@@ -26,7 +26,7 @@ Here's an overview of the steps you'll run:
     to check out Chromium.
 1.  We don't provide any sort of "install" step.
 1.  You may want to
-    [use a chroot](http://code.google.com/p/chromium/wiki/UsingALinuxChroot) to
+    [use a chroot](using_a_linux_chroot.md) to
     isolate yourself from versioning or packaging conflicts (or to run the
     layout tests).
 

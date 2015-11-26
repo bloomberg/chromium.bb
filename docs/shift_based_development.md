@@ -58,9 +58,7 @@ done in your separate local repositories, and you still use e.g. git
 pull (which in our git svn repositories behind the scenes does a `git svn fetch` etc.
 
 Shift-based collaboration won't work well (at least not with a
-pipeline of branches) unless you are using an "unmanaged" git checkout
-(search for "unmanaged" on
-[this page](https://code.google.com/p/chromium/wiki/UsingNewGit)).
+pipeline of branches) unless you are using an "unmanaged" git checkout.
 
 ## Example Working Rules
 

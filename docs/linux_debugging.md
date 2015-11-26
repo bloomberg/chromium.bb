@@ -439,8 +439,7 @@ and rebuild.
 
 See
 https://sites.google.com/a/chromium.org/dev/developers/profiling-chromium-and-webkit
-and
-http://code.google.com/p/chromium/wiki/LinuxProfiling
+and [Linux Profiling](linux_profiling.md).
 
 ## i18n
 

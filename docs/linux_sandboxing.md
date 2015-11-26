@@ -140,8 +140,7 @@ for 'dynamic' since dynamic transitions are a little obscure in SELinux)
 
 Sandboxing can make developing harder, see:
 
-*   [this page](https://code.google.com/p/chromium/wiki/LinuxSUIDSandboxDevelopment)
-    for the `setuid` sandbox
+*   [this page](linux_suid_sandbox_development.md) for the `setuid` sandbox
 *   [this page](http://www.chromium.org/for-testers/bug-reporting-guidelines/hanging-tabs)
     for triggering crashes
 *   [this page for debugging tricks](linux_debugging.md)

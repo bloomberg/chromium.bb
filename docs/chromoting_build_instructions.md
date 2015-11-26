@@ -36,8 +36,7 @@ If you've already checked out a copy of the browser's codebase, you can skip
 this section, although you'll still need to run `gclient runhooks` to ensure you
 build using the API keys you just generated.
 
-1.  Install the build dependencies, which are listed at
-    http://code.google.com/p/chromium/wiki/LinuxBuildInstructionsPrerequisites.
+1.  [Install the build dependencies](linux_build_instructions_prerequisites.md).
 1.  Install the depot\_tools utilities, a process that is documented at
     http://dev.chromium.org/developers/how-tos/install-depot-tools.
 1.  Download the Chromium source code by running:
@@ -111,8 +110,8 @@ very early stages of development. At the time of writing, you must compile from
 source because no official version is being distributed.
 
 1.  Follow all the instructions under the `Getting the code` and
-    `Install prerequisites` sections of: TODO: 404
-    http://code.google.com/p/chromium/wiki/AndroidBuildInstructions
+    `Install prerequisites` sections of:
+    https://www.chromium.org/developers/how-tos/android-build-instructions
 1.  Move into the `src/` directory that contains your checkout of the Chromium
     code.
 1.  Build the Android app: `$ ninja -C out/Release remoting_apk`

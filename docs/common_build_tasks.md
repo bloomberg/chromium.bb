@@ -67,11 +67,11 @@ system GYP when generating project files. This is a summary of them:
 
 TODO(andybons): Convert to list.
 
-| GYP\_DEFINES | A set of key=value pairs separated by space that will set default values of variables used in .gyp and .gypi files |
-|:-------------|:-------------------------------------------------------------------------------------------------------------------|
-| GYP\_GENERATORS | The specific generator that creates build-system specific files                                                    |
-| GYP\_GENERATOR\_FLAGS | Flags that are passed down to the tool that generates the build-system specific files                              |
-| GYP\_GENERATOR\_OUTPUT | The directory that the top-level build output directory is relative to                                             |
+|:-------------|:--------------------------------------------------------------|
+| `GYP_DEFINES` | A set of key=value pairs separated by space that will set default values of variables used in .gyp and .gypi files |
+| `GYP_GENERATORS` | The specific generator that creates build-system specific files |
+| `GYP_GENERATOR_FLAGS` | Flags that are passed down to the tool that generates the build-system specific files |
+| `GYP_GENERATOR_OUTPUT` | The directory that the top-level build output directory is relative to |
 
 Note also that GYP uses CPPFLAGS, CFLAGS, and CXXFLAGS when generating ninja
 files (the values at build time = ninja run time are _not_ used); see
@@ -89,12 +89,14 @@ Next to your top-level `/src/` directory, create a file called
 above environment variables. For the full list of supported keys, see
 [/src/build/gyp_helper.py](/build/gyp_helper.py).
 
-``` {
+```
+{
   'variables': {
     'mac_strip_release': 0,
   }, 'GYP_DEFINES':
     'clang=1 ' 'component=shared_library ' 'dcheck_always_on=1 '
-} ```
+}
+```
 
 #### include.gyp
 

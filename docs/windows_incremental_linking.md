@@ -11,5 +11,4 @@ reason.
 Note that `incremental_chrome_dll=1` will probably not work on Visual Studio
 2008 builds. It may not work on Visual Studio 2010 builds either (pamg couldn't
 get it to work as of Nov 2012, encountering numerous link errors). You may have
-to use [ninja](http://code.google.com/p/chromium/wiki/NinjaBuild), which has
-incremental linking on by default.
+to use [ninja](ninja_build.md), which has incremental linking on by default.

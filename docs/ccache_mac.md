@@ -11,7 +11,7 @@ page is about using ccache on Mac with clang and the NinjaBuild system.
 ## Installation
 
 In order to use [ccache](http://ccache.samba.org) with
-[clang](http://code.google.com/p/chromium/wiki/Clang), you need to use the
+[clang](clang.md), you need to use the
 current [git HEAD](http://ccache.samba.org/repo.html), since the most recent
 version (3.1.9) doesn't contain the
 [patch needed](https://github.com/jrosdahl/ccache/pull/4) for using

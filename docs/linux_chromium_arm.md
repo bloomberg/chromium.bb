@@ -26,9 +26,9 @@ and library dependencies directly from Ubuntu:
 
     $ ./build/install-build-deps.sh
 
-### Installing the rootfs
+### Installing the sysroot
 
-A prebuilt rootfs image is kept up-to-date on Cloud Storage. It will
+A prebuilt sysroot image is kept up-to-date on Cloud Storage. It will
 automatically be installed by gclient runhooks installed if you have
 `target_arch=arm` in your `GYP_DEFINES`.
 

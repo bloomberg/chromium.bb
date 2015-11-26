@@ -45,33 +45,33 @@ For Chromium contributors that have different nicks on other domains.
 | jchaffraix        | jchaffraix      | jchaffraix      |
 | jeremy            | jeremymos       | playmobil       |
 | jln               | julien\`        | jln             |
-| jochen            | jochen`__`      | eisinger        |
-| johnnyg           | johnny_g        | johnnyg         |
+| jochen            | jochen\_\_      | eisinger        |
+| johnnyg           | johnny\_g       | johnnyg         |
 | joi               | joisig          | joi             |
 | jonross           | jonrossca       | jonross         |
 | jshin             | jshin           | jungshik        |
-| jww               | jww__           | jww             |
+| jww               | jww\_\_         | jww             |
 | jyasskin          | jyasskin        | jyasskin        |
 | karen             | kareng          | kareng          |
 | keescook          | kees            | keescook        |
 | koz               |                 | jameskozianski  |
 | kuchhal           | kuchhal         | rahulk          |
-| levin             | dave_levin      | levin           |
-| lfg               | lfg_            | lfg             |
+| levin             | dave\_levin     | levin           |
+| lfg               | lfg\_           | lfg             |
 | luken             | luken_chromium  | luken           |
 | mark              | markmentovai    | mmentovai       |
-| mattm             | mattm_c, mattm_g | mattm           |
+| mattm             | mattm\_c, mattm\_g | mattm           |
 | mbarbella         | mbarbella       | mbarbella       |
 | mmeade            | mmeade          | mmeade          |
 | mednik            | mednik          | mednik          |
 | mgaba             | mgaba           | mgaba           |
 | mlinck            | dullb0yj4ck     | mlinck          |
-| msw               | msw_            | msw             |
+| msw               | msw\_           | msw             |
 | nick              | nickcarter      | ncarter         |
 | oleg              |                 | olege           |
 | ortuno            | gortuno         | ortuno          |
 | pam               | pamg            | pamg            |
-| paulirish         | paul_irish      | paulirish       |
+| paulirish         | paul\_irish      | paulirish       |
 | patrick           | pjohnson        | pjohnson        |
 | peter             | beverloo        | beverloo        |
 | phajdan.jr        | phajdan-jr      | phajdan         |
@@ -82,7 +82,7 @@ For Chromium contributors that have different nicks on other domains.
 | robliao           | robliao         | robliao         |
 | rsleevi           | sleevi, rsleevi | sleevi          |
 | sarah             |                 | sarahgordon     |
-| satish            | satish`_`       | satish          |
+| satish            | satish\_        | satish          |
 | scheglov          |                 | scheglov        |
 | scottbyer         | sbyer           | scottbyer       |
 | shans             |                 | shanestephens   |
@@ -99,7 +99,7 @@ For Chromium contributors that have different nicks on other domains.
 | vadimt            | vadimt          | vadimt          |
 | viettrungluu      | trungl          | vtl             |
 | wad               | redpig          | drewry          |
-| wez               | real_wez        | wez             |
+| wez               | real\_wez       | wez             |
 | wjmaclean         | seumas, wjmaclean | wjmaclean, wjm, seumas |
 | yoz               | yaws            | yoz             |
 | zmo               | zhenyao         | zmo             |
