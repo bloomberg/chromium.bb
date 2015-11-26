@@ -4,57 +4,37 @@
 
 #include "components/policy/core/common/cloud/resource_cache.h"
 
-#include "base/base64.h"
+#include "base/base64url.h"
 #include "base/callback.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/sequenced_task_runner.h"
-#include "base/strings/string_util.h"
 
 namespace policy {
 
 namespace {
-
-// Verifies that |value| is not empty and encodes it into base64url format,
-// which is safe to use as a file name on all platforms.
-bool Base64UrlEncode(const std::string& value, std::string* encoded) {
-  DCHECK(!value.empty());
-  if (value.empty())
-    return false;
-  base::Base64Encode(value, encoded);
-  base::ReplaceChars(*encoded, "+", "-", encoded);
-  base::ReplaceChars(*encoded, "/", "_", encoded);
-  // Note: this encoding keeps the padding chars, though the "Baset64 with safe
-  // URL alphabet" encoding trims them. See Base64UrlDecode below.
-  return true;
-}
 
 // Decodes all elements of |input| from base64url format and stores the decoded
 // elements in |output|.
 bool Base64UrlEncode(const std::set<std::string>& input,
                      std::set<std::string>* output) {
   output->clear();
-  for (std::set<std::string>::const_iterator it = input.begin();
-       it != input.end(); ++it) {
-    std::string encoded;
-    if (!Base64UrlEncode(*it, &encoded)) {
+  for (const auto& plain : input) {
+    if (plain.empty()) {
+      NOTREACHED();
       output->clear();
       return false;
     }
+
+    std::string encoded;
+    base::Base64UrlEncode(plain, base::Base64UrlEncodePolicy::INCLUDE_PADDING,
+                          &encoded);
+
     output->insert(encoded);
   }
   return true;
-}
-
-// Decodes |encoded| from base64url format and verifies that the result is not
-// emtpy.
-bool Base64UrlDecode(const std::string& encoded, std::string* value) {
-  std::string buffer;
-  base::ReplaceChars(encoded, "-", "+", &buffer);
-  base::ReplaceChars(buffer, "_", "/", &buffer);
-  return base::Base64Decode(buffer, value) && !value->empty();
 }
 
 }  // namespace
@@ -122,8 +102,10 @@ void ResourceCache::LoadAllSubkeys(
     // Only read from |subkey_path| if it is not a symlink and its name is
     // a base64-encoded string.
     if (!base::IsLink(path) &&
-        Base64UrlDecode(encoded_subkey, &subkey) &&
-        base::ReadFileToString(path, &data)) {
+        base::Base64UrlDecode(encoded_subkey,
+                              base::Base64UrlDecodePolicy::REQUIRE_PADDING,
+                              &subkey) &&
+        !subkey.empty() && base::ReadFileToString(path, &data)) {
       (*contents)[subkey].swap(data);
     }
   }
@@ -161,8 +143,10 @@ void ResourceCache::FilterSubkeys(const std::string& key,
     std::string subkey;
     // Delete files with invalid names, and files whose subkey doesn't pass the
     // filter.
-    if (!Base64UrlDecode(subkey_path.BaseName().MaybeAsASCII(), &subkey) ||
-        test.Run(subkey)) {
+    if (!base::Base64UrlDecode(subkey_path.BaseName().MaybeAsASCII(),
+                               base::Base64UrlDecodePolicy::REQUIRE_PADDING,
+                               &subkey) ||
+        subkey.empty() || test.Run(subkey)) {
       base::DeleteFile(subkey_path, true);
     }
   }
@@ -217,9 +201,15 @@ void ResourceCache::PurgeOtherSubkeys(
 bool ResourceCache::VerifyKeyPath(const std::string& key,
                                   bool allow_create,
                                   base::FilePath* path) {
-  std::string encoded;
-  if (!Base64UrlEncode(key, &encoded))
+  if (key.empty()) {
+    NOTREACHED();
     return false;
+  }
+
+  std::string encoded;
+  base::Base64UrlEncode(key, base::Base64UrlEncodePolicy::INCLUDE_PADDING,
+                        &encoded);
+
   *path = cache_dir_.AppendASCII(encoded);
   return allow_create ? base::CreateDirectory(*path) :
                         base::DirectoryExists(*path);
@@ -229,12 +219,19 @@ bool ResourceCache::VerifyKeyPathAndGetSubkeyPath(const std::string& key,
                                                   bool allow_create_key,
                                                   const std::string& subkey,
                                                   base::FilePath* path) {
-  base::FilePath key_path;
-  std::string encoded;
-  if (!VerifyKeyPath(key, allow_create_key, &key_path) ||
-      !Base64UrlEncode(subkey, &encoded)) {
+  if (subkey.empty()) {
+    NOTREACHED();
     return false;
   }
+
+  base::FilePath key_path;
+  if (!VerifyKeyPath(key, allow_create_key, &key_path))
+    return false;
+
+  std::string encoded;
+  base::Base64UrlEncode(subkey, base::Base64UrlEncodePolicy::INCLUDE_PADDING,
+                        &encoded);
+
   *path = key_path.AppendASCII(encoded);
   return true;
 }
