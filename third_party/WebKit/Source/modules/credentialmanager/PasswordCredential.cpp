@@ -52,8 +52,11 @@ PassRefPtr<EncodedFormData> PasswordCredential::encodeFormData(String& contentTy
         // If |additionalData| is a 'URLSearchParams' object, build a urlencoded response.
         URLSearchParams* params = URLSearchParams::create(URLSearchParamsInit());
         URLSearchParams* additionalData = m_additionalData.getAsURLSearchParams();
-        for (const auto& param : additionalData->params())
-            params->append(param.first, param.second);
+        for (const auto& param : additionalData->params()) {
+            const String& name = param.first;
+            if (name != idName() && name != passwordName())
+                params->append(name, param.second);
+        }
         params->append(idName(), id());
         params->append(passwordName(), password());
 
@@ -67,10 +70,14 @@ PassRefPtr<EncodedFormData> PasswordCredential::encodeFormData(String& contentTy
     if (m_additionalData.isFormData()) {
         FormData* additionalData = m_additionalData.getAsFormData();
         for (const FormData::Entry* entry : additionalData->entries()) {
+            const String& name = formData->decode(entry->name());
+            if (name == idName() || name == passwordName())
+                continue;
+
             if (entry->blob())
-                formData->append(formData->decode(entry->name()), entry->blob(), entry->filename());
+                formData->append(name, entry->blob(), entry->filename());
             else
-                formData->append(formData->decode(entry->name()), formData->decode(entry->value()));
+                formData->append(name, formData->decode(entry->value()));
         }
     }
     formData->append(idName(), id());
