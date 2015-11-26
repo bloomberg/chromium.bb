@@ -263,15 +263,14 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
      * renderer. https://crbug.com/434477.
      * @throws InterruptedException
      * @throws TimeoutException
-     * @SmallTest
      */
-    @FlakyTest
+    @SmallTest
     public void testNewTabSetsContentViewSize() throws InterruptedException, TimeoutException {
         ChromeTabUtils.newTabFromMenu(getInstrumentation(), getActivity());
+        getInstrumentation().waitForIdleSync();
 
         // Make sure we're on the NTP
         Tab tab = getActivity().getActivityTab();
-        ChromeTabUtils.waitForTabPageLoaded(tab, (String) null);
         assertTrue("NTP never fully loaded.", NewTabPageTestUtils.waitForNtpLoaded(tab));
 
         loadUrl(INITIAL_SIZE_TEST_URL);
