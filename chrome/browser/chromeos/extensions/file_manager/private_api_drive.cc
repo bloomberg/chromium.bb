@@ -429,13 +429,27 @@ class SingleEntryPropertiesGetterForFileSystemProvider {
     }
 
     ProvidedFileSystemInterface::MetadataFieldMask field_mask =
-        ProvidedFileSystemInterface::METADATA_FIELD_DEFAULT;
-    // TODO(mtomasz): Add other fields. All of them should be requested on
-    // demand. crbug.com/413161.
+        ProvidedFileSystemInterface::METADATA_FIELD_NONE;
+    if (names_.find(api::file_manager_private::ENTRY_PROPERTY_NAME_SIZE) !=
+        names_.end()) {
+      field_mask |= ProvidedFileSystemInterface::METADATA_FIELD_SIZE;
+    }
+    if (names_.find(
+            api::file_manager_private::ENTRY_PROPERTY_NAME_MODIFICATIONTIME) !=
+        names_.end()) {
+      field_mask |=
+          ProvidedFileSystemInterface::METADATA_FIELD_MODIFICATION_TIME;
+    }
+    if (names_.find(
+            api::file_manager_private::ENTRY_PROPERTY_NAME_CONTENTMIMETYPE) !=
+        names_.end()) {
+      field_mask |= ProvidedFileSystemInterface::METADATA_FIELD_MIME_TYPE;
+    }
     if (names_.find(
             api::file_manager_private::ENTRY_PROPERTY_NAME_THUMBNAILURL) !=
-        names_.end())
+        names_.end()) {
       field_mask |= ProvidedFileSystemInterface::METADATA_FIELD_THUMBNAIL;
+    }
 
     parser.file_system()->GetMetadata(
         parser.file_path(), field_mask,
@@ -453,15 +467,31 @@ class SingleEntryPropertiesGetterForFileSystemProvider {
       return;
     }
 
-    properties_->size.reset(new double(metadata->size));
-    properties_->modification_time.reset(
-        new double(metadata->modification_time.ToJsTime()));
+    if (names_.find(api::file_manager_private::ENTRY_PROPERTY_NAME_SIZE) !=
+        names_.end()) {
+      properties_->size.reset(new double(*metadata->size.get()));
+    }
 
-    if (!metadata->thumbnail.empty())
-      properties_->thumbnail_url.reset(new std::string(metadata->thumbnail));
-    if (!metadata->mime_type.empty()) {
+    if (names_.find(
+            api::file_manager_private::ENTRY_PROPERTY_NAME_MODIFICATIONTIME) !=
+        names_.end()) {
+      properties_->modification_time.reset(
+          new double(metadata->modification_time->ToJsTime()));
+    }
+
+    if (names_.find(
+            api::file_manager_private::ENTRY_PROPERTY_NAME_CONTENTMIMETYPE) !=
+            names_.end() &&
+        metadata->mime_type.get()) {
       properties_->content_mime_type.reset(
-          new std::string(metadata->mime_type));
+          new std::string(*metadata->mime_type));
+    }
+
+    if (names_.find(
+            api::file_manager_private::ENTRY_PROPERTY_NAME_THUMBNAILURL) !=
+            names_.end() &&
+        metadata->thumbnail.get()) {
+      properties_->thumbnail_url.reset(new std::string(*metadata->thumbnail));
     }
 
     CompleteGetEntryProperties(base::File::FILE_OK);

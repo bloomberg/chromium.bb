@@ -129,73 +129,91 @@ TEST_F(FileSystemProviderOperationsGetMetadataTest, ValidateIDLEntryMetadata) {
   // Correct metadata for non-root.
   {
     EntryMetadata metadata;
-    metadata.name = kValidFileName;
+    metadata.name.reset(new std::string(kValidFileName));
     metadata.modification_time.reset(new ModificationTime());
     metadata.modification_time->additional_properties.SetString(
         "value", "invalid-date-time");  // Invalid modification time is OK.
     metadata.thumbnail.reset(new std::string(kValidThumbnailUrl));
-    EXPECT_TRUE(ValidateIDLEntryMetadata(metadata, false /* root_path */));
+    EXPECT_TRUE(ValidateIDLEntryMetadata(
+        metadata,
+        ProvidedFileSystemInterface::METADATA_FIELD_NAME |
+            ProvidedFileSystemInterface::METADATA_FIELD_MODIFICATION_TIME |
+            ProvidedFileSystemInterface::METADATA_FIELD_THUMBNAIL,
+        false /* root_path */));
   }
 
   // Correct metadata for non-root (without thumbnail).
   {
     EntryMetadata metadata;
-    metadata.name = kValidFileName;
+    metadata.name.reset(new std::string(kValidFileName));
     metadata.modification_time.reset(new ModificationTime());
     metadata.modification_time->additional_properties.SetString(
         "value", "invalid-date-time");  // Invalid modification time is OK.
-    EXPECT_TRUE(ValidateIDLEntryMetadata(metadata, false /* root_path */));
+    EXPECT_TRUE(ValidateIDLEntryMetadata(
+        metadata,
+        ProvidedFileSystemInterface::METADATA_FIELD_NAME |
+            ProvidedFileSystemInterface::METADATA_FIELD_MODIFICATION_TIME |
+            ProvidedFileSystemInterface::METADATA_FIELD_THUMBNAIL,
+        false /* root_path */));
   }
 
   // Correct metadata for root.
   {
     EntryMetadata metadata;
-    metadata.name = "";
+    metadata.name.reset(new std::string());
     metadata.modification_time.reset(new ModificationTime());
     metadata.modification_time->additional_properties.SetString(
         "value", "invalid-date-time");  // Invalid modification time is OK.
-    EXPECT_TRUE(ValidateIDLEntryMetadata(metadata, true /* root_path */));
+    EXPECT_TRUE(ValidateIDLEntryMetadata(
+        metadata,
+        ProvidedFileSystemInterface::METADATA_FIELD_NAME |
+            ProvidedFileSystemInterface::METADATA_FIELD_MODIFICATION_TIME |
+            ProvidedFileSystemInterface::METADATA_FIELD_THUMBNAIL,
+        true /* root_path */));
   }
 
   // Invalid characters in the name.
   {
     EntryMetadata metadata;
-    metadata.name = "hello/world";
-    metadata.modification_time.reset(new ModificationTime());
-    metadata.modification_time->additional_properties.SetString(
-        "value", "invalid-date-time");  // Invalid modification time is OK.
-    metadata.thumbnail.reset(new std::string(kValidThumbnailUrl));
-    EXPECT_FALSE(ValidateIDLEntryMetadata(metadata, false /* root_path */));
+    metadata.name.reset(new std::string("hello/world"));
+    EXPECT_FALSE(ValidateIDLEntryMetadata(
+        metadata, ProvidedFileSystemInterface::METADATA_FIELD_NAME,
+        false /* root_path */));
   }
 
   // Empty name for non-root.
   {
     EntryMetadata metadata;
-    metadata.name = "";
-    metadata.modification_time.reset(new ModificationTime());
-    metadata.modification_time->additional_properties.SetString(
-        "value", "invalid-date-time");  // Invalid modification time is OK.
-    metadata.thumbnail.reset(new std::string(kValidThumbnailUrl));
-    EXPECT_FALSE(ValidateIDLEntryMetadata(metadata, false /* root_path */));
+    metadata.name.reset(new std::string());
+    EXPECT_FALSE(ValidateIDLEntryMetadata(
+        metadata, ProvidedFileSystemInterface::METADATA_FIELD_NAME,
+        false /* root_path */));
   }
 
-  // Missing last modification time is allowed.
+  // Missing last modification time.
   {
     EntryMetadata metadata;
-    metadata.name = kValidFileName;
-    metadata.thumbnail.reset(new std::string(kValidThumbnailUrl));
-    EXPECT_TRUE(ValidateIDLEntryMetadata(metadata, false /* root_path */));
+    EXPECT_FALSE(ValidateIDLEntryMetadata(
+        metadata, ProvidedFileSystemInterface::METADATA_FIELD_MODIFICATION_TIME,
+        false /* root_path */));
   }
 
   // Invalid thumbnail.
   {
     EntryMetadata metadata;
-    metadata.name = kValidFileName;
-    metadata.modification_time.reset(new ModificationTime());
-    metadata.modification_time->additional_properties.SetString(
-        "value", "invalid-date-time");  // Invalid modification time is OK.
     metadata.thumbnail.reset(new std::string("http://invalid-scheme"));
-    EXPECT_FALSE(ValidateIDLEntryMetadata(metadata, false /* root_path */));
+    EXPECT_FALSE(ValidateIDLEntryMetadata(
+        metadata, ProvidedFileSystemInterface::METADATA_FIELD_THUMBNAIL,
+        false /* root_path */));
+  }
+
+  // Empty string for thumbnail.
+  {
+    EntryMetadata metadata;
+    metadata.thumbnail.reset(new std::string());
+    EXPECT_FALSE(ValidateIDLEntryMetadata(
+        metadata, ProvidedFileSystemInterface::METADATA_FIELD_THUMBNAIL,
+        false /* root_path */));
   }
 }
 
@@ -258,7 +276,12 @@ TEST_F(FileSystemProviderOperationsGetMetadataTest, OnSuccess) {
 
   GetMetadata get_metadata(
       NULL, file_system_info_, base::FilePath(kDirectoryPath),
-      ProvidedFileSystemInterface::METADATA_FIELD_THUMBNAIL,
+      ProvidedFileSystemInterface::METADATA_FIELD_IS_DIRECTORY |
+          ProvidedFileSystemInterface::METADATA_FIELD_NAME |
+          ProvidedFileSystemInterface::METADATA_FIELD_SIZE |
+          ProvidedFileSystemInterface::METADATA_FIELD_MODIFICATION_TIME |
+          ProvidedFileSystemInterface::METADATA_FIELD_MIME_TYPE |
+          ProvidedFileSystemInterface::METADATA_FIELD_THUMBNAIL,
       base::Bind(&CallbackLogger::OnGetMetadata,
                  base::Unretained(&callback_logger)));
   get_metadata.SetDispatchEventImplForTesting(
@@ -297,14 +320,14 @@ TEST_F(FileSystemProviderOperationsGetMetadataTest, OnSuccess) {
   EXPECT_EQ(base::File::FILE_OK, event->result());
 
   const EntryMetadata* metadata = event->metadata();
-  EXPECT_FALSE(metadata->is_directory);
-  EXPECT_EQ(4096, metadata->size);
+  EXPECT_FALSE(*metadata->is_directory);
+  EXPECT_EQ(4096, *metadata->size);
   base::Time expected_time;
   EXPECT_TRUE(
       base::Time::FromString("Thu Apr 24 00:46:52 UTC 2014", &expected_time));
-  EXPECT_EQ(expected_time, metadata->modification_time);
-  EXPECT_EQ(kMimeType, metadata->mime_type);
-  EXPECT_EQ(kThumbnail, metadata->thumbnail);
+  EXPECT_EQ(expected_time, *metadata->modification_time);
+  EXPECT_EQ(kMimeType, *metadata->mime_type);
+  EXPECT_EQ(kThumbnail, *metadata->thumbnail);
 }
 
 TEST_F(FileSystemProviderOperationsGetMetadataTest, OnSuccess_InvalidMetadata) {
@@ -313,7 +336,12 @@ TEST_F(FileSystemProviderOperationsGetMetadataTest, OnSuccess_InvalidMetadata) {
 
   GetMetadata get_metadata(
       NULL, file_system_info_, base::FilePath(kDirectoryPath),
-      ProvidedFileSystemInterface::METADATA_FIELD_THUMBNAIL,
+      ProvidedFileSystemInterface::METADATA_FIELD_IS_DIRECTORY |
+          ProvidedFileSystemInterface::METADATA_FIELD_NAME |
+          ProvidedFileSystemInterface::METADATA_FIELD_SIZE |
+          ProvidedFileSystemInterface::METADATA_FIELD_MODIFICATION_TIME |
+          ProvidedFileSystemInterface::METADATA_FIELD_MIME_TYPE |
+          ProvidedFileSystemInterface::METADATA_FIELD_THUMBNAIL,
       base::Bind(&CallbackLogger::OnGetMetadata,
                  base::Unretained(&callback_logger)));
   get_metadata.SetDispatchEventImplForTesting(

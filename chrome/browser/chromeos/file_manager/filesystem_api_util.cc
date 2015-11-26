@@ -51,11 +51,11 @@ void GetMimeTypeAfterGetMetadataForProvidedFileSystem(
     base::File::Error result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (result != base::File::FILE_OK || metadata->mime_type.empty()) {
+  if (result != base::File::FILE_OK || !metadata->mime_type.get()) {
     callback.Run(false, std::string());
     return;
   }
-  callback.Run(true, metadata->mime_type);
+  callback.Run(true, *metadata->mime_type);
 }
 
 // Helper function to converts a callback that takes boolean value to that takes
@@ -176,7 +176,7 @@ void GetNonNativeLocalPathMimeType(
     parser.file_system()->GetMetadata(
         parser.file_path(),
         chromeos::file_system_provider::ProvidedFileSystemInterface::
-            METADATA_FIELD_DEFAULT,
+            METADATA_FIELD_MIME_TYPE,
         base::Bind(&GetMimeTypeAfterGetMetadataForProvidedFileSystem,
                    callback));
     return;

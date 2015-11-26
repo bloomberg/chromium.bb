@@ -26,7 +26,7 @@ namespace {
 void GetFileInfoOnUIThread(
     scoped_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
-    int /* fields */,
+    int fields,
     const ProvidedFileSystemInterface::GetMetadataCallback& callback) {
   util::FileSystemURLParser parser(url);
   if (!parser.Parse()) {
@@ -35,17 +35,21 @@ void GetFileInfoOnUIThread(
     return;
   }
 
-  // TODO(mtomasz): Pass fields to FSP extensions so only requested fields are
-  // returned.
-  parser.file_system()->GetMetadata(
-      parser.file_path(),
-      ProvidedFileSystemInterface::METADATA_FIELD_DEFAULT,
-      callback);
+  int fsp_fields = 0;
+  if (fields & storage::FileSystemOperation::GET_METADATA_FIELD_IS_DIRECTORY)
+    fsp_fields |= ProvidedFileSystemInterface::METADATA_FIELD_IS_DIRECTORY;
+  if (fields & storage::FileSystemOperation::GET_METADATA_FIELD_SIZE)
+    fsp_fields |= ProvidedFileSystemInterface::METADATA_FIELD_SIZE;
+  if (fields & storage::FileSystemOperation::GET_METADATA_FIELD_LAST_MODIFIED)
+    fsp_fields |= ProvidedFileSystemInterface::METADATA_FIELD_MODIFICATION_TIME;
+
+  parser.file_system()->GetMetadata(parser.file_path(), fsp_fields, callback);
 }
 
 // Routes the response of GetFileInfo back to the IO thread with a type
 // conversion.
-void OnGetFileInfo(const storage::AsyncFileUtil::GetFileInfoCallback& callback,
+void OnGetFileInfo(int fields,
+                   const storage::AsyncFileUtil::GetFileInfoCallback& callback,
                    scoped_ptr<EntryMetadata> metadata,
                    base::File::Error result) {
   if (result != base::File::FILE_OK) {
@@ -58,14 +62,20 @@ void OnGetFileInfo(const storage::AsyncFileUtil::GetFileInfoCallback& callback,
   DCHECK(metadata.get());
   base::File::Info file_info;
 
-  // TODO(mtomasz): Add support for last modified time and creation time.
-  // See: crbug.com/388540.
-  file_info.size = metadata->size;
-  file_info.is_directory = metadata->is_directory;
+  if (fields & storage::FileSystemOperation::GET_METADATA_FIELD_IS_DIRECTORY)
+    file_info.is_directory = *metadata->is_directory;
+  if (fields & storage::FileSystemOperation::GET_METADATA_FIELD_SIZE)
+    file_info.size = *metadata->size;
+
+  if (fields & storage::FileSystemOperation::GET_METADATA_FIELD_LAST_MODIFIED) {
+    file_info.last_modified = *metadata->modification_time;
+    // TODO(mtomasz): Add support for last modified time and creation time.
+    // See: crbug.com/388540.
+    file_info.last_accessed = *metadata->modification_time;  // Not supported.
+    file_info.creation_time = *metadata->modification_time;  // Not supported.
+  }
+
   file_info.is_symbolic_link = false;  // Not supported.
-  file_info.last_modified = metadata->modification_time;
-  file_info.last_accessed = metadata->modification_time;  // Not supported.
-  file_info.creation_time = metadata->modification_time;  // Not supported.
 
   BrowserThread::PostTask(BrowserThread::IO,
                           FROM_HERE,
@@ -326,7 +336,7 @@ void ProviderAsyncFileUtil::GetFileInfo(
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&GetFileInfoOnUIThread, base::Passed(&context), url, fields,
-                 base::Bind(&OnGetFileInfo, callback)));
+                 base::Bind(&OnGetFileInfo, fields, callback)));
 }
 
 void ProviderAsyncFileUtil::ReadDirectory(

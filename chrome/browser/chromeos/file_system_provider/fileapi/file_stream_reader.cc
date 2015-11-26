@@ -110,9 +110,9 @@ class FileStreamReader::OperationRunner
 
     abort_callback_ = file_system_->GetMetadata(
         file_path_,
-        ProvidedFileSystemInterface::METADATA_FIELD_DEFAULT,
-        base::Bind(&OperationRunner::OnGetMetadataCompletedOnUIThread,
-                   this,
+        ProvidedFileSystemInterface::METADATA_FIELD_SIZE |
+            ProvidedFileSystemInterface::METADATA_FIELD_MODIFICATION_TIME,
+        base::Bind(&OperationRunner::OnGetMetadataCompletedOnUIThread, this,
                    callback));
   }
 
@@ -286,7 +286,7 @@ void FileStreamReader::OnInitializeCompleted(
   // may be changed without affecting the modification time.
   DCHECK(metadata.get());
   if (!expected_modification_time_.is_null() &&
-      metadata->modification_time != expected_modification_time_) {
+      *metadata->modification_time != expected_modification_time_) {
     state_ = FAILED;
     error_callback.Run(net::ERR_UPLOAD_FILE_CHANGED);
     return;
@@ -466,13 +466,13 @@ void FileStreamReader::OnGetMetadataForGetLengthReceived(
   // may be changed without affecting the modification time.
   DCHECK(metadata.get());
   if (!expected_modification_time_.is_null() &&
-      metadata->modification_time != expected_modification_time_) {
+      *metadata->modification_time != expected_modification_time_) {
     callback.Run(net::ERR_UPLOAD_FILE_CHANGED);
     return;
   }
 
   DCHECK_EQ(base::File::FILE_OK, result);
-  callback.Run(metadata->size);
+  callback.Run(*metadata->size);
 }
 
 }  // namespace file_system_provider

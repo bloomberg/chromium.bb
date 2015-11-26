@@ -214,7 +214,7 @@ TEST_F(FileSystemProviderFileStreamWriter, Write_Append) {
   ASSERT_TRUE(entry);
 
   const std::string original_contents = entry->contents;
-  const int64 initial_offset = entry->metadata->size;
+  const int64 initial_offset = *entry->metadata->size;
   ASSERT_LT(0, initial_offset);
 
   FileStreamWriter writer(file_url_, initial_offset);

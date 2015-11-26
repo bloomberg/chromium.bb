@@ -38,6 +38,36 @@ var TESTING_WRONG_TIME_FILE = Object.freeze({
 });
 
 /**
+ * @type {Object}
+ * @const
+ */
+var TESTING_ONLY_BASIC_FILE = Object.freeze({
+  isDirectory: false,
+  name: 'invalid-time.txt',
+});
+
+/**
+ * @type {string}
+ * @const
+ */
+var TESTING_ONLY_BASIC_FILE_NAME = 'basic.txt';
+
+/**
+ * @type {Object}
+ * @const
+ */
+var TESTING_ONLY_SIZE_FILE = Object.freeze({
+  isDirectory: false,
+  size: 4096
+});
+
+/**
+ * @type {string}
+ * @const
+ */
+var TESTING_ONLY_SIZE_FILE_NAME = 'only-size.txt';
+
+/**
  * Returns metadata for a requested entry.
  *
  * @param {GetMetadataRequestedOptions} options Options.
@@ -63,6 +93,16 @@ function onGetMetadataRequested(options, onSuccess, onError) {
 
   if (options.entryPath === '/' + TESTING_WRONG_TIME_FILE.name) {
     onSuccess(TESTING_WRONG_TIME_FILE);
+    return;
+  }
+
+  if (options.entryPath === '/' + TESTING_ONLY_BASIC_FILE_NAME) {
+    onSuccess(TESTING_ONLY_BASIC_FILE);
+    return;
+  }
+
+  if (options.entryPath === '/' + TESTING_ONLY_SIZE_FILE_NAME) {
+    onSuccess(TESTING_ONLY_SIZE_FILE);
     return;
   }
 
@@ -170,6 +210,59 @@ function runTests() {
           chrome.test.callbackPass(function(error) {
             chrome.test.assertEq('TypeMismatchError', error.name);
           }));
+    },
+
+    // Resolving a file should only request is_directory and name fields.
+    function getMetadataForGetFile() {
+      test_util.fileSystem.root.getFile(
+          TESTING_ONLY_BASIC_FILE_NAME,
+          {create: false},
+          chrome.test.callbackPass(function(fileEntry) {
+            chrome.test.assertTrue(!!fileEntry);
+          }),
+          function(error) {
+            chrome.test.fail(error.name);
+          });
+    },
+
+    // Check that if a requested mandatory field is missing, then the error
+    // callback is invoked.
+    function getMetadataMissingFields() {
+      test_util.fileSystem.root.getFile(
+          TESTING_ONLY_SIZE_FILE_NAME,
+          {create: false},
+          chrome.test.callbackPass(function(fileEntry) {
+            fileEntry.getMetadata(
+                function(metadata) {
+                  chrome.test.fail('Unexpected success');
+                },
+                chrome.test.callbackPass(function(error) {
+                  chrome.test.assertEq('InvalidStateError', error.name);
+                }));
+          }),
+          function(error) {
+            chrome.test.fail(error.name);
+          });
+    },
+
+    // Fetch only requested fields.
+    function getEntryPropertiesFewFields() {
+      test_util.fileSystem.root.getFile(
+          TESTING_ONLY_SIZE_FILE_NAME,
+          {create: false},
+          chrome.test.callbackPass(function(fileEntry) {
+            chrome.fileManagerPrivate.getEntryProperties(
+                [fileEntry],
+                ['size'],
+                chrome.test.callbackPass(function(fileProperties) {
+                  chrome.test.assertEq(1, fileProperties.length);
+                  chrome.test.assertEq(
+                      TESTING_ONLY_SIZE_FILE.size, fileProperties[0].size);
+                }));
+            }),
+            function(error) {
+              chrome.test.fail(error.name);
+            });
     }
   ]);
 }

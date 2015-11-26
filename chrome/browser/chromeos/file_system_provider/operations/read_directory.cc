@@ -29,12 +29,17 @@ bool ConvertRequestValueToEntryList(scoped_ptr<RequestValue> value,
 
   for (size_t i = 0; i < params->entries.size(); ++i) {
     const linked_ptr<EntryMetadata> entry_metadata = params->entries[i];
-    if (!ValidateIDLEntryMetadata(*entry_metadata, false /* root_entry */))
+    if (!ValidateIDLEntryMetadata(
+            *entry_metadata,
+            ProvidedFileSystemInterface::METADATA_FIELD_IS_DIRECTORY |
+                ProvidedFileSystemInterface::METADATA_FIELD_NAME,
+            false /* root_entry */)) {
       return false;
+    }
 
     storage::DirectoryEntry output_entry;
-    output_entry.is_directory = entry_metadata->is_directory;
-    output_entry.name = entry_metadata->name;
+    output_entry.is_directory = *entry_metadata->is_directory;
+    output_entry.name = *entry_metadata->name;
 
     output->push_back(output_entry);
   }
@@ -64,6 +69,10 @@ bool ReadDirectory::Execute(int request_id) {
   options.file_system_id = file_system_info_.file_system_id();
   options.request_id = request_id;
   options.directory_path = directory_path_.AsUTF8Unsafe();
+
+  // Request only is_directory and name metadata fields.
+  options.is_directory = true;
+  options.name = true;
 
   return SendEvent(
       request_id,

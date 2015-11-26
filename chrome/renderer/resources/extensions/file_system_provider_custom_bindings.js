@@ -51,16 +51,86 @@ function verifyImageURI(uri) {
 }
 
 /**
+ * Verifies if the passed metadata is valid.
+ * @param {!GetMetadataOptions|!ReadDirectoryOptions} options
+ * @return {boolean} True if valid, false if invalid.
+ */
+function verifyMetadata(options, metadata) {
+  // Ideally we'd like to consider the following as errors, but for backward
+  // compatibility they are warnings only.
+  if (!options.isDirectory && metadata.isDirectory !== undefined)
+    console.warn('IsDirectory specified, but not requested.');
+  if (!options.name && metadata.name !== undefined)
+    console.warn('Name specified, but not requested.');
+  if (!options.size && metadata.size !== undefined)
+    console.warn('Size specified, but not requested.');
+  if (!options.modificationTime && metadata.modificationTime !== undefined)
+    console.warn('Last modification time specified, but not requested.');
+  if (!options.mimeType && metadata.mimeType !== undefined) {
+    console.warn('MIME type specified, but not requested.');
+  } else {
+    if (metadata.mimeType === '') {
+      warning = 'MIME type must not be an empty string.' +
+          'If unknown, then do not set it.';
+    }
+  }
+
+  if (options.isDirectory && metadata.isDirectory === undefined) {
+    console.error('IsDirectory is required for this request.');
+    return false;
+  }
+
+  if (options.name && metadata.name === undefined) {
+    console.error('Name is required for this request.');
+    return false;
+  }
+
+  if (options.size && metadata.size === undefined) {
+    console.error('Size is required for this request.');
+    return false;
+  }
+
+  if (options.modificationTime && metadata.modificationTime === undefined) {
+    console.error('Last modification time is required for this request.');
+    return false;
+  }
+
+  // It is invalid to return a thumbnail when it's not requested. The
+  // restriction is added in order to avoid fetching the thumbnail while
+  // it's not needed.
+  if (!options.thumbnail && metadata.thumbnail !== undefined) {
+    console.error('Thumbnail data provided, but not requested.');
+    return false;
+  }
+
+  // Check the format and size. Note, that in the C++ layer, there is
+  // another sanity check to avoid passing any evil URL.
+  if (metadata.thumbnail !== undefined && !verifyImageURI(metadata.thumbnail)) {
+    console.error('Thumbnail format invalid.');
+    return false;
+  }
+
+  if (metadata.thumbnail !== undefined &&
+      metadata.thumbnail.length > METADATA_THUMBNAIL_SIZE_LIMIT) {
+    console.error('Thumbnail data too large.');
+    return false;
+  }
+
+  return true;
+}
+
+/**
  * Annotates an entry metadata by serializing its modifiedTime value.
  * @param {EntryMetadata} metadata Input metadata.
  * @return {EntryMetadata} metadata Annotated metadata, which can be passed
  *     back to the C++ layer.
  */
 function annotateMetadata(metadata) {
-  var result = {
-    isDirectory: metadata.isDirectory,
-    name: metadata.name,
-  };
+  var result = {};
+  if (metadata.isDirectory !== undefined)
+    result.isDirectory = metadata.isDirectory;
+  if (metadata.name !== undefined)
+    result.name = metadata.name;
   if (metadata.size !== undefined)
     result.size = metadata.size;
   if (metadata.modificationTime !== undefined)
@@ -103,32 +173,7 @@ eventBindings.registerArgumentMassager(
       var executionStart = Date.now();
       var options = args[0];
       var onSuccessCallback = function(metadata) {
-        var error;
-        // TODO(mtomasz): Remove the following two fields once crbug.com/413161
-        // is landed.
-        if (options.size !== undefined)
-          error = 'Size is required for this event.';
-        if (options.modificationTime !== undefined)
-          error = 'Last modified time is required for this event.';
-
-        // It is invalid to return a thumbnail when it's not requested. The
-        // restriction is added in order to avoid fetching the thumbnail while
-        // it's not needed.
-        if (!options.thumbnail && metadata.thumbnail)
-          error = 'Thumbnail data provided, but not requested.';
-
-        // Check the format and size. Note, that in the C++ layer, there is
-        // another sanity check to avoid passing any evil URL.
-        if ('thumbnail' in metadata && !verifyImageURI(metadata.thumbnail))
-          error = 'Thumbnail format invalid.';
-
-        if ('thumbnail' in metadata &&
-            metadata.thumbnail.length > METADATA_THUMBNAIL_SIZE_LIMIT) {
-          error = 'Thumbnail data too large.';
-        }
-
-        if (error) {
-          console.error(error);
+        if (!verifyMetadata(options, metadata)) {
           fileSystemProviderInternal.operationRequestedError(
               options.fileSystemId, options.requestId, 'FAILED',
               Date.now() - executionStart);
@@ -179,25 +224,22 @@ eventBindings.registerArgumentMassager(
       var executionStart = Date.now();
       var options = args[0];
       var onSuccessCallback = function(entries, hasNext) {
-        var annotatedEntries = entries.map(annotateMetadata);
-        // It is invalid to return a thumbnail when it's not requested.
-        var error;
-        annotatedEntries.forEach(function(metadata) {
-          if (metadata.thumbnail) {
-            var error =
-                'Thumbnails must not be provided when reading a directory.';
+        var error = false;
+        for (var i = 0; i < entries; i++) {
+          if (!validateMetadata(options, entries[i])) {
+            error = true;
             return;
           }
-        });
+        }
 
         if (error) {
-          console.error(error);
           fileSystemProviderInternal.operationRequestedError(
               options.fileSystemId, options.requestId, 'FAILED',
               Date.now() - executionStart);
           return;
         }
 
+        var annotatedEntries = entries.map(annotateMetadata);
         fileSystemProviderInternal.readDirectoryRequestedSuccess(
             options.fileSystemId, options.requestId, annotatedEntries, hasNext,
             Date.now() - executionStart);

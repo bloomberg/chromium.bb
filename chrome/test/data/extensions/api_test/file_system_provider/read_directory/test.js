@@ -10,9 +10,7 @@
  */
 var TESTING_HELLO_DIR = Object.freeze({
   isDirectory: true,
-  name: 'hello',
-  size: 0,
-  modificationTime: new Date(2014, 3, 27, 9, 38, 14)
+  name: 'hello'
 });
 
 /**
@@ -21,9 +19,7 @@ var TESTING_HELLO_DIR = Object.freeze({
  */
 var TESTING_CANDIES_DIR = Object.freeze({
   isDirectory: true,
-  name: 'candies',
-  size: 0,
-  modificationTime: new Date(2014, 2, 26, 8, 37, 13)
+  name: 'candies'
 });
 
 /**
@@ -32,9 +28,7 @@ var TESTING_CANDIES_DIR = Object.freeze({
  */
 var TESTING_TIRAMISU_FILE = Object.freeze({
   isDirectory: false,
-  name: 'tiramisu.txt',
-  size: 1986,
-  modificationTime: new Date(2014, 1, 25, 7, 36, 12)
+  name: 'tiramisu.txt'
 });
 
 /**

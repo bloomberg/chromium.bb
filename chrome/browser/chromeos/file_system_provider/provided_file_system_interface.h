@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_PROVIDED_FILE_SYSTEM_INTERFACE_H_
 #define CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_PROVIDED_FILE_SYSTEM_INTERFACE_H_
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -40,12 +41,14 @@ struct EntryMetadata {
   EntryMetadata();
   ~EntryMetadata();
 
-  bool is_directory;
-  std::string name;
-  int64 size;
-  base::Time modification_time;
-  std::string mime_type;
-  std::string thumbnail;
+  // All of the metadata fields are optional. All strings which are set, are
+  // non-empty.
+  scoped_ptr<bool> is_directory;
+  scoped_ptr<std::string> name;
+  scoped_ptr<int64> size;
+  scoped_ptr<base::Time> modification_time;
+  scoped_ptr<std::string> mime_type;
+  scoped_ptr<std::string> thumbnail;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(EntryMetadata);
@@ -64,7 +67,7 @@ enum OpenFileMode { OPEN_FILE_MODE_READ, OPEN_FILE_MODE_WRITE };
 
 // Contains information about an opened file.
 struct OpenedFile {
-  OpenedFile(const base::FilePath& file_path, OpenFileMode& mode);
+  OpenedFile(const base::FilePath& file_path, OpenFileMode mode);
   OpenedFile();
   ~OpenedFile();
 
@@ -83,10 +86,15 @@ typedef std::map<int, OpenedFile> OpenedFiles;
 // with either a success or an error.
 class ProvidedFileSystemInterface {
  public:
-  // Extra fields to be fetched with metadata.
+  // Fields to be fetched with metadata.
   enum MetadataField {
-    METADATA_FIELD_DEFAULT = 0,
-    METADATA_FIELD_THUMBNAIL = 1 << 0
+    METADATA_FIELD_NONE = 0,
+    METADATA_FIELD_IS_DIRECTORY = 1 << 0,
+    METADATA_FIELD_NAME = 1 << 1,
+    METADATA_FIELD_SIZE = 1 << 2,
+    METADATA_FIELD_MODIFICATION_TIME = 1 << 3,
+    METADATA_FIELD_MIME_TYPE = 1 << 4,
+    METADATA_FIELD_THUMBNAIL = 1 << 5
   };
 
   // Callback for OpenFile(). In case of an error, file_handle is equal to 0
