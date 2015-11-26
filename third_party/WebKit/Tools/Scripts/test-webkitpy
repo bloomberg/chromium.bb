@@ -41,6 +41,7 @@ if path_to_typ not in sys.path:
 
 import typ
 
+skip = []
 if sys.platform == 'win32':
     # These test fail on win32. We could annotate some of these in
     # class-level skips, but we don't support package/module-level skips.
@@ -51,12 +52,6 @@ if sys.platform == 'win32':
         'webkitpy.tool.*',
         'webkitpy.w3c.*',
         'webkitpy.layout_tests.layout_package.bot_test_expectations_unittest.*',
-    ]
-else:
-    # The scm tests are really slow, so we skip them by default.
-    # bugs.webkit.org/show_bug.cgi?id=31818 .
-    skip = [
-        'webkitpy.common.checkout.scm.scm_unittest.*',
     ]
 
 sys.exit(typ.main(top_level_dir=scripts_dir,
