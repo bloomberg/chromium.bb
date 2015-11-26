@@ -18,12 +18,12 @@
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/threading/platform_thread.h"
-#include "third_party/webrtc/base/ipaddress.h"
-#include "third_party/webrtc/base/stream.h"
 #include "third_party/webrtc/base/stringencode.h"
 #include "third_party/webrtc/base/stringutils.h"
-#include "third_party/webrtc/base/timeutils.h"
+
+// This needs to be included after base/logging.h.
 #include "third_party/webrtc_overrides/webrtc/base/diagnostic_logging.h"
+#include "third_party/webrtc_overrides/webrtc/base/logging.h"
 
 // From this file we can't use VLOG since it expands into usage of the __FILE__
 // macro (for correct filtering). The actual logging call from DIAGNOSTIC_LOG in
@@ -347,9 +347,6 @@ void InitDiagnosticLoggingDelegateFunction(
   if (delegate == g_logging_delegate_function)
     return;
   CHECK(!g_logging_delegate_function);
-#ifdef NDEBUG
-  IPAddress::set_strip_sensitive(true);
-#endif
   g_logging_delegate_function = delegate;
 
   if (g_extra_logging_init_function)
