@@ -378,8 +378,6 @@ void BrowserViewRenderer::SetViewVisibility(bool view_visible) {
                        "view_visible",
                        view_visible);
   view_visible_ = view_visible;
-  if (!disable_page_visibility_)
-    UpdateCompositorIsActive();
 }
 
 void BrowserViewRenderer::SetWindowVisibility(bool window_visible) {
@@ -452,7 +450,7 @@ bool BrowserViewRenderer::IsClientVisible() const {
   if (disable_page_visibility_)
     return !is_paused_;
 
-  return !is_paused_ && IsVisible();
+  return !is_paused_ && (!attached_to_window_ || window_visible_);
 }
 
 gfx::Rect BrowserViewRenderer::GetScreenRect() const {
@@ -729,11 +727,8 @@ bool BrowserViewRenderer::CompositeSW(SkCanvas* canvas) {
 
 void BrowserViewRenderer::UpdateCompositorIsActive() {
   if (compositor_) {
-    if (disable_page_visibility_)
-      compositor_->SetIsActive(!is_paused_ &&
-                               (!attached_to_window_ || window_visible_));
-    else
-      compositor_->SetIsActive(IsClientVisible());
+    compositor_->SetIsActive(!is_paused_ &&
+                             (!attached_to_window_ || window_visible_));
   }
 }
 
