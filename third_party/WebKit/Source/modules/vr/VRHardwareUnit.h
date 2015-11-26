@@ -8,6 +8,7 @@
 #include "modules/vr/VRFieldOfView.h"
 #include "modules/vr/VRPositionState.h"
 #include "platform/heap/Handle.h"
+#include "public/platform/WebThread.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -24,7 +25,7 @@ enum VREye {
     VREyeNone,
 };
 
-class VRHardwareUnit : public GarbageCollectedFinalized<VRHardwareUnit> {
+class VRHardwareUnit : public GarbageCollectedFinalized<VRHardwareUnit>, public WebThread::TaskObserver {
 public:
     explicit VRHardwareUnit(NavigatorVRDevice*);
     virtual ~VRHardwareUnit();
@@ -42,6 +43,7 @@ public:
 
     // VRController queries
     VRPositionState* getSensorState();
+    VRPositionState* getImmediateSensorState(bool updateFrameIndex);
 
     HMDVRDevice* hmd() const { return m_hmd; }
     PositionSensorVRDevice* positionSensor() const { return m_positionSensor; }
@@ -49,6 +51,10 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
+    // TaskObserver implementation.
+    void didProcessTask() override;
+    void willProcessTask() override { }
+
     unsigned m_index;
     String m_hardwareUnitId;
     unsigned m_nextDeviceId;
@@ -57,6 +63,7 @@ private:
 
     Member<NavigatorVRDevice> m_navigatorVRDevice;
     Member<VRPositionState> m_positionState;
+    bool m_canUpdatePositionState;
 
     // Device types
     Member<HMDVRDevice> m_hmd;

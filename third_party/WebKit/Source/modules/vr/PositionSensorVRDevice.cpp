@@ -17,13 +17,12 @@ PositionSensorVRDevice::PositionSensorVRDevice(VRHardwareUnit* hardwareUnit, uns
 
 VRPositionState* PositionSensorVRDevice::getState()
 {
-    // FIXME: This value should be stable for the duration of a requestAnimationFrame callback
     return hardwareUnit()->getSensorState();
 }
 
 VRPositionState* PositionSensorVRDevice::getImmediateState()
 {
-    return hardwareUnit()->getSensorState();
+    return hardwareUnit()->getImmediateSensorState(false);
 }
 
 void PositionSensorVRDevice::resetSensor()

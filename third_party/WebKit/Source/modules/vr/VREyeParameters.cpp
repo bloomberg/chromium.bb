@@ -14,7 +14,7 @@ void setDomPoint(DOMPoint* point, const WebVRVector3& vec)
     point->setX(vec.x);
     point->setY(vec.y);
     point->setZ(vec.z);
-    point->setW(0.0);
+    point->setW(1.0);
 }
 
 } // namespace

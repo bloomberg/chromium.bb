@@ -18,7 +18,7 @@ DOMPoint* vecToDomPoint(const WebVRVector4& vec, bool valid)
 DOMPoint* vecToDomPoint(const WebVRVector3& vec, bool valid)
 {
     if (valid)
-        return DOMPoint::create(vec.x, vec.y, vec.z, 0.0);
+        return DOMPoint::create(vec.x, vec.y, vec.z, 1.0);
     return nullptr;
 }
 
