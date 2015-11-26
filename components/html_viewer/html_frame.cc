@@ -678,11 +678,10 @@ void HTMLFrame::SwapToLocal(
   SetWindow(window);
   SetReplicatedFrameStateFromClientProperties(properties, &state_);
   blink::WebLocalFrame* local_web_frame =
-      blink::WebLocalFrame::create(state_.tree_scope, this);
-  local_web_frame->initializeToReplaceRemoteFrame(
-      web_frame_->toWebRemoteFrame(), state_.name, state_.sandbox_flags,
-      // TODO(lazyboy): Figure out replicating WebFrameOwnerProperties.
-      blink::WebFrameOwnerProperties());
+      blink::WebLocalFrame::createProvisional(
+          this, web_frame_->toWebRemoteFrame(), state_.sandbox_flags,
+          // TODO(lazyboy): Figure out replicating WebFrameOwnerProperties.
+          blink::WebFrameOwnerProperties());
   // The swap() ends up calling to frameDetached() and deleting the old.
   web_frame_->swap(local_web_frame);
   web_frame_ = local_web_frame;

@@ -235,7 +235,6 @@ public:
     v8::Local<v8::Value> createTestInterface(const AtomicString& name);
 
     // WebLocalFrame methods:
-    void initializeToReplaceRemoteFrame(WebRemoteFrame*, const WebString& name, WebSandboxFlags, const WebFrameOwnerProperties&) override;
     void setAutofillClient(WebAutofillClient*) override;
     WebAutofillClient* autofillClient() override;
     void setDevToolsAgentClient(WebDevToolsAgentClient*) override;
@@ -267,6 +266,7 @@ public:
     void willDetachParent();
 
     static WebLocalFrameImpl* create(WebTreeScopeType, WebFrameClient*);
+    static WebLocalFrameImpl* createProvisional(WebFrameClient*, WebRemoteFrame*, WebSandboxFlags, const WebFrameOwnerProperties&);
     ~WebLocalFrameImpl() override;
 
     PassRefPtrWillBeRawPtr<LocalFrame> createChildFrame(const FrameLoadRequest&, const AtomicString& name, HTMLFrameOwnerElement*);
@@ -355,6 +355,7 @@ private:
     friend class FrameLoaderClientImpl;
 
     WebLocalFrameImpl(WebTreeScopeType, WebFrameClient*);
+    WebLocalFrameImpl(WebRemoteFrame*, WebFrameClient*);
 
     // Sets the local core frame and registers destruction observers.
     void setCoreFrame(PassRefPtrWillBeRawPtr<LocalFrame>);

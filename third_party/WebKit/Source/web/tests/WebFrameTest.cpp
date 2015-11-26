@@ -7015,8 +7015,7 @@ TEST_F(WebFrameSwapTest, SwapMainFrame)
     mainFrame()->swap(remoteFrame);
 
     FrameTestHelpers::TestWebFrameClient client;
-    WebLocalFrame* localFrame = WebLocalFrame::create(WebTreeScopeType::Document, &client);
-    localFrame->initializeToReplaceRemoteFrame(remoteFrame, "", WebSandboxFlags::None, WebFrameOwnerProperties());
+    WebLocalFrame* localFrame = WebLocalFrame::createProvisional(&client, remoteFrame, WebSandboxFlags::None, WebFrameOwnerProperties());
     remoteFrame->swap(localFrame);
 
     // Finally, make sure an embedder triggered load in the local frame swapped
@@ -7091,8 +7090,7 @@ TEST_F(WebFrameSwapTest, SwapFirstChild)
     swapAndVerifyFirstChildConsistency("local->remote", mainFrame(), remoteFrame);
 
     FrameTestHelpers::TestWebFrameClient client;
-    WebLocalFrame* localFrame = WebLocalFrame::create(WebTreeScopeType::Document, &client);
-    localFrame->initializeToReplaceRemoteFrame(remoteFrame, "", WebSandboxFlags::None, WebFrameOwnerProperties());
+    WebLocalFrame* localFrame = WebLocalFrame::createProvisional(&client, remoteFrame, WebSandboxFlags::None, WebFrameOwnerProperties());
     swapAndVerifyFirstChildConsistency("remote->local", mainFrame(), localFrame);
 
     // FIXME: This almost certainly fires more load events on the iframe element
@@ -7130,8 +7128,7 @@ TEST_F(WebFrameSwapTest, SwapMiddleChild)
     swapAndVerifyMiddleChildConsistency("local->remote", mainFrame(), remoteFrame);
 
     FrameTestHelpers::TestWebFrameClient client;
-    WebLocalFrame* localFrame = WebLocalFrame::create(WebTreeScopeType::Document, &client);
-    localFrame->initializeToReplaceRemoteFrame(remoteFrame, "", WebSandboxFlags::None, WebFrameOwnerProperties());
+    WebLocalFrame* localFrame = WebLocalFrame::createProvisional(&client, remoteFrame, WebSandboxFlags::None, WebFrameOwnerProperties());
     swapAndVerifyMiddleChildConsistency("remote->local", mainFrame(), localFrame);
 
     // FIXME: This almost certainly fires more load events on the iframe element
@@ -7166,8 +7163,7 @@ TEST_F(WebFrameSwapTest, SwapLastChild)
     swapAndVerifyLastChildConsistency("local->remote", mainFrame(), remoteFrame);
 
     FrameTestHelpers::TestWebFrameClient client;
-    WebLocalFrame* localFrame = WebLocalFrame::create(WebTreeScopeType::Document, &client);
-    localFrame->initializeToReplaceRemoteFrame(remoteFrame, "", WebSandboxFlags::None, WebFrameOwnerProperties());
+    WebLocalFrame* localFrame = WebLocalFrame::createProvisional(&client, remoteFrame, WebSandboxFlags::None, WebFrameOwnerProperties());
     swapAndVerifyLastChildConsistency("remote->local", mainFrame(), localFrame);
 
     // FIXME: This almost certainly fires more load events on the iframe element
@@ -7211,8 +7207,7 @@ TEST_F(WebFrameSwapTest, SwapParentShouldDetachChildren)
     WebRemoteFrame* childRemoteFrame = remoteFrame->createRemoteChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, &remoteFrameClient2);
 
     FrameTestHelpers::TestWebFrameClient client;
-    WebLocalFrame* localFrame = WebLocalFrame::create(WebTreeScopeType::Document, &client);
-    localFrame->initializeToReplaceRemoteFrame(remoteFrame, "", WebSandboxFlags::None, WebFrameOwnerProperties());
+    WebLocalFrame* localFrame = WebLocalFrame::createProvisional(&client, remoteFrame, WebSandboxFlags::None, WebFrameOwnerProperties());
     swapAndVerifySubframeConsistency("remote->local", targetFrame, localFrame);
 
     // FIXME: This almost certainly fires more load events on the iframe element
@@ -7255,8 +7250,7 @@ TEST_F(WebFrameSwapTest, SwapPreservesGlobalContext)
 
     // Now check that remote -> local works too, since it goes through a different code path.
     FrameTestHelpers::TestWebFrameClient client;
-    WebLocalFrame* localFrame = WebLocalFrame::create(WebTreeScopeType::Document, &client);
-    localFrame->initializeToReplaceRemoteFrame(remoteFrame, "", WebSandboxFlags::None, WebFrameOwnerProperties());
+    WebLocalFrame* localFrame = WebLocalFrame::createProvisional(&client, remoteFrame, WebSandboxFlags::None, WebFrameOwnerProperties());
     remoteFrame->swap(localFrame);
     v8::Local<v8::Value> localWindow = mainFrame()->executeScriptAndReturnValue(WebScriptSource(
         "document.querySelector('#frame2').contentWindow;"));
@@ -7289,8 +7283,7 @@ TEST_F(WebFrameSwapTest, SwapInitializesGlobal)
     EXPECT_TRUE(windowTop->StrictEquals(remoteWindowTop));
 
     FrameTestHelpers::TestWebFrameClient client;
-    WebLocalFrame* localFrame = WebLocalFrame::create(WebTreeScopeType::Document, &client);
-    localFrame->initializeToReplaceRemoteFrame(remoteFrame, "", WebSandboxFlags::None, WebFrameOwnerProperties());
+    WebLocalFrame* localFrame = WebLocalFrame::createProvisional(&client, remoteFrame, WebSandboxFlags::None, WebFrameOwnerProperties());
     remoteFrame->swap(localFrame);
     v8::Local<v8::Value> localWindowTop = mainFrame()->executeScriptAndReturnValue(WebScriptSource("saved.top"));
     EXPECT_TRUE(localWindowTop->IsObject());
@@ -7435,8 +7428,7 @@ TEST_F(WebFrameSwapTest, HistoryCommitTypeAfterNewRemoteToLocalSwap)
     ASSERT_EQ(mainFrame()->firstChild(), remoteFrame);
 
     RemoteToLocalSwapWebFrameClient client(remoteFrame);
-    WebLocalFrame* localFrame = WebLocalFrame::create(WebTreeScopeType::Document, &client);
-    localFrame->initializeToReplaceRemoteFrame(remoteFrame, "", WebSandboxFlags::None, WebFrameOwnerProperties());
+    WebLocalFrame* localFrame = WebLocalFrame::createProvisional(&client, remoteFrame, WebSandboxFlags::None, WebFrameOwnerProperties());
     FrameTestHelpers::loadFrame(localFrame, m_baseURL + "subframe-hello.html");
     EXPECT_EQ(WebInitialCommitInChildFrame, client.historyCommitType());
 
@@ -7460,8 +7452,7 @@ TEST_F(WebFrameSwapTest, HistoryCommitTypeAfterExistingRemoteToLocalSwap)
     ASSERT_EQ(mainFrame()->firstChild(), remoteFrame);
 
     RemoteToLocalSwapWebFrameClient client(remoteFrame);
-    WebLocalFrame* localFrame = WebLocalFrame::create(WebTreeScopeType::Document, &client);
-    localFrame->initializeToReplaceRemoteFrame(remoteFrame, "", WebSandboxFlags::None, WebFrameOwnerProperties());
+    WebLocalFrame* localFrame = WebLocalFrame::createProvisional(&client, remoteFrame, WebSandboxFlags::None, WebFrameOwnerProperties());
     localFrame->setCommittedFirstRealLoad();
     FrameTestHelpers::loadFrame(localFrame, m_baseURL + "subframe-hello.html");
     EXPECT_EQ(WebStandardCommit, client.historyCommitType());
@@ -7492,8 +7483,7 @@ TEST_F(WebFrameSwapTest, UniqueNameAfterRemoteToLocalSwap)
 
     // Swap back to a LocalFrame.
     RemoteToLocalSwapWebFrameClient client(remoteFrame);
-    WebLocalFrame* localFrame = WebLocalFrame::create(WebTreeScopeType::Document, &client);
-    localFrame->initializeToReplaceRemoteFrame(remoteFrame, "frame1", WebSandboxFlags::None, WebFrameOwnerProperties());
+    WebLocalFrame* localFrame = WebLocalFrame::createProvisional(&client, remoteFrame, WebSandboxFlags::None, WebFrameOwnerProperties());
     FrameTestHelpers::loadFrame(localFrame, m_baseURL + "subframe-hello.html");
     EXPECT_EQ(uniqueName.utf8(), localFrame->uniqueName().utf8());
     EXPECT_EQ(uniqueName.utf8(), WebString(toWebLocalFrameImpl(localFrame)->frame()->loader().currentItem()->target()).utf8());
@@ -7511,8 +7501,7 @@ TEST_F(WebFrameSwapTest, UniqueNameAfterRemoteToLocalSwap)
     EXPECT_EQ(uniqueName2.utf8(), WebString(toWebRemoteFrameImpl(remoteFrame2)->frame()->tree().uniqueName()).utf8());
 
     RemoteToLocalSwapWebFrameClient client2(remoteFrame2);
-    WebLocalFrame* localFrame2 = WebLocalFrame::create(WebTreeScopeType::Document, &client2);
-    localFrame2->initializeToReplaceRemoteFrame(remoteFrame2, "", WebSandboxFlags::None, WebFrameOwnerProperties());
+    WebLocalFrame* localFrame2 = WebLocalFrame::createProvisional(&client2, remoteFrame2, WebSandboxFlags::None, WebFrameOwnerProperties());
     FrameTestHelpers::loadFrame(localFrame2, m_baseURL + "subframe-hello.html");
     EXPECT_EQ(uniqueName2.utf8(), localFrame2->uniqueName().utf8());
     EXPECT_EQ(uniqueName2.utf8(), WebString(toWebLocalFrameImpl(localFrame2)->frame()->loader().currentItem()->target()).utf8());
@@ -7650,8 +7639,7 @@ TEST_F(WebFrameTest, NavigateRemoteToLocalWithOpener)
 
     // Do a remote-to-local swap in the popup.
     FrameTestHelpers::TestWebFrameClient popupLocalClient;
-    WebLocalFrame* popupLocalFrame = WebLocalFrame::create(WebTreeScopeType::Document, &popupLocalClient);
-    popupLocalFrame->initializeToReplaceRemoteFrame(popupRemoteFrame, "", WebSandboxFlags::None, WebFrameOwnerProperties());
+    WebLocalFrame* popupLocalFrame = WebLocalFrame::createProvisional(&popupLocalClient, popupRemoteFrame, WebSandboxFlags::None, WebFrameOwnerProperties());
     popupRemoteFrame->swap(popupLocalFrame);
 
     // The initial document created during the remote-to-local swap should have
@@ -7673,8 +7661,7 @@ TEST_F(WebFrameTest, SwapWithOpenerCycle)
 
     // Now swap in a local frame. It shouldn't crash.
     FrameTestHelpers::TestWebFrameClient localClient;
-    WebLocalFrame* localFrame = WebLocalFrame::create(WebTreeScopeType::Document, &localClient);
-    localFrame->initializeToReplaceRemoteFrame(remoteFrame, "", WebSandboxFlags::None, WebFrameOwnerProperties());
+    WebLocalFrame* localFrame = WebLocalFrame::createProvisional(&localClient, remoteFrame, WebSandboxFlags::None, WebFrameOwnerProperties());
     remoteFrame->swap(localFrame);
 
     // And the opener cycle should still be preserved.
@@ -8021,8 +8008,7 @@ TEST_P(ParameterizedWebFrameTest, RemoteToLocalSwapOnMainFrameInitializesCoreFra
 
     // Do a remote-to-local swap of the top frame.
     FrameTestHelpers::TestWebFrameClient localClient;
-    WebLocalFrame* localRoot = WebLocalFrame::create(WebTreeScopeType::Document, &localClient);
-    localRoot->initializeToReplaceRemoteFrame(remoteRoot, "", WebSandboxFlags::None, WebFrameOwnerProperties());
+    WebLocalFrame* localRoot = WebLocalFrame::createProvisional(&localClient, remoteRoot, WebSandboxFlags::None, WebFrameOwnerProperties());
     remoteRoot->swap(localRoot);
 
     // Load a page with a child frame in the new root to make sure this doesn't

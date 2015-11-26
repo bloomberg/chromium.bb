@@ -33,6 +33,13 @@ public:
     // It is valid to pass a null client pointer.
     BLINK_EXPORT static WebLocalFrame* create(WebTreeScopeType, WebFrameClient*);
 
+    // Used to create a provisional local frame in prepration for replacing a
+    // remote frame if the load commits. The returned frame is only partially
+    // attached to the frame tree: it has the same parent as its potential
+    // replacee but is invisible to the rest of the frames in the frame tree.
+    // If the load commits, call swap() to fully attach this frame.
+    BLINK_EXPORT static WebLocalFrame* createProvisional(WebFrameClient*, WebRemoteFrame*, WebSandboxFlags, const WebFrameOwnerProperties&);
+
     // Returns the WebFrame associated with the current V8 context. This
     // function can return 0 if the context is associated with a Document that
     // is not currently being displayed in a Frame.
@@ -48,11 +55,6 @@ public:
     BLINK_EXPORT static WebLocalFrame* fromFrameOwnerElement(const WebElement&);
 
     // Initialization ---------------------------------------------------------
-
-    // Used when we might swap from a remote frame to a local frame.
-    // Creates a provisional, semi-attached frame that will be fully
-    // swapped into the frame tree if it commits.
-    virtual void initializeToReplaceRemoteFrame(WebRemoteFrame*, const WebString& name, WebSandboxFlags, const WebFrameOwnerProperties&) = 0;
 
     virtual void setAutofillClient(WebAutofillClient*) = 0;
     virtual WebAutofillClient* autofillClient() = 0;

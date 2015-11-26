@@ -1631,6 +1631,11 @@ WebLocalFrame* WebLocalFrame::create(WebTreeScopeType scope, WebFrameClient* cli
     return WebLocalFrameImpl::create(scope, client);
 }
 
+WebLocalFrame* WebLocalFrame::createProvisional(WebFrameClient* client, WebRemoteFrame* oldWebFrame, WebSandboxFlags flags, const WebFrameOwnerProperties& frameOwnerProperties)
+{
+    return WebLocalFrameImpl::createProvisional(client, oldWebFrame, flags, frameOwnerProperties);
+}
+
 WebLocalFrameImpl* WebLocalFrameImpl::create(WebTreeScopeType scope, WebFrameClient* client)
 {
     WebLocalFrameImpl* frame = new WebLocalFrameImpl(scope, client);
@@ -1640,6 +1645,45 @@ WebLocalFrameImpl* WebLocalFrameImpl::create(WebTreeScopeType scope, WebFrameCli
     return adoptRef(frame).leakRef();
 #endif
 }
+
+WebLocalFrameImpl* WebLocalFrameImpl::createProvisional(WebFrameClient* client, WebRemoteFrame* oldWebFrame, WebSandboxFlags flags, const WebFrameOwnerProperties& frameOwnerProperties)
+{
+    RefPtrWillBeRawPtr<WebLocalFrameImpl> webFrame = adoptRef(new WebLocalFrameImpl(oldWebFrame, client));
+    Frame* oldFrame = oldWebFrame->toImplBase()->frame();
+    webFrame->setParent(oldWebFrame->parent());
+    webFrame->setOpener(oldWebFrame->opener());
+    // Note: this *always* temporarily sets a frame owner, even for main frames!
+    // When a core Frame is created with no owner, it attempts to set itself as
+    // the main frame of the Page. However, this is a provisional frame, and may
+    // disappear, so Page::m_mainFrame can't be updated just yet.
+    OwnPtrWillBeRawPtr<FrameOwner> tempOwner = RemoteBridgeFrameOwner::create(nullptr, SandboxNone, WebFrameOwnerProperties());
+    // TODO(dcheng): This block is very similar to initializeCoreFrame. Try to reuse it here.
+    RefPtrWillBeRawPtr<LocalFrame> frame = LocalFrame::create(webFrame->m_frameLoaderClientImpl.get(), oldFrame->host(), tempOwner.get());
+    // Set the name and unique name directly, bypassing any of the normal logic
+    // to calculate unique name.
+    frame->tree().setNameForReplacementFrame(toWebRemoteFrameImpl(oldWebFrame)->frame()->tree().name(), toWebRemoteFrameImpl(oldWebFrame)->frame()->tree().uniqueName());
+    webFrame->setCoreFrame(frame);
+
+    frame->setOwner(oldFrame->owner());
+
+    if (frame->owner() && !frame->owner()->isLocal()) {
+        toRemoteBridgeFrameOwner(frame->owner())->setSandboxFlags(static_cast<SandboxFlags>(flags));
+        // Since a remote frame doesn't get the notifications about frame owner
+        // property modifications, we need to sync up those properties here.
+        webFrame->setFrameOwnerProperties(frameOwnerProperties);
+    }
+
+    // We must call init() after m_frame is assigned because it is referenced
+    // during init(). Note that this may dispatch JS events; the frame may be
+    // detached after init() returns.
+    frame->init();
+#if ENABLE(OILPAN)
+    return webFrame.get();
+#else
+    return webFrame.release().leakRef();
+#endif
+}
+
 
 WebLocalFrameImpl::WebLocalFrameImpl(WebTreeScopeType scope, WebFrameClient* client)
     : WebLocalFrame(scope)
@@ -1658,6 +1702,11 @@ WebLocalFrameImpl::WebLocalFrameImpl(WebTreeScopeType scope, WebFrameClient* cli
 {
     Platform::current()->incrementStatsCounter(webFrameActiveCount);
     frameCount++;
+}
+
+WebLocalFrameImpl::WebLocalFrameImpl(WebRemoteFrame* oldWebFrame, WebFrameClient* client)
+    : WebLocalFrameImpl(oldWebFrame->inShadowTree() ? WebTreeScopeType::Shadow : WebTreeScopeType::Document, client)
+{
 }
 
 WebLocalFrameImpl::~WebLocalFrameImpl()
@@ -1980,38 +2029,6 @@ static void ensureFrameLoaderHasCommitted(FrameLoader& frameLoader)
     if (frameLoader.stateMachine()->committedMultipleRealLoads())
         return;
     frameLoader.stateMachine()->advanceTo(FrameLoaderStateMachine::CommittedMultipleRealLoads);
-}
-
-void WebLocalFrameImpl::initializeToReplaceRemoteFrame(WebRemoteFrame* oldWebFrame, const WebString& name, WebSandboxFlags flags, const WebFrameOwnerProperties& frameOwnerProperties)
-{
-    Frame* oldFrame = oldWebFrame->toImplBase()->frame();
-    // Note: this *always* temporarily sets a frame owner, even for main frames!
-    // When a core Frame is created with no owner, it attempts to set itself as
-    // the main frame of the Page. However, this is a provisional frame, and may
-    // disappear, so Page::m_mainFrame can't be updated just yet.
-    OwnPtrWillBeRawPtr<FrameOwner> tempOwner = RemoteBridgeFrameOwner::create(nullptr, SandboxNone, WebFrameOwnerProperties());
-    RefPtrWillBeRawPtr<LocalFrame> frame = LocalFrame::create(m_frameLoaderClientImpl.get(), oldFrame->host(), tempOwner.get());
-    frame->setOwner(oldFrame->owner());
-    setParent(oldWebFrame->parent());
-    setOpener(oldWebFrame->opener());
-
-    // Set the name and unique name directly.
-    // TODO(creis): Remove |name| and use the oldWebFrame's name.
-    frame->tree().setNameForReplacementFrame(name, toWebRemoteFrameImpl(oldWebFrame)->frame()->tree().uniqueName());
-
-    setCoreFrame(frame);
-
-    if (frame->owner() && !frame->owner()->isLocal()) {
-        toRemoteBridgeFrameOwner(frame->owner())->setSandboxFlags(static_cast<SandboxFlags>(flags));
-        // Since a remote frame doesn't get the notifications about frame owner
-        // property modifications, we need to sync up those properties here.
-        WebLocalFrameImpl::fromFrame(frame.get())->setFrameOwnerProperties(frameOwnerProperties);
-    }
-
-    // We must call init() after m_frame is assigned because it is referenced
-    // during init(). Note that this may dispatch JS events; the frame may be
-    // detached after init() returns.
-    frame->init();
 }
 
 void WebLocalFrameImpl::setAutofillClient(WebAutofillClient* autofillClient)

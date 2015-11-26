@@ -662,12 +662,10 @@ void RenderFrameImpl::CreateFrame(
         RenderFrameProxy::FromRoutingID(proxy_routing_id);
     CHECK(proxy);
     render_frame = RenderFrameImpl::Create(proxy->render_view(), routing_id);
-    web_frame =
-        blink::WebLocalFrame::create(replicated_state.scope, render_frame);
     render_frame->proxy_routing_id_ = proxy_routing_id;
-    web_frame->initializeToReplaceRemoteFrame(
-        proxy->web_frame(), WebString::fromUTF8(replicated_state.name),
-        replicated_state.sandbox_flags, frame_owner_properties);
+    web_frame = blink::WebLocalFrame::createProvisional(
+        render_frame, proxy->web_frame(), replicated_state.sandbox_flags,
+        frame_owner_properties);
   }
   render_frame->SetWebFrame(web_frame);
   CHECK(parent_routing_id != MSG_ROUTING_NONE || !web_frame->parent());
