@@ -115,6 +115,7 @@ void ContentLayerDelegate::paintContents(
 
     paintController->commitNewDisplayItems();
     paintArtifactToWebDisplayItemList(webDisplayItemList, paintController->paintArtifact(), clip);
+    paintController->setDisplayItemConstructionIsDisabled(false);
 }
 
 size_t ContentLayerDelegate::approximateUnsharedMemoryUsage() const
