@@ -258,9 +258,6 @@ char kTSanDefaultSuppressions[] =
 // http://crbug.com/388730
 "race:g_next_user_script_id\n"
 
-// http://crbug.com/389098
-"race:webrtc::voe::TransmitMixer::EnableStereoChannelSwapping\n"
-
 // http://crbug.com/397022
 "deadlock:"
 "base::trace_event::TraceEventTestFixture_ThreadOnceBlocking_Test::TestBody\n"
