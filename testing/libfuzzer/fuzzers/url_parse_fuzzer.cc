@@ -18,8 +18,7 @@ struct TestCase {
 TestCase* test_case = new TestCase();
 
 // Entry point for LibFuzzer.
-extern "C" int LLVMFuzzerTestOneInput(const unsigned char *data,
-                                      unsigned long size) {
+extern "C" int LLVMFuzzerTestOneInput(const unsigned char *data, size_t size) {
   GURL url(std::string(reinterpret_cast<const char*>(data), size));
   return 0;
 }

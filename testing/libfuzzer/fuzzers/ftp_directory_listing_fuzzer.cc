@@ -23,8 +23,7 @@ TestCase* test_case = new TestCase();
 
 
 // Entry point for LibFuzzer.
-extern "C" int LLVMFuzzerTestOneInput(const unsigned char* data,
-                                      unsigned long size) {
+extern "C" int LLVMFuzzerTestOneInput(const unsigned char* data, size_t size) {
   std::string buffer(reinterpret_cast<const char*>(data), size);
   std::vector<net::FtpDirectoryListingEntry> entries;
   net::ParseFtpDirectoryListing(buffer, base::Time::Now(), &entries);

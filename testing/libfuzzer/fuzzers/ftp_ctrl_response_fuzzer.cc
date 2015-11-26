@@ -6,8 +6,7 @@
 #include "net/log/net_log.h"
 
 // Entry point for LibFuzzer.
-extern "C" int LLVMFuzzerTestOneInput(const unsigned char* data,
-                                      unsigned long size) {
+extern "C" int LLVMFuzzerTestOneInput(const unsigned char* data, size_t size) {
   const net::BoundNetLog log;
   net::FtpCtrlResponseBuffer buffer(log);
   if (!buffer.ConsumeData(reinterpret_cast<const char*>(data), size)) {

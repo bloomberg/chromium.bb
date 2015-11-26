@@ -5,8 +5,7 @@
 #include "media/filters/vp9_parser.h"
 
 // Entry point for LibFuzzer.
-extern "C" int LLVMFuzzerTestOneInput(const unsigned char* data,
-                                      unsigned long size) {
+extern "C" int LLVMFuzzerTestOneInput(const unsigned char* data, size_t size) {
   media::Vp9Parser parser;
   parser.SetStream(data, size);
   while (true) {

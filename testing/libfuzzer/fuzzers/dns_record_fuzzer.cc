@@ -7,8 +7,7 @@
 #include "net/dns/dns_response.h"
 
 // Entry point for LibFuzzer.
-extern "C" int LLVMFuzzerTestOneInput(const unsigned char* data,
-                                      unsigned long size) {
+extern "C" int LLVMFuzzerTestOneInput(const unsigned char* data, size_t size) {
   std::string out;
   net::DnsRecordParser parser(data, size, 0);
   if (!parser.IsValid()) {

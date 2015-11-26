@@ -8,8 +8,7 @@
 #include "courgette/encoded_program.h"
 
 // Entry point for LibFuzzer.
-extern "C" int LLVMFuzzerTestOneInput(const unsigned char* data,
-                                      unsigned long size) {
+extern "C" int LLVMFuzzerTestOneInput(const unsigned char* data, size_t size) {
   courgette::AssemblyProgram* prog;
   courgette::Status status =
       courgette::ParseDetectedExecutable(data, size, &prog);

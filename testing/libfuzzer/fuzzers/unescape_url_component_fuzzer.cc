@@ -11,8 +11,7 @@ static const int kMaxUnescapeRule = 31;
 
 
 // Entry point for LibFuzzer.
-extern "C" int LLVMFuzzerTestOneInput(const unsigned char* data,
-                                      unsigned long size) {
+extern "C" int LLVMFuzzerTestOneInput(const unsigned char* data, size_t size) {
   std::string path(reinterpret_cast<const char*>(data), size);
   for (int i = 0; i <= kMaxUnescapeRule; i++) {
     (void)net::UnescapeURLComponent(path,

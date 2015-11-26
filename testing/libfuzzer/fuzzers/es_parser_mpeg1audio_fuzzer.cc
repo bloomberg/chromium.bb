@@ -23,8 +23,7 @@ static void NewAudioConfig(const media::AudioDecoderConfig& config) {}
 static void EmitBuffer(scoped_refptr<media::StreamParserBuffer> buffer) {}
 
 // Entry point for LibFuzzer.
-extern "C" int LLVMFuzzerTestOneInput(const unsigned char* data,
-                                      unsigned long size) {
+extern "C" int LLVMFuzzerTestOneInput(const unsigned char* data, size_t size) {
   scoped_refptr<NullMediaLog> media_log(new NullMediaLog());
   media::mp2t::EsParserMpeg1Audio es_parser(base::Bind(&NewAudioConfig),
                                             base::Bind(&EmitBuffer), media_log);

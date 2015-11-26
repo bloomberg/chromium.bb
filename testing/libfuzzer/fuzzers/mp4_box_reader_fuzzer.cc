@@ -22,8 +22,7 @@ class NullMediaLog : public media::MediaLog {
 };
 
 // Entry point for LibFuzzer.
-extern "C" int LLVMFuzzerTestOneInput(const unsigned char* data,
-                                      unsigned long size) {
+extern "C" int LLVMFuzzerTestOneInput(const unsigned char* data, size_t size) {
   bool err;
   scoped_refptr<NullMediaLog> media_log(new NullMediaLog());
   scoped_ptr<media::mp4::BoxReader> reader(

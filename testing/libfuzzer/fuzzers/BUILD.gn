@@ -217,3 +217,13 @@ test("gfx_png_image_fuzzer") {
     "//ui/gfx",
   ]
 }
+
+test("zlib_uncompress_fuzzer") {
+  sources = [
+    "zlib_uncompress_fuzzer.cc",
+  ]
+  deps = [
+    ":libfuzzer_main",
+    "//third_party/zlib",
+  ]
+}

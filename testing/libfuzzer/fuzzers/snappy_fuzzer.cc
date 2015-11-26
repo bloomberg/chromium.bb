@@ -8,8 +8,7 @@
 #include "third_party/snappy/src/snappy.h"
 
 // Entry point for LibFuzzer.
-extern "C" int LLVMFuzzerTestOneInput(const unsigned char* data,
-                                      unsigned long size) {
+extern "C" int LLVMFuzzerTestOneInput(const unsigned char* data, size_t size) {
   snappy::ByteArraySource src(reinterpret_cast<const char*>(data), size);
   uint32_t len;
   // Note: src is invalid after GetUncompressedLength call.

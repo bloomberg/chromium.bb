@@ -9,8 +9,7 @@ static void NewVideoConfig(const media::VideoDecoderConfig& config) {}
 static void EmitBuffer(scoped_refptr<media::StreamParserBuffer> buffer) {}
 
 // Entry point for LibFuzzer.
-extern "C" int LLVMFuzzerTestOneInput(const unsigned char* data,
-                                      unsigned long size) {
+extern "C" int LLVMFuzzerTestOneInput(const unsigned char* data, size_t size) {
   media::mp2t::EsParserH264 es_parser(base::Bind(&NewVideoConfig),
                                       base::Bind(&EmitBuffer));
   if (!es_parser.Parse(data, size, media::kNoTimestamp(),

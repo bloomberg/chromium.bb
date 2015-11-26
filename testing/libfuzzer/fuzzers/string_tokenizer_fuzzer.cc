@@ -7,12 +7,11 @@
 #include "base/strings/string_tokenizer.h"
 
 // Entry point for LibFuzzer.
-extern "C" int LLVMFuzzerTestOneInput(const unsigned char* data,
-                                      unsigned long size) {
+extern "C" int LLVMFuzzerTestOneInput(const unsigned char* data, size_t size) {
   if (size < 1) {
     return 0;
   }
-  unsigned long pattern_size = data[0];
+  size_t pattern_size = data[0];
   if (pattern_size > size - 1) {
     return 0;
   }
