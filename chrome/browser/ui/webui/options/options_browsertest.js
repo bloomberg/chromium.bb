@@ -79,31 +79,6 @@ OptionsWebUITest.prototype = {
     this.mockHandler.stubs().observePrefs(ANYTHING);
     this.mockHandler.stubs().coreOptionsUserMetricsAction(ANYTHING);
   },
-
-  /** @override */
-  setUp: function() {
-    OptionsBrowsertestBase.prototype.setUp.call(this);
-
-    // Enable when failure is resolved.
-    // AX_ARIA_10: http://crbug.com/559329
-    this.accessibilityAuditConfig.ignoreSelectors(
-        'unsupportedAriaAttribute',
-        '#profiles-list');
-
-    var linkWithUnclearPurposeSelectors = [
-      '#sync-overview > A',
-      '#privacy-explanation > A',
-      '#languages-section > .settings-row > A',
-      '#cloudprint-options-mdns > .settings-row > A',
-      '#do-not-track-confirm-overlay > .action-area > .hbox.stretch > A',
-    ];
-
-    // Enable when failure is resolved.
-    // AX_TEXT_04: http://crbug.com/559318
-    this.accessibilityAuditConfig.ignoreSelectors(
-        'linkWithUnclearPurpose',
-        linkWithUnclearPurposeSelectors);
-  },
 };
 
 /**
@@ -402,44 +377,6 @@ OptionsWebUIExtendedTest.prototype = {
 
   /** @override */
   typedefCppFixture: 'OptionsBrowserTest',
-
-  /** @override */
-  setUp: function() {
-    OptionsWebUITest.prototype.setUp.call(this);
-
-    // Enable when failure is resolved.
-    // AX_ARIA_10: http://crbug.com/559329
-    this.accessibilityAuditConfig.ignoreSelectors(
-        'unsupportedAriaAttribute',
-        '#profiles-list');
-
-    var controlsWithoutLabelSelectors = [
-      '#cookies-view-page > .content-area.cookies-list-content-area > *',
-      '#other-search-engine-list > .deletable-item > DIV > *',
-    ];
-
-    // Enable when failure is resolved.
-    // AX_TEXT_01: http://crbug.com/559330
-    this.accessibilityAuditConfig.ignoreSelectors(
-        'controlsWithoutLabel',
-        controlsWithoutLabelSelectors);
-
-    var linkWithUnclearPurposeSelectors = [
-      '#sync-overview > A',
-      '#privacy-explanation > A',
-      '#languages-section > .settings-row > A',
-      '#cloudprint-options-mdns > .settings-row > A',
-      // Selectors below only affect ChromeOS tests.
-      '#privacy-section > DIV > DIV:nth-of-type(9) > A',
-      '#accessibility-learn-more',
-    ];
-
-    // Enable when failure is resolved.
-    // AX_TEXT_04: http://crbug.com/559326
-    this.accessibilityAuditConfig.ignoreSelectors(
-        'linkWithUnclearPurpose',
-        linkWithUnclearPurposeSelectors);
-  },
 
   testGenPreamble: function() {
     // Start with no supervised users managed by this profile.

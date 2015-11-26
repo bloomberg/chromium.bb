@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-GEN_INCLUDE(['options_browsertest_base.js']);
 GEN('#include "chrome/browser/ui/webui/options/' +
     'multilanguage_options_browsertest.h"');
 
@@ -14,7 +13,7 @@ GEN('#include "chrome/browser/ui/webui/options/' +
 function MultilanguageOptionsWebUIBrowserTest() {}
 
 MultilanguageOptionsWebUIBrowserTest.prototype = {
-  __proto__: OptionsBrowsertestBase.prototype,
+  __proto__: testing.Test.prototype,
 
   /** @override */
   browsePreload: 'chrome://settings-frame/languages',
@@ -33,7 +32,7 @@ MultilanguageOptionsWebUIBrowserTest.prototype = {
 
   /** @override */
   setUp: function() {
-    OptionsBrowsertestBase.prototype.setUp.call(this);
+    testing.Test.prototype.setUp.call(this);
 
     assertTrue(loadTimeData.getBoolean('enableMultilingualSpellChecker'));
     assertFalse(cr.isMac);
@@ -41,29 +40,6 @@ MultilanguageOptionsWebUIBrowserTest.prototype = {
     expectFalse($('edit-custom-dictionary-button').hidden);
     this.expectEnableSpellcheckCheckboxHidden();
     this.expectCurrentlySelected('fr');
-
-    var requiredOwnedAriaRoleMissingSelectors = [
-      '#default-search-engine-list',
-      '#other-search-engine-list',
-    ];
-
-    // Enable when failure is resolved.
-    // AX_ARIA_08: http://crbug.com/559320
-    this.accessibilityAuditConfig.ignoreSelectors(
-        'requiredOwnedAriaRoleMissing',
-        requiredOwnedAriaRoleMissingSelectors);
-
-    // Enable when failure is resolved.
-    // AX_ARIA_10: http://crbug.com/559266
-    this.accessibilityAuditConfig.ignoreSelectors(
-        'unsupportedAriaAttribute',
-        '#language-options-list');
-
-    // Enable when failure is resolved.
-    // AX_TEXT_04: http://crbug.com/559271
-    this.accessibilityAuditConfig.ignoreSelectors(
-        'linkWithUnclearPurpose',
-        '#languagePage > .content-area > .language-options-header > A');
   },
 
   /** @override */
@@ -164,7 +140,7 @@ MultilanguagePreferenceWebUIBrowserTest.prototype = {
 
   /** @override */
   setUp: function() {
-    OptionsBrowsertestBase.prototype.setUp.call(this);
+    testing.Test.prototype.setUp.call(this);
 
     assertTrue(loadTimeData.getBoolean('enableMultilingualSpellChecker'));
     assertFalse(cr.isMac);
@@ -173,18 +149,6 @@ MultilanguagePreferenceWebUIBrowserTest.prototype = {
     this.expectEnableSpellcheckCheckboxHidden();
     this.expectCurrentlySelected('');
     this.expectRegisteredDictionariesPref('');
-
-    // Enable when failure is resolved.
-    // AX_ARIA_10: http://crbug.com/559266
-    this.accessibilityAuditConfig.ignoreSelectors(
-        'unsupportedAriaAttribute',
-        '#language-options-list');
-
-    // Enable when failure is resolved.
-    // AX_TEXT_04: http://crbug.com/559271
-    this.accessibilityAuditConfig.ignoreSelectors(
-        'linkWithUnclearPurpose',
-        '#languagePage > .content-area > .language-options-header > A');
   },
 };
 

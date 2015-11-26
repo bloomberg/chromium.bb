@@ -20,11 +20,7 @@ class BookmarksTest : public InProcessBrowserTest {
 
   void SetUpOnMainThread() override {
     InProcessBrowserTest::SetUpOnMainThread();
-
-    // Re-enable accessibility checks when audit failures are resolved.
-    // AX_TEXT_01: http://crbug.com/559201
-    // AX_ARIA_08: http://crbug.com/559202
-    // EnableAccessibilityChecksForTestCase(true);
+    EnableAccessibilityChecksForTestCase(true);
   }
 
   void OpenBookmarksManager() {
