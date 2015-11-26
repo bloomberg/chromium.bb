@@ -5,10 +5,8 @@
 package org.chromium.chrome.browser.init;
 
 import android.content.Context;
-import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
-import android.os.StrictMode;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
@@ -20,8 +18,8 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.ChromeStrictMode;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.FileProviderHelper;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.content.app.ContentApplication;
@@ -113,7 +111,7 @@ public class ChromeBrowserInitializer {
         // Don't do any large file access here!
         ContentApplication.initCommandLine(mApplication);
         waitForDebuggerIfNeeded();
-        configureStrictMode();
+        ChromeStrictMode.configureStrictMode();
 
         // Warm up the shared prefs stored.
         PreferenceManager.getDefaultSharedPreferences(mApplication);
@@ -267,37 +265,6 @@ public class ChromeBrowserInitializer {
 
         mNativeInitializationComplete = true;
         ContentUriUtils.setFileProviderUtil(new FileProviderHelper());
-    }
-
-    private static void configureStrictMode() {
-        CommandLine commandLine = CommandLine.getInstance();
-        if ("eng".equals(Build.TYPE)
-                || ("userdebug".equals(Build.TYPE) && !ChromeVersionInfo.isStableBuild())
-                || commandLine.hasSwitch(ChromeSwitches.STRICT_MODE)) {
-            StrictMode.enableDefaults();
-            StrictMode.ThreadPolicy.Builder threadPolicy =
-                    new StrictMode.ThreadPolicy.Builder(StrictMode.getThreadPolicy());
-            threadPolicy = threadPolicy.detectAll()
-                    .penaltyFlashScreen()
-                    .penaltyDeathOnNetwork();
-            /*
-             * Explicitly enable detection of all violations except file URI leaks, as that results
-             * in false positives when file URI intents are passed between Chrome activities in
-             * separate processes. See http://crbug.com/508282#c11.
-             */
-            StrictMode.VmPolicy.Builder vmPolicy = new StrictMode.VmPolicy.Builder();
-            vmPolicy = vmPolicy.detectActivityLeaks()
-                    .detectLeakedClosableObjects()
-                    .detectLeakedRegistrationObjects()
-                    .detectLeakedSqlLiteObjects()
-                    .penaltyLog();
-            if ("death".equals(commandLine.getSwitchValue(ChromeSwitches.STRICT_MODE))) {
-                threadPolicy = threadPolicy.penaltyDeath();
-                vmPolicy = vmPolicy.penaltyDeath();
-            }
-            StrictMode.setThreadPolicy(threadPolicy.build());
-            StrictMode.setVmPolicy(vmPolicy.build());
-        }
     }
 
     private void waitForDebuggerIfNeeded() {
