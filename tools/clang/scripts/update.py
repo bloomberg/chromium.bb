@@ -51,10 +51,16 @@ LLVM_BOOTSTRAP_INSTALL_DIR = os.path.join(THIRD_PARTY_DIR,
 CHROME_TOOLS_SHIM_DIR = os.path.join(LLVM_DIR, 'tools', 'chrometools')
 LLVM_BUILD_DIR = os.path.join(CHROMIUM_DIR, 'third_party', 'llvm-build',
                               'Release+Asserts')
-COMPILER_RT_BUILD_DIR = os.path.join(LLVM_BUILD_DIR, '32bit-compiler-rt')
+COMPILER_RT_BUILD_DIR = os.path.join(LLVM_BUILD_DIR, 'compiler-rt')
 CLANG_DIR = os.path.join(LLVM_DIR, 'tools', 'clang')
 LLD_DIR = os.path.join(LLVM_DIR, 'tools', 'lld')
-COMPILER_RT_DIR = os.path.join(LLVM_DIR, 'projects', 'compiler-rt')
+# compiler-rt is built as part of the regular LLVM build on Windows to get
+# the 64-bit runtime, and out-of-tree elsewhere.
+# TODO(thakis): Try to unify this.
+if sys.platform == 'win32':
+  COMPILER_RT_DIR = os.path.join(LLVM_DIR, 'projects', 'compiler-rt')
+else:
+  COMPILER_RT_DIR = os.path.join(LLVM_DIR, 'compiler-rt')
 LIBCXX_DIR = os.path.join(LLVM_DIR, 'projects', 'libcxx')
 LIBCXXABI_DIR = os.path.join(LLVM_DIR, 'projects', 'libcxxabi')
 LLVM_BUILD_TOOLS_DIR = os.path.abspath(
@@ -62,6 +68,8 @@ LLVM_BUILD_TOOLS_DIR = os.path.abspath(
 STAMP_FILE = os.path.join(LLVM_DIR, '..', 'llvm-build', 'cr_build_revision')
 BINUTILS_DIR = os.path.join(THIRD_PARTY_DIR, 'binutils')
 VERSION = '3.8.0'
+ANDROID_NDK_DIR = os.path.join(
+    CHROMIUM_DIR, 'third_party', 'android_tools', 'ndk')
 
 # URL for pre-built binaries.
 CDS_URL = 'https://commondatastorage.googleapis.com/chromium-browser-clang'
@@ -184,6 +192,7 @@ def CopyFile(src, dst):
 def CopyDirectoryContents(src, dst, filename_filter=None):
   """Copy the files from directory src to dst
   with an optional filename filter."""
+  dst = os.path.realpath(dst)  # realpath() in case dst ends in /..
   if not os.path.exists(dst):
     os.makedirs(dst)
   for root, _, files in os.walk(src):
@@ -322,13 +331,25 @@ def UpdateClang(args):
       DownloadAndUnpack(cds_full_url, LLVM_BUILD_DIR)
       print 'clang %s unpacked' % PACKAGE_VERSION
       # Download the gold plugin if requested to by an environment variable.
-      # This is used by the CFI ClusterFuzz bot.
-      if 'LLVM_DOWNLOAD_GOLD_PLUGIN' in os.environ:
+      # This is used by the CFI ClusterFuzz bot, and it's required for official
+      # builds on linux.
+      if 'LLVM_DOWNLOAD_GOLD_PLUGIN' in os.environ or (
+          sys.platform.startswith('linux') and
+          'buildtype=Official' in sys.environ.get('GYP_DEFINES', '') and
+          'branding=Chrome' in sys.environ.get('GYP_DEFINES', '')):
         RunCommand(['python', CHROMIUM_DIR+'/build/download_gold_plugin.py'])
       WriteStampFile(PACKAGE_VERSION)
       return 0
     except urllib2.HTTPError:
       print 'Did not find prebuilt clang %s, building locally' % cds_file
+
+  if args.with_android and not os.path.exists(ANDROID_NDK_DIR):
+    print 'Android NDK not found at ' + ANDROID_NDK_DIR
+    print 'The Android NDK is needed to build a Clang whose -fsanitize=address'
+    print 'works on Android. See '
+    print 'http://code.google.com/p/chromium/wiki/AndroidBuildInstructions'
+    print 'for how to install the NDK, or pass --without-android.'
+    return 1
 
   MaybeDownloadHostGcc(args)
   AddCMakeToPath()
@@ -491,6 +512,10 @@ def UpdateClang(args):
     cflags += ['-DLLVM_FORCE_HEAD_REVISION']
     cxxflags += ['-DLLVM_FORCE_HEAD_REVISION']
 
+  # Pin MSan to the old ABI.
+  # TODO(eugenis): Remove when MSan migrates to new ABI (crbug.com/560589).
+  cxxflags += [ '-DMSAN_LINUX_X86_64_OLD_MAPPING' ]
+
   CreateChromeToolsShim()
 
   deployment_env = None
@@ -498,7 +523,13 @@ def UpdateClang(args):
     deployment_env = os.environ.copy()
     deployment_env['MACOSX_DEPLOYMENT_TARGET'] = deployment_target
 
-  cmake_args = base_cmake_args + [
+  cmake_args = []
+  # TODO(thakis): Unconditionally append this to base_cmake_args instead once
+  # compiler-rt can build with clang-cl on Windows (http://llvm.org/PR23698)
+  cc_args = base_cmake_args if sys.platform != 'win32' else cmake_args
+  if cc is not None:  cc_args.append('-DCMAKE_C_COMPILER=' + cc)
+  if cxx is not None: cc_args.append('-DCMAKE_CXX_COMPILER=' + cxx)
+  cmake_args += base_cmake_args + [
       '-DLLVM_BINUTILS_INCDIR=' + binutils_incdir,
       '-DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD=WebAssembly',
       '-DCMAKE_C_FLAGS=' + ' '.join(cflags),
@@ -509,11 +540,6 @@ def UpdateClang(args):
       '-DCMAKE_INSTALL_PREFIX=' + LLVM_BUILD_DIR,
       '-DCHROMIUM_TOOLS_SRC=%s' % os.path.join(CHROMIUM_DIR, 'tools', 'clang'),
       '-DCHROMIUM_TOOLS=%s' % ';'.join(args.tools)]
-  # TODO(thakis): Unconditionally append this to base_cmake_args instead once
-  # compiler-rt can build with clang-cl on Windows (http://llvm.org/PR23698)
-  cc_args = base_cmake_args if sys.platform != 'win32' else cmake_args
-  if cc is not None:  cc_args.append('-DCMAKE_C_COMPILER=' + cc)
-  if cxx is not None: cc_args.append('-DCMAKE_CXX_COMPILER=' + cxx)
 
   if not os.path.exists(LLVM_BUILD_DIR):
     os.makedirs(LLVM_BUILD_DIR)
@@ -536,17 +562,21 @@ def UpdateClang(args):
     RunCommand(['ninja', 'cr-install'], msvc_arch='x64')
 
   if sys.platform == 'darwin':
-    CopyFile(os.path.join(LLVM_BUILD_DIR, 'libc++.1.dylib'),
+    CopyFile(os.path.join(libcxxbuild, 'libc++.1.dylib'),
              os.path.join(LLVM_BUILD_DIR, 'bin'))
     # See http://crbug.com/256342
     RunCommand(['strip', '-x', os.path.join(LLVM_BUILD_DIR, 'bin', 'clang')])
   elif sys.platform.startswith('linux'):
     RunCommand(['strip', os.path.join(LLVM_BUILD_DIR, 'bin', 'clang')])
 
-  # Do an x86 build of compiler-rt to get the 32-bit ASan run-time.
+  # Do an out-of-tree build of compiler-rt.
+  # On Windows, this is used to get the 32-bit ASan run-time.
   # TODO(hans): Remove once the regular build above produces this.
-  if not os.path.exists(COMPILER_RT_BUILD_DIR):
-    os.makedirs(COMPILER_RT_BUILD_DIR)
+  # On Mac and Linux, this is used to get the regular 64-bit run-time.
+  # Do a clobbered build due to cmake changes.
+  if os.path.isdir(COMPILER_RT_BUILD_DIR):
+    RmTree(COMPILER_RT_BUILD_DIR)
+  os.makedirs(COMPILER_RT_BUILD_DIR)
   os.chdir(COMPILER_RT_BUILD_DIR)
   # TODO(thakis): Add this once compiler-rt can build with clang-cl (see
   # above).
@@ -561,10 +591,14 @@ def UpdateClang(args):
     compiler_rt_args += ['-DLLVM_CONFIG_PATH=' +
                          os.path.join(LLVM_BUILD_DIR, 'bin', 'llvm-config'),
                         '-DSANITIZER_MIN_OSX_VERSION="10.7"']
-  RunCommand(['cmake'] + compiler_rt_args + [LLVM_DIR],
-              msvc_arch='x86', env=deployment_env)
+  # compiler-rt is part of the llvm checkout on Windows but a stand-alone
+  # directory elsewhere, see the TODO above COMPILER_RT_DIR.
+  RunCommand(['cmake'] + compiler_rt_args +
+             [LLVM_DIR if sys.platform == 'win32' else COMPILER_RT_DIR],
+             msvc_arch='x86', env=deployment_env)
   RunCommand(['ninja', 'compiler-rt'], msvc_arch='x86')
 
+  # Copy select output to the main tree.
   # TODO(hans): Make this (and the .gypi and .isolate files) version number
   # independent.
   if sys.platform == 'win32':
@@ -574,17 +608,26 @@ def UpdateClang(args):
   else:
     assert sys.platform.startswith('linux')
     platform = 'linux'
-  asan_rt_lib_src_dir = os.path.join(COMPILER_RT_BUILD_DIR, 'lib', 'clang',
-                                     VERSION, 'lib', platform)
+  asan_rt_lib_src_dir = os.path.join(COMPILER_RT_BUILD_DIR, 'lib', platform)
+  if sys.platform == 'win32':
+    # TODO(thakis): This too is due to compiler-rt being part of the checkout
+    # on Windows, see TODO above COMPILER_RT_DIR.
+    asan_rt_lib_src_dir = os.path.join(COMPILER_RT_BUILD_DIR, 'lib', 'clang',
+                                       VERSION, 'lib', platform)
   asan_rt_lib_dst_dir = os.path.join(LLVM_BUILD_DIR, 'lib', 'clang',
                                      VERSION, 'lib', platform)
-  CopyDirectoryContents(asan_rt_lib_src_dir, asan_rt_lib_dst_dir,
-                        r'^.*-i386\.lib$')
-  CopyDirectoryContents(asan_rt_lib_src_dir, asan_rt_lib_dst_dir,
-                        r'^.*-i386\.dll$')
+  # Blacklists:
+  CopyDirectoryContents(os.path.join(asan_rt_lib_src_dir, '..', '..'),
+                        os.path.join(asan_rt_lib_dst_dir, '..', '..'),
+                        r'^.*blacklist\.txt$')
+  # Headers:
+  if sys.platform != 'win32':
+    CopyDirectoryContents(
+        os.path.join(COMPILER_RT_BUILD_DIR, 'include/sanitizer'),
+        os.path.join(LLVM_BUILD_DIR, 'lib/clang', VERSION, 'include/sanitizer'))
+  # Static and dynamic libraries:
+  CopyDirectoryContents(asan_rt_lib_src_dir, asan_rt_lib_dst_dir)
 
-  CopyFile(os.path.join(asan_rt_lib_src_dir, '..', '..', 'asan_blacklist.txt'),
-           os.path.join(asan_rt_lib_dst_dir, '..', '..'))
 
   if sys.platform == 'win32':
     # Make an extra copy of the sanitizer headers, to be put on the include path
@@ -601,15 +644,63 @@ def UpdateClang(args):
         CopyFile(os.path.join(sanitizer_include_dir, f),
                  aux_sanitizer_include_dir)
 
+  if args.with_android:
+    make_toolchain = os.path.join(
+        ANDROID_NDK_DIR, 'build', 'tools', 'make-standalone-toolchain.sh')
+    for target_arch in ['aarch64', 'arm', 'i686']:
+      # Make standalone Android toolchain for target_arch.
+      toolchain_dir = os.path.join(
+          LLVM_BUILD_DIR, 'android-toolchain-' + target_arch)
+      RunCommand([
+          make_toolchain,
+          '--platform=android-' + ('21' if target_arch == 'aarch64' else '19'),
+          '--install-dir="%s"' % toolchain_dir,
+          '--system=linux-x86_64',
+          '--stl=stlport',
+          '--toolchain=' + {
+              'aarch64': 'aarch64-linux-android-4.9',
+              'arm': 'arm-linux-androideabi-4.9',
+              'i686': 'x86-4.9',
+          }[target_arch]])
+      # Android NDK r9d copies a broken unwind.h into the toolchain, see
+      # http://crbug.com/357890
+      for f in glob.glob(os.path.join(toolchain_dir, 'include/c++/*/unwind.h')):
+        os.remove(f)
+
+      # Build ASan runtime for Android in a separate build tree.
+      build_dir = os.path.join(LLVM_BUILD_DIR, 'android-' + target_arch)
+      if not os.path.exists(build_dir):
+        os.mkdir(os.path.join(build_dir))
+      os.chdir(build_dir)
+      if os.path.exists('CMakeCache.txt'):
+        os.remove('CMakeCache.txt')
+
+      cflags = ['--target=%s-linux-androideabi' % target_arch,
+                '--sysroot=%s/sysroot' % toolchain_dir,
+                '-B%s' % toolchain_dir]
+      android_args = base_cmake_args + [
+        '-DCMAKE_C_COMPILER=' + os.path.join(LLVM_BUILD_DIR, 'bin/clang'),
+        '-DCMAKE_CXX_COMPILER=' + os.path.join(LLVM_BUILD_DIR, 'bin/clang++'),
+        '-DLLVM_CONFIG_PATH=' + os.path.join(LLVM_BUILD_DIR, 'bin/llvm-config'),
+        '-DCMAKE_C_FLAGS=' + ' '.join(cflags),
+        '-DCMAKE_CXX_FLAGS=' + ' '.join(cflags),
+        '-DANDROID=1']
+      RunCommand(['cmake'] + android_args + [COMPILER_RT_DIR])
+      RunCommand(['ninja', 'libclang_rt.asan-%s-android.so' % target_arch])
+
+      # And copy it into the main build tree.
+      runtime = 'libclang_rt.asan-%s-android.so' % target_arch
+      for root, _, files in os.walk(build_dir):
+        if runtime in files:
+          shutil.copy(os.path.join(root, runtime), asan_rt_lib_dst_dir)
+
   # Run tests.
   if args.run_tests or use_head_revision:
     os.chdir(LLVM_BUILD_DIR)
-    RunCommand(GetVSVersion().SetupScript('x64') +
-               ['&&', 'ninja', 'cr-check-all'])
+    RunCommand(['ninja', 'cr-check-all'], msvc_arch='x64')
   if args.run_tests:
     os.chdir(LLVM_BUILD_DIR)
-    RunCommand(GetVSVersion().SetupScript('x64') +
-               ['&&', 'ninja', 'check-all'])
+    RunCommand(['ninja', 'check-all'], msvc_arch='x64')
 
   WriteStampFile(PACKAGE_VERSION)
   print 'Clang update was successful.'
@@ -661,6 +752,10 @@ def main():
   parser.add_argument('--tools', nargs='*',
                       help='select which chrome tools to build',
                       default=['plugins', 'blink_gc_plugin'])
+  parser.add_argument('--without-android', action='store_false',
+                      help='don\tt build Android ASan runtime (linux only)',
+                      dest='with_android',
+                      default=sys.platform.startswith('linux'))
 
   # For now, these flags are only used for the non-Windows flow, but argparser
   # gets mad if it sees a flag it doesn't recognize.
@@ -711,6 +806,9 @@ def main():
     PACKAGE_VERSION = LLVM_WIN_REVISION + '-0'
 
     args.force_local_build = True
+    if 'OS=android' not in os.environ.get('GYP_DEFINES', ''):
+      # Only build the Android ASan rt on ToT bots when targetting Android.
+      args.with_android = False
 
   return UpdateClang(args)
 

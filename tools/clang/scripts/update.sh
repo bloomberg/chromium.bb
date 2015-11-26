@@ -165,7 +165,7 @@ if [[ -n ${LLVM_FORCE_HEAD_REVISION:-''} ]]; then
   force_local_build=yes
 
   if ! [[ "$GYP_DEFINES" =~ .*OS=android.* ]]; then
-    # Only build the Android ASan rt when targetting Android.
+    # Only build the Android ASan rt on ToT bots when targetting Android.
     with_android=
   fi
 
@@ -315,10 +315,6 @@ fi
 
 echo Getting clang r"${CLANG_REVISION}" in "${CLANG_DIR}"
 svn co --force "${LLVM_REPO_URL}/cfe/trunk@${CLANG_REVISION}" "${CLANG_DIR}"
-
-# We have moved from building compiler-rt in the LLVM tree, to a separate
-# directory. Nuke any previous checkout to avoid building it.
-rm -rf "${LLVM_DIR}/projects/compiler-rt"
 
 echo Getting compiler-rt r"${CLANG_REVISION}" in "${COMPILER_RT_DIR}"
 svn co --force "${LLVM_REPO_URL}/compiler-rt/trunk@${CLANG_REVISION}" \
@@ -584,15 +580,18 @@ MACOSX_DEPLOYMENT_TARGET=${deployment_target} cmake -GNinja \
     -DLLVM_CONFIG_PATH="${ABS_LLVM_BUILD_DIR}/bin/llvm-config" \
     "${ABS_COMPILER_RT_DIR}"
 
-ninja
+ninja compiler-rt
 
-# Copy selected output to the main tree.
+# Copy select output to the main tree.
 # Darwin doesn't support cp --parents, so pipe through tar instead.
 CLANG_VERSION=$("${ABS_LLVM_BUILD_DIR}/bin/clang" --version | \
      sed -ne 's/clang version \([0-9]\.[0-9]\.[0-9]\).*/\1/p')
 ABS_LLVM_CLANG_LIB_DIR="${ABS_LLVM_BUILD_DIR}/lib/clang/${CLANG_VERSION}"
+# Blacklists:
 tar -c *blacklist.txt | tar -C ${ABS_LLVM_CLANG_LIB_DIR} -xv
+# Headers:
 tar -c include/sanitizer | tar -C ${ABS_LLVM_CLANG_LIB_DIR} -xv
+# Static and dynamic libraries:
 if [[ "${OS}" = "Darwin" ]]; then
   tar -c lib/darwin | tar -C ${ABS_LLVM_CLANG_LIB_DIR} -xv
 else
@@ -602,7 +601,7 @@ fi
 popd
 
 if [[ -n "${with_android}" ]]; then
-  # Make a standalone Android toolchain.
+  # Make standalone Android toolchains.
   ${ANDROID_NDK_DIR}/build/tools/make-standalone-toolchain.sh \
       --platform=android-19 \
       --install-dir="${LLVM_BUILD_DIR}/android-toolchain-arm" \
@@ -635,7 +634,7 @@ if [[ -n "${with_android}" ]]; then
     mkdir -p ${LLVM_BUILD_DIR}/android-${target_arch}
     pushd ${LLVM_BUILD_DIR}/android-${target_arch}
     rm -fv CMakeCache.txt
-    MACOSX_DEPLOYMENT_TARGET=${deployment_target} cmake -GNinja \
+    cmake -GNinja \
         -DCMAKE_BUILD_TYPE=Release \
         -DLLVM_ENABLE_ASSERTIONS=ON \
         -DLLVM_ENABLE_THREADS=OFF \
