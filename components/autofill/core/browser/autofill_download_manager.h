@@ -41,7 +41,7 @@ class AutofillDownloadManager : public net::URLFetcherDelegate {
     // server. |response_xml| contains the server response for the forms
     // represented by |form_signatures|.
     virtual void OnLoadedServerPredictions(
-        const std::string& response_xml,
+        std::string response_xml,
         const std::vector<std::string>& form_signatures) = 0;
 
     // These notifications are used to help with testing.

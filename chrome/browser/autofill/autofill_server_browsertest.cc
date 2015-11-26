@@ -149,14 +149,14 @@ IN_PROC_BROWSER_TEST_F(AutofillServerTest,
       "  };"
       "</script>";
   const char kQueryRequest[] =
-      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+      "<?xml version=\"1.0\"?>\n"
       "<autofillquery clientversion=\"6.1.1715.1442/en (GGLL)\">"
       "<form signature=\"15916856893790176210\">"
       "<field signature=\"2594484045\" name=\"one\" type=\"text\"/>"
       "<field signature=\"2750915947\" name=\"two\" type=\"text\"/>"
       "<field signature=\"3494787134\" name=\"three\" type=\"text\"/>"
       "<field signature=\"1236501728\" name=\"four\" type=\"text\"/></form>"
-      "</autofillquery>";
+      "</autofillquery>\n";
   WindowedNetworkObserver query_network_observer(Compress(kQueryRequest));
   ui_test_utils::NavigateToURL(
       browser(), GURL(std::string(kDataURIPrefix) + kFormHtml));
@@ -166,7 +166,7 @@ IN_PROC_BROWSER_TEST_F(AutofillServerTest,
   // triggered by user gestures are ignored. Expect an upload request upon form
   // submission, with form fields matching those from the query request.
   const char kUploadRequest[] =
-      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+      "<?xml version=\"1.0\"?>\n"
       "<autofillupload clientversion=\"6.1.1715.1442/en (GGLL)\""
       " formsignature=\"15916856893790176210\""
       " autofillused=\"false\""
@@ -180,7 +180,7 @@ IN_PROC_BROWSER_TEST_F(AutofillServerTest,
       " autofilltype=\"2\"/>"
       "<field signature=\"1236501728\" name=\"four\" type=\"text\""
       " autocomplete=\"off\" autofilltype=\"2\"/>"
-      "</autofillupload>";
+      "</autofillupload>\n";
 
   WindowedNetworkObserver upload_network_observer(Compress(kUploadRequest));
   content::WebContents* web_contents =
@@ -204,13 +204,13 @@ IN_PROC_BROWSER_TEST_F(AutofillServerTest,
       "  <input type='submit'>"
       "</form>";
   const char kQueryRequest[] =
-      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+      "<?xml version=\"1.0\"?>\n"
       "<autofillquery clientversion=\"6.1.1715.1442/en (GGLL)\">"
       "<form signature=\"8900697631820480876\">"
       "<field signature=\"2594484045\" name=\"one\" type=\"text\"/>"
       "<field signature=\"2750915947\" name=\"two\" type=\"text\"/>"
       "<field signature=\"116843943\" name=\"three\" type=\"password\"/>"
-      "</form></autofillquery>";
+      "</form></autofillquery>\n";
   WindowedNetworkObserver query_network_observer(Compress(kQueryRequest));
   ui_test_utils::NavigateToURL(
       browser(), GURL(std::string(kDataURIPrefix) + kFormHtml));

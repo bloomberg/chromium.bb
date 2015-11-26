@@ -4,6 +4,8 @@
 
 #include "components/autofill/core/browser/autofill_download_manager.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
 #include "base/rand_util.h"
@@ -21,7 +23,6 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_fetcher.h"
-#include "third_party/webrtc/libjingle/xmllite/xmlparser.h"
 #include "url/gurl.h"
 
 namespace autofill {
@@ -119,7 +120,7 @@ bool AutofillDownloadManager::StartQueryRequest(
     VLOG(1) << "AutofillDownloadManager: query request has been retrieved "
              << "from the cache, form signatures: "
              << GetCombinedSignature(request_data.form_signatures);
-    observer_->OnLoadedServerPredictions(query_data,
+    observer_->OnLoadedServerPredictions(std::move(query_data),
                                          request_data.form_signatures);
     return true;
   }
@@ -342,16 +343,14 @@ void AutofillDownloadManager::OnURLFetchComplete(
              << " request has succeeded with response body: " << response_body;
     if (it->second.request_type == AutofillDownloadManager::REQUEST_QUERY) {
       CacheQueryRequest(it->second.form_signatures, response_body);
-      observer_->OnLoadedServerPredictions(response_body,
+      observer_->OnLoadedServerPredictions(std::move(response_body),
                                            it->second.form_signatures);
     } else {
       double new_positive_upload_rate = 0;
       double new_negative_upload_rate = 0;
-      AutofillUploadXmlParser parse_handler(&new_positive_upload_rate,
-                                            &new_negative_upload_rate);
-      buzz::XmlParser parser(&parse_handler);
-      parser.Parse(response_body.data(), response_body.length(), true);
-      if (parse_handler.succeeded()) {
+      if (ParseAutofillUploadXml(std::move(response_body),
+                                 &new_positive_upload_rate,
+                                 &new_negative_upload_rate)) {
         SetPositiveUploadRate(new_positive_upload_rate);
         SetNegativeUploadRate(new_negative_upload_rate);
       }

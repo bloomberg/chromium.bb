@@ -19,6 +19,8 @@
 #include "components/autofill/core/browser/field_types.h"
 #include "url/gurl.h"
 
+class XmlWriter;
+
 enum UploadRequired {
   UPLOAD_NOT_REQUIRED,
   UPLOAD_REQUIRED,
@@ -82,7 +84,7 @@ class FormStructure {
   // Parses the field types from the server query response. |forms| must be the
   // same as the one passed to EncodeQueryRequest when constructing the query.
   // |rappor_service| may be null.
-  static void ParseQueryResponse(const std::string& response_xml,
+  static void ParseQueryResponse(std::string response_xml,
                                  const std::vector<FormStructure*>& forms,
                                  rappor::RapporService* rappor_service);
 
@@ -222,10 +224,14 @@ class FormStructure {
     FIELD_ASSIGNMENTS,
   };
 
-  // Adds form info to |encompassing_xml_element|. |request_type| indicates if
-  // it is a query or upload.
+  // Returns true if the form has no fields, or too many.
+  bool IsMalformed() const;
+
+  // Takes |xml_writer| and writes description for |fields_|, according to
+  // |request_type|. Returns false on failure, including when there are no
+  // fields, and true on success.
   bool EncodeFormRequest(EncodeRequestType request_type,
-                         buzz::XmlElement* encompassing_xml_element) const;
+                         XmlWriter* xml_writer) const;
 
   // Classifies each field in |fields_| into a logical section.
   // Sections are identified by the heuristic that a logical section should not

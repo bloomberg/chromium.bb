@@ -5,6 +5,7 @@
 #include "components/autofill/core/browser/autofill_download_manager.h"
 
 #include <list>
+#include <utility>
 
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
@@ -81,10 +82,10 @@ class AutofillDownloadTest : public AutofillDownloadManager::Observer,
 
   // AutofillDownloadManager::Observer implementation.
   void OnLoadedServerPredictions(
-      const std::string& response_xml,
+      std::string response_xml,
       const std::vector<std::string>& form_signatures) override {
     ResponseData response;
-    response.response = response_xml;
+    response.response = std::move(response_xml);
     response.type_of_response = QUERY_SUCCESSFULL;
     responses_.push_back(response);
   }
@@ -173,7 +174,7 @@ TEST_F(AutofillDownloadTest, QueryAndUploadTest) {
   field.form_control_type = "submit";
   form.fields.push_back(field);
 
-  FormStructure *form_structure = new FormStructure(form);
+  FormStructure* form_structure = new FormStructure(form);
   ScopedVector<FormStructure> form_structures;
   form_structures.push_back(form_structure);
 
@@ -431,7 +432,7 @@ TEST_F(AutofillDownloadTest, CacheQueryTest) {
   field.name = ASCIIToUTF16("lastname");
   form.fields.push_back(field);
 
-  FormStructure *form_structure = new FormStructure(form);
+  FormStructure* form_structure = new FormStructure(form);
   ScopedVector<FormStructure> form_structures0;
   form_structures0.push_back(form_structure);
 
@@ -562,13 +563,13 @@ TEST_F(AutofillDownloadTest, CacheQueryTest) {
 TEST_F(AutofillDownloadTest, QueryRequestIsGzipped) {
   // Expected query (uncompressed for visual verification).
   const char* kExpectedQueryXml =
-      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+      "<?xml version=\"1.0\"?>\n"
       "<autofillquery clientversion=\"6.1.1715.1442/en (GGLL)\">"
       "<form signature=\"14546501144368603154\">"
       "<field signature=\"239111655\"/>"
       "<field signature=\"3763331450\"/>"
       "<field signature=\"3494530716\"/>"
-      "</form></autofillquery>";
+      "</form></autofillquery>\n";
 
   // Create and register factory.
   net::TestURLFetcherFactory factory;
@@ -613,16 +614,16 @@ TEST_F(AutofillDownloadTest, QueryRequestIsGzipped) {
   EXPECT_EQ("gzip", header);
 
   // Expect that the compression is logged.
-  histogram.ExpectUniqueSample("Autofill.PayloadCompressionRatio.Query", 73, 1);
+  histogram.ExpectUniqueSample("Autofill.PayloadCompressionRatio.Query", 72, 1);
 }
 
 TEST_F(AutofillDownloadTest, UploadRequestIsGzipped) {
   // Expected upload (uncompressed for visual verification).
   const char* kExpectedUploadXml =
-      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+      "<?xml version=\"1.0\"?>\n"
       "<autofillupload clientversion=\"6.1.1715.1442/en (GGLL)\""
       " formsignature=\"14546501144368603154\" autofillused=\"true\""
-      " datapresent=\"\"/>";
+      " datapresent=\"\"/>\n";
 
   // Create and register factory.
   net::TestURLFetcherFactory factory;
@@ -670,7 +671,7 @@ TEST_F(AutofillDownloadTest, UploadRequestIsGzipped) {
   EXPECT_EQ("gzip", header);
 
   // Expect that the compression is logged.
-  histogram.ExpectUniqueSample("Autofill.PayloadCompressionRatio.Upload", 92,
+  histogram.ExpectUniqueSample("Autofill.PayloadCompressionRatio.Upload", 95,
                                1);
 }
 

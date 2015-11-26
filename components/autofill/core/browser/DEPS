@@ -15,10 +15,9 @@ include_rules = [
   "+sql",
   "+sync",
   "+third_party/fips181",
-  "+third_party/libjingle",
-  "+third_party/webrtc/libjingle",
   "+third_party/libaddressinput", # For address i18n.
   "+third_party/libphonenumber",  # For phone number i18n.
+  "+third_party/libxml",
   "+third_party/re2",
   "+ui/base",
   "+ui/gfx",

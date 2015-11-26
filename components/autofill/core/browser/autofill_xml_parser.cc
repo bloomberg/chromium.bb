@@ -4,149 +4,112 @@
 
 #include "components/autofill/core/browser/autofill_xml_parser.h"
 
-#include <string.h>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/autofill/core/browser/autofill_server_field_info.h"
-#include "third_party/webrtc/libjingle/xmllite/qname.h"
+#include "components/autofill/core/browser/field_types.h"
+#include "third_party/libxml/chromium/libxml_utils.h"
 
 namespace autofill {
 
-AutofillXmlParser::AutofillXmlParser()
-    : succeeded_(true) {
-}
+bool ParseAutofillQueryXml(std::string xml,
+                           std::vector<AutofillServerFieldInfo>* field_infos,
+                           UploadRequired* upload_required) {
+  DCHECK(field_infos);
+  DCHECK(upload_required);
 
-AutofillXmlParser::~AutofillXmlParser() {}
+  XmlReader reader;
+  if (!reader.Load(xml))
+    return false;
 
-void AutofillXmlParser::CharacterData(
-    buzz::XmlParseContext* context, const char* text, int len) {
-}
+  // Seek to the first opening tag.
+  if (!reader.Read())
+    return false;  // Malformed input.
 
-void AutofillXmlParser::EndElement(buzz::XmlParseContext* context,
-                                   const char* name) {
-}
+  if (reader.NodeName() != "autofillqueryresponse")
+    return false;  // Malformed input.
 
-void AutofillXmlParser::Error(buzz::XmlParseContext* context,
-                              XML_Error error_code) {
-  succeeded_ = false;
-}
+  *upload_required = USE_UPLOAD_RATES;
+  std::string upload_required_value;
+  if (reader.NodeAttribute("uploadrequired", &upload_required_value)) {
+    if (upload_required_value == "true")
+      *upload_required = UPLOAD_REQUIRED;
+    else if (upload_required_value == "false")
+      *upload_required = UPLOAD_NOT_REQUIRED;
+  }
 
-AutofillQueryXmlParser::AutofillQueryXmlParser(
-    std::vector<AutofillServerFieldInfo>* field_infos,
-    UploadRequired* upload_required)
-    : field_infos_(field_infos),
-      upload_required_(upload_required) {
-  DCHECK(upload_required_);
-}
+  field_infos->clear();
+  if (reader.IsClosingElement())
+    return true;
 
-AutofillQueryXmlParser::~AutofillQueryXmlParser() {}
-
-void AutofillQueryXmlParser::StartElement(buzz::XmlParseContext* context,
-                                          const char* name,
-                                          const char** attrs) {
-  buzz::QName qname = context->ResolveQName(name, false);
-  const std::string& element = qname.LocalPart();
-  if (element.compare("autofillqueryresponse") == 0) {
-    // We check for the upload required attribute below, but if it's not
-    // present, we use the default upload rates.
-    *upload_required_ = USE_UPLOAD_RATES;
-
-    // |attrs| is a NULL-terminated list of (attribute, value) pairs.
-    while (*attrs) {
-      buzz::QName attribute_qname = context->ResolveQName(*attrs, true);
-      ++attrs;
-      const std::string& attribute_name = attribute_qname.LocalPart();
-      if (attribute_name.compare("uploadrequired") == 0) {
-        if (strcmp(*attrs, "true") == 0)
-          *upload_required_ = UPLOAD_REQUIRED;
-        else if (strcmp(*attrs, "false") == 0)
-          *upload_required_ = UPLOAD_NOT_REQUIRED;
-      }
-      ++attrs;
-    }
-  } else if (element.compare("field") == 0) {
-    if (!*attrs) {
-      // Missing the "autofilltype" attribute, abort.
-      context->RaiseError(XML_ERROR_ABORTED);
-      return;
-    }
-
-    // Determine the field type from the attribute value.  There should be one
-    // attribute (autofilltype) with an integer value.
+  if (!reader.Read())
+    return false;  // Malformed input.
+  while (reader.NodeName() == "field") {
     AutofillServerFieldInfo field_info;
     field_info.field_type = UNKNOWN_TYPE;
 
-    // |attrs| is a NULL-terminated list of (attribute, value) pairs.
-    while (*attrs) {
-      buzz::QName attribute_qname = context->ResolveQName(*attrs, true);
-      ++attrs;
-      const std::string& attribute_name = attribute_qname.LocalPart();
-      if (attribute_name.compare("autofilltype") == 0) {
-        int value = GetIntValue(context, *attrs);
-        if (value >= 0 && value < MAX_VALID_FIELD_TYPE)
-          field_info.field_type = static_cast<ServerFieldType>(value);
-        else
-          field_info.field_type = NO_SERVER_DATA;
-      } else if (field_info.field_type == FIELD_WITH_DEFAULT_VALUE &&
-                 attribute_name.compare("defaultvalue") == 0) {
-        field_info.default_value = *attrs;
-      }
-      ++attrs;
+    std::string autofill_type_value;
+    if (!reader.NodeAttribute("autofilltype", &autofill_type_value))
+      return false;  // Missing required attribute.
+    int parsed_type = 0;
+    if (!base::StringToInt(autofill_type_value, &parsed_type) ||
+        parsed_type < 0 || parsed_type >= MAX_VALID_FIELD_TYPE) {
+      // Invalid attribute value should not make the whole parse fail.
+      field_info.field_type = NO_SERVER_DATA;
+    } else {
+      field_info.field_type = static_cast<ServerFieldType>(parsed_type);
     }
 
-    // Record this field type, default value pair.
-    field_infos_->push_back(field_info);
-  }
-}
-
-int AutofillQueryXmlParser::GetIntValue(buzz::XmlParseContext* context,
-                                        const char* attribute) {
-  int value = 0;
-  if (!base::StringToInt(attribute, &value)) {
-    context->RaiseError(XML_ERROR_SYNTAX);
-    return 0;
-  }
-  return value;
-}
-
-AutofillUploadXmlParser::AutofillUploadXmlParser(double* positive_upload_rate,
-                                                 double* negative_upload_rate)
-    : succeeded_(false),
-      positive_upload_rate_(positive_upload_rate),
-      negative_upload_rate_(negative_upload_rate) {
-  DCHECK(positive_upload_rate_);
-  DCHECK(negative_upload_rate_);
-}
-
-void AutofillUploadXmlParser::StartElement(buzz::XmlParseContext* context,
-                                           const char* name,
-                                           const char** attrs) {
-  buzz::QName qname = context->ResolveQName(name, false);
-  const std::string &element = qname.LocalPart();
-  if (element.compare("autofilluploadresponse") == 0) {
-    // Loop over all attributes to get the upload rates.
-    while (*attrs) {
-      buzz::QName attribute_qname = context->ResolveQName(attrs[0], true);
-      const std::string &attribute_name = attribute_qname.LocalPart();
-      if (attribute_name.compare("positiveuploadrate") == 0) {
-        *positive_upload_rate_ = GetDoubleValue(context, attrs[1]);
-      } else if (attribute_name.compare("negativeuploadrate") == 0) {
-        *negative_upload_rate_ = GetDoubleValue(context, attrs[1]);
-      }
-      attrs += 2;  // We peeked at attrs[0] and attrs[1], skip past both.
+    std::string default_value;
+    if (field_info.field_type == FIELD_WITH_DEFAULT_VALUE &&
+        reader.NodeAttribute("defaultvalue", &default_value)) {
+      field_info.default_value = std::move(default_value);
     }
+
+    field_infos->push_back(field_info);
+
+    if (!reader.Read())
+      return false;  // Malformed input.
   }
+
+  if (reader.NodeName() != "autofillqueryresponse" ||
+      !reader.IsClosingElement()) {
+    return false;  // Malformed input.
+  }
+  return true;
 }
 
-double AutofillUploadXmlParser::GetDoubleValue(buzz::XmlParseContext* context,
-                                               const char* attribute) {
-  double value = 0;
-  if (!base::StringToDouble(attribute, &value)) {
-    context->RaiseError(XML_ERROR_SYNTAX);
-    return 0.0;
-  }
-  return value;
+bool ParseAutofillUploadXml(std::string xml,
+                            double* positive_upload_rate,
+                            double* negative_upload_rate) {
+  DCHECK(positive_upload_rate);
+  DCHECK(negative_upload_rate);
+
+  XmlReader reader;
+  if (!reader.Load(xml))
+    return false;
+
+  // Seek to the first opening tag.
+  if (!reader.Read())
+    return false;  // Malformed input.
+
+  if (reader.NodeName() != "autofilluploadresponse")
+    return false;  // Malformed input.
+
+  std::string attribute_value;
+  // TODO(crbug.com/561619) Make the two attributes non-required and use 1 as
+  // the default value.
+  if (!reader.NodeAttribute("positiveuploadrate", &attribute_value))
+    return false;  // Missing required attribute.
+  if (!base::StringToDouble(attribute_value, positive_upload_rate))
+    return false;  // Invalid attribute value.
+  if (!reader.NodeAttribute("negativeuploadrate", &attribute_value))
+    return false;  // Missing required attribute.
+  if (!base::StringToDouble(attribute_value, negative_upload_rate))
+    return false;  // Invalid attribute value.
+  return true;
 }
 
 }  // namespace autofill

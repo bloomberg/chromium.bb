@@ -743,7 +743,7 @@ void AutofillManager::OnSetDataList(const std::vector<base::string16>& values,
 }
 
 void AutofillManager::OnLoadedServerPredictions(
-    const std::string& response_xml,
+    std::string response_xml,
     const std::vector<std::string>& form_signatures) {
   // We obtain the current valid FormStructures represented by
   // |form_signatures|. We invert both lists because most recent forms are at
@@ -765,7 +765,7 @@ void AutofillManager::OnLoadedServerPredictions(
     return;
 
   // Parse and store the server predictions.
-  FormStructure::ParseQueryResponse(response_xml, queried_forms,
+  FormStructure::ParseQueryResponse(std::move(response_xml), queried_forms,
                                     client_->GetRapporService());
 
   // Forward form structures to the password generation manager to detect

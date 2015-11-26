@@ -3,14 +3,15 @@
 // found in the LICENSE file.
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
+#include "components/autofill/core/browser/autofill_server_field_info.h"
 #include "components/autofill/core/browser/autofill_xml_parser.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/webrtc/libjingle/xmllite/xmlparser.h"
 
 namespace autofill {
 namespace {
@@ -21,13 +22,10 @@ class AutofillQueryXmlParserTest : public testing::Test {
   ~AutofillQueryXmlParserTest() override{};
 
  protected:
-  void ParseQueryXML(const std::string& xml, bool should_succeed) {
-    // Create a parser.
-    AutofillQueryXmlParser parse_handler(&field_infos_,
-                                         &upload_required_);
-    buzz::XmlParser parser(&parse_handler);
-    parser.Parse(xml.c_str(), xml.length(), true);
-    EXPECT_EQ(should_succeed, parse_handler.succeeded());
+  void ParseQueryXML(std::string xml, bool should_succeed) {
+    EXPECT_EQ(should_succeed,
+              ParseAutofillQueryXml(std::move(xml), &field_infos_,
+                                    &upload_required_));
   }
 
   std::vector<AutofillServerFieldInfo> field_infos_;
@@ -40,13 +38,9 @@ class AutofillUploadXmlParserTest : public testing::Test {
   ~AutofillUploadXmlParserTest() override{};
 
  protected:
-  void ParseUploadXML(const std::string& xml, bool should_succeed) {
-    // Create a parser.
-    AutofillUploadXmlParser parse_handler(&positive_, &negative_);
-    buzz::XmlParser parser(&parse_handler);
-    parser.Parse(xml.c_str(), xml.length(), true);
-
-    EXPECT_EQ(should_succeed, parse_handler.succeeded());
+  void ParseUploadXML(std::string xml, bool should_succeed) {
+    EXPECT_EQ(should_succeed,
+              ParseAutofillUploadXml(std::move(xml), &positive_, &negative_));
   }
 
   double positive_;
@@ -62,7 +56,7 @@ TEST_F(AutofillQueryXmlParserTest, BasicQuery) {
                     "<field autofilltype=\"2\" />"
                     "<field autofilltype=\"61\" defaultvalue=\"default\"/>"
                     "</autofillqueryresponse>";
-  ParseQueryXML(xml, true);
+  ParseQueryXML(std::move(xml), true);
 
   EXPECT_EQ(USE_UPLOAD_RATES, upload_required_);
   ASSERT_EQ(5U, field_infos_.size());
@@ -81,7 +75,7 @@ TEST_F(AutofillQueryXmlParserTest, TestUploadRequired) {
                     "<field autofilltype=\"0\" />"
                     "</autofillqueryresponse>";
 
-  ParseQueryXML(xml, true);
+  ParseQueryXML(std::move(xml), true);
 
   EXPECT_EQ(upload_required_, upload_required_);
   ASSERT_EQ(1U, field_infos_.size());
@@ -92,7 +86,7 @@ TEST_F(AutofillQueryXmlParserTest, TestUploadRequired) {
         "<field autofilltype=\"0\" />"
         "</autofillqueryresponse>";
 
-  ParseQueryXML(xml, true);
+  ParseQueryXML(std::move(xml), true);
 
   EXPECT_EQ(UPLOAD_NOT_REQUIRED, upload_required_);
   ASSERT_EQ(1U, field_infos_.size());
@@ -103,7 +97,7 @@ TEST_F(AutofillQueryXmlParserTest, TestUploadRequired) {
         "<field autofilltype=\"0\" />"
         "</autofillqueryresponse>";
 
-  ParseQueryXML(xml, true);
+  ParseQueryXML(std::move(xml), true);
 
   EXPECT_EQ(USE_UPLOAD_RATES, upload_required_);
   ASSERT_EQ(1U, field_infos_.size());
@@ -117,17 +111,14 @@ TEST_F(AutofillQueryXmlParserTest, ParseErrors) {
                     "<field/>"
                     "</autofillqueryresponse>";
 
-  ParseQueryXML(xml, false);
-
-  EXPECT_EQ(USE_UPLOAD_RATES, upload_required_);
-  EXPECT_EQ(0U, field_infos_.size());
+  ParseQueryXML(std::move(xml), false);
 
   // Test an incorrect Autofill type.
   xml = "<autofillqueryresponse>"
         "<field autofilltype=\"-1\"/>"
         "</autofillqueryresponse>";
 
-  ParseQueryXML(xml, true);
+  ParseQueryXML(std::move(xml), true);
 
   EXPECT_EQ(USE_UPLOAD_RATES, upload_required_);
   ASSERT_EQ(1U, field_infos_.size());
@@ -139,7 +130,7 @@ TEST_F(AutofillQueryXmlParserTest, ParseErrors) {
   xml = "<autofillqueryresponse><field autofilltype=\"" +
       base::IntToString(MAX_VALID_FIELD_TYPE) + "\"/></autofillqueryresponse>";
 
-  ParseQueryXML(xml, true);
+  ParseQueryXML(std::move(xml), true);
 
   EXPECT_EQ(USE_UPLOAD_RATES, upload_required_);
   ASSERT_EQ(1U, field_infos_.size());
@@ -152,8 +143,8 @@ TEST_F(AutofillQueryXmlParserTest, ParseErrors) {
         "<field autofilltype=\"No Type\"/>"
         "</autofillqueryresponse>";
 
-  // Parse fails but an entry is still added to field_infos_.
-  ParseQueryXML(xml, false);
+  // Unknown autofill type is handled gracefully.
+  ParseQueryXML(std::move(xml), true);
 
   EXPECT_EQ(USE_UPLOAD_RATES, upload_required_);
   ASSERT_EQ(1U, field_infos_.size());
@@ -176,26 +167,13 @@ TEST_F(AutofillUploadXmlParserTest, TestFailedResponse) {
                  "negativeuploadrate=\"0.3\"/>",
                  false);
 
-  EXPECT_DOUBLE_EQ(0, positive_);
-  EXPECT_DOUBLE_EQ(0.3, negative_);  // Partially parsed.
-  negative_ = 0;
-
   ParseUploadXML("<autofilluploadresponse positiveuploadrate=\"0.5\" "
                  "negativeuploadrate=\"0.3\"",
                  false);
 
-  EXPECT_DOUBLE_EQ(0, positive_);
-  EXPECT_DOUBLE_EQ(0, negative_);
-
   ParseUploadXML("bad data", false);
 
-  EXPECT_DOUBLE_EQ(0, positive_);
-  EXPECT_DOUBLE_EQ(0, negative_);
-
   ParseUploadXML(std::string(), false);
-
-  EXPECT_DOUBLE_EQ(0, positive_);
-  EXPECT_DOUBLE_EQ(0, negative_);
 }
 
 }  // namespace

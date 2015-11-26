@@ -4,6 +4,7 @@
 
 #include "components/autofill/core/browser/form_structure.h"
 
+#include <map>
 #include <utility>
 
 #include "base/basictypes.h"
@@ -20,6 +21,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
+#include "components/autofill/core/browser/autofill_server_field_info.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/autofill_xml_parser.h"
 #include "components/autofill/core/browser/field_types.h"
@@ -31,8 +33,8 @@
 #include "components/autofill/core/common/form_field_data_predictions.h"
 #include "components/rappor/rappor_service.h"
 #include "components/rappor/rappor_utils.h"
+#include "third_party/libxml/chromium/libxml_utils.h"
 #include "third_party/re2/re2/re2.h"
-#include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
 
 namespace autofill {
 namespace {
@@ -54,7 +56,6 @@ const char kAttributeControlType[] = "type";
 const char kAttributeAutocomplete[] = "autocomplete";
 const char kAttributeLoginFormSignature[] = "loginformsignature";
 const char kClientVersion[] = "6.1.1715.1442/en (GGLL)";
-const char kXMLDeclaration[] = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 const char kXMLElementAutofillQuery[] = "autofillquery";
 const char kXMLElementAutofillUpload[] = "autofillupload";
 const char kXMLElementFieldAssignments[] = "fieldassignments";
@@ -115,75 +116,86 @@ std::string EncodeFieldTypes(const ServerFieldTypeSet& available_field_types) {
   return data_presence;
 }
 
-// Helper for |EncodeFormRequest()| and |EncodeFieldForUpload| that returns an
-// XmlElement for the given field in query xml, and also add it to the parent
-// XmlElement.
-buzz::XmlElement* EncodeFieldForQuery(const AutofillField& field,
-                                      buzz::XmlElement* parent) {
-  buzz::XmlElement* field_element = new buzz::XmlElement(
-      buzz::QName(kXMLElementField));
-  field_element->SetAttr(buzz::QName(kAttributeSignature),
-                         field.FieldSignature());
+// Assumes that |xml_writer| has just started an element with name
+// |kXMLElementField|, and adds some field attributes based on |field|. Returns
+// true on success, false on failure.
+bool EncodeFieldForQuery(const AutofillField& field, XmlWriter* xml_writer) {
+  if (!xml_writer->AddAttribute(kAttributeSignature, field.FieldSignature()))
+    return false;
   if (IsAutofillFieldMetadataEnabled()) {
     if (!field.name.empty()) {
-      field_element->SetAttr(buzz::QName(kAttributeName),
-                             base::UTF16ToUTF8(field.name));
+      if (!xml_writer->AddAttribute(kAttributeName,
+                                    base::UTF16ToUTF8(field.name)))
+        return false;
     }
-    field_element->SetAttr(buzz::QName(kAttributeControlType),
-                           field.form_control_type);
+    if (!xml_writer->AddAttribute(kAttributeControlType,
+                                  field.form_control_type))
+      return false;
     if (!field.label.empty()) {
       std::string truncated;
       base::TruncateUTF8ToByteSize(base::UTF16ToUTF8(field.label),
                                    kMaxFieldLabelNumChars, &truncated);
-      field_element->SetAttr(buzz::QName(kAttributeFieldLabel), truncated);
+      if (!xml_writer->AddAttribute(kAttributeFieldLabel, truncated))
+        return false;
     }
   }
-  parent->AddElement(field_element);
-  return field_element;
+  return true;
 }
 
-// Helper for |EncodeFormRequest()| that creates XmlElements for the given field
-// in upload xml, and also add them to the parent XmlElement.
-void EncodeFieldForUpload(const AutofillField& field,
-                          buzz::XmlElement* parent) {
+// Uses |xml_writer| to write one tag named |kXMLElementField| for each item in
+// |field.possible_types()|, and adds some field attributes based on |field|.
+// Returns true on success, false on failure.
+bool EncodeFieldForUpload(const AutofillField& field, XmlWriter* xml_writer) {
   // Don't upload checkable fields.
   if (field.is_checkable)
-    return;
+    return true;
 
-  ServerFieldTypeSet types = field.possible_types();
-  // |types| could be empty in unit-tests only.
+  const ServerFieldTypeSet& types = field.possible_types();
   for (const auto& field_type : types) {
-    // We use the same field elements as the query and add a few more below.
-    buzz::XmlElement* field_element = EncodeFieldForQuery(field, parent);
+    if (!xml_writer->StartElement(kXMLElementField))
+      return false;
+    // Add the same field elements as the query and a few more below.
+    if (!EncodeFieldForQuery(field, xml_writer))
+      return false;
 
     if (IsAutofillFieldMetadataEnabled() &&
         !field.autocomplete_attribute.empty()) {
-      field_element->SetAttr(buzz::QName(kAttributeAutocomplete),
-                             field.autocomplete_attribute);
+      if (!xml_writer->AddAttribute(kAttributeAutocomplete,
+                                    field.autocomplete_attribute))
+        return false;
     }
 
-    field_element->SetAttr(buzz::QName(kAttributeAutofillType),
-                           base::IntToString(field_type));
+    if (!xml_writer->AddAttribute(kAttributeAutofillType,
+                                  base::IntToString(field_type)))
+      return false;
+    if (!xml_writer->EndElement())
+      return false;
   }
+  return true;
 }
 
-// Helper for |EncodeFormRequest()| that creates XmlElements for the given field
-// in field assignments xml, and also add them to the parent XmlElement.
-void EncodeFieldForFieldAssignments(const AutofillField& field,
-                                    buzz::XmlElement* parent) {
-  ServerFieldTypeSet types = field.possible_types();
+// Uses |xml_writer| to write one tag named |kXMLElementFields| for each item in
+// |field.possible_types()|, and adds some field attributes based on |field|.
+// Returns true on success, false on failure.
+bool EncodeFieldForFieldAssignments(const AutofillField& field,
+                                    XmlWriter* xml_writer) {
+  const ServerFieldTypeSet& types = field.possible_types();
   for (const auto& field_type : types) {
-    buzz::XmlElement *field_element = new buzz::XmlElement(
-        buzz::QName(kXMLElementFields));
+    if (!xml_writer->StartElement(kXMLElementFields))
+      return false;
 
-    field_element->SetAttr(buzz::QName(kAttributeFieldID),
-                           field.FieldSignature());
-    field_element->SetAttr(buzz::QName(kAttributeFieldType),
-                           base::IntToString(field_type));
-    field_element->SetAttr(buzz::QName(kAttributeName),
-                           base::UTF16ToUTF8(field.name));
-    parent->AddElement(field_element);
+    if (!xml_writer->AddAttribute(kAttributeFieldID, field.FieldSignature()))
+      return false;
+    if (!xml_writer->AddAttribute(kAttributeFieldType,
+                                  base::IntToString(field_type)))
+      return false;
+    if (!xml_writer->AddAttribute(kAttributeName,
+                                  base::UTF16ToUTF8(field.name)))
+      return false;
+    if (!xml_writer->EndElement())
+      return false;
   }
+  return true;
 }
 
 // Returns |true| iff the |token| is a type hint for a contact field, as
@@ -442,49 +454,59 @@ bool FormStructure::EncodeUploadRequest(
     bool form_was_autofilled,
     const std::string& login_form_signature,
     std::string* encoded_xml) const {
+  DCHECK(encoded_xml);
   DCHECK(ShouldBeCrowdsourced());
 
   // Verify that |available_field_types| agrees with the possible field types we
   // are uploading.
   for (const AutofillField* field : *this) {
     for (const auto& type : field->possible_types()) {
-      DCHECK(type == UNKNOWN_TYPE ||
-             type == EMPTY_TYPE ||
+      DCHECK(type == UNKNOWN_TYPE || type == EMPTY_TYPE ||
              available_field_types.count(type));
     }
   }
 
   // Set up the <autofillupload> element and its attributes.
-  buzz::XmlElement autofill_request_xml(
-      (buzz::QName(kXMLElementAutofillUpload)));
-  autofill_request_xml.SetAttr(buzz::QName(kAttributeClientVersion),
-                               kClientVersion);
-  autofill_request_xml.SetAttr(buzz::QName(kAttributeFormSignature),
-                               FormSignature());
-  autofill_request_xml.SetAttr(buzz::QName(kAttributeAutofillUsed),
-                               form_was_autofilled ? "true" : "false");
-  autofill_request_xml.SetAttr(buzz::QName(kAttributeDataPresent),
-                               EncodeFieldTypes(available_field_types).c_str());
+  XmlWriter xml_writer;
+  xml_writer.StartWriting();
+  xml_writer.StopIndenting();
+  if (!xml_writer.StartElement(kXMLElementAutofillUpload))
+    return false;
+  if (!xml_writer.AddAttribute(kAttributeClientVersion, kClientVersion))
+    return false;
+  if (!xml_writer.AddAttribute(kAttributeFormSignature, FormSignature()))
+    return false;
+  if (!xml_writer.AddAttribute(kAttributeAutofillUsed,
+                               form_was_autofilled ? "true" : "false"))
+    return false;
+  if (!xml_writer.AddAttribute(kAttributeDataPresent,
+                               EncodeFieldTypes(available_field_types)))
+    return false;
   if (IsAutofillFieldMetadataEnabled()) {
-    autofill_request_xml.SetAttr(buzz::QName(kAttributeFormActionHostSignature),
-                                 Hash64Bit(target_url_.host()));
-    if(!form_name().empty()) {
-      autofill_request_xml.SetAttr(buzz::QName(kAttributeFormName),
-                                   base::UTF16ToUTF8(form_name()));
+    if (!xml_writer.AddAttribute(kAttributeFormActionHostSignature,
+                                 Hash64Bit(target_url_.host())))
+      return false;
+    if (!form_name().empty()) {
+      if (!xml_writer.AddAttribute(kAttributeFormName,
+                                   base::UTF16ToUTF8(form_name())))
+        return false;
     }
   }
 
   if (!login_form_signature.empty()) {
-    autofill_request_xml.SetAttr(buzz::QName(kAttributeLoginFormSignature),
-                                 login_form_signature);
+    if (!xml_writer.AddAttribute(kAttributeLoginFormSignature,
+                                 login_form_signature))
+      return false;
   }
 
-  if (!EncodeFormRequest(FormStructure::UPLOAD, &autofill_request_xml))
+  if (IsMalformed() || !EncodeFormRequest(FormStructure::UPLOAD, &xml_writer))
     return false;  // Malformed form, skip it.
+  if (!xml_writer.EndElement())
+    return false;
 
   // Obtain the XML structure as a string.
-  *encoded_xml = kXMLDeclaration;
-  *encoded_xml += autofill_request_xml.Str().c_str();
+  xml_writer.StopWriting();
+  *encoded_xml = xml_writer.GetWrittenString();
 
   // To enable this logging, run with the flag --vmodule="form_structure=2".
   VLOG(2) << "\n" << *encoded_xml;
@@ -495,21 +517,28 @@ bool FormStructure::EncodeUploadRequest(
 bool FormStructure::EncodeFieldAssignments(
     const ServerFieldTypeSet& available_field_types,
     std::string* encoded_xml) const {
+  DCHECK(encoded_xml);
   DCHECK(ShouldBeCrowdsourced());
 
   // Set up the <fieldassignments> element and its attributes.
-  buzz::XmlElement autofill_request_xml(
-      (buzz::QName(kXMLElementFieldAssignments)));
-  autofill_request_xml.SetAttr(buzz::QName(kAttributeFormSignature),
-                               FormSignature());
+  XmlWriter xml_writer;
+  xml_writer.StartWriting();
+  xml_writer.StopIndenting();
+  if (!xml_writer.StartElement(kXMLElementFieldAssignments))
+    return false;
+  if (!xml_writer.AddAttribute(kAttributeFormSignature, FormSignature()))
+    return false;
 
-  if (!EncodeFormRequest(FormStructure::FIELD_ASSIGNMENTS,
-                         &autofill_request_xml))
+  if (IsMalformed() ||
+      !EncodeFormRequest(FormStructure::FIELD_ASSIGNMENTS, &xml_writer)) {
     return false;  // Malformed form, skip it.
+  }
+  if (!xml_writer.EndElement())
+    return false;
 
   // Obtain the XML structure as a string.
-  *encoded_xml = kXMLDeclaration;
-  *encoded_xml += autofill_request_xml.Str().c_str();
+  xml_writer.StopWriting();
+  *encoded_xml = xml_writer.GetWrittenString();
 
   return true;
 }
@@ -521,37 +550,43 @@ bool FormStructure::EncodeQueryRequest(
     std::string* encoded_xml) {
   DCHECK(encoded_signatures);
   DCHECK(encoded_xml);
-  encoded_xml->clear();
   encoded_signatures->clear();
   encoded_signatures->reserve(forms.size());
 
   // Set up the <autofillquery> element and attributes.
-  buzz::XmlElement autofill_request_xml(
-      (buzz::QName(kXMLElementAutofillQuery)));
-  autofill_request_xml.SetAttr(buzz::QName(kAttributeClientVersion),
-                               kClientVersion);
+  XmlWriter xml_writer;
+  xml_writer.StartWriting();
+  xml_writer.StopIndenting();
+  if (!xml_writer.StartElement(kXMLElementAutofillQuery))
+    return false;
+  if (!xml_writer.AddAttribute(kAttributeClientVersion, kClientVersion))
+    return false;
 
   // Some badly formatted web sites repeat forms - detect that and encode only
   // one form as returned data would be the same for all the repeated forms.
   std::set<std::string> processed_forms;
-  for (const auto& it : forms) {
-    std::string signature(it->FormSignature());
+  for (const auto& form : forms) {
+    std::string signature(form->FormSignature());
     if (processed_forms.find(signature) != processed_forms.end())
       continue;
     processed_forms.insert(signature);
-    scoped_ptr<buzz::XmlElement> encompassing_xml_element(
-        new buzz::XmlElement(buzz::QName(kXMLElementForm)));
-    encompassing_xml_element->SetAttr(buzz::QName(kAttributeSignature),
-                                      signature);
+    if (form->IsMalformed())
+      continue;
+    if (!xml_writer.StartElement(kXMLElementForm))
+      return false;
+    if (!xml_writer.AddAttribute(kAttributeSignature, signature))
+      return false;
 
-    if (!it->EncodeFormRequest(FormStructure::QUERY,
-                               encompassing_xml_element.get())) {
-      continue;  // Malformed form, skip it.
-    }
+    if (!form->EncodeFormRequest(FormStructure::QUERY, &xml_writer))
+      continue;
 
-    autofill_request_xml.AddElement(encompassing_xml_element.release());
+    if (!xml_writer.EndElement())
+      return false;
+
     encoded_signatures->push_back(signature);
   }
+  if (!xml_writer.EndElement())
+    return false;
 
   if (!encoded_signatures->size())
     return false;
@@ -561,14 +596,14 @@ bool FormStructure::EncodeQueryRequest(
   // it ever resurfaces, re-add code here to set the attribute accordingly.
 
   // Obtain the XML structure as a string.
-  *encoded_xml = kXMLDeclaration;
-  *encoded_xml += autofill_request_xml.Str().c_str();
+  xml_writer.StopWriting();
+  *encoded_xml = xml_writer.GetWrittenString();
 
   return true;
 }
 
 // static
-void FormStructure::ParseQueryResponse(const std::string& response_xml,
+void FormStructure::ParseQueryResponse(std::string response_xml,
                                        const std::vector<FormStructure*>& forms,
                                        rappor::RapporService* rappor_service) {
   AutofillMetrics::LogServerQueryMetric(
@@ -577,11 +612,7 @@ void FormStructure::ParseQueryResponse(const std::string& response_xml,
   // Parse the field types from the server response to the query.
   std::vector<AutofillServerFieldInfo> field_infos;
   UploadRequired upload_required;
-  AutofillQueryXmlParser parse_handler(&field_infos,
-                                       &upload_required);
-  buzz::XmlParser parser(&parse_handler);
-  parser.Parse(response_xml.c_str(), response_xml.length(), true);
-  if (!parse_handler.succeeded())
+  if (!ParseAutofillQueryXml(response_xml, &field_infos, &upload_required))
     return;
 
   AutofillMetrics::LogServerQueryMetric(AutofillMetrics::QUERY_RESPONSE_PARSED);
@@ -1027,11 +1058,9 @@ std::string FormStructure::Hash64Bit(const std::string& str) {
   return base::Uint64ToString(hash64);
 }
 
-bool FormStructure::EncodeFormRequest(
-    FormStructure::EncodeRequestType request_type,
-    buzz::XmlElement* encompassing_xml_element) const {
+bool FormStructure::IsMalformed() const {
   if (!field_count())  // Nothing to add.
-    return false;
+    return true;
 
   // Some badly formatted web sites repeat fields - limit number of fields to
   // 48, which is far larger than any valid form and XML still fits into 2K.
@@ -1039,22 +1068,33 @@ bool FormStructure::EncodeFormRequest(
   // near certainly not valid/auto-fillable.
   const size_t kMaxFieldsOnTheForm = 48;
   if (field_count() > kMaxFieldsOnTheForm)
-    return false;
+    return true;
+  return false;
+}
 
+bool FormStructure::EncodeFormRequest(EncodeRequestType request_type,
+                                      XmlWriter* xml_writer) const {
+  DCHECK(!IsMalformed());
   // Add the child nodes for the form fields.
-  for (size_t index = 0; index < field_count(); ++index) {
-    const AutofillField* field = fields_[index];
+  for (const AutofillField* field : fields_) {
     switch (request_type) {
       case FormStructure::UPLOAD:
-        EncodeFieldForUpload(*field, encompassing_xml_element);
+        if (!EncodeFieldForUpload(*field, xml_writer))
+          return false;
         break;
       case FormStructure::QUERY:
         if (ShouldSkipField(*field))
           continue;
-        EncodeFieldForQuery(*field, encompassing_xml_element);
+        if (!xml_writer->StartElement(kXMLElementField))
+          return false;
+        if (!EncodeFieldForQuery(*field, xml_writer))
+          return false;
+        if (!xml_writer->EndElement())
+          return false;
         break;
       case FormStructure::FIELD_ASSIGNMENTS:
-        EncodeFieldForFieldAssignments(*field, encompassing_xml_element);
+        if (!EncodeFieldForFieldAssignments(*field, xml_writer))
+          return false;
         break;
     }
   }
