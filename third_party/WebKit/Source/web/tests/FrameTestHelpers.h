@@ -163,7 +163,7 @@ public:
         WebDOMMessageEvent) override { }
 
 private:
-    WebRemoteFrameImpl* const m_frame;
+    RawPtrWillBePersistent<WebRemoteFrameImpl> const m_frame;
 };
 
 class TestWebViewClient : public WebViewClient {
