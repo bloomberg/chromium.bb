@@ -513,6 +513,23 @@ InspectorTest.assertTrue = function(found, message)
     InspectorTest.assertEquals(true, !!found, message);
 }
 
+InspectorTest.wrapListener = function(func)
+{
+    function wrapper()
+    {
+        var wrapArgs = arguments;
+        var wrapThis = this;
+        // Give a chance to other listeners.
+        setTimeout(apply, 0);
+
+        function apply()
+        {
+            func.apply(wrapThis, wrapArgs);
+        }
+    }
+    return wrapper;
+}
+
 InspectorTest.safeWrap = function(func, onexception)
 {
     function result()

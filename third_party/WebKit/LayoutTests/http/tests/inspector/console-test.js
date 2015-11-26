@@ -224,6 +224,14 @@ InspectorTest.dumpConsoleClassesBrief = function()
         InspectorTest.addResult(messageViews[i].toMessageElement().className);
 }
 
+InspectorTest.dumpConsoleCounters = function()
+{
+    var counter = WebInspector.Main.WarningErrorCounter._instanceForTest;
+    for (var index = 0; index < counter._titles.length; ++index)
+        InspectorTest.addResult(counter._titles[index]);
+    InspectorTest.dumpConsoleClassesBrief();
+}
+
 InspectorTest.expandConsoleMessages = function(callback, deepFilter, sectionFilter)
 {
     var messageViews = WebInspector.ConsolePanel._view()._visibleViewMessages;

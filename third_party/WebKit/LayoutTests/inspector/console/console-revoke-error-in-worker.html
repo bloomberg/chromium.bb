@@ -18,8 +18,8 @@ function handlePromiseRejection()
 
 function test()
 {
-    WebInspector.multitargetConsoleModel.addEventListener(WebInspector.ConsoleModel.Events.MessageAdded, messageAdded);
-    WebInspector.multitargetConsoleModel.addEventListener(WebInspector.ConsoleModel.Events.MessageUpdated, messageUpdated);
+    WebInspector.multitargetConsoleModel.addEventListener(WebInspector.ConsoleModel.Events.MessageAdded, InspectorTest.wrapListener(messageAdded));
+    WebInspector.multitargetConsoleModel.addEventListener(WebInspector.ConsoleModel.Events.MessageUpdated, InspectorTest.wrapListener(messageUpdated));
 
     InspectorTest.addResult("Creating worker with promise");
     InspectorTest.evaluateInPageWithTimeout("createPromise()");
@@ -28,12 +28,9 @@ function test()
     {
         InspectorTest.addResult("");
         InspectorTest.addResult("Message added: " + event.data.level + " " + event.data.type);
-        var counter = WebInspector.Main.WarningErrorCounter._instanceForTest;
-        for (var counter of counter._counters)
-            InspectorTest.addResult("    " + counter.title);
 
         if (event.data.level === WebInspector.ConsoleMessage.MessageLevel.Error) {
-            InspectorTest.dumpConsoleClassesBrief();
+            InspectorTest.dumpConsoleCounters();
             InspectorTest.addResult("");
             InspectorTest.addResult("Handling promise");
             InspectorTest.evaluateInPageWithTimeout("handlePromiseRejection()");
@@ -42,7 +39,7 @@ function test()
 
     function messageUpdated()
     {
-        InspectorTest.dumpConsoleClassesBrief();
+        InspectorTest.dumpConsoleCounters();
         InspectorTest.completeTest();
     }
 }

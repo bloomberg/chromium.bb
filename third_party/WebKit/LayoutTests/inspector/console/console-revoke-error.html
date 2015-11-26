@@ -20,7 +20,8 @@ function handleSomeRejections()
 
 function test()
 {
-    InspectorTest.consoleModel.addEventListener(WebInspector.ConsoleModel.Events.MessageAdded, messageAdded);
+    var messageAddedListener = InspectorTest.wrapListener(messageAdded);
+    InspectorTest.consoleModel.addEventListener(WebInspector.ConsoleModel.Events.MessageAdded, messageAddedListener);
 
     InspectorTest.addResult("Creating promise");
     InspectorTest.evaluateInPageWithTimeout("createPromises()");
@@ -33,14 +34,12 @@ function test()
             return;
         messageNumber = 0;
 
-        InspectorTest.consoleModel.removeEventListener(WebInspector.ConsoleModel.Events.MessageAdded, messageAdded);
+        InspectorTest.consoleModel.removeEventListener(WebInspector.ConsoleModel.Events.MessageAdded, messageAddedListener);
         InspectorTest.addResult("");
-        InspectorTest.addResult("errors: " + InspectorTest.consoleModel.errors());
-        InspectorTest.addResult("revokedErrors: " + InspectorTest.consoleModel.revokedErrors());
 
         // Process array as a batch.
-        InspectorTest.consoleModel.addEventListener(WebInspector.ConsoleModel.Events.MessageUpdated, messageUpdated);
-        InspectorTest.dumpConsoleClassesBrief();
+        InspectorTest.consoleModel.addEventListener(WebInspector.ConsoleModel.Events.MessageUpdated, InspectorTest.wrapListener(messageUpdated));
+        InspectorTest.dumpConsoleCounters();
         InspectorTest.addResult("");
         InspectorTest.addResult("Handling promise");
         InspectorTest.evaluateInPageWithTimeout("handleSomeRejections()");
@@ -50,9 +49,7 @@ function test()
     {
         if (++messageNumber < 2)
             return;
-        InspectorTest.dumpConsoleClassesBrief();
-        InspectorTest.addResult("errors: " + InspectorTest.consoleModel.errors());
-        InspectorTest.addResult("revokedErrors: " + InspectorTest.consoleModel.revokedErrors());
+        InspectorTest.dumpConsoleCounters();
         InspectorTest.completeTest();
     }
 }

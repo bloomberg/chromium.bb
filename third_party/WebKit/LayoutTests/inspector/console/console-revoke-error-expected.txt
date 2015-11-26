@@ -10,16 +10,15 @@ Message added: error log
 Message added: error log
 Message added: error log
 
-errors: 3
-revokedErrors: 0
+3 errors
 console-message-wrapper console-error-level
 console-message-wrapper console-error-level
 console-message-wrapper console-error-level
 
 Handling promise
+1 error
+2 handled promise rejections
 console-message-wrapper console-revokedError-level
 console-message-wrapper console-error-level
 console-message-wrapper console-revokedError-level
-errors: 1
-revokedErrors: 2
 
