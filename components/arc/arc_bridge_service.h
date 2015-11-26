@@ -5,24 +5,24 @@
 #ifndef COMPONENTS_ARC_ARC_BRIDGE_SERVICE_H_
 #define COMPONENTS_ARC_ARC_BRIDGE_SERVICE_H_
 
+#include "base/files/scoped_file.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
-#include "base/sequenced_task_runner.h"
 #include "components/arc/common/arc_message_types.h"
-#include "ipc/ipc_channel_proxy.h"
-#include "ipc/ipc_listener.h"
-#include "ipc/ipc_message.h"
 
 namespace base {
 class CommandLine;
-}
+class SequencedTaskRunner;
+class SingleThreadTaskRunner;
+}  // namespace base
 
 namespace arc {
 
 // The Chrome-side service that handles ARC instances and ARC bridge creation.
 // This service handles the lifetime of ARC instances and sets up the
 // communication channel (the ARC bridge) used to send and receive messages.
-class ArcBridgeService : public IPC::Listener {
+class ArcBridgeService {
  public:
   // The possible states of the bridge.  In the normal flow, the state changes
   // in the following sequence:
@@ -79,10 +79,12 @@ class ArcBridgeService : public IPC::Listener {
     virtual ~Observer() {}
   };
 
-  ArcBridgeService(
+  virtual ~ArcBridgeService();
+
+  // Creates instance of |ArcBridgeService| for normal use.
+  static scoped_ptr<ArcBridgeService> Create(
       const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner,
       const scoped_refptr<base::SequencedTaskRunner>& file_task_runner);
-  ~ArcBridgeService() override;
 
   // Gets the global instance of the ARC Bridge Service. This can only be
   // called on the thread that this class was created on.
@@ -95,16 +97,16 @@ class ArcBridgeService : public IPC::Listener {
   // DetectAvailability() should be called once D-Bus is available. It will
   // call CheckArcAvailability() on the session_manager. This can only be
   // called on the thread that this class was created on.
-  void DetectAvailability();
+  virtual void DetectAvailability() = 0;
 
   // HandleStartup() should be called upon profile startup.  This will only
   // launch an instance if the instance service is available and it is enabled.
   // This can only be called on the thread that this class was created on.
-  void HandleStartup();
+  virtual void HandleStartup() = 0;
 
   // Shutdown() should be called when the browser is shutting down. This can
   // only be called on the thread that this class was created on.
-  void Shutdown();
+  virtual void Shutdown() = 0;
 
   // Adds or removes observers. This can only be called on the thread that this
   // class was created on.
@@ -123,72 +125,35 @@ class ArcBridgeService : public IPC::Listener {
   // OS Keyboard"), |device_type| the name of the device type (e.g. "keyboard")
   // and |fd| a file descriptor that emulates the kernel events of the device.
   // This can only be called on the thread that this class was created on.
-  bool RegisterInputDevice(const std::string& name,
-                           const std::string& device_type,
-                           base::ScopedFD fd);
+  virtual bool RegisterInputDevice(const std::string& name,
+                                   const std::string& device_type,
+                                   base::ScopedFD fd) = 0;
 
- private:
-  friend class ArcBridgeTest;
-  FRIEND_TEST_ALL_PREFIXES(ArcBridgeTest, Basic);
-  FRIEND_TEST_ALL_PREFIXES(ArcBridgeTest, ShutdownMidStartup);
-
-  // If all pre-requisites are true (ARC is available, it has been enabled, and
-  // the session has started), and ARC is stopped, start ARC. If ARC is running
-  // and the pre-requisites stop being true, stop ARC.
-  void PrerequisitesChanged();
-
-  // Binds to the socket specified by |socket_path|.
-  void SocketConnect(const base::FilePath& socket_path);
-
-  // Binds to the socket specified by |socket_path| after creating its parent
-  // directory is present.
-  void SocketConnectAfterEnsureParentDirectory(
-      const base::FilePath& socket_path,
-      bool directory_present);
-
-  // Internal connection method. Separated to make testing easier.
-  bool Connect(const IPC::ChannelHandle& handle, IPC::Channel::Mode mode);
-
-  // Finishes connecting after setting socket permissions.
-  void SocketConnectAfterSetSocketPermissions(const base::FilePath& socket_path,
-                                              bool socket_permissions_success);
-
-  // Stops the running instance.
-  void StopInstance();
-
-  // Called when the instance has reached a boot phase
-  void OnInstanceBootPhase(InstanceBootPhase phase);
+ protected:
+  ArcBridgeService();
 
   // Changes the current state and notifies all observers.
   void SetState(State state);
 
-  // IPC::Listener:
-  bool OnMessageReceived(const IPC::Message& message) override;
+  // Changes the current availability and notifies all observers.
+  void SetAvailable(bool availability);
 
-  // DBus callbacks.
-  void OnArcAvailable(bool available);
-  void OnInstanceStarted(bool success);
-  void OnInstanceStopped(bool success);
+  const scoped_refptr<base::SequencedTaskRunner>& origin_task_runner() const {
+    return origin_task_runner_;
+  }
 
+  base::ObserverList<Observer>& observer_list() { return observer_list_; }
+
+ private:
   scoped_refptr<base::SequencedTaskRunner> origin_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner_;
-  scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
-
-  scoped_ptr<IPC::ChannelProxy> ipc_channel_;
 
   base::ObserverList<Observer> observer_list_;
-
-  // If the user's session has started.
-  bool session_started_;
 
   // If the ARC instance service is available.
   bool available_;
 
   // The current state of the bridge.
   ArcBridgeService::State state_;
-
-  // WeakPtrFactory to use callbacks.
-  base::WeakPtrFactory<ArcBridgeService> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcBridgeService);
 };

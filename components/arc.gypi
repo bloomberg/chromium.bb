@@ -19,6 +19,8 @@
       'sources': [
         'arc/arc_bridge_service.cc',
         'arc/arc_bridge_service.h',
+        'arc/arc_bridge_service_impl.cc',
+        'arc/arc_bridge_service_impl.h',
         'arc/common/arc_host_messages.h',
         'arc/common/arc_instance_messages.h',
         'arc/common/arc_message_generator.cc',

@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/arc/arc_bridge_service.h"
-
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "components/arc/arc_bridge_service_impl.h"
 #include "components/arc/common/arc_host_messages.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_proxy.h"
@@ -79,7 +78,7 @@ class ArcBridgeTest : public testing::Test, public ArcBridgeService::Observer {
  protected:
   scoped_ptr<IPCSenderFake> fake_sender_;
 
-  scoped_ptr<ArcBridgeService> service_;
+  scoped_ptr<ArcBridgeServiceImpl> service_;
 
  private:
   void SetUp() override {
@@ -91,8 +90,8 @@ class ArcBridgeTest : public testing::Test, public ArcBridgeService::Observer {
     ipc_thread_.reset(new base::Thread("IPC thread"));
     ipc_thread_->StartWithOptions(
         base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
-    service_.reset(new ArcBridgeService(ipc_thread_->task_runner(),
-                                        message_loop_.task_runner()));
+    service_.reset(new ArcBridgeServiceImpl(ipc_thread_->task_runner(),
+                                            message_loop_.task_runner()));
 
     service_->AddObserver(this);
 

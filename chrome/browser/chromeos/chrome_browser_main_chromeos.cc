@@ -388,11 +388,13 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
 
   wake_on_wifi_manager_.reset(new WakeOnWifiManager());
 
-  arc_bridge_service_.reset(new arc::ArcBridgeService(
-      content::BrowserThread::GetMessageLoopProxyForThread(
-          content::BrowserThread::IO),
-      content::BrowserThread::GetMessageLoopProxyForThread(
-          content::BrowserThread::FILE)));
+  arc_bridge_service_ =
+      arc::ArcBridgeService::Create(
+          content::BrowserThread::GetMessageLoopProxyForThread(
+              content::BrowserThread::IO),
+          content::BrowserThread::GetMessageLoopProxyForThread(
+              content::BrowserThread::FILE))
+          .Pass();
   arc_bridge_service_->DetectAvailability();
 
   ChromeBrowserMainPartsLinux::PreMainMessageLoopRun();

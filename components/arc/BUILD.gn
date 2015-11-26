@@ -6,6 +6,8 @@ static_library("arc") {
   sources = [
     "arc_bridge_service.cc",
     "arc_bridge_service.h",
+    "arc_bridge_service_impl.cc",
+    "arc_bridge_service_impl.h",
     "common/arc_message_generator.cc",
   ]
 
