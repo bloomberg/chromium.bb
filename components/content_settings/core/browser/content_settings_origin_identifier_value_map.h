@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/memory/linked_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "components/content_settings/core/common/content_settings.h"
 
 class GURL;
@@ -66,14 +67,14 @@ class OriginIdentifierValueMap {
   size_t size() const;
 
   // Returns an iterator for reading the rules for |content_type| and
-  // |resource_identifier|. The caller takes the ownership of the iterator. It
-  // is not allowed to call functions of |OriginIdentifierValueMap| (also
-  // |GetRuleIterator|) before the iterator has been destroyed. If |lock| is
-  // non-NULL, the returned |RuleIterator| locks it and releases it when it is
-  // destroyed.
-  RuleIterator* GetRuleIterator(ContentSettingsType content_type,
-                                const ResourceIdentifier& resource_identifier,
-                                base::Lock* lock) const;
+  // |resource_identifier|. It is not allowed to call functions of
+  // |OriginIdentifierValueMap| (also |GetRuleIterator|) before the iterator
+  // has been destroyed. If |lock| is non-NULL, the returned |RuleIterator|
+  // locks it and releases it when it is destroyed.
+  scoped_ptr<RuleIterator> GetRuleIterator(
+      ContentSettingsType content_type,
+      const ResourceIdentifier& resource_identifier,
+      base::Lock* lock) const;
 
   OriginIdentifierValueMap();
   ~OriginIdentifierValueMap();

@@ -39,15 +39,15 @@ BinaryValueMap::BinaryValueMap() {}
 
 BinaryValueMap::~BinaryValueMap() {}
 
-RuleIterator* BinaryValueMap::GetRuleIterator(
+scoped_ptr<RuleIterator> BinaryValueMap::GetRuleIterator(
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier,
     scoped_ptr<base::AutoLock> auto_lock) const {
   if (resource_identifier.empty()) {
-    return new RuleIteratorBinary(IsContentSettingEnabled(content_type),
-                                  auto_lock.Pass());
+    return scoped_ptr<RuleIterator>(new RuleIteratorBinary(
+        IsContentSettingEnabled(content_type), auto_lock.Pass()));
   }
-  return new EmptyRuleIterator();
+  return scoped_ptr<RuleIterator>(new EmptyRuleIterator());
 }
 
 void BinaryValueMap::SetContentSettingDisabled(ContentSettingsType content_type,

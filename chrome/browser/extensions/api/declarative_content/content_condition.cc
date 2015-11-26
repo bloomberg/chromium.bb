@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/declarative_content/content_condition.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -25,9 +27,8 @@ const char kUnknownConditionAttribute[] = "Unknown condition attribute '%s'";
 }  // namespace
 
 ContentCondition::ContentCondition(
-    ScopedVector<const ContentPredicate> predicates)
-    : predicates(predicates.Pass()) {
-}
+    std::vector<scoped_ptr<const ContentPredicate>> predicates)
+    : predicates(std::move(predicates)) {}
 
 ContentCondition::~ContentCondition() {}
 
@@ -54,7 +55,7 @@ scoped_ptr<ContentCondition> CreateContentCondition(
     return scoped_ptr<ContentCondition>();
   }
 
-  ScopedVector<const ContentPredicate> predicates;
+  std::vector<scoped_ptr<const ContentPredicate>> predicates;
   for (base::DictionaryValue::Iterator iter(*api_condition_dict);
        !iter.IsAtEnd(); iter.Advance()) {
     const std::string& predicate_name = iter.key();
@@ -75,7 +76,8 @@ scoped_ptr<ContentCondition> CreateContentCondition(
       return scoped_ptr<ContentCondition>();
   }
 
-  return scoped_ptr<ContentCondition>(new ContentCondition(predicates.Pass()));
+  return scoped_ptr<ContentCondition>(
+      new ContentCondition(std::move(predicates)));
 }
 
 }  // namespace extensions

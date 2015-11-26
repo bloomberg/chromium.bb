@@ -9,7 +9,9 @@
 
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
+#include "components/content_settings/core/browser/content_settings_rule.h"
 #include "components/content_settings/core/common/content_settings.h"
 
 class ContentSettingsPattern;
@@ -27,11 +29,10 @@ class ProviderInterface {
   // provider. If |incognito| is true, the iterator returns only the content
   // settings which are applicable to the incognito mode and differ from the
   // normal mode. Otherwise, it returns the content settings for the normal
-  // mode. The caller takes the ownership of the returned |RuleIterator|. It is
-  // not allowed to call other |ProviderInterface| functions (including
-  // |GetRuleIterator|) for the same provider until the |RuleIterator| is
-  // destroyed.
-  virtual RuleIterator* GetRuleIterator(
+  // mode. It is not allowed to call other |ProviderInterface| functions
+  // (including |GetRuleIterator|) for the same provider until the
+  // |RuleIterator| is destroyed.
+  virtual scoped_ptr<RuleIterator> GetRuleIterator(
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier,
       bool incognito) const = 0;

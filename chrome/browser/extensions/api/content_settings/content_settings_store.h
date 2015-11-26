@@ -51,7 +51,7 @@ class ContentSettingsStore
 
   // //////////////////////////////////////////////////////////////////////////
 
-  content_settings::RuleIterator* GetRuleIterator(
+  scoped_ptr<content_settings::RuleIterator> GetRuleIterator(
       ContentSettingsType type,
       const content_settings::ResourceIdentifier& identifier,
       bool incognito) const;

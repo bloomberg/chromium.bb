@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include <list>
+#include <utility>
+#include <vector>
 
 #include "components/content_settings/core/browser/content_settings_rule.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
@@ -52,10 +54,10 @@ TEST(RuleTest, ConcatenationIterator) {
                         ContentSettingsPattern::Wildcard(),
                         new base::FundamentalValue(0)));
 
-  ScopedVector<RuleIterator> iterators;
-  iterators.push_back(new ListIterator(rules1));
-  iterators.push_back(new ListIterator(rules2));
-  ConcatenationIterator concatenation_iterator(&iterators, NULL);
+  std::vector<scoped_ptr<RuleIterator>> iterators;
+  iterators.push_back(scoped_ptr<RuleIterator>(new ListIterator(rules1)));
+  iterators.push_back(scoped_ptr<RuleIterator>(new ListIterator(rules2)));
+  ConcatenationIterator concatenation_iterator(std::move(iterators), nullptr);
 
   Rule rule;
   ASSERT_TRUE(concatenation_iterator.HasNext());

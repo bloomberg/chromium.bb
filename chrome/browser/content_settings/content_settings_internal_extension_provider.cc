@@ -60,7 +60,7 @@ InternalExtensionProvider::~InternalExtensionProvider() {
   DCHECK(!registrar_.get());
 }
 
-RuleIterator* InternalExtensionProvider::GetRuleIterator(
+scoped_ptr<RuleIterator> InternalExtensionProvider::GetRuleIterator(
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier,
     bool incognito) const {

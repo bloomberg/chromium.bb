@@ -22,9 +22,10 @@ class MockProvider : public ObservableProvider {
   explicit MockProvider(bool read_only);
   ~MockProvider() override;
 
-  RuleIterator* GetRuleIterator(ContentSettingsType content_type,
-                                const ResourceIdentifier& resource_identifier,
-                                bool incognito) const override;
+  scoped_ptr<RuleIterator> GetRuleIterator(
+      ContentSettingsType content_type,
+      const ResourceIdentifier& resource_identifier,
+      bool incognito) const override;
 
   // The MockProvider is only able to store one content setting. So every time
   // this method is called the previously set content settings is overwritten.

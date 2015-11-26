@@ -5,9 +5,9 @@
 #include "chrome/browser/extensions/api/declarative_content/declarative_content_page_url_condition_tracker.h"
 
 #include <set>
+#include <vector>
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_vector.h"
 #include "base/stl_util.h"
 #include "base/test/values_test_util.h"
 #include "chrome/browser/extensions/api/declarative_content/content_predicate_evaluator.h"
@@ -133,22 +133,22 @@ TEST(DeclarativeContentPageUrlPredicateTest, PageUrlPredicate) {
 // the matching WebContents.
 TEST_F(DeclarativeContentPageUrlConditionTrackerTest, AddAndRemovePredicates) {
   // Create four tabs.
-  ScopedVector<content::WebContents> tabs;
+  std::vector<scoped_ptr<content::WebContents>> tabs;
   for (int i = 0; i < 4; ++i) {
     tabs.push_back(MakeTab());
     delegate_.evaluation_requests().clear();
-    tracker_.TrackForWebContents(tabs.back());
+    tracker_.TrackForWebContents(tabs.back().get());
     EXPECT_THAT(delegate_.evaluation_requests(),
-                UnorderedElementsAre(tabs.back()));
+                UnorderedElementsAre(tabs.back().get()));
   }
 
   // Navigate three of them to URLs that will match with predicats we're about
   // to add.
-  LoadURL(tabs[0], GURL("http://test1/"));
-  LoadURL(tabs[1], GURL("http://test2/"));
-  LoadURL(tabs[2], GURL("http://test3/"));
+  LoadURL(tabs[0].get(), GURL("http://test1/"));
+  LoadURL(tabs[1].get(), GURL("http://test2/"));
+  LoadURL(tabs[2].get(), GURL("http://test3/"));
 
-  ScopedVector<const ContentPredicate> predicates;
+  std::vector<scoped_ptr<const ContentPredicate>> predicates;
   std::string error;
   predicates.push_back(CreatePredicate("{\"hostPrefix\": \"test1\"}"));
   predicates.push_back(CreatePredicate("{\"hostPrefix\": \"test2\"}"));
@@ -158,41 +158,42 @@ TEST_F(DeclarativeContentPageUrlConditionTrackerTest, AddAndRemovePredicates) {
   delegate_.evaluation_requests().clear();
   std::map<const void*, std::vector<const ContentPredicate*>> predicate_groups;
   const void* const group1 = GeneratePredicateGroupID();
-  predicate_groups[group1].push_back(predicates[0]);
-  predicate_groups[group1].push_back(predicates[1]);
+  predicate_groups[group1].push_back(predicates[0].get());
+  predicate_groups[group1].push_back(predicates[1].get());
   const void* const group2 = GeneratePredicateGroupID();
-  predicate_groups[group2].push_back(predicates[2]);
+  predicate_groups[group2].push_back(predicates[2].get());
   tracker_.TrackPredicates(predicate_groups);
-  EXPECT_THAT(delegate_.evaluation_requests(),
-              UnorderedElementsAre(tabs[0], tabs[1], tabs[2]));
+  EXPECT_THAT(
+      delegate_.evaluation_requests(),
+      UnorderedElementsAre(tabs[0].get(), tabs[1].get(), tabs[2].get()));
 
   // Check that the predicates evaluate as expected for the tabs.
-  EXPECT_TRUE(tracker_.EvaluatePredicate(predicates[0], tabs[0]));
-  EXPECT_FALSE(tracker_.EvaluatePredicate(predicates[0], tabs[1]));
-  EXPECT_FALSE(tracker_.EvaluatePredicate(predicates[0], tabs[2]));
-  EXPECT_FALSE(tracker_.EvaluatePredicate(predicates[0], tabs[3]));
+  EXPECT_TRUE(tracker_.EvaluatePredicate(predicates[0].get(), tabs[0].get()));
+  EXPECT_FALSE(tracker_.EvaluatePredicate(predicates[0].get(), tabs[1].get()));
+  EXPECT_FALSE(tracker_.EvaluatePredicate(predicates[0].get(), tabs[2].get()));
+  EXPECT_FALSE(tracker_.EvaluatePredicate(predicates[0].get(), tabs[3].get()));
 
-  EXPECT_FALSE(tracker_.EvaluatePredicate(predicates[1], tabs[0]));
-  EXPECT_TRUE(tracker_.EvaluatePredicate(predicates[1], tabs[1]));
-  EXPECT_FALSE(tracker_.EvaluatePredicate(predicates[1], tabs[2]));
-  EXPECT_FALSE(tracker_.EvaluatePredicate(predicates[1], tabs[3]));
+  EXPECT_FALSE(tracker_.EvaluatePredicate(predicates[1].get(), tabs[0].get()));
+  EXPECT_TRUE(tracker_.EvaluatePredicate(predicates[1].get(), tabs[1].get()));
+  EXPECT_FALSE(tracker_.EvaluatePredicate(predicates[1].get(), tabs[2].get()));
+  EXPECT_FALSE(tracker_.EvaluatePredicate(predicates[1].get(), tabs[3].get()));
 
-  EXPECT_FALSE(tracker_.EvaluatePredicate(predicates[2], tabs[0]));
-  EXPECT_FALSE(tracker_.EvaluatePredicate(predicates[2], tabs[1]));
-  EXPECT_TRUE(tracker_.EvaluatePredicate(predicates[2], tabs[2]));
-  EXPECT_FALSE(tracker_.EvaluatePredicate(predicates[2], tabs[3]));
+  EXPECT_FALSE(tracker_.EvaluatePredicate(predicates[2].get(), tabs[0].get()));
+  EXPECT_FALSE(tracker_.EvaluatePredicate(predicates[2].get(), tabs[1].get()));
+  EXPECT_TRUE(tracker_.EvaluatePredicate(predicates[2].get(), tabs[2].get()));
+  EXPECT_FALSE(tracker_.EvaluatePredicate(predicates[2].get(), tabs[3].get()));
 
   // Remove the first group of predicates.
   delegate_.evaluation_requests().clear();
   tracker_.StopTrackingPredicates(std::vector<const void*>(1, group1));
   EXPECT_THAT(delegate_.evaluation_requests(),
-              UnorderedElementsAre(tabs[0], tabs[1]));
+              UnorderedElementsAre(tabs[0].get(), tabs[1].get()));
 
   // Remove the second group of predicates.
   delegate_.evaluation_requests().clear();
   tracker_.StopTrackingPredicates(std::vector<const void*>(1, group2));
   EXPECT_THAT(delegate_.evaluation_requests(),
-              UnorderedElementsAre(tabs[2]));
+              UnorderedElementsAre(tabs[2].get()));
 }
 
 // Tests that tracking WebContents triggers evaluation requests for matching

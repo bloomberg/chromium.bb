@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/declarative_content/content_condition.h"
 
+#include <vector>
+
 #include "base/bind.h"
 #include "base/test/values_test_util.h"
 #include "base/values.h"
@@ -127,7 +129,10 @@ TEST(DeclarativeContentConditionTest, AllSpecifiedPredicatesCreated) {
   ASSERT_TRUE(condition);
   ASSERT_EQ(1u, factory1.created_predicates().size());
   ASSERT_EQ(1u, factory2.created_predicates().size());
-  EXPECT_THAT(condition->predicates,
+  std::vector<const ContentPredicate*> predicates;
+  for (const auto& predicate : condition->predicates)
+    predicates.push_back(predicate.get());
+  EXPECT_THAT(predicates,
               UnorderedElementsAre(factory1.created_predicates()[0],
                                    factory2.created_predicates()[0]));
 }

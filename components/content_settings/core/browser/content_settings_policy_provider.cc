@@ -5,7 +5,6 @@
 #include "components/content_settings/core/browser/content_settings_policy_provider.h"
 
 #include <string>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/json/json_reader.h"
@@ -182,7 +181,7 @@ PolicyProvider::~PolicyProvider() {
   DCHECK(!prefs_);
 }
 
-RuleIterator* PolicyProvider::GetRuleIterator(
+scoped_ptr<RuleIterator> PolicyProvider::GetRuleIterator(
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier,
     bool incognito) const {

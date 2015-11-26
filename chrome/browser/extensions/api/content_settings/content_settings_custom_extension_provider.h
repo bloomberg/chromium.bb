@@ -24,9 +24,10 @@ class CustomExtensionProvider : public ObservableProvider,
   ~CustomExtensionProvider() override;
 
   // ProviderInterface methods:
-  RuleIterator* GetRuleIterator(ContentSettingsType content_type,
-                                const ResourceIdentifier& resource_identifier,
-                                bool incognito) const override;
+  scoped_ptr<RuleIterator> GetRuleIterator(
+      ContentSettingsType content_type,
+      const ResourceIdentifier& resource_identifier,
+      bool incognito) const override;
 
   bool SetWebsiteSetting(const ContentSettingsPattern& primary_pattern,
                          const ContentSettingsPattern& secondary_pattern,

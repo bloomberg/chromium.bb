@@ -256,7 +256,7 @@ bool DefaultProvider::SetWebsiteSetting(
   return true;
 }
 
-RuleIterator* DefaultProvider::GetRuleIterator(
+scoped_ptr<RuleIterator> DefaultProvider::GetRuleIterator(
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier,
     bool incognito) const {
@@ -264,10 +264,10 @@ RuleIterator* DefaultProvider::GetRuleIterator(
   if (resource_identifier.empty()) {
     auto it(default_settings_.find(content_type));
     if (it != default_settings_.end())
-      return new DefaultRuleIterator(it->second);
+      return scoped_ptr<RuleIterator>(new DefaultRuleIterator(it->second));
     NOTREACHED();
   }
-  return new EmptyRuleIterator();
+  return scoped_ptr<RuleIterator>(new EmptyRuleIterator());
 }
 
 void DefaultProvider::ClearAllContentSettingsRules(

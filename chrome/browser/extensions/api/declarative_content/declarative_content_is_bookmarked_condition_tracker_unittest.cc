@@ -6,10 +6,10 @@
 
 #include <set>
 #include <utility>
+#include <vector>
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/values_test_util.h"
@@ -230,24 +230,26 @@ TEST_F(DeclarativeContentIsBookmarkedConditionTrackerTest,
 TEST_F(DeclarativeContentIsBookmarkedConditionTrackerTest,
        AddAndRemoveBookmark) {
   // Create two tabs.
-  ScopedVector<content::WebContents> tabs;
+  std::vector<scoped_ptr<content::WebContents>> tabs;
   for (int i = 0; i < 2; ++i) {
     tabs.push_back(MakeTab());
     delegate_.evaluation_requests().clear();
-    tracker_->TrackForWebContents(tabs.back());
+    tracker_->TrackForWebContents(tabs.back().get());
     EXPECT_THAT(delegate_.evaluation_requests(),
-                UnorderedElementsAre(tabs.back()));
-    EXPECT_TRUE(CheckPredicates(tabs.back(), false));
+                UnorderedElementsAre(tabs.back().get()));
+    EXPECT_TRUE(CheckPredicates(tabs.back().get(), false));
   }
 
   // Navigate the first tab to a URL that we will bookmark.
   delegate_.evaluation_requests().clear();
-  LoadURL(tabs[0], GURL("http://bookmarked/"));
-  tracker_->OnWebContentsNavigation(tabs[0], content::LoadCommittedDetails(),
+  LoadURL(tabs[0].get(), GURL("http://bookmarked/"));
+  tracker_->OnWebContentsNavigation(tabs[0].get(),
+                                    content::LoadCommittedDetails(),
                                     content::FrameNavigateParams());
-  EXPECT_THAT(delegate_.evaluation_requests(), UnorderedElementsAre(tabs[0]));
-  EXPECT_TRUE(CheckPredicates(tabs[0], false));
-  EXPECT_TRUE(CheckPredicates(tabs[1], false));
+  EXPECT_THAT(delegate_.evaluation_requests(),
+              UnorderedElementsAre(tabs[0].get()));
+  EXPECT_TRUE(CheckPredicates(tabs[0].get(), false));
+  EXPECT_TRUE(CheckPredicates(tabs[1].get(), false));
 
   // Bookmark the first tab's URL.
   delegate_.evaluation_requests().clear();
@@ -255,40 +257,44 @@ TEST_F(DeclarativeContentIsBookmarkedConditionTrackerTest,
       bookmark_model_->AddURL(bookmark_model_->other_node(), 0,
                               base::ASCIIToUTF16("title"),
                               GURL("http://bookmarked/"));
-  EXPECT_THAT(delegate_.evaluation_requests(), UnorderedElementsAre(tabs[0]));
-  EXPECT_TRUE(CheckPredicates(tabs[0], true));
-  EXPECT_TRUE(CheckPredicates(tabs[1], false));
+  EXPECT_THAT(delegate_.evaluation_requests(),
+              UnorderedElementsAre(tabs[0].get()));
+  EXPECT_TRUE(CheckPredicates(tabs[0].get(), true));
+  EXPECT_TRUE(CheckPredicates(tabs[1].get(), false));
 
   // Remove the bookmark.
   delegate_.evaluation_requests().clear();
   bookmark_model_->Remove(node);
-  EXPECT_THAT(delegate_.evaluation_requests(), UnorderedElementsAre(tabs[0]));
-  EXPECT_TRUE(CheckPredicates(tabs[0], false));
-  EXPECT_TRUE(CheckPredicates(tabs[1], false));
+  EXPECT_THAT(delegate_.evaluation_requests(),
+              UnorderedElementsAre(tabs[0].get()));
+  EXPECT_TRUE(CheckPredicates(tabs[0].get(), false));
+  EXPECT_TRUE(CheckPredicates(tabs[1].get(), false));
 }
 
 // Tests that adding and removing bookmarks triggers evaluation requests for the
 // matching WebContents.
 TEST_F(DeclarativeContentIsBookmarkedConditionTrackerTest, ExtensiveChanges) {
   // Create two tabs.
-  ScopedVector<content::WebContents> tabs;
+  std::vector<scoped_ptr<content::WebContents>> tabs;
   for (int i = 0; i < 2; ++i) {
     tabs.push_back(MakeTab());
     delegate_.evaluation_requests().clear();
-    tracker_->TrackForWebContents(tabs.back());
+    tracker_->TrackForWebContents(tabs.back().get());
     EXPECT_THAT(delegate_.evaluation_requests(),
-                UnorderedElementsAre(tabs.back()));
-    EXPECT_TRUE(CheckPredicates(tabs.back(), false));
+                UnorderedElementsAre(tabs.back().get()));
+    EXPECT_TRUE(CheckPredicates(tabs.back().get(), false));
   }
 
   // Navigate the first tab to a URL that we will bookmark.
   delegate_.evaluation_requests().clear();
-  LoadURL(tabs[0], GURL("http://bookmarked/"));
-  tracker_->OnWebContentsNavigation(tabs[0], content::LoadCommittedDetails(),
+  LoadURL(tabs[0].get(), GURL("http://bookmarked/"));
+  tracker_->OnWebContentsNavigation(tabs[0].get(),
+                                    content::LoadCommittedDetails(),
                                     content::FrameNavigateParams());
-  EXPECT_THAT(delegate_.evaluation_requests(), UnorderedElementsAre(tabs[0]));
-  EXPECT_TRUE(CheckPredicates(tabs[0], false));
-  EXPECT_TRUE(CheckPredicates(tabs[1], false));
+  EXPECT_THAT(delegate_.evaluation_requests(),
+              UnorderedElementsAre(tabs[0].get()));
+  EXPECT_TRUE(CheckPredicates(tabs[0].get(), false));
+  EXPECT_TRUE(CheckPredicates(tabs[1].get(), false));
 
   {
     // Check that evaluation requests occur outside ExtensiveBookmarkChanges for
@@ -300,12 +306,13 @@ TEST_F(DeclarativeContentIsBookmarkedConditionTrackerTest, ExtensiveChanges) {
                                 base::ASCIIToUTF16("title"),
                                 GURL("http://bookmarked/"));
     EXPECT_TRUE(delegate_.evaluation_requests().empty());
-    EXPECT_TRUE(CheckPredicates(tabs[0], false));
-    EXPECT_TRUE(CheckPredicates(tabs[1], false));
+    EXPECT_TRUE(CheckPredicates(tabs[0].get(), false));
+    EXPECT_TRUE(CheckPredicates(tabs[1].get(), false));
     bookmark_model_->EndExtensiveChanges();
-    EXPECT_THAT(delegate_.evaluation_requests(), UnorderedElementsAre(tabs[0]));
-    EXPECT_TRUE(CheckPredicates(tabs[0], true));
-    EXPECT_TRUE(CheckPredicates(tabs[1], false));
+    EXPECT_THAT(delegate_.evaluation_requests(),
+                UnorderedElementsAre(tabs[0].get()));
+    EXPECT_TRUE(CheckPredicates(tabs[0].get(), true));
+    EXPECT_TRUE(CheckPredicates(tabs[1].get(), false));
 
     // Check that evaluation requests occur outside ExtensiveBookmarkChanges for
     // removed nodes.
@@ -313,12 +320,13 @@ TEST_F(DeclarativeContentIsBookmarkedConditionTrackerTest, ExtensiveChanges) {
     bookmark_model_->BeginExtensiveChanges();
     bookmark_model_->Remove(node);
     EXPECT_TRUE(delegate_.evaluation_requests().empty());
-    EXPECT_TRUE(CheckPredicates(tabs[0], true));
-    EXPECT_TRUE(CheckPredicates(tabs[1], false));
+    EXPECT_TRUE(CheckPredicates(tabs[0].get(), true));
+    EXPECT_TRUE(CheckPredicates(tabs[1].get(), false));
     bookmark_model_->EndExtensiveChanges();
-    EXPECT_THAT(delegate_.evaluation_requests(), UnorderedElementsAre(tabs[0]));
-    EXPECT_TRUE(CheckPredicates(tabs[0], false));
-    EXPECT_TRUE(CheckPredicates(tabs[1], false));
+    EXPECT_THAT(delegate_.evaluation_requests(),
+                UnorderedElementsAre(tabs[0].get()));
+    EXPECT_TRUE(CheckPredicates(tabs[0].get(), false));
+    EXPECT_TRUE(CheckPredicates(tabs[1].get(), false));
   }
 
   {
@@ -332,12 +340,13 @@ TEST_F(DeclarativeContentIsBookmarkedConditionTrackerTest, ExtensiveChanges) {
                                      base::ASCIIToUTF16("title"),
                                      GURL("http://bookmarked/"));
       EXPECT_TRUE(delegate_.evaluation_requests().empty());
-      EXPECT_TRUE(CheckPredicates(tabs[0], false));
-      EXPECT_TRUE(CheckPredicates(tabs[1], false));
+      EXPECT_TRUE(CheckPredicates(tabs[0].get(), false));
+      EXPECT_TRUE(CheckPredicates(tabs[1].get(), false));
     }
-    EXPECT_THAT(delegate_.evaluation_requests(), UnorderedElementsAre(tabs[0]));
-    EXPECT_TRUE(CheckPredicates(tabs[0], true));
-    EXPECT_TRUE(CheckPredicates(tabs[1], false));
+    EXPECT_THAT(delegate_.evaluation_requests(),
+                UnorderedElementsAre(tabs[0].get()));
+    EXPECT_TRUE(CheckPredicates(tabs[0].get(), true));
+    EXPECT_TRUE(CheckPredicates(tabs[1].get(), false));
 
     // Check that evaluation requests occur outside ScopedGroupBookmarkActions
     // for removed nodes.
@@ -346,12 +355,13 @@ TEST_F(DeclarativeContentIsBookmarkedConditionTrackerTest, ExtensiveChanges) {
       bookmarks::ScopedGroupBookmarkActions scoped_group(bookmark_model_);
       bookmark_model_->Remove(node);
       EXPECT_TRUE(delegate_.evaluation_requests().empty());
-      EXPECT_TRUE(CheckPredicates(tabs[0], true));
-      EXPECT_TRUE(CheckPredicates(tabs[1], false));
+      EXPECT_TRUE(CheckPredicates(tabs[0].get(), true));
+      EXPECT_TRUE(CheckPredicates(tabs[1].get(), false));
     }
-    EXPECT_THAT(delegate_.evaluation_requests(), UnorderedElementsAre(tabs[0]));
-    EXPECT_TRUE(CheckPredicates(tabs[0], false));
-    EXPECT_TRUE(CheckPredicates(tabs[1], false));
+    EXPECT_THAT(delegate_.evaluation_requests(),
+                UnorderedElementsAre(tabs[0].get()));
+    EXPECT_TRUE(CheckPredicates(tabs[0].get(), false));
+    EXPECT_TRUE(CheckPredicates(tabs[1].get(), false));
   }
 }
 
@@ -368,55 +378,63 @@ TEST_F(DeclarativeContentIsBookmarkedConditionTrackerTest, Navigation) {
                           GURL("http://bookmarked2/"));
 
   // Create two tabs.
-  ScopedVector<content::WebContents> tabs;
+  std::vector<scoped_ptr<content::WebContents>> tabs;
   for (int i = 0; i < 2; ++i) {
     tabs.push_back(MakeTab());
     delegate_.evaluation_requests().clear();
-    tracker_->TrackForWebContents(tabs.back());
+    tracker_->TrackForWebContents(tabs.back().get());
     EXPECT_THAT(delegate_.evaluation_requests(),
-                UnorderedElementsAre(tabs.back()));
-    EXPECT_TRUE(CheckPredicates(tabs.back(), false));
+                UnorderedElementsAre(tabs.back().get()));
+    EXPECT_TRUE(CheckPredicates(tabs.back().get(), false));
   }
 
   // Navigate the first tab to one bookmarked URL.
   delegate_.evaluation_requests().clear();
-  LoadURL(tabs[0], GURL("http://bookmarked1/"));
-  tracker_->OnWebContentsNavigation(tabs[0], content::LoadCommittedDetails(),
+  LoadURL(tabs[0].get(), GURL("http://bookmarked1/"));
+  tracker_->OnWebContentsNavigation(tabs[0].get(),
+                                    content::LoadCommittedDetails(),
                                     content::FrameNavigateParams());
-  EXPECT_THAT(delegate_.evaluation_requests(), UnorderedElementsAre(tabs[0]));
-  EXPECT_TRUE(CheckPredicates(tabs[0], true));
-  EXPECT_TRUE(CheckPredicates(tabs[1], false));
+  EXPECT_THAT(delegate_.evaluation_requests(),
+              UnorderedElementsAre(tabs[0].get()));
+  EXPECT_TRUE(CheckPredicates(tabs[0].get(), true));
+  EXPECT_TRUE(CheckPredicates(tabs[1].get(), false));
 
   // Navigate the first tab to another bookmarked URL. The contents have
   // changed, so we should receive a new evaluation request even though the
   // bookmarked state hasn't.
   delegate_.evaluation_requests().clear();
-  LoadURL(tabs[0], GURL("http://bookmarked2/"));
-  tracker_->OnWebContentsNavigation(tabs[0], content::LoadCommittedDetails(),
+  LoadURL(tabs[0].get(), GURL("http://bookmarked2/"));
+  tracker_->OnWebContentsNavigation(tabs[0].get(),
+                                    content::LoadCommittedDetails(),
                                     content::FrameNavigateParams());
-  EXPECT_THAT(delegate_.evaluation_requests(), UnorderedElementsAre(tabs[0]));
-  EXPECT_TRUE(CheckPredicates(tabs[0], true));
-  EXPECT_TRUE(CheckPredicates(tabs[1], false));
+  EXPECT_THAT(delegate_.evaluation_requests(),
+              UnorderedElementsAre(tabs[0].get()));
+  EXPECT_TRUE(CheckPredicates(tabs[0].get(), true));
+  EXPECT_TRUE(CheckPredicates(tabs[1].get(), false));
 
   // Navigate the first tab to a non-bookmarked URL.
   delegate_.evaluation_requests().clear();
-  LoadURL(tabs[0], GURL("http://not-bookmarked1/"));
-  tracker_->OnWebContentsNavigation(tabs[0], content::LoadCommittedDetails(),
+  LoadURL(tabs[0].get(), GURL("http://not-bookmarked1/"));
+  tracker_->OnWebContentsNavigation(tabs[0].get(),
+                                    content::LoadCommittedDetails(),
                                     content::FrameNavigateParams());
-  EXPECT_THAT(delegate_.evaluation_requests(), UnorderedElementsAre(tabs[0]));
-  EXPECT_TRUE(CheckPredicates(tabs[0], false));
-  EXPECT_TRUE(CheckPredicates(tabs[1], false));
+  EXPECT_THAT(delegate_.evaluation_requests(),
+              UnorderedElementsAre(tabs[0].get()));
+  EXPECT_TRUE(CheckPredicates(tabs[0].get(), false));
+  EXPECT_TRUE(CheckPredicates(tabs[1].get(), false));
 
   // Navigate the first tab to another non-bookmarked URL. The contents have
   // changed, so we should receive a new evaluation request even though the
   // bookmarked state hasn't.
   delegate_.evaluation_requests().clear();
-  LoadURL(tabs[0], GURL("http://not-bookmarked2/"));
-  tracker_->OnWebContentsNavigation(tabs[0], content::LoadCommittedDetails(),
+  LoadURL(tabs[0].get(), GURL("http://not-bookmarked2/"));
+  tracker_->OnWebContentsNavigation(tabs[0].get(),
+                                    content::LoadCommittedDetails(),
                                     content::FrameNavigateParams());
-  EXPECT_THAT(delegate_.evaluation_requests(), UnorderedElementsAre(tabs[0]));
-  EXPECT_TRUE(CheckPredicates(tabs[0], false));
-  EXPECT_TRUE(CheckPredicates(tabs[1], false));
+  EXPECT_THAT(delegate_.evaluation_requests(),
+              UnorderedElementsAre(tabs[0].get()));
+  EXPECT_TRUE(CheckPredicates(tabs[0].get(), false));
+  EXPECT_TRUE(CheckPredicates(tabs[1].get(), false));
 }
 
 }  // namespace extensions

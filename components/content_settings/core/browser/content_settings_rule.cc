@@ -35,12 +35,10 @@ Rule EmptyRuleIterator::Next() {
 }
 
 ConcatenationIterator::ConcatenationIterator(
-    ScopedVector<RuleIterator>* iterators,
+    std::vector<scoped_ptr<RuleIterator>> iterators,
     base::AutoLock* auto_lock)
-    : auto_lock_(auto_lock) {
-  iterators_.swap(*iterators);
-
-  ScopedVector<RuleIterator>::iterator it = iterators_.begin();
+    : iterators_(std::move(iterators)), auto_lock_(auto_lock) {
+  auto it = iterators_.begin();
   while (it != iterators_.end()) {
     if (!(*it)->HasNext())
       it = iterators_.erase(it);
@@ -56,8 +54,7 @@ bool ConcatenationIterator::HasNext() const {
 }
 
 Rule ConcatenationIterator::Next() {
-  ScopedVector<RuleIterator>::iterator current_iterator =
-      iterators_.begin();
+  auto current_iterator = iterators_.begin();
   DCHECK(current_iterator != iterators_.end());
   DCHECK((*current_iterator)->HasNext());
   const Rule& to_return = (*current_iterator)->Next();

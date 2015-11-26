@@ -10,16 +10,19 @@
 
 namespace extensions {
 
-ScopedVector<ContentPredicateEvaluator> CreateDefaultContentPredicateEvaluators(
+std::vector<scoped_ptr<ContentPredicateEvaluator>>
+CreateDefaultContentPredicateEvaluators(
     content::BrowserContext* browser_context,
     ContentPredicateEvaluator::Delegate* delegate) {
-  ScopedVector<ContentPredicateEvaluator> evaluators;
-  evaluators.push_back(new DeclarativeContentPageUrlConditionTracker(delegate));
-  evaluators.push_back(new DeclarativeContentCssConditionTracker(delegate));
-  evaluators.push_back(new DeclarativeContentIsBookmarkedConditionTracker(
-      browser_context,
-      delegate));
-  return evaluators.Pass();
+  std::vector<scoped_ptr<ContentPredicateEvaluator>> evaluators;
+  evaluators.push_back(scoped_ptr<ContentPredicateEvaluator>(
+      new DeclarativeContentPageUrlConditionTracker(delegate)));
+  evaluators.push_back(scoped_ptr<ContentPredicateEvaluator>(
+      new DeclarativeContentCssConditionTracker(delegate)));
+  evaluators.push_back(scoped_ptr<ContentPredicateEvaluator>(
+      new DeclarativeContentIsBookmarkedConditionTracker(browser_context,
+                                                         delegate)));
+  return evaluators;
 }
 
 }  // namespace extensions

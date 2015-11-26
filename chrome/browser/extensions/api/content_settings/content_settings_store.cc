@@ -5,11 +5,12 @@
 #include "chrome/browser/extensions/api/content_settings/content_settings_store.h"
 
 #include <set>
+#include <utility>
+#include <vector>
 
 #include "base/debug/alias.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
@@ -54,11 +55,11 @@ ContentSettingsStore::~ContentSettingsStore() {
   STLDeleteValues(&entries_);
 }
 
-RuleIterator* ContentSettingsStore::GetRuleIterator(
+scoped_ptr<RuleIterator> ContentSettingsStore::GetRuleIterator(
     ContentSettingsType type,
     const content_settings::ResourceIdentifier& identifier,
     bool incognito) const {
-  ScopedVector<RuleIterator> iterators;
+  std::vector<scoped_ptr<RuleIterator>> iterators;
   // Iterate the extensions based on install time (last installed extensions
   // first).
   ExtensionEntryMap::const_reverse_iterator entry;
@@ -87,7 +88,8 @@ RuleIterator* ContentSettingsStore::GetRuleIterator(
           entry->second->settings.GetRuleIterator(type, identifier, NULL));
     }
   }
-  return new ConcatenationIterator(&iterators, auto_lock.release());
+  return scoped_ptr<RuleIterator>(
+      new ConcatenationIterator(std::move(iterators), auto_lock.release()));
 }
 
 void ContentSettingsStore::SetExtensionContentSetting(

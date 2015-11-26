@@ -5,7 +5,6 @@
 #include "chrome/browser/extensions/api/declarative_content/declarative_content_css_condition_tracker.h"
 
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/test/values_test_util.h"
 #include "chrome/browser/extensions/api/declarative_content/content_predicate_evaluator.h"
 #include "chrome/browser/extensions/api/declarative_content/declarative_content_condition_tracker_test.h"
@@ -148,7 +147,7 @@ TEST_F(DeclarativeContentCssConditionTrackerTest, AddAndRemovePredicates) {
 
   // Check that adding predicates sends a WatchPages message with the
   // corresponding selectors to the tab's RenderProcessHost.
-  ScopedVector<const ContentPredicate> predicates;
+  std::vector<scoped_ptr<const ContentPredicate>> predicates;
   predicates.push_back(CreatePredicate("[\"a\", \"div\"]"));
   predicates.push_back(CreatePredicate("[\"b\"]"));
   predicates.push_back(CreatePredicate("[\"input\"]"));
@@ -156,10 +155,10 @@ TEST_F(DeclarativeContentCssConditionTrackerTest, AddAndRemovePredicates) {
   // Add the predicates in two groups: (0, 1) and (2).
   std::map<const void*, std::vector<const ContentPredicate*>> predicate_groups;
   const void* const group1 = GeneratePredicateGroupID();
-  predicate_groups[group1].push_back(predicates[0]);
-  predicate_groups[group1].push_back(predicates[1]);
+  predicate_groups[group1].push_back(predicates[0].get());
+  predicate_groups[group1].push_back(predicates[1].get());
   const void* const group2 = GeneratePredicateGroupID();
-  predicate_groups[group2].push_back(predicates[2]);
+  predicate_groups[group2].push_back(predicates[2].get());
 
   std::set<std::string> watched_selectors;
   watched_selectors.insert("a");

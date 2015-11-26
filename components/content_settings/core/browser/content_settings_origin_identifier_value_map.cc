@@ -83,7 +83,7 @@ bool OriginIdentifierValueMap::PatternPair::operator<(
          std::tie(other.primary_pattern, other.secondary_pattern);
 }
 
-RuleIterator* OriginIdentifierValueMap::GetRuleIterator(
+scoped_ptr<RuleIterator> OriginIdentifierValueMap::GetRuleIterator(
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier,
     base::Lock* lock) const {
@@ -97,10 +97,9 @@ RuleIterator* OriginIdentifierValueMap::GetRuleIterator(
     auto_lock.reset(new base::AutoLock(*lock));
   EntryMap::const_iterator it = entries_.find(key);
   if (it == entries_.end())
-    return new EmptyRuleIterator();
-  return new RuleIteratorImpl(it->second.begin(),
-                              it->second.end(),
-                              auto_lock.release());
+    return scoped_ptr<RuleIterator>(new EmptyRuleIterator());
+  return scoped_ptr<RuleIterator>(new RuleIteratorImpl(
+      it->second.begin(), it->second.end(), auto_lock.release()));
 }
 
 size_t OriginIdentifierValueMap::size() const {

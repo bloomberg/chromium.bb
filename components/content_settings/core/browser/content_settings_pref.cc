@@ -82,7 +82,7 @@ ContentSettingsPref::ContentSettingsPref(
 ContentSettingsPref::~ContentSettingsPref() {
 }
 
-RuleIterator* ContentSettingsPref::GetRuleIterator(
+scoped_ptr<RuleIterator> ContentSettingsPref::GetRuleIterator(
     const ResourceIdentifier& resource_identifier,
     bool incognito) const {
   if (incognito)

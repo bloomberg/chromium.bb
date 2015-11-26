@@ -4,6 +4,7 @@
 
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/callback.h"
@@ -141,12 +142,7 @@ scoped_ptr<KeyedService> StubEventRouterFactoryFunction(
 class AudioModemApiUnittest : public ExtensionApiUnittest {
  public:
   AudioModemApiUnittest() {}
-  ~AudioModemApiUnittest() override {
-    for (const auto& events : events_by_extension_id_) {
-      for (const Event* event : events.second)
-        delete event;
-    }
-  }
+  ~AudioModemApiUnittest() override {}
 
  protected:
   template<typename Function>
@@ -185,14 +181,14 @@ class AudioModemApiUnittest : public ExtensionApiUnittest {
     return extensions_by_name_[name].get();
   }
 
-  const std::vector<const Event*>&
-  GetEventsForExtension(const std::string& name) {
+  const std::vector<scoped_ptr<const Event>>& GetEventsForExtension(
+      const std::string& name) {
     const Extension* extension = extensions_by_name_[name].get();
     DCHECK(extension);
     return events_by_extension_id_[extension->id()];
   }
 
-  const std::vector<const Event*>& GetEvents() {
+  const std::vector<scoped_ptr<const Event>>& GetEvents() {
     return GetEventsForExtension(std::string());
   }
 
@@ -211,16 +207,13 @@ class AudioModemApiUnittest : public ExtensionApiUnittest {
 
   void CaptureEvent(const std::string& extension_id,
                     scoped_ptr<Event> event) {
-    // Since scoped_ptr (and ScopedVector) do not work inside STL containers,
-    // we must manage this memory manually. It is cleaned up by the destructor.
-    events_by_extension_id_[extension_id].push_back(event.release());
+    events_by_extension_id_[extension_id].push_back(std::move(event));
   }
 
   std::map<std::string, scoped_refptr<Extension>> extensions_by_name_;
 
-  // We own all of these pointers.
-  // Do not remove them from the map without calling delete.
-  std::map<std::string, std::vector<const Event*>> events_by_extension_id_;
+  std::map<std::string, std::vector<scoped_ptr<const Event>>>
+      events_by_extension_id_;
 };
 
 TEST_F(AudioModemApiUnittest, TransmitBasic) {
@@ -360,10 +353,10 @@ TEST_F(AudioModemApiUnittest, ReceiveMultiple) {
   // Check the token received.
   scoped_ptr<DictionaryValue> expected_token(
       CreateReceivedToken("abcd", "inaudible"));
-  EXPECT_TRUE(ReceivedSingleToken(
-      GetEventsForExtension("ext1")[0], expected_token.get()));
-  EXPECT_TRUE(ReceivedSingleToken(
-      GetEventsForExtension("ext2")[0], expected_token.get()));
+  EXPECT_TRUE(ReceivedSingleToken(GetEventsForExtension("ext1")[0].get(),
+                                  expected_token.get()));
+  EXPECT_TRUE(ReceivedSingleToken(GetEventsForExtension("ext2")[0].get(),
+                                  expected_token.get()));
 
   // If one extension stops, the modem is still receiving for the other.
   EXPECT_EQ("success", RunFunction<AudioModemStopReceiveFunction>(
@@ -376,8 +369,8 @@ TEST_F(AudioModemApiUnittest, ReceiveMultiple) {
   EXPECT_EQ(1u, GetEventsForExtension("ext1").size());
   EXPECT_EQ(2u, GetEventsForExtension("ext2").size());
   expected_token.reset(CreateReceivedToken("1234", "inaudible"));
-  EXPECT_TRUE(ReceivedSingleToken(
-      GetEventsForExtension("ext2")[1], expected_token.get()));
+  EXPECT_TRUE(ReceivedSingleToken(GetEventsForExtension("ext2")[1].get(),
+                                  expected_token.get()));
 
   EXPECT_EQ("success", RunFunction<AudioModemStopReceiveFunction>(
       CreateList(new StringValue("inaudible")), GetExtension("ext2")));

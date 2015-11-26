@@ -4,8 +4,6 @@
 
 #include "chrome/browser/extensions/api/declarative_content/chrome_content_rules_registry.h"
 
-#include <string>
-
 #include "base/bind.h"
 #include "base/test/values_test_util.h"
 #include "chrome/browser/extensions/api/declarative_content/content_predicate.h"
@@ -116,13 +114,13 @@ class TestPredicateEvaluator : public ContentPredicateEvaluator {
 };
 
 // Create the test evaluator and set |evaluator| to its pointer.
-ScopedVector<ContentPredicateEvaluator> CreateTestEvaluator(
+std::vector<scoped_ptr<ContentPredicateEvaluator>> CreateTestEvaluator(
     TestPredicateEvaluator** evaluator,
     ContentPredicateEvaluator::Delegate* delegate) {
-  ScopedVector<ContentPredicateEvaluator> evaluators;
+  std::vector<scoped_ptr<ContentPredicateEvaluator>> evaluators;
   *evaluator = new TestPredicateEvaluator(delegate);
-  evaluators.push_back(*evaluator);
-  return evaluators.Pass();
+  evaluators.push_back(scoped_ptr<ContentPredicateEvaluator>(*evaluator));
+  return evaluators;
 }
 
 }  // namespace

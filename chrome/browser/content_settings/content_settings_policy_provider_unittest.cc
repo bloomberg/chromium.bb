@@ -54,11 +54,8 @@ TEST_F(PolicyProviderTest, DefaultGeolocationContentSetting) {
   prefs->SetManagedPref(prefs::kManagedDefaultGeolocationSetting,
                         new base::FundamentalValue(CONTENT_SETTING_BLOCK));
 
-  rule_iterator.reset(
-      provider.GetRuleIterator(
-          CONTENT_SETTINGS_TYPE_GEOLOCATION,
-          std::string(),
-          false));
+  rule_iterator = provider.GetRuleIterator(CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                                           std::string(), false);
   EXPECT_TRUE(rule_iterator->HasNext());
   Rule rule = rule_iterator->Next();
   EXPECT_FALSE(rule_iterator->HasNext());

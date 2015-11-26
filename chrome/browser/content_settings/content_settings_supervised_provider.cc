@@ -51,7 +51,7 @@ SupervisedProvider::SupervisedProvider(
 SupervisedProvider::~SupervisedProvider() {
 }
 
-RuleIterator* SupervisedProvider::GetRuleIterator(
+scoped_ptr<RuleIterator> SupervisedProvider::GetRuleIterator(
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier,
     bool incognito) const {

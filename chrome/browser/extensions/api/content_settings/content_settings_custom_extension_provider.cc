@@ -6,6 +6,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/api/content_settings/content_settings_store.h"
+#include "components/content_settings/core/browser/content_settings_rule.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 
@@ -21,7 +22,7 @@ CustomExtensionProvider::CustomExtensionProvider(
 CustomExtensionProvider::~CustomExtensionProvider() {
 }
 
-RuleIterator* CustomExtensionProvider::GetRuleIterator(
+scoped_ptr<RuleIterator> CustomExtensionProvider::GetRuleIterator(
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier,
     bool incognito) const {

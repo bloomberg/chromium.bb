@@ -26,9 +26,10 @@ class BinaryValueMap {
   BinaryValueMap();
   ~BinaryValueMap();
 
-  RuleIterator* GetRuleIterator(ContentSettingsType content_type,
-                                const ResourceIdentifier& resource_identifier,
-                                scoped_ptr<base::AutoLock> lock) const;
+  scoped_ptr<RuleIterator> GetRuleIterator(
+      ContentSettingsType content_type,
+      const ResourceIdentifier& resource_identifier,
+      scoped_ptr<base::AutoLock> lock) const;
   void SetContentSettingDisabled(ContentSettingsType content_type,
                                  bool disabled);
   bool IsContentSettingEnabled(ContentSettingsType content_type) const;

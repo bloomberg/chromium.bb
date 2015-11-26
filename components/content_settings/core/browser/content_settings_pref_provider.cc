@@ -119,7 +119,7 @@ PrefProvider::~PrefProvider() {
   DCHECK(!prefs_);
 }
 
-RuleIterator* PrefProvider::GetRuleIterator(
+scoped_ptr<RuleIterator> PrefProvider::GetRuleIterator(
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier,
     bool incognito) const {

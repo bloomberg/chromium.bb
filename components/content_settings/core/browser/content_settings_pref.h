@@ -48,8 +48,9 @@ class ContentSettingsPref {
                       NotifyObserversCallback notify_callback);
   ~ContentSettingsPref();
 
-  RuleIterator* GetRuleIterator(const ResourceIdentifier& resource_identifier,
-                                bool incognito) const;
+  scoped_ptr<RuleIterator> GetRuleIterator(
+      const ResourceIdentifier& resource_identifier,
+      bool incognito) const;
 
   bool SetWebsiteSetting(const ContentSettingsPattern& primary_pattern,
                          const ContentSettingsPattern& secondary_pattern,

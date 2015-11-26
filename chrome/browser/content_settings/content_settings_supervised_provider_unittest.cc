@@ -61,8 +61,8 @@ TEST_F(SupervisedUserProviderTest, GeolocationTest) {
       supervised_users::kGeolocationDisabled,
       scoped_ptr<base::Value>(new base::FundamentalValue(true)));
 
-  rule_iterator.reset(provider_->GetRuleIterator(
-      CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string(), false));
+  rule_iterator = provider_->GetRuleIterator(CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                                             std::string(), false);
   ASSERT_TRUE(rule_iterator->HasNext());
   Rule rule = rule_iterator->Next();
   EXPECT_FALSE(rule_iterator->HasNext());
@@ -79,8 +79,8 @@ TEST_F(SupervisedUserProviderTest, GeolocationTest) {
       supervised_users::kGeolocationDisabled,
       scoped_ptr<base::Value>(new base::FundamentalValue(false)));
 
-  rule_iterator.reset(provider_->GetRuleIterator(
-      CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string(), false));
+  rule_iterator = provider_->GetRuleIterator(CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                                             std::string(), false);
   EXPECT_FALSE(rule_iterator->HasNext());
 }
 
@@ -89,8 +89,8 @@ TEST_F(SupervisedUserProviderTest, CameraMicTest) {
       CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, std::string(), false));
   EXPECT_FALSE(rule_iterator->HasNext());
   rule_iterator.reset();
-  rule_iterator.reset(provider_->GetRuleIterator(
-      CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, std::string(), false));
+  rule_iterator = provider_->GetRuleIterator(
+      CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, std::string(), false);
   EXPECT_FALSE(rule_iterator->HasNext());
   rule_iterator.reset();
 
@@ -105,8 +105,8 @@ TEST_F(SupervisedUserProviderTest, CameraMicTest) {
       supervised_users::kCameraMicDisabled,
       scoped_ptr<base::Value>(new base::FundamentalValue(true)));
 
-  rule_iterator.reset(provider_->GetRuleIterator(
-      CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, std::string(), false));
+  rule_iterator = provider_->GetRuleIterator(
+      CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, std::string(), false);
   ASSERT_TRUE(rule_iterator->HasNext());
   Rule rule = rule_iterator->Next();
   EXPECT_FALSE(rule_iterator->HasNext());
@@ -116,8 +116,8 @@ TEST_F(SupervisedUserProviderTest, CameraMicTest) {
   EXPECT_EQ(CONTENT_SETTING_BLOCK, ValueToContentSetting(rule.value.get()));
   rule_iterator.reset();
 
-  rule_iterator.reset(provider_->GetRuleIterator(
-      CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, std::string(), false));
+  rule_iterator = provider_->GetRuleIterator(
+      CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, std::string(), false);
   ASSERT_TRUE(rule_iterator->HasNext());
   rule = rule_iterator->Next();
   EXPECT_FALSE(rule_iterator->HasNext());
@@ -138,12 +138,12 @@ TEST_F(SupervisedUserProviderTest, CameraMicTest) {
       supervised_users::kCameraMicDisabled,
       scoped_ptr<base::Value>(new base::FundamentalValue(false)));
 
-  rule_iterator.reset(provider_->GetRuleIterator(
-      CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, std::string(), false));
+  rule_iterator = provider_->GetRuleIterator(
+      CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, std::string(), false);
   EXPECT_FALSE(rule_iterator->HasNext());
   rule_iterator.reset();
-  rule_iterator.reset(provider_->GetRuleIterator(
-      CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, std::string(), false));
+  rule_iterator = provider_->GetRuleIterator(
+      CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, std::string(), false);
   EXPECT_FALSE(rule_iterator->HasNext());
 }
 

@@ -7,9 +7,9 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "chrome/browser/extensions/api/declarative_content/content_predicate_evaluator.h"
 
 namespace base {
@@ -29,10 +29,11 @@ class Extension;
 // rule1['conditions'][0] is represented by a ContentCondition.
 struct ContentCondition {
  public:
-  explicit ContentCondition(ScopedVector<const ContentPredicate> predicates);
+  explicit ContentCondition(
+      std::vector<scoped_ptr<const ContentPredicate>> predicates);
   ~ContentCondition();
 
-  ScopedVector<const ContentPredicate> predicates;
+  std::vector<scoped_ptr<const ContentPredicate>> predicates;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ContentCondition);

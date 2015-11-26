@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "components/content_settings/core/browser/content_settings_mock_provider.h"
+#include "components/content_settings/core/browser/content_settings_rule.h"
 
 namespace content_settings {
 
@@ -15,11 +16,11 @@ MockProvider::MockProvider(bool read_only)
 
 MockProvider::~MockProvider() {}
 
-RuleIterator* MockProvider::GetRuleIterator(
+scoped_ptr<RuleIterator> MockProvider::GetRuleIterator(
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier,
     bool incognito) const {
-  return value_map_.GetRuleIterator(content_type, resource_identifier, NULL);
+  return value_map_.GetRuleIterator(content_type, resource_identifier, nullptr);
 }
 
 bool MockProvider::SetWebsiteSetting(

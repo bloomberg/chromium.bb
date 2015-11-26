@@ -2,8 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+#include <vector>
+
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/active_script_controller.h"
 #include "chrome/browser/extensions/extension_action.h"
@@ -83,7 +87,7 @@ class ActiveScriptControllerBrowserTest : public ExtensionBrowserTest {
                                    InjectionType injection_type);
 
  private:
-  ScopedVector<TestExtensionDir> test_extension_dirs_;
+  std::vector<scoped_ptr<TestExtensionDir>> test_extension_dirs_;
   std::vector<const Extension*> extensions_;
 };
 
@@ -151,7 +155,7 @@ const Extension* ActiveScriptControllerBrowserTest::CreateExtension(
 
   const Extension* extension = LoadExtension(dir->unpacked_path());
   if (extension) {
-    test_extension_dirs_.push_back(dir.release());
+    test_extension_dirs_.push_back(std::move(dir));
     extensions_.push_back(extension);
   }
 
