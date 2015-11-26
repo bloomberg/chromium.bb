@@ -21,61 +21,25 @@
 
 namespace blink {
 
-// TODO(leviw): This should take a CSSParserTokenRange
-static void findEndIndexOfVariableReference(const Vector<CSSParserToken>& resolvedTokens, unsigned startIndex, unsigned& endIndex, unsigned& commaIndex, bool& hasClosingBracket)
+bool CSSVariableResolver::resolveVariableTokensRecursive(CSSParserTokenRange range,
+    Vector<CSSParserToken>& result)
 {
-    endIndex = 0;
-    commaIndex = 0;
-    unsigned bracketCount = 1;
-    for (unsigned i = startIndex; i < resolvedTokens.size(); ++i) {
-        CSSParserTokenType type = resolvedTokens[i].type();
-
-        if (type == CommaToken && !commaIndex) {
-            commaIndex = i;
-        } else if (type == LeftParenthesisToken || type == FunctionToken) {
-            bracketCount++;
-        } else if (type == RightParenthesisToken) {
-            if (bracketCount == 1) {
-                hasClosingBracket = true;
-                endIndex = i;
-                return;
-            }
-            bracketCount--;
-        }
-    }
-    hasClosingBracket = false;
-    endIndex = resolvedTokens.size() - 1;
-}
-
-unsigned CSSVariableResolver::resolveVariableTokensRecursive(Vector<CSSParserToken>& resolvedTokens, unsigned startIndex)
-{
-    unsigned variableLocation = startIndex;
-    while (resolvedTokens[variableLocation].type() != IdentToken)
-        variableLocation++;
-
-    unsigned commaIndex;
-    unsigned endIndex;
-    bool hasClosingBracket;
-    // Find default value and match braces
-    findEndIndexOfVariableReference(resolvedTokens, variableLocation + 1, endIndex, commaIndex, hasClosingBracket);
-
-    unsigned length = endIndex - startIndex + 1;
-    unsigned varFunctionPosition = startIndex;
-
-    AtomicString variableName = resolvedTokens[variableLocation].value();
+    range.consumeWhitespace();
+    ASSERT(range.peek().type() == IdentToken);
+    AtomicString variableName = range.consumeIncludingWhitespace().value();
+    ASSERT(range.atEnd() || (range.peek().type() == CommaToken));
 
     if (m_variablesSeen.contains(variableName)) {
         m_cycleDetected = true;
-        resolvedTokens.clear();
-        return 0;
+        return false;
     }
 
     CSSVariableData* variableData = m_styleVariableData ? m_styleVariableData->getVariable(variableName) : nullptr;
     if (variableData) {
-        Vector<CSSParserToken> tokens(variableData->tokens());
+        Vector<CSSParserToken> tokens;
         if (variableData->needsVariableResolution()) {
             m_variablesSeen.add(variableName);
-            resolveVariableReferencesFromTokens(tokens);
+            resolveVariableReferencesFromTokens(variableData->tokens(), tokens);
             m_variablesSeen.remove(variableName);
 
             // The old variable data holds onto the backing string the new resolved CSSVariableData
@@ -83,56 +47,46 @@ unsigned CSSVariableResolver::resolveVariableTokensRecursive(Vector<CSSParserTok
             ASSERT(variableData->refCount() > 1);
 
             m_styleVariableData->setVariable(variableName, CSSVariableData::createResolved(tokens));
+        } else {
+            tokens = variableData->tokens();
         }
-        if (tokens.size()) {
-            resolvedTokens.remove(startIndex, length);
-            resolvedTokens.insert(startIndex, tokens);
-            return tokens.size();
+        if (!tokens.isEmpty()) {
+            result.appendVector(tokens);
+            return true;
         }
     }
 
-    // Fallback on default value if present
-    if (!commaIndex || m_cycleDetected) {
-        resolvedTokens.clear();
-        return 0;
-    }
+    if (range.atEnd())
+        return false;
 
-    // Move the tokens to the beginning of the variable reference
-    unsigned defaultValueStart = commaIndex + 1;
-    unsigned defaultValueLength = endIndex - commaIndex - (hasClosingBracket ? 1 : 0);
-    for (unsigned i = 0; i < defaultValueLength; ++i)
-        resolvedTokens[varFunctionPosition + i] = resolvedTokens[defaultValueStart + i];
-    resolvedTokens.remove(varFunctionPosition + defaultValueLength, length - defaultValueLength);
+    // Comma Token, as asserted above.
+    range.consume();
 
-    resolveVariableReferencesFromTokens(resolvedTokens);
-
-    return resolvedTokens.size();
+    resolveVariableReferencesFromTokens(range, result);
+    return true;
 }
 
-void CSSVariableResolver::resolveVariableReferencesFromTokens(Vector<CSSParserToken>& tokens)
+bool CSSVariableResolver::resolveVariableReferencesFromTokens(CSSParserTokenRange range,
+    Vector<CSSParserToken>& result)
 {
-    for (unsigned i = 0; i < tokens.size(); ++i) {
-        if (tokens[i].functionId() == CSSValueVar) {
-            unsigned validTokens = resolveVariableTokensRecursive(tokens, i);
-            if (validTokens < 1 || m_cycleDetected) {
-                tokens.clear();
-                break;
-            }
-            i += validTokens - 1;
+    while (!range.atEnd()) {
+        if (range.peek().functionId() != CSSValueVar) {
+            result.append(range.consume());
+        } else if (!resolveVariableTokensRecursive(range.consumeBlock(), result) || m_cycleDetected) {
+            result.clear();
+            return false;
         }
     }
+    return true;
 }
 
 void CSSVariableResolver::resolveAndApplyVariableReferences(StyleResolverState& state, CSSPropertyID id, const CSSVariableReferenceValue& value)
 {
     // TODO(leviw): This should be a stack
-    Vector<CSSParserToken> tokens = value.variableDataValue()->tokens();
-
     CSSVariableResolver resolver(state.style()->variables());
 
-    resolver.resolveVariableReferencesFromTokens(tokens);
-
-    if (!tokens.size())
+    Vector<CSSParserToken> tokens;
+    if (!resolver.resolveVariableReferencesFromTokens(value.variableDataValue()->tokens(), tokens))
         return;
 
     CSSParserContext context(HTMLStandardMode, 0);
@@ -154,10 +108,10 @@ void CSSVariableResolver::resolveVariableDefinitions(StyleVariableData* variable
     for (auto& variable : variables->m_data) {
         if (!variable.value->needsVariableResolution())
             continue;
-        Vector<CSSParserToken> resolvedTokens(variable.value->tokens());
+        Vector<CSSParserToken> resolvedTokens;
 
         CSSVariableResolver resolver(variables, variable.key);
-        resolver.resolveVariableReferencesFromTokens(resolvedTokens);
+        resolver.resolveVariableReferencesFromTokens(variable.value->tokens(), resolvedTokens);
 
         variable.value = CSSVariableData::createResolved(resolvedTokens);
     }

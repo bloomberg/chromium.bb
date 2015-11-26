@@ -13,6 +13,7 @@
 
 namespace blink {
 
+class CSSParserTokenRange;
 class CSSVariableReferenceValue;
 class StyleResolverState;
 class StyleVariableData;
@@ -26,8 +27,8 @@ private:
     CSSVariableResolver(StyleVariableData*);
     CSSVariableResolver(StyleVariableData*, AtomicString& variable);
 
-    unsigned resolveVariableTokensRecursive(Vector<CSSParserToken>&, unsigned startOffset);
-    void resolveVariableReferencesFromTokens(Vector<CSSParserToken>& tokens);
+    bool resolveVariableTokensRecursive(CSSParserTokenRange, Vector<CSSParserToken>& result);
+    bool resolveVariableReferencesFromTokens(CSSParserTokenRange tokens, Vector<CSSParserToken>& result);
 
     StyleVariableData* m_styleVariableData;
     HashSet<AtomicString> m_variablesSeen;
