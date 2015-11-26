@@ -1747,18 +1747,27 @@ void LayoutBlockFlow::deleteLineBoxTree()
 
 void LayoutBlockFlow::markAllDescendantsWithFloatsForLayout(LayoutBox* floatToRemove, bool inLayout)
 {
+    Vector<LayoutBox*, 16> floatsToRemove;
+    if (floatToRemove)
+        floatsToRemove.append(floatToRemove);
+    markAllDescendantsWithFloatsForLayout(floatsToRemove, inLayout);
+}
+
+void LayoutBlockFlow::markAllDescendantsWithFloatsForLayout(Vector<LayoutBox*, 16> floatsToRemove, bool inLayout)
+{
     if (!everHadLayout() && !containsFloats())
         return;
 
-    if (m_descendantsWithFloatsMarkedForLayout && !floatToRemove)
+    bool hasFloatToRemove = floatsToRemove.size();
+    if (m_descendantsWithFloatsMarkedForLayout && hasFloatToRemove)
         return;
-    m_descendantsWithFloatsMarkedForLayout |= !floatToRemove;
+    m_descendantsWithFloatsMarkedForLayout |= hasFloatToRemove;
 
     MarkingBehavior markParents = inLayout ? MarkOnlyThis : MarkContainerChain;
     setChildNeedsLayout(markParents);
 
-    if (floatToRemove)
-        removeFloatingObject(floatToRemove);
+    for (auto& object : floatsToRemove)
+        removeFloatingObject(object);
 
     // Iterate over our children and mark them as needed. If our children are inline, then the
     // only boxes which could contain floats are atomic inlines (e.g. inline-block, float etc.) and these create formatting
@@ -1766,7 +1775,7 @@ void LayoutBlockFlow::markAllDescendantsWithFloatsForLayout(LayoutBox* floatToRe
     // TODO(rhogan): Should this be !createsNewFormattingContext() instead of !childrenInline()?
     if (!childrenInline()) {
         for (LayoutObject* child = firstChild(); child; child = child->nextSibling()) {
-            if ((!floatToRemove && child->isFloatingOrOutOfFlowPositioned()) || !child->isLayoutBlock())
+            if ((!hasFloatToRemove && child->isFloatingOrOutOfFlowPositioned()) || !child->isLayoutBlock())
                 continue;
             if (!child->isLayoutBlockFlow()) {
                 LayoutBlock* childBlock = toLayoutBlock(child);
@@ -1775,8 +1784,8 @@ void LayoutBlockFlow::markAllDescendantsWithFloatsForLayout(LayoutBox* floatToRe
                 continue;
             }
             LayoutBlockFlow* childBlockFlow = toLayoutBlockFlow(child);
-            if ((floatToRemove ? childBlockFlow->containsFloat(floatToRemove) : childBlockFlow->containsFloats()) || childBlockFlow->shrinkToAvoidFloats())
-                childBlockFlow->markAllDescendantsWithFloatsForLayout(floatToRemove, inLayout);
+            if ((floatsToRemove.size() == 1 ? childBlockFlow->containsFloat(floatsToRemove[0]) : childBlockFlow->containsFloats()) || childBlockFlow->shrinkToAvoidFloats())
+                childBlockFlow->markAllDescendantsWithFloatsForLayout(floatsToRemove, inLayout);
         }
     }
 }

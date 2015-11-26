@@ -650,8 +650,8 @@ void LayoutBlock::makeChildrenInlineIfPossible()
     // If we make an object's children inline we are going to frustrate any future attempts to remove
     // floats from its children's float-lists before the next layout happens so remove them proactively here.
     // TODO(rhogan): We need to understand if intruding floats in this object's float list need to be removed also.
-    for (size_t i = 0; i < floatsToRemoveFromFloatLists.size(); i++)
-        toLayoutBlockFlow(this)->markAllDescendantsWithFloatsForLayout(floatsToRemoveFromFloatLists[i]);
+    if (floatsToRemoveFromFloatLists.size() > 0)
+        toLayoutBlockFlow(this)->markAllDescendantsWithFloatsForLayout(floatsToRemoveFromFloatLists);
 
     for (size_t i = 0; i < blocksToRemove.size(); i++)
         collapseAnonymousBlockChild(this, blocksToRemove[i]);

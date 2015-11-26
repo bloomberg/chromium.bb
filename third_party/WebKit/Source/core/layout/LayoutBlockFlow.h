@@ -134,6 +134,7 @@ public:
     RootInlineBox* createAndAppendRootInlineBox();
 
     void markAllDescendantsWithFloatsForLayout(LayoutBox* floatToRemove = nullptr, bool inLayout = true);
+    void markAllDescendantsWithFloatsForLayout(Vector<LayoutBox*, 16> floatsToRemove, bool inLayout = true);
     void markSiblingsWithFloatsForLayout(LayoutBox* floatToRemove = nullptr);
 
     bool containsFloats() const { return m_floatingObjects && !m_floatingObjects->set().isEmpty(); }
