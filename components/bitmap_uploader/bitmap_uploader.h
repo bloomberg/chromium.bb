@@ -7,6 +7,7 @@
 
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
+#include "components/bitmap_uploader/bitmap_uploader_export.h"
 #include "components/mus/public/cpp/window_surface.h"
 #include "components/mus/public/interfaces/compositor_frame.mojom.h"
 #include "components/mus/public/interfaces/gpu.mojom.h"
@@ -20,11 +21,11 @@ class Shell;
 
 namespace bitmap_uploader {
 
-extern const char kBitmapUploaderForAcceleratedWidget[];
+BITMAP_UPLOADER_EXPORT extern const char kBitmapUploaderForAcceleratedWidget[];
 
 // BitmapUploader is useful if you want to draw a bitmap or color in a
 // mus::Window.
-class BitmapUploader : public mus::mojom::SurfaceClient {
+class BITMAP_UPLOADER_EXPORT BitmapUploader : public mus::mojom::SurfaceClient {
  public:
   explicit BitmapUploader(mus::Window* window);
   ~BitmapUploader() override;
