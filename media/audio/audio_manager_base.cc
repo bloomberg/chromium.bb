@@ -76,6 +76,10 @@ class AudioManagerBase::CompareByParams {
   const DispatcherParams* dispatcher_;
 };
 
+static bool IsDefaultDeviceId(const std::string& device_id) {
+  return device_id.empty() || device_id == AudioManagerBase::kDefaultDeviceId;
+}
+
 AudioManagerBase::AudioManagerBase(AudioLogFactory* audio_log_factory)
     : max_num_output_streams_(kDefaultMaxOutputStreams),
       max_num_input_streams_(kDefaultMaxInputStreams),
@@ -162,7 +166,7 @@ AudioOutputStream* AudioManagerBase::MakeAudioOutputStream(
   AudioOutputStream* stream;
   switch (params.format()) {
     case AudioParameters::AUDIO_PCM_LINEAR:
-      DCHECK(device_id.empty())
+      DCHECK(IsDefaultDeviceId(device_id))
           << "AUDIO_PCM_LINEAR supports only the default device.";
       stream = MakeLinearOutputStream(params);
       break;
@@ -241,8 +245,8 @@ AudioOutputStream* AudioManagerBase::MakeAudioOutputStreamProxy(
   // "default" or via the specific id.
   // NOTE: Implementations that don't yet support opening non-default output
   // devices may return an empty string from GetDefaultOutputDeviceID().
-  std::string output_device_id = device_id.empty() ?
-      GetDefaultOutputDeviceID() : device_id;
+  std::string output_device_id =
+      IsDefaultDeviceId(device_id) ? GetDefaultOutputDeviceID() : device_id;
 
   // If we're not using AudioOutputResampler our output parameters are the same
   // as our input parameters.

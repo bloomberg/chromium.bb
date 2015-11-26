@@ -39,6 +39,10 @@ class MEDIA_EXPORT AudioOutputProxy
   void GetVolume(double* volume) override;
   void Close() override;
 
+  AudioOutputDispatcher* get_dispatcher_for_testing() const {
+    return dispatcher_.get();
+  }
+
  private:
   enum State {
     kCreated,

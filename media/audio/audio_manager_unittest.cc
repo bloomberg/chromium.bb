@@ -9,8 +9,10 @@
 #include "base/synchronization/waitable_event.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/audio_manager_base.h"
+#include "media/audio/audio_output_proxy.h"
 #include "media/audio/audio_unittest_util.h"
 #include "media/audio/fake_audio_log_factory.h"
+#include "media/audio/fake_audio_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(USE_ALSA)
@@ -32,6 +34,37 @@ namespace media {
 // Test fixture which allows us to override the default enumeration API on
 // Windows.
 class AudioManagerTest : public ::testing::Test {
+ public:
+  void HandleDefaultDeviceIDsTest() {
+    AudioParameters params(AudioParameters::AUDIO_PCM_LOW_LATENCY,
+                           CHANNEL_LAYOUT_STEREO, 48000, 16, 2048);
+
+    // Create a stream with the default device id "".
+    AudioOutputStream* stream =
+        audio_manager_->MakeAudioOutputStreamProxy(params, "");
+    ASSERT_TRUE(stream);
+    AudioOutputDispatcher* dispatcher1 =
+        reinterpret_cast<AudioOutputProxy*>(stream)
+            ->get_dispatcher_for_testing();
+
+    // Closing this stream will put it up for reuse.
+    stream->Close();
+    stream = audio_manager_->MakeAudioOutputStreamProxy(
+        params, AudioManagerBase::kDefaultDeviceId);
+
+    // Verify both streams are created with the same dispatcher (which is unique
+    // per device).
+    ASSERT_EQ(dispatcher1, reinterpret_cast<AudioOutputProxy*>(stream)
+                               ->get_dispatcher_for_testing());
+    stream->Close();
+
+    // Create a non-default device and ensure it gets a different dispatcher.
+    stream = audio_manager_->MakeAudioOutputStreamProxy(params, "123456");
+    ASSERT_NE(dispatcher1, reinterpret_cast<AudioOutputProxy*>(stream)
+                               ->get_dispatcher_for_testing());
+    stream->Close();
+  }
+
  protected:
   AudioManagerTest() : audio_manager_(AudioManager::CreateForTesting()) {
     // Wait for audio thread initialization to complete.  Otherwise the
@@ -149,6 +182,14 @@ class AudioManagerTest : public ::testing::Test {
   FakeAudioLogFactory fake_audio_log_factory_;
   scoped_ptr<AudioManager> audio_manager_;
 };
+
+TEST_F(AudioManagerTest, HandleDefaultDeviceIDs) {
+  // Use a fake manager so we can makeup device ids, this will still use the
+  // AudioManagerBase code.
+  audio_manager_.reset(new FakeAudioManager(&fake_audio_log_factory_));
+  RunOnAudioThread(base::Bind(&AudioManagerTest::HandleDefaultDeviceIDsTest,
+                              base::Unretained(this)));
+}
 
 // Test that devices can be enumerated.
 TEST_F(AudioManagerTest, EnumerateInputDevices) {
