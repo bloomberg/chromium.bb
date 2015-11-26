@@ -100,33 +100,6 @@ void AutofillQueryXmlParser::StartElement(buzz::XmlParseContext* context,
   }
 }
 
-void AutofillQueryXmlParser::ParseElementDescriptor(
-    buzz::XmlParseContext* context,
-    const char* const* attrs,
-    WebElementDescriptor* element_descriptor) {
-  // If both id and css_selector are set, the first one to appear will take
-  // precedence.
-  // |attrs| is a NULL-terminated list of (attribute, value) pairs.
-  while (*attrs) {
-    buzz::QName attribute_qname = context->ResolveQName(*attrs, true);
-    ++attrs;
-    const std::string& attribute_name = attribute_qname.LocalPart();
-    buzz::QName value_qname = context->ResolveQName(*attrs, true);
-    ++attrs;
-    const std::string& attribute_value = value_qname.LocalPart();
-    if (attribute_name.compare("id") == 0 && !attribute_value.empty()) {
-      element_descriptor->retrieval_method = WebElementDescriptor::ID;
-      element_descriptor->descriptor = attribute_value;
-      break;
-    } else if (attribute_name.compare("css_selector") == 0 &&
-               !attribute_value.empty()) {
-      element_descriptor->retrieval_method = WebElementDescriptor::CSS_SELECTOR;
-      element_descriptor->descriptor = attribute_value;
-      break;
-    }
-  }
-}
-
 int AutofillQueryXmlParser::GetIntValue(buzz::XmlParseContext* context,
                                         const char* attribute) {
   int value = 0;

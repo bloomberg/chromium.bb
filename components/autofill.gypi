@@ -50,8 +50,6 @@
         'autofill/core/common/password_generation_util.h',
         'autofill/core/common/save_password_progress_logger.cc',
         'autofill/core/common/save_password_progress_logger.h',
-        'autofill/core/common/web_element_descriptor.cc',
-        'autofill/core/common/web_element_descriptor.h',
       ],
 
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.

@@ -30,7 +30,6 @@ namespace autofill {
 
 struct FormData;
 struct FormFieldData;
-struct WebElementDescriptor;
 class PasswordAutofillAgent;
 class PasswordGenerationAgent;
 

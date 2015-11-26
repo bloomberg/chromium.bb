@@ -17,7 +17,6 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_form_field_prediction_map.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
-#include "components/autofill/core/common/web_element_descriptor.h"
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/common_param_traits_macros.h"
 #include "ipc/ipc_message_macros.h"
@@ -38,14 +37,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(
 
 IPC_ENUM_TRAITS_MAX_VALUE(base::i18n::TextDirection,
                           base::i18n::TEXT_DIRECTION_NUM_DIRECTIONS - 1)
-
-IPC_STRUCT_TRAITS_BEGIN(autofill::WebElementDescriptor)
-  IPC_STRUCT_TRAITS_MEMBER(descriptor)
-  IPC_STRUCT_TRAITS_MEMBER(retrieval_method)
-IPC_STRUCT_TRAITS_END()
-
-IPC_ENUM_TRAITS_MAX_VALUE(autofill::WebElementDescriptor::RetrievalMethod,
-                          autofill::WebElementDescriptor::NONE)
 
 IPC_STRUCT_TRAITS_BEGIN(autofill::FormFieldData)
   IPC_STRUCT_TRAITS_MEMBER(label)

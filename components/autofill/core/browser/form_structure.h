@@ -17,7 +17,6 @@
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/field_types.h"
-#include "components/autofill/core/common/web_element_descriptor.h"
 #include "url/gurl.h"
 
 enum UploadRequired {

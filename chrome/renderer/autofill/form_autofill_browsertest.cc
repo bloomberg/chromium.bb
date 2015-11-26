@@ -13,7 +13,6 @@
 #include "components/autofill/content/renderer/form_cache.h"
 #include "components/autofill/core/common/autofill_data_validation.h"
 #include "components/autofill/core/common/form_data.h"
-#include "components/autofill/core/common/web_element_descriptor.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
@@ -54,6 +53,20 @@ struct AutofillFieldCase {
   const char* const autofill_value;  // The value being used to fill the field.
   const char* const expected_value;  // The expected value after Autofill
                                      // or Preview.
+};
+
+struct WebElementDescriptor {
+  enum RetrievalMethod {
+    CSS_SELECTOR,
+    ID,
+    NONE,
+  };
+
+  // Information to retrieve element with.
+  std::string descriptor;
+
+  // Which retrieval method to use.
+  RetrievalMethod retrieval_method = NONE;
 };
 
 const char kFormHtml[] =
