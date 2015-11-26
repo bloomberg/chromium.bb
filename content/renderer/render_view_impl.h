@@ -291,6 +291,11 @@ class CONTENT_EXPORT RenderViewImpl
   void TransferActiveWheelFlingAnimation(
       const blink::WebActiveWheelFlingParameters& params);
 
+  // Starts a timer to send an UpdateState message on behalf of |frame|, if the
+  // timer isn't already running. This allows multiple state changing events to
+  // be coalesced into one update.
+  void StartNavStateSyncTimerIfNecessary(RenderFrameImpl* frame);
+
   // Synchronously sends the current navigation state to the browser.
   void SendUpdateState();
 
@@ -574,8 +579,6 @@ class CONTENT_EXPORT RenderViewImpl
   // are to be moved to RenderFrameImpl <http://crbug.com/361761>.
 
   void didChangeIcon(blink::WebLocalFrame*, blink::WebIconURL::Type);
-  void didUpdateCurrentHistoryItem(blink::WebLocalFrame* frame);
-  void didChangeScrollOffset(blink::WebLocalFrame* frame);
 
   static Referrer GetReferrerFromRequest(
       blink::WebFrame* frame,
@@ -714,14 +717,15 @@ class CONTENT_EXPORT RenderViewImpl
                      const blink::WebRect& selection_rect,
                      bool final_status_update);
 
-  // Starts nav_state_sync_timer_ if it isn't already running.
-  void StartNavStateSyncTimerIfNecessary();
-
 #if defined(OS_WIN) || (defined(OS_POSIX) && !defined(OS_MACOSX))
   void UpdateFontRenderingFromRendererPrefs();
 #else
   void UpdateFontRenderingFromRendererPrefs() {}
 #endif
+
+  // In OOPIF-enabled modes, this tells each RenderFrame with a pending state
+  // update to inform the browser process.
+  void SendFrameStateUpdates();
 
   // Update the target url and tell the browser that the target URL has changed.
   // If |url| is empty, show |fallback_url|.
@@ -824,6 +828,10 @@ class CONTENT_EXPORT RenderViewImpl
   // Timer used to delay the updating of nav state (see
   // StartNavStateSyncTimerIfNecessary).
   base::OneShotTimer nav_state_sync_timer_;
+
+  // Set of RenderFrame routing IDs for frames that having pending UpdateState
+  // messages to send when the next |nav_state_sync_timer_| fires.
+  std::set<int> frames_with_pending_state_;
 
   // Page IDs ------------------------------------------------------------------
   // See documentation in RenderView.

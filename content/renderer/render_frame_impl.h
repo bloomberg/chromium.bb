@@ -617,6 +617,9 @@ class CONTENT_EXPORT RenderFrameImpl
   scoped_ptr<media::MediaPermission> CreateMediaPermissionProxy(
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner);
 
+  // Sends the current frame's navigation state to the browser.
+  void SendUpdateState();
+
  protected:
   explicit RenderFrameImpl(const CreateParams& params);
 
@@ -843,9 +846,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void LoadDataURL(const CommonNavigationParams& params,
                    blink::WebFrame* frame,
                    blink::WebFrameLoadType load_type);
-
-  // Sends the current frame's navigation state to the browser.
-  void SendUpdateState();
 
   // Sends a proper FrameHostMsg_DidFailProvisionalLoadWithError_Params IPC for
   // the failed request |request|.

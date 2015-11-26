@@ -3223,9 +3223,7 @@ void RenderFrameImpl::didNavigateWithinPage(blink::WebLocalFrame* frame,
 
 void RenderFrameImpl::didUpdateCurrentHistoryItem(blink::WebLocalFrame* frame) {
   DCHECK(!frame_ || frame_ == frame);
-  // TODO(nasko): Move implementation here. Needed methods:
-  // * StartNavStateSyncTimerIfNecessary
-  render_view_->didUpdateCurrentHistoryItem(frame);
+  render_view_->StartNavStateSyncTimerIfNecessary(this);
 }
 
 void RenderFrameImpl::didChangeThemeColor() {
@@ -3700,9 +3698,7 @@ void RenderFrameImpl::willReleaseScriptContext(blink::WebLocalFrame* frame,
 
 void RenderFrameImpl::didChangeScrollOffset(blink::WebLocalFrame* frame) {
   DCHECK(!frame_ || frame_ == frame);
-  // TODO(nasko): Move implementation here. Needed methods:
-  // * StartNavStateSyncTimerIfNecessary
-  render_view_->didChangeScrollOffset(frame);
+  render_view_->StartNavStateSyncTimerIfNecessary(this);
 
   FOR_EACH_OBSERVER(RenderFrameObserver, observers_, DidChangeScrollOffset());
 }

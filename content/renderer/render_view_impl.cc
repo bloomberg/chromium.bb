@@ -1484,6 +1484,20 @@ void RenderViewImpl::SendUpdateState() {
       routing_id_, page_id_, HistoryEntryToPageState(entry)));
 }
 
+void RenderViewImpl::SendFrameStateUpdates() {
+  // We only use this path in OOPIF-enabled modes.
+  DCHECK(SiteIsolationPolicy::UseSubframeNavigationEntries());
+
+  // Tell each frame with pending state to send its UpdateState message.
+  for (int render_frame_routing_id : frames_with_pending_state_) {
+    RenderFrameImpl* frame =
+        RenderFrameImpl::FromRoutingID(render_frame_routing_id);
+    if (frame)
+      frame->SendUpdateState();
+  }
+  frames_with_pending_state_.clear();
+}
+
 void RenderViewImpl::ApplyWebPreferencesInternal(
     const WebPreferences& prefs,
     blink::WebView* web_view,
@@ -1848,11 +1862,10 @@ gfx::RectF RenderViewImpl::ClientRectToPhysicalWindowRect(
   return window_rect;
 }
 
-void RenderViewImpl::StartNavStateSyncTimerIfNecessary() {
-  // TODO(creis): Move this to RenderFrameHost.  In the meantime, we'll ignore
-  // state changes between navigation events in OOPIF-enabled modes.
+void RenderViewImpl::StartNavStateSyncTimerIfNecessary(RenderFrameImpl* frame) {
+  // In OOPIF modes, keep track of which frames have pending updates.
   if (SiteIsolationPolicy::UseSubframeNavigationEntries())
-    return;
+    frames_with_pending_state_.insert(frame->GetRoutingID());
 
   int delay;
   if (send_content_state_immediately_)
@@ -1871,8 +1884,15 @@ void RenderViewImpl::StartNavStateSyncTimerIfNecessary() {
     nav_state_sync_timer_.Stop();
   }
 
-  nav_state_sync_timer_.Start(FROM_HERE, TimeDelta::FromSeconds(delay), this,
-                              &RenderViewImpl::SendUpdateState);
+  if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
+    // In OOPIF modes, tell each frame with pending state to inform the browser.
+    nav_state_sync_timer_.Start(FROM_HERE, TimeDelta::FromSeconds(delay), this,
+                                &RenderViewImpl::SendFrameStateUpdates);
+  } else {
+    // By default, send an UpdateState for the current history item.
+    nav_state_sync_timer_.Start(FROM_HERE, TimeDelta::FromSeconds(delay), this,
+                                &RenderViewImpl::SendUpdateState);
+  }
 }
 
 void RenderViewImpl::setMouseOverURL(const WebURL& url) {
@@ -2133,10 +2153,6 @@ void RenderViewImpl::didChangeIcon(WebLocalFrame* frame,
   SendUpdateFaviconURL(urls);
 }
 
-void RenderViewImpl::didUpdateCurrentHistoryItem(WebLocalFrame* frame) {
-  StartNavStateSyncTimerIfNecessary();
-}
-
 void RenderViewImpl::CheckPreferredSize() {
   // We don't always want to send the change messages over IPC, only if we've
   // been put in that mode by getting a |ViewMsg_EnablePreferredSizeChangedMode|
@@ -2151,10 +2167,6 @@ void RenderViewImpl::CheckPreferredSize() {
   preferred_size_ = size;
   Send(new ViewHostMsg_DidContentsPreferredSizeChange(routing_id_,
                                                       preferred_size_));
-}
-
-void RenderViewImpl::didChangeScrollOffset(WebLocalFrame* frame) {
-  StartNavStateSyncTimerIfNecessary();
 }
 
 void RenderViewImpl::SendFindReply(int request_id,
