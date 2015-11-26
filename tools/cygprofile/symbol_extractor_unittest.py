@@ -29,7 +29,10 @@ class TestSymbolInfo(unittest.TestCase):
     line = ('00c1b228 l     F .text  00000060 _ZN20trace_event too many')
     self.assertRaises(AssertionError, symbol_extractor._FromObjdumpLine, line)
     # This line has invalid characters in the symbol.
-    line = ('00c1b228 l     F .text  00000060 _ZN20trace_$bad')
+    line = ('00c1b228 l     F .text  00000060 _ZN20trace_?bad')
+    self.assertRaises(AssertionError, symbol_extractor._FromObjdumpLine, line)
+    # This line has an invalid character at the start of the symbol name.
+    line = ('00c1b228 l     F .text  00000060 $_ZN20trace_bad')
     self.assertRaises(AssertionError, symbol_extractor._FromObjdumpLine, line)
 
   def testSymbolInfo(self):
@@ -59,6 +62,17 @@ class TestSymbolInfo(unittest.TestCase):
     self.assertEquals(test_size, symbol_info.size)
     self.assertEquals(test_name, symbol_info.name)
     self.assertEquals(test_section, symbol_info.section)
+
+  def testDollarInSymbolName(self):
+    # A $ character elsewhere in the symbol name is fine.
+    # This is an example of a lambda function name from Clang.
+    line = ('00c1b228 l     F .text  00000060 _ZZL11get_globalsvENK3$_1clEv')
+    symbol_info = symbol_extractor._FromObjdumpLine(line)
+    self.assertIsNotNone(symbol_info)
+    self.assertEquals(0xc1b228, symbol_info.offset)
+    self.assertEquals(0x60, symbol_info.size)
+    self.assertEquals('_ZZL11get_globalsvENK3$_1clEv', symbol_info.name)
+    self.assertEquals('.text', symbol_info.section)
 
 
 class TestSymbolInfosFromStream(unittest.TestCase):

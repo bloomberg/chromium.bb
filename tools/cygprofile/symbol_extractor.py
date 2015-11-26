@@ -54,7 +54,13 @@ def _FromObjdumpLine(line):
   section = parts[3]
   size = int(parts[4], 16)
   name = parts[-1].rstrip('\n')
-  assert re.match('^[a-zA-Z0-9_.]+$', name)
+  # Forbid ARM mapping symbols and other unexpected symbol names, but allow $
+  # characters in a non-initial position, which can appear as a component of a
+  # mangled name, e.g. Clang can mangle a lambda function to:
+  # 02cd61e0 l     F .text  000000c0 _ZZL11get_globalsvENK3$_1clEv
+  # The equivalent objdump line from GCC is:
+  # 0325c58c l     F .text  000000d0 _ZZL11get_globalsvENKUlvE_clEv
+  assert re.match('^[a-zA-Z0-9_.][a-zA-Z0-9_.$]*$', name)
   return SymbolInfo(name=name, offset=offset, section=section, size=size)
 
 
@@ -90,6 +96,7 @@ def SymbolInfosFromBinary(binary_filename):
     result = _SymbolInfosFromStream(p.stdout)
     return result
   finally:
+    p.stdout.close()
     p.wait()
 
 
