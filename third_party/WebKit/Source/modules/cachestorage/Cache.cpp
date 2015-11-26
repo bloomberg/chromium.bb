@@ -495,19 +495,12 @@ ScriptPromise Cache::putImpl(ScriptState* scriptState, const HeapVector<Member<R
             barrierCallback->onError("Request method '" + requests[i]->method() + "' is unsupported");
             return promise;
         }
-        if (requests[i]->hasBody() && requests[i]->bodyUsed()) {
-            barrierCallback->onError("Request body is already used");
-            return promise;
-        }
-        if (responses[i]->hasBody() && responses[i]->bodyUsed()) {
+        ASSERT(!requests[i]->hasBody());
+
+        if (responses[i]->isBodyLocked() || responses[i]->bodyUsed()) {
             barrierCallback->onError("Response body is already used");
             return promise;
         }
-
-        if (requests[i]->hasBody())
-            requests[i]->setBodyPassed();
-        if (responses[i]->hasBody())
-            responses[i]->setBodyPassed();
 
         BodyStreamBuffer* buffer = responses[i]->internalBodyBuffer();
         if (buffer) {

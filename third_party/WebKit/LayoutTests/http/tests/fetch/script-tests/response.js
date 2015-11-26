@@ -234,27 +234,9 @@ test(function() {
 
 promise_test(function(t) {
     var res = new Response('hello');
-    return consume(res.body.getReader()).then(function(chunks) {
-        return decode(chunks);
-      }).then(function(text) {
-        assert_equals(text, 'hello');
-        return res.body.getReader().read();
-      }).then(function(r) {
-        assert_true(r.done);
-        return res.text();
-      }).then(function(r) {
-        assert_equals(r, '');
-      });
-  }, 'Read Response body via stream');
-
-promise_test(function(t) {
-    var res = new Response('hello');
     res.body.cancel();
     return res.body.getReader().read().then(function(r) {
         assert_true(r.done);
-        return res.text();
-      }).then(function(r) {
-        assert_equals(r, '');
       });
   }, 'Cancel body stream on Response');
 
@@ -287,37 +269,11 @@ promise_test(function(t) {
   }, 'call json() on null body response');
 
 promise_test(function(t) {
-    // TODO(yhirano): In the current implementation, The body stream always
-    // consists of one chunk and hence, we cannot create a meaning test case
-    // here. Fix this test case when reading into a size-specified buffer gets
-    // possible.
-    var size = 8 * 1024 * 1024;
-    var buffer = new ArrayBuffer(size);
-    var blob = new Blob([buffer]);
-
-    var res = new Response(blob);
-    var reader = res.body.getReader();
-    var head;
-    return reader.read().then(function(r) {
-        assert_false(r.done);
-        head = r.value;
-        assert_not_equals(head.byteLength, 0);
-        // TODO(yhirano): See above.
-        // assert_not_equals(head.byteLength, size);
-        reader.releaseLock();
-        return res.arrayBuffer();
-      }).then(function(buffer) {
-        assert_equals(buffer.byteLength + head.byteLength, size);
-        return res.body.getReader().read();
-      }).then(function(r) {
-        assert_true(r.done);
-      });
-  }, 'Partial read on Response');
-
-promise_test(function(t) {
     var res = new Response('hello');
     var body = res.body;
     var clone = res.clone();
+    assert_false(res.bodyUsed);
+    assert_false(clone.bodyUsed);
     assert_not_equals(res.body, body);
     assert_not_equals(res.body, clone.body);
     assert_not_equals(body, clone.body);
@@ -325,11 +281,6 @@ promise_test(function(t) {
     return Promise.all([res.text(), clone.text()]).then(function(r) {
         assert_equals(r[0], 'hello');
         assert_equals(r[1], 'hello');
-        return Promise.all([res.text(), clone.text(), res.clone().text()]);
-      }).then(function(r) {
-        assert_equals(r[0], '');
-        assert_equals(r[1], '');
-        assert_equals(r[2], '');
       });
   }, 'Clone on Response (text)');
 
@@ -337,6 +288,8 @@ promise_test(function(t) {
     var res = new Response('hello');
     var body = res.body;
     var clone = res.clone();
+    assert_false(res.bodyUsed);
+    assert_false(clone.bodyUsed);
     assert_not_equals(res.body, body);
     assert_not_equals(res.body, clone.body);
     assert_not_equals(body, clone.body);
@@ -346,35 +299,22 @@ promise_test(function(t) {
     return Promise.all([consume(reader1), consume(reader2)]).then(function(r) {
         assert_equals(decode(r[0]), 'hello');
         assert_equals(decode(r[1]), 'hello');
-        return Promise.all([res.text(), clone.text(), res.clone().text()]);
-      }).then(function(r) {
-        assert_equals(r[0], '');
-        assert_equals(r[1], '');
-        assert_equals(r[2], '');
       });
   }, 'Clone on Response (manual read)');
 
-promise_test(function(t) {
+test(() => {
     var res = new Response('hello');
-    var clone = res.clone();
     res.body.cancel();
-    return Promise.all([res.text(), clone.text()]).then(function(r) {
-        assert_equals(r[0], '');
-        assert_equals(r[1], 'hello');
-      });
-  }, 'Clone and Cancel on Response');
+    assert_true(res.bodyUsed);
+    assert_throws({name: 'TypeError'}, () => res.clone());
+  }, 'Used => clone');
 
-promise_test(function(t) {
+test(() => {
     var res = new Response('hello');
-    res.body.cancel();
-    var clone = res.clone();
-    return Promise.all([res.blob(), clone.blob()]).then(function(r) {
-        assert_equals(r[0].type, 'text/plain;charset=utf-8', 'cloned type');
-        assert_equals(r[1].type, 'text/plain;charset=utf-8', 'original type');
-        assert_equals(r[0].size, 0, 'original size');
-        assert_equals(r[1].size, 0, 'cloned size');
-      });
-  }, 'Cancel and Clone on Response');
+    res.body.getReader();
+    assert_false(res.bodyUsed);
+    assert_throws({name: 'TypeError'}, () => res.clone());
+  }, 'Locked => clone');
 
 // Tests for MIME types.
 promise_test(function(t) {
@@ -392,13 +332,6 @@ promise_test(function(t) {
       .then(function(blob) {
           assert_equals(blob.type, 'text/plain');
           assert_equals(blob.size, 5);
-          assert_equals(res.headers.get('Content-Type'), 'text/plain');
-          return res.blob();
-        }).then(function(blob) {
-          // When we read from a response twice, it returns an empty contents.
-          // But the type should remain.
-          assert_equals(blob.type, 'text/plain');
-          assert_equals(blob.size, 0);
           assert_equals(res.headers.get('Content-Type'), 'text/plain');
         });
   }, 'MIME type for Blob with non-empty type');
@@ -458,29 +391,6 @@ promise_test(function(t) {
         });
   }, 'Extract a MIME type (1)');
 
-promise_test(function(t) {
-    var res = new Response(new Blob([''], {type: 'Text/Plain'}),
-                           {headers: [['Content-Type', 'Text/Html']]});
-    res.body.cancel();
-    return res.blob()
-      .then(function(blob) {
-          assert_equals(blob.type, 'text/html');
-          assert_equals(res.headers.get('Content-Type'), 'Text/Html');
-        });
-  }, 'Extract a MIME type (2)');
-
-promise_test(function(t) {
-    var res = new Response(new Blob([''], {type: 'Text/Plain'}),
-                           {headers: [['Content-Type', 'Text/Html']]});
-    res.body.cancel();
-    res = res.clone();
-    return res.blob()
-      .then(function(blob) {
-          assert_equals(blob.type, 'text/html');
-          assert_equals(res.headers.get('Content-Type'), 'Text/Html');
-        });
-  }, 'Extract a MIME type (3)');
-
 promise_test(function() {
     var response = Response.error();
     return response.text().then(function(text) {
@@ -496,21 +406,6 @@ promise_test(function() {
                       'body is always null');
       });
   }, 'Response.error()');
-
-promise_test(function(t) {
-    var res = new Response('hello');
-    return res.text().then(function(text) {
-        assert_equals(text, 'hello');
-        return Promise.all([res.text(), res.text()]);
-      }).then(function(texts) {
-        assert_equals(texts[0], '');
-        assert_equals(texts[1], '');
-        return res.body.getReader().read();
-      }).then(function(r) {
-        assert_true(r.done);
-        assert_equals(r.value, undefined);
-      });
-  }, 'Read after text()');
 
 promise_test(function() {
     var response = Response.redirect('https://www.example.com/test.html');

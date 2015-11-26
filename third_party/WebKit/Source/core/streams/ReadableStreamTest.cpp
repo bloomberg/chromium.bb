@@ -560,7 +560,7 @@ TEST_F(ReadableStreamTest, GetClosedReader)
     String onFulfilled, onRejected;
     reader->closed(scriptState()).then(createCaptor(&onFulfilled), createCaptor(&onRejected));
 
-    EXPECT_FALSE(reader->isActive());
+    EXPECT_TRUE(reader->isActive());
     EXPECT_TRUE(onFulfilled.isNull());
     EXPECT_TRUE(onRejected.isNull());
 
@@ -583,7 +583,7 @@ TEST_F(ReadableStreamTest, GetErroredReader)
     String onFulfilled, onRejected;
     reader->closed(scriptState()).then(createCaptor(&onFulfilled), createCaptor(&onRejected));
 
-    EXPECT_FALSE(reader->isActive());
+    EXPECT_TRUE(reader->isActive());
     EXPECT_TRUE(onFulfilled.isNull());
     EXPECT_TRUE(onRejected.isNull());
 

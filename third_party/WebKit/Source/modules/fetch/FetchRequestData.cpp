@@ -8,7 +8,9 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/fetch/ResourceLoaderOptions.h"
 #include "core/loader/ThreadableLoader.h"
+#include "core/streams/ReadableStream.h"
 #include "modules/fetch/BodyStreamBuffer.h"
+#include "modules/fetch/DataConsumerHandleUtil.h"
 #include "modules/fetch/DataConsumerTee.h"
 #include "modules/fetch/FetchBlobDataConsumerHandle.h"
 #include "modules/fetch/FetchHeaderList.h"
@@ -66,8 +68,7 @@ FetchRequestData* FetchRequestData::clone(ExecutionContext* executionContext)
     FetchRequestData* request = FetchRequestData::cloneExceptBody();
     if (m_buffer) {
         OwnPtr<FetchDataConsumerHandle> dest1, dest2;
-        // TODO(yhirano): unlock the buffer.
-        DataConsumerTee::create(executionContext, m_buffer->lock(executionContext), &dest1, &dest2);
+        DataConsumerTee::create(executionContext, m_buffer->releaseHandle(executionContext), &dest1, &dest2);
         m_buffer = new BodyStreamBuffer(dest1.release());
         request->m_buffer = new BodyStreamBuffer(dest2.release());
     }
@@ -77,8 +78,11 @@ FetchRequestData* FetchRequestData::clone(ExecutionContext* executionContext)
 FetchRequestData* FetchRequestData::pass(ExecutionContext* executionContext)
 {
     FetchRequestData* request = FetchRequestData::cloneExceptBody();
-    request->m_buffer = m_buffer;
-    m_buffer = nullptr;
+    if (m_buffer) {
+        request->m_buffer = m_buffer;
+        m_buffer = new BodyStreamBuffer(createFetchDataConsumerHandleFromWebHandle(createDoneDataConsumerHandle()));
+        m_buffer->stream()->setIsDisturbed();
+    }
     return request;
 }
 

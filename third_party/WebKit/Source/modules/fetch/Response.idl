@@ -28,7 +28,7 @@ typedef (Blob or ArrayBuffer or ArrayBufferView or FormData or USVString) BodyIn
 
     [RaisesException] Response clone();
 
-    readonly attribute ReadableByteStream body;
+    [ImplementedAs=bodyWithUseCounter] readonly attribute ReadableByteStream body;
 };
 
 Response implements Body;

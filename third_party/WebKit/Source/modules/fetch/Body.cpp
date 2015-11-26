@@ -192,13 +192,23 @@ ScriptPromise Body::text(ScriptState* scriptState)
 
 ReadableByteStream* Body::body()
 {
-    UseCounter::count(executionContext(), UseCounter::FetchBodyStream);
     return bodyBuffer() ? bodyBuffer()->stream() : nullptr;
+}
+
+ReadableByteStream* Body::bodyWithUseCounter()
+{
+    UseCounter::count(executionContext(), UseCounter::FetchBodyStream);
+    return body();
 }
 
 bool Body::bodyUsed()
 {
-    return m_bodyPassed || (body() && body()->isLocked());
+    return body() && body()->isDisturbed();
+}
+
+bool Body::isBodyLocked()
+{
+    return body() && body()->isLocked();
 }
 
 bool Body::hasPendingActivity() const
@@ -210,7 +220,7 @@ bool Body::hasPendingActivity() const
     return bodyBuffer()->hasPendingActivity();
 }
 
-Body::Body(ExecutionContext* context) : ActiveDOMObject(context), m_bodyPassed(false), m_opaque(false)
+Body::Body(ExecutionContext* context) : ActiveDOMObject(context), m_opaque(false)
 {
     suspendIfNeeded();
 }
@@ -219,7 +229,7 @@ ScriptPromise Body::rejectInvalidConsumption(ScriptState* scriptState)
 {
     if (m_opaque)
         return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "The body is opaque."));
-    if (bodyUsed())
+    if (isBodyLocked() || bodyUsed())
         return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "Already read"));
     return ScriptPromise();
 }

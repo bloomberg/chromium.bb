@@ -57,6 +57,9 @@ const String getMessageForResponseError(WebServiceWorkerResponseError error, con
     case WebServiceWorkerResponseErrorResponseTypeOpaqueRedirect:
         errorMessage = errorMessage + "an \"opaqueredirect\" type response was used for a request which is not a navigation request.";
         break;
+    case WebServiceWorkerResponseErrorBodyLocked:
+        errorMessage = errorMessage + "a Response whose \"body\" is locked cannot be used to respond to a request.";
+        break;
     case WebServiceWorkerResponseErrorUnknown:
     default:
         errorMessage = errorMessage + "an unexpected error occurred.";
@@ -222,12 +225,15 @@ void RespondWithObserver::responseWasFulfilled(const ScriptValue& value)
         responseWasRejected(WebServiceWorkerResponseErrorResponseTypeOpaqueRedirect);
         return;
     }
+    if (response->isBodyLocked()) {
+        responseWasRejected(WebServiceWorkerResponseErrorBodyLocked);
+        return;
+    }
     if (response->bodyUsed()) {
         responseWasRejected(WebServiceWorkerResponseErrorBodyUsed);
         return;
     }
 
-    response->setBodyPassed();
     WebServiceWorkerResponse webResponse;
     response->populateWebServiceWorkerResponse(webResponse);
     BodyStreamBuffer* buffer = response->internalBodyBuffer();

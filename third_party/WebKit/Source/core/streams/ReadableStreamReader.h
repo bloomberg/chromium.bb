@@ -38,6 +38,8 @@ public:
     ScriptPromise read(ScriptState*);
     void releaseLock(ExceptionState&);
     void releaseLock();
+    void close();
+    void error();
 
     bool hasPendingActivity() const override;
     void stop() override;
@@ -48,7 +50,6 @@ private:
     using ClosedPromise = ScriptPromiseProperty<Member<ReadableStreamReader>, ToV8UndefinedGenerator, Member<DOMException>>;
 
     const Member<ReadableStream> m_stream;
-    ReadableStream::State m_stateAfterRelease;
     Member<ClosedPromise> m_closed;
 };
 

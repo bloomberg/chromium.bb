@@ -283,11 +283,14 @@ cache_test(function(cache) {
                  '[https://fetch.spec.whatwg.org/#dom-body-bodyused] ' +
                  'Response.bodyUsed should be initially false.');
     return response.text().then(function() {
-      assert_false(
+      assert_true(
         response.bodyUsed,
         '[https://fetch.spec.whatwg.org/#concept-body-consume-body] ' +
-          'The text() method should not set "body passed" flag.');
-      return cache.put(new Request(test_url), response);
+          'The text() method should make the body disturbed.');
+      var request = new Request(test_url);
+      return cache.put(request, response).then(() => {
+          assert_unreached('cache.put should be rejected');
+        }, () => {});
     });
   }, 'Cache.put with a used response body');
 
@@ -295,7 +298,7 @@ cache_test(function(cache) {
     var response = new Response(test_body);
     return cache.put(new Request(test_url), response)
       .then(function() {
-          return response.body.getReader().closed;
+          assert_throws(new TypeError(), () => response.body.getReader());
       });
   }, 'getReader() after Cache.put');
 

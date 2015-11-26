@@ -111,6 +111,7 @@ ScriptPromise ReadableStream::cancel(ScriptState* scriptState, ScriptValue reaso
 
 ScriptPromise ReadableStream::cancelInternal(ScriptState* scriptState, ScriptValue reason)
 {
+    setIsDisturbed();
     closeInternal();
     return m_source->cancelSource(scriptState, reason).then(ConstUndefined::create(scriptState));
 }
@@ -125,7 +126,7 @@ void ReadableStream::error(DOMException* exception)
     rejectAllPendingReads(m_exception);
     m_state = Errored;
     if (m_reader)
-        m_reader->releaseLock();
+        m_reader->error();
 }
 
 void ReadableStream::didSourceStart()
@@ -179,7 +180,7 @@ void ReadableStream::closeInternal()
     resolveAllPendingReadsAsDone();
     clearQueue();
     if (m_reader)
-        m_reader->releaseLock();
+        m_reader->close();
 }
 
 DEFINE_TRACE(ReadableStream)

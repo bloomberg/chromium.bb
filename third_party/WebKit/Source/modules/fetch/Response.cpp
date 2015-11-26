@@ -339,7 +339,7 @@ Headers* Response::headers() const
 
 Response* Response::clone(ExceptionState& exceptionState)
 {
-    if (bodyUsed()) {
+    if (isBodyLocked() || bodyUsed()) {
         exceptionState.throwTypeError("Response body is already used");
         return nullptr;
     }
@@ -388,6 +388,11 @@ Response::Response(ExecutionContext* context, FetchResponseData* response, Heade
 bool Response::hasBody() const
 {
     return m_response->internalBuffer();
+}
+
+bool Response::bodyUsed()
+{
+    return internalBodyBuffer() && internalBodyBuffer()->stream()->isDisturbed();
 }
 
 String Response::mimeType() const

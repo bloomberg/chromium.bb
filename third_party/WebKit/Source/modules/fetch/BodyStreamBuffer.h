@@ -34,18 +34,16 @@ public:
     // Callable only when not locked.
     PassRefPtr<BlobDataHandle> drainAsBlobDataHandle(FetchDataConsumerHandle::Reader::BlobSizePolicy);
     PassRefPtr<EncodedFormData> drainAsFormData();
-
-    // Callable only when not locked. Returns a non-null handle.
-    // Note: There is a case that calling |lock| doesn't make the buffer
-    // locked. |unlock| should be called even in such cases when a user finishes
-    // to use the returned handle, in order to maintain hasPendingActivity().
-    PassOwnPtr<FetchDataConsumerHandle> lock(ExecutionContext*);
-
-    // This function will lock |this| object. |client| cannot be null.
     void startLoading(ExecutionContext*, FetchDataLoader*, FetchDataLoader::Client* /* client */);
 
-    bool isLocked() const { return m_stream->isLocked(); }
-    bool hasPendingActivity() const { return isLocked() || m_lockLevel > 0; }
+    // Callable only when not locked. Returns a non-null handle.
+    // There is no means to "return" the handle to the body buffer: Calling
+    // this function locks, disturbs and closes the stream and no one will
+    // not be able to get any information from the stream and this buffer after
+    // that.
+    PassOwnPtr<FetchDataConsumerHandle> releaseHandle(ExecutionContext*);
+
+    bool hasPendingActivity() const;
 
     // UnderlyingSource
     void pullSource() override;
@@ -57,32 +55,23 @@ public:
     DEFINE_INLINE_TRACE()
     {
         visitor->trace(m_stream);
-        visitor->trace(m_streamReader);
-        visitor->trace(m_loaders);
+        visitor->trace(m_loader);
         UnderlyingSource::trace(visitor);
     }
 
 private:
-    class LoaderHolder;
-    enum EndLoadingMode {
-        EndLoadingDone,
-        EndLoadingErrored,
-    };
+    class LoaderClient;
     void close();
     void error();
     void processData();
-    void unlock();
-    void endLoading(FetchDataLoader::Client*, EndLoadingMode);
+    void endLoading();
+    void stopLoading();
 
     OwnPtr<FetchDataConsumerHandle> m_handle;
     OwnPtr<FetchDataConsumerHandle::Reader> m_reader;
     Member<ReadableByteStream> m_stream;
-    Member<ReadableByteStreamReader> m_streamReader;
-    HeapHashSet<Member<FetchDataLoader::Client>> m_loaders;
-    // We need this variable because we cannot lock closed or erroed stream
-    // although we should return true for hasPendingActivity() when someone
-    // calls |startLoading| but the loding is not yet done.
-    unsigned m_lockLevel;
+    // We need this member to keep it alive while loading.
+    Member<FetchDataLoader> m_loader;
     bool m_streamNeedsMore;
 };
 

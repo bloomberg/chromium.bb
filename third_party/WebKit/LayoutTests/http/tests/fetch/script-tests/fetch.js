@@ -356,4 +356,16 @@ test(function(t) {
   'Destroying the execution context while fetch is happening should not ' +
   'cause a crash.');
 
+test(t => {
+    var req = new Request('/', {method: 'POST', body: ''});
+    fetch(req);
+    assert_true(req.bodyUsed);
+}, 'Calling fetch() disturbs body if not null');
+
+test(t => {
+    var req = new Request('/', {method: 'POST'});
+    fetch(req);
+    assert_false(req.bodyUsed);
+}, 'Calling fetch() doesn\'t disturb body if null');
+
 done();

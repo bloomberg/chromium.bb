@@ -183,8 +183,7 @@ FetchResponseData* FetchResponseData::clone(ExecutionContext* executionContext)
         ASSERT(!m_internalResponse);
         if (m_buffer) {
             OwnPtr<WebDataConsumerHandle> handle1, handle2;
-            // TODO(yhirano): unlock the buffer appropriately.
-            DataConsumerTee::create(executionContext, m_buffer->lock(executionContext), &handle1, &handle2);
+            DataConsumerTee::create(executionContext, m_buffer->releaseHandle(executionContext), &handle1, &handle2);
             m_buffer = new BodyStreamBuffer(createFetchDataConsumerHandleFromWebHandle(handle1.release()));
             newResponse->m_buffer = new BodyStreamBuffer(createFetchDataConsumerHandleFromWebHandle(handle2.release()));
         }

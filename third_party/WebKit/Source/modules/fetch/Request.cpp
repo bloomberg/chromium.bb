@@ -12,6 +12,7 @@
 #include "core/fetch/ResourceLoaderOptions.h"
 #include "core/loader/ThreadableLoader.h"
 #include "modules/fetch/BodyStreamBuffer.h"
+#include "modules/fetch/DataConsumerHandleUtil.h"
 #include "modules/fetch/FetchBlobDataConsumerHandle.h"
 #include "modules/fetch/FetchManager.h"
 #include "modules/fetch/RequestInit.h"
@@ -50,28 +51,15 @@ FetchRequestData* createCopyOfFetchRequestDataForFetch(ScriptState* scriptState,
 
 Request* Request::createRequestWithRequestOrString(ScriptState* scriptState, Request* inputRequest, const String& inputString, RequestInit& init, ExceptionState& exceptionState)
 {
-    BodyStreamBuffer* temporaryBody = nullptr;
-
-    if (inputRequest) {
-        // We check bodyUsed even when the body is null in spite of the
-        // spec. See https://github.com/whatwg/fetch/issues/61 for details.
-        if (inputRequest->bodyUsed()) {
-            exceptionState.throwTypeError("Cannot construct a Request with a Request object that has already been used.");
-            return nullptr;
-        }
-    }
-
     // - "If |input| is a Request object and it is disturbed, throw a
     //   TypeError."
+    if (inputRequest && inputRequest->bodyUsed()) {
+        exceptionState.throwTypeError("Cannot construct a Request with a Request object that has already been used.");
+        return nullptr;
+    }
     // - "Let |temporaryBody| be |input|'s request's body if |input| is a
     //   Request object, and null otherwise."
-    if (inputRequest && inputRequest->hasBody()) {
-        if (inputRequest->bodyUsed()) {
-            exceptionState.throwTypeError("Cannot construct a Request with a Request object that has already been used.");
-            return nullptr;
-        }
-        temporaryBody = inputRequest->bodyBuffer();
-    }
+    BodyStreamBuffer* temporaryBody = inputRequest ? inputRequest->bodyBuffer() : nullptr;
 
     // "Let |request| be |input|'s request, if |input| is a Request object,
     // and a new request otherwise."
@@ -366,14 +354,11 @@ Request* Request::createRequestWithRequestOrString(ScriptState* scriptState, Req
 
     // "If |input| is a Request object and |input|'s request's body is
     // non-null, run these substeps:"
-    //
-    // We set bodyUsed even when the body is null in spite of the
-    // spec. See https://github.com/whatwg/fetch/issues/61 for details.
-    if (inputRequest) {
+    if (inputRequest && inputRequest->bodyBuffer()) {
         // "Set |input|'s body to an empty byte stream."
-        inputRequest->m_request->setBuffer(nullptr);
+        inputRequest->m_request->setBuffer(new BodyStreamBuffer(createFetchDataConsumerHandleFromWebHandle(createDoneDataConsumerHandle())));
         // "Set |input|'s disturbed flag."
-        inputRequest->setBodyPassed();
+        inputRequest->bodyBuffer()->stream()->setIsDisturbed();
     }
 
     // "Return |r|."
@@ -600,7 +585,7 @@ String Request::integrity() const
 
 Request* Request::clone(ExceptionState& exceptionState)
 {
-    if (bodyUsed()) {
+    if (isBodyLocked() || bodyUsed()) {
         exceptionState.throwTypeError("Request body is already used");
         return nullptr;
     }
@@ -614,9 +599,7 @@ Request* Request::clone(ExceptionState& exceptionState)
 FetchRequestData* Request::passRequestData()
 {
     ASSERT(!bodyUsed());
-    setBodyPassed();
-    FetchRequestData* newRequestData = m_request->pass(executionContext());
-    return newRequestData;
+    return m_request->pass(executionContext());
 }
 
 bool Request::hasBody() const

@@ -69,6 +69,7 @@ public:
     const BodyStreamBuffer* bodyBuffer() const override { return m_response->buffer(); }
     BodyStreamBuffer* internalBodyBuffer() { return m_response->internalBuffer(); }
     const BodyStreamBuffer* internalBodyBuffer() const { return m_response->internalBuffer(); }
+    bool bodyUsed() override;
 
     String mimeType() const override;
     String internalMIMEType() const;

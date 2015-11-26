@@ -10,6 +10,7 @@
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptValue.h"
+#include "bindings/core/v8/ToV8.h"
 #include "bindings/core/v8/V8ArrayBuffer.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8IteratorResultValue.h"
@@ -191,6 +192,11 @@ bool ReadableStreamImpl<ChunkTypeTraits>::enqueue(typename ChunkTypeTraits::Pass
 template <typename ChunkTypeTraits>
 ScriptPromise ReadableStreamImpl<ChunkTypeTraits>::read(ScriptState* scriptState)
 {
+    if (stateInternal() == Closed)
+        return ScriptPromise::cast(scriptState, v8IteratorResultDone(scriptState));
+    if (stateInternal() == Errored)
+        return ScriptPromise::reject(scriptState, toV8(storedException(), scriptState->context()->Global(), scriptState->isolate()));
+
     ASSERT(stateInternal() == Readable);
     setIsDisturbed();
     if (m_queue.isEmpty()) {
