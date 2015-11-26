@@ -525,7 +525,8 @@ weston_surface_state_init(struct weston_surface_state *state)
 	state->sx = 0;
 	state->sy = 0;
 
-	pixman_region32_init(&state->damage);
+	pixman_region32_init(&state->damage_surface);
+	pixman_region32_init(&state->damage_buffer);
 	pixman_region32_init(&state->opaque);
 	region_init_infinite(&state->input);
 
@@ -552,7 +553,8 @@ weston_surface_state_fini(struct weston_surface_state *state)
 
 	pixman_region32_fini(&state->input);
 	pixman_region32_fini(&state->opaque);
-	pixman_region32_fini(&state->damage);
+	pixman_region32_fini(&state->damage_surface);
+	pixman_region32_fini(&state->damage_buffer);
 
 	if (state->buffer)
 		wl_list_remove(&state->buffer_destroy_listener.link);
@@ -2569,8 +2571,23 @@ surface_damage(struct wl_client *client,
 	if (width <= 0 || height <= 0)
 		return;
 
-	pixman_region32_union_rect(&surface->pending.damage,
-				   &surface->pending.damage,
+	pixman_region32_union_rect(&surface->pending.damage_surface,
+				   &surface->pending.damage_surface,
+				   x, y, width, height);
+}
+
+static void
+surface_damage_buffer(struct wl_client *client,
+		      struct wl_resource *resource,
+		      int32_t x, int32_t y, int32_t width, int32_t height)
+{
+	struct weston_surface *surface = wl_resource_get_user_data(resource);
+
+	if (width <= 0 || height <= 0)
+		return;
+
+	pixman_region32_union_rect(&surface->pending.damage_buffer,
+				   &surface->pending.damage_buffer,
 				   x, y, width, height);
 }
 
@@ -2733,6 +2750,40 @@ weston_surface_build_buffer_matrix(struct weston_surface *surface,
 	weston_matrix_scale(matrix, vp->buffer.scale, vp->buffer.scale, 1);
 }
 
+/* Translate pending damage in buffer co-ordinates to surface
+ * co-ordinates and union it with a pixman_region32_t.
+ * This should only be called after the buffer is attached.
+ */
+static void
+apply_damage_buffer(pixman_region32_t *dest,
+		    struct weston_surface *surface,
+		    struct weston_surface_state *state)
+{
+	struct weston_buffer *buffer = surface->buffer_ref.buffer;
+
+	/* wl_surface.damage_buffer needs to be clipped to the buffer,
+	 * translated into surface co-ordinates and unioned with
+	 * any other surface damage.
+	 * None of this makes sense if there is no buffer though.
+	 */
+	if (buffer && pixman_region32_not_empty(&state->damage_buffer)) {
+		pixman_region32_t buffer_damage;
+
+		pixman_region32_intersect_rect(&state->damage_buffer,
+					       &state->damage_buffer,
+					       0, 0, buffer->width,
+					       buffer->height);
+		pixman_region32_init(&buffer_damage);
+		weston_matrix_transform_region(&buffer_damage,
+					       &surface->buffer_to_surface_matrix,
+					       &state->damage_buffer);
+		pixman_region32_union(dest, dest, &buffer_damage);
+		pixman_region32_fini(&buffer_damage);
+	}
+	/* We should clear this on commit even if there was no buffer */
+	pixman_region32_clear(&state->damage_buffer);
+}
+
 static void
 weston_surface_commit_state(struct weston_surface *surface,
 			    struct weston_surface_state *state)
@@ -2766,15 +2817,20 @@ weston_surface_commit_state(struct weston_surface *surface,
 	state->newly_attached = 0;
 	state->buffer_viewport.changed = 0;
 
-	/* wl_surface.damage */
+	/* wl_surface.damage and wl_surface.damage_buffer */
 	if (weston_timeline_enabled_ &&
-	    pixman_region32_not_empty(&state->damage))
+	    (pixman_region32_not_empty(&state->damage_surface) ||
+	     pixman_region32_not_empty(&state->damage_buffer)))
 		TL_POINT("core_commit_damage", TLP_SURFACE(surface), TLP_END);
+
 	pixman_region32_union(&surface->damage, &surface->damage,
-			      &state->damage);
+			      &state->damage_surface);
+
+	apply_damage_buffer(&surface->damage, surface, state);
+
 	pixman_region32_intersect_rect(&surface->damage, &surface->damage,
 				       0, 0, surface->width, surface->height);
-	pixman_region32_clear(&state->damage);
+	pixman_region32_clear(&state->damage_surface);
 
 	/* wl_surface.set_opaque_region */
 	pixman_region32_init(&opaque);
@@ -2893,7 +2949,8 @@ static const struct wl_surface_interface surface_interface = {
 	surface_set_input_region,
 	surface_commit,
 	surface_set_buffer_transform,
-	surface_set_buffer_scale
+	surface_set_buffer_scale,
+	surface_damage_buffer
 };
 
 static void
@@ -3022,11 +3079,12 @@ weston_subsurface_commit_to_cache(struct weston_subsurface *sub)
 	 * translated to correspond to the new surface coordinate system
 	 * origin.
 	 */
-	pixman_region32_translate(&sub->cached.damage,
+	pixman_region32_translate(&sub->cached.damage_surface,
 				  -surface->pending.sx, -surface->pending.sy);
-	pixman_region32_union(&sub->cached.damage, &sub->cached.damage,
-			      &surface->pending.damage);
-	pixman_region32_clear(&surface->pending.damage);
+	pixman_region32_union(&sub->cached.damage_surface,
+			      &sub->cached.damage_surface,
+			      &surface->pending.damage_surface);
+	pixman_region32_clear(&surface->pending.damage_surface);
 
 	if (surface->pending.newly_attached) {
 		sub->cached.newly_attached = 1;
@@ -3039,6 +3097,8 @@ weston_subsurface_commit_to_cache(struct weston_subsurface *sub)
 	}
 	sub->cached.sx += surface->pending.sx;
 	sub->cached.sy += surface->pending.sy;
+
+	apply_damage_buffer(&sub->cached.damage_surface, surface, &surface->pending);
 
 	sub->cached.buffer_viewport.changed |=
 		surface->pending.buffer_viewport.changed;
@@ -4536,7 +4596,7 @@ weston_compositor_create(struct wl_display *display, void *user_data)
 	ec->output_id_pool = 0;
 	ec->repaint_msec = DEFAULT_REPAINT_WINDOW;
 
-	if (!wl_global_create(ec->wl_display, &wl_compositor_interface, 3,
+	if (!wl_global_create(ec->wl_display, &wl_compositor_interface, 4,
 			      ec, compositor_bind))
 		goto fail;
 
