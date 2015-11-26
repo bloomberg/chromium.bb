@@ -452,7 +452,12 @@ TEST_F(RenderViewImplTest, SaveImageFromDataURL) {
 }
 
 // Test that we get form state change notifications when input fields change.
-TEST_F(RenderViewImplTest, DISABLED_OnNavStateChanged) {
+TEST_F(RenderViewImplTest, OnNavStateChanged) {
+  // TODO(creis): Make the UpdateState timer work in OOPIF modes.
+  // See https://crbug.com/545219.
+  if (SiteIsolationPolicy::UseSubframeNavigationEntries())
+    return;
+
   // Don't want any delay for form state sync changes. This will still post a
   // message so updates will get coalesced, but as soon as we spin the message
   // loop, it will generate an update.
