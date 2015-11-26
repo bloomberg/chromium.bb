@@ -561,9 +561,11 @@ class DriveFileSystemExtensionApiTest : public FileSystemExtensionApiTestBase {
 class MultiProfileDriveFileSystemExtensionApiTest :
     public FileSystemExtensionApiTestBase {
  public:
-  MultiProfileDriveFileSystemExtensionApiTest() : second_profile(NULL) {}
+  MultiProfileDriveFileSystemExtensionApiTest() : second_profile_(NULL) {}
 
   void SetUpOnMainThread() override {
+    ASSERT_TRUE(tmp_dir_.CreateUniqueTempDir());
+
     base::FilePath user_data_directory;
     PathService::Get(chrome::DIR_USER_DATA, &user_data_directory);
     user_manager::UserManager::Get()->UserLoggedIn(
@@ -574,7 +576,7 @@ class MultiProfileDriveFileSystemExtensionApiTest :
         user_data_directory.Append(
             chromeos::ProfileHelper::GetUserProfileDir(
                 kSecondProfileHash).BaseName());
-    second_profile =
+    second_profile_ =
         g_browser_process->profile_manager()->GetProfile(profile_dir);
 
     FileSystemExtensionApiTestBase::SetUpOnMainThread();
@@ -593,7 +595,7 @@ class MultiProfileDriveFileSystemExtensionApiTest :
 
   void AddTestMountPoint() override {
     test_util::WaitUntilDriveMountPointIsAdded(browser()->profile());
-    test_util::WaitUntilDriveMountPointIsAdded(second_profile);
+    test_util::WaitUntilDriveMountPointIsAdded(second_profile_);
   }
 
  protected:
@@ -601,7 +603,8 @@ class MultiProfileDriveFileSystemExtensionApiTest :
   drive::DriveIntegrationService* CreateDriveIntegrationService(
       Profile* profile) {
     base::FilePath cache_dir;
-    base::CreateNewTempDirectory(base::FilePath::StringType(), &cache_dir);
+    base::CreateTemporaryDirInDir(tmp_dir_.path(), base::FilePath::StringType(),
+                                  &cache_dir);
 
     drive::FakeDriveService* const fake_drive_service =
         new drive::FakeDriveService;
@@ -619,7 +622,7 @@ class MultiProfileDriveFileSystemExtensionApiTest :
             drive::util::GetDriveServiceByProfile(browser()->profile()));
     drive::FakeDriveService* const sub_service =
         static_cast<drive::FakeDriveService*>(
-            drive::util::GetDriveServiceByProfile(second_profile));
+            drive::util::GetDriveServiceByProfile(second_profile_));
 
     google_apis::DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
     scoped_ptr<google_apis::FileResource> entry;
@@ -645,11 +648,12 @@ class MultiProfileDriveFileSystemExtensionApiTest :
     return (error == google_apis::HTTP_CREATED);
   }
 
+  base::ScopedTempDir tmp_dir_;
   DriveIntegrationServiceFactory::FactoryCallback
       create_drive_integration_service_;
   scoped_ptr<DriveIntegrationServiceFactory::ScopedFactoryForTest>
       service_factory_for_test_;
-  Profile* second_profile;
+  Profile* second_profile_;
   std::map<std::string, std::string> resource_ids_;
 };
 
