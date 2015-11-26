@@ -63,6 +63,12 @@ void FrameTree::setName(const AtomicString& name, const AtomicString& fallbackNa
     m_uniqueName = parent()->tree().uniqueChildName(name.isEmpty() ? fallbackName : name);
 }
 
+void FrameTree::setNameForReplacementFrame(const AtomicString& name, const AtomicString& uniqueName)
+{
+    m_name = name;
+    m_uniqueName = uniqueName;
+}
+
 Frame* FrameTree::parent() const
 {
     if (!m_thisFrame->client())

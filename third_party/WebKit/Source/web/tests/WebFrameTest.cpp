@@ -7472,6 +7472,58 @@ TEST_F(WebFrameSwapTest, HistoryCommitTypeAfterExistingRemoteToLocalSwap)
     remoteFrame->close();
 }
 
+// The uniqueName should be preserved when swapping to a RemoteFrame and back,
+// whether the frame has a name or not.
+TEST_F(WebFrameSwapTest, UniqueNameAfterRemoteToLocalSwap)
+{
+    // Start with a named frame.
+    WebFrame* targetFrame = mainFrame()->firstChild();
+    ASSERT_TRUE(targetFrame);
+    WebString uniqueName = targetFrame->uniqueName();
+    EXPECT_EQ("frame1", uniqueName.utf8());
+
+    // Swap to a RemoteFrame.
+    FrameTestHelpers::TestWebRemoteFrameClient remoteFrameClient;
+    WebRemoteFrame* remoteFrame = WebRemoteFrame::create(WebTreeScopeType::Document, &remoteFrameClient);
+    targetFrame->swap(remoteFrame);
+    ASSERT_TRUE(mainFrame()->firstChild());
+    ASSERT_EQ(mainFrame()->firstChild(), remoteFrame);
+    EXPECT_EQ(uniqueName.utf8(), WebString(toWebRemoteFrameImpl(remoteFrame)->frame()->tree().uniqueName()).utf8());
+
+    // Swap back to a LocalFrame.
+    RemoteToLocalSwapWebFrameClient client(remoteFrame);
+    WebLocalFrame* localFrame = WebLocalFrame::create(WebTreeScopeType::Document, &client);
+    localFrame->initializeToReplaceRemoteFrame(remoteFrame, "frame1", WebSandboxFlags::None, WebFrameOwnerProperties());
+    FrameTestHelpers::loadFrame(localFrame, m_baseURL + "subframe-hello.html");
+    EXPECT_EQ(uniqueName.utf8(), localFrame->uniqueName().utf8());
+    EXPECT_EQ(uniqueName.utf8(), WebString(toWebLocalFrameImpl(localFrame)->frame()->loader().currentItem()->target()).utf8());
+
+    // Repeat with no name on the frame.
+    localFrame->setName("");
+    WebString uniqueName2 = localFrame->uniqueName();
+    EXPECT_EQ("<!--framePath //<!--frame2-->-->", uniqueName2.utf8());
+
+    FrameTestHelpers::TestWebRemoteFrameClient remoteFrameClient2;
+    WebRemoteFrame* remoteFrame2 = WebRemoteFrame::create(WebTreeScopeType::Document, &remoteFrameClient2);
+    localFrame->swap(remoteFrame2);
+    ASSERT_TRUE(mainFrame()->firstChild());
+    ASSERT_EQ(mainFrame()->firstChild(), remoteFrame2);
+    EXPECT_EQ(uniqueName2.utf8(), WebString(toWebRemoteFrameImpl(remoteFrame2)->frame()->tree().uniqueName()).utf8());
+
+    RemoteToLocalSwapWebFrameClient client2(remoteFrame2);
+    WebLocalFrame* localFrame2 = WebLocalFrame::create(WebTreeScopeType::Document, &client2);
+    localFrame2->initializeToReplaceRemoteFrame(remoteFrame2, "", WebSandboxFlags::None, WebFrameOwnerProperties());
+    FrameTestHelpers::loadFrame(localFrame2, m_baseURL + "subframe-hello.html");
+    EXPECT_EQ(uniqueName2.utf8(), localFrame2->uniqueName().utf8());
+    EXPECT_EQ(uniqueName2.utf8(), WebString(toWebLocalFrameImpl(localFrame2)->frame()->loader().currentItem()->target()).utf8());
+
+    // Manually reset to break WebViewHelper's dependency on the stack allocated
+    // TestWebFrameClient.
+    reset();
+    remoteFrame->close();
+    remoteFrame2->close();
+}
+
 class RemoteNavigationClient : public FrameTestHelpers::TestWebRemoteFrameClient {
 public:
     void navigate(const WebURLRequest& request, bool shouldReplaceCurrentEntry) override

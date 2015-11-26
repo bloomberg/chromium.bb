@@ -42,6 +42,11 @@ public:
     // |fallbackName| is used as a source of uniqueName.
     void setName(const AtomicString& name, const AtomicString& fallbackName = nullAtom);
 
+    // Directly assigns both the name and uniqueName. Should only be used when
+    // switching between LocalFrames and RemoteFrames for the same logical frame
+    // so that the unique name stays unique.
+    void setNameForReplacementFrame(const AtomicString& name, const AtomicString& uniqueName);
+
     Frame* parent() const;
     Frame* top() const;
     Frame* previousSibling() const;

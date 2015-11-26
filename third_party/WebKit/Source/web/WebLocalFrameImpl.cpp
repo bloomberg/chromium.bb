@@ -118,6 +118,7 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/RemoteFrame.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLAnchorElement.h"
@@ -1991,9 +1992,13 @@ void WebLocalFrameImpl::initializeToReplaceRemoteFrame(WebRemoteFrame* oldWebFra
     OwnPtrWillBeRawPtr<FrameOwner> tempOwner = RemoteBridgeFrameOwner::create(nullptr, SandboxNone, WebFrameOwnerProperties());
     RefPtrWillBeRawPtr<LocalFrame> frame = LocalFrame::create(m_frameLoaderClientImpl.get(), oldFrame->host(), tempOwner.get());
     frame->setOwner(oldFrame->owner());
-    frame->tree().setName(name);
     setParent(oldWebFrame->parent());
     setOpener(oldWebFrame->opener());
+
+    // Set the name and unique name directly.
+    // TODO(creis): Remove |name| and use the oldWebFrame's name.
+    frame->tree().setNameForReplacementFrame(name, toWebRemoteFrameImpl(oldWebFrame)->frame()->tree().uniqueName());
+
     setCoreFrame(frame);
 
     if (frame->owner() && !frame->owner()->isLocal()) {
