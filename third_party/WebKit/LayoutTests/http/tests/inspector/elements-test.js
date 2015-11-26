@@ -969,14 +969,10 @@ InspectorTest.waitForAnimationAdded = function(callback)
 
 InspectorTest.dumpAnimationTimeline = function(timeline)
 {
-    for (var nodeUI of timeline._nodesMap.values()) {
-        for (nodeRow of nodeUI._rows) {
-            for (var ui of nodeRow.animations) {
-                InspectorTest.addResult(ui.animation().type());
-                InspectorTest.addResult(ui._nameElement.innerHTML);
-                InspectorTest.addResult(ui._svg.innerHTML);
-            }
-        }
+    for (var ui of timeline._uiAnimations) {
+        InspectorTest.addResult(ui.animation().type());
+        InspectorTest.addResult(ui._nameElement.innerHTML);
+        InspectorTest.addResult(ui._svg.innerHTML);
     }
 }
 
