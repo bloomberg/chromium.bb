@@ -88,7 +88,6 @@
                 '../android_webview/android_webview_shell.gyp:system_webview_shell_apk',
                 '../chrome/android/chrome_apk.gyp:chrome_public_apk',
                 '../chrome/android/chrome_apk.gyp:chrome_sync_shell_apk',
-                '../remoting/remoting.gyp:remoting_apk',
               ],
             }],
             # TODO: Enable packed relocations for x64. See: b/20532404
