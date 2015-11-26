@@ -393,6 +393,23 @@ public class ApplicationStatus {
     }
 
     /**
+     * Robolectric JUnit tests create a new application between each test, while all the context
+     * in static classes isn't reset. This function allows to reset the application status to avoid
+     * being in a dirty state.
+     */
+    public static void destroyForJUnitTests() {
+        sApplicationStateListeners.clear();
+        sGeneralActivityStateListeners.clear();
+        sActivityInfo.clear();
+        synchronized (sCachedApplicationStateLock) {
+            sCachedApplicationState = null;
+        }
+        sActivity = null;
+        sApplication = null;
+        sNativeApplicationStateListener = null;
+    }
+
+    /**
      * Registers the single thread-safe native activity status listener.
      * This handles the case where the caller is not on the main thread.
      * Note that this is used by a leaky singleton object from the native
