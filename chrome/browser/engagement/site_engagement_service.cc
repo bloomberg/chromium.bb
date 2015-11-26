@@ -421,14 +421,9 @@ void SiteEngagementService::AddPoints(const GURL& url, double points) {
 
   score.AddPoints(points);
   if (score.UpdateScoreDict(score_dict.get())) {
-    ContentSettingsPattern pattern(
-        ContentSettingsPattern::FromURLNoWildcard(url));
-    if (!pattern.IsValid())
-      return;
-
-    settings_map->SetWebsiteSetting(pattern, ContentSettingsPattern::Wildcard(),
-                                    CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT,
-                                    std::string(), score_dict.release());
+    settings_map->SetWebsiteSettingDefaultScope(
+        url, GURL(), CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT, std::string(),
+        score_dict.release());
   }
 }
 
@@ -453,9 +448,9 @@ void SiteEngagementService::CleanupEngagementScores() {
         continue;
     }
 
-    settings_map->SetWebsiteSetting(
-        site.primary_pattern, ContentSettingsPattern::Wildcard(),
-        CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT, std::string(), nullptr);
+    settings_map->SetWebsiteSettingDefaultScope(
+        origin, GURL(), CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT, std::string(),
+        nullptr);
   }
 }
 
@@ -556,13 +551,8 @@ void SiteEngagementService::GetCountsForOriginsComplete(
     if (origin_to_count.second != 0)
       continue;
 
-    ContentSettingsPattern pattern(
-        ContentSettingsPattern::FromURLNoWildcard(origin_to_count.first));
-    if (!pattern.IsValid())
-      continue;
-
-    settings_map->SetWebsiteSetting(pattern, ContentSettingsPattern::Wildcard(),
-                                    CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT,
-                                    std::string(), nullptr);
+    settings_map->SetWebsiteSettingDefaultScope(
+        origin_to_count.first, GURL(), CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT,
+        std::string(), nullptr);
   }
 }

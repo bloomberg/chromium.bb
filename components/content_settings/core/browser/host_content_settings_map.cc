@@ -23,6 +23,7 @@
 #include "components/content_settings/core/browser/content_settings_registry.h"
 #include "components/content_settings/core/browser/content_settings_rule.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
+#include "components/content_settings/core/browser/website_settings_registry.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -213,42 +214,58 @@ void HostContentSettingsMap::GetSettingsForOneType(
 void HostContentSettingsMap::SetDefaultContentSetting(
     ContentSettingsType content_type,
     ContentSetting setting) {
-  base::Value* value = NULL;
+  scoped_ptr<base::Value> value;
   // A value of CONTENT_SETTING_DEFAULT implies deleting the content setting.
   if (setting != CONTENT_SETTING_DEFAULT) {
     DCHECK(IsDefaultSettingAllowedForType(setting, content_type));
-    value = new base::FundamentalValue(setting);
+    value.reset(new base::FundamentalValue(setting));
   }
-  SetWebsiteSetting(
-      ContentSettingsPattern::Wildcard(),
-      ContentSettingsPattern::Wildcard(),
-      content_type,
-      std::string(),
-      value);
+  SetWebsiteSettingCustomScope(ContentSettingsPattern::Wildcard(),
+                               ContentSettingsPattern::Wildcard(), content_type,
+                               std::string(), value.Pass());
 }
 
-void HostContentSettingsMap::SetWebsiteSetting(
-    const ContentSettingsPattern& primary_pattern,
-    const ContentSettingsPattern& secondary_pattern,
+void HostContentSettingsMap::SetWebsiteSettingDefaultScope(
+    const GURL& requesting_url,
+    const GURL& top_level_url,
     ContentSettingsType content_type,
     const std::string& resource_identifier,
     base::Value* value) {
-  DCHECK(SupportsResourceIdentifier(content_type) ||
-         resource_identifier.empty());
-  UsedContentSettingsProviders();
+  using content_settings::WebsiteSettingsInfo;
 
-  for (ProviderIterator provider = content_settings_providers_.begin();
-       provider != content_settings_providers_.end();
-       ++provider) {
-    if (provider->second->SetWebsiteSetting(primary_pattern,
-                                            secondary_pattern,
-                                            content_type,
-                                            resource_identifier,
-                                            value)) {
-      return;
-    }
+  const WebsiteSettingsInfo* info =
+      content_settings::WebsiteSettingsRegistry::GetInstance()->Get(
+          content_type);
+  ContentSettingsPattern primary_pattern;
+  ContentSettingsPattern secondary_pattern;
+  switch (info->scoping_type()) {
+    case WebsiteSettingsInfo::TOP_LEVEL_DOMAIN_ONLY_SCOPE:
+      primary_pattern = ContentSettingsPattern::FromURL(top_level_url);
+      secondary_pattern = ContentSettingsPattern::Wildcard();
+      DCHECK(requesting_url.is_empty());
+      break;
+    case WebsiteSettingsInfo::REQUESTING_DOMAIN_ONLY_SCOPE:
+      primary_pattern = ContentSettingsPattern::FromURL(requesting_url);
+      secondary_pattern = ContentSettingsPattern::Wildcard();
+      DCHECK(top_level_url.is_empty());
+      break;
+    case WebsiteSettingsInfo::REQUESTING_ORIGIN_ONLY_SCOPE:
+      primary_pattern =
+          ContentSettingsPattern::FromURLNoWildcard(requesting_url);
+      secondary_pattern = ContentSettingsPattern::Wildcard();
+      DCHECK(top_level_url.is_empty());
+      break;
+    case WebsiteSettingsInfo::REQUESTING_ORIGIN_AND_TOP_LEVEL_ORIGIN_SCOPE:
+      primary_pattern =
+          ContentSettingsPattern::FromURLNoWildcard(requesting_url);
+      secondary_pattern =
+          ContentSettingsPattern::FromURLNoWildcard(top_level_url);
+      break;
   }
-  NOTREACHED();
+  if (!primary_pattern.IsValid() || !secondary_pattern.IsValid())
+    return;
+  SetWebsiteSettingCustomScope(primary_pattern, secondary_pattern, content_type,
+                               resource_identifier, make_scoped_ptr(value));
 }
 
 void HostContentSettingsMap::SetNarrowestContentSetting(
@@ -331,19 +348,16 @@ void HostContentSettingsMap::SetContentSetting(
     UpdateLastUsageByPattern(primary_pattern, secondary_pattern, content_type);
   }
 
-  base::Value* value = NULL;
+  scoped_ptr<base::Value> value;
   // A value of CONTENT_SETTING_DEFAULT implies deleting the content setting.
   if (setting != CONTENT_SETTING_DEFAULT) {
     DCHECK(content_settings::ContentSettingsRegistry::GetInstance()
                ->Get(content_type)
                ->IsSettingValid(setting));
-    value = new base::FundamentalValue(setting);
+    value.reset(new base::FundamentalValue(setting));
   }
-  SetWebsiteSetting(primary_pattern,
-                    secondary_pattern,
-                    content_type,
-                    resource_identifier,
-                    value);
+  SetWebsiteSettingCustomScope(primary_pattern, secondary_pattern, content_type,
+                               resource_identifier, value.Pass());
 }
 
 ContentSetting HostContentSettingsMap::GetContentSettingAndMaybeUpdateLastUsage(
@@ -495,6 +509,27 @@ void HostContentSettingsMap::ShutdownOnUIThread() {
        ++it) {
     it->second->ShutdownOnUIThread();
   }
+}
+
+void HostContentSettingsMap::SetWebsiteSettingCustomScope(
+    const ContentSettingsPattern& primary_pattern,
+    const ContentSettingsPattern& secondary_pattern,
+    ContentSettingsType content_type,
+    const std::string& resource_identifier,
+    scoped_ptr<base::Value> value) {
+  DCHECK(SupportsResourceIdentifier(content_type) ||
+         resource_identifier.empty());
+  UsedContentSettingsProviders();
+
+  base::Value* val = value.release();
+  for (auto& provider_pair : content_settings_providers_) {
+    if (provider_pair.second->SetWebsiteSetting(primary_pattern,
+                                                secondary_pattern, content_type,
+                                                resource_identifier, val)) {
+      return;
+    }
+  }
+  NOTREACHED();
 }
 
 void HostContentSettingsMap::AddSettingsForOneType(

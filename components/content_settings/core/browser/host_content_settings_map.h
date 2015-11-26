@@ -132,25 +132,30 @@ class HostContentSettingsMap : public content_settings::Observer,
   // this pattern.
   // NOTICE: This is just a convenience method for content types that use
   // |CONTENT_SETTING| as their data type. For content types that use other
-  // data types please use the method SetWebsiteSetting.
+  // data types please use the method SetWebsiteSettingDefaultScope().
   //
   // This should only be called on the UI thread.
+  // TODO(raymes): Create a version of this function which uses the default
+  // scope.
   void SetContentSetting(const ContentSettingsPattern& primary_pattern,
                          const ContentSettingsPattern& secondary_pattern,
                          ContentSettingsType content_type,
                          const std::string& resource_identifier,
                          ContentSetting setting);
 
-  // Sets the |value| for the given patterns, |content_type| and
-  // |resource_identifier|. Setting the value to NULL causes the default value
-  // for that type to be used when loading pages matching this pattern.
+  // Sets the |value| for the default scope of the url that is appropriate for
+  // the given |content_type| and |resource_identifier|. Setting the value to
+  // null removes the default pattern pair for this content type.
   //
-  // Takes ownership of the passed value.
-  void SetWebsiteSetting(const ContentSettingsPattern& primary_pattern,
-                         const ContentSettingsPattern& secondary_pattern,
-                         ContentSettingsType content_type,
-                         const std::string& resource_identifier,
-                         base::Value* value);
+  // Internally this will call SetWebsiteSettingCustomScope() with the default
+  // scope patterns for the given |content_type|. Developers will generally want
+  // to use this function instead of SetWebsiteSettingCustomScope() unless they
+  // need to specify custom scoping.
+  void SetWebsiteSettingDefaultScope(const GURL& requesting_url,
+                                     const GURL& top_level_url,
+                                     ContentSettingsType content_type,
+                                     const std::string& resource_identifier,
+                                     base::Value* value);
 
   // Sets the most specific rule that currently defines the setting for the
   // given content type. TODO(raymes): Remove this once all content settings
@@ -245,6 +250,17 @@ class HostContentSettingsMap : public content_settings::Observer,
   typedef ProviderMap::const_iterator ConstProviderIterator;
 
   ~HostContentSettingsMap() override;
+
+  // Sets a rule to apply the |value| for all sites matching |pattern|,
+  // |content_type| and |resource_identifier|. Setting the value to null removes
+  // the given pattern pair. Unless adding a custom-scoped setting, most
+  // developers will want to use SetWebsiteSettingDefaultScope() instead.
+  void SetWebsiteSettingCustomScope(
+      const ContentSettingsPattern& primary_pattern,
+      const ContentSettingsPattern& secondary_pattern,
+      ContentSettingsType content_type,
+      const std::string& resource_identifier,
+      scoped_ptr<base::Value> value);
 
   ContentSetting GetDefaultContentSettingFromProvider(
       ContentSettingsType content_type,

@@ -235,8 +235,6 @@ void ChromeSSLHostStateDelegate::AllowCert(const std::string& host,
                                            const net::X509Certificate& cert,
                                            net::CertStatus error) {
   GURL url = GetSecureGURLForHost(host);
-  const ContentSettingsPattern pattern =
-      ContentSettingsPattern::FromURLNoWildcard(url);
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(profile_);
   scoped_ptr<base::Value> value(map->GetWebsiteSetting(
@@ -263,12 +261,10 @@ void ChromeSSLHostStateDelegate::AllowCert(const std::string& host,
   cert_dict->SetIntegerWithoutPathExpansion(GetKey(cert, error), ALLOWED);
 
   // The map takes ownership of the value, so it is released in the call to
-  // SetWebsiteSetting.
-  map->SetWebsiteSetting(pattern,
-                         pattern,
-                         CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS,
-                         std::string(),
-                         value.release());
+  // SetWebsiteSettingDefaultScope.
+  map->SetWebsiteSettingDefaultScope(url, GURL(),
+                                     CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS,
+                                     std::string(), value.release());
 }
 
 void ChromeSSLHostStateDelegate::Clear() {
@@ -331,16 +327,12 @@ ChromeSSLHostStateDelegate::QueryPolicy(const std::string& host,
 void ChromeSSLHostStateDelegate::RevokeUserAllowExceptions(
     const std::string& host) {
   GURL url = GetSecureGURLForHost(host);
-  const ContentSettingsPattern pattern =
-      ContentSettingsPattern::FromURLNoWildcard(url);
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(profile_);
 
-  map->SetWebsiteSetting(pattern,
-                         pattern,
-                         CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS,
-                         std::string(),
-                         NULL);
+  map->SetWebsiteSettingDefaultScope(url, GURL(),
+                                     CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS,
+                                     std::string(), NULL);
 }
 
 // TODO(jww): This will revoke all of the decisions in the browser context.

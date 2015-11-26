@@ -1354,14 +1354,12 @@ void ContentSettingsHandler::RemoveExceptionFromHostContentSettingsMap(
       mode == "normal" ? GetContentSettingsMap() :
                          GetOTRContentSettingsMap();
   if (settings_map) {
-    settings_map->SetWebsiteSetting(
+    settings_map->SetContentSetting(
         ContentSettingsPattern::FromString(pattern),
-        secondary_pattern.empty() ?
-            ContentSettingsPattern::Wildcard() :
-            ContentSettingsPattern::FromString(secondary_pattern),
-        type,
-        std::string(),
-        NULL);
+        secondary_pattern.empty()
+            ? ContentSettingsPattern::Wildcard()
+            : ContentSettingsPattern::FromString(secondary_pattern),
+        type, std::string(), CONTENT_SETTING_DEFAULT);
   }
 }
 

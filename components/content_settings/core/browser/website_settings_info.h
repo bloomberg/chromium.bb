@@ -28,12 +28,12 @@ class WebsiteSettingsInfo {
     // Settings scoped to the domain of the main frame only.
     TOP_LEVEL_DOMAIN_ONLY_SCOPE,
 
-    // Settings scoped to the origin of the requesting frame only.
-    REQUESTING_ORIGIN_ONLY_SCOPE,
-
     // Settings scoped to the domain of the requesting frame only. This should
     // not generally be used.
     REQUESTING_DOMAIN_ONLY_SCOPE,
+
+    // Settings scoped to the origin of the requesting frame only.
+    REQUESTING_ORIGIN_ONLY_SCOPE,
 
     // Settings scoped to the combination of the origin of the requesting
     // frame and the origin of the top level frame.

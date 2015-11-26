@@ -99,14 +99,7 @@ scoped_ptr<base::DictionaryValue> ChooserContextBase::GetWebsiteSetting(
 void ChooserContextBase::SetWebsiteSetting(const GURL& requesting_origin,
                                            const GURL& embedding_origin,
                                            scoped_ptr<base::Value> value) {
-  ContentSettingsPattern primary_pattern(
-      ContentSettingsPattern::FromURLNoWildcard(requesting_origin));
-  ContentSettingsPattern secondary_pattern(
-      ContentSettingsPattern::FromURLNoWildcard(embedding_origin));
-  if (!primary_pattern.IsValid() || !secondary_pattern.IsValid())
-    return;
-
-  host_content_settings_map_->SetWebsiteSetting(
-      primary_pattern, secondary_pattern, data_content_settings_type_,
+  host_content_settings_map_->SetWebsiteSettingDefaultScope(
+      requesting_origin, embedding_origin, data_content_settings_type_,
       std::string(), value.release());
 }

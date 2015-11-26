@@ -168,13 +168,9 @@ void AppBannerSettingsHelper::ClearHistoryForURLs(
   HostContentSettingsMap* settings =
       HostContentSettingsMapFactory::GetForProfile(profile);
   for (const GURL& origin_url : origin_urls) {
-    ContentSettingsPattern pattern(ContentSettingsPattern::FromURL(origin_url));
-    if (!pattern.IsValid())
-      continue;
-
-    settings->SetWebsiteSetting(pattern, ContentSettingsPattern::Wildcard(),
-                                CONTENT_SETTINGS_TYPE_APP_BANNER, std::string(),
-                                nullptr);
+    settings->SetWebsiteSettingDefaultScope(origin_url, GURL(),
+                                            CONTENT_SETTINGS_TYPE_APP_BANNER,
+                                            std::string(), nullptr);
     settings->FlushLossyWebsiteSettings();
   }
 }
@@ -230,10 +226,6 @@ void AppBannerSettingsHelper::RecordBannerEvent(
   if (profile->IsOffTheRecord() || package_name_or_start_url.empty())
     return;
 
-  ContentSettingsPattern pattern(ContentSettingsPattern::FromURL(origin_url));
-  if (!pattern.IsValid())
-    return;
-
   HostContentSettingsMap* settings =
       HostContentSettingsMapFactory::GetForProfile(profile);
   scoped_ptr<base::DictionaryValue> origin_dict =
@@ -251,9 +243,9 @@ void AppBannerSettingsHelper::RecordBannerEvent(
   std::string event_key(kBannerEventKeys[event]);
   app_dict->SetDouble(event_key, time.ToInternalValue());
 
-  settings->SetWebsiteSetting(pattern, ContentSettingsPattern::Wildcard(),
-                              CONTENT_SETTINGS_TYPE_APP_BANNER, std::string(),
-                              origin_dict.release());
+  settings->SetWebsiteSettingDefaultScope(origin_url, GURL(),
+                                          CONTENT_SETTINGS_TYPE_APP_BANNER,
+                                          std::string(), origin_dict.release());
 
   // App banner content settings are lossy, meaning they will not cause the
   // prefs to become dirty. This is fine for most events, as if they are lost it
@@ -273,10 +265,6 @@ void AppBannerSettingsHelper::RecordBannerCouldShowEvent(
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   if (profile->IsOffTheRecord() || package_name_or_start_url.empty())
-    return;
-
-  ContentSettingsPattern pattern(ContentSettingsPattern::FromURL(origin_url));
-  if (!pattern.IsValid())
     return;
 
   HostContentSettingsMap* settings =
@@ -348,9 +336,9 @@ void AppBannerSettingsHelper::RecordBannerCouldShowEvent(
   value->SetDouble(kBannerEngagementKey, engagement);
   could_show_list->Append(value.Pass());
 
-  settings->SetWebsiteSetting(pattern, ContentSettingsPattern::Wildcard(),
-                              CONTENT_SETTINGS_TYPE_APP_BANNER, std::string(),
-                              origin_dict.release());
+  settings->SetWebsiteSettingDefaultScope(origin_url, GURL(),
+                                          CONTENT_SETTINGS_TYPE_APP_BANNER,
+                                          std::string(), origin_dict.release());
 }
 
 bool AppBannerSettingsHelper::ShouldShowBanner(
