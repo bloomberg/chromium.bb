@@ -14,10 +14,11 @@
     "fileManagerPrivate",
     "https://www.google-analytics.com/",
     "https://www.googledrive.com/",
+    "https://lh3.googleusercontent.com/",
     "metricsPrivate",
     "storage"
   ],
-  "content_security_policy": "default-src 'none'; script-src 'self' blob: filesystem: chrome://resources chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj; style-src 'self' blob: filesystem:; frame-src 'self' blob: filesystem:; img-src 'self' blob: filesystem: data:; media-src 'self' blob: filesystem:; connect-src 'self' blob: filesystem: https://www.googledrive.com https://www.google-analytics.com",
+  "content_security_policy": "default-src 'none'; script-src 'self' blob: filesystem: chrome://resources chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj; style-src 'self' blob: filesystem:; frame-src 'self' blob: filesystem:; img-src 'self' blob: filesystem: data:; media-src 'self' blob: filesystem:; connect-src 'self' blob: filesystem: https://www.googledrive.com https://www.google-analytics.com https://lh3.googleusercontent.com",
   "background": {
     "scripts": [
       "chrome://resources/js/assert.js",

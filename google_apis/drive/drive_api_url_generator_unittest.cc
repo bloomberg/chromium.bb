@@ -15,13 +15,15 @@ namespace {
 // OS, so use testing base urls.
 const char kBaseUrlForTesting[] = "https://www.example.com";
 const char kBaseDownloadUrlForTesting[] = "https://download.example.com/p/";
+const char kBaseThumbnailUrlForTesting[] = "https://thumbnail.example.com";
 }  // namespace
 
 class DriveApiUrlGeneratorTest : public testing::Test {
  public:
   DriveApiUrlGeneratorTest()
       : url_generator_(GURL(kBaseUrlForTesting),
-                       GURL(kBaseDownloadUrlForTesting)) {}
+                       GURL(kBaseDownloadUrlForTesting),
+                       GURL(kBaseThumbnailUrlForTesting)) {}
 
  protected:
   DriveApiUrlGenerator url_generator_;
@@ -369,13 +371,12 @@ TEST_F(DriveApiUrlGeneratorTest, GeneratePermissionsInsertUrl) {
 
 TEST_F(DriveApiUrlGeneratorTest, GenerateThumbnailUrl) {
   EXPECT_EQ(
-      "https://download.example.com/p/thumb/0ADK06pfg?width=500&height=500",
-      url_generator_.GetThumbnailUrl("0ADK06pfg", 500, 500, false).spec());
+      "https://thumbnail.example.com/d/0ADK06pfg=w500-h480",
+      url_generator_.GetThumbnailUrl("0ADK06pfg", 500, 480, false).spec());
 
   EXPECT_EQ(
-      "https://download.example.com/p/thumb/"
-      "0ADK06pfg?width=360&height=360&crop=true",
-      url_generator_.GetThumbnailUrl("0ADK06pfg", 360, 360, true).spec());
+      "https://thumbnail.example.com/d/0ADK06pfg=w360-h380-c",
+      url_generator_.GetThumbnailUrl("0ADK06pfg", 360, 380, true).spec());
 }
 
 TEST_F(DriveApiUrlGeneratorTest, BatchUploadUrl) {

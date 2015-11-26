@@ -36,7 +36,8 @@ class TestAuthService : public google_apis::DummyAuthService {
 
 TEST(DriveAPIServiceTest, BatchRequestConfiguratorWithAuthFailure) {
   const GURL test_base_url("http://localhost/");
-  google_apis::DriveApiUrlGenerator url_generator(test_base_url, test_base_url);
+  google_apis::DriveApiUrlGenerator url_generator(
+      test_base_url, test_base_url, test_base_url);
   scoped_refptr<base::TestSimpleTaskRunner> task_runner =
       new base::TestSimpleTaskRunner();
   scoped_refptr<net::TestURLRequestContextGetter> request_context_getter =

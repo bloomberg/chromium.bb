@@ -248,11 +248,12 @@ DriveAPIService::DriveAPIService(
     base::SequencedTaskRunner* blocking_task_runner,
     const GURL& base_url,
     const GURL& base_download_url,
+    const GURL& base_thumbnail_url,
     const std::string& custom_user_agent)
     : oauth2_token_service_(oauth2_token_service),
       url_request_context_getter_(url_request_context_getter),
       blocking_task_runner_(blocking_task_runner),
-      url_generator_(base_url, base_download_url),
+      url_generator_(base_url, base_download_url, base_thumbnail_url),
       custom_user_agent_(custom_user_agent) {
 }
 

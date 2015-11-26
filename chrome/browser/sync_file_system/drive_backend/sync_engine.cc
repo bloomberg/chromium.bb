@@ -75,6 +75,8 @@ SyncEngine::DriveServiceFactory::CreateDriveService(
           GURL(google_apis::DriveApiUrlGenerator::kBaseUrlForProduction),
           GURL(google_apis::DriveApiUrlGenerator::
                kBaseDownloadUrlForProduction),
+          GURL(google_apis::DriveApiUrlGenerator::
+               kBaseThumbnailUrlForProduction),
           std::string() /* custom_user_agent */));
 }
 

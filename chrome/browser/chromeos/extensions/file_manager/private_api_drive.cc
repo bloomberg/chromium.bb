@@ -96,7 +96,9 @@ void FillEntryPropertiesValueForDrive(const drive::ResourceEntry& entry_proto,
     DriveApiUrlGenerator url_generator(
         (GURL(google_apis::DriveApiUrlGenerator::kBaseUrlForProduction)),
         (GURL(
-            google_apis::DriveApiUrlGenerator::kBaseDownloadUrlForProduction)));
+            google_apis::DriveApiUrlGenerator::kBaseDownloadUrlForProduction)),
+        (GURL(google_apis::DriveApiUrlGenerator::
+                  kBaseThumbnailUrlForProduction)));
     properties->thumbnail_url.reset(new std::string(
         url_generator.GetThumbnailUrl(entry_proto.resource_id(),
                                       500 /* width */, 500 /* height */,
@@ -1098,7 +1100,9 @@ void FileManagerPrivateInternalGetDownloadUrlFunction::OnGetResourceEntry(
 
   DriveApiUrlGenerator url_generator(
       (GURL(google_apis::DriveApiUrlGenerator::kBaseUrlForProduction)),
-      (GURL(google_apis::DriveApiUrlGenerator::kBaseDownloadUrlForProduction)));
+      (GURL(google_apis::DriveApiUrlGenerator::kBaseDownloadUrlForProduction)),
+      (GURL(
+          google_apis::DriveApiUrlGenerator::kBaseThumbnailUrlForProduction)));
   download_url_ = url_generator.GenerateDownloadFileUrl(entry->resource_id());
 
   ProfileOAuth2TokenService* oauth2_token_service =
