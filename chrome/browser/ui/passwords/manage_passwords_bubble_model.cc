@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/default_clock.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -73,15 +74,16 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
     content::WebContents* web_contents,
     DisplayReason display_reason)
     : content::WebContentsObserver(web_contents),
+      password_overridden_(false),
       display_disposition_(metrics_util::AUTOMATIC_WITH_PASSWORD_PENDING),
       dismissal_reason_(metrics_util::NO_DIRECT_INTERACTION),
-      update_password_submission_event_(metrics_util::NO_UPDATE_SUBMISSION) {
+      update_password_submission_event_(metrics_util::NO_UPDATE_SUBMISSION),
+      clock_(new base::DefaultClock) {
   PasswordsModelDelegate* delegate =
       PasswordsModelDelegateFromWebContents(web_contents);
 
   origin_ = delegate->GetOrigin();
   state_ = delegate->GetState();
-  password_overridden_ = delegate->IsPasswordOverridden();
   if (state_ == password_manager::ui::PENDING_PASSWORD_STATE ||
       state_ == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE) {
     pending_password_ = delegate->GetPendingPassword();
@@ -143,13 +145,15 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
   } else if (state_ == password_manager::ui::PENDING_PASSWORD_STATE) {
     interaction_stats_.origin_domain = origin_.GetOrigin();
     interaction_stats_.username_value = pending_password_.username_value;
-    interaction_stats_.update_time = base::Time::Now();
     password_manager::InteractionsStats* stats =
         delegate->GetCurrentInteractionStats();
     if (stats) {
-      // TODO(vasilii): DCHECK that username and origin are the same.
+      DCHECK_EQ(interaction_stats_.username_value, stats->username_value);
+      DCHECK_EQ(interaction_stats_.origin_domain, stats->origin_domain);
       interaction_stats_.dismissal_count = stats->dismissal_count;
     }
+  } else if (state_ == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE) {
+    password_overridden_ = delegate->IsPasswordOverridden();
   }
 
   manage_link_ =
@@ -220,6 +224,7 @@ ManagePasswordsBubbleModel::~ManagePasswordsBubbleModel() {
             std::numeric_limits<decltype(
                 interaction_stats_.dismissal_count)>::max())
           interaction_stats_.dismissal_count++;
+        interaction_stats_.update_time = clock_->Now();
         password_manager::PasswordStore* password_store =
             PasswordStoreFactory::GetForProfile(
                 profile, ServiceAccessType::EXPLICIT_ACCESS)

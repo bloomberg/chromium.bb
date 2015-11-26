@@ -263,15 +263,14 @@ TEST_F(ManagePasswordsUIControllerTest, PasswordAutofilled) {
 TEST_F(ManagePasswordsUIControllerTest, PasswordSubmitted) {
   scoped_ptr<password_manager::PasswordFormManager> test_form_manager(
       CreateFormManager());
+  test_form_manager->ProvisionallySave(
+      test_local_form(),
+      password_manager::PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
   controller()->OnPasswordSubmitted(test_form_manager.Pass());
   EXPECT_EQ(password_manager::ui::PENDING_PASSWORD_STATE,
             controller()->GetState());
   EXPECT_TRUE(controller()->opened_bubble());
-
-  // TODO(mkwst): This should be the value of test_local_form().origin, but
-  // it's being masked by the stub implementation of
-  // ManagePasswordsUIControllerMock::PendingCredentials.
-  EXPECT_EQ(GURL::EmptyGURL(), controller()->GetOrigin());
+  EXPECT_EQ(test_local_form().origin, controller()->GetOrigin());
 
   ExpectIconStateIs(password_manager::ui::PENDING_PASSWORD_STATE);
 }
@@ -408,12 +407,11 @@ TEST_F(ManagePasswordsUIControllerTest, PasswordSubmittedToNonWebbyURL) {
 
   scoped_ptr<password_manager::PasswordFormManager> test_form_manager(
       CreateFormManager());
+  test_form_manager->ProvisionallySave(
+      test_local_form(),
+      password_manager::PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
   controller()->OnPasswordSubmitted(test_form_manager.Pass());
   EXPECT_EQ(password_manager::ui::INACTIVE_STATE, controller()->GetState());
-
-  // TODO(mkwst): This should be the value of test_local_form().origin, but
-  // it's being masked by the stub implementation of
-  // ManagePasswordsUIControllerMock::PendingCredentials.
   EXPECT_EQ(GURL::EmptyGURL(), controller()->GetOrigin());
 
   ExpectIconStateIs(password_manager::ui::INACTIVE_STATE);

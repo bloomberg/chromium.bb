@@ -43,16 +43,16 @@ class PasswordsListViewControllerTest : public ManagePasswordsControllerTest {
 
   void SetUpManageState(
       const std::vector<const autofill::PasswordForm*>& forms) {
-    ui_controller()->SetState(password_manager::ui::MANAGE_STATE);
+    ManagePasswordsControllerTest::SetUpManageState();
     controller_.reset([[PasswordsListViewController alloc]
-        initWithModel:model()
+        initWithModel:GetModelAndCreateIfNull()
                 forms:forms]);
   }
 
   void SetUpPendingState(const autofill::PasswordForm* form) {
-    ui_controller()->SetState(password_manager::ui::PENDING_PASSWORD_STATE);
+    ManagePasswordsControllerTest::SetUpPendingState();
     controller_.reset([[PasswordsListViewController alloc]
-        initWithModel:model()
+        initWithModel:GetModelAndCreateIfNull()
                 forms:std::vector<const autofill::PasswordForm*>(1, form)]);
   }
 

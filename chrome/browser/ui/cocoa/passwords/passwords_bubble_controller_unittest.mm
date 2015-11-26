@@ -34,7 +34,7 @@ class ManagePasswordsBubbleControllerTest
     if (!controller_) {
       controller_ = [[ManagePasswordsBubbleController alloc]
           initWithParentWindow:browser()->window()->GetNativeWindow()
-                         model:model()];
+                         model:GetModelAndCreateIfNull()];
     }
     return controller_;
   }
@@ -48,13 +48,13 @@ class ManagePasswordsBubbleControllerTest
 };
 
 TEST_F(ManagePasswordsBubbleControllerTest, PendingStateShouldHavePendingView) {
-  ui_controller()->SetState(password_manager::ui::PENDING_PASSWORD_STATE);
+  SetUpPendingState();
   EXPECT_EQ([ManagePasswordsBubblePendingViewController class],
             [[controller() currentController] class]);
 }
 
 TEST_F(ManagePasswordsBubbleControllerTest, DismissingShouldCloseWindow) {
-  ui_controller()->SetState(password_manager::ui::PENDING_PASSWORD_STATE);
+  SetUpPendingState();
   [controller() showWindow:nil];
 
   // Turn off animations so that closing happens immediately.
@@ -68,7 +68,7 @@ TEST_F(ManagePasswordsBubbleControllerTest, DismissingShouldCloseWindow) {
 }
 
 TEST_F(ManagePasswordsBubbleControllerTest, ManageStateShouldHaveManageView) {
-  ui_controller()->SetState(password_manager::ui::MANAGE_STATE);
+  SetUpManageState();
   EXPECT_EQ([ManagePasswordsBubbleManageViewController class],
             [[controller() currentController] class]);
 }

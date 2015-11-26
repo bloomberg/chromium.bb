@@ -26,7 +26,7 @@ class ManagePasswordsBubblePendingViewControllerTest
   void SetUp() override {
     ManagePasswordsControllerTest::SetUp();
     delegate_.reset([[ContentViewDelegateMock alloc] init]);
-    ui_controller()->SetState(password_manager::ui::PENDING_PASSWORD_STATE);
+    SetUpPendingState();
   }
 
   ContentViewDelegateMock* delegate() { return delegate_.get(); }
@@ -34,7 +34,7 @@ class ManagePasswordsBubblePendingViewControllerTest
   ManagePasswordsBubblePendingViewController* controller() {
     if (!controller_) {
       controller_.reset([[ManagePasswordsBubblePendingViewController alloc]
-          initWithModel:model()
+          initWithModel:GetModelAndCreateIfNull()
                delegate:delegate()]);
       [controller_ loadView];
     }
@@ -48,29 +48,29 @@ class ManagePasswordsBubblePendingViewControllerTest
 
 TEST_F(ManagePasswordsBubblePendingViewControllerTest,
        ShouldSavePasswordAndDismissWhenSaveClicked) {
+  EXPECT_CALL(*ui_controller(), SavePassword());
+  EXPECT_CALL(*ui_controller(), NeverSavePassword()).Times(0);
   [controller().saveButton performClick:nil];
 
   EXPECT_TRUE([delegate() dismissed]);
-  EXPECT_TRUE(ui_controller()->saved_password());
-  EXPECT_FALSE(ui_controller()->never_saved_password());
 }
 
 TEST_F(ManagePasswordsBubblePendingViewControllerTest,
        ShouldNeverAndDismissWhenNeverClicked) {
+  EXPECT_CALL(*ui_controller(), SavePassword()).Times(0);
+  EXPECT_CALL(*ui_controller(), NeverSavePassword());
   [controller().neverButton performClick:nil];
 
   EXPECT_TRUE([delegate() dismissed]);
-  EXPECT_FALSE(ui_controller()->saved_password());
-  EXPECT_TRUE(ui_controller()->never_saved_password());
 }
 
 TEST_F(ManagePasswordsBubblePendingViewControllerTest,
        ShouldDismissWhenCrossClicked) {
+  EXPECT_CALL(*ui_controller(), SavePassword()).Times(0);
+  EXPECT_CALL(*ui_controller(), NeverSavePassword()).Times(0);
   [controller().closeButton performClick:nil];
 
   EXPECT_TRUE([delegate() dismissed]);
-  EXPECT_FALSE(ui_controller()->saved_password());
-  EXPECT_FALSE(ui_controller()->never_saved_password());
 }
 
 }  // namespace

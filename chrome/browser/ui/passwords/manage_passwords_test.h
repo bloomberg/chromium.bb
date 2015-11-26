@@ -18,9 +18,8 @@ class GURL;
 class ManagePasswordsIconView;
 class PasswordsClientUIDelegate;
 
-// Test class for the various password management view bits and pieces. Sets
-// up a ManagePasswordsUIControllerMock, and provides some helper methods
-// to poke at the bubble, icon, and controller's state.
+// Test class for the various password management view bits and pieces. Provides
+// some helper methods to poke at the bubble, icon, and controller's state.
 class ManagePasswordsTest : public InProcessBrowserTest {
  public:
   ManagePasswordsTest();

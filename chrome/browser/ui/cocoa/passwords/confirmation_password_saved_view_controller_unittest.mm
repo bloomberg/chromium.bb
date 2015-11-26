@@ -25,7 +25,7 @@ class ManagePasswordsBubbleConfirmationViewControllerTest
   void SetUp() override {
     ManagePasswordsControllerTest::SetUp();
     delegate_.reset([[ContentViewDelegateMock alloc] init]);
-    ui_controller()->SetState(password_manager::ui::CONFIRMATION_STATE);
+    SetUpConfirmationState();
   }
 
   ContentViewDelegateMock* delegate() { return delegate_.get(); }
@@ -33,7 +33,7 @@ class ManagePasswordsBubbleConfirmationViewControllerTest
   ManagePasswordsBubbleConfirmationViewController* controller() {
     if (!controller_) {
       controller_.reset([[ManagePasswordsBubbleConfirmationViewController alloc]
-          initWithModel:model()
+          initWithModel:GetModelAndCreateIfNull()
                delegate:delegate()]);
       [controller_ loadView];
     }
@@ -54,9 +54,9 @@ TEST_F(ManagePasswordsBubbleConfirmationViewControllerTest,
 
 TEST_F(ManagePasswordsBubbleConfirmationViewControllerTest,
        ShouldOpenPasswordsAndDismissWhenLinkClicked) {
+  EXPECT_CALL(*ui_controller(), NavigateToPasswordManagerSettingsPage());
   [controller().confirmationText clickedOnLink:@"about:blank" atIndex:0];
   EXPECT_TRUE([delegate() dismissed]);
-  EXPECT_TRUE(ui_controller()->navigated_to_settings_page());
 }
 
 }  // namespace

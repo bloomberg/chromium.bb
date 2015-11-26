@@ -5,102 +5,45 @@
 #ifndef CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_UI_CONTROLLER_MOCK_H_
 #define CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_UI_CONTROLLER_MOCK_H_
 
-#include "base/basictypes.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
-#include "components/password_manager/core/browser/password_manager.h"
-#include "components/password_manager/core/browser/stub_password_manager_client.h"
-#include "components/password_manager/core/browser/stub_password_manager_driver.h"
-#include "components/password_manager/core/common/password_manager_ui.h"
-#include "content/public/browser/navigation_details.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 namespace content {
 class WebContents;
 }  // namespace content
 
-namespace password_manager {
-class PasswordManager;
-class PasswordManagerClient;
-class PasswordManagerDriver;
-enum class CredentialType;
-}
-
-// This mock is used in tests to ensure that we're just testing the controller
-// behavior, and not the behavior of the bits and pieces it relies upon (like
-// FormManager).
-class ManagePasswordsUIControllerMock
-    : public ManagePasswordsUIController {
+class ManagePasswordsUIControllerMock : public ManagePasswordsUIController {
  public:
   explicit ManagePasswordsUIControllerMock(
       content::WebContents* contents);
   ~ManagePasswordsUIControllerMock() override;
 
-  // Navigation, surprisingly, is platform-specific; Android's settings page
-  // is native UI and therefore isn't available in a tab for unit tests.
-  //
-  // TODO(mkwst): Determine how to reasonably test this on that platform.
-  void NavigateToPasswordManagerSettingsPage() override;
-  bool navigated_to_settings_page() const {
-    return navigated_to_settings_page_;
-  }
-
-  // We don't have a FormManager in tests, so stub these out.
-  void SavePassword() override;
-  bool saved_password() const { return saved_password_; }
-
-  void UpdatePassword(const autofill::PasswordForm& password_form) override;
-  bool updated_password() const { return updated_password_; }
-
-  void NeverSavePassword() override;
-  bool never_saved_password() const { return never_saved_password_; }
-
-  void ChooseCredential(const autofill::PasswordForm& form,
-                        password_manager::CredentialType form_type) override;
-  bool choose_credential() const { return choose_credential_; }
-  autofill::PasswordForm chosen_credential() { return chosen_credential_; }
-
-  const autofill::PasswordForm& GetPendingPassword() const override;
-  void SetPendingPassword(autofill::PasswordForm pending_password);
-
-  password_manager::ui::State GetState() const override;
-  void SetState(password_manager::ui::State state);
-  void UnsetState();
-
-  void UpdateBubbleAndIconVisibility() override;
-
-  void UpdateAndroidAccountChooserInfoBarVisibility() override;
-
-  void OnBubbleHidden() override;
-
-  password_manager::InteractionsStats* GetCurrentInteractionStats()
-      const override;
-
-  // Simulate the pending password state. |best_matches| can't be empty.
-  void PretendSubmittedPassword(
-    ScopedVector<autofill::PasswordForm> best_matches);
-
-  static scoped_ptr<password_manager::PasswordFormManager> CreateFormManager(
-      password_manager::PasswordManagerClient* client,
-      const autofill::PasswordForm& observed_form,
-      ScopedVector<autofill::PasswordForm> best_matches);
+  MOCK_CONST_METHOD0(GetOrigin, const GURL&());
+  MOCK_CONST_METHOD0(GetState, password_manager::ui::State());
+  MOCK_CONST_METHOD0(GetPendingPassword, const autofill::PasswordForm&());
+  MOCK_CONST_METHOD0(IsPasswordOverridden, bool());
+  MOCK_CONST_METHOD0(GetCurrentForms,
+                     const std::vector<const autofill::PasswordForm*>&());
+  MOCK_CONST_METHOD0(GetFederatedForms,
+                     const std::vector<const autofill::PasswordForm*>&());
+  MOCK_CONST_METHOD0(GetCurrentInteractionStats,
+                     password_manager::InteractionsStats*());
+  MOCK_METHOD0(OnBubbleShown, void());
+  MOCK_METHOD0(OnBubbleHidden, void());
+  MOCK_METHOD0(OnNoInteractionOnUpdate, void());
+  MOCK_METHOD0(OnNopeUpdateClicked, void());
+  MOCK_METHOD0(NeverSavePassword, void());
+  MOCK_METHOD0(SavePassword, void());
+  MOCK_METHOD1(UpdatePassword, void(const autofill::PasswordForm&));
+  MOCK_METHOD2(ChooseCredential,
+               void(const autofill::PasswordForm&,
+                    password_manager::CredentialType));
+  MOCK_METHOD0(NavigateToExternalPasswordManager, void());
+  MOCK_METHOD0(NavigateToSmartLockPage, void());
+  MOCK_METHOD0(NavigateToSmartLockHelpPage, void());
+  MOCK_METHOD0(NavigateToPasswordManagerSettingsPage, void());
 
  private:
-  bool navigated_to_settings_page_;
-  bool saved_password_;
-  bool updated_password_;
-  bool never_saved_password_;
-  bool choose_credential_;
-  bool state_overridden_;
-  password_manager::ui::State state_;
-  base::TimeDelta elapsed_;
-
-  autofill::PasswordForm chosen_credential_;
-  autofill::PasswordForm pending_password_;
-
-  password_manager::StubPasswordManagerClient client_;
-  password_manager::StubPasswordManagerDriver driver_;
-  password_manager::PasswordManager password_manager_;
-
   DISALLOW_COPY_AND_ASSIGN(ManagePasswordsUIControllerMock);
 };
 

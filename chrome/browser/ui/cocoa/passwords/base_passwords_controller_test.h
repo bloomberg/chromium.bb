@@ -24,7 +24,15 @@ class ManagePasswordsControllerTest : public CocoaProfileTest {
   void SetUp() override;
 
   ManagePasswordsUIControllerMock* ui_controller() { return ui_controller_; }
-  ManagePasswordsBubbleModel* model();
+  ManagePasswordsBubbleModel* GetModelAndCreateIfNull();
+
+  // Sets the appropriate state for ManagePasswordsBubbleModel.
+  void SetUpPendingState();
+  void SetUpConfirmationState();
+  void SetUpManageState();
+  void SetUpAccountChooser(
+      ScopedVector<const autofill::PasswordForm> local,
+      ScopedVector<const autofill::PasswordForm> federations);
 
   // An opportunity for tests to override the constructor parameter of
   // ManagePasswordsBubbleModel.
