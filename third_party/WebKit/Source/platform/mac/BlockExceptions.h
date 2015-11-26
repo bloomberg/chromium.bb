@@ -23,9 +23,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#import <platform/PlatformExport.h>
 #import <Foundation/NSException.h>
-#import <wtf/Assertions.h>
+#import "platform/PlatformExport.h"
+#import "wtf/Assertions.h"
 
 PLATFORM_EXPORT NO_RETURN_DUE_TO_ASSERT void ReportBlockedObjCException(NSException *);
 

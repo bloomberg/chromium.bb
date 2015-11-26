@@ -26,7 +26,7 @@
 #import "config.h"
 #import "platform/mac/BlockExceptions.h"
 
-#import <wtf/Assertions.h>
+#import "wtf/Assertions.h"
 
 void ReportBlockedObjCException(NSException *exception)
 {

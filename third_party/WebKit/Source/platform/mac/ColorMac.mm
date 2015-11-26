@@ -26,8 +26,8 @@
 #import "config.h"
 #import "platform/mac/ColorMac.h"
 
-#import <wtf/RetainPtr.h>
-#import <wtf/StdLibExtras.h>
+#import "wtf/RetainPtr.h"
+#import "wtf/StdLibExtras.h"
 
 namespace blink {
 

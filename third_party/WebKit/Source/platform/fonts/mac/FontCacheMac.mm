@@ -35,15 +35,15 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/FontFaceCreationParams.h"
-#include  "platform/fonts/FontPlatformData.h"
+#include "platform/fonts/FontPlatformData.h"
 #include "platform/fonts/SimpleFontData.h"
 #include "platform/fonts/mac/FontFamilyMatcherMac.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebTaskRunner.h"
 #include "public/platform/WebTraceLocation.h"
-#include <wtf/Functional.h>
-#include <wtf/MainThread.h>
-#include <wtf/StdLibExtras.h>
+#include "wtf/Functional.h"
+#include "wtf/MainThread.h"
+#include "wtf/StdLibExtras.h"
 
 // Forward declare Mac SPIs.
 // Request for public API: rdar://13803570
