@@ -30,6 +30,7 @@ static_library("core") {
     "//ui/base",
     "//ui/gfx",
     "//ui/strings",
+    "//url",
   ]
 
   if (use_aura || (!is_ios && !is_android)) {

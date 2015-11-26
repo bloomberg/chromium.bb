@@ -32,6 +32,7 @@ component("core") {
   deps = [
     "//base",
     "//base:prefs",
+    "//components/pref_registry",
     "//components/user_prefs",
   ]
 }
@@ -43,6 +44,7 @@ source_set("unit_tests") {
   ]
   deps = [
     ":core",
+    "//base",
     "//testing/gtest",
     "//third_party/re2",
   ]

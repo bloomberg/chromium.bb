@@ -16,6 +16,8 @@ source_set("handoff") {
     ]
     deps = [
       "//base",
+      "//net",
+      "//url",
     ]
   }
 }

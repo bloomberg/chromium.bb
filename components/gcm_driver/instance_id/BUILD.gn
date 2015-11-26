@@ -18,6 +18,7 @@ source_set("instance_id") {
     "//components/gcm_driver",
     "//crypto",
   ]
+  allow_circular_includes_from = [ "//components/gcm_driver" ]
 
   if (is_android) {
     sources -= [
@@ -41,6 +42,7 @@ source_set("test_support") {
 
   deps = [
     ":instance_id",
+    "//base",
     "//components/gcm_driver:test_support",
     "//testing/gtest",
   ]
@@ -55,6 +57,8 @@ source_set("unit_tests") {
   deps = [
     ":instance_id",
     ":test_support",
+    "//base",
+    "//google_apis/gcm",
     "//testing/gtest",
   ]
 }

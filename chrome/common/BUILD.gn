@@ -71,6 +71,7 @@ static_library("common") {
     "//components/json_schema",
     "//components/metrics",
     "//components/metrics:net",
+    "//components/nacl/common:process_type",
     "//components/omnibox/common",
     "//components/policy:policy_component_common",
     "//components/strings",

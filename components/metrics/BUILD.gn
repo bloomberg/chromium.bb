@@ -122,13 +122,13 @@ static_library("net") {
     "net/version_utils.h",
     "net/wifi_access_point_info_provider.cc",
     "net/wifi_access_point_info_provider.h",
-    "net/wifi_access_point_info_provider_chromeos.cc",
-    "net/wifi_access_point_info_provider_chromeos.h",
   ]
 
   public_deps = [
     ":metrics",
   ]
+  allow_circular_includes_from = [ ":metrics" ]
+
   deps = [
     "//base",
     "//components/data_use_measurement/core",
@@ -136,6 +136,14 @@ static_library("net") {
     "//net",
     "//url",
   ]
+
+  if (is_chromeos) {
+    sources += [
+      "net/wifi_access_point_info_provider_chromeos.cc",
+      "net/wifi_access_point_info_provider_chromeos.h",
+    ]
+    deps += [ "//chromeos" ]
+  }
 }
 
 # GYP version: components/metrics.gypi:metrics_profiler
@@ -172,6 +180,7 @@ source_set("ui") {
   deps = [
     "//base",
     "//ui/gfx",
+    "//ui/gfx/geometry",
   ]
 }
 
@@ -188,6 +197,7 @@ if (!is_ios) {
     ]
     deps = [
       "//base",
+      "//components/nacl/common:process_type",
       "//content/public/browser",
       "//content/public/common",
     ]
@@ -272,8 +282,11 @@ source_set("unit_tests") {
     ":ui",
     "//base:prefs_test_support",
     "//base/test:test_support",
+    "//components/compression",
     "//components/variations",
+    "//net:test_support",
     "//testing/gtest",
+    "//ui/gfx/geometry",
   ]
 
   if (is_linux) {

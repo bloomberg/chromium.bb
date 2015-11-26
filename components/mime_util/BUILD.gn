@@ -28,6 +28,7 @@ source_set("unit_tests") {
   deps = [
     ":mime_util",
     "//base",
+    "//net",
     "//testing/gtest",
   ]
 }

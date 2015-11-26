@@ -25,6 +25,7 @@ source_set("browser") {
     "//components/ui/zoom",
     "//content/public/browser",
     "//content/public/common",
+    "//ipc",
     "//third_party/WebKit/public:blink",
   ]
 }

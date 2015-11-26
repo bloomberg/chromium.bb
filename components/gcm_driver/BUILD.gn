@@ -59,15 +59,22 @@ static_library("gcm_driver") {
 
   deps = [
     "//base",
+    "//base:prefs",
     "//components/gcm_driver/common",
+    "//components/gcm_driver/crypto",
+    "//components/keyed_service/core",
     "//components/os_crypt",
+    "//components/pref_registry",
+    "//components/signin/core/browser",
     "//components/sync_driver",
+    "//components/version_info",
+    "//google_apis",
     "//google_apis/gcm",
     "//net",
     "//sync/protocol",
     "//url:url",
-    "crypto",
   ]
+  allow_circular_includes_from = [ "//components/gcm_driver/crypto" ]
 
   if (is_chromeos) {
     deps += [ "//components/timers" ]
@@ -117,6 +124,7 @@ source_set("test_support") {
   deps = [
     "//base",
     "//google_apis/gcm:test_support",
+    "//net",
     "//testing/gtest",
   ]
 
@@ -141,6 +149,13 @@ source_set("unit_tests") {
   deps = [
     ":gcm_driver",
     ":test_support",
+    "//base",
+    "//base:prefs_test_support",
+    "//base/test:test_support",
+    "//google_apis:test_support",
+    "//google_apis/gcm:test_support",
+    "//net:test_support",
+    "//sync/protocol",
     "//testing/gtest",
     "//third_party/protobuf:protobuf_lite",
   ]

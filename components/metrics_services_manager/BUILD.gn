@@ -15,5 +15,6 @@ source_set("metrics_services_manager") {
     "//components/metrics",
     "//components/rappor",
     "//components/variations",
+    "//components/variations/service",
   ]
 }

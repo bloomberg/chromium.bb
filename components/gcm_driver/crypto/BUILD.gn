@@ -25,11 +25,13 @@ source_set("crypto") {
 
   deps = [
     "//base",
+    "//components/gcm_driver/common",
+    "//components/gcm_driver/crypto/proto",
     "//components/leveldb_proto",
     "//crypto",
     "//crypto:platform",
+    "//net",
     "//third_party/protobuf:protobuf_lite",
-    "proto",
   ]
 
   if (use_openssl) {
@@ -58,6 +60,8 @@ source_set("unit_tests") {
   deps = [
     ":crypto",
     "//base",
+    "//components/gcm_driver/common",
+    "//crypto",
     "//crypto:platform",
     "//testing/gtest",
     "//third_party/protobuf:protobuf_lite",

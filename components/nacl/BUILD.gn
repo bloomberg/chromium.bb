@@ -308,6 +308,7 @@ if (enable_nacl) {
   }
 }
 
+# TODO(brettw) move to //components/nacl/common:switches
 source_set("nacl_switches") {
   sources = [
     "common/nacl_switches.cc",
@@ -315,6 +316,7 @@ source_set("nacl_switches") {
   ]
 }
 
+# TODO(brettw) move to //components/nacl/common
 source_set("nacl_common") {
   sources = [
     "common/nacl_cmd_line.cc",

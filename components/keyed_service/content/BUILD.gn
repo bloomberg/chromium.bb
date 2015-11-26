@@ -28,6 +28,9 @@ component("content") {
     "//base",
     "//base/third_party/dynamic_annotations",
     "//components/keyed_service/core",
+    "//components/pref_registry",
+    "//components/user_prefs",
+    "//content/public/browser",
     "//content/public/common",
   ]
 }
