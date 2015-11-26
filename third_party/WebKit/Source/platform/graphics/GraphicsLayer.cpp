@@ -116,7 +116,7 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
     , m_paintCount(0)
     , m_contentsLayer(0)
     , m_contentsLayerId(0)
-    , m_scrollableArea(0)
+    , m_scrollableArea(nullptr)
     , m_3dRenderingContext(0)
 {
 #if ENABLE(ASSERT)

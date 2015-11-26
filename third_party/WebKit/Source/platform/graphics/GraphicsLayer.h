@@ -368,8 +368,7 @@ private:
 
     OwnPtr<ContentLayerDelegate> m_contentLayerDelegate;
 
-    GC_PLUGIN_IGNORE("509911")
-    ScrollableArea* m_scrollableArea;
+    RawPtrWillBeWeakPersistent<ScrollableArea> m_scrollableArea;
     GraphicsLayerDebugInfo m_debugInfo;
     int m_3dRenderingContext;
 
