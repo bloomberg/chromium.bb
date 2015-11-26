@@ -53,6 +53,8 @@ if [[ -z "$LLVM_DOWNLOAD_GOLD_PLUGIN" ]]; then
   LLVM_DOWNLOAD_GOLD_PLUGIN=
 fi
 
+OS="$(uname -s)"
+
 if [[ "${OS}" == "Linux" ]] && \
    [[ "$GYP_DEFINES" =~ .*buildtype=Official.* ]] && \
    [[ "$GYP_DEFINES" =~ .*branding=Chrome.* ]] ; then
@@ -71,8 +73,6 @@ if [[ -n ${LLVM_FORCE_HEAD_REVISION:-''} ]]; then
       | grep 'Revision:' | awk '{ printf $2; }')
   PACKAGE_VERSION="${CLANG_REVISION}-0"
 fi
-
-OS="$(uname -s)"
 
 # Parse command line options.
 if_needed=
