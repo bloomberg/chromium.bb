@@ -119,8 +119,8 @@ public class ImeAdapter {
     /**
      * Default factory for AdapterInputConnection classes.
      */
-    public static class AdapterInputConnectionFactory {
-        public AdapterInputConnection get(View view, ImeAdapter imeAdapter, int initialSelStart,
+    static class AdapterInputConnectionFactory {
+        AdapterInputConnection get(View view, ImeAdapter imeAdapter, int initialSelStart,
                 int initialSelEnd, EditorInfo outAttrs) {
             return new AdapterInputConnection(
                     view, imeAdapter, initialSelStart, initialSelEnd, outAttrs);
@@ -160,15 +160,6 @@ public class ImeAdapter {
     @VisibleForTesting
     public void setInputMethodManagerWrapperForTest(InputMethodManagerWrapper immw) {
         mInputMethodManagerWrapper = immw;
-    }
-
-    /**
-     * Should be only used by AdapterInputConnection.
-     * @return InputMethodManagerWrapper that should receive all the calls directed to
-     *         InputMethodManager.
-     */
-    InputMethodManagerWrapper getInputMethodManagerWrapper() {
-        return mInputMethodManagerWrapper;
     }
 
     @VisibleForTesting
@@ -370,7 +361,7 @@ public class ImeAdapter {
     }
 
     @VisibleForTesting
-    public void setInputTypeForTest(int textInputType) {
+    void setInputTypeForTest(int textInputType) {
         mTextInputType = textInputType;
     }
 
@@ -469,7 +460,7 @@ public class ImeAdapter {
     }
 
     @VisibleForTesting
-    protected void finishComposingText() {
+    void finishComposingText() {
         if (mNativeImeAdapterAndroid == 0) return;
         nativeFinishComposingText(mNativeImeAdapterAndroid);
     }
@@ -575,7 +566,7 @@ public class ImeAdapter {
     }
 
     @CalledByNative
-    void detach() {
+    private void detach() {
         Log.d(TAG, "detach");
         mNativeImeAdapterAndroid = 0;
     }
