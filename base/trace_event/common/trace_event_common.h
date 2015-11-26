@@ -203,39 +203,25 @@
 // - category and name strings must have application lifetime (statics or
 //   literals). They may not include " chars.
 #define TRACE_EVENT0(category_group, name)    \
-  INTERNAL_TRACE_MEMORY(category_group, name) \
   INTERNAL_TRACE_EVENT_ADD_SCOPED(category_group, name)
 #define TRACE_EVENT_WITH_FLOW0(category_group, name, bind_id, flow_flags)  \
-  INTERNAL_TRACE_MEMORY(category_group, name)                              \
   INTERNAL_TRACE_EVENT_ADD_SCOPED_WITH_FLOW(category_group, name, bind_id, \
                                             flow_flags)
 #define TRACE_EVENT1(category_group, name, arg1_name, arg1_val) \
-  INTERNAL_TRACE_MEMORY(category_group, name)                   \
   INTERNAL_TRACE_EVENT_ADD_SCOPED(category_group, name, arg1_name, arg1_val)
 #define TRACE_EVENT_WITH_FLOW1(category_group, name, bind_id, flow_flags,  \
                                arg1_name, arg1_val)                        \
-  INTERNAL_TRACE_MEMORY(category_group, name)                              \
   INTERNAL_TRACE_EVENT_ADD_SCOPED_WITH_FLOW(category_group, name, bind_id, \
                                             flow_flags, arg1_name, arg1_val)
 #define TRACE_EVENT2(category_group, name, arg1_name, arg1_val, arg2_name,   \
                      arg2_val)                                               \
-  INTERNAL_TRACE_MEMORY(category_group, name)                                \
   INTERNAL_TRACE_EVENT_ADD_SCOPED(category_group, name, arg1_name, arg1_val, \
                                   arg2_name, arg2_val)
 #define TRACE_EVENT_WITH_FLOW2(category_group, name, bind_id, flow_flags,    \
                                arg1_name, arg1_val, arg2_name, arg2_val)     \
-  INTERNAL_TRACE_MEMORY(category_group, name)                                \
   INTERNAL_TRACE_EVENT_ADD_SCOPED_WITH_FLOW(category_group, name, bind_id,   \
                                             flow_flags, arg1_name, arg1_val, \
                                             arg2_name, arg2_val)
-
-// Records events like TRACE_EVENT2 but uses |memory_tag| for memory tracing.
-// Use this where |name| is too generic to accurately aggregate allocations.
-#define TRACE_EVENT_WITH_MEMORY_TAG2(category, name, memory_tag, arg1_name, \
-                                     arg1_val, arg2_name, arg2_val)         \
-  INTERNAL_TRACE_MEMORY(category, memory_tag)                               \
-  INTERNAL_TRACE_EVENT_ADD_SCOPED(category, name, arg1_name, arg1_val,      \
-                                  arg2_name, arg2_val)
 
 // UNSHIPPED_TRACE_EVENT* are like TRACE_EVENT* except that they are not
 // included in official builds.
@@ -310,9 +296,9 @@
                            arg2_name, arg2_val)
 
 #define TRACE_EVENT_INSTANT_WITH_TIMESTAMP0(category_group, name, scope, \
-                                           timestamp)                   \
-  INTERNAL_TRACE_EVENT_ADD_WITH_ID_TID_AND_TIMESTAMP(                   \
-      TRACE_EVENT_PHASE_INSTANT, category_group, name, 0, 0, timestamp, \
+                                            timestamp)                   \
+  INTERNAL_TRACE_EVENT_ADD_WITH_ID_TID_AND_TIMESTAMP(                    \
+      TRACE_EVENT_PHASE_INSTANT, category_group, name, 0, 0, timestamp,  \
       TRACE_EVENT_FLAG_NONE | scope)
 
 // Syntactic sugars for the sampling tracing in the main thread.

@@ -22,7 +22,6 @@ class PowerMonitor;
 class SystemMonitor;
 class MemoryPressureMonitor;
 namespace trace_event {
-class TraceMemoryController;
 class TraceEventSystemStatsMonitor;
 }  // namespace trace_event
 }  // namespace base
@@ -207,7 +206,6 @@ class CONTENT_EXPORT BrowserMainLoop {
 #endif
 
   scoped_ptr<MemoryObserver> memory_observer_;
-  scoped_ptr<base::trace_event::TraceMemoryController> trace_memory_controller_;
 
   // Members initialized in |InitStartupTracingForDuration()| ------------------
   base::FilePath startup_trace_file_;

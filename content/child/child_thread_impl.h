@@ -24,10 +24,6 @@
 
 namespace base {
 class MessageLoop;
-
-namespace trace_event {
-class TraceMemoryController;
-}  // namespace trace_event
 }  // namespace base
 
 namespace IPC {
@@ -287,10 +283,6 @@ class CONTENT_EXPORT ChildThreadImpl
 
   scoped_ptr<ChildDiscardableSharedMemoryManager>
       discardable_shared_memory_manager_;
-
-  // Observes the trace event system. When tracing is enabled, optionally
-  // starts profiling the tcmalloc heap.
-  scoped_ptr<base::trace_event::TraceMemoryController> trace_memory_controller_;
 
   scoped_ptr<base::PowerMonitor> power_monitor_;
 

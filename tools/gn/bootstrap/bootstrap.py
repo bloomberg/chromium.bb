@@ -261,7 +261,6 @@ def write_ninja(path, options):
       'base/trace_event/trace_config.cc',
       'base/trace_event/trace_event_argument.cc',
       'base/trace_event/trace_event_impl.cc',
-      'base/trace_event/trace_event_memory.cc',
       'base/trace_event/trace_event_memory_overhead.cc',
       'base/trace_event/trace_event_synthetic_delay.cc',
       'base/trace_event/trace_log.cc',

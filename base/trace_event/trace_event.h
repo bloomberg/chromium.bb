@@ -14,7 +14,6 @@
 #include "base/atomicops.h"
 #include "base/time/time.h"
 #include "base/trace_event/common/trace_event_common.h"
-#include "base/trace_event/trace_event_memory.h"
 #include "base/trace_event/trace_event_system_stats_monitor.h"
 #include "base/trace_event/trace_log.h"
 #include "build/build_config.h"

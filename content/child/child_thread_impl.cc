@@ -511,12 +511,6 @@ void ChildThreadImpl::Init(const Options& options) {
   g_quit_closure.Get().BindToMainThread();
 #endif
 
-#if defined(TCMALLOC_TRACE_MEMORY_SUPPORTED)
-  trace_memory_controller_.reset(new base::trace_event::TraceMemoryController(
-      message_loop_->task_runner(), ::HeapProfilerWithPseudoStackStart,
-      ::HeapProfilerStop, ::GetHeapProfile));
-#endif
-
   shared_bitmap_manager_.reset(
       new ChildSharedBitmapManager(thread_safe_sender()));
 
