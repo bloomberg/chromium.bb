@@ -3033,7 +3033,7 @@ weston_subsurface_commit_to_cache(struct weston_subsurface *sub)
 	 * If this commit would cause the surface to move by the
 	 * attach(dx, dy) parameters, the old damage region must be
 	 * translated to correspond to the new surface coordinate system
-	 * original_mode.
+	 * origin.
 	 */
 	pixman_region32_translate(&sub->cached.damage,
 				  -surface->pending.sx, -surface->pending.sy);
