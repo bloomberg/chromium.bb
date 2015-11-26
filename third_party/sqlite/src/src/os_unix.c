@@ -5644,36 +5644,6 @@ int chromium_sqlite3_fill_in_unix_sqlite3_file(sqlite3_vfs* vfs,
 }
 
 /*
-** Search for an unused file descriptor that was opened on the database file.
-** If a suitable file descriptor if found, then it is stored in *fd; otherwise,
-** *fd is not modified.
-**
-** If a reusable file descriptor is not found, and a new UnixUnusedFd cannot
-** be allocated, SQLITE_NOMEM is returned. Otherwise, SQLITE_OK is returned.
-*/
-CHROMIUM_SQLITE_API
-int chromium_sqlite3_get_reusable_file_handle(sqlite3_file* file,
-                                              const char* fileName,
-                                              int flags,
-                                              int* fd) {
-  unixFile* unixSQLite3File = (unixFile*)file;
-  int fileType = flags & 0xFFFFFF00;
-  if (fileType == SQLITE_OPEN_MAIN_DB) {
-    UnixUnusedFd *unusedFd = findReusableFd(fileName, flags);
-    if (unusedFd) {
-      *fd = unusedFd->fd;
-    } else {
-      unusedFd = sqlite3_malloc(sizeof(*unusedFd));
-      if (!unusedFd) {
-        return SQLITE_NOMEM;
-      }
-    }
-    unixSQLite3File->pUnused = unusedFd;
-  }
-  return SQLITE_OK;
-}
-
-/*
 ** Marks 'fd' as the unused file descriptor for 'pFile'.
 */
 CHROMIUM_SQLITE_API
@@ -5800,10 +5770,17 @@ static int unixOpen(
   chromium_sqlite3_initialize_unix_sqlite3_file(pFile);
 
   if( eType==SQLITE_OPEN_MAIN_DB ){
-    rc = chromium_sqlite3_get_reusable_file_handle(pFile, zName, flags, &fd);
-    if( rc!=SQLITE_OK ){
-      return rc;
+    UnixUnusedFd *pUnused;
+    pUnused = findReusableFd(zName, flags);
+    if( pUnused ){
+      fd = pUnused->fd;
+    }else{
+      pUnused = sqlite3_malloc(sizeof(*pUnused));
+      if( !pUnused ){
+        return SQLITE_NOMEM;
+      }
     }
+    p->pUnused = pUnused;
 
     /* Database filenames are double-zero terminated if they are not
     ** URIs with parameters.  Hence, they can always be passed into

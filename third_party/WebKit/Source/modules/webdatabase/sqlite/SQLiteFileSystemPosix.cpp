@@ -143,17 +143,10 @@ int chromiumDeviceCharacteristics(sqlite3_file* sqliteFile)
 int chromiumOpenInternal(sqlite3_vfs* vfs, const char* fileName, sqlite3_file* id, int desiredFlags, int* usedFlags)
 {
     chromium_sqlite3_initialize_unix_sqlite3_file(id);
-    int fd = -1;
-    int result = chromium_sqlite3_get_reusable_file_handle(id, fileName, desiredFlags, &fd);
-    if (result != SQLITE_OK)
-        return result;
-
-    if (fd < 0) {
-        fd = Platform::current()->databaseOpenFile(String(fileName), desiredFlags);
-        if ((fd < 0) && (desiredFlags & SQLITE_OPEN_READWRITE)) {
-            int newFlags = (desiredFlags & ~(SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE)) | SQLITE_OPEN_READONLY;
-            fd = Platform::current()->databaseOpenFile(String(fileName), newFlags);
-        }
+    int fd = Platform::current()->databaseOpenFile(String(fileName), desiredFlags);
+    if ((fd < 0) && (desiredFlags & SQLITE_OPEN_READWRITE)) {
+        int newFlags = (desiredFlags & ~(SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE)) | SQLITE_OPEN_READONLY;
+        fd = Platform::current()->databaseOpenFile(String(fileName), newFlags);
     }
     if (fd < 0) {
         chromium_sqlite3_destroy_reusable_file_handle(id);
@@ -170,7 +163,7 @@ int chromiumOpenInternal(sqlite3_vfs* vfs, const char* fileName, sqlite3_file* i
     int fileType = desiredFlags & 0x00007F00;
     int noLock = (fileType != SQLITE_OPEN_MAIN_DB);
     sqlite3_vfs* wrappedVfs = static_cast<sqlite3_vfs*>(vfs->pAppData);
-    result = chromium_sqlite3_fill_in_unix_sqlite3_file(wrappedVfs, fd, -1, id, fileName, noLock);
+    int result = chromium_sqlite3_fill_in_unix_sqlite3_file(wrappedVfs, fd, -1, id, fileName, noLock);
     if (result != SQLITE_OK)
         chromium_sqlite3_destroy_reusable_file_handle(id);
     return result;
