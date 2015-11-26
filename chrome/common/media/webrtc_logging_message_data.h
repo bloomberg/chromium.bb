@@ -17,6 +17,8 @@ struct WebRtcLoggingMessageData {
   // Returns a string formatted as "[XXX:YYY] $message", where "[XXX:YYY]" is
   // the timestamp relative to |start_time| converted to seconds (XXX) plus
   // milliseconds (YYY).
+  static std::string Format(const std::string& message, base::Time timestamp,
+                            base::Time start_time);
   std::string Format(base::Time start_time) const;
 
   base::Time timestamp;

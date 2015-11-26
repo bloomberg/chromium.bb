@@ -894,7 +894,8 @@ void ChromeContentBrowserClient::RenderProcessWillLaunch(
   host->AddFilter(new TtsMessageFilter(host->GetBrowserContext()));
 #if defined(ENABLE_WEBRTC)
   WebRtcLoggingHandlerHost* webrtc_logging_handler_host =
-      new WebRtcLoggingHandlerHost(profile);
+      new WebRtcLoggingHandlerHost(
+          profile, g_browser_process->webrtc_log_uploader());
   host->SetWebRtcLogMessageCallback(base::Bind(
       &WebRtcLoggingHandlerHost::LogMessage, webrtc_logging_handler_host));
   host->AddFilter(webrtc_logging_handler_host);

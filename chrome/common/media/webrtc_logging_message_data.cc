@@ -12,14 +12,16 @@ WebRtcLoggingMessageData::WebRtcLoggingMessageData(base::Time time,
                                                    const std::string& message)
     : timestamp(time), message(message) {}
 
-std::string
-WebRtcLoggingMessageData::Format(base::Time start_time) const {
+// static
+std::string WebRtcLoggingMessageData::Format(const std::string& message,
+                                             base::Time timestamp,
+                                             base::Time start_time) {
   int32 interval_ms =
       static_cast<int32>((timestamp - start_time).InMilliseconds());
+  return base::StringPrintf("[%03d:%03d] %s", interval_ms / 1000,
+                            interval_ms % 1000, message.c_str());
+}
 
-  std::string result = base::StringPrintf("[%03d:%03d] %s",
-                                          interval_ms / 1000,
-                                          interval_ms % 1000,
-                                          message.c_str());
-  return result;
+std::string WebRtcLoggingMessageData::Format(base::Time start_time) const {
+  return Format(message, timestamp, start_time);
 }
