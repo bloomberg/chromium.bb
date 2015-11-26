@@ -70,10 +70,10 @@ class TestPixmap : public ui::NativePixmap {
  public:
   TestPixmap(gfx::BufferFormat format) : format_(format) {}
 
-  void* GetEGLClientBuffer() override { return nullptr; }
-  int GetDmaBufFd() override { return -1; }
-  int GetDmaBufPitch() override { return 0; }
-  gfx::BufferFormat GetBufferFormat() override { return format_; }
+  void* GetEGLClientBuffer() const override { return nullptr; }
+  int GetDmaBufFd() const override { return -1; }
+  int GetDmaBufPitch() const override { return 0; }
+  gfx::BufferFormat GetBufferFormat() const override { return format_; }
   bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
                             int plane_z_order,
                             gfx::OverlayTransform plane_transform,

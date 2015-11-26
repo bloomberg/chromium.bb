@@ -113,19 +113,19 @@ gfx::NativePixmapHandle GbmPixmap::ExportHandle() {
 GbmPixmap::~GbmPixmap() {
 }
 
-void* GbmPixmap::GetEGLClientBuffer() {
+void* GbmPixmap::GetEGLClientBuffer() const {
   return nullptr;
 }
 
-int GbmPixmap::GetDmaBufFd() {
+int GbmPixmap::GetDmaBufFd() const {
   return dma_buf_.get();
 }
 
-int GbmPixmap::GetDmaBufPitch() {
+int GbmPixmap::GetDmaBufPitch() const {
   return dma_buf_pitch_;
 }
 
-gfx::BufferFormat GbmPixmap::GetBufferFormat() {
+gfx::BufferFormat GbmPixmap::GetBufferFormat() const {
   return GetBufferFormatFromFourCCFormat(buffer_->GetFramebufferPixelFormat());
 }
 

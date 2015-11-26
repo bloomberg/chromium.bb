@@ -24,10 +24,10 @@ class NativePixmap : public base::RefCountedThreadSafe<NativePixmap> {
  public:
   NativePixmap() {}
 
-  virtual void* /* EGLClientBuffer */ GetEGLClientBuffer() = 0;
-  virtual int GetDmaBufFd() = 0;
-  virtual int GetDmaBufPitch() = 0;
-  virtual gfx::BufferFormat GetBufferFormat() = 0;
+  virtual void* /* EGLClientBuffer */ GetEGLClientBuffer() const = 0;
+  virtual int GetDmaBufFd() const = 0;
+  virtual int GetDmaBufPitch() const = 0;
+  virtual gfx::BufferFormat GetBufferFormat() const = 0;
 
   // Sets the overlay plane to switch to at the next page flip.
   // |w| specifies the screen to display this overlay plane on.

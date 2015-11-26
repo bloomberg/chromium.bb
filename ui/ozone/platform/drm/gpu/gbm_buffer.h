@@ -51,10 +51,10 @@ class GbmPixmap : public NativePixmap {
       gfx::BufferFormat target_format) override;
 
   // NativePixmap:
-  void* GetEGLClientBuffer() override;
-  int GetDmaBufFd() override;
-  int GetDmaBufPitch() override;
-  gfx::BufferFormat GetBufferFormat() override;
+  void* GetEGLClientBuffer() const override;
+  int GetDmaBufFd() const override;
+  int GetDmaBufPitch() const override;
+  gfx::BufferFormat GetBufferFormat() const override;
   bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
                             int plane_z_order,
                             gfx::OverlayTransform plane_transform,

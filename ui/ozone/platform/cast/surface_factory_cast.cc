@@ -185,13 +185,13 @@ scoped_refptr<NativePixmap> SurfaceFactoryCast::CreateNativePixmap(
    public:
     CastPixmap() {}
 
-    void* GetEGLClientBuffer() override {
+    void* GetEGLClientBuffer() const override {
       // TODO(halliwell): try to implement this through CastEglPlatform.
       return nullptr;
     }
-    int GetDmaBufFd() override { return -1; }
-    int GetDmaBufPitch() override { return 0; }
-    gfx::BufferFormat GetBufferFormat() override {
+    int GetDmaBufFd() const override { return -1; }
+    int GetDmaBufPitch() const override { return 0; }
+    gfx::BufferFormat GetBufferFormat() const override {
       return gfx::BufferFormat::BGRA_8888;
     }
     bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
