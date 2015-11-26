@@ -22,9 +22,11 @@
 #include "core/css/CSSUnicodeRangeValue.h"
 #include "core/css/CSSValuePair.h"
 #include "core/css/CSSValuePool.h"
+#include "core/css/CSSVariableReferenceValue.h"
 #include "core/css/FontFace.h"
 #include "core/css/parser/CSSParserFastPaths.h"
 #include "core/css/parser/CSSParserValues.h"
+#include "core/css/parser/CSSVariableParser.h"
 #include "core/frame/UseCounter.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/svg/SVGPathUtilities.h"
@@ -98,6 +100,7 @@ bool CSSPropertyParser::parseValueStart(CSSPropertyID unresolvedProperty, bool i
     if (consumeCSSWideKeyword(unresolvedProperty, important))
         return true;
 
+    CSSParserTokenRange originalRange = m_range;
     CSSPropertyID propertyId = resolveCSSPropertyID(unresolvedProperty);
 
     if (RefPtrWillBeRawPtr<CSSValue> parsedValue = parseSingleValue(unresolvedProperty)) {
@@ -111,10 +114,20 @@ bool CSSPropertyParser::parseValueStart(CSSPropertyID unresolvedProperty, bool i
         return true;
 
     CSSParserValueList valueList(m_range);
-    if (!valueList.size())
-        return false;
-    m_valueList = &valueList;
-    return parseValue(unresolvedProperty, important);
+    if (valueList.size()) {
+        m_valueList = &valueList;
+        if (parseValue(unresolvedProperty, important))
+            return true;
+    }
+
+    if (RuntimeEnabledFeatures::cssVariablesEnabled() && CSSVariableParser::containsValidVariableReferences(originalRange)) {
+        // We don't expand the shorthand here because crazypants.
+        RefPtrWillBeRawPtr<CSSVariableReferenceValue> variable = CSSVariableReferenceValue::create(CSSVariableData::create(originalRange));
+        addProperty(propertyId, variable.release(), important);
+        return true;
+    }
+
+    return false;
 }
 
 bool CSSPropertyParser::consumeCSSWideKeyword(CSSPropertyID unresolvedProperty, bool important)
