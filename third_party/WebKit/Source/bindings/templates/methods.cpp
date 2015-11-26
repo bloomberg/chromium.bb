@@ -27,23 +27,17 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
     CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
     {% endif %}
     {# Security checks #}
-    {% if method.is_check_security_for_window %}
-    if (LocalDOMWindow* window = impl->toDOMWindow()) {
-        if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), callingDOMWindow(info.GetIsolate()), window->frame(), exceptionState)) {
-            {{propagate_error_with_exception_state(method) | indent(12)}}
-        }
-        if (!window->document())
-            return;
-    }
-    {% elif method.is_check_security_for_frame %}
-    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), callingDOMWindow(info.GetIsolate()), impl->frame(), exceptionState)) {
-        {{propagate_error_with_exception_state(method) | indent(8)}}
-    }
-    {% endif %}
-    {% if method.is_check_security_for_node %}
-    if (!BindingSecurity::shouldAllowAccessToNode(info.GetIsolate(), callingDOMWindow(info.GetIsolate()), impl->{{method.name}}(exceptionState), exceptionState)) {
+    {% if method.is_check_security_for_window or
+          method.is_check_security_for_frame or
+          method.is_check_security_for_node %}
+    if (!BindingSecurity::shouldAllowAccessTo(info.GetIsolate(), callingDOMWindow(info.GetIsolate()), {{method.cpp_value if method.is_check_security_for_node else 'impl'}}, exceptionState)) {
+        {% if method.is_check_security_for_node %}
         v8SetReturnValueNull(info);
-        {{propagate_error_with_exception_state(method) | indent(8)}}
+        {% endif %}
+        {% if not method.returns_promise %}
+        exceptionState.throwIfNeeded();
+        {% endif %}
+        return;
     }
     {% endif %}
     {# Call method #}
@@ -536,7 +530,7 @@ static void {{method.name}}OriginSafeMethodGetter{{world_suffix}}(const v8::Prop
         return;
     }
     {{cpp_class}}* impl = {{v8_class}}::toImpl(holder);
-    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), callingDOMWindow(info.GetIsolate()), impl->frame(), DoNotReportSecurityError)) {
+    if (!BindingSecurity::shouldAllowAccessTo(info.GetIsolate(), callingDOMWindow(info.GetIsolate()), impl, DoNotReportSecurityError)) {
         v8SetReturnValue(info, domTemplate->GetFunction(info.GetIsolate()->GetCurrentContext()).ToLocalChecked());
         return;
     }

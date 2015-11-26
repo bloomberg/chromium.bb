@@ -230,7 +230,7 @@ void DOMWindow::postMessage(PassRefPtr<SerializedScriptValue> message, const Mes
 // exactly which details may be exposed to JavaScript.
 //
 // http://crbug.com/17325
-String DOMWindow::sanitizedCrossDomainAccessErrorMessage(LocalDOMWindow* callingWindow)
+String DOMWindow::sanitizedCrossDomainAccessErrorMessage(const LocalDOMWindow* callingWindow) const
 {
     if (!callingWindow || !callingWindow->document() || !frame())
         return String();
@@ -241,7 +241,7 @@ String DOMWindow::sanitizedCrossDomainAccessErrorMessage(LocalDOMWindow* calling
 
     ASSERT(!callingWindow->document()->securityOrigin()->canAccessCheckSuborigins(frame()->securityContext()->securityOrigin()));
 
-    SecurityOrigin* activeOrigin = callingWindow->document()->securityOrigin();
+    const SecurityOrigin* activeOrigin = callingWindow->document()->securityOrigin();
     String message = "Blocked a frame with origin \"" + activeOrigin->toString() + "\" from accessing a cross-origin frame.";
 
     // FIXME: Evaluate which details from 'crossDomainAccessErrorMessage' may safely be reported to JavaScript.
@@ -249,7 +249,7 @@ String DOMWindow::sanitizedCrossDomainAccessErrorMessage(LocalDOMWindow* calling
     return message;
 }
 
-String DOMWindow::crossDomainAccessErrorMessage(LocalDOMWindow* callingWindow)
+String DOMWindow::crossDomainAccessErrorMessage(const LocalDOMWindow* callingWindow) const
 {
     if (!callingWindow || !callingWindow->document() || !frame())
         return String();
@@ -259,8 +259,8 @@ String DOMWindow::crossDomainAccessErrorMessage(LocalDOMWindow* callingWindow)
         return String();
 
     // FIXME: This message, and other console messages, have extra newlines. Should remove them.
-    SecurityOrigin* activeOrigin = callingWindow->document()->securityOrigin();
-    SecurityOrigin* targetOrigin = frame()->securityContext()->securityOrigin();
+    const SecurityOrigin* activeOrigin = callingWindow->document()->securityOrigin();
+    const SecurityOrigin* targetOrigin = frame()->securityContext()->securityOrigin();
     ASSERT(!activeOrigin->canAccessCheckSuborigins(targetOrigin));
 
     String message = "Blocked a frame with origin \"" + activeOrigin->toString() + "\" from accessing a frame with origin \"" + targetOrigin->toString() + "\". ";

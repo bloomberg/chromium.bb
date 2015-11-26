@@ -125,6 +125,7 @@ public:
     virtual ExecutionContext* executionContext() const = 0;
 
     virtual Node* toNode();
+    virtual const LocalDOMWindow* toDOMWindow() const;
     virtual LocalDOMWindow* toDOMWindow();
     virtual MessagePort* toMessagePort();
 

@@ -94,6 +94,11 @@ Node* EventTarget::toNode()
     return nullptr;
 }
 
+const LocalDOMWindow* EventTarget::toDOMWindow() const
+{
+    return nullptr;
+}
+
 LocalDOMWindow* EventTarget::toDOMWindow()
 {
     return nullptr;

@@ -82,6 +82,7 @@ public:
 
     // EventTarget overrides:
     ExecutionContext* executionContext() const override;
+    const LocalDOMWindow* toDOMWindow() const override;
     LocalDOMWindow* toDOMWindow() override;
 
     // DOMWindow overrides:
@@ -165,7 +166,7 @@ public:
 
     FrameConsole* frameConsole() const;
 
-    void printErrorMessage(const String&);
+    void printErrorMessage(const String&) const;
 
     void postMessageTimerFired(PostMessageTimer*);
     void removePostMessageTimer(PostMessageTimer*);

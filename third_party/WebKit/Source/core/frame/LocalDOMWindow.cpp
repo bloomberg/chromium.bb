@@ -474,6 +474,11 @@ ExecutionContext* LocalDOMWindow::executionContext() const
     return m_document.get();
 }
 
+const LocalDOMWindow* LocalDOMWindow::toDOMWindow() const
+{
+    return this;
+}
+
 LocalDOMWindow* LocalDOMWindow::toDOMWindow()
 {
     return this;
@@ -1434,7 +1439,7 @@ void LocalDOMWindow::finishedLoading()
     }
 }
 
-void LocalDOMWindow::printErrorMessage(const String& message)
+void LocalDOMWindow::printErrorMessage(const String& message) const
 {
     if (!isCurrentlyDisplayedInFrame())
         return;

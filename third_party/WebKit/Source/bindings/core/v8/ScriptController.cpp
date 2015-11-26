@@ -89,7 +89,7 @@ bool ScriptController::canAccessFromCurrentOrigin(LocalFrame *frame)
     if (!frame)
         return false;
     v8::Isolate* isolate = toIsolate(frame);
-    return !isolate->InContext() || BindingSecurity::shouldAllowAccessToFrame(isolate, callingDOMWindow(isolate), frame);
+    return !isolate->InContext() || BindingSecurity::shouldAllowAccessToFrame(isolate, callingDOMWindow(isolate), frame, ReportSecurityError);
 }
 
 ScriptController::ScriptController(LocalFrame* frame)

@@ -63,7 +63,7 @@ static bool {{cpp_class}}CreateDataProperty(v8::Local<v8::Name> name, v8::Local<
     {{cpp_class}}* impl = {{v8_class}}::toImpl(info.Holder());
     v8::String::Utf8Value attributeName(name);
     ExceptionState exceptionState(ExceptionState::SetterContext, *attributeName, "{{interface_name}}", info.Holder(), info.GetIsolate());
-    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), callingDOMWindow(info.GetIsolate()), impl->frame(), exceptionState)) {
+    if (!BindingSecurity::shouldAllowAccessTo(info.GetIsolate(), callingDOMWindow(info.GetIsolate()), impl, exceptionState)) {
         exceptionState.throwIfNeeded();
         return false;
     }
@@ -132,7 +132,7 @@ bool securityCheck(v8::Local<v8::Context> accessingContext, v8::Local<v8::Object
 {
     // TODO(jochen): Take accessingContext into account.
     {{cpp_class}}* impl = {{v8_class}}::toImpl(accessedObject);
-    return BindingSecurity::shouldAllowAccessToFrame(v8::Isolate::GetCurrent(), callingDOMWindow(v8::Isolate::GetCurrent()), impl->frame(), DoNotReportSecurityError);
+    return BindingSecurity::shouldAllowAccessTo(v8::Isolate::GetCurrent(), callingDOMWindow(v8::Isolate::GetCurrent()), impl, DoNotReportSecurityError);
 }
 
 {% endif %}

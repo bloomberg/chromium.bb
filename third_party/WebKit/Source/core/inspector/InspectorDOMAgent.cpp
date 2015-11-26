@@ -160,7 +160,7 @@ ScriptValue nodeAsScriptValue(ScriptState* scriptState, Node* node)
     ScriptState::Scope scope(scriptState);
     v8::Isolate* isolate = scriptState->isolate();
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "nodeAsScriptValue", "InjectedScriptHost", scriptState->context()->Global(), isolate);
-    if (!BindingSecurity::shouldAllowAccessToNode(isolate, callingDOMWindow(isolate), node, exceptionState))
+    if (!BindingSecurity::shouldAllowAccessTo(isolate, callingDOMWindow(isolate), node, exceptionState))
         return ScriptValue(scriptState, v8::Null(isolate));
     return ScriptValue(scriptState, toV8(node, scriptState->context()->Global(), isolate));
 }

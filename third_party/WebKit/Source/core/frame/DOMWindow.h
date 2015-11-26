@@ -184,8 +184,8 @@ public:
 
     void postMessage(PassRefPtr<SerializedScriptValue> message, const MessagePortArray*, const String& targetOrigin, LocalDOMWindow* source, ExceptionState&);
 
-    String sanitizedCrossDomainAccessErrorMessage(LocalDOMWindow* callingWindow);
-    String crossDomainAccessErrorMessage(LocalDOMWindow* callingWindow);
+    String sanitizedCrossDomainAccessErrorMessage(const LocalDOMWindow* callingWindow) const;
+    String crossDomainAccessErrorMessage(const LocalDOMWindow* callingWindow) const;
     bool isInsecureScriptAccess(LocalDOMWindow& callingWindow, const String& urlString);
 
     // FIXME: When this DOMWindow is no longer the active DOMWindow (i.e.,

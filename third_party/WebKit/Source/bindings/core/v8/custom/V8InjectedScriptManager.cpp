@@ -83,15 +83,8 @@ bool InjectedScriptManager::canAccessInspectedWindow(ScriptState* scriptState)
     if (!scriptState->contextIsValid())
         return false;
     ScriptState::Scope scope(scriptState);
-    v8::Local<v8::Object> global = scriptState->context()->Global();
-    if (global.IsEmpty())
-        return false;
-    v8::Local<v8::Object> holder = V8Window::findInstanceInPrototypeChain(global, scriptState->isolate());
-    if (holder.IsEmpty())
-        return false;
-    LocalFrame* frame = toLocalDOMWindow(V8Window::toImpl(holder))->frame();
-
-    return BindingSecurity::shouldAllowAccessToFrame(scriptState->isolate(), callingDOMWindow(scriptState->isolate()), frame, DoNotReportSecurityError);
+    DOMWindow* window = toDOMWindow(scriptState->isolate(), scriptState->context()->Global());
+    return window && BindingSecurity::shouldAllowAccessTo(scriptState->isolate(), callingDOMWindow(scriptState->isolate()), window, DoNotReportSecurityError);
 }
 
 } // namespace blink

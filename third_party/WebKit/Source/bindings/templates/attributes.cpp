@@ -77,30 +77,15 @@ const v8::FunctionCallbackInfo<v8::Value>& info
     {% endif %}
     {# Security checks #}
     {% if not attribute.is_data_type_property %}
-    {% if attribute.is_check_security_for_window %}
-    if (LocalDOMWindow* window = impl->toDOMWindow()) {
-        if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), callingDOMWindow(info.GetIsolate()), window->frame(), exceptionState)) {
-            v8SetReturnValueNull(info);
-            exceptionState.throwIfNeeded();
-            return;
-        }
-        if (!window->document())
-            return;
-    }
-    {% elif attribute.is_check_security_for_frame %}
-    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), callingDOMWindow(info.GetIsolate()), impl->frame(), exceptionState)) {
+    {% if attribute.is_check_security_for_window or
+          attribute.is_check_security_for_frame or
+          attribute.is_check_security_for_node %}
+    if (!BindingSecurity::shouldAllowAccessTo(info.GetIsolate(), callingDOMWindow(info.GetIsolate()), {{attribute.cpp_value if attribute.is_check_security_for_node else 'impl'}}, exceptionState)) {
         v8SetReturnValueNull(info);
         exceptionState.throwIfNeeded();
         return;
     }
     {% endif %}
-    {% endif %}
-    {% if attribute.is_check_security_for_node %}
-    if (!BindingSecurity::shouldAllowAccessToNode(info.GetIsolate(), callingDOMWindow(info.GetIsolate()), {{attribute.cpp_value}}, exceptionState)) {
-        v8SetReturnValueNull(info);
-        exceptionState.throwIfNeeded();
-        return;
-    }
     {% endif %}
     {% if attribute.reflect_only %}
     {{release_only_check(attribute.reflect_only, attribute.reflect_missing,
@@ -298,30 +283,15 @@ v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info
     {% if not attribute.is_replaceable and
           not attribute.constructor_type %}
     {% if not attribute.is_data_type_property %}
-    {% if attribute.is_check_security_for_window %}
-    if (LocalDOMWindow* window = impl->toDOMWindow()) {
-        if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), callingDOMWindow(info.GetIsolate()), window->frame(), exceptionState)) {
-            v8SetReturnValue(info, v8Value);
-            exceptionState.throwIfNeeded();
-            return;
-        }
-        if (!window->document())
-            return;
-    }
-    {% elif attribute.is_check_security_for_frame %}
-    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), callingDOMWindow(info.GetIsolate()), impl->frame(), exceptionState)) {
+    {% if attribute.is_check_security_for_window or
+          attribute.is_check_security_for_frame or
+          attribute.is_check_security_for_node %}
+    if (!BindingSecurity::shouldAllowAccessTo(info.GetIsolate(), callingDOMWindow(info.GetIsolate()), {{attribute.cpp_value if attribute.is_check_security_for_node else 'impl'}}, exceptionState)) {
         v8SetReturnValue(info, v8Value);
         exceptionState.throwIfNeeded();
         return;
     }
     {% endif %}
-    {% endif %}
-    {% if attribute.is_check_security_for_node %}
-    if (!BindingSecurity::shouldAllowAccessToNode(info.GetIsolate(), callingDOMWindow(info.GetIsolate()), {{attribute.cpp_value}}, exceptionState)) {
-        v8SetReturnValue(info, v8Value);
-        exceptionState.throwIfNeeded();
-        return;
-    }
     {% endif %}
     {% endif %}{# not attribute.is_replaceable and
                   not attribute.constructor_type #}

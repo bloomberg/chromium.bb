@@ -78,13 +78,9 @@ void V8EventTarget::addEventListenerMethodCustom(const v8::FunctionCallbackInfo<
         return;
     }
     EventTarget* impl = V8EventTarget::toImpl(info.Holder());
-    if (LocalDOMWindow* window = impl->toDOMWindow()) {
-        if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), callingDOMWindow(info.GetIsolate()), window->frame(), exceptionState)) {
-            exceptionState.throwIfNeeded();
-            return;
-        }
-        if (!window->document())
-            return;
+    if (!BindingSecurity::shouldAllowAccessTo(info.GetIsolate(), callingDOMWindow(info.GetIsolate()), impl, exceptionState)) {
+        exceptionState.throwIfNeeded();
+        return;
     }
     V8StringResource<> type;
     RefPtrWillBeRawPtr<EventListener> listener;
@@ -121,13 +117,9 @@ void V8EventTarget::removeEventListenerMethodCustom(const v8::FunctionCallbackIn
         return;
     }
     EventTarget* impl = V8EventTarget::toImpl(info.Holder());
-    if (LocalDOMWindow* window = impl->toDOMWindow()) {
-        if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), callingDOMWindow(info.GetIsolate()), window->frame(), exceptionState)) {
-            exceptionState.throwIfNeeded();
-            return;
-        }
-        if (!window->document())
-            return;
+    if (!BindingSecurity::shouldAllowAccessTo(info.GetIsolate(), callingDOMWindow(info.GetIsolate()), impl, exceptionState)) {
+        exceptionState.throwIfNeeded();
+        return;
     }
     V8StringResource<> type;
     RefPtrWillBeRawPtr<EventListener> listener;
