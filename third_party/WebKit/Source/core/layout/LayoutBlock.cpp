@@ -2653,6 +2653,27 @@ LayoutUnit LayoutBlock::pageRemainingLogicalHeightForOffset(LayoutUnit offset, P
     return flowThread->pageRemainingLogicalHeightForOffset(offset, pageBoundaryRule);
 }
 
+LayoutUnit LayoutBlock::calculatePaginationStrutToFitContent(LayoutUnit offset, LayoutUnit strutToNextPage, LayoutUnit contentLogicalHeight) const
+{
+    ASSERT(strutToNextPage == pageRemainingLogicalHeightForOffset(offset, AssociateWithLatterPage));
+    LayoutUnit nextPageLogicalTop = offset + strutToNextPage;
+    if (pageLogicalHeightForOffset(nextPageLogicalTop) >= contentLogicalHeight)
+        return strutToNextPage; // Content fits just fine in the next page or column.
+
+    // Moving to the top of the next page or column doesn't result in enough space for the content
+    // that we're trying to fit. If we're in a nested fragmentation context, we may find enough
+    // space if we move to a column further ahead, by effectively breaking to the next outer
+    // fragmentainer.
+    LayoutFlowThread* flowThread = flowThreadContainingBlock();
+    if (!flowThread) {
+        // If there's no flow thread, we're not nested. All pages have the same height. Give up.
+        return strutToNextPage;
+    }
+    // Start searching for a suitable offset at the top of the next page or column.
+    LayoutUnit flowThreadOffset = offsetFromLogicalTopOfFirstPage() + nextPageLogicalTop;
+    return strutToNextPage + flowThread->nextLogicalTopForUnbreakableContent(flowThreadOffset, contentLogicalHeight) - flowThreadOffset;
+}
+
 void LayoutBlock::paginatedContentWasLaidOut(LayoutUnit logicalTopOffsetAfterPagination)
 {
     if (LayoutFlowThread* flowThread = flowThreadContainingBlock())

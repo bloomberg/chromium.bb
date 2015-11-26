@@ -682,7 +682,7 @@ LayoutUnit LayoutBlockFlow::adjustBlockChildForPagination(LayoutUnit logicalTop,
     // 3. The child itself is unsplittable and doesn't fit in the current page or column.
     //
     // No matter which source, if we need to insert a strut, it should always take us to the exact
-    // top of the next page or column, or be zero.
+    // top of a page or column further ahead, or be zero.
 
     // We're now going to calculate the child's final pagination strut. We may end up propagating
     // it to its containing block (|this|), so reset it first.
@@ -700,12 +700,8 @@ LayoutUnit LayoutBlockFlow::adjustBlockChildForPagination(LayoutUnit logicalTop,
     // For replaced elements and scrolled elements, we want to shift them to the next page if they don't fit on the current one.
     LayoutUnit logicalTopAfterUnsplittable = adjustForUnsplittableChild(child, logicalTop);
 
-    // Some sanity checks: No matter what the reason is for pushing the child to the next page or
-    // column, the amount should be the same.
-    ASSERT(!strutFromContent || logicalTopAfterForcedBreak == logicalTop || logicalTopAfterForcedBreak == logicalTopWithContentStrut);
-    ASSERT(!strutFromContent || logicalTopAfterUnsplittable == logicalTop || logicalTopAfterUnsplittable == logicalTopWithContentStrut);
-    ASSERT(logicalTopAfterUnsplittable == logicalTop || logicalTopAfterForcedBreak == logicalTop || logicalTopAfterUnsplittable == logicalTopAfterForcedBreak);
-
+    // Pick the largest offset. Tall unsplittable content may take us to a page or column further
+    // ahead than the next one.
     LayoutUnit logicalTopAfterPagination = std::max(logicalTopWithContentStrut, std::max(logicalTopAfterForcedBreak, logicalTopAfterUnsplittable));
     LayoutUnit newLogicalTop = logicalTop;
     if (LayoutUnit paginationStrut = logicalTopAfterPagination - logicalTop) {
@@ -735,7 +731,7 @@ LayoutUnit LayoutBlockFlow::adjustBlockChildForPagination(LayoutUnit logicalTop,
     return newLogicalTop;
 }
 
-static bool shouldSetStrutOnBlock(const LayoutBlockFlow& block, const RootInlineBox& lineBox, LayoutUnit lineLogicalOffset, int lineIndex, LayoutUnit remainingLogicalHeight)
+static bool shouldSetStrutOnBlock(const LayoutBlockFlow& block, const RootInlineBox& lineBox, LayoutUnit lineLogicalOffset, int lineIndex, LayoutUnit pageLogicalHeight)
 {
     bool wantsStrutOnBlock = false;
     if (!block.style()->hasAutoOrphans() && block.style()->orphans() >= lineIndex) {
@@ -751,10 +747,9 @@ static bool shouldSetStrutOnBlock(const LayoutBlockFlow& block, const RootInline
         // fits nicely where it is.
         LayoutUnit lineHeight = lineBox.lineBottomWithLeading() - lineBox.lineTopWithLeading();
         LayoutUnit totalLogicalHeight = lineHeight + std::max<LayoutUnit>(0, lineLogicalOffset);
-        LayoutUnit pageLogicalHeightAtNewOffset = block.pageLogicalHeightForOffset(lineLogicalOffset + remainingLogicalHeight);
         // It's rather pointless to break before the block if the current line isn't going to
         // fit in the same column or page, so check that as well.
-        if (totalLogicalHeight <= pageLogicalHeightAtNewOffset)
+        if (totalLogicalHeight <= pageLogicalHeight)
             wantsStrutOnBlock = true;
     }
     return wantsStrutOnBlock && block.allowsPaginationStrut();
@@ -779,17 +774,25 @@ void LayoutBlockFlow::adjustLinePositionForPagination(RootInlineBox& lineBox, La
     LayoutUnit pageLogicalHeight = pageLogicalHeightForOffset(logicalOffset);
     if (!pageLogicalHeight)
         return;
-    if (lineHeight > pageLogicalHeight) {
-        // Too tall to fit in one page / column. Give up. Don't push to the next page / column.
-        // TODO(mstensho): Get rid of this. This is just utter weirdness, but the other browsers
-        // also do something slightly similar, although in much more specific cases than we do here,
-        // and printing Google Docs depends on it.
-        return;
-    }
     LayoutUnit remainingLogicalHeight = pageRemainingLogicalHeightForOffset(logicalOffset, AssociateWithLatterPage);
-
     int lineIndex = lineCount(&lineBox);
     if (remainingLogicalHeight < lineHeight || (shouldBreakAtLineToAvoidWidow() && lineBreakToAvoidWidow() == lineIndex)) {
+        LayoutUnit paginationStrut = calculatePaginationStrutToFitContent(logicalOffset, remainingLogicalHeight, lineHeight);
+        LayoutUnit newLogicalOffset = logicalOffset + paginationStrut;
+        // The new offset may require us to insert a new row for columns (fragmentainer group).
+        // Give the multicol machinery an opportunity to do so (before checking the height of a
+        // column that wouldn't have existed yet otherwise).
+        paginatedContentWasLaidOut(newLogicalOffset);
+        // Moving to a different page or column may mean that its height is different.
+        pageLogicalHeight = pageLogicalHeightForOffset(newLogicalOffset);
+        if (lineHeight > pageLogicalHeight) {
+            // Too tall to fit in one page / column. Give up. Don't push to the next page / column.
+            // TODO(mstensho): Get rid of this. This is just utter weirdness, but the other browsers
+            // also do something slightly similar, although in much more specific cases than we do here,
+            // and printing Google Docs depends on it.
+            return;
+        }
+
         // We need to insert a break now, either because there's no room for the line in the
         // current column / page, or because we have determined that we need a break to satisfy
         // widow requirements.
@@ -797,21 +800,23 @@ void LayoutBlockFlow::adjustLinePositionForPagination(RootInlineBox& lineBox, La
             clearShouldBreakAtLineToAvoidWidow();
             setDidBreakAtLineToAvoidWidow();
         }
-        if (shouldSetStrutOnBlock(*this, lineBox, logicalOffset, lineIndex, remainingLogicalHeight)) {
+        if (shouldSetStrutOnBlock(*this, lineBox, logicalOffset, lineIndex, pageLogicalHeight)) {
             // Note that when setting the strut on a block, it may be propagated to parent blocks
             // later on, if a block's logical top is flush with that of its parent. We don't want
             // content-less portions (struts) at the beginning of a block before a break, if it can
             // be avoided. After all, that's the reason for setting struts on blocks and not lines
             // in the first place.
-            LayoutUnit strut = remainingLogicalHeight + logicalOffset + marginBeforeIfFloating();
+            LayoutUnit strut = paginationStrut + logicalOffset + marginBeforeIfFloating();
             setPaginationStrutPropagatedFromChild(strut);
         } else {
-            logicalOffset += remainingLogicalHeight;
-            delta += remainingLogicalHeight;
-            lineBox.setPaginationStrut(remainingLogicalHeight);
+            delta += paginationStrut;
+            lineBox.setPaginationStrut(paginationStrut);
             lineBox.setIsFirstAfterPageBreak(true);
         }
-    } else if (remainingLogicalHeight == pageLogicalHeight) {
+        return;
+    }
+
+    if (remainingLogicalHeight == pageLogicalHeight) {
         // We're at the very top of a page or column.
         if (lineBox != firstRootBox())
             lineBox.setIsFirstAfterPageBreak(true);
@@ -819,7 +824,7 @@ void LayoutBlockFlow::adjustLinePositionForPagination(RootInlineBox& lineBox, La
         // case it's a float) margin, we may want to set a strut on the block, so that everything
         // ends up in the next column or page. Setting a strut on the block is also important when
         // it comes to satisfying orphan requirements.
-        if (shouldSetStrutOnBlock(*this, lineBox, logicalOffset, lineIndex, remainingLogicalHeight)) {
+        if (shouldSetStrutOnBlock(*this, lineBox, logicalOffset, lineIndex, pageLogicalHeight)) {
             LayoutUnit strut = logicalOffset + marginBeforeIfFloating();
             setPaginationStrutPropagatedFromChild(strut);
         }
@@ -853,11 +858,15 @@ LayoutUnit LayoutBlockFlow::adjustForUnsplittableChild(LayoutBox& child, LayoutU
     if (!pageLogicalHeight)
         return logicalOffset;
     LayoutUnit remainingLogicalHeight = pageRemainingLogicalHeightForOffset(logicalOffset, AssociateWithLatterPage);
-    // Break if there's not enough space left for us, but only as long as we're not already at the
-    // top of a page. No point in leaving a page completely blank.
-    if (remainingLogicalHeight < childLogicalHeight && remainingLogicalHeight < pageLogicalHeight)
-        return logicalOffset + remainingLogicalHeight;
-    return logicalOffset;
+    if (remainingLogicalHeight >= childLogicalHeight)
+        return logicalOffset; // It fits fine where it is. No need to break.
+    LayoutUnit paginationStrut = calculatePaginationStrutToFitContent(logicalOffset, remainingLogicalHeight, childLogicalHeight);
+    if (paginationStrut == remainingLogicalHeight && remainingLogicalHeight == pageLogicalHeight) {
+        // Don't break if we were at the top of a page, and we failed to fit the content
+        // completely. No point in leaving a page completely blank.
+        return logicalOffset;
+    }
+    return logicalOffset + paginationStrut;
 }
 
 void LayoutBlockFlow::rebuildFloatsFromIntruding()

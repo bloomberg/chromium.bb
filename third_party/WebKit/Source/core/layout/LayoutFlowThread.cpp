@@ -163,6 +163,14 @@ void LayoutFlowThread::generateColumnSetIntervalTree()
         m_multiColumnSetIntervalTree.add(MultiColumnSetIntervalTree::createInterval(columnSet->logicalTopInFlowThread(), columnSet->logicalBottomInFlowThread(), columnSet));
 }
 
+LayoutUnit LayoutFlowThread::nextLogicalTopForUnbreakableContent(LayoutUnit flowThreadOffset, LayoutUnit contentLogicalHeight) const
+{
+    LayoutMultiColumnSet* columnSet = columnSetAtBlockOffset(flowThreadOffset);
+    if (!columnSet)
+        return flowThreadOffset;
+    return columnSet->nextLogicalTopForUnbreakableContent(flowThreadOffset, contentLogicalHeight);
+}
+
 void LayoutFlowThread::collectLayerFragments(PaintLayerFragments& layerFragments, const LayoutRect& layerBoundingBox, const LayoutRect& dirtyRectInFlowThread)
 {
     ASSERT(!m_columnSetsInvalidated);

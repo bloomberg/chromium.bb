@@ -86,6 +86,8 @@ public:
     LayoutUnit tallestUnbreakableLogicalHeight() const { return m_tallestUnbreakableLogicalHeight; }
     void propagateTallestUnbreakableLogicalHeight(LayoutUnit value) { m_tallestUnbreakableLogicalHeight = std::max(value, m_tallestUnbreakableLogicalHeight); }
 
+    LayoutUnit nextLogicalTopForUnbreakableContent(LayoutUnit flowThreadOffset, LayoutUnit contentLogicalHeight) const;
+
     LayoutFlowThread* flowThread() const { return m_flowThread; }
 
     LayoutBlockFlow* multiColumnBlockFlow() const { return toLayoutBlockFlow(parent()); }

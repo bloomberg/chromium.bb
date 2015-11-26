@@ -97,6 +97,36 @@ bool LayoutMultiColumnSet::isPageLogicalHeightKnown() const
     return firstFragmentainerGroup().logicalHeight();
 }
 
+LayoutUnit LayoutMultiColumnSet::nextLogicalTopForUnbreakableContent(LayoutUnit flowThreadOffset, LayoutUnit contentLogicalHeight) const
+{
+    ASSERT(pageLogicalTopForOffset(flowThreadOffset) == flowThreadOffset);
+    LayoutMultiColumnFlowThread* enclosingFlowThread = multiColumnFlowThread()->enclosingFlowThread();
+    if (!enclosingFlowThread) {
+        // If there's no enclosing fragmentation context, there'll ever be only one row, and all
+        // columns there will have the same height.
+        return flowThreadOffset;
+    }
+
+    // Assert the problematic situation. If we have no problem with the column height, why are we
+    // even here?
+    ASSERT(pageLogicalHeightForOffset(flowThreadOffset) < contentLogicalHeight);
+
+    // There's a likelihood for subsequent rows to be taller than the first one.
+    // TODO(mstensho): if we're doubly nested (e.g. multicol in multicol in multicol), we need to
+    // look beyond the first row here.
+    const MultiColumnFragmentainerGroup& firstRow = firstFragmentainerGroup();
+    LayoutUnit firstRowLogicalBottomInFlowThread = firstRow.logicalTopInFlowThread() + firstRow.logicalHeight() * usedColumnCount();
+    if (flowThreadOffset >= firstRowLogicalBottomInFlowThread)
+        return flowThreadOffset; // We're not in the first row. Give up.
+    LayoutUnit newLogicalHeight = enclosingFlowThread->pageLogicalHeightForOffset(firstRowLogicalBottomInFlowThread);
+    if (contentLogicalHeight > newLogicalHeight) {
+        // The next outer column or page doesn't have enough space either. Give up and stay where
+        // we are.
+        return flowThreadOffset;
+    }
+    return firstRowLogicalBottomInFlowThread;
+}
+
 LayoutMultiColumnSet* LayoutMultiColumnSet::nextSiblingMultiColumnSet() const
 {
     for (LayoutObject* sibling = nextSibling(); sibling; sibling = sibling->nextSibling()) {

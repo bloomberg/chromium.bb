@@ -89,6 +89,14 @@ public:
 
     virtual void contentWasLaidOut(LayoutUnit logicalTopInFlowThreadAfterPagination) = 0;
 
+    // Find and return the next logical top after |flowThreadOffset| that can fit unbreakable
+    // content as tall as |contentLogicalHeight|. |flowThreadOffset| is expected to be at the exact
+    // top of a column that's known to not have enough space for |contentLogicalHeight|. This method
+    // is called when the current column is too short to fit the content, in the hope that there
+    // exists one that's tall enough further ahead. If no such column can be found,
+    // |flowThreadOffset| will be returned.
+    LayoutUnit nextLogicalTopForUnbreakableContent(LayoutUnit flowThreadOffset, LayoutUnit contentLogicalHeight) const;
+
     virtual bool isPageLogicalHeightKnown() const { return true; }
     bool pageLogicalSizeChanged() const { return m_pageLogicalSizeChanged; }
 
