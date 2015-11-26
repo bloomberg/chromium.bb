@@ -73,8 +73,7 @@ crbug.com/463358 [ Mac Linux Debug ] fast/backgrounds/transformed-body-html-back
 crbug.com/463358 [ Mac Linux Debug ] css3/masking/clip-path-polygon-nonzero.html [ Failure ]
 crbug.com/463358 [ Mac Linux ] fast/transforms/transformed-caret.html [ Pass Failure ]
 crbug.com/463358 [ Mac Linux Debug ] fast/backgrounds/transformed-body-background.html [ Failure ]
-# Re-enable after rebaseline for https://codereview.chromium.org/1476523002
-# crbug.com/463358 [ Mac Linux ] svg/W3C-SVG-1.1/paths-data-02-t.svg [ Failure ]
+crbug.com/463358 [ Mac Linux ] svg/W3C-SVG-1.1/paths-data-02-t.svg [ Failure ]
 crbug.com/463358 [ Mac Linux Debug ] css3/masking/clip-path-polygon.html [ Failure ]
 
 crbug.com/267206 [ Mac ] virtual/rootlayerscrolls/fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
@@ -136,8 +135,7 @@ crbug.com/520617 [ Mac ] webaudio/audiochannelmerger-disconnect.html [ Failure P
 crbug.com/520619 [ Android Mac Linux XP Win7 ] webexposed/global-interface-listing.html [ Pass Timeout ]
 crbug.com/520194 http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-worker-overridesexpires.html [ Failure Pass ]
 crbug.com/520199 [ Mac ] plugins/plugin-initiate-popup-window.html [ Failure Pass ]
-# Re-enable after rebaseline for https://codereview.chromium.org/1476523002
-# crbug.com/520200 [ XP ] svg/batik/text/smallFonts.svg [ Failure Timeout ]
+crbug.com/520200 [ XP ] svg/batik/text/smallFonts.svg [ Failure Timeout ]
 crbug.com/520203 webaudio/audiobuffersource-late-start.html [ Failure Pass Timeout ]
 crbug.com/518967 [ Win7 ] http/tests/htmlimports/csp-import-block-but-nonce-nested.html [ Failure Pass Timeout ]
 crbug.com/448461 http/tests/loading/simple-subframe.html [ Failure Pass Timeout ]
@@ -938,8 +936,7 @@ crbug.com/466200 svg/custom/repaint-on-constant-size-change.svg [ Failure ]
 # Temporary until we start generating Trusty baselines.
 crbug.com/498021 [ Linux ] fast/text/unicode-fallback-font.html [ Failure ]
 crbug.com/498021 [ Linux ] http/tests/security/contentTypeOptions/nosniff-script-without-content-type-blocked.html [ Failure ]
-# Re-enable after rebaseline for https://codereview.chromium.org/1476523002
-# crbug.com/498021 [ Linux ] svg/custom/use-on-symbol-inside-pattern.svg [ Failure ]
+crbug.com/498021 [ Linux ] svg/custom/use-on-symbol-inside-pattern.svg [ Failure ]
 crbug.com/498021 [ Linux ] fast/forms/month/month-appearance-l10n.html [ Failure ]
 crbug.com/498021 [ Linux ] fast/text/ellipsis-stroked.html [ Failure ]
 crbug.com/498021 [ Linux ] fast/text/emphasis-complex.html [ Failure ]
@@ -947,11 +944,9 @@ crbug.com/498021 [ Linux ] fast/text/international/danda-space.html [ Failure ]
 crbug.com/498021 [ Linux ] fast/text/international/hindi-whitespace.html [ Failure ]
 crbug.com/498021 [ Linux ] fast/text/international/thai-line-breaks.html [ Failure ]
 crbug.com/498021 [ Linux ] fast/text/selection-multiple-runs.html [ Failure ]
-# Re-enable after rebaseline for https://codereview.chromium.org/1476523002
-# crbug.com/498021 [ Linux ] svg/W3C-SVG-1.1/paths-data-03-f.svg [ Failure ]
+crbug.com/498021 [ Linux ] svg/W3C-SVG-1.1/paths-data-03-f.svg [ Failure ]
 crbug.com/498021 [ Linux ] svg/W3C-SVG-1.1/text-align-08-b.svg [ Failure ]
-# Re-enable after rebaseline for https://codereview.chromium.org/1476523002
-# crbug.com/498021 [ Linux ] svg/custom/control-points-for-S-and-T.svg [ Failure ]
+crbug.com/498021 [ Linux ] svg/custom/control-points-for-S-and-T.svg [ Failure ]
 crbug.com/498021 [ Linux ] editing/pasteboard/4944770-2.html [ Failure ]
 crbug.com/498021 [ Linux ] fast/encoding/invalid-UTF-8.html [ Failure ]
 crbug.com/498021 [ Linux ] fast/text/emoticons.html [ Failure ]
@@ -1031,8 +1026,7 @@ crbug.com/321237 [ Mac ] fast/text/international/complex-text-leading-space-wrap
 crbug.com/321237 [ Win ] fast/text/international/complex-text-leading-space-wrapping.html [ Failure ]
 
 crbug.com/495523 [ XP ] svg/W3C-SVG-1.1/animate-elem-52-t.svg [ Failure ]
-# Re-enable after rebaseline for https://codereview.chromium.org/1476523002
-# crbug.com/495523 [ XP ] svg/W3C-SVG-1.1/extend-namespace-01-f.svg [ Failure ]
+crbug.com/495523 [ XP ] svg/W3C-SVG-1.1/extend-namespace-01-f.svg [ Failure ]
 
 crbug.com/501659 fast/xsl/xslt-missing-namespace-in-xslt.xml [ Failure ]
 crbug.com/501659 http/tests/xmlviewer/dumpAsText/svg.xml [ Failure ]
