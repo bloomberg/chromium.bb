@@ -34,7 +34,11 @@ class MOJO_SYSTEM_IMPL_EXPORT ChildBrokerHost
   ChildBrokerHost(base::ProcessHandle child_process, ScopedPlatformHandle pipe);
 
  private:
-  virtual ~ChildBrokerHost();
+#if defined(OS_WIN)
+  ~ChildBrokerHost() override;
+#else
+  ~ChildBrokerHost();
+#endif
 
   void RegisterIOHandler();
   void BeginRead();
