@@ -47,6 +47,7 @@
 #include "chrome/browser/ui/webui/options/startup_pages_handler.h"
 #include "chrome/browser/ui/webui/options/sync_setup_handler.h"
 #include "chrome/browser/ui/webui/theme_source.h"
+#include "chrome/common/features.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/locale_settings.h"
@@ -100,7 +101,7 @@
 #include "chrome/browser/ui/webui/options/certificate_manager_handler.h"
 #endif
 
-#if defined(ENABLE_GOOGLE_NOW)
+#if BUILDFLAG(ENABLE_GOOGLE_NOW)
 #include "chrome/browser/ui/webui/options/geolocation_options_handler.h"
 #endif
 
@@ -279,7 +280,7 @@ OptionsUI::OptionsUI(content::WebUI* web_ui)
   AddOptionsPageUIHandler(localized_strings, new CreateProfileHandler());
   AddOptionsPageUIHandler(localized_strings, new EasyUnlockHandler());
   AddOptionsPageUIHandler(localized_strings, new FontSettingsHandler());
-#if defined(ENABLE_GOOGLE_NOW)
+#if BUILDFLAG(ENABLE_GOOGLE_NOW)
   AddOptionsPageUIHandler(localized_strings, new GeolocationOptionsHandler());
 #endif
   AddOptionsPageUIHandler(localized_strings, new options::HelpOverlayHandler());

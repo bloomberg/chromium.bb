@@ -11,6 +11,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../content/content.gyp:content_child',
+        'chrome_features.gyp:chrome_common_features',
       ],
       'include_dirs': [
         '..',

@@ -72,6 +72,7 @@
       # GN version: //chrome/common:constants
       'target_name': 'common_constants',
       'type': 'static_library',
+      'hard_dependency': 1,  # Because of transitive dep on version_header.
       'sources': [
         '<@(common_constants_sources)'
       ],
@@ -80,6 +81,7 @@
       ],
       'dependencies': [
         'version_header',
+        'chrome_features.gyp:chrome_common_features',
         '../base/base.gyp:base',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../components/components.gyp:bookmarks_common',
@@ -108,6 +110,7 @@
       'targets': [
         {
           'target_name': 'common_constants_win64',
+          'hard_dependency': 1,  # Because of transitive dep on version_header.
           'type': 'static_library',
           'sources': [
             '<@(common_constants_sources)'
@@ -117,6 +120,7 @@
           ],
           'dependencies': [
             'version_header',
+            'chrome_features.gyp:chrome_common_features',
             '../base/base.gyp:base_win64',
             '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations_win64',
             '../components/nacl.gyp:nacl_switches_win64',

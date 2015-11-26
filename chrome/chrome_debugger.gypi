@@ -15,6 +15,7 @@
         '../net/net.gyp:net',
         'browser/devtools/webrtc_device_provider_resources.gyp:webrtc_device_provider_resources',
         'browser/devtools/devtools_protocol_constants.gyp:devtools_protocol_constants',
+        'chrome_features.gyp:chrome_common_features',
       ],
       'include_dirs': [
         '..',

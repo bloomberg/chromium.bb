@@ -1617,6 +1617,7 @@
       'type': 'executable',
       'dependencies': [
         'browser',
+        'chrome_features.gyp:chrome_common_features',
         'chrome_resources.gyp:chrome_resources',
         'chrome_resources.gyp:chrome_strings',
         'chrome_resources.gyp:packed_extra_resources',
@@ -2111,6 +2112,7 @@
       'type': 'executable',
       'dependencies': [
         'browser',
+        'chrome_features.gyp:chrome_common_features',
         'chrome_resources.gyp:browser_tests_pak',
         'chrome_resources.gyp:chrome_resources',
         'chrome_resources.gyp:chrome_strings',
@@ -2655,6 +2657,7 @@
       'type': 'executable',
       'dependencies': [
         'browser',
+        'chrome_features.gyp:chrome_common_features',
         'chrome_resources.gyp:chrome_resources',
         'chrome_resources.gyp:chrome_strings',
         'chrome_resources.gyp:packed_extra_resources',

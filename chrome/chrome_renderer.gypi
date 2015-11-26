@@ -239,6 +239,7 @@
       'dependencies': [
         'common',
         'common_mojo_bindings',
+        'chrome_features.gyp:chrome_common_features',
         'chrome_resources.gyp:chrome_resources',
         'chrome_resources.gyp:chrome_strings',
         '../third_party/re2/re2.gyp:re2',

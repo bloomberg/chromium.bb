@@ -12,6 +12,7 @@
         '../base/base.gyp:base',
         '../content/content.gyp:content_plugin',
         '../gin/gin.gyp:gin',
+        'chrome_features.gyp:chrome_common_features',
         'chrome_resources.gyp:chrome_strings',
       ],
       'include_dirs': [

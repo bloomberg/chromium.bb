@@ -297,6 +297,7 @@
       # GN: //chrome/common:common
       'target_name': 'common',
       'type': 'static_library',
+      'hard_dependency': 1,  # Because of transitive dep on version_header.
       'variables': {
         'chrome_common_target': 1,
         'enable_wexit_time_destructors': 1,
@@ -320,6 +321,7 @@
         '<(DEPTH)/base/base.gyp:base_i18n',
         '<(DEPTH)/base/base.gyp:base_prefs',
         '<(DEPTH)/base/base.gyp:base_static',
+        '<(DEPTH)/chrome/chrome_features.gyp:chrome_common_features',
         '<(DEPTH)/chrome/chrome_resources.gyp:chrome_resources',
         '<(DEPTH)/chrome/chrome_resources.gyp:chrome_strings',
         '<(DEPTH)/chrome/chrome_resources.gyp:theme_resources',
@@ -565,6 +567,7 @@
       ],
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
+        '<(DEPTH)/chrome/chrome_features.gyp:chrome_common_features',
         '<(DEPTH)/chrome/chrome_resources.gyp:chrome_resources',
         '<(DEPTH)/chrome/chrome_resources.gyp:chrome_strings',
         '<(DEPTH)/components/url_formatter/url_formatter.gyp:url_formatter',

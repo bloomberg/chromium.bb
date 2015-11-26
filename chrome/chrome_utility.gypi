@@ -124,6 +124,7 @@
         '../media/media.gyp:media',
         '../skia/skia.gyp:skia',
         '../third_party/libxml/libxml.gyp:libxml',
+        '<(DEPTH)/chrome/chrome_features.gyp:chrome_common_features',
         '<(DEPTH)/chrome/chrome_resources.gyp:chrome_resources',
         '<(DEPTH)/chrome/chrome_resources.gyp:chrome_strings',
         'common',

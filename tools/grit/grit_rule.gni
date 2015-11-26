@@ -244,13 +244,6 @@ if (enable_settings_app) {
     "enable_settings_app",
   ]
 }
-if (enable_google_now) {
-  grit_defines += [
-    "-D",
-    "enable_google_now",
-  ]
-}
-
 if (enable_webrtc) {
   grit_defines += [
     "-D",

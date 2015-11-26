@@ -5,6 +5,7 @@
 #include "chrome/common/pref_names.h"
 
 #include "base/basictypes.h"
+#include "chrome/common/features.h"
 #include "chrome/common/pref_font_webkit_names.h"
 
 namespace prefs {
@@ -1557,7 +1558,7 @@ const char kGeolocationAccessToken[] = "geolocation.access_token";
 const char kGeolocationEnabled[] = "geolocation.enabled";
 #endif
 
-#if defined(ENABLE_GOOGLE_NOW)
+#if BUILDFLAG(ENABLE_GOOGLE_NOW)
 // Boolean that is true when Google services can use the user's location.
 const char kGoogleGeolocationAccessEnabled[] =
     "googlegeolocationaccess.enabled";

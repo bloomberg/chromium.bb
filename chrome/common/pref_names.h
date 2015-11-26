@@ -10,6 +10,7 @@
 #include <stddef.h>
 
 #include "build/build_config.h"
+#include "chrome/common/features.h"
 
 namespace prefs {
 
@@ -557,7 +558,7 @@ extern const char kGeolocationAccessToken[];
 extern const char kGeolocationEnabled[];
 #endif
 
-#if defined(ENABLE_GOOGLE_NOW)
+#if BUILDFLAG(ENABLE_GOOGLE_NOW)
 extern const char kGoogleGeolocationAccessEnabled[];
 #endif
 extern const char kGoogleNowLauncherEnabled[];
