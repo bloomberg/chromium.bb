@@ -131,6 +131,13 @@ class BrowserDistribution {
   virtual base::string16 GetDistributionData(HKEY root_key);
 #endif
 
+  // Returns the path "Software\<PRODUCT>". This subkey of HKEY_CURRENT_USER can
+  // be used to save and restore state. With the exception of data that is used
+  // by third parties (e.g., a subkey that specifies the location of a native
+  // messaging host's manifest), state stored in this key is removed during
+  // uninstall when the user chooses to also delete their browsing data.
+  base::string16 GetRegistryPath();
+
   virtual base::string16 GetUninstallRegPath();
 
   // Returns an enum specifying the different ways in which this distribution

@@ -858,12 +858,10 @@ void RemoveDistributionRegistryState(BrowserDistribution* distribution) {
       L"Extensions",
       L"NativeMessagingHosts",
   };
-  base::string16 key_name(L"Software\\");
-  key_name += distribution->GetInstallSubDir();
   // Delete the contents of the distribution key except for those parts used by
   // outsiders to configure Chrome.
   DeleteRegistryKeyPartial(
-      HKEY_CURRENT_USER, key_name,
+      HKEY_CURRENT_USER, distribution->GetRegistryPath(),
       std::vector<base::string16>(
           &kKeysToPreserve[0],
           &kKeysToPreserve[arraysize(kKeysToPreserve) - 1]));

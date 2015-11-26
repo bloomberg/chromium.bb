@@ -22,10 +22,8 @@ namespace {
 
 // Returns the path to the registry key holding profile-specific state values.
 base::string16 GetStateStoreKeyName() {
-  base::string16 key_name(L"Software\\");
-  return key_name.append(
-                     BrowserDistribution::GetDistribution()->GetInstallSubDir())
-      .append(L"\\IncidentsSent");
+  return BrowserDistribution::GetDistribution()->GetRegistryPath().append(
+      L"\\IncidentsSent");
 }
 
 // Returns the name of the registry value for |profile|'s state.

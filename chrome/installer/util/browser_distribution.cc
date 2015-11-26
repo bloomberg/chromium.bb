@@ -240,6 +240,10 @@ base::string16 BrowserDistribution::GetDistributionData(HKEY root_key) {
   return L"";
 }
 
+base::string16 BrowserDistribution::GetRegistryPath() {
+  return base::string16(L"Software\\").append(GetInstallSubDir());
+}
+
 base::string16 BrowserDistribution::GetUninstallRegPath() {
   return L"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Chromium";
 }
