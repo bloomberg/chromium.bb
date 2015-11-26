@@ -9,7 +9,6 @@ import android.app.ActivityManager;
 import android.content.Context;
 import android.preference.PreferenceManager;
 import android.support.v4.widget.DrawerLayout;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
@@ -18,13 +17,11 @@ import android.widget.ViewSwitcher;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ObserverList;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.bookmark.BookmarksBridge.BookmarkItem;
 import org.chromium.chrome.browser.bookmark.BookmarksBridge.BookmarkModelObserver;
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
-import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.partnerbookmarks.PartnerBookmarksShim;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -434,20 +431,8 @@ public class EnhancedBookmarkManager implements EnhancedBookmarkDelegate {
     @Override
     public void openBookmark(BookmarkId bookmark, int launchLocation) {
         clearSelection();
-        if (mEnhancedBookmarksModel.getBookmarkById(bookmark) != null) {
-            String url = mEnhancedBookmarksModel.getLaunchUrlAndMarkAccessed(mActivity, bookmark);
-            // TODO(jianli): Notify the user about the failure.
-            if (TextUtils.isEmpty(url)) return;
-
-            NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_BOOKMARK);
-            if (url.startsWith("file:")) {
-                RecordHistogram.recordEnumeratedHistogram("OfflinePages.LaunchLocation",
-                        launchLocation, LaunchLocation.COUNT);
-            } else {
-                RecordHistogram.recordEnumeratedHistogram("Stars.LaunchLocation", launchLocation,
-                        LaunchLocation.COUNT);
-            }
-            EnhancedBookmarkUtils.openBookmark(mActivity, url);
+        if (EnhancedBookmarkUtils.openBookmark(
+                    mEnhancedBookmarksModel, mActivity, bookmark, launchLocation)) {
             EnhancedBookmarkUtils.finishActivityOnPhone(mActivity);
         }
     }

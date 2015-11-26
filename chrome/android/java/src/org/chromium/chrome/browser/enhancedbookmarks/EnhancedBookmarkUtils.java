@@ -12,8 +12,10 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.Browser;
+import android.text.TextUtils;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeBrowserProviderClient;
@@ -24,6 +26,7 @@ import org.chromium.chrome.browser.bookmark.BookmarksBridge.BookmarkItem;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarksModel.AddBookmarkCallback;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
+import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageFreeUpSpaceCallback;
 import org.chromium.chrome.browser.offlinepages.OfflinePageFreeUpSpaceDialog;
@@ -263,7 +266,7 @@ public class EnhancedBookmarkUtils {
             return false;
         }
         if (DeviceFormFactor.isTablet(activity)) {
-            openBookmark(activity, UrlConstants.BOOKMARKS_URL);
+            openUrl(activity, UrlConstants.BOOKMARKS_URL);
         } else {
             activity.startActivity(new Intent(activity, EnhancedBookmarkActivity.class));
         }
@@ -319,7 +322,37 @@ public class EnhancedBookmarkUtils {
         return BookmarkId.getBookmarkIdFromString(bundle.getString(BOOKMARK_SAVE_NAME));
     }
 
-    public static void openBookmark(Activity activity, String url) {
+    /**
+     * Opens a bookmark depending on connection status and reports UMA.
+     * @param model Enhanced bookmarks model to manage the bookmark.
+     * @param activity Activity requesting to open the bookmark.
+     * @param bookmarkId ID of the bookmark to be opened.
+     * @param launchLocation Location from which the bookmark is being opened.
+     * @return Whether the bookmark was successfully opened.
+     */
+    public static boolean openBookmark(EnhancedBookmarksModel model, Activity activity,
+            BookmarkId bookmarkId, int launchLocation) {
+        if (model.getBookmarkById(bookmarkId) == null) return false;
+
+        String url = model.getLaunchUrlAndMarkAccessed(activity, bookmarkId);
+
+        // TODO(jianli): Notify the user about the failure.
+        if (TextUtils.isEmpty(url)) return false;
+
+        NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_BOOKMARK);
+        if (url.startsWith("file:")) {
+            RecordHistogram.recordEnumeratedHistogram(
+                    "OfflinePages.LaunchLocation", launchLocation, LaunchLocation.COUNT);
+        } else {
+            RecordHistogram.recordEnumeratedHistogram(
+                    "Stars.LaunchLocation", launchLocation, LaunchLocation.COUNT);
+        }
+
+        openUrl(activity, url);
+        return true;
+    }
+
+    private static void openUrl(Activity activity, String url) {
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
         intent.setClassName(activity.getApplicationContext().getPackageName(),
                 ChromeLauncherActivity.class.getName());
