@@ -97,6 +97,9 @@ const char kUserAgent[] = "user-agent";
 // These mappings only apply to the host resolver.
 const char kIOSHostResolverRules[] = "host-resolver-rules";
 
+// Ignores certificate-related errors.
+const char kIOSIgnoreCertificateErrors[] = "ignore-certificate-errors";
+
 // Allows for forcing socket connections to http/https to use fixed ports.
 const char kIOSTestingFixedHttpPort[] = "testing-fixed-http-port";
 const char kIOSTestingFixedHttpsPort[] = "testing-fixed-https-port";
