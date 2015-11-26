@@ -235,14 +235,14 @@ private:
 #endif
 
     // In 64 bit architectures, we intentionally add 4 byte padding immediately
-    // after the HeapHeaderObject. This is because:
+    // after the HeapObjectHeader. This is because:
     //
-    // | HeapHeaderObject (4 byte) | padding (4 byte) | object payload (8 * n byte) |
+    // | HeapObjectHeader (4 byte) | padding (4 byte) | object payload (8 * n byte) |
     // ^8 byte aligned                                ^8 byte aligned
     //
     // is better than:
     //
-    // | HeapHeaderObject (4 byte) | object payload (8 * n byte) | padding (4 byte) |
+    // | HeapObjectHeader (4 byte) | object payload (8 * n byte) | padding (4 byte) |
     // ^4 byte aligned             ^8 byte aligned               ^4 byte aligned
     //
     // since the former layout aligns both header and payload to 8 byte.
