@@ -245,7 +245,7 @@
       }
     ]
   },
-  "Win GN": {
+  "Win x64 GN": {
     "additional_compile_targets": [
       "accessibility_unittests",
       "app_list_unittests",
@@ -298,7 +298,7 @@
       "wm_unittests"
     ]
   },
-  "Win GN (dbg)": {
+  "Win x64 GN (dbg)": {
     "additional_compile_targets": [
       "accessibility_unittests",
       "app_list_unittests",
