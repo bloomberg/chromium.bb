@@ -108,57 +108,57 @@ inline int WebRtcVerbosityLevel(LoggingSeverity sev) {
   }
 }
 
-// Generates extra information for LOG_E.
-static std::string GenerateExtra(LogErrorContext err_ctx,
-                                 int err,
-                                 const char* module) {
-  if (err_ctx != ERRCTX_NONE) {
-    std::ostringstream tmp;
-    tmp << ": ";
-    tmp << "[0x" << std::setfill('0') << std::hex << std::setw(8) << err << "]";
-    switch (err_ctx) {
-      case ERRCTX_ERRNO:
-        tmp << " " << strerror(err);
-        break;
+// Logs extra information for LOG_E.
+static void LogExtra(std::ostringstream* print_stream,
+                     LogErrorContext err_ctx,
+                     int err,
+                     const char* module) {
+  if (err_ctx == ERRCTX_NONE)
+    return;
+
+  (*print_stream) << ": ";
+  (*print_stream) << "[0x" << std::setfill('0') << std::hex << std::setw(8)
+                  << err << "]";
+  switch (err_ctx) {
+    case ERRCTX_ERRNO:
+      (*print_stream) << " " << strerror(err);
+      break;
 #if defined(WEBRTC_WIN)
-      case ERRCTX_HRESULT: {
-        char msgbuf[256];
-        DWORD flags = FORMAT_MESSAGE_FROM_SYSTEM;
-        HMODULE hmod = GetModuleHandleA(module);
-        if (hmod)
-          flags |= FORMAT_MESSAGE_FROM_HMODULE;
-        if (DWORD len = FormatMessageA(
-            flags, hmod, err,
-            MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-            msgbuf, sizeof(msgbuf) / sizeof(msgbuf[0]), NULL)) {
-          while ((len > 0) &&
-              isspace(static_cast<unsigned char>(msgbuf[len-1]))) {
-            msgbuf[--len] = 0;
-          }
-          tmp << " " << msgbuf;
+    case ERRCTX_HRESULT: {
+      char msgbuf[256];
+      DWORD flags = FORMAT_MESSAGE_FROM_SYSTEM;
+      HMODULE hmod = GetModuleHandleA(module);
+      if (hmod)
+        flags |= FORMAT_MESSAGE_FROM_HMODULE;
+      if (DWORD len = FormatMessageA(
+              flags, hmod, err, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+              msgbuf, sizeof(msgbuf) / sizeof(msgbuf[0]), NULL)) {
+        while ((len > 0) &&
+               isspace(static_cast<unsigned char>(msgbuf[len - 1]))) {
+          msgbuf[--len] = 0;
         }
-        break;
+        (*print_stream) << " " << msgbuf;
       }
-#endif  // OS_WIN
-#if defined(WEBRTC_IOS)
-      case ERRCTX_OSSTATUS:
-        tmp << " " << "Unknown LibJingle error: " << err;
-        break;
-#elif defined(WEBRTC_MAC)
-      case ERRCTX_OSSTATUS: {
-        tmp << " " << nonnull(GetMacOSStatusErrorString(err), "Unknown error");
-        if (const char* desc = GetMacOSStatusCommentString(err)) {
-          tmp << ": " << desc;
-        }
-        break;
-      }
-#endif  // OS_MACOSX
-      default:
-        break;
+      break;
     }
-    return tmp.str();
+#elif defined(WEBRTC_IOS)
+    case ERRCTX_OSSTATUS:
+      (*print_stream) << " "
+                      << "Unknown LibJingle error: " << err;
+      break;
+#elif defined(WEBRTC_MAC)
+    case ERRCTX_OSSTATUS: {
+      (*print_stream) << " " << nonnull(GetMacOSStatusErrorString(err),
+                                        "Unknown error");
+      if (const char* desc = GetMacOSStatusCommentString(err)) {
+        (*print_stream) << ": " << desc;
+      }
+      break;
+    }
+#endif  // defined(WEBRTC_WIN)
+    default:
+      break;
   }
-  return "";
 }
 
 DiagnosticLogMessage::DiagnosticLogMessage(const char* file,
@@ -166,12 +166,7 @@ DiagnosticLogMessage::DiagnosticLogMessage(const char* file,
                                            LoggingSeverity severity,
                                            LogErrorContext err_ctx,
                                            int err)
-    : file_name_(file),
-      line_(line),
-      severity_(severity),
-      log_to_chrome_(CheckVlogIsOnHelper(severity, file, strlen(file) + 1)) {
-  extra_ = GenerateExtra(err_ctx, err, NULL);
-}
+    : DiagnosticLogMessage(file, line, severity, err_ctx, err, nullptr) {}
 
 DiagnosticLogMessage::DiagnosticLogMessage(const char* file,
                                            int line,
@@ -182,16 +177,17 @@ DiagnosticLogMessage::DiagnosticLogMessage(const char* file,
     : file_name_(file),
       line_(line),
       severity_(severity),
-      log_to_chrome_(CheckVlogIsOnHelper(severity, file, strlen(file) + 1)) {
-  extra_ = GenerateExtra(err_ctx, err, module);
-}
+      err_ctx_(err_ctx),
+      err_(err),
+      module_(module),
+      log_to_chrome_(CheckVlogIsOnHelper(severity, file, strlen(file) + 1)) {}
 
 DiagnosticLogMessage::~DiagnosticLogMessage() {
   const bool call_delegate =
       g_logging_delegate_function && severity_ <= LS_INFO;
 
   if (call_delegate || log_to_chrome_) {
-    print_stream_ << extra_;
+    LogExtra(&print_stream_, err_ctx_, err_, module_);
     const std::string& str = print_stream_.str();
     if (log_to_chrome_) {
       LOG_LAZY_STREAM_DIRECT(file_name_, line_,

@@ -97,9 +97,10 @@ class DiagnosticLogMessage {
   const char* file_name_;
   const int line_;
   const LoggingSeverity severity_;
+  const LogErrorContext err_ctx_;
+  const int err_;
+  const char* const module_;
   const bool log_to_chrome_;
-
-  std::string extra_;
 
   std::ostringstream print_stream_;
 };
