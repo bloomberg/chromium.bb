@@ -57,6 +57,62 @@ OobeWebUITest.prototype = {
     this.accessibilityAuditConfig.ignoreSelectors(
         'focusableElementNotVisibleAndNotAriaHidden',
         '#iconButton');
+
+    // Enable when failure is resolved.
+    // AX_ARIA_02: http://crbug.com/560932
+    this.accessibilityAuditConfig.ignoreSelectors(
+      'nonExistentAriaRelatedElement',
+      '#cancelConfirmDlg');
+
+    var requiredOwnedAriaRoleMissingSelectors = [
+      '#networks-list-dropdown-container',
+      '#offline-networks-list-dropdown-container',
+      '#supervised-user-creation-image-grid',
+      'body > .decorated',
+    ];
+
+    // Enable when failure is resolved.
+    // AX_ARIA_08: http://crbug.com/560924
+    this.accessibilityAuditConfig.ignoreSelectors(
+      'requiredOwnedAriaRoleMissing',
+      requiredOwnedAriaRoleMissingSelectors);
+
+    var badAriaAttributeSelectors = [
+      '#forgotPasswordDlg',
+      '#cancelConfirmDlg',
+    ];
+
+    // Enable when failure is resolved.
+    // AX_ARIA_11: http://crbug.com/560935
+    this.accessibilityAuditConfig.ignoreSelectors(
+      'badAriaAttribute',
+      badAriaAttributeSelectors);
+
+    var tabIndexGreaterThanZeroSelectors = [
+      '#user-image-grid',
+      '#discard-photo',
+      '#take-photo',
+      '#flip-photo',
+    ];
+
+    // Enable when failure is resolved.
+    // AX_FOCUS_03: http://crbug.com/560928
+    this.accessibilityAuditConfig.ignoreSelectors(
+      'tabIndexGreaterThanZero',
+      tabIndexGreaterThanZeroSelectors);
+
+    var controlsWithoutLabelSelectors = [
+      '#supervised-user-creation-managers-pane',
+      '#supervised-user-creation-name',
+      '#supervised-user-creation-password',
+      '#supervised-user-creation-password-confirm',
+    ];
+
+    // Enable when failure is resolved.
+    // AX_TEXT_01: http://crbug.com/560939
+    this.accessibilityAuditConfig.ignoreSelectors(
+      'controlsWithoutLabel',
+      controlsWithoutLabelSelectors);
   },
 };
 

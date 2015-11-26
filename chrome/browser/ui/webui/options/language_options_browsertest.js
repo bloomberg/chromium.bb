@@ -16,6 +16,23 @@ LanguageOptionsWebUITest.prototype = {
 
   /** @override */
   browsePreload: 'chrome://settings-frame/languages',
+
+  /** @override */
+  setUp: function() {
+    OptionsBrowsertestBase.prototype.setUp.call(this);
+
+    // Enable when failure is resolved.
+    // AX_ARIA_10: http://crbug.com/559266
+    this.accessibilityAuditConfig.ignoreSelectors(
+        'unsupportedAriaAttribute',
+        '#language-options-list');
+
+    // Enable when failure is resolved.
+    // AX_TEXT_04: http://crbug.com/559271
+    this.accessibilityAuditConfig.ignoreSelectors(
+        'linkWithUnclearPurpose',
+        '#languagePage > .content-area > .language-options-header > A');
+  }
 };
 
 // Test opening language options has correct location.

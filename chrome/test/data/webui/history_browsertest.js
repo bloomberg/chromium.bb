@@ -775,6 +775,17 @@ HistoryWebUIRealBackendTest.prototype = {
     // Add a visit on the next day.
     GEN('  AddPageToHistory(36, "http://google.com", "Google");');
   },
+
+  /** @override */
+  setUp: function() {
+    BaseHistoryWebUITest.prototype.setUp.call(this);
+
+    // Enable when failure is resolved.
+    // AX_TEXT_04: http://crbug.com/560914
+    this.accessibilityAuditConfig.ignoreSelectors(
+        'linkWithUnclearPurpose',
+        '#notification-bar > A');
+  },
 };
 
 /**

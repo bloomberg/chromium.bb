@@ -168,15 +168,10 @@ var testing = {};
     /**
      * Returns the configuration for the accessibility audit, creating it
      * on-demand.
-     * @return {axs.AuditConfiguration}
+     * @return {!axs.AuditConfiguration}
      */
     get accessibilityAuditConfig() {
-      // The axs namespace is not available in chromevox tests.
-      // Further, 'window' is not available in unit tests, but since the
-      // accessibility audit library pulls in the closure library,
-      // 'goog.global' has to be present if axs is, so we use that here.
-      if (!this.accessibilityAuditConfig_ &&
-          goog && goog.global && goog.global.axs) {
+      if (!this.accessibilityAuditConfig_) {
         this.accessibilityAuditConfig_ = new axs.AuditConfiguration();
 
         this.accessibilityAuditConfig_.showUnsupportedRulesWarning = false;
@@ -196,6 +191,10 @@ var testing = {};
             // TODO(aboxhall): re-enable when crbug.com/267035 is fixed.
             // Until then it's just noise.
             "lowContrastElements",
+
+            // TODO(apacible): re-enable when following issue is fixed.
+            // github.com/GoogleChrome/accessibility-developer-tools/issues/251
+            "tableHasAppropriateHeaders",
         ];
       }
       return this.accessibilityAuditConfig_;
@@ -307,17 +306,14 @@ var testing = {};
      * @type {Function}
      */
     setUp: function() {
-      var auditConfig = this.accessibilityAuditConfig;
-      if (auditConfig) {
-        // These should be ignored in many of the web UI tests.
-        // user-image-stream and supervised-user-creation-image-stream are
-        // streaming video elements used for capturing a user image so they
-        // won't have captions and should be ignored everywhere.
-        auditConfig.ignoreSelectors('videoWithoutCaptions',
-                                    '.user-image-stream');
-        auditConfig.ignoreSelectors(
-            'videoWithoutCaptions', '.supervised-user-creation-image-stream');
-      }
+      // These should be ignored in many of the web UI tests.
+      // user-image-stream and supervised-user-creation-image-stream are
+      // streaming video elements used for capturing a user image so they
+      // won't have captions and should be ignored everywhere.
+      this.accessibilityAuditConfig.ignoreSelectors('videoWithoutCaptions',
+                                                    '.user-image-stream');
+      this.accessibilityAuditConfig.ignoreSelectors(
+          'videoWithoutCaptions', '.supervised-user-creation-image-stream');
     },
 
     /**
