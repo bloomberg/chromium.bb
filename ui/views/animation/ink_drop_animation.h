@@ -80,6 +80,9 @@ class VIEWS_EXPORT InkDropAnimation {
     PAINTED_SHAPE_COUNT
   };
 
+  // Returns a human readable string for the |painted_shape| value.
+  static std::string ToLayerName(PaintedShape painted_shape);
+
   // Type that contains a gfx::Tansform for each of the layers required by the
   // ink drop.
   typedef gfx::Transform InkDropTransforms[PAINTED_SHAPE_COUNT];

@@ -137,6 +137,8 @@ InkDropAnimation::InkDropAnimation(const gfx::Size& large_size,
           new RectangleLayerDelegate(kInkDropColor, large_size_)),
       root_layer_(new ui::Layer(ui::LAYER_NOT_DRAWN)),
       ink_drop_state_(InkDropState::HIDDEN) {
+  root_layer_->set_name("InkDropAnimation:ROOT_LAYER");
+
   for (int i = 0; i < PAINTED_SHAPE_COUNT; ++i)
     AddPaintLayer(static_cast<PaintedShape>(i));
 
@@ -177,6 +179,27 @@ void InkDropAnimation::SetCenterPoint(const gfx::Point& center_point) {
   gfx::Transform transform;
   transform.Translate(center_point.x(), center_point.y());
   root_layer_->SetTransform(transform);
+}
+
+std::string InkDropAnimation::ToLayerName(PaintedShape painted_shape) {
+  switch (painted_shape) {
+    case TOP_LEFT_CIRCLE:
+      return "TOP_LEFT_CIRCLE";
+    case TOP_RIGHT_CIRCLE:
+      return "TOP_RIGHT_CIRCLE";
+    case BOTTOM_RIGHT_CIRCLE:
+      return "BOTTOM_RIGHT_CIRCLE";
+    case BOTTOM_LEFT_CIRCLE:
+      return "BOTTOM_LEFT_CIRCLE";
+    case HORIZONTAL_RECT:
+      return "HORIZONTAL_RECT";
+    case VERTICAL_RECT:
+      return "VERTICAL_RECT";
+    case PAINTED_SHAPE_COUNT:
+      NOTREACHED() << "The PAINTED_SHAPE_COUNT value should never be used.";
+      return "PAINTED_SHAPE_COUNT";
+  }
+  return "UNKNOWN";
 }
 
 void InkDropAnimation::AnimateToStateInternal(
@@ -396,6 +419,7 @@ void InkDropAnimation::AddPaintLayer(PaintedShape painted_shape) {
   layer->SetVisible(true);
   layer->SetOpacity(1.0);
   layer->SetMasksToBounds(false);
+  layer->set_name("PAINTED_SHAPE_COUNT:" + ToLayerName(painted_shape));
 
   painted_layers_[painted_shape].reset(layer);
 }
