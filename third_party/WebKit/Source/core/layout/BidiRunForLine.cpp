@@ -89,21 +89,6 @@ TextDirection determinePlaintextDirectionality(LayoutObject* root,
     return observer.determineParagraphDirectionality();
 }
 
-// FIXME: This should be a BidiStatus constructor or create method.
-static inline BidiStatus statusWithDirection(TextDirection textDirection,
-    bool isOverride)
-{
-    WTF::Unicode::Direction direction = textDirection == LTR
-        ? LeftToRight
-        : RightToLeft;
-    RefPtr<BidiContext> context = BidiContext::create(
-        textDirection == LTR ? 0 : 1, direction, isOverride, FromStyleOrDOM);
-
-    // This copies BidiStatus and may churn the ref on BidiContext.
-    // I doubt it matters.
-    return BidiStatus(direction, direction, direction, context.release());
-}
-
 static inline void setupResolverToResumeInIsolate(InlineBidiResolver& resolver,
     LayoutObject* root, LayoutObject* startObject)
 {
@@ -162,8 +147,8 @@ void constructBidiRunsForLine(InlineBidiResolver& topResolver,
             ASSERT(unicodeBidi == Isolate || unicodeBidi == IsolateOverride);
             direction = isolatedInline->style()->direction();
         }
-        isolatedResolver.setStatus(statusWithDirection(direction,
-            isOverride(unicodeBidi)));
+        isolatedResolver.setStatus(BidiStatus::createForIsolate(direction,
+            isOverride(unicodeBidi), isolatedRun.level));
 
         setupResolverToResumeInIsolate(isolatedResolver, isolatedInline,
             startObj);

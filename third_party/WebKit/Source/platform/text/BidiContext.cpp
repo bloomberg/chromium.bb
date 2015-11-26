@@ -45,7 +45,7 @@ PassRefPtr<BidiContext> BidiContext::create(unsigned char level, Direction direc
 {
     ASSERT(direction == (level % 2 ? RightToLeft : LeftToRight));
 
-    if (parent)
+    if (parent || level >= 2)
         return createUncached(level, direction, override, source, parent);
 
     ASSERT(level <= 1);

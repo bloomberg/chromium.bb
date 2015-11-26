@@ -141,6 +141,25 @@ struct BidiStatus {
     {
     }
 
+    // Creates a BidiStatus for Isolates (RLI/LRI).
+    // The rule X5a ans X5b of UAX#9: http://unicode.org/reports/tr9/#X5a
+    static BidiStatus createForIsolate(TextDirection textDirection, bool isOverride, unsigned char level)
+    {
+        WTF::Unicode::Direction direction;
+        if (textDirection == RTL) {
+            level = nextGreaterOddLevel(level);
+            direction = WTF::Unicode::RightToLeft;
+        } else {
+            level = nextGreaterEvenLevel(level);
+            direction = WTF::Unicode::LeftToRight;
+        }
+        RefPtr<BidiContext> context = BidiContext::create(level, direction, isOverride, FromStyleOrDOM);
+
+        // This copies BidiStatus and may churn the ref on BidiContext.
+        // I doubt it matters.
+        return BidiStatus(direction, direction, direction, context.release());
+    }
+
     WTF::Unicode::Direction eor;
     WTF::Unicode::Direction lastStrong;
     WTF::Unicode::Direction last;

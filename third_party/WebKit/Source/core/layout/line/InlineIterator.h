@@ -34,11 +34,12 @@
 namespace blink {
 
 struct BidiIsolatedRun {
-    BidiIsolatedRun(LayoutObject& object, unsigned position, LayoutObject& root, BidiRun& runToReplace)
+    BidiIsolatedRun(LayoutObject& object, unsigned position, LayoutObject& root, BidiRun& runToReplace, unsigned char level)
         : object(object)
         , root(root)
         , runToReplace(runToReplace)
         , position(position)
+        , level(level)
     {
     }
 
@@ -46,6 +47,7 @@ struct BidiIsolatedRun {
     LayoutObject& root;
     BidiRun& runToReplace;
     unsigned position;
+    unsigned char level;
 };
 
 
@@ -593,7 +595,7 @@ static inline BidiRun* addPlaceholderRunForIsolatedInline(InlineBidiResolver& re
     resolver.runs().addRun(isolatedRun);
     // FIXME: isolatedRuns() could be a hash of object->run and then we could cheaply
     // ASSERT here that we didn't create multiple objects for the same inline.
-    resolver.isolatedRuns().append(BidiIsolatedRun(*obj, pos, *root, *isolatedRun));
+    resolver.isolatedRuns().append(BidiIsolatedRun(*obj, pos, *root, *isolatedRun, resolver.context()->level()));
     return isolatedRun;
 }
 
