@@ -1180,9 +1180,10 @@ TEST_P(HttpNetworkTransactionTest, ReuseConnection) {
 }
 
 TEST_P(HttpNetworkTransactionTest, Ignores100) {
-  ScopedVector<UploadElementReader> element_readers;
-  element_readers.push_back(new UploadBytesElementReader("foo", 3));
-  ElementsUploadDataStream upload_data_stream(element_readers.Pass(), 0);
+  std::vector<scoped_ptr<UploadElementReader>> element_readers;
+  element_readers.push_back(
+      make_scoped_ptr(new UploadBytesElementReader("foo", 3)));
+  ElementsUploadDataStream upload_data_stream(std::move(element_readers), 0);
 
   HttpRequestInfo request;
   request.method = "POST";
@@ -6012,9 +6013,10 @@ TEST_P(HttpNetworkTransactionTest, RecycleSocketAfterZeroContentLength) {
 }
 
 TEST_P(HttpNetworkTransactionTest, ResendRequestOnWriteBodyError) {
-  ScopedVector<UploadElementReader> element_readers;
-  element_readers.push_back(new UploadBytesElementReader("foo", 3));
-  ElementsUploadDataStream upload_data_stream(element_readers.Pass(), 0);
+  std::vector<scoped_ptr<UploadElementReader>> element_readers;
+  element_readers.push_back(
+      make_scoped_ptr(new UploadBytesElementReader("foo", 3)));
+  ElementsUploadDataStream upload_data_stream(std::move(element_readers), 0);
 
   HttpRequestInfo request[2];
   // Transaction 1: a GET request that succeeds.  The socket is recycled
@@ -9107,11 +9109,11 @@ TEST_P(HttpNetworkTransactionTest, UploadFileSmallerThanLength) {
   UploadFileElementReader::ScopedOverridingContentLengthForTests
       overriding_content_length(kFakeSize);
 
-  ScopedVector<UploadElementReader> element_readers;
-  element_readers.push_back(
-      new UploadFileElementReader(base::ThreadTaskRunnerHandle::Get().get(),
-                                  temp_file_path, 0, kuint64max, base::Time()));
-  ElementsUploadDataStream upload_data_stream(element_readers.Pass(), 0);
+  std::vector<scoped_ptr<UploadElementReader>> element_readers;
+  element_readers.push_back(make_scoped_ptr(new UploadFileElementReader(
+      base::ThreadTaskRunnerHandle::Get().get(), temp_file_path, 0, kuint64max,
+      base::Time())));
+  ElementsUploadDataStream upload_data_stream(std::move(element_readers), 0);
 
   HttpRequestInfo request;
   request.method = "POST";
@@ -9161,11 +9163,11 @@ TEST_P(HttpNetworkTransactionTest, UploadUnreadableFile) {
                                    temp_file_content.length()));
   ASSERT_TRUE(base::MakeFileUnreadable(temp_file));
 
-  ScopedVector<UploadElementReader> element_readers;
-  element_readers.push_back(
+  std::vector<scoped_ptr<UploadElementReader>> element_readers;
+  element_readers.push_back(make_scoped_ptr(
       new UploadFileElementReader(base::ThreadTaskRunnerHandle::Get().get(),
-                                  temp_file, 0, kuint64max, base::Time()));
-  ElementsUploadDataStream upload_data_stream(element_readers.Pass(), 0);
+                                  temp_file, 0, kuint64max, base::Time())));
+  ElementsUploadDataStream upload_data_stream(std::move(element_readers), 0);
 
   HttpRequestInfo request;
   request.method = "POST";
@@ -9218,9 +9220,9 @@ TEST_P(HttpNetworkTransactionTest, CancelDuringInitRequestBody) {
   };
 
   FakeUploadElementReader* fake_reader = new FakeUploadElementReader;
-  ScopedVector<UploadElementReader> element_readers;
-  element_readers.push_back(fake_reader);
-  ElementsUploadDataStream upload_data_stream(element_readers.Pass(), 0);
+  std::vector<scoped_ptr<UploadElementReader>> element_readers;
+  element_readers.push_back(make_scoped_ptr(fake_reader));
+  ElementsUploadDataStream upload_data_stream(std::move(element_readers), 0);
 
   HttpRequestInfo request;
   request.method = "POST";
@@ -14673,9 +14675,10 @@ TEST_P(HttpNetworkTransactionTest, CloseSSLSocketOnIdleForHttpRequest2) {
 }
 
 TEST_P(HttpNetworkTransactionTest, PostReadsErrorResponseAfterReset) {
-  ScopedVector<UploadElementReader> element_readers;
-  element_readers.push_back(new UploadBytesElementReader("foo", 3));
-  ElementsUploadDataStream upload_data_stream(element_readers.Pass(), 0);
+  std::vector<scoped_ptr<UploadElementReader>> element_readers;
+  element_readers.push_back(
+      make_scoped_ptr(new UploadBytesElementReader("foo", 3)));
+  ElementsUploadDataStream upload_data_stream(std::move(element_readers), 0);
 
   HttpRequestInfo request;
   request.method = "POST";
@@ -14780,9 +14783,10 @@ TEST_P(HttpNetworkTransactionTest,
   // Delete the transaction to release the socket back into the socket pool.
   trans1.reset();
 
-  ScopedVector<UploadElementReader> element_readers;
-  element_readers.push_back(new UploadBytesElementReader("foo", 3));
-  ElementsUploadDataStream upload_data_stream(element_readers.Pass(), 0);
+  std::vector<scoped_ptr<UploadElementReader>> element_readers;
+  element_readers.push_back(
+      make_scoped_ptr(new UploadBytesElementReader("foo", 3)));
+  ElementsUploadDataStream upload_data_stream(std::move(element_readers), 0);
 
   HttpRequestInfo request2;
   request2.method = "POST";
@@ -14812,9 +14816,10 @@ TEST_P(HttpNetworkTransactionTest,
 
 TEST_P(HttpNetworkTransactionTest,
        PostReadsErrorResponseAfterResetPartialBodySent) {
-  ScopedVector<UploadElementReader> element_readers;
-  element_readers.push_back(new UploadBytesElementReader("foo", 3));
-  ElementsUploadDataStream upload_data_stream(element_readers.Pass(), 0);
+  std::vector<scoped_ptr<UploadElementReader>> element_readers;
+  element_readers.push_back(
+      make_scoped_ptr(new UploadBytesElementReader("foo", 3)));
+  ElementsUploadDataStream upload_data_stream(std::move(element_readers), 0);
 
   HttpRequestInfo request;
   request.method = "POST";
@@ -14867,8 +14872,6 @@ TEST_P(HttpNetworkTransactionTest,
 // This tests the more common case than the previous test, where headers and
 // body are not merged into a single request.
 TEST_P(HttpNetworkTransactionTest, ChunkedPostReadsErrorResponseAfterReset) {
-  ScopedVector<UploadElementReader> element_readers;
-  element_readers.push_back(new UploadBytesElementReader("foo", 3));
   ChunkedUploadDataStream upload_data_stream(0);
 
   HttpRequestInfo request;
@@ -14926,9 +14929,10 @@ TEST_P(HttpNetworkTransactionTest, ChunkedPostReadsErrorResponseAfterReset) {
 }
 
 TEST_P(HttpNetworkTransactionTest, PostReadsErrorResponseAfterResetAnd100) {
-  ScopedVector<UploadElementReader> element_readers;
-  element_readers.push_back(new UploadBytesElementReader("foo", 3));
-  ElementsUploadDataStream upload_data_stream(element_readers.Pass(), 0);
+  std::vector<scoped_ptr<UploadElementReader>> element_readers;
+  element_readers.push_back(
+      make_scoped_ptr(new UploadBytesElementReader("foo", 3)));
+  ElementsUploadDataStream upload_data_stream(std::move(element_readers), 0);
 
   HttpRequestInfo request;
   request.method = "POST";
@@ -14979,9 +14983,10 @@ TEST_P(HttpNetworkTransactionTest, PostReadsErrorResponseAfterResetAnd100) {
 }
 
 TEST_P(HttpNetworkTransactionTest, PostIgnoresNonErrorResponseAfterReset) {
-  ScopedVector<UploadElementReader> element_readers;
-  element_readers.push_back(new UploadBytesElementReader("foo", 3));
-  ElementsUploadDataStream upload_data_stream(element_readers.Pass(), 0);
+  std::vector<scoped_ptr<UploadElementReader>> element_readers;
+  element_readers.push_back(
+      make_scoped_ptr(new UploadBytesElementReader("foo", 3)));
+  ElementsUploadDataStream upload_data_stream(std::move(element_readers), 0);
 
   HttpRequestInfo request;
   request.method = "POST";
@@ -15021,9 +15026,10 @@ TEST_P(HttpNetworkTransactionTest, PostIgnoresNonErrorResponseAfterReset) {
 
 TEST_P(HttpNetworkTransactionTest,
        PostIgnoresNonErrorResponseAfterResetAnd100) {
-  ScopedVector<UploadElementReader> element_readers;
-  element_readers.push_back(new UploadBytesElementReader("foo", 3));
-  ElementsUploadDataStream upload_data_stream(element_readers.Pass(), 0);
+  std::vector<scoped_ptr<UploadElementReader>> element_readers;
+  element_readers.push_back(
+      make_scoped_ptr(new UploadBytesElementReader("foo", 3)));
+  ElementsUploadDataStream upload_data_stream(std::move(element_readers), 0);
 
   HttpRequestInfo request;
   request.method = "POST";
@@ -15064,9 +15070,10 @@ TEST_P(HttpNetworkTransactionTest,
 }
 
 TEST_P(HttpNetworkTransactionTest, PostIgnoresHttp09ResponseAfterReset) {
-  ScopedVector<UploadElementReader> element_readers;
-  element_readers.push_back(new UploadBytesElementReader("foo", 3));
-  ElementsUploadDataStream upload_data_stream(element_readers.Pass(), 0);
+  std::vector<scoped_ptr<UploadElementReader>> element_readers;
+  element_readers.push_back(
+      make_scoped_ptr(new UploadBytesElementReader("foo", 3)));
+  ElementsUploadDataStream upload_data_stream(std::move(element_readers), 0);
 
   HttpRequestInfo request;
   request.method = "POST";
@@ -15104,9 +15111,10 @@ TEST_P(HttpNetworkTransactionTest, PostIgnoresHttp09ResponseAfterReset) {
 }
 
 TEST_P(HttpNetworkTransactionTest, PostIgnoresPartial400HeadersAfterReset) {
-  ScopedVector<UploadElementReader> element_readers;
-  element_readers.push_back(new UploadBytesElementReader("foo", 3));
-  ElementsUploadDataStream upload_data_stream(element_readers.Pass(), 0);
+  std::vector<scoped_ptr<UploadElementReader>> element_readers;
+  element_readers.push_back(
+      make_scoped_ptr(new UploadBytesElementReader("foo", 3)));
+  ElementsUploadDataStream upload_data_stream(std::move(element_readers), 0);
 
   HttpRequestInfo request;
   request.method = "POST";
@@ -15326,9 +15334,10 @@ TEST_P(HttpNetworkTransactionTest, ProxyHeadersNotSentOverWsTunnel) {
 }
 
 TEST_P(HttpNetworkTransactionTest, TotalNetworkBytesPost) {
-  ScopedVector<UploadElementReader> element_readers;
-  element_readers.push_back(new UploadBytesElementReader("foo", 3));
-  ElementsUploadDataStream upload_data_stream(element_readers.Pass(), 0);
+  std::vector<scoped_ptr<UploadElementReader>> element_readers;
+  element_readers.push_back(
+      make_scoped_ptr(new UploadBytesElementReader("foo", 3)));
+  ElementsUploadDataStream upload_data_stream(std::move(element_readers), 0);
 
   HttpRequestInfo request;
   request.method = "POST";
@@ -15370,9 +15379,10 @@ TEST_P(HttpNetworkTransactionTest, TotalNetworkBytesPost) {
 }
 
 TEST_P(HttpNetworkTransactionTest, TotalNetworkBytesPost100Continue) {
-  ScopedVector<UploadElementReader> element_readers;
-  element_readers.push_back(new UploadBytesElementReader("foo", 3));
-  ElementsUploadDataStream upload_data_stream(element_readers.Pass(), 0);
+  std::vector<scoped_ptr<UploadElementReader>> element_readers;
+  element_readers.push_back(
+      make_scoped_ptr(new UploadBytesElementReader("foo", 3)));
+  ElementsUploadDataStream upload_data_stream(std::move(element_readers), 0);
 
   HttpRequestInfo request;
   request.method = "POST";
@@ -15415,8 +15425,6 @@ TEST_P(HttpNetworkTransactionTest, TotalNetworkBytesPost100Continue) {
 }
 
 TEST_P(HttpNetworkTransactionTest, TotalNetworkBytesChunkedPost) {
-  ScopedVector<UploadElementReader> element_readers;
-  element_readers.push_back(new UploadBytesElementReader("foo", 3));
   ChunkedUploadDataStream upload_data_stream(0);
 
   HttpRequestInfo request;

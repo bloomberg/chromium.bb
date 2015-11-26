@@ -4,7 +4,9 @@
 
 #include "mojo/services/network/url_loader_impl.h"
 
-#include "base/memory/scoped_vector.h"
+#include <vector>
+
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "mojo/common/common_type_converters.h"
 #include "mojo/common/url_type_converters.h"
@@ -190,13 +192,13 @@ void URLLoaderImpl::Start(URLRequestPtr request,
     url_request_->SetExtraRequestHeaders(headers);
   }
   if (request->body) {
-    ScopedVector<net::UploadElementReader> element_readers;
+    std::vector<scoped_ptr<net::UploadElementReader>> element_readers;
     for (size_t i = 0; i < request->body.size(); ++i) {
-      element_readers.push_back(
-          new UploadDataPipeElementReader(request->body[i].Pass()));
+      element_readers.push_back(make_scoped_ptr(
+          new UploadDataPipeElementReader(request->body[i].Pass())));
     }
     url_request_->set_upload(make_scoped_ptr<net::UploadDataStream>(
-        new net::ElementsUploadDataStream(element_readers.Pass(), 0)));
+        new net::ElementsUploadDataStream(std::move(element_readers), 0)));
   }
   if (request->bypass_cache)
     url_request_->SetLoadFlags(net::LOAD_BYPASS_CACHE);

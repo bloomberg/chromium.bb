@@ -98,7 +98,7 @@ class URLRequestFakerForPostRequestsInterceptor
     const net::UploadDataStream* upload_data = request->get_upload();
     last_upload_bytes_.clear();
     if (upload_data) {
-      const ScopedVector<net::UploadElementReader>* readers =
+      const std::vector<scoped_ptr<net::UploadElementReader>>* readers =
           upload_data->GetElementReaders();
       if (readers) {
         for (size_t i = 0; i < readers->size(); ++i) {

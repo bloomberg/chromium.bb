@@ -88,7 +88,7 @@ bool UploadDataStream::IsInMemory() const {
   return false;
 }
 
-const ScopedVector<UploadElementReader>*
+const std::vector<scoped_ptr<UploadElementReader>>*
 UploadDataStream::GetElementReaders() const {
   return NULL;
 }

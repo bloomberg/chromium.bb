@@ -7,10 +7,11 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/memory/scoped_vector.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
@@ -1414,12 +1415,12 @@ TEST(HttpCache, SimpleGET_DoomWithPending) {
   MockHttpRequest writer_request(kSimpleGET_Transaction);
   writer_request.load_flags = LOAD_BYPASS_CACHE;
 
-  ScopedVector<Context> context_list;
+  std::vector<scoped_ptr<Context>> context_list;
   const int kNumTransactions = 4;
 
   for (int i = 0; i < kNumTransactions; ++i) {
-    context_list.push_back(new Context());
-    Context* c = context_list[i];
+    context_list.push_back(make_scoped_ptr(new Context()));
+    Context* c = context_list[i].get();
 
     c->result = cache.CreateTransaction(&c->trans);
     ASSERT_EQ(OK, c->result);
@@ -1438,13 +1439,12 @@ TEST(HttpCache, SimpleGET_DoomWithPending) {
   EXPECT_EQ(2, cache.network_layer()->transaction_count());
 
   // Cancel the first queued transaction.
-  delete context_list[1];
-  context_list.get()[1] = NULL;
+  context_list[1].reset();
 
   for (int i = 0; i < kNumTransactions; ++i) {
     if (i == 1)
       continue;
-    Context* c = context_list[i];
+    Context* c = context_list[i].get();
     ASSERT_EQ(ERR_IO_PENDING, c->result);
     c->result = c->callback.WaitForResult();
     ReadAndVerifyTransaction(c->trans.get(), kSimpleGET_Transaction);
@@ -2926,9 +2926,10 @@ TEST(HttpCache, SimplePOST_LoadOnlyFromCache_Hit) {
 
   const int64 kUploadId = 1;  // Just a dummy value.
 
-  ScopedVector<UploadElementReader> element_readers;
-  element_readers.push_back(new UploadBytesElementReader("hello", 5));
-  ElementsUploadDataStream upload_data_stream(element_readers.Pass(),
+  std::vector<scoped_ptr<UploadElementReader>> element_readers;
+  element_readers.push_back(
+      make_scoped_ptr(new UploadBytesElementReader("hello", 5)));
+  ElementsUploadDataStream upload_data_stream(std::move(element_readers),
                                               kUploadId);
   MockHttpRequest request(transaction);
   request.upload_data_stream = &upload_data_stream;
@@ -2958,9 +2959,10 @@ TEST(HttpCache, SimplePOST_WithRanges) {
 
   const int64 kUploadId = 1;  // Just a dummy value.
 
-  ScopedVector<UploadElementReader> element_readers;
-  element_readers.push_back(new UploadBytesElementReader("hello", 5));
-  ElementsUploadDataStream upload_data_stream(element_readers.Pass(),
+  std::vector<scoped_ptr<UploadElementReader>> element_readers;
+  element_readers.push_back(
+      make_scoped_ptr(new UploadBytesElementReader("hello", 5)));
+  ElementsUploadDataStream upload_data_stream(std::move(element_readers),
                                               kUploadId);
 
   MockHttpRequest request(transaction);
@@ -2978,9 +2980,10 @@ TEST(HttpCache, SimplePOST_WithRanges) {
 TEST(HttpCache, SimplePOST_SeparateCache) {
   MockHttpCache cache;
 
-  ScopedVector<UploadElementReader> element_readers;
-  element_readers.push_back(new UploadBytesElementReader("hello", 5));
-  ElementsUploadDataStream upload_data_stream(element_readers.Pass(), 1);
+  std::vector<scoped_ptr<UploadElementReader>> element_readers;
+  element_readers.push_back(
+      make_scoped_ptr(new UploadBytesElementReader("hello", 5)));
+  ElementsUploadDataStream upload_data_stream(std::move(element_readers), 1);
 
   MockTransaction transaction(kSimplePOST_Transaction);
   MockHttpRequest req1(transaction);
@@ -3017,9 +3020,10 @@ TEST(HttpCache, SimplePOST_Invalidate_205) {
   EXPECT_EQ(0, cache.disk_cache()->open_count());
   EXPECT_EQ(1, cache.disk_cache()->create_count());
 
-  ScopedVector<UploadElementReader> element_readers;
-  element_readers.push_back(new UploadBytesElementReader("hello", 5));
-  ElementsUploadDataStream upload_data_stream(element_readers.Pass(), 1);
+  std::vector<scoped_ptr<UploadElementReader>> element_readers;
+  element_readers.push_back(
+      make_scoped_ptr(new UploadBytesElementReader("hello", 5)));
+  ElementsUploadDataStream upload_data_stream(std::move(element_readers), 1);
 
   transaction.method = "POST";
   transaction.status = "HTTP/1.1 205 No Content";
@@ -3056,9 +3060,10 @@ TEST(HttpCache, SimplePOST_NoUploadId_Invalidate_205) {
   EXPECT_EQ(0, cache.disk_cache()->open_count());
   EXPECT_EQ(1, cache.disk_cache()->create_count());
 
-  ScopedVector<UploadElementReader> element_readers;
-  element_readers.push_back(new UploadBytesElementReader("hello", 5));
-  ElementsUploadDataStream upload_data_stream(element_readers.Pass(), 0);
+  std::vector<scoped_ptr<UploadElementReader>> element_readers;
+  element_readers.push_back(
+      make_scoped_ptr(new UploadBytesElementReader("hello", 5)));
+  ElementsUploadDataStream upload_data_stream(std::move(element_readers), 0);
 
   transaction.method = "POST";
   transaction.status = "HTTP/1.1 205 No Content";
@@ -3088,9 +3093,10 @@ TEST(HttpCache, SimplePOST_NoUploadId_NoBackend) {
   factory->FinishCreation();
   MockHttpCache cache(factory.Pass());
 
-  ScopedVector<UploadElementReader> element_readers;
-  element_readers.push_back(new UploadBytesElementReader("hello", 5));
-  ElementsUploadDataStream upload_data_stream(element_readers.Pass(), 0);
+  std::vector<scoped_ptr<UploadElementReader>> element_readers;
+  element_readers.push_back(
+      make_scoped_ptr(new UploadBytesElementReader("hello", 5)));
+  ElementsUploadDataStream upload_data_stream(std::move(element_readers), 0);
 
   MockTransaction transaction(kSimplePOST_Transaction);
   AddMockTransaction(&transaction);
@@ -3117,9 +3123,10 @@ TEST(HttpCache, SimplePOST_DontInvalidate_100) {
   EXPECT_EQ(0, cache.disk_cache()->open_count());
   EXPECT_EQ(1, cache.disk_cache()->create_count());
 
-  ScopedVector<UploadElementReader> element_readers;
-  element_readers.push_back(new UploadBytesElementReader("hello", 5));
-  ElementsUploadDataStream upload_data_stream(element_readers.Pass(), 1);
+  std::vector<scoped_ptr<UploadElementReader>> element_readers;
+  element_readers.push_back(
+      make_scoped_ptr(new UploadBytesElementReader("hello", 5)));
+  ElementsUploadDataStream upload_data_stream(std::move(element_readers), 1);
 
   transaction.method = "POST";
   transaction.status = "HTTP/1.1 100 Continue";
@@ -3428,9 +3435,10 @@ TEST(HttpCache, SimplePUT_Miss) {
   MockTransaction transaction(kSimplePOST_Transaction);
   transaction.method = "PUT";
 
-  ScopedVector<UploadElementReader> element_readers;
-  element_readers.push_back(new UploadBytesElementReader("hello", 5));
-  ElementsUploadDataStream upload_data_stream(element_readers.Pass(), 0);
+  std::vector<scoped_ptr<UploadElementReader>> element_readers;
+  element_readers.push_back(
+      make_scoped_ptr(new UploadBytesElementReader("hello", 5)));
+  ElementsUploadDataStream upload_data_stream(std::move(element_readers), 0);
 
   MockHttpRequest request(transaction);
   request.upload_data_stream = &upload_data_stream;
@@ -3457,9 +3465,10 @@ TEST(HttpCache, SimplePUT_Invalidate) {
   EXPECT_EQ(0, cache.disk_cache()->open_count());
   EXPECT_EQ(1, cache.disk_cache()->create_count());
 
-  ScopedVector<UploadElementReader> element_readers;
-  element_readers.push_back(new UploadBytesElementReader("hello", 5));
-  ElementsUploadDataStream upload_data_stream(element_readers.Pass(), 0);
+  std::vector<scoped_ptr<UploadElementReader>> element_readers;
+  element_readers.push_back(
+      make_scoped_ptr(new UploadBytesElementReader("hello", 5)));
+  ElementsUploadDataStream upload_data_stream(std::move(element_readers), 0);
 
   transaction.method = "PUT";
   MockHttpRequest req2(transaction);
@@ -3493,9 +3502,10 @@ TEST(HttpCache, SimplePUT_Invalidate_305) {
   EXPECT_EQ(0, cache.disk_cache()->open_count());
   EXPECT_EQ(1, cache.disk_cache()->create_count());
 
-  ScopedVector<UploadElementReader> element_readers;
-  element_readers.push_back(new UploadBytesElementReader("hello", 5));
-  ElementsUploadDataStream upload_data_stream(element_readers.Pass(), 0);
+  std::vector<scoped_ptr<UploadElementReader>> element_readers;
+  element_readers.push_back(
+      make_scoped_ptr(new UploadBytesElementReader("hello", 5)));
+  ElementsUploadDataStream upload_data_stream(std::move(element_readers), 0);
 
   transaction.method = "PUT";
   transaction.status = "HTTP/1.1 305 Use Proxy";
@@ -3531,9 +3541,10 @@ TEST(HttpCache, SimplePUT_DontInvalidate_404) {
   EXPECT_EQ(0, cache.disk_cache()->open_count());
   EXPECT_EQ(1, cache.disk_cache()->create_count());
 
-  ScopedVector<UploadElementReader> element_readers;
-  element_readers.push_back(new UploadBytesElementReader("hello", 5));
-  ElementsUploadDataStream upload_data_stream(element_readers.Pass(), 0);
+  std::vector<scoped_ptr<UploadElementReader>> element_readers;
+  element_readers.push_back(
+      make_scoped_ptr(new UploadBytesElementReader("hello", 5)));
+  ElementsUploadDataStream upload_data_stream(std::move(element_readers), 0);
 
   transaction.method = "PUT";
   transaction.status = "HTTP/1.1 404 Not Found";
@@ -3561,9 +3572,10 @@ TEST(HttpCache, SimpleDELETE_Miss) {
   MockTransaction transaction(kSimplePOST_Transaction);
   transaction.method = "DELETE";
 
-  ScopedVector<UploadElementReader> element_readers;
-  element_readers.push_back(new UploadBytesElementReader("hello", 5));
-  ElementsUploadDataStream upload_data_stream(element_readers.Pass(), 0);
+  std::vector<scoped_ptr<UploadElementReader>> element_readers;
+  element_readers.push_back(
+      make_scoped_ptr(new UploadBytesElementReader("hello", 5)));
+  ElementsUploadDataStream upload_data_stream(std::move(element_readers), 0);
 
   MockHttpRequest request(transaction);
   request.upload_data_stream = &upload_data_stream;
@@ -3590,9 +3602,10 @@ TEST(HttpCache, SimpleDELETE_Invalidate) {
   EXPECT_EQ(0, cache.disk_cache()->open_count());
   EXPECT_EQ(1, cache.disk_cache()->create_count());
 
-  ScopedVector<UploadElementReader> element_readers;
-  element_readers.push_back(new UploadBytesElementReader("hello", 5));
-  ElementsUploadDataStream upload_data_stream(element_readers.Pass(), 0);
+  std::vector<scoped_ptr<UploadElementReader>> element_readers;
+  element_readers.push_back(
+      make_scoped_ptr(new UploadBytesElementReader("hello", 5)));
+  ElementsUploadDataStream upload_data_stream(std::move(element_readers), 0);
 
   transaction.method = "DELETE";
   MockHttpRequest req2(transaction);

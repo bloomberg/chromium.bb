@@ -14,6 +14,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
@@ -126,9 +127,9 @@ TEST(HttpStreamParser, ShouldMergeRequestHeadersAndBody_NoBody) {
 }
 
 TEST(HttpStreamParser, ShouldMergeRequestHeadersAndBody_EmptyBody) {
-  ScopedVector<UploadElementReader> element_readers;
-  scoped_ptr<UploadDataStream> body(
-      new ElementsUploadDataStream(element_readers.Pass(), 0));
+  std::vector<scoped_ptr<UploadElementReader>> element_readers;
+  scoped_ptr<UploadDataStream> body(make_scoped_ptr(
+      new ElementsUploadDataStream(std::move(element_readers), 0)));
   ASSERT_EQ(OK, body->Init(CompletionCallback()));
   // Shouldn't be merged if upload data is empty.
   ASSERT_FALSE(HttpStreamParser::ShouldMergeRequestHeadersAndBody(
@@ -153,14 +154,14 @@ TEST(HttpStreamParser, ShouldMergeRequestHeadersAndBody_FileBody) {
   ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir.path(), &temp_file_path));
 
   {
-    ScopedVector<UploadElementReader> element_readers;
+    std::vector<scoped_ptr<UploadElementReader>> element_readers;
 
-    element_readers.push_back(
+    element_readers.push_back(make_scoped_ptr(
         new UploadFileElementReader(base::ThreadTaskRunnerHandle::Get().get(),
-                                    temp_file_path, 0, 0, base::Time()));
+                                    temp_file_path, 0, 0, base::Time())));
 
     scoped_ptr<UploadDataStream> body(
-        new ElementsUploadDataStream(element_readers.Pass(), 0));
+        new ElementsUploadDataStream(std::move(element_readers), 0));
     TestCompletionCallback callback;
     ASSERT_EQ(ERR_IO_PENDING, body->Init(callback.callback()));
     ASSERT_EQ(OK, callback.WaitForResult());
@@ -174,13 +175,13 @@ TEST(HttpStreamParser, ShouldMergeRequestHeadersAndBody_FileBody) {
 }
 
 TEST(HttpStreamParser, ShouldMergeRequestHeadersAndBody_SmallBodyInMemory) {
-  ScopedVector<UploadElementReader> element_readers;
+  std::vector<scoped_ptr<UploadElementReader>> element_readers;
   const std::string payload = "123";
-  element_readers.push_back(new UploadBytesElementReader(
-      payload.data(), payload.size()));
+  element_readers.push_back(make_scoped_ptr(
+      new UploadBytesElementReader(payload.data(), payload.size())));
 
   scoped_ptr<UploadDataStream> body(
-      new ElementsUploadDataStream(element_readers.Pass(), 0));
+      new ElementsUploadDataStream(std::move(element_readers), 0));
   ASSERT_EQ(OK, body->Init(CompletionCallback()));
   // Yes, should be merged if the in-memory body is small here.
   ASSERT_TRUE(HttpStreamParser::ShouldMergeRequestHeadersAndBody(
@@ -188,13 +189,13 @@ TEST(HttpStreamParser, ShouldMergeRequestHeadersAndBody_SmallBodyInMemory) {
 }
 
 TEST(HttpStreamParser, ShouldMergeRequestHeadersAndBody_LargeBodyInMemory) {
-  ScopedVector<UploadElementReader> element_readers;
+  std::vector<scoped_ptr<UploadElementReader>> element_readers;
   const std::string payload(10000, 'a');  // 'a' x 10000.
-  element_readers.push_back(new UploadBytesElementReader(
-      payload.data(), payload.size()));
+  element_readers.push_back(make_scoped_ptr(
+      new UploadBytesElementReader(payload.data(), payload.size())));
 
   scoped_ptr<UploadDataStream> body(
-      new ElementsUploadDataStream(element_readers.Pass(), 0));
+      new ElementsUploadDataStream(std::move(element_readers), 0));
   ASSERT_EQ(OK, body->Init(CompletionCallback()));
   // Shouldn't be merged if the in-memory body is large here.
   ASSERT_FALSE(HttpStreamParser::ShouldMergeRequestHeadersAndBody(
@@ -333,9 +334,10 @@ TEST(HttpStreamParser, SentBytesPost) {
   scoped_ptr<ClientSocketHandle> socket_handle =
       CreateConnectedSocketHandle(&data);
 
-  ScopedVector<UploadElementReader> element_readers;
-  element_readers.push_back(new UploadBytesElementReader("hello world!", 12));
-  ElementsUploadDataStream upload_data_stream(element_readers.Pass(), 0);
+  std::vector<scoped_ptr<UploadElementReader>> element_readers;
+  element_readers.push_back(
+      make_scoped_ptr(new UploadBytesElementReader("hello world!", 12)));
+  ElementsUploadDataStream upload_data_stream(std::move(element_readers), 0);
   ASSERT_EQ(OK, upload_data_stream.Init(TestCompletionCallback().callback()));
 
   HttpRequestInfo request;

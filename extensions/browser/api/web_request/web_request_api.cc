@@ -5,12 +5,14 @@
 #include "extensions/browser/api/web_request/web_request_api.h"
 
 #include <algorithm>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -249,7 +251,7 @@ void ExtractRequestInfoBody(const net::URLRequest* request,
     keys::kRequestBodyRawKey
   };
 
-  const ScopedVector<net::UploadElementReader>* readers =
+  const std::vector<scoped_ptr<net::UploadElementReader>>* readers =
       upload_data->GetElementReaders();
   bool some_succeeded = false;
   if (readers) {

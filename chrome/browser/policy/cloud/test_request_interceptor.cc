@@ -83,7 +83,7 @@ bool ValidRequest(net::URLRequest* request,
   const net::UploadDataStream* stream = request->get_upload();
   if (!stream)
     return false;
-  const ScopedVector<net::UploadElementReader>* readers =
+  const std::vector<scoped_ptr<net::UploadElementReader>>* readers =
       stream->GetElementReaders();
   if (!readers || readers->size() != 1u)
     return false;

@@ -5,11 +5,12 @@
 #ifndef NET_BASE_ELEMENTS_UPLOAD_DATA_STREAM_H_
 #define NET_BASE_ELEMENTS_UPLOAD_DATA_STREAM_H_
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "net/base/net_export.h"
 #include "net/base/upload_data_stream.h"
@@ -23,8 +24,9 @@ class UploadElementReader;
 // A non-chunked UploadDataStream consisting of one or more UploadElements.
 class NET_EXPORT ElementsUploadDataStream : public UploadDataStream {
  public:
-  ElementsUploadDataStream(ScopedVector<UploadElementReader> element_readers,
-                           int64_t identifier);
+  ElementsUploadDataStream(
+      std::vector<scoped_ptr<UploadElementReader>> element_readers,
+      int64_t identifier);
 
   ~ElementsUploadDataStream() override;
 
@@ -37,7 +39,8 @@ class NET_EXPORT ElementsUploadDataStream : public UploadDataStream {
  private:
   // UploadDataStream implementation.
   bool IsInMemory() const override;
-  const ScopedVector<UploadElementReader>* GetElementReaders() const override;
+  const std::vector<scoped_ptr<UploadElementReader>>* GetElementReaders()
+      const override;
   int InitInternal() override;
   int ReadInternal(IOBuffer* buf, int buf_len) override;
   void ResetInternal() override;
@@ -65,7 +68,7 @@ class NET_EXPORT ElementsUploadDataStream : public UploadDataStream {
   void ProcessReadResult(const scoped_refptr<DrainableIOBuffer>& buf,
                          int result);
 
-  ScopedVector<UploadElementReader> element_readers_;
+  std::vector<scoped_ptr<UploadElementReader>> element_readers_;
 
   // Index of the current upload element (i.e. the element currently being
   // read). The index is used as a cursor to iterate over elements in

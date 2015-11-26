@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
@@ -199,12 +201,11 @@ class QuicEndToEndTest : public PlatformTest {
   // Initializes |request_| for a post of |length| bytes.
   void InitializePostRequest(size_t length) {
     GenerateBody(length);
-    ScopedVector<UploadElementReader> element_readers;
-    element_readers.push_back(
-        new UploadBytesElementReader(request_body_.data(),
-                                     request_body_.length()));
+    std::vector<scoped_ptr<UploadElementReader>> element_readers;
+    element_readers.push_back(make_scoped_ptr(new UploadBytesElementReader(
+        request_body_.data(), request_body_.length())));
     upload_data_stream_.reset(
-        new ElementsUploadDataStream(element_readers.Pass(), 0));
+        new ElementsUploadDataStream(std::move(element_readers), 0));
     request_.method = "POST";
     request_.url = GURL("https://test.example.com/");
     request_.upload_data_stream = upload_data_stream_.get();

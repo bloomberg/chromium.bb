@@ -518,21 +518,16 @@ void ExtensionWebRequestTest::FireURLRequestWithData(
                                          content_type,
                                          true /* overwrite */);
   }
-  ScopedVector<net::UploadElementReader> element_readers;
-  element_readers.push_back(new net::UploadBytesElementReader(
-      &(bytes_1[0]), bytes_1.size()));
-  element_readers.push_back(
-      new net::UploadFileElementReader(
-                                       base::ThreadTaskRunnerHandle::Get()
-                                       .get(),
-                                       base::FilePath(),
-                                       0,
-                                       0,
-                                       base::Time()));
-  element_readers.push_back(
-      new net::UploadBytesElementReader(&(bytes_2[0]), bytes_2.size()));
+  std::vector<scoped_ptr<net::UploadElementReader>> element_readers;
+  element_readers.push_back(make_scoped_ptr(
+      new net::UploadBytesElementReader(&(bytes_1[0]), bytes_1.size())));
+  element_readers.push_back(make_scoped_ptr(new net::UploadFileElementReader(
+      base::ThreadTaskRunnerHandle::Get().get(), base::FilePath(), 0, 0,
+      base::Time())));
+  element_readers.push_back(make_scoped_ptr(
+      new net::UploadBytesElementReader(&(bytes_2[0]), bytes_2.size())));
   request->set_upload(make_scoped_ptr(
-      new net::ElementsUploadDataStream(element_readers.Pass(), 0)));
+      new net::ElementsUploadDataStream(std::move(element_readers), 0)));
   ipc_sender_.PushTask(base::Bind(&base::DoNothing));
   request->Start();
 }

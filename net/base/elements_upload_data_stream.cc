@@ -15,14 +15,13 @@
 namespace net {
 
 ElementsUploadDataStream::ElementsUploadDataStream(
-    ScopedVector<UploadElementReader> element_readers,
+    std::vector<scoped_ptr<UploadElementReader>> element_readers,
     int64_t identifier)
     : UploadDataStream(false, identifier),
-      element_readers_(element_readers.Pass()),
+      element_readers_(std::move(element_readers)),
       element_index_(0),
       read_failed_(false),
-      weak_ptr_factory_(this) {
-}
+      weak_ptr_factory_(this) {}
 
 ElementsUploadDataStream::~ElementsUploadDataStream() {
 }
@@ -30,10 +29,10 @@ ElementsUploadDataStream::~ElementsUploadDataStream() {
 scoped_ptr<UploadDataStream> ElementsUploadDataStream::CreateWithReader(
     scoped_ptr<UploadElementReader> reader,
     int64_t identifier) {
-  ScopedVector<UploadElementReader> readers;
-  readers.push_back(reader.Pass());
+  std::vector<scoped_ptr<UploadElementReader>> readers;
+  readers.push_back(std::move(reader));
   return scoped_ptr<UploadDataStream>(
-      new ElementsUploadDataStream(readers.Pass(), identifier));
+      new ElementsUploadDataStream(std::move(readers), identifier));
 }
 
 int ElementsUploadDataStream::InitInternal() {
@@ -48,14 +47,14 @@ int ElementsUploadDataStream::ReadInternal(
 }
 
 bool ElementsUploadDataStream::IsInMemory() const {
-  for (size_t i = 0; i < element_readers_.size(); ++i) {
-    if (!element_readers_[i]->IsInMemory())
+  for (const scoped_ptr<UploadElementReader>& it : element_readers_) {
+    if (!it->IsInMemory())
       return false;
   }
   return true;
 }
 
-const ScopedVector<UploadElementReader>*
+const std::vector<scoped_ptr<UploadElementReader>>*
 ElementsUploadDataStream::GetElementReaders() const {
   return &element_readers_;
 }
@@ -69,7 +68,7 @@ void ElementsUploadDataStream::ResetInternal() {
 int ElementsUploadDataStream::InitElements(size_t start_index) {
   // Call Init() for all elements.
   for (size_t i = start_index; i < element_readers_.size(); ++i) {
-    UploadElementReader* reader = element_readers_[i];
+    UploadElementReader* reader = element_readers_[i].get();
     // When new_result is ERR_IO_PENDING, InitInternal() will be called
     // with start_index == i + 1 when reader->Init() finishes.
     int result = reader->Init(
@@ -83,8 +82,8 @@ int ElementsUploadDataStream::InitElements(size_t start_index) {
   }
 
   uint64_t total_size = 0;
-  for (size_t i = 0; i < element_readers_.size(); ++i) {
-    total_size += element_readers_[i]->GetContentLength();
+  for (const scoped_ptr<UploadElementReader>& it : element_readers_) {
+    total_size += it->GetContentLength();
   }
   SetSize(total_size);
   return OK;
@@ -105,7 +104,7 @@ void ElementsUploadDataStream::OnInitElementCompleted(size_t index,
 int ElementsUploadDataStream::ReadElements(
     const scoped_refptr<DrainableIOBuffer>& buf) {
   while (!read_failed_ && element_index_ < element_readers_.size()) {
-    UploadElementReader* reader = element_readers_[element_index_];
+    UploadElementReader* reader = element_readers_[element_index_].get();
 
     if (reader->BytesRemaining() == 0) {
       ++element_index_;

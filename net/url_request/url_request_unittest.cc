@@ -5459,17 +5459,17 @@ TEST_F(URLRequestTestHTTP, PostFileTest) {
     PathService::Get(base::DIR_EXE, &dir);
     base::SetCurrentDirectory(dir);
 
-    ScopedVector<UploadElementReader> element_readers;
+    std::vector<scoped_ptr<UploadElementReader>> element_readers;
 
     base::FilePath path;
     PathService::Get(base::DIR_SOURCE_ROOT, &path);
     path = path.Append(kTestFilePath);
     path = path.Append(FILE_PATH_LITERAL("with-headers.html"));
-    element_readers.push_back(
+    element_readers.push_back(make_scoped_ptr(
         new UploadFileElementReader(base::ThreadTaskRunnerHandle::Get().get(),
-                                    path, 0, kuint64max, base::Time()));
+                                    path, 0, kuint64max, base::Time())));
     r->set_upload(make_scoped_ptr<UploadDataStream>(
-        new ElementsUploadDataStream(element_readers.Pass(), 0)));
+        new ElementsUploadDataStream(std::move(element_readers), 0)));
 
     r->Start();
     EXPECT_TRUE(r->is_pending());
@@ -5504,15 +5504,15 @@ TEST_F(URLRequestTestHTTP, PostUnreadableFileTest) {
         http_test_server()->GetURL("/echo"), DEFAULT_PRIORITY, &d));
     r->set_method("POST");
 
-    ScopedVector<UploadElementReader> element_readers;
+    std::vector<scoped_ptr<UploadElementReader>> element_readers;
 
-    element_readers.push_back(new UploadFileElementReader(
+    element_readers.push_back(make_scoped_ptr(new UploadFileElementReader(
         base::ThreadTaskRunnerHandle::Get().get(),
         base::FilePath(FILE_PATH_LITERAL(
             "c:\\path\\to\\non\\existant\\file.randomness.12345")),
-        0, kuint64max, base::Time()));
+        0, kuint64max, base::Time())));
     r->set_upload(make_scoped_ptr<UploadDataStream>(
-        new ElementsUploadDataStream(element_readers.Pass(), 0)));
+        new ElementsUploadDataStream(std::move(element_readers), 0)));
 
     r->Start();
     EXPECT_TRUE(r->is_pending());

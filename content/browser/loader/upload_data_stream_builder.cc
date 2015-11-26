@@ -77,27 +77,25 @@ scoped_ptr<net::UploadDataStream> UploadDataStreamBuilder::Build(
     storage::BlobStorageContext* blob_context,
     storage::FileSystemContext* file_system_context,
     base::SingleThreadTaskRunner* file_task_runner) {
-  ScopedVector<net::UploadElementReader> element_readers;
+  std::vector<scoped_ptr<net::UploadElementReader>> element_readers;
   for (const auto& element : *body->elements()) {
     switch (element.type()) {
       case ResourceRequestBody::Element::TYPE_BYTES:
-        element_readers.push_back(new BytesElementReader(body, element));
+        element_readers.push_back(
+            make_scoped_ptr(new BytesElementReader(body, element)));
         break;
       case ResourceRequestBody::Element::TYPE_FILE:
-        element_readers.push_back(
-            new FileElementReader(body, file_task_runner, element));
+        element_readers.push_back(make_scoped_ptr(
+            new FileElementReader(body, file_task_runner, element)));
         break;
       case ResourceRequestBody::Element::TYPE_FILE_FILESYSTEM:
         // If |body| contains any filesystem URLs, the caller should have
         // supplied a FileSystemContext.
         DCHECK(file_system_context);
         element_readers.push_back(
-            new content::UploadFileSystemFileElementReader(
-                file_system_context,
-                element.filesystem_url(),
-                element.offset(),
-                element.length(),
-                element.expected_modification_time()));
+            make_scoped_ptr(new content::UploadFileSystemFileElementReader(
+                file_system_context, element.filesystem_url(), element.offset(),
+                element.length(), element.expected_modification_time())));
         break;
       case ResourceRequestBody::Element::TYPE_BLOB: {
         DCHECK_EQ(std::numeric_limits<uint64_t>::max(), element.length());
@@ -105,9 +103,10 @@ scoped_ptr<net::UploadDataStream> UploadDataStreamBuilder::Build(
         scoped_ptr<storage::BlobDataHandle> handle =
             blob_context->GetBlobDataFromUUID(element.blob_uuid());
         storage::BlobDataHandle* handle_ptr = handle.get();
-        element_readers.push_back(new storage::UploadBlobElementReader(
-            handle_ptr->CreateReader(file_system_context, file_task_runner),
-            handle.Pass()));
+        element_readers.push_back(
+            make_scoped_ptr(new storage::UploadBlobElementReader(
+                handle_ptr->CreateReader(file_system_context, file_task_runner),
+                std::move(handle))));
         break;
       }
       case ResourceRequestBody::Element::TYPE_DISK_CACHE_ENTRY:
@@ -118,9 +117,8 @@ scoped_ptr<net::UploadDataStream> UploadDataStreamBuilder::Build(
     }
   }
 
-  return make_scoped_ptr(
-      new net::ElementsUploadDataStream(element_readers.Pass(),
-                                        body->identifier()));
+  return make_scoped_ptr(new net::ElementsUploadDataStream(
+      std::move(element_readers), body->identifier()));
 }
 
 }  // namespace content

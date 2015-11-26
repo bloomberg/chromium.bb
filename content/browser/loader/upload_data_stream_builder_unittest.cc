@@ -81,7 +81,7 @@ TEST(UploadDataStreamBuilderTest, CreateUploadDataStream) {
 
     const storage::UploadBlobElementReader* r3 =
         static_cast<storage::UploadBlobElementReader*>(
-            (*upload->GetElementReaders())[2]);
+            (*upload->GetElementReaders())[2].get());
     ASSERT_TRUE(r3);
     EXPECT_EQ("blobuuid", r3->uuid());
   }

@@ -5,9 +5,11 @@
 #ifndef NET_BASE_UPLOAD_DATA_STREAM_H_
 #define NET_BASE_UPLOAD_DATA_STREAM_H_
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
+#include "base/memory/scoped_ptr.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_export.h"
 
@@ -86,8 +88,8 @@ class NET_EXPORT UploadDataStream {
   virtual bool IsInMemory() const;
 
   // Returns a list of element readers owned by |this|, if it has any.
-  virtual const ScopedVector<UploadElementReader>*
-      GetElementReaders() const;
+  virtual const std::vector<scoped_ptr<UploadElementReader>>*
+  GetElementReaders() const;
 
  protected:
   // Must be called by subclasses when InitInternal and ReadInternal complete

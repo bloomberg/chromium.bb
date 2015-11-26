@@ -8,6 +8,7 @@
 
 #include <vector>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/thread_task_runner_handle.h"
 #include "net/base/chunked_upload_data_stream.h"
 #include "net/base/elements_upload_data_stream.h"
@@ -518,10 +519,10 @@ TEST_P(QuicHttpStreamTest, SendPostRequest) {
 
   Initialize();
 
-  ScopedVector<UploadElementReader> element_readers;
-  element_readers.push_back(
-      new UploadBytesElementReader(kUploadData, strlen(kUploadData)));
-  ElementsUploadDataStream upload_data_stream(element_readers.Pass(), 0);
+  std::vector<scoped_ptr<UploadElementReader>> element_readers;
+  element_readers.push_back(make_scoped_ptr(
+      new UploadBytesElementReader(kUploadData, strlen(kUploadData))));
+  ElementsUploadDataStream upload_data_stream(std::move(element_readers), 0);
   request_.method = "POST";
   request_.url = GURL("http://www.google.com/");
   request_.upload_data_stream = &upload_data_stream;

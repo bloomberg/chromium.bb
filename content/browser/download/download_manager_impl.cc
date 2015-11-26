@@ -73,10 +73,9 @@ void BeginDownload(scoped_ptr<DownloadUrlParameters> params,
     // plan on how to display the UI for that.
     DCHECK(params->prefer_cache());
     DCHECK_EQ("POST", params->method());
-    ScopedVector<net::UploadElementReader> element_readers;
-    request->set_upload(make_scoped_ptr(
-        new net::ElementsUploadDataStream(element_readers.Pass(),
-                                          params->post_id())));
+    std::vector<scoped_ptr<net::UploadElementReader>> element_readers;
+    request->set_upload(make_scoped_ptr(new net::ElementsUploadDataStream(
+        std::move(element_readers), params->post_id())));
   }
 
   // If we're not at the beginning of the file, retrieve only the remaining
