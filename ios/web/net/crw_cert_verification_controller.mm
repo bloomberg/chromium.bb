@@ -4,8 +4,10 @@
 
 #import "ios/web/net/crw_cert_verification_controller.h"
 
+#include "base/ios/block_types.h"
 #include "base/logging.h"
 #include "base/mac/bind_objc_block.h"
+#include "base/mac/scoped_block.h"
 #import "base/memory/ref_counted.h"
 #import "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram_macros.h"
@@ -48,40 +50,70 @@ enum CertVerifyAgreement {
 };
 
 // This class takes ownership of block and releases it on UI thread, even if
-// |BlockHolder| is destructed on a background thread.
+// |BlockHolder| is destructed on a background thread. On destruction calls its
+// block with default arguments, if block was not called before. This way
+// BlockHolder guarantees that block is always called to satisfy API contract
+// for CRWCertVerificationController (completion handlers are always called).
 template <class T>
 class BlockHolder : public base::RefCountedThreadSafe<BlockHolder<T>> {
  public:
-  // Takes ownership of |block|, which must not be null.
-  explicit BlockHolder(T block) : block_([block copy]) { DCHECK(block_); }
+  // Takes ownership of |block|, which must not be null. On destruction calls
+  // this block with |DefaultArgs|, if block was not called before.
+  // |DefaultArgs| must be passed by value, not by ponter or reference.
+  template <typename... Arguments>
+  BlockHolder(T block, Arguments... DefaultArgs)
+      : block_([block copy]),
+        called_(false),
+        default_block_([^{
+          block(DefaultArgs...);
+        } copy]) {
+    DCHECK(block_);
+  }
 
   // Calls underlying block with the given variadic arguments.
   template <typename... Arguments>
   void call(Arguments... Args) {
     block_(Args...);
+    called_ = true;
   }
 
  private:
   BlockHolder() = delete;
   friend class base::RefCountedThreadSafe<BlockHolder>;
 
-  // Releases the given block, must be called on UI thread.
-  static void ReleaseBlock(id block) {
+  // Finalizes object's destruction on UI thread by calling |default_block| (if
+  // |block| has not been called yet) and releasing all blocks. Must be called
+  // on UI thread.
+  static void Finalize(id block,
+                       ProceduralBlock default_block,
+                       bool block_was_called) {
     DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+    // By calling default_block, BlockHolder guarantees that block is always
+    // called to satisfy API contract for CRWCertVerificationController
+    // (completion handlers are always called).
+    if (!block_was_called)
+      default_block();
     [block release];
+    [default_block release];
   }
 
-  // Releases underlying |block_| on UI thread.
+  // Releases underlying |block_| on UI thread, calls |default_block_| if
+  // |block_| has not been called yet.
   ~BlockHolder() {
     if (web::WebThread::CurrentlyOn(web::WebThread::UI)) {
-      ReleaseBlock(block_);
+      Finalize(block_, default_block_, called_);
     } else {
-      web::WebThread::PostTask(web::WebThread::UI, FROM_HERE,
-                               base::Bind(&BlockHolder::ReleaseBlock, block_));
+      web::WebThread::PostTask(
+          web::WebThread::UI, FROM_HERE,
+          base::Bind(&BlockHolder::Finalize, block_, default_block_, called_));
     }
   }
 
   T block_;
+  // true if this |block_| has already been called.
+  bool called_;
+  // Called on destruction if |block_| was not called.
+  ProceduralBlock default_block_;
 };
 
 typedef scoped_refptr<BlockHolder<web::PolicyDecisionHandler>>
@@ -106,7 +138,7 @@ typedef scoped_refptr<BlockHolder<web::PolicyDecisionHandler>>
 
 // Returns YES if CertVerifier should be run (even if SecTrust API considers
 // cert as valid) and Web.CertVerifyAgreement UMA metric should be reported.
-// The result of this method is random and undeterministic.
+// The result of this method is random and nondeterministic.
 - (BOOL)shouldReportCertVerifyAgreement;
 
 // Reports Web.CertVerifyAgreement UMA metric.
@@ -134,18 +166,16 @@ decideLoadPolicyForAcceptedTrustResult:(SecTrustResultType)trustResult
 // Verifies the given |cert| for the given |host| using |net::CertVerifier| and
 // calls |completionHandler| on completion. This method can be called on any
 // thread. |completionHandler| cannot be null and will be called asynchronously
-// on IO thread or synchronously on current thread if IO task can't start (in
-// this case |dispatched| argument will be NO).
+// on IO thread or will never be called if IO task can't start or complete.
 - (void)verifyCert:(const scoped_refptr<net::X509Certificate>&)cert
               forHost:(NSString*)host
-    completionHandler:(void (^)(net::CertVerifyResult, BOOL dispatched))handler;
+    completionHandler:(void (^)(net::CertVerifyResult))completionHandler;
 
 // Verifies the given |trust| using SecTrustRef API. |completionHandler| cannot
-// be null and will be either called asynchronously on Worker thread or
-// synchronously on current thread if the worker task can't start (in this
-// case |dispatched| argument will be NO).
+// be null and will be either called asynchronously on Worker thread or will
+// never be called if the worker task can't start or complete.
 - (void)verifyTrust:(base::ScopedCFTypeRef<SecTrustRef>)trust
-    completionHandler:(void (^)(SecTrustResultType, BOOL dispatched))handler;
+    completionHandler:(void (^)(SecTrustResultType))completionHandler;
 
 // Returns cert accept policy for the given SecTrust result. |trustResult| must
 // not be for a valid cert. Must be called on IO thread.
@@ -199,18 +229,11 @@ decideLoadPolicyForAcceptedTrustResult:(SecTrustResultType)trustResult
   // objects (like Web Controller) |completionHandler| itself should never be
   // released on background thread and |BlockHolder| ensures that.
   __block PolicyDecisionHandlerHolder handlerHolder(
-      new BlockHolder<web::PolicyDecisionHandler>(completionHandler));
+      new BlockHolder<web::PolicyDecisionHandler>(
+          completionHandler, web::CERT_ACCEPT_POLICY_NON_RECOVERABLE_ERROR,
+          net::CertStatus()));
   [self verifyTrust:trust
-      completionHandler:^(SecTrustResultType trustResult, BOOL dispatched) {
-        if (!dispatched) {
-          // Cert verification task did not start.
-          dispatch_async(dispatch_get_main_queue(), ^{
-            handlerHolder->call(web::CERT_ACCEPT_POLICY_NON_RECOVERABLE_ERROR,
-                                net::CertStatus());
-          });
-          return;
-        }
-
+      completionHandler:^(SecTrustResultType trustResult) {
         if (web::GetSecurityStyleFromTrustResult(trustResult) ==
             web::SECURITY_STYLE_AUTHENTICATED) {
           [self decideLoadPolicyForAcceptedTrustResult:trustResult
@@ -236,17 +259,10 @@ decideLoadPolicyForAcceptedTrustResult:(SecTrustResultType)trustResult
   // |completionHandler| itself should never be released on background thread
   // and |BlockHolder| ensures that.
   __block scoped_refptr<BlockHolder<web::StatusQueryHandler>> handlerHolder(
-      new BlockHolder<web::StatusQueryHandler>(completionHandler));
+      new BlockHolder<web::StatusQueryHandler>(
+          completionHandler, web::SECURITY_STYLE_UNKNOWN, net::CertStatus()));
   [self verifyTrust:trust
-      completionHandler:^(SecTrustResultType trustResult, BOOL dispatched) {
-        if (!dispatched) {
-          // CertVerification task did not start.
-          dispatch_async(dispatch_get_main_queue(), ^{
-            handlerHolder->call(web::SECURITY_STYLE_UNKNOWN, net::CertStatus());
-          });
-          return;
-        }
-
+      completionHandler:^(SecTrustResultType trustResult) {
         web::SecurityStyle securityStyle =
             web::GetSecurityStyleFromTrustResult(trustResult);
         if (securityStyle == web::SECURITY_STYLE_AUTHENTICATED) {
@@ -264,8 +280,7 @@ decideLoadPolicyForAcceptedTrustResult:(SecTrustResultType)trustResult
             web::CreateCertFromTrust(trust));
         [self verifyCert:cert
                       forHost:host
-            completionHandler:^(net::CertVerifyResult certVerifierResult,
-                                BOOL) {
+            completionHandler:^(net::CertVerifyResult certVerifierResult) {
               dispatch_async(dispatch_get_main_queue(), ^{
                 handlerHolder->call(securityStyle,
                                     certVerifierResult.cert_status);
@@ -348,17 +363,7 @@ decideLoadPolicyForRejectedTrustResult:(SecTrustResultType)trustResult
   scoped_refptr<net::X509Certificate> cert(web::CreateCertFromTrust(trust));
   [self verifyCert:cert
                 forHost:host
-      completionHandler:^(net::CertVerifyResult certVerifierResult,
-                          BOOL dispatched) {
-        if (!dispatched) {
-          // Cert verification task did not start.
-          dispatch_async(dispatch_get_main_queue(), ^{
-            handler->call(web::CERT_ACCEPT_POLICY_NON_RECOVERABLE_ERROR,
-                          net::CertStatus());
-          });
-          return;
-        }
-
+      completionHandler:^(net::CertVerifyResult certVerifierResult) {
         web::CertAcceptPolicy policy =
             [self loadPolicyForRejectedTrustResult:trustResult
                                 certVerifierResult:certVerifierResult
@@ -393,11 +398,7 @@ decideLoadPolicyForAcceptedTrustResult:(SecTrustResultType)trustResult
     scoped_refptr<net::X509Certificate> cert(web::CreateCertFromTrust(trust));
     [self verifyCert:cert
                   forHost:host
-        completionHandler:^(net::CertVerifyResult certVerifierResult,
-                            BOOL dispatched) {
-          if (!dispatched) {
-            return;
-          }
+        completionHandler:^(net::CertVerifyResult certVerifierResult) {
           // SecTrust API accepted this cert and |PolicyDecisionHandler| has
           // been called already. |CertVerifier| verification is executed only
           // to collect CertVerifyAgreement UMA.
@@ -414,50 +415,41 @@ decideLoadPolicyForAcceptedTrustResult:(SecTrustResultType)trustResult
 
 - (void)verifyCert:(const scoped_refptr<net::X509Certificate>&)cert
               forHost:(NSString*)host
-    completionHandler:(void (^)(net::CertVerifyResult, BOOL))completionHandler {
+    completionHandler:(void (^)(net::CertVerifyResult))completionHandler {
   DCHECK(completionHandler);
   __block scoped_refptr<net::X509Certificate> blockCert = cert;
-  bool dispatched = web::WebThread::PostTask(
-      web::WebThread::IO, FROM_HERE, base::BindBlock(^{
-        // WeakNSObject does not work across different threads, hence this block
-        // retains self.
-        if (!_certVerifier) {
-          completionHandler(net::CertVerifyResult(), net::ERR_FAILED);
-          return;
-        }
+  web::WebThread::PostTask(web::WebThread::IO, FROM_HERE, base::BindBlock(^{
+    // WeakNSObject does not work across different threads, hence this block
+    // retains self.
+    if (!_certVerifier) {
+      completionHandler(net::CertVerifyResult());
+      return;
+    }
 
-        web::CertVerifierBlockAdapter::Params params(
-            blockCert.Pass(), base::SysNSStringToUTF8(host));
-        params.flags = self.certVerifyFlags;
-        // OCSP response is not provided by iOS API.
-        // CRLSets are not used, as the OS is used to make load/no-load
-        // decisions, not the CertVerifier.
-        _certVerifier->Verify(params, ^(net::CertVerifyResult result, int) {
-          completionHandler(result, YES);
-        });
-      }));
-
-  if (!dispatched) {
-    completionHandler(net::CertVerifyResult(), NO);
-  }
+    web::CertVerifierBlockAdapter::Params params(
+        blockCert.Pass(), base::SysNSStringToUTF8(host));
+    params.flags = self.certVerifyFlags;
+    // OCSP response is not provided by iOS API.
+    // CRLSets are not used, as the OS is used to make load/no-load
+    // decisions, not the CertVerifier.
+    _certVerifier->Verify(params, ^(net::CertVerifyResult result, int) {
+      completionHandler(result);
+    });
+  }));
 }
 
 - (void)verifyTrust:(base::ScopedCFTypeRef<SecTrustRef>)trust
-    completionHandler:(void (^)(SecTrustResultType, BOOL))completionHandler {
+    completionHandler:(void (^)(SecTrustResultType))completionHandler {
   DCHECK(completionHandler);
   // SecTrustEvaluate performs trust evaluation synchronously, possibly making
   // network requests. The UI thread should not be blocked by that operation.
-  bool dispatched = base::WorkerPool::PostTask(FROM_HERE, base::BindBlock(^{
+  base::WorkerPool::PostTask(FROM_HERE, base::BindBlock(^{
     SecTrustResultType trustResult = kSecTrustResultInvalid;
     if (SecTrustEvaluate(trust.get(), &trustResult) != errSecSuccess) {
       trustResult = kSecTrustResultInvalid;
     }
-    completionHandler(trustResult, YES);
+    completionHandler(trustResult);
   }), false /* task_is_slow */);
-
-  if (!dispatched) {
-    completionHandler(kSecTrustResultInvalid, NO);
-  }
 }
 
 - (web::CertAcceptPolicy)
