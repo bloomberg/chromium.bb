@@ -306,11 +306,11 @@ void WindowTreeClientImpl::OnRootDestroyed(Window* root) {
 
 InFlightChange* WindowTreeClientImpl::GetOldestInFlightChangeMatching(
     const InFlightChange& change) {
-  for (auto& pair : in_flight_map_) {
+  for (const auto& pair : in_flight_map_) {
     if (pair.second->window() == change.window() &&
         pair.second->change_type() == change.change_type() &&
         pair.second->Matches(change)) {
-      return pair.second;
+      return pair.second.get();
     }
   }
   return nullptr;
@@ -319,7 +319,7 @@ InFlightChange* WindowTreeClientImpl::GetOldestInFlightChangeMatching(
 uint32_t WindowTreeClientImpl::ScheduleInFlightChange(
     scoped_ptr<InFlightChange> change) {
   const uint32_t change_id = next_change_id_++;
-  in_flight_map_.set(change_id, change.Pass());
+  in_flight_map_[change_id] = std::move(change);
   return change_id;
 }
 
@@ -592,7 +592,8 @@ void WindowTreeClientImpl::OnWindowFocused(Id focused_window_id) {
 }
 
 void WindowTreeClientImpl::OnChangeCompleted(uint32 change_id, bool success) {
-  scoped_ptr<InFlightChange> change(in_flight_map_.take_and_erase(change_id));
+  scoped_ptr<InFlightChange> change(std::move(in_flight_map_[change_id]));
+  in_flight_map_.erase(change_id);
   if (!change)
     return;
 

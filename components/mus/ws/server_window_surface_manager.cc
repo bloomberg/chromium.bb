@@ -21,9 +21,8 @@ void ServerWindowSurfaceManager::CreateSurface(
     mojom::SurfaceType surface_type,
     mojo::InterfaceRequest<mojom::Surface> request,
     mojom::SurfaceClientPtr client) {
-  type_to_surface_map_.set(
-      surface_type, make_scoped_ptr(new ServerWindowSurface(
-                        this, surface_type, request.Pass(), client.Pass())));
+  type_to_surface_map_[surface_type] = make_scoped_ptr(new ServerWindowSurface(
+      this, surface_type, request.Pass(), client.Pass()));
 }
 
 ServerWindowSurface* ServerWindowSurfaceManager::GetDefaultSurface() {
@@ -37,7 +36,7 @@ ServerWindowSurface* ServerWindowSurfaceManager::GetUnderlaySurface() {
 ServerWindowSurface* ServerWindowSurfaceManager::GetSurfaceByType(
     mojom::SurfaceType type) {
   auto iter = type_to_surface_map_.find(type);
-  return iter == type_to_surface_map_.end() ? nullptr : iter->second;
+  return iter == type_to_surface_map_.end() ? nullptr : iter->second.get();
 }
 
 cc::SurfaceId ServerWindowSurfaceManager::GenerateId() {

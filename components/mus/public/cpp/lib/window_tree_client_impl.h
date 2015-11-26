@@ -5,7 +5,8 @@
 #ifndef COMPONENTS_MUS_PUBLIC_CPP_LIB_WINDOW_TREE_CLIENT_IMPL_H_
 #define COMPONENTS_MUS_PUBLIC_CPP_LIB_WINDOW_TREE_CLIENT_IMPL_H_
 
-#include "base/containers/scoped_ptr_map.h"
+#include <map>
+
 #include "components/mus/common/types.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_tree_connection.h"
@@ -105,9 +106,9 @@ class WindowTreeClientImpl : public WindowTreeConnection,
  private:
   friend class WindowTreeClientImplPrivate;
 
-  typedef std::map<Id, Window*> IdToWindowMap;
+  using IdToWindowMap = std::map<Id, Window*>;
 
-  using InFlightMap = base::ScopedPtrMap<uint32_t, scoped_ptr<InFlightChange>>;
+  using InFlightMap = std::map<uint32_t, scoped_ptr<InFlightChange>>;
 
   // Returns the oldest InFlightChange that matches |change|.
   InFlightChange* GetOldestInFlightChangeMatching(const InFlightChange& change);
