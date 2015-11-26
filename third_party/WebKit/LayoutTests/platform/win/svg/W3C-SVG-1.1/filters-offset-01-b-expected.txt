@@ -21,10 +21,10 @@ layer at (0,0) size 480x360
             [SourceGraphic]
       LayoutSVGEllipse {circle} at (120,10) size 200x320 [fill={[type=SOLID] [color=#000000]}] [cx=160.00] [cy=50.00] [r=40.00]
         [filter="FOMTest"] LayoutSVGResourceFilter {filter} at (120,10) size 200x320
-      LayoutSVGPath {path} at (109,79) size 22x22 [transform={m=((1.00,0.00)(0.00,1.00)) t=(120.00,90.00)}] [fill={[type=SOLID] [color=#000000]}] [data="M -1 -11 L 1 -11 L 1 -1 L 11 -1 L 11 1 L 1 1 L 1 11 L -1 11 L -1 1 L -11 1 L -11 -1 L -1 -1 L -1 -11"]
-      LayoutSVGPath {path} at (149,109) size 22x22 [transform={m=((1.00,0.00)(0.00,1.00)) t=(160.00,120.00)}] [fill={[type=SOLID] [color=#408000] [opacity=0.80]}] [data="M -1 -11 L 1 -11 L 1 -1 L 11 -1 L 11 1 L 1 1 L 1 11 L -1 11 L -1 1 L -11 1 L -11 -1 L -1 -1 L -1 -11"]
-      LayoutSVGPath {path} at (189,139) size 22x22 [transform={m=((1.00,0.00)(0.00,1.00)) t=(200.00,150.00)}] [fill={[type=SOLID] [color=#408000] [opacity=0.60]}] [data="M -1 -11 L 1 -11 L 1 -1 L 11 -1 L 11 1 L 1 1 L 1 11 L -1 11 L -1 1 L -11 1 L -11 -1 L -1 -1 L -1 -11"]
-      LayoutSVGPath {path} at (229,169) size 22x22 [transform={m=((1.00,0.00)(0.00,1.00)) t=(240.00,180.00)}] [fill={[type=SOLID] [color=#408000] [opacity=0.40]}] [data="M -1 -11 L 1 -11 L 1 -1 L 11 -1 L 11 1 L 1 1 L 1 11 L -1 11 L -1 1 L -11 1 L -11 -1 L -1 -1 L -1 -11"]
+      LayoutSVGPath {path} at (109,79) size 22x22 [transform={m=((1.00,0.00)(0.00,1.00)) t=(120.00,90.00)}] [fill={[type=SOLID] [color=#000000]}] [data="M -1 -11 h 2 v 10 h 10 v 2 h -10 v 10 h -2 v -10 h -10 v -2 h 10 v -10"]
+      LayoutSVGPath {path} at (149,109) size 22x22 [transform={m=((1.00,0.00)(0.00,1.00)) t=(160.00,120.00)}] [fill={[type=SOLID] [color=#408000] [opacity=0.80]}] [data="M -1 -11 h 2 v 10 h 10 v 2 h -10 v 10 h -2 v -10 h -10 v -2 h 10 v -10"]
+      LayoutSVGPath {path} at (189,139) size 22x22 [transform={m=((1.00,0.00)(0.00,1.00)) t=(200.00,150.00)}] [fill={[type=SOLID] [color=#408000] [opacity=0.60]}] [data="M -1 -11 h 2 v 10 h 10 v 2 h -10 v 10 h -2 v -10 h -10 v -2 h 10 v -10"]
+      LayoutSVGPath {path} at (229,169) size 22x22 [transform={m=((1.00,0.00)(0.00,1.00)) t=(240.00,180.00)}] [fill={[type=SOLID] [color=#408000] [opacity=0.40]}] [data="M -1 -11 h 2 v 10 h 10 v 2 h -10 v 10 h -2 v -10 h -10 v -2 h 10 v -10"]
     LayoutSVGText {text} at (10,304) size 264x45 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (0,0) size 264x45
         chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 263.34: "$Revision: 1.3 $"

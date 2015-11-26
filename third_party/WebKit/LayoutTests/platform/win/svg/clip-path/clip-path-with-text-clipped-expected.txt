@@ -3,10 +3,10 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (80,61) size 239x111
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
-      LayoutSVGPath {path} at (70,40) size 200x170 [transform={m=((1.00,0.00)(0.00,1.00)) t=(70.00,40.00)}] [fill={[type=SOLID] [color=#000000]}] [data="M 100 0 L 160 170 L 0 60 L 200 60 L 30 170 Z"]
+      LayoutSVGPath {path} at (70,40) size 200x170 [transform={m=((1.00,0.00)(0.00,1.00)) t=(70.00,40.00)}] [fill={[type=SOLID] [color=#000000]}] [data="m 100 0 l 60 170 l -160 -110 l 200 0 l -170 110 Z"]
       LayoutSVGResourceClipper {clipPath} [id="clipClip"] [clipPathUnits=userSpaceOnUse]
         LayoutSVGContainer {use} at (70,40) size 200x170
-          LayoutSVGPath {path} at (70,40) size 200x170 [transform={m=((1.00,0.00)(0.00,1.00)) t=(70.00,40.00)}] [fill={[type=SOLID] [color=#000000]}] [data="M 100 0 L 160 170 L 0 60 L 200 60 L 30 170 Z"]
+          LayoutSVGPath {path} at (70,40) size 200x170 [transform={m=((1.00,0.00)(0.00,1.00)) t=(70.00,40.00)}] [fill={[type=SOLID] [color=#000000]}] [data="m 100 0 l 60 170 l -160 -110 l 200 0 l -170 110 Z"]
       LayoutSVGResourceClipper {clipPath} [id="clip"] [clipPathUnits=userSpaceOnUse]
         LayoutSVGText {text} at (80,61) size 239x111 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 239x111

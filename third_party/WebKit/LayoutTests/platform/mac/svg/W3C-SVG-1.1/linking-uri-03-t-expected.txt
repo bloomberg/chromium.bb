@@ -7,7 +7,7 @@ layer at (0,0) size 480x360
         LayoutSVGInlineText {#text} at (0,0) size 254x14
           chunk 1 text run 1 at (75.00,16.00) startOffset 0 endOffset 55 width 253.92: "Simple exercise of xlink attributes on the 'a' element."
       LayoutSVGContainer {a} at (134,121) size 132x133
-        LayoutSVGPath {path} at (134,121) size 132x133 [stroke={[type=SOLID] [color=#0000FF]}] [fill={[type=SOLID] [color=#00FF00]}] [data="M 135 122 L 265 122 L 200 252 Z"]
+        LayoutSVGPath {path} at (134,121) size 132x133 [stroke={[type=SOLID] [color=#0000FF]}] [fill={[type=SOLID] [color=#00FF00]}] [data="M 135 122 l 130 0 l -65 130 Z"]
       LayoutSVGText {text} at (160,105) size 70x14 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 70x14
           chunk 1 text run 1 at (160.00,116.00) startOffset 0 endOffset 13 width 69.78: "Click for TOC"

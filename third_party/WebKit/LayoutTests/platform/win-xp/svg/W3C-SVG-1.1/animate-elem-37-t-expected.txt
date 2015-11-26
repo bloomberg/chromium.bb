@@ -1,6 +1,5 @@
-CONSOLE WARNING: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated and will be removed. Please use CSS animations or Web animations instead.
 layer at (0,0) size 480x360
-  LayoutView at (0,0) size 480x360
+  RenderView at (0,0) size 480x360
 layer at (0,0) size 480x360
   LayoutSVGRoot {svg} at (0,0) size 480x360
     LayoutSVGText {text} at (10,304) size 261x46 contains 1 chunk(s)

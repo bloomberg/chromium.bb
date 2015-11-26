@@ -4,7 +4,7 @@ layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 667x403
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
       LayoutSVGResourceClipper {clipPath} [id="clip"] [clipPathUnits=userSpaceOnUse]
-        LayoutSVGPath {path} at (280,280) size 120x120 [fill={[type=SOLID] [color=#000000]}] [data="M 10 10 L 100 10 L 100 100 L 10 100 Z"]
+        LayoutSVGPath {path} at (280,280) size 120x120 [fill={[type=SOLID] [color=#000000]}] [data="M 10 10 h 90 v 90 h -90 Z"]
       LayoutSVGResourceMasker {mask} [id="mask"] [maskUnits=objectBoundingBox] [maskContentUnits=userSpaceOnUse]
         LayoutSVGRect {rect} at (280,280) size 120x120 [fill={[type=SOLID] [color=#FFFFFF]}] [x=10.00] [y=10.00] [width=90.00] [height=90.00]
       LayoutSVGImage {image} at (280,280) size 267x267

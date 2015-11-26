@@ -13,7 +13,7 @@ layer at (0,0) size 480x360
         LayoutSVGText {text} at (304,50) size 21x15 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 21x14
             chunk 1 text run 1 at (304.00,62.00) startOffset 0 endOffset 4 width 20.89: "V, Z"
-        LayoutSVGPath {path} at (71,99) size 164x165 [stroke={[type=SOLID] [color=#000000]}] [data="M 240 56 L 270 56 L 270 86 L 300 86 L 300 116 L 330 116 L 330 146 L 240 146 L 240 56 Z"]
+        LayoutSVGPath {path} at (71,99) size 164x165 [stroke={[type=SOLID] [color=#000000]}] [data="M 240 56 H 270 V 86 H 300 V 116 H 330 V 146 H 240 V 56 Z"]
         LayoutSVGRect {rect} at (68,97) size 8x8 [fill={[type=SOLID] [color=#FFFF00]}] [x=238.00] [y=54.00] [width=4.00] [height=4.00]
         LayoutSVGRect {rect} at (122,97) size 8x8 [fill={[type=SOLID] [color=#FFFF00]}] [x=268.00] [y=54.00] [width=4.00] [height=4.00]
         LayoutSVGRect {rect} at (122,151) size 8x8 [fill={[type=SOLID] [color=#FFFF00]}] [x=268.00] [y=84.00] [width=4.00] [height=4.00]
@@ -22,7 +22,7 @@ layer at (0,0) size 480x360
         LayoutSVGRect {rect} at (230,205) size 8x8 [fill={[type=SOLID] [color=#FFFF00]}] [x=328.00] [y=114.00] [width=4.00] [height=4.00]
         LayoutSVGRect {rect} at (230,259) size 8x8 [fill={[type=SOLID] [color=#FFFF00]}] [x=328.00] [y=144.00] [width=4.00] [height=4.00]
         LayoutSVGRect {rect} at (68,259) size 8x8 [fill={[type=SOLID] [color=#FFFF00]}] [x=238.00] [y=144.00] [width=4.00] [height=4.00]
-        LayoutSVGPath {path} at (270,100) size 162x163 [fill={[type=SOLID] [color=#0000FF]}] [data="M 350 56 L 380 56 L 380 86 L 410 86 L 410 116 L 440 116 L 440 146 L 350 146 L 350 56 Z"]
+        LayoutSVGPath {path} at (270,100) size 162x163 [fill={[type=SOLID] [color=#0000FF]}] [data="M 350 56 H 380 V 86 H 410 V 116 H 440 V 146 H 350 V 56 Z"]
         LayoutSVGRect {rect} at (266,97) size 8x8 [fill={[type=SOLID] [color=#FFFF00]}] [x=348.00] [y=54.00] [width=4.00] [height=4.00]
         LayoutSVGRect {rect} at (320,97) size 8x8 [fill={[type=SOLID] [color=#FFFF00]}] [x=378.00] [y=54.00] [width=4.00] [height=4.00]
         LayoutSVGRect {rect} at (320,151) size 8x8 [fill={[type=SOLID] [color=#FFFF00]}] [x=378.00] [y=84.00] [width=4.00] [height=4.00]
