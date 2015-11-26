@@ -33,7 +33,6 @@
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/InputTypeNames.h"
 #include "core/dom/ClientRect.h"
-#include "core/dom/DOMTokenList.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/MouseEvent.h"
 #include "core/frame/LocalFrame.h"
