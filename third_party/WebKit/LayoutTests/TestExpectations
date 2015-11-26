@@ -236,7 +236,6 @@ crbug.com/461179 virtual/spv2/paint/invalidation/invalidate-when-receiving-paint
 crbug.com/542541 [ Debug ] fast/events/click-count.html [ Pass Failure ]
 crbug.com/542541 [ Debug ] virtual/trustedeventsdefaultaction/fast/events/click-count.html [ Pass Failure ]
 crbug.com/542541 [ Debug ] virtual/pointerevent/fast/events/click-count.html [ Pass Failure ]
-crbug.com/44917 [ Win Linux ] fast/forms/select/popup-menu-appearance-styled.html [ NeedsRebaseline ]
 
 # TODO(ojan): These tests aren't flaky. See crbug.com/517144.
 # Release trybots run asserts, but the main waterfall ones don't. So, even
