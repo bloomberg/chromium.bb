@@ -359,7 +359,7 @@ void MediaDrmBridge::CreateSessionAndGenerateRequest(
 
   ScopedJavaLocalRef<jstring> j_mime =
       ConvertUTF8ToJavaString(env, ConvertInitDataType(init_data_type));
-  uint32_t promise_id = cdm_promise_adapter_->SavePromise(promise.Pass());
+  uint32_t promise_id = cdm_promise_adapter_.SavePromise(promise.Pass());
   Java_MediaDrmBridge_createSessionFromNative(
       env, j_media_drm_.obj(), j_init_data.obj(), j_mime.obj(),
       j_optional_parameters.obj(), promise_id);
@@ -387,7 +387,7 @@ void MediaDrmBridge::UpdateSession(
   ScopedJavaLocalRef<jbyteArray> j_session_id = base::android::ToJavaByteArray(
       env, reinterpret_cast<const uint8_t*>(session_id.data()),
       session_id.size());
-  uint32_t promise_id = cdm_promise_adapter_->SavePromise(promise.Pass());
+  uint32_t promise_id = cdm_promise_adapter_.SavePromise(promise.Pass());
   Java_MediaDrmBridge_updateSession(env, j_media_drm_.obj(), j_session_id.obj(),
                                     j_response.obj(), promise_id);
 }
@@ -400,7 +400,7 @@ void MediaDrmBridge::CloseSession(const std::string& session_id,
   ScopedJavaLocalRef<jbyteArray> j_session_id = base::android::ToJavaByteArray(
       env, reinterpret_cast<const uint8_t*>(session_id.data()),
       session_id.size());
-  uint32_t promise_id = cdm_promise_adapter_->SavePromise(promise.Pass());
+  uint32_t promise_id = cdm_promise_adapter_.SavePromise(promise.Pass());
   Java_MediaDrmBridge_closeSession(env, j_media_drm_.obj(), j_session_id.obj(),
                                    promise_id);
 }
@@ -477,20 +477,20 @@ void MediaDrmBridge::ResetDeviceCredentials(
 
 void MediaDrmBridge::ResolvePromise(uint32_t promise_id) {
   DVLOG(2) << __FUNCTION__;
-  cdm_promise_adapter_->ResolvePromise(promise_id);
+  cdm_promise_adapter_.ResolvePromise(promise_id);
 }
 
 void MediaDrmBridge::ResolvePromiseWithSession(uint32_t promise_id,
                                                const std::string& session_id) {
   DVLOG(2) << __FUNCTION__;
-  cdm_promise_adapter_->ResolvePromise(promise_id, session_id);
+  cdm_promise_adapter_.ResolvePromise(promise_id, session_id);
 }
 
 void MediaDrmBridge::RejectPromise(uint32_t promise_id,
                                    const std::string& error_message) {
   DVLOG(2) << __FUNCTION__;
-  cdm_promise_adapter_->RejectPromise(promise_id, MediaKeys::UNKNOWN_ERROR, 0,
-                                      error_message);
+  cdm_promise_adapter_.RejectPromise(promise_id, MediaKeys::UNKNOWN_ERROR, 0,
+                                     error_message);
 }
 
 ScopedJavaLocalRef<jobject> MediaDrmBridge::GetMediaCrypto() {
@@ -721,7 +721,6 @@ MediaDrmBridge::MediaDrmBridge(
       legacy_session_error_cb_(legacy_session_error_cb),
       session_keys_change_cb_(session_keys_change_cb),
       session_expiration_update_cb_(session_expiration_update_cb),
-      cdm_promise_adapter_(new CdmPromiseAdapter()),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       weak_factory_(this) {
   DVLOG(1) << __FUNCTION__;
@@ -749,6 +748,9 @@ MediaDrmBridge::~MediaDrmBridge() {
     Java_MediaDrmBridge_destroy(env, j_media_drm_.obj());
 
   player_tracker_.NotifyCdmUnset();
+
+  // Rejects all pending promises.
+  cdm_promise_adapter_.Clear();
 }
 
 // TODO(ddorwin): This is specific to Widevine. http://crbug.com/459400

@@ -278,8 +278,7 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys, public PlayerTracker {
 
   PlayerTrackerImpl player_tracker_;
 
-  // TODO(xhwang): Host a CdmPromiseAdapter directly. No need to use scoped_ptr.
-  scoped_ptr<CdmPromiseAdapter> cdm_promise_adapter_;
+  CdmPromiseAdapter cdm_promise_adapter_;
 
   // Default task runner.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
