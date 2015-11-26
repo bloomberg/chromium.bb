@@ -2,24 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""
-Classes in this file define additional actions that need to be taken to run a
-test under some kind of runtime error detection tool.
-
-The interface is intended to be used as follows.
-
-1. For tests that simply run a native process (i.e. no activity is spawned):
-
-Call tool.CopyFiles(device).
-Prepend test command line with tool.GetTestWrapper().
-
-2. For tests that spawn an activity:
-
-Call tool.CopyFiles(device).
-Call tool.SetupEnvironment().
-Run the test as usual.
-Call tool.CleanUpEnvironment().
-"""
 # pylint: disable=R0201
 
 import glob
@@ -29,6 +11,7 @@ import subprocess
 import sys
 
 from devil.android import device_errors
+from devil.android.valgrind_tools import base_tool
 from pylib.constants import DIR_SOURCE_ROOT
 
 
@@ -42,56 +25,8 @@ def SetChromeTimeoutScale(device, scale):
     device.WriteFile(path, '%f' % scale, as_root=True)
 
 
-class BaseTool(object):
-  """A tool that does nothing."""
 
-  def __init__(self):
-    """Does nothing."""
-    pass
-
-  def GetTestWrapper(self):
-    """Returns a string that is to be prepended to the test command line."""
-    return ''
-
-  def GetUtilWrapper(self):
-    """Returns the wrapper name for the utilities.
-
-    Returns:
-       A string that is to be prepended to the command line of utility
-    processes (forwarder, etc.).
-    """
-    return ''
-
-  @classmethod
-  def CopyFiles(cls, device):
-    """Copies tool-specific files to the device, create directories, etc."""
-    pass
-
-  def SetupEnvironment(self):
-    """Sets up the system environment for a test.
-
-    This is a good place to set system properties.
-    """
-    pass
-
-  def CleanUpEnvironment(self):
-    """Cleans up environment."""
-    pass
-
-  def GetTimeoutScale(self):
-    """Returns a multiplier that should be applied to timeout values."""
-    return 1.0
-
-  def NeedsDebugInfo(self):
-    """Whether this tool requires debug info.
-
-    Returns:
-      True if this tool can not work with stripped binaries.
-    """
-    return False
-
-
-class AddressSanitizerTool(BaseTool):
+class AddressSanitizerTool(base_tool.BaseTool):
   """AddressSanitizer tool."""
 
   WRAPPER_NAME = '/system/bin/asanwrapper'
@@ -150,7 +85,7 @@ class AddressSanitizerTool(BaseTool):
     return 20.0
 
 
-class ValgrindTool(BaseTool):
+class ValgrindTool(base_tool.BaseTool):
   """Base abstract class for Valgrind tools."""
 
   VG_DIR = '/data/local/tmp/valgrind'
@@ -270,7 +205,7 @@ def CreateTool(tool_name, device):
     A tool for the specified tool_name.
   """
   if not tool_name:
-    return BaseTool()
+    return base_tool.BaseTool()
 
   ctor = TOOL_REGISTRY.get(tool_name)
   if ctor:

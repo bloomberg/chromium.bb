@@ -9,9 +9,9 @@ import logging
 import os
 import psutil
 
+from devil.android.valgrind_tools import base_tool
 from devil.utils import cmd_helper
 from pylib import constants
-from pylib import valgrind_tools
 
 
 def _GetProcessStartTime(pid):
@@ -70,7 +70,7 @@ class Forwarder(object):
       Exception on failure to forward the port.
     """
     if not tool:
-      tool = valgrind_tools.CreateTool(None, device)
+      tool = base_tool.BaseTool()
     with _FileLock(Forwarder._LOCK_PATH):
       instance = Forwarder._GetInstanceLocked(tool)
       instance._InitDeviceLocked(device, tool)
@@ -145,7 +145,7 @@ class Forwarder(object):
         if adb_serial == device_serial:
           Forwarder._UnmapDevicePortLocked(device_port, device)
       # There are no more ports mapped, kill the device_forwarder.
-      tool = valgrind_tools.CreateTool(None, device)
+      tool = base_tool.BaseTool()
       Forwarder._KillDeviceLocked(device, tool)
 
   @staticmethod
