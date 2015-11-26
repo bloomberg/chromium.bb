@@ -29,6 +29,7 @@
 #include "platform/geometry/IntSizeHash.h"
 #include "platform/geometry/LayoutSize.h"
 #include "platform/graphics/ImageObserver.h"
+#include "platform/graphics/ImageOrientation.h"
 #include "wtf/HashMap.h"
 
 namespace blink {
@@ -66,7 +67,7 @@ public:
     bool willPaintBrokenImage() const;
 
     // Assumes that image rotation or scale doesn't effect the image size being empty or not.
-    bool canRender() { return !errorOccurred() && !imageSizeForLayoutObject(nullptr, 1).isEmpty(); }
+    bool canRender() { return !errorOccurred() && !imageSize(DoNotRespectImageOrientation, 1).isEmpty(); }
 
     bool usesImageContainerSize() const;
     bool imageHasRelativeWidth() const;
@@ -80,7 +81,7 @@ public:
         IntrinsicCorrectedToDPR, // Report the intrinsic size corrected to account for image density.
     };
     // This method takes a zoom multiplier that can be used to increase the natural size of the image by the zoom.
-    LayoutSize imageSizeForLayoutObject(const LayoutObject*, float multiplier, SizeType = IntrinsicSize); // returns the size of the complete image.
+    LayoutSize imageSize(RespectImageOrientationEnum shouldRespectImageOrientation, float multiplier, SizeType = IntrinsicSize);
     void computeIntrinsicDimensions(Length& intrinsicWidth, Length& intrinsicHeight, FloatSize& intrinsicRatio);
 
     bool isAccessAllowed(SecurityOrigin*);

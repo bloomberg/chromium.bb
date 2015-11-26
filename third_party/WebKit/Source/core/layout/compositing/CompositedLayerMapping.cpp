@@ -1922,7 +1922,7 @@ void CompositedLayerMapping::updateImageContents()
         return;
 
     // This is a no-op if the layer doesn't have an inner layer for the image.
-    m_graphicsLayer->setContentsToImage(image, imageLayoutObject->shouldRespectImageOrientation());
+    m_graphicsLayer->setContentsToImage(image, LayoutObject::shouldRespectImageOrientation(imageLayoutObject));
 
     m_graphicsLayer->setFilterQuality(layoutObject()->style()->imageRendering() == ImageRenderingPixelated ? kNone_SkFilterQuality : kLow_SkFilterQuality);
 

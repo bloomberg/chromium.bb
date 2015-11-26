@@ -42,6 +42,7 @@
 #include "core/html/HTMLHtmlElement.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLMetaElement.h"
+#include "core/layout/LayoutObject.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
@@ -163,7 +164,7 @@ void ImageDocumentParser::finish()
 
         // Report the natural image size in the page title, regardless of zoom level.
         // At a zoom level of 1 the image is guaranteed to have an integer size.
-        IntSize size = flooredIntSize(cachedImage->imageSizeForLayoutObject(document()->imageElement()->layoutObject(), 1.0f));
+        IntSize size = flooredIntSize(cachedImage->imageSize(LayoutObject::shouldRespectImageOrientation(document()->imageElement()->layoutObject()), 1.0f));
         if (size.width()) {
             // Compute the title, we use the decoded filename of the resource, falling
             // back on the (decoded) hostname if there is no path.
@@ -263,7 +264,7 @@ float ImageDocument::scale() const
         return 1;
 
     ASSERT(m_imageElement->cachedImage());
-    LayoutSize imageSize = m_imageElement->cachedImage()->imageSizeForLayoutObject(m_imageElement->layoutObject(), pageZoomFactor(this));
+    LayoutSize imageSize = m_imageElement->cachedImage()->imageSize(LayoutObject::shouldRespectImageOrientation(m_imageElement->layoutObject()), pageZoomFactor(this));
     LayoutSize windowSize = LayoutSize(view->width(), view->height());
 
     float widthScale = windowSize.width().toFloat() / imageSize.width().toFloat();
@@ -278,7 +279,7 @@ void ImageDocument::resizeImageToFit(ScaleType type)
         return;
 
     ASSERT(m_imageElement->cachedImage());
-    LayoutSize imageSize = m_imageElement->cachedImage()->imageSizeForLayoutObject(m_imageElement->layoutObject(), pageZoomFactor(this));
+    LayoutSize imageSize = m_imageElement->cachedImage()->imageSize(LayoutObject::shouldRespectImageOrientation(m_imageElement->layoutObject()), pageZoomFactor(this));
 
     float scale = this->scale();
     m_imageElement->setWidth(static_cast<int>(imageSize.width() * scale));
@@ -320,7 +321,7 @@ void ImageDocument::imageUpdated()
         return;
 
     updateLayoutTreeIfNeeded();
-    if (!m_imageElement->cachedImage() || m_imageElement->cachedImage()->imageSizeForLayoutObject(m_imageElement->layoutObject(), pageZoomFactor(this)).isEmpty())
+    if (!m_imageElement->cachedImage() || m_imageElement->cachedImage()->imageSize(LayoutObject::shouldRespectImageOrientation(m_imageElement->layoutObject()), pageZoomFactor(this)).isEmpty())
         return;
 
     m_imageSizeIsKnown = true;
@@ -339,7 +340,7 @@ void ImageDocument::restoreImageSize(ScaleType type)
         return;
 
     ASSERT(m_imageElement->cachedImage());
-    LayoutSize imageSize = m_imageElement->cachedImage()->imageSizeForLayoutObject(m_imageElement->layoutObject(), 1.0f);
+    LayoutSize imageSize = m_imageElement->cachedImage()->imageSize(LayoutObject::shouldRespectImageOrientation(m_imageElement->layoutObject()), 1.0f);
     m_imageElement->setWidth(imageSize.width());
     m_imageElement->setHeight(imageSize.height());
 
@@ -363,7 +364,7 @@ bool ImageDocument::imageFitsInWindow() const
         return true;
 
     ASSERT(m_imageElement->cachedImage());
-    LayoutSize imageSize = m_imageElement->cachedImage()->imageSizeForLayoutObject(m_imageElement->layoutObject(), pageZoomFactor(this));
+    LayoutSize imageSize = m_imageElement->cachedImage()->imageSize(LayoutObject::shouldRespectImageOrientation(m_imageElement->layoutObject()), pageZoomFactor(this));
     LayoutSize windowSize = LayoutSize(view->width(), view->height());
 
     return imageSize.width() <= windowSize.width() && imageSize.height() <= windowSize.height();

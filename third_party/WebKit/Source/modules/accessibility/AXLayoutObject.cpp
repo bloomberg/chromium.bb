@@ -758,7 +758,7 @@ bool AXLayoutObject::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReason
 
             // check whether laid out image was stretched from one-dimensional file image
             if (image->cachedImage()) {
-                LayoutSize imageSize = image->cachedImage()->imageSizeForLayoutObject(m_layoutObject, image->view()->zoomFactor());
+                LayoutSize imageSize = image->cachedImage()->imageSize(LayoutObject::shouldRespectImageOrientation(m_layoutObject), image->view()->zoomFactor());
                 if (imageSize.height() <= 1 || imageSize.width() <= 1) {
                     if (ignoredReasons)
                         ignoredReasons->append(IgnoredReason(AXProbablyPresentational));

@@ -42,6 +42,7 @@
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/html/ImageData.h"
+#include "core/layout/LayoutObject.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "modules/canvas2d/CanvasRenderingContext2D.h"
 #include "platform/SharedBuffer.h"
@@ -55,7 +56,7 @@ namespace blink {
 static LayoutSize sizeFor(HTMLImageElement* image)
 {
     if (ImageResource* cachedImage = image->cachedImage())
-        return cachedImage->imageSizeForLayoutObject(image->layoutObject(), 1.0f); // FIXME: Not sure about this.
+        return cachedImage->imageSize(LayoutObject::shouldRespectImageOrientation(image->layoutObject()), 1.0f); // FIXME: Not sure about this.
     return LayoutSize();
 }
 

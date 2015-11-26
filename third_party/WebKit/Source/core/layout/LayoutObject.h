@@ -1228,7 +1228,7 @@ public:
     // Compute a list of hit-test rectangles per layer rooted at this layoutObject.
     virtual void computeLayerHitTestRects(LayerHitTestRects&) const;
 
-    RespectImageOrientationEnum shouldRespectImageOrientation() const;
+    static RespectImageOrientationEnum shouldRespectImageOrientation(const LayoutObject*);
 
     bool isRelayoutBoundaryForInspector() const;
 

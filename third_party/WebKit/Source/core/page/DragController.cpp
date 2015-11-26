@@ -797,7 +797,7 @@ static PassOwnPtr<DragImage> dragImageForImage(Element* element, Image* image, c
     IntPoint origin;
 
     InterpolationQuality interpolationQuality = element->ensureComputedStyle()->imageRendering() == ImageRenderingPixelated ? InterpolationNone : InterpolationHigh;
-    RespectImageOrientationEnum shouldRespectImageOrientation = element->layoutObject() ? element->layoutObject()->shouldRespectImageOrientation() : DoNotRespectImageOrientation;
+    RespectImageOrientationEnum shouldRespectImageOrientation = LayoutObject::shouldRespectImageOrientation(element->layoutObject());
     ImageOrientation orientation;
 
     if (shouldRespectImageOrientation == RespectImageOrientation && image->isBitmapImage())

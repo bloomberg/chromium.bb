@@ -673,7 +673,7 @@ PassOwnPtr<DragImage> LocalFrame::nodeImage(Node& node)
 
     IntRect rect;
 
-    return paintIntoDragImage(*layoutObject, layoutObject->shouldRespectImageOrientation(),
+    return paintIntoDragImage(*layoutObject, LayoutObject::shouldRespectImageOrientation(layoutObject),
         GlobalPaintFlattenCompositingLayers, layoutObject->paintingRootRect(rect));
 }
 

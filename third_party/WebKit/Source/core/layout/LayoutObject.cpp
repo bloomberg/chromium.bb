@@ -2403,21 +2403,24 @@ bool LayoutObject::isRooted() const
     return false;
 }
 
-RespectImageOrientationEnum LayoutObject::shouldRespectImageOrientation() const
+RespectImageOrientationEnum LayoutObject::shouldRespectImageOrientation(const LayoutObject* layoutObject)
 {
+    if (!layoutObject)
+        return DoNotRespectImageOrientation;
+
     // Respect the image's orientation if it's being used as a full-page image or
     // it's an <img> and the setting to respect it everywhere is set or the <img>
     // has image-orientation: from-image style. FIXME: crbug.com/498233
-    if (document().isImageDocument())
+    if (layoutObject->document().isImageDocument())
         return RespectImageOrientation;
 
-    if (!isHTMLImageElement(node()))
+    if (!isHTMLImageElement(layoutObject->node()))
         return DoNotRespectImageOrientation;
 
-    if (document().settings() && document().settings()->shouldRespectImageOrientation())
+    if (layoutObject->document().settings() && layoutObject->document().settings()->shouldRespectImageOrientation())
         return RespectImageOrientation;
 
-    if (style() && style()->respectImageOrientation() == RespectImageOrientation)
+    if (layoutObject->style() && layoutObject->style()->respectImageOrientation() == RespectImageOrientation)
         return RespectImageOrientation;
 
     return DoNotRespectImageOrientation;

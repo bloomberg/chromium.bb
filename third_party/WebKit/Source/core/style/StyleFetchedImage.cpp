@@ -83,7 +83,7 @@ bool StyleFetchedImage::errorOccurred() const
 
 LayoutSize StyleFetchedImage::imageSize(const LayoutObject* layoutObject, float multiplier) const
 {
-    return m_image->imageSizeForLayoutObject(layoutObject, multiplier);
+    return m_image->imageSize(LayoutObject::shouldRespectImageOrientation(layoutObject), multiplier);
 }
 
 bool StyleFetchedImage::imageHasRelativeWidth() const

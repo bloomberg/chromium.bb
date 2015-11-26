@@ -86,7 +86,7 @@ bool StyleFetchedImageSet::errorOccurred() const
 
 LayoutSize StyleFetchedImageSet::imageSize(const LayoutObject* layoutObject, float multiplier) const
 {
-    LayoutSize scaledImageSize = m_bestFitImage->imageSizeForLayoutObject(layoutObject, multiplier);
+    LayoutSize scaledImageSize = m_bestFitImage->imageSize(LayoutObject::shouldRespectImageOrientation(layoutObject), multiplier);
     scaledImageSize.scale(1 / m_imageScaleFactor);
     return scaledImageSize;
 }
