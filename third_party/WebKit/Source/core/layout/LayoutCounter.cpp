@@ -472,8 +472,10 @@ void LayoutCounter::destroyCounterNode(LayoutObject& owner, const AtomicString& 
 void LayoutCounter::layoutObjectSubtreeWillBeDetached(LayoutObject* layoutObject)
 {
     ASSERT(layoutObject->view());
-    if (!layoutObject->view()->hasLayoutCounters())
+    // View should never be non-zero. crbug.com/546939
+    if (!layoutObject->view() || !layoutObject->view()->hasLayoutCounters())
         return;
+
     LayoutObject* currentLayoutObject = layoutObject->lastLeafChild();
     if (!currentLayoutObject)
         currentLayoutObject = layoutObject;
