@@ -31,9 +31,6 @@ crbug.com/243871 [ Win Debug ] virtual/threaded_animation_timelines/fast/scroll-
 
 # Times out on the Mac Debug Oilpan bot.
 crbug.com/389648 [ Mac Debug ] fast/text-autosizing/table-inflation-crash.html [ Timeout ]
-crbug.com/515250 [ Mac Debug ] http/tests/plugins/geturlnotify-from-npp-destroystream.html [ Timeout ]
-crbug.com/515250 [ Mac Debug ] plugins/js-from-destroy.html [ Timeout ]
-crbug.com/515250 [ Mac Debug ] plugins/attach-during-destroy.html [ Timeout ]
 
 crbug.com/344239 [ Release ] inspector-protocol/heap-profiler/heap-objects-tracking.html [ Slow ]
 
