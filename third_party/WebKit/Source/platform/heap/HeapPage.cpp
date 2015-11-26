@@ -177,8 +177,10 @@ void BaseHeap::makeConsistentForGC()
 {
     clearFreeLists();
     ASSERT(isConsistentForGC());
-    for (BasePage* page = m_firstPage; page; page = page->next())
+    for (BasePage* page = m_firstPage; page; page = page->next()) {
         page->markAsUnswept();
+        page->invalidateObjectStartBitmap();
+    }
 
     // If a new GC is requested before this thread got around to sweep,
     // ie. due to the thread doing a long running operation, we clear
@@ -191,6 +193,7 @@ void BaseHeap::makeConsistentForGC()
     for (BasePage* page = m_firstUnsweptPage; page; previousPage = page, page = page->next()) {
         page->makeConsistentForGC();
         ASSERT(!page->hasBeenSwept());
+        page->invalidateObjectStartBitmap();
     }
     if (previousPage) {
         ASSERT(m_firstUnsweptPage);
@@ -213,6 +216,7 @@ void BaseHeap::makeConsistentForMutator()
     for (BasePage* page = m_firstUnsweptPage; page; previousPage = page, page = page->next()) {
         page->makeConsistentForMutator();
         page->markAsSwept();
+        page->invalidateObjectStartBitmap();
     }
     if (previousPage) {
         ASSERT(m_firstUnsweptPage);
@@ -508,7 +512,6 @@ bool NormalPageHeap::coalesce()
     m_freeList.clear();
     size_t freedSize = 0;
     for (NormalPage* page = static_cast<NormalPage*>(m_firstPage); page; page = static_cast<NormalPage*>(page->next())) {
-        page->clearObjectStartBitMap();
         Address startOfGap = page->payload();
         for (Address headerAddress = startOfGap; headerAddress < page->payloadEnd(); ) {
             HeapObjectHeader* header = reinterpret_cast<HeapObjectHeader*>(headerAddress);
@@ -1073,8 +1076,8 @@ void BasePage::markOrphaned()
 
 NormalPage::NormalPage(PageMemory* storage, BaseHeap* heap)
     : BasePage(storage, heap)
+    , m_objectStartBitMapComputed(false)
 {
-    m_objectStartBitMapComputed = false;
     ASSERT(isPageHeaderAddress(reinterpret_cast<Address>(this)));
 }
 
@@ -1110,8 +1113,6 @@ void NormalPage::removeFromHeap()
 
 void NormalPage::sweep()
 {
-    clearObjectStartBitMap();
-
     size_t markedObjectSize = 0;
     Address startOfGap = payload();
     for (Address headerAddress = startOfGap; headerAddress < payloadEnd(); ) {
@@ -1266,11 +1267,6 @@ void NormalPage::populateObjectStartBitMap()
     m_objectStartBitMapComputed = true;
 }
 
-void NormalPage::clearObjectStartBitMap()
-{
-    m_objectStartBitMapComputed = false;
-}
-
 static int numberOfLeadingZeroes(uint8_t byte)
 {
     if (!byte)
@@ -1293,7 +1289,7 @@ HeapObjectHeader* NormalPage::findHeaderFromAddress(Address address)
 {
     if (address < payload())
         return nullptr;
-    if (!isObjectStartBitMapComputed())
+    if (!m_objectStartBitMapComputed)
         populateObjectStartBitMap();
     size_t objectOffset = address - payload();
     size_t objectStartNumber = objectOffset / allocationGranularity;
