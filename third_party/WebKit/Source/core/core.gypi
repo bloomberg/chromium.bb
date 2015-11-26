@@ -917,6 +917,8 @@
             'animation/SVGInterpolationType.h',
             'animation/SVGNumberInterpolationType.cpp',
             'animation/SVGNumberInterpolationType.h',
+            'animation/SVGNumberListInterpolationType.cpp',
+            'animation/SVGNumberListInterpolationType.h',
             'animation/SVGNumberOptionalNumberInterpolationType.cpp',
             'animation/SVGNumberOptionalNumberInterpolationType.h',
             'animation/SVGPointListInterpolationType.cpp',

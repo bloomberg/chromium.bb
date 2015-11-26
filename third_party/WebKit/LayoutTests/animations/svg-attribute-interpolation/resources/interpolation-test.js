@@ -118,10 +118,7 @@
   }
 
   function serializeSVGNumberList(numberList) {
-    var elements = [];
-    for (var index = 0; index < numberList.numberOfItems; ++index)
-      elements.push(numberList.getItem(index).value);
-    return String(elements);
+    return Array.from(numberList).map(number => number.value).join(', ');
   }
 
   function serializeSVGPointList(pointList) {
@@ -404,10 +401,10 @@
         } else {
           assertionCode +=
             `  to: '${params.to}',\n` +
-            `  fromComposite: '${params.fromComposite}',\n`;
+            `  toComposite: '${params.toComposite}',\n`;
         }
 
-        assertionCode += `\n}, [\n`;
+        assertionCode += `}, [\n`;
 
         rebaseline.appendChild(document.createTextNode(assertionCode));
         var rebaselineExpectation = document.createTextNode('');

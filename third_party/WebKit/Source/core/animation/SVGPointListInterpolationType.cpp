@@ -6,44 +6,20 @@
 #include "core/animation/SVGPointListInterpolationType.h"
 
 #include "core/animation/InterpolationEnvironment.h"
+#include "core/animation/StringKeyframe.h"
+#include "core/animation/UnderlyingLengthChecker.h"
 #include "core/svg/SVGPointList.h"
 
 namespace blink {
 
-static size_t getUnderlyingLength(const UnderlyingValue& underlyingValue)
-{
-    if (!underlyingValue)
-        return 0;
-    return toInterpolableList(underlyingValue->interpolableValue()).length();
-}
-
-class UnderlyingLengthChecker : public InterpolationType::ConversionChecker {
-public:
-    static PassOwnPtr<UnderlyingLengthChecker> create(const InterpolationType& type, size_t underlyingLength)
-    {
-        return adoptPtr(new UnderlyingLengthChecker(type, underlyingLength));
-    }
-
-    bool isValid(const InterpolationEnvironment&, const UnderlyingValue& underlyingValue) const final
-    {
-        return m_underlyingLength == getUnderlyingLength(underlyingValue);
-    }
-
-private:
-    UnderlyingLengthChecker(const InterpolationType& type, size_t underlyingLength)
-        : ConversionChecker(type)
-        , m_underlyingLength(underlyingLength)
-    {}
-
-    size_t m_underlyingLength;
-};
-
 PassOwnPtr<InterpolationValue> SVGPointListInterpolationType::maybeConvertNeutral(const UnderlyingValue& underlyingValue, ConversionCheckers& conversionCheckers) const
 {
-    size_t underlyingLength = getUnderlyingLength(underlyingValue);
+    size_t underlyingLength = UnderlyingLengthChecker::getUnderlyingLength(underlyingValue);
     conversionCheckers.append(UnderlyingLengthChecker::create(*this, underlyingLength));
+
     if (underlyingLength == 0)
         return nullptr;
+
     OwnPtr<InterpolableList> result = InterpolableList::create(underlyingLength);
     for (size_t i = 0; i < underlyingLength; i++)
         result->set(i, InterpolableNumber::create(0));

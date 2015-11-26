@@ -28,8 +28,6 @@
 
 namespace blink {
 
-DEFINE_SVG_PROPERTY_TYPE_CASTS(SVGNumberList);
-
 SVGNumberList::SVGNumberList()
 {
 }

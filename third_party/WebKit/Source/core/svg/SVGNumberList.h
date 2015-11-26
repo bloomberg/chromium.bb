@@ -70,6 +70,8 @@ private:
     bool parse(const CharType*& ptr, const CharType* end);
 };
 
+DEFINE_SVG_PROPERTY_TYPE_CASTS(SVGNumberList);
+
 } // namespace blink
 
 #endif // SVGNumberList_h
