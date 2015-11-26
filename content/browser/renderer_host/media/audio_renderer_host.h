@@ -260,6 +260,10 @@ class CONTENT_EXPORT AudioRendererHost : public BrowserMessageFilter {
   // The second element contains the unique ID of the authorized device.
   std::map<int, std::pair<bool, std::string>> authorizations_;
 
+  // The maximum number of simultaneous streams during the lifetime of this
+  // host. Reported as UMA stat at shutdown.
+  size_t max_simultaneous_streams_;
+
   DISALLOW_COPY_AND_ASSIGN(AudioRendererHost);
 };
 

@@ -209,13 +209,21 @@ AudioRendererHost::AudioRendererHost(
           media::AudioLogFactory::AUDIO_OUTPUT_CONTROLLER)),
       media_stream_manager_(media_stream_manager),
       num_playing_streams_(0),
-      salt_callback_(salt_callback) {
+      salt_callback_(salt_callback),
+      max_simultaneous_streams_(0) {
   DCHECK(audio_manager_);
   DCHECK(media_stream_manager_);
 }
 
 AudioRendererHost::~AudioRendererHost() {
   DCHECK(audio_entries_.empty());
+
+  // If we had any streams, report the maximum number of simultaneous streams as
+  // UMA stat.
+  if (max_simultaneous_streams_ > 0) {
+    UMA_HISTOGRAM_CUSTOM_COUNTS("Media.AudioRendererIpcStreams",
+                                max_simultaneous_streams_, 1, 50, 51);
+  }
 }
 
 void AudioRendererHost::GetOutputControllers(
@@ -546,6 +554,9 @@ void AudioRendererHost::DoCreateStream(int stream_id,
   audio_log_->OnCreated(stream_id, params, device_unique_id);
   MediaInternals::GetInstance()->SetWebContentsTitleForAudioLogEntry(
       stream_id, render_process_id_, render_frame_id, audio_log_.get());
+
+  if (audio_entries_.size() > max_simultaneous_streams_)
+    max_simultaneous_streams_ = audio_entries_.size();
 }
 
 void AudioRendererHost::OnPlayStream(int stream_id) {

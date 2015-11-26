@@ -18086,6 +18086,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Captures statistics for various AudioRendererImpl events.</summary>
 </histogram>
 
+<histogram name="Media.AudioRendererIpcStreams">
+  <owner>grunell@chromium.org</owner>
+  <summary>
+    The maximum number of simultaneous audio render streams over IPC in a render
+    process. Logged at render process shutdown.
+  </summary>
+</histogram>
+
 <histogram name="Media.AudioRendererMissedDeadline" units="%">
   <owner>dalecurtis@chromium.org</owner>
   <summary>
