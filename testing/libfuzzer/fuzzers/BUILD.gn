@@ -223,7 +223,7 @@ test("zlib_uncompress_fuzzer") {
     "zlib_uncompress_fuzzer.cc",
   ]
   deps = [
-    ":libfuzzer_main",
+    "//testing/libfuzzer:libfuzzer_main",
     "//third_party/zlib",
   ]
 }
