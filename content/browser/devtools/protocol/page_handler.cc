@@ -306,7 +306,8 @@ Response PageHandler::StartScreencast(const std::string* format,
   ++session_id_;
   frame_counter_ = 0;
   frames_in_flight_ = 0;
-  capture_every_nth_frame_ = every_nth_frame ? *every_nth_frame : 1;
+  capture_every_nth_frame_ =
+      every_nth_frame && *every_nth_frame ? *every_nth_frame : 1;
 
   bool visible = !widget_host->is_hidden();
   NotifyScreencastVisibility(visible);
