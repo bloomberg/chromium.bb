@@ -15,7 +15,7 @@
   'targets': [
     {
       # GN version: //media/cast:common
-      'target_name': 'cast_base',
+      'target_name': 'cast_common',
       'type': 'static_library',
       'include_dirs': [
         '<(DEPTH)/',
@@ -25,6 +25,7 @@
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/crypto/crypto.gyp:crypto',
         '<(DEPTH)/net/net.gyp:net',
+        '<(DEPTH)/third_party/zlib/zlib.gyp:zlib',
       ],
       'export_dependent_settings': [
         'cast_logging_proto',
@@ -59,7 +60,7 @@
         'logging/simple_event_subscriber.h',
         'logging/stats_event_subscriber.cc',
         'logging/stats_event_subscriber.h',
-      ], # source
+      ], # sources
     },
     {
       # GN version: //media/cast/logging/proto
@@ -86,7 +87,7 @@
         '<(DEPTH)/',
       ],
       'dependencies': [
-        'cast_base',
+        'cast_common',
         'cast_net',
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/media/media.gyp:media',
@@ -114,7 +115,7 @@
         'receiver/frame_receiver.h',
         'receiver/video_decoder.cc',
         'receiver/video_decoder.h',
-      ], # source
+      ], # sources
       'conditions': [
         # use a restricted subset of media and no software codecs on iOS
         ['OS=="ios"', {
@@ -135,7 +136,7 @@
         '<(DEPTH)/',
       ],
       'dependencies': [
-        'cast_base',
+        'cast_common',
         'cast_net',
         '<(DEPTH)/media/media.gyp:media',
         '<(DEPTH)/media/media.gyp:shared_memory_support',
@@ -177,7 +178,7 @@
         'sender/vp8_encoder.h',
         'sender/vp8_quantizer_parser.h',
         'sender/vp8_quantizer_parser.cc',
-      ], # source
+      ], # sources
       'conditions': [
         # use a restricted subset of media and no software codecs on iOS
         ['OS=="ios"', {
@@ -221,7 +222,7 @@
         '<(DEPTH)/',
       ],
       'dependencies': [
-        'cast_base',
+        'cast_common',
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/net/net.gyp:net',
       ],
@@ -255,7 +256,7 @@
         'net/rtp/rtp_sender.h',
         'net/udp_transport.cc',
         'net/udp_transport.h',
-      ], # source
+      ], # sources
     },
   ],
 }

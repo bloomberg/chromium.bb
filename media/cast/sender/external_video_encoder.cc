@@ -749,6 +749,14 @@ bool QuantizerEstimator::CanExamineFrame(const VideoFrame& frame) {
 double QuantizerEstimator::ComputeEntropyFromHistogram(const int* histogram,
                                                        size_t num_buckets,
                                                        int num_samples) {
+#if defined(OS_ANDROID)
+  // Android does not currently provide a log2() function in their C++ standard
+  // library.  This is a substitute.
+  const auto log2 = [](double num) -> double {
+    return log(num) / 0.69314718055994528622676398299518041312694549560546875;
+  };
+#endif
+
   DCHECK_LT(0, num_samples);
   double entropy = 0.0;
   for (size_t i = 0; i < num_buckets; ++i) {

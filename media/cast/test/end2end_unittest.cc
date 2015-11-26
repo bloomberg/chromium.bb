@@ -156,8 +156,6 @@ std::map<uint16, LoggingEventCounts> GetEventCountForPacketEvents(
   return event_counter_for_packet;
 }
 
-}  // namespace
-
 // Shim that turns forwards packets from a test::PacketPipe to a
 // PacketReceiverCallback.
 class LoopBackPacketPipe : public test::PacketPipe {
@@ -178,6 +176,11 @@ class LoopBackPacketPipe : public test::PacketPipe {
 
 // Class that sends the packet direct from sender into the receiver with the
 // ability to drop packets between the two.
+//
+// TODO(miu): This should be reconciled/merged into
+// media/cast/test/loopback_transport.*.  It's roughly the same class and has
+// exactly the same name (and when it was outside of the anonymous namespace bad
+// things happened when linking on Android!).
 class LoopBackTransport : public PacketSender {
  public:
   explicit LoopBackTransport(scoped_refptr<CastEnvironment> cast_environment)
@@ -418,6 +421,8 @@ class TestReceiverVideoCallback
   std::list<ExpectedVideoFrame> expected_frame_;
   base::TimeTicks last_playout_time_;
 };
+
+}  // namespace
 
 // The actual test class, generate synthetic data for both audio and video and
 // send those through the sender and receiver and analyzes the result.

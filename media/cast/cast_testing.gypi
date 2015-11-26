@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 {
+  'includes': [ 'cast_testing_tools.gypi' ],
   'targets': [
     {
       # GN version: //media/cast:test_support
@@ -14,15 +15,16 @@
       'dependencies': [
         'cast_net',
         'cast_receiver',
+        '<(DEPTH)/base/base.gyp:test_support_base',
+        '<(DEPTH)/media/media.gyp:media_test_support',
         '<(DEPTH)/testing/gtest.gyp:gtest',
-        '<(DEPTH)/third_party/ffmpeg/ffmpeg.gyp:ffmpeg',
         '<(DEPTH)/third_party/libyuv/libyuv.gyp:libyuv',
         '<(DEPTH)/third_party/mt19937ar/mt19937ar.gyp:mt19937ar',
-        '<(DEPTH)/ui/gfx/gfx.gyp:gfx_geometry',
+        '<(DEPTH)/ui/gfx/gfx.gyp:gfx_test_support',
       ],
       'sources': [
-        'test/fake_media_source.cc',
-        'test/fake_media_source.h',
+        'test/fake_receiver_time_offset_estimator.cc',
+        'test/fake_receiver_time_offset_estimator.h',
         'test/fake_single_thread_task_runner.cc',
         'test/fake_single_thread_task_runner.h',
         'test/loopback_transport.cc',
@@ -45,11 +47,30 @@
         'test/utility/net_utility.h',
         'test/utility/standalone_cast_environment.cc',
         'test/utility/standalone_cast_environment.h',
+        'test/utility/test_util.cc',
+        'test/utility/test_util.h',
         'test/utility/udp_proxy.cc',
         'test/utility/udp_proxy.h',
         'test/utility/video_utility.cc',
         'test/utility/video_utility.h',
-      ], # source
+      ], # sources
+      'conditions': [
+        # FFMPEG software video decoders are not available on Android and/or
+        # Chromecast content_shell builds.
+        #
+        # TODO(miu): There *are* hardware decoder APIs available via FFMPEG, and
+        # we should use those for the Android receiver.  See media.gyp for usage
+        # details.  http://crbug.com/558714
+        ['OS!="android" and chromecast==0', {
+          'dependencies': [
+            '<(DEPTH)/third_party/ffmpeg/ffmpeg.gyp:ffmpeg',
+          ],
+          'sources': [
+            'test/fake_media_source.cc',
+            'test/fake_media_source.h',
+          ],
+        }],
+      ], # conditions
     },
     {
       # GN version: //media/cast:cast_unittests
@@ -59,22 +80,15 @@
         '<(DEPTH)/',
       ],
       'dependencies': [
-        'cast_base',
-        'cast_net',
-        'cast_receiver',
+        'cast_common',
         'cast_sender',
         'cast_test_utility',
-        # Not a true dependency. This is here to make sure the CQ can verify
-        # the tools compile correctly.
-        'cast_tools',
-        '<(DEPTH)/base/base.gyp:test_support_base',
-        '<(DEPTH)/media/media.gyp:media_test_support',
+        '<(DEPTH)/base/base.gyp:run_all_unittests',
         '<(DEPTH)/net/net.gyp:net',
         '<(DEPTH)/testing/gmock.gyp:gmock',
         '<(DEPTH)/testing/gtest.gyp:gtest',
       ],
       'sources': [
-        '<(DEPTH)/media/base/run_all_unittests.cc',
         'logging/encoding_event_subscriber_unittest.cc',
         'logging/receiver_time_offset_estimator_impl_unittest.cc',
         'logging/serialize_deserialize_test.cc',
@@ -91,7 +105,8 @@
         'net/rtcp/rtcp_builder_unittest.cc',
         'net/rtcp/rtcp_unittest.cc',
         'net/rtcp/rtcp_utility_unittest.cc',
-# TODO(miu): The following two are test utility modules.  Rename/move the files.
+        # TODO(miu): The following two are test utility modules.  Rename/move
+        # the files.
         'net/rtcp/test_rtcp_packet_builder.cc',
         'net/rtcp/test_rtcp_packet_builder.h',
         'net/rtp/cast_message_builder_unittest.cc',
@@ -103,8 +118,6 @@
         'net/rtp/receiver_stats_unittest.cc',
         'net/rtp/rtp_packet_builder.cc',
         'net/rtp/rtp_packetizer_unittest.cc',
-        'net/rtp/rtp_parser.cc',
-        'net/rtp/rtp_parser.h',
         'net/rtp/rtp_parser_unittest.cc',
         'net/udp_transport_unittest.cc',
         'receiver/audio_decoder_unittest.cc',
@@ -120,240 +133,35 @@
         'sender/video_sender_unittest.cc',
         'sender/vp8_quantizer_parser_unittest.cc',
         'test/end2end_unittest.cc',
-        'test/fake_receiver_time_offset_estimator.cc',
-        'test/fake_receiver_time_offset_estimator.h',
-        'test/fake_single_thread_task_runner.cc',
-        'test/fake_single_thread_task_runner.h',
         'test/utility/audio_utility_unittest.cc',
         'test/utility/barcode_unittest.cc',
-      ], # source
-    },
-    {
-      'target_name': 'cast_benchmarks',
-      'type': '<(gtest_target_type)',
-      'include_dirs': [
-        '<(DEPTH)/',
-      ],
-      'dependencies': [
-        'cast_base',
-        'cast_net',
-        'cast_receiver',
-        'cast_sender',
-        'cast_test_utility',
-        '<(DEPTH)/base/base.gyp:test_support_base',
-        '<(DEPTH)/net/net.gyp:net',
-        '<(DEPTH)/testing/gtest.gyp:gtest',
-      ],
-      'sources': [
-        'test/cast_benchmarks.cc',
-        'test/fake_single_thread_task_runner.cc',
-        'test/fake_single_thread_task_runner.h',
-        'test/utility/test_util.cc',
-        'test/utility/test_util.h',
-      ], # source
+      ], # sources
       'conditions': [
-        ['os_posix==1 and OS!="mac" and OS!="ios" and use_allocator!="none"',
-          {
-            'dependencies': [
-              '<(DEPTH)/base/allocator/allocator.gyp:allocator',
-            ],
-          }
-        ],
-      ],
-    },
-    {
-      # This is a target for the collection of cast development tools.
-      # They are built on bots but not shipped.
-      'target_name': 'cast_tools',
-      'type': 'none',
-      'dependencies': [
-        'cast_receiver_app',
-        'cast_sender_app',
-        'cast_simulator',
-        'udp_proxy',
-      ],
-    },
-    {
-      'target_name': 'cast_receiver_app',
-      'type': 'executable',
-      'include_dirs': [
-        '<(DEPTH)/',
-      ],
-      'dependencies': [
-        'cast_base',
-        'cast_net',
-        'cast_receiver',
-        'cast_test_utility',
-        '<(DEPTH)/ui/gfx/gfx.gyp:gfx_geometry',
-        '<(DEPTH)/net/net.gyp:net_test_support',
-        '<(DEPTH)/media/media.gyp:media',
-        '<(DEPTH)/testing/gtest.gyp:gtest',
-        '<(DEPTH)/third_party/libyuv/libyuv.gyp:libyuv',
-      ],
-      'sources': [
-        '<(DEPTH)/media/cast/test/receiver.cc',
-      ],
-      'conditions': [
-        ['OS == "linux" and use_x11==1', {
+        ['OS=="android"', {
           'dependencies': [
-            '<(DEPTH)/build/linux/system.gyp:x11',
-            '<(DEPTH)/build/linux/system.gyp:xext',
-          ],
-          'sources': [
-            '<(DEPTH)/media/cast/test/linux_output_window.cc',
-            '<(DEPTH)/media/cast/test/linux_output_window.h',
+            '<(DEPTH)/testing/android/native_test.gyp:native_test_native_code',
           ],
         }],
-      ],
-    },
-    {
-      'target_name': 'cast_sender_app',
-      'type': 'executable',
-      'include_dirs': [
-        '<(DEPTH)/',
-      ],
-      'dependencies': [
-        'cast_base',
-        'cast_net',
-        'cast_sender',
-        'cast_test_utility',
-        '<(DEPTH)/net/net.gyp:net_test_support',
-        '<(DEPTH)/media/media.gyp:media',
-        '<(DEPTH)/testing/gtest.gyp:gtest',
-        '<(DEPTH)/third_party/ffmpeg/ffmpeg.gyp:ffmpeg',
-        '<(DEPTH)/third_party/opus/opus.gyp:opus',
-        '<(DEPTH)/ui/gfx/gfx.gyp:gfx_geometry',
-      ],
-      'sources': [
-        '<(DEPTH)/media/cast/test/sender.cc',
-      ],
-    },
-    {
-      'target_name': 'cast_simulator',
-      'type': 'executable',
-      'include_dirs': [
-        '<(DEPTH)/',
-      ],
-      'dependencies': [
-        'cast_base',
-        'cast_net',
-        'cast_network_model_proto',
-        'cast_sender',
-        'cast_test_utility',
-        '<(DEPTH)/net/net.gyp:net_test_support',
-        '<(DEPTH)/media/media.gyp:media',
-        '<(DEPTH)/testing/gtest.gyp:gtest',
-        '<(DEPTH)/third_party/ffmpeg/ffmpeg.gyp:ffmpeg',
-        '<(DEPTH)/third_party/opus/opus.gyp:opus',
-        '<(DEPTH)/ui/gfx/gfx.gyp:gfx_geometry',
-      ],
-      'sources': [
-        '<(DEPTH)/media/cast/test/simulator.cc',
-      ],
-    },
-    {
-      # GN version: //media/cast/test/proto
-      'target_name': 'cast_network_model_proto',
-      'type': 'static_library',
-      'include_dirs': [
-        '<(DEPTH)/',
-      ],
-      'sources': [
-        'test/proto/network_simulation_model.proto',
-      ],
-      'variables': {
-        'proto_in_dir': 'test/proto',
-        'proto_out_dir': 'media/cast/test/proto',
-      },
-      'includes': ['../../build/protoc.gypi'],
-    },
-    {
-      # GN version: //media/cast:generate_barcode_video
-      'target_name': 'generate_barcode_video',
-      'type': 'executable',
-      'include_dirs': [
-        '<(DEPTH)/',
-      ],
-      'dependencies': [
-        'cast_test_utility',
-        '<(DEPTH)/base/base.gyp:base',
-        '<(DEPTH)/media/media.gyp:media',
-      ],
-      'sources': [
-        'test/utility/generate_barcode_video.cc',
-      ],
-    },
-    {
-      # GN version: //media/cast:generate_timecode_audio
-      'target_name': 'generate_timecode_audio',
-      'type': 'executable',
-      'include_dirs': [
-        '<(DEPTH)/',
-      ],
-      'dependencies': [
-        'cast_base',
-        'cast_net',
-        'cast_test_utility',
-        '<(DEPTH)/base/base.gyp:base',
-        '<(DEPTH)/media/media.gyp:media',
-      ],
-      'sources': [
-        'test/utility/generate_timecode_audio.cc',
-      ],
-    },
-    {
-      # GN version: //media/cast:udp_proxy
-      'target_name': 'udp_proxy',
-      'type': 'executable',
-      'include_dirs': [
-        '<(DEPTH)/',
-      ],
-      'dependencies': [
-        'cast_test_utility',
-        '<(DEPTH)/base/base.gyp:base',
-        '<(DEPTH)/media/media.gyp:media',
-      ],
-      'sources': [
-        'test/utility/udp_proxy_main.cc',
-      ],
+      ], # conditions
     },
   ], # targets
-
   'conditions': [
-    ['OS=="linux"',
-      { 'targets': [
-          {
-            'target_name': 'tap_proxy',
-            'type': 'executable',
-            'include_dirs': [
-              '<(DEPTH)/',
-            ],
-            'dependencies': [
-              'cast_test_utility',
-              '<(DEPTH)/base/base.gyp:base',
-              '<(DEPTH)/media/media.gyp:media',
-            ],
-            'sources': [
-              'test/utility/tap_proxy.cc',
-            ],
-          }
-        ]
-      }
-    ],
     ['OS=="ios" or OS=="mac"', {
       'targets': [
         {
           # GN version: //media/cast:cast_h264_vt_encoder_unittests
+          # TODO(miu): This can be rolled into cast_unittests now that FFMPEG
+          # dependency issues are resolved for iOS; but there are bot/isolates
+          # to update too.
           'target_name': 'cast_h264_vt_encoder_unittests',
           'type': '<(gtest_target_type)',
           'include_dirs': [
             '<(DEPTH)/',
           ],
           'dependencies': [
-            'cast_base',
+            'cast_common',
             'cast_sender',
             'cast_test_utility',
-            '<(DEPTH)/base/base.gyp:test_support_base',
             '<(DEPTH)/testing/gmock.gyp:gmock',
             '<(DEPTH)/testing/gtest.gyp:gtest',
             '<(DEPTH)/third_party/ffmpeg/ffmpeg.gyp:ffmpeg',
@@ -363,6 +171,22 @@
           ],
       }], # targets
     }], # OS=="ios" or OS=="mac"
+    ['OS=="android"', {
+      'targets': [
+        {
+          'target_name': 'cast_unittests_apk',
+          'type': 'none',
+          'dependencies': [
+            'cast_unittests',
+          ],
+          'variables': {
+            'test_suite_name': 'cast_unittests',
+            'isolate_file': 'cast_unittests.isolate',
+          },
+          'includes': ['../../build/apk_test.gypi'],
+        },
+      ],
+    }], # OS=="android"
     ['test_isolation_mode != "noop"', {
       'targets': [
         {
@@ -381,13 +205,13 @@
             ['use_x11==1',
               {
                 'dependencies': [
-                  '../../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
+                  '<(DEPTH)/tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
                 ],
               }
             ],
           ],
         },
       ],
-    }],
+    }], # test_isolation_mode != "noop"
   ], # conditions
 }
