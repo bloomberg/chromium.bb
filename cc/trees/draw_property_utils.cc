@@ -602,7 +602,7 @@ void ComputeOpacities(EffectTree* effect_tree) {
 }
 
 template <typename LayerType>
-void ComputeVisibleRectsUsingPropertyTreesInternal(
+static void ComputeVisibleRectsUsingPropertyTreesInternal(
     LayerType* root_layer,
     PropertyTrees* property_trees,
     bool can_render_to_separate_surface,
@@ -692,7 +692,7 @@ void ComputeVisibleRectsUsingPropertyTrees(LayerImpl* root_layer,
 }
 
 template <typename LayerType>
-gfx::Transform DrawTransformFromPropertyTreesInternal(
+static gfx::Transform DrawTransformFromPropertyTreesInternal(
     const LayerType* layer,
     const TransformNode* node) {
   gfx::Transform xform;
@@ -725,8 +725,9 @@ gfx::Transform DrawTransformFromPropertyTrees(const LayerImpl* layer,
       layer, tree.Node(layer->transform_tree_index()));
 }
 
-gfx::Transform SurfaceDrawTransform(const RenderSurfaceImpl* render_surface,
-                                    const TransformTree& tree) {
+static gfx::Transform SurfaceDrawTransform(
+    const RenderSurfaceImpl* render_surface,
+    const TransformTree& tree) {
   const TransformNode* node = tree.Node(render_surface->TransformTreeIndex());
   gfx::Transform render_surface_transform;
   // The draw transform of root render surface is identity tranform.
@@ -742,8 +743,8 @@ gfx::Transform SurfaceDrawTransform(const RenderSurfaceImpl* render_surface,
   return render_surface_transform;
 }
 
-bool SurfaceIsClipped(const RenderSurfaceImpl* render_surface,
-                      const ClipNode* clip_node) {
+static bool SurfaceIsClipped(const RenderSurfaceImpl* render_surface,
+                             const ClipNode* clip_node) {
   // If the render surface's owning layer doesn't form a clip node, it is not
   // clipped.
   if (render_surface->OwningLayerId() != clip_node->owner_id)
@@ -751,10 +752,10 @@ bool SurfaceIsClipped(const RenderSurfaceImpl* render_surface,
   return clip_node->data.target_is_clipped;
 }
 
-gfx::Rect SurfaceClipRect(const RenderSurfaceImpl* render_surface,
-                          const ClipNode* parent_clip_node,
-                          const TransformTree& transform_tree,
-                          bool is_clipped) {
+static gfx::Rect SurfaceClipRect(const RenderSurfaceImpl* render_surface,
+                                 const ClipNode* parent_clip_node,
+                                 const TransformTree& transform_tree,
+                                 bool is_clipped) {
   if (!is_clipped)
     return gfx::Rect();
   const TransformNode* transform_node =
@@ -797,7 +798,7 @@ gfx::Transform SurfaceScreenSpaceTransformFromPropertyTrees(
 }
 
 template <typename LayerType>
-gfx::Transform ScreenSpaceTransformFromPropertyTreesInternal(
+static gfx::Transform ScreenSpaceTransformFromPropertyTreesInternal(
     LayerType* layer,
     const TransformNode* node) {
   gfx::Transform xform(1, 0, 0, 1, layer->offset_to_transform_parent().x(),
@@ -823,7 +824,7 @@ gfx::Transform ScreenSpaceTransformFromPropertyTrees(
       layer, tree.Node(layer->transform_tree_index()));
 }
 
-float LayerDrawOpacity(const LayerImpl* layer, const EffectTree& tree) {
+static float LayerDrawOpacity(const LayerImpl* layer, const EffectTree& tree) {
   if (!layer->render_target())
     return 0.f;
 
@@ -841,8 +842,8 @@ float LayerDrawOpacity(const LayerImpl* layer, const EffectTree& tree) {
   return draw_opacity;
 }
 
-float SurfaceDrawOpacity(RenderSurfaceImpl* render_surface,
-                         const EffectTree& tree) {
+static float SurfaceDrawOpacity(RenderSurfaceImpl* render_surface,
+                                const EffectTree& tree) {
   const EffectNode* node = tree.Node(render_surface->EffectTreeIndex());
   float target_opacity_tree_index = render_surface->TargetEffectTreeIndex();
   if (target_opacity_tree_index < 0)
@@ -856,11 +857,11 @@ float SurfaceDrawOpacity(RenderSurfaceImpl* render_surface,
   return draw_opacity;
 }
 
-bool LayerCanUseLcdText(const LayerImpl* layer,
-                        bool layers_always_allowed_lcd_text,
-                        bool can_use_lcd_text,
-                        const TransformNode* transform_node,
-                        const EffectNode* effect_node) {
+static bool LayerCanUseLcdText(const LayerImpl* layer,
+                               bool layers_always_allowed_lcd_text,
+                               bool can_use_lcd_text,
+                               const TransformNode* transform_node,
+                               const EffectNode* effect_node) {
   if (layers_always_allowed_lcd_text)
     return true;
   if (!can_use_lcd_text)
@@ -881,7 +882,7 @@ bool LayerCanUseLcdText(const LayerImpl* layer,
   return true;
 }
 
-gfx::Rect LayerDrawableContentRect(
+static gfx::Rect LayerDrawableContentRect(
     const LayerImpl* layer,
     const gfx::Rect& layer_bounds_in_target_space,
     const gfx::Rect& clip_rect) {
@@ -891,7 +892,7 @@ gfx::Rect LayerDrawableContentRect(
   return layer_bounds_in_target_space;
 }
 
-gfx::Transform ReplicaToSurfaceTransform(
+static gfx::Transform ReplicaToSurfaceTransform(
     const RenderSurfaceImpl* render_surface,
     const TransformTree& tree) {
   gfx::Transform replica_to_surface;
@@ -918,8 +919,8 @@ gfx::Transform ReplicaToSurfaceTransform(
   return replica_to_surface;
 }
 
-gfx::Rect LayerClipRect(const LayerImpl* layer,
-                        const gfx::Rect& layer_bounds_in_target_space) {
+static gfx::Rect LayerClipRect(const LayerImpl* layer,
+                               const gfx::Rect& layer_bounds_in_target_space) {
   if (layer->is_clipped())
     return layer->clip_rect_in_target_space_from_property_trees();
 
@@ -1018,7 +1019,7 @@ void ComputeSurfaceDrawPropertiesUsingPropertyTrees(
 }
 
 template <typename LayerType>
-void UpdatePageScaleFactorInPropertyTreesInternal(
+static void UpdatePageScaleFactorInPropertyTreesInternal(
     PropertyTrees* property_trees,
     const LayerType* page_scale_layer,
     float page_scale_factor,
