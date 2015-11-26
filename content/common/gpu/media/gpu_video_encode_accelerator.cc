@@ -11,6 +11,7 @@
 #include "base/numerics/safe_math.h"
 #include "base/sys_info.h"
 #include "build/build_config.h"
+#include "content/common/gpu/client/gpu_memory_buffer_impl.h"
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/gpu/media/gpu_video_accelerator_util.h"
@@ -32,6 +33,14 @@
 #endif
 
 namespace content {
+
+namespace {
+
+// Allocation and destruction of buffer are done on the Browser process, so we
+// don't need to handle synchronization here.
+void DestroyGpuMemoryBuffer(const gpu::SyncToken& sync_token) {}
+
+} // namespace
 
 static bool MakeDecoderContextCurrent(
     const base::WeakPtr<GpuCommandBufferStub> stub) {
@@ -122,6 +131,7 @@ bool GpuVideoEncodeAccelerator::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(GpuVideoEncodeAccelerator, message)
     IPC_MESSAGE_HANDLER(AcceleratedVideoEncoderMsg_Encode, OnEncode)
+    IPC_MESSAGE_HANDLER(AcceleratedVideoEncoderMsg_Encode2, OnEncode2)
     IPC_MESSAGE_HANDLER(AcceleratedVideoEncoderMsg_UseOutputBitstreamBuffer,
                         OnUseOutputBitstreamBuffer)
     IPC_MESSAGE_HANDLER(
@@ -232,8 +242,16 @@ void GpuVideoEncodeAccelerator::OnEncode(
   DVLOG(3) << "GpuVideoEncodeAccelerator::OnEncode: frame_id = "
            << params.frame_id << ", buffer_size=" << params.buffer_size
            << ", force_keyframe=" << params.force_keyframe;
+  DCHECK_EQ(media::PIXEL_FORMAT_I420, input_format_);
+
+  // Wrap into a SharedMemory in the beginning, so that |params.buffer_handle|
+  // is cleaned properly in case of an early return.
+  scoped_ptr<base::SharedMemory> shm(
+      new base::SharedMemory(params.buffer_handle, true));
+
   if (!encoder_)
     return;
+
   if (params.frame_id < 0) {
     DLOG(ERROR) << "GpuVideoEncodeAccelerator::OnEncode(): invalid "
                    "frame_id=" << params.frame_id;
@@ -255,8 +273,6 @@ void GpuVideoEncodeAccelerator::OnEncode(
     return;
   }
 
-  scoped_ptr<base::SharedMemory> shm(
-      new base::SharedMemory(params.buffer_handle, true));
   if (!shm->MapAt(map_offset.ValueOrDie(), map_size.ValueOrDie())) {
     DLOG(ERROR) << "GpuVideoEncodeAccelerator::OnEncode(): "
                    "could not map frame_id=" << params.frame_id;
@@ -275,21 +291,100 @@ void GpuVideoEncodeAccelerator::OnEncode(
           params.buffer_size,
           params.buffer_handle,
           params.buffer_offset,
-          base::TimeDelta());
+          params.timestamp);
+  if (!frame.get()) {
+    DLOG(ERROR) << "GpuVideoEncodeAccelerator::OnEncode(): "
+                << "could not create a frame";
+    NotifyError(media::VideoEncodeAccelerator::kPlatformFailureError);
+    return;
+  }
   frame->AddDestructionObserver(
       media::BindToCurrentLoop(
           base::Bind(&GpuVideoEncodeAccelerator::EncodeFrameFinished,
                      weak_this_factory_.GetWeakPtr(),
                      params.frame_id,
                      base::Passed(&shm))));
+  encoder_->Encode(frame, params.force_keyframe);
+}
 
-  if (!frame.get()) {
-    DLOG(ERROR) << "GpuVideoEncodeAccelerator::OnEncode(): could not create "
-                   "VideoFrame for frame_id=" << params.frame_id;
+void GpuVideoEncodeAccelerator::OnEncode2(
+    const AcceleratedVideoEncoderMsg_Encode_Params2& params) {
+  DVLOG(3) << "GpuVideoEncodeAccelerator::OnEncode2: frame_id = "
+           << params.frame_id << ", size=" << params.size.ToString()
+           << ", force_keyframe=" << params.force_keyframe << ", handle type="
+           << params.gpu_memory_buffer_handles[0].type;
+  DCHECK_EQ(media::PIXEL_FORMAT_I420, input_format_);
+  DCHECK_EQ(media::VideoFrame::NumPlanes(input_format_),
+            params.gpu_memory_buffer_handles.size());
+
+  bool map_result = true;
+  uint8* data[media::VideoFrame::kMaxPlanes];
+  int32 strides[media::VideoFrame::kMaxPlanes];
+  ScopedVector<gfx::GpuMemoryBuffer> buffers;
+  const auto& handles = params.gpu_memory_buffer_handles;
+  for (size_t i = 0; i < handles.size(); ++i) {
+    const size_t width =
+        media::VideoFrame::Columns(i, input_format_, params.size.width());
+    const size_t height =
+        media::VideoFrame::Rows(i, input_format_, params.size.height());
+    scoped_ptr<gfx::GpuMemoryBuffer> buffer =
+        GpuMemoryBufferImpl::CreateFromHandle(
+            handles[i], gfx::Size(width, height), gfx::BufferFormat::R_8,
+            gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
+            media::BindToCurrentLoop(base::Bind(&DestroyGpuMemoryBuffer)));
+
+    // TODO(emircan): Refactor such that each frame is mapped once.
+    // See http://crbug/536938.
+    if (!buffer.get() || !buffer->Map()) {
+      map_result = false;
+      continue;
+    }
+
+    data[i] = reinterpret_cast<uint8*>(buffer->memory(0));
+    strides[i] = buffer->stride(0);
+    buffers.push_back(buffer.release());
+  }
+
+  if (!map_result) {
+    DLOG(ERROR) << "GpuVideoEncodeAccelerator::OnEncode2(): "
+                << "failed to map buffers";
     NotifyError(media::VideoEncodeAccelerator::kPlatformFailureError);
     return;
   }
 
+  if (!encoder_)
+    return;
+
+  if (params.frame_id < 0) {
+    DLOG(ERROR) << "GpuVideoEncodeAccelerator::OnEncode2(): invalid frame_id="
+                << params.frame_id;
+    NotifyError(media::VideoEncodeAccelerator::kPlatformFailureError);
+    return;
+  }
+
+  scoped_refptr<media::VideoFrame> frame =
+      media::VideoFrame::WrapExternalYuvData(
+          input_format_,
+          input_coded_size_,
+          gfx::Rect(input_visible_size_),
+          input_visible_size_,
+          strides[media::VideoFrame::kYPlane],
+          strides[media::VideoFrame::kUPlane],
+          strides[media::VideoFrame::kVPlane],
+          data[media::VideoFrame::kYPlane],
+          data[media::VideoFrame::kUPlane],
+          data[media::VideoFrame::kVPlane],
+          params.timestamp);
+  if (!frame.get()) {
+    DLOG(ERROR) << "GpuVideoEncodeAccelerator::OnEncode2(): "
+                << "could not create a frame";
+    NotifyError(media::VideoEncodeAccelerator::kPlatformFailureError);
+    return;
+  }
+  frame->AddDestructionObserver(media::BindToCurrentLoop(
+      base::Bind(&GpuVideoEncodeAccelerator::EncodeFrameFinished2,
+                 weak_this_factory_.GetWeakPtr(), params.frame_id,
+                 base::Passed(&buffers))));
   encoder_->Encode(frame, params.force_keyframe);
 }
 
@@ -340,6 +435,17 @@ void GpuVideoEncodeAccelerator::EncodeFrameFinished(
   Send(new AcceleratedVideoEncoderHostMsg_NotifyInputDone(host_route_id_,
                                                           frame_id));
   // Just let |shm| fall out of scope.
+}
+
+void GpuVideoEncodeAccelerator::EncodeFrameFinished2(
+    int32 frame_id,
+    ScopedVector<gfx::GpuMemoryBuffer> buffers) {
+  // TODO(emircan): Consider calling Unmap() in dtor.
+  for (const auto& buffer : buffers)
+    buffer->Unmap();
+  Send(new AcceleratedVideoEncoderHostMsg_NotifyInputDone(host_route_id_,
+                                                          frame_id));
+  // Just let |buffers| fall out of scope.
 }
 
 void GpuVideoEncodeAccelerator::Send(IPC::Message* message) {

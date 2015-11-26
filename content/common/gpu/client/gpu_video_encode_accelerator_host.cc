@@ -10,6 +10,8 @@
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/gpu/media/gpu_video_accelerator_util.h"
 #include "media/base/video_frame.h"
+#include "media/video/video_encode_accelerator.h"
+#include "ui/gfx/gpu_memory_buffer.h"
 
 namespace content {
 
@@ -107,43 +109,23 @@ void GpuVideoEncodeAcceleratorHost::Encode(
     const scoped_refptr<media::VideoFrame>& frame,
     bool force_keyframe) {
   DCHECK(CalledOnValidThread());
+  DCHECK_EQ(media::PIXEL_FORMAT_I420, frame->format());
   if (!channel_)
     return;
 
-  if (!base::SharedMemory::IsHandleValid(frame->shared_memory_handle())) {
-    PostNotifyError(FROM_HERE, kPlatformFailureError,
-                    "EncodeSharedMemory(): cannot encode frame with "
-                    "invalid shared memory handle");
-    return;
+  switch (frame->storage_type()) {
+    case media::VideoFrame::STORAGE_SHMEM:
+      EncodeSharedMemoryFrame(frame, force_keyframe);
+      break;
+    case media::VideoFrame::STORAGE_GPU_MEMORY_BUFFERS:
+      EncodeGpuMemoryBufferFrame(frame, force_keyframe);
+      break;
+    default:
+      PostNotifyError(FROM_HERE, kPlatformFailureError,
+                      "Encode(): cannot encode frame with invalid handles");
+      return;
   }
 
-  AcceleratedVideoEncoderMsg_Encode_Params params;
-  params.frame_id = next_frame_id_;
-  params.buffer_handle =
-      channel_->ShareToGpuProcess(frame->shared_memory_handle());
-  if (!base::SharedMemory::IsHandleValid(params.buffer_handle)) {
-    PostNotifyError(FROM_HERE, kPlatformFailureError,
-                    "EncodeSharedMemory(): failed to duplicate buffer handle "
-                    "for GPU process");
-    return;
-  }
-  params.buffer_offset =
-      base::checked_cast<uint32_t>(frame->shared_memory_offset());
-  // We assume that planar frame data passed here is packed and contiguous.
-  base::CheckedNumeric<uint32_t> buffer_size = 0u;
-  for (size_t i = 0; i < media::VideoFrame::NumPlanes(frame->format()); ++i) {
-    // Cast DCHECK parameters to void* to avoid printing uint8* as a string.
-    DCHECK_EQ(
-        reinterpret_cast<void*>(frame->data(i)),
-        reinterpret_cast<void*>((frame->data(0) + buffer_size.ValueOrDie())))
-        << "plane=" << i;
-    buffer_size +=
-        base::checked_cast<uint32_t>(frame->stride(i) * frame->rows(i));
-  }
-  params.buffer_size = buffer_size.ValueOrDie();
-  params.force_keyframe = force_keyframe;
-
-  Send(new AcceleratedVideoEncoderMsg_Encode(encoder_route_id_, params));
   frame_map_[next_frame_id_] = frame;
 
   // Mask against 30 bits, to avoid (undefined) wraparound on signed integer.
@@ -195,6 +177,63 @@ void GpuVideoEncodeAcceleratorHost::OnWillDeleteImpl() {
 
   // The CommandBufferProxyImpl is going away; error out this VEA.
   OnChannelError();
+}
+
+void GpuVideoEncodeAcceleratorHost::EncodeGpuMemoryBufferFrame(
+    const scoped_refptr<media::VideoFrame>& frame,
+    bool force_keyframe){
+  DCHECK_EQ(media::VideoFrame::NumPlanes(media::PIXEL_FORMAT_I420),
+            frame->gpu_memory_buffer_handles().size());
+  AcceleratedVideoEncoderMsg_Encode_Params2 params;
+  params.frame_id = next_frame_id_;
+  params.timestamp = frame->timestamp();
+  bool requires_sync_point = false;
+  for (const auto& handle : frame->gpu_memory_buffer_handles()) {
+    gfx::GpuMemoryBufferHandle new_handle =
+        channel_->ShareGpuMemoryBufferToGpuProcess(handle,
+                                                   &requires_sync_point);
+    if (new_handle.is_null()) {
+      PostNotifyError(FROM_HERE, kPlatformFailureError,
+                      "EncodeGpuMemoryBufferFrame(): failed to share gpu "
+                      "memory buffer handle for gpu process");
+      return;
+    }
+    params.gpu_memory_buffer_handles.push_back(new_handle);
+  }
+  params.size = frame->coded_size();
+  params.force_keyframe = force_keyframe;
+
+  Send(new AcceleratedVideoEncoderMsg_Encode2(encoder_route_id_, params));
+}
+
+void GpuVideoEncodeAcceleratorHost::EncodeSharedMemoryFrame(
+    const scoped_refptr<media::VideoFrame>& frame,
+    bool force_keyframe){
+  if (!base::SharedMemory::IsHandleValid(frame->shared_memory_handle())) {
+    PostNotifyError(FROM_HERE, kPlatformFailureError,
+                    "EncodeSharedMemory(): cannot encode frame with invalid "
+                    "shared memory handle");
+    return;
+  }
+
+  AcceleratedVideoEncoderMsg_Encode_Params params;
+  params.frame_id = next_frame_id_;
+  params.timestamp = frame->timestamp();
+  params.buffer_handle =
+      channel_->ShareToGpuProcess(frame->shared_memory_handle());
+  if (!base::SharedMemory::IsHandleValid(params.buffer_handle)) {
+    PostNotifyError(FROM_HERE, kPlatformFailureError,
+                    "Encode(): failed to duplicate shared memory buffer handle "
+                    "for GPU process");
+    return;
+  }
+  params.buffer_offset =
+      base::checked_cast<uint32_t>(frame->shared_memory_offset());
+  params.buffer_size =
+      media::VideoFrame::AllocationSize(frame->format(), frame->coded_size());
+  params.force_keyframe = force_keyframe;
+
+  Send(new AcceleratedVideoEncoderMsg_Encode(encoder_route_id_, params));
 }
 
 void GpuVideoEncodeAcceleratorHost::PostNotifyError(

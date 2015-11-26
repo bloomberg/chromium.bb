@@ -17,6 +17,7 @@
 #include "media/video/video_encode_accelerator.h"
 
 namespace gfx {
+struct GpuMemoryBufferHandle;
 class Size;
 }  // namespace gfx
 
@@ -68,6 +69,12 @@ class GpuVideoEncodeAcceleratorHost
  private:
   // Only Destroy() should be deleting |this|.
   ~GpuVideoEncodeAcceleratorHost() override;
+
+  // Encode specific video frame types.
+  void EncodeGpuMemoryBufferFrame(const scoped_refptr<media::VideoFrame>& frame,
+                                  bool force_keyframe);
+  void EncodeSharedMemoryFrame(const scoped_refptr<media::VideoFrame>& frame,
+                               bool force_keyframe);
 
   // Notify |client_| of an error.  Posts a task to avoid re-entrancy.
   void PostNotifyError(const tracked_objects::Location& location,
