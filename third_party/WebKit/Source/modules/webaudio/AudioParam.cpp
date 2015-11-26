@@ -43,7 +43,7 @@ AbstractAudioContext* AudioParamHandler::context() const
     // TODO(tkent): We can remove this dangerous function by removing
     // AbstractAudioContext dependency from AudioParamTimeline.
     ASSERT_WITH_SECURITY_IMPLICATION(deferredTaskHandler().isAudioThread());
-    return &m_context;
+    return m_context;
 }
 
 float AudioParamHandler::value()

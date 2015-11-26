@@ -229,23 +229,23 @@ protected:
     // Force all inputs to take any channel interpretation changes into account.
     void updateChannelsForInputs();
 
-    // This raw pointer is safe because this is cleared for all of live
-    // AudioHandlers when the AbstractAudioContext dies.  Do not access m_context
-    // directly, use context() instead.
-    GC_PLUGIN_IGNORE("http://crbug.com/404527")
-    AbstractAudioContext* m_context;
-
 private:
     void setNodeType(NodeType);
 
     volatile bool m_isInitialized;
     NodeType m_nodeType;
 
-    // The owner AudioNode.  This raw pointer is safe because dispose() is
+    // The owner AudioNode.  This untraced member is safe because dispose() is
     // called before the AudioNode death, and it clears m_node.  Do not access
     // m_node directly, use node() instead.
-    GC_PLUGIN_IGNORE("http://crbug.com/404527")
-    AudioNode* m_node;
+    // See http://crbug.com/404527 for the detail.
+    UntracedMember<AudioNode> m_node;
+
+    // This untraced member is safe because this is cleared for all of live
+    // AudioHandlers when the AbstractAudioContext dies.  Do not access m_context
+    // directly, use context() instead.
+    // See http://crbug.com/404527 for the detail.
+    UntracedMember<AbstractAudioContext> m_context;
 
     float m_sampleRate;
     Vector<OwnPtr<AudioNodeInput>> m_inputs;

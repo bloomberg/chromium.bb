@@ -105,7 +105,7 @@ private:
         , m_intrinsicValue(defaultValue)
         , m_defaultValue(defaultValue)
         , m_smoothedValue(defaultValue)
-        , m_context(context) { }
+        , m_context(&context) { }
 
     // sampleAccurate corresponds to a-rate (audio rate) vs. k-rate in the Web Audio specification.
     void calculateFinalValues(float* values, unsigned numberOfValues, bool sampleAccurate);
@@ -125,8 +125,7 @@ private:
 
     // We can't make this Persistent because of a reference cycle. It's safe to
     // access this field only when we're rendering audio.
-    GC_PLUGIN_IGNORE("509911")
-    AbstractAudioContext& m_context;
+    UntracedMember<AbstractAudioContext> m_context;
 };
 
 // AudioParam class represents web-exposed AudioParam interface.

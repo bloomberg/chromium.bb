@@ -92,7 +92,7 @@ void OfflineAudioDestinationHandler::uninitialize()
 
 OfflineAudioContext* OfflineAudioDestinationHandler::context() const
 {
-    return static_cast<OfflineAudioContext*>(m_context);
+    return static_cast<OfflineAudioContext*>(AudioDestinationHandler::context());
 }
 
 void OfflineAudioDestinationHandler::startRendering()
