@@ -684,13 +684,6 @@ bool WindowsCreateFunction::RunSync() {
 
   WindowController* controller = new_window->extension_window_controller();
 
-#if defined(OS_CHROMEOS)
-  // For ChromeOS, manually Minimize(). Because minimzied window is not
-  // considered to create new window. See http://crbug.com/473228.
-  if (create_params.initial_show_state == ui::SHOW_STATE_MINIMIZED)
-    new_window->window()->Minimize();
-#endif
-
   if (new_window->profile()->IsOffTheRecord() &&
       !GetProfile()->IsOffTheRecord() && !include_incognito()) {
     // Don't expose incognito windows if extension itself works in non-incognito

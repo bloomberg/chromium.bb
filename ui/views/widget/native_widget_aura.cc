@@ -494,6 +494,11 @@ void NativeWidgetAura::ShowWithWindowState(ui::WindowShowState state) {
     // do the right thing.
     SetInitialFocus(state);
   }
+
+  // On desktop aura, a window is activated first even when it is shown as
+  // minimized. Do the same for consistency.
+  if (state == ui::SHOW_STATE_MINIMIZED)
+    Minimize();
 }
 
 bool NativeWidgetAura::IsVisible() const {

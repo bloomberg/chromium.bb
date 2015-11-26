@@ -100,6 +100,21 @@ TEST_F(NativeWidgetAuraTest, CenterWindowSmallParentNotAtOrigin) {
   widget->CloseNow();
 }
 
+TEST_F(NativeWidgetAuraTest, CreateMinimized) {
+  Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
+  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.parent = NULL;
+  params.context = root_window();
+  params.show_state = ui::SHOW_STATE_MINIMIZED;
+  params.bounds.SetRect(0, 0, 1024, 800);
+  scoped_ptr<Widget> widget(new Widget());
+  widget->Init(params);
+  widget->Show();
+
+  EXPECT_TRUE(widget->IsMinimized());
+  widget->CloseNow();
+}
+
 class TestLayoutManagerBase : public aura::LayoutManager {
  public:
   TestLayoutManagerBase() {}
