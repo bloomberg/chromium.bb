@@ -1041,6 +1041,8 @@ int RenderFrameHostImpl::GetEnabledBindings() {
 void RenderFrameHostImpl::SetNavigationHandle(
     scoped_ptr<NavigationHandleImpl> navigation_handle) {
   navigation_handle_ = navigation_handle.Pass();
+  if (navigation_handle_)
+    navigation_handle_->set_render_frame_host(this);
 }
 
 scoped_ptr<NavigationHandleImpl>

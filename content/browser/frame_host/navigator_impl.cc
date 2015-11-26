@@ -151,8 +151,6 @@ void NavigatorImpl::DidStartProvisionalLoad(
       // DidStartProvisionalLoad should not correspond to a new navigation.
       DCHECK_EQ(url, render_frame_host->navigation_handle()->GetURL());
       render_frame_host->navigation_handle()->set_is_transferring(false);
-      render_frame_host->navigation_handle()->set_render_frame_host(
-          render_frame_host);
       return;
     }
 

@@ -288,7 +288,7 @@ void NavigationHandleImpl::DidRedirectNavigation(const GURL& new_url) {
 void NavigationHandleImpl::ReadyToCommitNavigation(
     RenderFrameHostImpl* render_frame_host,
     scoped_refptr<net::HttpResponseHeaders> response_headers) {
-  DCHECK(!render_frame_host_);
+  DCHECK(!render_frame_host_ || render_frame_host_ == render_frame_host);
   render_frame_host_ = render_frame_host;
   response_headers_ = response_headers;
   state_ = READY_TO_COMMIT;
@@ -304,7 +304,7 @@ void NavigationHandleImpl::ReadyToCommitNavigation(
 void NavigationHandleImpl::DidCommitNavigation(
     bool same_page,
     RenderFrameHostImpl* render_frame_host) {
-  CHECK(!render_frame_host_ || render_frame_host_ == render_frame_host);
+  DCHECK(!render_frame_host_ || render_frame_host_ == render_frame_host);
   is_same_page_ = same_page;
   render_frame_host_ = render_frame_host;
   state_ = net_error_code_ == net::OK ? DID_COMMIT : DID_COMMIT_ERROR_PAGE;
