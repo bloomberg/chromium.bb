@@ -106,6 +106,11 @@ void ApplicationContextImpl::PreMainMessageLoopRun() {
 
 void ApplicationContextImpl::StartTearDown() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  // Need to clear browser states before the IO thread.
+  // TODO(crbug.com/560854): the ShutDown() method can be folded into the
+  // destructor once ApplicationContextImpl owns ChromeBrowserStateManager.
+  GetChromeBrowserStateManager()->ShutDown();
+
   // PromoResourceService must be destroyed after the keyed services and before
   // the IO thread.
   promo_resource_service_.reset();
