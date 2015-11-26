@@ -54,13 +54,15 @@ void WindowManagerApplication::AddAccelerators() {
 void WindowManagerApplication::Initialize(mojo::ApplicationImpl* app) {
   app_ = app;
   tracing_.Initialize(app);
+  window_manager_.reset(new WindowManagerImpl(this));
+  // Don't bind to the WindowManager immediately. Wait for OnEmbed() first.
   mus::mojom::WindowManagerPtr window_manager;
   requests_.push_back(new mojo::InterfaceRequest<mus::mojom::WindowManager>(
       mojo::GetProxy(&window_manager)));
   mus::mojom::WindowTreeHostClientPtr host_client;
   host_client_binding_.Bind(GetProxy(&host_client));
   mus::CreateSingleWindowTreeHost(app, host_client.Pass(), this, &host_,
-                                  window_manager.Pass(), this);
+                                  window_manager.Pass(), window_manager_.get());
 }
 
 bool WindowManagerApplication::ConfigureIncomingConnection(
@@ -96,8 +98,6 @@ void WindowManagerApplication::OnEmbed(mus::Window* root) {
 
   AddAccelerators();
 
-  window_manager_.reset(new WindowManagerImpl(this));
-
   ui_init_.reset(new ui::mojo::UIInit(views::GetDisplaysFromWindow(root)));
   aura_init_.reset(new views::AuraInit(app_, "mash_wm_resources.pak"));
 
@@ -130,23 +130,6 @@ void WindowManagerApplication::OnWindowDestroyed(mus::Window* window) {
   // worry about the possibility of |root_| being null.
   window_manager_.reset();
   root_ = nullptr;
-}
-
-bool WindowManagerApplication::OnWmSetBounds(mus::Window* window,
-                                             gfx::Rect* bounds) {
-  // By returning true the bounds of |window| is updated.
-  return true;
-}
-
-bool WindowManagerApplication::OnWmSetProperty(
-    mus::Window* window,
-    const std::string& name,
-    scoped_ptr<std::vector<uint8_t>>* new_data) {
-  // TODO(sky): constrain this to set of keys we know about, and allowed
-  // values.
-  return name == mus::mojom::WindowManager::kShowState_Property ||
-      name == mus::mojom::WindowManager::kPreferredSize_Property ||
-      name == mus::mojom::WindowManager::kResizeBehavior_Property;
 }
 
 void WindowManagerApplication::CreateContainers() {

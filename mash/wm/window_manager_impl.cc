@@ -111,6 +111,22 @@ void WindowManagerImpl::GetConfig(const GetConfigCallback& callback) {
   callback.Run(config.Pass());
 }
 
+bool WindowManagerImpl::OnWmSetBounds(mus::Window* window, gfx::Rect* bounds) {
+  // By returning true the bounds of |window| is updated.
+  return true;
+}
+
+bool WindowManagerImpl::OnWmSetProperty(
+    mus::Window* window,
+    const std::string& name,
+    scoped_ptr<std::vector<uint8_t>>* new_data) {
+  // TODO(sky): constrain this to set of keys we know about, and allowed
+  // values.
+  return name == mus::mojom::WindowManager::kShowState_Property ||
+         name == mus::mojom::WindowManager::kPreferredSize_Property ||
+         name == mus::mojom::WindowManager::kResizeBehavior_Property;
+}
+
 mus::Window* WindowManagerImpl::GetContainerForChild(mus::Window* child) {
   mojom::Container container = GetRequestedContainer(child);
   return state_->GetWindowForContainer(container);

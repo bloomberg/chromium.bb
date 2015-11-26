@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "components/mus/common/types.h"
+#include "components/mus/public/cpp/window_manager_delegate.h"
 #include "components/mus/public/cpp/window_observer.h"
 #include "components/mus/public/interfaces/window_manager.mojom.h"
 
@@ -19,7 +20,8 @@ using WindowManagerErrorCodeCallback =
     const mojo::Callback<void(mus::mojom::WindowManagerErrorCode)>;
 
 class WindowManagerImpl : public mus::mojom::WindowManager,
-                          public mus::WindowObserver {
+                          public mus::WindowObserver,
+                          public mus::WindowManagerDelegate {
  public:
   explicit WindowManagerImpl(WindowManagerApplication* state);
   ~WindowManagerImpl() override;
@@ -33,6 +35,12 @@ class WindowManagerImpl : public mus::mojom::WindowManager,
                   mojo::Map<mojo::String, mojo::Array<uint8_t>>
                       transport_properties) override;
   void GetConfig(const GetConfigCallback& callback) override;
+
+  // WindowManagerDelegate:
+  bool OnWmSetBounds(mus::Window* window, gfx::Rect* bounds) override;
+  bool OnWmSetProperty(mus::Window* window,
+                       const std::string& name,
+                       scoped_ptr<std::vector<uint8_t>>* new_data) override;
 
   mus::Window* GetContainerForChild(mus::Window* child);
 
