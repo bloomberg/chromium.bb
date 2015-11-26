@@ -105,14 +105,6 @@ void ChromeBrowserProvider::SetUIViewAlphaWithAnimation(UIView* view,
                                                         float alpha) {
 }
 
-metrics::MetricsService* ChromeBrowserProvider::GetMetricsService() {
-  return nullptr;
-}
-
-variations::VariationsService* ChromeBrowserProvider::GetVariationsService() {
-  return nullptr;
-}
-
 autofill::CardUnmaskPromptView*
 ChromeBrowserProvider::CreateCardUnmaskPromptView(
     autofill::CardUnmaskPromptController* controller) {
@@ -121,10 +113,6 @@ ChromeBrowserProvider::CreateCardUnmaskPromptView(
 
 std::string ChromeBrowserProvider::GetRiskData() {
   return std::string();
-}
-
-rappor::RapporService* ChromeBrowserProvider::GetRapporService() {
-  return nullptr;
 }
 
 bool ChromeBrowserProvider::IsOffTheRecordSessionActive() {

@@ -52,6 +52,8 @@ class ApplicationContextImpl : public ApplicationContext {
   net::URLRequestContextGetter* GetSystemURLRequestContext() override;
   const std::string& GetApplicationLocale() override;
   ios::ChromeBrowserStateManager* GetChromeBrowserStateManager() override;
+  metrics_services_manager::MetricsServicesManager* GetMetricsServicesManager()
+      override;
   metrics::MetricsService* GetMetricsService() override;
   variations::VariationsService* GetVariationsService() override;
   rappor::RapporService* GetRapporService() override;
@@ -76,6 +78,8 @@ class ApplicationContextImpl : public ApplicationContext {
   scoped_ptr<net_log::ChromeNetLog> net_log_;
   scoped_ptr<network_time::NetworkTimeTracker> network_time_tracker_;
   scoped_ptr<IOSChromeIOThread> ios_chrome_io_thread_;
+  scoped_ptr<metrics_services_manager::MetricsServicesManager>
+      metrics_services_manager_;
   scoped_ptr<gcm::GCMDriver> gcm_driver_;
   scoped_ptr<web_resource::PromoResourceService> promo_resource_service_;
   std::string application_locale_;

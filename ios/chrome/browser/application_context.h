@@ -21,6 +21,10 @@ namespace metrics {
 class MetricsService;
 }
 
+namespace metrics_services_manager {
+class MetricsServicesManager;
+}
+
 namespace net {
 class URLRequestContextGetter;
 }
@@ -81,6 +85,11 @@ class ApplicationContext {
 
   // Gets the ChromeBrowserStateManager used by this application.
   virtual ios::ChromeBrowserStateManager* GetChromeBrowserStateManager() = 0;
+
+  // Gets the manager for the various metrics-related service, constructing it
+  // if necessary.
+  virtual metrics_services_manager::MetricsServicesManager*
+  GetMetricsServicesManager() = 0;
 
   // Gets the MetricsService used by this application.
   virtual metrics::MetricsService* GetMetricsService() = 0;

@@ -25,24 +25,12 @@ class CardUnmaskPromptController;
 class CardUnmaskPromptView;
 }
 
-namespace metrics {
-class MetricsService;
-}
-
 namespace net {
 class URLRequestContextGetter;
 }
 
-namespace rappor {
-class RapporService;
-}
-
 namespace user_prefs {
 class PrefRegistrySyncable;
-}
-
-namespace variations {
-class VariationsService;
 }
 
 // TODO(ios): Determine the best way to interface with Obj-C code through
@@ -119,18 +107,12 @@ class ChromeBrowserProvider {
   virtual std::string GetDistributionBrandCode();
   // Sets the alpha property of an UIView with an animation.
   virtual void SetUIViewAlphaWithAnimation(UIView* view, float alpha);
-  // Returns the metrics service.
-  virtual metrics::MetricsService* GetMetricsService();
-  // Returns the variations service.
-  virtual variations::VariationsService* GetVariationsService();
   // Returns an instance of a CardUnmaskPromptView used to unmask Wallet cards.
   // The view is responsible for its own lifetime.
   virtual autofill::CardUnmaskPromptView* CreateCardUnmaskPromptView(
       autofill::CardUnmaskPromptController* controller);
   // Returns risk data used in Wallet requests.
   virtual std::string GetRiskData();
-  // Returns the RapporService. May be null.
-  virtual rappor::RapporService* GetRapporService();
   // Returns whether there is an Off-The-Record session active.
   virtual bool IsOffTheRecordSessionActive();
   // Get the favicon for |page_url| and run |callback| with result when loaded.

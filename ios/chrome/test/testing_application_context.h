@@ -36,6 +36,8 @@ class TestingApplicationContext : public ApplicationContext {
   net::URLRequestContextGetter* GetSystemURLRequestContext() override;
   const std::string& GetApplicationLocale() override;
   ios::ChromeBrowserStateManager* GetChromeBrowserStateManager() override;
+  metrics_services_manager::MetricsServicesManager* GetMetricsServicesManager()
+      override;
   metrics::MetricsService* GetMetricsService() override;
   variations::VariationsService* GetVariationsService() override;
   rappor::RapporService* GetRapporService() override;

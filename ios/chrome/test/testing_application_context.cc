@@ -79,6 +79,12 @@ TestingApplicationContext::GetChromeBrowserStateManager() {
   return chrome_browser_state_manager_;
 }
 
+metrics_services_manager::MetricsServicesManager*
+TestingApplicationContext::GetMetricsServicesManager() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return nullptr;
+}
+
 metrics::MetricsService* TestingApplicationContext::GetMetricsService() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return nullptr;

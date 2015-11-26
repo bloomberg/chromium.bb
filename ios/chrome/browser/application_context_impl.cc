@@ -22,6 +22,7 @@
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service.h"
+#include "components/metrics_services_manager/metrics_services_manager.h"
 #include "components/net_log/chrome_net_log.h"
 #include "components/network_time/network_time_tracker.h"
 #include "components/translate/core/browser/translate_download_manager.h"
@@ -32,6 +33,7 @@
 #include "ios/chrome/browser/chrome_switches.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/ios_chrome_io_thread.h"
+#include "ios/chrome/browser/metrics/ios_chrome_metrics_services_manager_client.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/prefs/browser_prefs.h"
 #include "ios/chrome/browser/prefs/ios_chrome_pref_service_factory.h"
@@ -106,6 +108,13 @@ void ApplicationContextImpl::PreMainMessageLoopRun() {
 
 void ApplicationContextImpl::StartTearDown() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  // We need to destroy the MetricsServicesManager and PromoResourceService
+  // before the IO thread gets destroyed, since their destructors can call the
+  // URLFetcher destructor, which does a PostDelayedTask operation on the IO
+  // thread. (The IO thread will handle that URLFetcher operation before going
+  // away.)
+  metrics_services_manager_.reset();
+
   // Need to clear browser states before the IO thread.
   // TODO(crbug.com/560854): the ShutDown() method can be folded into the
   // destructor once ApplicationContextImpl owns ChromeBrowserStateManager.
@@ -115,7 +124,7 @@ void ApplicationContextImpl::StartTearDown() {
   // the IO thread.
   promo_resource_service_.reset();
 
-  // The |gcm_driver_| must shut down while the IO thread is still alive.
+  // The GCMDriver must shut down while the IO thread is still alive.
   if (gcm_driver_)
     gcm_driver_->Shutdown();
 
@@ -215,19 +224,30 @@ ApplicationContextImpl::GetChromeBrowserStateManager() {
   return ios::GetChromeBrowserProvider()->GetChromeBrowserStateManager();
 }
 
+metrics_services_manager::MetricsServicesManager*
+ApplicationContextImpl::GetMetricsServicesManager() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!metrics_services_manager_) {
+    metrics_services_manager_.reset(
+        new metrics_services_manager::MetricsServicesManager(make_scoped_ptr(
+            new IOSChromeMetricsServicesManagerClient(GetLocalState()))));
+  }
+  return metrics_services_manager_.get();
+}
+
 metrics::MetricsService* ApplicationContextImpl::GetMetricsService() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return ios::GetChromeBrowserProvider()->GetMetricsService();
+  return GetMetricsServicesManager()->GetMetricsService();
 }
 
 variations::VariationsService* ApplicationContextImpl::GetVariationsService() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return ios::GetChromeBrowserProvider()->GetVariationsService();
+  return GetMetricsServicesManager()->GetVariationsService();
 }
 
 rappor::RapporService* ApplicationContextImpl::GetRapporService() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return ios::GetChromeBrowserProvider()->GetRapporService();
+  return GetMetricsServicesManager()->GetRapporService();
 }
 
 net_log::ChromeNetLog* ApplicationContextImpl::GetNetLog() {
