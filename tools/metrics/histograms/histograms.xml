@@ -49433,6 +49433,48 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="TrafficStatsAmortizer.AmortizationDelay" units="milliseconds">
+  <owner>sclittle@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    The amount of time spent waiting to perform an amortization run. This is
+    logged at the end of each amortization run, before passing any DataUse
+    objects to their respective callbacks.
+  </summary>
+</histogram>
+
+<histogram name="TrafficStatsAmortizer.BufferSizeOnFlush" units="count">
+  <owner>sclittle@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    The number of DataUse objects processed in an amortization run.
+  </summary>
+</histogram>
+
+<histogram name="TrafficStatsAmortizer.PostAmortizationRunDataUseBytes"
+    units="bytes">
+  <owner>sclittle@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    The total bytes after performing amortization across all DataUse objects
+    buffered for a single amortization run by the TrafficStatsAmortizer. This is
+    recorded even if TrafficStats byte counts are unavailable, but not recorded
+    if no DataUse objects have been buffered.
+  </summary>
+</histogram>
+
+<histogram name="TrafficStatsAmortizer.PreAmortizationRunDataUseBytes"
+    units="bytes">
+  <owner>sclittle@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    The total bytes before performing amortization across all DataUse objects
+    buffered for a single amortization run by the TrafficStatsAmortizer. This is
+    recorded even if TrafficStats byte counts are unavailable, but not recorded
+    if no DataUse objects have been buffered.
+  </summary>
+</histogram>
+
 <histogram name="Translate.AlwaysTranslateLang">
   <owner>kenjibaheux@google.com</owner>
   <summary>
@@ -83604,6 +83646,15 @@ To add a new entry, add it with any value and run test to compute valid value.
 <histogram_suffixes name="TrackedSplitPreferences" separator=".">
   <suffix name="extensions.settings" label="Extension IDs dictionary"/>
   <affected-histogram name="Settings.TrackedSplitPreferenceChanged"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="TrafficStatsAmortizerBytesDirection" separator=".">
+  <suffix name="Tx" label="Records only transmitted network bytes."/>
+  <suffix name="Rx" label="Records only received network bytes."/>
+  <affected-histogram
+      name="TrafficStatsAmortizer.PostAmortizationRunDataUseBytes"/>
+  <affected-histogram
+      name="TrafficStatsAmortizer.PreAmortizationRunDataUseBytes"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="UnackedPackets" separator=".">

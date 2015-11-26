@@ -8,6 +8,8 @@
 #include <cmath>      // For std::modf.
 
 #include "base/location.h"
+#include "base/metrics/histogram_base.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/time/default_tick_clock.h"
 #include "base/timer/timer.h"
 #include "components/data_usage/core/data_use.h"
@@ -37,6 +39,18 @@ const int64_t kDefaultMaxAmortizationDelayMs = 500;
 // flushed.
 // TODO(sclittle): Control this with a field trial parameter.
 const size_t kDefaultMaxDataUseBufferSize = 128;
+
+// Returns |byte_count| as a histogram sample capped at the maximum histogram
+// sample value that's suitable for being recorded without overflowing.
+base::HistogramBase::Sample GetByteCountAsHistogramSample(int64_t byte_count) {
+  DCHECK_GE(byte_count, 0);
+  if (byte_count >= base::HistogramBase::kSampleType_MAX) {
+    // Return kSampleType_MAX - 1 because it's invalid to record
+    // kSampleType_MAX, which would cause a CHECK to fail in the histogram code.
+    return base::HistogramBase::kSampleType_MAX - 1;
+  }
+  return static_cast<base::HistogramBase::Sample>(byte_count);
+}
 
 // Scales |bytes| by |ratio|, using |remainder| to hold the running rounding
 // error. |bytes| must be non-negative, and multiplying |bytes| by |ratio| must
@@ -86,7 +100,6 @@ void AmortizeByteCountSequence(DataUseBuffer* data_use_sequence,
   for (auto& data_use_buffer_pair : *data_use_sequence) {
     int64_t* byte_count = get_byte_count_fn(data_use_buffer_pair.first.get());
     *byte_count = ScaleByteCount(*byte_count, ratio, &remainder);
-    // TODO(sclittle): Record UMA about values before vs. after amortization.
   }
 }
 
@@ -95,6 +108,22 @@ int64_t* GetTxBytes(DataUse* data_use) {
 }
 int64_t* GetRxBytes(DataUse* data_use) {
   return &data_use->rx_bytes;
+}
+
+// Returns the total transmitted bytes contained in |data_use_sequence|.
+int64_t GetTotalTxBytes(const DataUseBuffer& data_use_sequence) {
+  int64_t sum = 0;
+  for (const auto& data_use_buffer_pair : data_use_sequence)
+    sum += data_use_buffer_pair.first->tx_bytes;
+  return sum;
+}
+
+// Returns the total received bytes contained in |data_use_sequence|.
+int64_t GetTotalRxBytes(const DataUseBuffer& data_use_sequence) {
+  int64_t sum = 0;
+  for (const auto& data_use_buffer_pair : data_use_sequence)
+    sum += data_use_buffer_pair.first->rx_bytes;
+  return sum;
 }
 
 }  // namespace
@@ -182,7 +211,6 @@ void TrafficStatsAmortizer::AddPreAmortizationBytes(int64_t tx_bytes,
     // hogging memory. Note that this will likely cause the post-amortization
     // byte counts calculated here to be less accurate than if the amortizer
     // waited to perform amortization.
-    // TODO(sclittle): Record UMA about how often this occurs.
     traffic_stats_query_timer_->Stop();
     AmortizeNow();
     return;
@@ -192,8 +220,6 @@ void TrafficStatsAmortizer::AddPreAmortizationBytes(int64_t tx_bytes,
   // |max_amortization_delay_| comes earlier, then this will likely cause the
   // post-amortization byte counts calculated here to be less accurate than if
   // the amortizer waited to perform amortization.
-  // TODO(sclittle): Record UMA about how often |max_amortization_delay_| comes
-  // earlier.
   base::TimeDelta query_delay = std::min(
       traffic_stats_query_delay_, current_amortization_run_start_time_ +
                                       max_amortization_delay_ - now_ticks);
@@ -208,6 +234,18 @@ void TrafficStatsAmortizer::AddPreAmortizationBytes(int64_t tx_bytes,
 
 void TrafficStatsAmortizer::AmortizeNow() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(is_amortization_in_progress_);
+
+  if (!buffered_data_use_.empty()) {
+    // Record histograms for the pre-amortization byte counts of the DataUse
+    // objects.
+    UMA_HISTOGRAM_COUNTS(
+        "TrafficStatsAmortizer.PreAmortizationRunDataUseBytes.Tx",
+        GetByteCountAsHistogramSample(GetTotalTxBytes(buffered_data_use_)));
+    UMA_HISTOGRAM_COUNTS(
+        "TrafficStatsAmortizer.PreAmortizationRunDataUseBytes.Rx",
+        GetByteCountAsHistogramSample(GetTotalRxBytes(buffered_data_use_)));
+  }
 
   int64_t current_traffic_stats_tx_bytes = -1;
   int64_t current_traffic_stats_rx_bytes = -1;
@@ -241,8 +279,23 @@ void TrafficStatsAmortizer::AmortizeNow() {
     }
   }
 
-  // TODO(sclittle): Record some UMA about the delay before amortizing and how
-  // big the buffer was before amortizing.
+  if (!buffered_data_use_.empty()) {
+    // Record histograms for the post-amortization byte counts of the DataUse
+    // objects.
+    UMA_HISTOGRAM_COUNTS(
+        "TrafficStatsAmortizer.PostAmortizationRunDataUseBytes.Tx",
+        GetByteCountAsHistogramSample(GetTotalTxBytes(buffered_data_use_)));
+    UMA_HISTOGRAM_COUNTS(
+        "TrafficStatsAmortizer.PostAmortizationRunDataUseBytes.Rx",
+        GetByteCountAsHistogramSample(GetTotalRxBytes(buffered_data_use_)));
+  }
+
+  UMA_HISTOGRAM_TIMES(
+      "TrafficStatsAmortizer.AmortizationDelay",
+      tick_clock_->NowTicks() - current_amortization_run_start_time_);
+
+  UMA_HISTOGRAM_COUNTS_1000("TrafficStatsAmortizer.BufferSizeOnFlush",
+                            buffered_data_use_.size());
 
   // Reset state now that the amortization run has finished.
   is_amortization_in_progress_ = false;
