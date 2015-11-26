@@ -23,6 +23,10 @@ class CC_EXPORT ContentLayerClient {
     DISPLAY_LIST_PAINTING_DISABLED
   };
 
+  // The paintable region is the rectangular region, within the bounds of the
+  // layer this client paints, that the client is capable of painting via
+  // paintContents(). Calling paintContents() will return a DisplayItemList
+  // that is guaranteed valid only within this region.
   virtual gfx::Rect PaintableRegion() = 0;
 
   virtual scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
