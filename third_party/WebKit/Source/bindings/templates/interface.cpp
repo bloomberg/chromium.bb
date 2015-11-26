@@ -624,11 +624,11 @@ void {{v8_class}}::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>
        (cpp_class, method.name, world_suffix) %}
 {% set setter_callback =
        '{0}V8Internal::{0}OriginSafeMethodSetterCallback'.format(cpp_class)
-       if not method.is_read_only else '0' %}
+       if not method.is_unforgeable else '0' %}
 {% if method.is_per_world_bindings %}
 {% set getter_callback_for_main_world = '%sForMainWorld' % getter_callback %}
 {% set setter_callback_for_main_world = '%sForMainWorld' % setter_callback
-       if not method.is_read_only else '0' %}
+       if not method.is_unforgeable else '0' %}
 {% else %}
 {% set getter_callback_for_main_world = '0' %}
 {% set setter_callback_for_main_world = '0' %}

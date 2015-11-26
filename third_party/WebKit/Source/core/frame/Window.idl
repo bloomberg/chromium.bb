@@ -28,7 +28,7 @@
 
 // FIXME: explain all uses of [DoNotCheckSecurity]
 [
-    CheckSecurity=Frame,
+    CheckSecurity=Receiver,
     ImplementedAs=DOMWindow,
     PrimaryGlobal,
 ] interface Window : EventTarget {
@@ -60,7 +60,7 @@
     // FIXME: opener should be of type any.
     [DoNotCheckSecurity, Custom=Setter] attribute Window opener;
     [Replaceable, DoNotCheckSecurity] readonly attribute Window parent;
-    [CheckSecurity=Node, Custom=Getter] readonly attribute Element? frameElement;
+    [CheckSecurity=ReturnValue, Custom=Getter] readonly attribute Element? frameElement;
     // FIXME: open() should have 4 optional arguments with defaults.
     [Custom] Window? open(DOMString url, DOMString target, optional DOMString features);
     // FIXME: These getters should not have [NotEnumerable].

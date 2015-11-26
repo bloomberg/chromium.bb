@@ -53,10 +53,9 @@ const v8::FunctionCallbackInfo<v8::Value>& info
     {% if attribute.is_call_with_script_state %}
     ScriptState* scriptState = ScriptState::current(info.GetIsolate());
     {% endif %}
-    {% if ((attribute.is_check_security_for_frame or
-            attribute.is_check_security_for_window) and
+    {% if (attribute.is_check_security_for_receiver and
            not attribute.is_data_type_property) or
-          attribute.is_check_security_for_node or
+          attribute.is_check_security_for_return_value or
           attribute.is_getter_raises_exception %}
     ExceptionState exceptionState(ExceptionState::GetterContext, "{{attribute.name}}", "{{interface_name}}", holder, info.GetIsolate());
     {% endif %}
@@ -77,15 +76,20 @@ const v8::FunctionCallbackInfo<v8::Value>& info
     {% endif %}
     {# Security checks #}
     {% if not attribute.is_data_type_property %}
-    {% if attribute.is_check_security_for_window or
-          attribute.is_check_security_for_frame or
-          attribute.is_check_security_for_node %}
-    if (!BindingSecurity::shouldAllowAccessTo(info.GetIsolate(), callingDOMWindow(info.GetIsolate()), {{attribute.cpp_value if attribute.is_check_security_for_node else 'impl'}}, exceptionState)) {
+    {% if attribute.is_check_security_for_receiver %}
+    if (!BindingSecurity::shouldAllowAccessTo(info.GetIsolate(), callingDOMWindow(info.GetIsolate()), impl, exceptionState)) {
         v8SetReturnValueNull(info);
         exceptionState.throwIfNeeded();
         return;
     }
     {% endif %}
+    {% endif %}
+    {% if attribute.is_check_security_for_return_value %}
+    if (!BindingSecurity::shouldAllowAccessTo(info.GetIsolate(), callingDOMWindow(info.GetIsolate()), {{attribute.cpp_value}}, exceptionState)) {
+        v8SetReturnValueNull(info);
+        exceptionState.throwIfNeeded();
+        return;
+    }
     {% endif %}
     {% if attribute.reflect_only %}
     {{release_only_check(attribute.reflect_only, attribute.reflect_missing,
@@ -235,9 +239,8 @@ v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info
           ((not attribute.is_replaceable and
             not attribute.constructor_type and
             not attribute.is_data_type_property) and
-           (attribute.is_check_security_for_frame or
-            attribute.is_check_security_for_node or
-            attribute.is_check_security_for_window)) %}
+           (attribute.is_check_security_for_receiver or
+            attribute.is_check_security_for_return_value)) %}
     {% set raise_exception = 1 %}
     {% else %}
     {% set raise_exception = 0 %}
@@ -283,15 +286,16 @@ v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info
     {% if not attribute.is_replaceable and
           not attribute.constructor_type %}
     {% if not attribute.is_data_type_property %}
-    {% if attribute.is_check_security_for_window or
-          attribute.is_check_security_for_frame or
-          attribute.is_check_security_for_node %}
-    if (!BindingSecurity::shouldAllowAccessTo(info.GetIsolate(), callingDOMWindow(info.GetIsolate()), {{attribute.cpp_value if attribute.is_check_security_for_node else 'impl'}}, exceptionState)) {
+    {% if attribute.is_check_security_for_receiver %}
+    if (!BindingSecurity::shouldAllowAccessTo(info.GetIsolate(), callingDOMWindow(info.GetIsolate()), impl, exceptionState)) {
         v8SetReturnValue(info, v8Value);
         exceptionState.throwIfNeeded();
         return;
     }
     {% endif %}
+    {% endif %}
+    {% if attribute.is_check_security_for_return_value %}
+#error Attribute setter with the security check for the return value is not supported.
     {% endif %}
     {% endif %}{# not attribute.is_replaceable and
                   not attribute.constructor_type #}

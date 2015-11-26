@@ -55,15 +55,12 @@ def attribute_context(interface, attribute):
 
     # [CheckSecurity]
     is_do_not_check_security = 'DoNotCheckSecurity' in extended_attributes
-    is_check_security_for_frame = (
-        has_extended_attribute_value(interface, 'CheckSecurity', 'Frame') and
+    is_check_security_for_receiver = (
+        has_extended_attribute_value(interface, 'CheckSecurity', 'Receiver') and
         not is_do_not_check_security)
-    is_check_security_for_node = (
-        has_extended_attribute_value(attribute, 'CheckSecurity', 'Node'))
-    is_check_security_for_window = (
-        has_extended_attribute_value(interface, 'CheckSecurity', 'Window') and
-        not is_do_not_check_security)
-    if is_check_security_for_frame or is_check_security_for_node or is_check_security_for_window:
+    is_check_security_for_return_value = (
+        has_extended_attribute_value(attribute, 'CheckSecurity', 'ReturnValue'))
+    if is_check_security_for_receiver or is_check_security_for_return_value:
         includes.add('bindings/core/v8/BindingSecurity.h')
     # [Constructor]
     # TODO(yukishiino): Constructors are much like methods although constructors
@@ -119,9 +116,8 @@ def attribute_context(interface, attribute):
         'idl_type': str(idl_type),  # need trailing [] on array for Dictionary::ConversionContext::setConversionType
         'is_call_with_execution_context': has_extended_attribute_value(attribute, 'CallWith', 'ExecutionContext'),
         'is_call_with_script_state': has_extended_attribute_value(attribute, 'CallWith', 'ScriptState'),
-        'is_check_security_for_frame': is_check_security_for_frame,
-        'is_check_security_for_node': is_check_security_for_node,
-        'is_check_security_for_window': is_check_security_for_window,
+        'is_check_security_for_receiver': is_check_security_for_receiver,
+        'is_check_security_for_return_value': is_check_security_for_return_value,
         'is_custom_element_callbacks': is_custom_element_callbacks,
         # TODO(yukishiino): Make all DOM attributes accessor-type properties.
         'is_data_type_property': constructor_type or interface.name == 'Window' or interface.name == 'Location',

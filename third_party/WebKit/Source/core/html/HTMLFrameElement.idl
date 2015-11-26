@@ -27,7 +27,7 @@ interface HTMLFrameElement : HTMLElement {
     [Reflect] attribute DOMString frameBorder;
     [Reflect, URL] attribute DOMString longDesc;
     [Reflect] attribute boolean noResize;
-    [CheckSecurity=Node] readonly attribute Document? contentDocument;
+    [CheckSecurity=ReturnValue] readonly attribute Document? contentDocument;
     readonly attribute Window? contentWindow;
 
     [Reflect, TreatNullAs=EmptyString] attribute DOMString marginHeight;

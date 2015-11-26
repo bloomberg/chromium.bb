@@ -27,13 +27,17 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
     CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
     {% endif %}
     {# Security checks #}
-    {% if method.is_check_security_for_window or
-          method.is_check_security_for_frame or
-          method.is_check_security_for_node %}
-    if (!BindingSecurity::shouldAllowAccessTo(info.GetIsolate(), callingDOMWindow(info.GetIsolate()), {{method.cpp_value if method.is_check_security_for_node else 'impl'}}, exceptionState)) {
-        {% if method.is_check_security_for_node %}
-        v8SetReturnValueNull(info);
+    {% if method.is_check_security_for_receiver %}
+    if (!BindingSecurity::shouldAllowAccessTo(info.GetIsolate(), callingDOMWindow(info.GetIsolate()), impl, exceptionState)) {
+        {% if not method.returns_promise %}
+        exceptionState.throwIfNeeded();
         {% endif %}
+        return;
+    }
+    {% endif %}
+    {% if method.is_check_security_for_return_value %}
+    if (!BindingSecurity::shouldAllowAccessTo(info.GetIsolate(), callingDOMWindow(info.GetIsolate()), {{method.cpp_value}}, exceptionState)) {
+        v8SetReturnValueNull(info);
         {% if not method.returns_promise %}
         exceptionState.throwIfNeeded();
         {% endif %}

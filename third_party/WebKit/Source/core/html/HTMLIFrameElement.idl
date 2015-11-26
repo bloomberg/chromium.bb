@@ -29,9 +29,9 @@ interface HTMLIFrameElement : HTMLElement {
     [Reflect] attribute boolean allowFullscreen;
     [Reflect] attribute DOMString width;
     [Reflect] attribute DOMString height;
-    [CheckSecurity=Node] readonly attribute Document? contentDocument;
+    [CheckSecurity=ReturnValue] readonly attribute Document? contentDocument;
     readonly attribute Window? contentWindow;
-    [CheckSecurity=Node, RaisesException] Document? getSVGDocument();
+    [CheckSecurity=ReturnValue, RaisesException] Document? getSVGDocument();
     [RuntimeEnabled=ReferrerPolicyAttribute, Reflect, ReflectOnly=("","no-referrer","origin","no-referrer-when-downgrade","origin-when-cross-origin","unsafe-url"), ReflectMissing="", ReflectInvalid=""] attribute DOMString referrerpolicy;
 
 

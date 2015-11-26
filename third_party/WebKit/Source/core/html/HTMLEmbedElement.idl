@@ -29,7 +29,7 @@
     [Reflect] attribute DOMString type;
     [Reflect] attribute DOMString width;
     [Reflect] attribute DOMString height;
-    [CheckSecurity=Node, RaisesException] Document? getSVGDocument();
+    [CheckSecurity=ReturnValue, RaisesException] Document? getSVGDocument();
     // FIXME: The spec has a legacycaller any (any... arguments); crbug.com/465009
 
     // obsolete members

@@ -90,22 +90,20 @@ def method_context(interface, method, is_visible=True):
     is_call_with_this_value = has_extended_attribute_value(method, 'CallWith', 'ThisValue')
     if is_call_with_script_state or is_call_with_this_value:
         includes.add('bindings/core/v8/ScriptState.h')
-    is_check_security_for_node = 'CheckSecurity' in extended_attributes
-    if is_check_security_for_node:
+
+    # [CheckSecurity]
+    is_do_not_check_security = 'DoNotCheckSecurity' in extended_attributes
+    is_check_security_for_receiver = (
+        has_extended_attribute_value(interface, 'CheckSecurity', 'Receiver') and
+        not is_do_not_check_security)
+    is_check_security_for_return_value = (
+        has_extended_attribute_value(method, 'CheckSecurity', 'ReturnValue'))
+    if is_check_security_for_receiver or is_check_security_for_return_value:
         includes.add('bindings/core/v8/BindingSecurity.h')
+
     is_custom_element_callbacks = 'CustomElementCallbacks' in extended_attributes
     if is_custom_element_callbacks:
         includes.add('core/dom/custom/CustomElementProcessingStack.h')
-
-    is_do_not_check_security = 'DoNotCheckSecurity' in extended_attributes
-
-    is_check_security_for_frame = (
-        has_extended_attribute_value(interface, 'CheckSecurity', 'Frame') and
-        not is_do_not_check_security)
-
-    is_check_security_for_window = (
-        has_extended_attribute_value(interface, 'CheckSecurity', 'Window') and
-        not is_do_not_check_security)
 
     is_raises_exception = 'RaisesException' in extended_attributes
     is_custom_call_prologue = has_extended_attribute_value(method, 'Custom', 'CallPrologue')
@@ -143,8 +141,7 @@ def method_context(interface, method, is_visible=True):
                 method, CUSTOM_REGISTRATION_EXTENDED_ATTRIBUTES),
         'has_exception_state':
             is_raises_exception or
-            is_check_security_for_frame or
-            is_check_security_for_window or
+            is_check_security_for_receiver or
             any(argument for argument in arguments
                 if (argument.idl_type.name == 'SerializedScriptValue' or
                     argument_conversion_needs_exception_state(method, argument))),
@@ -153,9 +150,8 @@ def method_context(interface, method, is_visible=True):
         'is_call_with_script_arguments': is_call_with_script_arguments,
         'is_call_with_script_state': is_call_with_script_state,
         'is_call_with_this_value': is_call_with_this_value,
-        'is_check_security_for_frame': is_check_security_for_frame,
-        'is_check_security_for_node': is_check_security_for_node,
-        'is_check_security_for_window': is_check_security_for_window,
+        'is_check_security_for_receiver': is_check_security_for_receiver,
+        'is_check_security_for_return_value': is_check_security_for_return_value,
         'is_custom': 'Custom' in extended_attributes and
             not (is_custom_call_prologue or is_custom_call_epilogue),
         'is_custom_call_prologue': is_custom_call_prologue,
@@ -170,8 +166,8 @@ def method_context(interface, method, is_visible=True):
         'is_per_world_bindings': 'PerWorldBindings' in extended_attributes,
         'is_post_message': is_post_message,
         'is_raises_exception': is_raises_exception,
-        'is_read_only': is_unforgeable(interface, method),
         'is_static': is_static,
+        'is_unforgeable': is_unforgeable(interface, method),
         'is_variadic': arguments and arguments[-1].is_variadic,
         'measure_as': v8_utilities.measure_as(method, interface),  # [MeasureAs]
         'name': name,

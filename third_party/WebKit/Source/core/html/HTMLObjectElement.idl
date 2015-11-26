@@ -33,9 +33,9 @@
     [ImplementedAs=formOwner] readonly attribute HTMLFormElement? form;
     [Reflect] attribute DOMString width;
     [Reflect] attribute DOMString height;
-    [CheckSecurity=Node] readonly attribute Document? contentDocument;
+    [CheckSecurity=ReturnValue] readonly attribute Document? contentDocument;
     // TODO(philipj): readonly attribute WindowProxy? contentWindow;
-    [CheckSecurity=Node, RaisesException] Document? getSVGDocument();
+    [CheckSecurity=ReturnValue, RaisesException] Document? getSVGDocument();
 
     readonly attribute boolean willValidate;
     readonly attribute ValidityState validity;

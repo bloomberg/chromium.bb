@@ -564,8 +564,8 @@ def interface_context(interface):
     context.update({
         'conditionally_enabled_methods': conditionally_enabled_methods,
         'custom_registration_methods': custom_registration_methods,
-        'has_origin_safe_method_setter': any(
-            method['is_check_security_for_frame'] and not method['is_read_only']
+        'has_origin_safe_method_setter': is_global and any(
+            method['is_check_security_for_receiver'] and not method['is_unforgeable']
             for method in methods),
         'has_private_script': any(attribute['is_implemented_in_private_script'] for attribute in attributes) or
             any(method['is_implemented_in_private_script'] for method in methods),

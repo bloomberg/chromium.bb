@@ -177,7 +177,7 @@ interface TestObject {
     [CallWith=ExecutionContext] attribute any callWithExecutionContextAnyAttribute;
     [CallWith=ScriptState] attribute any callWithScriptStateAnyAttribute;
     [CallWith=(ExecutionContext,ScriptState)] attribute any callWithExecutionContextAndScriptStateAnyAttribute;
-    [CheckSecurity=Node] readonly attribute Document checkSecurityForNodeReadonlyDocumentAttribute; // All uses are read only
+    [CheckSecurity=ReturnValue] readonly attribute Document checkSecurityForNodeReadonlyDocumentAttribute; // All uses are read only
     [Conditional=CONDITION] attribute long conditionalLongAttribute;
     // Constructors: FIXME: replace suffix with [ConstructorAttribute]
     attribute TestInterfaceEmptyConstructor testInterfaceEmptyConstructorAttribute;
@@ -518,7 +518,7 @@ interface TestObject {
     [CallWith=ActiveWindow] void callWithActiveWindow();
     [CallWith=(ActiveWindow,FirstWindow)] void callWithActiveWindowScriptWindow();
     [CallWith=ThisValue] void callWithThisValue();
-    [CheckSecurity=Node] void checkSecurityForNodeVoidMethod();
+    [CheckSecurity=ReturnValue] void checkSecurityForNodeVoidMethod();
     [Conditional=CONDITION] void conditionalConditionVoidMethod();
     [Conditional=CONDITION] static void conditionalConditionStaticVoidMethod();
     [Custom] void customVoidMethod();
