@@ -24,6 +24,7 @@ class BoundedLabel;
 class MessageCenter;
 class MessageCenterController;
 class NotificationButton;
+class NotificationProgressBarBase;
 class NotificationView;
 class PaddedButton;
 class ProportionalImageView;
@@ -129,7 +130,7 @@ class MESSAGE_CENTER_EXPORT NotificationView
   views::View* bottom_view_;
   views::View* image_container_;
   ProportionalImageView* image_view_;
-  views::ProgressBar* progress_bar_view_;
+  NotificationProgressBarBase* progress_bar_view_;
   std::vector<NotificationButton*> action_buttons_;
   std::vector<views::View*> separators_;
 

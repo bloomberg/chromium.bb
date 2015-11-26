@@ -90,6 +90,8 @@
         'views/message_view_context_menu_controller.h',
         'views/notification_button.cc',
         'views/notification_button.h',
+        'views/notification_progress_bar.cc',
+        'views/notification_progress_bar.h',
         'views/notification_view.cc',
         'views/notification_view.h',
         'views/notifier_settings_view.cc',
