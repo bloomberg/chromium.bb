@@ -137,9 +137,10 @@ SuggestionPicker.prototype._measureMaxContentWidth = function() {
 
 SuggestionPicker.prototype._fixWindowSize = function() {
     var ListBorder = 2;
+    var zoom = this._config.zoomFactor;
     var desiredWindowWidth = this._measureMaxContentWidth() + ListBorder;
     if (typeof this._config.inputWidth === "number")
-        desiredWindowWidth = Math.max(this._config.inputWidth, desiredWindowWidth);
+        desiredWindowWidth = Math.max(this._config.inputWidth / zoom, desiredWindowWidth);
     var totalHeight = ListBorder;
     var maxHeight = 0;
     var entryCount = 0;
@@ -159,8 +160,8 @@ SuggestionPicker.prototype._fixWindowSize = function() {
         this._containerElement.style.overflowY = "scroll";
     }
 
-    var windowRect = adjustWindowRect(desiredWindowWidth, desiredWindowHeight, desiredWindowWidth, 0);
-    this._containerElement.style.height = (windowRect.height - ListBorder) + "px";
+    var windowRect = adjustWindowRect(desiredWindowWidth * zoom, desiredWindowHeight * zoom, desiredWindowWidth * zoom, 0);
+    this._containerElement.style.height = (windowRect.height / zoom - ListBorder) + "px";
     setWindowRect(windowRect);
 };
 

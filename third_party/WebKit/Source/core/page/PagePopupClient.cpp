@@ -31,10 +31,20 @@
 #include "config.h"
 #include "core/page/PagePopupClient.h"
 
+#include "core/dom/NodeComputedStyle.h"
 #include "wtf/text/CharacterNames.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace blink {
+
+float PagePopupClient::zoomFactor()
+{
+    if (const ComputedStyle* style = ownerElement().computedStyle())
+        return style->effectiveZoom();
+    if (LocalFrame* frame = ownerElement().document().frame())
+        return frame->pageZoomFactor();
+    return 1;
+}
 
 #define addLiteral(literal, data)    data->append(literal, sizeof(literal) - 1)
 

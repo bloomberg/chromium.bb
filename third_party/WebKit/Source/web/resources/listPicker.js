@@ -223,16 +223,17 @@ ListPicker.prototype._fixWindowSize = function() {
         desiredWindowWidth += getScrollbarWidth();
         expectingScrollbar = true;
     }
-    desiredWindowWidth = Math.max(this._config.anchorRectInScreen.width, desiredWindowWidth);
-    var windowRect = adjustWindowRect(desiredWindowWidth, desiredWindowHeight, this._selectElement.offsetWidth, 0);
+    var zoom = this._config.zoomFactor;
+    desiredWindowWidth = Math.max(this._config.anchorRectInScreen.width / zoom, desiredWindowWidth);
+    var windowRect = adjustWindowRect(desiredWindowWidth * zoom, desiredWindowHeight * zoom, this._selectElement.offsetWidth * zoom, 0);
     // If the available screen space is smaller than maxHeight, we will get an unexpected scrollbar.
-    if (!expectingScrollbar && windowRect.height < noScrollHeight) {
-        desiredWindowWidth = windowRect.width + getScrollbarWidth();
+    if (!expectingScrollbar && windowRect.height < noScrollHeight * zoom) {
+        desiredWindowWidth = windowRect.width + getScrollbarWidth() * zoom;
         windowRect = adjustWindowRect(desiredWindowWidth, windowRect.height, windowRect.width, windowRect.height);
     }
-    this._selectElement.style.width = windowRect.width + "px";
-    this._selectElement.style.height = windowRect.height + "px";
-    this._element.style.height = windowRect.height + "px";
+    this._selectElement.style.width = (windowRect.width / zoom) + "px";
+    this._selectElement.style.height = (windowRect.height / zoom) + "px";
+    this._element.style.height = (windowRect.height / zoom) + "px";
     setWindowRect(windowRect);
 };
 

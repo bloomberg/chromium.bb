@@ -112,6 +112,7 @@ void ColorChooserPopupUIController::writeDocument(SharedBuffer* data)
     PagePopupClient::addProperty("values", suggestionValues, data);
     PagePopupClient::addProperty("otherColorLabel", locale().queryString(WebLocalizedString::OtherColorLabel), data);
     addProperty("anchorRectInScreen", anchorRectInScreen, data);
+    addProperty("zoomFactor", zoomFactor(), data);
     PagePopupClient::addString("};\n", data);
     data->append(Platform::current()->loadResource("pickerCommon.js"));
     data->append(Platform::current()->loadResource("colorSuggestionPicker.js"));

@@ -129,6 +129,7 @@ void DateTimeChooserImpl::writeDocument(SharedBuffer* data)
     addString("</style></head><body><div id=main>Loading...</div><script>\n"
         "window.dialogArguments = {\n", data);
     addProperty("anchorRectInScreen", m_parameters.anchorRectInScreen, data);
+    addProperty("zoomFactor", zoomFactor(), data);
     addProperty("min", valueToDateTimeString(m_parameters.minimum, m_parameters.type), data);
     addProperty("max", valueToDateTimeString(m_parameters.maximum, m_parameters.type), data);
     addProperty("step", stepString, data);
