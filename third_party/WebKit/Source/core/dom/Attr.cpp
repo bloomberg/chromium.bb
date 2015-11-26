@@ -117,6 +117,7 @@ void Attr::setNodeValue(const String& v)
 
 PassRefPtrWillBeRawPtr<Node> Attr::cloneNode(bool /*deep*/)
 {
+    UseCounter::count(document(), UseCounter::AttrCloneNode);
     return adoptRefWillBeNoop(new Attr(document(), m_name, value()));
 }
 
