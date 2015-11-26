@@ -6,7 +6,10 @@
 #define CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_MUS_H_
 
 #include "base/macros.h"
+#include "components/mus/public/cpp/scoped_window_ptr.h"
+#include "components/mus/public/cpp/window.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
+#include "content/public/browser/render_process_host_observer.h"
 
 namespace content {
 
@@ -26,6 +29,7 @@ struct NativeWebKeyboardEvent;
 class CONTENT_EXPORT RenderWidgetHostViewMus : public RenderWidgetHostViewBase {
  public:
   RenderWidgetHostViewMus(
+      mus::Window* parent_window,
       RenderWidgetHostImpl* widget,
       base::WeakPtr<RenderWidgetHostViewBase> platform_view);
   ~RenderWidgetHostViewMus() override;
@@ -119,6 +123,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMus : public RenderWidgetHostViewBase {
 #endif
 
   RenderWidgetHostImpl* host_;
+  scoped_ptr<mus::ScopedWindowPtr> window_;
   gfx::Size size_;
   // The platform view for this RenderWidgetHostView.
   // RenderWidgetHostViewMus mostly only cares about stuff related to

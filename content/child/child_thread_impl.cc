@@ -728,7 +728,7 @@ void ChildThreadImpl::OnBindExternalMojoShellHandle(
   mojo::ScopedMessagePipeHandle message_pipe =
       mojo_shell_channel_init_.Init(handle, GetIOTaskRunner());
   DCHECK(message_pipe.is_valid());
-  MojoShellConnectionImpl::CreateWithMessagePipe(message_pipe.Pass());
+  MojoShellConnectionImpl::Get()->BindToMessagePipe(message_pipe.Pass());
 #endif  // defined(MOJO_SHELL_CLIENT)
 }
 

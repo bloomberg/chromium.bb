@@ -534,6 +534,7 @@ mojom("mojo_bindings") {
     "permission_service.mojom",
     "presentation/presentation_service.mojom",
     "process_control.mojom",
+    "render_widget_window_tree_client_factory.mojom",
     "routed_service_provider.mojom",
     "service_port_service.mojom",
     "service_worker/embedded_worker_setup.mojom",

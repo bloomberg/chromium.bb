@@ -136,6 +136,7 @@
 #if defined(MOJO_SHELL_CLIENT)
 #include "content/browser/web_contents/web_contents_view_mus.h"
 #include "content/public/common/mojo_shell_connection.h"
+#include "ui/aura/mus/mus_util.h"
 #endif
 
 namespace content {
@@ -1391,8 +1392,11 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
   if (MojoShellConnection::Get() &&
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kUseMusInRenderer)) {
-    view_.reset(new WebContentsViewMus(this, view_.Pass(),
-                                       &render_view_host_delegate_view_));
+    mus::Window* window = aura::GetMusWindow(params.context);
+    if (window) {
+      view_.reset(new WebContentsViewMus(this, window, view_.Pass(),
+                                         &render_view_host_delegate_view_));
+    }
   }
 #endif
 

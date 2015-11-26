@@ -15,11 +15,9 @@ class RenderProcessHost;
 
 // Creates a communication channel between the external Mojo shell and the
 // child. The server handle of this channel is shared with the external shell
-// via Mojo IPC and the client handle is shared with the child via Chrome IPC.
-// |child_process_id| is used to uniquify the child in the external shell's
-// instance map.
+// via Mojo IPC. |child_process_id| is used to uniquify the child in the
+// external shell's instance map.
 void RegisterChildWithExternalShell(int child_process_id,
-                                    base::ProcessHandle process_handle,
                                     RenderProcessHost* render_process_host);
 
 // Returns the URL associated with an instance corresponding to the renderer
@@ -27,6 +25,10 @@ void RegisterChildWithExternalShell(int child_process_id,
 // ConnectToApplication() to open a new connection to this renderer.
 std::string GetMojoApplicationInstanceURL(
     RenderProcessHost* render_process_host);
+
+// Shares a client handle to the Mojo Shell with the child via Chrome IPC.
+void SendExternalMojoShellHandleToChild(base::ProcessHandle process_handle,
+                                        RenderProcessHost* render_process_host);
 
 }  // namespace content
 

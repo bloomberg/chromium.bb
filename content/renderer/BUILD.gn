@@ -19,6 +19,7 @@ source_set("renderer") {
   configs += [
     "//content:content_implementation",
     "//build/config/compiler:no_size_t_to_int_warning",
+    "//content/public/common:mojo_shell_client",
   ]
 
   deps = [
@@ -73,6 +74,15 @@ source_set("renderer") {
     "//ui/surface",
     "//v8",
   ]
+
+  if (use_aura) {
+    sources += [
+      "render_widget_mus_connection.cc",
+      "render_widget_mus_connection.h",
+      "render_widget_window_tree_client_factory.cc",
+      "render_widget_window_tree_client_factory.h",
+    ]
+  }
 
   if (is_mac) {
     sources -= [

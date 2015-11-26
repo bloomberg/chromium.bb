@@ -424,6 +424,8 @@ source_set("browser") {
   if (use_aura) {
     deps += [
       "//components/bitmap_uploader",
+      "//components/mus/public/cpp",
+      "//components/mus/public/interfaces",
       "//ui/aura",
       "//ui/aura_extra",
       "//ui/strings",

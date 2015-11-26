@@ -5,6 +5,8 @@
 #include "content/browser/web_contents/web_contents_view_mus.h"
 
 #include "build/build_config.h"
+#include "components/mus/public/cpp/window.h"
+#include "components/mus/public/cpp/window_tree_connection.h"
 #include "content/browser/renderer_host/render_widget_host_view_mus.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -17,12 +19,19 @@ namespace content {
 
 WebContentsViewMus::WebContentsViewMus(
     WebContentsImpl* web_contents,
+    mus::Window* parent_window,
     scoped_ptr<WebContentsView> platform_view,
     RenderViewHostDelegateView** delegate_view)
     : web_contents_(web_contents),
       platform_view_(platform_view.Pass()),
       platform_view_delegate_view_(*delegate_view) {
+  DCHECK(parent_window);
   *delegate_view = this;
+  mus::Window* window = parent_window->connection()->NewWindow();
+  window->SetVisible(true);
+  window->SetBounds(gfx::Rect(300, 300));
+  parent_window->AddChild(window);
+  window_.reset(new mus::ScopedWindowPtr(window));
 }
 
 WebContentsViewMus::~WebContentsViewMus() {}
@@ -52,6 +61,7 @@ void WebContentsViewMus::SizeContents(const gfx::Size& size) {
   RenderWidgetHostView* rwhv = web_contents_->GetRenderWidgetHostView();
   if (rwhv)
     rwhv->SetSize(size);
+  window_->window()->SetBounds(gfx::Rect(size));
 }
 
 void WebContentsViewMus::SetInitialFocus() {
@@ -85,7 +95,7 @@ RenderWidgetHostViewBase* WebContentsViewMus::CreateViewForWidget(
       platform_view_->CreateViewForWidget(render_widget_host, true);
 
   return new RenderWidgetHostViewMus(
-      RenderWidgetHostImpl::From(render_widget_host),
+      window_->window(), RenderWidgetHostImpl::From(render_widget_host),
       platform_widget->GetWeakPtr());
 }
 

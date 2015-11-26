@@ -58,6 +58,10 @@
 #include "ui/ozone/public/client_native_pixmap_factory.h"
 #endif
 
+#if defined(MOJO_SHELL_CLIENT)
+#include "content/common/mojo/mojo_shell_connection_impl.h"
+#endif
+
 namespace content {
 namespace {
 // This function provides some ways to test crash and assertion handling
@@ -89,6 +93,10 @@ int RendererMain(const MainFunctionParams& parameters) {
   base::trace_event::TraceLog::GetInstance()->SetProcessName("Renderer");
   base::trace_event::TraceLog::GetInstance()->SetProcessSortIndex(
       kTraceEventRendererProcessSortIndex);
+
+#if defined(MOJO_SHELL_CLIENT)
+  MojoShellConnectionImpl::Create();
+#endif
 
   const base::CommandLine& parsed_command_line = parameters.command_line;
 

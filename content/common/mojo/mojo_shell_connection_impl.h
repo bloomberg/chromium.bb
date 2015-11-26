@@ -28,13 +28,22 @@ class MojoShellConnectionImpl : public MojoShellConnection,
                                 public mojo::ApplicationDelegate {
  public:
   // Creates an instance of this class and stuffs it in TLS on the calling
-  // thread. Retrieve it using MojoShellConnection::Get(). Blocks the calling
-  // thread until calling GetApplication() will return an Initialized()
-  // application with a bound ShellPtr.
+  // thread. Retrieve it using MojoShellConnection::Get().
   static void Create();
-  // Same as Create(), but receives a handle instead of looking for one on the
-  // command line.
-  static void CreateWithMessagePipe(mojo::ScopedMessagePipeHandle handle);
+
+  // Will return null if no connection has been established (either because it
+  // hasn't happened yet or the application was not spawned from the external
+  // Mojo shell).
+  static MojoShellConnectionImpl* Get();
+
+  // Blocks the calling thread until calling GetApplication() will return an
+  // Initialized() application with a bound ShellPtr. This call is a no-op
+  // if the connection has already been initialized.
+  void BindToCommandLinePlatformChannel();
+
+  // Same as BindToCommandLinePlatformChannel(), but receives a |handle| instead
+  // of looking for one on the command line.
+  void BindToMessagePipe(mojo::ScopedMessagePipeHandle handle);
 
  private:
   MojoShellConnectionImpl();

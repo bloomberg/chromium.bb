@@ -21,6 +21,7 @@ namespace content {
 namespace {
 
 const char kMojoShellInstanceURL[] = "mojo_shell_instance_url";
+const char kMojoPlatformFile[] = "mojo_platform_file";
 
 void DidCreateChannel(mojo::embedder::ChannelInfo* info) {}
 
@@ -46,16 +47,35 @@ class InstanceURL : public base::SupportsUserData::Data {
   DISALLOW_COPY_AND_ASSIGN(InstanceURL);
 };
 
+class InstanceShellHandle : public base::SupportsUserData::Data {
+ public:
+  InstanceShellHandle(base::PlatformFile shell_handle)
+      : shell_handle_(shell_handle) {}
+  ~InstanceShellHandle() override {}
+
+  base::PlatformFile get() const { return shell_handle_; }
+
+ private:
+  base::PlatformFile shell_handle_;
+
+  DISALLOW_COPY_AND_ASSIGN(InstanceShellHandle);
+};
+
 void SetMojoApplicationInstanceURL(RenderProcessHost* render_process_host,
                                    const std::string& instance_url) {
   render_process_host->SetUserData(kMojoShellInstanceURL,
                                    new InstanceURL(instance_url));
 }
 
+void SetMojoPlatformFile(RenderProcessHost* render_process_host,
+                         base::PlatformFile platform_file) {
+  render_process_host->SetUserData(kMojoPlatformFile,
+                                   new InstanceShellHandle(platform_file));
+}
+
 }  // namespace
 
 void RegisterChildWithExternalShell(int child_process_id,
-                                    base::ProcessHandle process_handle,
                                     RenderProcessHost* render_process_host) {
   // Some process types get created before the main message loop.
   if (!MojoShellConnection::Get())
@@ -96,8 +116,7 @@ void RegisterChildWithExternalShell(int child_process_id,
   // Send the other end to the child via Chrome IPC.
   base::PlatformFile client_file = PlatformFileFromScopedPlatformHandle(
       platform_channel_pair.PassClientHandle());
-  render_process_host->Send(new MojoMsg_BindExternalMojoShellHandle(
-      IPC::GetFileHandleForProcess(client_file, process_handle, true)));
+  SetMojoPlatformFile(render_process_host, client_file);
 
   // Store the URL on the RPH so client code can access it later via
   // GetMojoApplicationInstanceURL().
@@ -109,6 +128,17 @@ std::string GetMojoApplicationInstanceURL(
   InstanceURL* instance_url = static_cast<InstanceURL*>(
       render_process_host->GetUserData(kMojoShellInstanceURL));
   return instance_url ? instance_url->get() : std::string();
+}
+
+void SendExternalMojoShellHandleToChild(
+    base::ProcessHandle process_handle,
+    RenderProcessHost* render_process_host) {
+  InstanceShellHandle* client_file = static_cast<InstanceShellHandle*>(
+      render_process_host->GetUserData(kMojoPlatformFile));
+  if (!client_file)
+    return;
+  render_process_host->Send(new MojoMsg_BindExternalMojoShellHandle(
+      IPC::GetFileHandleForProcess(client_file->get(), process_handle, true)));
 }
 
 }  // namespace content

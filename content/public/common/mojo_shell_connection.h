@@ -29,7 +29,6 @@ class CONTENT_EXPORT MojoShellConnection {
     virtual bool ConfigureIncomingConnection(
         mojo::ApplicationConnection* connection) = 0;
 
-   protected:
     virtual ~Listener() {}
   };
 
@@ -47,6 +46,7 @@ class CONTENT_EXPORT MojoShellConnection {
 
   // [De]Register an impl of Listener that will be consulted when the wrapped
   // ApplicationImpl exposes services to inbound connections.
+  // Registered listeners are owned by this MojoShellConnection.
   virtual void AddListener(Listener* listener) = 0;
   virtual void RemoveListener(Listener* listener) = 0;
 

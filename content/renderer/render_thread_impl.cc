@@ -199,6 +199,11 @@
 #include "v8/src/third_party/vtune/v8-vtune.h"
 #endif
 
+#if defined(MOJO_SHELL_CLIENT)
+#include "content/public/common/mojo_shell_connection.h"
+#include "content/renderer/render_widget_window_tree_client_factory.h"
+#endif
+
 using base::ThreadRestrictions;
 using blink::WebDocument;
 using blink::WebFrame;
@@ -768,6 +773,13 @@ void RenderThreadImpl::Init() {
 
   service_registry()->AddService<EmbeddedWorkerSetup>(
       base::Bind(CreateEmbeddedWorkerSetup));
+
+#if defined(MOJO_SHELL_CLIENT)
+  // We may not have a MojoShellConnection object in tests that directly
+  // instantiate a RenderThreadImpl.
+  if (MojoShellConnection::Get())
+    CreateRenderWidgetWindowTreeClientFactory();
+#endif
 }
 
 RenderThreadImpl::~RenderThreadImpl() {

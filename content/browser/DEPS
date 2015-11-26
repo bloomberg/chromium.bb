@@ -3,6 +3,7 @@ include_rules = [
   # depend on components which we share with the mojo html_viewer.
   "+components/mime_util",
   "+components/mus/public/interfaces",
+  "+components/mus/public",
   "+components/scheduler/common",
   "+components/tracing",
   "+components/url_formatter",

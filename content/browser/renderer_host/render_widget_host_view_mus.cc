@@ -4,7 +4,14 @@
 
 #include "content/browser/renderer_host/render_widget_host_view_mus.h"
 
+#include "components/mus/public/cpp/window.h"
+#include "components/mus/public/cpp/window_tree_connection.h"
+#include "content/browser/mojo/mojo_shell_client_host.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/common/render_widget_window_tree_client_factory.mojom.h"
+#include "content/public/common/mojo_shell_connection.h"
+#include "mojo/application/public/cpp/application_impl.h"
 
 namespace blink {
 struct WebScreenInfo;
@@ -13,10 +20,28 @@ struct WebScreenInfo;
 namespace content {
 
 RenderWidgetHostViewMus::RenderWidgetHostViewMus(
+    mus::Window* parent_window,
     RenderWidgetHostImpl* host,
     base::WeakPtr<RenderWidgetHostViewBase> platform_view)
     : host_(host), platform_view_(platform_view) {
+  DCHECK(parent_window);
+  mus::Window* window = parent_window->connection()->NewWindow();
+  window->SetVisible(true);
+  window->SetBounds(gfx::Rect(300, 300));
+  parent_window->AddChild(window);
+  window_.reset(new mus::ScopedWindowPtr(window));
   host_->SetView(this);
+
+  // Connect to the renderer, pass it a WindowTreeClient interface request
+  // and embed that client inside our mus window.
+  std::string url = GetMojoApplicationInstanceURL(host_->GetProcess());
+  mojom::RenderWidgetWindowTreeClientFactoryPtr factory;
+  MojoShellConnection::Get()->GetApplication()->ConnectToService(url, &factory);
+
+  mus::mojom::WindowTreeClientPtr window_tree_client;
+  factory->CreateWindowTreeClientForRenderWidget(
+      host_->GetRoutingID(), mojo::GetProxy(&window_tree_client));
+  window_->window()->Embed(window_tree_client.Pass());
 }
 
 RenderWidgetHostViewMus::~RenderWidgetHostViewMus() {}
@@ -37,6 +62,7 @@ bool RenderWidgetHostViewMus::IsShowing() {
 
 void RenderWidgetHostViewMus::SetSize(const gfx::Size& size) {
   size_ = size;
+  window_->window()->SetBounds(gfx::Rect(size));
   host_->WasResized();
 }
 

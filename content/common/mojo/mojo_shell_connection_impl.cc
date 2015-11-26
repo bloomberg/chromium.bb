@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
+#include "base/stl_util.h"
 #include "base/threading/thread_local.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/application_impl.h"
@@ -30,21 +31,34 @@ bool IsRunningInMojoShell() {
 
 // static
 void MojoShellConnectionImpl::Create() {
-  DCHECK(IsRunningInMojoShell());
-  CreateWithMessagePipe(mojo::ScopedMessagePipeHandle());
-}
-
-// static
-void MojoShellConnectionImpl::CreateWithMessagePipe(
-    mojo::ScopedMessagePipeHandle handle) {
   DCHECK(!lazy_tls_ptr.Pointer()->Get());
   MojoShellConnectionImpl* connection = new MojoShellConnectionImpl;
   lazy_tls_ptr.Pointer()->Set(connection);
-  connection->WaitForShell(handle.Pass());
+}
+
+// static
+MojoShellConnectionImpl* MojoShellConnectionImpl::Get() {
+  return static_cast<MojoShellConnectionImpl*>(MojoShellConnection::Get());
+}
+
+void MojoShellConnectionImpl::BindToCommandLinePlatformChannel() {
+  DCHECK(IsRunningInMojoShell());
+  if (initialized_)
+    return;
+  WaitForShell(mojo::ScopedMessagePipeHandle());
+}
+
+void MojoShellConnectionImpl::BindToMessagePipe(
+    mojo::ScopedMessagePipeHandle handle) {
+  if (initialized_)
+    return;
+  WaitForShell(handle.Pass());
 }
 
 MojoShellConnectionImpl::MojoShellConnectionImpl() : initialized_(false) {}
-MojoShellConnectionImpl::~MojoShellConnectionImpl() {}
+MojoShellConnectionImpl::~MojoShellConnectionImpl() {
+  STLDeleteElements(&listeners_);
+}
 
 void MojoShellConnectionImpl::WaitForShell(
     mojo::ScopedMessagePipeHandle handle) {

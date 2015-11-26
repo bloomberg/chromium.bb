@@ -13,6 +13,7 @@
 #include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/layout_manager.h"
+#include "ui/aura/mus/mus_util.h"
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
 #include "ui/gfx/canvas.h"
@@ -178,7 +179,10 @@ NativeWidgetMus::NativeWidgetMus(internal::NativeWidgetDelegate* delegate,
       show_state_before_fullscreen_(ui::PLATFORM_WINDOW_STATE_UNKNOWN),
       ownership_(Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET),
       content_(new aura::Window(this)),
-      close_widget_factory_(this) {}
+      close_widget_factory_(this) {
+  // TODO(fsamuel): Figure out lifetime of |window_|.
+  aura::SetMusWindow(content_, window_);
+}
 
 NativeWidgetMus::~NativeWidgetMus() {
   if (ownership_ == Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET)

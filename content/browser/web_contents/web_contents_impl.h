@@ -43,13 +43,11 @@
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
 
-struct BrowserPluginHostMsg_ResizeGuest_Params;
 struct ViewHostMsg_DateTimeDialogValue_Params;
 
 namespace content {
 class BrowserPluginEmbedder;
 class BrowserPluginGuest;
-class BrowserPluginGuestManager;
 class DateTimeChooserAndroid;
 class DownloadItem;
 class GeolocationServiceContext;

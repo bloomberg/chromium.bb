@@ -575,6 +575,10 @@ RenderProcessHostImpl::RenderProcessHostImpl(
   IPC::AttachmentBrokerPrivileged::CreateBrokerIfNeeded();
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 #endif  // USE_ATTACHMENT_BROKER
+
+#if defined(MOJO_SHELL_CLIENT)
+  RegisterChildWithExternalShell(id_, this);
+#endif
 }
 
 // static
@@ -2439,9 +2443,8 @@ void RenderProcessHostImpl::OnProcessLaunched() {
                                          NotificationService::NoDetails());
 
 #if defined(MOJO_SHELL_CLIENT)
-  // Send a handle that the external Mojo shell can use to pass an Application
-  // request to the child.
-  RegisterChildWithExternalShell(id_, GetHandle(), this);
+  // Send the mojo shell handle to the renderer.
+  SendExternalMojoShellHandleToChild(GetHandle(), this);
 #endif
 
 #if defined(OS_WIN)

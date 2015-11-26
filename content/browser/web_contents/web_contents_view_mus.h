@@ -9,6 +9,8 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "components/mus/public/cpp/scoped_window_ptr.h"
+#include "components/mus/public/cpp/window.h"
 #include "content/browser/renderer_host/render_view_host_delegate_view.h"
 #include "content/browser/web_contents/web_contents_view.h"
 #include "content/common/content_export.h"
@@ -28,6 +30,7 @@ class WebContentsViewMus : public WebContentsView,
   // WebContentsViewMus always has a backing platform dependent view,
   // |platform_view|.
   WebContentsViewMus(WebContentsImpl* web_contents,
+                     mus::Window* parent_window,
                      scoped_ptr<WebContentsView> platform_view,
                      RenderViewHostDelegateView** platform_view_delegate_view);
   ~WebContentsViewMus() override;
@@ -79,6 +82,8 @@ class WebContentsViewMus : public WebContentsView,
 
   // The WebContentsImpl whose contents we display.
   WebContentsImpl* web_contents_;
+
+  scoped_ptr<mus::ScopedWindowPtr> window_;
 
   // The platform dependent view backing this WebContentsView.
   // Calls to this WebContentsViewMus are forwarded to |platform_view_|.

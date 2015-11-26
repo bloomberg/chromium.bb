@@ -933,6 +933,7 @@ int BrowserMainLoop::PreMainMessageLoopRun() {
 #if defined(MOJO_SHELL_CLIENT)
   if (IsRunningInMojoShell()) {
     MojoShellConnectionImpl::Create();
+    MojoShellConnectionImpl::Get()->BindToCommandLinePlatformChannel();
 #if defined(USE_AURA)
     views::WindowManagerConnection::Create(
         MojoShellConnection::Get()->GetApplication());
