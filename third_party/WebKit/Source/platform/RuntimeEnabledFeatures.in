@@ -49,7 +49,6 @@ CSSFontSizeAdjust status=experimental
 CSSGridLayout status=experimental
 CSSIndependentTransformProperties status=experimental
 CSSMaskSourceType status=experimental
-CSSMotionPath status=stable
 CSSOMSmoothScroll status=experimental
 CSSStickyPosition
 CSSTouchActionPanDirections status=experimental

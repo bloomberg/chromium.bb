@@ -2419,11 +2419,9 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
         return nullptr;
 
     case CSSPropertyMotion:
-        ASSERT(RuntimeEnabledFeatures::cssMotionPathEnabled());
         return valuesForShorthandProperty(motionShorthand(), style, layoutObject, styledNode, allowVisitedStyle);
 
     case CSSPropertyMotionPath: {
-        ASSERT(RuntimeEnabledFeatures::cssMotionPathEnabled());
         const StyleMotionPath* styleMotionPath = style.motionPath();
         if (!styleMotionPath)
             return cssValuePool().createIdentifierValue(CSSValueNone);
@@ -2433,11 +2431,9 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
     }
 
     case CSSPropertyMotionOffset:
-        ASSERT(RuntimeEnabledFeatures::cssMotionPathEnabled());
         return zoomAdjustedPixelValueForLength(style.motionOffset(), style);
 
     case CSSPropertyMotionRotation: {
-        ASSERT(RuntimeEnabledFeatures::cssMotionPathEnabled());
         RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
         if (style.motionRotationType() == MotionRotationAuto)
             list->append(cssValuePool().createIdentifierValue(CSSValueAuto));

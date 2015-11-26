@@ -2099,13 +2099,10 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
     case CSSPropertyTextDecorationLine:
         return consumeTextDecorationLine(m_range);
     case CSSPropertyMotionPath:
-        ASSERT(RuntimeEnabledFeatures::cssMotionPathEnabled());
         return consumeMotionPath(m_range);
     case CSSPropertyMotionOffset:
-        ASSERT(RuntimeEnabledFeatures::cssMotionPathEnabled());
         return consumeLengthOrPercent(m_range, m_context.mode(), ValueRangeAll);
     case CSSPropertyMotionRotation:
-        ASSERT(RuntimeEnabledFeatures::cssMotionPathEnabled());
         return consumeMotionRotation(m_range, m_context.mode());
     case CSSPropertyWebkitTextEmphasisStyle:
         return consumeTextEmphasisStyle(m_range);
@@ -2692,7 +2689,6 @@ bool CSSPropertyParser::parseShorthand(CSSPropertyID unresolvedProperty, bool im
     case CSSPropertyPadding:
         return consume4Values(paddingShorthand(), important);
     case CSSPropertyMotion:
-        ASSERT(RuntimeEnabledFeatures::cssMotionPathEnabled());
         return consumeShorthandGreedily(motionShorthand(), important);
     case CSSPropertyWebkitTextEmphasis:
         return consumeShorthandGreedily(webkitTextEmphasisShorthand(), important);
