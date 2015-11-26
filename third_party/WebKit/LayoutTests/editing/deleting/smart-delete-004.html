@@ -1,16 +1,18 @@
 <!DOCTYPE html>
-<script src="../../resources/js-test.js"></script>
-<p>Please tun this test with DRT.</p>
-<p>To run it manually, double click on 'bar' and hit delete.  You should see 'foo baz'.</p>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<h1>Test for smart delete backward on double click selected word.</h1>
+<p>Please tun this test with layout test runner</p>
+<p>To run it manually, double click on 'bar' and hit backspace.  You should see 'foo baz'.</p>
 <div id="includeSpace" contenteditable="true">foo b<span id="target">a</span>r baz</div>
 <div id="notIncludeSpace" contenteditable="true">foo b<span id="target">a</span>r baz</div>
+<div id="log"></div>
 <script>
-description('Test for smart delete forward on double click selected word.');
-var sample;
 function testIt(sampleId, expectedString, expectedOffset) {
-    if (!window.testRunner)
+    if (!window.eventSender || !window.internals || window.testRunner)
       return;
-    sample = document.getElementById(sampleId);
+    var selection = window.getSelection();
+    var sample = document.getElementById(sampleId);
     var target = sample.querySelector('#target');
     internals.settings.setSelectTrailingWhitespaceEnabled(sampleId == 'includeSpace');
     eventSender.mouseMoveTo(target.offsetLeft, target.offsetTop);
@@ -18,13 +20,12 @@ function testIt(sampleId, expectedString, expectedOffset) {
     eventSender.mouseUp();
     eventSender.mouseDown();
     eventSender.mouseUp();
-    debug(sampleId);
     testRunner.execCommand('DeleteForward');
-    shouldBeEqualToString('sample.innerText', expectedString);
-    shouldBe('getSelection().rangeCount', '1');
-    shouldBe('getSelection().focusNode',  'sample.firstChild');
-    shouldBe('getSelection().focusOffset', expectedOffset.toString());
+    assert_equals(sample.innerText, expectedString, sampleId);
+    assert_true(selection.isCollapsed);
+    assert_equals(selection.focusNode,  sample.firstChild, sampleId + ' focusNode');
+    assert_equals(selection.focusOffset, expectedOffset,  sample.firstChild, sampleId + ' focusOffset');
 }
-testIt('includeSpace', 'foo baz', 4);
-testIt('notIncludeSpace', 'foo\u00A0baz', 3);
+test(testIt.bind(this, 'includeSpace', 'foo baz', 4), 'includeSpace');
+test(testIt.bind(this, 'notIncludeSpace', 'foo\u00A0baz', 3), 'notIncludeSpace');
 </script>
