@@ -39,7 +39,7 @@ public:
     void additionalData(CredentialPostBodyType& out) const { out = m_additionalData; }
 
     // Internal methods
-    PassRefPtr<EncodedFormData> encodeFormData() const;
+    PassRefPtr<EncodedFormData> encodeFormData(String& contentType) const;
     const String& password() const;
     DECLARE_VIRTUAL_TRACE();
 

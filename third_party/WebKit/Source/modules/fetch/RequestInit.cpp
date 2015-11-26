@@ -92,11 +92,7 @@ RequestInit::RequestInit(ExecutionContext* context, const Dictionary& options, E
         isCredentialRequest = true;
         PasswordCredential* credential = V8PasswordCredential::toImpl(v8::Local<v8::Object>::Cast(v8Body));
 
-        RefPtr<EncodedFormData> encodedData = credential->encodeFormData();
-        if (encodedData->boundary().isEmpty())
-            contentType = AtomicString("application/x-www-form-urlencoded;charset=UTF-8", AtomicString::ConstructFromLiteral);
-        else
-            contentType = AtomicString("multipart/form-data; boundary=", AtomicString::ConstructFromLiteral) + encodedData->boundary().data();
+        RefPtr<EncodedFormData> encodedData = credential->encodeFormData(contentType);
         body = FetchFormDataConsumerHandle::create(context, encodedData.release());
     } else if (v8Body->IsString()) {
         contentType = "text/plain;charset=UTF-8";

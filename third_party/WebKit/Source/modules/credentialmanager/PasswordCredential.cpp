@@ -46,7 +46,7 @@ PasswordCredential::PasswordCredential(const String& id, const String& password,
 {
 }
 
-PassRefPtr<EncodedFormData> PasswordCredential::encodeFormData() const
+PassRefPtr<EncodedFormData> PasswordCredential::encodeFormData(String& contentType) const
 {
     if (m_additionalData.isURLSearchParams()) {
         // If |additionalData| is a 'URLSearchParams' object, build a urlencoded response.
@@ -56,6 +56,8 @@ PassRefPtr<EncodedFormData> PasswordCredential::encodeFormData() const
             params->append(param.first, param.second);
         params->append(idName(), id());
         params->append(passwordName(), password());
+
+        contentType = AtomicString("application/x-www-form-urlencoded;charset=UTF-8", AtomicString::ConstructFromLiteral);
 
         return params->encodeFormData();
     }
@@ -74,7 +76,9 @@ PassRefPtr<EncodedFormData> PasswordCredential::encodeFormData() const
     formData->append(idName(), id());
     formData->append(passwordName(), password());
 
-    return formData->encodeMultiPartFormData();
+    RefPtr<EncodedFormData> encodedData = formData->encodeMultiPartFormData();
+    contentType = AtomicString("multipart/form-data; boundary=", AtomicString::ConstructFromLiteral) + encodedData->boundary().data();
+    return encodedData.release();
 }
 
 const String& PasswordCredential::password() const
