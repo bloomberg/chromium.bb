@@ -111,7 +111,6 @@ String LayoutThemeDefault::extraDefaultStyleSheet()
 {
     return LayoutTheme::extraDefaultStyleSheet()
         + loadResourceAsASCIIString("themeWin.css")
-        + loadResourceAsASCIIString("themeChromiumSkia.css")
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
         + loadResourceAsASCIIString("themeInputMultipleFields.css")
 #endif

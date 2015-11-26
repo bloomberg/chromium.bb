@@ -937,9 +937,6 @@ const DataResource kDataResources[] = {
      IDR_UASTYLE_THEME_CHROMIUM_LINUX_CSS,
      ui::SCALE_FACTOR_NONE},
 #endif
-    {"themeChromiumSkia.css",
-     IDR_UASTYLE_THEME_CHROMIUM_SKIA_CSS,
-     ui::SCALE_FACTOR_NONE},
     {"themeInputMultipleFields.css",
      IDR_UASTYLE_THEME_INPUT_MULTIPLE_FIELDS_CSS,
      ui::SCALE_FACTOR_NONE},

@@ -23,7 +23,6 @@
       <if expr="is_macosx">
         <include name="IDR_UASTYLE_THEME_MAC_CSS" file="../Source/core/css/themeMac.css" type="BINDATA"/>
       </if>
-      <include name="IDR_UASTYLE_THEME_CHROMIUM_SKIA_CSS" file="../Source/core/css/themeChromiumSkia.css" type="BINDATA"/>
       <include name="IDR_UASTYLE_THEME_INPUT_MULTIPLE_FIELDS_CSS" file="../Source/core/css/themeInputMultipleFields.css" type="BINDATA"/>
       <include name="IDR_UASTYLE_THEME_WIN_CSS" file="../Source/core/css/themeWin.css" type="BINDATA"/>
       <include name="IDR_UASTYLE_THEME_WIN_QUIRKS_CSS" file="../Source/core/css/themeWinQuirks.css" type="BINDATA"/>

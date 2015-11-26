@@ -75,7 +75,6 @@ const DataResource kDataResources[] = {
 #if !defined(OS_WIN)
     {"themeChromiumLinux.css", IDR_UASTYLE_THEME_CHROMIUM_LINUX_CSS},
 #endif
-    {"themeChromiumSkia.css", IDR_UASTYLE_THEME_CHROMIUM_SKIA_CSS},
     {"themeInputMultipleFields.css",
      IDR_UASTYLE_THEME_INPUT_MULTIPLE_FIELDS_CSS},
 #if defined(OS_MACOSX)
