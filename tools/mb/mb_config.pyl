@@ -452,8 +452,8 @@
       'Linux GN (dbg)': 'gn_debug_bot',
       'Mac GN': 'gn_release_bot',
       'Mac GN (dbg)': 'gn_debug_static_bot',
-      'Win GN': 'gn_release_bot_minimal_symbols_x86',
-      'Win GN (dbg)': 'gn_debug_bot_minimal_symbols_x86',
+      'Win x64 GN': 'gn_release_bot_minimal_symbols',
+      'Win x64 GN (dbg)': 'gn_debug_bot_minimal_symbols',
     },
     'client.skia': {
       'Linux Builder': 'swarming_gn_release_bot',
