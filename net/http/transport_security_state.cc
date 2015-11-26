@@ -185,10 +185,9 @@ bool HashesIntersect(const HashValueVector& a,
   return false;
 }
 
-bool AddHash(const char* sha1_hash,
-             HashValueVector* out) {
-  HashValue hash(HASH_VALUE_SHA1);
-  memcpy(hash.data(), sha1_hash, hash.size());
+bool AddHash(const char* sha256_hash, HashValueVector* out) {
+  HashValue hash(HASH_VALUE_SHA256);
+  memcpy(hash.data(), sha256_hash, hash.size());
   out->push_back(hash);
   return true;
 }
@@ -1069,17 +1068,17 @@ bool TransportSecurityState::GetStaticDomainState(const std::string& host,
       pkp_state->report_uri = GURL(pinset->report_uri);
 
     if (pinset->accepted_pins) {
-      const char* const* sha1_hash = pinset->accepted_pins;
-      while (*sha1_hash) {
-        AddHash(*sha1_hash, &pkp_state->spki_hashes);
-        sha1_hash++;
+      const char* const* sha256_hash = pinset->accepted_pins;
+      while (*sha256_hash) {
+        AddHash(*sha256_hash, &pkp_state->spki_hashes);
+        sha256_hash++;
       }
     }
     if (pinset->rejected_pins) {
-      const char* const* sha1_hash = pinset->rejected_pins;
-      while (*sha1_hash) {
-        AddHash(*sha1_hash, &pkp_state->bad_spki_hashes);
-        sha1_hash++;
+      const char* const* sha256_hash = pinset->rejected_pins;
+      while (*sha256_hash) {
+        AddHash(*sha256_hash, &pkp_state->bad_spki_hashes);
+        sha256_hash++;
       }
     }
   }

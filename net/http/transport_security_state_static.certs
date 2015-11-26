@@ -7,10 +7,10 @@
 # details.
 
 # Each entry consists of a line containing the name of the pin followed either
-# by a hash in the format "sha1/" + base64(hash), or a PEM encoded certificate.
+# by a hash in the format "sha256/" + base64(hash), or a PEM encoded certificate.
 
 TestSPKI
-sha1/AAAAAAAAAAAAAAAAAAAAAAAAAAA=
+sha256/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
 
 VeriSignClass3
 -----BEGIN CERTIFICATE-----
