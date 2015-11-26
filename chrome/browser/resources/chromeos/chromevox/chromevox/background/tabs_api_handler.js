@@ -36,6 +36,19 @@ cvox.TabsApiHandler = function() {
   chrome.tabs.onActivated.addListener(this.onActivated.bind(this));
   chrome.tabs.onUpdated.addListener(this.onUpdated.bind(this));
   chrome.windows.onFocusChanged.addListener(this.onFocusChanged.bind(this));
+
+  /**
+   * @type {?number} The window.setInterval ID for checking the loading
+   *     status of the current tab.
+   * @private
+   */
+  this.pageLoadIntervalID_ = null;
+
+  /**
+   * @type {?number} The tab ID of the tab being polled because it's loading.
+   * @private
+   */
+  this.pageLoadTabID_ = null;
 };
 
 cvox.TabsApiHandler.prototype = {
@@ -65,6 +78,13 @@ cvox.TabsApiHandler.prototype = {
       return;
     }
     cvox.ChromeVox.earcons.playEarcon(cvox.Earcon.OBJECT_CLOSE);
+
+    chrome.tabs.query({active: true}, function(tabs) {
+      if (tabs.length == 0 && this.isPlayingPageLoadingSound_()) {
+        cvox.ChromeVox.earcons.cancelEarcon(cvox.Earcon.PAGE_START_LOADING);
+        this.cancelPageLoadTimer_();
+      }
+    }.bind(this));
   },
 
   /**
@@ -75,11 +95,8 @@ cvox.TabsApiHandler.prototype = {
     if (!cvox.ChromeVox.isActive) {
       return;
     }
+    this.updateLoadingSoundsWhenTabFocusChanges_(activeInfo.tabId);
     chrome.tabs.get(activeInfo.tabId, function(tab) {
-      this.lastActiveTabLoaded_ = tab.status == 'complete';
-      if (tab.status == 'loading') {
-        return;
-      }
       var title = tab.title ? tab.title : tab.url;
       cvox.ChromeVox.tts.speak(this.msg_('chrome_tab_selected',
                                          [title]),
@@ -89,6 +106,24 @@ cvox.TabsApiHandler.prototype = {
           cvox.NavBraille.fromText(this.msg_('chrome_tab_selected', [title])));
       cvox.ChromeVox.earcons.playEarcon(cvox.Earcon.OBJECT_SELECT);
       this.refreshAutomationHandler_(tab.id);
+    }.bind(this));
+  },
+
+  /**
+   * Called when a tab becomes active or focused.
+   * @param {number} tabId the id of the tab that's now focused and active.
+   * @private
+   */
+  updateLoadingSoundsWhenTabFocusChanges_: function(tabId) {
+    chrome.tabs.get(tabId, function(tab) {
+      this.lastActiveTabLoaded_ = tab.status == 'complete';
+      if (tab.status == 'loading' && !this.isPlayingPageLoadingSound_()) {
+        cvox.ChromeVox.earcons.playEarcon(cvox.Earcon.PAGE_START_LOADING);
+        this.startPageLoadTimer_(tabId);
+      } else {
+        cvox.ChromeVox.earcons.cancelEarcon(cvox.Earcon.PAGE_START_LOADING);
+        this.cancelPageLoadTimer_();
+      }
     }.bind(this));
   },
 
@@ -107,10 +142,14 @@ cvox.TabsApiHandler.prototype = {
       }
       if (tab.status == 'loading') {
         this.lastActiveTabLoaded_ = false;
-        cvox.ChromeVox.earcons.playEarcon(cvox.Earcon.PAGE_START_LOADING);
+        if (!this.isPlayingPageLoadingSound_()) {
+          cvox.ChromeVox.earcons.playEarcon(cvox.Earcon.PAGE_START_LOADING);
+          this.startPageLoadTimer_(tabId);
+        }
       } else if (!this.lastActiveTabLoaded_) {
         this.lastActiveTabLoaded_ = true;
         cvox.ChromeVox.earcons.playEarcon(cvox.Earcon.PAGE_FINISH_LOADING);
+        this.cancelPageLoadTimer_();
       }
       this.refreshAutomationHandler_(tabId);
     }.bind(this));
@@ -129,6 +168,9 @@ cvox.TabsApiHandler.prototype = {
     }
     chrome.windows.get(windowId, function(window) {
       chrome.tabs.query({active: true, windowId: windowId}, function(tabs) {
+        if (tabs[0])
+          this.updateLoadingSoundsWhenTabFocusChanges_(tabs[0].id);
+
         var msgId = window.incognito ? 'chrome_incognito_window_selected' :
             'chrome_normal_window_selected';
         var tab = tabs[0] || {};
@@ -159,5 +201,45 @@ cvox.TabsApiHandler.prototype = {
 
       this.handler_ = new TabsAutomationHandler(node);
     }.bind(this));
+  },
+
+  /**
+   * The chrome.tabs API doesn't always fire an onUpdated event when a
+   * page finishes loading, so we poll it.
+   * @param {number} tabId The id of the tab to monitor.
+   * @private
+   */
+  startPageLoadTimer_: function(tabId) {
+    if (this.pageLoadIntervalID_) {
+      if (tabId == this.pageLoadTabID_)
+        return;
+      this.cancelPageLoadTimer_();
+    }
+
+    this.pageLoadTabID_ = tabId;
+    this.pageLoadIntervalID_ = window.setInterval(function() {
+      if (this.pageLoadTabID_)
+        this.onUpdated(this.pageLoadTabID_, {});
+    }.bind(this), 1000);
+  },
+
+  /**
+   * Cancel the page loading timer because the active tab is loaded.
+   * @private
+   */
+  cancelPageLoadTimer_: function() {
+    if (this.pageLoadIntervalID_) {
+      window.clearInterval(this.pageLoadIntervalID_);
+      this.pageLoadIntervalID_ = null;
+      this.pageLoadTabID_ = null;
+    }
+  },
+
+  /**
+   * @return {boolean} True if the page loading sound is playing and our
+   * page loading timer is active.
+   */
+  isPlayingPageLoadingSound_: function() {
+    return this.pageLoadIntervalID_ != null;
   }
 };

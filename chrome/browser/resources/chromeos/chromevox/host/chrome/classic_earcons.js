@@ -74,6 +74,15 @@ cvox.ClassicEarcons.prototype.playEarcon = function(earcon) {
 
 
 /**
+ * @override
+ */
+cvox.ClassicEarcons.prototype.cancelEarcon = function(earcon) {
+  // Do nothing, all of the earcons are short, and they stop automatically
+  // when done.
+};
+
+
+/**
  * The base URL for  loading eracons.
  * @type {string}
  */

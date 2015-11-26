@@ -72,6 +72,14 @@ cvox.AbstractEarcons.prototype.playEarcon = function(earcon) {
 
 
 /**
+ * Cancels the specified earcon sound.
+ * @param {cvox.Earcon} earcon An earcon identifier.
+ */
+cvox.AbstractEarcons.prototype.cancelEarcon = function(earcon) {
+};
+
+
+/**
  * Whether or not earcons are available.
  * @return {boolean} True if earcons are available.
  */

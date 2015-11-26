@@ -685,6 +685,10 @@ EarconEngine.prototype.generateProgressTickTocks_ = function() {
  * explicitly canceled.
  */
 EarconEngine.prototype.startProgress = function() {
+  if (this.progressIntervalID_) {
+    this.cancelProgress();
+  }
+
   this.progressSources_ = [];
   this.progressGain_ = 0.5;
   this.progressTime_ = this.context_.currentTime;

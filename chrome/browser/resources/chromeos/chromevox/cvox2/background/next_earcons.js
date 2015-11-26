@@ -90,7 +90,6 @@ NextEarcons.prototype = {
         this.engine_.cancelProgress();
         break;
       case cvox.Earcon.PAGE_START_LOADING:
-        // TODO(dmazzoni): only when the page has focus.
         this.engine_.startProgress();
         break;
       case cvox.Earcon.POP_UP_BUTTON:
@@ -116,5 +115,16 @@ NextEarcons.prototype = {
         this.engine_.onWrap();
         break;
     }
-  }
+  },
+
+  /**
+   * @override
+   */
+  cancelEarcon: function(earcon) {
+    switch (earcon) {
+      case cvox.Earcon.PAGE_START_LOADING:
+        this.engine_.cancelProgress();
+        break;
+    }
+  },
 };

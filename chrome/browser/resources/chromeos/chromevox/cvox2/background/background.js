@@ -627,6 +627,14 @@ Background.prototype = {
       }
     }.bind(this));
 
+    // If switching out of a ChromeVox Next mode, make sure we cancel
+    // the progress loading sound just in case.
+    if ((this.mode_ === ChromeVoxMode.NEXT ||
+         this.mode_ === ChromeVoxMode.FORCE_NEXT) &&
+        this.mode_ != mode) {
+      cvox.ChromeVox.earcons.cancelEarcon(cvox.Earcon.PAGE_START_LOADING);
+    }
+
     this.mode_ = mode;
   },
 
