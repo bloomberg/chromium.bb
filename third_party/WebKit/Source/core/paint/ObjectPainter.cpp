@@ -211,8 +211,11 @@ void ObjectPainter::paintOutline(const PaintInfo& paintInfo, const LayoutPoint& 
     // Block flipping is not applied yet if !m_layoutObject.isBox().
     if (!m_layoutObject.isBox() && m_layoutObject.styleRef().isFlippedBlocksWritingMode()) {
         LayoutBlock* container = m_layoutObject.containingBlock();
-        if (container)
+        if (container) {
             m_layoutObject.localToContainerRects(outlineRects, container, -paintOffset, paintOffset);
+            if (outlineRects.isEmpty())
+                return;
+        }
     }
 
     Vector<IntRect> pixelSnappedOutlineRects;
