@@ -70,7 +70,7 @@ protected:
 
 private:
     String nodeName() const override;
-    PassRefPtrWillBeRawPtr<Node> cloneNode(bool deep = true) final;
+    PassRefPtrWillBeRawPtr<Node> cloneNode(bool deep) final;
 
     bool isTextNode() const = delete; // This will catch anyone doing an unnecessary check.
 

@@ -1103,7 +1103,7 @@ private:
     String nodeName() const final;
     NodeType nodeType() const final;
     bool childTypeAllowed(NodeType) const final;
-    PassRefPtrWillBeRawPtr<Node> cloneNode(bool deep = true) final;
+    PassRefPtrWillBeRawPtr<Node> cloneNode(bool deep) final;
     void cloneDataFromDocument(const Document&);
 
 #if !ENABLE(OILPAN)

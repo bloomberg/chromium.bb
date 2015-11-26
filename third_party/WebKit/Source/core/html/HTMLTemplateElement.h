@@ -48,7 +48,7 @@ public:
     DocumentFragment* content() const;
 
 private:
-    PassRefPtrWillBeRawPtr<Node> cloneNode(bool deep = true) override;
+    PassRefPtrWillBeRawPtr<Node> cloneNode(bool deep) override;
     void didMoveToNewDocument(Document& oldDocument) override;
 
     explicit HTMLTemplateElement(Document&);

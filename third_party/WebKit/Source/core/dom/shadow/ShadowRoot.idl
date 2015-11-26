@@ -42,5 +42,5 @@ interface ShadowRoot : DocumentFragment {
     // interface. Here, it's used to implement "Invoking the cloneNode() method
     // on a ShadowRoot instance must always throw a DATA_CLONE_ERR exception" as
     // Node.cloneNode() does not have [RaisesException].
-    [RaisesException] Node cloneNode([Default=Undefined] optional boolean deep);
+    [RaisesException] Node cloneNode(optional boolean deep = false);
 };

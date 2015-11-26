@@ -82,7 +82,7 @@ private:
 
     String nodeName() const override;
     NodeType nodeType() const override;
-    PassRefPtrWillBeRawPtr<Node> cloneNode(bool deep = true) override;
+    PassRefPtrWillBeRawPtr<Node> cloneNode(bool deep) override;
 
     InsertionNotificationRequest insertedInto(ContainerNode*) override;
     void removedFrom(ContainerNode*) override;

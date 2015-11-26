@@ -57,8 +57,7 @@
     [TreatUndefinedAs=NullString, CustomElementCallbacks] attribute DOMString? textContent;
     [CustomElementCallbacks] void normalize();
 
-    // FIXME: The deep argument should have a default value false.
-    [NewObject, CustomElementCallbacks] Node cloneNode(optional boolean deep);
+    [NewObject, CustomElementCallbacks] Node cloneNode(optional boolean deep = false);
     boolean isEqualNode(Node? node);
 
     const unsigned short DOCUMENT_POSITION_DISCONNECTED = 0x01;

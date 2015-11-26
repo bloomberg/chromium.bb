@@ -70,7 +70,7 @@ private:
 
     String nodeValue() const override { return value(); }
     void setNodeValue(const String&) override;
-    PassRefPtrWillBeRawPtr<Node> cloneNode(bool deep = true) override;
+    PassRefPtrWillBeRawPtr<Node> cloneNode(bool deep) override;
 
     bool isAttributeNode() const override { return true; }
 

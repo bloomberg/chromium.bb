@@ -37,7 +37,7 @@ private:
 
     String nodeName() const override;
     NodeType nodeType() const override;
-    PassRefPtrWillBeRawPtr<Node> cloneNode(bool deep = true) override;
+    PassRefPtrWillBeRawPtr<Node> cloneNode(bool deep) override;
 };
 
 DEFINE_NODE_TYPE_CASTS(Comment, nodeType() == Node::COMMENT_NODE);

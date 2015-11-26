@@ -47,7 +47,7 @@ protected:
 
 private:
     NodeType nodeType() const final;
-    PassRefPtrWillBeRawPtr<Node> cloneNode(bool deep = true) override;
+    PassRefPtrWillBeRawPtr<Node> cloneNode(bool deep) override;
     bool childTypeAllowed(NodeType) const override;
 
     bool isDocumentFragment() const = delete; // This will catch anyone doing an unnecessary check.
