@@ -74,30 +74,10 @@ class Host(SystemHost):
         os.environ['LC_ALL'] = ''
 
     # FIXME: This is a horrible, horrible hack for WinPort and should be removed.
-    # Maybe this belongs in SVN in some more generic "find the svn binary" codepath?
+    # Maybe this belongs in Git in some more generic "find the git binary" codepath?
     # Or possibly Executive should have a way to emulate shell path-lookups?
-    # FIXME: Unclear how to test this, since it currently mutates global state on SVN.
+    # FIXME: Unclear how to test this, since it currently mutates global state on Git.
     def _engage_awesome_windows_hacks(self):
-        try:
-            self.executive.run_command(['svn', 'help'])
-        except OSError, e:
-            try:
-                self.executive.run_command(['svn.bat', 'help'])
-                # The Win port uses the depot_tools package, which contains a number
-                # of development tools, including Python and svn. Instead of using a
-                # real svn executable, depot_tools indirects via a batch file, called
-                # svn.bat. This batch file allows depot_tools to auto-update the real
-                # svn executable, which is contained in a subdirectory.
-                #
-                # That's all fine and good, except that subprocess.popen can detect
-                # the difference between a real svn executable and batch file when we
-                # don't provide use shell=True. Rather than use shell=True on Windows,
-                # We hack the svn.bat name into the SVN class.
-                _log.debug('Engaging svn.bat Windows hack.')
-                from webkitpy.common.checkout.scm.svn import SVN
-                SVN.executable_name = 'svn.bat'
-            except OSError, e:
-                _log.debug('Failed to engage svn.bat Windows hack.')
         try:
             self.executive.run_command(['git', 'help'])
         except OSError, e:

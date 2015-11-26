@@ -43,9 +43,8 @@ class SCMDetectorTest(unittest.TestCase):
         detector = SCMDetector(filesystem, executive)
 
         expected_logs = """\
-MOCK run_command: ['svn', 'info'], cwd=/
 MOCK run_command: ['git', 'rev-parse', '--is-inside-work-tree'], cwd=/
 """
         scm = OutputCapture().assert_outputs(self, detector.detect_scm_system, ["/"], expected_logs=expected_logs)
         self.assertIsNone(scm)
-        # FIXME: This should make a synthetic tree and test SVN and Git detection in that tree.
+        # FIXME: This should make a synthetic tree and test Git detection in that tree.
