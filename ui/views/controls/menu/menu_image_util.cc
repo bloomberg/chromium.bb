@@ -7,6 +7,7 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
+#include "ui/base/resource/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/point.h"
@@ -151,8 +152,12 @@ gfx::ImageSkia GetRtlSubmenuArrowImage(bool rtl,
 namespace views {
 
 gfx::ImageSkia GetMenuCheckImage(bool dark_background) {
-  int image_id = dark_background ? IDR_MENU_CHECK_CHECKED_DARK_BACKGROUND :
-                                   IDR_MENU_CHECK_CHECKED;
+  // In MD, always draw the normal (non-inverted) check. TODO(estade): this
+  // should be replaced with a vector asset.
+  int image_id =
+      dark_background && !ui::MaterialDesignController::IsModeMaterial()
+          ? IDR_MENU_CHECK_CHECKED_DARK_BACKGROUND
+          : IDR_MENU_CHECK_CHECKED;
   return ui::ResourceBundle::GetSharedInstance().GetImageNamed(image_id).
       AsImageSkia();
 }
@@ -164,7 +169,11 @@ gfx::ImageSkia GetRadioButtonImage(bool selected) {
 }
 
 gfx::ImageSkia GetSubmenuArrowImage(bool dark_background) {
-  return GetRtlSubmenuArrowImage(base::i18n::IsRTL(), dark_background);
+  // In MD, always draw the normal (non-inverted) arrow. TODO(estade): this
+  // should be replaced with a vector asset.
+  return GetRtlSubmenuArrowImage(
+      base::i18n::IsRTL(),
+      dark_background && !ui::MaterialDesignController::IsModeMaterial());
 }
 
 }  // namespace views
