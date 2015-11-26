@@ -395,10 +395,6 @@ def main(argv):
   if options.type in ['android_apk', 'deps_dex']:
     config['final_dex'] = {}
     dex_config = config['final_dex']
-    if proguard_enabled:
-      # When proguard is enabled, the proguarded jar contains the code for all
-      # of the dependencies.
-      deps_dex_files = []
     dex_config['dependency_dex_files'] = deps_dex_files
 
   if options.type == 'android_apk':
