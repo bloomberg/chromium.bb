@@ -1105,15 +1105,13 @@ void LayoutGrid::ensureGridSize(size_t maximumRowSize, size_t maximumColumnSize)
 
 void LayoutGrid::insertItemIntoGrid(LayoutBox& child, const GridCoordinate& coordinate)
 {
+    RELEASE_ASSERT(coordinate.rows.isDefinite() && coordinate.columns.isDefinite());
     ensureGridSize(coordinate.rows.resolvedFinalPosition().toInt(), coordinate.columns.resolvedFinalPosition().toInt());
 
     for (GridSpan::iterator row = coordinate.rows.begin(); row != coordinate.rows.end(); ++row) {
         for (GridSpan::iterator column = coordinate.columns.begin(); column != coordinate.columns.end(); ++column)
             m_grid[row.toInt()][column.toInt()].append(&child);
     }
-
-    RELEASE_ASSERT(!m_gridItemCoordinate.contains(&child));
-    m_gridItemCoordinate.set(&child, coordinate);
 }
 
 void LayoutGrid::placeItemsOnGrid()
@@ -1134,17 +1132,16 @@ void LayoutGrid::placeItemsOnGrid()
         if (child->isOutOfFlowPositioned())
             continue;
 
-        GridSpan rowPositions = GridResolvedPosition::resolveGridPositionsFromStyle(*style(), *child, ForRows);
-        GridSpan columnPositions = GridResolvedPosition::resolveGridPositionsFromStyle(*style(), *child, ForColumns);
-        if (!rowPositions.isDefinite() || !columnPositions.isDefinite()) {
-            GridSpan majorAxisPositions = (autoPlacementMajorAxisDirection() == ForColumns) ? columnPositions : rowPositions;
+        GridCoordinate coordinate = cachedGridCoordinate(*child);
+        if (!coordinate.rows.isDefinite() || !coordinate.columns.isDefinite()) {
+            GridSpan majorAxisPositions = (autoPlacementMajorAxisDirection() == ForColumns) ? coordinate.columns : coordinate.rows;
             if (!majorAxisPositions.isDefinite())
                 autoMajorAxisAutoGridItems.append(child);
             else
                 specifiedMajorAxisAutoGridItems.append(child);
             continue;
         }
-        insertItemIntoGrid(*child, GridCoordinate(rowPositions, columnPositions));
+        insertItemIntoGrid(*child, coordinate);
     }
 
     ASSERT(gridRowCount() >= GridResolvedPosition::explicitGridRowCount(*style()));
@@ -1154,6 +1151,16 @@ void LayoutGrid::placeItemsOnGrid()
     placeAutoMajorAxisItemsOnGrid(autoMajorAxisAutoGridItems);
 
     m_grid.shrinkToFit();
+
+#if ENABLE(ASSERT)
+    for (LayoutBox* child = m_orderIterator.first(); child; child = m_orderIterator.next()) {
+        if (child->isOutOfFlowPositioned())
+            continue;
+
+        GridCoordinate coordinate = cachedGridCoordinate(*child);
+        ASSERT(coordinate.rows.isDefinite() && coordinate.columns.isDefinite());
+    }
+#endif
 }
 
 void LayoutGrid::populateExplicitGridAndOrderIterator()
@@ -1175,6 +1182,7 @@ void LayoutGrid::populateExplicitGridAndOrderIterator()
         // This function bypasses the cache (cachedGridCoordinate()) as it is used to build it.
         GridSpan rowPositions = GridResolvedPosition::resolveGridPositionsFromStyle(*style(), *child, ForRows);
         GridSpan columnPositions = GridResolvedPosition::resolveGridPositionsFromStyle(*style(), *child, ForColumns);
+        m_gridItemCoordinate.set(child, GridCoordinate(rowPositions, columnPositions));
 
         // |positions| is 0 if we need to run the auto-placement algorithm.
         if (rowPositions.isDefinite()) {
@@ -1218,7 +1226,9 @@ void LayoutGrid::placeSpecifiedMajorAxisItemsOnGrid(const Vector<LayoutBox*>& au
     HashMap<unsigned, unsigned, DefaultHash<unsigned>::Hash, WTF::UnsignedWithZeroKeyHashTraits<unsigned>> minorAxisCursors;
 
     for (const auto& autoGridItem : autoGridItems) {
-        GridSpan majorAxisPositions = GridResolvedPosition::resolveGridPositionsFromStyle(*style(), *autoGridItem, autoPlacementMajorAxisDirection());
+        GridSpan majorAxisPositions = cachedGridSpan(*autoGridItem, autoPlacementMajorAxisDirection());
+        ASSERT(majorAxisPositions.isDefinite());
+        ASSERT(!cachedGridSpan(*autoGridItem, autoPlacementMinorAxisDirection()).isDefinite());
         GridSpan minorAxisPositions = GridResolvedPosition::resolveGridPositionsFromAutoPlacementPosition(*style(), *autoGridItem, autoPlacementMinorAxisDirection(), GridResolvedPosition(0));
         unsigned majorAxisInitialPosition = majorAxisPositions.resolvedInitialPosition().toInt();
 
@@ -1226,6 +1236,8 @@ void LayoutGrid::placeSpecifiedMajorAxisItemsOnGrid(const Vector<LayoutBox*>& au
         OwnPtr<GridCoordinate> emptyGridArea = iterator.nextEmptyGridArea(majorAxisPositions.integerSpan(), minorAxisPositions.integerSpan());
         if (!emptyGridArea)
             emptyGridArea = createEmptyGridAreaAtSpecifiedPositionsOutsideGrid(*autoGridItem, autoPlacementMajorAxisDirection(), majorAxisPositions);
+
+        m_gridItemCoordinate.set(autoGridItem, *emptyGridArea);
         insertItemIntoGrid(*autoGridItem, *emptyGridArea);
 
         if (!isGridAutoFlowDense)
@@ -1251,8 +1263,8 @@ void LayoutGrid::placeAutoMajorAxisItemsOnGrid(const Vector<LayoutBox*>& autoGri
 
 void LayoutGrid::placeAutoMajorAxisItemOnGrid(LayoutBox& gridItem, std::pair<size_t, size_t>& autoPlacementCursor)
 {
-    GridSpan minorAxisPositions = GridResolvedPosition::resolveGridPositionsFromStyle(*style(), gridItem, autoPlacementMinorAxisDirection());
-    ASSERT(!GridResolvedPosition::resolveGridPositionsFromStyle(*style(), gridItem, autoPlacementMajorAxisDirection()).isDefinite());
+    GridSpan minorAxisPositions = cachedGridSpan(gridItem, autoPlacementMinorAxisDirection());
+    ASSERT(!cachedGridSpan(gridItem, autoPlacementMajorAxisDirection()).isDefinite());
     GridSpan majorAxisPositions = GridResolvedPosition::resolveGridPositionsFromAutoPlacementPosition(*style(), gridItem, autoPlacementMajorAxisDirection(), GridResolvedPosition(0));
 
     const size_t endOfMajorAxis = (autoPlacementMajorAxisDirection() == ForColumns) ? gridColumnCount() : gridRowCount();
@@ -1299,6 +1311,7 @@ void LayoutGrid::placeAutoMajorAxisItemOnGrid(LayoutBox& gridItem, std::pair<siz
             emptyGridArea = createEmptyGridAreaAtSpecifiedPositionsOutsideGrid(gridItem, autoPlacementMinorAxisDirection(), minorAxisPositions);
     }
 
+    m_gridItemCoordinate.set(&gridItem, *emptyGridArea);
     insertItemIntoGrid(gridItem, *emptyGridArea);
     // Move auto-placement cursor to the new position.
     autoPlacementCursor.first = emptyGridArea->rows.resolvedInitialPosition().toInt();
