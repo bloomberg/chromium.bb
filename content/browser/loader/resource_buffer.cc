@@ -54,11 +54,7 @@ bool ResourceBuffer::Initialize(int buffer_size,
   min_alloc_size_ = min_allocation_size;
   max_alloc_size_ = max_allocation_size;
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  return shared_mem_.CreateAndMapAnonymousMach(buf_size_);
-#else
   return shared_mem_.CreateAndMapAnonymous(buf_size_);
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 }
 
 bool ResourceBuffer::IsInitialized() const {

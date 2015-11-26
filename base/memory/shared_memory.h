@@ -140,10 +140,6 @@ class BASE_EXPORT SharedMemory {
   // http://crbug.com/466437.
   bool CreateAndMapAnonymousPosix(size_t size);
   bool CreateAnonymousPosix(size_t size);
-
-  // This method is an analog of CreateAndMapAnonymous that forces the
-  // underlying OS primitive to be a Mach memory object.
-  bool CreateAndMapAnonymousMach(size_t size);
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
   // Creates an anonymous shared memory segment of size size.

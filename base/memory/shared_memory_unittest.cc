@@ -473,6 +473,10 @@ TEST(SharedMemoryTest, AnonymousExecutable) {
   SharedMemoryCreateOptions options;
   options.size = kTestSize;
   options.executable = true;
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  // The Mach functionality is tested in shared_memory_mac_unittest.cc.
+  options.type = SharedMemoryHandle::POSIX;
+#endif
 
   EXPECT_TRUE(shared_memory.Create(options));
   EXPECT_TRUE(shared_memory.Map(shared_memory.requested_size()));
