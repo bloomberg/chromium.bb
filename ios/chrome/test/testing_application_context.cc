@@ -115,3 +115,8 @@ IOSChromeIOThread* TestingApplicationContext::GetIOSChromeIOThread() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return nullptr;
 }
+
+gcm::GCMDriver* TestingApplicationContext::GetGCMDriver() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return nullptr;
+}

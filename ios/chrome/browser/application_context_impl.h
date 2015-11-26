@@ -58,6 +58,7 @@ class ApplicationContextImpl : public ApplicationContext {
   net_log::ChromeNetLog* GetNetLog() override;
   network_time::NetworkTimeTracker* GetNetworkTimeTracker() override;
   IOSChromeIOThread* GetIOSChromeIOThread() override;
+  gcm::GCMDriver* GetGCMDriver() override;
 
  private:
   // Sets the locale used by the application.
@@ -66,11 +67,15 @@ class ApplicationContextImpl : public ApplicationContext {
   // Create the local state.
   void CreateLocalState();
 
+  // Create the gcm driver.
+  void CreateGCMDriver();
+
   base::ThreadChecker thread_checker_;
   scoped_ptr<PrefService> local_state_;
   scoped_ptr<net_log::ChromeNetLog> net_log_;
   scoped_ptr<network_time::NetworkTimeTracker> network_time_tracker_;
   scoped_ptr<IOSChromeIOThread> ios_chrome_io_thread_;
+  scoped_ptr<gcm::GCMDriver> gcm_driver_;
   std::string application_locale_;
 
   // Sequenced task runner for local state related I/O tasks.

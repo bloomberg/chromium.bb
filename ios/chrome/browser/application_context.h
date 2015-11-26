@@ -9,6 +9,10 @@
 
 #include "base/macros.h"
 
+namespace gcm {
+class GCMDriver;
+}
+
 namespace ios {
 class ChromeBrowserStateManager;
 }
@@ -91,6 +95,9 @@ class ApplicationContext {
 
   // Gets the IOSChromeIOThread.
   virtual IOSChromeIOThread* GetIOSChromeIOThread() = 0;
+
+  // Gets the GCMDriver.
+  virtual gcm::GCMDriver* GetGCMDriver() = 0;
 
  protected:
   // Sets the global ApplicationContext instance.

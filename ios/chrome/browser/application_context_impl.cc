@@ -15,6 +15,9 @@
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/time/default_tick_clock.h"
+#include "components/gcm_driver/gcm_client_factory.h"
+#include "components/gcm_driver/gcm_desktop_utils.h"
+#include "components/gcm_driver/gcm_driver.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/metrics/metrics_pref_names.h"
@@ -34,6 +37,7 @@
 #include "ios/public/provider/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/public/provider/chrome/browser/browser_state/chrome_browser_state_manager.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#include "ios/web/public/web_thread.h"
 #include "net/log/net_log_capture_mode.h"
 #include "net/socket/client_socket_pool_manager.h"
 
@@ -81,6 +85,10 @@ void ApplicationContextImpl::PreMainMessageLoopRun() {
 
 void ApplicationContextImpl::StartTearDown() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  // The |gcm_driver_| must shut down while the IO thread is still alive.
+  if (gcm_driver_)
+    gcm_driver_->Shutdown();
+
   if (local_state_) {
     local_state_->CommitPendingWrite();
   }
@@ -213,6 +221,14 @@ IOSChromeIOThread* ApplicationContextImpl::GetIOSChromeIOThread() {
   return ios_chrome_io_thread_.get();
 }
 
+gcm::GCMDriver* ApplicationContextImpl::GetGCMDriver() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!gcm_driver_)
+    CreateGCMDriver();
+  DCHECK(gcm_driver_);
+  return gcm_driver_.get();
+}
+
 void ApplicationContextImpl::SetApplicationLocale(const std::string& locale) {
   DCHECK(thread_checker_.CalledOnValidThread());
   application_locale_ = locale;
@@ -246,4 +262,24 @@ void ApplicationContextImpl::CreateLocalState() {
     was_last_shutdown_clean_ =
         local_state_->GetBoolean(prefs::kLastSessionExitedCleanly);
   }
+}
+
+void ApplicationContextImpl::CreateGCMDriver() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(!gcm_driver_);
+
+  base::FilePath store_path;
+  CHECK(PathService::Get(ios::DIR_GLOBAL_GCM_STORE, &store_path));
+  base::SequencedWorkerPool* worker_pool = web::WebThread::GetBlockingPool();
+  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner(
+      worker_pool->GetSequencedTaskRunnerWithShutdownBehavior(
+          worker_pool->GetSequenceToken(),
+          base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
+
+  gcm_driver_ = gcm::CreateGCMDriverDesktop(
+      make_scoped_ptr(new gcm::GCMClientFactory), GetLocalState(), store_path,
+      GetSystemURLRequestContext(), ::GetChannel(),
+      web::WebThread::GetTaskRunnerForThread(web::WebThread::UI),
+      web::WebThread::GetTaskRunnerForThread(web::WebThread::IO),
+      blocking_task_runner);
 }

@@ -42,6 +42,7 @@ class TestingApplicationContext : public ApplicationContext {
   net_log::ChromeNetLog* GetNetLog() override;
   network_time::NetworkTimeTracker* GetNetworkTimeTracker() override;
   IOSChromeIOThread* GetIOSChromeIOThread() override;
+  gcm::GCMDriver* GetGCMDriver() override;
 
  private:
   base::ThreadChecker thread_checker_;
