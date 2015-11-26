@@ -4,6 +4,7 @@
 
 #include "media/mojo/services/media_type_converters.h"
 
+#include "media/base/audio_buffer.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/buffering_state.h"
 #include "media/base/cdm_config.h"
@@ -13,6 +14,7 @@
 #include "media/base/demuxer_stream.h"
 #include "media/base/media_keys.h"
 #include "media/base/video_decoder_config.h"
+#include "media/base/video_frame.h"
 #include "media/mojo/interfaces/demuxer_stream.mojom.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 
@@ -527,6 +529,126 @@ TypeConverter<media::CdmConfig, media::interfaces::CdmConfigPtr>::Convert(
   config.allow_persistent_state = input->allow_persistent_state;
   config.use_hw_secure_codecs = input->use_hw_secure_codecs;
   return config;
+}
+
+// static
+media::interfaces::AudioBufferPtr
+TypeConverter<media::interfaces::AudioBufferPtr,
+              scoped_refptr<media::AudioBuffer>>::
+    Convert(const scoped_refptr<media::AudioBuffer>& input) {
+  media::interfaces::AudioBufferPtr buffer(
+      media::interfaces::AudioBuffer::New());
+  buffer->sample_format =
+      static_cast<media::interfaces::SampleFormat>(input->sample_format_);
+  buffer->channel_layout =
+      static_cast<media::interfaces::ChannelLayout>(input->channel_layout());
+  buffer->channel_count = input->channel_count();
+  buffer->sample_rate = input->sample_rate();
+  buffer->frame_count = input->frame_count();
+  buffer->end_of_stream = input->end_of_stream();
+  buffer->timestamp_usec = input->timestamp().InMicroseconds();
+
+  if (!input->end_of_stream()) {
+    std::vector<uint8_t> input_data(input->data_.get(),
+                                    input->data_.get() + input->data_size_);
+    buffer->data.Swap(&input_data);
+  }
+
+  return buffer.Pass();
+}
+
+// static
+scoped_refptr<media::AudioBuffer>
+TypeConverter<scoped_refptr<media::AudioBuffer>,
+              media::interfaces::AudioBufferPtr>::
+    Convert(const media::interfaces::AudioBufferPtr& input) {
+  if (input->end_of_stream)
+    return media::AudioBuffer::CreateEOSBuffer();
+
+  // Setup channel pointers.  AudioBuffer::CopyFrom() will only use the first
+  // one in the case of interleaved data.
+  std::vector<const uint8_t*> channel_ptrs(input->channel_count, nullptr);
+  std::vector<uint8_t> storage = input->data.storage();
+  const size_t size_per_channel = storage.size() / input->channel_count;
+  DCHECK_EQ(0u, storage.size() % input->channel_count);
+  for (int i = 0; i < input->channel_count; ++i)
+    channel_ptrs[i] = storage.data() + i * size_per_channel;
+
+  return media::AudioBuffer::CopyFrom(
+      static_cast<media::SampleFormat>(input->sample_format),
+      static_cast<media::ChannelLayout>(input->channel_layout),
+      input->channel_count, input->sample_rate, input->frame_count,
+      &channel_ptrs[0],
+      base::TimeDelta::FromMicroseconds(input->timestamp_usec));
+}
+
+// static
+media::interfaces::VideoFramePtr
+TypeConverter<media::interfaces::VideoFramePtr,
+              scoped_refptr<media::VideoFrame>>::
+    Convert(const scoped_refptr<media::VideoFrame>& input) {
+  media::interfaces::VideoFramePtr buffer(media::interfaces::VideoFrame::New());
+  buffer->end_of_stream =
+      input->metadata()->IsTrue(media::VideoFrameMetadata::END_OF_STREAM);
+  if (buffer->end_of_stream)
+    return buffer.Pass();
+
+  // handle non EOS buffer.
+  buffer->format = static_cast<media::interfaces::VideoFormat>(input->format());
+  buffer->coded_size = Size::From(input->coded_size());
+  buffer->visible_rect = Rect::From(input->visible_rect());
+  buffer->natural_size = Size::From(input->natural_size());
+  buffer->timestamp_usec = input->timestamp().InMicroseconds();
+
+  if (!input->coded_size().IsEmpty()) {
+    // TODO(jrummell): Use a shared buffer rather than copying the data for
+    // each plane.
+    std::vector<uint8_t> y_data(
+        input->data(media::VideoFrame::kYPlane),
+        input->data(media::VideoFrame::kYPlane) +
+            input->rows(media::VideoFrame::kYPlane) *
+                input->stride(media::VideoFrame::kYPlane));
+    buffer->y_data.Swap(&y_data);
+
+    std::vector<uint8_t> u_data(
+        input->data(media::VideoFrame::kUPlane),
+        input->data(media::VideoFrame::kUPlane) +
+            input->rows(media::VideoFrame::kUPlane) *
+                input->stride(media::VideoFrame::kUPlane));
+    buffer->u_data.Swap(&u_data);
+
+    std::vector<uint8_t> v_data(
+        input->data(media::VideoFrame::kVPlane),
+        input->data(media::VideoFrame::kVPlane) +
+            input->rows(media::VideoFrame::kVPlane) *
+                input->stride(media::VideoFrame::kVPlane));
+    buffer->v_data.Swap(&v_data);
+  }
+
+  return buffer.Pass();
+}
+
+// static
+scoped_refptr<media::VideoFrame>
+TypeConverter<scoped_refptr<media::VideoFrame>,
+              media::interfaces::VideoFramePtr>::
+    Convert(const media::interfaces::VideoFramePtr& input) {
+  if (input->end_of_stream)
+    return media::VideoFrame::CreateEOSFrame();
+
+  scoped_refptr<media::VideoFrame> frame = media::VideoFrame::CreateFrame(
+      static_cast<media::VideoPixelFormat>(input->format),
+      input->coded_size.To<gfx::Size>(), input->visible_rect.To<gfx::Rect>(),
+      input->natural_size.To<gfx::Size>(),
+      base::TimeDelta::FromMicroseconds(input->timestamp_usec));
+  memcpy(frame->data(media::VideoFrame::kYPlane),
+         input->y_data.storage().data(), input->y_data.storage().size());
+  memcpy(frame->data(media::VideoFrame::kUPlane),
+         input->u_data.storage().data(), input->u_data.storage().size());
+  memcpy(frame->data(media::VideoFrame::kVPlane),
+         input->v_data.storage().data(), input->v_data.storage().size());
+
+  return frame.Pass();
 }
 
 }  // namespace mojo

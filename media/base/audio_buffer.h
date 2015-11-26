@@ -15,8 +15,19 @@
 #include "media/base/media_export.h"
 #include "media/base/sample_format.h"
 
+namespace mojo {
+template <typename T, typename U>
+struct TypeConverter;
+template <typename T>
+class StructPtr;
+};
+
 namespace media {
 class AudioBus;
+
+namespace interfaces {
+class AudioBuffer;
+}
 
 // An audio buffer that takes a copy of the data passed to it, holds it, and
 // copies it into an AudioBus when needed. Also supports an end of stream
@@ -123,6 +134,11 @@ class MEDIA_EXPORT AudioBuffer
  private:
   friend class base::RefCountedThreadSafe<AudioBuffer>;
 
+  // mojo::TypeConverter added as a friend so that AudioBuffer can be
+  // transferred across a mojo connection.
+  friend struct mojo::TypeConverter<mojo::StructPtr<interfaces::AudioBuffer>,
+                                    scoped_refptr<AudioBuffer>>;
+
   // Allocates aligned contiguous buffer to hold all channel data (1 block for
   // interleaved data, |channel_count| blocks for planar data), copies
   // [data,data+data_size) to the allocated buffer(s). If |data| is null, no
@@ -151,6 +167,7 @@ class MEDIA_EXPORT AudioBuffer
 
   // Contiguous block of channel data.
   scoped_ptr<uint8, base::AlignedFreeDeleter> data_;
+  size_t data_size_;
 
   // For planar data, points to each channels data.
   std::vector<uint8*> channel_data_;

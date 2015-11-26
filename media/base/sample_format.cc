@@ -54,4 +54,42 @@ const char* SampleFormatToString(SampleFormat sample_format) {
   return "";
 }
 
+bool IsPlanar(SampleFormat sample_format) {
+  switch (sample_format) {
+    case kSampleFormatPlanarS16:
+    case kSampleFormatPlanarF32:
+    case kSampleFormatPlanarS32:
+      return true;
+    case kUnknownSampleFormat:
+    case kSampleFormatU8:
+    case kSampleFormatS16:
+    case kSampleFormatS24:
+    case kSampleFormatS32:
+    case kSampleFormatF32:
+      return false;
+  }
+
+  NOTREACHED() << "Invalid sample format provided: " << sample_format;
+  return false;
+}
+
+bool IsInterleaved(SampleFormat sample_format) {
+  switch (sample_format) {
+    case kSampleFormatU8:
+    case kSampleFormatS16:
+    case kSampleFormatS24:
+    case kSampleFormatS32:
+    case kSampleFormatF32:
+      return true;
+    case kUnknownSampleFormat:
+    case kSampleFormatPlanarS16:
+    case kSampleFormatPlanarF32:
+    case kSampleFormatPlanarS32:
+      return false;
+  }
+
+  NOTREACHED() << "Invalid sample format provided: " << sample_format;
+  return false;
+}
+
 }  // namespace media
