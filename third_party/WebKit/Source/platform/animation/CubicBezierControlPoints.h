@@ -5,11 +5,13 @@
 #ifndef CubicBezierControlPoints_h
 #define CubicBezierControlPoints_h
 
+#include "wtf/Allocator.h"
 #include <cstddef>
 
 namespace blink {
 
 struct CubicBezierControlPoints {
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     double x0, y0;
     double x1, y1;
     double x2, y2;

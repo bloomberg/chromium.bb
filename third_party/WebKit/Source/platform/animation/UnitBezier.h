@@ -27,12 +27,15 @@
 #define UnitBezier_h
 
 #include "platform/PlatformExport.h"
+#include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
 #include <math.h>
 
 namespace blink {
 
 struct UnitBezier {
+    USING_FAST_MALLOC(UnitBezier);
+public:
     UnitBezier(double p1x, double p1y, double p2x, double p2y)
     {
         // Calculate the polynomial coefficients, implicit first and last control points are (0,0) and (1,1).
