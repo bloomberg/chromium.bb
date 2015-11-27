@@ -13,6 +13,8 @@ source_set("egltest") {
     "ozone_platform_egltest.h",
   ]
 
+  configs += [ "//third_party/khronos:khronos_headers" ]
+
   deps = [
     ":eglplatform_shim",
     "//base",
