@@ -5,6 +5,7 @@
 #include "components/password_manager/core/browser/statistics_table.h"
 
 #include <algorithm>
+#include <limits>
 
 #include "sql/connection.h"
 #include "sql/statement.h"
@@ -32,13 +33,14 @@ bool operator==(const InteractionsStats& lhs, const InteractionsStats& rhs) {
 }
 
 InteractionsStats* FindStatsByUsername(
-    const std::vector<InteractionsStats*>& stats,
+    const std::vector<scoped_ptr<InteractionsStats>>& stats,
     const base::string16& username) {
-  auto it = std::find_if(stats.begin(), stats.end(),
-                         [&username](const InteractionsStats* element) {
-                           return username == element->username_value;
-                         });
-  return it == stats.end() ? nullptr : *it;
+  auto it =
+      std::find_if(stats.begin(), stats.end(),
+                   [&username](const scoped_ptr<InteractionsStats>& element) {
+                     return username == element->username_value;
+                   });
+  return it == stats.end() ? nullptr : it->get();
 }
 
 StatisticsTable::StatisticsTable() : db_(nullptr) {
@@ -101,24 +103,25 @@ bool StatisticsTable::RemoveRow(const GURL& domain) {
   return s.Run();
 }
 
-ScopedVector<InteractionsStats> StatisticsTable::GetRows(const GURL& domain) {
+std::vector<scoped_ptr<InteractionsStats>> StatisticsTable::GetRows(
+    const GURL& domain) {
   if (!domain.is_valid())
-    return ScopedVector<InteractionsStats>();
+    return std::vector<scoped_ptr<InteractionsStats>>();
   const char query[] =
       "SELECT origin_domain, username_value, "
       "dismissal_count, update_time FROM stats WHERE origin_domain == ?";
   sql::Statement s(db_->GetCachedStatement(SQL_FROM_HERE, query));
   s.BindString(0, domain.spec());
-  ScopedVector<InteractionsStats> result;
+  std::vector<scoped_ptr<InteractionsStats>> result;
   while (s.Step()) {
-    result.push_back(new InteractionsStats);
+    result.push_back(make_scoped_ptr(new InteractionsStats));
     result.back()->origin_domain = GURL(s.ColumnString(COLUMN_ORIGIN_DOMAIN));
     result.back()->username_value = s.ColumnString16(COLUMN_USERNAME);
     result.back()->dismissal_count = s.ColumnInt(COLUMN_DISMISSALS);
     result.back()->update_time =
         base::Time::FromInternalValue(s.ColumnInt64(COLUMN_DATE));
   }
-  return result.Pass();
+  return result;
 }
 
 bool StatisticsTable::RemoveStatsBetween(base::Time delete_begin,

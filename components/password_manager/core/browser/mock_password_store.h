@@ -5,6 +5,9 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_MOCK_PASSWORD_STORE_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_MOCK_PASSWORD_STORE_H_
 
+#include <string>
+#include <vector>
+
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/statistics_table.h"
@@ -51,7 +54,7 @@ class MockPasswordStore : public PasswordStore {
                bool(ScopedVector<autofill::PasswordForm>*));
   MOCK_METHOD1(NotifyLoginsChanged, void(const PasswordStoreChangeList&));
   // GMock doesn't allow to return noncopyable types.
-  ScopedVector<InteractionsStats> GetSiteStatsImpl(
+  std::vector<scoped_ptr<InteractionsStats>> GetSiteStatsImpl(
       const GURL& origin_domain) override;
   MOCK_METHOD1(GetSiteStatsMock, std::vector<InteractionsStats*>(const GURL&));
   MOCK_METHOD1(AddSiteStatsImpl, void(const InteractionsStats&));

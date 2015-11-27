@@ -123,7 +123,8 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // PasswordStoreConsumer:
   void OnGetPasswordStoreResults(
       ScopedVector<autofill::PasswordForm> results) override;
-  void OnGetSiteStatistics(ScopedVector<InteractionsStats> stats) override;
+  void OnGetSiteStatistics(
+      scoped_ptr<std::vector<scoped_ptr<InteractionsStats>>> stats) override;
 
   // A user opted to 'never remember' passwords for this form.
   // Blacklist it so that from now on when it is seen we ignore it.
@@ -143,7 +144,6 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // Handles save-as-new or update of the form managed by this manager.
   // Note the basic data of updated_credentials must match that of
   // observed_form_ (e.g DoesManage(pending_credentials_) == true).
-  // TODO: Make this private once we switch to the new UI.
   void Save();
 
   // Update the password store entry for |credentials_to_update|, using the
@@ -214,8 +214,8 @@ class PasswordFormManager : public PasswordStoreConsumer {
   }
 #endif
 
-  const std::vector<InteractionsStats*>& interactions_stats() const {
-    return interactions_stats_.get();
+  const std::vector<scoped_ptr<InteractionsStats>>& interactions_stats() const {
+    return interactions_stats_;
   }
 
   const autofill::PasswordForm& observed_form() const { return observed_form_; }
@@ -441,7 +441,7 @@ class PasswordFormManager : public PasswordStoreConsumer {
   const autofill::PasswordForm observed_form_;
 
   // Statistics for the current domain.
-  ScopedVector<InteractionsStats> interactions_stats_;
+  std::vector<scoped_ptr<InteractionsStats>> interactions_stats_;
 
   // Stores provisionally saved form until |pending_credentials_| is created.
   scoped_ptr<const autofill::PasswordForm> provisionally_saved_form_;

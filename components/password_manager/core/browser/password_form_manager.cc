@@ -616,11 +616,11 @@ void PasswordFormManager::OnGetPasswordStoreResults(
 }
 
 void PasswordFormManager::OnGetSiteStatistics(
-    ScopedVector<InteractionsStats> stats) {
+    scoped_ptr<std::vector<scoped_ptr<InteractionsStats>>> stats) {
   // On Windows the password request may be resolved after the statistics due to
   // importing from IE.
   DCHECK(state_ == MATCHING_PHASE || state_ == POST_MATCHING_PHASE) << state_;
-  interactions_stats_.swap(stats);
+  interactions_stats_.swap(*stats);
 }
 
 void PasswordFormManager::SaveAsNewLogin() {

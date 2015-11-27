@@ -3,8 +3,10 @@
 // found in the LICENSE file.
 
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -303,9 +305,11 @@ TEST_F(ManagePasswordsUIControllerTest, PasswordSubmittedBubbleSuppressed) {
   stats.origin_domain = test_local_form().origin.GetOrigin();
   stats.username_value = test_local_form().username_value;
   stats.dismissal_count = kGreatDissmisalCount;
-  ScopedVector<password_manager::InteractionsStats> interactions;
-  interactions.push_back(new password_manager::InteractionsStats(stats));
-  test_form_manager->OnGetSiteStatistics(interactions.Pass());
+  auto interactions(make_scoped_ptr(
+      new std::vector<scoped_ptr<password_manager::InteractionsStats>>));
+  interactions->push_back(
+      make_scoped_ptr(new password_manager::InteractionsStats(stats)));
+  test_form_manager->OnGetSiteStatistics(std::move(interactions));
   test_form_manager->ProvisionallySave(
       test_local_form(),
       password_manager::PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
@@ -328,9 +332,11 @@ TEST_F(ManagePasswordsUIControllerTest, PasswordSubmittedBubbleNotSuppressed) {
   stats.origin_domain = test_local_form().origin.GetOrigin();
   stats.username_value = base::ASCIIToUTF16("not my username");
   stats.dismissal_count = kGreatDissmisalCount;
-  ScopedVector<password_manager::InteractionsStats> interactions;
-  interactions.push_back(new password_manager::InteractionsStats(stats));
-  test_form_manager->OnGetSiteStatistics(interactions.Pass());
+  auto interactions(make_scoped_ptr(
+      new std::vector<scoped_ptr<password_manager::InteractionsStats>>));
+  interactions->push_back(
+      make_scoped_ptr(new password_manager::InteractionsStats(stats)));
+  test_form_manager->OnGetSiteStatistics(std::move(interactions));
   test_form_manager->ProvisionallySave(
       test_local_form(),
       password_manager::PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);

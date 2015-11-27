@@ -40,7 +40,7 @@ bool operator==(const InteractionsStats& lhs, const InteractionsStats& rhs);
 
 // Returns an element from |stats| with |username| or nullptr if not found.
 InteractionsStats* FindStatsByUsername(
-    const std::vector<InteractionsStats*>& stats,
+    const std::vector<scoped_ptr<InteractionsStats>>& stats,
     const base::string16& username);
 
 // Represents the 'stats' table in the Login Database.
@@ -69,7 +69,7 @@ class StatisticsTable {
   bool RemoveRow(const GURL& domain);
 
   // Returns the statistics for |domain| if it exists.
-  ScopedVector<InteractionsStats> GetRows(const GURL& domain);
+  std::vector<scoped_ptr<InteractionsStats>> GetRows(const GURL& domain);
 
   // Removes the statistics between the dates. Returns true if the SQL completed
   // successfully.

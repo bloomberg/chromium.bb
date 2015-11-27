@@ -4,6 +4,8 @@
 
 #include "components/password_manager/core/browser/password_store.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/location.h"
@@ -63,10 +65,12 @@ void PasswordStore::GetLoginsRequest::NotifyConsumerWithResults(
 }
 
 void PasswordStore::GetLoginsRequest::NotifyWithSiteStatistics(
-    ScopedVector<InteractionsStats> stats) {
+    std::vector<scoped_ptr<InteractionsStats>> stats) {
+  auto passed_stats(make_scoped_ptr(
+      new std::vector<scoped_ptr<InteractionsStats>>(std::move(stats))));
   origin_task_runner_->PostTask(
       FROM_HERE, base::Bind(&PasswordStoreConsumer::OnGetSiteStatistics,
-                            consumer_weak_, base::Passed(&stats)));
+                            consumer_weak_, base::Passed(&passed_stats)));
 }
 
 PasswordStore::PasswordStore(

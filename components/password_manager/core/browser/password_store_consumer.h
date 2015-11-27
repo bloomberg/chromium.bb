@@ -32,7 +32,11 @@ class PasswordStoreConsumer {
   virtual void OnGetPasswordStoreResults(
       ScopedVector<autofill::PasswordForm> results) = 0;
 
-  virtual void OnGetSiteStatistics(ScopedVector<InteractionsStats> stats);
+  // TODO(crbug.com/562554): The argument's type would ideally be just
+  // std::vector<scoped_ptr<InteractionsStats>>, but currently it is not
+  // possible to pass that into a callback.
+  virtual void OnGetSiteStatistics(
+      scoped_ptr<std::vector<scoped_ptr<InteractionsStats>>> stats);
 
   // The base::CancelableTaskTracker can be used for cancelling the
   // tasks associated with the consumer.

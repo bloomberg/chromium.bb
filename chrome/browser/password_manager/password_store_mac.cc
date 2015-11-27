@@ -331,7 +331,7 @@ bool FillPasswordFormFromKeychainItem(const AppleKeychain& keychain,
   attrInfo.tag = tags;
   attrInfo.format = NULL;
 
-  SecKeychainAttributeList *attrList;
+  SecKeychainAttributeList* attrList;
   UInt32 password_length;
 
   // If |extract_password_data| is false, do not pass in a reference to
@@ -1265,12 +1265,12 @@ void PasswordStoreMac::RemoveSiteStatsImpl(const GURL& origin_domain) {
     login_metadata_db_->stats_table().RemoveRow(origin_domain);
 }
 
-ScopedVector<password_manager::InteractionsStats>
+std::vector<scoped_ptr<password_manager::InteractionsStats>>
 PasswordStoreMac::GetSiteStatsImpl(const GURL& origin_domain) {
   DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
   return login_metadata_db_
              ? login_metadata_db_->stats_table().GetRows(origin_domain)
-             : ScopedVector<password_manager::InteractionsStats>();
+             : std::vector<scoped_ptr<password_manager::InteractionsStats>>();
 }
 
 bool PasswordStoreMac::AddToKeychainIfNecessary(const PasswordForm& form) {

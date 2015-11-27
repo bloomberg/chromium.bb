@@ -93,7 +93,7 @@ class PasswordStoreProxyMac : public password_manager::PasswordStore {
   void AddSiteStatsImpl(
       const password_manager::InteractionsStats& stats) override;
   void RemoveSiteStatsImpl(const GURL& origin_domain) override;
-  ScopedVector<password_manager::InteractionsStats> GetSiteStatsImpl(
+  std::vector<scoped_ptr<password_manager::InteractionsStats>> GetSiteStatsImpl(
       const GURL& origin_domain) override;
 
   scoped_refptr<PasswordStoreMac> password_store_mac_;
