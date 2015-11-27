@@ -28,8 +28,6 @@ bool MimeRegistryMessageFilter::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(MimeRegistryMessageFilter, message)
     IPC_MESSAGE_HANDLER(MimeRegistryMsg_GetMimeTypeFromExtension,
                         OnGetMimeTypeFromExtension)
-    IPC_MESSAGE_HANDLER(MimeRegistryMsg_GetMimeTypeFromFile,
-                        OnGetMimeTypeFromFile)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -38,11 +36,6 @@ bool MimeRegistryMessageFilter::OnMessageReceived(const IPC::Message& message) {
 void MimeRegistryMessageFilter::OnGetMimeTypeFromExtension(
     const base::FilePath::StringType& ext, std::string* mime_type) {
   net::GetMimeTypeFromExtension(ext, mime_type);
-}
-
-void MimeRegistryMessageFilter::OnGetMimeTypeFromFile(
-    const base::FilePath& file_path, std::string* mime_type) {
-  net::GetMimeTypeFromFile(file_path, mime_type);
 }
 
 }  // namespace content

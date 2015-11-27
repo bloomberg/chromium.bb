@@ -43,7 +43,6 @@ class CONTENT_EXPORT SimpleWebMimeRegistryImpl :
   blink::WebString mimeTypeForExtension(const blink::WebString&) override;
   blink::WebString wellKnownMimeTypeForExtension(
       const blink::WebString&) override;
-  blink::WebString mimeTypeFromFile(const blink::WebString&) override;
 };
 
 }  // namespace content

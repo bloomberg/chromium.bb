@@ -185,7 +185,6 @@ class RendererBlinkPlatformImpl::MimeRegistry
                                    const blink::WebString& codecs) override;
   blink::WebString mimeTypeForExtension(
       const blink::WebString& file_extension) override;
-  blink::WebString mimeTypeFromFile(const blink::WebString& file_path) override;
 };
 
 class RendererBlinkPlatformImpl::FileUtilities : public WebFileUtilitiesImpl {
@@ -510,20 +509,6 @@ WebString RendererBlinkPlatformImpl::MimeRegistry::mimeTypeForExtension(
   RenderThread::Get()->Send(
       new MimeRegistryMsg_GetMimeTypeFromExtension(
           base::FilePath::FromUTF16Unsafe(file_extension).value(), &mime_type));
-  return base::ASCIIToUTF16(mime_type);
-}
-
-WebString RendererBlinkPlatformImpl::MimeRegistry::mimeTypeFromFile(
-    const WebString& file_path) {
-  if (IsPluginProcess())
-    return SimpleWebMimeRegistryImpl::mimeTypeFromFile(file_path);
-
-  // The sandbox restricts our access to the registry, so we need to proxy
-  // these calls over to the browser process.
-  std::string mime_type;
-  RenderThread::Get()->Send(new MimeRegistryMsg_GetMimeTypeFromFile(
-      base::FilePath::FromUTF16Unsafe(file_path),
-      &mime_type));
   return base::ASCIIToUTF16(mime_type);
 }
 

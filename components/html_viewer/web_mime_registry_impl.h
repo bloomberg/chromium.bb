@@ -36,7 +36,6 @@ class WebMimeRegistryImpl : public blink::WebMimeRegistry {
       const blink::WebString& extension);
   virtual blink::WebString wellKnownMimeTypeForExtension(
       const blink::WebString& extension);
-  virtual blink::WebString mimeTypeFromFile(const blink::WebString& path);
 };
 
 }  // namespace html_viewer

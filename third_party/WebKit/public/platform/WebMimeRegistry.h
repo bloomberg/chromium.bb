@@ -31,8 +31,6 @@
 #ifndef WebMimeRegistry_h
 #define WebMimeRegistry_h
 
-#include "WebCommon.h"
-
 namespace blink {
 
 class WebString;
@@ -53,7 +51,6 @@ public:
 
     virtual WebString mimeTypeForExtension(const WebString& fileExtension) = 0;
     virtual WebString wellKnownMimeTypeForExtension(const WebString& fileExtension) = 0;
-    virtual WebString mimeTypeFromFile(const WebString& filePath) = 0;
 
 protected:
     ~WebMimeRegistry() { }

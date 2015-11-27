@@ -99,12 +99,4 @@ WebString SimpleWebMimeRegistryImpl::wellKnownMimeTypeForExtension(
   return WebString::fromUTF8(mime_type);
 }
 
-WebString SimpleWebMimeRegistryImpl::mimeTypeFromFile(
-    const WebString& file_path) {
-  std::string mime_type;
-  net::GetMimeTypeFromFile(base::FilePath::FromUTF16Unsafe(file_path),
-                           &mime_type);
-  return WebString::fromUTF8(mime_type);
-}
-
 }  // namespace content
