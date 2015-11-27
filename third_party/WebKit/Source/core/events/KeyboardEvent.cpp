@@ -87,6 +87,8 @@ KeyboardEvent::KeyboardEvent(const PlatformKeyboardEvent& key, AbstractView* vie
 KeyboardEvent::KeyboardEvent(const AtomicString& eventType, const KeyboardEventInit& initializer)
     : UIEventWithKeyState(eventType, initializer)
     , m_keyIdentifier(initializer.keyIdentifier())
+    , m_code(initializer.code())
+    , m_key(initializer.key())
     , m_location(initializer.location())
 {
     if (initializer.repeat())

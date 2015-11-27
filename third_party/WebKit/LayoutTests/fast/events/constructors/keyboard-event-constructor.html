@@ -73,6 +73,42 @@ shouldBeEqualToString("new KeyboardEvent('eventType', { keyIdentifier: [1, 2, 3]
 shouldBeEqualToString("new KeyboardEvent('eventType', { keyIdentifier: {koakuma: 12345} }).keyIdentifier", "[object Object]");
 shouldBeEqualToString("new KeyboardEvent('eventType', { keyIdentifier: {valueOf: function () { return 'koakuma'; } } }).keyIdentifier", "[object Object]");
 
+// code is passed.
+// Strings.
+shouldBeEqualToString("new KeyboardEvent('eventType', { code: 'koakuma' }).code", "koakuma");
+shouldBeEqualToString("new KeyboardEvent('eventType', { code: '' }).code", "");
+
+// Non-strings.
+shouldBeEqualToString("new KeyboardEvent('eventType', { code: undefined }).code", "");
+shouldBeEqualToString("new KeyboardEvent('eventType', { code: null }).code", "null");
+shouldBeEqualToString("new KeyboardEvent('eventType', { code: false }).code", "false");
+shouldBeEqualToString("new KeyboardEvent('eventType', { code: true }).code", "true");
+shouldBeEqualToString("new KeyboardEvent('eventType', { code: 12345 }).code", "12345");
+shouldBeEqualToString("new KeyboardEvent('eventType', { code: 18446744073709551615 }).code", "18446744073709552000");
+shouldBeEqualToString("new KeyboardEvent('eventType', { code: NaN }).code", "NaN");
+shouldBeEqualToString("new KeyboardEvent('eventType', { code: [] }).code", "");
+shouldBeEqualToString("new KeyboardEvent('eventType', { code: [1, 2, 3] }).code", "1,2,3");
+shouldBeEqualToString("new KeyboardEvent('eventType', { code: {koakuma: 12345} }).code", "[object Object]");
+shouldBeEqualToString("new KeyboardEvent('eventType', { code: {valueOf: function () { return 'koakuma'; } } }).code", "[object Object]");
+
+// key is passed.
+// Strings.
+shouldBeEqualToString("new KeyboardEvent('eventType', { key: 'koakuma' }).key", "koakuma");
+shouldBeEqualToString("new KeyboardEvent('eventType', { key: '' }).key", "");
+
+// Non-strings.
+shouldBeEqualToString("new KeyboardEvent('eventType', { key: undefined }).key", "");
+shouldBeEqualToString("new KeyboardEvent('eventType', { key: null }).key", "null");
+shouldBeEqualToString("new KeyboardEvent('eventType', { key: false }).key", "false");
+shouldBeEqualToString("new KeyboardEvent('eventType', { key: true }).key", "true");
+shouldBeEqualToString("new KeyboardEvent('eventType', { key: 12345 }).key", "12345");
+shouldBeEqualToString("new KeyboardEvent('eventType', { key: 18446744073709551615 }).key", "18446744073709552000");
+shouldBeEqualToString("new KeyboardEvent('eventType', { key: NaN }).key", "NaN");
+shouldBeEqualToString("new KeyboardEvent('eventType', { key: [] }).key", "");
+shouldBeEqualToString("new KeyboardEvent('eventType', { key: [1, 2, 3] }).key", "1,2,3");
+shouldBeEqualToString("new KeyboardEvent('eventType', { key: {koakuma: 12345} }).key", "[object Object]");
+shouldBeEqualToString("new KeyboardEvent('eventType', { key: {valueOf: function () { return 'koakuma'; } } }).key", "[object Object]");
+
 // location is passed.
 // numbers within the unsigned long range.
 shouldBe("new KeyboardEvent('eventType', { location: KeyboardEvent.DOM_KEY_LOCATION_STANDARD }).location", "KeyboardEvent.DOM_KEY_LOCATION_STANDARD");
@@ -123,17 +159,19 @@ forEachModifier(function(attr, modifierName) {
 });
 
 // All initializers are passed.
-shouldBe("new KeyboardEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, keyIdentifier: 'chocolate', location: 222, ctrlKey: true, altKey: true, shiftKey: true, metaKey: true, repeat: true }).bubbles", "true");
-shouldBe("new KeyboardEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, keyIdentifier: 'chocolate', location: 222, ctrlKey: true, altKey: true, shiftKey: true, metaKey: true, repeat: true }).cancelable", "true");
-shouldBe("new KeyboardEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, keyIdentifier: 'chocolate', location: 222, ctrlKey: true, altKey: true, shiftKey: true, metaKey: true, repeat: true }).view", "window");
-shouldBe("new KeyboardEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, keyIdentifier: 'chocolate', location: 222, ctrlKey: true, altKey: true, shiftKey: true, metaKey: true, repeat: true }).detail", "111");
-shouldBeEqualToString("new KeyboardEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, keyIdentifier: 'chocolate', location: 222, ctrlKey: true, altKey: true, shiftKey: true, metaKey: true, repeat: true }).keyIdentifier", "chocolate");
-shouldBe("new KeyboardEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, keyIdentifier: 'chocolate', location: 222, ctrlKey: true, altKey: true, shiftKey: true, metaKey: true, repeat: true }).location", "222");
-shouldBe("new KeyboardEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, keyIdentifier: 'chocolate', location: 222, ctrlKey: true, altKey: true, shiftKey: true, metaKey: true, repeat: true }).ctrlKey", "true");
-shouldBe("new KeyboardEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, keyIdentifier: 'chocolate', location: 222, ctrlKey: true, altKey: true, shiftKey: true, metaKey: true, repeat: true }).altKey", "true");
-shouldBe("new KeyboardEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, keyIdentifier: 'chocolate', location: 222, ctrlKey: true, altKey: true, shiftKey: true, metaKey: true, repeat: true }).shiftKey", "true");
-shouldBe("new KeyboardEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, keyIdentifier: 'chocolate', location: 222, ctrlKey: true, altKey: true, shiftKey: true, metaKey: true, repeat: true }).metaKey", "true");
-shouldBe("new KeyboardEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, keyIdentifier: 'chocolate', location: 222, ctrlKey: true, altKey: true, shiftKey: true, metaKey: true, repeat: true }).repeat", "true");
+shouldBe("new KeyboardEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, keyIdentifier: 'chocolate', code: 'chocode', key: 'chokey', location: 222, ctrlKey: true, altKey: true, shiftKey: true, metaKey: true, repeat: true }).bubbles", "true");
+shouldBe("new KeyboardEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, keyIdentifier: 'chocolate', code: 'chocode', key: 'chokey', location: 222, ctrlKey: true, altKey: true, shiftKey: true, metaKey: true, repeat: true }).cancelable", "true");
+shouldBe("new KeyboardEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, keyIdentifier: 'chocolate', code: 'chocode', key: 'chokey', location: 222, ctrlKey: true, altKey: true, shiftKey: true, metaKey: true, repeat: true }).view", "window");
+shouldBe("new KeyboardEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, keyIdentifier: 'chocolate', code: 'chocode', key: 'chokey', location: 222, ctrlKey: true, altKey: true, shiftKey: true, metaKey: true, repeat: true }).detail", "111");
+shouldBeEqualToString("new KeyboardEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, keyIdentifier: 'chocolate', code: 'chocode', key: 'chokey', location: 222, ctrlKey: true, altKey: true, shiftKey: true, metaKey: true, repeat: true }).keyIdentifier", "chocolate");
+shouldBeEqualToString("new KeyboardEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, keyIdentifier: 'chocolate', code: 'chocode', key: 'chokey', location: 222, ctrlKey: true, altKey: true, shiftKey: true, metaKey: true, repeat: true }).code", "chocode");
+shouldBeEqualToString("new KeyboardEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, keyIdentifier: 'chocolate', code: 'chocode', key: 'chokey', location: 222, ctrlKey: true, altKey: true, shiftKey: true, metaKey: true, repeat: true }).key", "chokey");
+shouldBe("new KeyboardEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, keyIdentifier: 'chocolate', code: 'chocode', key: 'chokey', location: 222, ctrlKey: true, altKey: true, shiftKey: true, metaKey: true, repeat: true }).location", "222");
+shouldBe("new KeyboardEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, keyIdentifier: 'chocolate', code: 'chocode', key: 'chokey', location: 222, ctrlKey: true, altKey: true, shiftKey: true, metaKey: true, repeat: true }).ctrlKey", "true");
+shouldBe("new KeyboardEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, keyIdentifier: 'chocolate', code: 'chocode', key: 'chokey', location: 222, ctrlKey: true, altKey: true, shiftKey: true, metaKey: true, repeat: true }).altKey", "true");
+shouldBe("new KeyboardEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, keyIdentifier: 'chocolate', code: 'chocode', key: 'chokey', location: 222, ctrlKey: true, altKey: true, shiftKey: true, metaKey: true, repeat: true }).shiftKey", "true");
+shouldBe("new KeyboardEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, keyIdentifier: 'chocolate', code: 'chocode', key: 'chokey', location: 222, ctrlKey: true, altKey: true, shiftKey: true, metaKey: true, repeat: true }).metaKey", "true");
+shouldBe("new KeyboardEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, keyIdentifier: 'chocolate', code: 'chocode', key: 'chokey', location: 222, ctrlKey: true, altKey: true, shiftKey: true, metaKey: true, repeat: true }).repeat", "true");
 </script>
 </body>
 </html>
