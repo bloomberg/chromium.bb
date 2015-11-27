@@ -14,6 +14,13 @@ source_set("common") {
     "password_manager_switches.h",
     "password_manager_ui.h",
   ]
+
+  deps = [
+    "//base",
+    "//components/autofill/core/common",
+    "//sql",
+    "//url",
+  ]
 }
 
 source_set("unit_tests") {
@@ -23,6 +30,10 @@ source_set("unit_tests") {
   ]
   deps = [
     ":common",
+    "//base",
+    "//components/autofill/core/common",
+    "//sql",
     "//testing/gtest",
+    "//url",
   ]
 }

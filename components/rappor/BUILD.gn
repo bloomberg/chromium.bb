@@ -54,8 +54,10 @@ static_library("test_support") {
     "test_rappor_service.h",
   ]
 
-  deps = [
+  public_deps = [
     ":rappor",
+  ]
+  deps = [
     "//components/rappor/proto",
   ]
 }

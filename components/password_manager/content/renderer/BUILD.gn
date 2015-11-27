@@ -10,7 +10,10 @@ static_library("renderer") {
 
   deps = [
     "//base",
+    "//components/password_manager/content/common",
+    "//components/password_manager/core/common",
     "//components/strings",
+    "//content/public/renderer",
     "//ipc",
     "//third_party/WebKit/public:blink",
     "//url",
@@ -25,6 +28,9 @@ source_set("browser_tests") {
 
   deps = [
     ":renderer",
+    "//components/password_manager/content/common",
+    "//content/test:test_support",
+    "//ipc:test_support",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/WebKit/public:blink",

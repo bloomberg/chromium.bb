@@ -18,7 +18,9 @@ static_library("browser") {
   deps = [
     "//base",
     "//components/page_load_metrics/common",
+    "//components/rappor",
     "//ipc",
+    "//net",
   ]
 }
 
@@ -29,6 +31,12 @@ source_set("unit_tests") {
   ]
   deps = [
     ":browser",
+    "//base",
+    "//base/test:test_support",
+    "//components/page_load_metrics/common",
+    "//components/rappor:test_support",
+    "//content/test:test_support",
+    "//net",
     "//testing/gtest",
   ]
 }

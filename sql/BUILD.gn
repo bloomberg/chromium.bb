@@ -46,8 +46,10 @@ source_set("test_support") {
     "test/test_helpers.h",
   ]
 
-  deps = [
+  public_deps = [
     ":sql",
+  ]
+  deps = [
     "//base",
     "//testing/gtest",
     "//third_party/sqlite",

@@ -25,6 +25,8 @@ source_set("test_support") {
 
   deps = [
     ":open_from_clipboard",
+    "//base",
+    "//url",
   ]
 }
 

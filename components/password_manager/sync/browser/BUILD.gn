@@ -18,10 +18,14 @@ source_set("browser") {
 
   deps = [
     "//base",
+    "//base:prefs",
     "//components/autofill/core/common",
+    "//components/keyed_service/core",
     "//components/password_manager/core/browser",
+    "//components/password_manager/core/common",
     "//components/signin/core/browser",
     "//components/sync_driver",
+    "//components/syncable_prefs",
     "//google_apis",
     "//net",
     "//url",
@@ -39,12 +43,19 @@ source_set("unit_tests") {
   ]
   deps = [
     ":browser",
-    "//components/pref_registry",
+    "//base",
+    "//base:prefs",
+    "//base/test:test_support",
+    "//components/autofill/core/common",
+    "//components/password_manager/core/browser:test_support",
+    "//components/password_manager/core/common",
+    "//components/pref_registry:test_support",
+    "//components/signin/core/browser:test_support",
     "//components/signin/core/common",
     "//components/sync_driver:test_support",
     "//components/syncable_prefs",
     "//components/syncable_prefs:test_support",
-    "//sync",
+    "//sync:test_support_sync_api",
     "//testing/gmock",
     "//testing/gtest",
   ]

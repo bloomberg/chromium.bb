@@ -44,6 +44,7 @@ source_set("unit_tests") {
 
   deps = [
     ":pairing",
+    "//net",
     "//testing/gtest",
   ]
 }

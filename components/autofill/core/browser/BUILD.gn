@@ -217,8 +217,11 @@ source_set("test_support") {
     "test_personal_data_manager.h",
   ]
 
-  deps = [
+  public_deps = [
     ":browser",
+  ]
+
+  deps = [
     "//base",
     "//base:prefs",
     "//base:prefs_test_support",

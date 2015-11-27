@@ -13,6 +13,7 @@ static_library("common") {
 
   deps = [
     "//base",
+    "//components/password_manager/core/common",
     "//content/public/common",
     "//ipc",
     "//third_party/WebKit/public:blink",

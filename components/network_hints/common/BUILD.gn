@@ -15,6 +15,9 @@ source_set("common") {
 
   deps = [
     "//base",
+    "//content/public/common",
+    "//ipc",
     "//ui/accessibility",
+    "//url",
   ]
 }

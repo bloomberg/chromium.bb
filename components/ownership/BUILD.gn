@@ -49,6 +49,7 @@ if (is_chromeos) {
 
     deps = [
       ":ownership",
+      "//base",
       "//testing/gtest",
     ]
   }

@@ -16,6 +16,7 @@ static_library("renderer") {
   deps = [
     "//base",
     "//components/page_load_metrics/common",
+    "//ipc",
     "//third_party/WebKit/public:blink",
     "//url",
   ]
@@ -29,6 +30,8 @@ source_set("unit_tests") {
   ]
   deps = [
     ":renderer",
+    "//base",
+    "//components/page_load_metrics/common",
     "//ipc",
     "//testing/gmock",
     "//testing/gtest",

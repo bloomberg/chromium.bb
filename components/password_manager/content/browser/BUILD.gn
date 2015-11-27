@@ -18,12 +18,14 @@ source_set("browser") {
 
   public_deps = [
     "//base",
+    "//base:prefs",
     "//components/autofill/content/browser",
     "//components/autofill/content/common",
     "//components/autofill/core/common",
     "//components/keyed_service/content",
     "//components/password_manager/content/common",
     "//components/password_manager/core/browser",
+    "//components/password_manager/core/common",
     "//content/public/browser",
     "//content/public/common",
     "//ipc",
@@ -39,6 +41,10 @@ source_set("unit_tests") {
   ]
   deps = [
     ":browser",
+    "//base:prefs_test_support",
+    "//components/autofill/core/browser:test_support",
+    "//components/password_manager/core/browser:test_support",
+    "//content/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]
