@@ -48,6 +48,7 @@ EphemeralRangeTemplate<Strategy>::EphemeralRangeTemplate(const Range* range)
 {
     if (!range)
         return;
+    ASSERT(range->inDocument());
     m_startPosition = fromPositionInDOMTree<Strategy>(range->startPosition());
     m_endPosition = fromPositionInDOMTree<Strategy>(range->endPosition());
 #if ENABLE(ASSERT)

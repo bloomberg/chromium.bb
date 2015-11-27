@@ -851,7 +851,7 @@ void FrameSelection::selectAll()
 
 bool FrameSelection::setSelectedRange(Range* range, TextAffinity affinity, SelectionDirectionalMode directional, SetSelectionOptions options)
 {
-    if (!range || !range->startContainer() || !range->endContainer())
+    if (!range || !range->inDocument())
         return false;
     ASSERT(range->startContainer()->document() == range->endContainer()->document());
     return setSelectedRange(EphemeralRange(range), affinity, directional, options);

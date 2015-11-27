@@ -150,6 +150,12 @@ void Range::dispose()
 #endif
 }
 
+bool Range::inDocument() const
+{
+    ASSERT(m_start.inDocument() == m_end.inDocument());
+    return m_start.inDocument();
+}
+
 void Range::setDocument(Document& document)
 {
     ASSERT(m_ownerDocument != document);

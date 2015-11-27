@@ -22,6 +22,14 @@ function testDetachedRange()
     selection.addRange(range);
 }
 
+function testNotInDocumentRange()
+{
+    var range = document.createRange();
+    var notInDocument = document.createTextNode('not in document');
+    range.selectNodeContents(notInDocument);
+    selection.addRange(range);
+}
+
 function testOtherDocument()
 {
     var iframe = document.createElement('iframe');
@@ -65,7 +73,7 @@ function runSingleTest(testFunction)
     shouldEvaluateTo('selection.getRangeAt(0).endOffset', 0);
 }
 
-var testFunctions = [testNull, testDetachedRange, testOtherDocument, testOtherDocumentFragments];
+var testFunctions = [testNull, testDetachedRange, testNotInDocumentRange, testOtherDocument, testOtherDocumentFragments];
 testFunctions.forEach(runSingleTest);
 </script>
 </body>

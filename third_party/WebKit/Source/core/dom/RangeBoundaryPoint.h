@@ -39,6 +39,7 @@ public:
 
     explicit RangeBoundaryPoint(const RangeBoundaryPoint&);
 
+    bool inDocument() const;
     const Position toPosition() const;
 
     Node* container() const;
@@ -104,6 +105,11 @@ inline void RangeBoundaryPoint::ensureOffsetIsValid() const
 
     ASSERT(m_childBeforeBoundary);
     m_offsetInContainer = m_childBeforeBoundary->nodeIndex() + 1;
+}
+
+inline bool RangeBoundaryPoint::inDocument() const
+{
+    return m_containerNode && m_containerNode->inDocument();
 }
 
 inline const Position RangeBoundaryPoint::toPosition() const

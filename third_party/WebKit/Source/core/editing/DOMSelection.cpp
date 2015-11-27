@@ -402,8 +402,8 @@ void DOMSelection::addRange(Range* newRange)
         return;
     }
 
-    if (!newRange->startContainer()) {
-        addConsoleError("The given range has no container. Perhaps 'detach()' has been invoked on it?");
+    if (!newRange->inDocument()) {
+        addConsoleError("The given range isn't in document.");
         return;
     }
 

@@ -73,6 +73,7 @@ public:
     int endOffset() const { return m_end.offset(); }
 
     bool collapsed() const { return m_start == m_end; }
+    bool inDocument() const;
 
     Node* commonAncestorContainer() const;
     static Node* commonAncestorContainer(const Node* containerA, const Node* containerB);
