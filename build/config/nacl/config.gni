@@ -27,6 +27,8 @@ if (current_cpu == "pnacl") {
   nacl_tuple = "x86_64-nacl"
 } else if (current_cpu == "arm") {
   nacl_tuple = "arm-nacl"
+} else if (current_cpu == "mipsel") {
+  nacl_tuple = "mipsel-nacl"
 }
 
 nacl_toolchain_bindir = "${nacl_toolchain_dir}/${nacl_toolchain_package}/bin"

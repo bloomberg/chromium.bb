@@ -33,7 +33,7 @@ config("compiler") {
   if (is_clang) {
     rebased_android_toolchain_root =
         rebase_path(android_toolchain_root, root_build_dir)
-    if (current_cpu == "arm") {
+    if (current_cpu == "arm" || current_cpu == "mipsel") {
       cflags += [
         # TODO(hans) Enable integrated-as (crbug.com/124610).
         "-no-integrated-as",
@@ -55,6 +55,11 @@ config("compiler") {
     if (current_cpu == "x86") {
       cflags += [ "-mstackrealign" ]
     }
+  }
+
+  if (current_cpu == "mipsel" && is_clang) {
+    # Let clang find the ld.bfd in the NDK.
+    ldflags += [ "--gcc-toolchain=$rebased_android_toolchain_root" ]
   }
 
   ldflags += [
@@ -91,8 +96,7 @@ config("compiler") {
       # TODO: Enable clang support for Android x64. http://crbug.com/539781
       abi_target = "x86_64-linux-androideabi"
     } else if (current_cpu == "mipsel") {
-      # Place holder for mips support, not tested.
-      abi_target = "mipsel-linux-androideabi"
+      abi_target = "mipsel-linux-android"
     } else if (current_cpu == "mips64el") {
       # Place holder for mips64 support, not tested.
       abi_target = "mips64el-linux-androideabi"
@@ -146,6 +150,24 @@ config("runtime_library") {
   } else {
     libs = [ "c++_static" ]
   }
+
+  # libgcc must come before libdl for ld.bfd (MIPS)
+  if (current_cpu == "mipsel") {
+    libs += [
+      # ld linker is used for mips Android, and ld does not accept library
+      # absolute path prefixed by "-l"; Since libgcc does not exist in mips
+      # sysroot the proper library will be linked.
+      # TODO(gordanac): Remove once gold linker is used for mips Android.
+      "gcc",
+    ]
+  } else {
+    libs += [
+      # Manually link the libgcc.a that the cross compiler uses. This is
+      # absolute because the linker will look inside the sysroot if it's not.
+      rebase_path(android_libgcc_file),
+    ]
+  }
+
   libs += [
     "c",
     "dl",
@@ -164,22 +186,6 @@ config("runtime_library") {
   # issues with libc++ (crbug.com/456380).
   if (current_cpu != "mipsel" && current_cpu != "mips64el") {
     ldflags += [ "-Wl,--warn-shared-textrel" ]
-  }
-
-  if (current_cpu == "mipsel") {
-    libs += [
-      # ld linker is used for mips Android, and ld does not accept library
-      # absolute path prefixed by "-l"; Since libgcc does not exist in mips
-      # sysroot the proper library will be linked.
-      # TODO(gordanac): Remove once gold linker is used for mips Android.
-      "gcc",
-    ]
-  } else {
-    libs += [
-      # Manually link the libgcc.a that the cross compiler uses. This is
-      # absolute because the linker will look inside the sysroot if it's not.
-      rebase_path(android_libgcc_file),
-    ]
   }
 
   # Clang with libc++ does not require an explicit atomic library reference.
