@@ -395,6 +395,8 @@ int LayoutThemeDefault::menuListArrowPadding() const
 
 int LayoutThemeDefault::menuListInternalPadding(const ComputedStyle& style, int paddingType) const
 {
+    if (style.appearance() == NoControlPart)
+        return 0;
     // This internal padding is in addition to the user-supplied padding.
     // Matches the FF behavior.
     int padding = styledMenuListInternalPadding[paddingType];
@@ -402,10 +404,8 @@ int LayoutThemeDefault::menuListInternalPadding(const ComputedStyle& style, int 
     // Reserve the space for right arrow here. The rest of the padding is
     // set by adjustMenuListStyle, since PopMenuWin.cpp uses the padding from
     // LayoutMenuList to lay out the individual items in the popup.
-    // If the MenuList actually has appearance "NoAppearance", then that means
-    // we don't draw a button, so don't reserve space for it.
     const int barType = style.direction() == LTR ? RightPadding : LeftPadding;
-    if (paddingType == barType && style.appearance() != NoControlPart)
+    if (paddingType == barType)
         padding += menuListArrowPadding();
 
     return padding * style.effectiveZoom();
