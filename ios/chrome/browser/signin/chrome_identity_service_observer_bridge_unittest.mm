@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 #include "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
+#include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 
 @interface TestChromeIdentityServiceObserver
@@ -16,7 +17,7 @@
 @property(nonatomic) BOOL onAccessTokenRefreshFailedCalled;
 @property(nonatomic) BOOL onProfileUpdateCalled;
 @property(nonatomic, assign) ChromeIdentity* identity;
-@property(nonatomic) ios::AccessTokenErrorReason error;
+@property(nonatomic, readonly) NSDictionary* userInfo;
 @property(nonatomic, readonly)
     ios::ChromeIdentityService::Observer* observerBridge;
 @end
@@ -30,7 +31,7 @@
     _onAccessTokenRefreshFailedCalled;
 @synthesize onProfileUpdateCalled = _onProfileUpdateCalled;
 @synthesize identity = _identity;
-@synthesize error = _error;
+@synthesize userInfo = _userInfo;
 
 - (instancetype)init {
   if (self == [super init]) {
@@ -50,9 +51,9 @@
 }
 
 - (void)onAccessTokenRefreshFailed:(ChromeIdentity*)identity
-                             error:(ios::AccessTokenErrorReason)error {
+                          userInfo:(NSDictionary*)userInfo {
   _onAccessTokenRefreshFailedCalled = YES;
-  _error = error;
+  _userInfo = userInfo;
   _identity = identity;
 }
 
@@ -94,15 +95,14 @@ TEST_F(ChromeIdentityServiceObserverBridgeTest, onIdentityListChanged) {
 // Tests that |onAccessTokenRefreshFailed| is forwarded.
 TEST_F(ChromeIdentityServiceObserverBridgeTest, onAccessTokenRefreshFailed) {
   base::scoped_nsobject<ChromeIdentity> identity([[ChromeIdentity alloc] init]);
-  ios::AccessTokenErrorReason error =
-      ios::AccessTokenErrorReason::UNKNOWN_ERROR;
+  NSDictionary* userInfo = [NSDictionary dictionary];
   ASSERT_FALSE(GetTestObserver().onAccessTokenRefreshFailedCalled);
-  GetObserverBridge()->OnAccessTokenRefreshFailed(identity, error);
+  GetObserverBridge()->OnAccessTokenRefreshFailed(identity, userInfo);
   EXPECT_FALSE(GetTestObserver().onIdentityListChangedCalled);
   EXPECT_TRUE(GetTestObserver().onAccessTokenRefreshFailedCalled);
   EXPECT_FALSE(GetTestObserver().onProfileUpdateCalled);
   EXPECT_EQ(identity, GetTestObserver().identity);
-  EXPECT_EQ(error, GetTestObserver().error);
+  EXPECT_NSEQ(userInfo, GetTestObserver().userInfo);
 }
 
 // Tests that |onProfileUpdate| is forwarded.

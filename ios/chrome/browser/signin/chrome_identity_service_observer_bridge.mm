@@ -24,10 +24,10 @@ void ChromeIdentityServiceObserverBridge::OnIdentityListChanged() {
 
 void ChromeIdentityServiceObserverBridge::OnAccessTokenRefreshFailed(
     ChromeIdentity* identity,
-    ios::AccessTokenErrorReason error) {
+    NSDictionary* user_info) {
   if ([observer_
-          respondsToSelector:@selector(onAccessTokenRefreshFailed:error:)]) {
-    [observer_ onAccessTokenRefreshFailed:identity error:error];
+          respondsToSelector:@selector(onAccessTokenRefreshFailed:userInfo:)]) {
+    [observer_ onAccessTokenRefreshFailed:identity userInfo:user_info];
   }
 }
 

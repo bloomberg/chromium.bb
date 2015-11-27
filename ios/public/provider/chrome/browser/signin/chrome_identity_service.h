@@ -38,9 +38,6 @@ typedef void (^ForgetIdentityCallback)(NSError* error);
 // Callback passed to method |GetAvatarForIdentity()|.
 typedef void (^GetAvatarCallback)(UIImage* avatar);
 
-// Describes the reason for an access token error.
-enum class AccessTokenErrorReason { INVALID_GRANT, UNKNOWN_ERROR };
-
 // ChromeIdentityService abstracts the signin flow on iOS.
 class ChromeIdentityService {
  public:
@@ -55,8 +52,11 @@ class ChromeIdentityService {
 
     // Handles access token refresh failed events.
     // |identity| is the the identity for which the access token refresh failed.
+    // |user_info| is the user info dictionary in the original notification. It
+    // should not be accessed directly but via helper methods (like
+    // ChromeIdentityService::IsInvalidGrantError).
     virtual void OnAccessTokenRefreshFailed(ChromeIdentity* identity,
-                                            AccessTokenErrorReason error) {}
+                                            NSDictionary* user_info) {}
 
     // Called when profile information or the profile image is updated.
     virtual void OnProfileUpdate(ChromeIdentity* identity) {}
@@ -135,14 +135,18 @@ class ChromeIdentityService {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
+  // Returns whether the given |user_info|, from an access token refresh failed
+  // event, corresponds to an invalid grant error.
+  virtual bool IsInvalidGrantError(NSDictionary* user_info);
+
  protected:
   // Fires |OnIdentityListChanged| on all observers.
   void FireIdentityListChanged();
 
   // Fires |OnAccessTokenRefreshFailed| on all observers, with the corresponding
-  // identity and error reason.
+  // identity and user info.
   void FireAccessTokenRefreshFailed(ChromeIdentity* identity,
-                                    AccessTokenErrorReason error);
+                                    NSDictionary* user_info);
 
   // Fires |OnProfileUpdate| on all observers, with the corresponding identity.
   void FireProfileDidUpdate(ChromeIdentity* identity);
