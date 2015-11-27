@@ -50925,6 +50925,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Time spent serializing code, used by V8 code caching.</summary>
 </histogram>
 
+<histogram name="V8.DebugFeatureUsage" enum="V8DebugFeature">
+  <owner>yangguo@chromium.org</owner>
+  <summary>
+    Debugger feature used at least once per isolate, recorded on first use.
+  </summary>
+</histogram>
+
 <histogram name="V8.DeferredCodeGeneration">
   <obsolete>
     This histogram is no longer present in V8
@@ -77526,6 +77533,28 @@ To add a new entry, add it with any value and run test to compute valid value.
   </int>
   <int value="5" label="FLAGS_MISMATCH">Reject due to flags hash mismatch</int>
   <int value="6" label="CHECKSUM_MISMATCH">Reject due to checksum mismatch</int>
+</enum>
+
+<enum name="V8DebugFeature" type="int">
+  <int value="1" label="kActive">Debugger has been active</int>
+  <int value="2" label="kBreakPoint">
+    Debugger has been used to set break points
+  </int>
+  <int value="3" label="kStepping">
+    Debugger has been used to step through Javascript code
+  </int>
+  <int value="4" label="kHeapSnapshot">
+    Heap profiler has been used to take heap snapshots
+  </int>
+  <int value="5" label="kAllocationTracking">
+    Heap profiler has been used to track allocations
+  </int>
+  <int value="6" label="kProfiler">
+    Cpu profiler has been used to profile execution
+  </int>
+  <int value="7" label="kLiveEdit">
+    LiveEdit has been used to replace Javascript code on-the-fly
+  </int>
 </enum>
 
 <enum name="V8InitializerLoadV8SnapshotResult" type="int">
