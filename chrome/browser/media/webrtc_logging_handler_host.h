@@ -20,6 +20,7 @@ class URLRequestContextGetter;
 }  // namespace net
 
 class Profile;
+class WebRtcLogUploader;
 
 #if defined(OS_ANDROID)
 const size_t kWebRtcLogSize = 1 * 1024 * 1024;  // 1 MB
@@ -77,7 +78,7 @@ class WebRtcLoggingHandlerHost : public content::BrowserMessageFilter {
   typedef base::Callback<void(bool, const std::string&, const std::string&)>
       UploadDoneCallback;
 
-  explicit WebRtcLoggingHandlerHost(Profile* profile);
+  WebRtcLoggingHandlerHost(Profile* profile, WebRtcLogUploader* log_uploader);
 
   // Sets meta data that will be uploaded along with the log and also written
   // in the beginning of the log. Must be called on the IO thread before calling
@@ -113,6 +114,7 @@ class WebRtcLoggingHandlerHost : public content::BrowserMessageFilter {
   void StoreLog(const std::string& log_id, const GenericDoneCallback& callback);
 
   // Adds a message to the log.
+  // This method must be called on the IO thread.
   void LogMessage(const std::string& message);
 
   // May be called on any thread. |upload_log_on_render_close_| is used
@@ -177,16 +179,9 @@ class WebRtcLoggingHandlerHost : public content::BrowserMessageFilter {
   void OnAddLogMessages(const std::vector<WebRtcLoggingMessageData>& messages);
   void OnLoggingStoppedInRenderer();
 
-  // Handles log message requests from browser process.
-  void AddLogMessageFromBrowser(const WebRtcLoggingMessageData& message);
-
-  void StartLoggingIfAllowed(const GenericDoneCallback& callback);
-  void DoStartLogging(bool permissions_granted,
-                      const GenericDoneCallback& callback);
   void LogInitialInfoOnFileThread(const GenericDoneCallback& callback);
   void LogInitialInfoOnIOThread(const net::NetworkInterfaceList& network_list,
                                 const GenericDoneCallback& callback);
-  void NotifyLoggingStarted(const GenericDoneCallback& callback);
 
   // Called after stopping RTP dumps.
   void StoreLogContinue(const std::string& log_id,
@@ -273,6 +268,10 @@ class WebRtcLoggingHandlerHost : public content::BrowserMessageFilter {
 
   // The callback to call when StopRtpDump is called.
   content::RenderProcessHost::WebRtcStopRtpDumpCallback stop_rtp_dump_callback_;
+
+  // A pointer to the log uploader that's shared for all profiles.
+  // Ownership lies with the browser process.
+  WebRtcLogUploader* const log_uploader_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcLoggingHandlerHost);
 };

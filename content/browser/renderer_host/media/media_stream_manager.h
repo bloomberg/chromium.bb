@@ -27,7 +27,7 @@
 #define CONTENT_BROWSER_RENDERER_HOST_MEDIA_MEDIA_STREAM_MANAGER_H_
 
 #include <list>
-#include <set>
+#include <map>
 #include <string>
 #include <utility>
 
@@ -213,6 +213,14 @@ class CONTENT_EXPORT MediaStreamManager
   // generated stream (or when using --use-fake-ui-for-media-stream).
   void UseFakeUIForTests(scoped_ptr<FakeMediaStreamUIProxy> fake_ui);
 
+  // Register and unregister a new callback for receiving native log entries.
+  // The registered callback will be invoked on the IO thread.
+  // The registration and unregistration will be done asynchronously so it is
+  // not guaranteed that when the call returns the operation has completed.
+  void RegisterNativeLogCallback(int renderer_host_id,
+      const base::Callback<void(const std::string&)>& callback);
+  void UnregisterNativeLogCallback(int renderer_host_id);
+
   // Generates a hash of a device's unique ID usable by one
   // particular security origin.
   static std::string GetHMACForMediaDeviceID(
@@ -381,6 +389,11 @@ class CONTENT_EXPORT MediaStreamManager
   void SetKeyboardMicOnDeviceThread();
 #endif
 
+  // Runs on the IO thread and does the actual [un]registration of callbacks.
+  void DoNativeLogCallbackRegistration(int renderer_host_id,
+      const base::Callback<void(const std::string&)>& callback);
+  void DoNativeLogCallbackUnregistration(int renderer_host_id);
+
   // Task runner shared by VideoCaptureManager and AudioInputDeviceManager and
   // used for enumerating audio output devices.
   // Note: Enumeration tasks may take seconds to complete so must never be run
@@ -420,6 +433,9 @@ class CONTENT_EXPORT MediaStreamManager
 
   bool use_fake_ui_;
   scoped_ptr<FakeMediaStreamUIProxy> fake_ui_;
+
+  // Maps render process hosts to log callbacks. Used on the IO thread.
+  std::map<int, base::Callback<void(const std::string&)>> log_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamManager);
 };

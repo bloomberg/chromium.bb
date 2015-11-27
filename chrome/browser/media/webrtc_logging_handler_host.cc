@@ -140,15 +140,22 @@ void WebRtcLogBuffer::SetComplete() {
   thread_checker_.DetachFromThread();
 }
 
-WebRtcLoggingHandlerHost::WebRtcLoggingHandlerHost(Profile* profile)
+WebRtcLoggingHandlerHost::WebRtcLoggingHandlerHost(
+    Profile* profile, WebRtcLogUploader* log_uploader)
     : BrowserMessageFilter(WebRtcLoggingMsgStart),
       profile_(profile),
       logging_state_(CLOSED),
-      upload_log_on_render_close_(false) {
+      upload_log_on_render_close_(false),
+      log_uploader_(log_uploader) {
   DCHECK(profile_);
+  DCHECK(log_uploader_);
 }
 
-WebRtcLoggingHandlerHost::~WebRtcLoggingHandlerHost() {}
+WebRtcLoggingHandlerHost::~WebRtcLoggingHandlerHost() {
+  // If we hit this, then we might be leaking a log reference count (see
+  // ApplyForStartLogging).
+  DCHECK_EQ(CLOSED, logging_state_);
+}
 
 void WebRtcLoggingHandlerHost::SetMetaData(
     scoped_ptr<MetaDataMap> meta_data,
@@ -187,9 +194,22 @@ void WebRtcLoggingHandlerHost::StartLogging(
     return;
   }
 
+  if (!log_uploader_->ApplyForStartLogging()) {
+    FireGenericDoneCallback(callback, false,
+        "Cannot start, maybe the maximum number of "
+        "simultaneuos logs has been reached.");
+    return;
+  }
+
   logging_state_ = STARTING;
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
-      &WebRtcLoggingHandlerHost::StartLoggingIfAllowed, this, callback));
+
+  DCHECK(!log_buffer_.get());
+  log_buffer_.reset(new WebRtcLogBuffer());
+  if (!meta_data_.get())
+    meta_data_.reset(new MetaDataMap());
+
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, base::Bind(
+      &WebRtcLoggingHandlerHost::LogInitialInfoOnFileThread, this, callback));
 }
 
 void WebRtcLoggingHandlerHost::StopLogging(
@@ -250,7 +270,7 @@ void WebRtcLoggingHandlerHost::UploadStoredLogOnFileThread(
   upload_data.host = this;
   upload_data.local_log_id = log_id;
 
-  g_browser_process->webrtc_log_uploader()->UploadStoredLog(upload_data);
+  log_uploader_->UploadStoredLog(upload_data);
 }
 
 void WebRtcLoggingHandlerHost::UploadLogDone() {
@@ -266,7 +286,7 @@ void WebRtcLoggingHandlerHost::DiscardLog(const GenericDoneCallback& callback) {
     FireGenericDoneCallback(callback, false, kLogNotStoppedOrNoLogOpen);
     return;
   }
-  g_browser_process->webrtc_log_uploader()->LoggingStoppedDontUpload();
+  log_uploader_->LoggingStoppedDontUpload();
   log_buffer_.reset();
   meta_data_.reset();
   logging_state_ = CLOSED;
@@ -320,13 +340,11 @@ void WebRtcLoggingHandlerHost::StoreLogContinue(
 }
 
 void WebRtcLoggingHandlerHost::LogMessage(const std::string& message) {
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(
-          &WebRtcLoggingHandlerHost::AddLogMessageFromBrowser,
-          this,
-          WebRtcLoggingMessageData(base::Time::Now(), message)));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (logging_state_ == STARTED) {
+    LogToCircularBuffer(WebRtcLoggingMessageData::Format(
+        message, base::Time::Now(), logging_started_time_));
+  }
 }
 
 void WebRtcLoggingHandlerHost::StartRtpDump(
@@ -425,7 +443,8 @@ void WebRtcLoggingHandlerHost::OnChannelClosing() {
           base::Bind(&WebRtcLoggingHandlerHost::TriggerUpload, this,
                      UploadDoneCallback()));
     } else {
-      g_browser_process->webrtc_log_uploader()->LoggingStoppedDontUpload();
+      log_uploader_->LoggingStoppedDontUpload();
+      logging_state_ = CLOSED;
     }
   }
   content::BrowserMessageFilter::OnChannelClosing();
@@ -446,13 +465,6 @@ bool WebRtcLoggingHandlerHost::OnMessageReceived(const IPC::Message& message) {
   IPC_END_MESSAGE_MAP()
 
   return handled;
-}
-
-void WebRtcLoggingHandlerHost::AddLogMessageFromBrowser(
-    const WebRtcLoggingMessageData& message) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (logging_state_ == STARTED)
-    LogToCircularBuffer(message.Format(logging_started_time_));
 }
 
 void WebRtcLoggingHandlerHost::OnAddLogMessages(
@@ -480,41 +492,6 @@ void WebRtcLoggingHandlerHost::OnLoggingStoppedInRenderer() {
   logging_state_ = STOPPED;
   FireGenericDoneCallback(stop_callback_, true, "");
   stop_callback_.Reset();
-}
-
-void WebRtcLoggingHandlerHost::StartLoggingIfAllowed(
-    const GenericDoneCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, base::Bind(
-      &WebRtcLoggingHandlerHost::DoStartLogging, this,
-      g_browser_process->webrtc_log_uploader()->ApplyForStartLogging(),
-      callback));
-}
-
-void WebRtcLoggingHandlerHost::DoStartLogging(
-    bool permissions_granted,
-    const GenericDoneCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (logging_state_ != STARTING) {
-    FireGenericDoneCallback(callback, false, "Logging cancelled.");
-    return;
-  }
-
-  if (!permissions_granted) {
-    logging_state_ = CLOSED;
-    FireGenericDoneCallback(callback, false,
-        "Cannot start, maybe the maximum number of "
-        "simultaneuos logs has been reached.");
-    return;
-  }
-
-  DCHECK(!log_buffer_.get());
-  log_buffer_.reset(new WebRtcLogBuffer());
-  if (!meta_data_.get())
-    meta_data_.reset(new MetaDataMap());
-
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, base::Bind(
-      &WebRtcLoggingHandlerHost::LogInitialInfoOnFileThread, this, callback));
 }
 
 void WebRtcLoggingHandlerHost::LogInitialInfoOnFileThread(
@@ -616,13 +593,6 @@ void WebRtcLoggingHandlerHost::LogInitialInfoOnIOThread(
         net::NetworkChangeNotifier::ConnectionTypeToString(it->type));
   }
 
-  NotifyLoggingStarted(callback);
-}
-
-void WebRtcLoggingHandlerHost::NotifyLoggingStarted(
-    const GenericDoneCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK_EQ(logging_state_, STARTING);
   Send(new WebRtcLoggingMsg_StartLogging());
   logging_started_time_ = base::Time::Now();
   logging_state_ = STARTED;
@@ -681,7 +651,7 @@ void WebRtcLoggingHandlerHost::StoreLogInDirectory(
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&WebRtcLogUploader::LoggingStoppedDoStore,
-                 base::Unretained(g_browser_process->webrtc_log_uploader()),
+                 base::Unretained(log_uploader_),
                  *log_paths.get(), log_id, base::Passed(&log_buffer_),
                  base::Passed(&meta_data_), done_callback));
 
@@ -703,9 +673,8 @@ void WebRtcLoggingHandlerHost::DoUploadLogAndRtpDumps(
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&WebRtcLogUploader::LoggingStoppedDoUpload,
-                 base::Unretained(g_browser_process->webrtc_log_uploader()),
-                 base::Passed(&log_buffer_), base::Passed(&meta_data_),
-                 upload_done_data));
+                 base::Unretained(log_uploader_), base::Passed(&log_buffer_),
+                 base::Passed(&meta_data_), upload_done_data));
 
   logging_state_ = CLOSED;
 }

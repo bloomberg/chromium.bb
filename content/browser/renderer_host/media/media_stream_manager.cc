@@ -20,6 +20,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_local.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/media/capture/web_contents_capture_util.h"
 #include "content/browser/renderer_host/media/audio_input_device_manager.h"
@@ -54,6 +55,9 @@
 #endif
 
 namespace content {
+
+base::LazyInstance<base::ThreadLocalPointer<MediaStreamManager>>::Leaky
+    g_media_stream_manager_tls_ptr = LAZY_INSTANCE_INITIALIZER;
 
 // Forward declaration of DeviceMonitorMac and its only useable method.
 class DeviceMonitorMac {
@@ -157,27 +161,6 @@ void EnableHotwordEffect(const StreamOptions& options, int* effects) {
 #endif
 }
 
-// Private helper method for SendMessageToNativeLog() that obtains the global
-// MediaStreamManager instance on the UI thread before sending |message| to the
-// webrtcLoggingPrivate API.
-void DoAddLogMessage(const std::string& message) {
-  // Must be on the UI thread to access BrowserMainLoop.
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  // May be null in tests.
-  // TODO(vrk): Handle this more elegantly by having native log messages become
-  // no-ops until MediaStreamManager is aware that a renderer process has
-  // started logging. crbug.com/333894
-  const BrowserMainLoop* browser_main_loop =
-      content::BrowserMainLoop::GetInstance();
-  if (!browser_main_loop)
-     return;
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&MediaStreamManager::AddLogMessageOnIOThread,
-                 base::Unretained(browser_main_loop->media_stream_manager()),
-                 message));
-}
-
 // Private helper method to generate a string for the log message that lists the
 // human readable names of |devices|.
 std::string GetLogMessageString(MediaStreamType stream_type,
@@ -200,27 +183,6 @@ std::string ReturnEmptySalt() {
 void ClearDeviceLabels(content::StreamDeviceInfoArray* devices) {
   for (content::StreamDeviceInfo& device_info : *devices)
     device_info.device.name.clear();
-}
-
-// Helper method that sends log messages to the render process hosts whose
-// corresponding render processes are in |render_process_ids|, to be used by
-// the webrtcLoggingPrivate API if requested.
-void AddLogMessageOnUIThread(const std::set<int>& requesting_process_ids,
-                             const std::string& message) {
-#if defined(ENABLE_WEBRTC)
-  // Must be on the UI thread to access RenderProcessHost from process ID.
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  for (const int& requesting_process_id : requesting_process_ids) {
-    // Log the message to all renderers that are requesting a MediaStream or
-    // have a MediaStream running.
-    content::RenderProcessHostImpl* const render_process_host_impl =
-        static_cast<content::RenderProcessHostImpl*>(
-            content::RenderProcessHost::FromID(requesting_process_id));
-    if (render_process_host_impl)
-      render_process_host_impl->WebRtcLogMessage(message);
-  }
-#endif
 }
 
 bool CalledOnIOThread() {
@@ -411,8 +373,19 @@ MediaStreamManager::EnumerationCache::~EnumerationCache() {
 
 // static
 void MediaStreamManager::SendMessageToNativeLog(const std::string& message) {
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(DoAddLogMessage, message));
+  if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+        base::Bind(&MediaStreamManager::SendMessageToNativeLog, message));
+    return;
+  }
+
+  MediaStreamManager* msm = g_media_stream_manager_tls_ptr.Pointer()->Get();
+  if (!msm) {
+    DLOG(ERROR) << "No MediaStreamManager on the IO thread. " << message;
+    return;
+  }
+
+  msm->AddLogMessageOnIOThread(message);
 }
 
 MediaStreamManager::MediaStreamManager(media::AudioManager* audio_manager)
@@ -449,6 +422,7 @@ MediaStreamManager::MediaStreamManager(media::AudioManager* audio_manager)
 }
 
 MediaStreamManager::~MediaStreamManager() {
+  DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::IO));
   DVLOG(1) << "~MediaStreamManager";
   DCHECK(requests_.empty());
   DCHECK(!device_task_runner_.get());
@@ -1598,6 +1572,14 @@ void MediaStreamManager::FinalizeMediaAccessRequest(
 }
 
 void MediaStreamManager::InitializeDeviceManagersOnIOThread() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  // Store a pointer to |this| on the IO thread to avoid having to jump to the
+  // UI thread to fetch a pointer to the MSM. In particular on Android, it can
+  // be problematic to post to a UI thread from arbitrary worker threads since
+  // attaching to the VM is required and we may have to access the MSM from
+  // callback threads that we don't own and don't want to attach.
+  g_media_stream_manager_tls_ptr.Pointer()->Set(this);
+
   // TODO(dalecurtis): Remove ScopedTracker below once crbug.com/457525 is
   // fixed.
   tracked_objects::ScopedTracker tracking_profile1(
@@ -1838,28 +1820,32 @@ void MediaStreamManager::UseFakeUIForTests(
   fake_ui_ = fake_ui.Pass();
 }
 
+void MediaStreamManager::RegisterNativeLogCallback(
+    int renderer_host_id,
+    const base::Callback<void(const std::string&)>& callback) {
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+      base::Bind(&MediaStreamManager::DoNativeLogCallbackRegistration,
+                 base::Unretained(this), renderer_host_id, callback));
+}
+
+void MediaStreamManager::UnregisterNativeLogCallback(int renderer_host_id) {
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+      base::Bind(&MediaStreamManager::DoNativeLogCallbackUnregistration,
+                 base::Unretained(this), renderer_host_id));
+}
+
 void MediaStreamManager::AddLogMessageOnIOThread(const std::string& message) {
   // Get render process ids on the IO thread.
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  // Grab all unique process ids that request a MediaStream or have a
-  // MediaStream running.
-  std::set<int> requesting_process_ids;
   for (const LabeledDeviceRequest& labeled_request : requests_) {
     DeviceRequest* const request = labeled_request.second;
-    if (request->request_type == MEDIA_GENERATE_STREAM)
-      requesting_process_ids.insert(request->requesting_process_id);
+    if (request->request_type == MEDIA_GENERATE_STREAM) {
+      const auto& found = log_callbacks_.find(request->requesting_process_id);
+      if (found != log_callbacks_.end())
+        found->second.Run(message);
+    }
   }
-
-  // MediaStreamManager is a singleton in BrowserMainLoop, which owns the UI
-  // thread. MediaStreamManager has the same lifetime as the UI thread, so it is
-  // safe to use base::Unretained.
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(AddLogMessageOnUIThread,
-                 requesting_process_ids,
-                 message));
 }
 
 void MediaStreamManager::HandleAccessRequestResponse(
@@ -1998,6 +1984,7 @@ void MediaStreamManager::WillDestroyCurrentMessageLoop() {
   audio_input_device_manager_ = NULL;
   video_capture_manager_ = NULL;
   audio_output_device_enumerator_ = NULL;
+  g_media_stream_manager_tls_ptr.Pointer()->Set(NULL);
 }
 
 void MediaStreamManager::NotifyDevicesChanged(
@@ -2133,6 +2120,20 @@ void MediaStreamManager::SetKeyboardMicOnDeviceThread() {
   audio_manager_->SetHasKeyboardMic();
 }
 #endif
+
+void MediaStreamManager::DoNativeLogCallbackRegistration(
+    int renderer_host_id,
+    const base::Callback<void(const std::string&)>& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  // Re-registering (overwriting) is allowed and happens in some tests.
+  log_callbacks_[renderer_host_id] = callback;
+}
+
+void MediaStreamManager::DoNativeLogCallbackUnregistration(
+    int renderer_host_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  log_callbacks_.erase(renderer_host_id);
+}
 
 // static
 std::string MediaStreamManager::GetHMACForMediaDeviceID(

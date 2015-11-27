@@ -9,6 +9,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/time/time.h"
@@ -168,6 +169,13 @@ class WebRtcLogUploaderTest : public testing::Test {
     EXPECT_EQ(dump_content, lines[i + 3]);
   }
 
+  void FlushIOThread() {
+    base::RunLoop run_loop;
+    content::BrowserThread::PostTask(
+        content::BrowserThread::IO, FROM_HERE, run_loop.QuitClosure());
+    run_loop.Run();
+  }
+
   content::TestBrowserThreadBundle thread_bundle_;
   base::FilePath test_list_path_;
 };
@@ -206,6 +214,7 @@ TEST_F(WebRtcLogUploaderTest, AddLocallyStoredLogInfoToUploadListFile) {
   ASSERT_TRUE(VerifyLastLineHasLocalStorageInfoOnly());
 
   webrtc_log_uploader->StartShutdown();
+  FlushIOThread();
 }
 
 TEST_F(WebRtcLogUploaderTest, AddUploadedLogInfoToUploadListFile) {
@@ -232,6 +241,7 @@ TEST_F(WebRtcLogUploaderTest, AddUploadedLogInfoToUploadListFile) {
   ASSERT_TRUE(VerifyLastLineHasUploadInfoOnly());
 
   webrtc_log_uploader->StartShutdown();
+  FlushIOThread();
 }
 
 TEST_F(WebRtcLogUploaderTest, AddRtpDumpsToPostedData) {
@@ -261,7 +271,7 @@ TEST_F(WebRtcLogUploaderTest, AddRtpDumpsToPostedData) {
 
   scoped_ptr<Profile> profile(new TestingProfile());
   scoped_refptr<WebRtcLoggingHandlerHost> host(
-      new WebRtcLoggingHandlerHost(profile.get()));
+      new WebRtcLoggingHandlerHost(profile.get(), webrtc_log_uploader.get()));
 
   upload_done_data.incoming_rtp_dump = incoming_dump;
   upload_done_data.outgoing_rtp_dump = outgoing_dump;
@@ -276,4 +286,5 @@ TEST_F(WebRtcLogUploaderTest, AddRtpDumpsToPostedData) {
   VerifyRtpDumpInMultipart(post_data, "rtpdump_send", outgoing_dump_content);
 
   webrtc_log_uploader->StartShutdown();
+  FlushIOThread();
 }
