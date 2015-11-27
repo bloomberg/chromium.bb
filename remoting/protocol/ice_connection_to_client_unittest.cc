@@ -35,7 +35,7 @@ class IpcConnectionToClientTest : public testing::Test {
         .WillOnce(
             InvokeWithoutArgs(this, &IpcConnectionToClientTest::ConnectStubs));
     EXPECT_CALL(handler_, OnConnectionChannelsConnected(viewer_.get()));
-    session_->event_handler()->OnSessionStateChange(Session::CONNECTED);
+    session_->event_handler()->OnSessionStateChange(Session::ACCEPTED);
     session_->event_handler()->OnSessionStateChange(Session::AUTHENTICATED);
     base::RunLoop().RunUntilIdle();
   }

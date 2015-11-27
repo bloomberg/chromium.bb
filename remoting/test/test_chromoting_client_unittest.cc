@@ -129,8 +129,8 @@ TEST_F(TestChromotingClientTest, StartConnectionAndDisconnect) {
   EXPECT_EQ(protocol::OK, error_code_);
   EXPECT_FALSE(is_connected_to_host_);
 
-  // Simulate a CONNECTED message being sent from the Jingle session.
-  fake_connection_to_host_->SignalStateChange(protocol::Session::CONNECTED,
+  // Simulate a ACCEPTED message being sent from the Jingle session.
+  fake_connection_to_host_->SignalStateChange(protocol::Session::ACCEPTED,
                                               protocol::OK);
   EXPECT_EQ(protocol::ConnectionToHost::State::CONNECTED, connection_state_);
   EXPECT_EQ(protocol::OK, error_code_);
@@ -182,8 +182,8 @@ TEST_F(TestChromotingClientTest, StartConnectionThenFailWithUnknownError) {
   EXPECT_EQ(protocol::OK, error_code_);
   EXPECT_FALSE(is_connected_to_host_);
 
-  // Simulate a CONNECTED message being sent from the Jingle session.
-  fake_connection_to_host_->SignalStateChange(protocol::Session::CONNECTED,
+  // Simulate a ACCEPTED message being sent from the Jingle session.
+  fake_connection_to_host_->SignalStateChange(protocol::Session::ACCEPTED,
                                               protocol::OK);
   EXPECT_EQ(protocol::ConnectionToHost::State::CONNECTED, connection_state_);
   EXPECT_EQ(protocol::OK, error_code_);

@@ -201,7 +201,7 @@ class JingleSessionTest : public testing::Test {
       InSequence dummy;
 
       EXPECT_CALL(host_session_event_handler_,
-                  OnSessionStateChange(Session::CONNECTED))
+                  OnSessionStateChange(Session::ACCEPTED))
           .Times(AtMost(1));
       EXPECT_CALL(host_session_event_handler_,
                   OnSessionStateChange(Session::AUTHENTICATING))
@@ -225,7 +225,7 @@ class JingleSessionTest : public testing::Test {
       InSequence dummy;
 
       EXPECT_CALL(client_session_event_handler_,
-                  OnSessionStateChange(Session::CONNECTED))
+                  OnSessionStateChange(Session::ACCEPTED))
           .Times(AtMost(1));
       EXPECT_CALL(client_session_event_handler_,
                   OnSessionStateChange(Session::AUTHENTICATING))
@@ -449,7 +449,7 @@ TEST_F(JingleSessionTest, DeleteSessionOnIncomingConnection) {
           SetArgumentPointee<1>(protocol::SessionManager::ACCEPT)));
 
   EXPECT_CALL(host_session_event_handler_,
-      OnSessionStateChange(Session::CONNECTED))
+      OnSessionStateChange(Session::ACCEPTED))
       .Times(AtMost(1));
 
   EXPECT_CALL(host_session_event_handler_,
@@ -476,7 +476,7 @@ TEST_F(JingleSessionTest, DeleteSessionOnAuth) {
           SetArgumentPointee<1>(protocol::SessionManager::ACCEPT)));
 
   EXPECT_CALL(host_session_event_handler_,
-      OnSessionStateChange(Session::CONNECTED))
+      OnSessionStateChange(Session::ACCEPTED))
       .Times(AtMost(1));
 
   EXPECT_CALL(host_session_event_handler_,

@@ -56,10 +56,11 @@ void FakeConnectionToHost::SignalStateChange(protocol::Session::State state,
     case protocol::Session::CONNECTING:
     case protocol::Session::ACCEPTING:
     case protocol::Session::AUTHENTICATING:
+    case protocol::Session::CONNECTED:
       // No updates for these events.
       break;
 
-    case protocol::Session::CONNECTED:
+    case protocol::Session::ACCEPTED:
       SetState(CONNECTED, error);
       break;
 

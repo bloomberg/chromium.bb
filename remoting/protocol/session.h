@@ -33,13 +33,16 @@ class Session {
     ACCEPTING,
 
     // Session has been accepted and is pending authentication.
-    CONNECTED,
+    ACCEPTED,
 
     // Session has started authenticating.
     AUTHENTICATING,
 
     // Session has been connected and authenticated.
     AUTHENTICATED,
+
+    // Session has been connected.
+    CONNECTED,
 
     // Session has been closed.
     CLOSED,

@@ -197,7 +197,7 @@ void JingleSession::ContinueAcceptIncomingConnection() {
   SendMessage(message);
 
   // Update state.
-  SetState(CONNECTED);
+  SetState(ACCEPTED);
 
   if (authenticator_->state() == Authenticator::ACCEPTED) {
     OnAuthenticated();
@@ -231,6 +231,8 @@ StreamChannelFactory* JingleSession::GetQuicChannelFactory() {
 
 void JingleSession::Close(protocol::ErrorCode error) {
   DCHECK(CalledOnValidThread());
+
+  transport_.reset();
 
   if (is_session_active()) {
     // Send session-terminate message with the appropriate error code.
@@ -362,9 +364,8 @@ void JingleSession::OnTransportRouteChange(const std::string& channel_name,
 
 void JingleSession::OnTransportConnected() {
   DCHECK(CalledOnValidThread());
-
-  // TODO(sergeyu): Add Session::State value to indicate that the transport has
-  // been connected.
+  DCHECK_EQ(state_, AUTHENTICATED);
+  SetState(CONNECTED);
 }
 
 void JingleSession::OnTransportError(ErrorCode error) {
@@ -472,7 +473,7 @@ void JingleSession::OnAccept(const JingleMessage& message,
     quic_channel_factory_.reset();
   }
 
-  SetState(CONNECTED);
+  SetState(ACCEPTED);
 
   DCHECK(authenticator_->state() == Authenticator::WAITING_MESSAGE);
   authenticator_->ProcessMessage(auth_message, base::Bind(
@@ -487,7 +488,7 @@ void JingleSession::OnSessionInfo(const JingleMessage& message,
     return;
   }
 
-  if ((state_ != CONNECTED && state_ != AUTHENTICATING) ||
+  if ((state_ != ACCEPTED && state_ != AUTHENTICATING) ||
       authenticator_->state() != Authenticator::WAITING_MESSAGE) {
     LOG(WARNING) << "Received unexpected authenticator message "
                  << message.info->Str();
@@ -569,7 +570,7 @@ void JingleSession::ProcessAuthenticationStep() {
   DCHECK(CalledOnValidThread());
   DCHECK_NE(authenticator_->state(), Authenticator::PROCESSING_MESSAGE);
 
-  if (state_ != CONNECTED && state_ != AUTHENTICATING) {
+  if (state_ != ACCEPTED && state_ != AUTHENTICATING) {
     DCHECK(state_ == FAILED || state_ == CLOSED);
     // The remote host closed the connection while the authentication was being
     // processed asynchronously, nothing to do.
@@ -632,7 +633,7 @@ void JingleSession::SetState(State new_state) {
 }
 
 bool JingleSession::is_session_active() {
-  return state_ == CONNECTING || state_ == ACCEPTING || state_ == CONNECTED ||
+  return state_ == CONNECTING || state_ == ACCEPTING || state_ == ACCEPTED ||
         state_ == AUTHENTICATING || state_ == AUTHENTICATED;
 }
 

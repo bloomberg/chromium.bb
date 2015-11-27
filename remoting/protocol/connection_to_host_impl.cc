@@ -186,8 +186,9 @@ void ConnectionToHostImpl::OnSessionStateChange(Session::State state) {
     case Session::INITIALIZING:
     case Session::CONNECTING:
     case Session::ACCEPTING:
-    case Session::CONNECTED:
+    case Session::ACCEPTED:
     case Session::AUTHENTICATING:
+    case Session::CONNECTED:
       // Don't care about these events.
       break;
 
