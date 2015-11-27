@@ -1136,18 +1136,6 @@
    fun:_ZN2pp5proxy26PPP_Instance_Private_Proxy22OnMsgGetInstanceObjectEiNS0_24SerializedVarReturnValueE
 }
 {
-   bug_90487a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN9__gnu_cxx13new_allocatorISt10_List_nodeIPN5quota11QuotaClientEEE8allocateEjPKv
-   fun:_ZNSt10_List_baseIPN5quota11QuotaClientESaIS2_EE11_M_get_nodeEv
-   fun:_ZNSt4listIPN5quota11QuotaClientESaIS2_EE14_M_create_nodeERKS2_
-   fun:_ZNSt4listIPN5quota11QuotaClientESaIS2_EE9_M_insertESt14_List_iteratorIS2_ERKS2_
-   fun:_ZNSt4listIPN5quota11QuotaClientESaIS2_EE9push_backERKS2_
-   fun:_ZN5quota12QuotaManager14RegisterClientEPNS_11QuotaClientE
-   fun:_ZN5quota17QuotaManagerProxy14RegisterClientEPNS_11QuotaClientE
-}
-{
    bug_93730_a
    Memcheck:Leak
    fun:_Znw*
@@ -3448,4 +3436,11 @@
    fun:_ZN4mojo6common15MessagePumpMojo9DoRunLoopEPNS1_8RunStateEPN4base11MessagePump8DelegateE
    fun:_ZN4mojo6common15MessagePumpMojo3RunEPN4base11MessagePump8DelegateE
    fun:_ZN4base11MessageLoop10RunHandlerEv
+}
+{
+   bug_562703
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7storage12QuotaManager14LazyInitializeEv
+   fun:_ZN7storage12QuotaManager26GetUsageAndQuotaForWebAppsERK4GURLNS_11StorageTypeERKN4base8CallbackIFvNS_15QuotaStatusCodeEllEEE
 }
