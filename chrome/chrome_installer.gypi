@@ -247,6 +247,8 @@
             'installer/setup/install_worker.h',
             'installer/setup/installer_crash_reporter_client.cc',
             'installer/setup/installer_crash_reporter_client.h',
+            'installer/setup/installer_crash_reporting.cc',
+            'installer/setup/installer_crash_reporting.h',
             'installer/setup/setup.ico',
             'installer/setup/setup.rc',
             'installer/setup/setup_constants.cc',

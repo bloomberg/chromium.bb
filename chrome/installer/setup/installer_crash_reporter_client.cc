@@ -13,6 +13,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_version.h"
 #include "chrome/common/env_vars.h"
+#include "chrome/installer/setup/installer_crash_reporting.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "components/crash/core/common/crash_keys.h"
 
@@ -124,12 +125,7 @@ bool InstallerCrashReporterClient::GetCrashDumpLocation(
 }
 
 size_t InstallerCrashReporterClient::RegisterCrashKeys() {
-  const base::debug::CrashKey kKeys[] = {
-    { crash_keys::kClientId, crash_keys::kSmallSize },
-  };
-
-  return base::debug::InitCrashKeys(&kKeys[0], arraysize(kKeys),
-                                    crash_keys::kChunkMaxLength);
+  return installer::RegisterCrashKeys();
 }
 
 bool InstallerCrashReporterClient::IsRunningUnattended() {

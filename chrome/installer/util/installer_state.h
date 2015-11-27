@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "base/strings/string16.h"
 #include "base/version.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/product.h"
@@ -107,11 +108,9 @@ class InstallerState {
   Operation operation() const { return operation_; }
 
   // A convenience method returning level() == SYSTEM_LEVEL.
-  // TODO(grt): Eradicate the bool in favor of the enum.
   bool system_install() const;
 
   // A convenience method returning package_type() == MULTI_PACKAGE.
-  // TODO(grt): Eradicate the bool in favor of the enum.
   bool is_multi_install() const;
 
   // The full path to the place where the operand resides.
@@ -130,7 +129,7 @@ class InstallerState {
 #endif
 
   // The ClientState key by which we interact with Google Update.
-  const std::wstring& state_key() const { return state_key_; }
+  const base::string16& state_key() const { return state_key_; }
 
   // Convenience method to return the type of the BrowserDistribution associated
   // with the ClientState key we will be interacting with.
@@ -255,7 +254,7 @@ class InstallerState {
 
   Operation operation_;
   base::FilePath target_path_;
-  std::wstring state_key_;
+  base::string16 state_key_;
   BrowserDistribution::Type state_type_;
   ScopedVector<Product> products_;
   BrowserDistribution* multi_package_distribution_;
