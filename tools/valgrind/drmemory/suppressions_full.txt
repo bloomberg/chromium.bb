@@ -2049,3 +2049,17 @@ UNINITIALIZED READ
 name=https://github.com/DynamoRIO/drmemory/issues/1485
 instruction=*ymm*
 media.dll!*
+
+HANDLE LEAK
+name=bug_562701
+system call NtCreateSection
+KERNELBASE.dll!CreateFileMappingW
+base.dll!base::SharedMemory::Create
+content.dll!content::ChildThreadImpl::AllocateSharedMemory
+content.dll!content::RenderThreadImpl::HostAllocateSharedMemoryBuffer
+content.dll!content::ImageDataPlatformBackend::Init
+content.dll!content::PPB_ImageData_Impl::Init
+content.dll!content::PPB_ImageData_Impl::Create
+content.dll!content::ResourceCreationImpl::CreateImageData
+ppapi_proxy.dll!ppapi::proxy::PPB_ImageData_Proxy::CreateImageData
+ppapi_proxy.dll!ppapi::proxy::PPB_ImageData_Proxy::OnHostMsgCreatePlatform
