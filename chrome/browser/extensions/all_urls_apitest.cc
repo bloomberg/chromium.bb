@@ -22,23 +22,51 @@ namespace {
 const std::string kAllUrlsTarget = "/extensions/api_test/all_urls/index.html";
 }
 
-class AllUrlsApiTest : public ExtensionApiTest {
+class AllUrlsApiTest : public ExtensionApiTest,
+                       public ExtensionRegistryObserver {
  protected:
-  AllUrlsApiTest() {}
+  AllUrlsApiTest() : wait_until_reload_(false),
+                     content_script_is_reloaded_(false),
+                     execute_script_is_reloaded_(false) {}
   ~AllUrlsApiTest() override {}
 
   const Extension* content_script() const { return content_script_.get(); }
   const Extension* execute_script() const { return execute_script_.get(); }
 
+  // ExtensionRegistryObserver implementation
+  void OnExtensionLoaded(
+      content::BrowserContext*,
+      const Extension* extension) override {
+    if (!wait_until_reload_)
+      return;
+
+    if (extension->id() == content_script_->id())
+      content_script_is_reloaded_ = true;
+    else if (extension->id() == execute_script_->id())
+      execute_script_is_reloaded_ = true;
+
+    if (content_script_is_reloaded_ && execute_script_is_reloaded_) {
+      base::MessageLoop::current()->QuitWhenIdle();
+      wait_until_reload_ = false;
+    }
+  }
+
   void WhitelistExtensions() {
+    ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver> observer(this);
+    observer.Add(ExtensionRegistry::Get(browser()->profile()));
+
     ExtensionsClient::ScriptingWhitelist whitelist;
     whitelist.push_back(content_script_->id());
     whitelist.push_back(execute_script_->id());
     ExtensionsClient::Get()->SetScriptingWhitelist(whitelist);
     // Extensions will have certain permissions withheld at initialization if
     // they aren't whitelisted, so we need to reload them.
+    content_script_is_reloaded_ = false;
+    execute_script_is_reloaded_ = false;
+    wait_until_reload_ = true;
     extension_service()->ReloadExtension(content_script_->id());
     extension_service()->ReloadExtension(execute_script_->id());
+    base::MessageLoop::current()->Run();
   }
 
  private:
@@ -54,17 +82,14 @@ class AllUrlsApiTest : public ExtensionApiTest {
   scoped_refptr<const Extension> content_script_;
   scoped_refptr<const Extension> execute_script_;
 
+  bool wait_until_reload_;
+  bool content_script_is_reloaded_;
+  bool execute_script_is_reloaded_;
+
   DISALLOW_COPY_AND_ASSIGN(AllUrlsApiTest);
 };
 
-#if (defined(OS_WIN) && !defined(NDEBUG)) || defined(OS_CHROMEOS) || \
-    (defined(OS_MACOSX) && defined(ADDRESS_SANITIZER))
-// http://crbug.com/174341
-#define MAYBE_WhitelistedExtension DISABLED_WhitelistedExtension
-#else
-#define MAYBE_WhitelistedExtension WhitelistedExtension
-#endif
-IN_PROC_BROWSER_TEST_F(AllUrlsApiTest, MAYBE_WhitelistedExtension) {
+IN_PROC_BROWSER_TEST_F(AllUrlsApiTest, WhitelistedExtension) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
