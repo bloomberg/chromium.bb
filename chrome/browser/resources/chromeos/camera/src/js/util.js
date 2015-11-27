@@ -194,7 +194,8 @@ camera.util.waitForAnimationCompletion = function(
     if (completed || (opt_event && opt_event.target != animationElement))
       return;
     completed = true;
-    animationElement.removeEventListener(onAnimationCompleted);
+    animationElement.removeEventListener(
+        'webkitAnimationEnd', onAnimationCompleted);
     onCompletion();
   };
   if (timeout)
@@ -216,7 +217,8 @@ camera.util.waitForTransitionCompletion = function(
     if (completed || (opt_event && opt_event.target != transitionElement))
       return;
     completed = true;
-    transitionElement.removeEventListener(onTransitionCompleted);
+    transitionElement.removeEventListener(
+        'webkitTransitionEnd', onTransitionCompleted);
     onCompletion();
   };
   if (timeout)
