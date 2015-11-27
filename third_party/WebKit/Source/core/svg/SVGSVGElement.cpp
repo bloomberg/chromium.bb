@@ -701,10 +701,12 @@ void SVGSVGElement::setupInitialView(const String& fragmentIdentifier, Element* 
 
         view->inheritViewAttributesFromElement(this);
 
-        if (view->parseViewSpec(fragmentIdentifier))
+        if (view->parseViewSpec(fragmentIdentifier)) {
+            UseCounter::count(document(), UseCounter::SVGSVGElementFragmentSVGView);
             m_useCurrentView = true;
-        else
+        } else {
             view->reset();
+        }
 
         if (layoutObject && (hadUseCurrentView || m_useCurrentView))
             markForLayoutAndParentResourceInvalidation(layoutObject);
@@ -745,6 +747,7 @@ void SVGSVGElement::inheritViewAttributes(SVGViewElement* viewElement)
 {
     SVGViewSpec* view = currentView();
     m_useCurrentView = true;
+    UseCounter::count(document(), UseCounter::SVGSVGElementFragmentSVGViewElement);
     view->inheritViewAttributesFromElement(this);
     view->inheritViewAttributesFromElement(viewElement);
 }

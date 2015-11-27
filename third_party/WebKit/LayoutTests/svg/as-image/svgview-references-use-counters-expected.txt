@@ -1,0 +1,10 @@
+PASS window.internals.isUseCounted(document.querySelector('object').contentDocument, SVGSVGElementFragmentSVGView) is false
+PASS window.internals.isUseCounted(document.querySelector('object').contentDocument, SVGSVGElementFragmentSVGViewElement) is false
+PASS window.internals.isUseCounted(document.querySelector('object').contentDocument, SVGSVGElementFragmentSVGView) is true
+PASS window.internals.isUseCounted(document.querySelector('object').contentDocument, SVGSVGElementFragmentSVGViewElement) is false
+PASS window.internals.isUseCounted(document.querySelector('object').contentDocument, SVGSVGElementFragmentSVGView) is true
+PASS window.internals.isUseCounted(document.querySelector('object').contentDocument, SVGSVGElementFragmentSVGViewElement) is true
+PASS successfullyParsed is true
+
+TEST COMPLETE
+  
