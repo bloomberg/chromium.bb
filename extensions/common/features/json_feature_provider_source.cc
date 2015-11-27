@@ -18,9 +18,8 @@ JSONFeatureProviderSource::~JSONFeatureProviderSource() {
 }
 
 void JSONFeatureProviderSource::LoadJSON(int resource_id) {
-  const std::string& features_file = ResourceBundle::GetSharedInstance()
-                                         .GetRawDataResource(resource_id)
-                                         .as_string();
+  const base::StringPiece features_file =
+      ResourceBundle::GetSharedInstance().GetRawDataResource(resource_id);
   int error_code = 0;
   std::string error_message;
   scoped_ptr<base::Value> value(base::JSONReader::ReadAndReturnError(
