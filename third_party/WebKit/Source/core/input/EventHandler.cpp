@@ -1979,7 +1979,7 @@ void EventHandler::defaultWheelEventHandler(Node* startNode, WheelEvent* wheelEv
 
 bool EventHandler::handleGestureShowPress()
 {
-    m_lastShowPressTimestamp = WTF::currentTime();
+    m_lastShowPressTimestamp = WTF::monotonicallyIncreasingTime();
 
     FrameView* view = m_frame->view();
     if (!view)
@@ -2753,7 +2753,7 @@ GestureEventWithHitTestResults EventHandler::targetGestureEvent(const PlatformGe
         // If the Tap is received very shortly after ShowPress, we want to
         // delay clearing of the active state so that it's visible to the user
         // for at least a couple of frames.
-        activeInterval = WTF::currentTime() - m_lastShowPressTimestamp;
+        activeInterval = WTF::monotonicallyIncreasingTime() - m_lastShowPressTimestamp;
         shouldKeepActiveForMinInterval = m_lastShowPressTimestamp && activeInterval < minimumActiveInterval;
         if (shouldKeepActiveForMinInterval)
             hitType |= HitTestRequest::ReadOnly;
