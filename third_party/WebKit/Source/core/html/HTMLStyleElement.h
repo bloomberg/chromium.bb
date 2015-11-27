@@ -40,8 +40,6 @@ public:
     static PassRefPtrWillBeRawPtr<HTMLStyleElement> create(Document&, bool createdByParser);
     ~HTMLStyleElement() override;
 
-    ContainerNode* scopingNode();
-
     using StyleElement::sheet;
 
     bool disabled() const;

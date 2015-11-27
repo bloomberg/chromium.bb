@@ -119,17 +119,6 @@ const AtomicString& HTMLStyleElement::type() const
     return getAttribute(typeAttr);
 }
 
-ContainerNode* HTMLStyleElement::scopingNode()
-{
-    if (!inDocument())
-        return nullptr;
-
-    if (isInShadowTree())
-        return containingShadowRoot();
-
-    return &document();
-}
-
 void HTMLStyleElement::dispatchPendingLoadEvents()
 {
     styleLoadEventSender().dispatchPendingEvents();
