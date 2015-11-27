@@ -67,6 +67,7 @@
         '<(DEPTH)/ui/display/display.gyp:display_types',
         '<(DEPTH)/ui/display/display.gyp:display_util',
         '<(DEPTH)/ui/events/events.gyp:events',
+        '<(DEPTH)/ui/events/devices/events_devices.gyp:events_devices',
         '<(DEPTH)/ui/events/ozone/events_ozone.gyp:events_ozone',
         '<(DEPTH)/ui/gfx/gfx.gyp:gfx',
         '<(DEPTH)/ui/gfx/gfx.gyp:gfx_geometry',
