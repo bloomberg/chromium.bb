@@ -202,6 +202,7 @@ function runPendingResponsiveTests() {
         var after = stateTransition.after;
         var container = bindings.createTargetContainer(document.body);
         var targets = createTargets(bindings, after.expect.length, container);
+        var expectationTargets = createTargets(bindings, after.expect.length, container);
 
         setState(bindings, targets, property, before.state);
         startPausedAnimations(targets, keyframes, after.expect.map(function(expectation) { return expectation.at; }));
@@ -213,9 +214,11 @@ function runPendingResponsiveTests() {
             for (var i = 0; i < targets.length; i++) {
               var target = targets[i];
               var expectation = after.expect[i];
+              var expectationTarget = expectationTargets[i];
+              bindings.setValue(expectationTarget, property, expectation.is);
               var actual = bindings.getAnimatedValue(target, property);
               test(function() {
-                assert_equals(actual, expectation.is);
+                assert_equals(actual, bindings.getAnimatedValue(expectationTarget, property));
               }, `Animation on property <${prefixedProperty}> from ${keyframeText(from)} to ${keyframeText(to)} with ${JSON.stringify(before.state)} changed to ${JSON.stringify(after.state)} at (${expectation.at}) is [${expectation.is}]`);
             }
           },

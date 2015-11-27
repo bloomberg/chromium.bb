@@ -1,0 +1,8 @@
+This is a testharness.js-based test.
+PASS This test uses responsive-test.js. 
+FAIL Animation on property <svgTransform> from neutral to [translate(30 70)] with {"underlying":"translate(10 10)"} changed to {"underlying":"translate(20 30) skewX(10)"} at (0.25) is [translate(20 30) skewX(10)] assert_equals: expected "2,0,1,0,0,1,20,30,5,10,1,0,0.17632698070846498,1,0,0" but got "2,0,1,0,0,1,0,0,5,0,1,0,0,1,0,0"
+PASS Animation on property <svgTransform> from neutral to [translate(30 70)] with {"underlying":"translate(10 10)"} changed to {"underlying":"translate(20 30) skewX(10)"} at (0.75) is [translate(30 70)] 
+FAIL Animation on property <svgTransform> from neutral to [translate(30 70)] with {"underlying":"translate(20 30) skewX(10)"} changed to {"underlying":"translate(10 10)"} at (0.25) is [translate(15 25)] assert_equals: expected "2,0,1,0,0,1,15,25" but got "2,0,1,0,0,1,7.5,17.5"
+FAIL Animation on property <svgTransform> from neutral to [translate(30 70)] with {"underlying":"translate(20 30) skewX(10)"} changed to {"underlying":"translate(10 10)"} at (0.75) is [translate(25 55)] assert_equals: expected "2,0,1,0,0,1,25,55" but got "2,0,1,0,0,1,22.5,52.5"
+Harness: the test ran to completion.
+

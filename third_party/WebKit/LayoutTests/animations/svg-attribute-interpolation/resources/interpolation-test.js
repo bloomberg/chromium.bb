@@ -257,6 +257,9 @@
   {
     var animateElement;
     if (attributeName.toLowerCase().includes('transform')) {
+      if (isNeutralKeyframe(from) || isNeutralKeyframe(to)) {
+        return null;
+      }
       from = from.split(')');
       to = to.split(')');
       // Discard empty string at end.
@@ -312,7 +315,6 @@
           target.container.pauseAnimations();
           target.container.setCurrentTime(expectation.at);
         } else {
-          console.warn(`Unable to test SMIL from ${params.from} to ${params.to}`);
           target.container.remove();
           target.measure = function() {};
         }
