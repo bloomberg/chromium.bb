@@ -8,11 +8,11 @@ The canonical version is located at `https://chrome-internal.googlesource.com/
 infra/infra_internal/+/master/commit_queue/cq_client`.
 
 You'll need to use protoc version 2.6.1 and
-recent golang/protobuf package. Sadly, the latter has no tags no versions.
+recent golang/protobuf package. Sadly, the latter has neither tags nor versions.
 
-You can get protobuf by downloading archive from https://github.com/google/protobuf/tree/v2.6.1,
-and manually building it. As for golang compiler, if you have go configured,
-just
+You can get protobuf by downloading archive from
+https://github.com/google/protobuf/tree/v2.6.1 and manually building it. As for
+golang compiler, if you have go configured, just
 
     go get -u github.com/golang/protobuf/{proto,protoc-gen-go}
 
