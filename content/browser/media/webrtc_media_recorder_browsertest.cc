@@ -64,8 +64,14 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcMediaRecorderTest,
   MakeTypicalCall("testStartAndDataAvailable();", kMediaRecorderHtmlFile);
 }
 
+// Fails flakily under ThreadSanitizer, http://crbug.com/562406.
+#if defined(THREAD_SANITIZER)
+#define MAYBE_MediaRecorderStartWithTimeSlice DISABLED_MediaRecorderStartWithTimeSlice
+#else
+#define MAYBE_MediaRecorderStartWithTimeSlice MediaRecorderStartWithTimeSlice
+#endif
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcMediaRecorderTest,
-                       MediaRecorderStartWithTimeSlice) {
+                       MAYBE_MediaRecorderStartWithTimeSlice) {
   MakeTypicalCall("testStartWithTimeSlice();", kMediaRecorderHtmlFile);
 }
 
