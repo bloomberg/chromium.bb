@@ -260,11 +260,7 @@ void ChromotingHost::OnIncomingSession(
       protocol::Session* session,
       protocol::SessionManager::IncomingSessionResponse* response) {
   DCHECK(CalledOnValidThread());
-
-  if (!started_) {
-    *response = protocol::SessionManager::DECLINE;
-    return;
-  }
+  DCHECK(started_);
 
   if (login_backoff_.ShouldRejectRequest()) {
     LOG(WARNING) << "Rejecting connection due to"

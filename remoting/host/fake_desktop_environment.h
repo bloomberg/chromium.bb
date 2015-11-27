@@ -13,7 +13,8 @@
 
 namespace remoting {
 
-class FakeInputInjector : public InputInjector {
+class FakeInputInjector : public InputInjector,
+                          public base::SupportsWeakPtr<FakeInputInjector> {
  public:
   FakeInputInjector();
   ~FakeInputInjector() override;
@@ -24,6 +25,30 @@ class FakeInputInjector : public InputInjector {
   void InjectMouseEvent(const protocol::MouseEvent& event) override;
   void InjectTouchEvent(const protocol::TouchEvent& event) override;
   void InjectClipboardEvent(const protocol::ClipboardEvent& event) override;
+
+  void set_key_events(std::vector<protocol::KeyEvent>* key_events) {
+    key_events_ = key_events;
+  }
+  void set_text_events(std::vector<protocol::TextEvent>* text_events) {
+    text_events_ = text_events;
+  }
+  void set_mouse_events(std::vector<protocol::MouseEvent>* mouse_events) {
+    mouse_events_ = mouse_events;
+  }
+  void set_touch_events(std::vector<protocol::TouchEvent>* touch_events) {
+    touch_events_ = touch_events;
+  }
+  void set_clipboard_events(
+      std::vector<protocol::ClipboardEvent>* clipboard_events) {
+    clipboard_events_ = clipboard_events;
+  }
+
+ private:
+  std::vector<protocol::KeyEvent>* key_events_ = nullptr;
+  std::vector<protocol::TextEvent>* text_events_ = nullptr;
+  std::vector<protocol::MouseEvent>* mouse_events_ = nullptr;
+  std::vector<protocol::TouchEvent>* touch_events_ = nullptr;
+  std::vector<protocol::ClipboardEvent>* clipboard_events_ = nullptr;
 };
 
 class FakeScreenControls : public ScreenControls {
@@ -35,7 +60,9 @@ class FakeScreenControls : public ScreenControls {
   void SetScreenResolution(const ScreenResolution& resolution) override;
 };
 
-class FakeDesktopEnvironment : public DesktopEnvironment {
+class FakeDesktopEnvironment
+    : public DesktopEnvironment,
+      public base::SupportsWeakPtr<FakeDesktopEnvironment> {
  public:
   FakeDesktopEnvironment();
   ~FakeDesktopEnvironment() override;
@@ -58,8 +85,14 @@ class FakeDesktopEnvironment : public DesktopEnvironment {
   scoped_ptr<GnubbyAuthHandler> CreateGnubbyAuthHandler(
       protocol::ClientStub* client_stub) override;
 
+  base::WeakPtr<FakeInputInjector> last_input_injector() {
+    return last_input_injector_;
+  }
+
  private:
   protocol::FakeDesktopCapturer::FrameGenerator frame_generator_;
+
+  base::WeakPtr<FakeInputInjector> last_input_injector_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeDesktopEnvironment);
 };
@@ -83,8 +116,14 @@ class FakeDesktopEnvironmentFactory : public DesktopEnvironmentFactory {
   bool SupportsAudioCapture() const override;
   void SetEnableGnubbyAuth(bool enable) override;
 
+  base::WeakPtr<FakeDesktopEnvironment> last_desktop_environment() {
+    return last_desktop_environment_;
+  }
+
  private:
   protocol::FakeDesktopCapturer::FrameGenerator frame_generator_;
+
+  base::WeakPtr<FakeDesktopEnvironment> last_desktop_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeDesktopEnvironmentFactory);
 };

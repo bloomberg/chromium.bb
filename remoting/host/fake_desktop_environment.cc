@@ -7,6 +7,7 @@
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/gnubby_auth_handler.h"
 #include "remoting/host/input_injector.h"
+#include "remoting/proto/event.pb.h"
 #include "remoting/protocol/fake_desktop_capturer.h"
 
 namespace remoting {
@@ -19,19 +20,29 @@ void FakeInputInjector::Start(
 }
 
 void FakeInputInjector::InjectKeyEvent(const protocol::KeyEvent& event) {
+  if (key_events_)
+    key_events_->push_back(event);
 }
 
 void FakeInputInjector::InjectTextEvent(const protocol::TextEvent& event) {
+  if (text_events_)
+    text_events_->push_back(event);
 }
 
 void FakeInputInjector::InjectMouseEvent(const protocol::MouseEvent& event) {
+  if (mouse_events_)
+    mouse_events_->push_back(event);
 }
 
 void FakeInputInjector::InjectTouchEvent(const protocol::TouchEvent& event) {
+  if (touch_events_)
+    touch_events_->push_back(event);
 }
 
 void FakeInputInjector::InjectClipboardEvent(
     const protocol::ClipboardEvent& event) {
+  if (clipboard_events_)
+    clipboard_events_->push_back(event);
 }
 
 FakeScreenControls::FakeScreenControls() {}
@@ -51,7 +62,9 @@ scoped_ptr<AudioCapturer> FakeDesktopEnvironment::CreateAudioCapturer() {
 }
 
 scoped_ptr<InputInjector> FakeDesktopEnvironment::CreateInputInjector() {
-  return make_scoped_ptr(new FakeInputInjector());
+  scoped_ptr<FakeInputInjector> result(new FakeInputInjector());
+  last_input_injector_ = result->AsWeakPtr();
+  return result.Pass();
 }
 
 scoped_ptr<ScreenControls> FakeDesktopEnvironment::CreateScreenControls() {
@@ -91,6 +104,7 @@ scoped_ptr<DesktopEnvironment> FakeDesktopEnvironmentFactory::Create(
     base::WeakPtr<ClientSessionControl> client_session_control) {
   scoped_ptr<FakeDesktopEnvironment> result(new FakeDesktopEnvironment());
   result->set_frame_generator(frame_generator_);
+  last_desktop_environment_ = result->AsWeakPtr();
   return result.Pass();
 }
 
