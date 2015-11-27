@@ -184,17 +184,6 @@ nouveau_object_del(struct nouveau_object **pobj)
 	}
 }
 
-void *
-nouveau_object_find(struct nouveau_object *obj, uint32_t pclass)
-{
-	while (obj && obj->oclass != pclass) {
-		obj = obj->parent;
-		if (pclass == NOUVEAU_PARENT_CLASS)
-			break;
-	}
-	return obj;
-}
-
 void
 nouveau_drm_del(struct nouveau_drm **pdrm)
 {

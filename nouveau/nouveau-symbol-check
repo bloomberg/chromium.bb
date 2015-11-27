@@ -34,7 +34,6 @@ nouveau_drm_del
 nouveau_drm_new
 nouveau_getparam
 nouveau_object_del
-nouveau_object_find
 nouveau_object_mclass
 nouveau_object_mthd
 nouveau_object_new

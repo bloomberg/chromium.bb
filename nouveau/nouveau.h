@@ -109,7 +109,6 @@ int  nouveau_object_sclass_get(struct nouveau_object *,
 void nouveau_object_sclass_put(struct nouveau_sclass **);
 int  nouveau_object_mclass(struct nouveau_object *,
 			   const struct nouveau_mclass *);
-void *nouveau_object_find(struct nouveau_object *, uint32_t parent_class);
 
 struct nouveau_device {
 	struct nouveau_object object;
