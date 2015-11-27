@@ -35,9 +35,20 @@ source_set("cryptauth") {
     "sync_scheduler_impl.h",
   ]
 
+  # TODO bug 562685: This target is including a header from the test support
+  # target. To prevent "gn check" from complaining, whitelist it here, but
+  # this should be factored so that test headers aren't included.
+  sources += [ "fake_secure_message_delegate.h" ]
+
   deps = [
     "//base",
+    "//base:prefs",
     "//components/gcm_driver",
+    "//components/gcm_driver/common",
+
+    # TODO bug 562683: This component has a circular dependency with the root
+    # proximity auth target. It is whitelisted in that target for includes.
+    #"//components/proximity_auth",
     "//components/proximity_auth/logging",
     "//crypto",
     "//google_apis",
@@ -45,7 +56,7 @@ source_set("cryptauth") {
   ]
 
   public_deps = [
-    "proto",
+    "//components/proximity_auth/cryptauth/proto",
   ]
 }
 
@@ -63,14 +74,14 @@ source_set("test_support") {
     "mock_sync_scheduler.h",
   ]
 
-  deps = [
+  public_deps = [
     ":cryptauth",
-    "//base",
-    "//testing/gmock",
+    "//components/proximity_auth/cryptauth/proto",
   ]
 
-  public_deps = [
-    "proto",
+  deps = [
+    "//base",
+    "//testing/gmock",
   ]
 }
 
@@ -94,6 +105,7 @@ source_set("unit_tests") {
     "//base:prefs_test_support",
     "//base/test:test_support",
     "//components/gcm_driver:test_support",
+    "//components/proximity_auth",
     "//google_apis:test_support",
     "//net:test_support",
     "//testing/gtest",

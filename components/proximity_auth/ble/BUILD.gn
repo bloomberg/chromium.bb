@@ -23,7 +23,12 @@ source_set("ble") {
 
   deps = [
     "//base",
-    "//components/proximity_auth",
+    "//base:prefs",
+    "//components/proximity_auth/logging",
+
+    # TODO bug 562683: This component has a circular dependency with the root
+    # proximity auth target. It is whitelisted in that target for includes.
+    #"//components/proximity_auth",
     "//device/bluetooth",
     "//net",
   ]
@@ -46,8 +51,9 @@ source_set("unit_tests") {
 
   deps = [
     ":ble",
+    "//base:prefs_test_support",
     "//base/test:test_support",
-    "//components/proximity_auth",
+    "//components/proximity_auth:test_support",
     "//device/bluetooth:mocks",
     "//testing/gmock",
     "//testing/gtest",

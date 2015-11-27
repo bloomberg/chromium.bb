@@ -14,9 +14,17 @@ source_set("test_support") {
     "print_test_content_renderer_client.h",
   ]
 
-  deps = [
+  public_deps = [
+    "//base",
+    "//components/printing/common",
     "//components/printing/renderer",
+    "//content/public/common",
+    "//content/public/renderer",
+    "//content/test:test_support",
+    "//ipc",
+    "//printing",
     "//skia",
     "//testing/gtest",
+    "//ui/gfx/geometry",
   ]
 }

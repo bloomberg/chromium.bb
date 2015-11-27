@@ -15,5 +15,7 @@ source_set("common") {
     "//printing",
     "//third_party/WebKit/public:blink",
     "//ui/gfx",
+    "//ui/gfx/geometry",
+    "//ui/gfx/ipc",
   ]
 }

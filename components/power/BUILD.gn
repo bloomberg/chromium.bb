@@ -12,8 +12,10 @@ static_library("power") {
 
   deps = [
     "//base",
-    "//components/keyed_service/core:core",
+    "//components/keyed_service/content",
+    "//components/keyed_service/core",
     "//content/public/common",
+    "//url",
   ]
 }
 

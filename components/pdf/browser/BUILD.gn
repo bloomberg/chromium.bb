@@ -13,7 +13,9 @@ static_library("browser") {
   ]
 
   deps = [
+    "//base",
     "//components/pdf/common",
     "//content/public/browser",
+    "//ipc",
   ]
 }

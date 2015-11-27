@@ -274,6 +274,10 @@ component("proxy") {
     "//build/config:precompiled_headers",
   ]
 
+  public_deps = [
+    "//ppapi/proxy:ipc_sources",
+  ]
+
   deps = [
     "//base",
     "//gpu/command_buffer/client:gles2_implementation",
@@ -281,7 +285,6 @@ component("proxy") {
     "//ipc",
     "//media:shared_memory_support",
     "//ppapi/c",
-    "//ppapi/proxy:ipc_sources",
     "//ppapi/shared_impl",
   ]
 

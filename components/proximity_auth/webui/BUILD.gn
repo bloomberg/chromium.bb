@@ -17,10 +17,15 @@ static_library("webui") {
 
   deps = [
     "//base",
+    "//base:i18n",
+    "//base:prefs",
+    "//components/proximity_auth",
+    "//components/proximity_auth/ble",
     "//components/proximity_auth/cryptauth",
-    "//components/proximity_auth/cryptauth/proto",
+    "//components/proximity_auth/logging",
     "//components/resources",
     "//content/public/browser",
+    "//device/bluetooth",
     "//ui/resources",
   ]
 }

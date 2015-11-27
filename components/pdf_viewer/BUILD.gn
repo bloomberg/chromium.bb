@@ -14,11 +14,13 @@ mojo_native_application("pdf_viewer") {
   deps = [
     "//base",
     "//components/bitmap_uploader",
+    "//components/mus/common",
     "//components/mus/public/cpp",
     "//components/mus/public/interfaces",
     "//components/web_view/public/interfaces",
     "//gpu",
     "//mojo/application/public/cpp",
+    "//mojo/application/public/interfaces",
     "//mojo/common",
     "//mojo/common:common_base",
     "//mojo/converters/input_events",
@@ -33,6 +35,7 @@ mojo_native_application("pdf_viewer") {
     "//ui/gfx/geometry",
     "//ui/mojo/geometry:interfaces",
     "//ui/mojo/geometry:util",
+    "//v8",
   ]
 
   data_deps = [

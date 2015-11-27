@@ -271,9 +271,13 @@ if (enable_configuration_policy) {
     }
 
     public_deps = [
+      ":policy",
       ":policy_component",
       ":test_support",
+      "//base",
       "//components/policy/proto",
+      "//crypto",
+      "//net",
       "//testing/gmock",
       "//testing/gtest",
     ]

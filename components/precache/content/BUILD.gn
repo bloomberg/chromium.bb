@@ -12,9 +12,15 @@ source_set("content") {
 
   deps = [
     "//base",
+    "//base:prefs",
+    "//components/history/core/browser",
+    "//components/keyed_service/core",
     "//components/precache/core",
     "//components/sync_driver",
+    "//components/variations",
     "//content/public/browser",
+    "//net",
+    "//sql",
     "//url",
   ]
 }
@@ -26,6 +32,14 @@ source_set("unit_tests") {
   ]
   deps = [
     ":content",
+    "//base",
+    "//base/test:test_support",
+    "//components/history/core/browser",
+    "//components/precache/core",
+    "//content/public/browser",
+    "//content/test:test_support",
+    "//net:test_support",
+    "//sql",
     "//testing/gmock",
     "//testing/gtest",
   ]

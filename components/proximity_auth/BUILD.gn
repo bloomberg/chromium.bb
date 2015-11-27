@@ -71,11 +71,24 @@ source_set("proximity_auth") {
 
   deps = [
     "//base",
+    "//base:prefs",
+    "//components/proximity_auth/ble",
+    "//components/proximity_auth/cryptauth",
+    "//components/proximity_auth/logging",
     "//device/bluetooth",
     "//net",
-    "cryptauth/proto",
-    "logging",
   ]
+
+  # TODO bug 562683: This whitelists a circular include dependency between this
+  # target and the following targets which should not exist.
+  allow_circular_includes_from = [
+    "//components/proximity_auth/ble",
+    "//components/proximity_auth/cryptauth",
+  ]
+
+  if (is_chromeos) {
+    deps += [ "//chromeos" ]
+  }
 }
 
 source_set("test_support") {
@@ -94,10 +107,15 @@ source_set("test_support") {
     "proximity_auth_test_util.h",
   ]
 
+  public_deps = [
+    ":proximity_auth",
+  ]
+
   deps = [
     "//base",
+    "//components/proximity_auth/cryptauth:test_support",
+    "//components/proximity_auth/logging",
     "//testing/gmock",
-    "cryptauth:test_support",
   ]
 }
 
@@ -128,15 +146,22 @@ source_set("unit_tests") {
   deps = [
     ":proximity_auth",
     ":test_support",
+    "//base",
+    "//base:prefs_test_support",
     "//base/test:test_support",
+    "//components/proximity_auth/ble:unit_tests",
+    "//components/proximity_auth/cryptauth:test_support",
+    "//components/proximity_auth/cryptauth:unit_tests",
+    "//components/proximity_auth/logging",
+    "//components/proximity_auth/logging:unit_tests",
     "//device/bluetooth:mocks",
     "//testing/gmock",
     "//testing/gtest",
-    "ble:unit_tests",
-    "cryptauth:test_support",
-    "cryptauth:unit_tests",
-    "logging:unit_tests",
   ]
+
+  if (is_chromeos) {
+    deps += [ "//chromeos" ]
+  }
 }
 
 # Note: This is a convenience target for ease of rapid iteration during
@@ -148,6 +173,8 @@ if (!is_chromeos) {
     ]
     deps = [
       ":unit_tests",
+      "//base",
+      "//base/test:test_support",
     ]
   }
 }

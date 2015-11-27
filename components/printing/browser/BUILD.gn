@@ -9,7 +9,10 @@ source_set("browser") {
     "print_manager_utils.cc",
     "print_manager_utils.h",
   ]
+
   deps = [
+    "//base",
+    "//components/printing/common",
     "//content/public/browser",
     "//printing",
   ]

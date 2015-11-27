@@ -25,10 +25,14 @@ static_library("renderer") {
   }
 
   deps = [
+    "//content/public/child",
+    "//content/public/common",
+    "//content/public/renderer",
     "//gin",
     "//skia",
     "//third_party/WebKit/public:blink",
     "//third_party/re2",
+    "//ui/base",
     "//v8",
   ]
 }

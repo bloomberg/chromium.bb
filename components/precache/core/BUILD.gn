@@ -38,6 +38,10 @@ source_set("core") {
   deps = [
     ":proto",
     "//base",
+    "//base:prefs",
+    "//components/history/core/browser",
+    "//net",
+    "//sql",
     "//url",
   ]
 }
@@ -61,6 +65,11 @@ source_set("unit_tests") {
   deps = [
     ":core",
     ":proto",
+    "//base",
+    "//base/test:test_support",
+    "//components/history/core/browser",
+    "//net:test_support",
+    "//sql",
     "//testing/gmock",
     "//testing/gtest",
   ]
