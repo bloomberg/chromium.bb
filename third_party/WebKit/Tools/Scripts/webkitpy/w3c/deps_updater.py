@@ -30,10 +30,9 @@ class DepsUpdater(object):
         self.print_('## noting the current Blink commitish')
         blink_commitish = self.run(['git', 'show-ref', 'HEAD'])[1].split()[0]
 
-        wpt_import_text = ''
         if self.target == 'wpt':
-            wpt_import_text = self.update('web-platform-tests',
-                                          'https://chromium.googlesource.com/external/w3c/web-platform-tests.git')
+            import_commitish = self.update('web-platform-tests',
+                                           'https://chromium.googlesource.com/external/w3c/web-platform-tests.git')
 
             for resource in ['testharnessreport.js', 'vendor-prefix.js']:
                 source = self.path_from_webkit_base('LayoutTests', 'resources', resource)
@@ -41,12 +40,13 @@ class DepsUpdater(object):
                 self.copyfile(source, destination)
                 self.run(['git', 'add', destination])
 
-        css_import_text = ''
-        if self.target == 'css':
-            css_import_text = self.update('csswg-test',
-                                          'https://chromium.googlesource.com/external/w3c/csswg-test.git')
+        elif self.target == 'css':
+            import_commitish = self.update('csswg-test',
+                                           'https://chromium.googlesource.com/external/w3c/csswg-test.git')
+        else:
+            raise AssertionError("Unsupported target %s" % self.target)
 
-        self.commit_changes_if_needed(blink_commitish, css_import_text, wpt_import_text)
+        self.commit_changes_if_needed(blink_commitish, import_commitish)
 
         return 0
 
@@ -129,15 +129,15 @@ class DepsUpdater(object):
             self.cd('')
             self.rmtree(repo)
 
-        return 'imported %s@%s' % (repo, master_commitish)
+        return '%s@%s' % (repo, master_commitish)
 
-    def commit_changes_if_needed(self, blink_commitish, css_import_text, wpt_import_text):
+    def commit_changes_if_needed(self, blink_commitish, import_commitish):
         if self.run(['git', 'diff', '--quiet', 'HEAD'], exit_on_failure=False)[0]:
             self.print_('## commiting changes')
-            commit_msg = ('update-w3c-deps import using blink %s:\n'
+            commit_msg = ('Import %s\n'
                           '\n'
-                          '%s\n'
-                          '%s\n' % (blink_commitish, css_import_text, wpt_import_text))
+                          'Using update-w3c-deps in Blink %s.\n'
+                          % (import_commitish, blink_commitish))
             path_to_commit_msg = self.path_from_webkit_base('commit_msg')
             if self.verbose:
                 self.print_('cat > %s <<EOF' % path_to_commit_msg)
