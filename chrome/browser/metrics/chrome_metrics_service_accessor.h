@@ -22,6 +22,10 @@ class CrashesDOMHandler;
 class FlashDOMHandler;
 }
 
+namespace chrome_browser {
+void SetupPreReadFieldTrial();
+}
+
 namespace component_updater {
 class ComponentUpdateService;
 }
@@ -65,6 +69,7 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   friend class ::CrashesDOMHandler;
   friend class ::FlashDOMHandler;
   friend class BrowserProcessImpl;
+  friend void chrome_browser::SetupPreReadFieldTrial();
   friend class ChromeExtensionDownloaderFactory;
   friend class ChromeMetricsServicesManagerClient;
   friend class ChromeRenderMessageFilter;

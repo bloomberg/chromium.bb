@@ -19,6 +19,8 @@
         '..',
       ],
       'sources': [
+        'startup_metric_utils/browser/pre_read_field_trial_utils_win.cc',
+        'startup_metric_utils/browser/pre_read_field_trial_utils_win.h',
         'startup_metric_utils/browser/startup_metric_utils.cc',
         'startup_metric_utils/browser/startup_metric_utils.h',
       ],

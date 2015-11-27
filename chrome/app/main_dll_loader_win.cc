@@ -20,6 +20,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/platform_thread.h"
 #include "base/trace_event/trace_event.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
@@ -34,6 +35,7 @@
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/env_vars.h"
+#include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/install_util.h"
@@ -41,6 +43,7 @@
 #include "chrome/installer/util/util_constants.h"
 #include "components/crash/content/app/breakpad_win.h"
 #include "components/crash/content/app/crash_reporter_client.h"
+#include "components/startup_metric_utils/browser/pre_read_field_trial_utils_win.h"
 #include "content/public/app/sandbox_helper_win.h"
 #include "content/public/common/content_switches.h"
 #include "sandbox/win/src/sandbox.h"
@@ -59,11 +62,28 @@ base::LazyInstance<ChromeCrashReporterClient>::Leaky g_chrome_crash_client =
 HMODULE LoadModuleWithDirectory(const base::FilePath& module, bool pre_read) {
   ::SetCurrentDirectoryW(module.DirName().value().c_str());
 
-  if (pre_read) {
+  // Get pre-read options from the PreRead field trial.
+  bool trial_should_pre_read = true;
+  bool trial_should_pre_read_high_priority = false;
+  startup_metric_utils::GetPreReadOptions(
+      BrowserDistribution::GetDistribution()->GetRegistryPath(),
+      &trial_should_pre_read, &trial_should_pre_read_high_priority);
+
+  if (pre_read && trial_should_pre_read) {
+    base::ThreadPriority previous_priority = base::ThreadPriority::NORMAL;
+    if (trial_should_pre_read_high_priority) {
+      previous_priority = base::PlatformThread::GetCurrentThreadPriority();
+      base::PlatformThread::SetCurrentThreadPriority(
+          base::ThreadPriority::DISPLAY);
+    }
+
     // We pre-read the binary to warm the memory caches (fewer hard faults to
     // page parts of the binary in).
     const size_t kStepSize = 1024 * 1024;
     PreReadFile(module, kStepSize);
+
+    if (trial_should_pre_read_high_priority)
+      base::PlatformThread::SetCurrentThreadPriority(previous_priority);
   }
 
   return ::LoadLibraryExW(module.value().c_str(), nullptr,
