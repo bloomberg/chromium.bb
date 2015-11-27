@@ -41,7 +41,6 @@
 #include "WebFileChooserParams.h"
 #include "WebFrame.h"
 #include "WebPopupType.h"
-#include "WebTextAffinity.h"
 #include "WebTextDirection.h"
 #include "WebWidgetClient.h"
 

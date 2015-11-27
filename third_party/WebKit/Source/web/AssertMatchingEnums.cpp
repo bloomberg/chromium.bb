@@ -132,7 +132,6 @@
 #include "public/web/WebSerializedScriptValueVersion.h"
 #include "public/web/WebSettings.h"
 #include "public/web/WebSpeechRecognizerClient.h"
-#include "public/web/WebTextAffinity.h"
 #include "public/web/WebTextCheckingResult.h"
 #include "public/web/WebTextCheckingType.h"
 #include "public/web/WebTextDecorationType.h"
@@ -531,9 +530,6 @@ STATIC_ASSERT_MATCHING_ENUM(WebSettings::EditingBehaviorMac, EditingMacBehavior)
 STATIC_ASSERT_MATCHING_ENUM(WebSettings::EditingBehaviorWin, EditingWindowsBehavior);
 STATIC_ASSERT_MATCHING_ENUM(WebSettings::EditingBehaviorUnix, EditingUnixBehavior);
 STATIC_ASSERT_MATCHING_ENUM(WebSettings::EditingBehaviorAndroid, EditingAndroidBehavior);
-
-STATIC_ASSERT_MATCHING_ENUM(WebTextAffinityUpstream, TextAffinity::Upstream);
-STATIC_ASSERT_MATCHING_ENUM(WebTextAffinityDownstream, TextAffinity::Downstream);
 
 STATIC_ASSERT_MATCHING_ENUM(WebIDBDatabaseExceptionUnknownError, UnknownError);
 STATIC_ASSERT_MATCHING_ENUM(WebIDBDatabaseExceptionConstraintError, ConstraintError);

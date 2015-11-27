@@ -263,7 +263,6 @@ using blink::WebStorageQuotaCallbacks;
 using blink::WebStorageQuotaError;
 using blink::WebStorageQuotaType;
 using blink::WebString;
-using blink::WebTextAffinity;
 using blink::WebTextDirection;
 using blink::WebTouchEvent;
 using blink::WebURL;
