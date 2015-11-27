@@ -10,6 +10,8 @@
 #include "ui/events/event_handler.h"
 #include "ui/events/null_event_targeter.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/views/controls/menu/menu_controller_delegate.h"
+#include "ui/views/controls/menu/menu_delegate.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/submenu_view.h"
 #include "ui/views/test/views_test_base.h"
@@ -30,6 +32,60 @@ namespace views {
 namespace test {
 
 namespace {
+
+// Test implementation of MenuControllerDelegate that only reports the values
+// called of OnMenuClosed.
+class TestMenuControllerDelegate : public internal::MenuControllerDelegate {
+ public:
+  TestMenuControllerDelegate();
+  ~TestMenuControllerDelegate() override {}
+
+  int on_menu_closed_called() { return on_menu_closed_called_; }
+
+  NotifyType on_menu_closed_notify_type() {
+    return on_menu_closed_notify_type_;
+  }
+
+  MenuItemView* on_menu_closed_menu() { return on_menu_closed_menu_; }
+
+  int on_menu_closed_mouse_event_flags() {
+    return on_menu_closed_mouse_event_flags_;
+  }
+
+  // internal::MenuControllerDelegate:
+  void OnMenuClosed(NotifyType type,
+                    MenuItemView* menu,
+                    int mouse_event_flags) override;
+  void SiblingMenuCreated(MenuItemView* menu) override;
+
+ private:
+  // Number of times OnMenuClosed has been called.
+  int on_menu_closed_called_;
+
+  // The values passed on the last call of OnMenuClosed.
+  NotifyType on_menu_closed_notify_type_;
+  MenuItemView* on_menu_closed_menu_;
+  int on_menu_closed_mouse_event_flags_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestMenuControllerDelegate);
+};
+
+TestMenuControllerDelegate::TestMenuControllerDelegate()
+    : on_menu_closed_called_(0),
+      on_menu_closed_notify_type_(NOTIFY_DELEGATE),
+      on_menu_closed_menu_(nullptr),
+      on_menu_closed_mouse_event_flags_(0) {}
+
+void TestMenuControllerDelegate::OnMenuClosed(NotifyType type,
+                                              MenuItemView* menu,
+                                              int mouse_event_flags) {
+  on_menu_closed_called_++;
+  on_menu_closed_notify_type_ = type;
+  on_menu_closed_menu_ = menu;
+  on_menu_closed_mouse_event_flags_ = mouse_event_flags;
+}
+
+void TestMenuControllerDelegate::SiblingMenuCreated(MenuItemView* menu) {}
 
 class SubmenuViewShown : public SubmenuView {
  public:
@@ -70,7 +126,7 @@ class TestEventHandler : public ui::EventHandler {
 
 class TestMenuItemViewShown : public MenuItemView {
  public:
-  TestMenuItemViewShown() : MenuItemView(nullptr) {
+  TestMenuItemViewShown(MenuDelegate* delegate) : MenuItemView(delegate) {
     submenu_ = new SubmenuViewShown(this);
   }
   ~TestMenuItemViewShown() override {}
@@ -179,9 +235,16 @@ class MenuControllerTest : public ViewsTestBase {
     menu_controller_->RunMessageLoop(false);
   }
 
+  void Accept(MenuItemView* item, int event_flags) {
+    menu_controller_->Accept(item, event_flags);
+  }
+
   Widget* owner() { return owner_.get(); }
   ui::test::EventGenerator* event_generator() { return event_generator_.get(); }
   TestMenuItemViewShown* menu_item() { return menu_item_.get(); }
+  TestMenuControllerDelegate* menu_controller_delegate() {
+    return menu_controller_delegate_.get();
+  }
   MenuController* menu_controller() { return menu_controller_; }
   const MenuItemView* pending_state_item() const {
       return menu_controller_->pending_state_.item;
@@ -206,7 +269,8 @@ class MenuControllerTest : public ViewsTestBase {
   }
 
   void SetupMenuItem() {
-    menu_item_.reset(new TestMenuItemViewShown);
+    menu_delegate_.reset(new MenuDelegate);
+    menu_item_.reset(new TestMenuItemViewShown(menu_delegate_.get()));
     menu_item_->AppendMenuItemWithLabel(1, base::ASCIIToUTF16("One"));
     menu_item_->AppendMenuItemWithLabel(2, base::ASCIIToUTF16("Two"));
     menu_item_->AppendMenuItemWithLabel(3, base::ASCIIToUTF16("Three"));
@@ -214,7 +278,9 @@ class MenuControllerTest : public ViewsTestBase {
   }
 
   void SetupMenuController() {
-    menu_controller_= new MenuController(true, nullptr);
+    menu_controller_delegate_.reset(new TestMenuControllerDelegate);
+    menu_controller_ =
+        new MenuController(true, menu_controller_delegate_.get());
     menu_controller_->owner_ = owner_.get();
     menu_controller_->showing_ = true;
     menu_controller_->SetSelection(
@@ -224,6 +290,8 @@ class MenuControllerTest : public ViewsTestBase {
   scoped_ptr<Widget> owner_;
   scoped_ptr<ui::test::EventGenerator> event_generator_;
   scoped_ptr<TestMenuItemViewShown> menu_item_;
+  scoped_ptr<TestMenuControllerDelegate> menu_controller_delegate_;
+  scoped_ptr<MenuDelegate> menu_delegate_;
   MenuController* menu_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(MenuControllerTest);
@@ -414,6 +482,54 @@ TEST_F(MenuControllerTest, PreviousSelectedItem) {
 
   // Clear references in menu controller to the menu item that is going away.
   ResetSelection();
+}
+
+// Tests that a menu opened asynchronously, will notify its
+// MenuControllerDelegate when Accept is called.
+TEST_F(MenuControllerTest, AsynchronousAccept) {
+  MenuController* controller = menu_controller();
+  controller->set_async_run(true);
+
+  int mouse_event_flags = 0;
+  MenuItemView* run_result =
+      controller->Run(owner(), nullptr, menu_item(), gfx::Rect(),
+                      MENU_ANCHOR_TOPLEFT, false, false, &mouse_event_flags);
+  EXPECT_EQ(run_result, nullptr);
+  TestMenuControllerDelegate* delegate = menu_controller_delegate();
+  EXPECT_EQ(0, delegate->on_menu_closed_called());
+
+  MenuItemView* accepted = menu_item()->GetSubmenu()->GetMenuItemAt(0);
+  const int kEventFlags = 42;
+  Accept(accepted, kEventFlags);
+
+  EXPECT_EQ(1, delegate->on_menu_closed_called());
+  EXPECT_EQ(accepted, delegate->on_menu_closed_menu());
+  EXPECT_EQ(kEventFlags, delegate->on_menu_closed_mouse_event_flags());
+  EXPECT_EQ(internal::MenuControllerDelegate::NOTIFY_DELEGATE,
+            delegate->on_menu_closed_notify_type());
+}
+
+// Tests that a menu opened asynchronously, will notify its
+// MenuControllerDelegate when CancelAll is called.
+TEST_F(MenuControllerTest, AsynchronousCancelAll) {
+  MenuController* controller = menu_controller();
+  controller->set_async_run(true);
+
+  int mouse_event_flags = 0;
+  MenuItemView* run_result =
+      controller->Run(owner(), nullptr, menu_item(), gfx::Rect(),
+                      MENU_ANCHOR_TOPLEFT, false, false, &mouse_event_flags);
+  EXPECT_EQ(run_result, nullptr);
+  TestMenuControllerDelegate* delegate = menu_controller_delegate();
+  EXPECT_EQ(0, delegate->on_menu_closed_called());
+
+  controller->CancelAll();
+  EXPECT_EQ(1, delegate->on_menu_closed_called());
+  EXPECT_EQ(nullptr, delegate->on_menu_closed_menu());
+  EXPECT_EQ(0, delegate->on_menu_closed_mouse_event_flags());
+  EXPECT_EQ(internal::MenuControllerDelegate::NOTIFY_DELEGATE,
+            delegate->on_menu_closed_notify_type());
+  EXPECT_EQ(MenuController::EXIT_ALL, controller->exit_type());
 }
 
 }  // namespace test

@@ -31,12 +31,12 @@ MenuRunnerImpl::MenuRunnerImpl(MenuItemView* menu)
     : menu_(menu),
       running_(false),
       delete_after_run_(false),
+      async_(false),
       for_drop_(false),
       controller_(NULL),
       owns_controller_(false),
       closing_event_time_(base::TimeDelta()),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 bool MenuRunnerImpl::IsRunning() const {
   return running_;
@@ -104,6 +104,7 @@ MenuRunner::RunResult MenuRunnerImpl::RunMenuAt(Widget* parent,
   }
 
   running_ = true;
+  async_ = (run_types & MenuRunner::ASYNC) != 0;
   for_drop_ = (run_types & MenuRunner::FOR_DROP) != 0;
   bool has_mnemonics = (run_types & MenuRunner::HAS_MNEMONICS) != 0;
   owns_controller_ = false;
@@ -112,6 +113,7 @@ MenuRunner::RunResult MenuRunnerImpl::RunMenuAt(Widget* parent,
     controller = new MenuController(!for_drop_, this);
     owns_controller_ = true;
   }
+  controller->set_async_run(async_);
   controller->set_is_combobox((run_types & MenuRunner::COMBOBOX) != 0);
   controller_ = controller;
   menu_->set_controller(controller_);
@@ -132,11 +134,12 @@ MenuRunner::RunResult MenuRunnerImpl::RunMenuAt(Widget* parent,
                       &mouse_event_flags);
   // Get the time of the event which closed this menu.
   closing_event_time_ = controller->closing_event_time();
-  if (for_drop_) {
-    // Drop menus return immediately. We finish processing in DropMenuClosed.
+  if (for_drop_ || async_) {
+    // Drop and asynchronous menus return immediately. We finish processing in
+    // OnMenuClosed.
     return MenuRunner::NORMAL_EXIT;
   }
-  return MenuDone(result, mouse_event_flags);
+  return MenuDone(NOTIFY_DELEGATE, result, mouse_event_flags);
 }
 
 void MenuRunnerImpl::Cancel() {
@@ -148,13 +151,10 @@ base::TimeDelta MenuRunnerImpl::GetClosingEventTime() const {
   return closing_event_time_;
 }
 
-void MenuRunnerImpl::DropMenuClosed(NotifyType type, MenuItemView* menu) {
-  MenuDone(NULL, 0);
-
-  if (type == NOTIFY_DELEGATE && menu->GetDelegate()) {
-    // Delegate is null when invoked from the destructor.
-    menu->GetDelegate()->DropMenuClosed(menu);
-  }
+void MenuRunnerImpl::OnMenuClosed(NotifyType type,
+                                  MenuItemView* menu,
+                                  int mouse_event_flags) {
+  MenuDone(type, menu, mouse_event_flags);
 }
 
 void MenuRunnerImpl::SiblingMenuCreated(MenuItemView* menu) {
@@ -170,17 +170,18 @@ MenuRunnerImpl::~MenuRunnerImpl() {
     delete *i;
 }
 
-MenuRunner::RunResult MenuRunnerImpl::MenuDone(MenuItemView* result,
+MenuRunner::RunResult MenuRunnerImpl::MenuDone(NotifyType type,
+                                               MenuItemView* result,
                                                int mouse_event_flags) {
   menu_->RemoveEmptyMenus();
-  menu_->set_controller(NULL);
+  menu_->set_controller(nullptr);
 
   if (owns_controller_) {
     // We created the controller and need to delete it.
     delete controller_;
     owns_controller_ = false;
   }
-  controller_ = NULL;
+  controller_ = nullptr;
   // Make sure all the windows we created to show the menus have been
   // destroyed.
   menu_->DestroyAllMenuHosts();
@@ -189,13 +190,19 @@ MenuRunner::RunResult MenuRunnerImpl::MenuDone(MenuItemView* result,
     return MenuRunner::MENU_DELETED;
   }
   running_ = false;
-  if (result && menu_->GetDelegate()) {
+  if (menu_->GetDelegate()) {
     // Executing the command may also delete this.
     base::WeakPtr<MenuRunnerImpl> ref(weak_factory_.GetWeakPtr());
-    menu_->GetDelegate()->ExecuteCommand(result->GetCommand(),
-                                         mouse_event_flags);
+    if (result && !for_drop_) {
+      // Do not execute the menu that was dragged/dropped.
+      menu_->GetDelegate()->ExecuteCommand(result->GetCommand(),
+                                           mouse_event_flags);
+    }
+    // Only notify the delegate if it did not delete this.
     if (!ref)
       return MenuRunner::MENU_DELETED;
+    else if (type == NOTIFY_DELEGATE)
+      menu_->GetDelegate()->OnMenuClosed(result, MenuRunner::NORMAL_EXIT);
   }
   return MenuRunner::NORMAL_EXIT;
 }

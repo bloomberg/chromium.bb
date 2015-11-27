@@ -364,6 +364,9 @@ MenuItemView* MenuController::Run(Widget* parent,
   if (ViewsDelegate::GetInstance())
     ViewsDelegate::GetInstance()->AddRef();
 
+  if (async_run_)
+    return nullptr;
+
   // We need to turn on nestable tasks as in some situations (pressing alt-f for
   // one) the menus are run from a task. If we don't do this and are invoked
   // from a task none of the tasks we schedule are processed and the menu
@@ -376,76 +379,10 @@ MenuItemView* MenuController::Run(Widget* parent,
   if (ViewsDelegate::GetInstance())
     ViewsDelegate::GetInstance()->ReleaseRef();
 
-  // Close any open menus.
-  SetSelection(NULL, SELECTION_UPDATE_IMMEDIATELY | SELECTION_EXIT);
-
-#if defined(OS_WIN)
-  // On Windows, if we select the menu item by touch and if the window at the
-  // location is another window on the same thread, that window gets a
-  // WM_MOUSEACTIVATE message and ends up activating itself, which is not
-  // correct. We workaround this by setting a property on the window at the
-  // current cursor location. We check for this property in our
-  // WM_MOUSEACTIVATE handler and don't activate the window if the property is
-  // set.
-  if (item_selected_by_touch_) {
-    item_selected_by_touch_ = false;
-    POINT cursor_pos;
-    ::GetCursorPos(&cursor_pos);
-     HWND window = ::WindowFromPoint(cursor_pos);
-     if (::GetWindowThreadProcessId(window, NULL) ==
-                                    ::GetCurrentThreadId()) {
-       ::SetProp(window, ui::kIgnoreTouchMouseActivateForWindow,
-                 reinterpret_cast<HANDLE>(true));
-     }
-  }
-#endif
-
-  linked_ptr<MenuButton::PressedLock> nested_pressed_lock;
-  if (nested_menu) {
-    DCHECK(!menu_stack_.empty());
-    // We're running from within a menu, restore the previous state.
-    // The menus are already showing, so we don't have to show them.
-    state_ = menu_stack_.back().first;
-    pending_state_ = menu_stack_.back().first;
-    nested_pressed_lock = menu_stack_.back().second;
-    menu_stack_.pop_back();
-  } else {
-    showing_ = false;
-    did_capture_ = false;
-  }
-
-  MenuItemView* result = result_;
-  // In case we're nested, reset result_.
-  result_ = NULL;
-
   if (result_event_flags)
     *result_event_flags = accept_event_flags_;
 
-  if (exit_type_ == EXIT_OUTERMOST) {
-    SetExitType(EXIT_NONE);
-  } else {
-    if (nested_menu && result) {
-      // We're nested and about to return a value. The caller might enter
-      // another blocking loop. We need to make sure all menus are hidden
-      // before that happens otherwise the menus will stay on screen.
-      CloseAllNestedMenus();
-      SetSelection(NULL, SELECTION_UPDATE_IMMEDIATELY | SELECTION_EXIT);
-
-      // Set exit_all_, which makes sure all nested loops exit immediately.
-      if (exit_type_ != EXIT_DESTROYED)
-        SetExitType(EXIT_ALL);
-    } else if (exit_type_ != EXIT_NONE && message_loop_depth_) {
-      // If we're closing all menus, also mark the next topmost menu
-      // message loop for termination, so that we'll unwind fully.
-      TerminateNestedMessageLoop();
-    }
-  }
-
-  // Reset our pressed lock to the previous state's, if there was one.
-  // The lock handles the case if the button was destroyed.
-  pressed_lock_.reset(nested_pressed_lock.release());
-
-  return result;
+  return ExitMenuRun();
 }
 
 void MenuController::Cancel(ExitType type) {
@@ -474,11 +411,15 @@ void MenuController::Cancel(ExitType type) {
     // triggers deleting us.
     DCHECK(selected);
     showing_ = false;
-    delegate_->DropMenuClosed(
-        internal::MenuControllerDelegate::NOTIFY_DELEGATE,
-        selected->GetRootMenuItem());
+    delegate_->OnMenuClosed(internal::MenuControllerDelegate::NOTIFY_DELEGATE,
+                            selected->GetRootMenuItem(), accept_event_flags_);
     // WARNING: the call to MenuClosed deletes us.
     return;
+  }
+  if (async_run_) {
+    MenuItemView* result = ExitMenuRun();
+    delegate_->OnMenuClosed(internal::MenuControllerDelegate::NOTIFY_DELEGATE,
+                            result, accept_event_flags_);
   }
 }
 
@@ -856,9 +797,9 @@ int MenuController::OnPerformDrop(SubmenuView* source,
     drop_target = drop_target->GetParentMenuItem();
 
   if (!IsBlockingRun()) {
-    delegate_->DropMenuClosed(
+    delegate_->OnMenuClosed(
         internal::MenuControllerDelegate::DONT_NOTIFY_DELEGATE,
-        item->GetRootMenuItem());
+        item->GetRootMenuItem(), accept_event_flags_);
   }
 
   // WARNING: the call to MenuClosed deletes us.
@@ -1239,6 +1180,7 @@ MenuController::MenuController(bool blocking,
       message_loop_depth_(0),
       closing_event_time_(base::TimeDelta()),
       menu_start_time_(base::TimeTicks()),
+      async_run_(false),
       is_combobox_(false),
       item_selected_by_touch_(false),
       current_mouse_event_target_(nullptr),
@@ -1319,6 +1261,11 @@ void MenuController::Accept(MenuItemView* item, int event_flags) {
     SetExitType(EXIT_ALL);
   }
   accept_event_flags_ = event_flags;
+  if (async_run_) {
+    MenuItemView* result = ExitMenuRun();
+    delegate_->OnMenuClosed(internal::MenuControllerDelegate::NOTIFY_DELEGATE,
+                            result, accept_event_flags_);
+  }
 }
 
 bool MenuController::ShowSiblingMenu(SubmenuView* source,
@@ -2310,7 +2257,7 @@ void MenuController::RepostEvent(SubmenuView* source,
   if (!window)
     return;
 
-  message_loop_->RepostEventToWindow(event, window, screen_loc);
+  MenuMessageLoop::RepostEventToWindow(event, window, screen_loc);
 }
 
 void MenuController::SetDropMenuItem(
@@ -2451,6 +2398,81 @@ void MenuController::SetExitType(ExitType type) {
 
 void MenuController::TerminateNestedMessageLoop() {
   message_loop_->QuitNow();
+}
+
+MenuItemView* MenuController::ExitMenuRun() {
+  // Release the lock which prevents Chrome from shutting down while the menu is
+  // showing.
+  if (async_run_ && ViewsDelegate::GetInstance())
+    ViewsDelegate::GetInstance()->ReleaseRef();
+
+  // Close any open menus.
+  SetSelection(nullptr, SELECTION_UPDATE_IMMEDIATELY | SELECTION_EXIT);
+
+#if defined(OS_WIN)
+  // On Windows, if we select the menu item by touch and if the window at the
+  // location is another window on the same thread, that window gets a
+  // WM_MOUSEACTIVATE message and ends up activating itself, which is not
+  // correct. We workaround this by setting a property on the window at the
+  // current cursor location. We check for this property in our
+  // WM_MOUSEACTIVATE handler and don't activate the window if the property is
+  // set.
+  if (item_selected_by_touch_) {
+    item_selected_by_touch_ = false;
+    POINT cursor_pos;
+    ::GetCursorPos(&cursor_pos);
+    HWND window = ::WindowFromPoint(cursor_pos);
+    if (::GetWindowThreadProcessId(window, nullptr) == ::GetCurrentThreadId()) {
+      ::SetProp(window, ui::kIgnoreTouchMouseActivateForWindow,
+                reinterpret_cast<HANDLE>(true));
+    }
+  }
+#endif
+
+  linked_ptr<MenuButton::PressedLock> nested_pressed_lock;
+  bool nested_menu = !menu_stack_.empty();
+  if (nested_menu) {
+    DCHECK(!menu_stack_.empty());
+    // We're running from within a menu, restore the previous state.
+    // The menus are already showing, so we don't have to show them.
+    state_ = menu_stack_.back().first;
+    pending_state_ = menu_stack_.back().first;
+    nested_pressed_lock = menu_stack_.back().second;
+    menu_stack_.pop_back();
+  } else {
+    showing_ = false;
+    did_capture_ = false;
+  }
+
+  MenuItemView* result = result_;
+  // In case we're nested, reset |result_|.
+  result_ = nullptr;
+
+  if (exit_type_ == EXIT_OUTERMOST) {
+    SetExitType(EXIT_NONE);
+  } else {
+    if (nested_menu && result) {
+      // We're nested and about to return a value. The caller might enter
+      // another blocking loop. We need to make sure all menus are hidden
+      // before that happens otherwise the menus will stay on screen.
+      CloseAllNestedMenus();
+      SetSelection(nullptr, SELECTION_UPDATE_IMMEDIATELY | SELECTION_EXIT);
+
+      // Set exit_all_, which makes sure all nested loops exit immediately.
+      if (exit_type_ != EXIT_DESTROYED)
+        SetExitType(EXIT_ALL);
+    } else if (exit_type_ != EXIT_NONE && message_loop_depth_) {
+      // If we're closing all menus, also mark the next topmost menu
+      // message loop for termination, so that we'll unwind fully.
+      TerminateNestedMessageLoop();
+    }
+  }
+
+  // Reset our pressed lock to the previous state's, if there was one.
+  // The lock handles the case if the button was destroyed.
+  pressed_lock_.reset(nested_pressed_lock.release());
+
+  return result;
 }
 
 void MenuController::HandleMouseLocation(SubmenuView* source,

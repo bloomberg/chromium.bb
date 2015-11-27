@@ -95,7 +95,6 @@ class ChevronMenuButton::MenuController : public views::MenuDelegate {
                        int id,
                        const gfx::Point& p,
                        ui::MenuSourceType source_type) override;
-  void DropMenuClosed(views::MenuItemView* menu) override;
   // These drag functions offer support for dragging icons into the overflow
   // menu.
   bool GetDropFormats(
@@ -111,6 +110,8 @@ class ChevronMenuButton::MenuController : public views::MenuDelegate {
   int OnPerformDrop(views::MenuItemView* menu,
                     DropPosition position,
                     const ui::DropTargetEvent& event) override;
+  void OnMenuClosed(views::MenuItemView* menu,
+                    views::MenuRunner::RunResult result) override;
   // These three drag functions offer support for dragging icons out of the
   // overflow menu.
   bool CanDrag(views::MenuItemView* menu) override;
@@ -265,11 +266,6 @@ bool ChevronMenuButton::MenuController::ShowContextMenu(
   return true;
 }
 
-void ChevronMenuButton::MenuController::DropMenuClosed(
-    views::MenuItemView* menu) {
-  owner_->MenuDone();
-}
-
 bool ChevronMenuButton::MenuController::GetDropFormats(
     views::MenuItemView* menu,
     int* formats,
@@ -334,6 +330,12 @@ int ChevronMenuButton::MenuController::OnPerformDrop(
   if (for_drop_)
     owner_->MenuDone();
   return ui::DragDropTypes::DRAG_MOVE;
+}
+
+void ChevronMenuButton::MenuController::OnMenuClosed(
+    views::MenuItemView* menu,
+    views::MenuRunner::RunResult result) {
+  owner_->MenuDone();
 }
 
 bool ChevronMenuButton::MenuController::CanDrag(views::MenuItemView* menu) {

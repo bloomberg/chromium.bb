@@ -68,26 +68,30 @@ class VIEWS_EXPORT MenuRunner {
 
     // The menu is a nested context menu. For example, click a folder on the
     // bookmark bar, then right click an entry to get its context menu.
-    IS_NESTED     = 1 << 1,
+    IS_NESTED = 1 << 1,
 
     // Used for showing a menu during a drop operation. This does NOT block the
     // caller, instead the delegate is notified when the menu closes via the
     // DropMenuClosed method.
-    FOR_DROP      = 1 << 2,
+    FOR_DROP = 1 << 2,
 
     // The menu is a context menu (not necessarily nested), for example right
     // click on a link on a website in the browser.
-    CONTEXT_MENU  = 1 << 3,
+    CONTEXT_MENU = 1 << 3,
 
     // The menu should behave like a Windows native Combobox dropdow menu.
     // This behavior includes accepting the pending item and closing on F4.
-    COMBOBOX  = 1 << 4,
+    COMBOBOX = 1 << 4,
 
     // A child view is performing a drag-and-drop operation, so the menu should
     // stay open (even if it doesn't receive drag updated events). In this case,
     // the caller is responsible for closing the menu upon completion of the
     // drag-and-drop.
     NESTED_DRAG = 1 << 5,
+
+    // Used for showing a menu which does NOT block the caller. Instead the
+    // delegate is notified when the menu closes via OnMenuClosed.
+    ASYNC = 1 << 6,
   };
 
   enum RunResult {

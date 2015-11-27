@@ -17,17 +17,16 @@ MenuMessageLoop* MenuMessageLoop::Create() {
   return new MenuMessageLoopMac;
 }
 
-MenuMessageLoopMac::MenuMessageLoopMac() {
-}
-
-MenuMessageLoopMac::~MenuMessageLoopMac() {
-}
-
-void MenuMessageLoopMac::RepostEventToWindow(const ui::LocatedEvent& event,
-                                             gfx::NativeWindow window,
-                                             const gfx::Point& screen_loc) {
+// static
+void MenuMessageLoop::RepostEventToWindow(const ui::LocatedEvent& event,
+                                          gfx::NativeWindow window,
+                                          const gfx::Point& screen_loc) {
   NOTIMPLEMENTED();
 }
+
+MenuMessageLoopMac::MenuMessageLoopMac() {}
+
+MenuMessageLoopMac::~MenuMessageLoopMac() {}
 
 void MenuMessageLoopMac::Run(MenuController* controller,
                              Widget* owner,

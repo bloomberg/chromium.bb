@@ -14,6 +14,7 @@
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/menu/menu_types.h"
 #include "ui/views/views_export.h"
 
@@ -204,11 +205,6 @@ class VIEWS_EXPORT MenuDelegate {
   // See DragDropTypes for possible values.
   virtual int GetDragOperations(MenuItemView* sender);
 
-  // Notification the menu has closed. This is only sent when running the
-  // menu for a drop.
-  virtual void DropMenuClosed(MenuItemView* menu) {
-  }
-
   // Returns true if the menu should close upon a drag completing. Defaults to
   // true. This is only invoked for drag and drop operations performed on child
   // Views that are not MenuItemViews.
@@ -217,6 +213,10 @@ class VIEWS_EXPORT MenuDelegate {
   // Notification that the user has highlighted the specified item.
   virtual void SelectionChanged(MenuItemView* menu) {
   }
+
+  // Notification the menu has closed. This will not be called if MenuRunner is
+  // deleted during calls to ExecuteCommand().
+  virtual void OnMenuClosed(MenuItemView* menu, MenuRunner::RunResult result) {}
 
   // If the user drags the mouse outside the bounds of the menu the delegate
   // is queried for a sibling menu to show. If this returns non-null the

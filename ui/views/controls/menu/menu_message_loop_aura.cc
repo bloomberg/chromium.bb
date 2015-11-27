@@ -98,15 +98,10 @@ MenuMessageLoop* MenuMessageLoop::Create() {
   return new MenuMessageLoopAura;
 }
 
-MenuMessageLoopAura::MenuMessageLoopAura() : owner_(nullptr) {
-}
-
-MenuMessageLoopAura::~MenuMessageLoopAura() {
-}
-
-void MenuMessageLoopAura::RepostEventToWindow(const ui::LocatedEvent& event,
-                                              gfx::NativeWindow window,
-                                              const gfx::Point& screen_loc) {
+// static
+void MenuMessageLoop::RepostEventToWindow(const ui::LocatedEvent& event,
+                                          gfx::NativeWindow window,
+                                          const gfx::Point& screen_loc) {
   aura::Window* root = window->GetRootWindow();
   ScreenPositionClient* spc = aura::client::GetScreenPositionClient(root);
   if (!spc)
@@ -120,6 +115,10 @@ void MenuMessageLoopAura::RepostEventToWindow(const ui::LocatedEvent& event,
   clone.set_root_location(root_loc);
   root->GetHost()->dispatcher()->RepostEvent(clone);
 }
+
+MenuMessageLoopAura::MenuMessageLoopAura() : owner_(nullptr) {}
+
+MenuMessageLoopAura::~MenuMessageLoopAura() {}
 
 void MenuMessageLoopAura::Run(MenuController* controller,
                               Widget* owner,

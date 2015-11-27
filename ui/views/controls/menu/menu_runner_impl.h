@@ -38,7 +38,9 @@ class MenuRunnerImpl : public MenuRunnerImplInterface,
   base::TimeDelta GetClosingEventTime() const override;
 
   // MenuControllerDelegate:
-  void DropMenuClosed(NotifyType type, MenuItemView* menu) override;
+  void OnMenuClosed(NotifyType type,
+                    MenuItemView* menu,
+                    int mouse_event_flags) override;
   void SiblingMenuCreated(MenuItemView* menu) override;
 
  private:
@@ -46,7 +48,9 @@ class MenuRunnerImpl : public MenuRunnerImplInterface,
 
   // Cleans up after the menu is no longer showing. |result| is the menu that
   // the user selected, or NULL if nothing was selected.
-  MenuRunner::RunResult MenuDone(MenuItemView* result, int mouse_event_flags);
+  MenuRunner::RunResult MenuDone(NotifyType type,
+                                 MenuItemView* result,
+                                 int mouse_event_flags);
 
   // Returns true if mnemonics should be shown in the menu.
   bool ShouldShowMnemonics(MenuButton* button);
@@ -69,6 +73,9 @@ class MenuRunnerImpl : public MenuRunnerImplInterface,
 
   // Set if |running_| and Release() has been invoked.
   bool delete_after_run_;
+
+  // Are we running asynchronously?
+  bool async_;
 
   // Are we running for a drop?
   bool for_drop_;

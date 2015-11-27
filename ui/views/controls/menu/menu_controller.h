@@ -125,6 +125,8 @@ class VIEWS_EXPORT MenuController : public WidgetObserver {
   // Returns the time from the event which closed the menu - or 0.
   base::TimeDelta closing_event_time() const { return closing_event_time_; }
 
+  void set_async_run(bool is_async) { async_run_ = is_async; }
+
   void set_is_combobox(bool is_combobox) { is_combobox_ = is_combobox; }
 
   // Various events, forwarded from the submenu.
@@ -529,6 +531,10 @@ class VIEWS_EXPORT MenuController : public WidgetObserver {
   // Terminates the current nested message-loop.
   void TerminateNestedMessageLoop();
 
+  // Performs the teardown of the menu launched by Run(). The selected item is
+  // returned.
+  MenuItemView* ExitMenuRun();
+
   // Handles the mouse location event on the submenu |source|.
   void HandleMouseLocation(SubmenuView* source,
                            const gfx::Point& mouse_location);
@@ -643,6 +649,10 @@ class VIEWS_EXPORT MenuController : public WidgetObserver {
   // If a mouse press triggered this menu, this will have its location (in
   // screen coordinates). Otherwise this will be (0, 0).
   gfx::Point menu_start_mouse_press_loc_;
+
+  // Controls behviour differences between an asynchronous run, and other types
+  // of run (blocking, drag and drop).
+  bool async_run_;
 
   // Controls behavior differences between a combobox and other types of menu
   // (like a context menu).
