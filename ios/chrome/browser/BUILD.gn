@@ -5,6 +5,19 @@
 import("//build/config/features.gni")
 import("//ios/web/js_compile.gni")
 
+declare_args() {
+  google_test_gaia_client_id = ""
+  google_test_gaia_client_secret = ""
+  google_staging_api_url = ""
+  google_staging_lso_url = ""
+  google_test_api_url = ""
+  google_test_lso_url = ""
+  google_test_oauth_client_id = ""
+  google_test_oauth_client_secret = ""
+  google_test_oauth_url = ""
+  google_test_sync_url = ""
+}
+
 source_set("browser") {
   sources = [
     "app_startup_parameters.h",
@@ -433,6 +446,7 @@ source_set("browser") {
   ]
 
   deps = [
+    ":about_flags",
     ":injected_js",
     "//base",
     "//base:prefs",
@@ -546,6 +560,41 @@ source_set("browser") {
       "//components/policy/core/common",
     ]
   }
+}
+
+# This is a separate target so that the 'defines' does not leak to the
+# other files (which would increase the compilation time when changing
+# the value).
+source_set("about_flags") {
+  visibility = [ ":browser" ]
+
+  sources = [
+    "about_flags.h",
+    "about_flags.mm",
+  ]
+
+  deps = [
+    "//base",
+    "//components/autofill/core/common",
+    "//components/dom_distiller/core",
+    "//components/enhanced_bookmarks",
+    "//components/flags_ui",
+    "//components/strings",
+    "//google_apis",
+    "//ios/chrome/app/strings",
+    "//ios/web",
+  ]
+
+  defines = [
+    "GOOGLE_STAGING_API_URL=\"$google_staging_api_url\"",
+    "GOOGLE_STAGING_LSO_URL=\"$google_staging_lso_url\"",
+    "GOOGLE_TEST_API_URL=\"$google_test_api_url\"",
+    "GOOGLE_TEST_LSO_URL=\"$google_test_lso_url\"",
+    "GOOGLE_TEST_OAUTH_CLIENT_ID=\"$google_test_oauth_client_id\"",
+    "GOOGLE_TEST_OAUTH_CLIENT_SECRET=\"$google_test_oauth_client_secret\"",
+    "GOOGLE_TEST_OAUTH_URL=\"$google_test_oauth_url\"",
+    "GOOGLE_TEST_SYNC_URL=\"$google_test_sync_url\"",
+  ]
 }
 
 # TODO(crbug.com/487804): use js_compile_checked instead once the errors have

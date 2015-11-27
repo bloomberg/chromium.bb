@@ -120,6 +120,7 @@
         '../provider/ios_provider_chrome.gyp:ios_provider_chrome_browser',
         '../web/ios_web.gyp:ios_web',
         'injected_js',
+        'ios_chrome_browser_about_flags',
         'ios_chrome_common',
         'ios_chrome_resources.gyp:ios_chrome_resources',
         'ios_chrome_resources.gyp:ios_chrome_ui_string_overrider_factory',
@@ -589,6 +590,53 @@
           ],
         }],
       ],
+    },
+    {
+      # GN version: //ios/chrome/browser:about_flags
+      # This is a separate target so that the 'defines' does not leak to the
+      # other files (which would increase the compilation time when changing
+      # the value).
+      'target_name': 'ios_chrome_browser_about_flags',
+      'type': 'static_library',
+      'include_dirs': [
+        '../..',
+      ],
+      'dependencies': [
+        '../../base/base.gyp:base',
+        '../../components/components.gyp:autofill_core_common',
+        '../../components/components.gyp:dom_distiller_core',
+        '../../components/components.gyp:enhanced_bookmarks',
+        '../../components/components.gyp:flags_ui',
+        '../../components/components.gyp:sync_driver',
+        '../../components/components_strings.gyp:components_strings',
+        '../../google_apis/google_apis.gyp:google_apis',
+        '../web/ios_web.gyp:ios_web',
+        'ios_chrome_resources.gyp:ios_strings_gen',
+      ],
+      'sources': [
+        'browser/about_flags.h',
+        'browser/about_flags.mm',
+      ],
+      'defines': [
+        'GOOGLE_STAGING_API_URL="<(google_staging_api_url)"',
+        'GOOGLE_STAGING_LSO_URL="<(google_staging_lso_url)"',
+        'GOOGLE_TEST_API_URL="<(google_test_api_url)"',
+        'GOOGLE_TEST_LSO_URL="<(google_test_lso_url)"',
+        'GOOGLE_TEST_OAUTH_CLIENT_ID="<(google_test_oauth_client_id)"',
+        'GOOGLE_TEST_OAUTH_CLIENT_SECRET="<(google_test_oauth_client_secret)"',
+        'GOOGLE_TEST_OAUTH_URL="<(google_test_oauth_url)"',
+        'GOOGLE_TEST_SYNC_URL="<(google_test_sync_url)"',
+      ],
+      'variables': {
+        'google_staging_api_url%': '',
+        'google_staging_lso_url%': '',
+        'google_test_api_url%': '',
+        'google_test_lso_url%': '',
+        'google_test_oauth_client_id%': '',
+        'google_test_oauth_client_secret%': '',
+        'google_test_oauth_url%': '',
+        'google_test_sync_url%': '',
+      },
     },
     {
       # GN version: //ios/chrome/common

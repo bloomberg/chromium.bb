@@ -19,6 +19,7 @@ include_rules = [
   "+components/enhanced_bookmarks",
   "+components/favicon/core",
   "+components/favicon_base",
+  "+components/flags_ui",
   "+components/gcm_driver",
   "+components/google/core/browser",
   "+components/history/core/browser",
