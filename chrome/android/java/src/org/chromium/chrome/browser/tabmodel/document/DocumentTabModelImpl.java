@@ -136,6 +136,14 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
     private int mLastShownTabId = Tab.INVALID_TAB_ID;
 
     /**
+     * Pre-load shared prefs to avoid being blocked on the
+     * disk access async task in the future.
+     */
+    public static void warmUpSharedPrefs(Context context) {
+        context.getSharedPreferences(PREF_PACKAGE, Context.MODE_PRIVATE);
+    }
+
+    /**
      * Construct a DocumentTabModel.
      * @param activityDelegate Delegate to use for accessing the ActivityManager.
      * @param storageDelegate Delegate to use for accessing persistent storage.

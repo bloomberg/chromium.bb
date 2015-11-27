@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.ChromeStrictMode;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.FileProviderHelper;
 import org.chromium.chrome.browser.device.DeviceClassManager;
+import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelImpl;
 import org.chromium.content.app.ContentApplication;
 import org.chromium.content.browser.BrowserStartupController;
 import org.chromium.content.browser.DeviceUtils;
@@ -102,6 +103,15 @@ public class ChromeBrowserInitializer {
     }
 
 
+    /**
+     * Pre-load shared prefs to avoid being blocked on the
+     * disk access async task in the future.
+     */
+    private void warmUpSharedPrefs() {
+        PreferenceManager.getDefaultSharedPreferences(mApplication);
+        DocumentTabModelImpl.warmUpSharedPrefs(mApplication);
+    }
+
     private void preInflationStartup() {
         ThreadUtils.assertOnUiThread();
         if (mPreInflationStartupComplete) return;
@@ -113,8 +123,7 @@ public class ChromeBrowserInitializer {
         waitForDebuggerIfNeeded();
         ChromeStrictMode.configureStrictMode();
 
-        // Warm up the shared prefs stored.
-        PreferenceManager.getDefaultSharedPreferences(mApplication);
+        warmUpSharedPrefs();
 
         DeviceUtils.addDeviceSpecificUserAgentSwitch(mApplication);
 
