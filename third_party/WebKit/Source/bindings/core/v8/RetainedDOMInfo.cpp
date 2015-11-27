@@ -99,7 +99,7 @@ intptr_t RetainedDOMInfo::GetElementCount()
 
 intptr_t RetainedDOMInfo::GetEquivalenceClass()
 {
-    return reinterpret_cast<intptr_t>(m_root);
+    return reinterpret_cast<intptr_t>(m_root.get());
 }
 
 ActiveDOMObjectsInfo::ActiveDOMObjectsInfo(int numberOfObjectsWithPendingActivity)
