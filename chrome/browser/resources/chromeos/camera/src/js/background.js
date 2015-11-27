@@ -45,6 +45,16 @@ camera.bg.TOPBAR_COLOR = "#1E2023";
  * Creates the window. Note, that only one window at once is supported.
  */
 camera.bg.create = function() {
+  var maximized = false;
+  var fullscreen = false;
+  chrome.storage.local.get(['maximized', 'fullscreen'], function(result) {
+    if (!chrome.runtime.lastError) {
+      if (result.maximized)
+        maximized = result.maximized;
+      if (result.fullscreen)
+        fullscreen = result.fullscreen;
+    }
+  });
   chrome.app.window.create('views/main.html', {
     id: 'main',
     frame: {
@@ -60,6 +70,17 @@ camera.bg.create = function() {
           (window.screen.availHeight - camera.bg.DEFAULT_HEIGHT) / 2)
     },
   }, function(inAppWindow) {
+    // Temporary workaround for crbug.com/452737.
+    // 'state' option in CreateWindowOptions is ignored when a window is
+    // launched with 'hidden' option, so we maintain window state manually here.
+    if (maximized)
+      inAppWindow.maximize();
+    if (fullscreen)
+      inAppWindow.fullscreen();
+    inAppWindow.onClosed.addListener(function() {
+      chrome.storage.local.set({maximized: inAppWindow.isMaximized()});
+      chrome.storage.local.set({fullscreen: inAppWindow.isFullscreen()});
+    });
     camera.bg.appWindow = inAppWindow;
   });
 };
