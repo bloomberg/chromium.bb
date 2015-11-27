@@ -74,9 +74,15 @@ inline UIColor* UIColorFromRGB(int rgb, CGFloat alpha = 1.0) {
                          alpha:alpha];
 }
 
+// Returns whether an image contains an alpha channel. If yes, displaying the
+// image will require blending.
+// Intended for use in debug.
+BOOL ImageHasAlphaChannel(UIImage* image);
+
 // Returns an image resized to |targetSize|. It first calculate the projection
 // by calling CalculateProjection() and then create a new image of the desired
-// size and project the correct subset of the originla image onto it.
+// size and project the correct subset of the original image onto it.
+// The resulting image will have an alpha channel.
 //
 // Image interpolation level for resizing is set to kCGInterpolationDefault.
 //
@@ -84,6 +90,20 @@ inline UIColor* UIColorFromRGB(int rgb, CGFloat alpha = 1.0) {
 UIImage* ResizeImage(UIImage* image,
                      CGSize targetSize,
                      ProjectionMode projectionMode);
+
+// Returns an image resized to |targetSize|. It first calculate the projection
+// by calling CalculateProjection() and then create a new image of the desired
+// size and project the correct subset of the original image onto it.
+// |opaque| determine whether resulting image should have an alpha channel.
+// Prefer setting |opaque| to YES for better performances.
+//
+// Image interpolation level for resizing is set to kCGInterpolationDefault.
+//
+// The resize always preserves the scale of the original image.
+UIImage* ResizeImage(UIImage* image,
+                     CGSize targetSize,
+                     ProjectionMode projectionMode,
+                     BOOL opaque);
 
 // Returns a slightly blurred image darkened enough to provide contrast for
 // white text to be readable.

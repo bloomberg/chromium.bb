@@ -184,9 +184,32 @@ UIColor* GetSettingsBackgroundColor() {
   return [UIColor colorWithWhite:rgb alpha:1];
 }
 
+BOOL ImageHasAlphaChannel(UIImage* image) {
+  CGImageAlphaInfo info = CGImageGetAlphaInfo(image.CGImage);
+  switch (info) {
+    case kCGImageAlphaNone:
+    case kCGImageAlphaNoneSkipLast:
+    case kCGImageAlphaNoneSkipFirst:
+      return NO;
+    case kCGImageAlphaPremultipliedLast:
+    case kCGImageAlphaPremultipliedFirst:
+    case kCGImageAlphaLast:
+    case kCGImageAlphaFirst:
+    case kCGImageAlphaOnly:
+      return YES;
+  }
+}
+
 UIImage* ResizeImage(UIImage* image,
                      CGSize targetSize,
                      ProjectionMode projectionMode) {
+  return ResizeImage(image, targetSize, projectionMode, NO);
+}
+
+UIImage* ResizeImage(UIImage* image,
+                     CGSize targetSize,
+                     ProjectionMode projectionMode,
+                     BOOL opaque) {
   CGSize revisedTargetSize;
   CGRect projectTo;
 
@@ -198,7 +221,8 @@ UIImage* ResizeImage(UIImage* image,
 
   // Resize photo. Use UIImage drawing methods because they respect
   // UIImageOrientation as opposed to CGContextDrawImage().
-  UIGraphicsBeginImageContextWithOptions(revisedTargetSize, NO, image.scale);
+  UIGraphicsBeginImageContextWithOptions(revisedTargetSize, opaque,
+                                         image.scale);
   [image drawInRect:projectTo];
   UIImage* resizedPhoto = UIGraphicsGetImageFromCurrentImageContext();
   UIGraphicsEndImageContext();

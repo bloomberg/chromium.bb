@@ -76,6 +76,20 @@ UIImage* testImage(CGSize imageSize) {
   return image;
 }
 
+TEST(UIKitUIUtilTest, TestResizeImageOpacity) {
+  UIImage* actual;
+  UIImage* image = testImage(CGSizeMake(100, 100));
+  actual =
+      ResizeImage(image, CGSizeMake(50, 50), ProjectionMode::kAspectFit, YES);
+  EXPECT_TRUE(actual);
+  EXPECT_FALSE(ImageHasAlphaChannel(actual));
+
+  actual =
+      ResizeImage(image, CGSizeMake(50, 50), ProjectionMode::kAspectFit, NO);
+  EXPECT_TRUE(actual);
+  EXPECT_TRUE(ImageHasAlphaChannel(actual));
+}
+
 TEST(UIKitUIUtilTest, TestResizeImageInvalidInput) {
   UIImage* actual;
   UIImage* image = testImage(CGSizeMake(100, 50));
