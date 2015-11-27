@@ -2322,7 +2322,7 @@ class LayerTreeHostImplTestScrollbarAnimation : public LayerTreeHostImplTest {
   }
 
   void RunTest(LayerTreeSettings::ScrollbarAnimator animator) {
-    LayerTreeSettings settings;
+    LayerTreeSettings settings = DefaultSettings();
     settings.scrollbar_animator = animator;
     settings.scrollbar_fade_delay_ms = 20;
     settings.scrollbar_fade_duration_ms = 20;
@@ -2435,7 +2435,7 @@ TEST_F(LayerTreeHostImplTestScrollbarAnimation, Thinning) {
 class LayerTreeHostImplTestScrollbarOpacity : public LayerTreeHostImplTest {
  protected:
   void RunTest(LayerTreeSettings::ScrollbarAnimator animator) {
-    LayerTreeSettings settings;
+    LayerTreeSettings settings = DefaultSettings();
     settings.scrollbar_animator = animator;
     settings.scrollbar_fade_delay_ms = 20;
     settings.scrollbar_fade_duration_ms = 20;
@@ -2493,7 +2493,7 @@ TEST_F(LayerTreeHostImplTestScrollbarOpacity, Thinning) {
 }
 
 TEST_F(LayerTreeHostImplTest, ScrollbarInnerLargerThanOuter) {
-  LayerTreeSettings settings;
+  LayerTreeSettings settings = DefaultSettings();
   CreateHostImpl(settings, CreateOutputSurface());
 
   gfx::Size inner_viewport_size(315, 200);
@@ -2527,7 +2527,7 @@ TEST_F(LayerTreeHostImplTest, ScrollbarInnerLargerThanOuter) {
 }
 
 TEST_F(LayerTreeHostImplTest, ScrollbarRegistration) {
-  LayerTreeSettings settings;
+  LayerTreeSettings settings = DefaultSettings();
   settings.scrollbar_animator = LayerTreeSettings::LINEAR_FADE;
   settings.scrollbar_fade_delay_ms = 20;
   settings.scrollbar_fade_duration_ms = 20;
@@ -2648,7 +2648,7 @@ TEST_F(LayerTreeHostImplTest, ScrollbarRegistration) {
 
 void LayerTreeHostImplTest::SetupMouseMoveAtWithDeviceScale(
     float device_scale_factor) {
-  LayerTreeSettings settings;
+  LayerTreeSettings settings = DefaultSettings();
   settings.scrollbar_fade_delay_ms = 500;
   settings.scrollbar_fade_duration_ms = 300;
   settings.scrollbar_animator = LayerTreeSettings::THINNING;
@@ -3418,6 +3418,7 @@ class LayerTreeHostImplTopControlsTest : public LayerTreeHostImplTest {
       const gfx::Size& inner_viewport_size,
       const gfx::Size& outer_viewport_size,
       const gfx::Size& scroll_layer_size) {
+    settings_ = DefaultSettings();
     CreateHostImpl(settings_, CreateOutputSurface());
     host_impl_->sync_tree()->set_top_controls_shrink_blink_size(true);
     host_impl_->sync_tree()->set_top_controls_height(top_controls_height_);
@@ -3765,6 +3766,7 @@ TEST_F(LayerTreeHostImplTopControlsTest, TopControlsScrollableSublayer) {
 // Ensure setting the top controls position explicitly using the setters on the
 // TreeImpl correctly affects the top controls manager and viewport bounds.
 TEST_F(LayerTreeHostImplTopControlsTest, PositionTopControlsExplicitly) {
+  settings_ = DefaultSettings();
   CreateHostImpl(settings_, CreateOutputSurface());
   SetupTopControlsAndScrollLayerWithVirtualViewport(
       layer_size_, layer_size_, layer_size_);
@@ -3795,6 +3797,7 @@ TEST_F(LayerTreeHostImplTopControlsTest, PositionTopControlsExplicitly) {
 // applied on sync tree activation. The total top controls offset shouldn't
 // change after the activation.
 TEST_F(LayerTreeHostImplTopControlsTest, ApplyDeltaOnTreeActivation) {
+  settings_ = DefaultSettings();
   CreateHostImpl(settings_, CreateOutputSurface());
   SetupTopControlsAndScrollLayerWithVirtualViewport(
       layer_size_, layer_size_, layer_size_);
@@ -3838,6 +3841,7 @@ TEST_F(LayerTreeHostImplTopControlsTest, ApplyDeltaOnTreeActivation) {
 // height is the amount that the inner viewport container was shrunk outside
 // the compositor to accommodate the top controls.
 TEST_F(LayerTreeHostImplTopControlsTest, TopControlsLayoutHeightChanged) {
+  settings_ = DefaultSettings();
   CreateHostImpl(settings_, CreateOutputSurface());
   SetupTopControlsAndScrollLayerWithVirtualViewport(
       layer_size_, layer_size_, layer_size_);
@@ -4045,6 +4049,7 @@ TEST_F(LayerTreeHostImplTopControlsTest, TopControlsScrollOuterViewport) {
 
 TEST_F(LayerTreeHostImplTopControlsTest,
        ScrollNonScrollableRootWithTopControls) {
+  settings_ = DefaultSettings();
   CreateHostImpl(settings_, CreateOutputSurface());
   SetupTopControlsAndScrollLayerWithVirtualViewport(
       layer_size_, layer_size_, layer_size_);
@@ -5300,7 +5305,7 @@ TEST_F(LayerTreeHostImplTest, OverscrollChildEventBubbling) {
 
 TEST_F(LayerTreeHostImplTest, OverscrollAlways) {
   InputHandlerScrollResult scroll_result;
-  LayerTreeSettings settings;
+  LayerTreeSettings settings = DefaultSettings();
   CreateHostImpl(settings, CreateOutputSurface());
 
   LayerImpl* scroll_layer = SetupScrollAndContentsLayers(gfx::Size(50, 50));
@@ -6012,7 +6017,7 @@ TEST_F(LayerTreeHostImplTest, PartialSwapReceivesDamageRect) {
 
   // This test creates its own LayerTreeHostImpl, so
   // that we can force partial swap enabled.
-  LayerTreeSettings settings;
+  LayerTreeSettings settings = DefaultSettings();
   settings.renderer_settings.partial_swap_enabled = true;
   scoped_ptr<LayerTreeHostImpl> layer_tree_host_impl =
       LayerTreeHostImpl::Create(
@@ -6294,6 +6299,7 @@ TEST_F(LayerTreeHostImplTest, PartialSwap) {
 }
 
 static scoped_ptr<LayerTreeHostImpl> SetupLayersForOpacity(
+    LayerTreeSettings settings,
     bool partial_swap,
     LayerTreeHostImplClient* client,
     TaskRunnerProvider* task_runner_provider,
@@ -6301,7 +6307,6 @@ static scoped_ptr<LayerTreeHostImpl> SetupLayersForOpacity(
     TaskGraphRunner* task_graph_runner,
     RenderingStatsInstrumentation* stats_instrumentation,
     OutputSurface* output_surface) {
-  LayerTreeSettings settings;
   settings.renderer_settings.partial_swap_enabled = partial_swap;
   scoped_ptr<LayerTreeHostImpl> my_host_impl = LayerTreeHostImpl::Create(
       settings, client, task_runner_provider, stats_instrumentation, manager,
@@ -6377,8 +6382,9 @@ TEST_F(LayerTreeHostImplTest, ContributingLayerEmptyScissorPartialSwap) {
   scoped_ptr<OutputSurface> output_surface(
       FakeOutputSurface::Create3d(provider));
   scoped_ptr<LayerTreeHostImpl> my_host_impl = SetupLayersForOpacity(
-      true, this, &task_runner_provider_, &shared_bitmap_manager,
-      &task_graph_runner, &stats_instrumentation_, output_surface.get());
+      DefaultSettings(), true, this, &task_runner_provider_,
+      &shared_bitmap_manager, &task_graph_runner, &stats_instrumentation_,
+      output_surface.get());
   {
     LayerTreeHostImpl::FrameData frame;
     EXPECT_EQ(DRAW_SUCCESS, my_host_impl->PrepareToDraw(&frame));
@@ -6406,8 +6412,9 @@ TEST_F(LayerTreeHostImplTest, ContributingLayerEmptyScissorNoPartialSwap) {
   scoped_ptr<OutputSurface> output_surface(
       FakeOutputSurface::Create3d(provider));
   scoped_ptr<LayerTreeHostImpl> my_host_impl = SetupLayersForOpacity(
-      false, this, &task_runner_provider_, &shared_bitmap_manager,
-      &task_graph_runner, &stats_instrumentation_, output_surface.get());
+      DefaultSettings(), false, this, &task_runner_provider_,
+      &shared_bitmap_manager, &task_graph_runner, &stats_instrumentation_,
+      output_surface.get());
   {
     LayerTreeHostImpl::FrameData frame;
     EXPECT_EQ(DRAW_SUCCESS, my_host_impl->PrepareToDraw(&frame));
@@ -6600,7 +6607,7 @@ TEST_F(LayerTreeHostImplTestWithDelegatingRenderer, FrameIncludesDamageRect) {
 // TODO(reveman): Remove this test and the ability to prevent on demand raster
 // when delegating renderer supports PictureDrawQuads. crbug.com/342121
 TEST_F(LayerTreeHostImplTestWithDelegatingRenderer, PreventRasterizeOnDemand) {
-  LayerTreeSettings settings;
+  LayerTreeSettings settings = DefaultSettings();
   CreateHostImpl(settings, CreateOutputSurface());
   EXPECT_FALSE(host_impl_->GetRendererCapabilities().allow_rasterize_on_demand);
 }
@@ -6822,7 +6829,7 @@ TEST_F(LayerTreeHostImplTest,
 // Checks that we have a non-0 default allocation if we pass a context that
 // doesn't support memory management extensions.
 TEST_F(LayerTreeHostImplTest, DefaultMemoryAllocation) {
-  LayerTreeSettings settings;
+  LayerTreeSettings settings = DefaultSettings();
   host_impl_ = LayerTreeHostImpl::Create(
       settings, this, &task_runner_provider_, &stats_instrumentation_,
       &shared_bitmap_manager_, &gpu_memory_buffer_manager_, &task_graph_runner_,
