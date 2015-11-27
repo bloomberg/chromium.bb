@@ -314,7 +314,7 @@ static bool evalResolution(const MediaQueryExpValue& value, MediaFeaturePrefix o
     double canonicalFactor = CSSPrimitiveValue::conversionToCanonicalUnitsScaleFactor(value.unit);
     double dppxFactor = CSSPrimitiveValue::conversionToCanonicalUnitsScaleFactor(CSSPrimitiveValue::UnitType::DotsPerPixel);
     float valueInDppx = clampTo<float>(value.value * (canonicalFactor / dppxFactor));
-    if (CSSPrimitiveValue::isDotsPerCentimeter(value.unit)) {
+    if (value.unit == CSSPrimitiveValue::UnitType::DotsPerCentimeter) {
         // To match DPCM to DPPX values, we limit to 2 decimal points.
         // The http://dev.w3.org/csswg/css3-values/#absolute-lengths recommends
         // "that the pixel unit refer to the whole number of device pixels that best
