@@ -46,8 +46,8 @@ void initialize(TimeFunction currentTimeFunction, TimeFunction monotonicallyIncr
 {
     // WTF, and Blink in general, cannot handle being re-initialized, even if shutdown first.
     // Make that explicit here.
-    ASSERT(!s_initialized);
-    ASSERT(!s_shutdown);
+    RELEASE_ASSERT(!s_initialized);
+    RELEASE_ASSERT(!s_shutdown);
     s_initialized = true;
     setCurrentTimeFunction(currentTimeFunction);
     setMonotonicallyIncreasingTimeFunction(monotonicallyIncreasingTimeFunction);
@@ -59,8 +59,8 @@ void initialize(TimeFunction currentTimeFunction, TimeFunction monotonicallyIncr
 
 void shutdown()
 {
-    ASSERT(s_initialized);
-    ASSERT(!s_shutdown);
+    RELEASE_ASSERT(s_initialized);
+    RELEASE_ASSERT(!s_shutdown);
     s_shutdown = true;
     Partitions::shutdown();
 }
