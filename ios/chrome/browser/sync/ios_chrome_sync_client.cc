@@ -46,6 +46,7 @@
 #include "ios/chrome/browser/signin/oauth2_token_service_factory.h"
 #include "ios/chrome/browser/sync/glue/sync_start_util.h"
 #include "ios/chrome/browser/sync/sessions/ios_chrome_local_session_event_router.h"
+#include "ios/chrome/browser/undo/bookmark_undo_service_factory.h"
 #include "ios/chrome/browser/web_data_service_factory.h"
 #include "ios/chrome/common/channel_info.h"
 #include "ios/public/provider/chrome/browser/browser_state/chrome_browser_state.h"
@@ -225,8 +226,8 @@ IOSChromeSyncClient::GetWebDataService() {
 }
 
 BookmarkUndoService* IOSChromeSyncClient::GetBookmarkUndoServiceIfExists() {
-  // TODO(crbug.com/561569) Implement this.
-  return nullptr;
+  return ios::BookmarkUndoServiceFactory::GetForBrowserStateIfExists(
+      browser_state_);
 }
 
 invalidation::InvalidationService*
