@@ -24,7 +24,7 @@ import org.chromium.chrome.browser.widget.TintedDrawable;
  * Container for all parameters related to creating a custom action button.
  */
 /* package */ class ActionButtonParams {
-    private static final String TAG = "cr_CustomTabs";
+    private static final String TAG = "CustomTabs";
 
     private Bitmap mIcon;
     private String mDescription;

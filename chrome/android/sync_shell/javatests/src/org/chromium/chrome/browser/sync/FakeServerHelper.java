@@ -22,7 +22,7 @@ import java.util.concurrent.ExecutionException;
  * Assists in Java interaction the native Sync FakeServer.
  */
 public class FakeServerHelper {
-    private static final String TAG = "cr.FakeServerHelper";
+    private static final String TAG = "FakeServerHelper";
 
     // Lazily-instantiated singleton FakeServerHelper.
     private static FakeServerHelper sFakeServerHelper;

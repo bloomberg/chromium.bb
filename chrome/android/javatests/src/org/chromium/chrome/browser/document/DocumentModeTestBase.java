@@ -47,7 +47,7 @@ import java.util.concurrent.Callable;
 @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
 @DisableInTabbedMode
 public class DocumentModeTestBase extends MultiActivityTestBase {
-    protected static final String TAG = "cr.document";
+    protected static final String TAG = "document";
 
     private static class TestTabObserver extends EmptyTabObserver {
         private ContextMenu mContextMenu;

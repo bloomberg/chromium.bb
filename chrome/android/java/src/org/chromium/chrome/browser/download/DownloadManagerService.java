@@ -50,7 +50,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class DownloadManagerService extends BroadcastReceiver implements
         DownloadController.DownloadNotificationService {
-    private static final String TAG = "cr.DownloadService";
+    private static final String TAG = "DownloadService";
     private static final String DOWNLOAD_NOTIFICATION_IDS = "DownloadNotificationIds";
     private static final String DOWNLOAD_DIRECTORY = "Download";
     protected static final String PENDING_OMA_DOWNLOADS = "PendingOMADownloads";

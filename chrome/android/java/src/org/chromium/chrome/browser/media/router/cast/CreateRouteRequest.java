@@ -28,7 +28,7 @@ import org.chromium.chrome.browser.media.router.RouteDelegate;
 public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
         ResultCallback<Cast.ApplicationConnectionResult> {
-    private static final String TAG = "cr.MediaRouter";
+    private static final String TAG = "MediaRouter";
 
     private static final int STATE_IDLE = 0;
     private static final int STATE_CONNECTING_TO_API = 1;

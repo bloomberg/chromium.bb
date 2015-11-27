@@ -29,7 +29,7 @@ import javax.annotation.Nullable;
 @JNINamespace("media_router")
 public class ChromeMediaRouter implements MediaRouteManager {
 
-    private static final String TAG = "cr_MediaRouter";
+    private static final String TAG = "MediaRouter";
 
     private static final String MEDIA_ROUTE_ID_PREFIX = "route:";
     private static final String MEDIA_ROUTE_ID_SEPARATOR = "/";

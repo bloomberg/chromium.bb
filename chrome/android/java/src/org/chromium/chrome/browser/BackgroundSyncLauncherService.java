@@ -24,7 +24,7 @@ import org.chromium.content.browser.BrowserStartupController;
  * when the browser needs to be launched in response to changing network or power conditions.
  */
 public class BackgroundSyncLauncherService extends GcmTaskService {
-    private static final String TAG = "cr_BgSyncLauncher";
+    private static final String TAG = "BgSyncLauncher";
 
     @Override
     @VisibleForTesting

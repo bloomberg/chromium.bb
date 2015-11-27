@@ -110,7 +110,7 @@ public class SnackbarManager implements OnClickListener, OnGlobalLayoutListener 
 
     private static final int DEFAULT_SNACKBAR_DURATION_MS = 3000;
     private static final int ACCESSIBILITY_MODE_SNACKBAR_DURATION_MS = 6000;
-    private static final String TAG = "cr_snackbar";
+    private static final String TAG = "snackbar";
 
     // Used instead of the constant so tests can override the value.
     private static int sSnackbarDurationMs = DEFAULT_SNACKBAR_DURATION_MS;

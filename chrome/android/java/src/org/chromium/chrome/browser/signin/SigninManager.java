@@ -64,7 +64,7 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
 
     private static final String CLEAR_DATA_PROGRESS_DIALOG_TAG = "clear_data_progress";
 
-    private static final String TAG = "cr.SigninManager";
+    private static final String TAG = "SigninManager";
 
     private static SigninManager sSigninManager;
 

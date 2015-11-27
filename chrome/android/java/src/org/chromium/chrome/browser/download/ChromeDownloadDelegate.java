@@ -54,7 +54,7 @@ import java.io.File;
  */
 public class ChromeDownloadDelegate
         implements ContentViewDownloadDelegate, InfoBarListeners.Confirm {
-    private static final String TAG = "cr.Download";
+    private static final String TAG = "Download";
 
     // The application context.
     private final Context mContext;

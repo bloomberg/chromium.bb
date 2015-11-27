@@ -38,7 +38,7 @@ import org.chromium.chrome.browser.tab.Tab;
  */
 public class MediaNotificationManager {
 
-    private static final String TAG = "cr_MediaNotification";
+    private static final String TAG = "MediaNotification";
 
     // We're always used on the UI thread but the LOCK is required by lint when creating the
     // singleton.

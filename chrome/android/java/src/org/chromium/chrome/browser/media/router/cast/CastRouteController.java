@@ -43,7 +43,7 @@ import java.util.Set;
  * A wrapper around the established Cast application session.
  */
 public class CastRouteController implements RouteController, MediaNotificationListener {
-    private static final String TAG = "cr_MediaRouter";
+    private static final String TAG = "MediaRouter";
 
     private static final String MEDIA_NAMESPACE = "urn:x-cast:com.google.cast.media";
     private static final String GAMES_NAMESPACE = "urn:x-cast:com.google.cast.games";

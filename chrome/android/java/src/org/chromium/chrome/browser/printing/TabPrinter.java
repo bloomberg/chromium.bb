@@ -20,7 +20,7 @@ import java.lang.ref.WeakReference;
  */
 public class TabPrinter implements Printable {
     private static String sDefaultTitle;
-    private static final String TAG = "cr.printing";
+    private static final String TAG = "printing";
 
     private final WeakReference<Tab> mTab;
 

@@ -37,7 +37,7 @@ import java.util.concurrent.TimeUnit;
  * it to the native side with a caching layer in {@link DelayedInvalidationsController}.
  */
 public abstract class ChromiumSyncAdapter extends AbstractThreadedSyncAdapter {
-    private static final String TAG = "cr.invalidation";
+    private static final String TAG = "invalidation";
 
     private final Application mApplication;
     private final boolean mAsyncStartup;

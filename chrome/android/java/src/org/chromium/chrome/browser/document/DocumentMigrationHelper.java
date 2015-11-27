@@ -68,7 +68,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
 public class DocumentMigrationHelper {
-    private static final String TAG = "cr.DocumentMigration";
+    private static final String TAG = "DocumentMigration";
 
     public static final int FINALIZE_MODE_NO_ACTION = 0;
     public static final int FINALIZE_MODE_FINISH_ACTIVITY = 1;

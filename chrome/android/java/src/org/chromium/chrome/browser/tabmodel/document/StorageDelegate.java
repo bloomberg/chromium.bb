@@ -32,7 +32,7 @@ import java.util.List;
  * Contains functions for interacting with the file system.
  */
 public class StorageDelegate extends TabPersister {
-    private static final String TAG = "cr.StorageDelegate";
+    private static final String TAG = "StorageDelegate";
 
     /** Filename to use for the DocumentTabModel that stores regular tabs. */
     private static final String REGULAR_FILE_NAME = "chrome_document_activity.store";

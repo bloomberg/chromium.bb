@@ -176,7 +176,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
      * Timeout in ms for reading PartnerBrowserCustomizations provider.
      */
     private static final int PARTNER_BROWSER_CUSTOMIZATIONS_TIMEOUT_MS = 10000;
-    private static final String TAG = "cr.ChromeActivity";
+    private static final String TAG = "ChromeActivity";
     private static final Rect EMPTY_RECT = new Rect();
 
     private TabModelSelector mTabModelSelector;

@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 @JNINamespace("history_report")
 public class HistoryReportJniBridge implements SearchJniBridge {
-    private static final String TAG = "cr.historyreport";
+    private static final String TAG = "historyreport";
 
     private long mNativeHistoryReportJniBridge;
     private DataChangeObserver mDataChangeObserver;

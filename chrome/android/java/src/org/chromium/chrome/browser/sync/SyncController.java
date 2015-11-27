@@ -47,7 +47,7 @@ import org.chromium.sync.signin.ChromeSigninController;
  */
 public class SyncController implements ProfileSyncService.SyncStateChangedListener,
                                        AndroidSyncSettings.AndroidSyncSettingsObserver {
-    private static final String TAG = "cr.SyncController";
+    private static final String TAG = "SyncController";
 
     /**
      * An identifier for the generator in UniqueIdentificationGeneratorFactory to be used to

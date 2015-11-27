@@ -65,7 +65,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * accessible from {@link ChromeApplication}.
  */
 public class CustomTabsConnection extends ICustomTabsService.Stub {
-    private static final String TAG = "cr.ChromeConnection";
+    private static final String TAG = "ChromeConnection";
     private static final String LOG_SERVICE_REQUESTS = "custom-tabs-log-service-requests";
     @VisibleForTesting
     static final String NO_PRERENDERING_KEY =

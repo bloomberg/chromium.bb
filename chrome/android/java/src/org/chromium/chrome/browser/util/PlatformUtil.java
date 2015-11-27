@@ -17,7 +17,7 @@ import org.chromium.base.annotations.CalledByNative;
  * Utility class for providing platform functionalities.
  */
 public class PlatformUtil {
-    private static final String TAG = "cr.PlatformUtil";
+    private static final String TAG = "PlatformUtil";
 
     @CalledByNative
     private static void launchExternalProtocol(String url) {

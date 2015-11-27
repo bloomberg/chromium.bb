@@ -56,7 +56,7 @@ import java.util.UUID;
  * http://docs.google.com/a/google.com/document/d/1scTCovqASf5ktkOeVj8wFRkWTCeDYw2LrOBNn05CDB0/edit
  */
 public class OmahaClient extends IntentService {
-    private static final String TAG = "cr.omaha";
+    private static final String TAG = "omaha";
 
     // Intent actions.
     private static final String ACTION_INITIALIZE =

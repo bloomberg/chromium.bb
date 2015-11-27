@@ -40,7 +40,7 @@ public class EnhancedBookmarkEditActivity extends EnhancedBookmarkActivityBase {
     public static final String INTENT_BOOKMARK_ID = "EnhancedBookmarkEditActivity.BookmarkId";
     public static final String INTENT_WEB_CONTENTS = "EnhancedBookmarkEditActivity.WebContents";
 
-    private static final String TAG = "cr.BookmarkEdit";
+    private static final String TAG = "BookmarkEdit";
 
     private enum OfflineButtonType {
         NONE,

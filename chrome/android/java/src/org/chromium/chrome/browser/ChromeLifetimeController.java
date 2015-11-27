@@ -25,7 +25,7 @@ import java.lang.ref.WeakReference;
  */
 class ChromeLifetimeController implements ApplicationLifetime.Observer,
         ApplicationStatus.ActivityStateListener {
-    private static final String TAG = "cr.LifetimeController";
+    private static final String TAG = "LifetimeController";
 
     private boolean mRestartChromeOnDestroy;
     private int mRemainingActivitiesCount = 0;

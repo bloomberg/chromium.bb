@@ -43,7 +43,7 @@ import java.util.Locale;
  * Handles all browser-related Intents.
  */
 public class IntentHandler {
-    private static final String TAG = "cr.IntentHandler";
+    private static final String TAG = "IntentHandler";
 
     /**
      * Document mode: If true, Chrome is launched into the same Task.

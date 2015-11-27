@@ -24,7 +24,7 @@ import java.util.List;
  * Utilities dealing with extracting information from intents.
  */
 public class IntentUtils {
-    private static final String TAG = "cr_IntentUtils";
+    private static final String TAG = "IntentUtils";
 
     /** See {@link #isIntentTooLarge(Intent)}. */
     private static final int MAX_INTENT_SIZE_THRESHOLD = 750000;

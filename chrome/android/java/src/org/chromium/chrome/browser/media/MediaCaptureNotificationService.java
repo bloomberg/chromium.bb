@@ -38,7 +38,7 @@ public class MediaCaptureNotificationService extends Service {
     private static final String NOTIFICATION_MEDIA_URL_EXTRA = "NotificationMediaUrl";
 
     private static final String WEBRTC_NOTIFICATION_IDS = "WebRTCNotificationIds";
-    private static final String TAG = "cr.MediaCapture";
+    private static final String TAG = "MediaCapture";
 
     private static final int MEDIATYPE_NO_MEDIA = 0;
     private static final int MEDIATYPE_AUDIO_AND_VIDEO = 1;

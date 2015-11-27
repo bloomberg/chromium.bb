@@ -23,7 +23,7 @@ import java.net.URISyntaxException;
  * media actions from the controls to the {@link org.chromium.content.browser.MediaSession}
  */
 public class MediaSessionTabHelper {
-    private static final String TAG = "cr.MediaSession";
+    private static final String TAG = "MediaSession";
 
     private static final String UNICODE_PLAY_CHARACTER = "\u25B6";
 

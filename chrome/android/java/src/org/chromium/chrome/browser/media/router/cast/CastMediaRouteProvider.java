@@ -31,7 +31,7 @@ import javax.annotation.Nullable;
 public class CastMediaRouteProvider
         implements MediaRouteProvider, DiscoveryDelegate, RouteDelegate {
 
-    private static final String TAG = "cr_MediaRouter";
+    private static final String TAG = "MediaRouter";
 
     private static final String AUTO_JOIN_PRESENTATION_ID = "auto-join";
     private static final String PRESENTATION_ID_SESSION_ID_PREFIX = "cast-session_";

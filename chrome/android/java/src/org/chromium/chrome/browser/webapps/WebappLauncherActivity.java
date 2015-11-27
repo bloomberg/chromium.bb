@@ -34,7 +34,7 @@ public class WebappLauncherActivity extends Activity {
     public static final String ACTION_START_WEBAPP =
             "com.google.android.apps.chrome.webapps.WebappManager.ACTION_START_WEBAPP";
 
-    private static final String TAG = "cr.webapps";
+    private static final String TAG = "webapps";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
