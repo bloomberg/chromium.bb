@@ -862,9 +862,6 @@ crbug.com/392706 virtual/threaded/animations/play-state-initially-paused.html [ 
 crbug.com/402379 [ Win7 Debug ] storage/indexeddb/cursor-continue-validity.html [ Pass Slow ]
 crbug.com/402379 [ Win7 Debug ] storage/indexeddb/mozilla/indexes.html [ Pass Slow ]
 
-# The below is failing on XP and Win10 only. See crbug.com/539693
-crbug.com/543309 editing/selection/doubleclick-crash.html [ NeedsManualRebaseline ]
-
 crbug.com/419993 [ Debug ] fast/css/giant-stylesheet-crash.html [ Pass Slow ]
 
 # Part of a larger issue referenced in the bug. This specific issue will be fixed shortly.
