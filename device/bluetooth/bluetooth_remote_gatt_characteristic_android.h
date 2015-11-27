@@ -65,10 +65,15 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicAndroid
                                  const ErrorCallback& error_callback) override;
 
   // Callback after Read operation completes.
-  void OnRead(JNIEnv* env, jobject jcaller, int32_t status, jbyteArray value);
+  void OnRead(JNIEnv* env,
+              const base::android::JavaParamRef<jobject>& jcaller,
+              int32_t status,
+              const base::android::JavaParamRef<jbyteArray>& value);
 
   // Callback after Write operation completes.
-  void OnWrite(JNIEnv* env, jobject jcaller, int32_t status);
+  void OnWrite(JNIEnv* env,
+               const base::android::JavaParamRef<jobject>& jcaller,
+               int32_t status);
 
  private:
   BluetoothRemoteGattCharacteristicAndroid(const std::string& instanceId);

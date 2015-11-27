@@ -178,11 +178,12 @@ void BluetoothRemoteGattServiceAndroid::Unregister(
 
 void BluetoothRemoteGattServiceAndroid::CreateGattRemoteCharacteristic(
     JNIEnv* env,
-    jobject caller,
-    const jstring& instanceId,
-    jobject /* BluetoothGattCharacteristicWrapper */
+    const JavaParamRef<jobject>& caller,
+    const JavaParamRef<jstring>& instanceId,
+    const JavaParamRef<jobject>& /* BluetoothGattCharacteristicWrapper */
     bluetooth_gatt_characteristic_wrapper,
-    jobject /* ChromeBluetoothDevice */ chrome_bluetooth_device) {
+    const JavaParamRef<
+        jobject>& /* ChromeBluetoothDevice */ chrome_bluetooth_device) {
   std::string instanceIdString =
       base::android::ConvertJavaStringToUTF8(env, instanceId);
 

@@ -81,11 +81,13 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattServiceAndroid
   // |characteristics_| if it is not already there.
   void CreateGattRemoteCharacteristic(
       JNIEnv* env,
-      jobject caller,
-      const jstring& instanceId,
-      jobject /* BluetoothGattCharacteristicWrapper */
+      const base::android::JavaParamRef<jobject>& caller,
+      const base::android::JavaParamRef<jstring>& instanceId,
+      const base::android::JavaParamRef<
+          jobject>& /* BluetoothGattCharacteristicWrapper */
       bluetooth_gatt_characteristic_wrapper,
-      jobject /* ChromeBluetoothDevice */ chrome_bluetooth_device);
+      const base::android::JavaParamRef<
+          jobject>& /* ChromeBluetoothDevice */ chrome_bluetooth_device);
 
  private:
   BluetoothRemoteGattServiceAndroid(BluetoothAdapterAndroid* adapter,

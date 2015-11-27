@@ -91,16 +91,19 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterAndroid final
   }
 
   // Handles a scan error event by invalidating all discovery sessions.
-  void OnScanFailed(JNIEnv* env, jobject caller);
+  void OnScanFailed(JNIEnv* env,
+                    const base::android::JavaParamRef<jobject>& caller);
 
   // Creates or updates device with advertised UUID information when a device is
   // discovered during a scan.
   void CreateOrUpdateDeviceOnScan(
       JNIEnv* env,
-      jobject caller,
-      const jstring& address,
-      jobject bluetooth_device_wrapper,  // Java Type: bluetoothDeviceWrapper
-      jobject advertised_uuids);         // Java Type: List<ParcelUuid>
+      const base::android::JavaParamRef<jobject>& caller,
+      const base::android::JavaParamRef<jstring>& address,
+      const base::android::JavaParamRef<jobject>&
+          bluetooth_device_wrapper,  // Java Type: bluetoothDeviceWrapper
+      const base::android::JavaParamRef<jobject>&
+          advertised_uuids);  // Java Type: List<ParcelUuid>
 
  protected:
   BluetoothAdapterAndroid();

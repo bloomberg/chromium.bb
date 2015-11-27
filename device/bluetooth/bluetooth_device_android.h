@@ -90,22 +90,26 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceAndroid final
 
   // Callback indicating when GATT client has connected/disconnected.
   // See android.bluetooth.BluetoothGattCallback.onConnectionStateChange.
-  void OnConnectionStateChange(JNIEnv* env,
-                               jobject jcaller,
-                               int32_t status,
-                               bool connected);
+  void OnConnectionStateChange(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jcaller,
+      int32_t status,
+      bool connected);
 
   // Callback indicating when all services of the device have been
   // discovered.
-  void OnGattServicesDiscovered(JNIEnv* env, jobject jcaller);
+  void OnGattServicesDiscovered(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jcaller);
 
   // Creates Bluetooth GATT service objects and adds them to
   // BluetoothDevice::gatt_services_ if they are not already there.
   void CreateGattRemoteService(
       JNIEnv* env,
-      jobject caller,
-      const jstring& instanceId,
-      jobject /* BluetoothGattServiceWrapper */ bluetooth_gatt_service_wrapper);
+      const base::android::JavaParamRef<jobject>& caller,
+      const base::android::JavaParamRef<jstring>& instanceId,
+      const base::android::JavaParamRef<jobject>&
+          bluetooth_gatt_service_wrapper);  // BluetoothGattServiceWrapper
 
  protected:
   BluetoothDeviceAndroid(BluetoothAdapterAndroid* adapter);

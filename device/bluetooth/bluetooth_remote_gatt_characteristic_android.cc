@@ -191,10 +191,11 @@ void BluetoothRemoteGattCharacteristicAndroid::WriteRemoteCharacteristic(
   write_error_callback_ = error_callback;
 }
 
-void BluetoothRemoteGattCharacteristicAndroid::OnRead(JNIEnv* env,
-                                                      jobject jcaller,
-                                                      int32_t status,
-                                                      jbyteArray value) {
+void BluetoothRemoteGattCharacteristicAndroid::OnRead(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jcaller,
+    int32_t status,
+    const JavaParamRef<jbyteArray>& value) {
   read_pending_ = false;
 
   // Clear callbacks before calling to avoid reentrancy issues.
@@ -213,9 +214,10 @@ void BluetoothRemoteGattCharacteristicAndroid::OnRead(JNIEnv* env,
   }
 }
 
-void BluetoothRemoteGattCharacteristicAndroid::OnWrite(JNIEnv* env,
-                                                       jobject jcaller,
-                                                       int32_t status) {
+void BluetoothRemoteGattCharacteristicAndroid::OnWrite(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jcaller,
+    int32_t status) {
   write_pending_ = false;
 
   // Clear callbacks before calling to avoid reentrancy issues.

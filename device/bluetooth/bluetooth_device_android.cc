@@ -201,10 +201,11 @@ void BluetoothDeviceAndroid::ConnectToServiceInsecurely(
   NOTIMPLEMENTED();
 }
 
-void BluetoothDeviceAndroid::OnConnectionStateChange(JNIEnv* env,
-                                                     jobject jcaller,
-                                                     int32_t status,
-                                                     bool connected) {
+void BluetoothDeviceAndroid::OnConnectionStateChange(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jcaller,
+    int32_t status,
+    bool connected) {
   gatt_connected_ = connected;
   if (gatt_connected_) {
     DidConnectGatt();
@@ -225,17 +226,19 @@ void BluetoothDeviceAndroid::OnConnectionStateChange(JNIEnv* env,
   }
 }
 
-void BluetoothDeviceAndroid::OnGattServicesDiscovered(JNIEnv* env,
-                                                      jobject jcaller) {
+void BluetoothDeviceAndroid::OnGattServicesDiscovered(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jcaller) {
   FOR_EACH_OBSERVER(BluetoothAdapter::Observer, GetAdapter()->GetObservers(),
                     GattServicesDiscovered(GetAdapter(), this));
 }
 
 void BluetoothDeviceAndroid::CreateGattRemoteService(
     JNIEnv* env,
-    jobject caller,
-    const jstring& instanceId,
-    jobject /* BluetoothGattServiceWrapper */ bluetooth_gatt_service_wrapper) {
+    const JavaParamRef<jobject>& caller,
+    const JavaParamRef<jstring>& instanceId,
+    const JavaParamRef<jobject>&
+        bluetooth_gatt_service_wrapper) {  // BluetoothGattServiceWrapper
   std::string instanceIdString =
       base::android::ConvertJavaStringToUTF8(env, instanceId);
 

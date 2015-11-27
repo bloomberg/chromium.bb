@@ -253,36 +253,38 @@ void BluetoothTestAndroid::
 
 void BluetoothTestAndroid::OnFakeBluetoothDeviceConnectGattCalled(
     JNIEnv* env,
-    jobject caller) {
+    const JavaParamRef<jobject>& caller) {
   gatt_connection_attempts_++;
 }
 
-void BluetoothTestAndroid::OnFakeBluetoothGattDisconnect(JNIEnv* env,
-                                                         jobject caller) {
+void BluetoothTestAndroid::OnFakeBluetoothGattDisconnect(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& caller) {
   gatt_disconnection_attempts_++;
 }
 
-void BluetoothTestAndroid::OnFakeBluetoothGattDiscoverServices(JNIEnv* env,
-                                                               jobject caller) {
+void BluetoothTestAndroid::OnFakeBluetoothGattDiscoverServices(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& caller) {
   gatt_discovery_attempts_++;
 }
 
 void BluetoothTestAndroid::OnFakeBluetoothGattSetCharacteristicNotification(
     JNIEnv* env,
-    jobject caller) {
+    const JavaParamRef<jobject>& caller) {
   gatt_notify_characteristic_attempts_++;
 }
 
 void BluetoothTestAndroid::OnFakeBluetoothGattReadCharacteristic(
     JNIEnv* env,
-    jobject caller) {
+    const JavaParamRef<jobject>& caller) {
   gatt_read_characteristic_attempts_++;
 }
 
 void BluetoothTestAndroid::OnFakeBluetoothGattWriteCharacteristic(
     JNIEnv* env,
-    jobject caller,
-    jbyteArray value) {
+    const JavaParamRef<jobject>& caller,
+    const JavaParamRef<jbyteArray>& value) {
   gatt_write_characteristic_attempts_++;
   base::android::JavaByteArrayToByteVector(env, value, &last_write_value_);
 }

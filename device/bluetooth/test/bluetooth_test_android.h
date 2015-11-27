@@ -60,26 +60,36 @@ class BluetoothTestAndroid : public BluetoothTestBase {
       BluetoothGattCharacteristic* characteristic) override;
 
   // Records that Java FakeBluetoothDevice connectGatt was called.
-  void OnFakeBluetoothDeviceConnectGattCalled(JNIEnv* env, jobject caller);
+  void OnFakeBluetoothDeviceConnectGattCalled(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& caller);
 
   // Records that Java FakeBluetoothGatt disconnect was called.
-  void OnFakeBluetoothGattDisconnect(JNIEnv* env, jobject caller);
+  void OnFakeBluetoothGattDisconnect(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& caller);
 
   // Records that Java FakeBluetoothGatt discoverServices was called.
-  void OnFakeBluetoothGattDiscoverServices(JNIEnv* env, jobject caller);
+  void OnFakeBluetoothGattDiscoverServices(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& caller);
 
   // Records that Java FakeBluetoothGatt setCharacteristicNotification was
   // called.
-  void OnFakeBluetoothGattSetCharacteristicNotification(JNIEnv* env,
-                                                        jobject caller);
+  void OnFakeBluetoothGattSetCharacteristicNotification(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& caller);
 
   // Records that Java FakeBluetoothGatt readCharacteristic was called.
-  void OnFakeBluetoothGattReadCharacteristic(JNIEnv* env, jobject caller);
+  void OnFakeBluetoothGattReadCharacteristic(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& caller);
 
   // Records that Java FakeBluetoothGatt writeCharacteristic was called.
-  void OnFakeBluetoothGattWriteCharacteristic(JNIEnv* env,
-                                              jobject caller,
-                                              jbyteArray value);
+  void OnFakeBluetoothGattWriteCharacteristic(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& caller,
+      const base::android::JavaParamRef<jbyteArray>& value);
 
   base::android::ScopedJavaGlobalRef<jobject> j_fake_bluetooth_adapter_;
 };
