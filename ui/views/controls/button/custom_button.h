@@ -16,6 +16,8 @@ class ThrobAnimation;
 
 namespace views {
 
+class InkDropDelegate;
+
 // A button with custom rendering. The base of ImageButton and LabelButton.
 // Note that this type of button is not focusable by default and will not be
 // part of the focus chain.  Call SetFocusable(true) to make it part of the
@@ -76,6 +78,7 @@ class VIEWS_EXPORT CustomButton : public Button,
   bool IsHotTracked() const;
 
   // Overridden from View:
+  void Layout() override;
   void OnEnabledChanged() override;
   const char* GetClassName() const override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
@@ -123,7 +126,13 @@ class VIEWS_EXPORT CustomButton : public Button,
   // state). This does not take into account enabled state.
   bool ShouldEnterHoveredState();
 
+  void SetInkDropDelegate(scoped_ptr<InkDropDelegate> ink_drop_delegate);
+  InkDropDelegate* ink_drop_delegate() const {
+    return ink_drop_delegate_.get();
+  }
+
   // Overridden from View:
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
   void OnBlur() override;
@@ -151,6 +160,9 @@ class VIEWS_EXPORT CustomButton : public Button,
 
   // See description above setter.
   bool request_focus_on_press_;
+
+  // Animation delegate for the ink drop ripple effect.
+  scoped_ptr<InkDropDelegate> ink_drop_delegate_;
 
   // The event on which the button should notify its listener.
   NotifyAction notify_action_;

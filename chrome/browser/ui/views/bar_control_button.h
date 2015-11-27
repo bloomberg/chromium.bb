@@ -43,6 +43,7 @@ class BarControlButton : public views::ImageButton, public views::InkDropHost {
   // views::InkDropHost:
   void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
   void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
+  gfx::Point CalculateInkDropCenter() const override;
 
   gfx::VectorIconId id_;
   base::Callback<SkColor(void)> get_text_color_callback_;

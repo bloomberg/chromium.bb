@@ -20,6 +20,7 @@ class TestInkDropHost : public InkDropHost {
   // TestInkDropHost:
   void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
   void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
+  gfx::Point CalculateInkDropCenter() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestInkDropHost);

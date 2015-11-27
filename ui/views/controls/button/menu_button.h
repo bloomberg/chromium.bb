@@ -121,7 +121,7 @@ class VIEWS_EXPORT MenuButton : public LabelButton {
   // The down arrow used to differentiate the menu button from normal buttons.
   const gfx::ImageSkia* menu_marker_;
 
-  // If non-null the destuctor sets this to true. This is set while the menu is
+  // If non-null the destructor sets this to true. This is set while the menu is
   // showing and used to detect if the menu was deleted while running.
   bool* destroyed_flag_;
 

@@ -56,6 +56,12 @@ bool EventTarget::IsPreTargetListEmpty() const {
   return pre_target_list_.empty();
 }
 
+EventHandler* EventTarget::SetTargetHandler(EventHandler* target_handler) {
+  EventHandler* original_target_handler = target_handler_;
+  target_handler_ = target_handler;
+  return original_target_handler;
+}
+
 void EventTarget::OnEvent(Event* event) {
   CHECK_EQ(this, event->target());
   if (target_handler_)

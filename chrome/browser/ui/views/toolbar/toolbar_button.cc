@@ -347,10 +347,10 @@ void ToolbarButton::ShowDropDownMenu(ui::MenuSourceType source_type) {
     SetState(STATE_NORMAL);
 }
 
-gfx::Point ToolbarButton::CalculateInkDropCenter() const {
-  return GetLocalBounds().CenterPoint();
-}
-
 const char* ToolbarButton::GetClassName() const {
   return "ToolbarButton";
+}
+
+gfx::Point ToolbarButton::CalculateInkDropCenter() const {
+  return GetLocalBounds().CenterPoint();
 }

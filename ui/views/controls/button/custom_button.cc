@@ -10,6 +10,7 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/screen.h"
+#include "ui/views/animation/ink_drop_delegate.h"
 #include "ui/views/controls/button/blue_button.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/image_button.h"
@@ -115,6 +116,11 @@ bool CustomButton::IsHotTracked() const {
 
 ////////////////////////////////////////////////////////////////////////////////
 // CustomButton, View overrides:
+
+void CustomButton::Layout() {
+  if (ink_drop_delegate_)
+    ink_drop_delegate_->OnLayout();
+}
 
 void CustomButton::OnEnabledChanged() {
   if (enabled() ? (state_ != STATE_DISABLED) : (state_ == STATE_DISABLED))
@@ -284,6 +290,8 @@ void CustomButton::OnDragDone() {
   // (since disabled buttons may still be able to be dragged).
   if (state_ != STATE_DISABLED)
     SetState(STATE_NORMAL);
+  if (ink_drop_delegate_)
+    ink_drop_delegate_->OnAction(InkDropState::HIDDEN);
 }
 
 void CustomButton::GetAccessibleState(ui::AXViewState* state) {
@@ -371,8 +379,18 @@ bool CustomButton::ShouldEnterHoveredState() {
   return check_mouse_position && IsMouseHovered();
 }
 
+void CustomButton::SetInkDropDelegate(
+    scoped_ptr<InkDropDelegate> ink_drop_delegate) {
+  ink_drop_delegate_ = ink_drop_delegate.Pass();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // CustomButton, View overrides (protected):
+
+void CustomButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  if (ink_drop_delegate_)
+    ink_drop_delegate_->OnLayout();
+}
 
 void CustomButton::ViewHierarchyChanged(
     const ViewHierarchyChangedDetails& details) {

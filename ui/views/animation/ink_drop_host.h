@@ -6,6 +6,7 @@
 #define UI_VIEWS_ANIMATION_INK_DROP_HOST_H_
 
 #include "base/macros.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/views/views_export.h"
 
 namespace ui {
@@ -31,6 +32,10 @@ class VIEWS_EXPORT InkDropHost {
 
   // Removes |ink_drop_layer| from the layer tree.
   virtual void RemoveInkDropLayer(ui::Layer* ink_drop_layer) = 0;
+
+  // Returns the Point where the ink drop should be centered.
+  // TODO(varkha): This should be moved to InkDropConsumer.
+  virtual gfx::Point CalculateInkDropCenter() const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InkDropHost);

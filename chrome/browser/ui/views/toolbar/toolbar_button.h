@@ -73,9 +73,6 @@ class ToolbarButton : public views::LabelButton,
   // Function to show the dropdown menu.
   virtual void ShowDropDownMenu(ui::MenuSourceType source_type);
 
-  // Returns the Point where the ink drop should be centered.
-  virtual gfx::Point CalculateInkDropCenter() const;
-
   views::InkDropAnimationController* ink_drop_animation_controller() {
     return ink_drop_animation_controller_.get();
   }
@@ -83,6 +80,9 @@ class ToolbarButton : public views::LabelButton,
  private:
   // views::LabelButton:
   const char* GetClassName() const override;
+
+  // views::InkDropHost:
+  gfx::Point CalculateInkDropCenter() const override;
 
   // The model that populates the attached menu.
   scoped_ptr<ui::MenuModel> model_;

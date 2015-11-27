@@ -335,6 +335,7 @@ void LabelButton::Layout() {
 
   image_->SetBoundsRect(gfx::Rect(image_origin, image_size));
   label_->SetBoundsRect(gfx::Rect(label_origin, label_size));
+  CustomButton::Layout();
 }
 
 const char* LabelButton::GetClassName() const {

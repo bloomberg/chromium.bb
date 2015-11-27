@@ -93,7 +93,7 @@ Window::Window(WindowDelegate* delegate)
       // problems for code that adds an observer as part of an observer
       // notification (such as the workspace code).
       observers_(base::ObserverList<WindowObserver>::NOTIFY_EXISTING_ONLY) {
-  set_target_handler(delegate_);
+  SetTargetHandler(delegate_);
 }
 
 Window::~Window() {
@@ -109,7 +109,7 @@ Window::~Window() {
   // While we are being destroyed, our target handler may also be in the
   // process of destruction or already destroyed, so do not forward any
   // input events at the ui::EP_TARGET phase.
-  set_target_handler(nullptr);
+  SetTargetHandler(nullptr);
 
   // TODO(beng): See comment in window_event_dispatcher.h. This shouldn't be
   //             necessary but unfortunately is right now due to ordering

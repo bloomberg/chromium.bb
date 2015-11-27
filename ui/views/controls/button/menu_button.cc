@@ -18,6 +18,7 @@
 #include "ui/gfx/text_constants.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/strings/grit/ui_strings.h"
+#include "ui/views/animation/ink_drop_delegate.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/mouse_constants.h"
@@ -126,6 +127,8 @@ bool MenuButton::Activate() {
     // We don't set our state here. It's handled in the MenuController code or
     // by our click listener.
 
+    if (ink_drop_delegate())
+      ink_drop_delegate()->OnAction(InkDropState::QUICK_ACTION);
     listener_->OnMenuButtonClicked(this, menu_position);
 
     if (destroyed) {
@@ -189,6 +192,8 @@ void MenuButton::OnMouseReleased(const ui::MouseEvent& event) {
       HitTestPoint(event.location()) && !InDrag()) {
     Activate();
   } else {
+    if (ink_drop_delegate())
+      ink_drop_delegate()->OnAction(InkDropState::HIDDEN);
     LabelButton::OnMouseReleased(event);
   }
 }

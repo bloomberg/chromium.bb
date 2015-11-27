@@ -14,4 +14,8 @@ void TestInkDropHost::AddInkDropLayer(ui::Layer* ink_drop_layer) {}
 
 void TestInkDropHost::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {}
 
+gfx::Point TestInkDropHost::CalculateInkDropCenter() const {
+  return gfx::Point();
+}
+
 }  // namespace views

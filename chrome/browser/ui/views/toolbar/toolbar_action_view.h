@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_action_view_delegate_views.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "ui/views/animation/ink_drop_host.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
@@ -39,7 +40,8 @@ class ToolbarActionView : public views::MenuButton,
                           public ToolbarActionViewDelegateViews,
                           public views::MenuButtonListener,
                           public views::ContextMenuController,
-                          public content::NotificationObserver {
+                          public content::NotificationObserver,
+                          public views::InkDropHost {
  public:
   // Need DragController here because ToolbarActionView could be
   // dragged/dropped.
@@ -65,6 +67,9 @@ class ToolbarActionView : public views::MenuButton,
     ~Delegate() override {}
   };
 
+  // Callback type used for testing.
+  using ContextMenuCallback = base::Callback<void(ToolbarActionView*)>;
+
   ToolbarActionView(ToolbarActionViewController* view_controller,
                     Profile* profile,
                     Delegate* delegate);
@@ -72,6 +77,13 @@ class ToolbarActionView : public views::MenuButton,
 
   // views::MenuButton:
   void GetAccessibleState(ui::AXViewState* state) override;
+  scoped_ptr<views::LabelButtonBorder> CreateDefaultBorder() const override;
+  void OnMouseEntered(const ui::MouseEvent& event) override;
+  bool ShouldEnterPushedState(const ui::Event& event) override;
+
+  // ToolbarActionViewDelegateViews:
+  content::WebContents* GetCurrentWebContents() const override;
+  void UpdateState() override;
 
   // views::MenuButtonListener:
   void OnMenuButtonClicked(views::View* sender,
@@ -82,14 +94,9 @@ class ToolbarActionView : public views::MenuButton,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
-  // views::MenuButton:
-  scoped_ptr<views::LabelButtonBorder> CreateDefaultBorder() const override;
-  void OnMouseEntered(const ui::MouseEvent& event) override;
-  bool ShouldEnterPushedState(const ui::Event& event) override;
-
-  // ToolbarActionViewDelegate: (public because called by others).
-  void UpdateState() override;
-  content::WebContents* GetCurrentWebContents() const override;
+  // views::InkDropHost:
+  void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
+  void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
 
   ToolbarActionViewController* view_controller() {
     return view_controller_;
@@ -100,7 +107,6 @@ class ToolbarActionView : public views::MenuButton,
 
   bool wants_to_run_for_testing() const { return wants_to_run_; }
 
-  using ContextMenuCallback = base::Callback<void(ToolbarActionView*)>;
   // Set a callback to be called directly before the context menu is shown.
   // The toolbar action opening the menu will be passed in.
   static void set_context_menu_callback_for_testing(
@@ -111,6 +117,8 @@ class ToolbarActionView : public views::MenuButton,
  private:
   // views::MenuButton:
   gfx::Size GetPreferredSize() const override;
+  bool OnMousePressed(const ui::MouseEvent& event) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
   void OnDragDone() override;
   void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
@@ -127,6 +135,9 @@ class ToolbarActionView : public views::MenuButton,
   void ShowContextMenuForView(views::View* source,
                               const gfx::Point& point,
                               ui::MenuSourceType source_type) override;
+
+  // views::InkDropHost:
+  gfx::Point CalculateInkDropCenter() const override;
 
   // Shows the context menu (if one exists) for the toolbar action.
   void DoShowContextMenu(ui::MenuSourceType source_type);

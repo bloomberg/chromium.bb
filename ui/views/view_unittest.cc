@@ -31,6 +31,7 @@
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/focus/view_storage.h"
+#include "ui/views/scoped_target_handler.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/native_widget.h"
@@ -4294,6 +4295,63 @@ TEST_F(ViewTest, OnNativeThemeChanged) {
   EXPECT_EQ(widget->GetNativeTheme(), test_view_child_2->native_theme_);
 
   widget->CloseNow();
+}
+
+class TestEventHandler : public ui::EventHandler {
+ public:
+  TestEventHandler(TestView* view) : view_(view), had_mouse_event_(false) {}
+  ~TestEventHandler() override {}
+
+  void OnMouseEvent(ui::MouseEvent* event) override {
+    // The |view_| should have received the event first.
+    EXPECT_EQ(ui::ET_MOUSE_PRESSED, view_->last_mouse_event_type_);
+    had_mouse_event_ = true;
+  }
+
+  TestView* view_;
+  bool had_mouse_event_;
+};
+
+TEST_F(ViewTest, ScopedTargetHandlerReceivesEvents) {
+  TestView* v = new TestView();
+  v->SetBoundsRect(gfx::Rect(0, 0, 300, 300));
+
+  scoped_ptr<Widget> widget(new Widget);
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.bounds = gfx::Rect(50, 50, 350, 350);
+  widget->Init(params);
+  internal::RootView* root =
+      static_cast<internal::RootView*>(widget->GetRootView());
+  root->AddChildView(v);
+  v->Reset();
+  TestEventHandler handler(v);
+  {
+    ScopedTargetHandler scoped_target_handler(v, &handler);
+    // View's target EventHandler should be set to the |scoped_target_handler|.
+    EXPECT_EQ(&scoped_target_handler,
+              v->SetTargetHandler(&scoped_target_handler));
+
+    EXPECT_EQ(ui::ET_UNKNOWN, v->last_mouse_event_type_);
+    gfx::Point p(10, 120);
+    ui::MouseEvent pressed(ui::ET_MOUSE_PRESSED, p, p, ui::EventTimeForNow(),
+                           ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
+    root->OnMousePressed(pressed);
+
+    // Both the View |v| and the |handler| should have received the event.
+    EXPECT_EQ(ui::ET_MOUSE_PRESSED, v->last_mouse_event_type_);
+    EXPECT_TRUE(handler.had_mouse_event_);
+  }
+
+  // The View should no longer have a target EventHandler.
+  EXPECT_EQ(nullptr, v->SetTargetHandler(nullptr));
+
+  // The View should continue receiving events after the |handler| is deleted.
+  v->Reset();
+  ui::MouseEvent released(ui::ET_MOUSE_RELEASED, gfx::Point(), gfx::Point(),
+                          ui::EventTimeForNow(), 0, 0);
+  root->OnMouseReleased(released);
+  EXPECT_EQ(ui::ET_MOUSE_RELEASED, v->last_mouse_event_type_);
 }
 
 }  // namespace views

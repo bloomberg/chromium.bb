@@ -4,6 +4,7 @@
 
 #include <vector>
 
+#include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event.h"
 #include "ui/events/event_target_iterator.h"
@@ -139,7 +140,7 @@ TEST_F(EventProcessorTest, NestedEventProcessing) {
   // first event processor should be handled by |target_handler| instead.
   scoped_ptr<TestEventHandler> target_handler(
       new ReDispatchEventHandler(second_processor.get(), root()->child_at(0)));
-  root()->child_at(0)->set_target_handler(target_handler.get());
+  ignore_result(root()->child_at(0)->SetTargetHandler(target_handler.get()));
 
   // Dispatch a mouse event to the tree of event targets owned by the first
   // event processor, checking in ReDispatchEventHandler that the phase and

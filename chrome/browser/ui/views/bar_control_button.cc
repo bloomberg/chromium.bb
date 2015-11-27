@@ -66,8 +66,7 @@ void BarControlButton::OnNativeThemeChanged(const ui::NativeTheme* theme) {
 void BarControlButton::Layout() {
   ImageButton::Layout();
 
-  ink_drop_animation_controller_->SetInkDropCenter(
-      GetLocalBounds().CenterPoint());
+  ink_drop_animation_controller_->SetInkDropCenter(CalculateInkDropCenter());
 }
 
 void BarControlButton::AddInkDropLayer(ui::Layer* ink_drop_layer) {
@@ -83,6 +82,10 @@ void BarControlButton::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
   layer()->Remove(ink_drop_layer);
   SetFillsBoundsOpaquely(true);
   SetPaintToLayer(false);
+}
+
+gfx::Point BarControlButton::CalculateInkDropCenter() const {
+  return GetLocalBounds().CenterPoint();
 }
 
 bool BarControlButton::OnMousePressed(const ui::MouseEvent& event) {

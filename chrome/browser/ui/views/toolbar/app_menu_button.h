@@ -74,6 +74,7 @@ class AppMenuButton : public views::InkDropHost,
   // views::InkDropHost:
   void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
   void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
+  gfx::Point CalculateInkDropCenter() const override;
 
   // views::MenuButton:
   const char* GetClassName() const override;

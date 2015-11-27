@@ -77,9 +77,8 @@ class EVENTS_EXPORT EventTarget : public EventHandler {
   // Returns true if the event pre target list is empty.
   bool IsPreTargetListEmpty() const;
 
-  void set_target_handler(EventHandler* handler) {
-    target_handler_ = handler;
-  }
+  // Sets |target_handler| as |target_handler_| and returns the old handler.
+  EventHandler* SetTargetHandler(EventHandler* target_handler);
 
  protected:
   EventHandler* target_handler() { return target_handler_; }
