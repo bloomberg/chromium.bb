@@ -137,6 +137,9 @@ source_set("browser") {
     "//ui/gfx",
     "//url",
   ]
+
+  # TODO(brettw) Fix the include cycle and remove this line.
+  allow_circular_includes_from = [ "//components/search_engines" ]
 }
 
 if (is_android) {

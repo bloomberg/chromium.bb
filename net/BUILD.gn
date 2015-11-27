@@ -621,6 +621,7 @@ source_set("test_support") {
     "test/net_test_suite.h",
     "test/python_utils.cc",
     "test/python_utils.h",
+    "test/test_certificate_data.h",
     "test/url_request/ssl_certificate_error_job.cc",
     "test/url_request/ssl_certificate_error_job.h",
     "test/url_request/url_request_failed_job.cc",

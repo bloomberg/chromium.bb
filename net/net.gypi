@@ -1723,7 +1723,6 @@
       'test/run_all_unittests.cc',
       'test/scoped_disable_exit_on_dfatal.cc',
       'test/scoped_disable_exit_on_dfatal.h',
-      'test/test_certificate_data.h',
       'tools/balsa/balsa_frame_test.cc',
       'tools/balsa/balsa_headers_test.cc',
       'tools/quic/quic_simple_client_test.cc',

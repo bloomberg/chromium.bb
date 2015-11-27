@@ -13,7 +13,9 @@ source_set("ssl_errors") {
 
   deps = [
     "//base",
+    "//base:i18n",
     "//components/strings",
+    "//components/url_formatter",
     "//net",
     "//ui/base",
   ]
@@ -27,6 +29,8 @@ source_set("unit_tests") {
 
   deps = [
     ":ssl_errors",
+    "//base",
+    "//net:test_support",
     "//testing/gtest",
   ]
 }

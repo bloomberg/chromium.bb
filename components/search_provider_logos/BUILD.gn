@@ -34,7 +34,10 @@ source_set("unit_tests") {
   ]
   deps = [
     ":search_provider_logos",
+    "//base/test:test_support",
+    "//net:test_support",
     "//testing/gmock",
     "//testing/gtest",
+    "//ui/gfx",
   ]
 }

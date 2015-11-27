@@ -13,6 +13,7 @@ static_library("core") {
 
   deps = [
     "//base",
+    "//base:prefs",
     "//components/google/core/browser",
     "//components/history/core/browser",
     "//components/metrics",

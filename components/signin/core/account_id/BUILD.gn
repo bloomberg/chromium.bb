@@ -10,5 +10,6 @@ source_set("account_id") {
 
   deps = [
     "//base",
+    "//google_apis",
   ]
 }

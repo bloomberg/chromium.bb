@@ -54,10 +54,18 @@ static_library("search_engines") {
   deps = [
     ":prepopulated_engines",
     "//base",
+    "//base:i18n",
+    "//base:prefs",
     "//components/google/core/browser",
     "//components/history/core/browser",
     "//components/keyed_service/core",
     "//components/metrics/proto",
+
+    # This target is in an include cycle with components/omnibox/browser.
+    # The cycle is whitelisted in the omnibox/browser target, but should
+    # ideally be fixed.
+    #"//components/omnibox/browser",
+    "//components/policy:policy_component",
     "//components/pref_registry",
     "//components/rappor",
     "//components/strings",
@@ -69,7 +77,9 @@ static_library("search_engines") {
     "//sql",
     "//sync",
     "//third_party/libxml",
+    "//ui/base",
     "//ui/gfx",
+    "//ui/gfx/geometry",
     "//url",
   ]
 
@@ -93,6 +103,7 @@ source_set("test_support") {
 
   public_deps = [
     ":search_engines",
+    "//base",
     "//testing/gtest",
   ]
 }
@@ -114,10 +125,18 @@ source_set("unit_tests") {
   }
 
   deps = [
+    ":prepopulated_engines",
     ":test_support",
+    "//base",
+    "//components/google/core/browser",
+    "//components/policy",
+    "//components/policy:policy_component_test_support",
     "//components/pref_registry:test_support",
+    "//components/webdata/common",
+    "//sql",
     "//testing/gmock",
     "//testing/gtest",
+    "//url",
   ]
 }
 
