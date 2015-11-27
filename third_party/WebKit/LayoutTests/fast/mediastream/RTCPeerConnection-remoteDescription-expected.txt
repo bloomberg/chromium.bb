@@ -3,6 +3,7 @@ Tests RTCPeerConnection remoteDescription.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
+PASS pc.setRemoteDescription(null) threw exception TypeError: Failed to execute 'setRemoteDescription' on 'RTCPeerConnection': parameter 1 is not of type 'RTCSessionDescription'..
 PASS pc.setRemoteDescription(sessionDescription, requestSucceeded1, requestFailed1); did not throw exception.
 PASS requestSucceeded was called.
 PASS pc.setRemoteDescription(sessionDescription, requestSucceeded2, requestFailed2); did not throw exception.

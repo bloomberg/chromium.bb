@@ -405,10 +405,7 @@ void RTCPeerConnection::setLocalDescription(RTCSessionDescription* sessionDescri
     if (throwExceptionIfSignalingStateClosed(m_signalingState, exceptionState))
         return;
 
-    if (!sessionDescription) {
-        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType(1, "RTCSessionDescription"));
-        return;
-    }
+    ASSERT(sessionDescription);
 
     RTCVoidRequest* request = RTCVoidRequestImpl::create(executionContext(), this, successCallback, errorCallback);
     m_peerHandler->setLocalDescription(request, sessionDescription->webSessionDescription());
@@ -428,10 +425,7 @@ void RTCPeerConnection::setRemoteDescription(RTCSessionDescription* sessionDescr
     if (throwExceptionIfSignalingStateClosed(m_signalingState, exceptionState))
         return;
 
-    if (!sessionDescription) {
-        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType(1, "RTCSessionDescription"));
-        return;
-    }
+    ASSERT(sessionDescription);
 
     RTCVoidRequest* request = RTCVoidRequestImpl::create(executionContext(), this, successCallback, errorCallback);
     m_peerHandler->setRemoteDescription(request, sessionDescription->webSessionDescription());
@@ -538,10 +532,7 @@ void RTCPeerConnection::addIceCandidate(RTCIceCandidate* iceCandidate, Exception
     if (throwExceptionIfSignalingStateClosed(m_signalingState, exceptionState))
         return;
 
-    if (!iceCandidate) {
-        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType(1, "RTCIceCandidate"));
-        return;
-    }
+    ASSERT(iceCandidate);
 
     bool valid = m_peerHandler->addICECandidate(iceCandidate->webCandidate());
     if (!valid)
@@ -553,10 +544,7 @@ void RTCPeerConnection::addIceCandidate(RTCIceCandidate* iceCandidate, VoidCallb
     if (throwExceptionIfSignalingStateClosed(m_signalingState, exceptionState))
         return;
 
-    if (!iceCandidate) {
-        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType(1, "RTCIceCandidate"));
-        return;
-    }
+    ASSERT(iceCandidate);
     ASSERT(successCallback);
     ASSERT(errorCallback);
 
@@ -749,10 +737,7 @@ RTCDTMFSender* RTCPeerConnection::createDTMFSender(MediaStreamTrack* track, Exce
     if (throwExceptionIfSignalingStateClosed(m_signalingState, exceptionState))
         return nullptr;
 
-    if (!track) {
-        exceptionState.throwTypeError(ExceptionMessages::argumentNullOrIncorrectType(1, "MediaStreamTrack"));
-        return nullptr;
-    }
+    ASSERT(track);
 
     if (!hasLocalStreamWithTrackId(track->id())) {
         exceptionState.throwDOMException(SyntaxError, "No local stream is available for the track provided.");

@@ -82,7 +82,7 @@ enum RTCIceConnectionState {
     // readonly attribute RTCSessionDescription? currentRemoteDescription;
     // readonly attribute RTCSessionDescription? pendingRemoteDescription;
     // TODO(guidou): addIceCandidate() should return a Promise.
-    [RaisesException, LegacyInterfaceTypeChecking] void addIceCandidate(RTCIceCandidate candidate);
+    [RaisesException] void addIceCandidate(RTCIceCandidate candidate);
     readonly attribute RTCSignalingState signalingState;
     readonly attribute RTCIceGatheringState iceGatheringState;
     readonly attribute RTCIceConnectionState iceConnectionState;
@@ -101,14 +101,14 @@ enum RTCIceConnectionState {
     // TODO(guidou): The failureCallback argument should be non-optional.
     [RaisesException] void createOffer(RTCSessionDescriptionCallback successCallback, [Default=Undefined] optional RTCErrorCallback failureCallback, optional Dictionary rtcOfferOptions);
     // TODO(guidou): None of the arguments should be optional.
-    [RaisesException, LegacyInterfaceTypeChecking] void setLocalDescription(RTCSessionDescription description, [Default=Undefined] optional VoidCallback successCallback, [Default=Undefined] optional RTCErrorCallback failureCallback);
+    [RaisesException] void setLocalDescription(RTCSessionDescription description, [Default=Undefined] optional VoidCallback successCallback, [Default=Undefined] optional RTCErrorCallback failureCallback);
     // TODO(guidou): The failureCallback argument should be non-optional, and
     // there should be no mediaConstraints argument.
     [RaisesException] void createAnswer(RTCSessionDescriptionCallback successCallback, [Default=Undefined] optional RTCErrorCallback failureCallback, optional Dictionary mediaConstraints);
     // TODO(guidou): The successCallback and failureCallback arguments should be
     // non-optional.
-    [RaisesException, LegacyInterfaceTypeChecking] void setRemoteDescription(RTCSessionDescription description, [Default=Undefined] optional VoidCallback successCallback, [Default=Undefined] optional RTCErrorCallback failureCallback);
-    [RaisesException, LegacyInterfaceTypeChecking] void addIceCandidate(RTCIceCandidate candidate, VoidCallback successCallback, RTCErrorCallback failureCallback);
+    [RaisesException] void setRemoteDescription(RTCSessionDescription description, [Default=Undefined] optional VoidCallback successCallback, [Default=Undefined] optional RTCErrorCallback failureCallback);
+    [RaisesException] void addIceCandidate(RTCIceCandidate candidate, VoidCallback successCallback, RTCErrorCallback failureCallback);
     // TODO(guidou): The selector argument should the first (nullable,
     // non-optional) argument, and there should be a third failureCallback
     // argument.
@@ -127,7 +127,7 @@ enum RTCIceConnectionState {
     MediaStream getStreamById(DOMString streamId);
     [RaisesException] void addStream(MediaStream? stream, optional Dictionary mediaConstraints);
     [RaisesException] void removeStream(MediaStream? stream);
-    [RaisesException, LegacyInterfaceTypeChecking] RTCDTMFSender createDTMFSender(MediaStreamTrack track);
+    [RaisesException] RTCDTMFSender createDTMFSender(MediaStreamTrack track);
     attribute EventHandler onaddstream;
     attribute EventHandler onremovestream;
 

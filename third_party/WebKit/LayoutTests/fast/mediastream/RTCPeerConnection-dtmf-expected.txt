@@ -8,6 +8,7 @@ PASS Stream generated.
 PASS stream.getAudioTracks().length is 1
 PASS stream.getVideoTracks().length is 0
 PASS pc is connected
+PASS dtmfsender = pc.createDTMFSender(null); threw exception TypeError: Failed to execute 'createDTMFSender' on 'RTCPeerConnection': parameter 1 is not of type 'MediaStreamTrack'..
 PASS dtmfsender = pc.createDTMFSender(track); threw exception SyntaxError: Failed to execute 'createDTMFSender' on 'RTCPeerConnection': No local stream is available for the track provided..
 PASS dtmfsender = pc.createDTMFSender(track); did not throw exception.
 PASS dtmfsender.canInsertDTMF is true

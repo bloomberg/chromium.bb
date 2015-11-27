@@ -47,7 +47,7 @@
              attribute EventHandler onmessage;
     [RaisesException=Setter] attribute DOMString binaryType;
     [RaisesException] void send(DOMString data);
-    [RaisesException, LegacyInterfaceTypeChecking] void send(Blob data);
-    [RaisesException, LegacyInterfaceTypeChecking] void send(ArrayBuffer data);
-    [RaisesException, LegacyInterfaceTypeChecking] void send(ArrayBufferView data);
+    [RaisesException] void send(Blob data);
+    [RaisesException] void send(ArrayBuffer data);
+    [RaisesException] void send(ArrayBufferView data);
 };

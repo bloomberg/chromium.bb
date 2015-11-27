@@ -31,7 +31,6 @@
     Constructor(MediaStreamTrack[] tracks),
     ConstructorCallWith=ExecutionContext,
     NoInterfaceObject,
-    LegacyInterfaceTypeChecking,
 ] interface MediaStream : EventTarget {
 
     readonly attribute DOMString id;

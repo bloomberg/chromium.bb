@@ -35,6 +35,7 @@ function pc_onicechange() {
         testPassed("pc is connected");
         track = stream.getAudioTracks()[0];
 
+        shouldThrow('dtmfsender = pc.createDTMFSender(null);');
         shouldThrow('dtmfsender = pc.createDTMFSender(track);');
         pc.addStream(stream);
         shouldNotThrow('dtmfsender = pc.createDTMFSender(track);');
