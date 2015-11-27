@@ -230,13 +230,6 @@ crbug.com/493815 inspector/elements/iframe-load-event.html [ Pass Failure ]
 crbug.com/248938 [ Win Debug ] virtual/threaded/transitions/transition-end-event-multiple-03.html [ Pass Failure ]
 crbug.com/248938 [ Win Debug ] virtual/threaded/transitions/transition-end-event-multiple-04.html [ Pass Failure ]
 crbug.com/352405 virtual/threaded/animations/transition-and-animation-1.html [ Pass Timeout ]
-crbug.com/554951 [ Linux Win ] fast/forms/menulist-clip.html [ NeedsRebaseline ]
-crbug.com/554951 [ Linux Win ] fast/forms/menulist-option-wrap.html [ NeedsRebaseline ]
-crbug.com/554951 [ Linux Win ] fast/forms/select-empty-option-height.html [ NeedsRebaseline ]
-crbug.com/554951 [ Linux Win ] fast/forms/select/popup-menu-appearance-fractional-width.html [ NeedsRebaseline ]
-crbug.com/554951 [ Linux Win ] fast/forms/select/popup-menu-appearance-rtl.html [ NeedsRebaseline ]
-crbug.com/554951 [ Linux Win ] fast/repaint/control-clip.html [ NeedsRebaseline ]
-crbug.com/554951 [ Linux Win ] virtual/syncpaint/fast/repaint/control-clip.html [ NeedsRebaseline ]
 
 crbug.com/461179 virtual/spv2/paint/invalidation/invalidate-when-receiving-paint-layer.html [ Failure ]
 

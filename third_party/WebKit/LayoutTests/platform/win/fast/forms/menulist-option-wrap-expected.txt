@@ -15,29 +15,29 @@ layer at (0,0) size 800x600
             text run at (360,0) width 273: "Native popup with size=\"1\" wraps options"
         LayoutText {#text} at (632,0) size 5x17
           text run at (632,0) width 5: "."
-      LayoutBlockFlow {P} at (0,34) size 784x20
-        LayoutText {#text} at (0,1) size 36x17
-          text run at (0,1) width 36: "With "
+      LayoutBlockFlow {P} at (0,34) size 784x18
+        LayoutText {#text} at (0,0) size 36x17
+          text run at (0,0) width 36: "With "
         LayoutInline {TT} at (0,0) size 65x16
-          LayoutText {#text} at (35,3) size 65x16
-            text run at (35,3) width 65: "size=\"1\""
-        LayoutText {#text} at (99,1) size 9x17
-          text run at (99,1) width 9: ": "
-        LayoutMenuList {SELECT} at (107.78,0) size 100x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-          LayoutBlockFlow (anonymous) at (1,1) size 98x18
-            LayoutText (anonymous) at (4,1) size 188x16
-              text run at (4,1) width 188: "Very long option that does not fit"
+          LayoutText {#text} at (35,2) size 65x16
+            text run at (35,2) width 65: "size=\"1\""
+        LayoutText {#text} at (99,0) size 9x17
+          text run at (99,0) width 9: ": "
+        LayoutMenuList {SELECT} at (107.78,0) size 100x18 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+          LayoutBlockFlow (anonymous) at (1,1) size 98x16
+            LayoutText (anonymous) at (0,0) size 188x16
+              text run at (0,0) width 188: "Very long option that does not fit"
         LayoutText {#text} at (0,0) size 0x0
-      LayoutBlockFlow {P} at (0,70) size 784x20
-        LayoutText {#text} at (0,1) size 56x17
-          text run at (0,1) width 56: "Without "
+      LayoutBlockFlow {P} at (0,68) size 784x18
+        LayoutText {#text} at (0,0) size 56x17
+          text run at (0,0) width 56: "Without "
         LayoutInline {TT} at (0,0) size 33x16
-          LayoutText {#text} at (55,3) size 33x16
-            text run at (55,3) width 33: "size"
-        LayoutText {#text} at (87,1) size 10x17
-          text run at (87,1) width 10: ": "
-        LayoutMenuList {SELECT} at (96.23,0) size 100x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-          LayoutBlockFlow (anonymous) at (1,1) size 98x18
-            LayoutText (anonymous) at (4,1) size 188x16
-              text run at (4,1) width 188: "Very long option that does not fit"
+          LayoutText {#text} at (55,2) size 33x16
+            text run at (55,2) width 33: "size"
+        LayoutText {#text} at (87,0) size 10x17
+          text run at (87,0) width 10: ": "
+        LayoutMenuList {SELECT} at (96.23,0) size 100x18 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+          LayoutBlockFlow (anonymous) at (1,1) size 98x16
+            LayoutText (anonymous) at (0,0) size 188x16
+              text run at (0,0) width 188: "Very long option that does not fit"
         LayoutText {#text} at (0,0) size 0x0
