@@ -56,7 +56,6 @@
 #include "core/svg/SVGLineElement.h"
 #include "core/svg/SVGLinearGradientElement.h"
 #include "core/svg/SVGPathElement.h"
-#include "core/svg/SVGPathUtilities.h"
 #include "core/svg/SVGPatternElement.h"
 #include "core/svg/SVGPointList.h"
 #include "core/svg/SVGPolyElement.h"
@@ -366,8 +365,7 @@ static TextStream& operator<<(TextStream& ts, const LayoutSVGShape& shape)
     } else if (isSVGPolyElement(*svgElement)) {
         writeNameAndQuotedValue(ts, "points", toSVGPolyElement(*svgElement).points()->currentValue()->valueAsString());
     } else if (isSVGPathElement(*svgElement)) {
-        String pathString = buildStringFromByteStream(toSVGPathElement(*svgElement).pathByteStream(), UnalteredParsing);
-        writeNameAndQuotedValue(ts, "data", pathString);
+        writeNameAndQuotedValue(ts, "data", toSVGPathElement(*svgElement).path()->currentValue()->valueAsString());
     } else {
         ASSERT_NOT_REACHED();
     }

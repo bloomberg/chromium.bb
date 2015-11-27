@@ -31,13 +31,13 @@
 #ifndef SVGPath_h
 #define SVGPath_h
 
+#include "core/svg/SVGPathByteStream.h"
 #include "core/svg/properties/SVGProperty.h"
 
 namespace blink {
 
 class ExceptionState;
 class Path;
-class SVGPathByteStream;
 
 class SVGPath : public SVGPropertyBase {
 public:

@@ -21,7 +21,6 @@
 #define SVGPathUtilities_h
 
 #include "core/CoreExport.h"
-#include "core/svg/SVGPathParser.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -37,7 +36,7 @@ bool buildPathFromByteStream(const SVGPathByteStream&, Path&);
 bool buildByteStreamFromString(const String&, SVGPathByteStream&);
 
 // SVGPathByteStream -> String
-String buildStringFromByteStream(const SVGPathByteStream&, PathParsingMode);
+String buildStringFromByteStream(const SVGPathByteStream&);
 
 } // namespace blink
 

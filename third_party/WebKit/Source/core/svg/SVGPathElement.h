@@ -25,7 +25,6 @@
 #include "core/svg/SVGAnimatedNumber.h"
 #include "core/svg/SVGAnimatedPath.h"
 #include "core/svg/SVGGeometryElement.h"
-#include "core/svg/SVGPathByteStream.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -41,9 +40,8 @@ public:
     PassRefPtrWillBeRawPtr<SVGPointTearOff> getPointAtLength(float distance);
     unsigned getPathSegAtLength(float distance);
 
+    SVGAnimatedPath* path() { return m_path.get(); }
     SVGAnimatedNumber* pathLength() { return m_pathLength.get(); }
-
-    const SVGPathByteStream& pathByteStream() const { return m_path->currentValue()->byteStream(); }
 
     DECLARE_VIRTUAL_TRACE();
 

@@ -81,18 +81,18 @@ Path SVGPathElement::asPath() const
 
 float SVGPathElement::getTotalLength()
 {
-    return SVGPathQuery(pathByteStream()).getTotalLength();
+    return SVGPathQuery(m_path->currentValue()->byteStream()).getTotalLength();
 }
 
 PassRefPtrWillBeRawPtr<SVGPointTearOff> SVGPathElement::getPointAtLength(float length)
 {
-    FloatPoint point = SVGPathQuery(pathByteStream()).getPointAtLength(length);
+    FloatPoint point = SVGPathQuery(m_path->currentValue()->byteStream()).getPointAtLength(length);
     return SVGPointTearOff::create(SVGPoint::create(point), 0, PropertyIsNotAnimVal);
 }
 
 unsigned SVGPathElement::getPathSegAtLength(float length)
 {
-    return SVGPathQuery(pathByteStream()).getPathSegIndexAtLength(length);
+    return SVGPathQuery(m_path->currentValue()->byteStream()).getPathSegIndexAtLength(length);
 }
 
 void SVGPathElement::svgAttributeChanged(const QualifiedName& attrName)
