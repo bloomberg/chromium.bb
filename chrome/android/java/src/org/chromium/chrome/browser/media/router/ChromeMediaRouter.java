@@ -31,13 +31,6 @@ public class ChromeMediaRouter implements MediaRouteManager {
 
     private static final String TAG = "MediaRouter";
 
-    private static final String MEDIA_ROUTE_ID_PREFIX = "route:";
-    private static final String MEDIA_ROUTE_ID_SEPARATOR = "/";
-    private static final int MEDIA_ROUTE_ID_COMPONENTS_NUM = 3;
-    private static final int MEDIA_ROUTE_ID_PRESENTATION_ID_INDEX = 0;
-    private static final int MEDIA_ROUTE_ID_SINK_ID_INDEX = 1;
-    private static final int MEDIA_ROUTE_ID_SOURCE_ID_INDEX = 2;
-
     private final long mNativeMediaRouterAndroid;
     private final List<MediaRouteProvider> mRouteProviders = new ArrayList<MediaRouteProvider>();
     private final Map<String, MediaRouteProvider> mSinkIdsToProviders =
@@ -66,29 +59,6 @@ public class ChromeMediaRouter implements MediaRouteManager {
             // TODO(mlamouri): happens with Robolectric.
             return null;
         }
-    }
-
-    public static String createMediaRouteId(
-            String presentationId, String sinkId, String sourceUrn) {
-        StringBuilder builder = new StringBuilder();
-        builder.append(MEDIA_ROUTE_ID_PREFIX);
-        builder.append(presentationId);
-        builder.append(MEDIA_ROUTE_ID_SEPARATOR);
-        builder.append(sinkId);
-        builder.append(MEDIA_ROUTE_ID_SEPARATOR);
-        builder.append(sourceUrn);
-        return builder.toString();
-    }
-
-    public static String[] parseMediaRouteId(String routeId) {
-        if (!routeId.startsWith(MEDIA_ROUTE_ID_PREFIX)) return null;
-
-        String[] routeComponents = routeId.substring(MEDIA_ROUTE_ID_PREFIX.length())
-                .split(MEDIA_ROUTE_ID_SEPARATOR, MEDIA_ROUTE_ID_COMPONENTS_NUM);
-
-        if (routeComponents.length != MEDIA_ROUTE_ID_COMPONENTS_NUM) return null;
-
-        return routeComponents;
     }
 
     @Override
@@ -233,8 +203,7 @@ public class ChromeMediaRouter implements MediaRouteManager {
             return;
         }
 
-        String routeId = createMediaRouteId(presentationId, sinkId, sourceId);
-        provider.createRoute(sourceId, sinkId, routeId, origin, tabId, requestId);
+        provider.createRoute(sourceId, sinkId, presentationId, origin, tabId, requestId);
     }
 
     /**

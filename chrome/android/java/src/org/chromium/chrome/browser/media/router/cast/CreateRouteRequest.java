@@ -17,6 +17,7 @@ import com.google.android.gms.common.api.Status;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.media.router.ChromeMediaRouter;
+import org.chromium.chrome.browser.media.router.MediaRoute;
 import org.chromium.chrome.browser.media.router.RouteDelegate;
 
 /**
@@ -84,7 +85,7 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
 
     private final MediaSource mSource;
     private final MediaSink mSink;
-    private final String mRouteId;
+    private final String mPresentationId;
     private final String mOrigin;
     private final int mTabId;
     private final int mRequestId;
@@ -96,19 +97,19 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
 
     /**
      * Initializes the request.
-     * @param source The {@link MediaSource} defining the application to launch on the Cast device
-     * @param sink The {@link MediaSink} identifying the selected Cast device
-     * @param routeId The id assigned to the route by {@link ChromeMediaRouter}
+     * @param source The {@link MediaSource} defining the application to launch on the Cast device.
+     * @param sink The {@link MediaSink} identifying the selected Cast device.
+     * @param presentationId The presentation id assigned to the route by {@link ChromeMediaRouter}.
      * @param origin The origin of the frame requesting the route.
      * @param tabId the id of the tab containing the frame requesting the route.
      * @param requestId The id of the route creation request for tracking by
-     * {@link ChromeMediaRouter}
-     * @param delegate The instance of {@link RouteDelegate} handling the request
+     * {@link ChromeMediaRouter}.
+     * @param delegate The instance of {@link RouteDelegate} handling the request.
      */
     public CreateRouteRequest(
             MediaSource source,
             MediaSink sink,
-            String routeId,
+            String presentationId,
             String origin,
             int tabId,
             int requestId,
@@ -118,7 +119,7 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
 
         mSource = source;
         mSink = sink;
-        mRouteId = routeId;
+        mPresentationId = presentationId;
         mOrigin = origin;
         mTabId = tabId;
         mRequestId = requestId;
@@ -223,19 +224,20 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
     private void reportSuccess(Cast.ApplicationConnectionResult result) {
         if (mState != STATE_LAUNCH_SUCCEEDED) throwInvalidState();
 
+        MediaRoute route = new MediaRoute(mSink.getId(), mSource.getUrn(), mPresentationId);
         CastRouteController session = new CastRouteController(
                 mApiClient,
                 result.getSessionId(),
                 result.getApplicationMetadata(),
                 result.getApplicationStatus(),
                 mSink.getDevice(),
-                mRouteId,
+                route.id,
                 mOrigin,
                 mTabId,
                 mSource,
                 mDelegate);
         mCastListener.setSession(session);
-        mDelegate.onRouteCreated(mRequestId, session, result.getWasLaunched());
+        mDelegate.onRouteCreated(mRequestId, route, session);
 
         terminate();
     }

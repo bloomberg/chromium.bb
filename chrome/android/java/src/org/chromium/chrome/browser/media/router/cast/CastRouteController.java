@@ -158,7 +158,6 @@ public class CastRouteController implements RouteController, MediaNotificationLi
     private String mApplicationStatus;
     private ApplicationMetadata mApplicationMetadata;
     private boolean mStoppingApplication;
-    private boolean mDetached;
     private MediaNotificationInfo.Builder mNotificationBuilder;
     private RemoteMediaPlayer mMediaPlayer;
 
@@ -255,13 +254,6 @@ public class CastRouteController implements RouteController, MediaNotificationLi
         }
     }
 
-    public CastRouteController createJoinedController(String mediaRouteId, String origin, int tabId,
-            MediaSource source) {
-        return new CastRouteController(mApiClient, mSessionId, mApplicationMetadata,
-                mApplicationStatus, mCastDevice, mediaRouteId, origin, tabId, source,
-                mRouteDelegate);
-    }
-
     /**
      * @return the id of the Cast session controlled by the route.
      */
@@ -314,17 +306,6 @@ public class CastRouteController implements RouteController, MediaNotificationLi
     public int getTabId() {
         return mTabId;
     }
-
-    @Override
-    public void markDetached() {
-        mDetached = true;
-    }
-
-    @Override
-    public boolean isDetached() {
-        return mDetached;
-    }
-
 
     /////////////////////////////////////////////////////////////////////////////////////////////
     // MediaNotificationListener implementation.
@@ -402,15 +383,11 @@ public class CastRouteController implements RouteController, MediaNotificationLi
                         mSessionId = null;
                         mApiClient = null;
 
-                        mRouteDelegate.onRouteClosed(CastRouteController.this);
+                        mRouteDelegate.onRouteClosed(getRouteId());
                         mStoppingApplication = false;
 
-                        // The detached route will be closed only if another route joined
-                        // the same session so it will take over the notification.
-                        if (!mDetached) {
-                            MediaNotificationManager.hide(
-                                    mTabId, R.id.presentation_notification);
-                        }
+                        MediaNotificationManager.hide(
+                                mTabId, R.id.presentation_notification);
                     }
                 });
     }

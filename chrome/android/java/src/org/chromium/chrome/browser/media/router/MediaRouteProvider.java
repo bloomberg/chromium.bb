@@ -33,12 +33,13 @@ public interface MediaRouteProvider {
      * Tries to create a media route from the given media source to the media sink.
      * @param sourceId The source to create the route for.
      * @param sinkId The sink to create the route for.
+     * @param presentationId The presentation id generated for this route.
      * @param origin The origin of the frame initiating the request.
      * @param tabId The id of the tab containing the frame initiating the request.
      * @param nativeRequestId The id of the request tracked by the native side.
      */
-    void createRoute(String sourceId, String sinkId, String routeId, String origin, int tabId,
-            int nativeRequestId);
+    void createRoute(String sourceId, String sinkId, String presentationId, String origin,
+            int tabId, int nativeRequestId);
 
     /**
      * Tries to join an existing media route for the given media source and presentation id.
