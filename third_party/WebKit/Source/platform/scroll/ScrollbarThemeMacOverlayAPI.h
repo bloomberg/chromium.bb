@@ -39,6 +39,7 @@ namespace blink {
 
 class PLATFORM_EXPORT ScrollbarThemeMacOverlayAPI : public ScrollbarThemeMacCommon {
 public:
+    bool shouldRepaintAllPartsOnInvalidation() const override { return false; }
     void updateEnabledState(const ScrollbarThemeClient*) override;
     int scrollbarThickness(ScrollbarControlSize = RegularScrollbar) override;
     bool usesOverlayScrollbars() const override;
@@ -49,10 +50,12 @@ public:
     void unregisterScrollbar(ScrollbarThemeClient*) override;
 
     void setNewPainterForScrollbar(ScrollbarThemeClient*, ScrollbarPainter);
-    ScrollbarPainter painterForScrollbar(const ScrollbarThemeClient*);
+    ScrollbarPainter painterForScrollbar(const ScrollbarThemeClient*) const;
 
     void paintTrackBackground(GraphicsContext*, const ScrollbarThemeClient*, const IntRect&) override;
     void paintThumb(GraphicsContext*, const ScrollbarThemeClient*, const IntRect&) override;
+
+    float thumbOpacity(const ScrollbarThemeClient*) const override;
 
 protected:
     IntRect trackRect(const ScrollbarThemeClient*, bool painting = false) override;

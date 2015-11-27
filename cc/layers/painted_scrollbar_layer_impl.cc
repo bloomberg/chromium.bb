@@ -32,12 +32,12 @@ PaintedScrollbarLayerImpl::PaintedScrollbarLayerImpl(
     : ScrollbarLayerImplBase(tree_impl, id, orientation, false, false),
       track_ui_resource_id_(0),
       thumb_ui_resource_id_(0),
+      thumb_opacity_(1.f),
       internal_contents_scale_(1.f),
       thumb_thickness_(0),
       thumb_length_(0),
       track_start_(0),
-      track_length_(0) {
-}
+      track_length_(0) {}
 
 PaintedScrollbarLayerImpl::~PaintedScrollbarLayerImpl() {}
 
@@ -62,6 +62,8 @@ void PaintedScrollbarLayerImpl::PushPropertiesTo(LayerImpl* layer) {
 
   scrollbar_layer->set_track_ui_resource_id(track_ui_resource_id_);
   scrollbar_layer->set_thumb_ui_resource_id(thumb_ui_resource_id_);
+
+  scrollbar_layer->set_thumb_opacity(thumb_opacity_);
 }
 
 bool PaintedScrollbarLayerImpl::WillDraw(DrawMode draw_mode,
@@ -102,7 +104,8 @@ void PaintedScrollbarLayerImpl::AppendQuads(
 
   if (thumb_resource_id && !visible_thumb_quad_rect.IsEmpty()) {
     gfx::Rect opaque_rect;
-    const float opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};
+    const float opacity[] = {thumb_opacity_, thumb_opacity_, thumb_opacity_,
+                             thumb_opacity_};
     TextureDrawQuad* quad =
         render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
     quad->SetNew(shared_quad_state, scaled_thumb_quad_rect, opaque_rect,

@@ -31,6 +31,8 @@ class Scrollbar {
   virtual int ThumbThickness() const = 0;
   virtual int ThumbLength() const = 0;
   virtual gfx::Rect TrackRect() const = 0;
+  virtual float ThumbOpacity() const = 0;
+  virtual bool NeedsPaintPart(ScrollbarPart part) const = 0;
   virtual void PaintPart(SkCanvas* canvas,
                          ScrollbarPart part,
                          const gfx::Rect& content_rect) = 0;

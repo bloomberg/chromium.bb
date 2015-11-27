@@ -49,7 +49,8 @@ PaintedScrollbarLayer::PaintedScrollbarLayer(const LayerSettings& settings,
       thumb_thickness_(scrollbar_->ThumbThickness()),
       thumb_length_(scrollbar_->ThumbLength()),
       is_overlay_(scrollbar_->IsOverlay()),
-      has_thumb_(scrollbar_->HasThumb()) {
+      has_thumb_(scrollbar_->HasThumb()),
+      thumb_opacity_(scrollbar_->ThumbOpacity()) {
   if (!scrollbar_->IsOverlay())
     SetShouldScrollOnMainThread(true);
 }
@@ -126,6 +127,8 @@ void PaintedScrollbarLayer::PushPropertiesTo(LayerImpl* layer) {
     scrollbar_layer->set_thumb_ui_resource_id(thumb_resource_->id());
   else
     scrollbar_layer->set_thumb_ui_resource_id(0);
+
+  scrollbar_layer->set_thumb_opacity(thumb_opacity_);
 
   scrollbar_layer->set_is_overlay_scrollbar(is_overlay_);
 }
@@ -244,17 +247,24 @@ bool PaintedScrollbarLayer::Update() {
   if (update_rect_.IsEmpty() && track_resource_)
     return updated;
 
-  track_resource_ = ScopedUIResource::Create(
-      layer_tree_host(),
-      RasterizeScrollbarPart(track_layer_rect, scaled_track_rect, TRACK));
+  if (!track_resource_ || scrollbar_->NeedsPaintPart(TRACK)) {
+    track_resource_ = ScopedUIResource::Create(
+        layer_tree_host(),
+        RasterizeScrollbarPart(track_layer_rect, scaled_track_rect, TRACK));
+  }
 
   gfx::Rect thumb_layer_rect = OriginThumbRect();
   gfx::Rect scaled_thumb_rect =
       ScrollbarLayerRectToContentRect(thumb_layer_rect);
   if (has_thumb_ && !scaled_thumb_rect.IsEmpty()) {
-    thumb_resource_ = ScopedUIResource::Create(
-        layer_tree_host(),
-        RasterizeScrollbarPart(thumb_layer_rect, scaled_thumb_rect, THUMB));
+    if (!thumb_resource_ || scrollbar_->NeedsPaintPart(THUMB) ||
+        scaled_thumb_rect.size() !=
+            thumb_resource_->GetBitmap(0, false).GetSize()) {
+      thumb_resource_ = ScopedUIResource::Create(
+          layer_tree_host(),
+          RasterizeScrollbarPart(thumb_layer_rect, scaled_thumb_rect, THUMB));
+    }
+    thumb_opacity_ = scrollbar_->ThumbOpacity();
   }
 
   // UI resources changed so push properties is needed.

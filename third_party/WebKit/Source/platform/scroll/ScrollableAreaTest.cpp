@@ -5,6 +5,8 @@
 #include "config.h"
 #include "platform/scroll/ScrollableArea.h"
 
+#include "platform/scroll/ScrollbarTheme.h"
+#include "platform/scroll/ScrollbarThemeMock.h"
 #include "platform/testing/TestingPlatformSupport.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebScheduler.h"
@@ -32,10 +34,10 @@ public:
     MOCK_CONST_METHOD0(enclosingScrollableArea, ScrollableArea*());
     MOCK_CONST_METHOD1(visibleContentRect, IntRect(IncludeScrollbarsInRect));
     MOCK_CONST_METHOD0(contentsSize, IntSize());
-    MOCK_CONST_METHOD0(scrollbarsCanBeActive, bool());
     MOCK_CONST_METHOD0(scrollableAreaBoundingBox, IntRect());
 
     bool userInputScrollable(ScrollbarOrientation) const override { return true; }
+    bool scrollbarsCanBeActive () const override { return true; }
     bool shouldPlaceVerticalScrollbarOnLeft() const override { return false; }
     void setScrollOffset(const IntPoint& offset, ScrollType) override { m_scrollPosition = offset.shrunkTo(m_maximumScrollPosition); }
     IntPoint scrollPosition() const override { return m_scrollPosition; }
@@ -125,6 +127,38 @@ TEST_F(ScrollableAreaTest, ScrollAnimatorCurrentPositionShouldBeSync)
     OwnPtrWillBeRawPtr<MockScrollableArea> scrollableArea = MockScrollableArea::create(IntPoint(0, 100));
     scrollableArea->setScrollPosition(IntPoint(0, 10000), CompositorScroll);
     EXPECT_EQ(100.0, scrollableArea->scrollAnimator()->currentPosition().y());
+}
+
+TEST_F(ScrollableAreaTest, ScrollbarTrackAndThumbRepaint)
+{
+    ScrollbarTheme::setMockScrollbarsEnabled(true);
+    ScrollbarThemeMock::setShouldRepaintAllPartsOnInvalidation(true);
+
+    OwnPtrWillBeRawPtr<MockScrollableArea> scrollableArea = MockScrollableArea::create(IntPoint(0, 100));
+    RefPtrWillBeRawPtr<Scrollbar> scrollbar = Scrollbar::create(scrollableArea.get(), HorizontalScrollbar, RegularScrollbar);
+
+    EXPECT_TRUE(scrollbar->trackNeedsRepaint());
+    EXPECT_TRUE(scrollbar->thumbNeedsRepaint());
+    scrollbar->setNeedsPaintInvalidation();
+    EXPECT_TRUE(scrollbar->trackNeedsRepaint());
+    EXPECT_TRUE(scrollbar->thumbNeedsRepaint());
+
+    scrollbar->setTrackNeedsRepaint(false);
+    scrollbar->setThumbNeedsRepaint(false);
+    EXPECT_FALSE(scrollbar->trackNeedsRepaint());
+    EXPECT_FALSE(scrollbar->thumbNeedsRepaint());
+    scrollbar->setNeedsPaintInvalidation();
+    EXPECT_TRUE(scrollbar->trackNeedsRepaint());
+    EXPECT_TRUE(scrollbar->thumbNeedsRepaint());
+
+    ScrollbarThemeMock::setShouldRepaintAllPartsOnInvalidation(false);
+    scrollbar->setTrackNeedsRepaint(false);
+    scrollbar->setThumbNeedsRepaint(false);
+    EXPECT_FALSE(scrollbar->trackNeedsRepaint());
+    EXPECT_FALSE(scrollbar->thumbNeedsRepaint());
+    scrollbar->setNeedsPaintInvalidation();
+    EXPECT_FALSE(scrollbar->trackNeedsRepaint());
+    EXPECT_FALSE(scrollbar->thumbNeedsRepaint());
 }
 
 } // namespace blink

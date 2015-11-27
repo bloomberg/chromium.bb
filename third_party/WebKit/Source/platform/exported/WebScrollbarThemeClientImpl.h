@@ -79,6 +79,10 @@ public:
     void setIsAlphaLocked(bool) override;
     float elasticOverscroll() const override;
     void setElasticOverscroll(float) override;
+    bool trackNeedsRepaint() const override;
+    void setTrackNeedsRepaint(bool) override;
+    bool thumbNeedsRepaint() const override;
+    void setThumbNeedsRepaint(bool) override;
     DisplayItemClient displayItemClient() const override;
     String debugName() const override;
 

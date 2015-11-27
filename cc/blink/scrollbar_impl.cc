@@ -63,6 +63,16 @@ gfx::Rect ScrollbarImpl::TrackRect() const {
   return geometry_->trackRect(scrollbar_.get());
 }
 
+float ScrollbarImpl::ThumbOpacity() const {
+  return painter_.thumbOpacity();
+}
+
+bool ScrollbarImpl::NeedsPaintPart(cc::ScrollbarPart part) const {
+  if (part == cc::THUMB)
+    return painter_.thumbNeedsRepaint();
+  return painter_.trackNeedsRepaint();
+}
+
 void ScrollbarImpl::PaintPart(SkCanvas* canvas,
                               cc::ScrollbarPart part,
                               const gfx::Rect& content_rect) {

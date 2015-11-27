@@ -38,12 +38,20 @@ class CullRect;
 class GraphicsContext;
 class PlatformMouseEvent;
 class ScrollbarThemeClient;
+class ScrollbarThemePaintParams;
 
 class PLATFORM_EXPORT ScrollbarTheme {
     WTF_MAKE_NONCOPYABLE(ScrollbarTheme); USING_FAST_MALLOC(ScrollbarTheme);
 public:
     ScrollbarTheme() { }
     virtual ~ScrollbarTheme() { }
+
+    // If true, then scrollbars with this theme will be painted every time
+    // Scrollbar::setNeedsPaintInvalidation is called. If false, then scrollbar
+    // thumb and track part painting results will be cached and not repainted
+    // unless requested by Scrollbar::setThumbNeedsRepaint or
+    // Scrollbar::setTrackNeedsRepaint.
+    virtual bool shouldRepaintAllPartsOnInvalidation() const { return true; }
 
     virtual void updateEnabledState(const ScrollbarThemeClient*) { }
 
@@ -77,6 +85,8 @@ public:
     virtual int trackPosition(const ScrollbarThemeClient*);
     // The length of the track along the axis of the scrollbar.
     virtual int trackLength(const ScrollbarThemeClient*);
+    // The opacity to be applied to the thumb.
+    virtual float thumbOpacity(const ScrollbarThemeClient*) const { return 1.0f; }
 
     virtual bool hasButtons(const ScrollbarThemeClient*) = 0;
     virtual bool hasThumb(const ScrollbarThemeClient*) = 0;

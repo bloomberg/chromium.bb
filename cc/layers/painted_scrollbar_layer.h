@@ -97,6 +97,8 @@ class CC_EXPORT PaintedScrollbarLayer : public ScrollbarLayerInterface,
   scoped_ptr<ScopedUIResource> track_resource_;
   scoped_ptr<ScopedUIResource> thumb_resource_;
 
+  float thumb_opacity_;
+
   DISALLOW_COPY_AND_ASSIGN(PaintedScrollbarLayer);
 };
 

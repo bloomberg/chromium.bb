@@ -430,12 +430,16 @@ private:
         break;
     case TrackAlpha:
         [_scrollbarPainter.get() setTrackAlpha:currentValue];
+        _scrollbar->setTrackNeedsRepaint(true);
         break;
     case UIStateTransition:
         [_scrollbarPainter.get() setUiStateTransitionProgress:currentValue];
+        _scrollbar->setThumbNeedsRepaint(true);
+        _scrollbar->setTrackNeedsRepaint(true);
         break;
     case ExpansionTransition:
         [_scrollbarPainter.get() setExpansionTransitionProgress:currentValue];
+        _scrollbar->setThumbNeedsRepaint(true);
         break;
     }
 
@@ -460,6 +464,7 @@ private:
     RetainPtr<WebScrollbarPartAnimation> _trackAlphaAnimation;
     RetainPtr<WebScrollbarPartAnimation> _uiStateTransitionAnimation;
     RetainPtr<WebScrollbarPartAnimation> _expansionTransitionAnimation;
+    BOOL _hasExpandedSinceInvisible;
 }
 - (id)initWithScrollbar:(blink::Scrollbar*)scrollbar;
 - (void)updateVisibilityImmediately:(bool)show;
@@ -642,6 +647,21 @@ private:
 
 - (void)scrollerImp:(id)scrollerImp overlayScrollerStateChangedTo:(NSUInteger)newOverlayScrollerState
 {
+    // The names of these states are based on their observed behavior, and are not based on documentation.
+    enum {
+        NSScrollerStateInvisible = 0,
+        NSScrollerStateKnob = 1,
+        NSScrollerStateExpanded = 2
+    };
+    // We do not receive notifications about the thumb un-expanding when the scrollbar fades away. Ensure
+    // that we re-paint the thumb the next time that we transition away from being invisible, so that
+    // the thumb doesn't stick in an expanded state.
+    if (newOverlayScrollerState == NSScrollerStateExpanded) {
+        _hasExpandedSinceInvisible = YES;
+    } else if (newOverlayScrollerState != NSScrollerStateInvisible && _hasExpandedSinceInvisible) {
+        _scrollbar->setThumbNeedsRepaint(true);
+        _hasExpandedSinceInvisible = NO;
+    }
 }
 
 - (void)invalidate
@@ -1069,6 +1089,8 @@ void ScrollAnimatorMac::updateScrollerStyle()
     NSScrollerStyle newStyle = [m_scrollbarPainterController.get() scrollerStyle];
 
     if (Scrollbar* verticalScrollbar = scrollableArea()->verticalScrollbar()) {
+        verticalScrollbar->setTrackNeedsRepaint(true);
+        verticalScrollbar->setThumbNeedsRepaint(true);
         verticalScrollbar->setNeedsPaintInvalidation();
 
         ScrollbarPainter oldVerticalPainter = [m_scrollbarPainterController.get() verticalScrollerImp];
@@ -1087,6 +1109,8 @@ void ScrollAnimatorMac::updateScrollerStyle()
     }
 
     if (Scrollbar* horizontalScrollbar = scrollableArea()->horizontalScrollbar()) {
+        horizontalScrollbar->setTrackNeedsRepaint(true);
+        horizontalScrollbar->setThumbNeedsRepaint(true);
         horizontalScrollbar->setNeedsPaintInvalidation();
 
         ScrollbarPainter oldHorizontalPainter = [m_scrollbarPainterController.get() horizontalScrollerImp];

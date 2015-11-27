@@ -45,6 +45,8 @@ class CC_EXPORT PaintedScrollbarLayerImpl : public ScrollbarLayerImplBase {
     thumb_ui_resource_id_ = uid;
   }
 
+  void set_thumb_opacity(float opacity) { thumb_opacity_ = opacity; }
+
   void set_internal_contents_scale_and_bounds(float content_scale,
                                               const gfx::Size& content_bounds) {
     internal_contents_scale_ = content_scale;
@@ -68,6 +70,8 @@ class CC_EXPORT PaintedScrollbarLayerImpl : public ScrollbarLayerImplBase {
 
   UIResourceId track_ui_resource_id_;
   UIResourceId thumb_ui_resource_id_;
+
+  float thumb_opacity_;
 
   float internal_contents_scale_;
   gfx::Size internal_content_bounds_;

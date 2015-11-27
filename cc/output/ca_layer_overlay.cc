@@ -89,6 +89,11 @@ CALayerResult FromTextureQuad(ResourceProvider* resource_provider,
   ca_layer_overlay->contents_rect =
       BoundingRect(quad->uv_top_left, quad->uv_bottom_right);
   ca_layer_overlay->background_color = quad->background_color;
+  for (int i = 1; i < 4; ++i) {
+    if (quad->vertex_opacity[i] != quad->vertex_opacity[0])
+      return CA_LAYER_FAILED_UNKNOWN;
+  }
+  ca_layer_overlay->opacity *= quad->vertex_opacity[0];
   return CA_LAYER_SUCCESS;
 }
 

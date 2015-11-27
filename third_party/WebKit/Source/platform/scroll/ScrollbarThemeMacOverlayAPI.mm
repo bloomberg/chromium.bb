@@ -133,7 +133,7 @@ void ScrollbarThemeMacOverlayAPI::setNewPainterForScrollbar(ScrollbarThemeClient
     updateScrollbarOverlayStyle(scrollbar);
 }
 
-ScrollbarPainter ScrollbarThemeMacOverlayAPI::painterForScrollbar(const ScrollbarThemeClient* scrollbar)
+ScrollbarPainter ScrollbarThemeMacOverlayAPI::painterForScrollbar(const ScrollbarThemeClient* scrollbar) const
 {
     return [scrollbarPainterMap()->get(const_cast<ScrollbarThemeClient*>(scrollbar)).get() painter];
 }
@@ -154,7 +154,6 @@ void ScrollbarThemeMacOverlayAPI::paintTrackBackground(GraphicsContext* context,
     ScrollbarPainter scrollbarPainter = painterForScrollbar(scrollbar);
     [scrollbarPainter setEnabled:scrollbar->enabled()];
     [scrollbarPainter setBoundsSize: NSSizeFromCGSize(frameRect.size)];
-
     NSRect trackRect = NSMakeRect(0, 0, frameRect.size.width, frameRect.size.height);
     [scrollbarPainter drawKnobSlotInRect:trackRect highlight:NO];
 }
@@ -179,12 +178,17 @@ void ScrollbarThemeMacOverlayAPI::paintThumb(GraphicsContext* context, const Scr
     [scrollbarPainter setBoundsSize:NSSizeFromCGSize(rect.size())];
     [scrollbarPainter setDoubleValue:0];
     [scrollbarPainter setKnobProportion:1];
+
+    CGFloat oldKnobAlpha = [scrollbarPainter knobAlpha];
+    [scrollbarPainter setKnobAlpha:1];
+
     if (scrollbar->enabled())
         [scrollbarPainter drawKnob];
 
     // If this state is not set, then moving the cursor over the scrollbar area will only cause the
     // scrollbar to engorge when moved over the top of the scrollbar area.
     [scrollbarPainter setBoundsSize: NSSizeFromCGSize(scrollbar->frameRect().size())];
+    [scrollbarPainter setKnobAlpha:oldKnobAlpha];
 }
 
 int ScrollbarThemeMacOverlayAPI::scrollbarThickness(ScrollbarControlSize controlSize)
@@ -264,6 +268,11 @@ int ScrollbarThemeMacOverlayAPI::minimumThumbLength(const ScrollbarThemeClient* 
 void ScrollbarThemeMacOverlayAPI::updateEnabledState(const ScrollbarThemeClient* scrollbar)
 {
     [painterForScrollbar(scrollbar) setEnabled:scrollbar->enabled()];
+}
+
+float ScrollbarThemeMacOverlayAPI::thumbOpacity(const ScrollbarThemeClient* scrollbar) const {
+    ScrollbarPainter scrollbarPainter = painterForScrollbar(scrollbar);
+    return [scrollbarPainter knobAlpha];
 }
 
 } // namespace blink

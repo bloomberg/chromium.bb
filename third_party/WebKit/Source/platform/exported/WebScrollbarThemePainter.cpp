@@ -68,6 +68,8 @@ void WebScrollbarThemePainter::paintTrackBackground(WebCanvas* canvas, const Web
     pictureBuilder.context().setDeviceScaleFactor(m_deviceScaleFactor);
     m_theme->paintTrackBackground(&pictureBuilder.context(), m_scrollbar.get(), intRect);
     pictureBuilder.endRecording()->playback(canvas);
+    if (!m_theme->shouldRepaintAllPartsOnInvalidation())
+        m_scrollbar->setTrackNeedsRepaint(false);
 }
 
 void WebScrollbarThemePainter::paintBackTrackPart(WebCanvas* canvas, const WebRect& rect)
@@ -140,6 +142,8 @@ void WebScrollbarThemePainter::paintThumb(WebCanvas* canvas, const WebRect& rect
     pictureBuilder.context().setDeviceScaleFactor(m_deviceScaleFactor);
     m_theme->paintThumb(&pictureBuilder.context(), m_scrollbar.get(), intRect);
     pictureBuilder.endRecording()->playback(canvas);
+    if (!m_theme->shouldRepaintAllPartsOnInvalidation())
+        m_scrollbar->setThumbNeedsRepaint(false);
 }
 
 WebScrollbarThemePainter::WebScrollbarThemePainter(ScrollbarTheme* theme, Scrollbar* scrollbar, float deviceScaleFactor)
@@ -147,6 +151,21 @@ WebScrollbarThemePainter::WebScrollbarThemePainter(ScrollbarTheme* theme, Scroll
     , m_scrollbar(scrollbar)
     , m_deviceScaleFactor(deviceScaleFactor)
 {
+}
+
+float WebScrollbarThemePainter::thumbOpacity() const
+{
+    return m_theme->thumbOpacity(m_scrollbar.get());
+}
+
+bool WebScrollbarThemePainter::trackNeedsRepaint() const
+{
+    return m_scrollbar->trackNeedsRepaint();
+}
+
+bool WebScrollbarThemePainter::thumbNeedsRepaint() const
+{
+    return m_scrollbar->thumbNeedsRepaint();
 }
 
 } // namespace blink

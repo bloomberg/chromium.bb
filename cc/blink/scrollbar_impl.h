@@ -33,6 +33,8 @@ class ScrollbarImpl : public cc::Scrollbar {
   int ThumbThickness() const override;
   int ThumbLength() const override;
   gfx::Rect TrackRect() const override;
+  float ThumbOpacity() const override;
+  bool NeedsPaintPart(cc::ScrollbarPart part) const override;
   void PaintPart(SkCanvas* canvas,
                  cc::ScrollbarPart part,
                  const gfx::Rect& content_rect) override;

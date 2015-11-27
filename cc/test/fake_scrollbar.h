@@ -26,6 +26,8 @@ class FakeScrollbar : public Scrollbar {
   int ThumbThickness() const override;
   int ThumbLength() const override;
   gfx::Rect TrackRect() const override;
+  float ThumbOpacity() const override;
+  bool NeedsPaintPart(ScrollbarPart part) const override;
   void PaintPart(SkCanvas* canvas,
                  ScrollbarPart part,
                  const gfx::Rect& content_rect) override;
@@ -39,12 +41,23 @@ class FakeScrollbar : public Scrollbar {
   void set_has_thumb(bool has_thumb) { has_thumb_ = has_thumb; }
   SkColor paint_fill_color() const { return SK_ColorBLACK | fill_color_; }
 
+  void set_thumb_opacity(float opacity) { thumb_opacity_ = opacity; }
+  void set_needs_paint_thumb(bool needs_paint) {
+    needs_paint_thumb_ = needs_paint;
+  }
+  void set_needs_paint_track(bool needs_paint) {
+    needs_paint_track_ = needs_paint;
+  }
+
  private:
   bool paint_;
   bool has_thumb_;
   bool is_overlay_;
   int thumb_thickness_;
   int thumb_length_;
+  float thumb_opacity_;
+  bool needs_paint_thumb_;
+  bool needs_paint_track_;
   gfx::Point location_;
   gfx::Rect track_rect_;
   SkColor fill_color_;

@@ -50,6 +50,7 @@
       'layers/nine_patch_layer_impl_unittest.cc',
       'layers/nine_patch_layer_unittest.cc',
       'layers/painted_scrollbar_layer_impl_unittest.cc',
+      'layers/painted_scrollbar_layer_unittest.cc',
       'layers/picture_image_layer_impl_unittest.cc',
       'layers/picture_image_layer_unittest.cc',
       'layers/picture_layer_impl_unittest.cc',
