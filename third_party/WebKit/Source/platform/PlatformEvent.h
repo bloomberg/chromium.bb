@@ -26,9 +26,12 @@
 #ifndef PlatformEvent_h
 #define PlatformEvent_h
 
+#include "wtf/Allocator.h"
+
 namespace blink {
 
 class PlatformEvent {
+    USING_FAST_MALLOC(PlatformEvent);
 public:
     enum Type {
         NoType = 0,
