@@ -1,7 +1,7 @@
 CONSOLE ERROR: line 23: Uncaught (in promise) Error: err1
 CONSOLE ERROR: line 44: Uncaught (in promise) Error: err2
 CONSOLE ERROR: line 62: Uncaught (in promise) NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-CONSOLE ERROR: Uncaught (in promise) 42
+CONSOLE ERROR: line 68: Uncaught (in promise) 42
 CONSOLE ERROR: line 73: Uncaught (in promise) 1e+100
 CONSOLE ERROR: line 78: Uncaught (in promise) foo
 CONSOLE ERROR: line 83: Uncaught (in promise) #<Object>
@@ -18,7 +18,9 @@ timeout @ console-uncaught-promise.html:16
     console-uncaught-promise.html:62 Uncaught (in promise) DOMException: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.(…)
 throwDOMException @ console-uncaught-promise.html:62
 catcher @ console-uncaught-promise.html:54
-console-uncaught-promise.html:1 Uncaught (in promise) 42
+    console-uncaught-promise.html:68 Uncaught (in promise) 42
+promiseTest4 @ console-uncaught-promise.html:68
+timeout @ console-uncaught-promise.html:16
     console-uncaught-promise.html:73 Uncaught (in promise) 1e+100
 promiseTest5 @ console-uncaught-promise.html:73
 timeout @ console-uncaught-promise.html:16

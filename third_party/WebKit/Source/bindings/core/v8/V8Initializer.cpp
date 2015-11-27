@@ -237,9 +237,10 @@ static void promiseRejectHandlerInMainThread(v8::PromiseRejectMessage data)
     int columnNumber = 0;
     String resourceName;
     String errorMessage;
+    AccessControlStatus corsStatus = NotSharableCrossOrigin;
     RefPtrWillBeRawPtr<ScriptCallStack> callStack = nullptr;
 
-    v8::Local<v8::Message> message = v8::Exception::CreateMessage(exception);
+    v8::Local<v8::Message> message = v8::Exception::CreateMessage(isolate, exception);
     if (!message.IsEmpty()) {
         if (v8Call(message->GetLineNumber(isolate->GetCurrentContext()), lineNumber)
             && v8Call(message->GetStartColumn(isolate->GetCurrentContext()), columnNumber))
@@ -247,9 +248,8 @@ static void promiseRejectHandlerInMainThread(v8::PromiseRejectMessage data)
         resourceName = extractResourceName(message, window->document());
         errorMessage = toCoreStringWithNullCheck(message->Get());
         callStack = extractCallStack(isolate, message, &scriptId);
-    } else if (!exception.IsEmpty() && exception->IsInt32()) {
-        // For Smi's the message would be empty.
-        errorMessage = "Uncaught " + String::number(exception.As<v8::Integer>()->Value());
+        if (message->IsSharedCrossOrigin())
+            corsStatus = SharableCrossOrigin;
     }
 
     String messageForConsole = extractMessageForConsole(isolate, data.GetValue());
@@ -257,7 +257,7 @@ static void promiseRejectHandlerInMainThread(v8::PromiseRejectMessage data)
         errorMessage = "Uncaught " + messageForConsole;
 
     ScriptState* scriptState = ScriptState::current(isolate);
-    rejectedPromisesOnMainThread().rejectedWithNoHandler(scriptState, data, errorMessage, resourceName, scriptId, lineNumber, columnNumber, callStack);
+    rejectedPromisesOnMainThread().rejectedWithNoHandler(scriptState, data, errorMessage, resourceName, scriptId, lineNumber, columnNumber, callStack, corsStatus);
 }
 
 static void promiseRejectHandlerInWorker(v8::PromiseRejectMessage data)
@@ -290,8 +290,10 @@ static void promiseRejectHandlerInWorker(v8::PromiseRejectMessage data)
     int columnNumber = 0;
     String resourceName;
     String errorMessage;
+    AccessControlStatus corsStatus = NotSharableCrossOrigin;
 
-    v8::Local<v8::Message> message = v8::Exception::CreateMessage(data.GetValue());
+    v8::Local<v8::Value> exception = data.GetValue();
+    v8::Local<v8::Message> message = v8::Exception::CreateMessage(isolate, exception);
     if (!message.IsEmpty()) {
         TOSTRING_VOID(V8StringResource<>, resourceName, message->GetScriptOrigin().ResourceName());
         scriptId = message->GetScriptOrigin().ScriptID()->Value();
@@ -300,8 +302,10 @@ static void promiseRejectHandlerInWorker(v8::PromiseRejectMessage data)
             ++columnNumber;
         // message->Get() can be empty here. https://crbug.com/450330
         errorMessage = toCoreStringWithNullCheck(message->Get());
+        if (message->IsSharedCrossOrigin())
+            corsStatus = SharableCrossOrigin;
     }
-    scriptController->rejectedPromises()->rejectedWithNoHandler(scriptState, data, errorMessage, resourceName, scriptId, lineNumber, columnNumber, nullptr);
+    scriptController->rejectedPromises()->rejectedWithNoHandler(scriptState, data, errorMessage, resourceName, scriptId, lineNumber, columnNumber, nullptr, corsStatus);
 }
 
 static void failedAccessCheckCallbackInMainThread(v8::Local<v8::Object> host, v8::AccessType type, v8::Local<v8::Value> data)
