@@ -60,58 +60,6 @@ public:
         return GridSpan(0, 1, Indefinite);
     }
 
-    static GridSpan definiteGridSpanWithSpanAgainstOpposite(const GridResolvedPosition& resolvedOppositePosition, const GridPosition& position, GridPositionSide side)
-    {
-        size_t positionOffset = position.spanPosition();
-        if (side == ColumnStartSide || side == RowStartSide) {
-            if (resolvedOppositePosition == 0)
-                return GridSpan::definiteGridSpan(resolvedOppositePosition, resolvedOppositePosition.next());
-
-            GridResolvedPosition initialResolvedPosition = GridResolvedPosition(std::max<int>(0, resolvedOppositePosition.toInt() - positionOffset));
-            return GridSpan::definiteGridSpan(initialResolvedPosition, resolvedOppositePosition);
-        }
-
-        return GridSpan::definiteGridSpan(resolvedOppositePosition, GridResolvedPosition(resolvedOppositePosition.toInt() + positionOffset));
-    }
-
-    static GridSpan definiteGridSpanWithNamedSpanAgainstOpposite(const GridResolvedPosition& resolvedOppositePosition, const GridPosition& position, GridPositionSide side, const Vector<size_t>& gridLines)
-    {
-        if (side == RowStartSide || side == ColumnStartSide)
-            return definiteGridSpanWithInitialNamedSpanAgainstOpposite(resolvedOppositePosition, position, gridLines);
-
-        return definiteGridSpanWithFinalNamedSpanAgainstOpposite(resolvedOppositePosition, position, gridLines);
-    }
-
-    static GridSpan definiteGridSpanWithInitialNamedSpanAgainstOpposite(const GridResolvedPosition& resolvedOppositePosition, const GridPosition& position, const Vector<size_t>& gridLines)
-    {
-        if (resolvedOppositePosition == 0)
-            return GridSpan::definiteGridSpan(resolvedOppositePosition, resolvedOppositePosition.next());
-
-        size_t firstLineBeforeOppositePositionIndex = 0;
-        const size_t* firstLineBeforeOppositePosition = std::lower_bound(gridLines.begin(), gridLines.end(), resolvedOppositePosition.toInt());
-        if (firstLineBeforeOppositePosition != gridLines.end())
-            firstLineBeforeOppositePositionIndex = firstLineBeforeOppositePosition - gridLines.begin();
-        size_t gridLineIndex = std::max<int>(0, firstLineBeforeOppositePositionIndex - position.spanPosition());
-        GridResolvedPosition resolvedGridLinePosition = GridResolvedPosition(gridLines[gridLineIndex]);
-        if (resolvedGridLinePosition >= resolvedOppositePosition)
-            resolvedGridLinePosition = resolvedOppositePosition.prev();
-        return GridSpan::definiteGridSpan(resolvedGridLinePosition, resolvedOppositePosition);
-    }
-
-    static GridSpan definiteGridSpanWithFinalNamedSpanAgainstOpposite(const GridResolvedPosition& resolvedOppositePosition, const GridPosition& position, const Vector<size_t>& gridLines)
-    {
-        size_t firstLineAfterOppositePositionIndex = gridLines.size() - 1;
-        const size_t* firstLineAfterOppositePosition = std::upper_bound(gridLines.begin(), gridLines.end(), resolvedOppositePosition.toInt());
-        if (firstLineAfterOppositePosition != gridLines.end())
-            firstLineAfterOppositePositionIndex = firstLineAfterOppositePosition - gridLines.begin();
-        size_t gridLineIndex = std::min(gridLines.size() - 1, firstLineAfterOppositePositionIndex + position.spanPosition() - 1);
-        GridResolvedPosition resolvedGridLinePosition = gridLines[gridLineIndex];
-        if (resolvedGridLinePosition <= resolvedOppositePosition)
-            resolvedGridLinePosition = resolvedOppositePosition.next();
-
-        return GridSpan::definiteGridSpan(resolvedOppositePosition, resolvedGridLinePosition);
-    }
-
     bool operator==(const GridSpan& o) const
     {
         return m_type == o.m_type && m_resolvedInitialPosition == o.m_resolvedInitialPosition && m_resolvedFinalPosition == o.m_resolvedFinalPosition;
@@ -196,22 +144,6 @@ public:
     bool operator!=(const GridCoordinate& o) const
     {
         return !(*this == o);
-    }
-
-    GridResolvedPosition positionForSide(GridPositionSide side) const
-    {
-        switch (side) {
-        case ColumnStartSide:
-            return columns.resolvedInitialPosition();
-        case ColumnEndSide:
-            return columns.resolvedFinalPosition();
-        case RowStartSide:
-            return rows.resolvedInitialPosition();
-        case RowEndSide:
-            return rows.resolvedFinalPosition();
-        }
-        ASSERT_NOT_REACHED();
-        return 0;
     }
 
     GridSpan columns;

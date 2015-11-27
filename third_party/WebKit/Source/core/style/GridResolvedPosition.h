@@ -32,17 +32,6 @@ class GridResolvedPosition {
     DISALLOW_NEW();
 public:
 
-    static bool isValidNamedLineOrArea(const String& lineName, const ComputedStyle&, GridPositionSide);
-    static GridPositionSide initialPositionSide(GridTrackSizingDirection);
-    static GridPositionSide finalPositionSide(GridTrackSizingDirection);
-    static void initialAndFinalPositionsFromStyle(const ComputedStyle&, const LayoutBox&, GridTrackSizingDirection, GridPosition &initialPosition, GridPosition &finalPosition);
-    static GridSpan resolveGridPositionsFromAutoPlacementPosition(const ComputedStyle&, const LayoutBox&, GridTrackSizingDirection, const GridResolvedPosition&);
-    static GridSpan resolveGridPositionsFromStyle(const ComputedStyle&, const LayoutBox&, GridTrackSizingDirection);
-    static GridResolvedPosition resolveNamedGridLinePositionFromStyle(const ComputedStyle&, const GridPosition&, GridPositionSide);
-    static GridResolvedPosition resolveGridPositionFromStyle(const ComputedStyle&, const GridPosition&, GridPositionSide);
-    static GridSpan resolveGridPositionAgainstOppositePosition(const ComputedStyle&, const GridResolvedPosition& resolvedOppositePosition, const GridPosition&, GridPositionSide);
-    static GridSpan resolveNamedGridLinePositionAgainstOppositePosition(const ComputedStyle&, const GridResolvedPosition& resolvedOppositePosition, const GridPosition&, GridPositionSide);
-
     GridResolvedPosition(size_t position)
         : m_integerPosition(position)
     {
@@ -107,9 +96,15 @@ public:
     static size_t explicitGridColumnCount(const ComputedStyle&);
     static size_t explicitGridRowCount(const ComputedStyle&);
 
-private:
+    static bool isValidNamedLineOrArea(const String& lineName, const ComputedStyle&, GridPositionSide);
 
-    static size_t explicitGridSizeForSide(const ComputedStyle&, GridPositionSide);
+    static GridPositionSide initialPositionSide(GridTrackSizingDirection);
+    static GridPositionSide finalPositionSide(GridTrackSizingDirection);
+
+    static GridSpan resolveGridPositionsFromAutoPlacementPosition(const ComputedStyle&, const LayoutBox&, GridTrackSizingDirection, const GridResolvedPosition&);
+    static GridSpan resolveGridPositionsFromStyle(const ComputedStyle&, const LayoutBox&, GridTrackSizingDirection);
+
+private:
 
     size_t m_integerPosition;
 };
