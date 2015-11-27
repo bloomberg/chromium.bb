@@ -106,6 +106,12 @@ class JavaParamRef : public JavaRef<T> {
   // Does not assume ownership as parameters should not be deleted.
   JavaParamRef(JNIEnv* env, T obj) : JavaRef<T>(env, obj) {}
 
+  // Allow nullptr to be converted to JavaParamRef. Some unit tests call JNI
+  // methods directly from C++ and pass null for objects which are not actually
+  // used by the implementation (e.g. the caller object); allow this to keep
+  // working.
+  JavaParamRef(std::nullptr_t) : JavaRef<T>() {}
+
   ~JavaParamRef() {}
 
   // TODO(torne): remove this cast once we're using JavaRef consistently.
