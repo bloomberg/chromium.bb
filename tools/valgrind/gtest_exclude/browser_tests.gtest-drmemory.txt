@@ -90,3 +90,6 @@ DistillablePageUtilsBrowserTestAdaboost.TestDelegate
 
 # https://crbug.com/561088
 CrExtensionsBrowserTestWithMultipleExtensionTypesInstalled.ExtensionManagerSplitSectionsTest
+
+# https://crbug.com/562434
+AppearanceSettingsBrowserTest.uiTests
