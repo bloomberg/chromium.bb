@@ -1196,6 +1196,13 @@ drm_output_set_cursor(struct drm_output *output)
 	}
 
 	weston_view_to_global_float(ev, 0, 0, &x, &y);
+
+	/* From global to output space, output transform is guaranteed to be
+	 * NORMAL by drm_output_prepare_cursor_view().
+	 */
+	x = (x - output->base.x) * output->base.current_scale;
+	y = (y - output->base.y) * output->base.current_scale;
+
 	if (output->cursor_plane.x != x || output->cursor_plane.y != y) {
 		if (drmModeMoveCursor(b->drm.fd, output->crtc_id, x, y)) {
 			weston_log("failed to move cursor: %m\n");
