@@ -63,7 +63,7 @@ void InitPasswordFormFillData(
 
   // Copy additional username/value pairs.
   for (const auto& it : matches) {
-    if (it.second != preferred_match) {
+    if (it.second.get() != preferred_match) {
       PasswordAndRealm value;
       value.password = it.second->password_value;
       if (it.second->is_public_suffix_match ||

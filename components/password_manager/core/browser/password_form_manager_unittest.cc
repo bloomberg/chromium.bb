@@ -1385,7 +1385,7 @@ TEST_F(PasswordFormManagerTest, AndroidCredentialsAreProtected) {
 
   std::vector<PasswordForm*> actual_matches;
   for (const auto& username_match_pair : form_manager()->best_matches())
-    actual_matches.push_back(username_match_pair.second);
+    actual_matches.push_back(username_match_pair.second.get());
   EXPECT_THAT(actual_matches,
               UnorderedPasswordFormElementsAre(expected_matches.get()));
 }
@@ -1706,7 +1706,7 @@ TEST_F(PasswordFormManagerTest, PreferredMatchIsUpToDate) {
   form_manager()->OnGetPasswordStoreResults(simulated_results.Pass());
   EXPECT_EQ(1u, form_manager()->best_matches().size());
   EXPECT_EQ(form_manager()->preferred_match(),
-            form_manager()->best_matches().begin()->second);
+            form_manager()->best_matches().begin()->second.get());
   // Make sure to access all fields of preferred_match; this way if it was
   // deleted, ASAN might notice it.
   PasswordForm dummy(*form_manager()->preferred_match());

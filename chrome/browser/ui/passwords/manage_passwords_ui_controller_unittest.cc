@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
@@ -246,7 +248,7 @@ TEST_F(ManagePasswordsUIControllerTest, PasswordAutofilled) {
   autofill::PasswordForm* test_form_ptr = test_form.get();
   base::string16 kTestUsername = test_form->username_value;
   autofill::PasswordFormMap map;
-  map.insert(kTestUsername, test_form.Pass());
+  map.insert(std::make_pair(kTestUsername, std::move(test_form)));
   controller()->OnPasswordAutofilled(map, map.begin()->second->origin);
 
   EXPECT_EQ(password_manager::ui::MANAGE_STATE, controller()->GetState());
@@ -420,8 +422,9 @@ TEST_F(ManagePasswordsUIControllerTest, PasswordSubmittedToNonWebbyURL) {
 TEST_F(ManagePasswordsUIControllerTest, BlacklistedElsewhere) {
   base::string16 kTestUsername = base::ASCIIToUTF16("test_username");
   autofill::PasswordFormMap map;
-  map.insert(kTestUsername,
-             make_scoped_ptr(new autofill::PasswordForm(test_local_form())));
+  map.insert(std::make_pair(
+      kTestUsername,
+      make_scoped_ptr(new autofill::PasswordForm(test_local_form()))));
   controller()->OnPasswordAutofilled(map, map.begin()->second->origin);
 
   test_local_form().blacklisted_by_user = true;
@@ -584,7 +587,7 @@ TEST_F(ManagePasswordsUIControllerTest, AutofillDuringAutoSignin) {
       new autofill::PasswordForm(test_local_form()));
   autofill::PasswordFormMap map;
   base::string16 kTestUsername = test_form->username_value;
-  map.insert(kTestUsername, test_form.Pass());
+  map.insert(std::make_pair(kTestUsername, std::move(test_form)));
   controller()->OnPasswordAutofilled(map, map.begin()->second->origin);
 
   ExpectIconAndControllerStateIs(password_manager::ui::AUTO_SIGNIN_STATE);
@@ -596,7 +599,7 @@ TEST_F(ManagePasswordsUIControllerTest, InactiveOnPSLMatched) {
   scoped_ptr<autofill::PasswordForm> psl_matched_test_form(
       new autofill::PasswordForm(test_local_form()));
   psl_matched_test_form->is_public_suffix_match = true;
-  map.insert(kTestUsername, psl_matched_test_form.Pass());
+  map.insert(std::make_pair(kTestUsername, std::move(psl_matched_test_form)));
   controller()->OnPasswordAutofilled(map, map.begin()->second->origin);
 
   EXPECT_EQ(password_manager::ui::INACTIVE_STATE, controller()->GetState());

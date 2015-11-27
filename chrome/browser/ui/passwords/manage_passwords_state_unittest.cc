@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/passwords/manage_passwords_state.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/strings/utf_string_conversions.h"
@@ -345,9 +346,9 @@ TEST_F(ManagePasswordsStateTest, AutomaticPasswordSave) {
 
 TEST_F(ManagePasswordsStateTest, PasswordAutofilled) {
   autofill::PasswordFormMap password_form_map;
-  password_form_map.insert(
+  password_form_map.insert(std::make_pair(
       test_local_form().username_value,
-      make_scoped_ptr(new autofill::PasswordForm(test_local_form())));
+      make_scoped_ptr(new autofill::PasswordForm(test_local_form()))));
   GURL origin("https://example.com");
   passwords_data().OnPasswordAutofilled(password_form_map, origin);
 
@@ -367,9 +368,9 @@ TEST_F(ManagePasswordsStateTest, InactiveOnPSLMatched) {
   autofill::PasswordForm psl_matched_test_form = test_local_form();
   psl_matched_test_form.is_public_suffix_match = true;
   autofill::PasswordFormMap password_form_map;
-  password_form_map.insert(
+  password_form_map.insert(std::make_pair(
       psl_matched_test_form.username_value,
-      make_scoped_ptr(new autofill::PasswordForm(psl_matched_test_form)));
+      make_scoped_ptr(new autofill::PasswordForm(psl_matched_test_form))));
   passwords_data().OnPasswordAutofilled(password_form_map,
                                         GURL("https://m.example.com/"));
 
@@ -451,9 +452,9 @@ TEST_F(ManagePasswordsStateTest, AutomaticPasswordSaveAddBlacklisted) {
 
 TEST_F(ManagePasswordsStateTest, BackgroundAutofilledAddBlacklisted) {
   autofill::PasswordFormMap password_form_map;
-  password_form_map.insert(
+  password_form_map.insert(std::make_pair(
       test_local_form().username_value,
-      make_scoped_ptr(new autofill::PasswordForm(test_local_form())));
+      make_scoped_ptr(new autofill::PasswordForm(test_local_form()))));
   passwords_data().OnPasswordAutofilled(
       password_form_map, password_form_map.begin()->second->origin);
   EXPECT_EQ(password_manager::ui::MANAGE_STATE, passwords_data().state());

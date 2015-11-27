@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "base/containers/scoped_ptr_map.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "components/autofill/core/common/form_data.h"
@@ -298,11 +297,10 @@ struct LessThanUniqueKey {
 };
 
 // Map username to PasswordForm* for convenience. See password_form_manager.h.
-typedef base::ScopedPtrMap<base::string16, scoped_ptr<PasswordForm>>
-    PasswordFormMap;
+using PasswordFormMap = std::map<base::string16, scoped_ptr<PasswordForm>>;
 
 // Like PasswordFormMap, but with weak (not owned) pointers.
-typedef std::map<base::string16, const PasswordForm*> ConstPasswordFormMap;
+using ConstPasswordFormMap = std::map<base::string16, const PasswordForm*>;
 
 // For testing.
 std::ostream& operator<<(std::ostream& os, PasswordForm::Layout layout);

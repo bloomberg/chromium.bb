@@ -4,6 +4,7 @@
 
 #include "components/password_manager/core/browser/password_autofill_manager.h"
 
+#include <algorithm>
 #include <vector>
 
 #include "base/i18n/case_conversion.h"

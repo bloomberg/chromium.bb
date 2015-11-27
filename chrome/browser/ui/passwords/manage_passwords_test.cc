@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/passwords/manage_passwords_test.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -45,8 +47,9 @@ void ManagePasswordsTest::ExecuteManagePasswordsCommand() {
 void ManagePasswordsTest::SetupManagingPasswords() {
   base::string16 kTestUsername = base::ASCIIToUTF16("test_username");
   autofill::PasswordFormMap map;
-  map.insert(kTestUsername,
-             make_scoped_ptr(new autofill::PasswordForm(*test_form())));
+  map.insert(std::make_pair(
+      kTestUsername,
+      make_scoped_ptr(new autofill::PasswordForm(*test_form()))));
   GetController()->OnPasswordAutofilled(map, map.begin()->second->origin);
 }
 
@@ -81,8 +84,9 @@ void ManagePasswordsTest::SetupChooseCredentials(
     const GURL& origin) {
   base::string16 kTestUsername = base::ASCIIToUTF16("test_username");
   autofill::PasswordFormMap map;
-  map.insert(kTestUsername,
-             make_scoped_ptr(new autofill::PasswordForm(*test_form())));
+  map.insert(std::make_pair(
+      kTestUsername,
+      make_scoped_ptr(new autofill::PasswordForm(*test_form()))));
   GetController()->OnChooseCredentials(
       local_credentials.Pass(), federated_credentials.Pass(), origin,
       base::Bind(&ManagePasswordsTest::OnChooseCredential, this));

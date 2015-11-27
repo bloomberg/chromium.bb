@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <map>
 #include <set>
+#include <utility>
 
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_split.h"
@@ -54,7 +55,7 @@ bool DoesUsenameAndPasswordMatchCredentials(
     const base::string16& typed_username,
     const base::string16& typed_password,
     const autofill::PasswordFormMap& credentials) {
-  for (auto match : credentials) {
+  for (const auto& match : credentials) {
     if (match.second->username_value == typed_username &&
         match.second->password_value == typed_password)
       return true;
@@ -484,9 +485,9 @@ void PasswordFormManager::OnRequestDone(
     if (best_match_username == best_matches_.end()) {
       if (login->preferred)
         preferred_match_ = login.get();
-      best_matches_.insert(username, login.Pass());
+      best_matches_.insert(std::make_pair(username, std::move(login)));
     } else {
-      not_best_matches_.push_back(login.Pass());
+      not_best_matches_.push_back(std::move(login));
     }
   }
 
@@ -499,7 +500,7 @@ void PasswordFormManager::OnRequestDone(
     *it = nullptr;
     const base::string16& username = protege->username_value;
     if (best_matches_.find(username) == best_matches_.end())
-      best_matches_.insert(username, protege.Pass());
+      best_matches_.insert(std::make_pair(username, std::move(protege)));
     else
       not_best_matches_.push_back(protege.Pass());
   }
@@ -513,7 +514,7 @@ void PasswordFormManager::OnRequestDone(
     // just pick the first one and whichever the user selects for submit will
     // be saved as preferred.
     if (!preferred_match_)
-      preferred_match_ = best_matches_.begin()->second;
+      preferred_match_ = best_matches_.begin()->second.get();
   }
 }
 
@@ -1226,7 +1227,7 @@ void PasswordFormManager::DeleteEmptyUsernameCredentials() {
     return;
   }
   for (auto iter = best_matches_.begin(); iter != best_matches_.end(); ++iter) {
-    PasswordForm* form = iter->second;
+    PasswordForm* form = iter->second.get();
     if (!form->is_public_suffix_match && form->username_value.empty() &&
         form->password_value == pending_credentials_.password_value)
       password_store->RemoveLogin(*form);
@@ -1238,7 +1239,7 @@ PasswordForm* PasswordFormManager::FindBestMatchForUpdatePassword(
   if (best_matches_.size() == 1) {
     // In case when the user has only one credential, consider it the same as
     // is being saved.
-    return best_matches_.begin()->second;
+    return best_matches_.begin()->second.get();
   }
   if (password.empty())
     return nullptr;
@@ -1255,7 +1256,7 @@ PasswordForm* PasswordFormManager::FindBestMatchForUpdatePassword(
   }
   return best_password_match_it == best_matches_.end()
              ? nullptr
-             : best_password_match_it->second;
+             : best_password_match_it->second.get();
 }
 
 PasswordForm* PasswordFormManager::FindBestSavedMatch(
@@ -1263,12 +1264,12 @@ PasswordForm* PasswordFormManager::FindBestSavedMatch(
   PasswordFormMap::const_iterator it =
       best_matches_.find(provisionally_saved_form_->username_value);
   if (it != best_matches_.end())
-    return it->second;
+    return it->second.get();
   if (!form->username_value.empty())
     return nullptr;
   for (const auto& stored_match : best_matches_) {
     if (stored_match.second->password_value == form->password_value)
-      return stored_match.second;
+      return stored_match.second.get();
   }
   return nullptr;
 }
@@ -1333,7 +1334,7 @@ void PasswordFormManager::WipeStoreCopyIfOutdated() {
       continue;
     }
     password_store->RemoveLogin(*credential_to_delete->second);
-    if (credential_to_delete->second == preferred_match_)
+    if (credential_to_delete->second.get() == preferred_match_)
       preferred_match_ = nullptr;
     best_matches_.erase(credential_to_delete);
   }

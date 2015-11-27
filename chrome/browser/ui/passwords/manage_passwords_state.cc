@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/passwords/manage_passwords_state.h"
 
+#include <utility>
+
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 #include "components/password_manager/core/browser/log_manager.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
@@ -34,7 +36,7 @@ ScopedPtrMapToVector(const Map& map) {
   std::vector<const typename Map::mapped_type::element_type*> ret;
   ret.reserve(map.size());
   for (const auto& form_pair : map)
-    ret.push_back(form_pair.second);
+    ret.push_back(form_pair.second.get());
   return ret;
 }
 
@@ -135,10 +137,11 @@ void ManagePasswordsState::OnAutoSignin(
 void ManagePasswordsState::OnAutomaticPasswordSave(
     scoped_ptr<PasswordFormManager> form_manager) {
   ClearData();
-  form_manager_ = form_manager.Pass();
+  form_manager_ = std::move(form_manager);
   autofill::ConstPasswordFormMap current_forms;
-  current_forms.insert(form_manager_->best_matches().begin(),
-                       form_manager_->best_matches().end());
+  for (const auto& match : form_manager_->best_matches()) {
+    current_forms.insert(std::make_pair(match.first, match.second.get()));
+  }
   current_forms[form_manager_->pending_credentials().username_value] =
       &form_manager_->pending_credentials();
   current_forms_weak_ = MapToVector(current_forms);

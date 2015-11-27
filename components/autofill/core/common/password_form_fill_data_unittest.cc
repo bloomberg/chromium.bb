@@ -4,6 +4,8 @@
 
 #include "components/autofill/core/common/password_form_fill_data.h"
 
+#include <utility>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/common/password_form.h"
@@ -144,9 +146,10 @@ TEST(PasswordFormFillDataTest, TestPublicSuffixDomainMatching) {
 
   // Add one exact match and one public suffix match.
   PasswordFormMap matches;
-  matches.insert(exact_match.username_value, scoped_exact_match.Pass());
-  matches.insert(public_suffix_match.username_value,
-                 scoped_public_suffix_match.Pass());
+  matches.insert(std::make_pair(exact_match.username_value,
+                                std::move(scoped_exact_match)));
+  matches.insert(std::make_pair(public_suffix_match.username_value,
+                                std::move(scoped_public_suffix_match)));
 
   PasswordFormFillData result;
   InitPasswordFormFillData(form_on_page,
@@ -231,9 +234,10 @@ TEST(PasswordFormFillDataTest, TestAffiliationMatch) {
 
   // Add one exact match and one affiliation based match.
   PasswordFormMap matches;
-  matches.insert(exact_match.username_value, scoped_exact_match.Pass());
-  matches.insert(affiliated_match.username_value,
-                 scoped_affiliated_match.Pass());
+  matches.insert(std::make_pair(exact_match.username_value,
+                                std::move(scoped_exact_match)));
+  matches.insert(std::make_pair(affiliated_match.username_value,
+                                std::move(scoped_affiliated_match)));
 
   PasswordFormFillData result;
   InitPasswordFormFillData(form_on_page, matches, &preferred_match, false,
