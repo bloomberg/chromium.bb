@@ -184,6 +184,7 @@
 #include "content/renderer/android/synchronous_compositor_factory.h"
 #include "content/renderer/java/gin_java_bridge_dispatcher.h"
 #include "content/renderer/media/android/renderer_media_player_manager.h"
+#include "content/renderer/media/android/renderer_media_session_manager.h"
 #include "content/renderer/media/android/stream_texture_factory_impl.h"
 #include "content/renderer/media/android/webmediaplayer_android.h"
 #include "content/renderer/media/android/webmediasession_android.h"
@@ -774,6 +775,7 @@ RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
       midi_dispatcher_(NULL),
 #if defined(OS_ANDROID)
       media_player_manager_(NULL),
+      media_session_manager_(NULL),
 #endif
 #if defined(ENABLE_BROWSER_CDMS)
       cdm_manager_(NULL),
@@ -2247,7 +2249,7 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
 
 blink::WebMediaSession* RenderFrameImpl::createMediaSession() {
 #if defined(OS_ANDROID)
-  return new WebMediaSessionAndroid();
+  return new WebMediaSessionAndroid(GetMediaSessionManager());
 #else
   return nullptr;
 #endif  // defined(OS_ANDROID)
@@ -5291,6 +5293,13 @@ RendererMediaPlayerManager* RenderFrameImpl::GetMediaPlayerManager() {
     media_player_manager_ = new RendererMediaPlayerManager(this);
   return media_player_manager_;
 }
+
+RendererMediaSessionManager* RenderFrameImpl::GetMediaSessionManager() {
+  if (!media_session_manager_)
+    media_session_manager_ = new RendererMediaSessionManager(this);
+  return media_session_manager_;
+}
+
 #endif  // defined(OS_ANDROID)
 
 scoped_ptr<media::MediaPermission> RenderFrameImpl::CreateMediaPermissionProxy(

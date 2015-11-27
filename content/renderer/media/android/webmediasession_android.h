@@ -6,19 +6,25 @@
 #define CONTENT_RENDERER_MEDIA_ANDROID_WEBMEDIASESSION_ANDROID_H_
 
 #include "base/macros.h"
+#include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/modules/mediasession/WebMediaSession.h"
 
 namespace content {
 
-class WebMediaSessionAndroid : public blink::WebMediaSession {
+class RendererMediaSessionManager;
+
+class CONTENT_EXPORT WebMediaSessionAndroid : public blink::WebMediaSession {
  public:
-  WebMediaSessionAndroid() = default;
-  virtual ~WebMediaSessionAndroid() = default;
+  WebMediaSessionAndroid(RendererMediaSessionManager* session_manager);
+  virtual ~WebMediaSessionAndroid() override;
 
   void activate(blink::WebMediaSessionActivateCallback*) override;
   void deactivate(blink::WebMediaSessionDeactivateCallback*) override;
 
  private:
+  RendererMediaSessionManager* const session_manager_;
+  int session_id_;
+
   DISALLOW_COPY_AND_ASSIGN(WebMediaSessionAndroid);
 };
 

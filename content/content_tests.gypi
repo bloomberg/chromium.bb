@@ -801,6 +801,7 @@
       'common/gpu/client/gpu_memory_buffer_impl_surface_texture_unittest.cc',
       'common/gpu/gpu_memory_buffer_factory_surface_texture_unittest.cc',
       'renderer/java/gin_java_bridge_value_converter_unittest.cc',
+      'renderer/media/android/webmediasession_android_unittest.cc',
     ],
     'content_unittests_mac_sources': [
       'common/gpu/client/gpu_memory_buffer_impl_io_surface_unittest.cc',

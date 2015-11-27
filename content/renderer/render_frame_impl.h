@@ -118,6 +118,7 @@ class PushMessagingDispatcher;
 class RendererAccessibility;
 class RendererCdmManager;
 class RendererMediaPlayerManager;
+class RendererMediaSessionManager;
 class RendererPpapiHost;
 class RenderFrameObserver;
 class RenderViewImpl;
@@ -878,6 +879,8 @@ class CONTENT_EXPORT RenderFrameImpl
       const media::WebMediaPlayerParams& params);
 
   RendererMediaPlayerManager* GetMediaPlayerManager();
+
+  RendererMediaSessionManager* GetMediaSessionManager();
 #endif
 
   bool AreSecureCodecsSupported();
@@ -1015,10 +1018,12 @@ class CONTENT_EXPORT RenderFrameImpl
   MidiDispatcher* midi_dispatcher_;
 
 #if defined(OS_ANDROID)
-  // Manages all media players in this render frame for communicating with the
-  // real media player in the browser process. It's okay to use a raw pointer
-  // since it's a RenderFrameObserver.
+  // Manages all media players and sessions in this render frame for
+  // communicating with the real media player and sessions in the
+  // browser process. It's okay to use raw pointers since they're both
+  // RenderFrameObservers.
   RendererMediaPlayerManager* media_player_manager_;
+  RendererMediaSessionManager* media_session_manager_;
 #endif
 
 #if defined(ENABLE_BROWSER_CDMS)
