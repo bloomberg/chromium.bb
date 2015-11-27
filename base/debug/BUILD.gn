@@ -58,6 +58,7 @@ source_set("debug") {
   configs += [ "//base:base_implementation" ]
 
   deps = [
+    "//base:base_static",
     "//base/memory",
     "//base/process",
   ]

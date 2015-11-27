@@ -39,9 +39,13 @@ source_set("metrics") {
     "//base/debug",
     "//base/json",
     "//base/memory",
+    "//base/process",
   ]
 
-  allow_circular_includes_from = [ "//base/memory" ]
+  allow_circular_includes_from = [
+    "//base/memory",
+    "//base/process",
+  ]
 
   visibility = [ "//base/*" ]
 }

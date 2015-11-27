@@ -68,6 +68,16 @@ source_set("trace_event") {
     "winheap_dump_provider_win.h",
   ]
 
+  configs += [ "//base:base_implementation" ]
+
+  deps = [
+    "//base/debug",
+    "//base/json",
+    "//base/memory",
+    "//base/process",
+    "//base/third_party/dynamic_annotations",
+  ]
+
   if (is_nacl) {
     sources -= [
       "process_memory_totals_dump_provider.cc",
@@ -80,22 +90,12 @@ source_set("trace_event") {
       "malloc_dump_provider.cc",
       "malloc_dump_provider.h",
     ]
+    deps += [ "//base/allocator:extension_thunks" ]
   }
 
   if (is_linux || is_android) {
     sources += [ "process_memory_maps_dump_provider.cc" ]
   }
-
-  configs += [ "//base:base_implementation" ]
-
-  deps = [
-    "//base/debug",
-    "//base/json",
-    "//base/memory",
-    "//base/process",
-    "//base/third_party/dynamic_annotations",
-  ]
-
   if (is_win) {
     deps += [ "//base/trace_event/etw_manifest:chrome_events_win" ]
   }

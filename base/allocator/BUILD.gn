@@ -90,6 +90,7 @@ if (is_win) {
       public_configs = [ ":nocmt" ]
       deps = [
         ":prep_libc",
+        "//base",
       ]
     }
   }
@@ -305,7 +306,7 @@ if (use_allocator == "tcmalloc") {
   }
 }  # !is_android
 
-source_set("allocator_extension_thunks") {
+source_set("extension_thunks") {
   visibility = [ "//base/*" ]
   sources = [
     "allocator_extension_thunks.cc",

@@ -17,7 +17,7 @@ secondary_source = "//build/secondary/"
 check_targets = [
   #"//apps/*",  # Medium-hard.
   #"//ash/*",  # Medium-hard.
-  #"//base/*",  # Minor work on Windows.
+  "//base/*",
   "//blink/*",
   "//breakpad/*",
   "//build/*",
