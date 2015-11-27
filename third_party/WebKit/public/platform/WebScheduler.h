@@ -60,15 +60,6 @@ public:
     // Takes ownership of |IdleTask|. Can be called from any thread.
     virtual void postIdleTaskAfterWakeup(const WebTraceLocation&, WebThread::IdleTask*) = 0;
 
-    // Schedule a timer task to be run on the the associated WebThread. Timer Tasks
-    // tasks usually have the default priority, but may be delayed
-    // when the user is interacting with the device.
-    // |monotonicTime| is in the timebase of WTF::monotonicallyIncreasingTime().
-    // Takes ownership of |WebTaskRunner::Task|. Can be called from any thread.
-    // TODO(alexclarke): Move timer throttling for background pages to the
-    // chromium side and remove this.
-    virtual void postTimerTaskAt(const WebTraceLocation&, WebTaskRunner::Task*, double monotonicTime) = 0;
-
     // Returns a WebTaskRunner for loading tasks. Can be called from any thread.
     virtual WebTaskRunner* loadingTaskRunner() = 0;
 

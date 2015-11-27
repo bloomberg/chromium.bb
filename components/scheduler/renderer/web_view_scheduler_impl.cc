@@ -5,6 +5,9 @@
 #include "components/scheduler/renderer/web_view_scheduler_impl.h"
 
 #include "base/logging.h"
+#include "components/scheduler/base/virtual_time_domain.h"
+#include "components/scheduler/child/scheduler_tqm_delegate.h"
+#include "components/scheduler/renderer/renderer_scheduler_impl.h"
 #include "components/scheduler/renderer/web_frame_scheduler_impl.h"
 #include "third_party/WebKit/public/platform/WebFrameScheduler.h"
 
@@ -15,7 +18,7 @@ WebViewSchedulerImpl::WebViewSchedulerImpl(
     RendererSchedulerImpl* renderer_scheduler)
     : web_view_(web_view),
       renderer_scheduler_(renderer_scheduler),
-      background_(false) {}
+      page_in_background_(false) {}
 
 WebViewSchedulerImpl::~WebViewSchedulerImpl() {
   // TODO(alexclarke): Find out why we can't rely on the web view outliving the
@@ -25,17 +28,29 @@ WebViewSchedulerImpl::~WebViewSchedulerImpl() {
   }
 }
 
-void WebViewSchedulerImpl::setPageInBackground(bool background) {
-  background_ = background;
-  // TODO(alexclarke): Do something with this flag.
+void WebViewSchedulerImpl::setPageInBackground(bool page_in_background) {
+  if (page_in_background_ == page_in_background)
+    return;
+
+  page_in_background_ = page_in_background;
+
+  for (WebFrameSchedulerImpl* frame_scheduler : frame_schedulers_) {
+    frame_scheduler->SetPageInBackground(page_in_background_);
+  }
+}
+
+scoped_ptr<WebFrameSchedulerImpl>
+WebViewSchedulerImpl::createWebFrameSchedulerImpl() {
+  scoped_ptr<WebFrameSchedulerImpl> frame_scheduler(
+      new WebFrameSchedulerImpl(renderer_scheduler_, this));
+  frame_scheduler->SetPageInBackground(page_in_background_);
+  frame_schedulers_.insert(frame_scheduler.get());
+  return frame_scheduler.Pass();
 }
 
 blink::WebPassOwnPtr<blink::WebFrameScheduler>
 WebViewSchedulerImpl::createFrameScheduler() {
-  scoped_ptr<WebFrameSchedulerImpl> frame_scheduler(
-      new WebFrameSchedulerImpl(renderer_scheduler_, this));
-  frame_schedulers_.insert(frame_scheduler.get());
-  return blink::adoptWebPtr(frame_scheduler.release());
+  return blink::adoptWebPtr(createWebFrameSchedulerImpl().release());
 }
 
 void WebViewSchedulerImpl::Unregister(WebFrameSchedulerImpl* frame_scheduler) {

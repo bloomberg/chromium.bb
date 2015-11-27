@@ -61,7 +61,6 @@ public:
     const WebTraceLocation& location() const { return m_location; }
 
     double nextFireInterval() const;
-    double nextUnalignedFireInterval() const;
     double repeatInterval() const { return m_repeatInterval; }
 
     void augmentRepeatInterval(double delta) {
@@ -69,8 +68,6 @@ public:
         setNextFireTime(now, m_nextFireTime - now + delta);
         m_repeatInterval += delta;
     }
-
-    void didChangeAlignmentInterval(double now);
 
     struct PLATFORM_EXPORT Comparator {
         bool operator()(const TimerBase* a, const TimerBase* b) const;
@@ -121,7 +118,6 @@ private:
     };
 
     double m_nextFireTime; // 0 if inactive
-    double m_unalignedNextFireTime; // m_nextFireTime not considering alignment interval
     double m_repeatInterval; // 0 if not repeating
     WebTraceLocation m_location;
     CancellableTimerTask* m_cancellableTimerTask; // NOT OWNED

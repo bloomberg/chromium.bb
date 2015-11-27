@@ -16,8 +16,8 @@ namespace internal {
 class TaskQueueSetsTest : public testing::Test {
  public:
   void SetUp() override {
-    virtual_time_domain_ = make_scoped_refptr<VirtualTimeDomain>(
-        new VirtualTimeDomain(base::TimeTicks()));
+    virtual_time_domain_ = make_scoped_ptr<VirtualTimeDomain>(
+        new VirtualTimeDomain(nullptr, base::TimeTicks()));
     task_queue_sets_.reset(new TaskQueueSets(kNumSets));
   }
 
@@ -29,8 +29,8 @@ class TaskQueueSetsTest : public testing::Test {
   TaskQueueImpl* NewTaskQueue(const char* queue_name) {
     scoped_refptr<internal::TaskQueueImpl> queue =
         make_scoped_refptr(new internal::TaskQueueImpl(
-            nullptr, virtual_time_domain_, TaskQueue::Spec(queue_name), "test",
-            "test"));
+            nullptr, virtual_time_domain_.get(), TaskQueue::Spec(queue_name),
+            "test", "test"));
     task_queues_.push_back(queue);
     return queue.get();
   }
@@ -41,7 +41,7 @@ class TaskQueueSetsTest : public testing::Test {
     return fake_task;
   }
 
-  scoped_refptr<VirtualTimeDomain> virtual_time_domain_;
+  scoped_ptr<VirtualTimeDomain> virtual_time_domain_;
   std::vector<scoped_refptr<internal::TaskQueueImpl>> task_queues_;
   scoped_ptr<TaskQueueSets> task_queue_sets_;
 };

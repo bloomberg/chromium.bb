@@ -117,7 +117,6 @@ Page::Page(PageClients& pageClients)
     , m_tabKeyCyclesThroughElements(true)
     , m_defersLoading(false)
     , m_deviceScaleFactor(1)
-    , m_timerAlignmentInterval(DOMTimer::visiblePageAlignmentInterval())
     , m_visibilityState(PageVisibilityStateVisible)
     , m_isCursorVisible(true)
 #if ENABLE(ASSERT)
@@ -356,41 +355,15 @@ void Page::visitedStateChanged(LinkHash linkHash)
     }
 }
 
-void Page::setTimerAlignmentInterval(double interval)
-{
-    if (interval == m_timerAlignmentInterval)
-        return;
-
-    m_timerAlignmentInterval = interval;
-    for (Frame* frame = mainFrame(); frame; frame = frame->tree().traverseNextWithWrap(false)) {
-        if (!frame->isLocalFrame())
-            continue;
-
-        if (Document* document = toLocalFrame(frame)->document()) {
-            if (DOMTimerCoordinator* timers = document->timers()) {
-                timers->didChangeTimerAlignmentInterval();
-            }
-        }
-    }
-}
-
-double Page::timerAlignmentInterval() const
-{
-    return m_timerAlignmentInterval;
-}
-
 void Page::setVisibilityState(PageVisibilityState visibilityState, bool isInitialState)
 {
     if (m_visibilityState == visibilityState)
         return;
     m_visibilityState = visibilityState;
 
-    // TODO(alexclarke): Move throttling of timers to chromium.
     if (visibilityState == PageVisibilityStateVisible) {
-        setTimerAlignmentInterval(DOMTimer::visiblePageAlignmentInterval());
         memoryPurgeController().pageBecameActive();
     } else {
-        setTimerAlignmentInterval(DOMTimer::hiddenPageAlignmentInterval());
         if (!isInitialState)
             memoryPurgeController().pageBecameInactive();
     }

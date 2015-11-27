@@ -23,9 +23,24 @@ class TaskQueueImpl;
 class TaskQueueManager;
 class TaskQueueManagerDelegate;
 
-class SCHEDULER_EXPORT TimeDomain : public base::RefCounted<TimeDomain> {
+class SCHEDULER_EXPORT TimeDomain {
  public:
-  TimeDomain();
+  class SCHEDULER_EXPORT Observer {
+   public:
+    virtual ~Observer() {}
+
+    // Called when an empty TaskQueue registered with this TimeDomain has a task
+    // enqueued.
+    virtual void OnTimeDomainHasImmediateWork() = 0;
+
+    // Called when a TaskQueue registered with this TimeDomain has a delayed
+    // task enqueued and no other delayed tasks associated with this TimeDomain
+    // are pending.
+    virtual void OnTimeDomainHasDelayedWork() = 0;
+  };
+
+  explicit TimeDomain(Observer* observer);
+  virtual ~TimeDomain();
 
   // Returns a LazyNow that evaluate this TimeDomain's Now.  Can be called from
   // any thread.
@@ -46,9 +61,6 @@ class SCHEDULER_EXPORT TimeDomain : public base::RefCounted<TimeDomain> {
  protected:
   friend class internal::TaskQueueImpl;
   friend class TaskQueueManager;
-  friend class base::RefCounted<TimeDomain>;
-
-  virtual ~TimeDomain();
 
   void AsValueInto(base::trace_event::TracedValue* state) const;
 
@@ -69,6 +81,9 @@ class SCHEDULER_EXPORT TimeDomain : public base::RefCounted<TimeDomain> {
   void ScheduleDelayedWork(internal::TaskQueueImpl* queue,
                            base::TimeTicks delayed_run_time,
                            LazyNow* lazy_now);
+
+  // Registers the |queue|.
+  void RegisterQueue(internal::TaskQueueImpl* queue);
 
   // Removes |queue| from the set of task queues that UpdateWorkQueues calls
   // UpdateWorkQueue on.
@@ -114,6 +129,10 @@ class SCHEDULER_EXPORT TimeDomain : public base::RefCounted<TimeDomain> {
   // Set of task queues with avaliable work on the incoming queue.  This should
   // only be accessed from the main thread.
   std::set<internal::TaskQueueImpl*> updatable_queue_set_;
+
+  std::set<internal::TaskQueueImpl*> registered_task_queues_;
+
+  Observer* observer_;
 
   base::ThreadChecker main_thread_checker_;
 

@@ -100,12 +100,10 @@ class SCHEDULER_EXPORT TaskQueueManager
   const scoped_refptr<TaskQueueManagerDelegate>& delegate() const;
 
   // Time domains must be registered for the task queues to get updated.
-  void RegisterTimeDomain(const scoped_refptr<TimeDomain>& time_domain);
-  void UnregisterTimeDomain(const scoped_refptr<TimeDomain>& time_domain);
+  void RegisterTimeDomain(TimeDomain* time_domain);
+  void UnregisterTimeDomain(TimeDomain* time_domain);
 
-  const scoped_refptr<RealTimeDomain>& real_time_domain() const {
-    return real_time_domain_;
-  }
+  RealTimeDomain* real_time_domain() const { return real_time_domain_.get(); }
 
  private:
   friend class LazyNow;
@@ -176,8 +174,8 @@ class SCHEDULER_EXPORT TaskQueueManager
   AsValueWithSelectorResult(bool should_run,
                             internal::TaskQueueImpl* selected_queue) const;
 
-  std::set<scoped_refptr<TimeDomain>> time_domains_;
-  scoped_refptr<RealTimeDomain> real_time_domain_;
+  std::set<TimeDomain*> time_domains_;
+  scoped_ptr<RealTimeDomain> real_time_domain_;
 
   std::set<scoped_refptr<internal::TaskQueueImpl>> queues_;
 
@@ -212,7 +210,6 @@ class SCHEDULER_EXPORT TaskQueueManager
 
   Observer* observer_;  // NOT OWNED
   scoped_refptr<DeletionSentinel> deletion_sentinel_;
-  scoped_refptr<TimeDomain> time_domain_;
   base::WeakPtrFactory<TaskQueueManager> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskQueueManager);

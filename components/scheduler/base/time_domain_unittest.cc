@@ -19,14 +19,18 @@ namespace scheduler {
 
 class MockTimeDomain : public TimeDomain {
  public:
-  MockTimeDomain()
-      : now_(base::TimeTicks() + base::TimeDelta::FromSeconds(1)) {}
+  explicit MockTimeDomain(TimeDomain::Observer* observer)
+      : TimeDomain(observer),
+        now_(base::TimeTicks() + base::TimeDelta::FromSeconds(1)) {}
+
+  ~MockTimeDomain() override {}
 
   using TimeDomain::NextScheduledRunTime;
   using TimeDomain::NextScheduledTaskQueue;
   using TimeDomain::ScheduleDelayedWork;
   using TimeDomain::UnregisterQueue;
   using TimeDomain::UpdateWorkQueues;
+  using TimeDomain::RegisterAsUpdatableTaskQueue;
 
   // TimeSource implementation:
   LazyNow CreateLazyNow() override { return LazyNow(now_); }
@@ -49,21 +53,23 @@ class MockTimeDomain : public TimeDomain {
  private:
   base::TimeTicks now_;
 
-  ~MockTimeDomain() override {}
-
   DISALLOW_COPY_AND_ASSIGN(MockTimeDomain);
 };
 
 class TimeDomainTest : public testing::Test {
  public:
   void SetUp() final {
-    time_domain_ = make_scoped_refptr(new MockTimeDomain());
+    time_domain_ = make_scoped_ptr(CreateMockTimeDomain());
     task_queue_ = make_scoped_refptr(new internal::TaskQueueImpl(
-        nullptr, time_domain_, TaskQueue::Spec("test_queue"), "test.category",
-        "test.category"));
+        nullptr, time_domain_.get(), TaskQueue::Spec("test_queue"),
+        "test.category", "test.category"));
   }
 
-  scoped_refptr<MockTimeDomain> time_domain_;
+  virtual MockTimeDomain* CreateMockTimeDomain() {
+    return new MockTimeDomain(nullptr);
+  }
+
+  scoped_ptr<MockTimeDomain> time_domain_;
   scoped_refptr<internal::TaskQueueImpl> task_queue_;
 };
 
@@ -115,7 +121,7 @@ TEST_F(TimeDomainTest, RequestWakeup_OnlyCalledForEarlierTasks) {
 TEST_F(TimeDomainTest, UnregisterQueue) {
   scoped_refptr<internal::TaskQueueImpl> task_queue2_ =
       make_scoped_refptr(new internal::TaskQueueImpl(
-          nullptr, time_domain_, TaskQueue::Spec("test_queue2"),
+          nullptr, time_domain_.get(), TaskQueue::Spec("test_queue2"),
           "test.category", "test.category"));
 
   EXPECT_CALL(*time_domain_.get(), RequestWakeup(_, _)).Times(1);
@@ -140,7 +146,7 @@ TEST_F(TimeDomainTest, UnregisterQueue) {
 }
 
 TEST_F(TimeDomainTest, UpdateWorkQueues) {
-  scoped_refptr<MockTimeDomain> dummy_delegate(new MockTimeDomain());
+  scoped_ptr<MockTimeDomain> dummy_delegate(new MockTimeDomain(nullptr));
   base::SimpleTestTickClock dummy_time_source;
   scoped_refptr<cc::OrderedSimpleTaskRunner> dummy_task_runner(
       new cc::OrderedSimpleTaskRunner(&dummy_time_source, false));
@@ -174,6 +180,40 @@ TEST_F(TimeDomainTest, UpdateWorkQueues) {
   time_domain_->SetNow(delayed_runtime);
   time_domain_->UpdateWorkQueues(false, nullptr);
   EXPECT_EQ(1UL, dummy_queue->IncomingQueueSizeForTest());
+}
+
+namespace {
+class MockObserver : public TimeDomain::Observer {
+ public:
+  ~MockObserver() override {}
+
+  MOCK_METHOD0(OnTimeDomainHasImmediateWork, void());
+  MOCK_METHOD0(OnTimeDomainHasDelayedWork, void());
+};
+}  // namespace
+
+class TimeDomainWithObserverTest : public TimeDomainTest {
+ public:
+  MockTimeDomain* CreateMockTimeDomain() override {
+    observer_.reset(new MockObserver());
+    return new MockTimeDomain(observer_.get());
+  }
+
+  scoped_ptr<MockObserver> observer_;
+};
+
+TEST_F(TimeDomainWithObserverTest, OnTimeDomainHasImmediateWork) {
+  EXPECT_CALL(*observer_, OnTimeDomainHasImmediateWork());
+  time_domain_->RegisterAsUpdatableTaskQueue(task_queue_.get());
+}
+
+TEST_F(TimeDomainWithObserverTest, OnTimeDomainHasDelayedWork) {
+  EXPECT_CALL(*observer_, OnTimeDomainHasDelayedWork());
+  EXPECT_CALL(*time_domain_.get(), RequestWakeup(_, _));
+  LazyNow lazy_now = time_domain_->CreateLazyNow();
+  time_domain_->ScheduleDelayedWork(
+      task_queue_.get(),
+      time_domain_->Now() + base::TimeDelta::FromMilliseconds(10), &lazy_now);
 }
 
 }  // namespace scheduler

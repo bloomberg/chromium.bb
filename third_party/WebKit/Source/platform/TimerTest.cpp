@@ -136,11 +136,6 @@ public:
         return nullptr;
     }
 
-    void postTimerTaskAt(const WebTraceLocation&, WebTaskRunner::Task* task, double monotonicTime) override
-    {
-        m_timerTasks.push(DelayedTask(task, (monotonicTime - monotonicallyIncreasingTime()) * 1000));
-    }
-
     void runUntilIdle()
     {
         while (m_timerTasks.size()) {
@@ -696,80 +691,6 @@ TEST_F(TimerTest, AugmentRepeatInterval)
 
     runUntilIdleOrDeadlinePassed(m_startTime + 50.0);
     EXPECT_THAT(m_runTimes, ElementsAre(m_startTime + 20.0, m_startTime + 40.0));
-}
-
-class MockTimerWithAlignment : public TimerBase {
-public:
-    MockTimerWithAlignment() : m_lastFireTime(0.0), m_alignedFireTime(0.0) { }
-
-    void fired() override
-    {
-    }
-
-    double alignedFireTime(double fireTime) const override
-    {
-        m_lastFireTime = fireTime;
-        return m_alignedFireTime;
-    }
-
-    void setAlignedFireTime(double alignedFireTime)
-    {
-        m_alignedFireTime = alignedFireTime;
-    }
-
-    double lastFireTime() const
-    {
-        return m_lastFireTime;
-    }
-
-private:
-    mutable double m_lastFireTime;
-    double m_alignedFireTime;
-};
-
-TEST_F(TimerTest, TimerAlignment_OneShotZero)
-{
-    MockTimerWithAlignment timer;
-    timer.setAlignedFireTime(m_startTime + 1.0);
-
-    timer.start(0.0, 0.0, BLINK_FROM_HERE);
-
-    // The nextFireInterval gets overrriden.
-    EXPECT_FLOAT_EQ(1.0, timer.nextFireInterval());
-    EXPECT_FLOAT_EQ(0.0, timer.nextUnalignedFireInterval());
-    EXPECT_FLOAT_EQ(m_startTime, timer.lastFireTime());
-}
-
-TEST_F(TimerTest, TimerAlignment_OneShotNonZero)
-{
-    MockTimerWithAlignment timer;
-    timer.setAlignedFireTime(m_startTime + 1.0);
-
-    timer.start(0.5, 0.0, BLINK_FROM_HERE);
-
-    // The nextFireInterval gets overrriden.
-    EXPECT_FLOAT_EQ(1.0, timer.nextFireInterval());
-    EXPECT_FLOAT_EQ(0.5, timer.nextUnalignedFireInterval());
-    EXPECT_FLOAT_EQ(m_startTime + 0.5, timer.lastFireTime());
-}
-
-TEST_F(TimerTest, DidChangeAlignmentInterval)
-{
-    MockTimerWithAlignment timer;
-    timer.setAlignedFireTime(m_startTime + 1.0);
-
-    timer.start(0.0, 0.0, BLINK_FROM_HERE);
-
-    EXPECT_FLOAT_EQ(1.0, timer.nextFireInterval());
-    EXPECT_FLOAT_EQ(0.0, timer.nextUnalignedFireInterval());
-    EXPECT_FLOAT_EQ(m_startTime, timer.lastFireTime());
-
-    timer.setAlignedFireTime(m_startTime);
-    timer.didChangeAlignmentInterval(monotonicallyIncreasingTime());
-
-    EXPECT_FLOAT_EQ(0.0, timer.nextFireInterval());
-    EXPECT_FLOAT_EQ(0.0, timer.nextUnalignedFireInterval());
-    EXPECT_FLOAT_EQ(m_startTime, timer.lastFireTime());
 }
 
 TEST_F(TimerTest, RepeatingTimerDoesNotDrift)

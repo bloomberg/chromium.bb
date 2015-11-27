@@ -17,6 +17,7 @@ class TaskQueueManagerDelegate;
 class SCHEDULER_EXPORT RealTimeDomain : public TimeDomain {
  public:
   RealTimeDomain();
+  ~RealTimeDomain() override;
 
   // TimeDomain implementation:
   LazyNow CreateLazyNow() override;
@@ -39,8 +40,6 @@ class SCHEDULER_EXPORT RealTimeDomain : public TimeDomain {
   std::set<base::TimeTicks> pending_wakeups_;
   base::Closure do_work_closure_;
   base::WeakPtrFactory<RealTimeDomain> weak_factory_;
-
-  ~RealTimeDomain() override;
 
   DISALLOW_COPY_AND_ASSIGN(RealTimeDomain);
 };

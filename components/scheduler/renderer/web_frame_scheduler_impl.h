@@ -36,10 +36,13 @@ class SCHEDULER_EXPORT WebFrameSchedulerImpl : public blink::WebFrameScheduler {
   blink::WebTaskRunner* timerTaskRunner() override;
   void setFrameOrigin(const blink::WebSecurityOrigin* origin) override;
 
+  void SetPageInBackground(bool page_in_background);
+
  private:
   friend class WebViewSchedulerImpl;
 
   void DetachFromWebViewScheduler();
+  void ApplyPolicyToTimerQueue();
 
   scoped_refptr<TaskQueue> loading_task_queue_;
   scoped_refptr<TaskQueue> timer_task_queue_;
@@ -49,6 +52,7 @@ class SCHEDULER_EXPORT WebFrameSchedulerImpl : public blink::WebFrameScheduler {
   WebViewSchedulerImpl* parent_web_view_scheduler_;  // NOT OWNED
   blink::WebSecurityOrigin origin_;
   bool visible_;
+  bool page_in_background_;
 
   DISALLOW_COPY_AND_ASSIGN(WebFrameSchedulerImpl);
 };

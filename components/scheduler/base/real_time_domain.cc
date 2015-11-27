@@ -10,7 +10,7 @@
 
 namespace scheduler {
 
-RealTimeDomain::RealTimeDomain() : weak_factory_(this) {}
+RealTimeDomain::RealTimeDomain() : TimeDomain(nullptr), weak_factory_(this) {}
 
 RealTimeDomain::~RealTimeDomain() {}
 

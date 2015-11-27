@@ -6,8 +6,9 @@
 
 namespace scheduler {
 
-bool TaskQueue::IsQueueEmpty() const {
-  return GetQueueState() == QueueState::EMPTY;
+bool TaskQueue::HasPendingImmediateTask() const {
+  QueueState state = GetQueueState();
+  return state == QueueState::NEEDS_PUMPING || state == QueueState::HAS_WORK;
 }
 
 }  // namespace scheduler

@@ -37,8 +37,6 @@ public:
     SecurityContext& securityContext() override { return *this; }
     DOMTimerCoordinator* timers() override { return nullptr; }
 
-    double timerAlignmentInterval() const;
-
     void addConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>) override { }
     void logExceptionToConsole(const String& errorMessage, int scriptId, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack>) override { }
 

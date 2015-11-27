@@ -148,11 +148,6 @@ void WorkerGlobalScope::disableEval(const String& errorMessage)
     m_script->disableEval(errorMessage);
 }
 
-double WorkerGlobalScope::timerAlignmentInterval() const
-{
-    return DOMTimer::visiblePageAlignmentInterval();
-}
-
 DOMTimerCoordinator* WorkerGlobalScope::timers()
 {
     return &m_timers;

@@ -89,7 +89,6 @@ public:
     virtual LocalDOMWindow* executingWindow() { return 0; }
     virtual String userAgent() const = 0;
     virtual void postTask(const WebTraceLocation&, PassOwnPtr<ExecutionContextTask>) = 0; // Executes the task on context's thread asynchronously.
-    virtual double timerAlignmentInterval() const = 0;
 
     // Gets the DOMTimerCoordinator which maintains the "active timer
     // list" of tasks created by setTimeout and setInterval. The
