@@ -43,8 +43,8 @@ class Node;
 class CORE_EXPORT V8GCController {
     STATIC_ONLY(V8GCController);
 public:
-    static void gcPrologue(v8::GCType, v8::GCCallbackFlags);
-    static void gcEpilogue(v8::GCType, v8::GCCallbackFlags);
+    static void gcPrologue(v8::Isolate*, v8::GCType, v8::GCCallbackFlags);
+    static void gcEpilogue(v8::Isolate*, v8::GCType, v8::GCCallbackFlags);
 
     static void collectGarbage(v8::Isolate*);
     // You should use collectAllGarbageForTesting() when you want to collect all

@@ -342,8 +342,8 @@ static void timerTraceProfilerInMainThread(const char* name, int status)
 
 static void initializeV8Common(v8::Isolate* isolate)
 {
-    v8::V8::AddGCPrologueCallback(V8GCController::gcPrologue);
-    v8::V8::AddGCEpilogueCallback(V8GCController::gcEpilogue);
+    isolate->AddGCPrologueCallback(V8GCController::gcPrologue);
+    isolate->AddGCEpilogueCallback(V8GCController::gcEpilogue);
 
     v8::Debug::SetLiveEditEnabled(isolate, false);
 
