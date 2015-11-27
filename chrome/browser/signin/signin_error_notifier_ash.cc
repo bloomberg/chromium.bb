@@ -186,6 +186,7 @@ void SigninErrorNotifier::OnErrorChanged() {
       notifier_id,
       base::string16(),  // display_source
       GURL(notification_id_), notification_id_, data, delegate);
+  notification.SetSystemPriority();
 
   // Update or add the notification.
   if (notification_ui_manager->FindById(
