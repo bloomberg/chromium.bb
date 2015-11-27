@@ -432,7 +432,7 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
   Mode mode_;
   int num_traces_recorded_;
   scoped_ptr<TraceBuffer> logged_events_;
-  ScopedVector<TraceEvent> metadata_events_;
+  std::vector<scoped_ptr<TraceEvent>> metadata_events_;
   subtle::AtomicWord /* EventCallback */ event_callback_;
   bool dispatching_to_observer_list_;
   std::vector<EnabledStateObserver*> enabled_state_observer_list_;

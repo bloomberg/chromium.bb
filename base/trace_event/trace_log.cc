@@ -1530,7 +1530,7 @@ void TraceLog::AddMetadataEventsWhileLocked() {
   lock_.AssertAcquired();
 
   // Copy metadata added by |AddMetadataEvent| into the trace log.
-  for (TraceEvent* event : metadata_events_)
+  for (const scoped_ptr<TraceEvent>& event : metadata_events_)
     AddEventToThreadSharedChunkWhileLocked(nullptr, false)->CopyFrom(*event);
 
 #if !defined(OS_NACL)  // NaCl shouldn't expose the process id.
