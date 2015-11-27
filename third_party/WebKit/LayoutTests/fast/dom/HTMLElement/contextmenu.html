@@ -93,13 +93,13 @@ shouldBeEqualToString("container6.getAttribute('contextmenu')", "");
 debug("Test setting contextmenu attribute to some text");
 document.write("<div id='container7'></div>");
 var container7 = document.getElementById('container7');
-container7.contextMenu = "foobar";
+shouldThrow("container7.contextMenu = 'foobar'");
 shouldBeNull("container7.contextMenu");
 
 debug("Test setting contextmenu attribute to comment");
 document.write("<div id='container8'></div>");
 var container8 = document.getElementById('container8');
-container8.contextMenu = document.createComment('foo');
+shouldThrow("container8.contextMenu = document.createComment('foo')");
 shouldBeNull("container8.contextMenu");
 
 debug("Test setting contextmenu attribute to menu without type");

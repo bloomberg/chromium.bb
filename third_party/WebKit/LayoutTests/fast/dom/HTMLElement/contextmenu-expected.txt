@@ -36,8 +36,10 @@ PASS container6.contextMenu is null
 PASS container6.hasAttribute('contextmenu') is true
 PASS container6.getAttribute('contextmenu') is ""
 Test setting contextmenu attribute to some text
+PASS container7.contextMenu = 'foobar' threw exception TypeError: Failed to set the 'contextMenu' property on 'HTMLElement': The provided value is not of type 'HTMLMenuElement'..
 PASS container7.contextMenu is null
 Test setting contextmenu attribute to comment
+PASS container8.contextMenu = document.createComment('foo') threw exception TypeError: Failed to set the 'contextMenu' property on 'HTMLElement': The provided value is not of type 'HTMLMenuElement'..
 PASS container8.contextMenu is null
 Test setting contextmenu attribute to menu without type
 PASS container9.contextMenu.id is "menu_without_type"

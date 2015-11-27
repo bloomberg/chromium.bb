@@ -36,7 +36,7 @@ interface HTMLElement : Element {
     void blur();
     [Reflect] attribute DOMString accessKey;
     [CustomElementCallbacks] attribute boolean draggable;
-    [RuntimeEnabled=ContextMenu, LegacyInterfaceTypeChecking] attribute HTMLMenuElement? contextMenu;
+    [RuntimeEnabled=ContextMenu] attribute HTMLMenuElement? contextMenu;
     attribute boolean spellcheck;
 
     // HTMLElement implements ElementContentEditable
