@@ -1757,13 +1757,6 @@ void RenderProcessHostImpl::Cleanup() {
     survive_for_worker_start_time_ = base::TimeTicks::Now();
   }
 
-#if defined(ENABLE_WEBRTC)
-  if (is_initialized_) {
-    BrowserMainLoop::GetInstance()->media_stream_manager()->
-        UnregisterNativeLogCallback(GetID());
-  }
-#endif
-
   // When there are no other owners of this object, we can delete ourselves.
   if (listeners_.IsEmpty() && worker_ref_count_ == 0) {
     if (!survive_for_worker_start_time_.is_null()) {
@@ -1917,10 +1910,7 @@ void RenderProcessHostImpl::DisableAudioDebugRecordings() {
 
 void RenderProcessHostImpl::SetWebRtcLogMessageCallback(
     base::Callback<void(const std::string&)> callback) {
-#if defined(ENABLE_WEBRTC)
-  BrowserMainLoop::GetInstance()->media_stream_manager()->
-      RegisterNativeLogCallback(GetID(), callback);
-#endif
+  webrtc_log_message_callback_ = callback;
 }
 
 RenderProcessHostImpl::WebRtcStopRtpDumpCallback
@@ -2321,6 +2311,14 @@ size_t RenderProcessHost::GetActiveViewCount() {
   }
   return num_active_views;
 }
+
+#if defined(ENABLE_WEBRTC)
+void RenderProcessHostImpl::WebRtcLogMessage(const std::string& message) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!webrtc_log_message_callback_.is_null())
+    webrtc_log_message_callback_.Run(message);
+}
+#endif
 
 void RenderProcessHostImpl::ReleaseOnCloseACK(
     RenderProcessHost* host,

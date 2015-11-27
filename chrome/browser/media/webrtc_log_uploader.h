@@ -47,6 +47,12 @@ class WebRtcLogUploader : public net::URLFetcherDelegate {
   WebRtcLogUploader();
   ~WebRtcLogUploader() override;
 
+  // net::URLFetcherDelegate implementation.
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLFetchUploadProgress(const net::URLFetcher* source,
+                                int64 current,
+                                int64 total) override;
+
   // Returns true is number of logs limit is not reached yet. Increases log
   // count if true is returned. Must be called before UploadLog().
   bool ApplyForStartLogging();
@@ -101,12 +107,6 @@ class WebRtcLogUploader : public net::URLFetcherDelegate {
   FRIEND_TEST_ALL_PREFIXES(WebRtcLogUploaderTest,
                            AddUploadedLogInfoToUploadListFile);
 
-  // net::URLFetcherDelegate implementation.
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
-  void OnURLFetchUploadProgress(const net::URLFetcher* source,
-                                int64 current,
-                                int64 total) override;
-
   // Sets up a multipart body to be uploaded. The body is produced according
   // to RFC 2046.
   void SetupMultipart(std::string* post_data,
@@ -121,19 +121,17 @@ class WebRtcLogUploader : public net::URLFetcherDelegate {
   void ResizeForNextOutput(std::string* compressed_log,
                            z_stream* stream);
 
-  void UploadCompressedLog(
+  void CreateAndStartURLFetcher(
       const WebRtcLogUploadDoneData& upload_done_data,
       scoped_ptr<std::string> post_data);
 
   void DecreaseLogCount();
 
-  void ShutdownOnIOThread();
-
   // Must be called on the FILE thread.
   void WriteCompressedLogToFile(const std::string& compressed_log,
                                 const base::FilePath& log_file_path);
 
-  void PrepareMultipartPostData(
+  void UploadCompressedLog(
       const std::string& compressed_log,
       scoped_ptr<MetaDataMap> meta_data,
       const WebRtcLogUploadDoneData& upload_done_data);
@@ -172,7 +170,7 @@ class WebRtcLogUploader : public net::URLFetcherDelegate {
   // This is the FILE thread for Chromium. Some other thread for tests.
   base::ThreadChecker file_thread_checker_;
 
-  // Keeps track of number of currently open logs. Must be accessed on the IO
+  // Keeps track of number of currently open logs. Must be accessed on the UI
   // thread.
   int log_count_;
 
@@ -182,7 +180,7 @@ class WebRtcLogUploader : public net::URLFetcherDelegate {
 
   typedef std::map<const net::URLFetcher*, WebRtcLogUploadDoneData>
       UploadDoneDataMap;
-  // Only accessed on the IO thread.
+  // Only accessed on the UI thread.
   UploadDoneDataMap upload_done_data_;
 
   // When shutting down, don't create new URLFetchers.

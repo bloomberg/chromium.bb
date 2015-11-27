@@ -184,6 +184,11 @@ class CONTENT_EXPORT RenderProcessHostImpl
     child_process_activity_time_ = base::TimeTicks::Now();
   }
 
+#if defined(ENABLE_WEBRTC)
+  // Fires the webrtc log message callback with |message|, if callback is set.
+  void WebRtcLogMessage(const std::string& message);
+#endif
+
   // Used to extend the lifetime of the sessions until the render view
   // in the renderer is fully closed. This is static because its also called
   // with mock hosts as input in test cases.
@@ -392,7 +397,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   std::queue<IPC::Message*> queued_messages_;
 
   // The globally-unique identifier for this RPH.
-  const int id_;
+  int id_;
 
   BrowserContext* browser_context_;
 
@@ -451,6 +456,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
 #endif
 
 #if defined(ENABLE_WEBRTC)
+  base::Callback<void(const std::string&)> webrtc_log_message_callback_;
+
   scoped_refptr<P2PSocketDispatcherHost> p2p_socket_dispatcher_host_;
 
   // Must be accessed on UI thread.
