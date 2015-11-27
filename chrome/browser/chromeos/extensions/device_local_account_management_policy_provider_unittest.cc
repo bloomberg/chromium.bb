@@ -122,6 +122,7 @@ TEST(DeviceLocalAccountManagementPolicyProviderTest, PublicSession) {
   EXPECT_NE(base::string16(), error);
   error.clear();
 
+#if 0
   // Verify that a minimal platform app can be installed from location
   // EXTERNAL_POLICY.
   {
@@ -301,6 +302,7 @@ TEST(DeviceLocalAccountManagementPolicyProviderTest, PublicSession) {
     EXPECT_EQ(base::string16(), error);
     error.clear();
   }
+#endif
 }
 
 TEST(DeviceLocalAccountManagementPolicyProviderTest, KioskAppSession) {
