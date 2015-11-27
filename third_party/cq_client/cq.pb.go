@@ -11,6 +11,7 @@ It is generated from these files:
 It has these top-level messages:
 	Config
 	Rietveld
+	Gerrit
 	Verifiers
 */
 package cq
@@ -54,6 +55,9 @@ type Config struct {
 	InProduction *bool `protobuf:"varint,8,opt,name=in_production" json:"in_production,omitempty"`
 	// Configuration options for Rietveld code review.
 	Rietveld *Rietveld `protobuf:"bytes,9,opt,name=rietveld" json:"rietveld,omitempty"`
+	// EXPERIMENTAL! Configuration options for Gerrit code review.
+	// TODO(tandrii): update this doc (GERRIT).
+	Gerrit *Gerrit `protobuf:"bytes,15,opt,name=gerrit" json:"gerrit,omitempty"`
 	// This can be used to override the Git repository URL used to checkout and
 	// commit changes on CQ host. This should only be used in case, when the
 	// source repository is not supported by luci-config (e.g. GitHub).
@@ -63,15 +67,8 @@ type Config struct {
 	// that use gnumbd where CQ should commit into a pending ref.
 	TargetRef *string `protobuf:"bytes,11,opt,name=target_ref" json:"target_ref,omitempty"`
 	// Deprecated. URL of the SVN repository. We are deprecating SVN support.
-	SvnRepoUrl *string `protobuf:"bytes,12,opt,name=svn_repo_url" json:"svn_repo_url,omitempty"`
-	// Deprecated. Should be set to true, when the project's SVN repository does
-	// not have server-side hooks configured.
-	ServerHooksMissing *bool `protobuf:"varint,13,opt,name=server_hooks_missing" json:"server_hooks_missing,omitempty"`
-	// Deprecated. Specifies a list of verifiers that are run on a local checkout
-	// with patch applied. The only remaining use case for this is PRESUBMIT_CHECK
-	// verifier, which we are deprecating as well.
-	VerifiersWithPatch *Verifiers `protobuf:"bytes,14,opt,name=verifiers_with_patch" json:"verifiers_with_patch,omitempty"`
-	XXX_unrecognized   []byte     `json:"-"`
+	SvnRepoUrl       *string `protobuf:"bytes,12,opt,name=svn_repo_url" json:"svn_repo_url,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
 }
 
 func (m *Config) Reset()         { *m = Config{} }
@@ -141,6 +138,13 @@ func (m *Config) GetRietveld() *Rietveld {
 	return nil
 }
 
+func (m *Config) GetGerrit() *Gerrit {
+	if m != nil {
+		return m.Gerrit
+	}
+	return nil
+}
+
 func (m *Config) GetGitRepoUrl() string {
 	if m != nil && m.GitRepoUrl != nil {
 		return *m.GitRepoUrl
@@ -160,20 +164,6 @@ func (m *Config) GetSvnRepoUrl() string {
 		return *m.SvnRepoUrl
 	}
 	return ""
-}
-
-func (m *Config) GetServerHooksMissing() bool {
-	if m != nil && m.ServerHooksMissing != nil {
-		return *m.ServerHooksMissing
-	}
-	return false
-}
-
-func (m *Config) GetVerifiersWithPatch() *Verifiers {
-	if m != nil {
-		return m.VerifiersWithPatch
-	}
-	return nil
 }
 
 type Rietveld struct {
@@ -206,6 +196,44 @@ func (m *Rietveld) GetProjectBases() []string {
 	return nil
 }
 
+// Gerrit CQ is EXPERIMENTAL! See http://crbug.com/493899 for more info.
+//
+// Unlike Rietveld, Gerrit doesn't need a separate url.
+// Instead, the git_repo_url must be specified on the Gerrit instance,
+// and CQ will deduce Gerrit url from it.
+//
+// TODO(tandrii): support Rietveld and Gerrit at the same time.
+// This basically requires to start two CQ instances, instead of one.
+//
+// For example, if https://chromium.googlesource.com/infra/infra.git is your
+// repo url provided in `git_repo_url` above, then
+// https://chromium-review.googlesource.com/#/admin/projects/infra/infra should
+// show general properties of your project.
+//
+// Also,
+// https://chromium-review.googlesource.com/#/admin/projects/infra/infra,access
+// should show ACLs for refs in your project, but you may need to be admin to
+// see it. This will come handy to enable and customize the CQ-related workflows
+// for your project.
+type Gerrit struct {
+	// If set, tells CQ to set score on a given label to mark result of CQ run.
+	// Typically, this is Commit-Queue-Verified label.
+	// If not set, CQ will just try to hit submit button.
+	CqVerifiedLabel  *string `protobuf:"bytes,1,opt,name=cq_verified_label" json:"cq_verified_label,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *Gerrit) Reset()         { *m = Gerrit{} }
+func (m *Gerrit) String() string { return proto.CompactTextString(m) }
+func (*Gerrit) ProtoMessage()    {}
+
+func (m *Gerrit) GetCqVerifiedLabel() string {
+	if m != nil && m.CqVerifiedLabel != nil {
+		return *m.CqVerifiedLabel
+	}
+	return ""
+}
+
 // Verifiers are various types of checks that a Commit Queue performs on a CL.
 // All verifiers must pass in order for a CL to be landed. Configuration file
 // describes types of verifiers that should be applied to each CL and their
@@ -213,6 +241,7 @@ func (m *Rietveld) GetProjectBases() []string {
 type Verifiers struct {
 	// This verifier is used to ensure that an LGTM was posted to the code review
 	// site from a valid project committer.
+	// This verifier is not supported with Gerrit.
 	ReviewerLgtm *Verifiers_ReviewerLgtmVerifier `protobuf:"bytes,1,opt,name=reviewer_lgtm" json:"reviewer_lgtm,omitempty"`
 	// This verifier is used to check tree status before committing a CL. If the
 	// tree is closed, then the verifier will wait until it is reopened.
@@ -354,7 +383,7 @@ type Verifiers_TryJobVerifier_Builder struct {
 	Name *string `protobuf:"bytes,1,opt,name=name" json:"name,omitempty"`
 	// When true, the builder is triggered by CQ. Otherwise, it is expected to
 	// be triggered from another tryjob. Default value is true.
-	Triggered *bool `protobuf:"varint,2,opt,name=triggered" json:"triggered,omitempty"`
+	TriggeredByCq *bool `protobuf:"varint,2,opt,name=triggered_by_cq" json:"triggered_by_cq,omitempty"`
 	// When this field is present, it marks given builder as experimental. It
 	// is only executed on a given percentage of the CLs and the outcome does
 	// not affect the decicion whether a CL can land or not. This is typically
@@ -374,9 +403,9 @@ func (m *Verifiers_TryJobVerifier_Builder) GetName() string {
 	return ""
 }
 
-func (m *Verifiers_TryJobVerifier_Builder) GetTriggered() bool {
-	if m != nil && m.Triggered != nil {
-		return *m.Triggered
+func (m *Verifiers_TryJobVerifier_Builder) GetTriggeredByCq() bool {
+	if m != nil && m.TriggeredByCq != nil {
+		return *m.TriggeredByCq
 	}
 	return false
 }
@@ -480,3 +509,17 @@ type Verifiers_SignCLAVerifier struct {
 func (m *Verifiers_SignCLAVerifier) Reset()         { *m = Verifiers_SignCLAVerifier{} }
 func (m *Verifiers_SignCLAVerifier) String() string { return proto.CompactTextString(m) }
 func (*Verifiers_SignCLAVerifier) ProtoMessage()    {}
+
+func init() {
+	proto.RegisterType((*Config)(nil), "Config")
+	proto.RegisterType((*Rietveld)(nil), "Rietveld")
+	proto.RegisterType((*Gerrit)(nil), "Gerrit")
+	proto.RegisterType((*Verifiers)(nil), "Verifiers")
+	proto.RegisterType((*Verifiers_ReviewerLgtmVerifier)(nil), "Verifiers.ReviewerLgtmVerifier")
+	proto.RegisterType((*Verifiers_TreeStatusLgtmVerifier)(nil), "Verifiers.TreeStatusLgtmVerifier")
+	proto.RegisterType((*Verifiers_TryJobVerifier)(nil), "Verifiers.TryJobVerifier")
+	proto.RegisterType((*Verifiers_TryJobVerifier_Builder)(nil), "Verifiers.TryJobVerifier.Builder")
+	proto.RegisterType((*Verifiers_TryJobVerifier_Bucket)(nil), "Verifiers.TryJobVerifier.Bucket")
+	proto.RegisterType((*Verifiers_TryJobVerifier_TryJobRetryConfig)(nil), "Verifiers.TryJobVerifier.TryJobRetryConfig")
+	proto.RegisterType((*Verifiers_SignCLAVerifier)(nil), "Verifiers.SignCLAVerifier")
+}

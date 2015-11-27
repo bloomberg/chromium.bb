@@ -23,16 +23,12 @@ from cq_client import cq_pb2
 
 REQUIRED_FIELDS = [
   'version',
-  'rietveld',
-  'rietveld.url',
   'verifiers',
   'cq_name',
 ]
 
 LEGACY_FIELDS = [
   'svn_repo_url',
-  'server_hooks_missing',
-  'verifiers_with_patch',
 ]
 
 EMAIL_REGEXP = '^[^@]+@[^@]+\.[^@]+$'
@@ -92,7 +88,22 @@ def IsValid(cq_config):
     logging.error('Failed to parse config as protobuf:\n%s', e)
     return False
 
-  for fname in REQUIRED_FIELDS:
+  if _HasField(config, 'gerrit'):
+    if _HasField(config, 'rietveld'):
+      logging.error('gerrit and rietveld are not supported at the same time.')
+      return False
+    # TODO(tandrii): validate gerrit.
+    required_fields = REQUIRED_FIELDS + ['gerrit.cq_verified_label']
+    if _HasField(config, 'verifiers.reviewer_lgtm'):
+      logging.error('reviewer_lgtm verifier is not supported with Gerrit.')
+      return False
+  elif _HasField(config, 'rietveld'):
+    required_fields = REQUIRED_FIELDS + ['rietveld.url']
+  else:
+    logging.error('either rietveld gerrit are required fields.')
+    return False
+
+  for fname in required_fields:
     if not _HasField(config, fname):
       logging.error('%s is a required field', fname)
       return False
@@ -111,5 +122,4 @@ def IsValid(cq_config):
 
   # TODO(sergiyb): For each field, check valid values depending on its
   # semantics, e.g. email addresses, regular expressions etc.
-
   return True

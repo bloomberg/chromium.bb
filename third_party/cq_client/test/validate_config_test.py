@@ -16,9 +16,23 @@ TEST_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 class TestValidateConfig(unittest.TestCase):
-  def test_is_valid(self):
-    with open(os.path.join(TEST_DIR, 'cq_example.cfg'), 'r') as test_config:
+  def test_is_valid_rietveld(self):
+    with open(os.path.join(TEST_DIR, 'cq_rietveld.cfg'), 'r') as test_config:
       self.assertTrue(validate_config.IsValid(test_config.read()))
+
+  def test_is_valid_gerrit(self):
+    with open(os.path.join(TEST_DIR, 'cq_gerrit.cfg'), 'r') as test_config:
+      self.assertTrue(validate_config.IsValid(test_config.read()))
+
+  def test_one_codereview(self):
+    with open(os.path.join(TEST_DIR, 'cq_gerrit.cfg'), 'r') as gerrit_config:
+      data = gerrit_config.read()
+    data += '\n'.join([
+        'rietveld{',
+        'url: "https://blabla.com"',
+        '}'
+    ])
+    self.assertFalse(validate_config.IsValid(data))
 
   def test_has_field(self):
     config = cq_pb2.Config()

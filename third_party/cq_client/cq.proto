@@ -39,6 +39,10 @@ message Config {
   // Configuration options for Rietveld code review.
   optional Rietveld rietveld = 9;
 
+  // EXPERIMENTAL! Configuration options for Gerrit code review.
+  // TODO(tandrii): update this doc (GERRIT).
+  optional Gerrit gerrit = 15;
+
   // This can be used to override the Git repository URL used to checkout and
   // commit changes on CQ host. This should only be used in case, when the
   // source repository is not supported by luci-config (e.g. GitHub).
@@ -51,15 +55,6 @@ message Config {
 
   // Deprecated. URL of the SVN repository. We are deprecating SVN support.
   optional string svn_repo_url = 12;
-
-  // Deprecated. Should be set to true, when the project's SVN repository does
-  // not have server-side hooks configured.
-  optional bool server_hooks_missing = 13;
-
-  // Deprecated. Specifies a list of verifiers that are run on a local checkout
-  // with patch applied. The only remaining use case for this is PRESUBMIT_CHECK
-  // verifier, which we are deprecating as well.
-  optional Verifiers verifiers_with_patch = 14;
 }
 
 message Rietveld {
@@ -74,6 +69,32 @@ message Rietveld {
   repeated string project_bases = 2;
 }
 
+// Gerrit CQ is EXPERIMENTAL! See http://crbug.com/493899 for more info.
+//
+// Unlike Rietveld, Gerrit doesn't need a separate url.
+// Instead, the git_repo_url must be specified on the Gerrit instance,
+// and CQ will deduce Gerrit url from it.
+//
+// TODO(tandrii): support Rietveld and Gerrit at the same time.
+// This basically requires to start two CQ instances, instead of one.
+//
+// For example, if https://chromium.googlesource.com/infra/infra.git is your
+// repo url provided in `git_repo_url` above, then
+// https://chromium-review.googlesource.com/#/admin/projects/infra/infra should
+// show general properties of your project.
+//
+// Also,
+// https://chromium-review.googlesource.com/#/admin/projects/infra/infra,access
+// should show ACLs for refs in your project, but you may need to be admin to
+// see it. This will come handy to enable and customize the CQ-related workflows
+// for your project.
+message Gerrit {
+  // If set, tells CQ to set score on a given label to mark result of CQ run.
+  // Typically, this is Commit-Queue-Verified label.
+  // If not set, CQ will just try to hit submit button.
+  optional string cq_verified_label = 1;
+}
+
 // Verifiers are various types of checks that a Commit Queue performs on a CL.
 // All verifiers must pass in order for a CL to be landed. Configuration file
 // describes types of verifiers that should be applied to each CL and their
@@ -81,6 +102,7 @@ message Rietveld {
 message Verifiers {
   // This verifier is used to ensure that an LGTM was posted to the code review
   // site from a valid project committer.
+  // This verifier is not supported with Gerrit.
   optional ReviewerLgtmVerifier reviewer_lgtm = 1;
 
   // This verifier is used to check tree status before committing a CL. If the
@@ -130,7 +152,7 @@ message Verifiers {
 
       // When true, the builder is triggered by CQ. Otherwise, it is expected to
       // be triggered from another tryjob. Default value is true.
-      optional bool triggered = 2;
+      optional bool triggered_by_cq = 2;
 
       // When this field is present, it marks given builder as experimental. It
       // is only executed on a given percentage of the CLs and the outcome does

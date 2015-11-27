@@ -26,7 +26,7 @@ _sym_db = _symbol_database.Default()
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='cq.proto',
   package='',
-  serialized_pb=_b('\n\x08\x63q.proto\"\xf5\x02\n\x06\x43onfig\x12\x0f\n\x07version\x18\x01 \x01(\x05\x12\x0f\n\x07\x63q_name\x18\x02 \x01(\t\x12\x1d\n\tverifiers\x18\x03 \x01(\x0b\x32\n.Verifiers\x12\x15\n\rcq_status_url\x18\x04 \x01(\t\x12!\n\x19hide_ref_in_committed_msg\x18\x05 \x01(\x08\x12\x1a\n\x12\x63ommit_burst_delay\x18\x06 \x01(\x05\x12\x18\n\x10max_commit_burst\x18\x07 \x01(\x05\x12\x15\n\rin_production\x18\x08 \x01(\x08\x12\x1b\n\x08rietveld\x18\t \x01(\x0b\x32\t.Rietveld\x12\x14\n\x0cgit_repo_url\x18\n \x01(\t\x12\x12\n\ntarget_ref\x18\x0b \x01(\t\x12\x14\n\x0csvn_repo_url\x18\x0c \x01(\t\x12\x1c\n\x14server_hooks_missing\x18\r \x01(\x08\x12(\n\x14verifiers_with_patch\x18\x0e \x01(\x0b\x32\n.Verifiers\".\n\x08Rietveld\x12\x0b\n\x03url\x18\x01 \x01(\t\x12\x15\n\rproject_bases\x18\x02 \x03(\t\"\xd3\x06\n\tVerifiers\x12\x36\n\rreviewer_lgtm\x18\x01 \x01(\x0b\x32\x1f.Verifiers.ReviewerLgtmVerifier\x12\x36\n\x0btree_status\x18\x02 \x01(\x0b\x32!.Verifiers.TreeStatusLgtmVerifier\x12*\n\x07try_job\x18\x03 \x01(\x0b\x32\x19.Verifiers.TryJobVerifier\x12,\n\x08sign_cla\x18\x04 \x01(\x0b\x32\x1a.Verifiers.SignCLAVerifier\x1aZ\n\x14ReviewerLgtmVerifier\x12\x16\n\x0e\x63ommitter_list\x18\x01 \x01(\t\x12\x15\n\rmax_wait_secs\x18\x02 \x01(\x05\x12\x13\n\x0bno_lgtm_msg\x18\x03 \x01(\t\x1a\x31\n\x16TreeStatusLgtmVerifier\x12\x17\n\x0ftree_status_url\x18\x01 \x01(\t\x1a\xd9\x03\n\x0eTryJobVerifier\x12\x31\n\x07\x62uckets\x18\x01 \x03(\x0b\x32 .Verifiers.TryJobVerifier.Bucket\x12I\n\x14try_job_retry_config\x18\x02 \x01(\x0b\x32+.Verifiers.TryJobVerifier.TryJobRetryConfig\x1aI\n\x07\x42uilder\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x11\n\ttriggered\x18\x02 \x01(\x08\x12\x1d\n\x15\x65xperiment_percentage\x18\x04 \x01(\x02\x1aK\n\x06\x42ucket\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x33\n\x08\x62uilders\x18\x02 \x03(\x0b\x32!.Verifiers.TryJobVerifier.Builder\x1a\xb0\x01\n\x11TryJobRetryConfig\x12\x1b\n\x13try_job_retry_quota\x18\x01 \x01(\x05\x12\x1a\n\x12global_retry_quota\x18\x02 \x01(\x05\x12\x1c\n\x14\x66\x61ilure_retry_weight\x18\x03 \x01(\x05\x12&\n\x1etransient_failure_retry_weight\x18\x04 \x01(\x05\x12\x1c\n\x14timeout_retry_weight\x18\x05 \x01(\x05\x1a\x11\n\x0fSignCLAVerifier')
+  serialized_pb=_b('\n\x08\x63q.proto\"\xc6\x02\n\x06\x43onfig\x12\x0f\n\x07version\x18\x01 \x01(\x05\x12\x0f\n\x07\x63q_name\x18\x02 \x01(\t\x12\x1d\n\tverifiers\x18\x03 \x01(\x0b\x32\n.Verifiers\x12\x15\n\rcq_status_url\x18\x04 \x01(\t\x12!\n\x19hide_ref_in_committed_msg\x18\x05 \x01(\x08\x12\x1a\n\x12\x63ommit_burst_delay\x18\x06 \x01(\x05\x12\x18\n\x10max_commit_burst\x18\x07 \x01(\x05\x12\x15\n\rin_production\x18\x08 \x01(\x08\x12\x1b\n\x08rietveld\x18\t \x01(\x0b\x32\t.Rietveld\x12\x17\n\x06gerrit\x18\x0f \x01(\x0b\x32\x07.Gerrit\x12\x14\n\x0cgit_repo_url\x18\n \x01(\t\x12\x12\n\ntarget_ref\x18\x0b \x01(\t\x12\x14\n\x0csvn_repo_url\x18\x0c \x01(\t\".\n\x08Rietveld\x12\x0b\n\x03url\x18\x01 \x01(\t\x12\x15\n\rproject_bases\x18\x02 \x03(\t\"#\n\x06Gerrit\x12\x19\n\x11\x63q_verified_label\x18\x01 \x01(\t\"\xd9\x06\n\tVerifiers\x12\x36\n\rreviewer_lgtm\x18\x01 \x01(\x0b\x32\x1f.Verifiers.ReviewerLgtmVerifier\x12\x36\n\x0btree_status\x18\x02 \x01(\x0b\x32!.Verifiers.TreeStatusLgtmVerifier\x12*\n\x07try_job\x18\x03 \x01(\x0b\x32\x19.Verifiers.TryJobVerifier\x12,\n\x08sign_cla\x18\x04 \x01(\x0b\x32\x1a.Verifiers.SignCLAVerifier\x1aZ\n\x14ReviewerLgtmVerifier\x12\x16\n\x0e\x63ommitter_list\x18\x01 \x01(\t\x12\x15\n\rmax_wait_secs\x18\x02 \x01(\x05\x12\x13\n\x0bno_lgtm_msg\x18\x03 \x01(\t\x1a\x31\n\x16TreeStatusLgtmVerifier\x12\x17\n\x0ftree_status_url\x18\x01 \x01(\t\x1a\xdf\x03\n\x0eTryJobVerifier\x12\x31\n\x07\x62uckets\x18\x01 \x03(\x0b\x32 .Verifiers.TryJobVerifier.Bucket\x12I\n\x14try_job_retry_config\x18\x02 \x01(\x0b\x32+.Verifiers.TryJobVerifier.TryJobRetryConfig\x1aO\n\x07\x42uilder\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x17\n\x0ftriggered_by_cq\x18\x02 \x01(\x08\x12\x1d\n\x15\x65xperiment_percentage\x18\x04 \x01(\x02\x1aK\n\x06\x42ucket\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x33\n\x08\x62uilders\x18\x02 \x03(\x0b\x32!.Verifiers.TryJobVerifier.Builder\x1a\xb0\x01\n\x11TryJobRetryConfig\x12\x1b\n\x13try_job_retry_quota\x18\x01 \x01(\x05\x12\x1a\n\x12global_retry_quota\x18\x02 \x01(\x05\x12\x1c\n\x14\x66\x61ilure_retry_weight\x18\x03 \x01(\x05\x12&\n\x1etransient_failure_retry_weight\x18\x04 \x01(\x05\x12\x1c\n\x14timeout_retry_weight\x18\x05 \x01(\x05\x1a\x11\n\x0fSignCLAVerifier')
 )
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
@@ -104,37 +104,30 @@ _CONFIG = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='git_repo_url', full_name='Config.git_repo_url', index=9,
+      name='gerrit', full_name='Config.gerrit', index=9,
+      number=15, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='git_repo_url', full_name='Config.git_repo_url', index=10,
       number=10, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='target_ref', full_name='Config.target_ref', index=10,
+      name='target_ref', full_name='Config.target_ref', index=11,
       number=11, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='svn_repo_url', full_name='Config.svn_repo_url', index=11,
+      name='svn_repo_url', full_name='Config.svn_repo_url', index=12,
       number=12, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='server_hooks_missing', full_name='Config.server_hooks_missing', index=12,
-      number=13, type=8, cpp_type=7, label=1,
-      has_default_value=False, default_value=False,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='verifiers_with_patch', full_name='Config.verifiers_with_patch', index=13,
-      number=14, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
@@ -150,7 +143,7 @@ _CONFIG = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=13,
-  serialized_end=386,
+  serialized_end=339,
 )
 
 
@@ -186,8 +179,38 @@ _RIETVELD = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=388,
-  serialized_end=434,
+  serialized_start=341,
+  serialized_end=387,
+)
+
+
+_GERRIT = _descriptor.Descriptor(
+  name='Gerrit',
+  full_name='Gerrit',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='cq_verified_label', full_name='Gerrit.cq_verified_label', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=389,
+  serialized_end=424,
 )
 
 
@@ -230,8 +253,8 @@ _VERIFIERS_REVIEWERLGTMVERIFIER = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=652,
-  serialized_end=742,
+  serialized_start=642,
+  serialized_end=732,
 )
 
 _VERIFIERS_TREESTATUSLGTMVERIFIER = _descriptor.Descriptor(
@@ -259,8 +282,8 @@ _VERIFIERS_TREESTATUSLGTMVERIFIER = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=744,
-  serialized_end=793,
+  serialized_start=734,
+  serialized_end=783,
 )
 
 _VERIFIERS_TRYJOBVERIFIER_BUILDER = _descriptor.Descriptor(
@@ -278,7 +301,7 @@ _VERIFIERS_TRYJOBVERIFIER_BUILDER = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='triggered', full_name='Verifiers.TryJobVerifier.Builder.triggered', index=1,
+      name='triggered_by_cq', full_name='Verifiers.TryJobVerifier.Builder.triggered_by_cq', index=1,
       number=2, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
@@ -302,8 +325,8 @@ _VERIFIERS_TRYJOBVERIFIER_BUILDER = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=940,
-  serialized_end=1013,
+  serialized_start=930,
+  serialized_end=1009,
 )
 
 _VERIFIERS_TRYJOBVERIFIER_BUCKET = _descriptor.Descriptor(
@@ -338,8 +361,8 @@ _VERIFIERS_TRYJOBVERIFIER_BUCKET = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1015,
-  serialized_end=1090,
+  serialized_start=1011,
+  serialized_end=1086,
 )
 
 _VERIFIERS_TRYJOBVERIFIER_TRYJOBRETRYCONFIG = _descriptor.Descriptor(
@@ -395,8 +418,8 @@ _VERIFIERS_TRYJOBVERIFIER_TRYJOBRETRYCONFIG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1093,
-  serialized_end=1269,
+  serialized_start=1089,
+  serialized_end=1265,
 )
 
 _VERIFIERS_TRYJOBVERIFIER = _descriptor.Descriptor(
@@ -431,8 +454,8 @@ _VERIFIERS_TRYJOBVERIFIER = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=796,
-  serialized_end=1269,
+  serialized_start=786,
+  serialized_end=1265,
 )
 
 _VERIFIERS_SIGNCLAVERIFIER = _descriptor.Descriptor(
@@ -453,8 +476,8 @@ _VERIFIERS_SIGNCLAVERIFIER = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1271,
-  serialized_end=1288,
+  serialized_start=1267,
+  serialized_end=1284,
 )
 
 _VERIFIERS = _descriptor.Descriptor(
@@ -503,13 +526,13 @@ _VERIFIERS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=437,
-  serialized_end=1288,
+  serialized_start=427,
+  serialized_end=1284,
 )
 
 _CONFIG.fields_by_name['verifiers'].message_type = _VERIFIERS
 _CONFIG.fields_by_name['rietveld'].message_type = _RIETVELD
-_CONFIG.fields_by_name['verifiers_with_patch'].message_type = _VERIFIERS
+_CONFIG.fields_by_name['gerrit'].message_type = _GERRIT
 _VERIFIERS_REVIEWERLGTMVERIFIER.containing_type = _VERIFIERS
 _VERIFIERS_TREESTATUSLGTMVERIFIER.containing_type = _VERIFIERS
 _VERIFIERS_TRYJOBVERIFIER_BUILDER.containing_type = _VERIFIERS_TRYJOBVERIFIER
@@ -526,6 +549,7 @@ _VERIFIERS.fields_by_name['try_job'].message_type = _VERIFIERS_TRYJOBVERIFIER
 _VERIFIERS.fields_by_name['sign_cla'].message_type = _VERIFIERS_SIGNCLAVERIFIER
 DESCRIPTOR.message_types_by_name['Config'] = _CONFIG
 DESCRIPTOR.message_types_by_name['Rietveld'] = _RIETVELD
+DESCRIPTOR.message_types_by_name['Gerrit'] = _GERRIT
 DESCRIPTOR.message_types_by_name['Verifiers'] = _VERIFIERS
 
 Config = _reflection.GeneratedProtocolMessageType('Config', (_message.Message,), dict(
@@ -541,6 +565,13 @@ Rietveld = _reflection.GeneratedProtocolMessageType('Rietveld', (_message.Messag
   # @@protoc_insertion_point(class_scope:Rietveld)
   ))
 _sym_db.RegisterMessage(Rietveld)
+
+Gerrit = _reflection.GeneratedProtocolMessageType('Gerrit', (_message.Message,), dict(
+  DESCRIPTOR = _GERRIT,
+  __module__ = 'cq_pb2'
+  # @@protoc_insertion_point(class_scope:Gerrit)
+  ))
+_sym_db.RegisterMessage(Gerrit)
 
 Verifiers = _reflection.GeneratedProtocolMessageType('Verifiers', (_message.Message,), dict(
 
