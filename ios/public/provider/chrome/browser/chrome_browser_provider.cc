@@ -9,8 +9,8 @@
 #include "base/logging.h"
 #include "components/metrics/metrics_provider.h"
 #include "components/sync_sessions/local_session_event_router.h"
+#include "components/sync_sessions/synced_window_delegates_getter.h"
 #include "ios/public/provider/chrome/browser/browsing_data/ios_chrome_browsing_data_remover_provider.h"
-#include "ios/public/provider/chrome/browser/keyed_service_provider.h"
 #include "ios/public/provider/chrome/browser/keyed_service_provider.h"
 
 namespace ios {
@@ -131,5 +131,11 @@ bool ChromeBrowserProvider::IsSafeBrowsingEnabled(
 }
 
 void ChromeBrowserProvider::OnMetricsServicesManagerClientDestroyed() {}
+
+scoped_ptr<browser_sync::SyncedWindowDelegatesGetter>
+ChromeBrowserProvider::CreateSyncedWindowDelegatesGetter(
+    ios::ChromeBrowserState* browser_state) {
+  return nullptr;
+}
 
 }  // namespace ios

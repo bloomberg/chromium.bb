@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/memory/scoped_ptr.h"
 #include "components/favicon_base/favicon_callback.h"
 
 class AutocompleteProvider;
@@ -23,6 +24,10 @@ class ProfileOAuth2TokenServiceIOSProvider;
 namespace autofill {
 class CardUnmaskPromptController;
 class CardUnmaskPromptView;
+}
+
+namespace browser_sync {
+class SyncedWindowDelegatesGetter;
 }
 
 namespace net {
@@ -130,6 +135,10 @@ class ChromeBrowserProvider {
   // Called when the IOSChromeMetricsServiceClientManager instance is
   // destroyed.
   virtual void OnMetricsServicesManagerClientDestroyed();
+
+  // Returns the SyncedWindowDelegatesGetter implementation.
+  virtual scoped_ptr<browser_sync::SyncedWindowDelegatesGetter>
+  CreateSyncedWindowDelegatesGetter(ios::ChromeBrowserState* browser_state);
 };
 
 }  // namespace ios
