@@ -36,6 +36,13 @@ bool AreKeyboardCommandsEnabled();
 // Whether viewing and copying passwords is enabled.
 bool IsViewCopyPasswordsEnabled();
 
+// Whether password generation is enabled.
+bool IsPasswordGenerationEnabled();
+
+// Whether password generation fields are determined using local heuristics
+// only.
+bool UseOnlyLocalHeuristicsForPasswordGeneration();
+
 }  // namespace experimental_flags
 
 #endif  // IOS_CHROME_BROWSER_EXPERIMENTAL_FLAGS_H_

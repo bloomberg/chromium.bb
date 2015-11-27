@@ -12,7 +12,9 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/metrics/field_trial.h"
 #include "base/strings/string_util.h"
+#include "components/autofill/core/common/autofill_switches.h"
 #include "components/enhanced_bookmarks/enhanced_bookmark_features.h"
 #include "components/variations/variations_associated_data.h"
 #include "ios/chrome/browser/chrome_switches.h"
@@ -22,6 +24,8 @@ namespace {
 NSString* const kEnableAlertOnBackgroundUpload =
     @"EnableAlertsOnBackgroundUpload";
 NSString* const kEnableViewCopyPasswords = @"EnableViewCopyPasswords";
+NSString* const kHeuristicsForPasswordGeneration =
+    @"HeuristicsForPasswordGeneration";
 
 enum class WKWebViewEligibility {
   // UNSET indicates that no explicit call to set eligibility has been made,
@@ -124,6 +128,29 @@ bool IsViewCopyPasswordsEnabled() {
   if ([viewCopyPasswordFlag isEqualToString:@"Enabled"])
     return true;
   return false;
+}
+
+bool IsPasswordGenerationEnabled() {
+  // This call activates the field trial, if needed, so it must come before any
+  // early returns.
+  std::string group_name =
+      base::FieldTrialList::FindFullName("PasswordGeneration");
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kEnableIOSPasswordGeneration))
+    return true;
+  if (command_line->HasSwitch(switches::kDisableIOSPasswordGeneration))
+    return false;
+  return group_name != "Disabled";
+}
+
+bool UseOnlyLocalHeuristicsForPasswordGeneration() {
+  if ([[NSUserDefaults standardUserDefaults]
+          boolForKey:kHeuristicsForPasswordGeneration]) {
+    return true;
+  }
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  return command_line->HasSwitch(
+      autofill::switches::kLocalHeuristicsOnlyForPasswordGeneration);
 }
 
 }  // namespace experimental_flags
