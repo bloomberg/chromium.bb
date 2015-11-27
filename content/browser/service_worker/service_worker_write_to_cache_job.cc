@@ -359,6 +359,8 @@ void ServiceWorkerWriteToCacheJob::OnResponseStarted(
 void ServiceWorkerWriteToCacheJob::OnWriteHeadersComplete(net::Error error) {
   DCHECK_NE(net::ERR_IO_PENDING, error);
   if (error != net::OK) {
+    ServiceWorkerMetrics::CountWriteResponseResult(
+        ServiceWorkerMetrics::WRITE_HEADERS_ERROR);
     NotifyStartError(net::URLRequestStatus::FromError(error));
     return;
   }
@@ -371,7 +373,15 @@ void ServiceWorkerWriteToCacheJob::OnWriteDataComplete(net::Error error) {
   DCHECK_NE(net::ERR_IO_PENDING, error);
   if (io_buffer_bytes_ == 0)
     error = NotifyFinishedCaching(net::URLRequestStatus::FromError(error), "");
-  ReadRawDataComplete(error == net::OK ? io_buffer_bytes_ : error);
+  if (error != net::OK) {
+    ServiceWorkerMetrics::CountWriteResponseResult(
+        ServiceWorkerMetrics::WRITE_DATA_ERROR);
+    ReadRawDataComplete(error);
+    return;
+  }
+  ServiceWorkerMetrics::CountWriteResponseResult(
+      ServiceWorkerMetrics::WRITE_OK);
+  ReadRawDataComplete(io_buffer_bytes_);
 }
 
 void ServiceWorkerWriteToCacheJob::OnReadCompleted(net::URLRequest* request,
