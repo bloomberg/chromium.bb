@@ -190,7 +190,7 @@ deps = {
    Var('chromium_git') + '/chromium/third_party/ffmpeg.git' + '@' + 'f962bcb6a8aed397bb2d418527a4e4a23f5ab955',
 
   'src/third_party/libjingle/source/talk':
-    Var('chromium_git') + '/external/webrtc/trunk/talk.git' + '@' + '223d8ffb60e2f1e10af047a95480716997df860c', # commit position 10790
+    Var('chromium_git') + '/external/webrtc/trunk/talk.git' + '@' + '27d493b66324061421c6a3626cf00f76f9bb60b9', # commit position 10819
 
   'src/third_party/usrsctp/usrsctplib':
     Var('chromium_git') + '/external/usrsctplib.git' + '@' + '36444a999739e9e408f8f587cb4c3ffeef2e50ac', # from svn revision 9215
@@ -214,7 +214,7 @@ deps = {
    Var('chromium_git') + '/native_client/src/third_party/scons-2.0.1.git' + '@' + '1c1550e17fc26355d08627fbdec13d8291227067',
 
   'src/third_party/webrtc':
-    Var('chromium_git') + '/external/webrtc/trunk/webrtc.git' + '@' + '57ea0a4064d963a7357070105070969417fdb3f9', # commit position 10796
+    Var('chromium_git') + '/external/webrtc/trunk/webrtc.git' + '@' + '415a73ab088f08b9762840703f5b84f7d82d2999', # commit position 10821
 
   'src/third_party/openmax_dl':
     Var('chromium_git') + '/external/webrtc/deps/third_party/openmax.git' + '@' +  Var('openmax_dl_revision'),
