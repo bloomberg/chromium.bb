@@ -488,17 +488,11 @@ void XMLHttpRequest::trackProgress(long long length)
 {
     m_receivedLength += length;
 
-    if (m_state != LOADING) {
-        changeState(LOADING);
-    } else {
-        // Dispatch a readystatechange event because many applications use
-        // it to track progress although this is not specified.
-        //
-        // FIXME: Stop dispatching this event for progress tracking.
-        dispatchReadyStateChangeEvent();
-    }
-    if (m_async)
+    changeState(LOADING);
+    if (m_async) {
+        // readyStateChange event is fired as well.
         dispatchProgressEventFromSnapshot(EventTypeNames::progress);
+    }
 }
 
 void XMLHttpRequest::changeState(State newState)
@@ -514,8 +508,6 @@ void XMLHttpRequest::dispatchReadyStateChangeEvent()
     if (!executionContext())
         return;
 
-    // We need this protection because dispatchReadyStateChangeEvent may
-    // dispatch multiple events.
     ScopedEventDispatchProtect protect(&m_eventDispatchRecursionLevel);
     if (m_async || (m_state <= OPENED || m_state == DONE)) {
         TRACE_EVENT1("devtools.timeline", "XHRReadyStateChange", "data", InspectorXhrReadyStateChangeEvent::data(executionContext(), this));
@@ -1676,6 +1668,7 @@ void XMLHttpRequest::resume()
 void XMLHttpRequest::stop()
 {
     InspectorInstrumentation::didFailXHRLoading(executionContext(), this, this, m_method, m_url);
+    m_progressEventThrottle->stop();
     internalAbort();
 }
 

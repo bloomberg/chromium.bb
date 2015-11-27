@@ -28,6 +28,8 @@
 #include "core/xmlhttprequest/XMLHttpRequestProgressEventThrottle.h"
 
 #include "core/EventTypeNames.h"
+#include "core/inspector/InspectorInstrumentation.h"
+#include "core/inspector/InspectorTraceEvents.h"
 #include "core/xmlhttprequest/XMLHttpRequest.h"
 #include "core/xmlhttprequest/XMLHttpRequestProgressEvent.h"
 #include "wtf/Assertions.h"
@@ -69,6 +71,7 @@ const double XMLHttpRequestProgressEventThrottle::minimumProgressEventDispatchin
 XMLHttpRequestProgressEventThrottle::XMLHttpRequestProgressEventThrottle(XMLHttpRequest* target)
     : m_target(target)
     , m_deferred(adoptPtr(new DeferredEvent))
+    , m_hasDispatchedProgressProgressEvent(false)
 {
     ASSERT(target);
 }
@@ -89,7 +92,7 @@ void XMLHttpRequestProgressEventThrottle::dispatchProgressEvent(const AtomicStri
     if (isActive()) {
         m_deferred->set(lengthComputable, loaded, total);
     } else {
-        m_target->dispatchEvent(XMLHttpRequestProgressEvent::create(type, lengthComputable, loaded, total));
+        dispatchProgressProgressEvent(lengthComputable, loaded, total);
         startOneShot(minimumProgressEventDispatchingIntervalInSeconds, BLINK_FROM_HERE);
     }
 }
@@ -101,13 +104,13 @@ void XMLHttpRequestProgressEventThrottle::dispatchReadyStateChangeEvent(PassRefP
     // we don't have to worry about event dispatching while suspended.
     if (action == Flush) {
         dispatchDeferredEvent();
-        // |m_target| is protected by the caller.
         stop();
     } else if (action == Clear) {
         m_deferred->clear();
         stop();
     }
 
+    m_hasDispatchedProgressProgressEvent = false;
     if (state == m_target->readyState()) {
         // We don't dispatch the event when an event handler associated with
         // the previously dispatched event changes the readyState (e.g. when
@@ -117,10 +120,26 @@ void XMLHttpRequestProgressEventThrottle::dispatchReadyStateChangeEvent(PassRefP
     }
 }
 
+void XMLHttpRequestProgressEventThrottle::dispatchProgressProgressEvent(bool lengthComputable, unsigned long long loaded, unsigned long long total)
+{
+    XMLHttpRequest::State state = m_target->readyState();
+    if (m_target->readyState() == XMLHttpRequest::LOADING && m_hasDispatchedProgressProgressEvent) {
+        TRACE_EVENT1("devtools.timeline", "XHRReadyStateChange", "data", InspectorXhrReadyStateChangeEvent::data(m_target->executionContext(), m_target));
+        m_target->dispatchEvent(Event::create(EventTypeNames::readystatechange));
+        TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateCounters", TRACE_EVENT_SCOPE_THREAD, "data", InspectorUpdateCountersEvent::data());
+    }
+
+    if (m_target->readyState() != state)
+        return;
+
+    m_hasDispatchedProgressProgressEvent = true;
+    m_target->dispatchEvent(XMLHttpRequestProgressEvent::create(EventTypeNames::progress, lengthComputable, loaded, total));
+}
+
 void XMLHttpRequestProgressEventThrottle::dispatchDeferredEvent()
 {
     if (m_deferred->isDeferred()) {
-        m_target->dispatchEvent(XMLHttpRequestProgressEvent::create(EventTypeNames::progress, m_deferred->lengthComputable(), m_deferred->loaded(), m_deferred->total()));
+        dispatchProgressProgressEvent(m_deferred->lengthComputable(), m_deferred->loaded(), m_deferred->total());
         m_deferred->clear();
     }
 }

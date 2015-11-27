@@ -71,6 +71,8 @@ public:
     // queued. If the timer is running, this method just updates
     // m_lengthComputable, m_loaded and m_total. They'll be used on next
     // fired() call.
+    // For an event named "progress", a readyStateChange will be dispatched
+    // as well.
     void dispatchProgressEvent(const AtomicString&, bool lengthComputable, unsigned long long loaded, unsigned long long total);
     // Dispatches the given event after operation about the "progress" event
     // depending on the value of the ProgressEventAction argument.
@@ -86,6 +88,10 @@ public:
 private:
     explicit XMLHttpRequestProgressEventThrottle(XMLHttpRequest*);
 
+    // Dispatches a "progress" progress event and usually a readyStateChange
+    // event as well.
+    void dispatchProgressProgressEvent(bool lengthComputable, unsigned long long loaded, unsigned long long total);
+
     // The main purpose of this class is to throttle the "progress"
     // ProgressEvent dispatching. This class represents such a deferred
     // "progress" ProgressEvent.
@@ -95,15 +101,14 @@ private:
     void fired() override;
     void dispatchDeferredEvent();
 
-    // Non-Oilpan, keep a weak pointer to our XMLHttpRequest object as it is
-    // the one holding us. With Oilpan, a simple strong Member can be used -
-    // this XMLHttpRequestProgressEventThrottle (part) object dies together
-    // with the XMLHttpRequest object.
     Member<XMLHttpRequest> m_target;
 
     // A slot for the deferred "progress" ProgressEvent. When multiple events
     // arrive, only the last one is stored and others are discarded.
     const OwnPtr<DeferredEvent> m_deferred;
+    // True if any "progress" progress event has been dispatched since
+    // |m_target|'s readyState changed.
+    bool m_hasDispatchedProgressProgressEvent;
 };
 
 } // namespace blink
