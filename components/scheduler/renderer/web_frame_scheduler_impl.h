@@ -34,7 +34,7 @@ class SCHEDULER_EXPORT WebFrameSchedulerImpl : public blink::WebFrameScheduler {
   void setFrameVisible(bool visible) override;
   blink::WebTaskRunner* loadingTaskRunner() override;
   blink::WebTaskRunner* timerTaskRunner() override;
-  void setFrameOrigin(const blink::WebSecurityOrigin* origin) override;
+  void setFrameOrigin(const blink::WebSecurityOrigin& origin) override;
 
   void SetPageInBackground(bool page_in_background);
 

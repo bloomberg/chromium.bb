@@ -1068,7 +1068,6 @@ bool FrameLoader::prepareForCommit()
     if (m_frame->document())
         m_frame->document()->detach();
     m_documentLoader = m_provisionalDocumentLoader.release();
-    m_frame->updateFrameSecurityOrigin();
 
     return true;
 }

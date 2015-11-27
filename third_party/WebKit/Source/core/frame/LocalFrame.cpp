@@ -900,14 +900,10 @@ WebFrameScheduler* LocalFrame::frameScheduler()
     return m_frameScheduler.get();
 }
 
-void LocalFrame::updateFrameSecurityOrigin()
+void LocalFrame::updateSecurityOrigin(SecurityOrigin* origin)
 {
-    SecurityContext* context = securityContext();
-    if (!context)
-        return;
-
-    WebSecurityOrigin securityOrigin(context->securityOrigin());
-    frameScheduler()->setFrameOrigin(&securityOrigin);
+    script().updateSecurityOrigin(origin);
+    frameScheduler()->setFrameOrigin(WebSecurityOrigin(origin));
 }
 
 DEFINE_WEAK_IDENTIFIER_MAP(LocalFrame);

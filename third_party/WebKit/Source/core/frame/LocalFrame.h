@@ -186,7 +186,8 @@ public:
 
     // Returns the frame scheduler, creating one if needed.
     WebFrameScheduler* frameScheduler();
-    void updateFrameSecurityOrigin();
+
+    void updateSecurityOrigin(SecurityOrigin*);
 
     bool isNavigationAllowed() const { return m_navigationDisableCount == 0; }
 

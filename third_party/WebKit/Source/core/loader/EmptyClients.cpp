@@ -75,7 +75,7 @@ public:
     void setFrameVisible(bool) override { }
     WebTaskRunner* loadingTaskRunner() override;
     WebTaskRunner* timerTaskRunner() override;
-    void setFrameOrigin(const WebSecurityOrigin*) override { }
+    void setFrameOrigin(const WebSecurityOrigin&) override { }
 };
 
 WebTaskRunner* EmptyFrameScheduler::loadingTaskRunner()

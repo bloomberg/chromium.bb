@@ -67,9 +67,8 @@ blink::WebTaskRunner* WebFrameSchedulerImpl::timerTaskRunner() {
 }
 
 void WebFrameSchedulerImpl::setFrameOrigin(
-    const blink::WebSecurityOrigin* origin) {
-  DCHECK(origin);
-  origin_ = *origin;
+    const blink::WebSecurityOrigin& origin) {
+  origin_ = origin;
   // TODO(skyostil): Associate the task queues with this origin.
 }
 
