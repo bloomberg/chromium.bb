@@ -5,8 +5,9 @@
 #include "base/trace_event/trace_buffer.h"
 
 #include <utility>
+#include <vector>
 
-#include "base/memory/scoped_vector.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/trace_event/trace_event_impl.h"
 
 namespace base {
@@ -40,7 +41,7 @@ class TraceBufferRingBuffer : public TraceBuffer {
     if (*index >= chunks_.size())
       chunks_.resize(*index + 1);
 
-    TraceBufferChunk* chunk = chunks_[*index];
+    TraceBufferChunk* chunk = chunks_[*index].release();
     chunks_[*index] = NULL;  // Put NULL in the slot of a in-flight chunk.
     if (chunk)
       chunk->Reset(current_chunk_seq_++);
@@ -57,7 +58,7 @@ class TraceBufferRingBuffer : public TraceBuffer {
     DCHECK(chunk);
     DCHECK_LT(index, chunks_.size());
     DCHECK(!chunks_[index]);
-    chunks_[index] = chunk.release();
+    chunks_[index] = std::move(chunk);
     recyclable_chunks_queue_[queue_tail_] = index;
     queue_tail_ = NextQueueIndex(queue_tail_);
   }
@@ -76,7 +77,7 @@ class TraceBufferRingBuffer : public TraceBuffer {
   TraceEvent* GetEventByHandle(TraceEventHandle handle) override {
     if (handle.chunk_index >= chunks_.size())
       return NULL;
-    TraceBufferChunk* chunk = chunks_[handle.chunk_index];
+    TraceBufferChunk* chunk = chunks_[handle.chunk_index].get();
     if (!chunk || chunk->seq() != handle.chunk_seq)
       return NULL;
     return chunk->GetEventAt(handle.event_index);
@@ -92,7 +93,7 @@ class TraceBufferRingBuffer : public TraceBuffer {
       if (chunk_index >= chunks_.size())  // Skip uninitialized chunks.
         continue;
       DCHECK(chunks_[chunk_index]);
-      return chunks_[chunk_index];
+      return chunks_[chunk_index].get();
     }
     return NULL;
   }
@@ -104,8 +105,8 @@ class TraceBufferRingBuffer : public TraceBuffer {
       size_t chunk_index = recyclable_chunks_queue_[queue_index];
       if (chunk_index >= chunks_.size())  // Skip uninitialized chunks.
         continue;
-      TraceBufferChunk* chunk = chunks_[chunk_index];
-      cloned_buffer->chunks_.push_back(chunk ? chunk->Clone().release() : NULL);
+      TraceBufferChunk* chunk = chunks_[chunk_index].get();
+      cloned_buffer->chunks_.push_back(chunk ? chunk->Clone() : NULL);
     }
     return std::move(cloned_buffer);
   }
@@ -130,7 +131,7 @@ class TraceBufferRingBuffer : public TraceBuffer {
     // The only implemented method.
     const TraceBufferChunk* NextChunk() override {
       return current_iteration_index_ < chunks_.size()
-                 ? chunks_[current_iteration_index_++]
+                 ? chunks_[current_iteration_index_++].get()
                  : NULL;
     }
 
@@ -157,7 +158,7 @@ class TraceBufferRingBuffer : public TraceBuffer {
     }
 
     size_t current_iteration_index_;
-    ScopedVector<TraceBufferChunk> chunks_;
+    std::vector<scoped_ptr<TraceBufferChunk>> chunks_;
   };
 
   bool QueueIsEmpty() const { return queue_head_ == queue_tail_; }
@@ -183,7 +184,7 @@ class TraceBufferRingBuffer : public TraceBuffer {
   }
 
   size_t max_chunks_;
-  ScopedVector<TraceBufferChunk> chunks_;
+  std::vector<scoped_ptr<TraceBufferChunk>> chunks_;
 
   scoped_ptr<size_t[]> recyclable_chunks_queue_;
   size_t queue_head_;
