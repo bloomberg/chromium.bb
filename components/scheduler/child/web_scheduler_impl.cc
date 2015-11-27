@@ -87,20 +87,6 @@ blink::WebTaskRunner* WebSchedulerImpl::timerTaskRunner() {
   return timer_web_task_runner_.get();
 }
 
-void WebSchedulerImpl::postTimerTaskAt(
-    const blink::WebTraceLocation& web_location,
-    blink::WebTaskRunner::Task* task,
-    double monotonicTime) {
-  DCHECK(timer_task_runner_);
-  tracked_objects::Location location(web_location.functionName(),
-                                     web_location.fileName(), -1, nullptr);
-  timer_task_runner_->PostDelayedTaskAt(
-      location,
-      base::Bind(&WebTaskRunnerImpl::runTask,
-                 base::Passed(scoped_ptr<blink::WebTaskRunner::Task>(task))),
-      base::TimeTicks() + base::TimeDelta::FromSecondsD(monotonicTime));
-}
-
 blink::WebPassOwnPtr<blink::WebViewScheduler>
 WebSchedulerImpl::createWebViewScheduler(blink::WebView*) {
   NOTREACHED();

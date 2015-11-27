@@ -75,11 +75,11 @@ class TaskQueueSelectorTest : public testing::Test {
 
  protected:
   void SetUp() final {
-    virtual_time_domain_ = make_scoped_refptr<VirtualTimeDomain>(
-        new VirtualTimeDomain(base::TimeTicks()));
+    virtual_time_domain_ = make_scoped_ptr<VirtualTimeDomain>(
+        new VirtualTimeDomain(nullptr, base::TimeTicks()));
     for (size_t i = 0; i < kTaskQueueCount; i++) {
       scoped_refptr<TaskQueueImpl> task_queue = make_scoped_refptr(
-          new TaskQueueImpl(nullptr, virtual_time_domain_,
+          new TaskQueueImpl(nullptr, virtual_time_domain_.get(),
                             TaskQueue::Spec("test queue"), "test", "test"));
       selector_.AddQueue(task_queue.get());
       task_queues_.push_back(task_queue);
@@ -93,7 +93,7 @@ class TaskQueueSelectorTest : public testing::Test {
   const size_t kTaskQueueCount = 5;
   base::Closure test_closure_;
   TaskQueueSelector selector_;
-  scoped_refptr<VirtualTimeDomain> virtual_time_domain_;
+  scoped_ptr<VirtualTimeDomain> virtual_time_domain_;
   std::vector<scoped_refptr<TaskQueueImpl>> task_queues_;
   std::map<TaskQueueImpl*, size_t> queue_to_index_map_;
 };

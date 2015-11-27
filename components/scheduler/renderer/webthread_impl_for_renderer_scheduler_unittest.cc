@@ -35,27 +35,30 @@ class MockTaskObserver : public blink::WebThread::TaskObserver {
 
 class WebThreadImplForRendererSchedulerTest : public testing::Test {
  public:
-  WebThreadImplForRendererSchedulerTest()
-      : clock_(new base::SimpleTestTickClock()),
-        scheduler_(SchedulerTqmDelegateImpl::Create(
-            &message_loop_,
-            make_scoped_ptr(new TestTimeSource(clock_.get())))),
-        default_task_runner_(scheduler_.DefaultTaskRunner()),
-        thread_(scheduler_.CreateMainThread()) {}
+  WebThreadImplForRendererSchedulerTest() {}
+
+  void SetUp() override {
+    clock_.reset(new base::SimpleTestTickClock());
+    clock_->Advance(base::TimeDelta::FromMicroseconds(5000));
+    scheduler_.reset(new RendererSchedulerImpl(SchedulerTqmDelegateImpl::Create(
+        &message_loop_, make_scoped_ptr(new TestTimeSource(clock_.get())))));
+    default_task_runner_ = scheduler_->DefaultTaskRunner();
+    thread_ = scheduler_->CreateMainThread();
+  }
 
   ~WebThreadImplForRendererSchedulerTest() override {}
 
   void SetWorkBatchSizeForTesting(size_t work_batch_size) {
-    scheduler_.GetSchedulerHelperForTesting()->SetWorkBatchSizeForTesting(
+    scheduler_->GetSchedulerHelperForTesting()->SetWorkBatchSizeForTesting(
         work_batch_size);
   }
 
-  void TearDown() override { scheduler_.Shutdown(); }
+  void TearDown() override { scheduler_->Shutdown(); }
 
  protected:
   base::MessageLoop message_loop_;
   scoped_ptr<base::SimpleTestTickClock> clock_;
-  RendererSchedulerImpl scheduler_;
+  scoped_ptr<RendererSchedulerImpl> scheduler_;
   scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
   scoped_ptr<blink::WebThread> thread_;
 

@@ -120,7 +120,6 @@ public:
     bool isContextThread() const final;
     bool isJSExecutionForbidden() const final;
 
-    double timerAlignmentInterval() const final;
     DOMTimerCoordinator* timers() final;
 
     WorkerInspectorController* workerInspectorController() { return m_workerInspectorController.get(); }

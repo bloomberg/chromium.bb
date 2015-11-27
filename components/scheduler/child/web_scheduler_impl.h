@@ -52,11 +52,6 @@ class SCHEDULER_EXPORT WebSchedulerImpl : public blink::WebScheduler {
   void removePendingNavigation() override {}
   void onNavigationStarted() override {}
 
-  // TODO(alexclarke): Remove when possible.
-  void postTimerTaskAt(const blink::WebTraceLocation& location,
-                       blink::WebTaskRunner::Task* task,
-                       double monotonicTime) override;
-
  private:
   static void runIdleTask(scoped_ptr<blink::WebThread::IdleTask> task,
                           base::TimeTicks deadline);

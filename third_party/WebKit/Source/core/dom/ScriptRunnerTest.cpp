@@ -137,7 +137,6 @@ public:
     void postIdleTask(const WebTraceLocation&, WebThread::IdleTask*) override { }
     void postNonNestableIdleTask(const WebTraceLocation&, WebThread::IdleTask*) override { }
     void postIdleTaskAfterWakeup(const WebTraceLocation&, WebThread::IdleTask*) override { }
-    void postTimerTaskAt(const WebTraceLocation&, WebTaskRunner::Task*, double monotonicTime) override { }
     WebPassOwnPtr<WebViewScheduler> createWebViewScheduler(blink::WebView*) override { return nullptr; }
     void suspendTimerQueue() override { }
     void resumeTimerQueue() override { }

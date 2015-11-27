@@ -1116,8 +1116,6 @@ private:
 
     void reportBlockedScriptExecutionToInspector(const String& directiveText) final;
 
-    double timerAlignmentInterval() const final;
-
     void updateTitle(const String&);
     void updateFocusAppearanceTimerFired(Timer<Document>*);
     void updateBaseURL();

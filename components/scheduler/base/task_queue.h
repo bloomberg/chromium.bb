@@ -20,12 +20,6 @@ class SCHEDULER_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
   // the TaskQueueManager's reference to it will be released soon.
   virtual void UnregisterTaskQueue() = 0;
 
-  // Post a delayed task at an absolute desired run time instead of a time
-  // delta from the current time.
-  virtual bool PostDelayedTaskAt(const tracked_objects::Location& from_here,
-                                 const base::Closure& task,
-                                 base::TimeTicks desired_run_time) = 0;
-
   enum QueuePriority {
     // Queues with control priority will run before any other queue, and will
     // explicitly starve other queues. Typically this should only be used for
@@ -91,6 +85,9 @@ class SCHEDULER_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
     // A queue in the HAS_WORK state has tasks in the work task queue which
     // are runnable.
     HAS_WORK,
+    // The work and incomming queues are empty but there is delayed work
+    // scheduled.
+    NO_IMMEDIATE_WORK,
   };
 
   // Options for constructing a TaskQueue. Once set the |name|,
@@ -145,10 +142,11 @@ class SCHEDULER_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
   virtual bool IsQueueEnabled() const = 0;
 
   // Returns true if there no tasks in either the work or incoming task queue.
+  // This method ignores delayed tasks that are scheduled to run in the future.
   // Note that this function involves taking a lock, so calling it has some
   // overhead. NOTE this must be called on the thread this TaskQueue was created
   // by.
-  virtual bool IsQueueEmpty() const;
+  virtual bool HasPendingImmediateTask() const;
 
   // Returns the QueueState. Note that this function involves taking a lock, so
   // calling it has some overhead.
@@ -183,7 +181,7 @@ class SCHEDULER_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
 
   // Removes the task queue from the previous TimeDomain and adds it to
   // |domain|.  This is a moderately expensive operation.
-  virtual void SetTimeDomain(const scoped_refptr<TimeDomain>& domain) = 0;
+  virtual void SetTimeDomain(TimeDomain* domain) = 0;
 
  protected:
   ~TaskQueue() override {}

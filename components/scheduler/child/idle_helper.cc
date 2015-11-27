@@ -93,7 +93,7 @@ IdleHelper::IdlePeriodState IdleHelper::ComputeNewLongIdlePeriodState(
   if (long_idle_period_duration >=
       base::TimeDelta::FromMilliseconds(kMinimumIdlePeriodDurationMillis)) {
     *next_long_idle_period_delay_out = long_idle_period_duration;
-    if (idle_queue_->IsQueueEmpty()) {
+    if (!idle_queue_->HasPendingImmediateTask()) {
       return IdlePeriodState::IN_LONG_IDLE_PERIOD_PAUSED;
     } else if (long_idle_period_duration == max_long_idle_period_duration) {
       return IdlePeriodState::IN_LONG_IDLE_PERIOD_WITH_MAX_DEADLINE;

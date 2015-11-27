@@ -42,20 +42,6 @@ void DOMTimerCoordinator::removeTimeoutByID(int timeoutID)
     m_timers.remove(timeoutID);
 }
 
-void DOMTimerCoordinator::didChangeTimerAlignmentInterval()
-{
-    // Reschedule timers in increasing order of desired run time to maintain their relative order.
-    // TODO(skyostil): Move timer alignment into the scheduler.
-    WillBeHeapVector<RawPtrWillBeMember<DOMTimer>> timers;
-    timers.reserveCapacity(m_timers.size());
-    for (TimeoutMap::iterator iter = m_timers.begin(); iter != m_timers.end(); ++iter)
-        timers.append(iter->value.get());
-    std::sort(timers.begin(), timers.end(), TimerBase::Comparator());
-    double now = monotonicallyIncreasingTime();
-    for (DOMTimer* timer : timers)
-        timer->didChangeAlignmentInterval(now);
-}
-
 DEFINE_TRACE(DOMTimerCoordinator)
 {
 #if ENABLE(OILPAN)

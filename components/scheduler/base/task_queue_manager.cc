@@ -21,7 +21,8 @@ TaskQueueManager::TaskQueueManager(
     const char* tracing_category,
     const char* disabled_by_default_tracing_category,
     const char* disabled_by_default_verbose_tracing_category)
-    : delegate_(delegate),
+    : real_time_domain_(new RealTimeDomain()),
+      delegate_(delegate),
       task_was_run_on_quiescence_monitored_queue_(false),
       pending_dowork_count_(0),
       work_batch_size_(1),
@@ -44,8 +45,7 @@ TaskQueueManager::TaskQueueManager(
       base::Bind(&TaskQueueManager::DoWork, weak_factory_.GetWeakPtr(), false);
 
   // TODO(alexclarke): Change this to be a parameter that's passed in.
-  real_time_domain_ = make_scoped_refptr(new RealTimeDomain());
-  RegisterTimeDomain(real_time_domain_);
+  RegisterTimeDomain(real_time_domain_.get());
 }
 
 TaskQueueManager::~TaskQueueManager() {
@@ -58,15 +58,13 @@ TaskQueueManager::~TaskQueueManager() {
   selector_.SetTaskQueueSelectorObserver(nullptr);
 }
 
-void TaskQueueManager::RegisterTimeDomain(
-    const scoped_refptr<TimeDomain>& time_domain) {
+void TaskQueueManager::RegisterTimeDomain(TimeDomain* time_domain) {
   time_domains_.insert(time_domain);
   time_domain->OnRegisterWithTaskQueueManager(delegate_.get(),
                                               do_work_closure_);
 }
 
-void TaskQueueManager::UnregisterTimeDomain(
-    const scoped_refptr<TimeDomain>& time_domain) {
+void TaskQueueManager::UnregisterTimeDomain(TimeDomain* time_domain) {
   time_domains_.erase(time_domain);
 }
 
@@ -77,8 +75,7 @@ scoped_refptr<internal::TaskQueueImpl> TaskQueueManager::NewTaskQueue(
   DCHECK(main_thread_checker_.CalledOnValidThread());
   TimeDomain* time_domain =
       spec.time_domain ? spec.time_domain : real_time_domain_.get();
-  DCHECK(time_domains_.find(make_scoped_refptr(time_domain)) !=
-         time_domains_.end());
+  DCHECK(time_domains_.find(time_domain) != time_domains_.end());
   scoped_refptr<internal::TaskQueueImpl> queue(
       make_scoped_refptr(new internal::TaskQueueImpl(
           this, time_domain, spec, disabled_by_default_tracing_category_,
@@ -115,7 +112,7 @@ void TaskQueueManager::UpdateWorkQueues(
   TRACE_EVENT0(disabled_by_default_tracing_category_,
                "TaskQueueManager::UpdateWorkQueues");
 
-  for (const scoped_refptr<TimeDomain>& time_domain : time_domains_) {
+  for (TimeDomain* time_domain : time_domains_) {
     time_domain->UpdateWorkQueues(should_trigger_wakeup, previous_task);
   }
 }
@@ -189,7 +186,7 @@ void TaskQueueManager::DoWork(bool decrement_pending_dowork_count) {
 
 bool TaskQueueManager::TryAdvanceTimeDomains() {
   bool can_advance = false;
-  for (const scoped_refptr<TimeDomain>& time_domain : time_domains_) {
+  for (TimeDomain* time_domain : time_domains_) {
     can_advance |= time_domain->MaybeAdvanceTime();
   }
   return can_advance;

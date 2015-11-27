@@ -185,8 +185,6 @@ public:
     bool isPainting() const { return m_isPainting; }
 #endif
 
-    double timerAlignmentInterval() const;
-
     class CORE_EXPORT MultisamplingChangedObserver : public WillBeGarbageCollectedMixin {
     public:
         virtual void multisamplingChanged(bool) = 0;
@@ -212,8 +210,6 @@ public:
 
 private:
     void initGroup();
-
-    void setTimerAlignmentInterval(double);
 
     void setNeedsLayoutInAllFrames();
 
@@ -260,8 +256,6 @@ private:
     bool m_defersLoading;
 
     float m_deviceScaleFactor;
-
-    double m_timerAlignmentInterval;
 
     PageVisibilityState m_visibilityState;
 
