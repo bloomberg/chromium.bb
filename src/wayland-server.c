@@ -42,7 +42,6 @@
 #include <fcntl.h>
 #include <sys/file.h>
 #include <sys/stat.h>
-#include <ffi.h>
 
 #include "wayland-private.h"
 #include "wayland-server.h"
