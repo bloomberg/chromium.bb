@@ -34,6 +34,11 @@ void NullExecutionContext::postTask(const WebTraceLocation&, PassOwnPtr<Executio
 {
 }
 
+double NullExecutionContext::timerAlignmentInterval() const
+{
+    return DOMTimer::visiblePageAlignmentInterval();
+}
+
 bool NullExecutionContext::isSecureContext(String& errorMessage, const SecureContextCheck privilegeContextCheck) const
 {
     return true;

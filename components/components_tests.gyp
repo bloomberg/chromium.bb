@@ -619,7 +619,6 @@
       'scheduler/renderer/renderer_scheduler_impl_unittest.cc',
       'scheduler/renderer/render_widget_signals_unittest.cpp',
       'scheduler/renderer/task_cost_estimator_unittest.cc',
-      'scheduler/renderer/throttling_helper_unittest.cc',
       'scheduler/renderer/user_model_unittest.cc',
       'scheduler/renderer/web_view_scheduler_impl_unittest.cc',
       'scheduler/renderer/webthread_impl_for_renderer_scheduler_unittest.cc',

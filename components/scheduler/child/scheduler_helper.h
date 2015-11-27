@@ -83,9 +83,7 @@ class SCHEDULER_EXPORT SchedulerHelper : public TaskQueueManager::Observer {
   void SetObserver(Observer* observer);
 
   // Accessor methods.
-  RealTimeDomain* real_time_domain() const;
-  void RegisterTimeDomain(TimeDomain* time_domain);
-  void UnregisterTimeDomain(TimeDomain* time_domain);
+  const scoped_refptr<RealTimeDomain>& real_time_domain() const;
   const scoped_refptr<SchedulerTqmDelegate>& scheduler_tqm_delegate() const;
   bool GetAndClearSystemIsQuiescentBit();
 

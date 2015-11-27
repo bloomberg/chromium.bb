@@ -149,7 +149,10 @@ public:
         SuspendableTimer::trace(visitor);
     }
 
-    // TODO(alexclarke): Override timerTaskRunner() to pass in a document specific default task runner.
+    WebTaskRunner* timerTaskRunner() override
+    {
+        return m_window->document()->timerTaskRunner();
+    }
 
 private:
     void fired() override

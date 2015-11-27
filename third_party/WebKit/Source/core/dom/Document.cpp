@@ -442,7 +442,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_timeline(AnimationTimeline::create(this))
     , m_templateDocumentHost(nullptr)
     , m_didAssociateFormControlsTimer(this, &Document::didAssociateFormControlsTimerFired)
-    , m_timers(timerTaskRunner()->adoptClone())
+    , m_timers(Platform::current()->currentThread()->scheduler()->timerTaskRunner()->adoptClone())
     , m_hasViewportUnits(false)
     , m_styleRecalcElementCounter(0)
     , m_parserSyncPolicy(AllowAsynchronousParsing)
@@ -453,6 +453,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
         provideContextFeaturesToDocumentFrom(*this, *m_frame->page());
 
         m_fetcher = m_frame->loader().documentLoader()->fetcher();
+        m_timers.setTimerTaskRunner(m_frame->frameScheduler()->timerTaskRunner()->adoptClone());
         FrameFetchContext::provideDocumentToContext(m_fetcher->context(), this);
     } else if (m_importsController) {
         m_fetcher = FrameFetchContext::createContextAndFetcher(nullptr);
@@ -2876,6 +2877,14 @@ KURL Document::virtualCompleteURL(const String& url) const
     return completeURL(url);
 }
 
+double Document::timerAlignmentInterval() const
+{
+    Page* p = page();
+    if (!p)
+        return DOMTimer::visiblePageAlignmentInterval();
+    return p->timerAlignmentInterval();
+}
+
 DOMTimerCoordinator* Document::timers()
 {
     return &m_timers;
@@ -3016,7 +3025,8 @@ void Document::didRemoveAllPendingStylesheet()
 
 void Document::didLoadAllScriptBlockingResources()
 {
-    loadingTaskRunner()->postTask(BLINK_FROM_HERE, m_executeScriptsWaitingForResourcesTask->cancelAndCreate());
+    Platform::current()->currentThread()->scheduler()->loadingTaskRunner()->postTask(
+        BLINK_FROM_HERE, m_executeScriptsWaitingForResourcesTask->cancelAndCreate());
 
     if (frame())
         frame()->loader().client()->didRemoveAllPendingStylesheet();
@@ -5740,22 +5750,12 @@ WebTaskRunner* Document::loadingTaskRunner() const
 {
     if (frame())
         return frame()->frameScheduler()->loadingTaskRunner();
-    if (m_importsController)
-        return m_importsController->master()->loadingTaskRunner();
-    if (m_contextDocument)
-        return m_contextDocument->loadingTaskRunner();
     return Platform::current()->currentThread()->scheduler()->loadingTaskRunner();
 }
 
 WebTaskRunner* Document::timerTaskRunner() const
 {
-    if (frame())
-        return m_frame->frameScheduler()->timerTaskRunner();
-    if (m_importsController)
-        return m_importsController->master()->timerTaskRunner();
-    if (m_contextDocument)
-        return m_contextDocument->timerTaskRunner();
-    return Platform::current()->currentThread()->scheduler()->timerTaskRunner();
+    return m_timers.timerTaskRunner();
 }
 
 DEFINE_TRACE(Document)

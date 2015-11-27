@@ -13,7 +13,7 @@ namespace internal {
 
 TaskQueueImpl::TaskQueueImpl(
     TaskQueueManager* task_queue_manager,
-    TimeDomain* time_domain,
+    const scoped_refptr<TimeDomain>& time_domain,
     const Spec& spec,
     const char* disabled_by_default_tracing_category,
     const char* disabled_by_default_verbose_tracing_category)
@@ -28,15 +28,10 @@ TaskQueueImpl::TaskQueueImpl(
       wakeup_policy_(spec.wakeup_policy),
       should_monitor_quiescence_(spec.should_monitor_quiescence),
       should_notify_observers_(spec.should_notify_observers) {
-  DCHECK(time_domain);
-  time_domain->RegisterQueue(this);
+  DCHECK(time_domain.get());
 }
 
-TaskQueueImpl::~TaskQueueImpl() {
-  base::AutoLock lock(any_thread_lock_);
-  if (any_thread().time_domain)
-    any_thread().time_domain->UnregisterQueue(this);
-}
+TaskQueueImpl::~TaskQueueImpl() {}
 
 TaskQueueImpl::Task::Task()
     : PendingTask(tracked_objects::Location(),
@@ -62,9 +57,10 @@ TaskQueueImpl::Task::Task(const tracked_objects::Location& posted_from,
   sequence_num = sequence_number;
 }
 
-TaskQueueImpl::AnyThread::AnyThread(TaskQueueManager* task_queue_manager,
-                                    PumpPolicy pump_policy,
-                                    TimeDomain* time_domain)
+TaskQueueImpl::AnyThread::AnyThread(
+    TaskQueueManager* task_queue_manager,
+    PumpPolicy pump_policy,
+    const scoped_refptr<TimeDomain>& time_domain)
     : task_queue_manager(task_queue_manager),
       pump_policy(pump_policy),
       time_domain(time_domain) {}
@@ -82,8 +78,7 @@ void TaskQueueImpl::UnregisterTaskQueue() {
   base::AutoLock lock(any_thread_lock_);
   if (!any_thread().task_queue_manager)
     return;
-  if (any_thread().time_domain)
-    any_thread().time_domain->UnregisterQueue(this);
+  any_thread().time_domain->UnregisterQueue(this);
   any_thread().time_domain = nullptr;
   any_thread().task_queue_manager->UnregisterTaskQueue(this);
 
@@ -110,6 +105,18 @@ bool TaskQueueImpl::PostNonNestableDelayedTask(
     const base::Closure& task,
     base::TimeDelta delay) {
   return PostDelayedTaskImpl(from_here, task, delay, TaskType::NON_NESTABLE);
+}
+
+bool TaskQueueImpl::PostDelayedTaskAt(
+    const tracked_objects::Location& from_here,
+    const base::Closure& task,
+    base::TimeTicks desired_run_time) {
+  base::AutoLock lock(any_thread_lock_);
+  if (!any_thread().task_queue_manager)
+    return false;
+  LazyNow lazy_now(any_thread().time_domain->CreateLazyNow());
+  return PostDelayedTaskLocked(&lazy_now, from_here, task, desired_run_time,
+                               TaskType::NORMAL);
 }
 
 bool TaskQueueImpl::PostDelayedTaskImpl(
@@ -169,8 +176,9 @@ bool TaskQueueImpl::PostDelayedTaskLocked(
   return true;
 }
 
-void TaskQueueImpl::ScheduleDelayedWorkTask(TimeDomain* time_domain,
-                                            base::TimeTicks desired_run_time) {
+void TaskQueueImpl::ScheduleDelayedWorkTask(
+    const scoped_refptr<TimeDomain> time_domain,
+    base::TimeTicks desired_run_time) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   LazyNow lazy_now(time_domain->CreateLazyNow());
   time_domain->ScheduleDelayedWork(this, desired_run_time, &lazy_now);
@@ -211,15 +219,13 @@ TaskQueue::QueueState TaskQueueImpl::GetQueueState() const {
   {
     base::AutoLock lock(any_thread_lock_);
     if (any_thread().incoming_queue.empty()) {
-      if (any_thread().delayed_task_queue.empty())
-        return QueueState::EMPTY;
-      else
-        return QueueState::NO_IMMEDIATE_WORK;
+      return QueueState::EMPTY;
     } else {
       return QueueState::NEEDS_PUMPING;
     }
   }
 }
+
 bool TaskQueueImpl::TaskIsOlderThanQueuedTasks(const Task* task) {
   // A null task is passed when UpdateQueue is called before any task is run.
   // In this case we don't want to pump an after_wakeup queue, so return true
@@ -499,14 +505,14 @@ void TaskQueueImpl::NotifyDidProcessTask(
                     DidProcessTask(pending_task));
 }
 
-void TaskQueueImpl::SetTimeDomain(TimeDomain* time_domain) {
+void TaskQueueImpl::SetTimeDomain(
+    const scoped_refptr<TimeDomain>& time_domain) {
   base::AutoLock lock(any_thread_lock_);
   DCHECK(main_thread_checker_.CalledOnValidThread());
   if (time_domain == any_thread().time_domain)
     return;
 
-  if (time_domain)
-    any_thread().time_domain->MigrateQueue(this, time_domain);
+  any_thread().time_domain->MigrateQueue(this, time_domain.get());
   any_thread().time_domain = time_domain;
 }
 

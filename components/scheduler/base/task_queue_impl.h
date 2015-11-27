@@ -23,7 +23,7 @@ namespace internal {
 class SCHEDULER_EXPORT TaskQueueImpl final : public TaskQueue {
  public:
   TaskQueueImpl(TaskQueueManager* task_queue_manager,
-                TimeDomain* time_domain,
+                const scoped_refptr<TimeDomain>& time_domain,
                 const Spec& spec,
                 const char* disabled_by_default_tracing_category,
                 const char* disabled_by_default_verbose_tracing_category);
@@ -70,6 +70,9 @@ class SCHEDULER_EXPORT TaskQueueImpl final : public TaskQueue {
   bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
                                   const base::Closure& task,
                                   base::TimeDelta delay) override;
+  bool PostDelayedTaskAt(const tracked_objects::Location& from_here,
+                         const base::Closure& task,
+                         base::TimeTicks desired_run_time) override;
 
   bool IsQueueEnabled() const override;
   QueueState GetQueueState() const override;
@@ -79,7 +82,7 @@ class SCHEDULER_EXPORT TaskQueueImpl final : public TaskQueue {
   void AddTaskObserver(base::MessageLoop::TaskObserver* task_observer) override;
   void RemoveTaskObserver(
       base::MessageLoop::TaskObserver* task_observer) override;
-  void SetTimeDomain(TimeDomain* time_domain) override;
+  void SetTimeDomain(const scoped_refptr<TimeDomain>& time_domain) override;
 
   void UpdateWorkQueue(LazyNow* lazy_now,
                        bool should_trigger_wakeup,
@@ -151,7 +154,7 @@ class SCHEDULER_EXPORT TaskQueueImpl final : public TaskQueue {
   struct AnyThread {
     AnyThread(TaskQueueManager* task_queue_manager,
               PumpPolicy pump_policy,
-              TimeDomain* time_domain);
+              const scoped_refptr<TimeDomain>& time_domain);
     ~AnyThread();
 
     // TaskQueueManager is maintained in two copies: inside AnyThread and inside
@@ -162,7 +165,7 @@ class SCHEDULER_EXPORT TaskQueueImpl final : public TaskQueue {
     std::queue<Task> incoming_queue;
     PumpPolicy pump_policy;
     std::priority_queue<Task> delayed_task_queue;
-    TimeDomain* time_domain;
+    scoped_refptr<TimeDomain> time_domain;
   };
 
   struct MainThreadOnly {
@@ -189,7 +192,7 @@ class SCHEDULER_EXPORT TaskQueueImpl final : public TaskQueue {
                              const base::Closure& task,
                              base::TimeTicks desired_run_time,
                              TaskType task_type);
-  void ScheduleDelayedWorkTask(TimeDomain* time_domain,
+  void ScheduleDelayedWorkTask(const scoped_refptr<TimeDomain> time_domain,
                                base::TimeTicks desired_run_time);
 
   // Enqueues any delayed tasks which should be run now on the incoming_queue_.

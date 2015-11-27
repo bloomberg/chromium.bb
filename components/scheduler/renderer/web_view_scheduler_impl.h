@@ -8,7 +8,6 @@
 #include <set>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/scheduler/scheduler_export.h"
 #include "third_party/WebKit/public/platform/WebViewScheduler.h"
 
@@ -33,13 +32,11 @@ class SCHEDULER_EXPORT WebViewSchedulerImpl : public blink::WebViewScheduler {
   ~WebViewSchedulerImpl() override;
 
   // blink::WebViewScheduler implementation:
-  void setPageInBackground(bool page_in_background) override;
+  void setPageInBackground(bool background) override;
   blink::WebPassOwnPtr<blink::WebFrameScheduler> createFrameScheduler()
       override;
 
   blink::WebView* web_view() const { return web_view_; }
-
-  scoped_ptr<WebFrameSchedulerImpl> createWebFrameSchedulerImpl();
 
  private:
   friend class WebFrameSchedulerImpl;
@@ -49,7 +46,7 @@ class SCHEDULER_EXPORT WebViewSchedulerImpl : public blink::WebViewScheduler {
   std::set<WebFrameSchedulerImpl*> frame_schedulers_;
   blink::WebView* web_view_;
   RendererSchedulerImpl* renderer_scheduler_;
-  bool page_in_background_;
+  bool background_;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewSchedulerImpl);
 };

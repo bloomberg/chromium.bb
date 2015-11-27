@@ -10,9 +10,8 @@
 
 namespace scheduler {
 
-VirtualTimeDomain::VirtualTimeDomain(TimeDomain::Observer* observer,
-                                     base::TimeTicks initial_time)
-    : TimeDomain(observer), now_(initial_time) {}
+VirtualTimeDomain::VirtualTimeDomain(base::TimeTicks initial_time)
+    : now_(initial_time) {}
 
 VirtualTimeDomain::~VirtualTimeDomain() {}
 
@@ -45,8 +44,6 @@ void VirtualTimeDomain::AdvanceTo(base::TimeTicks now) {
   base::AutoLock lock(lock_);
   DCHECK_GE(now, now_);
   now_ = now;
-  DCHECK(task_queue_manager_delegate_);
-
   task_queue_manager_delegate_->PostTask(FROM_HERE, do_work_closure_);
 }
 

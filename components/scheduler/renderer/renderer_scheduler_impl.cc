@@ -12,7 +12,6 @@
 #include "cc/output/begin_frame_args.h"
 #include "components/scheduler/base/task_queue_impl.h"
 #include "components/scheduler/base/task_queue_selector.h"
-#include "components/scheduler/base/virtual_time_domain.h"
 #include "components/scheduler/child/scheduler_tqm_delegate.h"
 #include "components/scheduler/renderer/webthread_impl_for_renderer_scheduler.h"
 
@@ -42,7 +41,6 @@ RendererSchedulerImpl::RendererSchedulerImpl(
                    TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
                    "RendererSchedulerIdlePeriod",
                    base::TimeDelta()),
-      throttling_helper_(this, "renderer.scheduler"),
       render_widget_scheduler_signals_(this),
       control_task_runner_(helper_.ControlTaskRunner()),
       compositor_task_runner_(
@@ -176,11 +174,6 @@ RendererSchedulerImpl::LoadingTaskRunner() {
 scoped_refptr<TaskQueue> RendererSchedulerImpl::TimerTaskRunner() {
   helper_.CheckOnValidThread();
   return default_timer_task_runner_;
-}
-
-scoped_refptr<TaskQueue> RendererSchedulerImpl::ControlTaskRunner() {
-  helper_.CheckOnValidThread();
-  return helper_.ControlTaskRunner();
 }
 
 scoped_refptr<TaskQueue> RendererSchedulerImpl::NewLoadingTaskRunner(
@@ -542,7 +535,7 @@ bool RendererSchedulerImpl::ShouldYieldForHighPriorityWork() {
 
     case UseCase::MAIN_THREAD_GESTURE:
     case UseCase::SYNCHRONIZED_GESTURE:
-      return compositor_task_runner_->HasPendingImmediateTask() ||
+      return !compositor_task_runner_->IsQueueEmpty() ||
              MainThreadOnly().touchstart_expected_soon;
 
     case UseCase::TOUCHSTART:
@@ -1051,18 +1044,6 @@ double RendererSchedulerImpl::CurrentTimeSeconds() const {
 double RendererSchedulerImpl::MonotonicallyIncreasingTimeSeconds() const {
   return helper_.scheduler_tqm_delegate()->NowTicks().ToInternalValue() /
          static_cast<double>(base::Time::kMicrosecondsPerSecond);
-}
-
-void RendererSchedulerImpl::RegisterTimeDomain(TimeDomain* time_domain) {
-  helper_.RegisterTimeDomain(time_domain);
-}
-
-void RendererSchedulerImpl::UnregisterTimeDomain(TimeDomain* time_domain) {
-  helper_.UnregisterTimeDomain(time_domain);
-}
-
-base::TickClock* RendererSchedulerImpl::tick_clock() const {
-  return helper_.scheduler_tqm_delegate().get();
 }
 
 }  // namespace scheduler

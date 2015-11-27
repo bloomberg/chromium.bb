@@ -15,9 +15,7 @@ class TaskQueueManagerDelegate;
 
 class SCHEDULER_EXPORT VirtualTimeDomain : public TimeDomain {
  public:
-  VirtualTimeDomain(TimeDomain::Observer* observer,
-                    base::TimeTicks initial_time);
-  ~VirtualTimeDomain() override;
+  VirtualTimeDomain(base::TimeTicks initial_time);
 
   // TimeDomain implementation:
   LazyNow CreateLazyNow() override;
@@ -42,6 +40,8 @@ class SCHEDULER_EXPORT VirtualTimeDomain : public TimeDomain {
 
   TaskQueueManagerDelegate* task_queue_manager_delegate_;  // NOT OWNED
   base::Closure do_work_closure_;
+
+  ~VirtualTimeDomain() override;
 
   DISALLOW_COPY_AND_ASSIGN(VirtualTimeDomain);
 };

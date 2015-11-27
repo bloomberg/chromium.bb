@@ -52,6 +52,10 @@ public:
     // ActiveDOMObject
     void stop() override;
 
+    // The following are essentially constants. All intervals are in seconds.
+    static double hiddenPageAlignmentInterval();
+    static double visiblePageAlignmentInterval();
+
     // Eager finalization is needed to promptly stop this Timer object.
     // Otherwise timer events might fire at an object that's slated for destruction
     // (when lazily swept), but some of its members (m_action) may already have
@@ -71,6 +75,9 @@ private:
 
     DOMTimer(ExecutionContext*, PassOwnPtrWillBeRawPtr<ScheduledAction>, int interval, bool singleShot, int timeoutID);
     void fired() override;
+
+    // Retuns timer fire time rounded to the next multiple of timer alignment interval.
+    double alignedFireTime(double) const override;
 
     WebTaskRunner* timerTaskRunner() override;
 

@@ -216,12 +216,12 @@ TEST_F(TaskQueueManagerTest, QueuePolling) {
   Initialize(1u);
 
   std::vector<int> run_order;
-  EXPECT_FALSE(runners_[0]->HasPendingImmediateTask());
+  EXPECT_TRUE(runners_[0]->IsQueueEmpty());
   runners_[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order));
-  EXPECT_TRUE(runners_[0]->HasPendingImmediateTask());
+  EXPECT_FALSE(runners_[0]->IsQueueEmpty());
 
   test_task_runner_->RunUntilIdle();
-  EXPECT_FALSE(runners_[0]->HasPendingImmediateTask());
+  EXPECT_TRUE(runners_[0]->IsQueueEmpty());
 }
 
 TEST_F(TaskQueueManagerTest, DelayedTaskPosting) {
@@ -232,8 +232,7 @@ TEST_F(TaskQueueManagerTest, DelayedTaskPosting) {
   runners_[0]->PostDelayedTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order),
                                delay);
   EXPECT_EQ(delay, test_task_runner_->DelayToNextTaskTime());
-  EXPECT_EQ(TaskQueue::QueueState::NO_IMMEDIATE_WORK,
-            runners_[0]->GetQueueState());
+  EXPECT_TRUE(runners_[0]->IsQueueEmpty());
   EXPECT_TRUE(run_order.empty());
 
   // The task doesn't run before the delay has completed.
@@ -243,7 +242,6 @@ TEST_F(TaskQueueManagerTest, DelayedTaskPosting) {
   // After the delay has completed, the task runs normally.
   test_task_runner_->RunForPeriod(base::TimeDelta::FromMilliseconds(1));
   EXPECT_THAT(run_order, ElementsAre(1));
-  EXPECT_EQ(TaskQueue::QueueState::EMPTY, runners_[0]->GetQueueState());
 }
 
 bool MessageLoopTaskCounter(size_t* count) {
@@ -377,7 +375,7 @@ TEST_F(TaskQueueManagerTest, ManualPumping) {
   EXPECT_FALSE(test_task_runner_->HasPendingTasks());
 
   // However polling still works.
-  EXPECT_TRUE(runners_[0]->HasPendingImmediateTask());
+  EXPECT_FALSE(runners_[0]->IsQueueEmpty());
 
   // After pumping the task runs normally.
   runners_[0]->PumpQueue();
@@ -1005,32 +1003,32 @@ TEST_F(TaskQueueManagerTest, GetAndClearSystemIsQuiescentBit) {
   EXPECT_TRUE(manager_->GetAndClearSystemIsQuiescentBit());
 }
 
-TEST_F(TaskQueueManagerTest, HasPendingImmediateTask) {
+TEST_F(TaskQueueManagerTest, IsQueueEmpty) {
   Initialize(2u);
   internal::TaskQueueImpl* queue0 = runners_[0].get();
   internal::TaskQueueImpl* queue1 = runners_[1].get();
   queue0->SetPumpPolicy(TaskQueue::PumpPolicy::AUTO);
   queue1->SetPumpPolicy(TaskQueue::PumpPolicy::MANUAL);
 
-  EXPECT_FALSE(queue0->HasPendingImmediateTask());
-  EXPECT_FALSE(queue1->HasPendingImmediateTask());
+  EXPECT_TRUE(queue0->IsQueueEmpty());
+  EXPECT_TRUE(queue1->IsQueueEmpty());
 
   queue0->PostTask(FROM_HERE, base::Bind(NullTask));
   queue1->PostTask(FROM_HERE, base::Bind(NullTask));
-  EXPECT_TRUE(queue0->HasPendingImmediateTask());
-  EXPECT_TRUE(queue1->HasPendingImmediateTask());
+  EXPECT_FALSE(queue0->IsQueueEmpty());
+  EXPECT_FALSE(queue1->IsQueueEmpty());
 
   test_task_runner_->RunUntilIdle();
-  EXPECT_FALSE(queue0->HasPendingImmediateTask());
-  EXPECT_TRUE(queue1->HasPendingImmediateTask());
+  EXPECT_TRUE(queue0->IsQueueEmpty());
+  EXPECT_FALSE(queue1->IsQueueEmpty());
 
   queue1->PumpQueue();
-  EXPECT_FALSE(queue0->HasPendingImmediateTask());
-  EXPECT_TRUE(queue1->HasPendingImmediateTask());
+  EXPECT_TRUE(queue0->IsQueueEmpty());
+  EXPECT_FALSE(queue1->IsQueueEmpty());
 
   test_task_runner_->RunUntilIdle();
-  EXPECT_FALSE(queue0->HasPendingImmediateTask());
-  EXPECT_FALSE(queue1->HasPendingImmediateTask());
+  EXPECT_TRUE(queue0->IsQueueEmpty());
+  EXPECT_TRUE(queue1->IsQueueEmpty());
 }
 
 TEST_F(TaskQueueManagerTest, GetQueueState) {
@@ -1102,6 +1100,33 @@ TEST_F(TaskQueueManagerTest, DelayedTaskDoesNotSkipAHeadOfShorterDelayedTask) {
   test_task_runner_->RunUntilIdle();
 
   EXPECT_THAT(run_order, ElementsAre(2, 1));
+}
+
+TEST_F(TaskQueueManagerTest, DelayedTaskWithAbsoluteRunTime) {
+  Initialize(1u);
+
+  // One task in the past, two with the exact same run time and one in the
+  // future.
+  base::TimeDelta delay = base::TimeDelta::FromMilliseconds(10);
+  base::TimeTicks runTime1 = now_src_->NowTicks() - delay;
+  base::TimeTicks runTime2 = now_src_->NowTicks();
+  base::TimeTicks runTime3 = now_src_->NowTicks();
+  base::TimeTicks runTime4 = now_src_->NowTicks() + delay;
+
+  std::vector<int> run_order;
+  runners_[0]->PostDelayedTaskAt(
+      FROM_HERE, base::Bind(&TestTask, 1, &run_order), runTime1);
+  runners_[0]->PostDelayedTaskAt(
+      FROM_HERE, base::Bind(&TestTask, 2, &run_order), runTime2);
+  runners_[0]->PostDelayedTaskAt(
+      FROM_HERE, base::Bind(&TestTask, 3, &run_order), runTime3);
+  runners_[0]->PostDelayedTaskAt(
+      FROM_HERE, base::Bind(&TestTask, 4, &run_order), runTime4);
+
+  now_src_->Advance(2 * delay);
+  test_task_runner_->RunUntilIdle();
+
+  EXPECT_THAT(run_order, ElementsAre(1, 2, 3, 4));
 }
 
 void CheckIsNested(bool* is_nested) {
@@ -1298,6 +1323,20 @@ TEST_F(TaskQueueManagerTest, OnUnregisterTaskQueue) {
   manager_->SetObserver(nullptr);
 }
 
+TEST_F(TaskQueueManagerTest, ScheduleDelayedWorkIsNotReEntrant) {
+  Initialize(1u);
+
+  // Post two tasks into the past. The second one used to trigger a deadlock
+  // because it tried to re-entrantly wake the first task in the same queue.
+  runners_[0]->PostDelayedTaskAt(
+      FROM_HERE, base::Bind(&NullTask),
+      base::TimeTicks() + base::TimeDelta::FromMicroseconds(100));
+  runners_[0]->PostDelayedTaskAt(
+      FROM_HERE, base::Bind(&NullTask),
+      base::TimeTicks() + base::TimeDelta::FromMicroseconds(200));
+  test_task_runner_->RunUntilIdle();
+}
+
 void HasOneRefTask(std::vector<bool>* log, internal::TaskQueueImpl* tq) {
   log->push_back(tq->HasOneRef());
 }
@@ -1348,14 +1387,12 @@ TEST_F(TaskQueueManagerTest, TimeDomainsAreIndependant) {
   Initialize(2u);
 
   base::TimeTicks start_time = manager_->delegate()->NowTicks();
-  scoped_ptr<VirtualTimeDomain> domain_a(
-      new VirtualTimeDomain(nullptr, start_time));
-  scoped_ptr<VirtualTimeDomain> domain_b(
-      new VirtualTimeDomain(nullptr, start_time));
-  manager_->RegisterTimeDomain(domain_a.get());
-  manager_->RegisterTimeDomain(domain_b.get());
-  runners_[0]->SetTimeDomain(domain_a.get());
-  runners_[1]->SetTimeDomain(domain_b.get());
+  scoped_refptr<VirtualTimeDomain> domain_a(new VirtualTimeDomain(start_time));
+  scoped_refptr<VirtualTimeDomain> domain_b(new VirtualTimeDomain(start_time));
+  manager_->RegisterTimeDomain(domain_a);
+  manager_->RegisterTimeDomain(domain_b);
+  runners_[0]->SetTimeDomain(domain_a);
+  runners_[1]->SetTimeDomain(domain_b);
 
   std::vector<int> run_order;
   runners_[0]->PostDelayedTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order),
@@ -1382,18 +1419,17 @@ TEST_F(TaskQueueManagerTest, TimeDomainsAreIndependant) {
   test_task_runner_->RunUntilIdle();
   EXPECT_THAT(run_order, ElementsAre(4, 5, 6, 1, 2, 3));
 
-  manager_->UnregisterTimeDomain(domain_a.get());
-  manager_->UnregisterTimeDomain(domain_b.get());
+  manager_->UnregisterTimeDomain(domain_a);
+  manager_->UnregisterTimeDomain(domain_b);
 }
 
 TEST_F(TaskQueueManagerTest, TimeDomainMigration) {
   Initialize(1u);
 
   base::TimeTicks start_time = manager_->delegate()->NowTicks();
-  scoped_ptr<VirtualTimeDomain> domain_a(
-      new VirtualTimeDomain(nullptr, start_time));
-  manager_->RegisterTimeDomain(domain_a.get());
-  runners_[0]->SetTimeDomain(domain_a.get());
+  scoped_refptr<VirtualTimeDomain> domain_a(new VirtualTimeDomain(start_time));
+  manager_->RegisterTimeDomain(domain_a);
+  runners_[0]->SetTimeDomain(domain_a);
 
   std::vector<int> run_order;
   runners_[0]->PostDelayedTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order),
@@ -1409,18 +1445,17 @@ TEST_F(TaskQueueManagerTest, TimeDomainMigration) {
   test_task_runner_->RunUntilIdle();
   EXPECT_THAT(run_order, ElementsAre(1, 2));
 
-  scoped_ptr<VirtualTimeDomain> domain_b(
-      new VirtualTimeDomain(nullptr, start_time));
-  manager_->RegisterTimeDomain(domain_b.get());
-  runners_[0]->SetTimeDomain(domain_b.get());
+  scoped_refptr<VirtualTimeDomain> domain_b(new VirtualTimeDomain(start_time));
+  manager_->RegisterTimeDomain(domain_b);
+  runners_[0]->SetTimeDomain(domain_b);
 
   domain_b->AdvanceTo(start_time + base::TimeDelta::FromMilliseconds(50));
 
   test_task_runner_->RunUntilIdle();
   EXPECT_THAT(run_order, ElementsAre(1, 2, 3, 4));
 
-  manager_->UnregisterTimeDomain(domain_a.get());
-  manager_->UnregisterTimeDomain(domain_b.get());
+  manager_->UnregisterTimeDomain(domain_a);
+  manager_->UnregisterTimeDomain(domain_b);
 }
 
 namespace {
