@@ -67,7 +67,6 @@ const DataResource kDataResources[] = {
     {"html.css", IDR_UASTYLE_HTML_CSS},
     {"quirks.css", IDR_UASTYLE_QUIRKS_CSS},
     {"view-source.css", IDR_UASTYLE_VIEW_SOURCE_CSS},
-    {"themeChromium.css", IDR_UASTYLE_THEME_CHROMIUM_CSS},
 #if defined(OS_ANDROID)
     {"themeChromiumAndroid.css", IDR_UASTYLE_THEME_CHROMIUM_ANDROID_CSS},
     {"mediaControlsAndroid.css", IDR_UASTYLE_MEDIA_CONTROLS_ANDROID_CSS},

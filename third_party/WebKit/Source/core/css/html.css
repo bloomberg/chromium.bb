@@ -642,6 +642,10 @@ input[type="button" i]:active:disabled, input[type="submit" i]:active:disabled, 
     border-style: outset
 }
 
+input:disabled, textarea:disabled {
+    color: #545454;
+}
+
 option:-internal-spatial-navigation-focus {
     outline: black dashed 1px;
     outline-offset: -1px;

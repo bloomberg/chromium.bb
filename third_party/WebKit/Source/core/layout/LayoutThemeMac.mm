@@ -1160,7 +1160,6 @@ String LayoutThemeMac::extraFullScreenStyleSheet()
 String LayoutThemeMac::extraDefaultStyleSheet()
 {
     return LayoutTheme::extraDefaultStyleSheet() +
-        loadResourceAsASCIIString("themeChromium.css") +
         loadResourceAsASCIIString("themeInputMultipleFields.css") +
         loadResourceAsASCIIString("themeMac.css");
 }

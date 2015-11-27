@@ -11,7 +11,6 @@
       <include name="IDR_UASTYLE_HTML_CSS" file="../Source/core/css/html.css" type="BINDATA"/>
       <include name="IDR_UASTYLE_QUIRKS_CSS" file="../Source/core/css/quirks.css" type="BINDATA"/>
       <include name="IDR_UASTYLE_VIEW_SOURCE_CSS" file="../Source/core/css/view-source.css" type="BINDATA"/>
-      <include name="IDR_UASTYLE_THEME_CHROMIUM_CSS" file="../Source/core/css/themeChromium.css" type="BINDATA"/>
       <if expr="is_android">
         <include name="IDR_UASTYLE_THEME_CHROMIUM_ANDROID_CSS" file="../Source/core/css/themeChromiumAndroid.css" type="BINDATA"/>
         <include name="IDR_UASTYLE_MEDIA_CONTROLS_ANDROID_CSS" file="../Source/core/css/mediaControlsAndroid.css" type="BINDATA"/>

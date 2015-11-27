@@ -110,11 +110,11 @@ Color LayoutThemeDefault::systemColor(CSSValueID cssValueId) const
 String LayoutThemeDefault::extraDefaultStyleSheet()
 {
     return LayoutTheme::extraDefaultStyleSheet()
-        + loadResourceAsASCIIString("themeWin.css")
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
         + loadResourceAsASCIIString("themeInputMultipleFields.css")
 #endif
-        + loadResourceAsASCIIString("themeChromium.css");
+        + loadResourceAsASCIIString("themeWin.css");
+
 }
 
 String LayoutThemeDefault::extraQuirksStyleSheet()

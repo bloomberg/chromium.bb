@@ -918,9 +918,6 @@ const DataResource kDataResources[] = {
     {"html.css", IDR_UASTYLE_HTML_CSS, ui::SCALE_FACTOR_NONE},
     {"quirks.css", IDR_UASTYLE_QUIRKS_CSS, ui::SCALE_FACTOR_NONE},
     {"view-source.css", IDR_UASTYLE_VIEW_SOURCE_CSS, ui::SCALE_FACTOR_NONE},
-    {"themeChromium.css",
-     IDR_UASTYLE_THEME_CHROMIUM_CSS,
-     ui::SCALE_FACTOR_NONE},
 #if defined(OS_ANDROID)
     {"themeChromiumAndroid.css",
      IDR_UASTYLE_THEME_CHROMIUM_ANDROID_CSS,
