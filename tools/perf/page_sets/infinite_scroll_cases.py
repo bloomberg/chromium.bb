@@ -14,7 +14,6 @@ STARTUP_SCRIPT = '''
     window.performance = undefined;'''
 
 def _ScrollAction(action_runner, scroll_amount, delay, repeat):
-  action_runner.Wait(TIME_TO_WAIT_BEFORE_STARTING_IN_SECONDS)
   with action_runner.CreateInteraction('Begin'):
     action_runner.tab.browser.DumpMemory()
   with action_runner.CreateInteraction('Scrolling'):
@@ -30,6 +29,8 @@ def _WaitAction(action_runner):
     'document.body != null && '
     'document.body.scrollHeight > window.innerHeight && '
     '!document.body.addEventListener("touchstart", function() {})')
+  action_runner.Wait(TIME_TO_WAIT_BEFORE_STARTING_IN_SECONDS)
+  action_runner.ForceGarbageCollection()
 
 def _CreateInfiniteScrollPageClass(base_page_cls):
   class DerivedSmoothPage(base_page_cls):  # pylint: disable=no-init
