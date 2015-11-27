@@ -890,6 +890,7 @@ public:
         OfflineAudioContextSuspend = 1032,
         OfflineAudioContextResume = 1033,
         AttrCloneNode = 1034,
+        SVG1DOMPaintServer = 1035,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

@@ -63413,6 +63413,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1032" label="OfflineAudioContextSuspend"/>
   <int value="1033" label="OfflineAudioContextResume"/>
   <int value="1034" label="AttrCloneNode"/>
+  <int value="1035" label="SVG1DOMPaintServer"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">
