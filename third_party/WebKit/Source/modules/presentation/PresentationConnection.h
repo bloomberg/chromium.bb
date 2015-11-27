@@ -52,6 +52,7 @@ public:
     void send(PassRefPtr<DOMArrayBuffer>, ExceptionState&);
     void send(PassRefPtr<DOMArrayBufferView>, ExceptionState&);
     void send(Blob*, ExceptionState&);
+    void close();
     void terminate();
 
     String binaryType() const;
@@ -116,8 +117,8 @@ private:
     void didFinishLoadingBlob(PassRefPtr<DOMArrayBuffer>);
     void didFailLoadingBlob(FileError::ErrorCode);
 
-    // Returns true iff current state is closed or terminated.
-    bool isDisconnected() const;
+    // Cancel loads and pending messages when the connection is closed.
+    void tearDown();
 
     String m_id;
     String m_url;

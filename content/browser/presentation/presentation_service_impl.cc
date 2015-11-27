@@ -422,6 +422,15 @@ void PresentationServiceImpl::CloseSession(
                             presentation_id);
 }
 
+void PresentationServiceImpl::TerminateSession(
+    const mojo::String& presentation_url,
+    const mojo::String& presentation_id) {
+  DVLOG(2) << "TerminateSession " << presentation_id;
+  if (delegate_)
+    delegate_->TerminateSession(render_process_id_, render_frame_id_,
+                                presentation_id);
+}
+
 void PresentationServiceImpl::OnConnectionStateChanged(
     const PresentationSessionInfo& connection,
     PresentationConnectionState state) {

@@ -725,6 +725,24 @@ void PresentationServiceDelegateImpl::CloseSession(
     DVLOG(1) << "No active route for: " << presentation_id;
     return;
   }
+
+  // TODO(mfoltz, mlamouri): implement CloseSession().
+  // This could call router_->OnPresentationSessionDetached(route_id).
+  // PresentationFrame::Reset() should probably call CloseSession() too.
+  // Rename CloseRoute() to something else to avoid confusion?
+  NOTIMPLEMENTED();
+}
+
+void PresentationServiceDelegateImpl::TerminateSession(
+    int render_process_id,
+    int render_frame_id,
+    const std::string& presentation_id) {
+  const MediaRoute::Id& route_id = frame_manager_->GetRouteId(
+      RenderFrameHostId(render_process_id, render_frame_id), presentation_id);
+  if (route_id.empty()) {
+    DVLOG(1) << "No active route for: " << presentation_id;
+    return;
+  }
   router_->CloseRoute(route_id);
 }
 

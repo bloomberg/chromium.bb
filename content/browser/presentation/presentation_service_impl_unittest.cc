@@ -107,6 +107,10 @@ class MockPresentationServiceDelegate : public PresentationServiceDelegate {
                void(int render_process_id,
                     int render_frame_id,
                     const std::string& presentation_id));
+  MOCK_METHOD3(TerminateSession,
+               void(int render_process_id,
+                    int render_frame_id,
+                    const std::string& presentation_id));
   MOCK_METHOD4(ListenForSessionMessages,
                void(int render_process_id,
                     int render_frame_id,
@@ -571,6 +575,14 @@ TEST_F(PresentationServiceImplTest, CloseSession) {
   service_ptr_->CloseSession(kPresentationUrl, kPresentationId);
   base::RunLoop run_loop;
   EXPECT_CALL(mock_delegate_, CloseSession(_, _, Eq(kPresentationId)))
+      .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
+  run_loop.Run();
+}
+
+TEST_F(PresentationServiceImplTest, TerminateSession) {
+  service_ptr_->TerminateSession(kPresentationUrl, kPresentationId);
+  base::RunLoop run_loop;
+  EXPECT_CALL(mock_delegate_, TerminateSession(_, _, Eq(kPresentationId)))
       .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
   run_loop.Run();
 }

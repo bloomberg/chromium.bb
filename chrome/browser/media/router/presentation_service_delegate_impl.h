@@ -110,6 +110,9 @@ class PresentationServiceDelegateImpl
   void CloseSession(int render_process_id,
                     int render_frame_id,
                     const std::string& presentation_id) override;
+  void TerminateSession(int render_process_id,
+                        int render_frame_id,
+                        const std::string& presentation_id) override;
   void ListenForSessionMessages(
       int render_process_id,
       int render_frame_id,

@@ -137,14 +137,21 @@ class CONTENT_EXPORT PresentationServiceDelegate {
       const PresentationSessionStartedCallback& success_cb,
       const PresentationSessionErrorCallback& error_cb) = 0;
 
-  // Close an existing presentation session.
+  // Closes an existing presentation session.
   // |render_process_id|, |render_frame_id|: ID for originating frame.
   // |presentation_id|: The ID of the presentation to close.
   virtual void CloseSession(int render_process_id,
                             int render_frame_id,
                             const std::string& presentation_id) = 0;
 
-  // Listen for messages for a presentation session.
+  // Terminates an existing presentation session.
+  // |render_process_id|, |render_frame_id|: ID for originating frame.
+  // |presentation_id|: The ID of the presentation to terminate.
+  virtual void TerminateSession(int render_process_id,
+                                int render_frame_id,
+                                const std::string& presentation_id) = 0;
+
+  // Listens for messages for a presentation session.
   // |render_process_id|, |render_frame_id|: ID for originating frame.
   // |session|: URL and ID of presentation session to listen for messages.
   // |message_cb|: Invoked with a non-empty list of messages whenever there are

@@ -205,12 +205,22 @@ void PresentationDispatcher::HandleSendMessageRequests(bool success) {
   }
 }
 
-void PresentationDispatcher::terminateSession(
+void PresentationDispatcher::closeSession(
     const blink::WebString& presentationUrl,
     const blink::WebString& presentationId) {
   ConnectToPresentationServiceIfNeeded();
 
   presentation_service_->CloseSession(
+      presentationUrl.utf8(),
+      presentationId.utf8());
+}
+
+void PresentationDispatcher::terminateSession(
+    const blink::WebString& presentationUrl,
+    const blink::WebString& presentationId) {
+  ConnectToPresentationServiceIfNeeded();
+
+  presentation_service_->TerminateSession(
       presentationUrl.utf8(),
       presentationId.utf8());
 }

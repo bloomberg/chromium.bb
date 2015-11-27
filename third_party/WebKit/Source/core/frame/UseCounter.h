@@ -893,6 +893,7 @@ public:
         SVG1DOMPaintServer = 1035,
         SVGSVGElementFragmentSVGView = 1036,
         SVGSVGElementFragmentSVGViewElement = 1037,
+        PresentationConnectionClose = 1038,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
