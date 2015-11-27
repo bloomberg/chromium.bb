@@ -21,7 +21,7 @@ static inline IntRect normalizeRect(const IntRect& rect)
         std::max(rect.height(), -rect.height()));
 }
 
-static PassRefPtr<StaticBitmapImage> cropImage(StaticBitmapImage* image, const IntRect& cropRect)
+static PassRefPtr<StaticBitmapImage> cropImage(Image* image, const IntRect& cropRect)
 {
     ASSERT(image);
 
@@ -48,7 +48,7 @@ static PassRefPtr<StaticBitmapImage> cropImage(StaticBitmapImage* image, const I
 
 ImageBitmap::ImageBitmap(HTMLImageElement* image, const IntRect& cropRect)
 {
-    m_image = cropImage(static_cast<StaticBitmapImage*>(image->cachedImage()->image()), cropRect);
+    m_image = cropImage(image->cachedImage()->image(), cropRect);
 }
 
 ImageBitmap::ImageBitmap(HTMLVideoElement* video, const IntRect& cropRect)
@@ -71,7 +71,7 @@ ImageBitmap::ImageBitmap(HTMLVideoElement* video, const IntRect& cropRect)
 ImageBitmap::ImageBitmap(HTMLCanvasElement* canvas, const IntRect& cropRect)
 {
     ASSERT(canvas->isPaintable());
-    m_image = cropImage(static_cast<StaticBitmapImage*>(canvas->copiedImage(BackBuffer, PreferAcceleration).get()), cropRect);
+    m_image = cropImage(canvas->copiedImage(BackBuffer, PreferAcceleration).get(), cropRect);
 }
 
 ImageBitmap::ImageBitmap(ImageData* data, const IntRect& cropRect)
@@ -103,7 +103,7 @@ ImageBitmap::ImageBitmap(ImageBitmap* bitmap, const IntRect& cropRect)
 
 ImageBitmap::ImageBitmap(Image* image, const IntRect& cropRect)
 {
-    m_image = cropImage(static_cast<StaticBitmapImage*>(image), cropRect);
+    m_image = cropImage(image, cropRect);
 }
 
 ImageBitmap::ImageBitmap(PassRefPtr<StaticBitmapImage> image)
