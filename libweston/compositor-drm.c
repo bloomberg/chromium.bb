@@ -155,8 +155,8 @@ struct drm_output {
 	struct weston_output base;
 	drmModeConnector *connector;
 
-	uint32_t crtc_id;
-	int pipe;
+	uint32_t crtc_id; /* object ID to pass to DRM functions */
+	int pipe; /* index of CRTC in resource array / bitmasks */
 	uint32_t connector_id;
 	drmModeCrtcPtr original_crtc;
 	struct drm_edid edid;
