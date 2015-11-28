@@ -75,9 +75,7 @@ void FontFallbackList::releaseFontData()
             FontCache::fontCache()->releaseFontData(toSimpleFontData(m_fontList[i]));
         }
     }
-    if (m_shapeCache)
-        m_shapeCache->clear(); // Clear the shape cache.
-    m_shapeCache.clear(); // Clear the weak pointer to the cache instance.
+    m_shapeCache.clear();
 }
 
 bool FontFallbackList::loadingCustomFonts() const
@@ -208,8 +206,15 @@ FallbackListCompositeKey FontFallbackList::compositeKey(const FontDescription& f
                 if (FontPlatformData* platformData = FontCache::fontCache()->getFontPlatformData(fontDescription, params))
                     result = FontCache::fontCache()->fontDataFromFontPlatformData(platformData);
             }
-            if (result)
-                key.add(fontDescription.cacheKey(params));
+
+            // Include loading state and version when constructing key, that way if called when a font is loading
+            // and then again once it has been loaded or updated different keys are produced.
+            if (result) {
+                FontCacheKey cacheKey = fontDescription.cacheKey(params, FontTraits(0),
+                    result->isLoading() || result->isLoadingFallback(),
+                    m_fontSelector ? m_fontSelector->version() : 0);
+                key.add(cacheKey);
+            }
         }
         currentFamily = currentFamily->next();
     }
