@@ -142,8 +142,8 @@ MdDownloadsUI::MdDownloadsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
   DownloadManager* dlm = BrowserContext::GetDownloadManager(profile);
 
-  MdDownloadsDOMHandler* handler = new MdDownloadsDOMHandler(dlm);
-  web_ui->AddMessageHandler(handler);
+  handler_ = new MdDownloadsDOMHandler(dlm, web_ui);
+  web_ui->AddMessageHandler(handler_);
 
   // Set up the chrome://downloads/ source.
   content::WebUIDataSource* source = CreateDownloadsUIHTMLSource(profile);
@@ -159,4 +159,9 @@ base::RefCountedMemory* MdDownloadsUI::GetFaviconResourceBytes(
     ui::ScaleFactor scale_factor) {
   return ResourceBundle::GetSharedInstance().
       LoadDataResourceBytesForScale(IDR_DOWNLOADS_FAVICON, scale_factor);
+}
+
+void MdDownloadsUI::RenderViewReused(
+    content::RenderViewHost* render_view_host) {
+  handler_->RenderViewReused(render_view_host);
 }

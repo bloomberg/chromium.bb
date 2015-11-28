@@ -8,13 +8,10 @@
 #include <set>
 #include <vector>
 
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/download/all_download_item_notifier.h"
 #include "chrome/browser/download/download_danger_prompt.h"
-#include "content/public/browser/download_item.h"
-#include "content/public/browser/download_manager.h"
+#include "chrome/browser/ui/webui/md_downloads/downloads_list_tracker.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 namespace base {
@@ -22,29 +19,25 @@ class ListValue;
 }
 
 namespace content {
+class DownloadItem;
+class DownloadManager;
+class RenderViewHost;
 class WebContents;
+class WebUI;
 }
 
 // The handler for Javascript messages related to the "downloads" view,
 // also observes changes to the download manager.
-class MdDownloadsDOMHandler : public content::WebUIMessageHandler,
-                              public AllDownloadItemNotifier::Observer {
+class MdDownloadsDOMHandler : public content::WebUIMessageHandler {
  public:
-  explicit MdDownloadsDOMHandler(content::DownloadManager* download_manager);
+  MdDownloadsDOMHandler(content::DownloadManager* download_manager,
+                        content::WebUI* web_ui);
   ~MdDownloadsDOMHandler() override;
-
-  void Init();
 
   // WebUIMessageHandler implementation.
   void RegisterMessages() override;
 
-  // AllDownloadItemNotifier::Observer interface
-  void OnDownloadCreated(content::DownloadManager* manager,
-                         content::DownloadItem* download_item) override;
-  void OnDownloadUpdated(content::DownloadManager* manager,
-                         content::DownloadItem* download_item) override;
-  void OnDownloadRemoved(content::DownloadManager* manager,
-                         content::DownloadItem* download_item) override;
+  void RenderViewReused(content::RenderViewHost* render_view_host);
 
   // Callback for the "getDownloads" message.
   void HandleGetDownloads(const base::ListValue* args);
@@ -94,12 +87,6 @@ class MdDownloadsDOMHandler : public content::WebUIMessageHandler,
   // depend on WebUI. The other methods that depend on WebUI are
   // RegisterMessages() and HandleDrag().
   virtual content::WebContents* GetWebUIWebContents();
-  virtual void CallUpdateAll(const base::ListValue& list);
-  virtual void CallUpdateItem(const base::DictionaryValue& item);
-
-  // Schedules a call to SendCurrentDownloads() in the next message loop
-  // iteration. Protected rather than private for use in tests.
-  void ScheduleSendCurrentDownloads();
 
   // Actually remove downloads with an ID in |removals_|. This cannot be undone.
   void FinalizeRemovals();
@@ -115,9 +102,6 @@ class MdDownloadsDOMHandler : public content::WebUIMessageHandler,
   // Convenience method to call |original_notifier_->GetManager()| while
   // null-checking |original_notifier_|.
   content::DownloadManager* GetOriginalNotifierManager() const;
-
-  // Sends the current list of downloads to the page.
-  void SendCurrentDownloads();
 
   // Displays a native prompt asking the user for confirmation after accepting
   // the dangerous download specified by |dangerous|. The function returns
@@ -144,28 +128,10 @@ class MdDownloadsDOMHandler : public content::WebUIMessageHandler,
   // Remove all downloads in |to_remove| with the ability to undo removal later.
   void RemoveDownloads(const DownloadVector& to_remove);
 
-  // Weak reference to the DownloadManager this class was constructed with. You
-  // should probably be using use Get{Main,Original}NotifierManager() instead.
-  content::DownloadManager* download_manager_;
-
-  // Current search terms.
-  scoped_ptr<base::ListValue> search_terms_;
-
-  // Notifies OnDownload*() and provides safe access to the DownloadManager.
-  scoped_ptr<AllDownloadItemNotifier> main_notifier_;
-
-  // If |main_notifier_| observes an incognito profile, then this observes the
-  // DownloadManager for the original profile; otherwise, this is NULL.
-  scoped_ptr<AllDownloadItemNotifier> original_notifier_;
+  DownloadsListTracker list_tracker_;
 
   // IDs of downloads to remove when this handler gets deleted.
   std::vector<IdSet> removals_;
-
-  // Whether a call to SendCurrentDownloads() is currently scheduled.
-  bool update_scheduled_;
-
-  // IDs of new downloads that the page doesn't know about yet.
-  IdSet new_downloads_;
 
   base::WeakPtrFactory<MdDownloadsDOMHandler> weak_ptr_factory_;
 

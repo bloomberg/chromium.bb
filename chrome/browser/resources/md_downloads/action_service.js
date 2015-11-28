@@ -14,6 +14,27 @@ cr.define('downloads', function() {
   /** @constructor */
   function ActionService() {}
 
+  /**
+   * @param {string} s
+   * @return {string} |s| without whitespace at the beginning or end.
+   */
+  function trim(s) { return s.trim(); }
+
+  /**
+   * @param {string|undefined} value
+   * @return {boolean} Whether |value| is truthy.
+   */
+  function truthy(value) { return !!value; }
+
+  /**
+   * @param {string} searchText Input typed by the user into a search box.
+   * @return {Array<string>} A list of terms extracted from |searchText|.
+   */
+  ActionService.splitTerms = function(searchText) {
+    // Split quoted terms (e.g., 'The "lazy" dog' => ['The', 'lazy', 'dog']).
+    return searchText.split(/"([^"]*)"/).map(trim).filter(truthy);
+  };
+
   ActionService.prototype = {
     /** @param {string} id ID of the download to cancel. */
     cancel: chromeSendWithId('cancel'),
@@ -40,12 +61,15 @@ cr.define('downloads', function() {
     /** @param {string} id ID of the download that the user started dragging. */
     drag: chromeSendWithId('drag'),
 
+    /** @private {boolean} */
+    isSearching_: false,
+
     /**
      * @return {boolean} Whether the user is currently searching for downloads
      *     (i.e. has a non-empty search term).
      */
     isSearching: function() {
-      return this.searchText_.length > 0;
+      return this.isSearching_;
     },
 
     /** Opens the current local destination for downloads. */
@@ -78,9 +102,10 @@ cr.define('downloads', function() {
 
       this.searchText_ = searchText;
 
-      // Split quoted terms (e.g., 'The "lazy" dog' => ['The', 'lazy', 'dog']).
-      function trim(s) { return s.trim(); }
-      chrome.send('getDownloads', searchText.split(/"([^"]*)"/).map(trim));
+      var terms = ActionService.splitTerms(searchText);
+      this.isSearching_ = terms.length > 0;
+
+      chrome.send('getDownloads', terms);
     },
 
     /**

@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/strings/string16.h"
 #include "content/public/browser/download_item.h"
 
 namespace base {
@@ -89,6 +90,9 @@ class DownloadQuery {
     ASCENDING,
     DESCENDING,
   };
+
+  static bool MatchesQuery(const std::vector<base::string16>& query_terms,
+                           const content::DownloadItem& item);
 
   DownloadQuery();
   ~DownloadQuery();
