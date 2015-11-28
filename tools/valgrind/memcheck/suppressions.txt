@@ -3255,6 +3255,15 @@
    fun:_ZN5blink4Heap19processMarkingStackEPNS_7VisitorE
 }
 {
+   bug_515330
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:_ZN3net13CTLogVerifier4InitERKN4base16BasicStringPieceISsEE
+   fun:_ZN3net13CTLogVerifier6CreateERKN4base16BasicStringPieceISsEES5_S5_
+   fun:_ZN3net2ct30CreateLogVerifiersForKnownLogsEv
+}
+{
    bug_521656
    Memcheck:Uninitialized
    fun:_ZN5blink10TraceTraitINS_11WebGLObjectEE5traceEPNS_7VisitorEPv
@@ -3443,4 +3452,59 @@
    fun:_Znw*
    fun:_ZN7storage12QuotaManager14LazyInitializeEv
    fun:_ZN7storage12QuotaManager26GetUsageAndQuotaForWebAppsERK4GURLNS_11StorageTypeERKN4base8CallbackIFvNS_15QuotaStatusCodeEllEEE
+}
+{
+   bug_562712
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base8internal20PostTaskAndReplyImpl16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEESA_
+   fun:_ZN4base10TaskRunner16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEES9_
+   fun:_ZN10disk_cache15SimpleEntryImpl13CloseInternalEv
+   fun:_ZN10disk_cache15SimpleEntryImpl24RunNextOperationIfNeededEv
+   fun:_ZN10disk_cache15SimpleEntryImpl5CloseEv
+}
+{
+   bug_562718a
+   Memcheck:Uninitialized
+   fun:_ZN5blink10PaintLayer24removeFilterInfoIfNeededEv
+   fun:_ZN5blink10PaintLayerD1Ev
+   fun:_ZN3WTF15OwnedPtrDeleterIN5blink10PaintLayerEE9deletePtrEPS2_
+   fun:_ZN3WTF6OwnPtrIN5blink10PaintLayerEE5clearEv
+   fun:_ZN3WTF6OwnPtrIN5blink10PaintLayerEEaSEDn
+}
+{
+   bug_562718b
+   Memcheck:Uninitialized
+   fun:_ZN5blink10PaintLayer31setNeedsCompositingInputsUpdateEv
+   fun:_ZN5blink10PaintLayer12styleChangedENS_15StyleDifferenceEPKNS_13ComputedStyleE
+   fun:_ZN5blink20LayoutBoxModelObject14styleDidChangeENS_15StyleDifferenceEPKNS_13ComputedStyleE
+   fun:_ZN5blink9LayoutBox14styleDidChangeENS_15StyleDifferenceEPKNS_13ComputedStyleE
+   fun:_ZN5blink11LayoutBlock14styleDidChangeENS_15StyleDifferenceEPKNS_13ComputedStyleE
+}
+{
+   bug_562718c
+   Memcheck:Uninitialized
+   fun:_ZN5blink10PaintLayer30updateDescendantDependentFlagsEv
+   fun:_ZN5blink10PaintLayer12styleChangedENS_15StyleDifferenceEPKNS_13ComputedStyleE
+   fun:_ZN5blink20LayoutBoxModelObject14styleDidChangeENS_15StyleDifferenceEPKNS_13ComputedStyleE
+   fun:_ZN5blink9LayoutBox14styleDidChangeENS_15StyleDifferenceEPKNS_13ComputedStyleE
+   fun:_ZN5blink11LayoutBlock14styleDidChangeENS_15StyleDifferenceEPKNS_13ComputedStyleE
+}
+{
+   bug_562718d
+   Memcheck:Uninitialized
+   fun:_ZN7GrGLGpu18createCopyProgramsEv
+   fun:_ZN7GrGLGpuC1EP11GrGLContextP9GrContext
+   fun:_ZN7GrGLGpu6CreateElRK16GrContextOptionsP9GrContext
+   fun:_ZN5GrGpu6CreateE9GrBackendlRK16GrContextOptionsP9GrContext
+   fun:_ZN9GrContext4initE9GrBackendlRK16GrContextOptions
+}
+{
+   bug_562718e
+   Memcheck:Uninitialized
+   fun:_ZN8GrGLCaps8initGLSLERK15GrGLContextInfo
+   fun:_ZN8GrGLCaps4initERK16GrContextOptionsRK15GrGLContextInfoPK13GrGLInterface
+   fun:_ZN8GrGLCapsC1ERK16GrContextOptionsRK15GrGLContextInfoPK13GrGLInterface
+   fun:_ZN15GrGLContextInfoC1ERKNS_15ConstructorArgsE
+   fun:_ZN11GrGLContextC2ERKN15GrGLContextInfo15ConstructorArgsE
 }
