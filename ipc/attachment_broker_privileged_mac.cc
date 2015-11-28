@@ -282,7 +282,7 @@ base::mac::ScopedMachSendRight AttachmentBrokerPrivilegedMac::ExtractNamedRight(
   mach_port_t extracted_right = MACH_PORT_NULL;
   mach_msg_type_name_t extracted_right_type;
   kern_return_t kr =
-      mach_port_extract_right(task_port, named_right, MACH_MSG_TYPE_COPY_SEND,
+      mach_port_extract_right(task_port, named_right, MACH_MSG_TYPE_MOVE_SEND,
                               &extracted_right, &extracted_right_type);
   if (kr != KERN_SUCCESS) {
     LogError(ERROR_EXTRACT_SOURCE_RIGHT);
@@ -291,14 +291,6 @@ base::mac::ScopedMachSendRight AttachmentBrokerPrivilegedMac::ExtractNamedRight(
 
   DCHECK_EQ(static_cast<mach_msg_type_name_t>(MACH_MSG_TYPE_PORT_SEND),
             extracted_right_type);
-
-  // Decrement the reference count of the send right from the source process.
-  kr = mach_port_mod_refs(task_port, named_right, MACH_PORT_RIGHT_SEND, -1);
-  if (kr != KERN_SUCCESS) {
-    LogError(ERROR_DECREASE_REF);
-    // Failure does not actually affect attachment brokering, so there's no need
-    // to return |MACH_PORT_NULL|.
-  }
 
   return base::mac::ScopedMachSendRight(extracted_right);
 }
