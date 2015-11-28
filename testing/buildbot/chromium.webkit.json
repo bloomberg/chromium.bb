@@ -999,9 +999,6 @@
         "test": "gpu_unittests"
       },
       {
-        "test": "html_viewer_unittests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -1021,9 +1018,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "jingle_unittests"
-      },
-      {
-        "test": "mash_unittests"
       },
       {
         "swarming": {
@@ -1077,19 +1071,10 @@
         "test": "mojo_public_utility_unittests"
       },
       {
-        "test": "mojo_runner_host_unittests"
-      },
-      {
         "test": "mojo_shell_unittests"
       },
       {
-        "test": "mojo_surfaces_lib_unittests"
-      },
-      {
         "test": "mojo_system_unittests"
-      },
-      {
-        "test": "mojo_view_manager_lib_unittests"
       },
       {
         "swarming": {
@@ -1117,9 +1102,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "remoting_unittests"
-      },
-      {
-        "test": "resource_provider_unittests"
       },
       {
         "swarming": {
