@@ -96,6 +96,36 @@ bool AttachmentBrokerPrivilegedMac::SendAttachmentToProcess(
   return false;
 }
 
+void AttachmentBrokerPrivilegedMac::DeregisterCommunicationChannel(
+    Endpoint* endpoint) {
+  AttachmentBrokerPrivileged::DeregisterCommunicationChannel(endpoint);
+
+  if (!endpoint)
+    return;
+
+  base::ProcessId pid = endpoint->GetPeerPID();
+  if (pid == base::kNullProcessId)
+    return;
+
+  {
+    base::AutoLock l(precursors_lock_);
+    auto it = precursors_.find(pid);
+    if (it != precursors_.end()) {
+      delete it->second;
+      precursors_.erase(pid);
+    }
+  }
+
+  {
+    base::AutoLock l(extractors_lock_);
+    auto it = extractors_.find(pid);
+    if (it != extractors_.end()) {
+      delete it->second;
+      extractors_.erase(pid);
+    }
+  }
+}
+
 bool AttachmentBrokerPrivilegedMac::OnMessageReceived(const Message& msg) {
   bool handled = true;
   switch (msg.type()) {
@@ -169,7 +199,7 @@ void AttachmentBrokerPrivilegedMac::RoutePrecursorToSelf(
   HandleReceivedAttachment(attachment);
 }
 
-void AttachmentBrokerPrivilegedMac::RouteWireFormatToAnother(
+bool AttachmentBrokerPrivilegedMac::RouteWireFormatToAnother(
     const MachPortWireFormat& wire_format) {
   DCHECK_NE(wire_format.destination_process, base::Process::Current().Pid());
 
@@ -183,11 +213,12 @@ void AttachmentBrokerPrivilegedMac::RouteWireFormatToAnother(
     LOG(ERROR) << "Failed to deliver brokerable attachment to process with id: "
                << dest;
     LogError(DESTINATION_NOT_FOUND);
-    return;
+    return false;
   }
 
   LogError(DESTINATION_FOUND);
   sender->Send(new AttachmentBrokerMsg_MachPortHasBeenDuplicated(wire_format));
+  return true;
 }
 
 mach_port_name_t AttachmentBrokerPrivilegedMac::CreateIntermediateMachPort(
@@ -245,21 +276,6 @@ mach_port_name_t AttachmentBrokerPrivilegedMac::CreateIntermediateMachPort(
   return endpoint;
 }
 
-base::mac::ScopedMachSendRight AttachmentBrokerPrivilegedMac::AcquireSendRight(
-    base::ProcessId pid,
-    mach_port_name_t named_right) {
-  if (pid == base::GetCurrentProcId()) {
-    kern_return_t kr = mach_port_mod_refs(mach_task_self(), named_right,
-                                          MACH_PORT_RIGHT_SEND, 1);
-    if (kr != KERN_SUCCESS)
-      return base::mac::ScopedMachSendRight(MACH_PORT_NULL);
-    return base::mac::ScopedMachSendRight(named_right);
-  }
-
-  mach_port_t task_port = port_provider_->TaskForPid(pid);
-  return ExtractNamedRight(task_port, named_right);
-}
-
 base::mac::ScopedMachSendRight AttachmentBrokerPrivilegedMac::ExtractNamedRight(
     mach_port_t task_port,
     mach_port_name_t named_right) {
@@ -305,16 +321,32 @@ void AttachmentBrokerPrivilegedMac::SendPrecursorsForProcess(
   // Whether this process is the destination process.
   bool to_self = pid == base::GetCurrentProcId();
 
+  if (!to_self) {
+    if (!GetSenderWithProcessId(pid)) {
+      // If there is no sender, then the destination process is no longer
+      // running, or never existed to begin with.
+      LogError(DESTINATION_NOT_FOUND);
+      delete it->second;
+      precursors_.erase(it);
+      return;
+    }
+  }
+
   mach_port_t task_port = port_provider_->TaskForPid(pid);
+
+  // It's possible that the destination process has not yet provided the
+  // privileged process with its task port.
   if (!to_self && task_port == MACH_PORT_NULL)
     return;
 
   while (!it->second->empty()) {
     auto precursor_it = it->second->begin();
-    if (to_self)
+    if (to_self) {
       RoutePrecursorToSelf(*precursor_it);
-    else
-      SendPrecursor(*precursor_it, task_port);
+    } else {
+      if (!SendPrecursor(*precursor_it, task_port))
+        break;
+    }
     it->second->erase(precursor_it);
   }
 
@@ -322,7 +354,7 @@ void AttachmentBrokerPrivilegedMac::SendPrecursorsForProcess(
   precursors_.erase(it);
 }
 
-void AttachmentBrokerPrivilegedMac::SendPrecursor(
+bool AttachmentBrokerPrivilegedMac::SendPrecursor(
     AttachmentPrecursor* precursor,
     mach_port_t task_port) {
   DCHECK(task_port);
@@ -334,7 +366,8 @@ void AttachmentBrokerPrivilegedMac::SendPrecursor(
     intermediate_port = CreateIntermediateMachPort(
         task_port, base::mac::ScopedMachSendRight(port_to_insert.release()));
   }
-  RouteWireFormatToAnother(CopyWireFormat(wire_format, intermediate_port));
+  return RouteWireFormatToAnother(
+      CopyWireFormat(wire_format, intermediate_port));
 }
 
 void AttachmentBrokerPrivilegedMac::AddPrecursor(
@@ -357,7 +390,18 @@ void AttachmentBrokerPrivilegedMac::ProcessExtractorsForProcess(
   if (it == extractors_.end())
     return;
 
+  if (!GetSenderWithProcessId(pid)) {
+    // If there is no sender, then the source process is no longer running.
+    LogError(ERROR_SOURCE_NOT_FOUND);
+    delete it->second;
+    extractors_.erase(it);
+    return;
+  }
+
   mach_port_t task_port = port_provider_->TaskForPid(pid);
+
+  // It's possible that the source process has not yet provided the privileged
+  // process with its task port.
   if (task_port == MACH_PORT_NULL)
     return;
 

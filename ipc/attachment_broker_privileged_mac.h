@@ -64,6 +64,7 @@ class IPC_EXPORT AttachmentBrokerPrivilegedMac
   bool SendAttachmentToProcess(
       const scoped_refptr<IPC::BrokerableAttachment>& attachment,
       base::ProcessId destination_process) override;
+  void DeregisterCommunicationChannel(Endpoint* endpoint) override;
 
   // IPC::Listener overrides.
   bool OnMessageReceived(const Message& message) override;
@@ -150,11 +151,6 @@ class IPC_EXPORT AttachmentBrokerPrivilegedMac
       mach_port_t task_port,
       base::mac::ScopedMachSendRight port_to_insert);
 
-  // Acquire a send right to a named right in |pid|.
-  // Returns MACH_PORT_NULL on error.
-  base::mac::ScopedMachSendRight AcquireSendRight(base::ProcessId pid,
-                                                  mach_port_name_t named_right);
-
   // Extracts a copy of the send right to |named_right| from |task_port|.
   // Returns MACH_PORT_NULL on error.
   base::mac::ScopedMachSendRight ExtractNamedRight(
@@ -176,14 +172,16 @@ class IPC_EXPORT AttachmentBrokerPrivilegedMac
   // |wire_format.mach_port| must be the intermediate Mach port.
   // Ownership of |wire_format.mach_port| is implicitly passed to the process
   // that receives the Chrome IPC message.
-  void RouteWireFormatToAnother(const MachPortWireFormat& wire_format);
+  // Returns |false| on irrecoverable error.
+  bool RouteWireFormatToAnother(const MachPortWireFormat& wire_format);
 
   // Atempts to broker all precursors whose destination is |pid|. Has no effect
   // if |port_provider_| does not have the task port for |pid|.
   void SendPrecursorsForProcess(base::ProcessId pid);
 
   // Brokers a single precursor into the task represented by |task_port|.
-  void SendPrecursor(AttachmentPrecursor* precursor, mach_port_t task_port);
+  // Returns |false| on irrecoverable error.
+  bool SendPrecursor(AttachmentPrecursor* precursor, mach_port_t task_port);
 
   // Add a precursor to |precursors_|. Takes ownership of |port|.
   void AddPrecursor(base::ProcessId pid,

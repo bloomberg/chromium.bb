@@ -79,6 +79,9 @@ class IPC_EXPORT AttachmentBrokerPrivileged : public IPC::AttachmentBroker {
     ERROR_DECREASE_REF = 10,
     // Couldn't extract a right from the source.
     ERROR_EXTRACT_SOURCE_RIGHT = 11,
+    // The broker did not have a channel of communication with the source
+    // process.
+    ERROR_SOURCE_NOT_FOUND = 12,
     ERROR_MAX
   };
 

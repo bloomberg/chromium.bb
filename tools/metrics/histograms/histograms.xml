@@ -66322,6 +66322,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="11" label="ERROR_EXTRACT_RIGHT_SOURCE">
     Couldn't extract a right from the source process.
   </int>
+  <int value="12" label="ERROR_SOURCE_NOT_FOUND">
+    Broker didn't have a channel of communication with the source process.
+  </int>
 </enum>
 
 <enum name="IPCAttachmentBrokerUnprivilegedBrokerAttachmentError" type="int">
