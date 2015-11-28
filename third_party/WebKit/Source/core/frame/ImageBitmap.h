@@ -9,6 +9,7 @@
 #include "core/CoreExport.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/canvas/CanvasImageSource.h"
+#include "core/imagebitmap/ImageBitmapSource.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/Image.h"
 #include "platform/graphics/ImageBuffer.h"
@@ -23,7 +24,7 @@ class HTMLCanvasElement;
 class HTMLVideoElement;
 class ImageData;
 
-class CORE_EXPORT ImageBitmap final : public RefCountedWillBeGarbageCollectedFinalized<ImageBitmap>, public ScriptWrappable, public ImageLoaderClient, public CanvasImageSource {
+class CORE_EXPORT ImageBitmap final : public RefCountedWillBeGarbageCollectedFinalized<ImageBitmap>, public ScriptWrappable, public ImageLoaderClient, public CanvasImageSource, public ImageBitmapSource {
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ImageBitmap);
 public:
@@ -50,6 +51,10 @@ public:
     bool wouldTaintOrigin(SecurityOrigin*) const override { return false; }
     void adjustDrawRects(FloatRect* srcRect, FloatRect* dstRect) const override;
     FloatSize elementSize() const override;
+
+    // ImageBitmapSource implementation
+    IntSize bitmapSourceSize() const override { return size(); }
+    ScriptPromise createImageBitmap(ScriptState*, EventTarget&, int sx, int sy, int sw, int sh, ExceptionState&) override;
 
     DECLARE_VIRTUAL_TRACE();
 

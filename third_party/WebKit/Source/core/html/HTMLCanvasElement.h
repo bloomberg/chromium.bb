@@ -37,6 +37,7 @@
 #include "core/fileapi/FileCallback.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/canvas/CanvasImageSource.h"
+#include "core/imagebitmap/ImageBitmapSource.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/GraphicsTypes.h"
@@ -60,7 +61,7 @@ class ImageBufferSurface;
 class ImageData;
 class IntSize;
 
-class CORE_EXPORT HTMLCanvasElement final : public HTMLElement, public DocumentVisibilityObserver, public CanvasImageSource, public ImageBufferClient {
+class CORE_EXPORT HTMLCanvasElement final : public HTMLElement, public DocumentVisibilityObserver, public CanvasImageSource, public ImageBufferClient, public ImageBitmapSource {
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(HTMLCanvasElement);
 public:
@@ -157,6 +158,10 @@ public:
     void restoreCanvasMatrixClipStack(SkCanvas*) const override;
 
     void doDeferredPaintInvalidation();
+
+    // ImageBitmapSource implementation
+    IntSize bitmapSourceSize() const override;
+    ScriptPromise createImageBitmap(ScriptState*, EventTarget&, int sx, int sy, int sw, int sh, ExceptionState&) override;
 
     DECLARE_VIRTUAL_TRACE();
 

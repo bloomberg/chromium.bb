@@ -37,6 +37,7 @@
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMArrayBufferView.h"
 #include "core/html/URLRegistry.h"
+#include "core/imagebitmap/ImageBitmapSource.h"
 #include "platform/blob/BlobData.h"
 #include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
@@ -49,7 +50,7 @@ class BlobPropertyBag;
 class ExceptionState;
 class ExecutionContext;
 
-class CORE_EXPORT Blob : public GarbageCollectedFinalized<Blob>, public ScriptWrappable, public URLRegistrable {
+class CORE_EXPORT Blob : public GarbageCollectedFinalized<Blob>, public ScriptWrappable, public URLRegistrable, public ImageBitmapSource {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static Blob* create(ExceptionState&)
@@ -99,6 +100,9 @@ public:
 
     // URLRegistrable to support PublicURLs.
     URLRegistry& registry() const final;
+
+    // ImageBitmapSource implementation
+    bool isBlob() const override { return true; }
 
     DEFINE_INLINE_TRACE() { }
 

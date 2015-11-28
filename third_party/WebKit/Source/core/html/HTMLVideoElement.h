@@ -30,6 +30,7 @@
 #include "core/html/HTMLImageLoader.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/canvas/CanvasImageSource.h"
+#include "core/imagebitmap/ImageBitmapSource.h"
 #include "platform/graphics/GraphicsTypes3D.h"
 
 class SkPaint;
@@ -45,7 +46,7 @@ class GraphicsContext;
 typedef unsigned GLenum;
 typedef int GC3Dint;
 
-class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement, public CanvasImageSource {
+class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement, public CanvasImageSource, public ImageBitmapSource {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<HTMLVideoElement> create(Document&);
@@ -85,6 +86,10 @@ public:
     const KURL& sourceURL() const override { return currentSrc(); }
 
     bool isHTMLVideoElement() const override { return true; }
+
+    // ImageBitmapSource implementation
+    IntSize bitmapSourceSize() const override;
+    ScriptPromise createImageBitmap(ScriptState*, EventTarget&, int sx, int sy, int sw, int sh, ExceptionState&) override;
 
 private:
     HTMLVideoElement(Document&);

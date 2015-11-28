@@ -34,33 +34,30 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
+#include "bindings/core/v8/UnionTypesCore.h"
 #include "core/fileapi/FileReaderLoader.h"
 #include "core/fileapi/FileReaderLoaderClient.h"
 #include "platform/Supplementable.h"
 #include "platform/geometry/IntRect.h"
-#include "wtf/Forward.h"
-#include "wtf/HashSet.h"
 
 namespace blink {
 
+class ImageBitmapSource;
 class Blob;
 class EventTarget;
 class ExceptionState;
-class ImageBitmap;
-class ImageData;
 class ExecutionContext;
+
+typedef HTMLImageElementOrHTMLVideoElementOrHTMLCanvasElementOrBlobOrImageDataOrImageBitmap ImageBitmapSourceUnion;
 
 class ImageBitmapFactories final : public NoBaseWillBeGarbageCollectedFinalized<ImageBitmapFactories>, public WillBeHeapSupplement<LocalDOMWindow>, public WillBeHeapSupplement<WorkerGlobalScope> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ImageBitmapFactories);
     USING_FAST_MALLOC_WILL_BE_REMOVED(ImageBitmapFactories);
 
 public:
-    static ScriptPromise createImageBitmap(ScriptState*, EventTarget&, Blob*, ExceptionState&);
-    static ScriptPromise createImageBitmap(ScriptState*, EventTarget&, Blob*, int sx, int sy, int sw, int sh, ExceptionState&);
-    static ScriptPromise createImageBitmap(ScriptState*, EventTarget&, ImageData*, ExceptionState&);
-    static ScriptPromise createImageBitmap(ScriptState*, EventTarget&, ImageData*, int sx, int sy, int sw, int sh, ExceptionState&);
-    static ScriptPromise createImageBitmap(ScriptState*, EventTarget&, ImageBitmap*, ExceptionState&);
-    static ScriptPromise createImageBitmap(ScriptState*, EventTarget&, ImageBitmap*, int sx, int sy, int sw, int sh, ExceptionState&);
+    static ScriptPromise createImageBitmap(ScriptState*, EventTarget&, const ImageBitmapSourceUnion&, ExceptionState&);
+    static ScriptPromise createImageBitmap(ScriptState*, EventTarget&, const ImageBitmapSourceUnion&, int sx, int sy, int sw, int sh, ExceptionState&);
+    static ScriptPromise createImageBitmap(ScriptState*, EventTarget&, ImageBitmapSource*, int sx, int sy, int sw, int sh, ExceptionState&);
 
     virtual ~ImageBitmapFactories() { }
 

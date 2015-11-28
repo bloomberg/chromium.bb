@@ -1647,6 +1647,8 @@
             'frame/csp/SourceListDirective.cpp',
             'imagebitmap/ImageBitmapFactories.cpp',
             'imagebitmap/ImageBitmapFactories.h',
+            'imagebitmap/ImageBitmapSource.cpp',
+            'imagebitmap/ImageBitmapSource.h',
             'inspector/AsyncCallChain.cpp',
             'inspector/AsyncCallChain.h',
             'inspector/AsyncCallTracker.cpp',

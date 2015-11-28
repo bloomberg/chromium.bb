@@ -187,6 +187,15 @@ IntSize ImageBitmap::size() const
     return IntSize(m_image->width(), m_image->height());
 }
 
+ScriptPromise ImageBitmap::createImageBitmap(ScriptState* scriptState, EventTarget& eventTarget, int sx, int sy, int sw, int sh, ExceptionState& exceptionState)
+{
+    if (!sw || !sh) {
+        exceptionState.throwDOMException(IndexSizeError, String::format("The source %s provided is 0.", sw ? "height" : "width"));
+        return ScriptPromise();
+    }
+    return ImageBitmapSource::fulfillImageBitmap(scriptState, create(this, IntRect(sx, sy, sw, sh)));
+}
+
 void ImageBitmap::notifyImageSourceChanged()
 {
 }

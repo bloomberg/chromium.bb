@@ -29,6 +29,7 @@
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLImageLoader.h"
 #include "core/html/canvas/CanvasImageSource.h"
+#include "core/imagebitmap/ImageBitmapSource.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/network/ResourceResponse.h"
 #include "wtf/WeakPtr.h"
@@ -39,7 +40,7 @@ class HTMLFormElement;
 class ImageCandidate;
 class ShadowRoot;
 
-class CORE_EXPORT HTMLImageElement final : public HTMLElement, public CanvasImageSource {
+class CORE_EXPORT HTMLImageElement final : public HTMLElement, public CanvasImageSource, public ImageBitmapSource {
     DEFINE_WRAPPERTYPEINFO();
 public:
     class ViewportChangeListener;
@@ -114,6 +115,10 @@ public:
     float sourceSize(Element&);
 
     void forceReload() const;
+
+    // ImageBitmapSource implementation
+    IntSize bitmapSourceSize() const override;
+    ScriptPromise createImageBitmap(ScriptState*, EventTarget&, int sx, int sy, int sw, int sh, ExceptionState&) override;
 
 protected:
     explicit HTMLImageElement(Document&, HTMLFormElement* = 0, bool createdByParser = false);

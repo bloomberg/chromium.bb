@@ -5,6 +5,7 @@
 #include "config.h"
 #include "modules/canvas2d/CanvasRenderingContext2D.h"
 
+#include "core/fetch/MemoryCache.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/ImageBitmap.h"
 #include "core/html/HTMLCanvasElement.h"
@@ -80,11 +81,13 @@ protected:
     CanvasRenderingContext2D* context2d() const { return static_cast<CanvasRenderingContext2D*>(canvasElement().renderingContext()); }
 
     void createContext(OpacityMode);
+    void TearDown();
 
 private:
     OwnPtr<DummyPageHolder> m_dummyPageHolder;
     RefPtrWillBePersistent<HTMLDocument> m_document;
     RefPtrWillBePersistent<HTMLCanvasElement> m_canvasElement;
+    Persistent<MemoryCache> m_globalMemoryCache;
 
     class WrapGradients final : public NoBaseWillBeGarbageCollectedFinalized<WrapGradients> {
     public:
@@ -159,6 +162,14 @@ void CanvasRenderingContext2DTest::SetUp()
     EXPECT_FALSE(exceptionState.hadException());
     StringOrCanvasGradientOrCanvasPattern wrappedAlphaGradient;
     this->alphaGradient().setCanvasGradient(alphaGradient);
+
+    m_globalMemoryCache = replaceMemoryCacheForTesting(MemoryCache::create());
+}
+
+void CanvasRenderingContext2DTest::TearDown()
+{
+    Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
+    replaceMemoryCacheForTesting(m_globalMemoryCache.release());
 }
 
 //============================================================================
@@ -598,6 +609,24 @@ TEST_F(CanvasRenderingContext2DTest, FallbackWithLargeState)
         context2d()->translate(1.0f, 0.0f);
     }
     canvasElement().doDeferredPaintInvalidation(); // To close the current frame
+}
+
+TEST_F(CanvasRenderingContext2DTest, ImageResourceLifetime)
+{
+    RefPtrWillBeRawPtr<HTMLCanvasElement> canvasElement = HTMLCanvasElement::create(*Document::create().get());
+    canvasElement->setHeight(40);
+    canvasElement->setWidth(40);
+    RefPtrWillBeRawPtr<ImageBitmap> imageBitmapDerived = nullptr;
+    {
+        RefPtrWillBeRawPtr<ImageBitmap> imageBitmapFromCanvas = ImageBitmap::create(canvasElement.get(), IntRect(0, 0, canvasElement->width(), canvasElement->height()));
+        imageBitmapDerived = ImageBitmap::create(imageBitmapFromCanvas.get(), IntRect(0, 0, 20, 20));
+    }
+    CanvasContextCreationAttributes attributes;
+    CanvasRenderingContext2D* context = static_cast<CanvasRenderingContext2D*>(canvasElement->getCanvasRenderingContext("2d", attributes));
+    TrackExceptionState exceptionState;
+    CanvasImageSourceUnion imageSource;
+    imageSource.setImageBitmap(imageBitmapDerived);
+    context->drawImage(imageSource, 0, 0, exceptionState);
 }
 
 } // namespace blink

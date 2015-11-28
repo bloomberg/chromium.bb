@@ -32,88 +32,76 @@
 #include "core/imagebitmap/ImageBitmapFactories.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/fileapi/Blob.h"
 #include "core/frame/ImageBitmap.h"
 #include "core/frame/LocalDOMWindow.h"
+#include "core/html/HTMLCanvasElement.h"
+#include "core/html/HTMLImageElement.h"
+#include "core/html/HTMLVideoElement.h"
 #include "core/html/ImageData.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "platform/SharedBuffer.h"
 #include "platform/graphics/ImageSource.h"
-#include "platform/graphics/StaticBitmapImage.h"
-#include "public/platform/WebSize.h"
-#include "third_party/skia/include/core/SkImage.h"
 #include <v8.h>
 
 namespace blink {
 
-static ScriptPromise fulfillImageBitmap(ScriptState* scriptState, PassRefPtrWillBeRawPtr<ImageBitmap> imageBitmap)
+static inline ImageBitmapSource* toImageBitmapSourceInternal(const ImageBitmapSourceUnion& value)
 {
-    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-    ScriptPromise promise = resolver->promise();
-    if (imageBitmap) {
-        resolver->resolve(imageBitmap);
-    } else {
-        resolver->reject(ScriptValue(scriptState, v8::Null(scriptState->isolate())));
+    if (value.isHTMLImageElement())
+        return value.getAsHTMLImageElement().get();
+    if (value.isHTMLVideoElement())
+        return value.getAsHTMLVideoElement().get();
+    if (value.isHTMLCanvasElement())
+        return value.getAsHTMLCanvasElement().get();
+    if (value.isBlob())
+        return value.getAsBlob();
+    if (value.isImageData())
+        return value.getAsImageData();
+    if (value.isImageBitmap())
+        return value.getAsImageBitmap().get();
+    ASSERT_NOT_REACHED();
+    return nullptr;
+}
+
+ScriptPromise ImageBitmapFactories::createImageBitmap(ScriptState* scriptState, EventTarget& eventTarget, const ImageBitmapSourceUnion& bitmapSource, ExceptionState& exceptionState)
+{
+    ImageBitmapSource* bitmapSourceInternal = toImageBitmapSourceInternal(bitmapSource);
+    if (bitmapSourceInternal->isBlob()) {
+        Blob* blob = static_cast<Blob*>(bitmapSourceInternal);
+        ImageBitmapLoader* loader = ImageBitmapFactories::ImageBitmapLoader::create(from(eventTarget), IntRect(), scriptState);
+        ScriptPromise promise = loader->promise();
+        from(eventTarget).addLoader(loader);
+        loader->loadBlobAsync(eventTarget.executionContext(), blob);
+        return promise;
     }
-    return promise;
+    IntSize srcSize = bitmapSourceInternal->bitmapSourceSize();
+    return createImageBitmap(scriptState, eventTarget, bitmapSourceInternal, 0, 0, srcSize.width(), srcSize.height(), exceptionState);
 }
 
-ScriptPromise ImageBitmapFactories::createImageBitmap(ScriptState* scriptState, EventTarget& eventTarget, Blob* blob, ExceptionState& exceptionState)
+ScriptPromise ImageBitmapFactories::createImageBitmap(ScriptState* scriptState, EventTarget& eventTarget, const ImageBitmapSourceUnion& bitmapSource, int sx, int sy, int sw, int sh, ExceptionState& exceptionState)
 {
-    ImageBitmapLoader* loader = ImageBitmapFactories::ImageBitmapLoader::create(from(eventTarget), IntRect(), scriptState);
-    ScriptPromise promise = loader->promise();
-    from(eventTarget).addLoader(loader);
-    loader->loadBlobAsync(eventTarget.executionContext(), blob);
-    return promise;
+    ImageBitmapSource* bitmapSourceInternal = toImageBitmapSourceInternal(bitmapSource);
+    return createImageBitmap(scriptState, eventTarget, bitmapSourceInternal, sx, sy, sw, sh, exceptionState);
 }
 
-ScriptPromise ImageBitmapFactories::createImageBitmap(ScriptState* scriptState, EventTarget& eventTarget, Blob* blob, int sx, int sy, int sw, int sh, ExceptionState& exceptionState)
+ScriptPromise ImageBitmapFactories::createImageBitmap(ScriptState* scriptState, EventTarget& eventTarget, ImageBitmapSource* bitmapSource, int sx, int sy, int sw, int sh, ExceptionState& exceptionState)
 {
-    if (!sw || !sh) {
-        exceptionState.throwDOMException(IndexSizeError, String::format("The source %s provided is 0.", sw ? "height" : "width"));
-        return ScriptPromise();
+    if (bitmapSource->isBlob()) {
+        if (!sw || !sh) {
+            exceptionState.throwDOMException(IndexSizeError, String::format("The source %s provided is 0.", sw ? "height" : "width"));
+            return ScriptPromise();
+        }
+        Blob* blob = static_cast<Blob*>(bitmapSource);
+        ImageBitmapLoader* loader = ImageBitmapFactories::ImageBitmapLoader::create(from(eventTarget), IntRect(sx, sy, sw, sh), scriptState);
+        ScriptPromise promise = loader->promise();
+        from(eventTarget).addLoader(loader);
+        loader->loadBlobAsync(eventTarget.executionContext(), blob);
+        return promise;
     }
-    ImageBitmapLoader* loader = ImageBitmapFactories::ImageBitmapLoader::create(from(eventTarget), IntRect(sx, sy, sw, sh), scriptState);
-    ScriptPromise promise = loader->promise();
-    from(eventTarget).addLoader(loader);
-    loader->loadBlobAsync(eventTarget.executionContext(), blob);
-    return promise;
-}
 
-ScriptPromise ImageBitmapFactories::createImageBitmap(ScriptState* scriptState, EventTarget& eventTarget, ImageData* data, ExceptionState& exceptionState)
-{
-    return createImageBitmap(scriptState, eventTarget, data, 0, 0, data->width(), data->height(), exceptionState);
-}
-
-ScriptPromise ImageBitmapFactories::createImageBitmap(ScriptState* scriptState, EventTarget& eventTarget, ImageData* data, int sx, int sy, int sw, int sh, ExceptionState& exceptionState)
-{
-    if (!sw || !sh) {
-        exceptionState.throwDOMException(IndexSizeError, String::format("The source %s provided is 0.", sw ? "height" : "width"));
-        return ScriptPromise();
-    }
-    if (data->data()->bufferBase()->isNeutered()) {
-        exceptionState.throwDOMException(InvalidStateError, "The source data has been neutered.");
-        return ScriptPromise();
-    }
-    // FIXME: make ImageBitmap creation asynchronous crbug.com/258082
-    return fulfillImageBitmap(scriptState, ImageBitmap::create(data, IntRect(sx, sy, sw, sh)));
-}
-
-ScriptPromise ImageBitmapFactories::createImageBitmap(ScriptState* scriptState, EventTarget& eventTarget, ImageBitmap* bitmap, ExceptionState& exceptionState)
-{
-    return createImageBitmap(scriptState, eventTarget, bitmap, 0, 0, bitmap->width(), bitmap->height(), exceptionState);
-}
-
-ScriptPromise ImageBitmapFactories::createImageBitmap(ScriptState* scriptState, EventTarget& eventTarget, ImageBitmap* bitmap, int sx, int sy, int sw, int sh, ExceptionState& exceptionState)
-{
-    if (!sw || !sh) {
-        exceptionState.throwDOMException(IndexSizeError, String::format("The source %s provided is 0.", sw ? "height" : "width"));
-        return ScriptPromise();
-    }
-    // FIXME: make ImageBitmap creation asynchronous crbug.com/258082
-    return fulfillImageBitmap(scriptState, ImageBitmap::create(bitmap, IntRect(sx, sy, sw, sh)));
+    return bitmapSource->createImageBitmap(scriptState, eventTarget, sx, sy, sw, sh, exceptionState);
 }
 
 const char* ImageBitmapFactories::supplementName()

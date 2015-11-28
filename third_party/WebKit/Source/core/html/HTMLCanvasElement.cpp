@@ -35,6 +35,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/fileapi/File.h"
+#include "core/frame/ImageBitmap.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/html/ImageData.h"
@@ -931,6 +932,25 @@ bool HTMLCanvasElement::wouldTaintOrigin(SecurityOrigin*) const
 FloatSize HTMLCanvasElement::elementSize() const
 {
     return FloatSize(width(), height());
+}
+
+IntSize HTMLCanvasElement::bitmapSourceSize() const
+{
+    return IntSize(width(), height());
+}
+
+ScriptPromise HTMLCanvasElement::createImageBitmap(ScriptState* scriptState, EventTarget& eventTarget, int sx, int sy, int sw, int sh, ExceptionState& exceptionState)
+{
+    ASSERT(eventTarget.toDOMWindow());
+    if (!originClean()) {
+        exceptionState.throwSecurityError("The canvas element provided is tainted with cross-origin data.");
+        return ScriptPromise();
+    }
+    if (!sw || !sh) {
+        exceptionState.throwDOMException(IndexSizeError, String::format("The source %s provided is 0.", sw ? "height" : "width"));
+        return ScriptPromise();
+    }
+    return ImageBitmapSource::fulfillImageBitmap(scriptState, isPaintable() ? ImageBitmap::create(this, IntRect(sx, sy, sw, sh)) : nullptr);
 }
 
 bool HTMLCanvasElement::isOpaque() const

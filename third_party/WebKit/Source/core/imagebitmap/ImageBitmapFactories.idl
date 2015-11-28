@@ -28,19 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// https://html.spec.whatwg.org/#imagebitmapfactories
-
-// FIXME: should use typedef instead, but
-// requires better union type support: http://crbug.com/240176
-/*
-typedef (// HTMLImageElement or
-         // HTMLVideoElement or
-         // HTMLCanvasElement or
+typedef (HTMLImageElement or
+         HTMLVideoElement or
+         HTMLCanvasElement or
          Blob or
          ImageData or
-         // CanvasRenderingContext2D or
          ImageBitmap) ImageBitmapSource;
-*/
 
 [
     LegacyTreatAsPartialInterface,
@@ -48,12 +41,8 @@ typedef (// HTMLImageElement or
     Exposed=(Window,Worker),
     RuntimeEnabled=ExperimentalCanvasFeatures,
 ] interface ImageBitmapFactories {
-    [CallWith=ScriptState, RaisesException] Promise createImageBitmap(Blob blob);
-    [CallWith=ScriptState, RaisesException] Promise createImageBitmap(Blob blob, long sx, long sy, long sw, long sh);
-    [CallWith=ScriptState, RaisesException] Promise createImageBitmap(ImageData data);
-    [CallWith=ScriptState, RaisesException] Promise createImageBitmap(ImageData data, long sx, long sy, long sw, long sh);
-    [CallWith=ScriptState, RaisesException] Promise createImageBitmap(ImageBitmap bitmap);
-    [CallWith=ScriptState, RaisesException] Promise createImageBitmap(ImageBitmap bitmap, long sx, long sy, long sw, long sh);
+    [CallWith=ScriptState, RaisesException] Promise createImageBitmap(ImageBitmapSource imageBitmap);
+    [CallWith=ScriptState, RaisesException] Promise createImageBitmap(ImageBitmapSource imageBitmap, long sx, long sy, long sw, long sh);
 };
 
 Window implements ImageBitmapFactories;

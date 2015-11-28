@@ -103,10 +103,6 @@ Promise.resolve().then(function() {
     });
 }).then(function() {
     return createCanvas().then(function(canvas) {
-        return checkInvalidRange(canvas.getContext('2d'), 'canvas context');
-    });
-}).then(function() {
-    return createCanvas().then(function(canvas) {
         var imagedata = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height);
         return checkInvalidRange(imagedata, 'canvas imagedata')
     });

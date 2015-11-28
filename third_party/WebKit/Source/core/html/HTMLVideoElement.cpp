@@ -34,6 +34,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/Fullscreen.h"
 #include "core/dom/shadow/ShadowRoot.h"
+#include "core/frame/ImageBitmap.h"
 #include "core/frame/Settings.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/layout/LayoutImage.h"
@@ -318,6 +319,38 @@ bool HTMLVideoElement::wouldTaintOrigin(SecurityOrigin* destinationSecurityOrigi
 FloatSize HTMLVideoElement::elementSize() const
 {
     return FloatSize(videoWidth(), videoHeight());
+}
+
+IntSize HTMLVideoElement::bitmapSourceSize() const
+{
+    return IntSize(videoWidth(), videoHeight());
+}
+
+ScriptPromise HTMLVideoElement::createImageBitmap(ScriptState* scriptState, EventTarget& eventTarget, int sx, int sy, int sw, int sh, ExceptionState& exceptionState)
+{
+    ASSERT(eventTarget.toDOMWindow());
+    if (networkState() == HTMLMediaElement::NETWORK_EMPTY) {
+        exceptionState.throwDOMException(InvalidStateError, "The provided element has not retrieved data.");
+        return ScriptPromise();
+    }
+    if (readyState() <= HTMLMediaElement::HAVE_METADATA) {
+        exceptionState.throwDOMException(InvalidStateError, "The provided element's player has no current data.");
+        return ScriptPromise();
+    }
+    if (!sw || !sh) {
+        exceptionState.throwDOMException(IndexSizeError, String::format("The source %s provided is 0.", sw ? "height" : "width"));
+        return ScriptPromise();
+    }
+    if (!hasSingleSecurityOrigin()) {
+        exceptionState.throwSecurityError("The source video contains image data from multiple origins.");
+        return ScriptPromise();
+    }
+    if (!webMediaPlayer()->didPassCORSAccessCheck()
+        && eventTarget.toDOMWindow()->document()->securityOrigin()->taintsCanvas(currentSrc())) {
+        exceptionState.throwSecurityError("Cross-origin access to the source video is denied.");
+        return ScriptPromise();
+    }
+    return ImageBitmapSource::fulfillImageBitmap(scriptState, ImageBitmap::create(this, IntRect(sx, sy, sw, sh)));
 }
 
 } // namespace blink

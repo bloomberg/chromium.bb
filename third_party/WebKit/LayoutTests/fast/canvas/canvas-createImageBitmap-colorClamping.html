@@ -19,7 +19,7 @@ canvas.setAttribute("width", "250");
 canvas.setAttribute("height", "200");
 var ctx = canvas.getContext("2d");
 
-createImageBitmap(aCtx, 100, 100, 100, 100).then(function (imageBitmap) {
+createImageBitmap(aCanvas, 100, 100, 100, 100).then(function (imageBitmap) {
     ctx.drawImage(imageBitmap, 0, 0);
     ctx.drawImage(imageBitmap, 120, 0, 150, 150);
     if (window.testRunner)

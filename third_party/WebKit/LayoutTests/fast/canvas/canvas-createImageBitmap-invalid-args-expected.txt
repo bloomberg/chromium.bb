@@ -5,10 +5,10 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 PASS Rejected as expected: undefined
 PASS reason instanceof Error is true
-TypeError: Failed to execute 'createImageBitmap' on 'Window': No function was found that matched the signature provided.
+TypeError: Failed to execute 'createImageBitmap' on 'Window': The provided value is not of type '(HTMLImageElement or HTMLVideoElement or HTMLCanvasElement or Blob or ImageData or ImageBitmap)'
 PASS Rejected as expected: null
 PASS reason instanceof Error is true
-TypeError: Failed to execute 'createImageBitmap' on 'Window': No function was found that matched the signature provided.
+TypeError: Failed to execute 'createImageBitmap' on 'Window': The provided value is not of type '(HTMLImageElement or HTMLVideoElement or HTMLCanvasElement or Blob or ImageData or ImageBitmap)'
 PASS Rejected as expected: empty image
 PASS reason instanceof Error is true
 InvalidStateError: Failed to execute 'createImageBitmap' on 'Window': No image can be retrieved from the provided element.
@@ -31,12 +31,6 @@ PASS Rejected as expected: canvas / invalid range
 PASS reason instanceof Error is true
 IndexSizeError: Failed to execute 'createImageBitmap' on 'Window': The source height provided is 0.
 PASS Rejected as expected: canvas / invalid range
-PASS reason instanceof Error is true
-IndexSizeError: Failed to execute 'createImageBitmap' on 'Window': The source width provided is 0.
-PASS Rejected as expected: canvas context / invalid range
-PASS reason instanceof Error is true
-IndexSizeError: Failed to execute 'createImageBitmap' on 'Window': The source height provided is 0.
-PASS Rejected as expected: canvas context / invalid range
 PASS reason instanceof Error is true
 IndexSizeError: Failed to execute 'createImageBitmap' on 'Window': The source width provided is 0.
 PASS Rejected as expected: canvas imagedata / invalid range
