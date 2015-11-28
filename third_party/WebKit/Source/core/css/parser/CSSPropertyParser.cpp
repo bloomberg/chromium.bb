@@ -1693,6 +1693,11 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeTextStrokeWidth(CSSParse
     return consumeLineWidth(range, cssParserMode);
 }
 
+static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeColumnRuleWidth(CSSParserTokenRange& range, CSSParserMode cssParserMode)
+{
+    return consumeLineWidth(range, cssParserMode);
+}
+
 static bool consumeTranslate3d(CSSParserTokenRange& args, CSSParserMode cssParserMode, RefPtrWillBeRawPtr<CSSFunctionValue>& transformValue)
 {
     unsigned numberOfArguments = 2;
@@ -2079,6 +2084,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
     case CSSPropertyStopColor:
     case CSSPropertyFloodColor:
     case CSSPropertyLightingColor:
+    case CSSPropertyWebkitColumnRuleColor:
         return consumeColor(m_range, m_context);
     case CSSPropertyColor:
         return consumeColor(m_range, m_context, inQuirksMode());
@@ -2130,6 +2136,8 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
         return consumeNumber(m_range, ValueRangeNonNegative);
     case CSSPropertyStrokeDasharray:
         return consumeStrokeDasharray(m_range);
+    case CSSPropertyWebkitColumnRuleWidth:
+        return consumeColumnRuleWidth(m_range, m_context.mode());
     default:
         return nullptr;
     }
@@ -2718,6 +2726,8 @@ bool CSSPropertyParser::parseShorthand(CSSPropertyID unresolvedProperty, bool im
         return consumeFlex(important);
     case CSSPropertyFlexFlow:
         return consumeShorthandGreedily(flexFlowShorthand(), important);
+    case CSSPropertyWebkitColumnRule:
+        return consumeShorthandGreedily(webkitColumnRuleShorthand(), important);
     default:
         m_currentShorthand = oldShorthand;
         return false;

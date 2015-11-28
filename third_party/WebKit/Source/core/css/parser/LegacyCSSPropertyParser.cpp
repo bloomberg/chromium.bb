@@ -383,8 +383,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyBorderRightColor:
     case CSSPropertyBorderBottomColor:
     case CSSPropertyBorderLeftColor:
-    case CSSPropertyWebkitColumnRuleColor:
-        parsedValue = parseColor(m_valueList->current(), acceptQuirkyColors(propId));
+        parsedValue = parseColor(m_valueList->current(), inQuirksMode() && (!inShorthand() || m_currentShorthand == CSSPropertyBorderColor));
         if (parsedValue)
             m_valueList->next();
         break;
@@ -551,8 +550,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyBorderLeftWidth:
         if (!inShorthand() || m_currentShorthand == CSSPropertyBorderWidth)
             unitless = FUnitlessQuirk;
-        // fall through
-    case CSSPropertyWebkitColumnRuleWidth:
         if (id == CSSValueThin || id == CSSValueMedium || id == CSSValueThick)
             validPrimitive = true;
         else
@@ -904,8 +901,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         return parse4Values(propId, borderStyleShorthand().properties(), important);
     case CSSPropertyListStyle:
         return parseShorthand(propId, listStyleShorthand(), important);
-    case CSSPropertyWebkitColumnRule:
-        return parseShorthand(propId, webkitColumnRuleShorthand(), important);
     case CSSPropertyInvalid:
         return false;
     case CSSPropertyWebkitClipPath:
@@ -1094,6 +1089,9 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyFlexShrink:
     case CSSPropertyFlexFlow:
     case CSSPropertyStrokeDasharray:
+    case CSSPropertyWebkitColumnRule:
+    case CSSPropertyWebkitColumnRuleColor:
+    case CSSPropertyWebkitColumnRuleWidth:
         validPrimitive = false;
         break;
 
@@ -1526,25 +1524,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseAttr(CSSParserValueList
     RefPtrWillBeRawPtr<CSSFunctionValue> attrValue = CSSFunctionValue::create(CSSValueAttr);
     attrValue->append(CSSCustomIdentValue::create(attrName));
     return attrValue.release();
-}
-
-bool CSSPropertyParser::acceptQuirkyColors(CSSPropertyID propertyId) const
-{
-    if (!inQuirksMode())
-        return false;
-    switch (propertyId) {
-    case CSSPropertyBackgroundColor:
-    case CSSPropertyBorderBottomColor:
-    case CSSPropertyBorderLeftColor:
-    case CSSPropertyBorderRightColor:
-    case CSSPropertyBorderTopColor:
-        return !inShorthand() || m_currentShorthand == CSSPropertyBorderColor;
-    case CSSPropertyColor:
-        return true;
-    default:
-        break;
-    }
-    return false;
 }
 
 bool CSSPropertyParser::isColorKeyword(CSSValueID id)
