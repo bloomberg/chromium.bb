@@ -9,13 +9,13 @@
 #include "chromeos/settings/cros_settings_names.h"
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ChromeOSInfoPrivateTest) {
-  // Set the initial timezone to a different one that JS function
+  // Set the initial timezone different from what JS function
   // timezoneSetTest() will attempt to set.
   base::StringValue initial_timezone("America/Los_Angeles");
   chromeos::CrosSettings::Get()->Set(chromeos::kSystemTimezone,
                                      initial_timezone);
 
-  // Check that accessability settings are set to default values.
+  // Check that accessibility settings are set to default values.
   PrefService* prefs = profile()->GetPrefs();
   ASSERT_FALSE(prefs->GetBoolean(prefs::kAccessibilityLargeCursorEnabled));
   ASSERT_FALSE(prefs->GetBoolean(prefs::kAccessibilityStickyKeysEnabled));
@@ -29,7 +29,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ChromeOSInfoPrivateTest) {
 
   ASSERT_TRUE(RunComponentExtensionTest("chromeos_info_private")) << message_;
 
-  // Check that accessability settings have been all flipped by the test.
+  // Check that all accessibility settings have been flipped by the test.
   ASSERT_TRUE(prefs->GetBoolean(prefs::kAccessibilityLargeCursorEnabled));
   ASSERT_TRUE(prefs->GetBoolean(prefs::kAccessibilityStickyKeysEnabled));
   ASSERT_TRUE(prefs->GetBoolean(prefs::kAccessibilitySpokenFeedbackEnabled));
