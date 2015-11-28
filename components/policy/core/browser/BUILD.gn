@@ -100,7 +100,6 @@ if (enable_configuration_policy) {
       "//components/autofill/core/common",
       "//components/policy",
       "//components/policy:policy_component_test_support",
-      "//components/policy/core/common",
       "//components/proxy_config",
       "//components/url_formatter",
       "//google_apis",
