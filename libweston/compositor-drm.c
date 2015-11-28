@@ -93,8 +93,6 @@ struct drm_backend {
 		char *filename;
 	} drm;
 	struct gbm_device *gbm;
-	uint32_t *crtcs;
-	int num_crtcs;
 	uint32_t crtc_allocator;
 	uint32_t connector_allocator;
 	struct wl_listener session_listener;
@@ -236,21 +234,9 @@ static void
 drm_output_update_msc(struct drm_output *output, unsigned int seq);
 
 static int
-drm_sprite_crtc_supported(struct drm_output *output, uint32_t supported)
+drm_sprite_crtc_supported(struct drm_output *output, struct drm_sprite *sprite)
 {
-	struct weston_compositor *ec = output->base.compositor;
-	struct drm_backend *b = to_drm_backend(ec);
-	int crtc;
-
-	for (crtc = 0; crtc < b->num_crtcs; crtc++) {
-		if (b->crtcs[crtc] != output->crtc_id)
-			continue;
-
-		if (supported & (1 << crtc))
-			return -1;
-	}
-
-	return 0;
+	return !!(sprite->possible_crtcs & (1 << output->pipe));
 }
 
 static void
@@ -718,7 +704,7 @@ drm_output_repaint(struct weston_output *output_base,
 		};
 
 		if ((!s->current && !s->next) ||
-		    !drm_sprite_crtc_supported(output, s->possible_crtcs))
+		    !drm_sprite_crtc_supported(output, s))
 			continue;
 
 		if (s->next && !backend->sprites_hidden)
@@ -993,7 +979,7 @@ drm_output_prepare_overlay_view(struct drm_output *output,
 		return NULL;
 
 	wl_list_for_each(s, &b->sprite_list, link) {
-		if (!drm_sprite_crtc_supported(output, s->possible_crtcs))
+		if (!drm_sprite_crtc_supported(output, s))
 			continue;
 
 		if (!s->next) {
@@ -2654,19 +2640,10 @@ create_outputs(struct drm_backend *b, uint32_t option_connector,
 		return -1;
 	}
 
-	b->crtcs = calloc(resources->count_crtcs, sizeof(uint32_t));
-	if (!b->crtcs) {
-		drmModeFreeResources(resources);
-		return -1;
-	}
-
 	b->min_width  = resources->min_width;
 	b->max_width  = resources->max_width;
 	b->min_height = resources->min_height;
 	b->max_height = resources->max_height;
-
-	b->num_crtcs = resources->count_crtcs;
-	memcpy(b->crtcs, resources->crtcs, sizeof(uint32_t) * b->num_crtcs);
 
 	for (i = 0; i < resources->count_connectors; i++) {
 		connector = drmModeGetConnector(b->drm.fd,
