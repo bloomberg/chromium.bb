@@ -1167,9 +1167,6 @@
         "test": "webkit_unit_tests"
       },
       {
-        "test": "window_manager_unittests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
