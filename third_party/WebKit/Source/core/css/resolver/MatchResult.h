@@ -121,7 +121,6 @@ public:
 
     MatchedPropertiesRange operator*() const
     {
-        ASSERT(m_endIndex >= 0);
         unsigned rangeEnd = m_result.m_authorRangeEnds[m_endIndex];
         unsigned rangeBegin = m_endIndex ? m_result.m_authorRangeEnds[m_endIndex - 1] : m_result.m_uaRangeEnd;
         return MatchedPropertiesRange(m_result.matchedProperties().begin() + rangeBegin, m_result.matchedProperties().begin() + rangeEnd);
@@ -129,7 +128,6 @@ public:
 
     ImportantAuthorRangeIterator& operator++()
     {
-        ASSERT(m_endIndex >= 0);
         --m_endIndex;
         return *this;
     }
