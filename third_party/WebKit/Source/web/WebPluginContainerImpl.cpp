@@ -309,14 +309,7 @@ void WebPluginContainerImpl::setWebLayer(WebLayer* layer)
     if (layer)
         GraphicsLayer::registerContentsLayer(layer);
 
-    // If either of the layers is null we need to switch between hardware
-    // and software compositing.
-    bool needsCompositingUpdate = !m_webLayer || !layer;
-
     m_webLayer = layer;
-
-    if (!needsCompositingUpdate)
-        return;
 
 #if ENABLE(OILPAN)
     if (!m_element)
