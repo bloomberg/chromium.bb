@@ -331,7 +331,8 @@ void InMemoryURLIndexTest::InitializeInMemoryURLIndex() {
   SchemeSet client_schemes_to_whitelist;
   client_schemes_to_whitelist.insert(kClientWhitelistedScheme);
   url_index_.reset(new InMemoryURLIndex(
-      nullptr, history_service_, content::BrowserThread::GetBlockingPool(),
+      nullptr, history_service_, nullptr,
+      content::BrowserThread::GetBlockingPool(),
       base::FilePath(), kTestLanguages, client_schemes_to_whitelist));
   url_index_->Init();
   url_index_->RebuildFromHistory(history_database_);
@@ -1266,7 +1267,8 @@ TEST_F(InMemoryURLIndexTest, AddHistoryMatch) {
     String16Vector lower_terms;
     StringToTerms(test_cases[i].search_string, test_cases[i].cursor_position,
                   &lower_string, &lower_terms);
-    URLIndexPrivateData::AddHistoryMatch match(nullptr, *GetPrivateData(),
+    URLIndexPrivateData::AddHistoryMatch match(nullptr, nullptr,
+                                               *GetPrivateData(),
                                                kTestLanguages, lower_string,
                                                lower_terms, base::Time::Now());
 
@@ -1302,8 +1304,8 @@ void InMemoryURLIndexCacheTest::SetUp() {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   base::FilePath path(temp_dir_.path());
   url_index_.reset(new InMemoryURLIndex(
-      nullptr, nullptr, content::BrowserThread::GetBlockingPool(), path,
-      kTestLanguages, SchemeSet()));
+      nullptr, nullptr, nullptr, content::BrowserThread::GetBlockingPool(),
+      path, kTestLanguages, SchemeSet()));
 }
 
 void InMemoryURLIndexCacheTest::TearDown() {
