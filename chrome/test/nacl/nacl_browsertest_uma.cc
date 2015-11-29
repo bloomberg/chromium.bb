@@ -237,12 +237,9 @@ IN_PROC_BROWSER_TEST_F(NaClBrowserTestGLibcVcacheExtension,
                               num_expected_binaries);
 }
 
-// Test that validation for the 2 (or 3) PNaCl translator nexes can be cached.
-// This includes pnacl-llc.nexe, pnacl-ld.nexe, and possibly pnacl-sz.nexe.
+// Test that validation for the 2 PNaCl translator nexes can be cached.
 IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnacl,
                        ValidationCacheOfTranslatorNexes) {
-  bool uses_subzero_with_o0 = (strcmp(nacl::GetSandboxArch(), "x86-32") == 0);
-  base::HistogramBase::Count subzero_o0_count = (uses_subzero_with_o0 ? 1 : 0);
   base::HistogramTester histograms;
   // Run a load test w/ one pexe cache identity.
   RunLoadTest(FILE_PATH_LITERAL("pnacl_options.html?use_nmf=o_0"));
@@ -269,16 +266,12 @@ IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnacl,
 
   // Should now have 5 more queries on top of the previous ones.
   histograms.ExpectTotalCount("NaCl.ValidationCache.Query", 10);
-  // With the extra queries being cache hits (except that pnacl-llc.nexe will be
-  // a miss if pnacl-sz.nexe was used the first time around).
+  // With the extra queries being cache hits.
   histograms.ExpectBucketCount("NaCl.ValidationCache.Query",
-                               nacl::NaClBrowser::CACHE_HIT,
-                               7 - subzero_o0_count);
-  // No extra cache settings (except to add pnacl-llc.nexe if pnacl-sz.nexe was
-  // used the first time around).
+                               nacl::NaClBrowser::CACHE_HIT, 7);
+  // No extra cache settings.
   histograms.ExpectUniqueSample("NaCl.ValidationCache.Set",
-                                nacl::NaClBrowser::CACHE_HIT,
-                                3 + subzero_o0_count);
+                                nacl::NaClBrowser::CACHE_HIT, 3);
 }
 
 
