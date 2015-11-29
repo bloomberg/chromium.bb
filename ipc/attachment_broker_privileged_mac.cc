@@ -40,13 +40,18 @@ kern_return_t SendMachPort(mach_port_t endpoint,
   send_msg.data.disposition = disposition;
   send_msg.data.type = MACH_MSG_PORT_DESCRIPTOR;
 
-  return mach_msg(&send_msg.header,
-                  MACH_SEND_MSG | MACH_SEND_TIMEOUT,
-                  send_msg.header.msgh_size,
-                  0,                // receive limit
-                  MACH_PORT_NULL,   // receive name
-                  0,                // timeout
-                  MACH_PORT_NULL);  // notification port
+  kern_return_t kr =
+      mach_msg(&send_msg.header, MACH_SEND_MSG | MACH_SEND_TIMEOUT,
+               send_msg.header.msgh_size,
+               0,                // receive limit
+               MACH_PORT_NULL,   // receive name
+               0,                // timeout
+               MACH_PORT_NULL);  // notification port
+
+  if (kr != KERN_SUCCESS)
+    mach_port_deallocate(mach_task_self(), endpoint);
+
+  return kr;
 }
 
 }  // namespace
