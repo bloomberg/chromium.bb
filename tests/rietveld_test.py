@@ -340,9 +340,9 @@ class RietveldTest(BaseFixture):
         '&modified_before=2010-02-01'
         '&owner=owner%40example.com'
         '&reviewer=reviewer%40example.com'
-        '&closed=2'
-        '&commit=2'
-        '&private=2'
+        '&closed=True'
+        '&commit=True'
+        '&private=True'
         '&keys_only=True'
         '&with_messages=True'
         '&limit=23')

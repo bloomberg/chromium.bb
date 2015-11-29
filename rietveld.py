@@ -313,7 +313,7 @@ class Rietveld(object):
     for key in sorted(three_state_keys):
       value = three_state_keys[key]
       if value is not None:
-        url += '&%s=%d' % (key, int(value) + 1)
+        url += '&%s=%s' % (key, value)
 
     if keys_only:
       url += '&keys_only=True'
