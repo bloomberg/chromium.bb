@@ -868,7 +868,6 @@
             'animation/ImageSliceStyleInterpolation.h',
             'animation/InertEffect.cpp',
             'animation/InertEffect.h',
-            'animation/IntegerSVGInterpolation.h',
             'animation/InterpolableValue.cpp',
             'animation/InterpolableValue.h',
             'animation/Interpolation.cpp',
