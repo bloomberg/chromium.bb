@@ -1366,3 +1366,4 @@ crbug.com/558574 [ Win7 ] fast/text/emphasis.html [ Failure ]
 
 crbug.com/561595 [ XP ] plugins/webview-plugin-scroll.html [ Failure ]
 crbug.com/563588 [ Mac ] fast/filesystem/op-get-entry.html [ Failure ]
+crbug.com/554951 [ XP ] virtual/syncpaint/fast/repaint/control-clip.html [ NeedsRebaseline ]
