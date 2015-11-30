@@ -63,6 +63,10 @@ bool AppListShelfItemDelegate::IsDraggable() {
   return false;
 }
 
+bool AppListShelfItemDelegate::CanPin() const {
+  return true;
+}
+
 bool AppListShelfItemDelegate::ShouldShowTooltip() {
   return true;
 }

@@ -289,9 +289,9 @@ class ChromeLauncherController
   ash::ShelfID GetShelfIDForAppID(const std::string& app_id) override;
   bool HasShelfIDToAppIDMapping(ash::ShelfID id) const override;
   const std::string& GetAppIDForShelfID(ash::ShelfID id) override;
+  bool GetAppIDForShelfIDConst(ash::ShelfID id, std::string* app_id) const;
   void PinAppWithID(const std::string& app_id) override;
   bool IsAppPinned(const std::string& app_id) override;
-  bool CanPin() const override;
   void UnpinAppWithID(const std::string& app_id) override;
 
   // ash::ShelfItemDelegateManagerObserver:
@@ -403,6 +403,8 @@ class ChromeLauncherController
   AppWindowLauncherController* app_window_controller_for_test() {
     return app_window_controller_.get();
   }
+
+  bool CanPin(const std::string& app_id);
 
  protected:
   // Creates a new app shortcut item and controller on the shelf at |index|.

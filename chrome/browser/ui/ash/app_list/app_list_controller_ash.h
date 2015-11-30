@@ -24,7 +24,7 @@ class AppListControllerDelegateAsh : public AppListControllerDelegate {
   bool IsAppPinned(const std::string& extension_id) override;
   void PinApp(const std::string& extension_id) override;
   void UnpinApp(const std::string& extension_id) override;
-  Pinnable GetPinnable() override;
+  Pinnable GetPinnable(const std::string& extension_id) override;
   void OnShowChildDialog() override;
   void OnCloseChildDialog() override;
   bool CanDoCreateShortcutsFlow() override;

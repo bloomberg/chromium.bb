@@ -21,6 +21,8 @@ namespace ash {
 // specifying the extension ID of the app to be pinned by that entry.
 extern const char kPinnedAppsPrefAppIDPath[];
 
+extern const char kPinnedAppsPrefPinnedByPolicy[];
+
 // Values used for prefs::kShelfAutoHideBehavior.
 extern const char kShelfAutoHideBehaviorAlways[];
 extern const char kShelfAutoHideBehaviorNever[];

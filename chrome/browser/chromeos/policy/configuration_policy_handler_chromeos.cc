@@ -305,7 +305,7 @@ base::Value* NetworkConfigurationPolicyHandler::SanitizeNetworkConfig(
 
 PinnedLauncherAppsPolicyHandler::PinnedLauncherAppsPolicyHandler()
     : ExtensionListPolicyHandler(key::kPinnedLauncherApps,
-                                 prefs::kPinnedLauncherApps,
+                                 prefs::kPolicyPinnedLauncherApps,
                                  false) {}
 
 PinnedLauncherAppsPolicyHandler::~PinnedLauncherAppsPolicyHandler() {}

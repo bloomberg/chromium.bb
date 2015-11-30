@@ -36,8 +36,8 @@ void TestAppListControllerDelegate::PinApp(const std::string& extension_id) {
 void TestAppListControllerDelegate::UnpinApp(const std::string& extension_id) {
 }
 
-AppListControllerDelegate::Pinnable
-TestAppListControllerDelegate::GetPinnable() {
+AppListControllerDelegate::Pinnable TestAppListControllerDelegate::GetPinnable(
+    const std::string& extension_id) {
   return NO_PIN;
 }
 

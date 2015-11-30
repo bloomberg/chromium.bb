@@ -115,10 +115,6 @@ void TestShelfDelegate::PinAppWithID(const std::string& app_id) {
   pinned_apps_.insert(app_id);
 }
 
-bool TestShelfDelegate::CanPin() const {
-  return true;
-}
-
 bool TestShelfDelegate::IsAppPinned(const std::string& app_id) {
   return pinned_apps_.find(app_id) != pinned_apps_.end();
 }

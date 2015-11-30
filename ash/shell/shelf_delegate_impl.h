@@ -32,7 +32,6 @@ class ShelfDelegateImpl : public ShelfDelegate {
   const std::string& GetAppIDForShelfID(ShelfID id) override;
   void PinAppWithID(const std::string& app_id) override;
   bool IsAppPinned(const std::string& app_id) override;
-  bool CanPin() const override;
   void UnpinAppWithID(const std::string& app_id) override;
 
  private:

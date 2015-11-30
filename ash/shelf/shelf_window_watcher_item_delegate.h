@@ -31,6 +31,7 @@ class ShelfWindowWatcherItemDelegate : public ShelfItemDelegate {
   ui::MenuModel* CreateContextMenu(aura::Window* root_window) override;
   ShelfMenuModel* CreateApplicationMenu(int event_flags) override;
   bool IsDraggable() override;
+  bool CanPin() const override;
   bool ShouldShowTooltip() override;
   void Close() override;
 

@@ -50,6 +50,10 @@ bool WindowWatcherShelfItemDelegate::IsDraggable() {
   return true;
 }
 
+bool WindowWatcherShelfItemDelegate::CanPin() const {
+  return true;
+}
+
 bool WindowWatcherShelfItemDelegate::ShouldShowTooltip() {
   return true;
 }

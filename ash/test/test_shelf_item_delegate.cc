@@ -11,8 +11,7 @@ namespace ash {
 namespace test {
 
 TestShelfItemDelegate::TestShelfItemDelegate(aura::Window* window)
-    : window_(window) {
-}
+    : window_(window), is_draggable_(true) {}
 
 TestShelfItemDelegate::~TestShelfItemDelegate() {
 }
@@ -43,6 +42,10 @@ ShelfMenuModel* TestShelfItemDelegate::CreateApplicationMenu(int event_flags) {
 }
 
 bool TestShelfItemDelegate::IsDraggable() {
+  return is_draggable_;
+}
+
+bool TestShelfItemDelegate::CanPin() const {
   return true;
 }
 
@@ -52,6 +55,5 @@ bool TestShelfItemDelegate::ShouldShowTooltip() {
 
 void TestShelfItemDelegate::Close() {
 }
-
 }  // namespace test
 }  // namespace ash

@@ -57,6 +57,11 @@ class ASH_EXPORT ShelfItemDelegate {
   // menu. The caller takes ownership of the returned model.
   virtual ui::MenuModel* CreateContextMenu(aura::Window* root_window) = 0;
 
+  // Returns whether the user can change the pin status of this item.
+  // Pinning may be disallowed by policy if this app is pinned by pre-defined
+  // pinned app list.
+  virtual bool CanPin() const = 0;
+
   // Returns the application menu model for the specified item. There are three
   // possible return values:
   //  - A return of NULL indicates that no menu is wanted for this item.

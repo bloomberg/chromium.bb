@@ -76,7 +76,7 @@ class AppListControllerDelegate {
   virtual bool IsAppPinned(const std::string& extension_id) = 0;
   virtual void PinApp(const std::string& extension_id) = 0;
   virtual void UnpinApp(const std::string& extension_id) = 0;
-  virtual Pinnable GetPinnable() = 0;
+  virtual Pinnable GetPinnable(const std::string& extension_id) = 0;
 
   // Called before and after a dialog opens in the app list. For example,
   // displays an overlay that disables the app list while the dialog is open.

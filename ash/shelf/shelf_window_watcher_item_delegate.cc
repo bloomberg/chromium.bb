@@ -66,6 +66,10 @@ bool ShelfWindowWatcherItemDelegate::IsDraggable() {
   return true;
 }
 
+bool ShelfWindowWatcherItemDelegate::CanPin() const {
+  return true;
+}
+
 bool ShelfWindowWatcherItemDelegate::ShouldShowTooltip() {
   return true;
 }

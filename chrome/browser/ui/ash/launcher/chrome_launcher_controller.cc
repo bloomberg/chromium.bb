@@ -272,6 +272,73 @@ std::string GetSourceFromAppListSource(ash::LaunchSource source) {
   }
 }
 
+/*
+ * Return whether an app is pinned only by user.
+ * This function doesn't expect an app_id neither pinned by user nor by
+ * policy, the app_id in the arguments list MUST be pinned by either of
+ * those. Invalid input may lead to unexpected result.
+ * If this app is pinned by policy, but not by user, false is returned.
+ * If this app is pinned by both policy and user, false is returned.
+ * If this app is pinned not by policy, but by user, true is returned.
+ */
+bool IsAppForUserPinned(const std::string& app_id,
+                        const base::ListValue* pinned_apps_pref,
+                        const base::ListValue* policy_pinned_apps_pref) {
+  for (size_t index = 0; index < pinned_apps_pref->GetSize(); ++index) {
+    const base::DictionaryValue* app;
+    if (pinned_apps_pref->GetDictionary(index, &app)) {
+      std::string current_app_id;
+      bool pinned_by_policy = false;
+      if (app->GetString(ash::kPinnedAppsPrefAppIDPath, &current_app_id)) {
+        if (app_id == current_app_id) {
+          if (app->GetBoolean(ash::kPinnedAppsPrefPinnedByPolicy,
+                              &pinned_by_policy) &&
+              pinned_by_policy) {
+            // Pinned by policy in the past or present.
+            // Need to check policy_pinned_apps to determine
+            break;
+          } else {
+            // User Preference Already Pinned
+            return true;
+          }
+        }
+      }
+    }
+  }
+  for (size_t index = 0; index < policy_pinned_apps_pref->GetSize(); ++index) {
+    const base::DictionaryValue* app;
+    if (policy_pinned_apps_pref->GetDictionary(index, &app)) {
+      std::string app_id_;
+      if (app->GetString(ash::kPinnedAppsPrefAppIDPath, &app_id_)) {
+        // Only pinned by policy, which is not part of user-pinned
+        if (app_id == app_id_)
+          return false;
+      }
+    }
+  }
+  // Default, user added new pins
+  return true;
+}
+
+void update_pinned_apps(const std::string& app_id,
+                        bool valid_for_current_user,
+                        std::vector<std::string>* pinned_apps,
+                        bool* chrome_icon_added,
+                        bool* app_list_icon_added) {
+  if (app_id == extension_misc::kChromeAppId) {
+    *chrome_icon_added = true;
+    pinned_apps->push_back(extension_misc::kChromeAppId);
+  } else if (app_id == kAppShelfIdPlaceholder) {
+    *app_list_icon_added = true;
+    pinned_apps->push_back(kAppShelfIdPlaceholder);
+  } else if (valid_for_current_user) {
+    // Note: In multi profile scenarios we only want to show pinnable apps
+    // here which is correct. Running applications from the other users will
+    // continue to run. So no need for multi profile modifications.
+    pinned_apps->push_back(app_id);
+  }
+}
+
 }  // namespace
 
 #if defined(OS_CHROMEOS)
@@ -554,6 +621,22 @@ void ChromeLauncherController::CloseLauncherItem(ash::ShelfID id) {
   }
 }
 
+bool ChromeLauncherController::CanPin(const std::string& app_id) {
+  const base::ListValue* pref =
+      profile_->GetPrefs()->GetList(prefs::kPolicyPinnedLauncherApps);
+  if (!pref)
+    return true;
+  for (size_t index = 0; index < pref->GetSize(); ++index) {
+    const base::DictionaryValue* app = nullptr;
+    std::string the_app_id;
+    if (pref->GetDictionary(index, &app) &&
+        app->GetString(ash::kPinnedAppsPrefAppIDPath, &the_app_id) &&
+        app_id == the_app_id)
+      return false;
+  }
+  return true;
+}
+
 void ChromeLauncherController::Pin(ash::ShelfID id) {
   DCHECK(HasShelfIDToAppIDMapping(id));
 
@@ -570,13 +653,14 @@ void ChromeLauncherController::Pin(ash::ShelfID id) {
     return;
   }
 
-  if (CanPin())
+  if (GetLauncherItemController(id)->CanPin())
     PersistPinnedState();
 }
 
 void ChromeLauncherController::Unpin(ash::ShelfID id) {
   LauncherItemController* controller = GetLauncherItemController(id);
   CHECK(controller);
+  bool can_pin = controller->CanPin();
 
   if (controller->type() == LauncherItemController::TYPE_APP ||
       controller->locked()) {
@@ -584,7 +668,7 @@ void ChromeLauncherController::Unpin(ash::ShelfID id) {
   } else {
     LauncherItemClosed(id);
   }
-  if (CanPin())
+  if (can_pin)
     PersistPinnedState();
 }
 
@@ -612,10 +696,10 @@ bool ChromeLauncherController::IsPinnable(ash::ShelfID id) const {
     return false;
 
   ash::ShelfItemType type = model_->items()[index].type;
-  return ((type == ash::TYPE_APP_SHORTCUT ||
-           type == ash::TYPE_PLATFORM_APP ||
+  std::string app_id;
+  return ((type == ash::TYPE_APP_SHORTCUT || type == ash::TYPE_PLATFORM_APP ||
            type == ash::TYPE_WINDOWED_APP) &&
-          CanPin());
+          item_delegate_manager_->GetShelfItemDelegate(id)->CanPin());
 }
 
 void ChromeLauncherController::LockV1AppWithID(const std::string& app_id) {
@@ -810,12 +894,6 @@ void ChromeLauncherController::SetLauncherItemImage(
   model_->Set(index, item);
 }
 
-bool ChromeLauncherController::CanPin() const {
-  const PrefService::Preference* pref =
-      profile_->GetPrefs()->FindPreference(prefs::kPinnedLauncherApps);
-  return pref && pref->IsUserModifiable();
-}
-
 bool ChromeLauncherController::IsAppPinned(const std::string& app_id) {
   for (IDToItemControllerMap::const_iterator i =
            id_to_item_controller_map_.begin();
@@ -837,7 +915,7 @@ bool ChromeLauncherController::IsWindowedAppInLauncher(
 }
 
 void ChromeLauncherController::PinAppWithID(const std::string& app_id) {
-  if (CanPin())
+  if (CanPin(app_id))
     DoPinAppWithID(app_id);
   else
     NOTREACHED();
@@ -854,7 +932,7 @@ void ChromeLauncherController::SetLaunchType(
 }
 
 void ChromeLauncherController::UnpinAppWithID(const std::string& app_id) {
-  if (CanPin())
+  if (CanPin(app_id))
     DoUnpinAppWithID(app_id);
   else
     NOTREACHED();
@@ -893,15 +971,19 @@ void ChromeLauncherController::PersistPinnedState() {
   // It is a coding error to call PersistPinnedState() if the pinned apps are
   // not user-editable. The code should check earlier and not perform any
   // modification actions that trigger persisting the state.
-  if (!CanPin()) {
-    NOTREACHED() << "Can't pin but pinned state being updated";
-    return;
-  }
   // Mutating kPinnedLauncherApps is going to notify us and trigger us to
   // process the change. We don't want that to happen so remove ourselves as a
   // listener.
   pref_change_registrar_.Remove(prefs::kPinnedLauncherApps);
   {
+    scoped_ptr<const base::ListValue> pinned_apps_pref =
+        profile_->GetPrefs()
+            ->GetList(prefs::kPinnedLauncherApps)
+            ->CreateDeepCopy();
+
+    const base::ListValue* policy_pinned_apps_pref =
+        profile_->GetPrefs()->GetList(prefs::kPolicyPinnedLauncherApps);
+
     ListPrefUpdate updater(profile_->GetPrefs(), prefs::kPinnedLauncherApps);
     updater->Clear();
     for (size_t i = 0; i < model_->items().size(); ++i) {
@@ -911,8 +993,13 @@ void ChromeLauncherController::PersistPinnedState() {
         if (controller && IsPinned(id)) {
           base::DictionaryValue* app_value = ash::CreateAppDict(
               controller->app_id());
-          if (app_value)
+          if (app_value) {
+            if (!IsAppForUserPinned(controller->app_id(),
+                                    pinned_apps_pref.get(),
+                                    policy_pinned_apps_pref))
+              app_value->SetBoolean(ash::kPinnedAppsPrefPinnedByPolicy, true);
             updater->Append(app_value);
+          }
         }
       } else if (model_->items()[i].type == ash::TYPE_BROWSER_SHORTCUT) {
         PersistChromeItemIndex(i);
@@ -1390,6 +1477,18 @@ const std::string& ChromeLauncherController::GetAppIdFromShelfIdForTest(
   return id_to_item_controller_map_[id]->app_id();
 }
 
+bool ChromeLauncherController::GetAppIDForShelfIDConst(
+    ash::ShelfID id,
+    std::string* app_id) const {
+  auto app = id_to_item_controller_map_.find(id);
+  if (app == id_to_item_controller_map_.end()) {
+    return false;
+  } else {
+    *app_id = app->second->app_id();
+    return true;
+  }
+}
+
 void ChromeLauncherController::SetShelfItemDelegateManagerForTest(
     ash::ShelfItemDelegateManager* manager) {
   if (item_delegate_manager_)
@@ -1516,8 +1615,8 @@ void ChromeLauncherController::DoPinAppWithID(const std::string& app_id) {
     Pin(shelf_id);
   } else {
     // Otherwise, create a shortcut item for it.
-    CreateAppShortcutLauncherItem(app_id, model_->item_count());
-    if (CanPin())
+    shelf_id = CreateAppShortcutLauncherItem(app_id, model_->item_count());
+    if (CanPin(app_id))
       PersistPinnedState();
   }
 }
@@ -1963,6 +2062,9 @@ ChromeLauncherController::GetListOfPinnedAppsAndBrowser() {
   const base::ListValue* pinned_apps_pref =
       profile_->GetPrefs()->GetList(prefs::kPinnedLauncherApps);
 
+  const base::ListValue* policy_pinned_apps_pref =
+      profile_->GetPrefs()->GetList(prefs::kPolicyPinnedLauncherApps);
+
   // Keep track of the addition of the chrome and the app list icon.
   bool chrome_icon_added = false;
   bool app_list_icon_added = false;
@@ -1975,6 +2077,21 @@ ChromeLauncherController::GetListOfPinnedAppsAndBrowser() {
     chrome_icon_added = pinned_apps_pref->Find(*chrome_app) !=
         pinned_apps_pref->end();
     delete chrome_app;
+  }
+
+  if (policy_pinned_apps_pref) {
+    for (size_t index = 0; index < policy_pinned_apps_pref->GetSize();
+         ++index) {
+      const base::DictionaryValue* app = NULL;
+      std::string app_id;
+      if (policy_pinned_apps_pref->GetDictionary(index, &app) &&
+          app->GetString(ash::kPinnedAppsPrefAppIDPath, &app_id) &&
+          (std::find(pinned_apps.begin(), pinned_apps.end(), app_id) ==
+           pinned_apps.end()))
+        update_pinned_apps(
+            app_id, app_tab_helper_->IsValidIDForCurrentUser(app_id),
+            &pinned_apps, &chrome_icon_added, &app_list_icon_added);
+    }
   }
 
   for (size_t index = 0; index < pinned_apps_pref->GetSize(); ++index) {
@@ -1990,18 +2107,15 @@ ChromeLauncherController::GetListOfPinnedAppsAndBrowser() {
         app->GetString(ash::kPinnedAppsPrefAppIDPath, &app_id) &&
         (std::find(pinned_apps.begin(), pinned_apps.end(), app_id) ==
              pinned_apps.end())) {
-      if (app_id == extension_misc::kChromeAppId) {
-        chrome_icon_added = true;
-        pinned_apps.push_back(extension_misc::kChromeAppId);
-      } else if (app_id == kAppShelfIdPlaceholder) {
-        app_list_icon_added = true;
-        pinned_apps.push_back(kAppShelfIdPlaceholder);
-      } else if (app_tab_helper_->IsValidIDForCurrentUser(app_id)) {
-        // Note: In multi profile scenarios we only want to show pinnable apps
-        // here which is correct. Running applications from the other users will
-        // continue to run. So no need for multi profile modifications.
-        pinned_apps.push_back(app_id);
+      bool pinned_by_policy;
+      if (app->GetBoolean(ash::kPinnedAppsPrefPinnedByPolicy,
+                          &pinned_by_policy) &&
+          pinned_by_policy) {
+        continue;
       }
+      update_pinned_apps(
+          app_id, app_tab_helper_->IsValidIDForCurrentUser(app_id),
+          &pinned_apps, &chrome_icon_added, &app_list_icon_added);
     }
   }
 
@@ -2081,6 +2195,10 @@ void ChromeLauncherController::AttachProfile(Profile* profile) {
   pref_change_registrar_.Init(profile_->GetPrefs());
   pref_change_registrar_.Add(
       prefs::kPinnedLauncherApps,
+      base::Bind(&ChromeLauncherController::UpdateAppLaunchersFromPref,
+                 base::Unretained(this)));
+  pref_change_registrar_.Add(
+      prefs::kPolicyPinnedLauncherApps,
       base::Bind(&ChromeLauncherController::UpdateAppLaunchersFromPref,
                  base::Unretained(this)));
   pref_change_registrar_.Add(

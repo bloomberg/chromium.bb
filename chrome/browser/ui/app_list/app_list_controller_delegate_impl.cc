@@ -52,7 +52,7 @@ void AppListControllerDelegateImpl::UnpinApp(const std::string& extension_id) {
 }
 
 AppListControllerDelegateImpl::Pinnable
-    AppListControllerDelegateImpl::GetPinnable() {
+AppListControllerDelegateImpl::GetPinnable(const std::string& extension_id) {
   return NO_PIN;
 }
 

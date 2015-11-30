@@ -46,6 +46,7 @@ class BrowserShortcutLauncherItemController : public LauncherItemController {
   ui::MenuModel* CreateContextMenu(aura::Window* root_window) override;
   ash::ShelfMenuModel* CreateApplicationMenu(int event_flags) override;
   bool IsDraggable() override;
+  bool CanPin() const override;
   bool ShouldShowTooltip() override;
   void Close() override;
 

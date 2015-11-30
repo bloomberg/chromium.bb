@@ -709,6 +709,7 @@ extern const char kShelfPreferences[];
 
 extern const char kLogoutDialogDurationMs[];
 extern const char kPinnedLauncherApps[];
+extern const char kPolicyPinnedLauncherApps[];
 extern const char kShowLogoutButtonInTray[];
 #endif
 

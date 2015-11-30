@@ -44,10 +44,6 @@ class ASH_EXPORT ShelfDelegate {
   // Check if the app with |app_id_| is pinned to the shelf.
   virtual bool IsAppPinned(const std::string& app_id) = 0;
 
-  // Checks whether the user is allowed to pin/unpin apps. Pinning may be
-  // disallowed by policy in case there is a pre-defined set of pinned apps.
-  virtual bool CanPin() const = 0;
-
   // Unpins app item with |app_id|.
   virtual void UnpinAppWithID(const std::string& app_id) = 0;
 };

@@ -1887,7 +1887,7 @@
     "can_be_recommended": true,
     "test_policy": { "PinnedLauncherApps": [] },
     "pref_mappings": [
-      { "pref": "pinned_launcher_apps" }
+      { "pref": "policy_pinned_launcher_apps" }
     ]
   },
 

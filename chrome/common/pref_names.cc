@@ -1997,6 +1997,7 @@ const char kShelfPreferences[] = "shelf_preferences";
 // a confirmation dialog.
 const char kLogoutDialogDurationMs[] = "logout_dialog_duration_ms";
 const char kPinnedLauncherApps[] = "pinned_launcher_apps";
+const char kPolicyPinnedLauncherApps[] = "policy_pinned_launcher_apps";
 // Boolean value indicating whether to show a logout button in the ash tray.
 const char kShowLogoutButtonInTray[] = "show_logout_button_in_tray";
 #endif

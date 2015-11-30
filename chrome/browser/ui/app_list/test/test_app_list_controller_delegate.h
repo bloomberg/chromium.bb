@@ -20,7 +20,7 @@ class TestAppListControllerDelegate : public AppListControllerDelegate {
   bool IsAppPinned(const std::string& extension_id) override;
   void PinApp(const std::string& extension_id) override;
   void UnpinApp(const std::string& extension_id) override;
-  Pinnable GetPinnable() override;
+  Pinnable GetPinnable(const std::string& extension_id) override;
   bool CanDoCreateShortcutsFlow() override;
   void DoCreateShortcutsFlow(Profile* profile,
                              const std::string& extension_id) override;

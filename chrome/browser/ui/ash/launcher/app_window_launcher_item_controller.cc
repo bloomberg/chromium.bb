@@ -245,7 +245,11 @@ ash::ShelfMenuModel* AppWindowLauncherItemController::CreateApplicationMenu(
 bool AppWindowLauncherItemController::IsDraggable() {
   if (type() == TYPE_APP_PANEL)
     return true;
-  return launcher_controller()->CanPin() ? true : false;
+  return CanPin();
+}
+
+bool AppWindowLauncherItemController::CanPin() const {
+  return launcher_controller()->CanPin(app_id());
 }
 
 bool AppWindowLauncherItemController::ShouldShowTooltip() {

@@ -45,10 +45,6 @@ bool ShelfDelegateImpl::IsAppPinned(const std::string& app_id) {
   return false;
 }
 
-bool ShelfDelegateImpl::CanPin() const {
-  return false;
-}
-
 void ShelfDelegateImpl::UnpinAppWithID(const std::string& app_id) {
 }
 

@@ -22,6 +22,8 @@ class TestShelfItemDelegate : public ShelfItemDelegate {
   explicit TestShelfItemDelegate(aura::Window* window);
   ~TestShelfItemDelegate() override;
 
+  void set_is_draggable(bool is_draggable) { is_draggable_ = is_draggable; }
+
   // ShelfItemDelegate:
   ShelfItemDelegate::PerformedAction ItemSelected(
       const ui::Event& event) override;
@@ -29,11 +31,14 @@ class TestShelfItemDelegate : public ShelfItemDelegate {
   ui::MenuModel* CreateContextMenu(aura::Window* root_window) override;
   ShelfMenuModel* CreateApplicationMenu(int event_flags) override;
   bool IsDraggable() override;
+  bool CanPin() const override;
   bool ShouldShowTooltip() override;
   void Close() override;
 
  private:
   aura::Window* window_;
+
+  bool is_draggable_;
 
   DISALLOW_COPY_AND_ASSIGN(TestShelfItemDelegate);
 };

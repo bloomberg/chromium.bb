@@ -13870,6 +13870,9 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
         <message name="IDS_LAUNCHER_CONTEXT_MENU_UNPIN" desc="Title text for the 'unpin' context menu item of the launcher">
           Unpin
         </message>
+        <message name="IDS_LAUNCHER_CONTEXT_MENU_PIN_ENFORCED_BY_POLICY" desc="Short text for the pin/unpin context menu to tell user the setting is enforced by policy of a shelf item">
+          Pinned by administrator
+        </message>
       </if>
 
       <!-- Panel windows -->
@@ -14219,6 +14222,9 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
           <message name="IDS_APP_LIST_CONTEXT_MENU_UNPIN" desc="Title text for the 'unpin' context menu item of an app list item.">
             Unpin from shelf
           </message>
+          <message name="IDS_APP_LIST_CONTEXT_MENU_PIN_ENFORCED_BY_POLICY" desc="Short text for the pin/unpin context menu to tell user the setting is enforced by policy of an app list item">
+            Pinned by administrator
+          </message>
           <message name="IDS_APP_LIST_UNINSTALL_ITEM"
                    desc="Title text for the 'uninstall' context menu item of an app list item.">
             Uninstall...
@@ -14251,6 +14257,9 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
           </message>
           <message name="IDS_APP_LIST_CONTEXT_MENU_UNPIN" desc="Title text for the 'unpin' context menu item of an app list item.">
             Unpin from Shelf
+          </message>
+          <message name="IDS_APP_LIST_CONTEXT_MENU_PIN_ENFORCED_BY_POLICY" desc="Short text for the pin/unpin context menu to tell user the setting is enforced by policy of an app list item">
+            Pinned by administrator
           </message>
           <message name="IDS_APP_LIST_UNINSTALL_ITEM"
                    desc="Title text for the 'uninstall' context menu item of an app list item.">

@@ -273,7 +273,11 @@ BrowserShortcutLauncherItemController::CreateApplicationMenu(int event_flags) {
 }
 
 bool BrowserShortcutLauncherItemController::IsDraggable() {
-  return launcher_controller()->CanPin() ? true : false;
+  return true;
+}
+
+bool BrowserShortcutLauncherItemController::CanPin() const {
+  return true;
 }
 
 bool BrowserShortcutLauncherItemController::ShouldShowTooltip() {

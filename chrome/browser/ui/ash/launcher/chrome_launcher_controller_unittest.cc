@@ -254,6 +254,9 @@ class TestV2AppLauncherItemController : public LauncherItemController {
     return NULL;
   }
   bool IsDraggable() override { return false; }
+  bool CanPin() const override {
+    return launcher_controller()->CanPin(app_id());
+  }
   bool ShouldShowTooltip() override { return false; }
 
  private:
@@ -939,6 +942,52 @@ TEST_F(ChromeLauncherControllerTest, DefaultApps) {
   EXPECT_EQ("AppList, Chrome, App3", GetPinnedAppStatus());
   EXPECT_FALSE(launcher_controller_->IsAppPinned(extension1_->id()));
   EXPECT_FALSE(launcher_controller_->IsAppPinned(extension2_->id()));
+}
+
+/*
+ * Test ChromeLauncherController correctly merges policy pinned apps
+ * and user pinned apps
+ */
+TEST_F(ChromeLauncherControllerTest, MergePolicyAndUserPrefPinnedApps) {
+  InitLauncherController();
+
+  base::ListValue user_pref_value;
+  extension_service_->AddExtension(extension1_.get());
+  extension_service_->AddExtension(extension3_.get());
+  extension_service_->AddExtension(extension4_.get());
+  extension_service_->AddExtension(extension5_.get());
+  // extension 1, 3 are pinned by user
+  InsertPrefValue(&user_pref_value, 0, extension1_->id());
+  InsertPrefValue(&user_pref_value, 1, extension3_->id());
+  profile()->GetTestingPrefService()->SetUserPref(prefs::kPinnedLauncherApps,
+                                                  user_pref_value.DeepCopy());
+
+  base::ListValue policy_value;
+  // extension 2 4 are pinned by policy
+  InsertPrefValue(&policy_value, 0, extension2_->id());
+  InsertPrefValue(&policy_value, 1, extension4_->id());
+  profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kPolicyPinnedLauncherApps, policy_value.DeepCopy());
+
+  SetShelfChromeIconIndex(1);
+
+  EXPECT_TRUE(launcher_controller_->IsAppPinned(extension1_->id()));
+  // 2 is not pinned as it's not installed
+  EXPECT_FALSE(launcher_controller_->IsAppPinned(extension2_->id()));
+  EXPECT_TRUE(launcher_controller_->IsAppPinned(extension3_->id()));
+  EXPECT_TRUE(launcher_controller_->IsAppPinned(extension4_->id()));
+  // install extension 2 and check
+  extension_service_->AddExtension(extension2_.get());
+  EXPECT_TRUE(launcher_controller_->IsAppPinned(extension2_->id()));
+
+  // Check user can manually pin or unpin these apps
+  EXPECT_TRUE(launcher_controller_->CanPin(extension1_->id()));
+  EXPECT_FALSE(launcher_controller_->CanPin(extension2_->id()));
+  EXPECT_TRUE(launcher_controller_->CanPin(extension3_->id()));
+  EXPECT_FALSE(launcher_controller_->CanPin(extension4_->id()));
+
+  // Check the order of shelf pinned apps
+  EXPECT_EQ("AppList, App2, App4, App1, Chrome, App3", GetPinnedAppStatus());
 }
 
 // Check that the restauration of launcher items is happening in the same order
