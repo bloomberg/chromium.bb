@@ -47,13 +47,15 @@ WebMediaPlayerMS::WebMediaPlayerMS(
     media::GpuVideoAcceleratorFactories* gpu_factories,
     const blink::WebString& sink_id,
     const blink::WebSecurityOrigin& security_origin)
-    : frame_(frame),
+    : RenderFrameObserver(RenderFrame::FromWebFrame(frame)),
+      frame_(frame),
       network_state_(WebMediaPlayer::NetworkStateEmpty),
       ready_state_(WebMediaPlayer::ReadyStateHaveNothing),
       buffered_(static_cast<size_t>(0)),
       client_(client),
       delegate_(delegate),
       paused_(true),
+      render_frame_suspended_(false),
       received_first_frame_(false),
       media_log_(media_log),
       renderer_factory_(factory.Pass()),
@@ -350,6 +352,28 @@ unsigned WebMediaPlayerMS::videoDecodedByteCount() const {
   return 0;
 }
 
+void WebMediaPlayerMS::WasHidden() {
+#if defined(OS_ANDROID)
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(!render_frame_suspended_);
+
+  // Method called when the RenderFrame is sent to background and suspended
+  // (android). Substitute the displayed VideoFrame with a copy to avoid
+  // holding on to it unnecessarily.
+  render_frame_suspended_=true;
+  if (!paused_)
+    compositor_->ReplaceCurrentFrameWithACopy();
+#endif  // defined(OS_ANDROID)
+}
+
+void WebMediaPlayerMS::WasShown() {
+#if defined(OS_ANDROID)
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  render_frame_suspended_ = false;
+#endif  // defined(OS_ANDROID)
+}
+
 bool WebMediaPlayerMS::copyVideoTextureToPlatformTexture(
     blink::WebGraphicsContext3D* web_graphics_context,
     unsigned int texture,
@@ -382,6 +406,9 @@ void WebMediaPlayerMS::OnFrameAvailable(
     const scoped_refptr<media::VideoFrame>& frame) {
   DVLOG(3) << __FUNCTION__;
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (render_frame_suspended_)
+    return;
 
   base::TimeTicks render_time;
   if (frame->metadata()->GetTimeTicks(media::VideoFrameMetadata::REFERENCE_TIME,

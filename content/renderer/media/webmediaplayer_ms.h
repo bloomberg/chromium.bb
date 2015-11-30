@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
+#include "content/public/renderer/render_frame_observer.h"
 #include "media/blink/webmediaplayer_util.h"
 #include "media/renderers/gpu_video_accelerator_factories.h"
 #include "media/renderers/skcanvas_video_renderer.h"
@@ -40,6 +41,7 @@ class MediaStreamAudioRenderer;
 class MediaStreamRendererFactory;
 class VideoFrameProvider;
 class WebMediaPlayerMSCompositor;
+class RenderFrameObserver;
 
 // WebMediaPlayerMS delegates calls from WebCore::MediaPlayerPrivate to
 // Chrome's media player when "src" is from media stream.
@@ -52,15 +54,12 @@ class WebMediaPlayerMSCompositor;
 // VideoFrameProvider
 //   provides video frames for rendering.
 //
-// TODO(wjia): add AudioPlayer.
-// AudioPlayer
-//   plays audio streams.
-//
 // blink::WebMediaPlayerClient
 //   WebKit client of this media player object.
 class WebMediaPlayerMS
     : public blink::WebMediaPlayer,
-      public base::SupportsWeakPtr<WebMediaPlayerMS> {
+      public base::SupportsWeakPtr<WebMediaPlayerMS>,
+      public RenderFrameObserver {
  public:
   // Construct a WebMediaPlayerMS with reference to the client, and
   // a MediaStreamClient which provides VideoFrameProvider.
@@ -134,6 +133,11 @@ class WebMediaPlayerMS
   unsigned audioDecodedByteCount() const override;
   unsigned videoDecodedByteCount() const override;
 
+  // RenderFrameObserver implementation. Called when the RenderFrame visiblity
+  // is changed.
+  void WasHidden() override;
+  void WasShown() override;
+
   bool copyVideoTextureToPlatformTexture(
       blink::WebGraphicsContext3D* web_graphics_context,
       unsigned int texture,
@@ -179,6 +183,7 @@ class WebMediaPlayerMS
   media::SkCanvasVideoRenderer video_renderer_;
 
   bool paused_;
+  bool render_frame_suspended_;
   bool received_first_frame_;
 
   scoped_refptr<media::MediaLog> media_log_;
