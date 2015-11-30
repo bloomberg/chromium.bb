@@ -56,3 +56,8 @@ add_executable(vttdemux
                "${LIBWEBM_SRC_DIR}/webvttparser.cc"
                "${LIBWEBM_SRC_DIR}/webvttparser.h")
 target_link_libraries(vttdemux LINK_PUBLIC webm)
+
+# webm2pes section.
+add_executable(webm2pes
+               "${LIBWEBM_SRC_DIR}/webm2pes.cc")
+target_link_libraries(webm2pes LINK_PUBLIC webm)
