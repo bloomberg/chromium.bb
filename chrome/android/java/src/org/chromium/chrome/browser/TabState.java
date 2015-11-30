@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser;
 
 import android.os.Handler;
+import android.os.StrictMode;
 import android.util.Log;
 import android.util.Pair;
 
@@ -169,6 +170,8 @@ public class TabState {
     public static TabState restoreTabState(File tabFile, boolean isIncognito) {
         FileInputStream stream = null;
         TabState tabState = null;
+        // Temporarily allowing disk access while fixing. TODO: http://crbug.com/543201
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
         try {
             stream = new FileInputStream(tabFile);
             tabState = TabState.readState(stream, isIncognito);
@@ -178,6 +181,7 @@ public class TabState {
             Log.e(TAG, "Failed to restore tab state.", exception);
         } finally {
             StreamUtil.closeQuietly(stream);
+            StrictMode.setThreadPolicy(oldPolicy);
         }
         return tabState;
     }

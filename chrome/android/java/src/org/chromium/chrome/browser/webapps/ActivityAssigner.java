@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.webapps;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.StrictMode;
 import android.util.Log;
 
 import org.chromium.base.ThreadUtils;
@@ -204,7 +205,15 @@ public class ActivityAssigner {
 
         // Restore any entries that were previously saved.  If it seems that the preferences have
         // been corrupted somehow, just discard the whole map.
-        SharedPreferences prefs = mContext.getSharedPreferences(PREF_PACKAGE, Context.MODE_PRIVATE);
+        // Temporarily allowing disk access while fixing. TODO: http://crbug.com/562189
+        SharedPreferences prefs = null;
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
+        try {
+            prefs = mContext.getSharedPreferences(PREF_PACKAGE, Context.MODE_PRIVATE);
+        } finally {
+            StrictMode.setThreadPolicy(oldPolicy);
+        }
+
         try {
             final int numSavedEntries = prefs.getInt(PREF_NUM_SAVED_ENTRIES, 0);
             if (numSavedEntries <= NUM_WEBAPP_ACTIVITIES) {
@@ -251,7 +260,14 @@ public class ActivityAssigner {
      * Saves the mapping between webapps and WebappActivities.
      */
     private void storeActivityList() {
-        SharedPreferences prefs = mContext.getSharedPreferences(PREF_PACKAGE, Context.MODE_PRIVATE);
+        // Temporarily allowing disk access while fixing. TODO: http://crbug.com/562189
+        SharedPreferences prefs = null;
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
+        try {
+            prefs = mContext.getSharedPreferences(PREF_PACKAGE, Context.MODE_PRIVATE);
+        } finally {
+            StrictMode.setThreadPolicy(oldPolicy);
+        }
         SharedPreferences.Editor editor = prefs.edit();
         editor.clear();
         editor.putInt(PREF_NUM_SAVED_ENTRIES, mActivityList.size());

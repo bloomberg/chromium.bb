@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.tabmodel.document;
 
 import android.content.Context;
 import android.os.AsyncTask;
+import android.os.StrictMode;
 import android.util.SparseArray;
 
 import com.google.protobuf.nano.MessageNano;
@@ -106,8 +107,14 @@ public class StorageDelegate extends TabPersister {
     /** @return The directory that stores the TabState files. */
     @Override
     public File getStateDirectory() {
-        return ApplicationStatus.getApplicationContext().getDir(
-                STATE_DIRECTORY, Context.MODE_PRIVATE);
+        // Temporarily allowing disk access while fixing. TODO: http://crbug.com/543201
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
+        try {
+            return ApplicationStatus.getApplicationContext().getDir(
+                    STATE_DIRECTORY, Context.MODE_PRIVATE);
+        } finally {
+            StrictMode.setThreadPolicy(oldPolicy);
+        }
     }
 
     /**
