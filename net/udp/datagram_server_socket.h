@@ -5,6 +5,8 @@
 #ifndef NET_UDP_DATAGRAM_SERVER_SOCKET_H_
 #define NET_UDP_DATAGRAM_SERVER_SOCKET_H_
 
+#include <stdint.h>
+
 #include "net/base/completion_callback.h"
 #include "net/udp/datagram_socket.h"
 #include "net/udp/diff_serv_code_point.h"
@@ -57,11 +59,11 @@ class NET_EXPORT DatagramServerSocket : public DatagramSocket {
 
   // Set the receive buffer size (in bytes) for the socket.
   // Returns a net error code.
-  virtual int SetReceiveBufferSize(int32 size) = 0;
+  virtual int SetReceiveBufferSize(int32_t size) = 0;
 
   // Set the send buffer size (in bytes) for the socket.
   // Returns a net error code.
-  virtual int SetSendBufferSize(int32 size) = 0;
+  virtual int SetSendBufferSize(int32_t size) = 0;
 
   // Allow the socket to share the local address to which the socket will
   // be bound with other processes. Should be called before Listen().
@@ -86,7 +88,7 @@ class NET_EXPORT DatagramServerSocket : public DatagramSocket {
   // interface is used.
   // Should be called before Bind().
   // Returns a network error code.
-  virtual int SetMulticastInterface(uint32 interface_index) = 0;
+  virtual int SetMulticastInterface(uint32_t interface_index) = 0;
 
   // Set the time-to-live option for UDP packets sent to the multicast
   // group address. The default value of this option is 1.

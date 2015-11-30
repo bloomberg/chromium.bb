@@ -5,6 +5,8 @@
 #ifndef NET_UDP_UDP_SOCKET_POSIX_H_
 #define NET_UDP_UDP_SOCKET_POSIX_H_
 
+#include <stdint.h>
+
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -111,11 +113,11 @@ class NET_EXPORT UDPSocketPosix : public base::NonThreadSafe {
 
   // Sets the receive buffer size (in bytes) for the socket.
   // Returns a net error code.
-  int SetReceiveBufferSize(int32 size);
+  int SetReceiveBufferSize(int32_t size);
 
   // Sets the send buffer size (in bytes) for the socket.
   // Returns a net error code.
-  int SetSendBufferSize(int32 size);
+  int SetSendBufferSize(int32_t size);
 
   // Returns true if the socket is already connected or bound.
   bool is_connected() const { return is_connected_; }
@@ -152,7 +154,7 @@ class NET_EXPORT UDPSocketPosix : public base::NonThreadSafe {
   // default interface is used.
   // Should be called before Bind().
   // Returns a net error code.
-  int SetMulticastInterface(uint32 interface_index);
+  int SetMulticastInterface(uint32_t interface_index);
 
   // Sets the time-to-live option for UDP packets sent to the multicast
   // group address. The default value of this option is 1.
@@ -264,7 +266,7 @@ class NET_EXPORT UDPSocketPosix : public base::NonThreadSafe {
   int socket_options_;
 
   // Multicast interface.
-  uint32 multicast_interface_;
+  uint32_t multicast_interface_;
 
   // Multicast socket options cached for SetMulticastOption.
   // Cannot be used after Bind().

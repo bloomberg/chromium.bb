@@ -60,11 +60,11 @@ int UDPServerSocket::SendTo(IOBuffer* buf,
   return socket_.SendTo(buf, buf_len, address, callback);
 }
 
-int UDPServerSocket::SetReceiveBufferSize(int32 size) {
+int UDPServerSocket::SetReceiveBufferSize(int32_t size) {
   return socket_.SetReceiveBufferSize(size);
 }
 
-int UDPServerSocket::SetSendBufferSize(int32 size) {
+int UDPServerSocket::SetSendBufferSize(int32_t size) {
   return socket_.SetSendBufferSize(size);
 }
 
@@ -100,7 +100,7 @@ int UDPServerSocket::LeaveGroup(const IPAddressNumber& group_address) const {
   return socket_.LeaveGroup(group_address);
 }
 
-int UDPServerSocket::SetMulticastInterface(uint32 interface_index) {
+int UDPServerSocket::SetMulticastInterface(uint32_t interface_index) {
   return socket_.SetMulticastInterface(interface_index);
 }
 

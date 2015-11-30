@@ -45,7 +45,7 @@ const int kPortEnd = 65535;
 #if defined(OS_MACOSX)
 
 // Returns IPv4 address in network order.
-int GetIPv4AddressFromIndex(int socket, uint32 index, uint32* address){
+int GetIPv4AddressFromIndex(int socket, uint32_t index, uint32_t* address) {
   if (!index) {
     *address = htonl(INADDR_ANY);
     return OK;
@@ -360,7 +360,7 @@ int UDPSocketPosix::BindToNetwork(
 #endif
 }
 
-int UDPSocketPosix::SetReceiveBufferSize(int32 size) {
+int UDPSocketPosix::SetReceiveBufferSize(int32_t size) {
   DCHECK_NE(socket_, kInvalidSocket);
   DCHECK(CalledOnValidThread());
   int rv = setsockopt(socket_, SOL_SOCKET, SO_RCVBUF,
@@ -368,7 +368,7 @@ int UDPSocketPosix::SetReceiveBufferSize(int32 size) {
   return rv == 0 ? OK : MapSystemError(errno);
 }
 
-int UDPSocketPosix::SetSendBufferSize(int32 size) {
+int UDPSocketPosix::SetSendBufferSize(int32_t size) {
   DCHECK_NE(socket_, kInvalidSocket);
   DCHECK(CalledOnValidThread());
   int rv = setsockopt(socket_, SOL_SOCKET, SO_SNDBUF,
@@ -608,7 +608,7 @@ int UDPSocketPosix::SetMulticastOptions() {
         break;
       }
       case AF_INET6: {
-        uint32 interface_index = multicast_interface_;
+        uint32_t interface_index = multicast_interface_;
         int rv = setsockopt(socket_, IPPROTO_IPV6, IPV6_MULTICAST_IF,
                             reinterpret_cast<const char*>(&interface_index),
                             sizeof(interface_index));
@@ -738,7 +738,7 @@ int UDPSocketPosix::LeaveGroup(const IPAddressNumber& group_address) const {
   }
 }
 
-int UDPSocketPosix::SetMulticastInterface(uint32 interface_index) {
+int UDPSocketPosix::SetMulticastInterface(uint32_t interface_index) {
   DCHECK(CalledOnValidThread());
   if (is_connected())
     return ERR_SOCKET_IS_CONNECTED;

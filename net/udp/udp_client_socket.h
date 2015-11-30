@@ -5,6 +5,8 @@
 #ifndef NET_SOCKET_UDP_CLIENT_SOCKET_H_
 #define NET_SOCKET_UDP_CLIENT_SOCKET_H_
 
+#include <stdint.h>
+
 #include "net/base/rand_callback.h"
 #include "net/log/net_log.h"
 #include "net/udp/datagram_client_socket.h"
@@ -35,8 +37,8 @@ class NET_EXPORT_PRIVATE UDPClientSocket : public DatagramClientSocket {
   void Close() override;
   int GetPeerAddress(IPEndPoint* address) const override;
   int GetLocalAddress(IPEndPoint* address) const override;
-  int SetReceiveBufferSize(int32 size) override;
-  int SetSendBufferSize(int32 size) override;
+  int SetReceiveBufferSize(int32_t size) override;
+  int SetSendBufferSize(int32_t size) override;
   const BoundNetLog& NetLog() const override;
 
 #if defined(OS_WIN)

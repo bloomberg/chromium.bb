@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -53,7 +52,7 @@ class UDPSocketPerfTest : public PlatformTest {
 
 // Creates and address from an ip/port and returns it in |address|.
 void CreateUDPAddress(const std::string& ip_str,
-                      uint16 port,
+                      uint16_t port,
                       IPEndPoint* address) {
   IPAddressNumber ip_number;
   bool rv = ParseIPLiteralToNumber(ip_str, &ip_number);
@@ -86,7 +85,7 @@ void UDPSocketPerfTest::WritePacketsToSocket(UDPClientSocket* socket,
 
 void UDPSocketPerfTest::WriteBenchmark(bool use_nonblocking_io) {
   base::MessageLoopForIO message_loop;
-  const uint16 kPort = 9999;
+  const uint16_t kPort = 9999;
 
   // Setup the server to listen.
   IPEndPoint bind_address;
