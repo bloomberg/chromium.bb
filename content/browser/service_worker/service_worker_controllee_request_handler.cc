@@ -45,8 +45,12 @@ ServiceWorkerControlleeRequestHandler::ServiceWorkerControlleeRequestHandler(
       request_context_type_(request_context_type),
       frame_type_(frame_type),
       body_(body),
-      skip_service_worker_(false),
       force_update_started_(false),
+      use_network_(false),
+      was_fetched_via_service_worker_(false),
+      was_fallback_required_(false),
+      response_type_via_service_worker_(
+          blink::WebServiceWorkerResponseTypeDefault),
       weak_factory_(this) {}
 
 ServiceWorkerControlleeRequestHandler::
@@ -68,39 +72,41 @@ net::URLRequestJob* ServiceWorkerControlleeRequestHandler::MaybeCreateJob(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate,
     ResourceContext* resource_context) {
-  if (job_.get() && worker_start_time_.is_null()) {
-    // Save worker timings of the first job.
-    worker_start_time_ = job_->worker_start_time();
-    worker_ready_time_ = job_->worker_ready_time();
-  }
+  ClearJob();
 
   if (!context_ || !provider_host_) {
     // We can't do anything other than to fall back to network.
-    job_ = NULL;
     return NULL;
   }
 
   // This may get called multiple times for original and redirect requests:
-  // A. original request case: job_ is null, no previous location info.
+  // A. original request case: use_network_ is false, no previous location info.
   // B. redirect or restarted request case:
-  //  a) job_ is non-null if the previous location was forwarded to SW.
-  //  b) job_ is null if the previous location was fallback.
-  //  c) job_ is non-null if additional restart was required to fall back.
+  //  a) use_network_ is false if the previous location was forwarded to SW.
+  //  b) use_network_ is false if the previous location was fallback.
+  //  c) use_network_ is true if additional restart was required to fall back.
 
-  // We've come here by restart, we already have original request and it
-  // tells we should fallback to network. (Case B-c)
-  if ((job_.get() && job_->ShouldFallbackToNetwork()) || skip_service_worker_) {
-    FallbackToNetwork();
+  // Fall back to network. (Case B-c)
+  if (use_network_) {
+    // Once a subresource request has fallen back to the network once, it will
+    // never be handled by a service worker. This is not true of main frame
+    // requests.
+    if (is_main_resource_load_)
+      use_network_ = false;
     return NULL;
   }
 
   // It's for original request (A) or redirect case (B-a or B-b).
-  DCHECK(!job_.get() || job_->ShouldForwardToServiceWorker());
-
-  job_ = new ServiceWorkerURLRequestJob(
+  ServiceWorkerURLRequestJob* job = new ServiceWorkerURLRequestJob(
       request, network_delegate, provider_host_, blob_storage_context_,
       resource_context, request_mode_, credentials_mode_, redirect_mode_,
-      is_main_resource_load_, request_context_type_, frame_type_, body_);
+      is_main_resource_load_, request_context_type_, frame_type_, body_,
+      base::Bind(&ServiceWorkerControlleeRequestHandler::OnPrepareToRestart,
+                 base::Unretained(this)),
+      base::Bind(&ServiceWorkerControlleeRequestHandler::OnStartCompleted,
+                 base::Unretained(this)));
+  job_ = job->GetWeakPtr();
+
   resource_context_ = resource_context;
 
   if (is_main_resource_load_)
@@ -110,31 +116,37 @@ net::URLRequestJob* ServiceWorkerControlleeRequestHandler::MaybeCreateJob(
 
   if (job_->ShouldFallbackToNetwork()) {
     // If we know we can fallback to network at this point (in case
-    // the storage lookup returned immediately), just return NULL here to
-    // fallback to network.
-    FallbackToNetwork();
+    // the storage lookup returned immediately), just destroy the job and return
+    // NULL here to fallback to network.
+
+    // If this is a subresource request, all subsequent requests should also use
+    // the network.
+    if (!is_main_resource_load_)
+      use_network_ = true;
+
+    // TODO(mmenke): Make job a scoped_ptr once URLRequestJobs are no longer
+    // reference counted.
+    scoped_refptr<ServiceWorkerURLRequestJob> owned_job(job);
+    ClearJob();
+
     return NULL;
   }
 
-  return job_.get();
+  return job;
 }
 
 void ServiceWorkerControlleeRequestHandler::GetExtraResponseInfo(
     ResourceResponseInfo* response_info) const {
-  if (!job_.get()) {
-    response_info->was_fetched_via_service_worker = false;
-    response_info->was_fallback_required_by_service_worker = false;
-    response_info->original_url_via_service_worker = GURL();
-    response_info->service_worker_start_time = worker_start_time_;
-    response_info->service_worker_ready_time = worker_ready_time_;
-    return;
-  }
-  job_->GetExtraResponseInfo(response_info);
-  if (!worker_start_time_.is_null()) {
-    // If we have worker timings from previous job, use it.
-    response_info->service_worker_start_time = worker_start_time_;
-    response_info->service_worker_ready_time = worker_ready_time_;
-  }
+  response_info->was_fetched_via_service_worker =
+      was_fetched_via_service_worker_;
+  response_info->was_fallback_required_by_service_worker =
+      was_fallback_required_;
+  response_info->original_url_via_service_worker =
+      original_url_via_service_worker_;
+  response_info->response_type_via_service_worker =
+      response_type_via_service_worker_;
+  response_info->service_worker_start_time = service_worker_start_time_;
+  response_info->service_worker_ready_time = service_worker_ready_time_;
 }
 
 void ServiceWorkerControlleeRequestHandler::PrepareForMainResource(
@@ -167,7 +179,10 @@ void
 ServiceWorkerControlleeRequestHandler::DidLookupRegistrationForMainResource(
     ServiceWorkerStatusCode status,
     const scoped_refptr<ServiceWorkerRegistration>& registration) {
-  DCHECK(job_.get());
+  // The job may have been canceled and then destroyed before this was invoked.
+  if (!job_)
+    return;
+
   const bool need_to_update = !force_update_started_ && registration &&
                               registration->force_update_on_page_load();
 
@@ -266,6 +281,10 @@ ServiceWorkerControlleeRequestHandler::DidLookupRegistrationForMainResource(
 void ServiceWorkerControlleeRequestHandler::OnVersionStatusChanged(
     ServiceWorkerRegistration* registration,
     ServiceWorkerVersion* version) {
+  // The job may have been canceled and then destroyed before this was invoked.
+  if (!job_)
+    return;
+
   if (provider_host_)
     provider_host_->SetAllowAssociation(true);
   if (version != registration->active_version() ||
@@ -288,6 +307,11 @@ void ServiceWorkerControlleeRequestHandler::DidUpdateRegistration(
     const std::string& status_message,
     int64 registration_id) {
   DCHECK(force_update_started_);
+
+  // The job may have been canceled and then destroyed before this was invoked.
+  if (!job_)
+    return;
+
   if (!context_) {
     job_->FallbackToNetwork();
     return;
@@ -317,6 +341,10 @@ void ServiceWorkerControlleeRequestHandler::DidUpdateRegistration(
 void ServiceWorkerControlleeRequestHandler::OnUpdatedVersionStatusChanged(
     const scoped_refptr<ServiceWorkerRegistration>& registration,
     const scoped_refptr<ServiceWorkerVersion>& version) {
+  // The job may have been canceled and then destroyed before this was invoked.
+  if (!job_)
+    return;
+
   if (!context_) {
     job_->FallbackToNetwork();
     return;
@@ -343,13 +371,44 @@ void ServiceWorkerControlleeRequestHandler::PrepareForSubResource() {
   job_->ForwardToServiceWorker();
 }
 
-void ServiceWorkerControlleeRequestHandler::FallbackToNetwork() {
-  // Once a subresource request was fallbacked to the network, we set
-  // |skip_service_worker_| because the request should not go to the service
-  // worker.
-  if (!is_main_resource_load_)
-    skip_service_worker_ = true;
-  job_ = NULL;
+void ServiceWorkerControlleeRequestHandler::OnPrepareToRestart(
+    base::TimeTicks service_worker_start_time,
+    base::TimeTicks service_worker_ready_time) {
+  use_network_ = true;
+  ClearJob();
+  // Update times, if not already set by a previous Job.
+  if (service_worker_start_time_.is_null()) {
+    service_worker_start_time_ = service_worker_start_time;
+    service_worker_ready_time_ = service_worker_ready_time;
+  }
+}
+
+void ServiceWorkerControlleeRequestHandler::OnStartCompleted(
+    bool was_fetched_via_service_worker,
+    bool was_fallback_required,
+    const GURL& original_url_via_service_worker,
+    blink::WebServiceWorkerResponseType response_type_via_service_worker,
+    base::TimeTicks service_worker_start_time,
+    base::TimeTicks service_worker_ready_time) {
+  was_fetched_via_service_worker_ = was_fetched_via_service_worker;
+  was_fallback_required_ = was_fallback_required;
+  original_url_via_service_worker_ = original_url_via_service_worker;
+  response_type_via_service_worker_ = response_type_via_service_worker;
+
+  // Update times, if not already set by a previous Job.
+  if (service_worker_start_time_.is_null()) {
+    service_worker_start_time_ = service_worker_start_time;
+    service_worker_ready_time_ = service_worker_ready_time;
+  }
+}
+
+void ServiceWorkerControlleeRequestHandler::ClearJob() {
+  job_.reset();
+  was_fetched_via_service_worker_ = false;
+  was_fallback_required_ = false;
+  original_url_via_service_worker_ = GURL();
+  response_type_via_service_worker_ =
+      blink::WebServiceWorkerResponseTypeDefault;
 }
 
 }  // namespace content

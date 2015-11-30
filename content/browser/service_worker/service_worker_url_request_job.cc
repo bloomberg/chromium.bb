@@ -28,7 +28,6 @@
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/common/referrer.h"
-#include "content/public/common/resource_response_info.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
@@ -108,7 +107,9 @@ ServiceWorkerURLRequestJob::ServiceWorkerURLRequestJob(
     bool is_main_resource_load,
     RequestContextType request_context_type,
     RequestContextFrameType frame_type,
-    scoped_refptr<ResourceRequestBody> body)
+    scoped_refptr<ResourceRequestBody> body,
+    const OnPrepareToRestartCallback& on_prepare_to_restart_callback,
+    const OnStartCompletedCallback& on_start_completed_callback)
     : net::URLRequestJob(request, network_delegate),
       provider_host_(provider_host),
       response_type_(NOT_DETERMINED),
@@ -125,6 +126,8 @@ ServiceWorkerURLRequestJob::ServiceWorkerURLRequestJob(
       frame_type_(frame_type),
       fall_back_required_(false),
       body_(body),
+      on_prepare_to_restart_callback_(on_prepare_to_restart_callback),
+      on_start_completed_callback_(on_start_completed_callback),
       weak_factory_(this) {}
 
 void ServiceWorkerURLRequestJob::FallbackToNetwork() {
@@ -344,6 +347,11 @@ void ServiceWorkerURLRequestJob::OnStreamRegistered(Stream* stream) {
   CommitResponseHeader();
 }
 
+base::WeakPtr<ServiceWorkerURLRequestJob>
+ServiceWorkerURLRequestJob::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}
+
 // Misc -----------------------------------------------------------------------
 
 const net::HttpResponseInfo* ServiceWorkerURLRequestJob::http_info() const {
@@ -353,26 +361,6 @@ const net::HttpResponseInfo* ServiceWorkerURLRequestJob::http_info() const {
     return range_response_info_.get();
   return http_response_info_.get();
 }
-
-void ServiceWorkerURLRequestJob::GetExtraResponseInfo(
-    ResourceResponseInfo* response_info) const {
-  if (response_type_ != FORWARD_TO_SERVICE_WORKER) {
-    response_info->was_fetched_via_service_worker = false;
-    response_info->was_fallback_required_by_service_worker = false;
-    response_info->original_url_via_service_worker = GURL();
-    response_info->response_type_via_service_worker =
-        blink::WebServiceWorkerResponseTypeDefault;
-    return;
-  }
-  response_info->was_fetched_via_service_worker = true;
-  response_info->was_fallback_required_by_service_worker = fall_back_required_;
-  response_info->original_url_via_service_worker = response_url_;
-  response_info->response_type_via_service_worker =
-      service_worker_response_type_;
-  response_info->service_worker_start_time = worker_start_time_;
-  response_info->service_worker_ready_time = worker_ready_time_;
-}
-
 
 ServiceWorkerURLRequestJob::~ServiceWorkerURLRequestJob() {
   ClearStream();
@@ -799,6 +787,39 @@ void ServiceWorkerURLRequestJob::ClearStream() {
     stream_registry->RemoveRegisterObserver(waiting_stream_url_);
     stream_registry->AbortPendingStream(waiting_stream_url_);
   }
+}
+
+void ServiceWorkerURLRequestJob::NotifyHeadersComplete() {
+  OnStartCompleted();
+  URLRequestJob::NotifyHeadersComplete();
+}
+
+void ServiceWorkerURLRequestJob::NotifyStartError(
+    net::URLRequestStatus status) {
+  OnStartCompleted();
+  URLRequestJob::NotifyStartError(status);
+}
+
+void ServiceWorkerURLRequestJob::NotifyRestartRequired() {
+  on_prepare_to_restart_callback_.Run(worker_start_time_, worker_ready_time_);
+  URLRequestJob::NotifyRestartRequired();
+}
+
+void ServiceWorkerURLRequestJob::OnStartCompleted() const {
+  if (response_type_ != FORWARD_TO_SERVICE_WORKER) {
+    on_start_completed_callback_.Run(
+        false /* was_fetched_via_service_worker */,
+        false /* was_fallback_required */,
+        GURL() /* original_url_via_service_worker */,
+        blink::WebServiceWorkerResponseTypeDefault,
+        base::TimeTicks() /* service_worker_start_time */,
+        base::TimeTicks() /* service_worker_ready_time */);
+    return;
+  }
+  on_start_completed_callback_.Run(true /* was_fetched_via_service_worker */,
+                                   fall_back_required_, response_url_,
+                                   service_worker_response_type_,
+                                   worker_start_time_, worker_ready_time_);
 }
 
 }  // namespace content
