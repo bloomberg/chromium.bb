@@ -539,6 +539,10 @@ imported/web-platform-tests/FileAPI/url/url_xmlhttprequest_img.html [ Skip ]
 imported/web-platform-tests/html/semantics/forms/form-submission-0/url-encoded.html [ Skip ]
 
 # crbug.com/561418: <ul type=decimal> and values other than 1/a/A/i/I/none/disc/circle/square should not be supported
+imported/web-platform-tests/html/rendering/non-replaced-elements/lists/li-type-unsupported-lower-alpha.html [ Skip ]
+imported/web-platform-tests/html/rendering/non-replaced-elements/lists/li-type-unsupported-lower-roman.html [ Skip ]
+imported/web-platform-tests/html/rendering/non-replaced-elements/lists/li-type-unsupported-upper-alpha.html [ Skip ]
+imported/web-platform-tests/html/rendering/non-replaced-elements/lists/li-type-unsupported-upper-roman.html [ Skip ]
 imported/web-platform-tests/html/rendering/non-replaced-elements/lists/ul-type-unsupported-decimal.html [ Skip ]
 imported/web-platform-tests/html/rendering/non-replaced-elements/lists/ul-type-unsupported-lower-alpha.html [ Skip ]
 imported/web-platform-tests/html/rendering/non-replaced-elements/lists/ul-type-unsupported-lower-roman.html [ Skip ]
