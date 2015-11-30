@@ -554,13 +554,18 @@ extern "C"
   int other_charToDots (const char *trantab, const widechar
 			* inbuf, widechar * outbuf, int length, int mode);
 
-  int trace_translate (const char* tableList, const widechar* inbuf,
-                       int* inlen, widechar* outbuf, int* outlen,
-                       formtype* typeform, char* spacing, int* 
-                       outputPos,
-                       int* inputPos, int* cursorPos,
-                       const TranslationTableRule** rules, int* rulesLen,
-                       int mode);
+  int translateWithTracing (const char* tableList, const widechar * inbuf,
+			    int* inlen, widechar * outbuf, int* outlen,
+			    formtype* typeform, char* spacing, int* outputPos,
+			    int* inputPos, int* cursorPos, int mode,
+			    const TranslationTableRule **rules, int *rulesLen);
+
+  int backTranslateWithTracing (const char *tableList, const widechar * inbuf,
+  				int *inlen, widechar * outbuf,
+  				int *outlen, formtype *typeform,
+  				char *spacing, int *outputPos,
+  				int *inputPos, int *cursorPos, int mode,
+  				const TranslationTableRule **rules, int *rulesLen);
 
   char * getLastTableList();
   void debugHook ();
