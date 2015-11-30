@@ -539,7 +539,8 @@ int amdgpu_create_bo_from_user_mem(amdgpu_device_handle dev,
 	struct drm_amdgpu_gem_userptr args;
 
 	args.addr = (uintptr_t)cpu;
-	args.flags = AMDGPU_GEM_USERPTR_ANONONLY | AMDGPU_GEM_USERPTR_REGISTER;
+	args.flags = AMDGPU_GEM_USERPTR_ANONONLY | AMDGPU_GEM_USERPTR_REGISTER |
+		AMDGPU_GEM_USERPTR_VALIDATE;
 	args.size = size;
 	r = drmCommandWriteRead(dev->fd, DRM_AMDGPU_GEM_USERPTR,
 				&args, sizeof(args));
