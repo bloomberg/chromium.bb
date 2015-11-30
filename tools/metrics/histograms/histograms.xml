@@ -38224,6 +38224,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Renderer4.CompositorTouchScrollUpdateThread"
+    enum="ScrollThread">
+  <owner>tdresser@chromium.org</owner>
+  <summary>Whether the scroll from touch is executed on main thread.</summary>
+</histogram>
+
+<histogram name="Renderer4.CompositorWheelScrollUpdateThread"
+    enum="ScrollThread">
+  <owner>tdresser@chromium.org</owner>
+  <summary>
+    Whether the scroll from mouse wheel is executed on main thread.
+  </summary>
+</histogram>
+
 <histogram name="Renderer4.drawPixelCountCulled" units="NormalizedPixels">
   <obsolete>
     Renamed to Renderer4.pixelCountCulled_Draw.

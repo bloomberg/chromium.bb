@@ -130,6 +130,20 @@ void DidVisibilityChange(LayerTreeHostImpl* id, bool visible) {
   TRACE_EVENT_ASYNC_END0("cc", "LayerTreeHostImpl::SetVisible", id);
 }
 
+enum ScrollThread { MAIN_THREAD, CC_THREAD };
+
+void RecordCompositorSlowScrollMetric(InputHandler::ScrollInputType type,
+                                      ScrollThread scroll_thread) {
+  bool scroll_on_main_thread = (scroll_thread == ScrollThread::MAIN_THREAD);
+  if (type == InputHandler::WHEEL || type == InputHandler::ANIMATED_WHEEL) {
+    UMA_HISTOGRAM_BOOLEAN("Renderer4.CompositorWheelScrollUpdateThread",
+                          scroll_on_main_thread);
+  } else {
+    UMA_HISTOGRAM_BOOLEAN("Renderer4.CompositorTouchScrollUpdateThread",
+                          scroll_on_main_thread);
+  }
+}
+
 }  // namespace
 
 LayerTreeHostImpl::FrameData::FrameData()
@@ -2480,6 +2494,10 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBeginImpl(
   active_tree_->SetCurrentlyScrollingLayer(scrolling_layer_impl);
   wheel_scrolling_ = (type == WHEEL || type == ANIMATED_WHEEL);
   client_->RenewTreePriority();
+  RecordCompositorSlowScrollMetric(type, ScrollThread::CC_THREAD);
+
+  // TODO(lanwei): Will remove this metric in M50 when we have used the new
+  // metrics for one milestone, see https://crbug.com/557787.
   UMA_HISTOGRAM_BOOLEAN("TryScroll.SlowScroll", false);
   return SCROLL_STARTED;
 }
@@ -2519,6 +2537,10 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
       &scroll_affects_scroll_handler_);
 
   if (scroll_on_main_thread) {
+    RecordCompositorSlowScrollMetric(type, ScrollThread::MAIN_THREAD);
+
+    // TODO(lanwei): Will remove this metric in M50 when we have used the new
+    // metrics for one milestone, see https://crbug.com/557787.
     UMA_HISTOGRAM_BOOLEAN("TryScroll.SlowScroll", true);
     return SCROLL_ON_MAIN_THREAD;
   }
