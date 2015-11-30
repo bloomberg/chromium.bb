@@ -25,7 +25,7 @@ ContextualSearchSceneLayer::~ContextualSearchSceneLayer() {
 
 void ContextualSearchSceneLayer::UpdateContextualSearchLayer(
     JNIEnv* env,
-    jobject object,
+    const JavaParamRef<jobject>& object,
     jint search_bar_background_resource_id,
     jint search_context_resource_id,
     jint search_term_resource_id,
@@ -40,7 +40,7 @@ void ContextualSearchSceneLayer::UpdateContextualSearchLayer(
     jint peek_promo_text_resource_id,
     jint search_provider_icon_sprite_bitmap_resource_id,
     jint search_provider_icon_sprite_metadata_resource_id,
-    jobject jcontent_view_core,
+    const JavaParamRef<jobject>& jcontent_view_core,
     jboolean search_promo_visible,
     jfloat search_promo_height,
     jfloat search_promo_opacity,
@@ -71,7 +71,7 @@ void ContextualSearchSceneLayer::UpdateContextualSearchLayer(
     jfloat progress_bar_height,
     jfloat progress_bar_opacity,
     jint progress_bar_completion,
-    jobject jresource_manager) {
+    const JavaParamRef<jobject>& jresource_manager) {
   ui::ResourceManager* resource_manager =
       ui::ResourceManagerImpl::FromJavaObject(jresource_manager);
   // Lazily construct the contextual search layer, as the feature is only

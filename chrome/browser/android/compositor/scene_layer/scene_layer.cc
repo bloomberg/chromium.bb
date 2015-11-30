@@ -46,7 +46,7 @@ void SceneLayer::OnDetach() {
   layer()->RemoveFromParent();
 }
 
-void SceneLayer::Destroy(JNIEnv* env, jobject jobj) {
+void SceneLayer::Destroy(JNIEnv* env, const JavaParamRef<jobject>& jobj) {
   delete this;
 }
 

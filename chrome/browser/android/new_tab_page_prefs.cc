@@ -28,75 +28,84 @@ NewTabPagePrefs::NewTabPagePrefs(Profile* profile)
   : profile_(profile) {
 }
 
-void NewTabPagePrefs::Destroy(JNIEnv* env, jobject obj) {
+void NewTabPagePrefs::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   delete this;
 }
 
 NewTabPagePrefs::~NewTabPagePrefs() {
 }
 
-jboolean NewTabPagePrefs::GetCurrentlyOpenTabsCollapsed(JNIEnv* env,
-                                                       jobject obj) {
+jboolean NewTabPagePrefs::GetCurrentlyOpenTabsCollapsed(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   PrefService* prefs = profile_->GetPrefs();
   return prefs->GetBoolean(prefs::kNtpCollapsedCurrentlyOpenTabs);
 }
 
-void NewTabPagePrefs::SetCurrentlyOpenTabsCollapsed(JNIEnv* env,
-                                                   jobject obj,
-                                                   jboolean is_collapsed) {
+void NewTabPagePrefs::SetCurrentlyOpenTabsCollapsed(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    jboolean is_collapsed) {
   PrefService* prefs = profile_->GetPrefs();
   prefs->SetBoolean(prefs::kNtpCollapsedCurrentlyOpenTabs, is_collapsed);
 }
 
-jboolean NewTabPagePrefs::GetSnapshotDocumentCollapsed(JNIEnv* env,
-                                                       jobject obj) {
+jboolean NewTabPagePrefs::GetSnapshotDocumentCollapsed(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   return profile_->GetPrefs()->GetBoolean(prefs::kNtpCollapsedSnapshotDocument);
 }
 
-void NewTabPagePrefs::SetSnapshotDocumentCollapsed(JNIEnv* env,
-                                                   jobject obj,
-                                                   jboolean is_collapsed) {
+void NewTabPagePrefs::SetSnapshotDocumentCollapsed(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    jboolean is_collapsed) {
   PrefService* prefs = profile_->GetPrefs();
   prefs->SetBoolean(prefs::kNtpCollapsedSnapshotDocument, is_collapsed);
 }
 
-jboolean NewTabPagePrefs::GetRecentlyClosedTabsCollapsed(JNIEnv* env,
-                                                         jobject obj) {
+jboolean NewTabPagePrefs::GetRecentlyClosedTabsCollapsed(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   return profile_->GetPrefs()->GetBoolean(
       prefs::kNtpCollapsedRecentlyClosedTabs);
 }
 
-void NewTabPagePrefs::SetRecentlyClosedTabsCollapsed(JNIEnv* env,
-                                                     jobject obj,
-                                                     jboolean is_collapsed) {
+void NewTabPagePrefs::SetRecentlyClosedTabsCollapsed(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    jboolean is_collapsed) {
   PrefService* prefs = profile_->GetPrefs();
   prefs->SetBoolean(prefs::kNtpCollapsedRecentlyClosedTabs, is_collapsed);
 }
 
-jboolean NewTabPagePrefs::GetSyncPromoCollapsed(JNIEnv* env,
-                                                       jobject obj) {
+jboolean NewTabPagePrefs::GetSyncPromoCollapsed(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   return profile_->GetPrefs()->GetBoolean(prefs::kNtpCollapsedSyncPromo);
 }
 
 void NewTabPagePrefs::SetSyncPromoCollapsed(JNIEnv* env,
-                                            jobject obj,
+                                            const JavaParamRef<jobject>& obj,
                                             jboolean is_collapsed) {
   PrefService* prefs = profile_->GetPrefs();
   prefs->SetBoolean(prefs::kNtpCollapsedSyncPromo, is_collapsed);
 }
 
-jboolean NewTabPagePrefs::GetForeignSessionCollapsed(JNIEnv* env,
-                                                     jobject obj,
-                                                     jstring session_tag) {
+jboolean NewTabPagePrefs::GetForeignSessionCollapsed(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& session_tag) {
   const base::DictionaryValue* dict = profile_->GetPrefs()->GetDictionary(
       prefs::kNtpCollapsedForeignSessions);
   return dict && dict->HasKey(ConvertJavaStringToUTF8(env, session_tag));
 }
 
-void NewTabPagePrefs::SetForeignSessionCollapsed(JNIEnv* env,
-                                                 jobject obj,
-                                                 jstring session_tag,
-                                                 jboolean is_collapsed) {
+void NewTabPagePrefs::SetForeignSessionCollapsed(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& session_tag,
+    jboolean is_collapsed) {
   // Store session tags for collapsed sessions in a preference so that the
   // collapsed state persists.
   PrefService* prefs = profile_->GetPrefs();

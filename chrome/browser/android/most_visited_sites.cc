@@ -238,14 +238,15 @@ MostVisitedSites::~MostVisitedSites() {
     profile_sync_service->RemoveObserver(this);
 }
 
-void MostVisitedSites::Destroy(JNIEnv* env, jobject obj) {
+void MostVisitedSites::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   delete this;
 }
 
-void MostVisitedSites::SetMostVisitedURLsObserver(JNIEnv* env,
-                                                  jobject obj,
-                                                  jobject j_observer,
-                                                  jint num_sites) {
+void MostVisitedSites::SetMostVisitedURLsObserver(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& j_observer,
+    jint num_sites) {
   observer_.Reset(env, j_observer);
   num_sites_ = num_sites;
 
@@ -277,10 +278,11 @@ void MostVisitedSites::SetMostVisitedURLsObserver(JNIEnv* env,
   }
 }
 
-void MostVisitedSites::GetURLThumbnail(JNIEnv* env,
-                                       jobject obj,
-                                       jstring j_url,
-                                       jobject j_callback_obj) {
+void MostVisitedSites::GetURLThumbnail(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& j_url,
+    const JavaParamRef<jobject>& j_callback_obj) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   scoped_ptr<ScopedJavaGlobalRef<jobject>> j_callback(
       new ScopedJavaGlobalRef<jobject>());
@@ -353,8 +355,8 @@ void MostVisitedSites::OnObtainedThumbnail(
 }
 
 void MostVisitedSites::BlacklistUrl(JNIEnv* env,
-                                    jobject obj,
-                                    jstring j_url) {
+                                    const JavaParamRef<jobject>& obj,
+                                    const JavaParamRef<jstring>& j_url) {
   GURL url(ConvertJavaStringToUTF8(env, j_url));
 
   // Always blacklist in the local TopSites.
@@ -374,10 +376,11 @@ void MostVisitedSites::BlacklistUrl(JNIEnv* env,
   }
 }
 
-void MostVisitedSites::RecordTileTypeMetrics(JNIEnv* env,
-                                             jobject obj,
-                                             jintArray jtile_types,
-                                             jboolean is_icon_mode) {
+void MostVisitedSites::RecordTileTypeMetrics(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jintArray>& jtile_types,
+    jboolean is_icon_mode) {
   std::vector<int> tile_types;
   base::android::JavaIntArrayToIntVector(env, jtile_types, &tile_types);
   DCHECK_EQ(current_suggestions_.size(), tile_types.size());
@@ -409,10 +412,11 @@ void MostVisitedSites::RecordTileTypeMetrics(JNIEnv* env,
   }
 }
 
-void MostVisitedSites::RecordOpenedMostVisitedItem(JNIEnv* env,
-                                                   jobject obj,
-                                                   jint index,
-                                                   jint tile_type) {
+void MostVisitedSites::RecordOpenedMostVisitedItem(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    jint index,
+    jint tile_type) {
   DCHECK_GE(index, 0);
   DCHECK_LT(index, static_cast<int>(current_suggestions_.size()));
   std::string histogram = base::StringPrintf(

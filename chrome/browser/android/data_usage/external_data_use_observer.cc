@@ -147,10 +147,10 @@ void ExternalDataUseObserver::FetchMatchingRulesOnUIThread() const {
 
 void ExternalDataUseObserver::FetchMatchingRulesDone(
     JNIEnv* env,
-    jobject obj,
-    const base::android::JavaParamRef<jobjectArray>& app_package_name,
-    const base::android::JavaParamRef<jobjectArray>& domain_path_regex,
-    const base::android::JavaParamRef<jobjectArray>& label) {
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobjectArray>& app_package_name,
+    const JavaParamRef<jobjectArray>& domain_path_regex,
+    const JavaParamRef<jobjectArray>& label) {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
   // Convert to native objects.
   std::vector<std::string> app_package_name_native;
@@ -184,9 +184,10 @@ void ExternalDataUseObserver::FetchMatchingRulesDoneOnIOThread(
   // Process buffered reports.
 }
 
-void ExternalDataUseObserver::OnReportDataUseDone(JNIEnv* env,
-                                                  jobject obj,
-                                                  bool success) {
+void ExternalDataUseObserver::OnReportDataUseDone(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    bool success) {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
   io_task_runner_->PostTask(
       FROM_HERE,

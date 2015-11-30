@@ -13,24 +13,35 @@
 class FindInPageBridge {
  public:
   FindInPageBridge(JNIEnv* env, jobject obj, jobject j_web_contents);
-  void Destroy(JNIEnv*, jobject);
+  void Destroy(JNIEnv*, const base::android::JavaParamRef<jobject>&);
 
   void StartFinding(JNIEnv* env,
-                    jobject obj,
-                    jstring search_string,
+                    const base::android::JavaParamRef<jobject>& obj,
+                    const base::android::JavaParamRef<jstring>& search_string,
                     jboolean forward_direction,
                     jboolean case_sensitive);
 
-  void StopFinding(JNIEnv* env, jobject obj, jboolean clearSelection);
+  void StopFinding(JNIEnv* env,
+                   const base::android::JavaParamRef<jobject>& obj,
+                   jboolean clearSelection);
 
-  base::android::ScopedJavaLocalRef<jstring> GetPreviousFindText(JNIEnv* env,
-                                                                 jobject obj);
+  base::android::ScopedJavaLocalRef<jstring> GetPreviousFindText(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
 
-  void RequestFindMatchRects(JNIEnv* env, jobject obj, jint current_version);
+  void RequestFindMatchRects(JNIEnv* env,
+                             const base::android::JavaParamRef<jobject>& obj,
+                             jint current_version);
 
-  void ActivateNearestFindResult(JNIEnv* env, jobject obj, jfloat x, jfloat y);
+  void ActivateNearestFindResult(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jfloat x,
+      jfloat y);
 
-  void ActivateFindInPageResultForAccessibility(JNIEnv* env, jobject obj);
+  void ActivateFindInPageResultForAccessibility(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
 
   static bool RegisterFindInPageBridge(JNIEnv* env);
 

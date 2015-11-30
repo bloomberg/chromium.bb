@@ -27,18 +27,30 @@ class SyncService;
 class ForeignSessionHelper : public sync_driver::SyncServiceObserver {
  public:
   explicit ForeignSessionHelper(Profile* profile);
-  void Destroy(JNIEnv* env, jobject obj);
-  jboolean IsTabSyncEnabled(JNIEnv* env, jobject obj);
-  void TriggerSessionSync(JNIEnv* env, jobject obj);
-  void SetOnForeignSessionCallback(JNIEnv* env, jobject obj, jobject callback);
-  jboolean GetForeignSessions(JNIEnv* env, jobject obj, jobject result);
-  jboolean OpenForeignSessionTab(JNIEnv* env,
-                                 jobject obj,
-                                 jobject j_tab,
-                                 jstring session_tag,
-                                 jint tab_id,
-                                 jint disposition);
-  void DeleteForeignSession(JNIEnv* env, jobject obj, jstring session_tag);
+  void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+  jboolean IsTabSyncEnabled(JNIEnv* env,
+                            const base::android::JavaParamRef<jobject>& obj);
+  void TriggerSessionSync(JNIEnv* env,
+                          const base::android::JavaParamRef<jobject>& obj);
+  void SetOnForeignSessionCallback(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobject>& callback);
+  jboolean GetForeignSessions(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobject>& result);
+  jboolean OpenForeignSessionTab(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobject>& j_tab,
+      const base::android::JavaParamRef<jstring>& session_tag,
+      jint tab_id,
+      jint disposition);
+  void DeleteForeignSession(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& session_tag);
 
   // sync_driver::SyncServiceObserver implementation
   void OnStateChanged() override {}

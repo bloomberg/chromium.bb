@@ -22,11 +22,12 @@ CookiesFetcher::CookiesFetcher(JNIEnv* env, jobject obj, Profile* profile) {
 CookiesFetcher::~CookiesFetcher() {
 }
 
-void CookiesFetcher::Destroy(JNIEnv* env, jobject obj) {
+void CookiesFetcher::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   delete this;
 }
 
-void CookiesFetcher::PersistCookies(JNIEnv* env, jobject obj) {
+void CookiesFetcher::PersistCookies(JNIEnv* env,
+                                    const JavaParamRef<jobject>& obj) {
   Profile* profile = ProfileManager::GetPrimaryUserProfile();
   if (!profile->HasOffTheRecordProfile()) {
     // There is no work to be done. We might consider calling
@@ -98,12 +99,12 @@ void CookiesFetcher::OnCookiesFetchFinished(const net::CookieList& cookies) {
 }
 
 void CookiesFetcher::RestoreCookies(JNIEnv* env,
-                                    jobject obj,
-                                    jstring url,
-                                    jstring name,
-                                    jstring value,
-                                    jstring domain,
-                                    jstring path,
+                                    const JavaParamRef<jobject>& obj,
+                                    const JavaParamRef<jstring>& url,
+                                    const JavaParamRef<jstring>& name,
+                                    const JavaParamRef<jstring>& value,
+                                    const JavaParamRef<jstring>& domain,
+                                    const JavaParamRef<jstring>& path,
                                     int64 creation,
                                     int64 expiration,
                                     int64 last_access,

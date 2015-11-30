@@ -14,9 +14,9 @@
 class PrecacheLauncher {
  public:
   PrecacheLauncher(JNIEnv* env, jobject obj);
-  void Destroy(JNIEnv* env, jobject obj);
-  void Start(JNIEnv* env, jobject obj);
-  void Cancel(JNIEnv* env, jobject obj);
+  void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+  void Start(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+  void Cancel(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
 
  private:
   ~PrecacheLauncher();

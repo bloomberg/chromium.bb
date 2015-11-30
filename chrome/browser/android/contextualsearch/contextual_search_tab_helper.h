@@ -17,7 +17,7 @@ class Profile;
 class ContextualSearchTabHelper {
  public:
   ContextualSearchTabHelper(JNIEnv* env, jobject obj, Profile* profile);
-  void Destroy(JNIEnv* env, jobject obj);
+  void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
 
  private:
   ~ContextualSearchTabHelper();

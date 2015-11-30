@@ -86,8 +86,9 @@ AppBannerInfoBarDelegateAndroid::~AppBannerInfoBarDelegateAndroid() {
   java_delegate_.Reset();
 }
 
-void AppBannerInfoBarDelegateAndroid::UpdateInstallState(JNIEnv* env,
-                                                         jobject obj) {
+void AppBannerInfoBarDelegateAndroid::UpdateInstallState(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   if (native_app_data_.is_null())
     return;
 
@@ -101,7 +102,7 @@ void AppBannerInfoBarDelegateAndroid::UpdateInstallState(JNIEnv* env,
 
 void AppBannerInfoBarDelegateAndroid::OnInstallIntentReturned(
     JNIEnv* env,
-    jobject obj,
+    const JavaParamRef<jobject>& obj,
     jboolean jis_installing) {
   if (!infobar())
     return;
@@ -128,9 +129,10 @@ void AppBannerInfoBarDelegateAndroid::OnInstallIntentReturned(
   UpdateInstallState(env, obj);
 }
 
-void AppBannerInfoBarDelegateAndroid::OnInstallFinished(JNIEnv* env,
-                                                 jobject obj,
-                                                 jboolean success) {
+void AppBannerInfoBarDelegateAndroid::OnInstallFinished(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    jboolean success) {
   if (!infobar())
     return;
 

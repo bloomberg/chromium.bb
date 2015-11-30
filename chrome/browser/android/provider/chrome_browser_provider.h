@@ -35,7 +35,7 @@ class ChromeBrowserProvider : public bookmarks::BaseBookmarkModelObserver,
                               public history::HistoryServiceObserver {
  public:
   ChromeBrowserProvider(JNIEnv* env, jobject obj);
-  void Destroy(JNIEnv*, jobject);
+  void Destroy(JNIEnv*, const base::android::JavaParamRef<jobject>&);
 
   // JNI registration.
   static bool RegisterChromeBrowserProvider(JNIEnv* env);
@@ -44,14 +44,17 @@ class ChromeBrowserProvider : public bookmarks::BaseBookmarkModelObserver,
   // bookmark is added to the beginning of the specified parent and if the
   // parent ID is not valid (i.e. < 0) then it will be added to the bookmark
   // bar.
-  jlong AddBookmark(JNIEnv* env, jobject,
-                    jstring jurl,
-                    jstring jtitle,
+  jlong AddBookmark(JNIEnv* env,
+                    const base::android::JavaParamRef<jobject>&,
+                    const base::android::JavaParamRef<jstring>& jurl,
+                    const base::android::JavaParamRef<jstring>& jtitle,
                     jboolean is_folder,
                     jlong parent_id);
 
   // Removes a bookmark (or folder) with the specified ID.
-  jint RemoveBookmark(JNIEnv*, jobject, jlong id);
+  jint RemoveBookmark(JNIEnv*,
+                      const base::android::JavaParamRef<jobject>&,
+                      jlong id);
 
   // Updates a bookmark (or folder) with the the new title and new URL.
   // The |url| field will be ignored if the bookmark node is a folder.
@@ -59,120 +62,131 @@ class ChromeBrowserProvider : public bookmarks::BaseBookmarkModelObserver,
   // parent is given, the node will be moved to that folder as the first
   // child.
   jint UpdateBookmark(JNIEnv* env,
-                      jobject,
+                      const base::android::JavaParamRef<jobject>&,
                       jlong id,
-                      jstring url,
-                      jstring title,
+                      const base::android::JavaParamRef<jstring>& url,
+                      const base::android::JavaParamRef<jstring>& title,
                       jlong parent_id);
 
   // The below are methods to support Android public API.
   // Bookmark and history APIs. -----------------------------------------------
-  jlong AddBookmarkFromAPI(JNIEnv* env,
-                           jobject obj,
-                           jstring url,
-                           jobject created,
-                           jobject isBookmark,
-                           jobject date,
-                           jbyteArray favicon,
-                           jstring title,
-                           jobject visits,
-                           jlong parent_id);
+  jlong AddBookmarkFromAPI(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& url,
+      const base::android::JavaParamRef<jobject>& created,
+      const base::android::JavaParamRef<jobject>& isBookmark,
+      const base::android::JavaParamRef<jobject>& date,
+      const base::android::JavaParamRef<jbyteArray>& favicon,
+      const base::android::JavaParamRef<jstring>& title,
+      const base::android::JavaParamRef<jobject>& visits,
+      jlong parent_id);
 
   base::android::ScopedJavaLocalRef<jobject> QueryBookmarkFromAPI(
       JNIEnv* env,
-      jobject obj,
-      jobjectArray projection,
-      jstring selections,
-      jobjectArray selection_args,
-      jstring sort_order);
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobjectArray>& projection,
+      const base::android::JavaParamRef<jstring>& selections,
+      const base::android::JavaParamRef<jobjectArray>& selection_args,
+      const base::android::JavaParamRef<jstring>& sort_order);
 
-  jint UpdateBookmarkFromAPI(JNIEnv* env,
-                             jobject obj,
-                             jstring url,
-                             jobject created,
-                             jobject isBookmark,
-                             jobject date,
-                             jbyteArray favicon,
-                             jstring title,
-                             jobject visits,
-                             jlong parent_id,
-                             jstring selections,
-                             jobjectArray selection_args);
+  jint UpdateBookmarkFromAPI(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& url,
+      const base::android::JavaParamRef<jobject>& created,
+      const base::android::JavaParamRef<jobject>& isBookmark,
+      const base::android::JavaParamRef<jobject>& date,
+      const base::android::JavaParamRef<jbyteArray>& favicon,
+      const base::android::JavaParamRef<jstring>& title,
+      const base::android::JavaParamRef<jobject>& visits,
+      jlong parent_id,
+      const base::android::JavaParamRef<jstring>& selections,
+      const base::android::JavaParamRef<jobjectArray>& selection_args);
 
-  jint RemoveBookmarkFromAPI(JNIEnv* env,
-                             jobject obj,
-                             jstring selections,
-                             jobjectArray selection_args);
+  jint RemoveBookmarkFromAPI(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& selections,
+      const base::android::JavaParamRef<jobjectArray>& selection_args);
 
-  jint RemoveHistoryFromAPI(JNIEnv* env,
-                            jobject obj,
-                            jstring selections,
-                            jobjectArray selection_args);
+  jint RemoveHistoryFromAPI(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& selections,
+      const base::android::JavaParamRef<jobjectArray>& selection_args);
 
-  jlong AddSearchTermFromAPI(JNIEnv* env,
-                             jobject obj,
-                             jstring search_term,
-                             jobject date);
+  jlong AddSearchTermFromAPI(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& search_term,
+      const base::android::JavaParamRef<jobject>& date);
 
   base::android::ScopedJavaLocalRef<jobject> QuerySearchTermFromAPI(
       JNIEnv* env,
-      jobject obj,
-      jobjectArray projection,
-      jstring selections,
-      jobjectArray selection_args,
-      jstring sort_order);
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobjectArray>& projection,
+      const base::android::JavaParamRef<jstring>& selections,
+      const base::android::JavaParamRef<jobjectArray>& selection_args,
+      const base::android::JavaParamRef<jstring>& sort_order);
 
-  jint RemoveSearchTermFromAPI(JNIEnv* env,
-                               jobject obj,
-                               jstring selections,
-                               jobjectArray selection_args);
+  jint RemoveSearchTermFromAPI(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& selections,
+      const base::android::JavaParamRef<jobjectArray>& selection_args);
 
-  jint UpdateSearchTermFromAPI(JNIEnv* env,
-                               jobject obj,
-                               jstring search_term,
-                               jobject date,
-                               jstring selections,
-                               jobjectArray selection_args);
+  jint UpdateSearchTermFromAPI(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& search_term,
+      const base::android::JavaParamRef<jobject>& date,
+      const base::android::JavaParamRef<jstring>& selections,
+      const base::android::JavaParamRef<jobjectArray>& selection_args);
 
   // Custom provider API methods. ---------------------------------------------
-  jlong CreateBookmarksFolderOnce(JNIEnv* env,
-                                  jobject obj,
-                                  jstring title,
-                                  jlong parent_id);
+  jlong CreateBookmarksFolderOnce(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& title,
+      jlong parent_id);
 
-  void RemoveAllUserBookmarks(JNIEnv* env, jobject obj);
+  void RemoveAllUserBookmarks(JNIEnv* env,
+                              const base::android::JavaParamRef<jobject>& obj);
 
   base::android::ScopedJavaLocalRef<jobject> GetEditableBookmarkFolders(
       JNIEnv* env,
-      jobject obj);
+      const base::android::JavaParamRef<jobject>& obj);
 
   base::android::ScopedJavaLocalRef<jobject> GetBookmarkNode(
       JNIEnv* env,
-      jobject obj,
+      const base::android::JavaParamRef<jobject>& obj,
       jlong id,
       jboolean get_parent,
       jboolean get_children);
 
   base::android::ScopedJavaLocalRef<jobject> GetMobileBookmarksFolder(
       JNIEnv* env,
-      jobject obj);
+      const base::android::JavaParamRef<jobject>& obj);
 
-  jboolean IsBookmarkInMobileBookmarksBranch(JNIEnv* env,
-                                             jobject obj,
-                                             jlong id);
+  jboolean IsBookmarkInMobileBookmarksBranch(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jlong id);
 
   jboolean BookmarkNodeExists(JNIEnv* env,
-                              jobject obj,
+                              const base::android::JavaParamRef<jobject>& obj,
                               jlong id);
 
   base::android::ScopedJavaLocalRef<jbyteArray> GetFaviconOrTouchIcon(
       JNIEnv* env,
-      jobject obj,
-      jstring url);
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& url);
 
-  base::android::ScopedJavaLocalRef<jbyteArray> GetThumbnail(JNIEnv* env,
-                                                             jobject obj,
-                                                             jstring url);
+  base::android::ScopedJavaLocalRef<jbyteArray> GetThumbnail(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& url);
 
  private:
   ~ChromeBrowserProvider() override;

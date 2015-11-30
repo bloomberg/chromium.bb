@@ -33,27 +33,35 @@ class HistoryReportJniBridge {
 
   // Removes entries with seqno <= seq_no_lower_bound from delta file.
   // Returns biggest seqno in delta file.
-  jlong TrimDeltaFile(JNIEnv* env, jobject obj, jlong seq_no_lower_bound);
+  jlong TrimDeltaFile(JNIEnv* env,
+                      const base::android::JavaParamRef<jobject>& obj,
+                      jlong seq_no_lower_bound);
   // Queries delta file for up to limit entries with seqno > last_seq_no.
-  base::android::ScopedJavaLocalRef<jobjectArray> Query(JNIEnv* env,
-                                                        jobject obj,
-                                                        jlong last_seq_no,
-                                                        jint limit);
+  base::android::ScopedJavaLocalRef<jobjectArray> Query(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jlong last_seq_no,
+      jint limit);
   // Queries usage reports buffer for a batch of reports to be reported to
   // Icing.
   base::android::ScopedJavaLocalRef<jobjectArray> GetUsageReportsBatch(
       JNIEnv* env,
-      jobject obj,
+      const base::android::JavaParamRef<jobject>& obj,
       jint batch_size);
   // Removes a batch of usage reports from a usage reports buffer.
-  void RemoveUsageReports(JNIEnv* env,
-                          jobject obj,
-                          jobjectArray batch);
+  void RemoveUsageReports(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobjectArray>& batch);
   // Populates the usage reports buffer with historic visits.
   // This should happen only once per corpus registration.
-  jboolean AddHistoricVisitsToUsageReportsBuffer(JNIEnv* env, jobject obj);
+  jboolean AddHistoricVisitsToUsageReportsBuffer(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
   // Dumps internal state.
-  base::android::ScopedJavaLocalRef<jstring> Dump(JNIEnv* env, jobject obj);
+  base::android::ScopedJavaLocalRef<jstring> Dump(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
 
   void NotifyDataChanged();
   void NotifyDataCleared();

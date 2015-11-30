@@ -26,7 +26,7 @@ class AppBannerDataFetcherAndroid : public AppBannerDataFetcher {
   // then continues the creation pipeline.
   bool ContinueFetching(const base::string16& app_title,
                         const std::string& app_package,
-                        base::android::ScopedJavaLocalRef<jobject> app_data,
+                        const base::android::JavaRef<jobject>& app_data,
                         const GURL& image_url);
 
   // Fetches the splash screen image and stores it in the WebappDataStorage.

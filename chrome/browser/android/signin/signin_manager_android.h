@@ -36,28 +36,41 @@ class SigninManagerAndroid {
   // Registers the SigninManagerAndroid's native methods through JNI.
   static bool Register(JNIEnv* env);
 
-  void CheckPolicyBeforeSignIn(JNIEnv* env, jobject obj, jstring username);
+  void CheckPolicyBeforeSignIn(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& username);
 
-  void FetchPolicyBeforeSignIn(JNIEnv* env, jobject obj);
+  void FetchPolicyBeforeSignIn(JNIEnv* env,
+                               const base::android::JavaParamRef<jobject>& obj);
 
   // Indicates that the user has made the choice to sign-in. |username|
   // contains the email address of the account to use as primary.
-  void OnSignInCompleted(JNIEnv* env, jobject obj, jstring username);
+  void OnSignInCompleted(JNIEnv* env,
+                         const base::android::JavaParamRef<jobject>& obj,
+                         const base::android::JavaParamRef<jstring>& username);
 
-  void SignOut(JNIEnv* env, jobject obj);
+  void SignOut(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
 
-  base::android::ScopedJavaLocalRef<jstring> GetManagementDomain(JNIEnv* env,
-                                                                 jobject obj);
+  base::android::ScopedJavaLocalRef<jstring> GetManagementDomain(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
 
-  void WipeProfileData(JNIEnv* env, jobject obj);
+  void WipeProfileData(JNIEnv* env,
+                       const base::android::JavaParamRef<jobject>& obj);
 
-  void LogInSignedInUser(JNIEnv* env, jobject obj);
+  void LogInSignedInUser(JNIEnv* env,
+                         const base::android::JavaParamRef<jobject>& obj);
 
-  void ClearLastSignedInUser(JNIEnv* env, jobject obj);
+  void ClearLastSignedInUser(JNIEnv* env,
+                             const base::android::JavaParamRef<jobject>& obj);
 
-  jboolean IsSigninAllowedByPolicy(JNIEnv* env, jobject obj);
+  jboolean IsSigninAllowedByPolicy(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
 
-  jboolean IsSignedInOnNative(JNIEnv* env, jobject obj);
+  jboolean IsSignedInOnNative(JNIEnv* env,
+                              const base::android::JavaParamRef<jobject>& obj);
 
  private:
   ~SigninManagerAndroid();

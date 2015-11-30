@@ -48,17 +48,18 @@ class AppBannerInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
   ~AppBannerInfoBarDelegateAndroid() override;
 
   // Called when the AppBannerInfoBar's button needs to be updated.
-  void UpdateInstallState(JNIEnv* env, jobject obj);
+  void UpdateInstallState(JNIEnv* env,
+                          const base::android::JavaParamRef<jobject>& obj);
 
   // Called when the installation Intent has been handled and focus has been
   // returned to Chrome.
   void OnInstallIntentReturned(JNIEnv* env,
-                               jobject obj,
+                               const base::android::JavaParamRef<jobject>& obj,
                                jboolean jis_installing);
 
   // Called when the InstallerDelegate task has finished.
   void OnInstallFinished(JNIEnv* env,
-                         jobject obj,
+                         const base::android::JavaParamRef<jobject>& obj,
                          jboolean success);
 
  private:

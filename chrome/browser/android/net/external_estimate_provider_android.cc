@@ -108,7 +108,9 @@ void ExternalEstimateProviderAndroid::OnConnectionTypeChanged(
 }
 
 void ExternalEstimateProviderAndroid::
-    NotifyExternalEstimateProviderAndroidUpdate(JNIEnv* env, jobject obj) {
+    NotifyExternalEstimateProviderAndroidUpdate(
+        JNIEnv* env,
+        const JavaParamRef<jobject>& obj) {
   if (!task_runner_)
     return;
   task_runner_->PostTask(

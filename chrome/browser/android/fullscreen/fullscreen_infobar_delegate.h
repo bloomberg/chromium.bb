@@ -24,7 +24,8 @@ class FullscreenInfoBarDelegate : public ConfirmInfoBarDelegate {
   ~FullscreenInfoBarDelegate() override;
 
   // Called to close the infobar.
-  void CloseFullscreenInfoBar(JNIEnv* env, jobject obj);
+  void CloseFullscreenInfoBar(JNIEnv* env,
+                              const base::android::JavaParamRef<jobject>& obj);
 
   // ConfirmInfoBarDelegate:
   int GetIconId() const override;

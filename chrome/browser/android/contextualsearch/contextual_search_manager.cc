@@ -49,14 +49,17 @@ ContextualSearchManager::~ContextualSearchManager() {
   Java_ContextualSearchManager_clearNativeManager(env, java_manager_.obj());
 }
 
-void ContextualSearchManager::Destroy(JNIEnv* env, jobject obj) { delete this; }
+void ContextualSearchManager::Destroy(JNIEnv* env,
+                                      const JavaParamRef<jobject>& obj) {
+  delete this;
+}
 
 void ContextualSearchManager::StartSearchTermResolutionRequest(
     JNIEnv* env,
-    jobject obj,
-    jstring j_selection,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& j_selection,
     jboolean j_use_resolved_search_term,
-    jobject j_base_content_view_core,
+    const JavaParamRef<jobject>& j_base_content_view_core,
     jboolean j_may_send_base_page_url) {
   ContentViewCore* base_content_view_core =
       ContentViewCore::GetNativeContentViewCore(env, j_base_content_view_core);
@@ -73,10 +76,10 @@ void ContextualSearchManager::StartSearchTermResolutionRequest(
 
 void ContextualSearchManager::GatherSurroundingText(
     JNIEnv* env,
-    jobject obj,
-    jstring j_selection,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& j_selection,
     jboolean j_use_resolved_search_term,
-    jobject j_base_content_view_core,
+    const JavaParamRef<jobject>& j_base_content_view_core,
     jboolean j_may_send_base_page_url) {
   ContentViewCore* base_content_view_core =
       ContentViewCore::GetNativeContentViewCore(env, j_base_content_view_core);
@@ -91,7 +94,8 @@ void ContextualSearchManager::GatherSurroundingText(
 }
 
 base::android::ScopedJavaLocalRef<jstring>
-ContextualSearchManager::GetTargetLanguage(JNIEnv* env, jobject obj) {
+ContextualSearchManager::GetTargetLanguage(JNIEnv* env,
+                                           const JavaParamRef<jobject>& obj) {
   std::string target_language = delegate_->GetTargetLanguage();
   base::android::ScopedJavaLocalRef<jstring> j_target_language =
       base::android::ConvertUTF8ToJavaString(env, target_language.c_str());
@@ -99,7 +103,8 @@ ContextualSearchManager::GetTargetLanguage(JNIEnv* env, jobject obj) {
 }
 
 base::android::ScopedJavaLocalRef<jstring>
-ContextualSearchManager::GetAcceptLanguages(JNIEnv* env, jobject obj) {
+ContextualSearchManager::GetAcceptLanguages(JNIEnv* env,
+                                            const JavaParamRef<jobject>& obj) {
   std::string accept_languages = delegate_->GetAcceptLanguages();
   base::android::ScopedJavaLocalRef<jstring> j_accept_languages =
       base::android::ConvertUTF8ToJavaString(env, accept_languages.c_str());

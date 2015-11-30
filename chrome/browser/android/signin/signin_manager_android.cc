@@ -96,9 +96,10 @@ SigninManagerAndroid::SigninManagerAndroid(JNIEnv* env, jobject obj)
 
 SigninManagerAndroid::~SigninManagerAndroid() {}
 
-void SigninManagerAndroid::CheckPolicyBeforeSignIn(JNIEnv* env,
-                                                   jobject obj,
-                                                   jstring username) {
+void SigninManagerAndroid::CheckPolicyBeforeSignIn(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& username) {
 #if defined(ENABLE_CONFIGURATION_POLICY)
   username_ = base::android::ConvertJavaStringToUTF8(env, username);
   policy::UserPolicySigninService* service =
@@ -119,7 +120,9 @@ void SigninManagerAndroid::CheckPolicyBeforeSignIn(JNIEnv* env,
 #endif
 }
 
-void SigninManagerAndroid::FetchPolicyBeforeSignIn(JNIEnv* env, jobject obj) {
+void SigninManagerAndroid::FetchPolicyBeforeSignIn(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
 #if defined(ENABLE_CONFIGURATION_POLICY)
   if (!dm_token_.empty()) {
     policy::UserPolicySigninService* service =
@@ -143,21 +146,24 @@ void SigninManagerAndroid::FetchPolicyBeforeSignIn(JNIEnv* env, jobject obj) {
                                                  java_signin_manager_.obj());
 }
 
-void SigninManagerAndroid::OnSignInCompleted(JNIEnv* env,
-                                             jobject obj,
-                                             jstring username) {
+void SigninManagerAndroid::OnSignInCompleted(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& username) {
   DVLOG(1) << "SigninManagerAndroid::OnSignInCompleted";
   SigninManagerFactory::GetForProfile(profile_)->OnExternalSigninCompleted(
       base::android::ConvertJavaStringToUTF8(env, username));
 }
 
-void SigninManagerAndroid::SignOut(JNIEnv* env, jobject obj) {
+void SigninManagerAndroid::SignOut(JNIEnv* env,
+                                   const JavaParamRef<jobject>& obj) {
   SigninManagerFactory::GetForProfile(profile_)->SignOut(
       signin_metrics::USER_CLICKED_SIGNOUT_SETTINGS);
 }
 
 base::android::ScopedJavaLocalRef<jstring>
-SigninManagerAndroid::GetManagementDomain(JNIEnv* env, jobject obj) {
+SigninManagerAndroid::GetManagementDomain(JNIEnv* env,
+                                          const JavaParamRef<jobject>& obj) {
   base::android::ScopedJavaLocalRef<jstring> domain;
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
@@ -175,7 +181,8 @@ SigninManagerAndroid::GetManagementDomain(JNIEnv* env, jobject obj) {
   return domain;
 }
 
-void SigninManagerAndroid::WipeProfileData(JNIEnv* env, jobject obj) {
+void SigninManagerAndroid::WipeProfileData(JNIEnv* env,
+                                           const JavaParamRef<jobject>& obj) {
   // The ProfileDataRemover deletes itself once done.
   new ProfileDataRemover(
       profile_,
@@ -227,7 +234,9 @@ void SigninManagerAndroid::OnBrowsingDataRemoverDone() {
                                         java_signin_manager_.obj());
 }
 
-void SigninManagerAndroid::ClearLastSignedInUser(JNIEnv* env, jobject obj) {
+void SigninManagerAndroid::ClearLastSignedInUser(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   ClearLastSignedInUser();
 }
 
@@ -235,7 +244,8 @@ void SigninManagerAndroid::ClearLastSignedInUser() {
   profile_->GetPrefs()->ClearPref(prefs::kGoogleServicesLastUsername);
 }
 
-void SigninManagerAndroid::LogInSignedInUser(JNIEnv* env, jobject obj) {
+void SigninManagerAndroid::LogInSignedInUser(JNIEnv* env,
+                                             const JavaParamRef<jobject>& obj) {
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetForProfile(profile_);
   // With the account consistency enabled let the account Reconcilor handles
@@ -248,12 +258,15 @@ void SigninManagerAndroid::LogInSignedInUser(JNIEnv* env, jobject obj) {
       ->ValidateAccounts(primary_acct, true);
 }
 
-jboolean SigninManagerAndroid::IsSigninAllowedByPolicy(JNIEnv* env,
-                                                       jobject obj) {
+jboolean SigninManagerAndroid::IsSigninAllowedByPolicy(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   return SigninManagerFactory::GetForProfile(profile_)->IsSigninAllowed();
 }
 
-jboolean SigninManagerAndroid::IsSignedInOnNative(JNIEnv* env, jobject obj) {
+jboolean SigninManagerAndroid::IsSignedInOnNative(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   return SigninManagerFactory::GetForProfile(profile_)->IsAuthenticated();
 }
 

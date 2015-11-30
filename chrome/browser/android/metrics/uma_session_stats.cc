@@ -38,7 +38,8 @@ UmaSessionStats::UmaSessionStats()
 UmaSessionStats::~UmaSessionStats() {
 }
 
-void UmaSessionStats::UmaResumeSession(JNIEnv* env, jobject obj) {
+void UmaSessionStats::UmaResumeSession(JNIEnv* env,
+                                       const JavaParamRef<jobject>& obj) {
   DCHECK(g_browser_process);
 
   if (active_session_count_ == 0) {
@@ -53,7 +54,8 @@ void UmaSessionStats::UmaResumeSession(JNIEnv* env, jobject obj) {
   ++active_session_count_;
 }
 
-void UmaSessionStats::UmaEndSession(JNIEnv* env, jobject obj) {
+void UmaSessionStats::UmaEndSession(JNIEnv* env,
+                                    const JavaParamRef<jobject>& obj) {
   --active_session_count_;
   DCHECK_GE(active_session_count_, 0);
 

@@ -18,13 +18,13 @@ FindInPageBridge::FindInPageBridge(JNIEnv* env,
   web_contents_ = content::WebContents::FromJavaWebContents(j_web_contents);
 }
 
-void FindInPageBridge::Destroy(JNIEnv*, jobject) {
+void FindInPageBridge::Destroy(JNIEnv*, const JavaParamRef<jobject>&) {
   delete this;
 }
 
 void FindInPageBridge::StartFinding(JNIEnv* env,
-                                    jobject obj,
-                                    jstring search_string,
+                                    const JavaParamRef<jobject>& obj,
+                                    const JavaParamRef<jstring>& search_string,
                                     jboolean forward_direction,
                                     jboolean case_sensitive) {
   FindTabHelper::FromWebContents(web_contents_)->
@@ -35,36 +35,39 @@ void FindInPageBridge::StartFinding(JNIEnv* env,
 }
 
 void FindInPageBridge::StopFinding(JNIEnv* env,
-                                   jobject obj,
+                                   const JavaParamRef<jobject>& obj,
                                    jboolean clearSelection) {
   FindTabHelper::FromWebContents(web_contents_)->
       StopFinding(clearSelection ? FindBarController::kClearSelectionOnPage
           : FindBarController::kKeepSelectionOnPage);
 }
 
-ScopedJavaLocalRef<jstring> FindInPageBridge::GetPreviousFindText(JNIEnv* env,
-                                                                  jobject obj) {
+ScopedJavaLocalRef<jstring> FindInPageBridge::GetPreviousFindText(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   return ConvertUTF16ToJavaString(
       env, FindTabHelper::FromWebContents(web_contents_)->previous_find_text());
 }
 
 void FindInPageBridge::RequestFindMatchRects(JNIEnv* env,
-                                             jobject obj,
+                                             const JavaParamRef<jobject>& obj,
                                              jint current_version) {
   FindTabHelper::FromWebContents(web_contents_)->
       RequestFindMatchRects(current_version);
 }
 
-void FindInPageBridge::ActivateNearestFindResult(JNIEnv* env,
-                                                 jobject obj,
-                                                 jfloat x,
-                                                 jfloat y) {
+void FindInPageBridge::ActivateNearestFindResult(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    jfloat x,
+    jfloat y) {
   FindTabHelper::FromWebContents(web_contents_)->
       ActivateNearestFindResult(x, y);
 }
 
 void FindInPageBridge::ActivateFindInPageResultForAccessibility(
-    JNIEnv* env, jobject obj) {
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   FindTabHelper::FromWebContents(web_contents_)->
       ActivateFindInPageResultForAccessibility();
 }

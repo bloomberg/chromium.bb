@@ -151,7 +151,7 @@ TabContentManager::TabContentManager(JNIEnv* env,
 TabContentManager::~TabContentManager() {
 }
 
-void TabContentManager::Destroy(JNIEnv* env, jobject obj) {
+void TabContentManager::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   thumbnail_cache_->RemoveThumbnailCacheObserver(this);
   delete this;
 }
@@ -232,16 +232,17 @@ void TabContentManager::OnFinishDecompressThumbnail(int tab_id,
       java_bitmap.obj());
 }
 
-jboolean TabContentManager::HasFullCachedThumbnail(JNIEnv* env,
-                                                   jobject obj,
-                                                   jint tab_id) {
+jboolean TabContentManager::HasFullCachedThumbnail(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    jint tab_id) {
   return thumbnail_cache_->Get(tab_id, false, false) != nullptr;
 }
 
 void TabContentManager::CacheTab(JNIEnv* env,
-                                 jobject obj,
-                                 jobject tab,
-                                 jobject content_view_core,
+                                 const JavaParamRef<jobject>& obj,
+                                 const JavaParamRef<jobject>& tab,
+                                 const JavaParamRef<jobject>& content_view_core,
                                  jfloat thumbnail_scale) {
   TabAndroid* tab_android = TabAndroid::GetNativeTab(env, tab);
   DCHECK(tab_android);
@@ -276,9 +277,9 @@ void TabContentManager::CacheTab(JNIEnv* env,
 }
 
 void TabContentManager::CacheTabWithBitmap(JNIEnv* env,
-                                           jobject obj,
-                                           jobject tab,
-                                           jobject bitmap,
+                                           const JavaParamRef<jobject>& obj,
+                                           const JavaParamRef<jobject>& tab,
+                                           const JavaParamRef<jobject>& bitmap,
                                            jfloat thumbnail_scale) {
   TabAndroid* tab_android = TabAndroid::GetNativeTab(env, tab);
   DCHECK(tab_android);
@@ -294,16 +295,17 @@ void TabContentManager::CacheTabWithBitmap(JNIEnv* env,
 }
 
 void TabContentManager::InvalidateIfChanged(JNIEnv* env,
-                                            jobject obj,
+                                            const JavaParamRef<jobject>& obj,
                                             jint tab_id,
-                                            jstring jurl) {
+                                            const JavaParamRef<jstring>& jurl) {
   thumbnail_cache_->InvalidateThumbnailIfChanged(
       tab_id, GURL(base::android::ConvertJavaStringToUTF8(env, jurl)));
 }
 
-void TabContentManager::UpdateVisibleIds(JNIEnv* env,
-                                         jobject obj,
-                                         jintArray priority) {
+void TabContentManager::UpdateVisibleIds(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jintArray>& priority) {
   std::list<int> priority_ids;
   jsize length = env->GetArrayLength(priority);
   jint* ints = env->GetIntArrayElements(priority, NULL);
@@ -315,7 +317,7 @@ void TabContentManager::UpdateVisibleIds(JNIEnv* env,
 }
 
 void TabContentManager::RemoveTabThumbnail(JNIEnv* env,
-                                           jobject obj,
+                                           const JavaParamRef<jobject>& obj,
                                            jint tab_id) {
   TabReadbackRequestMap::iterator readback_iter =
       pending_tab_readbacks_.find(tab_id);
@@ -326,14 +328,15 @@ void TabContentManager::RemoveTabThumbnail(JNIEnv* env,
 
 void TabContentManager::RemoveTabThumbnailFromDiskAtAndAboveId(
     JNIEnv* env,
-    jobject obj,
+    const JavaParamRef<jobject>& obj,
     jint min_forbidden_id) {
   thumbnail_cache_->RemoveFromDiskAtAndAboveId(min_forbidden_id);
 }
 
-void TabContentManager::GetDecompressedThumbnail(JNIEnv* env,
-                                                 jobject obj,
-                                                 jint tab_id) {
+void TabContentManager::GetDecompressedThumbnail(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    jint tab_id) {
   base::Callback<void(bool, SkBitmap)> decompress_done_callback =
       base::Bind(&TabContentManager::OnFinishDecompressThumbnail,
                  weak_factory_.GetWeakPtr(), reinterpret_cast<int>(tab_id));

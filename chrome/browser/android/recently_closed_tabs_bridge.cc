@@ -64,20 +64,23 @@ RecentlyClosedTabsBridge::~RecentlyClosedTabsBridge() {
     tab_restore_service_->RemoveObserver(this);
 }
 
-void RecentlyClosedTabsBridge::Destroy(JNIEnv* env, jobject obj) {
+void RecentlyClosedTabsBridge::Destroy(JNIEnv* env,
+                                       const JavaParamRef<jobject>& obj) {
   delete this;
 }
 
-void RecentlyClosedTabsBridge::SetRecentlyClosedCallback(JNIEnv* env,
-                                                         jobject obj,
-                                                         jobject jcallback) {
+void RecentlyClosedTabsBridge::SetRecentlyClosedCallback(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& jcallback) {
   callback_.Reset(env, jcallback);
 }
 
-jboolean RecentlyClosedTabsBridge::GetRecentlyClosedTabs(JNIEnv* env,
-                                                         jobject obj,
-                                                         jobject jtabs_list,
-                                                         jint max_tab_count) {
+jboolean RecentlyClosedTabsBridge::GetRecentlyClosedTabs(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& jtabs_list,
+    jint max_tab_count) {
   EnsureTabRestoreService();
   if (!tab_restore_service_)
     return false;
@@ -87,11 +90,12 @@ jboolean RecentlyClosedTabsBridge::GetRecentlyClosedTabs(JNIEnv* env,
   return true;
 }
 
-jboolean RecentlyClosedTabsBridge::OpenRecentlyClosedTab(JNIEnv* env,
-                                                         jobject obj,
-                                                         jobject jtab,
-                                                         jint recent_tab_id,
-                                                         jint j_disposition) {
+jboolean RecentlyClosedTabsBridge::OpenRecentlyClosedTab(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& jtab,
+    jint recent_tab_id,
+    jint j_disposition) {
   if (!tab_restore_service_)
     return false;
 
@@ -122,8 +126,9 @@ jboolean RecentlyClosedTabsBridge::OpenRecentlyClosedTab(JNIEnv* env,
   return true;
 }
 
-void RecentlyClosedTabsBridge::ClearRecentlyClosedTabs(JNIEnv* env,
-                                                       jobject obj) {
+void RecentlyClosedTabsBridge::ClearRecentlyClosedTabs(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   EnsureTabRestoreService();
   if (tab_restore_service_)
     tab_restore_service_->ClearEntries();

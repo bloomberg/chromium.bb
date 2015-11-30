@@ -73,14 +73,14 @@ HistoryReportJniBridge::HistoryReportJniBridge(JNIEnv* env, jobject obj)
 HistoryReportJniBridge::~HistoryReportJniBridge() {}
 
 jlong HistoryReportJniBridge::TrimDeltaFile(JNIEnv* env,
-                                    jobject obj,
-                                    jlong seq_no_lower_bound) {
+                                            const JavaParamRef<jobject>& obj,
+                                            jlong seq_no_lower_bound) {
   return delta_file_service_->Trim(seq_no_lower_bound);
 }
 
 base::android::ScopedJavaLocalRef<jobjectArray> HistoryReportJniBridge::Query(
     JNIEnv* env,
-    jobject obj,
+    const JavaParamRef<jobject>& obj,
     jlong last_seq_no,
     jint limit) {
   scoped_ptr<std::vector<DeltaFileEntryWithData> > entries =
@@ -113,8 +113,8 @@ base::android::ScopedJavaLocalRef<jobjectArray> HistoryReportJniBridge::Query(
 
 base::android::ScopedJavaLocalRef<jobjectArray>
 HistoryReportJniBridge::GetUsageReportsBatch(JNIEnv* env,
-                                     jobject obj,
-                                     jint batch_size) {
+                                             const JavaParamRef<jobject>& obj,
+                                             jint batch_size) {
   scoped_ptr<std::vector<UsageReport> > reports =
       usage_reports_buffer_service_->GetUsageReportsBatch(batch_size);
   ScopedJavaLocalRef<jobjectArray> jreports_array =
@@ -133,9 +133,10 @@ HistoryReportJniBridge::GetUsageReportsBatch(JNIEnv* env,
   return jreports_array;
 }
 
-void HistoryReportJniBridge::RemoveUsageReports(JNIEnv* env,
-                                        jobject obj,
-                                        jobjectArray batch) {
+void HistoryReportJniBridge::RemoveUsageReports(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobjectArray>& batch) {
   std::vector<std::string> to_remove;
   base::android::AppendJavaStringArrayToStringVector(env, batch, &to_remove);
   usage_reports_buffer_service_->Remove(to_remove);
@@ -173,7 +174,7 @@ void HistoryReportJniBridge::StartReporting() {
 
 jboolean HistoryReportJniBridge::AddHistoricVisitsToUsageReportsBuffer(
     JNIEnv* env,
-    jobject obj) {
+    const JavaParamRef<jobject>& obj) {
   data_provider_->StartVisitMigrationToUsageBuffer(
       usage_reports_buffer_service_.get());
   // TODO(nileshagrawal): Return true when actually done,
@@ -183,7 +184,7 @@ jboolean HistoryReportJniBridge::AddHistoricVisitsToUsageReportsBuffer(
 
 base::android::ScopedJavaLocalRef<jstring> HistoryReportJniBridge::Dump(
     JNIEnv* env,
-    jobject obj) {
+    const JavaParamRef<jobject>& obj) {
   std::string dump;
   dump.append(delta_file_service_->Dump());
   dump.append(usage_reports_buffer_service_->Dump());

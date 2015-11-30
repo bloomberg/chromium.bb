@@ -39,14 +39,25 @@ class PasswordUIViewAndroid : public PasswordUIView {
 
   // Calls from Java.
   base::android::ScopedJavaLocalRef<jobject> GetSavedPasswordEntry(
-      JNIEnv* env, jobject, int index);
-  base::android::ScopedJavaLocalRef<jstring>
-      GetSavedPasswordException(JNIEnv* env, jobject, int index);
-  void UpdatePasswordLists(JNIEnv* env, jobject);
-  void HandleRemoveSavedPasswordEntry(JNIEnv* env, jobject, int index);
-  void HandleRemoveSavedPasswordException(JNIEnv* env, jobject, int index);
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>&,
+      int index);
+  base::android::ScopedJavaLocalRef<jstring> GetSavedPasswordException(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>&,
+      int index);
+  void UpdatePasswordLists(JNIEnv* env,
+                           const base::android::JavaParamRef<jobject>&);
+  void HandleRemoveSavedPasswordEntry(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>&,
+      int index);
+  void HandleRemoveSavedPasswordException(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>&,
+      int index);
   // Destroy the native implementation.
-  void Destroy(JNIEnv*, jobject);
+  void Destroy(JNIEnv*, const base::android::JavaParamRef<jobject>&);
 
   // JNI registration
   static bool RegisterPasswordUIViewAndroid(JNIEnv* env);

@@ -1185,7 +1185,7 @@ ChromeBrowserProvider::~ChromeBrowserProvider() {
   bookmark_model_->RemoveObserver(this);
 }
 
-void ChromeBrowserProvider::Destroy(JNIEnv*, jobject) {
+void ChromeBrowserProvider::Destroy(JNIEnv*, const JavaParamRef<jobject>&) {
   history_service_observer_.RemoveAll();
   delete this;
 }
@@ -1193,9 +1193,9 @@ void ChromeBrowserProvider::Destroy(JNIEnv*, jobject) {
 // ------------- Provider public APIs ------------- //
 
 jlong ChromeBrowserProvider::AddBookmark(JNIEnv* env,
-                                         jobject,
-                                         jstring jurl,
-                                         jstring jtitle,
+                                         const JavaParamRef<jobject>&,
+                                         const JavaParamRef<jstring>& jurl,
+                                         const JavaParamRef<jstring>& jtitle,
                                          jboolean is_folder,
                                          jlong parent_id) {
   base::string16 url;
@@ -1207,16 +1207,18 @@ jlong ChromeBrowserProvider::AddBookmark(JNIEnv* env,
   return task.Run(title, url, is_folder, parent_id);
 }
 
-jint ChromeBrowserProvider::RemoveBookmark(JNIEnv*, jobject, jlong id) {
+jint ChromeBrowserProvider::RemoveBookmark(JNIEnv*,
+                                           const JavaParamRef<jobject>&,
+                                           jlong id) {
   RemoveBookmarkTask task(bookmark_model_);
   return task.Run(id);
 }
 
 jint ChromeBrowserProvider::UpdateBookmark(JNIEnv* env,
-                                           jobject,
+                                           const JavaParamRef<jobject>&,
                                            jlong id,
-                                           jstring jurl,
-                                           jstring jtitle,
+                                           const JavaParamRef<jstring>& jurl,
+                                           const JavaParamRef<jstring>& jtitle,
                                            jlong parent_id) {
   base::string16 url;
   if (jurl)
@@ -1228,16 +1230,17 @@ jint ChromeBrowserProvider::UpdateBookmark(JNIEnv* env,
 }
 
 // Add the bookmark with the given column values.
-jlong ChromeBrowserProvider::AddBookmarkFromAPI(JNIEnv* env,
-                                                jobject obj,
-                                                jstring url,
-                                                jobject created,
-                                                jobject isBookmark,
-                                                jobject date,
-                                                jbyteArray favicon,
-                                                jstring title,
-                                                jobject visits,
-                                                jlong parent_id) {
+jlong ChromeBrowserProvider::AddBookmarkFromAPI(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& url,
+    const JavaParamRef<jobject>& created,
+    const JavaParamRef<jobject>& isBookmark,
+    const JavaParamRef<jobject>& date,
+    const JavaParamRef<jbyteArray>& favicon,
+    const JavaParamRef<jstring>& title,
+    const JavaParamRef<jobject>& visits,
+    jlong parent_id) {
   DCHECK(url);
 
   history::HistoryAndBookmarkRow row;
@@ -1256,11 +1259,11 @@ jlong ChromeBrowserProvider::AddBookmarkFromAPI(JNIEnv* env,
 
 ScopedJavaLocalRef<jobject> ChromeBrowserProvider::QueryBookmarkFromAPI(
     JNIEnv* env,
-    jobject obj,
-    jobjectArray projection,
-    jstring selections,
-    jobjectArray selection_args,
-    jstring sort_order) {
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobjectArray>& projection,
+    const JavaParamRef<jstring>& selections,
+    const JavaParamRef<jobjectArray>& selection_args,
+    const JavaParamRef<jstring>& sort_order) {
   // Converts the projection to array of ColumnID and column name.
   // Used to store the projection column ID according their sequence.
   std::vector<history::HistoryAndBookmarkRow::ColumnID> query_columns;
@@ -1310,18 +1313,19 @@ ScopedJavaLocalRef<jobject> ChromeBrowserProvider::QueryBookmarkFromAPI(
 
 // Updates the bookmarks with the given column values. The value is not given if
 // it is NULL.
-jint ChromeBrowserProvider::UpdateBookmarkFromAPI(JNIEnv* env,
-                                                  jobject obj,
-                                                  jstring url,
-                                                  jobject created,
-                                                  jobject isBookmark,
-                                                  jobject date,
-                                                  jbyteArray favicon,
-                                                  jstring title,
-                                                  jobject visits,
-                                                  jlong parent_id,
-                                                  jstring selections,
-                                                  jobjectArray selection_args) {
+jint ChromeBrowserProvider::UpdateBookmarkFromAPI(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& url,
+    const JavaParamRef<jobject>& created,
+    const JavaParamRef<jobject>& isBookmark,
+    const JavaParamRef<jobject>& date,
+    const JavaParamRef<jbyteArray>& favicon,
+    const JavaParamRef<jstring>& title,
+    const JavaParamRef<jobject>& visits,
+    jlong parent_id,
+    const JavaParamRef<jstring>& selections,
+    const JavaParamRef<jobjectArray>& selection_args) {
   history::HistoryAndBookmarkRow row;
   FillBookmarkRow(env, obj, url, created, isBookmark, date, favicon, title,
                   visits, parent_id, &row, bookmark_model_);
@@ -1337,10 +1341,11 @@ jint ChromeBrowserProvider::UpdateBookmarkFromAPI(JNIEnv* env,
   return task.Run(row, where_clause, where_args);
 }
 
-jint ChromeBrowserProvider::RemoveBookmarkFromAPI(JNIEnv* env,
-                                                  jobject obj,
-                                                  jstring selections,
-                                                  jobjectArray selection_args) {
+jint ChromeBrowserProvider::RemoveBookmarkFromAPI(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& selections,
+    const JavaParamRef<jobjectArray>& selection_args) {
   std::vector<base::string16> where_args =
       ConvertJStringArrayToString16Array(env, selection_args);
 
@@ -1352,10 +1357,11 @@ jint ChromeBrowserProvider::RemoveBookmarkFromAPI(JNIEnv* env,
   return task.Run(where_clause, where_args);
 }
 
-jint ChromeBrowserProvider::RemoveHistoryFromAPI(JNIEnv* env,
-                                                 jobject obj,
-                                                 jstring selections,
-                                                 jobjectArray selection_args) {
+jint ChromeBrowserProvider::RemoveHistoryFromAPI(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& selections,
+    const JavaParamRef<jobjectArray>& selection_args) {
   std::vector<base::string16> where_args =
       ConvertJStringArrayToString16Array(env, selection_args);
 
@@ -1369,10 +1375,11 @@ jint ChromeBrowserProvider::RemoveHistoryFromAPI(JNIEnv* env,
 
 // Add the search term with the given column values. The value is not given if
 // it is NULL.
-jlong ChromeBrowserProvider::AddSearchTermFromAPI(JNIEnv* env,
-                                                  jobject obj,
-                                                  jstring search_term,
-                                                  jobject date) {
+jlong ChromeBrowserProvider::AddSearchTermFromAPI(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& search_term,
+    const JavaParamRef<jobject>& date) {
   DCHECK(search_term);
 
   history::SearchRow row;
@@ -1392,11 +1399,11 @@ jlong ChromeBrowserProvider::AddSearchTermFromAPI(JNIEnv* env,
 
 ScopedJavaLocalRef<jobject> ChromeBrowserProvider::QuerySearchTermFromAPI(
     JNIEnv* env,
-    jobject obj,
-    jobjectArray projection,
-    jstring selections,
-    jobjectArray selection_args,
-    jstring sort_order) {
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobjectArray>& projection,
+    const JavaParamRef<jstring>& selections,
+    const JavaParamRef<jobjectArray>& selection_args,
+    const JavaParamRef<jstring>& sort_order) {
   // Converts the projection to array of ColumnID and column name.
   // Used to store the projection column ID according their sequence.
   std::vector<history::SearchRow::ColumnID> query_columns;
@@ -1447,8 +1454,12 @@ ScopedJavaLocalRef<jobject> ChromeBrowserProvider::QuerySearchTermFromAPI(
 // Updates the search terms with the given column values. The value is not
 // given if it is NULL.
 jint ChromeBrowserProvider::UpdateSearchTermFromAPI(
-    JNIEnv* env, jobject obj, jstring search_term, jobject date,
-    jstring selections, jobjectArray selection_args) {
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& search_term,
+    const JavaParamRef<jobject>& date,
+    const JavaParamRef<jstring>& selections,
+    const JavaParamRef<jobjectArray>& selection_args) {
   history::SearchRow row;
   FillSearchRow(env, obj, search_term, date, &row);
 
@@ -1466,7 +1477,10 @@ jint ChromeBrowserProvider::UpdateSearchTermFromAPI(
 }
 
 jint ChromeBrowserProvider::RemoveSearchTermFromAPI(
-    JNIEnv* env, jobject obj, jstring selections, jobjectArray selection_args) {
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& selections,
+    const JavaParamRef<jobjectArray>& selection_args) {
   std::vector<base::string16> where_args =
       ConvertJStringArrayToString16Array(env, selection_args);
 
@@ -1484,7 +1498,7 @@ jint ChromeBrowserProvider::RemoveSearchTermFromAPI(
 
 jboolean ChromeBrowserProvider::BookmarkNodeExists(
     JNIEnv* env,
-    jobject obj,
+    const JavaParamRef<jobject>& obj,
     jlong id) {
   BookmarkNodeExistsTask task(bookmark_model_);
   return task.Run(id);
@@ -1492,8 +1506,8 @@ jboolean ChromeBrowserProvider::BookmarkNodeExists(
 
 jlong ChromeBrowserProvider::CreateBookmarksFolderOnce(
     JNIEnv* env,
-    jobject obj,
-    jstring jtitle,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& jtitle,
     jlong parent_id) {
   base::string16 title = ConvertJavaStringToUTF16(env, jtitle);
   if (title.empty())
@@ -1505,7 +1519,7 @@ jlong ChromeBrowserProvider::CreateBookmarksFolderOnce(
 
 ScopedJavaLocalRef<jobject> ChromeBrowserProvider::GetEditableBookmarkFolders(
     JNIEnv* env,
-    jobject obj) {
+    const JavaParamRef<jobject>& obj) {
   ScopedJavaGlobalRef<jobject> jroot;
   ManagedBookmarkService* managed =
       ManagedBookmarkServiceFactory::GetForProfile(profile_);
@@ -1515,7 +1529,9 @@ ScopedJavaLocalRef<jobject> ChromeBrowserProvider::GetEditableBookmarkFolders(
   return ScopedJavaLocalRef<jobject>(jroot);
 }
 
-void ChromeBrowserProvider::RemoveAllUserBookmarks(JNIEnv* env, jobject obj) {
+void ChromeBrowserProvider::RemoveAllUserBookmarks(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   LOG(ERROR) << "begin ChromeBrowserProvider::RemoveAllUserBookmarks";
   RemoveAllUserBookmarksTask task(bookmark_model_);
   task.Run();
@@ -1523,7 +1539,10 @@ void ChromeBrowserProvider::RemoveAllUserBookmarks(JNIEnv* env, jobject obj) {
 }
 
 ScopedJavaLocalRef<jobject> ChromeBrowserProvider::GetBookmarkNode(
-    JNIEnv* env, jobject obj, jlong id, jboolean get_parent,
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    jlong id,
+    jboolean get_parent,
     jboolean get_children) {
   ScopedJavaGlobalRef<jobject> jnode;
   GetBookmarkNodeTask task(bookmark_model_);
@@ -1533,7 +1552,7 @@ ScopedJavaLocalRef<jobject> ChromeBrowserProvider::GetBookmarkNode(
 
 ScopedJavaLocalRef<jobject> ChromeBrowserProvider::GetMobileBookmarksFolder(
     JNIEnv* env,
-    jobject obj) {
+    const JavaParamRef<jobject>& obj) {
   ScopedJavaGlobalRef<jobject> jnode;
   GetMobileBookmarksNodeTask task(bookmark_model_);
   ConvertBookmarkNode(task.Run(), ScopedJavaLocalRef<jobject>(), &jnode);
@@ -1542,14 +1561,16 @@ ScopedJavaLocalRef<jobject> ChromeBrowserProvider::GetMobileBookmarksFolder(
 
 jboolean ChromeBrowserProvider::IsBookmarkInMobileBookmarksBranch(
     JNIEnv* env,
-    jobject obj,
+    const JavaParamRef<jobject>& obj,
     jlong id) {
   IsInMobileBookmarksBranchTask task(bookmark_model_);
   return task.Run(id);
 }
 
 ScopedJavaLocalRef<jbyteArray> ChromeBrowserProvider::GetFaviconOrTouchIcon(
-    JNIEnv* env, jobject obj, jstring jurl) {
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& jurl) {
   if (!jurl)
     return ScopedJavaLocalRef<jbyteArray>();
 
@@ -1566,7 +1587,9 @@ ScopedJavaLocalRef<jbyteArray> ChromeBrowserProvider::GetFaviconOrTouchIcon(
 }
 
 ScopedJavaLocalRef<jbyteArray> ChromeBrowserProvider::GetThumbnail(
-    JNIEnv* env, jobject obj, jstring jurl) {
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& jurl) {
   if (!jurl)
     return ScopedJavaLocalRef<jbyteArray>();
   GURL url = GURL(ConvertJavaStringToUTF16(env, jurl));

@@ -34,25 +34,26 @@ SkColor StaticTabSceneLayer::GetBackgroundColor() {
   return background_color_;
 }
 
-void StaticTabSceneLayer::UpdateTabLayer(JNIEnv* env,
-                                         jobject jobj,
-                                         jfloat content_viewport_x,
-                                         jfloat content_viewport_y,
-                                         jfloat content_viewport_width,
-                                         jfloat content_viewport_height,
-                                         jobject jtab_content_manager,
-                                         jint id,
-                                         jint toolbar_resource_id,
-                                         jboolean can_use_live_layer,
-                                         jint default_background_color,
-                                         jfloat x,
-                                         jfloat y,
-                                         jfloat width,
-                                         jfloat height,
-                                         jfloat content_offset_y,
-                                         jfloat static_to_view_blend,
-                                         jfloat saturation,
-                                         jfloat brightness) {
+void StaticTabSceneLayer::UpdateTabLayer(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jobj,
+    jfloat content_viewport_x,
+    jfloat content_viewport_y,
+    jfloat content_viewport_width,
+    jfloat content_viewport_height,
+    const JavaParamRef<jobject>& jtab_content_manager,
+    jint id,
+    jint toolbar_resource_id,
+    jboolean can_use_live_layer,
+    jint default_background_color,
+    jfloat x,
+    jfloat y,
+    jfloat width,
+    jfloat height,
+    jfloat content_offset_y,
+    jfloat static_to_view_blend,
+    jfloat saturation,
+    jfloat brightness) {
   background_color_ = default_background_color;
   gfx::Size content_viewport_size(content_viewport_width,
                                   content_viewport_height);
@@ -121,9 +122,10 @@ void StaticTabSceneLayer::UpdateTabLayer(JNIEnv* env,
   }
 }
 
-void StaticTabSceneLayer::SetContentSceneLayer(JNIEnv* env,
-                                               jobject jobj,
-                                               jobject jcontent_scene_layer) {
+void StaticTabSceneLayer::SetContentSceneLayer(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jobj,
+    const JavaParamRef<jobject>& jcontent_scene_layer) {
   SceneLayer* content_scene_layer = FromJavaObject(env, jcontent_scene_layer);
   if (content_scene_layer && content_scene_layer->layer()) {
     content_scene_layer_ = content_scene_layer->layer();

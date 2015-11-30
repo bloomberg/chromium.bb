@@ -108,13 +108,13 @@ LogoBridge::~LogoBridge() {
   ClearFetcher();
 }
 
-void LogoBridge::Destroy(JNIEnv* env, jobject obj) {
+void LogoBridge::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   delete this;
 }
 
 void LogoBridge::GetCurrentLogo(JNIEnv* env,
-                                jobject obj,
-                                jobject j_logo_observer) {
+                                const JavaParamRef<jobject>& obj,
+                                const JavaParamRef<jobject>& j_logo_observer) {
   if (!logo_service_)
     return;
 
@@ -125,9 +125,9 @@ void LogoBridge::GetCurrentLogo(JNIEnv* env,
 }
 
 void LogoBridge::GetAnimatedLogo(JNIEnv* env,
-                                 jobject obj,
-                                 jobject j_callback,
-                                 jstring j_url) {
+                                 const JavaParamRef<jobject>& obj,
+                                 const JavaParamRef<jobject>& j_callback,
+                                 const JavaParamRef<jstring>& j_url) {
   DCHECK(j_callback);
   if (!logo_service_)
     return;

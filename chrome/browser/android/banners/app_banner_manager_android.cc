@@ -40,13 +40,15 @@ AppBannerManagerAndroid::AppBannerManagerAndroid(
 AppBannerManagerAndroid::~AppBannerManagerAndroid() {
 }
 
-void AppBannerManagerAndroid::Destroy(JNIEnv* env, jobject obj) {
+void AppBannerManagerAndroid::Destroy(JNIEnv* env,
+                                      const JavaParamRef<jobject>& obj) {
   delete this;
 }
 
-void AppBannerManagerAndroid::ReplaceWebContents(JNIEnv* env,
-                                                 jobject obj,
-                                                 jobject jweb_contents) {
+void AppBannerManagerAndroid::ReplaceWebContents(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& jweb_contents) {
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(jweb_contents);
   AppBannerManager::ReplaceWebContents(web_contents);
@@ -150,28 +152,28 @@ AppBannerDataFetcher* AppBannerManagerAndroid::CreateAppBannerDataFetcher(
       ShortcutHelper::GetMinimumSplashImageSizeInDp());
 }
 
-bool AppBannerManagerAndroid::OnAppDetailsRetrieved(JNIEnv* env,
-                                                    jobject obj,
-                                                    jobject japp_data,
-                                                    jstring japp_title,
-                                                    jstring japp_package,
-                                                    jstring jicon_url) {
+bool AppBannerManagerAndroid::OnAppDetailsRetrieved(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& japp_data,
+    const JavaParamRef<jstring>& japp_title,
+    const JavaParamRef<jstring>& japp_package,
+    const JavaParamRef<jstring>& jicon_url) {
   if (!CheckFetcherMatchesContents())
     return false;
 
-  base::android::ScopedJavaLocalRef<jobject> native_app_data;
-  native_app_data.Reset(env, japp_data);
   GURL image_url = GURL(ConvertJavaStringToUTF8(env, jicon_url));
 
   AppBannerDataFetcherAndroid* android_fetcher =
       static_cast<AppBannerDataFetcherAndroid*>(data_fetcher().get());
   return android_fetcher->ContinueFetching(
       ConvertJavaStringToUTF16(env, japp_title),
-      ConvertJavaStringToUTF8(env, japp_package),
-      native_app_data, image_url);
+      ConvertJavaStringToUTF8(env, japp_package), japp_data, image_url);
 }
 
-bool AppBannerManagerAndroid::IsFetcherActive(JNIEnv* env, jobject obj) {
+bool AppBannerManagerAndroid::IsFetcherActive(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   return AppBannerManager::IsFetcherActive();
 }
 

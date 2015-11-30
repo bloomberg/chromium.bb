@@ -47,11 +47,11 @@ PrecacheLauncher::PrecacheLauncher(JNIEnv* env, jobject obj)
 
 PrecacheLauncher::~PrecacheLauncher() {}
 
-void PrecacheLauncher::Destroy(JNIEnv* env, jobject obj) {
+void PrecacheLauncher::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   delete this;
 }
 
-void PrecacheLauncher::Start(JNIEnv* env, jobject obj) {
+void PrecacheLauncher::Start(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   // TODO(bengr): Add integration tests for the whole feature.
   Profile* profile = GetProfile();
 
@@ -66,7 +66,7 @@ void PrecacheLauncher::Start(JNIEnv* env, jobject obj) {
       &PrecacheLauncher::OnPrecacheCompleted, weak_factory_.GetWeakPtr()));
 }
 
-void PrecacheLauncher::Cancel(JNIEnv* env, jobject obj) {
+void PrecacheLauncher::Cancel(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   Profile* profile = GetProfile();
   PrecacheManager* precache_manager = GetPrecacheManager(profile);
 

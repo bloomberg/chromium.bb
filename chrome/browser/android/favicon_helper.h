@@ -14,27 +14,29 @@
 class FaviconHelper {
  public:
   FaviconHelper();
-  void Destroy(JNIEnv* env, jobject obj);
-  jboolean GetLocalFaviconImageForURL(JNIEnv* env,
-                                      jobject obj,
-                                      jobject j_profile,
-                                      jstring j_page_url,
-                                      jint j_icon_types,
-                                      jint j_desired_size_in_pixel,
-                                      jobject j_favicon_image_callback);
+  void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+  jboolean GetLocalFaviconImageForURL(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobject>& j_profile,
+      const base::android::JavaParamRef<jstring>& j_page_url,
+      jint j_icon_types,
+      jint j_desired_size_in_pixel,
+      const base::android::JavaParamRef<jobject>& j_favicon_image_callback);
   base::android::ScopedJavaLocalRef<jobject> GetSyncedFaviconImageForURL(
       JNIEnv* env,
-      jobject obj,
-      jobject jprofile,
-      jstring j_page_url);
-  void EnsureIconIsAvailable(JNIEnv* env,
-                             jobject obj,
-                             jobject j_profile,
-                             jobject j_web_contents,
-                             jstring j_page_url,
-                             jstring j_icon_url,
-                             jboolean j_is_large_icon,
-                             jobject j_availability_callback);
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobject>& jprofile,
+      const base::android::JavaParamRef<jstring>& j_page_url);
+  void EnsureIconIsAvailable(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobject>& j_profile,
+      const base::android::JavaParamRef<jobject>& j_web_contents,
+      const base::android::JavaParamRef<jstring>& j_page_url,
+      const base::android::JavaParamRef<jstring>& j_icon_url,
+      jboolean j_is_large_icon,
+      const base::android::JavaParamRef<jobject>& j_availability_callback);
   static bool RegisterFaviconHelper(JNIEnv* env);
 
  private:

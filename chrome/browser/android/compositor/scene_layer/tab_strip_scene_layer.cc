@@ -39,9 +39,10 @@ TabStripSceneLayer::TabStripSceneLayer(JNIEnv* env, jobject jobj)
 TabStripSceneLayer::~TabStripSceneLayer() {
 }
 
-void TabStripSceneLayer::SetContentTree(JNIEnv* env,
-                                        jobject jobj,
-                                        jobject jcontent_tree) {
+void TabStripSceneLayer::SetContentTree(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jobj,
+    const JavaParamRef<jobject>& jcontent_tree) {
   SceneLayer* content_tree = FromJavaObject(env, jcontent_tree);
   if (content_tree_ &&
       (!content_tree_->layer()->parent() ||
@@ -61,13 +62,15 @@ void TabStripSceneLayer::SetContentTree(JNIEnv* env,
 }
 
 void TabStripSceneLayer::BeginBuildingFrame(JNIEnv* env,
-                                            jobject jobj,
+                                            const JavaParamRef<jobject>& jobj,
                                             jboolean visible) {
   write_index_ = 0;
   tab_strip_layer_->SetHideLayerAndSubtree(!visible);
 }
 
-void TabStripSceneLayer::FinishBuildingFrame(JNIEnv* env, jobject jobj) {
+void TabStripSceneLayer::FinishBuildingFrame(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jobj) {
   if (tab_strip_layer_->hide_layer_and_subtree())
     return;
 
@@ -79,7 +82,7 @@ void TabStripSceneLayer::FinishBuildingFrame(JNIEnv* env, jobject jobj) {
 }
 
 void TabStripSceneLayer::UpdateTabStripLayer(JNIEnv* env,
-                                             jobject jobj,
+                                             const JavaParamRef<jobject>& jobj,
                                              jfloat width,
                                              jfloat height,
                                              jfloat y_offset,
@@ -118,15 +121,16 @@ void TabStripSceneLayer::UpdateTabStripLayer(JNIEnv* env,
   }
 }
 
-void TabStripSceneLayer::UpdateNewTabButton(JNIEnv* env,
-                                            jobject jobj,
-                                            jint resource_id,
-                                            jfloat x,
-                                            jfloat y,
-                                            jfloat width,
-                                            jfloat height,
-                                            jboolean visible,
-                                            jobject jresource_manager) {
+void TabStripSceneLayer::UpdateNewTabButton(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jobj,
+    jint resource_id,
+    jfloat x,
+    jfloat y,
+    jfloat width,
+    jfloat height,
+    jboolean visible,
+    const JavaParamRef<jobject>& jresource_manager) {
   ui::ResourceManager* resource_manager =
       ui::ResourceManagerImpl::FromJavaObject(jresource_manager);
   ui::ResourceManager::Resource* button_resource =
@@ -141,16 +145,17 @@ void TabStripSceneLayer::UpdateNewTabButton(JNIEnv* env,
   new_tab_button_->SetHideLayerAndSubtree(!visible);
 }
 
-void TabStripSceneLayer::UpdateModelSelectorButton(JNIEnv* env,
-                                                   jobject jobj,
-                                                   jint resource_id,
-                                                   jfloat x,
-                                                   jfloat y,
-                                                   jfloat width,
-                                                   jfloat height,
-                                                   jboolean incognito,
-                                                   jboolean visible,
-                                                   jobject jresource_manager) {
+void TabStripSceneLayer::UpdateModelSelectorButton(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jobj,
+    jint resource_id,
+    jfloat x,
+    jfloat y,
+    jfloat width,
+    jfloat height,
+    jboolean incognito,
+    jboolean visible,
+    const JavaParamRef<jobject>& jresource_manager) {
   ui::ResourceManager* resource_manager =
       ui::ResourceManagerImpl::FromJavaObject(jresource_manager);
   ui::ResourceManager::Resource* button_resource =
@@ -166,25 +171,26 @@ void TabStripSceneLayer::UpdateModelSelectorButton(JNIEnv* env,
   model_selector_button_->SetHideLayerAndSubtree(!visible);
 }
 
-void TabStripSceneLayer::PutStripTabLayer(JNIEnv* env,
-                                          jobject jobj,
-                                          jint id,
-                                          jint close_resource_id,
-                                          jint handle_resource_id,
-                                          jboolean foreground,
-                                          jboolean close_pressed,
-                                          jfloat toolbar_width,
-                                          jfloat x,
-                                          jfloat y,
-                                          jfloat width,
-                                          jfloat height,
-                                          jfloat content_offset_x,
-                                          jfloat close_button_alpha,
-                                          jboolean is_loading,
-                                          jfloat spinner_rotation,
-                                          jfloat border_opacity,
-                                          jobject jlayer_title_cache,
-                                          jobject jresource_manager) {
+void TabStripSceneLayer::PutStripTabLayer(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jobj,
+    jint id,
+    jint close_resource_id,
+    jint handle_resource_id,
+    jboolean foreground,
+    jboolean close_pressed,
+    jfloat toolbar_width,
+    jfloat x,
+    jfloat y,
+    jfloat width,
+    jfloat height,
+    jfloat content_offset_x,
+    jfloat close_button_alpha,
+    jboolean is_loading,
+    jfloat spinner_rotation,
+    jfloat border_opacity,
+    const JavaParamRef<jobject>& jlayer_title_cache,
+    const JavaParamRef<jobject>& jresource_manager) {
   LayerTitleCache* layer_title_cache =
       LayerTitleCache::FromJavaObject(jlayer_title_cache);
   ui::ResourceManager* resource_manager =

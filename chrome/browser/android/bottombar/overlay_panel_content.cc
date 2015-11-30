@@ -48,12 +48,15 @@ OverlayPanelContent::~OverlayPanelContent() {
       env, java_manager_.obj());
 }
 
-void OverlayPanelContent::Destroy(JNIEnv* env, jobject obj) { delete this; }
+void OverlayPanelContent::Destroy(JNIEnv* env,
+                                  const JavaParamRef<jobject>& obj) {
+  delete this;
+}
 
 void OverlayPanelContent::RemoveLastHistoryEntry(
     JNIEnv* env,
-    jobject obj,
-    jstring search_url,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& search_url,
     jlong search_start_time_ms) {
   // The deletion window is from the time a search URL was put in history, up
   // to a short amount of time later.
@@ -80,10 +83,11 @@ void OverlayPanelContent::RemoveLastHistoryEntry(
   }
 }
 
-void OverlayPanelContent::SetWebContents(JNIEnv* env,
-                                             jobject obj,
-                                             jobject jcontent_view_core,
-                                             jobject jweb_contents_delegate) {
+void OverlayPanelContent::SetWebContents(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& jcontent_view_core,
+    const JavaParamRef<jobject>& jweb_contents_delegate) {
   content::ContentViewCore* content_view_core =
       content::ContentViewCore::GetNativeContentViewCore(env,
                                                          jcontent_view_core);
@@ -107,7 +111,9 @@ void OverlayPanelContent::SetWebContents(JNIEnv* env,
   web_contents_->SetDelegate(web_contents_delegate_.get());
 }
 
-void OverlayPanelContent::DestroyWebContents(JNIEnv* env, jobject jobj) {
+void OverlayPanelContent::DestroyWebContents(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jobj) {
   DCHECK(web_contents_.get());
   web_contents_.reset();
   // |web_contents_delegate_| may already be NULL at this point.
@@ -116,9 +122,9 @@ void OverlayPanelContent::DestroyWebContents(JNIEnv* env, jobject jobj) {
 
 void OverlayPanelContent::SetInterceptNavigationDelegate(
     JNIEnv* env,
-    jobject obj,
-    jobject delegate,
-    jobject jweb_contents) {
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& delegate,
+    const JavaParamRef<jobject>& jweb_contents) {
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(jweb_contents);
   DCHECK(web_contents);

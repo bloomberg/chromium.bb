@@ -41,7 +41,7 @@ std::string AppBannerDataFetcherAndroid::GetBannerType() {
 bool AppBannerDataFetcherAndroid::ContinueFetching(
     const base::string16& app_title,
     const std::string& app_package,
-    base::android::ScopedJavaLocalRef<jobject> app_data,
+    const base::android::JavaRef<jobject>& app_data,
     const GURL& image_url) {
   set_app_title(app_title);
   native_app_package_ = app_package;

@@ -24,13 +24,16 @@ class URLRequestContextGetter;
 class LogoBridge : public net::URLFetcherDelegate {
  public:
   explicit LogoBridge(jobject j_profile);
-  void Destroy(JNIEnv* env, jobject obj);
-  void GetCurrentLogo(JNIEnv* env, jobject obj, jobject j_logo_observer);
+  void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+  void GetCurrentLogo(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobject>& j_logo_observer);
 
   void GetAnimatedLogo(JNIEnv* env,
-                       jobject obj,
-                       jobject j_callback,
-                       jstring j_url);
+                       const base::android::JavaParamRef<jobject>& obj,
+                       const base::android::JavaParamRef<jobject>& j_callback,
+                       const base::android::JavaParamRef<jstring>& j_url);
 
   // net::URLFetcherDelegate:
   void OnURLFetchComplete(const net::URLFetcher* source) override;

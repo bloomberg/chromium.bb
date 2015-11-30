@@ -20,7 +20,7 @@ class ContextualSearchManager {
   virtual ~ContextualSearchManager();
 
   // Called by the Java ContextualSearchManager when it is being destroyed.
-  void Destroy(JNIEnv* env, jobject obj);
+  void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
 
   // Starts the request to get the search terms to use for the given selection,
   // by accessing our server with the content of the page (from the given
@@ -31,28 +31,31 @@ class ContextualSearchManager {
   // calling OnSearchTermResolutionResponse().
   void StartSearchTermResolutionRequest(
       JNIEnv* env,
-      jobject obj,
-      jstring j_selection,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& j_selection,
       jboolean j_use_resolved_search_term,
-      jobject j_base_content_view_core,
+      const base::android::JavaParamRef<jobject>& j_base_content_view_core,
       jboolean j_may_send_base_page_url);
 
   // Gathers the surrounding text around the selection and saves it locally.
   // Does not send a search term resolution request to the server.
-  void GatherSurroundingText(JNIEnv* env,
-                             jobject obj,
-                             jstring j_selection,
-                             jboolean j_use_resolved_search_term,
-                             jobject j_base_content_view_core,
-                             jboolean j_may_send_base_page_url);
+  void GatherSurroundingText(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& j_selection,
+      jboolean j_use_resolved_search_term,
+      const base::android::JavaParamRef<jobject>& j_base_content_view_core,
+      jboolean j_may_send_base_page_url);
 
   // Gets the target language for translation purposes.
-  base::android::ScopedJavaLocalRef<jstring> GetTargetLanguage(JNIEnv* env,
-                                                               jobject obj);
+  base::android::ScopedJavaLocalRef<jstring> GetTargetLanguage(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
 
   // Gets the accept-languages preference string.
-  base::android::ScopedJavaLocalRef<jstring> GetAcceptLanguages(JNIEnv* env,
-                                                                jobject obj);
+  base::android::ScopedJavaLocalRef<jstring> GetAcceptLanguages(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
 
  private:
   void OnSearchTermResolutionResponse(

@@ -53,7 +53,9 @@ class ExternalEstimateProviderAndroid
 
   // Called by Java when the external estimate provider has an updated value.
   // This may be called on a thread different from |task_runner_|.
-  void NotifyExternalEstimateProviderAndroidUpdate(JNIEnv* env, jobject obj);
+  void NotifyExternalEstimateProviderAndroidUpdate(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
 
  protected:
   // Notifies the delegate that a new update to external estimate is available.

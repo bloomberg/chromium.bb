@@ -31,9 +31,10 @@ TabListSceneLayer::TabListSceneLayer(JNIEnv* env, jobject jobj)
 TabListSceneLayer::~TabListSceneLayer() {
 }
 
-void TabListSceneLayer::SetContentTree(JNIEnv* env,
-                                       jobject jobj,
-                                       jobject jcontent_tree) {
+void TabListSceneLayer::SetContentTree(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jobj,
+    const JavaParamRef<jobject>& jcontent_tree) {
   SceneLayer* content_tree = FromJavaObject(env, jcontent_tree);
   if (content_tree && content_tree->layer()) {
     content_tree_ = content_tree->layer();
@@ -46,74 +47,77 @@ void TabListSceneLayer::SetContentTree(JNIEnv* env,
     layer()->AddChild(content_tree_);
 }
 
-void TabListSceneLayer::BeginBuildingFrame(JNIEnv* env, jobject jobj) {
+void TabListSceneLayer::BeginBuildingFrame(JNIEnv* env,
+                                           const JavaParamRef<jobject>& jobj) {
   write_index_ = 0;
   content_obscures_self_ = false;
 }
 
-void TabListSceneLayer::FinishBuildingFrame(JNIEnv* env, jobject jobj) {
+void TabListSceneLayer::FinishBuildingFrame(JNIEnv* env,
+                                            const JavaParamRef<jobject>& jobj) {
   if (layers_.size() > write_index_)
     RemoveTabLayersInRange(write_index_, layers_.size());
 }
 
-void TabListSceneLayer::PutLayer(JNIEnv* env,
-                                 jobject jobj,
-                                 jint id,
-                                 jint toolbar_resource_id,
-                                 jint close_button_resource_id,
-                                 jint shadow_resource_id,
-                                 jint contour_resource_id,
-                                 jint back_logo_resource_id,
-                                 jint border_resource_id,
-                                 jboolean can_use_live_layer,
-                                 jint tab_background_color,
-                                 jint background_color,
-                                 jint back_logo_color,
-                                 jboolean incognito,
-                                 jboolean is_portrait,
-                                 jfloat x,
-                                 jfloat y,
-                                 jfloat width,
-                                 jfloat height,
-                                 jfloat content_width,
-                                 jfloat content_height,
-                                 jfloat visible_content_height,
-                                 jfloat viewport_x,
-                                 jfloat viewport_y,
-                                 jfloat viewport_width,
-                                 jfloat viewport_height,
-                                 jfloat shadow_x,
-                                 jfloat shadow_y,
-                                 jfloat shadow_width,
-                                 jfloat shadow_height,
-                                 jfloat pivot_x,
-                                 jfloat pivot_y,
-                                 jfloat rotation_x,
-                                 jfloat rotation_y,
-                                 jfloat alpha,
-                                 jfloat border_alpha,
-                                 jfloat contour_alpha,
-                                 jfloat shadow_alpha,
-                                 jfloat close_alpha,
-                                 jfloat close_btn_width,
-                                 jfloat static_to_view_blend,
-                                 jfloat border_scale,
-                                 jfloat saturation,
-                                 jfloat brightness,
-                                 jboolean show_toolbar,
-                                 jint toolbar_background_color,
-                                 jboolean anonymize_toolbar,
-                                 jint toolbar_textbox_resource_id,
-                                 jint toolbar_textbox_background_color,
-                                 jfloat toolbar_textbox_alpha,
-                                 jfloat toolbar_alpha,
-                                 jfloat toolbar_y_offset,
-                                 jfloat side_border_scale,
-                                 jboolean attach_content,
-                                 jboolean inset_border,
-                                 jobject jlayer_title_cache,
-                                 jobject jtab_content_manager,
-                                 jobject jresource_manager) {
+void TabListSceneLayer::PutLayer(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jobj,
+    jint id,
+    jint toolbar_resource_id,
+    jint close_button_resource_id,
+    jint shadow_resource_id,
+    jint contour_resource_id,
+    jint back_logo_resource_id,
+    jint border_resource_id,
+    jboolean can_use_live_layer,
+    jint tab_background_color,
+    jint background_color,
+    jint back_logo_color,
+    jboolean incognito,
+    jboolean is_portrait,
+    jfloat x,
+    jfloat y,
+    jfloat width,
+    jfloat height,
+    jfloat content_width,
+    jfloat content_height,
+    jfloat visible_content_height,
+    jfloat viewport_x,
+    jfloat viewport_y,
+    jfloat viewport_width,
+    jfloat viewport_height,
+    jfloat shadow_x,
+    jfloat shadow_y,
+    jfloat shadow_width,
+    jfloat shadow_height,
+    jfloat pivot_x,
+    jfloat pivot_y,
+    jfloat rotation_x,
+    jfloat rotation_y,
+    jfloat alpha,
+    jfloat border_alpha,
+    jfloat contour_alpha,
+    jfloat shadow_alpha,
+    jfloat close_alpha,
+    jfloat close_btn_width,
+    jfloat static_to_view_blend,
+    jfloat border_scale,
+    jfloat saturation,
+    jfloat brightness,
+    jboolean show_toolbar,
+    jint toolbar_background_color,
+    jboolean anonymize_toolbar,
+    jint toolbar_textbox_resource_id,
+    jint toolbar_textbox_background_color,
+    jfloat toolbar_textbox_alpha,
+    jfloat toolbar_alpha,
+    jfloat toolbar_y_offset,
+    jfloat side_border_scale,
+    jboolean attach_content,
+    jboolean inset_border,
+    const JavaParamRef<jobject>& jlayer_title_cache,
+    const JavaParamRef<jobject>& jtab_content_manager,
+    const JavaParamRef<jobject>& jresource_manager) {
   // TODO(changwan): move these to constructor if possible
   if (resource_manager_ == nullptr) {
     resource_manager_ =

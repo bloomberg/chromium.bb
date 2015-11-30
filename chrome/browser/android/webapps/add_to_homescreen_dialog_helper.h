@@ -34,13 +34,15 @@ class AddToHomescreenDialogHelper :
                               content::WebContents* web_contents);
 
   // Called by the Java counterpart to destroy its native half.
-  void Destroy(JNIEnv* env, jobject obj);
+  void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
 
   // Registers JNI hooks.
   static bool RegisterAddToHomescreenDialogHelper(JNIEnv* env);
 
   // Adds a shortcut to the current URL to the Android home screen.
-  void AddShortcut(JNIEnv* env, jobject obj, jstring title);
+  void AddShortcut(JNIEnv* env,
+                   const base::android::JavaParamRef<jobject>& obj,
+                   const base::android::JavaParamRef<jstring>& title);
 
   // AddToHomescreenDataFetcher::Observer
   void OnUserTitleAvailable(const base::string16& user_title) override;

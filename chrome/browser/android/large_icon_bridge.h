@@ -7,6 +7,7 @@
 
 #include <jni.h>
 
+#include "base/android/scoped_java_ref.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
 
@@ -15,13 +16,14 @@
 class LargeIconBridge {
  public:
   LargeIconBridge();
-  void Destroy(JNIEnv* env, jobject obj);
-  jboolean GetLargeIconForURL(JNIEnv* env,
-                              jobject obj,
-                              jobject j_profile,
-                              jstring j_page_url,
-                              jint min_source_size_px,
-                              jobject j_callback);
+  void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+  jboolean GetLargeIconForURL(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobject>& j_profile,
+      const base::android::JavaParamRef<jstring>& j_page_url,
+      jint min_source_size_px,
+      const base::android::JavaParamRef<jobject>& j_callback);
   static bool RegisterLargeIconBridge(JNIEnv* env);
 
  private:

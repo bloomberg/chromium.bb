@@ -30,7 +30,9 @@ PasswordUIViewAndroid::PasswordUIViewAndroid(JNIEnv* env, jobject obj)
 
 PasswordUIViewAndroid::~PasswordUIViewAndroid() {}
 
-void PasswordUIViewAndroid::Destroy(JNIEnv*, jobject) { delete this; }
+void PasswordUIViewAndroid::Destroy(JNIEnv*, const JavaParamRef<jobject>&) {
+  delete this;
+}
 
 Profile* PasswordUIViewAndroid::GetProfile() {
   return ProfileManager::GetLastUsedProfile();
@@ -69,12 +71,15 @@ void PasswordUIViewAndroid::SetPasswordExceptionList(
   }
 }
 
-void PasswordUIViewAndroid::UpdatePasswordLists(JNIEnv* env, jobject) {
+void PasswordUIViewAndroid::UpdatePasswordLists(JNIEnv* env,
+                                                const JavaParamRef<jobject>&) {
   password_manager_presenter_.UpdatePasswordLists();
 }
 
-ScopedJavaLocalRef<jobject>
-PasswordUIViewAndroid::GetSavedPasswordEntry(JNIEnv* env, jobject, int index) {
+ScopedJavaLocalRef<jobject> PasswordUIViewAndroid::GetSavedPasswordEntry(
+    JNIEnv* env,
+    const JavaParamRef<jobject>&,
+    int index) {
   const autofill::PasswordForm* form =
       password_manager_presenter_.GetPassword(index);
   if (!form) {
@@ -91,7 +96,9 @@ PasswordUIViewAndroid::GetSavedPasswordEntry(JNIEnv* env, jobject, int index) {
 }
 
 ScopedJavaLocalRef<jstring> PasswordUIViewAndroid::GetSavedPasswordException(
-    JNIEnv* env, jobject, int index) {
+    JNIEnv* env,
+    const JavaParamRef<jobject>&,
+    int index) {
   const autofill::PasswordForm* form =
       password_manager_presenter_.GetPasswordException(index);
   if (!form)
@@ -102,12 +109,16 @@ ScopedJavaLocalRef<jstring> PasswordUIViewAndroid::GetSavedPasswordException(
 }
 
 void PasswordUIViewAndroid::HandleRemoveSavedPasswordEntry(
-    JNIEnv* env, jobject, int index) {
+    JNIEnv* env,
+    const JavaParamRef<jobject>&,
+    int index) {
   password_manager_presenter_.RemoveSavedPassword(index);
 }
 
 void PasswordUIViewAndroid::HandleRemoveSavedPasswordException(
-    JNIEnv* env, jobject, int index) {
+    JNIEnv* env,
+    const JavaParamRef<jobject>&,
+    int index) {
   password_manager_presenter_.RemovePasswordException(index);
 }
 

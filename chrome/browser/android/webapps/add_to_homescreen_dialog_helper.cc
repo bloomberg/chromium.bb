@@ -79,7 +79,8 @@ void AddToHomescreenDialogHelper::OnDataAvailable(const ShortcutInfo& info,
     AddShortcut(info, icon);
 }
 
-void AddToHomescreenDialogHelper::Destroy(JNIEnv* env, jobject obj) {
+void AddToHomescreenDialogHelper::Destroy(JNIEnv* env,
+                                          const JavaParamRef<jobject>& obj) {
   delete this;
 }
 
@@ -92,9 +93,10 @@ SkBitmap AddToHomescreenDialogHelper::FinalizeLauncherIcon(
   return ShortcutHelper::FinalizeLauncherIcon(bitmap, url, is_generated);
 }
 
-void AddToHomescreenDialogHelper::AddShortcut(JNIEnv* env,
-                                        jobject obj,
-                                        jstring j_user_title) {
+void AddToHomescreenDialogHelper::AddShortcut(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& j_user_title) {
   add_shortcut_pending_ = true;
 
   base::string16 user_title =

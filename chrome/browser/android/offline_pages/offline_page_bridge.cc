@@ -87,7 +87,7 @@ OfflinePageBridge::OfflinePageBridge(JNIEnv* env,
   offline_page_model_->AddObserver(this);
 }
 
-void OfflinePageBridge::Destroy(JNIEnv*, jobject) {
+void OfflinePageBridge::Destroy(JNIEnv*, const JavaParamRef<jobject>&) {
   offline_page_model_->RemoveObserver(this);
   delete this;
 }
@@ -115,8 +115,8 @@ void OfflinePageBridge::OfflinePageDeleted(int64 bookmark_id) {
 }
 
 void OfflinePageBridge::GetAllPages(JNIEnv* env,
-                                    jobject obj,
-                                    jobject j_result_obj) {
+                                    const JavaParamRef<jobject>& obj,
+                                    const JavaParamRef<jobject>& j_result_obj) {
   DCHECK(offline_page_model_->is_loaded());
   DCHECK(j_result_obj);
   const std::vector<OfflinePageItem>& offline_pages =
@@ -124,9 +124,10 @@ void OfflinePageBridge::GetAllPages(JNIEnv* env,
   ToJavaOfflinePageList(env, j_result_obj, offline_pages);
 }
 
-void OfflinePageBridge::GetPagesToCleanUp(JNIEnv* env,
-                                          jobject obj,
-                                          jobject j_result_obj) {
+void OfflinePageBridge::GetPagesToCleanUp(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& j_result_obj) {
   DCHECK(offline_page_model_->is_loaded());
   DCHECK(j_result_obj);
   const std::vector<OfflinePageItem>& offline_pages =
@@ -136,7 +137,7 @@ void OfflinePageBridge::GetPagesToCleanUp(JNIEnv* env,
 
 ScopedJavaLocalRef<jobject> OfflinePageBridge::GetPageByBookmarkId(
     JNIEnv* env,
-    jobject obj,
+    const JavaParamRef<jobject>& obj,
     jlong bookmark_id) {
   const OfflinePageItem* offline_page =
       offline_page_model_->GetPageByBookmarkId(bookmark_id);
@@ -154,9 +155,9 @@ ScopedJavaLocalRef<jobject> OfflinePageBridge::GetPageByBookmarkId(
 }
 
 void OfflinePageBridge::SavePage(JNIEnv* env,
-                                 jobject obj,
-                                 jobject j_callback_obj,
-                                 jobject j_web_contents,
+                                 const JavaParamRef<jobject>& obj,
+                                 const JavaParamRef<jobject>& j_callback_obj,
+                                 const JavaParamRef<jobject>& j_web_contents,
                                  jlong bookmark_id) {
   DCHECK(j_callback_obj);
   DCHECK(j_web_contents);
@@ -177,14 +178,14 @@ void OfflinePageBridge::SavePage(JNIEnv* env,
 }
 
 void OfflinePageBridge::MarkPageAccessed(JNIEnv* env,
-                                         jobject obj,
+                                         const JavaParamRef<jobject>& obj,
                                          jlong bookmark_id) {
   offline_page_model_->MarkPageAccessed(bookmark_id);
 }
 
 void OfflinePageBridge::DeletePage(JNIEnv* env,
-                                   jobject obj,
-                                   jobject j_callback_obj,
+                                   const JavaParamRef<jobject>& obj,
+                                   const JavaParamRef<jobject>& j_callback_obj,
                                    jlong bookmark_id) {
   DCHECK(j_callback_obj);
 
@@ -195,10 +196,11 @@ void OfflinePageBridge::DeletePage(JNIEnv* env,
       &DeletePageCallback, j_callback_ref));
 }
 
-void OfflinePageBridge::DeletePages(JNIEnv* env,
-                                    jobject obj,
-                                    jobject j_callback_obj,
-                                    jlongArray bookmark_ids_array) {
+void OfflinePageBridge::DeletePages(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& j_callback_obj,
+    const JavaParamRef<jlongArray>& bookmark_ids_array) {
   DCHECK(j_callback_obj);
 
   ScopedJavaGlobalRef<jobject> j_callback_ref;
@@ -213,7 +215,9 @@ void OfflinePageBridge::DeletePages(JNIEnv* env,
       base::Bind(&DeletePageCallback, j_callback_ref));
 }
 
-void OfflinePageBridge::CheckMetadataConsistency(JNIEnv* env, jobject obj) {
+void OfflinePageBridge::CheckMetadataConsistency(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   offline_page_model_->CheckForExternalFileDeletion();
 }
 

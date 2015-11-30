@@ -21,17 +21,20 @@ class PartnerBookmarksReader {
   ~PartnerBookmarksReader();
 
   // JNI methods
-  void Destroy(JNIEnv* env, jobject obj);
-  void Reset(JNIEnv* env, jobject obj);
-  jlong AddPartnerBookmark(JNIEnv* env,
-                           jobject obj,
-                           jstring jurl,
-                           jstring jtitle,
-                           jboolean is_folder,
-                           jlong parent_id,
-                           jbyteArray favicon,
-                           jbyteArray touchicon);
-  void PartnerBookmarksCreationComplete(JNIEnv* env, jobject obj);
+  void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+  void Reset(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+  jlong AddPartnerBookmark(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& jurl,
+      const base::android::JavaParamRef<jstring>& jtitle,
+      jboolean is_folder,
+      jlong parent_id,
+      const base::android::JavaParamRef<jbyteArray>& favicon,
+      const base::android::JavaParamRef<jbyteArray>& touchicon);
+  void PartnerBookmarksCreationComplete(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
 
   // JNI registration
   static bool RegisterPartnerBookmarksReader(JNIEnv* env);

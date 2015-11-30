@@ -36,7 +36,8 @@ class SceneLayer {
   virtual void OnDetach();
 
   // Java SceneLayer can use this method to destroy its native-side counterpart.
-  virtual void Destroy(JNIEnv* env, jobject jobj);
+  virtual void Destroy(JNIEnv* env,
+                       const base::android::JavaParamRef<jobject>& jobj);
 
   // Returns cc::Layer object that this SceneLayer contains.
   scoped_refptr<cc::Layer> layer() { return layer_; }

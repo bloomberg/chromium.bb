@@ -36,7 +36,8 @@ void ContextualSearchTabHelper::OnContextualSearchPrefChanged() {
   Java_ContextualSearchTabHelper_onContextualSearchPrefChanged(env, jobj.obj());
 }
 
-void ContextualSearchTabHelper::Destroy(JNIEnv* env, jobject obj) {
+void ContextualSearchTabHelper::Destroy(JNIEnv* env,
+                                        const JavaParamRef<jobject>& obj) {
   delete this;
 }
 

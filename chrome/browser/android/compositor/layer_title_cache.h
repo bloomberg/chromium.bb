@@ -44,19 +44,21 @@ class LayerTitleCache {
                   jint favicon_end_padding,
                   jint spinner_resource_id,
                   jint spinner_incognito_resource_id);
-  void Destroy(JNIEnv* env, jobject obj);
+  void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
 
   // Called from Java, updates a native cc::Layer based on the new texture
   // information.
   void UpdateLayer(JNIEnv* env,
-                   jobject obj,
+                   const base::android::JavaParamRef<jobject>& obj,
                    jint tab_id,
                    jint title_resource_id,
                    jint favicon_resource_id,
                    bool is_incognito,
                    bool is_rtl);
 
-  void ClearExcept(JNIEnv* env, jobject obj, jint except_id);
+  void ClearExcept(JNIEnv* env,
+                   const base::android::JavaParamRef<jobject>& obj,
+                   jint except_id);
 
   // Returns the layer that represents the title of tab of tab_id.
   // Returns NULL if no layer can be found.

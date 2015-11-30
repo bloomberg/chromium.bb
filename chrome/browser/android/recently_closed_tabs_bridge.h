@@ -18,18 +18,24 @@ class RecentlyClosedTabsBridge : public sessions::TabRestoreServiceObserver {
  public:
   explicit RecentlyClosedTabsBridge(Profile* profile);
 
-  void Destroy(JNIEnv* env, jobject obj);
-  void SetRecentlyClosedCallback(JNIEnv* env, jobject obj, jobject jcallback);
-  jboolean GetRecentlyClosedTabs(JNIEnv* env,
-                                 jobject obj,
-                                 jobject jtabs,
-                                 jint max_tab_count);
-  jboolean OpenRecentlyClosedTab(JNIEnv* env,
-                                 jobject obj,
-                                 jobject jtab,
-                                 jint tab_id,
-                                 jint j_disposition);
-  void ClearRecentlyClosedTabs(JNIEnv* env, jobject obj);
+  void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+  void SetRecentlyClosedCallback(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobject>& jcallback);
+  jboolean GetRecentlyClosedTabs(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobject>& jtabs,
+      jint max_tab_count);
+  jboolean OpenRecentlyClosedTab(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobject>& jtab,
+      jint tab_id,
+      jint j_disposition);
+  void ClearRecentlyClosedTabs(JNIEnv* env,
+                               const base::android::JavaParamRef<jobject>& obj);
 
   // Observer callback for TabRestoreServiceObserver. Notifies the registered
   // callback that the recently closed tabs list has changed.

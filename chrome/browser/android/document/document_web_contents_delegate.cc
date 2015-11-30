@@ -16,9 +16,10 @@ DocumentWebContentsDelegate::DocumentWebContentsDelegate(JNIEnv* env,
 DocumentWebContentsDelegate::~DocumentWebContentsDelegate() {
 }
 
-void DocumentWebContentsDelegate::AttachContents(JNIEnv* env,
-                                                 jobject jcaller,
-                                                 jobject jweb_contents) {
+void DocumentWebContentsDelegate::AttachContents(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jcaller,
+    const JavaParamRef<jobject>& jweb_contents) {
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(jweb_contents);
   web_contents->SetDelegate(this);

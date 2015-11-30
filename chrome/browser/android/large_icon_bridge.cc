@@ -69,17 +69,17 @@ LargeIconBridge::LargeIconBridge() {
 LargeIconBridge::~LargeIconBridge() {
 }
 
-void LargeIconBridge::Destroy(JNIEnv* env, jobject obj) {
+void LargeIconBridge::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   delete this;
 }
 
 jboolean LargeIconBridge::GetLargeIconForURL(
     JNIEnv* env,
-    jobject obj,
-    jobject j_profile,
-    jstring j_page_url,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& j_profile,
+    const JavaParamRef<jstring>& j_page_url,
     jint min_source_size_px,
-    jobject j_callback) {
+    const JavaParamRef<jobject>& j_callback) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
   if (!profile)
     return false;
