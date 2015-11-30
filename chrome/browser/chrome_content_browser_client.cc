@@ -182,13 +182,10 @@
 #elif defined(OS_LINUX)
 #include "chrome/browser/chrome_browser_main_linux.h"
 #elif defined(OS_ANDROID)
-#include "chrome/browser/android/new_tab_page_url_handler.h"
-#include "chrome/browser/android/webapps/single_tab_mode_tab_helper.h"
 #include "chrome/browser/chrome_browser_main_android.h"
 #include "chrome/common/descriptors_android.h"
 #include "components/crash/content/browser/crash_dump_manager_android.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
-#include "components/service_tab_launcher/browser/android/service_tab_launcher.h"
 #include "ui/base/resource/resource_bundle_android.h"
 #elif defined(OS_POSIX)
 #include "chrome/browser/chrome_browser_main_posix.h"
@@ -278,6 +275,12 @@
 
 #if defined(ENABLE_WAYLAND_SERVER)
 #include "chrome/browser/chrome_browser_main_extra_parts_exo.h"
+#endif
+
+#if defined(OS_ANDROID) && !defined(USE_AURA)
+#include "chrome/browser/android/new_tab_page_url_handler.h"
+#include "chrome/browser/android/webapps/single_tab_mode_tab_helper.h"
+#include "components/service_tab_launcher/browser/android/service_tab_launcher.h"
 #endif
 
 using base::FileDescriptor;
@@ -586,8 +589,10 @@ class SafeBrowsingSSLCertReporter : public SSLCertReporter {
       safe_browsing_ui_manager_;
 };
 
-#if defined(OS_ANDROID)
 
+  // TODO(bshe): Use defined(ANDROID_JAVA_UI) once
+  // codereview.chromium.org/1459793002 landed.
+#if defined(OS_ANDROID) && !defined(USE_AURA)
 void HandleSingleTabModeBlockOnUIThread(const BlockedWindowParams& params) {
   WebContents* web_contents = tab_util::GetWebContentsByFrameID(
       params.render_process_id(), params.opener_render_frame_id());
@@ -596,7 +601,9 @@ void HandleSingleTabModeBlockOnUIThread(const BlockedWindowParams& params) {
 
   SingleTabModeTabHelper::FromWebContents(web_contents)->HandleOpenUrl(params);
 }
+#endif
 
+#if defined(OS_ANDROID)
 float GetDeviceScaleAdjustment() {
   static const float kMinFSM = 1.05f;
   static const int kWidthForMinFSM = 320;
@@ -616,7 +623,6 @@ float GetDeviceScaleAdjustment() {
       (kWidthForMaxFSM - kWidthForMinFSM);
   return ratio * (kMaxFSM - kMinFSM) + kMinFSM;
 }
-
 #endif  // defined(OS_ANDROID)
 
 #if defined(ENABLE_EXTENSIONS)
@@ -2170,7 +2176,9 @@ bool ChromeContentBrowserClient::CanCreateWindow(
     }
   }
 
-#if defined(OS_ANDROID)
+  // TODO(bshe): Use defined(ANDROID_JAVA_UI) once
+  // codereview.chromium.org/1459793002 landed.
+#if defined(OS_ANDROID) && !defined(USE_AURA)
   if (SingleTabModeTabHelper::IsRegistered(render_process_id,
                                            opener_render_view_id)) {
     BrowserThread::PostTask(BrowserThread::UI,
@@ -2341,7 +2349,9 @@ void ChromeContentBrowserClient::BrowserURLHandlerCreated(
   handler->AddHandlerPair(&WillHandleBrowserAboutURL,
                           BrowserURLHandler::null_handler());
 
-#if defined(OS_ANDROID)
+  // TODO(bshe): Use defined(ANDROID_JAVA_UI) once
+  // codereview.chromium.org/1459793002 landed.
+#if defined(OS_ANDROID) && !defined(USE_AURA)
   // Handler to rewrite chrome://newtab on Android.
   handler->AddHandlerPair(&chrome::android::HandleAndroidNativePageURL,
                           BrowserURLHandler::null_handler());
@@ -2627,7 +2637,9 @@ void ChromeContentBrowserClient::OpenURL(
     const base::Callback<void(content::WebContents*)>& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  // TODO(bshe): Use !defined(ANDROID_JAVA_UI) once
+  // codereview.chromium.org/1459793002 landed.
+#if (!defined(OS_ANDROID) || defined(USE_AURA)) && !defined(OS_IOS)
   chrome::NavigateParams nav_params(
       Profile::FromBrowserContext(browser_context),
       params.url,
