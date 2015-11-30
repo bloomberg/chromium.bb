@@ -257,6 +257,8 @@ crbug.com/535408 fast/js/function-bind.html [ NeedsManualRebaseline ]
 
 crbug.com/552574 fast/js/regexp-caching.html [ NeedsManualRebaseline ]
 
+crbug.com/538614 fast/borders/border-image-scaled-gradient.html [ NeedsRebaseline ]
+
 crbug.com/498539 http/tests/inspector/elements/styles/selector-line.html [ Pass Timeout ]
 crbug.com/498539 http/tests/inspector/network/network-datareceived.html [ Pass Timeout ]
 crbug.com/498539 [ Win ] inspector/tracing/decode-resize.html [ Failure Timeout ]
