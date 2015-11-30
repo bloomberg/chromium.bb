@@ -1,7 +1,7 @@
-From e646ccd23c9eaa86e4e6b0f5ee60867010407346 Mon Sep 17 00:00:00 2001
+From 4b957c2c198a53498fe18ad9668e2817ace98b1e Mon Sep 17 00:00:00 2001
 From: dumi <dumi@chromium.org>
 Date: Mon, 20 Jul 2009 23:40:51 +0000
-Subject: [PATCH 05/12] Modify default VFS to support WebDatabase.
+Subject: [PATCH 05/11] Modify default VFS to support WebDatabase.
 
 The renderer WebDatabase implementation needs to broker certain requests
 to the browser.  This modifies SQLite to allow monkey-patching the VFS
@@ -17,13 +17,13 @@ https://codereview.chromium.org/384075
 https://codereview.chromium.org/377039
 [Possibly not a complete list.]
 ---
- third_party/sqlite/src/src/os_unix.c   | 57 ++++++++++++++++++++++++++++++----
- third_party/sqlite/src/src/os_win.c    |  8 +++++
- third_party/sqlite/src/src/sqlite.h.in | 31 ++++++++++++++++++
- 3 files changed, 90 insertions(+), 6 deletions(-)
+ third_party/sqlite/src/src/os_unix.c   | 100 +++++++++++++++++++++++++++------
+ third_party/sqlite/src/src/os_win.c    |   8 +++
+ third_party/sqlite/src/src/sqlite.h.in |  36 ++++++++++++
+ 3 files changed, 128 insertions(+), 16 deletions(-)
 
 diff --git a/third_party/sqlite/src/src/os_unix.c b/third_party/sqlite/src/src/os_unix.c
-index a9344ee..c6e1b6c 100644
+index a9344ee..75b71dc 100644
 --- a/third_party/sqlite/src/src/os_unix.c
 +++ b/third_party/sqlite/src/src/os_unix.c
 @@ -1321,6 +1321,12 @@ static int fileHasMoved(unixFile *pFile){
@@ -39,7 +39,7 @@ index a9344ee..c6e1b6c 100644
    return pFile->pInode!=0 &&
        (osStat(pFile->zPath, &buf)!=0 || buf.st_ino!=pFile->pInode->fileId.ino);
  #endif
-@@ -5615,6 +5621,48 @@ static int findCreateFileMode(
+@@ -5615,6 +5621,78 @@ static int findCreateFileMode(
  }
  
  /*
@@ -59,6 +59,36 @@ index a9344ee..c6e1b6c 100644
 +                                               int noLock) {
 +  int ctrlFlags = (noLock ? UNIXFILE_NOLOCK : 0);
 +  return fillInUnixFile(vfs, fd, file, fileName, ctrlFlags);
++}
++
++/*
++** Search for an unused file descriptor that was opened on the database file.
++** If a suitable file descriptor if found, then it is stored in *fd; otherwise,
++** *fd is not modified.
++**
++** If a reusable file descriptor is not found, and a new UnixUnusedFd cannot
++** be allocated, SQLITE_NOMEM is returned. Otherwise, SQLITE_OK is returned.
++*/
++CHROMIUM_SQLITE_API
++int chromium_sqlite3_get_reusable_file_handle(sqlite3_file* file,
++                                              const char* fileName,
++                                              int flags,
++                                              int* fd) {
++  unixFile* unixSQLite3File = (unixFile*)file;
++  int fileType = flags & 0xFFFFFF00;
++  if (fileType == SQLITE_OPEN_MAIN_DB) {
++    UnixUnusedFd *unusedFd = findReusableFd(fileName, flags);
++    if (unusedFd) {
++      *fd = unusedFd->fd;
++    } else {
++      unusedFd = sqlite3_malloc(sizeof(*unusedFd));
++      if (!unusedFd) {
++        return SQLITE_NOMEM;
++      }
++    }
++    unixSQLite3File->pUnused = unusedFd;
++  }
++  return SQLITE_OK;
 +}
 +
 +/*
@@ -88,7 +118,7 @@ index a9344ee..c6e1b6c 100644
  ** Open the file zPath.
  ** 
  ** Previously, the SQLite OS layer used three functions in place of this
-@@ -5715,7 +5763,7 @@ static int unixOpen(
+@@ -5715,20 +5793,13 @@ static int unixOpen(
      sqlite3_randomness(0,0);
    }
  
@@ -96,8 +126,24 @@ index a9344ee..c6e1b6c 100644
 +  chromium_sqlite3_initialize_unix_sqlite3_file(pFile);
  
    if( eType==SQLITE_OPEN_MAIN_DB ){
-     UnixUnusedFd *pUnused;
-@@ -5798,10 +5846,7 @@ static int unixOpen(
+-    UnixUnusedFd *pUnused;
+-    pUnused = findReusableFd(zName, flags);
+-    if( pUnused ){
+-      fd = pUnused->fd;
+-    }else{
+-      pUnused = sqlite3_malloc(sizeof(*pUnused));
+-      if( !pUnused ){
+-        return SQLITE_NOMEM;
+-      }
++    rc = chromium_sqlite3_get_reusable_file_handle(pFile, zName, flags, &fd);
++    if( rc!=SQLITE_OK ){
++      return rc;
+     }
+-    p->pUnused = pUnused;
+ 
+     /* Database filenames are double-zero terminated if they are not
+     ** URIs with parameters.  Hence, they can always be passed into
+@@ -5798,10 +5869,7 @@ static int unixOpen(
      *pOutFlags = flags;
    }
  
@@ -109,7 +155,7 @@ index a9344ee..c6e1b6c 100644
  
    if( isDelete ){
  #if OS_VXWORKS
-@@ -5893,7 +5938,7 @@ static int unixOpen(
+@@ -5893,7 +5961,7 @@ static int unixOpen(
  
  open_finished:
    if( rc!=SQLITE_OK ){
@@ -136,10 +182,10 @@ index 8ca2107..9320bfc 100644
 +
  #endif /* SQLITE_OS_WIN */
 diff --git a/third_party/sqlite/src/src/sqlite.h.in b/third_party/sqlite/src/src/sqlite.h.in
-index f1d4e40..00e4771 100644
+index f1d4e40..36aa999 100644
 --- a/third_party/sqlite/src/src/sqlite.h.in
 +++ b/third_party/sqlite/src/src/sqlite.h.in
-@@ -7408,6 +7408,37 @@ int sqlite3_vtab_on_conflict(sqlite3 *);
+@@ -7408,6 +7408,42 @@ int sqlite3_vtab_on_conflict(sqlite3 *);
  
  
  
@@ -165,6 +211,11 @@ index f1d4e40..00e4771 100644
 +                                               const char* fileName,
 +                                               int noLock);
 +CHROMIUM_SQLITE_API
++int chromium_sqlite3_get_reusable_file_handle(sqlite3_file* file,
++                                              const char* fileName,
++                                              int flags,
++                                              int* fd);
++CHROMIUM_SQLITE_API
 +void chromium_sqlite3_update_reusable_file_handle(sqlite3_file* file,
 +                                                  int fd,
 +                                                  int flags);
@@ -178,5 +229,5 @@ index f1d4e40..00e4771 100644
  ** Undo the hack that converts floating point types to integer for
  ** builds on processors without floating point support.
 -- 
-2.6.1
+2.4.5
 
