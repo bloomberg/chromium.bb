@@ -432,6 +432,22 @@ static int ToMessageID(WebLocalizedString::Name name) {
   return -1;
 }
 
+class TraceLogObserverAdapter
+    : public base::trace_event::TraceLog::EnabledStateObserver {
+ public:
+  TraceLogObserverAdapter(
+      blink::Platform::TraceLogEnabledStateObserver* observer)
+      : observer_(observer) {}
+
+  void OnTraceLogEnabled() override { observer_->onTraceLogEnabled(); }
+
+  void OnTraceLogDisabled() override { observer_->onTraceLogDisabled(); }
+
+ private:
+  blink::Platform::TraceLogEnabledStateObserver* observer_;
+  DISALLOW_COPY_AND_ASSIGN(TraceLogObserverAdapter);
+};
+
 // TODO(skyostil): Ensure that we always have an active task runner when
 // constructing the platform.
 BlinkPlatformImpl::BlinkPlatformImpl()
@@ -738,6 +754,26 @@ blink::Platform::WebMemoryAllocatorDumpGuid
 BlinkPlatformImpl::createWebMemoryAllocatorDumpGuid(
     const blink::WebString& guidStr) {
   return base::trace_event::MemoryAllocatorDumpGuid(guidStr.utf8()).ToUint64();
+}
+
+void BlinkPlatformImpl::addTraceLogEnabledStateObserver(
+    TraceLogEnabledStateObserver* observer) {
+  TraceLogObserverAdapter* adapter = new TraceLogObserverAdapter(observer);
+  bool did_insert =
+      trace_log_observers_.add(observer, make_scoped_ptr(adapter)).second;
+  DCHECK(did_insert);
+  base::trace_event::TraceLog::GetInstance()->AddEnabledStateObserver(adapter);
+}
+
+void BlinkPlatformImpl::removeTraceLogEnabledStateObserver(
+    TraceLogEnabledStateObserver* observer) {
+  scoped_ptr<TraceLogObserverAdapter> adapter =
+      trace_log_observers_.take_and_erase(observer);
+  DCHECK(adapter);
+  DCHECK(base::trace_event::TraceLog::GetInstance()->HasEnabledStateObserver(
+      adapter.get()));
+  base::trace_event::TraceLog::GetInstance()->RemoveEnabledStateObserver(
+      adapter.get());
 }
 
 namespace {

@@ -573,6 +573,17 @@ public:
     // Must be called on the thread that called registerMemoryDumpProvider().
     virtual void unregisterMemoryDumpProvider(blink::WebMemoryDumpProvider*) { }
 
+    class TraceLogEnabledStateObserver {
+    public:
+        virtual ~TraceLogEnabledStateObserver() = default;
+        virtual void onTraceLogEnabled() = 0;
+        virtual void onTraceLogDisabled() = 0;
+    };
+
+    // Register or unregister a trace log state observer. Does not take ownership.
+    virtual void addTraceLogEnabledStateObserver(TraceLogEnabledStateObserver*) {}
+    virtual void removeTraceLogEnabledStateObserver(TraceLogEnabledStateObserver*) {}
+
     // Returns a newly allocated WebProcessMemoryDump instance.
     virtual blink::WebProcessMemoryDump* createProcessMemoryDump() { return nullptr; }
 
