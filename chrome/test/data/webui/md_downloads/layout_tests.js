@@ -12,14 +12,13 @@ cr.define('downloads.layout_tests', function() {
         PolymerTest.clearBody();
         manager = document.createElement('downloads-manager');
         document.body.appendChild(manager);
-        assertEquals(manager, downloads.Manager.get());
       });
 
       test('long URLs ellide', function() {
-        downloads.Manager.insertItems(0, [{
+        manager.updateAll_([{
           file_name: 'file name',
           state: downloads.States.COMPLETE,
-          url: 'a'.repeat(1000),
+          url: 'a'.repeat(10000),
         }]);
 
         Polymer.dom.flush();
