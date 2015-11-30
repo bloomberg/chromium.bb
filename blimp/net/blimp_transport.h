@@ -5,6 +5,8 @@
 #ifndef BLIMP_NET_BLIMP_TRANSPORT_H_
 #define BLIMP_NET_BLIMP_TRANSPORT_H_
 
+#include <string>
+
 #include "base/memory/scoped_ptr.h"
 #include "net/base/completion_callback.h"
 
@@ -31,6 +33,9 @@ class BlimpTransport {
 
   // Returns the connection object after a successful Connect().
   virtual scoped_ptr<BlimpConnection> TakeConnection() = 0;
+
+  // Gets transport name, e.g. "TCP", "SSL", "mock", etc.
+  virtual const std::string GetName() const = 0;
 };
 
 }  // namespace blimp

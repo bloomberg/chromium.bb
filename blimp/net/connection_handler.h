@@ -9,7 +9,7 @@ namespace blimp {
 
 class BlimpConnection;
 
-// Interface for objects that can take possesion of BlimpConnections.
+// Interface for objects that can take possession of BlimpConnections.
 class ConnectionHandler {
  public:
   virtual ~ConnectionHandler() {}

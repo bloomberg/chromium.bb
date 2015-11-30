@@ -32,6 +32,7 @@ class BLIMP_NET_EXPORT TCPClientTransport : public BlimpTransport {
   // BlimpTransport implementation.
   void Connect(const net::CompletionCallback& callback) override;
   scoped_ptr<BlimpConnection> TakeConnection() override;
+  const std::string GetName() const override;
 
  private:
   void OnTCPConnectComplete(int result);

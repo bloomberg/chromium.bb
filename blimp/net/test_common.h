@@ -7,9 +7,12 @@
 
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/net/blimp_message_processor.h"
+#include "blimp/net/blimp_transport.h"
 #include "blimp/net/connection_error_observer.h"
+#include "blimp/net/connection_handler.h"
 #include "blimp/net/packet_reader.h"
 #include "blimp/net/packet_writer.h"
 #include "net/socket/stream_socket.h"
@@ -107,6 +110,27 @@ class MockStreamSocket : public net::StreamSocket {
   MOCK_METHOD0(ClearConnectionAttempts, void());
   MOCK_METHOD1(AddConnectionAttempts, void(const net::ConnectionAttempts&));
   MOCK_CONST_METHOD0(GetTotalReceivedBytes, int64_t());
+};
+
+class MockTransport : public BlimpTransport {
+ public:
+  MockTransport();
+  ~MockTransport() override;
+
+  MOCK_METHOD1(Connect, void(const net::CompletionCallback& callback));
+  MOCK_METHOD0(TakeConnectionPtr, BlimpConnection*());
+
+  scoped_ptr<BlimpConnection> TakeConnection() override;
+  const std::string GetName() const override;
+};
+
+class MockConnectionHandler : public ConnectionHandler {
+ public:
+  MockConnectionHandler();
+  ~MockConnectionHandler() override;
+
+  MOCK_METHOD1(HandleConnectionPtr, void(BlimpConnection* connection));
+  void HandleConnection(scoped_ptr<BlimpConnection> connection) override;
 };
 
 class MockPacketReader : public PacketReader {

@@ -49,6 +49,10 @@ scoped_ptr<BlimpConnection> TCPClientTransport::TakeConnection() {
   return make_scoped_ptr(new StreamSocketConnection(std::move(socket_)));
 }
 
+const std::string TCPClientTransport::GetName() const {
+  return "TCP";
+}
+
 void TCPClientTransport::OnTCPConnectComplete(int result) {
   DCHECK_NE(net::ERR_IO_PENDING, result);
   DCHECK(socket_);

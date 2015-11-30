@@ -5,35 +5,46 @@
 #ifndef BLIMP_NET_ENGINE_CONNECTION_MANAGER_H_
 #define BLIMP_NET_ENGINE_CONNECTION_MANAGER_H_
 
+#include <vector>
+
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "blimp/net/blimp_connection.h"
-#include "blimp/net/connection_error_observer.h"
+#include "base/memory/scoped_ptr.h"
+#include "blimp/net/blimp_net_export.h"
 #include "blimp/net/connection_handler.h"
 
 namespace blimp {
+
+class BlimpConnection;
+class BlimpTransport;
 
 // Coordinates the channel creation and authentication workflows for
 // incoming (Engine) network connections.
 //
 // TODO(kmarshall): Add rate limiting and abuse handling logic.
-class EngineConnectionManager : public ConnectionHandler,
-                                public ConnectionErrorObserver {
+class BLIMP_NET_EXPORT EngineConnectionManager {
  public:
   // Caller is responsible for ensuring that |connection_handler| outlives
   // |this|.
   explicit EngineConnectionManager(ConnectionHandler* connection_handler);
 
-  ~EngineConnectionManager() override;
+  ~EngineConnectionManager();
 
-  // Accepts new BlimpConnections from |transport_| as fast as they arrive.
-  void StartListening();
-
-  // ConnectionHandler implementation.
-  // Handles a new connection, authenticates it, and passes it on to the
-  // underlying ConnectionHandler.
-  void HandleConnection(scoped_ptr<BlimpConnection> connection) override;
+  // Adds a transport and accepts new BlimpConnections from it as fast as they
+  // arrive.
+  void AddTransport(scoped_ptr<BlimpTransport> transport);
 
  private:
+  // Invokes transport->Connect to listen for a connection.
+  void Connect(BlimpTransport* transport);
+
+  // Callback invoked by |transport| to indicate that it has a connection
+  // ready to be authenticated.
+  void OnConnectResult(BlimpTransport* transport, int result);
+
+  ConnectionHandler* connection_handler_;
+  std::vector<scoped_ptr<BlimpTransport>> transports_;
+
   DISALLOW_COPY_AND_ASSIGN(EngineConnectionManager);
 };
 

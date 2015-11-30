@@ -33,6 +33,7 @@ class BLIMP_NET_EXPORT TCPEngineTransport : public BlimpTransport {
   // BlimpTransport implementation.
   void Connect(const net::CompletionCallback& callback) override;
   scoped_ptr<BlimpConnection> TakeConnection() override;
+  const std::string GetName() const override;
 
   int GetLocalAddressForTesting(net::IPEndPoint* address) const;
 

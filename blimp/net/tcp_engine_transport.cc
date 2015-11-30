@@ -61,6 +61,10 @@ scoped_ptr<BlimpConnection> TCPEngineTransport::TakeConnection() {
       new StreamSocketConnection(std::move(accepted_socket_)));
 }
 
+const std::string TCPEngineTransport::GetName() const {
+  return "TCP";
+}
+
 int TCPEngineTransport::GetLocalAddressForTesting(
     net::IPEndPoint* address) const {
   DCHECK(server_socket_);
