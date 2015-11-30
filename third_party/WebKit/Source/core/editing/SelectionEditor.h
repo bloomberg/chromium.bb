@@ -61,7 +61,7 @@ public:
     void setVisibleSelection(const VisibleSelectionInComposedTree&, FrameSelection::SetSelectionOptions);
 
     void setIsDirectional(bool);
-    void setWithoutValidation(const Position& start, const Position& end);
+    void setWithoutValidation(const Position& base, const Position& extent);
 
     void resetXPosForVerticalArrowNavigation();
 

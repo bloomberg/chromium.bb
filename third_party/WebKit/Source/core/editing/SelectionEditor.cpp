@@ -84,11 +84,7 @@ void SelectionEditor::setVisibleSelection(const VisibleSelection& newSelection, 
 {
     m_selection = newSelection;
     if (options & FrameSelection::DoNotAdjustInComposedTree) {
-        const auto& base = toPositionInComposedTree(m_selection.base());
-        const auto& extent = toPositionInComposedTree(m_selection.extent());
-        base.anchorNode()->updateDistribution();
-        extent.anchorNode()->updateDistribution();
-        m_selectionInComposedTree.setWithoutValidation(base, extent);
+        m_selectionInComposedTree.setWithoutValidation(toPositionInComposedTree(m_selection.base()), toPositionInComposedTree(m_selection.extent()));
         return;
     }
 
@@ -170,10 +166,10 @@ void SelectionEditor::setIsDirectional(bool isDirectional)
     m_selectionInComposedTree.setIsDirectional(isDirectional);
 }
 
-void SelectionEditor::setWithoutValidation(const Position& start, const Position& end)
+void SelectionEditor::setWithoutValidation(const Position& base, const Position& extent)
 {
-    m_selection.setWithoutValidation(start, end);
-    adjustVisibleSelectionInComposedTree();
+    m_selection.setWithoutValidation(base, extent);
+    m_selectionInComposedTree.setWithoutValidation(toPositionInComposedTree(base), toPositionInComposedTree(extent));
 }
 
 TextDirection SelectionEditor::directionOfEnclosingBlock()

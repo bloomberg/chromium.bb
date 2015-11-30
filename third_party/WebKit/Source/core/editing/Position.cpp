@@ -289,7 +289,9 @@ int comparePositions(const PositionInComposedTree& positionA, const PositionInCo
     ASSERT(positionA.isNotNull());
     ASSERT(positionB.isNotNull());
 
+    positionA.anchorNode()->updateDistribution();
     Node* containerA = positionA.computeContainerNode();
+    positionB.anchorNode()->updateDistribution();
     Node* containerB = positionB.computeContainerNode();
     int offsetA = positionA.computeOffsetInContainerNode();
     int offsetB = positionB.computeOffsetInContainerNode();
