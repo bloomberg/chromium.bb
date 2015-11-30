@@ -5,21 +5,28 @@
 #ifndef COMPONENTS_MUS_PUBLIC_CPP_WINDOW_SURFACE_H_
 #define COMPONENTS_MUS_PUBLIC_CPP_WINDOW_SURFACE_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
+#include "base/threading/thread_checker.h"
 #include "components/mus/public/interfaces/compositor_frame.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_ptr_info.h"
 
 namespace mus {
 
+class WindowSurfaceBinding;
 class WindowSurfaceClient;
 class Window;
 
-// A WindowSurface is wrapper to simplify submitting CompositorFrames to Views,
-// and receiving ReturnedResources.
+// A WindowSurface is wrapper to simplify submitting CompositorFrames to
+// Windows, and receiving ReturnedResources.
 class WindowSurface : public mojom::SurfaceClient {
  public:
+  // static
+  static scoped_ptr<WindowSurface> Create(
+      scoped_ptr<WindowSurfaceBinding>* surface_binding);
+
   ~WindowSurface() override;
 
   // Called to indicate that the current thread has assumed control of this
@@ -46,7 +53,29 @@ class WindowSurface : public mojom::SurfaceClient {
   mojo::InterfaceRequest<mojom::SurfaceClient> client_request_;
   mojom::SurfacePtr surface_;
   scoped_ptr<mojo::Binding<mojom::SurfaceClient>> client_binding_;
-  bool bound_to_thread_;
+  scoped_ptr<base::ThreadChecker> thread_checker_;
+
+  DISALLOW_COPY_AND_ASSIGN(WindowSurface);
+};
+
+// A WindowSurfaceBinding is a bundle of mojo interfaces that are to be used by
+// or implemented by the Mus window server when passed into
+// Window::AttachSurface. WindowSurfaceBinding has no standalone functionality.
+class WindowSurfaceBinding {
+ public:
+  ~WindowSurfaceBinding();
+
+ private:
+  friend class WindowSurface;
+  friend class Window;
+
+  WindowSurfaceBinding(mojo::InterfaceRequest<mojom::Surface> surface_request,
+                       mojom::SurfaceClientPtr surface_client);
+
+  mojo::InterfaceRequest<mojom::Surface> surface_request_;
+  mojom::SurfaceClientPtr surface_client_;
+
+  DISALLOW_COPY_AND_ASSIGN(WindowSurfaceBinding);
 };
 
 }  // namespace mus

@@ -51,7 +51,7 @@ void TestWindowTree::SetWindowProperty(uint32_t change_id,
   change_id_ = change_id;
 }
 
-void TestWindowTree::RequestSurface(
+void TestWindowTree::AttachSurface(
     uint32_t window_id,
     mojom::SurfaceType type,
     mojo::InterfaceRequest<mojom::Surface> surface,

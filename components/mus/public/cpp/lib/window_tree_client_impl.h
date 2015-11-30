@@ -81,10 +81,10 @@ class WindowTreeClientImpl : public WindowTreeConnection,
              uint32_t policy_bitmask,
              const mojom::WindowTree::EmbedCallback& callback);
 
-  void RequestSurface(Id window_id,
-                      mojom::SurfaceType type,
-                      mojo::InterfaceRequest<mojom::Surface> surface,
-                      mojom::SurfaceClientPtr client);
+  void AttachSurface(Id window_id,
+                     mojom::SurfaceType type,
+                     mojo::InterfaceRequest<mojom::Surface> surface,
+                     mojom::SurfaceClientPtr client);
 
   void set_change_acked_callback(const mojo::Callback<void(void)>& callback) {
     change_acked_callback_ = callback;

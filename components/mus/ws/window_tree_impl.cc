@@ -761,7 +761,7 @@ void WindowTreeImpl::SetWindowProperty(uint32_t change_id,
   client_->OnChangeCompleted(change_id, success);
 }
 
-void WindowTreeImpl::RequestSurface(
+void WindowTreeImpl::AttachSurface(
     Id window_id,
     mojom::SurfaceType type,
     mojo::InterfaceRequest<mojom::Surface> surface,

@@ -29,6 +29,7 @@ namespace mus {
 class ServiceProviderImpl;
 class WindowObserver;
 class WindowSurface;
+class WindowSurfaceBinding;
 class WindowTreeClientImpl;
 class WindowTreeConnection;
 
@@ -86,6 +87,9 @@ class Window {
   }
 
   scoped_ptr<WindowSurface> RequestSurface(mojom::SurfaceType type);
+
+  void AttachSurface(mojom::SurfaceType type,
+                     scoped_ptr<WindowSurfaceBinding> surface_binding);
 
   // The template-ized versions of the following methods rely on the presence
   // of a mojo::TypeConverter<const std::vector<uint8_t>, T>.
