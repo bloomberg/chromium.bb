@@ -65,6 +65,44 @@ enum g2d_base_addr_reg {
 	g2d_src
 };
 
+enum e_g2d_dir_mode {
+	G2D_DIR_MODE_POSITIVE = 0,
+	G2D_DIR_MODE_NEGATIVE = 1
+};
+
+union g2d_direction_val {
+	unsigned int val[2];
+	struct {
+		/* SRC_MSK_DIRECT_REG [0:1] (source) */
+		enum e_g2d_dir_mode		src_x_direction:1;
+		enum e_g2d_dir_mode		src_y_direction:1;
+
+		/* SRC_MSK_DIRECT_REG [2:3] */
+		unsigned int			reversed1:2;
+
+		/* SRC_MSK_DIRECT_REG [4:5] (mask) */
+		enum e_g2d_dir_mode		mask_x_direction:1;
+		enum e_g2d_dir_mode		mask_y_direction:1;
+
+		/* SRC_MSK_DIRECT_REG [6:31] */
+		unsigned int			padding1:26;
+
+		/* DST_PAT_DIRECT_REG [0:1] (destination) */
+		enum e_g2d_dir_mode		dst_x_direction:1;
+		enum e_g2d_dir_mode		dst_y_direction:1;
+
+		/* DST_PAT_DIRECT_REG [2:3] */
+		unsigned int			reversed2:2;
+
+		/* DST_PAT_DIRECT_REG [4:5] (pattern) */
+		enum e_g2d_dir_mode		pat_x_direction:1;
+		enum e_g2d_dir_mode		pat_y_direction:1;
+
+		/* DST_PAT_DIRECT_REG [6:31] */
+		unsigned int			padding2:26;
+	} data;
+};
+
 static unsigned int g2d_get_scaling(unsigned int src, unsigned int dst)
 {
 	/*
@@ -239,6 +277,19 @@ static void g2d_add_base_addr(struct g2d_context *ctx, struct g2d_image *img,
 				(unsigned long)&img->user_ptr[0]);
 	else
 		g2d_add_cmd(ctx, cmd, img->bo[0]);
+}
+
+/*
+ * g2d_set_direction - setup direction register (useful for overlapping blits).
+ *
+ * @ctx: a pointer to g2d_context structure.
+ * @dir: a pointer to the g2d_direction_val structure.
+ */
+static void g2d_set_direction(struct g2d_context *ctx,
+			const union g2d_direction_val *dir)
+{
+	g2d_add_cmd(ctx, SRC_MASK_DIRECT_REG, dir->val[0]);
+	g2d_add_cmd(ctx, DST_PAT_DIRECT_REG, dir->val[1]);
 }
 
 /*
