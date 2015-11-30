@@ -2177,13 +2177,10 @@ static LayoutObject* associatedLayoutObjectOf(const Node& node, int offsetInNode
     return layoutTextFragment;
 }
 
-int caretMinOffset(const Node* n)
+int caretMinOffset(const Node* node)
 {
-    LayoutObject* r = n->layoutObject();
-    // TODO(yosin): This was a runtime check that seemingly couldn't fail;
-    // changed it to an
-    ASSERT(!n->isCharacterDataNode() || !r || r->isText());
-    return r ? r->caretMinOffset() : 0;
+    LayoutObject* layoutObject = associatedLayoutObjectOf(*node, 0);
+    return layoutObject ? layoutObject->caretMinOffset() : 0;
 }
 
 int caretMaxOffset(const Node* n)

@@ -67,6 +67,26 @@ TEST_F(VisibleUnitsTest, absoluteCaretBoundsOf)
     EXPECT_EQ(boundsInDOMTree, boundsInComposedTree);
 }
 
+TEST_F(VisibleUnitsTest, caretMinOffset)
+{
+    const char* bodyContent = "<p id=one>one</p>";
+    setBodyContent(bodyContent);
+
+    RefPtrWillBeRawPtr<Element> one = document().getElementById("one");
+
+    EXPECT_EQ(0, caretMinOffset(one->firstChild()));
+}
+
+TEST_F(VisibleUnitsTest, caretMinOffsetWithFirstLetter)
+{
+    const char* bodyContent = "<style>#one:first-letter { font-size: 200%; }</style><p id=one>one</p>";
+    setBodyContent(bodyContent);
+
+    RefPtrWillBeRawPtr<Element> one = document().getElementById("one");
+
+    EXPECT_EQ(0, caretMinOffset(one->firstChild()));
+}
+
 TEST_F(VisibleUnitsTest, characterAfter)
 {
     const char* bodyContent = "<p id='host'><b id='one'>1</b><b id='two'>22</b></p><b id='three'>333</b>";
