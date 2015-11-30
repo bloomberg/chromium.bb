@@ -93,12 +93,12 @@ void MediaDrmCredentialManager::OnResetCredentialsCompleted(
 bool MediaDrmCredentialManager::ResetCredentialsInternal(
     SecurityLevel security_level) {
   // Create provision fetcher for the default browser http request context.
-  scoped_ptr<media::ProvisionFetcher> provision_fetcher =
-      content::CreateProvisionFetcher(
-          g_browser_process->system_request_context());
+  media::CreateFetcherCB create_fetcher_cb =
+      base::Bind(&content::CreateProvisionFetcher,
+                 g_browser_process->system_request_context());
 
   media_drm_bridge_ = media::MediaDrmBridge::CreateWithoutSessionSupport(
-      kWidevineKeySystem, provision_fetcher.Pass());
+      kWidevineKeySystem, create_fetcher_cb);
   if (!media_drm_bridge_)
     return false;
 

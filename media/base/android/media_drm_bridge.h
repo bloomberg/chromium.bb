@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "media/base/android/provision_fetcher.h"
 #include "media/base/cdm_promise_adapter.h"
 #include "media/base/media_export.h"
 #include "media/base/media_keys.h"
@@ -31,8 +32,6 @@ namespace media {
 // This class lives on the thread where it is created. All methods must be
 // called on the |task_runner_| except for the PlayerTracker methods and
 // SetMediaCryptoReadyCB(), which can be called on any thread.
-
-class ProvisionFetcher;
 
 class MEDIA_EXPORT MediaDrmBridge : public MediaKeys, public PlayerTracker {
  public:
@@ -79,7 +78,7 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys, public PlayerTracker {
   // TODO(xhwang): Is it okay not to update session expiration info?
   static scoped_refptr<MediaDrmBridge> Create(
       const std::string& key_system,
-      scoped_ptr<ProvisionFetcher> provision_fetcher,
+      const CreateFetcherCB& create_fetcher_cb,
       const SessionMessageCB& session_message_cb,
       const SessionClosedCB& session_closed_cb,
       const LegacySessionErrorCB& legacy_session_error_cb,
@@ -91,7 +90,7 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys, public PlayerTracker {
   // use MediaDrmBridge without creating any sessions.
   static scoped_refptr<MediaDrmBridge> CreateWithoutSessionSupport(
       const std::string& key_system,
-      scoped_ptr<ProvisionFetcher> provision_fetcher);
+      const CreateFetcherCB& create_fetcher_cb);
 
   // MediaKeys implementation.
   void SetServerCertificate(
@@ -231,7 +230,7 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys, public PlayerTracker {
   friend class base::DeleteHelper<MediaDrmBridge>;
 
   MediaDrmBridge(const std::vector<uint8>& scheme_uuid,
-                 scoped_ptr<ProvisionFetcher> provision_fetcher,
+                 const CreateFetcherCB& create_fetcher_cb,
                  const SessionMessageCB& session_message_cb,
                  const SessionClosedCB& session_closed_cb,
                  const LegacySessionErrorCB& legacy_session_error_cb,
@@ -262,7 +261,11 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys, public PlayerTracker {
   // Java MediaDrm instance.
   base::android::ScopedJavaGlobalRef<jobject> j_media_drm_;
 
-  // The object that requests and receives provisioning data.
+  // The callback to create a ProvisionFetcher.
+  CreateFetcherCB create_fetcher_cb_;
+
+  // The ProvisionFetcher that requests and receives provisioning data.
+  // Non-null iff when a provision request is pending.
   scoped_ptr<ProvisionFetcher> provision_fetcher_;
 
   // Callbacks for firing session events.

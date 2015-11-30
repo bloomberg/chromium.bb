@@ -6,7 +6,6 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "media/base/android/media_drm_bridge.h"
-#include "media/base/android/provision_fetcher.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/cdm_config.h"
 #include "media/base/key_systems.h"
@@ -48,8 +47,8 @@ void AndroidCdmFactory::Create(
   }
 
   scoped_refptr<MediaDrmBridge> cdm(MediaDrmBridge::Create(
-      key_system, create_fetcher_cb_.Run(), session_message_cb,
-      session_closed_cb, legacy_session_error_cb, session_keys_change_cb,
+      key_system, create_fetcher_cb_, session_message_cb, session_closed_cb,
+      legacy_session_error_cb, session_keys_change_cb,
       session_expiration_update_cb));
   if (!cdm) {
     error_message = "MediaDrmBridge cannot be created for " + key_system;

@@ -34,6 +34,8 @@ class MEDIA_EXPORT ProvisionFetcher {
                         const ResponseCB& response_cb) = 0;
 };
 
+using CreateFetcherCB = base::Callback<scoped_ptr<ProvisionFetcher>()>;
+
 }  // namespace media
 
 #endif  // MEDIA_BASE_PROVISION_FETCHER_H

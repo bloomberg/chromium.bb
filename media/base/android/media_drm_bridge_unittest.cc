@@ -4,6 +4,7 @@
 
 #include "base/android/build_info.h"
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "media/base/android/media_drm_bridge.h"
@@ -47,13 +48,14 @@ namespace {
 // Mock ProvisionFetcher.
 class MockProvisionFetcher : public ProvisionFetcher {
  public:
+  static scoped_ptr<ProvisionFetcher> Create() {
+    return scoped_ptr<ProvisionFetcher>(new MockProvisionFetcher());
+  }
+
+  // ProvisionFetcher implementation.
   void Retrieve(const std::string& default_url,
                 const std::string& request_data,
                 const ResponseCB& response_cb) override {}
-
-  static scoped_ptr<ProvisionFetcher> Create() {
-    return scoped_ptr<ProvisionFetcher>(new MockProvisionFetcher);
-  }
 };
 
 }  // namespace (anonymous)
@@ -95,21 +97,21 @@ TEST(MediaDrmBridgeTest, IsKeySystemSupported_InvalidKeySystem) {
 TEST(MediaDrmBridgeTest, CreateWithoutSessionSupport_Widevine) {
   base::MessageLoop message_loop_;
   EXPECT_TRUE_IF_WIDEVINE_AVAILABLE(MediaDrmBridge::CreateWithoutSessionSupport(
-      kWidevineKeySystem, MockProvisionFetcher::Create().Pass()));
+      kWidevineKeySystem, base::Bind(&MockProvisionFetcher::Create)));
 }
 
 // Invalid key system is NOT supported regardless whether MediaDrm is available.
 TEST(MediaDrmBridgeTest, CreateWithoutSessionSupport_InvalidKeySystem) {
   base::MessageLoop message_loop_;
   EXPECT_FALSE(MediaDrmBridge::CreateWithoutSessionSupport(
-      kInvalidKeySystem, MockProvisionFetcher::Create().Pass()));
+      kInvalidKeySystem, base::Bind(&MockProvisionFetcher::Create)));
 }
 
 TEST(MediaDrmBridgeTest, SetSecurityLevel_Widevine) {
   base::MessageLoop message_loop_;
   scoped_refptr<MediaDrmBridge> media_drm_bridge =
       MediaDrmBridge::CreateWithoutSessionSupport(
-          kWidevineKeySystem, MockProvisionFetcher::Create().Pass());
+          kWidevineKeySystem, base::Bind(&MockProvisionFetcher::Create));
   EXPECT_TRUE_IF_WIDEVINE_AVAILABLE(media_drm_bridge);
   if (!media_drm_bridge)
     return;

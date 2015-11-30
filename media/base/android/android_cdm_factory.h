@@ -17,8 +17,6 @@ struct CdmConfig;
 
 class MEDIA_EXPORT AndroidCdmFactory : public CdmFactory {
  public:
-  using CreateFetcherCB = base::Callback<scoped_ptr<ProvisionFetcher>()>;
-
   AndroidCdmFactory(const CreateFetcherCB& create_fetcher_cb);
   ~AndroidCdmFactory() final;
 

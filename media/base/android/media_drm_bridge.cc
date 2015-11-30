@@ -257,7 +257,7 @@ std::vector<std::string> MediaDrmBridge::GetPlatformKeySystemNames() {
 // static
 scoped_refptr<MediaDrmBridge> MediaDrmBridge::Create(
     const std::string& key_system,
-    scoped_ptr<ProvisionFetcher> provision_fetcher,
+    const CreateFetcherCB& create_fetcher_cb,
     const SessionMessageCB& session_message_cb,
     const SessionClosedCB& session_closed_cb,
     const LegacySessionErrorCB& legacy_session_error_cb,
@@ -272,10 +272,10 @@ scoped_refptr<MediaDrmBridge> MediaDrmBridge::Create(
   if (scheme_uuid.empty())
     return nullptr;
 
-  scoped_refptr<MediaDrmBridge> media_drm_bridge(new MediaDrmBridge(
-      scheme_uuid, provision_fetcher.Pass(), session_message_cb,
-      session_closed_cb, legacy_session_error_cb, session_keys_change_cb,
-      session_expiration_update_cb));
+  scoped_refptr<MediaDrmBridge> media_drm_bridge(
+      new MediaDrmBridge(scheme_uuid, create_fetcher_cb, session_message_cb,
+                         session_closed_cb, legacy_session_error_cb,
+                         session_keys_change_cb, session_expiration_update_cb));
 
   if (media_drm_bridge->j_media_drm_.is_null())
     media_drm_bridge = nullptr;
@@ -286,8 +286,8 @@ scoped_refptr<MediaDrmBridge> MediaDrmBridge::Create(
 // static
 scoped_refptr<MediaDrmBridge> MediaDrmBridge::CreateWithoutSessionSupport(
     const std::string& key_system,
-    scoped_ptr<ProvisionFetcher> provision_fetcher) {
-  return MediaDrmBridge::Create(key_system, provision_fetcher.Pass(),
+    const CreateFetcherCB& create_fetcher_cb) {
+  return MediaDrmBridge::Create(key_system, create_fetcher_cb,
                                 SessionMessageCB(), SessionClosedCB(),
                                 LegacySessionErrorCB(), SessionKeysChangeCB(),
                                 SessionExpirationUpdateCB());
@@ -708,14 +708,14 @@ void MediaDrmBridge::OnResetDeviceCredentialsCompleted(JNIEnv* env,
 
 MediaDrmBridge::MediaDrmBridge(
     const std::vector<uint8>& scheme_uuid,
-    scoped_ptr<ProvisionFetcher> provision_fetcher,
+    const CreateFetcherCB& create_fetcher_cb,
     const SessionMessageCB& session_message_cb,
     const SessionClosedCB& session_closed_cb,
     const LegacySessionErrorCB& legacy_session_error_cb,
     const SessionKeysChangeCB& session_keys_change_cb,
     const SessionExpirationUpdateCB& session_expiration_update_cb)
     : scheme_uuid_(scheme_uuid),
-      provision_fetcher_(provision_fetcher.Pass()),
+      create_fetcher_cb_(create_fetcher_cb),
       session_message_cb_(session_message_cb),
       session_closed_cb_(session_closed_cb),
       legacy_session_error_cb_(legacy_session_error_cb),
@@ -725,7 +725,7 @@ MediaDrmBridge::MediaDrmBridge(
       weak_factory_(this) {
   DVLOG(1) << __FUNCTION__;
 
-  DCHECK(provision_fetcher_);
+  DCHECK(!create_fetcher_cb_.is_null());
 
   JNIEnv* env = AttachCurrentThread();
   CHECK(env);
@@ -785,7 +785,11 @@ void MediaDrmBridge::NotifyMediaCryptoReady(const MediaCryptoReadyCB& cb) {
 
 void MediaDrmBridge::SendProvisioningRequest(const std::string& default_url,
                                              const std::string& request_data) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DVLOG(1) << __FUNCTION__;
+
+  DCHECK(!provision_fetcher_) << "At most one provision request at any time.";
+  provision_fetcher_ = create_fetcher_cb_.Run();
 
   provision_fetcher_->Retrieve(
       default_url, request_data,
@@ -795,7 +799,11 @@ void MediaDrmBridge::SendProvisioningRequest(const std::string& default_url,
 
 void MediaDrmBridge::ProcessProvisionResponse(bool success,
                                               const std::string& response) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DVLOG(1) << __FUNCTION__;
+
+  DCHECK(provision_fetcher_) << "No provision request pending.";
+  provision_fetcher_.reset();
 
   if (!success)
     VLOG(1) << "Device provision failure: can't get server response";
