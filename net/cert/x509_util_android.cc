@@ -27,16 +27,6 @@ void RecordCertVerifyCapabilitiesHistogram(JNIEnv* env,
   }
 }
 
-ScopedJavaLocalRef<jobject> GetApplicationContext(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& clazz) {
-  ScopedJavaLocalRef<jobject> r;
-  // Must use Reset to force creation of a new local ref, instead of trying to
-  // adopt the global-ref'ed jobject as a local ref as the constructor would.
-  r.Reset(env, base::android::GetApplicationContext());
-  return r;
-}
-
 bool RegisterX509Util(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }

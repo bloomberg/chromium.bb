@@ -15,6 +15,7 @@ import android.security.KeyChain;
 import android.util.Log;
 import android.util.Pair;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.SuppressFBWarnings;
 
@@ -240,7 +241,7 @@ public class X509Util {
         }
         if (!sDisableNativeCodeForTest && sTrustStorageListener == null) {
             sTrustStorageListener = new TrustStorageListener();
-            nativeGetApplicationContext().registerReceiver(
+            ContextUtils.getApplicationContext().registerReceiver(
                     sTrustStorageListener, new IntentFilter(KeyChain.ACTION_STORAGE_CHANGED));
         }
     }
@@ -529,10 +530,5 @@ public class X509Util {
      */
     private static native void nativeRecordCertVerifyCapabilitiesHistogram(
             boolean foundSystemTrustRoots);
-
-    /**
-     * Returns the application context.
-     */
-    private static native Context nativeGetApplicationContext();
 
 }
