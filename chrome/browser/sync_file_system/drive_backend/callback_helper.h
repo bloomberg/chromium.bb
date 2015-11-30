@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_CALLBACK_HELPER_H_
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_CALLBACK_HELPER_H_
 
+#include <type_traits>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -19,17 +21,14 @@ namespace drive_backend {
 namespace internal {
 
 template <typename T>
-typename base::enable_if<
-    base::internal::IsMoveOnlyType<T>::value,
-    base::internal::PassedWrapper<T> >::type
+typename std::enable_if<base::internal::IsMoveOnlyType<T>::value,
+                        base::internal::PassedWrapper<T>>::type
 RebindForward(T& t) {
   return base::Passed(&t);
 }
 
 template <typename T>
-typename base::enable_if<
-    !base::internal::IsMoveOnlyType<T>::value,
-    T&>::type
+typename std::enable_if<!base::internal::IsMoveOnlyType<T>::value, T&>::type
 RebindForward(T& t) {
   return t;
 }

@@ -6,6 +6,7 @@
 #define BASE_NUMERICS_SAFE_CONVERSIONS_H_
 
 #include <limits>
+#include <type_traits>
 
 #include "base/logging.h"
 #include "base/numerics/safe_conversions_impl.h"
@@ -23,7 +24,7 @@ inline bool IsValueInRangeForNumericType(Src value) {
 // Convenience function for determining if a numeric value is negative without
 // throwing compiler warnings on: unsigned(value) < 0.
 template <typename T>
-typename enable_if<std::numeric_limits<T>::is_signed, bool>::type
+typename std::enable_if<std::numeric_limits<T>::is_signed, bool>::type
 IsValueNegative(T value) {
   static_assert(std::numeric_limits<T>::is_specialized,
                 "Argument must be numeric.");
@@ -31,8 +32,8 @@ IsValueNegative(T value) {
 }
 
 template <typename T>
-typename enable_if<!std::numeric_limits<T>::is_signed, bool>::type
-IsValueNegative(T) {
+typename std::enable_if<!std::numeric_limits<T>::is_signed, bool>::type
+    IsValueNegative(T) {
   static_assert(std::numeric_limits<T>::is_specialized,
                 "Argument must be numeric.");
   return false;

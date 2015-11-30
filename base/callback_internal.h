@@ -205,12 +205,14 @@ struct CallbackParamTraitsForMoveOnlyType {
 // parameter to another callback. This is to support Callbacks that return
 // the movable-but-not-copyable types whitelisted above.
 template <typename T>
-typename enable_if<!IsMoveOnlyType<T>::value, T>::type& CallbackForward(T& t) {
+typename std::enable_if<!IsMoveOnlyType<T>::value, T>::type& CallbackForward(
+    T& t) {
   return t;
 }
 
 template <typename T>
-typename enable_if<IsMoveOnlyType<T>::value, T>::type CallbackForward(T& t) {
+typename std::enable_if<IsMoveOnlyType<T>::value, T>::type CallbackForward(
+    T& t) {
   return t.Pass();
 }
 

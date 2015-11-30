@@ -5,6 +5,8 @@
 #ifndef GIN_OBJECT_TEMPLATE_BUILDER_H_
 #define GIN_OBJECT_TEMPLATE_BUILDER_H_
 
+#include <type_traits>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/strings/string_piece.h"
@@ -52,9 +54,10 @@ struct CallbackTraits<base::Callback<T> > {
 // specially because the first parameter for callbacks to MFP should typically
 // come from the the JavaScript "this" object the function was called on, not
 // from the first normal parameter.
-template<typename T>
-struct CallbackTraits<T, typename base::enable_if<
-                           base::is_member_function_pointer<T>::value>::type> {
+template <typename T>
+struct CallbackTraits<
+    T,
+    typename std::enable_if<base::is_member_function_pointer<T>::value>::type> {
   static v8::Local<v8::FunctionTemplate> CreateTemplate(v8::Isolate* isolate,
                                                          T callback) {
     return CreateFunctionTemplate(isolate, base::Bind(callback),
