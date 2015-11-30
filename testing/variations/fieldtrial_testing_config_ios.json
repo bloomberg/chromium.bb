@@ -25,6 +25,14 @@
             "group_name": "Enabled"
         }
     ],
+    "DataReductionProxyConfigService": [
+        {
+            "group_name": "Enabled",
+            "params": {
+                "minimum_refresh_interval_on_success_msec": "21600000"
+            }
+        }
+    ],
     "QUIC": [
         {
             "group_name": "Enabled",
