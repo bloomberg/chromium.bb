@@ -5,15 +5,30 @@ AM_CFLAGS = \
 	-I $(top_srcdir)/exynos \
 	-I $(top_srcdir)
 
+bin_PROGRAMS =
+noinst_PROGRAMS =
+
 if HAVE_LIBKMS
 if HAVE_INSTALL_TESTS
-bin_PROGRAMS = \
+bin_PROGRAMS += \
 	exynos_fimg2d_test
 else
-noinst_PROGRAMS = \
+noinst_PROGRAMS += \
 	exynos_fimg2d_test
 endif
 endif
+
+if HAVE_INSTALL_TESTS
+bin_PROGRAMS += \
+	exynos_fimg2d_perf
+else
+noinst_PROGRAMS += \
+	exynos_fimg2d_perf
+endif
+
+exynos_fimg2d_perf_LDADD = \
+	$(top_builddir)/libdrm.la \
+	$(top_builddir)/exynos/libdrm_exynos.la
 
 exynos_fimg2d_test_LDADD = \
 	$(top_builddir)/libdrm.la \
