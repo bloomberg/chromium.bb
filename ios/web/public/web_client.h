@@ -12,6 +12,7 @@
 #include "base/strings/string_piece.h"
 #include "ios/web/public/web_view_type.h"
 #include "ui/base/layout.h"
+#include "url/url_util.h"
 
 namespace base {
 class RefCountedStaticMemory;
@@ -55,6 +56,11 @@ class WebClient {
   // Gives the embedder a chance to set up the given web view before presenting
   // it in the UI.
   virtual void PostWebViewCreation(UIWebView* web_view) const {}
+
+  // Gives the embedder a chance to register its own standard and saveable url
+  // schemes early on in the startup sequence.
+  virtual void AddAdditionalSchemes(
+      std::vector<url::SchemeWithType>* additional_standard_schemes) const {}
 
   // Returns the languages used in the Accept-Languages HTTP header.
   // Used to decide URL formating.

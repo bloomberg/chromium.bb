@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/metrics/statistics_recorder.h"
 #include "ios/web/app/web_main_loop.h"
+#include "ios/web/public/url_schemes.h"
 #include "ios/web/public/web_client.h"
 #include "ui/base/ui_base_paths.h"
 
@@ -51,8 +52,7 @@ class WebMainRunnerImpl : public WebMainRunner {
     if (!GetWebClient())
       SetWebClient(&empty_web_client_);
 
-    // TODO(rohitrao): Desktop calls content::RegisterContentSchemes(true) here.
-    // Do we need similar scheme registration on iOS?
+    RegisterWebSchemes(true);
     ui::RegisterPathProvider();
 
     CHECK(base::i18n::InitializeICU());

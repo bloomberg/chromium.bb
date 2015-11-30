@@ -168,6 +168,8 @@
         'public/ssl_status.h',
         'public/string_util.h',
         'public/url_scheme_util.h',
+        'public/url_schemes.h',
+        'public/url_schemes.mm',
         'public/url_util.h',
         'public/user_metrics.h',
         'public/web/url_data_source_ios.h',
