@@ -218,7 +218,7 @@ BlinkGCPluginConsumer::BlinkGCPluginConsumer(
   diag_class_contains_invalid_fields_ = diagnostic_.getCustomDiagID(
       getErrorLevel(), kClassContainsInvalidFields);
   diag_class_contains_invalid_fields_warning_ = diagnostic_.getCustomDiagID(
-      DiagnosticsEngine::Warning, kClassContainsInvalidFields);
+      getErrorLevel(), kClassContainsInvalidFields);
   diag_class_contains_gc_root_ =
       diagnostic_.getCustomDiagID(getErrorLevel(), kClassContainsGCRoot);
   diag_class_requires_finalization_ = diagnostic_.getCustomDiagID(
