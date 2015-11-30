@@ -44,7 +44,9 @@ import android.view.inputmethod.InputMethodInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.view.inputmethod.InputMethodSubtype;
 
+import org.chromium.base.ActivityState;
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.ApplicationStatus;
 import org.chromium.base.BaseSwitches;
 import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
@@ -552,8 +554,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     public void onStartWithNative() {
         super.onStartWithNative();
         getChromeApplication().onStartWithNative();
-        Tab tab = getActivityTab();
-        if (tab != null) tab.onActivityStart();
         FeatureUtilities.setDocumentModeEnabled(FeatureUtilities.isDocumentMode(this));
         WarmupManager.getInstance().clearWebContentsIfNecessary();
 
@@ -565,6 +565,19 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             ContextReporter.reportStatus(ContextReporter.STATUS_GSA_NOT_AVAILABLE);
         }
         mCompositorViewHolder.resetFlags();
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        Tab tab = getActivityTab();
+        if (tab == null) return;
+        if (hasFocus) {
+            tab.onActivityShown();
+        } else {
+            boolean stopped = ApplicationStatus.getStateForActivity(this) == ActivityState.STOPPED;
+            if (stopped) tab.onActivityHidden();
+        }
     }
 
     /**
@@ -628,7 +641,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     @Override
     public void onStopWithNative() {
         Tab tab = getActivityTab();
-        if (tab != null) tab.onActivityStop();
+        if (tab != null && !hasWindowFocus()) tab.onActivityHidden();
         if (mAppMenuHandler != null) mAppMenuHandler.hideAppMenu();
         if (mGSAServiceClient != null) {
             mGSAServiceClient.disconnect();

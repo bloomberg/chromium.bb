@@ -65,11 +65,23 @@ public class ChromeActivityTest extends ChromeTabbedActivityTestBase {
                 getActivity().onStop();
             }
         });
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                getActivity().onWindowFocusChanged(false);
+            }
+        });
         // Verify that both Tabs are hidden.
         assertTrue(tabs[0].isHidden());
         assertTrue(tabs[1].isHidden());
 
         // Fake bringing the activity back to foreground.
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                getActivity().onWindowFocusChanged(true);
+            }
+        });
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {

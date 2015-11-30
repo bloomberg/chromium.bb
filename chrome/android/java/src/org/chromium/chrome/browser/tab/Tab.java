@@ -1085,20 +1085,9 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      * Called on the foreground tab when the Activity showing the Tab gets started. This is called
      * on both cold and warm starts.
      */
-    public void onActivityStart() {
-        onActivityStartInternal(true);
-    }
-
-    /**
-     * Called on the foreground tab when the Activity showing the Tab gets stopped.
-     */
-    public void onActivityStop() {
-        hide();
-    }
-
-    protected void onActivityStartInternal(boolean showNow) {
+    public void onActivityShown() {
         if (isHidden()) {
-            if (showNow) show(TabSelectionType.FROM_USER);
+            show(TabSelectionType.FROM_USER);
         } else {
             // The visible Tab's renderer process may have died after the activity was paused.
             // Ensure that it's restored appropriately.
@@ -1109,6 +1098,13 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         // subactivity did not change the fullscreen configuration of this ChromeTab's renderer in
         // the case where it was shared (i.e. via an EmbedContentViewActivity).
         updateFullscreenEnabledState();
+    }
+
+    /**
+     * Called on the foreground tab when the Activity showing the Tab gets stopped.
+     */
+    public void onActivityHidden() {
+        hide();
     }
 
     /**
