@@ -4594,8 +4594,16 @@
           ['order_profiling!=0 and OS=="android"', {
             'target_conditions' : [
               ['_toolset=="target"', {
+                'cflags': ['-finstrument-functions'],
+                'defines': ['CYGPROFILE_INSTRUMENTATION'],
+              }],
+            ],
+          }],
+          # Clang doesn't understand -finstrument-functions-exclude-file-list=.
+          ['order_profiling!=0 and OS=="android" and clang==0', {
+            'target_conditions' : [
+              ['_toolset=="target"', {
                 'cflags': [
-                  '-finstrument-functions',
                   # Allow mmx intrinsics to inline, so that the
                   # compiler can expand the intrinsics.
                   '-finstrument-functions-exclude-file-list=mmintrin.h',
@@ -4603,7 +4611,6 @@
                   # "third_party/android_tools/ndk/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86_64/bin/../lib/gcc/arm-linux-androideabi/4.6/include/arm_neon.h:3426:3: error: argument must be a constant"
                   '-finstrument-functions-exclude-file-list=arm_neon.h',
                 ],
-                'defines': ['CYGPROFILE_INSTRUMENTATION'],
               }],
             ],
           }],
