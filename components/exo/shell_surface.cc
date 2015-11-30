@@ -64,13 +64,6 @@ ShellSurface::~ShellSurface() {
     widget_->CloseNow();
 }
 
-void ShellSurface::Show() {
-  TRACE_EVENT0("exo", "ShellSurface::Show");
-
-  if (!widget_ && show_state_ == ui::SHOW_STATE_END)
-    show_state_ = ui::SHOW_STATE_DEFAULT;
-}
-
 void ShellSurface::SetToplevel() {
   TRACE_EVENT0("exo", "ShellSurface::SetToplevel");
 
@@ -78,15 +71,26 @@ void ShellSurface::SetToplevel() {
     show_state_ = ui::SHOW_STATE_NORMAL;
 }
 
-void ShellSurface::SetFullscreen(bool fullscreen) {
-  TRACE_EVENT1("exo", "ShellSurface::SetFullscreen", "fullscreen", fullscreen);
+void ShellSurface::SetMaximized() {
+  TRACE_EVENT0("exo", "ShellSurface::SetMaximized");
 
   if (widget_) {
-    widget_->SetFullscreen(fullscreen);
+    widget_->Maximize();
     return;
   }
 
-  show_state_ = fullscreen ? ui::SHOW_STATE_FULLSCREEN : ui::SHOW_STATE_DEFAULT;
+  show_state_ = ui::SHOW_STATE_MAXIMIZED;
+}
+
+void ShellSurface::SetFullscreen() {
+  TRACE_EVENT0("exo", "ShellSurface::SetFullscreen");
+
+  if (widget_) {
+    widget_->SetFullscreen(true);
+    return;
+  }
+
+  show_state_ = ui::SHOW_STATE_FULLSCREEN;
 }
 
 void ShellSurface::SetTitle(const base::string16& title) {
@@ -121,12 +125,8 @@ void ShellSurface::OnSurfaceCommit() {
   params.type = views::Widget::InitParams::TYPE_WINDOW;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.delegate = this;
-  params.shadow_type = show_state_ == ui::SHOW_STATE_NORMAL
-                           ? views::Widget::InitParams::SHADOW_TYPE_DROP
-                           : views::Widget::InitParams::SHADOW_TYPE_NONE;
-  params.opacity = show_state_ == ui::SHOW_STATE_NORMAL
-                       ? views::Widget::InitParams::OPAQUE_WINDOW
-                       : views::Widget::InitParams::TRANSLUCENT_WINDOW;
+  params.shadow_type = views::Widget::InitParams::SHADOW_TYPE_NONE;
+  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.show_state = show_state_;
   params.parent = ash::Shell::GetContainer(
       ash::Shell::GetPrimaryRootWindow(), ash::kShellWindowId_DefaultContainer);
@@ -176,10 +176,7 @@ views::View* ShellSurface::GetContentsView() {
 
 views::NonClientFrameView* ShellSurface::CreateNonClientFrameView(
     views::Widget* widget) {
-  // Default show state is borderless and requires a custom frame view as the
-  // default one does not support this.
-  return show_state_ != ui::SHOW_STATE_NORMAL ? new CustomFrameView(widget)
-                                              : nullptr;
+  return new CustomFrameView(widget);
 }
 
 }  // namespace exo

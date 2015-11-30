@@ -615,7 +615,7 @@ void shell_surface_set_fullscreen(wl_client* client,
                                   uint32_t method,
                                   uint32_t framerate,
                                   wl_resource* output_resource) {
-  GetUserDataAs<ShellSurface>(resource)->SetFullscreen(true);
+  GetUserDataAs<ShellSurface>(resource)->SetFullscreen();
 }
 
 void shell_surface_set_popup(wl_client* client,
@@ -632,7 +632,7 @@ void shell_surface_set_popup(wl_client* client,
 void shell_surface_set_maximized(wl_client* client,
                                  wl_resource* resource,
                                  wl_resource* output_resource) {
-  NOTIMPLEMENTED();
+  GetUserDataAs<ShellSurface>(resource)->SetMaximized();
 }
 
 void shell_surface_set_title(wl_client* client,

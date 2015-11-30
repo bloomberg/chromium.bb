@@ -33,14 +33,14 @@ class ShellSurface : public SurfaceDelegate,
   explicit ShellSurface(Surface* surface);
   ~ShellSurface() override;
 
-  // Show surface at the time of the next commit.
-  void Show();
-
-  // Show surface as a toplevel window with decorations.
+  // Show surface as a toplevel window.
   void SetToplevel();
 
-  // Make the surface fullscreen.
-  void SetFullscreen(bool fullscreen);
+  // Maximize or show surface as a maximized window.
+  void SetMaximized();
+
+  // Fullscreen or show surface as a fullscreen window.
+  void SetFullscreen();
 
   // Set title for surface.
   void SetTitle(const base::string16& title);
