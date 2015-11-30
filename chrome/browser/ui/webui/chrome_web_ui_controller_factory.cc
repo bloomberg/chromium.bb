@@ -713,9 +713,8 @@ void ChromeWebUIControllerFactory::GetFaviconForURL(
       bitmap_result.bitmap_data = bitmap;
       // Leave |bitmap_result|'s icon URL as the default of GURL().
       bitmap_result.icon_type = favicon_base::FAVICON;
-      favicon_bitmap_results->push_back(bitmap_result);
-
       bitmap_result.pixel_size = candidate_sizes[selected_index];
+      favicon_bitmap_results->push_back(bitmap_result);
     }
   }
 
