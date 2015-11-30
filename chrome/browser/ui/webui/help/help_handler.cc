@@ -50,7 +50,6 @@
 #include "base/i18n/time_formatting.h"
 #include "base/prefs/pref_service.h"
 #include "base/sys_info.h"
-#include "base/task_runner_util.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -582,6 +581,9 @@ void HelpHandler::SetUpdateStatus(VersionUpdater::Status status,
   case VersionUpdater::DISABLED:
     status_str = "disabled";
     break;
+  case VersionUpdater::DISABLED_BY_ADMIN:
+    status_str = "disabled_by_admin";
+    break;
   }
 
   web_ui()->CallJavascriptFunction("help.HelpPage.setUpdateStatus",
@@ -683,4 +685,4 @@ void HelpHandler::OnRegulatoryLabelTextRead(const std::string& text) {
       base::StringValue(base::CollapseWhitespaceASCII(text, true)));
 }
 
-#endif // defined(OS_CHROMEOS)
+#endif  // defined(OS_CHROMEOS)

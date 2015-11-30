@@ -27,6 +27,7 @@ class VersionUpdater {
     FAILED_OFFLINE,
     FAILED_CONNECTION_TYPE_DISALLOWED,
     DISABLED,
+    DISABLED_BY_ADMIN
   };
 
 #if defined(OS_MACOSX)

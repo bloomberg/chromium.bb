@@ -28,6 +28,22 @@ TEST_F('HelpPageWebUITest', 'testOpenHelpPage', function() {
 
 GEN('#if defined(OS_LINUX) || defined(GOOGLE_CHROME_BUILD)');
 
+TEST_F('HelpPageWebUITest', 'testUpdateStateIcon', function() {
+  var icon = $('update-status-icon');
+  help.HelpPage.setUpdateStatus('checking', '');
+  assertEquals(icon.getAttribute('class'), 'help-page-icon working');
+  help.HelpPage.setUpdateStatus('updating', '');
+  assertEquals(icon.getAttribute('class'), 'help-page-icon working');
+  help.HelpPage.setUpdateStatus('nearly_updated', '');
+  assertEquals(icon.getAttribute('class'), 'help-page-icon up-to-date');
+  help.HelpPage.setUpdateStatus('updated', '');
+  assertEquals(icon.getAttribute('class'), 'help-page-icon up-to-date');
+  help.HelpPage.setUpdateStatus('failed', '');
+  assertEquals(icon.getAttribute('class'), 'help-page-icon failed');
+  help.HelpPage.setUpdateStatus('disabled_by_admin', '');
+  assertEquals(icon.getAttribute('class'), 'help-page-icon disabled-by-admin');
+});
+
 // Test that repeated calls to setUpdateStatus work.
 TEST_F('HelpPageWebUITest', 'testUpdateState', function() {
   var relaunch = $('relaunch');

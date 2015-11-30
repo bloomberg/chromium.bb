@@ -325,10 +325,13 @@ cr.define('help', function() {
         }
       } else if (status == 'updated') {
         this.setUpdateImage_('up-to-date');
-        $('update-status-message').innerHTML = message ? message :
+        $('update-status-message').innerHTML =
             loadTimeData.getString('upToDate');
       } else if (status == 'failed') {
         this.setUpdateImage_('failed');
+        $('update-status-message').innerHTML = message;
+      } else if (status == 'disabled_by_admin') {
+        this.setUpdateImage_('disabled-by-admin');
         $('update-status-message').innerHTML = message;
       }
 

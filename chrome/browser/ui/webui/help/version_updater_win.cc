@@ -2,16 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/webui/help/version_updater_win.h"
+
 #include "base/memory/weak_ptr.h"
-#include "base/strings/string16.h"
 #include "base/task_runner_util.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/first_run/upgrade_util.h"
-#include "chrome/browser/google/google_update_win.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/browser/ui/webui/help/version_updater.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
@@ -19,51 +18,6 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/native_widget_types.h"
-
-namespace {
-
-// Windows implementation of version update functionality, used by the WebUI
-// About/Help page.
-class VersionUpdaterWin : public VersionUpdater, public UpdateCheckDelegate {
- public:
-  // |owner_widget| is the parent widget hosting the update check UI. Any UI
-  // needed to install an update (e.g., a UAC prompt for a system-level install)
-  // will be parented to this widget. |owner_widget| may be given a value of
-  // nullptr in which case the UAC prompt will be parented to the desktop.
-  explicit VersionUpdaterWin(gfx::AcceleratedWidget owner_widget);
-  ~VersionUpdaterWin() override;
-
-  // VersionUpdater:
-  void CheckForUpdate(const StatusCallback& callback) override;
-  void RelaunchBrowser() const override;
-
-  // UpdateCheckDelegate:
-  void OnUpdateCheckComplete(const base::string16& new_version) override;
-  void OnUpgradeProgress(int progress,
-                         const base::string16& new_version) override;
-  void OnUpgradeComplete(const base::string16& new_version) override;
-  void OnError(GoogleUpdateErrorCode error_code,
-               const base::string16& html_error_message,
-               const base::string16& new_version) override;
-
- private:
-  void BeginUpdateCheckOnFileThread(bool install_update_if_possible);
-
-  // A task run on the UI thread with the result of checking for a pending
-  // restart.
-  void OnPendingRestartCheck(bool is_update_pending_restart);
-
-  // The widget owning the UI for the update check.
-  gfx::AcceleratedWidget owner_widget_;
-
-  // Callback used to communicate update status to the client.
-  StatusCallback callback_;
-
-  // Used for callbacks.
-  base::WeakPtrFactory<VersionUpdaterWin> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(VersionUpdaterWin);
-};
 
 VersionUpdaterWin::VersionUpdaterWin(gfx::AcceleratedWidget owner_widget)
     : owner_widget_(owner_widget), weak_factory_(this) {
@@ -141,14 +95,12 @@ void VersionUpdaterWin::OnError(GoogleUpdateErrorCode error_code,
 
   switch (error_code) {
     case GOOGLE_UPDATE_DISABLED_BY_POLICY:
-      // Display this as if Chrome is up to date, but with a custom message.
-      status = UPDATED;
+      status = DISABLED_BY_ADMIN;
       message =
           l10n_util::GetStringUTF16(IDS_UPGRADE_DISABLED_BY_POLICY);
       break;
     case GOOGLE_UPDATE_DISABLED_BY_POLICY_AUTO_ONLY:
-      // Display this as if Chrome is up to date, but with a custom message.
-      status = UPDATED;
+      status = DISABLED_BY_ADMIN;
       message =
           l10n_util::GetStringUTF16(IDS_UPGRADE_DISABLED_BY_POLICY_MANUAL);
       break;
@@ -178,8 +130,6 @@ void VersionUpdaterWin::OnPendingRestartCheck(bool is_update_pending_restart) {
   callback_.Run(is_update_pending_restart ? NEARLY_UPDATED : UPDATED, 0,
                 base::string16());
 }
-
-}  // namespace
 
 VersionUpdater* VersionUpdater::Create(content::WebContents* web_contents) {
   // Retrieve the HWND for the browser window that is hosting the update check.

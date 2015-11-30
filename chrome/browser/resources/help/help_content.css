@@ -86,6 +86,11 @@
   background-size: 18px;
 }
 
+#update-status-icon.disabled-by-admin {
+  background-image: url(../../../../ui/webui/resources/images/business.svg);
+  background-size: 18px;
+}
+
 #update-status-message-container {
   display: inline-block;
   vertical-align: middle;
