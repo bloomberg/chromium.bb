@@ -557,6 +557,8 @@ void SpellChecker::markAndReplaceFor(PassRefPtrWillBeRawPtr<SpellCheckRequest> r
 {
     TRACE_EVENT0("blink", "SpellChecker::markAndReplaceFor");
     ASSERT(request);
+    if (!request->isValid())
+        return;
 
     TextCheckingTypeMask textCheckingOptions = request->data().mask();
     TextCheckingParagraph paragraph(request->checkingRange(), request->paragraphRange());

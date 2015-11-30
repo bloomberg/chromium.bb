@@ -60,6 +60,7 @@ public:
 #endif
 
     const TextCheckingRequestData& data() const override;
+    bool isValid() const;
     void didSucceed(const Vector<TextCheckingResult>&) override;
     void didCancel() override;
 

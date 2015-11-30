@@ -52,6 +52,11 @@ SpellCheckRequest::SpellCheckRequest(
     , m_requestData(unrequestedTextCheckingSequence, text, mask, processType, documentMarkersInRange, documentMarkerOffsets)
     , m_requestNumber(requestNumber)
 {
+    ASSERT(m_checkingRange);
+    ASSERT(m_checkingRange->inDocument());
+    ASSERT(m_paragraphRange);
+    ASSERT(m_paragraphRange->inDocument());
+    ASSERT(m_rootEditableElement);
 }
 
 SpellCheckRequest::~SpellCheckRequest()
@@ -104,6 +109,11 @@ PassRefPtrWillBeRawPtr<SpellCheckRequest> SpellCheckRequest::create(TextChecking
 const TextCheckingRequestData& SpellCheckRequest::data() const
 {
     return m_requestData;
+}
+
+bool SpellCheckRequest::isValid() const
+{
+    return m_checkingRange->inDocument() && m_paragraphRange->inDocument() && m_rootEditableElement->inDocument();
 }
 
 void SpellCheckRequest::didSucceed(const Vector<TextCheckingResult>& results)
@@ -287,8 +297,10 @@ void SpellCheckRequester::didCheckSucceed(int sequence, const Vector<TextCheckin
             markers.remove(DocumentMarker::Spelling);
         if (!requestData.maskContains(TextCheckingTypeGrammar))
             markers.remove(DocumentMarker::Grammar);
-        RefPtrWillBeRawPtr<Range> checkingRange = m_processingRequest->checkingRange();
-        frame().document()->markers().removeMarkers(EphemeralRange(checkingRange.get()), markers);
+        if (m_processingRequest->isValid()) {
+            RefPtrWillBeRawPtr<Range> checkingRange = m_processingRequest->checkingRange();
+            frame().document()->markers().removeMarkers(EphemeralRange(checkingRange.get()), markers);
+        }
     }
     didCheck(sequence, results);
 }

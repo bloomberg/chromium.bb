@@ -30,8 +30,10 @@ window.onload = function()
     if (window.testRunner)
         testRunner.dumpAsText();
 
-    if (window.internals)
+    if (window.internals) {
+        internals.settings.setAsynchronousSpellCheckingEnabled(true);
         internals.settings.setSelectionIncludesAltImageText(false);
+    }
     runTest();
     if (window.internals)
         internals.settings.setSelectionIncludesAltImageText(true);
