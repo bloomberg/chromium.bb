@@ -89,7 +89,7 @@ public:
 
     PassRefPtr<SkImage> imageForCurrentFrame() override;
     PassRefPtr<Image> imageForDefaultFrame() override;
-    bool currentFrameKnownToBeOpaque() override;
+    bool currentFrameKnownToBeOpaque(MetadataMode = UseCurrentMetadata) override;
     bool currentFrameIsComplete() override;
     bool currentFrameIsLazyDecoded() override;
 

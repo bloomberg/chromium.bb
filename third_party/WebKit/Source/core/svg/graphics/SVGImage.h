@@ -101,7 +101,7 @@ private:
     void destroyDecodedData(bool) override { }
 
     // FIXME: Implement this to be less conservative.
-    bool currentFrameKnownToBeOpaque() override { return false; }
+    bool currentFrameKnownToBeOpaque(MetadataMode = UseCurrentMetadata) override { return false; }
 
     SVGImage(ImageObserver*);
     void draw(SkCanvas*, const SkPaint&, const FloatRect& fromRect, const FloatRect& toRect, RespectImageOrientationEnum, ImageClampingMode) override;

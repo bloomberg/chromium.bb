@@ -40,7 +40,6 @@ class ResourceFetcher;
 class FloatSize;
 class Length;
 class MemoryCache;
-class LayoutObject;
 class SecurityOrigin;
 
 class CORE_EXPORT ImageResource final : public Resource, public ImageObserver {
@@ -60,8 +59,6 @@ public:
 
     blink::Image* image(); // Returns the nullImage() if the image is not available yet.
     bool hasImage() const { return m_image.get(); }
-    // Side effect: ensures decoded image is in cache, therefore should only be called when about to draw the image.
-    bool currentFrameKnownToBeOpaque(const LayoutObject*);
 
     static std::pair<blink::Image*, float> brokenImage(float deviceScaleFactor); // Returns an image and the image's resolution scale factor.
     bool willPaintBrokenImage() const;

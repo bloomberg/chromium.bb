@@ -134,7 +134,8 @@ PassRefPtr<Image> StyleFetchedImage::image(const LayoutObject*, const IntSize& c
 
 bool StyleFetchedImage::knownToBeOpaque(const LayoutObject* layoutObject) const
 {
-    return m_image->currentFrameKnownToBeOpaque(layoutObject);
+    TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage", "data", InspectorPaintImageEvent::data(layoutObject, *m_image.get()));
+    return m_image->image()->currentFrameKnownToBeOpaque(Image::PreCacheMetadata);
 }
 
 DEFINE_TRACE(StyleFetchedImage)

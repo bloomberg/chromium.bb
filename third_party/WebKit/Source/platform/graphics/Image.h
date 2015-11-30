@@ -70,7 +70,15 @@ public:
 
     virtual bool isSVGImage() const { return false; }
     virtual bool isBitmapImage() const { return false; }
-    virtual bool currentFrameKnownToBeOpaque() = 0;
+
+    // To increase accuracy of currentFrameKnownToBeOpaque() it may,
+    // for applicable image types, be told to pre-cache metadata for
+    // the current frame. Since this may initiate a deferred image
+    // decoding, PreCacheMetadata requires a InspectorPaintImageEvent
+    // during call.
+    enum MetadataMode { UseCurrentMetadata, PreCacheMetadata };
+    virtual bool currentFrameKnownToBeOpaque(MetadataMode = UseCurrentMetadata) = 0;
+
     virtual bool currentFrameIsComplete() { return false; }
     virtual bool currentFrameIsLazyDecoded() { return false; }
     virtual bool isTextureBacked();

@@ -245,7 +245,8 @@ bool LayoutImage::foregroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect,
     if (objectFit != ObjectFitFill && objectFit != ObjectFitCover)
         return false;
     // Check for image with alpha.
-    return m_imageResource->cachedImage() && m_imageResource->cachedImage()->currentFrameKnownToBeOpaque(this);
+    TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage", "data", InspectorPaintImageEvent::data(this, *m_imageResource->cachedImage()));
+    return m_imageResource->cachedImage() && m_imageResource->cachedImage()->image()->currentFrameKnownToBeOpaque(Image::PreCacheMetadata);
 }
 
 bool LayoutImage::computeBackgroundIsKnownToBeObscured() const

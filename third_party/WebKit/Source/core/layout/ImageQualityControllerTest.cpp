@@ -50,7 +50,7 @@ TEST_F(ImageQualityControllerTest, ImageRenderingPixelated)
 class TestImageAnimated : public Image {
 public:
     bool maybeAnimated() override { return true; }
-    bool currentFrameKnownToBeOpaque() override { return false; }
+    bool currentFrameKnownToBeOpaque(MetadataMode = UseCurrentMetadata) override { return false; }
     IntSize size() const override { return IntSize(); }
     void destroyDecodedData(bool) override { }
     void draw(SkCanvas*, const SkPaint&, const FloatRect& dstRect, const FloatRect& srcRect, RespectImageOrientationEnum, ImageClampingMode) override { }
@@ -69,7 +69,7 @@ TEST_F(ImageQualityControllerTest, ImageMaybeAnimated)
 class TestImageWithContrast : public Image {
 public:
     bool maybeAnimated() override { return true; }
-    bool currentFrameKnownToBeOpaque() override { return false; }
+    bool currentFrameKnownToBeOpaque(MetadataMode = UseCurrentMetadata) override { return false; }
     IntSize size() const override { return IntSize(); }
     void destroyDecodedData(bool) override { }
     void draw(SkCanvas*, const SkPaint&, const FloatRect& dstRect, const FloatRect& srcRect, RespectImageOrientationEnum, ImageClampingMode) override { }
@@ -90,7 +90,7 @@ TEST_F(ImageQualityControllerTest, LowQualityFilterForContrast)
 class TestImageLowQuality : public Image {
 public:
     bool maybeAnimated() override { return true; }
-    bool currentFrameKnownToBeOpaque() override { return false; }
+    bool currentFrameKnownToBeOpaque(MetadataMode = UseCurrentMetadata) override { return false; }
     IntSize size() const override { return IntSize(1, 1); }
     void destroyDecodedData(bool) override { }
     void draw(SkCanvas*, const SkPaint&, const FloatRect& dstRect, const FloatRect& srcRect, RespectImageOrientationEnum, ImageClampingMode) override { }

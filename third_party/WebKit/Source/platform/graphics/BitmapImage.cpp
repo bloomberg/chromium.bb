@@ -436,8 +436,13 @@ bool BitmapImage::frameHasAlphaAtIndex(size_t index)
     return m_source.frameHasAlphaAtIndex(index);
 }
 
-bool BitmapImage::currentFrameKnownToBeOpaque()
+bool BitmapImage::currentFrameKnownToBeOpaque(MetadataMode metadataMode)
 {
+    if (metadataMode == PreCacheMetadata) {
+        // frameHasAlphaAtIndex() conservatively returns false for uncached frames. To increase the
+        // chance of an accurate answer, pre-cache the current frame metadata.
+        frameAtIndex(currentFrame());
+    }
     return !frameHasAlphaAtIndex(currentFrame());
 }
 

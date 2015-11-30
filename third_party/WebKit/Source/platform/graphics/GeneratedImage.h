@@ -55,7 +55,7 @@ protected:
         const FloatRect&, const IntSize& repeatSpacing) final;
 
     // FIXME: Implement this to be less conservative.
-    bool currentFrameKnownToBeOpaque() override { return false; }
+    bool currentFrameKnownToBeOpaque(MetadataMode = UseCurrentMetadata) override { return false; }
 
     GeneratedImage(const IntSize& size) : m_size(size) { }
 

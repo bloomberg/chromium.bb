@@ -73,7 +73,7 @@ public:
         return m_image;
     }
 
-    bool currentFrameKnownToBeOpaque() override
+    bool currentFrameKnownToBeOpaque(MetadataMode = UseCurrentMetadata) override
     {
         return false;
     }

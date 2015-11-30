@@ -59,7 +59,7 @@ public:
     void drawPattern(GraphicsContext*, const FloatRect&, const FloatSize&, const FloatPoint&, SkXfermode::Mode, const FloatRect&, const IntSize& repeatSpacing) override;
 
     // FIXME: Implement this to be less conservative.
-    bool currentFrameKnownToBeOpaque() override { return false; }
+    bool currentFrameKnownToBeOpaque(MetadataMode = UseCurrentMetadata) override { return false; }
 
     PassRefPtr<SkImage> imageForCurrentFrame() override;
 

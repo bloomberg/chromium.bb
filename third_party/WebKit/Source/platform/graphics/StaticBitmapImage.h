@@ -17,7 +17,7 @@ public:
 
     static PassRefPtr<StaticBitmapImage> create(PassRefPtr<SkImage>);
     virtual void destroyDecodedData(bool destroyAll) { }
-    virtual bool currentFrameKnownToBeOpaque();
+    virtual bool currentFrameKnownToBeOpaque(MetadataMode = UseCurrentMetadata);
     virtual IntSize size() const;
     void draw(SkCanvas*, const SkPaint&, const FloatRect& dstRect, const FloatRect& srcRect, RespectImageOrientationEnum, ImageClampingMode) override;
 

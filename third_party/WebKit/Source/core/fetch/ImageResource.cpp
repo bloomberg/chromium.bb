@@ -30,7 +30,6 @@
 #include "core/fetch/ResourceClientWalker.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/ResourceLoader.h"
-#include "core/layout/LayoutObject.h"
 #include "core/svg/graphics/SVGImage.h"
 #include "platform/Logging.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -444,19 +443,6 @@ void ImageResource::changedInRect(const blink::Image* image, const IntRect& rect
     if (!image || image != m_image)
         return;
     notifyObservers(&rect);
-}
-
-bool ImageResource::currentFrameKnownToBeOpaque(const LayoutObject* layoutObject)
-{
-    blink::Image* image = this->image();
-    if (image->isBitmapImage()) {
-        TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage", "data", InspectorPaintImageEvent::data(layoutObject, *this));
-        // BitmapImage::currentFrameKnownToBeOpaque() conservatively returns false for uncached
-        // frames. To increase the change of an accurate answer, we pre-cache the current frame
-        // metadata.
-        image->imageForCurrentFrame();
-    }
-    return image->currentFrameKnownToBeOpaque();
 }
 
 bool ImageResource::isAccessAllowed(SecurityOrigin* securityOrigin)

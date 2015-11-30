@@ -49,7 +49,7 @@ public:
         return adoptRef(new TestImage(size, opaque));
     }
 
-    bool currentFrameKnownToBeOpaque() override
+    bool currentFrameKnownToBeOpaque(MetadataMode = UseCurrentMetadata) override
     {
         return m_image->isOpaque();
     }

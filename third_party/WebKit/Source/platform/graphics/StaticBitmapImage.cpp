@@ -33,7 +33,7 @@ IntSize StaticBitmapImage::size() const
     return IntSize(m_image->width(), m_image->height());
 }
 
-bool StaticBitmapImage::currentFrameKnownToBeOpaque()
+bool StaticBitmapImage::currentFrameKnownToBeOpaque(MetadataMode)
 {
     return m_image->isOpaque();
 }
