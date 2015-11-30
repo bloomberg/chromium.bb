@@ -163,9 +163,11 @@ void HeaderChecker::RunCheckOverFiles(const FileMap& files, bool force_check) {
         type != SOURCE_M && type != SOURCE_MM && type != SOURCE_RC)
       continue;
 
-    // If any target marks it as generated, don't check it.
+    // If any target marks it as generated, don't check it. We have to check
+    // file_map_, which includes all known files; files only includes those
+    // being checked.
     bool is_generated = false;
-    for (const auto& vect_i : file.second)
+    for (const auto& vect_i : file_map_[file.first])
       is_generated |= vect_i.is_generated;
     if (is_generated)
       continue;
