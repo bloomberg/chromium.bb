@@ -31,13 +31,19 @@
 #ifndef SecurityOriginCache_h
 #define SecurityOriginCache_h
 
+#include "wtf/Allocator.h"
+#include "wtf/Noncopyable.h"
+
 namespace blink {
 
 class KURL;
 class SecurityOrigin;
 
 class SecurityOriginCache {
+    USING_FAST_MALLOC(SecurityOriginCache);
+    WTF_MAKE_NONCOPYABLE(SecurityOriginCache);
 public:
+    SecurityOriginCache() { }
     virtual ~SecurityOriginCache() { }
     virtual SecurityOrigin* cachedOrigin(const KURL&) = 0;
 };

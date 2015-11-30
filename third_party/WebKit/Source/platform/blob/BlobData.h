@@ -63,6 +63,7 @@ private:
 };
 
 struct PLATFORM_EXPORT BlobDataItem {
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     static const long long toEndOfFile;
 
     // Default constructor.
@@ -161,6 +162,7 @@ typedef Vector<BlobDataItem> BlobDataItemList;
 
 class PLATFORM_EXPORT BlobData {
     USING_FAST_MALLOC(BlobData);
+    WTF_MAKE_NONCOPYABLE(BlobData);
 public:
     static PassOwnPtr<BlobData> create();
 
@@ -191,12 +193,6 @@ private:
     BlobData() { }
 
     bool canConsolidateData(size_t length);
-
-    // Make this private so that the otherwise-generated implicit assignment
-    // operator doesn't reference BlobDataItemList's operator=, which would
-    // require BlobDataItem to have an implicit operator= which it can't have
-    // because it has a const member.
-    BlobData& operator=(const BlobData&);
 
     String m_contentType;
     BlobDataItemList m_items;

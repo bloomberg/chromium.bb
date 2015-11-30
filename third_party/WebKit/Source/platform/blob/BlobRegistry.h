@@ -32,6 +32,7 @@
 #define BlobRegistry_h
 
 #include "platform/PlatformExport.h"
+#include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
@@ -46,6 +47,7 @@ class SecurityOrigin;
 
 // A bridging class for calling blink::WebBlobRegistry methods.
 class PLATFORM_EXPORT BlobRegistry {
+    STATIC_ONLY(BlobRegistry);
 public:
     // Methods for controlling Blobs.
     static void registerBlobData(const String& uuid, PassOwnPtr<BlobData>);
