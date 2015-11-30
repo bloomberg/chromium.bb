@@ -104,8 +104,8 @@ private:
 
     // This raw pointer is safe since the SVG element is guaranteed to be kept
     // alive by a V8 wrapper.
-    GC_PLUGIN_IGNORE("crbug.com/528275")
-    SVGElement* m_contextElement;
+    // See http://crbug.com/528275 for the detail.
+    RawPtrWillBeUntracedMember<SVGElement> m_contextElement;
 
     const QualifiedName& m_attributeName;
 };

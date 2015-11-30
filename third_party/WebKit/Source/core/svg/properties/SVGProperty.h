@@ -103,8 +103,8 @@ private:
     // Oilpan: the back reference to the owner should be a Member, but this can create
     // cycles when SVG properties meet the off-heap InterpolationValue hierarchy.
     // Not tracing it is safe, albeit an undesirable state of affairs.
-    GC_PLUGIN_IGNORE("528275")
-    SVGPropertyBase* m_ownerList;
+    // See http://crbug.com/528275 for the detail.
+    RawPtrWillBeUntracedMember<SVGPropertyBase> m_ownerList;
 };
 
 #define DEFINE_SVG_PROPERTY_TYPE_CASTS(thisType)\
