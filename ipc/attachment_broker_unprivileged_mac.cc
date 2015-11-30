@@ -85,6 +85,8 @@ void AttachmentBrokerUnprivilegedMac::OnMachPortHasBeenDuplicated(
     const IPC::internal::MachPortAttachmentMac::WireFormat& wire_format) {
   // The IPC message was intended for a different process. Ignore it.
   if (wire_format.destination_process != base::Process::Current().Pid()) {
+    // If everything is functioning correctly, this path should not be taken.
+    // However, it's still important to validate all fields of the IPC message.
     LogError(WRONG_DESTINATION);
     return;
   }
