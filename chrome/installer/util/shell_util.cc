@@ -154,11 +154,10 @@ bool UserSpecificRegistrySuffix::GetSuffix(base::string16* suffix) {
   return true;
 }
 
-// This class represents a single registry entry. The objective is to
-// encapsulate all the registry entries required for registering Chrome at one
-// place. This class can not be instantiated outside the class and the objects
-// of this class type can be obtained only by calling a static method of this
-// class.
+// This class represents a single registry entry (a key and its value). A
+// collection of registry entries should be collected into a list and written
+// atomically using a WorkItemList. This is preferred to writing to the registry
+// directly, because if anything goes wrong, they can be rolled back atomically.
 class RegistryEntry {
  public:
   // A bit-field enum of places to look for this key in the Windows registry.
@@ -212,6 +211,19 @@ class RegistryEntry {
     // The CLSID for the application's DelegateExecute handler. May be empty.
     base::string16 delegate_clsid;
   };
+
+  // Create a object that represent default value of a key
+  RegistryEntry(const base::string16& key_path, const base::string16& value);
+
+  // Create a object that represent a key of type REG_SZ
+  RegistryEntry(const base::string16& key_path,
+                const base::string16& name,
+                const base::string16& value);
+
+  // Create a object that represent a key of integer type
+  RegistryEntry(const base::string16& key_path,
+                const base::string16& name,
+                DWORD value);
 
   // Returns the Windows browser client registration key for Chrome.  For
   // example: "Software\Clients\StartMenuInternet\Chromium[.user]".  Strictly
@@ -375,19 +387,6 @@ class RegistryEntry {
     SAME_VALUE,
   };
 
-  // Create a object that represent default value of a key
-  RegistryEntry(const base::string16& key_path, const base::string16& value);
-
-  // Create a object that represent a key of type REG_SZ
-  RegistryEntry(const base::string16& key_path,
-                const base::string16& name,
-                const base::string16& value);
-
-  // Create a object that represent a key of integer type
-  RegistryEntry(const base::string16& key_path,
-                const base::string16& name,
-                DWORD value);
-
   base::string16 key_path_;  // key path for the registry entry
   base::string16 name_;      // name of the registry entry
   bool is_string_;           // true if current registry entry is of type REG_SZ
@@ -405,6 +404,35 @@ class RegistryEntry {
 
   DISALLOW_COPY_AND_ASSIGN(RegistryEntry);
 };  // class RegistryEntry
+
+RegistryEntry::RegistryEntry(const base::string16& key_path,
+                             const base::string16& value)
+    : key_path_(key_path),
+      name_(),
+      is_string_(true),
+      value_(value),
+      int_value_(0),
+      removal_flag_(RemovalFlag::NONE) {}
+
+RegistryEntry::RegistryEntry(const base::string16& key_path,
+                             const base::string16& name,
+                             const base::string16& value)
+    : key_path_(key_path),
+      name_(name),
+      is_string_(true),
+      value_(value),
+      int_value_(0),
+      removal_flag_(RemovalFlag::NONE) {}
+
+RegistryEntry::RegistryEntry(const base::string16& key_path,
+                             const base::string16& name,
+                             DWORD value)
+    : key_path_(key_path),
+      name_(name),
+      is_string_(false),
+      value_(),
+      int_value_(value),
+      removal_flag_(RemovalFlag::NONE) {}
 
 // static
 base::string16 RegistryEntry::GetBrowserClientKey(
@@ -840,35 +868,6 @@ bool RegistryEntry::KeyExistsInRegistry(uint32 look_for_in) const {
     status = StatusInRegistryUnderRoot(HKEY_LOCAL_MACHINE);
   return status != DOES_NOT_EXIST;
 }
-
-RegistryEntry::RegistryEntry(const base::string16& key_path,
-                             const base::string16& value)
-    : key_path_(key_path),
-      name_(),
-      is_string_(true),
-      value_(value),
-      int_value_(0),
-      removal_flag_(RemovalFlag::NONE) {}
-
-RegistryEntry::RegistryEntry(const base::string16& key_path,
-                             const base::string16& name,
-                             const base::string16& value)
-    : key_path_(key_path),
-      name_(name),
-      is_string_(true),
-      value_(value),
-      int_value_(0),
-      removal_flag_(RemovalFlag::NONE) {}
-
-RegistryEntry::RegistryEntry(const base::string16& key_path,
-                             const base::string16& name,
-                             DWORD value)
-    : key_path_(key_path),
-      name_(name),
-      is_string_(false),
-      value_(),
-      int_value_(value),
-      removal_flag_(RemovalFlag::NONE) {}
 
 RegistryEntry::RegistryStatus RegistryEntry::StatusInRegistryUnderRoot(
     HKEY root) const {
