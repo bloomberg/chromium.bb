@@ -19,8 +19,11 @@ def Format(root, lang='en', output_dir='.'):
 
   encoder = JSONEncoder();
   format = ('  "%s": {\n'
-            '    "message": %s\n'
+            '    "message": %s%s\n'
             '  }')
+  placeholder_format = ('      "%i": {\n'
+                        '        "content": "$%i"\n'
+                        '      }')
   first = True
   for child in root.ActiveDescendants():
     if isinstance(child, message.MessageNode):
@@ -31,9 +34,24 @@ def Format(root, lang='en', output_dir='.'):
       loc_message = encoder.encode(child.ws_at_start + child.Translate(lang) +
                                    child.ws_at_end)
 
+      # Replace $n place-holders with $n$ and add an appropriate "placeholders"
+      # entry. Note that chrome.i18n.getMessage only supports 9 placeholders:
+      # https://developer.chrome.com/extensions/i18n#method-getMessage
+      placeholders = ''
+      for i in range(1, 10):
+        if loc_message.find('$%d' % i) == -1:
+          break
+        loc_message = loc_message.replace('$%d' % i, '$%d$' % i)
+        if placeholders:
+          placeholders += ',\n'
+        placeholders += placeholder_format % (i, i)
+
       if not first:
         yield ',\n'
       first = False
-      yield format % (id, loc_message)
+
+      if placeholders:
+        placeholders = ',\n    "placeholders": {\n%s\n    }' % placeholders
+      yield format % (id, loc_message, placeholders)
 
   yield '\n}\n'
