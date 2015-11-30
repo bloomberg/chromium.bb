@@ -18,7 +18,8 @@ var FilesToast = Polymer({
   properties: {
     'visible': {
       type: Boolean,
-      readOnly: true
+      readOnly: true,
+      value: false
     },
     'duration': {
       type: Number,
