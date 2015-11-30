@@ -12,40 +12,17 @@
 #include <vector>
 #endif
 
-#include "third_party/skia/include/core/SkColor.h"
+#include "skia/ext/platform_surface.h"
 #include "third_party/skia/include/core/SkBitmapDevice.h"
 #include "third_party/skia/include/core/SkTypes.h"
 
 class SkMatrix;
-class SkMetaData;
 class SkPath;
 class SkRegion;
-
-#if defined(USE_CAIRO)
-typedef struct _cairo cairo_t;
-typedef struct _cairo_rectangle cairo_rectangle_t;
-#elif defined(OS_MACOSX)
-typedef struct CGContext* CGContextRef;
-typedef struct CGRect CGRect;
-#endif
 
 namespace skia {
 
 class PlatformDevice;
-
-#if defined(OS_WIN)
-typedef HDC PlatformSurface;
-typedef RECT PlatformRect;
-#elif defined(USE_CAIRO)
-typedef cairo_t* PlatformSurface;
-typedef cairo_rectangle_t PlatformRect;
-#elif defined(OS_MACOSX)
-typedef CGContextRef PlatformSurface;
-typedef CGRect PlatformRect;
-#else
-typedef void* PlatformSurface;
-typedef SkIRect* PlatformRect;
-#endif
 
 // The following routines provide accessor points for the functionality
 // exported by the various PlatformDevice ports.  
@@ -65,19 +42,6 @@ SK_API PlatformDevice* GetPlatformDevice(SkBaseDevice* device);
 #if defined(OS_WIN)
 // Initializes the default settings and colors in a device context.
 SK_API void InitializeDC(HDC context);
-#elif defined(OS_MACOSX)
-// Returns the CGContext that backing the SkBaseDevice.  Forwards to the bound
-// PlatformDevice.  Returns NULL if no PlatformDevice is bound.
-SK_API CGContextRef GetBitmapContext(SkBaseDevice* device);
-#endif
-
-// Following routines are used in print preview workflow to mark the
-// preview metafile.
-SK_API SkMetaData& getMetaData(const SkCanvas& canvas);
-
-#if defined(OS_MACOSX)
-SK_API void SetIsPreviewMetafile(const SkCanvas& canvas, bool is_preview);
-SK_API bool IsPreviewMetafile(const SkCanvas& canvas);
 #endif
 
 // A SkBitmapDevice is basically a wrapper around SkBitmap that provides a 

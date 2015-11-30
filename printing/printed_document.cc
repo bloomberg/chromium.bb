@@ -29,7 +29,6 @@
 #include "printing/printed_page.h"
 #include "printing/printed_pages_source.h"
 #include "printing/units.h"
-#include "skia/ext/platform_device.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/text_elider.h"
 

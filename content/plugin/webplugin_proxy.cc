@@ -17,7 +17,6 @@
 #include "content/plugin/plugin_thread.h"
 #include "content/public/common/content_client.h"
 #include "skia/ext/platform_canvas.h"
-#include "skia/ext/platform_device.h"
 #include "third_party/WebKit/public/web/WebBindings.h"
 #include "ui/gfx/canvas.h"
 #include "url/url_constants.h"

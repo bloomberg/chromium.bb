@@ -68,7 +68,7 @@ void CanvasSkiaPaint::Init(bool opaque) {
   canvas->translate(-SkDoubleToScalar(NSMinX(rectangle_)),
                     -SkDoubleToScalar(NSMinY(rectangle_)));
 
-  context_ = skia::GetBitmapContext(skia::GetTopDevice(*canvas));
+  context_ = skia::GetBitmapContext(*canvas);
 }
 
 }  // namespace skia

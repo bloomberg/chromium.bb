@@ -219,7 +219,7 @@
 #include "public/web/WebSerializedScriptValue.h"
 #include "public/web/WebTestInterfaceFactory.h"
 #include "public/web/WebTreeScopeType.h"
-#include "skia/ext/platform_device.h"
+#include "skia/ext/platform_canvas.h"
 #include "web/AssociatedURLLoader.h"
 #include "web/AudioOutputDeviceClientImpl.h"
 #include "web/CompositionUnderlineVectorBuilder.h"
@@ -370,7 +370,7 @@ public:
             return 0;
 
         IntRect pageRect = m_pageRects[pageNumber];
-        SkPictureBuilder pictureBuilder(pageRect, &skia::getMetaData(*canvas));
+        SkPictureBuilder pictureBuilder(pageRect, &skia::GetMetaData(*canvas));
         pictureBuilder.context().setPrinting(true);
 
         float scale = spoolPage(pictureBuilder.context(), pageNumber);
@@ -397,7 +397,7 @@ public:
         int totalHeight = numPages * (pageSizeInPixels.height() + 1) - 1;
         IntRect allPagesRect(0, 0, pageWidth, totalHeight);
 
-        SkPictureBuilder pictureBuilder(allPagesRect, &skia::getMetaData(*canvas));
+        SkPictureBuilder pictureBuilder(allPagesRect, &skia::GetMetaData(*canvas));
         pictureBuilder.context().setPrinting(true);
 
         GraphicsContext& context = pictureBuilder.context();

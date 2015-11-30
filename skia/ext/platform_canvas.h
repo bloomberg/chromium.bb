@@ -8,12 +8,14 @@
 // The platform-specific device will include the necessary platform headers
 // to get the surface type.
 #include "base/basictypes.h"
-#include "skia/ext/platform_device.h"
+#include "skia/ext/platform_surface.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPixelRef.h"
 #include "third_party/skia/include/core/SkPixmap.h"
+
+class SkBaseDevice;
 
 namespace skia {
 
@@ -170,6 +172,19 @@ class SK_API ScopedPlatformPaint {
   ScopedPlatformPaint(const ScopedPlatformPaint&);
   ScopedPlatformPaint& operator=(const ScopedPlatformPaint&);
 };
+
+// Following routines are used in print preview workflow to mark the
+// preview metafile.
+SK_API SkMetaData& GetMetaData(const SkCanvas& canvas);
+
+#if defined(OS_MACOSX)
+SK_API void SetIsPreviewMetafile(const SkCanvas& canvas, bool is_preview);
+SK_API bool IsPreviewMetafile(const SkCanvas& canvas);
+
+// Returns the CGContext that backing the SkCanvas.
+// Returns NULL if none is bound.
+SK_API CGContextRef GetBitmapContext(const SkCanvas& canvas);
+#endif
 
 }  // namespace skia
 

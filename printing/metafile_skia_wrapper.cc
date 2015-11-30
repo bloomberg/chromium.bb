@@ -3,11 +3,9 @@
 // found in the LICENSE file.
 
 #include "printing/metafile_skia_wrapper.h"
-#include "skia/ext/platform_device.h"
+#include "skia/ext/platform_canvas.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkMetaData.h"
-
-class SkCanvas;
 
 namespace printing {
 
@@ -24,14 +22,14 @@ void MetafileSkiaWrapper::SetMetafileOnCanvas(const SkCanvas& canvas,
   if (metafile)
     wrapper = skia::AdoptRef(new MetafileSkiaWrapper(metafile));
 
-  SkMetaData& meta = skia::getMetaData(canvas);
+  SkMetaData& meta = skia::GetMetaData(canvas);
   meta.setRefCnt(kMetafileKey, wrapper.get());
 }
 
 // static
 PdfMetafileSkia* MetafileSkiaWrapper::GetMetafileFromCanvas(
     const SkCanvas& canvas) {
-  SkMetaData& meta = skia::getMetaData(canvas);
+  SkMetaData& meta = skia::GetMetaData(canvas);
   SkRefCnt* value;
   if (!meta.findRefCnt(kMetafileKey, &value) || !value)
     return NULL;

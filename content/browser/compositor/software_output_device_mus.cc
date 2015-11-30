@@ -5,8 +5,7 @@
 #include "content/browser/compositor/software_output_device_mus.h"
 
 #include "components/bitmap_uploader/bitmap_uploader.h"
-#include "third_party/skia/include/core/SkBitmap.h"
-#include "third_party/skia/include/core/SkDevice.h"
+#include "third_party/skia/include/core/SkImageInfo.h"
 #include "ui/base/view_prop.h"
 #include "ui/compositor/compositor.h"
 #include "ui/gfx/skia_util.h"
