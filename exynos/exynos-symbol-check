@@ -30,6 +30,7 @@ g2d_exec
 g2d_config_event
 g2d_fini
 g2d_init
+g2d_move
 g2d_scale_and_blend
 g2d_solid_fill
 EOF
