@@ -5,16 +5,16 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 PASS AudioBuffer.prototype.copyFromChannel is defined.
 PASS buffer = context.createBuffer(3, 16, context.sampleRate) did not throw an exception.
-PASS buffer.copyFromChannel(null, 0) threw TypeMismatchError: Failed to execute 'copyFromChannel' on 'AudioBuffer': The 1st argument provided is either null, or an invalid Float32Array object..
-PASS buffer.copyFromChannel(context, 0) threw TypeMismatchError: Failed to execute 'copyFromChannel' on 'AudioBuffer': The 1st argument provided is either null, or an invalid Float32Array object..
+PASS buffer.copyFromChannel(null, 0) threw TypeError: Failed to execute 'copyFromChannel' on 'AudioBuffer': parameter 1 is not of type 'Float32Array'..
+PASS buffer.copyFromChannel(context, 0) threw TypeError: Failed to execute 'copyFromChannel' on 'AudioBuffer': parameter 1 is not of type 'Float32Array'..
 PASS buffer.copyFromChannel(x, -1) threw IndexSizeError: Failed to execute 'copyFromChannel' on 'AudioBuffer': The channelNumber provided (-1) is outside the range [0, 2]..
 PASS buffer.copyFromChannel(x, 3) threw IndexSizeError: Failed to execute 'copyFromChannel' on 'AudioBuffer': The channelNumber provided (3) is outside the range [0, 2]..
 PASS buffer.copyFromChannel(x, 0, -1) threw IndexSizeError: Failed to execute 'copyFromChannel' on 'AudioBuffer': The startInChannel provided (4294967295) is outside the range [0, 16)..
 PASS buffer.copyFromChannel(x, 0, 16) threw IndexSizeError: Failed to execute 'copyFromChannel' on 'AudioBuffer': The startInChannel provided (16) is outside the range [0, 16)..
 PASS buffer.copyFromChannel(x, 3) threw exception IndexSizeError: Failed to execute 'copyFromChannel' on 'AudioBuffer': The channelNumber provided (3) is outside the range [0, 2]..
 PASS AudioBuffer.prototype.copyToChannel is defined.
-PASS buffer.copyToChannel(null, 0) threw TypeMismatchError: Failed to execute 'copyToChannel' on 'AudioBuffer': The 1st argument provided is either null, or an invalid Float32Array object..
-PASS buffer.copyToChannel(context, 0) threw TypeMismatchError: Failed to execute 'copyToChannel' on 'AudioBuffer': The 1st argument provided is either null, or an invalid Float32Array object..
+PASS buffer.copyToChannel(null, 0) threw TypeError: Failed to execute 'copyToChannel' on 'AudioBuffer': parameter 1 is not of type 'Float32Array'..
+PASS buffer.copyToChannel(context, 0) threw TypeError: Failed to execute 'copyToChannel' on 'AudioBuffer': parameter 1 is not of type 'Float32Array'..
 PASS buffer.copyToChannel(x, -1) threw IndexSizeError: Failed to execute 'copyToChannel' on 'AudioBuffer': The channelNumber provided (-1) is outside the range [0, 2]..
 PASS buffer.copyToChannel(x, 3) threw IndexSizeError: Failed to execute 'copyToChannel' on 'AudioBuffer': The channelNumber provided (3) is outside the range [0, 2]..
 PASS buffer.copyToChannel(x, 0, -1) threw IndexSizeError: Failed to execute 'copyToChannel' on 'AudioBuffer': The startInChannel provided (4294967295) is outside the range [0, 16)..

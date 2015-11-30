@@ -57,14 +57,14 @@ enum AudioContextState {
     [RaisesException] AudioBuffer createBuffer(unsigned long numberOfChannels, unsigned long numberOfFrames, float sampleRate);
 
     // Asynchronous audio file data decoding.
-    [RaisesException, MeasureAs=AudioContextDecodeAudioData, LegacyInterfaceTypeChecking] void decodeAudioData(ArrayBuffer audioData, AudioBufferCallback successCallback, optional AudioBufferCallback errorCallback);
+    [RaisesException, MeasureAs=AudioContextDecodeAudioData] void decodeAudioData(ArrayBuffer audioData, AudioBufferCallback successCallback, optional AudioBufferCallback errorCallback);
 
     // Sources
     [RaisesException, MeasureAs=AudioContextCreateBufferSource] AudioBufferSourceNode createBufferSource();
 
-    [RaisesException, MeasureAs=AudioContextCreateMediaElementSource, LegacyInterfaceTypeChecking] MediaElementAudioSourceNode createMediaElementSource(HTMLMediaElement mediaElement);
+    [RaisesException, MeasureAs=AudioContextCreateMediaElementSource] MediaElementAudioSourceNode createMediaElementSource(HTMLMediaElement mediaElement);
 
-    [RaisesException, MeasureAs=AudioContextCreateMediaStreamSource, RaisesException, LegacyInterfaceTypeChecking] MediaStreamAudioSourceNode createMediaStreamSource(MediaStream mediaStream);
+    [RaisesException, MeasureAs=AudioContextCreateMediaStreamSource] MediaStreamAudioSourceNode createMediaStreamSource(MediaStream mediaStream);
     [RaisesException, MeasureAs=AudioContextCreateMediaStreamDestination] MediaStreamAudioDestinationNode createMediaStreamDestination();
 
     // Processing nodes
@@ -76,10 +76,10 @@ enum AudioContextState {
     [RaisesException, MeasureAs=AudioContextCreateConvolver] ConvolverNode createConvolver();
     [RaisesException, MeasureAs=AudioContextCreateDynamicsCompressor] DynamicsCompressorNode createDynamicsCompressor();
     [RaisesException, MeasureAs=AudioContextCreateAnalyser] AnalyserNode createAnalyser();
-    [RaisesException, MeasureAs=AudioContextCreateScriptProcessor, RaisesException] ScriptProcessorNode createScriptProcessor(optional unsigned long bufferSize, optional unsigned long numberOfInputChannels, optional unsigned long numberOfOutputChannels);
+    [RaisesException, MeasureAs=AudioContextCreateScriptProcessor] ScriptProcessorNode createScriptProcessor(optional unsigned long bufferSize, optional unsigned long numberOfInputChannels, optional unsigned long numberOfOutputChannels);
     [RaisesException, MeasureAs=AudioContextCreateStereoPanner] StereoPannerNode createStereoPanner();
     [RaisesException, MeasureAs=AudioContextCreateOscillator] OscillatorNode createOscillator();
-    [RaisesException, MeasureAs=AudioContextCreatePeriodicWave, RaisesException, LegacyInterfaceTypeChecking] PeriodicWave createPeriodicWave(Float32Array real, Float32Array imag, optional Dictionary options);
+    [RaisesException, MeasureAs=AudioContextCreatePeriodicWave] PeriodicWave createPeriodicWave(Float32Array real, Float32Array imag, optional Dictionary options);
 
     // Channel splitting and merging
     [RaisesException, MeasureAs=AudioContextCreateChannelSplitter] ChannelSplitterNode createChannelSplitter(optional unsigned long numberOfOutputs);

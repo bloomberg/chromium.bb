@@ -597,6 +597,8 @@ var Should = (function () {
                 this._testPassed('threw an exception of type ' + error.name);
             else if (error.name === errorType)
                 this._testPassed('threw ' + errorType + ': ' + error.message);
+            else if (self.hasOwnProperty(errorType) && error instanceof self[errorType])
+                this._testPassed('threw ' + errorType + ': ' + error.message);
             else
                 this._testFailed('threw ' + error.name + ' instead of ' + exception);
         }

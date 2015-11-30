@@ -198,12 +198,6 @@ void AbstractAudioContext::decodeAudioData(DOMArrayBuffer* audioData, AudioBuffe
         return;
     }
 
-    if (!audioData) {
-        exceptionState.throwDOMException(
-            SyntaxError,
-            "invalid ArrayBuffer for audioData.");
-        return;
-    }
     m_audioDecoder.decodeAsync(audioData, sampleRate(), successCallback, errorCallback);
 }
 
@@ -233,13 +227,6 @@ MediaElementAudioSourceNode* AbstractAudioContext::createMediaElementSource(HTML
         return nullptr;
     }
 
-    if (!mediaElement) {
-        exceptionState.throwDOMException(
-            InvalidStateError,
-            "invalid HTMLMedialElement.");
-        return nullptr;
-    }
-
     // First check if this media element already has a source node.
     if (mediaElement->audioSourceNode()) {
         exceptionState.throwDOMException(
@@ -262,13 +249,6 @@ MediaStreamAudioSourceNode* AbstractAudioContext::createMediaStreamSource(MediaS
 
     if (isContextClosed()) {
         throwExceptionForClosedState(exceptionState);
-        return nullptr;
-    }
-
-    if (!mediaStream) {
-        exceptionState.throwDOMException(
-            InvalidStateError,
-            "invalid MediaStream source");
         return nullptr;
     }
 
@@ -555,20 +535,6 @@ PeriodicWave* AbstractAudioContext::createPeriodicWave(DOMFloat32Array* real, DO
 
     if (isContextClosed()) {
         throwExceptionForClosedState(exceptionState);
-        return nullptr;
-    }
-
-    if (!real) {
-        exceptionState.throwDOMException(
-            SyntaxError,
-            "invalid real array");
-        return nullptr;
-    }
-
-    if (!imag) {
-        exceptionState.throwDOMException(
-            SyntaxError,
-            "invalid imaginary array");
         return nullptr;
     }
 
