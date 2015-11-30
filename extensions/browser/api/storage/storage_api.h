@@ -5,6 +5,8 @@
 #ifndef EXTENSIONS_BROWSER_API_STORAGE_STORAGE_API_H_
 #define EXTENSIONS_BROWSER_API_STORAGE_STORAGE_API_H_
 
+#include <string>
+
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "extensions/browser/api/storage/settings_namespace.h"
@@ -34,7 +36,9 @@ class SettingsFunction : public UIThreadExtensionFunction {
   //   RestoreStorageAndRetry(), and return that result.
   // - If the |result| failed with a different error, this will set |error_|
   //   and return.
+  // - |key| will be non-null only when reading a single value.
   ResponseValue UseReadResult(ValueStore::ReadResult result,
+                              const std::string* key,
                               ValueStore* storage);
 
   // Handles the |result| of a write function.
@@ -43,8 +47,10 @@ class SettingsFunction : public UIThreadExtensionFunction {
   //   RestoreStorageAndRetry(), and return that result.
   // - If the |result| failed with a different error, this will set |error_|
   //   and return.
+  // - |key| will be non-null only when writing a single value.
   // This will also send out a change notification, if appropriate.
   ResponseValue UseWriteResult(ValueStore::WriteResult result,
+                               const std::string* key,
                                ValueStore* storage);
 
  private:
@@ -57,7 +63,9 @@ class SettingsFunction : public UIThreadExtensionFunction {
   // If the storage cannot be restored or was due to some other error, then sets
   // error and returns. This also sets the |tried_restoring_storage_| flag to
   // ensure we don't enter a loop.
+  // - |key| will be non-null only when reading/writing a single value.
   ResponseValue HandleError(const ValueStore::Error& error,
+                            const std::string* key,
                             ValueStore* storage);
 
   // The settings namespace the call was for.  For example, SYNC if the API

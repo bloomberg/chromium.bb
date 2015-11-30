@@ -133,6 +133,5 @@ bool TestingValueStore::RestoreKey(const std::string& key) {
 }
 
 scoped_ptr<ValueStore::Error> TestingValueStore::TestingError() {
-  return make_scoped_ptr(new ValueStore::Error(
-      error_code_, kGenericErrorMessage, scoped_ptr<std::string>()));
+  return ValueStore::Error::Create(error_code_, kGenericErrorMessage);
 }

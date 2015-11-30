@@ -87,8 +87,7 @@ class LeveldbValueStore : public ValueStore,
   // Converts an error leveldb::Status to a ValueStore::Error. Returns a
   // scoped_ptr for convenience; the result will always be non-empty.
   scoped_ptr<ValueStore::Error> ToValueStoreError(
-      const leveldb::Status& status,
-      scoped_ptr<std::string> key);
+      const leveldb::Status& status);
 
   // Removes the on-disk database at |db_path_|. Any file system locks should
   // be released before calling this method.

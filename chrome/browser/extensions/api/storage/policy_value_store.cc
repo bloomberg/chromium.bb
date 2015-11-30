@@ -11,19 +11,16 @@
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/storage/settings_namespace.h"
 #include "extensions/browser/value_store/value_store_change.h"
-#include "extensions/browser/value_store/value_store_util.h"
 
 using content::BrowserThread;
-
-namespace util = value_store_util;
 
 namespace extensions {
 
 namespace {
 
-scoped_ptr<ValueStore::Error> ReadOnlyError(scoped_ptr<std::string> key) {
-  return make_scoped_ptr(new ValueStore::Error(
-      ValueStore::READ_ONLY, "This is a read-only store.", key.Pass()));
+scoped_ptr<ValueStore::Error> ReadOnlyError() {
+  return ValueStore::Error::Create(ValueStore::READ_ONLY,
+                                   "This is a read-only store.");
 }
 
 }  // namespace
@@ -149,25 +146,25 @@ ValueStore::ReadResult PolicyValueStore::Get() {
 
 ValueStore::WriteResult PolicyValueStore::Set(
     WriteOptions options, const std::string& key, const base::Value& value) {
-  return MakeWriteResult(ReadOnlyError(util::NewKey(key)));
+  return MakeWriteResult(ReadOnlyError());
 }
 
 ValueStore::WriteResult PolicyValueStore::Set(
     WriteOptions options, const base::DictionaryValue& settings) {
-  return MakeWriteResult(ReadOnlyError(util::NoKey()));
+  return MakeWriteResult(ReadOnlyError());
 }
 
 ValueStore::WriteResult PolicyValueStore::Remove(const std::string& key) {
-  return MakeWriteResult(ReadOnlyError(util::NewKey(key)));
+  return MakeWriteResult(ReadOnlyError());
 }
 
 ValueStore::WriteResult PolicyValueStore::Remove(
     const std::vector<std::string>& keys) {
-  return MakeWriteResult(ReadOnlyError(util::NoKey()));
+  return MakeWriteResult(ReadOnlyError());
 }
 
 ValueStore::WriteResult PolicyValueStore::Clear() {
-  return MakeWriteResult(ReadOnlyError(util::NoKey()));
+  return MakeWriteResult(ReadOnlyError());
 }
 
 bool PolicyValueStore::Restore() { return delegate_->Restore(); }

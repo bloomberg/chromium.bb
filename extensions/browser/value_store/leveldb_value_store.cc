@@ -177,10 +177,8 @@ ValueStore::ReadResult LeveldbValueStore::Get() {
     std::string key = it->key().ToString();
     scoped_ptr<base::Value> value =
         json_reader.ReadToValue(it->value().ToString());
-    if (!value) {
-      return MakeReadResult(
-          Error::Create(CORRUPTION, kInvalidJson, util::NewKey(key)));
-    }
+    if (!value)
+      return MakeReadResult(Error::Create(CORRUPTION, kInvalidJson));
     settings->SetWithoutPathExpansion(key, value.Pass());
   }
 
@@ -190,7 +188,7 @@ ValueStore::ReadResult LeveldbValueStore::Get() {
   }
 
   if (!it->status().ok())
-    return MakeReadResult(ToValueStoreError(it->status(), util::NoKey()));
+    return MakeReadResult(ToValueStoreError(it->status()));
 
   return MakeReadResult(settings.Pass());
 }
@@ -271,7 +269,7 @@ ValueStore::WriteResult LeveldbValueStore::Remove(
 
   leveldb::Status status = db_->Write(leveldb::WriteOptions(), &batch);
   if (!status.ok() && !status.IsNotFound())
-    return MakeWriteResult(ToValueStoreError(status, util::NoKey()));
+    return MakeWriteResult(ToValueStoreError(status));
   return MakeWriteResult(changes.Pass());
 }
 
@@ -400,7 +398,7 @@ scoped_ptr<ValueStore::Error> LeveldbValueStore::EnsureDbIsOpen() {
     Restore();
   }
   if (!status.ok())
-    return ToValueStoreError(status, util::NoKey());
+    return ToValueStoreError(status);
 
   CHECK(db);
   db_.reset(db);
@@ -424,11 +422,11 @@ scoped_ptr<ValueStore::Error> LeveldbValueStore::ReadFromDb(
   }
 
   if (!s.ok())
-    return ToValueStoreError(s, util::NewKey(key));
+    return ToValueStoreError(s);
 
   scoped_ptr<base::Value> value = base::JSONReader().ReadToValue(value_as_json);
   if (!value)
-    return Error::Create(CORRUPTION, kInvalidJson, util::NewKey(key));
+    return Error::Create(CORRUPTION, kInvalidJson);
 
   *setting = value.Pass();
   return util::NoError();
@@ -446,6 +444,10 @@ scoped_ptr<ValueStore::Error> LeveldbValueStore::AddToBatch(
     scoped_ptr<base::Value> old_value;
     scoped_ptr<Error> read_error =
         ReadFromDb(leveldb::ReadOptions(), key, &old_value);
+    if (read_error && read_error->code == CORRUPTION) {
+      batch->Delete(key);
+      read_error.reset();
+    }
     if (read_error)
       return read_error.Pass();
     if (!old_value || !old_value->Equals(&value)) {
@@ -459,7 +461,7 @@ scoped_ptr<ValueStore::Error> LeveldbValueStore::AddToBatch(
   if (write_new_value) {
     std::string value_as_json;
     if (!base::JSONWriter::Write(value, &value_as_json))
-      return Error::Create(OTHER_ERROR, kCannotSerialize, util::NewKey(key));
+      return Error::Create(OTHER_ERROR, kCannotSerialize);
     batch->Put(key, value_as_json);
   }
 
@@ -469,8 +471,7 @@ scoped_ptr<ValueStore::Error> LeveldbValueStore::AddToBatch(
 scoped_ptr<ValueStore::Error> LeveldbValueStore::WriteToDb(
     leveldb::WriteBatch* batch) {
   leveldb::Status status = db_->Write(leveldb::WriteOptions(), batch);
-  return status.ok() ? util::NoError()
-                     : ToValueStoreError(status, util::NoKey());
+  return status.ok() ? util::NoError() : ToValueStoreError(status);
 }
 
 bool LeveldbValueStore::IsEmpty() {
@@ -497,8 +498,7 @@ bool LeveldbValueStore::DeleteDbFile() {
 }
 
 scoped_ptr<ValueStore::Error> LeveldbValueStore::ToValueStoreError(
-    const leveldb::Status& status,
-    scoped_ptr<std::string> key) {
+    const leveldb::Status& status) {
   CHECK(!status.ok());
   CHECK(!status.IsNotFound());  // not an error
 
@@ -508,5 +508,5 @@ scoped_ptr<ValueStore::Error> LeveldbValueStore::ToValueStoreError(
   base::ReplaceSubstringsAfterOffset(
       &message, 0u, db_path_.AsUTF8Unsafe(), "...");
 
-  return Error::Create(CORRUPTION, message, key.Pass());
+  return Error::Create(CORRUPTION, message);
 }

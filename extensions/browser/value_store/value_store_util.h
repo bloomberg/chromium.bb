@@ -12,14 +12,6 @@
 
 namespace value_store_util {
 
-// Returns a copy of |key| as a scoped_ptr. Useful for creating keys for
-// ValueStore::Error.
-scoped_ptr<std::string> NewKey(const std::string& key);
-
-// Returns an empty scoped_ptr. Useful for creating empty keys for
-// ValueStore::Error.
-scoped_ptr<std::string> NoKey();
-
 // Return an empty Error. Useful for creating ValueStore::Error-less
 // ValueStore::Read/WriteResults.
 scoped_ptr<ValueStore::Error> NoError();

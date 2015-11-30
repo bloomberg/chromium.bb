@@ -8,10 +8,8 @@
 
 // Implementation of Error.
 
-ValueStore::Error::Error(ErrorCode code,
-                         const std::string& message,
-                         scoped_ptr<std::string> key)
-    : code(code), message(message), key(key.Pass()) {}
+ValueStore::Error::Error(ErrorCode code, const std::string& message)
+    : code(code), message(message) {}
 
 ValueStore::Error::~Error() {}
 

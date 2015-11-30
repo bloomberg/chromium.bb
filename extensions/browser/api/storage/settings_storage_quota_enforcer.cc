@@ -11,10 +11,7 @@
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
-#include "extensions/browser/value_store/value_store_util.h"
 #include "extensions/common/extension_api.h"
-
-namespace util = value_store_util;
 
 namespace extensions {
 
@@ -55,8 +52,7 @@ void Free(
   used_per_setting->erase(key);
 }
 
-scoped_ptr<ValueStore::Error> QuotaExceededError(Resource resource,
-                                                 scoped_ptr<std::string> key) {
+scoped_ptr<ValueStore::Error> QuotaExceededError(Resource resource) {
   const char* name = NULL;
   // TODO(kalman): These hisograms are both silly and untracked. Fix.
   switch (resource) {
@@ -77,10 +73,9 @@ scoped_ptr<ValueStore::Error> QuotaExceededError(Resource resource,
       break;
   }
   CHECK(name);
-  return make_scoped_ptr(new ValueStore::Error(
+  return ValueStore::Error::Create(
       ValueStore::QUOTA_EXCEEDED,
-      base::StringPrintf("%s quota exceeded", name),
-      key.Pass()));
+      base::StringPrintf("%s quota exceeded", name));
 }
 
 }  // namespace
@@ -136,16 +131,12 @@ ValueStore::WriteResult SettingsStorageQuotaEnforcer::Set(
   Allocate(key, value, &new_used_total, &new_used_per_setting);
 
   if (!(options & IGNORE_QUOTA)) {
-    if (new_used_total > limits_.quota_bytes) {
-      return MakeWriteResult(
-          QuotaExceededError(QUOTA_BYTES, util::NewKey(key)));
-    }
-    if (new_used_per_setting[key] > limits_.quota_bytes_per_item) {
-      return MakeWriteResult(
-          QuotaExceededError(QUOTA_BYTES_PER_ITEM, util::NewKey(key)));
-    }
+    if (new_used_total > limits_.quota_bytes)
+      return MakeWriteResult(QuotaExceededError(QUOTA_BYTES));
+    if (new_used_per_setting[key] > limits_.quota_bytes_per_item)
+      return MakeWriteResult(QuotaExceededError(QUOTA_BYTES_PER_ITEM));
     if (new_used_per_setting.size() > limits_.max_items)
-      return MakeWriteResult(QuotaExceededError(MAX_ITEMS, util::NewKey(key)));
+      return MakeWriteResult(QuotaExceededError(MAX_ITEMS));
   }
 
   WriteResult result = delegate_->Set(options, key, value);
@@ -168,16 +159,15 @@ ValueStore::WriteResult SettingsStorageQuotaEnforcer::Set(
 
     if (!(options & IGNORE_QUOTA) &&
         new_used_per_setting[it.key()] > limits_.quota_bytes_per_item) {
-      return MakeWriteResult(
-          QuotaExceededError(QUOTA_BYTES_PER_ITEM, util::NewKey(it.key())));
+      return MakeWriteResult(QuotaExceededError(QUOTA_BYTES_PER_ITEM));
     }
   }
 
   if (!(options & IGNORE_QUOTA)) {
     if (new_used_total > limits_.quota_bytes)
-      return MakeWriteResult(QuotaExceededError(QUOTA_BYTES, util::NoKey()));
+      return MakeWriteResult(QuotaExceededError(QUOTA_BYTES));
     if (new_used_per_setting.size() > limits_.max_items)
-      return MakeWriteResult(QuotaExceededError(MAX_ITEMS, util::NoKey()));
+      return MakeWriteResult(QuotaExceededError(MAX_ITEMS));
   }
 
   WriteResult result = delegate_->Set(options, values);

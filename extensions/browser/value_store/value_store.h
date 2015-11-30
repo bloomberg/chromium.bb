@@ -41,15 +41,11 @@ class ValueStore {
 
   // Bundles an ErrorCode with further metadata.
   struct Error {
-    Error(ErrorCode code,
-          const std::string& message,
-          scoped_ptr<std::string> key);
     ~Error();
 
     static scoped_ptr<Error> Create(ErrorCode code,
-                                    const std::string& message,
-                                    scoped_ptr<std::string> key) {
-      return make_scoped_ptr(new Error(code, message, key.Pass()));
+                                    const std::string& message) {
+      return make_scoped_ptr(new Error(code, message));
     }
 
     // The error code.
@@ -58,13 +54,9 @@ class ValueStore {
     // Message associated with the error.
     const std::string message;
 
-    // The key associated with the error, if any. Use a scoped_ptr here
-    // because empty-string is a valid key.
-    //
-    // TODO(kalman): add test(s) for an empty key.
-    const scoped_ptr<std::string> key;
-
    private:
+    Error(ErrorCode code, const std::string& message);
+
     DISALLOW_COPY_AND_ASSIGN(Error);
   };
 

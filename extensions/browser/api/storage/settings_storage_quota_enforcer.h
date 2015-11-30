@@ -5,6 +5,10 @@
 #ifndef EXTENSIONS_BROWSER_API_STORAGE_SETTINGS_STORAGE_QUOTA_ENFORCER_H_
 #define EXTENSIONS_BROWSER_API_STORAGE_SETTINGS_STORAGE_QUOTA_ENFORCER_H_
 
+#include <map>
+#include <string>
+#include <vector>
+
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "extensions/browser/value_store/value_store.h"

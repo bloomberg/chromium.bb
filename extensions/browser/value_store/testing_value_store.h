@@ -5,6 +5,9 @@
 #ifndef EXTENSIONS_BROWSER_VALUE_STORE_TESTING_VALUE_STORE_H_
 #define EXTENSIONS_BROWSER_VALUE_STORE_TESTING_VALUE_STORE_H_
 
+#include <string>
+#include <vector>
+
 #include "base/compiler_specific.h"
 #include "extensions/browser/value_store/value_store.h"
 
