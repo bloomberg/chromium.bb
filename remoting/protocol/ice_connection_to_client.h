@@ -22,6 +22,7 @@ class HostControlDispatcher;
 class HostEventDispatcher;
 class HostVideoDispatcher;
 class VideoFeedbackStub;
+class VideoFramePump;
 
 // This class represents a remote viewer connection to the chromoting
 // host. It sets up all protocol channels and connects them to the
@@ -30,7 +31,9 @@ class IceConnectionToClient : public ConnectionToClient,
                               public Session::EventHandler,
                               public ChannelDispatcherBase::EventHandler {
  public:
-  explicit IceConnectionToClient(scoped_ptr<Session> session);
+  IceConnectionToClient(
+      scoped_ptr<Session> session,
+      scoped_refptr<base::SingleThreadTaskRunner> video_encode_task_runner);
   ~IceConnectionToClient() override;
 
   // ConnectionToClient interface.
@@ -39,13 +42,13 @@ class IceConnectionToClient : public ConnectionToClient,
   Session* session() override;
   void Disconnect(ErrorCode error) override;
   void OnInputEventReceived(int64_t timestamp) override;
-  VideoStub* video_stub() override;
+  scoped_ptr<VideoStream> StartVideoStream(
+      scoped_ptr<webrtc::DesktopCapturer> desktop_capturer) override;
   AudioStub* audio_stub() override;
   ClientStub* client_stub() override;
   void set_clipboard_stub(ClipboardStub* clipboard_stub) override;
   void set_host_stub(HostStub* host_stub) override;
   void set_input_stub(InputStub* input_stub) override;
-  void set_video_feedback_stub(VideoFeedbackStub* video_feedback_stub) override;
 
   // Session::EventHandler interface.
   void OnSessionStateChange(Session::State state) override;
@@ -68,10 +71,12 @@ class IceConnectionToClient : public ConnectionToClient,
   base::ThreadChecker thread_checker_;
 
   // Event handler for handling events sent from this object.
-  ConnectionToClient::EventHandler* handler_;
+  ConnectionToClient::EventHandler* event_handler_;
 
   // The libjingle channel used to send and receive data from the remote client.
   scoped_ptr<Session> session_;
+
+  scoped_refptr<base::SingleThreadTaskRunner> video_encode_task_runner_;
 
   scoped_ptr<HostControlDispatcher> control_dispatcher_;
   scoped_ptr<HostEventDispatcher> event_dispatcher_;

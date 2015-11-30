@@ -6,7 +6,6 @@
 #define REMOTING_PROTOCOL_VIDEO_FRAME_PUMP_H_
 
 #include "base/basictypes.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/threading/thread_checker.h"
@@ -15,6 +14,7 @@
 #include "remoting/codec/video_encoder.h"
 #include "remoting/proto/video.pb.h"
 #include "remoting/protocol/capture_scheduler.h"
+#include "remoting/protocol/video_stream.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 
 namespace base {
@@ -63,7 +63,8 @@ class VideoStub;
 // of the capture, encode and network processes.  However, it also needs to
 // rate-limit captures to avoid overloading the host system, either by consuming
 // too much CPU, or hogging the host's graphics subsystem.
-class VideoFramePump : public webrtc::DesktopCapturer::Callback {
+class VideoFramePump : public VideoStream,
+                       public webrtc::DesktopCapturer::Callback {
  public:
   // Enables timestamps for generated frames. Used for testing.
   static void EnableTimestampsForTests();
@@ -78,17 +79,12 @@ class VideoFramePump : public webrtc::DesktopCapturer::Callback {
       protocol::VideoStub* video_stub);
   ~VideoFramePump() override;
 
-  // Pauses or resumes scheduling of frame captures.  Pausing/resuming captures
-  // only affects capture scheduling and does not stop/start the capturer.
-  void Pause(bool pause);
-
-  // Called whenever input event is received.
-  void OnInputEventReceived(int64_t event_timestamp);
-
-  // Sets whether the video encoder should be requested to encode losslessly,
-  // or to use a lossless color space (typically requiring higher bandwidth).
-  void SetLosslessEncode(bool want_lossless);
-  void SetLosslessColor(bool want_lossless);
+  // VideoStream interface.
+  void Pause(bool pause) override;
+  void OnInputEventReceived(int64_t event_timestamp) override;
+  void SetLosslessEncode(bool want_lossless) override;
+  void SetLosslessColor(bool want_lossless) override;
+  void SetSizeCallback(const SizeCallback& size_callback) override;
 
   protocol::VideoFeedbackStub* video_feedback_stub() {
     return &capture_scheduler_;
@@ -165,6 +161,9 @@ class VideoFramePump : public webrtc::DesktopCapturer::Callback {
 
   // Interface through which video frames are passed to the client.
   protocol::VideoStub* video_stub_;
+
+  SizeCallback size_callback_;
+  webrtc::DesktopSize frame_size_;
 
   // Timer used to ensure that we send empty keep-alive frames to the client
   // even when the video stream is paused or encoder is busy.

@@ -104,6 +104,11 @@ void VideoFramePump::SetLosslessColor(bool want_lossless) {
                             base::Unretained(encoder_.get()), want_lossless));
 }
 
+void VideoFramePump::SetSizeCallback(const SizeCallback& size_callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  size_callback_ = size_callback;
+}
+
 webrtc::SharedMemory* VideoFramePump::CreateSharedMemory(size_t size) {
   DCHECK(thread_checker_.CalledOnValidThread());
   return nullptr;
@@ -115,6 +120,12 @@ void VideoFramePump::OnCaptureCompleted(webrtc::DesktopFrame* frame) {
   capture_scheduler_.OnCaptureCompleted();
 
   captured_frame_timestamps_->capture_ended_time = base::TimeTicks::Now();
+
+  if (frame && !frame_size_.equals(frame->size())) {
+    frame_size_ = frame->size();
+    if (!size_callback_.is_null())
+      size_callback_.Run(frame_size_);
+  }
 
   // Even when |frame| is nullptr we still need to post it to the encode thread
   // to make sure frames are freed in the same order they are received and

@@ -12,6 +12,7 @@
 #include "base/strings/string_util.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/base/constants.h"
+#include "remoting/codec/video_encoder_verbatim.h"
 #include "remoting/host/client_session.h"
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/fake_desktop_environment.h"
@@ -104,8 +105,8 @@ class ClientSessionTest : public testing::Test {
   // the input pipe line and starts video capturing.
   void ConnectClientSession();
 
-  // Waits for the first frame to be processed.
-  void WaitFirstFrame();
+  // Fakes video size notification from the VideoStream.
+  void NotifyVideoSize();
 
   // Creates expectations to send an extension message and to disconnect
   // afterwards.
@@ -137,7 +138,6 @@ class ClientSessionTest : public testing::Test {
 
   // Stubs returned to |client_session_| components by |connection_|.
   MockClientStub client_stub_;
-  MockVideoStub video_stub_;
 
   // ClientSession owns |connection_| but tests need it to inject fake events.
   protocol::FakeConnectionToClient* connection_;
@@ -178,7 +178,6 @@ void ClientSessionTest::CreateClientSession() {
   scoped_ptr<protocol::FakeConnectionToClient> connection(
       new protocol::FakeConnectionToClient(session.Pass()));
   connection->set_client_stub(&client_stub_);
-  connection->set_video_stub(&video_stub_);
   connection_ = connection.get();
 
   client_session_.reset(new ClientSession(
@@ -212,21 +211,16 @@ void ClientSessionTest::ConnectClientSession() {
   client_session_->OnConnectionChannelsConnected(client_session_->connection());
 }
 
-void ClientSessionTest::WaitFirstFrame() {
-  // Wait for the first video packet to be captured to make sure that
-  // the injected input will go though. Otherwise mouse events will be blocked
-  // by the mouse clamping filter.
-  base::RunLoop run_loop;
-  EXPECT_CALL(video_stub_, ProcessVideoPacketPtr(_, _))
-      .Times(AtLeast(1))
-      .WillOnce(testing::InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
-  run_loop.Run();
+void ClientSessionTest::NotifyVideoSize() {
+  connection_->last_video_stream()->size_callback().Run(
+      webrtc::DesktopSize(protocol::FakeDesktopCapturer::kWidth,
+                          protocol::FakeDesktopCapturer::kHeight));
 }
 
 TEST_F(ClientSessionTest, DisableInputs) {
   CreateClientSession();
   ConnectClientSession();
-  WaitFirstFrame();
+  NotifyVideoSize();
 
   FakeInputInjector* input_injector =
       desktop_environment_factory_->last_desktop_environment()
@@ -282,7 +276,8 @@ TEST_F(ClientSessionTest, DisableInputs) {
 TEST_F(ClientSessionTest, LocalInputTest) {
   CreateClientSession();
   ConnectClientSession();
-  WaitFirstFrame();
+  NotifyVideoSize();
+
 
   std::vector<protocol::MouseEvent> mouse_events;
   desktop_environment_factory_->last_desktop_environment()
@@ -317,7 +312,7 @@ TEST_F(ClientSessionTest, LocalInputTest) {
 TEST_F(ClientSessionTest, RestoreEventState) {
   CreateClientSession();
   ConnectClientSession();
-  WaitFirstFrame();
+  NotifyVideoSize();
 
   FakeInputInjector* input_injector =
       desktop_environment_factory_->last_desktop_environment()
@@ -355,7 +350,7 @@ TEST_F(ClientSessionTest, RestoreEventState) {
 TEST_F(ClientSessionTest, ClampMouseEvents) {
   CreateClientSession();
   ConnectClientSession();
-  WaitFirstFrame();
+  NotifyVideoSize();
 
   std::vector<protocol::MouseEvent> mouse_events;
   desktop_environment_factory_->last_desktop_environment()
@@ -384,7 +379,7 @@ TEST_F(ClientSessionTest, ClampMouseEvents) {
 TEST_F(ClientSessionTest, NoGnubbyAuth) {
   CreateClientSession();
   ConnectClientSession();
-  WaitFirstFrame();
+  NotifyVideoSize();
 
   protocol::ExtensionMessage message;
   message.set_type("gnubby-auth");
@@ -397,7 +392,7 @@ TEST_F(ClientSessionTest, NoGnubbyAuth) {
 TEST_F(ClientSessionTest, EnableGnubbyAuth) {
   CreateClientSession();
   ConnectClientSession();
-  WaitFirstFrame();
+  NotifyVideoSize();
 
   // Lifetime controlled by object under test.
   MockGnubbyAuthHandler* gnubby_auth_handler = new MockGnubbyAuthHandler();
@@ -416,7 +411,7 @@ TEST_F(ClientSessionTest, EnableGnubbyAuth) {
 TEST_F(ClientSessionTest, ResetVideoPipeline) {
   CreateClientSession();
   ConnectClientSession();
-  WaitFirstFrame();
+  NotifyVideoSize();
 
   client_session_->ResetVideoPipeline();
 }
@@ -449,6 +444,11 @@ TEST_F(ClientSessionTest, Extensions) {
   protocol::Capabilities capabilities_message;
   capabilities_message.set_capabilities("cap1 cap4 default");
   client_session_->SetCapabilities(capabilities_message);
+
+  // Simulate OnCreateVideoEncoder() which is normally called by the
+  // ConnectionToClient when creating the video stream.
+  scoped_ptr<VideoEncoder> encoder(new VideoEncoderVerbatim());
+  connection_->event_handler()->OnCreateVideoEncoder(&encoder);
 
   // Verify that the correct extension messages are delivered, and dropped.
   protocol::ExtensionMessage message1;

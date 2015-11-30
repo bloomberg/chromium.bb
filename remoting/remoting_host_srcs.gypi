@@ -182,8 +182,6 @@
       'host/logging_win.cc',
       'host/me2me_desktop_environment.cc',
       'host/me2me_desktop_environment.h',
-      'host/mouse_clamping_filter.cc',
-      'host/mouse_clamping_filter.h',
       'host/mouse_shape_pump.cc',
       'host/mouse_shape_pump.h',
       'host/oauth_token_getter.cc',

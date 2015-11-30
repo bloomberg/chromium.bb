@@ -275,7 +275,8 @@ void ChromotingHost::OnIncomingSession(
 
   // Create a client object.
   scoped_ptr<protocol::ConnectionToClient> connection(
-      new protocol::IceConnectionToClient(make_scoped_ptr(session)));
+      new protocol::IceConnectionToClient(make_scoped_ptr(session),
+                                          video_encode_task_runner_));
   ClientSession* client = new ClientSession(
       this,
       audio_task_runner_,

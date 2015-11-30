@@ -9,7 +9,14 @@
 
 #include "remoting/protocol/transport.h"
 
+namespace webrtc {
+class DesktopCapturer;
+}  // namespace webrtc
+
 namespace remoting {
+
+class VideoEncoder;
+
 namespace protocol {
 
 class AudioStub;
@@ -18,8 +25,7 @@ class ClipboardStub;
 class HostStub;
 class InputStub;
 class Session;
-class VideoFeedbackStub;
-class VideoStub;
+class VideoStream;
 
 // This interface represents a remote viewer connection to the chromoting host.
 // It sets up all protocol channels and connects them to the stubs.
@@ -37,6 +43,10 @@ class ConnectionToClient {
     // channels are connected.
     virtual void OnConnectionChannelsConnected(
         ConnectionToClient* connection) = 0;
+
+    // Called when a VideoEncoder is created. Used by ClientSession to modify
+    // the video pipeline if necessary.
+    virtual void OnCreateVideoEncoder(scoped_ptr<VideoEncoder>* encoder) = 0;
 
     // Called when the network connection is closed or failed.
     virtual void OnConnectionClosed(ConnectionToClient* connection,
@@ -74,11 +84,15 @@ class ConnectionToClient {
   // received event.
   virtual void OnInputEventReceived(int64_t timestamp) = 0;
 
+  // Start video stream that sends screen content from |desktop_capturer| to the
+  // client.
+  virtual scoped_ptr<VideoStream> StartVideoStream(
+      scoped_ptr<webrtc::DesktopCapturer> desktop_capturer) = 0;
+
   // Get the stubs used by the host to transmit messages to the client.
   // The stubs must not be accessed before OnConnectionAuthenticated(), or
   // after OnConnectionClosed().
   // Note that the audio stub will be nullptr if audio is not enabled.
-  virtual VideoStub* video_stub() = 0;
   virtual AudioStub* audio_stub() = 0;
   virtual ClientStub* client_stub() = 0;
 
@@ -87,11 +101,6 @@ class ConnectionToClient {
   virtual void set_clipboard_stub(ClipboardStub* clipboard_stub) = 0;
   virtual void set_host_stub(HostStub* host_stub) = 0;
   virtual void set_input_stub(InputStub* input_stub) = 0;
-
-  // Sets video feedback stub. Can be called at any time after connection is
-  // authenticated.
-  virtual void set_video_feedback_stub(
-      VideoFeedbackStub* video_feedback_stub) = 0;
 };
 
 }  // namespace protocol

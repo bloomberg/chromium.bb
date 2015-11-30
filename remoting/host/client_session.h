@@ -16,7 +16,6 @@
 #include "remoting/host/client_session_control.h"
 #include "remoting/host/gnubby_auth_handler.h"
 #include "remoting/host/host_extension_session_manager.h"
-#include "remoting/host/mouse_clamping_filter.h"
 #include "remoting/host/remote_input_filter.h"
 #include "remoting/protocol/clipboard_echo_filter.h"
 #include "remoting/protocol/clipboard_filter.h"
@@ -26,6 +25,7 @@
 #include "remoting/protocol/input_event_tracker.h"
 #include "remoting/protocol/input_filter.h"
 #include "remoting/protocol/input_stub.h"
+#include "remoting/protocol/mouse_input_filter.h"
 #include "remoting/protocol/pairing_registry.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 
@@ -41,10 +41,6 @@ class DesktopEnvironmentFactory;
 class InputInjector;
 class MouseShapePump;
 class ScreenControls;
-
-namespace protocol {
-class VideoFramePump;
-}  // namespace protocol
 
 // A ClientSession keeps a reference to a connection to a client, and maintains
 // per-client state.
@@ -124,6 +120,7 @@ class ClientSession
       protocol::ConnectionToClient* connection) override;
   void OnConnectionClosed(protocol::ConnectionToClient* connection,
                           protocol::ErrorCode error) override;
+  void OnCreateVideoEncoder(scoped_ptr<VideoEncoder>* encoder) override;
   void OnInputEventReceived(protocol::ConnectionToClient* connection,
                             int64_t timestamp) override;
   void OnRouteChange(protocol::ConnectionToClient* connection,
@@ -153,6 +150,8 @@ class ClientSession
   // Creates a proxy for sending clipboard events to the client.
   scoped_ptr<protocol::ClipboardStub> CreateClipboardProxy();
 
+  void OnScreenSizeChanged(const webrtc::DesktopSize& size);
+
   EventHandler* event_handler_;
 
   // The connection to the client.
@@ -176,7 +175,7 @@ class ClientSession
   RemoteInputFilter remote_input_filter_;
 
   // Filter used to clamp mouse events to the current display dimensions.
-  MouseClampingFilter mouse_clamping_filter_;
+  protocol::MouseInputFilter mouse_clamping_filter_;
 
   // Filter to used to stop clipboard items sent from the client being echoed
   // back to it.  It is the final element in the clipboard (client -> host)
@@ -207,11 +206,11 @@ class ClientSession
   scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
 
-  // Pumps for audio, video and mouse shape.
-  // |video_frame_pump_| and |mouse_shape_pump_| may be nullptr if the video
+  // Objects responsible for sending video, audio and mouse shape.
+  // |video_stream_| and |mouse_shape_pump_| may be nullptr if the video
   // stream is handled by an extension, see ResetVideoPipeline().
   scoped_ptr<AudioPump> audio_pump_;
-  scoped_ptr<protocol::VideoFramePump> video_frame_pump_;
+  scoped_ptr<protocol::VideoStream> video_stream_;
   scoped_ptr<MouseShapePump> mouse_shape_pump_;
 
   // The set of all capabilities supported by the client.

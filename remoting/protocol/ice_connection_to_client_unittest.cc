@@ -29,7 +29,8 @@ class IpcConnectionToClientTest : public testing::Test {
     session_ = new FakeSession();
 
     // Allocate a ClientConnection object with the mock objects.
-    viewer_.reset(new IceConnectionToClient(make_scoped_ptr(session_)));
+    viewer_.reset(new IceConnectionToClient(make_scoped_ptr(session_),
+                                            message_loop_.task_runner()));
     viewer_->SetEventHandler(&handler_);
     EXPECT_CALL(handler_, OnConnectionAuthenticated(viewer_.get()))
         .WillOnce(
@@ -65,8 +66,8 @@ class IpcConnectionToClientTest : public testing::Test {
 };
 
 TEST_F(IpcConnectionToClientTest, SendUpdateStream) {
-  scoped_ptr<VideoPacket> packet(new VideoPacket());
-  viewer_->video_stub()->ProcessVideoPacket(packet.Pass(), base::Closure());
+  Capabilities capabilities;
+  viewer_->client_stub()->SetCapabilities(capabilities);
 
   base::RunLoop().RunUntilIdle();
 
@@ -74,7 +75,7 @@ TEST_F(IpcConnectionToClientTest, SendUpdateStream) {
   // TODO(sergeyu): Verify that the correct data has been written.
   FakeStreamSocket* channel =
       session_->GetTransport()->GetStreamChannelFactory()->GetFakeChannel(
-          kVideoChannelName);
+          kControlChannelName);
   ASSERT_TRUE(channel);
   EXPECT_FALSE(channel->written_data().empty());
 
@@ -85,8 +86,8 @@ TEST_F(IpcConnectionToClientTest, SendUpdateStream) {
 }
 
 TEST_F(IpcConnectionToClientTest, NoWriteAfterDisconnect) {
-  scoped_ptr<VideoPacket> packet(new VideoPacket());
-  viewer_->video_stub()->ProcessVideoPacket(packet.Pass(), base::Closure());
+  Capabilities capabilities;
+  viewer_->client_stub()->SetCapabilities(capabilities);
 
   // And then close the connection to ConnectionToClient.
   viewer_->Disconnect(protocol::OK);

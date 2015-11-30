@@ -7,6 +7,9 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "net/base/io_buffer.h"
+#include "remoting/codec/video_encoder.h"
+#include "remoting/codec/video_encoder_verbatim.h"
+#include "remoting/codec/video_encoder_vpx.h"
 #include "remoting/protocol/audio_writer.h"
 #include "remoting/protocol/clipboard_stub.h"
 #include "remoting/protocol/host_control_dispatcher.h"
@@ -14,23 +17,46 @@
 #include "remoting/protocol/host_stub.h"
 #include "remoting/protocol/host_video_dispatcher.h"
 #include "remoting/protocol/input_stub.h"
+#include "remoting/protocol/video_frame_pump.h"
 
 namespace remoting {
 namespace protocol {
 
+namespace {
+
+scoped_ptr<VideoEncoder> CreateVideoEncoder(
+    const protocol::SessionConfig& config) {
+  const protocol::ChannelConfig& video_config = config.video_config();
+
+  if (video_config.codec == protocol::ChannelConfig::CODEC_VP8) {
+    return VideoEncoderVpx::CreateForVP8().Pass();
+  } else if (video_config.codec == protocol::ChannelConfig::CODEC_VP9) {
+    return VideoEncoderVpx::CreateForVP9().Pass();
+  } else if (video_config.codec == protocol::ChannelConfig::CODEC_VERBATIM) {
+    return make_scoped_ptr(new VideoEncoderVerbatim());
+  }
+
+  NOTREACHED();
+  return nullptr;
+}
+
+}  // namespace
+
 IceConnectionToClient::IceConnectionToClient(
-    scoped_ptr<protocol::Session> session)
-    : handler_(nullptr), session_(session.Pass()) {
+    scoped_ptr<protocol::Session> session,
+    scoped_refptr<base::SingleThreadTaskRunner> video_encode_task_runner)
+    : event_handler_(nullptr),
+      session_(session.Pass()),
+      video_encode_task_runner_(video_encode_task_runner) {
   session_->SetEventHandler(this);
 }
 
-IceConnectionToClient::~IceConnectionToClient() {
-}
+IceConnectionToClient::~IceConnectionToClient() {}
 
 void IceConnectionToClient::SetEventHandler(
     ConnectionToClient::EventHandler* event_handler) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  handler_ = event_handler;
+  event_handler_ = event_handler;
 }
 
 protocol::Session* IceConnectionToClient::session() {
@@ -50,12 +76,23 @@ void IceConnectionToClient::Disconnect(ErrorCode error) {
 
 void IceConnectionToClient::OnInputEventReceived(int64_t timestamp) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  handler_->OnInputEventReceived(this, timestamp);
+  event_handler_->OnInputEventReceived(this, timestamp);
 }
 
-VideoStub* IceConnectionToClient::video_stub() {
+scoped_ptr<VideoStream> IceConnectionToClient::StartVideoStream(
+    scoped_ptr<webrtc::DesktopCapturer> desktop_capturer) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return video_dispatcher_.get();
+
+  scoped_ptr<VideoEncoder> video_encoder =
+      CreateVideoEncoder(session_->config());
+  event_handler_->OnCreateVideoEncoder(&video_encoder);
+  DCHECK(video_encoder);
+
+  scoped_ptr<VideoFramePump> pump(
+      new VideoFramePump(video_encode_task_runner_, desktop_capturer.Pass(),
+                         video_encoder.Pass(), video_dispatcher_.get()));
+  video_dispatcher_->set_video_feedback_stub(pump->video_feedback_stub());
+  return pump.Pass();
 }
 
 AudioStub* IceConnectionToClient::audio_stub() {
@@ -85,16 +122,10 @@ void IceConnectionToClient::set_input_stub(protocol::InputStub* input_stub) {
   event_dispatcher_->set_input_stub(input_stub);
 }
 
-void IceConnectionToClient::set_video_feedback_stub(
-    VideoFeedbackStub* video_feedback_stub) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  video_dispatcher_->set_video_feedback_stub(video_feedback_stub);
-}
-
 void IceConnectionToClient::OnSessionStateChange(Session::State state) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  DCHECK(handler_);
+  DCHECK(event_handler_);
   switch (state) {
     case Session::INITIALIZING:
     case Session::CONNECTING:
@@ -104,7 +135,7 @@ void IceConnectionToClient::OnSessionStateChange(Session::State state) {
       // Don't care about these events.
       break;
     case Session::AUTHENTICATING:
-      handler_->OnConnectionAuthenticating(this);
+      event_handler_->OnConnectionAuthenticating(this);
       break;
     case Session::AUTHENTICATED:
       // Initialize channels.
@@ -131,7 +162,7 @@ void IceConnectionToClient::OnSessionStateChange(Session::State state) {
 
       // Notify the handler after initializing the channels, so that
       // ClientSession can get a client clipboard stub.
-      handler_->OnConnectionAuthenticated(this);
+      event_handler_->OnConnectionAuthenticated(this);
       break;
 
     case Session::CLOSED:
@@ -147,7 +178,7 @@ void IceConnectionToClient::OnSessionStateChange(Session::State state) {
 void IceConnectionToClient::OnSessionRouteChange(
     const std::string& channel_name,
     const TransportRoute& route) {
-  handler_->OnRouteChange(this, channel_name, route);
+  event_handler_->OnRouteChange(this, channel_name, route);
 }
 
 void IceConnectionToClient::OnChannelInitialized(
@@ -180,12 +211,12 @@ void IceConnectionToClient::NotifyIfChannelsReady() {
       session_->config().is_audio_enabled()) {
     return;
   }
-  handler_->OnConnectionChannelsConnected(this);
+  event_handler_->OnConnectionChannelsConnected(this);
 }
 
 void IceConnectionToClient::Close(ErrorCode error) {
   CloseChannels();
-  handler_->OnConnectionClosed(this, error);
+  event_handler_->OnConnectionClosed(this, error);
 }
 
 void IceConnectionToClient::CloseChannels() {

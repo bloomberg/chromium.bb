@@ -5,9 +5,29 @@
 #include "remoting/protocol/fake_connection_to_client.h"
 
 #include "remoting/protocol/session.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 
 namespace remoting {
 namespace protocol {
+
+FakeVideoStream::FakeVideoStream() : weak_factory_(this) {}
+FakeVideoStream::~FakeVideoStream() {}
+
+void FakeVideoStream::Pause(bool pause) {}
+
+void FakeVideoStream::OnInputEventReceived(int64_t event_timestamp) {}
+
+void FakeVideoStream::SetLosslessEncode(bool want_lossless) {}
+
+void FakeVideoStream::SetLosslessColor(bool want_lossless) {}
+
+void FakeVideoStream::SetSizeCallback(const SizeCallback& size_callback) {
+  size_callback_ = size_callback;
+}
+
+base::WeakPtr<FakeVideoStream> FakeVideoStream::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}
 
 FakeConnectionToClient::FakeConnectionToClient(scoped_ptr<Session> session)
     : session_(session.Pass()) {}
@@ -18,8 +38,11 @@ void FakeConnectionToClient::SetEventHandler(EventHandler* event_handler) {
   event_handler_ = event_handler;
 }
 
-VideoStub* FakeConnectionToClient::video_stub() {
-  return video_stub_;
+scoped_ptr<VideoStream> FakeConnectionToClient::StartVideoStream(
+    scoped_ptr<webrtc::DesktopCapturer> desktop_capturer) {
+  scoped_ptr<FakeVideoStream> result(new FakeVideoStream());
+  last_video_stream_ = result->GetWeakPtr();
+  return result.Pass();
 }
 
 AudioStub* FakeConnectionToClient::audio_stub() {
@@ -55,11 +78,6 @@ void FakeConnectionToClient::set_host_stub(HostStub* host_stub) {
 
 void FakeConnectionToClient::set_input_stub(InputStub* input_stub) {
   input_stub_ = input_stub;
-}
-
-void FakeConnectionToClient::set_video_feedback_stub(
-    VideoFeedbackStub* video_feedback_stub) {
-  video_feedback_stub_ = video_feedback_stub;
 }
 
 }  // namespace protocol

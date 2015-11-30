@@ -108,20 +108,13 @@ class ChromotingHostTest : public testing::Test {
         new protocol::FakeConnectionToClient(make_scoped_ptr(session1_)));
     owned_connection1_->set_host_stub(&host_stub1_);
     connection1_ = owned_connection1_.get();
-    connection1_->set_video_stub(&video_stub1_);
     connection1_->set_client_stub(&client_stub1_);
 
     owned_connection2_.reset(
         new protocol::FakeConnectionToClient(make_scoped_ptr(session2_)));
     owned_connection2_->set_host_stub(&host_stub2_);
     connection2_ = owned_connection2_.get();
-    connection2_->set_video_stub(&video_stub2_);
     connection2_->set_client_stub(&client_stub2_);
-
-    ON_CALL(video_stub1_, ProcessVideoPacketPtr(_, _))
-        .WillByDefault(DeleteArg<0>());
-    ON_CALL(video_stub2_, ProcessVideoPacketPtr(_, _))
-        .WillByDefault(DeleteArg<0>());
   }
 
   // Helper method to pretend a client is connected to ChromotingHost.
@@ -234,7 +227,6 @@ class ChromotingHostTest : public testing::Test {
   std::string session_jid1_;
   MockSession* session1_;  // Owned by |connection_|.
   scoped_ptr<SessionConfig> session_config1_;
-  MockVideoStub video_stub1_;
   MockClientStub client_stub1_;
   MockHostStub host_stub1_;
   protocol::FakeConnectionToClient* connection2_;
@@ -243,7 +235,6 @@ class ChromotingHostTest : public testing::Test {
   std::string session_jid2_;
   MockSession* session2_;  // Owned by |connection2_|.
   scoped_ptr<SessionConfig> session_config2_;
-  MockVideoStub video_stub2_;
   MockClientStub client_stub2_;
   MockHostStub host_stub2_;
   scoped_ptr<MockSession> session_unowned1_;  // Not owned by a connection.
