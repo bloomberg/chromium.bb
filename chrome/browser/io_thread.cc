@@ -1120,6 +1120,8 @@ void IOThread::InitializeNetworkSessionParamsFromGlobals(
   params->quic_connection_options = globals.quic_connection_options;
   globals.quic_close_sessions_on_ip_change.CopyToIfSet(
       &params->quic_close_sessions_on_ip_change);
+  globals.quic_idle_connection_timeout_seconds.CopyToIfSet(
+      &params->quic_idle_connection_timeout_seconds);
 
   globals.origin_to_force_quic_on.CopyToIfSet(
       &params->origin_to_force_quic_on);
@@ -1251,6 +1253,12 @@ void IOThread::ConfigureQuicGlobals(
         GetQuicConnectionOptions(command_line, quic_trial_params);
     globals->quic_close_sessions_on_ip_change.set(
         ShouldQuicCloseSessionsOnIpChange(quic_trial_params));
+    int idle_connection_timeout_seconds = GetQuicIdleConnectionTimeoutSeconds(
+        quic_trial_params);
+    if (idle_connection_timeout_seconds != 0) {
+      globals->quic_idle_connection_timeout_seconds.set(
+          idle_connection_timeout_seconds);
+    }
   }
 
   size_t max_packet_length = GetQuicMaxPacketLength(command_line,
@@ -1490,6 +1498,17 @@ bool IOThread::ShouldQuicCloseSessionsOnIpChange(
   return base::LowerCaseEqualsASCII(
       GetVariationParam(quic_trial_params, "close_sessions_on_ip_change"),
       "true");
+}
+
+int IOThread::GetQuicIdleConnectionTimeoutSeconds(
+    const VariationParameters& quic_trial_params) {
+  int value;
+  if (base::StringToInt(GetVariationParam(quic_trial_params,
+                                          "idle_connection_timeout_seconds"),
+                        &value)) {
+    return value;
+  }
+  return 0;
 }
 
 size_t IOThread::GetQuicMaxPacketLength(

@@ -118,6 +118,7 @@ HttpNetworkSession::Params::Params()
       quic_threshold_public_resets_post_handshake(0),
       quic_threshold_timeouts_streams_open(0),
       quic_close_sessions_on_ip_change(false),
+      quic_idle_connection_timeout_seconds(kIdleConnectionTimeoutSeconds),
       proxy_delegate(NULL) {
   quic_supported_versions.push_back(QUIC_VERSION_25);
 }
@@ -172,6 +173,7 @@ HttpNetworkSession::HttpNetworkSession(const Params& params)
           params.quic_delay_tcp_race,
           params.quic_store_server_configs_in_properties,
           params.quic_close_sessions_on_ip_change,
+          params.quic_idle_connection_timeout_seconds,
           params.quic_connection_options),
       spdy_session_pool_(params.host_resolver,
                          params.ssl_config_service,

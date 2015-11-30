@@ -54,6 +54,9 @@ namespace test {
 class QuicStreamFactoryPeer;
 }  // namespace test
 
+// When a connection is idle for 30 seconds it will be closed.
+const int kIdleConnectionTimeoutSeconds = 30;
+
 // Encapsulates a pending request for a QuicHttpStream.
 // If the request is still pending when it is destroyed, it will
 // cancel the request with the factory.
@@ -140,6 +143,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       bool delay_tcp_race,
       bool store_server_configs_in_properties,
       bool close_sessions_on_ip_change,
+      int idle_connection_timeout_seconds,
       const QuicTagVector& connection_options);
   ~QuicStreamFactory() override;
 

@@ -70,9 +70,6 @@ enum CreateSessionFailure {
   CREATION_ERROR_MAX
 };
 
-// When a connection is idle for 30 seconds it will be closed.
-const int kIdleConnectionTimeoutSeconds = 30;
-
 // The maximum receive window sizes for QUIC sessions and streams.
 const int32 kQuicSessionMaxRecvWindowSize = 15 * 1024 * 1024;  // 15 MB
 const int32 kQuicStreamMaxRecvWindowSize = 6 * 1024 * 1024;    // 6 MB
@@ -94,11 +91,13 @@ bool IsEcdsaSupported() {
   return true;
 }
 
-QuicConfig InitializeQuicConfig(const QuicTagVector& connection_options) {
+QuicConfig InitializeQuicConfig(const QuicTagVector& connection_options,
+                                int idle_connection_timeout_seconds) {
+  DCHECK_GT(idle_connection_timeout_seconds, 0);
   QuicConfig config;
   config.SetIdleConnectionStateLifetime(
-      QuicTime::Delta::FromSeconds(kIdleConnectionTimeoutSeconds),
-      QuicTime::Delta::FromSeconds(kIdleConnectionTimeoutSeconds));
+      QuicTime::Delta::FromSeconds(idle_connection_timeout_seconds),
+      QuicTime::Delta::FromSeconds(idle_connection_timeout_seconds));
   config.SetConnectionOptionsToSend(connection_options);
   return config;
 }
@@ -571,6 +570,7 @@ QuicStreamFactory::QuicStreamFactory(
     bool delay_tcp_race,
     bool store_server_configs_in_properties,
     bool close_sessions_on_ip_change,
+    int idle_connection_timeout_seconds,
     const QuicTagVector& connection_options)
     : require_confirmation_(true),
       host_resolver_(host_resolver),
@@ -583,7 +583,8 @@ QuicStreamFactory::QuicStreamFactory(
       clock_(clock),
       max_packet_length_(max_packet_length),
       socket_performance_watcher_factory_(socket_performance_watcher_factory),
-      config_(InitializeQuicConfig(connection_options)),
+      config_(InitializeQuicConfig(connection_options,
+                                   idle_connection_timeout_seconds)),
       crypto_config_(new ProofVerifierChromium(cert_verifier,
                                                cert_policy_enforcer,
                                                transport_security_state,

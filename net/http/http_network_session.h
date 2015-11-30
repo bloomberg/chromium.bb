@@ -173,6 +173,8 @@ class NET_EXPORT HttpNetworkSession
     QuicTagVector quic_connection_options;
     // If true, all QUIC sessions are closed when any local IP address changes.
     bool quic_close_sessions_on_ip_change;
+    // Specifes QUIC idle connection state lifetime.
+    int quic_idle_connection_timeout_seconds;
     ProxyDelegate* proxy_delegate;
   };
 

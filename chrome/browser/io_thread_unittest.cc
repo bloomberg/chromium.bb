@@ -11,6 +11,7 @@
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties_impl.h"
 #include "net/quic/quic_protocol.h"
+#include "net/quic/quic_stream_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -197,6 +198,8 @@ TEST_F(IOThreadTest, EnableQuicFromFieldTrialGroup) {
   EXPECT_EQ(1.0f, params.quic_packet_loss_threshold);
   EXPECT_FALSE(params.quic_delay_tcp_race);
   EXPECT_FALSE(params.quic_close_sessions_on_ip_change);
+  EXPECT_EQ(net::kIdleConnectionTimeoutSeconds,
+            params.quic_idle_connection_timeout_seconds);
   EXPECT_FALSE(IOThread::ShouldEnableQuicForDataReductionProxy());
 }
 
@@ -291,6 +294,15 @@ TEST_F(IOThreadTest, QuicCloseSessionsOnIpChangeFromFieldTrialParams) {
   net::HttpNetworkSession::Params params;
   InitializeNetworkSessionParams(&params);
   EXPECT_TRUE(params.quic_close_sessions_on_ip_change);
+}
+
+TEST_F(IOThreadTest, QuicIdleConnectionTimeoutSecondsFieldTrialParams) {
+  field_trial_group_ = "Enabled";
+  field_trial_params_["idle_connection_timeout_seconds"] = "300";
+  ConfigureQuicGlobals();
+  net::HttpNetworkSession::Params params;
+  InitializeNetworkSessionParams(&params);
+  EXPECT_EQ(300, params.quic_idle_connection_timeout_seconds);
 }
 
 TEST_F(IOThreadTest, PacketLengthFromFieldTrialParams) {
