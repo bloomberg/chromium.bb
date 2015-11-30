@@ -146,6 +146,8 @@ public:
     BLINK_PLATFORM_EXPORT WebCString securityInfo() const;
     BLINK_PLATFORM_EXPORT void setSecurityInfo(const WebCString&);
 
+    BLINK_PLATFORM_EXPORT void setHasMajorCertificateErrors(bool);
+
     BLINK_PLATFORM_EXPORT SecurityStyle securityStyle() const;
     BLINK_PLATFORM_EXPORT void setSecurityStyle(SecurityStyle);
 

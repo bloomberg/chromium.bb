@@ -50,6 +50,9 @@ struct ResourceResponseInfo {
   // response.  This may include information about the SSL connection used.
   std::string security_info;
 
+  // True if the resource was loaded in spite of certificate errors.
+  bool has_major_certificate_errors;
+
   // Content length if available. -1 if not available
   int64 content_length;
 
