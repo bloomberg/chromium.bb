@@ -45,9 +45,6 @@ PolymerTest.prototype = {
   /** Time when preLoad starts, i.e. before the browsePreload page is loaded. */
   preloadTime: 0,
 
-  /** Time when test setup starts. */
-  setupTime: 0,
-
   /** Time when test run starts. */
   runTime: 0,
 
@@ -59,7 +56,6 @@ PolymerTest.prototype = {
 
   /** @override */
   setUp: function() {
-    this.setupTime = window.performance.now();
     testing.Test.prototype.setUp.call(this);
 
     // List of imported URLs for debugging purposes.
@@ -116,12 +112,12 @@ PolymerTest.prototype = {
   /** @override */
   tearDown: function() {
     var endTime = window.performance.now();
-    var delta = this.setupTime - this.preloadTime;
-    console.log('Page load time: ' + delta + " ms");
+    var delta = this.runTime - this.preloadTime;
+    console.log('Page load time: ' + delta.toFixed(0) + " ms");
     delta = endTime - this.runTime;
-    console.log('Test run time: ' + delta + " ms");
+    console.log('Test run time: ' + delta.toFixed(0) + " ms");
     delta = endTime - this.preloadTime;
-    console.log('Total time: ' + delta + " ms");
+    console.log('Total time: ' + delta.toFixed(0) + " ms");
     testing.Test.prototype.tearDown.call(this);
   }
 };
