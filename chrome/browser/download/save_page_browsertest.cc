@@ -1005,7 +1005,7 @@ IN_PROC_BROWSER_TEST_P(SavePageMultiFrameBrowserTest, CrossSite) {
 }
 
 // Test for crbug.com/553478.
-IN_PROC_BROWSER_TEST_P(SavePageMultiFrameBrowserTest, DISABLED_ObjectElements) {
+IN_PROC_BROWSER_TEST_P(SavePageMultiFrameBrowserTest, ObjectElements) {
   content::SavePageType save_page_type = GetParam();
 
   // 4 = main frame + iframe + object w/ html doc + object w/ pdf doc
@@ -1020,6 +1020,10 @@ IN_PROC_BROWSER_TEST_P(SavePageMultiFrameBrowserTest, DISABLED_ObjectElements) {
 
   GURL url(
       embedded_test_server()->GetURL("a.com", "/save_page/frames-objects.htm"));
+
+  // TODO(lukasza): crbug.com/553478: Enable <object> testing of MHTML.
+  if (save_page_type == content::SAVE_PAGE_TYPE_AS_MHTML)
+    return;
 
   TestMultiFramePage(save_page_type, url, expected_number_of_frames,
                      expected_substrings);

@@ -129,6 +129,12 @@ WebString GetSubResourceLinkFromElement(const WebElement& element) {
              element.hasHTMLTagName("del") ||
              element.hasHTMLTagName("ins")) {
     attribute_name = "cite";
+  } else if (element.hasHTMLTagName("object")) {
+    // TODO(lukasza): When <object> contains a html document, it should be
+    // reported as a subframe, not as a savable resource (reporting as a
+    // savable resource works, but will save original html contents, not
+    // current html contents of the frame).
+    attribute_name = "data";
   } else if (element.hasHTMLTagName("link")) {
     // If the link element is not linked to css, ignore it.
     if (base::LowerCaseEqualsASCII(
