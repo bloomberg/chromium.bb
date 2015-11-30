@@ -115,7 +115,7 @@ BlimpBrowserContext::CreateRequestContext(
           content::BrowserThread::UnsafeGetMessageLoopForThread(
               content::BrowserThread::FILE)
               ->task_runner(),
-          protocol_handlers, request_interceptors.Pass(), net_log_));
+          protocol_handlers, std::move(request_interceptors), net_log_));
   return resource_context_->url_request_context_getter();
 }
 

@@ -57,7 +57,8 @@ void TCPEngineTransport::Connect(const net::CompletionCallback& callback) {
 scoped_ptr<BlimpConnection> TCPEngineTransport::TakeConnection() {
   DCHECK(connect_callback_.is_null());
   DCHECK(accepted_socket_);
-  return make_scoped_ptr(new StreamSocketConnection(accepted_socket_.Pass()));
+  return make_scoped_ptr(
+      new StreamSocketConnection(std::move(accepted_socket_)));
 }
 
 int TCPEngineTransport::GetLocalAddressForTesting(

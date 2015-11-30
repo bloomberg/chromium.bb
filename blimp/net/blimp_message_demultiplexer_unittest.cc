@@ -46,7 +46,7 @@ TEST_F(BlimpMessageDemultiplexerTest, ProcessMessageOK) {
   EXPECT_CALL(receiver1_, MockableProcessMessage(Ref(*input_msg_), _))
       .WillOnce(SaveArg<1>(&captured_cb_));
   net::TestCompletionCallback cb;
-  demux_.ProcessMessage(input_msg_.Pass(), cb.callback());
+  demux_.ProcessMessage(std::move(input_msg_), cb.callback());
   captured_cb_.Run(net::OK);
   EXPECT_EQ(net::OK, cb.WaitForResult());
 }
@@ -55,7 +55,7 @@ TEST_F(BlimpMessageDemultiplexerTest, ProcessMessageFailed) {
   EXPECT_CALL(receiver2_, MockableProcessMessage(Ref(*compositor_msg_), _))
       .WillOnce(SaveArg<1>(&captured_cb_));
   net::TestCompletionCallback cb2;
-  demux_.ProcessMessage(compositor_msg_.Pass(), cb2.callback());
+  demux_.ProcessMessage(std::move(compositor_msg_), cb2.callback());
   captured_cb_.Run(net::ERR_FAILED);
   EXPECT_EQ(net::ERR_FAILED, cb2.WaitForResult());
 }

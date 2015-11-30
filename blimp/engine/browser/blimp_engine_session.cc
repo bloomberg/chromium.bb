@@ -52,7 +52,7 @@ class FocusRulesImpl : public wm::BaseFocusRules {
 
 BlimpEngineSession::BlimpEngineSession(
     scoped_ptr<BlimpBrowserContext> browser_context)
-    : browser_context_(browser_context.Pass()), screen_(new BlimpScreen) {}
+    : browser_context_(std::move(browser_context)), screen_(new BlimpScreen) {}
 
 BlimpEngineSession::~BlimpEngineSession() {}
 
@@ -94,7 +94,7 @@ void BlimpEngineSession::CreateWebContents(const int target_tab_id) {
                                                    nullptr);
   scoped_ptr<content::WebContents> new_contents =
       make_scoped_ptr(content::WebContents::Create(create_params));
-  PlatformSetContents(new_contents.Pass());
+  PlatformSetContents(std::move(new_contents));
 }
 
 void BlimpEngineSession::CloseWebContents(const int target_tab_id) {
@@ -244,7 +244,7 @@ void BlimpEngineSession::ForwardCompositorProto(
 void BlimpEngineSession::PlatformSetContents(
     scoped_ptr<content::WebContents> new_contents) {
   new_contents->SetDelegate(this);
-  web_contents_ = new_contents.Pass();
+  web_contents_ = std::move(new_contents);
 
   aura::Window* parent = window_tree_host_->window();
   aura::Window* content = web_contents_->GetNativeView();

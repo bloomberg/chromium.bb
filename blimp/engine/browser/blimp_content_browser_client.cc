@@ -27,7 +27,7 @@ net::URLRequestContextGetter* BlimpContentBrowserClient::CreateRequestContext(
   BlimpBrowserContext* blimp_context =
       static_cast<BlimpBrowserContext*>(content_browser_context);
   return blimp_context->CreateRequestContext(protocol_handlers,
-                                             request_interceptors.Pass())
+                                             std::move(request_interceptors))
       .get();
 }
 

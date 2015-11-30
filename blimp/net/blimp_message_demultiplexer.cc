@@ -44,7 +44,7 @@ void BlimpMessageDemultiplexer::ProcessMessage(
     }
   }
 
-  receiver_iter->second->ProcessMessage(message.Pass(), callback);
+  receiver_iter->second->ProcessMessage(std::move(message), callback);
 }
 
 }  // namespace blimp

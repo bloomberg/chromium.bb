@@ -56,7 +56,7 @@ class BlimpMessageMultiplexerTest : public testing::Test {
 // correctly.
 TEST_F(BlimpMessageMultiplexerTest, TypeSetByMux) {
   net::TestCompletionCallback cb_1;
-  input_processor_->ProcessMessage(input_message_.Pass(), cb_1.callback());
+  input_processor_->ProcessMessage(std::move(input_message_), cb_1.callback());
   EXPECT_EQ(BlimpMessage::INPUT, captured_message_.type());
   EXPECT_EQ(InputMessage::Type_GestureScrollBegin,
             captured_message_.input().type());
@@ -64,7 +64,7 @@ TEST_F(BlimpMessageMultiplexerTest, TypeSetByMux) {
   EXPECT_EQ(net::OK, cb_1.WaitForResult());
 
   net::TestCompletionCallback cb_2;
-  navigation_processor_->ProcessMessage(navigation_message_.Pass(),
+  navigation_processor_->ProcessMessage(std::move(navigation_message_),
                                         cb_2.callback());
   EXPECT_EQ(BlimpMessage::NAVIGATION, captured_message_.type());
   EXPECT_EQ(NavigationMessage::LOAD_URL, captured_message_.navigation().type());
@@ -77,7 +77,7 @@ TEST_F(BlimpMessageMultiplexerTest, TypeSetByCaller) {
   input_message_->set_type(BlimpMessage::INPUT);
 
   net::TestCompletionCallback cb_1;
-  input_processor_->ProcessMessage(input_message_.Pass(), cb_1.callback());
+  input_processor_->ProcessMessage(std::move(input_message_), cb_1.callback());
   EXPECT_EQ(BlimpMessage::INPUT, captured_message_.type());
   EXPECT_EQ(InputMessage::Type_GestureScrollBegin,
             captured_message_.input().type());
@@ -89,7 +89,7 @@ TEST_F(BlimpMessageMultiplexerTest, TypeSetByCaller) {
 TEST_F(BlimpMessageMultiplexerTest, SenderTransience) {
   net::TestCompletionCallback cb_3;
   input_processor_ = multiplexer_.CreateSenderForType(BlimpMessage::INPUT);
-  input_processor_->ProcessMessage(input_message_.Pass(), cb_3.callback());
+  input_processor_->ProcessMessage(std::move(input_message_), cb_3.callback());
   EXPECT_EQ(BlimpMessage::INPUT, captured_message_.type());
   EXPECT_EQ(InputMessage::Type_GestureScrollBegin,
             captured_message_.input().type());
@@ -102,7 +102,7 @@ TEST_F(BlimpMessageMultiplexerTest, SenderMultiplicity) {
   net::TestCompletionCallback cb_4;
   scoped_ptr<BlimpMessageProcessor> input_processor_2 =
       multiplexer_.CreateSenderForType(BlimpMessage::INPUT);
-  input_processor_2->ProcessMessage(input_message_.Pass(), cb_4.callback());
+  input_processor_2->ProcessMessage(std::move(input_message_), cb_4.callback());
   EXPECT_EQ(BlimpMessage::INPUT, captured_message_.type());
   EXPECT_EQ(InputMessage::Type_GestureScrollBegin,
             captured_message_.input().type());

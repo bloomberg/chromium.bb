@@ -75,7 +75,7 @@ BlimpURLRequestContextGetter::BlimpURLRequestContextGetter(
       io_loop_task_runner_(io_loop_task_runner),
       file_loop_task_runner_(file_loop_task_runner),
       net_log_(net_log),
-      request_interceptors_(request_interceptors.Pass()) {
+      request_interceptors_(std::move(request_interceptors)) {
   // Must first be created on the UI thread.
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -91,7 +91,7 @@ BlimpURLRequestContextGetter::~BlimpURLRequestContextGetter() {}
 
 scoped_ptr<net::NetworkDelegate>
 BlimpURLRequestContextGetter::CreateNetworkDelegate() {
-  return make_scoped_ptr(new BlimpNetworkDelegate).Pass();
+  return make_scoped_ptr(new BlimpNetworkDelegate);
 }
 
 scoped_ptr<net::ProxyConfigService>
@@ -102,7 +102,7 @@ BlimpURLRequestContextGetter::GetProxyConfigService() {
 
 scoped_ptr<net::ProxyService> BlimpURLRequestContextGetter::GetProxyService() {
   return net::ProxyService::CreateUsingSystemProxyResolver(
-      proxy_config_service_.Pass(), 0, url_request_context_->net_log());
+      std::move(proxy_config_service_), 0, url_request_context_->net_log());
 }
 
 net::URLRequestContext* BlimpURLRequestContextGetter::GetURLRequestContext() {
@@ -169,21 +169,21 @@ net::URLRequestContext* BlimpURLRequestContextGetter::GetURLRequestContext() {
         ignore_certificate_errors_;
     if (command_line.HasSwitch(switches::kHostResolverRules)) {
       scoped_ptr<net::MappedHostResolver> mapped_host_resolver(
-          new net::MappedHostResolver(host_resolver.Pass()));
+          new net::MappedHostResolver(std::move(host_resolver)));
       mapped_host_resolver->SetRulesFromString(
           command_line.GetSwitchValueASCII(switches::kHostResolverRules));
-      host_resolver = mapped_host_resolver.Pass();
+      host_resolver = std::move(mapped_host_resolver);
     }
 
     // Give |storage_| ownership at the end in case it's |mapped_host_resolver|.
-    storage_->set_host_resolver(host_resolver.Pass());
+    storage_->set_host_resolver(std::move(host_resolver));
     network_session_params.host_resolver =
         url_request_context_->host_resolver();
 
     storage_->set_http_network_session(
         make_scoped_ptr(new net::HttpNetworkSession(network_session_params)));
     storage_->set_http_transaction_factory(make_scoped_ptr(new net::HttpCache(
-        storage_->http_network_session(), main_backend.Pass(), true)));
+        storage_->http_network_session(), std::move(main_backend), true)));
 
     scoped_ptr<net::URLRequestJobFactoryImpl> job_factory(
         new net::URLRequestJobFactoryImpl());
@@ -196,15 +196,16 @@ net::URLRequestContext* BlimpURLRequestContextGetter::GetURLRequestContext() {
 
     // Set up interceptors in the reverse order so that the last inceptor is at
     // the end of the linked list of job factories.
-    scoped_ptr<net::URLRequestJobFactory> top_job_factory = job_factory.Pass();
+    scoped_ptr<net::URLRequestJobFactory> top_job_factory =
+        std::move(job_factory);
     for (auto i = request_interceptors_.rbegin();
          i != request_interceptors_.rend(); ++i) {
       top_job_factory.reset(new net::URLRequestInterceptingJobFactory(
-          top_job_factory.Pass(), make_scoped_ptr(*i)));
+          std::move(top_job_factory), make_scoped_ptr(*i)));
     }
     request_interceptors_.weak_clear();
     // Save the head of the job factory list at storage_.
-    storage_->set_job_factory(top_job_factory.Pass());
+    storage_->set_job_factory(std::move(top_job_factory));
   }
 
   return url_request_context_.get();

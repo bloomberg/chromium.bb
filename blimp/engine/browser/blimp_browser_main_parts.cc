@@ -36,7 +36,7 @@ void BlimpBrowserMainParts::PreMainMessageLoopRun() {
   net_log_.reset(new net::NetLog());
   scoped_ptr<BlimpBrowserContext> browser_context(
       new BlimpBrowserContext(false, net_log_.get()));
-  engine_session_.reset(new BlimpEngineSession(browser_context.Pass()));
+  engine_session_.reset(new BlimpEngineSession(std::move(browser_context)));
   engine_session_->Initialize();
 
   // TODO(haibinlu): Create EngineConnectionManager to accept new connections.
@@ -45,13 +45,15 @@ void BlimpBrowserMainParts::PreMainMessageLoopRun() {
   scoped_ptr<BlimpMessage> message(new BlimpMessage);
   message->set_type(BlimpMessage::CONTROL);
   message->mutable_control()->set_type(ControlMessage::CREATE_TAB);
-  engine_session_->ProcessMessage(message.Pass(), net::CompletionCallback());
+  engine_session_->ProcessMessage(std::move(message),
+                                  net::CompletionCallback());
   message.reset(new BlimpMessage);
   message->set_type(BlimpMessage::NAVIGATION);
   message->mutable_navigation()->set_type(NavigationMessage::LOAD_URL);
   message->mutable_navigation()->mutable_load_url()->set_url(
       "https://www.google.com/");
-  engine_session_->ProcessMessage(message.Pass(), net::CompletionCallback());
+  engine_session_->ProcessMessage(std::move(message),
+                                  net::CompletionCallback());
 }
 
 void BlimpBrowserMainParts::PostMainMessageLoopRun() {

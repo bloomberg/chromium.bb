@@ -59,7 +59,7 @@ void BlimpMessagePump::OnReadPacketComplete(int result) {
     if (parse_result) {
       process_msg_callback_.Reset(base::Bind(
           &BlimpMessagePump::OnProcessMessageComplete, base::Unretained(this)));
-      processor_->ProcessMessage(message.Pass(),
+      processor_->ProcessMessage(std::move(message),
                                  process_msg_callback_.callback());
       return;
     }

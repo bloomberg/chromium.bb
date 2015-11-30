@@ -13,7 +13,7 @@ StreamSocketConnection::StreamSocketConnection(
     scoped_ptr<net::StreamSocket> socket)
     : BlimpConnection(make_scoped_ptr(new StreamPacketReader(socket.get())),
                       make_scoped_ptr(new StreamPacketWriter(socket.get()))),
-      socket_(socket.Pass()) {
+      socket_(std::move(socket)) {
   DCHECK(socket_);
 }
 

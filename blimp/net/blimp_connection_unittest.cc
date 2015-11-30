@@ -32,15 +32,16 @@ namespace {
 class BlimpConnectionTest : public testing::Test {
  public:
   BlimpConnectionTest() {
-    message1_ = CreateInputMessage().Pass();
-    message2_ = CreateControlMessage().Pass();
+    message1_ = CreateInputMessage();
+    message2_ = CreateControlMessage();
     scoped_ptr<testing::StrictMock<MockPacketReader>> reader(
         new testing::StrictMock<MockPacketReader>);
     reader_ = reader.get();
     scoped_ptr<testing::StrictMock<MockPacketWriter>> writer(
         new testing::StrictMock<MockPacketWriter>);
     writer_ = writer.get();
-    connection_.reset(new BlimpConnection(reader.Pass(), writer.Pass()));
+    connection_.reset(new BlimpConnection(std::move(reader),
+                                          std::move(writer)));
     connection_->SetConnectionErrorObserver(&error_observer_);
   }
 
@@ -49,13 +50,13 @@ class BlimpConnectionTest : public testing::Test {
   scoped_ptr<BlimpMessage> CreateInputMessage() {
     scoped_ptr<BlimpMessage> msg(new BlimpMessage);
     msg->set_type(BlimpMessage::INPUT);
-    return msg.Pass();
+    return msg;
   }
 
   scoped_ptr<BlimpMessage> CreateControlMessage() {
     scoped_ptr<BlimpMessage> msg(new BlimpMessage);
     msg->set_type(BlimpMessage::CONTROL);
-    return msg.Pass();
+    return msg;
   }
 
  protected:
@@ -101,10 +102,11 @@ TEST_F(BlimpConnectionTest, SyncTwoPacketsWrite) {
 
   BlimpMessageProcessor* sender = connection_->GetOutgoingMessageProcessor();
   net::TestCompletionCallback complete_cb_1;
-  sender->ProcessMessage(CreateInputMessage().Pass(), complete_cb_1.callback());
+  sender->ProcessMessage(CreateInputMessage(),
+                         complete_cb_1.callback());
   EXPECT_EQ(net::OK, complete_cb_1.WaitForResult());
   net::TestCompletionCallback complete_cb_2;
-  sender->ProcessMessage(CreateControlMessage().Pass(),
+  sender->ProcessMessage(CreateControlMessage(),
                          complete_cb_2.callback());
   EXPECT_EQ(net::OK, complete_cb_2.WaitForResult());
 }
@@ -123,10 +125,11 @@ TEST_F(BlimpConnectionTest, SyncTwoPacketsWriteWithError) {
 
   BlimpMessageProcessor* sender = connection_->GetOutgoingMessageProcessor();
   net::TestCompletionCallback complete_cb_1;
-  sender->ProcessMessage(CreateInputMessage().Pass(), complete_cb_1.callback());
+  sender->ProcessMessage(CreateInputMessage(),
+                         complete_cb_1.callback());
   EXPECT_EQ(net::OK, complete_cb_1.WaitForResult());
   net::TestCompletionCallback complete_cb_2;
-  sender->ProcessMessage(CreateControlMessage().Pass(),
+  sender->ProcessMessage(CreateControlMessage(),
                          complete_cb_2.callback());
   EXPECT_EQ(net::ERR_FAILED, complete_cb_2.WaitForResult());
 }
@@ -148,14 +151,15 @@ TEST_F(BlimpConnectionTest, AsyncTwoPacketsWrite) {
   BlimpMessageProcessor* sender = connection_->GetOutgoingMessageProcessor();
   net::TestCompletionCallback complete_cb_1;
   ASSERT_TRUE(write_packet_cb.is_null());
-  sender->ProcessMessage(CreateInputMessage().Pass(), complete_cb_1.callback());
+  sender->ProcessMessage(CreateInputMessage(),
+                         complete_cb_1.callback());
   ASSERT_FALSE(write_packet_cb.is_null());
   base::ResetAndReturn(&write_packet_cb).Run(net::OK);
   EXPECT_EQ(net::OK, complete_cb_1.WaitForResult());
 
   net::TestCompletionCallback complete_cb_2;
   ASSERT_TRUE(write_packet_cb.is_null());
-  sender->ProcessMessage(CreateControlMessage().Pass(),
+  sender->ProcessMessage(CreateControlMessage(),
                          complete_cb_2.callback());
   ASSERT_FALSE(write_packet_cb.is_null());
   base::ResetAndReturn(&write_packet_cb).Run(net::OK);
@@ -180,12 +184,13 @@ TEST_F(BlimpConnectionTest, AsyncTwoPacketsWriteWithError) {
 
   BlimpMessageProcessor* sender = connection_->GetOutgoingMessageProcessor();
   net::TestCompletionCallback complete_cb_1;
-  sender->ProcessMessage(CreateInputMessage().Pass(), complete_cb_1.callback());
+  sender->ProcessMessage(CreateInputMessage(),
+                         complete_cb_1.callback());
   base::ResetAndReturn(&write_packet_cb).Run(net::OK);
   EXPECT_EQ(net::OK, complete_cb_1.WaitForResult());
 
   net::TestCompletionCallback complete_cb_2;
-  sender->ProcessMessage(CreateControlMessage().Pass(),
+  sender->ProcessMessage(CreateControlMessage(),
                          complete_cb_2.callback());
   base::ResetAndReturn(&write_packet_cb).Run(net::ERR_FAILED);
   EXPECT_EQ(net::ERR_FAILED, complete_cb_2.WaitForResult());

@@ -95,9 +95,9 @@ void BlimpMessageSender::OnWritePacketComplete(int result) {
 
 BlimpConnection::BlimpConnection(scoped_ptr<PacketReader> reader,
                                  scoped_ptr<PacketWriter> writer)
-    : reader_(reader.Pass()),
+    : reader_(std::move(reader)),
       message_pump_(new BlimpMessagePump(reader_.get())),
-      writer_(writer.Pass()),
+      writer_(std::move(writer)),
       outgoing_msg_processor_(new BlimpMessageSender(writer_.get())) {
   DCHECK(writer_);
 }

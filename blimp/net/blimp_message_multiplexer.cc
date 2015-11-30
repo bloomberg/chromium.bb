@@ -44,7 +44,7 @@ void MultiplexedSender::ProcessMessage(
   } else {
     message->set_type(type_);
   }
-  output_processor_->ProcessMessage(message.Pass(), callback);
+  output_processor_->ProcessMessage(std::move(message), callback);
 }
 
 }  // namespace

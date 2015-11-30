@@ -46,7 +46,7 @@ void TCPClientTransport::Connect(const net::CompletionCallback& callback) {
 scoped_ptr<BlimpConnection> TCPClientTransport::TakeConnection() {
   DCHECK(connect_callback_.is_null());
   DCHECK(socket_);
-  return make_scoped_ptr(new StreamSocketConnection(socket_.Pass()));
+  return make_scoped_ptr(new StreamSocketConnection(std::move(socket_)));
 }
 
 void TCPClientTransport::OnTCPConnectComplete(int result) {
