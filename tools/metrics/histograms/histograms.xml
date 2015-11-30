@@ -42525,6 +42525,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SequencedWorkerPool.ShutdownDelayTime" units="milliseconds">
+  <owner>gab@chromium.org</owner>
+  <summary>
+    How long it takes to wait for tasks that block shutdown to complete.
+  </summary>
+</histogram>
+
+<histogram name="SequencedWorkerPool.TaskCount">
+  <owner>gab@chromium.org</owner>
+  <summary>
+    How many pending tasks there are on each request for work from a worker
+    thread.
+  </summary>
+</histogram>
+
+<histogram name="SequencedWorkerPool.UnrunnableTaskCount">
+  <owner>gab@chromium.org</owner>
+  <summary>How many tasks we skip over to find the next runnable task.</summary>
+</histogram>
+
 <histogram name="ServicesCustomization.LoadResult"
     enum="ServicesCustomizationLoadResult">
   <owner>alemate@chromium.org</owner>
