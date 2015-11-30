@@ -12,7 +12,10 @@
 #include "base/rand_util.h"
 #include "base/sys_info.h"
 #include "mojo/public/c/system/types.h"
+
+#if !defined(OS_ANDROID)
 #include "third_party/icu/source/i18n/unicode/timezone.h"
+#endif
 
 extern "C" {
 #if defined(WIN32)
@@ -34,10 +37,12 @@ InitializeBase(const uint8* icu_data) {
   // cause crashes.
   CHECK(base::i18n::InitializeICUFromRawMemory(icu_data));
 
+#if !defined(OS_ANDROID)
   // ICU DateFormat class (used in base/time_format.cc) needs to get the
   // Olson timezone ID by accessing the zoneinfo files on disk. After
   // TimeZone::createDefault is called once here, the timezone ID is
   // cached and there's no more need to access the file system.
   scoped_ptr<icu::TimeZone> zone(icu::TimeZone::createDefault());
+#endif
 }
 }
