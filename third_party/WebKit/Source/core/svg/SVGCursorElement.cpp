@@ -80,7 +80,7 @@ void SVGCursorElement::svgAttributeChanged(const QualifiedName& attrName)
 
         // Any change of a cursor specific attribute triggers this recalc.
         for (const auto& client : m_clients)
-            client->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::SVGCursor));
+            client->setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::SVGCursor));
 
         return;
     }
