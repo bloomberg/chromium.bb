@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ja">
 <translation id="1013923882670373915">Bluetooth デバイス「<ph name="DEVICE_NAME" />」がペア設定の権限をリクエストしています。このデバイスに次の PIN コードを入力してください: <ph name="PINCODE" /></translation>
+<translation id="1021311941847921177">次の入力方法に切り替えるショートカットが変わりました。<ph name="OLD_SHORTCUT" /> ではなく <ph name="NEW_SHORTCUT" /> をご使用ください。</translation>
 <translation id="112308213915226829">シェルフを自動的に隠す</translation>
 <translation id="1195412055398077112">オーバースキャン</translation>
 <translation id="1270290102613614947">画面キーボードは無効です</translation>
@@ -25,7 +26,9 @@
 <translation id="1812696562331527143">入力方法を <ph name="INPUT_METHOD_ID" />*（<ph name="BEGIN_LINK" />サードパーティ<ph name="END_LINK" />）に変更しました。
 切り替えるには Shift+Alt キーを押します。</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> へミラーリング</translation>
+<translation id="1919743966458266018">タスク マネージャを起動するショートカットが変わりました。<ph name="OLD_SHORTCUT" /> ではなく <ph name="NEW_SHORTCUT" /> をご使用ください。</translation>
 <translation id="1923539912171292317">自動クリック</translation>
+<translation id="1938872420421548906">Shift+Alt</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" />（USB）</translation>
 <translation id="2127372758936585790">低電力の充電器</translation>
@@ -105,6 +108,7 @@
 <translation id="4421231901400348175">リモート サポート経由で <ph name="HELPER_NAME" /> と画面の制御を共有しています。</translation>
 <translation id="4430019312045809116">音量</translation>
 <translation id="4527045527269911712">Bluetooth デバイス「<ph name="DEVICE_NAME" />」がペア設定の権限をリクエストしています。</translation>
+<translation id="4544944664594876241">画面をロックするショートカットが変わりました。<ph name="OLD_SHORTCUT" /> ではなく <ph name="NEW_SHORTCUT" /> をご使用ください。</translation>
 <translation id="479989351350248267">検索</translation>
 <translation id="4804818685124855865">切断</translation>
 <translation id="4872237917498892622">Alt+ 検索/Shift</translation>
@@ -113,12 +117,14 @@
 <translation id="4957722034734105353">詳細...</translation>
 <translation id="4961318399572185831">画面をキャスト</translation>
 <translation id="5011233892417813670">Chromebook</translation>
+<translation id="5012744545445585468">Ctrl+Shift+Space</translation>
 <translation id="5045002648206642691">Google ドライブの設定...</translation>
 <translation id="5102001756192215136">残り時間: <ph name="HOUR" />:<ph name="MINUTE" /></translation>
 <translation id="511445211639755999"><ph name="RESOLUTION" />、<ph name="OVERSCAN" /></translation>
 <translation id="5168181903108465623">キャスト デバイスを利用できます</translation>
 <translation id="5222676887888702881">ログアウト</translation>
 <translation id="5238774010593222950">別のアカウントにログインできません。</translation>
+<translation id="532063867737390965">このネットワーク設定は管理者によって無効にされています。</translation>
 <translation id="544691375626129091">該当するすべてのユーザーをこのセッションに追加済みです。</translation>
 <translation id="5507786745520522457">モバイル データを設定する</translation>
 <translation id="5543001071567407895">SMS</translation>
@@ -132,6 +138,7 @@
 切り替えるには Shift+Alt キーを押します。</translation>
 <translation id="5871632337994001636">デバイスを管理...</translation>
 <translation id="5895138241574237353">再起動</translation>
+<translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5927132638760172455">不明な受信デバイスにキャストしています</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">元に戻す</translation>
@@ -155,6 +162,7 @@
 <translation id="6426039856985689743">モバイル データを無効にする</translation>
 <translation id="6452181791372256707">拒否</translation>
 <translation id="6459472438155181876"><ph name="DISPLAY_NAME" /> へ画面を拡張しています</translation>
+<translation id="6501401484702599040">画面を <ph name="RECEIVER_NAME" /> にキャスト中</translation>
 <translation id="6550675742724504774">オプション</translation>
 <translation id="6585808820553845416">セッション終了まであと <ph name="SESSION_TIME_REMAINING" />です。</translation>
 <translation id="6596816719288285829">IP アドレス</translation>
@@ -162,6 +170,7 @@
 <translation id="6713285437468012787">Bluetooth デバイス「<ph name="DEVICE_NAME" />」がペア設定されました。すべてのユーザーはこのデバイスを使用できます。[設定] から、このペア設定を削除することもできます。</translation>
 <translation id="6785414152754474415">バッテリー残量: <ph name="PERCENTAGE" />%、充電しています。</translation>
 <translation id="6803622936009808957">サポートされている解像度が見つからなかったため、ディスプレイをミラーリングできませんでした。代わりに拡張デスクトップ モードに切り替えました。</translation>
+<translation id="683971173229319003">Search+L</translation>
 <translation id="68610848741840742">ChromeVox（音声フィードバック）</translation>
 <translation id="6911468394164995108">他のネットワークに接続...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
@@ -169,6 +178,7 @@
 <translation id="6981982820502123353">ユーザー補助機能</translation>
 <translation id="7029814467594812963">セッションを終了</translation>
 <translation id="703171847531699602">キャスト デバイスがありません</translation>
+<translation id="7034339000180558234"><ph name="TAB_NAME" /> を <ph name="RECEIVER_NAME" /> にキャスト中</translation>
 <translation id="7052914147756339792">壁紙を設定...</translation>
 <translation id="7097613348211027502">ChromeVox（音声フィードバック）が有効です。
 無効にするには Ctrl+Alt+Z を押してください。</translation>
@@ -180,6 +190,7 @@ Alt+ 検索/Shift キーを押すと解除されます。</translation>
 <translation id="737451040872859086">マイク（内蔵）</translation>
 <translation id="742594950370306541">カメラが使用中です。</translation>
 <translation id="743058460480092004">カメラとマイクが使用中です。</translation>
+<translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> は <ph name="SPECIFIED_RESOLUTION" /> に対応していません。解像度は <ph name="FALLBACK_RESOLUTION" /> に変更されました</translation>
 <translation id="7573962313813535744">ドッキング モード</translation>
 <translation id="7593891976182323525">検索/Shift</translation>
@@ -207,6 +218,7 @@ Alt+ 検索/Shift キーを押すと解除されます。</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="882279321799040148">クリックして表示</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8878886163241303700">画面を拡張しています</translation>
 <translation id="8940956008527784070">バッテリー残量: 少（<ph name="PERCENTAGE" />%）</translation>
 <translation id="9074739597929991885">Bluetooth</translation>

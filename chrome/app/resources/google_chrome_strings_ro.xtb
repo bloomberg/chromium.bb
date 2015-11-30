@@ -5,6 +5,7 @@
 <translation id="1013290471399003443">Chrome s-a asigurat că certificatul acestui site a fost emis de <ph name="ISSUER" />. Serverul a oferit informații valide privind Certificate Transparency.</translation>
 <translation id="1016765312371154165">Chrome nu s-a închis corect.</translation>
 <translation id="103396972844768118">Informații importante cu privire la datele dvs. Chrome</translation>
+<translation id="1035334672863811645">conectează-te în Chrome</translation>
 <translation id="1061441684050139317">Chrome are nevoie de acces la microfon pentru a-l acorda acestui site.</translation>
 <translation id="1065672644894730302">Preferințele dvs. nu pot fi citite. Este posibil ca unele funcții să nu fie disponibile, iar modificările aduse preferințelor nu vor fi salvate.</translation>
 <translation id="1073391069195728457">Chrome – Notificări</translation>
@@ -87,7 +88,7 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3881912906674381083">Chrome s-a asigurat că certificatul acestui site a fost emis de <ph name="ISSUER" />. Serverul a oferit informații privind Certificate Transparency, însă Chrome nu a recunoscut niciunul dintre jurnalele Certificate Transparency.</translation>
 <translation id="3889417619312448367">Dezinstalează Google Chrome</translation>
-<translation id="4011219958405096740">Dacă este activat, se va folosi un flux de conectare la Chrome bazat pe iframe; în caz contrar se va folosi un flux bazat pe WebView.</translation>
+<translation id="4042449298237264661">Acest computer nu va mai primi actualizări pentru Google Chrome, deoarece Windows XP și Windows Vista nu mai sunt acceptate.</translation>
 <translation id="4050175100176540509">În cea mai recentă versiune sunt disponibile îmbunătățiri de securitate și funcții noi importante.</translation>
 <translation id="4053720452172726777">Personalizați și controlați Google Chrome</translation>
 <translation id="4147555960264124640">Vă conectați cu un cont gestionat și îi permiteți administratorului acestuia controlul asupra profilului dvs. Google Chrome. Datele Chrome, cum ar fi aplicațiile, marcajele, istoricul, parolele și alte setări vor fi asociate definitiv cu <ph name="USER_NAME" />. Veți putea să ștergeți aceste date prin intermediul Tabloului de bord pentru Conturi Google, însă nu veți putea să asociați aceste date cu un alt cont. <ph name="LEARN_MORE" /></translation>
@@ -140,9 +141,9 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="573759479754913123">Despre sistemul de operare Chrome</translation>
 <translation id="5749068826913805084">Pentru a descărca fișiere, Chrome necesită acces la stocare.</translation>
 <translation id="5785746630574083988">Repornirea în modul Windows 8 va închide și relansa aplicațiile Chrome.</translation>
-<translation id="5799551393681493217">Activează fluxurile de conectare la Chrome bazate pe iframe. Acest marcaj înlocuiește --enable-web-based-signin.</translation>
 <translation id="5855036575689098185">Software-ul care rulează pe computer este incompatibil cu Google Chrome.</translation>
 <translation id="5877064549588274448">Canalul a fost schimbat. Reporniți dispozitivul pentru a aplica modificările.</translation>
+<translation id="5890698319714066019">Google Chrome nu poate afișa pagina web, deoarece computerul nu este conectat la internet.</translation>
 <translation id="5931853610562009806">Pe Mac, parolele pot fi salvate în aplicația Keychain și pot fi accesate sau sincronizate de alți utilizatori Chrome care folosesc același cont de OS X.</translation>
 <translation id="5940385492829620908">Experiența web personalizată, marcajele și celelalte date Chrome chiar aici.</translation>
 <translation id="5941830788786076944">Setează Google Chrome ca browser prestabilit</translation>
@@ -165,6 +166,8 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="6236285698028833233">Google Chrome nu se mai actualizează și nu mai acceptă această versiune a sistemului dvs. de operare.</translation>
 <translation id="629218512217695915">Folosește parola generată de Chrome</translation>
 <translation id="6368958679917195344">Sistemul de operare Chrome este posibil datorită unui <ph name="BEGIN_LINK_CROS_OSS" />software open source<ph name="END_LINK_CROS_OSS" /> suplimentar.</translation>
+<translation id="6400076122676892962">În curând, acest computer nu va mai primi actualizări pentru Google Chrome, deoarece Mac OS X 10.6, 10.7 și 10.8 nu vor mai fi acceptate.</translation>
+<translation id="6470176598693778404">Acest computer nu va mai primi actualizări pentru Google Chrome, deoarece Mac OS X 10.6, 10.7 și 10.8 nu mai sunt acceptate.</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{O descărcare este în desfășurare. Dorești să anulezi descărcarea și să ieși din Google Chrome?}few{# descărcări sunt în desfășurare. Dorești să anulezi descărcările și să ieși din Google Chrome?}other{# de descărcări sunt în desfășurare. Dorești să anulezi descărcările și să ieși din Google Chrome?}}</translation>
 <translation id="6598387184982954187">În prezent, folosiți <ph name="PROFILE_EMAIL" /> pentru a sincroniza datele Chrome. Pentru a actualiza preferințele de sincronizare sau pentru a folosi Chrome fără un Cont Google, accesați <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6600954340915313787">Copiat în Chrome</translation>
@@ -202,6 +205,7 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="7196020411877309443">De ce văd acest lucru?</translation>
 <translation id="7242029209006116544">Vă conectați cu un cont gestionat și îi permiteți administratorului acestuia controlul asupra profilului dvs. Google Chrome. Datele Chrome, cum ar fi aplicațiile, marcajele, istoricul, parolele și alte setări vor fi asociate definitiv cu <ph name="USER_NAME" />. Veți putea să ștergeți aceste date prin intermediul Tabloului de bord pentru Conturi Google, însă nu veți putea să asociați aceste date cu alt cont. Aveți opțiunea de a crea un profil nou, pentru a păstra separat datele Chrome existente. <ph name="LEARN_MORE" /></translation>
 <translation id="7282192067747128786">Chrome – Notificări (<ph name="QUANTITY" /> necitite)</translation>
+<translation id="729375352412857283">În curând, acest computer nu va mai primi actualizări pentru Google Chrome, deoarece Windows XP și Windows Vista nu vor mai fi acceptate.</translation>
 <translation id="7339898014177206373">Fereastră nouă</translation>
 <translation id="7396375882099008034">Permiteți browserului Chrome să acceseze rețeaua din setările pentru firewall sau
         antivirus.</translation>

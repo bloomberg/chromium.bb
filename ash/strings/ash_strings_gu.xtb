@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="gu">
 <translation id="1013923882670373915">Bluetooth ઉપકરણ "<ph name="DEVICE_NAME" />" ને જોડી બનાવવા માટે પરવાનગી જોઈએ છે. કૃપા કરીને તે ઉપકરણ પર આ PIN કોડ દાખલ કરો: <ph name="PINCODE" /></translation>
+<translation id="1021311941847921177">આગલી ઇનપુટ પદ્ધતિ પર સ્વિચ કરવા માટેની પદ્ધતિ બદલી છે. કૃપા કરીને <ph name="NEW_SHORTCUT" /> ની બદલે <ph name="OLD_SHORTCUT" /> નો ઉપયોગ કરો.</translation>
 <translation id="112308213915226829">સ્વતઃછુપાવો શેલ્ફ</translation>
 <translation id="1195412055398077112">ઓવરસ્કૅન</translation>
 <translation id="1270290102613614947">ઓન-સ્ક્રીન કીબોર્ડ અક્ષમ કર્યું</translation>
@@ -25,7 +26,9 @@
 <translation id="1812696562331527143">તમારી ઇનપુટ પદ્ધતિ  <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />3જા પક્ષ<ph name="END_LINK" />)માં બદલાઇ ગયેલ છે.
 સ્વિચ કરવા માટે Shift + Alt દબાવો.</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> પર પ્રતિબિંબિત થઈ રહ્યું છે</translation>
+<translation id="1919743966458266018">ટાસ્ક સંચાલક ખોલવાનો શોર્ટકટ બદલાયો છે. કૃપા કરીને <ph name="NEW_SHORTCUT" /> ની બદલે <ph name="OLD_SHORTCUT" /> નો ઉપયોગ કરો.</translation>
 <translation id="1923539912171292317">આપમેળે ક્લિક્સ</translation>
+<translation id="1938872420421548906">Shift+Alt</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2127372758936585790">નિમ્ન-પાવર ચાર્જર</translation>
@@ -105,6 +108,7 @@
 <translation id="4421231901400348175">દૂરસ્થ સહાય વડે <ph name="HELPER_NAME" /> સાથે તમારી સ્ક્રીનનું નિયંત્રણ શેર કરવું.</translation>
 <translation id="4430019312045809116">વૉલ્યૂમ</translation>
 <translation id="4527045527269911712">Bluetooth ઉપકરણ "<ph name="DEVICE_NAME" />" ને જોડી બનાવવા માટે પરવાનગી જોઈએ છે.</translation>
+<translation id="4544944664594876241">સ્ક્રીનને લૉક કરવાનો શોર્ટકટ બદલાયો છે. કૃપા કરીને <ph name="OLD_SHORTCUT" /> ને બદલે <ph name="NEW_SHORTCUT" /> નો ઉપયોગ કરો.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">ડિસ્કનેક્ટ કરો</translation>
 <translation id="4872237917498892622">Alt+Search અથવા Shift</translation>
@@ -113,12 +117,14 @@
 <translation id="4957722034734105353">વધુ જાણો...</translation>
 <translation id="4961318399572185831">સ્ક્રીનને કાસ્ટ કરો</translation>
 <translation id="5011233892417813670">Chromebook</translation>
+<translation id="5012744545445585468">Ctrl+Shift+Space</translation>
 <translation id="5045002648206642691">Google ડ્રાઇવ સેટિંગ્સ...</translation>
 <translation id="5102001756192215136"><ph name="HOUR" />:<ph name="MINUTE" /> બાકી</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION" />, <ph name="OVERSCAN" /></translation>
 <translation id="5168181903108465623">Cast ઉપકરણો ઉપલબ્ધ</translation>
 <translation id="5222676887888702881">સાઇન આઉટ</translation>
 <translation id="5238774010593222950">બીજા એકાઉન્ટમાં સાઇન-ઇન કરી શકતાં નથી.</translation>
+<translation id="532063867737390965">આ નેટવર્ક સેટિંગ વ્યવસ્થાપક દ્વારા અક્ષમ કરેલ છે.</translation>
 <translation id="544691375626129091">બધા ઉપલબ્ધ વપરાશકર્તાઓ પહેલેથી જ આ સત્ર પર ઉમેરવામાં આવ્યા છે.</translation>
 <translation id="5507786745520522457">મોબાઇલ ડેટા સેટ કરો</translation>
 <translation id="5543001071567407895">SMS</translation>
@@ -132,6 +138,7 @@
 સ્વિચ કરવા માટે Shift + Alt દબાવો.</translation>
 <translation id="5871632337994001636">ઉપકરણોનું સંચાલન કરો...</translation>
 <translation id="5895138241574237353">પુનઃપ્રારંભ કરો</translation>
+<translation id="5901316534475909376">Shift + Esc</translation>
 <translation id="5927132638760172455">અજાણ્યાં પ્રાપ્તકર્તા પર કાસ્ટ કરી રહ્યાં છે</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">પાછા ફરો</translation>
@@ -155,6 +162,7 @@
 <translation id="6426039856985689743">મોબાઇલ ડેટાને અક્ષમ કરો</translation>
 <translation id="6452181791372256707">નકારો</translation>
 <translation id="6459472438155181876">સ્ક્રીનને <ph name="DISPLAY_NAME" /> પર વિસ્તૃત કરી રહ્યાં છે</translation>
+<translation id="6501401484702599040"><ph name="RECEIVER_NAME" /> પર સ્ક્રીન કાસ્ટ કરી રહ્યાં છીએ</translation>
 <translation id="6550675742724504774">વિકલ્પો</translation>
 <translation id="6585808820553845416"><ph name="SESSION_TIME_REMAINING" /> માં સત્ર સમાપ્ત થાય છે.</translation>
 <translation id="6596816719288285829">IP સરનામું</translation>
@@ -162,6 +170,7 @@
 <translation id="6713285437468012787">Bluetooth ઉપકરણ "<ph name="DEVICE_NAME" />" ની જોડી બનાવવામાં આવી અને હવે તે બધા વપરાશકર્તાઓને ઉપલબ્ધ છે. તમે સેટિંગ્સનો ઉપયોગ કરીને આ જોડીને દૂર કરી શકો છો.</translation>
 <translation id="6785414152754474415">બેટરી <ph name="PERCENTAGE" /> % પૂર્ણ અને ચાર્જ થઈ રહી છે.</translation>
 <translation id="6803622936009808957">કોઈ સમર્થિત રિઝોલ્યૂશન મળ્યું ન હોવાથી, પ્રદર્શનોને પ્રતિબિંબિત કરી શકાયા નથી. તેને બદલે વિસ્તૃત ડેસ્કટૉપ દાખલ કર્યું.</translation>
+<translation id="683971173229319003">Search+L</translation>
 <translation id="68610848741840742">ChromeVox (બોલાયેલ પ્રતિસાદ)</translation>
 <translation id="6911468394164995108">અન્યથી જોડાઓ...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
@@ -169,6 +178,7 @@
 <translation id="6981982820502123353">ઍક્સેસિબિલિટી</translation>
 <translation id="7029814467594812963">સત્રમાંથી બહાર નીકળો</translation>
 <translation id="703171847531699602">કોઈ કાસ્ટ ઉપકરણો નથી</translation>
+<translation id="7034339000180558234"><ph name="RECEIVER_NAME" /> પર <ph name="TAB_NAME" /> ને કાસ્ટ કરી રહ્યાં છીએ</translation>
 <translation id="7052914147756339792">વૉલપેપર સેટ કરો...</translation>
 <translation id="7097613348211027502">ChromeVox (બોલાયેલ પ્રતિસાદ) સક્ષમ છે. અક્ષમ કરવા માટે Ctrl+Alt+Z દબાવો.</translation>
 <translation id="714034171374937760">Chromebase</translation>
@@ -179,6 +189,7 @@
 <translation id="737451040872859086">માઇક્રોફોન (આંતરિક)</translation>
 <translation id="742594950370306541">કૅમેરો ઉપયોગમાં છે.</translation>
 <translation id="743058460480092004">કૅમેરો અને માઇક્રોફોન ઉપયોગમાં છે.</translation>
+<translation id="7510334386202674593">ctrl + shift + L</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" />, <ph name="SPECIFIED_RESOLUTION" /> ને સમર્થન આપતું નથી. રિઝોલ્યુશન <ph name="FALLBACK_RESOLUTION" /> પર બદલાયું હતું</translation>
 <translation id="7573962313813535744">ડોક કરેલ મોડ</translation>
 <translation id="7593891976182323525">Search અથવા Shift</translation>
@@ -206,6 +217,7 @@
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="882279321799040148">જોવા માટે ક્લિક કરો</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8878886163241303700">સ્ક્રીનને વિસ્તૃત કરી રહ્યું છે</translation>
 <translation id="8940956008527784070">બૅટરી ઓછી (<ph name="PERCENTAGE" />%)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>

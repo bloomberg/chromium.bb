@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="en-GB">
+<translation id="101438888985615157">Rotate screen by 180 degrees</translation>
 <translation id="1017967144265860778">Power management on the login screen</translation>
 <translation id="1019101089073227242">Set user data directory</translation>
 <translation id="1022361784792428773">Extension IDs the user should be prevented from installing (or * for all)</translation>
@@ -265,6 +266,17 @@
 <translation id="2113068765175018713">Limit device uptime by automatically rebooting</translation>
 <translation id="2127599828444728326">Allow notifications on these sites</translation>
 <translation id="2131902621292742709">Screen dim delay when running on battery power</translation>
+<translation id="2137064848866899664">If this policy is set, each display is rotated to the
+      specified orientation on every reboot and the first time that it is connected
+      after the policy value has changed. Users may change the display
+      rotation via the settings page after logging in, but their
+      setting will be overridden by the policy value at the next reboot.
+
+      This policy applies to both the primary and all secondary displays.
+
+      If the policy is not set, the default value is 0 degrees and the user is
+      free to change it. In this case, the default value is not reapplied at
+      restart.</translation>
 <translation id="2166715102875984646">Disable support for 3D graphics APIs.
 
       Enabling this setting prevents web pages from accessing the graphics processing unit (GPU). Specifically, web pages can not access the WebGL API and plugins can not use the Pepper 3D API.
@@ -994,6 +1006,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If you enable this setting, the Developer Tools cannot be accessed and website elements cannot be inspected any more. Any keyboard shortcuts and any menu or context menu entries to open the Developer Tools or the JavaScript Console will be disabled.
 
       Setting this option to disabled or leaving it unset will allow the user to use the Developer Tools and the JavaScript console.</translation>
+<translation id="4449545651113180484">Rotate screen clockwise by 270 degrees</translation>
 <translation id="4467952432486360968">Block third-party cookies</translation>
 <translation id="4474167089968829729">Enable saving passwords to the password manager</translation>
 <translation id="4480694116501920047">Force SafeSearch</translation>
@@ -1264,6 +1277,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If disabled, the default search engine is not imported.
 
       If it is not set, the user may be asked whether to import or importing may happen automatically.</translation>
+<translation id="5423197884968724595">Android WebView restriction name:</translation>
 <translation id="5447306928176905178">Enable reporting memory info (JS heap size) to page (deprecated)</translation>
 <translation id="5457065417344056871">Enable guest mode in browser</translation>
 <translation id="5457924070961220141">Allows you to configure the default HTML renderer when <ph name="PRODUCT_FRAME_NAME" /> is installed.
@@ -2040,6 +2054,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           If this setting is enabled, then this machine can discover and connect to remote host machines even if they are separated by a firewall.
 
           If this setting is disabled and outgoing UDP connections are filtered by the firewall, then this machine can only connect to host machines within the local network.</translation>
+<translation id="802147957407376460">Rotate screen by 0 degrees</translation>
 <translation id="8044493735196713914">Report device boot mode</translation>
 <translation id="8059164285174960932">URL where remote access clients should obtain their authentication token</translation>
 <translation id="8071636581296916773">Enables usage of relay servers when remote clients are trying to establish a connection to this machine.
@@ -2156,6 +2171,8 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="8382184662529825177">Enable the use of remote attestation for content protection for the device</translation>
 <translation id="838870586332499308">Enable data roaming</translation>
 <translation id="8412312801707973447">Whether online OCSP/CRL checks are performed</translation>
+<translation id="8424255554404582727">Set default display rotation, reapplied on every reboot</translation>
+<translation id="8426231401662877819">Rotate screen clockwise by 90 degrees</translation>
 <translation id="8451988835943702790">Use New Tab Page as homepage</translation>
 <translation id="8465065632133292531">Parameters for instant URL which uses POST</translation>
 <translation id="847472800012384958">Do not allow any site to show pop-ups</translation>

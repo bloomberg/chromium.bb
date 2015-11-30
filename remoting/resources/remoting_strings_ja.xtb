@@ -24,6 +24,7 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="1546934824884762070">予期しないエラーが発生しました。この問題をデベロッパーに報告してください。</translation>
 <translation id="1619813076098775562">キャスト デバイスへの接続を終了しました。</translation>
 <translation id="1643640058022401035">このページを閉じると、Chromoting セッションが終了します。</translation>
+<translation id="1646994964686260497">接続先がありません。</translation>
 <translation id="1654128982815600832">このパソコンのリモート接続を有効にしています...</translation>
 <translation id="170207782578677537">このパソコンを登録できませんでした。</translation>
 <translation id="1704090719919187045">Chromoting ホスト設定</translation>
@@ -109,6 +110,7 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="3606997049964069799">Chromium にログインしていません。ログインしてもう一度お試しください。</translation>
 <translation id="3649256019230929621">ウィンドウを最小化</translation>
 <translation id="369442766917958684">オフラインです。</translation>
+<translation id="3695446226812920698">詳細</translation>
 <translation id="3776024066357219166">Chrome リモート デスクトップ セッションが終了しました。</translation>
 <translation id="3785447812627779171">Chromoting
 ホスト</translation>
@@ -121,6 +123,10 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="3950820424414687140">ログイン</translation>
 <translation id="3989511127559254552">続行するには、このパソコンに拡張アクセス許可を付与する必要があります。この作業は 1 回だけ必要です。</translation>
 <translation id="4006787130661126000">Chrome リモート デスクトップを使用してこのパソコンにアクセスするには、リモート接続を有効にする必要があります。</translation>
+<translation id="401121182145179743">リモート接続に使用するパソコンを最初に設定しておく必要があります。</translation>
+<translation id="4028465833180158312">• マテリアル デザインのユーザー インターフェースの更新。
+• サードパーティ ライセンスのクレジット。
+• オフラインのリモート パソコンに関する情報の表示。</translation>
 <translation id="405887016757208221">リモート パソコンでセッションを初期化できませんでした。引き続き問題が発生する場合は、ホストを設定し直してみてください。</translation>
 <translation id="4068946408131579958">すべての接続</translation>
 <translation id="409800995205263688">注: ポリシー設定に基づき、接続が許可されるのはこのネットワーク内のパソコン間のみとなります。</translation>

@@ -24,6 +24,7 @@ Các máy tính từ xa có bàn phím không phải tiếng Anh-Mỹ có thể 
 <translation id="1546934824884762070">Đã xảy ra lỗi không mong muốn. Vui lòng báo cáo vấn đề này cho nhà phát triển.</translation>
 <translation id="1619813076098775562">Đã đóng kết nối tới Thiết bị truyền.</translation>
 <translation id="1643640058022401035">Thoát khỏi trang này sẽ kết thúc phiên Kết nối từ xa trên Chrome của bạn.</translation>
+<translation id="1646994964686260497">Không có máy tính nào để kết nối.</translation>
 <translation id="1654128982815600832">Đang bật kết nối từ xa cho máy tính này…</translation>
 <translation id="170207782578677537">Không thể đăng ký máy tính này.</translation>
 <translation id="1704090719919187045">Tùy chọn máy chủ kết nối từ xa trên Chrome</translation>
@@ -109,6 +110,7 @@ Các máy tính từ xa có bàn phím không phải tiếng Anh-Mỹ có thể 
 <translation id="3606997049964069799">Bạn chưa đăng nhập vào Chromium. Vui lòng đăng nhập và thử lại.</translation>
 <translation id="3649256019230929621">Thu nhỏ cửa sổ</translation>
 <translation id="369442766917958684">Ngoại tuyến.</translation>
+<translation id="3695446226812920698">Tìm hiểu cách thức</translation>
 <translation id="3776024066357219166">Phiên Chrome Remote Desktop của bạn đã kết thúc.</translation>
 <translation id="3785447812627779171">Máy chủ kết nối từ xa
 trên Chrome</translation>
@@ -121,6 +123,10 @@ trên Chrome</translation>
 <translation id="3950820424414687140">Đăng nhập</translation>
 <translation id="3989511127559254552">Để tiếp tục, trước tiên, bạn phải cấp các quyền truy cập mở rộng cho máy tính của mình. Bạn chỉ phải thực hiện việc này một lần.</translation>
 <translation id="4006787130661126000">Bạn phải bật kết nối từ xa nếu bạn muốn sử dụng Chrome Remote Desktop để truy cập vào máy tính này.</translation>
+<translation id="401121182145179743">Trước tiên, bạn cần thiết lập máy tính để truy cập từ xa.</translation>
+<translation id="4028465833180158312">• Bản cập nhật giao diện người dùng thiết kế material design.
+• Tín dụng cấp phép bên thứ ba.
+• Thông tin được hiển thị cho các máy tính từ xa đang ngoại tuyến.</translation>
 <translation id="405887016757208221">Máy tính từ xa đã không khởi tạo được phiên. Nếu sự cố vẫn tiếp diễn, vui lòng thử định cấu hình lại máy chủ.</translation>
 <translation id="4068946408131579958">Tất cả kết nối</translation>
 <translation id="409800995205263688">LƯU Ý: Cài đặt chính sách chỉ cho phép kết nối giữa các máy tính trong mạng của bạn.</translation>

@@ -29,11 +29,14 @@
 <translation id="1383876407941801731">Pesquisar</translation>
 <translation id="1389974829397082527">Nenhum marcador aqui</translation>
 <translation id="1404122904123200417">Incorporado em <ph name="WEBSITE_URL" /></translation>
+<translation id="1406000523432664303">"Não Monitorizar"</translation>
+<translation id="1409879593029778104">A transferência de <ph name="FILE_NAME" /> foi impedida porque o ficheiro já existe.</translation>
 <translation id="1416550906796893042">Versão da aplicação</translation>
 <translation id="1423209968422390786">O acesso à localização está <ph name="BEGIN_LINK" />desativado neste dispositivo<ph name="END_LINK" />.</translation>
 <translation id="1445680696957526815">Os componentes do Chrome são incompatíveis entre si. O Chrome pode estar a ser atualizado, tente novamente dentro de alguns minutos. Se o problema continuar, experimente desinstalar e reinstalar o Chrome.</translation>
 <translation id="1446450296470737166">Perm. controlo total dispo. MIDI</translation>
 <translation id="145097072038377568">Desativada nas Definições do Android</translation>
+<translation id="1477626028522505441">A transferência de <ph name="FILE_NAME" /> falhou devido a problemas do servidor.</translation>
 <translation id="1506061864768559482">Motor de pesquisa</translation>
 <translation id="1513352483775369820">Marcadores e histórico da Web</translation>
 <translation id="1557201757634521564">Deteção automática de codificação</translation>
@@ -46,9 +49,12 @@
 <translation id="1647391597548383849">Aceder à câmara</translation>
 <translation id="1648687357130613845">Espaço de armazenamento</translation>
 <translation id="1657479659644194568">Configurar o Chrome</translation>
+<translation id="169033420419426091">A transferência de <ph name="FILE_NAME" /> falhou porque o cartão SD não está presente.</translation>
 <translation id="1692118695553449118">A sincronização está ativada</translation>
 <translation id="1709438864123551175">Poupança de dados</translation>
+<translation id="1741127251791687432">Tem sessão iniciada nas seguintes Contas Google.</translation>
 <translation id="1742134235943978220">Traduzido para <ph name="TARGET_LANGUAGE" />.</translation>
+<translation id="1749561566933687563">Sincronizar os marcadores</translation>
 <translation id="17513872634828108">Separadores abertos</translation>
 <translation id="1807246157184219062">Claro</translation>
 <translation id="1825719650605518411">Experiência de primeira execução</translation>
@@ -80,6 +86,7 @@
 <translation id="2268044343513325586">Refinar</translation>
 <translation id="2315043854645842844">O sistema operativo não suporta a seleção do certificado do lado do cliente.</translation>
 <translation id="2316129865977710310">Não, obrigado</translation>
+<translation id="2319528413610359757">Para leitores de <ph name="PUBLISHER" /></translation>
 <translation id="2321958826496381788">Arraste o controlo de deslize até conseguir ler confortavelmente. O texto deve ter, pelo menos, este tamanho depois de tocar duas vezes num parágrafo.</translation>
 <translation id="2343328333327081434">A instalar...</translation>
 <translation id="2351097562818989364">As definições de tradução foram repostas.</translation>
@@ -90,6 +97,7 @@
 <translation id="2414886740292270097">Escuro</translation>
 <translation id="2433507940547922241">Aspeto</translation>
 <translation id="2440823041667407902">Acesso à localização</translation>
+<translation id="2441637511528789386">Tem agora sessão iniciada no Chrome.</translation>
 <translation id="2470327855284432041">Página de <ph name="PAGE_SIZE_STRING" /> guardada offline</translation>
 <translation id="2476578072172137802">Definições do site</translation>
 <translation id="2482878487686419369">Notificações</translation>
@@ -153,6 +161,7 @@
 
 Está a iniciar sessão com uma conta gerida e a atribuir ao respetivo administrador controlo sobre o seu perfil do Chrome. Os seus dados do Chrome ficarão associados permanentemente a esta conta. Desassociar esta conta irá eliminar os dados locais do Chrome.</translation>
 <translation id="3384347053049321195">Partilhar imagem</translation>
+<translation id="3387650086002190359">A transferência de <ph name="FILE_NAME" /> falhou devido a erros do sistema de ficheiros.</translation>
 <translation id="3414952576877147120">Tamanho:</translation>
 <translation id="3485544713029068372">Smart Lock para palavras-passe</translation>
 <translation id="3492207499832628349">Novo sep. navegação anónima</translation>
@@ -161,6 +170,8 @@ Está a iniciar sessão com uma conta gerida e a atribuir ao respetivo administr
 <translation id="360480449234699036">Saiba mais acerca dos tópicos nos Websites sem sair da página. A funcionalidade Tocar para pesquisar envia uma palavra e o respetivo contexto circundante para a Pesquisa Google, que devolve definições, imagens, resultados da pesquisa e outros detalhes.
 
 Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refinar a sua pesquisa, deslize lentamente o painel totalmente para cima e toque na caixa de pesquisa.</translation>
+<translation id="363596933471559332">Inicie automaticamente sessão em Websites com as credenciais armazenadas. Quando a funcionalidade está desativada, é-lhe sempre pedida validação antes de iniciar sessão num Website.</translation>
+<translation id="3653742808139624888">Para obter os seus marcadores em todos os dispositivos, inicie sessão no Chrome</translation>
 <translation id="3656115297268584622">Ative a localização nas <ph name="BEGIN_LINK" />Definições do Android<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">Os Websites de terceiros podem guardar e ler dados de cookies</translation>
 <translation id="3672452749423051839">Sugestões de erros de navegação</translation>
@@ -168,6 +179,7 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="3774280986422214650">Se ativar esta funcionalidade, fará parte de uma experiência que utiliza páginas HTTPS com proxy através dos servidores da Google.</translation>
 <translation id="3809549525127675114">"<ph name="VIDEO_TITLE" />" concluído</translation>
 <translation id="3828029223314399057">Pesquisar marcadores</translation>
+<translation id="3871171699884605801">Não é possível limpar o histórico de navegação nas contas para crianças</translation>
 <translation id="3894427358181296146">Adicionar pasta</translation>
 <translation id="3895926599014793903">Forçar ativação do zoom</translation>
 <translation id="3917783807003067648">A localização está bloqueada</translation>
@@ -211,6 +223,7 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="4532845899244822526">Escolher pasta</translation>
 <translation id="4543087392704641517">Título do marcador</translation>
 <translation id="4543661749405994812">Copiar endereço de email</translation>
+<translation id="4581964774250883625">Entrou no modo de navegação anónima.</translation>
 <translation id="4583974066823898813">{NUM_URLS,plural, =1{1 link da Web física próximo}other{# links da Web física próximos}}</translation>
 <translation id="4645575059429386691">Gerido pelos teus pais</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> marcadores eliminados</translation>
@@ -229,6 +242,7 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="4816465935029283692">Tipos de dados</translation>
 <translation id="4827948050554950725">Adicionar cartão de crédito</translation>
 <translation id="4836364883164334657">A sua ligação a este site não é privada. É possível que utilizadores mal intencionados estejam a tentar roubar as suas informações (por exemplo, fotos, palavras-passe, mensagens e cartões de crédito) de <ph name="DOMAIN_NAME" />.</translation>
+<translation id="4842511359652954519">Ler mais</translation>
 <translation id="4850886885716139402">Ver</translation>
 <translation id="4871370605780490696">Adicionar marcador</translation>
 <translation id="4881695831933465202">Abrir</translation>
@@ -247,6 +261,9 @@ Basta abrir o Chrome no computador, aceder ao menu e selecionar "Iniciar sessão
 <translation id="5026147292873308216">Não foram encontradas páginas Web próximas</translation>
 <translation id="5039804452771397117">Permitir</translation>
 <translation id="5040262127954254034">Privacidade</translation>
+<translation id="5049968687459146030">A ativação de "Não Monitorizar" significa que é incluído um pedido com o seu tráfego de navegação. Qualquer efeito depende de um Website responder ou não ao pedido e do modo como o pedido é interpretado.
+
+Por exemplo, alguns Websites podem responder a este pedido ao mostrar-lhe anúncios que não têm por base outros Websites visitados por si. Ainda assim, muitos Websites continuam a recolher e a utilizar os seus dados de navegação para, por exemplo, melhorar a segurança, fornecer conteúdo, anúncios e recomendações nos Websites e gerar relatórios estatísticos.</translation>
 <translation id="5063480226653192405">Utilização</translation>
 <translation id="5074309530946372881">A procurar páginas Web próximas</translation>
 <translation id="509605886816275399">Guardar esta página offline?</translation>
@@ -255,6 +272,7 @@ Basta abrir o Chrome no computador, aceder ao menu e selecionar "Iniciar sessão
 <translation id="5138299137310274655">Esta página está em <ph name="SOURCE_LANGUAGE" />. Pretende traduzi-la para <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="5150703642582475397">Unir separadores e aplicações</translation>
 <translation id="515227803646670480">Limpar dados armazenados</translation>
+<translation id="5156656584247937086">Esta conta pertence a uma criança</translation>
 <translation id="5161254044473106830">Título obrigatório</translation>
 <translation id="5164482624172255778">Pretende que o Google Chrome se ofereça para traduzir as páginas em <ph name="LANGUAGE" /> deste site da próxima vez?</translation>
 <translation id="5168917394043976756">Abrir a gaveta de navegação</translation>
@@ -279,6 +297,7 @@ Basta abrir o Chrome no computador, aceder ao menu e selecionar "Iniciar sessão
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> eliminado</translation>
 <translation id="5345083863238459644">O acesso à localização também está <ph name="BEGIN_LINK" />desativado neste dispositivo<ph name="END_LINK" />.</translation>
 <translation id="5380554235172449987">Nunca enviar</translation>
+<translation id="5400569084694353794">Ao utilizar esta aplicação, concorda com os <ph name="BEGIN_LINK1" />Termos de Utilização<ph name="END_LINK1" /> e o <ph name="BEGIN_LINK2" />Aviso de Privacidade<ph name="END_LINK2" /> do Chrome.</translation>
 <translation id="5414836363063783498">A validar…</translation>
 <translation id="5423934151118863508">As páginas mais visitadas aparecem aqui</translation>
 <translation id="5424715742813396254">Editar nome/palavra-passe guardada ou exceção</translation>
@@ -328,6 +347,7 @@ No entanto, a navegação não é invisível. Passar para o modo de navegação 
 <translation id="5899349522111170522">Criar novo ficheiro</translation>
 <translation id="5902828464777634901">Todos os dados armazenados por este Website, incluindo cookies, são eliminados.</translation>
 <translation id="5911030830365207728">Google Tradutor</translation>
+<translation id="5913211790276112891">Se se tiver esquecido da frase de acesso, pare e reinicie a Sincronização através do <ph name="BEGIN_LINK" />Painel de Controlo Google<ph name="END_LINK" />.</translation>
 <translation id="5916664084637901428">Ativado</translation>
 <translation id="5939518447894949180">Repor</translation>
 <translation id="5953603475187800576">Mostrar endereços e cartões de crédito do Google Payments</translation>
@@ -338,6 +358,7 @@ No entanto, a navegação não é invisível. Passar para o modo de navegação 
 <translation id="6031101910111098835">Reduzida – clicar para expandir</translation>
 <translation id="6040143037577758943">Fechar</translation>
 <translation id="6042308850641462728">Mais</translation>
+<translation id="604996488070107836">A transferência de <ph name="FILE_NAME" /> falhou devido a um erro desconhecido.</translation>
 <translation id="605721222689873409">AA</translation>
 <translation id="6075798973483050474">Editar página inicial</translation>
 <translation id="6108923351542677676">Configuração em curso…</translation>
@@ -367,6 +388,7 @@ No entanto, a navegação não é invisível. Passar para o modo de navegação 
 <translation id="6458785801851713928">A sincronização não está disponível para o seu domínio.</translation>
 <translation id="6464825623202322042">Este dispositivo</translation>
 <translation id="6476911854266661814">"<ph name="VIDEO_TITLE" />" em pausa</translation>
+<translation id="6482749332252372425">A transferência de <ph name="FILE_NAME" /> falhou devido à falta de espaço de armazenamento.</translation>
 <translation id="654446541061731451">Selecione um separador a transmitir</translation>
 <translation id="6550675742724504774">Opções</translation>
 <translation id="656628257199996201">Traduzir sempre <ph name="SOURCE_LANGUAGE" /></translation>
@@ -377,6 +399,7 @@ No entanto, a navegação não é invisível. Passar para o modo de navegação 
 <translation id="6612856669344839356">Guardar marcador</translation>
 <translation id="6627583120233659107">Editar pasta</translation>
 <translation id="6643016212128521049">Limpar</translation>
+<translation id="6656545060687952787">O Chrome necessita de acesso à localização para procurar dispositivos. <ph name="BEGIN_LINK" />Atualizar autorizações<ph name="END_LINK" /></translation>
 <translation id="666268767214822976">Utilizar um serviço de previsão para mostrar consultas relacionadas e Websites populares à medida que escreve na barra de endereço</translation>
 <translation id="666981079809192359">Aviso de privacidade do Chrome</translation>
 <translation id="6697251040310467641">Página guardada offline</translation>
@@ -397,6 +420,7 @@ No entanto, a navegação não é invisível. Passar para o modo de navegação 
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> separadores fechados</translation>
 <translation id="6857778194843072568">Enviar apenas em Wi-Fi</translation>
 <translation id="6868088497967843822">Iniciar sessão para aceder aos marcadores, ao histórico, às palavras-passe e a outras definições em todos os dispositivos</translation>
+<translation id="6905639951630474043">A procurar dispositivos...</translation>
 <translation id="6945221475159498467">Seleccionar</translation>
 <translation id="6963766334940102469">Eliminar marcadores</translation>
 <translation id="6964496835063002391">Adicionar uma conta</translation>
@@ -431,9 +455,11 @@ No entanto, a navegação não é invisível. Passar para o modo de navegação 
 <translation id="7378627244592794276">Não</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7400448254438078120">Não é possível transmitir vídeo devido a restrições do site</translation>
+<translation id="7408644312175185557">Veja os separadores com outras aplicações recentes no ecrã Vista geral do telemóvel.</translation>
 <translation id="7423098979219808738">Perguntar primeiro</translation>
 <translation id="7437998757836447326">Terminar sessão no Chrome</translation>
 <translation id="7473891865547856676">Não, obrigado</translation>
+<translation id="7475192538862203634">Se vê isto com frequência, experimente estas <ph name="BEGIN_LINK" />sugestões<ph name="END_LINK" />.</translation>
 <translation id="748127970106343339">Confirmar a eliminação das credenciais do dispositivo</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (atualizado há <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7498271377022651285">Aguarde…</translation>
@@ -442,7 +468,10 @@ No entanto, a navegação não é invisível. Passar para o modo de navegação 
 <translation id="7561196759112975576">Sempre</translation>
 <translation id="7562080006725997899">A limpar dados de navegação</translation>
 <translation id="7596558890252710462">Sistema operativo</translation>
+<translation id="7599840151813361502">A sessão nas suas <ph name="BEGIN_LINK" />Contas Google<ph name="END_LINK" /> não é terminada</translation>
+<translation id="7603403729818446828">Veja os seus separadores com outras aplicações recentes no ecrã Vista geral do telemóvel. Pode controlar esta função nas <ph name="BEGIN_LINK" />Definições<ph name="END_LINK" />.</translation>
 <translation id="7607002721634913082">Em pausa</translation>
+<translation id="7619072057915878432">A transferência de <ph name="FILE_NAME" /> falhou devido a falhas de rede.</translation>
 <translation id="7626032353295482388">Bem-vindo ao Chrome</translation>
 <translation id="7634554953375732414">A sua ligação a este site não é privada.</translation>
 <translation id="7638584964844754484">Frase de acesso incorreta</translation>
@@ -528,6 +557,7 @@ Para obter licenças novas, ligue-se à Internet e reproduza o conteúdo transfe
 <translation id="869891660844655955">Data de expiração</translation>
 <translation id="8719023831149562936">Impossível transmitir o separador atual</translation>
 <translation id="8725066075913043281">Tentar novamente</translation>
+<translation id="8727142376512517020">Não voltar a mostrar</translation>
 <translation id="8730621377337864115">Concluído</translation>
 <translation id="8737542153238017984">Página guardada não disponível offline. O armazenamento está quase cheio.</translation>
 <translation id="8793430725658173476">Copiar URL</translation>
@@ -560,6 +590,7 @@ Para obter licenças novas, ligue-se à Internet e reproduza o conteúdo transfe
 <translation id="9133515669113036225">Repor as credenciais do dispositivo</translation>
 <translation id="9137013805542155359">Mostrar original</translation>
 <translation id="9156605176886108508">Nenhuma pasta de marcadores</translation>
+<translation id="9187199695613236444">Visualização compatível com dispositivos móveis</translation>
 <translation id="9192643434065497760">Ative o Bluetooth nas <ph name="BEGIN_LINK" />definições do dispositivo<ph name="END_LINK" /> para permitir a sincronização.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="932327136139879170">Página inicial</translation>

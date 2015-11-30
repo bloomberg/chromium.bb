@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="pl">
 <translation id="1013923882670373915">Urządzenie Bluetooth „<ph name="DEVICE_NAME" />” chce się sparować. Wpisz na nim ten kod PIN: <ph name="PINCODE" /></translation>
+<translation id="1021311941847921177">Zmieniliśmy skrót, który aktywuje następną metodę wprowadzania. Zamiast <ph name="OLD_SHORTCUT" /> używaj teraz <ph name="NEW_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Autoukrywanie półki</translation>
 <translation id="1195412055398077112">nadmiarowość obrazu</translation>
 <translation id="1270290102613614947">Klawiatura ekranowa wyłączona</translation>
@@ -25,7 +26,9 @@
 <translation id="1812696562331527143">Metoda wprowadzania została zmieniona na <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />innej firmy<ph name="END_LINK" />).
 Naciśnij Shift + Alt, by ją przełączyć.</translation>
 <translation id="1882897271359938046">Kopia na <ph name="DISPLAY_NAME" /></translation>
+<translation id="1919743966458266018">Zmieniliśmy skrót, który otwiera menedżera zadań. Zamiast <ph name="OLD_SHORTCUT" /> używaj teraz <ph name="NEW_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Automatyczne kliknięcia</translation>
+<translation id="1938872420421548906">Shift+Alt</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2127372758936585790">Ładowarka o małej mocy</translation>
@@ -105,6 +108,7 @@ Naciśnij Szukaj lub Shift, by anulować.</translation>
 <translation id="4421231901400348175">Udostępnianie sterowania ekranem użytkownikowi <ph name="HELPER_NAME" /> przy użyciu pomocy zdalnej.</translation>
 <translation id="4430019312045809116">Głośność</translation>
 <translation id="4527045527269911712">Urządzenie Bluetooth „<ph name="DEVICE_NAME" />” chce się sparować.</translation>
+<translation id="4544944664594876241">Zmieniliśmy skrót, który blokuje ekran. Zamiast <ph name="OLD_SHORTCUT" /> używaj teraz <ph name="NEW_SHORTCUT" />.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Rozłącz</translation>
 <translation id="4872237917498892622">Alt+Szukaj lub Shift</translation>
@@ -113,12 +117,14 @@ Naciśnij Szukaj lub Shift, by anulować.</translation>
 <translation id="4957722034734105353">Więcej informacji...</translation>
 <translation id="4961318399572185831">Przesyłanie ekranu</translation>
 <translation id="5011233892417813670">Chromebook</translation>
+<translation id="5012744545445585468">Ctrl+Shift+Space</translation>
 <translation id="5045002648206642691">Ustawienia Dysku Google...</translation>
 <translation id="5102001756192215136">Pozostało <ph name="HOUR" />:<ph name="MINUTE" /></translation>
 <translation id="511445211639755999"><ph name="RESOLUTION" />, <ph name="OVERSCAN" /></translation>
 <translation id="5168181903108465623">Dostępne są urządzenia przesyłające</translation>
 <translation id="5222676887888702881">Wyloguj się</translation>
 <translation id="5238774010593222950">Nie możesz zalogować się na inne konto.</translation>
+<translation id="532063867737390965">To ustawienie sieci zostało wyłączone przez administratora.</translation>
 <translation id="544691375626129091">Wszyscy dostępni użytkownicy zostali już dodani do tej sesji.</translation>
 <translation id="5507786745520522457">Skonfiguruj komórkową transmisję danych</translation>
 <translation id="5543001071567407895">SMS</translation>
@@ -132,6 +138,7 @@ Naciśnij Szukaj lub Shift, by anulować.</translation>
 Naciśnij Shift + Alt, by ją przełączyć.</translation>
 <translation id="5871632337994001636">Zarządzaj urządzeniami...</translation>
 <translation id="5895138241574237353">Uruchom ponownie</translation>
+<translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5927132638760172455">Przesyłam do nieznanego odbiornika</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">Przywróć</translation>
@@ -155,6 +162,7 @@ Naciśnij Shift + Alt, by ją przełączyć.</translation>
 <translation id="6426039856985689743">Wyłącz komórkową transmisję danych</translation>
 <translation id="6452181791372256707">Odrzuć</translation>
 <translation id="6459472438155181876">Rozszerzanie ekranu na <ph name="DISPLAY_NAME" /></translation>
+<translation id="6501401484702599040">Przesyłam ekran do: <ph name="RECEIVER_NAME" /></translation>
 <translation id="6550675742724504774">Opcje</translation>
 <translation id="6585808820553845416">Sesja kończy się za <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6596816719288285829">Adres IP</translation>
@@ -162,6 +170,7 @@ Naciśnij Shift + Alt, by ją przełączyć.</translation>
 <translation id="6713285437468012787">Urządzenie Bluetooth „<ph name="DEVICE_NAME" />” zostało sparowane i jest teraz dostępne dla wszystkich użytkowników. Możesz usunąć to sparowanie w Ustawieniach.</translation>
 <translation id="6785414152754474415">Naładowanie baterii: <ph name="PERCENTAGE" />%. Trwa ładowanie.</translation>
 <translation id="6803622936009808957">Nie można wyświetlić odbicia lustrzanego, ponieważ nie znaleziono obsługiwanych rozdzielczości. Zamiast tego został włączony pulpit rozszerzony.</translation>
+<translation id="683971173229319003">Szukaj+L</translation>
 <translation id="68610848741840742">ChromeVox (potwierdzenia głosowe)</translation>
 <translation id="6911468394164995108">Połącz z inną...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
@@ -169,6 +178,7 @@ Naciśnij Shift + Alt, by ją przełączyć.</translation>
 <translation id="6981982820502123353">Ułatwienia dostępu</translation>
 <translation id="7029814467594812963">Zakończ sesję</translation>
 <translation id="703171847531699602">Brak urządzeń przesyłających</translation>
+<translation id="7034339000180558234">Przesyłam kartę <ph name="TAB_NAME" /> do: <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Ustaw tapetę...</translation>
 <translation id="7097613348211027502">ChromeVox (potwierdzenia głosowe) jest włączony.
 Aby wyłączyć, naciśnij Ctrl+Alt+Z.</translation>
@@ -180,6 +190,7 @@ Naciśnij Alt+Szukaj lub Shift, by anulować.</translation>
 <translation id="737451040872859086">Mikrofon (wewnętrzny)</translation>
 <translation id="742594950370306541">Aparat jest używany.</translation>
 <translation id="743058460480092004">Aparat i mikrofon są używane.</translation>
+<translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> nie obsługuje <ph name="SPECIFIED_RESOLUTION" />. Zmieniono rozdzielczość na <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7573962313813535744">Tryb dokowania</translation>
 <translation id="7593891976182323525">Szukaj lub Shift</translation>
@@ -207,6 +218,7 @@ Naciśnij Alt+Szukaj lub Shift, by anulować.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="882279321799040148">Kliknij, by wyświetlić</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8850991929411075241">Szukaj+Esc</translation>
 <translation id="8878886163241303700">Rozszerzony ekran</translation>
 <translation id="8940956008527784070">Niski stan baterii (<ph name="PERCENTAGE" />%)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>

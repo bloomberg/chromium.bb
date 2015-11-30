@@ -12,11 +12,12 @@
 <translation id="1293235220023151515">સિસ્ટમ પર Chromium નું એક વિરોધાભાસી ઇન્સ્ટોલેશન મળ્યું. કૃપા કરીને તેને અનઇન્સ્ટોલ કરો અને ફરીથી પ્રયાસ કરો.</translation>
 <translation id="1298199220304005244">Chromium OS નો ઉપયોગ કરવા સહાય મેળવો</translation>
 <translation id="1396446129537741364">Chromium પાસવર્ડ્સ બતાવવાનો પ્રયાસ કરી રહ્યું છે.</translation>
+<translation id="1403254041219632970">Chromium ના ભાવિ સંસ્કરણો હવેથી Mac OS X 10.6, 10.7 અથવા 10.8 ને સમર્થિત કરશે નહિ.</translation>
 <translation id="1414495520565016063">તમે Chromium માં સાઇન ઇન કર્યું છે!</translation>
 <translation id="1444754455097148408">Chromium ખુલ્લા સ્ત્રોત લાઇસેંસેસ</translation>
-<translation id="1461885241643463646">iframe-આધારિત Chromium સાઇન-ઇન પ્રવાહોને સક્ષમ કરે છે. આ ફ્લેગ --વેબ-આધારિત-સાઇનઇન-સક્ષમ કરોને ઓવરરાઇડ કરે છે.</translation>
 <translation id="1480489203462860648">તેને અજમાવી જુઓ, તે પહેલેથી જ ઇન્સ્ટોલ કરેલ છે</translation>
 <translation id="151962892725702025">Chromium OS તમારા ડેટાને સમન્વયિત કરી શક્યું નથી કારણ કે તમારા ડોમેન માટે સમન્વયન ઉપલબ્ધ નથી.</translation>
+<translation id="1559451348202814456">Chromium યોગ્ય રીતે કાર્ય ન કરે તેવું બની શકે કારણકે તે હવેથી Mac OS X 10.6, 10.7 અથવા 10.8 પર સમર્થિત નથી.</translation>
 <translation id="1644918877723739397">Chromium આને તમારા <ph name="SAVED_PASSWORD_LINK" /> માં સાચવશે અને આગલી વખતે તમને તેની જરૂર પડે ત્યારે યાદ રાખશે.</translation>
 <translation id="1668054258064581266">તમારા એકાઉન્ટને Chromium માંથી દૂર કર્યાં પછી, અમલમાં લાવવા માટે તમારે તમારા ટેબ્સને ફરીથી લોડ કરવાની જરૂર પડી શકે છે.</translation>
 <translation id="1688750314291223739">તમારી વેબ પરની વ્યક્તિગત કરેલી બ્રાઉઝર સુવિધાઓને સાચવવા અને તેમને કોઈપણ કમ્પ્યુટર પર Chromium માંથી ઍક્સેસ કરવા માટે સમન્વયન સેટ કરો.</translation>
@@ -45,8 +46,10 @@
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{હાલમાં એક ડાઉનલોડ ચાલુ છે. શું તમે Chromium થી બહાર નીકળવા અને ડાઉનલોડને રદ કરવા માગો છો?}one{હાલમાં # ડાઉનલોડ્સ ચાલુ છે. શું તમે Chromium થી બહાર નીકળવા અને ડાઉનલોડ્સને રદ કરવા માગો છો?}other{હાલમાં # ડાઉનલોડ્સ ચાલુ છે. શું તમે Chromium થી બહાર નીકળવા અને ડાઉનલોડ્સને રદ કરવા માગો છો?}}</translation>
 <translation id="2396765026452590966">જ્યારે તમે Chromium શરૂ કરો છો ત્યારે જે પૃષ્ઠ દર્શાવવામાં આવે છે તે <ph name="EXTENSION_NAME" /> એક્સટેન્શને બદલ્યું છે.</translation>
 <translation id="2485422356828889247">અનઇન્સ્ટોલ કરો</translation>
+<translation id="2486653164587200256">Chromium યોગ્ય રીતે કાર્ય ન કરે તેવું બની શકે કારણકે તે હવેથી Windows XP અથવા Windows Vista પર સમર્થિત નથી.</translation>
 <translation id="2535480412977113886">તમારી એકાઉન્ટ સાઇન ઇન વિગતો જૂની હોવાને કારણે Chromium OS તમારા ડેટાને સમન્વયિત કરી શક્યું નથી.</translation>
 <translation id="2558641060352364164">આ સાઇટ Chromium ફ્રેમ પ્લગિનનો ઉપયોગ કરી રહી છે જે ટૂંક સમયમાં અસમર્થિત થશે. કૃપા કરીને તેને અનઇન્સ્ટોલ કરો અને આધુનિક બ્રાઉઝરમાં અપગ્રેડ કરો.</translation>
+<translation id="2565260267992448464">Chromium વેબપૃષ્ઠ પ્રદર્શિત કરી શકતું નથી કારણ કે તમારું કમ્પ્યુટર ઇન્ટરનેટ સાથે કનેક્ટ થયેલ નથી.</translation>
 <translation id="2572494885440352020">Chromium હેલ્પર</translation>
 <translation id="2602806952220118310">Chromium - સૂચનાઓ</translation>
 <translation id="2636877269779209383">Chromium ને આ સાઇટ સાથે કૅમેરો શેર કરવા માટે તેની ઍક્સેસની જરૂર છે.</translation>
@@ -109,6 +112,7 @@
 <translation id="4423735387467980091">Chromium ને કસ્ટમાઇઝ અને નિયંત્રિત કરો</translation>
 <translation id="4458285410772214805">કૃપા કરીને આ પરિવર્તનને પ્રભાવમાં લાવવા માટે સાઇન આઉટ કરો અને ફરીથી સાઇન ઇન કરો.</translation>
 <translation id="4488676065623537541">તમારી બિલિંગ વિગતો Chromium માં સાચવવામાં આવી છે.</translation>
+<translation id="4549794359424059447">Chromium ના ભાવિ સંસ્કરણો હવેથી Windows XP અથવા Windows Vista ને સમર્થિત કરશે નહિ.</translation>
 <translation id="4559775032954821361">Chromium મેનૂ &gt;
           <ph name="SETTINGS_TITLE" />
           &gt;
@@ -136,6 +140,7 @@
 <translation id="549669000822060376">કૃપા કરીને Chromium, નવીનતમ સિસ્ટમ અપડેટ્સ ઇન્સ્ટોલ કરે ત્યાં સુધી રાહ જુઓ.</translation>
 <translation id="5563479599352954471">એક ટચ વડે શોધ કરો</translation>
 <translation id="5620765574781326016">પૃષ્ઠને છોડ્યાં વિના વેબસાઇટ્સ પરના મુદ્દાઓ વિશે જાણો.</translation>
+<translation id="5680901439334282664">Chromium માં સાઇન ઇન કરો</translation>
 <translation id="5772805321386874569">(Chromium <ph name="BEGIN_BUTTON" />પુનઃપ્રારંભ કરવું<ph name="END_BUTTON" /> આવશ્યક છે)</translation>
 <translation id="5796460469508169315">Chromium લગભગ તૈયાર છે.</translation>
 <translation id="580822234363523061">Chromium મેનૂ &gt;
@@ -211,7 +216,6 @@ Chromium તમારી સેટિંગ્સને પુનઃપ્રા
 <translation id="761356813943268536">Chromium તમારા કેમેરા અને માઇક્રોફોનનો ઉપયોગ કરી રહ્યું છે.</translation>
 <translation id="7617377681829253106">Chromium હવે પહેલાંથી બહેતર બન્યું છે</translation>
 <translation id="7641113255207688324">Chromium તમારું ડિફોલ્ટ બ્રાઉઝર નથી.</translation>
-<translation id="7723128346970903111">સક્ષમ હોવા પર, iframe-આધારિત Chromium સાઇન-ઇન પ્રવાહનો ઉપયોગ કરશે; અન્યથા webview-આધારિત પ્રવાહનો ઉપયોગ કરે છે.</translation>
 <translation id="7729447699958282447">Chromium તમારા ડેટાને સમન્વયિત કરી શક્યું નથી કારણ કે તમારા ડોમેન માટે સમન્વયન ઉપલબ્ધ નથી.</translation>
 <translation id="7747138024166251722">ઇન્સ્ટોલર અસ્થાયી ડાયરેક્ટરી બનાવી શક્યું નથી. કૃપા કરીને ખાલી ડિસ્ક સ્પેસ માટે અને સૉફ્ટવેર ઇન્સ્ટોલ કરવાની પરવાનગી માટે તપાસો.</translation>
 <translation id="7918535023914021398">Chromium એ ચકાસ્યું કે <ph name="ISSUER" /> એ આ વેબસાઇટનું પ્રમાણપત્ર ઇસ્યુ કર્યું છે. સર્વરે કોઈપણ પ્રમાણપત્ર પારદર્શિતા માહિતી પૂરી પાડી ન હતી.</translation>

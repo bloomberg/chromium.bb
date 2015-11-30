@@ -24,6 +24,7 @@ Du kan få flere oplysninger om privatliv i privatlivspolitikkerne for Google (h
 <translation id="1546934824884762070">Der opstod en uventet fejl. Rapportér dette problem til udviklerne.</translation>
 <translation id="1619813076098775562">Lukket forbindelse til Cast-enheden.</translation>
 <translation id="1643640058022401035">Hvis du forlader denne side, afsluttes din session med Chromoting.</translation>
+<translation id="1646994964686260497">Der er intet at oprette forbindelse til.</translation>
 <translation id="1654128982815600832">Aktiverer fjernforbindelserne for denne computer…</translation>
 <translation id="170207782578677537">Denne computer kunne ikke registreres.</translation>
 <translation id="1704090719919187045">Præferencer for Chromoting-host</translation>
@@ -109,6 +110,7 @@ Du kan få flere oplysninger om privatliv i privatlivspolitikkerne for Google (h
 <translation id="3606997049964069799">Du er ikke logget ind på Chromium. Log ind, og prøv igen.</translation>
 <translation id="3649256019230929621">Minimer vinduet</translation>
 <translation id="369442766917958684">Offline.</translation>
+<translation id="3695446226812920698">Få flere oplysninger om, hvordan du gør</translation>
 <translation id="3776024066357219166">Din session med Chrome Fjernskrivebord er afsluttet.</translation>
 <translation id="3785447812627779171">Chromoting-
 host</translation>
@@ -121,6 +123,10 @@ host</translation>
 <translation id="3950820424414687140">Log ind</translation>
 <translation id="3989511127559254552">For at fortsætte skal du give udvidet adgangstilladelse til din computer. Du skal kun gøre dette én gang.</translation>
 <translation id="4006787130661126000">Du skal aktivere fjernforbindelserne, hvis du vil bruge Chrome Fjernskrivebord til at få adgang til denne computer.</translation>
+<translation id="401121182145179743">Du skal først konfigurere din computer til fjernadgang.</translation>
+<translation id="4028465833180158312">• Opdateringer af Material Design-grænsefladen.
+• Angivelser af tredjepartslicensering.
+• Der vises oplysninger for fjerncomputere, som er offline.</translation>
 <translation id="405887016757208221">Fjerncomputeren har ikke startet sessionen. Hvis problemet fortsætter, kan du prøve at konfigurere hosten igen.</translation>
 <translation id="4068946408131579958">Alle forbindelser</translation>
 <translation id="409800995205263688">BEMÆRK! Politikindstillingerne tillader kun forbindelser mellem computere inden for dit netværk.</translation>
@@ -149,7 +155,7 @@ Fjernskrivebord</translation>
 <translation id="4647791084836149355">Se udsigten gennem Cardboard</translation>
 <translation id="4703799847237267011">Din session med Chromoting er afsluttet.</translation>
 <translation id="4736223761657662401">Forbindelseshistorik</translation>
-<translation id="4741792197137897469">Godkendelsen mislykkedes. Log ind på Chrome igen.</translation>
+<translation id="4741792197137897469">Godkendelsen mislykkedes. Log ind i Chrome igen.</translation>
 <translation id="477305884757156764">Applikationen er for langsom.</translation>
 <translation id="4795786176190567663">Du har ikke tilladelse til at udføre denne handling.</translation>
 <translation id="4804818685124855865">Afbryd</translation>
@@ -200,7 +206,7 @@ Fjernskrivebord</translation>
 <translation id="6193698048504518729">Opret forbindelse til <ph name="HOSTNAME" /></translation>
 <translation id="6198252989419008588">Skift pinkode</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" /> (forældet)</translation>
-<translation id="6221358653751391898">Du er ikke logget ind på Chrome. Log ind, og prøv igen.</translation>
+<translation id="6221358653751391898">Du er ikke logget ind i Chrome. Log ind, og prøv igen.</translation>
 <translation id="6284412385303060032">Hosten, der kører på loginskærmen for konsollen, er lukket ned for at understøtte curtain mode ved at skifte til en host, der kører i en brugerspecifik session.</translation>
 <translation id="629730747756840877">Konto</translation>
 <translation id="6304318647555713317">Klient</translation>

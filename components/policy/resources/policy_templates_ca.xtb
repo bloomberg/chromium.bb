@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ca">
+<translation id="101438888985615157">Gira la visualització 180 graus</translation>
 <translation id="1017967144265860778">Gestió de l'alimentació a la pantalla d'inici de sessió</translation>
 <translation id="1019101089073227242">Estableix el directori de dades de l'usuari</translation>
 <translation id="1022361784792428773">ID de les extensions que l'usuari no pot instal·lar (o bé * per a totes)</translation>
@@ -235,6 +236,18 @@ Si aquesta opció està desactivada o no especificada, no apareix cap botó gran
 <translation id="2113068765175018713">Limita el temps d'activitat del dispositiu mitjançant el reinici automàtic</translation>
 <translation id="2127599828444728326">Permet les notificacions en aquests llocs</translation>
 <translation id="2131902621292742709">Retard d'atenuació de pantalla quan s'utilitza bateria</translation>
+<translation id="2137064848866899664">Si aquesta política s'estableix, després de cada reinici es giren totes les
+      visualitzacions segons l'orientació especificada. També es giren la primera vegada
+      que es connecten després d'haver canviat el valor de la política. Els usuaris poden
+      anar a la pàgina de configuració després d'iniciar la sessió per canviar la rotació
+      de la visualització, però el valor de la política anul·larà l'opció de configuració
+      durant el reinici següent.
+
+      Aquesta política s'aplica tant a la visualització principal com a la secundària.
+
+      Si la política no s'estableix, el valor predeterminat és 0 graus, i l'usuari
+      és lliure de canviar-lo. En aquest cas, el valor predeterminat no es torna a aplicar
+      després de reiniciar el dispositiu.</translation>
 <translation id="2166715102875984646">Desactiva la compatibilitat amb les API de gràfics en 3D.
 
       Si activeu aquesta opció, s'impedirà que les pàgines web accedeixin a la unitat de processament de gràfics (GPU). En concret, les pàgines web no podran accedir a l'API WebGL i els connectors no podran fer servir l'API Pepper 3D.
@@ -885,6 +898,7 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
       </translation>
 <translation id="4442582539341804154">Activació del bloqueig quan el dispositiu està inactiu o se suspèn</translation>
 <translation id="4445684791305970001">Desactiva les eines per a desenvolupador i la consola de JavaScript. Si activeu aquest paràmetre, no es podrà accedir a les eines per a desenvolupadors i no es podran inspeccionar més els elements del lloc web. Les tecles de drecera i les entrades dels menús o dels menús contextuals per obrir les eines per a desenvolupadors es desactivaran. Si es desactiva o no es defineix aquesta opció, es podran utilitzar les eines per a desenvolupadors i la consola de JavaScript.</translation>
+<translation id="4449545651113180484">Gira la visualització 270 graus en el sentit de les agulles del rellotge</translation>
 <translation id="4467952432486360968">Bloqueja les galetes de tercers</translation>
 <translation id="4474167089968829729">Permet que el gestor de contrasenyes desi contrasenyes</translation>
 <translation id="4480694116501920047">Força SafeSearch</translation>
@@ -1108,6 +1122,7 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
 
           Si aquest paràmetre està desactivat o no està definit, tant els usuaris remots com els locals poden interactuar amb l'amfitrió mentre sigui compartit.</translation>
 <translation id="5423001109873148185">Si està activada, aquesta política fa que els motors de cerca s'importin des del navegador predeterminat actual. Si està activada, aquesta política també afecta el diàleg d'importació. Si està desactivada, el motor de cerca predeterminat no s'importarà. Si no es defineix, pot ser que es demani a l'usuari si vol importar o bé la importació es pot produir de manera automàtica.</translation>
+<translation id="5423197884968724595">Nom de la restricció de WebView per a Android:</translation>
 <translation id="5447306928176905178">Activa els informes d'informació de memòria (mida de pila JS) a la pàgina (no disponible)</translation>
 <translation id="5457065417344056871">Activa el mode de convidat al navegador</translation>
 <translation id="5457924070961220141">Us permet configurar el processador HTML predeterminat quan <ph name="PRODUCT_FRAME_NAME" /> està instal·lat. La configuració predeterminada que s'utilitza quan no es defineix aquesta política és permetre que el navegador amfitrió dugui a terme la renderització, però si ho desitgeu podeu modificar-ho i fer que <ph name="PRODUCT_FRAME_NAME" /> renderitzi de manera predeterminada les pàgines HTML.</translation>
@@ -1794,6 +1809,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="7953256619080733119">Amfitrions d'excepcions manuals d'usuari gestionat</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Aquesta política ja no és compatible. Activa l'ús de servidors STUN i de relé quan us connecteu a un client remot. Si s'activa aquest paràmetre, aquest equip pot descobrir i connectar-se a equips amfitrions remots, fins i tot si estan separats per un tallafoc. Si es desactiva aquest paràmetre i el tallafoc filtra les connexions UDP de sortida, aquest equip només es podrà connectar als equips amfitrions de la xarxa local.</translation>
+<translation id="802147957407376460">Gira la visualització 0 graus</translation>
 <translation id="8044493735196713914">Informa del mode d'inici del dispositiu</translation>
 <translation id="8059164285174960932">URL on els clients d'accés remot han d'obtenir el testimoni d'autenticació</translation>
 <translation id="8071636581296916773">Permet l'ús de servidors de tramesa quan els clients remots estan provant d'establir una connexió amb aquest ordinador.
@@ -1902,6 +1918,8 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
 <translation id="8382184662529825177">Activa l'ús del testimoni remot del contingut protegit al dispositiu.</translation>
 <translation id="838870586332499308">Activa la itinerància de dades</translation>
 <translation id="8412312801707973447">Si es realitzen comprovacions OCSP/CRL en línia</translation>
+<translation id="8424255554404582727">Estableix la rotació predeterminada de la visualització, que es torna a aplicar després de cada reinici</translation>
+<translation id="8426231401662877819">Gira la visualització 90 graus en el sentit de les agulles del rellotge</translation>
 <translation id="8451988835943702790">Fes servir la pàgina de pestanya nova com a pàgina d'inici</translation>
 <translation id="8465065632133292531">Paràmetres per a l'URL instantani que utilitza POST</translation>
 <translation id="847472800012384958">No permetis que cap lloc mostri elements emergents</translation>

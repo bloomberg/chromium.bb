@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-CN">
+<translation id="101438888985615157">将屏幕旋转 180 度</translation>
 <translation id="1017967144265860778">登录屏幕的电源管理设置</translation>
 <translation id="1019101089073227242">设置用户数据目录</translation>
 <translation id="1022361784792428773">应禁止用户安装的扩展程序的 ID（或者用“*”表示禁止安装所有扩展程序）</translation>
@@ -226,6 +227,11 @@
 <translation id="2113068765175018713">通过自动重启限制设备的正常运行时间</translation>
 <translation id="2127599828444728326">允许在这些网站上显示通知</translation>
 <translation id="2131902621292742709">使用电源供电时的屏幕变暗延迟时间</translation>
+<translation id="2137064848866899664">如果您设置了此政策，那么每个显示屏在每次重新启动后或在此政策的值更改后首次连入时，都会旋转到指定方向。用户可以在登录后通过“设置”页面更改显示屏旋转角度，但在显示屏下次重新启动后，他们设置的旋转角度将会被此政策的值覆盖。
+
+      此政策适用于主要显示屏和所有辅助显示屏。
+
+      如果此政策未设置，那么默认值为 0 度，并且用户可以更改该值。如果用户更改了默认值，显示屏在重新启动后不会重新应用默认值。</translation>
 <translation id="2166715102875984646">停止支持 3D 图形 API。
 
       如果您启用了此设置，网页将无法使用图形处理器 (GPU)。具体来说就是，网页将无法使用 WebGL API，并且插件将无法使用 Pepper 3D API。
@@ -853,6 +859,7 @@
       </translation>
 <translation id="4442582539341804154">当设备进入待机或暂停状态时启用锁定</translation>
 <translation id="4445684791305970001">停用开发者工具和 JavaScript 控制台。如果您启用了此设置，用户就无法再访问开发者工具和查看网站元素了。用于启动开发者工具和 JavaScript 控制台的任何键盘快捷键以及任何菜单或右键菜单条目都会停用。如果停用或未设置此选项，用户就可以使用开发者工具和 JavaScript 控制台。</translation>
+<translation id="4449545651113180484">将屏幕顺时针旋转 270 度</translation>
 <translation id="4467952432486360968">阻止第三方 Cookie</translation>
 <translation id="4474167089968829729">允许将密码保存到密码管理器</translation>
 <translation id="4480694116501920047">强制使用安全搜索</translation>
@@ -1076,6 +1083,7 @@
 
           如果停用或未设定此设置，那么当主机处于共享状态时，本地和远程用户都可以与主机互动。</translation>
 <translation id="5423001109873148185">如果启用此政策，就会强制从当前默认浏览器导入搜索引擎，还会影响导入对话框。如果停用此政策，就不会导入默认搜索引擎。如果未设置此政策，系统就会询问用户是否导入默认搜索引擎，或者系统自动进行导入。</translation>
+<translation id="5423197884968724595">Android WebView 限制名称：</translation>
 <translation id="5447306928176905178">向网页报告内存信息（JS堆内存大小）（已停止使用）</translation>
 <translation id="5457065417344056871">在浏览器中启用访客模式</translation>
 <translation id="5457924070961220141">可让您在安装 <ph name="PRODUCT_FRAME_NAME" />时配置默认 HTML 呈现器。如果未设置此政策，则使用默认设置，即允许托管浏览器进行呈现。不过您可以视情况替换此设置，让 <ph name="PRODUCT_FRAME_NAME" />默认呈现 HTML 网页。</translation>
@@ -1751,6 +1759,7 @@
 <translation id="7953256619080733119">托管用户手动管理的例外主机</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">此政策已不再受支持。在连接到远程客户端时，允许使用 STUN 和中继服务器。如果启用此设置，那么即使远程客户端受到防火墙隔离，也仍然可以检测到并连接到此计算机。如果停用此设置，并且防火墙过滤了外发 UDP 连接，那么此计算机将只能与本地网络内的客户端计算机建立连接。</translation>
+<translation id="802147957407376460">将屏幕旋转 0 度</translation>
 <translation id="8044493735196713914">报告设备引导模式</translation>
 <translation id="8059164285174960932">远程访问客户端获取身份验证令牌的网址</translation>
 <translation id="8071636581296916773">当远程客户端尝试与此机器建立连接时，允许使用中继服务器。
@@ -1858,6 +1867,8 @@
 <translation id="8382184662529825177">允许为设备使用远程认证来保护内容</translation>
 <translation id="838870586332499308">启用数据漫游</translation>
 <translation id="8412312801707973447">是否执行在线 OCSP/CRL 检查</translation>
+<translation id="8424255554404582727">设置显示屏默认旋转角度，每次重新启动后都重新应用设置的角度</translation>
+<translation id="8426231401662877819">将屏幕顺时针旋转 90 度</translation>
 <translation id="8451988835943702790">使用“新标签页”作为主页</translation>
 <translation id="8465065632133292531">在使用 POST 的即搜即得网址中所需的参数</translation>
 <translation id="847472800012384958">不允许任何网站显示弹出式窗口</translation>

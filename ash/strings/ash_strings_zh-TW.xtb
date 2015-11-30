@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-TW">
 <translation id="1013923882670373915">藍牙裝置「<ph name="DEVICE_NAME" />」要求配對權限，請在裝置上輸入以下 PIN 碼：<ph name="PINCODE" /></translation>
+<translation id="1021311941847921177">切換至下一個輸入法的快速鍵已變更，請改用 <ph name="NEW_SHORTCUT" /> (停用 <ph name="OLD_SHORTCUT" />)。</translation>
 <translation id="112308213915226829">自動隱藏檔案櫃</translation>
 <translation id="1195412055398077112">遮視區域</translation>
 <translation id="1270290102613614947">螢幕小鍵盤已停用</translation>
@@ -25,7 +26,9 @@
 <translation id="1812696562331527143">您的輸入法已變更為 <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />第三方<ph name="END_LINK" />)。
 按下 Shift + Alt 鍵即可切換。</translation>
 <translation id="1882897271359938046">正在建立 <ph name="DISPLAY_NAME" /> 鏡像</translation>
+<translation id="1919743966458266018">開啟工作管理員的快速鍵已變更，請改用 <ph name="NEW_SHORTCUT" /> (停用 <ph name="OLD_SHORTCUT" />)。</translation>
 <translation id="1923539912171292317">自動點擊</translation>
+<translation id="1938872420421548906">Shift + Alt 鍵</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2127372758936585790">低功率充電器</translation>
@@ -105,6 +108,7 @@
 <translation id="4421231901400348175">透過遠端協助與<ph name="HELPER_NAME" />分享螢幕控制功能。</translation>
 <translation id="4430019312045809116">音量</translation>
 <translation id="4527045527269911712">藍牙裝置「<ph name="DEVICE_NAME" />」要求配對權限。</translation>
+<translation id="4544944664594876241">螢幕鎖定快速鍵已變更，請改用 <ph name="NEW_SHORTCUT" /> (停用 <ph name="OLD_SHORTCUT" />)。</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">中斷連線</translation>
 <translation id="4872237917498892622">Alt + 搜尋鍵或 Shift 鍵</translation>
@@ -113,12 +117,14 @@
 <translation id="4957722034734105353">瞭解詳情...</translation>
 <translation id="4961318399572185831">投放螢幕</translation>
 <translation id="5011233892417813670">Chromebook</translation>
+<translation id="5012744545445585468">Ctrl + Shift + 空格鍵</translation>
 <translation id="5045002648206642691">Google 雲端硬碟設定...</translation>
 <translation id="5102001756192215136">電量剩餘時間：<ph name="HOUR" />:<ph name="MINUTE" /></translation>
 <translation id="511445211639755999"><ph name="RESOLUTION" />，<ph name="OVERSCAN" /></translation>
 <translation id="5168181903108465623">可用的投放裝置</translation>
 <translation id="5222676887888702881">登出</translation>
 <translation id="5238774010593222950">無法登入其他帳戶。</translation>
+<translation id="532063867737390965">管理員停用了這項網路設定。</translation>
 <translation id="544691375626129091">現有使用者已全部加入這個工作階段。</translation>
 <translation id="5507786745520522457">設定行動資料</translation>
 <translation id="5543001071567407895">簡訊</translation>
@@ -132,6 +138,7 @@
 按下 Shift + Alt 鍵即可切換。</translation>
 <translation id="5871632337994001636">管理裝置...</translation>
 <translation id="5895138241574237353">重新啟動</translation>
+<translation id="5901316534475909376">Shift + Esc 鍵</translation>
 <translation id="5927132638760172455">正在投放至不明接收端</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">還原</translation>
@@ -155,6 +162,7 @@
 <translation id="6426039856985689743">停用行動數據</translation>
 <translation id="6452181791372256707">拒絕</translation>
 <translation id="6459472438155181876">正在擴充 <ph name="DISPLAY_NAME" /> 畫面</translation>
+<translation id="6501401484702599040">正在將畫面投放到「<ph name="RECEIVER_NAME" />」</translation>
 <translation id="6550675742724504774">選項</translation>
 <translation id="6585808820553845416">這個工作階段將在 <ph name="SESSION_TIME_REMAINING" />後結束。</translation>
 <translation id="6596816719288285829">IP 位址</translation>
@@ -162,6 +170,7 @@
 <translation id="6713285437468012787">藍牙裝置「<ph name="DEVICE_NAME" />」已配對成功，可供所有使用者使用。如要移除配對，請使用「設定」。</translation>
 <translation id="6785414152754474415">電池電量為 <ph name="PERCENTAGE" />% (充電中)。</translation>
 <translation id="6803622936009808957">找不到系統支援的解析度，因此無法顯示鏡像。已改為進入延伸桌面。</translation>
+<translation id="683971173229319003">搜尋鍵 + L 鍵</translation>
 <translation id="68610848741840742">ChromeVox (互動朗讀)</translation>
 <translation id="6911468394164995108">加入其他網路...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
@@ -169,6 +178,7 @@
 <translation id="6981982820502123353">協助工具</translation>
 <translation id="7029814467594812963">結束工作階段</translation>
 <translation id="703171847531699602">沒有投放裝置</translation>
+<translation id="7034339000180558234">正在將「<ph name="TAB_NAME" />」畫面投放到「<ph name="RECEIVER_NAME" />」</translation>
 <translation id="7052914147756339792">設定桌布...</translation>
 <translation id="7097613348211027502">ChromeVox (互動朗讀) 已啟用。
 可按 Ctrl+Alt+Z 鍵停用。</translation>
@@ -180,6 +190,7 @@
 <translation id="737451040872859086">麥克風 (內部)</translation>
 <translation id="742594950370306541">攝影機正在使用中。</translation>
 <translation id="743058460480092004">攝影機和麥克風正在使用中。</translation>
+<translation id="7510334386202674593">Ctrl + Shift + L 鍵</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> 不支援 <ph name="SPECIFIED_RESOLUTION" />，解析度已變更為 <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7573962313813535744">停駐模式</translation>
 <translation id="7593891976182323525">搜尋鍵或 Shift 鍵</translation>
@@ -207,6 +218,7 @@
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="882279321799040148">按這裡瀏覽</translation>
 <translation id="8828714802988429505">90 度</translation>
+<translation id="8850991929411075241">搜尋鍵 + Esc 鍵</translation>
 <translation id="8878886163241303700">延伸螢幕</translation>
 <translation id="8940956008527784070">電池電量不足 (<ph name="PERCENTAGE" />%)</translation>
 <translation id="9074739597929991885">藍牙</translation>

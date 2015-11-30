@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="tr">
+<translation id="101438888985615157">Ekranı 180 derece döndür</translation>
 <translation id="1017967144265860778">Giriş ekranında güç yönetimi</translation>
 <translation id="1019101089073227242">Kullanıcı veri dizinini ayarla</translation>
 <translation id="1022361784792428773">Kullanıcının yüklemesine engel olunacak uzantı kimlikleri (veya tümü için *)</translation>
@@ -270,6 +271,17 @@
 <translation id="2113068765175018713">Otomatik bir şekilde yeniden başlatarak cihazın açık kalma süresini sınırlandır</translation>
 <translation id="2127599828444728326">Bu sitelerde bildirimlere izin ver</translation>
 <translation id="2131902621292742709">Pil gücüyle çalışırken ekran karartma gecikmesi</translation>
+<translation id="2137064848866899664">Bu politika ayarlanırsa her bir ekran, her yeniden
+      başlatmada ve politika değeri değiştirildikten sonra ilk kez bağlanıldığında
+      belirtilen yönde döndürülür. Kullanıcılar, giriş yaptıktan sonra ayarlar
+      sayfası aracılığıyla ekran döndürme ayarını değiştirebilir, ancak kullanıcıların
+      ayarları, bir sonraki yeniden başlatmada politika değeri tarafından geçersiz kılınır.
+
+      Bu politika hem birincil hem de tüm ikincil ekranlar için geçerlidir.
+
+      Politika ayarlanmazsa varsayılan değer 0 derece olur ve kullanıcı
+      istediğinde bunu değiştirebilir. Bu durumda, yeniden başlatmada
+      varsayılan değer tekrar uygulanmaz.</translation>
 <translation id="2166715102875984646">3D grafik API'ları desteğini devre dışı bırakın.
 
       Bu ayar etkinleştirildiğinde web sayfalarının grafik işleme birimine (GPU) erişmesi engellenir. Özellikle, web sayfaları WebGL API'sına erişemez ve eklentiler Pepper 3D API'sını kullanamaz.
@@ -996,6 +1008,7 @@ politikayı geçersiz kılamaz.
       Bu ayarı etkinleştirirseniz, Geliştirici Araçları'na erişilemez ve web sitesi öğeleri bundan sonra incelenemez. Geliştirici Araçları veya JavaScript Konsolu'nu açmak için kullanılan menüler veya bağlam menüsü girişleri devre dışı bırakılır.
 
       Bu seçeneğin devre dışı olarak ayarlanması veya ayarlanmadan bırakılması, Geliştirici Araçları ve JavaScript konsolunun kullanımına olanak tanır.</translation>
+<translation id="4449545651113180484">Ekranı saat yönünde 270 derece döndür</translation>
 <translation id="4467952432486360968">Üçüncü taraf çerezlerini engelle</translation>
 <translation id="4474167089968829729">Şifrelerin, şifre yöneticisine kaydedilmesini etkinleştir</translation>
 <translation id="4480694116501920047">Güvenli Arama'nın kullanılmasını zorunlu tut</translation>
@@ -1263,6 +1276,7 @@ politikayı geçersiz kılamaz.
       Devre dışı bırakılırsa, varsayılan arama motoru içe aktarılmaz.
 
       Ayarlanmazsa, kullanıcıdan içe aktarma işlemini gerçekleştirmesi istenebilir veya içe aktarma otomatik olarak gerçekleşebilir.</translation>
+<translation id="5423197884968724595">Android WebView kısıtlama adı:</translation>
 <translation id="5447306928176905178">Bellek bilgilerini (JS yığın boyutu) sayfada raporlamayı etkinleştir (kullanımdan kaldırıldı)</translation>
 <translation id="5457065417344056871">Tarayıcıda misafir modunu etkinleştir</translation>
 <translation id="5457924070961220141"><ph name="PRODUCT_FRAME_NAME" /> yüklendiğinde varsayılan HTML oluşturucusunu yapılandırabilmenizi sağlar.
@@ -2027,6 +2041,7 @@ politikayı geçersiz kılamaz.
           Bu ayar etkinleştirilirse, bu makine, bir güvenlik duvarıyla ayrılmış olsalar bile uzak ana makineleri keşfedebilir ve bunlara bağlanabilir.
 
           Bu ayar devre dışı bırakılırsa ve giden UDP bağlantılarına güvenlik duvarı tarafından filtre uygulanıyorsa, bu makine yalnızca yerel ağ içindeki ana makinelere bağlanabilir.</translation>
+<translation id="802147957407376460">Ekranı 0 derece döndür</translation>
 <translation id="8044493735196713914">Rapor cihazı önyükleme modu</translation>
 <translation id="8059164285174960932">Uzaktan erişim istemcilerinin kimlik doğrulama jetonunu edinmesi gerektiği URL</translation>
 <translation id="8071636581296916773">Uzak istemciler bu makineyle bir bağlantı oluşturmaya çalıştıklarında geçiş sunucularının kullanımını etkinleştirir.
@@ -2142,6 +2157,8 @@ politikayı geçersiz kılamaz.
 <translation id="8382184662529825177">Cihazda içerik koruma için uzak onay kullanımını etkinleştir</translation>
 <translation id="838870586332499308">Veri dolaşımını etkinleştir</translation>
 <translation id="8412312801707973447">Çevrimiçi OCSP/CRL denetimlerinin yapılıp yapılmayacağı</translation>
+<translation id="8424255554404582727">Her yeniden başlatmada tekrar uygulanacak varsayılan ekran döndürmesini ayarla</translation>
+<translation id="8426231401662877819">Ekranı saat yönünde 90 derece döndür</translation>
 <translation id="8451988835943702790">Ana sayfa olarak Yeni Sekme Sayfası'nı kullan</translation>
 <translation id="8465065632133292531">POST kullanan anlık URL parametreleri</translation>
 <translation id="847472800012384958">Hiçbir sitenin pop-up göstermesine izin verme</translation>

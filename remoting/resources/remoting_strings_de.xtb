@@ -24,6 +24,7 @@ Informationen zum Datenschutz finden Sie in der Google-Datenschutzerklärung (ht
 <translation id="1546934824884762070">Ein unerwarteter Fehler ist aufgetreten. Bitte melden Sie dieses Problem den Entwicklern.</translation>
 <translation id="1619813076098775562">Die Verbindung zum Übertragungsgerät wurde beendet.</translation>
 <translation id="1643640058022401035">Wenn Sie diese Seite verlassen, wird Ihre Chromoting-Sitzung beendet.</translation>
+<translation id="1646994964686260497">Es gibt keine Verbindungsziele.</translation>
 <translation id="1654128982815600832">Remote-Verbindungen für diesen Computer werden aktiviert…</translation>
 <translation id="170207782578677537">Fehler beim Registrieren dieses Computers</translation>
 <translation id="1704090719919187045">Chromoting Host-Einstellungen</translation>
@@ -109,6 +110,7 @@ Informationen zum Datenschutz finden Sie in der Google-Datenschutzerklärung (ht
 <translation id="3606997049964069799">Sie sind nicht in Chromium angemeldet. Melden Sie sich an und versuchen Sie es erneut.</translation>
 <translation id="3649256019230929621">Fenster minimieren</translation>
 <translation id="369442766917958684">Offline</translation>
+<translation id="3695446226812920698">Weitere Informationen</translation>
 <translation id="3776024066357219166">Ihre Chrome Remote Desktop-Sitzung wurde beendet.</translation>
 <translation id="3785447812627779171">Chromoting
 Host</translation>
@@ -121,6 +123,10 @@ Host</translation>
 <translation id="3950820424414687140">Anmelden</translation>
 <translation id="3989511127559254552">Um fortfahren zu können, müssen Sie zunächst erweiterte Zugriffsberechtigungen auf Ihren Computer gewähren. Dieser Schritt ist nur einmal erforderlich.</translation>
 <translation id="4006787130661126000">Aktivieren Sie die Remote-Verbindungen, wenn Sie mit Chrome Remote Desktop auf diesen Computer zugreifen möchten.</translation>
+<translation id="401121182145179743">Richten Sie zuerst Ihren Computer für den Remotezugriff ein.</translation>
+<translation id="4028465833180158312">• Aktualisierungen an der Material Design-Benutzeroberfläche
+• Angaben zu Drittanbieter-Lizenzen
+• Anzeige von Informationen für Remotecomputer, die offline sind</translation>
 <translation id="405887016757208221">Der Remote-Computer konnte die Sitzung nicht initialisieren. Sollte das Problem weiter bestehen, versuchen Sie bitte, den Host nochmals zu konfigurieren.</translation>
 <translation id="4068946408131579958">Alle Verbindungen</translation>
 <translation id="409800995205263688">Hinweis: Die Richtlinieneinstellungen erlauben nur Verbindungen zwischen Computern in Ihrem Netzwerk.</translation>

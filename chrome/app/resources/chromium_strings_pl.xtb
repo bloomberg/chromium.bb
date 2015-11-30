@@ -10,11 +10,12 @@
 <translation id="1293235220023151515">W systemie znaleziono zainstalowaną przeglądarkę Chromium, która powoduje konflikt. Odinstaluj ją i spróbuj ponownie.</translation>
 <translation id="1298199220304005244">Skorzystaj z pomocy dotyczącej używania systemu operacyjnego Chromium</translation>
 <translation id="1396446129537741364">Chromium próbuje pokazać hasła.</translation>
+<translation id="1403254041219632970">Przyszłe wersje Chromium nie będą już zgodne z Mac OS X 10.6, 10.7 ani 10.8.</translation>
 <translation id="1414495520565016063">Jesteś zalogowany w Chromium.</translation>
 <translation id="1444754455097148408">Licencje oprogramowania typu open source w Chromium</translation>
-<translation id="1461885241643463646">Włącza procesy logowania w Chromium oparte na iframe. Ta flaga zastępuje internetowy proces logowania.</translation>
 <translation id="1480489203462860648">Wypróbuj go – jest już zainstalowany</translation>
 <translation id="151962892725702025">System operacyjny Chromium nie może zsynchronizować danych, ponieważ synchronizacja jest niedostępna w Twojej domenie.</translation>
+<translation id="1559451348202814456">Chromium może działać nieprawidłowo, bo nie jest już zgodny z Mac OS X 10.6, 10.7 ani 10.8.</translation>
 <translation id="1644918877723739397">Chromium zapisze to hasło (tutaj: <ph name="SAVED_PASSWORD_LINK" />) i zapamięta je do użycia w przyszłości.</translation>
 <translation id="1668054258064581266">Aby po usunięciu konta z Chromium zmiany zostały zastosowane, może być konieczne ponowne załadowanie otwartych kart.</translation>
 <translation id="1688750314291223739">Skonfiguruj synchronizację, by zapisać w internecie własne funkcje przeglądarki i mieć do nich dostęp w Chromium na każdym komputerze.</translation>
@@ -43,8 +44,10 @@
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{Trwa pobieranie pliku. Czy chcesz je anulować i wyjść z Chromium?}few{Trwa pobieranie # plików. Czy chcesz je anulować i wyjść z Chromium?}many{Trwa pobieranie # plików. Czy chcesz je anulować i wyjść z Chromium?}other{Trwa pobieranie # pliku. Czy chcesz je anulować i wyjść z Chromium?}}</translation>
 <translation id="2396765026452590966">Rozszerzenie „<ph name="EXTENSION_NAME" />” ustawiło inną stronę wyświetlaną po uruchomieniu Chromium.</translation>
 <translation id="2485422356828889247">Odinstaluj</translation>
+<translation id="2486653164587200256">Chromium może działać nieprawidłowo, bo nie jest już zgodny z Windows XP ani Windows Vista.</translation>
 <translation id="2535480412977113886">System operacyjny Chromium nie może zsynchronizować danych, ponieważ dane logowania na Twoje konto są nieaktualne.</translation>
 <translation id="2558641060352364164">Ta strona korzysta z wtyczki Chromium Frame, która wkrótce nie będzie obsługiwana. Odinstaluj wtyczkę i przejdź na nowoczesną przeglądarkę.</translation>
+<translation id="2565260267992448464">Chromium nie może wyświetlić strony internetowej, bo komputer nie ma połączenia z internetem.</translation>
 <translation id="2572494885440352020">Pomoc Chromium</translation>
 <translation id="2602806952220118310">Chromium – powiadomienia</translation>
 <translation id="2636877269779209383">Chromium potrzebuje dostępu do kamery, by móc ją udostępnić tej stronie.</translation>
@@ -103,6 +106,7 @@
 <translation id="4423735387467980091">Dostosowywanie i kontrolowanie Chromium</translation>
 <translation id="4458285410772214805">Wyloguj się i zaloguj ponownie, by zmiana zaczęła obowiązywać.</translation>
 <translation id="4488676065623537541">Szczegóły płatności zostały zapisane w Chromium.</translation>
+<translation id="4549794359424059447">Przyszłe wersje Chromium nie będą już zgodne z Windows XP ani Windows Vista.</translation>
 <translation id="4559775032954821361">Wybierz
           menu Chromium &gt;
           <ph name="SETTINGS_TITLE" />
@@ -131,6 +135,7 @@
 <translation id="549669000822060376">Poczekaj, aż Chromium zainstaluje najnowsze aktualizacje systemu.</translation>
 <translation id="5563479599352954471">Szukaj jednym kliknięciem</translation>
 <translation id="5620765574781326016">Poznaj tematy omawiane w witrynach, nie opuszczając strony.</translation>
+<translation id="5680901439334282664">zaloguj się w Chromium</translation>
 <translation id="5772805321386874569">(wymaga <ph name="BEGIN_BUTTON" />ponownego uruchomienia<ph name="END_BUTTON" /> Chromium)</translation>
 <translation id="5796460469508169315">Chromium jest prawie gotowy.</translation>
 <translation id="580822234363523061">Wybierz
@@ -207,7 +212,6 @@ Chromium nie może odzyskać ustawień.</translation>
 <translation id="761356813943268536">Chromium używa Twojej kamery i mikrofonu.</translation>
 <translation id="7617377681829253106">Przeglądarka Chromium jest jeszcze lepsza</translation>
 <translation id="7641113255207688324">Chromium nie jest domyślną przeglądarką.</translation>
-<translation id="7723128346970903111">Gdy ta funkcja jest włączona, używany będzie proces logowania w Chromium oparty na iframe. Jeśli nie, logowanie będzie oparte na WebView.</translation>
 <translation id="7729447699958282447">Chromium nie może zsynchronizować danych, ponieważ synchronizacja jest niedostępna w Twojej domenie.</translation>
 <translation id="7747138024166251722">Instalator nie mógł utworzyć katalogu tymczasowego. Sprawdź, czy na dysku jest dość wolnego miejsca oraz sprawdź, czy posiadasz uprawnienia do instalowania programów.</translation>
 <translation id="7918535023914021398">Chromium sprawdził, że wydawcą certyfikatu tej witryny jest <ph name="ISSUER" />. Serwer nie dostarczył informacji o certyfikacie, korzystając z protokołu Certificate Transparency.</translation>

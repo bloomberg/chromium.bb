@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="id">
+<translation id="101438888985615157">Putar layar sebesar 180 derajat</translation>
 <translation id="1017967144265860778">Pengelolaan daya di layar masuk</translation>
 <translation id="1019101089073227242">Menyetel direktori data pengguna</translation>
 <translation id="1022361784792428773">ID ekstensi yang tidak diizinkan dipasang pengguna (atau * untuk semua)</translation>
@@ -236,6 +237,17 @@
 <translation id="2113068765175018713">Membatasi waktu operasi perangkat dengan melakukan booting ulang secara otomatis</translation>
 <translation id="2127599828444728326">Izinkan pemberitahuan di situs ini</translation>
 <translation id="2131902621292742709">Penundaan peredupan layar saat menggunakan daya baterai</translation>
+<translation id="2137064848866899664">Jika kebijakan ini disetel, tiap layar akan diputar dengan orientasi tertentu
+      setiap kali melakukan boot ulang dan pertama kalinya layar tersambung
+      setelah nilai kebijakan berubah. Pengguna dapat mengubah rotasi layar
+      melalui laman setelan setelah masuk, tapi setelan pengguna
+      akan digantikan dengan nilai kebijakan pada boot ulang selanjutnya.
+
+      Kebijakan ini berlaku untuk semua layar utama dan sekunder.
+
+      Jika kebijakan tidak disetel, nilai defaultnya adalah 0 derajat, dan pengguna
+      dapat mengubahnya. Dalam kasus ini, nilai default tidak akan diterapkan kembali
+      saat memulai ulang.</translation>
 <translation id="2166715102875984646">Menonaktifkan dukungan API grafis 3D.
 
       Dengan mengaktifkan setelan ini, Anda mencegah laman web mengakses unit pemrosesan grafis (GPU). Secara khusus, laman web tidak dapat mengakses API WebGL dan plugin tidak dapat menggunakan API Pepper 3D.
@@ -887,6 +899,7 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
       </translation>
 <translation id="4442582539341804154">Aktifkan kunci bila perangkat menganggur atau ditangguhkan</translation>
 <translation id="4445684791305970001">Menonaktifkan Alat Pengembang dan konsol JavaScript. Jika Anda mengaktifkan setelan ini, alat Pengembang tidak dapat diakses dan elemen situs web tidak dapat diperiksa lagi. Setiap pintasan keyboard dan menu atau entri menu konteks untuk membuka Alat Pengembang atau Konsol JavaScript akan dinonaktifkan. Dengan menyetel opsi menjadi nonaktif atau membiarkannya tanpa disetel akan memungkinkan penggunaan konsol JavaScript dan Alat Pengembang.</translation>
+<translation id="4449545651113180484">Putar layar searah jarum jam sebesar 270 derajat</translation>
 <translation id="4467952432486360968">Cekal cookie pihak ketiga</translation>
 <translation id="4474167089968829729">Aktifkan penyimpanan sandi di pengelola sandi</translation>
 <translation id="4480694116501920047">Paksakan TelusurAman</translation>
@@ -1795,6 +1808,7 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 <translation id="7953256619080733119">Hosting pengecualian manual pengguna yang dikelola</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Kebijakan ini tidak lagi didukung. Mengaktifkan penggunaan STUN dan server relay saat menyambungkan ke klien jarak jauh. Jika setelan ini diaktifkan, maka komputer ini dapat menemukan dan tersambung ke komputer host jarak jauh bahkan jika dipisahkan oleh firewall. Jika setelan ini dinonaktifkan dan sambungan UDP keluar difilter oleh firewall, maka komputer ini hanya dapat tersambung ke komputer host dalam jaringan lokal.</translation>
+<translation id="802147957407376460">Putar layar sebesar 0 derajat</translation>
 <translation id="8044493735196713914">Laporkan mode boot perangkat</translation>
 <translation id="8059164285174960932">URL tempat klien akses jarak jauh seharusnya memperoleh token autentikasi mereka</translation>
 <translation id="8071636581296916773">Memungkinkan penggunaan server relay saat klien jarak jauh sedang mencoba membuat koneksi ke komputer ini.
@@ -1903,6 +1917,8 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 <translation id="8382184662529825177">Mengaktifkan penggunaan pengesahan jarak jauh untuk perlindungan konten bagi perangkat</translation>
 <translation id="838870586332499308">Aktifkan roaming data</translation>
 <translation id="8412312801707973447">Apakah pemeriksaan OCSP/CRL online dilakukan atau tidak</translation>
+<translation id="8424255554404582727">Setel pemutaran layar default, diterapkan kembali setiap kali melakukan boot ulang</translation>
+<translation id="8426231401662877819">Putar layar searah jarum jam sebesar 90 derajat</translation>
 <translation id="8451988835943702790">Gunakan Laman Tab Baru sebagai beranda</translation>
 <translation id="8465065632133292531">Parameter untuk URL instan yang menggunakan POST</translation>
 <translation id="847472800012384958">Jangan izinkan situs mana pun menampilkan munculan</translation>

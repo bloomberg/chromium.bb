@@ -357,6 +357,7 @@
 <translation id="4729095194763193578">上一個表格列</translation>
 <translation id="4736221692378411923">8 月</translation>
 <translation id="4740661827607246557">說明指令</translation>
+<translation id="4755857887974653209">停用 ChromeVox</translation>
 <translation id="4759716709594980008">Chrome 作業系統鍵盤語言回饋工具</translation>
 <translation id="4763296182459741068">自動換行至底部</translation>
 <translation id="4763480195061959176">影片</translation>
@@ -661,6 +662,7 @@
 <translation id="8065607967589909823">所選項目是</translation>
 <translation id="8066678206530322333">橫幅</translation>
 <translation id="8110647606445335195">沒有 ARIA 地標。</translation>
+<translation id="8132379720172247073">ChromeVox 選單</translation>
 <translation id="8153880621934657047">不在表格內。</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{底線}other{# 個底線}}</translation>
 <translation id="8179976553408161302">Enter</translation>
@@ -696,6 +698,7 @@
 <translation id="8584721346566392021">第 5 階</translation>
 <translation id="8587549812518406253">下一個清單項目</translation>
 <translation id="860150890330522909">「<ph name="NAME" />」核取方塊已勾選</translation>
+<translation id="8603071050456974042">ChromeVox 面板</translation>
 <translation id="8606621670302093223">日期控制項</translation>
 <translation id="8631359288236106450">已選取 <ph name="COUNT" /> 個項目</translation>
 <translation id="8638532244051952400">讀出目前的儲存格座標</translation>

@@ -24,6 +24,7 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
 <translation id="1546934824884762070">An unexpected error occurred. Please report this problem to the developers.</translation>
 <translation id="1619813076098775562">Closed connection to Cast device.</translation>
 <translation id="1643640058022401035">Leaving this page will end your Chromoting session.</translation>
+<translation id="1646994964686260497">There's nothing to connect to.</translation>
 <translation id="1654128982815600832">Enabling remote connections for this computer…</translation>
 <translation id="170207782578677537">Failed to register this computer.</translation>
 <translation id="1704090719919187045">Chromoting Host Preferences</translation>
@@ -109,6 +110,7 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
 <translation id="3606997049964069799">You are not signed in to Chromium. Please sign in and try again.</translation>
 <translation id="3649256019230929621">Minimise window</translation>
 <translation id="369442766917958684">Offline.</translation>
+<translation id="3695446226812920698">Find out how</translation>
 <translation id="3776024066357219166">Your Chrome Remote Desktop session has ended.</translation>
 <translation id="3785447812627779171">Chromoting
 Host</translation>
@@ -121,6 +123,10 @@ Host</translation>
 <translation id="3950820424414687140">Sign in</translation>
 <translation id="3989511127559254552">To continue, you must first grant extended access permissions to your computer. You only have to do this once.</translation>
 <translation id="4006787130661126000">You must enable remote connections if you want to use Chrome Remote Desktop to access this computer.</translation>
+<translation id="401121182145179743">You need first to set up your computer for remote access.</translation>
+<translation id="4028465833180158312">• Material Design UI updates.
+• Third-party licensing credits.
+• Information shown for remote computers that are offline.</translation>
 <translation id="405887016757208221">The remote computer has failed to initialise the session. If problem persists please try to configure the host again.</translation>
 <translation id="4068946408131579958">All connections</translation>
 <translation id="409800995205263688">NOTE: Policy settings permit connections only between computers within your network.</translation>

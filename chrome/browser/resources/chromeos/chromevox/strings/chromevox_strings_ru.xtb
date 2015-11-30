@@ -357,6 +357,7 @@
 <translation id="4729095194763193578">Перейти к предыдущей строке таблицы</translation>
 <translation id="4736221692378411923">август</translation>
 <translation id="4740661827607246557">Справка по командам</translation>
+<translation id="4755857887974653209">Отключить ChromeVox</translation>
 <translation id="4759716709594980008">Озвучивание клавиатуры ChromeOS</translation>
 <translation id="4763296182459741068">Смещение вниз</translation>
 <translation id="4763480195061959176">видео</translation>
@@ -661,6 +662,7 @@
 <translation id="8065607967589909823">Выбранный фрагмент.</translation>
 <translation id="8066678206530322333">Баннер</translation>
 <translation id="8110647606445335195">Ориентиров ARIA нет.</translation>
+<translation id="8132379720172247073">Меню ChromeVox</translation>
 <translation id="8153880621934657047">Ошибка. Перейдите в таблицу.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{символ подчеркивания}one{# символ подчеркивания}few{# символа подчеркивания}many{# символов подчеркивания}other{# underscores}}</translation>
 <translation id="8179976553408161302">ВВОД</translation>
@@ -696,6 +698,7 @@
 <translation id="8584721346566392021">h5</translation>
 <translation id="8587549812518406253">Перейти к следующему пункту списка</translation>
 <translation id="860150890330522909">Флажок "<ph name="NAME" />", установлен</translation>
+<translation id="8603071050456974042">Панель управления ChromeVox</translation>
 <translation id="8606621670302093223">Выбор даты</translation>
 <translation id="8631359288236106450">Выбрано: <ph name="COUNT" /></translation>
 <translation id="8638532244051952400">Назвать координаты текущей ячейки</translation>

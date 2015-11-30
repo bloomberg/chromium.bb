@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="pl">
+<translation id="101438888985615157">Obróć ekran o 180 stopni</translation>
 <translation id="1017967144265860778">Zarządzanie energią na ekranie logowania</translation>
 <translation id="1019101089073227242">Ustaw katalog danych użytkownika</translation>
 <translation id="1022361784792428773">Identyfikatory rozszerzeń, których nie może instalować użytkownik (wartość * oznacza wszystkie)</translation>
@@ -228,6 +229,18 @@
 <translation id="2113068765175018713">Ogranicz czas działania urządzenia przez automatyczne ponowne uruchamianie</translation>
 <translation id="2127599828444728326">Zezwalaj na powiadomienia w tych witrynach.</translation>
 <translation id="2131902621292742709">Opóźnienie przyciemnienia ekranu przy zasilaniu z baterii</translation>
+<translation id="2137064848866899664">Kiedy ta zasada jest skonfigurowana, każdy ekran jest obracany do określonej
+      orientacji po każdym ponownym uruchomieniu urządzenia
+      oraz przy pierwszym podłączeniu po zmianie wartości tej zasady.
+      Po zalogowaniu się użytkownicy mogą zmienić ustawienie obrotu ekranu
+      na stronie ustawień, ale zostanie ono zastąpione przez wartość tej zasady
+      po następnym uruchomieniu urządzenia.
+
+      Ta zasada dotyczy zarówno głównego ekranu, jak i ekranów dodatkowych.
+
+      Kiedy ta zasada nie jest skonfigurowana, domyślna wartość to 0 stopni,
+      a użytkownik może ją zmienić. Jeśli tak zrobi, zmieniona wartość nie zostanie ponownie
+      zastosowana po ponownym uruchomieniu urządzenia.</translation>
 <translation id="2166715102875984646">Wyłącza obsługę API grafiki 3D.
 
       Włączenie tego ustawienia blokuje dostęp stron internetowych do procesora graficznego (GPU). W szczególności strony internetowe nie mają dostępu do interfejsu API WebGL, natomiast wtyczki nie mogą korzystać z interfejsu API Pepper 3D.
@@ -886,6 +899,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
       </translation>
 <translation id="4442582539341804154">Włącz blokadę w przypadku bezczynności lub zawieszenia działania urządzenia</translation>
 <translation id="4445684791305970001">Wyłącza narzędzia dla programistów i konsolę JavaScript. Jeśli włączysz to ustawienie, niemożliwe będzie uzyskanie dostępu do narzędzi dla programistów i dokonanie przeglądu elementów witryny. Wszelkie skróty klawiszowe oraz pozycje w menu aplikacji i menu kontekstowym umożliwiające otwarcie narzędzi dla programistów lub konsoli JavaScript będą nieaktywne. Wyłączenie lub nieskonfigurowanie tej opcji umożliwi korzystanie z narzędzi dla programistów i konsoli JavaScript.</translation>
+<translation id="4449545651113180484">Obróć ekran w prawo o 270 stopni</translation>
 <translation id="4467952432486360968">Blokuj pliki cookie innych firm</translation>
 <translation id="4474167089968829729">Włącz zapisywanie haseł w menedżerze haseł</translation>
 <translation id="4480694116501920047">Wymuś stosowanie filtru SafeSearch</translation>
@@ -1112,6 +1126,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 
           Jeśli to ustawienie będzie wyłączone lub nieustawione, zarówno zdalni, jak i lokalni użytkownicy będą mogli korzystać z udostępnianego hosta.</translation>
 <translation id="5423001109873148185">Po włączeniu tej zasady wymuszany jest import wyszukiwarek z bieżącej przeglądarki domyślnej. Włączenie zasady ma również wpływ na opcje w oknie dialogowym importowania. W przypadku jej wyłączenia wyszukiwarka domyślna nie jest importowana. Jeśli zasada nie zostanie skonfigurowana, użytkownik może zobaczyć pytanie o zaimportowanie wyszukiwarki lub importowanie odbędzie się automatycznie.</translation>
+<translation id="5423197884968724595">Nazwa ograniczenia w Android WebView:</translation>
 <translation id="5447306928176905178">Włącz raportowanie informacji o pamięci (rozmiar stosu pamięci JS) do strony (opcja wycofana)</translation>
 <translation id="5457065417344056871">Włącz tryb gościa w przeglądarce</translation>
 <translation id="5457924070961220141">Umożliwia skonfigurowanie domyślnego mechanizmu renderowania HTML po zainstalowaniu wtyczki <ph name="PRODUCT_FRAME_NAME" />. Ustawieniem domyślnym, stosowanym w przypadku nieskonfigurowania tej zasady, jest zezwolenie przeglądarce hosta na wykonywanie renderowania, jednak możesz opcjonalnie zastąpić to ustawienie, tak aby strony HTML były domyślnie renderowane przez wtyczkę <ph name="PRODUCT_FRAME_NAME" />.</translation>
@@ -1783,6 +1798,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="7953256619080733119">Zarządzane hosty umieszczone przez użytkownika na liście wyjątków</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Ta zasada nie jest już obsługiwana. Umożliwia stosowanie protokołu STUN i serwerów przekazywania podczas łączenia się z klientem zdalnym. Jeśli ustawienie jest włączone, ten komputer może wykrywać hosty zdalne i łączyć się z nimi nawet wówczas, gdy są oddzielone zaporą sieciową. Jeśli ustawienie jest wyłączone, a wychodzące połączenia UDP są filtrowane przez zaporę sieciową, komputer może łączyć się tylko z hostami w sieci lokalnej.</translation>
+<translation id="802147957407376460">Obróć ekran o 0 stopni</translation>
 <translation id="8044493735196713914">Zgłoś tryb uruchomienia urządzenia</translation>
 <translation id="8059164285174960932">Adres URL, dla którego klienty dostępu zdalnego powinny uzyskać token uwierzytelniania</translation>
 <translation id="8071636581296916773">Pozwala korzystać z serwerów przekazujących, gdy klienty zdalne próbują nawiązać połączenie z tym komputerem.
@@ -1891,6 +1907,8 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="8382184662529825177">Włącz używanie zaświadczania zdalnego do ochrony treści na urządzeniu</translation>
 <translation id="838870586332499308">Włącz dane w roamingu</translation>
 <translation id="8412312801707973447">Czy wykonywane jest sprawdzanie OCSP/CRL online</translation>
+<translation id="8424255554404582727">Ustaw domyślny obrót ekranu stosowany po każdym ponownym uruchomieniu</translation>
+<translation id="8426231401662877819">Obróć ekran w prawo o 90 stopni</translation>
 <translation id="8451988835943702790">Używaj strony Nowa karta jako strony początkowej</translation>
 <translation id="8465065632133292531">Parametry dla URL-i dynamicznych używających POST</translation>
 <translation id="847472800012384958">Nie zezwalaj na pokazywanie wyskakujących okienek w żadnej witrynie</translation>

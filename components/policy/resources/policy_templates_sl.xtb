@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sl">
+<translation id="101438888985615157">Sukanje zaslona za 180 stopinj</translation>
 <translation id="1017967144265860778">Upravljanje porabe na zaslonu za prijavo</translation>
 <translation id="1019101089073227242">Nastavitev imenika za uporabniške podatke</translation>
 <translation id="1022361784792428773">ID-ji razširitev, katerih namestitev je treba uporabniku preprečiti (ali * za vse)</translation>
@@ -266,6 +267,17 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
 <translation id="2113068765175018713">Omejitev časa dejavnosti naprave samodejnim vnovičnim zagonom</translation>
 <translation id="2127599828444728326">Dovoli obvestila na teh mestih</translation>
 <translation id="2131902621292742709">Časovni zamik zatemnitve zaslona ob napajanju iz akumulatorja</translation>
+<translation id="2137064848866899664">Če je ta pravilnik nastavljen, je vsak zaslon zasukan na
+      določeno postavitev pri vsakem vnovičnem zagonu in pri prvi povezavi
+      po spremembi vrednosti pravilnika. Uporabnik lahko po prijavi
+      na strani z nastavitvami spremeni sukanje, vendar bo pri naslednjem
+      vnovičnem zagonu vrednost pravilnika preglasila njegovo nastavitev.
+
+      Ta pravilnika velja za primarne in sekundarne zaslone.
+
+      Če pravilnik ni nastavljen, je privzeta vrednost 0 stopinj in uporabnik
+      jo lahko spremeni. V tem primeru se privzeta vrednost ob vnovičnem
+      zagonu ne uveljavi znova.</translation>
 <translation id="2166715102875984646">Onemogoči podporo za API-je za grafiko 3D.
 
       Če to nastavitev omogočite, spletnim stranem preprečite dostop do grafičnega procesorja (spletne strani ne morejo dostopati do API-ja WebGL, vtičniki pa ne morejo uporabljati API-ja Pepper 3D).
@@ -994,6 +1006,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
       Če to nastavitev omogočite, dostop do orodij za razvijalcev ne bo mogoč in spletnih elementov ne bo več mogoče pregledovati. Vse bližnjične tipke in vnosi v meniju ali priročnem meniju za odpiranje orodij za razvijalce in konzole za JavaScript bodo onemogočeni.
 
       Če to možnost onemogočite ali jo ne nastavite, bo lahko uporabnik uporabljal orodja za razvijalce in konzolo JavaScript.</translation>
+<translation id="4449545651113180484">Sukanje zaslona v smeri urnega kazalca za 270 stopinj</translation>
 <translation id="4467952432486360968">Blokiraj piškotke drugih spletnih mest</translation>
 <translation id="4474167089968829729">Omogočanje shranjevanja gesel v upravitelju gesel</translation>
 <translation id="4480694116501920047">Uveljavitev Google Varnega iskanja</translation>
@@ -1262,6 +1275,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
       Če je onemogočen, se privzeti iskalnik ne uvozi.
 
       Če ni nastavljen, bo uporabnik morda vprašan, ali naj ga uvozi, ali pa bo uvoz izveden samodejno.</translation>
+<translation id="5423197884968724595">Ime omejitve za Android WebView:</translation>
 <translation id="5447306928176905178">Omogoči poročanje o podatkih pomnilnika (velikost kopice JS) strani (zastarelo)</translation>
 <translation id="5457065417344056871">Omogočanje načina za goste v brskalniku</translation>
 <translation id="5457924070961220141">Omogoča nastavitev privzetega upodabljalnika HTML, ko je <ph name="PRODUCT_FRAME_NAME" /> nameščen.
@@ -2038,6 +2052,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
           Če je ta nastavitev omogočena, lahko ta računalnik odkrije oddaljene gostiteljske računalnike in se poveže z njimi, tudi če jih ločuje požarni zid.
 
           Če je ta nastavitev onemogočena in izhodne povezave UDP filtrira požarni zid, se bo lahko ta računalnik povezal samo z gostiteljskimi računalniki znotraj lokalnega omrežja.</translation>
+<translation id="802147957407376460">Sukanje zaslona za 0 stopinj</translation>
 <translation id="8044493735196713914">Pošiljanje podatkov o načinu zagona naprave</translation>
 <translation id="8059164285174960932">URL, na katerem morajo odjemalci za oddaljeni dostop pridobiti žeton za preverjanje pristnosti</translation>
 <translation id="8071636581296916773">Omogoča uporabo posredovalnih strežnikov, ko oddaljeni odjemalci poskušajo vzpostaviti povezavo s tem računalnikom.
@@ -2154,6 +2169,8 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="8382184662529825177">Omogoči uporabo oddaljenega potrjevanja za zaščito vsebine za napravo</translation>
 <translation id="838870586332499308">Omogoči podatkovno gostovanje</translation>
 <translation id="8412312801707973447">Ali se izvaja spletni pregled OCSP/CRL</translation>
+<translation id="8424255554404582727">Nastavitev privzetega sukanja zaslona, ki se znova uveljavi pri vsakem vnovičnem zagonu</translation>
+<translation id="8426231401662877819">Sukanje zaslona v smeri urnega kazalca za 90 stopinj</translation>
 <translation id="8451988835943702790">Uporabi stran za nov zavihek kot domačo stran</translation>
 <translation id="8465065632133292531">Parametri za takojšnji URL, ki uporablja POST</translation>
 <translation id="847472800012384958">Nobenemu mestu ne dovoli prikaza pojavnih oken</translation>

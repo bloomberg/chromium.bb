@@ -5,6 +5,7 @@
 <translation id="1013290471399003443">O Chrome verificou que <ph name="ISSUER" /> emitiu o certificado deste website. O servidor forneceu informações de Transparência de certificado válidas.</translation>
 <translation id="1016765312371154165">O Chrome não foi encerrado corretamente.</translation>
 <translation id="103396972844768118">Informação importante sobre seus dados do Google Chrome</translation>
+<translation id="1035334672863811645">fazer login no Chrome</translation>
 <translation id="1061441684050139317">O Chrome precisa ter acesso ao microfone para compartilhá-lo com este site.</translation>
 <translation id="1065672644894730302">Não foi possível ler suas preferências. Alguns recursos podem não estar disponíveis e as alterações nas preferências não serão salvas.</translation>
 <translation id="1073391069195728457">Google Chrome - Notificações</translation>
@@ -87,7 +88,7 @@ Se você decidir fazer login assim mesmo, as informações do Google Chrome, com
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3881912906674381083">O Chrome verificou que <ph name="ISSUER" /> emitiu o certificado deste website. O servidor forneceu informações de Transparência de certificado, mas o Chrome não reconheceu nenhum dos registros de Transparência de certificado.</translation>
 <translation id="3889417619312448367">Desinstalar o Google Chrome</translation>
-<translation id="4011219958405096740">Quando ativada, usa o fluxo de login do Chrome baseado em iframe. Caso contrário, usa um fluxo baseado em visualização da Web.</translation>
+<translation id="4042449298237264661">Este computador não receberá mais atualizações do Google Chrome porque o Windows XP e o Windows Vista não são mais compatíveis.</translation>
 <translation id="4050175100176540509">Melhorias de segurança importantes e novos recursos estão disponíveis na versão mais recente.</translation>
 <translation id="4053720452172726777">Personalizar e controlar o Google Chrome</translation>
 <translation id="4147555960264124640">Você está fazendo login com uma conta gerenciada e concedendo ao administrador da conta o controle sobre seu perfil do Google Chrome. Seus dados do Google Chrome, como aplicativos, favoritos, histórico, senhas e outras configurações serão permanentemente vinculados a <ph name="USER_NAME" />. Você pode excluir esses dados pelo painel das Contas do Google, mas não pode associá-los a outra conta. <ph name="LEARN_MORE" /></translation>
@@ -142,9 +143,9 @@ incomuns e incorretas. Isso pode acontecer quando um invasor está fingindo ser 
 <translation id="573759479754913123">Sobre o Chrome OS</translation>
 <translation id="5749068826913805084">O Chrome precisa de acesso de armazenamento para fazer o download de arquivos.</translation>
 <translation id="5785746630574083988">A reinicialização no modo Windows 8 fecha e reinicia todos os aplicativos do Google Chrome.</translation>
-<translation id="5799551393681493217">Ativa fluxos de login do Google Chrome baseados em iframe. Esta sinalização modifica login com ativação baseada na Web.</translation>
 <translation id="5855036575689098185">O software que está sendo executado em seu computador não é compatível com o Google Chrome.</translation>
 <translation id="5877064549588274448">Canal alterado. Reinicie o dispositivo para aplicar as alterações.</translation>
+<translation id="5890698319714066019">O Google Chrome não pode exibir a página da Web porque seu computador não está conectado à Internet.</translation>
 <translation id="5931853610562009806">No Mac, as senhas podem ser salvas no seu Keychain e acessadas ou sincronizadas por outros usuários do Google Chrome que compartilhem essa conta OS X.</translation>
 <translation id="5940385492829620908">Sua Web, seus favoritos e demais conteúdo do Chrome estão aqui.</translation>
 <translation id="5941830788786076944">Fazer do Google Chrome o navegador padrão</translation>
@@ -167,6 +168,8 @@ incomuns e incorretas. Isso pode acontecer quando um invasor está fingindo ser 
 <translation id="6236285698028833233">O Google Chrome parou de ser atualizado e não oferece mais suporte para esta versão de seu sistema operacional.</translation>
 <translation id="629218512217695915">Usar senha gerada pelo Chrome</translation>
 <translation id="6368958679917195344">O sistema operacional do Chrome tornou-se possível graças a um <ph name="BEGIN_LINK_CROS_OSS" />software de código aberto<ph name="END_LINK_CROS_OSS" /> adicional.</translation>
+<translation id="6400076122676892962">Este computador em breve parará de receber atualizações do Google Chrome porque o Mac OS X 10.6, 10.7 e 10.8 não serão mais compatíveis.</translation>
+<translation id="6470176598693778404">Este computador não receberá mais atualizações do Google Chrome porque o Mac OS X 10.6, 10.7 e 10.8 não são mais compatíveis.</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{Um download está em andamento. Deseja cancelar o download e sair do Google Chrome?}one{# downloads estão em andamento. Deseja cancelar os downloads e sair do Google Chrome?}other{# downloads estão em andamento. Deseja cancelar os downloads e sair do Google Chrome?}}</translation>
 <translation id="6598387184982954187">Você está usando <ph name="PROFILE_EMAIL" /> para sincronizar suas informações do Google Chrome. Para atualizar suas preferências de sincronização ou usar o Chrome sem uma Conta do Google, vá para <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6600954340915313787">Copiado no Chrome</translation>
@@ -204,6 +207,7 @@ incomuns e incorretas. Isso pode acontecer quando um invasor está fingindo ser 
 <translation id="7196020411877309443">Por que estou vendo este aviso?</translation>
 <translation id="7242029209006116544">Você está fazendo login com uma conta gerenciada e concedendo ao administrador da conta o controle sobre seu perfil do Google Chrome. Seus dados do Google Chrome, como aplicativos, favoritos, histórico, senhas e outras configurações serão permanentemente vinculados a <ph name="USER_NAME" />. Você pode excluir esses dados pelo painel das Contas do Google, mas não pode associá-los a outra conta. Você tem a opção de criar um novo perfil para manter seus dados existentes do Google Chrome separados. <ph name="LEARN_MORE" /></translation>
 <translation id="7282192067747128786">Google Chrome – Notificações (<ph name="QUANTITY" /> não lidas)</translation>
+<translation id="729375352412857283">Este computador em breve parará de receber atualizações do Google Chrome porque o Windows XP e Windows Vista não serão mais compatíveis.</translation>
 <translation id="7339898014177206373">Nova janela</translation>
 <translation id="7396375882099008034">Permitir que o Google Chrome acesse a rede em suas configurações de
         firewall ou antivírus.</translation>

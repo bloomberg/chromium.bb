@@ -5,6 +5,7 @@
 <translation id="1013290471399003443"><ph name="ISSUER" /> የዚህን የድር ጣቢያ ምስክር ወረቀት እንደሰጠ Chrome አረጋግጧል። አገልጋዩ ልክ የሆነ የምስክር ወረቀት ግልፅነት መረጃን አቅርቧል።</translation>
 <translation id="1016765312371154165">Chrome በትክክል አልተዘጋም ነበር።</translation>
 <translation id="103396972844768118">የChrome ውሂብዎን በተመለከተ አስፈላጊ መረጃ</translation>
+<translation id="1035334672863811645">ወደ Chrome ይግቡ</translation>
 <translation id="1061441684050139317">Chrome እሱን ለዚህ ጣቢያ ለማጋራት የማይክሮፎን መዳረሻ ያስፈልገዋል።</translation>
 <translation id="1065672644894730302">አማራጮችዎ ሊነበቡ አልቻሉም።
 
@@ -91,7 +92,6 @@
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3881912906674381083"><ph name="ISSUER" /> የዚህን የድር ጣቢያ ምስክር ወረቀት እንደሰጠ Chrome አረጋግጧል። አገልጋዩ የምስክር ወረቀት ግልፅነት መረጃን አቅርቧል፣ ሆኖም ግን Chrome ማንኛውንም የምስክር ወረቀት ግልፅነት ምዝግብ ማስታወሻዎችን አያውቅም።</translation>
 <translation id="3889417619312448367">Google Chromeን አራግፍ</translation>
-<translation id="4011219958405096740">በሚነቃበት ጊዜ፣ በiframe-ላይ የተመረኮዘ የChrome በመለያ መግቢያ ፍሰትን የሚጠቀም ሲሆን ይህ ካልሆነ ግን በwebview-ላይ የተመረኮዘ ፍሰትን ይጠቀማል።</translation>
 <translation id="4042449298237264661">Windows XP እና Windows Vista ከእንግዲህ ስለማይደገፉ ይህ ኮምፒውተር ከአሁን በኋላ የGoogle Chrome ዝማኔዎችን አይቀበልም።</translation>
 <translation id="4050175100176540509">አስፈላጊ የደህንነት ማሻሻያዎች እና አዲስ ባህሪያት በቅርብ ጊዜው ስሪቱ ላይ ይገኛሉ።</translation>
 <translation id="4053720452172726777">Google Chromeን ያብጁ እና ይቆጣጠሩ</translation>
@@ -149,7 +149,6 @@ Google Chrome ቅንጅቶችዎን ማስመለስ አልቻለም።</translat
 <translation id="573759479754913123">ስለ Chrome OS</translation>
 <translation id="5749068826913805084">Chrome ፋይሎችን ለማውረድ የማከማቻ መዳረሻ ያስፈልገዋል።</translation>
 <translation id="5785746630574083988">በWindows 8 ሁኔታ ውስጥ ዳግም መጀመር የChrome መተግበሪያዎችዎን ይዘጋቸውና ዳግም ያስጀምራቸዋል።</translation>
-<translation id="5799551393681493217">በiframe-ላይ የተመረኮዘ የChrome በመለያ የመግባት ፍሰትን ይነቃል። ይህ ጠቁም --በድር-ላይ-የተመረኮዘ-በመለያ መግቢያን ይሰረዛል።</translation>
 <translation id="5855036575689098185">በኮምፒውተርዎ ላይ እያሄደ ያለ ሶፍትዌር ከGoogle Chrome ጋር ተኳሃኝ አይደለም።</translation>
 <translation id="5877064549588274448">ሰርጥ ተለውጧል። ለውጦችን ለመተግበር መሳሪያዎን ዳግም ያስጀምሩ።</translation>
 <translation id="5890698319714066019">የእርስዎ ኮምፒውተር ከበይነመረቡ ጋር ስላልተገናኘ Google Chrome ድረ-ገጹን ማሳየት አይችልም።</translation>

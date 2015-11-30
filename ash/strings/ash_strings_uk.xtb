@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="uk">
 <translation id="1013923882670373915">Пристрою Bluetooth "<ph name="DEVICE_NAME" />" потрібен дозвіл на підключення. Введіть на пристрої цей PIN-код: <ph name="PINCODE" /></translation>
+<translation id="1021311941847921177">Комбінація клавіш для вибору наступного методу введення змінилася. Тепер це <ph name="NEW_SHORTCUT" />, а не <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Автоматично ховати полицю</translation>
 <translation id="1195412055398077112">облямівка екрана</translation>
 <translation id="1270290102613614947">Екранну клавіатуру вимкнено</translation>
@@ -25,7 +26,9 @@
 <translation id="1812696562331527143">Метод введення змінено на <ph name="INPUT_METHOD_ID" />* (<ph name="BEGIN_LINK" />третя сторона<ph name="END_LINK" />).
 Щоб переключитися, натисніть Shift + Alt.</translation>
 <translation id="1882897271359938046">Дзеркалювання на <ph name="DISPLAY_NAME" /></translation>
+<translation id="1919743966458266018">Комбінація клавіш для запуску Диспетчера завдань змінилася. Тепер це <ph name="NEW_SHORTCUT" />, а не <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Автоматичні кліки</translation>
+<translation id="1938872420421548906">Shift+Alt</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2127372758936585790">Зарядний пристрій низької потужності</translation>
@@ -105,6 +108,7 @@
 <translation id="4421231901400348175">Спільний доступ до екрана для користувача <ph name="HELPER_NAME" /> через віддалену допомогу.</translation>
 <translation id="4430019312045809116">Гучність</translation>
 <translation id="4527045527269911712">Пристрою Bluetooth "<ph name="DEVICE_NAME" />" потрібен дозвіл на підключення.</translation>
+<translation id="4544944664594876241">Комбінація клавіш для блокування екрана змінилася. Тепер це <ph name="NEW_SHORTCUT" />, а не <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="479989351350248267">пошук</translation>
 <translation id="4804818685124855865">Від'єднатися</translation>
 <translation id="4872237917498892622">Alt+клавіша пошуку або Shift</translation>
@@ -113,12 +117,14 @@
 <translation id="4957722034734105353">Докладніше...</translation>
 <translation id="4961318399572185831">Трансляція екрана</translation>
 <translation id="5011233892417813670">Chromebook</translation>
+<translation id="5012744545445585468">Ctrl+Shift+пробіл</translation>
 <translation id="5045002648206642691">Налаштування Google Диска...</translation>
 <translation id="5102001756192215136">Залишилося <ph name="HOUR" />:<ph name="MINUTE" /></translation>
 <translation id="511445211639755999"><ph name="RESOLUTION" />, <ph name="OVERSCAN" /></translation>
 <translation id="5168181903108465623">Доступні пристрої для трансляції</translation>
 <translation id="5222676887888702881">Вийти</translation>
 <translation id="5238774010593222950">Неможливо ввійти в інший обліковий запис.</translation>
+<translation id="532063867737390965">Адміністратор вимкнув налаштування мережі.</translation>
 <translation id="544691375626129091">Усіх доступних користувачів уже додано до цього сеансу.</translation>
 <translation id="5507786745520522457">Налаштувати мобільне передавання даних</translation>
 <translation id="5543001071567407895">SMS</translation>
@@ -132,6 +138,7 @@
 Щоб переключитися, натисніть Shift + Alt.</translation>
 <translation id="5871632337994001636">Керування пристроями…</translation>
 <translation id="5895138241574237353">Перезапустити</translation>
+<translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5927132638760172455">Трансляція на невідомий приймач</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">Повернути</translation>
@@ -155,6 +162,7 @@
 <translation id="6426039856985689743">Вимкнути передавання мобільних даних</translation>
 <translation id="6452181791372256707">Відхилити</translation>
 <translation id="6459472438155181876">Розширення екрана на <ph name="DISPLAY_NAME" /></translation>
+<translation id="6501401484702599040">Вміст екрана транслюється на пристрій "<ph name="RECEIVER_NAME" />"</translation>
 <translation id="6550675742724504774">Параметри</translation>
 <translation id="6585808820553845416">Сеанс закінчиться через <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6596816719288285829">ІР-адреса</translation>
@@ -162,6 +170,7 @@
 <translation id="6713285437468012787">Пристрій Bluetooth "<ph name="DEVICE_NAME" />" підключено. Він доступний для всіх користувачів. Відключити пристрій можна в Налаштуваннях.</translation>
 <translation id="6785414152754474415">Акумулятор заряджений на <ph name="PERCENTAGE" />% і заряджається.</translation>
 <translation id="6803622936009808957">Не вдалося дублювати зображення екранів, оскільки не знайдено підтримувані значення роздільної здатності. Натомість запущено режим розширеного робочого столу.</translation>
+<translation id="683971173229319003">Search (Пошук)+L</translation>
 <translation id="68610848741840742">ChromeVox (голосові підказки)</translation>
 <translation id="6911468394164995108">Під’єднатися до іншої...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
@@ -169,6 +178,7 @@
 <translation id="6981982820502123353">Доступність</translation>
 <translation id="7029814467594812963">Завершити сеанс</translation>
 <translation id="703171847531699602">Немає пристроїв для трансляції</translation>
+<translation id="7034339000180558234">Вкладка "<ph name="TAB_NAME" />" транслюється на пристрій "<ph name="RECEIVER_NAME" />"</translation>
 <translation id="7052914147756339792">Установити фоновий малюнок...</translation>
 <translation id="7097613348211027502">ChromeVox (голосові підказки) увімкнено.
 Натисніть Ctrl+Alt+Z, щоб вимкнути.</translation>
@@ -180,6 +190,7 @@
 <translation id="737451040872859086">Мікрофон (внутрішній)</translation>
 <translation id="742594950370306541">Камера використовується.</translation>
 <translation id="743058460480092004">Камера та мікрофон використовуються.</translation>
+<translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7561014039265304140">Екран <ph name="DISPLAY_NAME" /> не підтримує роздільну здатність <ph name="SPECIFIED_RESOLUTION" />. Роздільну здатність змінено на <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7573962313813535744">Режим док-станції</translation>
 <translation id="7593891976182323525">Клавіша пошуку або Shift</translation>
@@ -207,6 +218,7 @@
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="882279321799040148">Натисніть, щоб переглянути</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8850991929411075241">Search (Пошук)+Esc</translation>
 <translation id="8878886163241303700">Розширення екрана</translation>
 <translation id="8940956008527784070">Низький заряд акумулятора (<ph name="PERCENTAGE" />%)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>

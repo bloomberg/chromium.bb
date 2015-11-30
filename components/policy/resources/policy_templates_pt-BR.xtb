@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="pt-BR">
+<translation id="101438888985615157">Girar a tela em 180 graus</translation>
 <translation id="1017967144265860778">Gerenciamento de energia na tela de login</translation>
 <translation id="1019101089073227242">Definir diretório de dados do usuário</translation>
 <translation id="1022361784792428773">IDs de extensão que devem ser impedidos de serem instalados pelo usuário (ou * para todos)</translation>
@@ -224,6 +225,17 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="2113068765175018713">Limitar tempo de execução do dispositivo reiniciando automaticamente</translation>
 <translation id="2127599828444728326">Permitir notificações nesses sites</translation>
 <translation id="2131902621292742709">Intervalo de escurecimento de tela no funcionamento com energia da bateria</translation>
+<translation id="2137064848866899664">Se esta política está definida, cada tela gira para a
+      orientação especificada em cada reinicialização e na primeira vez em que se conectar
+      após a alteração do valor da política. É possível alterar a rotação
+      da tela na página de configurações depois do login, mas a
+      configuração do usuário será substituída pelo valor da política na próxima reinicialização.
+
+      Esta política se aplica à tela principal e a todas as telas secundárias.
+
+      Se esta política não for definida, o valor padrão será 0 graus, e o usuário terá
+      liberdade para alterá-lo. Nesse caso, o valor padrão não é reaplicado na
+      reinicialização.</translation>
 <translation id="2166715102875984646">Desativar suporte para APIs de gráficos 3D.
 
       A ativação desta configuração impede que páginas da Web acessem a unidade de processamento gráfico (GPU). De forma específica, as páginas da Web não podem acessar a API WebGL, e os plug-ins não podem usar a API Pepper 3D.
@@ -684,7 +696,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="350797926066071931">Ativar Traduzir</translation>
 <translation id="3516856976222674451">Limita a duração máxima de uma sessão do usuário.
 
-      Quando esta política estiver definida, especificará depois de quanto tempo um usuário será automaticamente desconectado, encerrando a sessão. O usuário é informado sobre o tempo restante por um cronômetro mostrado na bandeja do sistema.
+      Quando esta política estiver definida, especificará depois de quanto tempo um usuário será automaticamente desconectado, encerrando a sessão. O usuário é informado sobre o tempo restante por um timer de contagem regressiva mostrado na bandeja do sistema.
 
       Quando esta política não estiver definida, a duração da sessão será ilimitada.
 
@@ -870,6 +882,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
       </translation>
 <translation id="4442582539341804154">Ativar o bloqueio quando o dispositivo entrar no modo ocioso ou suspenso</translation>
 <translation id="4445684791305970001">Desativa as Ferramentas do desenvolvedor e o console JavaScript. Se ativar esta configuração, as Ferramentas do desenvolvedor não podem ser acessadas ​​e elementos de websites não poderão mais ser inspecionados. Quaisquer entradas para abrir as Ferramentas do desenvolvedor ou o Console de JavaScript em atalhos de teclado, menus ou menus de contextos serão desativadas. Definir esta opção como desativada ou deixá-la sem definição permitirá a utilização das Ferramentas do desenvolvedor e do console JavaScript.</translation>
+<translation id="4449545651113180484">Girar tela no sentido horário em 270 graus</translation>
 <translation id="4467952432486360968">Bloquear cookies de terceiros</translation>
 <translation id="4474167089968829729">Ativar salvamento de senhas no gerenciador de senhas</translation>
 <translation id="4480694116501920047">Forçar SafeSearch</translation>
@@ -1087,6 +1100,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="5388730678841939057">Seleciona a estratégia usada para liberar espaço em disco durante a limpeza automática (obsoleta)</translation>
 <translation id="5395271912574071439">Ativa as cortinas de hosts de acesso remoto enquanto uma conexão está em andamento. Se essa configuração for ativada, os dispositivos de entrada e saída físicas dos hosts serão desativados enquanto houver uma conexão remota em andamento. Se essa configuração for desativada ou não estiver definida, os usuários locais e remotos poderão interagir com o host quando ele estiver sendo compartilhado.</translation>
 <translation id="5423001109873148185">Caso ativada, esta política força mecanismos de pesquisa a serem importados do navegador padrão atual. Se ativada, esta política também afeta a caixa de diálogo de importação. Caso seja desativada, o mecanismo de pesquisa padrão não é importado. Se não for definida, o usuário pode ser solicitado a responder se deseja importar ou permitir a importação automática.</translation>
+<translation id="5423197884968724595">Nome de restrição do Android WebView:</translation>
 <translation id="5447306928176905178">Ativar relatórios de informação de memória (JS tamanho da pilha) para a página (obsoleta)</translation>
 <translation id="5457065417344056871">Ativar o modo visitante no navegador</translation>
 <translation id="5457924070961220141">Permite configurar o processador HTML padrão quando <ph name="PRODUCT_FRAME_NAME" /> estiver instalado. A configuração padrão utilizada quando esta política é deixada sem definição é permitir que o navegador host faça o processamento, mas você pode, opcionalmente, substituí-la para que <ph name="PRODUCT_FRAME_NAME" /> processe as páginas HTML por padrão.</translation>
@@ -1766,6 +1780,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="7953256619080733119">Hosts de exceção manual do usuário gerenciado</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Esta política não é mais suportada. Ativa o uso de servidores STUN e de retransmissão ao estabelecer conexão a um cliente remoto. Se esta configuração estiver ativada, este computador pode descobrir e conectar-se a computadores host remotos mesmo se separados por um firewall. Se esta configuração estiver desativada e conexões de UDP enviadas forem filtradas pelo firewall, este computador só poderá estabelecer conexões a computadores host na rede local.</translation>
+<translation id="802147957407376460">Girar tela em 0 graus</translation>
 <translation id="8044493735196713914">Informar modo de inicialização do dispositivo</translation>
 <translation id="8059164285174960932">URL no qual clientes de acesso remoto devem receber seu token de autenticação</translation>
 <translation id="8071636581296916773">Permite o uso de servidores relay quando clientes remotos estiverem tentando estabelecer uma conexão com a máquina.
@@ -1870,6 +1885,8 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="8382184662529825177">Permitir o uso de declaração remota para proteção de conteúdo no dispositivo</translation>
 <translation id="838870586332499308">Ativa roaming de dados</translation>
 <translation id="8412312801707973447">Define se as verificações on-line de OCSP/CRL devem ser executadas</translation>
+<translation id="8424255554404582727">Definir rotação padrão da tela, reaplicada em cada reinicialização</translation>
+<translation id="8426231401662877819">Girar tela no sentido horário em 90 graus</translation>
 <translation id="8451988835943702790">Usar a página "Nova guia" como página inicial</translation>
 <translation id="8465065632133292531">Parâmetros para URL de instantâneos que usa POST</translation>
 <translation id="847472800012384958">Não permite que nenhum site exiba pop-ups</translation>
@@ -2002,7 +2019,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="8965758116018152083">Se esta política for definida para um string em branco ou não for configurada, o <ph name="PRODUCT_OS_NAME" /> não mostrará uma opção de preenchimento automático durante o fluxo de login.
       Se esta política for definida para um string representando um nome de domínio, o <ph name="PRODUCT_OS_NAME" /> mostrará uma opção de preenchimento automático durante o login do usuário, permitindo que o mesmo digite apenas seu nome de usuário sem a extensão de nome de domínio. O usuário poderá substituir essa extensão de nome de domínio.</translation>
 <translation id="8970205333161758602">Remover a solicitação de recusa do <ph name="PRODUCT_FRAME_NAME" /></translation>
-<translation id="8971221018777092728">Temporizador de login automático na sessão pública</translation>
+<translation id="8971221018777092728">Timer de login automático na sessão pública</translation>
 <translation id="8976248126101463034">Permitir autenticação gnubby para hosts de acesso remoto</translation>
 <translation id="8992176907758534924">Não permitir que nenhum site exiba imagens</translation>
 <translation id="9035964157729712237">IDs de extensão que serão isentos da lista negra</translation>

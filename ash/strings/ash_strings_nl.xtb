@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="nl">
 <translation id="1013923882670373915">Bluetooth-apparaat '<ph name="DEVICE_NAME" />' wil toestemming om te koppelen. Voer de volgende pincode in op dat apparaat: <ph name="PINCODE" /></translation>
+<translation id="1021311941847921177">De sneltoets om naar de volgende invoermethode te schakelen is gewijzigd. Gebruik <ph name="NEW_SHORTCUT" /> in plaats van <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Plank automatisch verbergen</translation>
 <translation id="1195412055398077112">overscan</translation>
 <translation id="1270290102613614947">Schermtoetsenbord uitgeschakeld</translation>
@@ -25,7 +26,9 @@
 <translation id="1812696562331527143">Je invoermethode is gewijzigd in <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />derden<ph name="END_LINK" />).
 Druk op Shift + Alt om te schakelen.j</translation>
 <translation id="1882897271359938046">Spiegelen naar <ph name="DISPLAY_NAME" /></translation>
+<translation id="1919743966458266018">De sneltoets om Taakbeheer te openen is gewijzigd. Gebruik <ph name="NEW_SHORTCUT" /> in plaats van <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Automatische klikken</translation>
+<translation id="1938872420421548906">Shift+Alt</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2127372758936585790">Laag-vermogen-lader</translation>
@@ -105,6 +108,7 @@ Druk op Zoeken of Shift om te annuleren.</translation>
 <translation id="4421231901400348175">De controle over je scherm wordt gedeeld met <ph name="HELPER_NAME" /> via externe ondersteuning.</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="4527045527269911712">Bluetooth-apparaat '<ph name="DEVICE_NAME" />' wil toestemming om te koppelen.</translation>
+<translation id="4544944664594876241">De sneltoets om het scherm te vergrendelen is gewijzigd. Gebruik <ph name="NEW_SHORTCUT" /> in plaats van <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="479989351350248267">zoeken</translation>
 <translation id="4804818685124855865">Verbinding verbreken</translation>
 <translation id="4872237917498892622">Alt+Zoeken of Shift</translation>
@@ -113,12 +117,14 @@ Druk op Zoeken of Shift om te annuleren.</translation>
 <translation id="4957722034734105353">Meer informatie...</translation>
 <translation id="4961318399572185831">Scherm casten</translation>
 <translation id="5011233892417813670">Chromebook</translation>
+<translation id="5012744545445585468">Ctrl+Shift+spatie</translation>
 <translation id="5045002648206642691">Instellingen voor Google Drive...</translation>
 <translation id="5102001756192215136"><ph name="HOUR" />:<ph name="MINUTE" /> resterend</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION" />, <ph name="OVERSCAN" /></translation>
 <translation id="5168181903108465623">Cast-apparaten beschikbaar</translation>
 <translation id="5222676887888702881">Uitloggen</translation>
 <translation id="5238774010593222950">Kan niet inloggen op een ander account.</translation>
+<translation id="532063867737390965">Deze netwerkinstelling is uitgeschakeld door de beheerder.</translation>
 <translation id="544691375626129091">Alle beschikbare gebruikers zijn al aan deze sessie toegevoegd.</translation>
 <translation id="5507786745520522457">Mobiele gegevens instellen</translation>
 <translation id="5543001071567407895">SMS</translation>
@@ -132,6 +138,7 @@ Druk op Zoeken of Shift om te annuleren.</translation>
 Druk op Shift + Alt om te schakelen.</translation>
 <translation id="5871632337994001636">Apparaten beheren...</translation>
 <translation id="5895138241574237353">Opnieuw starten</translation>
+<translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5927132638760172455">Casten naar een onbekende ontvanger</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">Terugzetten</translation>
@@ -155,6 +162,7 @@ Druk op Shift + Alt om te schakelen.</translation>
 <translation id="6426039856985689743">Mobiele gegevens uitschakelen</translation>
 <translation id="6452181791372256707">Weigeren</translation>
 <translation id="6459472438155181876">Scherm uitbreiden naar <ph name="DISPLAY_NAME" /></translation>
+<translation id="6501401484702599040">Scherm casten naar <ph name="RECEIVER_NAME" /></translation>
 <translation id="6550675742724504774">Opties</translation>
 <translation id="6585808820553845416">Sessie loopt af over <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6596816719288285829">IP-adres</translation>
@@ -162,6 +170,7 @@ Druk op Shift + Alt om te schakelen.</translation>
 <translation id="6713285437468012787">Bluetooth-apparaat '<ph name="DEVICE_NAME" />' is gekoppeld en is nu beschikbaar voor alle gebruikers. Je kunt deze koppeling verwijderen via 'Instellingen'.</translation>
 <translation id="6785414152754474415">De accu is <ph name="PERCENTAGE" />% vol en wordt opgeladen.</translation>
 <translation id="6803622936009808957">Kan schermen niet spiegelen, omdat er geen ondersteunde resoluties zijn gevonden. Het uitgebreide bureaublad is geactiveerd.</translation>
+<translation id="683971173229319003">Zoeken+L</translation>
 <translation id="68610848741840742">ChromeVox (gesproken feedback)</translation>
 <translation id="6911468394164995108">Verbinding met ander netwerk maken...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
@@ -169,6 +178,7 @@ Druk op Shift + Alt om te schakelen.</translation>
 <translation id="6981982820502123353">Toegankelijkheid</translation>
 <translation id="7029814467594812963">Sessie sluiten</translation>
 <translation id="703171847531699602">Geen cast-apparaten</translation>
+<translation id="7034339000180558234"><ph name="TAB_NAME" /> wordt gecast naar <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Achtergrond instellen...</translation>
 <translation id="7097613348211027502">ChromeVox (gesproken feedback) is ingeschakeld.
 Druk op Ctrl+Alt+Z om uit te schakelen.</translation>
@@ -180,6 +190,7 @@ Druk op Alt+Zoeken of Shift om te annuleren.</translation>
 <translation id="737451040872859086">Microfoon (intern)</translation>
 <translation id="742594950370306541">Camera is in gebruik.</translation>
 <translation id="743058460480092004">Camera en microfoon zijn in gebruik.</translation>
+<translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> ondersteunt <ph name="SPECIFIED_RESOLUTION" /> niet. De resolutie is gewijzigd in <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7573962313813535744">Gedockte modus</translation>
 <translation id="7593891976182323525">Zoeken of Shift</translation>
@@ -207,6 +218,7 @@ Druk op Alt+Zoeken of Shift om te annuleren.</translation>
 <translation id="8814190375133053267">Wifi</translation>
 <translation id="882279321799040148">Klik om te bekijken</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8850991929411075241">Zoeken+Esc</translation>
 <translation id="8878886163241303700">Uitgebreid scherm</translation>
 <translation id="8940956008527784070">Accu is bijna leeg (<ph name="PERCENTAGE" />%)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>

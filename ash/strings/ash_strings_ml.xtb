@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ml">
 <translation id="1013923882670373915">"<ph name="DEVICE_NAME" />" എന്ന Bluetooth ഉപകരണം ജോടിയാക്കുന്നതിനുള്ള അനുമതി ആവശ്യപ്പെടുന്നു. ആ ഉപകരണത്തിൽ ഈ പിൻ കോഡ് നൽകുക: <ph name="PINCODE" /></translation>
+<translation id="1021311941847921177">അടുത്ത ഇൻപുട്ട് രീതിയിലേക്ക് മാറാനുള്ള കുറുക്കുവഴി മാറ്റി. <ph name="OLD_SHORTCUT" /> എന്നതിന് പകരം <ph name="NEW_SHORTCUT" /> ഉപയോഗിക്കുക.</translation>
 <translation id="112308213915226829">ഷെൽഫ് യാന്ത്രികമായി മറയ്‌ക്കുക</translation>
 <translation id="1195412055398077112">ഓവർസ്‌കാൻ</translation>
 <translation id="1270290102613614947">ഓൺ-സ്‌ക്രീൻ കീബോർഡ് പ്രവർത്തനരഹിതമാക്കി</translation>
@@ -25,7 +26,9 @@
 <translation id="1812696562331527143">നിങ്ങളുടെ ഇൻപുട്ട് രീതി <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />മൂന്നാം കക്ഷി<ph name="END_LINK" />) എന്നതിലേയ്‌ക്ക് മാറ്റി.
 സ്വിച്ചുചെയ്യുന്നതിന് Shift + Alt അമർത്തുക.</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> എന്നതിലേക്ക് മിറർചെയ്യുന്നു</translation>
+<translation id="1919743966458266018">ടാസ്‌ക് മാനേജർ തുറക്കാനുള്ള കുറുക്കുവഴി മാറ്റി. <ph name="OLD_SHORTCUT" /> എന്നതിന് പകരം <ph name="NEW_SHORTCUT" /> ഉപയോഗിക്കുക.</translation>
 <translation id="1923539912171292317">യാന്ത്രിക ക്ലിക്കുകൾ</translation>
+<translation id="1938872420421548906">Shift+Alt</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2127372758936585790">കുറഞ്ഞ തോതിൽ വൈദ്യുതി പ്രവഹിക്കുന്ന ചാർജർ</translation>
@@ -105,6 +108,7 @@
 <translation id="4421231901400348175"><ph name="HELPER_NAME" /> ഉപയോഗിച്ച് നിങ്ങളുടെ വിദൂര സഹായി മുഖേന സ്‌ക്രീനിന്റെ നിയന്ത്രണം പങ്കിടുക.</translation>
 <translation id="4430019312045809116">അളവ്</translation>
 <translation id="4527045527269911712">"<ph name="DEVICE_NAME" />" എന്ന Bluetooth ഉപകരണം ജോടിയാക്കുന്നതിനുള്ള അനുമതി ആവശ്യപ്പെടുന്നു.</translation>
+<translation id="4544944664594876241">സ്‌ക്രീൻ ലോക്കുചെയ്യുന്നതിനുള്ള കുറുക്കുവഴി മാറ്റി. <ph name="OLD_SHORTCUT" /> എന്നതിന് പകരം <ph name="NEW_SHORTCUT" /> ഉപയോഗിക്കുക.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">വിച്ഛേദിക്കുക</translation>
 <translation id="4872237917498892622">Alt+തിരയൽ അല്ലെങ്കിൽ Shift</translation>
@@ -113,12 +117,14 @@
 <translation id="4957722034734105353">കൂടുതലറിയുക...</translation>
 <translation id="4961318399572185831">സ്‌ക്രീൻ കാസ്റ്റുചെയ്യുക</translation>
 <translation id="5011233892417813670">Chromebook</translation>
+<translation id="5012744545445585468">Ctrl+Shift+Space</translation>
 <translation id="5045002648206642691">Google ഡ്രൈവ് ക്രമീകരണങ്ങൾ...</translation>
 <translation id="5102001756192215136"><ph name="HOUR" />:<ph name="MINUTE" /> ശേഷിക്കുന്നു</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION" />, <ph name="OVERSCAN" /></translation>
 <translation id="5168181903108465623">Cast ഉപകരണങ്ങൾ ലഭ്യമാണ്.</translation>
 <translation id="5222676887888702881">പുറത്തുകടക്കുക</translation>
 <translation id="5238774010593222950">മറ്റൊരു അക്കൗണ്ടിൽ സൈൻ ഇൻ ചെയ്യാനാകില്ല.</translation>
+<translation id="532063867737390965">അഡ്‌മിനിസ്‌ട്രേറ്റർ, ഈ നെറ്റ്‌വർക്ക് ക്രമീകരണം പ്രവർത്തനരഹിതമാക്കി.</translation>
 <translation id="544691375626129091">ലഭ്യമായ എല്ലാ ഉപയോക്താക്കളേയും ഈ സെഷനിൽ ഇതിനകം ചേർത്തു.</translation>
 <translation id="5507786745520522457">മൊബൈൽ ഡാറ്റ സജ്ജീകരിക്കുക</translation>
 <translation id="5543001071567407895">SMS</translation>
@@ -131,6 +137,7 @@
 <translation id="5825747213122829519">നിങ്ങളുടെ ഇൻപുട്ട് രീതി <ph name="INPUT_METHOD_ID" /> എന്നതിലേയ്‌ക്ക് മാറ്റി. സ്വിച്ചുചെയ്യുന്നതിന് Shift + Alt അമർത്തുക.</translation>
 <translation id="5871632337994001636">ഉപകരണങ്ങൾ നിയന്ത്രിക്കുക...</translation>
 <translation id="5895138241574237353">പുനരാരംഭിക്കുക</translation>
+<translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5927132638760172455">ഒരു അജ്ഞാത റിസീവറിലേക്ക് കാസ്റ്റുചെയ്യുന്നു</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">പഴയപടിയാക്കുക</translation>
@@ -154,6 +161,7 @@
 <translation id="6426039856985689743">മൊബൈൽ ഡാറ്റ അപ്രാപ്‌തമാക്കുക</translation>
 <translation id="6452181791372256707">നിരസിക്കുക</translation>
 <translation id="6459472438155181876">സ്‌ക്രീൻ <ph name="DISPLAY_NAME" /> എന്നതിലേക്ക് വികസിപ്പിക്കുന്നു</translation>
+<translation id="6501401484702599040"><ph name="RECEIVER_NAME" /> എന്നതിലേക്ക് സ്‌ക്രീൻ കാസ്‌റ്റുചെയ്യുന്നു</translation>
 <translation id="6550675742724504774">ഐച്ഛികങ്ങള്‍‌</translation>
 <translation id="6585808820553845416"><ph name="SESSION_TIME_REMAINING" />-നുള്ളിൽ സെഷൻ അവസാനിക്കുന്നു.</translation>
 <translation id="6596816719288285829">IP വിലാസം</translation>
@@ -161,6 +169,7 @@
 <translation id="6713285437468012787">"<ph name="DEVICE_NAME" />" എന്ന Bluetooth ഉപകരണം ജോടിയാക്കി, അത് ഇപ്പോൾ എല്ലാ ഉപയോക്താക്കൾക്കും ലഭ്യമാണ്. ക്രമീകരണങ്ങൾ ഉപയോഗിച്ച് നിങ്ങൾക്ക് ഈ ജോടിയാക്കൽ നീക്കംചെയ്യാം.</translation>
 <translation id="6785414152754474415">ബാറ്ററി <ph name="PERCENTAGE" />% നിറഞ്ഞിരിക്കുന്നു, ചാർജുചെയ്യൽ തുടരുന്നു.</translation>
 <translation id="6803622936009808957">പിന്തുണയ്‌ക്കുന്ന മിഴിവുകൾ കണ്ടെത്താത്തതിനാൽ പ്രദർശനങ്ങൾ പ്രതിഫലിപ്പിക്കാനായില്ല. പകരം വിപുലീകൃത ഡെസ്‌ക്‌ടോപ്പ് നൽകി.</translation>
+<translation id="683971173229319003">തിരയൽ+L</translation>
 <translation id="68610848741840742">ChromeVox (സ്‌പോക്കൺ ഫീഡ്‌ബാക്ക്)</translation>
 <translation id="6911468394164995108">മറ്റുള്ളവ ചേർക്കുക...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
@@ -168,6 +177,7 @@
 <translation id="6981982820502123353">പ്രവേശനക്ഷമത</translation>
 <translation id="7029814467594812963">സെഷനിൽ നിന്ന് പുറത്തുകടക്കുക</translation>
 <translation id="703171847531699602">കാസ്റ്റ് ഉപകരണങ്ങളൊന്നും ഇല്ല</translation>
+<translation id="7034339000180558234"><ph name="RECEIVER_NAME" /> എന്നതിലേക്ക് <ph name="TAB_NAME" /> കാസ്‌റ്റുചെയ്യുന്നു</translation>
 <translation id="7052914147756339792">വാൾപേപ്പർ സജ്ജമാക്കുക...</translation>
 <translation id="7097613348211027502">ChromeVox (സ്‌പോക്കൺ ഫീഡ്‌ബാക്ക്) പ്രവർത്തനക്ഷമമാണ്. പ്രവർത്തനരഹിതമാക്കാൻ Ctrl+Alt+Z അമർത്തുക.</translation>
 <translation id="714034171374937760">Chromebase</translation>
@@ -178,6 +188,7 @@
 <translation id="737451040872859086">മൈക്രോഫോൺ (ആന്തരികം)</translation>
 <translation id="742594950370306541">ക്യാമറ ഉപയോഗത്തിലാണ്.</translation>
 <translation id="743058460480092004">ക്യാമറയും മൈക്രോഫോണും ഉപയോഗത്തിലാണ്.</translation>
+<translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" />, <ph name="SPECIFIED_RESOLUTION" /> എന്നതിനെ പിന്തുണയ്‌ക്കുന്നില്ല. റസലൂഷൻ <ph name="FALLBACK_RESOLUTION" /> എന്നതിലേക്ക് മാറ്റി.</translation>
 <translation id="7573962313813535744">ഡോക്കുചെയ്‌ത മോഡ്</translation>
 <translation id="7593891976182323525">തിരയൽ അല്ലെങ്കിൽ Shift</translation>
@@ -205,6 +216,7 @@
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="882279321799040148">കാണുന്നതിന് ക്ലിക്കുചെയ്യുക</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8850991929411075241">തിരയൽ+Esc</translation>
 <translation id="8878886163241303700">സ്‌ക്രീൻ വിപുലീകരിക്കുന്നു</translation>
 <translation id="8940956008527784070">ബാറ്ററി കുറവാണ് (<ph name="PERCENTAGE" />%)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>

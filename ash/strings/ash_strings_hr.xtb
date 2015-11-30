@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="hr">
 <translation id="1013923882670373915">Bluetooth uređaj "<ph name="DEVICE_NAME" />" traži dopuštenje za uparivanje. Unesite ovaj PIN na tom uređaju: <ph name="PINCODE" />.</translation>
+<translation id="1021311941847921177">Promijenio se prečac za prelazak na sljedeći način unosa. Upotrijebite <ph name="NEW_SHORTCUT" /> umjesto <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Automatski sakrij policu</translation>
 <translation id="1195412055398077112">rubno područje zaslona</translation>
 <translation id="1270290102613614947">Tipkovnica na zaslonu onemogućena je</translation>
@@ -25,7 +26,9 @@
 <translation id="1812696562331527143">Vaš je način unosa promijenjen u <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />treća strana<ph name="END_LINK" />).
 Pritisnite Shift + Alt za promjenu.</translation>
 <translation id="1882897271359938046">Zrcaljenje na zaslon <ph name="DISPLAY_NAME" /></translation>
+<translation id="1919743966458266018">Promijenio se prečac za otvaranje upravitelja zadataka. Upotrijebite <ph name="NEW_SHORTCUT" /> umjesto <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Automatski klikovi</translation>
+<translation id="1938872420421548906">Shift + Alt</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2127372758936585790">Punjač male snage</translation>
@@ -105,6 +108,7 @@ Pritisnite tipke Pretraživanje ili Shift da biste ju isključili.</translation>
 <translation id="4421231901400348175"><ph name="HELPER_NAME" /> i vi dijelite kontrolu nad zaslonom putem Daljinske pomoći.</translation>
 <translation id="4430019312045809116">Glasnoća</translation>
 <translation id="4527045527269911712">Bluetooth uređaj "<ph name="DEVICE_NAME" />" traži dopuštenje za uparivanje.</translation>
+<translation id="4544944664594876241">Promijenio se prečac za zaključavanje zaslona. Upotrijebite <ph name="NEW_SHORTCUT" /> umjesto <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Prekini vezu</translation>
 <translation id="4872237917498892622">Alt + Pretraživanje ili Shift</translation>
@@ -113,12 +117,14 @@ Pritisnite tipke Pretraživanje ili Shift da biste ju isključili.</translation>
 <translation id="4957722034734105353">Saznajte više...</translation>
 <translation id="4961318399572185831">Emitiranje zaslona</translation>
 <translation id="5011233892417813670">Chromebook</translation>
+<translation id="5012744545445585468">Ctrl + Shift + razmak</translation>
 <translation id="5045002648206642691">Postavke Google diska...</translation>
 <translation id="5102001756192215136">Preostalo <ph name="HOUR" />:<ph name="MINUTE" /></translation>
 <translation id="511445211639755999"><ph name="RESOLUTION" />, <ph name="OVERSCAN" /></translation>
 <translation id="5168181903108465623">Dostupni su uređaji za emitiranje</translation>
 <translation id="5222676887888702881">Odjava</translation>
 <translation id="5238774010593222950">Nije moguća prijava na drugi račun.</translation>
+<translation id="532063867737390965">Tu postavku mreže onemogućio je administrator.</translation>
 <translation id="544691375626129091">Svi dostupni korisnici već su dodani ovoj sesiji.</translation>
 <translation id="5507786745520522457">Postavljanje mobilnih podataka</translation>
 <translation id="5543001071567407895">SMS</translation>
@@ -132,6 +138,7 @@ Pritisnite tipke Pretraživanje ili Shift da biste ju isključili.</translation>
 Pritisnite Shift + Alt za promjenu.</translation>
 <translation id="5871632337994001636">Upravljanje uređajima...</translation>
 <translation id="5895138241574237353">Ponovno pokreni</translation>
+<translation id="5901316534475909376">Shift + Esc</translation>
 <translation id="5927132638760172455">Emitiranje na nepoznati prijamnik</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">Vrati</translation>
@@ -155,6 +162,7 @@ Pritisnite Shift + Alt za promjenu.</translation>
 <translation id="6426039856985689743">Onemogući mobilne podatke</translation>
 <translation id="6452181791372256707">Odbaci</translation>
 <translation id="6459472438155181876">Proširivanje zaslona na zaslon <ph name="DISPLAY_NAME" /></translation>
+<translation id="6501401484702599040">Emitiranje zaslona na <ph name="RECEIVER_NAME" /></translation>
 <translation id="6550675742724504774">Opcije</translation>
 <translation id="6585808820553845416">Sesija će završiti za <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6596816719288285829">IP adresa</translation>
@@ -162,6 +170,7 @@ Pritisnite Shift + Alt za promjenu.</translation>
 <translation id="6713285437468012787">Bluetooth uređaj "<ph name="DEVICE_NAME" />" sada je uparen i dostupan svim korisnicima. To uparivanje možete ukloniti u Postavkama.</translation>
 <translation id="6785414152754474415">Baterija je <ph name="PERCENTAGE" />% puna i puni se.</translation>
 <translation id="6803622936009808957">Nije bilo moguće zrcaliti zaslone jer nije pronađena nijedna podržana razlučivost. Umjesto toga proširena je radna površina.</translation>
+<translation id="683971173229319003">Pretraživanje + L</translation>
 <translation id="68610848741840742">ChromeVox (govorne povratne informacije)</translation>
 <translation id="6911468394164995108">Pridruži se drugoj...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
@@ -169,6 +178,7 @@ Pritisnite Shift + Alt za promjenu.</translation>
 <translation id="6981982820502123353">Pristupačnost</translation>
 <translation id="7029814467594812963">Izlazak iz sesije</translation>
 <translation id="703171847531699602">Nema uređaja za emitiranje</translation>
+<translation id="7034339000180558234">Emitiranje kartice <ph name="TAB_NAME" /> na <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Postavljanje pozadinske slike...</translation>
 <translation id="7097613348211027502">Omogućen je ChromeVox (govorne povratne informacije).
 Pritisnite Ctrl+Alt+Z da biste ga onemogućili.</translation>
@@ -180,6 +190,7 @@ Pritisnite tipke Alt + Pretraživanje ili Shift da biste ju isključili.</transl
 <translation id="737451040872859086">Mikrofon (ugrađeni)</translation>
 <translation id="742594950370306541">Fotoaparat je aktivan.</translation>
 <translation id="743058460480092004">Fotoaparat i mikrofon su aktivni.</translation>
+<translation id="7510334386202674593">Ctrl + Shift + L</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> ne podržava razlučivost <ph name="SPECIFIED_RESOLUTION" />. Razlučivost je promijenjena u <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7573962313813535744">Način rada u priključnoj stanici</translation>
 <translation id="7593891976182323525">Pretraživanje ili Shift</translation>
@@ -207,6 +218,7 @@ Pritisnite tipke Alt + Pretraživanje ili Shift da biste ju isključili.</transl
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="882279321799040148">Kliknite za prikaz</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8850991929411075241">Pretraživanje + Esc</translation>
 <translation id="8878886163241303700">Produljenje zaslona</translation>
 <translation id="8940956008527784070">Baterija je skoro prazna (<ph name="PERCENTAGE" />%)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>

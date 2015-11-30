@@ -54,6 +54,7 @@
 <translation id="1709438864123551175">የውሂብ አስቀማጭ</translation>
 <translation id="1741127251791687432">ወደሚከተሉት የGoogle መለያዎች ገብተዋል።</translation>
 <translation id="1742134235943978220">ወደ <ph name="TARGET_LANGUAGE" /> ተተርጉሟል።</translation>
+<translation id="1749561566933687563">የእርስዎን ዕልባቶች ያስምሩ</translation>
 <translation id="17513872634828108">ትሮችን ክፈት</translation>
 <translation id="1807246157184219062">ብርሃን</translation>
 <translation id="1825719650605518411">የመጀመሪያ የማሄድ ተሞክሮ</translation>
@@ -170,6 +171,7 @@
 
 የፍለጋ ቃልዎን ለማስተካከል ለመምረጥ በረዥሙ ይጫኑ። ፍለጋዎን ይበልጥ ለማጥራት መቃኑን እስከ ላይ ድረስ ያንሸራትቱት እና የፍለጋ ሳጥኑን ይንኩ።</translation>
 <translation id="363596933471559332">የተከማቹ ምስክርነቶችን በመጠቀም በራስ-ሰር ወደ የድር ጣቢያዎች መለያ ይግቡ። ባህሪው ሲጠፋ ወደ አንድ ድር ጣቢያ ከመግባትዎ በፊት ማረጋገጫ ይጠየቃሉ።</translation>
+<translation id="3653742808139624888">የእርስዎን ዕልባቶች በሁሉም መሣሪያዎችዎ ላይ ለማግኘት ወደ Chrome ይግቡ</translation>
 <translation id="3656115297268584622">በ<ph name="BEGIN_LINK" />Android ቅንብሮች<ph name="END_LINK" /> ውስጥ አካባቢን ያብሩ።</translation>
 <translation id="3661699943263275414">የሶስተኛ ወገን የድርጣቢያዎች የኩኪ ውሂብን ማስቀመጥ እና ማንበብ ይችላሉ</translation>
 <translation id="3672452749423051839">የአሰሳ ስህተት ጥቆማ አስተያየቶች</translation>
@@ -270,7 +272,7 @@
 <translation id="5138299137310274655">ይህ ገጽ በ<ph name="SOURCE_LANGUAGE" /> ነው። ወደ <ph name="TARGET_LANGUAGE" /> ይተርጎም?</translation>
 <translation id="5150703642582475397">ትሮችን እና መተግበሪያዎችን ያዋህዱ</translation>
 <translation id="515227803646670480">የተከማቸ ውሂብን አጽዳ</translation>
-<translation id="5156656584247937086">ይሄ የህጻን መለያ ነው</translation>
+<translation id="5156656584247937086">ይህ የህጻን መለያ ነው</translation>
 <translation id="5161254044473106830">ርዕስ ያስፈልጋል</translation>
 <translation id="5164482624172255778">Google Chrome በሚቀጥለው ጊዜ ላይ በዚህ ጣቢያ ላይ ያሉ የ<ph name="LANGUAGE" /> ገጾች እንዲተረጎምልዎ ይፈልጋሉ?</translation>
 <translation id="5168917394043976756">የአሰሳ መሳቢያ ክፈት</translation>
@@ -356,6 +358,7 @@
 <translation id="6031101910111098835">ተሰብስቧል - ለመዘርጋት ጠቅ ያድርጉ</translation>
 <translation id="6040143037577758943">ዝጋ</translation>
 <translation id="6042308850641462728">ተጨማሪ</translation>
+<translation id="604996488070107836"><ph name="FILE_NAME" />ን ማውረድ ባልታወቀ ስህተት ምክንያት አልተሳካም።</translation>
 <translation id="605721222689873409">ዓዓ</translation>
 <translation id="6075798973483050474">መነሻ ገጽን ያርትዑ</translation>
 <translation id="6108923351542677676">ማዋቀር በሂደት ላይ…</translation>

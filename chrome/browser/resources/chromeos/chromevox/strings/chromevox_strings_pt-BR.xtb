@@ -357,6 +357,7 @@
 <translation id="4729095194763193578">Linha anterior da tabela</translation>
 <translation id="4736221692378411923">Agosto</translation>
 <translation id="4740661827607246557">Comandos de ajuda</translation>
+<translation id="4755857887974653209">Desativar ChromeVox</translation>
 <translation id="4759716709594980008">Explorador de teclado ChromeOS</translation>
 <translation id="4763296182459741068">Avançar para baixo</translation>
 <translation id="4763480195061959176">vídeo</translation>
@@ -657,10 +658,11 @@
 <translation id="8033827949643255796">selecionado</translation>
 <translation id="8035962149453661158">max:<ph name="X" /></translation>
 <translation id="8042761080832772327">Editar texto, entrada de pesquisa</translation>
-<translation id="8049189770492311300">Temporizador</translation>
+<translation id="8049189770492311300">Timer</translation>
 <translation id="8065607967589909823">A seleção é</translation>
 <translation id="8066678206530322333">Banner</translation>
 <translation id="8110647606445335195">Nenhum ponto de referência ARIA.</translation>
+<translation id="8132379720172247073">Menu do ChromeVox</translation>
 <translation id="8153880621934657047">Não está dentro da tabela.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{sublinhado}one{# sublinhados}other{# sublinhados}}</translation>
 <translation id="8179976553408161302">Entrar</translation>
@@ -696,6 +698,7 @@
 <translation id="8584721346566392021">h5</translation>
 <translation id="8587549812518406253">Próximo item da lista</translation>
 <translation id="860150890330522909">Caixa de seleção <ph name="NAME" /> marcada</translation>
+<translation id="8603071050456974042">Painel do ChromeVox</translation>
 <translation id="8606621670302093223">Controle de data</translation>
 <translation id="8631359288236106450"><ph name="COUNT" /> itens selecionados</translation>
 <translation id="8638532244051952400">Anunciar coordenadas da célula atual</translation>

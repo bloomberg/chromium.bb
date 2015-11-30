@@ -10,11 +10,12 @@
 <translation id="1293235220023151515">Det ble funnet en konfliktskapende installasjon av Chromium på systemet. Avinstaller den og prøv på nytt.</translation>
 <translation id="1298199220304005244">Få hjelp med å bruke Chromium OS</translation>
 <translation id="1396446129537741364">Chromium prøver å vise passord.</translation>
+<translation id="1403254041219632970">Fremtidige versjoner av Chromium kommer ikke lenger til å støtte Mac OS X 10.6, 10.7 eller 10.8.</translation>
 <translation id="1414495520565016063">Du er logget på Chromium.</translation>
 <translation id="1444754455097148408">Åpen kildekode-lisenser for Chromium</translation>
-<translation id="1461885241643463646">Slår på iframe-baserte påloggingsprosesser for Chromium. Dette flagget overstyrer --enable-web-based-signin.</translation>
 <translation id="1480489203462860648">Prøv det – det er allerede installert</translation>
 <translation id="151962892725702025">Chromium OS kunne ikke synkronisere dataene dine fordi synkronisering ikke er tilgjengelig for domenet ditt.</translation>
+<translation id="1559451348202814456">Chromium fungerer kanskje ikke riktig fordi den ikke lenger støttes på Mac OS X 10.6, 10.7 eller 10.8.</translation>
 <translation id="1644918877723739397">Chromium lagrer dette i <ph name="SAVED_PASSWORD_LINK" /> og husker det neste gang du trenger det.</translation>
 <translation id="1668054258064581266">Når du har fjernet kontoen din fra Chromium, kan det hende at du må laste inn de åpne fanene på nytt før endringene trer i kraft.</translation>
 <translation id="1688750314291223739">Konfigurer Synkronisering til å lagre de personlig tilpassede nettleserfunksjonene dine på nettet slik at du kan bruke dem fra Chromium på enhver datamaskin.</translation>
@@ -43,8 +44,10 @@
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{En nedlasting pågår for øyeblikket. Vil du avbryte nedlastingen og avslutte Chromium?}other{# nedlastinger pågår for øyeblikket. Vil du avbryte nedlastingene og avslutte Chromium?}}</translation>
 <translation id="2396765026452590966">Utvidelsen «<ph name="EXTENSION_NAME" />» har endret hvilken side som vises når du starter Chromium.</translation>
 <translation id="2485422356828889247">Avinstaller</translation>
+<translation id="2486653164587200256">Chromium fungerer kanskje ikke riktig fordi den ikke lenger støttes på Windows XP eller Windows Vista.</translation>
 <translation id="2535480412977113886">Chromium kunne ikke synkronisere dataene fordi påloggingsopplysningene dine er foreldede.</translation>
 <translation id="2558641060352364164">Dette nettstedet bruker Chromium Frame-programtillegget. Støtten for dette programtillegget utløper snart, og du bør derfor avinstallere det og oppgradere til en nyere nettleser.</translation>
+<translation id="2565260267992448464">Chromium kan ikke vise nettsiden fordi datamaskinen din ikke er koblet til Internett.</translation>
 <translation id="2572494885440352020">Chromium-hjelper</translation>
 <translation id="2602806952220118310">Chromium – varsler</translation>
 <translation id="2636877269779209383">Chromium må ha tilgang til kameraet ditt for å kunne dele det med dette nettstedet.</translation>
@@ -106,6 +109,7 @@ og feil legitimasjon. Dette kan skje når en angriper prøver å utgi seg for å
 <translation id="4423735387467980091">Tilpass og kontrollér Chromium</translation>
 <translation id="4458285410772214805">Logg deg av og så på igjen for at denne endringen skal tre i kraft.</translation>
 <translation id="4488676065623537541">Faktureringsdetaljene dine er lagret i Chromium.</translation>
+<translation id="4549794359424059447">Fremtidige versjoner av Chromium kommer ikke lenger til å støtte Windows XP eller Windows Vista.</translation>
 <translation id="4559775032954821361">Gå til
           Chromium-menyen &gt;
           <ph name="SETTINGS_TITLE" />
@@ -134,6 +138,7 @@ og feil legitimasjon. Dette kan skje når en angriper prøver å utgi seg for å
 <translation id="549669000822060376">Vent mens Chromium installerer de nyeste systemoppdateringene.</translation>
 <translation id="5563479599352954471">Søk med ett trykk</translation>
 <translation id="5620765574781326016">Finn ut mer om emner på nettsteder uten å forlate siden.</translation>
+<translation id="5680901439334282664">logg på Chromium</translation>
 <translation id="5772805321386874569">(krever at Chromium <ph name="BEGIN_BUTTON" />startes på nytt<ph name="END_BUTTON" />)</translation>
 <translation id="5796460469508169315">Chromium er nesten klar.</translation>
 <translation id="580822234363523061">Gå til
@@ -210,7 +215,6 @@ Chromium kan ikke gjenopprette innstillingen dine.</translation>
 <translation id="761356813943268536">Chromium bruker kameraet og mikrofonen din.</translation>
 <translation id="7617377681829253106">Nå er Chromium blitt enda bedre</translation>
 <translation id="7641113255207688324">Chromium er ikke standard nettleser.</translation>
-<translation id="7723128346970903111">Når dette er slått på, brukes en iframe-basert påloggingsprosess for Chromium. Hvis ikke brukes en nettvisningsbasert prosess.</translation>
 <translation id="7729447699958282447">Chromium kunne ikke synkronisere dataene dine. Dette skyldes at synkronisering ikke er tilgjengelig for domenet ditt.</translation>
 <translation id="7747138024166251722">Installasjonsprogrammet kunne ikke opprette en midlertidig katalog. Kontroller at du har nok ledig diskplass og tillatelse til å installere programvare.</translation>
 <translation id="7918535023914021398">Chromium bekreftet at sertifikatet for dette nettstedet er utstedt av <ph name="ISSUER" />. Tjeneren oppga ingen informasjon om sertifikatåpenhet.</translation>

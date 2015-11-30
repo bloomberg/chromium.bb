@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="nl">
+<translation id="101438888985615157">Scherm 180 graden draaien</translation>
 <translation id="1017967144265860778">Energiebeheer op het inlogscherm</translation>
 <translation id="1019101089073227242">Gegevensdirectory voor gebruiker instellen</translation>
 <translation id="1022361784792428773">Id's van extensies die de gebruiker niet mag installeren (of '*' voor alle extensies)</translation>
@@ -261,6 +262,19 @@
 <translation id="2113068765175018713">Uptime van apparaat beperken door automatisch opnieuw op te starten</translation>
 <translation id="2127599828444728326">Meldingen op deze sites toestaan</translation>
 <translation id="2131902621292742709">Vertraging van dimmen van scherm wanneer op de accu wordt gewerkt</translation>
+<translation id="2137064848866899664">Als dit beleid is ingesteld, wordt elke display bij opnieuw opstarten
+      gedraaid tot de gespecificeerde stand, plus de eerste keer dat de
+      display wordt aangesloten nadat de beleidswaarde is gewijzigd.
+      Gebruikers kunnen na inloggen de schermrotatie wijzigen via de
+      instellingenpagina, maar na opnieuw opstarten wordt hun instelling
+      overschreven door de waarde in het beleid.
+
+      Dit beleid is van toepassing op de primaire display en alle
+      secundaire displays.
+
+      Als het beleid niet is ingesteld, is de standaardwaarde 0 graden
+      en kan de gebruiker dit naar wens wijzigen. In dit geval wordt
+      de standaardwaarde niet opnieuw toegepast na opnieuw opstarten.</translation>
 <translation id="2166715102875984646">Hiermee kun je de API's voor 3D-beelden uitschakelen.
 
       Als je deze instelling inschakelt, krijgen webpagina's geen toegang tot de GPU (graphics processing unit). Webpagina's krijgen met name geen toegang tot de WebGL-API en plug-ins kunnen de Pepper 3D-API niet gebruiken.
@@ -979,6 +993,7 @@
       Als je deze instelling inschakelt, kunnen de hulpprogramma's voor ontwikkelaars niet meer worden geopend en kunnen website-elementen niet meer worden geïnspecteerd. Alle sneltoetsen en menu- en contextmenu-opties voor het openen van de hulpprogramma's voor ontwikkelaars of de JavaScript-console worden uitgeschakeld.
 
       Als je deze optie uitschakelt of niet instelt, kunnen hulpprogramma's voor ontwikkelaars en de JavaScript-console worden gebruikt.</translation>
+<translation id="4449545651113180484">Scherm 270 graden met de klok mee draaien</translation>
 <translation id="4467952432486360968">Indirecte cookies blokkeren</translation>
 <translation id="4474167089968829729">Opslaan van wachtwoorden in wachtwoordbeheer inschakelen</translation>
 <translation id="4480694116501920047">SafeSearch afdwingen</translation>
@@ -1245,6 +1260,7 @@
       Als het beleid is uitgeschakeld, wordt de standaardzoekmachine niet geïmporteerd.
 
       Als dit beleid niet is ingesteld, kan de gebruiker worden gevraagd of deze wil importeren, of wordt er automatisch geïmporteerd.</translation>
+<translation id="5423197884968724595">Naam van Android WebView-beperking:</translation>
 <translation id="5447306928176905178">Het rapporteren van geheugengegevens (JS-heapgrootte) aan de pagina inschakelen (verouderd)</translation>
 <translation id="5457065417344056871">De gastmodus inschakelen in browser</translation>
 <translation id="5457924070961220141">Hiermee kun je de standaard HTML-renderer configureren wanneer <ph name="PRODUCT_FRAME_NAME" /> is geïnstalleerd.
@@ -2010,6 +2026,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
           Als deze instelling is ingeschakeld, kan dit apparaat externe hosts zien en hier verbinding mee maken, zelfs als ze worden gescheiden door een firewall.
 
           Als deze instelling is uitgeschakeld en uitgaande UDP-verbindingen worden gefilterd door de firewall, kan dit apparaat alleen verbinding maken met hosts binnen het lokale netwerk.</translation>
+<translation id="802147957407376460">Scherm 0 graden draaien</translation>
 <translation id="8044493735196713914">Opstartmodus van apparaat melden</translation>
 <translation id="8059164285174960932">URL waarbij clients met externe toegang hun verificatietoken moeten ophalen</translation>
 <translation id="8071636581296916773">Hiermee wordt het gebruik van relayservers ingeschakeld wanneer externe clients proberen een verbinding met dit apparaat tot stand te brengen.
@@ -2125,6 +2142,8 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="8382184662529825177">Het gebruik van externe verificatie inschakelen voor het beveiligen van inhoud voor het apparaat</translation>
 <translation id="838870586332499308">Gegevensroaming inschakelen</translation>
 <translation id="8412312801707973447">Uitvoer van online OCSP/CRL-controles</translation>
+<translation id="8424255554404582727">Standaard displayrotatie instellen, wordt telkens toegepast na opnieuw opstarten</translation>
+<translation id="8426231401662877819">Scherm 90 graden met de klok mee draaien</translation>
 <translation id="8451988835943702790">De pagina 'Nieuw tabblad' als startpagina gebruiken</translation>
 <translation id="8465065632133292531">Parameters voor instant-URL die POST gebruikt</translation>
 <translation id="847472800012384958">Niet toestaan dat sites pop-ups weergeven</translation>

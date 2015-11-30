@@ -5,6 +5,7 @@
 <translation id="1013290471399003443">Chrome heeft geverifieerd dat <ph name="ISSUER" /> het certificaat van deze website heeft uitgegeven. De server heeft geldige certificaattransparantiegegevens geleverd.</translation>
 <translation id="1016765312371154165">Chrome is niet correct afgesloten.</translation>
 <translation id="103396972844768118">Belangrijke informatie over je Chrome-gegevens</translation>
+<translation id="1035334672863811645">inloggen bij Chrome</translation>
 <translation id="1061441684050139317">Chrome heeft microfoontoegang nodig om het item te delen met deze site.</translation>
 <translation id="1065672644894730302">Je voorkeuren kunnen niet worden gelezen.
 
@@ -91,7 +92,7 @@ Als je inlogt, worden Chrome-gegevens zoals bladwijzers, geschiedenis en andere 
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3881912906674381083">Chrome heeft geverifieerd dat <ph name="ISSUER" /> het certificaat van deze website heeft uitgegeven. De server heeft certificaattransparantiegegevens geleverd, maar Chrome heeft geen van de logboeken voor certificaattransparantie herkend.</translation>
 <translation id="3889417619312448367">Google Chrome verwijderen</translation>
-<translation id="4011219958405096740">Als deze markering is ingeschakeld, wordt een Chrome-inlogprocedure op basis van iframes gebruikt. Anders wordt een procedure op basis van webweergaven gebruikt.</translation>
+<translation id="4042449298237264661">Deze computer ontvangt geen Google Chrome-updates meer, omdat Windows XP en Windows Vista niet meer worden ondersteund.</translation>
 <translation id="4050175100176540509">Er zijn belangrijke beveiligingsverbeteringen en nieuwe functies beschikbaar in de nieuwste versie.</translation>
 <translation id="4053720452172726777">Google Chrome aanpassen en beheren</translation>
 <translation id="4147555960264124640">Je logt in op een beheerd account en geeft de beheerderscontrole over aan je Google Chrome-profiel. Je Chrome-gegevens zoals je apps, bladwijzers, geschiedenis, wachtwoorden en andere instellingen worden permanent gekoppeld aan <ph name="USER_NAME" />. Je kunt deze gegevens verwijderen via het Google Accounts Dashboard, maar je kunt deze gegevens niet koppelen aan een ander account. <ph name="LEARN_MORE" /></translation>
@@ -146,9 +147,9 @@ Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirector
 <translation id="573759479754913123">Over Chrome OS</translation>
 <translation id="5749068826913805084">Chrome heeft toegang tot de opslag nodig om deze bestanden te kunnen downloaden.</translation>
 <translation id="5785746630574083988">Als je opnieuw start in Windows 8-modus, worden je Chrome-apps gesloten en opnieuw gestart.</translation>
-<translation id="5799551393681493217">Hiermee worden Chrome-inlogprocedures op basis van iframes ingeschakeld. Deze markering overschrijft --enable-web-based-signin.</translation>
 <translation id="5855036575689098185">De software op je computer is niet compatibel met Google Chrome.</translation>
 <translation id="5877064549588274448">Kanaal gewijzigd. Start het apparaat opnieuw op om de wijzigingen door te voeren.</translation>
+<translation id="5890698319714066019">Google Chrome kan de webpagina niet weergeven, omdat je computer niet is verbonden met internet.</translation>
 <translation id="5931853610562009806">Wachtwoorden kunnen op de Mac worden opgeslagen in je sleutelhanger en worden geopend of gesynchroniseerd door andere Chrome-gebruikers die dit OS X-account delen.</translation>
 <translation id="5940385492829620908">Hier vind je internet, bladwijzers en andere Chrome-instellingen.</translation>
 <translation id="5941830788786076944">Google Chrome instellen als mijn standaardbrowser</translation>
@@ -171,6 +172,8 @@ Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirector
 <translation id="6236285698028833233">Google Chrome is gestopt met bijwerken en ondersteunt deze versie van je besturingssysteem niet meer.</translation>
 <translation id="629218512217695915">Wachtwoord gebruiken dat is gegenereerd door Chrome</translation>
 <translation id="6368958679917195344">Chrome OS wordt mogelijk gemaakt door aanvullende <ph name="BEGIN_LINK_CROS_OSS" />open source-software<ph name="END_LINK_CROS_OSS" />.</translation>
+<translation id="6400076122676892962">Deze computer ontvangt binnenkort geen Google Chrome-updates meer, omdat Mac OS X 10.6, 10.7 en 10.8 niet meer worden ondersteund.</translation>
+<translation id="6470176598693778404">Deze computer ontvangt geen Google Chrome-updates meer, omdat Mac OS X 10.6, 10.7 en 10.8 niet meer worden ondersteund.</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{Er wordt momenteel een download uitgevoerd. Wil je de download annuleren en Google Chrome afsluiten?}other{Er worden momenteel # downloads uitgevoerd. Wil je de downloads annuleren en Google Chrome afsluiten?}}</translation>
 <translation id="6598387184982954187">Je gebruikt <ph name="PROFILE_EMAIL" /> om je Chrome-bestanden te synchroniseren. Als je je synchronisatievoorkeur wilt bijwerken of Chrome zonder Google-account wilt gebruiken, ga je naar '<ph name="SETTINGS_LINK" />'.</translation>
 <translation id="6600954340915313787">Gekopieerd naar Chrome</translation>
@@ -208,6 +211,7 @@ Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirector
 <translation id="7196020411877309443">Waarom zie ik dit venster?</translation>
 <translation id="7242029209006116544">Je logt in op een beheerd account waarmee de eigenaar van dat account beheer krijgt over je Google Chrome-profiel. Je Chrome-gegevens zoals je apps, bladwijzers, geschiedenis, wachtwoorden en andere instellingen worden permanent gekoppeld aan <ph name="USER_NAME" />. Je kunt deze gegevens verwijderen via het Google Accounts Dashboard, maar je kunt deze gegevens niet koppelen aan een ander account. Je kunt ook een nieuw profiel maken om je bestaande Chrome-gegevens gescheiden te houden. <ph name="LEARN_MORE" /></translation>
 <translation id="7282192067747128786">Chrome - Meldingen (<ph name="QUANTITY" /> ongelezen)</translation>
+<translation id="729375352412857283">Deze computer ontvangt binnenkort geen Google Chrome-updates meer, omdat Windows XP en Windows Vista niet meer worden ondersteund.</translation>
 <translation id="7339898014177206373">Nieuw venster</translation>
 <translation id="7396375882099008034">Sta Chrome via je firewall- of antivirusinstellingen toe het netwerk te gebruiken.</translation>
 <translation id="7398801000654795464">Je bent ingelogd bij Chrome als <ph name="USER_EMAIL_ADDRESS" />. Gebruik hetzelfde account om opnieuw in te loggen.</translation>

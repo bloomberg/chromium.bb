@@ -12,7 +12,6 @@
 <translation id="1012794136286421601">Your Docs, Sheets, Slides and Drawings files are being synced. Open the Google Drive app to access them online or offline.</translation>
 <translation id="1012876632442809908">USB-C device (front port)</translation>
 <translation id="1013707859758800957">An unsandboxed plug-in was allowed to run on this page.</translation>
-<translation id="1014321050861012327">Save passwords automatically.</translation>
 <translation id="1015255576907412255">Contact your system administrator for more information.</translation>
 <translation id="1017280919048282932">&amp;Add to dictionary</translation>
 <translation id="1018656279737460067">Cancelled</translation>
@@ -111,7 +110,6 @@
 <translation id="1146204723345436916">Import bookmarks from HTML file...</translation>
 <translation id="1146498888431277930">SSL connection error</translation>
 <translation id="1148624853678088576">You’re all set!</translation>
-<translation id="1151169732719877940">Enable identity consistency between browser and cookie jar</translation>
 <translation id="1151972924205500581">Password required</translation>
 <translation id="1154228249304313899">Open this page:</translation>
 <translation id="115443833402798225">Hangul Ahnmatae</translation>
@@ -178,7 +176,6 @@
 <translation id="1225211345201532184">Shelf item 5</translation>
 <translation id="1225404570112441414">Add this site to your shelf to use it any time.</translation>
 <translation id="1227507814927581609">Authentication failed while connecting to "<ph name="DEVICE_NAME" />".</translation>
-<translation id="1231728991993914119">Enable quit notification for hosted apps.</translation>
 <translation id="1232569758102978740">Untitled</translation>
 <translation id="1233721473400465416">Locale</translation>
 <translation id="1234808891666923653">Service Workers</translation>
@@ -204,7 +201,6 @@
 <translation id="1278813325885878377">Hungarian QWERTY keyboard</translation>
 <translation id="1285320974508926690">Never translate this site</translation>
 <translation id="1285484354230578868">Store data in your Google Drive account</translation>
-<translation id="1286637972568390913">Disable support for WebRTC hardware video decoding.</translation>
 <translation id="1290223615328246825">Automatic sign-in failed</translation>
 <translation id="1293264513303784526">USB-C device (left port)</translation>
 <translation id="1293556467332435079">Files</translation>
@@ -229,7 +225,6 @@
 <translation id="132090119144658135">Subject Match:</translation>
 <translation id="132101382710394432">Preferred networks ...</translation>
 <translation id="1325040735987616223">System Update</translation>
-<translation id="1326632442851891994">Disable voice input on virtual keyboard.</translation>
 <translation id="1327074568633507428">Printer on Google Cloud Print</translation>
 <translation id="1330036564648768163">Device missing?</translation>
 <translation id="1330145147221172764">Enable on-screen keyboard</translation>
@@ -240,7 +235,6 @@
 <translation id="1340527397989195812">Back up media from the device using the Files app.</translation>
 <translation id="1341988552785875222">The current wallpaper is set by '<ph name="APP_NAME" />'. You may need to uninstall '<ph name="APP_NAME" />' before selecting a different wallpaper.</translation>
 <translation id="1343517687228689568">Unpin this page from Start screen...</translation>
-<translation id="1344519653668879001">Disable hyperlink auditing</translation>
 <translation id="1346104802985271895">Vietnamese input method (TELEX)</translation>
 <translation id="1346748346194534595">Right</translation>
 <translation id="1351692861129622852">Importing <ph name="FILE_COUNT" /> files...</translation>
@@ -276,6 +270,7 @@
 <translation id="1386387014181100145">Howdy.</translation>
 <translation id="1389297115360905376">This can only be added from the <ph name="CHROME_WEB_STORE" />.</translation>
 <translation id="1390548061267426325">Open as a Standard Tab</translation>
+<translation id="1395262318152388157">Seek slider</translation>
 <translation id="1395730723686586365">Updater started</translation>
 <translation id="1398853756734560583">Maximise</translation>
 <translation id="1399648040768741453">Telugu keyboard (Phonetic)</translation>
@@ -307,7 +302,6 @@
 <translation id="143027896309062157">Read and change all your data on your computer and the websites that you visit</translation>
 <translation id="1430915738399379752">Print</translation>
 <translation id="1434886155212424586">Homepage is the New Tab page</translation>
-<translation id="1434928358870966081">Disable accelerated 2D canvas</translation>
 <translation id="1436784010935106834">Removed</translation>
 <translation id="1438632560381091872">Unmute tabs</translation>
 <translation id="1441841714100794440">Vietnamese keyboard (Telex)</translation>
@@ -393,13 +387,10 @@
 <translation id="1533920822694388968">TV alignment</translation>
 <translation id="1535919895260326054">Romaja</translation>
 <translation id="15373452373711364">Large mouse cursor</translation>
-<translation id="1539714775460645859">Enable the experimental App Launcher.</translation>
-<translation id="1543152709146436555">Disable touch adjustment.</translation>
 <translation id="1545177026077493356">Automatic Kiosk Mode</translation>
 <translation id="1545786162090505744">URL with %s in place of query</translation>
 <translation id="1546280085599573572">This extension has changed the page that is shown when you click the Home button.</translation>
 <translation id="1546795794523394272">Welcome to Chromebox for meetings!</translation>
-<translation id="1547297114045837579">Enable GPU rasterization.</translation>
 <translation id="1547964879613821194">Canadian English</translation>
 <translation id="1548132948283577726">Sites which never save passwords will appear here.</translation>
 <translation id="1549045574060481141">Confirm Download</translation>
@@ -419,7 +410,6 @@
 <translation id="1567723158593978621">When enabled, signing in to the browser will use a new GAIA password-separated sign-in flow.</translation>
 <translation id="1567993339577891801">JavaScript Console</translation>
 <translation id="1568822834048182062">Your bookmarks, history, passwords and other settings will be synced to your Google Account.</translation>
-<translation id="1570677382738576200">Disable the new task manager.</translation>
 <translation id="1571119610742640910">Compositing for fixed root backgrounds.</translation>
 <translation id="1572876035008611720">Enter your email</translation>
 <translation id="1580652505892042215">Context:</translation>
@@ -431,7 +421,6 @@
 <ph name="EXTENSION_NAME" /></translation>
 <translation id="1587275751631642843">&amp;JavaScript console</translation>
 <translation id="158809615184981282">Faroese keyboard</translation>
-<translation id="1588343017533984630">Disables the creation of app shims on Mac when creating a hosted app.</translation>
 <translation id="1588870296199743671">Open Link With...</translation>
 <translation id="1589055389569595240">Show Spelling and Grammar</translation>
 <translation id="158917669717260118">Unable to load the web page, because your computer has entered sleep or hibernate mode. When this happens, network connections are shut down and new network requests fail. Reloading the page should resolve this.</translation>
@@ -458,7 +447,6 @@
 <translation id="161821681072026592">Fill passwords on account selection</translation>
 <translation id="1618268899808219593">Help Centre</translation>
 <translation id="1620510694547887537">Camera</translation>
-<translation id="1620799610000238634">Disable threaded scrolling.</translation>
 <translation id="1621207256975573490">Save &amp;frame as...</translation>
 <translation id="1624026626836496796">This will only happen once, and your credentials will not be stored.</translation>
 <translation id="1626545055522824874">SHA-1 Certificate</translation>
@@ -490,7 +478,6 @@
 <translation id="1661245713600520330">This page lists all modules loaded into the main process and modules registered to be loaded at a later point.</translation>
 <translation id="166179487779922818">Password is too short.</translation>
 <translation id="16620462294541761">Sorry, your password could not be verified. Please try again.</translation>
-<translation id="1662233752299965451">If enabled, download status is displayed as a notification, instead of an item in download bar.</translation>
 <translation id="166278006618318542">Subject Public Key Algorithm</translation>
 <translation id="1662837784918284394">(none)</translation>
 <translation id="1663298465081438178">Hassle-free goodness.</translation>
@@ -506,7 +493,6 @@
 <translation id="1681120471812444678">Set up to add printers…</translation>
 <translation id="1682324559341535203">Enrol <ph name="DEVICE_TYPE" /></translation>
 <translation id="1682548588986054654">New Incognito Window</translation>
-<translation id="168282077338734107">Enable simulated hardware 'OK Google' features.</translation>
 <translation id="168328519870909584">Attackers currently on <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> might attempt to install dangerous apps on your device that steal or delete your information (for example, photos, passwords, messages and credit cards).</translation>
 <translation id="1685141618403317602">Unenrol</translation>
 <translation id="1685944703056982650">Mouse cursor exceptions</translation>
@@ -522,11 +508,11 @@
 <translation id="1699395855685456105">Hardware revision:</translation>
 <translation id="1701062906490865540">Remove this person</translation>
 <translation id="1702534956030472451">Western</translation>
+<translation id="1702987929180449188">When enabled, the toolbar will never be hidden due to scrolling on devices with a minimum screen dp &gt;= 800. It will still be hidden if page contents go full screen.</translation>
 <translation id="1707463636381878959">Share this network with other users</translation>
 <translation id="1708338024780164500">(Inactive)</translation>
 <translation id="1711973684025117106">Zipping failed, unexpected error: $1</translation>
 <translation id="1715941336038158809">Invalid user name or password.</translation>
-<translation id="1717810180141539171">Enable additional touch feedback on UI components.</translation>
 <translation id="1718396316646584626">Ask by you</translation>
 <translation id="1720318856472900922">TLS WWW Server Authentication</translation>
 <translation id="1720372306711178108">Extended Desktop</translation>
@@ -585,7 +571,6 @@
 <translation id="1801298019027379214">Incorrect PIN. Please try again. Tries left: <ph name="TRIES_COUNT" /></translation>
 <translation id="1801827354178857021">Period</translation>
 <translation id="1803133642364907127">Extension Content Verification</translation>
-<translation id="1804251416207250805">Disable sending hyperlink auditing pings.</translation>
 <translation id="1807938677607439181">All files</translation>
 <translation id="1810107444790159527">List box</translation>
 <translation id="1812631533912615985">Unpin tabs</translation>
@@ -593,6 +578,7 @@
 <translation id="18139523105317219">EDI Party Name</translation>
 <translation id="1815083418640426271">Paste as Plain Text</translation>
 <translation id="1815861158988915678"><ph name="BEGIN_BOLD" />Caution:<ph name="END_BOLD" />  These files are temporary and may be automatically deleted to free up disk space.  <ph name="BEGIN_LINK" />Learn More<ph name="END_LINK" /></translation>
+<translation id="1817598832273952216">{COUNT,plural, =1{1 credit card}other{# credit cards}}</translation>
 <translation id="1817871734039893258">Microsoft File Recovery</translation>
 <translation id="1818196664359151069">Resolution:</translation>
 <translation id="1825832322945165090">Not enough space on device</translation>
@@ -619,20 +605,17 @@
 <translation id="1857166538520940818">Attach file:</translation>
 <translation id="1859234291848436338">Writing Direction</translation>
 <translation id="1864111464094315414">Login</translation>
-<translation id="1864146862702347178">Enable scroll prediction</translation>
 <translation id="1864454756846565995">USB-C device (rear port)</translation>
 <translation id="1864676585353837027">Change how these files are shared</translation>
 <translation id="1864756863218646478">The file could not be found.</translation>
 <translation id="186612162884103683">"<ph name="EXTENSION" />" can read and write images, video and sound files in the ticked locations.</translation>
 <translation id="1867780286110144690"><ph name="PRODUCT_NAME" /> is ready to complete your installation</translation>
 <translation id="1873879463550486830">SUID Sandbox</translation>
-<translation id="1875987452136482705">This option disables support in WebRTC for decoding video streams using platform hardware.</translation>
 <translation id="1878524442024357078">Do not allow any sites to use a plug-in to access your computer</translation>
 <translation id="1880905663253319515">Delete certificate "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="1883255238294161206">Collapse list</translation>
 <translation id="1884319566525838835">Sandbox Status</translation>
 <translation id="1886996562706621347">Allow sites to ask to become default handlers for protocols (recommended)</translation>
-<translation id="1887402381088266116">Enable distance field text</translation>
 <translation id="1891668193654680795">Trust this certificate for identifying software makers.</translation>
 <translation id="189210018541388520">Open full screen</translation>
 <translation id="189358972401248634">Other languages</translation>
@@ -653,9 +636,9 @@
 <translation id="192144045824434199">Enable Panel windows that open outside of the browser frame. Attempts to open a Panel will open a pop-up instead if not enabled. Panels are always enabled on the dev and canary channels.</translation>
 <translation id="1921584744613111023"><ph name="DPI" /> dpi</translation>
 <translation id="1921986354447415460">Turkish-F keyboard</translation>
-<translation id="1923786009776354244">Enable support for WebRTC Stun origin header.</translation>
 <translation id="1926741348654461781">Enable offline pages</translation>
 <translation id="1929546189971853037">Read your browsing history on all your signed-in devices</translation>
+<translation id="1931134289871235022">Slovak</translation>
 <translation id="1931152874660185993">No components installed.</translation>
 <translation id="1932098463447129402">Not Before</translation>
 <translation id="1932240834133965471">These settings belong to <ph name="OWNER_EMAIL" />.</translation>
@@ -667,7 +650,6 @@
 <translation id="1944921356641260203">Update found</translation>
 <translation id="1947424002851288782">German keyboard</translation>
 <translation id="1949433054743893124">Going incognito doesn’t hide your browsing from your employer, your internet service provider or the websites that you visit.</translation>
-<translation id="1949686912118286247">Enable display list 2D canvas</translation>
 <translation id="1950295184970569138">* Google Profile photo (loading)</translation>
 <translation id="1951615167417147110">Scroll up one page</translation>
 <translation id="1956050014111002555">The file contained multiple certificates, none of which were imported:</translation>
@@ -678,12 +660,10 @@
 <translation id="1965624977906726414">Has no special permissions.</translation>
 <translation id="1970746430676306437">View page &amp;info</translation>
 <translation id="197288927597451399">Keep</translation>
-<translation id="1973277570128718649">Enable Media Router</translation>
 <translation id="1973491249112991739"><ph name="PLUGIN_NAME" /> download failed.</translation>
 <translation id="1974043046396539880">CRL Distribution Points</translation>
 <translation id="1974060860693918893">Advanced</translation>
 <translation id="1974371662733320303">Memory discarding strategy to use</translation>
-<translation id="1975360744064614709">Disable hardware-accelerated mjpeg decode for captured frame.</translation>
 <translation id="197560921582345123">Can edit</translation>
 <translation id="1975841812214822307">Remove...</translation>
 <translation id="1976150099241323601">Sign in to Security Device</translation>
@@ -716,7 +696,6 @@
 <translation id="203168018648013061">Sync Error: Please reset Sync via the Google Dashboard.</translation>
 <translation id="2031695690821674406">Filling of passwords when an account is explicitly selected by the user rather than autofilling credentials on page load.</translation>
 <translation id="2040460856718599782">Oops!  Something went wrong when trying to authenticate you. Please double-check your sign-in credentials and try again.</translation>
-<translation id="2040822234646148327">Enable experimental Web Platform features.</translation>
 <translation id="2042078858148122628">The server at <ph name="HOST_NAME" /> can't be found because the DNS look-up failed. DNS is the network service that translates a website's name to its Internet address. This error is most often caused by having no connection to the Internet or a misconfigured network. It can also be caused by an unresponsive DNS server or a firewall preventing <ph name="PRODUCT_NAME" /> from accessing the network.</translation>
 <translation id="204497730941176055">Microsoft Certificate Template Name</translation>
 <translation id="2045969484888636535">Continue blocking cookies</translation>
@@ -729,7 +708,6 @@
 <translation id="2052610617971448509">You are not adequately sandboxed!</translation>
 <translation id="2053312383184521053">Idle State Data</translation>
 <translation id="2058632120927660550">An error has occurred. Please check your printer and try again.</translation>
-<translation id="2059334576206320859">Enable Wi-Fi credential sync.</translation>
 <translation id="2061855250933714566"><ph name="ENCODING_CATEGORY" /> (<ph name="ENCODING_NAME" />)</translation>
 <translation id="2065985942032347596">Authentication Required</translation>
 <translation id="2070909990982335904">Names starting with dot are reserved for the system. Please choose another name.</translation>
@@ -744,7 +722,6 @@
 <translation id="2079545284768500474">Undo</translation>
 <translation id="2080010875307505892">Serbian keyboard</translation>
 <translation id="2080070583977670716">More settings</translation>
-<translation id="2080796051686842158">Disables wallpaper boot animation (except for OOBE case).</translation>
 <translation id="2081322486940989439">This site doesn't accept Visa.</translation>
 <translation id="2084978867795361905">MS-IME</translation>
 <translation id="2085470240340828803">A file named "<ph name="FILENAME" />" already exists. What do you want to do?</translation>
@@ -770,7 +747,6 @@
 <translation id="2114224913786726438">Modules (<ph name="TOTAL_COUNT" />) - No conflicts detected</translation>
 <translation id="2115926821277323019">Must be a valid URL</translation>
 <translation id="2116673936380190819">the past hour</translation>
-<translation id="2124335647227850314">Disable calibrating the colour of the display even if the display supports the feature.</translation>
 <translation id="2125314715136825419">Proceed without updating Adobe Reader (not recommended)</translation>
 <translation id="2127166530420714525">Failed to change the power state of the Bluetooth adapter.</translation>
 <translation id="2127372758936585790">Low-power charger</translation>
@@ -824,12 +800,12 @@
 <translation id="2195729137168608510">Email Protection</translation>
 <translation id="2198315389084035571">Simplified Chinese</translation>
 <translation id="219985413780390209">Protect you and your device from dangerous sites</translation>
-<translation id="2201369125593048723">Disable hardware-accelerated mjpeg decode for captured frame where available.</translation>
 <translation id="220138918934036434">Hide button</translation>
 <translation id="2202898655984161076">There was a problem while listing printers. Some of your printers may not have registered successfully with <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2204034823255629767">Read and change anything that you type</translation>
 <translation id="2208158072373999562">Zip archive</translation>
 <translation id="2208311832613497869">Oops! You need to ask your parent if it's OK to visit this page.</translation>
+<translation id="2208323208084708176">Unified desktop mode</translation>
 <translation id="220858061631308971">Please enter this PIN code on "<ph name="DEVICE_NAME" />":</translation>
 <translation id="2209593327042758816">Shelf item 2</translation>
 <translation id="2213819743710253654">Page Action</translation>
@@ -957,7 +933,6 @@ After you create a new supervised user, you can manage their settings at any tim
 <translation id="236128817791440714">Recommended: Set up Smart Lock for Android</translation>
 <translation id="236141728043665931">Always block microphone access</translation>
 <translation id="2367972762794486313">Show apps</translation>
-<translation id="2368075211218459617">Enable Contextual Search.</translation>
 <translation id="2370882663124746154">Enable Double-Pinyin mode</translation>
 <translation id="2371076942591664043">Open when &amp;done</translation>
 <translation id="2372036074421194686">Chrome found an unwanted program (<ph name="UWS_NAME" />) installed on your computer. You may be able to remove it by running the Chrome Cleanup Tool.</translation>
@@ -993,7 +968,6 @@ After you create a new supervised user, you can manage their settings at any tim
 <translation id="2412835451908901523">Please enter the 8-digit PIN Unlocking Key provided by <ph name="CARRIER_ID" />.</translation>
 <translation id="2413749388954403953">Change the bookmarks user interface</translation>
 <translation id="2415294094132942411">Add to desktop...</translation>
-<translation id="242184683889529951">Disabled threaded handling of scroll-related input events, forcing all such scroll events to be handled on the main thread. Note that this can dramatically hurt scrolling performance of most websites and is intended for testing purposes only.</translation>
 <translation id="2421956571193030337">Only use this feature with accounts that you trust.</translation>
 <translation id="2422426094670600218">&lt;unnamed&gt;</translation>
 <translation id="2423578206845792524">Sa&amp;ve image as...</translation>
@@ -1005,6 +979,7 @@ After you create a new supervised user, you can manage their settings at any tim
 <translation id="2436186046335138073">Allow <ph name="HANDLER_HOSTNAME" /> to open all <ph name="PROTOCOL" /> links?</translation>
 <translation id="2436707352762155834">Minimum</translation>
 <translation id="2436733981438712345">Processing...</translation>
+<translation id="2437139306601019091">Data use measuring ended</translation>
 <translation id="2440300961915670171"><ph name="REASON" />
 I don't think this site should be blocked!</translation>
 <translation id="2440443888409942524">Japanese input method (for US Dvorak keyboard)</translation>
@@ -1081,9 +1056,7 @@ I don't think this site should be blocked!</translation>
 <translation id="2529133382850673012">US keyboard</translation>
 <translation id="2532589005999780174">High contrast mode</translation>
 <translation id="253434972992662860">&amp;Pause</translation>
-<translation id="2537977853636185618">Disable MTP write support in File System API (and file manager). In-place editing operations are not supported.</translation>
 <translation id="2539110682392681234">The proxy is enforced by your administrator.</translation>
-<translation id="2540140729418125086">Enable extension toolbar redesign.</translation>
 <translation id="254087552098767269">Unenrollment from remote management was not successful.</translation>
 <translation id="2541423446708352368">Show all downloads</translation>
 <translation id="2542049655219295786">Google table</translation>
@@ -1103,9 +1076,7 @@ I don't think this site should be blocked!</translation>
 <translation id="2562743677925229011">Not signed in to <ph name="SHORT_PRODUCT_NAME" /></translation>
 <translation id="2565670301826831948">Touchpad speed:</translation>
 <translation id="2566124945717127842">Powerwash to reset your <ph name="IDS_SHORT_PRODUCT_NAME" /> device to be just like new.</translation>
-<translation id="256636418356649753">Enable unified desktop mode.</translation>
 <translation id="2568774940984945469">Infobar Container</translation>
-<translation id="2569850583200847032">Enable password generation.</translation>
 <translation id="2570648609346224037">There was a problem during recovery image download.</translation>
 <translation id="257088987046510401">Themes</translation>
 <translation id="2572032849266859634">Read-only access to <ph name="VOLUME_NAME" /> has been granted.</translation>
@@ -1206,7 +1177,6 @@ I don't think this site should be blocked!</translation>
 <translation id="2721037002783622288">&amp;Search <ph name="SEARCH_ENGINE" /> for image</translation>
 <translation id="2724841811573117416">WebRTC logs</translation>
 <translation id="2725200716980197196">Network connectivity restored</translation>
-<translation id="2726306725839966998">Disable hiding close buttons on inactive tabs when stacked</translation>
 <translation id="2726934403674109201">(<ph name="COUNT" /> total)</translation>
 <translation id="2727712005121231835">Actual Size</translation>
 <translation id="273093730430620027">This page is accessing your camera.</translation>
@@ -1229,10 +1199,10 @@ I don't think this site should be blocked!</translation>
 <translation id="2749756011735116528">Sign in to <ph name="PRODUCT_NAME" /></translation>
 <translation id="2749881179542288782">Check Grammar With Spelling</translation>
 <translation id="2752805177271551234">Use input history</translation>
-<translation id="2756781634892530465">Enable XPS in Google Cloud Print</translation>
 <translation id="2756798847867733934">SIM Card Disabled</translation>
 <translation id="2757031529886297178">FPS counter</translation>
 <translation id="2758939858455657368">Subsequent notifications, windows and dialogues may be split between desktops.</translation>
+<translation id="2761824548806711139">The proxy <ph name="DOMAIN" /> requires a username and password. The proxy says: <ph name="REALM" />.</translation>
 <translation id="2765217105034171413">Small</translation>
 <translation id="2766006623206032690">Pa&amp;ste and go</translation>
 <translation id="276969039800130567">Signed in as <ph name="USER_EMAIL_ADDRESS" />.</translation>
@@ -1284,7 +1254,7 @@ I don't think this site should be blocked!</translation>
 <translation id="2805646850212350655">Microsoft Encrypting File System</translation>
 <translation id="2805707493867224476">Allow all sites to show pop-ups</translation>
 <translation id="2805756323405976993">Apps</translation>
-<translation id="280827847188441726">Disables the new compositor driven video rendering path for video elements.</translation>
+<translation id="2809142985846095314">Enable offering upload of Autofilled credit cards</translation>
 <translation id="2809346626032021864">Reading</translation>
 <translation id="2809586584051668049">and <ph name="NUMBER_ADDITIONAL_DISABLED" /> more</translation>
 <translation id="2810731435681289055">Next time you unlock this <ph name="DEVICE_TYPE" />, Smart Lock will update so you'll be able to just click your picture to enter.</translation>
@@ -1333,7 +1303,6 @@ I don't think this site should be blocked!</translation>
 <translation id="2862043554446264826">Debug everything except secure shell and the PNaCl translator.</translation>
 <translation id="2867768963760577682">Open as a Pinned Tab</translation>
 <translation id="2868746137289129307">This extension is outdated and disabled by enterprise policy. It might become enabled automatically when a newer version is available.</translation>
-<translation id="2868979525648340289">Enable hosted apps to be opened in windows instead of being limited to tabs.</translation>
 <translation id="2869742291459757746">Allow the user to have Chrome generate passwords when it detects account creation pages.</translation>
 <translation id="2870560284913253234">Site</translation>
 <translation id="2870836398458454343">Transliteration (marhaban ← مرحبا)</translation>
@@ -1379,17 +1348,16 @@ I don't think this site should be blocked!</translation>
 <translation id="291886813706048071">You can search from here with <ph name="SEARCH_ENGINE" /></translation>
 <translation id="2923240520113693977">Estonian</translation>
 <translation id="29232676912973978">Manage connections...</translation>
-<translation id="2923469375796950815">Disable the new ZIP unpacker.</translation>
 <translation id="2924296707677495905">Transliteration (namaskaram → ನಮಸ್ಕಾರ)</translation>
 <translation id="2925966894897775835">Sheets</translation>
 <translation id="2927017729816812676">Cache Storage</translation>
 <translation id="2927657246008729253">Change...</translation>
+<translation id="2928415919076124714">Hide toolbar in full screen</translation>
 <translation id="2928526264833629376">Continue to Hangouts</translation>
 <translation id="2930644991850369934">There was a problem during recovery image download. Network connection has been lost.</translation>
 <translation id="2932330436172705843"><ph name="PROFILE_DISPLAY_NAME" /> (Account for kids)</translation>
 <translation id="2932883381142163287">Report abuse</translation>
 <translation id="2934522647674136521">Use GPU to rasterize web content. Requires impl-side painting.</translation>
-<translation id="2937174152333875430">Enable App Launcher sync</translation>
 <translation id="2938225289965773019">Open <ph name="PROTOCOL" /> links</translation>
 <translation id="2938685643439809023">Mongolian</translation>
 <translation id="2941479658084239256">Enable storing pages locally for offline use.</translation>
@@ -1404,6 +1372,7 @@ I don't think this site should be blocked!</translation>
 <translation id="2951247061394563839">Centre window</translation>
 <translation id="2955913368246107853">Close find bar</translation>
 <translation id="2956763290572484660"><ph name="COOKIES" /> cookies</translation>
+<translation id="2959614062380389916">Disabled by administrator</translation>
 <translation id="2960393411257968125">How the password manager handles autofill for the sync credential.</translation>
 <translation id="29611076221683977">Attackers currently on <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> might attempt to install dangerous programmes on your Mac that steal or delete your information (for example, photos, passwords, messages and credit cards).</translation>
 <translation id="2961695502793809356">Click to go forward, hold to see history</translation>
@@ -1418,7 +1387,6 @@ I don't think this site should be blocked!</translation>
 <translation id="2971213274238188218">bright down</translation>
 <translation id="2972557485845626008">Firmware</translation>
 <translation id="2972581237482394796">&amp;Redo</translation>
-<translation id="2978633839734115297">Disables filtering the windows shown in overview mode by entering text.</translation>
 <translation id="297870353673992530">DNS server:</translation>
 <translation id="2981113813906970160">Show large mouse cursor</translation>
 <translation id="2984337792991268709">Today <ph name="TODAY_DAYTIME" /></translation>
@@ -1445,12 +1413,12 @@ I don't think this site should be blocked!</translation>
 <translation id="3015992588037997514">Does this code appear on your Chromebox screen?</translation>
 <translation id="3016641847947582299">Component updated</translation>
 <translation id="3016780570757425217">Know your location</translation>
-<translation id="3018454109497821123">Enable Drive Search in Chrome App Launcher.</translation>
 <translation id="302014277942214887">Enter application ID or web store URL.</translation>
 <translation id="3020990233660977256">Serial Number: <ph name="SERIAL_NUMBER" /></translation>
 <translation id="3021678814754966447">&amp;View Frame Source</translation>
 <translation id="3024374909719388945">Use 24-hour clock</translation>
 <translation id="3025022340603654002">Make autofill suggestions on initial mouse click on a form element.</translation>
+<translation id="3025659459015040795">{COUNT,plural, =1{1 suggestion}other{# suggestions}}</translation>
 <translation id="3025729795978504041">Right click on the button above to view other people.</translation>
 <translation id="3026050830483105579">It's all here.</translation>
 <translation id="302620147503052030">Show button</translation>
@@ -1493,8 +1461,6 @@ I don't think this site should be blocked!</translation>
 <translation id="3084548735795614657">Drop to install</translation>
 <translation id="3084771660770137092">Either Chrome ran out of memory or the process for the web page was terminated for some other reason. To continue, reload or go to another page.</translation>
 <translation id="3084857401535570106">GPU rasterisation MSAA sample count.</translation>
-<translation id="3085235303151103497">Enable debugging for packed apps.</translation>
-<translation id="3087329981864897625">If enabled, raster threads write directly to GPU memory associated with tiles.</translation>
 <translation id="3088034400796962477">Transliteration (salam ← سلام)</translation>
 <translation id="3088325635286126843">&amp;Rename...</translation>
 <translation id="308903551226753393">Configure automatically</translation>
@@ -1543,7 +1509,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for these and further ins
 <translation id="3150927491400159470">Hard Reload</translation>
 <translation id="315116470104423982">Mobile data</translation>
 <translation id="315141861755603168">"<ph name="BUNDLE_NAME" />" adds these apps:</translation>
-<translation id="3153094071447713741">Experimental input view features.</translation>
 <translation id="3153177132960373163">Allow all sites to use a plug-in to access your computer</translation>
 <translation id="3154429428035006212">Offline for more than a month</translation>
 <translation id="3157931365184549694">Restore</translation>
@@ -1576,7 +1541,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for these and further ins
 <translation id="3199127022143353223">Servers</translation>
 <translation id="3200025317479269283">Have fun! We're here for you.</translation>
 <translation id="3202173864863109533">This tab's audio is being muted.</translation>
-<translation id="3202237796902623372">Enable Download Resumption</translation>
 <translation id="3202578601642193415">Newest</translation>
 <translation id="3204209274259353887">When enabled, WebRTC will try to negotiate DTLS 1.2.</translation>
 <translation id="3204741654590142272">Channel change will be applied later.</translation>
@@ -1658,6 +1622,8 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for these and further ins
 <translation id="3308116878371095290">This page was prevented from setting cookies.</translation>
 <translation id="3308134619352333507">Hide Button</translation>
 <translation id="3309747692199697901">Always Run on All Sites</translation>
+<translation id="3313080019966590424"><ph name="DOWNLOAD_RECEIVED_AND_TOTAL" />, <ph name="SUB_STATUS_TEXT" />
+From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3313590242757056087">To set which websites the supervised user can view, you can configure restrictions
     and settings by visiting <ph name="MANAGEMENT_URL" />.
     If you do not change the default settings, <ph name="USER_DISPLAY_NAME" />
@@ -1690,7 +1656,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for these and further ins
 <translation id="3341703758641437857">Allow access to file URLs</translation>
 <translation id="3344786168130157628">Access Point Name:</translation>
 <translation id="3345135638360864351">Your request to access this site could not be sent to <ph name="NAME" />. Please try again.</translation>
-<translation id="3345634697982520715">Enable embedded extension options.</translation>
 <translation id="3345886924813989455">No supported browser found</translation>
 <translation id="3347086966102161372">C&amp;opy image address</translation>
 <translation id="3348038390189153836">Removable device detected</translation>
@@ -1736,9 +1701,9 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for these and further ins
 <translation id="3420980393175304359">Switch Person</translation>
 <translation id="3423858849633684918">Please Relaunch <ph name="PRODUCT_NAME" /></translation>
 <translation id="3426704822745136852">Specify the number of raster threads.</translation>
-<translation id="3428010780253032925">Disable rect-based targeting in views</translation>
 <translation id="3429274334716393946">{COUNT,plural, =0{at least 1 item on synced devices}=1{1 item (and more on synced devices)}other{# items (and more on synced devices)}}</translation>
 <translation id="3429599832623003132">$1 items</translation>
+<translation id="3432757130254800023">Send audio and video to displays on the local network</translation>
 <translation id="3433621910545056227">Oops!  The system failed to establish the device installation-time attributes lock.</translation>
 <translation id="343467364461911375">Some content services use machine identifiers to uniquely identify you for the purposes of authorising access to protected content.</translation>
 <translation id="3435738964857648380">Security</translation>
@@ -1770,7 +1735,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for these and further ins
 <translation id="3467267818798281173">Ask Google for suggestions</translation>
 <translation id="3467848195100883852">Enable automatic spelling correction</translation>
 <translation id="3468522857997926824"><ph name="FILE_COUNT" /> photos backed up to <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
-<translation id="3469304186884340688">If proxy is configured, it usually prevents authorisation on different captive portals. This flag disables opening captive portal authorisation dialogue in a separate window, which ignores proxy settings.</translation>
 <translation id="3470442499439619530">Remove This User</translation>
 <translation id="3470502288861289375">Copying...</translation>
 <translation id="3473479545200714844">Screen magnifier</translation>
@@ -1824,6 +1788,7 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for these and further ins
 <translation id="3527276236624876118">A supervised user named <ph name="USER_DISPLAY_NAME" /> has been created.</translation>
 <translation id="3528033729920178817">This page is tracking your location.</translation>
 <translation id="3528498924003805721">Shortcut targets</translation>
+<translation id="3530305684079447434">To get your bookmarks on all your devices, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="3530751398950974194">Update sync passphrase</translation>
 <translation id="3531250013160506608">Password text box</translation>
 <translation id="3534879087479077042">What is a supervised user?</translation>
@@ -1854,7 +1819,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for these and further ins
 <translation id="3571734092741541777">Set up</translation>
 <translation id="3574210789297084292">sign in</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
-<translation id="3574777678278664892">If enabled, the password manager will not offer to save the credential used to sync.</translation>
 <translation id="357479282490346887">Lithuanian</translation>
 <translation id="3578331450833904042">Default (pick up everything)</translation>
 <translation id="3578594933904494462">This tab's content is being shared.</translation>
@@ -1869,12 +1833,10 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for these and further ins
 <translation id="3587482841069643663">All</translation>
 <translation id="358796204584394954">Type this code on "<ph name="DEVICE_NAME" />" to pair:</translation>
 <translation id="3588662957555259973">* Google Profile photo</translation>
-<translation id="3589283827341767588">Enable remote password management link</translation>
 <translation id="3590194807845837023">Unlock Profile and Relaunch</translation>
 <translation id="3590366738065013855">Enable Delay Agnostic AEC in WebRTC. Use if reported system delays are untrusted. Specifically applies to Mac OS X and CrOS, but also if audio is routed through a different device like TV. enable-delay-agnostic-aec overrides disable-delay-agnostic-aec.</translation>
 <translation id="3590559774363307859">Password saved. You can access it and all your <ph name="SAVED_PASSWORDS_LINK" /> from any browser.</translation>
 <translation id="3590587280253938212">fast</translation>
-<translation id="3591494811171694976">Enable the new Translate UX.</translation>
 <translation id="3592260987370335752">&amp;Learn more</translation>
 <translation id="359283478042092570">Enter</translation>
 <translation id="3593152357631900254">Enable Fuzzy-Pinyin mode</translation>
@@ -1886,6 +1848,7 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for these and further ins
 <translation id="3603622770190368340">Obtain network certificate</translation>
 <translation id="3605780360466892872">Smartboy</translation>
 <translation id="3606220979431771195">Turkish-F</translation>
+<translation id="3608308818141211642">The client and server don't support a common SSL protocol version or cipher suite. This is likely to be caused when the server needs RC4, which is no longer considered secure.</translation>
 <translation id="3608454375274108141">F10</translation>
 <translation id="3608576286259426129">User image preview</translation>
 <translation id="3609138628363401169">The server does not support the TLS renegotiation extension.</translation>
@@ -1938,7 +1901,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for these and further ins
 <translation id="3668823961463113931">Handlers</translation>
 <translation id="3672159315667503033"><ph name="URL" /> wants to permanently store large data on your local computer.</translation>
 <translation id="3672681487849735243">A factory error has been detected</translation>
-<translation id="3672928695873425336">Disallow shelf to minimise-on-click.</translation>
 <translation id="367645871420407123">leave empty if you want to set the root password to the default test image value</translation>
 <translation id="3678156199662914018">Extension: <ph name="EXTENSION_NAME" /></translation>
 <translation id="3678559383040232393">Maltese keyboard</translation>
@@ -1967,6 +1929,7 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for these and further ins
 <translation id="3694678678240097321">Require user consent for an extension running a script on the page, if the extension requested permission to run on all URLs.</translation>
 <translation id="36954862089075551">Oops! The new user couldn't be created. Please check your hard drive space and permissions and try again.</translation>
 <translation id="3695919544155087829">Please enter the password that was used to encrypt this certificate file.</translation>
+<translation id="3696411085566228381">none</translation>
 <translation id="3697100740575341996">Your IT administrator has disabled Chrome Goodies for your device. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="3699624789011381381">Email address</translation>
 <translation id="3700528541715530410">Oops, looks like you don't have permission to access this page.</translation>
@@ -1996,7 +1959,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for these and further ins
 <translation id="3733127536501031542">SSL Server with Step-up</translation>
 <translation id="3734816294831429815"><ph name="PRODUCT_NAME" /> will restart in <ph name="SECONDS" /> seconds.</translation>
 <translation id="3736520371357197498">If you understand the risks to your security, you may <ph name="BEGIN_LINK" />visit this unsafe site<ph name="END_LINK" /> before the dangerous programmes have been removed.</translation>
-<translation id="3737514536860147030">Learn more about incognito browsing</translation>
 <translation id="3738924763801731196"><ph name="OID" />:</translation>
 <translation id="3739798227959604811">Delay before repeat:</translation>
 <translation id="3741158646617793859"><ph name="DEVICE_NAME" /> will now appear in the Admin Console</translation>
@@ -2051,7 +2013,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for these and further ins
 <translation id="3807747707162121253">&amp;Cancel</translation>
 <translation id="3809280248639369696">Moonbeam</translation>
 <translation id="3810973564298564668">Manage</translation>
-<translation id="3811328435734979057">Enable the new bookmark app system.</translation>
 <translation id="3812034401428455285"><ph name="UWS_NAME" /> and <ph name="UWS_NAME" /></translation>
 <translation id="3812525830114410218">Bad certificate</translation>
 <translation id="3813984289128269159">Ok Google</translation>
@@ -2089,6 +2050,7 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for these and further ins
 <translation id="3851428669031642514">Load unsafe scripts</translation>
 <translation id="3855472144336161447">German Neo 2</translation>
 <translation id="3855676282923585394">Import Bookmarks and Settings...</translation>
+<translation id="3856921555429624101">Data use measuring has ended</translation>
 <translation id="3857272004253733895">Double Pinyin schema</translation>
 <translation id="3857466062686943799">Add to taskbar</translation>
 <translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</translation>
@@ -2107,7 +2069,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for these and further ins
 <translation id="3893536212201235195">Read and change your accessibility settings</translation>
 <translation id="3893630138897523026">ChromeVox (spoken feedback)</translation>
 <translation id="3893977120523121937">Run all plug-in content</translation>
-<translation id="3895034729709274924">Enable Silent Debugging.</translation>
 <translation id="389589731200570180">Share with guests</translation>
 <translation id="3897092660631435901">Menu</translation>
 <translation id="3898521660513055167">Token Status</translation>
@@ -2132,9 +2093,7 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for these and further ins
 <translation id="3925573269917483990">Camera:</translation>
 <translation id="3925842537050977900">Unpin from Shelf</translation>
 <translation id="3926002189479431949">Smart Lock phone changed</translation>
-<translation id="3926862159284741883">Enable WebGL Draft Extensions</translation>
 <translation id="3927932062596804919">Deny</translation>
-<translation id="3928494192447988737">Certain UI components will stop displaying visual feedback upon touch interactions.</translation>
 <translation id="3930521966936686665">Play on</translation>
 <translation id="3936390757709632190">&amp;Open audio in new tab</translation>
 <translation id="3936768791051458634">Change channel...</translation>
@@ -2160,7 +2119,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for these and further ins
 <translation id="3954354850384043518">In progress</translation>
 <translation id="3954582159466790312">Un&amp;mute</translation>
 <translation id="3958088479270651626">Import bookmarks and settings</translation>
-<translation id="3960121209995357026">Enable Automatic Spelling Correction</translation>
 <translation id="3960566196862329469">ONC</translation>
 <translation id="3966072572894326936">Choose another folder...</translation>
 <translation id="3966388904776714213">Audio Player</translation>
@@ -2175,6 +2133,7 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for these and further ins
 <translation id="3979395879372752341">New extension added (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="3979748722126423326">Enable <ph name="NETWORKDEVICE" /></translation>
 <translation id="3981760180856053153">Invalid save type entered.</translation>
+<translation id="3981990000224130884">{COUNT,plural, =1{1 address}other{# addresses}}</translation>
 <translation id="3983586614702900908">devices from an unknown vendor</translation>
 <translation id="3984413272403535372">Error while signing extension.</translation>
 <translation id="3987970780975473420">Enable the Physical Web.</translation>
@@ -2185,7 +2144,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for these and further ins
 <translation id="39964277676607559">Could not load JavaScript '<ph name="RELATIVE_PATH" />' for content script.</translation>
 <translation id="3996912167543967198">Resetting...</translation>
 <translation id="40027638859996362">Word move</translation>
-<translation id="4011708746171704399">Enable animated transitions in the first-run tutorial.</translation>
 <translation id="4012185032967847512">Oops, looks like you need permission from <ph name="NAME" /> to access this page.</translation>
 <translation id="4012550234655138030">Set up or manage printers in <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="4014432863917027322">Repair "<ph name="EXTENSION_NAME" />"?</translation>
@@ -2194,21 +2152,17 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for these and further ins
 <translation id="4023146161712577481">Determining device configuration.</translation>
 <translation id="402759845255257575">Do not allow any site to run JavaScript</translation>
 <translation id="4027804175521224372">(You're missing out—<ph name="IDS_SYNC_PROMO_NOT_SIGNED_IN_STATUS_LINK" />)</translation>
-<translation id="4031468775258578238">Disables rect-based targeting in views. Rect-based targeting uses a heuristic to determine the most probable target of a gesture, where the touch region is represented by a rectangle.</translation>
 <translation id="4031910098617850788">F5</translation>
 <translation id="4032534284272647190">Access to <ph name="URL" /> denied.</translation>
 <translation id="4034042927394659004">Decrease key brightness</translation>
 <translation id="4035758313003622889">&amp;Task manager</translation>
 <translation id="4037463823853863991">Enable the accessibility tab switcher for Android.</translation>
-<translation id="4037732314385844870">Enable the experimental Credential Manager API.</translation>
-<translation id="404010098438120717">Enable WebVR</translation>
 <translation id="4043223219875055035">Sign in with your Google Account to allow apps to synchronise settings and provide other customised services.</translation>
 <translation id="4044260751144303020">Compositing for fixed position elements.</translation>
 <translation id="404493185430269859">Default search engine</translation>
 <translation id="4047112090469382184">How this is secure</translation>
 <translation id="4047345532928475040">N/A</translation>
 <translation id="4052120076834320548">Tiny</translation>
-<translation id="4054376378714379870">Enable potentially annoying security features.</translation>
 <translation id="4055023634561256217">A restart is required before your device can be reset with Powerwash.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" /></translation>
 <translation id="4057896668975954729">View in Store</translation>
@@ -2230,7 +2184,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for these and further ins
 
 <ph name="EXTENSION_FILE" /></translation>
 <translation id="4088095054444612037">Accept for group</translation>
-<translation id="408898940369358887">Enable Experimental JavaScript</translation>
 <translation id="4089521618207933045">Has sub-menu</translation>
 <translation id="4090103403438682346">Enable Verified Access</translation>
 <translation id="4090404313667273475"><ph name="PLUGIN_NAME" /> is required to display some elements on this page.</translation>
@@ -2247,7 +2200,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for these and further ins
 <translation id="4103763322291513355">Visit &lt;strong&gt;chrome://policy&lt;/strong&gt; to see the list of blacklisted URLs and other policies enforced by your system administrator.</translation>
 <translation id="4104163789986725820">E&amp;xport...</translation>
 <translation id="4105563239298244027">Get 1 TB free with Google Drive</translation>
-<translation id="4106164762195622179">Pages that you view in incognito tabs won’t stick around in your browser’s history, cookie store or search history after you’ve closed <ph name="BEGIN_BOLD" />all<ph name="END_BOLD" /> of your incognito tabs. Any files that you download or bookmarks that you create will be kept.</translation>
 <translation id="4109135793348361820">Move window to <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110342520124362335">Cookies from <ph name="DOMAIN" /> blocked.</translation>
 <translation id="4110559665646603267">Focus shelf</translation>
@@ -2257,12 +2209,10 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for these and further ins
 <translation id="4114955900795884390">No plug-in available to display this content.</translation>
 <translation id="4116663294526079822">Always allow on this site</translation>
 <translation id="411666854932687641">Private Memory</translation>
-<translation id="4119224432853805992">Enable use of Mac OS X AVFoundation APIs, instead of QTKit.</translation>
 <translation id="4120329147617730038">An administrator has disallowed multiple sign-in for <ph name="USER_EMAIL" />.
 All users must sign out to continue.</translation>
 <translation id="4120817667028078560">Path too long</translation>
 <translation id="4121428309786185360">Expires On</translation>
-<translation id="4125496372515105318">Disable latest stable JavaScript features</translation>
 <translation id="412730574613779332">Speedy</translation>
 <translation id="4130199216115862831">Device Log</translation>
 <translation id="4130207949184424187">This extension has changed the page that is shown when you search from the Omnibox.</translation>
@@ -2280,6 +2230,7 @@ All users must sign out to continue.</translation>
 <translation id="4154664944169082762">Fingerprints</translation>
 <translation id="4157188838832721931">Disable prompting the user for their OS password before revealing passwords on the passwords page.</translation>
 <translation id="4157869833395312646">Microsoft Server Gated Cryptography</translation>
+<translation id="4158739975813877944">Open play list</translation>
 <translation id="4159681666905192102">This is an account for kids managed by <ph name="CUSTODIAN_EMAIL" /> and <ph name="SECOND_CUSTODIAN_EMAIL" />.</translation>
 <translation id="4163560723127662357">Unknown keyboard</translation>
 <translation id="4165986682804962316">Site settings</translation>
@@ -2288,7 +2239,6 @@ All users must sign out to continue.</translation>
 <translation id="4172051516777682613">Always show</translation>
 <translation id="417475959318757854">Centre the App Launcher.</translation>
 <translation id="4176463684765177261">Disabled</translation>
-<translation id="4176955763200793134">Enable physical keyboard autocorrect.</translation>
 <translation id="4180788401304023883">Delete CA certificate "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="418179967336296930">Russian Phonetic (YaZHert) keyboard</translation>
 <translation id="4181841719683918333">Languages</translation>
@@ -2302,7 +2252,6 @@ All users must sign out to continue.</translation>
 <translation id="4195814663415092787">Continue where you left off</translation>
 <translation id="4197674956721858839">Zip selection</translation>
 <translation id="4200983522494130825">New &amp;tab</translation>
-<translation id="4203263844740071256">Disables hiding the close buttons of inactive tabs when the tab strip is in stacked mode.</translation>
 <translation id="4204151581355608139">You can try to diagnose the problem by taking the following steps:
           <ph name="LINE_BREAK" />
           <ph name="PLATFORM_TEXT" /></translation>
@@ -2318,8 +2267,6 @@ All users must sign out to continue.</translation>
 <translation id="4215350869199060536">Oops, illegal symbols in name!</translation>
 <translation id="4215898373199266584">Psst! Incognito mode (<ph name="INCOGNITO_MODE_SHORTCUT" />) may come in handy next time.</translation>
 <translation id="4218259925454408822">Sign in another account</translation>
-<translation id="4221409371759617141">Edit customised dictionary</translation>
-<translation id="4221832029456688531">Substring matching for Autofill suggestions.</translation>
 <translation id="4235200303672858594">Entire screen</translation>
 <translation id="4235813040357936597">Add Account for <ph name="PROFILE_NAME" /></translation>
 <translation id="4240069395079660403"><ph name="PRODUCT_NAME" /> cannot be displayed in this language</translation>
@@ -2348,13 +2295,11 @@ All users must sign out to continue.</translation>
 <translation id="4267171000817377500">Plug-ins</translation>
 <translation id="4268025649754414643">Key Encipherment</translation>
 <translation id="4268574628540273656">URL:</translation>
-<translation id="4269099019648381197">Enables the request tablet site option in the settings menu.</translation>
 <translation id="4270393598798225102">Version <ph name="NUMBER" /></translation>
 <translation id="4274187853770964845">Sync Error: Please stop and restart Sync.</translation>
 <translation id="4275830172053184480">Restart your device</translation>
 <translation id="4276796043975446927">Welcome to Chromebox for meetings</translation>
 <translation id="4278390842282768270">Allowed</translation>
-<translation id="4279125075627804580">Enable tab audio muting UI control.</translation>
 <translation id="4279490309300973883">Mirroring</translation>
 <translation id="4284105660453474798">Are you sure that you want to delete "$1"?</translation>
 <translation id="4285498937028063278">Unpin</translation>
@@ -2365,6 +2310,7 @@ All users must sign out to continue.</translation>
 <translation id="4287689875748136217">Unable to load the web page because the server sent no data.</translation>
 <translation id="4289300219472526559">Start Speaking</translation>
 <translation id="4289540628985791613">Overview</translation>
+<translation id="4293409159363387562">Recover anyway</translation>
 <translation id="4296575653627536209">Add Supervised User</translation>
 <translation id="42981349822642051">Expand</translation>
 <translation id="4298972503445160211">Danish keyboard</translation>
@@ -2383,18 +2329,14 @@ All users must sign out to continue.</translation>
 <translation id="4315548163539304064">Scanning your media device...
     <ph name="LINE_BREAK1" />
     <ph name="FILE_COUNT" /> new photos found</translation>
-<translation id="4316363078957068868">Enable support for hover capable touchscreens.</translation>
 <translation id="4316850752623536204">Developer Website</translation>
-<translation id="4317408933658370267">Enable affiliation-based matching in password manager.</translation>
 <translation id="4320697033624943677">Add users</translation>
 <translation id="4321136812570927563">{NUM_DOWNLOAD,plural, =1{Continue download}other{Continue downloads}}</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4322394346347055525">Close Other Tabs</translation>
 <translation id="4325378361067528777">Enable Push API background mode</translation>
-<translation id="4326952458285403282">Disables the use of experimental DirectWrite font rendering system.</translation>
 <translation id="4326999707196471878">Toolkit-Views Browser Dialogues.</translation>
 <translation id="4330406155931244378">Enable Multilingual Spellchecker</translation>
-<translation id="4330523403413375536">Enable Developer Tools experiments. Use Settings panel in Developer Tools to toggle individual experiments.</translation>
 <translation id="4333854382783149454">PKCS #1 SHA-1 With RSA Encryption</translation>
 <translation id="4335713051520279344">This computer will reset in 1 second.
 Press any key to continue exploring.</translation>
@@ -2412,6 +2354,8 @@ Press any key to continue exploring.</translation>
 <translation id="4352333825734680558">Oops! The new supervised user couldn't be created. Please check your network connection and try again later.</translation>
 <translation id="4358697938732213860">Add an address</translation>
 <translation id="4359408040881008151">Installed because of dependent extension(s).</translation>
+<translation id="4361190688154226069">Rect-based targeting in views</translation>
+<translation id="4363372140743955595">Password Manager Reauthentication</translation>
 <translation id="4364444725319685468"><ph name="FILE_NAME" /> downloaded</translation>
 <translation id="4365673000813822030">Whoops, Sync has stopped working.</translation>
 <translation id="4366509400410520531">Allowed by you</translation>
@@ -2462,7 +2406,6 @@ Press any key to continue exploring.</translation>
 <translation id="4444304522807523469">Access document scanners attached via USB or on the local network</translation>
 <translation id="4446933390699670756">Mirrored</translation>
 <translation id="4447465454292850432">Battery:</translation>
-<translation id="4448186133363537200">Disables the ability for javascript to lock the screen orientation.</translation>
 <translation id="4449935293120761385">About Auto-fill</translation>
 <translation id="4449996769074858870">This tab is playing audio.</translation>
 <translation id="4450974146388585462">Diagnose</translation>
@@ -2551,7 +2494,6 @@ Press any key to continue exploring.</translation>
 <translation id="4593021220803146968">&amp;Go to <ph name="URL" /></translation>
 <translation id="4594109696316595112">One-time activation: Type your password to activate Smart Lock on this <ph name="DEVICE_TYPE" />. With Smart Lock, your phone will unlock this device – without a password. To change or turn off this feature, visit your <ph name="DEVICE_TYPE" />'s settings.</translation>
 <translation id="4595560905247879544">Apps and extensions can only be modified by the manager (<ph name="CUSTODIAN_NAME" />).</translation>
-<translation id="460028601412914923">Disable Delay Agnostic AEC in WebRTC.</translation>
 <translation id="4601242977939794209">EMF Convertor</translation>
 <translation id="4601250583401186741">Pair with a controller</translation>
 <translation id="4602466770786743961">Always allow <ph name="HOST" /> to access your camera and microphone</translation>
@@ -2578,7 +2520,6 @@ Press any key to continue exploring.</translation>
 <translation id="4631110328717267096">System update failed.</translation>
 <translation id="4631502262378200687">There was an error (<ph name="ERROR" />) while downloading the plug-in.</translation>
 <translation id="4632483769545853758">Unmute Tab</translation>
-<translation id="4633945134722448536">If enabled, prefetch search results for the typed Omnibox query and reuse pre-rendered search base page to commit any search query (not just prefetch query).</translation>
 <translation id="4634771451598206121">Sign in again...</translation>
 <translation id="4635114802498986446">Enables a Smart Lock setting that restricts unlocking to only work when your phone is very close to (roughly, within an arm's length of) the Chrome device.</translation>
 <translation id="4640525840053037973">Sign in with your Google Account</translation>
@@ -2601,7 +2542,6 @@ Press any key to continue exploring.</translation>
 <translation id="4669109953235344059">RETRY</translation>
 <translation id="4672319956099354105">Valid Certificate</translation>
 <translation id="4672657274720418656">Distill Page</translation>
-<translation id="46733879594767046">Enable large icons on the New Tab page</translation>
 <translation id="4677772697204437347">GPU memory</translation>
 <translation id="4680322106555328717">You have recently allowed insecure content (such as scripts or iframes) to run on this site.</translation>
 <translation id="4681260323810445443">You are not authorised to access the web page at <ph name="URL" />.  You may need to sign in.</translation>
@@ -2617,8 +2557,6 @@ Press any key to continue exploring.</translation>
 <translation id="4692623383562244444">Search engines</translation>
 <translation id="4697214168136963651"><ph name="URL" /> was blocked</translation>
 <translation id="4697551882387947560">When the browsing session ends</translation>
-<translation id="4698435846585701394">Disable Encrypted Media Extensions on video and audio elements.</translation>
-<translation id="4698609943129647485">Enable Enhanced Bookmarks</translation>
 <translation id="4699172675775169585">Cached images and files</translation>
 <translation id="4699357559218762027">(auto-launched)</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -2657,11 +2595,9 @@ Press any key to continue exploring.</translation>
 <translation id="474217410105706308">Mute Tab</translation>
 <translation id="4742746985488890273">Pin to Shelf</translation>
 <translation id="474421578985060416">Blocked by you</translation>
-<translation id="4744335556946062993">Enable Print Preview Registration Promos</translation>
 <translation id="4744574733485822359">Your download has completed</translation>
 <translation id="4746971725921104503">Looks like you're already managing a user by that name. Did you want to <ph name="LINK_START" />import <ph name="USER_DISPLAY_NAME" /> to this device<ph name="LINK_END" />?</translation>
 <translation id="4747271164117300400">Macedonian</translation>
-<translation id="4747597332667805440">Enable session restore bubble UI.</translation>
 <translation id="4749157430980974800">Georgian keyboard</translation>
 <translation id="4750394297954878236">Suggestions</translation>
 <translation id="475088594373173692">First user</translation>
@@ -2678,6 +2614,7 @@ Press any key to continue exploring.</translation>
 <translation id="4773696473262035477">You can access it and all your <ph name="SAVED_PASSWORDS_LINK" /> from any browser.</translation>
 <translation id="477518548916168453">The server does not support the functionality required to fulfill the request.</translation>
 <translation id="4776917500594043016">Password for <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="4779052991835840224">A secure connection cannot be established because this site uses an unsupported protocol or cipher suite. This is likely to be caused when the server needs RC4, which is no longer considered secure.</translation>
 <translation id="4779083564647765204">Zoom</translation>
 <translation id="4780321648949301421">Save Page As...</translation>
 <translation id="4780374166989101364">Enables experimental extension APIs. Note that the extension gallery doesn't allow you to upload extensions that use experimental APIs.</translation>
@@ -2693,7 +2630,6 @@ Press any key to continue exploring.</translation>
 <translation id="479280082949089240">Cookies set by this page</translation>
 <translation id="4793866834012505469">Retrain voice model</translation>
 <translation id="479536056609751218">Web Page, HTML Only</translation>
-<translation id="479555359673800162">Disable Password Manager Reauthentication</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4801257000660565496">Create Application Shortcuts</translation>
 <translation id="4801448226354548035">Hide accounts</translation>
@@ -2705,7 +2641,6 @@ Press any key to continue exploring.</translation>
 <translation id="4807098396393229769">Name on card</translation>
 <translation id="4809190954660909198">New billing details...</translation>
 <translation id="480990236307250886">Open the homepage</translation>
-<translation id="4810984886082414856">Simple Cache for HTTP.</translation>
 <translation id="4811502511369621968">Invalid email address. Please check and try again.</translation>
 <translation id="4813345808229079766">Connection</translation>
 <translation id="4813512666221746211">Network error</translation>
@@ -2717,7 +2652,6 @@ Press any key to continue exploring.</translation>
 <translation id="4823484602432206655">Read and change user and device settings</translation>
 <translation id="4830573902900904548">Your <ph name="DEVICE_TYPE" /> is unable to connect to the Internet using <ph name="NETWORK_NAME" />. Please choose another network. <ph name="LEARN_MORE_LINK_START" />Find out more<ph name="LEARN_MORE_LINK_END" /></translation>
 <translation id="4830663122372455572">The identity of <ph name="ORGANIZATION" /> at <ph name="LOCALITY" /> has been verified by <ph name="ISSUER" />. Valid Certificate Transparency information was supplied by the server.</translation>
-<translation id="4833609837088121721">Enable Developer Tools experiments.</translation>
 <translation id="4834551561866946575">Enable tab discarding</translation>
 <translation id="4834912470034578916">Enable customised layouts for Web Notifications.</translation>
 <translation id="4835836146030131423">Error signing in.</translation>
@@ -2751,10 +2685,10 @@ Press any key to continue exploring.</translation>
 <translation id="4871370605780490696">Add bookmark</translation>
 <translation id="4873312501243535625">Media File Checker</translation>
 <translation id="4874539263382920044">Title must contain at least one character</translation>
-<translation id="4875057836161716898">Enable input views.</translation>
 <translation id="4875622588773761625">Do you want <ph name="PASSWORD_MANAGER_BRAND" /> to update your password for this site?</translation>
 <translation id="4876895919560854374">Lock and unlock the screen</translation>
 <translation id="4877017884043316611">Pair with Chromebox</translation>
+<translation id="4880214202172289027">Volume slider</translation>
 <translation id="4880520557730313061">Auto-fix</translation>
 <translation id="4880827082731008257">Search history</translation>
 <translation id="4881695831933465202">Open</translation>
@@ -2770,6 +2704,7 @@ Press any key to continue exploring.</translation>
 <translation id="4888510611625056742">Tab 2</translation>
 <translation id="4890284164788142455">Thai</translation>
 <translation id="4893336867552636863">This will permanently delete your browsing data from this device.</translation>
+<translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4899376560703610051">Your <ph name="DEVICE_TYPE" /> has been manually locked. You'll need to type your password to enter.</translation>
 <translation id="490074449735753175">Use a web service to help resolve spelling errors</translation>
 <translation id="49027928311173603">The policy downloaded from the server is invalid: <ph name="VALIDATION_ERROR" />.</translation>
@@ -2830,6 +2765,7 @@ Press any key to continue exploring.</translation>
 <translation id="4989966318180235467">Inspect &amp;background page</translation>
 <translation id="4991420928586866460">Treat top-row keys as function keys</translation>
 <translation id="499165176004408815">Use high contrast mode</translation>
+<translation id="4992066212339426712">Unmute</translation>
 <translation id="4992458225095111526">Confirm Powerwash</translation>
 <translation id="4992576607980257687">Ask me when a site wants to use system exclusive messages to access MIDI devices (recommended)</translation>
 <translation id="4998873842614926205">Confirm Changes</translation>
@@ -2841,7 +2777,6 @@ Press any key to continue exploring.</translation>
 <translation id="5011739343823725107">Failed to start up the sync backend</translation>
 <translation id="5015344424288992913">Resolving proxy...</translation>
 <translation id="5015762597229892204">Select a printer driver app</translation>
-<translation id="5016228287818420766">If enabled, a reader mode button click slides up the reader mode version of a web page instead of navigating to it</translation>
 <translation id="5016865932503687142">Allow the user to manually enforce password saving instead of relying on password manager's heuristics.</translation>
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5023310440958281426">Check your administrator's policies</translation>
@@ -2863,7 +2798,6 @@ Press any key to continue exploring.</translation>
 <translation id="5040262127954254034">Privacy</translation>
 <translation id="5045550434625856497">Incorrect password</translation>
 <translation id="5048179823246820836">Nordic</translation>
-<translation id="5050209346295804497">Disable gesture requirement for media playback.</translation>
 <translation id="5053604404986157245">The randomly generated TPM password is not available. This is normal after a Powerwash.</translation>
 <translation id="5053803681436838483">New delivery address...</translation>
 <translation id="5055309315264875868">Show a link in the password manager settings page to manage your synced passwords online.</translation>
@@ -2877,7 +2811,7 @@ Press any key to continue exploring.</translation>
 <translation id="507075806566596212">You are about to enrol this <ph name="DEVICE_TYPE" /> with Google to enable the ability to remotely locate, wipe and lock the device. This will require a reboot. Do you wish to continue?</translation>
 <translation id="5072836811783999860">Show managed bookmarks</translation>
 <translation id="5074318175948309511">This page may need to be reloaded before the new settings take effect.</translation>
-<translation id="5075306601479391924">Disable user gesture requirement for playing media elements. Activating this will allow autoplay to work.</translation>
+<translation id="5076939268435192372">Press |<ph name="ACCELERATOR" />| to exit</translation>
 <translation id="5078638979202084724">Bookmark all tabs</translation>
 <translation id="5078796286268621944">Incorrect PIN</translation>
 <translation id="5081055027309504756">Seccomp-BPF sandbox</translation>
@@ -2886,7 +2820,6 @@ Press any key to continue exploring.</translation>
 <translation id="5087864757604726239">back</translation>
 <translation id="508794495705880051">Add new credit card...</translation>
 <translation id="5088534251099454936">PKCS #1 SHA-512 With RSA Encryption</translation>
-<translation id="5091619265517204357">Disable Media Source API.</translation>
 <translation id="509429900233858213">An error occurred.</translation>
 <translation id="5094721898978802975">Communicate with cooperating native applications</translation>
 <translation id="5098629044894065541">Hebrew</translation>
@@ -2908,7 +2841,6 @@ Press any key to continue exploring.</translation>
 <translation id="5121130586824819730">Your hard disk is full.  Please save to another location or make more room on the hard disk.</translation>
 <translation id="5122371513570456792">Found <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> for '<ph name="SEARCH_STRING" />'.</translation>
 <translation id="5125751979347152379">Invalid URL.</translation>
-<translation id="512608082539554821">If enabled, transitions during first-run tutorial are animated.</translation>
 <translation id="5127881134400491887">Manage network connections</translation>
 <translation id="512903556749061217">attached</translation>
 <translation id="5129301143853688736">Your connection to this site is not private. Attackers might be trying to steal your information (for example, photos, passwords, messages and credit cards) from <ph name="DOMAIN" />.</translation>
@@ -2924,7 +2856,6 @@ Press any key to continue exploring.</translation>
 <translation id="5143712164865402236">Enter Full Screen</translation>
 <translation id="5144820558584035333">Hangul 3 Set (390)</translation>
 <translation id="5145331109270917438">Date modified</translation>
-<translation id="5148652308299789060">Disable 3D software rasteriser</translation>
 <translation id="5150254825601720210">Netscape Certificate SSL Server Name</translation>
 <translation id="5151639798712723370">"&gt;
     USB-C device (right side front port)</translation>
@@ -2972,11 +2903,11 @@ Press any key to continue exploring.</translation>
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5197680270886368025">Sync complete.</translation>
 <translation id="5204967432542742771">Enter password</translation>
+<translation id="520621735928254154">Certificate import error</translation>
 <translation id="5208988882104884956">Halfwidth</translation>
 <translation id="5209320130288484488">No devices found</translation>
 <translation id="5209518306177824490">SHA-1 Fingerprint</translation>
 <translation id="5210365745912300556">Close tab</translation>
-<translation id="5210496856287228091">Disable boot animation.</translation>
 <translation id="5212108862377457573">Adjust conversion based on previous input</translation>
 <translation id="5212461935944305924">Cookie and site data exceptions</translation>
 <translation id="521582610500777512">Photo was discarded</translation>
@@ -2996,7 +2927,6 @@ Press any key to continue exploring.</translation>
 <translation id="5233638681132016545">New tab</translation>
 <translation id="5233736638227740678">&amp;Paste</translation>
 <translation id="5233930340889611108">webkit</translation>
-<translation id="5234320766290789922">Disallow the shelf to minimise a window if a shelf item gets clicked which has only a single, already active, window associated with it.</translation>
 <translation id="5234764350956374838">Dismiss</translation>
 <translation id="5238278114306905396">The app "<ph name="EXTENSION_NAME" />" was automatically removed.</translation>
 <translation id="5238369540257804368">Scopes</translation>
@@ -3059,14 +2989,12 @@ Press any key to continue exploring.</translation>
 <translation id="5316716239522500219">Mirror monitors</translation>
 <translation id="5317780077021120954">Save</translation>
 <translation id="5319782540886810524">Latvian keyboard</translation>
-<translation id="5321676762462132688">If enabled, Settings will be shown in a dedicated window instead of as a browser tab.</translation>
 <translation id="5323213332664049067">Latin American</translation>
 <translation id="532360961509278431">Unable to open "$1": $2</translation>
 <translation id="5324674707192845912">You are about to unenrol this <ph name="DEVICE_TYPE" /> with Google to disable the ability to remotely locate, wipe and lock the device. This will require a reboot. Do you wish to continue?</translation>
 <translation id="5324780743567488672">Set time zone automatically using your location</translation>
 <translation id="5325120507747984426">Uses a stable window ordering in overview mode which attempts to minimise movement of windows when entering/exiting overview and between overview sessions.</translation>
 <translation id="5327248766486351172">Name</translation>
-<translation id="5327436699888037476">If set, automatic timezone update by the current geolocation is turned off.</translation>
 <translation id="5328031682234198929">8</translation>
 <translation id="5328285148748012771">Access all your apps from this handy launcher. Play games, video chat, listen to music, edit documents or get more apps from the Chrome Web Store.</translation>
 <translation id="5329858601952122676">&amp;Delete</translation>
@@ -3114,7 +3042,6 @@ Press any key to continue exploring.</translation>
 <translation id="5392544185395226057">Enable support for Native Client.</translation>
 <translation id="5393125431335030955">This plug-in only works on the desktop.</translation>
 <translation id="5396126354477659676"><ph name="PEPPER_PLUGIN_NAME" /> on <ph name="PEPPER_PLUGIN_DOMAIN" /> wants to access your computer.</translation>
-<translation id="5396704340251753095">Enable MTP support in File Manager.</translation>
 <translation id="539755880180803351">Annotates web forms with Auto-fill field type predictions as placeholder text.</translation>
 <translation id="5397578532367286026">Usage and history of this user can be reviewed by the manager (<ph name="MANAGER_EMAIL" />) on chrome.com.</translation>
 <translation id="5397794290049113714">You</translation>
@@ -3128,7 +3055,6 @@ Press any key to continue exploring.</translation>
 <translation id="5411472733320185105">Do not use the proxy settings for these hosts and domains:</translation>
 <translation id="5412637665001827670">Bulgarian keyboard</translation>
 <translation id="5414566801737831689">Read the icons of the websites that you visit</translation>
-<translation id="5414882716132603766">Drop sync credentials from password manager.</translation>
 <translation id="5417998409611691946">Your <ph name="DEVICE_TYPE" /> can now:</translation>
 <translation id="5418923334382419584">Myanmar keyboard</translation>
 <translation id="5419294236999569767">System time</translation>
@@ -3136,6 +3062,7 @@ Press any key to continue exploring.</translation>
 <translation id="5422781158178868512">Sorry, your external storage device could not be recognised.</translation>
 <translation id="542318722822983047">Automatically move cursor to the next character</translation>
 <translation id="5423849171846380976">Activated</translation>
+<translation id="5425470845862293575">Enables the use of experimental DirectWrite font rendering system.</translation>
 <translation id="5425722269016440406">You must be online to turn off Smart Lock because this setting is synced to your phone and other devices. Please connect to a network first.</translation>
 <translation id="5427459444770871191">Rotate &amp;Clockwise</translation>
 <translation id="5428105026674456456">Spanish</translation>
@@ -3155,6 +3082,7 @@ Press any key to continue exploring.</translation>
 <translation id="54401264925851789">Page Security Info</translation>
 <translation id="544083962418256601">Create shortcuts...</translation>
 <translation id="5441100684135434593">Wired network</translation>
+<translation id="5447330194051379405">Show all saved pages</translation>
 <translation id="5448293924669608770">Oops, something went wrong with signing in</translation>
 <translation id="5449588825071916739">Bookmark All Tabs</translation>
 <translation id="5449624072515809082">Turn on autocorrection of text while typing. Synchronous spellchecking is not compatible with this feature.</translation>
@@ -3266,19 +3194,16 @@ Press any key to continue exploring.</translation>
 <translation id="5605830556594064952">US Dvorak</translation>
 <translation id="5606674617204776232"><ph name="PEPPER_PLUGIN_NAME" /> on <ph name="PEPPER_PLUGIN_DOMAIN" /> wants to access your mobile device.</translation>
 <translation id="5609231933459083978">The application appears to be invalid.</translation>
-<translation id="5610637197759059204">Disable page reloads triggered by vertically overscrolling content.</translation>
 <translation id="5612734644261457353">Sorry, your password still could not be verified. Note: if you changed your password recently, your new password will be applied once you sign out, please use the old password here.</translation>
 <translation id="561349411957324076">Completed</translation>
 <translation id="5613695965848159202">Anonymous identity:</translation>
 <translation id="5614190747811328134">User Notice</translation>
-<translation id="5617934323658610138">Enable BLE Advertising in Chrome Apps.</translation>
 <translation id="5618075537869101857">Oh no, the kiosk application could not be launched.</translation>
 <translation id="5618333180342767515">(this might take a few minutes)</translation>
 <translation id="5618972959246891967">System date</translation>
 <translation id="5620568081365989559">DevTools requests full access to <ph name="FOLDER_PATH" />. Make sure that you do not expose any sensitive information.</translation>
 <translation id="5620612546311710611">usage statistics</translation>
 <translation id="5622017037336776003">Open PDF in Reader</translation>
-<translation id="5622158329259661758">Disables the use of the GPU to perform 2d canvas rendering and instead uses software rendering.</translation>
 <translation id="5624120631404540903">Manage passwords</translation>
 <translation id="5624407043686221179">Emphasise titles in the omnibox drop-down</translation>
 <translation id="5626134646977739690">Name:</translation>
@@ -3289,7 +3214,6 @@ Press any key to continue exploring.</translation>
           Start &gt; Control Panel &gt; Network and Internet &gt; Network and Sharing Centre &gt; Troubleshoot Problems (at the bottom) &gt; Internet Connections.
           <ph name="END_BOLD" /></translation>
 <translation id="5630163645818715367">Material design in the browser's top Chrome</translation>
-<translation id="5630205793128597629">Disable DirectWrite</translation>
 <translation id="5633060877636360447">This will permanently delete at least <ph name="TOTAL_COUNT" /> items from this device but will not clear synced items from other devices.</translation>
 <translation id="5636996382092289526">To use <ph name="NETWORK_ID" /> you may first need to <ph name="LINK_START" />visit the network's sign-in page<ph name="LINK_END" />, which will open automatically in a few seconds. If it doesn't happen, the network can't be used.</translation>
 <translation id="5637380810526272785">Input Method</translation>
@@ -3301,7 +3225,6 @@ Press any key to continue exploring.</translation>
 <translation id="5649768706273821470">Listen</translation>
 <translation id="5649823029736413118"><ph name="URL" /> needs to uniquely identify your device to play premium content.</translation>
 <translation id="5650551054760837876">No search results found.</translation>
-<translation id="5651448275201436327">Enable hosted apps to be opened in windows.</translation>
 <translation id="5653140146600257126">The directory named "$1" already exists. Please choose a different name.</translation>
 <translation id="5657667036353380798">The external extension requires chrome version <ph name="MINIMUM_CHROME_VERSION" /> or greater to be installed.</translation>
 <translation id="5659593005791499971">Email</translation>
@@ -3311,14 +3234,12 @@ Press any key to continue exploring.</translation>
 <translation id="5669267381087807207">Activating</translation>
 <translation id="5669462439438204699">Save Credit Card</translation>
 <translation id="5671961047338275645">Manage sites</translation>
-<translation id="5673305876422468017">Enable Link Disambiguation Pop-up.</translation>
 <translation id="5676267133227121599">Access your passwords from any device at <ph name="MANAGEMENT_LINK" />.</translation>
 <translation id="5677503058916217575">Page language:</translation>
 <translation id="5677928146339483299">Blocked</translation>
 <translation id="5678550637669481956">Read and write access to <ph name="VOLUME_NAME" /> has been granted.</translation>
 <translation id="567881659373499783">Version <ph name="PRODUCT_VERSION" /></translation>
 <translation id="5678955352098267522">Read your data on <ph name="WEBSITE_1" /></translation>
-<translation id="5680545064257783621">Provides an off switch for enhanced bookmarks experiment</translation>
 <translation id="568428328938709143">Account removed</translation>
 <translation id="5684661240348539843">Asset Identifier</translation>
 <translation id="569068482611873351">Import...</translation>
@@ -3327,14 +3248,12 @@ Press any key to continue exploring.</translation>
 <translation id="5691596662111998220">Whoops, <ph name="FILE_NAME" /> no longer exists.</translation>
 <translation id="5694501201003948907">Zipping $1 items...</translation>
 <translation id="5695323626817702678">short</translation>
-<translation id="5696705333713017736">Disable new Korean IME, which is based on Google Input Tools' HMM engine.</translation>
 <translation id="5697118958262594262">Detect important content by default</translation>
 <translation id="5699533844376998780">The extension "<ph name="EXTENSION_NAME" />" has been installed.</translation>
 <translation id="5701101281789450335">Language and input settings...</translation>
 <translation id="5701381305118179107">Centre</translation>
 <translation id="5702898740348134351">&amp;Edit Search Engines...</translation>
 <translation id="5703594190584829406">Shows auto-fill suggestions on top of the keyboard rather than in a dropdown.</translation>
-<translation id="5704272569086782895">Enable threaded GPU rasterisation.</translation>
 <translation id="5706551819490830015">Manage billing addresses...</translation>
 <translation id="5707185214361380026">Failed to load extension from:</translation>
 <translation id="5707604204219538797">Next word</translation>
@@ -3360,9 +3279,7 @@ Press any key to continue exploring.</translation>
 <translation id="574392208103952083">Medium</translation>
 <translation id="5745056705311424885">USB memory stick detected</translation>
 <translation id="5746169159649715125">Save as PDF</translation>
-<translation id="5747099790216076160">Disable creation of app shims for hosted apps on Mac.</translation>
 <translation id="5747785204778348146">Developer - unstable</translation>
-<translation id="5748743223699164725">Enable experimental Web Platform features that are in development.</translation>
 <translation id="5749483996735055937">There was a problem during copying recovery image to device.</translation>
 <translation id="5749861707650047230">{NUM_DOWNLOAD,plural, =1{Cancel download}other{Cancel downloads}}</translation>
 <translation id="5750288053043553775">0</translation>
@@ -3374,7 +3291,6 @@ Press any key to continue exploring.</translation>
 <translation id="5756163054456765343">Help centre</translation>
 <translation id="5756666464756035725">Hungarian QWERTY</translation>
 <translation id="5757567991662509396">Enables use of the Android spellchecker.</translation>
-<translation id="5758389120290973856">Disable Cloud Import.</translation>
 <translation id="5759272020525228995">The website encountered an error while retrieving <ph name="URL" />.
         It may be down for maintenance or configured incorrectly.</translation>
 <translation id="5759728514498647443">Documents that you send to print via <ph name="APP_NAME" /> can be read by <ph name="APP_NAME" />.</translation>
@@ -3395,6 +3311,7 @@ Press any key to continue exploring.</translation>
 <translation id="5778550464785688721">MIDI devices full control</translation>
 <translation id="5780066559993805332">(Best)</translation>
 <translation id="5783221160790377646">Due to an error, a supervised user was not created. Please try again later.</translation>
+<translation id="57838592816432529">Mute</translation>
 <translation id="5785756445106461925">Further, this page includes other resources which are not secure. These resources can be viewed by others while in transit, and can be modified by an attacker to change the look of the page.</translation>
 <translation id="5787146423283493983">Key Agreement</translation>
 <translation id="5788367137662787332">Sorry, at least one partition on the device <ph name="DEVICE_LABEL" /> could not be mounted.</translation>
@@ -3433,6 +3350,7 @@ Press any key to continue exploring.</translation>
 <translation id="5833610766403489739">This file has wandered off somewhere. Please check your download location setting and try again.</translation>
 <translation id="5833726373896279253">These settings may only be modified by the owner:</translation>
 <translation id="5834581999798853053">About <ph name="TIME" /> minutes left</translation>
+<translation id="5838825566232597749">US Workman international</translation>
 <translation id="5839277899276241121">Same as billing address</translation>
 <translation id="5846929185714966548">Tab 4</translation>
 <translation id="5848934677402291689">Saving to PDF in progress</translation>
@@ -3459,9 +3377,9 @@ Press any key to continue exploring.</translation>
 <translation id="586567932979200359">You're running <ph name="PRODUCT_NAME" /> from its disk image. Installing it on your computer lets you run it without the disk image and ensures that it will be kept up to date.</translation>
 <translation id="5866389191145427800">Specifies quality setting for images captured if scaling up.</translation>
 <translation id="5866557323934807206">Clear these settings for future visits</translation>
-<translation id="5868571107634815419">Disable Office Editing for Docs, Sheets &amp; Slides</translation>
 <translation id="5868927042224783176">Disallow for reauth</translation>
 <translation id="5869522115854928033">Saved passwords</translation>
+<translation id="5869741316553135824">Enables a new option to upload credit cards to Google Payments for sync to all Chrome devices.</translation>
 <translation id="5870086504539785141">Close accessibility menu</translation>
 <translation id="5874045675243596003">Enforce strict (hard fail if we can't get hashes)</translation>
 <translation id="5875858680971105888">Oops! The supervised user couldn't be imported. Please check your network connection and try again later.</translation>
@@ -3504,12 +3422,10 @@ Press any key to continue exploring.</translation>
 <translation id="5941343993301164315">Please sign in to <ph name="TOKEN_NAME" />.</translation>
 <translation id="5941711191222866238">Minimise</translation>
 <translation id="5942207977017515242">https://support.google.com/chrome/?hl=<ph name="GRITLANGCODE_1" />&amp;p=settings_sign_in</translation>
-<translation id="5945992478690277605">Enable pinch virtual viewport.</translation>
 <translation id="5946591249682680882">Report ID <ph name="WEBRTC_LOG_REPORT_ID" /></translation>
 <translation id="5948544841277865110">Add private network</translation>
 <translation id="5949910269212525572">Unable to resolve the server's DNS address.</translation>
 <translation id="5951823343679007761">No battery</translation>
-<translation id="5952256601775839173">Enable touchpad three-finger-click.</translation>
 <translation id="5953603475187800576">Show addresses and credit cards from Google Payments</translation>
 <translation id="5956585768868398362">Is this the search page that you were expecting?</translation>
 <translation id="5957613098218939406">More Options</translation>
@@ -3539,6 +3455,7 @@ Press any key to continue exploring.</translation>
 <translation id="5990559369517809815">Requests to the server have been blocked by an extension.</translation>
 <translation id="5991049340509704927">Magnify</translation>
 <translation id="5991774521050363748">Enable customised layouts for Web Notifications. They will have subtle layout improvements that are otherwise not possible.</translation>
+<translation id="5993332328670040093">Your data use will no longer be measured.</translation>
 <translation id="5996258716334177896">Your profile could not be opened correctly.
 
 Some features may be unavailable.  Please check that the profile exists and you have permission to read and write its contents.</translation>
@@ -3568,6 +3485,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="604124094241169006">Automatic</translation>
 <translation id="6042308850641462728">More</translation>
 <translation id="604257181445267932">Smart Lock helps you quickly sign in to apps and sites using passwords you have saved with Google.</translation>
+<translation id="6047795324659063781">Open volume slider</translation>
 <translation id="6049065490165456785">Photo from internal camera</translation>
 <translation id="6051028581720248124">By printing to FedEx Office, you accept their <ph name="START_LINK" />terms of use<ph name="END_LINK" />.</translation>
 <translation id="6051086608691487286">Overlay Scrollbars</translation>
@@ -3581,7 +3499,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="6059232451013891645">Folder:</translation>
 <translation id="6059652578941944813">Certificate Hierarchy</translation>
 <translation id="6062697480277116433">You are using mobile data</translation>
-<translation id="6063810760121779748">Disable WebAudio</translation>
 <translation id="6065289257230303064">Certificate Subject Directory Attributes</translation>
 <translation id="6066742401428748382">Access to the web page was denied</translation>
 <translation id="6071181508177083058">confirm password</translation>
@@ -3611,7 +3528,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="6092270396854197260">MSPY</translation>
 <translation id="6093795393556121384">Your card is verified</translation>
 <translation id="6093888419484831006">Cancelling update...</translation>
-<translation id="6094826672794738469">Alternative Services.</translation>
 <translation id="6095984072944024315">−</translation>
 <translation id="6096047740730590436">Open maximised</translation>
 <translation id="6096326118418049043">X.500 Name</translation>
@@ -3644,7 +3560,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="6136253676302684829">This setting is controlled by:</translation>
 <translation id="6136285399872347291">backspace</translation>
 <translation id="6139064580472999710">Namespace Sandbox</translation>
-<translation id="6139269067241684224">Disable MTP write support</translation>
 <translation id="614161640521680948">Language:</translation>
 <translation id="6143186082490678276">Get Help</translation>
 <translation id="6144697279259829572">{NUM_ITEMS,plural, =1{This will permanently delete at least $1 item from this device.}other{This will permanently delete at least $1 items from this device.}}</translation>
@@ -3653,9 +3568,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="614998064310228828">Device model:</translation>
 <translation id="6150853954427645995">To save this file for offline use, get back online, right-click the file and select the <ph name="OFFLINE_CHECKBOX_NAME" /> option.</translation>
 <translation id="6151323131516309312">Press <ph name="SEARCH_KEY" /> to search <ph name="SITE_NAME" /></translation>
-<translation id="6151559892024914821">Enable touch initiated drag and drop</translation>
 <translation id="6154697846084421647">Currently signed in</translation>
-<translation id="6155817405098385604">Don't fall back to a 3D-software rasteriser when the GPU cannot be used.</translation>
 <translation id="6156863943908443225">Script cache</translation>
 <translation id="6160625263637492097">Provide certificates for authentication</translation>
 <translation id="6162157842722615167">Smart Lock for Chromebook</translation>
@@ -3673,13 +3586,11 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="6187344976531853059">Moving windows to another desktop may result in unexpected behaviour.</translation>
 <translation id="6188939051578398125">Enter names or addresses.</translation>
 <translation id="6190552617269794435">Attempts to connect to nearby devices will be cancelled. All local copresence data will be cleared, and apps using copresence may stop working. Are you sure?</translation>
-<translation id="6196041699996825846">Learn more about Guest browsing</translation>
 <translation id="6196207969502475924">Voice Search</translation>
 <translation id="6196854373336333322">The extension "<ph name="EXTENSION_NAME" />" has taken control of your proxy settings, which means it can change, break or eavesdrop on anything you do online. If you aren't sure why this change happened, you probably don't want it.</translation>
 <translation id="6198102561359457428">Sign out then sign in again...</translation>
 <translation id="6198252989419008588">Change PIN</translation>
 <translation id="6199801702437275229">Waiting for space info...</translation>
-<translation id="6200903742087665630">Enable out-of-process iframes</translation>
 <translation id="6203231073485539293">Check your Internet connection</translation>
 <translation id="620329680124578183">Don't Load (Recommended)</translation>
 <translation id="6204930791202015665">View...</translation>
@@ -3697,6 +3608,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="6225378837831321064"><ph name="DEVICE_NAME" />: Connecting...</translation>
 <translation id="6227235786875481728">This file could not be played.</translation>
 <translation id="6228691855869374890">This site has full control of MIDI devices.</translation>
+<translation id="6231148928368101651">Panels</translation>
 <translation id="6231881193380278751">Add a QueryParam in URL to auto-refresh the page: chrome://device-log/?refresh=&lt;sec&gt;</translation>
 <translation id="6232017090690406397">Battery</translation>
 <translation id="6232139169545176020">The requested URI Scheme is not supported.</translation>
@@ -3729,7 +3641,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="6277518330158259200">T&amp;ake Screenshot</translation>
 <translation id="6285120908535925801">{NUM_PRINTER,plural, =1{New printer on your network}other{New printers on your network}}</translation>
 <translation id="6285395082104474418">The status tray shows you the current state of your network, battery and more.</translation>
-<translation id="6285905808004014074">Enable Offline Auto-Reload Mode</translation>
+<translation id="6286684120317096255">Data use is being measured</translation>
 <translation id="6287852322318138013">Select an app to open this file</translation>
 <translation id="6291953229176937411">&amp;Show in Finder</translation>
 <translation id="6292030868006209076">Tamil input method (itrans)</translation>
@@ -3761,6 +3673,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="634208815998129842">Task manager</translation>
 <translation id="6344170822609224263">Access list of network connections</translation>
 <translation id="6344783595350022745">Clear Text</translation>
+<translation id="6345221851280129312">unknown size</translation>
 <translation id="6347003977836730270">Enable the new Translate bubble UX is offered instead of the infobar.</translation>
 <translation id="6348657800373377022">Combo box</translation>
 <translation id="6349839454356033837">Android is having trouble playing media.</translation>
@@ -3777,7 +3690,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="6370351608045086850">Enable virtual keyboard overscroll support.</translation>
 <translation id="637062427944097960">This file opened on a different desktop. Move to <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) to view it.</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
-<translation id="6374100501221763867">Disable hardware-accelerated video decode.</translation>
 <translation id="6380143666419481200">Accept and continue</translation>
 <translation id="6380224340023442078">Content settings...</translation>
 <translation id="6384275966486438344">Change your search settings to: <ph name="SEARCH_HOST" /></translation>
@@ -3792,7 +3704,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="6401445054534215853">Shelf item 1</translation>
 <translation id="6402990355583388081">Enables hover feature by holding your finger just over the screen to experience a mouse-over event.</translation>
 <translation id="6404511346730675251">Edit bookmark</translation>
-<translation id="6405640832764359650">Enable Google Payments card saving tick box</translation>
 <translation id="6406303162637086258">Simulate browser restart</translation>
 <translation id="6407080938771313237">Projection touch HUD</translation>
 <translation id="6408118934673775994">Read and change your data on <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> and <ph name="WEBSITE_3" /></translation>
@@ -3803,14 +3714,12 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="641105183165925463">$1 MB</translation>
 <translation id="6412931879992742813">New incognito window</translation>
 <translation id="641480858134062906"><ph name="URL" /> failed to load</translation>
-<translation id="641702813324074008">Enable Save Password Bubble UI</translation>
 <translation id="6417515091412812850">Unable to check whether the certificate has been revoked.</translation>
 <translation id="6418160186546245112">Reverting to the previously installed version of <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>
 <translation id="6418481728190846787">Permanently remove access for all apps</translation>
 <translation id="6419902127459849040">Central European</translation>
 <translation id="6420676428473580225">Add to Desktop</translation>
 <translation id="6422329785618833949">Photo flipped</translation>
-<translation id="6422732120309392130">Disable text filtering in Overview Mode.</translation>
 <translation id="642282551015776456">This name may not be used as a file or folder name</translation>
 <translation id="642322423610046417">Use the context (right-click) menu to remove the extensions that you don't need.</translation>
 <translation id="6423239382391657905">Open VPN</translation>
@@ -3863,7 +3772,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="6490471652906364588">USB-C device (right port)</translation>
 <translation id="6490936204492416398">Install new from the web store</translation>
 <translation id="6492313032770352219">Size on disk:</translation>
-<translation id="6498855056513831869">Disable automatic timezone update by geolocation</translation>
 <translation id="6499143127267478107">Resolving host in proxy script...</translation>
 <translation id="6500116422101723010">The server is currently unable to handle the request. This code indicates that this is a temporary condition and that the server will be up again after a delay.</translation>
 <translation id="6503077044568424649">Most visited</translation>
@@ -3886,9 +3794,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
-<translation id="6522350652862471760">Enable Google profile name and icon</translation>
 <translation id="6523029110630438127"><ph name="ORIGIN" /> is now full screen.</translation>
 <translation id="6527303717912515753">Share</translation>
+<translation id="6528546217685656218">The private key for this client certificate is missing or invalid.</translation>
 <translation id="653019979737152879">Syncing <ph name="FILE_NAME" />...</translation>
 <translation id="6533019874004191247">Unsupported URL.</translation>
 <translation id="6535131196824081346">This error can occur when connecting to a secure (HTTPS) server. It
@@ -3956,7 +3864,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="6615455863669487791">Show me</translation>
 <translation id="6615807189585243369"><ph name="BURNT_AMOUNT" /> of <ph name="TOTAL_SIZE" /> copied</translation>
 <translation id="661719348160586794">Your saved passwords will appear here.</translation>
-<translation id="661749824932101285">Disable bypass proxy for Captive Portal Authorisation</translation>
 <translation id="6622980291894852883">Continue blocking images</translation>
 <translation id="6624687053722465643">Sweetness</translation>
 <translation id="6626108645084335023">Waiting for DNS probe.</translation>
@@ -3964,7 +3871,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="6629841649550503054">All backed up to <ph name="BEGIN_LINK" />Google Drive!<ph name="END_LINK" /></translation>
 <translation id="6630452975878488444">Selection shortcut</translation>
 <translation id="6630752851777525409"><ph name="EXTENSION_NAME" /> wants permanent access to a certificate to authenticate itself on your behalf.</translation>
-<translation id="6631802470730636970">Enable add to shelf</translation>
 <translation id="6634865548447745291">You cannot visit <ph name="SITE" /> at the moment because <ph name="BEGIN_LINK" />this certificate has been revoked<ph name="END_LINK" />. Network errors and attacks are usually temporary, so this page will probably work later.</translation>
 <translation id="6637478299472506933">Download Failed</translation>
 <translation id="6639554308659482635">SQLite memory</translation>
@@ -3985,7 +3891,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="6664237456442406323">Unfortunately, your computer is configured with a malformed hardware ID. This prevents Chrome OS from updating with the latest security fixes and your computer <ph name="BEGIN_BOLD" />may be vulnerable to malicious attacks<ph name="END_BOLD" />.</translation>
 <translation id="666541661050183336">Reduces the load priority of iframe resources.</translation>
 <translation id="6666647326143344290">with your Google Account</translation>
-<translation id="6667102209320924827">Disable the colour calibration of the display.</translation>
 <translation id="6675665718701918026">Pointing device connected</translation>
 <translation id="6677037229676347494">Expected ID "<ph name="EXPECTED_ID" />", but ID was "<ph name="NEW_ID" />".</translation>
 <translation id="6680028776254050810">Change Users</translation>
@@ -4006,7 +3911,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="6701535245008341853">Could not get profile.</translation>
 <translation id="6702639462873609204">&amp;Edit...</translation>
 <translation id="6703985642190525976">Controls how text selection granularity changes when touch text selection handles are dragged. Non-default behaviour is experimental.</translation>
-<translation id="6705010888342980713">Enable out of process PDF.</translation>
 <translation id="6707389671160270963">SSL Client Certificate</translation>
 <translation id="6708242697268981054">Origin:</translation>
 <translation id="6709357832553498500">Connect using <ph name="EXTENSIONNAME" /></translation>
@@ -4035,7 +3939,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="6746392203843147041">vol. up</translation>
 <translation id="6748140994595080445">Change how <ph name="APP_NAME" /> handles and displays languages.</translation>
 <translation id="6748465660675848252">You may proceed, but only your synced data and settings will be restored. All local data will be lost.</translation>
-<translation id="6750299625019870383">Enable fast tab/window close</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (Incognito)</translation>
 <translation id="6759193508432371551">Factory reset</translation>
 <translation id="6760765581316020278">Vietnamese keyboard (VNI)</translation>
@@ -4044,14 +3947,12 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="6769712124046837540">Adding printer...</translation>
 <translation id="6771079623344431310">Unable to connect to the proxy server</translation>
 <translation id="6771503742377376720">Is a Certification Authority</translation>
-<translation id="6771713287216370711">Disable Screen Orientation locking.</translation>
 <translation id="6772186257078173656">Turn on support for spellchecking in multiple languages at the same time.</translation>
 <translation id="6773575010135450071">More actions...</translation>
 <translation id="6775029867846481468">{NUM_ITEMS,plural, =1{This will permanently delete $1 item from this device but will not clear synced items from other devices.}other{This will permanently delete $1 items from this device but will not clear synced items from other devices.}}</translation>
 <translation id="6780439250949340171">manage other settings</translation>
 <translation id="6780476430578694241">App Launcher</translation>
 <translation id="6781404225664080496">Requests to this URL have been temporarily throttled.</translation>
-<translation id="6782622603507084740">Enable EmbeddedSearch API</translation>
 <translation id="6786747875388722282">Extensions</translation>
 <translation id="6787839852456839824">Keyboard shortcuts</translation>
 <translation id="6790428901817661496">Play</translation>
@@ -4066,7 +3967,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="6804671422566312077">Open All Bookmarks in &amp;New Window</translation>
 <translation id="6805647936811177813">Please sign in to <ph name="TOKEN_NAME" /> to import client certificate from <ph name="HOST_NAME" />.</translation>
 <translation id="680572642341004180">Enable RLZ tracking on <ph name="SHORT_PRODUCT_OS_NAME" />.</translation>
-<translation id="6806236207372176468">Disable support for WebRTC hardware video encoding.</translation>
 <translation id="6807889908376551050">Show All...</translation>
 <translation id="6809448577646370871">Customised Window Cycling for Chrome Apps.</translation>
 <translation id="6811587677947739199">Secure Resources</translation>
@@ -4103,17 +4003,14 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="6847758263950452722">Save Page as MHTML</translation>
 <translation id="6853388645642883916">Updater sleeping</translation>
 <translation id="68541483639528434">Close other tabs</translation>
-<translation id="6856526171412069413">Enable pinch scale.</translation>
 <translation id="6860097299815761905">Proxy settings...</translation>
 <translation id="6860427144121307915">Open in a Tab</translation>
 <translation id="6862635236584086457">All files saved in this folder are backed up online automatically</translation>
 <translation id="6865313869410766144">Autofill form data</translation>
 <translation id="6867678160199975333">Switch to <ph name="NEW_PROFILE_NAME" /></translation>
-<translation id="6868698883023260206">Disables the new video rendering path for video elements.</translation>
 <translation id="6869402422344886127">Ticked checkbox</translation>
 <translation id="6870130893560916279">Ukrainian keyboard</translation>
 <translation id="6871644448911473373">OCSP Responder: <ph name="LOCATION" /></translation>
-<translation id="6871690136546646783">Disables touch adjustment support. Touch adjustment is the process of refining the position of a touch gesture in order to compensate for touches having poor resolution compared to a mouse.</translation>
 <translation id="6871906683378132336">Appears to be an article</translation>
 <translation id="6873213799448839504">Auto-commit a string</translation>
 <translation id="6874681241562738119">Sign-in Error</translation>
@@ -4137,16 +4034,17 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="6914291514448387591"><ph name="PLUGIN_NAME" /> needs your permission to run.</translation>
 <translation id="6915804003454593391">User:</translation>
 <translation id="6916590542764765824">Manage Extensions</translation>
+<translation id="6918340160281024199">US Workman</translation>
 <translation id="6920653475274831310">The web page at <ph name="URL" /> has resulted in too many redirects. Clearing your cookies for this site or allowing third-party cookies may fix the problem. If not, it is possibly a server configuration issue and not a problem with your computer.</translation>
 <translation id="6920989436227028121">Open as standard tab</translation>
 <translation id="6922128026973287222">Save data and browse faster using Google Data Saver. Click to learn more.</translation>
-<translation id="6928441285542626375">Enable TCP Fast Open</translation>
 <translation id="6929555043669117778">Continue blocking pop-ups</translation>
 <translation id="6930242544192836755">Duration</translation>
 <translation id="6934265752871836553">Use bleeding-edge code to make Chrome draw content faster. The changes
         behind this path are very likely to break lots of content.</translation>
 <translation id="6935367737854035550">Sets the material design elements in the browser's top chrome.</translation>
 <translation id="6937152069980083337">Google Japanese Input (for US keyboard)</translation>
+<translation id="6939777852457331078">US Workman keyboard</translation>
 <translation id="6941427089482296743">Remove all shown</translation>
 <translation id="6941937518557314510">Please sign in to <ph name="TOKEN_NAME" /> to authenticate to <ph name="HOST_NAME" /> with your certificate.</translation>
 <translation id="6945221475159498467">Select</translation>
@@ -4155,10 +4053,8 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="6949306908218145636">Bookmark Open Pages...</translation>
 <translation id="695164542422037736">If this option is enabled and if the body is styled with background-attachment:fixed, the background will have its own composited layer.</translation>
 <translation id="6952626679169241027"><ph name="PASSWORD_MANAGER_BRAND" /> remembers your passwords and signs you in to sites automatically on this device.</translation>
-<translation id="6954850746343724854">Enable Native Client for all web applications, even those that were not installed from the Chrome Web Store.</translation>
 <translation id="6955446738988643816">Inspect Pop-up</translation>
 <translation id="695755122858488207">Unselected radio button</translation>
-<translation id="6957703620025723294">Enable experimental canvas features</translation>
 <translation id="696036063053180184">3 Set (No shift)</translation>
 <translation id="696203921837389374">Enable syncing over mobile data</translation>
 <translation id="6964308487066031935">Add folders to "<ph name="EXTENSION" />"?</translation>
@@ -4267,7 +4163,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="7088615885725309056">Older</translation>
 <translation id="7088674813905715446">This device has been placed into a deprovisioned state by the administrator. To enable it for enrolment, please have your administrator place the device into a pending state.</translation>
 <translation id="708969677220991657">Allows requests to localhost over HTTPS even when an invalid certificate is presented.</translation>
-<translation id="7090356285609536948">If enabled, the session restore UI will be shown in a bubble instead of an info bar.</translation>
 <translation id="7092106376816104">Pop-up exceptions</translation>
 <translation id="7093866338626856921">Exchange data with the devices named: <ph name="HOSTNAMES" /></translation>
 <translation id="7096082900368329802">Want to discover more awesome features?</translation>
@@ -4318,9 +4213,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="7172053773111046550">Estonian keyboard</translation>
 <translation id="7173828187784915717">Chewing Input Settings</translation>
 <translation id="7175353351958621980">Loaded from:</translation>
-<translation id="7177840076592118126">Use a stable window order in overview.</translation>
 <translation id="7180611975245234373">Refresh</translation>
 <translation id="7180865173735832675">Customise</translation>
+<translation id="7184428045150946911">Disable auto-hiding the toolbar on large tablets</translation>
 <translation id="7186088072322679094">Keep in Toolbar</translation>
 <translation id="719009910964971313">US Programmer Dvorak keyboard</translation>
 <translation id="7191454237977785534">Save file as</translation>
@@ -4353,7 +4248,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="7223775956298141902">Oh dear... You have no extensions :-(</translation>
 <translation id="7224023051066864079">Subnet mask:</translation>
 <translation id="7225179976675429563">Network type missing</translation>
-<translation id="7227146810596798920">Enable Site Engagement Service</translation>
 <translation id="7231224339346098802">Use a number to indicate how many copies to print (1 or more).</translation>
 <translation id="7238585580608191973">SHA-256 Fingerprint</translation>
 <translation id="7240120331469437312">Certificate Subject Alternative Name</translation>
@@ -4370,6 +4264,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="7257173066616499747">Wi-Fi networks</translation>
 <translation id="7257666756905341374">Read data that you copy and paste</translation>
 <translation id="7260002739296185724">Enable AVFoundation use for video capture and video device monitoring on OS X &gt;= 10.7. QTKit will be used otherwise.</translation>
+<translation id="7262004276116528033">This sign-in service is hosted by <ph name="SAML_DOMAIN" /></translation>
 <translation id="7262221505565121">Unsandboxed plug-in access exceptions</translation>
 <translation id="7264275118036872269">Failed to start Bluetooth device discovery.</translation>
 <translation id="7265986070661382626">You cannot visit <ph name="SITE" /> at the moment because the website <ph name="BEGIN_LINK" />uses certificate pinning<ph name="END_LINK" />. Network errors and attacks are usually temporary, so this page will probably work later.</translation>
@@ -4386,11 +4281,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="7279701417129455881">Manage cookie blocking...</translation>
 <translation id="7280877790564589615">Permission requested</translation>
 <translation id="7282547042039404307">Smooth</translation>
-<translation id="7285011324031710154">Enables the web app style frame for hosted apps.</translation>
 <translation id="7287143125007575591">Access denied</translation>
 <translation id="7288676996127329262"><ph name="HORIZONTAL_DPI" />x<ph name="VERTICAL_DPI" /> dpi</translation>
 <translation id="7290594223351252791">Confirm registration</translation>
-<translation id="7291266260406617455">Enable force-saving of passwords</translation>
 <translation id="7295019613773647480">Enable supervised users</translation>
 <translation id="7296774163727375165"><ph name="DOMAIN" /> Terms</translation>
 <translation id="7299337219131431707">Enable Guest browsing</translation>
@@ -4422,6 +4315,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="734651947642430719">Tamil input method (InScript)</translation>
 <translation id="7347751611463936647">To use this extension, type "<ph name="EXTENSION_KEYWORD" />", then TAB, then your command or search.</translation>
 <translation id="7348093485538360975">On-Screen Keyboard</translation>
+<translation id="7348749398828259943">US Workman international keyboard</translation>
 <translation id="7352651011704765696">Something went wrong</translation>
 <translation id="7353651168734309780"><ph name="EXTENSION_NAME" /> requires new permissions</translation>
 <translation id="7357661729054396567">Browsing the Internet is disabled until the enterprise enrolment verification check has finished.
@@ -4436,7 +4330,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="7366762109661450129">Say "OK Google" when the screen is on and unlocked.</translation>
 <translation id="7369521049655330548">The following plug-ins were blocked on this page:</translation>
 <translation id="7371490661692457119">Default tile width</translation>
-<translation id="7372527722222052179">Enable zero-copy rasteriser</translation>
 <translation id="7372973238305370288">search result</translation>
 <translation id="7374461526650987610">Protocol Handlers</translation>
 <translation id="7375125077091615385">Type:</translation>
@@ -4470,19 +4363,14 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY" /> may come in handy next time.</tr
 <translation id="7401762151840183030">Your settings will be restored to their original defaults. This will reset your home page, new tab page and search engine, disable your extensions, and unpin all tabs. It will also clear other temporary and cached data, such as cookies, content and site data.</translation>
 <translation id="7405422715075171617">Enable scanning a new credit card number when filling out a credit card form.</translation>
 <translation id="740624631517654988">Pop-up blocked</translation>
-<translation id="7408287099496324465">If enabled, EmbeddedSearch API will be used to submit search queries in the search results page.</translation>
-<translation id="7408503041071447390">Enable Web Bluetooth.</translation>
 <translation id="7409233648990234464">Relaunch and Powerwash</translation>
 <translation id="7410344089573941623">Ask if <ph name="HOST" /> wants to access your camera and microphone</translation>
-<translation id="7410744438574300812">Do not show the infobar when an extension attaches to a page via chrome.debugger API. This flag is required to debug extension background pages.</translation>
 <translation id="7412226954991670867">GPU Memory</translation>
 <translation id="7416362041876611053">Unknown network error</translation>
 <translation id="7417453074306512035">Ethiopic keyboard</translation>
 <translation id="7417705661718309329">Google map</translation>
-<translation id="7418949474175272990">This option disables support in WebRTC for encoding video streams using platform hardware.</translation>
 <translation id="741906494724992817">This app requires no special permissions.</translation>
 <translation id="7419631653042041064">Catalan keyboard</translation>
-<translation id="7421446779945496135">Enable child account detection.</translation>
 <translation id="7421925624202799674">&amp;View Page Source</translation>
 <translation id="7422192691352527311">Preferences...</translation>
 <translation id="7424027215640192571">Enable the stale-while-revalidate cache directive</translation>
@@ -4507,7 +4395,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY" /> may come in handy next time.</tr
 <translation id="7456142309650173560">dev</translation>
 <translation id="7456847797759667638">Open Location...</translation>
 <translation id="7457232995997878302">Match Autofill suggestions based on substrings (token prefixes) rather than just prefixes.</translation>
-<translation id="7458128457147328975">Enable the deprecated version of Encrypted Media Extensions on video and audio elements.</translation>
 <translation id="7460898608667578234">Ukrainian</translation>
 <translation id="7461924472993315131">Pin</translation>
 <translation id="7463006580194749499">Add person</translation>
@@ -4533,12 +4420,10 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY" /> may come in handy next time.</tr
 <translation id="7485236722522518129">F4</translation>
 <translation id="7487099628810939106">Delay before click:</translation>
 <translation id="7487969577036436319">No components are installed</translation>
-<translation id="7488471977753647650">Disable support for Cast Streaming hardware video encoding.</translation>
 <translation id="7489605380874780575">Check eligibility</translation>
 <translation id="749028671485790643">Person <ph name="VALUE" /></translation>
 <translation id="7491962110804786152">tab</translation>
 <translation id="7495778526395737099">Forgot your old password?</translation>
-<translation id="7498566414244653415">Disable the MediaSource object. This object allows JavaScript to send media data directly to a video element.</translation>
 <translation id="7503191893372251637">Netscape Certificate Type</translation>
 <translation id="7503821294401948377">Could not load icon '<ph name="ICON" />' for browser action.</translation>
 <translation id="750413812607578381">You should restart <ph name="PRODUCT_NAME" /> now.</translation>
@@ -4570,6 +4455,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY" /> may come in handy next time.</tr
 <translation id="7540972813190816353">An error occurred while checking for updates: <ph name="ERROR" /></translation>
 <translation id="7541121857749629630">Image exceptions</translation>
 <translation id="7543104066686362383">Enable debugging features on this <ph name="IDS_SHORT_PRODUCT_NAME" /> device</translation>
+<translation id="7544853251252956727">Shuffle</translation>
 <translation id="7545288882499673859">Memory discard strategy for advanced pressure handling</translation>
 <translation id="7547317915858803630">Warning: your <ph name="PRODUCT_NAME" /> settings are stored on a network drive. This may result in slowdowns, crashes or even loss of data.</translation>
 <translation id="7547811415869834682">Dutch</translation>
@@ -4593,7 +4479,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY" /> may come in handy next time.</tr
 <translation id="7564847347806291057">End process</translation>
 <translation id="7566723889363720618">F12</translation>
 <translation id="7568790562536448087">Updating</translation>
-<translation id="7572787314531933228">Enable managed bookmarks for supervised users</translation>
 <translation id="7573172247376861652">Battery Charge</translation>
 <translation id="7576032389798113292">6 x 4</translation>
 <translation id="7576690715254076113">Collate</translation>
@@ -4634,7 +4519,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY" /> may come in handy next time.</tr
 <translation id="7618337809041914424">&amp;Print frame...</translation>
 <translation id="7624154074265342755">Wireless networks</translation>
 <translation id="7627262197844840899">This site doesn't accept MasterCard.</translation>
-<translation id="7627349730328142646">Enables experiment that message centre always scrolls up upon notification removal.</translation>
 <translation id="7627790789328695202">Whoops, <ph name="FILE_NAME" /> already exists. Rename it and try again.</translation>
 <translation id="7628079021897738671">OK, I've got it</translation>
 <translation id="762917759028004464">The default browser is currently <ph name="BROWSER_NAME" />.</translation>
@@ -4694,25 +4578,23 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY" /> may come in handy next time.</tr
 <translation id="7716284821709466371">Default tile height</translation>
 <translation id="7716781361494605745">Netscape Certification Authority Policy URL</translation>
 <translation id="7717014941119698257">Downloading: <ph name="STATUS" /></translation>
-<translation id="7717536746040464035">Enable seccomp-bpf renderer sandbox</translation>
 <translation id="7719421816612904796">Training timed out</translation>
 <translation id="771953673318695590">QA</translation>
 <translation id="7724603315864178912">Cut</translation>
 <translation id="7730449930968088409">Capture content of your screen</translation>
 <translation id="7730494089396812859">Show Cloud backup details</translation>
-<translation id="7732882898097938546">Enable the new App Launcher mixer algorithm.</translation>
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS" />)</translation>
 <translation id="773426152488311044">You are currently the only <ph name="PRODUCT_NAME" /> user.</translation>
 <translation id="7740287852186792672">Search results</translation>
 <translation id="7740996059027112821">Standard</translation>
 <translation id="7742762435724633909">Provider name:</translation>
 <translation id="774465434535803574">Pack Extension Error</translation>
-<translation id="7748144333872478614">Disable window backdrops in TouchView</translation>
 <translation id="7748528009589593815">Previous tab</translation>
 <translation id="7751260505918304024">Show all</translation>
 <translation id="7754704193130578113">Ask where to save each file before downloading</translation>
 <translation id="7756363132985736290">Certificate already exists.</translation>
 <translation id="7760004034676677601">Is this the start-up page that you were expecting?</translation>
+<translation id="7764256770584298012"><ph name="DOWNLOAD_RECEIVED" /> from <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="7765158879357617694">Move</translation>
 <translation id="7766807826975222231">Take a tour</translation>
 <translation id="7767646430896201896">Options:</translation>
@@ -4738,7 +4620,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY" /> may come in handy next time.</tr
     <ph name="MARKUP_4" />delete files from your Downloads folder<ph name="MARKUP_5" /></translation>
 <translation id="7788444488075094252">Languages and input</translation>
 <translation id="7788668840732459509">Position:</translation>
-<translation id="7791536208663663346">Disables hardware-accelerated video decode where available.</translation>
 <translation id="7791543448312431591">Add</translation>
 <translation id="7792012425874949788">Something went wrong with signing in</translation>
 <translation id="7792388396321542707">Stop sharing</translation>
@@ -4788,7 +4669,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY" /> may come in handy next time.</tr
 <translation id="7852934890287130200">Create, change or delete profiles.</translation>
 <translation id="7853747251428735">More Too&amp;ls</translation>
 <translation id="7853966320808728790">French BÉPO</translation>
-<translation id="7854323427075506422">Disable the new ZIP unpacker flow, based on the File System Provider API.</translation>
 <translation id="7855759346726093224">This site was blocked due to the SafeSites static blacklist.</translation>
 <translation id="7857823885309308051">This may take a minute...</translation>
 <translation id="7857949311770343000">Is this the new tab page that you were expecting?</translation>
@@ -4819,7 +4699,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY" /> may come in handy next time.</tr
 <translation id="7899177175067029110">Can’t find your phone. Make sure that your <ph name="DEVICE_TYPE" /> is connected to the Internet. &lt;a&gt;Learn more&lt;/a&gt;</translation>
 <translation id="790025292736025802"><ph name="URL" /> is not found</translation>
 <translation id="7900476766547206086">Passwords are required for signed-in users, as one or more users has this setting turned on.</translation>
-<translation id="7903070801626843743">Enable prefixed Encrypted Media Extensions.</translation>
 <translation id="7903128267494448252">Delete this person</translation>
 <translation id="7903345046358933331">The page has become unresponsive. You can wait for it to become responsive or close it.</translation>
 <translation id="7903925330883316394">Utility: <ph name="UTILITY_TYPE" /></translation>
@@ -4841,13 +4720,11 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY" /> may come in handy next time.</tr
 <translation id="7925686952655276919">Do not use mobile data for sync</translation>
 <translation id="7926906273904422255">Mark non-secure origins as non-secure or "dubious".</translation>
 <translation id="7928710562641958568">Eject device</translation>
-<translation id="7935864848518524631">Apps file associations.</translation>
 <translation id="7938594894617528435">Currently offline</translation>
 <translation id="7939412583708276221">Keep anyway</translation>
 <translation id="7939997691108949385">The manager will be able to configure restrictions and settings for this supervised user at <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="7943385054491506837">US Colemak</translation>
 <translation id="7943837619101191061">Add Location...</translation>
-<translation id="7945967575565699145">Experimental QUIC protocol.</translation>
 <translation id="7946068607136443002">The app-list will appear as fullscreen mode when it's in touch view mode. This flag does nothing outside of the mode.</translation>
 <translation id="794676567536738329">Confirm Permission</translation>
 <translation id="7947962633355574091">C&amp;opy Video Address</translation>
@@ -4859,7 +4736,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY" /> may come in handy next time.</tr
 <translation id="7959074893852789871">The file contained multiple certificates, some of which were not imported:</translation>
 <translation id="7959874006162866942">Are you sure that you want to install <ph name="PLUGIN_NAME" />? You should only install plug-ins that you trust.</translation>
 <translation id="7961015016161918242">Never</translation>
-<translation id="7963675372086154214">Enable HarfBuzz for UI text.</translation>
 <translation id="7965010376480416255">Shared Memory</translation>
 <translation id="7966241909927244760">C&amp;opy Image Address</translation>
 <translation id="7967437925638594022">Extensions &amp; Apps</translation>
@@ -4867,13 +4743,11 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY" /> may come in handy next time.</tr
 <translation id="7968833647796919681">Enable performance data collection</translation>
 <translation id="7968982339740310781">View details</translation>
 <translation id="7969525169268594403">Slovenian</translation>
-<translation id="7971550670320370753">Allows the user to easily disable the cloud-import feature.</translation>
 <translation id="7972714317346275248">PKCS #1 SHA-384 With RSA Encryption</translation>
 <translation id="7973320858902175766">Component Patcher</translation>
 <translation id="7974067550340408553">Get notified on your phone every time that Smart Lock unlocks your <ph name="DEVICE_TYPE" />.</translation>
 <translation id="7974566588408714340">Retry using <ph name="EXTENSIONNAME" /></translation>
 <translation id="7977551819349545646">Updating Chromebox...</translation>
-<translation id="7978187628461914320">Enable Out-of-process V8 Proxy Resolver.</translation>
 <translation id="7978412674231730200">Private key</translation>
 <translation id="7979036127916589816">Sync Error</translation>
 <translation id="7980024752931677009">This will permanently delete your browsing data from this device but will not clear synced items from other devices.</translation>
@@ -4890,7 +4764,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY" /> may come in handy next time.</tr
 <translation id="7989023212944932320">Google Safe Browsing recently <ph name="BEGIN_LINK" />detected malware<ph name="END_LINK" /> on <ph name="SITE" />. Websites that are normally safe are sometimes infected with malware. The malicious content comes from <ph name="SUBRESOURCE_HOST" />, a known malware distributor. You should come back in a few hours.</translation>
 <translation id="7994370417837006925">Multiple sign-in</translation>
 <translation id="799547531016638432">Remove shortcut</translation>
-<translation id="7996005831155352675">Enable single-click autofill</translation>
 <translation id="79962507603257656">Download Status in Notification Centre</translation>
 <translation id="7997089631332811254">(requires Chrome |restart|)</translation>
 <translation id="7997479212858899587">Identity:</translation>
@@ -4921,6 +4794,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8028060951694135607">Microsoft Key Recovery</translation>
 <translation id="8028993641010258682">Size</translation>
 <translation id="8030169304546394654">Disconnected</translation>
+<translation id="8031722894461705849">Slovak keyboard</translation>
 <translation id="8034304765210371109">Enable the experimental version of the App Launcher.</translation>
 <translation id="8034955203865359138">No history entries found.</translation>
 <translation id="8037117027592400564">Read all text spoken using synthesised speech</translation>
@@ -4931,7 +4805,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8044899503464538266">Slow</translation>
 <translation id="8045462269890919536">Romanian</translation>
 <translation id="8046259711247445257">bright up</translation>
-<translation id="8047633567446736935">Disables the use of the new and optimised implementation of the Chrome task manager.</translation>
 <translation id="8049913480579063185">Extension Name</translation>
 <translation id="8050038245906040378">Microsoft Commercial Code Signing</translation>
 <translation id="8053278772142718589">PKCS No.12 Files</translation>
@@ -4950,8 +4823,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8071942001314758122">Just say "OK Google" three times</translation>
 <translation id="8072988827236813198">Pin Tabs</translation>
 <translation id="8075539548641175231">Your data was encrypted with your sync passphrase on <ph name="TIME" />. Please enter it below.</translation>
+<translation id="8079530767338315840">Repeat</translation>
 <translation id="8083739373364455075">Get 100 GB free with Google Drive</translation>
 <translation id="8088137642766812908">Careful, this feature may bite</translation>
+<translation id="8089520772729574115">less than 1 MB</translation>
 <translation id="8090234456044969073">Read a list of your most frequently visited websites</translation>
 <translation id="8094917007353911263">The network that you are using may require you to visit <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
 <translation id="8096505003078145654">A proxy server is a server that acts as an intermediary between your computer and other servers.  Right now, your system is configured to use a proxy, but
@@ -4968,8 +4843,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8106242143503688092">Don't load (recommended)</translation>
 <translation id="8109930990200908494">Sign-in required for user certificate.</translation>
 <translation id="8110513421455578152">Specify the default tile height.</translation>
-<translation id="8112754292007745564">Enable Web MIDI API</translation>
 <translation id="8116190140324504026">More info...</translation>
+<translation id="8116483400482790018">Custom spelling dictionary</translation>
 <translation id="8116972784401310538">&amp;Bookmark manager</translation>
 <translation id="8117957376775388318">Dayi input method</translation>
 <translation id="8118860139461251237">Manage your downloads</translation>
@@ -4978,6 +4853,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8121385576314601440">Hangul input settings</translation>
 <translation id="8124313775439841391">Managed ONC</translation>
 <translation id="8127322077195964840">Allow invalid certificates for resources loaded from localhost.</translation>
+<translation id="8129262335948759431">unknown amount</translation>
 <translation id="813082847718468539">View site information</translation>
 <translation id="8131740175452115882">Confirm</translation>
 <translation id="8132793192354020517">Connected to <ph name="NAME" /></translation>
@@ -5006,7 +4882,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8153607920959057464">This file could not be displayed.</translation>
 <translation id="8154790740888707867">No file</translation>
 <translation id="815491593104042026">Oops!  Authentication failed because it was configured to use a non-secure URL (<ph name="BLOCKED_URL" />).  Please contact your administrator.</translation>
-<translation id="8155481074575809396">If enabled, text is rendered with signed distance fields rather than bitmap alpha masks.</translation>
 <translation id="8156020606310233796">List view</translation>
 <translation id="8157939133946352716">7 x 5</translation>
 <translation id="8160015581537295331">Spanish keyboard</translation>
@@ -5057,11 +4932,10 @@ Calculating remaining time</translation>
 <translation id="8221729492052686226">If you did not initiate this request, it may represent an attempted attack on your system. Unless you took an explicit action to initiate this request, you should press Do Nothing.</translation>
 <translation id="8222121761382682759">Uninstall...</translation>
 <translation id="8223479393428528563">To save these files for offline use, get back online, right-click the files and select the <ph name="OFFLINE_CHECKBOX_NAME" /> option.</translation>
-<translation id="82239625576146587">Disable new Korean IME.</translation>
 <translation id="8226222018808695353">Forbidden</translation>
 <translation id="8226742006292257240">Below is the randomly generated TPM password that has been assigned to your computer:</translation>
+<translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8230421197304563332">Attackers currently on <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> might attempt to install dangerous programmes on your computer that steal or delete your information (for example, photos, passwords, messages and credit cards).</translation>
-<translation id="8235613855873080297">Disable Encrypted Media Extensions.</translation>
 <translation id="8236231079192337250">Chrome Web Store Gallery app for printer drivers</translation>
 <translation id="8238649969398088015">Help tip</translation>
 <translation id="8240697550402899963">Use Classic theme</translation>
@@ -5096,7 +4970,6 @@ Calculating remaining time</translation>
 <translation id="8272443605911821513">Manage your extensions by clicking Extensions in the "More tools" menu.</translation>
 <translation id="8273972836055206582"><ph name="FULLSCREEN_ORIGIN" /> is now full screen and wants to disable your mouse cursor.</translation>
 <translation id="8275038454117074363">Import</translation>
-<translation id="8275863942928500239">Disable additional touch feedback on UI components.</translation>
 <translation id="8276560076771292512">Empty Cache and Hard Reload</translation>
 <translation id="8279107132611114222">Your request to access this site has been sent to <ph name="NAME" />.</translation>
 <translation id="8279388322240498158">Sorani Kurdish English-based keyboard</translation>
@@ -5111,7 +4984,6 @@ Calculating remaining time</translation>
 <translation id="8293206222192510085">Add Bookmark</translation>
 <translation id="8295070100601117548">Server error</translation>
 <translation id="8297012244086013755">Hangul 3 Set (No Shift)</translation>
-<translation id="8297222119869486204">Enable 'window-controls' element</translation>
 <translation id="8298115750975731693">The Wi-Fi that you are using (<ph name="WIFI_NAME" />) may require you to visit <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
 <translation id="8299269255470343364">Japanese</translation>
 <translation id="8299319456683969623">You are currently offline.</translation>
@@ -5123,7 +4995,6 @@ Calculating remaining time</translation>
           <ph name="END_BOLD" />
           to test your connection.</translation>
 <translation id="8303655282093186569">Pinyin Input Settings</translation>
-<translation id="830598693585544337">Enabling this option prevents web sites from accessing the WebAudio API.</translation>
 <translation id="8306534594034939679">Enable support for Alternative Services, an experimental HTTP feature.</translation>
 <translation id="8307376264102990850">Charging
 Calculating time until full</translation>
@@ -5133,9 +5004,9 @@ Calculating time until full</translation>
 <translation id="8312871300878166382">Paste into folder</translation>
 <translation id="8314013494437618358">Threaded compositing</translation>
 <translation id="8319414634934645341">Extended Key Usage</translation>
-<translation id="8321029433037466758">If enabled, renderers will have a second-layer sandbox provided by seccomp-bpf. This requires kernel features only available on select Android versions.</translation>
 <translation id="8322814362483282060">This page has been blocked from accessing your microphone.</translation>
 <translation id="8326478304147373412">PKCS #7, certificate chain</translation>
+<translation id="8327201046748601585">{COUNT,plural, =1{1 other}other{# others}}</translation>
 <translation id="8329978297633540474">Plain text</translation>
 <translation id="8335587457941836791">Unpin from shelf</translation>
 <translation id="8335971947739877923">Export...</translation>
@@ -5153,12 +5024,10 @@ Calculating time until full</translation>
 <translation id="8356258244599961364">This language doesn't have any input methods</translation>
 <translation id="8357224663288891423">Keyboard Shortcuts for Extensions and Apps</translation>
 <translation id="8358685469073206162">Restore pages?</translation>
-<translation id="8362900609631365882">Enable Accessibility Tab Switcher.</translation>
 <translation id="8363095875018065315">stable</translation>
 <translation id="8366396658833131068">Your network connectivity is restored. Please select a different network or press 'Continue' button below to launch your kiosk app.</translation>
 <translation id="8366694425498033255">Selection keys</translation>
 <translation id="8368859634510605990">&amp;Open all bookmarks</translation>
-<translation id="836961001039546082">Enable material UI for PDF.</translation>
 <translation id="8373281062075027970">Party Name: <ph name="PARTY_NAME" /></translation>
 <translation id="8373360586245335572">Allow all sites to show notifications</translation>
 <translation id="8373553483208508744">Mute tabs</translation>
@@ -5216,6 +5085,7 @@ Calculating time until full</translation>
 <translation id="8446824986496198687">Sets the speed of the experimental visual feedback animations for material design.</translation>
 <translation id="8446884382197647889">Learn More</translation>
 <translation id="8449008133205184768">Paste and Match Style</translation>
+<translation id="8452388482414738991">{COUNT,plural, =1{1 other suggestion}other{# other suggestions}}</translation>
 <translation id="8452588990572106089">Invalid card number. Please check and try again.</translation>
 <translation id="8453482423012550001">Copying $1 items...</translation>
 <translation id="8454189779191516805">Specify the number of MSAA samples for GPU rasterisation.</translation>
@@ -5280,7 +5150,7 @@ Calculating time until full</translation>
 <translation id="8551388862522347954">Licences</translation>
 <translation id="8551406349318936106">Oops! Looks like there's a problem with your credentials. Please make sure that you're signed in properly and try again.</translation>
 <translation id="8551494947769799688">Latvian</translation>
-<translation id="8556377764941071135">Enable Smart Lock proximity detection.</translation>
+<translation id="855705891482654011">Load unpacked extensions</translation>
 <translation id="855773602626431402">An unsandboxed plug-in was prevented from running on this page.</translation>
 <translation id="8559694214572302298">Image Decoder</translation>
 <translation id="8559748832541950395">You can change this setting or <ph name="BEGIN_LINK" />manage your private data<ph name="END_LINK" /> whenever you like. Please remember that when Voice &amp; Audio Activity is on, this data may be saved from any of your signed-in devices.</translation>
@@ -5323,7 +5193,6 @@ Calculating time until full</translation>
 <translation id="8606726445206553943">Use your MIDI devices</translation>
 <translation id="8610892630019863050">Ask when a site wants to show notifications (recommended)</translation>
 <translation id="8615618338313291042">Incognito App: <ph name="APP_NAME" /></translation>
-<translation id="8616748524633185354">Some web pages use legacy or non-standard JavaScript extensions that may conflict with the latest JavaScript features. This flag disables support of those features for compatibility with such pages.</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME" />: <ph name="ERROR" /></translation>
 <translation id="8620765578342452535">Configure network connections</translation>
 <translation id="8623004009673949077">App with 'kiosk_only' manifest attribute must be installed in Chrome OS kiosk mode.</translation>
@@ -5411,7 +5280,6 @@ Calculating time until full</translation>
 <translation id="872537912056138402">Croatian</translation>
 <translation id="8726206820263995930">Error when fetching policy settings from the server: <ph name="CLIENT_ERROR" />.</translation>
 <translation id="8726888928275282477">Display extension options as an embedded element in chrome://extensions rather than opening a new tab.</translation>
-<translation id="872728358380751743">This option disables support in Cast Streaming for encoding video streams using platform hardware.</translation>
 <translation id="8728672262656704056">You’ve gone incognito</translation>
 <translation id="8729518820755801792">Chrome cannot open this URL.</translation>
 <translation id="8730621377337864115">Finished</translation>
@@ -5423,7 +5291,6 @@ Calculating time until full</translation>
 <translation id="8737260648576902897">Install Adobe Reader</translation>
 <translation id="8737685506611670901">Open <ph name="PROTOCOL" /> links instead of <ph name="REPLACED_HANDLER_TITLE" /></translation>
 <translation id="8737709691285775803">Shill</translation>
-<translation id="87377425248837826">Enable Panels</translation>
 <translation id="874420130893181774">Traditional Pinyin input method</translation>
 <translation id="8744525654891896746">Select an avatar for this supervised user</translation>
 <translation id="8744641000906923997">Romaji</translation>
@@ -5576,7 +5443,6 @@ Calculating time until full</translation>
 <translation id="8974161578568356045">Auto Detect</translation>
 <translation id="8978526688207379569">This site downloaded multiple files automatically.</translation>
 <translation id="8982248110486356984">Switch users</translation>
-<translation id="898448178443221993">Enable change password support.</translation>
 <translation id="8986267729801483565">Download location:</translation>
 <translation id="8986362086234534611">Forget</translation>
 <translation id="8986494364107987395">Automatically send usage statistics and crash reports to Google</translation>
@@ -5591,6 +5457,7 @@ Calculating time until full</translation>
 <translation id="8997135628821231"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (<ph name="DEVICE" />)</translation>
 <translation id="9000649589621199759">Can’t find your phone. Make sure that you’re using a compatible Android phone that’s turned on and within arm’s reach. &lt;a&gt;Learn more&lt;/a&gt;</translation>
 <translation id="9001035236599590379">MIME type</translation>
+<translation id="9001074447101275817">The proxy <ph name="DOMAIN" /> requires a username and password.</translation>
 <translation id="9003647077635673607">Allow on all websites</translation>
 <translation id="9003677638446136377">Check again</translation>
 <translation id="9004952710076978168">Received a notification for an unknown printer.</translation>
@@ -5666,7 +5533,6 @@ Calculating time until full</translation>
 <translation id="9094033019050270033">Update password</translation>
 <translation id="9100765901046053179">Advanced settings</translation>
 <translation id="9100825730060086615">Keyboard Type</translation>
-<translation id="9101609509133125779">Disable Office Editing for Docs, Sheets &amp; Slides for testing purposes</translation>
 <translation id="9101691533782776290">Launch app</translation>
 <translation id="9103001804464916031">{NUM_DOWNLOAD,plural, =1{Download in Progress}other{Downloads in Progress}}</translation>
 <translation id="9105212490906037469">F2</translation>
@@ -5681,12 +5547,10 @@ Calculating time until full</translation>
 <translation id="9112748030372401671">Change your wallpaper</translation>
 <translation id="9112987648460918699">Find...</translation>
 <translation id="9115675100829699941">&amp;Bookmarks</translation>
-<translation id="9119792571829395025">Disables the grey window backdrops used in TouchView (maximise mode) behind windows which cannot be maximised.</translation>
 <translation id="9121814364785106365">Open as pinned tab</translation>
 <translation id="9123104177314065219">Enables using Google information to populate the profile name and icon in the avatar menu.</translation>
 <translation id="9123413579398459698">FTP proxy</translation>
 <translation id="9124229546822826599">Skip the passwords prompt and save passwords automatically.</translation>
-<translation id="9126706773198551170">Enable new profile management system</translation>
 <translation id="9127762771585363996">Flip camera image horizontally</translation>
 <translation id="9128870381267983090">Connect to network</translation>
 <translation id="9130015405878219958">Invalid mode entered.</translation>
@@ -5700,7 +5564,7 @@ Calculating time until full</translation>
 <translation id="9137356749601179867">Show the tick box to offer local saving of a credit card downloaded from the server.</translation>
 <translation id="913758436357682283">Myanmar Myansan keyboard</translation>
 <translation id="9137916601698928395">Open link as <ph name="USER" /></translation>
-<translation id="914566504855049417">Enable negotiation with DTLS 1.2 for WebRTC.</translation>
+<translation id="9145718805518496796">Pack extensions...</translation>
 <translation id="9147392381910171771">&amp;Options</translation>
 <translation id="9148058034647219655">Exit</translation>
 <translation id="9148126808321036104">Sign in again</translation>
@@ -5731,7 +5595,6 @@ Calculating time until full</translation>
 <translation id="9188441292293901223">Please update your phone to a newer version of Android to unlock this <ph name="DEVICE_TYPE" />.</translation>
 <translation id="9189690067274055051">Unlock your phone and bring it closer to your <ph name="DEVICE_TYPE" /> to enter.</translation>
 <translation id="9190063653747922532">L2TP/IPSec + Preshared key</translation>
-<translation id="919412290393329570">Disable the pull-to-refresh effect.</translation>
 <translation id="9201305942933582053">Google Now for Chrome!</translation>
 <translation id="9203398526606335860">&amp;Profiling enabled</translation>
 <translation id="9203478404496196495">Unmute tab</translation>
@@ -5743,8 +5606,6 @@ Calculating time until full</translation>
 <translation id="9210991923655648139">Accessible to Script:</translation>
 <translation id="9214520840402538427">Oops!  The initialisation of the installation-time attributes has timed out.  Please contact your support representative.</translation>
 <translation id="9215293857209265904">"<ph name="EXTENSION_NAME" />" added</translation>
-<translation id="9217413363143870800">Enable Smart Lock Bluetooth Low Energy Discovery.</translation>
-<translation id="9218350802691534808">Enable show-on-first-paint for apps.</translation>
 <translation id="9218430445555521422">Set as default</translation>
 <translation id="9219103736887031265">Images</translation>
 <translation id="9220525904950070496">Remove account</translation>
@@ -5769,8 +5630,8 @@ Calculating time until full</translation>
 <translation id="953345106084818179">Request permission</translation>
 <translation id="959890390740139744">Automatically Correct Spelling</translation>
 <translation id="960987915827980018">About 1 hour left</translation>
-<translation id="962520199903263026">Spelling Feedback Field Trial.</translation>
 <translation id="96421021576709873">Wi-Fi network</translation>
+<translation id="965490406356730238">Enable hardware-accelerated mjpeg decode for captured frame where available.</translation>
 <translation id="968174221497644223">Application cache</translation>
 <translation id="970047733946999531">{NUM_TABS,plural, =1{1 Tab}other{# Tabs}}</translation>
 <translation id="970794034573172516">Enable Voice &amp; Audio Activity</translation>

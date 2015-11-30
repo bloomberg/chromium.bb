@@ -5,6 +5,7 @@
 <translation id="1013290471399003443">Chrome đã xác minh rằng <ph name="ISSUER" /> cấp chứng chỉ của trang web này. Máy chủ cung cấp thông tin hợp lệ về Tính minh mạch của chứng chỉ.</translation>
 <translation id="1016765312371154165">Chrome đã không tắt đúng cách.</translation>
 <translation id="103396972844768118">Thông tin quan trọng liên quan đến dữ liệu Chrome của bạn</translation>
+<translation id="1035334672863811645">đăng nhập vào Chrome</translation>
 <translation id="1061441684050139317">Chrome cần quyền truy cập micrô để chia sẻ micrô với trang web này.</translation>
 <translation id="1065672644894730302">Không thể đọc tùy chọn của bạn. Một số tính năng có thể không khả dụng và các thay đổi đối với tùy chọn sẽ không được lưu.</translation>
 <translation id="1073391069195728457">Chrome - Thông báo</translation>
@@ -89,7 +90,7 @@
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3881912906674381083">Chrome đã xác minh rằng <ph name="ISSUER" /> cấp chứng chỉ của trang web này. Máy chủ cung cấp thông tin về Tính minh mạch của chứng chỉ nhưng Chrome không nhận ra bất kỳ nhật ký nào về Tính minh bạch của chứng chỉ.</translation>
 <translation id="3889417619312448367">Gỡ cài đặt Google Chrome</translation>
-<translation id="4011219958405096740">Khi được bật, sẽ sử dụng luồng đăng nhập Chrome dựa trên iframe; nếu không, sử dụng luồng dựa trên chế độ xem web.</translation>
+<translation id="4042449298237264661">Máy tính này sẽ không nhận được bản cập nhật Google Chrome nữa do Windows XP và Windows Vista không còn được hỗ trợ.</translation>
 <translation id="4050175100176540509">Cải thiện bảo mật quan trọng và tính năng mới có trong phiên bản mới nhất.</translation>
 <translation id="4053720452172726777">Tùy chỉnh và điều khiển Google Chrome</translation>
 <translation id="4147555960264124640">Bạn đang đăng nhập bằng tài khoản được quản lý và cấp cho quản trị viên của tài khoản quyền kiểm soát cấu hình trên Google Chrome của bạn. Dữ liệu Chrome của bạn, chẳng hạn như ứng dụng, dấu trang, lịch sử, mật khẩu và các cài đặt khác sẽ vĩnh viễn được liên kết với <ph name="USER_NAME" />. Bạn có thể xóa dữ liệu này thông qua Trang tổng quan của tài khoản Google nhưng không thể liên kết dữ liệu này với tài khoản khác. <ph name="LEARN_MORE" /></translation>
@@ -146,9 +147,9 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="573759479754913123">Giới thiệu về Chrome OS</translation>
 <translation id="5749068826913805084">Chrome cần quyền truy cập bộ nhớ để tải xuống tệp.</translation>
 <translation id="5785746630574083988">Chế độ chạy lại trong Windows 8 sẽ đóng và chạy lại ứng dụng Chrome của bạn.</translation>
-<translation id="5799551393681493217">Bật luồng đăng nhập Chrome dựa trên iframe. Cờ này ghi đè --enable-web-based-signin.</translation>
 <translation id="5855036575689098185">Phần mềm đang chạy trên máy tính của bạn không tương thích với Google Chrome.</translation>
 <translation id="5877064549588274448">Kênh đã thay đổi. Hãy khởi động lại thiết bị để áp dụng thay đổi.</translation>
+<translation id="5890698319714066019">Google Chrome không thể hiển thị trang web vì máy tính của bạn chưa kết nối Internet.</translation>
 <translation id="5931853610562009806">Trên máy Mac, mật khẩu có thể được lưu vào Keychain và được truy cập hoặc đồng bộ hóa bởi những người dùng Chrome khác dùng chung tài khoản OS X này.</translation>
 <translation id="5940385492829620908">Web, dấu trang và các nội dung khác của bạn trên Chrome đều có ở đây.</translation>
 <translation id="5941830788786076944">Chọn Google Chrome làm trình duyệt mặc định</translation>
@@ -171,6 +172,8 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="6236285698028833233">Google Chrome đã ngừng cập nhật và không còn hỗ trợ phiên bản này của hệ điều hành của bạn.</translation>
 <translation id="629218512217695915">Sử dụng mật khẩu do Chrome tạo</translation>
 <translation id="6368958679917195344">Chrome OS trở nên khả thi là nhờ <ph name="BEGIN_LINK_CROS_OSS" />phần mềm nguồn mở<ph name="END_LINK_CROS_OSS" /> bổ sung.</translation>
+<translation id="6400076122676892962">Máy tính này sắp dừng nhận bản cập nhật Google Chrome do Mac OS X 10.6, 10.7 và 10.8 sẽ không được hỗ trợ nữa.</translation>
+<translation id="6470176598693778404">Máy tính này sẽ không nhận bản cập nhật Google Chrome do Mac OS X 10.6, 10.7 và 10.8 không được hỗ trợ nữa.</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{Một tải xuống hiện đang diễn ra. Bạn có muốn hủy tải xuống và thoát khỏi Google Chrome không?}other{# tải xuống hiện đang diễn ra. Bạn có muốn hủy tải xuống và thoát khỏi Google Chrome không?}}</translation>
 <translation id="6598387184982954187">Bạn đang sử dụng <ph name="PROFILE_EMAIL" /> để đồng bộ hóa nội dung Chrome của mình. Để cập nhật tùy chọn đồng bộ hóa hoặc sử dụng Chrome mà không cần tài khoản Google, hãy truy cập <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6600954340915313787">Đã sao chép vào Chrome</translation>
@@ -208,6 +211,7 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="7196020411877309443">Tại sao tôi nhìn thấy thông báo này?</translation>
 <translation id="7242029209006116544">Bạn đang đăng nhập bằng tài khoản được quản lý và cấp cho quản trị viên của tài khoản quyền kiểm soát cấu hình trên Google Chrome của bạn. Dữ liệu Chrome của bạn, chẳng hạn như ứng dụng, dấu trang, lịch sử, mật khẩu và các cài đặt khác sẽ vĩnh viễn được liên kết với <ph name="USER_NAME" />. Bạn có thể xóa dữ liệu này thông qua Trang tổng quan của tài khoản Google nhưng không thể liên kết dữ liệu này với tài khoản khác. Bạn có thể tùy chọn tạo một cấu hình mới để giữ cho dữ liệu Chrome hiện có của bạn riêng biệt. <ph name="LEARN_MORE" /></translation>
 <translation id="7282192067747128786">Chrome - Thông báo (<ph name="QUANTITY" /> thông báo chưa đọc)</translation>
+<translation id="729375352412857283">Máy tính này sắp dừng nhận bản cập nhật Google Chrome do Windows XP và Windows Vista sẽ không được hỗ trợ nữa.</translation>
 <translation id="7339898014177206373">Cửa sổ mới</translation>
 <translation id="7396375882099008034">Cho phép Chrome truy cập mạng trong cài đặt tường lửa hoặc diệt vi-rút
         của bạn.</translation>

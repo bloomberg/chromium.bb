@@ -12,11 +12,12 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="1293235220023151515">Det finns en annan installation av Chromium på datorn. Avinstallera den och försök igen.</translation>
 <translation id="1298199220304005244">Få hjälp med att använda Chromium OS</translation>
 <translation id="1396446129537741364">Chromium försöker visa lösenord.</translation>
+<translation id="1403254041219632970">Framtida versioner av Chromium kommer inte att ha stöd för Mac OS X 10.6, 10.7 eller 10.8.</translation>
 <translation id="1414495520565016063">Du är inloggad i Chromium.</translation>
 <translation id="1444754455097148408">Licenser för öppen källkod för Chromium</translation>
-<translation id="1461885241643463646">Aktiverar iframe-baserade inloggningsflöden i Chromium. Den här flaggan åsidosätter --enable-web-based-signin.</translation>
 <translation id="1480489203462860648">Testa, webbläsaren är redan installerad</translation>
 <translation id="151962892725702025">Det gick inte att synkronisera data med Chromium eftersom synkronisering inte är tillgängligt för domänen.</translation>
+<translation id="1559451348202814456">Chromium kanske inte fungerar ordentligt eftersom den inte längre stöds på Mac OS X 10.6, 10.7 och 10.8.</translation>
 <translation id="1644918877723739397">Chromium sparar detta i <ph name="SAVED_PASSWORD_LINK" /> och kommer ihåg det nästa gång du behöver det.</translation>
 <translation id="1668054258064581266">När du har tagit bort kontot från Chromium kan öppna flikar behöva läsas in på nytt för att ändringen ska träda i kraft.</translation>
 <translation id="1688750314291223739">Konfigurera synkronisering för att spara dina webbläsarfunktioner på webben och använda dem i Chromium på alla datorer.</translation>
@@ -45,8 +46,10 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{En nedladdning pågår för närvarande. Vill du avbryta nedladdningen och avsluta Chromium?}other{# nedladdningar pågår för närvarande. Vill du avbryta nedladdningarna och avsluta Chromium?}}</translation>
 <translation id="2396765026452590966">Tillägget <ph name="EXTENSION_NAME" /> har ändrat vilken sida som visas när du startar Chromium.</translation>
 <translation id="2485422356828889247">Avinstallera</translation>
+<translation id="2486653164587200256">Chromium kanske inte fungerar ordentligt eftersom den inte längre stöds på Windows XP och Windows Vista.</translation>
 <translation id="2535480412977113886">Det gick inte att synkronisera data med Chromium eftersom inloggningsuppgifterna för kontot är inaktuella.</translation>
 <translation id="2558641060352364164">På den här webbplatsen används pluginprogrammet Chromium Frame som snart slutar stödjas. Avinstallera det och uppgradera till en modern webbläsare.</translation>
+<translation id="2565260267992448464">Det går inte att visa webbsidan i Chromium eftersom datorn inte är ansluten till internet.</translation>
 <translation id="2572494885440352020">Hjälp för Chromium</translation>
 <translation id="2602806952220118310">Chromium – meddelanden</translation>
 <translation id="2636877269779209383">Chromium behöver tillgång till kameran för att kunna dela den på den här webbplatsen.</translation>
@@ -108,6 +111,7 @@ och felaktiga uppgifter. Sådant kan hända när en angripare utger sig för att
 <translation id="4423735387467980091">Anpassa och kontrollera Chromium</translation>
 <translation id="4458285410772214805">Den här ändringen träder inte i kraft förrän du loggat ut och sedan loggar in igen.</translation>
 <translation id="4488676065623537541">Dina faktureringsuppgifter har sparats i Chromium.</translation>
+<translation id="4549794359424059447">Framtida versioner av Chromium kommer inte att ha stöd för Windows XP och Windows Vista.</translation>
 <translation id="4559775032954821361">Öppna
           Chromium-menyn &gt;
           <ph name="SETTINGS_TITLE" />
@@ -136,6 +140,7 @@ och felaktiga uppgifter. Sådant kan hända när en angripare utger sig för att
 <translation id="549669000822060376">Vänta medan de senaste systemuppdateringarna installeras av Chromium.</translation>
 <translation id="5563479599352954471">Sök med en tryckning</translation>
 <translation id="5620765574781326016">Läs mer om vilka ämnen som webbplatser handlar om utan att lämna sidan.</translation>
+<translation id="5680901439334282664">Logga in i Chromium</translation>
 <translation id="5772805321386874569">(Chromium måste <ph name="BEGIN_BUTTON" />startas om<ph name="END_BUTTON" />)</translation>
 <translation id="5796460469508169315">Chromium är nästan klart.</translation>
 <translation id="580822234363523061">Öppna
@@ -212,7 +217,6 @@ Chromium kan inte återställa dina inställningar.</translation>
 <translation id="761356813943268536">Chromium använder din kamera och mikrofon.</translation>
 <translation id="7617377681829253106">Vi har förbättrat Chromium</translation>
 <translation id="7641113255207688324">Chromium är inte din standardwebbläsare.</translation>
-<translation id="7723128346970903111">När det här alternativet är aktiverat används ett iframe-baserat inloggningsflöde i Chromium. Annars används ett flöde baserat på WebView.</translation>
 <translation id="7729447699958282447">Chromium kunde inte synkronisera data eftersom synkronisering inte är tillgängligt för domänen.</translation>
 <translation id="7747138024166251722">Det gick inte att skapa en tillfällig katalog för installationsfilen. Kontrollera diskutrymmet och att du har behörighet att installera program.</translation>
 <translation id="7918535023914021398">Chromium har verifierat att webbplatsens certifikat har utfärdats av <ph name="ISSUER" />. Inga certifikattransparensuppgifter skickades från servern.</translation>

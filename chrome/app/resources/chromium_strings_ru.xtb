@@ -10,11 +10,12 @@
 <translation id="1293235220023151515">В системе установлена конфликтующая версия Chromium. Удалите ее и повторите попытку.</translation>
 <translation id="1298199220304005244">Помощь по использованию Chromium OS</translation>
 <translation id="1396446129537741364">Вводимые пароли будут отображаться в Chromium.</translation>
+<translation id="1403254041219632970">В следующих версиях Chromium будет прекращена поддержка Mac OS X 10.6, 10.7 и 10.8.</translation>
 <translation id="1414495520565016063">Добро пожаловать в Chromium!</translation>
 <translation id="1444754455097148408">Лицензии Chromium на ПО с открытым исходным кодом</translation>
-<translation id="1461885241643463646">Позволяет входить в Chromium на основе компонента iframe. Параметр --enable-web-based-signin при этом игнорируется.</translation>
 <translation id="1480489203462860648">Запустить Chrome (уже установлен)</translation>
 <translation id="151962892725702025">Не удалось синхронизировать данные, поскольку сервис Sync недоступен в вашем домене.</translation>
+<translation id="1559451348202814456">В работе Chromium могут возникать сбои, так как браузер больше не поддерживает Mac OS X 10.6, 10.7 и 10.8.</translation>
 <translation id="1644918877723739397">Chromium добавит его к другим сохраненным паролям (<ph name="SAVED_PASSWORD_LINK" />) и запомнит для следующих визитов.</translation>
 <translation id="1668054258064581266">После удаления вашего аккаунта из Chromium может понадобиться перезагрузить открытые вкладки, чтобы изменения вступили в силу.</translation>
 <translation id="1688750314291223739">Настройте синхронизацию, чтобы сохранить в облаке персонализированные функции браузера и получить к ним доступ из Chromium с любого компьютера.</translation>
@@ -43,8 +44,10 @@
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{Идет скачивание. Отменить и выйти из Chromium?}one{Идет скачивание (#). Отменить и выйти из Chromium?}few{Идет скачивание (#). Отменить и выйти из Chromium?}many{Идет скачивание (#). Отменить и выйти из Chromium?}other{Идет скачивание (#). Отменить и выйти из Chromium?}}</translation>
 <translation id="2396765026452590966">Расширение "<ph name="EXTENSION_NAME" />" изменило стартовую страницу Chromium.</translation>
 <translation id="2485422356828889247">Удалить</translation>
+<translation id="2486653164587200256">В работе Chromium могут возникать сбои, так как браузер больше не поддерживает Windows XP и Windows Vista.</translation>
 <translation id="2535480412977113886">Не удалось выполнить синхронизацию, так как учетные данные устарели.</translation>
 <translation id="2558641060352364164">Этот сайт использует плагин Chromium Frame, поддержка которого скоро будет прекращена. Установите новую версию браузера.</translation>
+<translation id="2565260267992448464">Не удается загрузить веб-страницу, так как компьютер не подключен к Интернету.</translation>
 <translation id="2572494885440352020">Помощник по Chromium</translation>
 <translation id="2602806952220118310">Chromium - Оповещения</translation>
 <translation id="2636877269779209383">Предоставьте браузеру Chromium доступ к камере, чтобы пользоваться ею на этом сайте.</translation>
@@ -104,6 +107,7 @@
 <translation id="4423735387467980091">Настройка и управление Chromium</translation>
 <translation id="4458285410772214805">Чтобы изменения вступили в силу, выполните вход еще раз.</translation>
 <translation id="4488676065623537541">Платежные данные сохранены в Chromium.</translation>
+<translation id="4549794359424059447">В следующих версиях Chromium будет прекращена поддержка Windows XP и Windows Vista.</translation>
 <translation id="4559775032954821361">Выберите
           меню Chromium &gt;
           <ph name="SETTINGS_TITLE" />
@@ -132,6 +136,7 @@
 <translation id="549669000822060376">Подождите, пока Chromium устанавливает последние обновления системы</translation>
 <translation id="5563479599352954471">Поиск в одно касание</translation>
 <translation id="5620765574781326016">Теперь искать информацию в Интернете можно с любой страницы.</translation>
+<translation id="5680901439334282664">войдите в Chromium</translation>
 <translation id="5772805321386874569">(необходимо <ph name="BEGIN_BUTTON" />перезапустить<ph name="END_BUTTON" /> Chromium)</translation>
 <translation id="5796460469508169315">Chromium почти готов к работе</translation>
 <translation id="580822234363523061">Выберите
@@ -206,7 +211,6 @@
 <translation id="761356813943268536">Chromium использует камеру и микрофон.</translation>
 <translation id="7617377681829253106">Chromium становится все лучше</translation>
 <translation id="7641113255207688324">Chromium не назначен браузером по умолчанию.</translation>
-<translation id="7723128346970903111">Если параметр включен, вход в Chromium будет осуществляться на основе iframe. В противном случае будет использован WebView.</translation>
 <translation id="7729447699958282447">Chromium не удалось синхронизировать данные, поскольку служба Sync недоступна для вашего домена.</translation>
 <translation id="7747138024166251722">Программе установки не удалось создать временный каталог. Возможно, у вас нет прав на установку приложений или недостаточно места на диске.</translation>
 <translation id="7918535023914021398">Данные Chromium подтверждают, что издатель сертификата сайта – <ph name="ISSUER" />. Сервер не предоставил временные метки сертификата.</translation>

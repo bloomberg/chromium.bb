@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="no">
+<translation id="101438888985615157">Rotér skjermen 180 grader</translation>
 <translation id="1017967144265860778">Strømstyring på påloggingssiden</translation>
 <translation id="1019101089073227242">Angi katalog for brukerdata</translation>
 <translation id="1022361784792428773">Utvidelses-ID-er brukeren skal hindres i å installere (eller * for alle)</translation>
@@ -255,6 +256,17 @@
 <translation id="2113068765175018713">Begrens enhetens driftstid ved å bruke automatisk omstart</translation>
 <translation id="2127599828444728326">Tillat varslinger på disse nettstedene</translation>
 <translation id="2131902621292742709">Forsinkelse for nedtonet skjerm når enheten kjører på batteristrøm</translation>
+<translation id="2137064848866899664">Hvis denne regelen er angitt, roteres alle skjermer til den
+      spesifiserte retningen hver gang enheten starter, og første gang den kobles
+      til etter at regelverdien er endret. Brukerne kan endre skjermrotasjonen
+      på innstillingssiden etter pålogging, men innstillingene deres
+      overstyres av regelverdien ved neste oppstart.
+
+      Denne regelen gjelder for både primære og sekundære skjermer.
+
+      Hvis regelen ikke er angitt, er standardverdien 0 grader, og brukeren
+      står fritt til å endre den. I dette tilfellet brukes ikke standardverdien igjen
+      ved omstart.</translation>
 <translation id="2166715102875984646">Slå av støtten for API-er for 3D-grafikk.
 
       Hvis du slår på denne innstillingen, får ikke nettsider tilgang til grafikkprosessorene (GPU). Det betyr mer konkret at ingen nettsider får tilgang til WebGL API, og at ingen programtillegg kan bruke Pepper 3D API.
@@ -946,6 +958,7 @@
       Hvis du aktiverer denne innstillingen, har man ingen tilgang til utviklerverktøyene, og nettstedelementene kan ikke inspiseres lenger. Alle tastatursnarveier og eventuelle oppføringer i menyer eller kontekstmenyer som kan åpne utviklerverktøyene eller JavaScript-konsollen, blir deaktivert.
 
       Hvis dette alternativet deaktiveres eller ikke angis, kan utviklerverktøyene og JavaScript-konsollen brukes.</translation>
+<translation id="4449545651113180484">Rotér skjermen 270 grader med klokken</translation>
 <translation id="4467952432486360968">Blokkér tredjeparts informasjonskapsler</translation>
 <translation id="4474167089968829729">Slå på lagring av passord i passordbehandleren</translation>
 <translation id="4480694116501920047">Tving Sikkert Søk</translation>
@@ -1204,6 +1217,7 @@
       Hvis den er deaktivert, importeres ikke den standard søkemotoren.
 
       Hvis den ikke er angitt, kan det hende at brukeren blir spurt om hvorvidt vedkommende ønsker å importere, eller så kan importeringen skje automatisk.</translation>
+<translation id="5423197884968724595">Navn på Android WebView-begrensning:</translation>
 <translation id="5447306928176905178">Slå på rapportering av minneinformasjon (heap-størrelse for JavaScript) til siden (avviklet)</translation>
 <translation id="5457065417344056871">Slå på gjestemodus i nettleseren</translation>
 <translation id="5457924070961220141">Gjør at du kan konfigurere standard HTML-gjengivelsen når <ph name="PRODUCT_FRAME_NAME" /> er installert.
@@ -1958,6 +1972,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="7953256619080733119">Verter for manuelle unntak for administrerte brukere</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Denne retningslinjen støttes ikke lenger. Aktiverer bruk av STUN og relétjenere ved tilkobling til en ekstern klient. Hvis denne innstillingen er aktivert, kan maskinen oppdage og koble seg til eksterne vertsmaskiner selv om de er adskilt av en brannmur. Hvis denne innstillingen er deaktivert og utgående UDP-tilkoblinger filtreres av brannmuren, kan denne maskinen bare koble seg til vertsmaskiner i det lokale nettverket.</translation>
+<translation id="802147957407376460">Rotér skjermen 0 grader</translation>
 <translation id="8044493735196713914">Rapportering av oppstartsmodus for enhet</translation>
 <translation id="8059164285174960932">Nettadressen der klienter for ekstern tilgang skal hente autentiseringstokenet sitt fra</translation>
 <translation id="8071636581296916773">Aktiverer bruk av relétjenere når eksterne klienter prøver å opprette forbindelse til denne maskinen.
@@ -2074,6 +2089,8 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="8382184662529825177">Slå på bruken av ekstern attestasjon for innholdsbeskyttelse på enheten</translation>
 <translation id="838870586332499308">Aktiver datastreifing</translation>
 <translation id="8412312801707973447">Angir om OCSP/CRL-kontroller utføres på nettet</translation>
+<translation id="8424255554404582727">Angi standardverdien for skjermrotasjon. Denne brukes hver gang enheten starter på nytt</translation>
+<translation id="8426231401662877819">Rotér skjermen 90 grader med klokken</translation>
 <translation id="8451988835943702790">Bruk siden Ny fane som startside</translation>
 <translation id="8465065632133292531">Parametere for Instant-nettadresser som bruker POST</translation>
 <translation id="847472800012384958">Ikke la noen nettsteder vise forgrunnsvinduer</translation>

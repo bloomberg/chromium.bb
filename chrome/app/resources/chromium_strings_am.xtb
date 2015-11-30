@@ -15,7 +15,6 @@
 <translation id="1403254041219632970">የወደፊት የChromium ስሪቶች ከአሁን በኋላ Mac OS X 10.6፣ 10.7 ወይም 10.8 አይደግፉም።</translation>
 <translation id="1414495520565016063">ወደ Chromium ገብተዋል!</translation>
 <translation id="1444754455097148408">Chromium የክፍት ምንጭ ፈቃዶች</translation>
-<translation id="1461885241643463646">በiframe ላይ የተመሠረቱ የChromium መግቢያ ፍሰቶችን ይፈጥራል። ይህ ዕልባት --enable-web-based-signin ን ይሽራል።</translation>
 <translation id="1480489203462860648">ይሞክሩት፣ አስቀድሞ ተጭኗል</translation>
 <translation id="151962892725702025">ማመሳሰል ለጎራዎ ስለማይገኝ Chromium OS ውሂብዎን ማመሳሰል አይችልም።</translation>
 <translation id="1559451348202814456">Chromium ከአሁን በኋላ በMac OS X 10.6፣ 10.7 ወይም 10.8 ላይ ከእንግዲህ ስለማይደገፍ በአግባቡ ላይሰራ ይችላል።</translation>
@@ -140,6 +139,7 @@
 <translation id="549669000822060376">Chromium የቅርብ ጊዜዎቹ የስርዓቱ ዝማኔዎችን እስኪጭን ድረስ እባክዎ ይጠብቁ።</translation>
 <translation id="5563479599352954471">በአንዲ ንክኪ ይፈልጉ</translation>
 <translation id="5620765574781326016">ከገጹ ሳይወጡ በድር ጣቢያዎች ላይ ስላሉ ስለርዕሶች ይወቁ</translation>
+<translation id="5680901439334282664">ወደ Chromium ይግቡ</translation>
 <translation id="5772805321386874569">(የChromium <ph name="BEGIN_BUTTON" />ዳግም መጀመር<ph name="END_BUTTON" /> ያስፈልገዋል)</translation>
 <translation id="5796460469508169315">Chromium ዝግጁ ሊሆን ትንሽ ቀርቶታል።</translation>
 <translation id="580822234363523061">ወደ
@@ -216,7 +216,6 @@ Chromium ቅንብሮችዎን ማስመለስ አልቻለም።</translation>
 <translation id="761356813943268536">Chromium ካሜራዎን እና ማይክሮፎንዎን እየተጠቀመ ነው።</translation>
 <translation id="7617377681829253106">Chromium አሁን ይበልጥ ተሻሽሏል</translation>
 <translation id="7641113255207688324">Chromium ነባሪ አሳሽዎ አይደለም።</translation>
-<translation id="7723128346970903111">ሲነቃ በiframe ላይ የተመሠረተ የChromium መግቢያ ፍሰትን ይፈጥራል፤ አለበለዚያ በድር እይታ ላይ የተመሰረተ ፍሰትን ይጠቀማል።</translation>
 <translation id="7729447699958282447">ማመሳሰል ለጎራዎ ስለማይገኝ Chromium ውሂብዎን ማመሳሰል አይችልም።</translation>
 <translation id="7747138024166251722">ጫኝው ጊዜያዊ ማውጫ መፍጠር አልቻለም። እባክዎ ነፃ የዲስክ ቦታ እና ሶፍትዌር የመጫን ፍቃድ እንዳለ ይፈትሹ።</translation>
 <translation id="7918535023914021398"><ph name="ISSUER" /> የዚህን የድር ጣቢያ ምስክር ወረቀት እንደሰጠ Chromium አረጋግጧል። አገልጋዩ ማንኛውንም የምስክር ወረቀት ግልፅነት መረጃን አላቀረበም።</translation>

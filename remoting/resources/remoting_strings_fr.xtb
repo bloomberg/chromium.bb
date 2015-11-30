@@ -24,6 +24,7 @@ Pour en savoir plus sur la confidentialité, veuillez consulter les règles de c
 <translation id="1546934824884762070">Une erreur inattendue s'est produite. Veuillez signaler le problème aux développeurs.</translation>
 <translation id="1619813076098775562">Connexion avec l'appareil Cast interrompue</translation>
 <translation id="1643640058022401035">En quittant cette page, vous mettrez fin à la session Google Chromoting.</translation>
+<translation id="1646994964686260497">Aucun appareil auquel se connecter.</translation>
 <translation id="1654128982815600832">Activation des connexions à distance pour cet ordinateur en cours…</translation>
 <translation id="170207782578677537">Échec de l'enregistrement de cet ordinateur.</translation>
 <translation id="1704090719919187045">Préférences relatives à l'hôte Chromoting</translation>
@@ -109,6 +110,7 @@ Pour en savoir plus sur la confidentialité, veuillez consulter les règles de c
 <translation id="3606997049964069799">Vous n'êtes pas connecté à Chromium. Veuillez vous connecter et réessayer.</translation>
 <translation id="3649256019230929621">Réduire la fenêtre</translation>
 <translation id="369442766917958684">Hors connexion</translation>
+<translation id="3695446226812920698">Comment procéder</translation>
 <translation id="3776024066357219166">La session du bureau à distance Google Chrome est terminée.</translation>
 <translation id="3785447812627779171">Hôte
 Chromoting</translation>
@@ -121,6 +123,10 @@ Chromoting</translation>
 <translation id="3950820424414687140">Ouvrir une session</translation>
 <translation id="3989511127559254552">Pour continuer, vous devez autoriser l'accès étendu à votre ordinateur. Vous n'aurez à effectuer cette opération qu'une seule fois.</translation>
 <translation id="4006787130661126000">Si vous souhaitez utiliser le bureau à distance Google Chrome pour accéder à cet ordinateur, vous devez activer les connexions à distance.</translation>
+<translation id="401121182145179743">Vous devez tout d'abord configurer votre ordinateur pour l'accès à distance.</translation>
+<translation id="4028465833180158312">• Mises à jour de l'interface utilisateur de Material Design
+• Crédits de licence tiers
+• Affichage d'informations pour les ordinateurs à distance qui sont hors connexion</translation>
 <translation id="405887016757208221">Échec de l'initialisation de la session par l'ordinateur distant. Si le problème persiste, veuillez réessayer de configurer l'hôte.</translation>
 <translation id="4068946408131579958">Toutes les connexions</translation>
 <translation id="409800995205263688">REMARQUE : Les paramètres des règles n'autorisent que les connexions entre les ordinateurs de votre réseau.</translation>

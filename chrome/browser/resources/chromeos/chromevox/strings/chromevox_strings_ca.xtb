@@ -357,6 +357,7 @@
 <translation id="4729095194763193578">Fila anterior de la taula</translation>
 <translation id="4736221692378411923">Agost</translation>
 <translation id="4740661827607246557">Ordres d'ajuda</translation>
+<translation id="4755857887974653209">Desactiva ChromeVox</translation>
 <translation id="4759716709594980008">Explorador del teclat de Chrome OS</translation>
 <translation id="4763296182459741068">Ajustat a la part inferior</translation>
 <translation id="4763480195061959176">vídeo</translation>
@@ -661,6 +662,7 @@
 <translation id="8065607967589909823">La selecció és</translation>
 <translation id="8066678206530322333">Bàner</translation>
 <translation id="8110647606445335195">No hi ha cap punt de referència ARIA.</translation>
+<translation id="8132379720172247073">Menú de ChromeVox</translation>
 <translation id="8153880621934657047">No sou dins la taula.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{ratlla baixa}other{# ratlles baixes}}</translation>
 <translation id="8179976553408161302">Retorn</translation>
@@ -696,6 +698,7 @@
 <translation id="8584721346566392021">h5</translation>
 <translation id="8587549812518406253">Element de llista següent</translation>
 <translation id="860150890330522909">S'ha marcat la casella de selecció <ph name="NAME" />.</translation>
+<translation id="8603071050456974042">Tauler de ChromeVox</translation>
 <translation id="8606621670302093223">Control de data</translation>
 <translation id="8631359288236106450">S'han seleccionat <ph name="COUNT" /> elements.</translation>
 <translation id="8638532244051952400">Anuncia les coordenades de la cel·la actual</translation>

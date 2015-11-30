@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fil">
+<translation id="101438888985615157">I-rotate ang screen nang 180 degrees</translation>
 <translation id="1017967144265860778">Pamamahala ng power sa screen sa pag-log in</translation>
 <translation id="1019101089073227242">Itakda ang direktoryo ng data ng user</translation>
 <translation id="1022361784792428773">Ang mga ID ng Extension na dapat na iwasan ng user mula sa pag-install (o * para sa lahat)</translation>
@@ -266,6 +267,17 @@
 <translation id="2113068765175018713">Limitahan ang uptime ng device sa pamamagitan ng awtomatikong pag-reboot</translation>
 <translation id="2127599828444728326">Payagan ang mga notification sa mga site na ito</translation>
 <translation id="2131902621292742709">Delay ng pag-dim ng screen kapag tumatakbo gamit ang power ng baterya</translation>
+<translation id="2137064848866899664">Kung itatakda ang patakarang ito, iro-rotate ang bawat display sa
+      nakatakdang oryentasyon sa bawat pag-reboot, at sa unang pagkakataon na ikokonekta ito
+      pagkatapos mabago ang value ng patakaran. Maaaring baguhin ng mga user ang pag-rotate ng display
+      sa pamamagitan ng page ng mga setting pagkatapos ng pagla-log in, ngunit io-override
+      ang kanilang setting ng value ng patakaran sa susunod na pag-reboot.
+
+      Naaangkop ang patakarang ito sa pangunahin at sa lahat ng pangalawang display.
+
+      Kung hindi itatakda ang patakaran, ang default na value ay 0 degrees at
+      maaari itong baguhin ng user. Sa sitwasyong ito, ang default na value ay hindi muling ilalapat sa
+      pag-restart.</translation>
 <translation id="2166715102875984646">I-disable ang suporta para sa mga 3D graphics API.
 
       Kapag na-enable ang setting na ito, pipigilan nito ang mga web page sa pag-access sa graphics processing unit (GPU). Sa partikular, hindi maa-access ng mga web page ang WebGL API at hindi magagamit ng mga plugin ang Pepper 3D API.
@@ -992,6 +1004,7 @@
       Kung pinagana mo ang setting na ito, hindi maa-access ang Mga Tool ng Developer at hindi na maaaring siyasatin ang mga elemento ng web-site. Hindi papaganahin ang anumang mga keyboard shortcut at anumang mga entry ng menu o menu ng konteksto upang buksan ang Mga Tool ng Developer o ang Console ng JavaScript.
 
       Bibigyang-daan ng pagtatakda sa pagpipiliang ito na hindi pinagana o pag-iwan ditong hindi nakatakda ang user na gamitin ang Mga Tool ng Developer at ang console ng JavaScript.</translation>
+<translation id="4449545651113180484">I-rotate ang screen pakanan nang 270 degrees</translation>
 <translation id="4467952432486360968">I-block ang cookies ng third party</translation>
 <translation id="4474167089968829729">I-enable ang pagse-save ng mga password sa password manager</translation>
 <translation id="4480694116501920047">Ipuwersa ang SafeSearch</translation>
@@ -1258,6 +1271,7 @@
       Kung hindi pinagana, hindi ini-import ang default na search engine.
 
       Kung hindi ito nakatakda, maaaring tanungin sa user kung mag-i-import o hindi, o maaaring awtomatikong mangyari ang pag-import.</translation>
+<translation id="5423197884968724595">Pangalan ng paghihigpit sa WebView ng Android:</translation>
 <translation id="5447306928176905178">I-enable ang pag-uulat ng impormasyon ng memory (laki ng JS heap) sa pahina (hindi na ginagamit)</translation>
 <translation id="5457065417344056871">I-enable ang guest mode sa browser</translation>
 <translation id="5457924070961220141">Binibigyang-daan kang i-configure ang default na taga-render ng HTML kapag naka-install ang <ph name="PRODUCT_FRAME_NAME" />.
@@ -2029,6 +2043,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
           Kung pinagana ang setting na ito, matutuklasan at makakakonekta ang machine na ito sa mga malayuang host machine kahit na pinaghihiwalay ng firewall ang mga ito.
 
           Kung hindi pinagana ang setting na ito at ang mga papalabas na UDP na koneksyon ay pini-filter ng firewall, makakakonekta lamang ang machine na ito sa mga host machine sa loob ng lokal na network.</translation>
+<translation id="802147957407376460">I-rotate ang screen nang 0 degrees</translation>
 <translation id="8044493735196713914">Iulat ang boot mode ng device</translation>
 <translation id="8059164285174960932">URL kung saan dapat makuha ng mga client ng malayuang pag-access ang kanilang token sa pagpapatotoo</translation>
 <translation id="8071636581296916773">Ini-enable ang paggamit ng mga relay server kapag sinusubukan ng mga malayuang kliyente na magtatag ng koneksyon sa makinang ito.
@@ -2145,6 +2160,8 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="8382184662529825177">I-enable ang paggamit ng malayuang pagpapatotoo para sa pagprotekta sa nilalaman para sa device</translation>
 <translation id="838870586332499308">Payagan ang roaming ng data</translation>
 <translation id="8412312801707973447">Kung isinasagawa ang mga online na pagsusuri sa OCSP/CRL</translation>
+<translation id="8424255554404582727">Itakda ang default na pag-rotate ng display, muling ilalapat sa bawat pag-reboot</translation>
+<translation id="8426231401662877819">I-rotate ang screen pakanan nang 90 degrees</translation>
 <translation id="8451988835943702790">Gamitin ang Pahina ng Bagong Tab bilang homepage</translation>
 <translation id="8465065632133292531">Mga parameter para sa instant na URL na ginagamit ang POST</translation>
 <translation id="847472800012384958">Huwag payagang magpakita ng mga popup ang anumang site</translation>

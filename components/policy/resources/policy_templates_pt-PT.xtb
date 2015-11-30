@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="pt-PT">
+<translation id="101438888985615157">Rodar o ecrã 180 graus</translation>
 <translation id="1017967144265860778">Gestão de energia no ecrã de início de sessão</translation>
 <translation id="1019101089073227242">Definir diretório de dados do utilizador</translation>
 <translation id="1022361784792428773">IDs das extensões que os utilizadores não poderão instalar (ou * para todas)</translation>
@@ -243,6 +244,17 @@
 <translation id="2113068765175018713">Limitar o tempo de atividade do dispositivo reiniciando automaticamente</translation>
 <translation id="2127599828444728326">Permitir notificações nestes Web sites</translation>
 <translation id="2131902621292742709">Atraso do escurecimento do ecrã quando o dispositivo está a utilizar a energia da bateria</translation>
+<translation id="2137064848866899664">Se esta política estiver definida, cada ecrã é rodado para a
+      orientação especificada em todos os reinícios e da primeira vez que for ligado
+      após a alteração do valor da política. Os utilizadores podem alterar a rotação
+      do ecrã através da página de definições após o início de sessão. No entanto,
+      essa definição é substituída pelo valor da política no reinício seguinte.
+
+      Esta política aplica-se ao ecrã principal e a todos os ecrãs secundários.
+
+      Se a política não estiver definida, o valor predefinido é 0 graus e o utilizador
+      pode alterá-lo. Neste caso, o valor predefinido não é aplicado novamente no
+      reinício.</translation>
 <translation id="2166715102875984646">Desativa o suporte para APIs de gráficos 3D.
 
       A ativação desta definição impede que as páginas Web acedam à unidade de processamento gráfica (GPU). Mais concretamente, as páginas Web não podem aceder à API WebGL e os plug-ins não podem aceder à API Pepper 3D.
@@ -893,6 +905,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       </translation>
 <translation id="4442582539341804154">Ativar o bloqueio quando o dispositivo fica inativo ou entra em suspensão.</translation>
 <translation id="4445684791305970001">Desativa as Ferramentas do Programador e a Consola de JavaScript. Se ativar esta definição, não será possível aceder às Ferramentas do Programador e os elementos de Web sites deixarão de ser inspecionados. Todos os atalhos de teclado e entradas de menu ou de menu de contexto para abrir as Ferramentas do Programador ou a Consola de JavaScript serão desativados. Se desativar ou não definir esta opção, permitirá que o utilizador use as Ferramentas do Programador e a Consola de JavaScript.</translation>
+<translation id="4449545651113180484">Rodar o ecrã 270 graus para a direita</translation>
 <translation id="4467952432486360968">Bloquear cookies de terceiros</translation>
 <translation id="4474167089968829729">Permitir guardar palavras-passe no gestor de palavras-passe</translation>
 <translation id="4480694116501920047">Forçar Pesquisa Segura</translation>
@@ -1119,6 +1132,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
           Se esta definição estiver desativada ou não for definida, então, os utilizadores locais e remotos podem interagir com o anfitrião quando este está a ser partilhado.</translation>
 <translation id="5423001109873148185">Se esta política estiver ativada, força a importação de motores de pesquisa a partir do navegador predefinido atual e também afeta a caixa de diálogo de importação. Se estiver desativada, o motor de pesquisa predefinido não é importado. Se não for definida, o utilizador poderá ser questionado se pretende importá-lo ou a importação poderá ocorrer automaticamente.</translation>
+<translation id="5423197884968724595">Nome da restrição WebView do Android:</translation>
 <translation id="5447306928176905178">Ativar informações de memória de relatórios (tamanho da área dinâmica para dados JS) para a página (descontinuado)</translation>
 <translation id="5457065417344056871">Ativar o modo convidado no navegador</translation>
 <translation id="5457924070961220141">Permite configurar o processador de HTML predefinido quando o <ph name="PRODUCT_FRAME_NAME" /> é instalado. Se esta política não for definida, será utilizada a predefinição para permitir que o processamento seja efetuado pelo navegador anfitrião. Opcionalmente, pode substituir esta definição e configurar o <ph name="PRODUCT_FRAME_NAME" /> para processar páginas HTML por predefinição.</translation>
@@ -1800,6 +1814,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="7953256619080733119">Anfitriões de exceção no manual do utilizador gerido</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Esta política já não é suportada. Ativa a utilização de servidores STUN e de transmissão ao estabelecer ligação a um cliente remoto. Se esta definição estiver ativada, o computador poderá localizar e estabelecer ligação a computadores anfitrião remotos, mesmo que estejam separados por uma firewall. Se esta definição estiver desativada e as ligações UDP de saída forem filtradas pela firewall, este computador apenas poderá estabelecer ligação a computadores anfitrião dentro da rede local.</translation>
+<translation id="802147957407376460">Rodar o ecrã 0 graus</translation>
 <translation id="8044493735196713914">Comunicar modo de arranque do aparelho</translation>
 <translation id="8059164285174960932">URL onde os clientes de acesso remoto devem obter o respetivo símbolo de autenticação</translation>
 <translation id="8071636581296916773">Ativa a utilização de servidores de retransmissão quando existirem clientes remotos a tentar estabelecer ligação a esta máquina.
@@ -1908,6 +1923,8 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="8382184662529825177">Ativar a utilização da comprovação remota para proteção de conteúdo no dispositivo</translation>
 <translation id="838870586332499308">Ativar roaming de dados</translation>
 <translation id="8412312801707973447">Se são ou não efetuadas verificações OCSP/CRL on-line</translation>
+<translation id="8424255554404582727">Definir a rotação predefinida do ecrã, aplicada novamente em todos os reinícios</translation>
+<translation id="8426231401662877819">Rodar o ecrã 90 graus para a direita</translation>
 <translation id="8451988835943702790">Utilizar a página Novo separador como página inicial</translation>
 <translation id="8465065632133292531">Parâmetros do URL instantâneo que utilize POST</translation>
 <translation id="847472800012384958">Não permitir que os sites mostrem pop-ups</translation>

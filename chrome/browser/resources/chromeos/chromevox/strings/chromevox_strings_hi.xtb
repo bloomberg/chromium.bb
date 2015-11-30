@@ -357,6 +357,7 @@
 <translation id="4729095194763193578">पिछली तालिका पंक्ति</translation>
 <translation id="4736221692378411923">अगस्त</translation>
 <translation id="4740661827607246557">सहायता आदेश</translation>
+<translation id="4755857887974653209">ChromeVox अक्षम करें</translation>
 <translation id="4759716709594980008">ChromeOS कीबोर्ड एक्‍सप्‍लोरर</translation>
 <translation id="4763296182459741068">नीचे तक लपेटा गया</translation>
 <translation id="4763480195061959176">वीडियो</translation>
@@ -661,6 +662,7 @@
 <translation id="8065607967589909823">यह चयनित है:</translation>
 <translation id="8066678206530322333">बैनर</translation>
 <translation id="8110647606445335195">कोई ARIA स्थानचिह्न नहीं.</translation>
+<translation id="8132379720172247073">ChromeVox मेनू</translation>
 <translation id="8153880621934657047">तालिका में नहीं है.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{अंडरस्कोर}one{# अंडरस्कोर}other{# अंडरस्कोर}}</translation>
 <translation id="8179976553408161302">Enter</translation>
@@ -696,6 +698,7 @@
 <translation id="8584721346566392021">h5</translation>
 <translation id="8587549812518406253">अगला सूची आइटम</translation>
 <translation id="860150890330522909"><ph name="NAME" />, चेकबॉक्‍स चेक किया गया</translation>
+<translation id="8603071050456974042">ChromeVox फलक</translation>
 <translation id="8606621670302093223">दिनांक नियंत्रण</translation>
 <translation id="8631359288236106450">चयनित <ph name="COUNT" /> आइटम</translation>
 <translation id="8638532244051952400">वर्तमान सेल निर्देशांक बताएं</translation>

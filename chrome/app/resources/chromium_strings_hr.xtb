@@ -10,11 +10,12 @@
 <translation id="1293235220023151515">U sustavu je pronađena konfliktna instalacija Chromiuma. Deinstalirajte je i pokušajte ponovo.</translation>
 <translation id="1298199220304005244">Pomoć za upotrebu OS-a Chromium</translation>
 <translation id="1396446129537741364">Chromium pokušava prikazati zaporke.</translation>
+<translation id="1403254041219632970">Buduće verzije Chromiuma više neće podržavati sustave Mac OS X 10.6, 10.7 i 10.8.</translation>
 <translation id="1414495520565016063">Prijavljeni ste na Chromium!</translation>
 <translation id="1444754455097148408">Licence otvorenog izvornog koda Chromiuma</translation>
-<translation id="1461885241643463646">Omogućuje postupke prijave na Chromium na temelju iframea. Ta oznaka premošćuje omogućivanje prijave na temelju weba.</translation>
 <translation id="1480489203462860648">Pokušajte, već je instaliran</translation>
 <translation id="151962892725702025">OS Chromium nije mogao sinkronizirati vaše podatke jer sinkronizacija nije dostupna za vašu domenu.</translation>
+<translation id="1559451348202814456">Chromium možda neće ispravno raditi jer više nije podržan na sustavima Mac OS X 10.6, 10.7 i 10.8.</translation>
 <translation id="1644918877723739397">Chromium će spremiti tu zaporku u vaše <ph name="SAVED_PASSWORD_LINK" /> i zapamtiti je za sljedeći put.</translation>
 <translation id="1668054258064581266">Nakon uklanjanja računa s Chromiuma možda ćete morati ponovo učitati otvorene kartice kako bi nastupile promjene.</translation>
 <translation id="1688750314291223739">Postavite sinkronizaciju da biste spremili svoje prilagođene značajke preglednika na web i pristupali im s preglednika Chromium na bilo kojem računalu.</translation>
@@ -43,8 +44,10 @@
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{U tijeku je preuzimanje. Želite li otkazati preuzimanje i napustiti Chromium?}one{U tijeku je # preuzimanje. Želite li otkazati preuzimanja i napustiti Chromium?}few{U tijeku su # preuzimanja. Želite li otkazati preuzimanja i napustiti Chromium?}other{U tijeku je # preuzimanja. Želite li otkazati preuzimanja i napustiti Chromium?}}</translation>
 <translation id="2396765026452590966">Proširenje "<ph name="EXTENSION_NAME" />" promijenilo je stranicu koja se prikazuje prilikom pokretanja Chromiuma.</translation>
 <translation id="2485422356828889247">Deinstaliraj</translation>
+<translation id="2486653164587200256">Chromium možda neće ispravno raditi jer više nije podržan na sustavima Windows XP i Windows Vista.</translation>
 <translation id="2535480412977113886">OS Chromium nije mogao sinkronizirati podatke vašeg računa jer su pojedinosti prijave na račun zastarjele.</translation>
 <translation id="2558641060352364164">Web-lokacija upotrebljava dodatak Chromium Frame koji se uskoro više neće podržavati. Deinstalirajte ga i nadogradite na suvremeni preglednik.</translation>
+<translation id="2565260267992448464">Chromium ne može prikazati web-stranicu jer vaše računalo nije povezano s internetom.</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="2602806952220118310">Chromium – obavijesti</translation>
 <translation id="2636877269779209383">Chromium treba imati pristup kameri da bi je dijelio s ovom web-lokacijom.</translation>
@@ -106,6 +109,7 @@ i netočne vjerodajnice. To može značiti da se neki napadač pokušava predsta
 <translation id="4423735387467980091">Prilagodite Chromium i upravljajte njime</translation>
 <translation id="4458285410772214805">Odjavite se i prijavite se ponovo da bi ta promjena postala aktivna.</translation>
 <translation id="4488676065623537541">Vaše pojedinosti o naplati spremljene su u Chromium.</translation>
+<translation id="4549794359424059447">Buduće verzije Chromiuma više neće podržavati sustave Windows XP i Windows Vista.</translation>
 <translation id="4559775032954821361">Idite na
           izbornik Chromium &gt;
           <ph name="SETTINGS_TITLE" />
@@ -134,6 +138,7 @@ i netočne vjerodajnice. To može značiti da se neki napadač pokušava predsta
 <translation id="549669000822060376">Pričekajte da Chromium instalira najnovija ažuriranja sustava.</translation>
 <translation id="5563479599352954471">Pretraživanje jednim dodirom</translation>
 <translation id="5620765574781326016">Ne morate napustiti stranicu da biste saznali koje su teme web-lokacija.</translation>
+<translation id="5680901439334282664">prijavite se na Chromium</translation>
 <translation id="5772805321386874569">(potrebno je <ph name="BEGIN_BUTTON" />ponovo pokrenuti<ph name="END_BUTTON" /> Chromium)</translation>
 <translation id="5796460469508169315">Chromium će uskoro biti spreman.</translation>
 <translation id="580822234363523061">Idite na
@@ -210,7 +215,6 @@ Chromium ne može oporaviti vaše postavke.</translation>
 <translation id="761356813943268536">Chromium upotrebljava vašu kameru i mikrofon.</translation>
 <translation id="7617377681829253106">Chromium je upravo postao bolji</translation>
 <translation id="7641113255207688324">Chromium nije vaš zadani preglednik.</translation>
-<translation id="7723128346970903111">Kada je to omogućeno, upotrebljavat će se postupak prijave na Chromium na temelju iframea. U suprotnom će se upotrebljavati postupak na temelju web-prikaza.</translation>
 <translation id="7729447699958282447">Chromium nije mogao sinkronizirati vaše podatke jer sinkronizacija nije dostupna za vašu domenu.</translation>
 <translation id="7747138024166251722">Program za instalaciju nije izradio privremeni direktorij. Provjerite ima li slobodnog prostora na disku i postoji li dopuštenje za instalaciju softvera.</translation>
 <translation id="7918535023914021398">Chromium je potvrdio da je <ph name="ISSUER" /> izdavač certifikata web-lokacije. Poslužitelj nije pružio informacije o transparentnosti certifikata.</translation>

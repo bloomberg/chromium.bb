@@ -357,6 +357,7 @@
 <translation id="4729095194763193578">পূর্ববর্তী সারণী সারি</translation>
 <translation id="4736221692378411923">আগস্ট</translation>
 <translation id="4740661827607246557">সহায়তা আদেশগুলি</translation>
+<translation id="4755857887974653209">ChromeVox অক্ষম করুন</translation>
 <translation id="4759716709594980008">ChromeOS কীবোর্ড এক্সপ্লোরার</translation>
 <translation id="4763296182459741068">নীচে সম্পৃক্ত রয়েছে</translation>
 <translation id="4763480195061959176">ভিডিও</translation>
@@ -661,6 +662,7 @@
 <translation id="8065607967589909823">নির্বাচনটি</translation>
 <translation id="8066678206530322333">ব্যানার</translation>
 <translation id="8110647606445335195">কোনো ARIA ল্যান্ডমার্ক নেই৷</translation>
+<translation id="8132379720172247073">ChromeVox মেনু</translation>
 <translation id="8153880621934657047">সারণীর ভিতরে নয়৷</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{আন্ডারস্কোর}one{#টি আন্ডারস্কোর}other{#টি আন্ডারস্কোর}}</translation>
 <translation id="8179976553408161302">Enter</translation>
@@ -696,6 +698,7 @@
 <translation id="8584721346566392021">h5</translation>
 <translation id="8587549812518406253">পরবর্তী তালিকা আইটেম</translation>
 <translation id="860150890330522909"><ph name="NAME" /> চেকবাক্সে চেক করা হয়েছে</translation>
+<translation id="8603071050456974042">ChromeVox প্যানেল</translation>
 <translation id="8606621670302093223">তারিখ নিয়ন্ত্রণ</translation>
 <translation id="8631359288236106450">নির্বাচিত <ph name="COUNT" />টি আইটেম</translation>
 <translation id="8638532244051952400">বর্তমান কক্ষ স্থানাঙ্কগুলি ঘোষণা করে</translation>

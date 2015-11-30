@@ -357,6 +357,7 @@
 <translation id="4729095194763193578">Önceki tablo satırı</translation>
 <translation id="4736221692378411923">Ağustos</translation>
 <translation id="4740661827607246557">Yardım Komutları</translation>
+<translation id="4755857887974653209">ChromeVox'u devre dışı bırak</translation>
 <translation id="4759716709594980008">ChromeOS Klavye Gezgini</translation>
 <translation id="4763296182459741068">Alta döner</translation>
 <translation id="4763480195061959176">video</translation>
@@ -661,6 +662,7 @@
 <translation id="8065607967589909823">Yapılan seçim:</translation>
 <translation id="8066678206530322333">Banner</translation>
 <translation id="8110647606445335195">ARIA önemli noktası yok.</translation>
+<translation id="8132379720172247073">ChromeVox Menüsü</translation>
 <translation id="8153880621934657047">Tablonun içinde değil.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{alt çizgi}other{# alt çizgi}}</translation>
 <translation id="8179976553408161302">Enter</translation>
@@ -696,6 +698,7 @@
 <translation id="8584721346566392021">h5</translation>
 <translation id="8587549812518406253">Sonraki liste öğesi</translation>
 <translation id="860150890330522909"><ph name="NAME" /> onay kutusu işaretli</translation>
+<translation id="8603071050456974042">ChromeVox Paneli</translation>
 <translation id="8606621670302093223">Tarih denetimi</translation>
 <translation id="8631359288236106450"><ph name="COUNT" /> öğe seçildi</translation>
 <translation id="8638532244051952400">Geçerli hücre koordinatlarını söyle</translation>

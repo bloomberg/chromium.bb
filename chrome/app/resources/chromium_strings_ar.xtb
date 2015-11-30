@@ -13,7 +13,6 @@
 <translation id="1403254041219632970">‏لن تدعم الإصدارات المستقبلية من Chromium أنظمة Mac OS X 10.6 أو 10.7 أو 10.8.</translation>
 <translation id="1414495520565016063">‏تم تسجيل دخولك إلى Chromium!</translation>
 <translation id="1444754455097148408">‏تراخيص مفتوحة المصدر لـ Chromium</translation>
-<translation id="1461885241643463646">‏يمكّن تدفقات تسجيل الدخول لمتصفح Chromium القائمة على iframe. وتلغي هذه العلامة تمكين تسجيل الدخول القائم على الموقع.</translation>
 <translation id="1480489203462860648">يمكنك تجريبه، إنه مثبت من قبل</translation>
 <translation id="151962892725702025">‏تعذر على نظام التشغيل Chromium مزامنة البيانات نظرًا لأن المزامنة غير متاحة في نطاقك.</translation>
 <translation id="1559451348202814456">‏ربما لن يعمل Chromium بشكل صحيح لأنه لم يعد مدعومًا على أنظمة Mac OS X 10.6 أو 10.7 أو 10.8.</translation>
@@ -139,6 +138,7 @@
 <translation id="549669000822060376">‏الرجاء الانتظار أثناء تثبيت Chromium لآخر تحديثات النظام.</translation>
 <translation id="5563479599352954471">للبحث بلمسة واحدة</translation>
 <translation id="5620765574781326016">تعرّف على موضوعات على مواقع الويب دون مغادرة الصفحة.</translation>
+<translation id="5680901439334282664">‏تسجيل الدخول إلى Chromium</translation>
 <translation id="5772805321386874569">‏(<ph name="BEGIN_BUTTON" />إعادة تشغيل<ph name="END_BUTTON" /> Chromium مطلوبة)</translation>
 <translation id="5796460469508169315">‏Chromium جاهز تقريبًا.</translation>
 <translation id="580822234363523061">‏انتقل إلى
@@ -215,7 +215,6 @@
 <translation id="761356813943268536">‏يستخدم Chromium الكاميرا والميكروفون.</translation>
 <translation id="7617377681829253106">‏Chromium أصبح أفضل</translation>
 <translation id="7641113255207688324">‏ليس Chromium متصفحك الافتراضي.</translation>
-<translation id="7723128346970903111">‏عند تمكينه، سيستخدم تدفق تسجيل دخول Chromium القائم على iframe؛ وإلا سيستخدم تدفقًا قائمًا على عرض الويب.</translation>
 <translation id="7729447699958282447">‏تعذر على Chromium مزامنة البيانات نظرًا لأن المزامنة غير متاحة في نطاقك.</translation>
 <translation id="7747138024166251722">تعذر على أداة المثبِّت إنشاء دليل مؤقت. يُرجى التحقق من وجود مساحة خالية على القرص وتوفر الإذن اللازم لتثبيت البرنامج.</translation>
 <translation id="7918535023914021398">‏تحقق Chromium من أن <ph name="ISSUER" /> أصدر شهادة موقع الويب هذا. ولم يقدم الخادم أي معلومات لشفافية الشهادة.</translation>

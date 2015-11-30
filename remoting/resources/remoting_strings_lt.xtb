@@ -24,6 +24,7 @@ Jei reikia informacijos apie privatumą, žr. „Google“ privatumo politiką (
 <translation id="1546934824884762070">Įvyko netikėta klaida. Praneškite apie problemą kūrėjams.</translation>
 <translation id="1619813076098775562">Nutrauktas ryšys su perdavimo įrenginiu.</translation>
 <translation id="1643640058022401035">Išėjus iš šio puslapio, baigsis „Chrome“ nuotolinio ryšio sesija.</translation>
+<translation id="1646994964686260497">Nėra prie ko prisijungti.</translation>
 <translation id="1654128982815600832">Įgalinamas nuotolinis ryšys šiame kompiuteryje…</translation>
 <translation id="170207782578677537">Mėginant užregistruoti šį kompiuterį įvyko klaida.</translation>
 <translation id="1704090719919187045">„Chrome“ nuotolinio ryšio prieglobos nuostatos</translation>
@@ -109,6 +110,7 @@ Jei reikia informacijos apie privatumą, žr. „Google“ privatumo politiką (
 <translation id="3606997049964069799">Nesate prisijungę prie „Chromium“. Prisijunkite ir bandykite dar kartą.</translation>
 <translation id="3649256019230929621">Sumažinti langą</translation>
 <translation id="369442766917958684">Neprisijungus.</translation>
+<translation id="3695446226812920698">Sužinokite kaip</translation>
 <translation id="3776024066357219166">Baigėsi „Chrome“ nuotolinio kompiuterio valdymo sesija.</translation>
 <translation id="3785447812627779171">„Chrome“ nuotolinio ryšio
 priegloba</translation>
@@ -121,6 +123,10 @@ priegloba</translation>
 <translation id="3950820424414687140">Prisijungti</translation>
 <translation id="3989511127559254552">Jei norite tęsti, pirmiausia turite suteikti išplėstinės prieigos prie kompiuterio leidimus. Tai reikės atlikti tik vieną kartą.</translation>
 <translation id="4006787130661126000">Jei norite naudoti „Chrome“ nuotolinį kompiuterio valdymą šiam kompiuteriui pasiekti, turite įgalinti nuotolinį ryšį.</translation>
+<translation id="401121182145179743">Pirmiausia turite nustatyti kompiuterio nuotolinę prieigą.</translation>
+<translation id="4028465833180158312">• Trimačių objektų dizaino NS naujiniai.
+• Trečiosios šalies licencijavimo kreditai.
+• Rodoma nuotolinių kompiuterių, kurie neprijungti prie interneto, informacija.</translation>
 <translation id="405887016757208221">Nuotoliniam kompiuteriui nepavyko inicijuoti sesijos. Jei problema išlieka, pabandykite dar kartą sukonfigūruoti prieglobą.</translation>
 <translation id="4068946408131579958">Visi ryšiai</translation>
 <translation id="409800995205263688">PASTABA: pagal politikos nustatymus leidžiama užmegzti ryšį tik tarp tinkle esančių kompiuterių.</translation>

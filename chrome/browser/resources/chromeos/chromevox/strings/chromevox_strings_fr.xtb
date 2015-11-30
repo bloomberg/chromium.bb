@@ -357,6 +357,7 @@
 <translation id="4729095194763193578">Ligne précédente du tableau</translation>
 <translation id="4736221692378411923">Août</translation>
 <translation id="4740661827607246557">Commandes relatives à l'aide</translation>
+<translation id="4755857887974653209">Désactiver ChromeVox</translation>
 <translation id="4759716709594980008">Explorateur de clavier Chrome OS</translation>
 <translation id="4763296182459741068">Accéder au bas</translation>
 <translation id="4763480195061959176">vidéo</translation>
@@ -661,6 +662,7 @@
 <translation id="8065607967589909823">La sélection est la suivante :</translation>
 <translation id="8066678206530322333">Bannière</translation>
 <translation id="8110647606445335195">Aucun repère ARIA</translation>
+<translation id="8132379720172247073">Menu ChromeVox</translation>
 <translation id="8153880621934657047">Hors du tableau</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{trait de soulignement}one{# trait de soulignement}other{# traits de soulignement}}</translation>
 <translation id="8179976553408161302">Entrée</translation>
@@ -696,6 +698,7 @@
 <translation id="8584721346566392021">h5</translation>
 <translation id="8587549812518406253">Élément de liste suivant</translation>
 <translation id="860150890330522909">case <ph name="NAME" /> cochée</translation>
+<translation id="8603071050456974042">Panneau ChromeVox</translation>
 <translation id="8606621670302093223">Commande relative à la date</translation>
 <translation id="8631359288236106450"><ph name="COUNT" /> éléments sélectionnés</translation>
 <translation id="8638532244051952400">Annoncer les coordonnées de la cellule active</translation>

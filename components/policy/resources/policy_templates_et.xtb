@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="et">
+<translation id="101438888985615157">Ekraani pööramine 180 kraadi</translation>
 <translation id="1017967144265860778">Toitehaldus sisselogimiskuval</translation>
 <translation id="1019101089073227242">Kasutaja andmete kataloogi määramine</translation>
 <translation id="1022361784792428773">Laienduste ID-d, mida kasutajatel ei ole lubatud installida (märk * keelab kõik)</translation>
@@ -266,6 +267,17 @@
 <translation id="2113068765175018713">Seadme tööaja piiramine automaatse taaskäivitamisega</translation>
 <translation id="2127599828444728326">Luba märguanded nendel saitidel</translation>
 <translation id="2131902621292742709">Ekraani hämardamise viiteaeg akutoite kasutamisel</translation>
+<translation id="2137064848866899664">Selle reegli määramisel pööratakse iga ekraan
+      määratud suunda igal taaskäivitamisel ja esimesel korral, kui see pärast
+      reegli väärtuse muutmist ühendatakse. Kasutajad saavad ekraani
+      pöördenurka seadete lehel pärast sisselogimist muuta, kuid reegli
+      väärtus alistab nende seade järgmisel taaskäivitamisel.
+
+      See reegel kehtib nii peamiste kui ka teiseste ekraanide puhul.
+
+      Kui reegel jäetakse määramata, on vaikeväärtus 0 kraadi ja kasutaja
+      saab seda muuta. Sellisel juhul ei rakendata vaikeväärtust
+      taaskäivitamisel uuesti.</translation>
 <translation id="2166715102875984646">Keelab 3D-graafika API-de toe.
 
       Seade lubamine takistab veebilehti graafikaprotsessorit (GPU) kasutamast. Täpsemalt ei pääse veebilehed juurde WebGL-i API-le ja pistikprogrammid ei saa kasutada Pepper 3D API-t.
@@ -978,6 +990,7 @@
       Seade lubamisel ei saa arendaja tööriistu kasutada ega veebisaitide elemente uurida. Kõik klaviatuuri otseteed ning arendaja tööriistade ja JavaScripti konsooli avamise käsud menüüdes ja kontekstimenüüdes keelatakse.
 
       Kui keelate valiku või jätate selle määramata, siis saab arendaja tööriistu ja JavaScripti konsooli kasutada.</translation>
+<translation id="4449545651113180484">Ekraani pööramine 270 kraadi päripäeva</translation>
 <translation id="4467952432486360968">Blokeeri kolmanda osapoole küpsised</translation>
 <translation id="4474167089968829729">Luba paroolide salvestamine paroolihaldurisse</translation>
 <translation id="4480694116501920047">Jõusta SafeSearchi kasutamine</translation>
@@ -1244,6 +1257,7 @@
       Kui reegel on keelatud, siis vaikeotsingumootorit ei impordita.
 
       Kui reeglit ei määrata, siis võidakse automaatselt importida või kasutajalt küsida, kas ta soovib importida.</translation>
+<translation id="5423197884968724595">Android WebView' piirangu nimi:</translation>
 <translation id="5447306928176905178">Mäluteabe (JS kuhja maht) aruandluse lubamine lehele (iganenud)</translation>
 <translation id="5457065417344056871">Külalisrežiimi lubamine brauseris</translation>
 <translation id="5457924070961220141">Võimaldab <ph name="PRODUCT_FRAME_NAME" /> installimisel seadistada HTML-i vaikerenderdaja.
@@ -2011,6 +2025,7 @@
           Seade lubamisel saab masin eemal asuvaid hostmasinaid tuvastada ja nendega ühenduse luua ka juhul, kui neid eraldab tulemüür.
 
           Kui keelate seade ja tulemüür filtreerib väljuvaid UDP-ühendusi, siis saab masin luua ühenduse vaid kohalikus võrgus olevate hostmasinatega.</translation>
+<translation id="802147957407376460">Ekraani pööramine 0 kraadi</translation>
 <translation id="8044493735196713914">Teabe saatmine seadme käivitusrežiimi kohta</translation>
 <translation id="8059164285174960932">URL, kust kaugjuurdepääsuga kliendid peaksid saama autentimismärgi</translation>
 <translation id="8071636581296916773">Lubab releeserverite kasutamise, kui kaugkliendid proovivad luua ühenduse selle seadmega.
@@ -2129,6 +2144,8 @@
 <translation id="8382184662529825177">Kaugatesteerimise lubamine seadme sisu kaitsmiseks</translation>
 <translation id="838870586332499308">Luba andmeside rändlusteenus</translation>
 <translation id="8412312801707973447">Kontrolli võrgus OCSP-d/CRL-i</translation>
+<translation id="8424255554404582727">Määratakse ekraani vaikepöördenurk, mis rakendatakse uuesti igal taaskäivitamisel</translation>
+<translation id="8426231401662877819">Ekraani pööramine 90 kraadi päripäeva</translation>
 <translation id="8451988835943702790">Kasuta avalehena Uut vahelehte</translation>
 <translation id="8465065632133292531">Parameetrid Instant-URL-i jaoks, mis kasutab POST-meetodit</translation>
 <translation id="847472800012384958">Keela kõikidel saitidel hüpikakende näitamine</translation>

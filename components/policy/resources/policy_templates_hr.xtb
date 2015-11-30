@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hr">
+<translation id="101438888985615157">Zakreni zaslon 180 stupnjeva</translation>
 <translation id="1017967144265860778">Upravljanje napajanjem na zaslonu za prijavu</translation>
 <translation id="1019101089073227242">Postavi imenik korisničkih podataka</translation>
 <translation id="1022361784792428773">ID-jevi proširenja u čijem bi instaliranju korisnik trebao biti spriječen (ili * za sve)</translation>
@@ -236,6 +237,17 @@
 <translation id="2113068765175018713">Ograničavanje vremena rada uređaja automatskim ponovnim pokretanjem sustava</translation>
 <translation id="2127599828444728326">Dopuštanje obavijesti na ovim web-lokacijama</translation>
 <translation id="2131902621292742709">Odgoda zatamnjivanja zaslona za vrijeme baterijskog napajanja</translation>
+<translation id="2137064848866899664">Ako se to pravilo postavi, svaki se zaslon zakreće na navedeno
+      usmjerenje pri svakom ponovnom pokretanju i prilikom prvog povezivanja
+      nakon promjene vrijednosti pravila. Korisnici mogu promijeniti usmjerenje
+      zaslona na stranici postavki nakon prijave, no vrijednost pravila
+      nadjačat će njihovu postavku prilikom sljedećeg ponovnog pokretanja.
+
+      To se pravilo primjenjuje na primarni i sve sekundarne zaslone.
+
+      Ako se to pravilo ne postavi, zadana je vrijednost 0 stupnjeva i korisnik
+      je može promijeniti. U tom slučaju zadana vrijednost neće se ponovo
+      primjenjivati nakon ponovnog pokretanja.</translation>
 <translation id="2166715102875984646">Onemogući podršku za API-je za 3D grafiku.
 
       Omogućivanjem te postavke web-stranicama se sprječava pristup grafičkoj procesorskoj jedinici (GPU). To konkretno znači da web-stranice ne mogu pristupiti API-ju WebGL, a dodaci ne mogu koristiti API Pepper 3D.
@@ -882,6 +894,7 @@
       </translation>
 <translation id="4442582539341804154">Omogući zaključavanje kada uređaj prijeđe u stanje mirovanja ili se isključi</translation>
 <translation id="4445684791305970001">Onemogućuje Alate za razvojne programere i konzolu JavaScriptu. Ako omogućite ovu postavku, više neće biti moguće pristupiti Alatima za razvojne programere i više se neće moći provjeravati elementi web-lokacija. Bit će onemogućeni svi tipkovnički prečaci i stavke izbornika ili kontekstnih izbornika za otvaranje Alata za razvojne programere ili konzole JavaScriptu. Ako se ova opcija onemogući ili ne postavi, bit će dopuštena upotreba Alata za razvojne programere i konzole JavaScripta.</translation>
+<translation id="4449545651113180484">Zakreni zaslon u smjeru kazaljke na satu 270 stupnjeva</translation>
 <translation id="4467952432486360968">Blokiraj kolačiće trećih strana</translation>
 <translation id="4474167089968829729">Omogući spremanje zaporki u upravitelj zaporki</translation>
 <translation id="4480694116501920047">Nametni Sigurno pretraživanje</translation>
@@ -1112,6 +1125,7 @@
 
           Ako je ta postavka onemogućena ili nije postavljena, tada u interakciju s hostom mogu stupati lokalni i udaljeni korisnici kada se on dijeli.</translation>
 <translation id="5423001109873148185">Ako je omogućeno, ovo pravilo prisilno uvozi tražilice iz trenutačno zadanog preglednika. Ako je omogućeno, ovo pravilo također utječe na dijaloški okvir za uvoz. Ako je onemogućeno, zadana se tražilica ne uvozi. Ako nije postavljeno, korisniku može biti postavljen upit želi li uvesti tražilicu ili do uvoza može doći automatski.</translation>
+<translation id="5423197884968724595">Naziv ograničenja za Android WebView:</translation>
 <translation id="5447306928176905178">Omogući prijavljivanje informacija o memoriji (ukupna veličina JS-a) na stranici (zastarjelo)</translation>
 <translation id="5457065417344056871">Omogućivanje načina rada za goste u pregledniku</translation>
 <translation id="5457924070961220141">Omogućuje konfiguriranje zadanog HTML prikazivača kada je instaliran okvir <ph name="PRODUCT_FRAME_NAME" />. Ako ovo pravilo nije postavljeno, zadana je postavka da prikazivanje obavlja preglednik hosta, ali to po izboru možete poništiti i postaviti da okvir <ph name="PRODUCT_FRAME_NAME" /> prikazuje HTML stranice prema zadanim postavkama.</translation>
@@ -1789,6 +1803,7 @@
 <translation id="7953256619080733119">Hostovi ručnih iznimaka upravljanih korisnika</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Ovo pravilo više se ne podržava. Omogućuje upotrebu STUN i relejnih poslužitelja prilikom povezivanja s udaljenim klijentom. Ako je ova postavka omogućena, onda ovo računalo može otkriti udaljena računala hostove i povezati se s njima, čak i ako su odvojena vatrozidom. Ako je ova postavka onemogućena, a izlazne UDP veze filtrirane su vatrozidom, onda se ovo računalo može jedino povezati s računalima hostovima unutar lokalne mreže.</translation>
+<translation id="802147957407376460">Zakreni zaslon 0 stupnjeva</translation>
 <translation id="8044493735196713914">Izvješće načina pokretanja uređaja</translation>
 <translation id="8059164285174960932">URL na kojem bi klijenti za daljinski pristup trebali dobiti token za autentifikaciju</translation>
 <translation id="8071636581296916773">Omogućuje upotrebu relejnih poslužitelja kada udaljeni klijenti pokušavaju uspostaviti vezu s ovim računalom.
@@ -1896,6 +1911,8 @@
 <translation id="8382184662529825177">Omogući upotrebu daljinske ovjere za zaštitu sadržaja za uređaj</translation>
 <translation id="838870586332499308">Omogući roaming podataka</translation>
 <translation id="8412312801707973447">Izvršavaju li se mrežne provjere OCSP/CRL</translation>
+<translation id="8424255554404582727">Postavi zadano zakretanje zaslona koje će se primjenjivati nakon svakog ponovnog pokretanja</translation>
+<translation id="8426231401662877819">Zakreni zaslon u smjeru kazaljke na satu 90 stupnjeva</translation>
 <translation id="8451988835943702790">Upotrijebi web-stranicu nove kartice kao početnu stranicu</translation>
 <translation id="8465065632133292531">Parametri za URL usluge Instant koji upotrebljava POST</translation>
 <translation id="847472800012384958">Ne dopusti web-lokacijama prikazivanje skočnih prozora</translation>

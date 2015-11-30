@@ -24,6 +24,7 @@ Pentru informații privind confidențialitatea, accesați Politica de confidenț
 <translation id="1546934824884762070">A apărut o eroare neașteptată. Raportați această problemă dezvoltatorilor.</translation>
 <translation id="1619813076098775562">Conexiunea la dispozitivul de proiecție a fost închisă.</translation>
 <translation id="1643640058022401035">Părăsind această pagină, veți încheia sesiunea Chromoting.</translation>
+<translation id="1646994964686260497">Niciun dispozitiv la care te poți conecta.</translation>
 <translation id="1654128982815600832">Se activează conexiunile la distanță pentru acest computer…</translation>
 <translation id="170207782578677537">Înregistrarea acestui computer nu a reușit.</translation>
 <translation id="1704090719919187045">Preferințe gazdă Chromoting</translation>
@@ -109,6 +110,7 @@ Pentru informații privind confidențialitatea, accesați Politica de confidenț
 <translation id="3606997049964069799">Nu te-ai conectat la Chromium. Conectează-te și încearcă din nou.</translation>
 <translation id="3649256019230929621">Minimizați fereastra</translation>
 <translation id="369442766917958684">Offline.</translation>
+<translation id="3695446226812920698">Află cum</translation>
 <translation id="3776024066357219166">Sesiunea Desktop la distanță Chrome s-a încheiat.</translation>
 <translation id="3785447812627779171">Gazdă
 Chromoting</translation>
@@ -121,6 +123,10 @@ Chromoting</translation>
 <translation id="3950820424414687140">Conectează-te</translation>
 <translation id="3989511127559254552">Pentru a continua, trebuie să acorzi permisiuni extinse de acces la computer. Acest lucru este necesar o singură dată.</translation>
 <translation id="4006787130661126000">Trebuie să activați conexiunile la distanță dacă doriți să utilizați Desktop la distanță Chrome pentru a accesa acest computer.</translation>
+<translation id="401121182145179743">Mai întâi, trebuie să configurezi computerul pentru accesul la distanță.</translation>
+<translation id="4028465833180158312">• Actualizări ale interfeței de utilizare care folosește designul material.
+• Credite de licențiere terță parte.
+• Informații afișate pentru computerele la distanță care sunt offline.</translation>
 <translation id="405887016757208221">Computerul la distanță nu a putut să inițializeze sesiunea. Dacă problema persistă, încearcă să configurezi gazda din nou.</translation>
 <translation id="4068946408131579958">Toate conexiunile</translation>
 <translation id="409800995205263688">NOTĂ: setările politicii permit conexiuni numai între computerele din rețeaua dvs.</translation>

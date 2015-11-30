@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="cs">
+<translation id="101438888985615157">Otočit obrazovku o 180 stupňů</translation>
 <translation id="1017967144265860778">Správa možností napájení na přihlašovací obrazovce</translation>
 <translation id="1019101089073227242">Nastavit adresář uživatelských dat</translation>
 <translation id="1022361784792428773">ID rozšíření, která by uživatelé neměli instalovat (* znamená, že se černá listina týká všech rozšíření)</translation>
@@ -254,6 +255,11 @@ Hodnota je analyzována jako slovník JSON s mapováním názvu zásady na hodno
 <translation id="2113068765175018713">Omezit provozní dobu zařízení automatickým restartováním</translation>
 <translation id="2127599828444728326">Povolit na těchto stránkách oznámení</translation>
 <translation id="2131902621292742709">Prodleva snížení jasu obrazovky při napájení z baterie</translation>
+<translation id="2137064848866899664">Pokud je tato zásada nastavena, každý displej se při prvním připojení po změně hodnoty zásady a při každém restartu otočí do požadované orientace. Uživatelé mohou otočení displeje po přihlášení na stránce nastavení změnit, ale při příštím restartu se jejich nastavení hodnotou zásady přepíše.
+
+Tato zásada platí pro primární i pro všechny sekundární displeje.
+
+Pokud tato zásada není nastavena, použije se výchozí hodnota 0 a uživatel ji bude moci změnit. V tomto případě se nastavení uživatele při restartu nepřepíše.</translation>
 <translation id="2166715102875984646">Deaktivovat podporu rozhraní API pro 3D grafiku</translation>
 <translation id="2168397434410358693">Prodleva nečinnosti při napájení ze sítě</translation>
 <translation id="2170233653554726857">Povolení optimalizace WPAD</translation>
@@ -953,6 +959,7 @@ Samotná zásada je na výše uvedených platformách podporována. Funkce, kter
       Pokud toto nastavení aktivujete, nebude možné přistupovat k nástrojům pro vývojáře ani kontrolovat prvky webových stránek. Deaktivovány budou také veškeré klávesové zkratky a položky klasických či kontextových nabídek, pomocí kterých lze nástroje pro vývojáře nebo konzoli JavaScriptu otevřít.
 
       Pokud tuto možnost deaktivujete nebo nenastavíte, umožníte uživatelům používat nástroje pro vývojáře nebo konzoli JavaScript.</translation>
+<translation id="4449545651113180484">Otočit obrazovku ve směru hodinových ručiček o 270 stupňů</translation>
 <translation id="4467952432486360968">Blokovat soubory cookie třetích stran</translation>
 <translation id="4474167089968829729">Povolit ukládání hesel do správce hesel</translation>
 <translation id="4480694116501920047">Vynutit Bezpečné vyhledávání</translation>
@@ -1217,6 +1224,7 @@ Pokud zásadu nastavíte, můžete nakonfigurovat, zda má uživatel oprávněn�
      Je-li deaktivovaná, k importu výchozího vyhledávače nedojde.
 
      Není-li nastavena, může se uživatelům zobrazit výzva, zda chtějí vyhledávač importovat, nebo může import probíhat automaticky.</translation>
+<translation id="5423197884968724595">Název omezení Android WebView:</translation>
 <translation id="5447306928176905178">Povolit hlášení informací o paměti (velikost haldy JavaScriptu) stránce (podpora byla ukončena)</translation>
 <translation id="5457065417344056871">Povolit v prohlížeči režim hosta</translation>
 <translation id="5457924070961220141">Umožňuje nakonfigurovat výchozí modul vykreslování obsahu HTML, pokud je nainstalován plugin <ph name="PRODUCT_FRAME_NAME" />.
@@ -1976,6 +1984,7 @@ Tato zásada není k dispozici v instancích Windows, které nejsou připojen�
           Pokud je toto nastavení zapnuto, může tento počítač objevit vzdálené hostitelské počítače a připojit se k nim i v případě, že jsou odděleny bránou firewall.
 
           Pokud je toto nastavení vypnuto a odchozí připojení UDP jsou filtrována bránou firewall, může se tento počítač připojit pouze k hostitelským počítačům v místní síti.</translation>
+<translation id="802147957407376460">Otočit obrazovku o 0 stupňů</translation>
 <translation id="8044493735196713914">Hlásit režim spuštění zařízení</translation>
 <translation id="8059164285174960932">Adresa URL, u které by klienti vzdáleného připojení měli obdržet ověřovací token</translation>
 <translation id="8071636581296916773">Povolí použití synchronizačních serverů, když se vzdálené klienty pokoušejí navázat připojení k tomuto počítači.
@@ -2088,6 +2097,8 @@ Pokud je tato zásada nastavena na hodnotu false, prohlížeč uvítací stránk
 <translation id="8382184662529825177">Povolit použití vzdáleného ověření identity k ochraně obsahu v zařízení</translation>
 <translation id="838870586332499308">Povolit datový roaming</translation>
 <translation id="8412312801707973447">Zda se budou provádět online kontroly OCSP/CRL</translation>
+<translation id="8424255554404582727">Nastavit výchozí otočení displeje, které se použije při každém restartu</translation>
+<translation id="8426231401662877819">Otočit obrazovku ve směru hodinových ručiček o 90 stupňů</translation>
 <translation id="8451988835943702790">Jako domovskou použít stránku Nová karta</translation>
 <translation id="8465065632133292531">Parametry pro adresu URL dynamického vyhledávání používající metodu POST</translation>
 <translation id="847472800012384958">Nepovolit zobrazení vyskakovacích oken žádným webovým stránkám</translation>

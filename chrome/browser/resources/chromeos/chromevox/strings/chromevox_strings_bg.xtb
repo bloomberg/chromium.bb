@@ -357,6 +357,7 @@
 <translation id="4729095194763193578">Предишният ред в таблицата</translation>
 <translation id="4736221692378411923">август</translation>
 <translation id="4740661827607246557">Помощни команди</translation>
+<translation id="4755857887974653209">Деактивиране на ChromeVox</translation>
 <translation id="4759716709594980008">Инструмент за изследване на клавиатурата в ChromeOS</translation>
 <translation id="4763296182459741068">Пренасяне в края</translation>
 <translation id="4763480195061959176">видео</translation>
@@ -661,6 +662,7 @@
 <translation id="8065607967589909823">Открояването е</translation>
 <translation id="8066678206530322333">Банер</translation>
 <translation id="8110647606445335195">Няма отличителни белези на ARIA.</translation>
+<translation id="8132379720172247073">Меню на ChromeVox</translation>
 <translation id="8153880621934657047">Не сте в таблицата.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{долна черта}other{# долни черти}}</translation>
 <translation id="8179976553408161302">Enter</translation>
@@ -696,6 +698,7 @@
 <translation id="8584721346566392021">заглавие от пето ниво</translation>
 <translation id="8587549812518406253">Следващият списъчен елемент</translation>
 <translation id="860150890330522909">квадратче „<ph name="NAME" />“ с отметка</translation>
+<translation id="8603071050456974042">Панел на ChromeVox</translation>
 <translation id="8606621670302093223">Контрола за датата</translation>
 <translation id="8631359288236106450"><ph name="COUNT" /> избрани елемента</translation>
 <translation id="8638532244051952400">Съобщаване на координатите на текущата клетка</translation>

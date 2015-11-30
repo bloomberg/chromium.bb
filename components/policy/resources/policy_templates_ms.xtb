@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ms">
+<translation id="101438888985615157">Putar skrin 180 darjah</translation>
 <translation id="1017967144265860778">Pengurusan kuasa pada skrin log masuk</translation>
 <translation id="1019101089073227242">Tetapkan direktori data pengguna</translation>
 <translation id="1022361784792428773">ID sambungan pengguna perlu dihalang daripada memasang (atau * untuk semua)</translation>
@@ -270,6 +271,17 @@
 <translation id="2113068765175018713">Hadkan masa hidup peranti melalui but semula automatik.</translation>
 <translation id="2127599828444728326">Benarkan pemberitahuan pada tapak ini</translation>
 <translation id="2131902621292742709">Kelewatan pemalapan skrin apabila dijalankan dengan kuasa bateri</translation>
+<translation id="2137064848866899664">Jika dasar ini ditetapkan, setiap paparan diputar kepada
+      orientasi yang ditetapkan pada setiap but semula dan pada kali pertama
+      disambungkan selepas nilai dasar diubah. Pengguna boleh menukar
+      putaran paparan melalui halaman tetapan selepas log masuk, tetapi tetapan
+      mereka akan dibatalkan oleh nilai dasar pada but semula yang seterusnya.
+
+      Dasar ini dilaksanakan pada paparan utama dan semua paparan sekunder.
+
+      Jika dasar ini tidak ditetapkan, nilai lalai ialah 0 darjah dan pengguna bebas
+      untuk mengubahnya. Dalam keadaan ini, nilai lalai tidak digunakan semula
+      pada mula semula.</translation>
 <translation id="2166715102875984646">Lumpuhkan sokongan untuk API grafik 3D.
 
       Apabila tetapan ini didayakan, halaman web akan dihalang daripada mengakses unit pemprosesan grafik (GPU). Secara khusus, halaman web tidak dapat mengakses API WebGL dan pemalam tidak boleh menggunakan API Pepper 3D.
@@ -993,6 +1005,7 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
       Jika anda mendayakan tetapan ini, Alat Pembangun tidak boleh diakses dan elemen tapak web tidak lagi boleh diperiksa. Sebarang pintasan papan kekunci dan mana-mana menu atau masukan menu konteks untuk membuka Alat Pembangun atau Konsol JavaScript akan dilumpuhkan.
 
       Menetapkan pilihan ini kepada dilumpuhkan atau membiarkannya tanpa ditetapkan, akan membolehkan pengguna menggunakan Alat Pembangun dan konsol JavaScript.</translation>
+<translation id="4449545651113180484">Putar skrin 270 darjah mengikut arah jam</translation>
 <translation id="4467952432486360968">Sekat kuki pihak ketiga</translation>
 <translation id="4474167089968829729">Dayakan penyimpanan kata laluan pada pengurus kata laluan</translation>
 <translation id="4480694116501920047">SafeSearch Paksa</translation>
@@ -1260,6 +1273,7 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
       Jika dilumpuhkan, enjin carian lalai tidak akan diimport.
 
       Jika ia tidak ditetapkan, pengguna mungkin ditanya sama ada untuk mengimport atau tidak, atau pengimportan mungkin berlaku secara automatik.</translation>
+<translation id="5423197884968724595">Nama sekatan Android WebView:</translation>
 <translation id="5447306928176905178">Dayakan maklumat pelaporan memori (saiz timbunan JS) pada halaman (lapuk)</translation>
 <translation id="5457065417344056871">Dayakan mod tetamu dalam penyemak imbas</translation>
 <translation id="5457924070961220141">Membenarkan anda mengkonfigurasi pemapar HTML lalai apabila <ph name="PRODUCT_FRAME_NAME" /> dipasang.
@@ -2031,6 +2045,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
           Jika tetapan ini didayakan, maka mesin ini boleh menjumpai dan bersambung dengan mesin hos jauh walaupun ia dipisahkan oleh firewall.
 
           Jika tetapan ini dilumpuhkan dan sambungan UDP keluar ditapis oleh firewall, maka mesin ini hanya boleh bersambung dengan mesin hos di dalam rangkaian setempat sahaja.</translation>
+<translation id="802147957407376460">Putar skrin 0 darjah</translation>
 <translation id="8044493735196713914">Laporkan mod but peranti</translation>
 <translation id="8059164285174960932">URL di mana pelanggan akses jauh harus mendapatkan token pengesahan mereka</translation>
 <translation id="8071636581296916773">Menggunakan penggunaan pelayan gantin semasa pelanggan jauh cuba mewujudkan sambungan kepada mesin ini.
@@ -2148,6 +2163,8 @@ Halaman yang dibuka semasa permulaan dikawal oleh dasar RestoreOnStartup.
 <translation id="8382184662529825177">Dayakan penggunaan pembuktian jauh untuk perlindungan kandungan bagi peranti</translation>
 <translation id="838870586332499308">Dayakan perayauan data</translation>
 <translation id="8412312801707973447">Sama ada semakan OCSP/CRL dalam talian dilaksanakan</translation>
+<translation id="8424255554404582727">Tetapkan putaran paparan lalai yang digunakan semula pada setiap but semula</translation>
+<translation id="8426231401662877819">Putar skrin 90 darjah mengikut arah jam</translation>
 <translation id="8451988835943702790">Gunakan Halaman Tab Baharu sebagai halaman utama</translation>
 <translation id="8465065632133292531">Parameter untuk URL semerta yang menggunakan POST</translation>
 <translation id="847472800012384958">Jangan benarkan mana-mana tapak untuk menunjukkan pop muncul</translation>

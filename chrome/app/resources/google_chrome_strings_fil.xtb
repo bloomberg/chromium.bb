@@ -5,6 +5,7 @@
 <translation id="1013290471399003443">Na-verify ng Chrome na ang <ph name="ISSUER" /> ang nagbigay sa certificate ng website na ito. Nagbigay ang server ng wastong impormasyon tungkol sa Certificate Transparency.</translation>
 <translation id="1016765312371154165">Hindi nag-shut down nang tama ang Chrome.</translation>
 <translation id="103396972844768118">Mahalagang impormasyon patungkol sa iyong data sa Chrome</translation>
+<translation id="1035334672863811645">mag-sign in sa Chrome</translation>
 <translation id="1061441684050139317">Kailangan ng Chrome ng access sa mikropono upang maibahagi ito sa site na ito.</translation>
 <translation id="1065672644894730302">Hindi mabasa ang iyong mga kagustuhan.
 
@@ -91,7 +92,7 @@ Kapag nag-sign in ka pa rin, isasama sa <ph name="ACCOUNT_EMAIL_NEW" /> ang impo
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3881912906674381083">Na-verify ng Chrome na ang <ph name="ISSUER" /> ang nagbigay sa certificate ng website na ito. Nagbigay ang server ng impormasyon tungkol sa Certificate Transparency, ngunit hindi natukoy ng Chrome ang alinman sa mga log ng Certificate Transparency</translation>
 <translation id="3889417619312448367">I-uninstall ang Google Chrome</translation>
-<translation id="4011219958405096740">Kapag naka-enable, ito ay gagamit ng daloy ng pag-sign in ng Chrome na batay sa iframe; kung hindi man, ito ay gumagamit ng daloy na batay sa webview.</translation>
+<translation id="4042449298237264661">Hindi na makakatanggap ang computer na ito ng mga update sa Google Chrome dahil hindi na sinusuportahan ang Windows XP at Windows Vista.</translation>
 <translation id="4050175100176540509">May available na mahahalagang pagpapahusay sa seguridad at mga bagong feature sa pinakabagong bersyon.</translation>
 <translation id="4053720452172726777">I-customize at kontrolin ang Google Chrome</translation>
 <translation id="4147555960264124640">Nagsa-sign in ka gamit ang isang pinamamahalaang account at nagbibigay sa administrator nito ng kontrol sa iyong profile sa Google Chrome. Permanenteng mauugnay ang iyong data sa Chrome, gaya ng iyong apps, mga bookmark, kasaysayan, password, at iba pang setting sa <ph name="USER_NAME" />. Matatanggal mo ang data na ito sa Google Accounts Dashboard, ngunit hindi mo maiuugnay ang data na ito sa isa pang account. <ph name="LEARN_MORE" /></translation>
@@ -148,9 +149,9 @@ Hindi magawang bawiin ng Google Chrome ang iyong mga setting.</translation>
 <translation id="573759479754913123">Tungkol sa Chrome OS</translation>
 <translation id="5749068826913805084">Kailangan ng Chrome ng access sa storage upang mag-download ng mga file.</translation>
 <translation id="5785746630574083988">Kapag naglunsad muli sa Windows 8, sasara at muling mailulunsad ang iyong mga app ng Chrome.</translation>
-<translation id="5799551393681493217">Ini-enable ang mga daloy ng pag-sign in ng Chrome na batay sa iframe. Ino-override ng flag na ito ang --i-enable ang web-based na pag-signin.</translation>
 <translation id="5855036575689098185">Hindi tumutugma ang software na tumatakbo sa iyong computer sa Google Chrome.</translation>
 <translation id="5877064549588274448">Binago ang channel. I-restart ang iyong device upang ilapat ang mga pagbabago.</translation>
+<translation id="5890698319714066019">Hindi maipakita ng Google Chrome ang webpage dahil hindi nakakonekta ang iyong computer sa Internet.</translation>
 <translation id="5931853610562009806">Sa Mac, maaaring ma-save ang mga password sa iyong Keychain at ma-access o ma-sync ng ibang mga user ng Chrome na nagbabahagi ng OS X account na ito.</translation>
 <translation id="5940385492829620908">Makikita dito ang iyong web, mga bookmark at iba pang mga bagay-bagay sa Chrome.</translation>
 <translation id="5941830788786076944">Gawin ang Google Chrome na default browser</translation>
@@ -173,6 +174,8 @@ Hindi magawang bawiin ng Google Chrome ang iyong mga setting.</translation>
 <translation id="6236285698028833233">Huminto na sa pag-update ang Google Chrome at hindi na nito sinusuportahan ang bersyong ito ng iyong operating system.</translation>
 <translation id="629218512217695915">Gumamit ng password na binuo ng Chrome</translation>
 <translation id="6368958679917195344">Ginagawang posible ang Chrome OS ng karagdagang <ph name="BEGIN_LINK_CROS_OSS" />open source na software<ph name="END_LINK_CROS_OSS" />.</translation>
+<translation id="6400076122676892962">Malapit nang hindi makatanggap ang computer na ito ng mga update sa Google Chrome dahil hindi na susuportahan ang Mac OS X 10.6, 10.7 at 10.8.</translation>
+<translation id="6470176598693778404">Hindi na makakatanggap ang computer na ito ng mga update sa Google Chrome dahil hindi na sinusuportahan ang Mac OS X 10.6, 10.7 at 10.8.</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{May nagaganap na pagda-download sa kasalukuyan. Gusto mo bang kanselahin ang pag-download at umalis sa Google Chrome?}one{# pag-download ang nagaganap sa kasalukuyan. Gusto mo bang kanselahin ang mga pag-download at umalis sa Google Chrome?}other{# pag-download ang nagaganap sa kasalukuyan. Gusto mo bang kanselahin ang mga pag-download at umalis sa Google Chrome?}}</translation>
 <translation id="6598387184982954187">Ginagamit mo ang <ph name="PROFILE_EMAIL" /> upang i-sync ang iyong bagay sa Chrome. Upang ma-update ang iyong kagustuhan sa pag-sync o upang magamit ang Chrome nang walang Google account, bisitahin ang <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6600954340915313787">Kinopya sa Chrome</translation>
@@ -210,6 +213,7 @@ Hindi magawang bawiin ng Google Chrome ang iyong mga setting.</translation>
 <translation id="7196020411877309443">Bakit ko nakikita ito?</translation>
 <translation id="7242029209006116544">Nagsa-sign in ka gamit ang isang pinamamahalaang account at nagbibigay sa administrator nito ng kontrol sa iyong profile sa Google Chrome. Permanenteng mauugnay ang iyong data sa Chrome, gaya ng iyong apps, mga bookmark, kasaysayan, password, at iba pang setting sa <ph name="USER_NAME" />. Matatanggal mo ang data na ito sa Google Accounts Dashboard, ngunit hindi mo maiuugnay ang data na ito sa isa pang account. Maaari ka ring gumawa ng bagong profile upang ihiwalay ang iyong umiiral na data sa Chrome. <ph name="LEARN_MORE" /></translation>
 <translation id="7282192067747128786">Chrome - Mga Notification (<ph name="QUANTITY" /> ang hindi pa nababasa)</translation>
+<translation id="729375352412857283">Malapit nang hindi makatanggap ang computer na ito ng mga update sa Google Chrome dahil hindi na susuportahan ang Windows XP at Windows Vista.</translation>
 <translation id="7339898014177206373">Bagong window</translation>
 <translation id="7396375882099008034">Payagan ang Chrome na i-access ang network sa mga setting ng iyong firewall
         o antivirus.</translation>

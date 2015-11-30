@@ -357,6 +357,7 @@
 <translation id="4729095194763193578">Previous table row</translation>
 <translation id="4736221692378411923">August</translation>
 <translation id="4740661827607246557">Help Commands</translation>
+<translation id="4755857887974653209">Disable ChromeVox</translation>
 <translation id="4759716709594980008">ChromeOS Keyboard Explorer</translation>
 <translation id="4763296182459741068">Wrapped to bottom</translation>
 <translation id="4763480195061959176">video</translation>
@@ -661,6 +662,7 @@
 <translation id="8065607967589909823">Selection is</translation>
 <translation id="8066678206530322333">Banner</translation>
 <translation id="8110647606445335195">No ARIA landmarks.</translation>
+<translation id="8132379720172247073">ChromeVox Menu</translation>
 <translation id="8153880621934657047">Not inside table.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{underscore}other{# underscores}}</translation>
 <translation id="8179976553408161302">Enter</translation>
@@ -696,6 +698,7 @@
 <translation id="8584721346566392021">h5</translation>
 <translation id="8587549812518406253">Next list item</translation>
 <translation id="860150890330522909"><ph name="NAME" /> tick box ticked</translation>
+<translation id="8603071050456974042">ChromeVox Panel</translation>
 <translation id="8606621670302093223">Date control</translation>
 <translation id="8631359288236106450">selected <ph name="COUNT" /> items</translation>
 <translation id="8638532244051952400">Announce current cell co-ordinates</translation>

@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hu">
+<translation id="101438888985615157">Képernyő elforgatása 180 fokkal</translation>
 <translation id="1017967144265860778">Energiagazdálkodás a bejelentkezési képernyőn</translation>
 <translation id="1019101089073227242">Felhasználói adatok könyvtárának beállítása</translation>
 <translation id="1022361784792428773">Bővítményazonosítók, amelyek felhasználói telepítését meg kell akadályozni (vagy * az összes esetén)</translation>
@@ -236,6 +237,17 @@ Ha a házirend konfigurálatlanul marad, a felhasználó döntheti el, hogy kív
 <translation id="2113068765175018713">Eszköz működési idejének korlátozása automatikus újraindítással</translation>
 <translation id="2127599828444728326">Értesítések engedélyezése ezeken a webhelyeken</translation>
 <translation id="2131902621292742709">Képernyő elsötétítésének késleltetése akkumulátorról való működés során</translation>
+<translation id="2137064848866899664">Ha a házirend be van állítva, minden kijelző elfordul a
+      megadott tájolásba minden újraindításkor, illetve a házirend értékének
+      módosítása utáni első csatlakozáskor. A felhasználók bejelentkezés után
+      elforgathatják a képernyőt a Beállítások oldalon, de a házirend értéke
+      a következő újraindításkor felülbírálja az ő beállításukat.
+
+      A házirend az elsődleges és a másodlagos kijelzőre is érvényes.
+
+      Ha a házirend nincs beállítva, akkor az alapértelmezett érték 0 fok,
+      amelyet a felhasználó szabadon módosíthat. Ebben az esetben
+      a böngésző nem alkalmazza az alapértelmezett értéket újraindításkor.</translation>
 <translation id="2166715102875984646">A 3D grafikus API-k támogatásának letiltása.
 
       A beállítás engedélyezése megakadályozza, hogy a weboldalak hozzáférjenek a grafikus processzorhoz (GPU). A weboldalak nem tudnak hozzáférni a WebGL API-hoz, a beépülő modulok pedig nem tudják használni a Pepper 3D API-t.
@@ -886,6 +898,7 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
       </translation>
 <translation id="4442582539341804154">Lezárás engedélyezése, ha az eszköz tétlen vagy felfüggesztett</translation>
 <translation id="4445684791305970001">Kikapcsolja a fejlesztői eszközöket és a JavaScript-konzolt. Ha engedélyezi ezt a beállítást, a fejlesztői eszközöket nem lehet elérni, és a webhelyek elemeit nem lehet ellenőrizni többé. Bármely billentyűparancs, menü vagy helyi menüpont le lesz tiltva, amely megnyitná a fejlesztői eszközöket vagy a JavaScript-konzolt. Ha letiltja ezt a beállítást, vagy konfigurálatlanul hagyja, akkor a felhasználó használhatja a felhasználói eszközöket és a JavaScript-konzolt.</translation>
+<translation id="4449545651113180484">Képernyő elforgatása 270 fokkal</translation>
 <translation id="4467952432486360968">Harmadik féltől származó cookie-k letiltása</translation>
 <translation id="4474167089968829729">Jelszavak mentésének aktiválása a jelszókezelőben</translation>
 <translation id="4480694116501920047">Kényszerített Biztonságos Keresés</translation>
@@ -1112,6 +1125,7 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
 
           Ha le van tiltva vagy nincs beállítva ez a beállítás, akkor a gazdagéppel mind helyi, mind távoli felhasználók interakcióba léphetnek, miközben az meg van osztva.</translation>
 <translation id="5423001109873148185">Bekapcsolása esetén a házirend kikényszeríti a keresőmotorok importálását az alapértelmezett böngészőből. Bekapcsolása esetén a házirend az importálás párbeszédpanelére is hatással van. Ha ki van kapcsolva, akkor a rendszer nem importálja az alapértelmezett keresőt. Ha nincs beállítva, akkor a rendszer a felhasználótól kérdezheti meg, hogy megtörténjen-e az importálás, vagy hogy lehet-e automatikus az importálás.</translation>
+<translation id="5423197884968724595">Android WebView-korlátozás neve:</translation>
 <translation id="5447306928176905178">A memóriával kapcsolatos információk jelentésének engedélyezése (JS-halomméret) az oldal számára (elavult)</translation>
 <translation id="5457065417344056871">Vendég mód engedélyezése a böngészőben</translation>
 <translation id="5457924070961220141">Lehetővé teszi az alapértelmezett HTML-megjelenítő konfigurálását, ha a(z) <ph name="PRODUCT_FRAME_NAME" /> telepítve van. Ha a házirend beállítatlanul marad, akkor az alapértelmezett beállítás az, hogy a gazdagép böngészője végzi a megjelenítést, de a felhasználó ezt opcionálisan felülbírálhatja, és megjelenítheti a HTML oldalakat alapértelmezés szerint a(z) <ph name="PRODUCT_FRAME_NAME" /> segítségével.</translation>
@@ -1793,6 +1807,7 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
 <translation id="7953256619080733119">Felügyelt felhasználó manuális kivételi gazdagépei</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Ez a házirend már nem támogatott. Távoli ügyfélhez való csatlakozáskor lehetővé teszi a STUN és továbbítószerverek használatát. Ha ez a beállítás engedélyezett, akkor ez a gép láthatja a távoli szervereket, és csatlakozni is tud hozzájuk, még akkor is, ha tűzfal választja el őket. Amennyiben ez a lehetőség ki van kapcsolva, és a tűzfal szűri a kimenő UDP-kapcsolatokat, akkor ez a gép csak a helyi hálózaton belül található szerverekhez tud csatlakozni.</translation>
+<translation id="802147957407376460">Képernyő elforgatása 0 fokkal</translation>
 <translation id="8044493735196713914">Az eszköz indítási módjának jelentése</translation>
 <translation id="8059164285174960932">Az URL, ahol a távoli hozzáférésű kliensnek be kell szereznie a hitelesítési tokent</translation>
 <translation id="8071636581296916773">Engedélyezi relay szerverek használatát, amikor a távoli ügyfelek megpróbálnak kapcsolatot létesíteni ezzel a számítógéppel.
@@ -1901,6 +1916,8 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
 <translation id="8382184662529825177">Távoli hitelesítés engedélyezése az eszközön lévő tartalmak védelme érdekében</translation>
 <translation id="838870586332499308">Adatbarangolás engedélyezése</translation>
 <translation id="8412312801707973447">Végbemenjenek-e online OCSP-/CRL-ellenőrzések</translation>
+<translation id="8424255554404582727">Képernyő alapértelmezett elforgatásának beállítása, minden újraindításkor ismételten alkalmazva</translation>
+<translation id="8426231401662877819">Képernyő elforgatása 90 fokkal</translation>
 <translation id="8451988835943702790"> való használata</translation>
 <translation id="8465065632133292531">Paraméterek POST metódust használó azonnali URL-hez</translation>
 <translation id="847472800012384958">Előugró ablakok tiltása minden webhely esetén</translation>

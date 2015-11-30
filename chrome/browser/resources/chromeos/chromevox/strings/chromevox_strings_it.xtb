@@ -357,6 +357,7 @@
 <translation id="4729095194763193578">Riga tabella precedente</translation>
 <translation id="4736221692378411923">Agosto</translation>
 <translation id="4740661827607246557">Comandi della Guida</translation>
+<translation id="4755857887974653209">Disattiva ChromeVox</translation>
 <translation id="4759716709594980008">Esplorazione tastiera Chrome OS</translation>
 <translation id="4763296182459741068">Ricomincia dalla fine</translation>
 <translation id="4763480195061959176">video</translation>
@@ -661,6 +662,7 @@
 <translation id="8065607967589909823">La selezione è</translation>
 <translation id="8066678206530322333">Banner</translation>
 <translation id="8110647606445335195">Nessun landmark ARIA.</translation>
+<translation id="8132379720172247073">Menu ChromeVox</translation>
 <translation id="8153880621934657047">Non sei all'interno della tabella.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{carattere di sottolineatura}other{# caratteri di sottolineatura}}</translation>
 <translation id="8179976553408161302">Invio</translation>
@@ -696,6 +698,7 @@
 <translation id="8584721346566392021">h5</translation>
 <translation id="8587549812518406253">Voce elenco successiva</translation>
 <translation id="860150890330522909">Casella di controllo <ph name="NAME" /> selezionata</translation>
+<translation id="8603071050456974042">Pannello ChromeVox</translation>
 <translation id="8606621670302093223">Controllo data</translation>
 <translation id="8631359288236106450"><ph name="COUNT" /> elementi selezionati</translation>
 <translation id="8638532244051952400">Vengono comunicate le coordinate della cella corrente</translation>

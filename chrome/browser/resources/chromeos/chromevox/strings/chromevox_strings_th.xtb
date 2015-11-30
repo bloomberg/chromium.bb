@@ -357,6 +357,7 @@
 <translation id="4729095194763193578">แถวตารางก่อนหน้า</translation>
 <translation id="4736221692378411923">สิงหาคม</translation>
 <translation id="4740661827607246557">คำสั่งช่วยเหลือ</translation>
+<translation id="4755857887974653209">ปิดใช้ ChromeVox</translation>
 <translation id="4759716709594980008">สำรวจแป้นพิมพ์ของ ChromeOS</translation>
 <translation id="4763296182459741068">ข้ามไปด้านล่าง</translation>
 <translation id="4763480195061959176">วิดีโอ</translation>
@@ -661,6 +662,7 @@
 <translation id="8065607967589909823">รายการที่เลือกคือ</translation>
 <translation id="8066678206530322333">แบนเนอร์</translation>
 <translation id="8110647606445335195">ไม่มีจุดสังเกต ARIA</translation>
+<translation id="8132379720172247073">เมนู ChromeVox</translation>
 <translation id="8153880621934657047">ไม่ได้อยู่ในตาราง</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{เครื่องหมายขีดล่าง}other{# เครื่องหมายขีดล่าง}}</translation>
 <translation id="8179976553408161302">Enter</translation>
@@ -696,6 +698,7 @@
 <translation id="8584721346566392021">h5</translation>
 <translation id="8587549812518406253">รายการถัดไป</translation>
 <translation id="860150890330522909">เลือกช่องทำเครื่องหมาย <ph name="NAME" /> แล้ว</translation>
+<translation id="8603071050456974042">แผง ChromeVox</translation>
 <translation id="8606621670302093223">การควบคุมวันที่</translation>
 <translation id="8631359288236106450">เลือก <ph name="COUNT" /> รายการ</translation>
 <translation id="8638532244051952400">แจ้งพิกัดของเซลล์ปัจจุบัน</translation>

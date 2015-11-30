@@ -84,6 +84,7 @@
 <translation id="2556876185419854533">&amp;Poništi uređivanje</translation>
 <translation id="2581221116934462656">Želite li da <ph name="PRODUCT_NAME" /> sljedeći put ponudi prijevod stranica ove web-lokacije na <ph name="LANGUAGE_NAME" />?</translation>
 <translation id="2587841377698384444">ID API-ja direktorija:</translation>
+<translation id="2589937147782335782">Želite li da Google spremi tu karticu?</translation>
 <translation id="2597378329261239068">Ovaj je dokument zaštićen zaporkom. Unesite zaporku.</translation>
 <translation id="2609632851001447353">Varijacije</translation>
 <translation id="2625385379895617796">Sat ide unaprijed</translation>
@@ -202,7 +203,6 @@
 <translation id="5295309862264981122">Potvrdi navigaciju</translation>
 <translation id="5299298092464848405">Pogreška u pravilu analize</translation>
 <translation id="5308689395849655368">Onemogućeno je izvješćivanje o padu.</translation>
-<translation id="5316812925700871227">Zakretanje u suprotnom smjeru od kazaljke na satu</translation>
 <translation id="5317780077021120954">Spremi</translation>
 <translation id="536296301121032821">Pohrana postavki pravila nije uspjela</translation>
 <translation id="540969355065856584">Poslužitelj nije uspio dokazati da je <ph name="DOMAIN" />; njegov sigurnosni certifikat trenutačno nije važeći. Uzrok tomu može biti pogrešna konfiguracija ili napadač koji je prekinuo vašu vezu.</translation>
@@ -219,6 +219,7 @@
 <translation id="560412284261940334">Upravljanje nije podržano</translation>
 <translation id="5629630648637658800">Učitavanje postavki pravila nije uspjelo</translation>
 <translation id="5631439013527180824">Token za upravljanje uređajem nije važeći</translation>
+<translation id="5680545064257783621">Prikazuje sklopku za isključivanje za eksperiment poboljšanih oznaka</translation>
 <translation id="5720705177508910913">Trenutačni korisnik:</translation>
 <translation id="5813119285467412249">&amp;Ponovi dodavanje</translation>
 <translation id="5872918882028971132">Nadređeni prijedlozi</translation>
@@ -289,11 +290,13 @@
 <translation id="7424977062513257142">Ugrađena stranica na ovoj web-lokaciji navodi sljedeće:</translation>
 <translation id="7441627299479586546">Pogrešan predmet pravila</translation>
 <translation id="7485870689360869515">Nema pronađenih podataka.</translation>
+<translation id="7514365320538308">Preuzmi</translation>
 <translation id="7537536606612762813">Obavezno</translation>
 <translation id="7542995811387359312">Automatsko popunjavanje kreditne kartice onemogućeno je jer se ovaj obrazac ne služi sigurnom vezom.</translation>
 <translation id="7567204685887185387">Poslužitelj nije mogao dokazati da je <ph name="DOMAIN" />; njegov sigurnosni certifikat možda je lažan. To može biti uzrokovano pogrešnom konfiguracijom ili napadom na vašu vezu.</translation>
 <translation id="7568593326407688803">Ova je stranica na ovom jeziku:<ph name="ORIGINAL_LANGUAGE" />Želite li je prevesti?</translation>
 <translation id="7569952961197462199">Želite li s Chromea ukloniti kreditnu karticu?</translation>
+<translation id="7578104083680115302">Plaćajte brzo na web-lokacijama i u aplikacijama na više uređaja karticama koje ste spremili na Google.</translation>
 <translation id="7592362899630581445">Certifikat poslužitelja krši ograničenja naziva.</translation>
 <translation id="7600965453749440009">Nikad ne prevodi <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">Vrijednost je izvan raspona <ph name="VALUE" />.</translation>

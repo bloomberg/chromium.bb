@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="fil">
 <translation id="1013923882670373915">Gusto ng bluetooth device na "<ph name="DEVICE_NAME" />" ng pahintulot na magpares. Pakilagay ang PIN na ito sa device na iyon: <ph name="PINCODE" /></translation>
+<translation id="1021311941847921177">Napalitan na ang shortcut para sa paglipat sa susunod na pamamaraan ng pag-input. Mangyaring gamitin ang <ph name="NEW_SHORTCUT" /> sa halip na gamitin ang <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Awtomatikong itago ang shelf</translation>
 <translation id="1195412055398077112">overscan</translation>
 <translation id="1270290102613614947">Naka-disable ang on-screen na keyboard</translation>
@@ -25,7 +26,9 @@
 <translation id="1812696562331527143">Naging <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />3rd party<ph name="END_LINK" />) ang iyong pamamaraan ng pag-input.
 Pindutin ang Shift + Alt upang magpalit.</translation>
 <translation id="1882897271359938046">Nagmi-mirror sa <ph name="DISPLAY_NAME" /></translation>
+<translation id="1919743966458266018">Napalitan na ang shortcut para sa pagbubukas sa task manager. Mangyaring gamitin ang <ph name="NEW_SHORTCUT" /> sa halip na gamitin ang <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Mga awtomatikong pag-click</translation>
+<translation id="1938872420421548906">Shift+Alt</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2127372758936585790">Low-power charger</translation>
@@ -105,6 +108,7 @@ Pindutin ang Search o Shift upang kanselahin.</translation>
 <translation id="4421231901400348175">Pagbabahagi ng kontrol sa iyong screen gamit ang <ph name="HELPER_NAME" /> sa pamamagitan ng Remote Assistance.</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="4527045527269911712">Gusto ng bluetooth device na "<ph name="DEVICE_NAME" />" na magpares.</translation>
+<translation id="4544944664594876241">Napalitan na ang shortcut para sa pagla-lock sa screen. Mangyaring gamitin ang <ph name="NEW_SHORTCUT" /> sa halip na gamitin ang <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">I-disconnect</translation>
 <translation id="4872237917498892622">Alt+Search o Shift</translation>
@@ -113,12 +117,14 @@ Pindutin ang Search o Shift upang kanselahin.</translation>
 <translation id="4957722034734105353">Matuto nang higit pa...</translation>
 <translation id="4961318399572185831">I-cast ang screen</translation>
 <translation id="5011233892417813670">Chromebook</translation>
+<translation id="5012744545445585468">Ctrl+Shift+Space</translation>
 <translation id="5045002648206642691">Mga setting ng Google Drive ...</translation>
 <translation id="5102001756192215136"><ph name="HOUR" />:<ph name="MINUTE" /> ang natitira</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION" />, <ph name="OVERSCAN" /></translation>
 <translation id="5168181903108465623">I-cast ang mga available na device</translation>
 <translation id="5222676887888702881">Mag-sign out</translation>
 <translation id="5238774010593222950">Hindi makapag-sign in sa ibang account.</translation>
+<translation id="532063867737390965">Na-disable ng administrator ang network setting na ito.</translation>
 <translation id="544691375626129091">Naidagdag na ang lahat ng available na user sa session na ito.</translation>
 <translation id="5507786745520522457">I-set up ang mobile data</translation>
 <translation id="5543001071567407895">SMS</translation>
@@ -132,6 +138,7 @@ Pindutin ang Search o Shift upang kanselahin.</translation>
 Pindutin ang Shift + Alt upang magpalit.</translation>
 <translation id="5871632337994001636">Pamahalaan ang mga device...</translation>
 <translation id="5895138241574237353">I-restart</translation>
+<translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5927132638760172455">Ikina-cast sa isang hindi kilalang tatanggap</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">I-revert</translation>
@@ -155,6 +162,7 @@ Pindutin ang Shift + Alt upang magpalit.</translation>
 <translation id="6426039856985689743">Huwag paganahin ang mobile data</translation>
 <translation id="6452181791372256707">Tanggihan</translation>
 <translation id="6459472438155181876">Pinapalawak ang screen sa <ph name="DISPLAY_NAME" /></translation>
+<translation id="6501401484702599040">Kina-cast ang screen sa <ph name="RECEIVER_NAME" /></translation>
 <translation id="6550675742724504774">Mga Pagpipilian</translation>
 <translation id="6585808820553845416">Matatapos ang session pagkalipas ng <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6596816719288285829">IP Address</translation>
@@ -162,6 +170,7 @@ Pindutin ang Shift + Alt upang magpalit.</translation>
 <translation id="6713285437468012787">Naipares na ang bluetooth device na "<ph name="DEVICE_NAME" />" at available na ngayon sa lahat ng user. Maaari mong alisin ang pagpapares na ito gamit ang Mga Setting.</translation>
 <translation id="6785414152754474415">Ang baterya ay <ph name="PERCENTAGE" />% na puno at nagcha-charge.</translation>
 <translation id="6803622936009808957">Hindi ma-mirror ang mga display dahil walang mga sinusuportahang resolusyon na nakita. Pumasok na lang sa pinalawak na desktop.</translation>
+<translation id="683971173229319003">Search+L</translation>
 <translation id="68610848741840742">ChromeVox (pasalitang feedback)</translation>
 <translation id="6911468394164995108">Sumali sa iba...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
@@ -169,6 +178,7 @@ Pindutin ang Shift + Alt upang magpalit.</translation>
 <translation id="6981982820502123353">Pagiging Maa-access</translation>
 <translation id="7029814467594812963">Lumabas sa session</translation>
 <translation id="703171847531699602">Walang mga cast device</translation>
+<translation id="7034339000180558234">Kina-cast ang <ph name="TAB_NAME" /> sa <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Magtakda ng wallpaper...</translation>
 <translation id="7097613348211027502">Naka-enable ang ChromeVox (pasalitang feedback).
 Pindutin ang Ctrl+Alt+Z upang i-disable.</translation>
@@ -180,6 +190,7 @@ Pindutin ang Alt+Search o Shift upang kanselahin.</translation>
 <translation id="737451040872859086">Microphone (Panloob)</translation>
 <translation id="742594950370306541">Ginagamit ang camera.</translation>
 <translation id="743058460480092004">Ginagamit ang camera at mikropono.</translation>
+<translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7561014039265304140">Hindi sinusuportahan ng <ph name="DISPLAY_NAME" /> ang <ph name="SPECIFIED_RESOLUTION" />. Ang resolution ay ginawang <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7573962313813535744">Mode na naka-dock</translation>
 <translation id="7593891976182323525">Search or Shift</translation>
@@ -207,6 +218,7 @@ Pindutin ang Alt+Search o Shift upang kanselahin.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="882279321799040148">I-click upang tingnan</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8878886163241303700">Pinapalawak ang screen</translation>
 <translation id="8940956008527784070">Mahina na ang baterya (<ph name="PERCENTAGE" />%)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>

@@ -357,6 +357,7 @@
 <translation id="4729095194763193578">השורה הקודמת בטבלה</translation>
 <translation id="4736221692378411923">אוגוסט</translation>
 <translation id="4740661827607246557">פקודות עזרה</translation>
+<translation id="4755857887974653209">‏השבת את ChromeVox</translation>
 <translation id="4759716709594980008">‏סייר המקלדת של ChromeOS</translation>
 <translation id="4763296182459741068">גלישה לחלק התחתון</translation>
 <translation id="4763480195061959176">סרטוני וידאו</translation>
@@ -661,6 +662,7 @@
 <translation id="8065607967589909823">הבחירה היא</translation>
 <translation id="8066678206530322333">מודעת באנר</translation>
 <translation id="8110647606445335195">‏אין ציוני דרך מסוג ARIA.</translation>
+<translation id="8132379720172247073">‏תפריט ChromeVox</translation>
 <translation id="8153880621934657047">לא בתוך טבלה.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{קו תחתון}two{# סימני קו תחתון}many{# סימני קו תחתון}other{# סימני קו תחתון}}</translation>
 <translation id="8179976553408161302">Enter</translation>
@@ -696,6 +698,7 @@
 <translation id="8584721346566392021">h5</translation>
 <translation id="8587549812518406253">הפריט הבא ברשימה</translation>
 <translation id="860150890330522909">תיבת הסימון <ph name="NAME" /> סומנה</translation>
+<translation id="8603071050456974042">‏חלונית ChromeVox</translation>
 <translation id="8606621670302093223">בקרת תאריך</translation>
 <translation id="8631359288236106450">נבחרו <ph name="COUNT" /> פריטים</translation>
 <translation id="8638532244051952400">הקרא את הקואורדינטות של התא הנוכחי</translation>

@@ -5,6 +5,7 @@
 <translation id="1013290471399003443">Chrome bekreftet at sertifikatet for dette nettstedet er utstedt av <ph name="ISSUER" />. Tjeneren oppga gyldig informasjon om sertifikatåpenhet.</translation>
 <translation id="1016765312371154165">Chrome ble ikke avsluttet på riktig måte.</translation>
 <translation id="103396972844768118">Viktig informasjon om Chrome-dataene dine</translation>
+<translation id="1035334672863811645">logg på Chrome</translation>
 <translation id="1061441684050139317">Chrome må ha tilgang til mikrofonen for å kunne dele den med dette nettstedet.</translation>
 <translation id="1065672644894730302">Kan ikke lese innstillingene. Enkelte funksjoner kan være utilgjengelige, og endringer av innstillingene blir ikke lagret.</translation>
 <translation id="1073391069195728457">Chrome – varsler</translation>
@@ -87,7 +88,7 @@ Hvis du logger deg på allikevel, blir Chrome-informasjon som bokmerker, loggen 
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3881912906674381083">Chrome bekreftet at sertifikatet for dette nettstedet er utstedt av <ph name="ISSUER" />. Tjeneren oppga informasjon om sertifikatåpenhet, men Chrome gjenkjente ingen av loggene for sertifikatåpenhet.</translation>
 <translation id="3889417619312448367">Avinstaller Google Chrome</translation>
-<translation id="4011219958405096740">Når dette er slått på, brukes en iframe-basert påloggingsprosess i Chrome – i motsatt fall brukes en nettvisningsbasert prosess.</translation>
+<translation id="4042449298237264661">Denne datamaskinen kommer ikke lenger til å motta oppdateringer av Google Chrome fordi Windows XP og Windows Vista ikke støttes lenger.</translation>
 <translation id="4050175100176540509">Viktige sikkerhetsforbedringer og nye funksjoner er tilgjengelige i den nyeste versjonen.</translation>
 <translation id="4053720452172726777">Tilpass og kontrollér Google Chrome</translation>
 <translation id="4147555960264124640">Du er i ferd med å logge deg på med en administrert konto og gir administratoren kontroll over Chrome-profilen din. Chrome-dataene dine, som apper, bokmerker, loggen, passord og andre innstillinger, blir permanent knyttet til <ph name="USER_NAME" />. Du kan slette disse dataene via kontooversikten for Google, men du kan ikke knytte disse dataene til en annen konto. <ph name="LEARN_MORE" /></translation>
@@ -141,9 +142,9 @@ og feil legitimasjon. Dette kan skje når en angriper prøver å utgi seg for å
 <translation id="573759479754913123">Om Chrome OS</translation>
 <translation id="5749068826913805084">Chrome må ha lagringstilgang for å laste ned filer.</translation>
 <translation id="5785746630574083988">Omstart i Windows 8-modus lukker og starte Chrome-appene dine på nytt.</translation>
-<translation id="5799551393681493217">Aktiverer iframe-baserte påloggingsprosesser i Chrome. Dette flagget overrstyrer --enable-web-based-signin.</translation>
 <translation id="5855036575689098185">Programvaren som kjører på datamaskinen din er ikke kompatibel med Google Chrome.</translation>
 <translation id="5877064549588274448">Kanalen ble endret. Start enheten på nytt for å aktivere endringene.</translation>
+<translation id="5890698319714066019">Google Chrome kan ikke vise nettsiden fordi datamaskinen din ikke er koblet til Internett.</translation>
 <translation id="5931853610562009806">På Mac kan det hende at passord blir lagret i nøkkelringen. Andre Chrome-brukere som deler denne OS X-kontoen, har i så fall adgang til og kan synkronisere med disse passordene.</translation>
 <translation id="5940385492829620908">Her finner du nettinnholdet, bokmerkene og de andre Chrome-tingene dine.</translation>
 <translation id="5941830788786076944">Gjør Google Chrome til standardleser</translation>
@@ -166,6 +167,8 @@ og feil legitimasjon. Dette kan skje når en angriper prøver å utgi seg for å
 <translation id="6236285698028833233">Google Chrome oppdateres ikke lenger og har mistet støtten for denne versjonen av operativsystemet ditt.</translation>
 <translation id="629218512217695915">Bruk passordet som genereres av Chrome</translation>
 <translation id="6368958679917195344">Chrome OS muliggjøres av <ph name="BEGIN_LINK_CROS_OSS" />tilleggsprogramvare med åpen kildekode<ph name="END_LINK_CROS_OSS" />.</translation>
+<translation id="6400076122676892962">Denne datamaskinen kommer snart til å slutte å motta oppdateringer av Google Chrome fordi Mac OS X 10.6, 10.7 og 10.8 ikke støttes lenger.</translation>
+<translation id="6470176598693778404">Denne datamaskinen kommer ikke lenger til å motta oppdateringer av Google Chrome fordi Mac OS X 10.6, 10.7 og 10.8 ikke støttes lenger.</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{En nedlasting pågår for øyeblikket. Vil du avbryte nedlastingen og avslutte Google Chrome?}other{# nedlastinger pågår for øyeblikket. Vil du avbryte nedlastingene og avslutte Google Chrome?}}</translation>
 <translation id="6598387184982954187">Du bruker <ph name="PROFILE_EMAIL" /> for synkronisering av Chrome-tingene dine. For å oppdatere alternativene for synkronisering eller bruke Chrome uten Google-konto, kan du gå til <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6600954340915313787">Kopiert til Chrome</translation>
@@ -203,6 +206,7 @@ og feil legitimasjon. Dette kan skje når en angriper prøver å utgi seg for å
 <translation id="7196020411877309443">Hvorfor vises dette?</translation>
 <translation id="7242029209006116544">Du er i ferd med å logge deg på med en administrert konto og gir administratoren kontroll over Chrome-profilen din. Chrome-dataene dine, som apper, bokmerker, loggen, passord og andre innstillinger, blir permanent knyttet til <ph name="USER_NAME" />. Du kan slette disse dataene via kontooversikten for Google, men du kan ikke knytte disse dataene til en annen konto. Du kan velge om du vil opprette en ny profil for å holde de eksisterende Chrome-dataene dine atskilte. <ph name="LEARN_MORE" /></translation>
 <translation id="7282192067747128786">Chrome – varsler (<ph name="QUANTITY" /> uleste)</translation>
+<translation id="729375352412857283">Denne datamaskinen kommer snart til å slutte å motta oppdateringer av Google Chrome fordi Windows XP og Windows Vista ikke støttes lenger.</translation>
 <translation id="7339898014177206373">Nytt vindu</translation>
 <translation id="7396375882099008034">Tillat at Chrome bruker nettverket i brannmur- eller antivirusinnstillingene dine.</translation>
 <translation id="7398801000654795464">Du ble logget på Chrome som <ph name="USER_EMAIL_ADDRESS" />. Du må logge deg på igjen med samme konto.</translation>

@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="fr">
 <translation id="1013923882670373915">L'appareil Bluetooth "<ph name="DEVICE_NAME" />" demande l'autorisation de s'associer. Veuillez saisir le code suivant sur l'appareil : <ph name="PINCODE" />.</translation>
+<translation id="1021311941847921177">Le raccourci permettant de passer au mode de saisie suivant a été modifié. Utilisez "<ph name="NEW_SHORTCUT" />" au lieu de "<ph name="OLD_SHORTCUT" />".</translation>
 <translation id="112308213915226829">Masquer automatiquement l'étagère</translation>
 <translation id="1195412055398077112">Surbalayage</translation>
 <translation id="1270290102613614947">Clavier à l'écran désactivé</translation>
@@ -25,7 +26,9 @@
 <translation id="1812696562331527143">Votre mode de saisie a été remplacé par <ph name="INPUT_METHOD_ID" />* (<ph name="BEGIN_LINK" />tiers<ph name="END_LINK" />).
 Appuyez sur Maj + Alt pour en utiliser un autre.</translation>
 <translation id="1882897271359938046">Mise en miroir pour <ph name="DISPLAY_NAME" /></translation>
+<translation id="1919743966458266018">Le raccourci permettant d'ouvrir le gestionnaire de tâches a été modifié. Utilisez "<ph name="NEW_SHORTCUT" />" au lieu de "<ph name="OLD_SHORTCUT" />".</translation>
 <translation id="1923539912171292317">Clics automatiques</translation>
+<translation id="1938872420421548906">Maj+Alt</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2127372758936585790">Chargeur de faible puissance</translation>
@@ -105,6 +108,7 @@ Appuyez sur Search ou Maj pour le désactiver.</translation>
 <translation id="4421231901400348175">Partager le contrôle de votre écran avec <ph name="HELPER_NAME" /> via l'assistance à distance</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="4527045527269911712">L'appareil Bluetooth "<ph name="DEVICE_NAME" />" demande l'autorisation de s'associer.</translation>
+<translation id="4544944664594876241">Le raccourci permettant de verrouiller l'écran a été modifié. Utilisez "<ph name="NEW_SHORTCUT" />" au lieu de "<ph name="OLD_SHORTCUT" />".</translation>
 <translation id="479989351350248267">rechercher</translation>
 <translation id="4804818685124855865">Se déconnecter</translation>
 <translation id="4872237917498892622">Alt + Recherche ou Maj</translation>
@@ -113,12 +117,14 @@ Appuyez sur Search ou Maj pour le désactiver.</translation>
 <translation id="4957722034734105353">En savoir plus…</translation>
 <translation id="4961318399572185831">Diffuser l'écran</translation>
 <translation id="5011233892417813670">Chromebook</translation>
+<translation id="5012744545445585468">Ctrl+Maj+Espace</translation>
 <translation id="5045002648206642691">Paramètres Google Drive…</translation>
 <translation id="5102001756192215136"><ph name="HOUR" />:<ph name="MINUTE" /> d'autonomie</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION" />, <ph name="OVERSCAN" /></translation>
 <translation id="5168181903108465623">Appareils Cast disponibles</translation>
 <translation id="5222676887888702881">Déconnexion</translation>
 <translation id="5238774010593222950">Impossible de se connecter à un autre compte.</translation>
+<translation id="532063867737390965">L'administrateur a désactivé ce paramètre réseau.</translation>
 <translation id="544691375626129091">Tous les utilisateurs disponibles ont déjà été ajoutés à cette session.</translation>
 <translation id="5507786745520522457">Configurer les données mobiles</translation>
 <translation id="5543001071567407895">SMS</translation>
@@ -132,6 +138,7 @@ Appuyez sur Search ou Maj pour le désactiver.</translation>
 Appuyez sur Maj + Alt pour en utiliser un autre.</translation>
 <translation id="5871632337994001636">Gérer les appareils…</translation>
 <translation id="5895138241574237353">Redémarrer</translation>
+<translation id="5901316534475909376">Maj+Échap</translation>
 <translation id="5927132638760172455">Destinataire de la diffusion inconnu</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">Rétablir</translation>
@@ -155,6 +162,7 @@ Appuyez sur Maj + Alt pour en utiliser un autre.</translation>
 <translation id="6426039856985689743">Désactiver les données mobiles</translation>
 <translation id="6452181791372256707">Refuser</translation>
 <translation id="6459472438155181876">Extension de l'écran pour <ph name="DISPLAY_NAME" /></translation>
+<translation id="6501401484702599040">Diffusion de l'écran sur "<ph name="RECEIVER_NAME" />"</translation>
 <translation id="6550675742724504774">Options</translation>
 <translation id="6585808820553845416">Fin de la session dans <ph name="SESSION_TIME_REMAINING" /></translation>
 <translation id="6596816719288285829">Adresse IP</translation>
@@ -162,6 +170,7 @@ Appuyez sur Maj + Alt pour en utiliser un autre.</translation>
 <translation id="6713285437468012787">L'appareil Bluetooth "<ph name="DEVICE_NAME" />" a été associé et tous les utilisateurs peuvent désormais y accéder. Vous pouvez supprimer cette association dans les paramètres.</translation>
 <translation id="6785414152754474415">La batterie est chargée à <ph name="PERCENTAGE" /> % et en charge.</translation>
 <translation id="6803622936009808957">Impossible de dupliquer les écrans, car aucune résolution compatible n'a été détectée. Le bureau étendu a été activé à la place.</translation>
+<translation id="683971173229319003">Recherche+L</translation>
 <translation id="68610848741840742">ChromeVox (commentaires audio)</translation>
 <translation id="6911468394164995108">Autre réseau…</translation>
 <translation id="6915678159055240887">Chromebox</translation>
@@ -169,6 +178,7 @@ Appuyez sur Maj + Alt pour en utiliser un autre.</translation>
 <translation id="6981982820502123353">Accessibilité</translation>
 <translation id="7029814467594812963">Quitter la session</translation>
 <translation id="703171847531699602">Aucun appareil Cast</translation>
+<translation id="7034339000180558234">Diffusion de l'onglet "<ph name="TAB_NAME" />" sur "<ph name="RECEIVER_NAME" />"</translation>
 <translation id="7052914147756339792">Définir un fond d'écran…</translation>
 <translation id="7097613348211027502">ChromeVox (commentaires audio) est activé.
 Appuyez sur les touches Ctrl + Alt + Z pour le désactiver.</translation>
@@ -180,6 +190,7 @@ Appuyez sur Alt + Recherche ou Maj pour le désactiver.</translation>
 <translation id="737451040872859086">Micro (interne)</translation>
 <translation id="742594950370306541">La caméra est en cours d'utilisation.</translation>
 <translation id="743058460480092004">La caméra et le micro sont en cours d'utilisation.</translation>
+<translation id="7510334386202674593">Ctrl+Maj+L</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> n'est pas compatible avec <ph name="SPECIFIED_RESOLUTION" />. La résolution a été modifiée pour utiliser <ph name="FALLBACK_RESOLUTION" />.</translation>
 <translation id="7573962313813535744">Mode Dock</translation>
 <translation id="7593891976182323525">Recherche ou Maj</translation>
@@ -207,6 +218,7 @@ Appuyez sur Alt + Recherche ou Maj pour le désactiver.</translation>
 <translation id="8814190375133053267">Wi-Fi </translation>
 <translation id="882279321799040148">Cliquer ici pour afficher la capture d'écran</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8850991929411075241">Recherche+Échap</translation>
 <translation id="8878886163241303700">Extension de l'écran</translation>
 <translation id="8940956008527784070">Batterie faible (<ph name="PERCENTAGE" /> %)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>

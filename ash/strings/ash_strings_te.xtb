@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="te">
 <translation id="1013923882670373915">బ్లూటూత్ పరికరం "<ph name="DEVICE_NAME" />" జత కావడానికి అనుమతి కోరుతోంది. దయచేసి ఆ పరికరంలో ఈ PIN కోడ్‌ను నమోదు చేయండి: <ph name="PINCODE" /></translation>
+<translation id="1021311941847921177">తదుపరి ఇన్‌పుట్ పద్ధతికి మార్చే సత్వరమార్గం మార్చబడింది. దయచేసి <ph name="OLD_SHORTCUT" />కి బదులుగా <ph name="NEW_SHORTCUT" />ని ఉపయోగించండి.</translation>
 <translation id="112308213915226829">అరను స్వయంచాలకంగా దాచు</translation>
 <translation id="1195412055398077112">ఓవర్‌స్కాన్</translation>
 <translation id="1270290102613614947">స్క్రీన్‌పై కనిపించే కీబోర్డ్ నిలిపివేయబడింది</translation>
@@ -25,7 +26,9 @@
 <translation id="1812696562331527143">మీ ఇన్‌పుట్ పద్ధతి <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />3వ పక్షం<ph name="END_LINK" />)కు మార్చబడింది.
 మారడానికి Shift + Altను నొక్కండి.</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" />కు దర్పణం చేస్తోంది</translation>
+<translation id="1919743966458266018">విధి నిర్వాహికిని తెరిచే సత్వరమార్గం మార్చబడింది. దయచేసి <ph name="OLD_SHORTCUT" />కి బదులుగా <ph name="NEW_SHORTCUT" />ని ఉపయోగించండి.</translation>
 <translation id="1923539912171292317">స్వయంచాలక క్లిక్‌లు</translation>
+<translation id="1938872420421548906">Shift+Alt</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2127372758936585790">తక్కువ-పవర్ గల ఛార్జర్</translation>
@@ -105,6 +108,7 @@
 <translation id="4421231901400348175">రిమోట్ సహాయం విధానంలో మీ స్క్రీన్ నియంత్రణ <ph name="HELPER_NAME" />కి భాగస్వామ్యం చేయబడుతోంది.</translation>
 <translation id="4430019312045809116">వాల్యూమ్</translation>
 <translation id="4527045527269911712">బ్లూటూత్ పరికరం "<ph name="DEVICE_NAME" />" జత కావడానికి అనుమతి కోరుతోంది.</translation>
+<translation id="4544944664594876241">స్క్రీన్‌ని లాక్ చేసే సత్వరమార్గం మార్చబడింది. దయచేసి <ph name="OLD_SHORTCUT" />కి బదులుగా <ph name="NEW_SHORTCUT" />ని ఉపయోగించండి.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">డిస్‌కనెక్ట్ చెయ్యి</translation>
 <translation id="4872237917498892622">Alt+Search లేదా Shift</translation>
@@ -113,12 +117,14 @@
 <translation id="4957722034734105353">మరింత తెలుసుకోండి...</translation>
 <translation id="4961318399572185831">స్క్రీన్ ప్రసారం చేయండి</translation>
 <translation id="5011233892417813670">Chromebook</translation>
+<translation id="5012744545445585468">Ctrl+Shift+Space</translation>
 <translation id="5045002648206642691">Google డిస్క్ సెట్టింగ్‌లు...</translation>
 <translation id="5102001756192215136"><ph name="HOUR" />:<ph name="MINUTE" /> మిగిలి ఉంది</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION" />, <ph name="OVERSCAN" /></translation>
 <translation id="5168181903108465623">Cast పరికరాలు అందుబాటులో ఉన్నాయి</translation>
 <translation id="5222676887888702881">సైన్ ఔట్</translation>
 <translation id="5238774010593222950">మరొక ఖాతాకు సైన్ ఇన్ చేయడం సాధ్యపడదు.</translation>
+<translation id="532063867737390965">ఈ నెట్‌వర్క్ సెట్టింగ్‌ను నిర్వాహకుడు నిలిపివేసారు.</translation>
 <translation id="544691375626129091">అందుబాటులో ఉన్న వినియోగదారులందరూ ఇప్పటికే ఈ సెషన్‌కు జోడించబడ్డారు.</translation>
 <translation id="5507786745520522457">మొబైల్ డేటాను సెటప్ చేయండి</translation>
 <translation id="5543001071567407895">SMS</translation>
@@ -132,6 +138,7 @@
 మారడానికి Shift + Altను నొక్కండి.</translation>
 <translation id="5871632337994001636">పరికరాలను నిర్వహించండి...</translation>
 <translation id="5895138241574237353">మళ్ళీ ప్రారంభించు</translation>
+<translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5927132638760172455">తెలియని స్వీకర్తకు ప్రసారం చేస్తోంది</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">తిరిగి పూర్వ స్థితికి మార్చు</translation>
@@ -155,6 +162,7 @@
 <translation id="6426039856985689743">మొబైల్ డేటాను నిలిపివేయి</translation>
 <translation id="6452181791372256707">తిరస్కరించు</translation>
 <translation id="6459472438155181876"><ph name="DISPLAY_NAME" />కు స్క్రీన్‌ను విస్తరిస్తోంది</translation>
+<translation id="6501401484702599040"><ph name="RECEIVER_NAME" />కి స్క్రీన్‌ను ప్రసారం చేస్తున్నాము</translation>
 <translation id="6550675742724504774">ఎంపికలు</translation>
 <translation id="6585808820553845416">సెషన్ <ph name="SESSION_TIME_REMAINING" />లో ముగుస్తుంది.</translation>
 <translation id="6596816719288285829">IP చిరునామా</translation>
@@ -162,6 +170,7 @@
 <translation id="6713285437468012787">బ్లూటూత్ పరికరం "<ph name="DEVICE_NAME" />" జత చేయబడింది మరియు ఇప్పుడు అందరు వినియోగదారులకు అందుబాటులో ఉంది. మీరు సెట్టింగ్‌లను ఉపయోగించి ఈ జతను తీసివేయవచ్చు.</translation>
 <translation id="6785414152754474415">బ్యాటరీ <ph name="PERCENTAGE" />% నిండింది మరియు ఛార్జ్ అవుతోంది.</translation>
 <translation id="6803622936009808957">మద్దతు ఉన్న రిజల్యూషన్‌లు కనుగొనబడనందున ప్రదర్శనలను ప్రతిబింబించడం సాధ్యపడలేదు. దానికి బదులుగా విస్తారిత డెస్క్‌టాప్‌కు మారారు.</translation>
+<translation id="683971173229319003">Search+L</translation>
 <translation id="68610848741840742">ChromeVox (చదవబడే అభిప్రాయం)</translation>
 <translation id="6911468394164995108">మరొక దానిలో చేరండి...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
@@ -169,6 +178,7 @@
 <translation id="6981982820502123353">ప్రాప్యత</translation>
 <translation id="7029814467594812963">సెషన్‌ని నిష్క్రమించు</translation>
 <translation id="703171847531699602">ప్రసార పరికరాలు లేవు</translation>
+<translation id="7034339000180558234"><ph name="RECEIVER_NAME" />కి <ph name="TAB_NAME" />ని ప్రసారం చేస్తున్నాము</translation>
 <translation id="7052914147756339792">వాల్‌పేపర్‌ను సెట్ చేయి...</translation>
 <translation id="7097613348211027502">ChromeVox (చదవబడే అభిప్రాయం) ప్రారంభించబడింది.
 నిలిపివేయడానికి Ctrl+Alt+Z నొక్కండి.</translation>
@@ -180,6 +190,7 @@
 <translation id="737451040872859086">మైక్రోఫోన్ (అంతర్గతం)</translation>
 <translation id="742594950370306541">కెమెరా ఉపయోగంలో ఉంది.</translation>
 <translation id="743058460480092004">కెమెరా మరియు మైక్రోఫోన్ ఉపయోగంలో ఉన్నాయి.</translation>
+<translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> <ph name="SPECIFIED_RESOLUTION" />కి మద్దతివ్వదు. రిజల్యూషన్ <ph name="FALLBACK_RESOLUTION" />కి మార్చబడింది</translation>
 <translation id="7573962313813535744">డాక్ చేయబడిన మోడ్</translation>
 <translation id="7593891976182323525">Search లేదా Shift</translation>
@@ -207,6 +218,7 @@
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="882279321799040148">వీక్షించడానికి క్లిక్ చేసినప్పుడు</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8878886163241303700">స్క్రీన్ విస్తరించబడుతోంది</translation>
 <translation id="8940956008527784070">బ్యాటరీ తక్కువగా ఉంది (<ph name="PERCENTAGE" />%)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>

@@ -11,11 +11,12 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="1293235220023151515">Une installation de Chromium incompatible a été détectée sur le système. Veuillez la désinstaller, puis réessayer.</translation>
 <translation id="1298199220304005244">Obtenir de l'aide sur l'utilisation de Chromium OS</translation>
 <translation id="1396446129537741364">Tentative d'affichage des mots de passe dans Chromium</translation>
+<translation id="1403254041219632970">Les futures versions de Chromium ne seront plus compatibles avec les versions 10.6, 10.7 et 10.8 de Mac OS X.</translation>
 <translation id="1414495520565016063">Vous êtes connecté à Chromium.</translation>
 <translation id="1444754455097148408">Licences Chromium Open Source</translation>
-<translation id="1461885241643463646">Activer les processus de connexion Chromium basés sur iFrame. Cet indicateur remplace "--enable-web-based-signin".</translation>
 <translation id="1480489203462860648">Essayez-le, il est déjà installé.</translation>
 <translation id="151962892725702025">Impossible de synchroniser vos données dans Chromium OS, car la synchronisation n'est pas disponible pour votre domaine.</translation>
+<translation id="1559451348202814456">Chromium risque de ne pas fonctionner correctement, car la compatibilité n'est plus assurée sur les versions 10.6, 10.7 et 10.8 de Mac OS X.</translation>
 <translation id="1644918877723739397">Chromium stockera ce mot de passe dans vos <ph name="SAVED_PASSWORD_LINK" /> et s'en souviendra la prochaine fois que vous en aurez besoin.</translation>
 <translation id="1668054258064581266">Une fois votre compte Chromium supprimé, vous devrez peut-être charger de nouveau les onglets ouverts pour que les modifications prennent effet.</translation>
 <translation id="1688750314291223739">Configurez la synchronisation pour enregistrer sur le Web les fonctionnalités personnalisées de votre navigateur et y accéder à partir de Chromium sur n'importe quel ordinateur.</translation>
@@ -44,8 +45,10 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{Un téléchargement est en cours. Voulez-vous annuler ce dernier et quitter Chromium ?}one{# téléchargement est en cours. Voulez-vous annuler ce dernier et quitter Chromium ?}other{# téléchargements sont en cours. Voulez-vous annuler ces derniers et quitter Chromium ?}}</translation>
 <translation id="2396765026452590966">L'extension <ph name="EXTENSION_NAME" /> a modifié la page qui s'affiche lorsque vous démarrez Chromium.</translation>
 <translation id="2485422356828889247">Désinstaller</translation>
+<translation id="2486653164587200256">Chromium risque de ne pas fonctionner correctement, car la compatibilité n'est plus assurée sur Windows XP et Windows Vista.</translation>
 <translation id="2535480412977113886">Impossible de synchroniser vos données dans Chromium OS, car les informations de connexion de votre compte ne sont plus à jour.</translation>
 <translation id="2558641060352364164">Ce site utilise le plug-in Chromium Frame, dont le développement va bientôt être abandonné. Veuillez désinstaller ce plug-in, puis passer à un navigateur récent.</translation>
+<translation id="2565260267992448464">Cette page Web ne peut pas s'afficher dans Chromium, car votre ordinateur n'est pas connecté à Internet.</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="2602806952220118310">Notifications – Chromium</translation>
 <translation id="2636877269779209383">Chromium doit accéder à la caméra pour la partager avec ce site.</translation>
@@ -107,6 +110,7 @@ au site <ph name="SITE" />, des identifiants inhabituels et incorrects ont été
 <translation id="4423735387467980091">Personnaliser et contrôler Chromium</translation>
 <translation id="4458285410772214805">Pour que cette modification soit prise en compte, veuillez vous déconnecter, puis vous reconnecter.</translation>
 <translation id="4488676065623537541">Vos informations de facturation ont été enregistrées dans Chromium.</translation>
+<translation id="4549794359424059447">Les futures versions de Chromium ne seront plus compatibles avec Windows XP et Windows Vista.</translation>
 <translation id="4559775032954821361">Accédez au
           menu Chromium &gt;
           <ph name="SETTINGS_TITLE" />
@@ -135,6 +139,7 @@ au site <ph name="SITE" />, des identifiants inhabituels et incorrects ont été
 <translation id="549669000822060376">Veuillez patienter pendant que Chromium installe les dernières mises à jour du système.</translation>
 <translation id="5563479599352954471">Rechercher en un clic</translation>
 <translation id="5620765574781326016">Pour en savoir plus sur des sujets évoqués sur des sites Web sans quitter la page.</translation>
+<translation id="5680901439334282664">connectez-vous à Chromium</translation>
 <translation id="5772805321386874569">(nécessite le <ph name="BEGIN_BUTTON" />redémarrage<ph name="END_BUTTON" /> de Chromium)</translation>
 <translation id="5796460469508169315">Chromium est presque prêt</translation>
 <translation id="580822234363523061">Accédez au
@@ -211,7 +216,6 @@ Chromium ne peut pas récupérer vos paramètres.</translation>
 <translation id="761356813943268536">Votre webcam et votre micro sont en cours d'utilisation dans Chromium.</translation>
 <translation id="7617377681829253106">Chromium s'est amélioré</translation>
 <translation id="7641113255207688324">Chromium n'est pas votre navigateur par défaut.</translation>
-<translation id="7723128346970903111">Lorsque cet indicateur est activé, un processus de connexion Chromium basé sur iFrame est utilisé. Dans le cas contraire, il s'agit d'un processus basé sur l'affichage Web.</translation>
 <translation id="7729447699958282447">Impossible de synchroniser vos données dans Chromium, car la synchronisation n'est pas disponible pour votre domaine.</translation>
 <translation id="7747138024166251722">Le programme d'installation n'a pas pu créer de répertoire temporaire. Vérifiez que le disque a suffisamment d'espace libre et que vous disposez des autorisations nécessaires pour installer le logiciel.</translation>
 <translation id="7918535023914021398">Il a été confirmé dans Chromium que le certificat de ce site a bien été fourni par <ph name="ISSUER" />. Aucune information relative à la transparence du certificat n'a été fournie via le serveur.</translation>

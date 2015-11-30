@@ -52,8 +52,9 @@
 <translation id="169033420419426091">Kipakuliwa cha <ph name="FILE_NAME" /> hakijafaulu kwa sababu hakuna Kadi ya SD.</translation>
 <translation id="1692118695553449118">Usawazishajii umewashwa</translation>
 <translation id="1709438864123551175">Kiokoa Data</translation>
-<translation id="1741127251791687432">Umeingia katika Akaunti za Google zinazofuata.</translation>
+<translation id="1741127251791687432">Umeingia katika Akaunti za Google zifuatazo.</translation>
 <translation id="1742134235943978220">Imetafsiriwa katika <ph name="TARGET_LANGUAGE" />.</translation>
+<translation id="1749561566933687563">Sawazisha alamisho zako</translation>
 <translation id="17513872634828108">Vichupo vilivyo wazi</translation>
 <translation id="1807246157184219062">Mwangaza</translation>
 <translation id="1825719650605518411">Hali ya Uendeshaji wa Kwanza</translation>
@@ -170,6 +171,7 @@ Unaingia katika akaunti ambayo inasimamiwa na kumpa msimamizi wa akaunti udhibit
 
 Ili kurekebisha hoja yako ya utafutaji, bonyeza kwa muda mrefu ili kuchagua. Ili kuchuja utafutaji wako, telezesha paneli hadi juu na uguse kisanduku cha utafutaji.</translation>
 <translation id="363596933471559332">Ingia katika tovuti kiotomatiki kwa kutumia kitambulisho kilichohifadhiwa. Kipengele kikiwa kimezimwa, utaombwa kuthibitisha kila wakati kabla ya kuingia katika tovuti.</translation>
+<translation id="3653742808139624888">Ingia katika Chrome ili upate alamisho zako kwenye vifaa vyako vyote</translation>
 <translation id="3656115297268584622">Washa eneo katika <ph name="BEGIN_LINK" />Mipangilio ya Android<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">Tovuti nyingine zinaweza kuhifadhi na kusoma data ya vidakuzi</translation>
 <translation id="3672452749423051839">Mapendekezo ya hitilafu ya kuelekea unapotaka</translation>
@@ -356,6 +358,7 @@ Hata hivyo, huonekani. Kuvinjari katika hali fiche hakufichi kuvinjari kwako kus
 <translation id="6031101910111098835">Imekunjwa - Bofya ili upanue</translation>
 <translation id="6040143037577758943">Funga</translation>
 <translation id="6042308850641462728">Zaidi</translation>
+<translation id="604996488070107836">Kipakuliwa cha <ph name="FILE_NAME" /> hakijafaulu kwa sababu ya hitilafu isiyojulikana.</translation>
 <translation id="605721222689873409">MK</translation>
 <translation id="6075798973483050474">Badilisha ukurasa wa mwanzo</translation>
 <translation id="6108923351542677676">Usanidi unaendelea...</translation>
@@ -456,7 +459,7 @@ Hata hivyo, huonekani. Kuvinjari katika hali fiche hakufichi kuvinjari kwako kus
 <translation id="7423098979219808738">Uliza kwanza</translation>
 <translation id="7437998757836447326">Ondoka kwenye Chrome</translation>
 <translation id="7473891865547856676">La Asante</translation>
-<translation id="7475192538862203634">Ikiwa unaona hili kila mara, jaribu <ph name="BEGIN_LINK" />mapendekezo haya<ph name="END_LINK" />.</translation>
+<translation id="7475192538862203634">Ikiwa unaona hili kila mara, jaribu <ph name="BEGIN_LINK" />mapendekezo<ph name="END_LINK" /> haya.</translation>
 <translation id="748127970106343339">Thibitisha ufutaji wa kitambulisho cha kifaa</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Ilisasishwa <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7498271377022651285">Tafadhali subiri...</translation>

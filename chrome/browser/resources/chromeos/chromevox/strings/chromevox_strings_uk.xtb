@@ -357,6 +357,7 @@
 <translation id="4729095194763193578">Попередній рядок таблиці</translation>
 <translation id="4736221692378411923">серпень</translation>
 <translation id="4740661827607246557">Команди довідки</translation>
+<translation id="4755857887974653209">Вимкнути ChromeVox</translation>
 <translation id="4759716709594980008">Огляд клавіатури ОС Chrome</translation>
 <translation id="4763296182459741068">Перенесення вниз</translation>
 <translation id="4763480195061959176">відео</translation>
@@ -661,6 +662,7 @@
 <translation id="8065607967589909823">Вибрано</translation>
 <translation id="8066678206530322333">Банер</translation>
 <translation id="8110647606445335195">Немає орієнтирів ARIA.</translation>
+<translation id="8132379720172247073">Меню ChromeVox</translation>
 <translation id="8153880621934657047">Не всередині таблиці.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{підкреслення}one{# підкреслення}few{# підкреслення}many{# підкреслень}other{# underscores}}</translation>
 <translation id="8179976553408161302">Enter</translation>
@@ -696,6 +698,7 @@
 <translation id="8584721346566392021">заголовок 5</translation>
 <translation id="8587549812518406253">Наступний пункт списку</translation>
 <translation id="860150890330522909"><ph name="NAME" /> вибрано</translation>
+<translation id="8603071050456974042">Панель ChromeVox</translation>
 <translation id="8606621670302093223">Елемент керування для вибору дати</translation>
 <translation id="8631359288236106450">виділено пунктів: <ph name="COUNT" /></translation>
 <translation id="8638532244051952400">Повідомити координати поточної клітинки</translation>

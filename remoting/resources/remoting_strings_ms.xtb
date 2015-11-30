@@ -24,6 +24,7 @@ Untuk mendapatkan maklumat tentang privasi, sila lihat Dasar Privasi Google (htt
 <translation id="1546934824884762070">Ralat yang tidak dijangka telah berlaku. Sila laporkan masalah ini kepada pembangun.</translation>
 <translation id="1619813076098775562">Sambungan ke peranti Cast ditutup.</translation>
 <translation id="1643640058022401035">Tindakan meninggalkan halaman ini akan menamatkan sesi Chromoting anda.</translation>
+<translation id="1646994964686260497">Tiada peranti untuk disambungkan.</translation>
 <translation id="1654128982815600832">Mendayakan sambungan jauh untuk komputer ini…</translation>
 <translation id="170207782578677537">Gagal mendaftarkan komputer ini.</translation>
 <translation id="1704090719919187045">Pilihan Hos Chromoting</translation>
@@ -109,6 +110,7 @@ Untuk mendapatkan maklumat tentang privasi, sila lihat Dasar Privasi Google (htt
 <translation id="3606997049964069799">Anda tidak log masuk ke Chromium. Sila log masuk dan cuba lagi.</translation>
 <translation id="3649256019230929621">Minimumkan tetingkap</translation>
 <translation id="369442766917958684">Luar talian.</translation>
+<translation id="3695446226812920698">Ketahui caranya</translation>
 <translation id="3776024066357219166">Sesi Desktop Jauh Chrome anda telah tamat.</translation>
 <translation id="3785447812627779171">Hos
 Chromoting</translation>
@@ -121,6 +123,10 @@ Chromoting</translation>
 <translation id="3950820424414687140">Log masuk</translation>
 <translation id="3989511127559254552">Untuk meneruskan, anda mesti memberikan kebenaran akses lanjutan terlebih dahulu kepada komputer anda. Anda hanya perlu melakukannya sekali.</translation>
 <translation id="4006787130661126000">Anda mesti mendayakan sambungan jauh jika anda mahu menggunakan Desktop Jauh Chrome untuk mengakses komputer ini.</translation>
+<translation id="401121182145179743">Mula-mula anda perlu menyediakan komputer anda untuk akses jauh.</translation>
+<translation id="4028465833180158312">• Kemas kini UI Reka Bentuk Bahan.
+• Kredit pelesenan pihak ketiga.
+• Maklumat yang ditunjukkan bagi komputer jauh yang berada di luar talian.</translation>
 <translation id="405887016757208221">Komputer jauh gagal memulakan sesi. Jika masalah berterusan, sila cuba mengkonfigurasi hos sekali lagi.</translation>
 <translation id="4068946408131579958">Semua sambungan</translation>
 <translation id="409800995205263688">NOTA: Tetapan dasar membenarkan sambungan antara komputer dalam rangkaian anda sahaja.</translation>

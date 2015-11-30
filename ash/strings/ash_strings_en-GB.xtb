@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="en-GB">
 <translation id="1013923882670373915">Bluetooth device "<ph name="DEVICE_NAME" />" would like permission to pair. Please enter this PIN code on that device: <ph name="PINCODE" /></translation>
+<translation id="1021311941847921177">The shortcut to switch to the next input method has changed. Please use <ph name="NEW_SHORTCUT" /> instead of <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Autohide shelf</translation>
 <translation id="1195412055398077112">overscan</translation>
 <translation id="1270290102613614947">On-screen keyboard disabled</translation>
@@ -25,7 +26,9 @@
 <translation id="1812696562331527143">Your input method has changed to <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />3rd party<ph name="END_LINK" />).
 Press Shift + Alt to switch.</translation>
 <translation id="1882897271359938046">Mirroring to <ph name="DISPLAY_NAME" /></translation>
+<translation id="1919743966458266018">The shortcut to open the task manager has changed. Please use <ph name="NEW_SHORTCUT" /> instead of <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Automatic clicks</translation>
+<translation id="1938872420421548906">Shift+Alt</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2127372758936585790">Low-power charger</translation>
@@ -105,6 +108,7 @@ Press Search or Shift to cancel.</translation>
 <translation id="4421231901400348175">Sharing control of your screen with <ph name="HELPER_NAME" /> via Remote Assistance.</translation>
 <translation id="4430019312045809116">volume</translation>
 <translation id="4527045527269911712">Bluetooth device "<ph name="DEVICE_NAME" />" would like permission to pair.</translation>
+<translation id="4544944664594876241">The shortcut to lock the screen has changed. Please use <ph name="NEW_SHORTCUT" /> instead of <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Disconnect</translation>
 <translation id="4872237917498892622">Alt+Search or Shift</translation>
@@ -113,12 +117,14 @@ Press Search or Shift to cancel.</translation>
 <translation id="4957722034734105353">Learn more...</translation>
 <translation id="4961318399572185831">Cast screen</translation>
 <translation id="5011233892417813670">Chromebook</translation>
+<translation id="5012744545445585468">Ctrl+Shift+Space</translation>
 <translation id="5045002648206642691">Google Drive settings</translation>
 <translation id="5102001756192215136"><ph name="HOUR" />:<ph name="MINUTE" /> left</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION" />, <ph name="OVERSCAN" /></translation>
 <translation id="5168181903108465623">Cast devices available</translation>
 <translation id="5222676887888702881">Sign out</translation>
 <translation id="5238774010593222950">Can't sign in to another account.</translation>
+<translation id="532063867737390965">This network setting is disabled by the administrator.</translation>
 <translation id="544691375626129091">All available users have already been added to this session.</translation>
 <translation id="5507786745520522457">Set up mobile data</translation>
 <translation id="5543001071567407895">SMS</translation>
@@ -132,6 +138,7 @@ Press Search or Shift to cancel.</translation>
 Press Shift + Alt to switch.</translation>
 <translation id="5871632337994001636">Manage devices...</translation>
 <translation id="5895138241574237353">Restart</translation>
+<translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5927132638760172455">Casting to an unknown receiver</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">Revert</translation>
@@ -155,6 +162,7 @@ Press Shift + Alt to switch.</translation>
 <translation id="6426039856985689743">Disable mobile data</translation>
 <translation id="6452181791372256707">Reject</translation>
 <translation id="6459472438155181876">Extending screen to <ph name="DISPLAY_NAME" /></translation>
+<translation id="6501401484702599040">Casting screen to <ph name="RECEIVER_NAME" /></translation>
 <translation id="6550675742724504774">Options</translation>
 <translation id="6585808820553845416">Session ends in <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6596816719288285829">IP Address</translation>
@@ -162,6 +170,7 @@ Press Shift + Alt to switch.</translation>
 <translation id="6713285437468012787">Bluetooth device "<ph name="DEVICE_NAME" />" has been paired and is now available to all users. You may remove this pairing using Settings.</translation>
 <translation id="6785414152754474415">Battery is <ph name="PERCENTAGE" />% full and charging.</translation>
 <translation id="6803622936009808957">Could not mirror displays since no supported resolutions found. Entered extended desktop instead.</translation>
+<translation id="683971173229319003">Search+L</translation>
 <translation id="68610848741840742">ChromeVox (Spoken feedback)</translation>
 <translation id="6911468394164995108">Join other ...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
@@ -169,6 +178,7 @@ Press Shift + Alt to switch.</translation>
 <translation id="6981982820502123353">Accessibility</translation>
 <translation id="7029814467594812963">Exit session</translation>
 <translation id="703171847531699602">No cast devices</translation>
+<translation id="7034339000180558234">Casting <ph name="TAB_NAME" /> to <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Set wallpaper...</translation>
 <translation id="7097613348211027502">ChromeVox (spoken feedback) is enabled.
 Press Ctrl+Alt+Z to disable.</translation>
@@ -180,6 +190,7 @@ Press Alt+Search or Shift to cancel.</translation>
 <translation id="737451040872859086">Microphone (Internal)</translation>
 <translation id="742594950370306541">Camera is in use.</translation>
 <translation id="743058460480092004">Camera and microphone are in use.</translation>
+<translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> doesn't support <ph name="SPECIFIED_RESOLUTION" />. The resolution was changed to <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7573962313813535744">Docked mode</translation>
 <translation id="7593891976182323525">Search or Shift</translation>
@@ -207,6 +218,7 @@ Press Alt+Search or Shift to cancel.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="882279321799040148">Click to view</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8878886163241303700">Extending screen</translation>
 <translation id="8940956008527784070">Battery low (<ph name="PERCENTAGE" />%)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>

@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="et">
 <translation id="1013923882670373915">Bluetoothi seade „<ph name="DEVICE_NAME" />” küsib luba sidumiseks. Sisestage seadmes järgmine PIN-kood: <ph name="PINCODE" /></translation>
+<translation id="1021311941847921177">Järgmise sisestusmeetodi aktiveerimise otseteed on muudetud. Kasutage vana otsetee <ph name="OLD_SHORTCUT" /> asemel uut otseteed <ph name="NEW_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Riiuli automaatne peitmine</translation>
 <translation id="1195412055398077112">liighälvitus</translation>
 <translation id="1270290102613614947">Ekraanil kuvatav klaviatuur on keelatud</translation>
@@ -25,7 +26,9 @@
 <translation id="1812696562331527143">Teie sisestusmeetod on nüüd <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />kolmas osapool<ph name="END_LINK" />).
 Selle muutmiseks vajutage klahve Tõstuklahv + Alt.</translation>
 <translation id="1882897271359938046">Peegeldamine asukohta <ph name="DISPLAY_NAME" /></translation>
+<translation id="1919743966458266018">Tegumihalduri avamise otseteed on muudetud. Kasutage vana otsetee <ph name="OLD_SHORTCUT" /> asemel uut otseteed <ph name="NEW_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Automaatsed klikid</translation>
+<translation id="1938872420421548906">Tõstuklahv + Alt</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2127372758936585790">Väikese energiakuluga laadija</translation>
@@ -105,6 +108,7 @@ Tühistamiseks vajutage otsinguklahvi või tõstuklahvi</translation>
 <translation id="4421231901400348175">Ekraani juhtimise jagamine isikuga <ph name="HELPER_NAME" /> kaugabi kaudu.</translation>
 <translation id="4430019312045809116">Helitugevus</translation>
 <translation id="4527045527269911712">Bluetoothi seade „<ph name="DEVICE_NAME" />” küsib luba sidumiseks.</translation>
+<translation id="4544944664594876241">Ekraani lukustamise otseteed on muudetud. Kasutage vana otsetee <ph name="OLD_SHORTCUT" /> asemel uut otseteed <ph name="NEW_SHORTCUT" />.</translation>
 <translation id="479989351350248267">otsing</translation>
 <translation id="4804818685124855865">Katkesta ühendus</translation>
 <translation id="4872237917498892622">Alt + otsinguklahv või tõstuklahv</translation>
@@ -113,12 +117,14 @@ Tühistamiseks vajutage otsinguklahvi või tõstuklahvi</translation>
 <translation id="4957722034734105353">Lisateave ...</translation>
 <translation id="4961318399572185831">Ekraani ülekandmine</translation>
 <translation id="5011233892417813670">Chromebook</translation>
+<translation id="5012744545445585468">Ctrl + Tõstuklahv + Tühik</translation>
 <translation id="5045002648206642691">Google Drive'i seaded ...</translation>
 <translation id="5102001756192215136"><ph name="HOUR" />:<ph name="MINUTE" /> alles</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION" />, <ph name="OVERSCAN" /></translation>
 <translation id="5168181903108465623">Ülekandeseadmed on saadaval</translation>
 <translation id="5222676887888702881">Logi välja</translation>
 <translation id="5238774010593222950">Teisele kontole ei saa sisse logida.</translation>
+<translation id="532063867737390965">Administraator on selle võrguseade keelanud.</translation>
 <translation id="544691375626129091">Kõik saadaval kasutajad on sellesse seanssi juba lisatud.</translation>
 <translation id="5507786745520522457">Mobiiliandmeside seadistamine</translation>
 <translation id="5543001071567407895">SMS</translation>
@@ -132,6 +138,7 @@ Tühistamiseks vajutage otsinguklahvi või tõstuklahvi</translation>
 Selle muutmiseks vajutage klahve Tõstuklahv + Alt.</translation>
 <translation id="5871632337994001636">Seadmete haldamine ...</translation>
 <translation id="5895138241574237353">Taaskäivitamine</translation>
+<translation id="5901316534475909376">Tõstuklahv + ESC</translation>
 <translation id="5927132638760172455">Ülekandmine teadmata vastuvõtjasse</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">Ennista</translation>
@@ -155,6 +162,7 @@ Selle muutmiseks vajutage klahve Tõstuklahv + Alt.</translation>
 <translation id="6426039856985689743">Keela mobiilne andmeside</translation>
 <translation id="6452181791372256707">Lükka tagasi</translation>
 <translation id="6459472438155181876">Ekraani laiendamine seadmesse <ph name="DISPLAY_NAME" /></translation>
+<translation id="6501401484702599040">Ekraani ülekandmine seadmesse <ph name="RECEIVER_NAME" /></translation>
 <translation id="6550675742724504774">Valikud</translation>
 <translation id="6585808820553845416">Seansi lõpuni on jäänud <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6596816719288285829">IP-aadress</translation>
@@ -162,6 +170,7 @@ Selle muutmiseks vajutage klahve Tõstuklahv + Alt.</translation>
 <translation id="6713285437468012787">Bluetoothi seade „<ph name="DEVICE_NAME" />” on nüüd seotud ja saadaval kõikidele kasutajatele. Võite sidumise tühistada jaotises Seaded.</translation>
 <translation id="6785414152754474415">Aku on <ph name="PERCENTAGE" />% täis ja seda laetakse.</translation>
 <translation id="6803622936009808957">Ei saanud kuvasid peegeldada, kuna toetatud eraldusvõimeid ei leitud. Selle asemel siseneti laiendatud töölaua režiimi.</translation>
+<translation id="683971173229319003">Otsing + L</translation>
 <translation id="68610848741840742">ChromeVox (kõnena esitatud tagasiside)</translation>
 <translation id="6911468394164995108">Liitu muu võrguga ...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
@@ -169,6 +178,7 @@ Selle muutmiseks vajutage klahve Tõstuklahv + Alt.</translation>
 <translation id="6981982820502123353">Juurdepääsetavus</translation>
 <translation id="7029814467594812963">Välju seansist</translation>
 <translation id="703171847531699602">Ülekandeseadmeid pole</translation>
+<translation id="7034339000180558234">Vahelehe <ph name="TAB_NAME" /> ülekandmine seadmesse <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Määra taustapilt ...</translation>
 <translation id="7097613348211027502">ChromeVox (kõnena esitatud tagasiside) on lubatud.
 Keelamiseks vajutage klahvikombinatsiooni Ctrl + Alt + Z.</translation>
@@ -180,6 +190,7 @@ Tühistamiseks vajutage klahvikombinatsiooni Alt + otsinguklahv või tõstuklahv
 <translation id="737451040872859086">Mikrofon (sisemine)</translation>
 <translation id="742594950370306541">Kaamera on kasutusel.</translation>
 <translation id="743058460480092004">Kaamera ja mikrofon on kasutusel.</translation>
+<translation id="7510334386202674593">Ctrl + Tõstuklahv + L</translation>
 <translation id="7561014039265304140">Üksus <ph name="DISPLAY_NAME" /> ei toeta eraldusvõimet <ph name="SPECIFIED_RESOLUTION" />. Eraldusvõime muudeti tagasi väärtusele <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7573962313813535744">Dokkimisrežiim</translation>
 <translation id="7593891976182323525">Otsinguklahv või tõstuklahv</translation>
@@ -207,6 +218,7 @@ Tühistamiseks vajutage klahvikombinatsiooni Alt + otsinguklahv või tõstuklahv
 <translation id="8814190375133053267">WiFi</translation>
 <translation id="882279321799040148">Vaatamiseks klõpsake</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8850991929411075241">Otsing + ESC</translation>
 <translation id="8878886163241303700">Ekraani laiendamine</translation>
 <translation id="8940956008527784070">Aku tühjeneb (<ph name="PERCENTAGE" />%)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>

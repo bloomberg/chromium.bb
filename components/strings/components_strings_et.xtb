@@ -84,6 +84,7 @@
 <translation id="2556876185419854533">&amp;Võta muudatus tagasi</translation>
 <translation id="2581221116934462656">Kas soovite, et rakendus <ph name="PRODUCT_NAME" /> pakub järgmisel korral sellel saidil <ph name="LANGUAGE_NAME" /> keeles lehtede tõlkimise võimalust?</translation>
 <translation id="2587841377698384444">Kataloogi API ID:</translation>
+<translation id="2589937147782335782">Kas soovite, et Google salvestaks selle kaardi?</translation>
 <translation id="2597378329261239068">Dokument on parooliga kaitstud. Sisestage parool.</translation>
 <translation id="2609632851001447353">Variatsioonid</translation>
 <translation id="2625385379895617796">Teie kell on ees</translation>
@@ -202,7 +203,6 @@
 <translation id="5295309862264981122">Kinnita navigatsiooni</translation>
 <translation id="5299298092464848405">Reegli sõelumisel ilmnes viga</translation>
 <translation id="5308689395849655368">Krahhide aruandlus on keelatud.</translation>
-<translation id="5316812925700871227">Pööra vastupäeva</translation>
 <translation id="5317780077021120954">Salvesta</translation>
 <translation id="536296301121032821">Reegli seadete talletamine ebaõnnestus</translation>
 <translation id="540969355065856584">Server ei suutnud tõestada, et see on domeen <ph name="DOMAIN" />; selle turvasertifikaat pole praegu kehtiv. Selle põhjuseks võib olla vale seadistus või ründaja, kes on sekkunud teie ühendusse.</translation>
@@ -219,6 +219,7 @@
 <translation id="560412284261940334">Haldust ei toetata</translation>
 <translation id="5629630648637658800">Reegli seadete laadimine ebaõnnestus</translation>
 <translation id="5631439013527180824">Seadme halduse luba on kehtetu</translation>
+<translation id="5680545064257783621">Pakub täiustatud järjehoidja katse jaoks väljalülitamisnuppu</translation>
 <translation id="5720705177508910913">Praegune kasutaja</translation>
 <translation id="5813119285467412249">&amp;Lisa uuesti</translation>
 <translation id="5872918882028971132">Vanema soovitused</translation>
@@ -289,11 +290,13 @@
 <translation id="7424977062513257142">Selle veebilehe manustatud leht ütleb:</translation>
 <translation id="7441627299479586546">Reegli objekt on vale</translation>
 <translation id="7485870689360869515">Andmeid ei leitud.</translation>
+<translation id="7514365320538308">Laadi alla</translation>
 <translation id="7537536606612762813">Kohustuslik</translation>
 <translation id="7542995811387359312">Automaatne krediitkaardi täide on keelatud, sest see vorm ei kasuta turvalist ühendust.</translation>
 <translation id="7567204685887185387">Server ei suutnud tõestada, et see on domeen <ph name="DOMAIN" />, selle turvasertifikaat võib olla väljastatud pettuse teel. Selle põhjuseks võib olla vale seadistus või ründaja, kes on sekkunud teie ühendusse.</translation>
 <translation id="7568593326407688803">See leht on keeles<ph name="ORIGINAL_LANGUAGE" />Kas soovite seda tõlkida?</translation>
 <translation id="7569952961197462199">Kas eemaldada Chrome'ist krediitkaart?</translation>
+<translation id="7578104083680115302">Google'i salvestatud kaartide abil saate eri seadmetes saitidel ja rakendustes kiirelt maksta.</translation>
 <translation id="7592362899630581445">Serveri sertifikaat rikub nime piiranguid.</translation>
 <translation id="7600965453749440009">Ära kunagi tõlgi: <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">Väärtus on vahemikust (<ph name="VALUE" />) väljaspool.</translation>

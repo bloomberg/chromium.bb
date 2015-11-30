@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="th">
 <translation id="1013923882670373915">อุปกรณ์บลูทูธ "<ph name="DEVICE_NAME" />" ต้องการสิทธิ์ในการจับคู่ โปรดป้อนรหัส PIN นี้บนอุปกรณ์นั้น: <ph name="PINCODE" /></translation>
+<translation id="1021311941847921177">มีการเปลี่ยนแปลงทางลัดที่ใช้สลับไปยังวิธีการป้อนข้อมูลถัดไป โปรดใช้ <ph name="NEW_SHORTCUT" /> แทน <ph name="OLD_SHORTCUT" /></translation>
 <translation id="112308213915226829">ซ่อนชั้นวางโดยอัตโนมัติ</translation>
 <translation id="1195412055398077112">โอเวอร์สแกน</translation>
 <translation id="1270290102613614947">ปิดใช้แป้นพิมพ์บนหน้าจออยู่</translation>
@@ -25,7 +26,9 @@
 <translation id="1812696562331527143">วิธีการป้อนข้อมูลของคุณเปลี่ยนแปลงเป็น <ph name="INPUT_METHOD_ID" />* (<ph name="BEGIN_LINK" />บุคคลที่สาม<ph name="END_LINK" />)
 กด Shift + Alt เพื่อสลับ</translation>
 <translation id="1882897271359938046">กำลังแสดงผลไปที่ <ph name="DISPLAY_NAME" /></translation>
+<translation id="1919743966458266018">มีการเปลี่ยนแปลงทางลัดที่ใช้เปิดตัวจัดการงาน โปรดใช้ <ph name="NEW_SHORTCUT" /> แทน <ph name="OLD_SHORTCUT" /></translation>
 <translation id="1923539912171292317">การคลิกอัตโนมัติ</translation>
+<translation id="1938872420421548906">Shift+Alt</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2127372758936585790">ที่ชาร์จพลังงานต่ำ</translation>
@@ -105,6 +108,7 @@
 <translation id="4421231901400348175">กำลังแชร์การควบคุมหน้าจอกับ <ph name="HELPER_NAME" /> ผ่านความช่วยเหลือระยะไกล</translation>
 <translation id="4430019312045809116">ระดับเสียง</translation>
 <translation id="4527045527269911712">อุปกรณ์บลูทูธ "<ph name="DEVICE_NAME" />" ต้องการสิทธิ์ในการจับคู่</translation>
+<translation id="4544944664594876241">มีการเปลี่ยนแปลงทางลัดที่ใช้ล็อกหน้าจอ โปรดใช้ <ph name="NEW_SHORTCUT" /> แทน <ph name="OLD_SHORTCUT" /></translation>
 <translation id="479989351350248267">ค้นหา</translation>
 <translation id="4804818685124855865">ตัดการเชื่อมต่อ</translation>
 <translation id="4872237917498892622">Alt+ค้นหา หรือ Shift</translation>
@@ -113,12 +117,14 @@
 <translation id="4957722034734105353">เรียนรู้เพิ่มเติม...</translation>
 <translation id="4961318399572185831">แคสต์หน้าจอ</translation>
 <translation id="5011233892417813670">Chromebook</translation>
+<translation id="5012744545445585468">Ctrl+Shift+Space</translation>
 <translation id="5045002648206642691">การตั้งค่า Google ไดรฟ์...</translation>
 <translation id="5102001756192215136">เหลืออีก <ph name="HOUR" />:<ph name="MINUTE" /></translation>
 <translation id="511445211639755999"><ph name="RESOLUTION" />, <ph name="OVERSCAN" /></translation>
 <translation id="5168181903108465623">เครื่องส่งพร้อมใช้งาน</translation>
 <translation id="5222676887888702881">ออกจากระบบ</translation>
 <translation id="5238774010593222950">ไม่สามารถลงชื่อเข้าใช้บัญชีอื่น</translation>
+<translation id="532063867737390965">การตั้งค่าเครือข่ายนี้ปิดใช้โดยผู้ดูแลระบบ</translation>
 <translation id="544691375626129091">เพิ่มผู้ใช้ที่มีทั้งหมดลงในเซสชันนี้แล้ว</translation>
 <translation id="5507786745520522457">ตั้งค่าข้อมูลมือถือ</translation>
 <translation id="5543001071567407895">SMS</translation>
@@ -132,6 +138,7 @@
 กด Shift + Alt เพื่อสลับ</translation>
 <translation id="5871632337994001636">จัดการอุปกรณ์...</translation>
 <translation id="5895138241574237353">ปิดแล้วเปิดอีกครั้ง</translation>
+<translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5927132638760172455">กำลังแคสต์ไปยังเครื่องรับที่ไม่รู้จัก</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">ย้อนกลับ</translation>
@@ -155,6 +162,7 @@
 <translation id="6426039856985689743">ปิดการใช้งานข้อมูลมือถือ</translation>
 <translation id="6452181791372256707">ปฏิเสธ</translation>
 <translation id="6459472438155181876">ขยายหน้าจอไปยัง <ph name="DISPLAY_NAME" /></translation>
+<translation id="6501401484702599040">กำลังแคสต์หน้าจอไปยัง <ph name="RECEIVER_NAME" /></translation>
 <translation id="6550675742724504774">ตัวเลือก</translation>
 <translation id="6585808820553845416">เซสชันจะสิ้นสุดใน <ph name="SESSION_TIME_REMAINING" /></translation>
 <translation id="6596816719288285829">ที่อยู่ IP</translation>
@@ -162,6 +170,7 @@
 <translation id="6713285437468012787">อุปกรณ์บลูทูธ "<ph name="DEVICE_NAME" />" ได้รับการจับคู่และขณะนี้พร้อมให้บริการแก่ผู้ใช้ทุกคนแล้ว คุณสามารถลบการจับคู่นี้โดยใช้การตั้งค่า</translation>
 <translation id="6785414152754474415">มีแบตเตอรี่ <ph name="PERCENTAGE" />% และกำลังชาร์จ</translation>
 <translation id="6803622936009808957">ไม่สามารถแสดงผลคู่ขนานได้เนื่องจากไม่พบความละเอียดที่สนับสนุน เข้าสู่เดสก์ท็อปแบบขยายแทน</translation>
+<translation id="683971173229319003">Search+L</translation>
 <translation id="68610848741840742">ChromeVox (การตอบสนองด้วยเสียง)</translation>
 <translation id="6911468394164995108">เชื่อมต่อเครือข่ายอื่น...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
@@ -169,6 +178,7 @@
 <translation id="6981982820502123353">การเข้าถึง</translation>
 <translation id="7029814467594812963">ออกจากเซสชัน</translation>
 <translation id="703171847531699602">ไม่มีอุปกรณ์แคสต์</translation>
+<translation id="7034339000180558234">กำลังแคสต์ <ph name="TAB_NAME" /> ไปยัง <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">ตั้งค่าวอลเปเปอร์...</translation>
 <translation id="7097613348211027502">เปิดใช้ ChromeVox (การตอบสนองด้วยเสียง) อยู่
 กด Ctrl+Alt+Z เพื่อปิด</translation>
@@ -180,6 +190,7 @@
 <translation id="737451040872859086">ไมโครโฟน (ภายใน)</translation>
 <translation id="742594950370306541">ใช้กล้องถ่ายรูปอยู่</translation>
 <translation id="743058460480092004">ใช้กล้องถ่ายรูปและไมโครโฟนอยู่</translation>
+<translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> ไม่สนับสนุน <ph name="SPECIFIED_RESOLUTION" /> ความละเอียดเปลี่ยนเป็น <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7573962313813535744">โหมดเชื่อมต่อแท่นชาร์จ</translation>
 <translation id="7593891976182323525">ค้นหาหรือ Shift</translation>
@@ -207,6 +218,7 @@
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="882279321799040148">คลิกเพื่อดู</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8878886163241303700">กำลังขยายหน้าจอ</translation>
 <translation id="8940956008527784070">แบตเตอรี่ต่ำ (<ph name="PERCENTAGE" />%)</translation>
 <translation id="9074739597929991885">บลูทูธ</translation>

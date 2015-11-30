@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-TW">
+<translation id="101438888985615157">將畫面旋轉 180 度</translation>
 <translation id="1017967144265860778">位於登入畫面中的電源管理設定</translation>
 <translation id="1019101089073227242">設定使用者資料目錄</translation>
 <translation id="1022361784792428773">使用者應避免安裝的擴充功能 ID (使用星號 (*) 排除所有擴充功能)</translation>
@@ -236,6 +237,17 @@
 <translation id="2113068765175018713">透過自動重新啟動的方式限制裝置的正常運作時間</translation>
 <translation id="2127599828444728326">允許這些網站的通知</translation>
 <translation id="2131902621292742709">在電池供電環境下執行時的螢幕調暗延遲時間</translation>
+<translation id="2137064848866899664">如果設定這項政策，每次重新啟動時，
+      以及在這個政策值發生變更後首次連線時，
+      每個畫面都會依指定的角度旋轉。
+      使用者可以在登入後透過設定頁面變更畫面旋轉設定，
+      但下次重新啟動時，使用者的設定仍會遭到這個政策值覆寫。
+
+      主要畫面和所有次要畫面都適用這項政策。
+
+      如果未設定這項政策，則預設值為 0 度 (使用者可予以變更)。
+      在這種情況下，重新啟動時就不會重新套用
+      預設值。</translation>
 <translation id="2166715102875984646">停止支援 3D 圖形 API。
 
       啟用這項設定會禁止網頁存取圖形處理器 (GPU)。具體來說，網頁將無法存取 WebGL API，外掛程式則無法使用 Pepper 3D API。
@@ -871,6 +883,7 @@
       </translation>
 <translation id="4442582539341804154">裝置閒置或暫停時啟用鎖定</translation>
 <translation id="4445684791305970001">停用「開發人員工具」和 JavaScript 控制台。如果您啟用這項設定，系統就無法存取「開發人員工具」且無法查看網站元素。此外，也會停用任何用來開啟「開發人員工具」和 JavaScript 控制台的鍵盤快速鍵、選單或內容選單項目。如果您停用或未設定這個選項，使用者即可使用「開發人員工具」和 JavaScript 控制台。</translation>
+<translation id="4449545651113180484">將畫面以順時針方向旋轉 270 度</translation>
 <translation id="4467952432486360968">封鎖第三方 Cookie</translation>
 <translation id="4474167089968829729">允許將密碼儲存到密碼管理員</translation>
 <translation id="4480694116501920047">強制啟用安全搜尋服務</translation>
@@ -1097,6 +1110,7 @@
 
           如果這個選項設定為停用或並未做任何設定，則在共用主機時，本機與遠端使用者皆可操作主機。</translation>
 <translation id="5423001109873148185">如果啟用這項政策，則會強制從目前的預設瀏覽器匯入搜尋引擎，並影響匯入對話方塊。如果停用這項政策，則不會匯入搜尋引擎。如果未設定這項政策，系統會自動匯入搜尋引擎，或詢問使用者是否要匯入搜尋引擎。</translation>
+<translation id="5423197884968724595">Android WebView 限制名稱：</translation>
 <translation id="5447306928176905178">在網頁上回報記憶體資訊 (JavaScript 堆積大小) (已不適用)</translation>
 <translation id="5457065417344056871">在瀏覽器中啟用訪客模式</translation>
 <translation id="5457924070961220141">允許您在安裝「<ph name="PRODUCT_FRAME_NAME" />」之後，設定預設的 HTML 轉譯器。如果未設定這項政策，系統就會使用預設設定，允許主機瀏覽器進行轉譯，但是您可以覆寫這項預設，改由「<ph name="PRODUCT_FRAME_NAME" />」轉譯 HTML 網頁。</translation>
@@ -1774,6 +1788,7 @@
 <translation id="7953256619080733119">管理化環境下使用者手動建立的例外主機</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">系統不再支援這項政策。連線至遠端用戶時，啟用 STUN 使用量和轉送伺服器。如果啟用這項設定，那麼即使遠端主機電腦被防火牆隔開，這台電腦也能發現遠端主機電腦並建立連結。如果停用這項設定，並且外傳 UDP 連結遭到防火牆篩選，則這台電腦只會與當地網路內的主機電腦建立連線。</translation>
+<translation id="802147957407376460">將畫面旋轉 0 度</translation>
 <translation id="8044493735196713914">回報裝置啟動模式</translation>
 <translation id="8059164285174960932">遠端存取用戶端取得驗證憑證的來源網址</translation>
 <translation id="8071636581296916773">遠端用戶端嘗試與這台電腦建立連線時，啟用轉送伺服器。
@@ -1882,6 +1897,8 @@
 <translation id="8382184662529825177">啟用可用於保護裝置內容的遠端認證機制</translation>
 <translation id="838870586332499308">啟用數據漫遊</translation>
 <translation id="8412312801707973447">不論線上 OCSP/CRL 檢查是否執行</translation>
+<translation id="8424255554404582727">設定畫面旋轉預設值 (每次重新啟動皆重新套用)</translation>
+<translation id="8426231401662877819">將畫面以順時針方向旋轉 90 度</translation>
 <translation id="8451988835943702790">將新分頁設為首頁</translation>
 <translation id="8465065632133292531">使用 POST 的互動智慧搜尋網址參數</translation>
 <translation id="847472800012384958">不允許任何網站顯示彈出式視窗</translation>

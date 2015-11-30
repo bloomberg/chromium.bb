@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ko">
+<translation id="101438888985615157">180도 화면 회전</translation>
 <translation id="1017967144265860778">로그인 화면의 전원 관리</translation>
 <translation id="1019101089073227242">사용자 데이터 디렉토리 설정</translation>
 <translation id="1022361784792428773">사용자가 설치할 수 없는 확장 프로그램 ID(또는 전체 확장 프로그램의 경우 *)</translation>
@@ -266,6 +267,17 @@
 <translation id="2113068765175018713">자동으로 재부팅하여 기기 가동 시간 제한</translation>
 <translation id="2127599828444728326">이 사이트에서 알림 허용</translation>
 <translation id="2131902621292742709">배터리 전원으로 실행할 때 화면 어둡게 하기 지연</translation>
+<translation id="2137064848866899664">이 정책이 설정되면 각 디스플레이는
+      재부팅될 때마다, 그리고 정책 값이 변경된 후
+      처음으로 연결될 때 지정된 방향으로 회전됩니다. 사용자는 로그인한 뒤
+      설정 페이지를 통해 디스플레이 회전을 변경할 수 있지만
+      다음 번에 재부팅할 때 정책 값이 설정보다 우선합니다.
+
+      이 정책은 기본 및 모든 이차 디스플레이에 적용됩니다.
+
+      이 정책이 설정되지 않은 경우, 기본값은 0도이며 사용자는
+      이를 자유롭게 변경할 수 있습니다. 이 경우 재시작 시 기본값이
+      다시 적용되지 않습니다.</translation>
 <translation id="2166715102875984646">3D 그래픽 API 지원을 사용 중지합니다.
 
       이 설정을 사용하도록 설정하면 웹페이지에서 그래픽 처리 장치(GPU)에 액세스하지 못하도록 차단합니다. 특히 WebGL API 및 플러그인에 액세스할 수 없는 웹페이지는 Pepper 3D API에 액세스할 수 없습니다.
@@ -982,6 +994,7 @@
       이 설정을 사용하면 개발자 도구에 액세스할 수 없으며 더 이상 웹사이트 요소를 검사할 수 없습니다. 개발자 도구나 자바스크립트 콘솔을 열기 위한 모든 단축키와 메뉴, 컨텍스트 메뉴 항목이 사용 중지됩니다.
 
       이 옵션을 사용 중지하도록 설정하거나 설정하지 않으면 사용자가 개발자 도구와 자바스크립트 콘솔을 사용할 수 있습니다.</translation>
+<translation id="4449545651113180484">화면을 시계 방향으로 270도 회전</translation>
 <translation id="4467952432486360968">제3자 쿠키 차단</translation>
 <translation id="4474167089968829729">비밀번호 관리자에 비밀번호 저장 기능 사용</translation>
 <translation id="4480694116501920047">세이프서치 강제 사용</translation>
@@ -1248,6 +1261,7 @@
       사용하지 않으면 기본 검색엔진을 가져오지 않습니다.
 
       설정하지 않으면 검색엔진을 가져올지 여부를 사용자에게 확인하거나 자동으로 가져올 수 있습니다.</translation>
+<translation id="5423197884968724595">Android WebView 제한 이름:</translation>
 <translation id="5447306928176905178">메모리 정보(JS 더미 크기)를 페이지로 보고하기 사용(지원 중단됨)</translation>
 <translation id="5457065417344056871">브라우저에서 게스트 모드 사용</translation>
 <translation id="5457924070961220141"><ph name="PRODUCT_FRAME_NAME" />이(가) 설치되면 기본 HTML 렌더러를 설정할 수 있습니다.
@@ -2024,6 +2038,7 @@
           이 설정을 사용하면 방화벽에 의해 차단된 경우에도 이 컴퓨터가 원격 호스트 컴퓨터를 검색하고 연결할 수 있습니다.
 
           이 설정을 사용 중지하고 발신 UDP 연결이 방화벽에 의해 필터링되는 경우 이 컴퓨터는 로컬 네트워크 내에 있는 호스트 컴퓨터에만 연결할 수 있습니다.</translation>
+<translation id="802147957407376460">화면을 0도 회전</translation>
 <translation id="8044493735196713914">기기 부팅 모드 보고</translation>
 <translation id="8059164285174960932">원격 액세스 클라이언트가 인증 토큰을 확보해야 하는 URL</translation>
 <translation id="8071636581296916773">원격 클라이언트가 이 컴퓨터에 연결을 설정하려고 할 때 릴레이 서버를 사용 설정합니다.
@@ -2139,6 +2154,8 @@
 <translation id="8382184662529825177">기기의 콘텐츠 보호에 원격 인증을 사용합니다.</translation>
 <translation id="838870586332499308">데이터 로밍 사용</translation>
 <translation id="8412312801707973447">온라인 OCSP/CRL 확인 수행 여부</translation>
+<translation id="8424255554404582727">기본 디스플레이 회전 설정, 재부팅할 때마다 다시 적용됨</translation>
+<translation id="8426231401662877819">화면을 시계 방향으로 90도 회전</translation>
 <translation id="8451988835943702790">새 탭 페이지를 홈페이지로 사용</translation>
 <translation id="8465065632133292531">POST를 사용하는 인스턴트 URL용 매개변수</translation>
 <translation id="847472800012384958">모든 사이트에서 팝업 표시 허용 안함</translation>

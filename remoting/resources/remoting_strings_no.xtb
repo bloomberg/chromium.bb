@@ -24,6 +24,7 @@ Du kan finne informasjon om personvern i Googles personvernregler (http://goo.gl
 <translation id="1546934824884762070">Det oppsto en uventet feil. Rapportér dette problemet til utviklerne.</translation>
 <translation id="1619813076098775562">Lukket tilkobling til Cast-enhet.</translation>
 <translation id="1643640058022401035">Hvis du forlater denne siden, avsluttes Chromoting-økten din.</translation>
+<translation id="1646994964686260497">Det finnes ingenting å koble til.</translation>
 <translation id="1654128982815600832">Slår på eksterne tilkoblinger for denne datamaskinen …</translation>
 <translation id="170207782578677537">Kunne ikke registrere denne datamaskinen.</translation>
 <translation id="1704090719919187045">Alternativer for Chromoting-vert</translation>
@@ -109,6 +110,7 @@ Du kan finne informasjon om personvern i Googles personvernregler (http://goo.gl
 <translation id="3606997049964069799">Du er ikke logget på Chromium. Logg på, og prøv på nytt.</translation>
 <translation id="3649256019230929621">Minimerer vinduet</translation>
 <translation id="369442766917958684">Utenfor nettet.</translation>
+<translation id="3695446226812920698">Sånn gjør du det</translation>
 <translation id="3776024066357219166">Chrome Eksternt skrivebord-økten din er avsluttet.</translation>
 <translation id="3785447812627779171">Chromoting
 Vert</translation>
@@ -121,6 +123,10 @@ Vert</translation>
 <translation id="3950820424414687140">Logg på</translation>
 <translation id="3989511127559254552">Før du kan fortsette, må du gi datamaskinen utvidede tilgangstillatelser. Det er bare nødvendig å gjøre dette én gang.</translation>
 <translation id="4006787130661126000">Du må aktivere eksterne tilkoblinger hvis du vil ha tilgang til denne datamaskinen gjennom Chrome Eksternt skrivebord.</translation>
+<translation id="401121182145179743">Du må først konfigurere datamaskinen for ekstern tilgang.</translation>
+<translation id="4028465833180158312">• Oppdateringer av «Material Design»-grensesnittet.
+• Kildereferanser for tredjepartslisenser.
+• Informasjon blir vist for eksterne datamaskiner som ikke er på nettet.</translation>
 <translation id="405887016757208221">Den eksterne datamaskinen kunne ikke initialisere økten. Hvis problemet vedvarer, kan du prøve å konfigurere verten på nytt.</translation>
 <translation id="4068946408131579958">Alle tilkoblinger</translation>
 <translation id="409800995205263688">MERK: I henhold til lokale retningslinjer er tilkobling tillatt bare mellom datamaskiner i nettverket ditt.</translation>

@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="da">
+<translation id="101438888985615157">Roter skærmen med 180 grader</translation>
 <translation id="1017967144265860778">Strømstyring på loginskærmen</translation>
 <translation id="1019101089073227242">Angiv brugerdatamappe</translation>
 <translation id="1022361784792428773">Udvidelses-id'er, som brugeren skal forhindres i at installere (eller * for alle)</translation>
@@ -236,6 +237,17 @@
 <translation id="2113068765175018713">Begræns oppetid for enheden vha. automatisk genstart</translation>
 <translation id="2127599828444728326">Tillad underretninger på disse websites</translation>
 <translation id="2131902621292742709">Skærmnedtoningsforsinkelse, når batteriet bruges</translation>
+<translation id="2137064848866899664">Hvis denne politik er angivet, roteres hver visning i den
+      angivne retning ved hver genstart og første gang, der oprettes forbindelse,
+      efter politikkens værdi ændres. Brugere kan ændre visningens
+      rotation via siden med indstillinger, når de er logget ind, men deres
+      indstilling tilsidesættes af politikkens værdi ved næste genstart.
+
+      Denne politik gælder for både den primære visning og den sekundære visning.
+
+      Hvis politikken ikke er angivet, er standardværdien 0 grader, og brugere
+      kan frit ændre den. I dette tilfælde genanvendes værdien ikke
+      ved genstart.</translation>
 <translation id="2166715102875984646">Deaktiver understøttelse af API'er til 3D-grafik.
 
       Aktivering af denne indstilling forhindrer websider i at få adgang til grafikbehandlingsenheden (GPU, Graphics processing unit). Mere specifikt kan websider ikke få adgang til WebGL-API'en, og plugins kan ikke bruge Pepper 3D-API'en.
@@ -883,6 +895,7 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
       </translation>
 <translation id="4442582539341804154">Aktivér låsen, hvis enheden bliver inaktiv eller suspenderes</translation>
 <translation id="4445684791305970001">Deaktiverer udviklerværktøjerne og JavaScript-konsollen. Hvis du aktiverer denne indstilling, kan man ikke få adgang til udviklerværktøjerne, og webstedselementer kan ikke inspiceres. Alle tastaturgenveje og menuer eller genvejsmenuer, der åbner udviklerværktøjerne eller JavaScript-konsollen, vil blive deaktiveret. Hvis du deaktiverer denne indstilling eller ikke angiver den, tillades brugen af udviklerværktøjer og JavaScript-konsollen.</translation>
+<translation id="4449545651113180484">Roter skærmen 270 grader med uret</translation>
 <translation id="4467952432486360968">Bloker cookies fra tredjeparter</translation>
 <translation id="4474167089968829729">Aktivér lagring af adgangskoder i adgangskodeadministratoren</translation>
 <translation id="4480694116501920047">Gennemtving Beskyttet Søgning</translation>
@@ -1116,6 +1129,7 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
 
           Hvis denne indstilling deaktiveres eller ikke angives, kan både lokale brugere og fjernbrugere interagere med en host, når den deles.</translation>
 <translation id="5423001109873148185">Denne politik tvinger import af søgemaskiner fra den aktuelle standardbrowser, hvis den er aktiveret. Hvis denne politik er aktiveret, påvirker den også dialogboksen for import. Hvis standardsøgemaskinen er deaktiveret, bliver den ikke importeret. Hvis den ikke er angivet, kan brugeren blive spurgt, om der skal importeres, ellers sker importen automatisk.</translation>
+<translation id="5423197884968724595">Navn på Android WebView-begrænsning:</translation>
 <translation id="5447306928176905178">Aktiver rapportering af hukommelsesoplysninger (størrelse på JavaScript-heap) til siden. (Udfaset)</translation>
 <translation id="5457065417344056871">Aktivér delefunktion i browseren</translation>
 <translation id="5457924070961220141">Giver dig mulighed for at konfigurere standard-HTML-gengivelse, når <ph name="PRODUCT_FRAME_NAME" /> er installeret. Den standardindstilling, der anvendes, når denne politik ikke er angivet, er at lade værtsbrowseren foretage gengivelsen, men du kan vælge at tilsidesætte dette og få <ph name="PRODUCT_FRAME_NAME" /> til at gengive HTML-sider som standard.</translation>
@@ -1811,6 +1825,7 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="7953256619080733119">Manuel undtagelse for host for administreret bruger</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Denne politik understøttes ikke længere. Muliggør brug af STUN- og relæservere ved oprettelse af forbindelse til en ekstern klient. Hvis denne indstilling er aktiveret, kan denne maskine finde og oprette forbindelse til eksterne værtsmaskiner, selvom de er adskilt af en firewall. Hvis denne indstilling er deaktiveret, og udgående UDP-forbindelser filtreres af firewallen, kan denne maskine kun oprette forbindelse til værtsmaskiner inden for det lokale netværk.</translation>
+<translation id="802147957407376460">Roter skærmen 0 grader</translation>
 <translation id="8044493735196713914">Rapportér genstart på enheden</translation>
 <translation id="8059164285174960932">Den webadresse, hvor klienten til fjernadgang skal hente deres godkendelsestoken</translation>
 <translation id="8071636581296916773">Muliggør brug af relæservere, hvis fjernklienter forsøger at oprette forbindelse til denne computer.
@@ -1919,6 +1934,8 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="8382184662529825177">Aktivér brug af fjernattestering til indholdsbeskyttelse for enheden.</translation>
 <translation id="838870586332499308">Aktivér dataroaming</translation>
 <translation id="8412312801707973447">Om der udføres online kontrol af OCSP/CRL</translation>
+<translation id="8424255554404582727">Angiv en standardrotation for visningen, som genanvendes ved hver genstart</translation>
+<translation id="8426231401662877819">Roter skærmen 90 grader med uret</translation>
 <translation id="8451988835943702790">Brug siden Ny fane som startside</translation>
 <translation id="8465065632133292531">Parametre for direkte webadresse, som bruger POST</translation>
 <translation id="847472800012384958">Tillad ikke, at websites viser pop op-vinduer</translation>

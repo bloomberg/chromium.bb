@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="vi">
 <translation id="1013923882670373915">Thiết bị Bluetooth "<ph name="DEVICE_NAME" />" muốn được phép ghép nối. Vui lòng nhập mã PIN này trên thiết bị đó: <ph name="PINCODE" /></translation>
+<translation id="1021311941847921177">Phím tắt để chuyển sang phương thức nhập tiếp theo đã thay đổi. Vui lòng sử dụng <ph name="NEW_SHORTCUT" /> thay vì <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Tự động ẩn giá</translation>
 <translation id="1195412055398077112">quét quá mức</translation>
 <translation id="1270290102613614947">Đã tắt bàn phím ảo</translation>
@@ -25,7 +26,9 @@
 <translation id="1812696562331527143">Phương thức nhập của bạn đã thay đổi thành <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />bên thứ ba<ph name="END_LINK" />).
 Nhấn Shift + Alt để chuyển đổi.</translation>
 <translation id="1882897271359938046">Đang phản chiếu tới <ph name="DISPLAY_NAME" /></translation>
+<translation id="1919743966458266018">Phím tắt để mở trình quản lý tác vụ đã thay đổi. Vui lòng sử dụng <ph name="NEW_SHORTCUT" /> thay vì <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Nhấp chuột tự động</translation>
+<translation id="1938872420421548906">Shift+Alt</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2127372758936585790">Bộ sạc công suất thấp</translation>
@@ -105,6 +108,7 @@ Nhấn Search hoặc Shift để hủy.</translation>
 <translation id="4421231901400348175">Chia sẻ quyền kiểm soát màn hình của bạn với <ph name="HELPER_NAME" /> qua Trợ giúp từ xa.</translation>
 <translation id="4430019312045809116">Âm lượng</translation>
 <translation id="4527045527269911712">Thiết bị Bluetooth "<ph name="DEVICE_NAME" />"muốn được phép ghép nối.</translation>
+<translation id="4544944664594876241">Phím tắt để khóa màn hình đã thay đổi. Vui lòng sử dụng <ph name="NEW_SHORTCUT" /> thay vì <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Ngắt kết nối</translation>
 <translation id="4872237917498892622">Alt+Search hoặc Shift</translation>
@@ -113,12 +117,14 @@ Nhấn Search hoặc Shift để hủy.</translation>
 <translation id="4957722034734105353">Tìm hiểu thêm...</translation>
 <translation id="4961318399572185831">Truyền màn hình</translation>
 <translation id="5011233892417813670">Chromebook</translation>
+<translation id="5012744545445585468">Ctrl+Shift+Space</translation>
 <translation id="5045002648206642691">Cài đặt Google Drive...</translation>
 <translation id="5102001756192215136">Còn lại <ph name="HOUR" />:<ph name="MINUTE" /></translation>
 <translation id="511445211639755999"><ph name="RESOLUTION" />, <ph name="OVERSCAN" /></translation>
 <translation id="5168181903108465623">Có thiết bị truyền</translation>
 <translation id="5222676887888702881">Đăng xuất</translation>
 <translation id="5238774010593222950">Không thể đăng nhập vào tài khoản khác.</translation>
+<translation id="532063867737390965">Cài đặt mạng này bị quản trị viên tắt.</translation>
 <translation id="544691375626129091">Tất cả người dùng hiện có mặt đã được thêm vào phiên này.</translation>
 <translation id="5507786745520522457">Thiết lập dữ liệu di động</translation>
 <translation id="5543001071567407895">SMS</translation>
@@ -132,6 +138,7 @@ Nhấn Search hoặc Shift để hủy.</translation>
 Nhấn Shift + Alt để chuyển đổi.</translation>
 <translation id="5871632337994001636">Quản lý thiết bị...</translation>
 <translation id="5895138241574237353">Khởi động lại</translation>
+<translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5927132638760172455">Đang truyền tới bộ thu không xác định</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">Hoàn nguyên</translation>
@@ -155,6 +162,7 @@ Nhấn Shift + Alt để chuyển đổi.</translation>
 <translation id="6426039856985689743">Tắt dữ liệu di động</translation>
 <translation id="6452181791372256707">Từ chối</translation>
 <translation id="6459472438155181876">Đang mở rộng màn hình tới <ph name="DISPLAY_NAME" /></translation>
+<translation id="6501401484702599040">Đang truyền màn hình tới <ph name="RECEIVER_NAME" /></translation>
 <translation id="6550675742724504774">Tùy chọn</translation>
 <translation id="6585808820553845416">Phiên sẽ kết thúc sau <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6596816719288285829">Địa chỉ IP</translation>
@@ -162,6 +170,7 @@ Nhấn Shift + Alt để chuyển đổi.</translation>
 <translation id="6713285437468012787">Thiết bị Bluetooth "<ph name="DEVICE_NAME" />"đã được ghép nối và hiện khả dụng với tất cả người dùng. Bạn có thể xóa ghép nối này bằng Cài đặt.</translation>
 <translation id="6785414152754474415">Pin đầy <ph name="PERCENTAGE" />% và đang sạc.</translation>
 <translation id="6803622936009808957">Không thể phản chiếu màn hình do không tìm thấy độ phân giải được hỗ trợ. Thay vào đó, đã chuyển sang chế độ màn hình mở rộng.</translation>
+<translation id="683971173229319003">Search+L</translation>
 <translation id="68610848741840742">ChromeVox (Phản hồi bằng giọng nói)</translation>
 <translation id="6911468394164995108">Tham gia mạng khác...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
@@ -169,6 +178,7 @@ Nhấn Shift + Alt để chuyển đổi.</translation>
 <translation id="6981982820502123353">Truy cập</translation>
 <translation id="7029814467594812963">Thoát khỏi phiên</translation>
 <translation id="703171847531699602">Không có thiết bị truyền nào</translation>
+<translation id="7034339000180558234">Đang truyền <ph name="TAB_NAME" /> tới <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Đặt hình nền...</translation>
 <translation id="7097613348211027502">Đã bật ChromeVox (phản hồi bằng giọng nói).
 Nhấn Ctrl+Alt+Z để tắt.</translation>
@@ -180,6 +190,7 @@ Nhấn Alt+Search hoặc Shift để hủy.</translation>
 <translation id="737451040872859086">Micrô (Bên trong)</translation>
 <translation id="742594950370306541">Máy ảnh đang được sử dụng.</translation>
 <translation id="743058460480092004">Máy ảnh và micrô đang được sử dụng.</translation>
+<translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> không hỗ trợ <ph name="SPECIFIED_RESOLUTION" />. Độ phân giải đã được thay đổi thành <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7573962313813535744">Chế độ được gắn đế</translation>
 <translation id="7593891976182323525">Search hoặc Shift</translation>
@@ -207,6 +218,7 @@ Nhấn Alt+Search hoặc Shift để hủy.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="882279321799040148">Nhấp để xem</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8878886163241303700">Mở rộng màn hình</translation>
 <translation id="8940956008527784070">Pin yếu (<ph name="PERCENTAGE" />%)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>

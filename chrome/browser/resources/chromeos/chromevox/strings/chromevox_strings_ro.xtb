@@ -357,6 +357,7 @@
 <translation id="4729095194763193578">Rândul anterior din tabel</translation>
 <translation id="4736221692378411923">August</translation>
 <translation id="4740661827607246557">Comenzi pentru ajutor</translation>
+<translation id="4755857887974653209">Dezactivează ChromeVox</translation>
 <translation id="4759716709594980008">Explorator pentru comenzile de la tastatură în sistemul de operare Chrome</translation>
 <translation id="4763296182459741068">Încadrare jos</translation>
 <translation id="4763480195061959176">video</translation>
@@ -661,6 +662,7 @@
 <translation id="8065607967589909823">Selecția este</translation>
 <translation id="8066678206530322333">Banner</translation>
 <translation id="8110647606445335195">Nu există repere ARIA.</translation>
+<translation id="8132379720172247073">Meniul ChromeVox</translation>
 <translation id="8153880621934657047">Nu vă aflați în interiorul tabelului.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{caracter de subliniere}few{# caractere de subliniere}other{# de caractere de subliniere}}</translation>
 <translation id="8179976553408161302">Enter</translation>
@@ -696,6 +698,7 @@
 <translation id="8584721346566392021">titlu 5</translation>
 <translation id="8587549812518406253">Elementul următor din listă</translation>
 <translation id="860150890330522909">Casetă de validare <ph name="NAME" /> bifată</translation>
+<translation id="8603071050456974042">Panoul ChromeVox</translation>
 <translation id="8606621670302093223">Comandă pentru dată</translation>
 <translation id="8631359288236106450"><ph name="COUNT" /> (de) elemente selectate</translation>
 <translation id="8638532244051952400">Anunță coordonatele celulei curente</translation>

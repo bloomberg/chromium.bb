@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-CN">
 <translation id="1013923882670373915">蓝牙设备“<ph name="DEVICE_NAME" />”需要配对许可。请在该设备上输入以下PIN码：<ph name="PINCODE" /></translation>
+<translation id="1021311941847921177">用于切换到下一种输入法的快捷键已更改。请使用 <ph name="NEW_SHORTCUT" />，而不是 <ph name="OLD_SHORTCUT" />。</translation>
 <translation id="112308213915226829">自动隐藏文件架</translation>
 <translation id="1195412055398077112">过扫描</translation>
 <translation id="1270290102613614947">屏幕键盘已停用</translation>
@@ -25,7 +26,9 @@
 <translation id="1812696562331527143">您的输入法已更改为“<ph name="INPUT_METHOD_ID" />”*（<ph name="BEGIN_LINK" />第三方<ph name="END_LINK" />）。
 按 Shift + Alt 键可切换。</translation>
 <translation id="1882897271359938046">正在镜像到<ph name="DISPLAY_NAME" /></translation>
+<translation id="1919743966458266018">用于打开任务管理器的快捷键已更改。请使用 <ph name="NEW_SHORTCUT" />，而不是 <ph name="OLD_SHORTCUT" />。</translation>
 <translation id="1923539912171292317">自动点击</translation>
+<translation id="1938872420421548906">Shift+Alt</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2127372758936585790">低功率充电器</translation>
@@ -105,6 +108,7 @@
 <translation id="4421231901400348175">正在通过远程协助与<ph name="HELPER_NAME" />共享您屏幕的控制权限。</translation>
 <translation id="4430019312045809116">音量</translation>
 <translation id="4527045527269911712">蓝牙设备“<ph name="DEVICE_NAME" />”需要配对许可。</translation>
+<translation id="4544944664594876241">用于锁定屏幕的快捷键已更改。请使用 <ph name="NEW_SHORTCUT" />，而不是 <ph name="OLD_SHORTCUT" />。</translation>
 <translation id="479989351350248267">搜索</translation>
 <translation id="4804818685124855865">断开连接</translation>
 <translation id="4872237917498892622">Alt + 搜索键或 Shift</translation>
@@ -113,12 +117,14 @@
 <translation id="4957722034734105353">了解详情...</translation>
 <translation id="4961318399572185831">投射屏幕</translation>
 <translation id="5011233892417813670">Chromebook</translation>
+<translation id="5012744545445585468">Ctrl+Shift+Space</translation>
 <translation id="5045002648206642691">Google 云端硬盘设置...</translation>
 <translation id="5102001756192215136">可用时长：<ph name="HOUR" />:<ph name="MINUTE" /></translation>
 <translation id="511445211639755999"><ph name="RESOLUTION" />，<ph name="OVERSCAN" /></translation>
 <translation id="5168181903108465623">有可用的投射设备</translation>
 <translation id="5222676887888702881">退出</translation>
 <translation id="5238774010593222950">无法登录其他帐户。</translation>
+<translation id="532063867737390965">此网络设置已被管理员停用。</translation>
 <translation id="544691375626129091">所有可参加的用户均已添加到此会话中。</translation>
 <translation id="5507786745520522457">设置移动数据网络</translation>
 <translation id="5543001071567407895">短信</translation>
@@ -132,6 +138,7 @@
 按 Shift + Alt 键可进行切换。</translation>
 <translation id="5871632337994001636">管理设备…</translation>
 <translation id="5895138241574237353">重新启动</translation>
+<translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5927132638760172455">正在投射至未知接收器</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">还原</translation>
@@ -155,6 +162,7 @@
 <translation id="6426039856985689743">停用移动数据</translation>
 <translation id="6452181791372256707">拒绝</translation>
 <translation id="6459472438155181876">正在将屏幕扩展到<ph name="DISPLAY_NAME" /></translation>
+<translation id="6501401484702599040">正在将屏幕投射到“<ph name="RECEIVER_NAME" />”</translation>
 <translation id="6550675742724504774">选项</translation>
 <translation id="6585808820553845416">会话将在<ph name="SESSION_TIME_REMAINING" />后结束。</translation>
 <translation id="6596816719288285829">IP 地址</translation>
@@ -162,6 +170,7 @@
 <translation id="6713285437468012787">蓝牙设备“<ph name="DEVICE_NAME" />”已配对，现可供所有用户使用。您可以通过“设置”取消此配对。</translation>
 <translation id="6785414152754474415">电池电量为<ph name="PERCENTAGE" />%（正在充电）。</translation>
 <translation id="6803622936009808957">找不到系统支持的分辨率，因此无法镜像显示屏。已改为进入扩展桌面。</translation>
+<translation id="683971173229319003">Search+L</translation>
 <translation id="68610848741840742">ChromeVox（语音反馈）</translation>
 <translation id="6911468394164995108">连接其他网络...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
@@ -169,6 +178,7 @@
 <translation id="6981982820502123353">无障碍</translation>
 <translation id="7029814467594812963">退出会话</translation>
 <translation id="703171847531699602">无任何投射设备</translation>
+<translation id="7034339000180558234">正在将“<ph name="TAB_NAME" />”投射到“<ph name="RECEIVER_NAME" />”</translation>
 <translation id="7052914147756339792">设置壁纸...</translation>
 <translation id="7097613348211027502">已启用ChromeVox（语音反馈）。
 如要停用，请按Ctrl+Alt+Z。</translation>
@@ -180,6 +190,7 @@
 <translation id="737451040872859086">麦克风（内部）</translation>
 <translation id="742594950370306541">摄像头处于使用状态。</translation>
 <translation id="743058460480092004">摄像头和麦克风处于使用状态。</translation>
+<translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" />不支持<ph name="SPECIFIED_RESOLUTION" />。分辨率已改为<ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7573962313813535744">停靠模式</translation>
 <translation id="7593891976182323525">搜索键或 Shift</translation>
@@ -207,6 +218,7 @@
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="882279321799040148">点击即可查看</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8878886163241303700">正在扩展屏幕</translation>
 <translation id="8940956008527784070">电池电量不足 (<ph name="PERCENTAGE" />%)</translation>
 <translation id="9074739597929991885">蓝牙</translation>

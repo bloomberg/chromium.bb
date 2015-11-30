@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="vi">
+<translation id="101438888985615157">Xoay màn hình 180 độ</translation>
 <translation id="1017967144265860778">Quản lý nguồn trên màn hình đăng nhập</translation>
 <translation id="1019101089073227242">Thiết lập thư mục dữ liệu người dùng</translation>
 <translation id="1022361784792428773">Các ID tiện ích mà bạn nên ngăn người dùng cài đặt (hoặc * cho tất cả)</translation>
@@ -264,6 +265,17 @@
 <translation id="2113068765175018713">Giới hạn thời gian hoạt động của thiết bị bằng cách tự động khởi động lại</translation>
 <translation id="2127599828444728326">Cho phép thông báo trên các trang web này</translation>
 <translation id="2131902621292742709">Độ trễ mờ màn hình khi chạy trên nguồn pin</translation>
+<translation id="2137064848866899664">Nếu chính sách này được đặt, mỗi màn hình sẽ được xoay theo
+      hướng đã chỉ định mỗi khi khởi động lại và lần đầu tiên màn hình được kết nối
+      sau khi giá trị chính sách thay đổi. Người dùng có thể thay đổi chế độ
+      xoay màn hình thông qua trang cài đặt sau khi đăng nhập. Tuy nhiên, 
+      cài đặt của họ sẽ bị giá trị chính sách ghi đè vào lần khởi động lại tiếp theo.
+
+      Chính sách này áp dụng cho cả màn hình chính và tất cả màn hình phụ.
+
+      Nếu chính sách chưa được đặt thì giá trị mặc định sẽ là 0 độ và người dùng
+      có thể thoải mái thay đổi giá trị đó. Trong trường hợp này, giá trị mặc định không
+      được áp dụng lại lúc khởi động lại.</translation>
 <translation id="2166715102875984646">Tắt hỗ trợ dành cho API đồ họa 3D.
 
       Bật cài đặt này sẽ ngăn các trang web truy cập đơn vị xử lý đồ họa (GPU). Cụ thể, các trang web không truy cập API WebGL và các plugin không thể sử dụng API Pepper 3D.
@@ -982,6 +994,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu bạn bật cài đặt này, sẽ không thể truy cập các Công cụ dành cho nhà phát triển cũng như không thể kiểm tra các phần tử của trang web được nữa. Mọi phím tắt và mọi menu hoặc các mục nhập menu ngữ cảnh để mở các Công cụ dành cho nhà phát triển hoặc Bảng điều khiển JavaScript sẽ bị tắt.
 
       Đặt thành tắt hoặc không đặt tùy chọn này sẽ cho phép người dùng sử dụng các Công cụ dành cho nhà phát triển và bảng điều khiển JavaScript.</translation>
+<translation id="4449545651113180484">Xoay màn hình 270 độ theo chiều kim đồng hồ</translation>
 <translation id="4467952432486360968">Chặn cookie của bên thứ ba</translation>
 <translation id="4474167089968829729">Bật lưu mật khẩu cho trình quản lý mật khẩu</translation>
 <translation id="4480694116501920047">Buộc Tìm kiếm an toàn</translation>
@@ -1250,6 +1263,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu tắt chính sách này, sẽ không có công cụ tìm kiếm mặc định nào được nhập.
 
       Nếu không thiết lập chính sách này, người dùng có thể được hỏi có nhập hay không hoặc quá trình nhập có thể diễn ra tự động.</translation>
+<translation id="5423197884968724595">Tên giới hạn Android WebView:</translation>
 <translation id="5447306928176905178">Bật báo cáo thông tin bộ nhớ (kích thước khối xếp JS) tới trang (không dùng nữa)</translation>
 <translation id="5457065417344056871">Bật chế độ khách trong trình duyệt</translation>
 <translation id="5457924070961220141">Cho phép bạn định cấu hình trình kết xuất HTML mặc định khi  <ph name="PRODUCT_FRAME_NAME" /> được cài đặt.
@@ -2012,6 +2026,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Nếu cài đặt này được bật, máy này có thể khám phá và kết nối với máy chủ từ xa ngay cả khi chúng bị tường lửa phân cách.
 
           Nếu cài đặt này bị tắt và kết nối UDP đi bị lọc bởi tường lửa, máy này chỉ có thể kết nối với máy chủ trong mạng cục bộ.</translation>
+<translation id="802147957407376460">Xoay màn hình 0 độ</translation>
 <translation id="8044493735196713914">Báo cáo chế độ khởi động thiết bị</translation>
 <translation id="8059164285174960932">URL nơi ứng dụng truy cập từ xa sẽ lấy mã thông báo xác thực</translation>
 <translation id="8071636581296916773">Cho phép sử dụng máy chủ chuyển tiếp khi máy khách từ xa cố gắng thiết lập kết nối tới máy tính này.
@@ -2126,6 +2141,8 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="8382184662529825177">Cho phép sử dụng chứng thực từ xa để bảo vệ nội dung cho thiết bị</translation>
 <translation id="838870586332499308">Bật chuyển vùng dữ liệu</translation>
 <translation id="8412312801707973447">Liệu các kiểm tra OCSP/CRL trực tuyến có được thực hiện hay không</translation>
+<translation id="8424255554404582727">Đặt chế độ xoay màn hình mặc định, được áp dụng lại mỗi lần khởi động lại</translation>
+<translation id="8426231401662877819">Xoay màn hình 90 độ theo chiều kim đồng hồ</translation>
 <translation id="8451988835943702790">Sử dụng trang Tab mới làm trang chủ</translation>
 <translation id="8465065632133292531">Tham số cho URL tức thì sử dụng POST</translation>
 <translation id="847472800012384958">Không cho phép bất kỳ trang web nào hiển thị cửa sổ bật lên</translation>

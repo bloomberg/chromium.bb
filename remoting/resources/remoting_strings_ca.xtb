@@ -24,6 +24,7 @@ Per obtenir informació sobre la privadesa, vegeu la Política de privadesa de G
 <translation id="1546934824884762070">S'ha produït un error inesperat. Informeu d'aquest problema als desenvolupadors.</translation>
 <translation id="1619813076098775562">La connexió amb el dispositiu d'emissió s'ha tancat</translation>
 <translation id="1643640058022401035">Si sortiu d'aquesta pàgina, la sessió de Chromoting finalitzarà.</translation>
+<translation id="1646994964686260497">No hi ha cap ordinador per connectar-s'hi.</translation>
 <translation id="1654128982815600832">S'estan activant les connexions remotes en aquest ordinador...</translation>
 <translation id="170207782578677537">No s'ha pogut registrar aquest ordinador.</translation>
 <translation id="1704090719919187045">Preferències de Chromoting Host</translation>
@@ -109,6 +110,7 @@ Per obtenir informació sobre la privadesa, vegeu la Política de privadesa de G
 <translation id="3606997049964069799">No heu iniciat la sessió a Chromium. Inicieu-hi la sessió i torneu-ho a provar.</translation>
 <translation id="3649256019230929621">Minimitza la finestra</translation>
 <translation id="369442766917958684">Sense connexió</translation>
+<translation id="3695446226812920698">Més informació</translation>
 <translation id="3776024066357219166">La sessió de l'escriptori remot de Chrome ha finalitzat.</translation>
 <translation id="3785447812627779171">Chromoting
 Host</translation>
@@ -121,6 +123,10 @@ Host</translation>
 <translation id="3950820424414687140">Inici de sessió</translation>
 <translation id="3989511127559254552">Per continuar heu de concedir permisos d'accés ampliat a l'ordinador. Només ho heu de fer una vegada.</translation>
 <translation id="4006787130661126000">Heu d'activar les connexions remotes si voleu utilitzar l'escriptori remot de Chrome per accedir a aquest ordinador.</translation>
+<translation id="401121182145179743">Primer heu de configurar l'accés remot al vostre ordinador.</translation>
+<translation id="4028465833180158312">• Actualitzacions a la interfície de material design.
+• Atribució de llicències de tercers.
+• Es mostra informació per als ordinadors remots que no tenen connexió.</translation>
 <translation id="405887016757208221">L'ordinador remot no ha pogut inicialitzar la sessió. Si el problema continua, torneu a configurar l'amfitrió.</translation>
 <translation id="4068946408131579958">Totes les connexions</translation>
 <translation id="409800995205263688">NOTA: La configuració de la política només permet connexions entre ordinadors de la vostra xarxa.</translation>

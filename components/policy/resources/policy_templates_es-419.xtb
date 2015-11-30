@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="es-419">
+<translation id="101438888985615157">Rotar la pantalla 180 grados</translation>
 <translation id="1017967144265860778">Administración de energía en la pantalla de acceso</translation>
 <translation id="1019101089073227242">Configurar directorio de datos de usuarios</translation>
 <translation id="1022361784792428773">ID de extensiones que el usuario no debe poder instalar (o * para incluirlas todas).</translation>
@@ -231,6 +232,11 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 <translation id="2113068765175018713">Limita el tiempo de actividad del dispositivo mediante un reinicio automático.</translation>
 <translation id="2127599828444728326">Permitir notificaciones en estos sitios</translation>
 <translation id="2131902621292742709">Demora de atenuación de pantalla con batería</translation>
+<translation id="2137064848866899664">Si se establece esta política, la pantalla rotará en la orientación especificada en cada reinicio y la primera vez que se conecte luego de que se cambie el valor de la política. Los usuarios pueden cambiar la rotación de la pantalla a través de la página de configuración después de acceder, pero el valor de la política anulará la configuración en el siguiente reinicio.
+
+      Esta política se aplica tanto a las pantallas principales como a las secundarias.
+
+      Si la política no se establece, el valor predeterminado es de 0 grados y el usuario puede cambiarlo. En este caso, el valor predeterminado no se volverá a aplicar en el reinicio.</translation>
 <translation id="2166715102875984646">Inhabilitar la compatibilidad para API gráficas en 3D
 
       Al habilitar esta configuración, las páginas web no pueden acceder a la unidad de procesamiento gráfico (GPU). Las páginas web no pueden acceder específicamente a la API WebGL, y los complementos no pueden usar la API Pepper 3D.
@@ -872,6 +878,7 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
       </translation>
 <translation id="4442582539341804154">Habilitar el bloqueo cuando el dispositivo esté inactivo o suspendido</translation>
 <translation id="4445684791305970001">Inhabilita las herramientas del programador y la consola de JavaScript. Si se habilita esta configuración, no se podrá acceder a las herramientas del programador y los elementos del sitio web ya no se podrán inspeccionar. Se inhabilitarán todos los accesos directos del teclado y todas las entradas de menú o de menú contextual para abrir las herramientas del programador o la consola de JavaScript. Si se inhabilita o no se configura esta opción, el usuario podrá usar las herramientas del programador y la consola de JavaScript.</translation>
+<translation id="4449545651113180484">Rotar la pantalla hacia la derecha 270 grados</translation>
 <translation id="4467952432486360968">Bloquear cookies de terceros</translation>
 <translation id="4474167089968829729">Habilitar el guardado de contraseñas en el administrador de contraseñas</translation>
 <translation id="4480694116501920047">Forzar SafeSearch</translation>
@@ -1097,6 +1104,7 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 <translation id="5388730678841939057">Seleccionar la estrategia utilizada para liberar espacio en el disco durante el proceso de limpieza automática (en desuso)</translation>
 <translation id="5395271912574071439">Habilita el modo de cortina para los hosts de acceso remoto durante una conexión. Si se habilita esta opción, los dispositivos físicos de entrada y salida del host se inhabilitan durante la conexión remota. Si se inhabilita o no se configura esta opción, tanto los usuarios locales como los remotos pueden interactuar con el host cuando se comparte.</translation>
 <translation id="5423001109873148185">Esta política, si se habilita, fuerza la importación de los motores de búsqueda del navegador predeterminado actual. Si se la habilita, esta política también afecta el cuadro de diálogo de importación. Si se la inhabilita, no se importa el motor de búsqueda predeterminado. Si esta política no se configura, se le puede preguntar al usuario si desea importar el motor de búsqueda o la importación puede realizarse de forma automática.</translation>
+<translation id="5423197884968724595">Nombre de restricción de WebView de Android:</translation>
 <translation id="5447306928176905178">Habilitar el suministro de información sobre la memoria (tamaño de pila de archivos JavaScript) a las páginas (obsoleto)</translation>
 <translation id="5457065417344056871">Habilitar modo de invitado en el navegador</translation>
 <translation id="5457924070961220141">Te permite configurar el procesador HTML predeterminado cuando se instala <ph name="PRODUCT_FRAME_NAME" />. La configuración predeterminada que se usa cuando esta política no se configura es permitir que el navegador del host realice la representación, pero puedes anular esta opción y hacer que <ph name="PRODUCT_FRAME_NAME" /> muestre páginas HTML de forma predeterminada.</translation>
@@ -1771,6 +1779,7 @@ desactivarlo).</translation>
 <translation id="7953256619080733119">Hosts de excepción manual de usuario administrado</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Esta política ya no es compatible. Habilita el uso de servidores STUN y de retransmisión cuando se establece una conexión con un cliente remoto. Si se habilita esta configuración, esta máquina podrá descubrir y conectarse a máquinas host remotas, incluso si están separadas por un firewall. Si se inhabilita esta configuración y el firewall filtra las conexiones UDP de salida, esta máquina solo se conectará a máquinas host dentro de la red local.</translation>
+<translation id="802147957407376460">Rotar la pantalla 0 grados</translation>
 <translation id="8044493735196713914">Modo de notificación de inicio de dispositivo</translation>
 <translation id="8059164285174960932">URL donde los clientes de acceso remoto deben obtener el token de autenticación</translation>
 <translation id="8071636581296916773">Habilita el uso de servidores de retransmisión cuando los clientes remotos intentan establecer una conexión con esta computadora.
@@ -1878,6 +1887,8 @@ desactivarlo).</translation>
 <translation id="8382184662529825177">Habilita el uso de la atestación remota para la protección de contenido del dispositivo.</translation>
 <translation id="838870586332499308">Activar la itinerancia de datos</translation>
 <translation id="8412312801707973447">Se realizan comprobaciones OCSP/CRL si estás conectado.</translation>
+<translation id="8424255554404582727">Establecer la rotación predeterminada de la pantalla que se volverá a aplicar en cada reinicio</translation>
+<translation id="8426231401662877819">Rotar la pantalla hacia la derecha 90 grados</translation>
 <translation id="8451988835943702790">Usar la página Nueva pestaña como página principal</translation>
 <translation id="8465065632133292531">Parámetros para URL instantánea que utiliza POST</translation>
 <translation id="847472800012384958">No permitir que ningún sitio muestre ventanas emergentes</translation>

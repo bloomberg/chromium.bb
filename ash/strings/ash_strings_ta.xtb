@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ta">
 <translation id="1013923882670373915">புளூடூத் சாதனம் "<ph name="DEVICE_NAME" />", இணைப்பதற்கான அனுமதியை விரும்புகிறது. அந்தச் சாதனத்தில் இந்த PIN குறியீட்டை உள்ளிடவும்: <ph name="PINCODE" /></translation>
+<translation id="1021311941847921177">அடுத்த உள்ளீட்டு முறைக்கு மாறுவதற்கான குறுக்குவழி மாற்றப்பட்டது.  <ph name="OLD_SHORTCUT" /> க்குப் பதிலாக <ph name="NEW_SHORTCUT" /> ஐப் பயன்படுத்தவும்.</translation>
 <translation id="112308213915226829">அடுக்கைத் தானாக மறை</translation>
 <translation id="1195412055398077112">ஓவர்ஸ்கேன்</translation>
 <translation id="1270290102613614947">ஆன்ஸ்க்ரீன் விசைப்பலகை முடக்கப்பட்டது</translation>
@@ -25,7 +26,9 @@
 <translation id="1812696562331527143">உங்கள் உள்ளீட்டு முறையானது <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />மூன்றாம் தரப்பு<ph name="END_LINK" />) க்கு மாற்றப்பட்டது.
 மாற்ற Shift + Alt ஐ அழுத்தவும்.</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> ஐப் பிரதிபலிக்கிறது</translation>
+<translation id="1919743966458266018">காரிய நிர்வாகியைத் திறப்பதற்கான குறுக்குவழி மாற்றப்பட்டது. <ph name="OLD_SHORTCUT" /> க்குப் பதிலாக <ph name="NEW_SHORTCUT" /> ஐப் பயன்படுத்தவும்.</translation>
 <translation id="1923539912171292317">தன்னியக்க கிளிக்குகள்</translation>
+<translation id="1938872420421548906">Shift+Alt</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2127372758936585790">குறைந்த சக்திகொண்ட சார்ஜர்</translation>
@@ -105,6 +108,7 @@
 <translation id="4421231901400348175">தொலைநிலை உதவி மூலம் <ph name="HELPER_NAME" /> உடன் உங்கள் திரையின் கட்டுப்பாட்டைப் பகிர்கிறது.</translation>
 <translation id="4430019312045809116">அளவு</translation>
 <translation id="4527045527269911712">புளூடூத் சாதனம் "<ph name="DEVICE_NAME" />", இணைப்பதற்கான அனுமதியை விரும்புகிறது.</translation>
+<translation id="4544944664594876241">திரையைப் பூட்டுவதற்கான குறுக்குவழி மாற்றப்பட்டது.  <ph name="OLD_SHORTCUT" /> க்குப் பதிலாக <ph name="NEW_SHORTCUT" /> ஐப் பயன்படுத்தவும்.</translation>
 <translation id="479989351350248267">Search</translation>
 <translation id="4804818685124855865">தொடர்பைத் துண்டி</translation>
 <translation id="4872237917498892622">Alt+Search அல்லது Shift</translation>
@@ -113,12 +117,14 @@
 <translation id="4957722034734105353">மேலும் அறிக...</translation>
 <translation id="4961318399572185831">அனுப்புதல் திரை</translation>
 <translation id="5011233892417813670">Chromebook</translation>
+<translation id="5012744545445585468">Ctrl+Shift+Space</translation>
 <translation id="5045002648206642691">Google இயக்கக அமைப்புகள்...</translation>
 <translation id="5102001756192215136"><ph name="HOUR" />:<ph name="MINUTE" /> உள்ளது</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION" />, <ph name="OVERSCAN" /></translation>
 <translation id="5168181903108465623">அனுப்பும் சாதனங்கள் உள்ளன</translation>
 <translation id="5222676887888702881">வெளியேறு</translation>
 <translation id="5238774010593222950">மற்றொரு கணக்கில் உள்நுழைய முடியாது.</translation>
+<translation id="532063867737390965">இந்த நெட்வொர்க் அமைப்பு நிர்வாகியால் முடக்கப்பட்டுள்ளது.</translation>
 <translation id="544691375626129091">எல்லா பயனர்களும் ஏற்கனவே இந்த அமர்வில் சேர்க்கப்பட்டுள்ளனர்.</translation>
 <translation id="5507786745520522457">மொபைல் தரவை அமை</translation>
 <translation id="5543001071567407895">SMS</translation>
@@ -132,6 +138,7 @@
 மாற்ற Shift + Alt ஐ அழுத்தவும்.</translation>
 <translation id="5871632337994001636">சாதனங்களை நிர்வகி...</translation>
 <translation id="5895138241574237353">மறுதொடக்கம்</translation>
+<translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5927132638760172455">தெரியாத ரிசீவருக்கு அனுப்புகிறது</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">மாற்றியமை</translation>
@@ -155,6 +162,7 @@
 <translation id="6426039856985689743">மொபைல் தரவை முடக்கு</translation>
 <translation id="6452181791372256707">நிராகரி</translation>
 <translation id="6459472438155181876"><ph name="DISPLAY_NAME" /> க்கு திரை விரிவாக்கப்படுகிறது</translation>
+<translation id="6501401484702599040"><ph name="RECEIVER_NAME" />க்குத் திரையை அனுப்புகிறது</translation>
 <translation id="6550675742724504774">விருப்பத்தேர்வுகள்</translation>
 <translation id="6585808820553845416"><ph name="SESSION_TIME_REMAINING" /> இல் அமர்வு முடிந்துவிடும்.</translation>
 <translation id="6596816719288285829">IP முகவரி</translation>
@@ -162,6 +170,7 @@
 <translation id="6713285437468012787">புளூடூத் சாதனம் "<ph name="DEVICE_NAME" />" ஆனது இணைக்கப்பட்டது மற்றும் இப்போது எல்லா பயனர்களுக்கும் கிடைக்கக்கூடியதாக உள்ளது. அமைப்புகளைப் பயன்படுத்தி இந்த இணைத்தலை நீங்கள் அகற்றலாம்.</translation>
 <translation id="6785414152754474415">பேட்டரி <ph name="PERCENTAGE" />% நிரம்பியது, மேலும் சார்ஜ் ஆகிறது.</translation>
 <translation id="6803622936009808957">ஆதரிக்கும் தெளிவுகள் கிடைக்காததால் காட்சிகளைப் பிரதிபலிக்க முடியவில்லை. பதிலாக நீட்டிக்கப்பட்ட டெஸ்க்டாப்பிற்குச் சென்றது.</translation>
+<translation id="683971173229319003">Search+L</translation>
 <translation id="68610848741840742">ChromeVox (பேச்சுவடிவ கருத்து)</translation>
 <translation id="6911468394164995108">மற்றொன்றில் சேர்...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
@@ -169,6 +178,7 @@
 <translation id="6981982820502123353">அணுகல் தன்மை</translation>
 <translation id="7029814467594812963">அமர்விலிருந்து வெளியேறவும்</translation>
 <translation id="703171847531699602">அனுப்பும் சாதனங்கள் இல்லை</translation>
+<translation id="7034339000180558234"><ph name="TAB_NAME" />ஐ <ph name="RECEIVER_NAME" />க்கு அனுப்புகிறது</translation>
 <translation id="7052914147756339792">வால்பேப்பரை அமை...</translation>
 <translation id="7097613348211027502">ChromeVox (பேச்சுவடிவ கருத்து) இயக்கப்பட்டது.
 முடக்குவதற்கு, Ctrl+Alt+Z ஐ அழுத்தவும்.</translation>
@@ -180,6 +190,7 @@
 <translation id="737451040872859086">மைக்ரோஃபோன் (உட்புறம்)</translation>
 <translation id="742594950370306541">கேமரா பயன்பாட்டில் உள்ளது.</translation>
 <translation id="743058460480092004">கேமராவும் மைக்ரோஃபோனும் பயன்பாட்டில் உள்ளன.</translation>
+<translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7561014039265304140"><ph name="SPECIFIED_RESOLUTION" /> ஐ <ph name="DISPLAY_NAME" /> ஆதரிக்கவில்லை. <ph name="FALLBACK_RESOLUTION" /> க்குத் தெளிவு மாற்றப்பட்டது</translation>
 <translation id="7573962313813535744">டாக் செய்யப்பட்ட பயன்முறை</translation>
 <translation id="7593891976182323525">Search அல்லது Shift</translation>
@@ -207,6 +218,7 @@
 <translation id="8814190375133053267">வைஃபை</translation>
 <translation id="882279321799040148">காண கிளிக் செய்க</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8878886163241303700">திரையை விரிவாக்குகிறது</translation>
 <translation id="8940956008527784070">பேட்டரி குறைவு (<ph name="PERCENTAGE" />%)</translation>
 <translation id="9074739597929991885">புளூடூத்</translation>

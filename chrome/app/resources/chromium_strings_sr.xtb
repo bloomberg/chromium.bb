@@ -12,11 +12,12 @@
 <translation id="1293235220023151515">У систему је пронађена некомпатибилна инсталација Chromium-а. Деинсталирајте је и покушајте поново.</translation>
 <translation id="1298199220304005244">Пронађи помоћ за коришћење Chromium ОС-а</translation>
 <translation id="1396446129537741364">Chromium покушава да прикаже лозинке.</translation>
+<translation id="1403254041219632970">Будуће верзије Chromium-а више неће подржавати Mac OS X 10.6, 10.7 или 10.8.</translation>
 <translation id="1414495520565016063">Пријављени сте на Chromium!</translation>
 <translation id="1444754455097148408">Лиценце отвореног кода за Chromium</translation>
-<translation id="1461885241643463646">Омогућава токове пријављивања у Chromium засноване на iframe-у. Ово обележје замењује обележје --enable-web-based-signin.</translation>
 <translation id="1480489203462860648">Испробајте га, већ је инсталиран</translation>
 <translation id="151962892725702025">Chromium ОС не може да синхронизује податке јер Синхронизација није доступна за домен.</translation>
+<translation id="1559451348202814456">Chromium можда неће исправно функционисати зато што више није подржан на систему Mac OS X 10.6, 10.7 или 10.8.</translation>
 <translation id="1644918877723739397">Chromium ће сачувати ове податке у услузи <ph name="SAVED_PASSWORD_LINK" /> и сетиће их се када вам следећи пут буду потребни.</translation>
 <translation id="1668054258064581266">Када уклоните налог из Chromium-а, можда ћете морати поново да учитате отворене картице да би то ступило на снагу.</translation>
 <translation id="1688750314291223739">Подесите Синхронизацију како бисте сачували персонализоване функције прегледача на Веб и приступали им из Chromium-а на било ком рачунару.</translation>
@@ -45,8 +46,10 @@
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{Преузимање је у току. Желите ли да откажете преузимање и да изађете из Chromium-а?}one{# преузимање је у току. Желите ли да откажете преузимања и да изађете из Chromium-а?}few{# преузимања су у току. Желите ли да откажете преузимања и да изађете из Chromium-а?}other{# преузимања је у току. Желите ли да откажете преузимања и да изађете из Chromium-а?}}</translation>
 <translation id="2396765026452590966">Додатак „<ph name="EXTENSION_NAME" />“ је променио страницу која се приказује када покренете Chromium.</translation>
 <translation id="2485422356828889247">Деинсталирај</translation>
+<translation id="2486653164587200256">Chromium можда неће исправно функционисати зато што више није подржан на Windows XP-у или Windows Vista-и.</translation>
 <translation id="2535480412977113886">Chromium ОС не може да синхронизује податке зато што су подаци за пријављивање на налог застарели.</translation>
 <translation id="2558641060352364164">Овај сајт користи додатну компоненту Chromium Frame која ускоро више неће бити подржана. Деинсталирајте је и надоградите на модеран прегледач.</translation>
+<translation id="2565260267992448464">Chromium не може да прикаже веб-страницу јер рачунар није повезан са интернетом.</translation>
 <translation id="2572494885440352020">Chromium помагач</translation>
 <translation id="2602806952220118310">Chromium – Обавештења</translation>
 <translation id="2636877269779209383">Chromium захтева приступ камери да би је делио са овим сајтом.</translation>
@@ -107,6 +110,7 @@
 <translation id="4423735387467980091">Прилагодите и контролишите Chromium</translation>
 <translation id="4458285410772214805">Одјавите се и поново се пријавите да би ова промена ступила на снагу.</translation>
 <translation id="4488676065623537541">Детаљи обрачуна су сачувани у Chromium-у.</translation>
+<translation id="4549794359424059447">Будуће верзије Chromium-а више неће подржавати Windows XP или Windows Vista-у.</translation>
 <translation id="4559775032954821361">Идите у
           Chromium мени &gt;
           <ph name="SETTINGS_TITLE" />
@@ -135,6 +139,7 @@
 <translation id="549669000822060376">Сачекајте да Chromium инсталира најновија ажурирања система.</translation>
 <translation id="5563479599352954471">Претражујте једним додиром</translation>
 <translation id="5620765574781326016">Сазнајте више о темама на веб-сајтовима без напуштања странице.</translation>
+<translation id="5680901439334282664">пријавите се на Chromium</translation>
 <translation id="5772805321386874569">(захтева <ph name="BEGIN_BUTTON" />поновно покретање<ph name="END_BUTTON" /> Chromium-а)</translation>
 <translation id="5796460469508169315">Chromium је скоро спреман.</translation>
 <translation id="580822234363523061">Идите у
@@ -211,7 +216,6 @@ Chromium не може да врати подешавања.</translation>
 <translation id="761356813943268536">Chromium користи камеру и микрофон.</translation>
 <translation id="7617377681829253106">Управо смо побољшали Chromium</translation>
 <translation id="7641113255207688324">Chromium није подразумевани прегледач.</translation>
-<translation id="7723128346970903111">Када је омогућено, користи ток пријављивања у Chromium заснован на iframe-у; у супротном, користи ток заснован на webview-у.</translation>
 <translation id="7729447699958282447">Chromium не може да синхронизује податке јер Синхронизација није доступна за домен.</translation>
 <translation id="7747138024166251722">Програм за инсталацију није могао да направи привремени директоријум. Проверите да ли имате слободног простора на диску, као и дозволу да инсталирате софтвер.</translation>
 <translation id="7918535023914021398">Chromium је верификовао да је <ph name="ISSUER" /> издао сертификат овог сајта. Сервер није послао ниједну информацију о транспарентности сертификата.</translation>

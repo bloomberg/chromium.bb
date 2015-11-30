@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="lv">
+<translation id="101438888985615157">Pagriezt ekrānu par 180 grādiem</translation>
 <translation id="1017967144265860778">Barošanas pārvaldība pieteikšanās ekrānā</translation>
 <translation id="1019101089073227242">Iestata lietotāja datu direktoriju</translation>
 <translation id="1022361784792428773">Paplašinājumu ID numuri, kurus lietotājam nav atļauts instalēt (vai *, lai iestatītu visus)</translation>
@@ -265,6 +266,19 @@
 <translation id="2113068765175018713">Ierobežot ierīces darbspējas laiku, veicot automātisku atsāknēšanu</translation>
 <translation id="2127599828444728326">Paziņojumu atļaušana šajās vietnēs</translation>
 <translation id="2131902621292742709">Aizkave līdz ekrāna aptumšošanai, ja ierīce darbojas ar akumulatora jaudu</translation>
+<translation id="2137064848866899664">Ja šī politika ir iestatīta, katrs ekrāns tiek pagriezts
+      iestatītajā virzienā ikreiz, kad ierīce tiek atkārtoti palaista,
+      kā arī tad, kad ekrāns tiek pirmo reizi pievienots 
+      pēc politikas vērtības maiņas. Lietotāji var mainīt ekrāna
+      pagriešanas iestatījumu, piesakoties un atverot iestatījumu lapu, taču nākamās 
+      palaišanas laikā lietotāja izvēlētais iestatījums tiks ignorēts
+      un tiks izmantota politikas vērtība.
+
+      Šī politika attiecas gan uz primāro ekrānu, gan visiem sekundārajiem ekrāniem.
+
+      Ja politika nav iestatīta, noklusējuma vērtība ir 0 grādi un lietotājs
+      var to mainīt. Tādā gadījumā noklusējuma vērtība vairs netiek lietota,
+      restartējot ierīci.</translation>
 <translation id="2166715102875984646">Šī politika tiek izmantota, lai atspējotu 3D grafikas API atbalstu.
 
       Iespējojot šo iestatījumu, tiek novērsta tīmekļa lapu piekļuve grafiskajam procesoram (GPU). Proti, tīmekļa lapas nevar piekļūt WebGL API, un spraudņi nevar izmantot Pepper 3D API.
@@ -980,6 +994,7 @@
       Ja šis iestatījums ir iespējots, nevar piekļūt izstrādātāju rīkiem un vairs nevar pārbaudīt vietņu elementus. Tiks atspējoti visi īsinājumtaustiņi un visi izvēļņu vai kontekstizvēlņu ieraksti, ar kuriem tiek atvērti izstrādātāju rīki vai JavaScript konsole.
 
       Ja šis iestatījums ir atspējots vai nav iestatīts, izstrādātāju rīkus un JavaScript konsoli varēs lietot.</translation>
+<translation id="4449545651113180484">Pagriezt ekrānu pulksteņrādītāju kustības virzienā par 270 grādiem</translation>
 <translation id="4467952432486360968">Bloķē trešo pušu sīkfailus</translation>
 <translation id="4474167089968829729">Iespējot paroļu saglabāšanu paroļu pārvaldniekā</translation>
 <translation id="4480694116501920047">Drošas meklēšanas piespiedu izmantošana</translation>
@@ -1250,6 +1265,7 @@
       Ja tā ir atspējota, noklusējuma meklētājprogramma netiek importēta.
 
       Ja tā nav iestatīta, vai nu lietotājam var tikt vaicāts, vai importēt, vai arī importēšana var notikt automātiski.</translation>
+<translation id="5423197884968724595">Android WebView ierobežojuma nosaukums:</translation>
 <translation id="5447306928176905178">Lapas patērētās atmiņas uzskaites (JS kaudzes izmērs) iespējošana (izmantošana pārtraukta)</translation>
 <translation id="5457065417344056871">Viesa režīma iespējošana pārlūkā</translation>
 <translation id="5457924070961220141">Ļauj konfigurēt noklusējuma HTML renderētāju, ja ir instalēts <ph name="PRODUCT_FRAME_NAME" />.
@@ -2023,6 +2039,7 @@
           Ja šis iestatījums ir iespējots, dators var atklāt attālus saimniekdatorus un izveidot ar tiem savienojumu, kaut arī tie ir šķirti ar ugunsmūri.
 
           Ja šis iestatījums ir atspējots un ugunsmūris filtrē izejošos UDP savienojumus, dators var izveidot savienojumus tikai ar lokālā tīkla saimniekdatoriem.</translation>
+<translation id="802147957407376460">Pagriezt ekrānu par 0 grādiem</translation>
 <translation id="8044493735196713914">Ziņot par ierīces sāknēšanas režīmu</translation>
 <translation id="8059164285174960932">URL, kurā attālās piekļuves klientiem ir jāiegūst autentifikācijas pilnvara</translation>
 <translation id="8071636581296916773">Ļauj izmantot pārraides serverus, kad attālie klienti mēģina izveidot savienojumu ar šo ierīci.
@@ -2139,6 +2156,8 @@
 <translation id="8382184662529825177">Iespējot attālās apstiprināšanas lietošanu ierīces satura aizsardzībai</translation>
 <translation id="838870586332499308">Iespējot datu viesabonēšanu</translation>
 <translation id="8412312801707973447">Vai tiek veiktas OCSP/CRL pārbaudes tiešsaistē</translation>
+<translation id="8424255554404582727">Iestatīt ekrāna pagriešanas noklusējumu, kas tiek lietots katrā atkārtotas palaišanas reizē</translation>
+<translation id="8426231401662877819">Pagriezt ekrānu pulksteņrādītāju kustības virzienā par 90 grādiem</translation>
 <translation id="8451988835943702790">Jaunas cilnes lapu izmanto kā sākumlapu</translation>
 <translation id="8465065632133292531">Parametri dinamiskās meklēšanas vietrādim URL, kurā izmantota metode POST</translation>
 <translation id="847472800012384958">Neļaut nevienai vietnei rādīt uznirstošos logus</translation>

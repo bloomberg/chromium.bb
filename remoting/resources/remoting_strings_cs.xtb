@@ -24,6 +24,7 @@ Informace ohledně ochrany soukromí naleznete v zásadách ochrany soukromí sp
 <translation id="1546934824884762070">Došlo k neočekávané chybě. Nahlaste prosím tento problém vývojářům.</translation>
 <translation id="1619813076098775562">Připojení k zařízení Cast bylo ukončeno.</translation>
 <translation id="1643640058022401035">Pokud opustíte tuto stránku, relace funkce Chromoting bude ukončena.</translation>
+<translation id="1646994964686260497">Není k dispozici žádné zařízení, ke kterému by bylo možné se připojit.</translation>
 <translation id="1654128982815600832">Povolování vzdálených připojení k tomuto počítači…</translation>
 <translation id="170207782578677537">Registrace tohoto počítače se nezdařila.</translation>
 <translation id="1704090719919187045">Nastavení hostitele funkce Chromoting</translation>
@@ -109,6 +110,7 @@ Informace ohledně ochrany soukromí naleznete v zásadách ochrany soukromí sp
 <translation id="3606997049964069799">Nejste do prohlížeče Chromium přihlášeni. Přihlaste se a zkuste to znovu.</translation>
 <translation id="3649256019230929621">Minimalizovat okno</translation>
 <translation id="369442766917958684">Offline.</translation>
+<translation id="3695446226812920698">Postup</translation>
 <translation id="3776024066357219166">Relace Vzdálené plochy Chrome byla ukončena.</translation>
 <translation id="3785447812627779171">Hostitel
 funkce
@@ -122,6 +124,10 @@ Chromoting</translation>
 <translation id="3950820424414687140">Přihlaste se</translation>
 <translation id="3989511127559254552">Aby bylo možné pokračovat, je nutné udělit dodatečná oprávnění k přístupu do vašeho počítače. Tuto akci stačí provést jednou.</translation>
 <translation id="4006787130661126000">Chcete-li se k tomuto počítači připojit prostřednictvím Vzdálené plochy Chrome, je třeba povolit vzdálená připojení.</translation>
+<translation id="401121182145179743">Nejdříve je potřeba v počítači nastavit vzdálený přístup.</translation>
+<translation id="4028465833180158312">• Byly provedeny aktualizace uživatelského rozhraní se vzhledem Material Design.
+• Jsou uvedeny licence třetích stran.
+• Zobrazují se informace o vzdálených počítačích, které jsou offline.</translation>
 <translation id="405887016757208221">Vzdálený počítač relaci neinicializoval. Pokud problém přetrvává, zkuste hostitele nakonfigurovat znovu.</translation>
 <translation id="4068946408131579958">Všechna připojení</translation>
 <translation id="409800995205263688">POZNÁMKA: Nastavení zásad umožňují spojení pouze mezi počítači v rámci vaší sítě.</translation>

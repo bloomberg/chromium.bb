@@ -84,6 +84,7 @@
 <translation id="2556876185419854533">&amp;Fortryd redigering</translation>
 <translation id="2581221116934462656">Skal <ph name="PRODUCT_NAME" /> tilbyde at oversætte sider på <ph name="LANGUAGE_NAME" /> fra dette website næste gang?</translation>
 <translation id="2587841377698384444">Id for Directory API:</translation>
+<translation id="2589937147782335782">Skal Google gemme dette kort?</translation>
 <translation id="2597378329261239068">Dette dokument er adgangskodebeskyttet. Indtast en adgangskode.</translation>
 <translation id="2609632851001447353">Varianter</translation>
 <translation id="2625385379895617796">Dit ur er foran</translation>
@@ -202,7 +203,6 @@
 <translation id="5295309862264981122">Bekræft navigation</translation>
 <translation id="5299298092464848405">Der opstod en fejl ved parsing af politik</translation>
 <translation id="5308689395849655368">Rapportering af nedbrud er deaktiveret.</translation>
-<translation id="5316812925700871227">Rotér mod uret</translation>
 <translation id="5317780077021120954">Gem</translation>
 <translation id="536296301121032821">Der kunne ikke gemmes indstillinger for politik</translation>
 <translation id="540969355065856584">Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da dens sikkerhedscertifikat ikke er gyldigt i øjeblikket. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse.</translation>
@@ -219,6 +219,7 @@
 <translation id="560412284261940334">Administration er ikke understøttet</translation>
 <translation id="5629630648637658800">Der kunne ikke indlæses indstillinger for politik</translation>
 <translation id="5631439013527180824">Ugyldigt token for enhedsadministration</translation>
+<translation id="5680545064257783621">Føjer en afbryderknap til forsøget med forbedrede bogmærker</translation>
 <translation id="5720705177508910913">Aktuel bruger</translation>
 <translation id="5813119285467412249">&amp;Annuller fortryd tilføjelse</translation>
 <translation id="5872918882028971132">Forslag fra forældre</translation>
@@ -289,11 +290,13 @@
 <translation id="7424977062513257142">En integreret side på denne webside siger:</translation>
 <translation id="7441627299479586546">Forkert emne for politik</translation>
 <translation id="7485870689360869515">Der blev ikke fundet nogen data.</translation>
+<translation id="7514365320538308">Download</translation>
 <translation id="7537536606612762813">Obligatorisk</translation>
 <translation id="7542995811387359312">Automatisk udfyldning af kreditkort er deaktiveret, fordi formularen ikke bruger en sikker forbindelse.</translation>
 <translation id="7567204685887185387">Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da sikkerhedscertifikatet er udstedt på ulovlig vis. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse.</translation>
 <translation id="7568593326407688803">Denne side er på<ph name="ORIGINAL_LANGUAGE" />Vil du oversætte den?</translation>
 <translation id="7569952961197462199">Vil du fjerne kreditkortet fra Chrome?</translation>
+<translation id="7578104083680115302">Betal hurtigt på websites og i apps på tværs af enheder ved hjælp af kort, du har gemt med Google.</translation>
 <translation id="7592362899630581445">Begrænsningerne for serverens certifikatnavn er overtrådt.</translation>
 <translation id="7600965453749440009">Oversæt aldrig <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">Værdien er uden for intervallet <ph name="VALUE" />.</translation>

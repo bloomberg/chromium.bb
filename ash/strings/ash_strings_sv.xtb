@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sv">
 <translation id="1013923882670373915">Bluetooth-enheten <ph name="DEVICE_NAME" /> har begärt tillstånd för koppling. Ange den här pinkoden på den enheten: <ph name="PINCODE" /></translation>
+<translation id="1021311941847921177">Kortkommandot för att byta till nästa inmatningsmetod har ändrats. Använd <ph name="NEW_SHORTCUT" /> i stället för <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Dölj hyllan automatiskt</translation>
 <translation id="1195412055398077112">överskanning</translation>
 <translation id="1270290102613614947">Skärmen på tangentbordet har inaktiverats</translation>
@@ -25,7 +26,9 @@
 <translation id="1812696562331527143">Inmatningsmetoden har ändrats till <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />tredje part<ph name="END_LINK" />).
         Tryck på Skift + Alt om du vill byta.</translation>
 <translation id="1882897271359938046">Spegling av <ph name="DISPLAY_NAME" /></translation>
+<translation id="1919743966458266018">Kortkommandot för att öppna aktivitetshanteraren har ändrats. Använd <ph name="NEW_SHORTCUT" /> i stället för <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Automatiska klick</translation>
+<translation id="1938872420421548906">Skift+Alt</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2127372758936585790">Laddning med låg effekt</translation>
@@ -104,6 +107,7 @@
 <translation id="4421231901400348175">Dela kontroll över skärmen med <ph name="HELPER_NAME" /> via Fjärrhjälp.</translation>
 <translation id="4430019312045809116">Volym</translation>
 <translation id="4527045527269911712">Bluetooth-enheten <ph name="DEVICE_NAME" /> har begärt tillstånd för koppling.</translation>
+<translation id="4544944664594876241">Kortkommandot för att låsa skärmen har ändrats. Använd <ph name="NEW_SHORTCUT" /> i stället för <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="479989351350248267">sök</translation>
 <translation id="4804818685124855865">Koppla från</translation>
 <translation id="4872237917498892622">Alt + Sök eller Skift</translation>
@@ -112,12 +116,14 @@
 <translation id="4957722034734105353">Läs mer ...</translation>
 <translation id="4961318399572185831">Casta skärmen</translation>
 <translation id="5011233892417813670">Chromebook</translation>
+<translation id="5012744545445585468">Ctrl+Skift+blanksteg</translation>
 <translation id="5045002648206642691">Inställningar för Google Drive ...</translation>
 <translation id="5102001756192215136"><ph name="HOUR" />:<ph name="MINUTE" /> kvar</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION" />, <ph name="OVERSCAN" /></translation>
 <translation id="5168181903108465623">Överföringsenheter finns tillgängliga</translation>
 <translation id="5222676887888702881">Logga ut</translation>
 <translation id="5238774010593222950">Det går inte att logga in på ett annat konto.</translation>
+<translation id="532063867737390965">Den här nätverksinställningen har inaktiverats av administratören.</translation>
 <translation id="544691375626129091">Alla tillgängliga användare har redan lagts till i den här sessionen.</translation>
 <translation id="5507786745520522457">Konfigurera mobildata</translation>
 <translation id="5543001071567407895">SMS</translation>
@@ -131,6 +137,7 @@
         Tryck på Skift + Alt om du vill byta.</translation>
 <translation id="5871632337994001636">Hantera enheter ...</translation>
 <translation id="5895138241574237353">Starta om</translation>
+<translation id="5901316534475909376">Skift+Escape</translation>
 <translation id="5927132638760172455">Castar till en okänd mottagare</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">Återgå</translation>
@@ -154,6 +161,7 @@
 <translation id="6426039856985689743">Inaktivera mobildata</translation>
 <translation id="6452181791372256707">Avvisa</translation>
 <translation id="6459472438155181876">Utökar skärmen till <ph name="DISPLAY_NAME" /></translation>
+<translation id="6501401484702599040">Skärmen castas till <ph name="RECEIVER_NAME" /></translation>
 <translation id="6550675742724504774">Alternativ</translation>
 <translation id="6585808820553845416">Sessionen upphör om <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6596816719288285829">IP-adress</translation>
@@ -161,6 +169,7 @@
 <translation id="6713285437468012787">Bluetooth-enheten <ph name="DEVICE_NAME" /> har kopplats och är nu tillgänglig för alla användare. Du kan ta bort kopplingen i Inställningar.</translation>
 <translation id="6785414152754474415">Batteriet är fullt till <ph name="PERCENTAGE" /> % och laddas.</translation>
 <translation id="6803622936009808957">Det gick inte att spegla visningar eftersom inga upplösningar som stöds hittades. Utökat skrivbordsläge används i stället.</translation>
+<translation id="683971173229319003">Sök+L</translation>
 <translation id="68610848741840742">ChromeVox (talad feedback)</translation>
 <translation id="6911468394164995108">Anslut till andra ...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
@@ -168,6 +177,7 @@
 <translation id="6981982820502123353">Tillgänglighet</translation>
 <translation id="7029814467594812963">Avsluta session</translation>
 <translation id="703171847531699602">Inga överföringsenheter</translation>
+<translation id="7034339000180558234">Castar <ph name="TAB_NAME" /> till <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Ange bakgrund ...</translation>
 <translation id="7097613348211027502">ChromeVox (talad feedback) har aktiverats.
 Inaktivera funktionen genom att trycka på Ctrl+Alt+Z.</translation>
@@ -178,6 +188,7 @@ Inaktivera funktionen genom att trycka på Ctrl+Alt+Z.</translation>
 <translation id="737451040872859086">Mikrofon (inbyggd)</translation>
 <translation id="742594950370306541">Kameran används.</translation>
 <translation id="743058460480092004">Kameran och mikrofonen används.</translation>
+<translation id="7510334386202674593">Ctrl+Skift+L</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> har inte stöd för <ph name="SPECIFIED_RESOLUTION" />. Upplösningen ändrades till <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7573962313813535744">Dockat läge</translation>
 <translation id="7593891976182323525">Sök eller Skift</translation>
@@ -205,6 +216,7 @@ Inaktivera funktionen genom att trycka på Ctrl+Alt+Z.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="882279321799040148">Klicka för att visa</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8850991929411075241">Sök+Escape</translation>
 <translation id="8878886163241303700">Utökad skärm</translation>
 <translation id="8940956008527784070">Låg batterinivå (<ph name="PERCENTAGE" /> %)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>

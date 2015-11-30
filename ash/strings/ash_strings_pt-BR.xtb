@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="pt-BR">
 <translation id="1013923882670373915">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" deseja permissão para realizar o pareamento. Digite este código PIN no dispositivo: <ph name="PINCODE" /></translation>
+<translation id="1021311941847921177">O atalho para alternar para o próximo método de entrada foi alterado. Use <ph name="NEW_SHORTCUT" /> em vez de <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Ocultar estante automaticamente</translation>
 <translation id="1195412055398077112">overscan</translation>
 <translation id="1270290102613614947">Teclado na tela desativado</translation>
@@ -25,7 +26,9 @@
 <translation id="1812696562331527143">Seu método de entrada mudou para <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />terceiros<ph name="END_LINK" />). 
 Pressione Shift + Alt para alternar.</translation>
 <translation id="1882897271359938046">Espelhamento de <ph name="DISPLAY_NAME" /></translation>
+<translation id="1919743966458266018">O atalho para abrir o gerenciador de tarefas foi alterado. Use <ph name="NEW_SHORTCUT" /> em vez de <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Cliques automáticos</translation>
+<translation id="1938872420421548906">Shift+Alt</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2127372758936585790">Carregador de baixa potência</translation>
@@ -104,6 +107,7 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="4421231901400348175">Compartilhando o controle da sua tela com <ph name="HELPER_NAME" /> via Assistência remota.</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="4527045527269911712">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" deseja permissão para realizar o pareamento.</translation>
+<translation id="4544944664594876241">O atalho para bloquear a tela foi alterado. Use <ph name="NEW_SHORTCUT" /> em vez de <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="479989351350248267">pesquisar</translation>
 <translation id="4804818685124855865">Desconectar</translation>
 <translation id="4872237917498892622">Alt + Pesquisar ou Shift</translation>
@@ -112,12 +116,14 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="4957722034734105353">Saiba mais...</translation>
 <translation id="4961318399572185831">Transmitir tela</translation>
 <translation id="5011233892417813670">Chromebook</translation>
+<translation id="5012744545445585468">Ctrl+Shift+Barra de espaço</translation>
 <translation id="5045002648206642691">Configurações do Google Drive...</translation>
 <translation id="5102001756192215136"><ph name="HOUR" />:<ph name="MINUTE" /> restantes</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION" />, <ph name="OVERSCAN" /></translation>
 <translation id="5168181903108465623">Dispositivos de transmissão disponíveis</translation>
 <translation id="5222676887888702881">Sair</translation>
 <translation id="5238774010593222950">Não é possível fazer login em outra conta.</translation>
+<translation id="532063867737390965">Essa configuração de rede foi desativada pelo administrador.</translation>
 <translation id="544691375626129091">Todos os usuários disponíveis já foram adicionados a esta sessão.</translation>
 <translation id="5507786745520522457">Configurar dados de dispositivos móveis</translation>
 <translation id="5543001071567407895">SMS</translation>
@@ -131,6 +137,7 @@ Pressione Shift + Alt para alternar.</translation>
 Pressione Shift + Alt para alternar.</translation>
 <translation id="5871632337994001636">Gerenciar dispositivos...</translation>
 <translation id="5895138241574237353">Reiniciar</translation>
+<translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5927132638760172455">Transmitindo para um destinatário desconhecido</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">Reverter</translation>
@@ -154,6 +161,7 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="6426039856985689743">Desativar dados móveis</translation>
 <translation id="6452181791372256707">Rejeitar</translation>
 <translation id="6459472438155181876">Estendendo tela para <ph name="DISPLAY_NAME" /></translation>
+<translation id="6501401484702599040">Transmitindo tela para <ph name="RECEIVER_NAME" /></translation>
 <translation id="6550675742724504774">Opções</translation>
 <translation id="6585808820553845416">A sessão termina em <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6596816719288285829">Endereço IP</translation>
@@ -161,6 +169,7 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="6713285437468012787">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" está pareado e disponível para todos os usuários. Para cancelar o pareamento, vá para "Configurações".</translation>
 <translation id="6785414152754474415">A bateria está <ph name="PERCENTAGE" />% cheia e carregando.</translation>
 <translation id="6803622936009808957">Não foi possível espelhar os displays porque não foram encontradas resoluções suportadas. Em vez disso, foi ativada a área de trabalho estendida.</translation>
+<translation id="683971173229319003">Pesquisa+L</translation>
 <translation id="68610848741840742">ChromeVox (feedback falado)</translation>
 <translation id="6911468394164995108">Conectar-se a outra...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
@@ -168,6 +177,7 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="6981982820502123353">Acessibilidade</translation>
 <translation id="7029814467594812963">Sair da sessão</translation>
 <translation id="703171847531699602">Nenhum dispositivo de transmissão</translation>
+<translation id="7034339000180558234">Transmitindo <ph name="TAB_NAME" /> para <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Definir plano de fundo...</translation>
 <translation id="7097613348211027502">O ChromeVox (feedback falado) está ativado.
 
@@ -179,6 +189,7 @@ Pressione Ctrl+Alt+Z para desativar.</translation>
 <translation id="737451040872859086">Microfone (interno)</translation>
 <translation id="742594950370306541">A câmera está em uso.</translation>
 <translation id="743058460480092004">A câmera e o microfone estão em uso.</translation>
+<translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> não suporta <ph name="SPECIFIED_RESOLUTION" />. A resolução foi alterada para <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7573962313813535744">Modo ancorado</translation>
 <translation id="7593891976182323525">Pesquisar ou Shift</translation>
@@ -206,6 +217,7 @@ Pressione Ctrl+Alt+Z para desativar.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="882279321799040148">Clique para visualizar</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8850991929411075241">Pesquisa+Esc</translation>
 <translation id="8878886163241303700">Tela ampla</translation>
 <translation id="8940956008527784070">Nível de bateria baixo (<ph name="PERCENTAGE" />%)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>

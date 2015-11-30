@@ -357,6 +357,7 @@
 <translation id="4729095194763193578">Předchozí řádek tabulky</translation>
 <translation id="4736221692378411923">Srpen</translation>
 <translation id="4740661827607246557">Příkazy nápovědy</translation>
+<translation id="4755857887974653209">Vypnout ChromeVox</translation>
 <translation id="4759716709594980008">Průzkumník klávesnice systému ChromeOS</translation>
 <translation id="4763296182459741068">Skok na konec</translation>
 <translation id="4763480195061959176">video</translation>
@@ -661,6 +662,7 @@
 <translation id="8065607967589909823">Výběr je</translation>
 <translation id="8066678206530322333">Banner</translation>
 <translation id="8110647606445335195">Žádné orientační body ARIA.</translation>
+<translation id="8132379720172247073">Nabídka ChromeVox</translation>
 <translation id="8153880621934657047">Mimo tabulku.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{podtržítko}few{# podtržítka}many{# underscores}other{# podtržítek}}</translation>
 <translation id="8179976553408161302">Enter</translation>
@@ -696,6 +698,7 @@
 <translation id="8584721346566392021">nadp 5</translation>
 <translation id="8587549812518406253">Další položka seznamu</translation>
 <translation id="860150890330522909">zaškrtnuto políčko <ph name="NAME" /></translation>
+<translation id="8603071050456974042">Panel ChromeVox</translation>
 <translation id="8606621670302093223">Ovládací prvek – datum</translation>
 <translation id="8631359288236106450">vybrané položky: <ph name="COUNT" /></translation>
 <translation id="8638532244051952400">Oznamovat souřadnice aktuální buňky</translation>

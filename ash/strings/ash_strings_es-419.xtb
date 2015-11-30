@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="es-419">
 <translation id="1013923882670373915">El dispositivo Bluetooth "<ph name="DEVICE_NAME" />" solicita permiso para sincronizarse. Ingresa el siguiente código de PIN en el dispositivo: <ph name="PINCODE" />.</translation>
+<translation id="1021311941847921177">Se modificó el acceso directo para cambiar al siguiente método de entrada. Utiliza <ph name="NEW_SHORTCUT" /> en vez de <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Ocultar la biblioteca automáticamente</translation>
 <translation id="1195412055398077112">desajuste de dimensiones</translation>
 <translation id="1270290102613614947">Teclado en pantalla inhabilitado</translation>
@@ -25,7 +26,9 @@
 <translation id="1812696562331527143">Tu método de introducción cambió a <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />tercero<ph name="END_LINK" />).
 Para cambiarlo, presiona Shift + Alt.</translation>
 <translation id="1882897271359938046">Copiando en <ph name="DISPLAY_NAME" /></translation>
+<translation id="1919743966458266018">Se modificó el acceso directo para abrir el administrador de tareas. Utiliza <ph name="NEW_SHORTCUT" /> en vez de <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Clics automáticos</translation>
+<translation id="1938872420421548906">Mayúscula + Alt</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2127372758936585790">Cargador de baja potencia</translation>
@@ -105,6 +108,7 @@ Presiona Mayús o la tecla de búsqueda para cancelar la operación.</translatio
 <translation id="4421231901400348175">Se está compartiendo el control de la pantalla con <ph name="HELPER_NAME" /> mediante la Asistencia remota.</translation>
 <translation id="4430019312045809116">Volumen</translation>
 <translation id="4527045527269911712">El dispositivo Bluetooth "<ph name="DEVICE_NAME" />" solicita permiso para sincronizarse.</translation>
+<translation id="4544944664594876241">Se modificó el acceso directo para bloquear la pantalla. Utiliza <ph name="NEW_SHORTCUT" /> en vez de <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Desconectar</translation>
 <translation id="4872237917498892622">Alt+tecla de búsqueda o Mayús</translation>
@@ -113,12 +117,14 @@ Presiona Mayús o la tecla de búsqueda para cancelar la operación.</translatio
 <translation id="4957722034734105353">Más información...</translation>
 <translation id="4961318399572185831">Transmitir pantalla</translation>
 <translation id="5011233892417813670">Chromebook</translation>
+<translation id="5012744545445585468">Ctrl + mayúscula + espacio</translation>
 <translation id="5045002648206642691">Configuración de Google Drive...</translation>
 <translation id="5102001756192215136"><ph name="HOUR" />:<ph name="MINUTE" /> restante</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION" />, <ph name="OVERSCAN" /></translation>
 <translation id="5168181903108465623">Dispositivos de transmisión disponibles</translation>
 <translation id="5222676887888702881">Salir</translation>
 <translation id="5238774010593222950">No se puede acceder a otra cuenta.</translation>
+<translation id="532063867737390965">El administrador inhabilitó esta configuración de red.</translation>
 <translation id="544691375626129091">Todos los usuarios disponibles ya se agregaron a esta sesión.</translation>
 <translation id="5507786745520522457">Configurar datos móviles</translation>
 <translation id="5543001071567407895">SMS</translation>
@@ -132,6 +138,7 @@ Presiona Mayús o la tecla de búsqueda para cancelar la operación.</translatio
 Para cambiarlo, presiona Shift + Alt.</translation>
 <translation id="5871632337994001636">Administrar dispositivos…</translation>
 <translation id="5895138241574237353">Reiniciar</translation>
+<translation id="5901316534475909376">Mayúscula + Esc</translation>
 <translation id="5927132638760172455">Transmitiendo a un receptor desconocido</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">Revertir</translation>
@@ -155,6 +162,7 @@ Para cambiarlo, presiona Shift + Alt.</translation>
 <translation id="6426039856985689743">Inhabilitar datos de dispositivos móviles</translation>
 <translation id="6452181791372256707">Rechazar</translation>
 <translation id="6459472438155181876">Ampliando pantalla para <ph name="DISPLAY_NAME" /></translation>
+<translation id="6501401484702599040">Transmitiendo pantalla a <ph name="RECEIVER_NAME" /></translation>
 <translation id="6550675742724504774">Opciones</translation>
 <translation id="6585808820553845416">La sesión terminará en <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6596816719288285829">Dirección IP</translation>
@@ -162,6 +170,7 @@ Para cambiarlo, presiona Shift + Alt.</translation>
 <translation id="6713285437468012787">El dispositivo Bluetooth "<ph name="DEVICE_NAME" />" se sincronizó y ahora está disponible para todos los usuarios. Puedes ir a Configuración para eliminar esta sincronización.</translation>
 <translation id="6785414152754474415">La batería tiene un <ph name="PERCENTAGE" /> % de carga y se está cargando.</translation>
 <translation id="6803622936009808957">No se pudieron reflejar las pantallas porque no se encontraron resoluciones compatibles. En su lugar, se activó el escritorio extendido.</translation>
+<translation id="683971173229319003">Tecla de búsqueda + L</translation>
 <translation id="68610848741840742">ChromeVox (comentarios por voz)</translation>
 <translation id="6911468394164995108">Conectarte a otra red...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
@@ -169,6 +178,7 @@ Para cambiarlo, presiona Shift + Alt.</translation>
 <translation id="6981982820502123353">Accesibilidad</translation>
 <translation id="7029814467594812963">Salir de la sesión</translation>
 <translation id="703171847531699602">No hay dispositivos de transmisión.</translation>
+<translation id="7034339000180558234">Transmitiendo <ph name="TAB_NAME" /> a <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Establecer fondo de pantalla...</translation>
 <translation id="7097613348211027502">ChromeVox (comentarios por voz) está habilitado. Presiona Ctrl + Alt + Z para inhabilitarlo.</translation>
 <translation id="714034171374937760">Chromebase</translation>
@@ -179,6 +189,7 @@ Presiona Alt y la tecla de búsqueda o Mayús para cancelar la operación.</tran
 <translation id="737451040872859086">Micrófono (interno)</translation>
 <translation id="742594950370306541">Cámara en uso</translation>
 <translation id="743058460480092004">Cámara y micrófono en uso</translation>
+<translation id="7510334386202674593">Ctrl + mayúscula + L</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> no admite una resolución de <ph name="SPECIFIED_RESOLUTION" />. La resolución se cambió a <ph name="FALLBACK_RESOLUTION" />.</translation>
 <translation id="7573962313813535744">Modo acoplado</translation>
 <translation id="7593891976182323525">Tecla de búsqueda o Mayús</translation>
@@ -206,6 +217,7 @@ Presiona Alt y la tecla de búsqueda o Mayús para cancelar la operación.</tran
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="882279321799040148">Haz clic para verla.</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8850991929411075241">Tecla de búsqueda + Esc</translation>
 <translation id="8878886163241303700">Ampliando pantalla</translation>
 <translation id="8940956008527784070">Batería baja (<ph name="PERCENTAGE" />%)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>

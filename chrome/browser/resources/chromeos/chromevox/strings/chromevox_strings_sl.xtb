@@ -357,6 +357,7 @@
 <translation id="4729095194763193578">Prejšnja vrstica tabele</translation>
 <translation id="4736221692378411923">avgust</translation>
 <translation id="4740661827607246557">Ukazi za pomoč</translation>
+<translation id="4755857887974653209">Onemogočanje ChromeVoxa</translation>
 <translation id="4759716709594980008">Raziskovalec tipkovnice Chrome OS</translation>
 <translation id="4763296182459741068">Prelom do dna</translation>
 <translation id="4763480195061959176">video</translation>
@@ -661,6 +662,7 @@
 <translation id="8065607967589909823">Izbrano je</translation>
 <translation id="8066678206530322333">Pasica</translation>
 <translation id="8110647606445335195">Ni mejnika v različici ARIA.</translation>
+<translation id="8132379720172247073">ChromeVoxov meni</translation>
 <translation id="8153880621934657047">Zunaj tabele.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{podčrtaj}one{# podčrtaj}two{# podčrtaja}few{# podčrtaji}other{# podčrtajev}}</translation>
 <translation id="8179976553408161302">Enter</translation>
@@ -696,6 +698,7 @@
 <translation id="8584721346566392021">n5</translation>
 <translation id="8587549812518406253">Naslednji element seznama</translation>
 <translation id="860150890330522909">Potrditveno polje <ph name="NAME" /> je označeno</translation>
+<translation id="8603071050456974042">ChromeVoxova plošča</translation>
 <translation id="8606621670302093223">Nadzor datuma</translation>
 <translation id="8631359288236106450">št. izbranih elementov: <ph name="COUNT" /></translation>
 <translation id="8638532244051952400">Izgovorjava trenutnih koordinat celice</translation>

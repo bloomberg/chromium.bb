@@ -24,6 +24,7 @@ Para ver mais informações sobre privacidade, consulte a Política de Privacida
 <translation id="1546934824884762070">Ocorreu um erro inesperado. Informe este problema aos desenvolvedores.</translation>
 <translation id="1619813076098775562">A conexão com o dispositivo de transmissão foi encerrada.</translation>
 <translation id="1643640058022401035">Abandonar esta página encerrará sua sessão de Chromoting.</translation>
+<translation id="1646994964686260497">Não há nada para se conectar.</translation>
 <translation id="1654128982815600832">Permitindo conexões remotas a este computador...</translation>
 <translation id="170207782578677537">Falha ao registrar este computador.</translation>
 <translation id="1704090719919187045">Preferências do host do Chromoting</translation>
@@ -109,6 +110,7 @@ Para ver mais informações sobre privacidade, consulte a Política de Privacida
 <translation id="3606997049964069799">Você não está conectado ao Chromium. Faça login e tente novamente.</translation>
 <translation id="3649256019230929621">Minimizar janela</translation>
 <translation id="369442766917958684">Off-line.</translation>
+<translation id="3695446226812920698">Saiba como</translation>
 <translation id="3776024066357219166">Sua sessão na Área de trabalho remota do Google Chrome foi encerrada.</translation>
 <translation id="3785447812627779171">Host do
 Chromoting</translation>
@@ -121,6 +123,10 @@ Chromoting</translation>
 <translation id="3950820424414687140">Fazer login</translation>
 <translation id="3989511127559254552">Para continuar, é necessário conceder permissões de acesso estendidas ao seu computador. Você só precisará fazer isso uma vez.</translation>
 <translation id="4006787130661126000">Ative conexões remotas se desejar usar a Área de trabalho remota do Google Chrome para acessar este computador.</translation>
+<translation id="401121182145179743">Primeiro, é necessário configurar seu computador para acesso remoto.</translation>
+<translation id="4028465833180158312">• Atualizações da IU material de design.
+• Créditos de licenciamento de terceiros.
+• Informações exibidas para computadores remotos que estão off-line.</translation>
 <translation id="405887016757208221">O computador remoto apresentou uma falha ao inicializar a sessão. Se o problema persistir, tente configurar o host novamente.</translation>
 <translation id="4068946408131579958">Todas as conexões</translation>
 <translation id="409800995205263688">OBSERVAÇÃO: as configurações da política permitem conexão apenas entre computadores em sua rede.</translation>

@@ -5,6 +5,7 @@
 <translation id="1013290471399003443">Chrome memverifikasi bahwa <ph name="ISSUER" /> menerbitkan sertifikat situs web ini. Server memberikan informasi Transparansi Sertifikat yang valid.</translation>
 <translation id="1016765312371154165">Chrome tidak dinonaktifkan dengan benar.</translation>
 <translation id="103396972844768118">Informasi penting terkait data Chrome Anda</translation>
+<translation id="1035334672863811645">masuk ke Chrome</translation>
 <translation id="1061441684050139317">Chrome memerlukan akses mikrofon untuk berbagi dengan situs ini.</translation>
 <translation id="1065672644894730302">Preferensi Anda tidak dapat dibaca. Beberapa fitur mungkin tidak tersedia dan perubahan pada preferensi tidak akan disimpan.</translation>
 <translation id="1073391069195728457">Chrome - Notifikasi</translation>
@@ -87,7 +88,6 @@ Tetap masuk akan menggabungkan informasi Chrome seperti bookmark, riwayat, dan s
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3881912906674381083">Chrome memverifikasi bahwa <ph name="ISSUER" /> menerbitkan sertifikat situs web ini. Server memberikan informasi Transparansi Sertifikat, namun Chrome tidak mengenali log Transparansi Sertifikat apa pun.</translation>
 <translation id="3889417619312448367">Hapus Penginstalan Google Chrome</translation>
-<translation id="4011219958405096740">Jika diaktifkan, alur masuk Chrome berbasis iframe akan digunakan; jika tidak, yang digunakan adalah alur berbasis tampilan web.</translation>
 <translation id="4042449298237264661">Komputer ini tidak akan menerima pembaruan Google Chrome lagi karena Windows XP dan Windows Vista sudah tidak didukung.</translation>
 <translation id="4050175100176540509">Peningkatan keamanan dan fitur baru yang penting tersedia di versi terbaru.</translation>
 <translation id="4053720452172726777">Sesuaikan dan kontrol Google Chrome</translation>
@@ -142,7 +142,6 @@ Tetap masuk akan menggabungkan informasi Chrome seperti bookmark, riwayat, dan s
 <translation id="573759479754913123">Tentang Chrome OS</translation>
 <translation id="5749068826913805084">Chrome memerlukan akses penyimpanan untuk mengunduh file.</translation>
 <translation id="5785746630574083988">Dengan meluncurkan kembali dalam mode Windows 8, Anda akan menutup dan meluncurkan kembali aplikasi Chrome.</translation>
-<translation id="5799551393681493217">Mengaktifkan alur masuk Chrome berbasis iframe. Tanda ini menggantikan pengaktifan opsi masuk berbasis web.</translation>
 <translation id="5855036575689098185">Perangkat lunak yang berjalan di komputer Anda tidak kompatibel dengan Google Chrome.</translation>
 <translation id="5877064549588274448">Saluran diubah. Mulai ulang perangkat Anda untuk menerapkan perubahan.</translation>
 <translation id="5890698319714066019">Google Chrome tidak dapat menampilkan laman web karena komputer Anda tidak tersambung ke Internet.</translation>

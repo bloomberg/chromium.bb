@@ -24,6 +24,7 @@ Para mais informações acerca da privacidade, consulte a Política de Privacida
 <translation id="1546934824884762070">Ocorreu um erro inesperado. Comunique este problema aos programadores.</translation>
 <translation id="1619813076098775562">Terminou a ligação ao Dispositivo de transmissão.</translation>
 <translation id="1643640058022401035">Se sair desta página, terminará a sessão do Chromoting.</translation>
+<translation id="1646994964686260497">Não há computadores aos quais estabelecer ligação.</translation>
 <translation id="1654128982815600832">A ativar as ligações remotas neste computador…</translation>
 <translation id="170207782578677537">Falha ao registar o computador.</translation>
 <translation id="1704090719919187045">Preferências do Anfitrião do Chromoting</translation>
@@ -109,6 +110,7 @@ Para mais informações acerca da privacidade, consulte a Política de Privacida
 <translation id="3606997049964069799">Não tem sessão iniciada no Chromium. Inicie sessão e tente novamente.</translation>
 <translation id="3649256019230929621">Minimizar janela</translation>
 <translation id="369442766917958684">Offline.</translation>
+<translation id="3695446226812920698">Saiba como</translation>
 <translation id="3776024066357219166">A sessão do Ambiente de Trabalho Remoto do Chrome terminou.</translation>
 <translation id="3785447812627779171">Anfitrião do
 Chromoting</translation>
@@ -121,6 +123,10 @@ Chromoting</translation>
 <translation id="3950820424414687140">Iniciar sessão</translation>
 <translation id="3989511127559254552">Para continuar, precisa primeiro de conceder autorizações de acesso alargadas ao computador. Apenas tem de efetuar esta operação uma vez.</translation>
 <translation id="4006787130661126000">Se pretende utilizar o Ambiente de Trabalho Remoto do Chrome para aceder ao computador, é necessário ativar as ligações remotas.</translation>
+<translation id="401121182145179743">Primeiro, tem de configurar o computador para acesso remoto.</translation>
+<translation id="4028465833180158312">• Atualizações de material design da IU.
+• Créditos de licenciamento de terceiros.
+• Apresentação de informações para computadores remotos offline.</translation>
 <translation id="405887016757208221">O computador remoto não conseguiu inicializar a sessão. Se o problema persistir, experimente configurar o anfitrião novamente.</translation>
 <translation id="4068946408131579958">Todas as ligações</translation>
 <translation id="409800995205263688">NOTA: as definições da política permitem ligações apenas entre computadores da sua rede.</translation>

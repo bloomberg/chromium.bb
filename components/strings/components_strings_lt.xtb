@@ -84,6 +84,7 @@
 <translation id="2556876185419854533">&amp;Anuliuoti redagavimą</translation>
 <translation id="2581221116934462656">Ar norite, kad „<ph name="PRODUCT_NAME" />“ kitą kartą siūlytų versti šios svetainės puslapius <ph name="LANGUAGE_NAME" />?</translation>
 <translation id="2587841377698384444">Katalogo API ID:</translation>
+<translation id="2589937147782335782">Ar norite, kad „Google“ išsaugotų šią kortelę?</translation>
 <translation id="2597378329261239068">Šis dokumentas apsaugotas slaptažodžiu. Įveskite slaptažodį.</translation>
 <translation id="2609632851001447353">Variantai</translation>
 <translation id="2625385379895617796">Jūsų laikrodis skuba</translation>
@@ -202,7 +203,6 @@
 <translation id="5295309862264981122">Patvirtinti naršymą</translation>
 <translation id="5299298092464848405">Analizuojant politiką įvyko klaida</translation>
 <translation id="5308689395849655368">Strigčių ataskaitų teikimas neleidžiamas.</translation>
-<translation id="5316812925700871227">Pasukti prieš laikrodžio rodyklę</translation>
 <translation id="5317780077021120954">Išsaugoti</translation>
 <translation id="536296301121032821">Išsaugant politikos nustatymus įvyko klaida</translation>
 <translation id="540969355065856584">Šiam serveriui nepavyko patvirtinti, kad jis yra <ph name="DOMAIN" />; šiuo metu jo saugos sertifikatas negalioja. Tai gali būti dėl netinkamos konfigūracijos arba dėl ryšį pertraukusio užgrobėjo.</translation>
@@ -219,6 +219,7 @@
 <translation id="560412284261940334">Tvarkymas nepalaikomas</translation>
 <translation id="5629630648637658800">Įkeliant politikos nustatymus įvyko klaida</translation>
 <translation id="5631439013527180824">Netinkamas įrenginio tvarkymo prieigos raktas</translation>
+<translation id="5680545064257783621">Teikiamas patobulinto žymių eksperimento išjungimo jungiklis</translation>
 <translation id="5720705177508910913">Dabartinis naudotojas</translation>
 <translation id="5813119285467412249">&amp;Pridėti dar kartą</translation>
 <translation id="5872918882028971132">Pasiūlymai tėvams</translation>
@@ -289,11 +290,13 @@
 <translation id="7424977062513257142">Šiame tinklalapyje įterptame puslapyje sakoma:</translation>
 <translation id="7441627299479586546">Netinkamas politikos objektas</translation>
 <translation id="7485870689360869515">Nerasta jokių duomenų.</translation>
+<translation id="7514365320538308">Atsisiųsti</translation>
 <translation id="7537536606612762813">Privaloma</translation>
 <translation id="7542995811387359312">Automatinis kredito kortelės informacijos pildymas neleidžiamas, nes šiai formai nenaudojamas saugus ryšys.</translation>
 <translation id="7567204685887185387">Šiam serveriui nepavyko patvirtinti, kad tai yra <ph name="DOMAIN" />; jo saugos sertifikatas gali būti neteisėtai išduotas. Taip gali nutikti dėl netinkamos konfigūracijos ar dėl ryšį pertraukusio užgrobėjo.</translation>
 <translation id="7568593326407688803">Šis puslapis yra<ph name="ORIGINAL_LANGUAGE" />Ar norėtumėte jį išversti?</translation>
 <translation id="7569952961197462199">Pašalinti kredito kortelės informaciją iš „Chrome“?</translation>
+<translation id="7578104083680115302">Greitai mokėkite svetainėse ir programose įvairiuose įrenginiuose naudodami korteles, kurias išsaugojote „Google“.</translation>
 <translation id="7592362899630581445">Serverio sertifikatas pažeidžia pavadinimų apribojimus.</translation>
 <translation id="7600965453749440009">Niekada neversti <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">Vertė nepatenka į diapazoną <ph name="VALUE" />.</translation>

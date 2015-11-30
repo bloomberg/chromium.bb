@@ -84,6 +84,7 @@
 <translation id="2556876185419854533">撤消修改(&amp;U)</translation>
 <translation id="2581221116934462656">您希望 <ph name="PRODUCT_NAME" /> 下次翻译此网站的<ph name="LANGUAGE_NAME" />网页吗？</translation>
 <translation id="2587841377698384444">Directory API ID：</translation>
+<translation id="2589937147782335782">您希望 Google 保存此银行卡吗？</translation>
 <translation id="2597378329261239068">本文档设置了密码保护，请输入密码。</translation>
 <translation id="2609632851001447353">其他变体</translation>
 <translation id="2625385379895617796">您的时钟快了</translation>
@@ -202,7 +203,6 @@
 <translation id="5295309862264981122">确认导航</translation>
 <translation id="5299298092464848405">解析策略时出错</translation>
 <translation id="5308689395849655368">已停用崩溃报告。</translation>
-<translation id="5316812925700871227">逆时针旋转</translation>
 <translation id="5317780077021120954">保存</translation>
 <translation id="536296301121032821">无法存储策略设置</translation>
 <translation id="540969355065856584">此服务器无法证明它是 <ph name="DOMAIN" />；其安全证书目前无效。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
@@ -219,6 +219,7 @@
 <translation id="560412284261940334">不支持管理</translation>
 <translation id="5629630648637658800">无法加载策略设置</translation>
 <translation id="5631439013527180824">设备管理令牌无效</translation>
+<translation id="5680545064257783621">为增强型书签实验提供一个“关闭”开关</translation>
 <translation id="5720705177508910913">当前用户</translation>
 <translation id="5813119285467412249">恢复添加(&amp;R)</translation>
 <translation id="5872918882028971132">家长建议</translation>
@@ -289,11 +290,13 @@
 <translation id="7424977062513257142">此网页上的嵌入式页面显示：</translation>
 <translation id="7441627299479586546">策略主题有误</translation>
 <translation id="7485870689360869515">找不到数据。</translation>
+<translation id="7514365320538308">下载</translation>
 <translation id="7537536606612762813">强制</translation>
 <translation id="7542995811387359312">由于该表单不使用安全连接，因此自动填写信用卡信息的功能已停用。</translation>
 <translation id="7567204685887185387">此服务器无法证明它是<ph name="DOMAIN" />；其安全证书可能是由骗子发出的。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
 <translation id="7568593326407688803">此网页为<ph name="ORIGINAL_LANGUAGE" />网页，是否需要翻译？</translation>
 <translation id="7569952961197462199">从 Chrome 中移除信用卡信息？</translation>
+<translation id="7578104083680115302">通过各种设备在网站和应用中购物时，您都可以使用 Google 为您保存的银行卡信息快速付款。</translation>
 <translation id="7592362899630581445">服务器的证书违反了域名限制。</translation>
 <translation id="7600965453749440009">一律不翻译<ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">值超出了范围 (<ph name="VALUE" />)。</translation>

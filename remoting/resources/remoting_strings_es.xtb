@@ -24,6 +24,7 @@ Para obtener información sobre la privacidad, consulta la Política de privacid
 <translation id="1546934824884762070">Se ha producido un error inesperado. Comunícaselo a los desarrolladores.</translation>
 <translation id="1619813076098775562">Se ha cerrado la conexión al dispositivo de transmisión.</translation>
 <translation id="1643640058022401035">Si abandonas esta página, finalizará tu sesión en Chromoting.</translation>
+<translation id="1646994964686260497">No hay ningún ordenador al que conectarse.</translation>
 <translation id="1654128982815600832">Habilitando conexiones remotas con este ordenador...</translation>
 <translation id="170207782578677537">No se ha podido registrar este ordenador.</translation>
 <translation id="1704090719919187045">Preferencias de host de Chromoting</translation>
@@ -109,6 +110,7 @@ Para obtener información sobre la privacidad, consulta la Política de privacid
 <translation id="3606997049964069799">No has iniciado sesión en Chromium. Inicia sesión y vuelve a intentarlo.</translation>
 <translation id="3649256019230929621">Minimizar ventana</translation>
 <translation id="369442766917958684">No conectado</translation>
+<translation id="3695446226812920698">Descubre cómo hacerlo</translation>
 <translation id="3776024066357219166">Ha finalizado tu sesión en Escritorio remoto de Chrome.</translation>
 <translation id="3785447812627779171">Host de
 Chromoting</translation>
@@ -121,6 +123,10 @@ Chromoting</translation>
 <translation id="3950820424414687140">Iniciar sesión</translation>
 <translation id="3989511127559254552">Para continuar, primero debes conceder permisos de acceso ampliados a tu ordenador. Solo debes realizar esta acción una vez.</translation>
 <translation id="4006787130661126000">Si quieres utilizar Escritorio remoto de Chrome para acceder a este ordenador, debes habilitar las conexiones remotas.</translation>
+<translation id="401121182145179743">En primer lugar, necesitas configurar el acceso remoto en tu ordenador.</translation>
+<translation id="4028465833180158312">• Actualizaciones de Material Design en la interfaz de usuario.
+• Créditos de licencias de terceros.
+• Ahora se muestra información para los ordenadores remotos que no están conectados.</translation>
 <translation id="405887016757208221">El equipo remoto no ha podido inicializar la sesión. Si el problema persiste, prueba a volver a configurar el host.</translation>
 <translation id="4068946408131579958">Todas las conexiones</translation>
 <translation id="409800995205263688">NOTA: la configuración de la política solo permite establecer conexiones entre ordenadores de tu misma red.</translation>

@@ -10,11 +10,12 @@
 <translation id="1293235220023151515">Pemasangan Chromium yang bercanggah telah dijumpai pada sistem. Sila nyahpasang dan cuba lagi.</translation>
 <translation id="1298199220304005244">Dapatkan bantuan untuk menggunakan Chromium OS</translation>
 <translation id="1396446129537741364">Chromium sedang cuba memaparkan kata laluan.</translation>
+<translation id="1403254041219632970">Versi Chromium yang akan datang tidak lagi akan menyokong Mac OS X 10.6, 10.7 atau 10.8.</translation>
 <translation id="1414495520565016063">Anda log masuk ke Chromium!</translation>
 <translation id="1444754455097148408">Lesen sumber terbuka Chromium</translation>
-<translation id="1461885241643463646">Mendayakan aliran log masuk Chromium berasaskan iframe. Bendera ini membatalkan --dayakan log masuk berasaskan web.</translation>
 <translation id="1480489203462860648">Cubalah, ia sudah dipasang</translation>
 <translation id="151962892725702025">OS Chromium tidak dapat menyegerakkan data anda kerana Segerak tidak tersedia untuk domain anda.</translation>
+<translation id="1559451348202814456">Chromium mungkin tidak akan berfungsi dengan betul kerana tidak lagi disokong pada Mac OS X 10.6, 10.7 atau 10.8.</translation>
 <translation id="1644918877723739397">Chromium akan menyimpan ini dalam <ph name="SAVED_PASSWORD_LINK" /> anda dan mengingatinya apabila anda memerlukannya nanti.</translation>
 <translation id="1668054258064581266">Selepas mengalih keluar akaun anda daripada Chromium, anda mungkin perlu memuatkan semula tab yang dibuka untuk memberi kesan.</translation>
 <translation id="1688750314291223739">Sediakan Penyegerakan untuk menyimpan ciri penyemak imbas yang diperibadikan di web dan aksesnya dari Chromium pada mana-mana komputer.</translation>
@@ -43,8 +44,10 @@
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{Muat turun sedang berlangsung. Adakah anda ingin membatalkan muat turun dan keluar daripada Chromium?}other{# muat turun sedang berlangsung pada masa ini. Adakah anda ingin membatalkan muat turun dan keluar daripada Chromium?}}</translation>
 <translation id="2396765026452590966">Sambungan "<ph name="EXTENSION_NAME" />" telah menukar halaman yang ditunjukkan apabila anda memulakan Chromium.</translation>
 <translation id="2485422356828889247">Nyahpasang</translation>
+<translation id="2486653164587200256">Chromium mungkin tidak akan berfungsi dengan betul kerana tidak lagi disokong pada Windows XP atau Windows Vista.</translation>
 <translation id="2535480412977113886">OS Chromium tidak dapat menyegerakkan data anda kerana butiran log masuk akaun anda sudah lapuk.</translation>
 <translation id="2558641060352364164">Tapak ini menggunakan pemalam Chromium Frame yang tidak akan disokong tidak lama lagi. Sila nyahpasangnya dan naik taraf kepada penyemak imbas moden.</translation>
+<translation id="2565260267992448464">Chromium tidak dapat memaparkan halaman web itu kerana komputer anda tidak disambungkan ke Internet.</translation>
 <translation id="2572494885440352020">Pembantu Chromium</translation>
 <translation id="2602806952220118310">Chromium - Pemberitahuan</translation>
 <translation id="2636877269779209383">Chromium memerlukan akses kamera untuk mengongsinya dengan tapak ini.</translation>
@@ -106,6 +109,7 @@ dan salah. Hal ini boleh berlaku apabila penyerang sedang cuba menyamar sebagai 
 <translation id="4423735387467980091">Sesuaikan dan kawal Chromium</translation>
 <translation id="4458285410772214805">Sila log keluar dan log masuk semula supaya perubahan ini boleh dilaksanakan.</translation>
 <translation id="4488676065623537541">Butiran pengebilan anda telah disimpan dalam Chromium.</translation>
+<translation id="4549794359424059447">Versi Chromium yang akan datang tidak lagi akan menyokong Windows XP atau Windows Vista.</translation>
 <translation id="4559775032954821361">Pergi ke
           menu Chromium &gt;
           <ph name="SETTINGS_TITLE" />
@@ -134,6 +138,7 @@ dan salah. Hal ini boleh berlaku apabila penyerang sedang cuba menyamar sebagai 
 <translation id="549669000822060376">Sila tunggu sementara Chromium memasang kemas kini sistem terkini.</translation>
 <translation id="5563479599352954471">Carian dengan satu sentuhan</translation>
 <translation id="5620765574781326016">Ketahui tentang topik di tapak web tanpa meninggalkan halaman.</translation>
+<translation id="5680901439334282664">log masuk ke Chromium</translation>
 <translation id="5772805321386874569">(memerlukan Chromium <ph name="BEGIN_BUTTON" />dimulakan semula<ph name="END_BUTTON" />)</translation>
 <translation id="5796460469508169315">Chromium hampir sedia.</translation>
 <translation id="580822234363523061">Pergi ke
@@ -210,7 +215,6 @@ Chromium tidak dapat mengembalikan tetapan anda.</translation>
 <translation id="761356813943268536">Chromium menggunakan kamera dan mikrofon anda.</translation>
 <translation id="7617377681829253106">Chromium kini lebih baik</translation>
 <translation id="7641113255207688324">Chromium bukan penyemak imbas lalai anda.</translation>
-<translation id="7723128346970903111">Apabila didayakan, akan menggunakan aliran log masuk Chromium berasaskan iframe; atau pun menggunakan aliran berasaskan paparan web.</translation>
 <translation id="7729447699958282447">Chromium tidak dapat menyegerakkan data anda kerana Segerak tidak tersedia untuk domain anda.</translation>
 <translation id="7747138024166251722">Pemasang tidak dapat mencipta direktori sementara. Sila semak ruang cakera kosong dan kebenaran untuk memasang perisian.</translation>
 <translation id="7918535023914021398">Chromium mengesahkan bahawa <ph name="ISSUER" /> mengeluarkan sijil tapak web ini. Pelayan tidak membekalkan sebarang maklumat Ketelusan Sijil.</translation>

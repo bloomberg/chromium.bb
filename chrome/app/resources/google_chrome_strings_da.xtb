@@ -5,6 +5,7 @@
 <translation id="1013290471399003443">Chrome bekræftede, at <ph name="ISSUER" /> har udstedt certifikatet for dette website. Serveren leverede gyldige Certificate Transparency-oplysninger.</translation>
 <translation id="1016765312371154165">Chrome blev ikke afsluttet korrekt.</translation>
 <translation id="103396972844768118">Vigtige oplysninger om dine Chrome-data</translation>
+<translation id="1035334672863811645">log ind på Chrome</translation>
 <translation id="1061441684050139317">Chrome skal have adgang til mikrofonen for at kunne dele den med dette website.</translation>
 <translation id="1065672644894730302">Dine præferencer kan ikke læses. Visse funktioner er muligvis ikke tilgængelige, og ændringer af præferencer gemmes ikke.</translation>
 <translation id="1073391069195728457">Chrome – Underretninger</translation>
@@ -70,7 +71,7 @@ Hvis du logger ind alligevel, flettes Chrome-oplysninger, som f.eks. bogmærker,
 <translation id="3089968997497233615">Der findes en ny, sikker version af Google Chrome.</translation>
 <translation id="3149510190863420837">Chrome-apps</translation>
 <translation id="3197823471738295152">Din enhed er opdateret.</translation>
-<translation id="3282568296779691940">Log ind på Chrome</translation>
+<translation id="3282568296779691940">Log ind i Chrome</translation>
 <translation id="3360895254066713204">Hjælp til Chrome</translation>
 <translation id="3396977131400919238">Der opstod en fejl ved operativsystemet under installation. Download Google Chrome igen.</translation>
 <translation id="3398288718845740432">Skjul i Chrome-menuen</translation>
@@ -87,7 +88,7 @@ Hvis du logger ind alligevel, flettes Chrome-oplysninger, som f.eks. bogmærker,
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3881912906674381083">Chrome bekræftede, at <ph name="ISSUER" /> har udstedt certifikatet for dette website. Serveren leverede Certificate Transparency-oplysninger, men Chrome genkender ikke nogen af Certificate Transparency-logfilerne.</translation>
 <translation id="3889417619312448367">Afinstaller Google Chrome</translation>
-<translation id="4011219958405096740">Når den er aktiveret, vil der blive anvendt iframe-baserede login-flows i Chrome, eller også anvendes der et webvisningsbaseret flow.</translation>
+<translation id="4042449298237264661">Denne computer vil ikke længere modtage Google Chrome-opdateringer, fordi Windows XP og Windows Vista ikke længere understøttes.</translation>
 <translation id="4050175100176540509">Vigtige sikkerhedsforbedringer og nye funktioner er tilgængelige i den seneste version.</translation>
 <translation id="4053720452172726777">Tilpas og kontrollér Google Chrome</translation>
 <translation id="4147555960264124640">Du er ved at logge ind med en administreret konto og give dens administrator kontrol over din profil i Google Chrome. Dine Chrome-data, f.eks. dine apps, bogmærker, historikdata, adgangskoder og andre indstillinger, knyttes permanent til <ph name="USER_NAME" />. Du kan slette disse data via betjeningspanelet for Google Konti, men du kan ikke knytte disse data til en anden konto. <ph name="LEARN_MORE" /></translation>
@@ -140,9 +141,9 @@ Hvis du logger ind alligevel, flettes Chrome-oplysninger, som f.eks. bogmærker,
 <translation id="573759479754913123">Om Chrome OS</translation>
 <translation id="5749068826913805084">Chrome skal have lageradgang for at kunne downloade filer.</translation>
 <translation id="5785746630574083988">En genstart i Windows 8-tilstand vil lukke og genstarte dine Chrome-apps.</translation>
-<translation id="5799551393681493217">Aktiverer iframe-baserede login-flows i Chrome. Dette flag tilsidesætter --enable-web-based-signin.</translation>
 <translation id="5855036575689098185">Du har software på din computer, som ikke er kompatibel med Google Chrome.</translation>
 <translation id="5877064549588274448">Kanalen er ændret. Genstart din enhed for at anvende ændringerne.</translation>
+<translation id="5890698319714066019">Google Chrome kan ikke vise websiden, fordi din computer ikke har forbindelse til internettet.</translation>
 <translation id="5931853610562009806">På Mac kan adgangskoder blive gemt i din Keychain, og andre Chrome-brugere, der deler denne OS X-konto, kan få adgang til eller synkronisere adgangskoderne.</translation>
 <translation id="5940385492829620908">Dit webindhold, dine bogmærker og andre Chrome-ting kan findes her.</translation>
 <translation id="5941830788786076944">Gør Google Chrome til din standardbrowser</translation>
@@ -165,6 +166,8 @@ Hvis du logger ind alligevel, flettes Chrome-oplysninger, som f.eks. bogmærker,
 <translation id="6236285698028833233">Google Chrome er holdt op med at opdatere og understøtter ikke længere denne version af dit operativsystem.</translation>
 <translation id="629218512217695915">Brug adgangskoder, der genereres af Chrome</translation>
 <translation id="6368958679917195344">Chrome OS er lavet ved hjælp af <ph name="BEGIN_LINK_CROS_OSS" />open source-software<ph name="END_LINK_CROS_OSS" />.</translation>
+<translation id="6400076122676892962">Computeren holder snart op med at modtage Google Chrome-opdateringer, fordi Mac OS X 10.6, 10.7 og 10.8 ikke længere understøttes.</translation>
+<translation id="6470176598693778404">Denne computer modtager ikke længere Google Chrome-opdateringer, fordi Mac OS X 10.6, 10.7 og 10.8 ikke længere understøttes.</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{Der er et download i gang i øjeblikket. Vil du at annullere dit download og lukke Google Chrome?}one{Der er # downloads i gang i øjeblikket. Vil du at annullere dine downloads og lukke Google Chrome?}other{Der er # downloads i gang i øjeblikket. Vil du at annullere dine downloads og lukke Google Chrome?}}</translation>
 <translation id="6598387184982954187">Du bruger <ph name="PROFILE_EMAIL" /> til at synkronisere dine Chrome-ting med. Gå til <ph name="SETTINGS_LINK" />, hvis du vil opdatere dine synkroniseringspræference, eller hvis du vil bruge Chrome uden en Google-konto.</translation>
 <translation id="6600954340915313787">Kopieret til Chrome</translation>
@@ -202,10 +205,11 @@ Hvis du logger ind alligevel, flettes Chrome-oplysninger, som f.eks. bogmærker,
 <translation id="7196020411877309443">Hvorfor får jeg vist dette?</translation>
 <translation id="7242029209006116544">Du er ved at logge ind med en administreret konto og give dens administrator kontrol over din profil i Google Chrome. Dine Chrome-data, f.eks. dine apps, bogmærker, historikdata, adgangskoder og andre indstillinger, knyttes permanent til <ph name="USER_NAME" />. Du kan slette disse data via betjeningspanelet for Google Konti, men du kan ikke knytte disse data til en anden konto. Du kan eventuelt oprette en ny profil for at holde dine eksisterende Chrome-data adskilt. <ph name="LEARN_MORE" /></translation>
 <translation id="7282192067747128786">Chrome – Underretninger (<ph name="QUANTITY" /> ulæste)</translation>
+<translation id="729375352412857283">Denne computer holder snart op med at modtage Google Chrome-opdateringer, fordi Windows XP og Windows Vista ikke længere understøttes.</translation>
 <translation id="7339898014177206373">Nyt vindue</translation>
 <translation id="7396375882099008034">Tillad, at Chrome får adgang til netværket i dine indstillinger for firewall eller
        antivirus.</translation>
-<translation id="7398801000654795464">Du loggede ind på Chrome som <ph name="USER_EMAIL_ADDRESS" />. Brug den samme konto til at logge ind igen.</translation>
+<translation id="7398801000654795464">Du loggede ind i Chrome som <ph name="USER_EMAIL_ADDRESS" />. Brug den samme konto til at logge ind igen.</translation>
 <translation id="7400722733683201933">Om Google Chrome</translation>
 <translation id="7408085963519505752">Vilkår for Chrome OS</translation>
 <translation id="7419046106786626209">Chrome OS kunne ikke synkronisere dine data, fordi synkronisering ikke er tilgængelig for dit domæne.</translation>

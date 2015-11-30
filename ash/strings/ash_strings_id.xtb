@@ -2,7 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="id">
 <translation id="1013923882670373915">Perangkat Bluetooth "<ph name="DEVICE_NAME" />" meminta izin untuk bersanding. Masukan kode PIN ini pada perangkat tersebut: <ph name="PINCODE" /></translation>
-<translation id="1021311941847921177">Pintasan untuk beralih ke metode masukan selanjutnya telah berubah. Gunakan <ph name="NEW_SHORTCUT" /> sebagai ganti <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="1021311941847921177">Pintasan untuk beralih ke metode masukan berikutnya telah berubah. Gunakan <ph name="NEW_SHORTCUT" /> sebagai ganti <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Sembunyikan otomatis rak</translation>
 <translation id="1195412055398077112">pemindaian berlebih</translation>
 <translation id="1270290102613614947">Keyboard di layar dinonaktifkan</translation>
@@ -124,6 +124,7 @@ Tekan Telusuri atau Shift untuk membatalkan.</translation>
 <translation id="5168181903108465623">Perangkat transmisi tersedia</translation>
 <translation id="5222676887888702881">Keluar</translation>
 <translation id="5238774010593222950">Tidak dapat masuk ke akun lain.</translation>
+<translation id="532063867737390965">Setelan jaringan ini dinonaktifkan oleh administrator.</translation>
 <translation id="544691375626129091">Semua pengguna yang tersedia telah ditambahkan ke sesi ini.</translation>
 <translation id="5507786745520522457">Siapkan data seluler</translation>
 <translation id="5543001071567407895">SMS</translation>

@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="iw">
 <translation id="1013923882670373915">‏מכשיר ה-Bluetooth ‏"<ph name="DEVICE_NAME" />" מבקש הרשאה לבצע התאמה. הזן את קוד ה-PIN הבא במכשיר הזה: <ph name="PINCODE" /></translation>
+<translation id="1021311941847921177">מקש הקיצור המשמש למעבר לשיטת הקלט הבאה השתנה. השתמש ב-<ph name="NEW_SHORTCUT" /> במקום ב-<ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">הסתרה אוטומטית של המדף</translation>
 <translation id="1195412055398077112">סריקת יתר</translation>
 <translation id="1270290102613614947">המקלדת שמופיעה במסך מושבתת</translation>
@@ -25,7 +26,9 @@
 <translation id="1812696562331527143">‏שיטת הקלט שלך השתנתה ל-‏<ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />צד שלישי<ph name="END_LINK" />)‎.
         הקש Shift + Alt כדי להחליף.</translation>
 <translation id="1882897271359938046">משקף אל <ph name="DISPLAY_NAME" /></translation>
+<translation id="1919743966458266018">מקש הקיצור לפתיחת מנהל המשימות השתנה. השתמש ב-<ph name="NEW_SHORTCUT" /> במקום ב-<ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">לחיצות אוטומטיות</translation>
+<translation id="1938872420421548906">Shift+Alt</translation>
 <translation id="1957803754585243749">‎0°‎</translation>
 <translation id="1969011864782743497">‏<ph name="DEVICE_NAME" />‏ (USB)</translation>
 <translation id="2127372758936585790">מטען בעל מתח נמוך</translation>
@@ -105,6 +108,7 @@
 <translation id="4421231901400348175">שיתוף השליטה במסך עם <ph name="HELPER_NAME" /> דרך סיוע מרחוק.</translation>
 <translation id="4430019312045809116">עוצמת קול</translation>
 <translation id="4527045527269911712">‏מכשיר ה-Bluetooth ‏"<ph name="DEVICE_NAME" />" מבקש הרשאה לבצע התאמה.</translation>
+<translation id="4544944664594876241">מקש הקיצור לנעילת המסך השתנה. השתמש ב-<ph name="NEW_SHORTCUT" /> במקום ב-<ph name="OLD_SHORTCUT" />.</translation>
 <translation id="479989351350248267">Search</translation>
 <translation id="4804818685124855865">נתק</translation>
 <translation id="4872237917498892622">‏Alt + חיפוש או Shift</translation>
@@ -113,12 +117,14 @@
 <translation id="4957722034734105353">למידע נוסף...</translation>
 <translation id="4961318399572185831">העברת מסך</translation>
 <translation id="5011233892417813670">Chromebook</translation>
+<translation id="5012744545445585468">‏Ctrl‏+Shift+רווח</translation>
 <translation id="5045002648206642691">‏הגדרות Google Drive...</translation>
 <translation id="5102001756192215136">נותרו <ph name="HOUR" /> <ph name="MINUTE" /></translation>
 <translation id="511445211639755999"><ph name="RESOLUTION" />‏, <ph name="OVERSCAN" /></translation>
 <translation id="5168181903108465623">מכשירי העברה זמינים</translation>
 <translation id="5222676887888702881">יציאה</translation>
 <translation id="5238774010593222950">לא ניתן להיכנס לחשבון אחר.</translation>
+<translation id="532063867737390965">מנהל המערכת השבית את הגדרת רשת זו.</translation>
 <translation id="544691375626129091">כל המשתמשים הזמינים כבר נוספו לפעילות זו באתר.</translation>
 <translation id="5507786745520522457">הגדר נתונים לנייד</translation>
 <translation id="5543001071567407895">SMS</translation>
@@ -132,6 +138,7 @@
         הקש Shift + Alt כדי להחליף.</translation>
 <translation id="5871632337994001636">נהל מכשירים...</translation>
 <translation id="5895138241574237353">הפעל מחדש</translation>
+<translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5927132638760172455">מעביר למקבל לא ידוע</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">חזרה לגרסה הקודמת</translation>
@@ -155,6 +162,7 @@
 <translation id="6426039856985689743">השבת נתונים לנייד</translation>
 <translation id="6452181791372256707">דחה</translation>
 <translation id="6459472438155181876">מרחיב את המסך אל <ph name="DISPLAY_NAME" /></translation>
+<translation id="6501401484702599040">מעביר את המסך אל <ph name="RECEIVER_NAME" /></translation>
 <translation id="6550675742724504774">אפשרויות</translation>
 <translation id="6585808820553845416">הפעילות באתר תסתיים בעוד <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6596816719288285829">‏כתובת IP</translation>
@@ -162,6 +170,7 @@
 <translation id="6713285437468012787">‏מכשיר ה-Bluetooth‏ "<ph name="DEVICE_NAME" />" הותאם והוא זמין כעת לכל המשתמשים. אתה יכול להסיר את ההתאמה הזו ב'הגדרות'.</translation>
 <translation id="6785414152754474415">‏הסוללה טעונה ברמה של ‎<ph name="PERCENTAGE" />%‎ ומתבצעת טעינה.</translation>
 <translation id="6803622936009808957">לא ניתן היה לשקף מסכים מכיוון שלא נמצאה רזולוציה נתמכת. במקום זאת התצוגה עברה למצב שולחן עבודה מורחב.</translation>
+<translation id="683971173229319003">Search+L</translation>
 <translation id="68610848741840742">‏ChromeVox (משוב קולי)</translation>
 <translation id="6911468394164995108">הצטרף לרשת אחרת...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
@@ -169,6 +178,7 @@
 <translation id="6981982820502123353">נגישות</translation>
 <translation id="7029814467594812963">צא מההפעלה</translation>
 <translation id="703171847531699602">אין מכשירי העברה</translation>
+<translation id="7034339000180558234">מעביר את <ph name="TAB_NAME" /> אל <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">הגדר טפט...</translation>
 <translation id="7097613348211027502">‏ChromeVox (משוב קולי) מופעל. הקש על Ctrl+Alt+Z כדי להשבית אותו.</translation>
 <translation id="714034171374937760">Chromebase</translation>
@@ -179,6 +189,7 @@
 <translation id="737451040872859086">מיקרופון (פנימי)</translation>
 <translation id="742594950370306541">המצלמה נמצאת בשימוש.</translation>
 <translation id="743058460480092004">המצלמה והמיקרופון נמצאים בשימוש.</translation>
+<translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> אינו תומך ב-<ph name="SPECIFIED_RESOLUTION" />. הרזולוציה שונתה ל-<ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7573962313813535744">מצב מעוגן</translation>
 <translation id="7593891976182323525">‏חיפוש או Shift</translation>
@@ -206,6 +217,7 @@
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="882279321799040148">לחץ להצגה</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8878886163241303700">מסך מתרחב</translation>
 <translation id="8940956008527784070">‏סוללה חלשה (‎<ph name="PERCENTAGE" />%‎)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>

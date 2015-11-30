@@ -12,11 +12,12 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="1293235220023151515">Er is een conflicterende installatie van Chromium op het systeem gevonden. Verwijder deze en probeer het opnieuw.</translation>
 <translation id="1298199220304005244">Hulp bij het gebruik van Chromium OS</translation>
 <translation id="1396446129537741364">Chromium probeert wachtwoorden weer te geven.</translation>
+<translation id="1403254041219632970">Toekomstige versies van Chromium bieden geen ondersteuning meer voor Mac OS X 10.6, 10.7 en 10.8.</translation>
 <translation id="1414495520565016063">U bent ingelogd bij Chromium.</translation>
 <translation id="1444754455097148408">Open-sourcelicenties van Chromium</translation>
-<translation id="1461885241643463646">Hiermee worden Chromium-inlogprocedures op basis van iframes ingeschakeld. Deze markering overschrijft --enable-web-based-signin.</translation>
 <translation id="1480489203462860648">Probeer het eens, het is al geïnstalleerd</translation>
 <translation id="151962892725702025">Chromium OS kan je gegevens niet synchroniseren omdat synchronisatie niet beschikbaar is voor je domein.</translation>
+<translation id="1559451348202814456">Chromium werkt wellicht niet naar behoren omdat dit niet langer wordt ondersteund op Mac OS X 10.6, 10.7 en 10.8.</translation>
 <translation id="1644918877723739397">Chromium slaat dit op bij je <ph name="SAVED_PASSWORD_LINK" /> en onthoudt dit voor de volgende keer dat je het nodig hebt.</translation>
 <translation id="1668054258064581266">Nadat je je account uit Chromium hebt verwijderd, moet je je geopende tabbladen mogelijk opnieuw laden om de wijzigingen door te voeren.</translation>
 <translation id="1688750314291223739">Stel synchronisatie in om je persoonlijke browserfuncties online op te slaan en toegang te hebben tot deze functies via Chromium, vanaf elke computer.</translation>
@@ -45,8 +46,10 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{Er wordt momenteel een download uitgevoerd. Wil je de download annuleren en Chromium afsluiten?}other{Er worden momenteel # downloads uitgevoerd. Wil je de downloads annuleren en Chromium afsluiten?}}</translation>
 <translation id="2396765026452590966">De extensie '<ph name="EXTENSION_NAME" />' heeft gewijzigd welke pagina wordt weergegeven wanneer je Chromium start.</translation>
 <translation id="2485422356828889247">Installatie ongedaan maken</translation>
+<translation id="2486653164587200256">Chromium werkt wellicht niet naar behoren omdat dit niet langer wordt ondersteund op Windows XP en Windows Vista.</translation>
 <translation id="2535480412977113886">Chromium OS kan je gegevens niet synchroniseren omdat de inloggegevens voor je account zijn verouderd.</translation>
 <translation id="2558641060352364164">Deze site maakt gebruik van de plug-in Chromium Frame die binnenkort niet meer wordt ondersteund. Verwijder deze en voer een upgrade naar een moderne browser uit.</translation>
+<translation id="2565260267992448464">Chromium kan de internetpagina niet weergeven omdat je computer niet is verbonden met internet.</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="2602806952220118310">Chromium - Meldingen</translation>
 <translation id="2636877269779209383">Chromium heeft cameratoegang nodig om het item te delen met deze site.</translation>
@@ -107,6 +110,7 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="4423735387467980091">Chromium aanpassen en beheren</translation>
 <translation id="4458285410772214805">Log uit en log weer in om deze wijziging door te voeren.</translation>
 <translation id="4488676065623537541">Je factureringsgegevens zijn opgeslagen in Chromium.</translation>
+<translation id="4549794359424059447">Toekomstige versies van Chromium bieden geen ondersteuning meer voor Windows XP en Windows Vista.</translation>
 <translation id="4559775032954821361">Ga naar
           het menu 'Chromium' &gt;
           <ph name="SETTINGS_TITLE" />
@@ -135,6 +139,7 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="549669000822060376">Wacht terwijl Chromium de nieuwste systeemupdates installeert.</translation>
 <translation id="5563479599352954471">Zoeken met een aanraking</translation>
 <translation id="5620765574781326016">Bekijk informatie over onderwerpen op websites zonder de pagina te verlaten.</translation>
+<translation id="5680901439334282664">inloggen bij Chromium</translation>
 <translation id="5772805321386874569">(je moet Chromium <ph name="BEGIN_BUTTON" />opnieuw starten<ph name="END_BUTTON" />)</translation>
 <translation id="5796460469508169315">Chromium is bijna klaar.</translation>
 <translation id="580822234363523061">Ga naar
@@ -211,7 +216,6 @@ Chromium kan je instellingen niet herstellen.</translation>
 <translation id="761356813943268536">Chromium gebruikt je camera en microfoon.</translation>
 <translation id="7617377681829253106">Chromium is nu nog beter</translation>
 <translation id="7641113255207688324">Chromium is niet je standaardbrowser.</translation>
-<translation id="7723128346970903111">Als dit is ingeschakeld, wordt een Chromium-inlogprocedure op basis van iframes gebruikt. Anders wordt een procedure op basis van webweergaven gebruikt.</translation>
 <translation id="7729447699958282447">Chromium kan je gegevens niet synchroniseren, omdat synchronisatie niet beschikbaar is voor je domein.</translation>
 <translation id="7747138024166251722">Het installatieprogramma kan geen tijdelijke directory maken. Controleer of je nog schijfruimte hebt en of je toestemming hebt om software te installeren.</translation>
 <translation id="7918535023914021398">Chromium heeft geverifieerd dat <ph name="ISSUER" /> het certificaat van deze website heeft uitgegeven. De server heeft geen certificaattransparantiegegevens geleverd.</translation>

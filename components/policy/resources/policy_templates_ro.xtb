@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ro">
+<translation id="101438888985615157">Rotește ecranul la 180 de grade</translation>
 <translation id="1017967144265860778">Gestionarea consumului de energie pe ecranul de conectare</translation>
 <translation id="1019101089073227242">Setează directorul pentru datele utilizatorului</translation>
 <translation id="1022361784792428773">ID-urile extensiilor pe care utilizatorul nu are permisiunea să le instaleze (sau * pentru toate)</translation>
@@ -241,6 +242,17 @@
 <translation id="2113068765175018713">Limitează durata de funcționare a dispozitivului prin repornirea automată a acestuia</translation>
 <translation id="2127599828444728326">Permiteți notificări pentru aceste site-uri</translation>
 <translation id="2131902621292742709">Interval până la reducerea luminozității ecranului la funcționarea pe baterie</translation>
+<translation id="2137064848866899664">Dacă această politică este configurată, după fiecare repornire și la prima conectare
+      după ce s-a schimbat valoarea politicii, fiecare afișaj este rotit la
+      orientarea specificată. Utilizatorii pot să schimbe rotirea
+      afișajului din pagina de setări după ce se conectează, însă la următoarea
+      repornire setarea lor va fi totuși înlocuită de valoarea politicii.
+
+      Această politică se aplică atât pentru afișajele principale, cât și pentru cele secundare.
+
+      Dacă politica nu este configurată, valoarea prestabilită este 0 grade, iar
+      utilizatorul poate să o schimbe. În acest caz, valoarea prestabilită
+      nu este reaplicată la repornire.</translation>
 <translation id="2166715102875984646">Dezactivează compatibilitatea cu API-urile grafice 3D.
 
       Activarea acestei setări împiedică paginile web să acceseze unitatea de procesare grafică (GPU). Mai exact, paginile web nu pot accesa API-ul WebGL, iar pluginurile nu pot utiliza API-ul Pepper 3D.
@@ -898,6 +910,7 @@
       </translation>
 <translation id="4442582539341804154">Activați blocarea când dispozitivul este inactiv sau suspendat</translation>
 <translation id="4445684791305970001">Dezactivează Instrumentele pentru dezvoltatori și consola JavaScript. Dacă activați această setare, Instrumentele pentru dezvoltatori nu pot fi accesate, iar elementele site-urilor web nu mai pot fi inspectate. Toate comenzile rapide de la tastatură și toate intrările din meniuri sau din meniurile contextuale pentru deschiderea Instrumentelor pentru dezvoltatori sau a consolei JavaScript vor fi dezactivate. Dacă dezactivați această opțiune sau nu o setați, utilizatorul va putea să folosească Instrumentele pentru dezvoltatori și consola JavaScript.</translation>
+<translation id="4449545651113180484">Rotește ecranul la 270 de grade în sensul acelor de ceasornic</translation>
 <translation id="4467952432486360968">Blochează cookie-urile terță parte</translation>
 <translation id="4474167089968829729">Activează salvarea parolelor în managerul de parole</translation>
 <translation id="4480694116501920047">Impuneți Căutarea sigură</translation>
@@ -1128,6 +1141,7 @@
 
           Dacă această setare este dezactivată sau neconfigurată, atunci atât utilizatorii locali, cât și cei de la distanță pot interacționa cu gazda când se permite accesul la aceasta.</translation>
 <translation id="5423001109873148185">Dacă este activată, această politică forțează importarea motoarelor de căutare din browserul prestabilit. Dacă este activată, politica afectează, de asemenea, caseta de dialog de importare. Dacă este dezactivată, motorul de căutare prestabilit nu este importat. În cazul în care nu este setată, utilizatorul poate fi întrebat dacă dorește importarea sau aceasta poate avea loc în mod automat.</translation>
+<translation id="5423197884968724595">Numele restricției Android WebView:</translation>
 <translation id="5447306928176905178">Activați raportarea informațiilor privind memoria (dimensiunea de heap JavaScript) în pagină (s-a renunțat la dezvoltare)</translation>
 <translation id="5457065417344056871">Activează modul pentru invitați în browser</translation>
 <translation id="5457924070961220141">Vă permite să configurați motorul de redare HTML prestabilit atunci când <ph name="PRODUCT_FRAME_NAME" /> este instalat. Setarea prestabilită este să permiteți browserului gazdă să efectueze redarea, dar opțional o puteți anula, pentru ca <ph name="PRODUCT_FRAME_NAME" /> să redea paginile HTML în mod prestabilit.</translation>
@@ -1812,6 +1826,7 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="7953256619080733119">Gazde pentru excepții adăugate manual ale utilizatorilor gestionați</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Această politică nu mai este acceptată. Permite utilizarea de servere STUN și de retransmisie în cazul conectării la un client la distanță. Dacă această setare este activată, atunci acest computer poate să descopere computere gazdă la distanță și să se conecteze la acestea, chiar dacă există un firewall. Dacă această setare este dezactivată, iar conexiunile UDP de ieșire sunt filtrate de firewall, atunci acest computer se poate conecta numai la computerele gazdă aflate în rețeaua locală.</translation>
+<translation id="802147957407376460">Rotește ecranul la 0 grade</translation>
 <translation id="8044493735196713914">Raportați modul de pornire al dispozitivului</translation>
 <translation id="8059164285174960932">Adresa URL de unde clienții cu acces la distanță își pot obține indicativul de autentificare</translation>
 <translation id="8071636581296916773">Activează folosirea serverelor de transmisie când clienții la distanță încearcă să stabilească o conexiune cu acest computer.
@@ -1920,6 +1935,8 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="8382184662529825177">Permiteți utilizarea atestării la distanță pentru protejarea conținutului pe dispozitiv</translation>
 <translation id="838870586332499308">Activează roamingul de date</translation>
 <translation id="8412312801707973447">Această politică stabilește dacă sunt efectuate verificări OCSP/CRL online</translation>
+<translation id="8424255554404582727">Setează rotirea prestabilită a ecranului, reaplicată la fiecare repornire</translation>
+<translation id="8426231401662877819">Rotește ecranul la 90 de grade în sensul acelor de ceasornic</translation>
 <translation id="8451988835943702790">Utilizează pagina Filă nouă ca pagină de pornire</translation>
 <translation id="8465065632133292531">Parametrii pentru adresa URL a căutării instant care utilizează POST</translation>
 <translation id="847472800012384958">Nu permite niciunui site să afișeze ferestre pop-up</translation>

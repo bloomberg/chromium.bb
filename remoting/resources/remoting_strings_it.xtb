@@ -24,6 +24,7 @@ Per informazioni sulla privacy, leggi le Norme sulla privacy di Google (http://g
 <translation id="1546934824884762070">Si è verificato un errore imprevisto. Segnala il problema agli sviluppatori.</translation>
 <translation id="1619813076098775562">Connessione al dispositivo di trasmissione interrotta.</translation>
 <translation id="1643640058022401035">Se esci da questa pagina, la sessione Chromoting verrà terminata.</translation>
+<translation id="1646994964686260497">Non ci sono dispositivi a cui connettersi.</translation>
 <translation id="1654128982815600832">Attivazione connessioni remote per questo computer in corso…</translation>
 <translation id="170207782578677537">Impossibile registrare il computer.</translation>
 <translation id="1704090719919187045">Preferenze host Chromoting</translation>
@@ -109,6 +110,7 @@ Per informazioni sulla privacy, leggi le Norme sulla privacy di Google (http://g
 <translation id="3606997049964069799">Non hai eseguito l'accesso a Chromium. Accedi e riprova.</translation>
 <translation id="3649256019230929621">Riduci la finestra</translation>
 <translation id="369442766917958684">Offline.</translation>
+<translation id="3695446226812920698">Scopri come</translation>
 <translation id="3776024066357219166">La sessione Chrome Remote Desktop è terminata.</translation>
 <translation id="3785447812627779171">Host
 Chromoting</translation>
@@ -121,6 +123,10 @@ Chromoting</translation>
 <translation id="3950820424414687140">Accedi</translation>
 <translation id="3989511127559254552">Per continuare devi concedere autorizzazioni di accesso esteso per il tuo computer. È necessario eseguire questa operazione solo una volta.</translation>
 <translation id="4006787130661126000">Per accedere a questo computer utilizzando Chrome Remote Desktop devi attivare le connessioni remote.</translation>
+<translation id="401121182145179743">Devi eseguire prima la configurazione del computer per poter effettuare l'accesso remoto.</translation>
+<translation id="4028465833180158312">• Aggiornamenti all'interfaccia utente di material design.
+• Crediti per le licenze di terze parti.
+• Informazioni visualizzate per computer remoti offline.</translation>
 <translation id="405887016757208221">Impossibile inizializzare la sessione sul computer remoto. Se il problema persiste, riprova a configurare l'host.</translation>
 <translation id="4068946408131579958">Tutte le connessioni</translation>
 <translation id="409800995205263688">NOTA. Le impostazioni dei criteri consentono connessioni solo tra computer all'interno della tua rete.</translation>

@@ -357,6 +357,7 @@
 <translation id="4729095194763193578">Hàng trước của bảng</translation>
 <translation id="4736221692378411923">Tháng 8</translation>
 <translation id="4740661827607246557">Lệnh trợ giúp</translation>
+<translation id="4755857887974653209">Tắt ChromeVox</translation>
 <translation id="4759716709594980008">Trình khám phá bàn phím ChromeOS</translation>
 <translation id="4763296182459741068">Đã bao gồm cả cuối trang</translation>
 <translation id="4763480195061959176">video</translation>
@@ -661,6 +662,7 @@
 <translation id="8065607967589909823">Lựa chọn hiện tại là</translation>
 <translation id="8066678206530322333">Biểu ngữ</translation>
 <translation id="8110647606445335195">Không có mốc ARIA nào.</translation>
+<translation id="8132379720172247073">Menu ChromeVox</translation>
 <translation id="8153880621934657047">Không phải bên trong bảng.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{dấu gạch dưới}other{# dấu gạch dưới}}</translation>
 <translation id="8179976553408161302">Enter</translation>
@@ -696,6 +698,7 @@
 <translation id="8584721346566392021">h5</translation>
 <translation id="8587549812518406253">Mục danh sách tiếp theo</translation>
 <translation id="860150890330522909">Hộp kiểm <ph name="NAME" /> đã được chọn</translation>
+<translation id="8603071050456974042">Bảng điều khiển ChromeVox</translation>
 <translation id="8606621670302093223">Kiểm soát ngày</translation>
 <translation id="8631359288236106450">đã chọn <ph name="COUNT" /> mục</translation>
 <translation id="8638532244051952400">Thông báo tọa độ ô hiện tại</translation>

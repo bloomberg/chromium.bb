@@ -24,6 +24,7 @@ Informacije o privatnosti potražite u Googleovim pravilima o privatnosti (http:
 <translation id="1546934824884762070">Pojavila se neočekivana pogreška. Prijavite taj problem razvojnim programerima.</translation>
 <translation id="1619813076098775562">Zatvorena je veza s uređajem za emitiranje.</translation>
 <translation id="1643640058022401035">Napuštanjem ove stranice završit ćete svoju sesiju aplikacije Chromoting.</translation>
+<translation id="1646994964686260497">Nema dostupnih računala za povezivanje.</translation>
 <translation id="1654128982815600832">Omogućavanje daljinskih veza za ovo računalo…</translation>
 <translation id="170207782578677537">Nisam uspio registrirati ovo računalo.</translation>
 <translation id="1704090719919187045">Postavke hosta usluge Chromoting</translation>
@@ -109,6 +110,7 @@ Informacije o privatnosti potražite u Googleovim pravilima o privatnosti (http:
 <translation id="3606997049964069799">Niste prijavljeni u Chromium. Prijavite se i pokušajte ponovo.</translation>
 <translation id="3649256019230929621">Minimiziranje prozora</translation>
 <translation id="369442766917958684">Offline.</translation>
+<translation id="3695446226812920698">Saznajte kako</translation>
 <translation id="3776024066357219166">Završila je vaša sesija u aplikaciji Udaljena radna površina Chrome.</translation>
 <translation id="3785447812627779171">Host usluge
 Chromoting</translation>
@@ -121,6 +123,10 @@ Chromoting</translation>
 <translation id="3950820424414687140">Prijava</translation>
 <translation id="3989511127559254552">Da biste nastavili, morate odobriti dopuštenja za prošireni pristup svojem računalu. To morate učiniti samo jednom.</translation>
 <translation id="4006787130661126000">Morate omogućiti daljinske veze ako želite pristupati računalu pomoću Udaljene radne površine Chrome.</translation>
+<translation id="401121182145179743">Prvo morate postaviti računalo za daljinski pristup.</translation>
+<translation id="4028465833180158312">• ažuriranja materijalnog dizajna korisničkog sučelja
+• bonusi za licenciranje trećih strana
+• prikazane informacije za udaljena računala koja su izvan mreže.</translation>
 <translation id="405887016757208221">Udaljeno računalo nije uspjelo inicijalizirati sesiju. Ako se problem ne riješi, pokušajte ponovo konfigurirati host.</translation>
 <translation id="4068946408131579958">Sve veze</translation>
 <translation id="409800995205263688">NAPOMENA: postavke pravila dopuštaju jedino veze između računala u vašoj mreži.</translation>

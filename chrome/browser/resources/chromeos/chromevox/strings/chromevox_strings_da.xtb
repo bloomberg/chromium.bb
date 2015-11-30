@@ -357,6 +357,7 @@
 <translation id="4729095194763193578">Forrige tabelrække</translation>
 <translation id="4736221692378411923">August</translation>
 <translation id="4740661827607246557">Hjælpekommandoer</translation>
+<translation id="4755857887974653209">Slå ChromeVox fra</translation>
 <translation id="4759716709594980008">ChromeOS-tastaturudforsker</translation>
 <translation id="4763296182459741068">Ombrudt til bunden af siden</translation>
 <translation id="4763480195061959176">video</translation>
@@ -661,6 +662,7 @@
 <translation id="8065607967589909823">Det valgte er</translation>
 <translation id="8066678206530322333">Banner</translation>
 <translation id="8110647606445335195">Ingen ARIA-orienteringspunkter.</translation>
+<translation id="8132379720172247073">ChromeVox-menu</translation>
 <translation id="8153880621934657047">Ikke i tabel.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{understregning}one{# understregninger}other{# understregninger}}</translation>
 <translation id="8179976553408161302">Enter</translation>
@@ -696,6 +698,7 @@
 <translation id="8584721346566392021">h5</translation>
 <translation id="8587549812518406253">Næste element på listen</translation>
 <translation id="860150890330522909">Afkrydsningsfeltet <ph name="NAME" /> er markeret</translation>
+<translation id="8603071050456974042">ChromeVox-panel</translation>
 <translation id="8606621670302093223">Datokontrol</translation>
 <translation id="8631359288236106450"><ph name="COUNT" /> elementer er valgt</translation>
 <translation id="8638532244051952400">Oplys aktuelle cellekoordinater</translation>

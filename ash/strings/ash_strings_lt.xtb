@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="lt">
 <translation id="1013923882670373915">„Bluetooth“ įrenginys „<ph name="DEVICE_NAME" />“ prašo leidimo susieti. Šiame įrenginyje įveskite šį PIN kodą: <ph name="PINCODE" /></translation>
+<translation id="1021311941847921177">Pakeistas perjungimo į kitą įvesties metodą spartusis klavišas. Naudokite <ph name="NEW_SHORTCUT" /> vietoje <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Automatiškai slėpti lentyną</translation>
 <translation id="1195412055398077112">sritis aplink vaizdo kraštus</translation>
 <translation id="1270290102613614947">Ekrano klaviatūra išjungta</translation>
@@ -25,7 +26,9 @@
 <translation id="1812696562331527143">Įvesties metodas pakeistas į <ph name="INPUT_METHOD_ID" />* (<ph name="BEGIN_LINK" />trečioji šalis<ph name="END_LINK" />).
         Jei norite perjungti, paspauskite „Shift“ + „Alt“.</translation>
 <translation id="1882897271359938046">Dubliuojama <ph name="DISPLAY_NAME" /></translation>
+<translation id="1919743966458266018">Pakeistas užduočių tvarkytuvės atidarymo spartusis klavišas. Naudokite <ph name="NEW_SHORTCUT" /> vietoje <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Automatiniai paspaudimai</translation>
+<translation id="1938872420421548906">„Shift“ + „Alt“</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2127372758936585790">Mažos galios įkroviklis</translation>
@@ -105,6 +108,7 @@ Jei norite atšaukti, paspauskite paieškos arba antrojo lygio klavišą.</trans
 <translation id="4421231901400348175"><ph name="HELPER_NAME" /> gali valdyti jūsų ekraną naudodamas (-a) Nuotolinę pagalbą.</translation>
 <translation id="4430019312045809116">Apimtis</translation>
 <translation id="4527045527269911712">„Bluetooth“ įrenginys „<ph name="DEVICE_NAME" />“ prašo leidimo susieti.</translation>
+<translation id="4544944664594876241">Pakeistas ekrano užrakinimo spartusis klavišas. Naudokite <ph name="NEW_SHORTCUT" /> vietoje <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="479989351350248267">ieškoti</translation>
 <translation id="4804818685124855865">Atsijungti</translation>
 <translation id="4872237917498892622">„Alt“ + paieškos arba antrojo lygio klavišas</translation>
@@ -113,12 +117,14 @@ Jei norite atšaukti, paspauskite paieškos arba antrojo lygio klavišą.</trans
 <translation id="4957722034734105353">Sužinokite daugiau...</translation>
 <translation id="4961318399572185831">Perduoti ekraną</translation>
 <translation id="5011233892417813670">Chromebook</translation>
+<translation id="5012744545445585468">„Ctrl“ + „Shift“ + tarpo klavišas</translation>
 <translation id="5045002648206642691">„Google“ disko nustatymai...</translation>
 <translation id="5102001756192215136">Liko <ph name="HOUR" />.<ph name="MINUTE" /></translation>
 <translation id="511445211639755999"><ph name="RESOLUTION" />, <ph name="OVERSCAN" /></translation>
 <translation id="5168181903108465623">Pasiekiami perdavimo įrenginiai</translation>
 <translation id="5222676887888702881">Atsijungti</translation>
 <translation id="5238774010593222950">Nepavyksta prisijungti prie kitos paskyros.</translation>
+<translation id="532063867737390965">Šį tinklo nustatymą išjungė administratorius.</translation>
 <translation id="544691375626129091">Prie šio seanso jau pridėti visi galimi naudotojai.</translation>
 <translation id="5507786745520522457">Nustatyti mobiliojo ryšio duomenis</translation>
 <translation id="5543001071567407895">SMS</translation>
@@ -132,6 +138,7 @@ Jei norite atšaukti, paspauskite paieškos arba antrojo lygio klavišą.</trans
         Jei norite perjungti, paspauskite „Shift“ + „Alt“.</translation>
 <translation id="5871632337994001636">Valdyti įrenginius...</translation>
 <translation id="5895138241574237353">Paleisti iš naujo</translation>
+<translation id="5901316534475909376">„Shift“ + „Esc“</translation>
 <translation id="5927132638760172455">Perduodama į nežinomą imtuvą</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">Grąžinti</translation>
@@ -155,6 +162,7 @@ Jei norite atšaukti, paspauskite paieškos arba antrojo lygio klavišą.</trans
 <translation id="6426039856985689743">Neleisti duomenų mobiliesiems</translation>
 <translation id="6452181791372256707">Atmesti</translation>
 <translation id="6459472438155181876">Ekranas išplečiamas į <ph name="DISPLAY_NAME" /></translation>
+<translation id="6501401484702599040">Perduodamas ekranas į „<ph name="RECEIVER_NAME" />“</translation>
 <translation id="6550675742724504774">Parinktys</translation>
 <translation id="6585808820553845416">Sesija baigsis po <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6596816719288285829">IP adresas</translation>
@@ -162,6 +170,7 @@ Jei norite atšaukti, paspauskite paieškos arba antrojo lygio klavišą.</trans
 <translation id="6713285437468012787">„Bluetooth“ įrenginys „<ph name="DEVICE_NAME" />“ susietas ir dabar pasiekiamas visiems naudotojams. Nustatymuose galite pašalinti šį susiejimą.</translation>
 <translation id="6785414152754474415">Likusi akumuliatoriaus įkrova: <ph name="PERCENTAGE" /> %. Jis įkraunamas.</translation>
 <translation id="6803622936009808957">Nepavyko dubliuoti vaizdų, nes nepavyko rasti palaikomų skyrų. Vietoje to įjungtas išplėstinio darbalaukio režimas.</translation>
+<translation id="683971173229319003">Paieškos klavišas + L</translation>
 <translation id="68610848741840742">„ChromeVox“ (žodiniai atsiliepimai)</translation>
 <translation id="6911468394164995108">Prisijungti prie kito...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
@@ -169,6 +178,7 @@ Jei norite atšaukti, paspauskite paieškos arba antrojo lygio klavišą.</trans
 <translation id="6981982820502123353">Pritaikymas neįgaliesiems</translation>
 <translation id="7029814467594812963">Išeiti iš sesijos</translation>
 <translation id="703171847531699602">Nėra perdavimo įrenginių</translation>
+<translation id="7034339000180558234">Perduodama „<ph name="TAB_NAME" />“ į „<ph name="RECEIVER_NAME" />“</translation>
 <translation id="7052914147756339792">Nustatyti darbalaukio foną...</translation>
 <translation id="7097613348211027502">„ChromeVox“ (žodiniai atsiliepimai) įgalinti.
 Jei norite išjungti, paspauskite „Ctrl“ + „Alt“ + Z.</translation>
@@ -180,6 +190,7 @@ Jei norite atšaukti, paspauskite „Alt“ + paieškos klavišas arba „Alt“
 <translation id="737451040872859086">Mikrofonas (vidinis)</translation>
 <translation id="742594950370306541">Kamera naudojama.</translation>
 <translation id="743058460480092004">Kamera ir mikrofonas naudojami.</translation>
+<translation id="7510334386202674593">„Ctrl“ + „Shift“ + L</translation>
 <translation id="7561014039265304140">„<ph name="DISPLAY_NAME" />“ nepalaiko <ph name="SPECIFIED_RESOLUTION" />. Skyra pakeista į <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7573962313813535744">Doko režimas</translation>
 <translation id="7593891976182323525">Paieškos arba antrojo lygio klavišas</translation>
@@ -207,6 +218,7 @@ Jei norite atšaukti, paspauskite „Alt“ + paieškos klavišas arba „Alt“
 <translation id="8814190375133053267">WI-Fi</translation>
 <translation id="882279321799040148">Jei norite peržiūrėti, spustelėkite</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8850991929411075241">Paieškos klavišas + „Esc“</translation>
 <translation id="8878886163241303700">Išplečiamas ekranas</translation>
 <translation id="8940956008527784070">Akumuliatorius senka (<ph name="PERCENTAGE" /> %)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>

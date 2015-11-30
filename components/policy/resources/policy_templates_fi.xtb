@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fi">
+<translation id="101438888985615157">Kierrä näyttöä 180 astetta.</translation>
 <translation id="1017967144265860778">Virran hallinta kirjautumisruudulla</translation>
 <translation id="1019101089073227242">Aseta käyttäjätietojen hakemisto</translation>
 <translation id="1022361784792428773">Niiden laajennuksien tunnukset, joita käyttäjä ei saa asentaa (tai * = kaikki).</translation>
@@ -231,6 +232,18 @@ Jos tämä asetus ei ole käytössä, järjestelmäpalkissa ei näytetä suurta 
 <translation id="2113068765175018713">Rajoita laitteen käyttöaikaa automaattisella uudelleenkäynnistyksellä</translation>
 <translation id="2127599828444728326">Salli ilmoitukset näillä sivustoilla</translation>
 <translation id="2131902621292742709">Ruudun himmennyksen viive käytettäessä laitetta akkuvirralla</translation>
+<translation id="2137064848866899664">Kun tämä käytäntö on määritetty, jokaista näyttöä kierretään
+      käytännön mukaisesti aina laitteen uudelleenkäynnistyksen yhteydessä ja 
+      ensimmäisellä kerralla, kun se yhdistetään käytännön arvomuutoksen jälkeen. 
+      Käyttäjät voivat muuttaa kiertoasetusta sisäänkirjautumisen jälkeen asetussivulla, 
+      mutta heidän tekemänsä asetusmuutokset ohitetaan ja korvataan käytännön  
+      arvolla uudelleenkäynnistyksen yhteydessä.
+
+      Käytäntö koskee sekä ensisijaisia että toissijaisia näyttöjä.
+
+      Jos käytäntöä ei ole asetettu, on sen oletusarvo nolla astetta, ja käyttäjä
+      voi muuttaa tätä vapaasti. Tässä tapauksessa oletusarvoon ei palata
+      uudelleenkäynnistyksen yhteydessä.</translation>
 <translation id="2166715102875984646">Poistaa käytöstä 3D-grafiikan sovellusliittymien tuen.
 
       Kun tämä asetus on käytössä, verkkosivut eivät voi käyttää grafiikkasuoritinta (GPU). Tällöin verkkosivut eivät siis voi käyttää WebGL-sovellusliittymää eivätkä laajennukset voi käyttää Pepper 3D -sovellusliittymää.
@@ -883,6 +896,7 @@ Jos tätä asetusta ei ole määritetty, kaikentyyppisiä sovelluksia ja laajenn
       </translation>
 <translation id="4442582539341804154">Ota lukitus käyttöön, kun laite on käyttämättömänä tai virransäästötilassa</translation>
 <translation id="4445684791305970001">Poistaa käytöstä kehittäjän työkalut sekä JavaScript-konsolin. Jos otat asetuksen käyttöön, kehittäjän työkaluja ei voi käyttää eikä verkkosivustojen elementtejä enää voi tarkastaa. Kehittäjän työkalut tai JavaScript-konsolin avaavat pikanäppäimet ja valikkokohteet poistetaan käytöstä. Jos poistat asetuksen käytöstä tai et määritä sitä, kehittäjän työkaluja ja JavaScript-konsolia voi käyttää.</translation>
+<translation id="4449545651113180484">Kierrä näyttöä 270 astetta myötäpäivään.</translation>
 <translation id="4467952432486360968">Estä kolmannen osapuolen evästeet</translation>
 <translation id="4474167089968829729">Ota käyttöön salasanojen tallentaminen salasanojen hallintaohjelmaan</translation>
 <translation id="4480694116501920047">Pakota SafeSearch käyttöön</translation>
@@ -1109,6 +1123,7 @@ Jos tätä asetusta ei ole määritetty, kaikentyyppisiä sovelluksia ja laajenn
 
           Jos tämä asetus on poistettu käytöstä tai sitä ei ole määritetty, paikalliset ja etäkäyttäjät voivat olla vuorovaikutuksessa isännän kanssa, kun se jaetaan.</translation>
 <translation id="5423001109873148185">Tämä käytäntö pakottaa hakukoneiden tuonnin nykyisestä oletusselaimesta. Jos käytäntö on käytössä, käytäntö vaikuttaa myös tuonti-ikkunaan. Jos käytäntö ei ole käytössä, oletushakukonetta ei tuoda. Jos käytäntöä ei ole määritetty, käyttäjiltä voidaan kysyä, haluavatko he tuoda hakukoneen, tai hakukone voidaan tuoda automaattisesti.</translation>
+<translation id="5423197884968724595">Android WebView -rajoituksen nimi:</translation>
 <translation id="5447306928176905178">Ota käyttöön muistitietojen ilmoittaminen (JS-pinon koko) sivulle (vanhentunut)</translation>
 <translation id="5457065417344056871">Ota vierastila käyttöön selaimessa</translation>
 <translation id="5457924070961220141">Voit määrittää oletus-HTML-hahmontajan, kun <ph name="PRODUCT_FRAME_NAME" /> on asennettu. Oletusasetusta käytetään, jos tätä käytäntöä ei ole määritetty. Tällöin isäntäselain suorittaa hahmonnuksen, mutta voit ohittaa asetuksen ja asettaa tuotteen <ph name="PRODUCT_FRAME_NAME" /> hahmontamaan HTML-sivut oletuksena.</translation>
@@ -1788,6 +1803,7 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 <translation id="7953256619080733119">Hallinnoidun käyttäjän manuaalisten poikkeuksien isännät</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Tätä käytäntöä ei enää tueta. Ottaa käyttöön STUN- ja relay-palvelimet, kun muodostetaan yhteyttä etäasiakkaaseen. Jos tämä asetus on käytössä, tämä kone voi löytää etäasiakkaan ja muodostaa yhteyden, vaikka asiakkaat olisivat palomuurin takana. Jos asetus ei ole käytössä ja lähtevät UDP-yhteydet menevät palomuurin kautta, tämä kone hyväksyy vain paikallisessa verkossa olevien isäntäkoneiden yhteydet.</translation>
+<translation id="802147957407376460">Kierrä näyttöä 0 astetta.</translation>
 <translation id="8044493735196713914">Ilmoita laitteen tila uudelleenkäynnistyksen yhteydessä</translation>
 <translation id="8059164285174960932">URL-osoite, josta etäkäytön asiakkaiden tulisi saada todennustunnus</translation>
 <translation id="8071636581296916773">Sallii etäasiakkaiden muodostaa yhteyden tähän koneeseen relay-palvelimien kautta.
@@ -1895,6 +1911,8 @@ Tämä käytäntö ei ole käytössä tavallisilla käyttäjätileillä.</transl
 <translation id="8382184662529825177">Poista käytöstä etävahvistuksen käyttö laitteen sisällön suojauksen vuoksi</translation>
 <translation id="838870586332499308">Ota mobiilitiedonsiirto käyttöön roaming-tilassa</translation>
 <translation id="8412312801707973447">OCSP-/CRL-tarkistusten suorittaminen</translation>
+<translation id="8424255554404582727">Aseta näytön oletuskierto, jota käytetään aina, kun laite käynnistetään uudelleen.</translation>
+<translation id="8426231401662877819">Kierrä näyttöä 90 astetta myötäpäivään.</translation>
 <translation id="8451988835943702790">Käytä Uusi välilehti -sivua etusivuna</translation>
 <translation id="8465065632133292531">POST-metodia käyttävän pikahaun URL-osoitteen parametrit</translation>
 <translation id="847472800012384958">Älä anna sivustojen näyttää ponnahdusikkunoita</translation>

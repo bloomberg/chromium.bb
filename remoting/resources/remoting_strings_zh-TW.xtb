@@ -24,6 +24,7 @@
 <translation id="1546934824884762070">發生未預期的錯誤，請向開發人員回報這個問題。</translation>
 <translation id="1619813076098775562">已中斷與 Cast 裝置之間的連線。</translation>
 <translation id="1643640058022401035">如果離開這個頁面，您的 Chromoting 工作階段也會結束。</translation>
+<translation id="1646994964686260497">沒有可供連線的電腦。</translation>
 <translation id="1654128982815600832">正在啟用這台電腦的遠端連線...</translation>
 <translation id="170207782578677537">無法註冊這台電腦。</translation>
 <translation id="1704090719919187045">Chromoting 主機偏好設定</translation>
@@ -109,6 +110,7 @@
 <translation id="3606997049964069799">您尚未登入 Chromium，請登入並再試一次。</translation>
 <translation id="3649256019230929621">將視窗縮到最小</translation>
 <translation id="369442766917958684">離線。</translation>
+<translation id="3695446226812920698">操作說明</translation>
 <translation id="3776024066357219166">您的 Chrome 遠端桌面工作階段已結束。</translation>
 <translation id="3785447812627779171">Chromoting
 主機</translation>
@@ -121,6 +123,10 @@
 <translation id="3950820424414687140">登入</translation>
 <translation id="3989511127559254552">您必須先授予電腦的延伸存取權限，才能繼續操作 (只需執行一次)。</translation>
 <translation id="4006787130661126000">您必須啟用遠端連線，才能透過 Chrome 遠端桌面存取這台電腦。</translation>
+<translation id="401121182145179743">您必須先設定電腦，才能執行遠端存取作業。</translation>
+<translation id="4028465833180158312">• Material Design 使用者介面更新。
+• 第三方授權額度。
+• 顯示離線的遠端電腦資訊。</translation>
 <translation id="405887016757208221">遠端電腦無法初始化工作階段。如果問題持續發生，請嘗試重新設定主機。</translation>
 <translation id="4068946408131579958">所有連線</translation>
 <translation id="409800995205263688">注意：政策設定僅允許您網路中的電腦相互連線。</translation>

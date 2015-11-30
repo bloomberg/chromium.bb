@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="bg">
 <translation id="1013923882670373915">Устройството с Bluetooth „<ph name="DEVICE_NAME" />“ иска разрешение за сдвояване. Моля, въведете на него следния ПИН код: <ph name="PINCODE" /></translation>
+<translation id="1021311941847921177">Комбинацията за превключване към следващия метод на въвеждане е променена. Моля, използвайте „<ph name="NEW_SHORTCUT" />“ вместо „<ph name="OLD_SHORTCUT" />“.</translation>
 <translation id="112308213915226829">Автоматично скриване на лавицата</translation>
 <translation id="1195412055398077112">допълнителна област</translation>
 <translation id="1270290102613614947">Екранната клавиатура е деактивирана</translation>
@@ -25,7 +26,9 @@
 <translation id="1812696562331527143">Методът ви на въвеждане се промени на <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />трета страна<ph name="END_LINK" />).
 Натиснете „Shift + Alt“, за да превключите.</translation>
 <translation id="1882897271359938046">Дублира се на „<ph name="DISPLAY_NAME" />“</translation>
+<translation id="1919743966458266018">Комбинацията за отваряне на диспечера на задачите е променена. Моля, използвайте „<ph name="NEW_SHORTCUT" />“ вместо „<ph name="OLD_SHORTCUT" />“.</translation>
 <translation id="1923539912171292317">Автоматични кликвания</translation>
+<translation id="1938872420421548906">Shift + Alt</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2127372758936585790">Зарядно устройство с малка мощност</translation>
@@ -105,6 +108,7 @@
 <translation id="4421231901400348175">Споделяте с/ъс <ph name="HELPER_NAME" /> контрола върху екрана си чрез отдалечено съдействие.</translation>
 <translation id="4430019312045809116">Звук</translation>
 <translation id="4527045527269911712">Устройството с Bluetooth „<ph name="DEVICE_NAME" />“ иска разрешение за сдвояване.</translation>
+<translation id="4544944664594876241">Комбинацията за заключване на екрана е променена. Моля, използвайте „<ph name="NEW_SHORTCUT" />“ вместо „<ph name="OLD_SHORTCUT" />“.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Изключване</translation>
 <translation id="4872237917498892622">„Alt + търсене“ или „Shift“</translation>
@@ -113,12 +117,14 @@
 <translation id="4957722034734105353">Научете повече...</translation>
 <translation id="4961318399572185831">Предаване на екрана</translation>
 <translation id="5011233892417813670">Chromebook</translation>
+<translation id="5012744545445585468">Ctrl + Shift + Space</translation>
 <translation id="5045002648206642691">Настройки за Google Диск...</translation>
 <translation id="5102001756192215136">Остава/т <ph name="HOUR" />:<ph name="MINUTE" /></translation>
 <translation id="511445211639755999"><ph name="RESOLUTION" />, <ph name="OVERSCAN" /></translation>
 <translation id="5168181903108465623">Налице са устройства Cast</translation>
 <translation id="5222676887888702881">Изход</translation>
 <translation id="5238774010593222950">Не можете да влезете в друг профил</translation>
+<translation id="532063867737390965">Тази мрежова настройка е деактивирана от администратора.</translation>
 <translation id="544691375626129091">Всички налични потребители вече са добавени към тази сесия.</translation>
 <translation id="5507786745520522457">Настройване на мобилните данни</translation>
 <translation id="5543001071567407895">SMS</translation>
@@ -132,6 +138,7 @@
 Натиснете „Shift + Alt“, за да превключите.</translation>
 <translation id="5871632337994001636">Управление на устройствата...</translation>
 <translation id="5895138241574237353">Рестартиране</translation>
+<translation id="5901316534475909376">Shift + Esc</translation>
 <translation id="5927132638760172455">Предава се към неизвестен приемник</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">Възстановяване</translation>
@@ -155,6 +162,7 @@
 <translation id="6426039856985689743">Деактивиране на мобилните данни</translation>
 <translation id="6452181791372256707">Отхвърляне</translation>
 <translation id="6459472438155181876">Екранът се разширява на „<ph name="DISPLAY_NAME" />“</translation>
+<translation id="6501401484702599040">Екранът се предава към „<ph name="RECEIVER_NAME" />“</translation>
 <translation id="6550675742724504774">Опции</translation>
 <translation id="6585808820553845416">Сесията приключва след <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6596816719288285829">IP адрес</translation>
@@ -162,6 +170,7 @@
 <translation id="6713285437468012787">Устройството с Bluetooth „<ph name="DEVICE_NAME" />“ е сдвоено и сега е налице за всички потребители. Може да премахнете това сдвояване посредством „Настройки“.</translation>
 <translation id="6785414152754474415">Батерията е <ph name="PERCENTAGE" />% пълна и се зарежда.</translation>
 <translation id="6803622936009808957">Дисплеите не можаха да се дублират, тъй като не бяха намерени поддържани разделителни способности. Вместо това влязохте в режима за разширен работен плот.</translation>
+<translation id="683971173229319003">търсене + L</translation>
 <translation id="68610848741840742">ChromeVox (обратна връзка с говор)</translation>
 <translation id="6911468394164995108">Присъединяване другаде...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
@@ -169,6 +178,7 @@
 <translation id="6981982820502123353">Достъпност</translation>
 <translation id="7029814467594812963">Изход от сесията</translation>
 <translation id="703171847531699602">Няма устройства Cast</translation>
+<translation id="7034339000180558234">„<ph name="TAB_NAME" />“ се предава към „<ph name="RECEIVER_NAME" />“</translation>
 <translation id="7052914147756339792">Задаване на тапет...</translation>
 <translation id="7097613348211027502">Функцията ChromeVox (обратна връзка с говор) е активирана.
 Натиснете „Ctrl+Alt+Z“, за да я деактивирате.</translation>
@@ -180,6 +190,7 @@
 <translation id="737451040872859086">Микрофон (вътрешен)</translation>
 <translation id="742594950370306541">Камерата се използва.</translation>
 <translation id="743058460480092004">Камерата и микрофонът се използват.</translation>
+<translation id="7510334386202674593">Ctrl + Shift + L</translation>
 <translation id="7561014039265304140">„<ph name="DISPLAY_NAME" />“ не поддържа разделителна способност от <ph name="SPECIFIED_RESOLUTION" />. Тя бе променена на <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7573962313813535744">Режим с докинг станция</translation>
 <translation id="7593891976182323525">„търсене“ или „Shift“</translation>
@@ -207,6 +218,7 @@
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="882279321799040148">Кликнете, за да прегледате</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8850991929411075241">търсене + Esc</translation>
 <translation id="8878886163241303700">Разгъване на екрана</translation>
 <translation id="8940956008527784070">Батерията е изтощена (<ph name="PERCENTAGE" />%)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>

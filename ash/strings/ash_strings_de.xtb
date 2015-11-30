@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="de">
 <translation id="1013923882670373915">Das Bluetooth-Gerät "<ph name="DEVICE_NAME" />" bittet um Erlaubnis für das Pairing. Geben Sie folgenden PIN-Code auf dem Gerät ein: <ph name="PINCODE" />.</translation>
+<translation id="1021311941847921177">Die Tastenkombination für den Wechsel zur nächsten Eingabemethode hat sich geändert. Bitte drücken Sie <ph name="NEW_SHORTCUT" /> statt <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Ablage automatisch ausblenden</translation>
 <translation id="1195412055398077112">Overscan</translation>
 <translation id="1270290102613614947">Bildschirmtastatur deaktiviert</translation>
@@ -25,7 +26,9 @@
 <translation id="1812696562331527143">Ihre Eingabemethode hat sich in <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />Drittanbieter<ph name="END_LINK" />) geändert.
 Drücken Sie zum Wechseln Shift+Alt.</translation>
 <translation id="1882897271359938046">Wird auf <ph name="DISPLAY_NAME" /> gespiegelt...</translation>
+<translation id="1919743966458266018">Die Tastenkombination zum Öffnen des Task-Managers hat sich geändert. Bitte drücken Sie <ph name="NEW_SHORTCUT" /> statt <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Automatische Klicks</translation>
+<translation id="1938872420421548906">Shift + Alt</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2127372758936585790">Schwachstrom-Ladegerät</translation>
@@ -105,6 +108,7 @@ Drücken Sie die Such-Taste oder Shift, um die Aktivierung aufzuheben.</translat
 <translation id="4421231901400348175">Sie teilen sich die Bildschirmsteuerung mit <ph name="HELPER_NAME" /> per Remote-Unterstützung.</translation>
 <translation id="4430019312045809116">Lautstärke</translation>
 <translation id="4527045527269911712">Das Bluetooth-Gerät "<ph name="DEVICE_NAME" />" bittet um Erlaubnis für das Pairing.</translation>
+<translation id="4544944664594876241">Die Tastenkombination zum Sperren des Bildschirms hat sich geändert. Bitte drücken Sie <ph name="NEW_SHORTCUT" /> statt <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="479989351350248267">Suchen</translation>
 <translation id="4804818685124855865">Verbindung trennen</translation>
 <translation id="4872237917498892622">Alt+Suchen oder Shift</translation>
@@ -113,12 +117,14 @@ Drücken Sie die Such-Taste oder Shift, um die Aktivierung aufzuheben.</translat
 <translation id="4957722034734105353">Weitere Informationen...</translation>
 <translation id="4961318399572185831">Bildschirmübertragung</translation>
 <translation id="5011233892417813670">Chromebook</translation>
+<translation id="5012744545445585468">Strg + Shift + Leer</translation>
 <translation id="5045002648206642691">Google Drive-Einstellungen...</translation>
 <translation id="5102001756192215136"><ph name="HOUR" />:<ph name="MINUTE" /> verbleiben</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION" />, <ph name="OVERSCAN" /></translation>
 <translation id="5168181903108465623">Übertragungsgeräte verfügbar</translation>
 <translation id="5222676887888702881">Abmelden</translation>
 <translation id="5238774010593222950">Fehler bei der Anmeldung in einem anderen Konto</translation>
+<translation id="532063867737390965">Diese Netzwerkeinstellung wurde durch den Administrator deaktiviert.</translation>
 <translation id="544691375626129091">Alle verfügbaren Nutzer wurden bereits zur Sitzung hinzugefügt.</translation>
 <translation id="5507786745520522457">Mobile Daten einrichten</translation>
 <translation id="5543001071567407895">SMS</translation>
@@ -132,6 +138,7 @@ Drücken Sie die Such-Taste oder Shift, um die Aktivierung aufzuheben.</translat
 Drücken Sie zum Wechseln Shift+Alt.</translation>
 <translation id="5871632337994001636">Geräte verwalten...</translation>
 <translation id="5895138241574237353">Neu starten</translation>
+<translation id="5901316534475909376">Shift + Esc</translation>
 <translation id="5927132638760172455">Übertragung an unbekannten Empfänger</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">Rückgängig machen</translation>
@@ -155,6 +162,7 @@ Drücken Sie zum Wechseln Shift+Alt.</translation>
 <translation id="6426039856985689743">Mobilfunk deaktivieren</translation>
 <translation id="6452181791372256707">Ablehnen</translation>
 <translation id="6459472438155181876">Bildschirm wird auf <ph name="DISPLAY_NAME" /> erweitert...</translation>
+<translation id="6501401484702599040">Bildschirm wird an <ph name="RECEIVER_NAME" /> gestreamt</translation>
 <translation id="6550675742724504774">Optionen</translation>
 <translation id="6585808820553845416">Sitzung endet in <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6596816719288285829">IP-Adresse</translation>
@@ -162,6 +170,7 @@ Drücken Sie zum Wechseln Shift+Alt.</translation>
 <translation id="6713285437468012787">Das Pairing für das Bluetooth-Gerät "<ph name="DEVICE_NAME" />" wurde durchgeführt und das Gerät ist nun für alle Nutzer verfügbar. Sie können das Pairing unter "Einstellungen" entfernen.</translation>
 <translation id="6785414152754474415">Akku ist zu <ph name="PERCENTAGE" /> % geladen und wird geladen.</translation>
 <translation id="6803622936009808957">Der Bildschirm konnte nicht gespiegelt werden, da die Auflösung nicht unterstützt wird. Stattdessen wurde der Modus für den erweiterten Desktop gestartet.</translation>
+<translation id="683971173229319003">Suche + L</translation>
 <translation id="68610848741840742">ChromeVox (gesprochenes Feedback)</translation>
 <translation id="6911468394164995108">Andere Netzwerke...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
@@ -169,6 +178,7 @@ Drücken Sie zum Wechseln Shift+Alt.</translation>
 <translation id="6981982820502123353">Bedienungshilfen</translation>
 <translation id="7029814467594812963">Sitzung beenden</translation>
 <translation id="703171847531699602">Keine Übertragungsgeräte</translation>
+<translation id="7034339000180558234"><ph name="TAB_NAME" /> wird an <ph name="RECEIVER_NAME" /> gestreamt</translation>
 <translation id="7052914147756339792">Hintergrund ändern</translation>
 <translation id="7097613348211027502">ChromeVox (gesprochenes Feedback) ist aktiviert.
 Zum Deaktivieren drücken Sie Strg + Alt + Z.</translation>
@@ -180,6 +190,7 @@ Drücken Sie Alt+Suchen oder Shift, um die Aktivierung aufzuheben.</translation>
 <translation id="737451040872859086">Mikrofon (intern)</translation>
 <translation id="742594950370306541">Kamera wird verwendet.</translation>
 <translation id="743058460480092004">Kamera und Mikrofon werden verwendet.</translation>
+<translation id="7510334386202674593">Strg + Shift + L</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> unterstützt <ph name="SPECIFIED_RESOLUTION" /> nicht. Die Auflösung wurde auf <ph name="FALLBACK_RESOLUTION" /> zurückgesetzt.</translation>
 <translation id="7573962313813535744">Docking-Modus</translation>
 <translation id="7593891976182323525">Suchen oder Shift</translation>
@@ -207,6 +218,7 @@ Drücken Sie Alt+Suchen oder Shift, um die Aktivierung aufzuheben.</translation>
 <translation id="8814190375133053267">WLAN</translation>
 <translation id="882279321799040148">Zum Anzeigen klicken</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8850991929411075241">Suche + Esc</translation>
 <translation id="8878886163241303700">Bildschirmerweiterung</translation>
 <translation id="8940956008527784070">Niedriger Akkustand (<ph name="PERCENTAGE" /> %)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>

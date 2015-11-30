@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ms">
 <translation id="1013923882670373915">Peranti Bluetooth "<ph name="DEVICE_NAME" />" ingin kebenaran untuk berpasangan. Sila masukkan kod PIN ini pada peranti tersebut: <ph name="PINCODE" /></translation>
+<translation id="1021311941847921177">Pintasan untuk bertukar kepada kaedah masukan seterusnya telah berubah. Sila gunakan <ph name="NEW_SHORTCUT" /> dan bukannya <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Autosembunyi rak</translation>
 <translation id="1195412055398077112">imbas lampau</translation>
 <translation id="1270290102613614947">Papan kekunci pada skrin dilumpuhkan</translation>
@@ -25,7 +26,9 @@
 <translation id="1812696562331527143">Kaedah masukan anda telah ditukar kepada <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />pihak ke-3<ph name="END_LINK" />).
 Tekan Shift + Alt untuk menukar.</translation>
 <translation id="1882897271359938046">Mencerminkan <ph name="DISPLAY_NAME" /></translation>
+<translation id="1919743966458266018">Pintasan untuk membuka pengurus tugas telah berubah. Sila gunakan <ph name="NEW_SHORTCUT" /> dan bukannya <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Klik automatik</translation>
+<translation id="1938872420421548906">Shift+Alt</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2127372758936585790">Pengecas berkuasa rendah</translation>
@@ -104,6 +107,7 @@ Tekan Shift + Alt untuk menukar.</translation>
 <translation id="4421231901400348175">Berkongsi kawalan skrin anda dengan <ph name="HELPER_NAME" /> melalui Bantuan Jauh.</translation>
 <translation id="4430019312045809116">Kelantangan</translation>
 <translation id="4527045527269911712">Peranti Bluetooth "<ph name="DEVICE_NAME" />" ingin kebenaran untuk berpasangan.</translation>
+<translation id="4544944664594876241">Pintasan untuk mengunci skrin telah berubah. Sila gunakan <ph name="NEW_SHORTCUT" /> dan bukannya <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Putuskan sambungan</translation>
 <translation id="4872237917498892622">Alt+Search atau Shift</translation>
@@ -112,12 +116,14 @@ Tekan Shift + Alt untuk menukar.</translation>
 <translation id="4957722034734105353">Ketahui lebih lanjut...</translation>
 <translation id="4961318399572185831">Hantar skrin</translation>
 <translation id="5011233892417813670">Chromebook</translation>
+<translation id="5012744545445585468">Ctrl+Shift+Space</translation>
 <translation id="5045002648206642691">Tetapan Google Drive</translation>
 <translation id="5102001756192215136"><ph name="HOUR" />:<ph name="MINUTE" /> tinggal</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION" />, <ph name="OVERSCAN" /></translation>
 <translation id="5168181903108465623">Peranti Cast tersedia</translation>
 <translation id="5222676887888702881">Log keluar</translation>
 <translation id="5238774010593222950">Tidak dapat melog masuk ke akaun lain.</translation>
+<translation id="532063867737390965">Tetapan rangkaian ini dilumpuhkan oleh pentadbir.</translation>
 <translation id="544691375626129091">Semua pengguna yang ada telah ditambahkan pada sesi ini.</translation>
 <translation id="5507786745520522457">Sediakan data mudah alih</translation>
 <translation id="5543001071567407895">SMS</translation>
@@ -131,6 +137,7 @@ Tekan Shift + Alt untuk menukar.</translation>
 Tekan Shift + Alt untuk menukar.</translation>
 <translation id="5871632337994001636">Uruskan peranti...</translation>
 <translation id="5895138241574237353">Mulakan Semula</translation>
+<translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5927132638760172455">Menghantar ke penerima yang tidak diketahui</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">Berbalik</translation>
@@ -154,6 +161,7 @@ Tekan Shift + Alt untuk menukar.</translation>
 <translation id="6426039856985689743">Lumpuhkan data mudah alih</translation>
 <translation id="6452181791372256707">Tolak</translation>
 <translation id="6459472438155181876">Melanjutkan skrin ke <ph name="DISPLAY_NAME" /></translation>
+<translation id="6501401484702599040">Menghantar skrin ke <ph name="RECEIVER_NAME" /></translation>
 <translation id="6550675742724504774">Pilihan</translation>
 <translation id="6585808820553845416">Sesi berakhir dalam <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6596816719288285829">Alamat IP</translation>
@@ -161,6 +169,7 @@ Tekan Shift + Alt untuk menukar.</translation>
 <translation id="6713285437468012787">Peranti Bluetooth "<ph name="DEVICE_NAME" />" telah dipasangkan dan kini tersedia untuk semua pengguna. Anda boleh mengalih keluar pasangan ini menggunakan Tetapan.</translation>
 <translation id="6785414152754474415">Bateri <ph name="PERCENTAGE" />% penuh dan sedang dicas.</translation>
 <translation id="6803622936009808957">Tidak dapat membalikkan paparan memandangkan tiada peleraian disokong ditemui. Sebaliknya, memasuki mod desktop yang dilanjutkan.</translation>
+<translation id="683971173229319003">Carian+L</translation>
 <translation id="68610848741840742">ChromeVox (Maklum balas pertuturan)</translation>
 <translation id="6911468394164995108">Sertai yang lain...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
@@ -168,6 +177,7 @@ Tekan Shift + Alt untuk menukar.</translation>
 <translation id="6981982820502123353">Kebolehcapaian</translation>
 <translation id="7029814467594812963">Keluar dari sesi</translation>
 <translation id="703171847531699602">Tiada peranti cast</translation>
+<translation id="7034339000180558234">Menghantar <ph name="TAB_NAME" /> ke <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Tetapkan kertas dinding...</translation>
 <translation id="7097613348211027502">ChromeVox (maklum balas pertuturan) didayakan.
 Tekan Ctrl+Alt+Z untuk melumpuhkan.</translation>
@@ -179,6 +189,7 @@ Tekan Alt+Search atau Shift untuk membatalkan.</translation>
 <translation id="737451040872859086">Mikrofon (Dalaman)</translation>
 <translation id="742594950370306541">Kamera sedang digunakan.</translation>
 <translation id="743058460480092004">Kamera dan mikrofon sedang digunakan.</translation>
+<translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> tidak menyokong <ph name="SPECIFIED_RESOLUTION" />. Resolusi telah ditukar kepada <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7573962313813535744">Mod dok</translation>
 <translation id="7593891976182323525">Search atau Shift</translation>
@@ -206,6 +217,7 @@ Tekan Alt+Search atau Shift untuk membatalkan.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="882279321799040148">Klik untuk melihat</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8850991929411075241">Carian+Esc</translation>
 <translation id="8878886163241303700">Meluaskan skrin</translation>
 <translation id="8940956008527784070">Bateri lemah (<ph name="PERCENTAGE" />%)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>

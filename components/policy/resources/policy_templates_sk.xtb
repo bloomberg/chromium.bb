@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sk">
+<translation id="101438888985615157">Otočiť obrazovku o 180 stupňov</translation>
 <translation id="1017967144265860778">Správa možností napájania na prihlasovacej obrazovke</translation>
 <translation id="1019101089073227242">Nastaviť adresár používateľských údajov</translation>
 <translation id="1022361784792428773">ID rozšírení, ktorých inštalácia by mala byť používateľovi zakázaná (alebo hodnota * pre všetky)</translation>
@@ -265,6 +266,17 @@
 <translation id="2113068765175018713">Obmedziť časové obdobie prevádzky zariadenia automatickým reštartovaním</translation>
 <translation id="2127599828444728326">Povoliť upozornenia na týchto webových stránkach</translation>
 <translation id="2131902621292742709">Oneskorenie zníženia jasu obrazovky pri napájaní z batérie</translation>
+<translation id="2137064848866899664">Ak nastavíte toto pravidlo, všetky obrazovky budú otočené
+      určeným smerom, keď ich reštartujete alebo prvýkrát pripojíte
+      po zmene hodnoty tohto pravidla. Prihlásení používatelia môžu
+      otáčanie obrazovky zmeniť pomocou stránky s nastaveniami, ale ich
+      nastavenie bude prepísané hodnotou tohto pravidla pri ďalšom reštartovaní.
+
+      Toto pravidlo platí pre hlavné aj všetky vedľajšie obrazovky.
+
+      Ak toto pravidlo nenastavíte, predvolená hodnota bude 0 stupňov a
+      používateľ ju môže zmeniť. V tomto prípade sa predvolená hodnota
+      pri reštartovaní opakovane nepoužije.</translation>
 <translation id="2166715102875984646">Zakázať podporu rozhraní API pre grafiku 3D
 
       Povolením tohto nastavenia zabránite webovým stránkam pristupovať do grafického procesora. Konkrétne webové stránky nemôžu pristupovať do rozhrania WebGL API a doplnky nemôžu používať rozhranie Pepper 3D API.
@@ -976,6 +988,7 @@ Odporúčaný spôsob nastavenia pravidiel v systéme Windows je nastavenie pro
       Ak toto nastavenie povolíte, nebude možné pristupovať k nástrojom pre vývojárov ani kontrolovať prvky webových stránok. Zakázané budú tiež všetky klávesové skratky a položky klasických či kontextových ponúk, pomocou ktorých je možné nástroje pre vývojárov alebo konzolu kódu JavaScript otvoriť.
 
       Ak túto možnosť nastavíte ako zakázanú alebo ju ponecháte nenastavenú, umožní to používateľovi použiť Nástroje pre vývojárov a konzolu JavaScript.</translation>
+<translation id="4449545651113180484">Otočiť obrazovku v smere hodinových ručičiek o 270 stupňov</translation>
 <translation id="4467952432486360968">Blokovať súbory cookie tretej strany</translation>
 <translation id="4474167089968829729">Povolenie ukladania hesiel do správcu hesiel</translation>
 <translation id="4480694116501920047">Vynútenie Bezpečného vyhľadávania</translation>
@@ -1245,6 +1258,7 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
       Ak je zakázané, predvolený vyhľadávač nebude importovaný.
 
       Ak nie je nastavené, môže sa používateľovi zobraziť výzva, či chce vyhľadávač importovať, alebo môže import prebehnúť automaticky.</translation>
+<translation id="5423197884968724595">Názov obmedzenia Android WebView:</translation>
 <translation id="5447306928176905178">Povoliť nahlasovanie informácií o pamäti (veľkosť hromady kódu JavaScript) stránke (zamietnuté)</translation>
 <translation id="5457065417344056871">Povoliť v prehliadači režim pre hostí</translation>
 <translation id="5457924070961220141">Umožňuje konfigurovať vykresľovací modul HTML, keď je nainštalovaný doplnok <ph name="PRODUCT_FRAME_NAME" />.
@@ -2014,6 +2028,7 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
           Ak je toto nastavenie povolené, môžete tento počítač vyhľadať a pripojiť sa k počítačom vzdialeného hostiteľa aj v prípade, ak sú oddelené bránou firewall.
 
           Ak je toto nastavenie zakázané a brána firewall filtruje odchádzajúce pripojenia cez protokol UDP, môže sa tento počítač pripojiť len k počítačom hostiteľa v rámci miestnej siete.</translation>
+<translation id="802147957407376460">Otočiť obrazovku o 0 stupňov</translation>
 <translation id="8044493735196713914">Hlásiť režim spustenia zariadenia</translation>
 <translation id="8059164285174960932">Webová adresa, kde by klienti vzdialeného prístupu mali získať token na overenie totožnosti</translation>
 <translation id="8071636581296916773">Povoľuje použitie serverov typu relay, keď sa vzdialení klienti pokúšajú nadviazať spojenie s týmto počítačom.
@@ -2129,6 +2144,8 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
 <translation id="8382184662529825177">Povoliť použitie vzdialeného overenia na ochranu obsahu pre zariadenie</translation>
 <translation id="838870586332499308">Povoliť roaming pre dátové prenosy</translation>
 <translation id="8412312801707973447">Či sa majú vykonávať kontroly OCSP/CRL online</translation>
+<translation id="8424255554404582727">Nastaviť predvolené otáčanie obrazovky, ktoré sa opakovane použije pri každom reštarte</translation>
+<translation id="8426231401662877819">Otočiť obrazovku v smere hodinových ručičiek o 90 stupňov</translation>
 <translation id="8451988835943702790">Použiť stránku Nová karta ako domovskú stránku</translation>
 <translation id="8465065632133292531">Parametre pre webovú adresu okamžitého vyhľadávania, ktorá používa metódu POST</translation>
 <translation id="847472800012384958">Zakázať všetkým stránkam zobrazovať kontextové okná</translation>

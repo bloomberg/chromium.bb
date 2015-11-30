@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fr">
+<translation id="101438888985615157">Faire pivoter l'écran de 180 degrés</translation>
 <translation id="1017967144265860778">Gestion de l'alimentation sur l'écran de connexion</translation>
 <translation id="1019101089073227242">Définir le répertoire de données utilisateur</translation>
 <translation id="1022361784792428773">Identifiants d'extension que l'utilisateur ne doit pas être autorisé à installer (ou * pour tous)</translation>
@@ -267,6 +268,19 @@ Pour plus d'options et obtenir des exemples détaillés, accédez au site :
 <translation id="2113068765175018713">Limiter le temps de fonctionnement de l'appareil en redémarrant automatiquement</translation>
 <translation id="2127599828444728326">Autoriser les notifications sur ces sites</translation>
 <translation id="2131902621292742709">Délai d'assombrissement de l'écran (batterie)</translation>
+<translation id="2137064848866899664">Si cette règle est définie, chaque écran pivote en fonction de
+      l'orientation spécifiée à chaque redémarrage et lors de sa première
+      connexion après la modification de la valeur de la règle. Les utilisateurs
+      peuvent modifier la rotation de l'écran via la page des paramètres
+      après s'être connectés, mais leur paramètre sera remplacé par la
+      valeur de la règle au prochain redémarrage.
+
+      Cette règle s'applique à l'écran principal ainsi qu'à tous les écrans
+      secondaires.
+
+      Si la règle n'est pas définie, la valeur par défaut est 0 degré et
+      l'utilisateur est libre de la modifier. Dans ce cas, la valeur par défaut n'est
+      pas réappliquée au redémarrage.</translation>
 <translation id="2166715102875984646">Désactiver la compatibilité avec les API graphiques 3D.
 
       Lorsque ce paramètre est activé, les pages Web ne peuvent pas accéder au processeur graphique (GPU). Plus précisément, les pages Web ne peuvent pas accéder à l'API WebGL et les plug-ins ne peuvent pas utiliser l'API Pepper 3D.
@@ -949,7 +963,7 @@ Si vous activez cette règle ou si vous ne la configurez pas, les utilisateurs p
 
       Un redémarrage automatique est programmé à l'heure sélectionnée, mais peut être reporté de 24 heures au maximum si un utilisateur se sert de l'appareil.
 
-      Remarque : Pour le moment, les redémarrages automatiques ne sont activés que lorsque l'écran de connexion est affiché ou qu'une session d'application de kiosque est en cours. Ce fonctionnement va changer prochainement : la règle s'appliquera toujours, qu'une session de n'importe quel type soit en cours ou non.
+      Remarque : Pour le moment, les redémarrages automatiques ne sont activés que lorsque l'écran de connexion est affiché ou qu'une session d'application kiosque est en cours. Ce fonctionnement va changer prochainement : la règle s'appliquera toujours, qu'une session de n'importe quel type soit en cours ou non.
 
       La valeur de la règle doit être spécifiée en secondes. Les valeurs doivent être au minimum égales à 3 600 (une heure).</translation>
 <translation id="420512303455129789">URL de mappage de dictionnaire vers un indicateur booléen indiquant si l'accès à l'hôte doit être autorisé s'il est associé à la valeur "True" (Vrai) ou bloqué s'il est associé à la valeur "False" (Faux).
@@ -996,6 +1010,7 @@ Si vous activez cette règle ou si vous ne la configurez pas, les utilisateurs p
 Si vous activez ce paramètre, les outils de développement ne sont plus accessibles et les éléments du site Web ne peuvent plus être  inspectés. Tous les raccourcis clavier et toutes les entrées de menu ou de menu contextuel permettant d'ouvrir les outils de développement ou la console JavaScript sont désactivés. 
 
 Si vous désactivez cette option ou si vous ne la configurez pas, l'utilisateur peut utiliser les outils de développement et la console JavaScript.</translation>
+<translation id="4449545651113180484">Faire pivoter l'écran vers la droite de 270 degrés</translation>
 <translation id="4467952432486360968">Bloquer les cookies tiers</translation>
 <translation id="4474167089968829729">Activer l'enregistrement des mots de passe dans le gestionnaire de mots de passe</translation>
 <translation id="4480694116501920047">Forcer SafeSearch</translation>
@@ -1268,6 +1283,7 @@ Si cette règle n'est pas configurée, le paramètre "AskNotifications" est util
 Si elle est désactivée, le moteur de recherche par défaut n'est pas importé. 
 
 Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'importation, ou celle-ci peut se faire automatiquement.</translation>
+<translation id="5423197884968724595">Nom de la restriction Android WebView :</translation>
 <translation id="5447306928176905178">Activer l'envoi d'informations sur la mémoire (taille du tas JS) à la page (obsolète)</translation>
 <translation id="5457065417344056871">Activer le mode Invité dans le navigateur</translation>
 <translation id="5457924070961220141">Permet de configurer le moteur de rendu HTML par défaut lorsque <ph name="PRODUCT_FRAME_NAME" /> est installé. 
@@ -1949,7 +1965,7 @@ au maximum si un utilisateur se sert de l'appareil.
 
       Si vous définissez cette règle, les utilisateurs ne peuvent pas la modifier ni l'ignorer.
 
-      Remarque : Pour le moment, les redémarrages automatiques ne sont activés que lorsque l'écran de connexion est affiché ou qu'une session d'application de kiosque est en cours. Ce fonctionnement va changer prochainement : la règle s'appliquera toujours, qu'une session de n'importe quel type soit en cours ou non.</translation>
+      Remarque : Pour le moment, les redémarrages automatiques ne sont activés que lorsque l'écran de connexion est affiché ou qu'une session d'application kiosque est en cours. Ce fonctionnement va changer prochainement : la règle s'appliquera toujours, qu'une session de n'importe quel type soit en cours ou non.</translation>
 <translation id="7701341006446125684">Régler la taille du cache pour les applications et les extensions (en octets)</translation>
 <translation id="7709537117200051035">Dictionnaire mappant les noms d'hôte avec un indicateur booléen qui détermine si l'accès à l'hôte est autorisé s'il est associé à la valeur "True" (Vrai) ou bloqué s'il est associé à la valeur "False" (Faux).
 
@@ -2038,6 +2054,7 @@ Permet l'utilisation de serveurs STUN et relais lors de la connexion à un clien
 Si ce paramètre est activé, cette machine peut découvrir et se connecter à des machines hôte distantes, même si elles sont séparées par un pare-feu. 
 
 Si ce paramètre est désactivé et que les connexions UDP sortantes sont filtrées par le pare-feu, cette machine peut uniquement se connecter aux machines hôte au sein du réseau local.</translation>
+<translation id="802147957407376460">Faire pivoter l'écran de 0 degré</translation>
 <translation id="8044493735196713914">Indiquer le mode de démarrage de l'appareil</translation>
 <translation id="8059164285174960932">URL où les clients d'accès à distance doivent obtenir leur jeton d'authentification</translation>
 <translation id="8071636581296916773">Permet l'utilisation de serveurs de relais lorsque les clients distants tentent d'établir une connexion avec ce poste.
@@ -2154,6 +2171,8 @@ Si ce paramètre n'est pas défini, l'utilisateur peut décider d'utiliser cette
 <translation id="8382184662529825177">Autoriser l'utilisation de l'attestation à distance pour assurer la protection du contenu de l'appareil</translation>
 <translation id="838870586332499308">Activer l'itinérance des données</translation>
 <translation id="8412312801707973447">Si des contrôles OCSP/CRL en ligne sont effectués</translation>
+<translation id="8424255554404582727">Définir la rotation de l'écran par défaut (réappliquée à chaque redémarrage)</translation>
+<translation id="8426231401662877819">Faire pivoter l'écran vers la droite de 90 degrés</translation>
 <translation id="8451988835943702790">Utiliser la page "Nouvel onglet" comme page d'accueil</translation>
 <translation id="8465065632133292531">Paramètres pour l'URL instantanée utilisant POST</translation>
 <translation id="847472800012384958">Interdire à tous les sites d'afficher des fenêtres pop-up</translation>

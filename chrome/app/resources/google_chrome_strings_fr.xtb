@@ -5,6 +5,7 @@
 <translation id="1013290471399003443">Il a été confirmé dans Chrome que le certificat de ce site a bien été fourni par <ph name="ISSUER" />. Les informations relatives à la transparence du certificat fournies via le serveur sont valides.</translation>
 <translation id="1016765312371154165">Chrome ne s'est pas correctement arrêté.</translation>
 <translation id="103396972844768118">Information importante concernant vos données Google Chrome</translation>
+<translation id="1035334672863811645">connectez-vous à Chrome</translation>
 <translation id="1061441684050139317">Chrome doit disposer de l'accès au micro pour le partager avec ce site.</translation>
 <translation id="1065672644894730302">Impossible de lire vos préférences.
 Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifications apportées à vos préférences ne seront pas enregistrées.</translation>
@@ -90,7 +91,7 @@ Si vous vous connectez quand même, toutes les informations Chrome, comme les fa
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3881912906674381083">Il a été confirmé dans Chrome que le certificat de ce site a bien été fourni par <ph name="ISSUER" />. Des informations relatives à la transparence du certificat ont été fournies via le serveur, mais aucun des journaux relatifs à la transparence du certificat n'a été reconnu dans Chrome.</translation>
 <translation id="3889417619312448367">Désinstaller Google Chrome</translation>
-<translation id="4011219958405096740">Lorsque cet indicateur est activé, un processus de connexion Chrome basé sur iFrame est utilisé. Dans le cas contraire, il s'agit d'un processus basé sur l'affichage Web.</translation>
+<translation id="4042449298237264661">Cet ordinateur ne recevra plus les mises à jour de Google Chrome, car la compatibilité n'est plus assurée sur Windows XP et Windows Vista.</translation>
 <translation id="4050175100176540509">La dernière version propose d'importantes améliorations de la sécurité ainsi que de nouvelles fonctionnalités.</translation>
 <translation id="4053720452172726777">Personnaliser et contrôler Google Chrome</translation>
 <translation id="4147555960264124640">Vous vous connectez avec un compte géré et donnez le contrôle de votre profil Google Chrome à son administrateur. Vos données Chrome, telles que les applications, les favoris, l'historique, les mots de passe et les autres paramètres, vont être définitivement associées à <ph name="USER_NAME" />. Vous pouvez supprimer ces données via le tableau de bord des comptes Google, mais vous ne pouvez pas les associer à un autre compte. <ph name="LEARN_MORE" /></translation>
@@ -149,9 +150,9 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="573759479754913123">À propos de Chrome OS</translation>
 <translation id="5749068826913805084">Pour télécharger des fichiers, Chrome a besoin d'accéder à l'espace de stockage.</translation>
 <translation id="5785746630574083988">Le redémarrage en mode Windows 8 entraîne la fermeture, puis la réouverture des applications Chrome.</translation>
-<translation id="5799551393681493217">Activer les processus de connexion Chrome basés sur iFrame. Cet indicateur remplace "--enable-web-based-signin".</translation>
 <translation id="5855036575689098185">Le logiciel exécuté sur votre ordinateur n'est pas compatible avec Google Chrome.</translation>
 <translation id="5877064549588274448">La version a été modifiée. Redémarrez votre appareil pour appliquer les modifications.</translation>
+<translation id="5890698319714066019">Cette page Web ne peut pas s'afficher dans Google Chrome, car votre ordinateur n'est pas connecté à Internet.</translation>
 <translation id="5931853610562009806">Sur Mac, les mots de passe peuvent être enregistrés dans votre trousseau. D'autres utilisateurs de Chrome partageant ce compte OS X peuvent les consulter ou les synchroniser.</translation>
 <translation id="5940385492829620908">Votre contenu Web, vos favoris et toutes vos données Chrome sont conservés ici.</translation>
 <translation id="5941830788786076944">Définir Google Chrome comme navigateur par défaut</translation>
@@ -174,6 +175,8 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="6236285698028833233">Google Chrome n'est plus mis à jour et n'est plus compatible avec la version actuelle de votre système d'exploitation.</translation>
 <translation id="629218512217695915">Utiliser le mot de passe généré par Chrome</translation>
 <translation id="6368958679917195344">Google Chrome OS fonctionne grâce à d'autres <ph name="BEGIN_LINK_CROS_OSS" />logiciels Open Source<ph name="END_LINK_CROS_OSS" />.</translation>
+<translation id="6400076122676892962">Cet ordinateur ne recevra bientôt plus les mises à jour de Google Chrome, car la compatibilité ne sera plus assurée sur les versions 10.6, 10.7 et 10.8 de Mac OS X.</translation>
+<translation id="6470176598693778404">Cet ordinateur ne recevra plus les mises à jour de Google Chrome, car la compatibilité n'est plus assurée sur les versions 10.6, 10.7 et 10.8 de Mac OS X.</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{Un téléchargement est en cours. Voulez-vous annuler ce dernier et quitter Google Chrome ?}one{# téléchargement est en cours. Voulez-vous annuler ce dernier et quitter Google Chrome ?}other{# téléchargements sont en cours. Voulez-vous annuler ces derniers et quitter Google Chrome ?}}</translation>
 <translation id="6598387184982954187">Vous utilisez le compte <ph name="PROFILE_EMAIL" /> pour synchroniser votre contenu dans Chrome. Pour mettre à jour vos préférences de synchronisation ou pour utiliser Chrome sans compte Google, accédez à la page <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6600954340915313787">Copiée dans Chrome</translation>
@@ -211,6 +214,7 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="7196020411877309443">Pourquoi ce message s'affiche-t-il ?</translation>
 <translation id="7242029209006116544">Vous vous connectez avec un compte géré et donnez le contrôle de votre profil Google Chrome à son administrateur. Vos données Chrome, telles que les applications, les favoris, l'historique, les mots de passe et les autres paramètres, vont être définitivement associées à <ph name="USER_NAME" />. Vous pouvez supprimer ces données via le tableau de bord des comptes Google, mais vous ne pouvez pas les associer à un autre compte. Vous pouvez éventuellement créer un nouveau profil pour maintenir vos données Chrome séparées. <ph name="LEARN_MORE" /></translation>
 <translation id="7282192067747128786">Notifications – Chrome (<ph name="QUANTITY" /> non lues)</translation>
+<translation id="729375352412857283">Cet ordinateur ne recevra bientôt plus les mises à jour de Google Chrome, car la compatibilité ne sera plus assurée sur Windows XP et Windows Vista.</translation>
 <translation id="7339898014177206373">Nouvelle fenêtre</translation>
 <translation id="7396375882099008034">Autoriser Chrome à accéder au réseau dans les paramètres de votre pare-feu ou
         de votre antivirus</translation>

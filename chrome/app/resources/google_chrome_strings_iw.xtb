@@ -5,6 +5,7 @@
 <translation id="1013290471399003443">‏Chrome אימת שהגורם שהנפיק את אישור האתר הזה הוא <ph name="ISSUER" />. השרת סיפק פרטים חוקיים על שקיפות האישור.</translation>
 <translation id="1016765312371154165">‏כיבוי Chrome לא בוצע כהלכה.</translation>
 <translation id="103396972844768118">‏מידע חשוב בנוגע לנתונים שלך ב-Chrome</translation>
+<translation id="1035334672863811645">‏כניסה ל-Chrome</translation>
 <translation id="1061441684050139317">‏Chrome זקוק לגישה למיקרופון כדי לשתף אותו עם האתר הזה.</translation>
 <translation id="1065672644894730302">לא היתה אפשרות לקרוא את ההעדפות שלך. ייתכן שחלק מהתכונות לא יהיו זמינות ושינויים בהעדפות לא יישמרו.</translation>
 <translation id="1073391069195728457">‏Chrome - הודעות</translation>
@@ -87,7 +88,7 @@
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3881912906674381083">‏Chrome אימת שהגורם שהנפיק את אישור האתר הזה הוא <ph name="ISSUER" />. השרת סיפק פרטים על שקיפות האישור, אבל Chrome לא זיהה אף אחד מהיומנים של שקיפות האישור.</translation>
 <translation id="3889417619312448367">‏הסר את Google Chrome</translation>
-<translation id="4011219958405096740">‏כשמצב זה מופעל, יעשה שימוש בתהליך כניסה אל Chrome המבוסס על iframe. אם לא יופעל, יעשה שימוש בתהליך המבוסס על WebView.</translation>
+<translation id="4042449298237264661">‏מחשב זה כבר לא יקבל עדכונים ל-Google Chrome, מאחר שכבר אין תמיכה במערכות Windows XP ו-Windows Vista.</translation>
 <translation id="4050175100176540509">הגרסה החדשה כוללת שיפורי בטיחות חשובים ותכונות חדשות.</translation>
 <translation id="4053720452172726777">‏הגדרת Google Chrome בהתאם לרצונך</translation>
 <translation id="4147555960264124640">‏אתה נכנס עם חשבון מנוהל ונותן למנהל המערכת שלו שליטה על הפרופיל שלך ב-Chrome. הנתונים שלך ב-Chrome, כגון יישומים, סימניות, היסטוריה, סיסמאות והגדרות אחרות ייקשרו באופן קבוע ל-<ph name="USER_NAME" />. תוכל למחוק את הנתונים האלה באמצעות לוח הבקרה של חשבונות Google, אבל לא תוכל לשייך את הנתונים האלה לחשבון אחר. <ph name="LEARN_MORE" /></translation>
@@ -141,9 +142,9 @@
 <translation id="573759479754913123">‏מידע על מערכת ההפעלה של Chrome</translation>
 <translation id="5749068826913805084">‏לצורך הורדת קבצים, Chrome זקוק לגישה לאחסון.</translation>
 <translation id="5785746630574083988">‏הפעלה מחדש במצב Windows 8 תסגור ותפעיל מחדש את יישומי Chrome.</translation>
-<translation id="5799551393681493217">‏מפעיל תהליכי כניסה אל Chrome המבוססים על iframe. הסימן הזה מבטל את --enable-web-based-signin.</translation>
 <translation id="5855036575689098185">‏תוכנה שפועלת במחשב שלך אינה תואמת ל-Google Chrome.</translation>
 <translation id="5877064549588274448">הערוץ שונה. הפעל מחדש את המכשיר להחלת השינויים.</translation>
+<translation id="5890698319714066019">‏Google Chrome אינו יכול להציג את דף האינטרנט מכיוון שהמחשב שלך לא מחובר לאינטרנט.</translation>
 <translation id="5931853610562009806">‏אם אתה משתמש ב-Mac, ייתכן שסיסמאות יישמרו ב-Keychain שלך, ומשתמשי Chrome אחרים החולקים את חשבון OS X הזה יוכלו לגשת אליהן או לסנכרן אותן.</translation>
 <translation id="5940385492829620908">‏היסטוריית האתרים, הסימניות ופריטים נוספים מ-Chrome נמצאים כאן.</translation>
 <translation id="5941830788786076944">‏הפוך את Google Chrome לדפדפן ברירת המחדל</translation>
@@ -166,6 +167,8 @@
 <translation id="6236285698028833233">‏Google Chrome הפסיק לעדכן את הגרסה הזו של מערכת ההפעלה שלך וכבר אינו תומך בה.</translation>
 <translation id="629218512217695915">‏השתמש בסיסמה שנוצרה על ידי Chrome</translation>
 <translation id="6368958679917195344">‏השימוש במערכת ההפעלה של Chrome מתאפשר באמצעות <ph name="BEGIN_LINK_CROS_OSS" />תוכנת קוד פתוח<ph name="END_LINK_CROS_OSS" /> נוספת.</translation>
+<translation id="6400076122676892962">‏בקרוב מחשב זה יפסיק לקבל עדכונים ל-Google Chrome בשל הפסקת התמיכה במערכת ההפעלה Mac OS X בגרסאות 10.6, 10.7 ו-10.8.</translation>
+<translation id="6470176598693778404">‏בקרוב מחשב זה יפסיק לקבל עדכונים ל-Google Chrome בשל הפסקת התמיכה במערכת ההפעלה Mac OS X בגרסאות 10.6, 10.7 ו-10.8.</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{‏הורדה מתבצעת עכשיו. האם ברצונך לבטל את ההורדה ולצאת מ-Google Chrome?}two{‏# הורדות מתבצעות עכשיו. האם ברצונך לבטל את ההורדות ולצאת מ-Google Chrome?}many{‏# הורדות מתבצעות עכשיו. האם ברצונך לבטל את ההורדות ולצאת מ-Google Chrome?}other{‏# הורדות מתבצעות עכשיו. האם ברצונך לבטל את ההורדות ולצאת מ-Google Chrome?}}</translation>
 <translation id="6598387184982954187">‏אתה משתמש ב-<ph name="PROFILE_EMAIL" /> כדי לסנכרן את הפריטים שלך ב-Chrome. עבור אל '<ph name="SETTINGS_LINK" />' כדי לעדכן את העדפות הסנכרון או להשתמש ב-Chrome ללא חשבון Google.</translation>
 <translation id="6600954340915313787">‏הועתק אל Chrome</translation>
@@ -203,6 +206,7 @@
 <translation id="7196020411877309443">למה אני רואה את הדף הזה?</translation>
 <translation id="7242029209006116544">‏אתה נכנס עם חשבון מנוהל ונותן למנהל המערכת שלו שליטה על הפרופיל שלך ב-Google Chrome. הנתונים שלך ב-Chrome, כגון יישומים, סימניות, היסטוריה, סיסמאות והגדרות אחרות ייקשרו באופן קבוע ל-<ph name="USER_NAME" />. תוכל למחוק את הנתונים האלה באמצעות לוח הבקרה של חשבונות Google, אבל לא תוכל לשייך את הנתונים האלה לחשבון אחר. <ph name="LEARN_MORE" /></translation>
 <translation id="7282192067747128786">‏Chrome - הודעות (<ph name="QUANTITY" /> שלא נקראו)</translation>
+<translation id="729375352412857283">‏בקרוב מחשב זה יפסיק לקבל עדכונים ל-Google Chrome בשל הפסקת התמיכה במערכות ההפעלה Windows XP ו-Windows Vista.</translation>
 <translation id="7339898014177206373">חלון חדש</translation>
 <translation id="7396375882099008034">‏אפשר ל-Chrome לגשת לרשת בהגדרות חומת האש או האנטי-וירוס שלך.</translation>
 <translation id="7398801000654795464">‏היית מחובר ל-Chrome כ-<ph name="USER_EMAIL_ADDRESS" />. השתמש באותו חשבון כדי להיכנס שוב.</translation>

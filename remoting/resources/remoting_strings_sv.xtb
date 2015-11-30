@@ -24,6 +24,7 @@ Du hittar mer information om sekretess i Googles sekretesspolicy (http://goo.gl/
 <translation id="1546934824884762070">Ett oväntat fel uppstod. Rapportera problemet till utvecklarna.</translation>
 <translation id="1619813076098775562">Stängd anslutning till överföringsenheten.</translation>
 <translation id="1643640058022401035">Om du lämnar sidan avslutas sessionen i Chromoting.</translation>
+<translation id="1646994964686260497">Det finns inget att ansluta till.</translation>
 <translation id="1654128982815600832">Fjärranslutningar aktiveras för den här datorn ...</translation>
 <translation id="170207782578677537">Det gick inte att registrera datorn.</translation>
 <translation id="1704090719919187045">Chromoting Host Preferences</translation>
@@ -109,6 +110,7 @@ Du hittar mer information om sekretess i Googles sekretesspolicy (http://goo.gl/
 <translation id="3606997049964069799">Du är inte inloggad i Chromium. Logga in och försök igen.</translation>
 <translation id="3649256019230929621">Minimera fönstret</translation>
 <translation id="369442766917958684">Offline.</translation>
+<translation id="3695446226812920698">Läs mer</translation>
 <translation id="3776024066357219166">Chrome Remote Desktop-sessionen har avslutats.</translation>
 <translation id="3785447812627779171">Chromoting
 Host</translation>
@@ -121,6 +123,10 @@ Host</translation>
 <translation id="3950820424414687140">Logga in</translation>
 <translation id="3989511127559254552">Innan du kan fortsätta måste du bevilja utökad åtkomstbehörighet till datorn. Du behöver bara göra det en gång.</translation>
 <translation id="4006787130661126000">Du måste aktivera fjärranslutningar om du vill använda Chrome Remote Desktop för att få åtkomst till den här datorn.</translation>
+<translation id="401121182145179743">Du måste först konfigurera datorn för fjärråtkomst.</translation>
+<translation id="4028465833180158312">• Användargränssnittet för Material Design uppdateras.
+• Licensieringar från tredje part.
+• Information visas för fjärrdatorer som är offline.</translation>
 <translation id="405887016757208221">Fjärrdatorn har misslyckats med att starta sessionen. Konfigurera värden på nytt om problemet kvarstår.</translation>
 <translation id="4068946408131579958">Alla anslutningar</translation>
 <translation id="409800995205263688">OBS! Enligt policyinställningarna tillåts endast anslutning mellan datorer i ditt nätverk.</translation>

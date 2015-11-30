@@ -357,6 +357,7 @@
 <translation id="4729095194763193578">表の前の行</translation>
 <translation id="4736221692378411923">8 月</translation>
 <translation id="4740661827607246557">ヘルプ コマンド</translation>
+<translation id="4755857887974653209">ChromeVox を無効にする</translation>
 <translation id="4759716709594980008">ChromeOS キーボード エクスプローラ</translation>
 <translation id="4763296182459741068">最後に戻ります</translation>
 <translation id="4763480195061959176">動画</translation>
@@ -661,6 +662,7 @@
 <translation id="8065607967589909823">現在選択しているのは、</translation>
 <translation id="8066678206530322333">バナー</translation>
 <translation id="8110647606445335195">ARIA ランドマークはありません。</translation>
+<translation id="8132379720172247073">ChromeVox メニュー</translation>
 <translation id="8153880621934657047">表の中ではありません。</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{アンダースコア}other{# 個のアンダースコア}}</translation>
 <translation id="8179976553408161302">Enter</translation>
@@ -696,6 +698,7 @@
 <translation id="8584721346566392021">見出し 5</translation>
 <translation id="8587549812518406253">次のリスト項目</translation>
 <translation id="860150890330522909"><ph name="NAME" /> チェックボックスがオンです</translation>
+<translation id="8603071050456974042">ChromeVox パネル</translation>
 <translation id="8606621670302093223">日付の設定</translation>
 <translation id="8631359288236106450"><ph name="COUNT" /> 件の項目を選択しました</translation>
 <translation id="8638532244051952400">現在のセルの座標を読み上げる</translation>

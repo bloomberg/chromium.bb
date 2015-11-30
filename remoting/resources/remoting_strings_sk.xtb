@@ -24,6 +24,7 @@ Informácie o ochrane osobných údajov nájdete v Pravidlách ochrany osobných
 <translation id="1546934824884762070">Vyskytla sa neočakávaná chyba. Nahláste tento problém vývojárom.</translation>
 <translation id="1619813076098775562">Pripojenie k zariadeniu Cast bolo zavreté.</translation>
 <translation id="1643640058022401035">Ak opustíte túto stránku, relácia aplikácie Chromoting sa ukončí.</translation>
+<translation id="1646994964686260497">Na pripojenie nie sú k dispozícii žiadne zariadenia.</translation>
 <translation id="1654128982815600832">Prebieha povoľovanie vzdialených pripojení pre tento počítač...</translation>
 <translation id="170207782578677537">Registrácia tohto počítača zlyhala.</translation>
 <translation id="1704090719919187045">Predvoľby hostiteľa funkcie Chromoting</translation>
@@ -109,6 +110,7 @@ Informácie o ochrane osobných údajov nájdete v Pravidlách ochrany osobných
 <translation id="3606997049964069799">Nie ste prihlásený/-á do prehliadača Chromium. Prihláste sa a skúste to znova.</translation>
 <translation id="3649256019230929621">Minimalizovať okno</translation>
 <translation id="369442766917958684">Offline.</translation>
+<translation id="3695446226812920698">Ako na to</translation>
 <translation id="3776024066357219166">Vaša relácia Vzdialenej plochy Chrome bola ukončená.</translation>
 <translation id="3785447812627779171">Chromoting
 Hostiteľ</translation>
@@ -121,6 +123,10 @@ Hostiteľ</translation>
 <translation id="3950820424414687140">Prihlásiť sa</translation>
 <translation id="3989511127559254552">Ak chcete pokračovať, musíte najprv udeliť rozšírené povolenia na prístup k vášmu počítaču. Stačí to urobiť len raz.</translation>
 <translation id="4006787130661126000">Ak chcete na prístup k tomuto počítaču použiť Vzdialenú plochu Chrome, musíte povoliť vzdialené pripojenia.</translation>
+<translation id="401121182145179743">Najprv musíte v počítači nastaviť vzdialený prístup.</translation>
+<translation id="4028465833180158312">• Aktualizácie používateľského rozhrania Material Design.
+• Uvedenie licencií tretích strán.
+• Zobrazenie informácií o vzdialených počítačoch, ktoré sú offline.</translation>
 <translation id="405887016757208221">Inicializácia relácie vzdialeným počítačom sa nepodarila. Ak problém pretrváva, skúste opätovne nakonfigurovať hostiteľa.</translation>
 <translation id="4068946408131579958">Všetky pripojenia</translation>
 <translation id="409800995205263688">Poznámka: Nastavenia pravidiel umožňujú pripojenie len medzi počítačmi v rámci vašej siete.</translation>

@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="fa">
 <translation id="1013923882670373915">دستگاه بلوتوث «<ph name="DEVICE_NAME" />» برای مرتبط‌سازی به مجوز نیاز دارد. لطفاً این کد پین را در آن دستگاه وارد کنید: <ph name="PINCODE" /></translation>
+<translation id="1021311941847921177">کلیدهای میان‌بر جابه‌جایی به روش ورودی بعدی تغییر کرده است. لطفاً از <ph name="NEW_SHORTCUT" /> به جای <ph name="OLD_SHORTCUT" /> استفاده کنید.</translation>
 <translation id="112308213915226829">پنهان کردن خودکار قفسه</translation>
 <translation id="1195412055398077112">بزرگتر از صفحه</translation>
 <translation id="1270290102613614947">صفحه‌کلید روی صفحه غیرفعال شد</translation>
@@ -24,7 +25,9 @@
 <translation id="1747827819627189109">صفحه‌کلید روی صفحه فعال شد</translation>
 <translation id="1812696562331527143">‏روش ورودی شما به <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />شخص ثالث<ph name="END_LINK" />) تغییر یافت. Shift + Alt را برای تعویض فشار دهید.</translation>
 <translation id="1882897271359938046">بازتاب به <ph name="DISPLAY_NAME" /></translation>
+<translation id="1919743966458266018">کلیدهای میان‌بر باز کردن مدیر فعالیت‌ها تغییر کرده است. لطفاً از <ph name="NEW_SHORTCUT" /> به جای <ph name="OLD_SHORTCUT" /> استفاده کنید.</translation>
 <translation id="1923539912171292317">کلیک‌های خودکار</translation>
+<translation id="1938872420421548906">Shift+Alt</translation>
 <translation id="1957803754585243749">۰ درجه</translation>
 <translation id="1969011864782743497">‏<ph name="DEVICE_NAME" /> (‏USB)</translation>
 <translation id="2127372758936585790">شارژر برق ضعیف</translation>
@@ -104,6 +107,7 @@
 <translation id="4421231901400348175">به اشتراک گذاشتن کنترل صفحه‌تان با <ph name="HELPER_NAME" /> از طریق راهنمایی از راه دور.</translation>
 <translation id="4430019312045809116">میزان صدا</translation>
 <translation id="4527045527269911712">دستگاه بلوتوث «<ph name="DEVICE_NAME" />» برای مرتبط‌سازی به مجوز نیاز دارد.</translation>
+<translation id="4544944664594876241">کلیدهای میان‌بر قفل کردن صفحه تغییر کرده است. لطفاً از <ph name="NEW_SHORTCUT" /> به جای <ph name="OLD_SHORTCUT" /> استفاده کنید.</translation>
 <translation id="479989351350248267">جستجو</translation>
 <translation id="4804818685124855865">قطع اتصال</translation>
 <translation id="4872237917498892622">‏Alt+جستجو یا Shift</translation>
@@ -112,12 +116,14 @@
 <translation id="4957722034734105353">اطلاعات بیشتر...</translation>
 <translation id="4961318399572185831">فرستادن صفحه</translation>
 <translation id="5011233892417813670">Chromebook</translation>
+<translation id="5012744545445585468">Ctrl+Shift+Space</translation>
 <translation id="5045002648206642691">‏تنظیمات Google Drive...</translation>
 <translation id="5102001756192215136"><ph name="HOUR" />:<ph name="MINUTE" /> باقیمانده است</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION" />، <ph name="OVERSCAN" /></translation>
 <translation id="5168181903108465623">دستگاه‌های فرستادن موجود هستند</translation>
 <translation id="5222676887888702881">خروج از سیستم</translation>
 <translation id="5238774010593222950">نمی‌توانید وارد حساب دیگری شوید.</translation>
+<translation id="532063867737390965">سرپرست سیستم این تنظیم شبکه را غیرفعال کرده است.</translation>
 <translation id="544691375626129091">تمام کاربران موجود قبلاً به این جلسه اضافه شده‌اند.</translation>
 <translation id="5507786745520522457">تنظیم داده‌های دستگاه همراه</translation>
 <translation id="5543001071567407895">پیامک</translation>
@@ -130,6 +136,7 @@
 <translation id="5825747213122829519">‏روش ورودی شما به <ph name="INPUT_METHOD_ID" /> تغییر یافت. Shift + Alt را برای تعویض فشار دهید.</translation>
 <translation id="5871632337994001636">مدیریت دستگاه‌ها...</translation>
 <translation id="5895138241574237353">راه‌اندازی مجدد</translation>
+<translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5927132638760172455">در حال فرستادن به گیرنده ناشناس</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">برگرداندن</translation>
@@ -153,6 +160,7 @@
 <translation id="6426039856985689743">غیرفعال کردن داده‌های تلفن همراه</translation>
 <translation id="6452181791372256707">عدم پذیرش</translation>
 <translation id="6459472438155181876">گسترش صفحه به <ph name="DISPLAY_NAME" /></translation>
+<translation id="6501401484702599040">ارسال محتوای صفحه به <ph name="RECEIVER_NAME" /></translation>
 <translation id="6550675742724504774">گزینه‌ها</translation>
 <translation id="6585808820553845416">جلسه در <ph name="SESSION_TIME_REMAINING" /> به پایان می‌رسد.</translation>
 <translation id="6596816719288285829">‏آدرس IP</translation>
@@ -160,6 +168,7 @@
 <translation id="6713285437468012787">دستگاه بلوتوث «<ph name="DEVICE_NAME" />» مرتبط شده است و اکنون برای همه کاربران در دسترس است. می‌توانید این مرتبط‌سازی را با استفاده از تنظیمات حذف کنید.</translation>
 <translation id="6785414152754474415">باتری <ph name="PERCENTAGE" /> درصد پر و درحال شارژ است.</translation>
 <translation id="6803622936009808957">نمایش یک تصویر واحد در چند صفحه نمایش ممکن نیست زیرا وضوح تصویر پشتیبانی شده‌ای وجود ندارد. بجای آن حالت نمایش دسک‌تاپ چند بخشی استفاده می‌شود.</translation>
+<translation id="683971173229319003">Search+L</translation>
 <translation id="68610848741840742">‏ChromeVox (بازخورد گفتاری)</translation>
 <translation id="6911468394164995108">پیوستن به شبکه دیگر…</translation>
 <translation id="6915678159055240887">Chromebox</translation>
@@ -167,6 +176,7 @@
 <translation id="6981982820502123353">قابلیت دسترسی</translation>
 <translation id="7029814467594812963">خروج از جلسه</translation>
 <translation id="703171847531699602">هیچ دستگاه فرستادنی وجود ندارد</translation>
+<translation id="7034339000180558234">ارسال محتوای <ph name="TAB_NAME" /> به <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">تنظیم کاغذدیواری...</translation>
 <translation id="7097613348211027502">‏ChromeVox (بازخورد گفتاری) فعال است.
 برای غیرفعال کردن آن Ctrl+Alt+Z را فشار دهید.</translation>
@@ -178,6 +188,7 @@ Alt+جستجو یا Shift را برای لغو فشار دهید.</translation>
 <translation id="737451040872859086">میکروفن (داخلی)</translation>
 <translation id="742594950370306541">دوربین در حال استفاده است.</translation>
 <translation id="743058460480092004">دوربین و میکروفن در حال استفاده هستند.</translation>
+<translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" />،‏ <ph name="SPECIFIED_RESOLUTION" /> را پشتیبانی نمی‌کند. وضوح به <ph name="FALLBACK_RESOLUTION" /> تغییر کرد</translation>
 <translation id="7573962313813535744">حالت اتصال به پایه</translation>
 <translation id="7593891976182323525">‏جستجو یا Shift</translation>
@@ -205,6 +216,7 @@ Alt+جستجو یا Shift را برای لغو فشار دهید.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="882279321799040148">برای مشاهده کلیک کنید</translation>
 <translation id="8828714802988429505">۹۰°</translation>
+<translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8878886163241303700">صفحه گسترش یافته است</translation>
 <translation id="8940956008527784070">باتری ضعیف است (<ph name="PERCENTAGE" />٪)</translation>
 <translation id="9074739597929991885">بلوتوث</translation>

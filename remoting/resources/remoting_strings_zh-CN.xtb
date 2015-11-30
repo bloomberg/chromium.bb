@@ -24,6 +24,7 @@
 <translation id="1546934824884762070">发生意外错误。请将此问题报告给开发者。</translation>
 <translation id="1619813076098775562">已断开与投射设备的连接。</translation>
 <translation id="1643640058022401035">如果您离开此页，那么您的 Chrome 远程访问会话就会结束。</translation>
+<translation id="1646994964686260497">没有可供连接的计算机。</translation>
 <translation id="1654128982815600832">正在对此计算机启用远程连接…</translation>
 <translation id="170207782578677537">无法注册此计算机。</translation>
 <translation id="1704090719919187045">Chrome 远程访问主机偏好设置</translation>
@@ -109,6 +110,7 @@
 <translation id="3606997049964069799">您尚未登录 Chromium。请登录，然后重试。</translation>
 <translation id="3649256019230929621">最小化窗口</translation>
 <translation id="369442766917958684">离线。</translation>
+<translation id="3695446226812920698">如何解决</translation>
 <translation id="3776024066357219166">您的 Chrome 远程桌面会话已结束。</translation>
 <translation id="3785447812627779171">Chrome 远程
 访问主机</translation>
@@ -121,6 +123,10 @@
 <translation id="3950820424414687140">登录</translation>
 <translation id="3989511127559254552">要继续，您必须先为该应用授予对您的计算机的扩展访问权限（该操作只需执行一次）。</translation>
 <translation id="4006787130661126000">如果您想使用 Chrome 远程桌面来访问此计算机，就必须启用远程连接。</translation>
+<translation id="401121182145179743">您需要先为您的计算机设置远程访问。</translation>
+<translation id="4028465833180158312">• Material Design 界面更新。
+• 加入了第三方许可信息。
+• 针对离线的远程计算机显示相关信息。</translation>
 <translation id="405887016757208221">远程计算机未能将该会话初始化。如果问题仍然存在，请尝试重新配置主机。</translation>
 <translation id="4068946408131579958">所有连接</translation>
 <translation id="409800995205263688">注意：策略设置仅允许您网络内的计算机之间建立连接。</translation>

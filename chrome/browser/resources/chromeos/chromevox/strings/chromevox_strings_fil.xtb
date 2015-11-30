@@ -357,6 +357,7 @@
 <translation id="4729095194763193578">Nakaraang row ng talahanayan</translation>
 <translation id="4736221692378411923">Agosto</translation>
 <translation id="4740661827607246557">Mga Command ng Tulong</translation>
+<translation id="4755857887974653209">I-disable ang ChromeVox</translation>
 <translation id="4759716709594980008">ChromeOS Keyboard Explorer</translation>
 <translation id="4763296182459741068">Naka-wrap sa ibaba</translation>
 <translation id="4763480195061959176">video</translation>
@@ -661,6 +662,7 @@
 <translation id="8065607967589909823">Ang pagpipilian ay</translation>
 <translation id="8066678206530322333">Banner</translation>
 <translation id="8110647606445335195">Walang mga landmark ng ARIA.</translation>
+<translation id="8132379720172247073">Menu ng ChromeVox</translation>
 <translation id="8153880621934657047">Wala sa loob ng talahanayan.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{underscore}one{# underscore}other{# na underscore}}</translation>
 <translation id="8179976553408161302">Enter</translation>
@@ -696,6 +698,7 @@
 <translation id="8584721346566392021">h5</translation>
 <translation id="8587549812518406253">Susunod na item sa listahan</translation>
 <translation id="860150890330522909">Nilagyan ng check ang checkbox na <ph name="NAME" /></translation>
+<translation id="8603071050456974042">Panel ng ChromeVox</translation>
 <translation id="8606621670302093223">Kontrol sa petsa</translation>
 <translation id="8631359288236106450">napili ang <ph name="COUNT" /> (na) item</translation>
 <translation id="8638532244051952400">Ianunsyo ang mga kasalukuyang cell coordinate</translation>

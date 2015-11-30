@@ -24,6 +24,7 @@ Gizlilikle ilgili daha fazla bilgi edinmek için lütfen Google Gizlilik Politik
 <translation id="1546934824884762070">Beklenmeyen bir hata oluştu. Lütfen bu sorunu geliştiricilere bildirin.</translation>
 <translation id="1619813076098775562">Cast cihazına bağlantı kapatıldı.</translation>
 <translation id="1643640058022401035">Bu sayfadan ayrılırsanız Chromoting oturumunuz sonlandırılır.</translation>
+<translation id="1646994964686260497">Bağlanacak bir bilgisayar yok.</translation>
 <translation id="1654128982815600832">Bu bilgisayara uzaktan bağlantılar etkinleştiriliyor…</translation>
 <translation id="170207782578677537">Bu bilgisayar kaydettirilemedi.</translation>
 <translation id="1704090719919187045">Chromoting Ana Makine Tercihleri</translation>
@@ -109,6 +110,7 @@ Gizlilikle ilgili daha fazla bilgi edinmek için lütfen Google Gizlilik Politik
 <translation id="3606997049964069799">Chromium'da oturum açmadınız. Lütfen oturum açın ve tekrar deneyin.</translation>
 <translation id="3649256019230929621">Pencereyi simge durumuna küçült</translation>
 <translation id="369442766917958684">Çevrimdışı.</translation>
+<translation id="3695446226812920698">Nasıl yapacağınızı öğrenin</translation>
 <translation id="3776024066357219166">Chrome Uzaktan Masaüstü oturumunuz sonlandı.</translation>
 <translation id="3785447812627779171">Chromoting
 Ana Makinesi</translation>
@@ -121,6 +123,10 @@ Ana Makinesi</translation>
 <translation id="3950820424414687140">Oturum açın</translation>
 <translation id="3989511127559254552">Devam etmek için öncelikle bilgisayarınıza genişletilmiş erişim izinleri vermelisiniz. Bunu yalnızca bir kez yapmanız yeterlidir.</translation>
 <translation id="4006787130661126000">Bu bilgisayara erişmek için Chrome Uzaktan Masaüstü uygulamasını kullanmak istiyorsanız uzaktan bağlantıları etkinleştirmelisiniz.</translation>
+<translation id="401121182145179743">İlk olarak bilgisayarınızı uzaktan erişim için ayarlamanız gerekir.</translation>
+<translation id="4028465833180158312">• Materyal Tasarım kullanıcı arayüzü güncellemeleri.
+• Üçüncü taraf lisanslama kredileri.
+• Çevrimdışı uzak bilgisayarlar için gösterilen bilgiler.</translation>
 <translation id="405887016757208221">Uzak bilgisayar, oturumu ilk kullanıma hazırlayamadı. Sorun devam ederse lütfen ana makineyi tekrar yapılandırmayı deneyin.</translation>
 <translation id="4068946408131579958">Tüm bağlantılar</translation>
 <translation id="409800995205263688">NOT: Politika ayarları, yalnızca ağınızdaki bilgisayarlar arasındaki bağlantılara izin veriyor.</translation>

@@ -24,6 +24,7 @@ Voor meer informatie over privacy bekijk je het Privacybeleid van Google (http:/
 <translation id="1546934824884762070">Er is een onverwachte fout opgetreden. Meld dit probleem aan de ontwikkelaars.</translation>
 <translation id="1619813076098775562">De verbinding met het Cast-apparaat is verbroken.</translation>
 <translation id="1643640058022401035">Als je deze pagina verlaat, wordt je Chromoting-sessie beëindigd.</translation>
+<translation id="1646994964686260497">Er is geen apparaat om verbinding mee te maken.</translation>
 <translation id="1654128982815600832">Externe verbindingen voor deze computer inschakelen…</translation>
 <translation id="170207782578677537">Kan deze computer niet registreren.</translation>
 <translation id="1704090719919187045">Voorkeuren voor Chromoting-host</translation>
@@ -109,6 +110,7 @@ Voor meer informatie over privacy bekijk je het Privacybeleid van Google (http:/
 <translation id="3606997049964069799">Je bent niet ingelogd bij Chromium. Log in en probeer het opnieuw.</translation>
 <translation id="3649256019230929621">Venster minimaliseren</translation>
 <translation id="369442766917958684">Offline.</translation>
+<translation id="3695446226812920698">Meer informatie</translation>
 <translation id="3776024066357219166">Je Chrome Remote Desktop-sessie is beëindigd.</translation>
 <translation id="3785447812627779171">Chromoting-
 host</translation>
@@ -121,6 +123,10 @@ host</translation>
 <translation id="3950820424414687140">Inloggen</translation>
 <translation id="3989511127559254552">Als je wilt doorgaan, moet je eerst uitgebreide toegangsrechten voor je computer verlenen. Je hoeft dit slechts één keer te doen.</translation>
 <translation id="4006787130661126000">Je moet externe verbindingen inschakelen als je Chrome Remote Desktop wilt gebruiken voor toegang tot deze computer.</translation>
+<translation id="401121182145179743">Je moet eerst je computer instellen voor toegang op afstand.</translation>
+<translation id="4028465833180158312">• Updates voor gebruikersinterface in Material design.
+• Kennisgeving voor licenties van derden.
+• Weergave van informatie voor externe computers die offline zijn.</translation>
 <translation id="405887016757208221">De externe computer kan de sessie niet initialiseren. Als het probleem blijft optreden, configureer je de host opnieuw.</translation>
 <translation id="4068946408131579958">Alle verbindingen</translation>
 <translation id="409800995205263688">OPMERKING: beleidsinstellingen staan alleen verbindingen tussen computers binnen je netwerk toe.</translation>

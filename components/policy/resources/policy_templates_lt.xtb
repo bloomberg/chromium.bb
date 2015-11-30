@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="lt">
+<translation id="101438888985615157">Pasukti ekraną 180 laipsnių kampu</translation>
 <translation id="1017967144265860778">Energijos valdymas prisijungimo ekrane</translation>
 <translation id="1019101089073227242">Nustatyti naudotojo duomenų katalogą</translation>
 <translation id="1022361784792428773">Plėtinių, kurių diegti naudotojams turi būti neleidžiama (arba „*“, jei neleidžiama nė vieno), ID</translation>
@@ -266,6 +267,17 @@
 <translation id="2113068765175018713">Apriboti įrenginio veiksenos laiką automatiškai įkeliant operacinę sistemą iš naujo</translation>
 <translation id="2127599828444728326">Leisti pranešimus šiose svetainėse</translation>
 <translation id="2131902621292742709">Ekrano pritemdymo delsa, kai naudojama akumuliatoriaus energija</translation>
+<translation id="2137064848866899664">Jei ši politika nustatyta, kiekvienas ekranas pasukamas
+      nurodyta kryptimi kiekvieną kartą paleidus įrenginį iš naujo ir pirmą kartą
+      jį prijungus po politikos pasikeitimo. Naudotojai gali prisijungti ir keisti ekrano
+      sukimo nustatymus nustatymų puslapyje, bet jų nustatymas bus
+      pakeistas politikos verte kitą kartą paleidus įrenginį iš naujo.
+
+      Ši politika taikoma ir pagrindiniam, ir visiems antriniams ekranams.
+
+      Jei politika nenustatyta, numatytoji vertė yra 0 laipsnių ir naudotojas
+      gali ją keisti. Tokiu atveju numatytoji vertė nėra pritaikoma iš naujo
+      paleidus įrenginį iš naujo.</translation>
 <translation id="2166715102875984646">Išjungiamas trimatės grafikos API palaikymas.
 
       Jei įgalinsite šį nustatymą, per tinklalapius nebus galima pasiekti grafikos apdorojimo įrenginių (GPU). Paprastai per tinklalapius negalima pasiekti „WebGL“ API, o papildiniai negali naudoti „Pepper“ trimatės API.
@@ -994,6 +1006,7 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
       Jei įgalinsite šį nustatymą, daugiau nebus galima pasiekti kūrėjo įrankių ir patikrinti svetainės elementų. Bus neleidžiami visi spartieji klavišai ir meniu ar kontekstinių meniu įrašai, skirti kūrėjo įrankiams ar „JavaScript“ konsolei atidaryti.
 
       Neleidus šios parinkties ar jos nenustačius, naudotojas (-a) galės naudoti kūrėjo įrankius ir „JavaScript“ konsolę.</translation>
+<translation id="4449545651113180484">Sukti ekraną pagal laikrodžio rodyklę 270 laipsnių kampu</translation>
 <translation id="4467952432486360968">Blokuoti trečiosios šalies slapukus</translation>
 <translation id="4474167089968829729">Įgalinti slaptažodžių saugojimą slaptažodžių tvarkytuvėje</translation>
 <translation id="4480694116501920047">Priverstinai vykdyti saugią paiešką</translation>
@@ -1263,6 +1276,7 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
       Jei neleidžiama, numatytasis paieškos variklis neimportuojamas.
 
       Jei nenustatyta, naudotojo gali būti paklausta, ar importuoti, arba gali būti automatiškai importuojama.</translation>
+<translation id="5423197884968724595">„Android WebView“ apribojimo pavadinimas:</translation>
 <translation id="5447306928176905178">Įgalinti ataskaitų teikimo atminties informaciją (JS masyvo dydžio) puslapyje (nepatvirtinta)</translation>
 <translation id="5457065417344056871">Svečio režimo įgalinimas naršyklėje</translation>
 <translation id="5457924070961220141">Leidžiama konfigūruoti numatytąją HTML pateikimo programą, kai įdiegta „<ph name="PRODUCT_FRAME_NAME" />“.
@@ -2040,6 +2054,7 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
           Jei šis nustatymas įgalintas, šis įrenginys gali rasti nuotolinės prieglobos įrenginius ir prie jų prisijungti, net jei jos atskirtos taikant užkardą.
 
            Jei šis nustatymas neleidžiamas ir išeinantys UDP ryšiai filtruojami taikant užkardą, šis įrenginys gali prisijungti tik prie prieglobos įrenginių vietiniame tinkle.</translation>
+<translation id="802147957407376460">Pasukti ekraną 0 laipsnių kampu</translation>
 <translation id="8044493735196713914">Pranešti įrenginio operacinės sistemos paleidimo būseną</translation>
 <translation id="8059164285174960932">URL, kur nuotolinės prieigos klientai turėtų gauti autentifikavimo prieigos raktą</translation>
 <translation id="8071636581296916773">Įgalinamas perdavimo serverių naudojimas, kai nuotolinės programos bando užmegzti ryšį su šiuo įrenginiu.
@@ -2156,6 +2171,8 @@ Jei plėtinio nėra sąraše arba sąrašas nenustatytas, kreipiantis į API įv
 <translation id="8382184662529825177">Įgalinti nuotolinio patvirtinimo naudojimą siekiant apsaugoti įrenginio turinį</translation>
 <translation id="838870586332499308">Įgalinti duomenų tarptinklinį ryšį</translation>
 <translation id="8412312801707973447">Ar atliekami OCSP / CRL patikrinimai prisijungus</translation>
+<translation id="8424255554404582727">Nustatyti numatytąjį ekrano sukimo nustatymą, kuris bus iš naujo pritaikymas kiekvieną kartą paleidus iš naujo</translation>
+<translation id="8426231401662877819">Sukti ekraną pagal laikrodžio rodyklę 90 laipsnių kampu</translation>
 <translation id="8451988835943702790">Naudoti naujo skirtuko puslapį kaip pagrindinį puslapį</translation>
 <translation id="8465065632133292531">Intuityviosios paieškos URL parametrai, kuriuose naudojama POST</translation>
 <translation id="847472800012384958">Neleisti jokioje svetainėje rodyti iššokančiųjų langų</translation>

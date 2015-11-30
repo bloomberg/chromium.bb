@@ -10,11 +10,12 @@
 <translation id="1293235220023151515">Foi encontrada uma instalação conflituosa do Chromium no sistema. Desinstale e tente novamente.</translation>
 <translation id="1298199220304005244">Obter ajuda para usar o Chromium OS</translation>
 <translation id="1396446129537741364">O Chromium está tentando mostrar senhas.</translation>
+<translation id="1403254041219632970">As futuras versões do Chromium não serão mais compatíveis com Mac OS X 10.6, 10.7 ou 10.8.</translation>
 <translation id="1414495520565016063">Você está conectado ao Chromium.</translation>
 <translation id="1444754455097148408">Licenças de código aberto do Chromium</translation>
-<translation id="1461885241643463646">Ativa fluxos de login do Chromium baseados em iframe. Esta sinalização modifica login com ativação baseada na Web.</translation>
 <translation id="1480489203462860648">Experimente, já está instalado</translation>
 <translation id="151962892725702025">O Chromium OS não pôde sincronizar seus dados porque a sincronização não está disponível para seu domínio.</translation>
+<translation id="1559451348202814456">É possível que o Chromium não funcione corretamente, porque ele não é mais compatível com Mac OS X 10.6, 10.7 ou 10.8.</translation>
 <translation id="1644918877723739397">O Chromium armazenará essa senha na sua <ph name="SAVED_PASSWORD_LINK" /> e lembrará dela na próxima vez que você precisar.</translation>
 <translation id="1668054258064581266">Depois de remover sua conta do Chromium, pode ser necessário recarregar as guias abertas para que a alteração entre em vigor.</translation>
 <translation id="1688750314291223739">Configure a sincronização para salvar suas características de navegador personalizadas na web e acessá-las do Chromium em qualquer computador.</translation>
@@ -43,8 +44,10 @@
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{Um download está em andamento. Deseja cancelar o download e sair do Chromium?}one{# downloads estão em andamento. Deseja cancelar os downloads e sair do Chromium?}other{# downloads estão em andamento. Deseja cancelar os downloads e sair do Chromium?}}</translation>
 <translation id="2396765026452590966">A extensão "<ph name="EXTENSION_NAME" />" alterou a página que é exibida quando você inicia o Chromium.</translation>
 <translation id="2485422356828889247">Desinstalar</translation>
+<translation id="2486653164587200256">É possível que o Chromium não funcione corretamente, porque ele não é mais compatível com o Windows XP ou Windows Vista.</translation>
 <translation id="2535480412977113886">O Chromium OS não pôde sincronizar seus dados porque os detalhes de login da sua conta estão desatualizados.</translation>
 <translation id="2558641060352364164">Este site está usando o plug-in Chromium Frame, que não será mais compatível em breve. Desinstale-o e faça upgrade para um navegador moderno.</translation>
+<translation id="2565260267992448464">O Chromium não pode exibir a página da Web porque seu computador não está conectado à Internet.</translation>
 <translation id="2572494885440352020">Assistente do Chromium</translation>
 <translation id="2602806952220118310">Chromium – Notificações</translation>
 <translation id="2636877269779209383">O Chromium precisa de acesso à câmera para compartilhá-la com este site.</translation>
@@ -104,6 +107,7 @@ incomuns e incorretas. Isso pode acontecer quando que um invasor está fingindo 
 <translation id="4423735387467980091">Personalizar e controlar o Chromium</translation>
 <translation id="4458285410772214805">Saia e faça login novamente para que esta alteração entre em vigor.</translation>
 <translation id="4488676065623537541">Seus dados para cobrança foram salvos no Chromium.</translation>
+<translation id="4549794359424059447">As futuras versões do Chromium não serão mais compatível com o Windows XP ou Windows Vista.</translation>
 <translation id="4559775032954821361">Vá para
           o menu do Chromium &gt;
           <ph name="SETTINGS_TITLE" />
@@ -132,6 +136,7 @@ incomuns e incorretas. Isso pode acontecer quando que um invasor está fingindo 
 <translation id="549669000822060376">Aguarde enquanto o Chromium instala as últimas atualizações do sistema.</translation>
 <translation id="5563479599352954471">Pesquisar com um toque</translation>
 <translation id="5620765574781326016">Saiba mais sobre tópicos em websites sem sair da página.</translation>
+<translation id="5680901439334282664">fazer login no Chromium</translation>
 <translation id="5772805321386874569">(requer a <ph name="BEGIN_BUTTON" />reinicialização<ph name="END_BUTTON" /> do Chromium)</translation>
 <translation id="5796460469508169315">O Chromium está quase pronto.</translation>
 <translation id="580822234363523061">Vá para
@@ -204,7 +209,6 @@ incomuns e incorretas. Isso pode acontecer quando que um invasor está fingindo 
 <translation id="761356813943268536">O Chromium está usando sua câmera e seu microfone.</translation>
 <translation id="7617377681829253106">O Chromium ficou ainda melhor</translation>
 <translation id="7641113255207688324">O Chromium não é seu navegador padrão.</translation>
-<translation id="7723128346970903111">Quando ativada, usa o fluxo de login do Chromium baseado em iframe. Caso contrário, usa um fluxo baseado em visualização da Web.</translation>
 <translation id="7729447699958282447">O Chromium não pôde sincronizar seus dados porque a sincronização não está disponível para seu domínio.</translation>
 <translation id="7747138024166251722">O instalador não conseguiu criar um diretório temporário. Verifique se há espaço livre em disco e se há permissão para a instalação de software.</translation>
 <translation id="7918535023914021398">O Chromium verificou que <ph name="ISSUER" /> emitiu o certificado deste website. O servidor não forneceu nenhuma informação de Transparência de certificado.</translation>

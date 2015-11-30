@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="it">
+<translation id="101438888985615157">Ruota lo schermo di 180°</translation>
 <translation id="1017967144265860778">Gestione dell'alimentazione nella schermata di accesso</translation>
 <translation id="1019101089073227242">Imposta directory dati utente</translation>
 <translation id="1022361784792428773">ID delle estensioni (oppure * per tutte le estensioni) per cui non è consentita l'installazione</translation>
@@ -229,6 +230,11 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="2113068765175018713">Limita il tempo di attività del dispositivo riavviandolo automaticamente</translation>
 <translation id="2127599828444728326">Consenti notifiche su questi siti</translation>
 <translation id="2131902621292742709">Ritardo oscuramento schermo in caso di utilizzo della batteria</translation>
+<translation id="2137064848866899664">Se la norma viene impostata, ogni schermo viene ruotato secondo l'orientamento specificato, a ogni riavvio e la prima volta che viene collegato in seguito alla modifica della norma. Dopo aver eseguito l'accesso, gli utenti possono modificare la rotazione dello schermo tramite la pagina delle impostazioni ma, al successivo riavvio, la loro impostazione viene sostituita dal valore della norma.
+
+      La norma si applica allo schermo principale e a tutti gli schermi secondari.
+
+      Se la norma non viene impostata, il valore predefinito è 0° e l'utente può modificarlo liberamente. In questo caso, il valore predefinito non viene applicato nuovamente al riavvio.</translation>
 <translation id="2166715102875984646">Consente di disattivare il supporto per le API grafiche 3D.
 
       Se l'impostazione viene attivata, le pagine web non possono accedere all'unità di elaborazione grafica (GPU). Nello specifico, le pagine web non possono accedere all'API WebGL e i plug-in non possono utilizzare l'API Pepper 3D.
@@ -855,6 +861,7 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       </translation>
 <translation id="4442582539341804154">Attiva il blocco quando lo stato del dispositivo diventa inattivo o sospeso</translation>
 <translation id="4445684791305970001">Consente di disattivare gli Strumenti per sviluppatori e la Console JavaScript. Se attivi questa impostazione, gli Strumenti per sviluppatori non saranno accessibili e non sarà più possibile eseguire un'ispezione degli elementi del sito web. Le scorciatoie da tastiera e le voci dei menu contestuali e di altri menu che consentono di aprire gli Strumenti per sviluppatori o la Console JavaScript verranno disattivate. Se disattivi questa opzione o non la imposti sarà possibile utilizzare gli Strumenti per sviluppatori e la Console JavaScript.</translation>
+<translation id="4449545651113180484">Ruota lo schermo in senso orario di 270°</translation>
 <translation id="4467952432486360968">Blocca cookie di terze parti</translation>
 <translation id="4474167089968829729">Attiva il salvataggio delle password in Gestione password</translation>
 <translation id="4480694116501920047">Forza SafeSearch</translation>
@@ -1076,6 +1083,7 @@ Se questa impostazione viene attivata, i dispositivi di input e output fisici de
 
 Se questa impostazione viene disattivata o non viene impostata, sia gli utenti locali che remoti potranno interagire con l'host quando viene condiviso.</translation>
 <translation id="5423001109873148185">Se è attiva, questa norma impone l'importazione dei motori di ricerca dal browser predefinito corrente. Se la norma è attiva incide anche sulla finestra di dialogo di importazione. Se non è attiva, il motore di ricerca predefinito non viene importato. Se non viene impostata, all'utente potrebbe essere chiesto se desidera effettuare l'importazione, oppure l'importazione potrebbe avvenire automaticamente.</translation>
+<translation id="5423197884968724595">Nome della limitazione di Android WebView:</translation>
 <translation id="5447306928176905178">Attiva le informazioni relative ai rapporti sulla memoria (dimensioni heap JS) per la pagina (obsoleto)</translation>
 <translation id="5457065417344056871">Attiva modalità ospite nel browser</translation>
 <translation id="5457924070961220141">Consente di configurare il renderer HTML predefinito se <ph name="PRODUCT_FRAME_NAME" /> è installato. Se questa norma non viene impostata, per impostazione predefinita il rendering viene eseguito dal browser host; tuttavia, in alternativa, puoi sostituire tale impostazione e consentire che l'esecuzione del rendering delle pagine HTML venga eseguita, per impostazione predefinita, da <ph name="PRODUCT_FRAME_NAME" />.</translation>
@@ -1738,6 +1746,7 @@ Se questa norma non viene impostata, <ph name="PRODUCT_NAME" /> utilizzerà il v
 <translation id="7953256619080733119">Host delle eccezioni manuali per gli utenti gestiti</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Questa norma non è più supportata. Consente di attivare l'utilizzo di server relay e STUN durante la connessione a un client remoto. Se questa impostazione viene attivata, questo computer potrà rilevare i computer host remoti e collegarsi a essi anche se sono separati da un firewall. Se questa impostazione viene disattivata e le connessioni UDP in uscita vengono filtrate dal firewall, questo computer potrà collegarsi ai computer host soltanto all'interno della rete locale.</translation>
+<translation id="802147957407376460">Ruota lo schermo di 0°</translation>
 <translation id="8044493735196713914">Indicazione modalità di avvio dispositivo</translation>
 <translation id="8059164285174960932">URL su cui i client di accesso remoto dovrebbero ottenere il token di autenticazione</translation>
 <translation id="8071636581296916773">Consente l'utilizzo dei server relay quando i client remoti cercano di stabilire una connessione con il computer.
@@ -1843,6 +1852,8 @@ Se questa norma non viene impostata, le pagine saranno sottoposte a scansione pe
 <translation id="8382184662529825177">Attiva l'utilizzo dell'attestazione remota per la protezione dei contenuti per il dispositivo</translation>
 <translation id="838870586332499308">Attiva roaming dati</translation>
 <translation id="8412312801707973447">Esecuzione dei controlli OCSP/CRL online</translation>
+<translation id="8424255554404582727">Imposta la rotazione predefinita dello schermo, riapplicata a ogni riavvio</translation>
+<translation id="8426231401662877819">Ruota lo schermo in senso orario di 90°</translation>
 <translation id="8451988835943702790">Usa la pagina Nuova scheda come Pagina iniziale</translation>
 <translation id="8465065632133292531">Parametri per l'URL istantaneo che utilizza POST</translation>
 <translation id="847472800012384958">Non consentire la visualizzazione di popup nei siti</translation>

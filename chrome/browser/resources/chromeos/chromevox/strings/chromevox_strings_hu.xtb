@@ -357,6 +357,7 @@
 <translation id="4729095194763193578">Előző táblázatsor</translation>
 <translation id="4736221692378411923">augusztus</translation>
 <translation id="4740661827607246557">Súgóparancsok</translation>
+<translation id="4755857887974653209">A ChromeVox kikapcsolása</translation>
 <translation id="4759716709594980008">ChromeOS Keyboard Explorer</translation>
 <translation id="4763296182459741068">Az aljára kerül</translation>
 <translation id="4763480195061959176">video</translation>
@@ -661,6 +662,7 @@
 <translation id="8065607967589909823">A kijelölés:</translation>
 <translation id="8066678206530322333">Szalaghirdetés</translation>
 <translation id="8110647606445335195">Nincsenek ARIA határjelek.</translation>
+<translation id="8132379720172247073">ChromeVox-menü</translation>
 <translation id="8153880621934657047">Nem táblázatban van.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{alulvonás}other{# alulvonás}}</translation>
 <translation id="8179976553408161302">Enter</translation>
@@ -696,6 +698,7 @@
 <translation id="8584721346566392021">h5</translation>
 <translation id="8587549812518406253">Következő listaelem</translation>
 <translation id="860150890330522909"><ph name="NAME" /> négyzet bejelölve</translation>
+<translation id="8603071050456974042">ChromeVox-panel</translation>
 <translation id="8606621670302093223">Dátum beállítása</translation>
 <translation id="8631359288236106450"><ph name="COUNT" /> elem kiválasztva</translation>
 <translation id="8638532244051952400">Aktuális cella koordinátáinak kimondása</translation>

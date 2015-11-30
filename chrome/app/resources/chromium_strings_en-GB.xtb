@@ -12,11 +12,12 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="1293235220023151515">A conflicting installation of Chromium was found on the system. Please uninstall it and try again.</translation>
 <translation id="1298199220304005244">Get help with using Chromium OS</translation>
 <translation id="1396446129537741364">Chromium is trying to show passwords.</translation>
+<translation id="1403254041219632970">Future versions of Chromium will no longer support Mac OS X 10.6, 10.7 or 10.8.</translation>
 <translation id="1414495520565016063">You're signed in to Chromium!</translation>
 <translation id="1444754455097148408">Chromium open source licences</translation>
-<translation id="1461885241643463646">Enables iframe-based Chromium sign-in flows. This flag overrides enable-web-based-sign-in.</translation>
 <translation id="1480489203462860648">Try it out, it's already installed</translation>
 <translation id="151962892725702025">Chromium OS could not sync your data because Sync is not available for your domain.</translation>
+<translation id="1559451348202814456">Chromium may not function correctly because it is no longer supported on Mac OS X 10.6, 10.7 or 10.8.</translation>
 <translation id="1644918877723739397">Chromium will store this in your <ph name="SAVED_PASSWORD_LINK" /> and remember it the next time that you need it.</translation>
 <translation id="1668054258064581266">After removing your account from Chromium, you may need to reload your open tabs to take effect.</translation>
 <translation id="1688750314291223739">Set up Sync to save your personalised browser features to the web and access them from Chromium on any computer.</translation>
@@ -45,8 +46,10 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{A download is currently in progress. Do you want to cancel the download and exit Chromium?}other{# downloads are currently in progress. Do you want to cancel the downloads and exit Chromium?}}</translation>
 <translation id="2396765026452590966">The extension "<ph name="EXTENSION_NAME" />" has changed the page that is shown when you start Chromium.</translation>
 <translation id="2485422356828889247">Uninstall</translation>
+<translation id="2486653164587200256">Chromium may not function correctly because it is no longer supported on Windows XP or Windows Vista.</translation>
 <translation id="2535480412977113886">Chromium OS could not sync your data because your account sign-in details are out of date.</translation>
 <translation id="2558641060352364164">This site is using the Chromium Frame plug-in which will soon be unsupported. Please uninstall it and upgrade to a modern browser.</translation>
+<translation id="2565260267992448464">Chromium can't display the web page because your computer isn't connected to the Internet.</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="2602806952220118310">Chromium - Notifications</translation>
 <translation id="2636877269779209383">Chromium needs camera access to share it with this site.</translation>
@@ -107,6 +110,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="4423735387467980091">Customise and control Chromium</translation>
 <translation id="4458285410772214805">Please sign out and sign in again for this change to take effect.</translation>
 <translation id="4488676065623537541">Your billing details have been saved in Chromium.</translation>
+<translation id="4549794359424059447">Future versions of Chromium will no longer support Windows XP or Windows Vista.</translation>
 <translation id="4559775032954821361">Go to
           the Chromium menu &gt;
           <ph name="SETTINGS_TITLE" />
@@ -135,6 +139,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="549669000822060376">Please wait while Chromium installs the latest system updates.</translation>
 <translation id="5563479599352954471">Search with one touch</translation>
 <translation id="5620765574781326016">Learn about topics on websites without leaving the page.</translation>
+<translation id="5680901439334282664">sign in to Chromium</translation>
 <translation id="5772805321386874569">(requires Chromium <ph name="BEGIN_BUTTON" />restart<ph name="END_BUTTON" />)</translation>
 <translation id="5796460469508169315">Chromium is almost ready.</translation>
 <translation id="580822234363523061">Go to
@@ -211,7 +216,6 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="761356813943268536">Chromium is using your camera and microphone.</translation>
 <translation id="7617377681829253106">Chromium just got better</translation>
 <translation id="7641113255207688324">Chromium isn't your default browser.</translation>
-<translation id="7723128346970903111">When enabled, will use an iframe-based Chromium sign-in flow; otherwise uses a webview-based flow.</translation>
 <translation id="7729447699958282447">Chromium could not sync your data because Sync is not available for your domain.</translation>
 <translation id="7747138024166251722">The installer couldn't create a temporary directory. Please check for free disk space and permission to install software.</translation>
 <translation id="7918535023914021398">Chromium verified that <ph name="ISSUER" /> issued this website's certificate. The server did not supply any Certificate Transparency information.</translation>

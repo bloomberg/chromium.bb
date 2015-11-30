@@ -84,6 +84,7 @@
 <translation id="2556876185419854533">K&amp;umoa muokkaus</translation>
 <translation id="2581221116934462656">Haluatko, että <ph name="PRODUCT_NAME" /> ehdottaa sivuston kielellä <ph name="LANGUAGE_NAME" /> kirjoitettujen sivujen kääntämistä seuraavalla kerralla?</translation>
 <translation id="2587841377698384444">Hakemistosovellusliittymän tunnus:</translation>
+<translation id="2589937147782335782">Haluatko, että Google tallentaa tämän kortin?</translation>
 <translation id="2597378329261239068">Tämä asiakirja on suojattu salasanalla. Anna salasana.</translation>
 <translation id="2609632851001447353">Muunnelmat</translation>
 <translation id="2625385379895617796">Kellosi edistää</translation>
@@ -202,7 +203,6 @@
 <translation id="5295309862264981122">Vahvista liikkuminen</translation>
 <translation id="5299298092464848405">Virhe jäsennettäessä käytäntöä</translation>
 <translation id="5308689395849655368">Kaatumisraportit on poistettu käytöstä.</translation>
-<translation id="5316812925700871227">Käännä vastapäivään</translation>
 <translation id="5317780077021120954">Tallenna</translation>
 <translation id="536296301121032821">Käytännön asetuksien tallentaminen epäonnistui</translation>
 <translation id="540969355065856584">Palvelin ei voinut todistaa olevansa <ph name="DOMAIN" />, sillä sen suojausvarmenne ei tällä hetkellä ole kelvollinen. Tämä voi johtua määritysvirheestä tai verkkoyhteytesi siepanneesta hyökkääjästä.</translation>
@@ -219,6 +219,7 @@
 <translation id="560412284261940334">Hallintaa ei tueta</translation>
 <translation id="5629630648637658800">Käytännön asetuksien lataaminen epäonnistui</translation>
 <translation id="5631439013527180824">Laitteenhallintatunnus on virheellinen</translation>
+<translation id="5680545064257783621">Antaa käytöstäpoistomahdollisuuden parannellut kirjanmerkit -kokeilulle</translation>
 <translation id="5720705177508910913">Nykyinen käyttäjä</translation>
 <translation id="5813119285467412249">&amp;Toista lisäys</translation>
 <translation id="5872918882028971132">Ylätason ehdotukset</translation>
@@ -289,11 +290,13 @@
 <translation id="7424977062513257142">Viesti tälle verkkosivulle upotetulta sivulta:</translation>
 <translation id="7441627299479586546">Väärä käytännön aihe</translation>
 <translation id="7485870689360869515">Tietoja ei löydy.</translation>
+<translation id="7514365320538308">Lataa</translation>
 <translation id="7537536606612762813">Pakollinen</translation>
 <translation id="7542995811387359312">Automaattinen luottokortin tietojen täyttäminen on poistettu käytöstä, koska tämä lomake ei käytä suojattua yhteyttä.</translation>
 <translation id="7567204685887185387">Palvelin ei voinut todistaa olevansa <ph name="DOMAIN" />; sen suojausvarmenne on ehkä luotu vilpillisesti. Tämä voi johtua määritysvirheestä tai verkkoyhteytesi siepanneesta hyökkääjästä.</translation>
 <translation id="7568593326407688803">Tämä sivu on kirjoitettu kielellä<ph name="ORIGINAL_LANGUAGE" />Haluatko kääntää sen?</translation>
 <translation id="7569952961197462199">Poistetaanko luottokortti Chromen tiedoista?</translation>
+<translation id="7578104083680115302">Voit maksaa sivustoilla ja sovelluksissa nopeasti eri laitteillasi käyttämällä Googleen tallennettuja kortteja.</translation>
 <translation id="7592362899630581445">Palvelimen varmenne rikkoo nimirajoituksia.</translation>
 <translation id="7600965453749440009">Älä koskaan käännä kieltä <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">Arvo on alueen ulkopuolella (<ph name="VALUE" />).</translation>

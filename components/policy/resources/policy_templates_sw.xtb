@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sw">
+<translation id="101438888985615157">Zungusha skrini kwa digrii 180</translation>
 <translation id="1017967144265860778">Udhibiti wa nishati kwenye skrini ya kuingia</translation>
 <translation id="1019101089073227242">Weka saraka ya data ya mtumiaji</translation>
 <translation id="1022361784792428773">Vitambuslisho vya Kiendelezi ambacho mtumiaji anahitaji kuzuiwa kusakinisha (au * kwa zote)</translation>
@@ -262,6 +263,16 @@ Sera hii ikiondolewa, chaguo-msingi zitatumika kwa mipangilio yote.</translation
 <translation id="2113068765175018713">Wekea kifaa vizuizi vya muda wa kuwaka kwa kuzima na kuwasha kiotomatiki</translation>
 <translation id="2127599828444728326">Ruhusu arifa katika tovuti hizi</translation>
 <translation id="2131902621292742709">Ufifili wa skrini unachelewa wakati wa kuendesha kwa nishati ya betri</translation>
+<translation id="2137064848866899664">Sera hii ikiwekwa, kila onyesho litazungushwa hadi
+      mkao uliobainishwa kila inapowashwa tena, na mara ya kwanza inapounganishwa
+      baada ya thamani ya sera kubadilika. Watumiaji wanaweza kubadilisha mzunguko 
+      wa onyesho kupitia ukurasa wa mipangilio baada ya kuingia katika akaunti, lakini
+      mipangilio yake itabatilishwa na thamani za sera itakapowashwa tena.
+
+     Sera hii inatumika kwenye maonyesho ya msingi na ya pili yote.
+
+     Sera hii isipowekwa, thamani chaguo-msingi ni digrii 0 na mtumiaji yuko huru
+     kuibadilisha. Kwa hivyo, thamani chaguo msingi haitumiwi tena wakati wa kuzima na kuwasha.</translation>
 <translation id="2166715102875984646">Zima matumizi ya API za picha za 3D.
 
       Kuwasha kipengee hiki huzuia kurasa za wavuti kufikia kitengo cha kuchakata picha (GPU). Kurasa za wavuti haziwezi kufikia API ya WebGL na programu-jalizi haziwezi kutumia API ya Pepper 3D.
@@ -980,6 +991,7 @@ Thamani ya sera inapaswa kubainishwa katika sekunde. Thamani huwekwa pamoja ili 
       Ukiwezesha mpangilio huu, Zana za Msanidi Programu haziwezi kufikiwa na vipengee vya tovuti haviwezi kukaguliwa tena. Mikato yoyote ya kibodi na menyu yoyote au maingizo yoyote ya menyu ya muktadha ya kufungua Zana za Msanidi Programu au Kiweko cha JavaScript vitalemazwa.
 
       Kulemaza chaguo hii au kuiacha bila kuwekwa kutaruhusu mtumiaji kutumia Zana za Msanidi Programu na kiweko cha JavaScript.</translation>
+<translation id="4449545651113180484">Zungusha skrini kwa mwendo wa saa kwa digrii 270</translation>
 <translation id="4467952432486360968">Zuia vidakuzi vya wengine</translation>
 <translation id="4474167089968829729">Washa kipengele cha kuhifadhi manenosiri kwenye kidhibiti cha nenosiri</translation>
 <translation id="4480694116501920047">Lazimisha SafeSearch</translation>
@@ -2006,6 +2018,7 @@ Kama sera haitawekwa, kikuza skrini kitazimwa wakati skrini ya kuingia katika ak
           Ikiwa mpangilio huu umewezeshwa, hivyo basi mashine yanaweza kutambua na kuunganisha kwenye mpangishaji wa mbali hata ikiwa yametengamnishwa kwa ngome.
 
           Ikiwa mpangilio huu umelemazwa na miunganisho ya UDP inayoondoka imechujwa kwa ngome, hivyo basi mashine haya yanaweza tu kuunganisha kwenye mashine ya mpangishaji katika mtandao wa karibu.</translation>
+<translation id="802147957407376460">Zungusha skrini kwa digrii 0</translation>
 <translation id="8044493735196713914">Ripoti modi ya kuwasha kifaa</translation>
 <translation id="8059164285174960932">URL ambapo seva teja za ufikiaji wa mbali zinapaswa kupata tokeni za uthibitishaji</translation>
 <translation id="8071636581296916773">Inawasha matumizi ya seva za relei seva teja za mbali zinapojaribu kutambua muunganisho wa mashini hii.
@@ -2117,6 +2130,8 @@ Kama sera hii haitawekwa, hali ya juu ya utofautishaji itazimwa mwanzoni lakini 
 <translation id="8382184662529825177">Washa matumizi ya usahihishaji wa mbali wa kulinda maudhui ya kifaa</translation>
 <translation id="838870586332499308">Wezesha utumiaji wa data nje ya mtandao wako wa kawaida</translation>
 <translation id="8412312801707973447">Ikiwa ukaguzi wa mtandaoni wa OCSP/CRL umeatekelezwa</translation>
+<translation id="8424255554404582727">Weka mzunguko chaguo-msingi wa onyesho, unaotumika kila unapowashwa tena</translation>
+<translation id="8426231401662877819">Zungusha skrini kwa mwendo wa saa kwa digrii 90</translation>
 <translation id="8451988835943702790">Tumia Ukurasa Mpya wa Kichupo kama ukurasa wa kwanza</translation>
 <translation id="8465065632133292531">Vigezo vya URL ya papo hapo inayotumia POST</translation>
 <translation id="847472800012384958">Usiruhusu tovuti yoyote kuonyesha madirisha ibukizi</translation>

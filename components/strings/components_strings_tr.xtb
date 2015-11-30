@@ -84,6 +84,7 @@
 <translation id="2556876185419854533">Düzenlemeyi &amp;Geri Al</translation>
 <translation id="2581221116934462656"><ph name="PRODUCT_NAME" /> ürününün bir dahaki sefere <ph name="LANGUAGE_NAME" /> sayfaları çevirmeyi teklif etmesini ister misiniz?</translation>
 <translation id="2587841377698384444">Dizin API'sı Kimliği:</translation>
+<translation id="2589937147782335782">Google'ın bu kartı kaydetmesini istiyor musunuz?</translation>
 <translation id="2597378329261239068">Doküman şifre korumalı. Lütfen şifreyi girin.</translation>
 <translation id="2609632851001447353">Varyasyonlar</translation>
 <translation id="2625385379895617796">Saatiniz ileri</translation>
@@ -202,7 +203,6 @@
 <translation id="5295309862264981122">Gezintiyi Onayla</translation>
 <translation id="5299298092464848405">Politika ayrıştırma hatası</translation>
 <translation id="5308689395849655368">Kilitlenme bildirme devre dışı.</translation>
-<translation id="5316812925700871227">Saat yönünün tersine döndür</translation>
 <translation id="5317780077021120954">Kaydet</translation>
 <translation id="536296301121032821">Politika ayarları saklanamadı</translation>
 <translation id="540969355065856584">Bu sunucu <ph name="DOMAIN" /> olduğunu kanıtlayamadı. Güvenlik sertifikası şu anda geçerli değil. Bu durum, bir yanlış yapılandırmadan veya bağlantıya müdahale eden bir saldırgandan kaynaklanıyor olabilir.</translation>
@@ -219,6 +219,7 @@
 <translation id="560412284261940334">Yönetim desteklenmiyor</translation>
 <translation id="5629630648637658800">Politika ayarları yüklenemedi</translation>
 <translation id="5631439013527180824">Geçersiz cihaz yönetimi jetonu</translation>
+<translation id="5680545064257783621">Gelişmiş yer işaretleri deneyi için bir kapama anahtarı sağlar</translation>
 <translation id="5720705177508910913">Geçerli kullanıcı</translation>
 <translation id="5813119285467412249">Eklemeyi &amp;Yeniden Yap</translation>
 <translation id="5872918882028971132">Ebeveyn Önerileri</translation>
@@ -289,11 +290,13 @@
 <translation id="7424977062513257142">Bu web sayfasındaki yerleşik bir sayfanın mesajı:</translation>
 <translation id="7441627299479586546">Politika konusu yanlış</translation>
 <translation id="7485870689360869515">Hiçbir veri bulunamadı.</translation>
+<translation id="7514365320538308">İndir</translation>
 <translation id="7537536606612762813">Zorunlu</translation>
 <translation id="7542995811387359312">Bu form güvenli bağlantı kullanmadığından kredi kartı bilgilerini otomatik doldurma özelliği devre dışı bırakıldı.</translation>
 <translation id="7567204685887185387">Bu sunucu <ph name="DOMAIN" /> olduğunu kanıtlayamadı. Güvenlik sertifikası hileli bir şekilde yayınlanmış olabilir. Bu durum, bir yanlış yapılandırmadan veya bağlantıya müdahale eden bir saldırgandan kaynaklanıyor olabilir.</translation>
 <translation id="7568593326407688803">Bu sayfanın dili<ph name="ORIGINAL_LANGUAGE" />Çevrilmesini istiyor musunuz?</translation>
 <translation id="7569952961197462199">Kredi kartı Chrome'dan kaldırılsın mı?</translation>
+<translation id="7578104083680115302">Google'a kaydettiğiniz kartları kullanarak farklı cihazlardan sitelerde ve uygulamalarda ödemelerinizi hızla yapabilirsiniz.</translation>
 <translation id="7592362899630581445">Sunucunun sertifikası ad sınırlamasını ihlal ediyor.</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE" /> dilini asla çevirme</translation>
 <translation id="7610193165460212391">Değer aralık dışında: <ph name="VALUE" />.</translation>

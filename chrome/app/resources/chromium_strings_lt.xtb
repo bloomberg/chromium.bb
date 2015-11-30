@@ -12,11 +12,12 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="1293235220023151515">Sistemoje aptikta nesuderinama „Chromium“ įdiegtis. Pašalinkite ją ir bandykite dar kartą.</translation>
 <translation id="1298199220304005244">Gauti su „Chromium“ OS naudojimu susijusios pagalbos</translation>
 <translation id="1396446129537741364">„Chromium“ bando parodyti slaptažodžius.</translation>
+<translation id="1403254041219632970">Būsimų versijų „Chromium“ nebebus palaikoma naudojant 10.6, 10.7 ar 10.8 versijos „Mac OS X“.</translation>
 <translation id="1414495520565016063">Esate prisijungę prie „Chromium“.</translation>
 <translation id="1444754455097148408">„Chromium“ atvirojo šaltinio licencijos</translation>
-<translation id="1461885241643463646">Įgalinami „Chromium“ prisijungimo „iframe“ pagrindu srautai. Ši žymė nepaiso funkcijos „įgalinti prisijungimą žiniatinklyje“.</translation>
 <translation id="1480489203462860648">Išbandykite, jau įdiegta</translation>
 <translation id="151962892725702025">„Chromium“ OS negali sinchronizuoti duomenų, nes jūsų domene sinchronizavimas nepasiekiamas.</translation>
+<translation id="1559451348202814456">„Chromium“ gali tinkamai neveikti, nes ji nebepalaikoma naudojant 10.6, 10.7 ar 10.8 versijos „Mac OS X“.</translation>
 <translation id="1644918877723739397">„Chromium“ jį išsaugos naudodama <ph name="SAVED_PASSWORD_LINK" /> ir prisimins, kai jo prireiks kitą kartą.</translation>
 <translation id="1668054258064581266">Pašalinus paskyrą iš „Chromium“, galbūt reikės iš naujo įkelti skirtukus, kad pakeitimai įsigaliotų.</translation>
 <translation id="1688750314291223739">Nustatykite sinchronizavimą, kad žiniatinklyje išsaugotumėte suasmenintas naršyklės funkcijas ir pasiektumėte jas iš „Chromium“ bet kuriuo kompiuteriu.</translation>
@@ -45,8 +46,10 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{Šiuo metu vykdomas atsisiuntimas. Ar norite atšaukti atsisiuntimą ir išeiti iš „Chromium“?}one{Šiuo metu vykdomas # atsisiuntimas. Ar norite atšaukti atsisiuntimus ir išeiti iš „Chromium“?}few{Šiuo metu vykdomi # atsisiuntimai. Ar norite atšaukti atsisiuntimus ir išeiti iš „Chromium“?}many{Šiuo metu vykdoma # atsisiuntimo. Ar norite atšaukti atsisiuntimus ir išeiti iš „Chromium“?}other{Šiuo metu vykdoma # atsisiuntimų. Ar norite atšaukti atsisiuntimus ir išeiti iš „Chromium“?}}</translation>
 <translation id="2396765026452590966">Plėtinys „<ph name="EXTENSION_NAME" />“ pakeitė, kuris puslapis rodomas paleidus „Chromium“.</translation>
 <translation id="2485422356828889247">Pašalinti</translation>
+<translation id="2486653164587200256">„Chromium“ gali tinkamai neveikti, nes ji nebepalaikoma naudojant „Windows XP“ arba „Windows Vista“.</translation>
 <translation id="2535480412977113886">„Chromium“ OS negali sinchronizuoti duomenų, nes paskyros išsami prisijungimo informacija yra pasenusi.</translation>
 <translation id="2558641060352364164">Šioje svetainėje naudojamas „Chromium“ rėmelio papildinys, kuris greitai bus nepalaikomas. Pašalinkite jį ir atsisiųskite modernią naršyklę.</translation>
+<translation id="2565260267992448464">„Chromium“ nepavyksta pateikti tinklalapio, nes kompiuteris neprijungtas prie interneto.</translation>
 <translation id="2572494885440352020">„Chromium“ pagalbos priemonė</translation>
 <translation id="2602806952220118310">„Chromium“ – pranešimai</translation>
 <translation id="2636877269779209383">„Chromium“ reikia pasiekti fotoaparatą, kad galėtų bendrinti jį su šia svetaine.</translation>
@@ -108,6 +111,7 @@ ir netinkamus prisijungimo duomenis. Gali būti, kad užpuolėjas bando apsimest
 <translation id="4423735387467980091">Tinkinkite ir valdykite „Chromium“</translation>
 <translation id="4458285410772214805">Atsijunkite ir prisijunkite iš naujo, kad šis pakeitimas būtų pritaikytas.</translation>
 <translation id="4488676065623537541">Išsami atsiskaitymo informacija išsaugota „Chromium“.</translation>
+<translation id="4549794359424059447">Būsimų versijų „Chromium“ nebebus palaikoma naudojant „Windows XP“ ar „Windows Vista“.</translation>
 <translation id="4559775032954821361">Eikite į 
           „Chromium“ meniu &gt;
           „<ph name="SETTINGS_TITLE" />“
@@ -136,6 +140,7 @@ ir netinkamus prisijungimo duomenis. Gali būti, kad užpuolėjas bando apsimest
 <translation id="549669000822060376">Palaukite, kol „Chromium“ įdiegs naujausius sistemos naujinius.</translation>
 <translation id="5563479599352954471">Paieška vienu palietimu</translation>
 <translation id="5620765574781326016">Sužinokite apie temas svetainėse neišėję iš puslapio.</translation>
+<translation id="5680901439334282664">prisijunkite prie „Chromium“</translation>
 <translation id="5772805321386874569">(„Chromium“ būtina <ph name="BEGIN_BUTTON" />paleisti iš naujo<ph name="END_BUTTON" />)</translation>
 <translation id="5796460469508169315">„Chromium“ beveik paruošta.</translation>
 <translation id="580822234363523061">Eikite į
@@ -212,7 +217,6 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="761356813943268536">„Chromium“ naudoja jūsų fotoaparatą ir mikrofoną.</translation>
 <translation id="7617377681829253106">„Chromium“ dabar dar tobulesnė</translation>
 <translation id="7641113255207688324">„Chromium“ nėra numatytoji naršyklė.</translation>
-<translation id="7723128346970903111">Kai įgalinta, naudojamas „Chromium“ prisijungimo „iframe“ pagrindu srautas; priešingu atveju naudojamas žiniatinklio peržiūra pagrįstas srautas.</translation>
 <translation id="7729447699958282447">„Chromium“ negali sinchronizuoti duomenų, nes jūsų domene sinchronizavimas nepasiekiamas.</translation>
 <translation id="7747138024166251722">Diegimo programai nepavyko sukurti laikino katalogo. Patikrinkite, ar yra laisvos vietos diske ir, ar leidžiama įdiegti programinę įrangą.</translation>
 <translation id="7918535023914021398">„Chromium“ patvirtino, kad „<ph name="ISSUER" />“ išdavė šį svetainės sertifikatą. Serveris nepateikė jokios sertifikato skaidrumo informacijos.</translation>

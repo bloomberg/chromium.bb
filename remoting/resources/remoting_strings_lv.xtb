@@ -24,6 +24,7 @@ Lai saņemtu informāciju par konfidencialitāti, skatiet Google konfidencialit�
 <translation id="1546934824884762070">Radās neparedzēta kļūda. Lūdzu, ziņojiet par šo problēmu izstrādātājiem.</translation>
 <translation id="1619813076098775562">Savienojums ar Cast ierīci tika pārtraukts.</translation>
 <translation id="1643640058022401035">Aizverot šo lapu, Chrome saites sesija tiks pārtraukta.</translation>
+<translation id="1646994964686260497">Nav neviena datora, ar kuru izveidot savienojumu.</translation>
 <translation id="1654128982815600832">Notiek attālo savienojumu iespējošana šim datoram…</translation>
 <translation id="170207782578677537">Neizdevās reģistrēt šo datoru.</translation>
 <translation id="1704090719919187045">Chrome saites saimniekdatora preferences</translation>
@@ -109,6 +110,7 @@ Lai saņemtu informāciju par konfidencialitāti, skatiet Google konfidencialit�
 <translation id="3606997049964069799">Jūs neesat pierakstījies pārlūkā Chromium. Lūdzu, pierakstieties un mēģiniet vēlreiz.</translation>
 <translation id="3649256019230929621">Minimizēt logu</translation>
 <translation id="369442766917958684">Bezsaistē.</translation>
+<translation id="3695446226812920698">Uzzināt vairāk</translation>
 <translation id="3776024066357219166">Jūsu Chrome attālās darbvirsmas sesija ir pārtraukta.</translation>
 <translation id="3785447812627779171">Chrome saites
 saimniekdators</translation>
@@ -121,6 +123,10 @@ saimniekdators</translation>
 <translation id="3950820424414687140">Pierakstīties</translation>
 <translation id="3989511127559254552">Lai turpinātu, jums vispirms ir jāpiešķir paplašinātas piekļuves atļaujas savam datoram. Tas ir jādara tikai vienreiz.</translation>
 <translation id="4006787130661126000">Ja vēlaties piekļūt šim datoram, izmantojot Chrome attālo darbvirsmu, ir jāiespējo attālie savienojumi.</translation>
+<translation id="401121182145179743">Vispirms datorā ir jāiestata attālā piekļuve.</translation>
+<translation id="4028465833180158312">• Lietotāja saskarnes atjauninājumi atbilstoši materiāla dizaina vadlīnijām.
+• Trešās puses licenču attiecinājums.
+• Informācija par attāliem datoriem, kas ir bezsaistē.</translation>
 <translation id="405887016757208221">Attālajam datoram neizdevās inicializēt sesiju. Ja problēma atkārtojas, lūdzu, mēģiniet vēlreiz konfigurēt saimniekdatoru.</translation>
 <translation id="4068946408131579958">Visi savienojumi</translation>
 <translation id="409800995205263688">PIEZĪME. Saskaņā ar politikas iestatījumiem savienojumus ir atļauts veidot tikai starp jūsu tīkla datoriem.</translation>

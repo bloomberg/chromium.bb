@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sk">
 <translation id="1013923882670373915">Zariadenie Bluetooth s názvom <ph name="DEVICE_NAME" /> žiada o povolenie párovania. Zadajte na danom zariadení toto číslo PIN: <ph name="PINCODE" /></translation>
+<translation id="1021311941847921177">Skratka prepnutia na ďalšiu metódu vstupu bola zmenená. Namiesto skratky <ph name="OLD_SHORTCUT" /> používajte kombináciu klávesov <ph name="NEW_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Automatické skrývanie poličky</translation>
 <translation id="1195412055398077112">presah obsahu</translation>
 <translation id="1270290102613614947">Klávesnica na obrazovke je zakázaná</translation>
@@ -25,7 +26,9 @@
 <translation id="1812696562331527143">Metóda vstupu sa zmenila na <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />tretia strana<ph name="END_LINK" />).
         Prepnete ju stlačením klávesov Shift + Alt.</translation>
 <translation id="1882897271359938046">Zrkadlenie na displej <ph name="DISPLAY_NAME" /></translation>
+<translation id="1919743966458266018">Skratka otvorenia správcu úloh bola zmenená. Namiesto skratky <ph name="OLD_SHORTCUT" /> používajte kombináciu klávesov <ph name="NEW_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Automatické kliknutia</translation>
+<translation id="1938872420421548906">Shift+Alt</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2127372758936585790">Nabíjačka s nízkym výkonom</translation>
@@ -105,6 +108,7 @@ Ak ho chcete zrušiť, stlačte klávesy Hľadať alebo Shift.</translation>
 <translation id="4421231901400348175">Ovládanie obrazovky sa prostredníctvom Vzdialenej pomoci zdieľa s používateľom <ph name="HELPER_NAME" />.</translation>
 <translation id="4430019312045809116">Hlasitosť</translation>
 <translation id="4527045527269911712">Zariadenie Bluetooth s názvom <ph name="DEVICE_NAME" /> žiada o povolenie párovania.</translation>
+<translation id="4544944664594876241">Skratka uzamknutia obrazovky bola zmenená. Namiesto skratky <ph name="OLD_SHORTCUT" /> používajte kombináciu klávesov <ph name="NEW_SHORTCUT" />.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Odpojiť</translation>
 <translation id="4872237917498892622">Alt + Hľadať alebo Shift</translation>
@@ -113,12 +117,14 @@ Ak ho chcete zrušiť, stlačte klávesy Hľadať alebo Shift.</translation>
 <translation id="4957722034734105353">Viac informácií...</translation>
 <translation id="4961318399572185831">Prenášanie obrazovky</translation>
 <translation id="5011233892417813670">Chromebook</translation>
+<translation id="5012744545445585468">Ctrl+Shift+Space</translation>
 <translation id="5045002648206642691">Nastavenia služby Disk Google...</translation>
 <translation id="5102001756192215136">zostáva <ph name="HOUR" />:<ph name="MINUTE" /></translation>
 <translation id="511445211639755999"><ph name="RESOLUTION" />, <ph name="OVERSCAN" /></translation>
 <translation id="5168181903108465623">Dostupné zariadenia na prenos</translation>
 <translation id="5222676887888702881">Odhlásiť sa</translation>
 <translation id="5238774010593222950">Nie je možné prihlásiť sa do iného účtu.</translation>
+<translation id="532063867737390965">Toto nastavenie siete zakázal správca.</translation>
 <translation id="544691375626129091">Do tejto relácie už boli pridaní všetci dostupní používatelia</translation>
 <translation id="5507786745520522457">Nastaviť mobilné dáta</translation>
 <translation id="5543001071567407895">SMS</translation>
@@ -132,6 +138,7 @@ Ak ho chcete zrušiť, stlačte klávesy Hľadať alebo Shift.</translation>
         Prepnete ju stlačením klávesov Shift + Alt.</translation>
 <translation id="5871632337994001636">Spravovať zariadenia...</translation>
 <translation id="5895138241574237353">Reštartovať</translation>
+<translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5927132638760172455">Prebieha prenášanie na neznámy prijímač</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">Vrátiť</translation>
@@ -155,6 +162,7 @@ Ak ho chcete zrušiť, stlačte klávesy Hľadať alebo Shift.</translation>
 <translation id="6426039856985689743">Zakázať mobilné dátové pripojenie</translation>
 <translation id="6452181791372256707">Odmietnuť</translation>
 <translation id="6459472438155181876">Rozšírenie obrazovky na displej <ph name="DISPLAY_NAME" /></translation>
+<translation id="6501401484702599040">Prenášanie obrazovky do zariadenia <ph name="RECEIVER_NAME" /></translation>
 <translation id="6550675742724504774">Možnosti</translation>
 <translation id="6585808820553845416">Relácia sa skončí o <ph name="SESSION_TIME_REMAINING" /></translation>
 <translation id="6596816719288285829">Adresa IP</translation>
@@ -162,6 +170,7 @@ Ak ho chcete zrušiť, stlačte klávesy Hľadať alebo Shift.</translation>
 <translation id="6713285437468012787">Zariadenie Bluetooth s názvom <ph name="DEVICE_NAME" /> bolo spárované a je k dispozícii pre všetkých používateľov. Párovanie môžete zrušiť pomocou ponuky Nastavenia.</translation>
 <translation id="6785414152754474415">Batéria je nabitá na <ph name="PERCENTAGE" /> % a nabíja sa.</translation>
 <translation id="6803622936009808957">Obraz na monitoroch sa nedá zrkadliť, pretože sa nenašli podporované rozlíšenia. Namiesto toho sa spustil režim rozšírenej pracovnej plochy.</translation>
+<translation id="683971173229319003">Hľadať+L</translation>
 <translation id="68610848741840742">ChromeVox (hlasová spätná väzba)</translation>
 <translation id="6911468394164995108">Pripojiť k ďalšej...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
@@ -169,6 +178,7 @@ Ak ho chcete zrušiť, stlačte klávesy Hľadať alebo Shift.</translation>
 <translation id="6981982820502123353">Dostupnosť</translation>
 <translation id="7029814467594812963">Ukončiť reláciu</translation>
 <translation id="703171847531699602">Žiadne zariadenia na prenos</translation>
+<translation id="7034339000180558234">Prenášanie karty <ph name="TAB_NAME" /> do zariadenia <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Nastavenie tapety...</translation>
 <translation id="7097613348211027502">Hlasová odozva ChromeVox je aktívna.
 Deaktivujete ju stlačením kombinácie klávesov Ctrl+Alt+Z.</translation>
@@ -180,6 +190,7 @@ Ak ho chcete zrušiť, stlačte klávesy Alt + Hľadať alebo Shift.</translatio
 <translation id="737451040872859086">Mikrofón (vnútorný)</translation>
 <translation id="742594950370306541">Fotoaparát sa používa.</translation>
 <translation id="743058460480092004">Fotoaparát a mikrofón sa používajú.</translation>
+<translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7561014039265304140">Obrazovka <ph name="DISPLAY_NAME" /> nepodporuje rozlíšenie <ph name="SPECIFIED_RESOLUTION" />. Rozlíšenie bolo zmenené na <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7573962313813535744">Režim v doku</translation>
 <translation id="7593891976182323525">Hľadať alebo Shift</translation>
@@ -207,6 +218,7 @@ Ak ho chcete zrušiť, stlačte klávesy Alt + Hľadať alebo Shift.</translatio
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="882279321799040148">Zobrazíte ju kliknutím tu</translation>
 <translation id="8828714802988429505">90 °</translation>
+<translation id="8850991929411075241">Hľadať+Esc</translation>
 <translation id="8878886163241303700">Rozšírenie obrazovky</translation>
 <translation id="8940956008527784070">Kapacita batérie je nízka (<ph name="PERCENTAGE" /> %)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>

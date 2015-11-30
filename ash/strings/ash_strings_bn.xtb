@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="bn">
 <translation id="1013923882670373915">Bluetooth ডিভাইস "<ph name="DEVICE_NAME" />" যুক্ত করার অনুমতি চাইছে। দয়া করে ডিভাইসটিতে এই পিন কোড প্রবেশ করুন: <ph name="PINCODE" /></translation>
+<translation id="1021311941847921177">পরবর্তী ইনপুট পদ্ধতিতে পরিবর্তন করার শর্টকাটটি পরিবর্তিত হয়েছে। <ph name="OLD_SHORTCUT" /> এর পরিবর্তে দয়া করে <ph name="NEW_SHORTCUT" /> ব্যবহার করুন।</translation>
 <translation id="112308213915226829">শেল্ফ স্বয়ংক্রিয়ভাবে লুকান</translation>
 <translation id="1195412055398077112">ওভারস্ক্যান</translation>
 <translation id="1270290102613614947">অন-স্ক্রীন কীবোর্ড অক্ষম করা রয়েছে</translation>
@@ -25,7 +26,9 @@
 <translation id="1812696562331527143">আপনার ইনপুট পদ্ধতি <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />৩য় পক্ষ<ph name="END_LINK" />) এ পরিবর্তিত হয়েছে৷
 স্যুইচ করতে Shift + Alt টিপুন৷</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> তে প্রতিবিম্বিত হচ্ছে</translation>
+<translation id="1919743966458266018">কার্য পরিচালক খোলার শর্টকাটটি পরিবর্তিত হয়েছে। <ph name="OLD_SHORTCUT" /> এর পরিবর্তে দয়া করে <ph name="NEW_SHORTCUT" /> ব্যবহার করুন।</translation>
 <translation id="1923539912171292317">স্বয়ংক্রিয় ক্লিকগুলি</translation>
+<translation id="1938872420421548906">Shift+Alt</translation>
 <translation id="1957803754585243749">০°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2127372758936585790">নিম্ন শক্তির চার্জার</translation>
@@ -105,6 +108,7 @@ Search অথবা বাতিল করতে Shift টিপুন৷</trans
 <translation id="4421231901400348175">রিমোট সহায়কের মাধ্যমে <ph name="HELPER_NAME" />-এর সাথে আপনার স্ক্রীন নিয়ন্ত্রন ভাগ করুন৷</translation>
 <translation id="4430019312045809116">ভলিউম</translation>
 <translation id="4527045527269911712">Bluetooth ডিভাইস "<ph name="DEVICE_NAME" />" যুক্ত করার অনুমতি চাইছে।</translation>
+<translation id="4544944664594876241">স্ক্রীন লক করার শর্টকাটটি পরিবর্তিত হয়েছে। <ph name="OLD_SHORTCUT" /> এর পরিবর্তে দয়া করে <ph name="NEW_SHORTCUT" /> ব্যবহার করুন।</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">সংযোগ বিচ্ছিন্ন</translation>
 <translation id="4872237917498892622">Alt+Search অথবা Shift</translation>
@@ -113,12 +117,14 @@ Search অথবা বাতিল করতে Shift টিপুন৷</trans
 <translation id="4957722034734105353">আরো জানুন...</translation>
 <translation id="4961318399572185831">স্ক্রীন কাস্ট করুন</translation>
 <translation id="5011233892417813670">Chromebook</translation>
+<translation id="5012744545445585468">Ctrl+Shift+Space</translation>
 <translation id="5045002648206642691">Google ড্রাইভ সেটিংস ...</translation>
 <translation id="5102001756192215136"><ph name="HOUR" />:<ph name="MINUTE" /> বাকি</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION" />, <ph name="OVERSCAN" /></translation>
 <translation id="5168181903108465623">কাস্ট ডিভাইসগুলি উপলব্ধ</translation>
 <translation id="5222676887888702881">সাইন আউট</translation>
 <translation id="5238774010593222950">অন্য অ্যাকাউন্টে সাইন ইন করা যাবে না।</translation>
+<translation id="532063867737390965">এই নেটওয়ার্ক সেটিং প্রশাসকের দ্বারা অক্ষম করা হয়েছে।</translation>
 <translation id="544691375626129091">সমস্ত উপলব্ধ ব্যবহারকারীকে ইতিমধ্যেই এই সেশনে যোগ করা হয়েছে৷</translation>
 <translation id="5507786745520522457">মোবাইল ডেটা সেটআপ করুন</translation>
 <translation id="5543001071567407895">SMS</translation>
@@ -132,6 +138,7 @@ Search অথবা বাতিল করতে Shift টিপুন৷</trans
 স্যুইচ করতে Shift + Alt টিপুন৷</translation>
 <translation id="5871632337994001636">ডিভাইসগুলি পরিচালন করুন...</translation>
 <translation id="5895138241574237353">পুনর্সূচনা</translation>
+<translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5927132638760172455">একটি অজানা রিসিভারে কাস্টিং করা হচ্ছে</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">ফেরান</translation>
@@ -155,6 +162,7 @@ Search অথবা বাতিল করতে Shift টিপুন৷</trans
 <translation id="6426039856985689743">মোবাইল ডেটা নিষ্ক্রিয় করুন</translation>
 <translation id="6452181791372256707">প্রত্যাখ্যান</translation>
 <translation id="6459472438155181876">স্ক্রীন <ph name="DISPLAY_NAME" /> তে প্রসারিত হচ্ছে</translation>
+<translation id="6501401484702599040"><ph name="RECEIVER_NAME" /> এ স্ক্রীন কাস্ট করা হচ্ছে</translation>
 <translation id="6550675742724504774">বিকল্পসমূহ</translation>
 <translation id="6585808820553845416"><ph name="SESSION_TIME_REMAINING" /> এর মধ্যে সেশন শেষ হয়ে যাবে৷</translation>
 <translation id="6596816719288285829">IP ঠিকানা</translation>
@@ -162,6 +170,7 @@ Search অথবা বাতিল করতে Shift টিপুন৷</trans
 <translation id="6713285437468012787">Bluetooth ডিভাইস "<ph name="DEVICE_NAME" />" যুক্ত করা হয়েছে এবং এখন সমস্ত ব্যবহারকারীর কাছে উপলব্ধ। আপনি সেটিংস ব্যবহার করে এই সংযুক্তি সরিয়ে দিতে পারেন।</translation>
 <translation id="6785414152754474415">ব্যাটারি <ph name="PERCENTAGE" />% পূর্ণ এবং চার্জ হচ্ছে৷</translation>
 <translation id="6803622936009808957">সমর্থিত রেসুলিউশানগুলি খুঁজে না পাওয়ায় মিরর প্রদর্শনগুলি করতে পারেনি৷ পরিবর্তে প্রসারিত ডেস্কটপ সক্ষম করা হয়েছে৷</translation>
+<translation id="683971173229319003">Search+L</translation>
 <translation id="68610848741840742">ChromeVox (কথ্য প্রতিক্রিয়া)</translation>
 <translation id="6911468394164995108">অন্যান্য যোগদান ...</translation>
 <translation id="6915678159055240887">ক্রোমবাক্স</translation>
@@ -169,6 +178,7 @@ Search অথবা বাতিল করতে Shift টিপুন৷</trans
 <translation id="6981982820502123353">অ্যাক্সেযোগ্যতা</translation>
 <translation id="7029814467594812963">সেশন থেকে প্রস্থান</translation>
 <translation id="703171847531699602">কোনো কাস্ট ডিভাইস নেই</translation>
+<translation id="7034339000180558234"><ph name="TAB_NAME" /> কে <ph name="RECEIVER_NAME" /> এ কাস্ট করা হচ্ছে</translation>
 <translation id="7052914147756339792">ওয়ালপেপার সেট করুন...</translation>
 <translation id="7097613348211027502">ChromeVox (কথ্য প্রতিক্রিয়া) সক্ষম রয়েছে৷ অক্ষম করার জন্য Ctrl+Alt+Z টিপুন৷</translation>
 <translation id="714034171374937760">Chromebase</translation>
@@ -179,6 +189,7 @@ Alt+Search অথবা বাতিল করতে Shift টিপুন৷</t
 <translation id="737451040872859086">মাইক্রোফোন (অভ্যন্তরীণ)</translation>
 <translation id="742594950370306541">ক্যামেরা ব্যবহার করা হচ্ছে।</translation>
 <translation id="743058460480092004">ক্যামেরা এবং মাইক্রোফোন ব্যবহার করা হচ্ছে।</translation>
+<translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" />, <ph name="SPECIFIED_RESOLUTION" /> সমর্থন করে না৷ রেজোলিউশন <ph name="FALLBACK_RESOLUTION" /> এ পরিবর্তিত হয়েছে</translation>
 <translation id="7573962313813535744">ডকযুক্ত মোড</translation>
 <translation id="7593891976182323525">Search অথবা Shift</translation>
@@ -206,6 +217,7 @@ Alt+Search অথবা বাতিল করতে Shift টিপুন৷</t
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="882279321799040148">দেখার জন্য ক্লিক করুন</translation>
 <translation id="8828714802988429505">৯০°</translation>
+<translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8878886163241303700">স্ক্রীন সম্প্রসারণ করা হচ্ছে</translation>
 <translation id="8940956008527784070">(<ph name="PERCENTAGE" />%) কম ব্যাটারি</translation>
 <translation id="9074739597929991885">Bluetooth</translation>

@@ -84,6 +84,7 @@
 <translation id="2556876185419854533">Tendua Kuhariri</translation>
 <translation id="2581221116934462656">Ungependa <ph name="PRODUCT_NAME" /> itafsiri kurasa za <ph name="LANGUAGE_NAME" /> kutoka tovuti hii wakati ujao?</translation>
 <translation id="2587841377698384444">Kitambulisho cha API ya Saraka:</translation>
+<translation id="2589937147782335782">Je, unataka Google ihifadhi kadi hii?</translation>
 <translation id="2597378329261239068">Hati hii imelindwa kwa nenosiri. Tafadhali weka nenosiri linalotumika.</translation>
 <translation id="2609632851001447353">Vipera</translation>
 <translation id="2625385379895617796">Saa yako iko mbele</translation>
@@ -202,7 +203,6 @@
 <translation id="5295309862264981122">Thibitisha unataka kuondoka</translation>
 <translation id="5299298092464848405">Hitilafu wakati wa kuchanganua sera</translation>
 <translation id="5308689395849655368">Kuripoti uharibifu kumelemazwa.</translation>
-<translation id="5316812925700871227">Zungusha kinyume cha mwendo wa saa</translation>
 <translation id="5317780077021120954">Hifadhi</translation>
 <translation id="536296301121032821">Imeshindwa kuhifadhi mipangilio ya sera</translation>
 <translation id="540969355065856584">Seva hii haikuweza kuthibitisha kuwa ni <ph name="DOMAIN" />; cheti chake cha usalama si sahihi kwa sasa. Hii inaweza kusababishwa na usanidi usiofaa au mvamizi kuingilia muunganisho wako.</translation>
@@ -219,6 +219,7 @@
 <translation id="560412284261940334">Usimamizi hautumiki</translation>
 <translation id="5629630648637658800">Imeshindwa kupakia mipangilio ya sera</translation>
 <translation id="5631439013527180824">Ishara ya usimamizi wa kifaa batili</translation>
+<translation id="5680545064257783621">Hutoa swichi ya kuzima ya jaribio za alamisho zilizoboreshwa</translation>
 <translation id="5720705177508910913">Mtumiaji wa sasa</translation>
 <translation id="5813119285467412249">Rudia Kuongeza</translation>
 <translation id="5872918882028971132">Mapendekezo ya Wazazi</translation>
@@ -289,11 +290,13 @@
 <translation id="7424977062513257142">Ukurasa uliopachikwa kwenye ukurasa huu wa wavuti unasema:</translation>
 <translation id="7441627299479586546">Kichwa cha sera kisichofaa</translation>
 <translation id="7485870689360869515">Hakuna data iliyopatikana.</translation>
+<translation id="7514365320538308">Pakua</translation>
 <translation id="7537536606612762813">Lazima</translation>
 <translation id="7542995811387359312">Mjazo otomatiki wa kadi ya mkopo umelemazwa kwa sababu fomu hii haitumii muunganisho salama.</translation>
 <translation id="7567204685887185387">Seva hii haikuweza kuthibitisha kuwa ni <ph name="DOMAIN" />; huenda cheti chake cha usalama kimetolewa kwa njia ya ulaghai. Hii inaweza kusababishwa na usanidi usiofaa au mvamizi kuingilia muunganisho wako.</translation>
 <translation id="7568593326407688803">Ukurasa huu umeandikwa kwa<ph name="ORIGINAL_LANGUAGE" />Je, ungependa kuutafsiri?</translation>
 <translation id="7569952961197462199">Ungependa kuondoa kadi ya malipo kutoka kwenye Chrome?</translation>
+<translation id="7578104083680115302">Lipa haraka kwenye tovuti na programu katika vifaa vyote ukitumia kadi ulizohifadhi kwenye Google.</translation>
 <translation id="7592362899630581445">Cheti cha seva kinakiuka vikwazo vya jina.</translation>
 <translation id="7600965453749440009">Kamwe usitafsiri <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">Thamani imezidi masafa<ph name="VALUE" />.</translation>

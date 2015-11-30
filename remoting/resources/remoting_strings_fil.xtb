@@ -24,6 +24,7 @@ Para sa higit pang impormasyon tungkol sa privacy, pakitingnan ang Patakaran sa 
 <translation id="1546934824884762070">May naganap na hindi inaasahang error. Paki-ulat ang problemang ito sa mga developer.</translation>
 <translation id="1619813076098775562">Isinara ang koneksyon sa Cast device.</translation>
 <translation id="1643640058022401035">Tatapusin ng pag-alis sa pahinang ito ang iyong session ng Chromoting.</translation>
+<translation id="1646994964686260497">Walang mapagkokonektahan.</translation>
 <translation id="1654128982815600832">Pinapagana ang mga malayuang koneksyon para sa computer na ito…</translation>
 <translation id="170207782578677537">Nabigong irehistro ang computer na ito.</translation>
 <translation id="1704090719919187045">Mga Kagustuhan sa Chromoting Host</translation>
@@ -109,6 +110,7 @@ Para sa higit pang impormasyon tungkol sa privacy, pakitingnan ang Patakaran sa 
 <translation id="3606997049964069799">Hindi ka naka-sign in sa Chromium. Mangyaring mag-sign in at subukang muli.</translation>
 <translation id="3649256019230929621">I-minimize ang window</translation>
 <translation id="369442766917958684">Naka-offline.</translation>
+<translation id="3695446226812920698">Alamin kung paano</translation>
 <translation id="3776024066357219166">Natapos na ang iyong session sa Remote na Desktop ng Chrome.</translation>
 <translation id="3785447812627779171">Chromoting
 Host</translation>
@@ -121,6 +123,10 @@ Host</translation>
 <translation id="3950820424414687140">Mag-sign in</translation>
 <translation id="3989511127559254552">Upang magpatuloy, dapat ka munang magbigay ng mga pahintulot sa pinalawak na access sa iyong computer. Isang beses mo lang ito kailangang gawin.</translation>
 <translation id="4006787130661126000">Dapat mong paganahin ang mga malayuang koneksyon kung nais mong gamitin ang Remote na Desktop ng Chrome upang i-access ang computer na ito.</translation>
+<translation id="401121182145179743">Kailangan mo munang i-setup ang iyong computer para sa remote na access.</translation>
+<translation id="4028465833180158312">• Mga update sa UI ng Material Design.
+• Mga third-party na credit sa paglilisensya.
+• Ang ipinapakitang impormasyon ay para sa mga naka-offline na remote na computer.</translation>
 <translation id="405887016757208221">Hindi nasimulan ng remote na computer ang session. Kung ayaw mawala ng problema, pakisubukang i-configure muli ang host.</translation>
 <translation id="4068946408131579958">Lahat ng koneksyon</translation>
 <translation id="409800995205263688">TANDAAN: Ang pinapayagan ng mga setting ng patakaran ay mga koneksyon lang sa pagitan ng mga computer sa loob ng iyong network.</translation>

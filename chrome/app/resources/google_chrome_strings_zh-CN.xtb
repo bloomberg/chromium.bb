@@ -5,6 +5,7 @@
 <translation id="1013290471399003443">Chrome 已证实此网站的证书是由<ph name="ISSUER" />签发的。服务器提供了有效的 Certificate Transparency 信息。</translation>
 <translation id="1016765312371154165">Chrome 未正确关闭。</translation>
 <translation id="103396972844768118">与您的 Chrome 数据相关的重要信息</translation>
+<translation id="1035334672863811645">登录 Chrome</translation>
 <translation id="1061441684050139317">Chrome 需要具有麦克风使用权限，才能批准此网站的分享请求。</translation>
 <translation id="1065672644894730302">系统无法读取您的偏好设置。某些功能可能无法使用，并且对偏好设置所做的更改不会保存。</translation>
 <translation id="1073391069195728457">Chrome - 通知</translation>
@@ -87,7 +88,7 @@
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3881912906674381083">Chrome 已证实此网站的证书是由<ph name="ISSUER" />签发的。服务器提供了 Certificate Transparency 信息，但 Chrome 无法识别任何 Certificate Transparency 日志。</translation>
 <translation id="3889417619312448367">卸载 Google Chrome</translation>
-<translation id="4011219958405096740">启用此项后，将使用基于 iframe 的 Chrome 登录流程；否则，将使用基于 WebView 的流程。</translation>
+<translation id="4042449298237264661">此计算机将不会再收到 Google Chrome 更新，因为 Windows XP 和 Windows Vista 不再受支持。</translation>
 <translation id="4050175100176540509">最新版本不仅在安全性方面做出了重要改进，还提供了多项新功能。</translation>
 <translation id="4053720452172726777">自定义及控制 Google Chrome</translation>
 <translation id="4147555960264124640">您目前登录的帐户是一个托管帐户，该帐户的管理员将能够控制您的 Google Chrome 个人资料。您的 Chrome 数据（例如您的应用、书签、历史记录、密码和其他设置）将永远与 <ph name="USER_NAME" /> 相关联。您可以通过 Google 帐户信息中心删除这些数据，但无法将这些数据与其他帐户相关联。<ph name="LEARN_MORE" /></translation>
@@ -141,9 +142,9 @@
 <translation id="573759479754913123">关于 Chrome 操作系统</translation>
 <translation id="5749068826913805084">Chrome 需要具备存储空间使用权限，才能下载文件。</translation>
 <translation id="5785746630574083988">若以Windows 8模式重新启动，将会关闭并重新启动您的Chrome应用。</translation>
-<translation id="5799551393681493217">启用基于 iframe 的 Chrome 登录流程。此项会覆盖 --enable-web-based-signin。</translation>
 <translation id="5855036575689098185">您计算机上运行的软件与 Google Chrome 不兼容。</translation>
 <translation id="5877064549588274448">版本已更改。请重新启动设备来应用这些变更。</translation>
+<translation id="5890698319714066019">Google Chrome 无法显示该网页，因为您的计算机未连接到互联网。</translation>
 <translation id="5931853610562009806">在 Mac 上，密码可能会保存到您的钥匙串 (Keychain) 中，这将导致共用此 OS X 帐户的其他 Chrome 用户都能够访问或同步处理这些密码。</translation>
 <translation id="5940385492829620908">您的上网记录、书签和其他Chrome资料和数据都保存在此处。</translation>
 <translation id="5941830788786076944">将 Google Chrome 浏览器设为默认浏览器</translation>
@@ -159,6 +160,8 @@
 <translation id="6236285698028833233">Google Chrome 已停止更新，并且不再支持您的操作系统版本。</translation>
 <translation id="629218512217695915">使用由Chrome生成的密码</translation>
 <translation id="6368958679917195344">Chrome 操作系统的问世还有其他<ph name="BEGIN_LINK_CROS_OSS" />开放源代码软件<ph name="END_LINK_CROS_OSS" />的一份功劳。</translation>
+<translation id="6400076122676892962">此计算机很快就不会再收到 Google Chrome 更新，因为 Mac OS X 10.6、10.7 和 10.8 将不再受支持。</translation>
+<translation id="6470176598693778404">此计算机将不会再收到 Google Chrome 更新，因为 Mac OS X 10.6、10.7 和 10.8 不再受支持。</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{有 1 项下载任务正在进行。确定要取消下载并退出 Google Chrome 吗？}other{有 # 项下载任务正在进行。确定要取消下载并退出 Google Chrome 吗？}}</translation>
 <translation id="6598387184982954187">您在使用<ph name="PROFILE_EMAIL" />同步自己的Chrome资料和数据。要更新您的同步偏好设置或在不登录Google帐户的情况下使用Chrome，请前往<ph name="SETTINGS_LINK" />部分。</translation>
 <translation id="6600954340915313787">已复制到 Chrome</translation>
@@ -187,6 +190,7 @@
 <translation id="7196020411877309443">为何会出现这个窗口？</translation>
 <translation id="7242029209006116544">您目前登录的帐户是一个托管帐户，该帐户的管理员将能够控制您的 Google Chrome 个人资料。您的 Chrome 数据（例如您的应用、书签、历史记录、密码和其他设置）将永远与 <ph name="USER_NAME" /> 相关联。您可以通过 Google 帐户信息中心删除这些数据，但无法将这些数据与其他帐户相关联。您可以选择创建新的个人资料来单独存储现有的 Chrome 数据。<ph name="LEARN_MORE" /></translation>
 <translation id="7282192067747128786">Chrome - 通知（<ph name="QUANTITY" />条未读）</translation>
+<translation id="729375352412857283">此计算机很快就不会再收到 Google Chrome 更新，因为 Windows XP 和 Windows Vista 将不再受支持。</translation>
 <translation id="7339898014177206373">打开新的窗口</translation>
 <translation id="7396375882099008034">对防火墙或防病毒软件进行设置，以允许 Chrome 访问该网络。</translation>
 <translation id="7398801000654795464">您之前登录 Chrome 时使用的帐户为 <ph name="USER_EMAIL_ADDRESS" />，请使用同一帐户再次登录。</translation>

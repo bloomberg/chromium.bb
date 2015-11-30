@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="es">
+<translation id="101438888985615157">Girar la pantalla 180 grados</translation>
 <translation id="1017967144265860778">Administración de energía en la pantalla de inicio de sesión</translation>
 <translation id="1019101089073227242">Establecer directorio de datos de usuarios</translation>
 <translation id="1022361784792428773">ID de extensiones que el usuario no debe poder instalar (o * para incluirlas todas)</translation>
@@ -266,6 +267,17 @@ Si esta política se establece en True, <ph name="PRODUCT_OS_NAME" /> intentará
 <translation id="2113068765175018713">Limitar tiempo de actividad de dispositivo mediante reinicio automático</translation>
 <translation id="2127599828444728326">Permitir notificaciones en estos sitios</translation>
 <translation id="2131902621292742709">Retraso de atenuado de pantalla cuando el dispositivo funciona con la batería</translation>
+<translation id="2137064848866899664">Si se establece esta política, se girará cada pantalla a la
+      orientación especificada cada vez que se reinicie el dispositivo y la primera vez que se conecte
+      después de cambiar el valor de la política. Los usuarios podrán cambiar la rotación
+      de la pantalla a través de la página de configuración después de iniciar sesión, pero el
+      valor de la política anulará esta configuración la próxima vez que se reinicie el dispositivo.
+
+      Esta política se aplica tanto a pantallas principales como secundarias.
+
+      Si no se establece esta política, el valor predeterminado será 0 grados y el usuario podrá
+      cambiarlo. En este caso, el valor predeterminado no se volverá a aplicar
+      cuando se reinicie el dispositivo.</translation>
 <translation id="2166715102875984646">Inhabilita la compatibilidad con las API de gráficos 3D.
 
       Si se habilita esta opción, se impide el acceso de las páginas web a la unidad de procesamiento de gráficos (GPU). En concreto, las páginas web no pueden acceder a la API de WebGL y los complementos no pueden usar la API de Pepper 3D.
@@ -985,6 +997,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
       Si habilitas esta opción, no se podrá acceder a las Herramientas para desarrolladores ni se podrán inspeccionar los elementos de los sitios web. También se inhabilitarán las combinaciones de teclas y las entradas de menús o de menús contextuales que permiten abrir las Herramientas para desarrolladores o la Consola JavaScript.
 
       Si se inhabilita esta opción o si no se establece, se podrán usar las Herramientas para desarrolladores y la Consola JavaScript.</translation>
+<translation id="4449545651113180484">Girar la pantalla 270 grados hacia la derecha</translation>
 <translation id="4467952432486360968">Bloquear cookies de terceros</translation>
 <translation id="4474167089968829729">Habilitar el almacenamiento de contraseñas en el administrador de contraseñas</translation>
 <translation id="4480694116501920047">Forzar SafeSearch</translation>
@@ -1253,6 +1266,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
       Si se inhabilita, no se importará el motor de búsqueda predeterminado.
 
       Si no se establece, es posible que se le pida al usuario que haga la importación o que los motores de búsqueda se importen automáticamente.</translation>
+<translation id="5423197884968724595">Nombre de restricción de WebView de Android:</translation>
 <translation id="5447306928176905178">Habilitar notificación de información sobre memoria (tamaño de conjunto de archivos JavaScript) a la página (obsoleto)</translation>
 <translation id="5457065417344056871">Habilitar el modo invitados en el navegador</translation>
 <translation id="5457924070961220141">Permite configurar el procesador de HTML predeterminado si se ha instalado <ph name="PRODUCT_FRAME_NAME" />.
@@ -2016,6 +2030,7 @@ Si se asigna el valor false a la política, no se proporcionará información so
           Si se habilita esta opción, el ordenador podrá buscar ordenadores host remotos y establecer conexión con ellos aunque estén protegidos por un firewall.
 
           Si se inhabilita esta opción y el firewall filtra las conexiones UDP salientes, el ordenador solo podrá establecer conexión con hosts dentro de la red local.</translation>
+<translation id="802147957407376460">Girar la pantalla 0 grados</translation>
 <translation id="8044493735196713914">Notificar modo de inicio de dispositivo</translation>
 <translation id="8059164285174960932">URL en la que los clientes de acceso remoto deben obtener su token de autenticación</translation>
 <translation id="8071636581296916773">Habilita el uso de servidores de retransmisión cuando clientes remotos intentan establecer una conexión con este ordenador.
@@ -2131,6 +2146,8 @@ Si la política está establecida en False, no se informará sobre la lista de i
 <translation id="8382184662529825177">Habilitar el uso de la confirmación remota para la protección del contenido del dispositivo</translation>
 <translation id="838870586332499308">Habilitar la itinerancia de datos</translation>
 <translation id="8412312801707973447">Se realizan comprobaciones OCSP/CRL si estás online</translation>
+<translation id="8424255554404582727">Establecer rotación de pantalla predeterminada y volver a aplicarla cada vez que se reinicie el dispositivo</translation>
+<translation id="8426231401662877819">Rotar la pantalla 90 grados hacia la derecha</translation>
 <translation id="8451988835943702790">Utilizar página Nueva pestaña como página principal</translation>
 <translation id="8465065632133292531">Parámetros para URL instantánea que utiliza POST</translation>
 <translation id="847472800012384958">No permitir que ningún sitio muestre pop-ups</translation>

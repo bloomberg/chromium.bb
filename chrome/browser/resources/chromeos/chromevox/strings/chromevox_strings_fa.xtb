@@ -357,6 +357,7 @@
 <translation id="4729095194763193578">ردیف جدول قبلی</translation>
 <translation id="4736221692378411923">اوت</translation>
 <translation id="4740661827607246557">فرمان‌های راهنما</translation>
+<translation id="4755857887974653209">‏غیرفعال کردن ChromeVox</translation>
 <translation id="4759716709594980008">‏کاوشگر صفحه‌کلید ChromeOS</translation>
 <translation id="4763296182459741068">جمع کردن به پایین</translation>
 <translation id="4763480195061959176">ویدیو</translation>
@@ -661,6 +662,7 @@
 <translation id="8065607967589909823">مورد انتخابی عبارتست از</translation>
 <translation id="8066678206530322333">بنر</translation>
 <translation id="8110647606445335195">‏علامت مشخصه ARIA موجود نیست.</translation>
+<translation id="8132379720172247073">‏منوی ChromeVox</translation>
 <translation id="8153880621934657047">خارج از جدول</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{زیرخط}one{# زیرخط}other{# زیرخط}}</translation>
 <translation id="8179976553408161302">ورود</translation>
@@ -696,6 +698,7 @@
 <translation id="8584721346566392021">h5</translation>
 <translation id="8587549812518406253">مورد لیست بعدی</translation>
 <translation id="860150890330522909">کادر تأیید <ph name="NAME" /> علامت‌گذاری شد</translation>
+<translation id="8603071050456974042">‏پانل ChromeVox</translation>
 <translation id="8606621670302093223">کنترل تاریخ</translation>
 <translation id="8631359288236106450"><ph name="COUNT" /> مورد انتخاب شده</translation>
 <translation id="8638532244051952400">اعلام مختصات سلول کنونی</translation>

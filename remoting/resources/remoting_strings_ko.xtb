@@ -24,6 +24,7 @@
 <translation id="1546934824884762070">예기치 않은 오류가 발생했습니다. 개발자에게 문제를 신고해 주세요.</translation>
 <translation id="1619813076098775562">Cast 기기에 대한 연결이 종료되었습니다.</translation>
 <translation id="1643640058022401035">이 페이지를 닫으면 Chromoting 세션이 종료됩니다.</translation>
+<translation id="1646994964686260497">연결 대상이 없습니다.</translation>
 <translation id="1654128982815600832">컴퓨터의 원격 연결을 사용하도록 설정 중...</translation>
 <translation id="170207782578677537">컴퓨터를 등록하는 데 실패했습니다.</translation>
 <translation id="1704090719919187045">Chromoting 호스트 환경설정</translation>
@@ -109,6 +110,7 @@
 <translation id="3606997049964069799">Chromium에 로그인하지 않았습니다. 로그인 후 다시 시도하세요.</translation>
 <translation id="3649256019230929621">창 최소화</translation>
 <translation id="369442766917958684">오프라인.</translation>
+<translation id="3695446226812920698">자세히 알아보기</translation>
 <translation id="3776024066357219166">Chrome 원격 데스크톱 세션이 종료되었습니다.</translation>
 <translation id="3785447812627779171">Chromoting
 호스트</translation>
@@ -121,6 +123,10 @@
 <translation id="3950820424414687140">로그인</translation>
 <translation id="3989511127559254552">계속하려면 내 컴퓨터에 확장 액세스 권한을 부여해야 합니다. 이 작업은 한번만 수행하면 됩니다.</translation>
 <translation id="4006787130661126000">Chrome 원격 데스크톱을 사용하여 컴퓨터에 액세스하려면 원격 연결을 사용하도록 설정해야 합니다.</translation>
+<translation id="401121182145179743">먼저 컴퓨터를 원격으로 액세스할 수 있도록 설정해야 합니다.</translation>
+<translation id="4028465833180158312">• 머티리얼 디자인 UI 업데이트
+• 제3자 라이선스 크레딧
+• 오프라인 상태인 원격 컴퓨터 관련 정보 표시</translation>
 <translation id="405887016757208221">원격 컴퓨터가 세션을 초기화하는 데 실패했습니다. 문제가 지속되면 호스트를 다시 구성해 보시기 바랍니다.</translation>
 <translation id="4068946408131579958">모든 연결</translation>
 <translation id="409800995205263688">참고: 정책 설정에 따라 네트워크 내에 있는 컴퓨터 간의 연결만 허용됩니다.</translation>

@@ -357,6 +357,7 @@
 <translation id="4729095194763193578">Iepriekšējā tabulas rinda</translation>
 <translation id="4736221692378411923">Augusts</translation>
 <translation id="4740661827607246557">Palīdzības komandas</translation>
+<translation id="4755857887974653209">Atspējot ChromeVox</translation>
 <translation id="4759716709594980008">ChromeOS tastatūras pārlūks</translation>
 <translation id="4763296182459741068">Doties uz beigām</translation>
 <translation id="4763480195061959176">video</translation>
@@ -661,6 +662,7 @@
 <translation id="8065607967589909823">Atlase ir</translation>
 <translation id="8066678206530322333">Reklāmkarogs</translation>
 <translation id="8110647606445335195">Nav ARIA orientieru.</translation>
+<translation id="8132379720172247073">ChromeVox izvēlne</translation>
 <translation id="8153880621934657047">Nav tabulas iekšpusē.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{pasvītra}zero{# pasvītru}one{# pasvītra}other{# pasvītras}}</translation>
 <translation id="8179976553408161302">Ievadīt</translation>
@@ -696,6 +698,7 @@
 <translation id="8584721346566392021">5. līmeņa virsraksts</translation>
 <translation id="8587549812518406253">Nākamais saraksta vienums</translation>
 <translation id="860150890330522909">Atzīmēta izvēles rūtiņa <ph name="NAME" /></translation>
+<translation id="8603071050456974042">ChromeVox panelis</translation>
 <translation id="8606621670302093223">Datuma vadīkla</translation>
 <translation id="8631359288236106450">atlasīti vienumi: <ph name="COUNT" /></translation>
 <translation id="8638532244051952400">Paziņot pašreizējās šūnas koordinātas</translation>

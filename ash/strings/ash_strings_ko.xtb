@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ko">
 <translation id="1013923882670373915">블루투스 기기 '<ph name="DEVICE_NAME" />'에서 페어링 허가를 요청합니다. 기기에서 다음 PIN 코드를 입력하세요. <ph name="PINCODE" /></translation>
+<translation id="1021311941847921177">다음 입력 방법으로 전환하는 단축키가 변경되었습니다. <ph name="OLD_SHORTCUT" /> 대신 <ph name="NEW_SHORTCUT" />을(를) 사용하세요.</translation>
 <translation id="112308213915226829">실행기 자동 숨김</translation>
 <translation id="1195412055398077112">오버스캔</translation>
 <translation id="1270290102613614947">터치 키보드 사용 중지됨</translation>
@@ -25,7 +26,9 @@
 <translation id="1812696562331527143">입력 방법이 <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />타사<ph name="END_LINK" />)(으)로 변경되었습니다.
 전환하려면 Shift+Alt를 누르세요.</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" />에 미러링</translation>
+<translation id="1919743966458266018">작업 관리자를 여는 단축키가 변경되었습니다. <ph name="OLD_SHORTCUT" /> 대신 <ph name="NEW_SHORTCUT" />을(를) 사용하세요.</translation>
 <translation id="1923539912171292317">자동 클릭</translation>
+<translation id="1938872420421548906">Shift+Alt</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" />(USB)</translation>
 <translation id="2127372758936585790">저출력 충전기</translation>
@@ -105,6 +108,7 @@
 <translation id="4421231901400348175">원격 지원을 통해 <ph name="HELPER_NAME" />와(과) 화면 제어 공유</translation>
 <translation id="4430019312045809116">볼륨</translation>
 <translation id="4527045527269911712">블루투스 기기 '<ph name="DEVICE_NAME" />'에서 페어링 허가를 요청합니다.</translation>
+<translation id="4544944664594876241">화면 잠금 단축키가 변경되었습니다. <ph name="OLD_SHORTCUT" /> 대신 <ph name="NEW_SHORTCUT" />을(를) 사용하세요.</translation>
 <translation id="479989351350248267">검색</translation>
 <translation id="4804818685124855865">연결 해제</translation>
 <translation id="4872237917498892622">Alt+검색 또는 Shift 키</translation>
@@ -113,12 +117,14 @@
 <translation id="4957722034734105353">자세히 알아보기...</translation>
 <translation id="4961318399572185831">화면 전송</translation>
 <translation id="5011233892417813670">Chromebook</translation>
+<translation id="5012744545445585468">Ctrl+Shift+스페이스바</translation>
 <translation id="5045002648206642691">Google 문서함 설정...</translation>
 <translation id="5102001756192215136"><ph name="HOUR" />:<ph name="MINUTE" /> 남음</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION" />, <ph name="OVERSCAN" /></translation>
 <translation id="5168181903108465623">전송 기기를 사용할 수 있음</translation>
 <translation id="5222676887888702881">로그아웃</translation>
 <translation id="5238774010593222950">다른 계정에 로그인할 수 없습니다.</translation>
+<translation id="532063867737390965">관리자가 이 네트워크 설정을 사용 중지했습니다.</translation>
 <translation id="544691375626129091">사용 가능한 모든 사용자가 이미 이 세션에 추가되었습니다.</translation>
 <translation id="5507786745520522457">모바일 데이터 설정</translation>
 <translation id="5543001071567407895">SMS</translation>
@@ -132,6 +138,7 @@
 전환하려면 Shift+Alt를 누르세요.</translation>
 <translation id="5871632337994001636">기기 관리...</translation>
 <translation id="5895138241574237353">다시 시작</translation>
+<translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5927132638760172455">알 수 없는 수신자로 전송 중</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">되돌리기</translation>
@@ -155,6 +162,7 @@
 <translation id="6426039856985689743">모바일 데이터 사용 안함</translation>
 <translation id="6452181791372256707">거부</translation>
 <translation id="6459472438155181876">화면을 <ph name="DISPLAY_NAME" />(으)로 확장</translation>
+<translation id="6501401484702599040"><ph name="RECEIVER_NAME" />(으)로 화면 전송 중</translation>
 <translation id="6550675742724504774">옵션</translation>
 <translation id="6585808820553845416">세션이 <ph name="SESSION_TIME_REMAINING" /> 후에 종료됩니다.</translation>
 <translation id="6596816719288285829">IP 주소</translation>
@@ -162,6 +170,7 @@
 <translation id="6713285437468012787">블루투스 기기 '<ph name="DEVICE_NAME" />'이(가) 페어링되어 이제 모든 사용자가 사용할 수 있습니다. 설정에서 이 페어링을 삭제할 수 있습니다.</translation>
 <translation id="6785414152754474415">배터리가 <ph name="PERCENTAGE" />% 충전되었으며 충전 중입니다.</translation>
 <translation id="6803622936009808957">지원되는 해상도가 없으므로 디스플레이를 그대로 반영할 수 없습니다. 대신 확장 데스크톱을 시작했습니다.</translation>
+<translation id="683971173229319003">Search+L</translation>
 <translation id="68610848741840742">ChromeVox(음성 피드백)</translation>
 <translation id="6911468394164995108">다른 네트워크에 연결</translation>
 <translation id="6915678159055240887">Chromebox</translation>
@@ -169,6 +178,7 @@
 <translation id="6981982820502123353">접근성</translation>
 <translation id="7029814467594812963">세션 종료</translation>
 <translation id="703171847531699602">전송 기기 없음</translation>
+<translation id="7034339000180558234"><ph name="TAB_NAME" />을(를) <ph name="RECEIVER_NAME" />(으)로 전송 중</translation>
 <translation id="7052914147756339792">배경화면 설정...</translation>
 <translation id="7097613348211027502">ChromeVox(음성 피드백)를 사용하도록 설정했습니다.
 사용 중지하려면 Ctrl+Alt+Z를 누르세요.</translation>
@@ -180,6 +190,7 @@
 <translation id="737451040872859086">마이크(내부)</translation>
 <translation id="742594950370306541">카메라가 사용 중입니다.</translation>
 <translation id="743058460480092004">카메라와 마이크가 사용 중입니다.</translation>
+<translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" />에서 <ph name="SPECIFIED_RESOLUTION" />을(를) 지원하지 않습니다. 해상도가 <ph name="FALLBACK_RESOLUTION" />(으)로 변경되었습니다.</translation>
 <translation id="7573962313813535744">고정 모드</translation>
 <translation id="7593891976182323525">검색 또는 Shift 키</translation>
@@ -207,6 +218,7 @@
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="882279321799040148">클릭하여 보기</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8878886163241303700">화면 확대</translation>
 <translation id="8940956008527784070">배터리 부족(<ph name="PERCENTAGE" />%)</translation>
 <translation id="9074739597929991885">블루투스</translation>

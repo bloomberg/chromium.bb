@@ -10,11 +10,12 @@
 <translation id="1293235220023151515">‏נמצאה במערכת התקנה מתנגשת של Chromium. הסר את ההתקנה ונסה שוב.</translation>
 <translation id="1298199220304005244">‏עזרה באמצעות מערכת ההפעלה של Chromium</translation>
 <translation id="1396446129537741364">‏Chromium מנסה להציג סיסמאות.</translation>
+<translation id="1403254041219632970">‏גרסאות עתידיות של Chromium כבר לא יתמכו במערכת Mac OS X בגרסאות 10.6, 10.7 ו-10.8.</translation>
 <translation id="1414495520565016063">‏נכנסת ל-Chromium!</translation>
 <translation id="1444754455097148408">‏רישיונות קוד פתוח של Chromium</translation>
-<translation id="1461885241643463646">‏מפעיל תהליכי כניסה אל Chromium המבוססים על iframe. הסימון הזה מבטל את "הפעלת כניסה מבוססת אינטרנט".</translation>
 <translation id="1480489203462860648">נסה את זה, זה כבר מותקן</translation>
 <translation id="151962892725702025">‏מערכת ההפעלה של Chromium לא הצליחה לסנכרן את הנתונים שלך מפני שסנכרון אינו זמין עבור הדומיין שלך.</translation>
+<translation id="1559451348202814456">‏ייתכן ש-Chromium לא יפעל כראוי כי כבר אין בו תמיכה במערכת Mac OS X בגרסאות 10.6, 10.7 ו-10.8.</translation>
 <translation id="1644918877723739397">‏Chromium ישמור את הסיסמה הזו ב-<ph name="SAVED_PASSWORD_LINK" /> ויזכור אותה בפעם הבאה שתזדקק לה.</translation>
 <translation id="1668054258064581266">‏לאחר הסרת החשבון שלך מ-Chromeium, ייתכן שתידרש לטעון מחדש את הכרטיסיות הפתוחות שלך כדי שההסרה תיושם בפועל.</translation>
 <translation id="1688750314291223739">‏הגדר סנכרון כדי לשמור את תכונות הדפדפן המותאמות אישית שלך באינטרנט ולגשת אליהן מ-Chromium בכל מחשב.</translation>
@@ -43,8 +44,10 @@
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{‏הורדה מתבצעת עכשיו. האם ברצונך לבטל את ההורדה ולצאת מ-Chromium?}two{‏# הורדות מתבצעות עכשיו. האם ברצונך לבטל את ההורדות ולצאת מ-Chromium?}many{‏# הורדות מתבצעות עכשיו. האם ברצונך לבטל את ההורדות ולצאת מ-Chromium?}other{‏# הורדות מתבצעות עכשיו. האם ברצונך לבטל את ההורדות ולצאת מ-Chromium?}}</translation>
 <translation id="2396765026452590966">‏התוסף "<ph name="EXTENSION_NAME" />" שינה את הדף שמוצג כשאתה מפעיל את Chromium.</translation>
 <translation id="2485422356828889247">הסר התקנה</translation>
+<translation id="2486653164587200256">‏ייתכן ש-Chromium לא יפעל כראוי כי כבר אין בו תמיכה ב-Windows XP וב-Windows Vista.</translation>
 <translation id="2535480412977113886">‏מערכת ההפעלה של Chromium לא הצליחה לסנכרן את הנתונים שלך מפני שפרטי הכניסה של חשבונך אינם מעודכנים.</translation>
 <translation id="2558641060352364164">‏האתר הזה משתמש בפלאגין Chromium Frame. התמיכה בפלאגין הזה תסתיים בקרוב. הסר את ההתקנה שלו ושדרג לדפדפן מודרני.</translation>
+<translation id="2565260267992448464">‏Chromium אינו יכול להציג את דף האינטרנט מכיוון שהמחשב שלך לא מחובר לאינטרנט.</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="2602806952220118310">‏Chromium - הודעות</translation>
 <translation id="2636877269779209383">‏Chromium זקוק לגישה אל המצלמה כדי לשתף אותה עם האתר הזה.</translation>
@@ -104,6 +107,7 @@
 <translation id="4423735387467980091">‏התאם אישית ושלוט ב-Chromium</translation>
 <translation id="4458285410772214805">צא מהמערכת והיכנס שוב כדי שהשינוי ייכנס לתוקף.</translation>
 <translation id="4488676065623537541">‏פרטי החיוב שלך נשמרו ב-Chromium.</translation>
+<translation id="4549794359424059447">‏גרסאות עתידיות של Chromium כבר לא יתמכו ב-Windows XP וב-Windows Vista.</translation>
 <translation id="4559775032954821361">‏עבור אל
           תפריט Chromium‏ &gt;
           <ph name="SETTINGS_TITLE" />
@@ -132,6 +136,7 @@
 <translation id="549669000822060376">‏המתן בזמן ש-Chromium מתקין את עדכוני המערכת האחרונים.</translation>
 <translation id="5563479599352954471">חיפוש בנגיעה אחת</translation>
 <translation id="5620765574781326016">קרא מידע על נושאים באתרים בלי לעזוב את הדף.</translation>
+<translation id="5680901439334282664">‏היכנס אל Chromium</translation>
 <translation id="5772805321386874569">‏(נדרש <ph name="BEGIN_BUTTON" />אתחול<ph name="END_BUTTON" /> של Chromium)</translation>
 <translation id="5796460469508169315">‏Chromium כמעט מוכן.</translation>
 <translation id="580822234363523061">‏עבור אל
@@ -208,7 +213,6 @@ Chromium לא יכול לשחזר את ההגדרות שלך.</translation>
 <translation id="761356813943268536">‏Chromium משתמש במצלמה ובמיקרופון שלך.</translation>
 <translation id="7617377681829253106">‏Chromium השתפר</translation>
 <translation id="7641113255207688324">‏Chromium אינו דפדפן ברירת המחדל שלך.</translation>
-<translation id="7723128346970903111">‏כשמצב זה מופעל, ייעשה שימוש בתהליך כניסה אל Chromium המבוסס על iframe. אם לא יופעל, ייעשה שימוש בתהליך המבוסס על WebView.</translation>
 <translation id="7729447699958282447">‏Chromium לא הצליח לסנכרן את הנתונים שלך מפני שסנכרון אינו זמין עבור הדומיין שלך.</translation>
 <translation id="7747138024166251722">המתקין לא הצליח ליצור ספריה זמנית. בדוק את המקום הפנוי בדיסק ואת האישור להתקנת תוכנה.</translation>
 <translation id="7918535023914021398">‏Chromium אימת שהגורם שהנפיק את אישור האתר הזה הוא <ph name="ISSUER" />. השרת לא סיפק פרטים על שקיפות האישור.</translation>

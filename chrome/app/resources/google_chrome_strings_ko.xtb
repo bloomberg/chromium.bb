@@ -5,6 +5,7 @@
 <translation id="1013290471399003443">Chrome에서 <ph name="ISSUER" />이(가) 이 웹사이트의 인증서를 발행했음을 확인했습니다. 서버에서 올바른 인증서 투명성 정보를 제공했습니다.</translation>
 <translation id="1016765312371154165">Chrome이 제대로 종료되지 않았습니다.</translation>
 <translation id="103396972844768118">Chrome 데이터 관련 중요 정보</translation>
+<translation id="1035334672863811645">Chrome에 로그인</translation>
 <translation id="1061441684050139317">이 사이트에 공유하려면 Chrome에 마이크 액세스 권한이 있어야 합니다.</translation>
 <translation id="1065672644894730302">환경설정을 읽을 수 없습니다.
 
@@ -91,7 +92,7 @@
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3881912906674381083">Chrome에서 <ph name="ISSUER" />이(가) 이 웹사이트의 인증서를 발행했음을 확인했습니다. 서버에서 인증서 투명성 정보를 제공했으나, Chromium에서 인증서 투명성 로그를 인식하지 못했습니다.</translation>
 <translation id="3889417619312448367">Chrome 제거</translation>
-<translation id="4011219958405096740">사용하면 iframe 기반 Chrome 로그인 절차를 사용하며, 그렇지 않은 경우 WebView 기반 로그인 절차를 사용합니다.</translation>
+<translation id="4042449298237264661">Windows XP와 Windows Vista가 더 이상 지원되지 않으므로 이 컴퓨터에서 Chrome 업데이트를 받을 수 없게 됩니다.</translation>
 <translation id="4050175100176540509">최신 버전에는 중요한 보안 개선사항 및 새로운 기능이 포함되어 있습니다.</translation>
 <translation id="4053720452172726777">Chrome 맞춤설정 및 제어</translation>
 <translation id="4147555960264124640">관리 계정으로 로그인하여 관리자에게 Chrome 프로필에 대한 제어권을 부여하려고 합니다. 앱, 북마크, 방문 기록, 비밀번호 및 기타 설정과 같은 Chrome 데이터가 <ph name="USER_NAME" /> 계정에 영구적으로 연결됩니다. 이후 이 데이터를 Google 계정 대시보드에서 삭제할 수는 있지만 다른 계정에 연결할 수는 없습니다. <ph name="LEARN_MORE" /></translation>
@@ -149,9 +150,9 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="573759479754913123">Chrome OS 정보</translation>
 <translation id="5749068826913805084">Chrome에서 파일을 다운로드하려면 저장소 액세스 권한이 있어야 합니다.</translation>
 <translation id="5785746630574083988">Windows 8 모드로 다시 실행하면 Chrome 앱이 닫혔다가 다시 실행됩니다.</translation>
-<translation id="5799551393681493217">iframe 기반 Chrome 로그인 절차 사용(이 플래그는 웹 기반 로그인 사용보다 우선함)</translation>
 <translation id="5855036575689098185">컴퓨터에서 실행 중인 소프트웨어가 Chrome과 호환되지 않습니다.</translation>
 <translation id="5877064549588274448">채널이 변경되었습니다. 변경사항을 적용하려면 기기를 다시 시작하세요.</translation>
+<translation id="5890698319714066019">컴퓨터가 인터넷에 연결되어 있지 않아 Chrome에서 웹페이지를 표시할 수 없습니다.</translation>
 <translation id="5931853610562009806">Mac에서는 비밀번호가 키체인에 저장되어 이 OS X 계정을 공유하는 다른 Chrome 사용자가 액세스하거나 동기화할 수 있습니다.</translation>
 <translation id="5940385492829620908">웹, 북마크 및 기타 Chrome 콘텐츠가 여기에 저장됩니다.</translation>
 <translation id="5941830788786076944">Chrome을 기본 브라우저로</translation>
@@ -173,6 +174,8 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="6236285698028833233">Chrome에서 업데이트를 중단했으며 이 버전의 운영체제를 더 이상 지원하지 않습니다.</translation>
 <translation id="629218512217695915">Chrome에서 생성한 비밀번호 사용</translation>
 <translation id="6368958679917195344">Chrome OS는 추가 <ph name="BEGIN_LINK_CROS_OSS" />오픈소스 소프트웨어<ph name="END_LINK_CROS_OSS" />를 사용했습니다.</translation>
+<translation id="6400076122676892962">Mac OS X 10.6, 10.7, 10.8이 더 이상 지원되지 않을 예정이므로 곧 이 컴퓨터에서 Chrome 업데이트를 받을 수 없게 됩니다.</translation>
+<translation id="6470176598693778404">Mac OS X 10.6, 10.7, 10.8이 더 이상 지원되지 않아 이 컴퓨터에서 Chrome 업데이트를 받을 수 없게 됩니다.</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{현재 다운로드가 진행 중입니다. 다운로드를 취소하고 Chrome을 종료하시겠습니까?}other{현재 #개의 다운로드가 진행 중입니다. 다운로드를 취소하고 Chrome을 종료하시겠습니까?}}</translation>
 <translation id="6598387184982954187">Chrome 콘텐츠를 동기화하기 위해 <ph name="PROFILE_EMAIL" />을(를) 사용 중입니다. 동기화 환경설정을 업데이트하거나 Google 계정 없이 Chrome을 사용하려면 <ph name="SETTINGS_LINK" />(으)로 이동하세요.</translation>
 <translation id="6600954340915313787">Chrome에 복사됨</translation>
@@ -209,6 +212,7 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="7196020411877309443">이 메시지가 표시되는 이유</translation>
 <translation id="7242029209006116544">관리 계정으로 로그인하고 관리자에게 Chrome 프로필에 대한 제어권을 부여하려고 합니다. 앱, 북마크, 방문 기록, 비밀번호 및 기타 설정과 같은 Chrome 데이터가 <ph name="USER_NAME" /> 계정에 영구적으로 연결됩니다. 이후 이 데이터를 Google 계정 대시보드에서 삭제할 수는 있지만 다른 계정에 연결할 수는 없습니다. 기존 Chrome 데이터를 유지하려면 새 프로필을 만드는 방법이 있습니다. <ph name="LEARN_MORE" /></translation>
 <translation id="7282192067747128786">Chrome - 알림(읽지 않은 알림 <ph name="QUANTITY" />개)</translation>
+<translation id="729375352412857283">Windows XP 및 Windows Vista가 더 이상 지원되지 않을 예정이므로 곧 이 컴퓨터에서 Chrome 업데이트를 받을 수 없게 됩니다.</translation>
 <translation id="7339898014177206373">새 창</translation>
 <translation id="7396375882099008034">Chrome이 방화벽이나 바이러스 백신이 설정된
         네트워크에 액세스할 수 있도록 허용합니다.</translation>

@@ -84,6 +84,7 @@
 <translation id="2556876185419854533">&amp;Anular edição</translation>
 <translation id="2581221116934462656">Pretende que o <ph name="PRODUCT_NAME" /> se ofereça para traduzir as páginas em <ph name="LANGUAGE_NAME" /> deste site da próxima vez?</translation>
 <translation id="2587841377698384444">ID da API de diretório:</translation>
+<translation id="2589937147782335782">Pretende que o Google guarde este cartão?</translation>
 <translation id="2597378329261239068">Este documento está protegido por palavra-passe.  Introduza uma palavra-passe.</translation>
 <translation id="2609632851001447353">Variações</translation>
 <translation id="2625385379895617796">O seu relógio está adiantado</translation>
@@ -202,7 +203,6 @@
 <translation id="5295309862264981122">Confirmar navegação</translation>
 <translation id="5299298092464848405">Erro ao analisar a política</translation>
 <translation id="5308689395849655368">O relatório de falha está desativado.</translation>
-<translation id="5316812925700871227">Rodar para a esquerda</translation>
 <translation id="5317780077021120954">Guardar</translation>
 <translation id="536296301121032821">Falha ao armazenar as definições da política</translation>
 <translation id="540969355065856584">Este servidor não conseguiu provar que é <ph name="DOMAIN" />; de momento, o respetivo certificado de segurança não é válido. Isto pode ser provocado por uma configuração incorreta ou por um atacante que esteja a intercetar a sua ligação.</translation>
@@ -219,6 +219,7 @@
 <translation id="560412284261940334">Gestão não suportada</translation>
 <translation id="5629630648637658800">Falha ao carregar as definições da política</translation>
 <translation id="5631439013527180824">Token de gestão do dispositivo inválido</translation>
+<translation id="5680545064257783621">Fornece um botão de desligar para uma melhor experiência com marcadores</translation>
 <translation id="5720705177508910913">Utilizador atual</translation>
 <translation id="5813119285467412249">&amp;Refazer adição</translation>
 <translation id="5872918882028971132">Sugestões superiores</translation>
@@ -289,11 +290,13 @@
 <translation id="7424977062513257142">Uma página incorporada nesta página Web diz:</translation>
 <translation id="7441627299479586546">Assunto da política incorreto</translation>
 <translation id="7485870689360869515">Não foram encontrados dados.</translation>
+<translation id="7514365320538308">Transferir</translation>
 <translation id="7537536606612762813">Obrigatório</translation>
 <translation id="7542995811387359312">O preenchimento automático de cartões de crédito está desactivado, porque este formulário não utiliza uma ligação segura.</translation>
 <translation id="7567204685887185387">Este servidor não conseguiu provar que é o domínio <ph name="DOMAIN" />; o respetivo certificado de segurança poderá ter sido emitido de forma fraudulenta. Isto pode ser o resultado de uma configuração incorreta ou de um invasor a intercetar a sua ligação.</translation>
 <translation id="7568593326407688803">Esta página está em<ph name="ORIGINAL_LANGUAGE" />Pretende traduzi-la?</translation>
 <translation id="7569952961197462199">Pretende remover o cartão de crédito do Chrome?</translation>
+<translation id="7578104083680115302">Pague rapidamente em sites e aplicações em todos os dispositivos com cartões que tenha guardado com o Google.</translation>
 <translation id="7592362899630581445">O certificado do servidor viola as restrições de nome.</translation>
 <translation id="7600965453749440009">Nunca traduzir do <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">O valor está fora do intervalo <ph name="VALUE" /> .</translation>

@@ -5,6 +5,7 @@
 <translation id="1013290471399003443">Chrome, bu web sitesi sertifikasının <ph name="ISSUER" /> tarafından yayınlandığını doğruladı. Sunucu geçerli Sertifika Şeffaflığı bilgilerini sağladı.</translation>
 <translation id="1016765312371154165">Chrome doğru bir şekilde kapatılmadı.</translation>
 <translation id="103396972844768118">Chrome verileri ile ilgili önemli bilgiler</translation>
+<translation id="1035334672863811645">Chrome'da oturum açın</translation>
 <translation id="1061441684050139317">Chrome'un mikrofonu bu siteyle paylaşması için mikrofon erişimine ihtiyacı var.</translation>
 <translation id="1065672644894730302">Tercihleriniz okunamıyor. Bazı özellikler kullanılamayabilir. Tercihlerde yapılan değişiklikler kaydedilmeyecektir.</translation>
 <translation id="1073391069195728457">Chrome - Bildirimler</translation>
@@ -87,7 +88,7 @@ Yine de oturum açarsanız, yer işaretleriniz, geçmişiniz ve diğer ayarları
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3881912906674381083">Chrome, bu web sitesi sertifikasının <ph name="ISSUER" /> tarafından yayınlandığını doğruladı. Sunucu Sertifika Şeffaflığı bilgilerini sağladı, ancak Chrome hiçbir Sertifika Şeffaflığı günlüğünü tanımadı.</translation>
 <translation id="3889417619312448367">Google Chrome'u Kaldır</translation>
-<translation id="4011219958405096740">Etkinleştirildiğinde iframe tabanlı bir Chrome oturum açma akışı kullanır. Aksi takdirde WebView tabanlı akışı kullanır.</translation>
+<translation id="4042449298237264661">Windows XP ve Windows Vista artık desteklenmediğinden, bu bilgisayar Google Chrome güncellemelerini artık almayacaktır.</translation>
 <translation id="4050175100176540509">Son sürümde güvenlikle ilgili önemli iyileştirmeler ve yeni özellikler mevcuttur.</translation>
 <translation id="4053720452172726777">Google Chrome'u özelleştirin ve kontrol edin</translation>
 <translation id="4147555960264124640">Yönetilen bir hesapla oturum açıyor ve hesabın yöneticisine Google Chrome profilinizi denetleme izni veriyorsunuz. Uygulamalarınız, yer işaretleriniz, geçmişiniz, şifreleriniz ve diğer ayarlarınız gibi Chrome verileriniz kalıcı olarak <ph name="USER_NAME" /> ile bağlantılandırılacaktır. Google Hesapları Hesap Özeti'ni kullanarak bu verileri silebilecek, ancak bu verileri başka bir hesapla ilişkilendiremeyeceksiniz.<ph name="LEARN_MORE" /></translation>
@@ -143,9 +144,9 @@ ve yanlış kimlik bilgileri döndürdü. Bir saldırgan <ph name="SITE" /> gibi
 <translation id="573759479754913123">Chrome OS hakkında</translation>
 <translation id="5749068826913805084">Dosya indirmek için Chrome'un depolama alanına erişmesi gerekiyor.</translation>
 <translation id="5785746630574083988">Windows 8 modunda yeniden başlatıldığında Chrome uygulamalarınız kapatılacak ve yeniden başlatılacaktır.</translation>
-<translation id="5799551393681493217">Iframe tabanlı Chrome oturum açma akışını etkinleştirir. Bu bayrak --web tabanlı oturum açma özelliğini geçersiz kılar.</translation>
 <translation id="5855036575689098185">Bilgisayarınızda çalışan yazılım Google Chrome ile uyumsuz.</translation>
 <translation id="5877064549588274448">Kanal değişti. Değişikliklerin uygulanması için cihazınızı yeniden başlatın.</translation>
+<translation id="5890698319714066019">Bilgisayarınız İnternet'e bağlı olmadığından Google Chrome web sayfasını görüntüleyemiyor.</translation>
 <translation id="5931853610562009806">Mac bilgisayarlarda şifreler Keychain uygulamanızda saklanabilir ve bu OS X hesabını paylaşan diğer Chrome kullanıcıları bu şifrelere erişilebilir veya şifreleri senkronize edilebilir.</translation>
 <translation id="5940385492829620908">Web, yer işaretleri ve diğer Chrome öğeleriniz burada bulunur.</translation>
 <translation id="5941830788786076944">Google Chrome varsayılan tarayıcı olsun</translation>
@@ -167,6 +168,8 @@ ve yanlış kimlik bilgileri döndürdü. Bir saldırgan <ph name="SITE" /> gibi
 <translation id="6236285698028833233">Google Chrome güncellemesi durdu ve artık işletim sisteminizin bu sürümü desteklenmiyor.</translation>
 <translation id="629218512217695915">Chrome tarafından oluşturulan şifreyi kullan</translation>
 <translation id="6368958679917195344">Chrome OS, ek <ph name="BEGIN_LINK_CROS_OSS" />açık kaynak yazılımlardan<ph name="END_LINK_CROS_OSS" /> yararlanılarak geliştirilmiştir.</translation>
+<translation id="6400076122676892962">Mac OS X 10.6, 10.7 ve 10.8 artık desteklenmeyeceğinden, bu bilgisayar yakında Google Chrome güncellemeleri almayı durduracaktır.</translation>
+<translation id="6470176598693778404">Mac OS X 10.6, 10.7 ve 10.8 artık desteklenmediğinden, bu bilgisayar Google Chrome güncellemelerini artık almayacaktır.</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{Şu anda devam eden bir indirme işlemi var. İndirme işlemini iptal etmek ve Google Chrome'dan çıkmak istiyor musunuz?}other{Şu anda devam eden # indirme işlemi var. İndirme işlemlerini iptal etmek ve Google Chrome'dan çıkmak istiyor musunuz?}}</translation>
 <translation id="6598387184982954187">Chrome öğelerinizi senkronize etmek için <ph name="PROFILE_EMAIL" /> adresini kullanıyorsunuz. Senkronizasyon tercihinizi güncellemek veya Chrome'u bir Google Hesabı olmadan kullanmak için şunu ziyaret edin: <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6600954340915313787">Chrome'a kopyalandı</translation>
@@ -203,6 +206,7 @@ ve yanlış kimlik bilgileri döndürdü. Bir saldırgan <ph name="SITE" /> gibi
 <translation id="7196020411877309443">Neden bunu görüyorum?</translation>
 <translation id="7242029209006116544">Yönetilen bir hesapla oturum açıyor ve hesabın yöneticisine Google Chrome profilinizi denetleme izni veriyorsunuz. Uygulamalarınız, yer işaretleriniz, geçmişiniz, şifreleriniz ve diğer ayarlarınız gibi Chrome verileriniz kalıcı olarak <ph name="USER_NAME" /> ile bağlantılandırılacaktır. Google Hesapları Hesap Özeti'ni kullanarak bu verileri silebilecek, ancak bu verileri başka bir hesapla ilişkilendiremeyeceksiniz. İsterseniz mevcut Chrome verilerinizi ayrı tutmak için yeni bir profil oluşturabilirsiniz.<ph name="LEARN_MORE" /></translation>
 <translation id="7282192067747128786">Chrome - Bildirimler (<ph name="QUANTITY" /> okunmamış)</translation>
+<translation id="729375352412857283">Windows XP ve Windows Vista artık desteklenmeyeceğinden, bu bilgisayar yakında Google Chrome güncellemeleri almayı durduracaktır.</translation>
 <translation id="7339898014177206373">Yeni pencere</translation>
 <translation id="7396375882099008034">Güvenlik duvarınızın veya virüsten korunma programınızın ayarlarından, Chrome'un ağa erişmesine
         izin verin.</translation>

@@ -84,6 +84,7 @@
 <translation id="2556876185419854533">&amp;Buat Asal Edit</translation>
 <translation id="2581221116934462656">Adakah anda ingin <ph name="PRODUCT_NAME" /> menawarkan halaman <ph name="LANGUAGE_NAME" /> dari tapak ini diterjemah pada masa akan datang?</translation>
 <translation id="2587841377698384444">ID API Direktori:</translation>
+<translation id="2589937147782335782">Adakah anda mahu Google menyimpan kad ini?</translation>
 <translation id="2597378329261239068">Dokumen ini dilindungi kata laluan.  Sila masukkan kata laluan.</translation>
 <translation id="2609632851001447353">Variasi</translation>
 <translation id="2625385379895617796">Jam anda lebih awal</translation>
@@ -202,7 +203,6 @@
 <translation id="5295309862264981122">Sahkan Navigasi</translation>
 <translation id="5299298092464848405">Ralat semasa menghuraikan dasar</translation>
 <translation id="5308689395849655368">Pelaporan nahas dilumpuhkan.</translation>
-<translation id="5316812925700871227">Putar lawan arah jam</translation>
 <translation id="5317780077021120954">Simpan</translation>
 <translation id="536296301121032821">Gagal menyimpan tetapan dasar</translation>
 <translation id="540969355065856584">Pelayan ini tidak dapat membuktikan bahawa pelayan adalah <ph name="DOMAIN" />; sijil keselamatan pelayan tidak sah pada masa ini. Ini mungkin disebabkan oleh kesilapan konfigurasi atau penyerang memintas sambungan anda.</translation>
@@ -219,6 +219,7 @@
 <translation id="560412284261940334">Pengurusan tidak disokong</translation>
 <translation id="5629630648637658800">Gagal memuatkan tetapan dasar</translation>
 <translation id="5631439013527180824">Token pengurusan peranti tidak sah</translation>
+<translation id="5680545064257783621">Menyediakan suis mati untuk percubaan penanda buku dipertingkat</translation>
 <translation id="5720705177508910913">Pengguna semasa</translation>
 <translation id="5813119285467412249">&amp;Buat Semula Tambahkan</translation>
 <translation id="5872918882028971132">Cadangan Ibu Bapa</translation>
@@ -289,11 +290,13 @@
 <translation id="7424977062513257142">Halaman terbenam pada halaman web ini menyatakan:</translation>
 <translation id="7441627299479586546">Subjek dasar salah</translation>
 <translation id="7485870689360869515">Tiada data dijumpai.</translation>
+<translation id="7514365320538308">Muat Turun</translation>
 <translation id="7537536606612762813">Wajib</translation>
 <translation id="7542995811387359312">Pengisian kad kredit automatik dilumpuhkan kerana borang ini tidak menggunakan sambungan selamat.</translation>
 <translation id="7567204685887185387">Pelayan ini tidak dapat membuktikan bahawa domainnya ialah <ph name="DOMAIN" />; sijil keselamatannya mungkin telah dikeluarkan melalui penipuan. Ini mungkin disebabkan oleh kesilapan konfigurasi atau penyerang yang memintasi sambungan anda.</translation>
 <translation id="7568593326407688803">Halaman ini adalah dalam<ph name="ORIGINAL_LANGUAGE" />Adakah anda ingin menterjemahkannya?</translation>
 <translation id="7569952961197462199">Alih keluar kad kredit daripada Chrome?</translation>
+<translation id="7578104083680115302">Bayar dengan cepat di tapak dan apl merentas peranti menggunakan kad yang telah disimpan dengan Google.</translation>
 <translation id="7592362899630581445">Sijil pelayan melanggar kekangan nama.</translation>
 <translation id="7600965453749440009">Jangan sekali-kali terjemahkan <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">Nilai berada di luar julat <ph name="VALUE" /></translation>

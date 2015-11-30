@@ -29,11 +29,14 @@
 <translation id="1383876407941801731">Pesquisar</translation>
 <translation id="1389974829397082527">Não há favoritos aqui</translation>
 <translation id="1404122904123200417">Incorporado em <ph name="WEBSITE_URL" /></translation>
+<translation id="1406000523432664303">"Não rastrear"</translation>
+<translation id="1409879593029778104">O download de <ph name="FILE_NAME" /> foi impedido porque o arquivo já existe.</translation>
 <translation id="1416550906796893042">Versão do aplicativo</translation>
 <translation id="1423209968422390786">O acesso a locais está <ph name="BEGIN_LINK" />desativado para este dispositivo<ph name="END_LINK" />.</translation>
 <translation id="1445680696957526815">Os componentes do Chrome são incompatíveis entre si. O Chrome pode estar fazendo um upgrade. Tente novamente em alguns minutos. Se o problema persistir, tente desinstalar e reinstalar o Chrome.</translation>
 <translation id="1446450296470737166">Permitir controle total de dispositivos MIDI</translation>
 <translation id="145097072038377568">Desativada nas configurações do Android</translation>
+<translation id="1477626028522505441">Falha no download do arquivo <ph name="FILE_NAME" /> devido a problemas de servidor.</translation>
 <translation id="1506061864768559482">Mecanismo de pesquisa</translation>
 <translation id="1513352483775369820">Favoritos e histórico da Web</translation>
 <translation id="1557201757634521564">Detectar codificação automaticamente</translation>
@@ -46,9 +49,12 @@
 <translation id="1647391597548383849">Acessar sua câmera</translation>
 <translation id="1648687357130613845">Espaço de armazenamento</translation>
 <translation id="1657479659644194568">Configurar o Google Chrome</translation>
+<translation id="169033420419426091">Falha no download do arquivo <ph name="FILE_NAME" /> devido à falta de cartão SD.</translation>
 <translation id="1692118695553449118">A sincronização está ativada</translation>
 <translation id="1709438864123551175">Economia de dados</translation>
+<translation id="1741127251791687432">Você está conectado às seguintes Contas do Google.</translation>
 <translation id="1742134235943978220">Traduzido para <ph name="TARGET_LANGUAGE" />.</translation>
+<translation id="1749561566933687563">Sincronize seus favoritos</translation>
 <translation id="17513872634828108">Guias abertas</translation>
 <translation id="1807246157184219062">Claro</translation>
 <translation id="1825719650605518411">Tela de apresentação</translation>
@@ -80,6 +86,7 @@
 <translation id="2268044343513325586">Refinar</translation>
 <translation id="2315043854645842844">A seleção de certificado do cliente não é compatível com o sistema operacional.</translation>
 <translation id="2316129865977710310">Não.</translation>
+<translation id="2319528413610359757">Para leitores de <ph name="PUBLISHER" /></translation>
 <translation id="2321958826496381788">Arraste o controle deslizante até que você possa ler confortavelmente. O texto deve ter pelo menos este tamanho após um toque duplo em um parágrafo.</translation>
 <translation id="2343328333327081434">Instalando...</translation>
 <translation id="2351097562818989364">As configurações de tradução foram redefinidas.</translation>
@@ -90,6 +97,7 @@
 <translation id="2414886740292270097">Escuro</translation>
 <translation id="2433507940547922241">Aparência</translation>
 <translation id="2440823041667407902">Acesso ao local</translation>
+<translation id="2441637511528789386">Você está conectado ao Chrome.</translation>
 <translation id="2470327855284432041">Página de <ph name="PAGE_SIZE_STRING" /> salva off-line</translation>
 <translation id="2476578072172137802">Configurações do site</translation>
 <translation id="2482878487686419369">Notificações</translation>
@@ -153,6 +161,7 @@
 
 Você está fazendo login com uma conta gerenciada e fornecendo ao administrador da conta o controle sobre seu perfil do Google Chrome. Seus dados do Chrome serão permanentemente vinculados a esta conta. Se você se desconectar desta conta, os dados locais do Chrome serão excluídos.</translation>
 <translation id="3384347053049321195">Compartilhar imagem</translation>
+<translation id="3387650086002190359">Falha no download de <ph name="FILE_NAME" /> devido a erros do sistema de arquivos.</translation>
 <translation id="3414952576877147120">Tamanho:</translation>
 <translation id="3485544713029068372">Smart Lock para senhas</translation>
 <translation id="3492207499832628349">Nova guia anônima</translation>
@@ -161,6 +170,8 @@ Você está fazendo login com uma conta gerenciada e fornecendo ao administrador
 <translation id="360480449234699036">Saiba mais sobre tópicos em websites sem sair da página. A opção "Tocar para pesquisar" envia uma palavra e seu respectivo contexto para a Pesquisa Google, que retorna definições, imagens, resultados de pesquisa e outros detalhes.
 
 Para ajustar seu termo de pesquisa, mantenha-o pressionado para selecionar. Para refinar sua pesquisa, deslize o painel totalmente para cima e toque na caixa de pesquisa.</translation>
+<translation id="363596933471559332">Faça login automaticamente nos websites usando as credenciais armazenadas. Se o recurso estiver desativado, será preciso fazer a verificação sempre antes de fazer login em um website.</translation>
+<translation id="3653742808139624888">Para ter seus favoritos em todos os seus dispositivos, faça login no Chrome</translation>
 <translation id="3656115297268584622">Ative o local nas <ph name="BEGIN_LINK" />Configurações do Android<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">Websites de terceiros podem salvar e ler dados de cookies</translation>
 <translation id="3672452749423051839">Sugestões de erro de navegação</translation>
@@ -168,6 +179,7 @@ Para ajustar seu termo de pesquisa, mantenha-o pressionado para selecionar. Para
 <translation id="3774280986422214650">Se você ativar este recurso, fará parte de um experimento que utiliza proxies de páginas HTTPS por meio de servidores do Google.</translation>
 <translation id="3809549525127675114">"<ph name="VIDEO_TITLE" />" concluído</translation>
 <translation id="3828029223314399057">Pesquisar favoritos</translation>
+<translation id="3871171699884605801">Não é possível limpar o histórico de navegação com contas para crianças</translation>
 <translation id="3894427358181296146">Adicionar pasta</translation>
 <translation id="3895926599014793903">Forçar ativação de zoom</translation>
 <translation id="3917783807003067648">O local está bloqueado</translation>
@@ -211,6 +223,7 @@ Para ajustar seu termo de pesquisa, mantenha-o pressionado para selecionar. Para
 <translation id="4532845899244822526">Escolher pasta</translation>
 <translation id="4543087392704641517">Título do favorito</translation>
 <translation id="4543661749405994812">Copiar endereço de e-mail</translation>
+<translation id="4581964774250883625">Você entrou no modo de navegação anônima.</translation>
 <translation id="4583974066823898813">{NUM_URLS,plural, =1{1 link da Web física nas proximidades}one{# links da Web física nas proximidades}other{# links da Web física nas proximidades}}</translation>
 <translation id="4645575059429386691">Gerenciado pelos seus pais</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> favoritos excluídos</translation>
@@ -229,6 +242,7 @@ Para ajustar seu termo de pesquisa, mantenha-o pressionado para selecionar. Para
 <translation id="4816465935029283692">Tipos de dados</translation>
 <translation id="4827948050554950725">Adicionar cartão de crédito</translation>
 <translation id="4836364883164334657">Sua conexão com este site não é particular. Invasores podem tentar roubar suas informações, como fotos, senhas, mensagens e cartões de crédito de <ph name="DOMAIN_NAME" />.</translation>
+<translation id="4842511359652954519">Leia mais</translation>
 <translation id="4850886885716139402">Visualizar</translation>
 <translation id="4871370605780490696">Adicionar favorito</translation>
 <translation id="4881695831933465202">Abrir</translation>
@@ -247,6 +261,9 @@ Basta abrir o Chrome no computador, ir até o menu e selecionar “Fazer login n
 <translation id="5026147292873308216">Não foi encontrada nenhuma página da Web nas proximidades</translation>
 <translation id="5039804452771397117">Permitir</translation>
 <translation id="5040262127954254034">Privacidade</translation>
+<translation id="5049968687459146030">A ativação de "Não rastrear" significa que uma solicitação será incluída no tráfico de navegação. Todo efeito depende de um website responder à solicitação e de como a solicitação é interpretada.
+
+Por exemplo, alguns websites podem responder a esta solicitação mostrando anúncios que não tenham como base outros websites que você visitou. Muitos websites continuarão coletando seus dados de navegação, por exemplo, para melhorar a segurança, fornecer conteúdo, anúncios e recomendações nos websites e para gerar relatórios estatísticos.</translation>
 <translation id="5063480226653192405">Uso</translation>
 <translation id="5074309530946372881">Procurando páginas da Web nas proximidades</translation>
 <translation id="509605886816275399">Salvar esta página off-line?</translation>
@@ -255,6 +272,7 @@ Basta abrir o Chrome no computador, ir até o menu e selecionar “Fazer login n
 <translation id="5138299137310274655">Esta página está escrita em <ph name="SOURCE_LANGUAGE" />. Deseja traduzi-la para <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="5150703642582475397">Mesclar guias e apps</translation>
 <translation id="515227803646670480">Limpar dados armazenados</translation>
+<translation id="5156656584247937086">Esta conta é de uma criança</translation>
 <translation id="5161254044473106830">O título é obrigatório</translation>
 <translation id="5164482624172255778">Deseja que na próxima vez o Google Chrome ofereça a tradução de páginas em <ph name="LANGUAGE" /> deste site?</translation>
 <translation id="5168917394043976756">Abrir gaveta de navegação</translation>
@@ -279,6 +297,7 @@ Basta abrir o Chrome no computador, ir até o menu e selecionar “Fazer login n
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> excluído</translation>
 <translation id="5345083863238459644">O acesso a locais também está <ph name="BEGIN_LINK" />desativado para este dispositivo<ph name="END_LINK" />.</translation>
 <translation id="5380554235172449987">Nunca enviar</translation>
+<translation id="5400569084694353794">Ao usar este aplicativo, você concorda com os <ph name="BEGIN_LINK1" />Termos de Serviço<ph name="END_LINK1" /> e com o <ph name="BEGIN_LINK2" />Aviso de Privacidade<ph name="END_LINK2" />.</translation>
 <translation id="5414836363063783498">Verificando...</translation>
 <translation id="5423934151118863508">Suas páginas mais visitadas aparecerão aqui</translation>
 <translation id="5424715742813396254">Editar nome/senha salvos ou exceção</translation>
@@ -327,6 +346,7 @@ Basta abrir o Chrome no computador, ir até o menu e selecionar “Fazer login n
 <translation id="5899349522111170522">Criar novo arquivo</translation>
 <translation id="5902828464777634901">Os dados locais armazenados por este site serão excluídos, inclusive os cookies.</translation>
 <translation id="5911030830365207728">Google Tradutor</translation>
+<translation id="5913211790276112891">Caso tenha esquecido sua senha, pare e reinicie a sincronização por meio do <ph name="BEGIN_LINK" />Painel do Google<ph name="END_LINK" />.</translation>
 <translation id="5916664084637901428">Ativado</translation>
 <translation id="5939518447894949180">Redefinir</translation>
 <translation id="5953603475187800576">Mostrar endereços e cartões de crédito do Google Payments</translation>
@@ -337,6 +357,7 @@ Basta abrir o Chrome no computador, ir até o menu e selecionar “Fazer login n
 <translation id="6031101910111098835">Visualização recolhida: clique para expandir</translation>
 <translation id="6040143037577758943">Fechar</translation>
 <translation id="6042308850641462728">Mais</translation>
+<translation id="604996488070107836">Falha no download do arquivo <ph name="FILE_NAME" /> devido a um erro desconhecido.</translation>
 <translation id="605721222689873409">AA</translation>
 <translation id="6075798973483050474">Editar página inicial</translation>
 <translation id="6108923351542677676">Configuração em andamento...</translation>
@@ -366,6 +387,7 @@ Basta abrir o Chrome no computador, ir até o menu e selecionar “Fazer login n
 <translation id="6458785801851713928">A sincronização não está disponível para seu domínio.</translation>
 <translation id="6464825623202322042">Este dispositivo</translation>
 <translation id="6476911854266661814">“<ph name="VIDEO_TITLE" />” pausado</translation>
+<translation id="6482749332252372425">Falha no download do arquivo <ph name="FILE_NAME" /> devido à falta de espaço de armazenamento.</translation>
 <translation id="654446541061731451">Selecione uma guia para transferir</translation>
 <translation id="6550675742724504774">Opções</translation>
 <translation id="656628257199996201">Sempre traduzir <ph name="SOURCE_LANGUAGE" /></translation>
@@ -376,6 +398,7 @@ Basta abrir o Chrome no computador, ir até o menu e selecionar “Fazer login n
 <translation id="6612856669344839356">Salvar favorito</translation>
 <translation id="6627583120233659107">Editar pasta</translation>
 <translation id="6643016212128521049">Limpar</translation>
+<translation id="6656545060687952787">O Chrome precisa de acesso ao local para procurar por dispositivos. <ph name="BEGIN_LINK" />Atualizar permissões<ph name="END_LINK" /></translation>
 <translation id="666268767214822976">Usar um serviço de previsão para mostrar consultas relacionadas e sites populares quando você digitar na barra de endereços</translation>
 <translation id="666981079809192359">Aviso de Privacidade do Chrome</translation>
 <translation id="6697251040310467641">Página salva off-line</translation>
@@ -396,6 +419,7 @@ Basta abrir o Chrome no computador, ir até o menu e selecionar “Fazer login n
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> guias fechadas</translation>
 <translation id="6857778194843072568">Enviar somente em Wi-Fi</translation>
 <translation id="6868088497967843822">Faça login para que favoritos, histórico, senhas e outras configurações fiquem disponíveis em todos os seus dispositivos</translation>
+<translation id="6905639951630474043">Procurando dispositivos...</translation>
 <translation id="6945221475159498467">Selecionar</translation>
 <translation id="6963766334940102469">Excluir favoritos</translation>
 <translation id="6964496835063002391">Adicionar uma conta</translation>
@@ -430,9 +454,11 @@ Basta abrir o Chrome no computador, ir até o menu e selecionar “Fazer login n
 <translation id="7378627244592794276">Não</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7400448254438078120">Não é possível transmitir vídeo devido a restrições do site</translation>
+<translation id="7408644312175185557">Veja suas guias com outros aplicativos recentes na tela "Visão geral" do seu smartphone.</translation>
 <translation id="7423098979219808738">Perguntar primeiro</translation>
 <translation id="7437998757836447326">Sair do Google Chrome</translation>
 <translation id="7473891865547856676">Não, obrigado</translation>
+<translation id="7475192538862203634">Se estiver vendo isso com frequência, tente estas <ph name="BEGIN_LINK" />sugestões<ph name="END_LINK" />.</translation>
 <translation id="748127970106343339">Confirmar exclusão da credencial do dispositivo</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (atualizada <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7498271377022651285">Aguarde...</translation>
@@ -441,7 +467,10 @@ Basta abrir o Chrome no computador, ir até o menu e selecionar “Fazer login n
 <translation id="7561196759112975576">Sempre</translation>
 <translation id="7562080006725997899">Limpando dados de navegação</translation>
 <translation id="7596558890252710462">Sistema operacional</translation>
+<translation id="7599840151813361502">Você não será desconectado das suas <ph name="BEGIN_LINK" />Contas do Google<ph name="END_LINK" /></translation>
+<translation id="7603403729818446828">Veja suas guias com outros aplicativos recentes na tela "Visão geral" do seu smartphone. Controle isso em <ph name="BEGIN_LINK" />Config.<ph name="END_LINK" />.</translation>
 <translation id="7607002721634913082">Pausado</translation>
+<translation id="7619072057915878432">Falha no download do arquivo <ph name="FILE_NAME" /> devido a falhas na rede.</translation>
 <translation id="7626032353295482388">Bem-vindo ao Google Chrome</translation>
 <translation id="7634554953375732414">Sua conexão a este site não é particular.</translation>
 <translation id="7638584964844754484">Senha incorreta</translation>
@@ -526,6 +555,7 @@ Para receber novas licenças, conecte-se à Internet e use seu conteúdo baixado
 <translation id="869891660844655955">Validade</translation>
 <translation id="8719023831149562936">Não é possível enviar a guia atual</translation>
 <translation id="8725066075913043281">Tentar novamente</translation>
+<translation id="8727142376512517020">Não mostrar isto novamente</translation>
 <translation id="8730621377337864115">Concluído</translation>
 <translation id="8737542153238017984">Página salva não disponível off-line. Armazenamento quase cheio.</translation>
 <translation id="8793430725658173476">Copiar URL</translation>
@@ -558,6 +588,7 @@ Para receber novas licenças, conecte-se à Internet e use seu conteúdo baixado
 <translation id="9133515669113036225">Redefinir as credenciais do dispositivo</translation>
 <translation id="9137013805542155359">Mostrar original</translation>
 <translation id="9156605176886108508">Nenhuma pasta de favoritos</translation>
+<translation id="9187199695613236444">Visualização otimizada para dispositivos móveis</translation>
 <translation id="9192643434065497760">Ativar o Bluetooth nas <ph name="BEGIN_LINK" />configurações do dispositivo<ph name="END_LINK" /> para permitir o pareamento.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="932327136139879170">Início</translation>

@@ -24,6 +24,7 @@ Para obtener más información sobre la privacidad, consulta la política de pri
 <translation id="1546934824884762070">Se produjo un error inesperado. Informa este problema a los programadores.</translation>
 <translation id="1619813076098775562">Se cerró la conexión con el dispositivo de transmisión.</translation>
 <translation id="1643640058022401035">Al abandonar esta página, se cerrará tu sesión en Chromoting.</translation>
+<translation id="1646994964686260497">No hay ninguna computadora con la cual conectarse.</translation>
 <translation id="1654128982815600832">Habilitando conexiones remotas para esta computadora…</translation>
 <translation id="170207782578677537">No se pudo registrar esta computadora.</translation>
 <translation id="1704090719919187045">Preferencias del host de Chromoting</translation>
@@ -109,6 +110,7 @@ Para obtener más información sobre la privacidad, consulta la política de pri
 <translation id="3606997049964069799">No accediste a Chromium. Accede y vuelve a intentarlo.</translation>
 <translation id="3649256019230929621">Minimizar ventana</translation>
 <translation id="369442766917958684">Sin conexión</translation>
+<translation id="3695446226812920698">Más información</translation>
 <translation id="3776024066357219166">Se cerró tu sesión en Escritorio remoto de Chrome.</translation>
 <translation id="3785447812627779171">Host de
 Chromoting</translation>
@@ -121,6 +123,10 @@ Chromoting</translation>
 <translation id="3950820424414687140">Acceder</translation>
 <translation id="3989511127559254552">Para continuar, primero debes extender los permisos de acceso a tu computadora. Solo tienes que hacerlo una vez.</translation>
 <translation id="4006787130661126000">Debes habilitar las conexiones remotas si deseas usar Escritorio remoto de Chrome para acceder a esta computadora.</translation>
+<translation id="401121182145179743">Primero debes configurar la computadora para tener acceso remoto.</translation>
+<translation id="4028465833180158312">• Actualizaciones en la interfaz de usuario de material design.
+• Crédito de las licencias de terceros.
+• Se muestra información de computadoras remotas que están sin conexión.</translation>
 <translation id="405887016757208221">La computadora remota no pudo inicializar la sesión. Si el problema persiste, intenta volver a configurar el host.</translation>
 <translation id="4068946408131579958">Todas las conexiones</translation>
 <translation id="409800995205263688">NOTA: La configuración de la política solo permite conexiones entre computadoras que estén dentro de tu red.</translation>

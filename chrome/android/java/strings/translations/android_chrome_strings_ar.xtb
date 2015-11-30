@@ -54,6 +54,7 @@
 <translation id="1709438864123551175">توفير البيانات</translation>
 <translation id="1741127251791687432">‏تم تسجيل دخولك إلى حسابات Google التالية.</translation>
 <translation id="1742134235943978220">تمت الترجمة إلى <ph name="TARGET_LANGUAGE" />.</translation>
+<translation id="1749561566933687563">مزامنة الإشارات المرجعية</translation>
 <translation id="17513872634828108">علامات التبويب المفتوحة</translation>
 <translation id="1807246157184219062">فاتح</translation>
 <translation id="1825719650605518411">تجربة التشغيل لأول مرة</translation>
@@ -168,6 +169,7 @@
 
 لضبط عبارة البحث، اضغط مع الاستمرار للتحديد. لتحسين البحث، مرّر اللوحة للأعلى والمس مربع البحث.</translation>
 <translation id="363596933471559332">يمكن تسجيل الدخول تلقائيًا إلى مواقع الويب باستخدم الاعتمادات المخزّنة. وعندما تكون الميزة معطّلة، فسيُطلب منك التحقق كل مرة قبل تسجيل الدخول إلى مواقع الويب.</translation>
+<translation id="3653742808139624888">‏للحصول على الإشارات المرجعية على جميع أجهزتك، سجِّل الدخول إلى Chrome</translation>
 <translation id="3656115297268584622">‏تشغيل الموقع في <ph name="BEGIN_LINK" />إعدادات Android<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">يمكن لمواقع الويب التابعة لجهات خارجية حفظ بيانات ملفات تعريف الارتباط وقراءتها</translation>
 <translation id="3672452749423051839">اقتراحات أخطاء التنقل</translation>
@@ -354,6 +356,7 @@
 <translation id="6031101910111098835">تم التصغير - انقر للتوسيع</translation>
 <translation id="6040143037577758943">إغلاق</translation>
 <translation id="6042308850641462728">المزيد</translation>
+<translation id="604996488070107836">أخفق تنزيل الملف <ph name="FILE_NAME" /> بسبب خطأ غير معلوم.</translation>
 <translation id="605721222689873409">العام</translation>
 <translation id="6075798973483050474">تعديل الصفحة الرئيسية</translation>
 <translation id="6108923351542677676">الإعداد قيد التقدّم…</translation>

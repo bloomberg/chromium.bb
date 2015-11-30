@@ -5,6 +5,7 @@
 <translation id="1013290471399003443">‏تحقق Chrome من أن <ph name="ISSUER" /> أصدر شهادة موقع الويب هذا. وقدم الخادم معلومات شفافية الشهادة الصالحة.</translation>
 <translation id="1016765312371154165">‏لم يتم إيقاف تشغيل Chrome بشكل صحيح.</translation>
 <translation id="103396972844768118">‏معلومات مهمة بخصوص بياناتك في Chrome</translation>
+<translation id="1035334672863811645">‏تسجيل الدخول إلى Chrome</translation>
 <translation id="1061441684050139317">‏يحتاج Chrome إلى الحصول على حق الوصول إلى الميكرفون لمشاركته مع هذا الموقع.</translation>
 <translation id="1065672644894730302">لا يمكن قراءة تفضيلاتك. قد تكون بعض الميزات غير متاحة، ولن يتم حفظ التغييرات في التفضيلات.</translation>
 <translation id="1073391069195728457">‏Chrome - الإشعارات</translation>
@@ -89,7 +90,6 @@
 <translation id="3870154837782082782">Google Inc‎.‎</translation>
 <translation id="3881912906674381083">‏تحقق Chrome من أن <ph name="ISSUER" /> أصدر شهادة موقع الويب هذا. وقدم الخادم معلومات شفافية الشهادة، ولكن لم يتعرّف Chrome على أي سجلات لشفافية الشهادة.</translation>
 <translation id="3889417619312448367">‏إزالة Google Chrome</translation>
-<translation id="4011219958405096740">‏عند تمكينه، سيستخدم تدفق تسجيل دخول Chrome القائم على iframe؛ وإلا سيستخدم تدفقًا قائمًا على عرض الويب.</translation>
 <translation id="4042449298237264661">‏لن يستلم هذا الكمبيوتر تحديثات لـ Google Chrome لأن Windows XP وWindows Vista أصبحا غير مدعومين.</translation>
 <translation id="4050175100176540509">تحسينات الأمان المهمة والميزات الجديدة متاحة في أحدث إصدار.</translation>
 <translation id="4053720452172726777">‏تخصيص Google Chrome والتحكم فيه</translation>
@@ -146,7 +146,6 @@
 <translation id="573759479754913123">‏حول نظام التشغيل Chrome</translation>
 <translation id="5749068826913805084">‏يحتاج Chrome الوصول إلى سعة التخزين لتنزيل الملفات.</translation>
 <translation id="5785746630574083988">‏ستؤدي إعادة التشغيل في وضع Windows 8 إلى إغلاق تطبيقات Chrome وإعادة تشغيلها.</translation>
-<translation id="5799551393681493217">‏يمكن تدفقات تسجيل الدخول لمتصفح Chrome القائمة على iframe. تلغي هذه العلامة تمكين-تسجيل الدخول-القائم-على الموقع.</translation>
 <translation id="5855036575689098185">‏البرامج التي تعمل على جهاز الكمبيوتر لا تتوافق مع Google Chrome.</translation>
 <translation id="5877064549588274448">تم تغيير القناة. يمكنك إعادة تشغيل الجهاز لتدخل التغييرات حيز التنفيذ.</translation>
 <translation id="5890698319714066019">‏يتعذر على Google Chrome عرض صفحة الويب لأن الكمبيوتر غير متصل بالإنترنت.</translation>

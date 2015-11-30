@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sv">
+<translation id="101438888985615157">Rotera skärmen 180 grader</translation>
 <translation id="1017967144265860778">Energibesparing på inloggningssidan</translation>
 <translation id="1019101089073227242">Ange katalog för användardata</translation>
 <translation id="1022361784792428773">Tilläggs-ID:n som användaren inte får installera (eller * om det gäller alla)</translation>
@@ -270,6 +271,17 @@
 <translation id="2113068765175018713">Begränsa enhetens upptid genom att starta om automatiskt</translation>
 <translation id="2127599828444728326">Tillåt meddelanden på dessa webbplatser</translation>
 <translation id="2131902621292742709">Skärmdämpningstid när enheten drivs av batteriet</translation>
+<translation id="2137064848866899664">När den här principen har ställts in roteras alla skärmar till
+      den angivna riktningen vid varje omstart och första gången som skärmen
+      ansluts efter att värdet i principen har ändrats. Användarna kan ändra
+      skärmrotationen via inställningssidan när de har loggat in, men inställningen
+      åsidosätts av värdet i principen vid nästa omstart.
+
+      Principen gäller både den primära skärmen och alla sekundära skärmar.
+
+      Om principen inte har ställts in används standardvärdet 0 grader.
+      Användarna kan ändra det när som helst och standardvärdet tillämpas
+      i så fall inte på nytt vid omstart.</translation>
 <translation id="2166715102875984646">Inaktivera stöd för API:er för 3D-grafik.
 
       Om du aktiverar den här inställningen kan inte webbsidor öppna grafikprocessorn. Webbsidor kan mer specifikt inte använda WebGL API och pluginprogram kan inte använda Pepper 3D API.
@@ -999,6 +1011,7 @@
       Om du aktiverar inställningen går det inte att använda utvecklarverktygen och det går inte att inspektera webbplatselement. Alla kortkommandon och alla objekt på menyer och snabbmenyer som öppnar utvecklarverktygen eller JavaScript-konsolen inaktiveras.
 
       Om det här alternativet inaktiveras eller inte anges kan utvecklarverktygen och JavaScript-konsolen användas.</translation>
+<translation id="4449545651113180484">Rotera skärmen 270 grader medurs</translation>
 <translation id="4467952432486360968">Blockera cookies från tredje part</translation>
 <translation id="4474167089968829729">Aktivera lösenordshanteraren för sparade lösenord</translation>
 <translation id="4480694116501920047">Tvinga fram användning av SafeSearch</translation>
@@ -1269,6 +1282,7 @@
       Om policyn är inaktiverad importeras inte standardsökmotorn.
 
       Om policyn inte är inställd kan användaren tillfrågas om importen ska göras eller inte, eller så kan importen göras automatiskt.</translation>
+<translation id="5423197884968724595">Begränsningsnamn för Android WebView:</translation>
 <translation id="5447306928176905178">Aktivera minnesrapportering (heap-storlek för JavaScript) på sidan (föråldrad)</translation>
 <translation id="5457065417344056871">Använda gästläget i webbläsaren</translation>
 <translation id="5457924070961220141">Policyn gör att du kan konfigurera standardrenderare för HTML när <ph name="PRODUCT_FRAME_NAME" /> installeras.
@@ -2043,6 +2057,7 @@
           Om inställningen är aktiverad kan datorn identifiera och ansluta till fjärrvärdenheter även om det finns en brandvägg mellan dem.
 
           Om inställningen är inaktiverad och utgående UDP-anslutningar filtreras av brandväggen kan den här datorn bara ansluta till värddatorer inom det lokala nätverket.</translation>
+<translation id="802147957407376460">Rotera skärmen 0 grader</translation>
 <translation id="8044493735196713914">Rapportera omstartsläge för enhet</translation>
 <translation id="8059164285174960932">Webbadress där fjärråtkomstklienter erhåller sin autentiseringstoken</translation>
 <translation id="8071636581296916773">Reläserveranvändning aktiveras när fjärrklienter försöker etablera en anslutning till datorn.
@@ -2159,6 +2174,8 @@
 <translation id="8382184662529825177">Aktivera användning av fjärrattestering för innehållsskydd för enheten</translation>
 <translation id="838870586332499308">Aktivera dataroaming</translation>
 <translation id="8412312801707973447">Anger huruvida OCSP/CRL-onlinekontroller ska utföras</translation>
+<translation id="8424255554404582727">Ange standardrotation efter omstart för skärmen</translation>
+<translation id="8426231401662877819">Rotera skärmen 90 grader medurs</translation>
 <translation id="8451988835943702790">Använd sidan Ny flik som startsida</translation>
 <translation id="8465065632133292531">Parametrar för webbadress för Instant som använder POST</translation>
 <translation id="847472800012384958">Tillåt inte att popup-fönster visas på någon webbplats</translation>

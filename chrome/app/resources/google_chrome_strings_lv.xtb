@@ -5,6 +5,7 @@
 <translation id="1013290471399003443">Chrome verificēja, ka <ph name="ISSUER" /> izsniedza šīs vietnes sertifikātu. Serveris sniedza derīgu Certificate Transparency informāciju.</translation>
 <translation id="1016765312371154165">Chrome netika pareizi izslēgts.</translation>
 <translation id="103396972844768118">Svarīga informācija par jūsu datiem pārlūkā Chrome</translation>
+<translation id="1035334672863811645">pierakstieties pārlūkā Chrome</translation>
 <translation id="1061441684050139317">Pārlūkam Chrome ir nepieciešama piekļuve mikrofonam, lai kopīgotu to ar šo vietni.</translation>
 <translation id="1065672644894730302">Jūsu preferences nevar nolasīt. Dažas funkcijas var nebūt pieejamas, un preferenču izmaiņas netiks saglabātas</translation>
 <translation id="1073391069195728457">Chrome — paziņojumi</translation>
@@ -89,7 +90,7 @@ Ja pierakstīsieties tik un tā, Chrome informācija, piemēram, grāmatzīmes, 
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3881912906674381083">Chrome verificēja, ka <ph name="ISSUER" /> izsniedza šīs vietnes sertifikātu. Serveris sniedza Certificate Transparency informāciju, taču Chrome neatpazina nevienu no Certificate Transparency žurnāliem.</translation>
 <translation id="3889417619312448367">Atinstalēt Google Chrome</translation>
-<translation id="4011219958405096740">Ja opcija būs iespējota, tiks izmantota uz iFrame balstīta Chrome pierakstīšanās plūsma; pretējā gadījumā tiks izmantota uz WebView balstīta plūsma.</translation>
+<translation id="4042449298237264661">Šajā datorā vairs netiks saņemti Google Chrome atjauninājumi, jo operētājsistēmas Windows XP un Windows Vista vairs netiek atbalstītas.</translation>
 <translation id="4050175100176540509">Jaunākajā versijā ir pieejami svarīgi drošības uzlabojumi un jaunas funkcijas.</translation>
 <translation id="4053720452172726777">Pielāgot un kontrolēt Google Chrome</translation>
 <translation id="4147555960264124640">Jūs pierakstāties ar pārvaldītu kontu un nodrošināt, ka tā administrators var pārvaldīt jūsu Google Chrome profilu. Jūsu Chrome dati, piemēram, lietotnes, grāmatzīmes, vēsture, paroles un citi iestatījumi tiks neatgriezeniski saistīti ar lietotāju <ph name="USER_NAME" />. Varēsiet dzēst šos datus, izmantojot Google kontu informācijas paneli, taču nevarēsiet saistīt šos datus ar citu kontu. <ph name="LEARN_MORE" /></translation>
@@ -146,9 +147,9 @@ neparastus
 <translation id="573759479754913123">Par &amp;Chrome OS</translation>
 <translation id="5749068826913805084">Chrome ir nepieciešama piekļuve krātuvei, lai varētu lejupielādēt failus.</translation>
 <translation id="5785746630574083988">Restartējot Windows 8 režīmā, Chrome lietotnes tiks aizvērtas.</translation>
-<translation id="5799551393681493217">Tiek iespējotas uz iFrame balstītās Chrome pierakstīšanās plūsmas. Šis karogs ignorē opciju “--enable-web-based-signin”.</translation>
 <translation id="5855036575689098185">Programmatūra, kas darbojas jūsu datorā, nav saderīga ar pārlūku Google Chrome.</translation>
 <translation id="5877064549588274448">Kanāls tika mainīts. Lai lietotu izmaiņas, restartējiet ierīci.</translation>
+<translation id="5890698319714066019">Google Chrome nevar parādīt šo tīmekļa lapu, jo jūsu datorā nav izveidots savienojums ar internetu.</translation>
 <translation id="5931853610562009806">Operētājsistēmā Mac paroles var tikt saglabātas sistēmā Keychain, un citi Chrome lietotāji, kuri koplieto šo OS X kontu, var piekļūt tām un sinhronizēt tās.</translation>
 <translation id="5940385492829620908">Šeit atrodas jūsu tīmekļa saturs, grāmatzīmes un cits Chrome saturs.</translation>
 <translation id="5941830788786076944">Izveidot Google Chrome par noklusējuma pārlūku</translation>
@@ -171,6 +172,8 @@ neparastus
 <translation id="6236285698028833233">Pārlūka Google Chrome atjaunināšana ir apturēta, un vairs netiek atbalstīta šī jūsu operētājsistēmas versija.</translation>
 <translation id="629218512217695915">Izmantot Chrome ģenerētu paroli</translation>
 <translation id="6368958679917195344">Chrome OS ir kļuvusi iespējama, pateicoties papildu <ph name="BEGIN_LINK_CROS_OSS" />atklātā pirmkoda programmatūrai<ph name="END_LINK_CROS_OSS" />.</translation>
+<translation id="6400076122676892962">Šajā datorā drīzumā vairs netiks saņemti Google Chrome atjauninājumi, jo operētājsistēmas Mac OS X 10.6, 10.7 un 10.8 vairs netiks atbalstītas.</translation>
+<translation id="6470176598693778404">Šajā datorā vairs netiks saņemti Google Chrome atjauninājumi, jo operētājsistēmas Mac OS X 10.6, 10.7 un 10.8 vairs netiks atbalstītas.</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{Pašlaik notiek lejupielāde. Vai vēlaties atcelt lejupielādi un iziet no pārlūka Google Chrome?}zero{Pašlaik notiek # lejupielādes. Vai vēlaties atcelt lejupielādes un iziet no pārlūka Google Chrome?}one{Pašlaik notiek # lejupielāde. Vai vēlaties atcelt lejupielādes un iziet no pārlūka Google Chrome?}other{Pašlaik notiek # lejupielādes. Vai vēlaties atcelt lejupielādes un iziet no pārlūka Google Chrome?}}</translation>
 <translation id="6598387184982954187">Chrome satura sinhronizēšanai jūs izmantojat kontu <ph name="PROFILE_EMAIL" />. Lai atjauninātu savas sinhronizācijas preferences vai izmantotu Chrome ierīci bez Google konta, dodieties uz: <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6600954340915313787">Nokopēta pārlūkā Chrome.</translation>
@@ -208,6 +211,7 @@ neparastus
 <translation id="7196020411877309443">Kāpēc es redzu šo dialoglodziņu?</translation>
 <translation id="7242029209006116544">Jūs pierakstāties ar pārvaldītu kontu un nodrošināt, ka tā administrators var pārvaldīt jūsu Google Chrome profilu. Jūsu Chrome dati, piemēram, lietotnes, grāmatzīmes, vēsture, paroles un citi iestatījumi tiks neatgriezeniski saistīti ar lietotāju <ph name="USER_NAME" />. Varēsiet dzēst šos datus, izmantojot Google kontu informācijas paneli, taču nevarēsiet saistīt šos datus ar citu kontu. Ja vēlaties, varat izveidot jaunu profilu, lai atsevišķi glabātu Chrome datus. <ph name="LEARN_MORE" /></translation>
 <translation id="7282192067747128786">Chrome — paziņojumi (nelasīti: <ph name="QUANTITY" />)</translation>
+<translation id="729375352412857283">Šajā datorā drīzumā vairs netiks saņemti Google Chrome atjauninājumi, jo operētājsistēmas Windows XP un Windows Vista vairs netiks atbalstītas.</translation>
 <translation id="7339898014177206373">Jauns logs</translation>
 <translation id="7396375882099008034">Atļaušana pārlūkam Chrome piekļūt tīklam jūsu ugunsmūra vai pretvīrusu programmas
         iestatījumos.</translation>

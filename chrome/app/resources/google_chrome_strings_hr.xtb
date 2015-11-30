@@ -5,6 +5,7 @@
 <translation id="1013290471399003443">Chrome je potvrdio da je <ph name="ISSUER" /> izdavač certifikata web-lokacije. Poslužitelj je pružio važeće informacije o transparentnosti certifikata.</translation>
 <translation id="1016765312371154165">Chrome se nije ispravno zatvorio.</translation>
 <translation id="103396972844768118">Važne informacije o vašim podacima u sustavu Chrome</translation>
+<translation id="1035334672863811645">prijavite se na Chrome</translation>
 <translation id="1061441684050139317">Chrome treba imati pristup mikrofonu da bi ga dijelio s ovom web-lokacijom.</translation>
 <translation id="1065672644894730302">Vaše postavke nije moguće čitati. Neke značajke možda nisu dostupne i promjene postavki neće biti spremljene.</translation>
 <translation id="1073391069195728457">Chrome – obavijesti</translation>
@@ -87,7 +88,7 @@ Ako se ipak prijavite, podaci sustava Chrome kao što su oznake, povijest i osta
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3881912906674381083">Chrome je potvrdio da je <ph name="ISSUER" /> izdavač certifikata web-lokacije. Informacije o transparentnosti certifikata pružio je poslužitelj, ali Chrome nije prepoznao nijedan zapisnik transparentnosti certifikata.</translation>
 <translation id="3889417619312448367">Deinstaliranje preglednika Google Chrome</translation>
-<translation id="4011219958405096740">Kada je to omogućeno, upotrebljavat će se postupak prijave na Chrome na temelju iframea; u suprotnom će se upotrebljavati postupak na temelju web-prikaza.</translation>
+<translation id="4042449298237264661">Ovo računalo više neće primati ažuriranja za Google Chrome jer sustavi Windows XP i Windows Vista više nisu podržani.</translation>
 <translation id="4050175100176540509">Najnovija verzija sadrži važna sigurnosna poboljšanja i nove značajke.</translation>
 <translation id="4053720452172726777">Prilagodite Google Chrome i upravljajte njime</translation>
 <translation id="4147555960264124640">Prijavljujete se upravljanim računom i dajete administratoru kontrolu nad svojim profilom u sustavu Google Chrome. Vaši podaci u sustavu Chrome, primjerice, aplikacije, oznake, povijest, zaporke i ostale postavke, trajno će se povezati s korisnikom <ph name="USER_NAME" />. Moći ćete izbrisati te podatke putem Nadzorne ploče Google računa, ali ih nećete moći povezati s nekim drugim računom. <ph name="LEARN_MORE" /></translation>
@@ -141,9 +142,9 @@ i netočne vjerodajnice. To može značiti da se neki napadač pokušava predsta
 <translation id="573759479754913123">O OS-u Chrome</translation>
 <translation id="5749068826913805084">Chrome treba pristup pohrani radi preuzimanja datoteka.</translation>
 <translation id="5785746630574083988">Ponovno pokretanje u načinu Windows 8 zatvorit će i ponovo pokrenuti vaše aplikacije Chrome.</translation>
-<translation id="5799551393681493217">Omogućuje postupke prijave na Chrome na temelju iframea. Ta oznaka premošćuje omogućivanje prijave na temelju weba.</translation>
 <translation id="5855036575689098185">Softver koji se izvodi na vašem računalu nije kompatibilan s Google Chromeom.</translation>
 <translation id="5877064549588274448">Kanal je promijenjen. Ponovo pokrenite uređaj za primjenu promjena.</translation>
+<translation id="5890698319714066019">Google Chrome ne može prikazati web-stranicu jer vaše računalo nije povezano s internetom.</translation>
 <translation id="5931853610562009806">Na Mac računalima zaporke se mogu spremati u vaš Keychain, a drugi korisnici Chromea koji dijele ovaj OS X račun mogu im pristupiti ili ih sinkronizirati.</translation>
 <translation id="5940385492829620908">Ovdje se nalaze vaš web, oznake i ostali sadržaji u Chromeu.</translation>
 <translation id="5941830788786076944">Neka Google Chrome bude zadani preglednik.</translation>
@@ -166,6 +167,8 @@ i netočne vjerodajnice. To može značiti da se neki napadač pokušava predsta
 <translation id="6236285698028833233">Google Chrome prestao se ažurirati i više ne podržava ovu verziju vašeg operativnog sustava.</translation>
 <translation id="629218512217695915">Upotrijebite zaporku koju generira Chrome</translation>
 <translation id="6368958679917195344">OS Chrome omogućen je dodatnim <ph name="BEGIN_LINK_CROS_OSS" />softverom otvorenog koda<ph name="END_LINK_CROS_OSS" />.</translation>
+<translation id="6400076122676892962">Ovo računalo uskoro će prestati primati ažuriranja za Google Chrome jer sustavi Mac OS X 10.6, 10.7 i 10.8 više neće biti podržani.</translation>
+<translation id="6470176598693778404">Ovo računalo više neće primati ažuriranja za Google Chrome jer sustavi Mac OS X 10.6, 10.7 i 10.8 više nisu podržani.</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{U tijeku je preuzimanje. Želite li otkazati preuzimanje i napustiti Google Chrome?}one{U tijeku je # preuzimanje. Želite li otkazati preuzimanja i napustiti Google Chrome?}few{U tijeku su # preuzimanja. Želite li otkazati preuzimanja i napustiti Google Chrome?}other{U tijeku je # preuzimanja. Želite li otkazati preuzimanja i napustiti Google Chrome?}}</translation>
 <translation id="6598387184982954187">Upotrebljavate profil <ph name="PROFILE_EMAIL" /> za sinkronizaciju sadržaja u Chromeu. Da biste ažurirali svoje postavke sinkroniziranja ili upotrebljavali Chrome bez Google računa, posjetite <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6600954340915313787">Kopirano u Chrome</translation>
@@ -203,6 +206,7 @@ i netočne vjerodajnice. To može značiti da se neki napadač pokušava predsta
 <translation id="7196020411877309443">Zašto vidim ovo?</translation>
 <translation id="7242029209006116544">Prijavljujete se upravljanim računom i dajete administratoru kontrolu nad svojim profilom u sustavu Google Chrome. Vaši podaci u sustavu Chrome, primjerice, aplikacije, oznake, povijest, zaporke i ostale postavke, trajno će se povezati s korisnikom <ph name="USER_NAME" />. Moći ćete izbrisati te podatke putem Nadzorne ploče Google računa, ali ih nećete moći povezati s nekim drugim računom. Ako želite, možete izraditi novi profil kako biste zadržali postojeće podatke u sustavu Chrome zasebno. <ph name="LEARN_MORE" /></translation>
 <translation id="7282192067747128786">Chrome – obavijesti (nepročitane: <ph name="QUANTITY" />)</translation>
+<translation id="729375352412857283">Ovo računalo uskoro će prestati primati ažuriranja za Google Chrome jer sustavi Windows XP i Windows Vista više neće biti podržani.</translation>
 <translation id="7339898014177206373">Novi prozor</translation>
 <translation id="7396375882099008034">U postavkama vatrozida ili antivirusnog programa omogućite Chromeu da pristupa mreži.</translation>
 <translation id="7398801000654795464">Bili ste prijavljeni na Chrome kao <ph name="USER_EMAIL_ADDRESS" />. Prijavite se ponovo istim računom.</translation>

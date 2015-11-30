@@ -10,11 +10,12 @@
 <translation id="1293235220023151515">Järjestelmästä löytyi ristiriidan aiheuttava toinen Chromium-asennus. Poista tuote ja yritä uudelleen.</translation>
 <translation id="1298199220304005244">Hanki apua Chromium-käyttöjärjestelmän käytössä</translation>
 <translation id="1396446129537741364">Chromium yrittää näyttää salasanat.</translation>
+<translation id="1403254041219632970">Chromiumin tulevat versiot eivät enää tue Mac OS X -versioita 10.6, 10.7 tai 10.8.</translation>
 <translation id="1414495520565016063">Olet kirjautunut Chromiumiin!</translation>
 <translation id="1444754455097148408">Chromiumin avoimen lähdekoodin lisenssit</translation>
-<translation id="1461885241643463646">Ota käyttöön iframe-pohjaiset Chromiumin kirjautumistyönkulut. Tämä merkintä ohittaa verkkopohjaisen kirjautumisen käyttöönoton.</translation>
 <translation id="1480489203462860648">Kokeile, selain on jo asennettu</translation>
 <translation id="151962892725702025">Chromium-käyttöjärjestelmä ei voi synkronoida tietoja, koska synkronointi ei ole käytettävissä verkkotunnuksessasi.</translation>
+<translation id="1559451348202814456">Chromium ei välttämättä toimi oikein, koska se ei enää tue Mac OS X -versioita 10.6, 10.7 tai 10.8.</translation>
 <translation id="1644918877723739397">Chromium tallentaa salasanan <ph name="SAVED_PASSWORD_LINK" /> -ominaisuudella ja muistaa sen, kun tarvitset sitä seuraavan kerran.</translation>
 <translation id="1668054258064581266">Kun olet poistanut tilisi Chromiumista, sinun on ehkä avattava avoinna olleet välilehdet uudelleen, jotta muutos tulee voimaan.</translation>
 <translation id="1688750314291223739">Määrittämällä synkronoinnin voit tallentaa selaimesi tiedot verkkoon ja käyttää niitä minkä tahansa tietokoneen Chromiumilla.</translation>
@@ -43,8 +44,10 @@
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{Lataus on parhaillaan käynnissä. Haluatko peruuttaa latauksen ja poistua Chromiumista?}other{# latausta on parhaillaan käynnissä. Haluatko peruuttaa lataukset ja poistua Chromiumista?}}</translation>
 <translation id="2396765026452590966">Laajennus <ph name="EXTENSION_NAME" /> on vaihtanut Chromiumin aloitussivun.</translation>
 <translation id="2485422356828889247">Poista</translation>
+<translation id="2486653164587200256">Chromium ei välttämättä toimi oikein, koska se ei enää tue Windows XP:tä tai Windows Vistaa.</translation>
 <translation id="2535480412977113886">Chromium-käyttöjärjestelmä ei voi synkronoida tietoja, sillä tilin kirjautumistiedot ovat vanhentuneet.</translation>
 <translation id="2558641060352364164">Tämä sivusto käyttää Chromium-kehyslaajennusta, jonka tukeminen lopetetaan pian. Poista se ja asenna uudempi selain.</translation>
+<translation id="2565260267992448464">Chromium ei voi näyttää verkkosivua, koska tietokoneellasi ei ole internetyhteyttä.</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="2602806952220118310">Chromium – ilmoitukset</translation>
 <translation id="2636877269779209383">Chromium tarvitsee kameran käyttöoikeuden, jotta voi jakaa sen sivustolle.</translation>
@@ -106,6 +109,7 @@ ja virheelliset tiedot. Joko hyökkääjä yrittää esiintyä sivustona <ph nam
 <translation id="4423735387467980091">Chromiumin muokkaus ja hallinta</translation>
 <translation id="4458285410772214805">Kirjaudu ulos ja kirjaudu uudelleen sisään, jotta muutos tulee voimaan.</translation>
 <translation id="4488676065623537541">Laskutustietosi on tallennettu Chromiumiin.</translation>
+<translation id="4549794359424059447">Chromiumin tulevat versiot eivät enää tue Windows XP:tä tai Windows Vistaa.</translation>
 <translation id="4559775032954821361">Avaa
           Chromium-valikko &gt;
           <ph name="SETTINGS_TITLE" />
@@ -134,6 +138,7 @@ ja virheelliset tiedot. Joko hyökkääjä yrittää esiintyä sivustona <ph nam
 <translation id="549669000822060376">Odota hetki, Chromium asentaa uusimpia järjestelmäpäivityksiä.</translation>
 <translation id="5563479599352954471">Etsi yhdellä kosketuksella</translation>
 <translation id="5620765574781326016">Tutustu verkkosivuston aiheisiin poistumatta sivulta.</translation>
+<translation id="5680901439334282664">Kirjaudu sisään Chromiumiin</translation>
 <translation id="5772805321386874569">(vaatii Chromiumin <ph name="BEGIN_BUTTON" />uudelleenkäynnistyksen<ph name="END_BUTTON" />)</translation>
 <translation id="5796460469508169315">Chromium on lähes valmis.</translation>
 <translation id="580822234363523061">Avaa
@@ -210,7 +215,6 @@ Chromium ei voi palauttaa asetuksiasi.</translation>
 <translation id="761356813943268536">Chromium käyttää kameraasi ja mikrofoniasi.</translation>
 <translation id="7617377681829253106">Chromium on nyt entistä parempi</translation>
 <translation id="7641113255207688324">Chromium ei ole oletusselain.</translation>
-<translation id="7723128346970903111">Kun tämä on käytössä, iframe-pohjaiset Chromiumin kirjautumistyönkulut ovat käytössä. Muuten käytetään verkkonäkymäpohjaisia työnkulkuja.</translation>
 <translation id="7729447699958282447">Chromium ei voinut synkronoida tietoja, koska synkronointi ei ole käytettävissä verkkotunnuksessasi.</translation>
 <translation id="7747138024166251722">Asennusohjelma ei pystynyt luomaan väliaikaista hakemistoa. Tarkista, että käytettävissä on riittävästi levytilaa ja että sinulla on oikeus asentaa ohjelmia.</translation>
 <translation id="7918535023914021398">Chromium vahvisti, että <ph name="ISSUER" /> on myöntänyt tämän sivuston varmenteen. Palvelin ei lähettänyt Certificate Transparency -tietoja.</translation>

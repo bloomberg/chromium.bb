@@ -357,6 +357,7 @@
 <translation id="4729095194763193578">表格上一行</translation>
 <translation id="4736221692378411923">8月</translation>
 <translation id="4740661827607246557">帮助命令</translation>
+<translation id="4755857887974653209">停用 ChromeVox</translation>
 <translation id="4759716709594980008">Chrome操作系统Keyboard Explorer</translation>
 <translation id="4763296182459741068">转至底部</translation>
 <translation id="4763480195061959176">视频</translation>
@@ -661,6 +662,7 @@
 <translation id="8065607967589909823">当前选择为</translation>
 <translation id="8066678206530322333">横幅</translation>
 <translation id="8110647606445335195">无ARIA地标。</translation>
+<translation id="8132379720172247073">ChromeVox 菜单</translation>
 <translation id="8153880621934657047">不在表格内。</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{1个下划线}other{#个下划线}}</translation>
 <translation id="8179976553408161302">Enter</translation>
@@ -696,6 +698,7 @@
 <translation id="8584721346566392021">5级标题标记</translation>
 <translation id="8587549812518406253">下一个列表项</translation>
 <translation id="860150890330522909">已选中“<ph name="NAME" />”复选框</translation>
+<translation id="8603071050456974042">ChromeVox 面板</translation>
 <translation id="8606621670302093223">日期控件</translation>
 <translation id="8631359288236106450">已选中<ph name="COUNT" />项</translation>
 <translation id="8638532244051952400">说出当前单元格的坐标</translation>

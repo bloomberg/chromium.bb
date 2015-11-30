@@ -10,11 +10,12 @@
 <translation id="1293235220023151515">競合する Chromium のインストールがシステムに見つかりました。アンインストールして、もう一度お試しください。</translation>
 <translation id="1298199220304005244">Chromium OS の使用に関するアドバイス</translation>
 <translation id="1396446129537741364">Chromium はパスワードを表示しようとしています。</translation>
+<translation id="1403254041219632970">Chromium の今後のバージョンでは Mac OS X 10.6、10.7、10.8 はサポートされなくなります。</translation>
 <translation id="1414495520565016063">Chromium にログインしました</translation>
 <translation id="1444754455097148408">Chromium オープンソース ライセンス</translation>
-<translation id="1461885241643463646">iframe を使った Chromium ログインフローを有効にします。このフラグの設定は --enable-web-based-signin よりも優先されます。</translation>
 <translation id="1480489203462860648">使ってみる（既にインストール済み）</translation>
 <translation id="151962892725702025">お使いのドメインでは同期を利用できないため、Chromium OS はデータを同期できませんでした。</translation>
+<translation id="1559451348202814456">Mac OS X 10.6、10.7、10.8 はサポートされなくなったため、Chromium は正常に機能しない可能性があります。</translation>
 <translation id="1644918877723739397">Chromium ではこのパスワードが <ph name="SAVED_PASSWORD_LINK" />に保存され、次回の入力時に使用されます。</translation>
 <translation id="1668054258064581266">Chromium からアカウントを削除したら、場合によっては開いているタブを再読み込みして変更を反映させる必要があります。</translation>
 <translation id="1688750314291223739">同期を設定すると、パーソナライズされたブラウザ機能をウェブ上に保存して、どのパソコンの Chromium からでも使用できるようになります。</translation>
@@ -43,8 +44,10 @@
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{ダウンロードが現在進行中です。ダウンロードをキャンセルし、Chromium を終了しますか？}other{# 件のダウンロードが現在進行中です。ダウンロードをキャンセルし、Chromium を終了しますか？}}</translation>
 <translation id="2396765026452590966">拡張機能「<ph name="EXTENSION_NAME" />」により、Chromium の起動時に表示されるページが変更されました。</translation>
 <translation id="2485422356828889247">アンインストール</translation>
+<translation id="2486653164587200256">Windows XP と Windows Vista はサポートされなくなったため、Chromium は正常に機能しない可能性があります。</translation>
 <translation id="2535480412977113886">アカウントのログイン情報が最新ではないため、Chromium OS はデータを同期できませんでした。</translation>
 <translation id="2558641060352364164">このサイトで使用されている Chromium Frame プラグインは、間もなくサポートが終了します。プラグインをアンインストールし、最新のブラウザにアップグレードしてください。</translation>
+<translation id="2565260267992448464">パソコンがインターネットに接続されていないため、Chromium でウェブページを表示できません。</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="2602806952220118310">Chromium - お知らせ</translation>
 <translation id="2636877269779209383">このサイトとカメラを共有するには、Chromium にカメラへのアクセスを許可する必要があります。</translation>
@@ -106,6 +109,7 @@
 <translation id="4423735387467980091">Chromium の設定</translation>
 <translation id="4458285410772214805">変更内容を反映するには、一度ログアウトして、もう一度ログインしてください。</translation>
 <translation id="4488676065623537541">お支払い情報を Chromium に保存しました。</translation>
+<translation id="4549794359424059447">Chromium の今後のバージョンでは Windows XP と Windows Vista はサポートされなくなります。</translation>
 <translation id="4559775032954821361">このオプションを無効にするには:
           Chromium メニュー &gt;
           <ph name="SETTINGS_TITLE" />
@@ -134,6 +138,7 @@
 <translation id="549669000822060376">Chromium は最新のシステム アップデートをインストールしています。しばらくお待ちください。</translation>
 <translation id="5563479599352954471">ワンタップで検索</translation>
 <translation id="5620765574781326016">ウェブサイト上のトピックについて、ページを移動せずに調べることができます。</translation>
+<translation id="5680901439334282664">Chromium にログイン</translation>
 <translation id="5772805321386874569">（Chromium を<ph name="BEGIN_BUTTON" />再起動<ph name="END_BUTTON" />する必要があります）</translation>
 <translation id="5796460469508169315">もうすぐ Chromium を使用できます。</translation>
 <translation id="580822234363523061">このオプションを無効にするには:
@@ -210,7 +215,6 @@
 <translation id="761356813943268536">Chromium がカメラとマイクを使用しています。</translation>
 <translation id="7617377681829253106">進化する Chromium</translation>
 <translation id="7641113255207688324">Chromium は既定のブラウザとして設定されていません。</translation>
-<translation id="7723128346970903111">有効な場合は、iframe を使った Chromium ログインフローが使用されます。それ以外の場合は、WebView を使ったフローが使用されます。</translation>
 <translation id="7729447699958282447">お使いのドメインでは同期を利用できないため、Chromium はデータを同期できませんでした。</translation>
 <translation id="7747138024166251722">インストーラーの一時ディレクトリを作成できませんでした。ディスクの空き領域とソフトウェアのインストール許可があることを確認してください。</translation>
 <translation id="7918535023914021398">Chromium で <ph name="ISSUER" /> がこのウェブサイトの証明書を発行したことを確認しました。証明書の透明性に関する情報はサーバーから提供されませんでした。</translation>

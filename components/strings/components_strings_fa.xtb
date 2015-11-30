@@ -84,6 +84,7 @@
 <translation id="2556876185419854533">&amp;واگرد ویرایش</translation>
 <translation id="2581221116934462656">مایلید دفعه بعد <ph name="PRODUCT_NAME" /> پیشنهاد دهد صفحه‌های <ph name="LANGUAGE_NAME" /> از این سایت ترجمه شوند؟</translation>
 <translation id="2587841377698384444">‏شناسه Directory API:</translation>
+<translation id="2589937147782335782">‏می‌خواهید Google این کارت را ذخیره کند؟</translation>
 <translation id="2597378329261239068">این سند توسط گذرواژه محافظت می‌شود.  لطفاً یک گذرواژه وارد کنید.</translation>
 <translation id="2609632851001447353">انواع مختلف</translation>
 <translation id="2625385379895617796">ساعت شما جلو است</translation>
@@ -202,7 +203,6 @@
 <translation id="5295309862264981122">تأیید پیمایش</translation>
 <translation id="5299298092464848405">خطا در تجزیه خط‌‌مشی</translation>
 <translation id="5308689395849655368">گزارش خرابی غیر فعال است.</translation>
-<translation id="5316812925700871227">چرخش خلاف جهت عقربه‌های ساعت</translation>
 <translation id="5317780077021120954">ذخیره</translation>
 <translation id="536296301121032821">تنظیمات خط‌‌مشی ذخیره نشد</translation>
 <translation id="540969355065856584">این سرور نتوانست ثابت کند که <ph name="DOMAIN" /> است؛ در حال حاضر، گواهی امنیتی آن معتبر نیست. ممکن است این مشکل به دلیل پیکربندی نادرست یا قطع اتصال شما توسط حمله‌کننده ایجاد شده باشد.</translation>
@@ -219,6 +219,7 @@
 <translation id="560412284261940334">مدیریت پشتیبانی نمی‌شود</translation>
 <translation id="5629630648637658800">تنظیمات خط‌مشی بارگیری نشد</translation>
 <translation id="5631439013527180824">نشانه مدیریت دستگاه نامعتبر است</translation>
+<translation id="5680545064257783621">یک کلید خاموش را برای آزمایش نشانک‌های بهبودیافته فراهم می‌کند</translation>
 <translation id="5720705177508910913">کاربر کنونی</translation>
 <translation id="5813119285467412249">&amp;انجام مجدد افزودن</translation>
 <translation id="5872918882028971132">پیشنهادات والدین</translation>
@@ -289,11 +290,13 @@
 <translation id="7424977062513257142">صفحه جاسازی‌شده‌ای در این صفحه وب می‌گوید:</translation>
 <translation id="7441627299479586546">موضوع خط‌مشی اشتباه است</translation>
 <translation id="7485870689360869515">هیچ داده‌ای یافت نشد.</translation>
+<translation id="7514365320538308">دانلود</translation>
 <translation id="7537536606612762813">اجباری</translation>
 <translation id="7542995811387359312">تکمیل خودکار کارت اعتباری غیر فعال است زیرا این فرم از یک اتصال امن استفاده نمی‌کند.</translation>
 <translation id="7567204685887185387">این سرور نتوانست اثبات کند که این <ph name="DOMAIN" /> است؛ ممکن است گواهی امنیتی آن به صورت تقلبی صادر شده باشد. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجمی اتصال شما را قطع کرده است.</translation>
 <translation id="7568593326407688803">این صفحه به <ph name="ORIGINAL_LANGUAGE" /> است، آیا مایلید ترجمه شود؟</translation>
 <translation id="7569952961197462199">‏کارت اعتباری از Chrome پاک شود؟</translation>
+<translation id="7578104083680115302">‏با استفاده از کارت‌هایی که با Google ذخیره کرده‌اید به‌سرعت در همه دستگاه‌هایتان پرداخت‌های سایت‌ها و برنامه‌ها را انجام دهید.</translation>
 <translation id="7592362899630581445">گواهی سرور محدودیت‌های نام را نقض می‌کند.</translation>
 <translation id="7600965453749440009">هرگز <ph name="LANGUAGE" /> ترجمه نشود</translation>
 <translation id="7610193165460212391">مقدار خارج از محدوده <ph name="VALUE" /> است.</translation>

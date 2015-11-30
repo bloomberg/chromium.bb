@@ -5,6 +5,7 @@
 <translation id="1013290471399003443">Chrome mengesahkan bahawa <ph name="ISSUER" /> mengeluarkan sijil tapak web ini. Pelayan membekalkan maklumat Ketelusan Sijil yang sah.</translation>
 <translation id="1016765312371154165">Chrome tidak ditutup dengan betul.</translation>
 <translation id="103396972844768118">Maklumat penting mengenai data Chrome anda</translation>
+<translation id="1035334672863811645">log masuk ke Chrome</translation>
 <translation id="1061441684050139317">Chrome memerlukan akses mikrofon untuk mengongsikannya dengan tapak ini.</translation>
 <translation id="1065672644894730302">Pilihan anda tidak dapat dibaca. Beberapa ciri mungkin tidak tersedia dan perubahan terhadap pilihan tidak akan disimpan.</translation>
 <translation id="1073391069195728457">Chrome - Pemberitahuan</translation>
@@ -87,7 +88,7 @@ Teruskan juga log masuk akan menggabungkan maklumat Chrome seperti penanda halam
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3881912906674381083">Chrome mengesahkan bahawa <ph name="ISSUER" /> mengeluarkan siil tapak web ini. Pelayan membekalkan maklumat Ketelusan Sijil, tetapi Chrome tidak mengenali mana-mana log Ketelusan Sijil.</translation>
 <translation id="3889417619312448367">Nyahpasang Google Chrome</translation>
-<translation id="4011219958405096740">Apabila didayakan, akan menggunakan aliran log masuk Chrome berasaskan iframe; atau pun gunakan aliran berasaskan webview.</translation>
+<translation id="4042449298237264661">Komputer ini tidak lagi akan menerima kemas kini Google Chrome kerana Windows XP dan Windows Vista sudah tidak disokong.</translation>
 <translation id="4050175100176540509">Peningkatan keselamatan penting dan ciri baharu tersedia dalam versi terkini.</translation>
 <translation id="4053720452172726777">Sesuaikan dan kawal Google Chrome</translation>
 <translation id="4147555960264124640">Anda log masuk menggunakan akaun terurus dan memberikan pentadbirnya kawalan terhadap profil Google Chrome anda. Data Chrome anda, seperti apl, penanda halaman, sejarah, kata laluan dan tetapan anda yang lain akan terikat kepada <ph name="USER_NAME" /> secara kekal. Anda akan dapat memadamkan data ini melalui Papan Pemuka Akaun Google, tetapi anda tidak akan dapat mengaitkan data ini dengan akaun lain. <ph name="LEARN_MORE" /></translation>
@@ -141,9 +142,9 @@ Teruskan juga log masuk akan menggabungkan maklumat Chrome seperti penanda halam
 <translation id="573759479754913123">Mengenai Chrome OS</translation>
 <translation id="5749068826913805084">Chrome memerlukan akses storan untuk memuat turun fail.</translation>
 <translation id="5785746630574083988">Melancarkan semula dalam mod Windows 8 akan menutup dan melancarkan semula apl Chrome anda.</translation>
-<translation id="5799551393681493217">Mendayakan aliran log masuk Chrome berasaskan iframe. Bendera ini mengatasi --dayakan log masuk berasaskan web.</translation>
 <translation id="5855036575689098185">Perisian yang dijalankan pada komputer anda tidak serasi dengan Google Chrome.</translation>
 <translation id="5877064549588274448">Saluran berubah. Mulakan semula peranti anda untuk menggunakan perubahan.</translation>
+<translation id="5890698319714066019">Google Chrome tidak dapat memaparkan halaman web itu kerana komputer anda tidak disambungkan ke Internet.</translation>
 <translation id="5931853610562009806">Pada Mac, kata laluan boleh disimpan pada Keychain anda dan boleh diakses atau disegerakkan oleh pengguna Chrome lain yang berkongsi akaun OS X ini.</translation>
 <translation id="5940385492829620908">Web, penanda halaman dan barangan Chrome anda yang lain tinggal di sini.</translation>
 <translation id="5941830788786076944">Jadikan Google Chrome penyemak imbas lalai</translation>
@@ -166,6 +167,8 @@ Teruskan juga log masuk akan menggabungkan maklumat Chrome seperti penanda halam
 <translation id="6236285698028833233">Google Chrome telah berhenti mengemas kini dan tidak lagi menyokong versi sistem pengendalian anda ini.</translation>
 <translation id="629218512217695915">Gunakan kata laluan yang dijana oleh Chrome</translation>
 <translation id="6368958679917195344">OS Chrome menjadi kenyataan dengan <ph name="BEGIN_LINK_CROS_OSS" />perisian sumber terbuka<ph name="END_LINK_CROS_OSS" /> tambahan.</translation>
+<translation id="6400076122676892962">Tidak lama lagi komputer ini akan berhenti menerima kemas kini Google Chrome kerana Mac OS X 10.6, 10.7 dan 10.8 tidak lagi akan disokong.</translation>
+<translation id="6470176598693778404">Komputer ini tidak lagi akan menerima kemas kini Google Chrome kerana Mac OS X 10.6, 10.7 dan 10.8 sudah tidak disokong.</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{Muat turun sedang berlangsung. Adakah anda ingin membatalkan muat turun dan keluar daripada Chrome?}other{# muat turun sedang berlangsung pada masa ini. Adakah anda ingin membatalkan muat turun dan keluar daripada Google Chrome?}}</translation>
 <translation id="6598387184982954187">Anda menggunakan <ph name="PROFILE_EMAIL" /> untuk menyegerakkan bahan digital Chrome anda. Untuk mengemas kini pilihan penyegerakan anda atau menggunakan Chrome tanpa akaun Google, lawati <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6600954340915313787">Disalin ke Chrome</translation>
@@ -203,6 +206,7 @@ Teruskan juga log masuk akan menggabungkan maklumat Chrome seperti penanda halam
 <translation id="7196020411877309443">Mengapakah halaman ini yang saya lihat?</translation>
 <translation id="7242029209006116544">Anda log masuk menggunakan akaun terurus dan memberikan pentadbirnya kawalan terhadap profil Google Chrome anda. Data Chrome anda, seperti apl, penanda halaman, sejarah, kata laluan dan tetapan anda yang lain akan terikat kepada <ph name="USER_NAME" /> secara kekal. Anda akan dapat memadamkan data ini melalui Papan Pemuka Akaun Google, tetapi anda tidak akan dapat mengaitkan data ini dengan akaun lain. Anda boleh memilih membuat profil baharu untuk mengasingkan data Chrome anda yang sedia ada. <ph name="LEARN_MORE" /></translation>
 <translation id="7282192067747128786">Chrome - Pemberitahuan (<ph name="QUANTITY" /> belum dibaca)</translation>
+<translation id="729375352412857283">Tidak lama lagi komputer ini akan berhenti menerima kemas kini Google Chrome kerana Windows XP dan Windows Vista tidak lagi akan disokong.</translation>
 <translation id="7339898014177206373">Tetingkap baharu</translation>
 <translation id="7396375882099008034">Benarkan Chrome mengakses rangkaian dalam tetapan firewall atau antivirus
         anda.</translation>
