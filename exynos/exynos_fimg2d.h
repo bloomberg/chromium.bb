@@ -299,6 +299,9 @@ int g2d_copy(struct g2d_context *ctx, struct g2d_image *src,
 		struct g2d_image *dst, unsigned int src_x,
 		unsigned int src_y, unsigned int dst_x, unsigned int dst_y,
 		unsigned int w, unsigned int h);
+int g2d_move(struct g2d_context *ctx, struct g2d_image *img,
+		unsigned int src_x, unsigned int src_y, unsigned int dst_x,
+		unsigned dst_y, unsigned int w, unsigned int h);
 int g2d_copy_with_scale(struct g2d_context *ctx, struct g2d_image *src,
 				struct g2d_image *dst, unsigned int src_x,
 				unsigned int src_y, unsigned int src_w,
