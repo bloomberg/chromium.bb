@@ -79,6 +79,7 @@ void HTMLOptGroupElement::parseAttribute(const QualifiedName& name, const Atomic
 
 void HTMLOptGroupElement::recalcSelectOptions()
 {
+    // TODO(tkent): Should use ownerSelectElement().
     if (HTMLSelectElement* select = Traversal<HTMLSelectElement>::firstAncestor(*this))
         select->setRecalcListItems();
 }
@@ -140,6 +141,7 @@ String HTMLOptGroupElement::groupLabelText() const
 
 HTMLSelectElement* HTMLOptGroupElement::ownerSelectElement() const
 {
+    // TODO(tkent): We should return only the parent <select>.
     return Traversal<HTMLSelectElement>::firstAncestor(*this);
 }
 

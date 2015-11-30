@@ -303,7 +303,14 @@ HTMLDataListElement* HTMLOptionElement::ownerDataListElement() const
 
 HTMLSelectElement* HTMLOptionElement::ownerSelectElement() const
 {
-    return Traversal<HTMLSelectElement>::firstAncestor(*this);
+    if (!parentNode())
+        return nullptr;
+    if (isHTMLSelectElement(*parentNode()))
+        return toHTMLSelectElement(parentNode());
+    if (!isHTMLOptGroupElement(*parentNode()))
+        return nullptr;
+    Node* grandParent = parentNode()->parentNode();
+    return isHTMLSelectElement(grandParent) ? toHTMLSelectElement(grandParent) : nullptr;
 }
 
 String HTMLOptionElement::label() const
@@ -357,19 +364,23 @@ bool HTMLOptionElement::isDisabledFormControl() const
 Node::InsertionNotificationRequest HTMLOptionElement::insertedInto(ContainerNode* insertionPoint)
 {
     HTMLElement::insertedInto(insertionPoint);
-    return InsertionShouldCallDidNotifySubtreeInsertions;
-}
-
-void HTMLOptionElement::didNotifySubtreeInsertionsToDocument()
-{
-    if (HTMLSelectElement* select = ownerSelectElement())
-        select->optionInserted(*this, m_isSelected);
+    if (HTMLSelectElement* select = ownerSelectElement()) {
+        if (insertionPoint == select || (isHTMLOptGroupElement(*insertionPoint) && insertionPoint->parentNode() == select))
+            select->optionInserted(*this, m_isSelected);
+    }
+    return InsertionDone;
 }
 
 void HTMLOptionElement::removedFrom(ContainerNode* insertionPoint)
 {
-    if (HTMLSelectElement* select = Traversal<HTMLSelectElement>::firstAncestorOrSelf(*insertionPoint))
-        select->optionRemoved(*this);
+    if (isHTMLSelectElement(*insertionPoint)) {
+        if (!parentNode() || isHTMLOptGroupElement(*parentNode()))
+            toHTMLSelectElement(insertionPoint)->optionRemoved(*this);
+    } else if (isHTMLOptGroupElement(*insertionPoint)) {
+        Node* parent = insertionPoint->parentNode();
+        if (isHTMLSelectElement(parent))
+            toHTMLSelectElement(parent)->optionRemoved(*this);
+    }
     HTMLElement::removedFrom(insertionPoint);
 }
 

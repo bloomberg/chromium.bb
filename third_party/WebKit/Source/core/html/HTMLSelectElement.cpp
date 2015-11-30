@@ -1730,16 +1730,6 @@ void HTMLSelectElement::typeAheadFind(KeyboardEvent* event)
         listBoxOnChange();
 }
 
-Node::InsertionNotificationRequest HTMLSelectElement::insertedInto(ContainerNode* insertionPoint)
-{
-    // When the element is created during document parsing, it won't have any
-    // items yet - but for innerHTML and related methods, this method is called
-    // after the whole subtree is constructed.
-    recalcListItems();
-    HTMLFormControlElementWithState::insertedInto(insertionPoint);
-    return InsertionDone;
-}
-
 void HTMLSelectElement::accessKeySetSelectedIndex(int index)
 {
     // First bring into focus the list box.

@@ -200,8 +200,6 @@ private:
     // Returns the first selected OPTION, or nullptr.
     HTMLOptionElement* selectedOption() const;
 
-    InsertionNotificationRequest insertedInto(ContainerNode*) override;
-
     bool isOptionalFormControl() const override { return !isRequiredFormControl(); }
     bool isRequiredFormControl() const override;
 
