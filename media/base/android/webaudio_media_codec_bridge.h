@@ -7,6 +7,7 @@
 
 #include <jni.h>
 
+#include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
 #include "base/file_descriptor_posix.h"
 #include "base/memory/shared_memory.h"
@@ -40,18 +41,20 @@ class MEDIA_EXPORT WebAudioMediaCodecBridge {
       uint32_t data_size,
       base::Closure on_decode_finished_cb);
 
-  void OnChunkDecoded(JNIEnv* env,
-                      jobject /*java object*/,
-                      jobject buf,
-                      jint buf_size,
-                      jint input_channel_count,
-                      jint output_channel_count);
+  void OnChunkDecoded(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& /*java object*/,
+      const base::android::JavaParamRef<jobject>& buf,
+      jint buf_size,
+      jint input_channel_count,
+      jint output_channel_count);
 
-  void InitializeDestination(JNIEnv* env,
-                             jobject /*java object*/,
-                             jint channel_count,
-                             jint sample_rate,
-                             jlong duration_us);
+  void InitializeDestination(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& /*java object*/,
+      jint channel_count,
+      jint sample_rate,
+      jlong duration_us);
 
  private:
   // Handles MediaCodec processing of the encoded data in

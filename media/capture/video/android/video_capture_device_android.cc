@@ -131,11 +131,12 @@ void VideoCaptureDeviceAndroid::StopAndDeAllocate() {
   Java_VideoCapture_deallocate(env, j_capture_.obj());
 }
 
-void VideoCaptureDeviceAndroid::OnFrameAvailable(JNIEnv* env,
-                                                 jobject obj,
-                                                 jbyteArray data,
-                                                 jint length,
-                                                 jint rotation) {
+void VideoCaptureDeviceAndroid::OnFrameAvailable(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jbyteArray>& data,
+    jint length,
+    jint rotation) {
   DVLOG(3) << "VideoCaptureDeviceAndroid::OnFrameAvailable: length =" << length;
 
   base::AutoLock lock(lock_);
@@ -169,8 +170,8 @@ void VideoCaptureDeviceAndroid::OnFrameAvailable(JNIEnv* env,
 }
 
 void VideoCaptureDeviceAndroid::OnError(JNIEnv* env,
-                                        jobject obj,
-                                        jstring message) {
+                                        const JavaParamRef<jobject>& obj,
+                                        const JavaParamRef<jstring>& message) {
   SetErrorState(FROM_HERE,
                 base::android::ConvertJavaStringToUTF8(env, message));
 }

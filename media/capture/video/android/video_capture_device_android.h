@@ -58,13 +58,15 @@ class MEDIA_EXPORT VideoCaptureDeviceAndroid : public VideoCaptureDevice {
 
   // Implement org.chromium.media.VideoCapture.nativeOnFrameAvailable.
   void OnFrameAvailable(JNIEnv* env,
-                        jobject obj,
-                        jbyteArray data,
+                        const base::android::JavaParamRef<jobject>& obj,
+                        const base::android::JavaParamRef<jbyteArray>& data,
                         jint length,
                         jint rotation);
 
   // Implement org.chromium.media.VideoCapture.nativeOnError.
-  void OnError(JNIEnv* env, jobject obj, jstring message);
+  void OnError(JNIEnv* env,
+               const base::android::JavaParamRef<jobject>& obj,
+               const base::android::JavaParamRef<jstring>& message);
 
  private:
   enum InternalState {

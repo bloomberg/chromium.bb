@@ -205,7 +205,9 @@ bool MediaPlayerBridge::InterceptMediaUrl(
   return false;
 }
 
-void MediaPlayerBridge::OnDidSetDataUriDataSource(JNIEnv* env, jobject obj,
+void MediaPlayerBridge::OnDidSetDataUriDataSource(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
     jboolean success) {
   if (!success) {
     OnMediaError(MEDIA_ERROR_FORMAT);

@@ -127,7 +127,7 @@ bool WebAudioMediaCodecBridge::DecodeInMemoryAudioFile() {
 
 void WebAudioMediaCodecBridge::InitializeDestination(
     JNIEnv* env,
-    jobject /*java object*/,
+    const JavaParamRef<jobject>& /*java object*/,
     jint channel_count,
     jint sample_rate,
     jlong duration_microsec) {
@@ -153,12 +153,11 @@ void WebAudioMediaCodecBridge::InitializeDestination(
 
 void WebAudioMediaCodecBridge::OnChunkDecoded(
     JNIEnv* env,
-    jobject /*java object*/,
-    jobject buf,
+    const JavaParamRef<jobject>& /*java object*/,
+    const JavaParamRef<jobject>& buf,
     jint buf_size,
     jint input_channel_count,
     jint output_channel_count) {
-
   if (buf_size <= 0 || !buf)
     return;
 

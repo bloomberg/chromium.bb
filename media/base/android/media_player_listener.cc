@@ -44,45 +44,55 @@ void MediaPlayerListener::ReleaseMediaPlayerListenerResources() {
   j_media_player_listener_.Reset();
 }
 
-void MediaPlayerListener::OnMediaError(
-    JNIEnv* /* env */, jobject /* obj */, jint error_type) {
+void MediaPlayerListener::OnMediaError(JNIEnv* /* env */,
+                                       const JavaParamRef<jobject>& /* obj */,
+                                       jint error_type) {
   task_runner_->PostTask(FROM_HERE, base::Bind(
       &MediaPlayerAndroid::OnMediaError, media_player_, error_type));
 }
 
 void MediaPlayerListener::OnVideoSizeChanged(
-    JNIEnv* /* env */, jobject /* obj */, jint width, jint height) {
+    JNIEnv* /* env */,
+    const JavaParamRef<jobject>& /* obj */,
+    jint width,
+    jint height) {
   task_runner_->PostTask(FROM_HERE, base::Bind(
       &MediaPlayerAndroid::OnVideoSizeChanged, media_player_,
       width, height));
 }
 
 void MediaPlayerListener::OnBufferingUpdate(
-    JNIEnv* /* env */, jobject /* obj */, jint percent) {
+    JNIEnv* /* env */,
+    const JavaParamRef<jobject>& /* obj */,
+    jint percent) {
   task_runner_->PostTask(FROM_HERE, base::Bind(
       &MediaPlayerAndroid::OnBufferingUpdate, media_player_, percent));
 }
 
 void MediaPlayerListener::OnPlaybackComplete(
-    JNIEnv* /* env */, jobject /* obj */) {
+    JNIEnv* /* env */,
+    const JavaParamRef<jobject>& /* obj */) {
   task_runner_->PostTask(FROM_HERE, base::Bind(
       &MediaPlayerAndroid::OnPlaybackComplete, media_player_));
 }
 
 void MediaPlayerListener::OnSeekComplete(
-    JNIEnv* /* env */, jobject /* obj */) {
+    JNIEnv* /* env */,
+    const JavaParamRef<jobject>& /* obj */) {
   task_runner_->PostTask(FROM_HERE, base::Bind(
       &MediaPlayerAndroid::OnSeekComplete, media_player_));
 }
 
 void MediaPlayerListener::OnMediaPrepared(
-    JNIEnv* /* env */, jobject /* obj */) {
+    JNIEnv* /* env */,
+    const JavaParamRef<jobject>& /* obj */) {
   task_runner_->PostTask(FROM_HERE, base::Bind(
       &MediaPlayerAndroid::OnMediaPrepared, media_player_));
 }
 
 void MediaPlayerListener::OnMediaInterrupted(
-    JNIEnv* /* env */, jobject /* obj */) {
+    JNIEnv* /* env */,
+    const JavaParamRef<jobject>& /* obj */) {
   task_runner_->PostTask(FROM_HERE, base::Bind(
       &MediaPlayerAndroid::OnMediaInterrupted, media_player_));
 }

@@ -160,56 +160,68 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys, public PlayerTracker {
   // only do minimal work and then post tasks to avoid reentrancy issues.
 
   // Called by Java after a MediaCrypto object is created.
-  void OnMediaCryptoReady(JNIEnv* env, jobject j_media_drm);
+  void OnMediaCryptoReady(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& j_media_drm);
 
   // Called by Java when we need to send a provisioning request,
-  void OnStartProvisioning(JNIEnv* env,
-                           jobject j_media_drm,
-                           jstring j_default_url,
-                           jbyteArray j_request_data);
+  void OnStartProvisioning(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& j_media_drm,
+      const base::android::JavaParamRef<jstring>& j_default_url,
+      const base::android::JavaParamRef<jbyteArray>& j_request_data);
 
   // Callbacks to resolve the promise for |promise_id|.
-  void OnPromiseResolved(JNIEnv* env, jobject j_media_drm, jint j_promise_id);
-  void OnPromiseResolvedWithSession(JNIEnv* env,
-                                    jobject j_media_drm,
-                                    jint j_promise_id,
-                                    jbyteArray j_session_id);
+  void OnPromiseResolved(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& j_media_drm,
+      jint j_promise_id);
+  void OnPromiseResolvedWithSession(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& j_media_drm,
+      jint j_promise_id,
+      const base::android::JavaParamRef<jbyteArray>& j_session_id);
 
   // Callback to reject the promise for |promise_id| with |error_message|.
   // Note: No |system_error| is available from MediaDrm.
   // TODO(xhwang): Implement Exception code.
-  void OnPromiseRejected(JNIEnv* env,
-                         jobject j_media_drm,
-                         jint j_promise_id,
-                         jstring j_error_message);
+  void OnPromiseRejected(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& j_media_drm,
+      jint j_promise_id,
+      const base::android::JavaParamRef<jstring>& j_error_message);
 
   // Session event callbacks.
 
   // TODO(xhwang): Remove |j_legacy_destination_url| when prefixed EME support
   // is removed.
-  void OnSessionMessage(JNIEnv* env,
-                        jobject j_media_drm,
-                        jbyteArray j_session_id,
-                        jint j_message_type,
-                        jbyteArray j_message,
-                        jstring j_legacy_destination_url);
-  void OnSessionClosed(JNIEnv* env,
-                       jobject j_media_drm,
-                       jbyteArray j_session_id);
+  void OnSessionMessage(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& j_media_drm,
+      const base::android::JavaParamRef<jbyteArray>& j_session_id,
+      jint j_message_type,
+      const base::android::JavaParamRef<jbyteArray>& j_message,
+      const base::android::JavaParamRef<jstring>& j_legacy_destination_url);
+  void OnSessionClosed(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& j_media_drm,
+      const base::android::JavaParamRef<jbyteArray>& j_session_id);
 
-  void OnSessionKeysChange(JNIEnv* env,
-                           jobject j_media_drm,
-                           jbyteArray j_session_id,
-                           jobjectArray j_keys_info,
-                           bool has_additional_usable_key);
+  void OnSessionKeysChange(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& j_media_drm,
+      const base::android::JavaParamRef<jbyteArray>& j_session_id,
+      const base::android::JavaParamRef<jobjectArray>& j_keys_info,
+      bool has_additional_usable_key);
 
   // |expiry_time_ms| is the new expiration time for the keys in the session.
   // The time is in milliseconds, relative to the Unix epoch. A time of 0
   // indicates that the keys never expire.
-  void OnSessionExpirationUpdate(JNIEnv* env,
-                                 jobject j_media_drm,
-                                 jbyteArray j_session_id,
-                                 jlong expiry_time_ms);
+  void OnSessionExpirationUpdate(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& j_media_drm,
+      const base::android::JavaParamRef<jbyteArray>& j_session_id,
+      jlong expiry_time_ms);
 
   // Called by the CDM when an error occurred in session |j_session_id|
   // unrelated to one of the MediaKeys calls that accept a |promise|.
@@ -217,13 +229,17 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys, public PlayerTracker {
   // - This method is only for supporting prefixed EME API.
   // - This method will be ignored by unprefixed EME. All errors reported
   //   in this method should probably also be reported by one of other methods.
-  void OnLegacySessionError(JNIEnv* env,
-                            jobject j_media_drm,
-                            jbyteArray j_session_id,
-                            jstring j_error_message);
+  void OnLegacySessionError(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& j_media_drm,
+      const base::android::JavaParamRef<jbyteArray>& j_session_id,
+      const base::android::JavaParamRef<jstring>& j_error_message);
 
   // Called by the java object when credential reset is completed.
-  void OnResetDeviceCredentialsCompleted(JNIEnv* env, jobject, bool success);
+  void OnResetDeviceCredentialsCompleted(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>&,
+      bool success);
 
  private:
   // For DeleteSoon() in DeleteOnCorrectThread().

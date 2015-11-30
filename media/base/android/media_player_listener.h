@@ -33,14 +33,24 @@ class MediaPlayerListener {
 
   // Called by the Java MediaPlayerListener and mirrored to corresponding
   // callbacks.
-  void OnMediaError(JNIEnv* /* env */, jobject /* obj */, jint error_type);
-  void OnVideoSizeChanged(JNIEnv* /* env */, jobject /* obj */,
-                          jint width, jint height);
-  void OnBufferingUpdate(JNIEnv* /* env */, jobject /* obj */, jint percent);
-  void OnPlaybackComplete(JNIEnv* /* env */, jobject /* obj */);
-  void OnSeekComplete(JNIEnv* /* env */, jobject /* obj */);
-  void OnMediaPrepared(JNIEnv* /* env */, jobject /* obj */);
-  void OnMediaInterrupted(JNIEnv* /* env */, jobject /* obj */);
+ void OnMediaError(JNIEnv* /* env */,
+                   const base::android::JavaParamRef<jobject>& /* obj */,
+                   jint error_type);
+ void OnVideoSizeChanged(JNIEnv* /* env */,
+                         const base::android::JavaParamRef<jobject>& /* obj */,
+                         jint width,
+                         jint height);
+ void OnBufferingUpdate(JNIEnv* /* env */,
+                        const base::android::JavaParamRef<jobject>& /* obj */,
+                        jint percent);
+ void OnPlaybackComplete(JNIEnv* /* env */,
+                         const base::android::JavaParamRef<jobject>& /* obj */);
+ void OnSeekComplete(JNIEnv* /* env */,
+                     const base::android::JavaParamRef<jobject>& /* obj */);
+ void OnMediaPrepared(JNIEnv* /* env */,
+                      const base::android::JavaParamRef<jobject>& /* obj */);
+ void OnMediaInterrupted(JNIEnv* /* env */,
+                         const base::android::JavaParamRef<jobject>& /* obj */);
 
   // Create a Java MediaPlayerListener object and listens to all the media
   // related events from system and |media_player|. If |media_player| is NULL,

@@ -75,7 +75,10 @@ class MEDIA_EXPORT MediaPlayerBridge : public MediaPlayerAndroid {
   GURL GetUrl() override;
   GURL GetFirstPartyForCookies() override;
 
-  void OnDidSetDataUriDataSource(JNIEnv* env, jobject obj, jboolean success);
+  void OnDidSetDataUriDataSource(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jboolean success);
 
  protected:
   void SetDuration(base::TimeDelta time);

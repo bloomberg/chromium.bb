@@ -37,8 +37,10 @@ AudioRecordInputStream::~AudioRecordInputStream() {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
-void AudioRecordInputStream::CacheDirectBufferAddress(JNIEnv* env, jobject obj,
-                                                      jobject byte_buffer) {
+void AudioRecordInputStream::CacheDirectBufferAddress(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& byte_buffer) {
   DCHECK(thread_checker_.CalledOnValidThread());
   direct_buffer_address_ = static_cast<uint8*>(
       env->GetDirectBufferAddress(byte_buffer));
@@ -49,7 +51,9 @@ bool AudioRecordInputStream::RegisterAudioRecordInput(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-void AudioRecordInputStream::OnData(JNIEnv* env, jobject obj, jint size,
+void AudioRecordInputStream::OnData(JNIEnv* env,
+                                    const JavaParamRef<jobject>& obj,
+                                    jint size,
                                     jint hardware_delay_bytes) {
   DCHECK(direct_buffer_address_);
   DCHECK_EQ(size,
