@@ -68,4 +68,4 @@ TouchActionBrowserTest.DefaultAuto
 IndexedDBBrowserTest.DiskFullOnCommit
 
 # https://crbug.com/562406
-WebRtcMediaRecorderTest.MediaRecorderStartWithTimeSlic
+WebRtcMediaRecorderTest.MediaRecorderStartWithTimeSlice
