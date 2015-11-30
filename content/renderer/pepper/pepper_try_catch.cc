@@ -122,6 +122,7 @@ PepperTryCatchVar::PepperTryCatchVar(PepperPluginInstanceImpl* instance,
                                      PP_Var* exception)
     : PepperTryCatch(instance, var_converter),
       handle_scope_(instance_->GetIsolate()),
+      try_catch_(instance_->GetIsolate()),
       exception_(exception),
       exception_is_set_(false) {
   // Store a handle to the context here for 2 reasons:

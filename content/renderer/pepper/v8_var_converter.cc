@@ -376,7 +376,7 @@ bool V8VarConverter::ToV8Value(const PP_Var& var,
         }
         if (did_create && CanHaveChildren(child_var))
           stack.push(child_var);
-        v8::TryCatch try_catch;
+        v8::TryCatch try_catch(isolate);
         v8_array->Set(static_cast<uint32>(i), child_v8);
         if (try_catch.HasCaught()) {
           LOG(ERROR) << "Setter for index " << i << " threw an exception.";
@@ -412,7 +412,7 @@ bool V8VarConverter::ToV8Value(const PP_Var& var,
         }
         if (did_create && CanHaveChildren(child_var))
           stack.push(child_var);
-        v8::TryCatch try_catch;
+        v8::TryCatch try_catch(isolate);
         v8_object->Set(
             v8::String::NewFromUtf8(
                 isolate, key.c_str(), v8::String::kNormalString, key.length()),
@@ -517,7 +517,7 @@ bool V8VarConverter::FromV8ValueInternal(
       }
 
       for (uint32 i = 0; i < v8_array->Length(); ++i) {
-        v8::TryCatch try_catch;
+        v8::TryCatch try_catch(context->GetIsolate());
         v8::Local<v8::Value> child_v8 = v8_array->Get(i);
         if (try_catch.HasCaught())
           return false;
@@ -573,7 +573,7 @@ bool V8VarConverter::FromV8ValueInternal(
 
         v8::String::Utf8Value name_utf8(key_string);
 
-        v8::TryCatch try_catch;
+        v8::TryCatch try_catch(context->GetIsolate());
         v8::Local<v8::Value> child_v8 = v8_object->Get(key);
         if (try_catch.HasCaught())
           return false;

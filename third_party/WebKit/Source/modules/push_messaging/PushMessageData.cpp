@@ -78,7 +78,7 @@ ScriptValue PushMessageData::json(ScriptState* scriptState, ExceptionState& exce
     ScriptState::Scope scope(scriptState);
     v8::Local<v8::String> dataString = v8String(isolate, text());
 
-    v8::TryCatch block;
+    v8::TryCatch block(isolate);
     v8::Local<v8::Value> parsed;
     if (!v8Call(v8::JSON::Parse(isolate, dataString), parsed, block)) {
         exceptionState.rethrowV8Exception(block.Exception());

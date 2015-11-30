@@ -42,7 +42,7 @@ ScriptRegexp::ScriptRegexp(const String& pattern, TextCaseSensitivity caseSensit
     v8::HandleScope handleScope(isolate);
     v8::Local<v8::Context> context = V8PerIsolateData::from(isolate)->ensureScriptRegexpContext();
     v8::Context::Scope contextScope(context);
-    v8::TryCatch tryCatch;
+    v8::TryCatch tryCatch(isolate);
 
     unsigned flags = v8::RegExp::kNone;
     if (caseSensitivity == TextCaseInsensitive)
@@ -73,7 +73,7 @@ int ScriptRegexp::match(const String& string, int startFrom, int* matchLength) c
     v8::HandleScope handleScope(isolate);
     v8::Local<v8::Context> context = V8PerIsolateData::from(isolate)->ensureScriptRegexpContext();
     v8::Context::Scope contextScope(context);
-    v8::TryCatch tryCatch;
+    v8::TryCatch tryCatch(isolate);
 
     v8::Local<v8::RegExp> regex = m_regex.newLocal(isolate);
     v8::Local<v8::Value> exec;

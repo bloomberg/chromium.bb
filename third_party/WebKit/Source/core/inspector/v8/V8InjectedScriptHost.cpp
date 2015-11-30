@@ -83,7 +83,7 @@ void V8InjectedScriptHost::internalConstructorNameCallback(const v8::FunctionCal
     if (!result.IsEmpty() && toCoreStringWithUndefinedOrNullCheck(result) == "Object") {
         v8::Local<v8::String> constructorSymbol = v8AtomicString(info.GetIsolate(), "constructor");
         if (object->HasRealNamedProperty(constructorSymbol) && !object->HasRealNamedCallbackProperty(constructorSymbol)) {
-            v8::TryCatch tryCatch;
+            v8::TryCatch tryCatch(info.GetIsolate());
             v8::Local<v8::Value> constructor = object->GetRealNamedProperty(constructorSymbol);
             if (!constructor.IsEmpty() && constructor->IsFunction()) {
                 v8::Local<v8::String> constructorName = functionDisplayName(v8::Local<v8::Function>::Cast(constructor));
@@ -325,7 +325,7 @@ void V8InjectedScriptHost::evalCallback(const v8::FunctionCallbackInfo<v8::Value
     }
 
     ASSERT(isolate->InContext());
-    v8::TryCatch tryCatch;
+    v8::TryCatch tryCatch(isolate);
     v8::Local<v8::Value> result;
     if (!v8Call(V8ScriptRunner::compileAndRunInternalScript(expression, info.GetIsolate()), result, tryCatch)) {
         v8SetReturnValue(info, tryCatch.ReThrow());
@@ -360,7 +360,7 @@ void V8InjectedScriptHost::evaluateWithExceptionDetailsCallback(const v8::Functi
     v8::Local<v8::Object> wrappedResult = v8::Object::New(isolate);
     if (wrappedResult.IsEmpty())
         return;
-    v8::TryCatch tryCatch;
+    v8::TryCatch tryCatch(isolate);
     v8::Local<v8::Script> script;
     v8::Local<v8::Value> result;
     if (!v8Call(V8ScriptRunner::compileScript(expression, String(), String(), TextPosition(), isolate), script, tryCatch)) {

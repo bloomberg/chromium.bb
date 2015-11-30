@@ -75,7 +75,7 @@ v8::Local<v8::Value> V8ThrowException::createDOMException(v8::Isolate* isolate, 
         sanitizedCreationContext = scriptState->context()->Global();
     }
 
-    v8::TryCatch tryCatch;
+    v8::TryCatch tryCatch(isolate);
 
     DOMException* domException = DOMException::create(ec, sanitizedMessage, unsanitizedMessage);
     v8::Local<v8::Value> exception = toV8(domException, sanitizedCreationContext, isolate);

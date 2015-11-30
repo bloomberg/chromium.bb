@@ -235,7 +235,7 @@ v8::Local<v8::Value> V8ValueConverterImpl::ToV8Array(
         ToV8ValueImpl(isolate, creation_context, child);
     CHECK(!child_v8.IsEmpty());
 
-    v8::TryCatch try_catch;
+    v8::TryCatch try_catch(isolate);
     result->Set(static_cast<uint32>(i), child_v8);
     if (try_catch.HasCaught())
       LOG(ERROR) << "Setter for index " << i << " threw an exception.";
@@ -257,7 +257,7 @@ v8::Local<v8::Value> V8ValueConverterImpl::ToV8Object(
         ToV8ValueImpl(isolate, creation_context, &iter.value());
     CHECK(!child_v8.IsEmpty());
 
-    v8::TryCatch try_catch;
+    v8::TryCatch try_catch(isolate);
     result->Set(
         v8::String::NewFromUtf8(
             isolate, key.c_str(), v8::String::kNormalString, key.length()),
@@ -396,7 +396,7 @@ base::Value* V8ValueConverterImpl::FromV8Array(
 
   // Only fields with integer keys are carried over to the ListValue.
   for (uint32 i = 0; i < val->Length(); ++i) {
-    v8::TryCatch try_catch;
+    v8::TryCatch try_catch(isolate);
     v8::Local<v8::Value> child_v8 = val->Get(i);
     if (try_catch.HasCaught()) {
       LOG(ERROR) << "Getter for index " << i << " threw an exception.";
@@ -509,7 +509,7 @@ base::Value* V8ValueConverterImpl::FromV8Object(
 
     v8::String::Utf8Value name_utf8(key);
 
-    v8::TryCatch try_catch;
+    v8::TryCatch try_catch(isolate);
     v8::Local<v8::Value> child_v8 = val->Get(key);
 
     if (try_catch.HasCaught()) {

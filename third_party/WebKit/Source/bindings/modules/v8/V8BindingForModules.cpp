@@ -205,7 +205,7 @@ static IDBKey* createIDBKeyFromValue(v8::Isolate* isolate, v8::Local<v8::Value> 
 
         IDBKey::KeyArray subkeys;
         uint32_t length = array->Length();
-        v8::TryCatch block;
+        v8::TryCatch block(isolate);
         for (uint32_t i = 0; i < length; ++i) {
             v8::Local<v8::Value> item;
             if (!v8Call(array->Get(isolate->GetCurrentContext(), i), item, block)) {
@@ -266,7 +266,7 @@ static IDBKey* createIDBKeyFromValueAndKeyPath(v8::Isolate* isolate, v8::Local<v
 
     v8::HandleScope handleScope(isolate);
     v8::Local<v8::Context> context = isolate->GetCurrentContext();
-    v8::TryCatch block;
+    v8::TryCatch block(isolate);
     for (size_t i = 0; i < keyPathElements.size(); ++i) {
         if (v8Value->IsString() && keyPathElements[i] == "length") {
             int32_t length = v8Value.As<v8::String>()->Length();

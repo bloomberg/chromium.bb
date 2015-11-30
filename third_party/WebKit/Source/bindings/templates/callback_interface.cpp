@@ -63,7 +63,7 @@ DEFINE_TRACE({{v8_class}})
 
     {% set this_handle_parameter = 'thisHandle, ' if method.call_with_this_handle else 'v8::Undefined(m_scriptState->isolate()), ' %}
     {% if method.idl_type == 'boolean' %}
-    v8::TryCatch exceptionCatcher;
+    v8::TryCatch exceptionCatcher(m_scriptState->isolate());
     exceptionCatcher.SetVerbose(true);
     ScriptController::callFunction(m_scriptState->executionContext(), m_callback.newLocal(m_scriptState->isolate()), {{this_handle_parameter}}{{method.arguments | length}}, argv, m_scriptState->isolate());
     return !exceptionCatcher.HasCaught();

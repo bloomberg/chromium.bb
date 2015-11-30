@@ -108,7 +108,7 @@ protected:
 
 TEST_F(ScriptPromiseTest, constructFromNonPromise)
 {
-    v8::TryCatch trycatch;
+    v8::TryCatch trycatch(isolate());
     ScriptPromise promise(scriptState(), v8::Undefined(isolate()));
     ASSERT_TRUE(trycatch.HasCaught());
     ASSERT_TRUE(promise.isEmpty());

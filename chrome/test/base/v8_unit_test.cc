@@ -123,7 +123,7 @@ bool V8UnitTest::RunJavascriptTestF(const std::string& testFixture,
       v8::Boolean::New(isolate, false),
       v8::String::NewFromUtf8(isolate, "RUN_TEST_F"), params};
 
-  v8::TryCatch try_catch;
+  v8::TryCatch try_catch(isolate);
   v8::Local<v8::Value> result = function->Call(context->Global(), 3, args);
   // The test fails if an exception was thrown.
   EXPECT_FALSE(result.IsEmpty());
@@ -222,7 +222,7 @@ void V8UnitTest::ExecuteScriptInContext(const base::StringPiece& script_source,
                               v8::String::kNormalString,
                               script_name.size());
 
-  v8::TryCatch try_catch;
+  v8::TryCatch try_catch(isolate);
   v8::Local<v8::Script> script = v8::Script::Compile(source, name);
   // Ensure the script compiled without errors.
   if (script.IsEmpty())
@@ -267,7 +267,7 @@ void V8UnitTest::TestFunction(const std::string& function_name) {
   v8::Local<v8::Function> function =
       v8::Local<v8::Function>::Cast(functionProperty);
 
-  v8::TryCatch try_catch;
+  v8::TryCatch try_catch(isolate);
   v8::Local<v8::Value> result = function->Call(context->Global(), 0, NULL);
   // The test fails if an exception was thrown.
   if (result.IsEmpty())

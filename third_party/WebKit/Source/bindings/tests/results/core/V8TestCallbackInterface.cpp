@@ -60,7 +60,7 @@ bool V8TestCallbackInterface::booleanMethod()
     ScriptState::Scope scope(m_scriptState.get());
     v8::Local<v8::Value> *argv = 0;
 
-    v8::TryCatch exceptionCatcher;
+    v8::TryCatch exceptionCatcher(m_scriptState->isolate());
     exceptionCatcher.SetVerbose(true);
     ScriptController::callFunction(m_scriptState->executionContext(), m_callback.newLocal(m_scriptState->isolate()), v8::Undefined(m_scriptState->isolate()), 0, argv, m_scriptState->isolate());
     return !exceptionCatcher.HasCaught();

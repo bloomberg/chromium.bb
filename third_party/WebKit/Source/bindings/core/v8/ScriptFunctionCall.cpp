@@ -92,7 +92,7 @@ ScriptFunctionCall::ScriptFunctionCall(const ScriptValue& thisObject, const Stri
 ScriptValue ScriptFunctionCall::call(bool& hadException, bool reportExceptions)
 {
     ScriptState::Scope scope(m_scriptState.get());
-    v8::TryCatch tryCatch;
+    v8::TryCatch tryCatch(m_scriptState->isolate());
     tryCatch.SetVerbose(reportExceptions);
 
     ScriptValue result = callWithoutExceptionHandling();
@@ -131,7 +131,7 @@ ScriptValue ScriptFunctionCall::callWithoutExceptionHandling()
 
 v8::Local<v8::Function> ScriptFunctionCall::function()
 {
-    v8::TryCatch tryCatch;
+    v8::TryCatch tryCatch(m_scriptState->isolate());
     v8::Local<v8::Object> thisObject = v8::Local<v8::Object>::Cast(m_thisObject.v8Value());
     v8::Local<v8::Value> value;
     if (!thisObject->Get(m_scriptState->context(), v8String(m_scriptState->isolate(), m_name)).ToLocal(&value))

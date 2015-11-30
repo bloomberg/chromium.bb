@@ -73,7 +73,7 @@ void UtilsNativeHandler::CreateClassWrapper(
       superclass};
   v8::Local<v8::Value> result;
   {
-    v8::TryCatch try_catch;
+    v8::TryCatch try_catch(GetIsolate());
     try_catch.SetCaptureMessage(true);
     result = context()->CallFunction(func, arraysize(func_args), func_args);
     if (try_catch.HasCaught()) {

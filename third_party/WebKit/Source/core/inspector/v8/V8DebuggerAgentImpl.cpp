@@ -930,7 +930,7 @@ void V8DebuggerAgentImpl::compileScript(ErrorString* errorString, const String& 
 
     ScriptState::Scope scope(injectedScript.scriptState());
     v8::Local<v8::String> source = v8String(m_isolate, expression);
-    v8::TryCatch tryCatch;
+    v8::TryCatch tryCatch(m_isolate);
     v8::Local<v8::Script> script;
     if (!v8Call(V8ScriptRunner::compileScript(source, sourceURL, String(), TextPosition(), m_isolate), script, tryCatch)) {
         v8::Local<v8::Message> message = tryCatch.Message();
@@ -976,7 +976,7 @@ void V8DebuggerAgentImpl::runScript(ErrorString* errorString, const ScriptId& sc
         *errorString = "Script execution failed";
         return;
     }
-    v8::TryCatch tryCatch;
+    v8::TryCatch tryCatch(m_isolate);
     v8::Local<v8::Value> value;
     ScriptValue scriptValue;
     if (v8Call(V8ScriptRunner::runCompiledScript(m_isolate, script, scriptState->executionContext()), value, tryCatch)) {

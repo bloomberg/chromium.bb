@@ -195,7 +195,7 @@ void CryptoResultImpl::completeWithJson(const char* utf8Data, unsigned length)
 
     v8::Local<v8::String> jsonString = v8AtomicString(scriptState->isolate(), utf8Data, length);
 
-    v8::TryCatch exceptionCatcher;
+    v8::TryCatch exceptionCatcher(scriptState->isolate());
     v8::Local<v8::Value> jsonDictionary;
     if (v8Call(v8::JSON::Parse(scriptState->isolate(), jsonString), jsonDictionary, exceptionCatcher))
         m_resolver->resolve(jsonDictionary);

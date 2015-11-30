@@ -66,7 +66,7 @@ bool V8SQLStatementErrorCallback::handleEvent(SQLTransaction* transaction, SQLEr
         errorHandle
     };
 
-    v8::TryCatch exceptionCatcher;
+    v8::TryCatch exceptionCatcher(isolate);
     exceptionCatcher.SetVerbose(true);
 
     v8::Local<v8::Value> result;

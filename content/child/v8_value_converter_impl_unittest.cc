@@ -652,7 +652,7 @@ TEST_F(V8ValueConverterImplTest, DetectCycles) {
   // Now create a recursive object
   const std::string key("key");
   v8::Local<v8::Object> recursive_object(v8::Object::New(isolate_));
-  v8::TryCatch try_catch;
+  v8::TryCatch try_catch(isolate_);
   recursive_object->Set(
       v8::String::NewFromUtf8(
           isolate_, key.c_str(), v8::String::kNormalString, key.length()),

@@ -114,7 +114,7 @@ PassRefPtrWillBeRawPtr<NodeFilter> toNodeFilter(v8::Local<v8::Value> callback, v
 bool toBooleanSlow(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState)
 {
     ASSERT(!value->IsBoolean());
-    v8::TryCatch block;
+    v8::TryCatch block(isolate);
     bool result = false;
     if (!v8Call(value->BooleanValue(isolate->GetCurrentContext()), result, block))
         exceptionState.rethrowV8Exception(block.Exception());

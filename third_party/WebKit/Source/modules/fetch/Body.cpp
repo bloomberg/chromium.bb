@@ -91,7 +91,7 @@ public:
         ScriptState::Scope scope(resolver()->scriptState());
         v8::Isolate* isolate = resolver()->scriptState()->isolate();
         v8::Local<v8::String> inputString = v8String(isolate, string);
-        v8::TryCatch trycatch;
+        v8::TryCatch trycatch(isolate);
         v8::Local<v8::Value> parsed;
         if (v8Call(v8::JSON::Parse(isolate, inputString), parsed, trycatch))
             resolver()->resolve(parsed);

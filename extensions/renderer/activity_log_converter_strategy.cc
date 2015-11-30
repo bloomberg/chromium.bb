@@ -17,7 +17,7 @@ namespace {
 // "[HTMLElement]").
 scoped_ptr<base::Value> SummarizeV8Value(v8::Isolate* isolate,
                                          v8::Local<v8::Object> object) {
-  v8::TryCatch try_catch;
+  v8::TryCatch try_catch(isolate);
   v8::Isolate::DisallowJavascriptExecutionScope scope(
       isolate, v8::Isolate::DisallowJavascriptExecutionScope::THROW_ON_FAILURE);
   v8::Local<v8::String> name = v8::String::NewFromUtf8(isolate, "[");

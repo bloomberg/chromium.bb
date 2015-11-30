@@ -19,7 +19,7 @@ PassRefPtr<SerializedScriptValue> SerializedScriptValueForModulesFactory::create
     ScriptValueSerializer::Status status;
     String errorMessage;
     {
-        v8::TryCatch tryCatch;
+        v8::TryCatch tryCatch(isolate);
         status = SerializedScriptValueFactory::doSerialize(value, writer, messagePorts, arrayBuffers, imageBitmaps, blobInfo, serializedValue.get(), tryCatch, errorMessage, isolate);
         if (status == ScriptValueSerializer::JSException) {
             // If there was a JS exception thrown, re-throw it.

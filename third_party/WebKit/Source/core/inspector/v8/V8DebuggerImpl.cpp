@@ -382,7 +382,7 @@ bool V8DebuggerImpl::setScriptSource(const String& sourceID, const String& newCo
     v8::Local<v8::Value> v8result;
     {
         EnableLiveEditScope enableLiveEditScope(m_isolate);
-        v8::TryCatch tryCatch;
+        v8::TryCatch tryCatch(m_isolate);
         tryCatch.SetVerbose(false);
         v8::MaybeLocal<v8::Value> maybeResult = callDebuggerMethod("liveEditScriptSource", 3, argv);
         if (tryCatch.HasCaught()) {

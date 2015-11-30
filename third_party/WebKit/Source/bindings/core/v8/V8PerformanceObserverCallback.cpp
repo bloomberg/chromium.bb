@@ -57,7 +57,7 @@ void V8PerformanceObserverCallback::handleEvent(PerformanceObserverEntryList* en
     }
     v8::Local<v8::Value> argv[] = { entriesHandle, observerHandle };
 
-    v8::TryCatch exceptionCatcher;
+    v8::TryCatch exceptionCatcher(m_scriptState->isolate());
     exceptionCatcher.SetVerbose(true);
     ScriptController::callFunction(m_scriptState->executionContext(), m_callback.newLocal(m_scriptState->isolate()), thisObject, 2, argv, m_scriptState->isolate());
 }
