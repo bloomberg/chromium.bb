@@ -28,13 +28,13 @@
 
 namespace blink {
 
-static void rejectDueToCredentialManagerError(ScriptPromiseResolver* resolver, WebCredentialManagerError* reason)
+static void rejectDueToCredentialManagerError(ScriptPromiseResolver* resolver, WebCredentialManagerError reason)
 {
-    switch (reason->errorType) {
-    case WebCredentialManagerError::ErrorTypeDisabled:
+    switch (reason) {
+    case WebCredentialManagerDisabledError:
         resolver->reject(DOMException::create(InvalidStateError, "The credential manager is disabled."));
         break;
-    case WebCredentialManagerError::ErrorTypeUnknown:
+    case WebCredentialManagerUnknownError:
     default:
         resolver->reject(DOMException::create(NotReadableError, "An unknown error occured while talking to the credential manager."));
         break;
@@ -52,7 +52,7 @@ public:
         m_resolver->resolve();
     }
 
-    void onError(WebCredentialManagerError* reason) override
+    void onError(WebCredentialManagerError reason) override
     {
         rejectDueToCredentialManagerError(m_resolver, reason);
     }
@@ -67,8 +67,9 @@ public:
     explicit RequestCallbacks(ScriptPromiseResolver* resolver) : m_resolver(resolver) { }
     ~RequestCallbacks() override { }
 
-    void onSuccess(WebCredential* credential) override
+    void onSuccess(WebPassOwnPtr<WebCredential> webCredential) override
     {
+        OwnPtr<WebCredential> credential = webCredential.release();
         if (!credential) {
             m_resolver->resolve();
             return;
@@ -76,12 +77,12 @@ public:
 
         ASSERT(credential->isPasswordCredential() || credential->isFederatedCredential());
         if (credential->isPasswordCredential())
-            m_resolver->resolve(PasswordCredential::create(static_cast<WebPasswordCredential*>(credential)));
+            m_resolver->resolve(PasswordCredential::create(static_cast<WebPasswordCredential*>(credential.get())));
         else
-            m_resolver->resolve(FederatedCredential::create(static_cast<WebFederatedCredential*>(credential)));
+            m_resolver->resolve(FederatedCredential::create(static_cast<WebFederatedCredential*>(credential.get())));
     }
 
-    void onError(WebCredentialManagerError* reason) override
+    void onError(WebCredentialManagerError reason) override
     {
         rejectDueToCredentialManagerError(m_resolver, reason);
     }

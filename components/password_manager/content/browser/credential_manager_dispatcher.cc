@@ -150,9 +150,8 @@ void CredentialManagerDispatcher::OnRequestCredential(
         new CredentialManagerMsg_RejectCredentialRequest(
             web_contents()->GetRenderViewHost()->GetRoutingID(), request_id,
             pending_request_
-                ? blink::WebCredentialManagerError::ErrorTypePendingRequest
-                : blink::WebCredentialManagerError::
-                      ErrorTypePasswordStoreUnavailable));
+                ? blink::WebCredentialManagerPendingRequestError
+                : blink::WebCredentialManagerPasswordStoreUnavailableError));
     return;
   }
 

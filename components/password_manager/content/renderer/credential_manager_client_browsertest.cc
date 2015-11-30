@@ -10,6 +10,7 @@
 #include "third_party/WebKit/public/platform/WebCredential.h"
 #include "third_party/WebKit/public/platform/WebCredentialManagerClient.h"
 #include "third_party/WebKit/public/platform/WebCredentialManagerError.h"
+#include "third_party/WebKit/public/platform/WebPassOwnPtr.h"
 #include "third_party/WebKit/public/platform/WebPasswordCredential.h"
 
 namespace password_manager {
@@ -109,7 +110,7 @@ class TestNotificationCallbacks
 
   void onSuccess() override { test_->set_callback_succeeded(true); }
 
-  void onError(blink::WebCredentialManagerError* reason) override {
+  void onError(blink::WebCredentialManagerError reason) override {
     test_->set_callback_errored(true);
   }
 
@@ -125,11 +126,11 @@ class TestRequestCallbacks
 
   ~TestRequestCallbacks() override {}
 
-  void onSuccess(blink::WebCredential*) override {
+  void onSuccess(blink::WebPassOwnPtr<blink::WebCredential>) override {
     test_->set_callback_succeeded(true);
   }
 
-  void onError(blink::WebCredentialManagerError* reason) override {
+  void onError(blink::WebCredentialManagerError reason) override {
     test_->set_callback_errored(true);
   }
 

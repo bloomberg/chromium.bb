@@ -7,6 +7,7 @@
 
 #include "public/platform/WebCallbacks.h"
 #include "public/platform/WebCredentialManagerError.h"
+#include "public/platform/WebPassOwnPtr.h"
 #include "public/platform/WebVector.h"
 
 namespace blink {
@@ -19,8 +20,8 @@ class WebURL;
 // 'credentialmanager' module.
 class WebCredentialManagerClient {
 public:
-    typedef WebCallbacks<WebCredential*, WebCredentialManagerError*> RequestCallbacks;
-    typedef WebCallbacks<void, WebCredentialManagerError*> NotificationCallbacks;
+    typedef WebCallbacks<WebPassOwnPtr<WebCredential>, WebCredentialManagerError> RequestCallbacks;
+    typedef WebCallbacks<void, WebCredentialManagerError> NotificationCallbacks;
 
     // Ownership of the callback is transferred to the callee for each of
     // the following methods.

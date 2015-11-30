@@ -22,8 +22,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(
     password_manager::CredentialType,
     password_manager::CredentialType::CREDENTIAL_TYPE_LAST)
 
-IPC_ENUM_TRAITS_MAX_VALUE(blink::WebCredentialManagerError::ErrorType,
-                          blink::WebCredentialManagerError::ErrorTypeLast)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::WebCredentialManagerError,
+                          blink::WebCredentialManagerErrorLastType)
 
 IPC_STRUCT_TRAITS_BEGIN(password_manager::CredentialInfo)
   IPC_STRUCT_TRAITS_MEMBER(type)
@@ -80,7 +80,6 @@ IPC_MESSAGE_ROUTED2(CredentialManagerMsg_SendCredential,
 
 // Reject the credential request in response to a
 // CredentialManagerHostMsg_RequestCredential message.
-IPC_MESSAGE_ROUTED2(
-    CredentialManagerMsg_RejectCredentialRequest,
-    int /* request_id */,
-    blink::WebCredentialManagerError::ErrorType /* rejection_reason */)
+IPC_MESSAGE_ROUTED2(CredentialManagerMsg_RejectCredentialRequest,
+                    int /* request_id */,
+                    blink::WebCredentialManagerError /* rejection_reason */)

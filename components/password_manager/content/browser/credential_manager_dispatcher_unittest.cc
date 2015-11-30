@@ -683,7 +683,7 @@ TEST_F(CredentialManagerDispatcherTest,
 
   CredentialManagerMsg_RejectCredentialRequest::Param reject_param;
   CredentialManagerMsg_RejectCredentialRequest::Read(message, &reject_param);
-  EXPECT_EQ(blink::WebCredentialManagerError::ErrorTypePendingRequest,
+  EXPECT_EQ(blink::WebCredentialManagerPendingRequestError,
             base::get<1>(reject_param));
   EXPECT_CALL(*client_, PromptUserToChooseCredentialsPtr(_, _, _, _))
       .Times(testing::Exactly(1));

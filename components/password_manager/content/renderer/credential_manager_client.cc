@@ -11,6 +11,7 @@
 #include "third_party/WebKit/public/platform/WebCredential.h"
 #include "third_party/WebKit/public/platform/WebCredentialManagerError.h"
 #include "third_party/WebKit/public/platform/WebFederatedCredential.h"
+#include "third_party/WebKit/public/platform/WebPassOwnPtr.h"
 #include "third_party/WebKit/public/platform/WebPasswordCredential.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
@@ -22,9 +23,7 @@ template <typename T>
 void ClearCallbacksMapWithErrors(T* callbacks_map) {
   typename T::iterator iter(callbacks_map);
   while (!iter.IsAtEnd()) {
-    blink::WebCredentialManagerError reason(
-        blink::WebCredentialManagerError::ErrorTypeUnknown);
-    iter.GetCurrentValue()->onError(&reason);
+    iter.GetCurrentValue()->onError(blink::WebCredentialManagerUnknownError);
     callbacks_map->Remove(iter.GetCurrentKey());
     iter.Advance();
   }
@@ -90,18 +89,16 @@ void CredentialManagerClient::OnSendCredential(int request_id,
       // Intentionally empty; we'll send nullptr to the onSuccess call below.
       break;
   }
-  callbacks->onSuccess(credential.get());
+  callbacks->onSuccess(adoptWebPtr(credential.release()));
   get_callbacks_.Remove(request_id);
 }
 
 void CredentialManagerClient::OnRejectCredentialRequest(
     int request_id,
-    blink::WebCredentialManagerError::ErrorType error_type) {
+    blink::WebCredentialManagerError error) {
   RequestCallbacks* callbacks = get_callbacks_.Lookup(request_id);
   DCHECK(callbacks);
-  scoped_ptr<blink::WebCredentialManagerError> error(
-      new blink::WebCredentialManagerError(error_type));
-  callbacks->onError(error.get());
+  callbacks->onError(error);
   get_callbacks_.Remove(request_id);
 }
 

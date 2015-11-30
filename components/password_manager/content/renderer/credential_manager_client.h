@@ -60,7 +60,7 @@ class CredentialManagerClient : public blink::WebCredentialManagerClient,
                                 const CredentialInfo& credential_info);
   virtual void OnRejectCredentialRequest(
       int request_id,
-      blink::WebCredentialManagerError::ErrorType error_type);
+      blink::WebCredentialManagerError error);
 
   // blink::WebCredentialManager:
   void dispatchStore(
