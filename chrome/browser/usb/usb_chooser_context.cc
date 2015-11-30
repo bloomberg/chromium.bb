@@ -4,6 +4,8 @@
 
 #include "chrome/browser/usb/usb_chooser_context.h"
 
+#include <vector>
+
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -24,12 +26,12 @@ bool CanStorePersistentEntry(const scoped_refptr<const UsbDevice>& device) {
 }
 
 const base::DictionaryValue* FindForDevice(
-    const ScopedVector<base::DictionaryValue>& device_list,
+    const std::vector<scoped_ptr<base::DictionaryValue>>& device_list,
     const scoped_refptr<const UsbDevice>& device) {
   const std::string utf8_serial_number =
       base::UTF16ToUTF8(device->serial_number());
 
-  for (const base::DictionaryValue* device_dict : device_list) {
+  for (const scoped_ptr<base::DictionaryValue>& device_dict : device_list) {
     int vendor_id;
     int product_id;
     std::string serial_number;
@@ -39,7 +41,7 @@ const base::DictionaryValue* FindForDevice(
         device->product_id() == product_id &&
         device_dict->GetString(kSerialNumberKey, &serial_number) &&
         utf8_serial_number == serial_number) {
-      return device_dict;
+      return device_dict.get();
     }
   }
   return nullptr;
@@ -92,7 +94,7 @@ void UsbChooserContext::RevokeDevicePermission(const GURL& requesting_origin,
   if (!device)
     return;
 
-  ScopedVector<base::DictionaryValue> device_list =
+  std::vector<scoped_ptr<base::DictionaryValue>> device_list =
       GetGrantedObjects(requesting_origin, embedding_origin);
   const base::DictionaryValue* entry = FindForDevice(device_list, device);
   if (entry)
@@ -110,7 +112,7 @@ bool UsbChooserContext::HasDevicePermission(const GURL& requesting_origin,
   if (!device)
     return false;
 
-  ScopedVector<base::DictionaryValue> device_list =
+  std::vector<scoped_ptr<base::DictionaryValue>> device_list =
       GetGrantedObjects(requesting_origin, embedding_origin);
   return FindForDevice(device_list, device) != nullptr;
 }

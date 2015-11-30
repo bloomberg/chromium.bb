@@ -4,13 +4,8 @@
 
 #include "chrome/browser/permissions/chooser_context_base.h"
 
-#include <string>
-
-#include "base/values.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
-
-using ObjectList = ScopedVector<base::DictionaryValue>;
 
 const char kObjectListKey[] = "chosen-objects";
 
@@ -23,22 +18,37 @@ ChooserContextBase::ChooserContextBase(
   DCHECK(host_content_settings_map_);
 }
 
-ChooserContextBase::~ChooserContextBase() {}
+ChooserContextBase::~ChooserContextBase() = default;
 
-ObjectList ChooserContextBase::GetGrantedObjects(const GURL& requesting_origin,
-                                                 const GURL& embedding_origin) {
+ChooserContextBase::Object::Object(GURL requesting_origin,
+                                   GURL embedding_origin,
+                                   base::DictionaryValue* object,
+                                   const std::string& source,
+                                   bool incognito)
+    : requesting_origin(requesting_origin),
+      embedding_origin(embedding_origin),
+      source(source),
+      incognito(incognito) {
+  this->object.Swap(object);
+}
+
+ChooserContextBase::Object::~Object() = default;
+
+std::vector<scoped_ptr<base::DictionaryValue>>
+ChooserContextBase::GetGrantedObjects(const GURL& requesting_origin,
+                                      const GURL& embedding_origin) {
+  std::vector<scoped_ptr<base::DictionaryValue>> results;
   scoped_ptr<base::DictionaryValue> setting =
       GetWebsiteSetting(requesting_origin, embedding_origin);
   scoped_ptr<base::Value> objects;
   if (!setting->Remove(kObjectListKey, &objects))
-    return ObjectList();
+    return results;
 
   scoped_ptr<base::ListValue> object_list =
       base::ListValue::From(objects.Pass());
   if (!object_list)
-    return ObjectList();
+    return results;
 
-  ObjectList results;
   for (base::ListValue::iterator it = object_list->begin();
        it != object_list->end(); ++it) {
     // Steal ownership of |object| from |object_list|.
@@ -50,14 +60,50 @@ ObjectList ChooserContextBase::GetGrantedObjects(const GURL& requesting_origin,
     if (object_dict && IsValidObject(*object_dict))
       results.push_back(object_dict.Pass());
   }
-  return results.Pass();
+  return results;
+}
+
+std::vector<scoped_ptr<ChooserContextBase::Object>>
+ChooserContextBase::GetAllGrantedObjects() {
+  ContentSettingsForOneType content_settings;
+  host_content_settings_map_->GetSettingsForOneType(
+      data_content_settings_type_, std::string(), &content_settings);
+
+  std::vector<scoped_ptr<Object>> results;
+  for (const ContentSettingPatternSource& content_setting : content_settings) {
+    GURL requesting_origin(content_setting.primary_pattern.ToString());
+    GURL embedding_origin(content_setting.secondary_pattern.ToString());
+    if (!requesting_origin.is_valid() || !embedding_origin.is_valid())
+      continue;
+
+    scoped_ptr<base::DictionaryValue> setting =
+        GetWebsiteSetting(requesting_origin, embedding_origin);
+    base::ListValue* object_list;
+    if (!setting->GetList(kObjectListKey, &object_list))
+      continue;
+
+    for (base::Value* object : *object_list) {
+      base::DictionaryValue* object_dict;
+      if (!object->GetAsDictionary(&object_dict) ||
+          !IsValidObject(*object_dict)) {
+        continue;
+      }
+
+      results.push_back(make_scoped_ptr(
+          new Object(requesting_origin, embedding_origin, object_dict,
+                     content_setting.source, content_setting.incognito)));
+    }
+  }
+
+  return results;
 }
 
 void ChooserContextBase::GrantObjectPermission(
     const GURL& requesting_origin,
     const GURL& embedding_origin,
     scoped_ptr<base::DictionaryValue> object) {
-  DCHECK(object && IsValidObject(*object));
+  DCHECK(object);
+  DCHECK(IsValidObject(*object));
   scoped_ptr<base::DictionaryValue> setting =
       GetWebsiteSetting(requesting_origin, embedding_origin);
   base::ListValue* object_list;
