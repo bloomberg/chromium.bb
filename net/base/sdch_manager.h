@@ -216,10 +216,6 @@ class NET_EXPORT SdchManager {
   // Support SDCH compression, by advertising in headers.
   static bool g_sdch_enabled_;
 
-  // A simple implementation of a RFC 3548 "URL safe" base64 encoder.
-  static void UrlSafeBase64Encode(const std::string& input,
-                                  std::string* output);
-
   DictionaryMap dictionaries_;
 
   // List domains where decode failures have required disabling sdch.

@@ -4,7 +4,7 @@
 
 #include "net/base/sdch_manager.h"
 
-#include "base/base64.h"
+#include "base/base64url.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
@@ -277,10 +277,14 @@ void SdchManager::GenerateHash(const std::string& dictionary_text,
   char binary_hash[32];
   crypto::SHA256HashString(dictionary_text, binary_hash, sizeof(binary_hash));
 
-  std::string first_48_bits(&binary_hash[0], 6);
-  std::string second_48_bits(&binary_hash[6], 6);
-  UrlSafeBase64Encode(first_48_bits, client_hash);
-  UrlSafeBase64Encode(second_48_bits, server_hash);
+  base::StringPiece first_48_bits(&binary_hash[0], 6);
+  base::StringPiece second_48_bits(&binary_hash[6], 6);
+
+  base::Base64UrlEncode(
+      first_48_bits, base::Base64UrlEncodePolicy::INCLUDE_PADDING, client_hash);
+  base::Base64UrlEncode(second_48_bits,
+                        base::Base64UrlEncodePolicy::INCLUDE_PADDING,
+                        server_hash);
 
   DCHECK_EQ(server_hash->length(), 8u);
   DCHECK_EQ(client_hash->length(), 8u);
@@ -428,16 +432,6 @@ SdchProblemCode SdchManager::RemoveSdchDictionary(
 scoped_ptr<SdchManager::DictionarySet>
 SdchManager::CreateEmptyDictionarySetForTesting() {
   return scoped_ptr<DictionarySet>(new DictionarySet).Pass();
-}
-
-// static
-void SdchManager::UrlSafeBase64Encode(const std::string& input,
-                                      std::string* output) {
-  // Since this is only done during a dictionary load, and hashes are only 8
-  // characters, we just do the simple fixup, rather than rewriting the encoder.
-  base::Base64Encode(input, output);
-  std::replace(output->begin(), output->end(), '+', '-');
-  std::replace(output->begin(), output->end(), '/', '_');
 }
 
 scoped_ptr<base::Value> SdchManager::SdchInfoToValue() const {
