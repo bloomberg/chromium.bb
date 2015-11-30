@@ -19,8 +19,6 @@ class AppBannerPromptResult final : public GarbageCollectedFinalized<AppBannerPr
     DEFINE_WRAPPERTYPEINFO();
     WTF_MAKE_NONCOPYABLE(AppBannerPromptResult);
 public:
-    static AppBannerPromptResult* take(PassOwnPtr<WebAppBannerPromptResult> webInstance);
-
     static AppBannerPromptResult* create(const AtomicString& platform, WebAppBannerPromptResult::Outcome outcome)
     {
         return new AppBannerPromptResult(platform, outcome);

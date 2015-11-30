@@ -12,9 +12,9 @@ AppBannerCallbacks::AppBannerCallbacks(UserChoiceProperty* userChoice)
 {
 }
 
-void AppBannerCallbacks::onSuccess(WebAppBannerPromptResult* result)
+void AppBannerCallbacks::onSuccess(const WebAppBannerPromptResult& result)
 {
-    m_userChoice->resolve(AppBannerPromptResult::take(adoptPtr(result)));
+    m_userChoice->resolve(AppBannerPromptResult::create(result.platform, result.outcome));
 }
 
 } // namespace blink

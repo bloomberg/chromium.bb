@@ -53,11 +53,8 @@ void AppBannerClient::ResolveEvent(
   if (!callbacks)
     return;
 
-  scoped_ptr<blink::WebAppBannerPromptResult> result(
-      new blink::WebAppBannerPromptResult(
-        blink::WebString::fromUTF8(platform),
-        outcome));
-  callbacks->onSuccess(result.release());
+  callbacks->onSuccess(blink::WebAppBannerPromptResult(
+      blink::WebString::fromUTF8(platform), outcome));
   banner_callbacks_.Remove(request_id);
 }
 

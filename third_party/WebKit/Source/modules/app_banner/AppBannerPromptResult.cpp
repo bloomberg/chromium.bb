@@ -9,12 +9,6 @@
 
 namespace blink {
 
-// static
-AppBannerPromptResult* AppBannerPromptResult::take(PassOwnPtr<WebAppBannerPromptResult> webInstance)
-{
-    return webInstance ? AppBannerPromptResult::create(webInstance->platform, webInstance->outcome) : nullptr;
-}
-
 AppBannerPromptResult::~AppBannerPromptResult()
 {
 }

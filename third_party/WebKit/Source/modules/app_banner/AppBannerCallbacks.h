@@ -19,7 +19,7 @@ public:
     ~AppBannerCallbacks() override = default;
 
     // WebAppBannerCallbacks overrides.
-    void onSuccess(WebAppBannerPromptResult*) override;
+    void onSuccess(const WebAppBannerPromptResult&) override;
 
 private:
     Persistent<UserChoiceProperty> m_userChoice;
