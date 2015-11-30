@@ -295,11 +295,8 @@
             'mips_arch_variant%': 'r1',
           }],
 
-          # The system root for linux compiles.
-          # Not used when chromecast=1 since ozone_platform_gbm doesn't
-          # currently build against the linux sysroot
-          # TODO(sbc): http://crbug.com/559708
-          ['OS=="linux" and chromeos==0 and chromecast==0 and use_sysroot==1', {
+          # The system root for linux builds.
+          ['OS=="linux" and chromeos==0 and use_sysroot==1', {
             # sysroot needs to be an absolute path otherwise it generates
             # incorrect results when passed to pkg-config
             'conditions': [
@@ -663,6 +660,10 @@
       # Automatically select platforms under ozone. Turn this off to
       # build only explicitly selected platforms.
       'ozone_auto_platforms%': 1,
+
+      # Disable the display for a chromecast build. Set to 1 perform an audio-
+      # only build.
+      'disable_display%': 0,
 
       # If this is set clang is used as host compiler, but not as target
       # compiler. Always do this by default.
@@ -1885,9 +1886,6 @@
           }],
         ],
       }],
-      ['chromecast==1 and OS!="android"', {
-        'ozone_platform_cast%': 1
-      }],
       ['OS=="linux"', {
         'clang%': 1,
       }],  # OS=="mac"
@@ -2383,12 +2381,28 @@
       ['use_ozone==1 and ozone_auto_platforms==1', {
         # Use headless as the default platform.
         'ozone_platform%': 'headless',
-
-        # Build all platforms whose deps are in install-build-deps.sh.
-        # Only these platforms will be compile tested by buildbots.
-        'ozone_platform_gbm%': 1,
         'ozone_platform_headless%': 1,
-        'ozone_platform_egltest%': 1,
+        'conditions': [
+          ['chromecast==1', {
+            'conditions': [
+              ['disable_display==0', {
+                # Enable the Cast ozone platform on all A/V Cast builds.
+                'ozone_platform_cast%': 1,
+                'conditions': [
+                  ['OS=="linux" and target_arch!="arm"', {
+                    'ozone_platform_egltest%': 1,
+                    'ozone_platform_ozonex%': 1,
+                  }],
+                ],
+              }],
+            ],
+          }, {
+            # Build all platforms whose deps are in install-build-deps.sh.
+            # Only these platforms will be compile tested by buildbots.
+            'ozone_platform_gbm%': 1,
+            'ozone_platform_egltest%': 1,
+          }],
+        ],
       }],
 
       ['desktop_linux==1 and use_aura==1 and use_x11==1', {
