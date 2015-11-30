@@ -750,9 +750,8 @@ void HTMLInputElement::parseAttribute(const QualifiedName& name, const AtomicStr
         m_maxResults = !value.isNull() ? std::min(value.toInt(), maxSavedResults) : -1;
         // FIXME: Detaching just for maxResults change is not ideal.  We should figure out the right
         // time to relayout for this change.
-        if (m_maxResults != oldResults && (m_maxResults <= 0 || oldResults <= 0))
+        if ((m_maxResults < 0) != (oldResults < 0))
             lazyReattachIfAttached();
-        setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::fromAttribute(resultsAttr));
         UseCounter::count(document(), UseCounter::ResultsAttribute);
     } else if (name == incrementalAttr) {
         UseCounter::count(document(), UseCounter::IncrementalAttribute);
