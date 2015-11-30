@@ -2,19 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_METRICS_METRICS_HASHES_H_
-#define COMPONENTS_METRICS_METRICS_HASHES_H_
+#ifndef BASE_METRICS_METRICS_HASHES_H_
+#define BASE_METRICS_METRICS_HASHES_H_
 
+#include <stdint.h>
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/base_export.h"
 
-namespace metrics {
+namespace base {
 
 // Computes a uint64 hash of a given string based on its MD5 hash. Suitable for
 // metric names.
-uint64 HashMetricName(const std::string& name);
+BASE_EXPORT uint64_t HashMetricName(const std::string& name);
 
 }  // namespace metrics
 
-#endif  // COMPONENTS_METRICS_METRICS_HASHES_H_
+#endif  // BASE_METRICS_METRICS_HASHES_H_

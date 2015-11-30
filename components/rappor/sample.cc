@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/logging.h"
-#include "components/metrics/metrics_hashes.h"
+#include "base/metrics/metrics_hashes.h"
 #include "components/rappor/bloom_filter.h"
 #include "components/rappor/byte_vector_utils.h"
 #include "components/rappor/proto/rappor_metric.pb.h"
@@ -67,7 +67,7 @@ void Sample::ExportMetrics(const std::string& secret,
         secret, parameters_, value_bytes);
 
     RapporReports::Report* report = reports->add_report();
-    report->set_name_hash(metrics::HashMetricName(
+    report->set_name_hash(base::HashMetricName(
         metric_name + "." + kv.first));
     report->set_bits(std::string(report_bytes.begin(), report_bytes.end()));
     DVLOG(2) << "Exporting sample " << metric_name << "." << kv.first;

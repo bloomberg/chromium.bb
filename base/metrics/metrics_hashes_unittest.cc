@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/metrics/metrics_hashes.h"
+#include "base/metrics/metrics_hashes.h"
 
 #include "base/format_macros.h"
+#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace metrics {
+namespace base {
 
 // Make sure our ID hashes are the same as what we see on the server side.
 TEST(MetricsUtilTest, HashMetricName) {
@@ -22,7 +23,7 @@ TEST(MetricsUtilTest, HashMetricName) {
   };
 
   for (size_t i = 0; i < arraysize(cases); ++i) {
-    uint64 hash = HashMetricName(cases[i].input);
+    uint64_t hash = HashMetricName(cases[i].input);
     std::string hash_hex = base::StringPrintf("0x%016" PRIx64, hash);
     EXPECT_EQ(cases[i].output, hash_hex);
   }

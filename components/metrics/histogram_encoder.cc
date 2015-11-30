@@ -10,7 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_samples.h"
-#include "components/metrics/metrics_hashes.h"
+#include "base/metrics/metrics_hashes.h"
 
 using base::SampleCountIterator;
 
@@ -25,7 +25,7 @@ void EncodeHistogramDelta(const std::string& histogram_name,
   // We will ignore the MAX_INT/infinite value in the last element of range[].
 
   HistogramEventProto* histogram_proto = uma_proto->add_histogram_event();
-  histogram_proto->set_name_hash(HashMetricName(histogram_name));
+  histogram_proto->set_name_hash(base::HashMetricName(histogram_name));
   histogram_proto->set_sum(snapshot.sum());
 
   for (scoped_ptr<SampleCountIterator> it = snapshot.Iterator(); !it->Done();

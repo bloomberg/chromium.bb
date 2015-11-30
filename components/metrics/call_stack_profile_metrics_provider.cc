@@ -16,12 +16,12 @@
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/metrics_hashes.h"
 #include "base/profiler/stack_sampling_profiler.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "components/metrics/metrics_hashes.h"
 #include "components/metrics/proto/chrome_user_metrics_extension.pb.h"
 
 using base::StackSamplingProfiler;
@@ -208,7 +208,7 @@ uint64 HashModuleFilename(const base::FilePath& filename) {
       basename.size() * sizeof(base::FilePath::CharType);
   std::string name_bytes(basename_length_in_bytes, '\0');
   memcpy(&name_bytes[0], &basename[0], basename_length_in_bytes);
-  return HashMetricName(name_bytes);
+  return base::HashMetricName(name_bytes);
 }
 
 // Transcode |sample| into |proto_sample|, using base addresses in |modules| to

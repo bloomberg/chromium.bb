@@ -9,12 +9,12 @@
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/metrics_hashes.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/threading/platform_thread.h"
 #include "components/compression/compression_utils.h"
 #include "components/metrics/client_info.h"
-#include "components/metrics/metrics_hashes.h"
 #include "components/metrics/metrics_log.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_state_manager.h"
@@ -122,7 +122,7 @@ class MetricsServiceTest : public testing::Test {
       const base::StatisticsRecorder::Histograms& histograms,
       uint64 name_hash) {
     for (const base::HistogramBase* histogram : histograms) {
-      if (name_hash == HashMetricName(histogram->histogram_name()))
+      if (name_hash == base::HashMetricName(histogram->histogram_name()))
         return histogram;
     }
     return nullptr;

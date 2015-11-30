@@ -403,6 +403,8 @@
           'metrics/histogram_samples.h',
           'metrics/histogram_snapshot_manager.cc',
           'metrics/histogram_snapshot_manager.h',
+          'metrics/metrics_hashes.cc',
+          'metrics/metrics_hashes.h',
           'metrics/sample_map.cc',
           'metrics/sample_map.h',
           'metrics/sample_vector.cc',

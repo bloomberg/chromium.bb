@@ -14,6 +14,7 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/memory/singleton.h"
+#include "base/metrics/metrics_hashes.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -36,7 +37,6 @@
 #include "components/flags_ui/feature_entry_macros.h"
 #include "components/flags_ui/flags_storage.h"
 #include "components/flags_ui/flags_ui_switches.h"
-#include "components/metrics/metrics_hashes.h"
 #include "components/nacl/common/nacl_switches.h"
 #include "components/offline_pages/offline_page_switches.h"
 #include "components/omnibox/browser/omnibox_switches.h"
@@ -2231,7 +2231,7 @@ void RecordUMAStatistics(flags_ui::FlagsStorage* flags_storage) {
 
 base::HistogramBase::Sample GetSwitchUMAId(const std::string& switch_name) {
   return static_cast<base::HistogramBase::Sample>(
-      metrics::HashMetricName(switch_name));
+      base::HashMetricName(switch_name));
 }
 
 void ReportCustomFlags(const std::string& uma_histogram_hame,

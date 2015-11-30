@@ -20,6 +20,8 @@ source_set("metrics") {
     "histogram_samples.h",
     "histogram_snapshot_manager.cc",
     "histogram_snapshot_manager.h",
+    "metrics_hashes.cc",
+    "metrics_hashes.h",
     "sample_map.cc",
     "sample_map.h",
     "sample_vector.cc",

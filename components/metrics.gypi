@@ -45,8 +45,6 @@
         'metrics/machine_id_provider.h',
         'metrics/machine_id_provider_stub.cc',
         'metrics/machine_id_provider_win.cc',
-        'metrics/metrics_hashes.cc',
-        'metrics/metrics_hashes.h',
         'metrics/metrics_log.cc',
         'metrics/metrics_log.h',
         'metrics/metrics_log_manager.cc',

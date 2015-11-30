@@ -7,8 +7,8 @@
 #include <stdint.h>
 
 #include "base/bind.h"
+#include "base/metrics/metrics_hashes.h"
 #include "base/tracked_objects.h"
-#include "components/metrics/metrics_hashes.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using tracked_objects::ProcessDataPhaseSnapshot;
@@ -20,7 +20,8 @@ TEST(ProfilerMetricsProviderTest, RecordData) {
   // WARNING: If you broke the below check, you've modified how
   // HashMetricName works. Please also modify all server-side code that
   // relies on the existing way of hashing.
-  EXPECT_EQ(UINT64_C(1518842999910132863), HashMetricName("birth_thread*"));
+  EXPECT_EQ(UINT64_C(1518842999910132863),
+            base::HashMetricName("birth_thread*"));
 
   ProfilerMetricsProvider profiler_metrics_provider;
 
@@ -151,70 +152,74 @@ TEST(ProfilerMetricsProviderTest, RecordData) {
 
   const ProfilerEventProto::TrackedObject* tracked_object =
       &uma_proto.profiler_event(0).tracked_object(0);
-  EXPECT_EQ(HashMetricName("file.h"), tracked_object->source_file_name_hash());
-  EXPECT_EQ(HashMetricName("function"),
+  EXPECT_EQ(base::HashMetricName("file.h"),
+            tracked_object->source_file_name_hash());
+  EXPECT_EQ(base::HashMetricName("function"),
             tracked_object->source_function_name_hash());
   EXPECT_EQ(1337, tracked_object->source_line_number());
-  EXPECT_EQ(HashMetricName("birth_thread"),
+  EXPECT_EQ(base::HashMetricName("birth_thread"),
             tracked_object->birth_thread_name_hash());
   EXPECT_EQ(37, tracked_object->exec_count());
   EXPECT_EQ(31, tracked_object->exec_time_total());
   EXPECT_EQ(13, tracked_object->exec_time_sampled());
   EXPECT_EQ(8, tracked_object->queue_time_total());
   EXPECT_EQ(3, tracked_object->queue_time_sampled());
-  EXPECT_EQ(HashMetricName("Still_Alive"),
+  EXPECT_EQ(base::HashMetricName("Still_Alive"),
             tracked_object->exec_thread_name_hash());
   EXPECT_EQ(177U, tracked_object->process_id());
   EXPECT_EQ(ProfilerEventProto::TrackedObject::BROWSER,
             tracked_object->process_type());
 
   tracked_object = &uma_proto.profiler_event(0).tracked_object(1);
-  EXPECT_EQ(HashMetricName("file2"), tracked_object->source_file_name_hash());
-  EXPECT_EQ(HashMetricName("function2"),
+  EXPECT_EQ(base::HashMetricName("file2"),
+            tracked_object->source_file_name_hash());
+  EXPECT_EQ(base::HashMetricName("function2"),
             tracked_object->source_function_name_hash());
   EXPECT_EQ(1773, tracked_object->source_line_number());
-  EXPECT_EQ(HashMetricName("birth_thread*"),
+  EXPECT_EQ(base::HashMetricName("birth_thread*"),
             tracked_object->birth_thread_name_hash());
   EXPECT_EQ(19, tracked_object->exec_count());
   EXPECT_EQ(23, tracked_object->exec_time_total());
   EXPECT_EQ(7, tracked_object->exec_time_sampled());
   EXPECT_EQ(0, tracked_object->queue_time_total());
   EXPECT_EQ(0, tracked_object->queue_time_sampled());
-  EXPECT_EQ(HashMetricName("death_thread"),
+  EXPECT_EQ(base::HashMetricName("death_thread"),
             tracked_object->exec_thread_name_hash());
   EXPECT_EQ(177U, tracked_object->process_id());
   EXPECT_EQ(ProfilerEventProto::TrackedObject::BROWSER,
             tracked_object->process_type());
 
   tracked_object = &uma_proto.profiler_event(0).tracked_object(2);
-  EXPECT_EQ(HashMetricName("file3"), tracked_object->source_file_name_hash());
-  EXPECT_EQ(HashMetricName("function3"),
+  EXPECT_EQ(base::HashMetricName("file3"),
+            tracked_object->source_file_name_hash());
+  EXPECT_EQ(base::HashMetricName("function3"),
             tracked_object->source_function_name_hash());
   EXPECT_EQ(7331, tracked_object->source_line_number());
-  EXPECT_EQ(HashMetricName("birth_thread*"),
+  EXPECT_EQ(base::HashMetricName("birth_thread*"),
             tracked_object->birth_thread_name_hash());
   EXPECT_EQ(137, tracked_object->exec_count());
   EXPECT_EQ(131, tracked_object->exec_time_total());
   EXPECT_EQ(113, tracked_object->exec_time_sampled());
   EXPECT_EQ(108, tracked_object->queue_time_total());
   EXPECT_EQ(103, tracked_object->queue_time_sampled());
-  EXPECT_EQ(HashMetricName("death_thread*"),
+  EXPECT_EQ(base::HashMetricName("death_thread*"),
             tracked_object->exec_thread_name_hash());
   EXPECT_EQ(1177U, tracked_object->process_id());
   EXPECT_EQ(ProfilerEventProto::TrackedObject::RENDERER,
             tracked_object->process_type());
 
   tracked_object = &uma_proto.profiler_event(0).tracked_object(3);
-  EXPECT_EQ(HashMetricName(""), tracked_object->source_file_name_hash());
-  EXPECT_EQ(HashMetricName(""), tracked_object->source_function_name_hash());
+  EXPECT_EQ(base::HashMetricName(""), tracked_object->source_file_name_hash());
+  EXPECT_EQ(base::HashMetricName(""),
+            tracked_object->source_function_name_hash());
   EXPECT_EQ(7332, tracked_object->source_line_number());
-  EXPECT_EQ(HashMetricName(""), tracked_object->birth_thread_name_hash());
+  EXPECT_EQ(base::HashMetricName(""), tracked_object->birth_thread_name_hash());
   EXPECT_EQ(138, tracked_object->exec_count());
   EXPECT_EQ(132, tracked_object->exec_time_total());
   EXPECT_EQ(114, tracked_object->exec_time_sampled());
   EXPECT_EQ(109, tracked_object->queue_time_total());
   EXPECT_EQ(104, tracked_object->queue_time_sampled());
-  EXPECT_EQ(HashMetricName(""), tracked_object->exec_thread_name_hash());
+  EXPECT_EQ(base::HashMetricName(""), tracked_object->exec_thread_name_hash());
   EXPECT_EQ(ProfilerEventProto::TrackedObject::RENDERER,
             tracked_object->process_type());
 
@@ -231,37 +236,38 @@ TEST(ProfilerMetricsProviderTest, RecordData) {
   ASSERT_EQ(2, uma_proto.profiler_event(1).tracked_object_size());
 
   tracked_object = &uma_proto.profiler_event(1).tracked_object(0);
-  EXPECT_EQ(HashMetricName("file10.h"),
+  EXPECT_EQ(base::HashMetricName("file10.h"),
             tracked_object->source_file_name_hash());
-  EXPECT_EQ(HashMetricName("function10"),
+  EXPECT_EQ(base::HashMetricName("function10"),
             tracked_object->source_function_name_hash());
   EXPECT_EQ(101337, tracked_object->source_line_number());
-  EXPECT_EQ(HashMetricName("birth_thread_ten"),
+  EXPECT_EQ(base::HashMetricName("birth_thread_ten"),
             tracked_object->birth_thread_name_hash());
   EXPECT_EQ(1037, tracked_object->exec_count());
   EXPECT_EQ(1031, tracked_object->exec_time_total());
   EXPECT_EQ(1013, tracked_object->exec_time_sampled());
   EXPECT_EQ(108, tracked_object->queue_time_total());
   EXPECT_EQ(103, tracked_object->queue_time_sampled());
-  EXPECT_EQ(HashMetricName("Already_Dead"),
+  EXPECT_EQ(base::HashMetricName("Already_Dead"),
             tracked_object->exec_thread_name_hash());
   EXPECT_EQ(177U, tracked_object->process_id());
   EXPECT_EQ(ProfilerEventProto::TrackedObject::BROWSER,
             tracked_object->process_type());
 
   tracked_object = &uma_proto.profiler_event(1).tracked_object(1);
-  EXPECT_EQ(HashMetricName("file210"), tracked_object->source_file_name_hash());
-  EXPECT_EQ(HashMetricName("function210"),
+  EXPECT_EQ(base::HashMetricName("file210"),
+            tracked_object->source_file_name_hash());
+  EXPECT_EQ(base::HashMetricName("function210"),
             tracked_object->source_function_name_hash());
   EXPECT_EQ(101773, tracked_object->source_line_number());
-  EXPECT_EQ(HashMetricName("birth_thread_ten*"),
+  EXPECT_EQ(base::HashMetricName("birth_thread_ten*"),
             tracked_object->birth_thread_name_hash());
   EXPECT_EQ(1019, tracked_object->exec_count());
   EXPECT_EQ(1023, tracked_object->exec_time_total());
   EXPECT_EQ(107, tracked_object->exec_time_sampled());
   EXPECT_EQ(100, tracked_object->queue_time_total());
   EXPECT_EQ(100, tracked_object->queue_time_sampled());
-  EXPECT_EQ(HashMetricName("death_thread_ten"),
+  EXPECT_EQ(base::HashMetricName("death_thread_ten"),
             tracked_object->exec_thread_name_hash());
   EXPECT_EQ(177U, tracked_object->process_id());
   EXPECT_EQ(ProfilerEventProto::TrackedObject::BROWSER,

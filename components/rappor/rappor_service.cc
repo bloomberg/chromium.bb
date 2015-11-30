@@ -5,9 +5,9 @@
 #include "components/rappor/rappor_service.h"
 
 #include "base/metrics/field_trial.h"
+#include "base/metrics/metrics_hashes.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
-#include "components/metrics/metrics_hashes.h"
 #include "components/rappor/log_uploader.h"
 #include "components/rappor/proto/rappor_metric.pb.h"
 #include "components/rappor/rappor_metric.h"
@@ -171,7 +171,7 @@ bool RapporService::ExportMetrics(RapporReports* reports) {
   for (const auto& kv : metrics_map_) {
     const RapporMetric* metric = kv.second;
     RapporReports::Report* report = reports->add_report();
-    report->set_name_hash(metrics::HashMetricName(kv.first));
+    report->set_name_hash(base::HashMetricName(kv.first));
     ByteVector bytes = metric->GetReport(secret_);
     report->set_bits(std::string(bytes.begin(), bytes.end()));
     DVLOG(2) << "Exporting metric " << kv.first;

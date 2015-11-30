@@ -15,6 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_samples.h"
+#include "base/metrics/metrics_hashes.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/sha1.h"
@@ -24,7 +25,6 @@
 #include "base/sys_info.h"
 #include "base/time/time.h"
 #include "components/metrics/histogram_encoder.h"
-#include "components/metrics/metrics_hashes.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_provider.h"
 #include "components/metrics/metrics_service_client.h"
@@ -134,7 +134,7 @@ void MetricsLog::RegisterPrefs(PrefRegistrySimple* registry) {
 
 // static
 uint64 MetricsLog::Hash(const std::string& value) {
-  uint64 hash = HashMetricName(value);
+  uint64 hash = base::HashMetricName(value);
 
   // The following log is VERY helpful when folks add some named histogram into
   // the code, but forgot to update the descriptive list of histograms.  When
