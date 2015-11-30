@@ -177,15 +177,11 @@ void SimpleFontData::platformInit()
         // value from the OS/2 table. However, the CSS ex unit
         // expects only parts above the baseline, hence measuring the glyph:
         // http://www.w3.org/TR/css3-values/#ex-unit
-        GlyphPage* glyphPageZero = GlyphPageTreeNode::getRootChild(this, 0)->page();
-        if (glyphPageZero) {
-            static const UChar32 xChar = 'x';
-            const Glyph xGlyph = glyphPageZero->glyphForCharacter(xChar);
-            if (xGlyph) {
-                FloatRect glyphBounds(boundsForGlyph(xGlyph));
-                // SkGlyph bounds, y down, based on rendering at (0,0).
-                xHeight = - glyphBounds.y();
-            }
+        const Glyph xGlyph = glyphForCharacter('x');
+        if (xGlyph) {
+            FloatRect glyphBounds(boundsForGlyph(xGlyph));
+            // SkGlyph bounds, y down, based on rendering at (0,0).
+            xHeight = - glyphBounds.y();
         }
 #endif
         m_fontMetrics.setXHeight(xHeight);
@@ -238,21 +234,14 @@ void SimpleFontData::platformInit()
     } else {
 #endif
         m_avgCharWidth = xHeight;
-
-        GlyphPage* glyphPageZero = GlyphPageTreeNode::getRootChild(this, 0)->page();
-
-        if (glyphPageZero) {
-            static const UChar32 xChar = 'x';
-            const Glyph xGlyph = glyphPageZero->glyphForCharacter(xChar);
-
-            if (xGlyph) {
-                // In widthForGlyph(), xGlyph will be compared with
-                // m_zeroWidthSpaceGlyph, which isn't initialized yet here.
-                // Initialize it with zero to make sure widthForGlyph() returns
-                // the right width.
-                m_zeroWidthSpaceGlyph = 0;
-                m_avgCharWidth = widthForGlyph(xGlyph);
-            }
+        const Glyph xGlyph = glyphForCharacter('x');
+        if (xGlyph) {
+            // In widthForGlyph(), xGlyph will be compared with
+            // m_zeroWidthSpaceGlyph, which isn't initialized yet here.
+            // Initialize it with zero to make sure widthForGlyph() returns
+            // the right width.
+            m_zeroWidthSpaceGlyph = 0;
+            m_avgCharWidth = widthForGlyph(xGlyph);
         }
 #if !OS(MACOSX)
     }
@@ -264,8 +253,8 @@ void SimpleFontData::platformInit()
 
 void SimpleFontData::platformGlyphInit()
 {
-    GlyphPage* glyphPageZero = GlyphPageTreeNode::getRootChild(this, 0)->page();
-    if (!glyphPageZero) {
+    SkTypeface* typeface = platformData().typeface();
+    if (!typeface->countGlyphs()) {
         m_spaceGlyph = 0;
         m_spaceWidth = 0;
         m_zeroGlyph = 0;
@@ -277,15 +266,15 @@ void SimpleFontData::platformGlyphInit()
 
     // Ask for the glyph for 0 to avoid paging in ZERO WIDTH SPACE. Control characters, including 0,
     // are mapped to the ZERO WIDTH SPACE glyph.
-    m_zeroWidthSpaceGlyph = glyphPageZero->glyphForCharacter(0);
+    m_zeroWidthSpaceGlyph = glyphForCharacter(0);
 
     // Nasty hack to determine if we should round or ceil space widths.
     // If the font is monospace or fake monospace we ceil to ensure that
     // every character and the space are the same width.  Otherwise we round.
-    m_spaceGlyph = glyphPageZero->glyphForCharacter(spaceCharacter);
+    m_spaceGlyph = glyphForCharacter(' ');
     float width = widthForGlyph(m_spaceGlyph);
     m_spaceWidth = width;
-    m_zeroGlyph = glyphPageZero->glyphForCharacter('0');
+    m_zeroGlyph = glyphForCharacter('0');
     m_fontMetrics.setZeroWidth(widthForGlyph(m_zeroGlyph));
 
     // Force the glyph for ZERO WIDTH SPACE to have zero width, unless it is shared with SPACE.
@@ -313,11 +302,13 @@ const SimpleFontData* SimpleFontData::fontDataForCharacter(UChar32) const
     return this;
 }
 
-Glyph SimpleFontData::glyphForCharacter(UChar32 character) const
+Glyph SimpleFontData::glyphForCharacter(UChar32 codepoint) const
 {
-    // As GlyphPage::size is power of 2 so shifting is valid
-    GlyphPageTreeNode* node = GlyphPageTreeNode::getNormalRootChild(this, character >> GlyphPage::sizeBits);
-    return node->page() ? node->page()->glyphAt(character & 0xFF) : 0;
+    uint16_t glyph;
+    SkTypeface* typeface = platformData().typeface();
+    RELEASE_ASSERT(typeface);
+    typeface->charsToGlyphs(&codepoint, SkTypeface::kUTF32_Encoding, &glyph, 1);
+    return glyph;
 }
 
 bool SimpleFontData::isSegmented() const
