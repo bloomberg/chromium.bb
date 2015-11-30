@@ -326,7 +326,7 @@ crbug.com/487281 [ Mac ] fast/forms/menulist-narrow-width.html [ Failure ]
 
 crbug.com/543110 [ Mac ] fast/text/international/text-shaping-arabic.html [ Failure ]
 
-crbug.com/548904 [ Linux Win7 ] fast/writing-mode/Kusa-Makura-background-canvas.html [ Failure Pass ]
+crbug.com/548904 [ Linux Win ] fast/writing-mode/Kusa-Makura-background-canvas.html [ Failure Pass ]
 
 crbug.com/561394 inspector/console/console-call-getter-on-proto.html [ NeedsManualRebaseline ]
 crbug.com/561394 inspector/console/console-dir-es6.html [ NeedsManualRebaseline ]
@@ -1189,7 +1189,6 @@ crbug.com/521730 [ Win10 ] fast/text/international/complex-character-based-fallb
 crbug.com/521730 [ Win10 ] fast/text/international/hindi-spacing.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/text/international/hindi-whitespace.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/text/justify-ideograph-leading-expansion.html [ Failure ]
-crbug.com/521730 [ Win10 ] fast/writing-mode/Kusa-Makura-background-canvas.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/writing-mode/border-vertical-lr.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/writing-mode/japanese-ruby-vertical-lr.html [ Failure ]
 crbug.com/521730 [ Win10 ] media/track/track-cue-rendering-vertical.html [ Failure ]
