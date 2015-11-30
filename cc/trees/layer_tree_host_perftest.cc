@@ -138,6 +138,7 @@ class LayerTreeHostPerfTestJsonReader : public LayerTreeHostPerfTest {
                                                   &fake_content_layer_client_);
     ASSERT_TRUE(root.get());
     layer_tree_host()->SetRootLayer(root);
+    fake_content_layer_client_.set_bounds(viewport);
   }
 
  private:
