@@ -284,8 +284,9 @@ void OmniboxPopupViewMac::PositionPopup(const CGFloat matrixHeight) {
   // |popup_| gets redrawn once the animation completes. See
   // http://crbug.com/538590 and http://crbug.com/551007 .
   if (base::mac::IsOSElCapitanOrLater()) {
+    NSWindow* popup = popup_.get();
     [[NSAnimationContext currentContext] setCompletionHandler:^{
-      [popup_ display];
+      [popup display];
     }];
   }
   [[popup_ animator] setFrame:popup_frame display:YES];
