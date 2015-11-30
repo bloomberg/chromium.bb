@@ -755,7 +755,6 @@ void HTMLInputElement::parseAttribute(const QualifiedName& name, const AtomicStr
         setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::fromAttribute(resultsAttr));
         UseCounter::count(document(), UseCounter::ResultsAttribute);
     } else if (name == incrementalAttr) {
-        setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::fromAttribute(incrementalAttr));
         UseCounter::count(document(), UseCounter::IncrementalAttribute);
     } else if (name == minAttr) {
         m_inputTypeView->minOrMaxAttributeChanged();
