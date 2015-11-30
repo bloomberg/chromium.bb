@@ -15,7 +15,7 @@ namespace net {
 TEST(SpdyFrameReaderTest, ReadUInt16) {
   // Frame data in network byte order.
   const uint16 kFrameData[] = {
-    htons(1), htons(1<<15),
+      base::HostToNet16(1), base::HostToNet16(1 << 15),
   };
 
   SpdyFrameReader frame_reader(reinterpret_cast<const char*>(kFrameData),
@@ -35,7 +35,7 @@ TEST(SpdyFrameReaderTest, ReadUInt16) {
 TEST(SpdyFrameReaderTest, ReadUInt32) {
   // Frame data in network byte order.
   const uint32 kFrameData[] = {
-    htonl(1), htonl(0x80000000),
+      base::HostToNet32(1), base::HostToNet32(0x80000000),
   };
 
   SpdyFrameReader frame_reader(reinterpret_cast<const char *>(kFrameData),

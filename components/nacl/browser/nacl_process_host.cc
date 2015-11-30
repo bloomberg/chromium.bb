@@ -60,6 +60,7 @@
 
 #if defined(OS_POSIX)
 
+#include <arpa/inet.h>
 #include <fcntl.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
@@ -67,6 +68,7 @@
 #include "ipc/ipc_channel_posix.h"
 #elif defined(OS_WIN)
 #include <windows.h>
+#include <winsock2.h>
 
 #include "base/threading/thread.h"
 #include "base/win/scoped_handle.h"

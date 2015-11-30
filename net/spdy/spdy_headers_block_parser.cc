@@ -168,9 +168,11 @@ void SpdyHeadersBlockParser::ParseLength(Reader* reader,
   }
   // Convert from network to host order and return the parsed out integer.
   if (length_field_size_ == sizeof(uint32_t)) {
-    *parsed_length = ntohl(*reinterpret_cast<const uint32_t *>(buffer));
+    *parsed_length =
+        base::NetToHost32(*reinterpret_cast<const uint32_t *>(buffer));
   } else {
-    *parsed_length = ntohs(*reinterpret_cast<const uint16_t *>(buffer));
+    *parsed_length =
+        base::NetToHost16(*reinterpret_cast<const uint16_t *>(buffer));
   }
 }
 

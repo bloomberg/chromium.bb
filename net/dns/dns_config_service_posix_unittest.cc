@@ -18,6 +18,13 @@
 #include "base/android/path_utils.h"
 #endif  // defined(OS_ANDROID)
 
+// Required for inet_pton()
+#if defined(OS_WIN)
+#include <winsock2.h>
+#else
+#include <arpa/inet.h>
+#endif
+
 namespace net {
 
 #if !defined(OS_ANDROID)

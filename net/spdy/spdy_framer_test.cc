@@ -5534,7 +5534,8 @@ TEST_P(SpdyFramerTest, EmptySynStream) {
 TEST_P(SpdyFramerTest, SettingsFlagsAndId) {
   const uint32 kId = 0x020304;
   const uint32 kFlags = 0x01;
-  const uint32 kWireFormat = htonl(IsSpdy2() ? 0x04030201 : 0x01020304);
+  const uint32 kWireFormat =
+      base::HostToNet32(IsSpdy2() ? 0x04030201 : 0x01020304);
 
   SettingsFlagsAndId id_and_flags =
       SettingsFlagsAndId::FromWireFormat(spdy_version_, kWireFormat);

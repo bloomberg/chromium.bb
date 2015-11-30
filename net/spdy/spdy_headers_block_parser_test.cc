@@ -81,10 +81,10 @@ class SpdyHeadersBlockParserTest :
   string EncodeLength(uint32_t len) {
     char buffer[4];
     if (length_field_size_ == sizeof(uint32_t)) {
-      uint32_t net_order_len = htonl(len);
+      uint32_t net_order_len = base::HostToNet32(len);
       memcpy(buffer, &net_order_len, length_field_size_);
     } else if (length_field_size_ == sizeof(uint16_t)) {
-      uint16_t net_order_len = htons(len);
+      uint16_t net_order_len = base::HostToNet16(static_cast<uint16_t>(len));
       memcpy(buffer, &net_order_len, length_field_size_);
     } else {
       CHECK(false) << "Invalid length field size";

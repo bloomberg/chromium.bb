@@ -121,7 +121,8 @@ bool HpackFuzzUtil::NextHeaderBlock(Input* input,
     return false;
   }
 
-  size_t length = ntohl(*reinterpret_cast<const uint32*>(input->ptr()));
+  size_t length =
+      base::NetToHost32(*reinterpret_cast<const uint32*>(input->ptr()));
   input->offset += sizeof(uint32);
 
   if (input->remaining() < length) {
@@ -134,7 +135,7 @@ bool HpackFuzzUtil::NextHeaderBlock(Input* input,
 
 // static
 string HpackFuzzUtil::HeaderBlockPrefix(size_t block_size) {
-  uint32 length = htonl(block_size);
+  uint32 length = base::HostToNet32(static_cast<uint32>(block_size));
   return string(reinterpret_cast<char*>(&length), sizeof(uint32));
 }
 

@@ -290,7 +290,7 @@ void EncodeString(const base::string16& value, std::string* into) {
   base::char16* dst =
       reinterpret_cast<base::char16*>(&*into->begin() + current);
   for (unsigned i = 0; i < length; ++i)
-    *dst++ = htons(*src++);
+    *dst++ = base::HostToNet16(*src++);
 }
 
 void EncodeBinary(const std::string& value, std::string* into) {
@@ -455,7 +455,7 @@ bool DecodeString(StringPiece* slice, base::string16* value) {
   const base::char16* encoded =
       reinterpret_cast<const base::char16*>(slice->begin());
   for (unsigned i = 0; i < length; ++i)
-    decoded.push_back(ntohs(*encoded++));
+    decoded.push_back(base::NetToHost16(*encoded++));
 
   *value = decoded;
   slice->remove_prefix(length * sizeof(base::char16));
