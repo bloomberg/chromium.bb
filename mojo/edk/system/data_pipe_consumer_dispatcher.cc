@@ -116,8 +116,11 @@ DataPipeConsumerDispatcher::DataPipeConsumerDispatcher(
 }
 
 DataPipeConsumerDispatcher::~DataPipeConsumerDispatcher() {
-  // |Close()|/|CloseImplNoLock()| should have taken care of the channel.
-  DCHECK(!channel_);
+  // See comment in ~MessagePipeDispatcher.
+  if (channel_ && internal::g_io_thread_task_runner->RunsTasksOnCurrentThread())
+    channel_->Shutdown();
+  else
+    DCHECK(!channel_);
 }
 
 void DataPipeConsumerDispatcher::CancelAllAwakablesNoLock() {

@@ -20,10 +20,6 @@
 namespace mojo {
 namespace edk {
 
-// TODO(jam): do more tests on using channel on same thread if it supports it (
-// i.e. with USE_CHROME_EDK and Windows). Also see ipc_channel_mojo.cc
-bool g_use_channel_on_io_thread_only = true;
-
 namespace {
 
 const size_t kInvalidMessagePipeHandleIndex = static_cast<size_t>(-1);
@@ -131,13 +127,8 @@ void MessagePipeDispatcher::Init(
         serialized_read_buffer, serialized_read_buffer_size,
         serialized_write_buffer, serialized_write_buffer_size,
         serialized_read_fds, serialized_write_fds);
-    if (g_use_channel_on_io_thread_only) {
-      internal::g_io_thread_task_runner->PostTask(
-          FROM_HERE, base::Bind(&MessagePipeDispatcher::InitOnIO, this));
-    } else {
-      InitOnIO();
-    }
-    // TODO(jam): optimize for when running on IO thread?
+    internal::g_io_thread_task_runner->PostTask(
+        FROM_HERE, base::Bind(&MessagePipeDispatcher::InitOnIO, this));
   }
 }
 
@@ -353,8 +344,14 @@ MessagePipeDispatcher::MessagePipeDispatcher()
 }
 
 MessagePipeDispatcher::~MessagePipeDispatcher() {
-  // |Close()|/|CloseImplNoLock()| should have taken care of the channel.
-  DCHECK(!channel_);
+  // |Close()|/|CloseImplNoLock()| should have taken care of the channel. The
+  // exception is if they posted a task to run CloseOnIO but the IO thread shut
+  // down and so when it was deleting pending tasks it caused the last reference
+  // to destruct this object. In that case, safe to destroy the channel.
+  if (channel_ && internal::g_io_thread_task_runner->RunsTasksOnCurrentThread())
+    channel_->Shutdown();
+  else
+    DCHECK(!channel_);
 #if defined(OS_POSIX)
   ClosePlatformHandles(&serialized_fds_);
 #endif
@@ -367,12 +364,8 @@ void MessagePipeDispatcher::CancelAllAwakablesNoLock() {
 
 void MessagePipeDispatcher::CloseImplNoLock() {
   lock().AssertAcquired();
-  if (g_use_channel_on_io_thread_only) {
-    internal::g_io_thread_task_runner->PostTask(
-        FROM_HERE, base::Bind(&MessagePipeDispatcher::CloseOnIO, this));
-  } else {
-    CloseOnIO();
-  }
+  internal::g_io_thread_task_runner->PostTask(
+      FROM_HERE, base::Bind(&MessagePipeDispatcher::CloseOnIO, this));
 }
 
 void MessagePipeDispatcher::SerializeInternal() {
