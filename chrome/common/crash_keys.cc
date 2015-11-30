@@ -87,7 +87,7 @@ size_t RegisterChromeCrashKeys() {
   // The following keys may be chunked by the underlying crash logging system,
   // but ultimately constitute a single key-value pair.
   base::debug::CrashKey fixed_keys[] = {
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(OS_WIN)
     { kMetricsClientId, kSmallSize },
 #else
     { kClientId, kSmallSize },

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CRASH_UPLOAD_LIST_MAC_H_
-#define CHROME_BROWSER_CRASH_UPLOAD_LIST_MAC_H_
+#ifndef CHROME_BROWSER_CRASH_UPLOAD_LIST_CRASHPAD_H_
+#define CHROME_BROWSER_CRASH_UPLOAD_LIST_CRASHPAD_H_
 
 #include "base/macros.h"
 #include "components/upload_list/crash_upload_list.h"
@@ -15,23 +15,23 @@ class SequencedWorkerPool;
 
 // A CrashUploadList that retrieves the list of uploaded reports from the
 // Crashpad database.
-class CrashUploadListMac : public CrashUploadList {
+class CrashUploadListCrashpad : public CrashUploadList {
  public:
   // The |upload_log_path| argument is unused. It is only accepted because the
   // base class constructor requires it, although it is entirely unused with
   // LoadUploadList() being overridden.
-  CrashUploadListMac(
+  CrashUploadListCrashpad(
       Delegate* delegate,
       const base::FilePath& upload_log_path,
       const scoped_refptr<base::SequencedWorkerPool>& worker_pool);
 
  protected:
-  ~CrashUploadListMac() override;
+  ~CrashUploadListCrashpad() override;
 
   // Called on a blocking pool thread.
   void LoadUploadList() override;
 
-  DISALLOW_COPY_AND_ASSIGN(CrashUploadListMac);
+  DISALLOW_COPY_AND_ASSIGN(CrashUploadListCrashpad);
 };
 
-#endif  // CHROME_BROWSER_CRASH_UPLOAD_LIST_MAC_H_
+#endif  // CHROME_BROWSER_CRASH_UPLOAD_LIST_CRASHPAD_H_

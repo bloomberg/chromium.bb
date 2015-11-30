@@ -20,6 +20,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event_impl.h"
 #include "build/build_config.h"
+#include "chrome/app/chrome_crash_reporter_client.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/common/channel_info.h"
@@ -40,6 +41,7 @@
 #include "chrome/utility/chrome_content_utility_client.h"
 #include "components/component_updater/component_updater_paths.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
+#include "components/crash/content/app/crash_reporter_client.h"
 #include "components/version_info/version_info.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_paths.h"
@@ -55,6 +57,7 @@
 #include "chrome/app/close_handle_hook_win.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/v8_breakpad_support_win.h"
+#include "components/crash/content/app/crashpad.h"
 #include "sandbox/win/src/sandbox.h"
 #include "ui/base/resource/resource_bundle_win.h"
 #endif
@@ -64,7 +67,7 @@
 #include "chrome/app/chrome_main_mac.h"
 #include "chrome/browser/mac/relauncher.h"
 #include "chrome/common/mac/cfbundle_blocker.h"
-#include "components/crash/content/app/crashpad_mac.h"
+#include "components/crash/content/app/crashpad.h"
 #include "components/crash/core/common/objc_zombie.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #endif
@@ -72,8 +75,6 @@
 #if defined(OS_POSIX)
 #include <locale.h>
 #include <signal.h>
-#include "chrome/app/chrome_crash_reporter_client.h"
-#include "components/crash/content/app/crash_reporter_client.h"
 #endif
 
 #if !defined(DISABLE_NACL) && defined(OS_LINUX)
@@ -145,7 +146,7 @@ base::LazyInstance<ChromeContentBrowserClient> g_chrome_content_browser_client =
     LAZY_INSTANCE_INITIALIZER;
 #endif
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_WIN)
 base::LazyInstance<ChromeCrashReporterClient>::Leaky g_chrome_crash_client =
     LAZY_INSTANCE_INITIALIZER;
 #endif
@@ -448,7 +449,6 @@ bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
 
-
 #if defined(OS_WIN)
   // Browser should not be sandboxed.
   const bool is_browser = !command_line.HasSwitch(switches::kProcessType);
@@ -665,7 +665,7 @@ void ChromeMainDelegate::PreSandboxStartup() {
   std::string process_type =
       command_line.GetSwitchValueASCII(switches::kProcessType);
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_WIN)
   crash_reporter::SetCrashReporterClient(g_chrome_crash_client.Pointer());
 #endif
 
@@ -678,6 +678,16 @@ void ChromeMainDelegate::PreSandboxStartup() {
 
   InitMacCrashReporter(command_line, process_type);
 #endif
+
+#if defined(OS_WIN)
+  // TODO(scottmg): It would be nice to do this earlier to catch early crashes,
+  // perhaps as early as WinMain in chrome.exe. This would require some code
+  // restructuring to have paths and command lines set up, and also to handle
+  // having some of the code live in chrome.exe, while having the database be
+  // accessed by browser code in chrome.dll (to get a list of uploaded crashes
+  // for chrome://crashes).
+  crash_reporter::InitializeCrashpad(process_type.empty(), process_type);
+#endif  // OS_WIN
 
 #if defined(OS_WIN)
   child_process_logging::Init();

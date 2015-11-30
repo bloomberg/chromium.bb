@@ -16,6 +16,14 @@ namespace crash_keys {
 // Crashpad owns the "guid" key. Chrome's metrics client ID is a separate ID
 // carried in a distinct "metrics_client_id" field.
 const char kMetricsClientId[] = "metrics_client_id";
+#elif defined(OS_WIN)
+// TODO(scottmg): While transitioning to Crashpad, there are some executables
+// that use Crashpad (which use kMetricsClientId), and some that use Breakpad
+// (kClientId), and they both use this file. For now we define both, but once
+// Breakpad is no longer used on Windows, we will no longer need kClientId, and
+// this can be combined with the OS_MACOSX block above.
+const char kMetricsClientId[] = "metrics_client_id";
+const char kClientId[] = "guid";
 #else
 const char kClientId[] = "guid";
 #endif
@@ -44,7 +52,7 @@ void SetMetricsClientIdFromGUID(const std::string& metrics_client_guid) {
   if (stripped_guid.empty())
     return;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(OS_WIN)
   // The crash client ID is maintained by Crashpad and is distinct from the
   // metrics client ID, which is carried in its own key.
   base::debug::SetCrashKeyValue(kMetricsClientId, stripped_guid);
@@ -56,7 +64,7 @@ void SetMetricsClientIdFromGUID(const std::string& metrics_client_guid) {
 }
 
 void ClearMetricsClientId() {
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(OS_WIN)
   // Crashpad always monitors for crashes, but doesn't upload them when
   // crash reporting is disabled. The preference to upload crash reports is
   // linked to the preference for metrics reporting. When metrics reporting is

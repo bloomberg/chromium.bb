@@ -13,7 +13,7 @@
 #include "chrome/common/chrome_paths.h"
 
 #if defined(OS_MACOSX)
-#include "components/crash/content/app/crashpad_mac.h"
+#include "components/crash/content/app/crashpad.h"
 #endif
 
 namespace {

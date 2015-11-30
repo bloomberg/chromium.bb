@@ -428,10 +428,6 @@
       'browser/component_updater/swiftshader_component_installer.h',
       'browser/crash_upload_list.cc',
       'browser/crash_upload_list.h',
-      'browser/crash_upload_list_mac.cc',
-      'browser/crash_upload_list_mac.h',
-      'browser/crash_upload_list_win.cc',
-      'browser/crash_upload_list_win.h',
       'browser/custom_handlers/protocol_handler_registry.cc',
       'browser/custom_handlers/protocol_handler_registry.h',
       'browser/custom_handlers/protocol_handler_registry_factory.cc',
@@ -1345,6 +1341,8 @@
     ],
     # Sources (generally "desktop OS importers") used only on Mac & Windows.
     'chrome_browser_win_mac_sources': [
+      'browser/crash_upload_list_crashpad.cc',
+      'browser/crash_upload_list_crashpad.h',
       'browser/media_galleries/fileapi/file_path_watcher_util.cc',
       'browser/media_galleries/fileapi/file_path_watcher_util.h',
       'browser/media_galleries/fileapi/iapps_data_provider.cc',

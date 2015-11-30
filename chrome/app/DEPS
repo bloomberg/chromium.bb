@@ -30,4 +30,5 @@ include_rules = [
   "+remoting/client/plugin",
   "+sandbox",
   "+syzygy/kasko/api",
+  "+third_party/crashpad/crashpad",
 ]

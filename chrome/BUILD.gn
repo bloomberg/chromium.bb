@@ -158,6 +158,7 @@ if (!is_android) {
         "//content/public/common:static_switches",
         "//crypto",
         "//sandbox",
+        "//third_party/crashpad/crashpad/handler:handler_lib",
         "//ui/gfx",
         "//win8/delegate_execute",
         "//win8/metro_driver",
@@ -404,6 +405,8 @@ if (is_mac || is_win) {
 
     shared_library("chrome_child") {
       sources = [
+        "app/chrome_crash_reporter_client.cc",
+        "app/chrome_crash_reporter_client.h",
         "app/chrome_main.cc",
         "app/chrome_main_delegate.cc",
         "app/chrome_main_delegate.h",
@@ -421,6 +424,8 @@ if (is_mac || is_win) {
         "//base/allocator",
         "//build/config/sanitizers:deps",
         "//chrome/browser/policy:path_parser",
+        "//components/browser_watcher:browser_watcher_client",
+        "//components/crash/content/app",
         "//content/public/app:child",
       ]
 

@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_CRASH_CONTENT_APP_CRASHPAD_MAC_H_
-#define COMPONENTS_CRASH_CONTENT_APP_CRASHPAD_MAC_H_
+#ifndef COMPONENTS_CRASH_CONTENT_APP_CRASHPAD_H_
+#define COMPONENTS_CRASH_CONTENT_APP_CRASHPAD_H_
 
 #include <time.h>
 
 #include <string>
 #include <vector>
+
+#include "base/files/file_path.h"
 
 namespace crash_reporter {
 
@@ -28,14 +30,14 @@ namespace crash_reporter {
 // release mode only). Note that when process_type is empty, initial_client must
 // be true.
 //
-// process_type may be non-empty with initial_client set to true. This indicates
-// that an exception handler has been inherited but should be discarded in favor
-// of a new Crashpad handler. This configuration should be used infrequently. It
-// is provided to allow an install-from-.dmg relauncher process to disassociate
-// from an old Crashpad handler so that after performing an installation from a
-// disk image, the relauncher process may unmount the disk image that contains
-// its inherited crashpad_handler. This is only supported when initial_client is
-// true and process_type is "relauncher".
+// On Mac, process_type may be non-empty with initial_client set to true. This
+// indicates that an exception handler has been inherited but should be
+// discarded in favor of a new Crashpad handler. This configuration should be
+// used infrequently. It is provided to allow an install-from-.dmg relauncher
+// process to disassociate from an old Crashpad handler so that after performing
+// an installation from a disk image, the relauncher process may unmount the
+// disk image that contains its inherited crashpad_handler. This is only
+// supported when initial_client is true and process_type is "relauncher".
 void InitializeCrashpad(bool initial_client, const std::string& process_type);
 
 // Enables or disables crash report upload. This is a property of the Crashpad
@@ -68,6 +70,15 @@ struct UploadedReport {
 // disabled.
 void GetUploadedReports(std::vector<UploadedReport>* uploaded_reports);
 
+namespace internal {
+
+// The platform-specific portion of InitializeCrashpad().
+// Returns the database path, if initializing in the browser process.
+base::FilePath PlatformCrashpadInitialization(bool initial_client,
+                                              bool browser_process);
+
+}  // namespace internal
+
 }  // namespace crash_reporter
 
-#endif  // COMPONENTS_CRASH_CONTENT_APP_CRASHPAD_MAC_H_
+#endif  // COMPONENTS_CRASH_CONTENT_APP_CRASHPAD_H_

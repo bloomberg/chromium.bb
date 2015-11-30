@@ -2063,13 +2063,13 @@
           'include_dirs': [
             '<(DEPTH)/third_party/wtl/include',
           ],
-          'conditions': [
-            ['use_aura==1', {
-              'dependencies': [
-                '../win8/win8.gyp:test_registrar_constants',
-                '../win8/win8.gyp:test_support_win8',
-              ],
-            }],
+          'dependencies': [
+            '../components/components.gyp:crash_component',
+            '../win8/win8.gyp:test_registrar_constants',
+            '../win8/win8.gyp:test_support_win8',
+          ],
+          'sources': [
+            'app/chrome_crash_reporter_client.cc',
           ],
         }],
         ['OS=="win" or OS=="mac"', {

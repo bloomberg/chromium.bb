@@ -612,7 +612,7 @@ source_set("browser") {
   } else {
     sources -= [ "password_manager/password_store_x.cc" ]
   }
-  if (is_posix && !is_mac && !is_ios) {
+  if ((is_posix && !is_mac && !is_ios) || is_win) {
     sources += [
       "//chrome/app/chrome_crash_reporter_client.cc",
       "//chrome/app/chrome_crash_reporter_client.h",

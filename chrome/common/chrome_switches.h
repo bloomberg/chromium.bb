@@ -353,6 +353,7 @@ extern const char kRelauncherProcessDMGDevice[];
 #endif  // defined(OS_MACOSX)
 
 #if defined(OS_WIN)
+extern const char kCrashpadHandler[];
 extern const char kEnableCloudPrintXps[];
 extern const char kEnableProfileShortcutManager[];
 extern const char kForceDesktop[];

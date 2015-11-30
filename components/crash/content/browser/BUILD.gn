@@ -30,7 +30,7 @@ source_set("browser") {
     ]
     deps += [
       "//breakpad:client",
-      "//components/crash/content/app:app_non_mac",
+      "//components/crash/content/app:app_non_mac_win",
     ]
   }
 
