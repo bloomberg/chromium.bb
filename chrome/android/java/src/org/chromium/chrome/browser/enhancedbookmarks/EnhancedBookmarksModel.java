@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -327,9 +328,17 @@ public class EnhancedBookmarksModel extends BookmarksBridge {
 
         List<OfflinePageItem> offlinePages = mOfflinePageBridge.getAllPages();
         Collections.sort(offlinePages, sOfflinePageComparator);
+
+        // We are going to filter out all of the offline pages without a matching bookmark.
+        // http://crbug.com/537806
+        HashSet<BookmarkId> existingBookmarks =
+                new HashSet<BookmarkId>(getAllBookmarkIDsOrderedByCreationDate());
+
         List<BookmarkId> bookmarkIds = new ArrayList<BookmarkId>();
         for (OfflinePageItem offlinePage : offlinePages) {
-            bookmarkIds.add(offlinePage.getBookmarkId());
+            if (existingBookmarks.contains(offlinePage.getBookmarkId())) {
+                bookmarkIds.add(offlinePage.getBookmarkId());
+            }
         }
         return bookmarkIds;
     }
