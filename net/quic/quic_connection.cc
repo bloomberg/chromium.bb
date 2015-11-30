@@ -426,8 +426,7 @@ bool QuicConnection::SelectMutualVersion(
   const QuicVersionVector& supported_versions = framer_.supported_versions();
   for (size_t i = 0; i < supported_versions.size(); ++i) {
     const QuicVersion& version = supported_versions[i];
-    if (std::find(available_versions.begin(), available_versions.end(),
-                  version) != available_versions.end()) {
+    if (ContainsValue(available_versions, version)) {
       framer_.set_version(version);
       return true;
     }
@@ -554,9 +553,7 @@ void QuicConnection::OnVersionNegotiationPacket(
     return;
   }
 
-  if (std::find(packet.versions.begin(),
-                packet.versions.end(), version()) !=
-      packet.versions.end()) {
+  if (ContainsValue(packet.versions, version())) {
     DLOG(WARNING) << ENDPOINT << "The server already supports our version. "
                   << "It should have accepted our connection.";
     // Just drop the connection.

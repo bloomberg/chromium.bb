@@ -6,6 +6,7 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -136,9 +137,7 @@ void EnsureSafeExtension(const std::string& mime_type,
     // If the existing extension is in the list of valid extensions for the
     // given type, use it. This avoids doing things like pointlessly renaming
     // "foo.jpg" to "foo.jpeg".
-    if (std::find(all_mime_extensions.begin(),
-                  all_mime_extensions.end(),
-                  extension) != all_mime_extensions.end()) {
+    if (ContainsValue(all_mime_extensions, extension)) {
       // leave |extension| alone
     } else if (!preferred_mime_extension.empty()) {
       extension = preferred_mime_extension;
