@@ -61,9 +61,10 @@ static_library("search_engines") {
     "//components/keyed_service/core",
     "//components/metrics/proto",
 
-    # This target is in an include cycle with components/omnibox/browser.
-    # The cycle is whitelisted in the omnibox/browser target, but should
-    # ideally be fixed.
+    # The search_engines target is in an include cycle with
+    # components/omnibox/browser. The cycle is whitelisted in the
+    # omnibox/browser target, but should ideally be fixed, then this
+    # dependency added:
     #"//components/omnibox/browser",
     "//components/policy:policy_component",
     "//components/pref_registry",

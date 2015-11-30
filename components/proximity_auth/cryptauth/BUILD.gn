@@ -35,9 +35,9 @@ source_set("cryptauth") {
     "sync_scheduler_impl.h",
   ]
 
-  # TODO bug 562685: This target is including a header from the test support
-  # target. To prevent "gn check" from complaining, whitelist it here, but
-  # this should be factored so that test headers aren't included.
+  # TODO(https://crbug.com/562683): This target is including a header from the
+  # test support target. To prevent "gn check" from complaining, whitelist it
+  # here, but this should be factored so that test headers aren't included.
   sources += [ "fake_secure_message_delegate.h" ]
 
   deps = [

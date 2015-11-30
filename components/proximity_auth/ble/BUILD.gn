@@ -26,8 +26,9 @@ source_set("ble") {
     "//base:prefs",
     "//components/proximity_auth/logging",
 
-    # TODO bug 562683: This component has a circular dependency with the root
-    # proximity auth target. It is whitelisted in that target for includes.
+    # TODO(https://crbug.com/562683): This component has a circular dependency
+    # with the root proximity auth target. It is whitelisted in that target for
+    # includes.
     #"//components/proximity_auth",
     "//device/bluetooth",
     "//net",

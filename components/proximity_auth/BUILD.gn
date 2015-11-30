@@ -79,8 +79,9 @@ source_set("proximity_auth") {
     "//net",
   ]
 
-  # TODO bug 562683: This whitelists a circular include dependency between this
-  # target and the following targets which should not exist.
+  # TODO(https://crbug.com/562683): This whitelists a circular include
+  # dependency between this target and the following targets which should not
+  # exist.
   allow_circular_includes_from = [
     "//components/proximity_auth/ble",
     "//components/proximity_auth/cryptauth",
