@@ -130,7 +130,7 @@ void SearchEngineTabHelper::OnPageHasOSDD(
 
   if (provider_type == TemplateURLFetcher::EXPLICIT_PROVIDER) {
     UMA_HISTOGRAM_ENUMERATION(
-        "Search.AddSearchProvider",
+        "Search.AddSearchProvider2",
         EditSearchEngineController::ADD_SEARCH_PROVIDER_CALLED,
         EditSearchEngineController::NUM_EDIT_SEARCH_ENGINE_ACTIONS);
   }

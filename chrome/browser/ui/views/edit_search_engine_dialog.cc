@@ -6,6 +6,7 @@
 
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/rtl.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
@@ -13,6 +14,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/search_engines/template_url.h"
+#include "content/public/browser/user_metrics.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -58,6 +60,10 @@ void EditSearchEngineDialog::Show(gfx::NativeWindow parent,
                                   TemplateURL* template_url,
                                   EditSearchEngineControllerDelegate* delegate,
                                   Profile* profile) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Search.AddSearchProvider2",
+      EditSearchEngineController::CONFIRMATION_DIALOG_SHOWN,
+      EditSearchEngineController::NUM_EDIT_SEARCH_ENGINE_ACTIONS);
   EditSearchEngineDialog* contents =
       new EditSearchEngineDialog(template_url, delegate, profile);
   // Window interprets an empty rectangle as needing to query the content for
@@ -90,11 +96,19 @@ bool EditSearchEngineDialog::IsDialogButtonEnabled(
 }
 
 bool EditSearchEngineDialog::Cancel() {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Search.AddSearchProvider2",
+      EditSearchEngineController::CONFIRMATION_DIALOG_CANCELLED,
+      EditSearchEngineController::NUM_EDIT_SEARCH_ENGINE_ACTIONS);
   controller_->CleanUpCancelledAdd();
   return true;
 }
 
 bool EditSearchEngineDialog::Accept() {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Search.AddSearchProvider2",
+      EditSearchEngineController::CONFIRMATION_DIALOG_CONFIRMED,
+      EditSearchEngineController::NUM_EDIT_SEARCH_ENGINE_ACTIONS);
   controller_->AcceptAddOrEdit(title_tf_->text(), keyword_tf_->text(),
                                base::UTF16ToUTF8(url_tf_->text()));
   return true;

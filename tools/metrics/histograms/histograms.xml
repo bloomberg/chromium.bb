@@ -42125,10 +42125,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Search.AddSearchProvider" enum="AddSearchProvider">
+  <obsolete>
+    Use Search.AddSearchProvider2 instead.
+  </obsolete>
+  <owner>estade@chromium.org</owner>
+  <summary>
+    Measures how much the user modifies their search engines, whether through
+    window.external.AddSearchProvider or chrome://settings.
+  </summary>
+</histogram>
+
+<histogram name="Search.AddSearchProvider2" enum="AddSearchProvider">
   <owner>estade@chromium.org</owner>
   <summary>
     Measures usage of window.external.AddSearchProvider and user interaction
-    with the resulting confirmation dialog (if any).
+    with the resulting confirmation dialog (if any). Only works on Views
+    platforms (Win, Linux, CrOS).
   </summary>
 </histogram>
 

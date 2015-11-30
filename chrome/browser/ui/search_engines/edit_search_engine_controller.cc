@@ -25,9 +25,6 @@ EditSearchEngineController::EditSearchEngineController(
       edit_keyword_delegate_(edit_keyword_delegate),
       profile_(profile) {
   DCHECK(profile_);
-  UMA_HISTOGRAM_ENUMERATION("Search.AddSearchProvider",
-                            CONFIRMATION_DIALOG_SHOWN,
-                            NUM_EDIT_SEARCH_ENGINE_ACTIONS);
 }
 
 bool EditSearchEngineController::IsTitleValid(
@@ -116,10 +113,6 @@ void EditSearchEngineController::AcceptAddOrEdit(
     edit_keyword_delegate_->OnEditedKeyword(template_url_, title_input,
                                             keyword_input, url_string);
   }
-
-  UMA_HISTOGRAM_ENUMERATION("Search.AddSearchProvider",
-                            CONFIRMATION_DIALOG_CONFIRMED,
-                            NUM_EDIT_SEARCH_ENGINE_ACTIONS);
 }
 
 void EditSearchEngineController::CleanUpCancelledAdd() {
@@ -129,10 +122,6 @@ void EditSearchEngineController::CleanUpCancelledAdd() {
     delete template_url_;
     template_url_ = NULL;
   }
-
-  UMA_HISTOGRAM_ENUMERATION("Search.AddSearchProvider",
-                            CONFIRMATION_DIALOG_CANCELLED,
-                            NUM_EDIT_SEARCH_ENGINE_ACTIONS);
 }
 
 std::string EditSearchEngineController::GetFixedUpURL(
