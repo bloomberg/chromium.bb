@@ -15,16 +15,16 @@
 namespace gcm {
 
 // Messages delivered through GCM may be encrypted according to the IETF Web
-// Push protocol, as described in draft-thomson-webpush-encryption-01:
+// Push protocol, as described in draft-ietf-webpush-encryption:
 //
-// https://tools.ietf.org/html/draft-thomson-webpush-encryption-01
+// https://tools.ietf.org/html/draft-ietf-webpush-encryption
 //
 // This class implements the ability to encrypt or decrypt such messages using
 // AEAD_AES_128_GCM with a 16-octet authentication tag. The encrypted payload
 // will be stored in a single record as described in
-// draft-thomson-http-encryption-01:
+// draft-thomson-http-encryption:
 //
-// https://tools.ietf.org/html/draft-thomson-http-encryption-01
+// https://tools.ietf.org/html/draft-thomson-http-encryption
 //
 // Note that while this class is not responsible for creating or storing the
 // actual keys, it uses a key derivation function for the actual message
@@ -36,7 +36,17 @@ class GCMMessageCryptographer {
   // unique content encryption key for a given message.
   static const size_t kSaltSize;
 
-  GCMMessageCryptographer();
+  // Label of the encryption group used to calculate the shared secret.
+  enum class Label {
+    P256
+  };
+
+  // Creates a new cryptographer with |label|, identifying the group used for
+  // the key agreement, and the public keys of both the recipient and sender.
+  GCMMessageCryptographer(Label label,
+                          const base::StringPiece& recipient_public_key,
+                          const base::StringPiece& sender_public_key);
+
   ~GCMMessageCryptographer();
 
   // Encrypts |plaintext| using the |key| and the |salt|, both of which must be
@@ -83,6 +93,12 @@ class GCMMessageCryptographer {
   // Derives the nonce from |key| and |salt|.
   std::string DeriveNonce(const base::StringPiece& key,
                           const base::StringPiece& salt) const;
+
+  // The info parameters to the HKDFs used for deriving the content encryption
+  // key and the nonce. These contain the label of the used curve, as well as
+  // the sender and recipient's public keys.
+  std::string content_encryption_key_info_;
+  std::string nonce_info_;
 };
 
 }  // namespace gcm

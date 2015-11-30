@@ -276,7 +276,10 @@ TEST_F(GCMEncryptionProviderTest, EncryptionRoundTrip) {
 
   // Encrypts the |kExampleMessage| using the generated shared key and the
   // random |salt|, storing the result in |record_size| and the message.
-  GCMMessageCryptographer cryptographer;
+  GCMMessageCryptographer cryptographer(
+      GCMMessageCryptographer::Label::P256, pair.public_key(),
+      server_pair.public_key());
+
   ASSERT_TRUE(cryptographer.Encrypt(kExampleMessage, shared_secret, salt,
                                     &record_size, &message.raw_data));
 

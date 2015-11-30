@@ -177,7 +177,8 @@ void GCMEncryptionProvider::DecryptMessageWithKey(
 
   std::string plaintext;
 
-  GCMMessageCryptographer cryptographer;
+  GCMMessageCryptographer cryptographer(
+      GCMMessageCryptographer::Label::P256, pair.public_key(), dh);
   if (!cryptographer.Decrypt(message.raw_data, shared_secret, salt, rs,
                              &plaintext)) {
     DLOG(ERROR) << "Unable to decrypt the incoming data.";
