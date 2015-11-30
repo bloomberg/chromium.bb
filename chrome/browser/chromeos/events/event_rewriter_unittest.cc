@@ -959,7 +959,8 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToCapsLock) {
 
   // Press Search.
   EXPECT_EQ(GetExpectedResultAsString(ui::ET_KEY_PRESSED, ui::VKEY_CAPITAL,
-                                      ui::DomCode::CAPS_LOCK, ui::EF_MOD3_DOWN,
+                                      ui::DomCode::CAPS_LOCK,
+                                      ui::EF_MOD3_DOWN | ui::EF_CAPS_LOCK_DOWN,
                                       ui::DomKey::CAPS_LOCK),
             GetRewrittenEventAsString(&rewriter, ui::ET_KEY_PRESSED,
                                       ui::VKEY_LWIN, ui::DomCode::OS_LEFT,

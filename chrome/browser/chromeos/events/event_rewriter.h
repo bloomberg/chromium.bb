@@ -179,13 +179,6 @@ class EventRewriter : public ui::EventRewriter {
   // at time of writing it is a singleton in ash::Shell.
   ash::StickyKeysController* sticky_keys_controller_;
 
-  // The ChromeOS Diamond key arrives as F15. Since F15 is not a modifier,
-  // we need to track its pressed state explicitly, and apply the selected
-  // modifier flag to key and mouse presses that arrive while F15 is down.
-  // While the Diamond key is down, this holds the corresponding modifier
-  // ui::EventFlags; otherwise it is EF_NONE.
-  int current_diamond_key_modifier_flags_;
-
   // Some keyboard layouts have 'latching' keys, which either apply
   // a modifier while held down (like normal modifiers), or, if no
   // non-modifier is pressed while the latching key is down, apply the
@@ -196,6 +189,8 @@ class EventRewriter : public ui::EventRewriter {
   // here, sticky keys, and the system layer (X11 or Ozone), and could
   // do with refactoring.
   // - |pressed_modifier_latches_| records the latching keys currently pressed.
+  //   It also records the active modifier flags for non-modifier keys that are
+  //   remapped to modifiers, e.g. Diamond/F15.
   // - |latched_modifier_latches_| records the latching keys just released,
   //   to be applied to the next non-modifier key.
   // - |used_modifier_latches_| records the latching keys applied to a non-
