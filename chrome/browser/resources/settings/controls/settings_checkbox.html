@@ -18,7 +18,9 @@
         <div id="mainLabel">{{label}}</div>
         <div id="subLabel">{{subLabel}}</div>
       </paper-checkbox>
-      <cr-policy-pref-indicator pref="[[pref]]"></cr-policy-pref-indicator>
+      <template is="dom-if" if="[[pref.policySource]]">
+        <cr-policy-pref-indicator pref="[[pref]]"></cr-policy-pref-indicator>
+      </template>
     </div>
   </template>
   <script src="settings_checkbox.js"></script>

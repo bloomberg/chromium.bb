@@ -8,13 +8,11 @@
 <dom-module id="cr-policy-pref-indicator">
   <link rel="import" type="css" href="cr_policy_indicator.css">
   <template>
-    <div class="layout horizontal">
-      <iron-icon id="indicator"
-          hidden$="[[!isIndicatorVisible(indicatorType)]]"
-          icon="[[getPolicyIndicatorIcon(indicatorType)]]"
-          title$="[[getPolicyIndicatorTooltip(indicatorType, pref, controllingUser)]]">
-      </iron-icon>
-    </div>
+    <iron-icon id="indicator"
+        hidden$="[[!isIndicatorVisible(indicatorType)]]"
+        icon="[[getPolicyIndicatorIcon(indicatorType)]]"
+        title$="[[getPolicyIndicatorTooltip(indicatorType, pref, controllingUser)]]">
+    </iron-icon>
   </template>
   <script src="cr_policy_pref_indicator.js"></script>
 </dom-module>

@@ -19,7 +19,9 @@
           readonly$="[[readonly]]" required="[[required]]" type="[[type]]"
           on-blur="onBlur_" disabled="[[isDisabled_(disabled, pref)]]">
       </paper-input>
-      <cr-policy-pref-indicator pref="[[pref]]"></cr-policy-pref-indicator>
+      <template is="dom-if" if="[[pref.policySource]]">
+        <cr-policy-pref-indicator pref="[[pref]]"></cr-policy-pref-indicator>
+      </template>
     </div>
   </template>
   <script src="settings_input.js"></script>
