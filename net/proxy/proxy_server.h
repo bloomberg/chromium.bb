@@ -12,6 +12,8 @@
 #endif
 
 #include <string>
+#include <tuple>
+
 #include "net/base/host_port_pair.h"
 #include "net/base/net_export.h"
 
@@ -149,9 +151,8 @@ class NET_EXPORT ProxyServer {
 
   // Comparator function so this can be placed in a std::map.
   bool operator<(const ProxyServer& other) const {
-    if (scheme_ != other.scheme_)
-      return scheme_ < other.scheme_;
-    return host_port_pair_ < other.host_port_pair_;
+    return std::tie(scheme_, host_port_pair_) <
+           std::tie(other.scheme_, other.host_port_pair_);
   }
 
  private:

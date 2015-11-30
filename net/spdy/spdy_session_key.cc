@@ -4,6 +4,8 @@
 
 #include "net/spdy/spdy_session_key.h"
 
+#include <tuple>
+
 #include "base/logging.h"
 
 namespace net {
@@ -33,11 +35,10 @@ SpdySessionKey::SpdySessionKey(const HostPortProxyPair& host_port_proxy_pair,
 SpdySessionKey::~SpdySessionKey() {}
 
 bool SpdySessionKey::operator<(const SpdySessionKey& other) const {
-  if (privacy_mode_ != other.privacy_mode_)
-    return privacy_mode_ < other.privacy_mode_;
-  if (!host_port_proxy_pair_.first.Equals(other.host_port_proxy_pair_.first))
-    return host_port_proxy_pair_.first < other.host_port_proxy_pair_.first;
-  return host_port_proxy_pair_.second < other.host_port_proxy_pair_.second;
+  return std::tie(privacy_mode_, host_port_proxy_pair_.first,
+                  host_port_proxy_pair_.second) <
+         std::tie(other.privacy_mode_, other.host_port_proxy_pair_.first,
+                  other.host_port_proxy_pair_.second);
 }
 
 bool SpdySessionKey::Equals(const SpdySessionKey& other) const {
@@ -47,4 +48,3 @@ bool SpdySessionKey::Equals(const SpdySessionKey& other) const {
 }
 
 }  // namespace net
-

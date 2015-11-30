@@ -7,6 +7,7 @@
 
 #include <map>
 #include <string>
+#include <tuple>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -125,11 +126,8 @@ struct NET_EXPORT AlternativeService {
   }
 
   bool operator<(const AlternativeService& other) const {
-    if (protocol != other.protocol)
-      return protocol < other.protocol;
-    if (host != other.host)
-      return host < other.host;
-    return port < other.port;
+    return std::tie(protocol, host, port) <
+           std::tie(other.protocol, other.host, other.port);
   }
 
   std::string ToString() const;

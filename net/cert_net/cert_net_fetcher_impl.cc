@@ -4,6 +4,8 @@
 
 #include "net/cert_net/cert_net_fetcher_impl.h"
 
+#include <tuple>
+
 #include "base/callback_helpers.h"
 #include "base/containers/linked_list.h"
 #include "base/logging.h"
@@ -133,13 +135,9 @@ CertNetFetcherImpl::RequestParams::RequestParams()
 
 bool CertNetFetcherImpl::RequestParams::operator<(
     const RequestParams& other) const {
-  if (url != other.url)
-    return url < other.url;
-  if (http_method != other.http_method)
-    return http_method < other.http_method;
-  if (max_response_bytes != other.max_response_bytes)
-    return max_response_bytes < other.max_response_bytes;
-  return timeout < other.timeout;
+  return std::tie(url, http_method, max_response_bytes, timeout) <
+         std::tie(other.url, other.http_method, other.max_response_bytes,
+                  other.timeout);
 }
 
 // CertNetFetcherImpl::Job tracks an outstanding URLRequest as well as all of

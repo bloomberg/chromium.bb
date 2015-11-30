@@ -7,6 +7,7 @@
 
 #include <functional>
 #include <string>
+#include <tuple>
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
@@ -46,14 +47,13 @@ class NET_EXPORT HostCache : NON_EXPORTED_BASE(public base::NonThreadSafe) {
           host_resolver_flags(host_resolver_flags) {}
 
     bool operator<(const Key& other) const {
+      // The order of comparisons of |Key| fields is arbitrary, thus
       // |address_family| and |host_resolver_flags| are compared before
       // |hostname| under assumption that integer comparisons are faster than
       // string comparisons.
-      if (address_family != other.address_family)
-        return address_family < other.address_family;
-      if (host_resolver_flags != other.host_resolver_flags)
-        return host_resolver_flags < other.host_resolver_flags;
-      return hostname < other.hostname;
+      return std::tie(address_family, host_resolver_flags, hostname) <
+             std::tie(other.address_family, other.host_resolver_flags,
+                      other.hostname);
     }
 
     std::string hostname;

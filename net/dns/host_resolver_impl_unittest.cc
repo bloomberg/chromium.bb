@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <string>
+#include <tuple>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -61,8 +62,8 @@ class MockHostResolverProc : public HostResolverProc {
     ResolveKey(const std::string& hostname, AddressFamily address_family)
         : hostname(hostname), address_family(address_family) {}
     bool operator<(const ResolveKey& other) const {
-      return address_family < other.address_family ||
-          (address_family == other.address_family && hostname < other.hostname);
+      return std::tie(address_family, hostname) <
+             std::tie(other.address_family, other.hostname);
     }
     std::string hostname;
     AddressFamily address_family;

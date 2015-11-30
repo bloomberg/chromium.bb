@@ -5,6 +5,7 @@
 #include "net/dns/mdns_cache.h"
 
 #include <algorithm>
+#include <tuple>
 #include <utility>
 
 #include "base/stl_util.h"
@@ -44,16 +45,9 @@ MDnsCache::Key& MDnsCache::Key::operator=(
 MDnsCache::Key::~Key() {
 }
 
-bool MDnsCache::Key::operator<(const MDnsCache::Key& key) const {
-  if (name_ != key.name_)
-    return name_ < key.name_;
-
-  if (type_ != key.type_)
-    return type_ < key.type_;
-
-  if (optional_ != key.optional_)
-    return optional_ < key.optional_;
-  return false;  // keys are equal
+bool MDnsCache::Key::operator<(const MDnsCache::Key& other) const {
+  return std::tie(name_, type_, optional_) <
+         std::tie(other.name_, other.type_, other.optional_);
 }
 
 bool MDnsCache::Key::operator==(const MDnsCache::Key& key) const {

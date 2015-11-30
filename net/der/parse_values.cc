@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <tuple>
+
 #include "base/logging.h"
 #include "base/numerics/safe_math.h"
 #include "net/der/parse_values.h"
@@ -277,17 +279,9 @@ bool ParseBitString(const Input& in, BitString* out) {
 }
 
 bool operator<(const GeneralizedTime& lhs, const GeneralizedTime& rhs) {
-  if (lhs.year != rhs.year)
-    return lhs.year < rhs.year;
-  if (lhs.month != rhs.month)
-    return lhs.month < rhs.month;
-  if (lhs.day != rhs.day)
-    return lhs.day < rhs.day;
-  if (lhs.hours != rhs.hours)
-    return lhs.hours < rhs.hours;
-  if (lhs.minutes != rhs.minutes)
-    return lhs.minutes < rhs.minutes;
-  return lhs.seconds < rhs.seconds;
+  return std::tie(lhs.year, lhs.month, lhs.day, lhs.hours, lhs.minutes,
+                  lhs.seconds) < std::tie(rhs.year, rhs.month, rhs.day,
+                                          rhs.hours, rhs.minutes, rhs.seconds);
 }
 
 // A UTC Time in DER encoding should be YYMMDDHHMMSSZ, but some CAs encode
