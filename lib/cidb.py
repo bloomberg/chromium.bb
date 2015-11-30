@@ -957,6 +957,28 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
          'waterfall', 'build_number', 'builder_name', 'platform_version',
          'full_version', 'important'])
 
+  @minimum_schema(30)
+  def GetBuildStages(self, build_id):
+    """Gets all the stages of a given build.
+
+    Args:
+      build_id: build id of the build to fetch the stages for.
+
+    Returns:
+      A list containing, for each stage of the build found, a dictionary with
+      keys (id, build_id, name, board, status, last_updated, start_time,
+      finish_time, final).
+    """
+    bs_table_columns = ['id', 'build_id', 'name', 'board', 'status',
+                        'last_updated', 'start_time', 'finish_time', 'final']
+    bs_prepended_columns = ['bs.' + x for x in bs_table_columns]
+    results = self._Execute(
+        'SELECT %s FROM buildStageTable bs '
+        'WHERE bs.build_id = %d' %
+        (', '.join(bs_prepended_columns), build_id)).fetchall()
+    columns = bs_table_columns
+    return [dict(zip(columns, values)) for values in results]
+
   @minimum_schema(43)
   def GetSlaveStatuses(self, master_build_id):
     """Gets the statuses of slave builders to given build.
