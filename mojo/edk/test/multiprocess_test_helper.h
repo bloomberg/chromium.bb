@@ -21,6 +21,8 @@ class PlatformChannelPair;
 
 namespace test {
 
+extern const char kBrokerHandleSwitch[];
+
 class MultiprocessTestHelper {
  public:
   MultiprocessTestHelper();
@@ -60,7 +62,11 @@ class MultiprocessTestHelper {
   static ScopedPlatformHandle client_platform_handle;
 
  private:
+  // Used differently depending on the test.
   scoped_ptr<PlatformChannelPair> platform_channel_pair_;
+
+  // Used by the broker.
+  scoped_ptr<PlatformChannelPair> broker_platform_channel_pair_;
 
   // Valid after |StartChild()| and before |WaitForChildShutdown()|.
   base::Process test_child_;

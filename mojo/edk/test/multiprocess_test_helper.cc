@@ -9,6 +9,7 @@
 #include "base/process/kill.h"
 #include "base/process/process_handle.h"
 #include "build/build_config.h"
+#include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 
 #if defined(OS_WIN)
@@ -19,9 +20,12 @@ namespace mojo {
 namespace edk {
 namespace test {
 
+const char kBrokerHandleSwitch[] = "broker-handle";
+
 MultiprocessTestHelper::MultiprocessTestHelper() {
   platform_channel_pair_.reset(new PlatformChannelPair());
   server_platform_handle = platform_channel_pair_->PassServerHandle();
+  broker_platform_channel_pair_.reset(new PlatformChannelPair());
 }
 
 MultiprocessTestHelper::~MultiprocessTestHelper() {
@@ -50,6 +54,10 @@ void MultiprocessTestHelper::StartChildWithExtraSwitch(
   platform_channel_pair_->PrepareToPassClientHandleToChildProcess(
       &command_line, &handle_passing_info);
 
+  std::string broker_handle = broker_platform_channel_pair_->
+      PrepareToPassClientHandleToChildProcessAsString(&handle_passing_info);
+  command_line.AppendSwitchASCII(kBrokerHandleSwitch, broker_handle);
+
   if (!switch_string.empty()) {
     CHECK(!command_line.HasSwitch(switch_string));
     if (!switch_value.empty())
@@ -75,6 +83,10 @@ void MultiprocessTestHelper::StartChildWithExtraSwitch(
       base::SpawnMultiProcessTestChild(test_child_main, command_line, options);
   platform_channel_pair_->ChildProcessLaunched();
 
+  broker_platform_channel_pair_->ChildProcessLaunched();
+  ChildProcessLaunched(test_child_.Handle(),
+                       broker_platform_channel_pair_->PassServerHandle());
+
   CHECK(test_child_.IsValid());
 }
 
@@ -98,6 +110,14 @@ void MultiprocessTestHelper::ChildSetup() {
   client_platform_handle =
       PlatformChannelPair::PassClientHandleFromParentProcess(
           *base::CommandLine::ForCurrentProcess());
+
+  std::string broker_handle_str =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          kBrokerHandleSwitch);
+  ScopedPlatformHandle broker_handle =
+      PlatformChannelPair::PassClientHandleFromParentProcessFromString(
+          broker_handle_str);
+  SetParentPipeHandle(broker_handle.Pass());
 }
 
 // static

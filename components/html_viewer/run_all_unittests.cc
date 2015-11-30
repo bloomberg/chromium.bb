@@ -30,48 +30,30 @@ std::vector<gfx::Display> GetTestDisplays() {
   return displays;
 }
 
-class NoAtExitBaseTestSuite : public base::TestSuite {
- public:
-  NoAtExitBaseTestSuite(int argc, char** argv)
-      : base::TestSuite(argc, argv, false), ui_init_(GetTestDisplays()) {
-#if defined(OS_ANDROID)
-    base::MemoryMappedFile::Region resource_file_region;
-    int fd = base::android::OpenApkAsset("assets/html_viewer.pak",
-                                         &resource_file_region);
-    CHECK_NE(fd, -1);
-    ui::ResourceBundle::InitSharedInstanceWithPakPath(base::FilePath());
-    ui::ResourceBundle::GetSharedInstance().AddDataPackFromFileRegion(
-        base::File(fd), resource_file_region, ui::SCALE_FACTOR_100P);
-#else
-    base::FilePath pak_path;
-    CHECK(PathService::Get(base::DIR_MODULE, &pak_path));
-    pak_path = pak_path.AppendASCII("html_viewer.pak");
-    ui::ResourceBundle::InitSharedInstanceWithPakPath(pak_path);
-#endif
-  }
-
- private:
-  ui::mojo::UIInit ui_init_;
-
-  DISALLOW_COPY_AND_ASSIGN(NoAtExitBaseTestSuite);
-};
-
-int RunTestSuite(int argc, char** argv) {
-  return NoAtExitBaseTestSuite(argc, argv).Run();
-}
-
 }  // namespace
 
 int main(int argc, char** argv) {
+  base::TestSuite test_suite(argc, argv);
 #if defined(OS_ANDROID)
   JNIEnv* env = base::android::AttachCurrentThread();
   base::RegisterContentUriTestUtils(env);
+  base::MemoryMappedFile::Region resource_file_region;
+  int fd = base::android::OpenApkAsset("assets/html_viewer.pak",
+                                        &resource_file_region);
+  CHECK_NE(fd, -1);
+  ui::ResourceBundle::InitSharedInstanceWithPakPath(base::FilePath());
+  ui::ResourceBundle::GetSharedInstance().AddDataPackFromFileRegion(
+      base::File(fd), resource_file_region, ui::SCALE_FACTOR_100P);
 #else
-  base::AtExitManager at_exit;
+  base::FilePath pak_path;
+  CHECK(PathService::Get(base::DIR_MODULE, &pak_path));
+  pak_path = pak_path.AppendASCII("html_viewer.pak");
+  ui::ResourceBundle::InitSharedInstanceWithPakPath(pak_path);
 #endif
+  ui::mojo::UIInit ui_init(GetTestDisplays());
   mojo::embedder::Init();
 
-  return base::LaunchUnitTests(argc,
-                               argv,
-                               base::Bind(&RunTestSuite, argc, argv));
+  return base::LaunchUnitTests(
+      argc, argv,
+      base::Bind(&base::TestSuite::Run, base::Unretained(&test_suite)));
 }

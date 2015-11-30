@@ -7,6 +7,7 @@
 #include "base/atomicops.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -23,7 +24,6 @@
 #include "mojo/edk/system/core.h"
 #include "mojo/edk/system/message_pipe_dispatcher.h"
 #include "mojo/edk/system/platform_handle_dispatcher.h"
-#include "mojo/edk/system/simple_broker.h"
 
 namespace mojo {
 namespace edk {
@@ -118,8 +118,10 @@ void SetParentPipeHandle(ScopedPlatformHandle pipe) {
 }
 
 void Init() {
-  if (!internal::g_broker)
-    internal::g_broker = new SimpleBroker;
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch("use-new-edk") && !internal::g_broker)
+    BrokerState::GetInstance();
 
   DCHECK(!internal::g_platform_support);
   internal::g_platform_support = new SimplePlatformSupport();

@@ -13,30 +13,14 @@
 #include "base/test/test_file_util.h"
 #endif
 
-namespace {
-
-class NoAtExitBaseTestSuite : public base::TestSuite {
- public:
-  NoAtExitBaseTestSuite(int argc, char** argv)
-      : base::TestSuite(argc, argv, false) {
-  }
-};
-
-int RunTestSuite(int argc, char** argv) {
-  return NoAtExitBaseTestSuite(argc, argv).Run();
-}
-
-}  // namespace
-
 int main(int argc, char** argv) {
-  mojo::embedder::Init();
 #if defined(OS_ANDROID)
   JNIEnv* env = base::android::AttachCurrentThread();
   base::RegisterContentUriTestUtils(env);
-#else
-  base::AtExitManager at_exit;
 #endif
-  return base::LaunchUnitTestsSerially(argc,
-                                       argv,
-                                       base::Bind(&RunTestSuite, argc, argv));
+  base::TestSuite test_suite(argc, argv);
+  mojo::embedder::Init();
+  return base::LaunchUnitTestsSerially(
+      argc, argv,
+      base::Bind(&base::TestSuite::Run, base::Unretained(&test_suite)));
 }

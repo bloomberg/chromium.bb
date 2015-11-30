@@ -361,7 +361,8 @@ int ChildProcessMain() {
       command_line.GetSwitchValuePath(switches::kChildProcess));
 
   base::i18n::InitializeICU();
-  CallLibraryEarlyInitialization(app_library);
+  if (app_library)
+    CallLibraryEarlyInitialization(app_library);
 #if defined(OS_LINUX) && !defined(OS_ANDROID)
   if (command_line.HasSwitch(switches::kEnableSandbox))
     sandbox = InitializeSandbox();

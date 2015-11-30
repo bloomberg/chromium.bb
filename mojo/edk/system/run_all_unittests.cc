@@ -7,6 +7,7 @@
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
 #include "mojo/edk/embedder/embedder.h"
+#include "mojo/edk/test/multiprocess_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 int main(int argc, char** argv) {
@@ -17,8 +18,15 @@ int main(int argc, char** argv) {
 #if !defined(OS_ANDROID)
   testing::GTEST_FLAG(death_test_style) = "threadsafe";
 #endif
-  mojo::edk::Init();
   base::TestSuite test_suite(argc, argv);
+
+  // Must be run before mojo::edk::Init.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          mojo::edk::test::kBrokerHandleSwitch)) {
+    mojo::edk::PreInitializeChildProcess();
+  }
+
+  mojo::edk::Init();
   // TODO(use_chrome_edk): temporary to force new EDK.
   base::CommandLine::ForCurrentProcess()->AppendSwitch("--use-new-edk");
 
