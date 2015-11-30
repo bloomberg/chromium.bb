@@ -14,6 +14,9 @@ typedef unsigned long XID;
 typedef struct _XImage XImage;
 typedef struct _XGC *GC;
 typedef struct _XDisplay XDisplay;
+typedef struct __GLXFBConfigRec *GLXFBConfig;
+typedef XID GLXWindow;
+typedef XID GLXDrawable;
 
 extern "C" {
 int XFree(void*);

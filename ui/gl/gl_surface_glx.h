@@ -44,8 +44,6 @@ class GL_EXPORT GLSurfaceGLX : public GLSurface {
  protected:
   ~GLSurfaceGLX() override;
 
-  static void* GetConfig(gfx::AcceleratedWidget window);
-
  private:
   DISALLOW_COPY_AND_ASSIGN(GLSurfaceGLX);
 };
@@ -74,7 +72,7 @@ class GL_EXPORT NativeViewGLSurfaceGLX : public GLSurfaceGLX,
 
  private:
   // The handle for the drawable to make current or swap.
-  gfx::AcceleratedWidget GetDrawableHandle() const;
+  GLXDrawable GetDrawableHandle() const;
 
   // PlatformEventDispatcher implementation
   bool CanDispatchEvent(const ui::PlatformEvent& event) override;
@@ -86,7 +84,10 @@ class GL_EXPORT NativeViewGLSurfaceGLX : public GLSurfaceGLX,
   // Child window, used to control resizes so that they're in-order with GL.
   gfx::AcceleratedWidget window_;
 
-  void* config_;
+  // GLXDrawable for the window.
+  GLXWindow glx_window_;
+
+  GLXFBConfig config_;
   gfx::Size size_;
 
   scoped_ptr<VSyncProvider> vsync_provider_;
@@ -113,9 +114,12 @@ class GL_EXPORT UnmappedNativeViewGLSurfaceGLX : public GLSurfaceGLX {
 
  private:
   gfx::Size size_;
-  void* config_;
+  GLXFBConfig config_;
   // Unmapped dummy window, used to provide a compatible surface.
   gfx::AcceleratedWidget window_;
+
+  // GLXDrawable for the window.
+  GLXWindow glx_window_;
 
   DISALLOW_COPY_AND_ASSIGN(UnmappedNativeViewGLSurfaceGLX);
 };
