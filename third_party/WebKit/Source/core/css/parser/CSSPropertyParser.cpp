@@ -593,6 +593,150 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeColor(CSSParserTokenRange& range,
     return cssValuePool().createColorValue(color);
 }
 
+static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumePositionComponent(CSSParserTokenRange& range, CSSParserMode cssParserMode, UnitlessQuirk unitless)
+{
+    if (range.peek().type() == IdentToken)
+        return consumeIdent<CSSValueLeft, CSSValueTop, CSSValueBottom, CSSValueRight, CSSValueCenter>(range);
+    return consumeLengthOrPercent(range, cssParserMode, ValueRangeAll, unitless);
+}
+
+static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> resolvePositionComponentKeywords(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> value)
+{
+    if (!value->isValueID())
+        return value;
+    CSSValueID id = value->getValueID();
+    int percent = 0;
+    if (id == CSSValueCenter)
+        percent = 50;
+    else if (id == CSSValueBottom || id == CSSValueRight)
+        percent = 100;
+    else
+        ASSERT(id == CSSValueLeft || id == CSSValueTop);
+    return cssValuePool().createValue(percent, CSSPrimitiveValue::UnitType::Percentage);
+}
+
+static bool isHorizontalPositionKeywordOnly(const CSSPrimitiveValue& value)
+{
+    return value.isValueID() && (value.getValueID() == CSSValueLeft || value.getValueID() == CSSValueRight);
+}
+
+static bool isVerticalPositionKeywordOnly(const CSSPrimitiveValue& value)
+{
+    return value.isValueID() && (value.getValueID() == CSSValueTop || value.getValueID() == CSSValueBottom);
+}
+
+static void positionFromOneValue(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> value, RefPtrWillBeRawPtr<CSSValue>& resultX, RefPtrWillBeRawPtr<CSSValue>& resultY)
+{
+    bool valueAppliesToYAxisOnly = isVerticalPositionKeywordOnly(*value);
+    resultX = resolvePositionComponentKeywords(value);
+    resultY = cssValuePool().createValue(50, CSSPrimitiveValue::UnitType::Percentage);
+    if (valueAppliesToYAxisOnly)
+        swap(resultX, resultY);
+}
+
+static bool positionFromTwoValues(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> value1, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> value2,
+    RefPtrWillBeRawPtr<CSSValue>& resultX, RefPtrWillBeRawPtr<CSSValue>& resultY)
+{
+    bool mustOrderAsXY = isHorizontalPositionKeywordOnly(*value1) || isVerticalPositionKeywordOnly(*value2)
+        || !value1->isValueID() || !value2->isValueID();
+    bool mustOrderAsYX = isVerticalPositionKeywordOnly(*value1) || isHorizontalPositionKeywordOnly(*value2);
+    if (mustOrderAsXY && mustOrderAsYX)
+        return false;
+    resultX = resolvePositionComponentKeywords(value1);
+    resultY = resolvePositionComponentKeywords(value2);
+    if (mustOrderAsYX)
+        swap(resultX, resultY);
+    return true;
+}
+
+static bool positionFromThreeOrFourValues(CSSPrimitiveValue** values, RefPtrWillBeRawPtr<CSSValue>& resultX, RefPtrWillBeRawPtr<CSSValue>& resultY)
+{
+    bool seenCenter = false;
+    for (int i = 0; values[i]; i++) {
+        CSSPrimitiveValue* currentValue = values[i];
+        if (!currentValue->isValueID())
+            return false;
+        CSSValueID id = currentValue->getValueID();
+
+        if (id == CSSValueCenter) {
+            if (seenCenter)
+                return false;
+            seenCenter = true;
+            continue;
+        }
+
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> offset;
+        if (values[i + 1] && !values[i + 1]->isValueID()) {
+            offset = values[++i];
+        } else {
+            offset = cssValuePool().createValue(0, CSSPrimitiveValue::UnitType::Percentage);
+        }
+
+        RefPtrWillBeRawPtr<CSSValuePair> pair = CSSValuePair::create(currentValue, offset.release(), CSSValuePair::KeepIdenticalValues);
+
+        if (id == CSSValueLeft || id == CSSValueRight) {
+            if (resultX)
+                return false;
+            resultX = pair.release();
+        } else {
+            ASSERT(id == CSSValueTop || id == CSSValueBottom);
+            if (resultY)
+                return false;
+            resultY = pair.release();
+        }
+    }
+
+    if (seenCenter) {
+        ASSERT(resultX || resultY);
+        if (resultX && resultY)
+            return false;
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> offset = cssValuePool().createValue(50, CSSPrimitiveValue::UnitType::Percentage);
+        if (!resultX)
+            resultX = CSSValuePair::create(cssValuePool().createIdentifierValue(CSSValueLeft), offset.release(), CSSValuePair::KeepIdenticalValues);
+        else
+            resultY = CSSValuePair::create(cssValuePool().createIdentifierValue(CSSValueTop), offset.release(), CSSValuePair::KeepIdenticalValues);
+    }
+
+    ASSERT(resultX && resultY);
+    return true;
+}
+
+// This may consume from the range upon failure since no caller needs the stricter behaviour.
+static bool consumePosition(CSSParserTokenRange& range, CSSParserMode cssParserMode, UnitlessQuirk unitless, RefPtrWillBeRawPtr<CSSValue>& resultX, RefPtrWillBeRawPtr<CSSValue>& resultY)
+{
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> value1 = consumePositionComponent(range, cssParserMode, unitless);
+    if (!value1)
+        return false;
+
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> value2 = consumePositionComponent(range, cssParserMode, unitless);
+    if (!value2) {
+        positionFromOneValue(value1.release(), resultX, resultY);
+        return true;
+    }
+
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> value3 = consumePositionComponent(range, cssParserMode, unitless);
+    if (!value3)
+        return positionFromTwoValues(value1.release(), value2.release(), resultX, resultY);
+
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> value4 = consumePositionComponent(range, cssParserMode, unitless);
+    CSSPrimitiveValue* values[5];
+    values[0] = value1.get();
+    values[1] = value2.get();
+    values[2] = value3.get();
+    values[3] = value4.get();
+    values[4] = nullptr;
+    return positionFromThreeOrFourValues(values, resultX, resultY);
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumePosition(CSSParserTokenRange& range, CSSParserMode cssParserMode, UnitlessQuirk unitless)
+{
+    RefPtrWillBeRawPtr<CSSValue> resultX;
+    RefPtrWillBeRawPtr<CSSValue> resultY;
+    if (consumePosition(range, cssParserMode, unitless, resultX, resultY))
+        return CSSValuePair::create(resultX.release(), resultY.release(), CSSValuePair::KeepIdenticalValues);
+    return nullptr;
+}
+
 static inline bool isCSSWideKeyword(const CSSValueID& id)
 {
     return id == CSSValueInitial || id == CSSValueInherit || id == CSSValueUnset || id == CSSValueDefault;
@@ -2035,6 +2179,8 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
         return consumeClip(m_range, m_context.mode());
     case CSSPropertyTouchAction:
         return consumeTouchAction(m_range);
+    case CSSPropertyObjectPosition:
+        return consumePosition(m_range, m_context.mode(), UnitlessQuirk::Forbid);
     case CSSPropertyWebkitLineClamp:
         return consumeLineClamp(m_range);
     case CSSPropertyWebkitFontSizeDelta:

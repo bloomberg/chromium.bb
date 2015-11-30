@@ -519,9 +519,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         m_implicitShorthand = false;
         return result;
     }
-    case CSSPropertyObjectPosition:
-        parsedValue = parsePosition(m_valueList);
-        break;
     case CSSPropertyListStyleImage:     // <uri> | none | inherit
     case CSSPropertyBorderImageSource:
     case CSSPropertyWebkitMaskBoxImageSource:
@@ -988,6 +985,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyWebkitMinLogicalHeight:
     case CSSPropertyWebkitLogicalWidth:
     case CSSPropertyWebkitLogicalHeight:
+    case CSSPropertyObjectPosition:
     case CSSPropertyClip:
     case CSSPropertyTouchAction:
     case CSSPropertyWebkitLineClamp:
