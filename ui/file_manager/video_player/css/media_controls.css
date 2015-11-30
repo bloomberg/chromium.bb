@@ -52,6 +52,7 @@ paper-slider.readonly {
 
 .time-controls > .time {
   cursor: default;
+  display: flex;
   flex: none;
   height: 100%;
   margin: 0 8px;
@@ -89,6 +90,7 @@ paper-slider.readonly {
 /* Volume controls: sound button and volume slider */
 
 .volume-controls {
+  display: flex;
   flex: none;
   height: 100%;
   margin: 0 8px;

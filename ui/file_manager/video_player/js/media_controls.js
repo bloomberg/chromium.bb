@@ -899,25 +899,6 @@ VideoControls.prototype.restorePlayState = function() {
 };
 
 /**
- * Updates style to best fit the size of the container.
- */
-VideoControls.prototype.updateStyle = function() {
-  // We assume that the video controls element fills the parent container.
-  // This is easier than adding margins to this.container_.clientWidth.
-  var width = this.container_.parentNode.clientWidth;
-
-  var hideBelow = function(selector, limit) {
-    this.container_.querySelector(selector).style.display =
-        width < limit ? 'none' : '-webkit-box';
-  }.bind(this);
-
-  hideBelow('.time', 350);
-  hideBelow('.volume', 275);
-  hideBelow('.volume-controls', 210);
-  hideBelow('.fullscreen', 150);
-};
-
-/**
  * Updates video control when the window is fullscreened or restored.
  * @param {boolean} fullscreen True if the window gets fullscreened.
  */

@@ -23,8 +23,6 @@ function FullWindowVideoControls(
 
   this.casting = false;
 
-  this.updateStyle();
-  window.addEventListener('resize', this.updateStyle.wrap(this));
   var currentWindow = chrome.app.window.current();
   currentWindow.onFullscreened.addListener(
       this.onFullScreenChanged.bind(this, true));
