@@ -137,7 +137,7 @@ bool CSSPropertyParser::consumeCSSWideKeyword(CSSPropertyID unresolvedProperty, 
     if (!rangeCopy.atEnd())
         return false;
 
-    RefPtrWillBeRawPtr<CSSValue> value;
+    RefPtrWillBeRawPtr<CSSValue> value = nullptr;
     if (id == CSSValueInitial)
         value = cssValuePool().createExplicitInitialValue();
     else if (id == CSSValueInherit)
@@ -665,7 +665,7 @@ static bool positionFromThreeOrFourValues(CSSPrimitiveValue** values, RefPtrWill
             continue;
         }
 
-        RefPtrWillBeRawPtr<CSSPrimitiveValue> offset;
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> offset = nullptr;
         if (values[i + 1] && !values[i + 1]->isValueID()) {
             offset = values[++i];
         } else {
@@ -730,8 +730,8 @@ static bool consumePosition(CSSParserTokenRange& range, CSSParserMode cssParserM
 
 static PassRefPtrWillBeRawPtr<CSSValue> consumePosition(CSSParserTokenRange& range, CSSParserMode cssParserMode, UnitlessQuirk unitless)
 {
-    RefPtrWillBeRawPtr<CSSValue> resultX;
-    RefPtrWillBeRawPtr<CSSValue> resultY;
+    RefPtrWillBeRawPtr<CSSValue> resultX = nullptr;
+    RefPtrWillBeRawPtr<CSSValue> resultY = nullptr;
     if (consumePosition(range, cssParserMode, unitless, resultX, resultY))
         return CSSValuePair::create(resultX.release(), resultY.release(), CSSValuePair::KeepIdenticalValues);
     return nullptr;
@@ -1344,7 +1344,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeColumnSpan(CSSParserTokenRange& r
 static PassRefPtrWillBeRawPtr<CSSValue> consumeZoom(CSSParserTokenRange& range, const CSSParserContext& context)
 {
     const CSSParserToken& token = range.peek();
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> zoom;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> zoom = nullptr;
     if (token.type() == IdentToken) {
         zoom = consumeIdent<CSSValueNormal, CSSValueReset, CSSValueDocument>(range);
     } else {
@@ -1730,7 +1730,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeTextDecorationLine(CSSParserToken
         return consumeIdent(range);
 
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> ident;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> ident = nullptr;
     while ((ident = consumeIdent<CSSValueBlink, CSSValueUnderline, CSSValueOverline, CSSValueLineThrough>(range))) {
         if (list->hasValue(ident.get()))
             return nullptr;
@@ -1845,7 +1845,7 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeColumnRuleWidth(CSSParse
 static bool consumeTranslate3d(CSSParserTokenRange& args, CSSParserMode cssParserMode, RefPtrWillBeRawPtr<CSSFunctionValue>& transformValue)
 {
     unsigned numberOfArguments = 2;
-    RefPtrWillBeRawPtr<CSSValue> parsedValue;
+    RefPtrWillBeRawPtr<CSSValue> parsedValue = nullptr;
     do {
         parsedValue = consumeLengthOrPercent(args, cssParserMode, ValueRangeAll);
         if (!parsedValue)
