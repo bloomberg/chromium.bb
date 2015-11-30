@@ -6,6 +6,8 @@
 
 #include <string.h>
 
+#include <tuple>
+
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
@@ -170,13 +172,8 @@ bool SchemeHostPort::Equals(const SchemeHostPort& other) const {
 }
 
 bool SchemeHostPort::operator<(const SchemeHostPort& other) const {
-  if (port_ != other.port_)
-    return port_ < other.port_;
-  if (scheme_ != other.scheme_)
-    return scheme_ < other.scheme_;
-  if (host_ != other.host_)
-    return host_ < other.host_;
-  return false;
+  return std::tie(port_, scheme_, host_) <
+         std::tie(other.port_, other.scheme_, other.host_);
 }
 
 }  // namespace url
