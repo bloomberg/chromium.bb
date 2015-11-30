@@ -43,18 +43,22 @@ bool IsGoogleCaptcha(const GURL& url) {
 
 GoogleCaptchaObserver::GoogleCaptchaObserver(
     page_load_metrics::PageLoadMetricsObservable* metrics)
- : metrics_(metrics) {}
+    : saw_solution_(false), metrics_(metrics) {}
 
 void GoogleCaptchaObserver::OnCommit(
     content::NavigationHandle* navigation_handle) {
   if (IsGoogleCaptcha(navigation_handle->GetURL()))
     RecordGoogleCaptchaEvent(GOOGLE_CAPTCHA_SHOWN);
+  if (saw_solution_) {
+    RecordGoogleCaptchaEvent(GOOGLE_CAPTCHA_SOLVED);
+    saw_solution_ = false;
+  }
 }
 
 void GoogleCaptchaObserver::OnRedirect(
     content::NavigationHandle* navigation_handle) {
   if (IsGoogleCaptcha(navigation_handle->GetReferrer().url))
-    RecordGoogleCaptchaEvent(GOOGLE_CAPTCHA_SOLVED);
+    saw_solution_ = true;
 }
 
 void GoogleCaptchaObserver::OnPageLoadMetricsGoingAway() {

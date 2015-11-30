@@ -25,6 +25,7 @@ class GoogleCaptchaObserver
   void OnPageLoadMetricsGoingAway() override;
 
  private:
+  bool saw_solution_;
   page_load_metrics::PageLoadMetricsObservable* const metrics_;
   DISALLOW_COPY_AND_ASSIGN(GoogleCaptchaObserver);
 
