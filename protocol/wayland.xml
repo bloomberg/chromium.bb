@@ -176,7 +176,7 @@
     </event>
   </interface>
 
-  <interface name="wl_compositor" version="3">
+  <interface name="wl_compositor" version="4">
     <description summary="the compositor singleton">
       A compositor.  This object is a singleton global.  The
       compositor is in charge of combining the contents of multiple
@@ -986,7 +986,7 @@
     </event>
   </interface>
 
-  <interface name="wl_surface" version="3">
+  <interface name="wl_surface" version="4">
     <description summary="an onscreen surface">
       A surface is a rectangular area that is displayed on the screen.
       It has a location, size and pixel contents.
@@ -1109,6 +1109,10 @@
 	wl_surface.commit assigns pending damage as the current damage,
 	and clears pending damage. The server will clear the current
 	damage as it repaints the surface.
+
+	Alternatively, damage can be posted with wl_surface.damage_buffer
+	which uses buffer co-ordinates instead of surface co-ordinates,
+	and is probably the preferred and intuitive way of doing this.
       </description>
 
       <arg name="x" type="int"/>
@@ -1324,6 +1328,48 @@
 	raised.
       </description>
       <arg name="scale" type="int"/>
+    </request>
+
+    <!-- Version 4 additions -->
+    <request name="damage_buffer" since="4">
+      <description summary="mark part of the surface damaged using buffer co-ordinates">
+	This request is used to describe the regions where the pending
+	buffer is different from the current surface contents, and where
+	the surface therefore needs to be repainted. The compositor
+	ignores the parts of the damage that fall outside of the surface.
+
+	Damage is double-buffered state, see wl_surface.commit.
+
+	The damage rectangle is specified in buffer coordinates.
+
+	The initial value for pending damage is empty: no damage.
+	wl_surface.damage_buffer adds pending damage: the new pending
+	damage is the union of old pending damage and the given rectangle.
+
+	wl_surface.commit assigns pending damage as the current damage,
+	and clears pending damage. The server will clear the current
+	damage as it repaints the surface.
+
+	This request differs from wl_surface.damage in only one way - it
+	takes damage in buffer co-ordinates instead of surface local
+	co-ordinates. While this generally is more intuitive than surface
+	co-ordinates, it is especially desirable when using wp_viewport
+	or when a drawing library (like EGL) is unaware of buffer scale
+	and buffer transform.
+
+	Note: Because buffer transformation changes and damage requests may
+	be interleaved in the protocol stream, It is impossible to determine
+	the actual mapping between surface and buffer damage until
+	wl_surface.commit time. Therefore, compositors wishing to take both
+	kinds of damage into account will have to accumulate damage from the
+	two requests separately and only transform from one to the other
+	after receiving the wl_surface.commit.
+      </description>
+
+      <arg name="x" type="int"/>
+      <arg name="y" type="int"/>
+      <arg name="width" type="int"/>
+      <arg name="height" type="int"/>
     </request>
    </interface>
 
