@@ -77,11 +77,10 @@ def need_issue(fn):
   return hook
 
 
-def set_commit(obj, issue, flag):
-  """Sets the commit bit flag on an issue."""
+def _apply_on_issue(fun, obj, issue):
+  """Applies function 'fun' on an issue."""
   try:
-    patchset = obj.get_issue_properties(issue, False)['patchsets'][-1]
-    print obj.set_flag(issue, patchset, 'commit', flag)
+    return fun(obj.get_issue_properties(issue, False))
   except urllib2.HTTPError, e:
     if e.code == 404:
       print >> sys.stderr, 'Issue %d doesn\'t exist.' % issue
@@ -91,6 +90,20 @@ def set_commit(obj, issue, flag):
       raise
     return 1
 
+def get_commit(obj, issue):
+  """Gets the commit bit flag of an issue."""
+  def _get_commit(properties):
+    print int(properties['commit'])
+    return 0
+  _apply_on_issue(_get_commit, obj, issue)
+
+def set_commit(obj, issue, flag):
+  """Sets the commit bit flag on an issue."""
+  def _set_commit(properties):
+    print obj.set_flag(issue, properties['patchsets'][-1], 'commit', flag)
+    return 0
+  _apply_on_issue(_set_commit, obj, issue)
+
 @need_issue
 def CMDset(parser, args):
   """Sets the commit bit."""
@@ -99,6 +112,13 @@ def CMDset(parser, args):
     parser.error('Unrecognized args: %s' % ' '.join(args))
   return set_commit(obj, options.issue, '1')
 
+@need_issue
+def CMDget(parser, args):
+  """Gets the commit bit."""
+  options, args, obj = parser.parse_args(args)
+  if args:
+    parser.error('Unrecognized args: %s' % ' '.join(args))
+  return get_commit(obj, options.issue)
 
 @need_issue
 def CMDclear(parser, args):
