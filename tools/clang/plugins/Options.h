@@ -14,8 +14,7 @@ struct Options {
         enforce_in_thirdparty_webkit(false),
         check_enum_last_value(false),
         with_ast_visitor(false),
-        check_templates(false),
-        warn_only(false) {}
+        check_templates(false) {}
 
   bool check_base_classes;
   bool enforce_overriding_blink;  // Blink base-class use
@@ -23,7 +22,6 @@ struct Options {
   bool check_enum_last_value;
   bool with_ast_visitor;
   bool check_templates;
-  bool warn_only;
 };
 
 }  // namespace chrome_checker

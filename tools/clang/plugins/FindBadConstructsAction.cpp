@@ -62,8 +62,6 @@ bool FindBadConstructsAction::ParseArgs(const CompilerInstance& instance,
       options_.with_ast_visitor = true;
     } else if (args[i] == "check-templates") {
       options_.check_templates = true;
-    } else if (args[i] == "warn-only") {
-      options_.warn_only = true;
     } else {
       parsed = false;
       llvm::errs() << "Unknown clang plugin argument: " << args[i] << "\n";

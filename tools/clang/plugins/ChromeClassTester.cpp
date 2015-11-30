@@ -319,9 +319,6 @@ bool ChromeClassTester::GetFilename(SourceLocation loc,
 }
 
 DiagnosticsEngine::Level ChromeClassTester::getErrorLevel() {
-  if (options_.warn_only)
-    return DiagnosticsEngine::Warning;
-
   return diagnostic().getWarningsAsErrors() ? DiagnosticsEngine::Error
                                             : DiagnosticsEngine::Warning;
 }
