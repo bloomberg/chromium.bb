@@ -7,8 +7,8 @@ Starting worker: random-values-types.js
 PASS [Worker] 'crypto' in self is true
 PASS [Worker] 'getRandomValues' in self.crypto is true
 PASS [Worker] crypto.getRandomValues() threw exception TypeError: Failed to execute 'getRandomValues' on 'Crypto': 1 argument required, but only 0 present..
-PASS [Worker] crypto.getRandomValues(undefined) threw exception TypeMismatchError: Failed to execute 'getRandomValues' on 'Crypto': The provided ArrayBufferView is null..
-PASS [Worker] crypto.getRandomValues(null) threw exception TypeMismatchError: Failed to execute 'getRandomValues' on 'Crypto': The provided ArrayBufferView is null..
+PASS [Worker] crypto.getRandomValues(undefined) threw exception TypeError: Failed to execute 'getRandomValues' on 'Crypto': parameter 1 is not of type 'ArrayBufferView'..
+PASS [Worker] crypto.getRandomValues(null) threw exception TypeError: Failed to execute 'getRandomValues' on 'Crypto': parameter 1 is not of type 'ArrayBufferView'..
 PASS [Worker] random = crypto.getRandomValues(new Uint8Array(3)) is defined.
 PASS [Worker] random is an instance of Uint8Array
 PASS [Worker] view = new Uint8Array(3) is defined.

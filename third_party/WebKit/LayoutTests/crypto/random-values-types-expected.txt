@@ -6,8 +6,8 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 PASS 'crypto' in self is true
 PASS 'getRandomValues' in self.crypto is true
 PASS crypto.getRandomValues() threw exception TypeError: Failed to execute 'getRandomValues' on 'Crypto': 1 argument required, but only 0 present..
-PASS crypto.getRandomValues(undefined) threw exception TypeMismatchError: Failed to execute 'getRandomValues' on 'Crypto': The provided ArrayBufferView is null..
-PASS crypto.getRandomValues(null) threw exception TypeMismatchError: Failed to execute 'getRandomValues' on 'Crypto': The provided ArrayBufferView is null..
+PASS crypto.getRandomValues(undefined) threw exception TypeError: Failed to execute 'getRandomValues' on 'Crypto': parameter 1 is not of type 'ArrayBufferView'..
+PASS crypto.getRandomValues(null) threw exception TypeError: Failed to execute 'getRandomValues' on 'Crypto': parameter 1 is not of type 'ArrayBufferView'..
 PASS random = crypto.getRandomValues(new Uint8Array(3)) is defined.
 PASS random is an instance of Uint8Array
 PASS view = new Uint8Array(3) is defined.
