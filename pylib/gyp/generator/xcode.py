@@ -87,6 +87,8 @@ generator_extra_sources_for_rules = [
   'mac_framework_private_headers',
 ]
 
+generator_filelist_paths = None
+
 # Xcode's standard set of library directories, which don't need to be duplicated
 # in LIBRARY_SEARCH_PATHS. This list is not exhaustive, but that's okay.
 xcode_standard_library_dirs = frozenset([
@@ -576,6 +578,26 @@ def PerformBuild(data, configurations, params):
     arguments += ['-configuration', config]
     print "Building [%s]: %s" % (config, arguments)
     subprocess.check_call(arguments)
+
+
+def CalculateGeneratorInputInfo(params):
+  toplevel = params['options'].toplevel_dir
+  if params.get('flavor') == 'ninja':
+    generator_dir = os.path.relpath(params['options'].generator_output or '.')
+    output_dir = params.get('generator_flags', {}).get('output_dir', 'out')
+    output_dir = os.path.normpath(os.path.join(generator_dir, output_dir))
+    qualified_out_dir = os.path.normpath(os.path.join(
+        toplevel, output_dir, 'gypfiles-xcode-ninja'))
+  else:
+    output_dir = os.path.normpath(os.path.join(toplevel, 'xcodebuild'))
+    qualified_out_dir = os.path.normpath(os.path.join(
+        toplevel, output_dir, 'gypfiles'))
+
+    global generator_filelist_paths
+    generator_filelist_paths = {
+        'toplevel': toplevel,
+        'qualified_out_dir': qualified_out_dir,
+    }
 
 
 def GenerateOutput(target_list, target_dicts, data, params):
