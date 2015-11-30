@@ -74,6 +74,10 @@ struct InlineBoxPosition {
 // "core/editing/VisibleUnitsTest.cpp".
 std::ostream& operator<<(std::ostream&, const InlineBoxPosition&);
 
+// offset functions on Node
+CORE_EXPORT int caretMinOffset(const Node*);
+CORE_EXPORT int caretMaxOffset(const Node*);
+
 // Position
 // mostForward/BackwardCaretPosition are used for moving back and forth between
 // visually equivalent candidates.

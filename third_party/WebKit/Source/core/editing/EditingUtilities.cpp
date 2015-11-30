@@ -1447,18 +1447,6 @@ bool isMailHTMLBlockquoteElement(const Node* node)
     return element.hasTagName(blockquoteTag) && element.getAttribute("type") == "cite";
 }
 
-int caretMinOffset(const Node* n)
-{
-    LayoutObject* r = n->layoutObject();
-    ASSERT(!n->isCharacterDataNode() || !r || r->isText()); // FIXME: This was a runtime check that seemingly couldn't fail; changed it to an assertion for now.
-    return r ? r->caretMinOffset() : 0;
-}
-
-int caretMaxOffset(const Node* n)
-{
-    return EditingStrategy::caretMaxOffset(*n);
-}
-
 bool lineBreakExistsAtVisiblePosition(const VisiblePosition& visiblePosition)
 {
     return lineBreakExistsAtPosition(mostForwardCaretPosition(visiblePosition.deepEquivalent()));

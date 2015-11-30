@@ -109,11 +109,6 @@ inline ContainerNode* parentCrossingShadowBoundaries<EditingInComposedTreeStrate
     return ComposedTreeTraversal::parent(node);
 }
 
-// offset functions on Node
-
-int caretMinOffset(const Node*);
-int caretMaxOffset(const Node*);
-
 // boolean functions on Node
 
 // FIXME: editingIgnoresContent, canHaveChildrenForEditing, and isAtomicNode
