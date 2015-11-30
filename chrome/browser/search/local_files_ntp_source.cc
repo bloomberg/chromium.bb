@@ -4,6 +4,8 @@
 
 #include "chrome/browser/search/local_files_ntp_source.h"
 
+#if !defined(GOOGLE_CHROME_BUILD) && !defined(OS_IOS)
+
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -16,10 +18,15 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/url_data_source.h"
+#include "third_party/re2/re2/re2.h"
+#include "third_party/re2/re2/stringpiece.h"
 
 namespace {
 
 const char kBasePath[] = "chrome/browser/resources/local_ntp";
+
+// Matches lines of form '<include src="foo">' and captures 'foo'.
+const char kInlineResourceRegex[] = "<include.*?src\\=[\"'](.+?)[\"'].*?>";
 
 void CallbackWithLoadedResource(
     const std::string& origin,
@@ -47,6 +54,53 @@ std::string ReadFileAndReturn(const base::FilePath& path) {
 
 namespace local_ntp {
 
+void FlattenLocalInclude(
+    const content::URLDataSource::GotDataCallback& callback,
+    std::string topLevelResource,
+    base::RefCountedMemory* inlineResource);
+
+// Helper method invoked by both CheckLocalIncludes and FlattenLocalInclude.
+// Checks for any <include> directives; if any are found, loads the associated
+// file and calls FlattenLocalInclude with the result. Otherwise, processing
+// is done, and so the original callback is invoked.
+void CheckLocalIncludesHelper(
+    const content::URLDataSource::GotDataCallback& callback,
+    std::string& resource) {
+  std::string filename;
+  re2::StringPiece resourceWrapper(resource);
+  if (re2::RE2::FindAndConsume(&resourceWrapper, kInlineResourceRegex,
+                               &filename)) {
+    content::URLDataSource::GotDataCallback wrapper =
+        base::Bind(&FlattenLocalInclude, callback, resource);
+    SendLocalFileResource(filename, wrapper);
+  } else {
+    callback.Run(base::RefCountedString::TakeString(&resource));
+  }
+}
+
+// Wrapper around the above helper function for use as a callback. Processes
+// local files to inline any files indicated by an <include> directive.
+void CheckLocalIncludes(
+    const content::URLDataSource::GotDataCallback& callback,
+    base::RefCountedMemory* resource) {
+  std::string resourceAsStr(resource->front_as<char>(), resource->size());
+  CheckLocalIncludesHelper(callback, resourceAsStr);
+}
+
+// Replaces the first <include> directive found with the given file contents.
+// Afterwards, re-invokes CheckLocalIncludesHelper to handle any subsequent
+// <include>s, including those which may have been added by the newly-inlined
+// resource.
+void FlattenLocalInclude(
+    const content::URLDataSource::GotDataCallback& callback,
+    std::string topLevelResource,
+    base::RefCountedMemory* inlineResource) {
+  std::string inlineAsStr(inlineResource->front_as<char>(),
+                          inlineResource->size());
+  re2::RE2::Replace(&topLevelResource, kInlineResourceRegex, inlineAsStr);
+  CheckLocalIncludesHelper(callback, topLevelResource);
+}
+
 void SendLocalFileResource(
     const std::string& path,
     const content::URLDataSource::GotDataCallback& callback) {
@@ -60,10 +114,14 @@ void SendLocalFileResourceWithOrigin(
   base::FilePath fullpath;
   PathService::Get(base::DIR_SOURCE_ROOT, &fullpath);
   fullpath = fullpath.AppendASCII(kBasePath).AppendASCII(path);
+  content::URLDataSource::GotDataCallback wrapper =
+      base::Bind(&CheckLocalIncludes, callback);
   base::PostTaskAndReplyWithResult(
       content::BrowserThread::GetBlockingPool(), FROM_HERE,
       base::Bind(&ReadFileAndReturn, fullpath),
-      base::Bind(&CallbackWithLoadedResource, origin, callback));
+      base::Bind(&CallbackWithLoadedResource, origin, wrapper));
 }
 
 }  // namespace local_ntp
+
+#endif  //  !defined(GOOGLE_CHROME_BUILD) && !defined(OS_IOS)

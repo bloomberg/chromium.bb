@@ -14,6 +14,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/search/instant_io_context.h"
 #include "chrome/browser/search/local_files_ntp_source.h"
 #include "chrome/browser/search/search.h"
@@ -208,7 +209,7 @@ void LocalNtpSource::StartDataRequest(
     return;
   }
 
-#if !defined(GOOGLE_CHROME_BUILD)
+#if !defined(GOOGLE_CHROME_BUILD) && !defined(OS_IOS)
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kLocalNtpReload)) {
     if (stripped_path == "local-ntp.html" || stripped_path == "local-ntp.js" ||
@@ -218,7 +219,7 @@ void LocalNtpSource::StartDataRequest(
       return;
     }
   }
-#endif
+#endif  // !defined(GOOGLE_CHROME_BUILD) && !defined(OS_IOS)
 
   float scale = 1.0f;
   std::string filename;
