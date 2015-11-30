@@ -13,3 +13,7 @@
 .reset-button {
   -webkit-margin-start: 15px;
 }
+
+#storage {
+  -webkit-padding-end: 0;
+}
