@@ -477,7 +477,7 @@ TEST_F(AssociatedInterfaceTest, PassAssociatedInterfaces) {
   IntegerSenderConnectionPtr connection_ptr;
   IntegerSenderConnectionImpl connection(GetProxy(&connection_ptr));
 
-  AssociatedInterfacePtr<IntegerSender> sender0;
+  IntegerSenderAssociatedPtr sender0;
   connection_ptr->GetSender(
       GetProxy(&sender0, connection_ptr.associated_group()));
 
@@ -486,7 +486,7 @@ TEST_F(AssociatedInterfaceTest, PassAssociatedInterfaces) {
   PumpMessages();
   EXPECT_EQ(123, echoed_value);
 
-  AssociatedInterfacePtr<IntegerSender> sender1;
+  IntegerSenderAssociatedPtr sender1;
   connection_ptr->AsyncGetSender(
       [&sender1](AssociatedInterfacePtrInfo<IntegerSender> ptr_info) {
         sender1.Bind(ptr_info.Pass());
