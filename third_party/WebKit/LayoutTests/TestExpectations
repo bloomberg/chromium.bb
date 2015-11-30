@@ -1356,6 +1356,8 @@ crbug.com/562311 [ Mac10.6 Mac10.7 Mac10.8 Mac10.9 ] fast/forms/suggestion-picke
 crbug.com/562311 [ Mac10.6 Mac10.7 Mac10.8 Mac10.9 ] fast/forms/suggestion-picker/date-suggestion-picker-appearance-zoom200.html [ Failure Pass Timeout ]
 crbug.com/549314 [ XP ] inspector-protocol/layout-fonts/unicode-range-combining-chars-fallback.html [ Failure ]
 
+crbug.com/563694 [ Linux Mac Debug ] svg/hixie/perf/005.xml [ Failure ]
+
 crbug.com/558574 [ Win7 ] fast/forms/text/text-font-height-mismatch.html [ Failure ]
 crbug.com/558574 [ Win7 ] fast/text/emphasis.html [ Failure ]
 
