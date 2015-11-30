@@ -57,6 +57,7 @@ struct g2d_context {
 	unsigned int			cmd_nr;
 	unsigned int			cmd_buf_nr;
 	unsigned int			cmdlist_nr;
+	void				*event_userdata;
 };
 
 enum g2d_base_addr_reg {
@@ -280,8 +281,15 @@ static int g2d_flush(struct g2d_context *ctx)
 	cmdlist.cmd_buf = (uint64_t)(uintptr_t)&ctx->cmd_buf[0];
 	cmdlist.cmd_nr = ctx->cmd_nr;
 	cmdlist.cmd_buf_nr = ctx->cmd_buf_nr;
-	cmdlist.event_type = G2D_EVENT_NOT;
-	cmdlist.user_data = 0;
+
+	if (ctx->event_userdata) {
+		cmdlist.event_type = G2D_EVENT_NONSTOP;
+		cmdlist.user_data = (uint64_t)(uintptr_t)(ctx->event_userdata);
+		ctx->event_userdata = NULL;
+	} else {
+		cmdlist.event_type = G2D_EVENT_NOT;
+		cmdlist.user_data = 0;
+	}
 
 	ctx->cmd_nr = 0;
 	ctx->cmd_buf_nr = 0;
@@ -333,6 +341,22 @@ struct g2d_context *g2d_init(int fd)
 void g2d_fini(struct g2d_context *ctx)
 {
 	free(ctx);
+}
+
+/**
+ * g2d_config_event - setup userdata configuration for a g2d event.
+ *		The next invocation of a g2d call (e.g. g2d_solid_fill) is
+ *		then going to flag the command buffer as 'nonstop'.
+ *		Completion of the command buffer execution can then be
+ *		determined by using drmHandleEvent on the DRM fd.
+ *		The userdata is 'consumed' in the process.
+ *
+ * @ctx: a pointer to g2d_context structure.
+ * @userdata: a pointer to the user data
+ */
+void g2d_config_event(struct g2d_context *ctx, void *userdata)
+{
+	ctx->event_userdata = userdata;
 }
 
 /**

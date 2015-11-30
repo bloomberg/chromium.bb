@@ -27,6 +27,7 @@ g2d_blend
 g2d_copy
 g2d_copy_with_scale
 g2d_exec
+g2d_config_event
 g2d_fini
 g2d_init
 g2d_scale_and_blend
