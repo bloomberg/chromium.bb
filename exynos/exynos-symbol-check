@@ -22,6 +22,7 @@ exynos_device_destroy
 exynos_prime_fd_to_handle
 exynos_prime_handle_to_fd
 exynos_vidi_connection
+exynos_handle_event
 g2d_blend
 g2d_copy
 g2d_copy_with_scale

@@ -54,6 +54,25 @@ struct exynos_bo {
 	uint32_t		name;
 };
 
+#define EXYNOS_EVENT_CONTEXT_VERSION 1
+
+/*
+ * Exynos Event Context structure.
+ *
+ * @base: base context (for core events).
+ * @version: version info similar to the one in 'drmEventContext'.
+ * @g2d_event_handler: handler for G2D events.
+ */
+struct exynos_event_context {
+	drmEventContext base;
+
+	int version;
+
+	void (*g2d_event_handler)(int fd, unsigned int cmdlist_no,
+							  unsigned int tv_sec, unsigned int tv_usec,
+							  void *user_data);
+};
+
 /*
  * device related functions:
  */
@@ -82,5 +101,12 @@ int exynos_prime_fd_to_handle(struct exynos_device *dev, int fd,
  */
 int exynos_vidi_connection(struct exynos_device *dev, uint32_t connect,
 				uint32_t ext, void *edid);
+
+/*
+ * event handling related functions:
+ */
+int exynos_handle_event(struct exynos_device *dev,
+				struct exynos_event_context *ctx);
+
 
 #endif /* EXYNOS_DRMIF_H_ */

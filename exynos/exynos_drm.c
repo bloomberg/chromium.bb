@@ -32,6 +32,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#include <unistd.h>
 
 #include <sys/mman.h>
 #include <linux/stddef.h>
@@ -41,6 +42,8 @@
 #include "libdrm_macros.h"
 #include "exynos_drm.h"
 #include "exynos_drmif.h"
+
+#define U642VOID(x) ((void *)(unsigned long)(x))
 
 /*
  * Create exynos drm device object.
@@ -370,6 +373,79 @@ exynos_vidi_connection(struct exynos_device *dev, uint32_t connect,
 		fprintf(stderr, "failed to request vidi connection[%s].\n",
 				strerror(errno));
 		return ret;
+	}
+
+	return 0;
+}
+
+static void
+exynos_handle_vendor(int fd, struct drm_event *e, void *ctx)
+{
+	struct drm_exynos_g2d_event *g2d;
+	struct exynos_event_context *ectx = ctx;
+
+	switch (e->type) {
+		case DRM_EXYNOS_G2D_EVENT:
+			if (ectx->version < 1 || ectx->g2d_event_handler == NULL)
+				break;
+			g2d = (struct drm_exynos_g2d_event *)e;
+			ectx->g2d_event_handler(fd, g2d->cmdlist_no, g2d->tv_sec,
+						g2d->tv_usec, U642VOID(g2d->user_data));
+			break;
+
+		default:
+			break;
+	}
+}
+
+int
+exynos_handle_event(struct exynos_device *dev, struct exynos_event_context *ctx)
+{
+	char buffer[1024];
+	int len, i;
+	struct drm_event *e;
+	struct drm_event_vblank *vblank;
+	drmEventContextPtr evctx = &ctx->base;
+
+	/* The DRM read semantics guarantees that we always get only
+	 * complete events. */
+	len = read(dev->fd, buffer, sizeof buffer);
+	if (len == 0)
+		return 0;
+	if (len < (int)sizeof *e)
+		return -1;
+
+	i = 0;
+	while (i < len) {
+		e = (struct drm_event *) &buffer[i];
+		switch (e->type) {
+		case DRM_EVENT_VBLANK:
+			if (evctx->version < 1 ||
+			    evctx->vblank_handler == NULL)
+				break;
+			vblank = (struct drm_event_vblank *) e;
+			evctx->vblank_handler(dev->fd,
+					      vblank->sequence,
+					      vblank->tv_sec,
+					      vblank->tv_usec,
+					      U642VOID (vblank->user_data));
+			break;
+		case DRM_EVENT_FLIP_COMPLETE:
+			if (evctx->version < 2 ||
+			    evctx->page_flip_handler == NULL)
+				break;
+			vblank = (struct drm_event_vblank *) e;
+			evctx->page_flip_handler(dev->fd,
+						 vblank->sequence,
+						 vblank->tv_sec,
+						 vblank->tv_usec,
+						 U642VOID (vblank->user_data));
+			break;
+		default:
+			exynos_handle_vendor(dev->fd, e, evctx);
+			break;
+		}
+		i += e->length;
 	}
 
 	return 0;

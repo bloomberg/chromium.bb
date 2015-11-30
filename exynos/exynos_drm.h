@@ -157,4 +157,16 @@ struct drm_exynos_g2d_exec {
 #define DRM_IOCTL_EXYNOS_G2D_EXEC		DRM_IOWR(DRM_COMMAND_BASE + \
 		DRM_EXYNOS_G2D_EXEC, struct drm_exynos_g2d_exec)
 
+/* EXYNOS specific events */
+#define DRM_EXYNOS_G2D_EVENT		0x80000000
+
+struct drm_exynos_g2d_event {
+	struct drm_event	base;
+	__u64				user_data;
+	__u32				tv_sec;
+	__u32				tv_usec;
+	__u32				cmdlist_no;
+	__u32				reserved;
+};
+
 #endif
