@@ -81,8 +81,6 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
     @MediumTest
     @Feature({"AndroidWebView"})
     @DisableHardwareAccelerationForTest
-    // Run in single-process mode only. Blocked by software draws support crbug.com/545611.
-    @ParameterizedTest.Set
     public void testFullscreenForNonVideoElementIsSupportedInSoftwareMode() throws Throwable {
         // Fullscreen for non-video elements is supported and works as expected. Note that
         // this test is the same as testOnShowAndHideCustomViewWithCallback_videoInsideDiv below.
@@ -198,7 +196,7 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
 
     @MediumTest
     @Feature({"AndroidWebView"})
-    // Run in single-process mode only. Blocked by software draws support crbug.com/545611.
+    // Run in single-process mode only. Blocked by inline video support crbug.com/545618.
     @ParameterizedTest.Set
     public void testHolePunchingSurfaceNotCreatedForClearVideo()
             throws Throwable {
@@ -318,7 +316,7 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
 
     @MediumTest
     @Feature({"AndroidWebView"})
-    // Run in single-process mode only. Blocked by software draws support crbug.com/545611.
+    // Run in single-process mode only. Blocked by inline video support crbug.com/545618.
     @ParameterizedTest.Set
     public void testPowerSaveBlockerIsEnabledDuringFullscreenPlayback_videoInsideDiv()
             throws Throwable {
@@ -345,7 +343,7 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
 
     @MediumTest
     @Feature({"AndroidWebView"})
-    // Run in single-process mode only. Blocked by software draws support crbug.com/545611.
+    // Run in single-process mode only. Blocked by inline video support crbug.com/545618.
     @ParameterizedTest.Set
     public void testPowerSaveBlockerIsEnabledDuringEmbeddedPlayback()
             throws Throwable {
@@ -366,7 +364,7 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
 
     @MediumTest
     @Feature({"AndroidWebView"})
-    // Run in single-process mode only. Blocked by software draws support crbug.com/545611.
+    // Run in single-process mode only. Blocked by inline video support crbug.com/545618.
     @ParameterizedTest.Set
     public void testPowerSaveBlockerIsTransferredToFullscreen()
             throws Throwable {
@@ -396,7 +394,7 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
 
     @MediumTest
     @Feature({"AndroidWebView"})
-    // Run in single-process mode only. Blocked by software draws support crbug.com/545611.
+    // Run in single-process mode only. Blocked by inline video support crbug.com/545618.
     @ParameterizedTest.Set
     public void testPowerSaveBlockerIsTransferredToEmbedded()
             throws Throwable {

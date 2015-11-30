@@ -14,7 +14,6 @@ import org.chromium.android_webview.AwContents.VisualStateCallback;
 import org.chromium.android_webview.test.util.GraphicsTestUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.parameter.ParameterizedTest;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -22,8 +21,6 @@ import java.util.concurrent.TimeUnit;
 /**
  * AwContents rendering / pixel tests.
  */
-// Run in single-process mode only. Blocked by software draws support crbug.com/545611.
-@ParameterizedTest.Set
 public class AwContentsRenderTest extends AwTestBase {
 
     private TestAwContentsClient mContentsClient;

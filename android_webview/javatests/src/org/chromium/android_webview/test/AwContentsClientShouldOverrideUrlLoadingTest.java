@@ -15,7 +15,6 @@ import org.chromium.android_webview.test.util.JavascriptEventObserver;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.parameter.ParameterizedTest;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper;
@@ -731,8 +730,6 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
 
     @SmallTest
     @Feature({"AndroidWebView", "Navigation"})
-    // Run in single-process mode only. Blocked by software draws support crbug.com/545611.
-    @ParameterizedTest.Set
     public void testCalledOn302Redirect() throws Throwable {
         final String redirectTargetUrl = createRedirectTargetPage();
         final String redirectUrl = mWebServer.setRedirect("/302.html", redirectTargetUrl);
@@ -741,8 +738,6 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
 
     @SmallTest
     @Feature({"AndroidWebView", "Navigation"})
-    // Run in single-process mode only. Blocked by software draws support crbug.com/545611.
-    @ParameterizedTest.Set
     public void testCalledOnMetaRefreshRedirect() throws Throwable {
         final String redirectTargetUrl = createRedirectTargetPage();
         final String redirectUrl = addPageToTestServer("/meta_refresh.html",
@@ -753,8 +748,6 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
 
     @SmallTest
     @Feature({"AndroidWebView", "Navigation"})
-    // Run in single-process mode only. Blocked by software draws support crbug.com/545611.
-    @ParameterizedTest.Set
     public void testCalledOnJavaScriptLocationImmediateAssignRedirect()
             throws Throwable {
         final String redirectTargetUrl = createRedirectTargetPage();
@@ -765,8 +758,6 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
 
     @SmallTest
     @Feature({"AndroidWebView", "Navigation"})
-    // Run in single-process mode only. Blocked by software draws support crbug.com/545611.
-    @ParameterizedTest.Set
     public void testCalledOnJavaScriptLocationImmediateReplaceRedirect()
             throws Throwable {
         final String redirectTargetUrl = createRedirectTargetPage();
@@ -777,8 +768,6 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
 
     @SmallTest
     @Feature({"AndroidWebView", "Navigation"})
-    // Run in single-process mode only. Blocked by software draws support crbug.com/545611.
-    @ParameterizedTest.Set
     public void testCalledOnJavaScriptLocationDelayedAssignRedirect()
             throws Throwable {
         final String redirectTargetUrl = createRedirectTargetPage();
@@ -789,8 +778,6 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
 
     @SmallTest
     @Feature({"AndroidWebView", "Navigation"})
-    // Run in single-process mode only. Blocked by software draws support crbug.com/545611.
-    @ParameterizedTest.Set
     public void testCalledOnJavaScriptLocationDelayedReplaceRedirect()
             throws Throwable {
         final String redirectTargetUrl = createRedirectTargetPage();
@@ -907,8 +894,6 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
 
     @SmallTest
     @Feature({"AndroidWebView"})
-    // Run in single-process mode only. Blocked by software draws support crbug.com/545611.
-    @ParameterizedTest.Set
     public void testNullContentsClientOpenLink() throws Throwable {
         try {
             // The test will fire real intents through the test activity.
@@ -959,8 +944,6 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
 
     @SmallTest
     @Feature({"AndroidWebView"})
-    // Run in single-process mode only. Blocked by software draws support crbug.com/545611.
-    @ParameterizedTest.Set
     public void testNullContentsClientClickableContent() throws Throwable {
         try {
             // The test will fire real intents through the test activity.
@@ -1044,16 +1027,12 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
 
     @SmallTest
     @Feature({"AndroidWebView"})
-    // Run in single-process mode only. Blocked by software draws support crbug.com/545611.
-    @ParameterizedTest.Set
     public void testClickableContent() throws Throwable {
         doTestClickableContent(true);
     }
 
     @SmallTest
     @Feature({"AndroidWebView"})
-    // Run in single-process mode only. Blocked by software draws support crbug.com/545611.
-    @ParameterizedTest.Set
     public void testClickableContentInIframe() throws Throwable {
         doTestClickableContent(false);
     }
