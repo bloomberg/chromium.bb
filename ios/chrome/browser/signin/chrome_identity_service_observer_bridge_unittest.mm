@@ -16,6 +16,7 @@
 @property(nonatomic) BOOL onIdentityListChangedCalled;
 @property(nonatomic) BOOL onAccessTokenRefreshFailedCalled;
 @property(nonatomic) BOOL onProfileUpdateCalled;
+@property(nonatomic) BOOL onChromeIdentityServiceWillBeDestroyedCalled;
 @property(nonatomic, assign) ChromeIdentity* identity;
 @property(nonatomic, readonly) NSDictionary* userInfo;
 @property(nonatomic, readonly)
@@ -30,6 +31,8 @@
 @synthesize onAccessTokenRefreshFailedCalled =
     _onAccessTokenRefreshFailedCalled;
 @synthesize onProfileUpdateCalled = _onProfileUpdateCalled;
+@synthesize onChromeIdentityServiceWillBeDestroyedCalled =
+    _onChromeIdentityServiceWillBeDestroyedCalled;
 @synthesize identity = _identity;
 @synthesize userInfo = _userInfo;
 
@@ -62,6 +65,10 @@
   _identity = identity;
 }
 
+- (void)onChromeIdentityServiceWillBeDestroyed {
+  _onChromeIdentityServiceWillBeDestroyedCalled = YES;
+}
+
 @end
 
 #pragma mark - ChromeIdentityServiceObserverBridgeTest
@@ -90,6 +97,7 @@ TEST_F(ChromeIdentityServiceObserverBridgeTest, onIdentityListChanged) {
   EXPECT_TRUE(GetTestObserver().onIdentityListChangedCalled);
   EXPECT_FALSE(GetTestObserver().onAccessTokenRefreshFailedCalled);
   EXPECT_FALSE(GetTestObserver().onProfileUpdateCalled);
+  EXPECT_FALSE(GetTestObserver().onChromeIdentityServiceWillBeDestroyedCalled);
 }
 
 // Tests that |onAccessTokenRefreshFailed| is forwarded.
@@ -101,6 +109,7 @@ TEST_F(ChromeIdentityServiceObserverBridgeTest, onAccessTokenRefreshFailed) {
   EXPECT_FALSE(GetTestObserver().onIdentityListChangedCalled);
   EXPECT_TRUE(GetTestObserver().onAccessTokenRefreshFailedCalled);
   EXPECT_FALSE(GetTestObserver().onProfileUpdateCalled);
+  EXPECT_FALSE(GetTestObserver().onChromeIdentityServiceWillBeDestroyedCalled);
   EXPECT_EQ(identity, GetTestObserver().identity);
   EXPECT_NSEQ(userInfo, GetTestObserver().userInfo);
 }
@@ -113,5 +122,17 @@ TEST_F(ChromeIdentityServiceObserverBridgeTest, onProfileUpdate) {
   EXPECT_FALSE(GetTestObserver().onIdentityListChangedCalled);
   EXPECT_FALSE(GetTestObserver().onAccessTokenRefreshFailedCalled);
   EXPECT_TRUE(GetTestObserver().onProfileUpdateCalled);
+  EXPECT_FALSE(GetTestObserver().onChromeIdentityServiceWillBeDestroyedCalled);
   EXPECT_EQ(identity, GetTestObserver().identity);
+}
+
+// Tests that |onChromeIdentityServiceWillBeDestroyed| is forwarded.
+TEST_F(ChromeIdentityServiceObserverBridgeTest,
+       onChromeIdentityServiceWillBeDestroyed) {
+  ASSERT_FALSE(GetTestObserver().onChromeIdentityServiceWillBeDestroyedCalled);
+  GetObserverBridge()->OnChromeIdentityServiceWillBeDestroyed();
+  EXPECT_FALSE(GetTestObserver().onIdentityListChangedCalled);
+  EXPECT_FALSE(GetTestObserver().onAccessTokenRefreshFailedCalled);
+  EXPECT_FALSE(GetTestObserver().onProfileUpdateCalled);
+  EXPECT_TRUE(GetTestObserver().onChromeIdentityServiceWillBeDestroyedCalled);
 }

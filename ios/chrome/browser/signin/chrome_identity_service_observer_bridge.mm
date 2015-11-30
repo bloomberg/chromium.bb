@@ -36,3 +36,12 @@ void ChromeIdentityServiceObserverBridge::OnProfileUpdate(
   if ([observer_ respondsToSelector:@selector(onProfileUpdate:)])
     [observer_ onProfileUpdate:identity];
 }
+
+void ChromeIdentityServiceObserverBridge::
+    OnChromeIdentityServiceWillBeDestroyed() {
+  if ([observer_
+          respondsToSelector:@selector(
+                                 onChromeIdentityServiceWillBeDestroyed)]) {
+    [observer_ onChromeIdentityServiceWillBeDestroyed];
+  }
+}

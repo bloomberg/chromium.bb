@@ -8,7 +8,10 @@ namespace ios {
 
 ChromeIdentityService::ChromeIdentityService() {}
 
-ChromeIdentityService::~ChromeIdentityService() {}
+ChromeIdentityService::~ChromeIdentityService() {
+  FOR_EACH_OBSERVER(Observer, observer_list_,
+                    OnChromeIdentityServiceWillBeDestroyed());
+}
 
 bool ChromeIdentityService::IsValidIdentity(ChromeIdentity* identity) const {
   return false;

@@ -61,6 +61,9 @@ class ChromeIdentityService {
     // Called when profile information or the profile image is updated.
     virtual void OnProfileUpdate(ChromeIdentity* identity) {}
 
+    // Called when the ChromeIdentityService will be destroyed.
+    virtual void OnChromeIdentityServiceWillBeDestroyed() {}
+
    private:
     DISALLOW_COPY_AND_ASSIGN(Observer);
   };
