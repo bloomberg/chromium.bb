@@ -17,10 +17,8 @@
 #include "base/profiler/scoped_tracker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
-#include "base/synchronization/waitable_event.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
-#include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "mojo/message_pump/message_pump_mojo.h"
 #include "mojo/message_pump/message_pump_mojo_handler.h"
@@ -64,8 +62,6 @@ class WatcherBackend : public MessagePumpMojoHandler {
   ~WatcherBackend() override;
 
   void StartWatching(const WatchData& data);
-
-  // Cancels a previously scheduled request to start a watch.
   void StopWatching(WatcherID watcher_id);
 
  private:
@@ -109,10 +105,11 @@ void WatcherBackend::StopWatching(WatcherID watcher_id) {
   // Because of the thread hop it is entirely possible to get here and not
   // have a valid handle registered for |watcher_id|.
   Handle handle;
-  if (GetMojoHandleByWatcherID(watcher_id, &handle)) {
-    handle_to_data_.erase(handle);
-    MessagePumpMojo::current()->RemoveHandler(handle);
-  }
+  if (!GetMojoHandleByWatcherID(watcher_id, &handle))
+    return;
+
+  handle_to_data_.erase(handle);
+  MessagePumpMojo::current()->RemoveHandler(handle);
 }
 
 void WatcherBackend::RemoveAndNotify(const Handle& handle,
@@ -151,8 +148,6 @@ void WatcherBackend::OnHandleError(const Handle& handle, MojoResult result) {
 
 // WatcherThreadManager manages the background thread that listens for handles
 // to be ready. All requests are handled by WatcherBackend.
-}  // namespace
-
 class WatcherThreadManager {
  public:
   ~WatcherThreadManager();
@@ -181,12 +176,11 @@ class WatcherThreadManager {
 
   // See description of |requests_| for details.
   struct RequestData {
-    RequestData() : type(REQUEST_START), stop_id(0), stop_event(NULL) {}
+    RequestData() : type(REQUEST_START), stop_id(0) {}
 
     RequestType type;
     WatchData start_data;
     WatcherID stop_id;
-    base::WaitableEvent* stop_event;
   };
 
   typedef std::vector<RequestData> Requests;
@@ -262,16 +256,10 @@ void WatcherThreadManager::StopWatching(WatcherID watcher_id) {
   tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "554761 WatcherThreadManager::StopWatching"));
-  base::ThreadRestrictions::ScopedAllowWait allow_wait;
-  base::WaitableEvent event(true, false);
   RequestData request_data;
   request_data.type = REQUEST_STOP;
   request_data.stop_id = watcher_id;
-  request_data.stop_event = &event;
   AddRequest(request_data);
-
-  // We need to block until the handle is actually removed.
-  event.Wait();
 }
 
 void WatcherThreadManager::AddRequest(const RequestData& data) {
@@ -282,7 +270,7 @@ void WatcherThreadManager::AddRequest(const RequestData& data) {
     if (!was_empty)
       return;
   }
-  // We own |thread_|, so it's safe to use Unretained() here.
+  // We outlive |thread_|, so it's safe to use Unretained() here.
   thread_.task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&WatcherThreadManager::ProcessRequestsOnBackendThread,
@@ -302,7 +290,6 @@ void WatcherThreadManager::ProcessRequestsOnBackendThread() {
       backend_.StartWatching(requests[i].start_data);
     } else {
       backend_.StopWatching(requests[i].stop_id);
-      requests[i].stop_event->Signal();
     }
   }
 }
@@ -313,6 +300,8 @@ WatcherThreadManager::WatcherThreadManager()
   thread_options.message_pump_factory = base::Bind(&MessagePumpMojo::Create);
   thread_.StartWithOptions(thread_options);
 }
+
+}  // namespace
 
 // HandleWatcher::StateBase and subclasses -------------------------------------
 

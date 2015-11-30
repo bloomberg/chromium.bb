@@ -55,11 +55,6 @@ class InFlightIO;
 namespace gles2 {
 class CommandBufferClientImpl;
 }
-namespace mojo {
-namespace common {
-class WatcherThreadManager;
-}
-}
 namespace net {
 class NetworkChangeNotifierMac;
 namespace internal {
@@ -192,7 +187,6 @@ class BASE_EXPORT ThreadRestrictions {
   friend class ::ScopedAllowWaitForLegacyWebViewApi;
   friend class cc::CompletionEvent;
   friend class cc::TaskGraphRunner;
-  friend class mojo::common::WatcherThreadManager;
   friend class remoting::AutoThread;
   friend class ui::WindowResizeHelperMac;
   friend class MessagePumpDefault;

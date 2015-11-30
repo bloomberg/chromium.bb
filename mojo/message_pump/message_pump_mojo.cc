@@ -202,6 +202,7 @@ bool MessagePumpMojo::DoInternalWork(const RunState& run_state, bool block) {
     switch (result) {
       case MOJO_RESULT_CANCELLED:
       case MOJO_RESULT_FAILED_PRECONDITION:
+      case MOJO_RESULT_INVALID_ARGUMENT:
         RemoveInvalidHandle(wait_state, result, wait_many_result.index);
         break;
       case MOJO_RESULT_DEADLINE_EXCEEDED:
@@ -249,7 +250,8 @@ void MessagePumpMojo::RemoveInvalidHandle(const WaitState& wait_state,
                                           MojoResult result,
                                           uint32_t index) {
   // TODO(sky): deal with control pipe going bad.
-  CHECK(result == MOJO_RESULT_FAILED_PRECONDITION ||
+  CHECK(result == MOJO_RESULT_INVALID_ARGUMENT ||
+        result == MOJO_RESULT_FAILED_PRECONDITION ||
         result == MOJO_RESULT_CANCELLED);
   CHECK_NE(index, 0u);  // Indicates the control pipe went bad.
 
