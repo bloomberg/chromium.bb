@@ -243,10 +243,9 @@ static void
 drm_fb_destroy_callback(struct gbm_bo *bo, void *data)
 {
 	struct drm_fb *fb = data;
-	struct gbm_device *gbm = gbm_bo_get_device(bo);
 
 	if (fb->fb_id)
-		drmModeRmFB(gbm_device_get_fd(gbm), fb->fb_id);
+		drmModeRmFB(fb->fd, fb->fb_id);
 
 	weston_buffer_reference(&fb->buffer_ref, NULL);
 
