@@ -249,10 +249,6 @@ bool EventTarget::clearAttributeEventListener(const AtomicString& eventType)
 
 bool EventTarget::dispatchEventForBindings(PassRefPtrWillBeRawPtr<Event> event, ExceptionState& exceptionState)
 {
-    if (!event) {
-        exceptionState.throwDOMException(InvalidStateError, "The event provided is null.");
-        return false;
-    }
     if (event->type().isEmpty()) {
         exceptionState.throwDOMException(InvalidStateError, "The event provided is uninitialized.");
         return false;
