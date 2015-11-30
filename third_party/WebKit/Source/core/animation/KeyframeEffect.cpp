@@ -209,6 +209,8 @@ void KeyframeEffect::clearEffects()
     m_sampledEffect = nullptr;
     restartAnimationOnCompositor();
     m_target->setNeedsAnimationStyleRecalc();
+    if (RuntimeEnabledFeatures::webAnimationsSVGEnabled() && m_target->isSVGElement())
+        toSVGElement(*m_target).clearWebAnimatedAttributes();
     invalidate();
 }
 

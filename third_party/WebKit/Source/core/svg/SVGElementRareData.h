@@ -69,6 +69,8 @@ public:
     CSSCursorImageValue* cursorImageValue() const { return m_cursorImageValue; }
     void setCursorImageValue(CSSCursorImageValue* cursorImageValue) { m_cursorImageValue = cursorImageValue; }
 
+    HashSet<const QualifiedName*>& webAnimatedAttributes() { return m_webAnimatedAttributes; }
+
     MutableStylePropertySet* animatedSMILStyleProperties() const { return m_animatedSMILStyleProperties.get(); }
     MutableStylePropertySet* ensureAnimatedSMILStyleProperties();
 
@@ -96,6 +98,7 @@ private:
     bool m_instancesUpdatesBlocked : 1;
     bool m_useOverrideComputedStyle : 1;
     bool m_needsOverrideComputedStyleUpdate : 1;
+    HashSet<const QualifiedName*> m_webAnimatedAttributes;
     RefPtrWillBeMember<MutableStylePropertySet> m_animatedSMILStyleProperties;
     RefPtr<ComputedStyle> m_overrideComputedStyle;
     // Used by <animateMotion>

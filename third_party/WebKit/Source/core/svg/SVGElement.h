@@ -46,6 +46,7 @@ class SVGElement;
 class SVGElementRareData;
 class SVGFitToViewBox;
 class SVGLength;
+class SVGPropertyBase;
 class SVGSVGElement;
 class SVGUseElement;
 
@@ -82,6 +83,9 @@ public:
 
     // Records the SVG element as having a Web Animation on an SVG attribute that needs applying.
     void setWebAnimationsPending();
+
+    void setWebAnimatedAttribute(const QualifiedName& attribute, PassRefPtrWillBeRawPtr<SVGPropertyBase>);
+    void clearWebAnimatedAttributes();
 
     SVGSVGElement* ownerSVGElement() const;
     SVGElement* viewportElement() const;

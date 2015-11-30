@@ -40,6 +40,7 @@
 #include "core/html/HTMLElement.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/svg/LayoutSVGResourceContainer.h"
+#include "core/svg/SVGAnimateElement.h"
 #include "core/svg/SVGCursorElement.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGElementRareData.h"
@@ -47,6 +48,7 @@
 #include "core/svg/SVGSVGElement.h"
 #include "core/svg/SVGTitleElement.h"
 #include "core/svg/SVGUseElement.h"
+#include "core/svg/properties/SVGProperty.h"
 #include "platform/JSONValues.h"
 #include "wtf/TemporaryChange.h"
 
@@ -238,6 +240,40 @@ void SVGElement::setInstanceUpdatesBlocked(bool value)
 void SVGElement::setWebAnimationsPending()
 {
     document().accessSVGExtensions().addWebAnimationsPendingSVGElement(*this);
+}
+
+template<typename T>
+static void updateInstancesAnimatedAttribute(SVGElement* element, const QualifiedName& attribute, T callback)
+{
+    SVGElement::InstanceUpdateBlocker blocker(element);
+    for (SVGElement* instance : SVGAnimateElement::findElementInstances(element)) {
+        RefPtrWillBeRawPtr<SVGAnimatedPropertyBase> animatedProperty = instance->propertyFromAttribute(attribute);
+        if (animatedProperty) {
+            callback(*animatedProperty);
+            instance->invalidateSVGAttributes();
+            instance->svgAttributeChanged(attribute);
+        }
+    }
+}
+
+void SVGElement::setWebAnimatedAttribute(const QualifiedName& attribute, PassRefPtrWillBeRawPtr<SVGPropertyBase> value)
+{
+    updateInstancesAnimatedAttribute(this, attribute, [&value](SVGAnimatedPropertyBase& animatedProperty) {
+        animatedProperty.setAnimatedValue(value.get());
+    });
+    ensureSVGRareData()->webAnimatedAttributes().add(&attribute);
+}
+
+void SVGElement::clearWebAnimatedAttributes()
+{
+    if (!hasSVGRareData())
+        return;
+    for (const QualifiedName* attribute : svgRareData()->webAnimatedAttributes()) {
+        updateInstancesAnimatedAttribute(this, *attribute, [](SVGAnimatedPropertyBase& animatedProperty) {
+            animatedProperty.animationEnded();
+        });
+    }
+    svgRareData()->webAnimatedAttributes().clear();
 }
 
 AffineTransform SVGElement::localCoordinateSpaceTransform(CTMScope) const

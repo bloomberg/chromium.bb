@@ -7,7 +7,8 @@
 
 #include "core/animation/InterpolationEnvironment.h"
 #include "core/animation/StringKeyframe.h"
-#include "core/svg/SVGAnimateElement.h"
+#include "core/svg/SVGElement.h"
+#include "core/svg/properties/SVGProperty.h"
 
 namespace blink {
 
@@ -27,17 +28,7 @@ PassOwnPtr<InterpolationValue> SVGInterpolationType::maybeConvertUnderlyingValue
 
 void SVGInterpolationType::apply(const InterpolableValue& interpolableValue, const NonInterpolableValue* nonInterpolableValue, InterpolationEnvironment& environment) const
 {
-    SVGElement& targetElement = environment.svgElement();
-    SVGElement::InstanceUpdateBlocker blocker(&targetElement);
-    RefPtrWillBeRawPtr<SVGPropertyBase> appliedValue = appliedSVGValue(interpolableValue, nonInterpolableValue);
-    for (SVGElement* instance : SVGAnimateElement::findElementInstances(&targetElement)) {
-        RefPtrWillBeRawPtr<SVGAnimatedPropertyBase> animatedProperty = instance->propertyFromAttribute(attribute());
-        if (animatedProperty) {
-            animatedProperty->setAnimatedValue(appliedValue);
-            instance->invalidateSVGAttributes();
-            instance->svgAttributeChanged(attribute());
-        }
-    }
+    environment.svgElement().setWebAnimatedAttribute(attribute(), appliedSVGValue(interpolableValue, nonInterpolableValue));
 }
 
 } // namespace blink
