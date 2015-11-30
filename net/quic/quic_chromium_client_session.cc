@@ -799,13 +799,12 @@ void QuicChromiumClientSession::OnProofVerifyDetailsAvailable(
     const ProofVerifyDetails& verify_details) {
   const ProofVerifyDetailsChromium* verify_details_chromium =
       reinterpret_cast<const ProofVerifyDetailsChromium*>(&verify_details);
-  CertVerifyResult* result_copy = new CertVerifyResult;
-  result_copy->CopyFrom(verify_details_chromium->cert_verify_result);
-  cert_verify_result_.reset(result_copy);
+  cert_verify_result_.reset(new CertVerifyResult);
+  cert_verify_result_->CopyFrom(verify_details_chromium->cert_verify_result);
   pinning_failure_log_ = verify_details_chromium->pinning_failure_log;
-  ct::CTVerifyResult* ct_verify_result_copy = new ct::CTVerifyResult;
-  *ct_verify_result_copy = verify_details_chromium->ct_verify_result;
-  ct_verify_result_.reset(ct_verify_result_copy);
+  scoped_ptr<ct::CTVerifyResult> ct_verify_result_copy(
+      new ct::CTVerifyResult(verify_details_chromium->ct_verify_result));
+  ct_verify_result_ = ct_verify_result_copy.Pass();
   logger_->OnCertificateVerified(*cert_verify_result_);
 }
 

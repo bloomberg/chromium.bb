@@ -241,12 +241,12 @@ TEST_F(ProofVerifierChromiumTest, FailsIfCertFails) {
   ProofVerifierChromium proof_verifier(&dummy_verifier, nullptr, nullptr,
                                        ct_verifier_.get());
 
-  DummyProofVerifierCallback* callback = new DummyProofVerifierCallback;
+  scoped_ptr<DummyProofVerifierCallback> callback(
+      new DummyProofVerifierCallback);
   QuicAsyncStatus status = proof_verifier.VerifyProof(
       kTestHostname, kTestConfig, certs_, "", GetTestSignature(),
-      verify_context_.get(), &error_details_, &details_, callback);
+      verify_context_.get(), &error_details_, &details_, callback.get());
   ASSERT_EQ(QUIC_FAILURE, status);
-  delete callback;
 }
 
 // Valid SCT, but invalid signature.
@@ -258,13 +258,13 @@ TEST_F(ProofVerifierChromiumTest, ValidSCTList) {
   ProofVerifierChromium proof_verifier(&cert_verifier, nullptr, nullptr,
                                        ct_verifier_.get());
 
-  DummyProofVerifierCallback* callback = new DummyProofVerifierCallback;
+  scoped_ptr<DummyProofVerifierCallback> callback(
+      new DummyProofVerifierCallback);
   QuicAsyncStatus status = proof_verifier.VerifyProof(
       kTestHostname, kTestConfig, certs_, GetSCTListForTesting(), "",
-      verify_context_.get(), &error_details_, &details_, callback);
+      verify_context_.get(), &error_details_, &details_, callback.get());
   ASSERT_EQ(QUIC_FAILURE, status);
   CheckSCT(/*sct_expected_ok=*/true);
-  delete callback;
 }
 
 // Invalid SCT and signature.
@@ -276,13 +276,13 @@ TEST_F(ProofVerifierChromiumTest, InvalidSCTList) {
   ProofVerifierChromium proof_verifier(&cert_verifier, nullptr, nullptr,
                                        ct_verifier_.get());
 
-  DummyProofVerifierCallback* callback = new DummyProofVerifierCallback;
+  scoped_ptr<DummyProofVerifierCallback> callback(
+      new DummyProofVerifierCallback);
   QuicAsyncStatus status = proof_verifier.VerifyProof(
       kTestHostname, kTestConfig, certs_, GetCorruptSCTListForTesting(), "",
-      verify_context_.get(), &error_details_, &details_, callback);
+      verify_context_.get(), &error_details_, &details_, callback.get());
   ASSERT_EQ(QUIC_FAILURE, status);
   CheckSCT(/*sct_expected_ok=*/false);
-  delete callback;
 }
 
 // Tests that the ProofVerifier doesn't verify certificates if the config
@@ -292,12 +292,12 @@ TEST_F(ProofVerifierChromiumTest, FailsIfSignatureFails) {
   ProofVerifierChromium proof_verifier(&cert_verifier, nullptr, nullptr,
                                        ct_verifier_.get());
 
-  DummyProofVerifierCallback* callback = new DummyProofVerifierCallback;
+  scoped_ptr<DummyProofVerifierCallback> callback(
+      new DummyProofVerifierCallback);
   QuicAsyncStatus status = proof_verifier.VerifyProof(
       kTestHostname, kTestConfig, certs_, "", kTestConfig,
-      verify_context_.get(), &error_details_, &details_, callback);
+      verify_context_.get(), &error_details_, &details_, callback.get());
   ASSERT_EQ(QUIC_FAILURE, status);
-  delete callback;
 }
 
 // Tests that EV certificates are left as EV if there is no certificate
@@ -316,12 +316,12 @@ TEST_F(ProofVerifierChromiumTest, PreservesEVIfNoPolicy) {
   ProofVerifierChromium proof_verifier(&dummy_verifier, nullptr, nullptr,
                                        ct_verifier_.get());
 
-  DummyProofVerifierCallback* callback = new DummyProofVerifierCallback;
+  scoped_ptr<DummyProofVerifierCallback> callback(
+      new DummyProofVerifierCallback);
   QuicAsyncStatus status = proof_verifier.VerifyProof(
       kTestHostname, kTestConfig, certs_, "", GetTestSignature(),
-      verify_context_.get(), &error_details_, &details_, callback);
+      verify_context_.get(), &error_details_, &details_, callback.get());
   ASSERT_EQ(QUIC_SUCCESS, status);
-  delete callback;
 
   ASSERT_TRUE(details_.get());
   ProofVerifyDetailsChromium* verify_details =
@@ -348,12 +348,12 @@ TEST_F(ProofVerifierChromiumTest, PreservesEVIfAllowed) {
   ProofVerifierChromium proof_verifier(&dummy_verifier, &policy_enforcer,
                                        nullptr, ct_verifier_.get());
 
-  DummyProofVerifierCallback* callback = new DummyProofVerifierCallback;
+  scoped_ptr<DummyProofVerifierCallback> callback(
+      new DummyProofVerifierCallback);
   QuicAsyncStatus status = proof_verifier.VerifyProof(
       kTestHostname, kTestConfig, certs_, "", GetTestSignature(),
-      verify_context_.get(), &error_details_, &details_, callback);
+      verify_context_.get(), &error_details_, &details_, callback.get());
   ASSERT_EQ(QUIC_SUCCESS, status);
-  delete callback;
 
   ASSERT_TRUE(details_.get());
   ProofVerifyDetailsChromium* verify_details =
@@ -380,12 +380,12 @@ TEST_F(ProofVerifierChromiumTest, StripsEVIfNotAllowed) {
   ProofVerifierChromium proof_verifier(&dummy_verifier, &policy_enforcer,
                                        nullptr, ct_verifier_.get());
 
-  DummyProofVerifierCallback* callback = new DummyProofVerifierCallback;
+  scoped_ptr<DummyProofVerifierCallback> callback(
+      new DummyProofVerifierCallback);
   QuicAsyncStatus status = proof_verifier.VerifyProof(
       kTestHostname, kTestConfig, certs_, "", GetTestSignature(),
-      verify_context_.get(), &error_details_, &details_, callback);
+      verify_context_.get(), &error_details_, &details_, callback.get());
   ASSERT_EQ(QUIC_SUCCESS, status);
-  delete callback;
 
   ASSERT_TRUE(details_.get());
   ProofVerifyDetailsChromium* verify_details =
@@ -413,12 +413,12 @@ TEST_F(ProofVerifierChromiumTest, IgnoresPolicyEnforcerIfNotEV) {
   ProofVerifierChromium proof_verifier(&dummy_verifier, &policy_enforcer,
                                        nullptr, ct_verifier_.get());
 
-  DummyProofVerifierCallback* callback = new DummyProofVerifierCallback;
+  scoped_ptr<DummyProofVerifierCallback> callback(
+      new DummyProofVerifierCallback);
   QuicAsyncStatus status = proof_verifier.VerifyProof(
       kTestHostname, kTestConfig, certs_, "", GetTestSignature(),
-      verify_context_.get(), &error_details_, &details_, callback);
+      verify_context_.get(), &error_details_, &details_, callback.get());
   ASSERT_EQ(QUIC_SUCCESS, status);
-  delete callback;
 
   ASSERT_TRUE(details_.get());
   ProofVerifyDetailsChromium* verify_details =
