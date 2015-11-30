@@ -46,6 +46,9 @@ interface CloseEvent : Event
     getter reason
     getter wasClean
     method constructor
+interface CountQueuingStrategy
+    method constructor
+    method size
 interface CrossOriginServiceWorkerClient : EventTarget
     getter origin
     getter targetUrl
@@ -495,9 +498,11 @@ interface ReadableByteStream
     method constructor
     method getReader
 interface ReadableStream
+    getter locked
     method cancel
     method constructor
     method getReader
+    method tee
 interface Request
     getter bodyUsed
     getter credentials

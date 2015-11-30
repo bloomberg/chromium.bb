@@ -249,7 +249,6 @@
             'page/scrolling/ScrollStateCallback.idl',
             'streams/ReadableByteStream.idl',
             'streams/ReadableByteStreamReader.idl',
-            'streams/ReadableStream.idl',
             'streams/ReadableStreamReader.idl',
             'streams/Stream.idl',
             'svg/SVGAElement.idl',

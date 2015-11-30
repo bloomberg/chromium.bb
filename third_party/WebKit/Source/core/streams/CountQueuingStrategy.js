@@ -7,7 +7,7 @@
 
   const defineProperty = global.Object.defineProperty;
 
-  class ByteLengthQueuingStrategy {
+  class CountQueuingStrategy {
     constructor(options) {
       defineProperty(this, 'highWaterMark', {
         value: options.highWaterMark,
@@ -16,11 +16,11 @@
         writable: true
       });
     }
-    size(chunk) { return chunk.byteLength; }
+    size(chunk) { return 1; }
   }
 
-  defineProperty(global, 'ByteLengthQueuingStrategy', {
-    value: ByteLengthQueuingStrategy,
+  defineProperty(global, 'CountQueuingStrategy', {
+    value: CountQueuingStrategy,
     enumerable: false,
     configurable: true,
     writable: true

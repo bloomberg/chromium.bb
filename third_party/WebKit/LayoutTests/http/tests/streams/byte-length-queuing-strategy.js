@@ -6,7 +6,7 @@ if (self.importScripts) {
 
 test(() => {
 
-  const strategy = new ByteLengthQueuingStrategy({ highWaterMark: 4 });
+  new ByteLengthQueuingStrategy({ highWaterMark: 4 });
 
 }, 'Can construct a ByteLengthQueuingStrategy with a valid high water mark');
 
@@ -23,11 +23,11 @@ test(() => {
 
   const highWaterMark = 1;
   const highWaterMarkObjectGetter = {
-    get highWaterMark() { return highWaterMark; },
+    get highWaterMark() { return highWaterMark; }
   };
   const error = new Error('wow!');
   const highWaterMarkObjectGetterThrowing = {
-    get highWaterMark() { throw error; },
+    get highWaterMark() { throw error; }
   };
 
   assert_throws({ name: 'TypeError' }, () => new ByteLengthQueuingStrategy(), 'construction fails with undefined');
@@ -47,12 +47,12 @@ test(() => {
   const size = 1024;
   const chunk = { byteLength: size };
   const chunkGetter = {
-    get byteLength() { return size; },
-  }
+    get byteLength() { return size; }
+  };
   const error = new Error('wow!');
   const chunkGetterThrowing = {
-    get byteLength() { throw error; },
-  }
+    get byteLength() { throw error; }
+  };
   assert_throws({ name: 'TypeError' }, () => ByteLengthQueuingStrategy.prototype.size(), 'size fails with undefined');
   assert_throws({ name: 'TypeError' }, () => ByteLengthQueuingStrategy.prototype.size(null), 'size fails with null');
   assert_equals(ByteLengthQueuingStrategy.prototype.size('potato'), undefined,
@@ -67,6 +67,18 @@ test(() => {
     'size fails with the error thrown by the getter');
 
 }, 'ByteLengthQueuingStrategy size behaves as expected with strange arguments');
+
+test(() => {
+
+  const thisValue = null;
+  const returnValue = { 'returned from': 'byteLength getter' };
+  const chunk = {
+    get byteLength() { return returnValue; }
+  };
+
+  assert_equals(ByteLengthQueuingStrategy.prototype.size.call(thisValue, chunk), returnValue);
+
+}, 'ByteLengthQueuingStrategy.prototype.size should work generically on its this and its arguments');
 
 test(() => {
 
@@ -87,8 +99,8 @@ test(() => {
   strategy.highWaterMark = 10;
   assert_equals(strategy.highWaterMark, 10);
 
-  strategy.highWaterMark = "banana";
-  assert_equals(strategy.highWaterMark, "banana");
+  strategy.highWaterMark = 'banana';
+  assert_equals(strategy.highWaterMark, 'banana');
 
 }, 'ByteLengthQueuingStrategy\'s highWaterMark property can be set to anything');
 

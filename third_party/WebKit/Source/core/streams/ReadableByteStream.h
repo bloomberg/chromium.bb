@@ -19,7 +19,7 @@ class ScriptState;
 class Strategy;
 class UnderlyingSource;
 
-class CORE_EXPORT ReadableByteStream : public ReadableStreamImpl<ReadableStreamChunkTypeTraits<DOMArrayBufferView>> {
+class CORE_EXPORT ReadableByteStream : public ReadableStreamImpl<ReadableStreamChunkTypeTraits<DOMArrayBufferView>>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     explicit ReadableByteStream(UnderlyingSource* source) : ReadableStreamImpl<ReadableStreamChunkTypeTraits<DOMArrayBufferView>>(source) { }

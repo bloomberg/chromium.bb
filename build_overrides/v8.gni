@@ -19,9 +19,13 @@ v8_use_external_startup_data = !(is_win || is_ios)
 # Adding V8 extras files requires API owners review
 # Be sure to synchronize with build/common.gypi
 
-v8_extra_library_files = []
-v8_experimental_extra_library_files =
-    [ "../third_party/WebKit/Source/core/streams/ByteLengthQueuingStrategy.js" ]
+v8_extra_library_files =
+    [ "../third_party/WebKit/Source/core/streams/ReadableStreamTempStub.js" ]
+v8_experimental_extra_library_files = [
+  "../third_party/WebKit/Source/core/streams/ByteLengthQueuingStrategy.js",
+  "../third_party/WebKit/Source/core/streams/CountQueuingStrategy.js",
+  "../third_party/WebKit/Source/core/streams/ReadableStream.js",
+]
 
 if (is_android) {
   v8_external_startup_data_renaming_sources = [

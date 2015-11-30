@@ -642,6 +642,9 @@ interface ConvolverNode : AudioNode
     method constructor
     setter buffer
     setter normalize
+interface CountQueuingStrategy
+    method constructor
+    method size
 interface Credential
     getter iconURL
     getter id
@@ -3906,9 +3909,11 @@ interface ReadableByteStream
     method constructor
     method getReader
 interface ReadableStream
+    getter locked
     method cancel
     method constructor
     method getReader
+    method tee
 interface RelatedEvent : Event
     getter relatedTarget
     method constructor

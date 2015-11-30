@@ -30,6 +30,9 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     setter transform
 [Worker] interface CompositorWorkerGlobalScope : WorkerGlobalScope
 [Worker]     method constructor
+[Worker] interface CountQueuingStrategy
+[Worker]     method constructor
+[Worker]     method size
 [Worker] interface DataView
 [Worker]     getter buffer
 [Worker]     getter byteLength
@@ -66,6 +69,12 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     attribute TYPE_MISMATCH_ERR
 [Worker]     getter code
 [Worker]     method constructor
+[Worker] interface ReadableStream
+[Worker]     getter locked
+[Worker]     method cancel
+[Worker]     method constructor
+[Worker]     method getReader
+[Worker]     method tee
 [Worker] interface webkitIDBCursor
 [Worker]     getter direction
 [Worker]     getter key

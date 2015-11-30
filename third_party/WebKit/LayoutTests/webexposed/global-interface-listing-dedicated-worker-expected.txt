@@ -50,6 +50,9 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     getter reason
 [Worker]     getter wasClean
 [Worker]     method constructor
+[Worker] interface CountQueuingStrategy
+[Worker]     method constructor
+[Worker]     method size
 [Worker] interface Crypto
 [Worker]     getter subtle
 [Worker]     method constructor
@@ -462,9 +465,11 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method constructor
 [Worker]     method getReader
 [Worker] interface ReadableStream
+[Worker]     getter locked
 [Worker]     method cancel
 [Worker]     method constructor
 [Worker]     method getReader
+[Worker]     method tee
 [Worker] interface Request
 [Worker]     getter bodyUsed
 [Worker]     getter credentials

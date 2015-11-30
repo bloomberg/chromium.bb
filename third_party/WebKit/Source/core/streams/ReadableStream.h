@@ -25,8 +25,7 @@ class ExecutionContext;
 class ReadableStreamReader;
 class UnderlyingSource;
 
-class CORE_EXPORT ReadableStream : public GarbageCollectedFinalized<ReadableStream>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
+class CORE_EXPORT ReadableStream : public GarbageCollectedFinalized<ReadableStream> {
 public:
     enum State {
         Readable,
