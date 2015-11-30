@@ -189,6 +189,8 @@ DEFINE_TRACE(FrameLoader)
 
 void FrameLoader::init()
 {
+    // init() may dispatch JS events, so protect a reference to m_frame.
+    RefPtrWillBeRawPtr<LocalFrame> protect(m_frame);
     ResourceRequest initialRequest(KURL(ParsedURLString, emptyString()));
     initialRequest.setRequestContext(WebURLRequest::RequestContextInternal);
     initialRequest.setFrameType(m_frame->isMainFrame() ? WebURLRequest::FrameTypeTopLevel : WebURLRequest::FrameTypeNested);
