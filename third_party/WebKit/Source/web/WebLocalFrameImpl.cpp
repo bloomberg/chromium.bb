@@ -1858,7 +1858,7 @@ void WebLocalFrameImpl::createFrameView()
 WebLocalFrameImpl* WebLocalFrameImpl::fromFrame(LocalFrame* frame)
 {
     if (!frame)
-        return 0;
+        return nullptr;
     return fromFrame(*frame);
 }
 
@@ -1866,22 +1866,21 @@ WebLocalFrameImpl* WebLocalFrameImpl::fromFrame(LocalFrame& frame)
 {
     FrameLoaderClient* client = frame.loader().client();
     if (!client || !client->isFrameLoaderClientImpl())
-        return 0;
+        return nullptr;
     return toFrameLoaderClientImpl(client)->webFrame();
 }
 
 WebLocalFrameImpl* WebLocalFrameImpl::fromFrameOwnerElement(Element* element)
 {
-    // FIXME: Why do we check specifically for <iframe> and <frame> here? Why can't we get the WebLocalFrameImpl from an <object> element, for example.
-    if (!isHTMLFrameElementBase(element))
-        return 0;
-    return fromFrame(toLocalFrame(toHTMLFrameElementBase(element)->contentFrame()));
+    if (!element->isFrameOwnerElement())
+        return nullptr;
+    return fromFrame(toLocalFrame(toHTMLFrameOwnerElement(element)->contentFrame()));
 }
 
 WebViewImpl* WebLocalFrameImpl::viewImpl() const
 {
     if (!frame())
-        return 0;
+        return nullptr;
     return WebViewImpl::fromPage(frame()->page());
 }
 

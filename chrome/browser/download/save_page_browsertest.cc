@@ -1010,12 +1010,14 @@ IN_PROC_BROWSER_TEST_P(SavePageMultiFrameBrowserTest, ObjectElements) {
 
   // 4 = main frame + iframe + object w/ html doc + object w/ pdf doc
   // (svg and png objects do not get a separate frame)
-  int expected_number_of_frames = 4;
+  int expected_number_of_frames = 6;
 
   std::vector<std::string> expected_substrings{
       "frames-objects.htm: 8da13db4-a512-4d9b-b1c5-dc1c134234b9",
       "a.htm: 1b8aae2b-e164-462f-bd5b-98aa366205f2",
       "b.htm: 3a35f7fa-96a9-4487-9f18-4470263907fa",
+      "frames-nested.htm: 4388232f-8d45-4d2e-9807-721b381be153",
+      "frames-nested2.htm: 6d23dc47-f283-4977-96ec-66bcf72301a4",
   };
 
   GURL url(

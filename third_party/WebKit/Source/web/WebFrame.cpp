@@ -266,9 +266,9 @@ WebFrame* WebFrame::fromFrameOwnerElement(const WebElement& webElement)
 {
     Element* element = PassRefPtrWillBeRawPtr<Element>(webElement).get();
 
-    if (!isHTMLFrameElementBase(element))
+    if (!element->isFrameOwnerElement())
         return nullptr;
-    return fromFrame(toHTMLFrameElementBase(element)->contentFrame());
+    return fromFrame(toHTMLFrameOwnerElement(element)->contentFrame());
 }
 
 bool WebFrame::isLoading() const

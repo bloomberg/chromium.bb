@@ -34,41 +34,63 @@ using blink::WebView;
 namespace content {
 namespace {
 
-// Get all savable resource links from current element. One element might
-// have more than one resource link. It is possible to have some links
-// in one CSS stylesheet.
+// Returns |true| if |web_frame| contains (or should be assumed to contain)
+// a html document.
+bool DoesFrameContainHtmlDocument(const WebFrame& web_frame,
+                                  const WebElement& element) {
+  if (web_frame.isWebLocalFrame()) {
+    WebDocument doc = web_frame.document();
+    return doc.isHTMLDocument() || doc.isXHTMLDocument();
+  }
+
+  // Cannot inspect contents of a remote frame, so we use a heuristic:
+  // Assume that <iframe> and <frame> elements contain a html document,
+  // and other elements (i.e. <object>) contain plugins or other resources.
+  // If the heuristic is wrong (i.e. the remote frame in <object> does
+  // contain an html document), then things will still work, but with the
+  // following caveats: 1) original frame content will be saved and 2) links
+  // in frame's html doc will not be rewritten to point to locally saved
+  // files.
+  return element.hasHTMLTagName("iframe") || element.hasHTMLTagName("frame");
+}
+
+// If present and valid, then push the link associated with |element|
+// into either SavableResourcesResult::subframes or
+// SavableResourcesResult::resources_list.
 void GetSavableResourceLinkForElement(
     const WebElement& element,
     const WebDocument& current_doc,
     SavableResourcesResult* result) {
-  if (element.hasHTMLTagName("iframe") || element.hasHTMLTagName("frame")) {
-    GURL complete_url = current_doc.completeURL(element.getAttribute("src"));
-    WebFrame* web_frame = WebFrame::fromFrameOwnerElement(element);
-
-    SavableSubframe subframe;
-    subframe.original_url = complete_url;
-    subframe.routing_id = GetRoutingIdForFrameOrProxy(web_frame);
-
-    result->subframes->push_back(subframe);
-    return;
-  }
-
   // Check whether the node has sub resource URL or not.
   WebString value = GetSubResourceLinkFromElement(element);
   if (value.isNull())
     return;
+
   // Get absolute URL.
-  GURL u = current_doc.completeURL(value);
-  // ignore invalid URL
-  if (!u.is_valid())
+  GURL element_url = current_doc.completeURL(value);
+
+  // See whether to report this element as a subframe.
+  WebFrame* web_frame = WebFrame::fromFrameOwnerElement(element);
+  if (web_frame && DoesFrameContainHtmlDocument(*web_frame, element)) {
+    SavableSubframe subframe;
+    subframe.original_url = element_url;
+    subframe.routing_id = GetRoutingIdForFrameOrProxy(web_frame);
+    result->subframes->push_back(subframe);
     return;
+  }
+
+  // Ignore invalid URL.
+  if (!element_url.is_valid())
+    return;
+
   // Ignore those URLs which are not standard protocols. Because FTP
   // protocol does no have cache mechanism, we will skip all
   // sub-resources if they use FTP protocol.
-  if (!u.SchemeIsHTTPOrHTTPS() && !u.SchemeIs(url::kFileScheme))
+  if (!element_url.SchemeIsHTTPOrHTTPS() &&
+      !element_url.SchemeIs(url::kFileScheme))
     return;
 
-  result->resources_list->push_back(u);
+  result->resources_list->push_back(element_url);
 }
 
 }  // namespace
@@ -112,6 +134,8 @@ bool GetSavableResourceLinksForFrame(WebFrame* current_frame,
 WebString GetSubResourceLinkFromElement(const WebElement& element) {
   const char* attribute_name = NULL;
   if (element.hasHTMLTagName("img") ||
+      element.hasHTMLTagName("frame") ||
+      element.hasHTMLTagName("iframe") ||
       element.hasHTMLTagName("script")) {
     attribute_name = "src";
   } else if (element.hasHTMLTagName("input")) {
@@ -130,10 +154,6 @@ WebString GetSubResourceLinkFromElement(const WebElement& element) {
              element.hasHTMLTagName("ins")) {
     attribute_name = "cite";
   } else if (element.hasHTMLTagName("object")) {
-    // TODO(lukasza): When <object> contains a html document, it should be
-    // reported as a subframe, not as a savable resource (reporting as a
-    // savable resource works, but will save original html contents, not
-    // current html contents of the frame).
     attribute_name = "data";
   } else if (element.hasHTMLTagName("link")) {
     // If the link element is not linked to css, ignore it.
