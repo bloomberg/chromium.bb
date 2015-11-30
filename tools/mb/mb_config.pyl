@@ -39,6 +39,7 @@
     # dont need aura as it is implied by chromeos and ozone.
     'gn_blimp_debug': ['gn', 'chromeos', 'ozone', 'debug'],
 
+    'gn_cfi_bot': ['gn', 'cfi', 'release_bot'],
     'gn_debug_bot': ['gn', 'debug_bot'],
     'gn_debug_bot_minimal_symbols': ['gn', 'debug_bot_minimal_symbols'],
     'gn_debug_bot_minimal_symbols_x86': ['gn', 'debug_bot_minimal_symbols', 'x86'],
@@ -152,6 +153,11 @@
     'cast': {
       'gn_args': '# TODO: Need the GN equivalents for a Chromecast build.',
       'gyp_defines': 'chromecast=1',
+    },
+
+    'cfi': {
+      'gn_args': 'is_cfi=1',
+      'gyp_defines': 'cfi_vptr=1',
     },
 
     'chromeos': {
@@ -439,6 +445,7 @@
       'Linux GN (dbg)': 'gn_debug_bot'
     },
     'chromium.fyi': {
+      'CFI Linux': 'gn_cfi_bot',
       'CrWinClang64(dbg)': 'win_clang_debug_bot',
       'Libfuzzer Upload Linux': 'libfuzzer_upload_bot',
       'Site Isolation Linux': 'gn_release_trybot',
