@@ -101,7 +101,7 @@ class BrowserFrame
   views::NonClientFrameView* CreateNonClientFrameView() override;
   bool GetAccelerator(int command_id,
                       ui::Accelerator* accelerator) const override;
-  ui::ThemeProvider* GetThemeProvider() const override;
+  const ui::ThemeProvider* GetThemeProvider() const override;
   void SchedulePaintInRect(const gfx::Rect& rect) override;
   void OnNativeWidgetActivationChanged(bool active) override;
 

@@ -402,7 +402,7 @@ void NewTabButton::PaintFill(bool pressed,
 
   // Draw the fill background image.
   const gfx::Size size(GetNewTabButtonSize());
-  ui::ThemeProvider* theme_provider = GetThemeProvider();
+  const ui::ThemeProvider* theme_provider = GetThemeProvider();
   gfx::ImageSkia* background = theme_provider->GetImageSkiaNamed(bg_id);
   // For custom tab backgrounds the background starts at the top of the tab
   // strip. Otherwise the background starts at the top of the frame.
@@ -1205,7 +1205,7 @@ bool TabStrip::IsImmersiveStyle() const {
 }
 
 int TabStrip::GetBackgroundResourceId(bool* custom_image) const {
-  ui::ThemeProvider* theme_provider = GetThemeProvider();
+  const ui::ThemeProvider* theme_provider = GetThemeProvider();
 
   if (GetWidget()->ShouldWindowContentsBeTransparent()) {
     const int kBackgroundIdGlass = IDR_THEME_TAB_BACKGROUND_V;

@@ -48,7 +48,7 @@ void ContentsWebView::ViewHierarchyChanged(
 }
 
 void ContentsWebView::OnThemeChanged() {
-  ui::ThemeProvider* const theme = GetThemeProvider();
+  const ui::ThemeProvider* const theme = GetThemeProvider();
   if (!theme)
     return;
 

@@ -56,7 +56,7 @@ class AppMenuIconPainter : gfx::AnimationDelegate {
   void set_badge(const gfx::ImageSkia& badge) { badge_ = badge; }
 
   void Paint(gfx::Canvas* canvas,
-             ui::ThemeProvider* theme_provider,
+             const ui::ThemeProvider* theme_provider,
              const gfx::Rect& rect,
              BezelType bezel_type);
 

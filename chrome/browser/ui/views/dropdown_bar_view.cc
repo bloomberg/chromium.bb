@@ -56,7 +56,7 @@ void DropdownBackground::Paint(gfx::Canvas* canvas, views::View* view) const {
   // Finally, calculate the background image tiling offset.
   origin = browser_view_->OffsetPointForToolbarBackgroundImage(origin);
 
-  ui::ThemeProvider* tp = view->GetThemeProvider();
+  const ui::ThemeProvider* tp = view->GetThemeProvider();
   gfx::ImageSkia background = *tp->GetImageSkiaNamed(IDR_THEME_TOOLBAR);
 
   int left_edge_width = left_alpha_mask_->width();

@@ -226,7 +226,7 @@ void ReloadButton::ExecuteBrowserCommand(int command, int event_flags) {
 }
 
 void ReloadButton::ChangeModeInternal(Mode mode) {
-  ui::ThemeProvider* tp = GetThemeProvider();
+  const ui::ThemeProvider* tp = GetThemeProvider();
   // |tp| can be NULL in unit tests.
   if (tp) {
     if (ui::MaterialDesignController::IsModeMaterial()) {

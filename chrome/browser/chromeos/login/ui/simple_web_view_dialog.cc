@@ -357,7 +357,7 @@ void SimpleWebViewDialog::ExecuteCommandWithDisposition(
 }
 
 void SimpleWebViewDialog::LoadImages() {
-  ui::ThemeProvider* tp = GetThemeProvider();
+  const ui::ThemeProvider* tp = GetThemeProvider();
 
   back_->SetImage(views::CustomButton::STATE_NORMAL,
                   tp->GetImageSkiaNamed(IDR_BACK));

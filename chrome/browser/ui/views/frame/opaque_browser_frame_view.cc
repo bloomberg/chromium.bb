@@ -544,7 +544,7 @@ views::ImageButton* OpaqueBrowserFrameView::InitWindowCaptionButton(
     int accessibility_string_id,
     ViewID view_id) {
   views::ImageButton* button = new views::ImageButton(this);
-  ui::ThemeProvider* tp = frame()->GetThemeProvider();
+  const ui::ThemeProvider* tp = frame()->GetThemeProvider();
   button->SetImage(views::CustomButton::STATE_NORMAL,
                    tp->GetImageSkiaNamed(normal_image_id));
   button->SetImage(views::CustomButton::STATE_HOVERED,
@@ -599,7 +599,7 @@ void OpaqueBrowserFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
   frame_background_->set_theme_overlay_image(GetFrameOverlayImage());
   frame_background_->set_top_area_height(GetTopAreaHeight());
 
-  ui::ThemeProvider* tp = GetThemeProvider();
+  const ui::ThemeProvider* tp = GetThemeProvider();
   frame_background_->SetSideImages(
       tp->GetImageSkiaNamed(IDR_WINDOW_LEFT_SIDE),
       tp->GetImageSkiaNamed(IDR_WINDOW_TOP_CENTER),
@@ -637,7 +637,7 @@ void OpaqueBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
   toolbar_bounds.set_origin(toolbar_origin);
   const int h = toolbar_bounds.height();
   const bool md = ui::MaterialDesignController::IsModeMaterial();
-  ui::ThemeProvider* tp = GetThemeProvider();
+  const ui::ThemeProvider* tp = GetThemeProvider();
   const SkColor separator_color =
       tp->GetColor(ThemeProperties::COLOR_TOOLBAR_SEPARATOR);
 
@@ -713,7 +713,7 @@ void OpaqueBrowserFrameView::PaintClientEdge(gfx::Canvas* canvas) {
   const int w = client_bounds.width();
   const int right = client_bounds.right();
   const bool normal_mode = browser_view()->IsTabStripVisible();
-  ui::ThemeProvider* tp = GetThemeProvider();
+  const ui::ThemeProvider* tp = GetThemeProvider();
   const SkColor toolbar_color = normal_mode ?
       tp->GetColor(ThemeProperties::COLOR_TOOLBAR) :
       ThemeProperties::GetDefaultColor(ThemeProperties::COLOR_TOOLBAR);

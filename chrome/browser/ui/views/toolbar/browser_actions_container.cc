@@ -768,7 +768,7 @@ void BrowserActionsContainer::LoadImages() {
   if (in_overflow_mode())
     return;  // Overflow mode has neither a chevron nor highlighting.
 
-  ui::ThemeProvider* tp = GetThemeProvider();
+  const ui::ThemeProvider* tp = GetThemeProvider();
   if (tp && chevron_) {
     chevron_->SetImage(views::Button::STATE_NORMAL,
                        *tp->GetImageSkiaNamed(IDR_BROWSER_ACTIONS_OVERFLOW));

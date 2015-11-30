@@ -757,7 +757,7 @@ gfx::Size ToolbarView::SizeForContentSize(gfx::Size size) const {
 }
 
 void ToolbarView::LoadImages() {
-  ui::ThemeProvider* tp = GetThemeProvider();
+  const ui::ThemeProvider* tp = GetThemeProvider();
 
   if (ui::MaterialDesignController::IsModeMaterial()) {
     const int kButtonSize = 16;

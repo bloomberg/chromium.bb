@@ -1316,7 +1316,7 @@ void Tab::PaintIcon(gfx::Canvas* canvas) {
 
   if (data().network_state != TabRendererData::NETWORK_STATE_NONE) {
     // Paint network activity (aka throbber) animation frame.
-    ui::ThemeProvider* tp = GetThemeProvider();
+    const ui::ThemeProvider* tp = GetThemeProvider();
     if (data().network_state == TabRendererData::NETWORK_STATE_WAITING) {
       if (waiting_start_time_ == base::TimeTicks())
         waiting_start_time_ = base::TimeTicks::Now();
@@ -1453,7 +1453,7 @@ void Tab::SetFaviconHidingOffset(int offset) {
 void Tab::OnButtonColorMaybeChanged() {
   // The theme provider may be null if we're not currently in a widget
   // hierarchy.
-  ui::ThemeProvider* theme_provider = GetThemeProvider();
+  const ui::ThemeProvider* theme_provider = GetThemeProvider();
   if (!theme_provider)
     return;
 

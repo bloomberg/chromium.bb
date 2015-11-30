@@ -755,12 +755,12 @@ bool Widget::IsVisible() const {
   return native_widget_->IsVisible();
 }
 
-ui::ThemeProvider* Widget::GetThemeProvider() const {
+const ui::ThemeProvider* Widget::GetThemeProvider() const {
   const Widget* root_widget = GetTopLevelWidget();
   if (root_widget && root_widget != this) {
     // Attempt to get the theme provider, and fall back to the default theme
     // provider if not found.
-    ui::ThemeProvider* provider = root_widget->GetThemeProvider();
+    const ui::ThemeProvider* provider = root_widget->GetThemeProvider();
     if (provider)
       return provider;
 

@@ -218,7 +218,7 @@ void DownloadItemViewMd::StopDownloadProgress() {
 
 // static
 SkColor DownloadItemViewMd::GetTextColorForThemeProvider(
-    ui::ThemeProvider* theme) {
+    const ui::ThemeProvider* theme) {
   return theme ? theme->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT)
                : gfx::kPlaceholderColor;
 }

@@ -557,7 +557,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   virtual bool IsVisible() const;
 
   // Returns the ThemeProvider that provides theme resources for this Widget.
-  virtual ui::ThemeProvider* GetThemeProvider() const;
+  virtual const ui::ThemeProvider* GetThemeProvider() const;
 
   ui::NativeTheme* GetNativeTheme() {
     return const_cast<ui::NativeTheme*>(

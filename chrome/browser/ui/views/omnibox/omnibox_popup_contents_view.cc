@@ -69,7 +69,7 @@ OmniboxPopupContentsView::OmniboxPopupContentsView(
   // The contents is owned by the LocationBarView.
   set_owned_by_client();
 
-  ui::ThemeProvider* theme = location_bar_view_->GetThemeProvider();
+  const ui::ThemeProvider* theme = location_bar_view_->GetThemeProvider();
   if (ui::MaterialDesignController::IsModeMaterial()) {
     top_shadow_ = theme->GetImageSkiaNamed(IDR_OMNIBOX_DROPDOWN_SHADOW_TOP);
     bottom_shadow_ =

@@ -239,7 +239,7 @@ void PaintDetachedBookmarkBar(gfx::Canvas* canvas,
 // the Bookmarks Bar when it is attached to the Toolbar into |bounds|.
 // |background_origin| is the origin to use for painting the theme image.
 void PaintBackgroundAttachedMode(gfx::Canvas* canvas,
-                                 ui::ThemeProvider* theme_provider,
+                                 const ui::ThemeProvider* theme_provider,
                                  const gfx::Rect& bounds,
                                  const gfx::Point& background_origin,
                                  chrome::HostDesktopType host_desktop_type) {

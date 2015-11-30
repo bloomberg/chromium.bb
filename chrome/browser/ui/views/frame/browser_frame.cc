@@ -172,7 +172,7 @@ bool BrowserFrame::GetAccelerator(int command_id,
   return browser_view_->GetAccelerator(command_id, accelerator);
 }
 
-ui::ThemeProvider* BrowserFrame::GetThemeProvider() const {
+const ui::ThemeProvider* BrowserFrame::GetThemeProvider() const {
   return theme_provider_;
 }
 

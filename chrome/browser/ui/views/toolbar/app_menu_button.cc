@@ -140,7 +140,7 @@ void AppMenuButton::RemoveMenuListener(views::MenuListener* listener) {
 gfx::Size AppMenuButton::GetPreferredSize() const {
   if (ui::MaterialDesignController::IsModeMaterial()) {
     gfx::Size size(image()->GetPreferredSize());
-    ui::ThemeProvider* provider = GetThemeProvider();
+    const ui::ThemeProvider* provider = GetThemeProvider();
     if (provider) {
       gfx::Insets insets(GetLayoutInsets(TOOLBAR_BUTTON));
       size.Enlarge(insets.width(), insets.height());

@@ -63,7 +63,7 @@ void AppMenuIconPainter::SetSeverity(Severity severity, bool animate) {
 }
 
 void AppMenuIconPainter::Paint(gfx::Canvas* canvas,
-                               ui::ThemeProvider* theme_provider,
+                               const ui::ThemeProvider* theme_provider,
                                const gfx::Rect& rect,
                                BezelType bezel_type) {
   gfx::Point center = rect.CenterPoint();

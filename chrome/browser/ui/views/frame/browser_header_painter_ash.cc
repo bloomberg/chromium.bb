@@ -361,7 +361,7 @@ void BrowserHeaderPainterAsh::GetFrameImagesForTabbedBrowser(
   int frame_image_id = 0;
   int frame_overlay_image_id = 0;
 
-  ui::ThemeProvider* tp = frame_->GetThemeProvider();
+  const ui::ThemeProvider* tp = frame_->GetThemeProvider();
   if (tp->HasCustomImage(IDR_THEME_FRAME_OVERLAY) && !is_incognito_) {
     frame_overlay_image_id = (mode == MODE_ACTIVE) ?
         IDR_THEME_FRAME_OVERLAY : IDR_THEME_FRAME_OVERLAY_INACTIVE;

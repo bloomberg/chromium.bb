@@ -77,7 +77,7 @@ class DownloadItemViewMd : public views::ButtonListener,
   void StopDownloadProgress();
 
   // Returns the base color for text on this download item, based on |theme|.
-  static SkColor GetTextColorForThemeProvider(ui::ThemeProvider* theme);
+  static SkColor GetTextColorForThemeProvider(const ui::ThemeProvider* theme);
 
   // IconManager::Client interface.
   void OnExtractIconComplete(gfx::Image* icon);

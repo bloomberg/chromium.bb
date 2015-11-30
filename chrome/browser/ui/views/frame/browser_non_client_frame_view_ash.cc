@@ -617,7 +617,7 @@ void BrowserNonClientFrameViewAsh::PaintToolbarBackground(gfx::Canvas* canvas) {
   int w = toolbar_bounds.width();
   int y = toolbar_bounds.y();
   int h = toolbar_bounds.height();
-  ui::ThemeProvider* tp = GetThemeProvider();
+  const ui::ThemeProvider* tp = GetThemeProvider();
 
   if (ui::MaterialDesignController::IsModeMaterial()) {
     // Paint the main toolbar image.  Since this image is also used to draw the

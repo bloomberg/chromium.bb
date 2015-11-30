@@ -511,7 +511,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   Border* border() { return border_.get(); }
 
   // Get the theme provider from the parent widget.
-  ui::ThemeProvider* GetThemeProvider() const;
+  const ui::ThemeProvider* GetThemeProvider() const;
 
   // Returns the NativeTheme to use for this View. This calls through to
   // GetNativeTheme() on the Widget this View is in, or provides a default

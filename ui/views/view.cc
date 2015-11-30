@@ -842,9 +842,9 @@ void View::set_background(Background* b) {
 
 void View::SetBorder(scoped_ptr<Border> b) { border_ = b.Pass(); }
 
-ui::ThemeProvider* View::GetThemeProvider() const {
+const ui::ThemeProvider* View::GetThemeProvider() const {
   const Widget* widget = GetWidget();
-  return widget ? widget->GetThemeProvider() : NULL;
+  return widget ? widget->GetThemeProvider() : nullptr;
 }
 
 const ui::NativeTheme* View::GetNativeTheme() const {

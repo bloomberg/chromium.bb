@@ -166,7 +166,7 @@ gfx::ImageSkia* BrowserNonClientFrameView::GetFrameImage() const {
 }
 
 gfx::ImageSkia* BrowserNonClientFrameView::GetFrameOverlayImage() const {
-  ui::ThemeProvider* tp = GetThemeProvider();
+  const ui::ThemeProvider* tp = GetThemeProvider();
   if (tp->HasCustomImage(IDR_THEME_FRAME_OVERLAY) &&
       browser_view_->IsBrowserTypeNormal() &&
       !browser_view_->IsOffTheRecord()) {
