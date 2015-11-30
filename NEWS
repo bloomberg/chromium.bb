@@ -5,6 +5,7 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 ** New features
 - A DEF file is now generated automatically for the windows builds.
   Thanks to Christian Egli
+- lou_trace supports backtranslation now. Thanks to Bert Frees
 
 ** Bug fixes
 - Fix a bug in the findtable code. Thanks to Michael Katzmann for the

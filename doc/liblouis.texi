@@ -1746,11 +1746,27 @@ translation table and an input string.
 lou_trace [OPTIONS] TABLE[,TABLE,...]
 @end example
 
-@command{lou_trace} accepts all the standard options (@pxref{common
-options}). Once started you can type an input string followed by
-@kbd{@key{RET}}. @command{lou_trace} will print the braille
-translation followed by list of rules that were applied to produce the
-translation. A possible invocation is listed in the following example:
+Aside from the standard options (@pxref{common options})
+@command{lou_trace} also accepts the following options:
+
+@table @option
+
+@item --forward
+@itemx -f
+Trace a forward translation.
+
+@item --backward
+@itemx -b
+Trace a backward translation.
+
+@end table
+
+If no options are given forward translation is assumed.
+
+Once started you can type an input string followed by @kbd{@key{RET}}.
+@command{lou_trace} will print the braille translation followed by
+list of rules that were applied to produce the translation. A possible
+invocation is listed in the following example:
 
 @example
 $ lou_trace tables/en-us-g2.ctb 
