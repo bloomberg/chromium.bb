@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/time/time.h"
 #include "media/blink/media_blink_export.h"
 
 namespace blink {
@@ -35,6 +36,13 @@ enum UncacheableReason {
 // request (using the disk cache), or 0 if it might be useful.
 uint32 MEDIA_BLINK_EXPORT
 GetReasonsForUncacheability(const blink::WebURLResponse& response);
+
+// Returns when we should evict data from this response from our
+// memory cache. Note that we may still cache data longer if
+// a audio/video tag is currently using it. Returns a TimeDelta
+// which is should be added to base::Time::Now() or base::TimeTicks::Now().
+base::TimeDelta MEDIA_BLINK_EXPORT
+GetCacheValidUntil(const blink::WebURLResponse& response);
 
 }  // namespace media
 

@@ -88,4 +88,42 @@ uint32 GetReasonsForUncacheability(const WebURLResponse& response) {
   return reasons;
 }
 
+base::TimeDelta GetCacheValidUntil(const WebURLResponse& response) {
+  std::string cache_control_header =
+      base::ToLowerASCII(response.httpHeaderField("cache-control").utf8());
+  if (cache_control_header.find("no-cache") != std::string::npos)
+    return base::TimeDelta();
+  if (cache_control_header.find("must-revalidate") != std::string::npos)
+    return base::TimeDelta();
+
+  // Max cache timeout ~= 1 month.
+  base::TimeDelta ret = base::TimeDelta::FromDays(30);
+
+  const char kMaxAgePrefix[] = "max-age=";
+  const size_t kMaxAgePrefixLen = arraysize(kMaxAgePrefix) - 1;
+  if (cache_control_header.substr(0, kMaxAgePrefixLen) == kMaxAgePrefix) {
+    int64 max_age_seconds;
+    base::StringToInt64(
+        base::StringPiece(cache_control_header.begin() + kMaxAgePrefixLen,
+                          cache_control_header.end()),
+        &max_age_seconds);
+
+    ret = std::min(ret, TimeDelta::FromSeconds(max_age_seconds));
+  } else {
+    // Note that |date| may be smaller than |expires|, which means we'll
+    // return a timetick some time in the past.
+    Time date;
+    Time expires;
+    if (Time::FromString(response.httpHeaderField("Date").utf8().data(),
+                         &date) &&
+        Time::FromString(response.httpHeaderField("Expires").utf8().data(),
+                         &expires) &&
+        date > Time() && expires > Time()) {
+      ret = std::min(ret, expires - date);
+    }
+  }
+
+  return ret;
+}
+
 }  // namespace media

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "media/blink/multibuffer.h"
 
 #include "base/bind.h"
@@ -113,10 +115,6 @@ MultiBuffer::MultiBuffer(int32_t block_size_shift,
     : max_size_(0), block_size_shift_(block_size_shift), lru_(global_lru) {}
 
 MultiBuffer::~MultiBuffer() {
-  // Delete all writers.
-  for (const auto& i : writer_index_) {
-    delete i.second;
-  }
   // Remove all blocks from the LRU.
   for (const auto& i : data_) {
     lru_->Remove(this, i.first);
@@ -155,15 +153,14 @@ void MultiBuffer::AddReader(const BlockId& pos, Reader* reader) {
     // Make sure that there are no present blocks between the writer and
     // the requested position, as that will cause the writer to quit.
     if (closest_writer > closest_block) {
-      provider = writer_index_[closest_writer];
+      provider = writer_index_[closest_writer].get();
       DCHECK(provider);
     }
   }
   if (!provider) {
     DCHECK(writer_index_.find(pos) == writer_index_.end());
-    provider = writer_index_[pos] = CreateWriter(pos);
-    provider->SetAvailableCallback(base::Bind(
-        &MultiBuffer::DataProviderEvent, base::Unretained(this), provider));
+    writer_index_[pos] = CreateWriter(pos);
+    provider = writer_index_[pos].get();
   }
   provider->SetDeferred(false);
 }
@@ -183,7 +180,7 @@ void MultiBuffer::CleanupWriters(const BlockId& pos) {
   BlockId closest_writer = ClosestPreviousEntry(writer_index_, p2);
   while (closest_writer > pos - kMaxWaitForWriterOffset) {
     DCHECK(writer_index_[closest_writer]);
-    DataProviderEvent(writer_index_[closest_writer]);
+    OnDataProviderEvent(writer_index_[closest_writer].get());
     closest_writer = ClosestPreviousEntry(writer_index_, closest_writer - 1);
   }
 }
@@ -258,25 +255,28 @@ void MultiBuffer::ReleaseBlocks(const std::vector<MultiBufferBlockId>& blocks) {
       }
     }
   }
+  if (data_.empty())
+    OnEmpty();
 }
+
+void MultiBuffer::OnEmpty() {}
 
 void MultiBuffer::AddProvider(scoped_ptr<DataProvider> provider) {
   // If there is already a provider in the same location, we delete it.
   DCHECK(!provider->Available());
   BlockId pos = provider->Tell();
-  DataProvider** place = &writer_index_[pos];
-  DCHECK_NE(*place, provider.get());
-  if (*place)
-    delete *place;
-  *place = provider.release();
+  writer_index_[pos] = std::move(provider);
 }
 
 scoped_ptr<MultiBuffer::DataProvider> MultiBuffer::RemoveProvider(
     DataProvider* provider) {
   BlockId pos = provider->Tell();
-  DCHECK_EQ(writer_index_[pos], provider);
-  writer_index_.erase(pos);
-  return scoped_ptr<DataProvider>(provider);
+  auto iter = writer_index_.find(pos);
+  DCHECK(iter != writer_index_.end());
+  DCHECK_EQ(iter->second.get(), provider);
+  scoped_ptr<DataProvider> ret = std::move(iter->second);
+  writer_index_.erase(iter);
+  return ret;
 }
 
 MultiBuffer::ProviderState MultiBuffer::SuggestProviderState(
@@ -324,7 +324,7 @@ void MultiBuffer::Prune(size_t max_to_free) {
   lru_->Prune(max_to_free);
 }
 
-void MultiBuffer::DataProviderEvent(DataProvider* provider_tmp) {
+void MultiBuffer::OnDataProviderEvent(DataProvider* provider_tmp) {
   scoped_ptr<DataProvider> provider(RemoveProvider(provider_tmp));
   BlockId start_pos = provider->Tell();
   BlockId pos = start_pos;
@@ -333,7 +333,7 @@ void MultiBuffer::DataProviderEvent(DataProvider* provider_tmp) {
 
   while (!ProviderCollision(pos) && !eof) {
     if (!provider->Available()) {
-      AddProvider(provider.Pass());
+      AddProvider(std::move(provider));
       break;
     }
     DCHECK_GE(pos, 0);
@@ -361,7 +361,7 @@ void MultiBuffer::DataProviderEvent(DataProvider* provider_tmp) {
   // Even if we did call AddProvider, calling NotifyAvailableRange can cause
   // readers to seek or self-destruct and clean up any associated writers.
   auto i = writer_index_.find(pos);
-  if (i != writer_index_.end() && i->second == provider_tmp) {
+  if (i != writer_index_.end() && i->second.get() == provider_tmp) {
     switch (SuggestProviderState(pos)) {
       case ProviderStateLoad:
         // Not sure we actually need to do this

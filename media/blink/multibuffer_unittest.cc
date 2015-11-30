@@ -18,27 +18,32 @@ const int kBlockSizeShift = 8;
 const size_t kBlockSize = 1UL << kBlockSizeShift;
 
 namespace media {
-class TestMultiBufferDataProvider;
 
-std::vector<TestMultiBufferDataProvider*> writers;
+class FakeMultiBufferDataProvider;
 
-class TestMultiBufferDataProvider : public media::MultiBuffer::DataProvider {
+namespace {
+std::vector<FakeMultiBufferDataProvider*> writers;
+}  // namespace
+
+class FakeMultiBufferDataProvider : public MultiBuffer::DataProvider {
  public:
-  TestMultiBufferDataProvider(MultiBufferBlockId pos,
+  FakeMultiBufferDataProvider(MultiBufferBlockId pos,
                               size_t file_size,
                               int max_blocks_after_defer,
                               bool must_read_whole_file,
-                              media::TestRandom* rnd)
+                              MultiBuffer* multibuffer,
+                              TestRandom* rnd)
       : pos_(pos),
         blocks_until_deferred_(1 << 30),
         max_blocks_after_defer_(max_blocks_after_defer),
         file_size_(file_size),
         must_read_whole_file_(must_read_whole_file),
+        multibuffer_(multibuffer),
         rnd_(rnd) {
     writers.push_back(this);
   }
 
-  ~TestMultiBufferDataProvider() override {
+  ~FakeMultiBufferDataProvider() override {
     if (must_read_whole_file_) {
       CHECK_GE(pos_ * kBlockSize, file_size_);
     }
@@ -64,11 +69,6 @@ class TestMultiBufferDataProvider : public media::MultiBuffer::DataProvider {
     return ret;
   }
 
-  void SetAvailableCallback(const base::Closure& cb) override {
-    DCHECK(!Available());
-    cb_ = cb;
-  }
-
   void SetDeferred(bool deferred) override {
     if (deferred) {
       if (max_blocks_after_defer_ > 0) {
@@ -89,7 +89,7 @@ class TestMultiBufferDataProvider : public media::MultiBuffer::DataProvider {
     --blocks_until_deferred_;
 
     bool ret = true;
-    scoped_refptr<media::DataBuffer> block = new media::DataBuffer(kBlockSize);
+    scoped_refptr<DataBuffer> block = new DataBuffer(kBlockSize);
     size_t x = 0;
     size_t byte_pos = (fifo_.size() + pos_) * kBlockSize;
     for (x = 0; x < kBlockSize; x++, byte_pos++) {
@@ -104,28 +104,27 @@ class TestMultiBufferDataProvider : public media::MultiBuffer::DataProvider {
       fifo_.push_back(DataBuffer::CreateEOSBuffer());
       ret = false;
     }
-    cb_.Run();
+    multibuffer_->OnDataProviderEvent(this);
     return ret;
   }
 
  private:
-  std::deque<scoped_refptr<media::DataBuffer>> fifo_;
+  std::deque<scoped_refptr<DataBuffer>> fifo_;
   MultiBufferBlockId pos_;
   int32_t blocks_until_deferred_;
   int32_t max_blocks_after_defer_;
   size_t file_size_;
   bool must_read_whole_file_;
-  base::Closure cb_;
-  media::TestRandom* rnd_;
+  MultiBuffer* multibuffer_;
+  TestRandom* rnd_;
 };
 
-class TestMultiBuffer : public media::MultiBuffer {
+class TestMultiBuffer : public MultiBuffer {
  public:
-  explicit TestMultiBuffer(
-      int32_t shift,
-      const scoped_refptr<media::MultiBuffer::GlobalLRU>& lru,
-      media::TestRandom* rnd)
-      : media::MultiBuffer(shift, lru),
+  explicit TestMultiBuffer(int32_t shift,
+                           const scoped_refptr<MultiBuffer::GlobalLRU>& lru,
+                           TestRandom* rnd)
+      : MultiBuffer(shift, lru),
         range_supported_(false),
         create_ok_(true),
         max_writers_(10000),
@@ -185,12 +184,14 @@ class TestMultiBuffer : public media::MultiBuffer {
   void SetRangeSupported(bool supported) { range_supported_ = supported; }
 
  protected:
-  DataProvider* CreateWriter(const MultiBufferBlockId& pos) override {
+  scoped_ptr<DataProvider> CreateWriter(
+      const MultiBufferBlockId& pos) override {
     DCHECK(create_ok_);
     writers_created_++;
     CHECK_LT(writers.size(), max_writers_);
-    return new TestMultiBufferDataProvider(
-        pos, file_size_, max_blocks_after_defer_, must_read_whole_file_, rnd_);
+    return scoped_ptr<DataProvider>(new FakeMultiBufferDataProvider(
+        pos, file_size_, max_blocks_after_defer_, must_read_whole_file_, this,
+        rnd_));
   }
   void Prune(size_t max_to_free) override {
     // Prune should not cause additional writers to be spawned.
@@ -209,35 +210,34 @@ class TestMultiBuffer : public media::MultiBuffer {
   int32_t max_blocks_after_defer_;
   bool must_read_whole_file_;
   int32_t writers_created_;
-  media::TestRandom* rnd_;
+  TestRandom* rnd_;
 };
-}
 
 class MultiBufferTest : public testing::Test {
  public:
   MultiBufferTest()
       : rnd_(42),
-        lru_(new media::MultiBuffer::GlobalLRU()),
+        lru_(new MultiBuffer::GlobalLRU()),
         multibuffer_(kBlockSizeShift, lru_, &rnd_) {}
 
   void Advance() {
-    CHECK(media::writers.size());
-    media::writers[rnd_.Rand() % media::writers.size()]->Advance();
+    CHECK(writers.size());
+    writers[rnd_.Rand() % writers.size()]->Advance();
   }
 
   bool AdvanceAll() {
     bool advanced = false;
-    for (size_t i = 0; i < media::writers.size(); i++) {
-      advanced |= media::writers[i]->Advance();
+    for (size_t i = 0; i < writers.size(); i++) {
+      advanced |= writers[i]->Advance();
     }
     multibuffer_.CheckLRUState();
     return advanced;
   }
 
  protected:
-  media::TestRandom rnd_;
-  scoped_refptr<media::MultiBuffer::GlobalLRU> lru_;
-  media::TestMultiBuffer multibuffer_;
+  TestRandom rnd_;
+  scoped_refptr<MultiBuffer::GlobalLRU> lru_;
+  TestMultiBuffer multibuffer_;
   base::MessageLoop message_loop_;
 };
 
@@ -247,8 +247,8 @@ TEST_F(MultiBufferTest, ReadAll) {
   size_t end = 10000;
   multibuffer_.SetFileSize(10000);
   multibuffer_.SetMustReadWholeFile(true);
-  media::MultiBufferReader reader(&multibuffer_, pos, end,
-                                  base::Callback<void(int64_t, int64_t)>());
+  MultiBufferReader reader(&multibuffer_, pos, end,
+                           base::Callback<void(int64_t, int64_t)>());
   reader.SetMaxBuffer(2000, 5000);
   reader.SetPreload(1000, 1000);
   while (pos < end) {
@@ -275,8 +275,8 @@ TEST_F(MultiBufferTest, ReadAllAdvanceFirst) {
   size_t end = 10000;
   multibuffer_.SetFileSize(10000);
   multibuffer_.SetMustReadWholeFile(true);
-  media::MultiBufferReader reader(&multibuffer_, pos, end,
-                                  base::Callback<void(int64_t, int64_t)>());
+  MultiBufferReader reader(&multibuffer_, pos, end,
+                           base::Callback<void(int64_t, int64_t)>());
   reader.SetMaxBuffer(2000, 5000);
   reader.SetPreload(1000, 1000);
   while (pos < end) {
@@ -305,8 +305,8 @@ TEST_F(MultiBufferTest, ReadAllAdvanceFirst_NeverDefer) {
   multibuffer_.SetFileSize(10000);
   multibuffer_.SetMaxBlocksAfterDefer(-10000);
   multibuffer_.SetRangeSupported(true);
-  media::MultiBufferReader reader(&multibuffer_, pos, end,
-                                  base::Callback<void(int64_t, int64_t)>());
+  MultiBufferReader reader(&multibuffer_, pos, end,
+                           base::Callback<void(int64_t, int64_t)>());
   reader.SetMaxBuffer(2000, 5000);
   reader.SetPreload(1000, 1000);
   while (pos < end) {
@@ -336,8 +336,8 @@ TEST_F(MultiBufferTest, ReadAllAdvanceFirst_NeverDefer2) {
   multibuffer_.SetFileSize(10000);
   multibuffer_.SetMustReadWholeFile(true);
   multibuffer_.SetMaxBlocksAfterDefer(-10000);
-  media::MultiBufferReader reader(&multibuffer_, pos, end,
-                                  base::Callback<void(int64_t, int64_t)>());
+  MultiBufferReader reader(&multibuffer_, pos, end,
+                           base::Callback<void(int64_t, int64_t)>());
   reader.SetMaxBuffer(2000, 5000);
   reader.SetPreload(1000, 1000);
   while (pos < end) {
@@ -366,8 +366,8 @@ TEST_F(MultiBufferTest, LRUTest) {
   size_t pos = 0;
   size_t end = 10000;
   multibuffer_.SetFileSize(10000);
-  media::MultiBufferReader reader(&multibuffer_, pos, end,
-                                  base::Callback<void(int64_t, int64_t)>());
+  MultiBufferReader reader(&multibuffer_, pos, end,
+                           base::Callback<void(int64_t, int64_t)>());
   reader.SetPreload(10000, 10000);
   // Note, no pinning, all data should end up in LRU.
   EXPECT_EQ(current_size, lru_->Size());
@@ -390,8 +390,8 @@ class ReadHelper {
  public:
   ReadHelper(size_t end,
              size_t max_read_size,
-             media::MultiBuffer* multibuffer,
-             media::TestRandom* rnd)
+             MultiBuffer* multibuffer,
+             TestRandom* rnd)
       : pos_(0),
         end_(end),
         max_read_size_(max_read_size),
@@ -446,8 +446,8 @@ class ReadHelper {
   int64_t end_;
   int64_t max_read_size_;
   int64_t read_size_;
-  media::TestRandom* rnd_;
-  media::MultiBufferReader reader_;
+  TestRandom* rnd_;
+  MultiBufferReader reader_;
 };
 
 TEST_F(MultiBufferTest, RandomTest) {
@@ -462,7 +462,7 @@ TEST_F(MultiBufferTest, RandomTest) {
   for (int i = 0; i < 100; i++) {
     for (int j = 0; j < 100; j++) {
       if (rnd_.Rand() & 1) {
-        if (!media::writers.empty())
+        if (!writers.empty())
           Advance();
       } else {
         size_t j = rnd_.Rand() % read_helpers.size();
@@ -493,7 +493,7 @@ TEST_F(MultiBufferTest, RandomTest_RangeSupported) {
   for (int i = 0; i < 100; i++) {
     for (int j = 0; j < 100; j++) {
       if (rnd_.Rand() & 1) {
-        if (!media::writers.empty())
+        if (!writers.empty())
           Advance();
       } else {
         size_t j = rnd_.Rand() % read_helpers.size();
@@ -510,3 +510,5 @@ TEST_F(MultiBufferTest, RandomTest_RangeSupported) {
     read_helpers.pop_back();
   }
 }
+
+}  // namespace media
