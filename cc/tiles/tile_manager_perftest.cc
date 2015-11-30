@@ -173,6 +173,7 @@ class TileManagerPerfTest : public testing::Test {
     pending_layer->SetDrawsContent(true);
     pending_layer->SetHasRenderSurface(true);
     pending_tree->SetRootLayer(std::move(pending_layer));
+    pending_tree->BuildPropertyTreesForTesting();
 
     pending_root_layer_ = static_cast<FakePictureLayerImpl*>(
         host_impl_.pending_tree()->LayerById(id_));
@@ -364,6 +365,9 @@ class TileManagerPerfTest : public testing::Test {
       ++next_id;
     }
 
+    // Property trees need to be rebuilt because layers were added above.
+    host_impl_.pending_tree()->property_trees()->needs_rebuild = true;
+    host_impl_.pending_tree()->BuildPropertyTreesForTesting();
     bool update_lcd_text = false;
     host_impl_.pending_tree()->UpdateDrawProperties(update_lcd_text);
     for (FakePictureLayerImpl* layer : layers)

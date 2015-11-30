@@ -68,6 +68,7 @@ class PictureLayerImplPerfTest : public testing::Test {
     pending_layer->SetDrawsContent(true);
     pending_layer->SetHasRenderSurface(true);
     pending_tree->SetRootLayer(std::move(pending_layer));
+    pending_tree->BuildPropertyTreesForTesting();
 
     pending_layer_ = static_cast<FakePictureLayerImpl*>(
         host_impl_.pending_tree()->LayerById(7));
