@@ -11,12 +11,12 @@
     ['OS=="win" or OS=="linux"', {
       'variables': {
         'command': [
-          '<(PRODUCT_DIR)/angle_deqp_gles3_tests<(EXECUTABLE_SUFFIX)',
+          '<(PRODUCT_DIR)/angle_deqp_egl_tests<(EXECUTABLE_SUFFIX)',
           '--test-launcher-batch-limit=400',
         ],
         'files': [
-          '../third_party/angle/src/tests/deqp_support/deqp_gles3_test_expectations.txt',
-          '../third_party/deqp/src/android/cts/master/gles3-master.txt',
+          '../third_party/angle/src/tests/deqp_support/deqp_egl_test_expectations.txt',
+          '../third_party/deqp/src/android/cts/master/egl-master.txt',
           '../third_party/deqp/src/data/',
         ],
       },
@@ -24,14 +24,14 @@
     ['OS=="win"', {
       'variables': {
         'files': [
-          '<(PRODUCT_DIR)/angle_deqp_libgles3.dll',
+          '<(PRODUCT_DIR)/angle_deqp_libegl.dll',
         ],
       },
     }],
     ['OS=="linux"', {
       'variables': {
         'files': [
-          '<(PRODUCT_DIR)/lib/libangle_deqp_libgles3.so',
+          '<(PRODUCT_DIR)/lib/libangle_deqp_libegl.so',
         ],
       },
     }],
