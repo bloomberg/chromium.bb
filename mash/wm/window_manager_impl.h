@@ -23,12 +23,18 @@ class WindowManagerImpl : public mus::mojom::WindowManager,
                           public mus::WindowObserver,
                           public mus::WindowManagerDelegate {
  public:
-  explicit WindowManagerImpl(WindowManagerApplication* state);
+  WindowManagerImpl();
   ~WindowManagerImpl() override;
+
+  void Initialize(WindowManagerApplication* state);
 
  private:
   gfx::Rect CalculateDefaultBounds(mus::Window* window) const;
   gfx::Rect GetMaximizedWindowBounds() const;
+
+  // mus::WindowObserver:
+  void OnTreeChanging(const TreeChangeParams& params) override;
+  void OnWindowEmbeddedAppDisconnected(mus::Window* window) override;
 
   // mus::mojom::WindowManager:
   void OpenWindow(mus::mojom::WindowTreeClientPtr client,
@@ -41,8 +47,6 @@ class WindowManagerImpl : public mus::mojom::WindowManager,
   bool OnWmSetProperty(mus::Window* window,
                        const std::string& name,
                        scoped_ptr<std::vector<uint8_t>>* new_data) override;
-
-  mus::Window* GetContainerForChild(mus::Window* child);
 
   WindowManagerApplication* state_;
 

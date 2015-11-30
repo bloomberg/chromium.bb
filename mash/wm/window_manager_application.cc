@@ -54,7 +54,7 @@ void WindowManagerApplication::AddAccelerators() {
 void WindowManagerApplication::Initialize(mojo::ApplicationImpl* app) {
   app_ = app;
   tracing_.Initialize(app);
-  window_manager_.reset(new WindowManagerImpl(this));
+  window_manager_.reset(new WindowManagerImpl());
   // Don't bind to the WindowManager immediately. Wait for OnEmbed() first.
   mus::mojom::WindowManagerPtr window_manager;
   requests_.push_back(new mojo::InterfaceRequest<mus::mojom::WindowManager>(
@@ -101,6 +101,7 @@ void WindowManagerApplication::OnEmbed(mus::Window* root) {
 
   ui_init_.reset(new ui::mojo::UIInit(views::GetDisplaysFromWindow(root)));
   aura_init_.reset(new views::AuraInit(app_, "mash_wm_resources.pak"));
+  window_manager_->Initialize(this);
 
   for (auto request : requests_)
     window_manager_binding_.AddBinding(window_manager_.get(), request->Pass());
