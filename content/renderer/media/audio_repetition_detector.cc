@@ -4,6 +4,8 @@
 
 #include "content/renderer/media/audio_repetition_detector.h"
 
+#include <string.h>
+
 #include "base/logging.h"
 #include "base/macros.h"
 
@@ -77,7 +79,7 @@ void AudioRepetitionDetector::Detect(const float* data, size_t num_frames,
       // inserted to the buffer, and thus |offset| should compensate for it.
       if (Equal(data, look_back_frames + idx)) {
         if (!state->reported()) {
-          state->Increment(IsZero(data, num_channels));
+          state->Increment(data, num_channels);
           if (HasValidReport(state)) {
             repetition_callback_.Run(state->look_back_ms());
             state->set_reported(true);
@@ -95,25 +97,34 @@ AudioRepetitionDetector::State::State(int look_back_ms)
   Reset();
 }
 
-void AudioRepetitionDetector::State::Increment(bool zero) {
-  if (zero) {
-    if (count_frames_ == 0) {
-      // If a repetition starts with zeros, we enter the all zero mode until
-      // a non zero is found later. The point is that the beginning zeros should
-      // be counted in the length of the repetition as long as the repetition
-      // does not comprise only zeros.
-      all_zero_ = true;
-    }
-  } else {
-    all_zero_ = false;
+AudioRepetitionDetector::State::~State() = default;
+
+void AudioRepetitionDetector::State::Increment(const float* frame,
+                                               size_t num_channels) {
+  if (count_frames_ == 0) {
+    is_constant_ = true;
+    constant_.resize(num_channels);
+    memcpy(&constant_[0], frame, sizeof(float) * num_channels);
+  } else if (is_constant_ && !EqualsConstant(frame, num_channels)) {
+    is_constant_ = false;
   }
   ++count_frames_;
 }
 
 void AudioRepetitionDetector::State::Reset() {
   count_frames_ = 0;
-  all_zero_ = true;
   reported_ = false;
+}
+
+bool AudioRepetitionDetector::State::EqualsConstant(const float* frame,
+                                                    size_t num_channels) const {
+  DCHECK(is_constant_);
+  for (size_t channel = 0; channel < num_channels; ++channel) {
+    const float diff = frame[channel] - constant_[channel];
+    if (diff < -EPSILON || diff > EPSILON)
+      return false;
+  }
+  return true;
 }
 
 void AudioRepetitionDetector::Reset(size_t num_channels, int sample_rate) {
@@ -161,17 +172,8 @@ bool AudioRepetitionDetector::Equal(const float* frame,
   return true;
 }
 
-bool AudioRepetitionDetector::IsZero(const float* frame,
-                                     size_t num_channels) const {
-  for (size_t channel = 0; channel < num_channels; ++channel, ++frame) {
-    if (*frame < -EPSILON || *frame > EPSILON)
-      return false;
-  }
-  return true;
-}
-
 bool AudioRepetitionDetector::HasValidReport(const State* state) const {
-  return (!state->all_zero() && state->count_frames() >=
+  return (!state->is_constant() && state->count_frames() >=
       static_cast<size_t>(min_length_ms_ * sample_rate_ / 1000));
 }
 

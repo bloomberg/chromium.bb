@@ -51,33 +51,40 @@ class CONTENT_EXPORT AudioRepetitionDetector {
   friend class AudioRepetitionDetectorForTest;
 
   // A state is used by the detector to keep track of a consecutive repetition,
-  // whether the samples in a repetition are all zeros, and whether a repetition
+  // whether the samples in a repetition are constant, and whether a repetition
   // has been reported.
   class State {
    public:
     explicit State(int look_back_ms);
+    ~State();
 
     int look_back_ms() const { return look_back_ms_; };
     size_t count_frames() const { return count_frames_; }
-    bool all_zero() const { return all_zero_; }
+    bool is_constant() const { return is_constant_; }
     bool reported() const { return reported_; }
     void set_reported(bool reported) { reported_ = reported; }
 
-    // Increase |count_frames_| by 1, and |zero| indidates whether the added
-    // audio frame is zero.
-    void Increment(bool zero);
+    // Increase |count_frames_| by 1. The method also determines if the frames
+    // in current repetition are constant.
+    void Increment(const float* frame, size_t num_channels);
 
     void Reset();
 
    private:
+    // Determine if an audio frame (samples interleaved if stereo) is identical
+    // to |constant_|.
+    bool EqualsConstant(const float* frame, size_t num_channels) const;
+
     // Look back time of the repetition pattern this state keeps track of.
     const int look_back_ms_;
 
     // Counter of frames in a consecutive repetition.
     size_t count_frames_;
 
-    // Whether a repetition contains only zeros.
-    bool all_zero_;
+    // |is_constant_| indicates whether frames in a repetition are constant.
+    // When |is_constant_| is true, |constant_| stores that constant frame.
+    bool is_constant_;
+    std::vector<float> constant_;
 
     // |reported_| tells whether a repetition has been reported. This is to make
     // sure that a repetition with a long duration will be reported as early as
@@ -96,9 +103,6 @@ class CONTENT_EXPORT AudioRepetitionDetector {
   // Determine if an audio frame (samples interleaved if stereo) is identical to
   // |audio_buffer_| at a look back position.
   bool Equal(const float* frame, int look_back_samples) const;
-
-  // Determine if an audio frame (samples interleaved if stereo) is zero.
-  bool IsZero(const float* frame, size_t num_channels) const;
 
   // Check whether the state contains a valid repetition report.
   bool HasValidReport(const State* state) const;
