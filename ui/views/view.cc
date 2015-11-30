@@ -116,6 +116,7 @@ View::View()
       context_menu_controller_(NULL),
       drag_controller_(NULL),
       native_view_accessibility_(NULL) {
+  SetTargetHandler(this);
 }
 
 View::~View() {

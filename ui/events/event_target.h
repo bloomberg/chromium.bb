@@ -20,7 +20,7 @@ class EventTargeter;
 class EventTargetIterator;
 class LocatedEvent;
 
-class EVENTS_EXPORT EventTarget : public EventHandler {
+class EVENTS_EXPORT EventTarget {
  public:
   class DispatcherApi {
    public:
@@ -38,7 +38,7 @@ class EVENTS_EXPORT EventTarget : public EventHandler {
   };
 
   EventTarget();
-  ~EventTarget() override;
+  virtual ~EventTarget();
 
   virtual bool CanAcceptEvent(const Event& event) = 0;
 
@@ -82,14 +82,6 @@ class EVENTS_EXPORT EventTarget : public EventHandler {
 
  protected:
   EventHandler* target_handler() { return target_handler_; }
-
-  // Overridden from EventHandler:
-  void OnEvent(Event* event) override;
-  void OnKeyEvent(KeyEvent* event) override;
-  void OnMouseEvent(MouseEvent* event) override;
-  void OnScrollEvent(ScrollEvent* event) override;
-  void OnTouchEvent(TouchEvent* event) override;
-  void OnGestureEvent(GestureEvent* event) override;
 
  private:
   friend class EventDispatcher;

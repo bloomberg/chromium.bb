@@ -1163,9 +1163,6 @@ ui::EventTargeter* Shell::GetEventTargeter() {
   return nullptr;
 }
 
-void Shell::OnEvent(ui::Event* event) {
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // Shell, aura::client::ActivationChangeObserver implementation:
 

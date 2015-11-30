@@ -15,7 +15,9 @@ TestEventTarget::TestEventTarget()
     : parent_(NULL),
       mark_events_as_handled_(false),
       recorder_(NULL),
-      target_name_("unknown") {}
+      target_name_("unknown") {
+  SetTargetHandler(this);
+}
 TestEventTarget::~TestEventTarget() {}
 
 void TestEventTarget::AddChild(scoped_ptr<TestEventTarget> child) {
@@ -76,7 +78,7 @@ void TestEventTarget::OnEvent(Event* event) {
   if (recorder_)
     recorder_->push_back(target_name_);
   received_.insert(event->type());
-  EventTarget::OnEvent(event);
+  EventHandler::OnEvent(event);
   if (!event->handled() && mark_events_as_handled_)
     event->SetHandled();
 }

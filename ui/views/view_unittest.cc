@@ -4321,12 +4321,11 @@ TEST_F(ViewTest, ScopedTargetHandlerReceivesEvents) {
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = gfx::Rect(50, 50, 350, 350);
   widget->Init(params);
-  internal::RootView* root =
-      static_cast<internal::RootView*>(widget->GetRootView());
+  View* root = widget->GetRootView();
   root->AddChildView(v);
   v->Reset();
-  TestEventHandler handler(v);
   {
+    TestEventHandler handler(v);
     ScopedTargetHandler scoped_target_handler(v, &handler);
     // View's target EventHandler should be set to the |scoped_target_handler|.
     EXPECT_EQ(&scoped_target_handler,
@@ -4342,9 +4341,6 @@ TEST_F(ViewTest, ScopedTargetHandlerReceivesEvents) {
     EXPECT_EQ(ui::ET_MOUSE_PRESSED, v->last_mouse_event_type_);
     EXPECT_TRUE(handler.had_mouse_event_);
   }
-
-  // The View should no longer have a target EventHandler.
-  EXPECT_EQ(nullptr, v->SetTargetHandler(nullptr));
 
   // The View should continue receiving events after the |handler| is deleted.
   v->Reset();

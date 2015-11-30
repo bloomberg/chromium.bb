@@ -219,6 +219,7 @@ NSEvent* CreateMouseEventInWindow(NSWindow* window,
 // class.
 class EventGeneratorDelegateMac : public ui::EventTarget,
                                   public ui::EventSource,
+                                  public ui::EventHandler,
                                   public ui::EventProcessor,
                                   public ui::EventTargeter,
                                   public ui::test::EventGeneratorDelegate {
@@ -240,7 +241,7 @@ class EventGeneratorDelegateMac : public ui::EventTarget,
   scoped_ptr<ui::EventTargetIterator> GetChildIterator() const override;
   ui::EventTargeter* GetEventTargeter() override { return this; }
 
-  // Overridden from ui::EventHandler (via ui::EventTarget):
+  // Overridden from ui::EventHandler:
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnKeyEvent(ui::KeyEvent* event) override;
   void OnTouchEvent(ui::TouchEvent* event) override;
@@ -303,6 +304,7 @@ class EventGeneratorDelegateMac : public ui::EventTarget,
 EventGeneratorDelegateMac::EventGeneratorDelegateMac() : owner_(nullptr) {
   DCHECK(!ui::test::EventGenerator::default_delegate);
   ui::test::EventGenerator::default_delegate = this;
+  SetTargetHandler(this);
   // Install a fake "edit" menu. This is normally provided by Chrome's
   // MainMenu.xib, but src/ui shouldn't depend on that.
   fake_menu_.reset([[NSMenu alloc] initWithTitle:@"Edit"]);

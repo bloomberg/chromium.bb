@@ -106,7 +106,8 @@ class RootView;
 class VIEWS_EXPORT View : public ui::LayerDelegate,
                           public ui::LayerOwner,
                           public ui::AcceleratorTarget,
-                          public ui::EventTarget {
+                          public ui::EventTarget,
+                          public ui::EventHandler {
  public:
   typedef std::vector<View*> Views;
 

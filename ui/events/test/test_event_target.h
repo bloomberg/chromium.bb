@@ -21,7 +21,8 @@ class Point;
 namespace ui {
 namespace test {
 
-class TestEventTarget : public EventTarget {
+class TestEventTarget : public EventTarget,
+                        public EventHandler {
  public:
   TestEventTarget();
   ~TestEventTarget() override;
