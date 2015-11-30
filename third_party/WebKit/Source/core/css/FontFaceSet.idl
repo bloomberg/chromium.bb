@@ -38,7 +38,6 @@ enum FontFaceSetLoadStatus { "loading", "loaded" };
     ActiveDOMObject,
     SetWrapperReferenceFrom=document,
     NoInterfaceObject,
-    LegacyInterfaceTypeChecking,
 ] interface FontFaceSet : EventTarget {
     setlike<FontFace>;
     readonly attribute unsigned long size;

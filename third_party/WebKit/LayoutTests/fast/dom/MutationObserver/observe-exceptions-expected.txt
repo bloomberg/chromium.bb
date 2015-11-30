@@ -9,8 +9,8 @@ PASS observer.observe(undefined) threw exception TypeError: Failed to execute 'o
 PASS observer.observe(document.body) threw exception TypeError: Failed to execute 'observe' on 'MutationObserver': 2 arguments required, but only 1 present..
 PASS observer.observe(document.body, null) threw exception TypeError: Failed to execute 'observe' on 'MutationObserver': The options object must set at least one of 'attributes', 'characterData', or 'childList' to true..
 PASS observer.observe(document.body, undefined) threw exception TypeError: Failed to execute 'observe' on 'MutationObserver': The options object must set at least one of 'attributes', 'characterData', or 'childList' to true..
-PASS observer.observe(null, {attributes: true}) threw exception NotFoundError: Failed to execute 'observe' on 'MutationObserver': The provided node was null..
-PASS observer.observe(undefined, {attributes: true}) threw exception NotFoundError: Failed to execute 'observe' on 'MutationObserver': The provided node was null..
+PASS observer.observe(null, {attributes: true}) threw exception TypeError: Failed to execute 'observe' on 'MutationObserver': parameter 1 is not of type 'Node'..
+PASS observer.observe(undefined, {attributes: true}) threw exception TypeError: Failed to execute 'observe' on 'MutationObserver': parameter 1 is not of type 'Node'..
 PASS observer.observe(document.body, {subtree: true}) threw exception TypeError: Failed to execute 'observe' on 'MutationObserver': The options object must set at least one of 'attributes', 'characterData', or 'childList' to true..
 PASS observer.observe(document.body, {attributes: false, attributeOldValue: true}) threw exception TypeError: Failed to execute 'observe' on 'MutationObserver': The options object may only set 'attributeOldValue' to true when 'attributes' is true or not present..
 PASS observer.observe(document.body, {attributes: false, attributeFilter: ["id"]}) threw exception TypeError: Failed to execute 'observe' on 'MutationObserver': The options object may only set 'attributeFilter' when 'attributes' is true or not present..

@@ -212,15 +212,13 @@ FileList* DataTransfer::files() const
     return files;
 }
 
-void DataTransfer::setDragImage(Element* image, int x, int y, ExceptionState& exceptionState)
+void DataTransfer::setDragImage(Element* image, int x, int y)
 {
+    ASSERT(image);
+
     if (!isForDragAndDrop())
         return;
 
-    if (!image) {
-        exceptionState.throwTypeError("setDragImage: Invalid first argument");
-        return;
-    }
     IntPoint location(x, y);
     if (isHTMLImageElement(*image) && !image->inDocument())
         setDragImageResource(toHTMLImageElement(*image).cachedImage(), location);

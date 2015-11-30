@@ -77,10 +77,7 @@ MutationObserver::~MutationObserver()
 
 void MutationObserver::observe(Node* node, const MutationObserverInit& observerInit, ExceptionState& exceptionState)
 {
-    if (!node) {
-        exceptionState.throwDOMException(NotFoundError, "The provided node was null.");
-        return;
-    }
+    ASSERT(node);
 
     MutationObserverOptions options = 0;
 

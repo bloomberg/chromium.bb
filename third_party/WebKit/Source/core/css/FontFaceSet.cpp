@@ -257,14 +257,11 @@ ScriptPromise FontFaceSet::ready(ScriptState* scriptState)
     return m_ready->promise(scriptState->world());
 }
 
-PassRefPtrWillBeRawPtr<FontFaceSet> FontFaceSet::addForBinding(ScriptState*, FontFace* fontFace, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<FontFaceSet> FontFaceSet::addForBinding(ScriptState*, FontFace* fontFace, ExceptionState&)
 {
+    ASSERT(fontFace);
     if (!inActiveDocumentContext())
         return this;
-    if (!fontFace) {
-        exceptionState.throwTypeError("The argument is not a FontFace.");
-        return this;
-    }
     if (m_nonCSSConnectedFaces.contains(fontFace))
         return this;
     if (isCSSConnectedFontFace(fontFace))
@@ -293,14 +290,11 @@ void FontFaceSet::clearForBinding(ScriptState*, ExceptionState&)
     fontSelector->fontFaceInvalidated();
 }
 
-bool FontFaceSet::deleteForBinding(ScriptState*, FontFace* fontFace, ExceptionState& exceptionState)
+bool FontFaceSet::deleteForBinding(ScriptState*, FontFace* fontFace, ExceptionState&)
 {
+    ASSERT(fontFace);
     if (!inActiveDocumentContext())
         return false;
-    if (!fontFace) {
-        exceptionState.throwTypeError("The argument is not a FontFace.");
-        return false;
-    }
     WillBeHeapListHashSet<RefPtrWillBeMember<FontFace>>::iterator it = m_nonCSSConnectedFaces.find(fontFace);
     if (it != m_nonCSSConnectedFaces.end()) {
         m_nonCSSConnectedFaces.remove(it);
@@ -314,14 +308,11 @@ bool FontFaceSet::deleteForBinding(ScriptState*, FontFace* fontFace, ExceptionSt
     return false;
 }
 
-bool FontFaceSet::hasForBinding(ScriptState*, FontFace* fontFace, ExceptionState& exceptionState) const
+bool FontFaceSet::hasForBinding(ScriptState*, FontFace* fontFace, ExceptionState&) const
 {
+    ASSERT(fontFace);
     if (!inActiveDocumentContext())
         return false;
-    if (!fontFace) {
-        exceptionState.throwTypeError("The argument is not a FontFace.");
-        return false;
-    }
     return m_nonCSSConnectedFaces.contains(fontFace) || isCSSConnectedFontFace(fontFace);
 }
 

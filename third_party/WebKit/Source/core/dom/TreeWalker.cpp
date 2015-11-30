@@ -39,12 +39,9 @@ TreeWalker::TreeWalker(PassRefPtrWillBeRawPtr<Node> rootNode, unsigned whatToSho
 {
 }
 
-void TreeWalker::setCurrentNode(PassRefPtrWillBeRawPtr<Node> node, ExceptionState& exceptionState)
+void TreeWalker::setCurrentNode(PassRefPtrWillBeRawPtr<Node> node)
 {
-    if (!node) {
-        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::argumentNullOrIncorrectType(1, "Node"));
-        return;
-    }
+    ASSERT(node);
     m_current = node;
 }
 

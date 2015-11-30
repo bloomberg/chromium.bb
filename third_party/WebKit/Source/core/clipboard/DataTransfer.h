@@ -43,7 +43,6 @@ class DataObject;
 class DataTransferItemList;
 class DragImage;
 class Element;
-class ExceptionState;
 class FileList;
 class FrameSelection;
 class LocalFrame;
@@ -83,7 +82,7 @@ public:
     FileList* files() const;
 
     IntPoint dragLocation() const { return m_dragLoc; }
-    void setDragImage(Element*, int x, int y, ExceptionState&);
+    void setDragImage(Element*, int x, int y);
     void clearDragImage();
     void setDragImageResource(ImageResource*, const IntPoint&);
     void setDragImageElement(Node*, const IntPoint&);

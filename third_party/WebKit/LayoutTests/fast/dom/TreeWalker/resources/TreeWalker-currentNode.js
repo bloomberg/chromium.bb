@@ -15,6 +15,14 @@ shouldBeNull("w.parentNode()");
 shouldBe("w.currentNode", "subTree");
 
 debug("");
+debug("Test that setting the currentNode to non-Node values throws.");
+debug("");
+
+shouldThrow("w.currentNode = null");
+shouldThrow("w.currentNode = {}");
+shouldThrow("w.currentNode = window");
+
+debug("");
 debug("Test that we handle setting the currentNode to arbitrary nodes not under the root element.");
 debug("");
 

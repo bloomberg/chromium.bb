@@ -76,8 +76,14 @@ function runTests() {
     }
     checkResults();
 
+    shouldThrow('document.fonts.has(null)');
+    shouldThrow('document.fonts.has("Font1")');
+    shouldThrow('document.fonts.add(null)');
+    shouldThrow('document.fonts.add("Font1")');
+    shouldThrow('document.fonts.delete(null)');
+    shouldThrow('document.fonts.delete("Font1")');
+
     shouldBeFalse('document.fonts.has(nonCssConnectedFace)');
-    shouldThrow('document.fonts.has("Font1")', '"TypeError: Failed to execute \'has\' on \'FontFaceSet\': The argument is not a FontFace."');
 
     shouldNotThrow('document.fonts.add(faces[0])');
     shouldBe('document.fonts.size', '3');

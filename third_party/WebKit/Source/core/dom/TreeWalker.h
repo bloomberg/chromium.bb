@@ -46,7 +46,7 @@ public:
     }
 
     Node* currentNode() const { return m_current.get(); }
-    void setCurrentNode(PassRefPtrWillBeRawPtr<Node>, ExceptionState&);
+    void setCurrentNode(PassRefPtrWillBeRawPtr<Node>);
 
     Node* parentNode(ExceptionState&);
     Node* firstChild(ExceptionState&);

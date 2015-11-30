@@ -47,10 +47,7 @@ FileReaderSync::FileReaderSync()
 
 PassRefPtr<DOMArrayBuffer> FileReaderSync::readAsArrayBuffer(ExecutionContext* executionContext, Blob* blob, ExceptionState& exceptionState)
 {
-    if (!blob) {
-        exceptionState.throwDOMException(NotFoundError, FileError::notFoundErrorMessage);
-        return nullptr;
-    }
+    ASSERT(blob);
 
     FileReaderLoader loader(FileReaderLoader::ReadAsArrayBuffer, nullptr);
     startLoading(executionContext, loader, *blob, exceptionState);
@@ -60,10 +57,7 @@ PassRefPtr<DOMArrayBuffer> FileReaderSync::readAsArrayBuffer(ExecutionContext* e
 
 String FileReaderSync::readAsBinaryString(ExecutionContext* executionContext, Blob* blob, ExceptionState& exceptionState)
 {
-    if (!blob) {
-        exceptionState.throwDOMException(NotFoundError, FileError::notFoundErrorMessage);
-        return String();
-    }
+    ASSERT(blob);
 
     FileReaderLoader loader(FileReaderLoader::ReadAsBinaryString, 0);
     startLoading(executionContext, loader, *blob, exceptionState);
@@ -72,10 +66,7 @@ String FileReaderSync::readAsBinaryString(ExecutionContext* executionContext, Bl
 
 String FileReaderSync::readAsText(ExecutionContext* executionContext, Blob* blob, const String& encoding, ExceptionState& exceptionState)
 {
-    if (!blob) {
-        exceptionState.throwDOMException(NotFoundError, FileError::notFoundErrorMessage);
-        return String();
-    }
+    ASSERT(blob);
 
     FileReaderLoader loader(FileReaderLoader::ReadAsText, nullptr);
     loader.setEncoding(encoding);
@@ -85,10 +76,7 @@ String FileReaderSync::readAsText(ExecutionContext* executionContext, Blob* blob
 
 String FileReaderSync::readAsDataURL(ExecutionContext* executionContext, Blob* blob, ExceptionState& exceptionState)
 {
-    if (!blob) {
-        exceptionState.throwDOMException(NotFoundError, FileError::notFoundErrorMessage);
-        return String();
-    }
+    ASSERT(blob);
 
     FileReaderLoader loader(FileReaderLoader::ReadAsDataURL, nullptr);
     loader.setDataType(blob->type());
