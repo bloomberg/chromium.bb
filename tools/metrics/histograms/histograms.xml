@@ -66051,6 +66051,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1970923579" label="xkb:us:intl:nld">Netherlands keyboard</int>
   <int value="1983264676" label="xkb:no::nob">Norwegian keyboard</int>
   <int value="2007323478" label="xkb:cz::cze">Czech keyboard</int>
+  <int value="2014669693" label="xkb:kz::kaz">Kazakh keyboard</int>
   <int value="2024146574" label="vkd_lo">Lao keyboard</int>
   <int value="2029882285" label="vkd_kn_phone">Kannada keyboard (Phonetic)</int>
   <int value="2031967946" label="xkb:mt::mlt">Maltese keyboard</int>

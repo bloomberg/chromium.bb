@@ -1059,6 +1059,20 @@
       ],
       "input_view": "inputview.html#id=mk&language=mk&passwordLayout=us-ltr&name=keyboard_macedonian",
       "options_page": "hmm_options.html?code=xkb:mk::mkd"
+    },
+    {
+      "name": "__MSG_keyboard_kazakh__",
+      "type": "ime",
+      "id": "xkb:kz::kaz",
+      "description": "",
+      "language": [
+        "kk"
+      ],
+      "layouts": [
+        "kz"
+      ],
+      "input_view": "inputview.html#id=kz&language=kk&passwordLayout=us-ltr&name=keyboard_kazakh",
+      "options_page": "hmm_options.html?code=xkb:kz::kaz"
     }
   ],
   "manifest_version": 2

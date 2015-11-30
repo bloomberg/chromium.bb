@@ -4977,6 +4977,9 @@ Battery full
   <message name="IDS_STATUSBAR_LAYOUT_MACEDONIAN" desc="In the language menu button, this shows the input mode [Macedonian keyboard].">
     Macedonian
   </message>
+  <message name="IDS_STATUSBAR_LAYOUT_KAZAKH" desc="In the language menu button, this shows the input mode [Kazakh keyboard].">
+    Kazakh
+  </message>
 
   <message name="IDS_IME_NAME_KEYBOARD_ARMENIAN_PHONETIC" desc="The input method name shows in system tray menu, this shows [Armenian Phonetic keyboard].">
     Armenian Phonetic keyboard
@@ -5067,6 +5070,9 @@ Battery full
   </message>
   <message name="IDS_IME_NAME_KEYBOARD_JAPANESE" desc="The input method name shows in system tray menu, this shows [Japanese keyboard].">
     Japanese keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_KAZAKH" desc="The input method name shows in system tray menu, this shows [Kazakh keyboard].">
+    Kazakh keyboard
   </message>
   <message name="IDS_IME_NAME_KEYBOARD_LATIN_AMERICAN" desc="The input method name shows in system tray menu, this shows [Latin American keyboard].">
     Latin American keyboard
