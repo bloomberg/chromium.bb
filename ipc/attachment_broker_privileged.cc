@@ -103,7 +103,7 @@ void AttachmentBrokerPrivileged::DeregisterCommunicationChannel(
 }
 
 Sender* AttachmentBrokerPrivileged::GetSenderWithProcessId(base::ProcessId id) {
-  base::AutoLock auto_lock(*get_lock());
+  get_lock()->AssertAcquired();
   auto it = std::find_if(endpoints_.begin(), endpoints_.end(),
                          [id](Endpoint* c) { return c->GetPeerPID() == id; });
   if (it == endpoints_.end())

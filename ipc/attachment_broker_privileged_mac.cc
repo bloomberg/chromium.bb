@@ -8,6 +8,7 @@
 #include "base/memory/shared_memory.h"
 #include "base/process/port_provider_mac.h"
 #include "base/process/process.h"
+#include "base/synchronization/lock.h"
 #include "ipc/attachment_broker_messages.h"
 #include "ipc/brokerable_attachment.h"
 #include "ipc/ipc_channel.h"
@@ -210,6 +211,7 @@ bool AttachmentBrokerPrivilegedMac::RouteWireFormatToAnother(
 
   // Another process is the destination.
   base::ProcessId dest = wire_format.destination_process;
+  base::AutoLock auto_lock(*get_lock());
   Sender* sender = GetSenderWithProcessId(dest);
   if (!sender) {
     // Assuming that this message was not sent from a malicious process, the
@@ -319,6 +321,7 @@ void AttachmentBrokerPrivilegedMac::SendPrecursorsForProcess(
   bool to_self = pid == base::GetCurrentProcId();
 
   if (!to_self) {
+    base::AutoLock auto_lock(*get_lock());
     if (!GetSenderWithProcessId(pid)) {
       // If there is no sender, then the destination process is no longer
       // running, or never existed to begin with.
@@ -387,12 +390,15 @@ void AttachmentBrokerPrivilegedMac::ProcessExtractorsForProcess(
   if (it == extractors_.end())
     return;
 
-  if (!GetSenderWithProcessId(pid)) {
-    // If there is no sender, then the source process is no longer running.
-    LogError(ERROR_SOURCE_NOT_FOUND);
-    delete it->second;
-    extractors_.erase(it);
-    return;
+  {
+    base::AutoLock auto_lock(*get_lock());
+    if (!GetSenderWithProcessId(pid)) {
+      // If there is no sender, then the source process is no longer running.
+      LogError(ERROR_SOURCE_NOT_FOUND);
+      delete it->second;
+      extractors_.erase(it);
+      return;
+    }
   }
 
   mach_port_t task_port = port_provider_->TaskForPid(pid);
