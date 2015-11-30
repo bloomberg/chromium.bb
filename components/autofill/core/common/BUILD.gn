@@ -54,6 +54,7 @@ static_library("common") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "autofill_l10n_util_unittest.cc",
     "autofill_regexes_unittest.cc",
     "autofill_util_unittest.cc",
     "form_data_unittest.cc",
@@ -66,6 +67,7 @@ source_set("unit_tests") {
     ":common",
     "//base",
     "//base:i18n",
+    "//base/test:test_support",
     "//components/autofill/core/browser",
     "//testing/gmock",
     "//testing/gtest",

@@ -58,6 +58,7 @@
       'autofill/core/browser/webdata/autofill_table_unittest.cc',
       'autofill/core/browser/webdata/autofill_wallet_metadata_syncable_service_unittest.cc',
       'autofill/core/browser/webdata/web_data_service_unittest.cc',
+      'autofill/core/common/autofill_l10n_util_unittest.cc',
       'autofill/core/common/autofill_regexes_unittest.cc',
       'autofill/core/common/autofill_util_unittest.cc',
       'autofill/core/common/form_data_unittest.cc',

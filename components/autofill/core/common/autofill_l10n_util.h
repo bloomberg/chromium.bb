@@ -4,6 +4,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
+#include "third_party/icu/source/common/unicode/locid.h"
 #include "third_party/icu/source/i18n/unicode/coll.h"
 
 namespace autofill {
@@ -13,6 +14,8 @@ namespace l10n {
 class CaseInsensitiveCompare {
  public:
   CaseInsensitiveCompare();
+  // Used for testing.
+  explicit CaseInsensitiveCompare(const icu::Locale& locale);
   ~CaseInsensitiveCompare();
 
   bool StringsEqual(const base::string16& lhs, const base::string16& rhs) const;

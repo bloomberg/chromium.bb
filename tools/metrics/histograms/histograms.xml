@@ -2221,6 +2221,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>The autofill state related to a submitted form.</summary>
 </histogram>
 
+<histogram name="Autofill.IcuCollatorCreationSuccess" enum="BooleanSuccess">
+  <owner>mathp@chromium.org</owner>
+  <summary>
+    Tracks whether Autofill was able to create the ICU collator successfully.
+  </summary>
+</histogram>
+
 <histogram name="Autofill.IsEnabled.PageLoad" enum="BooleanEnabled">
   <owner>isherman@chromium.org</owner>
   <summary>
