@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.Browser;
@@ -2425,15 +2426,24 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
 
         if (mTabUma != null) mTabUma.onRendererCrashed();
 
-        // Update the most recent minidump file with the logcat. Doing this asynchronously
-        // adds a race condition in the case of multiple simultaneously renderer crashses
-        // but because the data will be the same for all of them it is innocuous. We can
-        // attempt to do this regardless of whether it was a foreground tab in the event
-        // that it's a real crash and not just android killing the tab.
-        Context context = getApplicationContext();
-        Intent intent = MinidumpUploadService.createFindAndUploadLastCrashIntent(context);
-        context.startService(intent);
-        RecordUserAction.record("MobileBreakpadUploadAttempt");
+        try {
+            // Update the most recent minidump file with the logcat. Doing this asynchronously
+            // adds a race condition in the case of multiple simultaneously renderer crashses
+            // but because the data will be the same for all of them it is innocuous. We can
+            // attempt to do this regardless of whether it was a foreground tab in the event
+            // that it's a real crash and not just android killing the tab.
+            Context context = getApplicationContext();
+            Intent intent = MinidumpUploadService.createFindAndUploadLastCrashIntent(context);
+            context.startService(intent);
+            RecordUserAction.record("MobileBreakpadUploadAttempt");
+        } catch (SecurityException e) {
+            // For KitKat and below, there was a framework bug which cause us to not be able to
+            // find our own crash uploading service. Ignore a SecurityException here on older
+            // OS versions since the crash will eventually get uploaded on next start. crbug/542533
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                throw e;
+            }
+        }
     }
 
     /**
