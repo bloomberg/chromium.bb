@@ -919,19 +919,6 @@ weston_surface_to_buffer_float(struct weston_surface *surface,
 				 *bx, *by, bx, by);
 }
 
-WL_EXPORT void
-weston_surface_to_buffer(struct weston_surface *surface,
-			 int sx, int sy, int *bx, int *by)
-{
-	float bxf, byf;
-
-	weston_surface_to_buffer_float(surface,
-				       sx, sy, &bxf, &byf);
-
-	*bx = floorf(bxf);
-	*by = floorf(byf);
-}
-
 WL_EXPORT pixman_box32_t
 weston_surface_to_buffer_rect(struct weston_surface *surface,
 			      pixman_box32_t rect)

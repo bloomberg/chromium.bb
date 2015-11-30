@@ -1101,9 +1101,6 @@ weston_view_from_global_fixed(struct weston_view *view,
 void
 weston_surface_to_buffer_float(struct weston_surface *surface,
 			       float x, float y, float *bx, float *by);
-void
-weston_surface_to_buffer(struct weston_surface *surface,
-			 int sx, int sy, int *bx, int *by);
 pixman_box32_t
 weston_surface_to_buffer_rect(struct weston_surface *surface,
 			      pixman_box32_t rect);
