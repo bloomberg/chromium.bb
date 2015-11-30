@@ -463,13 +463,6 @@ crbug.com/552532 [ Win10 ] plugins/mouse-events.html [ Pass Crash ]
 crbug.com/552532 [ Win10 ] plugins/plugin-initiate-popup-window.html [ Pass Crash ]
 crbug.com/552532 [ Win10 ] plugins/tabindex.html [ Pass Crash ]
 
-crbug.com/561445 [ Mac ] fast/repaint/japanese-rl-selection-clear.html [ NeedsRebaseline ]
-crbug.com/561445 [ Mac ] fast/repaint/japanese-rl-selection-repaint.html [ NeedsRebaseline ]
-crbug.com/561445 [ Mac ] fast/writing-mode/japanese-lr-selection.html [ NeedsRebaseline ]
-crbug.com/561445 [ Mac ] fast/writing-mode/japanese-rl-selection.html [ NeedsRebaseline ]
-crbug.com/561445 [ Mac ] virtual/syncpaint/fast/repaint/japanese-rl-selection-clear.html [ NeedsRebaseline ]
-crbug.com/561445 [ Mac ] virtual/syncpaint/fast/repaint/japanese-rl-selection-repaint.html [ NeedsRebaseline ]
-
 crbug.com/505364 imported/web-platform-tests/shadow-dom/untriaged/shadow-trees/lower-boundary-encapsulation/test-004.html [ Failure ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/untriaged/shadow-trees/upper-boundary-encapsulation/dom-tree-accessors-001.html [ Failure ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/untriaged/shadow-trees/upper-boundary-encapsulation/dom-tree-accessors-002.html [ Failure ]
