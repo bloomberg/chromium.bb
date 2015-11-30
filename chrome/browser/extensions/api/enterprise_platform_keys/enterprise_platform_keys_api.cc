@@ -5,7 +5,6 @@
 #include "chrome/browser/extensions/api/enterprise_platform_keys/enterprise_platform_keys_api.h"
 
 #include "base/bind.h"
-#include "base/stl_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
@@ -134,8 +133,7 @@ EnterprisePlatformKeysImportCertificateFunction::Run() {
 
   const std::vector<char>& cert_der = params->certificate;
   scoped_refptr<net::X509Certificate> cert_x509 =
-      net::X509Certificate::CreateFromBytes(vector_as_array(&cert_der),
-                                            cert_der.size());
+      net::X509Certificate::CreateFromBytes(cert_der.data(), cert_der.size());
   if (!cert_x509.get())
     return RespondNow(Error(kErrorInvalidX509Cert));
 
@@ -173,8 +171,7 @@ EnterprisePlatformKeysRemoveCertificateFunction::Run() {
 
   const std::vector<char>& cert_der = params->certificate;
   scoped_refptr<net::X509Certificate> cert_x509 =
-      net::X509Certificate::CreateFromBytes(vector_as_array(&cert_der),
-                                            cert_der.size());
+      net::X509Certificate::CreateFromBytes(cert_der.data(), cert_der.size());
   if (!cert_x509.get())
     return RespondNow(Error(kErrorInvalidX509Cert));
 

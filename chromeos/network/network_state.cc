@@ -5,7 +5,6 @@
 #include "chromeos/network/network_state.h"
 
 #include "base/memory/scoped_ptr.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "chromeos/network/network_profile_handler.h"
@@ -364,7 +363,7 @@ bool NetworkState::IsPrivate() const {
 }
 
 std::string NetworkState::GetHexSsid() const {
-  return base::HexEncode(vector_as_array(&raw_ssid()), raw_ssid().size());
+  return base::HexEncode(raw_ssid().data(), raw_ssid().size());
 }
 
 std::string NetworkState::GetDnsServersAsString() const {

@@ -5,7 +5,6 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/stl_util.h"
 #include "chromeos/dbus/shill_client_unittest_base.h"
 #include "chromeos/dbus/shill_third_party_vpn_driver_client.h"
 #include "chromeos/dbus/shill_third_party_vpn_observer.h"
@@ -74,7 +73,7 @@ TEST_F(ShillThirdPartyVpnDriverClientTest, PlatformSignal) {
   {
     dbus::MessageWriter writer(&preceived_signal);
     writer.AppendArrayOfBytes(
-        reinterpret_cast<const uint8_t*>(vector_as_array(&data_packet)),
+        reinterpret_cast<const uint8_t*>(data_packet.data()),
         data_packet.size());
   }
 

@@ -20,7 +20,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/worker_pool.h"
@@ -86,7 +85,7 @@ bool SaveData(int key,
   base::FilePath file_path = data_dir.Append(file_name);
 
   return base::PathExists(file_path) ||
-         base::WriteFile(file_path, vector_as_array(&data), data.size()) != -1;
+         base::WriteFile(file_path, data.data(), data.size()) != -1;
 }
 
 // Gets |file_name| from directory with |key|. Return false if the directory can

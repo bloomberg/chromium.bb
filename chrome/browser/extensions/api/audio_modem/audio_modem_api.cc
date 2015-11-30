@@ -12,7 +12,6 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/copresence/chrome_whispernet_client.h"
@@ -279,7 +278,7 @@ ExtensionFunction::ResponseAction AudioModemTransmitFunction::Run() {
         Transmit::Results::Create(STATUS_INVALIDREQUEST),
         kInvalidTokenLengthError));
   }
-  const char* token = vector_as_array(&params->token);
+  const char* token = params->token.data();
   std::string token_str(token, params->token.size());
   if (static_cast<int>(token_str.size()) != token_length) {
     return RespondNow(ErrorWithArguments(

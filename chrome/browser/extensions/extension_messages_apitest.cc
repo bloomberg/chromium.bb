@@ -984,8 +984,8 @@ class ExternallyConnectableMessagingWithTlsChannelIdTest :
     std::vector<uint8> spki_vector;
     if (!channel_id_key->ExportPublicKey(&spki_vector))
       return std::string();
-    base::StringPiece spki(reinterpret_cast<char*>(
-        vector_as_array(&spki_vector)), spki_vector.size());
+    base::StringPiece spki(reinterpret_cast<char*>(spki_vector.data()),
+                           spki_vector.size());
     base::DictionaryValue jwk_value;
     net::JwkSerializer::ConvertSpkiFromDerToJwk(spki, &jwk_value);
     std::string tls_channel_id_value;

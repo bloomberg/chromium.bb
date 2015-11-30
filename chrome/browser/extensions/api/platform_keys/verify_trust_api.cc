@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
-#include "base/stl_util.h"
 #include "chrome/browser/extensions/api/platform_keys/platform_keys_api.h"
 #include "chrome/common/extensions/api/platform_keys_internal.h"
 #include "extensions/browser/extension_registry_factory.h"
@@ -168,8 +167,7 @@ void VerifyTrustAPI::IOPart::Verify(scoped_ptr<Params> params,
       return;
     }
     der_cert_chain.push_back(base::StringPiece(
-        reinterpret_cast<const char*>(vector_as_array(&cert_der)),
-        cert_der.size()));
+        reinterpret_cast<const char*>(cert_der.data()), cert_der.size()));
   }
   scoped_refptr<net::X509Certificate> cert_chain(
       net::X509Certificate::CreateFromDERCertChain(der_cert_chain));

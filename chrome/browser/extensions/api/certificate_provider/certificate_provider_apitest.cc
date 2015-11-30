@@ -17,7 +17,6 @@
 #include "base/files/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -88,15 +87,14 @@ bool RsaSign(const std::vector<uint8_t>& digest,
   size_t prefixed_digest_len = 0;
   int is_alloced = 0;
   if (!RSA_add_pkcs1_prefix(&prefixed_digest, &prefixed_digest_len, &is_alloced,
-                            NID_sha1, vector_as_array(&digest),
-                            digest.size())) {
+                            NID_sha1, digest.data(), digest.size())) {
     return false;
   }
   size_t len = 0;
   signature->resize(RSA_size(rsa_key.get()));
-  const int rv = RSA_sign_raw(rsa_key.get(), &len, vector_as_array(signature),
-                              signature->size(), prefixed_digest,
-                              prefixed_digest_len, RSA_PKCS1_PADDING);
+  const int rv =
+      RSA_sign_raw(rsa_key.get(), &len, signature->data(), signature->size(),
+                   prefixed_digest, prefixed_digest_len, RSA_PKCS1_PADDING);
   if (is_alloced)
     free(prefixed_digest);
 

@@ -17,7 +17,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/worker_pool.h"
 #include "chrome/browser/browser_process.h"
@@ -482,8 +481,7 @@ void SignRSAOnWorkerThread(scoped_ptr<SignRSAState> state) {
     }
 
     std::vector<unsigned char> signature(signature_len);
-    SECItem signature_output = {
-        siBuffer, vector_as_array(&signature), signature.size()};
+    SECItem signature_output = {siBuffer, signature.data(), signature.size()};
     if (PK11_Sign(rsa_key.get(), &signature_output, &input) == SECSuccess)
       signature_str.assign(signature.begin(), signature.end());
   } else {

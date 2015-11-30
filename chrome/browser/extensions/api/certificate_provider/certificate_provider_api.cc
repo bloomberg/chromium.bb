@@ -12,7 +12,6 @@
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/stl_util.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider_service.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider_service_factory.h"
 #include "chrome/common/extensions/api/certificate_provider.h"
@@ -92,8 +91,8 @@ bool CertificateProviderInternalReportCertificatesFunction::
     return false;
   }
 
-  out_info->certificate = net::X509Certificate::CreateFromBytes(
-      vector_as_array(&cert_der), cert_der.size());
+  out_info->certificate =
+      net::X509Certificate::CreateFromBytes(cert_der.data(), cert_der.size());
   if (!out_info->certificate) {
     WriteToConsole(content::CONSOLE_MESSAGE_LEVEL_ERROR, kErrorInvalidX509Cert);
     return false;

@@ -5,7 +5,6 @@
 #include "chromecast/media/cdm/chromecast_init_data.h"
 
 #include "base/logging.h"
-#include "base/stl_util.h"
 #include "media/base/bit_reader.h"
 #include "media/cdm/cenc_utils.h"
 
@@ -51,7 +50,7 @@ bool FindChromecastInitData(const std::vector<uint8_t>& init_data,
     return false;
   }
 
-  ::media::BitReader reader(vector_as_array(&pssh_data), pssh_data.size());
+  ::media::BitReader reader(pssh_data.data(), pssh_data.size());
 
   uint16_t msg_type;
   RCHECK(reader.ReadBits(2 * 8, &msg_type));

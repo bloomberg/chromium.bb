@@ -13,7 +13,6 @@
 #include "base/files/file_util.h"
 #include "base/json/json_writer.h"
 #include "base/path_service.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "crypto/rsa_private_key.h"
@@ -96,8 +95,7 @@ bool LocalPolicyTestServer::SetSigningKeyAndSignature(
 
   policy_key_ = server_data_dir_.path().Append(kSigningKeyFileName);
   int bytes_written = base::WriteFile(
-      policy_key_,
-      reinterpret_cast<const char*>(vector_as_array(&signing_key_bits)),
+      policy_key_, reinterpret_cast<const char*>(signing_key_bits.data()),
       signing_key_bits.size());
 
   if (bytes_written != static_cast<int>(signing_key_bits.size()))

@@ -93,8 +93,7 @@ const extensions::Extension* LookupExtensionForRawSsid(
   if (!profile || !networking_config_service)
     return nullptr;
   std::string extension_id;
-  std::string hex_ssid =
-      base::HexEncode(vector_as_array(&raw_ssid), raw_ssid.size());
+  std::string hex_ssid = base::HexEncode(raw_ssid.data(), raw_ssid.size());
   extension_id =
       networking_config_service->LookupExtensionIdForHexSsid(hex_ssid);
   if (extension_id.empty())

@@ -5,7 +5,6 @@
 #include "chromeos/dbus/shill_third_party_vpn_driver_client.h"
 
 #include "base/bind.h"
-#include "base/stl_util.h"
 #include "chromeos/dbus/shill_third_party_vpn_observer.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -253,9 +252,8 @@ void ShillThirdPartyVpnDriverClientImpl::SendPacket(
   dbus::MessageWriter writer(&method_call);
   static_assert(sizeof(uint8_t) == sizeof(char),
                 "Can't reinterpret ip_packet if char is not 8 bit large.");
-  writer.AppendArrayOfBytes(
-      reinterpret_cast<const uint8_t*>(vector_as_array(&ip_packet)),
-      ip_packet.size());
+  writer.AppendArrayOfBytes(reinterpret_cast<const uint8_t*>(ip_packet.data()),
+                            ip_packet.size());
   GetHelper(object_path_value)
       ->CallVoidMethodWithErrorCallback(&method_call, callback, error_callback);
 }

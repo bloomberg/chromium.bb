@@ -4,7 +4,6 @@
 
 #include "chrome/browser/copresence/chrome_whispernet_client.h"
 
-#include "base/stl_util.h"
 #include "chrome/browser/copresence/chrome_whispernet_config.h"
 #include "chrome/browser/extensions/api/copresence_private/copresence_private_api.h"
 #include "chrome/browser/extensions/component_loader.h"
@@ -188,7 +187,7 @@ void ChromeWhispernetClient::AudioConfiguration(const AudioParamData& params) {
   // nacl wrapper.
   const size_t params_size = sizeof(params);
   audio_params.param_data.resize(params_size);
-  memcpy(vector_as_array(&audio_params.param_data), &params, params_size);
+  memcpy(audio_params.param_data.data(), &params, params_size);
 
   DVLOG(3) << "Configuring audio for client " << client_id_;
   SendEventIfLoaded(make_scoped_ptr(new Event(

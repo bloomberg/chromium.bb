@@ -10,7 +10,6 @@
 
 #include "base/guid.h"
 #include "base/lazy_instance.h"
-#include "base/stl_util.h"
 #include "chrome/browser/copresence/chrome_whispernet_client.h"
 #include "chrome/common/extensions/api/copresence_private.h"
 #include "content/public/browser/browser_thread.h"
@@ -124,8 +123,7 @@ ExtensionFunction::ResponseAction CopresencePrivateSendSamplesFunction::Run() {
       media::AudioBusRefCounted::Create(1,  // Mono
                                         params->samples.size() / sizeof(float));
 
-  memcpy(samples->channel(0), vector_as_array(&params->samples),
-         params->samples.size());
+  memcpy(samples->channel(0), params->samples.data(), params->samples.size());
 
   whispernet_client->GetSamplesCallback().Run(
       params->token.audible ? audio_modem::AUDIBLE : audio_modem::INAUDIBLE,

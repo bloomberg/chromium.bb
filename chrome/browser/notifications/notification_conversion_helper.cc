@@ -9,7 +9,6 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/extensions/api/notification_provider.h"
 #include "chrome/common/extensions/api/notifications/notification_style.h"
@@ -130,9 +129,8 @@ void NotificationConversionHelper::GfxImageToNotificationBitmap(
   scoped_ptr<std::vector<char>> rgba_bitmap_data(
       new std::vector<char>(pixel_count * BYTES_PER_PIXEL));
 
-  gfx::ConvertSkiaToRGBA(bitmap, pixel_count,
-                         reinterpret_cast<unsigned char*>(
-                             vector_as_array(rgba_bitmap_data.get())));
+  gfx::ConvertSkiaToRGBA(bitmap, pixel_count, reinterpret_cast<unsigned char*>(
+                                                  rgba_bitmap_data->data()));
   sk_bitmap.unlockPixels();
 
   notification_bitmap->data = rgba_bitmap_data.Pass();

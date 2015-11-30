@@ -9,7 +9,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
-#include "base/stl_util.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
 #include "chrome/common/chrome_paths.h"
@@ -60,11 +59,10 @@ void DevicePolicyCrosTestHelper::InstallOwnerKey() {
   std::vector<uint8> owner_key_bits;
   ASSERT_TRUE(
       device_policy()->GetSigningKey()->ExportPublicKey(&owner_key_bits));
-  ASSERT_EQ(base::WriteFile(
-          owner_key_file,
-          reinterpret_cast<const char*>(vector_as_array(&owner_key_bits)),
-          owner_key_bits.size()),
-      static_cast<int>(owner_key_bits.size()));
+  ASSERT_EQ(base::WriteFile(owner_key_file, reinterpret_cast<const char*>(
+                                                owner_key_bits.data()),
+                            owner_key_bits.size()),
+            static_cast<int>(owner_key_bits.size()));
 }
 
 // static

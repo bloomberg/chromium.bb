@@ -90,7 +90,7 @@ void MessagePropertyProvider::GotChannelID(
     original_task_runner->PostTask(FROM_HERE, no_tls_channel_id_closure);
     return;
   }
-  base::StringPiece spki(reinterpret_cast<char*>(vector_as_array(&spki_vector)),
+  base::StringPiece spki(reinterpret_cast<char*>(spki_vector.data()),
                          spki_vector.size());
   base::DictionaryValue jwk_value;
   if (!net::JwkSerializer::ConvertSpkiFromDerToJwk(spki, &jwk_value)) {

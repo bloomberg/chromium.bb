@@ -11,7 +11,6 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "crypto/openssl_util.h"
 #include "crypto/rsa_private_key.h"
@@ -116,8 +115,8 @@ bool EncryptByteString(const std::vector<uint8_t>& pub_key_der,
   crypto::EnsureOpenSSLInit();
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
 
-  crypto::ScopedRSA rsa(RSA_public_key_from_bytes(vector_as_array(&pub_key_der),
-                                                  pub_key_der.size()));
+  crypto::ScopedRSA rsa(
+      RSA_public_key_from_bytes(pub_key_der.data(), pub_key_der.size()));
   if (!rsa || RSA_size(rsa.get()) == 0) {
     LOG(ERROR) << "Failed to parse public key";
     return false;
@@ -126,7 +125,7 @@ bool EncryptByteString(const std::vector<uint8_t>& pub_key_der,
   encrypted_output->resize(RSA_size(rsa.get()));
   int encrypted_length = RSA_public_encrypt(
       data.size(), reinterpret_cast<const uint8_t*>(data.data()),
-      vector_as_array(encrypted_output), rsa.get(), RSA_PKCS1_PADDING);
+      encrypted_output->data(), rsa.get(), RSA_PKCS1_PADDING);
   if (encrypted_length < 0) {
     LOG(ERROR) << "Error during decryption";
     return false;
