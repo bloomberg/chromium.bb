@@ -40,6 +40,11 @@ public class AutofillServerCardPreferences
         }
         assert mGUID != null;
         CreditCard card = PersonalDataManager.getInstance().getCreditCard(mGUID);
+        if (card == null) {
+            getActivity().finish();
+            return;
+        }
+
         assert !card.getIsLocal();
 
         Preference cardDescription = findPreference(PREF_SERVER_CARD_DESCRIPTION);
