@@ -22,7 +22,7 @@
 namespace {
 
 // Horizontal padding, in pixels, between the link and label.
-const int GetViewPadding() {
+int GetViewPadding() {
   if (ui::MaterialDesignController::IsModeMaterial()) {
     static int space_width =
         views::Label(base::ASCIIToUTF16(" ")).GetPreferredSize().width();
