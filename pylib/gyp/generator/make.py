@@ -2044,6 +2044,11 @@ def GenerateOutput(target_list, target_dicts, data, params):
     header_params.update({
         'flock': 'lockf',
     })
+  elif flavor == 'openbsd':
+    copy_archive_arguments = '-pPRf'
+    header_params.update({
+        'copy_archive_args': copy_archive_arguments,
+    })
   elif flavor == 'aix':
     copy_archive_arguments = '-pPRf'
     header_params.update({
