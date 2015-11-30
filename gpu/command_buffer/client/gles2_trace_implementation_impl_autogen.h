@@ -2220,6 +2220,12 @@ void GLES2TraceImplementation::ScheduleCALayerCHROMIUM(
                                background_color, bounds_size, transform);
 }
 
+void GLES2TraceImplementation::CommitOverlayPlanesCHROMIUM() {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
+                                "GLES2Trace::CommitOverlayPlanesCHROMIUM");
+  gl_->CommitOverlayPlanesCHROMIUM();
+}
+
 void GLES2TraceImplementation::SwapInterval(GLint interval) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::SwapInterval");
   gl_->SwapInterval(interval);

@@ -4153,6 +4153,14 @@ _FUNCTION_INFO = {
     'extension': 'CHROMIUM_schedule_ca_layer',
     'chromium': True,
   },
+  'CommitOverlayPlanesCHROMIUM': {
+    'impl_func': False,
+    'decoder_func': 'DoCommitOverlayPlanes',
+    'unit_test': False,
+    'client_test': False,
+    'extension': 'CHROMIUM_commit_overlay_planes',
+    'chromium': True,
+  },
   'MatrixLoadfCHROMIUM': {
     'type': 'PUT',
     'count': 16,

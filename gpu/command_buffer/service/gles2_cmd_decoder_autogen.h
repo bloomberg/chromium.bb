@@ -4909,6 +4909,16 @@ error::Error GLES2DecoderImpl::HandleDrawBuffersEXTImmediate(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleCommitOverlayPlanesCHROMIUM(
+    uint32_t immediate_data_size,
+    const void* cmd_data) {
+  const gles2::cmds::CommitOverlayPlanesCHROMIUM& c =
+      *static_cast<const gles2::cmds::CommitOverlayPlanesCHROMIUM*>(cmd_data);
+  (void)c;
+  DoCommitOverlayPlanes();
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderImpl::HandleSwapInterval(uint32_t immediate_data_size,
                                                   const void* cmd_data) {
   const gles2::cmds::SwapInterval& c =

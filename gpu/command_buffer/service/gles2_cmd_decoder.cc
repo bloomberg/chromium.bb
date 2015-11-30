@@ -876,6 +876,8 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   // Callback for async SwapBuffers.
   void FinishSwapBuffers(gfx::SwapResult result);
 
+  void DoCommitOverlayPlanes();
+
   // Wrapper for SwapInterval.
   void DoSwapInterval(int interval);
 
@@ -11780,6 +11782,11 @@ void GLES2DecoderImpl::FinishSwapBuffers(gfx::SwapResult result) {
       group_->LoseContexts(error::kUnknown);
     }
   }
+}
+
+void GLES2DecoderImpl::DoCommitOverlayPlanes() {
+  // TODO(watk): crbug.com/560592
+  NOTIMPLEMENTED();
 }
 
 void GLES2DecoderImpl::DoSwapInterval(int interval) {

@@ -304,33 +304,34 @@
   OP(DiscardBackbufferCHROMIUM)                   /* 545 */ \
   OP(ScheduleOverlayPlaneCHROMIUM)                /* 546 */ \
   OP(ScheduleCALayerCHROMIUM)                     /* 547 */ \
-  OP(SwapInterval)                                /* 548 */ \
-  OP(FlushDriverCachesCHROMIUM)                   /* 549 */ \
-  OP(MatrixLoadfCHROMIUMImmediate)                /* 550 */ \
-  OP(MatrixLoadIdentityCHROMIUM)                  /* 551 */ \
-  OP(GenPathsCHROMIUM)                            /* 552 */ \
-  OP(DeletePathsCHROMIUM)                         /* 553 */ \
-  OP(IsPathCHROMIUM)                              /* 554 */ \
-  OP(PathCommandsCHROMIUM)                        /* 555 */ \
-  OP(PathParameterfCHROMIUM)                      /* 556 */ \
-  OP(PathParameteriCHROMIUM)                      /* 557 */ \
-  OP(PathStencilFuncCHROMIUM)                     /* 558 */ \
-  OP(StencilFillPathCHROMIUM)                     /* 559 */ \
-  OP(StencilStrokePathCHROMIUM)                   /* 560 */ \
-  OP(CoverFillPathCHROMIUM)                       /* 561 */ \
-  OP(CoverStrokePathCHROMIUM)                     /* 562 */ \
-  OP(StencilThenCoverFillPathCHROMIUM)            /* 563 */ \
-  OP(StencilThenCoverStrokePathCHROMIUM)          /* 564 */ \
-  OP(StencilFillPathInstancedCHROMIUM)            /* 565 */ \
-  OP(StencilStrokePathInstancedCHROMIUM)          /* 566 */ \
-  OP(CoverFillPathInstancedCHROMIUM)              /* 567 */ \
-  OP(CoverStrokePathInstancedCHROMIUM)            /* 568 */ \
-  OP(StencilThenCoverFillPathInstancedCHROMIUM)   /* 569 */ \
-  OP(StencilThenCoverStrokePathInstancedCHROMIUM) /* 570 */ \
-  OP(BindFragmentInputLocationCHROMIUMBucket)     /* 571 */ \
-  OP(ProgramPathFragmentInputGenCHROMIUM)         /* 572 */ \
-  OP(BlendBarrierKHR)                             /* 573 */ \
-  OP(ApplyScreenSpaceAntialiasingCHROMIUM)        /* 574 */
+  OP(CommitOverlayPlanesCHROMIUM)                 /* 548 */ \
+  OP(SwapInterval)                                /* 549 */ \
+  OP(FlushDriverCachesCHROMIUM)                   /* 550 */ \
+  OP(MatrixLoadfCHROMIUMImmediate)                /* 551 */ \
+  OP(MatrixLoadIdentityCHROMIUM)                  /* 552 */ \
+  OP(GenPathsCHROMIUM)                            /* 553 */ \
+  OP(DeletePathsCHROMIUM)                         /* 554 */ \
+  OP(IsPathCHROMIUM)                              /* 555 */ \
+  OP(PathCommandsCHROMIUM)                        /* 556 */ \
+  OP(PathParameterfCHROMIUM)                      /* 557 */ \
+  OP(PathParameteriCHROMIUM)                      /* 558 */ \
+  OP(PathStencilFuncCHROMIUM)                     /* 559 */ \
+  OP(StencilFillPathCHROMIUM)                     /* 560 */ \
+  OP(StencilStrokePathCHROMIUM)                   /* 561 */ \
+  OP(CoverFillPathCHROMIUM)                       /* 562 */ \
+  OP(CoverStrokePathCHROMIUM)                     /* 563 */ \
+  OP(StencilThenCoverFillPathCHROMIUM)            /* 564 */ \
+  OP(StencilThenCoverStrokePathCHROMIUM)          /* 565 */ \
+  OP(StencilFillPathInstancedCHROMIUM)            /* 566 */ \
+  OP(StencilStrokePathInstancedCHROMIUM)          /* 567 */ \
+  OP(CoverFillPathInstancedCHROMIUM)              /* 568 */ \
+  OP(CoverStrokePathInstancedCHROMIUM)            /* 569 */ \
+  OP(StencilThenCoverFillPathInstancedCHROMIUM)   /* 570 */ \
+  OP(StencilThenCoverStrokePathInstancedCHROMIUM) /* 571 */ \
+  OP(BindFragmentInputLocationCHROMIUMBucket)     /* 572 */ \
+  OP(ProgramPathFragmentInputGenCHROMIUM)         /* 573 */ \
+  OP(BlendBarrierKHR)                             /* 574 */ \
+  OP(ApplyScreenSpaceAntialiasingCHROMIUM)        /* 575 */
 
 enum CommandId {
   kStartPoint = cmd::kLastCommonId,  // All GLES2 commands start after this.

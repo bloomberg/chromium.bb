@@ -4293,6 +4293,11 @@ void GLES2Implementation::PartialSwapBuffers(const gfx::Rect& sub_buffer) {
       sub_buffer.x(), sub_buffer.y(), sub_buffer.width(), sub_buffer.height());
 }
 
+void GLES2Implementation::CommitOverlayPlanesCHROMIUM() {
+  // TODO(watk): crbug.com/560592
+  NOTIMPLEMENTED();
+}
+
 static GLenum GetGLESOverlayTransform(gfx::OverlayTransform plane_transform) {
   switch (plane_transform) {
     case gfx::OVERLAY_TRANSFORM_INVALID:

@@ -13869,6 +13869,33 @@ static_assert(offsetof(ScheduleCALayerCHROMIUM, shm_id) == 16,
 static_assert(offsetof(ScheduleCALayerCHROMIUM, shm_offset) == 20,
               "offset of ScheduleCALayerCHROMIUM shm_offset should be 20");
 
+struct CommitOverlayPlanesCHROMIUM {
+  typedef CommitOverlayPlanesCHROMIUM ValueType;
+  static const CommandId kCmdId = kCommitOverlayPlanesCHROMIUM;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init() { SetHeader(); }
+
+  void* Set(void* cmd) {
+    static_cast<ValueType*>(cmd)->Init();
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+};
+
+static_assert(sizeof(CommitOverlayPlanesCHROMIUM) == 4,
+              "size of CommitOverlayPlanesCHROMIUM should be 4");
+static_assert(offsetof(CommitOverlayPlanesCHROMIUM, header) == 0,
+              "offset of CommitOverlayPlanesCHROMIUM header should be 0");
+
 struct SwapInterval {
   typedef SwapInterval ValueType;
   static const CommandId kCmdId = kSwapInterval;

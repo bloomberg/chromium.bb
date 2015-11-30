@@ -1523,6 +1523,9 @@ void GL_APIENTRY GLES2ScheduleCALayerCHROMIUM(GLuint contents_texture_id,
       contents_texture_id, contents_rect, opacity, background_color,
       bounds_size, transform);
 }
+void GL_APIENTRY GLES2CommitOverlayPlanesCHROMIUM() {
+  gles2::GetGLContext()->CommitOverlayPlanesCHROMIUM();
+}
 void GL_APIENTRY GLES2SwapInterval(GLint interval) {
   gles2::GetGLContext()->SwapInterval(interval);
 }
@@ -2861,6 +2864,10 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
         "glScheduleCALayerCHROMIUM",
         reinterpret_cast<GLES2FunctionPointer>(glScheduleCALayerCHROMIUM),
+    },
+    {
+        "glCommitOverlayPlanesCHROMIUM",
+        reinterpret_cast<GLES2FunctionPointer>(glCommitOverlayPlanesCHROMIUM),
     },
     {
         "glSwapInterval",

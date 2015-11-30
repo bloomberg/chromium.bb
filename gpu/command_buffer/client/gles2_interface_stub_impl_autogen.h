@@ -1040,6 +1040,7 @@ void GLES2InterfaceStub::ScheduleCALayerCHROMIUM(
     const GLuint /* background_color */,
     const GLfloat* /* bounds_size */,
     const GLfloat* /* transform */) {}
+void GLES2InterfaceStub::CommitOverlayPlanesCHROMIUM() {}
 void GLES2InterfaceStub::SwapInterval(GLint /* interval */) {}
 void GLES2InterfaceStub::FlushDriverCachesCHROMIUM() {}
 void GLES2InterfaceStub::MatrixLoadfCHROMIUM(GLenum /* matrixMode */,

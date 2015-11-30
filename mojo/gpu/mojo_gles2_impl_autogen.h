@@ -788,6 +788,7 @@ class MojoGLES2Impl : public gpu::gles2::GLES2Interface {
                                const GLuint background_color,
                                const GLfloat* bounds_size,
                                const GLfloat* transform) override;
+  void CommitOverlayPlanesCHROMIUM() override;
   void SwapInterval(GLint interval) override;
   void FlushDriverCachesCHROMIUM() override;
   void MatrixLoadfCHROMIUM(GLenum matrixMode, const GLfloat* m) override;

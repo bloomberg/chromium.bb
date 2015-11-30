@@ -2847,6 +2847,14 @@ void ScheduleCALayerCHROMIUM(GLuint contents_texture_id,
   }
 }
 
+void CommitOverlayPlanesCHROMIUM() {
+  gles2::cmds::CommitOverlayPlanesCHROMIUM* c =
+      GetCmdSpace<gles2::cmds::CommitOverlayPlanesCHROMIUM>();
+  if (c) {
+    c->Init();
+  }
+}
+
 void SwapInterval(GLint interval) {
   gles2::cmds::SwapInterval* c = GetCmdSpace<gles2::cmds::SwapInterval>();
   if (c) {

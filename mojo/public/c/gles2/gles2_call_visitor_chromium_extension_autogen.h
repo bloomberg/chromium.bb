@@ -382,6 +382,7 @@ VISIT_GL_CALL(ScheduleCALayerCHROMIUM,
                background_color,
                bounds_size,
                transform))
+VISIT_GL_CALL(CommitOverlayPlanesCHROMIUM, void, (), ())
 VISIT_GL_CALL(SwapInterval, void, (GLint interval), (interval))
 VISIT_GL_CALL(FlushDriverCachesCHROMIUM, void, (), ())
 VISIT_GL_CALL(MatrixLoadfCHROMIUM,

@@ -1705,6 +1705,10 @@ void MojoGLES2Impl::ScheduleCALayerCHROMIUM(GLuint contents_texture_id,
   glScheduleCALayerCHROMIUM(contents_texture_id, contents_rect, opacity,
                             background_color, bounds_size, transform);
 }
+void MojoGLES2Impl::CommitOverlayPlanesCHROMIUM() {
+  MojoGLES2MakeCurrent(context_);
+  glCommitOverlayPlanesCHROMIUM();
+}
 void MojoGLES2Impl::SwapInterval(GLint interval) {
   MojoGLES2MakeCurrent(context_);
   glSwapInterval(interval);

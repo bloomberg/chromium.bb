@@ -1057,6 +1057,8 @@ void ScheduleCALayerCHROMIUM(GLuint contents_texture_id,
                              const GLfloat* bounds_size,
                              const GLfloat* transform) override;
 
+void CommitOverlayPlanesCHROMIUM() override;
+
 void SwapInterval(GLint interval) override;
 
 void FlushDriverCachesCHROMIUM() override;

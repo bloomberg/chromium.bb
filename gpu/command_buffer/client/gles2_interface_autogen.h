@@ -785,6 +785,7 @@ virtual void ScheduleCALayerCHROMIUM(GLuint contents_texture_id,
                                      const GLuint background_color,
                                      const GLfloat* bounds_size,
                                      const GLfloat* transform) = 0;
+virtual void CommitOverlayPlanesCHROMIUM() = 0;
 virtual void SwapInterval(GLint interval) = 0;
 virtual void FlushDriverCachesCHROMIUM() = 0;
 virtual void MatrixLoadfCHROMIUM(GLenum matrixMode, const GLfloat* m) = 0;

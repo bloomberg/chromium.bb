@@ -4826,6 +4826,16 @@ TEST_F(GLES2FormatTest, ScheduleCALayerCHROMIUM) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
+TEST_F(GLES2FormatTest, CommitOverlayPlanesCHROMIUM) {
+  cmds::CommitOverlayPlanesCHROMIUM& cmd =
+      *GetBufferAs<cmds::CommitOverlayPlanesCHROMIUM>();
+  void* next_cmd = cmd.Set(&cmd);
+  EXPECT_EQ(static_cast<uint32_t>(cmds::CommitOverlayPlanesCHROMIUM::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
 TEST_F(GLES2FormatTest, SwapInterval) {
   cmds::SwapInterval& cmd = *GetBufferAs<cmds::SwapInterval>();
   void* next_cmd = cmd.Set(&cmd, static_cast<GLint>(11));
