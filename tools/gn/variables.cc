@@ -404,23 +404,24 @@ const char kCommonCflagsHelp[] =
     "\n"
     "  To target one of these variants individually, use \"cflags_c\",\n"
     "  \"cflags_cc\", \"cflags_objc\", and \"cflags_objcc\",\n"
-    "  respectively.\n"
+    "  respectively. These variant-specific versions of cflags* will be\n"
+    "  appended on the compiler command line after \"cflags\".\n"
     "\n"
-    "  These variant-specific versions of cflags* will be appended to the\n"
-    "  \"cflags\".\n"
+    "  See also \"asmflags\" for flags for assembly-language files.\n"
     COMMON_ORDERING_HELP;
 const char* kCflags_Help = kCommonCflagsHelp;
 
 const char kAsmflags[] = "asmflags";
 const char kAsmflags_HelpShort[] =
-    "asmflags: [string list] Flags passed to any assembly compiler.";
+    "asmflags: [string list] Flags passed to the assembler.";
 const char* kAsmflags_Help =
-    "asmflags: Flags passed to any assembly compiler.\n"
+    "asmflags: Flags passed to the assembler.\n"
     "\n"
     "  A list of strings.\n"
     "\n"
     "  \"asmflags\" are passed to any invocation of a tool that takes an\n"
-    "  .asm or .S file as input.\n";
+    "  .asm or .S file as input.\n"
+    COMMON_ORDERING_HELP;
 
 const char kCflagsC[] = "cflags_c";
 const char kCflagsC_HelpShort[] =
@@ -1390,6 +1391,7 @@ const VariableInfoMap& GetTargetVariables() {
     INSERT_VARIABLE(AllDependentConfigs)
     INSERT_VARIABLE(AllowCircularIncludesFrom)
     INSERT_VARIABLE(Args)
+    INSERT_VARIABLE(Asmflags)
     INSERT_VARIABLE(Cflags)
     INSERT_VARIABLE(CflagsC)
     INSERT_VARIABLE(CflagsCC)
