@@ -368,6 +368,7 @@ _arm_internal_release_boards = frozenset([
     'veyron_mickey',
     'veyron_mighty',
     'veyron_minnie',
+    'veyron_minnie-cheets',
     'veyron_pinky',
     'veyron_rialto',
     'veyron_romy',
@@ -396,6 +397,7 @@ _x86_internal_release_boards = frozenset([
     'clapper',
     'cranky',
     'cyan',
+    'cyan-cheets',
     'edgar',
     'enguarde',
     'expresso',
@@ -546,7 +548,9 @@ _base_layout_boards = _lakitu_boards
 _no_unittest_boards = frozenset((
 ))
 
-_no_vmtest_boards = _arm_boards | _brillo_boards
+_no_vmtest_boards = _arm_boards | _brillo_boards | frozenset((
+    'cyan-cheets',
+))
 
 # This is a list of configs that should be included on the main waterfall, but
 # aren't included by default (see IsDefaultMainWaterfall). This loosely
@@ -2525,6 +2529,7 @@ def GetConfig():
   _AddGroupConfig(
       'veyron-d', 'veyron_shark', (
           'veyron_romy',
+          'veyron_minnie-cheets',
       ),
   )
 
@@ -2548,6 +2553,7 @@ def GetConfig():
 
   _AddGroupConfig(
       'strago-b', 'reks', (
+          'cyan-cheets',
           'wizpig',
           'terra',
       ),

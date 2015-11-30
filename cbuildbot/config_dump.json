@@ -4548,6 +4548,173 @@
             "-chrome_internal"
         ]
     },
+    "cyan-cheets-chrome-pfq": {
+        "_template": "chrome-pfq",
+        "boards": [
+            "cyan-cheets"
+        ],
+        "important": false,
+        "manifest": "official.xml",
+        "vm_tests": []
+    },
+    "cyan-cheets-chromium-pfq": {
+        "_template": "chromium-pfq",
+        "boards": [
+            "cyan-cheets"
+        ],
+        "description": "Preflight Chromium Uprev & Build (internal)",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
+        "important": false,
+        "internal": true,
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "cyan-cheets-compile-only-pre-cq": {
+        "_template": "compile-only-pre-cq",
+        "boards": [
+            "cyan-cheets"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "cyan-cheets-full": {
+        "_template": "full",
+        "boards": [
+            "cyan-cheets"
+        ],
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "cyan-cheets-no-vmtest-pre-cq": {
+        "_template": "no-vmtest-pre-cq",
+        "boards": [
+            "cyan-cheets"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "cyan-cheets-paladin": {
+        "_template": "paladin",
+        "boards": [
+            "cyan-cheets"
+        ],
+        "description": "Commit Queue (internal)",
+        "important": false,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "prebuilts": "private",
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [],
+        "vm_tests_override": null
+    },
+    "cyan-cheets-payloads": {
+        "_template": "payloads",
+        "boards": [
+            "cyan-cheets"
+        ]
+    },
+    "cyan-cheets-pre-cq": {
+        "_template": "pre-cq",
+        "boards": [
+            "cyan-cheets"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "cyan-cheets-release": {
+        "_template": "release",
+        "boards": [
+            "cyan-cheets"
+        ],
+        "vm_tests": []
+    },
+    "cyan-cheets-release-afdo": {
+        "_template": "release-afdo-generate",
+        "boards": [
+            "cyan-cheets"
+        ],
+        "child_configs": [
+            {
+                "_template": "release-afdo-generate",
+                "boards": [
+                    "cyan-cheets"
+                ],
+                "grouped": true,
+                "name": "cyan-cheets-release-afdo-generate",
+                "vm_tests": []
+            },
+            {
+                "_template": "release-afdo-use",
+                "boards": [
+                    "cyan-cheets"
+                ],
+                "grouped": true,
+                "name": "cyan-cheets-release-afdo-use",
+                "vm_tests": []
+            }
+        ],
+        "vm_tests": []
+    },
+    "cyan-cheets-release-afdo-generate": {
+        "_template": "release-afdo-generate",
+        "boards": [
+            "cyan-cheets"
+        ],
+        "vm_tests": []
+    },
+    "cyan-cheets-release-afdo-use": {
+        "_template": "release-afdo-use",
+        "boards": [
+            "cyan-cheets"
+        ],
+        "vm_tests": []
+    },
+    "cyan-cheets-tot-chrome-pfq-informational": {
+        "_template": "chrome-pfq-informational",
+        "boards": [
+            "cyan-cheets"
+        ],
+        "manifest": "official.xml",
+        "vm_tests": []
+    },
+    "cyan-cheets-tot-chromium-pfq-informational": {
+        "_template": "chromium-pfq-informational",
+        "boards": [
+            "cyan-cheets"
+        ],
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
+    },
     "cyan-chrome-pfq": {
         "_template": "chrome-pfq",
         "boards": [
@@ -17562,6 +17729,22 @@
             {
                 "_template": "full",
                 "boards": [
+                    "cyan-cheets"
+                ],
+                "build_packages_in_background": true,
+                "chrome_sdk_build_chrome": false,
+                "grouped": true,
+                "name": "cyan-cheets-full",
+                "prebuilts": "public",
+                "unittests": null,
+                "useflags": [
+                    "-chrome_internal"
+                ],
+                "vm_tests": []
+            },
+            {
+                "_template": "full",
+                "boards": [
                     "wizpig"
                 ],
                 "build_packages_in_background": true,
@@ -17592,7 +17775,7 @@
                 "vm_tests": []
             }
         ],
-        "description": "Full Builds; Group config (boards: reks, wizpig, terra)",
+        "description": "Full Builds; Group config (boards: reks, cyan-cheets, wizpig, terra)",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -17612,6 +17795,18 @@
                 ],
                 "grouped": true,
                 "name": "reks-release"
+            },
+            {
+                "_template": "release",
+                "boards": [
+                    "cyan-cheets"
+                ],
+                "build_packages_in_background": true,
+                "chrome_sdk_build_chrome": false,
+                "grouped": true,
+                "name": "cyan-cheets-release",
+                "unittests": null,
+                "vm_tests": []
             },
             {
                 "_template": "release",
@@ -17638,7 +17833,7 @@
                 "vm_tests": []
             }
         ],
-        "description": "Release Builds (canary) (internal); Group config (boards: reks, wizpig, terra)",
+        "description": "Release Builds (canary) (internal); Group config (boards: reks, cyan-cheets, wizpig, terra)",
         "important": true
     },
     "strago-c-full-group": {
@@ -19710,9 +19905,25 @@
                     "-chrome_internal"
                 ],
                 "vm_tests": []
+            },
+            {
+                "_template": "full",
+                "boards": [
+                    "veyron_minnie-cheets"
+                ],
+                "build_packages_in_background": true,
+                "chrome_sdk_build_chrome": false,
+                "grouped": true,
+                "name": "veyron_minnie-cheets-full",
+                "prebuilts": "public",
+                "unittests": null,
+                "useflags": [
+                    "-chrome_internal"
+                ],
+                "vm_tests": []
             }
         ],
-        "description": "Full Builds; Group config (boards: veyron_shark, veyron_romy)",
+        "description": "Full Builds; Group config (boards: veyron_shark, veyron_romy, veyron_minnie-cheets)",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -19746,9 +19957,21 @@
                 "name": "veyron_romy-release",
                 "unittests": null,
                 "vm_tests": []
+            },
+            {
+                "_template": "release",
+                "boards": [
+                    "veyron_minnie-cheets"
+                ],
+                "build_packages_in_background": true,
+                "chrome_sdk_build_chrome": false,
+                "grouped": true,
+                "name": "veyron_minnie-cheets-release",
+                "unittests": null,
+                "vm_tests": []
             }
         ],
-        "description": "Release Builds (canary) (internal); Group config (boards: veyron_shark, veyron_romy)",
+        "description": "Release Builds (canary) (internal); Group config (boards: veyron_shark, veyron_romy, veyron_minnie-cheets)",
         "important": true,
         "vm_tests": []
     },
@@ -21064,6 +21287,173 @@
         "_template": "chromium-pfq-informational",
         "boards": [
             "veyron_mighty"
+        ],
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "veyron_minnie-cheets-chrome-pfq": {
+        "_template": "chrome-pfq",
+        "boards": [
+            "veyron_minnie-cheets"
+        ],
+        "important": false,
+        "manifest": "official.xml",
+        "vm_tests": []
+    },
+    "veyron_minnie-cheets-chromium-pfq": {
+        "_template": "chromium-pfq",
+        "boards": [
+            "veyron_minnie-cheets"
+        ],
+        "description": "Preflight Chromium Uprev & Build (internal)",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
+        "important": false,
+        "internal": true,
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "veyron_minnie-cheets-compile-only-pre-cq": {
+        "_template": "compile-only-pre-cq",
+        "boards": [
+            "veyron_minnie-cheets"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "veyron_minnie-cheets-full": {
+        "_template": "full",
+        "boards": [
+            "veyron_minnie-cheets"
+        ],
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "veyron_minnie-cheets-no-vmtest-pre-cq": {
+        "_template": "no-vmtest-pre-cq",
+        "boards": [
+            "veyron_minnie-cheets"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "veyron_minnie-cheets-paladin": {
+        "_template": "paladin",
+        "boards": [
+            "veyron_minnie-cheets"
+        ],
+        "description": "Commit Queue (internal)",
+        "important": false,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "prebuilts": "private",
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [],
+        "vm_tests_override": null
+    },
+    "veyron_minnie-cheets-payloads": {
+        "_template": "payloads",
+        "boards": [
+            "veyron_minnie-cheets"
+        ]
+    },
+    "veyron_minnie-cheets-pre-cq": {
+        "_template": "pre-cq",
+        "boards": [
+            "veyron_minnie-cheets"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "veyron_minnie-cheets-release": {
+        "_template": "release",
+        "boards": [
+            "veyron_minnie-cheets"
+        ],
+        "vm_tests": []
+    },
+    "veyron_minnie-cheets-release-afdo": {
+        "_template": "release-afdo-generate",
+        "boards": [
+            "veyron_minnie-cheets"
+        ],
+        "child_configs": [
+            {
+                "_template": "release-afdo-generate",
+                "boards": [
+                    "veyron_minnie-cheets"
+                ],
+                "grouped": true,
+                "name": "veyron_minnie-cheets-release-afdo-generate",
+                "vm_tests": []
+            },
+            {
+                "_template": "release-afdo-use",
+                "boards": [
+                    "veyron_minnie-cheets"
+                ],
+                "grouped": true,
+                "name": "veyron_minnie-cheets-release-afdo-use",
+                "vm_tests": []
+            }
+        ],
+        "vm_tests": []
+    },
+    "veyron_minnie-cheets-release-afdo-generate": {
+        "_template": "release-afdo-generate",
+        "boards": [
+            "veyron_minnie-cheets"
+        ],
+        "vm_tests": []
+    },
+    "veyron_minnie-cheets-release-afdo-use": {
+        "_template": "release-afdo-use",
+        "boards": [
+            "veyron_minnie-cheets"
+        ],
+        "vm_tests": []
+    },
+    "veyron_minnie-cheets-tot-chrome-pfq-informational": {
+        "_template": "chrome-pfq-informational",
+        "boards": [
+            "veyron_minnie-cheets"
+        ],
+        "manifest": "official.xml",
+        "vm_tests": []
+    },
+    "veyron_minnie-cheets-tot-chromium-pfq-informational": {
+        "_template": "chromium-pfq-informational",
+        "boards": [
+            "veyron_minnie-cheets"
         ],
         "useflags": [
             "-chrome_internal"
