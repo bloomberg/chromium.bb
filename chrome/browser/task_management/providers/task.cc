@@ -21,12 +21,14 @@ int64 g_last_id = 0;
 
 
 Task::Task(const base::string16& title,
+           const std::string& rappor_sample,
            const gfx::ImageSkia* icon,
            base::ProcessHandle handle)
     : task_id_(g_last_id++),
       network_usage_(-1),
       current_byte_count_(-1),
       title_(title),
+      rappor_sample_name_(rappor_sample),
       icon_(icon ? *icon : gfx::ImageSkia()),
       process_handle_(handle),
       process_id_(base::GetProcId(handle)) {

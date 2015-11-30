@@ -901,6 +901,8 @@
         'browser/chromeos/proxy_cros_settings_parser.cc',
         'browser/chromeos/proxy_cros_settings_parser.h',
         'browser/chromeos/reset/metrics.h',
+        'browser/chromeos/resource_reporter/resource_reporter.cc',
+        'browser/chromeos/resource_reporter/resource_reporter.h',
         'browser/chromeos/session_length_limiter.cc',
         'browser/chromeos/session_length_limiter.h',
         'browser/chromeos/set_time_dialog.cc',

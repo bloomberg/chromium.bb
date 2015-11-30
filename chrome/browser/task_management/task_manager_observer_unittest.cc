@@ -2,104 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/timer/mock_timer.h"
-#include "chrome/browser/task_management/task_manager_interface.h"
+#include "chrome/browser/task_management/test_task_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace task_management {
 
 namespace {
-
-// This is a partial stub implementation to test the behavior of the base class
-// TaskManagerInterface in response to adding and removing observers.
-class TestTaskManager : public TaskManagerInterface {
- public:
-  TestTaskManager()
-      : TaskManagerInterface(),
-        handle_(),
-        id_(),
-        title_(),
-        icon_(),
-        ids_() {
-    set_timer_for_testing(scoped_ptr<base::Timer>(new base::MockTimer(true,
-                                                                      true)));
-  }
-  ~TestTaskManager() override {}
-
-  // task_management::TaskManagerInterface:
-  void ActivateTask(TaskId task_id) override {}
-  double GetCpuUsage(TaskId task_id) const override { return 0.0; }
-  int64 GetPhysicalMemoryUsage(TaskId task_id) const override { return -1; }
-  int64 GetPrivateMemoryUsage(TaskId task_id) const override { return -1; }
-  int64 GetSharedMemoryUsage(TaskId task_id) const override { return -1; }
-  int64 GetGpuMemoryUsage(TaskId task_id, bool* has_duplicates) const override {
-    return -1;
-  }
-  int GetIdleWakeupsPerSecond(TaskId task_id) const override { return -1; }
-  int GetNaClDebugStubPort(TaskId task_id) const override { return -1; }
-  void GetGDIHandles(TaskId task_id,
-                     int64* current,
-                     int64* peak) const override {}
-  void GetUSERHandles(TaskId task_id,
-                      int64* current,
-                      int64* peak) const override {}
-  const base::string16& GetTitle(TaskId task_id) const override {
-    return title_;
-  }
-  base::string16 GetProfileName(TaskId task_id) const override {
-    return base::string16();
-  }
-  const gfx::ImageSkia& GetIcon(TaskId task_id) const override { return icon_; }
-  const base::ProcessHandle& GetProcessHandle(TaskId task_id) const override {
-    return handle_;
-  }
-  const base::ProcessId& GetProcessId(TaskId task_id) const override {
-    return id_;
-  }
-  Task::Type GetType(TaskId task_id) const override { return Task::UNKNOWN; }
-  int64 GetNetworkUsage(TaskId task_id) const override { return -1; }
-  int64 GetProcessTotalNetworkUsage(TaskId task_id) const override {
-    return -1;
-  }
-  int64 GetSqliteMemoryUsed(TaskId task_id) const override { return -1; }
-  bool GetV8Memory(TaskId task_id,
-                   int64* allocated,
-                   int64* used) const override { return false; }
-  bool GetWebCacheStats(
-      TaskId task_id,
-      blink::WebCache::ResourceTypeStats* stats) const override {
-    return false;
-  }
-  const TaskIdList& GetTaskIdsList() const override {
-    return ids_;
-  }
-  size_t GetNumberOfTasksOnSameProcess(TaskId task_id) const override {
-    return 1;
-  }
-
-  base::TimeDelta GetRefreshTime() {
-    return GetCurrentRefreshTime();
-  }
-
-  int64 GetEnabledFlags() {
-    return enabled_resources_flags();
-  }
-
- protected:
-  // task_management::TaskManager:
-  void Refresh() override {}
-  void StartUpdating() override {}
-  void StopUpdating() override {}
-
- private:
-  base::ProcessHandle handle_;
-  base::ProcessId id_;
-  base::string16 title_;
-  gfx::ImageSkia icon_;
-  TaskIdList ids_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestTaskManager);
-};
 
 // Defines a concrete observer that will be used for testing.
 class TestObserver : public TaskManagerObserver {

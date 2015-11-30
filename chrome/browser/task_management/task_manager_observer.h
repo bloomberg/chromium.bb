@@ -30,6 +30,9 @@ enum RefreshType {
   REFRESH_TYPE_NACL              = 1 << 7,
   REFRESH_TYPE_IDLE_WAKEUPS      = 1 << 8,
   REFRESH_TYPE_HANDLES           = 1 << 9,
+  REFRESH_TYPE_PRIORITY          = 1 << 10, // Whether an observer is interested
+                                            // in knowing if a process is
+                                            // foregrounded or backgrounded.
 };
 
 // Defines the interface for observers of the task manager.

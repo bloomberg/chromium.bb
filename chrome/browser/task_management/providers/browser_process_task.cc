@@ -43,6 +43,7 @@ bool ReportsV8Stats() {
 
 BrowserProcessTask::BrowserProcessTask()
     : Task(l10n_util::GetStringUTF16(IDS_TASK_MANAGER_WEB_BROWSER_CELL_TEXT),
+           "Browser Process",
            GetDefaultIcon(),
            base::GetCurrentProcessHandle()),
        allocated_v8_memory_(-1),

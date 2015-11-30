@@ -39321,6 +39321,50 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ResourceReporter.BrowserProcess.CpuUsage"
+    enum="ResourceReporterCpuUsage">
+  <owner>afakhry@chromium.org</owner>
+  <summary>
+    The cpu usage range reported for the browser process when the chromeos
+    device memory pressure (which is the percentage of total memory used by the
+    system) is moderate or critical. This is emitted only when memory pressure
+    changes from a low pressure to a higher pressure.
+  </summary>
+</histogram>
+
+<histogram name="ResourceReporter.BrowserProcess.MemoryUsage"
+    enum="ResourceReporterMemoryUsage">
+  <owner>afakhry@chromium.org</owner>
+  <summary>
+    The system memory usage range reported for the browser process when the
+    chromeos device memory pressure (which is the percentage of total memory
+    used by the system) is moderate or critical. This is emitted only when
+    memory pressure changes from a low pressure to a higher pressure.
+  </summary>
+</histogram>
+
+<histogram name="ResourceReporter.GpuProcess.CpuUsage"
+    enum="ResourceReporterCpuUsage">
+  <owner>afakhry@chromium.org</owner>
+  <summary>
+    The cpu usage range reported for the GPU process when the chromeos device
+    memory pressure (which is the percentage of total memory used by the system)
+    is moderate or critical. This is emitted only when memory pressure changes
+    from a low pressure to a higher pressure.
+  </summary>
+</histogram>
+
+<histogram name="ResourceReporter.GpuProcess.MemoryUsage"
+    enum="ResourceReporterMemoryUsage">
+  <owner>afakhry@chromium.org</owner>
+  <summary>
+    The system's RAM memory usage range reported for the GPU process when the
+    chromeos device memory pressure (which is the percentage of total memory
+    used by the system) is moderate or critical. This is emitted only when
+    memory pressure changes from a low pressure to a higher pressure.
+  </summary>
+</histogram>
+
 <histogram name="ResourceScheduler.ClientLoadedTime.Active">
   <owner>aiolos@chromium.org</owner>
   <summary>
@@ -73707,6 +73751,22 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="16" label="RESOURCE_STATUS_URL_TOO_LONG"/>
   <int value="32" label="RESOURCE_STATUS_NOT_CACHEABLE"/>
   <int value="64" label="RESOURCE_STATUS_HEADERS_MISSING"/>
+</enum>
+
+<enum name="ResourceReporterCpuUsage" type="int">
+  <int value="0" label="0-10%"/>
+  <int value="1" label="10%-30%"/>
+  <int value="2" label="30%-60%"/>
+  <int value="3" label="&gt;60%"/>
+</enum>
+
+<enum name="ResourceReporterMemoryUsage" type="int">
+  <int value="0" label="0-200MB"/>
+  <int value="1" label="200MB-400MB"/>
+  <int value="2" label="400MB-600MB"/>
+  <int value="3" label="600MB-800MB"/>
+  <int value="4" label="800MB-1GB"/>
+  <int value="5" label="&gt;1GB."/>
 </enum>
 
 <enum name="ResourceType" type="int">

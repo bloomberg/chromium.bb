@@ -122,8 +122,16 @@ void TaskManagerImpl::GetUSERHandles(TaskId task_id,
 #endif  // defined(OS_WIN)
 }
 
+bool TaskManagerImpl::IsTaskOnBackgroundedProcess(TaskId task_id) const {
+  return GetTaskGroupByTaskId(task_id)->is_backgrounded();
+}
+
 const base::string16& TaskManagerImpl::GetTitle(TaskId task_id) const {
   return GetTaskByTaskId(task_id)->title();
+}
+
+const std::string& TaskManagerImpl::GetTaskNameForRappor(TaskId task_id) const {
+  return GetTaskByTaskId(task_id)->rappor_sample_name();
 }
 
 base::string16 TaskManagerImpl::GetProfileName(TaskId task_id) const {
@@ -309,6 +317,9 @@ void TaskManagerImpl::Refresh() {
 }
 
 void TaskManagerImpl::StartUpdating() {
+  if (is_running_)
+    return;
+
   is_running_ = true;
 
   for (auto& provider : task_providers_)
@@ -318,6 +329,9 @@ void TaskManagerImpl::StartUpdating() {
 }
 
 void TaskManagerImpl::StopUpdating() {
+  if (!is_running_)
+    return;
+
   is_running_ = false;
 
   io_thread_helper_manager_.reset();

@@ -55,6 +55,7 @@ class TaskGroup {
   int64 gpu_memory() const { return gpu_memory_; }
   bool gpu_memory_has_duplicates() const { return gpu_memory_has_duplicates_; }
   int64 per_process_network_usage() const { return per_process_network_usage_; }
+  bool is_backgrounded() const { return is_backgrounded_; }
 
 #if defined(OS_WIN)
   int64 gdi_current_handles() const { return gdi_current_handles_; }
@@ -83,6 +84,8 @@ class TaskGroup {
   void OnMemoryUsageRefreshDone(MemoryUsageStats memory_usage);
 
   void OnIdleWakeupsRefreshDone(int idle_wakeups_per_second);
+
+  void OnProcessPriorityDone(bool is_backgrounded);
 
   // The process' handle and ID.
   base::ProcessHandle process_handle_;
@@ -113,6 +116,7 @@ class TaskGroup {
 #endif  // !defined(DISABLE_NACL)
   int idle_wakeups_per_second_;
   bool gpu_memory_has_duplicates_;
+  bool is_backgrounded_;
 
   // Always keep this the last member of this class so that it's the first to be
   // destroyed.

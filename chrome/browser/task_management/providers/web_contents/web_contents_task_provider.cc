@@ -175,6 +175,7 @@ void WebContentsEntry::DidNavigateMainFrame(
   // RendererTask::OnFaviconUpdated() will update the current favicon once
   // FaviconDriver figures out the correct favicon for the page.
   itr->second->UpdateFavicon();
+  itr->second->UpdateRapporSampleName();
 }
 
 void WebContentsEntry::TitleWasSet(content::NavigationEntry* entry,

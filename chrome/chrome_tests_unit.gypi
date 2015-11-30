@@ -899,6 +899,8 @@
       'browser/task_management/providers/browser_process_task_unittest.cc',
       'browser/task_management/providers/child_process_task_unittest.cc',
       'browser/task_management/task_manager_observer_unittest.cc',
+      'browser/task_management/test_task_manager.cc',
+      'browser/task_management/test_task_manager.h',
       # Old Task Manager Tests Sources:
       'browser/task_manager/task_manager_unittest.cc',
       'browser/task_manager/task_manager_util_unittest.cc',
@@ -1291,6 +1293,7 @@
       'browser/chromeos/printer_detector/printer_detector_unittest.cc',
       'browser/chromeos/profiles/profile_list_chromeos_unittest.cc',
       'browser/chromeos/proxy_config_service_impl_unittest.cc',
+      'browser/chromeos/resource_reporter/resource_reporter_unittest.cc',
       'browser/chromeos/session_length_limiter_unittest.cc',
       'browser/chromeos/settings/cros_settings_unittest.cc',
       'browser/chromeos/settings/device_oauth2_token_service_unittest.cc',

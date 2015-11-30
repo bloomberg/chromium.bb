@@ -6,6 +6,10 @@
 
 #include "base/stl_util.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/resource_reporter/resource_reporter.h"
+#endif  // defined(OS_CHROMEOS)
+
 namespace task_management {
 
 MockWebContentsTaskManager::MockWebContentsTaskManager()
@@ -29,6 +33,12 @@ void MockWebContentsTaskManager::TaskRemoved(Task* task) {
 }
 
 void MockWebContentsTaskManager::StartObserving() {
+#if defined(OS_CHROMEOS)
+  // On ChromeOS, the ResourceReporter needs to be turned off so as not to
+  // interfere with the tests.
+  chromeos::ResourceReporter::GetInstance()->StopMonitoring();
+#endif  // defined(OS_CHROMEOS)
+
   provider_.SetObserver(this);
 }
 

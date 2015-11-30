@@ -65,6 +65,7 @@
 #include "chrome/browser/chromeos/power/power_prefs.h"
 #include "chrome/browser/chromeos/power/renderer_freezer.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/chromeos/resource_reporter/resource_reporter.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/status/data_promo_notification.h"
@@ -395,6 +396,8 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
           content::BrowserThread::FILE));
   arc_bridge_service_->DetectAvailability();
 
+  chromeos::ResourceReporter::GetInstance()->StartMonitoring();
+
   ChromeBrowserMainPartsLinux::PreMainMessageLoopRun();
 }
 
@@ -706,6 +709,8 @@ void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
 
 // Shut down services before the browser process, etc are destroyed.
 void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
+  chromeos::ResourceReporter::GetInstance()->StopMonitoring();
+
   BootTimesRecorder::Get()->AddLogoutTimeMarker("UIMessageLoopEnded", true);
 
   arc_bridge_service_->Shutdown();

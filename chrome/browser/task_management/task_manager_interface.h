@@ -80,8 +80,16 @@ class TaskManagerInterface {
                               int64* current,
                               int64* peak) const = 0;
 
+  // Returns whether the task with |task_id| is running on a backgrounded
+  // process.
+  virtual bool IsTaskOnBackgroundedProcess(TaskId task_id) const = 0;
+
   // Returns the title of the task with |task_id|.
   virtual const base::string16& GetTitle(TaskId task_id) const = 0;
+
+  // Returns the canonicalized name of the task with |task_id| that can be used
+  // to represent this task in a Rappor sample via RapporService.
+  virtual const std::string& GetTaskNameForRappor(TaskId task_id) const = 0;
 
   // Returns the name of the profile associated with the browser context of the
   // render view host that the task with |task_id| represents (if that task

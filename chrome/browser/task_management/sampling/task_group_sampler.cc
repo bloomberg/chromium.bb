@@ -31,16 +31,19 @@ inline bool IsResourceRefreshEnabled(RefreshType refresh_type,
 }  // namespace
 
 TaskGroupSampler::TaskGroupSampler(
-    base::ProcessHandle proc_handle,
+    base::Process process,
     const scoped_refptr<base::SequencedTaskRunner>& blocking_pool_runner,
     const OnCpuRefreshCallback& on_cpu_refresh,
     const OnMemoryRefreshCallback& on_memory_refresh,
-    const OnIdleWakeupsCallback& on_idle_wakeups)
-    : process_metrics_(CreateProcessMetrics(proc_handle)),
+    const OnIdleWakeupsCallback& on_idle_wakeups,
+    const OnProcessPriorityCallback& on_process_priority)
+    : process_(process.Pass()),
+      process_metrics_(CreateProcessMetrics(process_.Handle())),
       blocking_pool_runner_(blocking_pool_runner),
       on_cpu_refresh_callback_(on_cpu_refresh),
       on_memory_refresh_callback_(on_memory_refresh),
-      on_idle_wakeups_callback_(on_idle_wakeups) {
+      on_idle_wakeups_callback_(on_idle_wakeups),
+      on_process_priority_callback_(on_process_priority) {
   DCHECK(blocking_pool_runner.get());
 
   // This object will be created on the UI thread, however the sequenced checker
@@ -78,6 +81,14 @@ void TaskGroupSampler::Refresh(int64 refresh_flags) {
         on_idle_wakeups_callback_);
   }
 #endif  // defined(OS_MACOSX) || defined(OS_LINUX)
+
+  if (IsResourceRefreshEnabled(REFRESH_TYPE_PRIORITY, refresh_flags)) {
+    base::PostTaskAndReplyWithResult(
+        blocking_pool_runner_.get(),
+        FROM_HERE,
+        base::Bind(&TaskGroupSampler::RefreshProcessPriority, this),
+        on_process_priority_callback_);
+  }
 }
 
 TaskGroupSampler::~TaskGroupSampler() {
@@ -124,6 +135,12 @@ int TaskGroupSampler::RefreshIdleWakeupsPerSecond() {
   DCHECK(worker_pool_sequenced_checker_.CalledOnValidSequencedThread());
 
   return process_metrics_->GetIdleWakeupsPerSecond();
+}
+
+bool TaskGroupSampler::RefreshProcessPriority() {
+  DCHECK(worker_pool_sequenced_checker_.CalledOnValidSequencedThread());
+
+  return process_.IsProcessBackgrounded();
 }
 
 }  // namespace task_management
