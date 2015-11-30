@@ -48,7 +48,7 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/spellchecker/spellcheck_host_metrics.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
-#include "chrome/browser/ssl/security_state_model.h"
+#include "chrome/browser/ssl/chrome_security_state_model_client.h"
 #include "chrome/browser/tab_contents/retargeting_details.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/translate/translate_service.h"
@@ -1948,12 +1948,13 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
         return;
       Browser* browser =
           chrome::FindBrowserWithWebContents(embedder_web_contents_);
-      SecurityStateModel* security_model =
-          SecurityStateModel::FromWebContents(embedder_web_contents_);
-      DCHECK(security_model);
+      ChromeSecurityStateModelClient* security_model_client =
+          ChromeSecurityStateModelClient::FromWebContents(
+              embedder_web_contents_);
+      DCHECK(security_model_client);
       chrome::ShowWebsiteSettings(browser, embedder_web_contents_,
                                   nav_entry->GetURL(),
-                                  security_model->GetSecurityInfo());
+                                  security_model_client->GetSecurityInfo());
       break;
     }
 

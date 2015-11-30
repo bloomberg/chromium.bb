@@ -29,6 +29,7 @@
 #include "chrome/browser/ssl/cert_report_helper.h"
 #include "chrome/browser/ssl/cert_verifier_browser_test.h"
 #include "chrome/browser/ssl/certificate_reporting_test_utils.h"
+#include "chrome/browser/ssl/chrome_security_state_model_client.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
 #include "chrome/browser/ssl/common_name_mismatch_handler.h"
 #include "chrome/browser/ssl/security_state_model.h"
@@ -1082,22 +1083,27 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestMarkNonSecureAs) {
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(contents);
 
-  SecurityStateModel* model = SecurityStateModel::FromWebContents(contents);
-  ASSERT_TRUE(model);
+  ChromeSecurityStateModelClient* model_client =
+      ChromeSecurityStateModelClient::FromWebContents(contents);
+  ASSERT_TRUE(model_client);
 
   ui_test_utils::NavigateToURL(browser(), GURL("file:/"));
-  EXPECT_EQ(SecurityStateModel::NONE, model->GetSecurityInfo().security_level);
+  EXPECT_EQ(SecurityStateModel::NONE,
+            model_client->GetSecurityInfo().security_level);
 
   ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
-  EXPECT_EQ(SecurityStateModel::NONE, model->GetSecurityInfo().security_level);
+  EXPECT_EQ(SecurityStateModel::NONE,
+            model_client->GetSecurityInfo().security_level);
 
   ui_test_utils::NavigateToURL(browser(), GURL("data:text/plain,hello"));
-  EXPECT_EQ(SecurityStateModel::NONE, model->GetSecurityInfo().security_level);
+  EXPECT_EQ(SecurityStateModel::NONE,
+            model_client->GetSecurityInfo().security_level);
 
   ui_test_utils::NavigateToURL(
       browser(),
       GURL("blob:chrome%3A//newtab/49a463bb-fac8-476c-97bf-5d7076c3ea1a"));
-  EXPECT_EQ(SecurityStateModel::NONE, model->GetSecurityInfo().security_level);
+  EXPECT_EQ(SecurityStateModel::NONE,
+            model_client->GetSecurityInfo().security_level);
 }
 
 #if defined(USE_NSS_CERTS)

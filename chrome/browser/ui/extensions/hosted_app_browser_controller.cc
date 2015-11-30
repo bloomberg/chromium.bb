@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ssl/chrome_security_state_model_client.h"
 #include "chrome/browser/ssl/security_state_model.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -92,10 +93,10 @@ bool HostedAppBrowserController::ShouldShowLocationBar() const {
   if (web_contents->GetLastCommittedURL().is_empty())
     return false;
 
-  const SecurityStateModel* model =
-      SecurityStateModel::FromWebContents(web_contents);
-  if (model &&
-      model->GetSecurityInfo().security_level ==
+  const ChromeSecurityStateModelClient* model_client =
+      ChromeSecurityStateModelClient::FromWebContents(web_contents);
+  if (model_client &&
+      model_client->GetSecurityInfo().security_level ==
           SecurityStateModel::SECURITY_ERROR)
     return true;
 

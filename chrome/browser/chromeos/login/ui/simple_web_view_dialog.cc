@@ -14,6 +14,7 @@
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ssl/chrome_security_state_model_client.h"
 #include "chrome/browser/ssl/security_state_model.h"
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 #include "chrome/browser/ui/browser.h"
@@ -162,7 +163,8 @@ void SimpleWebViewDialog::StartLoad(const GURL& url) {
 void SimpleWebViewDialog::Init() {
   // Create the security state model that the toolbar model needs.
   if (web_view_->GetWebContents())
-    SecurityStateModel::CreateForWebContents(web_view_->GetWebContents());
+    ChromeSecurityStateModelClient::CreateForWebContents(
+        web_view_->GetWebContents());
   toolbar_model_.reset(new ToolbarModelImpl(this));
 
   set_background(views::Background::CreateSolidBackground(kDialogColor));

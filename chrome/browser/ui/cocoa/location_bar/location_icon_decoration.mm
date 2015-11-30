@@ -6,6 +6,7 @@
 
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/search/search.h"
+#include "chrome/browser/ssl/chrome_security_state_model_client.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -119,11 +120,12 @@ bool LocationIconDecoration::OnMousePressed(NSRect frame, NSPoint location) {
     return true;
   Browser* browser = chrome::FindBrowserWithWebContents(tab);
 
-  SecurityStateModel* security_model = SecurityStateModel::FromWebContents(tab);
-  DCHECK(security_model);
+  ChromeSecurityStateModelClient* security_model_client =
+      ChromeSecurityStateModelClient::FromWebContents(tab);
+  DCHECK(security_model_client);
 
   chrome::ShowWebsiteSettings(browser, tab, nav_entry->GetURL(),
-                              security_model->GetSecurityInfo());
+                              security_model_client->GetSecurityInfo());
   return true;
 }
 

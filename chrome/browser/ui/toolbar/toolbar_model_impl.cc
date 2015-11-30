@@ -10,6 +10,7 @@
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
+#include "chrome/browser/ssl/chrome_security_state_model_client.h"
 #include "chrome/browser/ssl/security_state_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_model_delegate.h"
 #include "chrome/common/pref_names.h"
@@ -129,13 +130,13 @@ SecurityStateModel::SecurityLevel ToolbarModelImpl::GetSecurityLevel(
   // initialization), assume no security style.
   if (!web_contents)
     return SecurityStateModel::NONE;
-  const SecurityStateModel* model =
-      SecurityStateModel::FromWebContents(web_contents);
+  const ChromeSecurityStateModelClient* model_client =
+      ChromeSecurityStateModelClient::FromWebContents(web_contents);
 
   // When editing, assume no security style.
   return (input_in_progress() && !ignore_editing)
              ? SecurityStateModel::NONE
-             : model->GetSecurityInfo().security_level;
+             : model_client->GetSecurityInfo().security_level;
 }
 
 int ToolbarModelImpl::GetIcon() const {

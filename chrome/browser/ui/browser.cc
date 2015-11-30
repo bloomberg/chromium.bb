@@ -76,6 +76,7 @@
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
+#include "chrome/browser/ssl/chrome_security_state_model_client.h"
 #include "chrome/browser/ssl/security_state_model.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sync_ui_util.h"
@@ -1313,10 +1314,11 @@ bool Browser::CanDragEnter(content::WebContents* source,
 content::SecurityStyle Browser::GetSecurityStyle(
     WebContents* web_contents,
     content::SecurityStyleExplanations* security_style_explanations) {
-  SecurityStateModel* model = SecurityStateModel::FromWebContents(web_contents);
-  DCHECK(model);
+  ChromeSecurityStateModelClient* model_client =
+      ChromeSecurityStateModelClient::FromWebContents(web_contents);
+  DCHECK(model_client);
   const SecurityStateModel::SecurityInfo& security_info =
-      model->GetSecurityInfo();
+      model_client->GetSecurityInfo();
 
   const content::SecurityStyle security_style =
       SecurityLevelToSecurityStyle(security_info.security_level);

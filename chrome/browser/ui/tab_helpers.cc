@@ -24,7 +24,7 @@
 #include "chrome/browser/prerender/prerender_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
-#include "chrome/browser/ssl/security_state_model.h"
+#include "chrome/browser/ssl/chrome_security_state_model_client.h"
 #include "chrome/browser/tab_contents/navigation_metrics_recorder.h"
 #include "chrome/browser/tracing/navigation_tracing.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
@@ -170,7 +170,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   PrefsTabHelper::CreateForWebContents(web_contents);
   prerender::PrerenderTabHelper::CreateForWebContents(web_contents);
   SearchTabHelper::CreateForWebContents(web_contents);
-  SecurityStateModel::CreateForWebContents(web_contents);
+  ChromeSecurityStateModelClient::CreateForWebContents(web_contents);
   if (SiteEngagementService::IsEnabled())
     SiteEngagementHelper::CreateForWebContents(web_contents);
   // TODO(vabr): Remove TabSpecificContentSettings from here once their function

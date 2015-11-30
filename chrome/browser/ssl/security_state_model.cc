@@ -27,8 +27,6 @@
 #include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
 #endif
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(SecurityStateModel);
-
 namespace {
 
 SecurityStateModel::SecurityLevel GetSecurityLevelForNonSecureFieldTrial() {
@@ -194,6 +192,9 @@ SecurityStateModel::SecurityInfo::SecurityInfo()
 
 SecurityStateModel::SecurityInfo::~SecurityInfo() {}
 
+SecurityStateModel::SecurityStateModel(content::WebContents* web_contents)
+    : web_contents_(web_contents) {}
+
 SecurityStateModel::~SecurityStateModel() {}
 
 const SecurityStateModel::SecurityInfo& SecurityStateModel::GetSecurityInfo()
@@ -230,6 +231,10 @@ const SecurityStateModel::SecurityInfo& SecurityStateModel::GetSecurityInfo()
   return security_info_;
 }
 
+void SecurityStateModel::SetClient(SecurityStateModelClient* client) {
+  client_ = client;
+}
+
 // static
 void SecurityStateModel::SecurityInfoForRequest(
     const GURL& url,
@@ -260,7 +265,3 @@ void SecurityStateModel::SecurityInfoForRequest(
       url, ssl, profile, cert, security_info->sha1_deprecation_status,
       security_info->mixed_content_status, used_policy_installed_certificate);
 }
-
-SecurityStateModel::SecurityStateModel(content::WebContents* web_contents)
-    : web_contents_(web_contents),
-      client_(new ChromeSecurityStateModelClient(web_contents)) {}

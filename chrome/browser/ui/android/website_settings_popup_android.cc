@@ -9,6 +9,7 @@
 #include "base/android/jni_string.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ssl/chrome_security_state_model_client.h"
 #include "chrome/browser/ui/website_settings/website_settings.h"
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"
 #include "components/content_settings/core/common/content_settings.h"
@@ -51,14 +52,14 @@ WebsiteSettingsPopupAndroid::WebsiteSettingsPopupAndroid(
 
   popup_jobject_.Reset(env, java_website_settings_pop);
 
-  SecurityStateModel* security_model =
-      SecurityStateModel::FromWebContents(web_contents);
-  DCHECK(security_model);
+  ChromeSecurityStateModelClient* security_model_client =
+      ChromeSecurityStateModelClient::FromWebContents(web_contents);
+  DCHECK(security_model_client);
 
   presenter_.reset(new WebsiteSettings(
       this, Profile::FromBrowserContext(web_contents->GetBrowserContext()),
       TabSpecificContentSettings::FromWebContents(web_contents), web_contents,
-      nav_entry->GetURL(), security_model->GetSecurityInfo(),
+      nav_entry->GetURL(), security_model_client->GetSecurityInfo(),
       content::CertStore::GetInstance()));
 }
 

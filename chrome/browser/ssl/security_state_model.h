@@ -22,16 +22,14 @@ class Profile;
 class SecurityStateModelClient;
 
 // SecurityStateModel provides high-level security information about a
-// page or request. It is attached to a WebContents and will provide the
-// security info for that WebContents.
+// page or request.
 //
 // SecurityStateModel::SecurityInfo is the main data structure computed
 // by a SecurityStateModel. SecurityInfo contains a SecurityLevel (which
 // is a single value describing the overall security state) along with
 // information that a consumer might want to display in UI to explain or
 // elaborate on the SecurityLevel.
-class SecurityStateModel
-    : public content::WebContentsUserData<SecurityStateModel> {
+class SecurityStateModel {
  public:
   // Describes the overall security state of the page.
   //
@@ -124,12 +122,15 @@ class SecurityStateModel
   static const content::SecurityStyle kDisplayedInsecureContentStyle;
   static const content::SecurityStyle kRanInsecureContentStyle;
 
-  ~SecurityStateModel() override;
+  explicit SecurityStateModel(content::WebContents* web_contents);
+  virtual ~SecurityStateModel();
 
   // Returns a SecurityInfo describing the current page. Results are
   // cached so that computation is only done once per visible
   // NavigationEntry.
   const SecurityInfo& GetSecurityInfo() const;
+
+  void SetClient(SecurityStateModelClient* client);
 
   // Returns a SecurityInfo describing an individual request for the
   // given |profile|.
@@ -142,10 +143,11 @@ class SecurityStateModel
       SecurityInfo* security_info);
 
  private:
-  explicit SecurityStateModel(content::WebContents* web_contents);
-  friend class content::WebContentsUserData<SecurityStateModel>;
-
   // The WebContents for which this class describes the security status.
+  //
+  // TODO(estark): this should go away shortly and the model should rely
+  // on its delegate to provide whatever it needs from the
+  // WebContents. https://crbug.com/515071
   content::WebContents* web_contents_;
 
   // These data members cache the SecurityInfo for the visible
@@ -155,10 +157,7 @@ class SecurityStateModel
   mutable GURL visible_url_;
   mutable content::SSLStatus visible_ssl_status_;
 
-  // TODO(estark): The SecurityStateModel temporarily owns and
-  // instantiates this member, but it will soon be injected, once the
-  // model is compnentized. https://crbug.com/515071
-  scoped_ptr<SecurityStateModelClient> client_;
+  SecurityStateModelClient* client_;
 
   DISALLOW_COPY_AND_ASSIGN(SecurityStateModel);
 };

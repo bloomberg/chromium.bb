@@ -16,11 +16,21 @@
 #include "content/public/common/ssl_status.h"
 #include "net/cert/x509_certificate.h"
 
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(ChromeSecurityStateModelClient);
+
 ChromeSecurityStateModelClient::ChromeSecurityStateModelClient(
     content::WebContents* web_contents)
-    : web_contents_(web_contents) {}
+    : web_contents_(web_contents),
+      security_state_model_(new SecurityStateModel(web_contents)) {
+  security_state_model_->SetClient(this);
+}
 
 ChromeSecurityStateModelClient::~ChromeSecurityStateModelClient() {}
+
+const SecurityStateModel::SecurityInfo&
+ChromeSecurityStateModelClient::GetSecurityInfo() const {
+  return security_state_model_->GetSecurityInfo();
+}
 
 bool ChromeSecurityStateModelClient::RetrieveCert(
     scoped_refptr<net::X509Certificate>* cert) {

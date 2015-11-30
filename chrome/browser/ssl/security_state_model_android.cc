@@ -5,7 +5,7 @@
 #include "chrome/browser/ssl/security_state_model_android.h"
 
 #include "base/logging.h"
-#include "chrome/browser/ssl/security_state_model.h"
+#include "chrome/browser/ssl/chrome_security_state_model_client.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/SecurityStateModel_jni.h"
 
@@ -22,10 +22,11 @@ jint GetSecurityLevelForWebContents(
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(jweb_contents);
   DCHECK(web_contents);
-  SecurityStateModel::CreateForWebContents(web_contents);
-  SecurityStateModel* model = SecurityStateModel::FromWebContents(web_contents);
-  DCHECK(model);
-  return model->GetSecurityInfo().security_level;
+  ChromeSecurityStateModelClient::CreateForWebContents(web_contents);
+  ChromeSecurityStateModelClient* model_client =
+      ChromeSecurityStateModelClient::FromWebContents(web_contents);
+  DCHECK(model_client);
+  return model_client->GetSecurityInfo().security_level;
 }
 
 // static
@@ -35,10 +36,11 @@ jboolean IsDeprecatedSHA1Present(JNIEnv* env,
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(jweb_contents);
   DCHECK(web_contents);
-  SecurityStateModel::CreateForWebContents(web_contents);
-  SecurityStateModel* model = SecurityStateModel::FromWebContents(web_contents);
-  DCHECK(model);
-  return model->GetSecurityInfo().sha1_deprecation_status !=
+  ChromeSecurityStateModelClient::CreateForWebContents(web_contents);
+  ChromeSecurityStateModelClient* model_client =
+      ChromeSecurityStateModelClient::FromWebContents(web_contents);
+  DCHECK(model_client);
+  return model_client->GetSecurityInfo().sha1_deprecation_status !=
          SecurityStateModel::NO_DEPRECATED_SHA1;
 }
 
@@ -50,11 +52,12 @@ jboolean IsPassiveMixedContentPresent(
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(jweb_contents);
   DCHECK(web_contents);
-  SecurityStateModel::CreateForWebContents(web_contents);
-  SecurityStateModel* model = SecurityStateModel::FromWebContents(web_contents);
-  DCHECK(model);
-  return model->GetSecurityInfo().mixed_content_status ==
+  ChromeSecurityStateModelClient::CreateForWebContents(web_contents);
+  ChromeSecurityStateModelClient* model_client =
+      ChromeSecurityStateModelClient::FromWebContents(web_contents);
+  DCHECK(model_client);
+  return model_client->GetSecurityInfo().mixed_content_status ==
              SecurityStateModel::DISPLAYED_MIXED_CONTENT ||
-         model->GetSecurityInfo().mixed_content_status ==
+         model_client->GetSecurityInfo().mixed_content_status ==
              SecurityStateModel::RAN_AND_DISPLAYED_MIXED_CONTENT;
 }

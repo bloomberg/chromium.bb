@@ -7,6 +7,7 @@
 #include "ash/frame/caption_buttons/frame_caption_button.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/ssl/chrome_security_state_model_client.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "components/toolbar/toolbar_model.h"
@@ -90,10 +91,11 @@ void WebAppLeftHeaderView::ShowWebsiteSettings() const {
   if (!nav_entry)
     return;
 
-  SecurityStateModel* security_model = SecurityStateModel::FromWebContents(tab);
-  DCHECK(security_model);
+  ChromeSecurityStateModelClient* security_model_client =
+      ChromeSecurityStateModelClient::FromWebContents(tab);
+  DCHECK(security_model_client);
 
   chrome::ShowWebsiteSettings(browser_view_->browser(), tab,
                               nav_entry->GetURL(),
-                              security_model->GetSecurityInfo());
+                              security_model_client->GetSecurityInfo());
 }
