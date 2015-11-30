@@ -27,7 +27,10 @@ window.enablePixelTesting = true;
 <div id="console" style="opacity: 0"></div>
 
 <script>
-openPicker(document.getElementById('date'), finishTest);
+openPicker(document.getElementById('date'), finishTest, function() {
+    testFailed('picker didn\'t open')
+    finishJSTest();
+});
 
 function finishTest() {
     popupWindow.focus();
