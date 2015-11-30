@@ -29,14 +29,20 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
   browser()->window()->EnterFullscreen(
       GURL(), EXCLUSIVE_ACCESS_BUBBLE_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION,
       false);
-  bool is_fullscreen = browser()->window()->IsFullscreen();
+  ASSERT_TRUE(browser()->window()->IsFullscreen());
   ASSERT_TRUE(RunExtensionTest("window_update/focus")) << message_;
-  ASSERT_EQ(is_fullscreen, browser()->window()->IsFullscreen());
+  ASSERT_TRUE(browser()->window()->IsFullscreen());
 }
 
-// Fails flakily: http://crbug.com/308041
+#if defined(OS_MACOSX)
+// Fails flakily on Mac: http://crbug.com/308041
+#define MAYBE_UpdateWindowSizeExitsFullscreen \
+    DISABLED_UpdateWindowSizeExitsFullscreen
+#else
+#define MAYBE_UpdateWindowSizeExitsFullscreen UpdateWindowSizeExitsFullscreen
+#endif  // defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
-                       DISABLED_UpdateWindowSizeExitsFullscreen) {
+                       MAYBE_UpdateWindowSizeExitsFullscreen) {
   browser()->window()->EnterFullscreen(
       GURL(), EXCLUSIVE_ACCESS_BUBBLE_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION,
       false);
