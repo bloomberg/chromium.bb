@@ -69,7 +69,9 @@ public:
 
 protected:
     UIEvent();
+    // TODO(crbug.com/563542): Remove of this ctor in favor of making platformTimeStamp (and perhaps sourceCapabilities) required in all constructions sites
     UIEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView>, int detail, InputDeviceCapabilities* sourceCapabilities = nullptr);
+    UIEvent(const AtomicString& type, bool canBubble, bool cancelable, double platformTimeStamp, PassRefPtrWillBeRawPtr<AbstractView>, int detail, InputDeviceCapabilities* sourceCapabilities);
     UIEvent(const AtomicString&, const UIEventInit&);
 
 private:

@@ -158,6 +158,7 @@ PlatformWheelEventBuilder::PlatformWheelEventBuilder(Widget* widget, const WebMo
 
     m_type = PlatformEvent::Wheel;
 
+    m_timestamp = e.timeStampSeconds;
     m_modifiers = e.modifiers;
 
     m_hasPreciseScrollingDeltas = e.hasPreciseScrollingDeltas;
@@ -167,7 +168,6 @@ PlatformWheelEventBuilder::PlatformWheelEventBuilder(Widget* widget, const WebMo
 #if OS(MACOSX)
     m_phase = static_cast<PlatformWheelEventPhase>(e.phase);
     m_momentumPhase = static_cast<PlatformWheelEventPhase>(e.momentumPhase);
-    m_timestamp = e.timeStampSeconds;
     m_canRubberbandLeft = e.canRubberbandLeft;
     m_canRubberbandRight = e.canRubberbandRight;
 #endif

@@ -45,12 +45,11 @@ TouchEvent::TouchEvent(TouchList* touches, TouchList* targetTouches,
     TouchList* changedTouches, const AtomicString& type,
     PassRefPtrWillBeRawPtr<AbstractView> view,
     PlatformEvent::Modifiers modifiers, bool cancelable, bool causesScrollingIfUncanceled,
-    double timestamp)
+    double platformTimeStamp)
     // Pass a sourceCapabilities including the ability to fire touchevents when creating this touchevent, which is always created from input device capabilities from EventHandler.
-    : UIEventWithKeyState(type, true, cancelable, view, 0, modifiers, InputDeviceCapabilities::firesTouchEventsSourceCapabilities()),
+    : UIEventWithKeyState(type, true, cancelable, view, 0, modifiers, platformTimeStamp, InputDeviceCapabilities::firesTouchEventsSourceCapabilities()),
     m_touches(touches), m_targetTouches(targetTouches), m_changedTouches(changedTouches), m_causesScrollingIfUncanceled(causesScrollingIfUncanceled)
 {
-    setPlatformTimeStamp(timestamp);
 }
 
 TouchEvent::TouchEvent(const AtomicString& type, const TouchEventInit& initializer)

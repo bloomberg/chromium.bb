@@ -64,7 +64,7 @@ public:
 
 private:
     GestureEvent();
-    GestureEvent(const AtomicString& type, PassRefPtrWillBeRawPtr<AbstractView>, int screenX, int screenY, int clientX, int clientY, PlatformEvent::Modifiers, float deltaX, float deltaY, float velocityX, float velocityY, bool inertial, double uiTimeStamp, int resendingPluginId, GestureSource);
+    GestureEvent(const AtomicString& type, PassRefPtrWillBeRawPtr<AbstractView>, int screenX, int screenY, int clientX, int clientY, PlatformEvent::Modifiers, float deltaX, float deltaY, float velocityX, float velocityY, bool inertial, double platformTimeStamp, int resendingPluginId, GestureSource);
 
     float m_deltaX;
     float m_deltaY;

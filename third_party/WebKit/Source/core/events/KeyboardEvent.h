@@ -58,10 +58,10 @@ public:
 
     static PassRefPtrWillBeRawPtr<KeyboardEvent> create(const AtomicString& type, bool canBubble, bool cancelable, AbstractView* view,
         const String& keyIdentifier, const String& code, const String& key, unsigned location,
-        PlatformEvent::Modifiers modifiers)
+        PlatformEvent::Modifiers modifiers, double platformTimeStamp)
     {
         return adoptRefWillBeNoop(new KeyboardEvent(type, canBubble, cancelable, view, keyIdentifier, code, key, location,
-            modifiers));
+            modifiers, platformTimeStamp));
     }
 
     ~KeyboardEvent() override;
@@ -96,7 +96,7 @@ private:
     KeyboardEvent(const AtomicString&, const KeyboardEventInit&);
     KeyboardEvent(const AtomicString& type, bool canBubble, bool cancelable, AbstractView*,
         const String& keyIdentifier, const String& code, const String& key, unsigned location,
-        PlatformEvent::Modifiers);
+        PlatformEvent::Modifiers, double platformTimeStamp);
 
     void initLocationModifiers(unsigned location);
 

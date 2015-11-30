@@ -40,7 +40,7 @@ public:
             position,
             position,
             IntSize(5, 5),
-            WTF::currentTime(),
+            WTF::monotonicallyIncreasingTime(),
             static_cast<PlatformEvent::Modifiers>(0),
             PlatformGestureSourceTouchscreen)
     {
@@ -79,7 +79,7 @@ TEST_F(EventHandlerTest, dragSelectionAfterScroll)
         PlatformEvent::MousePressed,
         1,
         static_cast<PlatformEvent::Modifiers>(0),
-        WTF::currentTime());
+        WTF::monotonicallyIncreasingTime());
     document().frame()->eventHandler().handleMousePressEvent(mouseDownEvent);
 
     PlatformMouseEvent mouseMoveEvent(
@@ -89,11 +89,11 @@ TEST_F(EventHandlerTest, dragSelectionAfterScroll)
         PlatformEvent::MouseMoved,
         1,
         static_cast<PlatformEvent::Modifiers>(0),
-        WTF::currentTime());
+        WTF::monotonicallyIncreasingTime());
     document().frame()->eventHandler().handleMouseMoveEvent(mouseMoveEvent);
 
-    page().autoscrollController().animate(WTF::currentTime());
-    page().animator().serviceScriptedAnimations(WTF::currentTime());
+    page().autoscrollController().animate(WTF::monotonicallyIncreasingTime());
+    page().animator().serviceScriptedAnimations(WTF::monotonicallyIncreasingTime());
 
     PlatformMouseEvent mouseUpEvent(
         IntPoint(100, 50),
@@ -102,7 +102,7 @@ TEST_F(EventHandlerTest, dragSelectionAfterScroll)
         PlatformEvent::MouseReleased,
         1,
         static_cast<PlatformEvent::Modifiers>(0),
-        WTF::currentTime());
+        WTF::monotonicallyIncreasingTime());
     document().frame()->eventHandler().handleMouseReleaseEvent(mouseUpEvent);
 
     FrameSelection& selection = document().frame()->selection();

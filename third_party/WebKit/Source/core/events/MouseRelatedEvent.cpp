@@ -52,11 +52,11 @@ static LayoutSize contentsScrollOffset(AbstractView* abstractView)
     return LayoutSize(frameView->scrollX() / scaleFactor, frameView->scrollY() / scaleFactor);
 }
 
-MouseRelatedEvent::MouseRelatedEvent(const AtomicString& eventType, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView> abstractView,
-    int detail, const IntPoint& screenLocation, const IntPoint& rootFrameLocation,
-    const IntPoint& movementDelta,
-    PlatformEvent::Modifiers modifiers, PositionType positionType, InputDeviceCapabilities* sourceCapabilities)
-    : UIEventWithKeyState(eventType, canBubble, cancelable, abstractView, detail, modifiers, sourceCapabilities)
+MouseRelatedEvent::MouseRelatedEvent(const AtomicString& eventType, bool canBubble, bool cancelable,
+    PassRefPtrWillBeRawPtr<AbstractView> abstractView, int detail, const IntPoint& screenLocation,
+    const IntPoint& rootFrameLocation, const IntPoint& movementDelta, PlatformEvent::Modifiers modifiers,
+    double platformTimeStamp, PositionType positionType, InputDeviceCapabilities* sourceCapabilities)
+    : UIEventWithKeyState(eventType, canBubble, cancelable, abstractView, detail, modifiers, platformTimeStamp, sourceCapabilities)
     , m_screenLocation(screenLocation)
     , m_movementDelta(movementDelta)
     , m_positionType(positionType)

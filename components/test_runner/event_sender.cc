@@ -2008,7 +2008,7 @@ void EventSender::ScheduleAsynchronousKeyDown(const std::string& code_str,
 }
 
 double EventSender::GetCurrentEventTimeSec() {
-  return (base::TimeTicks::Now() - base::TimeTicks()).InSeconds() +
+  return (base::TimeTicks::Now() - base::TimeTicks()).InSecondsF() +
          time_offset_ms_ / 1000.0;
 }
 

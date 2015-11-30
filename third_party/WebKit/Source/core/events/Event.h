@@ -131,7 +131,6 @@ public:
     // |m_createTime|). For more info see http://crbug.com/160524
     double timeStamp(ScriptState*) const;
     double platformTimeStamp() const { return m_platformTimeStamp; }
-    void setPlatformTimeStamp(double platformTimeStamp) { m_platformTimeStamp = platformTimeStamp; }
     DOMTimeStamp createTime() const { return m_createTime; }
 
     void stopPropagation() { m_propagationStopped = true; }
@@ -207,6 +206,7 @@ public:
 protected:
     Event();
     Event(const AtomicString& type, bool canBubble, bool cancelable);
+    Event(const AtomicString& type, bool canBubble, bool cancelable, double platformTimeStamp);
     Event(const AtomicString& type, const EventInit&);
 
     virtual void receivedTarget();

@@ -116,7 +116,7 @@ static PlatformMouseEvent createMouseEvent(DragData* dragData)
     return PlatformMouseEvent(dragData->clientPosition(), dragData->globalPosition(),
         LeftButton, PlatformEvent::MouseMoved, 0,
         static_cast<PlatformEvent::Modifiers>(dragData->modifiers()),
-        PlatformMouseEvent::RealOrIndistinguishable, currentTime());
+        PlatformMouseEvent::RealOrIndistinguishable, monotonicallyIncreasingTime());
 }
 
 static DataTransfer* createDraggingDataTransfer(DataTransferAccessPolicy policy, DragData* dragData)

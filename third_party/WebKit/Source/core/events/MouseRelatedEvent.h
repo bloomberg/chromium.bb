@@ -73,7 +73,8 @@ protected:
     // sourceCapabilities even when it is null, see https://crbug.com/476530.
     MouseRelatedEvent(const AtomicString& type, bool canBubble, bool cancelable,
         PassRefPtrWillBeRawPtr<AbstractView>, int detail, const IntPoint& screenLocation,
-        const IntPoint& rootFrameLocation, const IntPoint& movementDelta, PlatformEvent::Modifiers, PositionType, InputDeviceCapabilities* sourceCapabilities = nullptr);
+        const IntPoint& rootFrameLocation, const IntPoint& movementDelta, PlatformEvent::Modifiers,
+        double platformTimeStamp, PositionType, InputDeviceCapabilities* sourceCapabilities = nullptr);
 
     MouseRelatedEvent(const AtomicString& type, const MouseEventInit& initializer);
 

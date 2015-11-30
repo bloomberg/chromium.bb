@@ -114,8 +114,8 @@ GestureEvent::GestureEvent()
 {
 }
 
-GestureEvent::GestureEvent(const AtomicString& type, PassRefPtrWillBeRawPtr<AbstractView> view, int screenX, int screenY, int clientX, int clientY, PlatformEvent::Modifiers modifiers, float deltaX, float deltaY, float velocityX, float velocityY, bool inertial, double timestamp, int resendingPluginId, GestureSource source)
-    : MouseRelatedEvent(type, true, true, view, 0, IntPoint(screenX, screenY), IntPoint(clientX, clientY), IntPoint(0, 0), modifiers, PositionType::Position)
+GestureEvent::GestureEvent(const AtomicString& type, PassRefPtrWillBeRawPtr<AbstractView> view, int screenX, int screenY, int clientX, int clientY, PlatformEvent::Modifiers modifiers, float deltaX, float deltaY, float velocityX, float velocityY, bool inertial, double platformTimeStamp, int resendingPluginId, GestureSource source)
+    : MouseRelatedEvent(type, true, true, view, 0, IntPoint(screenX, screenY), IntPoint(clientX, clientY), IntPoint(0, 0), modifiers, platformTimeStamp, PositionType::Position)
     , m_deltaX(deltaX)
     , m_deltaY(deltaY)
     , m_velocityX(velocityX)
@@ -124,7 +124,6 @@ GestureEvent::GestureEvent(const AtomicString& type, PassRefPtrWillBeRawPtr<Abst
     , m_source(source)
     , m_resendingPluginId(resendingPluginId)
 {
-    setPlatformTimeStamp(timestamp);
 }
 
 PassRefPtrWillBeRawPtr<EventDispatchMediator> GestureEvent::createMediator()

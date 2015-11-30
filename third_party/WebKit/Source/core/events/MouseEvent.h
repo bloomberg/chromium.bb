@@ -48,8 +48,8 @@ public:
         int movementX, int movementY, PlatformEvent::Modifiers,
         short button, unsigned short buttons,
         PassRefPtrWillBeRawPtr<EventTarget> relatedTarget,
-        PlatformMouseEvent::SyntheticEventType = PlatformMouseEvent::RealOrIndistinguishable,
-        double uiCreateTime = 0);
+        double platformTimeStamp,
+        PlatformMouseEvent::SyntheticEventType = PlatformMouseEvent::RealOrIndistinguishable);
 
     static PassRefPtrWillBeRawPtr<MouseEvent> create(const AtomicString& eventType, PassRefPtrWillBeRawPtr<AbstractView>, const PlatformMouseEvent&, int detail, PassRefPtrWillBeRawPtr<Node> relatedTarget);
 
@@ -97,7 +97,8 @@ protected:
         int movementX, int movementY,
         PlatformEvent::Modifiers, short button, unsigned short buttons,
         PassRefPtrWillBeRawPtr<EventTarget> relatedTarget,
-        PlatformMouseEvent::SyntheticEventType, double uiCreateTime = 0);
+        double platformTimeStamp,
+        PlatformMouseEvent::SyntheticEventType);
 
     MouseEvent(const AtomicString& type, const MouseEventInit&);
 

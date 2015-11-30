@@ -41,6 +41,11 @@ Event::Event()
 }
 
 Event::Event(const AtomicString& eventType, bool canBubbleArg, bool cancelableArg)
+    : Event(eventType, canBubbleArg, cancelableArg, monotonicallyIncreasingTime())
+{
+}
+
+Event::Event(const AtomicString& eventType, bool canBubbleArg, bool cancelableArg, double platformTimeStamp)
     : m_type(eventType)
     , m_canBubble(canBubbleArg)
     , m_cancelable(cancelableArg)
@@ -53,7 +58,7 @@ Event::Event(const AtomicString& eventType, bool canBubbleArg, bool cancelableAr
     , m_eventPhase(0)
     , m_currentTarget(nullptr)
     , m_createTime(convertSecondsToDOMTimeStamp(currentTime()))
-    , m_platformTimeStamp(monotonicallyIncreasingTime())
+    , m_platformTimeStamp(platformTimeStamp)
 {
 }
 
