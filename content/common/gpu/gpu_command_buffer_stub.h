@@ -190,8 +190,6 @@ class GpuCommandBufferStub
                             int32 route_id,
                             IPC::Message* reply_message);
 
-  void OnSetSurfaceVisible(bool visible);
-
   void OnEnsureBackbuffer();
 
   void OnRetireSyncPoint(uint32 sync_point);

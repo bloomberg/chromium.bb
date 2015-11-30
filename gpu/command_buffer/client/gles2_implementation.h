@@ -256,7 +256,6 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   void SignalSyncToken(const gpu::SyncToken& sync_token,
                        const base::Closure& callback) override;
   void SignalQuery(uint32 query, const base::Closure& callback) override;
-  void SetSurfaceVisible(bool visible) override;
   void SetAggressivelyFreeResources(bool aggressively_free_resources) override;
 
   // base::trace_event::MemoryDumpProvider implementation.

@@ -631,9 +631,6 @@ IPC_MESSAGE_ROUTED2(GpuCommandBufferMsg_UpdateVSyncParameters,
                     base::TimeTicks /* timebase */,
                     base::TimeDelta /* interval */)
 
-// Send to stub on surface visibility change.
-IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_SetSurfaceVisible, bool /* visible */)
-
 // Inserts a sync point into the channel. This is handled on the IO thread, so
 // can be expected to be reasonably fast, but the sync point is actually
 // retired in order with respect to the other calls. The sync point is shared

@@ -967,8 +967,6 @@ void InProcessCommandBuffer::SignalQueryOnGpuThread(
     query->AddCallback(callback);
 }
 
-void InProcessCommandBuffer::SetSurfaceVisible(bool visible) {}
-
 void InProcessCommandBuffer::SetLock(base::Lock*) {
 }
 

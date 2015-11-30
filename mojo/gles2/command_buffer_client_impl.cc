@@ -369,11 +369,6 @@ void CommandBufferClientImpl::SignalQuery(uint32_t query,
   NOTIMPLEMENTED();
 }
 
-void CommandBufferClientImpl::SetSurfaceVisible(bool visible) {
-  // TODO(piman)
-  NOTIMPLEMENTED();
-}
-
 void CommandBufferClientImpl::DidLoseContext(int32_t lost_reason) {
   last_state_.error = gpu::error::kLostContext;
   last_state_.context_lost_reason =

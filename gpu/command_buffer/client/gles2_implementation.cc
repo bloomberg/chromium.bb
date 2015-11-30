@@ -354,13 +354,6 @@ void GLES2Implementation::SignalQuery(uint32 query,
                  callback));
 }
 
-void GLES2Implementation::SetSurfaceVisible(bool visible) {
-  TRACE_EVENT1(
-      "gpu", "GLES2Implementation::SetSurfaceVisible", "visible", visible);
-  ShallowFlushCHROMIUM();
-  gpu_control_->SetSurfaceVisible(visible);
-}
-
 void GLES2Implementation::SetAggressivelyFreeResources(
     bool aggressively_free_resources) {
   TRACE_EVENT1("gpu", "GLES2Implementation::SetAggressivelyFreeResources",

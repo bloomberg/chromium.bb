@@ -649,14 +649,6 @@ void CommandBufferProxyImpl::SignalQuery(uint32 query,
   signal_tasks_.insert(std::make_pair(signal_id, callback));
 }
 
-void CommandBufferProxyImpl::SetSurfaceVisible(bool visible) {
-  CheckLock();
-  if (last_state_.error != gpu::error::kNoError)
-    return;
-
-  Send(new GpuCommandBufferMsg_SetSurfaceVisible(route_id_, visible));
-}
-
 bool CommandBufferProxyImpl::ProduceFrontBuffer(const gpu::Mailbox& mailbox) {
   CheckLock();
   if (last_state_.error != gpu::error::kNoError)

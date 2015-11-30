@@ -211,11 +211,6 @@ void CommandBufferLocal::SignalQuery(uint32_t query,
   NOTIMPLEMENTED();
 }
 
-void CommandBufferLocal::SetSurfaceVisible(bool visible) {
-  // TODO(piman)
-  NOTIMPLEMENTED();
-}
-
 void CommandBufferLocal::SetLock(base::Lock* lock) {
   NOTIMPLEMENTED();
 }

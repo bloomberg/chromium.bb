@@ -124,7 +124,6 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   void SignalSyncPoint(uint32 sync_point,
                        const base::Closure& callback) override;
   void SignalQuery(uint32 query_id, const base::Closure& callback) override;
-  void SetSurfaceVisible(bool visible) override;
   void SetLock(base::Lock*) override;
   bool IsGpuChannelLost() override;
   CommandBufferNamespace GetNamespaceID() const override;

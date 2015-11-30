@@ -488,10 +488,6 @@ void GLManager::SignalQuery(uint32 query, const base::Closure& callback) {
   NOTIMPLEMENTED();
 }
 
-void GLManager::SetSurfaceVisible(bool visible) {
-  NOTIMPLEMENTED();
-}
-
 void GLManager::SetLock(base::Lock*) {
   NOTIMPLEMENTED();
 }

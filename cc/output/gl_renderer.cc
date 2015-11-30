@@ -397,8 +397,6 @@ const RendererCapabilitiesImpl& GLRenderer::Capabilities() const {
 void GLRenderer::DidChangeVisibility() {
   EnforceMemoryPolicy();
 
-  context_support_->SetSurfaceVisible(visible());
-
   // If we are not visible, we ask the context to aggressively free resources.
   context_support_->SetAggressivelyFreeResources(!visible());
 }

@@ -328,10 +328,6 @@ void Display::SignalQuery(uint32 query, const base::Closure& callback) {
   NOTIMPLEMENTED();
 }
 
-void Display::SetSurfaceVisible(bool visible) {
-  NOTIMPLEMENTED();
-}
-
 void Display::SetLock(base::Lock*) {
   NOTIMPLEMENTED();
 }

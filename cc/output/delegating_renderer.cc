@@ -114,12 +114,7 @@ void DelegatingRenderer::DidChangeVisibility() {
       context_provider->ContextGL()->Flush();
     }
   }
-  // We loop visibility to the GPU process, since that's what manages memory.
-  // That will allow it to feed us with memory allocations that we can act
-  // upon.
   if (context_provider) {
-    context_provider->ContextSupport()->SetSurfaceVisible(visible());
-
     // If we are not visible, we ask the context to aggressively free resources.
     context_provider->ContextSupport()->SetAggressivelyFreeResources(
         !visible());

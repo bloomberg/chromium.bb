@@ -31,10 +31,6 @@ class ContextSupport {
   // passed the glEndQueryEXT() point.
   virtual void SignalQuery(uint32 query, const base::Closure& callback) = 0;
 
-  // For onscreen contexts, indicates that the surface visibility has changed.
-  // Clients aren't expected to draw to an invisible surface.
-  virtual void SetSurfaceVisible(bool visible) = 0;
-
   // Indicates whether the context should aggressively free allocated resources.
   // If set to true, the context will purge all temporary resources when
   // flushed.

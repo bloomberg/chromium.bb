@@ -40,12 +40,6 @@ void TestContextSupport::SignalQuery(uint32 query,
                             weak_ptr_factory_.GetWeakPtr()));
 }
 
-void TestContextSupport::SetSurfaceVisible(bool visible) {
-  if (!set_visible_callback_.is_null()) {
-    set_visible_callback_.Run(visible);
-  }
-}
-
 void TestContextSupport::SetAggressivelyFreeResources(
     bool aggressively_free_resources) {
 }
@@ -64,11 +58,6 @@ void TestContextSupport::CallAllSyncPointCallbacks() {
     }
   }
   sync_point_callbacks_.clear();
-}
-
-void TestContextSupport::SetSurfaceVisibleCallback(
-    const SurfaceVisibleCallback& set_visible_callback) {
-  set_visible_callback_ = set_visible_callback;
 }
 
 void TestContextSupport::SetScheduleOverlayPlaneCallback(

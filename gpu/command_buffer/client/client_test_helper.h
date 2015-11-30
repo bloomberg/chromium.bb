@@ -109,7 +109,6 @@ class MockClientGpuControl : public GpuControl {
   MOCK_METHOD1(RetireSyncPoint, void(uint32 id));
   MOCK_METHOD2(SignalSyncPoint, void(uint32 id, const base::Closure& callback));
   MOCK_METHOD2(SignalQuery, void(uint32 query, const base::Closure& callback));
-  MOCK_METHOD1(SetSurfaceVisible, void(bool visible));
   MOCK_METHOD1(CreateStreamTexture, uint32(uint32));
   MOCK_METHOD1(SetLock, void(base::Lock*));
   MOCK_METHOD0(IsGpuChannelLost, bool());

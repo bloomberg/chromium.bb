@@ -69,7 +69,6 @@ class CommandBufferLocal : public gpu::GpuControl {
   void SignalSyncPoint(uint32 sync_point,
                        const base::Closure& callback) override;
   void SignalQuery(uint32 query, const base::Closure& callback) override;
-  void SetSurfaceVisible(bool visible) override;
   void SetLock(base::Lock*) override;
   bool IsGpuChannelLost() override;
   gpu::CommandBufferNamespace GetNamespaceID() const override;

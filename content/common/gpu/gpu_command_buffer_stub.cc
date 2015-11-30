@@ -305,8 +305,6 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
                                     OnCreateVideoDecoder)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_CreateVideoEncoder,
                                     OnCreateVideoEncoder)
-    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_SetSurfaceVisible,
-                        OnSetSurfaceVisible)
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_RetireSyncPoint,
                         OnRetireSyncPoint)
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_SignalSyncPoint,
@@ -911,11 +909,6 @@ void GpuCommandBufferStub::OnCreateVideoEncoder(
                       reply_message);
   // encoder is registered as a DestructionObserver of this stub and will
   // self-delete during destruction of this stub.
-}
-
-// TODO(sohanjg): cleanup this and the client side too.
-void GpuCommandBufferStub::OnSetSurfaceVisible(bool visible) {
-  TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnSetSurfaceVisible");
 }
 
 void GpuCommandBufferStub::InsertSyncPoint(uint32 sync_point, bool retire) {

@@ -248,10 +248,6 @@ void PpapiCommandBufferProxy::SignalQuery(uint32 query,
   NOTREACHED();
 }
 
-void PpapiCommandBufferProxy::SetSurfaceVisible(bool visible) {
-  NOTREACHED();
-}
-
 gpu::Capabilities PpapiCommandBufferProxy::GetCapabilities() {
   return capabilities_;
 }

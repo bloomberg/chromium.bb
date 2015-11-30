@@ -28,7 +28,6 @@ class TestContextSupport : public gpu::ContextSupport {
   void SignalSyncToken(const gpu::SyncToken& sync_token,
                        const base::Closure& callback) override;
   void SignalQuery(uint32 query, const base::Closure& callback) override;
-  void SetSurfaceVisible(bool visible) override;
   void SetAggressivelyFreeResources(bool aggressively_free_resources) override;
   void Swap() override;
   void PartialSwapBuffers(const gfx::Rect& sub_buffer) override;
@@ -42,10 +41,6 @@ class TestContextSupport : public gpu::ContextSupport {
   uint64_t ShareGroupTracingGUID() const override;
 
   void CallAllSyncPointCallbacks();
-
-  typedef base::Callback<void(bool visible)> SurfaceVisibleCallback;
-  void SetSurfaceVisibleCallback(
-      const SurfaceVisibleCallback& set_visible_callback);
 
   typedef base::Callback<void(int plane_z_order,
                               gfx::OverlayTransform plane_transform,
@@ -64,7 +59,6 @@ class TestContextSupport : public gpu::ContextSupport {
 
  private:
   std::vector<base::Closure> sync_point_callbacks_;
-  SurfaceVisibleCallback set_visible_callback_;
   ScheduleOverlayPlaneCallback schedule_overlay_plane_callback_;
   bool out_of_order_callbacks_;
 
