@@ -13,6 +13,7 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 ** Other changes
 
 ** Braille table improvements
+- Improvements to Norwegian, thanks to Lars Bjørndal
 
 * Noteworthy changes in release 2.6.4 (2015-08-31)
 This is a minor release in terms of features. But in terms of test

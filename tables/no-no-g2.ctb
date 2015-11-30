@@ -252,6 +252,10 @@ endword forskjellar 1246-14-3456
 word fulgte 124-1245-1256
 word følg 124-1245
 begword følg 124-1245
+word følger 124-1245-156
+word følgers 124-1245-156-234
+word følgerne 124-1245-156-1246
+word følgernes 124-1245-156-1246-234
 
 word følge 124-1245-15
 begword følge 124-1245-15
@@ -454,7 +458,7 @@ word utenfor 136-1246
 word utenfra 136-124
 word vil 1236-123
 word ville 1236-123-15
-word villet 1236-123-146
+word villet 1236-123-346
 
 word viss 1236-234
 word uviss 136-1236-234
@@ -469,7 +473,7 @@ word vært 1236-2345
 word det 145-346
 word dets 145-346-234
 word den 145-126
-word dens 145-236-234
+word dens 145-126-234
 word dent 145-126-2345
 word dente 145-126-1256
 word dert 145-156-2345
