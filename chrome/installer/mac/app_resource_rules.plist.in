@@ -4,11 +4,7 @@
 <dict>
 	<key>rules</key>
 	<dict>
-		<key>^PkgInfo$</key>
-		<true/>
-		<key>^MacOS/</key>
-		<true/>
-		<key>^Resources/</key>
+		<key>.*</key>
 		<true/>
 		<key>^Versions/</key>
 		<dict>
@@ -53,11 +49,7 @@
 	</dict>
 	<key>rules2</key>
 	<dict>
-		<key>^PkgInfo$</key>
-		<true/>
-		<key>^MacOS/</key>
-		<true/>
-		<key>^Resources/</key>
+		<key>.*</key>
 		<true/>
 		<key>^Versions/</key>
 		<dict>
