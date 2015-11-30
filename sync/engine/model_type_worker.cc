@@ -4,6 +4,8 @@
 
 #include "sync/engine/model_type_worker.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/format_macros.h"
 #include "base/guid.h"
@@ -49,7 +51,8 @@ ModelTypeWorker::ModelTypeWorker(
     scoped_ptr<EntityTracker> entity_tracker =
         EntityTracker::FromUpdateResponse(*it);
     entity_tracker->ReceivePendingUpdate(*it);
-    entities_.insert(it->entity->client_tag_hash, entity_tracker.Pass());
+    entities_.insert(
+        std::make_pair(it->entity->client_tag_hash, std::move(entity_tracker)));
   }
 
   if (cryptographer_) {
@@ -144,9 +147,10 @@ SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
       scoped_ptr<EntityTracker> scoped_entity_tracker =
           EntityTracker::FromUpdateResponse(response_data);
       entity_tracker = scoped_entity_tracker.get();
-      entities_.insert(client_tag_hash, scoped_entity_tracker.Pass());
+      entities_.insert(
+          std::make_pair(client_tag_hash, std::move(scoped_entity_tracker)));
     } else {
-      entity_tracker = map_it->second;
+      entity_tracker = map_it->second.get();
     }
 
     const sync_pb::EntitySpecifics& specifics = update_entity->specifics();
@@ -246,7 +250,7 @@ scoped_ptr<CommitContribution> ModelTypeWorker::GetContribution(
   // TODO(rlarocque): Avoid iterating here.
   for (EntityMap::const_iterator it = entities_.begin();
        it != entities_.end() && space_remaining > 0; ++it) {
-    EntityTracker* entity = it->second;
+    EntityTracker* entity = it->second.get();
     if (entity->HasPendingCommit()) {
       sync_pb::SyncEntity* commit_entity = commit_entities.Add();
       int64 sequence_number = -1;
@@ -278,9 +282,10 @@ void ModelTypeWorker::StorePendingCommit(const CommitRequestData& request) {
     scoped_ptr<EntityTracker> scoped_entity =
         EntityTracker::FromCommitRequest(request);
     entity = scoped_entity.get();
-    entities_.insert(data.client_tag_hash, scoped_entity.Pass());
+    entities_.insert(
+        std::make_pair(data.client_tag_hash, std::move(scoped_entity)));
   } else {
-    entity = map_it->second;
+    entity = map_it->second.get();
   }
   entity->RequestCommit(request);
 }
@@ -301,7 +306,7 @@ void ModelTypeWorker::OnCommitResponse(
       continue;
     }
 
-    EntityTracker* entity = map_it->second;
+    EntityTracker* entity = map_it->second.get();
     entity->ReceiveCommitResponse(response_it->id,
                                   response_it->response_version,
                                   response_it->sequence_number);

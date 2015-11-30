@@ -11,7 +11,6 @@
 #include <map>
 
 #include "base/compiler_specific.h"
-#include "base/containers/scoped_ptr_map.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "sync/base/sync_export.h"
@@ -159,8 +158,7 @@ class SYNC_EXPORT_PRIVATE NudgeTracker {
   void SetDefaultNudgeDelay(base::TimeDelta nudge_delay);
 
  private:
-  typedef base::ScopedPtrMap<ModelType, scoped_ptr<DataTypeTracker>>
-      TypeTrackerMap;
+  using TypeTrackerMap = std::map<ModelType, scoped_ptr<DataTypeTracker>>;
 
   TypeTrackerMap type_trackers_;
 

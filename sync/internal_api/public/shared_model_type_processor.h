@@ -5,9 +5,9 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_SHARED_MODEL_TYPE_PROCESSOR_H_
 #define SYNC_INTERNAL_API_PUBLIC_SHARED_MODEL_TYPE_PROCESSOR_H_
 
+#include <map>
 #include <string>
 
-#include "base/containers/scoped_ptr_map.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
@@ -94,10 +94,8 @@ class SYNC_EXPORT_PRIVATE SharedModelTypeProcessor
                         const UpdateResponseDataList& pending_updates) override;
 
  private:
-  typedef base::ScopedPtrMap<std::string, scoped_ptr<ModelTypeEntity>>
-      EntityMap;
-  typedef base::ScopedPtrMap<std::string, scoped_ptr<UpdateResponseData>>
-      UpdateMap;
+  using EntityMap = std::map<std::string, scoped_ptr<ModelTypeEntity>>;
+  using UpdateMap = std::map<std::string, scoped_ptr<UpdateResponseData>>;
 
   // Sends all commit requests that are due to be sent to the sync thread.
   void FlushPendingCommitRequests();

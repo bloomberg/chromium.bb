@@ -11,7 +11,6 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "base/containers/scoped_ptr_map.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
@@ -150,8 +149,7 @@ class FakeServer {
   base::WeakPtr<FakeServer> AsWeakPtr();
 
  private:
-  typedef base::ScopedPtrMap<std::string, scoped_ptr<FakeServerEntity>>
-      EntityMap;
+  using EntityMap = std::map<std::string, scoped_ptr<FakeServerEntity>>;
 
   // Gets FakeServer ready for syncing.
   void Init();

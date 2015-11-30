@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <limits>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -248,8 +249,7 @@ void FakeServer::UpdateEntityVersion(FakeServerEntity* entity) {
 
 void FakeServer::SaveEntity(scoped_ptr<FakeServerEntity> entity) {
   UpdateEntityVersion(entity.get());
-  const string id = entity->GetId();
-  entities_.set(id, entity.Pass());
+  entities_[entity->GetId()] = std::move(entity);
 }
 
 void FakeServer::HandleCommand(const string& request,
@@ -587,10 +587,9 @@ bool FakeServer::ModifyEntitySpecifics(
     return false;
   }
 
-  scoped_ptr<FakeServerEntity> entity = entities_.take_and_erase(iter);
+  FakeServerEntity* entity = iter->second.get();
   entity->SetSpecifics(updated_specifics);
-  UpdateEntityVersion(entity.get());
-  entities_.insert(id, entity.Pass());
+  UpdateEntityVersion(entity);
   return true;
 }
 
@@ -605,16 +604,14 @@ bool FakeServer::ModifyBookmarkEntity(
     return false;
   }
 
-  scoped_ptr<BookmarkEntity> entity(
-      static_cast<BookmarkEntity*>(entities_.take_and_erase(iter).release()));
+  BookmarkEntity* entity = static_cast<BookmarkEntity*>(iter->second.get());
 
   entity->SetParentId(parent_id);
   entity->SetSpecifics(updated_specifics);
   if (updated_specifics.has_bookmark()) {
     entity->SetName(updated_specifics.bookmark().title());
   }
-  UpdateEntityVersion(entity.get());
-  entities_.insert(id, entity.Pass());
+  UpdateEntityVersion(entity);
   return true;
 }
 
@@ -715,7 +712,7 @@ std::string FakeServer::GetBookmarkBarFolderId() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   for (EntityMap::const_iterator it = entities_.begin(); it != entities_.end();
        ++it) {
-    FakeServerEntity* entity = it->second;
+    FakeServerEntity* entity = it->second.get();
     if (entity->GetName() == kBookmarkBarFolderName &&
         entity->IsFolder() &&
         entity->GetModelType() == syncer::BOOKMARKS) {

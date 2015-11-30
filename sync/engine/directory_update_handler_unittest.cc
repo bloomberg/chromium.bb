@@ -4,8 +4,9 @@
 
 #include "sync/engine/directory_update_handler.h"
 
+#include <utility>
+
 #include "base/compiler_specific.h"
-#include "base/containers/scoped_ptr_map.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "sync/engine/syncer_proto_util.h"
@@ -461,17 +462,17 @@ class DirectoryUpdateHandlerApplyUpdateTest : public ::testing::Test {
     dir_maker_.SetUp();
     entry_factory_.reset(new TestEntryFactory(directory()));
 
-    update_handler_map_.insert(
+    update_handler_map_.insert(std::make_pair(
         BOOKMARKS,
         make_scoped_ptr(new DirectoryUpdateHandler(
-            directory(), BOOKMARKS, ui_worker_, &bookmarks_emitter_)));
-    update_handler_map_.insert(
+            directory(), BOOKMARKS, ui_worker_, &bookmarks_emitter_))));
+    update_handler_map_.insert(std::make_pair(
         PASSWORDS,
         make_scoped_ptr(new DirectoryUpdateHandler(
-            directory(), PASSWORDS, password_worker_, &passwords_emitter_)));
-    update_handler_map_.insert(
+            directory(), PASSWORDS, password_worker_, &passwords_emitter_))));
+    update_handler_map_.insert(std::make_pair(
         ARTICLES, make_scoped_ptr(new DirectoryUpdateHandler(
-                      directory(), ARTICLES, ui_worker_, &articles_emitter_)));
+                      directory(), ARTICLES, ui_worker_, &articles_emitter_))));
   }
 
   void TearDown() override { dir_maker_.TearDown(); }
@@ -523,7 +524,7 @@ class DirectoryUpdateHandlerApplyUpdateTest : public ::testing::Test {
   DirectoryTypeDebugInfoEmitter passwords_emitter_;
   DirectoryTypeDebugInfoEmitter articles_emitter_;
 
-  base::ScopedPtrMap<ModelType, scoped_ptr<UpdateHandler>> update_handler_map_;
+  std::map<ModelType, scoped_ptr<UpdateHandler>> update_handler_map_;
 };
 
 namespace {

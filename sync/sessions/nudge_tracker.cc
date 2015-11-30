@@ -4,6 +4,8 @@
 
 #include "sync/sessions/nudge_tracker.h"
 
+#include <utility>
+
 #include "base/basictypes.h"
 #include "sync/internal_api/public/engine/polling_constants.h"
 #include "sync/protocol/sync.pb.h"
@@ -60,7 +62,8 @@ NudgeTracker::NudgeTracker()
   // Default initialize all the type trackers.
   for (ModelTypeSet::Iterator it = protocol_types.First(); it.Good();
        it.Inc()) {
-    type_trackers_.insert(it.Get(), make_scoped_ptr(new DataTypeTracker()));
+    type_trackers_.insert(
+        std::make_pair(it.Get(), make_scoped_ptr(new DataTypeTracker())));
   }
 }
 

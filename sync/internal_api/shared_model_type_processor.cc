@@ -4,6 +4,8 @@
 
 #include "sync/internal_api/public/shared_model_type_processor.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/thread_task_runner_handle.h"
@@ -162,9 +164,9 @@ void SharedModelTypeProcessor::Put(
   if (it == entities_.end()) {
     scoped_ptr<ModelTypeEntity> entity(ModelTypeEntity::NewLocalItem(
         client_tag, specifics, base::Time::Now()));
-    entities_.insert(client_tag_hash, entity.Pass());
+    entities_.insert(std::make_pair(client_tag_hash, std::move(entity)));
   } else {
-    ModelTypeEntity* entity = it->second;
+    ModelTypeEntity* entity = it->second.get();
     entity->MakeLocalChange(specifics);
   }
 
@@ -186,7 +188,7 @@ void SharedModelTypeProcessor::Delete(const std::string& client_key,
     DLOG(WARNING) << "Attempted to delete missing item."
                   << " client tag: " << client_key;
   } else {
-    ModelTypeEntity* entity = it->second;
+    ModelTypeEntity* entity = it->second.get();
     entity->Delete();
   }
 
@@ -269,9 +271,9 @@ void SharedModelTypeProcessor::OnUpdateReceived(
           response_data.response_version, data.specifics, data.is_deleted(),
           data.creation_time, data.modification_time,
           response_data.encryption_key_name);
-      entities_.insert(client_tag_hash, entity.Pass());
+      entities_.insert(std::make_pair(client_tag_hash, std::move(entity)));
     } else {
-      ModelTypeEntity* entity = it->second;
+      ModelTypeEntity* entity = it->second.get();
       entity->ApplyUpdateFromServer(
           response_data.response_version, data.is_deleted(), data.specifics,
           data.modification_time, response_data.encryption_key_name);
@@ -301,12 +303,12 @@ void SharedModelTypeProcessor::OnUpdateReceived(
     UpdateMap::const_iterator lookup_it =
         pending_updates_map_.find(client_tag_hash);
     if (lookup_it == pending_updates_map_.end()) {
-      pending_updates_map_.insert(
-          client_tag_hash, make_scoped_ptr(new UpdateResponseData(update)));
+      pending_updates_map_.insert(std::make_pair(
+          client_tag_hash, make_scoped_ptr(new UpdateResponseData(update))));
     } else if (lookup_it->second->response_version <= update.response_version) {
       pending_updates_map_.erase(lookup_it);
-      pending_updates_map_.insert(
-          client_tag_hash, make_scoped_ptr(new UpdateResponseData(update)));
+      pending_updates_map_.insert(std::make_pair(
+          client_tag_hash, make_scoped_ptr(new UpdateResponseData(update))));
     } else {
       // Received update is stale, do not overwrite existing.
     }
