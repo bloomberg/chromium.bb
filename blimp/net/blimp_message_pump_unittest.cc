@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <string>
 
+#include "base/callback_helpers.h"
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/net/blimp_message_pump.h"
 #include "blimp/net/common.h"
@@ -151,6 +152,38 @@ TEST_F(BlimpMessagePumpTest, InvalidPacket) {
       .WillOnce(DoAll(FillBufferFromString<0>(test_msg), Return(1)));
   EXPECT_CALL(error_observer_, OnConnectionError(net::ERR_FAILED));
   message_pump_->SetMessageProcessor(&receiver_);
+}
+
+TEST_F(BlimpMessagePumpTest, ClearMessageProcessorAfterRead) {
+  net::CompletionCallback read_packet_cb;
+  EXPECT_CALL(reader_, ReadPacket(NotNull(), _))
+      .WillOnce(DoAll(FillBufferFromMessage<0>(message1_.get()),
+                      SaveArg<1>(&read_packet_cb),
+                      Return(net::ERR_IO_PENDING)));
+  net::CompletionCallback process_msg_cb;
+  EXPECT_CALL(receiver_, MockableProcessMessage(EqualsProto(*message1_), _))
+      .WillOnce(SaveArg<1>(&process_msg_cb));
+
+  message_pump_->SetMessageProcessor(&receiver_);
+  base::ResetAndReturn(&read_packet_cb).Run(message1_->ByteSize());
+
+  message_pump_->SetMessageProcessor(nullptr);
+
+  // Completing message processing will not trigger next packet read.
+  base::ResetAndReturn(&process_msg_cb).Run(net::OK);
+}
+
+TEST_F(BlimpMessagePumpTest, ClearMessageProcessorDuringRead) {
+  net::CompletionCallback read_packet_cb;
+  EXPECT_CALL(reader_, ReadPacket(NotNull(), _))
+      .WillOnce(DoAll(FillBufferFromMessage<0>(message1_.get()),
+                      SaveArg<1>(&read_packet_cb),
+                      Return(net::ERR_IO_PENDING)));
+
+  // Receiver will not get any message.
+  message_pump_->SetMessageProcessor(&receiver_);
+  message_pump_->SetMessageProcessor(nullptr);
+  base::ResetAndReturn(&read_packet_cb).Run(message1_->ByteSize());
 }
 
 }  // namespace

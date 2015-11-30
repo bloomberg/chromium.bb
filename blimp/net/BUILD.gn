@@ -19,6 +19,8 @@ component("blimp_net") {
     "blimp_message_receiver.h",
     "blimp_net_export.h",
     "blimp_transport.h",
+    "browser_connection_handler.cc",
+    "browser_connection_handler.h",
     "client_connection_manager.cc",
     "client_connection_manager.h",
     "common.cc",

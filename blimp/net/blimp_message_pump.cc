@@ -26,10 +26,11 @@ BlimpMessagePump::BlimpMessagePump(PacketReader* reader)
 BlimpMessagePump::~BlimpMessagePump() {}
 
 void BlimpMessagePump::SetMessageProcessor(BlimpMessageProcessor* processor) {
-  DCHECK(processor);
-  bool reading_packet = !!processor_;
+  process_msg_callback_.Cancel();
   processor_ = processor;
-  if (!reading_packet) {
+  if (!processor_) {
+    read_packet_callback_.Cancel();
+  } else if (read_packet_callback_.IsCancelled()) {
     buffer_->SetCapacity(kMaxPacketPayloadSizeBytes);
     ReadNextPacket();
   }
@@ -49,6 +50,7 @@ void BlimpMessagePump::ReadNextPacket() {
 }
 
 void BlimpMessagePump::OnReadPacketComplete(int result) {
+  read_packet_callback_.Cancel();
   if (result > 0) {
     // The result is the size of the packet in bytes.
     scoped_ptr<BlimpMessage> message(new BlimpMessage);
@@ -70,6 +72,7 @@ void BlimpMessagePump::OnReadPacketComplete(int result) {
 void BlimpMessagePump::OnProcessMessageComplete(int result) {
   // No error is expected from the message receiver.
   DCHECK_EQ(result, net::OK);
+  process_msg_callback_.Cancel();
   ReadNextPacket();
 }
 
