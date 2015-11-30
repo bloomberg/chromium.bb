@@ -50,8 +50,10 @@ void SetLayerPropertiesForTesting(Layer* layer,
 
 void ExecuteCalculateDrawProperties(LayerImpl* root_layer) {
   std::vector<LayerImpl*> dummy_render_surface_layer_list;
+  root_layer->layer_tree_impl()->IncrementRenderSurfaceListIdForTesting();
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root_layer, root_layer->bounds(), &dummy_render_surface_layer_list);
+      root_layer, root_layer->bounds(), &dummy_render_surface_layer_list,
+      root_layer->layer_tree_impl()->current_render_surface_list_id());
   inputs.inner_viewport_scroll_layer =
       root_layer->layer_tree_impl()->InnerViewportScrollLayer();
   inputs.outer_viewport_scroll_layer =
@@ -224,9 +226,9 @@ TEST_F(LayerPositionConstraintTest,
   gfx::Transform expected_grand_child_transform = expected_child_transform;
 
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_child_transform,
-                                  child_impl_->draw_transform());
+                                  child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_grand_child_transform,
-                                  grand_child_impl_->draw_transform());
+                                  grand_child_impl_->DrawTransform());
 
   // Case 2: scroll delta of 10, 10
   child_impl_->SetScrollDelta(gfx::Vector2d(10, 10));
@@ -239,9 +241,9 @@ TEST_F(LayerPositionConstraintTest,
   expected_child_transform.Translate(-10.0, -10.0);
 
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_child_transform,
-                                  child_impl_->draw_transform());
+                                  child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_grand_child_transform,
-                                  grand_child_impl_->draw_transform());
+                                  grand_child_impl_->DrawTransform());
 
   // Case 3: fixed-container size delta of 20, 20
   SetFixedContainerSizeDelta(child_impl_, gfx::Vector2d(20, 20));
@@ -249,9 +251,9 @@ TEST_F(LayerPositionConstraintTest,
 
   // Top-left fixed-position layer should not be affected by container size.
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_child_transform,
-                                  child_impl_->draw_transform());
+                                  child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_grand_child_transform,
-                                  grand_child_impl_->draw_transform());
+                                  grand_child_impl_->DrawTransform());
 
   // Case 4: Bottom-right fixed-position layer.
   grand_child_->SetPositionConstraint(fixed_to_bottom_right_);
@@ -267,9 +269,9 @@ TEST_F(LayerPositionConstraintTest,
   expected_grand_child_transform.Translate(20.0, 20.0);
 
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_child_transform,
-                                  child_impl_->draw_transform());
+                                  child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_grand_child_transform,
-                                  grand_child_impl_->draw_transform());
+                                  grand_child_impl_->DrawTransform());
 }
 
 TEST_F(LayerPositionConstraintTest,
@@ -295,11 +297,11 @@ TEST_F(LayerPositionConstraintTest,
       expected_grand_child_transform;
 
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_child_transform,
-                                  child_impl_->draw_transform());
+                                  child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_grand_child_transform,
-                                  grand_child_impl_->draw_transform());
+                                  grand_child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_great_grand_child_transform,
-                                  great_grand_child_impl_->draw_transform());
+                                  great_grand_child_impl_->DrawTransform());
 
   // Case 2: scroll delta of 10, 10
   child_impl_->SetScrollDelta(gfx::Vector2d(10, 10));
@@ -312,11 +314,11 @@ TEST_F(LayerPositionConstraintTest,
   expected_grand_child_transform.MakeIdentity();
   expected_grand_child_transform.Translate(-2.0, -4.0);
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_child_transform,
-                                  child_impl_->draw_transform());
+                                  child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_grand_child_transform,
-                                  grand_child_impl_->draw_transform());
+                                  grand_child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_great_grand_child_transform,
-                                  great_grand_child_impl_->draw_transform());
+                                  great_grand_child_impl_->DrawTransform());
 
   // Case 3: fixed-container size delta of 20, 20
   SetFixedContainerSizeDelta(child_impl_, gfx::Vector2d(20, 20));
@@ -324,11 +326,11 @@ TEST_F(LayerPositionConstraintTest,
 
   // Top-left fixed-position layer should not be affected by container size.
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_child_transform,
-                                  child_impl_->draw_transform());
+                                  child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_grand_child_transform,
-                                  grand_child_impl_->draw_transform());
+                                  grand_child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_great_grand_child_transform,
-                                  great_grand_child_impl_->draw_transform());
+                                  great_grand_child_impl_->DrawTransform());
 
   // Case 4: Bottom-right fixed-position layer.
   great_grand_child_->SetPositionConstraint(fixed_to_bottom_right_);
@@ -345,11 +347,11 @@ TEST_F(LayerPositionConstraintTest,
   expected_great_grand_child_transform.Translate(8.0, 6.0);
 
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_child_transform,
-                                  child_impl_->draw_transform());
+                                  child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_grand_child_transform,
-                                  grand_child_impl_->draw_transform());
+                                  grand_child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_great_grand_child_transform,
-                                  great_grand_child_impl_->draw_transform());
+                                  great_grand_child_impl_->DrawTransform());
 }
 
 TEST_F(LayerPositionConstraintTest,
@@ -385,11 +387,11 @@ TEST_F(LayerPositionConstraintTest,
       expected_grand_child_transform;
 
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_child_transform,
-                                  child_impl_->draw_transform());
+                                  child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_grand_child_transform,
-                                  grand_child_impl_->draw_transform());
+                                  grand_child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_great_grand_child_transform,
-                                  great_grand_child_impl_->draw_transform());
+                                  great_grand_child_impl_->DrawTransform());
 
   // Case 2: scroll delta of 10, 20
   child_impl_->SetScrollDelta(gfx::Vector2d(10, 0));
@@ -413,11 +415,11 @@ TEST_F(LayerPositionConstraintTest,
   expected_grand_child_transform.Translate(8.0, 6.0);
 
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_child_transform,
-                                  child_impl_->draw_transform());
+                                  child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_grand_child_transform,
-                                  grand_child_impl_->draw_transform());
+                                  grand_child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_great_grand_child_transform,
-                                  great_grand_child_impl_->draw_transform());
+                                  great_grand_child_impl_->DrawTransform());
 }
 
 TEST_F(LayerPositionConstraintTest,
@@ -449,14 +451,14 @@ TEST_F(LayerPositionConstraintTest,
   expected_great_grand_child_transform.PreconcatTransform(rotation_about_z);
   EXPECT_TRUE(grand_child_impl_->render_surface());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_child_transform,
-                                  child_impl_->draw_transform());
+                                  child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       expected_surface_draw_transform,
       grand_child_impl_->render_surface()->draw_transform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_grand_child_transform,
-                                  grand_child_impl_->draw_transform());
+                                  grand_child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_great_grand_child_transform,
-                                  great_grand_child_impl_->draw_transform());
+                                  great_grand_child_impl_->DrawTransform());
 
   // Case 2: scroll delta of 10, 30
   child_impl_->SetScrollDelta(gfx::Vector2d(10, 30));
@@ -486,14 +488,14 @@ TEST_F(LayerPositionConstraintTest,
 
   EXPECT_TRUE(grand_child_impl_->render_surface());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_child_transform,
-                                  child_impl_->draw_transform());
+                                  child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       expected_surface_draw_transform,
       grand_child_impl_->render_surface()->draw_transform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_grand_child_transform,
-                                  grand_child_impl_->draw_transform());
+                                  grand_child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_great_grand_child_transform,
-                                  great_grand_child_impl_->draw_transform());
+                                  great_grand_child_impl_->DrawTransform());
 
   // Case 3: fixed-container size delta of 20, 20
   SetFixedContainerSizeDelta(child_impl_, gfx::Vector2d(20, 20));
@@ -501,11 +503,11 @@ TEST_F(LayerPositionConstraintTest,
 
   // Top-left fixed-position layer should not be affected by container size.
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_child_transform,
-                                  child_impl_->draw_transform());
+                                  child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_grand_child_transform,
-                                  grand_child_impl_->draw_transform());
+                                  grand_child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_great_grand_child_transform,
-                                  great_grand_child_impl_->draw_transform());
+                                  great_grand_child_impl_->DrawTransform());
 
   // Case 4: Bottom-right fixed-position layer.
   great_grand_child_->SetPositionConstraint(fixed_to_bottom_right_);
@@ -526,11 +528,11 @@ TEST_F(LayerPositionConstraintTest,
   expected_great_grand_child_transform.PreconcatTransform(rotation_about_z);
 
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_child_transform,
-                                  child_impl_->draw_transform());
+                                  child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_grand_child_transform,
-                                  grand_child_impl_->draw_transform());
+                                  grand_child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_great_grand_child_transform,
-                                  great_grand_child_impl_->draw_transform());
+                                  great_grand_child_impl_->DrawTransform());
 }
 
 TEST_F(LayerPositionConstraintTest,
@@ -594,19 +596,19 @@ TEST_F(LayerPositionConstraintTest,
   EXPECT_TRUE(grand_child_impl_->render_surface());
   EXPECT_TRUE(great_grand_child_impl_->render_surface());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_child_transform,
-                                  child_impl_->draw_transform());
+                                  child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       expected_grand_child_surface_draw_transform,
       grand_child_impl_->render_surface()->draw_transform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_grand_child_transform,
-                                  grand_child_impl_->draw_transform());
+                                  grand_child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       expected_great_grand_child_surface_draw_transform,
       great_grand_child_impl_->render_surface()->draw_transform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_great_grand_child_transform,
-                                  great_grand_child_impl_->draw_transform());
+                                  great_grand_child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_fixed_position_child_transform,
-                                  fixed_position_child_impl->draw_transform());
+                                  fixed_position_child_impl->DrawTransform());
 
   // Case 2: scroll delta of 10, 30
   child_impl_->SetScrollDelta(gfx::Vector2d(10, 30));
@@ -634,19 +636,19 @@ TEST_F(LayerPositionConstraintTest,
   EXPECT_TRUE(grand_child_impl_->render_surface());
   EXPECT_TRUE(great_grand_child_impl_->render_surface());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_child_transform,
-                                  child_impl_->draw_transform());
+                                  child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       expected_grand_child_surface_draw_transform,
       grand_child_impl_->render_surface()->draw_transform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_grand_child_transform,
-                                  grand_child_impl_->draw_transform());
+                                  grand_child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       expected_great_grand_child_surface_draw_transform,
       great_grand_child_impl_->render_surface()->draw_transform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_great_grand_child_transform,
-                                  great_grand_child_impl_->draw_transform());
+                                  great_grand_child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_fixed_position_child_transform,
-                                  fixed_position_child_impl->draw_transform());
+                                  fixed_position_child_impl->DrawTransform());
 
   // Case 3: fixed-container size delta of 20, 20
   SetFixedContainerSizeDelta(child_impl_, gfx::Vector2d(20, 20));
@@ -654,13 +656,13 @@ TEST_F(LayerPositionConstraintTest,
 
   // Top-left fixed-position layer should not be affected by container size.
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_child_transform,
-                                  child_impl_->draw_transform());
+                                  child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_grand_child_transform,
-                                  grand_child_impl_->draw_transform());
+                                  grand_child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_great_grand_child_transform,
-                                  great_grand_child_impl_->draw_transform());
+                                  great_grand_child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_fixed_position_child_transform,
-                                  fixed_position_child_impl->draw_transform());
+                                  fixed_position_child_impl->DrawTransform());
 
   // Case 4: Bottom-right fixed-position layer.
   fixed_position_child->SetPositionConstraint(fixed_to_bottom_right_);
@@ -680,13 +682,13 @@ TEST_F(LayerPositionConstraintTest,
   expected_fixed_position_child_transform.PreconcatTransform(rotation_about_z);
 
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_child_transform,
-                                  child_impl_->draw_transform());
+                                  child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_grand_child_transform,
-                                  grand_child_impl_->draw_transform());
+                                  grand_child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_great_grand_child_transform,
-                                  great_grand_child_impl_->draw_transform());
+                                  great_grand_child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_fixed_position_child_transform,
-                                  fixed_position_child_impl->draw_transform());
+                                  fixed_position_child_impl->DrawTransform());
 }
 
 TEST_F(
@@ -755,19 +757,19 @@ TEST_F(
   EXPECT_TRUE(grand_child_impl_->render_surface());
   EXPECT_TRUE(great_grand_child_impl_->render_surface());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_child_transform,
-                                  child_impl_->draw_transform());
+                                  child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       expected_grand_child_surface_draw_transform,
       grand_child_impl_->render_surface()->draw_transform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_grand_child_transform,
-                                  grand_child_impl_->draw_transform());
+                                  grand_child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       expected_great_grand_child_surface_draw_transform,
       great_grand_child_impl_->render_surface()->draw_transform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_great_grand_child_transform,
-                                  great_grand_child_impl_->draw_transform());
+                                  great_grand_child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_fixed_position_child_transform,
-                                  fixed_position_child_impl->draw_transform());
+                                  fixed_position_child_impl->DrawTransform());
 
   // Case 2: scroll delta of 10, 30
   child_impl_->SetScrollDelta(gfx::Vector2d(10, 30));
@@ -800,19 +802,19 @@ TEST_F(
   EXPECT_TRUE(grand_child_impl_->render_surface());
   EXPECT_TRUE(great_grand_child_impl_->render_surface());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_child_transform,
-                                  child_impl_->draw_transform());
+                                  child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       expected_grand_child_surface_draw_transform,
       grand_child_impl_->render_surface()->draw_transform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_grand_child_transform,
-                                  grand_child_impl_->draw_transform());
+                                  grand_child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       expected_great_grand_child_surface_draw_transform,
       great_grand_child_impl_->render_surface()->draw_transform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_great_grand_child_transform,
-                                  great_grand_child_impl_->draw_transform());
+                                  great_grand_child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_fixed_position_child_transform,
-                                  fixed_position_child_impl->draw_transform());
+                                  fixed_position_child_impl->DrawTransform());
 }
 
 TEST_F(LayerPositionConstraintTest,
@@ -840,9 +842,9 @@ TEST_F(LayerPositionConstraintTest,
       expected_surface_draw_transform,
       child_impl_->render_surface()->draw_transform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_child_transform,
-                                  child_impl_->draw_transform());
+                                  child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_grand_child_transform,
-                                  grand_child_impl_->draw_transform());
+                                  grand_child_impl_->DrawTransform());
 
   // Case 2: scroll delta of 10, 10
   child_impl_->SetScrollDelta(gfx::Vector2d(10, 10));
@@ -861,9 +863,9 @@ TEST_F(LayerPositionConstraintTest,
       expected_surface_draw_transform,
       child_impl_->render_surface()->draw_transform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_child_transform,
-                                  child_impl_->draw_transform());
+                                  child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_grand_child_transform,
-                                  grand_child_impl_->draw_transform());
+                                  grand_child_impl_->DrawTransform());
 
   // Case 3: fixed-container size delta of 20, 20
   SetFixedContainerSizeDelta(child_impl_, gfx::Vector2d(20, 20));
@@ -871,9 +873,9 @@ TEST_F(LayerPositionConstraintTest,
 
   // Top-left fixed-position layer should not be affected by container size.
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_child_transform,
-                                  child_impl_->draw_transform());
+                                  child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_grand_child_transform,
-                                  grand_child_impl_->draw_transform());
+                                  grand_child_impl_->DrawTransform());
 
   // Case 4: Bottom-right fixed-position layer.
   grand_child_->SetPositionConstraint(fixed_to_bottom_right_);
@@ -892,9 +894,9 @@ TEST_F(LayerPositionConstraintTest,
   expected_grand_child_transform.Translate(20.0, 20.0);
 
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_child_transform,
-                                  child_impl_->draw_transform());
+                                  child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_grand_child_transform,
-                                  grand_child_impl_->draw_transform());
+                                  grand_child_impl_->DrawTransform());
 }
 
 TEST_F(LayerPositionConstraintTest,
@@ -919,9 +921,9 @@ TEST_F(LayerPositionConstraintTest,
   gfx::Transform expected_child_transform;
   gfx::Transform expected_grand_child_transform;
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_child_transform,
-                                  child_impl_->draw_transform());
+                                  child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_grand_child_transform,
-                                  grand_child_impl_->draw_transform());
+                                  grand_child_impl_->DrawTransform());
 
   // Case 2: scroll delta of 10, 10
   child_impl_->SetScrollDelta(gfx::Vector2d(10, 10));
@@ -932,9 +934,9 @@ TEST_F(LayerPositionConstraintTest,
   expected_child_transform.MakeIdentity();
   expected_child_transform.Translate(-10.0, -10.0);
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_child_transform,
-                                  child_impl_->draw_transform());
+                                  child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_grand_child_transform,
-                                  grand_child_impl_->draw_transform());
+                                  grand_child_impl_->DrawTransform());
 
   // Case 3: fixed-container size delta of 20, 20
   SetFixedContainerSizeDelta(child_impl_, gfx::Vector2d(20, 20));
@@ -942,9 +944,9 @@ TEST_F(LayerPositionConstraintTest,
 
   // Top-left fixed-position layer should not be affected by container size.
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_child_transform,
-                                  child_impl_->draw_transform());
+                                  child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_grand_child_transform,
-                                  grand_child_impl_->draw_transform());
+                                  grand_child_impl_->DrawTransform());
 
   // Case 4: Bottom-right fixed-position layer.
   grand_child_->SetPositionConstraint(fixed_to_bottom_right_);
@@ -960,9 +962,9 @@ TEST_F(LayerPositionConstraintTest,
   expected_grand_child_transform.Translate(20.0, 20.0);
 
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_child_transform,
-                                  child_impl_->draw_transform());
+                                  child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_grand_child_transform,
-                                  grand_child_impl_->draw_transform());
+                                  grand_child_impl_->DrawTransform());
 }
 
 TEST_F(LayerPositionConstraintTest,
@@ -996,11 +998,11 @@ TEST_F(LayerPositionConstraintTest,
   gfx::Transform expected_great_grand_child_transform;
 
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_child_transform,
-                                  child_impl_->draw_transform());
+                                  child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_grand_child_transform,
-                                  grand_child_impl_->draw_transform());
+                                  grand_child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_great_grand_child_transform,
-                                  great_grand_child_impl_->draw_transform());
+                                  great_grand_child_impl_->DrawTransform());
 
   // Case 2: sizeDelta
   child_impl_->SetScrollDelta(gfx::Vector2d(0, 0));
@@ -1016,11 +1018,11 @@ TEST_F(LayerPositionConstraintTest,
   expected_great_grand_child_transform.Translate(20.0, 20.0);
 
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_child_transform,
-                                  child_impl_->draw_transform());
+                                  child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_grand_child_transform,
-                                  grand_child_impl_->draw_transform());
+                                  grand_child_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_great_grand_child_transform,
-                                  great_grand_child_impl_->draw_transform());
+                                  great_grand_child_impl_->DrawTransform());
 }
 
 TEST_F(LayerPositionConstraintTest,
@@ -1068,16 +1070,16 @@ TEST_F(LayerPositionConstraintTest,
   gfx::Transform expected_fixed_to_container2_transform;
 
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_container1_transform,
-                                  container1->draw_transform());
+                                  container1->DrawTransform());
 
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_fixed_to_container1_transform,
-                                  fixed_to_container1->draw_transform());
+                                  fixed_to_container1->DrawTransform());
 
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_container2_transform,
-                                  container2->draw_transform());
+                                  container2->DrawTransform());
 
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_fixed_to_container2_transform,
-                                  fixed_to_container2->draw_transform());
+                                  fixed_to_container2->DrawTransform());
 }
 
 TEST_F(LayerPositionConstraintTest,
@@ -1107,9 +1109,9 @@ TEST_F(LayerPositionConstraintTest,
 
   // Top-left fixed-position layer should not be affected by container size.
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_scroll_layer_transform,
-                                  scroll_layer_impl_->draw_transform());
+                                  scroll_layer_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_fixed_child_transform,
-                                  fixed_child_impl->draw_transform());
+                                  fixed_child_impl->DrawTransform());
 
   // Case 2: Bottom-right fixed-position layer.
   fixed_child->SetPositionConstraint(fixed_to_bottom_right_);
@@ -1127,9 +1129,9 @@ TEST_F(LayerPositionConstraintTest,
   expected_fixed_child_transform.Translate(20.0, 20.0);
 
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_scroll_layer_transform,
-                                  scroll_layer_impl_->draw_transform());
+                                  scroll_layer_impl_->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_fixed_child_transform,
-                                  fixed_child_impl->draw_transform());
+                                  fixed_child_impl->DrawTransform());
 }
 
 void VerifySerializeAndDeserializeProto(bool is_fixed_position,

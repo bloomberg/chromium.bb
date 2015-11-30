@@ -18,6 +18,8 @@
 #include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/shared_quad_state.h"
 #include "cc/trees/damage_tracker.h"
+#include "cc/trees/draw_property_utils.h"
+#include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/occlusion.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -224,12 +226,13 @@ void RenderSurfaceImpl::AppendQuads(RenderPass* render_pass,
   ResourceId mask_resource_id = 0;
   gfx::Size mask_texture_size;
   gfx::Vector2dF mask_uv_scale;
+  gfx::Transform owning_layer_draw_transform = owning_layer_->DrawTransform();
   if (mask_layer && mask_layer->DrawsContent() &&
       !mask_layer->bounds().IsEmpty()) {
     mask_layer->GetContentsResourceId(&mask_resource_id, &mask_texture_size);
     gfx::Vector2dF owning_layer_draw_scale =
-        MathUtil::ComputeTransform2dScaleComponents(
-            owning_layer_->draw_transform(), 1.f);
+        MathUtil::ComputeTransform2dScaleComponents(owning_layer_draw_transform,
+                                                    1.f);
     gfx::SizeF unclipped_mask_target_size = gfx::ScaleSize(
         gfx::SizeF(owning_layer_->bounds()), owning_layer_draw_scale.x(),
         owning_layer_draw_scale.y());
@@ -240,7 +243,7 @@ void RenderSurfaceImpl::AppendQuads(RenderPass* render_pass,
 
   DCHECK(owning_layer_->draw_properties().target_space_transform.IsScale2d());
   gfx::Vector2dF owning_layer_to_target_scale =
-      owning_layer_->draw_properties().target_space_transform.Scale2d();
+      owning_layer_draw_transform.Scale2d();
 
   RenderPassDrawQuad* quad =
       render_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();

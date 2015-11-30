@@ -919,10 +919,9 @@ class LayerTreeHostTimelinesTestRemoveAnimation
       return;
     gfx::Transform expected_transform;
     expected_transform.Translate(10.f, 10.f);
-    EXPECT_EQ(expected_transform, host_impl->active_tree()
-                                      ->root_layer()
-                                      ->children()[0]
-                                      ->draw_transform());
+    EXPECT_EQ(
+        expected_transform,
+        host_impl->active_tree()->root_layer()->children()[0]->DrawTransform());
     EndTest();
   }
 
@@ -979,7 +978,7 @@ class LayerTreeHostTimelinesTestAnimationFinishesDuringCommit
         expected_transform.Translate(5.f, 5.f);
         LayerImpl* layer_impl =
             host_impl->sync_tree()->root_layer()->children()[0].get();
-        EXPECT_EQ(expected_transform, layer_impl->draw_transform());
+        EXPECT_EQ(expected_transform, layer_impl->DrawTransform());
         EndTest();
         break;
     }

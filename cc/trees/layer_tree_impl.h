@@ -223,6 +223,7 @@ class CC_EXPORT LayerTreeImpl {
   // text may cause invalidations, so should only be done after a commit.
   bool UpdateDrawProperties(bool update_lcd_text);
   void BuildPropertyTreesForTesting();
+  void IncrementRenderSurfaceListIdForTesting();
 
   void set_needs_update_draw_properties() {
     needs_update_draw_properties_ = true;

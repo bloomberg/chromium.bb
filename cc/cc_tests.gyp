@@ -182,6 +182,8 @@
       'test/fake_layer_tree_host_impl.h',
       'test/fake_layer_tree_host_impl_client.cc',
       'test/fake_layer_tree_host_impl_client.h',
+      'test/fake_mask_layer_impl.cc',
+      'test/fake_mask_layer_impl.h',
       'test/fake_output_surface.cc',
       'test/fake_output_surface.h',
       'test/fake_output_surface_client.cc',

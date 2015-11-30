@@ -138,7 +138,7 @@ void VideoLayerImpl::AppendQuads(RenderPass* render_pass,
                                  AppendQuadsData* append_quads_data) {
   DCHECK(frame_.get());
 
-  gfx::Transform transform = draw_transform();
+  gfx::Transform transform = DrawTransform();
   gfx::Size rotated_size = bounds();
 
   switch (video_rotation_) {

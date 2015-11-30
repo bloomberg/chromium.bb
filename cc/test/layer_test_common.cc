@@ -129,8 +129,10 @@ LayerTestCommon::LayerImplTest::~LayerImplTest() {}
 void LayerTestCommon::LayerImplTest::CalcDrawProps(
     const gfx::Size& viewport_size) {
   LayerImplList layer_list;
+  host_->host_impl()->active_tree()->IncrementRenderSurfaceListIdForTesting();
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root_layer_impl_.get(), viewport_size, &layer_list);
+      root_layer_impl_.get(), viewport_size, &layer_list,
+      host_->host_impl()->active_tree()->current_render_surface_list_id());
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 }
 
@@ -142,9 +144,8 @@ void LayerTestCommon::LayerImplTest::AppendQuadsWithOcclusion(
   render_pass_->quad_list.clear();
   render_pass_->shared_quad_state_list.clear();
 
-  Occlusion occlusion(layer_impl->draw_transform(),
-                      SimpleEnclosedRegion(occluded),
-                      SimpleEnclosedRegion());
+  Occlusion occlusion(layer_impl->DrawTransform(),
+                      SimpleEnclosedRegion(occluded), SimpleEnclosedRegion());
   layer_impl->draw_properties().occlusion_in_content_space = occlusion;
 
   layer_impl->WillDraw(DRAW_MODE_HARDWARE, resource_provider());
@@ -161,9 +162,8 @@ void LayerTestCommon::LayerImplTest::AppendQuadsForPassWithOcclusion(
   given_render_pass->quad_list.clear();
   given_render_pass->shared_quad_state_list.clear();
 
-  Occlusion occlusion(layer_impl->draw_transform(),
-                      SimpleEnclosedRegion(occluded),
-                      SimpleEnclosedRegion());
+  Occlusion occlusion(layer_impl->DrawTransform(),
+                      SimpleEnclosedRegion(occluded), SimpleEnclosedRegion());
   layer_impl->draw_properties().occlusion_in_content_space = occlusion;
 
   layer_impl->WillDraw(DRAW_MODE_HARDWARE, resource_provider());

@@ -139,8 +139,10 @@ TEST_F(LayerIteratorTest, SimpleTree) {
   host_impl_.active_tree()->SetRootLayer(std::move(root_layer));
 
   LayerImplList render_surface_layer_list;
+  host_impl_.active_tree()->IncrementRenderSurfaceListIdForTesting();
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root_ptr, root_ptr->bounds(), &render_surface_layer_list);
+      root_ptr, root_ptr->bounds(), &render_surface_layer_list,
+      host_impl_.active_tree()->current_render_surface_list_id());
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
   IterateFrontToBack(&render_surface_layer_list);
@@ -185,8 +187,10 @@ TEST_F(LayerIteratorTest, ComplexTree) {
   host_impl_.active_tree()->SetRootLayer(std::move(root_layer));
 
   LayerImplList render_surface_layer_list;
+  host_impl_.active_tree()->IncrementRenderSurfaceListIdForTesting();
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root_ptr, root_ptr->bounds(), &render_surface_layer_list);
+      root_ptr, root_ptr->bounds(), &render_surface_layer_list,
+      host_impl_.active_tree()->current_render_surface_list_id());
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
   IterateFrontToBack(&render_surface_layer_list);
@@ -239,8 +243,10 @@ TEST_F(LayerIteratorTest, ComplexTreeMultiSurface) {
   host_impl_.active_tree()->SetRootLayer(std::move(root_layer));
 
   LayerImplList render_surface_layer_list;
+  host_impl_.active_tree()->IncrementRenderSurfaceListIdForTesting();
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root_ptr, root_ptr->bounds(), &render_surface_layer_list);
+      root_ptr, root_ptr->bounds(), &render_surface_layer_list,
+      host_impl_.active_tree()->current_render_surface_list_id());
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
   IterateFrontToBack(&render_surface_layer_list);

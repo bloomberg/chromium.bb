@@ -107,10 +107,12 @@ class CC_EXPORT LayerTreeHostCommon {
     CalcDrawPropsImplInputsForTesting(LayerImpl* root_layer,
                                       const gfx::Size& device_viewport_size,
                                       const gfx::Transform& device_transform,
-                                      LayerImplList* render_surface_layer_list);
+                                      LayerImplList* render_surface_layer_list,
+                                      int current_render_surface_layer_list_id);
     CalcDrawPropsImplInputsForTesting(LayerImpl* root_layer,
                                       const gfx::Size& device_viewport_size,
-                                      LayerImplList* render_surface_layer_list);
+                                      LayerImplList* render_surface_layer_list,
+                                      int current_render_surface_layer_list_id);
   };
 
   static void UpdateRenderSurfaces(Layer* root_layer,

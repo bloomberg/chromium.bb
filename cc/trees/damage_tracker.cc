@@ -298,7 +298,7 @@ void DamageTracker::ExtendDamageForLayer(LayerImpl* layer,
   damage_rect.Intersect(gfx::Rect(layer->bounds()));
   if (!damage_rect.IsEmpty()) {
     gfx::Rect damage_rect_in_target_space =
-        MathUtil::MapEnclosingClippedRect(layer->draw_transform(), damage_rect);
+        MathUtil::MapEnclosingClippedRect(layer->DrawTransform(), damage_rect);
     target_damage_rect->Union(damage_rect_in_target_space);
   }
 }

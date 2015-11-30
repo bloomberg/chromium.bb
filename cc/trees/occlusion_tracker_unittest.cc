@@ -60,7 +60,7 @@ class TestOcclusionTrackerWithClip : public TestOcclusionTracker {
   bool OccludedLayer(const LayerImpl* layer,
                      const gfx::Rect& content_rect) const {
     DCHECK(layer->visible_layer_rect().Contains(content_rect));
-    return this->GetCurrentOcclusionForLayer(layer->draw_transform())
+    return this->GetCurrentOcclusionForLayer(layer->DrawTransform())
         .IsOccluded(content_rect);
   }
 
@@ -69,7 +69,7 @@ class TestOcclusionTrackerWithClip : public TestOcclusionTracker {
   gfx::Rect UnoccludedLayerContentRect(const LayerImpl* layer,
                                        const gfx::Rect& content_rect) const {
     DCHECK(layer->visible_layer_rect().Contains(content_rect));
-    return this->GetCurrentOcclusionForLayer(layer->draw_transform())
+    return this->GetCurrentOcclusionForLayer(layer->DrawTransform())
         .GetUnoccludedContentRect(content_rect);
   }
 
@@ -226,8 +226,10 @@ class OcclusionTrackerTest : public testing::Test {
 
     FakeLayerTreeHostImpl::RecursiveUpdateNumChildren(root);
 
+    root->layer_tree_impl()->IncrementRenderSurfaceListIdForTesting();
     LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-        root, root->bounds(), &render_surface_layer_list_impl_);
+        root, root->bounds(), &render_surface_layer_list_impl_,
+        root->layer_tree_impl()->current_render_surface_list_id());
     inputs.can_adjust_raster_scales = true;
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 

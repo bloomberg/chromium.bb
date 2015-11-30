@@ -361,8 +361,9 @@ void OcclusionTracker::MarkOccludedBehindLayer(const LayerImpl* layer) {
 
   DCHECK(layer->visible_layer_rect().Contains(opaque_layer_region.bounds()));
 
+  gfx::Transform draw_transform = layer->DrawTransform();
   // TODO(danakj): Find a rect interior to each transformed quad.
-  if (!layer->draw_transform().Preserves2dAxisAlignment())
+  if (!draw_transform.Preserves2dAxisAlignment())
     return;
 
   gfx::Rect clip_rect_in_target = ScreenSpaceClipRectInTargetSurface(
@@ -377,7 +378,7 @@ void OcclusionTracker::MarkOccludedBehindLayer(const LayerImpl* layer) {
   for (size_t i = 0; i < opaque_layer_region.GetRegionComplexity(); ++i) {
     gfx::Rect transformed_rect =
         MathUtil::MapEnclosedRectWith2dAxisAlignedTransform(
-            layer->draw_transform(), opaque_layer_region.GetRect(i));
+            draw_transform, opaque_layer_region.GetRect(i));
     transformed_rect.Intersect(clip_rect_in_target);
     if (transformed_rect.width() < minimum_tracking_size_.width() &&
         transformed_rect.height() < minimum_tracking_size_.height())

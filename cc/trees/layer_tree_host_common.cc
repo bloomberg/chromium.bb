@@ -110,7 +110,8 @@ LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting::
     CalcDrawPropsImplInputsForTesting(LayerImpl* root_layer,
                                       const gfx::Size& device_viewport_size,
                                       const gfx::Transform& device_transform,
-                                      LayerImplList* render_surface_layer_list)
+                                      LayerImplList* render_surface_layer_list,
+                                      int current_render_surface_layer_list_id)
     : CalcDrawPropsImplInputs(root_layer,
                               device_viewport_size,
                               device_transform,
@@ -129,7 +130,7 @@ LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting::
                               true,
                               false,
                               render_surface_layer_list,
-                              0,
+                              current_render_surface_layer_list_id,
                               GetPropertyTrees(root_layer)) {
   DCHECK(root_layer);
   DCHECK(render_surface_layer_list);
@@ -138,11 +139,13 @@ LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting::
 LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting::
     CalcDrawPropsImplInputsForTesting(LayerImpl* root_layer,
                                       const gfx::Size& device_viewport_size,
-                                      LayerImplList* render_surface_layer_list)
+                                      LayerImplList* render_surface_layer_list,
+                                      int current_render_surface_layer_list_id)
     : CalcDrawPropsImplInputsForTesting(root_layer,
                                         device_viewport_size,
                                         gfx::Transform(),
-                                        render_surface_layer_list) {}
+                                        render_surface_layer_list,
+                                        current_render_surface_layer_list_id) {}
 
 ScrollAndScaleSet::ScrollAndScaleSet()
     : page_scale_delta(1.f), top_controls_delta(0.f) {
@@ -458,7 +461,8 @@ static bool IsLayerBackFaceVisible(LayerImpl* layer,
       return DrawTransformFromPropertyTrees(layer, transform_tree)
           .IsBackFaceVisible();
     } else {
-      return layer->draw_transform().IsBackFaceVisible();
+      return layer->draw_properties()
+          .target_space_transform.IsBackFaceVisible();
     }
   }
 
@@ -524,7 +528,8 @@ static gfx::Rect CalculateVisibleLayerRect(
 
   return CalculateVisibleRectWithCachedLayerRect(
       visible_rect_in_target_surface_space, gfx::Rect(layer->bounds()),
-      layer_rect_in_target_space, layer->draw_transform());
+      layer_rect_in_target_space,
+      layer->draw_properties().target_space_transform);
 }
 
 static bool LayerShouldBeSkipped(LayerImpl* layer,
@@ -787,7 +792,7 @@ gfx::Transform ComputeSizeDeltaCompensation(
   }
   // Calculate step 1b
   gfx::Transform container_layer_space_to_container_target_surface_space =
-      container->draw_transform();
+      container->draw_properties().target_space_transform;
   gfx::Transform container_target_surface_space_to_container_layer_space;
   if (container_layer_space_to_container_target_surface_space.GetInverse(
       &container_target_surface_space_to_container_layer_space)) {
@@ -1952,7 +1957,8 @@ static void CalculateDrawPropertiesInternal(
   // The layer bounds() includes the layer's bounds_delta() which we want
   // for the clip rect.
   gfx::Rect rect_in_target_space = MathUtil::MapEnclosingClippedRect(
-      layer->draw_transform(), gfx::Rect(layer->bounds()));
+      layer->draw_properties().target_space_transform,
+      gfx::Rect(layer->bounds()));
 
   if (LayerClipsSubtree(layer)) {
     layer_or_ancestor_clips_descendants = true;
@@ -2353,9 +2359,11 @@ void VerifyPropertyTreeValuesForLayer(LayerImpl* current_layer,
       << " actual: " << draw_properties.visible_layer_rect.ToString();
 
   const bool draw_transforms_match = ApproximatelyEqual(
-      current_layer->draw_transform(), draw_properties.target_space_transform);
+      current_layer->draw_properties().target_space_transform,
+      draw_properties.target_space_transform);
   CHECK(draw_transforms_match)
-      << "expected: " << current_layer->draw_transform().ToString()
+      << "expected: "
+      << current_layer->draw_properties().target_space_transform.ToString()
       << " actual: " << draw_properties.target_space_transform.ToString();
 
   CHECK_EQ(current_layer->draw_opacity(), draw_properties.opacity);
@@ -2705,6 +2713,9 @@ void CalculateRenderTarget(
 void CalculateRenderSurfaceLayerList(
     LayerTreeHostCommon::CalcDrawPropsImplInputs* inputs) {
   const bool subtree_visible_from_ancestor = true;
+  DCHECK_EQ(
+      inputs->current_render_surface_layer_list_id,
+      inputs->root_layer->layer_tree_impl()->current_render_surface_list_id());
   CalculateRenderSurfaceLayerListInternal(
       inputs->root_layer, inputs->property_trees,
       inputs->render_surface_layer_list, nullptr, nullptr,
@@ -2717,7 +2728,8 @@ static void ComputeMaskLayerDrawProperties(const LayerImpl* layer,
                                            LayerImpl* mask_layer) {
   DrawProperties& mask_layer_draw_properties = mask_layer->draw_properties();
   mask_layer_draw_properties.visible_layer_rect = gfx::Rect(layer->bounds());
-  mask_layer_draw_properties.target_space_transform = layer->draw_transform();
+  mask_layer_draw_properties.target_space_transform =
+      layer->draw_properties().target_space_transform;
   mask_layer_draw_properties.maximum_animation_contents_scale =
       layer->draw_properties().maximum_animation_contents_scale;
   mask_layer_draw_properties.starting_animation_contents_scale =

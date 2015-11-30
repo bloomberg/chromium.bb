@@ -930,7 +930,7 @@ class LayerTreeHostAnimationTestPendingTreeAnimatesFirstCommit
     // starting state which is 6,7.
     gfx::Transform expected_transform;
     expected_transform.Translate(6.0, 7.0);
-    EXPECT_EQ(expected_transform, child->draw_transform());
+    EXPECT_EQ(expected_transform, child->DrawTransform());
     // And the sync tree layer should know it is animating.
     EXPECT_TRUE(child->screen_space_transform_is_animating());
 
@@ -1111,7 +1111,7 @@ class LayerTreeHostAnimationTestRemoveAnimation
         // applied.
         gfx::Transform expected_transform;
         expected_transform.Translate(10.f, 10.f);
-        EXPECT_EQ(expected_transform, child->draw_transform());
+        EXPECT_EQ(expected_transform, child->DrawTransform());
         EXPECT_FALSE(child->screen_space_transform_is_animating());
         EndTest();
         break;
@@ -1250,7 +1250,7 @@ class LayerTreeHostAnimationTestAnimationFinishesDuringCommit
         expected_transform.Translate(5.f, 5.f);
         LayerImpl* layer_impl =
             host_impl->sync_tree()->root_layer()->children()[0].get();
-        EXPECT_EQ(expected_transform, layer_impl->draw_transform());
+        EXPECT_EQ(expected_transform, layer_impl->DrawTransform());
         EndTest();
         break;
     }

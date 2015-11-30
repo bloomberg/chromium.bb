@@ -1371,12 +1371,18 @@ TEST_F(PictureLayerImplTest, DontAddLowResForSmallLayers) {
           host_impl_.pending_tree(), 3, pending_raster_source);
   mask->SetBounds(layer_bounds);
   mask->SetDrawsContent(true);
+  pending_layer_->SetMaskLayer(std::move(mask));
+  pending_layer_->SetHasRenderSurface(true);
+  RebuildPropertyTreesOnPendingTree();
+  host_impl_.pending_tree()->UpdateDrawProperties(false);
 
+  FakePictureLayerImpl* mask_raw =
+      static_cast<FakePictureLayerImpl*>(pending_layer_->mask_layer());
   SetupDrawPropertiesAndUpdateTiles(
-      mask.get(), contents_scale, device_scale, page_scale,
+      mask_raw, contents_scale, device_scale, page_scale,
       maximum_animation_scale, starting_animation_scale, animating_transform);
-  EXPECT_EQ(mask->HighResTiling()->contents_scale(), contents_scale);
-  EXPECT_EQ(mask->num_tilings(), 1u);
+  EXPECT_EQ(mask_raw->HighResTiling()->contents_scale(), contents_scale);
+  EXPECT_EQ(mask_raw->num_tilings(), 1u);
 }
 
 TEST_F(PictureLayerImplTest, HugeMasksGetScaledDown) {
@@ -3831,7 +3837,7 @@ TEST_F(PictureLayerImplTest, SharedQuadStateContainsMaxTilingScale) {
   float max_contents_scale = active_layer_->MaximumTilingContentsScale();
   EXPECT_EQ(2.5f, max_contents_scale);
 
-  gfx::Transform scaled_draw_transform = active_layer_->draw_transform();
+  gfx::Transform scaled_draw_transform = active_layer_->DrawTransform();
   scaled_draw_transform.Scale(SK_MScalar1 / max_contents_scale,
                               SK_MScalar1 / max_contents_scale);
 

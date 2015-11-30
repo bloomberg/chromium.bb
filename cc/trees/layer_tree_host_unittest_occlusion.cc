@@ -56,11 +56,11 @@ class LayerTreeHostOcclusionTestDrawPropertiesOnLayer
     EXPECT_TRUE(child->IsDrawnRenderSurfaceLayerListMember());
 
     EXPECT_OCCLUSION_EQ(
-        Occlusion(child->draw_transform(), SimpleEnclosedRegion(),
+        Occlusion(child->DrawTransform(), SimpleEnclosedRegion(),
                   SimpleEnclosedRegion()),
         child->draw_properties().occlusion_in_content_space);
     EXPECT_OCCLUSION_EQ(
-        Occlusion(root->draw_transform(), SimpleEnclosedRegion(),
+        Occlusion(root->DrawTransform(), SimpleEnclosedRegion(),
                   SimpleEnclosedRegion(gfx::Rect(10, 6, 50, 59))),
         root->draw_properties().occlusion_in_content_space);
     EndTest();
@@ -176,7 +176,7 @@ class LayerTreeHostOcclusionTestDrawPropertiesOnMask
     EXPECT_EQ(child, child->render_target());
 
     gfx::Transform transform = surface->draw_transform();
-    transform.PreconcatTransform(child->draw_transform());
+    transform.PreconcatTransform(child->DrawTransform());
 
     EXPECT_OCCLUSION_EQ(
         Occlusion(transform, SimpleEnclosedRegion(),
@@ -191,6 +191,72 @@ class LayerTreeHostOcclusionTestDrawPropertiesOnMask
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostOcclusionTestDrawPropertiesOnMask);
+
+// Verify occlusion is correctly set on scaled mask layers.
+class LayerTreeHostOcclusionTestDrawPropertiesOnScaledMask
+    : public LayerTreeHostOcclusionTest {
+ public:
+  void SetupTree() override {
+    scoped_refptr<Layer> root = Layer::Create(layer_settings());
+    root->SetBounds(gfx::Size(100, 100));
+    root->SetIsDrawable(true);
+
+    gfx::Transform scale;
+    scale.Scale(2, 2);
+
+    scoped_refptr<Layer> child = Layer::Create(layer_settings());
+    child->SetBounds(gfx::Size(30, 40));
+    child->SetTransform(scale);
+    root->AddChild(child);
+
+    scoped_refptr<Layer> grand_child = Layer::Create(layer_settings());
+    grand_child->SetBounds(gfx::Size(100, 100));
+    grand_child->SetPosition(gfx::PointF(-10.f, -15.f));
+    grand_child->SetIsDrawable(true);
+    child->AddChild(grand_child);
+
+    scoped_refptr<Layer> mask =
+        PictureLayer::Create(layer_settings(), &client_);
+    mask->SetBounds(gfx::Size(30, 40));
+    mask->SetIsDrawable(true);
+    child->SetMaskLayer(mask.get());
+
+    scoped_refptr<Layer> child2 = Layer::Create(layer_settings());
+    child2->SetBounds(gfx::Size(10, 11));
+    child2->SetPosition(gfx::PointF(13.f, 15.f));
+    child2->SetContentsOpaque(true);
+    child2->SetIsDrawable(true);
+    root->AddChild(child2);
+
+    layer_tree_host()->SetRootLayer(root);
+    LayerTreeTest::SetupTree();
+    client_.set_bounds(root->bounds());
+  }
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
+    LayerImpl* root = impl->active_tree()->root_layer();
+    LayerImpl* child = root->children()[0].get();
+    LayerImpl* mask = child->mask_layer();
+
+    gfx::Transform scale;
+    scale.Scale(2, 2);
+
+    EXPECT_OCCLUSION_EQ(
+        Occlusion(scale, SimpleEnclosedRegion(),
+                  SimpleEnclosedRegion(gfx::Rect(13, 15, 10, 11))),
+        mask->draw_properties().occlusion_in_content_space);
+    EndTest();
+  }
+
+  void AfterTest() override {}
+
+  FakeContentLayerClient client_;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(
+    LayerTreeHostOcclusionTestDrawPropertiesOnScaledMask);
 
 // Verify occlusion is set to empty inside the subtree of a replica. This is
 // done because the tile system does not know about replicas, and so would not

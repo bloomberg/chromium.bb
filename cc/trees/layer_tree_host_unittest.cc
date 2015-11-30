@@ -1700,7 +1700,7 @@ class LayerTreeHostTestDeviceScaleFactorScalesViewportAndLayers
     gfx::Transform root_screen_space_transform = scale_transform;
     gfx::Transform root_draw_transform = scale_transform;
 
-    EXPECT_EQ(root_draw_transform, root->draw_transform());
+    EXPECT_EQ(root_draw_transform, root->DrawTransform());
     EXPECT_EQ(root_screen_space_transform, root->screen_space_transform());
 
     // The child is at position 2,2, which is transformed to 3,3 after the scale
@@ -1709,7 +1709,7 @@ class LayerTreeHostTestDeviceScaleFactorScalesViewportAndLayers
     child_transform.Scale(child->MaximumTilingContentsScale(),
                           child->MaximumTilingContentsScale());
 
-    EXPECT_TRANSFORMATION_MATRIX_EQ(child_transform, child->draw_transform());
+    EXPECT_TRANSFORMATION_MATRIX_EQ(child_transform, child->DrawTransform());
     EXPECT_TRANSFORMATION_MATRIX_EQ(child_transform,
                                     child->screen_space_transform());
 

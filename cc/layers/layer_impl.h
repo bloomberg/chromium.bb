@@ -385,11 +385,10 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   DrawProperties& draw_properties() { return draw_properties_; }
   const DrawProperties& draw_properties() const { return draw_properties_; }
 
+  gfx::Transform DrawTransform() const;
+
   // The following are shortcut accessors to get various information from
   // draw_properties_
-  const gfx::Transform& draw_transform() const {
-    return draw_properties_.target_space_transform;
-  }
   const gfx::Transform& screen_space_transform() const {
     return draw_properties_.screen_space_transform;
   }

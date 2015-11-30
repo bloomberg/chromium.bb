@@ -414,7 +414,7 @@ void DelegatedRendererLayerImpl::AppendRenderPassQuads(
   const SharedQuadState* delegated_shared_quad_state = nullptr;
   SharedQuadState* output_shared_quad_state = nullptr;
 
-  gfx::Transform delegated_frame_to_target_transform = draw_transform();
+  gfx::Transform delegated_frame_to_target_transform = DrawTransform();
   delegated_frame_to_target_transform.Scale(inverse_device_scale_factor_,
                                             inverse_device_scale_factor_);
   bool is_root_delegated_render_pass =

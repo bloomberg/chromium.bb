@@ -45,6 +45,7 @@
 #include "cc/test/begin_frame_args_test.h"
 #include "cc/test/fake_display_list_raster_source.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
+#include "cc/test/fake_mask_layer_impl.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_output_surface_client.h"
 #include "cc/test/fake_picture_layer_impl.h"
@@ -4361,16 +4362,16 @@ TEST_F(LayerTreeHostImplTest, PageScaleDeltaAppliedToRootScrollLayerOnly) {
   host_impl_->DrawLayers(&frame);
   host_impl_->DidDrawAllLayers(frame);
 
-  EXPECT_EQ(1.f, root->draw_transform().matrix().getDouble(0, 0));
-  EXPECT_EQ(1.f, root->draw_transform().matrix().getDouble(1, 1));
-  EXPECT_EQ(new_page_scale, scroll->draw_transform().matrix().getDouble(0, 0));
-  EXPECT_EQ(new_page_scale, scroll->draw_transform().matrix().getDouble(1, 1));
-  EXPECT_EQ(new_page_scale, child->draw_transform().matrix().getDouble(0, 0));
-  EXPECT_EQ(new_page_scale, child->draw_transform().matrix().getDouble(1, 1));
+  EXPECT_EQ(1.f, root->DrawTransform().matrix().getDouble(0, 0));
+  EXPECT_EQ(1.f, root->DrawTransform().matrix().getDouble(1, 1));
+  EXPECT_EQ(new_page_scale, scroll->DrawTransform().matrix().getDouble(0, 0));
+  EXPECT_EQ(new_page_scale, scroll->DrawTransform().matrix().getDouble(1, 1));
+  EXPECT_EQ(new_page_scale, child->DrawTransform().matrix().getDouble(0, 0));
+  EXPECT_EQ(new_page_scale, child->DrawTransform().matrix().getDouble(1, 1));
   EXPECT_EQ(new_page_scale,
-            grand_child->draw_transform().matrix().getDouble(0, 0));
+            grand_child->DrawTransform().matrix().getDouble(0, 0));
   EXPECT_EQ(new_page_scale,
-            grand_child->draw_transform().matrix().getDouble(1, 1));
+            grand_child->DrawTransform().matrix().getDouble(1, 1));
 }
 
 TEST_F(LayerTreeHostImplTest, ScrollChildAndChangePageScaleOnMainThread) {
@@ -6611,23 +6612,6 @@ TEST_F(LayerTreeHostImplTestWithDelegatingRenderer, PreventRasterizeOnDemand) {
   CreateHostImpl(settings, CreateOutputSurface());
   EXPECT_FALSE(host_impl_->GetRendererCapabilities().allow_rasterize_on_demand);
 }
-
-class FakeMaskLayerImpl : public LayerImpl {
- public:
-  static scoped_ptr<FakeMaskLayerImpl> Create(LayerTreeImpl* tree_impl,
-                                              int id) {
-    return make_scoped_ptr(new FakeMaskLayerImpl(tree_impl, id));
-  }
-
-  void GetContentsResourceId(ResourceId* resource_id,
-                             gfx::Size* resource_size) const override {
-    *resource_id = 0;
-  }
-
- private:
-  FakeMaskLayerImpl(LayerTreeImpl* tree_impl, int id)
-      : LayerImpl(tree_impl, id) {}
-};
 
 class GLRendererWithSetupQuadForAntialiasing : public GLRenderer {
  public:

@@ -4,6 +4,9 @@
 
 #include "cc/layers/render_surface_impl.h"
 
+#include "cc/layers/append_quads_data.h"
+#include "cc/quads/render_pass_draw_quad.h"
+#include "cc/test/fake_mask_layer_impl.h"
 #include "cc/test/layer_test_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -57,6 +60,57 @@ TEST(RenderSurfaceLayerImplTest, Occlusion) {
     EXPECT_EQ(1u, impl.quad_list().size());
     EXPECT_EQ(1u, partially_occluded_count);
   }
+}
+
+TEST(RenderSurfaceLayerImplTest, AppendQuadsWithScaledMask) {
+  gfx::Size layer_size(1000, 1000);
+  gfx::Size viewport_size(1000, 1000);
+
+  LayerTestCommon::LayerImplTest impl;
+  scoped_ptr<LayerImpl> root =
+      LayerImpl::Create(impl.host_impl()->active_tree(), 2);
+  root->SetHasRenderSurface(true);
+  scoped_ptr<LayerImpl> surface =
+      LayerImpl::Create(impl.host_impl()->active_tree(), 3);
+  surface->SetBounds(layer_size);
+  surface->SetHasRenderSurface(true);
+
+  gfx::Transform scale;
+  scale.Scale(2, 2);
+  surface->SetTransform(scale);
+
+  surface->SetMaskLayer(
+      FakeMaskLayerImpl::Create(impl.host_impl()->active_tree(), 4));
+  surface->mask_layer()->SetDrawsContent(true);
+  surface->mask_layer()->SetBounds(layer_size);
+
+  scoped_ptr<LayerImpl> child =
+      LayerImpl::Create(impl.host_impl()->active_tree(), 5);
+  child->SetDrawsContent(true);
+  child->SetBounds(layer_size);
+
+  surface->AddChild(std::move(child));
+  root->AddChild(std::move(surface));
+  impl.host_impl()->active_tree()->SetRootLayer(std::move(root));
+
+  impl.host_impl()->SetViewportSize(viewport_size);
+  impl.host_impl()->active_tree()->BuildPropertyTreesForTesting();
+  impl.host_impl()->active_tree()->UpdateDrawProperties(false);
+
+  LayerImpl* surface_raw =
+      impl.host_impl()->active_tree()->root_layer()->children()[0].get();
+  RenderSurfaceImpl* render_surface_impl = surface_raw->render_surface();
+  scoped_ptr<RenderPass> render_pass = RenderPass::Create();
+  AppendQuadsData append_quads_data;
+  render_surface_impl->AppendQuads(
+      render_pass.get(), render_surface_impl->draw_transform(), Occlusion(),
+      SK_ColorBLACK, 1.f, surface_raw->mask_layer(), &append_quads_data,
+      RenderPassId(1, 1));
+
+  const RenderPassDrawQuad* quad =
+      RenderPassDrawQuad::MaterialCast(render_pass->quad_list.front());
+  EXPECT_EQ(gfx::Vector2dF(1.f, 1.f), quad->mask_uv_scale);
+  EXPECT_EQ(gfx::Vector2dF(2.f, 2.f), quad->filters_scale);
 }
 
 }  // namespace
