@@ -157,6 +157,8 @@ void GlobalConfirmInfoBar::TabInsertedAt(content::WebContents* web_contents,
       InfoBarService::FromWebContents(web_contents);
   // WebContents from the tab strip must have the infobar service.
   DCHECK(infobar_service);
+  if (proxies_.find(infobar_service) != proxies_.end())
+      return;
 
   scoped_ptr<GlobalConfirmInfoBar::DelegateProxy> proxy(
       new GlobalConfirmInfoBar::DelegateProxy(weak_factory_.GetWeakPtr()));
