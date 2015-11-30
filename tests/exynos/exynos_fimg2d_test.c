@@ -675,7 +675,7 @@ int main(int argc, char **argv)
 	offsets[0] = 0;
 
 	ret = drmModeAddFB2(dev->fd, screen_width, screen_height,
-				DRM_FORMAT_RGBA8888, handles,
+				DRM_FORMAT_XRGB8888, handles,
 				pitches, offsets, &fb_id, 0);
 	if (ret < 0)
 		goto err_destroy_buffer;
