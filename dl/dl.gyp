@@ -19,6 +19,13 @@
     'conditions' : [
       ['target_arch=="arm"', {
         'conditions' : [
+          ['clang==1', {
+            # TODO(hans) Enable integrated-as (crbug.com/124610).
+            'cflags': [
+              '-fno-integrated-as',
+              '-B<(android_toolchain)',  # Else /usr/bin/as gets picked up.
+            ],
+          }],
           ['arm_neon==1', {
             # Enable build-time NEON selection.
             'defines': ['DL_ARM_NEON',],
