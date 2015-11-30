@@ -1047,15 +1047,16 @@ class PLATFORM_EXPORT DummyBase<void> { };
 
 template<typename T> T* adoptRefWillBeNoop(T* ptr)
 {
-    static const bool notRefCounted = !WTF::IsSubclassOfTemplate<typename std::remove_const<T>::type, RefCounted>::value;
-    static_assert(notRefCounted, "you must adopt");
+    static const bool isGarbageCollected = IsGarbageCollectedType<T>::value;
+    static const bool isRefCounted = WTF::IsSubclassOfTemplate<typename std::remove_const<T>::type, RefCounted>::value;
+    static_assert(isGarbageCollected && !isRefCounted, "T needs to be a non-refcounted, garbage collected type.");
     return ptr;
 }
 
 template<typename T> T* adoptPtrWillBeNoop(T* ptr)
 {
-    static const bool notRefCounted = !WTF::IsSubclassOfTemplate<typename std::remove_const<T>::type, RefCounted>::value;
-    static_assert(notRefCounted, "you must adopt");
+    static const bool isGarbageCollected = IsGarbageCollectedType<T>::value;
+    static_assert(isGarbageCollected, "T needs to be a garbage collected type.");
     return ptr;
 }
 
