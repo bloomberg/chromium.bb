@@ -25,12 +25,6 @@ class WebUIDataSource {
 
   CONTENT_EXPORT static WebUIDataSource* Create(const std::string& source_name);
 
-  // Adds the necessary resources for mojo bindings returning the
-  // WebUIDataSource that handles the resources. Callers do not own the return
-  // value.
-  CONTENT_EXPORT static WebUIDataSource* AddMojoDataSource(
-      BrowserContext* browser_context);
-
   // Adds a WebUI data source to |browser_context|.
   CONTENT_EXPORT static void Add(BrowserContext* browser_context,
                                  WebUIDataSource* source);
@@ -76,6 +70,9 @@ class WebUIDataSource {
 
   // Allows a caller to add a filter for URL requests.
   virtual void SetRequestFilter(const HandleRequestCallback& callback) = 0;
+
+  // Adds the necessary resources for mojo bindings.
+  virtual void AddMojoResources() = 0;
 
   // The following map to methods on URLDataSource. See the documentation there.
   // NOTE: it's not acceptable to call DisableContentSecurityPolicy for new

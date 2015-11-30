@@ -14,16 +14,16 @@
 
 OmniboxUI::OmniboxUI(content::WebUI* web_ui) : MojoWebUIController(web_ui) {
   // Set up the chrome://omnibox/ source.
-  content::WebUIDataSource* html_source =
+  content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIOmniboxHost);
-  html_source->AddResourcePath("omnibox.css", IDR_OMNIBOX_CSS);
-  html_source->AddResourcePath("omnibox.js", IDR_OMNIBOX_JS);
-  html_source->SetDefaultResource(IDR_OMNIBOX_HTML);
+  source->AddResourcePath("omnibox.css", IDR_OMNIBOX_CSS);
+  source->AddResourcePath("omnibox.js", IDR_OMNIBOX_JS);
+  source->AddResourcePath("chrome/browser/ui/webui/omnibox/omnibox.mojom",
+                          IDR_OMNIBOX_MOJO_JS);
+  source->AddMojoResources();
+  source->SetDefaultResource(IDR_OMNIBOX_HTML);
 
-  content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), html_source);
-
-  AddMojoResourcePath("chrome/browser/ui/webui/omnibox/omnibox.mojom",
-                      IDR_OMNIBOX_MOJO_JS);
+  content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
 }
 
 OmniboxUI::~OmniboxUI() {}

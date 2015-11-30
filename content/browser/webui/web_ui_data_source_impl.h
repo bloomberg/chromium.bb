@@ -38,6 +38,7 @@ class CONTENT_EXPORT WebUIDataSourceImpl
   void SetDefaultResource(int resource_id) override;
   void SetRequestFilter(
       const WebUIDataSource::HandleRequestCallback& callback) override;
+  void AddMojoResources() override;
   void DisableReplaceExistingSource() override;
   void DisableContentSecurityPolicy() override;
   void OverrideContentSecurityPolicyObjectSrc(const std::string& data) override;

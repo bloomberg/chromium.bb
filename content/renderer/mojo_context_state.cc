@@ -17,6 +17,7 @@
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebScriptSource.h"
+#include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 
 using v8::Context;
 using v8::HandleScope;
@@ -28,10 +29,6 @@ using v8::Script;
 namespace content {
 
 namespace {
-
-// All modules have this prefixed to them when downloading.
-// TODO(sky): move this into some common place.
-const char kModulePrefix[] = "chrome://mojo/";
 
 void RunMain(base::WeakPtr<gin::Runner> runner,
              v8::Local<v8::Value> module) {
@@ -46,7 +43,8 @@ void RunMain(base::WeakPtr<gin::Runner> runner,
 MojoContextState::MojoContextState(blink::WebFrame* frame,
                                    v8::Local<v8::Context> context)
     : frame_(frame),
-      module_added_(false) {
+      module_added_(false),
+      module_prefix_(frame_->securityOrigin().toString().utf8() + "/") {
   gin::PerContextData* context_data = gin::PerContextData::From(context);
   gin::ContextHolder* context_holder = context_data->context_holder();
   runner_.reset(new MojoMainRunner(frame_, context_holder));
@@ -87,7 +85,7 @@ void MojoContextState::FetchModules(const std::vector<std::string>& ids) {
 }
 
 void MojoContextState::FetchModule(const std::string& id) {
-  const GURL url(kModulePrefix + id);
+  const GURL url(module_prefix_ + id);
   // TODO(sky): better error checks here?
   DCHECK(url.is_valid() && !url.is_empty());
   DCHECK(fetched_modules_.find(id) == fetched_modules_.end());
@@ -106,10 +104,10 @@ void MojoContextState::OnFetchModuleComplete(
     ResourceFetcher* fetcher,
     const blink::WebURLResponse& response,
     const std::string& data) {
-  DCHECK_EQ(kModulePrefix,
-      response.url().string().utf8().substr(0, arraysize(kModulePrefix) - 1));
+  DCHECK_EQ(module_prefix_,
+            response.url().string().utf8().substr(0, module_prefix_.size()));
   const std::string module =
-      response.url().string().utf8().substr(arraysize(kModulePrefix) - 1);
+      response.url().string().utf8().substr(module_prefix_.size());
   // We can't delete fetch right now as the arguments to this function come from
   // it and are used below. Instead use a scope_ptr to cleanup.
   scoped_ptr<ResourceFetcher> deleter(fetcher);
