@@ -61,7 +61,6 @@ class PageHandler : public NotificationObserver {
 
   Response CaptureScreenshot(DevToolsCommandId command_id);
 
-  Response CanScreencast(bool* result);
   Response StartScreencast(const std::string* format,
                            const int* quality,
                            const int* max_width,

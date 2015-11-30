@@ -277,15 +277,6 @@ Response PageHandler::CaptureScreenshot(DevToolsCommandId command_id) {
   return Response::OK();
 }
 
-Response PageHandler::CanScreencast(bool* result) {
-#if defined(OS_ANDROID)
-  *result = true;
-#else
-  *result = false;
-#endif  // defined(OS_ANDROID)
-  return Response::OK();
-}
-
 Response PageHandler::StartScreencast(const std::string* format,
                                       const int* quality,
                                       const int* max_width,
