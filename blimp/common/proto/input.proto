@@ -4,8 +4,8 @@
 //
 // Message definitions for the input subprotocol.
 //
-// Current definitions are just placeholders and are NOT final.
-// Feel free to modify this interface as necessary during feature work.
+// The InputMessage protobuf generally carries web input events.  Currently we
+// just serialize the blink::WebInputEvent POD struct.
 
 syntax = "proto2";
 
@@ -15,25 +15,83 @@ import "common.proto";
 
 package blimp;
 
-message ClickArgs {
-  optional CoordinatePair target = 1;
+message GestureCommon {
+  optional int64 x = 1;
+  optional int64 y = 2;
+  optional int64 global_x = 3;
+  optional int64 global_y = 4;
 }
 
-message DragArgs {
-  optional CoordinatePair origin = 1;
-  optional CoordinatePair destination = 2;
-  optional CoordinatePair elastic_overscroll = 3;
+message GestureScrollBegin {
+  optional float delta_x_hint = 1;
+  optional float delta_y_hint = 2;
+  optional bool target_viewport = 3;
+}
+
+message GestureScrollUpdate {
+  optional float delta_x = 1;
+  optional float delta_y = 2;
+  optional float velocity_x = 3;
+  optional float velocity_y = 4;
+  optional bool previous_update_in_sequence_prevented = 5;
+  optional bool prevent_propagation = 6;
+  optional bool inertial = 7;
+}
+
+message GestureFlingStart {
+  optional float velocity_x = 1;
+  optional float velocity_y = 2;
+  optional bool target_viewport = 3;
+}
+
+message GestureFlingCancel {
+  optional bool prevent_boosting = 1;
+}
+
+message GestureTap {
+  optional int32 tap_count = 1;
+  optional float width = 2;
+  optional float height = 3;
+}
+
+message GesturePinchUpdate {
+  optional bool zoom_disabled = 1;
+  optional float scale = 2;
 }
 
 message InputMessage {
   enum Type {
     UNKNOWN = 0;
-    CLICK = 1;
-    DRAG = 2;
+
+    // This is a subset of WebGestureType events.  We only support a small set
+    // of these with the existing protocol.
+    Type_GestureScrollBegin = 1;
+    Type_GestureScrollEnd = 2;
+    Type_GestureScrollUpdate = 3;
+    Type_GestureFlingStart = 4;
+    Type_GestureFlingCancel = 5;
+    Type_GestureTap = 6;
+    Type_GesturePinchBegin = 7;
+    Type_GesturePinchEnd = 8;
+    Type_GesturePinchUpdate = 9;
   }
+
   optional Type type = 1;
 
-  optional ClickArgs click = 1000;
-  optional DragArgs drag = 1001;
+  // Seconds since client platform start (boot) with millisecond resolution.
+  // On Android, this is based off of the client's SystemClock#uptimeMillis().
+  optional double timestamp_seconds = 2;
+
+  optional GestureCommon gesture_common = 3;
+
+  // Input event specific messages follow.
+  // Only one of these fields may be set per InputMessage.
+  // TODO(dtrainor): use a 'oneof' union when it's supported in Chromium.
+  optional GestureScrollBegin gesture_scroll_begin = 4;
+  optional GestureScrollUpdate gesture_scroll_update = 5;
+  optional GestureFlingStart gesture_fling_start = 6;
+  optional GestureFlingCancel gesture_fling_cancel = 7;
+  optional GestureTap gesture_tap = 8;
+  optional GesturePinchUpdate gesture_pinch_update = 9;
 }
 
