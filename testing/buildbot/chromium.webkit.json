@@ -1639,6 +1639,25 @@
       },
       {
         "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 20
+        },
+        "test": "browser_tests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "content_browsertests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "extensions_browsertests"
+      },
+      {
+        "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "webkit_unit_tests"
