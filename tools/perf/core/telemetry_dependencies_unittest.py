@@ -41,20 +41,24 @@ def _GetRestrictedTelemetryDeps():
 class TelemetryDependenciesTest(unittest.TestCase):
 
   def testNoNewTelemetryDependencies(self):
-    telemetry_deps = _GetRestrictedTelemetryDeps()
-    current_dependencies = _GetCurrentTelemetryDependencies()
-    extra_dep_paths = []
-    for dep_path in current_dependencies:
-      if not any(path.IsSubpath(dep_path, d) for d in telemetry_deps):
-        extra_dep_paths.append(dep_path)
-    # Temporarily ignore failure on Mac because test is failing on Mac 10.8 bot.
-    # crbug.com/522335
-    if extra_dep_paths:
-      if platform.system() != 'Darwin':
-        self.fail(
-            'Your patch adds new dependencies to telemetry. Please contact '
-            'aiolos@,dtu@, or nednguyen@ on how to proceed with this change. '
-            'Extra dependencies:\n%s' % '\n'.join(extra_dep_paths))
-      else:
-        print ('Dependencies check failed on mac platform. Extra deps: %s\n'
-               ' sys.path: %s' % (extra_dep_paths, sys.path))
+    try:
+      telemetry_deps = _GetRestrictedTelemetryDeps()
+      current_dependencies = _GetCurrentTelemetryDependencies()
+      extra_dep_paths = []
+      for dep_path in current_dependencies:
+        if not any(path.IsSubpath(dep_path, d) for d in telemetry_deps):
+          extra_dep_paths.append(dep_path)
+      # Temporarily ignore failure on Mac because test is failing on Mac 10.8
+      # bot.
+      # crbug.com/522335
+      if extra_dep_paths:
+        if platform.system() != 'Darwin':
+          self.fail(
+              'Your patch adds new dependencies to telemetry. Please contact '
+              'aiolos@,dtu@, or nednguyen@ on how to proceed with this change. '
+              'Extra dependencies:\n%s' % '\n'.join(extra_dep_paths))
+        else:
+          print ('Dependencies check failed on mac platform. Extra deps: %s\n'
+                 ' sys.path: %s' % (extra_dep_paths, sys.path))
+    except ImportError:   # crbug.com/559527
+      pass

@@ -16,7 +16,11 @@ from telemetry.internal.util import command_line
 from telemetry.internal.util import path
 from telemetry.internal.util import path_set
 
-from modulegraph import modulegraph  # pylint: disable=import-error
+try:
+  from modulegraph import modulegraph  # pylint: disable=import-error
+except ImportError as err:
+  modulegraph = None
+  import_error = err
 
 from core import bootstrap
 from core import path_util
@@ -36,6 +40,8 @@ def FindBootstrapDependencies(base_dir):
 
 def FindPythonDependencies(module_path):
   logging.info('Finding Python dependencies of %s' % module_path)
+  if modulegraph is None:
+    raise import_error
 
   sys_path = sys.path
   sys.path = list(sys_path)
