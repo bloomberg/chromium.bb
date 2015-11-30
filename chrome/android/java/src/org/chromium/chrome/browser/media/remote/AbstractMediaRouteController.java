@@ -174,6 +174,11 @@ public abstract class AbstractMediaRouteController implements MediaRouteControll
     private final MediaRouter mMediaRouter;
 
     private final MediaRouteSelector mMediaRouteSelector;
+    /**
+     * The media state listener connects to the web page that requested casting. It will be null if
+     * that page is no longer in a tab, but closing the page or tab should not stop cast. Cast can
+     * still be controlled through the notification even if the page is closed.
+     */
     private MediaStateListener mMediaStateListener;
     private PlayerState mPlaybackState = PlayerState.FINISHED;
     private boolean mRoutesAvailable = false;
@@ -343,6 +348,7 @@ public abstract class AbstractMediaRouteController implements MediaRouteControll
     }
 
     private void startCastingVideo(RouteInfo route) {
+        if (mMediaStateListener == null) return;
         mMediaStateListener.pauseLocal();
         mMediaStateListener.onCastStarting(route.getName());
         String url = mMediaStateListener.getSourceUrl();
@@ -452,11 +458,13 @@ public abstract class AbstractMediaRouteController implements MediaRouteControll
             for (UiListener listener : mUiListeners) {
                 listener.onPrepared(this);
             }
-            if (mMediaStateListener.isPauseRequested()) pause();
-            if (mMediaStateListener.isSeekRequested()) {
-                seekTo(mMediaStateListener.getSeekLocation());
-            } else {
-                seekTo(mMediaStateListener.getLocalPosition());
+            if (mMediaStateListener != null) {
+                if (mMediaStateListener.isPauseRequested()) pause();
+                if (mMediaStateListener.isSeekRequested()) {
+                    seekTo(mMediaStateListener.getSeekLocation());
+                } else {
+                    seekTo(mMediaStateListener.getLocalPosition());
+                }
             }
             RecordCastAction.castDefaultPlayerResult(true);
             mIsPrepared = true;
