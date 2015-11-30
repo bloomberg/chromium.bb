@@ -18,6 +18,7 @@
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
 #include "components/rappor/rappor_service.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
+#include "components/signin/core/common/signin_pref_names.h"
 #include "components/sync_driver/sync_prefs.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/translate/core/common/translate_pref_names.h"
@@ -118,6 +119,19 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(
       prefs::kNetworkPredictionWifiOnly, true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterStringPref(prefs::kContextualSearchEnabled, std::string(),
+                               user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      ios::prefs::kSearchSuggestEnabled, true,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kSigninAllowed, true);
+  registry->RegisterBooleanPref(ios::prefs::kSavingBrowserHistoryDisabled,
+                                false);
+  registry->RegisterBooleanPref(ios::prefs::kAllowDeletingBrowserHistory, true);
+  registry->RegisterIntegerPref(ios::prefs::kNtpShownPage, 1 << 10);
+  // This comes from components/bookmarks/core/browser/bookmark_model.h
+  // Defaults to 3, which is the id of bookmarkModel_->mobile_node()
+  registry->RegisterInt64Pref(prefs::kNtpShownBookmarksFolder, 3);
 
   // TODO(crbug.com/525079): those preferences are not used on iOS but are
   // required to be able to run unit_tests until componentization of

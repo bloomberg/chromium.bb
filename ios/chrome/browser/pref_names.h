@@ -20,6 +20,7 @@ extern const char kBrowserStatesNumCreated[];
 extern const char kDefaultCharset[];
 extern const char kEnableDoNotTrack[];
 extern const char kHttpServerProperties[];
+extern const char kNtpShownPage[];
 extern const char kSavingBrowserHistoryDisabled[];
 extern const char kSearchSuggestEnabled[];
 
