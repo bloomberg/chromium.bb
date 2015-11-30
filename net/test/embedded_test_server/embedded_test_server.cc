@@ -78,10 +78,6 @@ bool EmbeddedTestServer::Start() {
   return true;
 }
 
-bool EmbeddedTestServer::InitializeAndWaitUntilReady() {
-  return Start();
-}
-
 bool EmbeddedTestServer::InitializeAndListen() {
   DCHECK(!Started());
 

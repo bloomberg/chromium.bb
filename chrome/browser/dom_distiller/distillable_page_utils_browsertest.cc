@@ -57,7 +57,7 @@ class DistillablePageUtilsBrowserTestOption : public InProcessBrowserTest {
 
   void SetUpOnMainThread() override {
     InProcessBrowserTest::SetUpOnMainThread();
-    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+    ASSERT_TRUE(embedded_test_server()->Start());
     web_contents_ =
         browser()->tab_strip_model()->GetActiveWebContents();
     setDelegate(web_contents_, holder_.GetDelegate());

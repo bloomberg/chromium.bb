@@ -1036,7 +1036,7 @@ class PrivetHttpWithServerTest : public ::testing::Test,
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
 
     server_.reset(new EmbeddedTestServer(EmbeddedTestServer::TYPE_HTTP));
-    ASSERT_TRUE(server_->InitializeAndWaitUntilReady());
+    ASSERT_TRUE(server_->Start());
 
     base::FilePath test_data_dir;
     ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir));

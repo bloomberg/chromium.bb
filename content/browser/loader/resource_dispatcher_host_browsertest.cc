@@ -642,7 +642,7 @@ class LoFiResourceDispatcherHostBrowserTest : public ContentBrowserTest {
   void SetUpOnMainThread() override {
     ContentBrowserTest::SetUpOnMainThread();
 
-    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+    ASSERT_TRUE(embedded_test_server()->Start());
 
     delegate_.reset(new LoFiModeResourceDispatcherHostDelegate(
         embedded_test_server()->GetURL("/page_with_iframe.html"),

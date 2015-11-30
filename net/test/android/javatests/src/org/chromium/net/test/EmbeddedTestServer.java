@@ -54,17 +54,6 @@ public class EmbeddedTestServer {
         nativeServeFilesFromDirectory(mNativeEmbeddedTestServer, directoryPath);
     }
 
-    // TODO(svaldez): Remove once all consumers have switched to start().
-    /** Wrapper for start()
-     *
-     *  start() should be used instead of this.
-     *
-     *  @return Whether the server was successfully initialized.
-     */
-    public boolean initializeAndWaitUntilReady() {
-        return start();
-    }
-
     /** Starts the server.
      *
      *  Note that this should be called after handlers are set up, including any relevant calls

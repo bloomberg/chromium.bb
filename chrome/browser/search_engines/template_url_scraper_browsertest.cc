@@ -67,7 +67,7 @@ scoped_ptr<net::test_server::HttpResponse> SendResponse(
 IN_PROC_BROWSER_TEST_F(TemplateURLScraperTest, ScrapeWithOnSubmit) {
   host_resolver()->AddRule("*.foo.com", "localhost");
   embedded_test_server()->RegisterRequestHandler(base::Bind(&SendResponse));
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   TemplateURLService* template_urls =
       TemplateURLServiceFactory::GetInstance()->GetForProfile(

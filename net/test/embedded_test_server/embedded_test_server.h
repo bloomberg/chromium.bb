@@ -131,10 +131,6 @@ class EmbeddedTestServer {
   // Returns whether a listening socket has been successfully created.
   bool Start();
 
-  // Deprecated method that calls Start().
-  // TODO(svaldez): Remove and replace with Start().
-  bool InitializeAndWaitUntilReady() WARN_UNUSED_RESULT;
-
   // Starts listening for incoming connections but will not yet accept them.
   // Returns whether a listening socket has been succesfully created.
   bool InitializeAndListen() WARN_UNUSED_RESULT;

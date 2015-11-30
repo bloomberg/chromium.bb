@@ -34,7 +34,7 @@ class WakeLockTest : public ContentBrowserTest {
 
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
-    EXPECT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+    EXPECT_TRUE(embedded_test_server()->Start());
     // To prevent occlusion events from changing page visibility.
     GetWebContents()->IncrementCapturerCount(gfx::Size());
   }

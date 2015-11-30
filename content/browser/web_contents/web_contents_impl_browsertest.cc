@@ -752,7 +752,7 @@ class MockPageScaleObserver : public WebContentsObserver {
 // When the page scale factor is set in the renderer it should send
 // a notification to the browser so that WebContentsObservers are notified.
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, ChangePageScale) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
   NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html"));
 
   MockPageScaleObserver observer(shell());
