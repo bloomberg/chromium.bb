@@ -1,5 +1,5 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-shadow-flex-layout.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/image-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/animations/slide-down-animation.html">
@@ -18,18 +18,18 @@
   <template>
 
     <paper-toolbar>
-      <div id="aligner" class="middle horizontal layout center">
-        <span id="title" class="flex-5" title="{{docTitle}}">
+      <div id="aligner" class="middle">
+        <span id="title" title="{{docTitle}}">
           <span>{{docTitle}}</span>
         </span>
 
-        <div class="flex-1" id="pageselector-container">
+        <div id="pageselector-container">
           <viewer-page-selector id="pageselector" class="invisible"
               doc-length="{{docLength}}" page-no="{{pageNo}}">
           </viewer-page-selector>
         </div>
 
-        <div id="buttons" class="invisible flex-5">
+        <div id="buttons" class="invisible">
           <paper-icon-button id="rotate-right" icon="image:rotate-right"
               on-click="rotateRight"
               i18n-values="aria-label:tooltipRotateCW;title:tooltipRotateCW">

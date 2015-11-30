@@ -7,6 +7,10 @@
   font-size: 88.8%;
 }
 
+:host ::selection {
+  background: rgba(255, 255, 255, 0.3);
+}
+
 #pageselector {
   --paper-input-container-underline: {
     visibility: hidden;
@@ -19,7 +23,7 @@
   width: 1ch;
 }
 
-input#input {
+#input {
   -webkit-margin-start: -3px;
   color: #fff;
   line-height: 18px;
@@ -27,8 +31,8 @@ input#input {
   text-align: end;
 }
 
-input#input:focus,
-input#input:hover {
+#input:focus,
+#input:hover {
   background-color: rgba(0, 0, 0, 0.5);
   border-radius: 2px;
 }

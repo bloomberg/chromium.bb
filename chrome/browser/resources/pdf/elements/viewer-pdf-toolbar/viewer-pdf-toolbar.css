@@ -2,14 +2,21 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-/* We introduce a wrapper aligner element as setting the relevant attributes
- * (horizontal justified layout center) have no effect on the core-toolbar. */
+:host ::selection {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* We introduce a wrapper aligner element to help with laying out the main
+ * toolbar content without changing the bottom-aligned progress bar. */
 #aligner {
+  @apply(--layout-horizontal);
+  @apply(--layout-center);
   padding: 0 16px;
   width: 100%;
 }
 
 #title {
+  @apply(--layout-flex-5);
   font-size: 77.8%;
   font-weight: 500;
   overflow: hidden;
@@ -18,6 +25,7 @@
 }
 
 #pageselector-container {
+  @apply(--layout-flex-1);
   text-align: center;
   /* The container resizes according to the width of the toolbar. On small
    * screens with large numbers of pages, overflow page numbers without
@@ -26,6 +34,7 @@
 }
 
 #buttons {
+  @apply(--layout-flex-5);
   -webkit-user-select: none;
   text-align: end;
 }
@@ -48,18 +57,10 @@ paper-progress {
 
 paper-toolbar {
   --paper-toolbar-background: rgb(50, 54, 57);
+  --paper-toolbar-height: 48px;
   @apply(--shadow-elevation-2dp);
   color: rgb(241, 241, 241);
   font-size: 1.5em;
-  height: 48px;
-}
-
-paper-toolbar /deep/ ::selection {
-  background: rgba(255, 255, 255, 0.3);
-}
-
-paper-toolbar /deep/ .toolbar-tools {
-  height: 48px;
 }
 
 .invisible {
