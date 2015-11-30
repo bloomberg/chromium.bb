@@ -4,6 +4,8 @@
 
 #include "tools/gn/location.h"
 
+#include <tuple>
+
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "tools/gn/input_file.h"
@@ -36,9 +38,8 @@ bool Location::operator!=(const Location& other) const {
 
 bool Location::operator<(const Location& other) const {
   DCHECK(file_ == other.file_);
-  if (line_number_ != other.line_number_)
-    return line_number_ < other.line_number_;
-  return char_offset_ < other.char_offset_;
+  return std::tie(line_number_, char_offset_) <
+         std::tie(other.line_number_, other.char_offset_);
 }
 
 std::string Location::Describe(bool include_char_offset) const {
