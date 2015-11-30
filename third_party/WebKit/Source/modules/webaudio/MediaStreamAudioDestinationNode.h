@@ -46,6 +46,9 @@ public:
 
     // AudioHandler.
     void process(size_t framesToProcess) override;
+    void setChannelCount(unsigned long, ExceptionState&) override;
+
+    unsigned long maxChannelCount() const;
 
 private:
     MediaStreamAudioDestinationHandler(AudioNode&, size_t numberOfChannels);
@@ -55,6 +58,9 @@ private:
     // This Persistent doesn't make a reference cycle.
     Persistent<MediaStream> m_stream;
     Persistent<MediaStreamSource> m_source;
+
+    // This internal mix bus is for up/down mixing the input to the actual
+    // number of channels in the destination.
     RefPtr<AudioBus> m_mixBus;
 };
 

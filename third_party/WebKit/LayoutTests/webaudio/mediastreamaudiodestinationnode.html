@@ -29,6 +29,11 @@ function runTest() {
     // MediaStreamAudioDestinationNode should inherit AudioNode.
     shouldBe('mediaStreamDestination.__proto__.__proto__', 'AudioNode.prototype');
 
+    // Check the channel count boundary of 8.
+    Should('Setting the channel count beyond 8', function () {
+        mediaStreamDestination.channelCount = 9;
+    }).throw('IndexSizeError');
+
     // Check number of inputs and outputs.
     if (mediaStreamDestination.numberOfInputs == 1)
         testPassed("Destination AudioNode has one input.");

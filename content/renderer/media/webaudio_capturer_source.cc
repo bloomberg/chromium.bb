@@ -36,25 +36,29 @@ void WebAudioCapturerSource::setFormat(
   DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(1) << "WebAudioCapturerSource::setFormat(sample_rate="
            << sample_rate << ")";
-  if (number_of_channels > 2) {
-    // TODO(xians): Handle more than just the mono and stereo cases.
-    LOG(WARNING) << "WebAudioCapturerSource::setFormat() : unhandled format.";
-    return;
-  }
 
+  // If the channel count is greater than 8, use discrete layout. However,
+  // anything beyond 8 is ignored by the subsequent (WebRTC) audio pipeline.
   ChannelLayout channel_layout =
-      number_of_channels == 1 ? CHANNEL_LAYOUT_MONO : CHANNEL_LAYOUT_STEREO;
+      number_of_channels > 8 ? media::CHANNEL_LAYOUT_DISCRETE
+                             : media::GuessChannelLayout(number_of_channels);
 
   base::AutoLock auto_lock(lock_);
+
   // Set the format used by this WebAudioCapturerSource. We are using 10ms data
   // as buffer size since that is the native buffer size of WebRtc packet
   // running on.
   params_.Reset(media::AudioParameters::AUDIO_PCM_LOW_LATENCY, channel_layout,
                 sample_rate, 16, sample_rate / 100);
+
+  // Take care of the discrete channel layout case.
+  params_.set_channels_for_discrete(number_of_channels);
+
   audio_format_changed_ = true;
 
   wrapper_bus_ = AudioBus::CreateWrapper(params_.channels());
   capture_bus_ = AudioBus::Create(params_);
+
   fifo_.reset(new AudioFifo(
       params_.channels(),
       kMaxNumberOfBuffersInFifo * params_.frames_per_buffer()));

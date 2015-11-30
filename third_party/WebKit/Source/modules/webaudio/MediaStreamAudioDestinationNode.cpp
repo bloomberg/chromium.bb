@@ -26,6 +26,9 @@
 #if ENABLE(WEB_AUDIO)
 #include "modules/webaudio/MediaStreamAudioDestinationNode.h"
 
+#include "bindings/core/v8/ExceptionMessages.h"
+#include "bindings/core/v8/ExceptionState.h"
+#include "core/dom/ExceptionCode.h"
 #include "modules/webaudio/AbstractAudioContext.h"
 #include "modules/webaudio/AudioNodeInput.h"
 #include "platform/UUID.h"
@@ -34,6 +37,10 @@
 #include "wtf/Locker.h"
 
 namespace blink {
+
+// WebAudioCapturerSource ignores the channel count beyond 8, so we set the
+// block here to avoid anything can cause the crash.
+static unsigned long kMaxChannelCount = 8;
 
 MediaStreamAudioDestinationHandler::MediaStreamAudioDestinationHandler(AudioNode& node, size_t numberOfChannels)
     : AudioBasicInspectorHandler(NodeTypeMediaStreamAudioDestination, node, node.context()->sampleRate(), numberOfChannels)
@@ -63,8 +70,51 @@ MediaStreamAudioDestinationHandler::~MediaStreamAudioDestinationHandler()
 
 void MediaStreamAudioDestinationHandler::process(size_t numberOfFrames)
 {
+    // Conform the input bus into the internal mix bus, which represents
+    // MediaStreamDestination's channel count.
     m_mixBus->copyFrom(*input(0).bus());
+
     m_source->consumeAudio(m_mixBus.get(), numberOfFrames);
+}
+
+void MediaStreamAudioDestinationHandler::setChannelCount(unsigned long channelCount, ExceptionState& exceptionState)
+{
+    ASSERT(isMainThread());
+
+    // Currently the maximum channel count supported for this node is 8,
+    // which is constrained by m_source (WebAudioCapturereSource). Although
+    // it has its own safety check for the excessive channels, throwing an
+    // exception here is useful to developers.
+    if (channelCount > maxChannelCount()) {
+        exceptionState.throwDOMException(
+            IndexSizeError,
+            ExceptionMessages::indexOutsideRange<unsigned>("channel count",
+                channelCount,
+                1,
+                ExceptionMessages::InclusiveBound,
+                maxChannelCount(),
+                ExceptionMessages::InclusiveBound));
+        return;
+    }
+
+    unsigned long oldChannelCount = this->channelCount();
+    AudioHandler::setChannelCount(channelCount, exceptionState);
+
+    // Update the pipeline with the new channel count only if absolutely
+    // necessary. This process requires the graph lock.
+    //
+    // TODO(hongchan): There might be a data race here since both threads
+    // have access to m_mixBus.
+    if (!exceptionState.hadException() && this->channelCount() != oldChannelCount && isInitialized()) {
+        AbstractAudioContext::AutoLocker locker(context());
+        m_mixBus = AudioBus::create(channelCount, ProcessingSizeInFrames);
+        m_source->setAudioFormat(channelCount, context()->sampleRate());
+    }
+}
+
+unsigned long MediaStreamAudioDestinationHandler::maxChannelCount() const
+{
+    return kMaxChannelCount;
 }
 
 // ----------------------------------------------------------------
