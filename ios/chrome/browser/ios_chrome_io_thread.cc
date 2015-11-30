@@ -87,7 +87,7 @@
 
 namespace {
 
-const char kSupportedAuthSchemes[] = "basic,digest,ntlm,negotiate";
+const char kSupportedAuthSchemes[] = "basic,digest,ntlm";
 
 const char kTCPFastOpenFieldTrialName[] = "TCPFastOpen";
 const char kTCPFastOpenHttpsEnabledGroupName[] = "HttpsEnabled";
