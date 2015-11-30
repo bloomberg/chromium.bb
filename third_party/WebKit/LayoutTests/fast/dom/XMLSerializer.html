@@ -41,6 +41,10 @@ test(function() {
     assert_equals(serializer.serializeToString(fragment), '<test><child1>First child</child1><child2 attr="an attribute">Second child</child2><!-- A comment --></test>');
 }, 'Check DocumentFragment serialization.');
 
+test(function() {
+    var attr = child2.getAttributeNode('attr');
+    assert_equals(serializer.serializeToString(attr), 'an attribute');
+}, 'Check Attr serializiation.');
 </script>
 </body>
 </html>

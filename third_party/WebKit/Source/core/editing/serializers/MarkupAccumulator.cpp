@@ -31,6 +31,7 @@
 #include "core/XLinkNames.h"
 #include "core/XMLNSNames.h"
 #include "core/XMLNames.h"
+#include "core/dom/Attr.h"
 #include "core/dom/CDATASection.h"
 #include "core/dom/Comment.h"
 #include "core/dom/Document.h"
@@ -79,6 +80,11 @@ void MarkupAccumulator::appendStartMarkup(StringBuilder& result, Node& node, Nam
         break;
     case Node::ELEMENT_NODE:
         appendElement(result, toElement(node), namespaces);
+        break;
+    case Node::ATTRIBUTE_NODE:
+        // Only XMLSerializer can pass an Attr.  So, |documentIsHTML| flag is
+        // false.
+        m_formatter.appendAttributeValue(result, toAttr(node).value(), false);
         break;
     default:
         m_formatter.appendStartMarkup(result, node, namespaces);
