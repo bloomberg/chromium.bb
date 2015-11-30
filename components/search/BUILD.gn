@@ -26,6 +26,8 @@ source_set("unit_tests") {
   ]
   deps = [
     ":search",
+    "//base",
+    "//components/variations",
     "//testing/gtest",
   ]
 }

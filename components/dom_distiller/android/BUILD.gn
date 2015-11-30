@@ -52,14 +52,9 @@ java_cpp_template("dom_distiller_core_theme_javagen") {
   ]
 }
 
-source_set("jni_registrar") {
+generate_jni("jni_headers") {
   sources = [
-    "component_jni_registrar.cc",
-    "component_jni_registrar.h",
+    "java/src/org/chromium/components/dom_distiller/content/DistillablePageUtils.java",
   ]
-
-  deps = [
-    "//base",
-    "//components/dom_distiller/content:content_browser",
-  ]
+  jni_package = "dom_distiller_content"
 }

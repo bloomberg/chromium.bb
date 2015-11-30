@@ -177,6 +177,7 @@ if (enable_nacl) {
       ":nacl",
       "//base/test:test_support",
       "//ipc:test_support",
+      "//ppapi/c",
       "//testing/gtest",
     ]
   }

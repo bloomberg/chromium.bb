@@ -26,10 +26,10 @@ static_library("browser") {
   configs += [ "//components/autofill/core/browser:wallet_service" ]
 
   public_deps = [
+    ":risk_proto",
     "//skia",
   ]
   deps = [
-    ":risk_proto",
     "//base",
     "//base:i18n",
     "//base:prefs",

@@ -18,6 +18,8 @@ component("bitmap_uploader") {
     "//components/mus/public/cpp",
     "//components/mus/public/interfaces",
     "//gpu",
+    "//mojo/application/public/cpp",
+    "//mojo/application/public/interfaces",
     "//mojo/converters/surfaces",
     "//mojo/public/c/gles2",
     "//mojo/public/c/system:for_component",

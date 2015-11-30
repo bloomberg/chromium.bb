@@ -294,7 +294,7 @@ source_set("browser") {
       "//components/data_use_measurement/content",
       "//components/devtools_discovery",
       "//components/devtools_http_handler",
-      "//components/dom_distiller/content:content_browser",
+      "//components/dom_distiller/content/browser",
       "//components/error_page/common",
       "//components/favicon/content",
       "//components/history/content/browser",

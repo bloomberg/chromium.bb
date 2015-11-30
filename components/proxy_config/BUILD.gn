@@ -28,6 +28,16 @@ component("proxy_config") {
     "//net",
     "//url",
   ]
+
+  # TODO(https://crbug.com/562773): Break a header include cycle on ChromeOS
+  # and disable include checking so GN doesn't complain about the missing
+  # dependency (it still links OK). This cycle should be fixed and header
+  # checking enabled.
+  if (is_chromeos) {
+    check_includes = false
+  } else {
+    deps += [ "//components/pref_registry" ]
+  }
 }
 
 source_set("unit_tests") {
@@ -39,6 +49,10 @@ source_set("unit_tests") {
   ]
   deps = [
     ":proxy_config",
+    "//base",
+    "//base:prefs_test_support",
+    "//base/test:test_support",
+    "//net",
     "//testing/gmock",
     "//testing/gtest",
   ]

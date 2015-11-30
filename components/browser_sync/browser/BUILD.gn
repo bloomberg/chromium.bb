@@ -18,6 +18,8 @@ source_set("browser") {
     "//base",
     "//base:prefs",
     "//components/autofill/core/browser",
+    "//components/autofill/core/common",
+    "//components/browser_sync/common",
     "//components/dom_distiller/core",
     "//components/history/core/browser",
     "//components/invalidation/impl",

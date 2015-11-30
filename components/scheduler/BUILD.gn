@@ -70,6 +70,7 @@ source_set("unit_tests") {
 
   deps = [
     ":scheduler",
+    "//base/test:test_support",
     "//cc:test_support",
     "//testing/gmock",
     "//testing/gtest",
@@ -77,12 +78,13 @@ source_set("unit_tests") {
 }
 
 # GYP version: components/scheduler.gypi:scheduler_test_support
-static_library("test_support") {
+source_set("test_support") {
   sources = rebase_path(scheduler_gypi_values.scheduler_test_support_sources,
                         ".",
                         "//components/scheduler")
 
-  deps = [
+  public_deps = [
+    ":scheduler",
     "//base",
   ]
 }

@@ -27,6 +27,7 @@ source_set("exo") {
     "//base",
     "//cc",
     "//gpu",
+    "//gpu/command_buffer/client:gles2_interface",
     "//skia",
     "//ui/aura",
     "//ui/compositor",
@@ -50,8 +51,12 @@ source_set("test_support") {
   deps = [
     "//ash:test_support",
     "//base",
+    "//gpu",
     "//skia",
     "//testing/gtest",
+    "//ui/aura",
+    "//ui/compositor",
+    "//ui/gfx/geometry",
   ]
 }
 
@@ -70,11 +75,17 @@ source_set("unit_tests") {
   deps = [
     ":exo",
     ":test_support",
+    "//base",
+    "//cc",
     "//components/user_manager",
+    "//gpu/command_buffer/client:gles2_interface",
     "//skia",
     "//testing/gtest",
+    "//ui/aura",
+    "//ui/gfx",
     "//ui/keyboard",
     "//ui/message_center",
+    "//ui/views",
   ]
 }
 
@@ -85,6 +96,8 @@ test("exo_unittests") {
   deps = [
     ":unit_tests",
     "//ash:test_support",
+    "//base",
+    "//base/test:test_support",
   ]
   if (is_linux) {
     deps += [ "//components/exo/wayland:unit_tests" ]

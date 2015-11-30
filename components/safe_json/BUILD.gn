@@ -27,6 +27,7 @@ source_set("safe_json") {
     "//base",
     "//components/strings",
     "//content/public/browser",
+    "//ipc",
     "//ui/base",
   ]
 

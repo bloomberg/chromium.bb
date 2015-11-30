@@ -15,6 +15,7 @@ source_set("prefix_set") {
     "prefix_set.h",
   ]
   deps = [
+    ":util",
     "//base",
   ]
 }
@@ -27,6 +28,7 @@ source_set("util") {
   deps = [
     "//base",
     "//crypto",
+    "//net",
   ]
   if (is_win) {
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
@@ -45,6 +47,7 @@ source_set("unit_tests") {
     ":util",
     "//base",
     "//testing/gtest",
+    "//url",
   ]
   if (is_win) {
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.

@@ -5,7 +5,7 @@
 {
   'targets': [
     {
-      # GN version: //components/dom_distiller/content:content_common
+      # GN version: //components/dom_distiller/content/common
       'target_name': 'dom_distiller_content_common',
       'type': 'static_library',
       'include_dirs': [
@@ -196,7 +196,7 @@
     ['OS != "ios"', {
       'targets': [
         {
-          # GN version: //components/dom_distiller/content:content_browser
+          # GN version: //components/dom_distiller/content/browser
           'target_name': 'dom_distiller_content_browser',
           'type': 'static_library',
           'dependencies': [
@@ -248,7 +248,7 @@
           ],
         },
         {
-          # GN version: //components/dom_distiller/content:content_renderer
+          # GN version: //components/dom_distiller/content/renderer
           'target_name': 'dom_distiller_content_renderer',
           'type': 'static_library',
           'dependencies': [
@@ -343,7 +343,7 @@
           'includes': [ '../build/android/java_cpp_template.gypi' ],
         },
         {
-          # GN: //components/dom_distiller/content:jni_headers
+          # GN: //components/dom_distiller/android:dom_distiller_content_java
           'target_name': 'dom_distiller_content_jni_headers',
           'type': 'none',
           'sources': [
@@ -355,7 +355,7 @@
           'includes': [ '../build/jni_generator.gypi' ],
         },
         {
-          # GN: //components/dom_distiller/core:jni_headers
+          # GN: //components/dom_distiller/android:jni_headers
           'target_name': 'dom_distiller_core_jni_headers',
           'type': 'none',
           'sources': [

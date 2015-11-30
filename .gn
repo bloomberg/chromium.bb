@@ -34,14 +34,17 @@ check_targets = [
   #"//chrome_elf/*",
   #"//cloud_print/*",
 
-  #"//components/*",  # Lots of errors.
+  #"//components/*",  # Needs nacl below.
+  #"//components:*",  # Some Android unit tests.
   "//components/about_handler/*",
   "//components/about_ui/*",
   "//components/app_modal/*",
   "//components/audio_modem/*",
   "//components/autofill/*",
   "//components/auto_login_parser/*",
+  "//components/bitmap_uploader/*",
   "//components/bookmarks/*",
+  "//components/browser_sync/*",
   "//components/browser_watcher/*",
   "//components/browsing_data/*",
   "//components/bubble/*",
@@ -68,15 +71,12 @@ check_targets = [
   "//components/devtools_discovery/*",
   "//components/devtools_http_handler/*",
   "//components/devtools_service/*",
-
-  # There are some Android problems where the jni_registrar referenced from
-  # core includes stuff from the content version of the dom_distiller.
-  #"//components/dom_distiller/*",
-
+  "//components/dom_distiller/*",
   "//components/domain_reliability/*",
   "//components/drive/*",
   "//components/enhanced_bookmarks/*",
   "//components/error_page/*",
+  "//components/exp/*",
   "//components/external_video_surface/*",
   "//components/favicon/*",
   "//components/favicon_base/*",
@@ -130,18 +130,17 @@ check_targets = [
   "//components/pref_registry/*",
   "//components/printing/*",
   "//components/proximity_auth/*",
-
-  #"//components/proxy_config/*",
-  #"//components/query_parser/*",
-  #"//components/rappor/*",
-  #"//components/renderer_context_menu/*",
-  #"//components/resource_provider/*",
-  #"//components/resources/*",
-  #"//components/rlz/*",
-
-  #"//components/safe_json/*",
-  #"//components/scheduler/*",
-  #"//components/search/*",
+  "//components/proxy_config/*",
+  "//components/query_parser/*",
+  "//components/rappor/*",
+  "//components/renderer_context_menu/*",
+  "//components/resource_provider/*",
+  "//components/resources/*",
+  "//components/rlz/*",
+  "//components/safe_browsing_db/*",
+  "//components/safe_json/*",
+  "//components/scheduler/*",
+  "//components/search/*",
   "//components/search_engines/*",
   "//components/search_provider_logos/*",
   "//components/security_interstitials/*",

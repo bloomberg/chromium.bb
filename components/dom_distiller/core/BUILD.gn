@@ -5,8 +5,6 @@
 # GYP version: components/dom_distiller.gypi:dom_distiller_core
 source_set("core") {
   sources = [
-    "../android/component_jni_registrar.cc",
-    "../android/component_jni_registrar.h",
     "article_attachments_data.cc",
     "article_attachments_data.h",
     "article_distillation_update.cc",
@@ -75,7 +73,6 @@ source_set("core") {
     "//net",
     "//skia",
     "//sync",
-    "//sync/protocol",  # TODO(brettw) bug 475091: this should be unnecessary.
     "//third_party/re2",
     "//ui/base",
     "//url",
