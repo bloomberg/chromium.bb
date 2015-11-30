@@ -150,7 +150,9 @@ executable("pepper_hash_for_uma") {
   ]
 }
 
-source_set("ppapi_cpp_lib") {
+static_library("ppapi_cpp_lib") {
+  # This library is distributed as a part of the SDK and as such has to
+  # be a static library rather than a source set.
   sources = ppapi_sources.cpp_source_files
   sources += [
     "cpp/module_embedder.h",

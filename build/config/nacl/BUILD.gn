@@ -16,6 +16,12 @@ config("nacl_defines") {
   } else if (is_win) {
     defines = [ "__STDC_LIMIT_MACROS=1" ]
   }
+
+  if (current_cpu == "pnacl" && !is_nacl_nonsfi) {
+    # TODO: Remove the following definition once NACL_BUILD_ARCH and
+    # NACL_BUILD_SUBARCH are defined by the PNaCl toolchain.
+    defines += [ "NACL_BUILD_ARCH=pnacl" ]
+  }
 }
 
 config("nexe_defines") {

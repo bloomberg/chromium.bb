@@ -986,7 +986,7 @@ if (!is_android) {
         ]
 
         data_deps += [
-          # "test/data/nacl:shared_test_files",  # TODO(GYP) bug 512902
+          "//chrome/test/data/nacl",
           "//ppapi/native_client:irt",
           "//ppapi:ppapi_nacl_tests_all",
 
