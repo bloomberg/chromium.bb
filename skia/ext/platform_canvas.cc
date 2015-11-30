@@ -14,7 +14,6 @@ namespace {
 
 #if defined(OS_MACOSX)
 const char kIsPreviewMetafileKey[] = "CrIsPreviewMetafile";
-#endif
 
 void SetBoolMetaData(const SkCanvas& canvas, const char* key,  bool value) {
   SkMetaData& meta = skia::GetMetaData(canvas);
@@ -28,6 +27,7 @@ bool GetBoolMetaData(const SkCanvas& canvas, const char* key) {
     value = false;
   return value;
 }
+#endif
 
 }  // namespace
 
