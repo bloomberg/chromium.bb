@@ -31,6 +31,7 @@ source_set("media_router_browsertests") {
     "media_router_base_browsertest.h",
     "media_router_e2e_browsertest.cc",
     "media_router_e2e_browsertest.h",
+    "media_router_e2e_ui_browsertest.cc",
     "media_router_integration_browsertest.cc",
     "media_router_integration_browsertest.h",
     "media_router_integration_ui_browsertest.cc",

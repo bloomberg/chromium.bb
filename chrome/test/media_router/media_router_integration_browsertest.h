@@ -28,6 +28,9 @@ class MediaRouterIntegrationBrowserTest : public MediaRouterBaseBrowserTest {
   // InProcessBrowserTest Overrides
   void TearDownOnMainThread() override;
 
+  // MediaRouterBaseBrowserTest Overrides
+  void ParseCommandLine() override;
+
   // Simulate user action to choose one sink in the popup dialog.
   // |web_contents|: The web contents of the test page which invokes the popup
   //                 dialog.
@@ -53,6 +56,13 @@ class MediaRouterIntegrationBrowserTest : public MediaRouterBaseBrowserTest {
       const content::ToRenderFrameHost& adapter, const std::string& script);
 
   void ClickDialog();
+
+  static bool ExecuteScriptAndExtractBool(
+      const content::ToRenderFrameHost& adapter,
+      const std::string& script);
+
+  static void ExecuteScript(const content::ToRenderFrameHost& adapter,
+                            const std::string& script);
 
   // Get the chrome modal dialog.
   // |web_contents|: The web contents of the test page which invokes the popup
@@ -81,7 +91,9 @@ class MediaRouterIntegrationBrowserTest : public MediaRouterBaseBrowserTest {
 
   bool IsRouteCreatedOnUI();
 
-  bool AreRoutesClosedOnUI();
+  bool IsRouteClosedOnUI();
+
+  bool IsSinkDiscoveredOnUI();
 
   // Close route through clicking 'Stop casting' button in route details dialog.
   void CloseRouteOnUI();
@@ -100,6 +112,15 @@ class MediaRouterIntegrationBrowserTest : public MediaRouterBaseBrowserTest {
   // there are no issues showing in UI.
   std::string GetIssueTitle();
 
+  // Returns the route ID for the specific sink.
+  std::string GetRouteId(const std::string& sink_id);
+
+  // Wait for the specific sink shows up in UI with a timeout. Fails if the sink
+  // doesn't show up before the timeout.
+  void WaitUntilSinkDiscoveredOnUI();
+
+  std::string receiver() const { return receiver_; }
+
  private:
   // Get the full path of the resource file.
   // |relative_path|: The relative path to
@@ -109,6 +130,9 @@ class MediaRouterIntegrationBrowserTest : public MediaRouterBaseBrowserTest {
       base::FilePath::StringPieceType relative_path) const;
 
   scoped_ptr<content::TestNavigationObserver> test_navigation_observer_;
+
+  // Fields
+  std::string receiver_;
 };
 
 }  // namespace media_router

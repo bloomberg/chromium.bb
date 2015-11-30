@@ -912,6 +912,7 @@
       'test/media_router/media_router_base_browsertest.h',
       'test/media_router/media_router_e2e_browsertest.cc',
       'test/media_router/media_router_e2e_browsertest.h',
+      'test/media_router/media_router_e2e_ui_browsertest.cc',
       'test/media_router/media_router_integration_browsertest.cc',
       'test/media_router/media_router_integration_browsertest.h',
       'test/media_router/media_router_integration_ui_browsertest.cc',

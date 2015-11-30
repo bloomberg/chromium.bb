@@ -29,6 +29,8 @@
 namespace media_router {
 
 namespace {
+// Command line argument to specify receiver,
+const char kReceiver[] = "receiver";
 // The path relative to <chromium src>/out/<build config> for media router
 // browser test resources.
 const base::FilePath::StringPieceType kResourcePath = FILE_PATH_LITERAL(
@@ -52,11 +54,35 @@ const char kCloseRouteScript[] =
     "window.document.getElementById('media-router-container').shadowRoot."
     "  getElementById('route-details').shadowRoot.getElementById("
     "    'close-route-button').click()";
-const char kGetRouteLengthScript[] =
-    "domAutomationController.send(window.document.getElementById("
-    "  'media-router-container').routeList.length)";
 const char kClickDialog[] =
     "window.document.getElementById('media-router-container').click();";
+const char kGetSinkIdScript[] =
+    "var sinks = window.document.getElementById('media-router-container')."
+    "  allSinks;"
+    "for (var i=0; i<sinks.length; i++) {"
+    "  if (sinks[i].name=='%s') {"
+    "    domAutomationController.send(sinks[i].id);"
+    "  }"
+    "}"
+    "domAutomationController.send('');";
+const char kGetRouteIdScript[] =
+    "var routes = window.document.getElementById('media-router-container')."
+    "  routeList;"
+    "for (var i=0; i<routes.length; i++) {"
+    "  if (routes[i].sinkId=='%s') {"
+    "    domAutomationController.send(routes[i].id);"
+    "  }"
+    "}"
+    "domAutomationController.send('');";
+const char kFindSinkScript[] =
+    "var sinks = document.getElementById('media-router-container')."
+    "  shadowRoot.getElementById('sink-list').getElementsByTagName('span');"
+    "for (var i=0; i<sinks.length; i++) {"
+    "  if (sinks[i].textContent=='%s') {"
+    "    domAutomationController.send(true);"
+    "}}"
+    "domAutomationController.send(false);";
+
 std::string GetStartedSessionId(content::WebContents* web_contents) {
   std::string session_id;
   CHECK(content::ExecuteScriptAndExtractString(
@@ -250,12 +276,34 @@ std::string MediaRouterIntegrationBrowserTest::ExecuteScriptAndExtractString(
   return result;
 }
 
+bool MediaRouterIntegrationBrowserTest::ExecuteScriptAndExtractBool(
+    const content::ToRenderFrameHost& adapter, const std::string& script) {
+  bool result;
+  CHECK(content::ExecuteScriptAndExtractBool(adapter, script, &result));
+  return result;
+}
+
+void MediaRouterIntegrationBrowserTest::ExecuteScript(
+    const content::ToRenderFrameHost& adapter, const std::string& script) {
+  ASSERT_TRUE(content::ExecuteScript(adapter, script));
+}
+
 bool MediaRouterIntegrationBrowserTest::IsRouteCreatedOnUI() {
+  return !GetRouteId(receiver()).empty();
+}
+
+std::string MediaRouterIntegrationBrowserTest::GetRouteId(
+    const std::string& sink_name) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   content::WebContents* dialog_contents = GetMRDialog(web_contents);
-  return ExecuteScriptAndExtractInt(dialog_contents,
-                                    kGetRouteLengthScript) == 1;
+  std::string script = base::StringPrintf(kGetSinkIdScript, sink_name.c_str());
+  std::string sink_id = ExecuteScriptAndExtractString(dialog_contents, script);
+  DVLOG(0) << "sink id: " << sink_id;
+  script = base::StringPrintf(kGetRouteIdScript, sink_id.c_str());
+  std::string route_id = ExecuteScriptAndExtractString(dialog_contents, script);
+  DVLOG(0) << "route id: " << route_id;
+  return route_id;
 }
 
 void MediaRouterIntegrationBrowserTest::WaitUntilRouteCreated() {
@@ -295,12 +343,8 @@ std::string MediaRouterIntegrationBrowserTest::GetIssueTitle() {
   return ExecuteScriptAndExtractString(dialog_contents, script);
 }
 
-bool MediaRouterIntegrationBrowserTest::AreRoutesClosedOnUI() {
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  content::WebContents* dialog_contents = GetMRDialog(web_contents);
-  return ExecuteScriptAndExtractInt(dialog_contents,
-                                    kGetRouteLengthScript) == 0;
+bool MediaRouterIntegrationBrowserTest::IsRouteClosedOnUI() {
+  return GetRouteId(receiver()).empty();
 }
 
 void MediaRouterIntegrationBrowserTest::CloseRouteOnUI() {
@@ -310,8 +354,34 @@ void MediaRouterIntegrationBrowserTest::CloseRouteOnUI() {
   ASSERT_TRUE(content::ExecuteScript(dialog_contents, kCloseRouteScript));
   ASSERT_TRUE(ConditionalWait(
       base::TimeDelta::FromSeconds(10), base::TimeDelta::FromSeconds(1),
-      base::Bind(&MediaRouterIntegrationBrowserTest::AreRoutesClosedOnUI,
+      base::Bind(&MediaRouterIntegrationBrowserTest::IsRouteClosedOnUI,
                  base::Unretained(this))));
+}
+
+bool MediaRouterIntegrationBrowserTest::IsSinkDiscoveredOnUI() {
+  content::WebContents* web_contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
+  content::WebContents* dialog_contents = GetMRDialog(web_contents);
+  std::string script = base::StringPrintf(kFindSinkScript, receiver().c_str());
+  return ExecuteScriptAndExtractBool(dialog_contents, script);
+}
+
+void MediaRouterIntegrationBrowserTest::WaitUntilSinkDiscoveredOnUI() {
+  DVLOG(0) << "Receiver name: " << receiver_;
+  // Wait for sink to show up in UI.
+  ASSERT_TRUE(ConditionalWait(
+      base::TimeDelta::FromSeconds(30), base::TimeDelta::FromSeconds(1),
+      base::Bind(&MediaRouterIntegrationBrowserTest::IsSinkDiscoveredOnUI,
+                 base::Unretained(this))));
+}
+
+void MediaRouterIntegrationBrowserTest::ParseCommandLine() {
+  MediaRouterBaseBrowserTest::ParseCommandLine();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+
+  receiver_ = command_line->GetSwitchValueASCII(kReceiver);
+  if (receiver_.empty())
+    receiver_ = kTestSinkName;
 }
 
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, MANUAL_Basic) {
@@ -321,6 +391,7 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, MANUAL_Basic) {
   ASSERT_TRUE(web_contents);
   ExecuteJavaScriptAPI(web_contents, kWaitDeviceScript);
   StartSession(web_contents);
+  WaitUntilSinkDiscoveredOnUI();
   ChooseSink(web_contents, kTestSinkName);
   ExecuteJavaScriptAPI(web_contents, kCheckSessionScript);
   Wait(base::TimeDelta::FromSeconds(5));
@@ -344,6 +415,7 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
   ASSERT_TRUE(web_contents);
   ExecuteJavaScriptAPI(web_contents, kWaitDeviceScript);
   StartSession(web_contents);
+  WaitUntilSinkDiscoveredOnUI();
   ChooseSink(web_contents, kTestSinkName);
   CheckStartFailed(web_contents, "UnknownError", "No provider supports it");
 }
@@ -357,6 +429,7 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
   ASSERT_TRUE(web_contents);
   ExecuteJavaScriptAPI(web_contents, kWaitDeviceScript);
   StartSession(web_contents);
+  WaitUntilSinkDiscoveredOnUI();
   ChooseSink(web_contents, kTestSinkName);
   CheckStartFailed(web_contents, "UnknownError", "Unknown sink");
 }
@@ -369,6 +442,7 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
   ASSERT_TRUE(web_contents);
   ExecuteJavaScriptAPI(web_contents, kWaitDeviceScript);
   StartSession(web_contents);
+  WaitUntilSinkDiscoveredOnUI();
   ChooseSink(web_contents, kTestSinkName);
   ExecuteJavaScriptAPI(web_contents, kCheckSessionScript);
   std::string session_id(GetStartedSessionId(web_contents));
@@ -398,6 +472,7 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
   ExecuteJavaScriptAPI(web_contents, kWaitDeviceScript);
   content::TestNavigationObserver test_navigation_observer(web_contents, 1);
   StartSession(web_contents);
+  WaitUntilSinkDiscoveredOnUI();
   ChooseSink(web_contents, kTestSinkName);
   ExecuteJavaScriptAPI(web_contents, kCheckSessionScript);
   std::string session_id(GetStartedSessionId(web_contents));

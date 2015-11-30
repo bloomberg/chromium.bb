@@ -23,7 +23,7 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, MANUAL_Dialog_Basic) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   content::WebContents* dialog_contents = OpenMRDialog(web_contents);
-
+  WaitUntilSinkDiscoveredOnUI();
   // Verify the sink list.
   std::string sink_length_script = base::StringPrintf(
       "domAutomationController.send("
