@@ -234,6 +234,11 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // |ended_| state by clamping current time to duration upon |ended_|.
   void UpdatePausedTime();
 
+  // Notifies |delegate_| that playback has started or was paused; also starts
+  // or stops the memory usage reporting timer respectively.
+  void NotifyPlaybackStarted();
+  void NotifyPlaybackPaused();
+
   // Called at low frequency to tell external observers how much memory we're
   // using for video playback.  Called by |memory_usage_reporting_timer_|.
   void ReportMemoryUsage();

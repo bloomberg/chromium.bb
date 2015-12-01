@@ -251,9 +251,6 @@ void WebMediaPlayerImpl::DoLoad(LoadType load_type,
   SetNetworkState(WebMediaPlayer::NetworkStateLoading);
   SetReadyState(WebMediaPlayer::ReadyStateHaveNothing);
   media_log_->AddEvent(media_log_->CreateLoadEvent(url.spec()));
-  memory_usage_reporting_timer_.Start(
-      FROM_HERE, base::TimeDelta::FromMilliseconds(500), this,
-      &WebMediaPlayerImpl::ReportMemoryUsage);
 
   // Media source pipelines can start immediately.
   if (load_type == LoadTypeMediaSource) {
@@ -288,7 +285,7 @@ void WebMediaPlayerImpl::play() {
   media_log_->AddEvent(media_log_->CreateEvent(MediaLogEvent::PLAY));
 
   if (delegate_ && playback_rate_ > 0)
-    delegate_->DidPlay(this);
+    NotifyPlaybackStarted();
 }
 
 void WebMediaPlayerImpl::pause() {
@@ -305,7 +302,7 @@ void WebMediaPlayerImpl::pause() {
   media_log_->AddEvent(media_log_->CreateEvent(MediaLogEvent::PAUSE));
 
   if (!was_already_paused && delegate_)
-    delegate_->DidPause(this);
+    NotifyPlaybackPaused();
 }
 
 bool WebMediaPlayerImpl::supportsSave() const {
@@ -401,9 +398,9 @@ void WebMediaPlayerImpl::setRate(double rate) {
     else if (rate > kMaxRate)
       rate = kMaxRate;
     if (playback_rate_ == 0 && !paused_ && delegate_)
-      delegate_->DidPlay(this);
+      NotifyPlaybackStarted();
   } else if (playback_rate_ != 0 && !paused_ && delegate_) {
-    delegate_->DidPause(this);
+    NotifyPlaybackPaused();
   }
 
   playback_rate_ = rate;
@@ -894,6 +891,10 @@ void WebMediaPlayerImpl::OnPipelineBufferingStateChanged(
   // Blink expects a timeChanged() in response to a seek().
   if (should_notify_time_changed_)
     client_->timeChanged();
+
+  // Once we have enough, start reporting the total memory usage. We'll also
+  // report once playback starts.
+  ReportMemoryUsage();
 }
 
 void WebMediaPlayerImpl::OnDemuxerOpened() {
@@ -1096,6 +1097,23 @@ void WebMediaPlayerImpl::UpdatePausedTime() {
   // incorrectly discard what it thinks is a seek to the existing time.
   paused_time_ =
       ended_ ? pipeline_.GetMediaDuration() : pipeline_.GetMediaTime();
+}
+
+void WebMediaPlayerImpl::NotifyPlaybackStarted() {
+  if (delegate_)
+    delegate_->DidPlay(this);
+  if (!memory_usage_reporting_timer_.IsRunning()) {
+    memory_usage_reporting_timer_.Start(FROM_HERE,
+                                        base::TimeDelta::FromSeconds(2), this,
+                                        &WebMediaPlayerImpl::ReportMemoryUsage);
+  }
+}
+
+void WebMediaPlayerImpl::NotifyPlaybackPaused() {
+  if (delegate_)
+    delegate_->DidPause(this);
+  memory_usage_reporting_timer_.Stop();
+  ReportMemoryUsage();
 }
 
 void WebMediaPlayerImpl::ReportMemoryUsage() {
