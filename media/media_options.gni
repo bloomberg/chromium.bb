@@ -20,14 +20,10 @@ declare_args() {
   # decoding of VP9 and VP8A type content.
   media_use_libvpx = true
 
-  # Enable libwebm for multiplexing video and audio for JS recording API.
-  media_use_libwebm = true
-
-  # Neither Android nor iOS use ffmpeg, libvpx nor libwebm.
+  # Neither Android nor iOS use ffmpeg, libvpx.
   if (is_android || is_ios) {
     media_use_ffmpeg = false
     media_use_libvpx = false
-    media_use_libwebm = false
   }
 
   # Override to dynamically link the cras (ChromeOS audio) library.

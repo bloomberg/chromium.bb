@@ -801,12 +801,6 @@
     ['OS=="android"', {
       'sources!': [
         'renderer/media/audio_decoder.cc',
-        'renderer/media/audio_track_recorder.cc',
-        'renderer/media/audio_track_recorder.h',
-        'renderer/media/media_recorder_handler.cc',
-        'renderer/media/media_recorder_handler.h',
-        'renderer/media/video_track_recorder.cc',
-        'renderer/media/video_track_recorder.h',
         'renderer/usb/type_converters.cc',
         'renderer/usb/type_converters.h',
         'renderer/usb/web_usb_client_impl.cc',

@@ -96,10 +96,8 @@ class CONTENT_EXPORT MediaRecorderHandler final
   ScopedVector<VideoTrackRecorder> video_recorders_;
   ScopedVector<AudioTrackRecorder> audio_recorders_;
 
-#if !defined(MEDIA_DISABLE_LIBWEBM)
   // Worker class doing the actual Webm Muxing work.
   scoped_ptr<media::WebmMuxer> webm_muxer_;
-#endif
 
   base::WeakPtrFactory<MediaRecorderHandler> weak_factory_;
 

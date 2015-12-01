@@ -58,6 +58,7 @@
         '../crypto/crypto.gyp:crypto',
         '../gpu/gpu.gyp:command_buffer_common',
         '../skia/skia.gyp:skia',
+        '../third_party/libwebm/libwebm.gyp:libwebm',
         '../third_party/libyuv/libyuv.gyp:libyuv',
         '../third_party/opus/opus.gyp:opus',
         '../ui/events/events.gyp:events_base',
@@ -486,6 +487,8 @@
         'capture/video/win/video_capture_device_mf_win.h',
         'capture/video/win/video_capture_device_win.cc',
         'capture/video/win/video_capture_device_win.h',
+        'capture/webm_muxer.cc',
+        'capture/webm_muxer.h',
         'cdm/aes_decryptor.cc',
         'cdm/aes_decryptor.h',
         'cdm/cdm_adapter.cc',
@@ -709,24 +712,6 @@
             'filters/vpx_video_decoder.cc',
             'filters/vpx_video_decoder.h',
           ],
-        }],
-        ['media_use_libwebm==1', {
-          'dependencies': [
-            '<(DEPTH)/third_party/libwebm/libwebm.gyp:libwebm',
-          ],
-          'sources': [
-            'capture/webm_muxer.cc',
-            'capture/webm_muxer.h',
-          ],
-        }, {  # media_use_libwebm==0
-          'defines': [
-            'MEDIA_DISABLE_LIBWEBM',
-          ],
-          'direct_dependent_settings': {
-            'defines': [
-              'MEDIA_DISABLE_LIBWEBM',
-            ],
-          },
         }],
         ['OS=="android"', {
           'dependencies': [
@@ -1187,6 +1172,7 @@
         '../skia/skia.gyp:skia',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
+        '../third_party/libwebm/libwebm.gyp:libwebm',
         '../third_party/libyuv/libyuv.gyp:libyuv',
         '../third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_version_h',
         '../ui/gfx/gfx.gyp:gfx',
@@ -1268,6 +1254,7 @@
         'capture/content/video_capture_oracle_unittest.cc',
         'capture/video/fake_video_capture_device_unittest.cc',
         'capture/video/video_capture_device_unittest.cc',
+        'capture/webm_muxer_unittest.cc',
         'cdm/aes_decryptor_unittest.cc',
         'cdm/json_web_key_unittest.cc',
         'ffmpeg/ffmpeg_common_unittest.cc',
@@ -1369,14 +1356,6 @@
             'filters/in_memory_url_protocol_unittest.cc',
             'test/pipeline_integration_test.cc',
             'test/pipeline_integration_test_base.cc',
-          ],
-        }],
-        ['media_use_libwebm==1', {
-          'dependencies': [
-            '<(DEPTH)/third_party/libwebm/libwebm.gyp:libwebm',
-          ],
-          'sources': [
-            'capture/webm_muxer_unittest.cc',
           ],
         }],
 

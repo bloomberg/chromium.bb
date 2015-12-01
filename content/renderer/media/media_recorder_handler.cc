@@ -16,12 +16,9 @@
 #include "media/base/audio_bus.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_frame.h"
+#include "media/capture/webm_muxer.h"
 #include "third_party/WebKit/public/platform/WebMediaRecorderHandlerClient.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-
-#if !defined(MEDIA_DISABLE_LIBWEBM)
-#include "media/capture/webm_muxer.h"
-#endif
 
 using base::TimeDelta;
 using base::TimeTicks;

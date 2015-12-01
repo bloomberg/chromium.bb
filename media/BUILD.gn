@@ -20,9 +20,6 @@ config("media_config") {
   if (!media_use_ffmpeg) {
     defines += [ "MEDIA_DISABLE_FFMPEG" ]
   }
-  if (!media_use_libwebm) {
-    defines += [ "MEDIA_DISABLE_LIBWEBM" ]
-  }
   if (current_cpu == "arm" && arm_use_neon) {
     defines += [ "USE_NEON" ]
   }
@@ -51,9 +48,6 @@ config("media_dependent_config") {
   }
   if (!media_use_ffmpeg) {
     defines += [ "MEDIA_DISABLE_FFMPEG" ]
-  }
-  if (!media_use_libwebm) {
-    defines += [ "MEDIA_DISABLE_LIBWEBM" ]
   }
   if (is_win) {
     ldflags = [
@@ -169,6 +163,8 @@ component("media") {
     "capture/video/win/video_capture_device_mf_win.h",
     "capture/video/win/video_capture_device_win.cc",
     "capture/video/win/video_capture_device_win.h",
+    "capture/webm_muxer.cc",
+    "capture/webm_muxer.h",
     "cdm/aes_decryptor.cc",
     "cdm/aes_decryptor.h",
     "cdm/cdm_adapter.cc",
@@ -373,14 +369,6 @@ component("media") {
     deps += [ "//third_party/libvpx_new" ]
   }
 
-  if (media_use_libwebm) {
-    sources += [
-      "capture/webm_muxer.cc",
-      "capture/webm_muxer.h",
-    ]
-    deps += [ "//third_party/libwebm" ]
-  }
-
   if (is_android) {
     # On Android, FFmpeg is built without video decoders. We only
     # support hardware video decoding.
@@ -564,6 +552,7 @@ component("media") {
     "//crypto:platform",  # TODO(ajwong): This used to be provided by crypto.gyp via export_dependent_settings
     "//gpu/command_buffer/common",
     "//skia",
+    "//third_party/libwebm",
     "//third_party/libyuv",
     "//third_party/opus",
     "//ui/events:events_base",
@@ -613,6 +602,7 @@ test("media_unittests") {
     "capture/content/video_capture_oracle_unittest.cc",
     "capture/video/fake_video_capture_device_unittest.cc",
     "capture/video/video_capture_device_unittest.cc",
+    "capture/webm_muxer_unittest.cc",
     "cdm/aes_decryptor_unittest.cc",
     "cdm/json_web_key_unittest.cc",
     "filters/audio_clock_unittest.cc",
@@ -683,6 +673,7 @@ test("media_unittests") {
     "//skia",  # Direct dependency required to inherit config.
     "//testing/gmock",
     "//testing/gtest",
+    "//third_party/libwebm",
     "//third_party/libyuv",
     "//third_party/widevine/cdm:version_h",
     "//ui/gfx:test_support",
@@ -726,11 +717,6 @@ test("media_unittests") {
         "filters/in_memory_url_protocol_unittest.cc",
       ]
     }
-  }
-
-  if (media_use_libwebm) {
-    sources += [ "capture/webm_muxer_unittest.cc" ]
-    deps += [ "//third_party/libwebm" ]
   }
 
   if (current_cpu != "arm" && is_chromeos) {

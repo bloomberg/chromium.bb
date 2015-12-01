@@ -45,8 +45,10 @@ void WriteOpusHeader(const media::AudioParameters& params, uint8* header) {
     header[OPUS_EXTRADATA_NUM_STREAMS_OFFSET] = params.channels();
     header[OPUS_EXTRADATA_NUM_COUPLED_OFFSET] = 0;
     // Set the actual stream map.
-    memcpy(header + OPUS_EXTRADATA_STREAM_MAP_OFFSET,
-           kOpusVorbisChannelMap[params.channels() - 1], params.channels());
+    for (int i = 0; i < params.channels(); ++i) {
+      header[OPUS_EXTRADATA_STREAM_MAP_OFFSET + i] =
+          kOpusVorbisChannelMap[params.channels() - 1][i];
+    }
   } else {
     header[OPUS_EXTRADATA_CHANNEL_MAPPING_OFFSET] = 0;
   }
