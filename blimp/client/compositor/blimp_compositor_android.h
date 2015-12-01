@@ -37,10 +37,6 @@ class BlimpCompositorAndroid : public BlimpCompositor {
 
   ~BlimpCompositorAndroid() override;
 
-  // Takes a reference to the ANativeWindow backing |jsurface|, to use to render
-  // to, and releases any previously-held reference.
-  void SetSurface(JNIEnv* env, jobject jsurface);
-
  protected:
   // |size| is the size of the display.  |real_size_supported| determines
   // whether or not this size is the real display size or the display size
@@ -51,7 +47,6 @@ class BlimpCompositorAndroid : public BlimpCompositor {
                          float dp_to_px);
 
   // BlimpCompositor implementation.
-  gfx::AcceleratedWidget GetWindow() override;
   void GenerateLayerTreeSettings(cc::LayerTreeSettings* settings);
 
  private:
@@ -64,8 +59,6 @@ class BlimpCompositorAndroid : public BlimpCompositor {
   // True if the |portrait_width_| and |landscape_width_| represent the device's
   // physical dimensions, including any area occupied by system decorations.
   bool real_size_supported_;
-
-  gfx::AcceleratedWidget window_;
 
   DISALLOW_COPY_AND_ASSIGN(BlimpCompositorAndroid);
 };

@@ -18,6 +18,8 @@ source_set("browser") {
     "blimp_permission_manager.h",
     "blimp_url_request_context_getter.cc",
     "blimp_url_request_context_getter.h",
+    "engine_render_widget_message_processor.cc",
+    "engine_render_widget_message_processor.h",
   ]
 
   deps = [
@@ -34,5 +36,25 @@ source_set("browser") {
     "//ui/base/ime",
     "//ui/resources",
     "//ui/wm",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+
+  sources = [
+    "engine_render_widget_message_processor_unittest.cc",
+  ]
+
+  deps = [
+    ":browser",
+    "//base",
+    "//base/test:run_all_unittests",
+    "//base/test:test_support",
+    "//blimp/common/proto",
+    "//blimp/engine/common",
+    "//blimp/net:blimp_net",
+    "//testing/gmock",
+    "//testing/gtest",
   ]
 }

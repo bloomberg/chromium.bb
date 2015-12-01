@@ -4,8 +4,6 @@
 //
 // Message definitions for the compositor subprotocol.
 
-// TODO(nyquist): Import cc proto files.
-
 syntax = "proto2";
 
 option optimize_for = LITE_RUNTIME;
@@ -13,6 +11,11 @@ option optimize_for = LITE_RUNTIME;
 package blimp;
 
 message CompositorMessage {
-  // TODO(nyquist): Include the cc proto message here.
+  // An ID that corresponds to RenderWidgetMessage.render_widget_id.
+  optional uint32 render_widget_id = 1;
+
+  // This represents a serialized CompositorMessage in
+  // cc/proto/compositor_message.proto.
+  optional bytes payload = 2;
 }
 

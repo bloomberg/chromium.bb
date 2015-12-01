@@ -7,8 +7,9 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
-shared_library("blimp_client") {
+component("blimp_client") {
   sources = [
+    "blimp_client_export.h",
     "compositor/blimp_compositor.cc",
     "compositor/blimp_compositor.h",
     "compositor/blimp_context_provider.cc",
@@ -17,21 +18,21 @@ shared_library("blimp_client") {
     "compositor/blimp_layer_tree_settings.h",
     "compositor/blimp_output_surface.cc",
     "compositor/blimp_output_surface.h",
+    "compositor/render_widget_message_processor.cc",
+    "compositor/render_widget_message_processor.h",
     "compositor/test/dummy_layer_driver.cc",
     "compositor/test/dummy_layer_driver.h",
-
-    # TODO(dtrainor): Remove this once the LayerTreeHost settings for Blimp
-    # are finalized or are pushed from the server component.  See
-    # crbug.com/527655.
-    "../../content/public/common/content_switches.cc",
-    "../../ui/native_theme/native_theme_switches.cc",
   ]
+
+  defines = [ "BLIMP_CLIENT_IMPLEMENTATION=1" ]
 
   deps = [
     "//base",
     "//blimp/common:blimp_common",
     "//blimp/common/proto",
+    "//blimp/net:blimp_net",
     "//cc",
+    "//cc/proto",
     "//gpu/command_buffer/client:gl_in_process_context",
     "//gpu/command_buffer/common:gles2_utils",
     "//gpu/skia_bindings",
@@ -39,25 +40,26 @@ shared_library("blimp_client") {
     "//ui/gl",
     "//url:url",
   ]
+}
 
-  if (is_android) {
-    sources += [
-      "android/blimp_jni_registrar.cc",
-      "android/blimp_jni_registrar.h",
-      "android/blimp_library_loader.cc",
-      "android/blimp_library_loader.h",
-      "android/blimp_view.cc",
-      "android/blimp_view.h",
-      "android/toolbar.cc",
-      "android/toolbar.h",
-      "compositor/blimp_compositor_android.cc",
-      "compositor/blimp_compositor_android.h",
-    ]
+source_set("unit_tests") {
+  testonly = true
 
-    deps += [ ":jni_headers" ]
+  sources = [
+    "compositor/render_widget_message_processor_unittest.cc",
+  ]
 
-    libs = [ "android" ]
-  }
+  deps = [
+    ":blimp_client",
+    "//base",
+    "//base/test:run_all_unittests",
+    "//base/test:test_support",
+    "//blimp/common/proto",
+    "//blimp/net:blimp_net",
+    "//cc/proto",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
 }
 
 if (is_android) {
@@ -189,11 +191,37 @@ if (is_android) {
     ]
   }
 
+  shared_library("blimp_client_android") {
+    deps = [
+      ":blimp_client",
+      ":jni_headers",
+      "//base",
+      "//skia",
+      "//ui/gfx/geometry",
+      "//ui/gl",
+      "//url:url",
+    ]
+
+    sources = [
+      "android/blimp_jni_registrar.cc",
+      "android/blimp_jni_registrar.h",
+      "android/blimp_library_loader.cc",
+      "android/blimp_library_loader.h",
+      "android/blimp_view.cc",
+      "android/blimp_view.h",
+      "android/toolbar.cc",
+      "android/toolbar.h",
+      "compositor/blimp_compositor_android.cc",
+      "compositor/blimp_compositor_android.h",
+    ]
+
+    libs = [ "android" ]
+  }
+
   android_apk("blimp_apk") {
     deps = [
       ":blimp_apk_manifest",
-      ":blimp_client",
-      ":blimp_java",
+      ":blimp_client_android",
       ":blimp_java",
       ":blimp_java_resources",
       "//base:base_java",
@@ -201,7 +229,7 @@ if (is_android) {
     ]
     apk_name = "Blimp"
     android_manifest = blimp_apk_manifest
-    native_libs = [ "libblimp_client.so" ]
+    native_libs = [ "libblimp_client_android.so" ]
   }
 
   instrumentation_test_apk("blimp_test_apk") {

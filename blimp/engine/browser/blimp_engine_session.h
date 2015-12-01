@@ -7,8 +7,10 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "blimp/engine/browser/engine_render_widget_message_processor.h"
 #include "blimp/net/blimp_message_processor.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "net/base/completion_callback.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -23,7 +25,12 @@ class WindowTreeClient;
 
 namespace content {
 class BrowserContext;
+class RenderViewHost;
 class WebContents;
+}
+
+namespace gfx {
+class Size;
 }
 
 namespace wm {
@@ -43,8 +50,11 @@ class BlimpScreen;
 class BlimpUiContextFactory;
 class BlimpWindowTreeHost;
 
-class BlimpEngineSession : public BlimpMessageProcessor,
-                           public content::WebContentsDelegate {
+class BlimpEngineSession
+    : public BlimpMessageProcessor,
+      public content::WebContentsDelegate,
+      public content::WebContentsObserver,
+      public EngineRenderWidgetMessageProcessor::RenderWidgetMessageDelegate {
  public:
   explicit BlimpEngineSession(scoped_ptr<BlimpBrowserContext> browser_context);
   ~BlimpEngineSession() override;
@@ -63,6 +73,7 @@ class BlimpEngineSession : public BlimpMessageProcessor,
   // Creates a new WebContents, which will be indexed by |target_tab_id|.
   void CreateWebContents(const int target_tab_id);
   void CloseWebContents(const int target_tab_id);
+  void HandleResize(const gfx::Size& size);
 
   // NavigationMessage handler methods.
   // Navigates the target tab to the |url|.
@@ -70,6 +81,12 @@ class BlimpEngineSession : public BlimpMessageProcessor,
   void GoBack(const int target_tab_id);
   void GoForward(const int target_tab_id);
   void Reload(const int target_tab_id);
+
+  // RenderWidgetMessage handler methods.
+  // RenderWidgetMessageDelegate implementation.
+  void OnWebInputEvent(scoped_ptr<blink::WebInputEvent> event) override;
+  void OnCompositorMessageReceived(
+      const std::vector<uint8_t>& message) override;
 
   // content::WebContentsDelegate implementation.
   content::WebContents* OpenURLFromTab(
@@ -87,6 +104,10 @@ class BlimpEngineSession : public BlimpMessageProcessor,
   void CloseContents(content::WebContents* source) override;
   void ActivateContents(content::WebContents* contents) override;
   void ForwardCompositorProto(const std::vector<uint8_t>& proto) override;
+
+  // content::WebContentsObserver implementation.
+  void RenderViewHostChanged(content::RenderViewHost* old_host,
+                             content::RenderViewHost* new_host) override;
 
   // Sets up and owns |new_contents|.
   void PlatformSetContents(scoped_ptr<content::WebContents> new_contents);
@@ -113,6 +134,11 @@ class BlimpEngineSession : public BlimpMessageProcessor,
 
   // Currently attached client connection.
   scoped_ptr<BlimpConnection> client_connection_;
+
+  // The bridge to the network layer that does the RenderWidget proto/id work.
+  // TODO(dtrainor, haibinlu): Move this to a higher level once we start dealing
+  // with multiple tabs.
+  EngineRenderWidgetMessageProcessor render_widget_processor_;
 
   DISALLOW_COPY_AND_ASSIGN(BlimpEngineSession);
 };

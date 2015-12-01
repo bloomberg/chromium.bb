@@ -44,6 +44,14 @@ repack("pak") {
   output = "$root_out_dir/blimp_engine.pak"
 }
 
+source_set("unit_tests") {
+  testonly = true
+
+  deps = [
+    "//blimp/engine/browser:unit_tests",
+  ]
+}
+
 if (is_linux) {
   executable("blimp_engine_app") {
     sources = [

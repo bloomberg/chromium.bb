@@ -8,6 +8,7 @@
 #include "base/android/jni_android.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/gfx/native_widget_types.h"
 
 namespace gfx {
 class Size;
@@ -51,6 +52,8 @@ class BlimpView {
  private:
   virtual ~BlimpView();
 
+  void ReleaseAcceleratedWidget();
+
   // Reference to the Java object which owns this class.
   base::android::ScopedJavaGlobalRef<jobject> java_obj_;
 
@@ -59,6 +62,8 @@ class BlimpView {
   // The format of the current surface owned by |compositor_|.  See
   // android.graphics.PixelFormat.java.
   int current_surface_format_;
+
+  gfx::AcceleratedWidget window_;
 
   DISALLOW_COPY_AND_ASSIGN(BlimpView);
 };

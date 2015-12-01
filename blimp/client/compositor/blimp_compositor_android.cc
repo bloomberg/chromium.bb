@@ -4,8 +4,6 @@
 
 #include "blimp/client/compositor/blimp_compositor_android.h"
 
-#include <android/native_window_jni.h>
-
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/geometry/size.h"
@@ -39,31 +37,9 @@ BlimpCompositorAndroid::BlimpCompositorAndroid(const gfx::Size& size,
     : BlimpCompositor(dp_to_px),
       portrait_width_(std::min(size.width(), size.height())),
       landscape_width_(std::max(size.width(), size.height())),
-      real_size_supported_(real_size_supported),
-      window_(nullptr) {}
+      real_size_supported_(real_size_supported) {}
 
-BlimpCompositorAndroid::~BlimpCompositorAndroid() {
-  SetSurface(nullptr, 0 /* null surface */);
-}
-
-void BlimpCompositorAndroid::SetSurface(JNIEnv* env, jobject jsurface) {
-  if (window_) {
-    SetVisible(false);
-    ANativeWindow_release(window_);
-    window_ = nullptr;
-  }
-
-  if (!jsurface)
-    return;
-
-  base::android::ScopedJavaLocalFrame scoped_local_reference_frame(env);
-  window_ = ANativeWindow_fromSurface(env, jsurface);
-  SetVisible(true);
-}
-
-gfx::AcceleratedWidget BlimpCompositorAndroid::GetWindow() {
-  return window_;
-}
+BlimpCompositorAndroid::~BlimpCompositorAndroid() {}
 
 void BlimpCompositorAndroid::GenerateLayerTreeSettings(
     cc::LayerTreeSettings* settings) {

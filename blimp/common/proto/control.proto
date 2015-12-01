@@ -8,6 +8,10 @@ syntax = "proto2";
 
 option optimize_for = LITE_RUNTIME;
 
+import "size.proto";
+
+package blimp;
+
 message ControlMessage {
   enum Type {
     UNKNOWN = 0;
@@ -15,6 +19,14 @@ message ControlMessage {
     // Client <=> Server types.
     CREATE_TAB = 1;
     CLOSE_TAB = 2;
+
+    // Client => Server types.
+    SIZE = 3;
   }
+
   optional Type type = 1;
+
+  // Feature-specific messages follow.
+  // Only one of these fields may be set per ControlMessage.
+  optional SizeMessage resize = 1000;
 }

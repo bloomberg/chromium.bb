@@ -6,6 +6,7 @@ include_rules = [
   "+content/public",
   "+net",
   "+third_party/khronos/GLES2/gl2.h",
+  "+third_party/WebKit/public/web/WebInputEvent.h",
   "+ui/aura",
   "+ui/base",
   "+ui/compositor",

@@ -6,6 +6,7 @@ include_rules = [
   "-content",
   "+gpu",
   "+jni",
+  "+net/base",
   "+skia",
   "+third_party/skia",
   "+ui/gfx",
@@ -14,10 +15,4 @@ include_rules = [
 
   # TODO(dtrainor): Remove this once Toast uses are removed from Java.
   "!ui/android",
-
-  # TODO(dtrainor): Remove this once the LayerTreeHost settings for Blimp
-  # are finalized or are pushed from the server component.  See
-  # crbug.com/527655.
-  "!content/public/common/content_switches.h",
-  "!ui/native_theme/native_theme_switches.h",
 ]

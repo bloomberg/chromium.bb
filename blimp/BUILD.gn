@@ -35,8 +35,13 @@ group("blimp_tests") {
 
 test("blimp_unittests") {
   deps = [
+    "//blimp/client:unit_tests",
     "//blimp/net:unit_tests",
   ]
+
+  if (is_linux) {
+    deps += [ "//blimp/engine:unit_tests" ]
+  }
 }
 
 # TODO(GYP): Delete this after we've converted everything to GN.

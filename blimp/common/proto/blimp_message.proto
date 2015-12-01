@@ -18,7 +18,6 @@
 // * Features are applied to unidirectional channels. Client->server and
 //   server->client channels for a component should be broken out as distinct
 //   features, even if they are conceptually similar.
-// * Shared proto types are contained in 'common.proto'.
 
 syntax = "proto2";
 
@@ -28,16 +27,18 @@ import "control.proto";
 import "compositor.proto";
 import "input.proto";
 import "navigation.proto";
+import "render_widget.proto";
 
 package blimp;
 
 message BlimpMessage {
   enum Type {
     UNKNOWN = 0;
-    COMPOSITOR = 1;
-    INPUT = 2;
-    CONTROL = 3;
-    NAVIGATION = 4;
+    CONTROL = 1;
+    NAVIGATION = 2;
+    RENDER_WIDGET = 3;
+    INPUT = 4;
+    COMPOSITOR = 5;
   }
   // Identifies the feature type of this message.
   // The feature-specific contents are contained in optional fields of the same
@@ -58,9 +59,10 @@ message BlimpMessage {
   // Feature-specific messages follow.
   // Only one of these fields may be set per BlimpMessage.
   // TODO(kmarshall): use a 'oneof' union when it's supported in Chromium.
-  optional CompositorMessage compositor = 1000;
-  optional InputMessage input = 1001;
-  optional ControlMessage control = 1002;
-  optional NavigationMessage navigation = 1003;
+  optional ControlMessage control = 1000;
+  optional NavigationMessage navigation = 1001;
+  optional RenderWidgetMessage render_widget = 1002;
+  optional InputMessage input = 1003;
+  optional CompositorMessage compositor = 1004;
 }
 

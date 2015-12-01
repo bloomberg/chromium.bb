@@ -33,6 +33,8 @@ component("blimp_net") {
     "input_message_generator.h",
     "input_message_processor.cc",
     "input_message_processor.h",
+    "null_blimp_message_processor.cc",
+    "null_blimp_message_processor.h",
     "stream_packet_reader.cc",
     "stream_packet_reader.h",
     "stream_packet_writer.cc",

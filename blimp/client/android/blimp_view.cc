@@ -4,6 +4,8 @@
 
 #include "blimp/client/android/blimp_view.h"
 
+#include <android/native_window_jni.h>
+
 #include "blimp/client/compositor/blimp_compositor_android.h"
 #include "jni/BlimpView_jni.h"
 #include "ui/gfx/geometry/size.h"
@@ -34,11 +36,14 @@ BlimpView::BlimpView(JNIEnv* env,
                      const gfx::Size& size,
                      float dp_to_px)
     : compositor_(BlimpCompositorAndroid::Create(real_size, size, dp_to_px)),
-      current_surface_format_(0) {
+      current_surface_format_(0),
+      window_(gfx::kNullAcceleratedWidget) {
   java_obj_.Reset(env, jobj);
 }
 
-BlimpView::~BlimpView() {}
+BlimpView::~BlimpView() {
+  ReleaseAcceleratedWidget();
+}
 
 void BlimpView::Destroy(JNIEnv* env, jobject jobj) {
   delete this;
@@ -54,7 +59,14 @@ void BlimpView::OnSurfaceChanged(JNIEnv* env,
                                  jobject jsurface) {
   if (current_surface_format_ != format) {
     current_surface_format_ = format;
-    compositor_->SetSurface(env, jsurface);
+    ReleaseAcceleratedWidget();
+
+    if (jsurface) {
+      base::android::ScopedJavaLocalFrame scoped_local_reference_frame(env);
+      window_ = ANativeWindow_fromSurface(env, jsurface);
+      compositor_->SetAcceleratedWidget(window_);
+      compositor_->SetVisible(true);
+    }
   }
 
   compositor_->SetSize(gfx::Size(width, height));
@@ -66,11 +78,20 @@ void BlimpView::OnSurfaceCreated(JNIEnv* env, jobject jobj) {
 
 void BlimpView::OnSurfaceDestroyed(JNIEnv* env, jobject jobj) {
   current_surface_format_ = 0 /** PixelFormat.UNKNOWN */;
-  compositor_->SetSurface(env, 0 /** nullptr jobject */);
+  ReleaseAcceleratedWidget();
 }
 
 void BlimpView::SetVisibility(JNIEnv* env, jobject jobj, jboolean visible) {
   compositor_->SetVisible(visible);
+}
+
+void BlimpView::ReleaseAcceleratedWidget() {
+  if (window_ == gfx::kNullAcceleratedWidget)
+    return;
+
+  compositor_->ReleaseAcceleratedWidget();
+  ANativeWindow_release(window_);
+  window_ = gfx::kNullAcceleratedWidget;
 }
 
 }  // namespace blimp

@@ -4,6 +4,7 @@
 
 #include "blimp/engine/browser/blimp_engine_session.h"
 
+#include "base/lazy_instance.h"
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/common/proto/control.pb.h"
 #include "blimp/engine/browser/blimp_browser_context.h"
@@ -11,6 +12,8 @@
 #include "blimp/engine/ui/blimp_screen.h"
 #include "blimp/engine/ui/blimp_ui_context_factory.h"
 #include "blimp/net/blimp_connection.h"
+#include "blimp/net/blimp_message_multiplexer.h"
+#include "blimp/net/null_blimp_message_processor.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -22,6 +25,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/wm/core/base_focus_rules.h"
 #include "ui/wm/core/default_activation_client.h"
 #include "ui/wm/core/focus_controller.h"
@@ -33,6 +37,11 @@
 namespace blimp {
 namespace engine {
 namespace {
+
+const int kDummyTabId = 0;
+
+base::LazyInstance<blimp::NullBlimpMessageProcessor> g_blimp_message_processor =
+    LAZY_INSTANCE_INITIALIZER;
 
 // Focus rules that support activating an child window.
 class FocusRulesImpl : public wm::BaseFocusRules {
@@ -52,9 +61,17 @@ class FocusRulesImpl : public wm::BaseFocusRules {
 
 BlimpEngineSession::BlimpEngineSession(
     scoped_ptr<BlimpBrowserContext> browser_context)
-    : browser_context_(std::move(browser_context)), screen_(new BlimpScreen) {}
+    : browser_context_(std::move(browser_context)),
+      screen_(new BlimpScreen),
+      // TODO(dtrainor, haibinlu): Properly pull these from the BlimpMessageMux.
+      render_widget_processor_(g_blimp_message_processor.Pointer(),
+                               g_blimp_message_processor.Pointer()) {
+  render_widget_processor_.SetDelegate(kDummyTabId, this);
+}
 
-BlimpEngineSession::~BlimpEngineSession() {}
+BlimpEngineSession::~BlimpEngineSession() {
+  render_widget_processor_.RemoveDelegate(kDummyTabId);
+}
 
 void BlimpEngineSession::Initialize() {
   DCHECK(!gfx::Screen::GetScreenByType(gfx::SCREEN_TYPE_NATIVE));
@@ -102,6 +119,11 @@ void BlimpEngineSession::CloseWebContents(const int target_tab_id) {
   web_contents_->Close();
 }
 
+void BlimpEngineSession::HandleResize(const gfx::Size& size) {
+  // TODO(dtrainor, haibinlu): Set the proper size on the WebContents/save for
+  // future WebContents objects.
+}
+
 void BlimpEngineSession::LoadUrl(const int target_tab_id, const GURL& url) {
   if (url.is_empty() || !web_contents_)
     return;
@@ -134,12 +156,35 @@ void BlimpEngineSession::Reload(const int target_tab_id) {
   web_contents_->GetController().Reload(true);
 }
 
+void BlimpEngineSession::OnWebInputEvent(
+    scoped_ptr<blink::WebInputEvent> event) {
+  if (!web_contents_ || !web_contents_->GetRenderViewHost())
+    return;
+
+  // TODO(dtrainor): Send the input event directly to the render process?
+}
+
+void BlimpEngineSession::OnCompositorMessageReceived(
+    const std::vector<uint8_t>& message) {
+  // Make sure that We actually have a valid WebContents and RenderViewHost.
+  if (!web_contents_ || !web_contents_->GetRenderViewHost())
+    return;
+
+  content::RenderWidgetHost* host =
+      web_contents_->GetRenderViewHost()->GetWidget();
+
+  // Make sure we actually have a valid RenderWidgetHost.
+  if (!host)
+    return;
+
+  host->HandleCompositorProto(message);
+}
+
 void BlimpEngineSession::ProcessMessage(
     scoped_ptr<BlimpMessage> message,
     const net::CompletionCallback& callback) {
   DCHECK(message->type() == BlimpMessage::CONTROL ||
-      message->type() == BlimpMessage::NAVIGATION ||
-      message->type() == BlimpMessage::COMPOSITOR);
+      message->type() == BlimpMessage::NAVIGATION);
 
   if (message->type() == BlimpMessage::CONTROL) {
     switch (message->control().type()) {
@@ -148,6 +193,10 @@ void BlimpEngineSession::ProcessMessage(
         break;
       case ControlMessage::CLOSE_TAB:
         CloseWebContents(message->target_tab_id());
+      case ControlMessage::SIZE:
+        HandleResize(gfx::Size(message->control().resize().width(),
+                               message->control().resize().height()));
+        break;
       default:
         NOTIMPLEMENTED();
     }
@@ -226,8 +275,10 @@ void BlimpEngineSession::RequestToLockMouse(content::WebContents* web_contents,
 }
 
 void BlimpEngineSession::CloseContents(content::WebContents* source) {
-  if (source == web_contents_.get())
+  if (source == web_contents_.get()) {
+    Observe(nullptr);
     web_contents_.reset();
+  }
 }
 
 void BlimpEngineSession::ActivateContents(content::WebContents* contents) {
@@ -236,14 +287,19 @@ void BlimpEngineSession::ActivateContents(content::WebContents* contents) {
 
 void BlimpEngineSession::ForwardCompositorProto(
     const std::vector<uint8_t>& proto) {
-  // Send the compositor proto over the network layer to the client, which will
-  // apply the proto to their local compositor instance.
-  // TODO(dtrainor): Send the compositor proto.
+  render_widget_processor_.SendCompositorMessage(kDummyTabId, proto);
+}
+
+void BlimpEngineSession::RenderViewHostChanged(
+    content::RenderViewHost* old_host,
+    content::RenderViewHost* new_host) {
+  render_widget_processor_.OnRenderWidgetInitialized(kDummyTabId);
 }
 
 void BlimpEngineSession::PlatformSetContents(
     scoped_ptr<content::WebContents> new_contents) {
   new_contents->SetDelegate(this);
+  Observe(new_contents.get());
   web_contents_ = std::move(new_contents);
 
   aura::Window* parent = window_tree_host_->window();
