@@ -34,6 +34,32 @@ template("pnacl_toolchain") {
   # TODO(mcgrathr): See above.
   pnacl_newlib_rev = revisions[2]
 
+  # The PNaCl toolchain tools are all wrapper scripts rather than binary
+  # executables.  On POSIX systems, nobody cares what kind of executable
+  # file you are.  But on Windows, scripts (.bat files) cannot be run
+  # directly and need the Windows shell (cmd.exe) specified explicily.
+  # TODO(mcgrathr): Hoist this to top level when
+  # https://code.google.com/p/chromium/issues/detail?id=395883 is fixed.
+  if (host_os == "win") {
+    # NOTE!  The //build/toolchain/gcc_*_wrapper.py scripts recognize
+    # this exact prefix string, so they must be updated if this string
+    # is changed in any way.
+    scriptprefix = "cmd /c call "
+    scriptsuffix = ".bat"
+  } else {
+    scriptprefix = ""
+    scriptsuffix = ""
+  }
+
+  # When the compilers are run via goma or ccache rather than directly by
+  # GN/Ninja, the goma/ccache wrapper handles .bat files but gets confused
+  # by being given the scriptprefix.
+  if (host_os == "win" && !use_goma && !use_ccache) {
+    compiler_scriptprefix = scriptprefix
+  } else {
+    compiler_scriptprefix = ""
+  }
+
   nacl_toolchain(target_name) {
     toolchain_package = "pnacl_newlib"
     toolchain_revision = pnacl_newlib_rev
@@ -43,15 +69,19 @@ template("pnacl_toolchain") {
                     root_build_dir)
 
     is_clang = true
-    cc = toolprefix + "clang"
-    cxx = toolprefix + "clang++"
-    ar = toolprefix + "ar"
-    ld = cxx
-    readelf = toolprefix + "readelf"
-    nm = toolprefix + "nm"
+    cc = compiler_scriptprefix + toolprefix + "clang" + scriptsuffix
+    cxx = compiler_scriptprefix + toolprefix + "clang++" + scriptsuffix
+    ar = scriptprefix + toolprefix + "ar" + scriptsuffix
+    readelf = scriptprefix + toolprefix + "readelf" + scriptsuffix
+    nm = scriptprefix + toolprefix + "nm" + scriptsuffix
     if (defined(invoker.strip)) {
-      strip = toolprefix + invoker.strip
+      strip = scriptprefix + toolprefix + invoker.strip + scriptsuffix
     }
+
+    # Note this is not the usual "ld = cxx" because "ld" uses are
+    # never run via goma, so this needs scriptprefix.
+    ld = scriptprefix + toolprefix + "clang++" + scriptsuffix
+
     executable_extension = invoker.executable_extension
   }
 }

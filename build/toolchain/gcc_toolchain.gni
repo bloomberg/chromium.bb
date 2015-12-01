@@ -223,7 +223,7 @@ template("gcc_toolchain") {
       # POSIX-like toolchains such as NaCl on Windows).
       ar_wrapper =
           rebase_path("//build/toolchain/gcc_ar_wrapper.py", root_build_dir)
-      command = "$python_path \"$ar_wrapper\" --output={{output}} --ar=$ar $arflags rcs @\"$rspfile\""
+      command = "$python_path \"$ar_wrapper\" --output={{output}} --ar=\"$ar\" $arflags rcs @\"$rspfile\""
       description = "AR {{output}}"
       rspfile_content = "{{inputs}}"
       outputs = [
@@ -265,7 +265,7 @@ template("gcc_toolchain") {
       # requiring sh control structures, pipelines, and POSIX utilities.
       # The host might not have a POSIX shell and utilities (e.g. Windows).
       solink_wrapper = rebase_path("//build/toolchain/gcc_solink_wrapper.py")
-      command = "$python_path $solink_wrapper --readelf=$readelf --nm=$nm $strip_switch --sofile=\"$unstripped_sofile\" --tocfile=\"$tocfile\" --output=\"$sofile\" -- $link_command"
+      command = "$python_path \"$solink_wrapper\" --readelf=\"$readelf\" --nm=\"$nm\" $strip_switch --sofile=\"$unstripped_sofile\" --tocfile=\"$tocfile\" --output=\"$sofile\" -- $link_command"
 
       rspfile_content = "-Wl,--whole-archive {{inputs}} {{solibs}} -Wl,--no-whole-archive $solink_libs_section_prefix {{libs}} $solink_libs_section_postfix"
 
@@ -353,7 +353,7 @@ template("gcc_toolchain") {
       if (defined(invoker.strip)) {
         link_wrapper =
             rebase_path("//build/toolchain/gcc_link_wrapper.py", root_build_dir)
-        command = "$python_path \"$link_wrapper\" --strip=${invoker.strip} --unstripped-file=\"$unstripped_outfile\" --output=\"$outfile\" -- $command"
+        command = "$python_path \"$link_wrapper\" --strip=\"${invoker.strip}\" --unstripped-file=\"$unstripped_outfile\" --output=\"$outfile\" -- $command"
       }
       description = "LINK $outfile"
       rspfile_content = "{{inputs}}"

@@ -49,10 +49,9 @@ template("nacl_toolchain") {
                              "toolchain_cpu",
                            ])
 
-    # We do not suport component builds or sanitizers with the NaCl toolchains.
+    # We do not support component builds or sanitizers with the NaCl toolchains.
     is_component_build = false
     clear_sanitizers = true
-    use_ccache = false
 
     rebuild_define = "NACL_TC_REV=" + invoker.toolchain_revision
   }

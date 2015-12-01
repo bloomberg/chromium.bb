@@ -17,10 +17,25 @@ import subprocess
 import sys
 
 
+# When running on a Windows host and using a toolchain whose tools are
+# actually wrapper scripts (i.e. .bat files on Windows) rather than binary
+# executables, the "command" to run has to be prefixed with this magic.
+# The GN toolchain definitions take care of that for when GN/Ninja is
+# running the tool directly.  When that command is passed in to this
+# script, it appears as a unitary string but needs to be split up so that
+# just 'cmd' is the actual command given to Python's subprocess module.
+BAT_PREFIX = 'cmd /c call '
+
+def CommandToRun(command):
+  if command[0].startswith(BAT_PREFIX):
+    command = command[0].split(None, 3) + command[1:]
+  return command
+
+
 def CollectSONAME(args):
   """Replaces: readelf -d $sofile | grep SONAME"""
   toc = ''
-  readelf = subprocess.Popen([args.readelf, '-d', args.sofile],
+  readelf = subprocess.Popen(CommandToRun([args.readelf, '-d', args.sofile]),
                              stdout=subprocess.PIPE, bufsize=-1)
   for line in readelf.stdout:
     if 'SONAME' in line:
@@ -31,7 +46,8 @@ def CollectSONAME(args):
 def CollectDynSym(args):
   """Replaces: nm --format=posix -g -D $sofile | cut -f1-2 -d' '"""
   toc = ''
-  nm = subprocess.Popen([args.nm, '--format=posix', '-g', '-D', args.sofile],
+  nm = subprocess.Popen(CommandToRun([
+      args.nm, '--format=posix', '-g', '-D', args.sofile]),
                         stdout=subprocess.PIPE, bufsize=-1)
   for line in nm.stdout:
     toc += ' '.join(line.split(' ', 2)[:2]) + '\n'
@@ -85,7 +101,7 @@ def main():
   args = parser.parse_args()
 
   # First, run the actual link.
-  result = subprocess.call(args.command)
+  result = subprocess.call(CommandToRun(args.command))
   if result != 0:
     return result
 
@@ -100,8 +116,8 @@ def main():
 
   # Finally, strip the linked shared object file (if desired).
   if args.strip:
-    result = subprocess.call([args.strip, '--strip-unneeded',
-                              '-o', args.output, args.sofile])
+    result = subprocess.call(CommandToRun([args.strip, '--strip-unneeded',
+                                           '-o', args.output, args.sofile]))
 
   return result
 
