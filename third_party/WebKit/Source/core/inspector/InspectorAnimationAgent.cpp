@@ -509,7 +509,6 @@ DEFINE_TRACE(InspectorAnimationAgent)
     visitor->trace(m_idToAnimation);
     visitor->trace(m_idToAnimationType);
     visitor->trace(m_idToAnimationClone);
-    visitor->trace(m_clearedAnimations);
 #endif
     InspectorBaseAgent::trace(visitor);
 }
