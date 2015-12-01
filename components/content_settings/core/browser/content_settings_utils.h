@@ -43,7 +43,7 @@ class MapValueIterator {
     return *this;
   }
 
-  ReferenceType operator*() { return iterator_->second; }
+  ReferenceType operator*() { return iterator_->second.get(); }
 
  private:
   IteratorType iterator_;

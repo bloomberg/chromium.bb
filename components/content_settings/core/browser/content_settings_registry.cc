@@ -93,7 +93,7 @@ const ContentSettingsInfo* ContentSettingsRegistry::Get(
     ContentSettingsType type) const {
   const auto& it = content_settings_info_.find(type);
   if (it != content_settings_info_.end())
-    return it->second;
+    return it->second.get();
   return nullptr;
 }
 
@@ -278,9 +278,8 @@ void ContentSettingsRegistry::Register(
           type, name, default_value.Pass(), sync_status,
           WebsiteSettingsInfo::NOT_LOSSY, scoping_type);
   DCHECK(!ContainsKey(content_settings_info_, type));
-  content_settings_info_.set(
-      type, make_scoped_ptr(new ContentSettingsInfo(
-                website_settings_info, whitelisted_schemes, valid_settings)));
+  content_settings_info_[type] = make_scoped_ptr(new ContentSettingsInfo(
+      website_settings_info, whitelisted_schemes, valid_settings));
 }
 
 }  // namespace content_settings

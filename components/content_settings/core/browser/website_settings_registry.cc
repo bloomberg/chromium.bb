@@ -36,7 +36,7 @@ const WebsiteSettingsInfo* WebsiteSettingsRegistry::Get(
     ContentSettingsType type) const {
   const auto& it = website_settings_info_.find(type);
   if (it != website_settings_info_.end())
-    return it->second;
+    return it->second.get();
   return nullptr;
 }
 
@@ -44,7 +44,7 @@ const WebsiteSettingsInfo* WebsiteSettingsRegistry::GetByName(
     const std::string& name) const {
   for (const auto& entry : website_settings_info_) {
     if (entry.second->name() == name)
-      return entry.second;
+      return entry.second.get();
   }
   return nullptr;
 }
@@ -59,7 +59,7 @@ const WebsiteSettingsInfo* WebsiteSettingsRegistry::Register(
   WebsiteSettingsInfo* info =
       new WebsiteSettingsInfo(type, name, initial_default_value.Pass(),
                               sync_status, lossy_status, scoping_type);
-  website_settings_info_.set(info->type(), make_scoped_ptr(info));
+  website_settings_info_[info->type()] = make_scoped_ptr(info);
   return info;
 }
 

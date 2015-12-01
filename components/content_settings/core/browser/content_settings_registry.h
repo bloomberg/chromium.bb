@@ -5,11 +5,11 @@
 #ifndef COMPONENTS_CONTENT_SETTINGS_CORE_BROWSER_CONTENT_SETTINGS_REGISTRY_H_
 #define COMPONENTS_CONTENT_SETTINGS_CORE_BROWSER_CONTENT_SETTINGS_REGISTRY_H_
 
+#include <map>
 #include <set>
 #include <string>
 #include <vector>
 
-#include "base/containers/scoped_ptr_map.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -29,8 +29,7 @@ class WebsiteSettingsRegistry;
 // const.
 class ContentSettingsRegistry {
  public:
-  using Map =
-      base::ScopedPtrMap<ContentSettingsType, scoped_ptr<ContentSettingsInfo>>;
+  using Map = std::map<ContentSettingsType, scoped_ptr<ContentSettingsInfo>>;
   using const_iterator = MapValueIterator<typename Map::const_iterator,
                                           const ContentSettingsInfo*>;
 

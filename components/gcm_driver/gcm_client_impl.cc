@@ -928,8 +928,8 @@ void GCMClientImpl::Register(
       kMaxRegistrationRetries, url_request_context_getter_, &recorder_,
       source_to_record));
   registration_request->Start();
-  pending_registration_requests_.insert(registration_info,
-                                        registration_request.Pass());
+  pending_registration_requests_.insert(
+      std::make_pair(registration_info, std::move(registration_request)));
 }
 
 void GCMClientImpl::OnRegisterCompleted(
@@ -1069,8 +1069,8 @@ void GCMClientImpl::Unregister(
           kMaxUnregistrationRetries, url_request_context_getter_, &recorder_,
           source_to_record));
   unregistration_request->Start();
-  pending_unregistration_requests_.insert(registration_info,
-                                          unregistration_request.Pass());
+  pending_unregistration_requests_.insert(
+      std::make_pair(registration_info, std::move(unregistration_request)));
 }
 
 void GCMClientImpl::OnUnregisterCompleted(

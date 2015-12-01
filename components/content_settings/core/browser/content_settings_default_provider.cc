@@ -264,7 +264,8 @@ scoped_ptr<RuleIterator> DefaultProvider::GetRuleIterator(
   if (resource_identifier.empty()) {
     auto it(default_settings_.find(content_type));
     if (it != default_settings_.end())
-      return scoped_ptr<RuleIterator>(new DefaultRuleIterator(it->second));
+      return scoped_ptr<RuleIterator>(
+          new DefaultRuleIterator(it->second.get()));
     NOTREACHED();
   }
   return scoped_ptr<RuleIterator>(new EmptyRuleIterator());
@@ -302,12 +303,9 @@ bool DefaultProvider::IsValueEmptyOrDefault(ContentSettingsType content_type,
 
 void DefaultProvider::ChangeSetting(ContentSettingsType content_type,
                                     base::Value* value) {
-  if (!value) {
-    default_settings_.set(content_type,
-                          ContentSettingToValue(GetDefaultValue(content_type)));
-  } else {
-    default_settings_.set(content_type, make_scoped_ptr(value->DeepCopy()));
-  }
+  default_settings_[content_type] =
+      value ? make_scoped_ptr(value->DeepCopy())
+            : ContentSettingToValue(GetDefaultValue(content_type));
 }
 
 void DefaultProvider::WriteToPref(ContentSettingsType content_type,

@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/containers/scoped_ptr_map.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -171,18 +170,17 @@ class GCMClientImpl
   // Collection of pending registration requests. Keys are RegistrationInfo
   // instance, while values are pending registration requests to obtain a
   // registration ID for requesting application.
-  typedef base::ScopedPtrMap<linked_ptr<RegistrationInfo>,
-                             scoped_ptr<RegistrationRequest>,
-                             RegistrationInfoComparer>
-      PendingRegistrationRequests;
+  using PendingRegistrationRequests = std::map<linked_ptr<RegistrationInfo>,
+                                               scoped_ptr<RegistrationRequest>,
+                                               RegistrationInfoComparer>;
 
   // Collection of pending unregistration requests. Keys are RegistrationInfo
   // instance, while values are pending unregistration requests to disable the
   // registration ID currently assigned to the application.
-  typedef base::ScopedPtrMap<linked_ptr<RegistrationInfo>,
-                             scoped_ptr<UnregistrationRequest>,
-                             RegistrationInfoComparer>
-      PendingUnregistrationRequests;
+  using PendingUnregistrationRequests =
+      std::map<linked_ptr<RegistrationInfo>,
+               scoped_ptr<UnregistrationRequest>,
+               RegistrationInfoComparer>;
 
   friend class GCMClientImplTest;
   friend class GCMClientInstanceIDTest;
