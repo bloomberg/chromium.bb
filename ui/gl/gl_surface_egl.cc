@@ -677,6 +677,11 @@ gfx::SwapResult NativeViewGLSurfaceEGL::SwapBuffers() {
   }
 #endif
 
+  if (!CommitAndClearPendingOverlays()) {
+    DVLOG(1) << "Failed to commit pending overlay planes.";
+    return gfx::SwapResult::SWAP_FAILED;
+  }
+
   if (!eglSwapBuffers(GetDisplay(), surface_)) {
     DVLOG(1) << "eglSwapBuffers failed with error "
              << GetLastEGLErrorString();
@@ -747,12 +752,33 @@ gfx::SwapResult NativeViewGLSurfaceEGL::PostSubBuffer(int x,
                                                       int width,
                                                       int height) {
   DCHECK(supports_post_sub_buffer_);
+  if (!CommitAndClearPendingOverlays()) {
+    DVLOG(1) << "Failed to commit pending overlay planes.";
+    return gfx::SwapResult::SWAP_FAILED;
+  }
   if (!eglPostSubBufferNV(GetDisplay(), surface_, x, y, width, height)) {
     DVLOG(1) << "eglPostSubBufferNV failed with error "
              << GetLastEGLErrorString();
     return gfx::SwapResult::SWAP_FAILED;
   }
   return gfx::SwapResult::SWAP_ACK;
+}
+
+bool NativeViewGLSurfaceEGL::SupportsCommitOverlayPlanes() {
+#if defined(OS_ANDROID)
+  return true;
+#else
+  return false;
+#endif
+}
+
+gfx::SwapResult NativeViewGLSurfaceEGL::CommitOverlayPlanes() {
+  DCHECK(SupportsCommitOverlayPlanes());
+  // Here we assume that the overlays scheduled on this surface will display
+  // themselves to the screen right away in |CommitAndClearPendingOverlays|,
+  // rather than being queued and waiting for a "swap" signal.
+  return CommitAndClearPendingOverlays() ? gfx::SwapResult::SWAP_ACK
+                                         : gfx::SwapResult::SWAP_FAILED;
 }
 
 VSyncProvider* NativeViewGLSurfaceEGL::GetVSyncProvider() {
@@ -764,15 +790,13 @@ bool NativeViewGLSurfaceEGL::ScheduleOverlayPlane(int z_order,
                                                   gl::GLImage* image,
                                                   const Rect& bounds_rect,
                                                   const RectF& crop_rect) {
-#if defined(OS_ANDROID)
-  // Overlay planes are used on Android for fullscreen video. The image is
-  // expected to update the plane as soon as possible to display the video frame
-  // chosen for this vsync interval.
-  return image->ScheduleOverlayPlane(window_, z_order, transform, bounds_rect,
-                                     crop_rect);
-#else
+#if !defined(OS_ANDROID)
   NOTIMPLEMENTED();
   return false;
+#else
+  pending_overlays_.push_back(
+      GLSurfaceOverlay(z_order, transform, image, bounds_rect, crop_rect));
+  return true;
 #endif
 }
 
@@ -786,6 +810,17 @@ NativeViewGLSurfaceEGL::~NativeViewGLSurfaceEGL() {
   if (window_)
     ANativeWindow_release(window_);
 #endif
+}
+
+bool NativeViewGLSurfaceEGL::CommitAndClearPendingOverlays() {
+  if (pending_overlays_.empty())
+    return true;
+
+  bool success = true;
+  for (const auto& overlay : pending_overlays_)
+    success &= overlay.ScheduleOverlayPlane(window_);
+  pending_overlays_.clear();
+  return success;
 }
 
 PbufferGLSurfaceEGL::PbufferGLSurfaceEGL(const gfx::Size& size)

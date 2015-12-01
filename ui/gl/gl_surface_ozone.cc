@@ -19,6 +19,7 @@
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface_egl.h"
 #include "ui/gl/gl_surface_osmesa.h"
+#include "ui/gl/gl_surface_overlay.h"
 #include "ui/gl/gl_surface_stub.h"
 #include "ui/gl/scoped_binders.h"
 #include "ui/gl/scoped_make_current.h"
@@ -164,29 +165,13 @@ class GL_EXPORT GLSurfaceOzoneSurfaceless : public SurfacelessEGL {
                           const SwapCompletionCallback& callback) override;
 
  protected:
-  struct Overlay {
-    Overlay(int z_order,
-            OverlayTransform transform,
-            GLImage* image,
-            const Rect& bounds_rect,
-            const RectF& crop_rect);
-
-    bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget) const;
-
-    int z_order;
-    OverlayTransform transform;
-    scoped_refptr<GLImage> image;
-    Rect bounds_rect;
-    RectF crop_rect;
-  };
-
   struct PendingFrame {
     PendingFrame();
 
     bool ScheduleOverlayPlanes(gfx::AcceleratedWidget widget);
 
     bool ready;
-    std::vector<Overlay> overlays;
+    std::vector<GLSurfaceOverlay> overlays;
     SwapCompletionCallback callback;
   };
 
@@ -213,23 +198,6 @@ class GL_EXPORT GLSurfaceOzoneSurfaceless : public SurfacelessEGL {
 
   DISALLOW_COPY_AND_ASSIGN(GLSurfaceOzoneSurfaceless);
 };
-
-GLSurfaceOzoneSurfaceless::Overlay::Overlay(int z_order,
-                                            OverlayTransform transform,
-                                            GLImage* image,
-                                            const Rect& bounds_rect,
-                                            const RectF& crop_rect)
-    : z_order(z_order),
-      transform(transform),
-      image(image),
-      bounds_rect(bounds_rect),
-      crop_rect(crop_rect) {}
-
-bool GLSurfaceOzoneSurfaceless::Overlay::ScheduleOverlayPlane(
-    gfx::AcceleratedWidget widget) const {
-  return image->ScheduleOverlayPlane(widget, z_order, transform, bounds_rect,
-                                     crop_rect);
-}
 
 GLSurfaceOzoneSurfaceless::PendingFrame::PendingFrame() : ready(false) {}
 
@@ -301,7 +269,7 @@ bool GLSurfaceOzoneSurfaceless::ScheduleOverlayPlane(int z_order,
                                                      const Rect& bounds_rect,
                                                      const RectF& crop_rect) {
   unsubmitted_frames_.back()->overlays.push_back(
-      Overlay(z_order, transform, image, bounds_rect, crop_rect));
+      GLSurfaceOverlay(z_order, transform, image, bounds_rect, crop_rect));
   return true;
 }
 

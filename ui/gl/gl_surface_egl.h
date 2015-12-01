@@ -18,6 +18,7 @@
 #include "ui/gfx/vsync_provider.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_surface.h"
+#include "ui/gl/gl_surface_overlay.h"
 
 namespace gfx {
 
@@ -87,6 +88,8 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL {
   EGLSurface GetHandle() override;
   bool SupportsPostSubBuffer() override;
   gfx::SwapResult PostSubBuffer(int x, int y, int width, int height) override;
+  bool SupportsCommitOverlayPlanes() override;
+  gfx::SwapResult CommitOverlayPlanes() override;
   VSyncProvider* GetVSyncProvider() override;
   bool ScheduleOverlayPlane(int z_order,
                             OverlayTransform transform,
@@ -106,6 +109,10 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL {
   void OnSetSwapInterval(int interval) override;
 
  private:
+  // Commit the |pending_overlays_| and clear the vector. Returns false if any
+  // fail to be committed.
+  bool CommitAndClearPendingOverlays();
+
   EGLSurface surface_;
   bool supports_post_sub_buffer_;
   EGLConfig config_;
@@ -114,6 +121,8 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL {
   scoped_ptr<VSyncProvider> vsync_provider_;
 
   int swap_interval_;
+
+  std::vector<GLSurfaceOverlay> pending_overlays_;
 
 #if defined(OS_WIN)
   bool vsync_override_;

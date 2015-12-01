@@ -101,6 +101,8 @@
         'gl_surface_mac.cc',
         'gl_surface_osmesa.cc',
         'gl_surface_osmesa.h',
+        'gl_surface_overlay.cc',
+        'gl_surface_overlay.h',
         'gl_surface_ozone.cc',
         'gl_surface_stub.cc',
         'gl_surface_stub.h',
