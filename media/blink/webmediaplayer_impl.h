@@ -188,9 +188,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // Called when the data source is downloading or paused.
   void NotifyDownloading(bool is_downloading);
 
-  // Creates a Renderer that will be used by the |pipeline_|.
-  scoped_ptr<Renderer> CreateRenderer();
-
   // Finishes starting the pipeline due to a call to load().
   void StartPipeline();
 
