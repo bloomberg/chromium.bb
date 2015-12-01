@@ -335,16 +335,3 @@ base::RefCountedMemory* FlagsUI::GetFaviconResourceBytes(
   return ResourceBundle::GetSharedInstance().
       LoadDataResourceBytesForScale(IDR_FLAGS_FAVICON, scale_factor);
 }
-
-// static
-void FlagsUI::RegisterPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterListPref(flags_ui::prefs::kEnabledLabsExperiments);
-}
-
-#if defined(OS_CHROMEOS)
-// static
-void FlagsUI::RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterListPref(flags_ui::prefs::kEnabledLabsExperiments);
-}
-
-#endif

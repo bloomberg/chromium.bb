@@ -4,10 +4,12 @@
 
 #include "components/flags_ui/pref_service_flags_storage.h"
 
+#include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/values.h"
 #include "components/flags_ui/flags_ui_pref_names.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 
 namespace flags_ui {
 
@@ -44,5 +46,18 @@ bool PrefServiceFlagsStorage::SetFlags(const std::set<std::string>& flags) {
 
   return true;
 }
+
+// static
+void PrefServiceFlagsStorage::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterListPref(prefs::kEnabledLabsExperiments);
+}
+
+#if defined(OS_CHROMEOS)
+// static
+void PrefServiceFlagsStorage::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterListPref(prefs::kEnabledLabsExperiments);
+}
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace flags_ui

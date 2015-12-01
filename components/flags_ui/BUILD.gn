@@ -22,6 +22,7 @@ source_set("flags_ui") {
     ":switches",
     "//base",
     "//base:prefs",
+    "//components/pref_registry",
     "//components/strings",
     "//ui/base",
   ]

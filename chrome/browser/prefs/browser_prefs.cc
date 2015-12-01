@@ -71,6 +71,7 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/dom_distiller/core/distilled_page_prefs.h"
 #include "components/enhanced_bookmarks/bookmark_server_cluster_service.h"
+#include "components/flags_ui/pref_service_flags_storage.h"
 #include "components/gcm_driver/gcm_channel_status_syncer.h"
 #include "components/network_time/network_time_tracker.h"
 #include "components/omnibox/browser/zero_suggest_provider.h"
@@ -247,7 +248,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   component_updater::RegisterPrefsForRecoveryComponent(registry);
   component_updater::SupervisedUserWhitelistInstaller::RegisterPrefs(registry);
   ExternalProtocolHandler::RegisterPrefs(registry);
-  FlagsUI::RegisterPrefs(registry);
+  flags_ui::PrefServiceFlagsStorage::RegisterPrefs(registry);
   geolocation::RegisterPrefs(registry);
   GLStringManager::RegisterPrefs(registry);
   GpuModeManager::RegisterPrefs(registry);
@@ -490,7 +491,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   chromeos::UserImageSyncObserver::RegisterProfilePrefs(registry);
   extensions::EnterprisePlatformKeysPrivateChallengeUserKeyFunction::
       RegisterProfilePrefs(registry);
-  FlagsUI::RegisterProfilePrefs(registry);
+  flags_ui::PrefServiceFlagsStorage::RegisterProfilePrefs(registry);
 #endif
 
 #if defined(OS_WIN)

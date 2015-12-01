@@ -31,10 +31,6 @@ class FlagsUI : public content::WebUIController {
 
   static base::RefCountedMemory* GetFaviconResourceBytes(
       ui::ScaleFactor scale_factor);
-  static void RegisterPrefs(PrefRegistrySimple* registry);
-#if defined(OS_CHROMEOS)
-  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
-#endif
 
  private:
   base::WeakPtrFactory<FlagsUI> weak_factory_;

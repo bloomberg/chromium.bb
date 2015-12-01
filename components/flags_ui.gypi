@@ -17,6 +17,7 @@
         '../components/components_strings.gyp:components_strings',
         '../ui/base/ui_base.gyp:ui_base',
         'flags_ui_switches',
+        'pref_registry',
       ],
       'sources': [
         # Note: sources list duplicated in GN build.

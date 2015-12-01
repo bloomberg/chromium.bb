@@ -10,6 +10,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
 #include "components/dom_distiller/core/distilled_page_prefs.h"
 #include "components/enhanced_bookmarks/bookmark_server_cluster_service.h"
+#include "components/flags_ui/pref_service_flags_storage.h"
 #include "components/gcm_driver/gcm_channel_status_syncer.h"
 #include "components/network_time/network_time_tracker.h"
 #include "components/omnibox/browser/zero_suggest_provider.h"
@@ -49,6 +50,7 @@ const char kURLsToRestoreOnStartupOld[] = "session.urls_to_restore_on_startup";
 
 void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   BrowserStateInfoCache::RegisterPrefs(registry);
+  flags_ui::PrefServiceFlagsStorage::RegisterPrefs(registry);
   gcm::GCMChannelStatusSyncer::RegisterPrefs(registry);
   ios::SigninManagerFactory::RegisterPrefs(registry);
   IOSChromeMetricsServiceClient::RegisterPrefs(registry);
