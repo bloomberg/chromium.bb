@@ -336,9 +336,8 @@ static const char *opcodeNames[CTO_None] = {
   "midnum",
   "endnum",
   "decpoint",
-  "hyphen",
-  "nobreak"
-};
+  "hyphen"
+  };
 static short opcodeLengths[CTO_None] = { 0 };
 
 static char scratchBuf[MAXSTRING];
@@ -1006,8 +1005,7 @@ charactersDefined (FileInfo * nested)
 	noErrors = 0;
       }
   if (!(newRule->opcode == CTO_Correct || newRule->opcode ==
-	CTO_NoBreak || newRule->opcode == CTO_SwapCc || newRule->opcode ==
-	CTO_SwapCd))
+	CTO_SwapCc || newRule->opcode == CTO_SwapCd))
     {
       for (k = newRule->charslen; k < newRule->charslen + newRule->dotslen;
 	   k++)
@@ -1098,7 +1096,7 @@ add_1_single (FileInfo * nested)
   TranslationTableRule *currentRule;
   TranslationTableOffset *currentOffsetPtr;
   TranslationTableCharacter *dots;
-  if (newRule->opcode == CTO_NoBreak || newRule->opcode == CTO_SwapCc ||
+  if (newRule->opcode == CTO_SwapCc ||
       (newRule->opcode >= CTO_Context
        &&
        newRule->opcode <= CTO_Pass4)
@@ -1135,7 +1133,7 @@ add_1_multiple ()
 								charsdots
 								[newRule->
 								 charslen])];
-  if (newRule->opcode == CTO_NoBreak || newRule->opcode == CTO_SwapCc ||
+  if (newRule->opcode == CTO_SwapCc ||
       (newRule->opcode >= CTO_Context && newRule->opcode <= CTO_Pass4))
     return;
   while (*currentOffsetPtr)
@@ -3707,50 +3705,6 @@ compileHyphenation (FileInfo * nested, CharsString * encoding)
 }
 
 static int
-compileNoBreak (FileInfo * nested)
-{
-  int k;
-  CharsString ruleDots;
-  CharsString otherDots;
-  CharsString dotsBefore;
-  CharsString dotsAfter;
-  int haveDotsAfter = 0;
-  if (!getToken (nested, &ruleDots, "dots operand"))
-    return 0;
-  for (k = 0; k < ruleDots.length && ruleDots.chars[k] != ','; k++);
-  if (k == ruleDots.length)
-    {
-      if (!parseDots (nested, &dotsBefore, &ruleDots))
-	return 0;
-      dotsAfter.length = dotsBefore.length;
-      for (k = 0; k < dotsBefore.length; k++)
-	dotsAfter.chars[k] = dotsBefore.chars[k];
-      dotsAfter.chars[k] = 0;
-    }
-  else
-    {
-      haveDotsAfter = ruleDots.length;
-      ruleDots.length = k;
-      if (!parseDots (nested, &dotsBefore, &ruleDots))
-	return 0;
-      otherDots.length = 0;
-      k++;
-      for (; k < haveDotsAfter; k++)
-	otherDots.chars[otherDots.length++] = ruleDots.chars[k];
-      if (!parseDots (nested, &dotsAfter, &otherDots))
-	return 0;
-    }
-  for (k = 0; k < dotsBefore.length; k++)
-    dotsBefore.chars[k] = getCharFromDots (dotsBefore.chars[k]);
-  for (k = 0; k < dotsAfter.length; k++)
-    dotsAfter.chars[k] = getCharFromDots (dotsAfter.chars[k]);
-  if (!addRule (nested, CTO_NoBreak, &dotsBefore, &dotsAfter, 0, 0))
-    return 0;
-  table->noBreak = newRuleOffset;
-  return 1;
-}
-
-static int
 compileCharDef (FileInfo * nested,
 		TranslationTableOpcode opcode,
 		TranslationTableCharacterAttributes attributes)
@@ -4363,9 +4317,6 @@ doOpcode:
       break;
     case CTO_LowerCase:
       compileCharDef (nested, opcode, CTC_LowerCase);
-      break;
-    case CTO_NoBreak:
-      ok = compileNoBreak (nested);
       break;
     case CTO_Grouping:
       ok = compileGrouping (nested);

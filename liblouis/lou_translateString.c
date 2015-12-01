@@ -53,24 +53,22 @@ lou_translateString (const char *tableList, const widechar
 }
 
 int EXPORT_CALL
-lou_translate (const char *tableList, const widechar
-	       * inbufx,
+lou_translate (const char *tableList, const widechar * inbufx,
 	       int *inlen, widechar * outbuf, int *outlen,
 	       formtype *typeform, char *spacing, int *outputPos,
 	       int *inputPos, int *cursorPos, int modex)
 {
-  return trace_translate (tableList, inbufx, inlen, outbuf, outlen,
-			  typeform, spacing, outputPos, inputPos, cursorPos,
-			  NULL, NULL, modex);
+  return translateWithTracing (tableList, inbufx, inlen, outbuf, outlen,
+			       typeform, spacing, outputPos, inputPos, cursorPos,
+			       modex, NULL, NULL);
 }
 
 int
-trace_translate (const char *tableList, const widechar * inbufx,
-		 int *inlen, widechar * outbuf, int *outlen,
-		 formtype *typeform, char *spacing, int *outputPos,
-		 int *inputPos, int *cursorPos,
-		 const TranslationTableRule ** rules, int *rulesLen,
-		 int modex)
+translateWithTracing (const char *tableList, const widechar * inbufx,
+		      int *inlen, widechar * outbuf, int *outlen,
+		      formtype *typeform, char *spacing, int *outputPos,
+		      int *inputPos, int *cursorPos, int modex,
+		      const TranslationTableRule **rules, int *rulesLen)
 {
   int k;
   int goodTrans = 1;
@@ -1837,8 +1835,9 @@ translateString ()
       if (!insertIndicators ())
         goto failure;
       for_selectRule ();
-      if (appliedRules != NULL && appliedRulesCount < maxAppliedRules)
-        appliedRules[appliedRulesCount++] = transRule;
+      if (transOpcode != CTO_Context)
+	if (appliedRules != NULL && appliedRulesCount < maxAppliedRules)
+	  appliedRules[appliedRulesCount++] = transRule;
       srcIncremented = 1;
       prevSrc = src;
       switch (transOpcode)        /*Rules that pre-empt context and swap */
@@ -2152,29 +2151,9 @@ lou_hyphenate (const char *tableList, const widechar
 	    hyphens2[hyphPos] = '0';
 	}
       for (kk = wordStart; kk < wordStart + k; kk++)
-	if (!table->noBreak || hyphens2[kk] == '0')
+	if (hyphens2[kk] == '0')
 	  hyphens[kk] = hyphens2[kk];
-	else
-	  {
-	    TranslationTableRule *noBreakRule = (TranslationTableRule *)
-	      & table->ruleArea[table->noBreak];
-	    int kkk;
-	    if (kk > 0)
-	      for (kkk = 0; kkk < noBreakRule->charslen; kkk++)
-		if (workingBuffer2[kk - 1] == noBreakRule->charsdots[kkk])
-		  {
-		    hyphens[kk] = '0';
-		    break;
-		  }
-	    for (kkk = 0; kkk < noBreakRule->dotslen; kkk++);
-	    if (workingBuffer2[kk] ==
-		noBreakRule->charsdots[noBreakRule->charslen + kkk])
-	      {
-		hyphens[kk] = '0';
-		break;
-	      }
-	  }
-    }
+	}
   for (k = 0; k < inlen; k++)
     if (hyphens[k] & 1)
       hyphens[k] = '1';
