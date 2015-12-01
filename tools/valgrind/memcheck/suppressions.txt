@@ -424,6 +424,21 @@
    fun:_ZN3ash5Shell14CreateInstanceEPNS_13ShellDelegateE
 }
 
+# According to http://crbug.com/242672, this is a false positive caused by
+# BitVector storing the pointer shifted right by 1. Leak checkers aren't smart
+# enough to comprehend that.
+{
+   bug_242672
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:_ZN3WTF9BitVector13OutOfLineBits6createEm
+   fun:_ZN3WTF9BitVector15resizeOutOfLineEm
+   fun:_ZN3WTF9BitVector10ensureSizeEm
+   fun:_ZN5blink10UseCounterC1Ev
+   fun:_ZN5blink4PageC1ERNS0_11PageClientsE
+}
+
 # http://crbug.com/269278 causes really widespread, flaky leaks in
 # value objects that own some memory.  These suppressions will cover
 # all such objects, even though it's possible to get real leaks that
@@ -2055,17 +2070,6 @@
    fun:_ZN3WTF9BitVectorC*
    ...
    fun:_ZN5blink10UseCounter17recordMeasurementENS0_7FeatureE
-}
-{
-   bug_242672
-   Memcheck:Leak
-   fun:malloc
-   ...
-   fun:_ZN3WTF9BitVector13OutOfLineBits6createEm
-   fun:_ZN3WTF9BitVector15resizeOutOfLineEm
-   fun:_ZN3WTF9BitVector10ensureSizeEm
-   fun:_ZN5blink10UseCounterC1Ev
-   fun:_ZN5blink4PageC1ERNS0_11PageClientsE
 }
 {
    bug_245714
