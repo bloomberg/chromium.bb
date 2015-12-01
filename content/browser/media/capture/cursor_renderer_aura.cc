@@ -193,14 +193,19 @@ void CursorRendererAura::OnMouseEvent(ui::MouseEvent* event) {
             std::abs(event->y() - last_mouse_position_y_) > MIN_MOVEMENT_PIXELS)
           cursor_displayed_ = true;
       }
-      if (cursor_displayed_) {
-        last_mouse_movement_timestamp_ = event->time_stamp();
-        last_mouse_position_x_ = event->x();
-        last_mouse_position_y_ = event->y();
-      }
+      break;
+    case ui::ET_MOUSE_PRESSED:
+    case ui::ET_MOUSE_RELEASED:
+    case ui::ET_MOUSEWHEEL:
+      cursor_displayed_ = true;
       break;
     default:
-      break;
+      return;
+  }
+  if (cursor_displayed_) {
+    last_mouse_movement_timestamp_ = event->time_stamp();
+    last_mouse_position_x_ = event->x();
+    last_mouse_position_y_ = event->y();
   }
 }
 
