@@ -12,8 +12,8 @@ source_set("browser") {
     "password_model_worker.h",
     "password_sync_util.cc",
     "password_sync_util.h",
-    "sync_store_result_filter.cc",
-    "sync_store_result_filter.h",
+    "sync_credentials_filter.cc",
+    "sync_credentials_filter.h",
   ]
 
   deps = [
@@ -37,7 +37,7 @@ source_set("unit_tests") {
   sources = [
     "password_manager_setting_migrator_service_unittest.cc",
     "password_sync_util_unittest.cc",
-    "sync_store_result_filter_unittest.cc",
+    "sync_credentials_filter_unittest.cc",
     "sync_username_test_base.cc",
     "sync_username_test_base.h",
   ]

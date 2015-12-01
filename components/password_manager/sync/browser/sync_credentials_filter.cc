@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/password_manager/sync/browser/sync_store_result_filter.h"
+#include "components/password_manager/sync/browser/sync_credentials_filter.h"
 
 #include <algorithm>
 
@@ -37,7 +37,7 @@ bool LastLoadWasTransactionalReauthPage(const GURL& last_load_url) {
 
 }  // namespace
 
-SyncStoreResultFilter::SyncStoreResultFilter(
+SyncCredentialsFilter::SyncCredentialsFilter(
     const PasswordManagerClient* client,
     SyncServiceFactoryFunction sync_service_factory_function,
     SigninManagerFactoryFunction signin_manager_factory_function)
@@ -45,10 +45,9 @@ SyncStoreResultFilter::SyncStoreResultFilter(
       sync_service_factory_function_(sync_service_factory_function),
       signin_manager_factory_function_(signin_manager_factory_function) {}
 
-SyncStoreResultFilter::~SyncStoreResultFilter() {
-}
+SyncCredentialsFilter::~SyncCredentialsFilter() {}
 
-ScopedVector<PasswordForm> SyncStoreResultFilter::FilterResults(
+ScopedVector<PasswordForm> SyncCredentialsFilter::FilterResults(
     ScopedVector<PasswordForm> results) const {
   const AutofillForSyncCredentialsState autofill_sync_state =
       GetAutofillForSyncCredentialsState();
@@ -75,22 +74,22 @@ ScopedVector<PasswordForm> SyncStoreResultFilter::FilterResults(
   return results.Pass();
 }
 
-bool SyncStoreResultFilter::ShouldSave(
+bool SyncCredentialsFilter::ShouldSave(
     const autofill::PasswordForm& form) const {
   return !sync_util::IsSyncAccountCredential(
       form, sync_service_factory_function_.Run(),
       signin_manager_factory_function_.Run());
 }
 
-void SyncStoreResultFilter::ReportFormUsed(
+void SyncCredentialsFilter::ReportFormUsed(
     const autofill::PasswordForm& form) const {
   base::RecordAction(
       base::UserMetricsAction("PasswordManager_SyncCredentialUsed"));
 }
 
 // static
-SyncStoreResultFilter::AutofillForSyncCredentialsState
-SyncStoreResultFilter::GetAutofillForSyncCredentialsState() {
+SyncCredentialsFilter::AutofillForSyncCredentialsState
+SyncCredentialsFilter::GetAutofillForSyncCredentialsState() {
   std::string group_name =
       base::FieldTrialList::FindFullName("AutofillSyncCredential");
 

@@ -14,7 +14,7 @@
 #include "components/password_manager/content/browser/credential_manager_dispatcher.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
-#include "components/password_manager/sync/browser/sync_store_result_filter.h"
+#include "components/password_manager/sync/browser/sync_credentials_filter.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "ui/gfx/geometry/rect.h"
@@ -157,7 +157,7 @@ class ChromePasswordManagerClient
   // want to save passwords and also won't fill the passwords).
   BooleanPrefMember saving_and_filling_passwords_enabled_;
 
-  const password_manager::SyncStoreResultFilter credentials_filter_;
+  const password_manager::SyncCredentialsFilter credentials_filter_;
 
   scoped_ptr<password_manager::LogManager> log_manager_;
 

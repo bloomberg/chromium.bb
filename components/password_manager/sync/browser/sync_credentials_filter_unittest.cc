@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/password_manager/sync/browser/sync_store_result_filter.h"
+#include "components/password_manager/sync/browser/sync_credentials_filter.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -47,7 +47,7 @@ bool IsFormFiltered(const CredentialsFilter* filter, const PasswordForm& form) {
 
 }  // namespace
 
-class StoreResultFilterTest : public SyncUsernameTestBase {
+class CredentialsFilterTest : public SyncUsernameTestBase {
  public:
   struct TestCase {
     enum { SYNCING_PASSWORDS, NOT_SYNCING_PASSWORDS } password_sync;
@@ -58,7 +58,7 @@ class StoreResultFilterTest : public SyncUsernameTestBase {
     enum { NO_HISTOGRAM, HISTOGRAM_REPORTED } histogram_reported;
   };
 
-  StoreResultFilterTest()
+  CredentialsFilterTest()
       : filter_(&client_,
                 base::Bind(&SyncUsernameTestBase::sync_service,
                            base::Unretained(this)),
@@ -83,17 +83,17 @@ class StoreResultFilterTest : public SyncUsernameTestBase {
     FakeSignout();
   }
 
-  SyncStoreResultFilter* filter() { return &filter_; }
+  SyncCredentialsFilter* filter() { return &filter_; }
 
   FakePasswordManagerClient* client() { return &client_; }
 
  private:
   FakePasswordManagerClient client_;
 
-  SyncStoreResultFilter filter_;
+  SyncCredentialsFilter filter_;
 };
 
-TEST_F(StoreResultFilterTest, FilterResults_AllowAll) {
+TEST_F(CredentialsFilterTest, FilterResults_AllowAll) {
   // By default, sync username is not filtered at all.
   const TestCase kTestCases[] = {
       // Reauth URL, not sync username.
@@ -131,7 +131,7 @@ TEST_F(StoreResultFilterTest, FilterResults_AllowAll) {
   }
 }
 
-TEST_F(StoreResultFilterTest, FilterResults_DisallowSyncOnReauth) {
+TEST_F(CredentialsFilterTest, FilterResults_DisallowSyncOnReauth) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   command_line->AppendSwitch(
       switches::kDisallowAutofillSyncCredentialForReauth);
@@ -172,7 +172,7 @@ TEST_F(StoreResultFilterTest, FilterResults_DisallowSyncOnReauth) {
   }
 }
 
-TEST_F(StoreResultFilterTest, FilterResults_DisallowSync) {
+TEST_F(CredentialsFilterTest, FilterResults_DisallowSync) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   command_line->AppendSwitch(switches::kDisallowAutofillSyncCredential);
 
@@ -212,14 +212,14 @@ TEST_F(StoreResultFilterTest, FilterResults_DisallowSync) {
   }
 }
 
-TEST_F(StoreResultFilterTest, ReportFormUsed) {
+TEST_F(CredentialsFilterTest, ReportFormUsed) {
   base::UserActionTester tester;
   ASSERT_EQ(0, tester.GetActionCount("PasswordManager_SyncCredentialUsed"));
   filter()->ReportFormUsed(PasswordForm());
   EXPECT_EQ(1, tester.GetActionCount("PasswordManager_SyncCredentialUsed"));
 }
 
-TEST_F(StoreResultFilterTest, ShouldSave_NotSyncCredential) {
+TEST_F(CredentialsFilterTest, ShouldSave_NotSyncCredential) {
   PasswordForm form = SimpleGaiaForm("user@example.org");
 
   ASSERT_NE("user@example.org",
@@ -228,7 +228,7 @@ TEST_F(StoreResultFilterTest, ShouldSave_NotSyncCredential) {
   EXPECT_TRUE(filter()->ShouldSave(form));
 }
 
-TEST_F(StoreResultFilterTest, ShouldSave_SyncCredential) {
+TEST_F(CredentialsFilterTest, ShouldSave_SyncCredential) {
   PasswordForm form = SimpleGaiaForm("user@example.org");
 
   FakeSigninAs("user@example.org");
@@ -236,7 +236,7 @@ TEST_F(StoreResultFilterTest, ShouldSave_SyncCredential) {
   EXPECT_FALSE(filter()->ShouldSave(form));
 }
 
-TEST_F(StoreResultFilterTest, ShouldSave_SyncCredential_NotSyncingPasswords) {
+TEST_F(CredentialsFilterTest, ShouldSave_SyncCredential_NotSyncingPasswords) {
   PasswordForm form = SimpleGaiaForm("user@example.org");
 
   FakeSigninAs("user@example.org");
@@ -244,7 +244,7 @@ TEST_F(StoreResultFilterTest, ShouldSave_SyncCredential_NotSyncingPasswords) {
   EXPECT_TRUE(filter()->ShouldSave(form));
 }
 
-TEST_F(StoreResultFilterTest, ShouldFilterOneForm) {
+TEST_F(CredentialsFilterTest, ShouldFilterOneForm) {
   // Adding disallow switch should cause sync credential to be filtered.
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   command_line->AppendSwitch(switches::kDisallowAutofillSyncCredential);
