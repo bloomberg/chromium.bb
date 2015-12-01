@@ -84,6 +84,8 @@ public:
             m_shapeCache = FontCache::fontCache()->getShapeCache(key)->weakPtr();
         }
         ASSERT(m_shapeCache);
+        if (fontSelector())
+            m_shapeCache->clearIfVersionChanged(fontSelector()->version());
         return m_shapeCache.get();
     }
 

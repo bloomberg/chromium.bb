@@ -128,7 +128,7 @@ private:
     friend bool operator==(const SmallStringKey&, const SmallStringKey&);
 
 public:
-    ShapeCache(): m_weakFactory(this) { }
+    ShapeCache(): m_weakFactory(this), m_version(0) { }
 
     ShapeCacheEntry* add(const TextRun& run, ShapeCacheEntry entry)
     {
@@ -136,6 +136,14 @@ public:
             return 0;
 
         return addSlowCase(run, entry);
+    }
+
+    void clearIfVersionChanged(unsigned version)
+    {
+        if (version != m_version) {
+            clear();
+            m_version = version;
+        }
     }
 
     void clear()
@@ -209,6 +217,7 @@ private:
     SingleCharMap m_singleCharMap;
     SmallStringMap m_shortStringMap;
     WeakPtrFactory<ShapeCache> m_weakFactory;
+    unsigned m_version;
 };
 
 inline bool operator==(const ShapeCache::SmallStringKey& a, const ShapeCache::SmallStringKey& b)
