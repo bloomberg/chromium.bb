@@ -49,7 +49,6 @@
 #include "components/sync_driver/signin_manager_wrapper.h"
 #include "components/sync_driver/sync_api_component_factory.h"
 #include "components/sync_driver/sync_client.h"
-#include "components/sync_driver/sync_driver_features.h"
 #include "components/sync_driver/sync_driver_switches.h"
 #include "components/sync_driver/sync_error_controller.h"
 #include "components/sync_driver/sync_stopped_reporter.h"
@@ -339,7 +338,7 @@ void ProfileSyncService::Initialize() {
     need_backup_ = false;
   }
 
-#if BUILDFLAG(ENABLE_PRE_SYNC_BACKUP)
+#if defined(ENABLE_PRE_SYNC_BACKUP)
   if (!running_rollback && !IsSignedIn()) {
     CleanUpBackup();
   }
@@ -2567,7 +2566,7 @@ void ProfileSyncService::ClearBrowsingDataSinceFirstSync() {
 void ProfileSyncService::CheckSyncBackupIfNeeded() {
   DCHECK_EQ(backend_mode_, SYNC);
 
-#if BUILDFLAG(ENABLE_PRE_SYNC_BACKUP)
+#if defined(ENABLE_PRE_SYNC_BACKUP)
   const base::Time last_synced_time = sync_prefs_.GetLastSyncedTime();
   // Check backup once a day.
   if (!last_backup_time_ &&

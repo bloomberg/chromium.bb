@@ -12,13 +12,12 @@
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "components/sync_driver/signin_manager_wrapper.h"
-#include "components/sync_driver/sync_driver_features.h"
 #include "components/sync_driver/sync_driver_switches.h"
 #include "components/sync_driver/sync_prefs.h"
 
 namespace sync_driver {
 
-#if BUILDFLAG(ENABLE_PRE_SYNC_BACKUP)
+#if defined(ENABLE_PRE_SYNC_BACKUP)
 // Number of rollback attempts to try before giving up.
 static const int kRollbackLimits = 3;
 
@@ -72,20 +71,20 @@ bool BackupRollbackController::StartRollback() {
 }
 
 void BackupRollbackController::OnRollbackReceived() {
-#if BUILDFLAG(ENABLE_PRE_SYNC_BACKUP)
+#if defined(ENABLE_PRE_SYNC_BACKUP)
   sync_prefs_->SetRemainingRollbackTries(kRollbackLimits);
 #endif
 }
 
 void BackupRollbackController::OnRollbackDone() {
-#if BUILDFLAG(ENABLE_PRE_SYNC_BACKUP)
+#if defined(ENABLE_PRE_SYNC_BACKUP)
   sync_prefs_->SetRemainingRollbackTries(0);
 #endif
 }
 
 // static
 bool BackupRollbackController::IsBackupEnabled() {
-#if BUILDFLAG(ENABLE_PRE_SYNC_BACKUP)
+#if defined(ENABLE_PRE_SYNC_BACKUP)
   const std::string group_name =
       base::FieldTrialList::FindFullName(kSyncBackupFinchName);
 

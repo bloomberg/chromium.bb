@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/buildflag_header.gni")
 import("//build/config/features.gni")
 
 source_set("sync_driver") {
@@ -121,9 +120,6 @@ source_set("sync_driver") {
     "user_selectable_sync_type.h",
   ]
 
-  public_deps = [
-    ":features",
-  ]
   deps = [
     "//base",
     "//base:prefs",
@@ -253,13 +249,4 @@ source_set("unit_tests") {
       "//components/policy:policy_component",
     ]
   }
-}
-
-buildflag_header("features") {
-  header = "sync_driver_features.h"
-
-  # Whether to back up data before sync.
-  enable_pre_sync_backup = is_win || is_mac || (is_linux && !is_chromeos)
-
-  flags = [ "ENABLE_PRE_SYNC_BACKUP=$enable_pre_sync_backup" ]
 }
