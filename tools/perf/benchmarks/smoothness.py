@@ -125,6 +125,7 @@ class SmoothnessKeyMobileSites(_Smoothness):
     return 'smoothness.key_mobile_sites_smooth'
 
 
+@benchmark.Disabled('mac')  # crbug.com/563615
 class SmoothnessToughAnimationCases(_Smoothness):
   test = smoothness.SmoothnessWithRestart
   page_set = page_sets.ToughAnimationCasesPageSet
