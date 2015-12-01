@@ -38,6 +38,8 @@ class DecoderBufferAdapter : public DecoderBufferBase {
   const CastDecryptConfig* decrypt_config() const override;
   bool end_of_stream() const override;
 
+  scoped_refptr<::media::DecoderBuffer> ToMediaBuffer() const override;
+
  private:
   ~DecoderBufferAdapter() override;
 

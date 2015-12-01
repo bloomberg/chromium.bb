@@ -11,6 +11,7 @@
 #include "chromecast/media/cma/base/decoder_buffer_base.h"
 #include "chromecast/public/media/cast_decrypt_config.h"
 #include "crypto/symmetric_key.h"
+#include "media/base/decoder_buffer.h"
 
 namespace chromecast {
 namespace media {
@@ -30,6 +31,7 @@ class DecoderBufferClear : public DecoderBufferBase {
   size_t data_size() const override;
   const CastDecryptConfig* decrypt_config() const override;
   bool end_of_stream() const override;
+  scoped_refptr<::media::DecoderBuffer> ToMediaBuffer() const override;
 
  private:
   ~DecoderBufferClear() override;
@@ -78,6 +80,11 @@ const CastDecryptConfig* DecoderBufferClear::decrypt_config() const {
 
 bool DecoderBufferClear::end_of_stream() const {
   return buffer_->end_of_stream();
+}
+
+scoped_refptr<::media::DecoderBuffer>
+DecoderBufferClear::ToMediaBuffer() const {
+  return buffer_->ToMediaBuffer();
 }
 
 }  // namespace

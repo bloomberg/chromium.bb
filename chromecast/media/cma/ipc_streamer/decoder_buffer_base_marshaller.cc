@@ -11,6 +11,7 @@
 #include "chromecast/media/cma/ipc/media_message_type.h"
 #include "chromecast/media/cma/ipc_streamer/decrypt_config_marshaller.h"
 #include "chromecast/public/media/cast_decrypt_config.h"
+#include "media/base/decoder_buffer.h"
 #include "media/base/decrypt_config.h"
 
 namespace chromecast {
@@ -34,6 +35,7 @@ class DecoderBufferFromMsg : public DecoderBufferBase {
   size_t data_size() const override;
   const CastDecryptConfig* decrypt_config() const override;
   bool end_of_stream() const override;
+  scoped_refptr<::media::DecoderBuffer> ToMediaBuffer() const override;
 
  private:
   ~DecoderBufferFromMsg() override;
@@ -141,6 +143,17 @@ const CastDecryptConfig* DecoderBufferFromMsg::decrypt_config() const {
 
 bool DecoderBufferFromMsg::end_of_stream() const {
   return is_eos_;
+}
+
+scoped_refptr<::media::DecoderBuffer>
+DecoderBufferFromMsg::ToMediaBuffer() const {
+  if (is_eos_)
+    return ::media::DecoderBuffer::CreateEOSBuffer();
+
+  scoped_refptr<::media::DecoderBuffer> copy =
+      ::media::DecoderBuffer::CopyFrom(data(), data_size());
+  copy->set_timestamp(base::TimeDelta::FromMicroseconds(timestamp()));
+  return copy;
 }
 
 }  // namespace
