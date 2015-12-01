@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/i18n/rtl.h"
 #include "base/pickle.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -20,7 +21,6 @@
 #include "ui/base/ime/input_method_delegate.h"
 #include "ui/base/ime/input_method_factory.h"
 #include "ui/base/ime/text_input_client.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/events/event.h"
@@ -1896,7 +1896,7 @@ TEST_F(TextfieldTest, TextCursorDisplayTest) {
 }
 
 TEST_F(TextfieldTest, TextCursorDisplayInRTLTest) {
-  std::string locale = l10n_util::GetApplicationLocale("");
+  std::string locale = base::i18n::GetConfiguredLocale();
   base::i18n::SetICUDefaultLocale("he");
 
   InitTextfield();
@@ -2043,7 +2043,7 @@ TEST_F(TextfieldTest, HitOutsideTextAreaTest) {
 }
 
 TEST_F(TextfieldTest, HitOutsideTextAreaInRTLTest) {
-  std::string locale = l10n_util::GetApplicationLocale("");
+  std::string locale = base::i18n::GetConfiguredLocale();
   base::i18n::SetICUDefaultLocale("he");
 
   InitTextfield();
@@ -2106,7 +2106,7 @@ TEST_F(TextfieldTest, OverflowTest) {
 }
 
 TEST_F(TextfieldTest, OverflowInRTLTest) {
-  std::string locale = l10n_util::GetApplicationLocale("");
+  std::string locale = base::i18n::GetConfiguredLocale();
   base::i18n::SetICUDefaultLocale("he");
 
   InitTextfield();

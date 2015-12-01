@@ -6,12 +6,12 @@
 
 #include <string>
 
+#include "base/i18n/rtl.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/events/event.h"
 #include "ui/events/gesture_event_details.h"
 #include "ui/events/test/event_generator.h"
@@ -192,7 +192,7 @@ void SliderTest::SetUp() {
   view->SetSize(size);
   max_x_ = size.width() - 1;
   max_y_ = size.height() - 1;
-  default_locale_ = l10n_util::GetApplicationLocale("");
+  default_locale_ = base::i18n::GetConfiguredLocale();
 
   views::Widget::InitParams init_params(CreateParams(
         views::Widget::InitParams::TYPE_WINDOW_FRAMELESS));

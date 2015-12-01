@@ -4,6 +4,7 @@
 
 #include <map>
 
+#include "base/i18n/rtl.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/rand_util.h"
 #include "base/strings/string_util.h"
@@ -183,7 +184,7 @@ void ScrambleTree(views::View* view) {
 class ScopedRTL {
  public:
   ScopedRTL() {
-    locale_ = l10n_util::GetApplicationLocale(std::string());
+    locale_ = base::i18n::GetConfiguredLocale();
     base::i18n::SetICUDefaultLocale("he");
   }
   ~ScopedRTL() { base::i18n::SetICUDefaultLocale(locale_); }

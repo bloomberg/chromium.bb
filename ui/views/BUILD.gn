@@ -214,6 +214,10 @@ test("views_unittests") {
     "//url",
   ]
 
+  data_deps = [
+    "//ui/resources:ui_test_pak",
+  ]
+
   if (is_win) {
     deps += [
       "//third_party/iaccessible2",
