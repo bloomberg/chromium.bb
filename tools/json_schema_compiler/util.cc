@@ -4,7 +4,6 @@
 
 #include "tools/json_schema_compiler/util.h"
 
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 
@@ -155,8 +154,8 @@ void AddItemToList(const std::string& from, base::ListValue* out) {
 }
 
 void AddItemToList(const std::vector<char>& from, base::ListValue* out) {
-  out->Append(base::BinaryValue::CreateWithCopiedBuffer(vector_as_array(&from),
-                                                        from.size()));
+  out->Append(
+      base::BinaryValue::CreateWithCopiedBuffer(from.data(), from.size()));
 }
 
 void AddItemToList(const linked_ptr<base::Value>& from, base::ListValue* out) {

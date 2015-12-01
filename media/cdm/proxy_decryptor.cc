@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "media/base/cdm_callback_promise.h"
 #include "media/base/cdm_config.h"
@@ -180,9 +179,8 @@ void ProxyDecryptor::GenerateKeyRequestInternal(
   if (session_creation_type == LoadSession) {
     media_keys_->LoadSession(
         MediaKeys::PERSISTENT_LICENSE_SESSION,
-        std::string(
-            reinterpret_cast<const char*>(vector_as_array(&stripped_init_data)),
-            stripped_init_data.size()),
+        std::string(reinterpret_cast<const char*>(stripped_init_data.data()),
+                    stripped_init_data.size()),
         promise.Pass());
     return;
   }

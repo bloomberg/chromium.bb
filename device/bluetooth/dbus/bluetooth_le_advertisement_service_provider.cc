@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/stl_util.h"
 #include "base/threading/platform_thread.h"
 #include "dbus/exported_object.h"
 #include "dbus/message.h"
@@ -338,8 +337,7 @@ class BluetoothAdvertisementServiceProviderImpl
       array_writer.OpenDictEntry(&entry_writer);
 
       entry_writer.AppendUint32(m.first);
-      entry_writer.AppendArrayOfBytes(vector_as_array(&m.second),
-                                      m.second.size());
+      entry_writer.AppendArrayOfBytes(m.second.data(), m.second.size());
 
       array_writer.CloseContainer(&entry_writer);
     }
@@ -356,8 +354,7 @@ class BluetoothAdvertisementServiceProviderImpl
       array_writer.OpenDictEntry(&entry_writer);
 
       entry_writer.AppendString(m.first);
-      entry_writer.AppendArrayOfBytes(vector_as_array(&m.second),
-                                      m.second.size());
+      entry_writer.AppendArrayOfBytes(m.second.data(), m.second.size());
 
       array_writer.CloseContainer(&entry_writer);
     }

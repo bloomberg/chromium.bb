@@ -8,7 +8,6 @@
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "net/socket/socket_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -87,10 +86,9 @@ void GCMSocketStreamTest::BuildSocket(const ReadList& read_list,
                                       const WriteList& write_list) {
   mock_reads_ = read_list;
   mock_writes_ = write_list;
-  data_provider_.reset(
-      new net::StaticSocketDataProvider(
-          vector_as_array(&mock_reads_), mock_reads_.size(),
-          vector_as_array(&mock_writes_), mock_writes_.size()));
+  data_provider_.reset(new net::StaticSocketDataProvider(
+      mock_reads_.data(), mock_reads_.size(), mock_writes_.data(),
+      mock_writes_.size()));
   socket_factory_.AddSocketDataProvider(data_provider_.get());
   OpenConnection();
   ResetInputStream();

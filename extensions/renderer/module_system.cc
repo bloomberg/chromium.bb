@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
@@ -273,8 +272,7 @@ v8::Local<v8::Value> ModuleSystem::CallModuleMethod(
     const std::string& module_name,
     const std::string& method_name,
     std::vector<v8::Local<v8::Value>>* args) {
-  return CallModuleMethod(
-      module_name, method_name, args->size(), vector_as_array(args));
+  return CallModuleMethod(module_name, method_name, args->size(), args->data());
 }
 
 v8::Local<v8::Value> ModuleSystem::CallModuleMethod(

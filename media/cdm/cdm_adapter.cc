@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
-#include "base/stl_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "media/base/cdm_context.h"
@@ -264,7 +263,7 @@ void CdmAdapter::SetServerCertificate(const std::vector<uint8_t>& certificate,
   }
 
   uint32_t promise_id = cdm_promise_adapter_.SavePromise(promise.Pass());
-  cdm_->SetServerCertificate(promise_id, vector_as_array(&certificate),
+  cdm_->SetServerCertificate(promise_id, certificate.data(),
                              certificate.size());
 }
 
@@ -278,8 +277,8 @@ void CdmAdapter::CreateSessionAndGenerateRequest(
   uint32_t promise_id = cdm_promise_adapter_.SavePromise(promise.Pass());
   cdm_->CreateSessionAndGenerateRequest(
       promise_id, MediaSessionTypeToCdmSessionType(session_type),
-      MediaInitDataTypeToCdmInitDataType(init_data_type),
-      vector_as_array(&init_data), init_data.size());
+      MediaInitDataTypeToCdmInitDataType(init_data_type), init_data.data(),
+      init_data.size());
 }
 
 void CdmAdapter::LoadSession(SessionType session_type,
@@ -301,7 +300,7 @@ void CdmAdapter::UpdateSession(const std::string& session_id,
 
   uint32_t promise_id = cdm_promise_adapter_.SavePromise(promise.Pass());
   cdm_->UpdateSession(promise_id, session_id.data(), session_id.size(),
-                      vector_as_array(&response), response.size());
+                      response.data(), response.size());
 }
 
 void CdmAdapter::CloseSession(const std::string& session_id,

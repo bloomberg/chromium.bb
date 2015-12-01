@@ -8,7 +8,6 @@
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "media/base/cdm_key_information.h"
@@ -383,7 +382,7 @@ void WebContentDecryptionModuleSessionImpl::OnSessionMessage(
     const std::vector<uint8>& message) {
   DCHECK(client_) << "Client not set before message event";
   DCHECK(thread_checker_.CalledOnValidThread());
-  client_->message(convertMessageType(message_type), vector_as_array(&message),
+  client_->message(convertMessageType(message_type), message.data(),
                    message.size());
 }
 

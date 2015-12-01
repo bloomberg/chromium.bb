@@ -13,7 +13,6 @@
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
-#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "extensions/common/extension_paths.h"
 #include "extensions/renderer/logging_native_handler.h"
@@ -40,7 +39,7 @@ class V8ExtensionConfigurator {
         names_(1, safe_builtins_->name()),
         configuration_(
             new v8::ExtensionConfiguration(static_cast<int>(names_.size()),
-                                           vector_as_array(&names_))) {
+                                           names_.data())) {
     v8::RegisterExtension(safe_builtins_.get());
   }
 

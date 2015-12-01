@@ -16,7 +16,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/sys_byteorder.h"
@@ -341,9 +340,9 @@ void MediaDrmBridge::CreateSessionAndGenerateRequest(
         promise->reject(INVALID_ACCESS_ERROR, 0, "Invalid init data.");
       }
       if (!init_data_from_delegate.empty()) {
-        j_init_data = base::android::ToJavaByteArray(
-            env, vector_as_array(&init_data_from_delegate),
-            init_data_from_delegate.size());
+        j_init_data =
+            base::android::ToJavaByteArray(env, init_data_from_delegate.data(),
+                                           init_data_from_delegate.size());
       }
       if (!optional_parameters_from_delegate.empty()) {
         j_optional_parameters = base::android::ToJavaArrayOfStrings(
@@ -353,8 +352,8 @@ void MediaDrmBridge::CreateSessionAndGenerateRequest(
   }
 
   if (j_init_data.is_null()) {
-    j_init_data = base::android::ToJavaByteArray(
-        env, vector_as_array(&init_data), init_data.size());
+    j_init_data =
+        base::android::ToJavaByteArray(env, init_data.data(), init_data.size());
   }
 
   ScopedJavaLocalRef<jstring> j_mime =
@@ -382,8 +381,8 @@ void MediaDrmBridge::UpdateSession(
   DVLOG(2) << __FUNCTION__;
 
   JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jbyteArray> j_response = base::android::ToJavaByteArray(
-      env, vector_as_array(&response), response.size());
+  ScopedJavaLocalRef<jbyteArray> j_response =
+      base::android::ToJavaByteArray(env, response.data(), response.size());
   ScopedJavaLocalRef<jbyteArray> j_session_id = base::android::ToJavaByteArray(
       env, reinterpret_cast<const uint8_t*>(session_id.data()),
       session_id.size());

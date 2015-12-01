@@ -12,7 +12,6 @@
 
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
-#include "base/stl_util.h"
 #include "base/task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
@@ -267,7 +266,7 @@ bool DrmDevice::SetCrtc(uint32_t crtc_id,
   TRACE_EVENT2("drm", "DrmDevice::SetCrtc", "crtc", crtc_id, "size",
                gfx::Size(mode->hdisplay, mode->vdisplay).ToString());
   return !drmModeSetCrtc(file_.GetPlatformFile(), crtc_id, framebuffer, 0, 0,
-                         vector_as_array(&connectors), connectors.size(), mode);
+                         connectors.data(), connectors.size(), mode);
 }
 
 bool DrmDevice::SetCrtc(drmModeCrtc* crtc, std::vector<uint32_t> connectors) {
@@ -280,9 +279,8 @@ bool DrmDevice::SetCrtc(drmModeCrtc* crtc, std::vector<uint32_t> connectors) {
 
   TRACE_EVENT1("drm", "DrmDevice::RestoreCrtc", "crtc", crtc->crtc_id);
   return !drmModeSetCrtc(file_.GetPlatformFile(), crtc->crtc_id,
-                         crtc->buffer_id, crtc->x, crtc->y,
-                         vector_as_array(&connectors), connectors.size(),
-                         &crtc->mode);
+                         crtc->buffer_id, crtc->x, crtc->y, connectors.data(),
+                         connectors.size(), &crtc->mode);
 }
 
 bool DrmDevice::DisableCrtc(uint32_t crtc_id) {

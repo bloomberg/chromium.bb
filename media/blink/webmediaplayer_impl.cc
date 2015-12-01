@@ -759,7 +759,7 @@ void WebMediaPlayerImpl::OnEncryptedMediaInitData(
   encrypted_media_support_.SetInitDataType(init_data_type);
 
   encrypted_client_->encrypted(
-      ConvertToWebInitDataType(init_data_type), vector_as_array(&init_data),
+      ConvertToWebInitDataType(init_data_type), init_data.data(),
       base::saturated_cast<unsigned int>(init_data.size()));
 }
 

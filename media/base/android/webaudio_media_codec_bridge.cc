@@ -20,7 +20,6 @@
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
-#include "base/stl_util.h"
 #include "jni/WebAudioMediaCodecBridge_jni.h"
 #include "media/base/android/webaudio_media_codec_info.h"
 
@@ -179,7 +178,7 @@ void WebAudioMediaCodecBridge::OnChunkDecoded(
       decoded_data[k] = *data;
       data += 2;
     }
-    buffer = reinterpret_cast<int8_t*>(vector_as_array(&decoded_data));
+    buffer = reinterpret_cast<int8_t*>(decoded_data.data());
     DCHECK(buffer);
     count = frame_count * sizeof(*data);
   }

@@ -6,7 +6,6 @@
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
@@ -337,9 +336,8 @@ class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
     EXPECT_TRUE(LookupKey(key_ids[0], &key));
 
     // Update the session with the key ID and key.
-    std::string jwk =
-        GenerateJWKSet(vector_as_array(&key), key.size(),
-                       vector_as_array(&key_ids[0]), key_ids[0].size());
+    std::string jwk = GenerateJWKSet(key.data(), key.size(), key_ids[0].data(),
+                                     key_ids[0].size());
     decryptor->UpdateSession(session_id,
                              std::vector<uint8_t>(jwk.begin(), jwk.end()),
                              CreatePromise(RESOLVED));

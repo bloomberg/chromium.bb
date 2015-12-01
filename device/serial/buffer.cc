@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/numerics/safe_conversions.h"
-#include "base/stl_util.h"
 #include "device/serial/buffer.h"
 #include "net/base/io_buffer.h"
 
@@ -23,7 +22,7 @@ SendBuffer::SendBuffer(
 SendBuffer::~SendBuffer() {}
 
 const char* SendBuffer::GetData() {
-  return vector_as_array(&data_);
+  return data_.data();
 }
 
 uint32_t SendBuffer::GetSize() {

@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
-#include "base/stl_util.h"
 #include "base/threading/worker_pool.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -27,8 +26,7 @@ void WriteDataToFile(const base::FilePath& location, const SkBitmap& bitmap) {
   DCHECK(!location.empty());
   std::vector<unsigned char> png_data;
   gfx::PNGCodec::FastEncodeBGRASkBitmap(bitmap, true, &png_data);
-  base::WriteFile(location,
-                  reinterpret_cast<const char*>(vector_as_array(&png_data)),
+  base::WriteFile(location, reinterpret_cast<const char*>(png_data.data()),
                   png_data.size());
 }
 

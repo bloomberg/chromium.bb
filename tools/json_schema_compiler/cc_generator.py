@@ -43,7 +43,6 @@ class _Generator(object):
       .Append()
       .Append(self._util_cc_helper.GetIncludePath())
       .Append('#include "base/logging.h"')
-      .Append('#include "base/stl_util.h"')
       .Append('#include "base/strings/string_number_conversions.h"')
       .Append('#include "base/strings/utf_string_conversions.h"')
       .Append('#include "%s/%s.h"' %
@@ -557,12 +556,10 @@ class _Generator(object):
     elif underlying_type.property_type == PropertyType.BINARY:
       if is_ptr:
         vardot = var + '->'
-        ref = var + '.get()'
       else:
         vardot = var + '.'
-        ref = '&' + var
-      return ('base::BinaryValue::CreateWithCopiedBuffer(vector_as_array(%s),'
-              ' %ssize())' % (ref, vardot))
+      return ('base::BinaryValue::CreateWithCopiedBuffer(%sdata(),'
+              ' %ssize())' % (vardot, vardot))
     elif underlying_type.property_type == PropertyType.ARRAY:
       return '%s.release()' % self._util_cc_helper.CreateValueFromArray(
           var,

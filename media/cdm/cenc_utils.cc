@@ -4,7 +4,6 @@
 
 #include "media/cdm/cenc_utils.h"
 
-#include "base/stl_util.h"
 #include "media/formats/mp4/box_definitions.h"
 #include "media/formats/mp4/box_reader.h"
 
@@ -38,8 +37,7 @@ static bool ReadAllPsshBoxes(
   // so this simply verifies that |input| only contains 'pssh' boxes and
   // nothing else.
   scoped_ptr<mp4::BoxReader> input_reader(
-      mp4::BoxReader::ReadConcatentatedBoxes(
-          vector_as_array(&input), input.size()));
+      mp4::BoxReader::ReadConcatentatedBoxes(input.data(), input.size()));
   std::vector<mp4::ProtectionSystemSpecificHeader> raw_pssh_boxes;
   if (!input_reader->ReadAllChildrenAndCheckFourCC(&raw_pssh_boxes))
     return false;
@@ -51,9 +49,8 @@ static bool ReadAllPsshBoxes(
   // ignoring any boxes that can't be parsed.
   for (const auto& raw_pssh_box : raw_pssh_boxes) {
     scoped_ptr<mp4::BoxReader> raw_pssh_reader(
-        mp4::BoxReader::ReadConcatentatedBoxes(
-            vector_as_array(&raw_pssh_box.raw_box),
-            raw_pssh_box.raw_box.size()));
+        mp4::BoxReader::ReadConcatentatedBoxes(raw_pssh_box.raw_box.data(),
+                                               raw_pssh_box.raw_box.size()));
     // ReadAllChildren() appends any successfully parsed box onto it's
     // parameter, so |pssh_boxes| will contain the collection of successfully
     // parsed 'pssh' boxes. If an error occurs, try the next box.

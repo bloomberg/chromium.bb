@@ -8,7 +8,6 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "components/update_client/update_client.h"
 #include "content/public/browser/browser_thread.h"
@@ -46,7 +45,7 @@ void UpdateDataProvider::GetData(
     std::string pubkey_bytes;
     base::Base64Decode(extension->public_key(), &pubkey_bytes);
     info->pk_hash.resize(crypto::kSHA256Length, 0);
-    crypto::SHA256HashString(pubkey_bytes, vector_as_array(&info->pk_hash),
+    crypto::SHA256HashString(pubkey_bytes, info->pk_hash.data(),
                              info->pk_hash.size());
     info->version = *extension->version();
     info->allow_background_download = false;

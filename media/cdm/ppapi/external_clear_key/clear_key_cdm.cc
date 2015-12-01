@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/stl_util.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "media/base/cdm_callback_promise.h"
@@ -204,7 +203,7 @@ void ConvertCdmKeysInfo(const std::vector<media::CdmKeyInformation*>& keys_info,
   keys_vector->reserve(keys_info.size());
   for (const auto& key_info : keys_info) {
     cdm::KeyInformation key;
-    key.key_id = vector_as_array(&key_info->key_id);
+    key.key_id = key_info->key_id.data();
     key.key_id_size = key_info->key_id.size();
     key.status = ConvertKeyStatus(key_info->status);
     key.system_code = key_info->system_code;
@@ -747,8 +746,8 @@ void ClearKeyCdm::OnSessionKeysChange(const std::string& session_id,
   std::vector<cdm::KeyInformation> keys_vector;
   ConvertCdmKeysInfo(keys_info.get(), &keys_vector);
   host_->OnSessionKeysChange(new_session_id.data(), new_session_id.length(),
-                             has_additional_usable_key,
-                             vector_as_array(&keys_vector), keys_vector.size());
+                             has_additional_usable_key, keys_vector.data(),
+                             keys_vector.size());
 }
 
 void ClearKeyCdm::OnSessionClosed(const std::string& session_id) {
@@ -812,9 +811,9 @@ void ClearKeyCdm::OnLoadSessionUpdated() {
     has_received_keys_change_event_for_emulated_loadsession_ = false;
     DCHECK(!keys_vector.empty());
     ConvertCdmKeysInfo(keys_info.get(), &keys_vector);
-    host_->OnSessionKeysChange(
-        kLoadableSessionId, strlen(kLoadableSessionId), !keys_vector.empty(),
-        vector_as_array(&keys_vector), keys_vector.size());
+    host_->OnSessionKeysChange(kLoadableSessionId, strlen(kLoadableSessionId),
+                               !keys_vector.empty(), keys_vector.data(),
+                               keys_vector.size());
   }
 }
 

@@ -7,7 +7,6 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/native_library.h"
-#include "base/stl_util.h"
 #include "remoting/proto/event.pb.h"
 
 namespace remoting {
@@ -214,8 +213,7 @@ void TouchInjectorWin::AddNewTouchPoints(const TouchEvent& event) {
     touches_in_contact_[touch_point.id()] = pointer_touch_info;
   }
 
-  if (delegate_->InjectTouchInput(touches.size(),
-                                  vector_as_array(&touches)) == 0) {
+  if (delegate_->InjectTouchInput(touches.size(), touches.data()) == 0) {
     PLOG(ERROR) << "Failed to inject a touch start event.";
   }
 }
@@ -235,8 +233,7 @@ void TouchInjectorWin::MoveTouchPoints(const TouchEvent& event) {
   std::vector<POINTER_TOUCH_INFO> touches;
   // Must inject already touching points as move events.
   AppendMapValuesToVector(&touches_in_contact_, &touches);
-  if (delegate_->InjectTouchInput(touches.size(),
-                                  vector_as_array(&touches)) == 0) {
+  if (delegate_->InjectTouchInput(touches.size(), touches.data()) == 0) {
     PLOG(ERROR) << "Failed to inject a touch move event.";
   }
 }
@@ -255,8 +252,7 @@ void TouchInjectorWin::EndTouchPoints(const TouchEvent& event) {
   }
 
   AppendMapValuesToVector(&touches_in_contact_, &touches);
-  if (delegate_->InjectTouchInput(touches.size(),
-                                  vector_as_array(&touches)) == 0) {
+  if (delegate_->InjectTouchInput(touches.size(), touches.data()) == 0) {
     PLOG(ERROR) << "Failed to inject a touch end event.";
   }
 }
@@ -276,8 +272,7 @@ void TouchInjectorWin::CancelTouchPoints(const TouchEvent& event) {
   }
 
   AppendMapValuesToVector(&touches_in_contact_, &touches);
-  if (delegate_->InjectTouchInput(touches.size(),
-                                  vector_as_array(&touches)) == 0) {
+  if (delegate_->InjectTouchInput(touches.size(), touches.data()) == 0) {
     PLOG(ERROR) << "Failed to inject a touch cancel event.";
   }
 }

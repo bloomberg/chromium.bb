@@ -185,8 +185,7 @@ scoped_ptr<Event> NetworkingConfigService::CreatePortalDetectedEventAndDispatch(
   api::networking_config::NetworkInfo network_info;
   network_info.type = api::networking_config::NETWORK_TYPE_WIFI;
   const std::vector<uint8_t>& raw_ssid = network->raw_ssid();
-  std::string hex_ssid =
-      base::HexEncode(vector_as_array(&raw_ssid), raw_ssid.size());
+  std::string hex_ssid = base::HexEncode(raw_ssid.data(), raw_ssid.size());
   network_info.hex_ssid = make_scoped_ptr(new std::string(hex_ssid));
   network_info.ssid = make_scoped_ptr(new std::string(network->name()));
   network_info.guid = make_scoped_ptr(new std::string(network->guid()));
