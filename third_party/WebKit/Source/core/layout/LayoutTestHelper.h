@@ -6,9 +6,11 @@
 #define LayoutTestHelper_h
 
 #include "core/dom/Document.h"
+#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLElement.h"
+#include "core/loader/EmptyClients.h"
 #include "core/testing/DummyPageHolder.h"
 #include "wtf/Allocator.h"
 #include "wtf/OwnPtr.h"
@@ -45,6 +47,48 @@ protected:
 
 private:
     OwnPtr<DummyPageHolder> m_pageHolder;
+};
+
+class SingleChildFrameLoaderClient final : public EmptyFrameLoaderClient {
+public:
+    static PassOwnPtrWillBeRawPtr<SingleChildFrameLoaderClient> create() { return adoptPtrWillBeNoop(new SingleChildFrameLoaderClient); }
+
+    DEFINE_INLINE_VIRTUAL_TRACE()
+    {
+        visitor->trace(m_child);
+        EmptyFrameLoaderClient::trace(visitor);
+    }
+
+    Frame* firstChild() const override { return m_child.get(); }
+    Frame* lastChild() const override { return m_child.get(); }
+
+    void setChild(Frame* child) { m_child = child; }
+
+private:
+    SingleChildFrameLoaderClient() : m_child(nullptr) { }
+
+    RefPtrWillBeMember<Frame> m_child;
+};
+
+class FrameLoaderClientWithParent final : public EmptyFrameLoaderClient {
+public:
+    static PassOwnPtrWillBeRawPtr<FrameLoaderClientWithParent> create(Frame* parent)
+    {
+        return adoptPtrWillBeNoop(new FrameLoaderClientWithParent(parent));
+    }
+
+    DEFINE_INLINE_VIRTUAL_TRACE()
+    {
+        visitor->trace(m_parent);
+        EmptyFrameLoaderClient::trace(visitor);
+    }
+
+    Frame* parent() const override { return m_parent.get(); }
+
+private:
+    explicit FrameLoaderClientWithParent(Frame* parent) : m_parent(parent) { }
+
+    RefPtrWillBeMember<Frame> m_parent;
 };
 
 } // namespace blink

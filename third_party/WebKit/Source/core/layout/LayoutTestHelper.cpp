@@ -5,7 +5,7 @@
 #include "config.h"
 #include "core/layout/LayoutTestHelper.h"
 
-#include "core/loader/EmptyClients.h"
+#include "core/frame/FrameHost.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/GraphicsLayerFactory.h"
 

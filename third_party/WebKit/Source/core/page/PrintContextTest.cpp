@@ -6,10 +6,11 @@
 #include "core/page/PrintContext.h"
 
 #include "core/dom/Document.h"
-#include "core/frame/FrameHost.h"
+
 #include "core/frame/FrameView.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLIFrameElement.h"
+#include "core/layout/LayoutTestHelper.h"
 #include "core/layout/LayoutView.h"
 #include "core/loader/EmptyClients.h"
 #include "core/paint/PaintLayer.h"
@@ -76,13 +77,12 @@ private:
     Vector<Operation> m_recordedOperations;
 };
 
-class PrintContextTest : public testing::Test {
+class PrintContextTest : public RenderingTest {
 protected:
     explicit PrintContextTest(PassOwnPtrWillBeRawPtr<FrameLoaderClient> frameLoaderClient = nullptr)
-        : m_pageHolder(DummyPageHolder::create(IntSize(kPageWidth, kPageHeight), nullptr, frameLoaderClient))
+        : RenderingTest(frameLoaderClient)
         , m_printContext(adoptPtrWillBeNoop(new MockPrintContext(document().frame()))) { }
 
-    Document& document() const { return m_pageHolder->document(); }
     MockPrintContext& printContext() { return *m_printContext.get(); }
 
     void setBodyInnerHTML(String bodyContent)
@@ -132,48 +132,6 @@ protected:
 private:
     OwnPtr<DummyPageHolder> m_pageHolder;
     OwnPtrWillBePersistent<MockPrintContext> m_printContext;
-};
-
-class SingleChildFrameLoaderClient final : public EmptyFrameLoaderClient {
-public:
-    static PassOwnPtrWillBeRawPtr<SingleChildFrameLoaderClient> create() { return adoptPtrWillBeNoop(new SingleChildFrameLoaderClient); }
-
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        visitor->trace(m_child);
-        EmptyFrameLoaderClient::trace(visitor);
-    }
-
-    Frame* firstChild() const override { return m_child.get(); }
-    Frame* lastChild() const override { return m_child.get(); }
-
-    void setChild(Frame* child) { m_child = child; }
-
-private:
-    SingleChildFrameLoaderClient() : m_child(nullptr) { }
-
-    RefPtrWillBeMember<Frame> m_child;
-};
-
-class FrameLoaderClientWithParent final : public EmptyFrameLoaderClient {
-public:
-    static PassOwnPtrWillBeRawPtr<FrameLoaderClientWithParent> create(Frame* parent)
-    {
-        return adoptPtrWillBeNoop(new FrameLoaderClientWithParent(parent));
-    }
-
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        visitor->trace(m_parent);
-        EmptyFrameLoaderClient::trace(visitor);
-    }
-
-    Frame* parent() const override { return m_parent.get(); }
-
-private:
-    explicit FrameLoaderClientWithParent(Frame* parent) : m_parent(parent) { }
-
-    RefPtrWillBeMember<Frame> m_parent;
 };
 
 class PrintContextFrameTest : public PrintContextTest {

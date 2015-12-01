@@ -5,7 +5,6 @@
 #include "config.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 
-#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/layout/LayoutBoxModelObject.h"
@@ -16,27 +15,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
-
-class SingleChildFrameLoaderClient final : public EmptyFrameLoaderClient {
-public:
-    static PassOwnPtrWillBeRawPtr<SingleChildFrameLoaderClient> create() { return adoptPtrWillBeNoop(new SingleChildFrameLoaderClient); }
-
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        visitor->trace(m_child);
-        EmptyFrameLoaderClient::trace(visitor);
-    }
-
-    Frame* firstChild() const override { return m_child.get(); }
-    Frame* lastChild() const override { return m_child.get(); }
-
-    void setChild(Frame* child) { m_child = child; }
-
-private:
-    SingleChildFrameLoaderClient() : m_child(nullptr) { }
-
-    RefPtrWillBeMember<Frame> m_child;
-};
 
 class CompositedLayerMappingTest : public RenderingTest {
 public:
@@ -509,27 +487,6 @@ TEST_F(CompositedLayerMappingTest, InterestRectOfSquashingLayerWithAncestorClip)
     // The following rect is at (-4000, 0, 4400, 1000) in viewport coordinates.
     EXPECT_RECT_EQ(IntRect(5600, 0, 4400, 1000), groupedMapping->computeInterestRect(groupedMapping->squashingLayer(), IntRect()));
 }
-
-class FrameLoaderClientWithParent final : public EmptyFrameLoaderClient {
-public:
-    static PassOwnPtrWillBeRawPtr<FrameLoaderClientWithParent> create(Frame* parent)
-    {
-        return adoptPtrWillBeNoop(new FrameLoaderClientWithParent(parent));
-    }
-
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        visitor->trace(m_parent);
-        EmptyFrameLoaderClient::trace(visitor);
-    }
-
-    Frame* parent() const override { return m_parent.get(); }
-
-private:
-    explicit FrameLoaderClientWithParent(Frame* parent) : m_parent(parent) { }
-
-    RefPtrWillBeMember<Frame> m_parent;
-};
 
 TEST_F(CompositedLayerMappingTest, InterestRectOfScrolledIframe)
 {
