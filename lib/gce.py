@@ -68,6 +68,18 @@ class GceContext(object):
   _DEFAULT_TIMEOUT_SEC = 5 * 60
   _INSTANCE_OPERATIONS_TIMEOUT_SEC = 5 * 60
   _IMAGE_OPERATIONS_TIMEOUT_SEC = 2* 60
+
+  # Project default service account and scopes.
+  _DEFAULT_SERVICE_ACCOUNT_EMAIL = 'default'
+  # The list is in line with what the gcloud cli uses.
+  # https://cloud.google.com/sdk/gcloud/reference/compute/instances/create
+  _DEFAULT_INSTANCE_SCOPES = [
+      'https://www.googleapis.com/auth/cloud.useraccounts.readonly',
+      'https://www.googleapis.com/auth/devstorage.read_only',
+      'https://www.googleapis.com/auth/logging.write',
+  ]
+
+  # This is made public to allow easy customization of the retry behavior.
   RETRIES = 2
 
   def __init__(self, project, zone, credentials, thread_safe=False):
@@ -129,7 +141,7 @@ class GceContext(object):
     return GceContext(project, zone, credentials, thread_safe=True)
 
   def CreateInstance(self, name, image, zone=None, network=None,
-                     machine_type=None, **kwargs):
+                     machine_type=None, default_scopes=True, **kwargs):
     """Creates an instance with the given image and waits until it's ready.
 
     Args:
@@ -146,17 +158,25 @@ class GceContext(object):
           will be used if omitted.
       machine_type: The machine type to use. Default machine type will be used
           if omitted.
+      default_scope: If true, the default scopes are added to the instances.
       kwargs: Other possible Instance Resource properties.
           https://cloud.google.com/compute/docs/reference/latest/instances#resource
+          Note that values from kwargs will overrule properties constructed from
+          positinal arguments, i.e., name, image, zone, network and
+          machine_type.
 
     Returns:
       URL to the created instance.
     """
+    network = 'global/networks/%s' % network or self._DEFAULT_NETWORK
     machine_type = 'zones/%s/machineTypes/%s' % (
         zone or self.zone, machine_type or self._DEFAULT_MACHINE_TYPE)
-    # Allow machineType overriding.
-    if 'machineType' in kwargs:
-      machine_type = kwargs['machineType']
+    service_accounts = (
+        {
+            'email': self._DEFAULT_SERVICE_ACCOUNT_EMAIL,
+            'scopes': self._DEFAULT_INSTANCE_SCOPES,
+        },
+    ) if default_scopes else ()
 
     config = {
         'name': name,
@@ -172,8 +192,7 @@ class GceContext(object):
         ),
         'networkInterfaces': (
             {
-                'network': ('global/networks/%s' % network or
-                            self._DEFAULT_NETWORK),
+                'network': network,
                 'accessConfigs': (
                     {
                         'type': 'ONE_TO_ONE_NAT',
@@ -182,6 +201,7 @@ class GceContext(object):
                 ),
             },
         ),
+        'serviceAccounts' : service_accounts,
     }
     config.update(**kwargs)
     operation = self.gce_client.instances().insert(
