@@ -945,8 +945,8 @@ weston_surface_to_buffer_rect(struct weston_surface *surface,
 	rect.y1 = floorf(yf);
 
 	scaler_surface_to_buffer(surface, rect.x2, rect.y2, &xf, &yf);
-	rect.x2 = floorf(xf);
-	rect.y2 = floorf(yf);
+	rect.x2 = ceilf(xf);
+	rect.y2 = ceilf(yf);
 
 	return weston_transformed_rect(surface->width_from_buffer,
 				       surface->height_from_buffer,
