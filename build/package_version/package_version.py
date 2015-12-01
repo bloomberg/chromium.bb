@@ -732,7 +732,7 @@ def _ExtractCmdArgParser(subparser):
   subparser.add_argument(
     '--overlay-tar-dir', dest='overlay_tar_dir',
     default=None,
-    help='Extracts tar directorys as usual, except uses any packages' +
+    help='Extracts tar directories as usual, except uses any packages' +
          ' found within the overlay tar directory first.')
 
 
