@@ -250,13 +250,13 @@ tests:
     - ⠲⠠⠓⠪⠗ ⠓⠑⠗⠒ ⠆⠙⠥ ⠸⠍⠡⠸ ⠛⠚⠪⠗⠑ ⠙⠑⠞⠰⠖⠲
     -
       typeform: '000000000011113311111111100'
-      xfail: true # FIXME: this seems to have worked in json
+      xfail: true
   - # Highlighting: bold and nested italic
     - hør    her    du    må    gjøre    det
     - ⠓⠪⠗    ⠓⠑⠗    ⠠⠄⠙⠥    ⠆⠍⠡⠰    ⠛⠚⠪⠗⠑⠠⠄    ⠙⠑⠞
     -
       typeform: '00000000000000444444554444444440000000'
-      xfail: true # FIXME: this seems to have worked in json
+      xfail: true
   -
     - 'Romanen Tusen strålende soler av den afghansk-amerikanske forfatteren Khaled
       Hosseini tyder på å bli en like stor suksess som den forrige romanen, Drageløperen.
@@ -541,8 +541,8 @@ tests:
     - Hun har e-postadressen line@online.no.
     - ⠠⠓⠥⠝ ⠓⠁⠗ ⠑⠤⠏⠕⠎⠞⠁⠙⠗⠑⠎⠎⠑⠝ ⠣⠇⠊⠝⠑⠈⠕⠝⠇⠊⠝⠑⠄⠝⠕⠜⠄
     - {xfail: true}
-  - [Hun oppga tone21@hotmail.com som sin adresse., ⠠⠓⠥⠝ ⠕⠏⠏⠛⠁ ⠣⠞⠕⠝⠑⠼⠃⠁⠈⠓⠕⠞⠍⠁⠊⠇⠄⠉⠕⠍⠜ ⠎⠕⠍ ⠎⠊⠝ ⠁⠙⠗⠑⠎⠎⠑⠄, {xfail: true}] # FIXME: this seems to have worked in json
-  - [Han har e-postadressen msvendsen@c2i.net., ⠠⠓⠁⠝ ⠓⠁⠗ ⠑⠤⠏⠕⠎⠞⠁⠙⠗⠑⠎⠎⠑⠝ ⠣⠍⠎⠧⠑⠝⠙⠎⠑⠝⠈⠉⠼⠃⠰⠊⠄⠝⠑⠞⠜⠄, {xfail: true}] # FIXME: this seems to have worked in json
+  - [Hun oppga tone21@hotmail.com som sin adresse., ⠠⠓⠥⠝ ⠕⠏⠏⠛⠁ ⠣⠞⠕⠝⠑⠼⠃⠁⠈⠓⠕⠞⠍⠁⠊⠇⠄⠉⠕⠍⠜ ⠎⠕⠍ ⠎⠊⠝ ⠁⠙⠗⠑⠎⠎⠑⠄, {xfail: true}]
+  - [Han har e-postadressen msvendsen@c2i.net., ⠠⠓⠁⠝ ⠓⠁⠗ ⠑⠤⠏⠕⠎⠞⠁⠙⠗⠑⠎⠎⠑⠝ ⠣⠍⠎⠧⠑⠝⠙⠎⠑⠝⠈⠉⠼⠃⠰⠊⠄⠝⠑⠞⠜⠄, {xfail: true}]
   - ['Dokumentet ligger i mappen c:\\tekst\\ på harddisken.', ⠠⠙⠕⠅⠥⠍⠑⠝⠞⠑⠞ ⠇⠊⠛⠛⠑⠗ ⠊ ⠍⠁⠏⠏⠑⠝ ⠉⠒⠱⠞⠑⠅⠎⠞⠱ ⠏⠡ ⠓⠁⠗⠙⠙⠊⠎⠅⠑⠝⠄]
   -
     - per_erik.iversen@online.no
