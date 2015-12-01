@@ -11,7 +11,6 @@ import glob
 import logging
 import os
 import posixpath
-import shutil
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir))
@@ -65,7 +64,7 @@ def Uninstall(device, package):
   logging.info('Uninstall took %s seconds.', main_timer.GetDelta())
 
 
-def Install(device, apk, split_globs=None, lib_dir=None, dex_files=None,
+def Install(device, apk, split_globs=None, native_libs=None, dex_files=None,
             enable_device_cache=True, use_concurrency=True,
             show_proguard_warning=False):
   """Installs the given incremental apk and all required supporting files.
@@ -74,7 +73,7 @@ def Install(device, apk, split_globs=None, lib_dir=None, dex_files=None,
     device: A DeviceUtils instance.
     apk: The path to the apk, or an ApkHelper instance.
     split_globs: Glob patterns for any required apk splits (optional).
-    lib_dir: Directory containing the app's native libraries (optional).
+    native_libs: List of app's native libraries (optional).
     dex_files: List of .dex.jar files that comprise the app's Dalvik code.
     enable_device_cache: Whether to enable on-device caching of checksums.
     use_concurrency: Whether to speed things up using multiple threads.
@@ -105,11 +104,14 @@ def Install(device, apk, split_globs=None, lib_dir=None, dex_files=None,
 
   # Push .so and .dex files to the device (if they have changed).
   def do_push_files():
-    if lib_dir:
+    if native_libs:
       push_native_timer.Start()
-      device_lib_dir = posixpath.join(device_incremental_dir, 'lib')
-      device.PushChangedFiles([(lib_dir, device_lib_dir)],
-                              delete_device_stale=True)
+      with build_utils.TempDir() as temp_dir:
+        device_lib_dir = posixpath.join(device_incremental_dir, 'lib')
+        for path in native_libs:
+          os.symlink(path, os.path.join(temp_dir, os.path.basename(path)))
+        device.PushChangedFiles([(temp_dir, device_lib_dir)],
+                                delete_device_stale=True)
       push_native_timer.Stop(log=False)
 
     if dex_files:
@@ -121,7 +123,7 @@ def Install(device, apk, split_globs=None, lib_dir=None, dex_files=None,
         # Ensure no two files have the same name.
         transformed_names = _TransformDexPaths(dex_files)
         for src_path, dest_name in zip(dex_files, transformed_names):
-          shutil.copyfile(src_path, os.path.join(temp_dir, dest_name))
+          os.symlink(src_path, os.path.join(temp_dir, dest_name))
         device.PushChangedFiles([(temp_dir, device_dex_dir)],
                                 delete_device_stale=True)
       push_dex_timer.Stop(log=False)
@@ -201,10 +203,14 @@ def main():
                       dest='splits',
                       help='A glob matching the apk splits. '
                            'Can be specified multiple times.')
-  parser.add_argument('--lib-dir',
-                      help='Path to native libraries directory.')
-  parser.add_argument('--dex-files',
-                      help='List of dex files to push.',
+  parser.add_argument('--native_lib',
+                      dest='native_libs',
+                      help='Path to native library (repeatable)',
+                      action='append',
+                      default=[])
+  parser.add_argument('--dex-file',
+                      dest='dex_files',
+                      help='Path to dex files (repeatable)',
                       action='append',
                       default=[])
   parser.add_argument('-d', '--device', dest='device',
@@ -270,7 +276,7 @@ def main():
   if args.uninstall:
     Uninstall(device, apk.GetPackageName())
   else:
-    Install(device, apk, split_globs=args.splits, lib_dir=args.lib_dir,
+    Install(device, apk, split_globs=args.splits, native_libs=args.native_libs,
             dex_files=args.dex_files, enable_device_cache=args.cache,
             use_concurrency=args.threading,
             show_proguard_warning=args.show_proguard_warning)

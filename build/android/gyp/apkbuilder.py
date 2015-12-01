@@ -45,9 +45,10 @@ def _ParseArgs(args):
                       required=True)
   parser.add_argument('--dex-file',
                       help='Path to the classes.dex to use')
-  # TODO(agrieve): Switch this to be a list of files rather than a directory.
-  parser.add_argument('--native-libs-dir',
-                      help='Directory containing native libraries to include',
+  parser.add_argument('--native-libs',
+                      action='append',
+                      help='GYP-list of native libraries to include. '
+                           'Can be specified multiple times.',
                       default=[])
   parser.add_argument('--android-abi',
                       help='Android architecture to use for native libraries')
@@ -62,16 +63,15 @@ def _ParseArgs(args):
       options.uncompressed_assets)
   options.native_lib_placeholders = build_utils.ParseGypList(
       options.native_lib_placeholders)
+  all_libs = []
+  for gyp_list in options.native_libs:
+    all_libs.extend(build_utils.ParseGypList(gyp_list))
+  options.native_libs = all_libs
 
-  if not options.android_abi and (options.native_libs_dir or
+  if not options.android_abi and (options.native_libs or
                                   options.native_lib_placeholders):
-    raise Exception('Must specify --android-abi with --native-libs-dir')
+    raise Exception('Must specify --android-abi with --native-libs')
   return options
-
-
-def _ListSubPaths(path):
-  """Returns a list of full paths to all files in the given path."""
-  return [os.path.join(path, name) for name in os.listdir(path)]
 
 
 def _SplitAssetPath(path):
@@ -122,10 +122,7 @@ def main(args):
   args = build_utils.ExpandFileArgs(args)
   options = _ParseArgs(args)
 
-  native_libs = []
-  if options.native_libs_dir:
-    native_libs = _ListSubPaths(options.native_libs_dir)
-    native_libs.sort()
+  native_libs = sorted(options.native_libs)
 
   input_paths = [options.resource_apk, __file__] + native_libs
   if options.dex_file:

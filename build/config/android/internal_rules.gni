@@ -667,7 +667,8 @@ template("emma_instr") {
 #   output_apk_path: Output path for the generated .apk.
 #   native_lib_placeholders: List of placeholder filenames to add to the apk
 #     (optional).
-#   native_libs_dir: Directory containing native libraries.
+#   native_libs: List of native libraries.
+#   native_libs_filearg: @FileArg() of additionaly native libraries.
 #   write_asset_list: Adds an extra file to the assets, which contains a list of
 #     all other asset files.
 template("package_apk") {
@@ -689,9 +690,7 @@ template("package_apk") {
       "//tools/android/md5sum",
     ]  # Used when deploying APKs
 
-    inputs = [
-      invoker.resource_packaged_apk_path,
-    ]
+    inputs = invoker.native_libs + [ invoker.resource_packaged_apk_path ]
     if (defined(invoker.dex_path)) {
       inputs += [ invoker.dex_path ]
     }
@@ -727,13 +726,16 @@ template("package_apk") {
       _rebased_dex_path = rebase_path(invoker.dex_path, root_build_dir)
       args += [ "--dex-file=$_rebased_dex_path" ]
     }
-    if (defined(invoker.native_libs_dir) || _native_lib_placeholders != []) {
+    if (invoker.native_libs != [] || defined(invoker.native_libs_filearg) ||
+        _native_lib_placeholders != []) {
       args += [ "--android-abi=$android_app_abi" ]
     }
-    if (defined(invoker.native_libs_dir)) {
-      _rebased_native_libs_dir =
-          rebase_path(invoker.native_libs_dir, root_build_dir)
-      args += [ "--native-libs-dir=$_rebased_native_libs_dir/$android_app_abi" ]
+    if (invoker.native_libs != []) {
+      _rebased_native_libs = rebase_path(invoker.native_libs, root_build_dir)
+      args += [ "--native-libs=$_rebased_native_libs" ]
+    }
+    if (defined(invoker.native_libs_filearg)) {
+      args += [ "--native-libs=${invoker.native_libs_filearg}" ]
     }
     if (_native_lib_placeholders != []) {
       args += [ "--native-lib-placeholders=$_native_lib_placeholders" ]
@@ -839,6 +841,10 @@ template("create_apk") {
   _incremental_deps = []
   if (defined(invoker.incremental_deps)) {
     _incremental_deps = invoker.incremental_deps
+  }
+  _native_libs = []
+  if (defined(invoker.native_libs)) {
+    _native_libs = invoker.native_libs
   }
 
   # TODO(agrieve): Remove support for asset_location in favor of using
@@ -1014,10 +1020,11 @@ template("create_apk") {
                              "assets_build_config",
                              "emma_instrument",
                              "native_lib_placeholders",
-                             "native_libs_dir",
+                             "native_libs_filearg",
                              "write_asset_list",
                            ])
     deps = _deps + [ ":${_package_resources_target_name}" ]
+    native_libs = _native_libs
 
     if (defined(_dex_path)) {
       dex_path = _dex_path
@@ -1045,8 +1052,12 @@ template("create_apk") {
           get_label_info(_dex_target, "target_gen_dir") + "/bootstrap.dex"
     }
 
+    native_libs = []
+
     # http://crbug.com/384638
-    if (defined(invoker.native_libs_dir)) {
+    _has_native_libs =
+        defined(invoker.native_libs_filearg) || _native_libs != []
+    if (_has_native_libs) {
       native_lib_placeholders = [ "libfix.crbug.384638.so" ]
     }
 
