@@ -48695,6 +48695,23 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Tab.RendererDetailedExitStatus"
+    enum="TabRendererDetailedExitStatus">
+  <owner>wnwen@chromium.org</owner>
+  <summary>
+    Breakdown of renderer exit status. An extension of the counts in
+    Tab.RendererExitStatus. Only recorded on Android.
+  </summary>
+</histogram>
+
+<histogram name="Tab.RendererExitStatus" enum="TabRendererExitStatus">
+  <owner>wnwen@chromium.org</owner>
+  <summary>
+    The status of a renderer when the browser notices that the process has
+    exited. Only recorded on Android.
+  </summary>
+</histogram>
+
 <histogram name="Tab.RestoreResult" enum="TabRestoreResult">
   <owner>lliabraa@chromium.org</owner>
   <summary>
@@ -77024,6 +77041,24 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="0" label="Shown in foreground app"/>
   <int value="1" label="Hidden in foreground app"/>
   <int value="2" label="Hidden in background app"/>
+</enum>
+
+<enum name="TabRendererDetailedExitStatus" type="int">
+  <int value="0" label="Empty minidump in running app"/>
+  <int value="1" label="Empty minidump in paused app"/>
+  <int value="2" label="Empty minidump in background app"/>
+  <int value="3" label="Valid minidump in running app"/>
+  <int value="4" label="Valid minidump in paused app"/>
+  <int value="5" label="Valid minidump in background app"/>
+</enum>
+
+<enum name="TabRendererExitStatus" type="int">
+  <int value="0" label="OOM protected in running app"/>
+  <int value="1" label="OOM protected in paused app"/>
+  <int value="2" label="OOM protected in background app"/>
+  <int value="3" label="Not protected in running app"/>
+  <int value="4" label="Not protected in paused app"/>
+  <int value="5" label="Not protected in background app"/>
 </enum>
 
 <enum name="TabRestoreResult" type="int">

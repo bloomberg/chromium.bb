@@ -7,13 +7,16 @@
 
 #include <map>
 
+#include "base/android/application_status_listener.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
+#include "base/process/kill.h"
 #include "base/process/process.h"
 #include "base/synchronization/lock.h"
 #include "content/public/browser/browser_child_process_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/common/process_type.h"
 
 namespace content {
 class RenderProcessHost;
@@ -48,8 +51,23 @@ class CrashDumpManager : public content::BrowserChildProcessObserver,
  private:
   typedef std::map<int, base::FilePath> ChildProcessIDToMinidumpPath;
 
+  // This enum is used to back a UMA histogram, and must be treated as
+  // append-only.
+  enum ExitStatus {
+    EMPTY_MINIDUMP_WHILE_RUNNING,
+    EMPTY_MINIDUMP_WHILE_PAUSED,
+    EMPTY_MINIDUMP_WHILE_BACKGROUND,
+    VALID_MINIDUMP_WHILE_RUNNING,
+    VALID_MINIDUMP_WHILE_PAUSED,
+    VALID_MINIDUMP_WHILE_BACKGROUND,
+    MINIDUMP_STATUS_COUNT
+  };
+
   static void ProcessMinidump(const base::FilePath& minidump_path,
-                              base::ProcessHandle pid);
+                              base::ProcessHandle pid,
+                              content::ProcessType process_type,
+                              base::TerminationStatus exit_status,
+                              base::android::ApplicationState app_state);
 
   // content::BrowserChildProcessObserver implementation:
   void BrowserChildProcessHostDisconnected(
@@ -64,7 +82,11 @@ class CrashDumpManager : public content::BrowserChildProcessObserver,
                const content::NotificationDetails& details) override;
 
   // Called on child process exit (including crash).
-  void OnChildExit(int child_process_id, base::ProcessHandle pid);
+  void OnChildExit(int child_process_id,
+                   base::ProcessHandle pid,
+                   content::ProcessType process_type,
+                   base::TerminationStatus exit_status,
+                   base::android::ApplicationState app_state);
 
   content::NotificationRegistrar notification_registrar_;
 

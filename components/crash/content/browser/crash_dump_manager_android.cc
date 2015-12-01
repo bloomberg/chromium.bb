@@ -8,6 +8,7 @@
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/posix/global_descriptors.h"
 #include "base/process/process.h"
 #include "base/rand_util.h"
@@ -81,14 +82,48 @@ base::File CrashDumpManager::CreateMinidumpFile(int child_process_id) {
 }
 
 // static
-void CrashDumpManager::ProcessMinidump(const base::FilePath& minidump_path,
-                                       base::ProcessHandle pid) {
+void CrashDumpManager::ProcessMinidump(
+    const base::FilePath& minidump_path,
+    base::ProcessHandle pid,
+    content::ProcessType process_type,
+    base::TerminationStatus exit_status,
+    base::android::ApplicationState app_state) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   CHECK(instance_);
   int64 file_size = 0;
   int r = base::GetFileSize(minidump_path, &file_size);
   DCHECK(r) << "Failed to retrieve size for minidump "
             << minidump_path.value();
+
+  if (process_type == content::PROCESS_TYPE_RENDERER &&
+      app_state != base::android::APPLICATION_STATE_UNKNOWN &&
+      exit_status == base::TERMINATION_STATUS_OOM_PROTECTED) {
+    bool is_running =
+        (app_state == base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES);
+    bool is_paused =
+        (app_state == base::android::APPLICATION_STATE_HAS_PAUSED_ACTIVITIES);
+    ExitStatus renderer_exit_status;
+    if (file_size == 0) {
+      if (is_running) {
+        renderer_exit_status = EMPTY_MINIDUMP_WHILE_RUNNING;
+      } else if (is_paused) {
+        renderer_exit_status = EMPTY_MINIDUMP_WHILE_PAUSED;
+      } else {
+        renderer_exit_status = EMPTY_MINIDUMP_WHILE_BACKGROUND;
+      }
+    } else {
+      if (is_running) {
+        renderer_exit_status = VALID_MINIDUMP_WHILE_RUNNING;
+      } else if (is_paused) {
+        renderer_exit_status = VALID_MINIDUMP_WHILE_PAUSED;
+      } else {
+        renderer_exit_status = VALID_MINIDUMP_WHILE_BACKGROUND;
+      }
+    }
+    UMA_HISTOGRAM_ENUMERATION("Tab.RendererDetailedExitStatus",
+                              renderer_exit_status,
+                              ExitStatus::MINIDUMP_STATUS_COUNT);
+  }
 
   if (file_size == 0) {
     // Empty minidump, this process did not crash. Just remove the file.
@@ -122,27 +157,51 @@ void CrashDumpManager::ProcessMinidump(const base::FilePath& minidump_path,
 
 void CrashDumpManager::BrowserChildProcessHostDisconnected(
     const content::ChildProcessData& data) {
-  OnChildExit(data.id, data.handle);
+  OnChildExit(data.id,
+              data.handle,
+              static_cast<content::ProcessType>(data.process_type),
+              base::TERMINATION_STATUS_MAX_ENUM,
+              base::android::APPLICATION_STATE_UNKNOWN);
 }
 
 void CrashDumpManager::BrowserChildProcessCrashed(
     const content::ChildProcessData& data,
     int exit_code) {
-  OnChildExit(data.id, data.handle);
+  OnChildExit(data.id,
+              data.handle,
+              static_cast<content::ProcessType>(data.process_type),
+              base::TERMINATION_STATUS_ABNORMAL_TERMINATION,
+              base::android::APPLICATION_STATE_UNKNOWN);
 }
 
 void CrashDumpManager::Observe(int type,
                                const content::NotificationSource& source,
                                const content::NotificationDetails& details) {
   switch (type) {
-    case content::NOTIFICATION_RENDERER_PROCESS_TERMINATED:
+    case content::NOTIFICATION_RENDERER_PROCESS_TERMINATED: {
       // NOTIFICATION_RENDERER_PROCESS_TERMINATED is sent when the renderer
-      // process is cleanly shutdown. However, we need to fallthrough so that
-      // we close the minidump_fd we kept open.
+      // process is cleanly shutdown. However, we still need to close the
+      // minidump_fd we kept open.
+      content::RenderProcessHost* rph =
+          content::Source<content::RenderProcessHost>(source).ptr();
+      OnChildExit(rph->GetID(),
+                  rph->GetHandle(),
+                  content::PROCESS_TYPE_RENDERER,
+                  base::TERMINATION_STATUS_NORMAL_TERMINATION,
+                  base::android::APPLICATION_STATE_UNKNOWN);
+      break;
+    }
     case content::NOTIFICATION_RENDERER_PROCESS_CLOSED: {
       content::RenderProcessHost* rph =
           content::Source<content::RenderProcessHost>(source).ptr();
-      OnChildExit(rph->GetID(), rph->GetHandle());
+      content::RenderProcessHost::RendererClosedDetails* process_details =
+          content::Details<content::RenderProcessHost::RendererClosedDetails>(
+              details).ptr();
+      OnChildExit(rph->GetID(),
+                  rph->GetHandle(),
+                  content::PROCESS_TYPE_RENDERER,
+                  process_details->status,
+                  base::android::ApplicationStatusListener::GetState());
       break;
     }
     default:
@@ -152,7 +211,10 @@ void CrashDumpManager::Observe(int type,
 }
 
 void CrashDumpManager::OnChildExit(int child_process_id,
-                                   base::ProcessHandle pid) {
+                                   base::ProcessHandle pid,
+                                   content::ProcessType process_type,
+                                   base::TerminationStatus exit_status,
+                                   base::android::ApplicationState app_state) {
   base::FilePath minidump_path;
   {
     base::AutoLock auto_lock(child_process_id_to_minidump_path_lock_);
@@ -168,7 +230,12 @@ void CrashDumpManager::OnChildExit(int child_process_id,
   }
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(&CrashDumpManager::ProcessMinidump, minidump_path, pid));
+      base::Bind(&CrashDumpManager::ProcessMinidump,
+                 minidump_path,
+                 pid,
+                 process_type,
+                 exit_status,
+                 app_state));
 }
 
 }  // namespace breakpad
