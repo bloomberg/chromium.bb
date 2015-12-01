@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <map>
 #include <string>
 
 #include "base/bind.h"
@@ -25,6 +26,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/crx_file/id_util.h"
+#include "components/variations/variations_associated_data.h"
 #include "extensions/browser/app_sorting.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
@@ -1423,6 +1425,9 @@ TEST_F(ExtensionServiceSyncTest, ProcessSyncDataPermissionApproval) {
 class ExtensionServiceTestSupervised : public ExtensionServiceSyncTest,
                                        public SupervisedUserService::Delegate {
  public:
+  ExtensionServiceTestSupervised()
+      : field_trial_list_(new base::MockEntropyProvider()) {}
+
   void SetUp() override {
     ExtensionServiceSyncTest::SetUp();
 
@@ -1440,6 +1445,17 @@ class ExtensionServiceTestSupervised : public ExtensionServiceSyncTest,
   }
 
  protected:
+  void InitNeedCustodianApprovalFieldTrial(bool enabled) {
+    // Group name doesn't matter.
+    base::FieldTrialList::CreateFieldTrial(
+        "SupervisedUserExtensionPermissionIncrease", "group");
+    std::map<std::string, std::string> params;
+    params["legacy_supervised_user"] = enabled ? "true" : "false";
+    params["child_account"] = enabled ? "true" : "false";
+    variations::AssociateVariationParams(
+        "SupervisedUserExtensionPermissionIncrease", "group", params);
+  }
+
   void InitServices(bool profile_is_supervised) {
     ExtensionServiceInitParams params = CreateDefaultInitParams();
     params.profile_is_supervised = profile_is_supervised;
@@ -1497,6 +1513,8 @@ class ExtensionServiceTestSupervised : public ExtensionServiceSyncTest,
   base::FilePath pem_path() const {
     return base_path().AppendASCII("permissions.pem");
   }
+
+  base::FieldTrialList field_trial_list_;
 };
 
 class MockPermissionRequestCreator : public PermissionRequestCreator {
@@ -1581,10 +1599,7 @@ TEST_F(ExtensionServiceTestSupervised, UpdateWithoutPermissionIncrease) {
 }
 
 TEST_F(ExtensionServiceTestSupervised, UpdateWithPermissionIncreaseNoApproval) {
-  // Explicitly disable the "need custodian approval" field trial.
-  base::FieldTrialList field_trial_list(new base::MockEntropyProvider());
-  base::FieldTrialList::CreateFieldTrial(
-      "SupervisedUserExtensionPermissionIncrease", "");
+  InitNeedCustodianApprovalFieldTrial(false);
 
   InitServices(true /* profile_is_supervised */);
 
@@ -1606,10 +1621,7 @@ TEST_F(ExtensionServiceTestSupervised, UpdateWithPermissionIncreaseNoApproval) {
 
 TEST_F(ExtensionServiceTestSupervised,
        UpdateWithPermissionIncreaseApprovalOldVersion) {
-  // Explicitly enable the "need custodian approval" field trial.
-  base::FieldTrialList field_trial_list(new base::MockEntropyProvider());
-  base::FieldTrialList::CreateFieldTrial(
-      "SupervisedUserExtensionPermissionIncrease", "NeedCustodianApproval");
+  InitNeedCustodianApprovalFieldTrial(true);
 
   InitServices(true /* profile_is_supervised */);
 
@@ -1659,10 +1671,7 @@ TEST_F(ExtensionServiceTestSupervised,
 
 TEST_F(ExtensionServiceTestSupervised,
        UpdateWithPermissionIncreaseApprovalMatchingVersion) {
-  // Explicitly enable the "need custodian approval" field trial.
-  base::FieldTrialList field_trial_list(new base::MockEntropyProvider());
-  base::FieldTrialList::CreateFieldTrial(
-      "SupervisedUserExtensionPermissionIncrease", "NeedCustodianApproval");
+  InitNeedCustodianApprovalFieldTrial(true);
 
   InitServices(true /* profile_is_supervised */);
 
@@ -1700,10 +1709,7 @@ TEST_F(ExtensionServiceTestSupervised,
 
 TEST_F(ExtensionServiceTestSupervised,
        UpdateWithPermissionIncreaseApprovalNewVersion) {
-  // Explicitly enable the "need custodian approval" field trial.
-  base::FieldTrialList field_trial_list(new base::MockEntropyProvider());
-  base::FieldTrialList::CreateFieldTrial(
-      "SupervisedUserExtensionPermissionIncrease", "NeedCustodianApproval");
+  InitNeedCustodianApprovalFieldTrial(true);
 
   InitServices(true /* profile_is_supervised */);
 

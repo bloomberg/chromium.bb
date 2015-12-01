@@ -1647,7 +1647,8 @@ void ExtensionService::CheckPermissionsIncrease(const Extension* extension,
     // to a permissions increase, send a request to the custodian if the
     // supervised user themselves can't re-enable the extension.
     if (extensions::util::IsExtensionSupervised(extension, profile_) &&
-        extensions::util::NeedCustodianApprovalForPermissionIncrease() &&
+        extensions::util::NeedCustodianApprovalForPermissionIncrease(
+            profile_) &&
         !ExtensionSyncService::Get(profile_)->HasPendingReenable(
             extension->id(), *extension->version())) {
       SupervisedUserService* supervised_user_service =

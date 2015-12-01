@@ -339,7 +339,8 @@ ExtensionDisabledGlobalError::GetBubbleViewMessages() {
 base::string16 ExtensionDisabledGlobalError::GetBubbleViewAcceptButtonLabel() {
   if (extensions::util::IsExtensionSupervised(extension_,
                                               service_->profile()) &&
-      extensions::util::NeedCustodianApprovalForPermissionIncrease()) {
+      extensions::util::NeedCustodianApprovalForPermissionIncrease(
+          service_->profile())) {
     // TODO(treib): Probably use a new string here once we get UX design.
     // For now, just use "OK". crbug.com/461261
     return l10n_util::GetStringUTF16(IDS_OK);
@@ -356,7 +357,8 @@ base::string16 ExtensionDisabledGlobalError::GetBubbleViewAcceptButtonLabel() {
 base::string16 ExtensionDisabledGlobalError::GetBubbleViewCancelButtonLabel() {
   if (extensions::util::IsExtensionSupervised(extension_,
                                               service_->profile())) {
-    if (extensions::util::NeedCustodianApprovalForPermissionIncrease()) {
+    if (extensions::util::NeedCustodianApprovalForPermissionIncrease(
+        service_->profile())) {
       // If the supervised user can't approve the update, then there is no
       // "cancel" button.
       return base::string16();
@@ -376,7 +378,8 @@ void ExtensionDisabledGlobalError::BubbleViewAcceptButtonPressed(
     Browser* browser) {
   if (extensions::util::IsExtensionSupervised(extension_,
                                               service_->profile()) &&
-      extensions::util::NeedCustodianApprovalForPermissionIncrease()) {
+      extensions::util::NeedCustodianApprovalForPermissionIncrease(
+          service_->profile())) {
     return;
   }
   // Delay extension reenabling so this bubble closes properly.
@@ -393,7 +396,8 @@ void ExtensionDisabledGlobalError::BubbleViewCancelButtonPressed(
     // For custodian-installed extensions, this button should only exist if the
     // supervised user can approve the update. Otherwise there is only an "OK"
     // button.
-    DCHECK(!extensions::util::NeedCustodianApprovalForPermissionIncrease());
+    DCHECK(!extensions::util::NeedCustodianApprovalForPermissionIncrease(
+        service_->profile()));
     // Supervised users may never remove custodian-installed extensions.
     return;
   }
