@@ -239,9 +239,6 @@ config("feature_flags") {
   if (enable_background) {
     defines += [ "ENABLE_BACKGROUND=1" ]
   }
-  if (enable_pre_sync_backup) {
-    defines += [ "ENABLE_PRE_SYNC_BACKUP" ]
-  }
   if (enable_video_hole) {
     defines += [ "VIDEO_HOLE=1" ]
   }

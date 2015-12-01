@@ -191,9 +191,6 @@ use_brlapi = is_chromeos
 # system).
 use_gconf = is_linux && !is_chromeos && !is_chromecast && !is_headless
 
-# Whether to back up data before sync.
-enable_pre_sync_backup = is_win || is_mac || (is_linux && !is_chromeos)
-
 # Enable WebVR support by default on Android
 # Still requires command line flag to access API
 enable_webvr = is_android

@@ -19,6 +19,7 @@
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
+#include "components/sync_driver/sync_driver_features.h"
 #include "components/sync_driver/sync_driver_switches.h"
 #include "sync/internal_api/public/util/sync_db_util.h"
 #include "sync/test/fake_server/fake_server_verifier.h"
@@ -158,7 +159,7 @@ class SyncRollbackChecker : public sync_driver::SyncServiceObserver,
   bool clear_done_;
 };
 
-#if defined(ENABLE_PRE_SYNC_BACKUP)
+#if BUILDFLAG(ENABLE_PRE_SYNC_BACKUP)
 #define MAYBE_TestBackup TestBackup
 #else
 #define MAYBE_TestBackup DISABLED_TestBackup
@@ -178,7 +179,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientBackupRollbackTest,
   ASSERT_EQ(backup_time, GetSyncService(0)->GetDeviceBackupTimeForTesting());
 }
 
-#if defined(ENABLE_PRE_SYNC_BACKUP)
+#if BUILDFLAG(ENABLE_PRE_SYNC_BACKUP)
 #define MAYBE_TestBackupDisabled TestBackupDisabled
 #else
 #define MAYBE_TestBackupDisabled DISABLED_TestBackupDisabled
@@ -198,7 +199,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientBackupRollbackTest,
   ASSERT_TRUE(GetSyncService(0)->GetDeviceBackupTimeForTesting().is_null());
 }
 
-#if defined(ENABLE_PRE_SYNC_BACKUP)
+#if BUILDFLAG(ENABLE_PRE_SYNC_BACKUP)
 #define MAYBE_TestRollback TestRollback
 #else
 #define MAYBE_TestRollback DISABLED_TestRollback
@@ -256,7 +257,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientBackupRollbackTest,
   ASSERT_EQ(GURL("http://www.nhl.com"), url2->url());
 }
 
-#if defined(ENABLE_PRE_SYNC_BACKUP)
+#if BUILDFLAG(ENABLE_PRE_SYNC_BACKUP)
 #define MAYBE_TestRollbackDisabled TestRollbackDisabled
 #else
 #define MAYBE_TestRollbackDisabled DISABLED_TestRollbackDisabled
@@ -305,7 +306,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientBackupRollbackTest,
             GetOtherNode(0)->GetChild(0)->url());
 }
 
-#if defined(ENABLE_PRE_SYNC_BACKUP)
+#if BUILDFLAG(ENABLE_PRE_SYNC_BACKUP)
 #define MAYBE_TestSyncDisabled TestSyncDisabled
 #else
 #define MAYBE_TestSyncDisabled DISABLED_TestSyncDisabled
@@ -352,7 +353,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientBackupRollbackTest,
             GetOtherNode(0)->GetChild(0)->url());
 }
 
-#if defined(ENABLE_PRE_SYNC_BACKUP)
+#if BUILDFLAG(ENABLE_PRE_SYNC_BACKUP)
 #define MAYBE_RollbackNoBackup RollbackNoBackup
 #else
 #define MAYBE_RollbackNoBackup DISABLED_RollbackNoBackup
@@ -399,7 +400,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientBackupRollbackTest,
             GetOtherNode(0)->GetChild(0)->url());
 }
 
-#if defined(ENABLE_PRE_SYNC_BACKUP)
+#if BUILDFLAG(ENABLE_PRE_SYNC_BACKUP)
 #define MAYBE_DontChangeBookmarkOrdering DontChangeBookmarkOrdering
 #else
 #define MAYBE_DontChangeBookmarkOrdering DISABLED_DontChangeBookmarkOrdering
