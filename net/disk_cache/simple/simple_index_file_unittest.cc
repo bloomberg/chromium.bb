@@ -292,8 +292,8 @@ TEST_F(SimpleIndexFileTest, SimpleCacheUpgrade) {
   // thread after that.
   MessageLoopHelper helper;
   CallbackTest cb_shutdown(&helper, false);
-  cache_thread.task_runner()->PostTask(
-      FROM_HERE,
+  cache_thread.task_runner()->PostTaskAndReply(
+      FROM_HERE, base::Bind(&base::DoNothing),
       base::Bind(&CallbackTest::Run, base::Unretained(&cb_shutdown), net::OK));
   helper.WaitUntilCacheIoFinished(1);
 

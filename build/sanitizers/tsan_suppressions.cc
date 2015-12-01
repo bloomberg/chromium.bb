@@ -144,9 +144,6 @@ char kTSanDefaultSuppressions[] =
 // http://crbug.com/310851
 "race:net::ProxyResolverV8Tracing::Job::~Job\n"
 
-// http://crbug.com/313726
-"race:CallbackWasCalled\n"
-
 // http://crbug.com/327330
 "race:PrepareTextureMailbox\n"
 "race:cc::LayerTreeHost::PaintLayerContents\n"
