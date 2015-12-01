@@ -2,13 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "jingle/notifier/communicator/single_login_attempt.h"
-
-#include <stdint.h>
-
-#include <limits>
 #include <string>
 
+#include "jingle/notifier/communicator/single_login_attempt.h"
+
+#include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -75,7 +73,7 @@ net::HostPortPair ParseRedirectText(const std::string& redirect_text) {
   if (!base::StringToInt(parts[1], &port)) {
     port = kDefaultXmppPort;
   }
-  if (port <= 0 || port > std::numeric_limits<uint16_t>::max()) {
+  if (port <= 0 || port > kuint16max) {
     port = kDefaultXmppPort;
   }
   redirect_server.set_port(port);

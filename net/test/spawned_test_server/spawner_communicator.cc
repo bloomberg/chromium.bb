@@ -4,8 +4,6 @@
 
 #include "net/test/spawned_test_server/spawner_communicator.h"
 
-#include <limits>
-
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
@@ -26,7 +24,7 @@ namespace net {
 
 namespace {
 
-GURL GenerateSpawnerCommandURL(const std::string& command, uint16_t port) {
+GURL GenerateSpawnerCommandURL(const std::string& command, uint16 port) {
   // Always performs HTTP request for sending command to the spawner server.
   return GURL(base::StringPrintf("%s:%u/%s", "http://127.0.0.1", port,
                                  command.c_str()));
@@ -100,7 +98,7 @@ class SpawnerRequestData : public base::SupportsUserData::Data {
 
 }  // namespace
 
-SpawnerCommunicator::SpawnerCommunicator(uint16_t port)
+SpawnerCommunicator::SpawnerCommunicator(uint16 port)
     : io_thread_("spawner_communicator"),
       event_(false, false),
       port_(port),
@@ -326,7 +324,7 @@ void SpawnerCommunicator::OnReadCompleted(URLRequest* request, int num_bytes) {
 }
 
 bool SpawnerCommunicator::StartServer(const std::string& arguments,
-                                      uint16_t* port) {
+                                      uint16* port) {
   *port = 0;
   // Send the start command to spawner server to start the Python test server
   // on remote machine.
@@ -354,11 +352,11 @@ bool SpawnerCommunicator::StartServer(const std::string& arguments,
   }
   int int_port;
   if (!server_data->GetInteger("port", &int_port) || int_port <= 0 ||
-      int_port > std::numeric_limits<uint16_t>::max()) {
+      int_port > kuint16max) {
     LOG(ERROR) << "Invalid port value: " << int_port;
     return false;
   }
-  *port = static_cast<uint16_t>(int_port);
+  *port = static_cast<uint16>(int_port);
   return true;
 }
 

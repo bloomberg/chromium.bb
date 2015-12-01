@@ -4,10 +4,7 @@
 
 #include "net/dns/dns_session.h"
 
-#include <stdint.h>
-
-#include <limits>
-
+#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram_macros.h"
@@ -89,9 +86,7 @@ DnsSession::DnsSession(const DnsConfig& config,
                        NetLog* net_log)
     : config_(config),
       socket_pool_(socket_pool.Pass()),
-      rand_callback_(base::Bind(rand_int_callback,
-                                0,
-                                std::numeric_limits<uint16_t>::max())),
+      rand_callback_(base::Bind(rand_int_callback, 0, kuint16max)),
       net_log_(net_log),
       server_index_(0) {
   socket_pool_->Initialize(&config_.nameservers, net_log);
@@ -107,8 +102,8 @@ DnsSession::~DnsSession() {
   RecordServerStats();
 }
 
-uint16_t DnsSession::NextQueryId() const {
-  return static_cast<uint16_t>(rand_callback_.Run());
+uint16 DnsSession::NextQueryId() const {
+  return static_cast<uint16>(rand_callback_.Run());
 }
 
 unsigned DnsSession::NextFirstServerIndex() {

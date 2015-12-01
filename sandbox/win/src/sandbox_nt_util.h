@@ -6,9 +6,8 @@
 #define SANDBOX_SRC_SANDBOX_NT_UTIL_H_
 
 #include <intrin.h>
-#include <stdint.h>
 
-#include "base/macros.h"
+#include "base/basictypes.h"
 #include "sandbox/win/src/nt_internals.h"
 #include "sandbox/win/src/sandbox_nt_types.h"
 
@@ -102,9 +101,7 @@ NTSTATUS CopyData(void* destination, const void* source, size_t bytes);
 
 // Copies the name from an object attributes.
 NTSTATUS AllocAndCopyName(const OBJECT_ATTRIBUTES* in_object,
-                          wchar_t** out_name,
-                          uint32_t* attributes,
-                          HANDLE* root);
+                          wchar_t** out_name, uint32* attributes, HANDLE* root);
 
 // Determine full path name from object root and path.
 NTSTATUS AllocAndGetFullPath(HANDLE root,
@@ -137,7 +134,7 @@ enum MappedModuleFlags {
 // }
 // InsertYourLogicHere(name);
 // operator delete(name, NT_ALLOC);
-UNICODE_STRING* GetImageInfoFromModule(HMODULE module, uint32_t* flags);
+UNICODE_STRING* GetImageInfoFromModule(HMODULE module, uint32* flags);
 
 // Returns the full path and filename for a given dll.
 // May return NULL if the provided address is not backed by a named section, or
@@ -185,9 +182,8 @@ class AutoProtectMemory {
 
 // Returns true if the file_rename_information structure is supported by our
 // rename handler.
-bool IsSupportedRenameCall(FILE_RENAME_INFORMATION* file_info,
-                           DWORD length,
-                           uint32_t file_info_class);
+bool IsSupportedRenameCall(FILE_RENAME_INFORMATION* file_info, DWORD length,
+                           uint32 file_info_class);
 
 }  // namespace sandbox
 

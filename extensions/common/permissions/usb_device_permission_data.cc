@@ -4,7 +4,6 @@
 
 #include "extensions/common/permissions/usb_device_permission_data.h"
 
-#include <limits>
 #include <string>
 #include <tuple>
 #include <vector>
@@ -31,12 +30,13 @@ UsbDevicePermissionData::UsbDevicePermissionData()
   : vendor_id_(0), product_id_(0), interface_id_(ANY_INTERFACE) {
 }
 
-UsbDevicePermissionData::UsbDevicePermissionData(uint16_t vendor_id,
-                                                 uint16_t product_id,
+UsbDevicePermissionData::UsbDevicePermissionData(uint16 vendor_id,
+                                                 uint16 product_id,
                                                  int interface_id)
-    : vendor_id_(vendor_id),
-      product_id_(product_id),
-      interface_id_(interface_id) {}
+  : vendor_id_(vendor_id),
+    product_id_(product_id),
+    interface_id_(interface_id) {
+}
 
 bool UsbDevicePermissionData::Check(
     const APIPermission::CheckParam* param) const {
@@ -69,19 +69,19 @@ bool UsbDevicePermissionData::FromValue(const base::Value* value) {
   int temp;
   if (!dict_value->GetInteger(kVendorIdKey, &temp))
     return false;
-  if (temp < 0 || temp > std::numeric_limits<uint16_t>::max())
+  if (temp < 0 || temp > kuint16max)
     return false;
   vendor_id_ = temp;
 
   if (!dict_value->GetInteger(kProductIdKey, &temp))
     return false;
-  if (temp < 0 || temp > std::numeric_limits<uint16_t>::max())
+  if (temp < 0 || temp > kuint16max)
     return false;
   product_id_ = temp;
 
   if (!dict_value->GetInteger(kInterfaceIdKey, &temp))
     interface_id_ = ANY_INTERFACE;
-  else if (temp < ANY_INTERFACE || temp > std::numeric_limits<uint8_t>::max())
+  else if (temp < ANY_INTERFACE || temp > kuint8max)
     return false;
   else
     interface_id_ = temp;

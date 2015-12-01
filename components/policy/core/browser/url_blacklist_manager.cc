@@ -4,10 +4,6 @@
 
 #include "components/policy/core/browser/url_blacklist_manager.h"
 
-#include <stdint.h>
-
-#include <limits>
-
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
@@ -141,7 +137,7 @@ struct URLBlacklist::FilterComponents {
 
   std::string scheme;
   std::string host;
-  uint16_t port;
+  uint16 port;
   std::string path;
   std::string query;
   int number_of_key_value_pairs;
@@ -239,7 +235,7 @@ bool URLBlacklist::FilterToComponents(SegmentURLCallback segment_url,
                                       std::string* scheme,
                                       std::string* host,
                                       bool* match_subdomains,
-                                      uint16_t* port,
+                                      uint16* port,
                                       std::string* path,
                                       std::string* query) {
   url::Parsed parsed;
@@ -302,7 +298,7 @@ bool URLBlacklist::FilterToComponents(SegmentURLCallback segment_url,
                            &int_port)) {
       return false;
     }
-    if (int_port <= 0 || int_port > std::numeric_limits<uint16_t>::max())
+    if (int_port <= 0 || int_port > kuint16max)
       return false;
     *port = int_port;
   } else {
@@ -332,7 +328,7 @@ scoped_refptr<URLMatcherConditionSet> URLBlacklist::CreateConditionSet(
     const std::string& scheme,
     const std::string& host,
     bool match_subdomains,
-    uint16_t port,
+    uint16 port,
     const std::string& path,
     const std::string& query,
     bool allow) {
