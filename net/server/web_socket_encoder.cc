@@ -149,9 +149,9 @@ void EncodeFrameHybi17(const std::string& message,
   int reserved1 = compressed ? kReserved1Bit : 0;
   frame.push_back(kFinalBit | op_code | reserved1);
   char mask_key_bit = masking_key != 0 ? kMaskBit : 0;
-  if (data_length <= kMaxSingleBytePayloadLength)
-    frame.push_back(data_length | mask_key_bit);
-  else if (data_length <= 0xFFFF) {
+  if (data_length <= kMaxSingleBytePayloadLength) {
+    frame.push_back(static_cast<char>(data_length) | mask_key_bit);
+  } else if (data_length <= 0xFFFF) {
     frame.push_back(kTwoBytePayloadLengthField | mask_key_bit);
     frame.push_back((data_length & 0xFF00) >> 8);
     frame.push_back(data_length & 0xFF);

@@ -801,7 +801,7 @@ class QuicConnectionTest : public ::testing::TestWithParam<TestParams> {
     connection_.ProcessUdpPacket(
         kSelfAddress, kPeerAddress,
         QuicEncryptedPacket(buffer, encrypted_length, false));
-    return encrypted_length;
+    return base::checked_cast<QuicPacketEntropyHash>(encrypted_length);
   }
 
   size_t ProcessDataPacket(QuicPacketNumber number,

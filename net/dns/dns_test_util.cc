@@ -122,7 +122,7 @@ class MockTransaction : public DnsTransaction,
           writer.WriteU16(qtype_);
           writer.WriteU16(dns_protocol::kClassIN);
           writer.WriteU32(kTTL);
-          writer.WriteU16(rdata_size);
+          writer.WriteU16(static_cast<uint16>(rdata_size));
           if (qtype_ == dns_protocol::kTypeA) {
             char kIPv4Loopback[] = { 0x7f, 0, 0, 1 };
             writer.WriteBytes(kIPv4Loopback, sizeof(kIPv4Loopback));

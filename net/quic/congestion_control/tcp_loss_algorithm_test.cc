@@ -154,7 +154,7 @@ TEST_F(TcpLossAlgorithmTest, EarlyRetransmitAllPackets) {
   unacked_packets_.RemoveFromInFlight(kNumSentPackets);
   // This simulates a single ack following multiple missing packets with FACK.
   for (size_t i = 1; i < kNumSentPackets; ++i) {
-    unacked_packets_.NackPacket(i, kNumSentPackets - i);
+    unacked_packets_.NackPacket(i, static_cast<uint16>(kNumSentPackets - i));
   }
   QuicPacketNumber lost[] = {1, 2};
   VerifyLosses(kNumSentPackets, lost, arraysize(lost));

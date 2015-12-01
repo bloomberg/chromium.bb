@@ -194,7 +194,7 @@ TEST_F(SOCKS5ClientSocketTest, ConnectAndDisconnectTwice) {
   };
 
   std::string request(kSOCKS5DomainRequest, arraysize(kSOCKS5DomainRequest));
-  request.push_back(hostname.size());
+  request.push_back(static_cast<char>(hostname.size()));
   request.append(hostname);
   request.append(reinterpret_cast<const char*>(&kNwPort), sizeof(kNwPort));
 
