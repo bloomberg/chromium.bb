@@ -98,17 +98,6 @@ STLCount(const Container& container, const T& val) {
   return std::count(container.begin(), container.end(), val);
 }
 
-// Deprecated: Use v.data() instead.
-template<typename T>
-inline T* vector_as_array(std::vector<T>* v) {
-  return v->data();
-}
-
-template<typename T>
-inline const T* vector_as_array(const std::vector<T>* v) {
-  return v->data();
-}
-
 // Return a mutable char* pointing to a string's internal buffer,
 // which may not be null-terminated. Writing through this pointer will
 // modify the string.
