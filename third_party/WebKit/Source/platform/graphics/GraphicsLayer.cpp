@@ -304,7 +304,6 @@ IntRect GraphicsLayer::interestRect()
 
 void GraphicsLayer::paint(GraphicsContext& context, const IntRect* interestRect)
 {
-    ASSERT(interestRect || RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled());
     ASSERT(drawsContent());
     ASSERT(&context.paintController() == m_paintController);
 
@@ -315,11 +314,12 @@ void GraphicsLayer::paint(GraphicsContext& context, const IntRect* interestRect)
     incrementPaintCount();
 
     IntRect newInterestRect;
+    if (!interestRect) {
+        newInterestRect = m_client->computeInterestRect(this, m_previousInterestRect);
+        interestRect = &newInterestRect;
+    }
+
     if (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled()) {
-        if (!interestRect) {
-            newInterestRect = m_client->computeInterestRect(this, m_previousInterestRect);
-            interestRect = &newInterestRect;
-        }
         if (!m_client->needsRepaint() && !paintController()->cacheIsEmpty() && m_previousInterestRect == *interestRect) {
             paintController()->createAndAppend<CachedDisplayItem>(*this, DisplayItem::CachedDisplayItemList);
             return;

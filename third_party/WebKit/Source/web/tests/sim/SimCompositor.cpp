@@ -25,7 +25,7 @@ static void paintLayers(PaintLayer& layer, SimDisplayItemList& displayList)
         GraphicsLayer* graphicsLayer = mapping->mainGraphicsLayer();
         if (graphicsLayer->hasTrackedPaintInvalidations()) {
             ContentLayerDelegate* delegate = graphicsLayer->contentLayerDelegateForTesting();
-            delegate->paintContents(&displayList, WebRect(0, 0, layer.size().width(), layer.size().height()));
+            delegate->paintContents(&displayList);
             graphicsLayer->resetTrackedPaintInvalidations();
         }
     }

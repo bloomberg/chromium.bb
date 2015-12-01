@@ -73,7 +73,7 @@ WebContentLayerImpl::PaintContentsToDisplayList(
       cc::DisplayItemList::Create(clip, settings);
   if (client_) {
     WebDisplayItemListImpl list(display_list.get());
-    client_->paintContents(&list, clip, PaintingControlToWeb(painting_control));
+    client_->paintContents(&list, PaintingControlToWeb(painting_control));
   }
   display_list->Finalize();
   return display_list;

@@ -63,7 +63,7 @@ public:
     gfx::Rect paintableRegion() override;
 
     // WebContentLayerClient implementation.
-    void paintContents(WebDisplayItemList*, const WebRect& clip, WebContentLayerClient::PaintingControlSetting = PaintDefaultBehavior) override;
+    void paintContents(WebDisplayItemList*, WebContentLayerClient::PaintingControlSetting = PaintDefaultBehavior) override;
     size_t approximateUnsharedMemoryUsage() const override;
 
 private:

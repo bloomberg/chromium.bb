@@ -266,14 +266,13 @@ gfx::Rect LinkHighlightImpl::paintableRegion()
     return gfx::Rect(0, 0, contentLayer()->layer()->bounds().width, contentLayer()->layer()->bounds().height);
 }
 
-void LinkHighlightImpl::paintContents(WebDisplayItemList* webDisplayItemList, const WebRect& webClipRect, WebContentLayerClient::PaintingControlSetting paintingControl)
+void LinkHighlightImpl::paintContents(WebDisplayItemList* webDisplayItemList, WebContentLayerClient::PaintingControlSetting paintingControl)
 {
     if (!m_node || !m_node->layoutObject())
         return;
 
     SkPictureRecorder recorder;
-    SkCanvas* canvas = recorder.beginRecording(webClipRect.width, webClipRect.height);
-    canvas->translate(-webClipRect.x, -webClipRect.y);
+    SkCanvas* canvas = recorder.beginRecording(paintableRegion().width(), paintableRegion().height());
 
     SkPaint paint;
     paint.setStyle(SkPaint::kFill_Style);

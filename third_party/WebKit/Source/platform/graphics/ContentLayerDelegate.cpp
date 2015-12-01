@@ -38,7 +38,6 @@
 #include "platform/transforms/TransformationMatrix.h"
 #include "public/platform/WebDisplayItemList.h"
 #include "public/platform/WebFloatRect.h"
-#include "public/platform/WebRect.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "ui/gfx/geometry/rect.h"
@@ -54,26 +53,14 @@ ContentLayerDelegate::~ContentLayerDelegate()
 {
 }
 
-PassRefPtr<TracedValue> toTracedValue(const WebRect& clip)
-{
-    RefPtr<TracedValue> tracedValue = TracedValue::create();
-    tracedValue->beginArray("clip_rect");
-    tracedValue->pushInteger(clip.x);
-    tracedValue->pushInteger(clip.y);
-    tracedValue->pushInteger(clip.width);
-    tracedValue->pushInteger(clip.height);
-    tracedValue->endArray();
-    return tracedValue;
-}
-
-static void paintArtifactToWebDisplayItemList(WebDisplayItemList* list, const PaintArtifact& artifact, const WebRect& bounds)
+static void paintArtifactToWebDisplayItemList(WebDisplayItemList* list, const PaintArtifact& artifact, const gfx::Rect& bounds)
 {
     if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
         // This is a temporary path to paint the artifact using the paint chunk
         // properties. Ultimately, we should instead split the artifact into
         // separate layers and send those to the compositor, instead of sending
         // one big flat SkPicture.
-        SkRect skBounds = SkRect::MakeXYWH(bounds.x, bounds.y, bounds.width, bounds.height);
+        SkRect skBounds = SkRect::MakeXYWH(bounds.x(), bounds.y(), bounds.width(), bounds.height());
         RefPtr<SkPicture> picture = paintArtifactToSkPicture(artifact, skBounds);
         // TODO(wkorman): Pass actual visual rect with the drawing item.
         list->appendDrawingItem(IntRect(), picture.get());
@@ -89,10 +76,9 @@ gfx::Rect ContentLayerDelegate::paintableRegion()
 }
 
 void ContentLayerDelegate::paintContents(
-    WebDisplayItemList* webDisplayItemList, const WebRect& clip,
-    WebContentLayerClient::PaintingControlSetting paintingControl)
+    WebDisplayItemList* webDisplayItemList, WebContentLayerClient::PaintingControlSetting paintingControl)
 {
-    TRACE_EVENT1("blink,benchmark", "ContentLayerDelegate::paintContents", "clip_rect", toTracedValue(clip));
+    TRACE_EVENT0("blink,benchmark", "ContentLayerDelegate::paintContents");
 
     PaintController* paintController = m_painter->paintController();
     ASSERT(paintController);
@@ -110,11 +96,10 @@ void ContentLayerDelegate::paintContents(
         disabledMode = GraphicsContext::FullyDisabled;
     GraphicsContext context(*paintController, disabledMode);
 
-    IntRect interestRect = clip;
-    m_painter->paint(context, &interestRect);
+    m_painter->paint(context, nullptr);
 
     paintController->commitNewDisplayItems();
-    paintArtifactToWebDisplayItemList(webDisplayItemList, paintController->paintArtifact(), clip);
+    paintArtifactToWebDisplayItemList(webDisplayItemList, paintController->paintArtifact(), paintableRegion());
     paintController->setDisplayItemConstructionIsDisabled(false);
 }
 

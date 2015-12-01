@@ -56,14 +56,10 @@ public:
     // Paints the content area for the layer, typically dirty rects submitted
     // through WebContentLayer::setNeedsDisplayInRect, submitting drawing commands
     // to populate the WebDisplayItemList.
-    // The |clip| rect defines the region of interest. The resulting WebDisplayItemList should contain
-    // sufficient content to correctly paint the rect, but may also contain other content. The result
-    // will be clipped on playback.
     // The |PaintingControlSetting| enum controls painting to isolate different components in performance tests.
     // Currently the DisplayListConstructionDisabled does nothing.
     virtual void paintContents(
         WebDisplayItemList*,
-        const WebRect& clip,
         PaintingControlSetting = PaintDefaultBehavior) = 0;
 
     // Returns an estimate of the current memory usage within this object,

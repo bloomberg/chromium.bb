@@ -61,7 +61,7 @@ public:
 
     // WebContentLayerClient implementation.
     gfx::Rect paintableRegion() override;
-    void paintContents(WebDisplayItemList*, const WebRect& clipRect, WebContentLayerClient::PaintingControlSetting) override;
+    void paintContents(WebDisplayItemList*, WebContentLayerClient::PaintingControlSetting) override;
 
     // WebCompositorAnimationDelegate implementation.
     void notifyAnimationStarted(double monotonicTime, int group) override;
