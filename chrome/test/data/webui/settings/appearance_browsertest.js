@@ -30,11 +30,43 @@ AppearanceSettingsBrowserTest.prototype = {
 
 TEST_F('AppearanceSettingsBrowserTest', 'uiTests', function() {
   var self = this;
+
+  var fontSize = function() {
+    return self.appearancePage(
+        '#defaultFontSize').$$('[class=iron-selected]').textContent.trim();
+  };
+
   suite('AppearanceHandler', function() {
-    test('font settings', function() {
-      var fontSize = self.appearancePage(
-          '#defaultFontSize').$$('[class=iron-selected]');
-      assertEquals('Medium', fontSize.textContent);
+    test('font settings', function(done) {
+      chrome.settingsPrivate.setPref(
+          'webkit.webprefs.default_font_size', 16, '', function(result) {
+        assertTrue(result);
+        assertEquals('Medium', fontSize());
+        chrome.settingsPrivate.setPref(
+            'webkit.webprefs.default_font_size', 20, '', function(result) {
+          assertTrue(result);
+          chrome.settingsPrivate.getPref(
+                'webkit.webprefs.default_font_size', function(pref) {
+              assertEquals(pref.value, 20);
+              assertEquals('Large', fontSize());
+              done();
+          });
+        });
+      });
+    });
+
+    /**
+     * If the font size is not one of the preset options (e.g. 16, 20, etc.)
+     * then the menu label will be 'Custom' (rather than 'Medium', 'Large',
+     * etc.).
+     */
+    test('font size custom', function(done) {
+      chrome.settingsPrivate.setPref(
+          'webkit.webprefs.default_font_size', 19, '', function(result) {
+        assertTrue(result);
+        assertEquals('Custom', fontSize());
+        done();
+      });
     });
 
     test('home button', function() {
