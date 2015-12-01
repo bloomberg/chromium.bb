@@ -81,26 +81,12 @@ class SYNC_EXPORT EntityTracker {
   void ClearPendingUpdate();
 
  private:
-  // Initializes received update state.  Does not initialize state related to
-  // pending commits and sets |is_commit_pending_| to false.
+  // Initializes the entity tracker's main fields. Does not initialize state
+  // related to a pending commit.
   EntityTracker(const std::string& id,
                 const std::string& client_tag_hash,
                 int64 highest_commit_response_version,
                 int64 highest_gu_response_version);
-
-  // Initializes all fields.  Sets |is_commit_pending_| to true.
-  EntityTracker(const std::string& id,
-                const std::string& client_tag_hash,
-                int64 highest_commit_response_version,
-                int64 highest_gu_response_version,
-                bool is_commit_pending,
-                int64 sequence_number,
-                int64 base_version,
-                base::Time ctime,
-                base::Time mtime,
-                const std::string& non_unique_name,
-                bool deleted,
-                const sync_pb::EntitySpecifics& specifics);
 
   // Checks if the current state indicates a conflict.
   //
@@ -126,10 +112,6 @@ class SYNC_EXPORT EntityTracker {
   // The highest version seen in a GU response for this entry.
   int64 highest_gu_response_version_;
 
-  // Flag that indicates whether or not we're waiting for a chance to commit
-  // this item.
-  bool is_commit_pending_;
-
   // Used to track in-flight commit requests on the model thread.  All we need
   // to do here is return it back to the model thread when the pending commit
   // is completed and confirmed.  Not valid if no commit is pending.
@@ -149,6 +131,6 @@ class SYNC_EXPORT EntityTracker {
   DISALLOW_COPY_AND_ASSIGN(EntityTracker);
 };
 
-}  // namespace syncer
+}  // namespace syncer_v2
 
 #endif  // SYNC_ENGINE_ENTITY_TRACKER_H_

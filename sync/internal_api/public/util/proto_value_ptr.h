@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_SYNCABLE_ENTRY_PROTO_FIELD_PTR_H_
-#define SYNC_SYNCABLE_ENTRY_PROTO_FIELD_PTR_H_
+#ifndef SYNC_INTERNAL_API_PUBLIC_UTIL_PROTO_VALUE_PTR_H_
+#define SYNC_INTERNAL_API_PUBLIC_UTIL_PROTO_VALUE_PTR_H_
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 
 namespace syncer_v2 {
 struct EntityData;
-}  // namespace syncable
+class ModelTypeEntity;
+}  // namespace syncer_v2
 
 namespace syncer {
 
@@ -58,8 +59,8 @@ class ProtoValuePtr {
   // Immutable shareable ref-counted wrapper that embeds the value.
   class Wrapper : public base::RefCountedThreadSafe<Wrapper> {
    public:
-    Wrapper(const T& value) { Traits::CopyValue(&value_, value); }
-    Wrapper(T* value) { Traits::SwapValue(&value_, value); }
+    explicit Wrapper(const T& value) { Traits::CopyValue(&value_, value); }
+    explicit Wrapper(T* value) { Traits::SwapValue(&value_, value); }
 
     const T& value() const { return value_; }
     // Create wrapper by deserializing a BLOB.
@@ -93,6 +94,7 @@ class ProtoValuePtr {
  private:
   friend struct syncable::EntryKernel;
   friend struct syncer_v2::EntityData;
+  friend class syncer_v2::ModelTypeEntity;
   FRIEND_TEST_ALL_PREFIXES(ProtoValuePtrTest, ValueAssignment);
   FRIEND_TEST_ALL_PREFIXES(ProtoValuePtrTest, ValueSwap);
   FRIEND_TEST_ALL_PREFIXES(ProtoValuePtrTest, SharingTest);
@@ -104,9 +106,11 @@ class ProtoValuePtr {
       wrapper_ = new Wrapper(new_value);
     } else {
       // Don't store default value.
-      wrapper_ = nullptr;
+      reset();
     }
   }
+
+  void reset() { wrapper_ = nullptr; }
 
   // Take over |src| value (swap).
   void swap_value(T* src) {
@@ -114,7 +118,7 @@ class ProtoValuePtr {
       wrapper_ = new Wrapper(src);
     } else {
       // Don't store default value.
-      wrapper_ = nullptr;
+      reset();
     }
   }
 
@@ -127,4 +131,4 @@ class ProtoValuePtr {
 
 }  // namespace syncer
 
-#endif  // SYNC_SYNCABLE_ENTRY_PROTO_FIELD_PTR_H_
+#endif  // SYNC_INTERNAL_API_PUBLIC_UTIL_PROTO_VALUE_PTR_H_

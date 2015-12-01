@@ -14,14 +14,12 @@ namespace syncer_v2 {
 
 scoped_ptr<EntityTracker> EntityTracker::FromUpdateResponse(
     const UpdateResponseData& data) {
-  // TODO(stanisc): Share entire EntityData with EntityTracker.
   return make_scoped_ptr(new EntityTracker(
       data.entity->id, data.entity->client_tag_hash, 0, data.response_version));
 }
 
 scoped_ptr<EntityTracker> EntityTracker::FromCommitRequest(
     const CommitRequestData& data) {
-  // TODO(stanisc): Share entire EntityData with EntityTracker.
   return make_scoped_ptr(
       new EntityTracker(data.entity->id, data.entity->client_tag_hash, 0, 0));
 }
@@ -96,6 +94,8 @@ void EntityTracker::RequestCommit(const CommitRequestData& data) {
 
   // This entity is identified by its client tag.  That value can never change.
   DCHECK_EQ(client_tag_hash_, data.entity->client_tag_hash);
+  // TODO(stanisc): consider simply copying CommitRequestData instead of
+  // allocating one dynamically.
   pending_commit_.reset(new CommitRequestData(data));
 
   // Do our counter values indicate a conflict?  If so, don't commit.
@@ -209,4 +209,4 @@ void EntityTracker::ClearPendingCommit() {
   pending_commit_.reset();
 }
 
-}  // namespace syncer
+}  // namespace syncer_v2

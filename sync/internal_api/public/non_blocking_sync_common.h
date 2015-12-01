@@ -67,10 +67,10 @@ struct SYNC_EXPORT_PRIVATE CommitResponseData {
 };
 
 struct SYNC_EXPORT_PRIVATE UpdateResponseData {
-  EntityDataPtr entity;
-
   UpdateResponseData();
   ~UpdateResponseData();
+
+  EntityDataPtr entity;
 
   int64 response_version = 0;
   std::string encryption_key_name;
@@ -80,6 +80,6 @@ typedef std::vector<CommitRequestData> CommitRequestDataList;
 typedef std::vector<CommitResponseData> CommitResponseDataList;
 typedef std::vector<UpdateResponseData> UpdateResponseDataList;
 
-}  // namespace syncer
+}  // namespace syncer_v2
 
 #endif  // SYNC_INTERNAL_API_PUBLIC_NON_BLOCKING_SYNC_COMMON_H_
