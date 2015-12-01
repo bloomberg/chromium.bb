@@ -63,7 +63,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling openmax_dl
   # and whatever else without interference from each other.
-  'openmax_dl_revision': '6625be0364c8adc1b202b000d1e5010f92e2b6a2',
+  'openmax_dl_revision': '7a179b97899cf33d4a12c7ef590176c519016f4d',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
