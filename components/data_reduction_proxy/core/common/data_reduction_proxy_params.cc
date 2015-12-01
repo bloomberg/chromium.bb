@@ -85,8 +85,8 @@ std::string GetLoFiFlagFieldTrialName() {
 }
 
 bool IsIncludedInLoFiEnabledFieldTrial() {
-  std::string name = FieldTrialList::FindFullName(GetLoFiFieldTrialName());
-  return base::StartsWith(name, kEnabled, base::CompareCase::SENSITIVE);
+  return FieldTrialList::FindFullName(GetLoFiFieldTrialName()).find(kEnabled) ==
+         0;
 }
 
 bool IsIncludedInLoFiControlFieldTrial() {

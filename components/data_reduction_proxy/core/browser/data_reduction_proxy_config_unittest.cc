@@ -787,7 +787,7 @@ TEST_F(DataReductionProxyConfigTest, IsDataReductionProxyWithMutableConfig) {
 TEST_F(DataReductionProxyConfigTest, LoFiOn) {
   const struct {
     bool lofi_switch_enabled;
-    bool lofi_enabled_field_trial_group;
+    const std::string lofi_field_trial_group_name;
     bool network_prohibitively_slow;
     bool expect_lofi_header;
     int bucket_to_check_for_auto_lofi_uma;
@@ -796,46 +796,74 @@ TEST_F(DataReductionProxyConfigTest, LoFiOn) {
       {
           // The Lo-Fi switch is off and the user is not in the enabled field
           // trial group. Lo-Fi should not be used.
-          false, false, false, false, 0,
+          false, std::string(), false, false, 0,
           0,  // not in enabled field trial, UMA is not recorded
       },
       {
           // The Lo-Fi switch is off and the user is not in enabled field trial
           // group and the network quality is bad. Lo-Fi should not be used.
-          false, false, true, false, 0,
+          false, std::string(), true, false, 0,
           0,  // not in enabled field trial, UMA is not recorded
       },
       {
           // Lo-Fi is enabled through command line switch. LoFi should be used.
-          true, false, false, true, 0,
+          true, std::string(), false, true, 0,
           0,  // not in enabled field trial, UMA is not recorded
       },
       {
           // The user is in the enabled field trial group but the network
           // quality is not bad. Lo-Fi should not be used.
-          false, true, false, false,
+          false, "Enabled", false, false,
+          0,  // Lo-Fi request header is not used (state change: empty to empty)
+          1,
+      },
+      {
+          // The user is in the enabled field trial group but the network
+          // quality is not bad. Lo-Fi should not be used.
+          false, "Enabled_Control", false, false,
           0,  // Lo-Fi request header is not used (state change: empty to empty)
           1,
       },
       {
           // The user is in the enabled field trial group and the network
           // quality is bad. Lo-Fi should be used.
-          false, true, true, true,
+          false, "Enabled", true, true,
           1,  // Lo-Fi request header is now used (state change: empty to low)
           1,
       },
       {
           // The user is in the enabled field trial group and the network
+          // quality is bad. Lo-Fi should be used.
+          false, "Enabled_Control", true, true,
+          3,  // Lo-Fi request header is now used (state change: low to low)
+          1,
+      },
+      {
+          // The user is in the enabled field trial group and the network
           // quality is bad. Lo-Fi should be used again.
-          false, true, true, true,
+          false, "Enabled", true, true,
+          3,  // Lo-Fi request header is now used (state change: low to low)
+          1,
+      },
+      {
+          // The user is in the enabled field trial group and the network
+          // quality is bad. Lo-Fi should be used again.
+          false, "Enabled_Control", true, true,
           3,  // Lo-Fi request header is now used (state change: low to low)
           1,
       },
       {
           // The user is in the enabled field trial group but the network
           // quality is not bad. Lo-Fi should not be used.
-          false, true, false, false,
+          false, "Enabled", false, false,
           2,  // Lo-Fi request header is not used (state change: low to empty)
+          1,
+      },
+      {
+          // The user is in the enabled field trial group but the network
+          // quality is not bad. Lo-Fi should not be used.
+          false, "Enabled_Control", false, false,
+          0,  // Lo-Fi request header is not used (state change: empty to empty)
           1,
       },
   };
@@ -851,9 +879,10 @@ TEST_F(DataReductionProxyConfigTest, LoFiOn) {
     }
 
     base::FieldTrialList field_trial_list(nullptr);
-    if (tests[i].lofi_enabled_field_trial_group) {
-      base::FieldTrialList::CreateFieldTrial(params::GetLoFiFieldTrialName(),
-                                             "Enabled");
+    if (!tests[i].lofi_field_trial_group_name.empty()) {
+      base::FieldTrialList::CreateFieldTrial(
+          params::GetLoFiFieldTrialName(),
+          tests[i].lofi_field_trial_group_name);
     }
 
     EXPECT_CALL(*config(), IsNetworkQualityProhibitivelySlow(_))
