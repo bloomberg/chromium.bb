@@ -77,7 +77,7 @@ function test()
     function step2(group)
     {
         timeline._selectAnimationGroup(group);
-        timeline._redraw();
+        timeline._render();
         InspectorTest.addResult(">>>> Animation with start delay only");
         InspectorTest.dumpAnimationTimeline(timeline);
         timeline._reset();
@@ -88,7 +88,7 @@ function test()
     function step3(group)
     {
         timeline._selectAnimationGroup(group);
-        timeline._redraw();
+        timeline._render();
         InspectorTest.addResult(">>>> Animation with start and end delay");
         InspectorTest.dumpAnimationTimeline(timeline);
         InspectorTest.waitForAnimationAdded(step5);
@@ -98,7 +98,7 @@ function test()
     function step5(group)
     {
         timeline._selectAnimationGroup(group);
-        timeline._redraw();
+        timeline._render();
         InspectorTest.addResult(">>>> Animation with step timing function");
         InspectorTest.dumpAnimationTimeline(timeline);
         timeline._reset();
@@ -109,7 +109,7 @@ function test()
     function step6(group)
     {
         timeline._selectAnimationGroup(group);
-        timeline._redraw();
+        timeline._render();
         InspectorTest.addResult(">>>> CSS animation started");
         InspectorTest.dumpAnimationTimeline(timeline);
         timeline._reset();
@@ -120,7 +120,7 @@ function test()
     function step7(group)
     {
         timeline._selectAnimationGroup(group);
-        timeline._redraw();
+        timeline._render();
         InspectorTest.addResult(">>>> CSS transition started");
         InspectorTest.dumpAnimationTimeline(timeline);
         InspectorTest.completeTest();
