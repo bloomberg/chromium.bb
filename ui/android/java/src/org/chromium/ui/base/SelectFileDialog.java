@@ -15,6 +15,7 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.os.StrictMode;
 import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.Log;
@@ -233,9 +234,15 @@ public class SelectFileDialog
      * @return file path for the captured image to be stored.
      */
     private File getFileForImageCapture(Context context) throws IOException {
-        File photoFile = File.createTempFile(String.valueOf(System.currentTimeMillis()), ".jpg",
-                UiUtils.getDirectoryForImageCapture(context));
-        return photoFile;
+        // Temporarily allowing disk access while fixing. TODO: http://crbug.com/562173
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
+        try {
+            File photoFile = File.createTempFile(String.valueOf(System.currentTimeMillis()), ".jpg",
+                    UiUtils.getDirectoryForImageCapture(context));
+            return photoFile;
+        } finally {
+            StrictMode.setThreadPolicy(oldPolicy);
+        }
     }
 
     /**

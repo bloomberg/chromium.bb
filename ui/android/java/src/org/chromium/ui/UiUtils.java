@@ -12,6 +12,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.StrictMode;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.SurfaceView;
@@ -288,22 +289,29 @@ public class UiUtils {
      * @return directory for the captured image to be stored.
      */
     public static File getDirectoryForImageCapture(Context context) throws IOException {
-        File path;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-            path = new File(context.getFilesDir(), IMAGE_FILE_PATH);
-            if (!path.exists() && !path.mkdir()) {
-                throw new IOException("Folder cannot be created.");
+        // Temporarily allowing disk access while fixing. TODO: http://crbug.com/562173
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
+        try {
+            File path;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                path = new File(context.getFilesDir(), IMAGE_FILE_PATH);
+                if (!path.exists() && !path.mkdir()) {
+                    throw new IOException("Folder cannot be created.");
+                }
+            } else {
+                File externalDataDir =
+                        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
+                path = new File(externalDataDir.getAbsolutePath()
+                                + File.separator
+                                + EXTERNAL_IMAGE_FILE_PATH);
+                if (!path.exists() && !path.mkdirs()) {
+                    path = externalDataDir;
+                }
             }
-        } else {
-            File externalDataDir =
-                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
-            path = new File(
-                    externalDataDir.getAbsolutePath() + File.separator + EXTERNAL_IMAGE_FILE_PATH);
-            if (!path.exists() && !path.mkdirs()) {
-                path = externalDataDir;
-            }
+            return path;
+        } finally {
+            StrictMode.setThreadPolicy(oldPolicy);
         }
-        return path;
     }
 
     /**

@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.test.util.browser.tabmodel.document;
 
+import android.os.StrictMode;
 import android.util.Base64;
 import android.util.Log;
 
@@ -50,10 +51,17 @@ public class MockStorageDelegate extends StorageDelegate {
 
     @Override
     public File getStateDirectory() {
-        if (!mStateDirectory.exists() && !mStateDirectory.mkdirs()) {
-            Assert.fail("Failed to create state directory.  Tests should fail.");
+        // This is a test class, allowing StrictMode violations.
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
+        StrictMode.allowThreadDiskWrites();
+        try {
+            if (!mStateDirectory.exists() && !mStateDirectory.mkdirs()) {
+                Assert.fail("Failed to create state directory.  Tests should fail.");
+            }
+            return mStateDirectory;
+        } finally {
+            StrictMode.setThreadPolicy(oldPolicy);
         }
-        return mStateDirectory;
     }
 
     /**

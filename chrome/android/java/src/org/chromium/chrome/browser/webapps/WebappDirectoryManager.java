@@ -158,6 +158,7 @@ public class WebappDirectoryManager {
     File getWebappDirectory(Context context, String webappId) {
         // Temporarily allowing disk access while fixing. TODO: http://crbug.com/525781
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
+        StrictMode.allowThreadDiskWrites();
         try {
             File webappDirectory = new File(getBaseWebappDirectory(context), webappId);
             if (!webappDirectory.exists() && !webappDirectory.mkdir()) {
