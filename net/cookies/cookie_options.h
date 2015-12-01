@@ -41,7 +41,7 @@ class NET_EXPORT CookieOptions {
   void set_enforce_prefixes() { enforce_prefixes_ = true; }
   bool enforce_prefixes() const { return enforce_prefixes_; }
 
-  // TODO(jww): Remove once we decide wether to ship modifying 'secure' cookies
+  // TODO(jww): Remove once we decide whether to ship modifying 'secure' cookies
   // only from secure schemes. https://crbug.com/546820
   void set_enforce_strict_secure() { enforce_strict_secure_ = true; }
   bool enforce_strict_secure() const { return enforce_strict_secure_; }

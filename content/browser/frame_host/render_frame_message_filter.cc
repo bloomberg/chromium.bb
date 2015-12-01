@@ -5,6 +5,8 @@
 #include "content/browser/frame_host/render_frame_message_filter.h"
 
 #include "base/command_line.h"
+#include "base/metrics/field_trial.h"
+#include "base/strings/string_util.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
@@ -40,6 +42,8 @@ namespace {
 #if defined(ENABLE_PLUGINS)
 const int kPluginsRefreshThresholdInSeconds = 3;
 #endif
+
+const char kEnforceStrictSecureExperiment[] = "StrictSecureCookies";
 
 void CreateChildFrameOnUI(
     int process_id,
@@ -349,11 +353,16 @@ void RenderFrameMessageFilter::OnSetCookie(int render_frame_id,
           url, first_party_for_cookies, cookie, resource_context_,
           render_process_id_, render_frame_id, &options)) {
     net::URLRequestContext* context = GetRequestContextForURL(url);
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableExperimentalWebPlatformFeatures)) {
+    bool experimental_web_platform_features_enabled =
+        base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableExperimentalWebPlatformFeatures);
+    const std::string enforce_strict_secure_group =
+        base::FieldTrialList::FindFullName(kEnforceStrictSecureExperiment);
+    if (experimental_web_platform_features_enabled)
       options.set_enforce_prefixes();
-      // TODO(jww): This should be hooked up to a Finch flag for M49, rather
-      // than the generic "experimental web platform features" flag.
+    if (experimental_web_platform_features_enabled ||
+        base::StartsWith(enforce_strict_secure_group, "Enabled",
+                         base::CompareCase::INSENSITIVE_ASCII)) {
       options.set_enforce_strict_secure();
     }
     // Pass a null callback since we don't care about when the 'set' completes.
