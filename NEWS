@@ -12,6 +12,7 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
   report.
 - Fix some compile time warnings on Windows, thanks to Bue
   Vester-Andersen.
+- Fixes to the logging code by Arend Arends. 
 
 ** Other changes
 - Add test data for EUB symbols, thanks to Paul Wood
