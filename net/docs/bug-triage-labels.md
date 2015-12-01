@@ -70,13 +70,19 @@ they fall largely outside the purview of the network stack team:
 
 **Cr-Blink-Storage-AppCache**
 
-**Cr-Blink-WebSockets**
+**Cr-Blink-Network-WebSockets**
+: Issues with the WebSockets.  Attach this label to any issue about the
+  WebSocket feature regardless of where the cause of the issue is (net/ or
+  Blink).
 
-**Cr-Blink-XHR**
-: Generic issues with sync/async XHR requests - missing request or response
+**Cr-Blink-Network-FetchAPI**
+: Generic issues with the Fetch API - missing request or response
   headers, multiple headers, etc.  These will often run into issues in certain
   corner cases (Cross origin / CORS, proxy, whatever).  Attach all labels that
   seem appropriate.
+
+**Cr-Blink-Network-XHR**
+: Generic issues with sync/async XHR requests.
 
 **Cr-Services-Sync**
 : Sharing data/tabs/history/passwords/etc between machines not working.
