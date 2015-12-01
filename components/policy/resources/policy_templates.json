@@ -4938,7 +4938,7 @@
         'type': 'array',
         'items': { 'type': 'string' },
       },
-      'supported_on': ['chrome_os:19-'],
+      'supported_on': ['chrome_os:19-40'],
       'device_only': True,
       'features': {
         'dynamic_refresh': True,
@@ -4955,7 +4955,7 @@
       'name': 'DeviceIdleLogoutTimeout',
       'type': 'int',
       'schema': { 'type': 'integer' },
-      'supported_on': ['chrome_os:19-'],
+      'supported_on': ['chrome_os:19-40'],
       'device_only': True,
       'features': {
         'dynamic_refresh': True,
@@ -4974,7 +4974,7 @@
       'name': 'DeviceIdleLogoutWarningDuration',
       'type': 'int',
       'schema': { 'type': 'integer' },
-      'supported_on': ['chrome_os:19-'],
+      'supported_on': ['chrome_os:19-40'],
       'device_only': True,
       'features': {
         'dynamic_refresh': True,
@@ -4993,7 +4993,7 @@
       'name': 'DeviceLoginScreenSaverId',
       'type': 'string',
       'schema': { 'type': 'string' },
-      'supported_on': ['chrome_os:19-'],
+      'supported_on': ['chrome_os:19-40'],
       'device_only': True,
       'features': {
         'dynamic_refresh': True,
@@ -5010,7 +5010,7 @@
       'name': 'DeviceLoginScreenSaverTimeout',
       'type': 'int',
       'schema': { 'type': 'integer' },
-      'supported_on': ['chrome_os:19-'],
+      'supported_on': ['chrome_os:19-40'],
       'device_only': True,
       'features': {
         'dynamic_refresh': True,
@@ -5032,7 +5032,7 @@
         'type': 'array',
         'items': { 'type': 'string' },
       },
-      'supported_on': ['chrome_os:19-'],
+      'supported_on': ['chrome_os:19-40'],
       'device_only': True,
       'features': {
         'dynamic_refresh': True,
