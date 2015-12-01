@@ -1,7 +1,7 @@
-liblouis 2.6.4 has been released
+liblouis 2.6.5 has been released
 
 The liblouis developer team is proud to announce the liblouis release
-2.6.4 The release is available for download at:
+2.6.5 The release is available for download at:
 
     https://github.com/liblouis/liblouis/releases
 
@@ -18,56 +18,49 @@ liblouisutdml[2] deals with formatting of braille.
 Changes in this release
 =======================
 
-This is a minor release in terms of features. But in terms of test
-coverage and stability it is a vast improvement over previous versions
-of Liblouis. The new YAML based test suite contains more than a
-million of validated translations. Every change in Liblouis is tested
-against this corpus ensuring the change doesn't break anything.
+This minor release introduces new tables (Mongolian and Norwegian 8
+dot) and new features to the tracing tool. But the most exiting news
+about this release is probably the fact that 12 developers have
+contributed to it, showing how widely used liblouis is and how
+actively the development progresses.
 
 New features
 ~~~~~~~~~~~~
 
-- YAML based harness tests. Harness tests can now be written in simple
-  YAML notation and they are integrated with the normal `make check`
-  command. They can be used for both ucs2 and ucs4 and no Python is
-  required. Thanks to Christian Egli.
+- A DEF file is now generated automatically for the windows builds.
+  Thanks to Christian Egli
+- lou_trace supports backtranslation now. Thanks to Bert Frees
 
 Bug fixes
 ~~~~~~~~~
 
-- Use a separate gnulib instance for the library and the tools. Use
-  the strndup module to avoid build problems on windows.
-- Fix a problem with the nocross opcode when used in combination with
-  the opcodes nocont and compbrl, thanks to Bue Vester-Andersen.
-- Fix a problem with the decoding of the harness test files. Thanks to
-  Bert Frees.
-- Fix numerous problems in the way braille indicators are handled.
-  There is now a safe version of the checkAttr function which makes
-  sure that no attributes are checked beyond the boundaries of the
-  currentInput. This fixes the random behavior with tests where the
-  emphasis extends to the end of the input string. Thanks to Christian
-  Egli.
+- Fix a bug in the findtable code. Thanks to Michael Katzmann for the
+  report.
+- Fix some compile time warnings on Windows, thanks to Bue
+  Vester-Andersen.
+- Fixes to the logging code by Arend Arends.
 
 Other changes
 ~~~~~~~~~~~~~
 
-- if found use texi2any to build the documentation, thanks to Martin
-  Michlmayr.
-- Fix permissions of Korean tables, thanks to Peter Lundblad.
-- Update the windows build instructions, thanks to Bue
-  Vester-Andersen.
+- Add test data for EUB symbols, thanks to Paul Wood
+- Clean up dead code i.e. remove support for (undocumented) nobreak
+  opcode. Thanks to Bue Vester-Andersen.
 
 Braille table improvements
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- New Mongolian table thanks to Tsengel Maidar and Sreeja Param.
+- Improvements to the Chinese braille table thanks to Coscell Kao.
+- Massive improvements to Norwegian, thanks to Lars Bjørndal, Ammar
+  Usama and Jostein Austvik Jacobsen. They added a 8 dot table and
+  lots of test data.
 - Improvements to Hungarian, thanks to Attila Hammer
-- Improvements to Hungarian 8 dot and Serbian grade 1, thanks to
-  Zvonimir Stanecic
 
 Next release
 ============
 
-The next release will be published on November 30 2015 so please keep up
+The next release will be published on March 7 2016 so please keep up
 the excellent work and keep those improvements coming.
 
 Share and Enjoy!
