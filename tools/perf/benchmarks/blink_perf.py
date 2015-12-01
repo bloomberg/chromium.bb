@@ -154,6 +154,10 @@ class BlinkPerfBindings(perf_benchmark.PerfBenchmark):
     path = os.path.join(BLINK_PERF_BASE_DIR, 'Bindings')
     return CreateStorySetFromPath(path, SKIPPED_FILE)
 
+  @classmethod
+  def ShouldDisable(cls, possible_browser):
+    return cls.IsSvelte(possible_browser)  # http://crbug.com/563979
+
 
 @benchmark.Enabled('content-shell')
 class BlinkPerfBlinkGC(perf_benchmark.PerfBenchmark):
