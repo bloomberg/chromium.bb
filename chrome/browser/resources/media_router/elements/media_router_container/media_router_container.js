@@ -218,11 +218,11 @@ Polymer({
   },
 
   listeners: {
+    'arrow-drop-click': 'toggleCastModeHidden_',
     'tap': 'onTap_',
   },
 
   ready: function() {
-    this.addEventListener('arrow-drop-click', this.toggleCastModeHidden_);
     this.showSinkList_();
   },
 
