@@ -106,8 +106,8 @@ private:
     void removeMarkers(const VisibleSelection&, DocumentMarker::MarkerTypes);
     bool unifiedTextCheckerEnabled() const;
 
-    void chunkAndMarkAllMisspellingsAndBadGrammar(TextCheckingTypeMask textCheckingOptions, const TextCheckingParagraph& fullParagraphToCheck, bool asynchronous);
-    void markAllMisspellingsAndBadGrammarInRanges(TextCheckingTypeMask textCheckingOptions, const EphemeralRange& checkingRange, const EphemeralRange& paragraphRange, bool asynchronous, int requestNumber, int* checkingLength = 0);
+    void chunkAndMarkAllMisspellingsAndBadGrammar(TextCheckingTypeMask textCheckingOptions, const TextCheckingParagraph& fullParagraphToCheck);
+    void markAllMisspellingsAndBadGrammarInRanges(TextCheckingTypeMask textCheckingOptions, const EphemeralRange& checkingRange, const EphemeralRange& paragraphRange, int requestNumber, int* checkingLength = 0);
 
     RawPtrWillBeMember<LocalFrame> m_frame;
     const OwnPtrWillBeMember<SpellCheckRequester> m_spellCheckRequester;

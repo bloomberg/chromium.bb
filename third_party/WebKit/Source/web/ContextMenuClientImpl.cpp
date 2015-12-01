@@ -102,55 +102,6 @@ static WebURL urlFromFrame(LocalFrame* frame)
     return WebURL();
 }
 
-// Helper function to determine whether text is a single word.
-static bool isASingleWord(const String& text)
-{
-    TextBreakIterator* it = wordBreakIterator(text, 0, text.length());
-    return it && it->next() == static_cast<int>(text.length());
-}
-
-// Helper function to get misspelled word on which context menu
-// is to be invoked. This function also sets the word on which context menu
-// has been invoked to be the selected word, as required. This function changes
-// the selection only when there were no selected characters on OS X.
-static String selectMisspelledWord(LocalFrame* selectedFrame)
-{
-    // First select from selectedText to check for multiple word selection.
-    String misspelledWord = selectedFrame->selectedText().stripWhiteSpace();
-
-    // If some texts were already selected, we don't change the selection.
-    if (!misspelledWord.isEmpty()) {
-        // Don't provide suggestions for multiple words.
-        if (!isASingleWord(misspelledWord))
-            return String();
-        return misspelledWord;
-    }
-
-    // Selection is empty, so change the selection to the word under the cursor.
-    HitTestResult hitTestResult = selectedFrame->eventHandler().
-        hitTestResultAtPoint(selectedFrame->page()->contextMenuController().hitTestResult().pointInInnerNodeFrame());
-    Node* innerNode = hitTestResult.innerNode();
-    VisiblePosition pos = createVisiblePosition(innerNode->layoutObject()->positionForPoint(
-        hitTestResult.localPoint()));
-
-    if (pos.isNull())
-        return misspelledWord; // It is empty.
-
-    WebLocalFrameImpl::selectWordAroundPosition(selectedFrame, pos);
-    misspelledWord = selectedFrame->selectedText().stripWhiteSpace();
-
-#if OS(MACOSX)
-    // If misspelled word is still empty, then that portion should not be
-    // selected. Set the selection to that position only, and do not expand.
-    if (misspelledWord.isEmpty())
-        selectedFrame->selection().setSelection(VisibleSelection(pos));
-#else
-    // On non-Mac, right-click should not make a range selection in any case.
-    selectedFrame->selection().setSelection(VisibleSelection(pos));
-#endif
-    return misspelledWord;
-}
-
 static bool IsWhiteSpaceOrPunctuation(UChar c)
 {
     return isSpaceOrNewline(c) || WTF::Unicode::isPunct(c);
@@ -340,38 +291,23 @@ void ContextMenuClientImpl::showContextMenu(const ContextMenu* defaultMenu)
     if (r.isContentEditable()) {
         data.isEditable = true;
 
-        // When Chrome enables asynchronous spellchecking, its spellchecker adds spelling markers to misspelled
-        // words and attaches suggestions to these markers in the background. Therefore, when a user right-clicks
-        // a mouse on a word, Chrome just needs to find a spelling marker on the word instead of spellchecking it.
-        if (selectedFrame->settings() && selectedFrame->settings()->asynchronousSpellCheckingEnabled()) {
-            String description;
-            uint32_t hash = 0;
-            data.misspelledWord = selectMisspellingAsync(selectedFrame, description, hash);
-            data.misspellingHash = hash;
-            if (description.length()) {
-                Vector<String> suggestions;
-                description.split('\n', suggestions);
-                data.dictionarySuggestions = suggestions;
-            } else if (m_webView->spellCheckClient()) {
-                int misspelledOffset, misspelledLength;
-                m_webView->spellCheckClient()->spellCheck(data.misspelledWord, misspelledOffset, misspelledLength, &data.dictionarySuggestions);
-            }
-        } else {
-            data.isSpellCheckingEnabled =
-                toLocalFrame(m_webView->focusedCoreFrame())->spellChecker().isContinuousSpellCheckingEnabled();
-            // Spellchecking might be enabled for the field, but could be disabled on the node.
-            if (toLocalFrame(m_webView->focusedCoreFrame())->spellChecker().isSpellCheckingEnabledInFocusedNode()) {
-                data.misspelledWord = selectMisspelledWord(selectedFrame);
-                if (m_webView->spellCheckClient()) {
-                    int misspelledOffset, misspelledLength;
-                    m_webView->spellCheckClient()->spellCheck(
-                        data.misspelledWord, misspelledOffset, misspelledLength,
-                        &data.dictionarySuggestions);
-                    if (!misspelledLength)
-                        data.misspelledWord.reset();
-                }
-            }
+        // Spellchecker adds spelling markers to misspelled words and attaches
+        // suggestions to these markers in the background. Therefore, when a
+        // user right-clicks a mouse on a word, Chrome just needs to find a
+        // spelling marker on the word instead of spellchecking it.
+        String description;
+        uint32_t hash = 0;
+        data.misspelledWord = selectMisspellingAsync(selectedFrame, description, hash);
+        data.misspellingHash = hash;
+        if (description.length()) {
+            Vector<String> suggestions;
+            description.split('\n', suggestions);
+            data.dictionarySuggestions = suggestions;
+        } else if (m_webView->spellCheckClient()) {
+            int misspelledOffset, misspelledLength;
+            m_webView->spellCheckClient()->spellCheck(data.misspelledWord, misspelledOffset, misspelledLength, &data.dictionarySuggestions);
         }
+
         HTMLFormElement* form = selectedFrame->selection().currentForm();
         if (form && isHTMLInputElement(*r.innerNode())) {
             HTMLInputElement& selectedElement = toHTMLInputElement(*r.innerNode());

@@ -489,9 +489,7 @@ void SpellChecker::markAllMisspellingsAndBadGrammarInRanges(TextCheckingTypeMask
         return;
 
     TextCheckingParagraph fullParagraphToCheck(shouldMarkGrammar ? grammarRange : spellingRange);
-
-    bool asynchronous = frame().settings() && frame().settings()->asynchronousSpellCheckingEnabled();
-    chunkAndMarkAllMisspellingsAndBadGrammar(textCheckingOptions, fullParagraphToCheck, asynchronous);
+    chunkAndMarkAllMisspellingsAndBadGrammar(textCheckingOptions, fullParagraphToCheck);
 }
 
 void SpellChecker::chunkAndMarkAllMisspellingsAndBadGrammar(Node* node)
@@ -501,11 +499,10 @@ void SpellChecker::chunkAndMarkAllMisspellingsAndBadGrammar(Node* node)
         return;
     RefPtrWillBeRawPtr<Range> rangeToCheck = Range::create(*frame().document(), firstPositionInNode(node), lastPositionInNode(node));
     TextCheckingParagraph textToCheck(rangeToCheck, rangeToCheck);
-    bool asynchronous = true;
-    chunkAndMarkAllMisspellingsAndBadGrammar(resolveTextCheckingTypeMask(TextCheckingTypeSpelling | TextCheckingTypeGrammar), textToCheck, asynchronous);
+    chunkAndMarkAllMisspellingsAndBadGrammar(resolveTextCheckingTypeMask(TextCheckingTypeSpelling | TextCheckingTypeGrammar), textToCheck);
 }
 
-void SpellChecker::chunkAndMarkAllMisspellingsAndBadGrammar(TextCheckingTypeMask textCheckingOptions, const TextCheckingParagraph& fullParagraphToCheck, bool asynchronous)
+void SpellChecker::chunkAndMarkAllMisspellingsAndBadGrammar(TextCheckingTypeMask textCheckingOptions, const TextCheckingParagraph& fullParagraphToCheck)
 {
     if (fullParagraphToCheck.isEmpty())
         return;
@@ -516,11 +513,11 @@ void SpellChecker::chunkAndMarkAllMisspellingsAndBadGrammar(TextCheckingTypeMask
     int end = fullParagraphToCheck.checkingEnd();
     start = std::min(start, end);
     end = std::max(start, end);
-    const int kNumChunksToCheck = asynchronous ? (end - start + kChunkSize - 1) / (kChunkSize) : 1;
+    const int kNumChunksToCheck = (end - start + kChunkSize - 1) / kChunkSize;
     int currentChunkStart = start;
-    if (kNumChunksToCheck == 1 && asynchronous) {
+    if (kNumChunksToCheck == 1) {
         EphemeralRange checkRange = fullParagraphToCheck.checkingRange();
-        markAllMisspellingsAndBadGrammarInRanges(textCheckingOptions, checkRange, checkRange, asynchronous, 0);
+        markAllMisspellingsAndBadGrammarInRanges(textCheckingOptions, checkRange, checkRange, 0);
         return;
     }
 
@@ -528,12 +525,12 @@ void SpellChecker::chunkAndMarkAllMisspellingsAndBadGrammar(TextCheckingTypeMask
         EphemeralRange checkRange = expandRangeToSentenceBoundary(fullParagraphToCheck.subrange(currentChunkStart, kChunkSize));
 
         int checkingLength = 0;
-        markAllMisspellingsAndBadGrammarInRanges(textCheckingOptions, checkRange, checkRange, asynchronous, iter, &checkingLength);
+        markAllMisspellingsAndBadGrammarInRanges(textCheckingOptions, checkRange, checkRange, iter, &checkingLength);
         currentChunkStart += checkingLength;
     }
 }
 
-void SpellChecker::markAllMisspellingsAndBadGrammarInRanges(TextCheckingTypeMask textCheckingOptions, const EphemeralRange& checkRange, const EphemeralRange& paragraphRange, bool asynchronous, int requestNumber, int* checkingLength)
+void SpellChecker::markAllMisspellingsAndBadGrammarInRanges(TextCheckingTypeMask textCheckingOptions, const EphemeralRange& checkRange, const EphemeralRange& paragraphRange, int requestNumber, int* checkingLength)
 {
     TextCheckingParagraph sentenceToCheck(checkRange, paragraphRange);
     if (checkingLength)
@@ -543,14 +540,7 @@ void SpellChecker::markAllMisspellingsAndBadGrammarInRanges(TextCheckingTypeMask
     if (!request)
         return;
 
-    if (asynchronous) {
-        m_spellCheckRequester->requestCheckingFor(request);
-        return;
-    }
-
-    Vector<TextCheckingResult> results;
-    checkTextOfParagraph(textChecker(), sentenceToCheck.text(), resolveTextCheckingTypeMask(textCheckingOptions), results);
-    markAndReplaceFor(request, results);
+    m_spellCheckRequester->requestCheckingFor(request);
 }
 
 void SpellChecker::markAndReplaceFor(PassRefPtrWillBeRawPtr<SpellCheckRequest> request, const Vector<TextCheckingResult>& results)

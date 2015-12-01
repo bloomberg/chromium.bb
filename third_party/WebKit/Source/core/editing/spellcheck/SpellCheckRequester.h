@@ -90,7 +90,6 @@ public:
     ~SpellCheckRequester();
     DECLARE_TRACE();
 
-    bool isAsynchronousEnabled() const;
     bool isCheckable(Range*) const;
 
     void requestCheckingFor(PassRefPtrWillBeRawPtr<SpellCheckRequest>);

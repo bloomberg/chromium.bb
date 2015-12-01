@@ -11,7 +11,7 @@ PASS input direction of setSelectionRange(0,1,"forward")
 FAIL input direction of setSelectionRange(0,1,"none") assert_equals: The direction of the selection must be set to forward if direction is a case-sensitive match for the string "none" expected "none" but got "forward"
 FAIL input direction of setSelectionRange(0,1,"hoge") assert_equals: otherwise expected "none" but got "forward"
 FAIL input direction of setSelectionRange(0,1,"BACKWARD") assert_equals: selectionDirection should be 'none' expected "none" but got "forward"
-FAIL input direction of setSelectionRange(0,1) assert_equals: if the argument is omitted expected "none" but got "forward"
+PASS input direction of setSelectionRange(0,1) 
 PASS input setSelectionRange("string",1) 
 PASS input setSelectionRange(true,1) 
 PASS input setSelectionRange([],1) 

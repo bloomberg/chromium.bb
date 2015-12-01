@@ -2,6 +2,12 @@
 crbug.com/524134 paint/invalidation/spv2 [ Skip ]
 crbug.com/524134 virtual/syncpaint/paint/invalidation/spv2 [ Skip ]
 
+# TODO(yosin): We should convert following tests to use asynchronous spell checker.
+crbug.com/563265 editing/spelling/context-menu-suggestions.html [ Skip ]
+crbug.com/563265 editing/spelling/spellcheck-editable-on-focus-multiframe.html [ Skip ]
+crbug.com/563265 editing/spelling/spellcheck-editable-on-focus-sync.html [ Skip ]
+crbug.com/563265 editing/spelling/spelling-unified-emulation.html [ Skip ]
+
 # TODO(wangxianzhu): Triage the failures
 crbug.com/524134 virtual/spv2/paint/invalidation/invalidate-after-composited-scroll.html [ Failure ]
 crbug.com/524134 crbug.com/539546 virtual/spv2/paint/selection/text-selection-drag.html [ Pass Failure ]

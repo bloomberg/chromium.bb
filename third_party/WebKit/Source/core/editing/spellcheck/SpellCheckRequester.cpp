@@ -181,14 +181,9 @@ void SpellCheckRequester::timerFiredToProcessQueuedRequest(Timer<SpellCheckReque
     invokeRequest(m_requestQueue.takeFirst());
 }
 
-bool SpellCheckRequester::isAsynchronousEnabled() const
-{
-    return frame().settings() && frame().settings()->asynchronousSpellCheckingEnabled();
-}
-
 bool SpellCheckRequester::canCheckAsynchronously(Range* range) const
 {
-    return isCheckable(range) && isAsynchronousEnabled();
+    return isCheckable(range);
 }
 
 bool SpellCheckRequester::isCheckable(Range* range) const

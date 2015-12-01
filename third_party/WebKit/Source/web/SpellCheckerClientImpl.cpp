@@ -115,16 +115,19 @@ void SpellCheckerClientImpl::toggleContinuousSpellChecking()
     }
 }
 
+// TODO(yosin): We should get rid of
+// |SepllCheckerClient::isGrammarCheckingEnabled()| as it always true.
 bool SpellCheckerClientImpl::isGrammarCheckingEnabled()
 {
-    const LocalFrame* frame = toLocalFrame(m_webView->focusedCoreFrame());
-    return frame && frame->settings() && (frame->settings()->asynchronousSpellCheckingEnabled() || frame->settings()->unifiedTextCheckerEnabled());
+    return true;
 }
 
+// TODO(yosin): We should get rid of
+// |TextCheckerClient::shouldEraseMarkersAfterChangeSelection()| as it always
+// false.
 bool SpellCheckerClientImpl::shouldEraseMarkersAfterChangeSelection(TextCheckingType type) const
 {
-    const Frame* frame = m_webView->focusedCoreFrame();
-    return !frame || !frame->settings() || (!frame->settings()->asynchronousSpellCheckingEnabled() && !frame->settings()->unifiedTextCheckerEnabled());
+    return false;
 }
 
 void SpellCheckerClientImpl::checkSpellingOfString(const String& text, int* misspellingLocation, int* misspellingLength)
