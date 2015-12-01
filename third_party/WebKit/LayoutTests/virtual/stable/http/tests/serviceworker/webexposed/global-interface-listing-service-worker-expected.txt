@@ -403,6 +403,7 @@ interface Notification : EventTarget
     setter onerror
     setter onshow
 interface NotificationEvent : ExtendableEvent
+    getter action
     getter notification
     method constructor
 interface PermissionStatus : EventTarget

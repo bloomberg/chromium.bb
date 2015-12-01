@@ -10,5 +10,5 @@
     RuntimeEnabled=Notifications,
 ] interface NotificationEvent : ExtendableEvent {
     readonly attribute Notification notification;
-    [RuntimeEnabled=NotificationExperimental] readonly attribute DOMString action;
+    readonly attribute DOMString action;
 };
