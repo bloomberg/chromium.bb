@@ -2508,7 +2508,7 @@ bool LayoutBox::skipContainingBlockForPercentHeightCalculation(const LayoutBox* 
     }
 
     // For quirks mode, we skip most auto-height containing blocks when computing percentages.
-    return document().inQuirksMode() && !containingBlock->isTableCell() && !containingBlock->isOutOfFlowPositioned() && containingBlock->style()->logicalHeight().isAuto();
+    return document().inQuirksMode() && !containingBlock->isTableCell() && !containingBlock->isOutOfFlowPositioned() && !containingBlock->isLayoutGrid() && containingBlock->style()->logicalHeight().isAuto();
 }
 
 LayoutUnit LayoutBox::computePercentageLogicalHeight(const Length& height) const
