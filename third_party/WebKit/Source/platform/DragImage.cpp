@@ -177,6 +177,7 @@ PassOwnPtr<DragImage> DragImage::create(const KURL& url, const String& inLabel, 
     bool drawURLString = true;
     bool clipURLString = false;
     bool clipLabelString = false;
+    float kMaxDragLabelStringWidthDIP = kMaxDragLabelStringWidth / deviceScaleFactor;
 
     String urlString = url.string();
     String label = inLabel.stripWhiteSpace();
@@ -190,8 +191,8 @@ PassOwnPtr<DragImage> DragImage::create(const KURL& url, const String& inLabel, 
     TextRun urlRun(urlString.impl());
     IntSize labelSize(labelFont.width(labelRun), labelFont.fontMetrics().ascent() + labelFont.fontMetrics().descent());
 
-    if (labelSize.width() > kMaxDragLabelStringWidth) {
-        labelSize.setWidth(kMaxDragLabelStringWidth);
+    if (labelSize.width() > kMaxDragLabelStringWidthDIP) {
+        labelSize.setWidth(kMaxDragLabelStringWidthDIP);
         clipLabelString = true;
     }
 
@@ -202,8 +203,8 @@ PassOwnPtr<DragImage> DragImage::create(const KURL& url, const String& inLabel, 
         urlStringSize.setWidth(urlFont.width(urlRun));
         urlStringSize.setHeight(urlFont.fontMetrics().ascent() + urlFont.fontMetrics().descent());
         imageSize.setHeight(imageSize.height() + urlStringSize.height());
-        if (urlStringSize.width() > kMaxDragLabelStringWidth) {
-            imageSize.setWidth(kMaxDragLabelWidth);
+        if (urlStringSize.width() > kMaxDragLabelStringWidthDIP) {
+            imageSize.setWidth(kMaxDragLabelStringWidthDIP);
             clipURLString = true;
         } else
             imageSize.setWidth(std::max(labelSize.width(), urlStringSize.width()) + kDragLabelBorderX * 2);
