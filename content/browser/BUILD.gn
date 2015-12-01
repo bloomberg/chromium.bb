@@ -429,7 +429,6 @@ source_set("browser") {
       "//ui/aura",
       "//ui/aura_extra",
       "//ui/strings",
-      "//ui/views/mus:for_component",
       "//ui/wm",
     ]
     sources += [
@@ -440,7 +439,10 @@ source_set("browser") {
       "web_contents/web_contents_view_mus.cc",
       "web_contents/web_contents_view_mus.h",
     ]
-    defines += [ "MOJO_RUNNER_CLIENT" ]
+    if (toolkit_views) {
+      deps += [ "//ui/views/mus:for_component" ]
+      defines += [ "MOJO_RUNNER_CLIENT" ]
+    }
   } else {  # Not aura.
     sources -= [
       "media/capture/cursor_renderer_aura.cc",
