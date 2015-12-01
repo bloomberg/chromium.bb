@@ -8,6 +8,7 @@
 #import <WebKit/WebKit.h>
 
 #include "base/ios/weak_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/supports_user_data.h"
 
@@ -17,10 +18,9 @@ class NavigationItem;
 
 // This class is a wrapper for information needed to implement native
 // WKWebView navigation. WKBackForwardListItemHolder is attached to
-// NavigationItem via the SupportsUserData interface and holds two
-// values:
-// (1) the NavigationItem's corresponding WKBackForwardListItem,
-// (2) the NavigationItem's corresponding WKNavigationType
+// NavigationItem via the SupportsUserData interface and holds the corresponding
+// WKBackForwardListItem, as well as any state that is inaccessible later and
+// thus needs to be preserved (e.g., WKNavigationType, MIME type).
 class WKBackForwardListItemHolder : public base::SupportsUserData::Data {
  public:
   // Returns the WKBackForwardListItemHolder for the NavigationItem |item|.
@@ -42,6 +42,12 @@ class WKBackForwardListItemHolder : public base::SupportsUserData::Data {
   WKNavigationType navigation_type() const { return navigation_type_; }
   void set_navigation_type(WKNavigationType type) { navigation_type_ = type; }
 
+  // Gets/sets the MIME type of the page corresponding to this item.
+  NSString* mime_type() const { return mime_type_.get(); }
+  void set_mime_type(NSString* mime_type) {
+    mime_type_.reset([mime_type copy]);
+  }
+
  private:
   WKBackForwardListItemHolder();
   ~WKBackForwardListItemHolder() override;
@@ -52,6 +58,9 @@ class WKBackForwardListItemHolder : public base::SupportsUserData::Data {
 
   // The navigation type for the associated NavigationItem.
   WKNavigationType navigation_type_;
+
+  // The MIME type of the page content.
+  base::scoped_nsobject<NSString> mime_type_;
 
   DISALLOW_COPY_AND_ASSIGN(WKBackForwardListItemHolder);
 };

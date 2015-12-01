@@ -850,12 +850,19 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 
   web::WKBackForwardListItemHolder* holder =
       [self currentBackForwardListItemHolder];
+
   WKNavigationType navigationType =
       _pendingNavigationInfo ? [_pendingNavigationInfo navigationType]
                              : WKNavigationTypeOther;
-    holder->set_back_forward_list_item(
-        [_wkWebView backForwardList].currentItem);
-    holder->set_navigation_type(navigationType);
+  holder->set_back_forward_list_item([_wkWebView backForwardList].currentItem);
+  holder->set_navigation_type(navigationType);
+
+  // Only update the MIME type in the holder if there was MIME type information
+  // as part of this pending load. It will be nil when doing a fast
+  // back/forward navigation, for instance, because the callback that would
+  // populate it is not called in that flow.
+  if ([_pendingNavigationInfo MIMEType])
+    holder->set_mime_type([_pendingNavigationInfo MIMEType]);
 }
 
 - (BOOL)isBackForwardListItemValid:(WKBackForwardListItem*)item {
@@ -1707,6 +1714,17 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   DCHECK(_documentURL == self.lastRegisteredRequestURL);
   self.webStateImpl->OnNavigationCommitted(_documentURL);
   [self commitPendingNavigationInfo];
+  if ([self currentBackForwardListItemHolder]->navigation_type() ==
+      WKNavigationTypeBackForward) {
+    // A fast back/forward won't call decidePolicyForNavigationResponse, so
+    // the MIME type needs to be updated explicitly.
+    NSString* storedMIMEType =
+        [self currentBackForwardListItemHolder]->mime_type();
+    if (storedMIMEType) {
+      self.webStateImpl->SetContentsMimeType(
+          base::SysNSStringToUTF8(storedMIMEType));
+    }
+  }
   [self webPageChanged];
 
   [self updateSSLStatusForCurrentNavigationItem];
