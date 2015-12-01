@@ -21,6 +21,7 @@
 #include "cc/blink/web_scrollbar_layer_impl.h"
 #include "cc/blink/web_transform_animation_curve_impl.h"
 #include "cc/blink/web_transform_operations_impl.h"
+#include "cc/layers/layer.h"
 #include "cc/output/output_surface.h"
 #include "cc/output/software_output_device.h"
 
@@ -56,6 +57,10 @@ WebCompositorSupportImpl::~WebCompositorSupportImpl() {
 
 WebLayer* WebCompositorSupportImpl::createLayer() {
   return new WebLayerImpl();
+}
+
+WebLayer* WebCompositorSupportImpl::createLayerFromCCLayer(cc::Layer* layer) {
+  return new WebLayerImpl(layer);
 }
 
 WebContentLayer* WebCompositorSupportImpl::createContentLayer(

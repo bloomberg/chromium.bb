@@ -26,6 +26,7 @@ class CC_BLINK_EXPORT WebCompositorSupportImpl
   ~WebCompositorSupportImpl() override;
 
   blink::WebLayer* createLayer() override;
+  blink::WebLayer* createLayerFromCCLayer(cc::Layer*) override;
   blink::WebContentLayer* createContentLayer(
       blink::WebContentLayerClient* client) override;
   blink::WebExternalTextureLayer* createExternalTextureLayer(

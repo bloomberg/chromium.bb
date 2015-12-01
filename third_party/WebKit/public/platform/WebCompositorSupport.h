@@ -35,6 +35,10 @@
 #include "WebScrollbar.h"
 #include "WebScrollbarThemePainter.h"
 
+namespace cc {
+class Layer;
+}
+
 namespace blink {
 
 class WebCompositorAnimationPlayer;
@@ -60,6 +64,8 @@ public:
     // Layers -------------------------------------------------------
 
     virtual WebLayer* createLayer() { return nullptr; }
+
+    virtual WebLayer* createLayerFromCCLayer(cc::Layer*) { return nullptr; }
 
     virtual WebContentLayer* createContentLayer(WebContentLayerClient*) { return nullptr; }
 
