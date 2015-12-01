@@ -91,9 +91,11 @@ void SVGAElement::svgAttributeChanged(const QualifiedName& attrName)
         bool wasLink = isLink();
         setIsLink(!hrefString().isNull());
 
-        if (wasLink != isLink())
-            setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::LinkColorChange));
-
+        if (wasLink || isLink()) {
+            pseudoStateChanged(CSSSelector::PseudoLink);
+            pseudoStateChanged(CSSSelector::PseudoVisited);
+            pseudoStateChanged(CSSSelector::PseudoAnyLink);
+        }
         return;
     }
 
