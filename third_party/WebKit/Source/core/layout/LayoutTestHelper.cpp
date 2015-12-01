@@ -30,14 +30,17 @@ public:
     }
 };
 
-void RenderingTest::SetUp()
+RenderingTest::RenderingTest(PassOwnPtrWillBeRawPtr<FrameLoaderClient> frameLoaderClient)
 {
     Page::PageClients pageClients;
     fillWithEmptyClients(pageClients);
     DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<FakeChromeClient>, chromeClient, (FakeChromeClient::create()));
     pageClients.chromeClient = chromeClient.get();
-    m_pageHolder = DummyPageHolder::create(IntSize(800, 600), &pageClients, nullptr, settingOverrider());
+    m_pageHolder = DummyPageHolder::create(IntSize(800, 600), &pageClients, frameLoaderClient, settingOverrider());
+}
 
+void RenderingTest::SetUp()
+{
     // This ensures that the minimal DOM tree gets attached
     // correctly for tests that don't call setBodyInnerHTML.
     document().view()->updateAllLifecyclePhases();

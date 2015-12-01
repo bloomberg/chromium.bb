@@ -5,19 +5,45 @@
 #include "config.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 
+#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
+#include "core/html/HTMLIFrameElement.h"
 #include "core/layout/LayoutBoxModelObject.h"
 #include "core/layout/LayoutTestHelper.h"
 #include "core/layout/LayoutView.h"
+#include "core/loader/EmptyClients.h"
 #include "core/paint/PaintLayer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 
+class SingleChildFrameLoaderClient final : public EmptyFrameLoaderClient {
+public:
+    static PassOwnPtrWillBeRawPtr<SingleChildFrameLoaderClient> create() { return adoptPtrWillBeNoop(new SingleChildFrameLoaderClient); }
+
+    DEFINE_INLINE_VIRTUAL_TRACE()
+    {
+        visitor->trace(m_child);
+        EmptyFrameLoaderClient::trace(visitor);
+    }
+
+    Frame* firstChild() const override { return m_child.get(); }
+    Frame* lastChild() const override { return m_child.get(); }
+
+    void setChild(Frame* child) { m_child = child; }
+
+private:
+    SingleChildFrameLoaderClient() : m_child(nullptr) { }
+
+    RefPtrWillBeMember<Frame> m_child;
+};
+
 class CompositedLayerMappingTest : public RenderingTest {
 public:
     CompositedLayerMappingTest()
-        : m_originalSlimmingPaintSynchronizedPaintingEnabled(RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled()) { }
+        : RenderingTest(SingleChildFrameLoaderClient::create())
+        , m_originalSlimmingPaintSynchronizedPaintingEnabled(RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled())
+{ }
 
 protected:
     IntRect recomputeInterestRect(const GraphicsLayer* graphicsLayer)
@@ -482,6 +508,63 @@ TEST_F(CompositedLayerMappingTest, InterestRectOfSquashingLayerWithAncestorClip)
     // The squashing layer is at (-9600, 0, 10000, 1000) in viewport coordinates.
     // The following rect is at (-4000, 0, 4400, 1000) in viewport coordinates.
     EXPECT_RECT_EQ(IntRect(5600, 0, 4400, 1000), groupedMapping->computeInterestRect(groupedMapping->squashingLayer(), IntRect()));
+}
+
+class FrameLoaderClientWithParent final : public EmptyFrameLoaderClient {
+public:
+    static PassOwnPtrWillBeRawPtr<FrameLoaderClientWithParent> create(Frame* parent)
+    {
+        return adoptPtrWillBeNoop(new FrameLoaderClientWithParent(parent));
+    }
+
+    DEFINE_INLINE_VIRTUAL_TRACE()
+    {
+        visitor->trace(m_parent);
+        EmptyFrameLoaderClient::trace(visitor);
+    }
+
+    Frame* parent() const override { return m_parent.get(); }
+
+private:
+    explicit FrameLoaderClientWithParent(Frame* parent) : m_parent(parent) { }
+
+    RefPtrWillBeMember<Frame> m_parent;
+};
+
+TEST_F(CompositedLayerMappingTest, InterestRectOfScrolledIframe)
+{
+    document().setBaseURLOverride(KURL(ParsedURLString, "http://test.com"));
+    setBodyInnerHTML(
+        "<style>body { margin: 0; }</style>"
+        "<div style='width: 200; height: 8000px'></div>"
+        "<iframe id=frame src='http://test.com' width='500' height='500' frameBorder='0'>"
+        "</iframe>");
+
+    HTMLIFrameElement& iframe = *toHTMLIFrameElement(document().getElementById("frame"));
+    OwnPtrWillBeRawPtr<FrameLoaderClient> frameLoaderClient = FrameLoaderClientWithParent::create(document().frame());
+    RefPtrWillBePersistent<LocalFrame> subframe = LocalFrame::create(frameLoaderClient.get(), document().frame()->host(), &iframe);
+    subframe->setView(FrameView::create(subframe.get(), IntSize(500, 500)));
+    subframe->init();
+    static_cast<SingleChildFrameLoaderClient*>(document().frame()->client())->setChild(subframe.get());
+    document().frame()->host()->incrementSubframeCount();
+    Document& frameDocument = *iframe.contentDocument();
+
+    frameDocument.setBaseURLOverride(KURL(ParsedURLString, "http://test.com"));
+    frameDocument.body()->setInnerHTML("<style>body { margin: 0; } #target { width: 200px; height: 200px; will-change: transform}</style><div id=target></div>",
+        ASSERT_NO_EXCEPTION);
+
+    // Scroll 8000 pixels down to move the iframe into view.
+    document().view()->setScrollPosition(DoublePoint(0.0, 8000.0), ProgrammaticScroll);
+    document().view()->updateAllLifecyclePhases();
+
+    Element* target = frameDocument.getElementById("target");
+    ASSERT_TRUE(target);
+
+    EXPECT_RECT_EQ(IntRect(0, 0, 200, 200), recomputeInterestRect(target->layoutObject()->enclosingLayer()->graphicsLayerBacking()));
+
+    subframe->detach(FrameDetachType::Remove);
+    static_cast<SingleChildFrameLoaderClient*>(document().frame()->client())->setChild(nullptr);
+    document().frame()->host()->decrementSubframeCount();
 }
 
 } // namespace blink

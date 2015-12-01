@@ -306,12 +306,11 @@ void LayoutView::mapLocalToContainer(const LayoutBoxModelObject* paintInvalidati
         return;
 
     if (mode & TraverseDocumentBoundaries) {
-        if (LayoutObject* parentDocLayoutObject = frame()->ownerLayoutObject()) {
+        if (LayoutPart* parentDocLayoutObject = frame()->ownerLayoutObject()) {
             transformState.move(-frame()->view()->scrollOffset());
-            if (parentDocLayoutObject->isBox())
-                transformState.move(toLayoutBox(parentDocLayoutObject)->contentBoxOffset());
+            transformState.move(parentDocLayoutObject->contentBoxOffset());
+
             parentDocLayoutObject->mapLocalToContainer(paintInvalidationContainer, transformState, mode, wasFixed, paintInvalidationState);
-            return;
         }
     }
 }
@@ -360,6 +359,15 @@ void LayoutView::mapAbsoluteToLocalPoint(MapCoordinatesFlags mode, TransformStat
         TransformationMatrix t;
         getTransformFromContainer(0, LayoutSize(), t);
         transformState.applyTransform(t);
+    }
+
+    if (mode & TraverseDocumentBoundaries) {
+        if (LayoutPart* parentDocLayoutObject = frame()->ownerLayoutObject()) {
+            parentDocLayoutObject->mapAbsoluteToLocalPoint(mode, transformState);
+
+            transformState.move(-parentDocLayoutObject->contentBoxOffset());
+            transformState.move(frame()->view()->scrollOffset());
+        }
     }
 }
 

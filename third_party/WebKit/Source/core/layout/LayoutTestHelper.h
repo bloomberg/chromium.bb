@@ -21,6 +21,8 @@ class RenderingTest : public testing::Test {
 public:
     virtual FrameSettingOverrideFunction settingOverrider() const { return nullptr; }
 
+    RenderingTest(PassOwnPtrWillBeRawPtr<FrameLoaderClient> = nullptr);
+
 protected:
     void SetUp() override;
     void TearDown() override;
