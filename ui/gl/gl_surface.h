@@ -70,6 +70,9 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
   // Returns whether or not the surface supports PostSubBuffer.
   virtual bool SupportsPostSubBuffer();
 
+  // Returns whether or not the surface supports CommitOverlayPlanes.
+  virtual bool SupportsCommitOverlayPlanes();
+
   // Returns whether SwapBuffersAsync() is supported.
   virtual bool SupportsAsyncSwap();
 
@@ -98,6 +101,18 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
                                   int width,
                                   int height,
                                   const SwapCompletionCallback& callback);
+
+  // Show overlay planes but don't swap the front and back buffers. This acts
+  // like SwapBuffers from the point of view of the client, but is cheaper when
+  // overlays account for all the damage.
+  virtual gfx::SwapResult CommitOverlayPlanes();
+
+  // Show overlay planes but don't swap the front and back buffers. On some
+  // platforms, we want to send SwapBufferAck only after the overlays are
+  // displayed on screen. The callback can be used to delay sending
+  // SwapBufferAck till that data is available. The callback should be run on
+  // the calling thread (i.e. same thread CommitOverlayPlanesAsync is called).
+  virtual void CommitOverlayPlanesAsync(const SwapCompletionCallback& callback);
 
   // Initialize GL bindings.
   static bool InitializeOneOff();
@@ -132,7 +147,8 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
   // of screen refresh. If unavailable, returns NULL.
   virtual VSyncProvider* GetVSyncProvider();
 
-  // Schedule an overlay plane to be shown at swap time.
+  // Schedule an overlay plane to be shown at swap time, or on the next
+  // CommitOverlayPlanes call.
   // |z_order| specifies the stacking order of the plane relative to the
   // main framebuffer located at index 0. For the case where there is no
   // main framebuffer, overlays may be scheduled at 0, taking its place.
@@ -220,7 +236,11 @@ class GL_EXPORT GLSurfaceAdapter : public GLSurface {
                           int width,
                           int height,
                           const SwapCompletionCallback& callback) override;
+  gfx::SwapResult CommitOverlayPlanes() override;
+  void CommitOverlayPlanesAsync(
+      const SwapCompletionCallback& callback) override;
   bool SupportsPostSubBuffer() override;
+  bool SupportsCommitOverlayPlanes() override;
   bool SupportsAsyncSwap() override;
   gfx::Size GetSize() override;
   void* GetHandle() override;

@@ -117,6 +117,10 @@ bool GLSurface::SupportsPostSubBuffer() {
   return false;
 }
 
+bool GLSurface::SupportsCommitOverlayPlanes() {
+  return false;
+}
+
 bool GLSurface::SupportsAsyncSwap() {
   return false;
 }
@@ -138,6 +142,16 @@ void GLSurface::PostSubBufferAsync(int x,
                                    int width,
                                    int height,
                                    const SwapCompletionCallback& callback) {
+  NOTREACHED();
+}
+
+gfx::SwapResult GLSurface::CommitOverlayPlanes() {
+  NOTREACHED();
+  return gfx::SwapResult::SWAP_FAILED;
+}
+
+void GLSurface::CommitOverlayPlanesAsync(
+    const SwapCompletionCallback& callback) {
   NOTREACHED();
 }
 
@@ -282,8 +296,21 @@ void GLSurfaceAdapter::PostSubBufferAsync(
   surface_->PostSubBufferAsync(x, y, width, height, callback);
 }
 
+gfx::SwapResult GLSurfaceAdapter::CommitOverlayPlanes() {
+  return surface_->CommitOverlayPlanes();
+}
+
+void GLSurfaceAdapter::CommitOverlayPlanesAsync(
+    const SwapCompletionCallback& callback) {
+  surface_->CommitOverlayPlanesAsync(callback);
+}
+
 bool GLSurfaceAdapter::SupportsPostSubBuffer() {
   return surface_->SupportsPostSubBuffer();
+}
+
+bool GLSurfaceAdapter::SupportsCommitOverlayPlanes() {
+  return surface_->SupportsCommitOverlayPlanes();
 }
 
 bool GLSurfaceAdapter::SupportsAsyncSwap() {

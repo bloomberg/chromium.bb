@@ -4293,9 +4293,8 @@ void GLES2Implementation::PartialSwapBuffers(const gfx::Rect& sub_buffer) {
       sub_buffer.x(), sub_buffer.y(), sub_buffer.width(), sub_buffer.height());
 }
 
-void GLES2Implementation::CommitOverlayPlanesCHROMIUM() {
-  // TODO(watk): crbug.com/560592
-  NOTIMPLEMENTED();
+void GLES2Implementation::CommitOverlayPlanes() {
+  CommitOverlayPlanesCHROMIUM();
 }
 
 static GLenum GetGLESOverlayTransform(gfx::OverlayTransform plane_transform) {
@@ -4358,6 +4357,21 @@ void GLES2Implementation::ScheduleCALayerCHROMIUM(GLuint contents_texture_id,
   helper_->ScheduleCALayerCHROMIUM(contents_texture_id, opacity,
                                    background_color, buffer.shm_id(),
                                    buffer.offset());
+}
+
+void GLES2Implementation::CommitOverlayPlanesCHROMIUM() {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] CommitOverlayPlanesCHROMIUM()");
+  TRACE_EVENT0("gpu", "GLES2::CommitOverlayPlanesCHROMIUM");
+
+  // Same flow control as GLES2Implementation::SwapBuffers (see comments there).
+  swap_buffers_tokens_.push(helper_->InsertToken());
+  helper_->CommitOverlayPlanesCHROMIUM();
+  helper_->CommandBufferHelper::Flush();
+  if (swap_buffers_tokens_.size() > kMaxSwapBuffers + 1) {
+    helper_->WaitForToken(swap_buffers_tokens_.front());
+    swap_buffers_tokens_.pop();
+  }
 }
 
 GLboolean GLES2Implementation::EnableFeatureCHROMIUM(

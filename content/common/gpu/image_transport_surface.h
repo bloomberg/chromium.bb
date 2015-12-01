@@ -175,6 +175,9 @@ class PassThroughImageTransportSurface
                           int width,
                           int height,
                           const SwapCompletionCallback& callback) override;
+  gfx::SwapResult CommitOverlayPlanes() override;
+  void CommitOverlayPlanesAsync(
+      const SwapCompletionCallback& callback) override;
   bool OnMakeCurrent(gfx::GLContext* context) override;
 
   // ImageTransportSurface implementation.

@@ -114,6 +114,7 @@ struct GPU_EXPORT Capabilities {
   int uniform_buffer_offset_alignment;
 
   bool post_sub_buffer;
+  bool commit_overlay_planes;
   bool egl_image_external;
   bool texture_format_astc;
   bool texture_format_atc;

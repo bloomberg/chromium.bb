@@ -80,6 +80,8 @@ void TestContextSupport::RetireSyncPointCHROMIUM(uint32 sync_point) {
 void TestContextSupport::PartialSwapBuffers(const gfx::Rect& sub_buffer) {
 }
 
+void TestContextSupport::CommitOverlayPlanes() {}
+
 void TestContextSupport::ScheduleOverlayPlane(
     int plane_z_order,
     gfx::OverlayTransform plane_transform,

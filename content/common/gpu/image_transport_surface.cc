@@ -210,6 +210,21 @@ void PassThroughImageTransportSurface::PostSubBufferAsync(
                  callback));
 }
 
+gfx::SwapResult PassThroughImageTransportSurface::CommitOverlayPlanes() {
+  scoped_ptr<std::vector<ui::LatencyInfo>> latency_info = StartSwapBuffers();
+  gfx::SwapResult result = gfx::GLSurfaceAdapter::CommitOverlayPlanes();
+  FinishSwapBuffers(latency_info.Pass(), result);
+  return result;
+}
+
+void PassThroughImageTransportSurface::CommitOverlayPlanesAsync(
+    const GLSurface::SwapCompletionCallback& callback) {
+  scoped_ptr<std::vector<ui::LatencyInfo>> latency_info = StartSwapBuffers();
+  gfx::GLSurfaceAdapter::CommitOverlayPlanesAsync(base::Bind(
+      &PassThroughImageTransportSurface::FinishSwapBuffersAsync,
+      weak_ptr_factory_.GetWeakPtr(), base::Passed(&latency_info), callback));
+}
+
 bool PassThroughImageTransportSurface::OnMakeCurrent(gfx::GLContext* context) {
   if (!did_set_swap_interval_) {
     ImageTransportHelper::SetSwapInterval(context);

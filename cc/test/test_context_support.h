@@ -31,6 +31,7 @@ class TestContextSupport : public gpu::ContextSupport {
   void SetAggressivelyFreeResources(bool aggressively_free_resources) override;
   void Swap() override;
   void PartialSwapBuffers(const gfx::Rect& sub_buffer) override;
+  void CommitOverlayPlanes() override;
   uint32 InsertFutureSyncPointCHROMIUM() override;
   void RetireSyncPointCHROMIUM(uint32 sync_point) override;
   void ScheduleOverlayPlane(int plane_z_order,

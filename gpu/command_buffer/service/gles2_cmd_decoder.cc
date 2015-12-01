@@ -1980,6 +1980,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   bool context_was_lost_;
   bool reset_by_robustness_extension_;
   bool supports_post_sub_buffer_;
+  bool supports_commit_overlay_planes_;
   bool supports_async_swap_;
 
   ContextType context_type_;
@@ -2526,6 +2527,7 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       context_was_lost_(false),
       reset_by_robustness_extension_(false),
       supports_post_sub_buffer_(false),
+      supports_commit_overlay_planes_(false),
       supports_async_swap_(false),
       context_type_(CONTEXT_TYPE_OPENGLES2),
       derivatives_explicitly_enabled_(false),
@@ -2977,6 +2979,8 @@ bool GLES2DecoderImpl::Initialize(
       !surface->IsOffscreen())
     supports_post_sub_buffer_ = false;
 
+  supports_commit_overlay_planes_ = surface->SupportsCommitOverlayPlanes();
+
   supports_async_swap_ = surface->SupportsAsyncSwap();
 
   if (feature_info_->workarounds().reverse_point_sprite_coord_origin) {
@@ -3120,6 +3124,7 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
 #endif
 
   caps.post_sub_buffer = supports_post_sub_buffer_;
+  caps.commit_overlay_planes = supports_commit_overlay_planes_;
   caps.image = true;
   caps.surfaceless = surfaceless_;
 
@@ -11785,8 +11790,13 @@ void GLES2DecoderImpl::FinishSwapBuffers(gfx::SwapResult result) {
 }
 
 void GLES2DecoderImpl::DoCommitOverlayPlanes() {
-  // TODO(watk): crbug.com/560592
-  NOTIMPLEMENTED();
+  TRACE_EVENT0("gpu", "GLES2DecoderImpl::DoCommitOverlayPlanes");
+  if (supports_async_swap_) {
+    surface_->CommitOverlayPlanesAsync(base::Bind(
+        &GLES2DecoderImpl::FinishSwapBuffers, base::AsWeakPtr(this)));
+  } else {
+    FinishSwapBuffers(surface_->CommitOverlayPlanes());
+  }
 }
 
 void GLES2DecoderImpl::DoSwapInterval(int interval) {

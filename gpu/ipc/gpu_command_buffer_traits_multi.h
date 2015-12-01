@@ -83,6 +83,7 @@ IPC_STRUCT_TRAITS_BEGIN(gpu::Capabilities)
   IPC_STRUCT_TRAITS_MEMBER(uniform_buffer_offset_alignment)
 
   IPC_STRUCT_TRAITS_MEMBER(post_sub_buffer)
+  IPC_STRUCT_TRAITS_MEMBER(commit_overlay_planes)
   IPC_STRUCT_TRAITS_MEMBER(egl_image_external)
   IPC_STRUCT_TRAITS_MEMBER(texture_format_atc)
   IPC_STRUCT_TRAITS_MEMBER(texture_format_bgra8888)

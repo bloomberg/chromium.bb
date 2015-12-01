@@ -202,6 +202,7 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   // ContextSupport implementation.
   void Swap() override;
   void PartialSwapBuffers(const gfx::Rect& sub_buffer) override;
+  void CommitOverlayPlanes() override;
   void ScheduleOverlayPlane(int plane_z_order,
                             gfx::OverlayTransform plane_transform,
                             unsigned overlay_texture_id,
