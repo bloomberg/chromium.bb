@@ -526,14 +526,16 @@ void ContentSettingMIDISysExImageModel::UpdateFromWebContents(
   usages_state.GetDetailedInfo(NULL, &state_flags);
   bool allowed =
       !!(state_flags & ContentSettingsUsagesState::TABSTATE_HAS_ANY_ALLOWED);
-#if defined(OS_MACOSX)
-  SetIconByResourceId(allowed ? IDR_ALLOWED_MIDI_SYSEX
-                              : IDR_BLOCKED_MIDI_SYSEX);
-#else
-  set_icon_by_vector_id(gfx::VectorIconId::MIDI,
-                        allowed ? gfx::VectorIconId::VECTOR_ICON_NONE
-                                : gfx::VectorIconId::BLOCKED_BADGE);
+  if (!UseVectorGraphics()) {
+    SetIconByResourceId(allowed ? IDR_ALLOWED_MIDI_SYSEX
+                                : IDR_BLOCKED_MIDI_SYSEX);
+#if !defined(OS_MACOSX)
+  } else {
+    set_icon_by_vector_id(gfx::VectorIconId::MIDI,
+                          allowed ? gfx::VectorIconId::VECTOR_ICON_NONE
+                                  : gfx::VectorIconId::BLOCKED_BADGE);
 #endif
+  }
   set_tooltip(l10n_util::GetStringUTF16(allowed
                                             ? IDS_MIDI_SYSEX_ALLOWED_TOOLTIP
                                             : IDS_MIDI_SYSEX_BLOCKED_TOOLTIP));
