@@ -1,0 +1,8 @@
+The bottom border of the popup should be visible in 90% zoom level.
+
+
+FAIL picker didn't open
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

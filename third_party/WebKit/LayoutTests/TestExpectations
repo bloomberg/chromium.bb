@@ -88,7 +88,6 @@ crbug.com/465126 imported/gecko/variables/variable-declaration-24.html [ Failure
 crbug.com/465126 imported/gecko/variables/variable-declaration-25.html [ Failure ]
 crbug.com/465126 imported/gecko/variables/variable-supports-13.html [ Failure ]
 crbug.com/465126 imported/gecko/variables/variable-external-font-face-01.html [ Failure ]
-crbug.com/563304 fast/forms/select/popup-menu-appearance-zoom090.html [ NeedsRebaseline ]
 
 crbug.com/280342 [ Linux Win ] http/tests/media/progress-events-generated-correctly.html [ Failure ]
 
