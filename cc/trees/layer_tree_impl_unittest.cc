@@ -232,7 +232,7 @@ TEST_F(LayerTreeImplTest, HitTestingForUninvertibleTransform) {
   // Sanity check the scenario we just created.
   ASSERT_EQ(1u, RenderSurfaceLayerList().size());
   ASSERT_EQ(1u, root_layer()->render_surface()->layer_list().size());
-  ASSERT_FALSE(root_layer()->screen_space_transform().IsInvertible());
+  ASSERT_FALSE(root_layer()->ScreenSpaceTransform().IsInvertible());
 
   // Hit testing any point should not hit the layer. If the invertible matrix is
   // accidentally ignored and treated like an identity, then the hit testing
@@ -1396,7 +1396,7 @@ TEST_F(LayerTreeImplTest,
   // Sanity check the scenario we just created.
   ASSERT_EQ(1u, RenderSurfaceLayerList().size());
   ASSERT_EQ(1u, root_layer()->render_surface()->layer_list().size());
-  ASSERT_FALSE(root_layer()->screen_space_transform().IsInvertible());
+  ASSERT_FALSE(root_layer()->ScreenSpaceTransform().IsInvertible());
 
   // Hit checking any point should not hit the touch handler region on the
   // layer. If the invertible matrix is accidentally ignored and treated like an

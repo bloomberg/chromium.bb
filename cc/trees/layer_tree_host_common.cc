@@ -2115,7 +2115,8 @@ static void CalculateDrawPropertiesInternal(
     // The owning layer's screen_space_transform has a scale from content to
     // layer space which we need to undo and replace with a scale from the
     // surface's subtree into layer space.
-    gfx::Transform screen_space_transform = layer->screen_space_transform();
+    gfx::Transform screen_space_transform =
+        layer->draw_properties().screen_space_transform;
     screen_space_transform.Scale(1.0 / combined_transform_scales.x(),
                                  1.0 / combined_transform_scales.y());
     render_surface->SetScreenSpaceTransform(screen_space_transform);

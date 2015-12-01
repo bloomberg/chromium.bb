@@ -548,20 +548,6 @@ gfx::SizeF LayerTreeImpl::ScrollableViewportSize() const {
                         1.0f / current_page_scale_factor());
 }
 
-static const gfx::Transform LayerScreenSpaceTransform(
-    const LayerImpl* layer,
-    const TransformTree& transform_tree,
-    const bool use_property_trees) {
-  if (!use_property_trees)
-    return layer->screen_space_transform();
-  // When we use property trees, UpdateDrawProperties does not update the draw
-  // properties of a layer that is not in render surface layer list, so we need
-  // to compute the screen space transform.
-  return layer->IsDrawnRenderSurfaceLayerListMember()
-             ? layer->screen_space_transform()
-             : ScreenSpaceTransformFromPropertyTrees(layer, transform_tree);
-}
-
 gfx::Rect LayerTreeImpl::RootScrollLayerDeviceViewportBounds() const {
   LayerImpl* root_scroll_layer = OuterViewportScrollLayer()
                                      ? OuterViewportScrollLayer()
@@ -569,12 +555,8 @@ gfx::Rect LayerTreeImpl::RootScrollLayerDeviceViewportBounds() const {
   if (!root_scroll_layer || root_scroll_layer->children().empty())
     return gfx::Rect();
   LayerImpl* layer = root_scroll_layer->children()[0].get();
-  bool use_property_trees =
-      settings().verify_property_trees || settings().use_property_trees;
-  return MathUtil::MapEnclosingClippedRect(
-      LayerScreenSpaceTransform(layer, property_trees_.transform_tree,
-                                use_property_trees),
-      gfx::Rect(layer->bounds()));
+  return MathUtil::MapEnclosingClippedRect(layer->ScreenSpaceTransform(),
+                                           gfx::Rect(layer->bounds()));
 }
 
 void LayerTreeImpl::ApplySentScrollAndScaleDeltasFromAbortedCommit() {
@@ -1441,9 +1423,7 @@ static bool PointIsClippedBySurfaceOrClipRect(
       return true;
 
     if (LayerClipsSubtree(layer) &&
-        !PointHitsRect(screen_space_point,
-                       LayerScreenSpaceTransform(layer, transform_tree,
-                                                 use_property_trees),
+        !PointHitsRect(screen_space_point, layer->ScreenSpaceTransform(),
                        gfx::Rect(layer->bounds()), NULL))
       return true;
   }
@@ -1459,10 +1439,8 @@ static bool PointHitsLayer(const LayerImpl* layer,
                            const TransformTree& transform_tree,
                            const bool use_property_trees) {
   gfx::Rect content_rect(layer->bounds());
-  if (!PointHitsRect(
-          screen_space_point,
-          LayerScreenSpaceTransform(layer, transform_tree, use_property_trees),
-          content_rect, distance_to_intersection))
+  if (!PointHitsRect(screen_space_point, layer->ScreenSpaceTransform(),
+                     content_rect, distance_to_intersection))
     return false;
 
   // At this point, we think the point does hit the layer, but we need to walk
@@ -1601,9 +1579,7 @@ static bool LayerHasTouchEventHandlersAt(const gfx::PointF& screen_space_point,
   if (layer_impl->touch_event_handler_region().IsEmpty())
     return false;
 
-  if (!PointHitsRegion(screen_space_point,
-                       LayerScreenSpaceTransform(layer_impl, transform_tree,
-                                                 use_property_trees),
+  if (!PointHitsRegion(screen_space_point, layer_impl->ScreenSpaceTransform(),
                        layer_impl->touch_event_handler_region()))
     return false;
 
@@ -1687,8 +1663,7 @@ static ViewportSelectionBound ComputeViewportSelectionBound(
 
   auto layer_top = gfx::PointF(layer_bound.edge_top);
   auto layer_bottom = gfx::PointF(layer_bound.edge_bottom);
-  gfx::Transform screen_space_transform =
-      LayerScreenSpaceTransform(layer, transform_tree, use_property_trees);
+  gfx::Transform screen_space_transform = layer->ScreenSpaceTransform();
 
   bool clipped = false;
   gfx::PointF screen_top =

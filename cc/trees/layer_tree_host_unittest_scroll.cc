@@ -1038,6 +1038,46 @@ class LayerTreeHostScrollTestScrollZeroMaxScrollOffset
 SINGLE_AND_MULTI_THREAD_TEST_F(
     LayerTreeHostScrollTestScrollZeroMaxScrollOffset);
 
+class LayerTreeHostScrollTestScrollNonDrawnLayer
+    : public LayerTreeHostScrollTest {
+ public:
+  LayerTreeHostScrollTestScrollNonDrawnLayer() {}
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void SetupTree() override {
+    LayerTreeHostScrollTest::SetupTree();
+    layer_tree_host()->outer_viewport_scroll_layer()->SetIsDrawable(false);
+    layer_tree_host()->outer_viewport_scroll_layer()->SetScrollOffset(
+        gfx::ScrollOffset(20.f, 20.f));
+    layer_tree_host()
+        ->outer_viewport_scroll_layer()
+        ->SetNonFastScrollableRegion(gfx::Rect(20, 20, 20, 20));
+  }
+
+  void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
+    LayerImpl* scroll_layer = impl->OuterViewportScrollLayer();
+
+    // Verify that the scroll layer's scroll offset is taken into account when
+    // checking whether the screen space point is inside the non-fast
+    // scrollable region.
+    EXPECT_EQ(
+        InputHandler::SCROLL_ON_MAIN_THREAD,
+        scroll_layer->TryScroll(gfx::PointF(1.f, 1.f), InputHandler::GESTURE,
+                                SCROLL_BLOCKS_ON_NONE));
+    EXPECT_EQ(
+        InputHandler::SCROLL_STARTED,
+        scroll_layer->TryScroll(gfx::PointF(21.f, 21.f), InputHandler::GESTURE,
+                                SCROLL_BLOCKS_ON_NONE));
+
+    EndTest();
+  }
+
+  void AfterTest() override {}
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostScrollTestScrollNonDrawnLayer);
+
 class ThreadCheckingInputHandlerClient : public InputHandlerClient {
  public:
   ThreadCheckingInputHandlerClient(base::SingleThreadTaskRunner* runner,

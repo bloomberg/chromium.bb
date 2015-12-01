@@ -2600,22 +2600,6 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
   return scroll_status;
 }
 
-const gfx::Transform LayerTreeHostImpl::LayerScreenSpaceTransform(
-    const LayerImpl* layer) {
-  const bool use_property_trees =
-      settings_.use_property_trees || settings_.verify_property_trees;
-  if (!use_property_trees)
-    return layer->screen_space_transform();
-  const bool is_active_tree = layer->layer_tree_impl() == active_tree();
-  LayerTreeImpl* layer_tree_impl =
-      is_active_tree ? active_tree() : pending_tree();
-  DCHECK(layer_tree_impl);
-  return layer->IsDrawnRenderSurfaceLayerListMember()
-             ? layer->screen_space_transform()
-             : ScreenSpaceTransformFromPropertyTrees(
-                   layer, layer_tree_impl->property_trees()->transform_tree);
-}
-
 gfx::Vector2dF LayerTreeHostImpl::ScrollLayerWithViewportSpaceDelta(
     LayerImpl* layer_impl,
     const gfx::PointF& viewport_point,
@@ -2623,7 +2607,7 @@ gfx::Vector2dF LayerTreeHostImpl::ScrollLayerWithViewportSpaceDelta(
   // Layers with non-invertible screen space transforms should not have passed
   // the scroll hit test in the first place.
   const gfx::Transform screen_space_transform =
-      LayerScreenSpaceTransform(layer_impl);
+      layer_impl->ScreenSpaceTransform();
   DCHECK(screen_space_transform.IsInvertible());
   gfx::Transform inverse_screen_space_transform(
       gfx::Transform::kSkipInitialization);
@@ -2939,7 +2923,7 @@ float LayerTreeHostImpl::DeviceSpaceDistanceToLayer(
   gfx::Rect layer_impl_bounds(layer_impl->bounds());
 
   gfx::RectF device_viewport_layer_impl_bounds = MathUtil::MapClippedRect(
-      LayerScreenSpaceTransform(layer_impl), gfx::RectF(layer_impl_bounds));
+      layer_impl->ScreenSpaceTransform(), gfx::RectF(layer_impl_bounds));
 
   return device_viewport_layer_impl_bounds.ManhattanDistanceToPoint(
       device_viewport_point);

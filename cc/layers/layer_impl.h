@@ -386,12 +386,10 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   const DrawProperties& draw_properties() const { return draw_properties_; }
 
   gfx::Transform DrawTransform() const;
+  gfx::Transform ScreenSpaceTransform() const;
 
   // The following are shortcut accessors to get various information from
   // draw_properties_
-  const gfx::Transform& screen_space_transform() const {
-    return draw_properties_.screen_space_transform;
-  }
   float draw_opacity() const { return draw_properties_.opacity; }
   bool screen_space_transform_is_animating() const {
     return draw_properties_.screen_space_transform_is_animating;

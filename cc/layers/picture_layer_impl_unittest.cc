@@ -588,7 +588,7 @@ TEST_F(PictureLayerImplTest, InvalidViewportForPrioritizingTiles) {
       active_layer_->visible_rect_for_tile_priority();
   EXPECT_FALSE(visible_rect_for_tile_priority.IsEmpty());
   gfx::Transform screen_space_transform_for_tile_priority =
-      active_layer_->screen_space_transform();
+      active_layer_->draw_properties().screen_space_transform;
 
   // Expand viewport and set it as invalid for prioritizing tiles.
   // Should update viewport and transform, but not update visible rect.
@@ -607,8 +607,8 @@ TEST_F(PictureLayerImplTest, InvalidViewportForPrioritizingTiles) {
   active_layer_->UpdateTiles(resourceless_software_draw);
 
   // Transform for tile priority is updated.
-  EXPECT_TRANSFORMATION_MATRIX_EQ(transform,
-                                  active_layer_->screen_space_transform());
+  EXPECT_TRANSFORMATION_MATRIX_EQ(
+      transform, active_layer_->draw_properties().screen_space_transform);
   // Visible rect for tile priority retains old value.
   EXPECT_EQ(visible_rect_for_tile_priority,
             active_layer_->visible_rect_for_tile_priority());
@@ -624,8 +624,8 @@ TEST_F(PictureLayerImplTest, InvalidViewportForPrioritizingTiles) {
                                         resourceless_software_draw);
   active_layer_->UpdateTiles(resourceless_software_draw);
 
-  EXPECT_TRANSFORMATION_MATRIX_EQ(transform,
-                                  active_layer_->screen_space_transform());
+  EXPECT_TRANSFORMATION_MATRIX_EQ(
+      transform, active_layer_->draw_properties().screen_space_transform);
   EXPECT_EQ(viewport, active_layer_->visible_rect_for_tile_priority());
 }
 
@@ -3640,7 +3640,7 @@ TEST_F(NoLowResPictureLayerImplTest, InvalidViewportForPrioritizingTiles) {
       active_layer_->visible_rect_for_tile_priority();
   EXPECT_FALSE(visible_rect_for_tile_priority.IsEmpty());
   gfx::Transform screen_space_transform_for_tile_priority =
-      active_layer_->screen_space_transform();
+      active_layer_->draw_properties().screen_space_transform;
 
   // Expand viewport and set it as invalid for prioritizing tiles.
   // Should update viewport and transform, but not update visible rect.
@@ -3659,8 +3659,8 @@ TEST_F(NoLowResPictureLayerImplTest, InvalidViewportForPrioritizingTiles) {
   active_layer_->UpdateTiles(resourceless_software_draw);
 
   // Transform for tile priority is updated.
-  EXPECT_TRANSFORMATION_MATRIX_EQ(transform,
-                                  active_layer_->screen_space_transform());
+  EXPECT_TRANSFORMATION_MATRIX_EQ(
+      transform, active_layer_->draw_properties().screen_space_transform);
   // Visible rect for tile priority retains old value.
   EXPECT_EQ(visible_rect_for_tile_priority,
             active_layer_->visible_rect_for_tile_priority());
@@ -3676,8 +3676,8 @@ TEST_F(NoLowResPictureLayerImplTest, InvalidViewportForPrioritizingTiles) {
                                         resourceless_software_draw);
   active_layer_->UpdateTiles(resourceless_software_draw);
 
-  EXPECT_TRANSFORMATION_MATRIX_EQ(transform,
-                                  active_layer_->screen_space_transform());
+  EXPECT_TRANSFORMATION_MATRIX_EQ(
+      transform, active_layer_->draw_properties().screen_space_transform);
   EXPECT_EQ(viewport, active_layer_->visible_rect_for_tile_priority());
 }
 

@@ -246,7 +246,7 @@ void DelegatedRendererLayerImpl::AppendContributingRenderPasses(
   const RenderPass* root_delegated_render_pass =
       render_passes_in_draw_order_.back().get();
   gfx::Size frame_size = root_delegated_render_pass->output_rect.size();
-  gfx::Transform delegated_frame_to_root_transform = screen_space_transform();
+  gfx::Transform delegated_frame_to_root_transform = ScreenSpaceTransform();
   delegated_frame_to_root_transform.Scale(inverse_device_scale_factor_,
                                           inverse_device_scale_factor_);
 

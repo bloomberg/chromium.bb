@@ -630,7 +630,6 @@ class CC_EXPORT LayerTreeHostImpl
   BeginFrameTracker current_begin_frame_tracker_;
 
  private:
-  const gfx::Transform LayerScreenSpaceTransform(const LayerImpl* layer);
   gfx::Vector2dF ScrollLayerWithViewportSpaceDelta(
       LayerImpl* layer_impl,
       const gfx::PointF& viewport_point,

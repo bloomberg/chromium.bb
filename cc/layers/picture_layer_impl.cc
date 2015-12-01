@@ -491,7 +491,7 @@ void PictureLayerImpl::UpdateViewportRectForTilePriorityInContentSpace() {
   if (visible_rect_in_content_space.IsEmpty() ||
       layer_tree_impl()->DeviceViewport() != viewport_rect_for_tile_priority) {
     gfx::Transform view_to_layer(gfx::Transform::kSkipInitialization);
-    if (screen_space_transform().GetInverse(&view_to_layer)) {
+    if (ScreenSpaceTransform().GetInverse(&view_to_layer)) {
       // Transform from view space to content space.
       visible_rect_in_content_space = MathUtil::ProjectEnclosingClippedRect(
           view_to_layer, viewport_rect_for_tile_priority);

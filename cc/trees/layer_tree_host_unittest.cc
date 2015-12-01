@@ -1701,7 +1701,7 @@ class LayerTreeHostTestDeviceScaleFactorScalesViewportAndLayers
     gfx::Transform root_draw_transform = scale_transform;
 
     EXPECT_EQ(root_draw_transform, root->DrawTransform());
-    EXPECT_EQ(root_screen_space_transform, root->screen_space_transform());
+    EXPECT_EQ(root_screen_space_transform, root->ScreenSpaceTransform());
 
     // The child is at position 2,2, which is transformed to 3,3 after the scale
     gfx::Transform child_transform;
@@ -1711,7 +1711,7 @@ class LayerTreeHostTestDeviceScaleFactorScalesViewportAndLayers
 
     EXPECT_TRANSFORMATION_MATRIX_EQ(child_transform, child->DrawTransform());
     EXPECT_TRANSFORMATION_MATRIX_EQ(child_transform,
-                                    child->screen_space_transform());
+                                    child->ScreenSpaceTransform());
 
     EndTest();
   }

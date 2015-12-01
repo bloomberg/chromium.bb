@@ -339,7 +339,7 @@ TEST_F(LayerTreeHostCommonTest, TransformsAboutScrollOffset) {
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_transform,
                                   sublayer->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_transform,
-                                  sublayer->screen_space_transform());
+                                  sublayer->ScreenSpaceTransform());
 
   gfx::Transform arbitrary_translate;
   const float kTranslateX = 10.6f;
@@ -514,7 +514,7 @@ TEST_F(LayerTreeHostCommonTest, TransformsForSingleRenderSurface) {
   EXPECT_TRANSFORMATION_MATRIX_EQ(surface_sublayer_transform,
                                   child->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(parent_composite_transform,
-                                  child->screen_space_transform());
+                                  child->ScreenSpaceTransform());
 
   // Because the grand_child is the only drawable content, the child's render
   // surface will tighten its bounds to the grand_child.  The scale at which the
@@ -573,7 +573,7 @@ TEST_F(LayerTreeHostCommonTest, TransformsWhenCannotRenderToSeparateSurface) {
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_grand_child_draw_transform,
                                   grand_child->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_grand_child_screen_space_transform,
-                                  grand_child->screen_space_transform());
+                                  grand_child->ScreenSpaceTransform());
 
   ExecuteCalculateDrawPropertiesWithoutSeparateSurfaces(root);
 
@@ -582,7 +582,7 @@ TEST_F(LayerTreeHostCommonTest, TransformsWhenCannotRenderToSeparateSurface) {
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_grand_child_screen_space_transform,
                                   grand_child->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_grand_child_screen_space_transform,
-                                  grand_child->screen_space_transform());
+                                  grand_child->ScreenSpaceTransform());
 }
 
 TEST_F(LayerTreeHostCommonTest, TransformsForReplica) {
@@ -828,25 +828,24 @@ TEST_F(LayerTreeHostCommonTest, TransformsForRenderSurfaceHierarchy) {
 
   // Verify layer screen-space transforms
   //
-  EXPECT_TRANSFORMATION_MATRIX_EQ(A, parent->screen_space_transform());
-  EXPECT_TRANSFORMATION_MATRIX_EQ(A * A,
-                                  child_of_root->screen_space_transform());
-  EXPECT_TRANSFORMATION_MATRIX_EQ(
-      A * A * A, grand_child_of_root->screen_space_transform());
+  EXPECT_TRANSFORMATION_MATRIX_EQ(A, parent->ScreenSpaceTransform());
+  EXPECT_TRANSFORMATION_MATRIX_EQ(A * A, child_of_root->ScreenSpaceTransform());
+  EXPECT_TRANSFORMATION_MATRIX_EQ(A * A * A,
+                                  grand_child_of_root->ScreenSpaceTransform());
 
   EXPECT_TRANSFORMATION_MATRIX_EQ(A * A,
-                                  render_surface1->screen_space_transform());
+                                  render_surface1->ScreenSpaceTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(A * A * A,
-                                  child_of_rs1->screen_space_transform());
+                                  child_of_rs1->ScreenSpaceTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(A * A * A * A,
-                                  grand_child_of_rs1->screen_space_transform());
+                                  grand_child_of_rs1->ScreenSpaceTransform());
 
   EXPECT_TRANSFORMATION_MATRIX_EQ(A * A * A,
-                                  render_surface2->screen_space_transform());
+                                  render_surface2->ScreenSpaceTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(A * A * A * A,
-                                  child_of_rs2->screen_space_transform());
+                                  child_of_rs2->ScreenSpaceTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(A * A * A * A * A,
-                                  grand_child_of_rs2->screen_space_transform());
+                                  grand_child_of_rs2->ScreenSpaceTransform());
 
   // Verify render surface transforms.
   //
@@ -877,25 +876,23 @@ TEST_F(LayerTreeHostCommonTest, TransformsForRenderSurfaceHierarchy) {
   // Sanity check. If these fail there is probably a bug in the test itself.  It
   // is expected that we correctly set up transforms so that the y-component of
   // the screen-space transform encodes the "depth" of the layer in the tree.
-  EXPECT_FLOAT_EQ(1.0, parent->screen_space_transform().matrix().get(1, 3));
+  EXPECT_FLOAT_EQ(1.0, parent->ScreenSpaceTransform().matrix().get(1, 3));
   EXPECT_FLOAT_EQ(2.0,
-                  child_of_root->screen_space_transform().matrix().get(1, 3));
+                  child_of_root->ScreenSpaceTransform().matrix().get(1, 3));
   EXPECT_FLOAT_EQ(
-      3.0, grand_child_of_root->screen_space_transform().matrix().get(1, 3));
+      3.0, grand_child_of_root->ScreenSpaceTransform().matrix().get(1, 3));
 
   EXPECT_FLOAT_EQ(2.0,
-                  render_surface1->screen_space_transform().matrix().get(1, 3));
-  EXPECT_FLOAT_EQ(3.0,
-                  child_of_rs1->screen_space_transform().matrix().get(1, 3));
+                  render_surface1->ScreenSpaceTransform().matrix().get(1, 3));
+  EXPECT_FLOAT_EQ(3.0, child_of_rs1->ScreenSpaceTransform().matrix().get(1, 3));
   EXPECT_FLOAT_EQ(
-      4.0, grand_child_of_rs1->screen_space_transform().matrix().get(1, 3));
+      4.0, grand_child_of_rs1->ScreenSpaceTransform().matrix().get(1, 3));
 
   EXPECT_FLOAT_EQ(3.0,
-                  render_surface2->screen_space_transform().matrix().get(1, 3));
-  EXPECT_FLOAT_EQ(4.0,
-                  child_of_rs2->screen_space_transform().matrix().get(1, 3));
+                  render_surface2->ScreenSpaceTransform().matrix().get(1, 3));
+  EXPECT_FLOAT_EQ(4.0, child_of_rs2->ScreenSpaceTransform().matrix().get(1, 3));
   EXPECT_FLOAT_EQ(
-      5.0, grand_child_of_rs2->screen_space_transform().matrix().get(1, 3));
+      5.0, grand_child_of_rs2->ScreenSpaceTransform().matrix().get(1, 3));
 }
 
 TEST_F(LayerTreeHostCommonTest, TransformsForFlatteningLayer) {
@@ -959,16 +956,16 @@ TEST_F(LayerTreeHostCommonTest, TransformsForFlatteningLayer) {
       child->render_surface()->screen_space_transform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(identity_matrix, child->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_child_screen_space_transform,
-                                  child->screen_space_transform());
+                                  child->ScreenSpaceTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_grand_child_draw_transform,
                                   grand_child->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_grand_child_screen_space_transform,
-                                  grand_child->screen_space_transform());
+                                  grand_child->ScreenSpaceTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_great_grand_child_draw_transform,
                                   great_grand_child->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       expected_great_grand_child_screen_space_transform,
-      great_grand_child->screen_space_transform());
+      great_grand_child->ScreenSpaceTransform());
 }
 
 TEST_F(LayerTreeHostCommonTest, LayerFullyContainedWithinClipInTargetSpace) {
@@ -1517,9 +1514,9 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfacesFlattenScreenSpaceTransform) {
   // have been flattened at their render target. In particular, the fact that
   // |grand_child| happens to preserve 3d shouldn't affect this flattening.
   EXPECT_TRANSFORMATION_MATRIX_EQ(flattened_rotation_about_y,
-                                  child->screen_space_transform());
+                                  child->ScreenSpaceTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(flattened_rotation_about_y,
-                                  grand_child->screen_space_transform());
+                                  grand_child->ScreenSpaceTransform());
 }
 
 TEST_F(LayerTreeHostCommonTest, ClipRectCullsRenderSurfaces) {
@@ -2353,25 +2350,23 @@ TEST_F(LayerTreeHostCommonTest, AnimationsForRenderSurfaceHierarchy) {
   // Sanity check. If these fail there is probably a bug in the test itself.
   // It is expected that we correctly set up transforms so that the y-component
   // of the screen-space transform encodes the "depth" of the layer in the tree.
-  EXPECT_FLOAT_EQ(1.0, parent->screen_space_transform().matrix().get(1, 3));
+  EXPECT_FLOAT_EQ(1.0, parent->ScreenSpaceTransform().matrix().get(1, 3));
   EXPECT_FLOAT_EQ(2.0,
-                  child_of_root->screen_space_transform().matrix().get(1, 3));
+                  child_of_root->ScreenSpaceTransform().matrix().get(1, 3));
   EXPECT_FLOAT_EQ(
-      3.0, grand_child_of_root->screen_space_transform().matrix().get(1, 3));
+      3.0, grand_child_of_root->ScreenSpaceTransform().matrix().get(1, 3));
 
   EXPECT_FLOAT_EQ(2.0,
-                  render_surface1->screen_space_transform().matrix().get(1, 3));
-  EXPECT_FLOAT_EQ(3.0,
-                  child_of_rs1->screen_space_transform().matrix().get(1, 3));
+                  render_surface1->ScreenSpaceTransform().matrix().get(1, 3));
+  EXPECT_FLOAT_EQ(3.0, child_of_rs1->ScreenSpaceTransform().matrix().get(1, 3));
   EXPECT_FLOAT_EQ(
-      4.0, grand_child_of_rs1->screen_space_transform().matrix().get(1, 3));
+      4.0, grand_child_of_rs1->ScreenSpaceTransform().matrix().get(1, 3));
 
   EXPECT_FLOAT_EQ(3.0,
-                  render_surface2->screen_space_transform().matrix().get(1, 3));
-  EXPECT_FLOAT_EQ(4.0,
-                  child_of_rs2->screen_space_transform().matrix().get(1, 3));
+                  render_surface2->ScreenSpaceTransform().matrix().get(1, 3));
+  EXPECT_FLOAT_EQ(4.0, child_of_rs2->ScreenSpaceTransform().matrix().get(1, 3));
   EXPECT_FLOAT_EQ(
-      5.0, grand_child_of_rs2->screen_space_transform().matrix().get(1, 3));
+      5.0, grand_child_of_rs2->ScreenSpaceTransform().matrix().get(1, 3));
 }
 
 TEST_F(LayerTreeHostCommonTest, LargeTransforms) {
@@ -4494,7 +4489,7 @@ TEST_F(LayerTreeHostCommonScalingTest, LayerTransformsInHighDPI) {
   gfx::Transform expected_parent_transform;
   expected_parent_transform.Scale(device_scale_factor, device_scale_factor);
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_parent_transform,
-                                  parent->screen_space_transform());
+                                  parent->ScreenSpaceTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_parent_transform,
                                   parent->DrawTransform());
 
@@ -4504,7 +4499,7 @@ TEST_F(LayerTreeHostCommonScalingTest, LayerTransformsInHighDPI) {
   gfx::RectF parent_draw_rect =
       MathUtil::MapClippedRect(parent->DrawTransform(), parent_bounds);
   gfx::RectF parent_screen_space_rect =
-      MathUtil::MapClippedRect(parent->screen_space_transform(), parent_bounds);
+      MathUtil::MapClippedRect(parent->ScreenSpaceTransform(), parent_bounds);
 
   gfx::RectF expected_parent_draw_rect(gfx::SizeF(parent->bounds()));
   expected_parent_draw_rect.Scale(device_scale_factor);
@@ -4519,11 +4514,11 @@ TEST_F(LayerTreeHostCommonScalingTest, LayerTransformsInHighDPI) {
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_child_transform,
                                   child->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_child_transform,
-                                  child->screen_space_transform());
+                                  child->ScreenSpaceTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_child_transform,
                                   child2->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_child_transform,
-                                  child2->screen_space_transform());
+                                  child2->ScreenSpaceTransform());
 
   // Verify results of transformed child and child2 rects. They should
   // match.
@@ -4532,12 +4527,12 @@ TEST_F(LayerTreeHostCommonScalingTest, LayerTransformsInHighDPI) {
   gfx::RectF child_draw_rect =
       MathUtil::MapClippedRect(child->DrawTransform(), child_bounds);
   gfx::RectF child_screen_space_rect =
-      MathUtil::MapClippedRect(child->screen_space_transform(), child_bounds);
+      MathUtil::MapClippedRect(child->ScreenSpaceTransform(), child_bounds);
 
   gfx::RectF child2_draw_rect =
       MathUtil::MapClippedRect(child2->DrawTransform(), child_bounds);
   gfx::RectF child2_screen_space_rect =
-      MathUtil::MapClippedRect(child2->screen_space_transform(), child_bounds);
+      MathUtil::MapClippedRect(child2->ScreenSpaceTransform(), child_bounds);
 
   gfx::RectF expected_child_draw_rect(child->position(),
                                       gfx::SizeF(child->bounds()));
@@ -4762,7 +4757,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceTransformsInHighDPI) {
   gfx::Transform expected_parent_transform;
   expected_parent_transform.Scale(device_scale_factor, device_scale_factor);
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_parent_transform,
-                                  parent->screen_space_transform());
+                                  parent->ScreenSpaceTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_parent_transform,
                                   parent->DrawTransform());
 
@@ -4777,15 +4772,15 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceTransformsInHighDPI) {
   expected_screen_space_transform.Translate(child->position().x(),
                                             child->position().y());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_screen_space_transform,
-                                  child->screen_space_transform());
+                                  child->ScreenSpaceTransform());
 
   gfx::Transform expected_duplicate_child_draw_transform =
       child->DrawTransform();
   EXPECT_TRANSFORMATION_MATRIX_EQ(child->DrawTransform(),
                                   duplicate_child_non_owner->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(
-      child->screen_space_transform(),
-      duplicate_child_non_owner->screen_space_transform());
+      child->ScreenSpaceTransform(),
+      duplicate_child_non_owner->ScreenSpaceTransform());
   EXPECT_EQ(child->drawable_content_rect(),
             duplicate_child_non_owner->drawable_content_rect());
   EXPECT_EQ(child->bounds(), duplicate_child_non_owner->bounds());

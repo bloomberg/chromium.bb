@@ -499,7 +499,8 @@ InputHandler::ScrollStatus LayerImpl::TryScroll(
     return InputHandler::SCROLL_ON_MAIN_THREAD;
   }
 
-  if (!screen_space_transform().IsInvertible()) {
+  gfx::Transform screen_space_transform = ScreenSpaceTransform();
+  if (!screen_space_transform.IsInvertible()) {
     TRACE_EVENT0("cc", "LayerImpl::TryScroll: Ignored NonInvertibleTransform");
     return InputHandler::SCROLL_IGNORED;
   }
@@ -508,7 +509,7 @@ InputHandler::ScrollStatus LayerImpl::TryScroll(
     bool clipped = false;
     gfx::Transform inverse_screen_space_transform(
         gfx::Transform::kSkipInitialization);
-    if (!screen_space_transform().GetInverse(&inverse_screen_space_transform)) {
+    if (!screen_space_transform.GetInverse(&inverse_screen_space_transform)) {
       // TODO(shawnsingh): We shouldn't be applying a projection if screen space
       // transform is uninvertible here. Perhaps we should be returning
       // SCROLL_ON_MAIN_THREAD in this case?
@@ -1638,7 +1639,7 @@ void LayerImpl::AsValueInto(base::trace_event::TracedValue* state) const {
 
   bool clipped;
   gfx::QuadF layer_quad =
-      MathUtil::MapQuad(screen_space_transform(),
+      MathUtil::MapQuad(ScreenSpaceTransform(),
                         gfx::QuadF(gfx::RectF(gfx::Rect(bounds()))), &clipped);
   MathUtil::AddToTracedValue("layer_quad", layer_quad, state);
   if (!touch_event_handler_region_.IsEmpty()) {
@@ -1789,6 +1790,18 @@ gfx::Transform LayerImpl::DrawTransform() const {
   }
 
   return draw_properties().target_space_transform;
+}
+
+gfx::Transform LayerImpl::ScreenSpaceTransform() const {
+  // Only drawn layers have up-to-date draw properties when property trees are
+  // enabled.
+  if (layer_tree_impl()->settings().use_property_trees &&
+      !IsDrawnRenderSurfaceLayerListMember()) {
+    return ScreenSpaceTransformFromPropertyTrees(
+        this, layer_tree_impl()->property_trees()->transform_tree);
+  }
+
+  return draw_properties().screen_space_transform;
 }
 
 Region LayerImpl::GetInvalidationRegion() {
