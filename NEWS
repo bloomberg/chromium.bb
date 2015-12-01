@@ -15,7 +15,9 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 - Add test data for EUB symbols, thanks to Paul Wood
 
 ** Braille table improvements
-- Improvements to Norwegian, thanks to Lars Bjørndal
+- Massive improvements to Norwegian, thanks to Lars Bjørndal, Ammar
+  Usama and Jostein Austvik Jacobsen. They added a 8 dot table and
+  lots of test data.
 - Improvements to Hungarian, thanks to Attila Hammer
 
 * Noteworthy changes in release 2.6.4 (2015-08-31)
