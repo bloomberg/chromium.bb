@@ -74,8 +74,8 @@ bool NinePieceImagePainter::paint(GraphicsContext* graphicsContext, const Layout
             if (drawInfo.isCornerPiece) {
                 graphicsContext->drawImage(image.get(), drawInfo.destination, drawInfo.source, op);
             } else {
-                graphicsContext->drawTiledImage(image.get(), enclosingIntRect(drawInfo.destination),
-                    enclosingIntRect(drawInfo.source), drawInfo.tileScale, drawInfo.tileRule.horizontal,
+                graphicsContext->drawTiledImage(image.get(), drawInfo.destination,
+                    drawInfo.source, drawInfo.tileScale, drawInfo.tileRule.horizontal,
                     drawInfo.tileRule.vertical, op);
             }
         }

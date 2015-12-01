@@ -164,7 +164,7 @@ public:
 
     void drawTiledImage(Image*, const IntRect& destRect, const IntPoint& srcPoint, const IntSize& tileSize,
         SkXfermode::Mode = SkXfermode::kSrcOver_Mode, const IntSize& repeatSpacing = IntSize());
-    void drawTiledImage(Image*, const IntRect& destRect, const IntRect& srcRect,
+    void drawTiledImage(Image*, const FloatRect& destRect, const FloatRect& srcRect,
         const FloatSize& tileScaleFactor, Image::TileRule hRule = Image::StretchTile, Image::TileRule vRule = Image::StretchTile,
         SkXfermode::Mode = SkXfermode::kSrcOver_Mode);
 

@@ -839,7 +839,7 @@ void GraphicsContext::drawTiledImage(Image* image, const IntRect& destRect, cons
     image->drawTiled(this, destRect, srcPoint, FloatSize(tileSize), op, repeatSpacing);
 }
 
-void GraphicsContext::drawTiledImage(Image* image, const IntRect& dest, const IntRect& srcRect,
+void GraphicsContext::drawTiledImage(Image* image, const FloatRect& dest, const FloatRect& srcRect,
     const FloatSize& tileScaleFactor, Image::TileRule hRule, Image::TileRule vRule, SkXfermode::Mode op)
 {
     if (contextDisabled() || !image)
