@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/favicon_base/favicon_callback.h"
 
@@ -57,7 +58,6 @@ class ChromeBrowserState;
 class ChromeBrowserStateManager;
 class ChromeIdentityService;
 class GeolocationUpdaterProvider;
-class IOSChromeBrowsingDataRemoverProvider;
 class SigninResourcesProvider;
 class StringProvider;
 class LiveTabContextProvider;
@@ -103,8 +103,6 @@ class ChromeBrowserProvider {
   virtual StringProvider* GetStringProvider();
   // Returns an instance of a LiveTabContextProvider.
   virtual LiveTabContextProvider* GetLiveTabContextProvider();
-  virtual scoped_ptr<IOSChromeBrowsingDataRemoverProvider>
-  GetIOSChromeBrowsingDataRemoverProvider(ChromeBrowserState* browser_state);
   virtual GeolocationUpdaterProvider* GetGeolocationUpdaterProvider();
   // Returns "enabled", "disabled", or "default".
   virtual std::string DataReductionProxyAvailability();
@@ -139,6 +137,10 @@ class ChromeBrowserProvider {
   // Returns the SyncedWindowDelegatesGetter implementation.
   virtual scoped_ptr<browser_sync::SyncedWindowDelegatesGetter>
   CreateSyncedWindowDelegatesGetter(ios::ChromeBrowserState* browser_state);
+
+  // Gets the URLRequestContextGetter used by the SafeBrowsing service. Returns
+  // null if there is no SafeBrowsing service.
+  virtual net::URLRequestContextGetter* GetSafeBrowsingURLRequestContext();
 };
 
 }  // namespace ios

@@ -26,9 +26,11 @@
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/sessions/core/tab_restore_service.h"
+#include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/history/web_history_service_factory.h"
+#include "ios/chrome/browser/ios_chrome_io_thread.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
@@ -36,7 +38,6 @@
 #include "ios/chrome/browser/web_data_service_factory.h"
 #include "ios/net/http_cache_helper.h"
 #include "ios/public/provider/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/public/provider/chrome/browser/browsing_data/ios_chrome_browsing_data_remover_provider.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/keyed_service_provider.h"
 #include "ios/web/public/user_metrics.h"
@@ -48,7 +49,6 @@
 #include "net/ssl/channel_id_store.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "url/origin.h"
 
 using base::UserMetricsAction;
 using web::WebThread;
@@ -110,9 +110,7 @@ IOSChromeBrowsingDataRemover::IOSChromeBrowsingDataRemover(
     : browser_state_(browser_state),
       delete_begin_(delete_begin),
       delete_end_(delete_end),
-      main_context_getter_(browser_state->GetRequestContext()),
-      provider_(ios::GetChromeBrowserProvider()
-                    ->GetIOSChromeBrowsingDataRemoverProvider(browser_state)) {
+      main_context_getter_(browser_state->GetRequestContext()) {
   DCHECK(browser_state);
   // crbug.com/140910: Many places were calling this with base::Time() as
   // delete_end, even though they should've used base::Time::Max(). Work around
@@ -141,7 +139,6 @@ void IOSChromeBrowsingDataRemover::RemoveImpl(int remove_mask,
   DCHECK_CURRENTLY_ON_WEB_THREAD(WebThread::UI);
   set_removing(true);
   remove_mask_ = remove_mask;
-  url::Origin remove_origin(remove_url);
 
   PrefService* prefs = browser_state_->GetPrefs();
   bool may_delete_history =
@@ -181,10 +178,18 @@ void IOSChromeBrowsingDataRemover::RemoveImpl(int remove_mask,
     // Need to clear the host cache and accumulated speculative data, as it also
     // reveals some history: we have no mechanism to track when these items were
     // created, so we'll clear them all. Better safe than sorry.
-    waiting_for_clear_hostname_resolution_cache_ = true;
-    provider_->ClearHostnameResolutionCache(base::Bind(
-        &IOSChromeBrowsingDataRemover::OnClearedHostnameResolutionCache,
-        base::Unretained(this)));
+    IOSChromeIOThread* ios_chrome_io_thread =
+        GetApplicationContext()->GetIOSChromeIOThread();
+    if (ios_chrome_io_thread) {
+      waiting_for_clear_hostname_resolution_cache_ = true;
+      web::WebThread::PostTaskAndReply(
+          web::WebThread::IO, FROM_HERE,
+          base::Bind(&IOSChromeIOThread::ClearHostCache,
+                     base::Unretained(ios_chrome_io_thread)),
+          base::Bind(
+              &IOSChromeBrowsingDataRemover::OnClearedHostnameResolutionCache,
+              base::Unretained(this)));
+    }
 
     // As part of history deletion we also delete the auto-generated keywords.
     // Because the TemplateURLService is shared between incognito and
@@ -266,17 +271,23 @@ void IOSChromeBrowsingDataRemover::RemoveImpl(int remove_mask,
     // hours/days to the safebrowsing cookies since they aren't the result of
     // any user action.
     if (delete_begin_ == base::Time()) {
-      net::URLRequestContextGetter* safe_browsing_context =
-          provider_->GetSafeBrowsingURLRequestContext();
+      scoped_refptr<net::URLRequestContextGetter> safe_browsing_context =
+          make_scoped_refptr(ios::GetChromeBrowserProvider()
+                                 ->GetSafeBrowsingURLRequestContext());
       if (safe_browsing_context) {
         ++waiting_for_clear_cookies_count_;
         WebThread::PostTask(
             WebThread::IO, FROM_HERE,
             base::Bind(&IOSChromeBrowsingDataRemover::ClearCookiesOnIOThread,
-                       base::Unretained(this),
-                       base::Unretained(safe_browsing_context)));
+                       base::Unretained(this), safe_browsing_context, GURL()));
       }
     }
+
+    ++waiting_for_clear_cookies_count_;
+    WebThread::PostTask(
+        WebThread::IO, FROM_HERE,
+        base::Bind(&IOSChromeBrowsingDataRemover::ClearCookiesOnIOThread,
+                   base::Unretained(this), main_context_getter_, remove_url));
 
     // TODO(mkwst): If we're not removing passwords, then clear the 'zero-click'
     // flag for all credentials in the password store.
@@ -284,15 +295,12 @@ void IOSChromeBrowsingDataRemover::RemoveImpl(int remove_mask,
 
   if (remove_mask & REMOVE_CHANNEL_IDS) {
     web::RecordAction(UserMetricsAction("ClearBrowsingData_ChannelIDs"));
-    // Since we are running on the UI thread don't call GetURLRequestContext().
-    net::URLRequestContextGetter* rq_context =
-        browser_state_->GetRequestContext();
-    if (rq_context) {
+    if (main_context_getter_) {
       waiting_for_clear_channel_ids_ = true;
       WebThread::PostTask(
           WebThread::IO, FROM_HERE,
           base::Bind(&IOSChromeBrowsingDataRemover::ClearChannelIDsOnIOThread,
-                     base::Unretained(this), base::Unretained(rq_context)));
+                     base::Unretained(this), main_context_getter_));
     }
   }
 
@@ -345,16 +353,8 @@ void IOSChromeBrowsingDataRemover::RemoveImpl(int remove_mask,
     DCHECK(delete_begin_.is_null()) << "Partial clearing not supported";
     ClearHttpCache(browser_state_->GetRequestContext(),
                    WebThread::GetTaskRunnerForThread(WebThread::IO),
-                   base::Bind(&IOSChromeBrowsingDataRemover::ClearedCache,
+                   base::Bind(&IOSChromeBrowsingDataRemover::OnClearedCache,
                               base::Unretained(this)));
-  }
-
-  if (remove_mask & REMOVE_COOKIES) {
-    waiting_for_clear_storage_partition_data_ = true;
-    provider_->ClearStoragePartition(
-        remove_url, delete_begin_, delete_end_,
-        base::Bind(&IOSChromeBrowsingDataRemover::OnClearedStoragePartitionData,
-                   base::Unretained(this)));
   }
 
   // Remove omnibox zero-suggest cache results.
@@ -418,8 +418,7 @@ bool IOSChromeBrowsingDataRemover::AllDone() {
          !waiting_for_clear_hostname_resolution_cache_ &&
          !waiting_for_clear_keyword_data_ &&
          !waiting_for_clear_networking_history_ &&
-         !waiting_for_clear_passwords_ &&
-         !waiting_for_clear_storage_partition_data_;
+         !waiting_for_clear_passwords_;
 }
 
 void IOSChromeBrowsingDataRemover::OnKeywordsLoaded() {
@@ -473,7 +472,7 @@ void IOSChromeBrowsingDataRemover::OnClearedNetworkingHistory() {
   NotifyAndDeleteIfDone();
 }
 
-void IOSChromeBrowsingDataRemover::ClearedCache(int error) {
+void IOSChromeBrowsingDataRemover::OnClearedCache(int error) {
   waiting_for_clear_cache_ = false;
 
   NotifyAndDeleteIfDone();
@@ -500,29 +499,37 @@ void IOSChromeBrowsingDataRemover::OnClearedCookies(int num_deleted) {
 }
 
 void IOSChromeBrowsingDataRemover::ClearCookiesOnIOThread(
-    net::URLRequestContextGetter* rq_context) {
+    const scoped_refptr<net::URLRequestContextGetter>& rq_context,
+    const GURL& storage_url) {
   DCHECK_CURRENTLY_ON_WEB_THREAD(WebThread::IO);
   net::CookieStore* cookie_store =
       rq_context->GetURLRequestContext()->cookie_store();
-  cookie_store->DeleteAllCreatedBetweenAsync(
-      delete_begin_, delete_end_,
-      base::Bind(&IOSChromeBrowsingDataRemover::OnClearedCookies,
-                 base::Unretained(this)));
+  if (storage_url.is_empty()) {
+    cookie_store->DeleteAllCreatedBetweenAsync(
+        delete_begin_, delete_end_,
+        base::Bind(&IOSChromeBrowsingDataRemover::OnClearedCookies,
+                   base::Unretained(this)));
+  } else {
+    cookie_store->DeleteAllCreatedBetweenForHostAsync(
+        delete_begin_, delete_end_, storage_url,
+        base::Bind(&IOSChromeBrowsingDataRemover::OnClearedCookies,
+                   base::Unretained(this)));
+  }
 }
 
 void IOSChromeBrowsingDataRemover::ClearChannelIDsOnIOThread(
-    net::URLRequestContextGetter* rq_context) {
+    const scoped_refptr<net::URLRequestContextGetter>& rq_context) {
   DCHECK_CURRENTLY_ON_WEB_THREAD(WebThread::IO);
   net::ChannelIDService* channel_id_service =
       rq_context->GetURLRequestContext()->channel_id_service();
   channel_id_service->GetChannelIDStore()->DeleteAllCreatedBetween(
       delete_begin_, delete_end_,
       base::Bind(&IOSChromeBrowsingDataRemover::OnClearedChannelIDsOnIOThread,
-                 base::Unretained(this), base::Unretained(rq_context)));
+                 base::Unretained(this), rq_context));
 }
 
 void IOSChromeBrowsingDataRemover::OnClearedChannelIDsOnIOThread(
-    net::URLRequestContextGetter* rq_context) {
+    const scoped_refptr<net::URLRequestContextGetter>& rq_context) {
   // Need to close open SSL connections which may be using the channel ids we
   // are deleting.
   // TODO(mattm): http://crbug.com/166069 Make the server bound cert
@@ -551,12 +558,6 @@ void IOSChromeBrowsingDataRemover::OnClearedFormData() {
 void IOSChromeBrowsingDataRemover::OnClearedAutofillOriginURLs() {
   DCHECK_CURRENTLY_ON_WEB_THREAD(WebThread::UI);
   waiting_for_clear_autofill_origin_urls_ = false;
-  NotifyAndDeleteIfDone();
-}
-
-void IOSChromeBrowsingDataRemover::OnClearedStoragePartitionData() {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(WebThread::UI);
-  waiting_for_clear_storage_partition_data_ = false;
   NotifyAndDeleteIfDone();
 }
 

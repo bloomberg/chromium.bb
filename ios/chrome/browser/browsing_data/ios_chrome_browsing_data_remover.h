@@ -21,7 +21,6 @@
 
 namespace ios {
 class ChromeBrowserState;
-class IOSChromeBrowsingDataRemoverProvider;
 }
 
 namespace net {
@@ -189,7 +188,7 @@ class IOSChromeBrowsingDataRemover {
 
   // Callback for when the cache has been deleted. Invokes
   // NotifyAndDeleteIfDone.
-  void ClearedCache(int error);
+  void OnClearedCache(int error);
 
   // Callback for when passwords for the requested time range have been cleared.
   void OnClearedPasswords();
@@ -198,14 +197,18 @@ class IOSChromeBrowsingDataRemover {
   void OnClearedCookies(int num_deleted);
 
   // Invoked on the IO thread to delete cookies.
-  void ClearCookiesOnIOThread(net::URLRequestContextGetter* rq_context);
+  void ClearCookiesOnIOThread(
+      const scoped_refptr<net::URLRequestContextGetter>& rq_context,
+      const GURL& storage_url);
 
   // Invoked on the IO thread to delete channel IDs.
-  void ClearChannelIDsOnIOThread(net::URLRequestContextGetter* rq_context);
+  void ClearChannelIDsOnIOThread(
+      const scoped_refptr<net::URLRequestContextGetter>& rq_context);
 
   // Callback on IO Thread when channel IDs have been deleted. Clears SSL
   // connection pool and posts to UI thread to run OnClearedChannelIDs.
-  void OnClearedChannelIDsOnIOThread(net::URLRequestContextGetter* rq_context);
+  void OnClearedChannelIDsOnIOThread(
+      const scoped_refptr<net::URLRequestContextGetter>& rq_context);
 
   // Callback for when channel IDs have been deleted. Invokes
   // NotifyAndDeleteIfDone.
@@ -217,9 +220,6 @@ class IOSChromeBrowsingDataRemover {
   // Callback for when the Autofill profile and credit card origin URLs have
   // been deleted.
   void OnClearedAutofillOriginURLs();
-
-  // Callback on UI thread when the storage partition related data are cleared.
-  void OnClearedStoragePartitionData();
 
   void OnClearedDomainReliabilityMonitor();
 
@@ -254,7 +254,6 @@ class IOSChromeBrowsingDataRemover {
   bool waiting_for_clear_keyword_data_ = false;
   bool waiting_for_clear_networking_history_ = false;
   bool waiting_for_clear_passwords_ = false;
-  bool waiting_for_clear_storage_partition_data_ = false;
 
   // The removal mask for the current removal operation.
   int remove_mask_ = 0;
@@ -265,10 +264,6 @@ class IOSChromeBrowsingDataRemover {
   base::CancelableTaskTracker history_task_tracker_;
 
   scoped_ptr<TemplateURLService::Subscription> template_url_sub_;
-
-  // Object that supports legacy functionality and functionality that has not
-  // yet been ported to //ios/chrome.
-  scoped_ptr<ios::IOSChromeBrowsingDataRemoverProvider> provider_;
 
   DISALLOW_COPY_AND_ASSIGN(IOSChromeBrowsingDataRemover);
 };
