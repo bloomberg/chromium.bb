@@ -6,6 +6,7 @@
 #define COMPONENTS_ERROR_PAGE_RENDERER_NET_ERROR_HELPER_CORE_H_
 
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
@@ -225,6 +226,43 @@ class NetErrorHelperCore {
  private:
   struct ErrorPageInfo;
 
+  // Represents an event that has occured, and the initial state of the
+  // NetErrorHelperCore when it occured.
+  // TODO(mmenke): Remove once https://crbug.com/557541 is fixed.
+  struct HistoryDebugEvent {
+    enum EventType {
+      GET_ERROR_HTML = 0,
+      ON_START_LOAD = 1,
+      ON_COMMIT_LOAD = 2,
+      ON_COMMIT_LOAD_END = 3,
+      ON_FINISH_LOAD = 4,
+      ON_FINISH_LOAD_END_NOT_ERROR_PAGE = 5,
+      ON_FINISH_LOAD_END_DNS_PROBE = 6,
+      ON_FINISH_LOAD_END_NO_DNS_PROBE = 7,
+      ON_STOP = 8,
+      ON_WAS_SHOWN = 9,
+      ON_WAS_HIDDEN = 10,
+      CANCEL_PENDING_FETCHES = 11,
+      NAVIGATION_CORRECTIONS_FETCHED = 12,
+      NET_ERROR_INFO_RECEIVED = 13,
+      NETWORK_STATE_CHANGED = 14,
+      SHOULD_SUPPRESS_ERROR_PAGE = 15,
+      EXECUTE_BUTTON_PRESS = 16,
+      MAYBE_RELOAD = 17,
+      RELOAD = 18,
+      START_RELOAD_TIMER = 19,
+      RELOAD_TIMER_FIRED = 20,
+      PAUSE_RELOAD_TIMER = 21,
+      UPDATE_ERROR_PAGE = 22,
+      START_RELOAD_TIMER_PAUSED = 23,
+    };
+
+    EventType event_type;
+    bool pending_error_page_info_exists;
+    bool committed_error_page_info_exists;
+    bool timer_running;
+  };
+
   // Gets HTML for a main frame error page.  Depending on
   // |pending_error_page_info|, may use the navigation correction service, or
   // show a DNS probe error page.  May modify |pending_error_page_info|.
@@ -247,6 +285,11 @@ class NetErrorHelperCore {
   OfflinePageStatus GetOfflinePageStatus() const;
 
   static bool IsReloadableError(const ErrorPageInfo& info);
+
+  // Adds the specified event, along with information about the current state of
+  // |this|, to |history_|.
+  // TODO(mmenke): Remove once https://crbug.com/557541 is fixed.
+  void RecordHistoryDebugEvent(HistoryDebugEvent::EventType event_type);
 
   Delegate* delegate_;
 
@@ -308,6 +351,10 @@ class NetErrorHelperCore {
   // the error page.  It is used to detect when such navigations result
   // in errors.
   Button navigation_from_button_;
+
+  // Record of the most recent events that have occurred.
+  // TODO(mmenke): Remove once https://crbug.com/557541 is fixed.
+  std::vector<HistoryDebugEvent> history_debug_events_;
 };
 
 }  // namespace error_page
