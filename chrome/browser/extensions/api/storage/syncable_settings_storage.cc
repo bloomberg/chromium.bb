@@ -72,9 +72,8 @@ ValueStore::WriteResult SyncableSettingsStorage::Set(
     WriteOptions options, const std::string& key, const base::Value& value) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   WriteResult result = delegate_->Set(options, key, value);
-  if (result->HasError()) {
+  if (!result->status().ok())
     return result.Pass();
-  }
   SyncResultIfEnabled(result);
   return result.Pass();
 }
@@ -83,9 +82,8 @@ ValueStore::WriteResult SyncableSettingsStorage::Set(
     WriteOptions options, const base::DictionaryValue& values) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   WriteResult result = delegate_->Set(options, values);
-  if (result->HasError()) {
+  if (!result->status().ok())
     return result.Pass();
-  }
   SyncResultIfEnabled(result);
   return result.Pass();
 }
@@ -94,9 +92,8 @@ ValueStore::WriteResult SyncableSettingsStorage::Remove(
     const std::string& key) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   WriteResult result = delegate_->Remove(key);
-  if (result->HasError()) {
+  if (!result->status().ok())
     return result.Pass();
-  }
   SyncResultIfEnabled(result);
   return result.Pass();
 }
@@ -105,9 +102,8 @@ ValueStore::WriteResult SyncableSettingsStorage::Remove(
     const std::vector<std::string>& keys) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   WriteResult result = delegate_->Remove(keys);
-  if (result->HasError()) {
+  if (!result->status().ok())
     return result.Pass();
-  }
   SyncResultIfEnabled(result);
   return result.Pass();
 }
@@ -115,9 +111,8 @@ ValueStore::WriteResult SyncableSettingsStorage::Remove(
 ValueStore::WriteResult SyncableSettingsStorage::Clear() {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   WriteResult result = delegate_->Clear();
-  if (result->HasError()) {
+  if (!result->status().ok())
     return result.Pass();
-  }
   SyncResultIfEnabled(result);
   return result.Pass();
 }
@@ -174,11 +169,11 @@ syncer::SyncError SyncableSettingsStorage::StartSyncing(
   sync_processor_->Init(*sync_state);
 
   ReadResult maybe_settings = delegate_->Get();
-  if (maybe_settings->HasError()) {
+  if (!maybe_settings->status().ok()) {
     return syncer::SyncError(
         FROM_HERE, syncer::SyncError::DATATYPE_ERROR,
         base::StringPrintf("Failed to get settings: %s",
-                           maybe_settings->error().message.c_str()),
+                           maybe_settings->status().message.c_str()),
         sync_processor_->type());
   }
 
@@ -287,13 +282,12 @@ syncer::SyncError SyncableSettingsStorage::ProcessSyncChanges(
     scoped_ptr<base::Value> current_value;
     {
       ReadResult maybe_settings = Get(key);
-      if (maybe_settings->HasError()) {
+      if (!maybe_settings->status().ok()) {
         errors.push_back(syncer::SyncError(
-            FROM_HERE,
-            syncer::SyncError::DATATYPE_ERROR,
+            FROM_HERE, syncer::SyncError::DATATYPE_ERROR,
             base::StringPrintf("Error getting current sync state for %s/%s: %s",
-                extension_id_.c_str(), key.c_str(),
-                maybe_settings->error().message.c_str()),
+                               extension_id_.c_str(), key.c_str(),
+                               maybe_settings->status().message.c_str()),
             sync_processor_->type()));
         continue;
       }
@@ -364,12 +358,11 @@ syncer::SyncError SyncableSettingsStorage::OnSyncAdd(
     ValueStoreChangeList* changes) {
   DCHECK(new_value);
   WriteResult result = delegate_->Set(IGNORE_QUOTA, key, *new_value);
-  if (result->HasError()) {
+  if (!result->status().ok()) {
     return syncer::SyncError(
-        FROM_HERE,
-        syncer::SyncError::DATATYPE_ERROR,
+        FROM_HERE, syncer::SyncError::DATATYPE_ERROR,
         base::StringPrintf("Error pushing sync add to local settings: %s",
-            result->error().message.c_str()),
+                           result->status().message.c_str()),
         sync_processor_->type());
   }
   changes->push_back(ValueStoreChange(key, NULL, new_value));
@@ -384,12 +377,11 @@ syncer::SyncError SyncableSettingsStorage::OnSyncUpdate(
   DCHECK(old_value);
   DCHECK(new_value);
   WriteResult result = delegate_->Set(IGNORE_QUOTA, key, *new_value);
-  if (result->HasError()) {
+  if (!result->status().ok()) {
     return syncer::SyncError(
-        FROM_HERE,
-        syncer::SyncError::DATATYPE_ERROR,
+        FROM_HERE, syncer::SyncError::DATATYPE_ERROR,
         base::StringPrintf("Error pushing sync update to local settings: %s",
-            result->error().message.c_str()),
+                           result->status().message.c_str()),
         sync_processor_->type());
   }
   changes->push_back(ValueStoreChange(key, old_value, new_value));
@@ -402,12 +394,11 @@ syncer::SyncError SyncableSettingsStorage::OnSyncDelete(
     ValueStoreChangeList* changes) {
   DCHECK(old_value);
   WriteResult result = delegate_->Remove(key);
-  if (result->HasError()) {
+  if (!result->status().ok()) {
     return syncer::SyncError(
-        FROM_HERE,
-        syncer::SyncError::DATATYPE_ERROR,
+        FROM_HERE, syncer::SyncError::DATATYPE_ERROR,
         base::StringPrintf("Error pushing sync remove to local settings: %s",
-            result->error().message.c_str()),
+                           result->status().message.c_str()),
         sync_processor_->type());
   }
   changes->push_back(ValueStoreChange(key, old_value, NULL));

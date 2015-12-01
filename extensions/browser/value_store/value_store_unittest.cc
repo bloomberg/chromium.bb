@@ -55,9 +55,9 @@ testing::AssertionResult SettingsEq(
     const char* _1, const char* _2,
     const base::DictionaryValue& expected,
     ValueStore::ReadResult actual_result) {
-  if (actual_result->HasError()) {
-    return testing::AssertionFailure() <<
-        "Result has error: " << actual_result->error().message;
+  if (!actual_result->status().ok()) {
+    return testing::AssertionFailure() << "Result has error: "
+                                       << actual_result->status().message;
   }
 
   std::string error;
@@ -74,9 +74,9 @@ testing::AssertionResult ChangesEq(
     const char* _1, const char* _2,
     const ValueStoreChangeList& expected,
     ValueStore::WriteResult actual_result) {
-  if (actual_result->HasError()) {
-    return testing::AssertionFailure() <<
-        "Result has error: " << actual_result->error().message;
+  if (!actual_result->status().ok()) {
+    return testing::AssertionFailure() << "Result has error: "
+                                       << actual_result->status().message;
   }
 
   const ValueStoreChangeList& actual = actual_result->changes();

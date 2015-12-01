@@ -64,30 +64,27 @@ class LeveldbValueStore : public ValueStore,
 
  private:
   // Tries to open the database if it hasn't been opened already.
-  scoped_ptr<ValueStore::Error> EnsureDbIsOpen();
+  ValueStore::Status EnsureDbIsOpen();
 
   // Reads a setting from the database.
-  scoped_ptr<ValueStore::Error> ReadFromDb(
-      leveldb::ReadOptions options,
-      const std::string& key,
-      // Will be reset() with the result, if any.
-      scoped_ptr<base::Value>* setting);
+  ValueStore::Status ReadFromDb(leveldb::ReadOptions options,
+                                const std::string& key,
+                                // Will be reset() with the result, if any.
+                                scoped_ptr<base::Value>* setting);
 
   // Adds a setting to a WriteBatch, and logs the change in |changes|. For use
   // with WriteToDb.
-  scoped_ptr<ValueStore::Error> AddToBatch(ValueStore::WriteOptions options,
-                                           const std::string& key,
-                                           const base::Value& value,
-                                           leveldb::WriteBatch* batch,
-                                           ValueStoreChangeList* changes);
+  ValueStore::Status AddToBatch(ValueStore::WriteOptions options,
+                                const std::string& key,
+                                const base::Value& value,
+                                leveldb::WriteBatch* batch,
+                                ValueStoreChangeList* changes);
 
   // Commits the changes in |batch| to the database.
-  scoped_ptr<ValueStore::Error> WriteToDb(leveldb::WriteBatch* batch);
+  ValueStore::Status WriteToDb(leveldb::WriteBatch* batch);
 
-  // Converts an error leveldb::Status to a ValueStore::Error. Returns a
-  // scoped_ptr for convenience; the result will always be non-empty.
-  scoped_ptr<ValueStore::Error> ToValueStoreError(
-      const leveldb::Status& status);
+  // Converts an error leveldb::Status to a ValueStore::Status.
+  ValueStore::Status ToValueStoreError(const leveldb::Status& status);
 
   // Removes the on-disk database at |db_path_|. Any file system locks should
   // be released before calling this method.

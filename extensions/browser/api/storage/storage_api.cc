@@ -74,8 +74,8 @@ ExtensionFunction::ResponseValue SettingsFunction::UseReadResult(
     ValueStore::ReadResult result,
     const std::string* key,
     ValueStore* storage) {
-  if (result->HasError())
-    return HandleError(result->error(), key, storage);
+  if (!result->status().ok())
+    return HandleError(result->status(), key, storage);
 
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->Swap(&result->settings());
@@ -86,8 +86,8 @@ ExtensionFunction::ResponseValue SettingsFunction::UseWriteResult(
     ValueStore::WriteResult result,
     const std::string* key,
     ValueStore* storage) {
-  if (result->HasError())
-    return HandleError(result->error(), key, storage);
+  if (!result->status().ok())
+    return HandleError(result->status(), key, storage);
 
   if (!result->changes().empty()) {
     observers_->Notify(FROM_HERE, &SettingsObserver::OnSettingsChanged,
@@ -99,13 +99,13 @@ ExtensionFunction::ResponseValue SettingsFunction::UseWriteResult(
 }
 
 ExtensionFunction::ResponseValue SettingsFunction::HandleError(
-    const ValueStore::Error& error,
+    const ValueStore::Status& status,
     const std::string* key,
     ValueStore* storage) {
   // If the method failed due to corruption, and we haven't tried to fix it, we
   // can try to restore the storage and re-run it. Otherwise, the method has
   // failed.
-  if (error.code == ValueStore::CORRUPTION && !tried_restoring_storage_) {
+  if (status.IsCorrupted() && !tried_restoring_storage_) {
     tried_restoring_storage_ = true;
 
     // If the corruption is on a particular key, try to restore that key and
@@ -119,7 +119,7 @@ ExtensionFunction::ResponseValue SettingsFunction::HandleError(
       return RunWithStorage(storage);
   }
 
-  return Error(error.message);
+  return Error(status.message);
 }
 
 // Concrete settings functions
@@ -194,7 +194,7 @@ ExtensionFunction::ResponseValue StorageStorageAreaGetFunction::RunWithStorage(
       base::DictionaryValue* as_dict =
           static_cast<base::DictionaryValue*>(input);
       ValueStore::ReadResult result = storage->Get(GetKeys(*as_dict));
-      if (result->HasError()) {
+      if (!result->status().ok()) {
         return UseReadResult(result.Pass(), nullptr, storage);
       }
 

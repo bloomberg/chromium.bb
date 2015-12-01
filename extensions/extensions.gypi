@@ -789,8 +789,6 @@
       'browser/value_store/value_store_change.h',
       'browser/value_store/value_store_frontend.cc',
       'browser/value_store/value_store_frontend.h',
-      'browser/value_store/value_store_util.cc',
-      'browser/value_store/value_store_util.h',
       'browser/verified_contents.cc',
       'browser/verified_contents.h',
       'browser/view_type_utils.cc',

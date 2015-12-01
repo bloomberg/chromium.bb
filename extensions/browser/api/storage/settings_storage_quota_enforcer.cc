@@ -52,7 +52,7 @@ void Free(
   used_per_setting->erase(key);
 }
 
-scoped_ptr<ValueStore::Error> QuotaExceededError(Resource resource) {
+ValueStore::Status QuotaExceededError(Resource resource) {
   const char* name = NULL;
   // TODO(kalman): These hisograms are both silly and untracked. Fix.
   switch (resource) {
@@ -73,9 +73,8 @@ scoped_ptr<ValueStore::Error> QuotaExceededError(Resource resource) {
       break;
   }
   CHECK(name);
-  return ValueStore::Error::Create(
-      ValueStore::QUOTA_EXCEEDED,
-      base::StringPrintf("%s quota exceeded", name));
+  return ValueStore::Status(ValueStore::QUOTA_EXCEEDED,
+                            base::StringPrintf("%s quota exceeded", name));
 }
 
 }  // namespace
@@ -140,9 +139,8 @@ ValueStore::WriteResult SettingsStorageQuotaEnforcer::Set(
   }
 
   WriteResult result = delegate_->Set(options, key, value);
-  if (result->HasError()) {
+  if (!result->status().ok())
     return result.Pass();
-  }
 
   used_total_ = new_used_total;
   used_per_setting_.swap(new_used_per_setting);
@@ -171,9 +169,8 @@ ValueStore::WriteResult SettingsStorageQuotaEnforcer::Set(
   }
 
   WriteResult result = delegate_->Set(options, values);
-  if (result->HasError()) {
+  if (!result->status().ok())
     return result.Pass();
-  }
 
   used_total_ = new_used_total;
   used_per_setting_ = new_used_per_setting;
@@ -183,9 +180,8 @@ ValueStore::WriteResult SettingsStorageQuotaEnforcer::Set(
 ValueStore::WriteResult SettingsStorageQuotaEnforcer::Remove(
     const std::string& key) {
   WriteResult result = delegate_->Remove(key);
-  if (result->HasError()) {
+  if (!result->status().ok())
     return result.Pass();
-  }
   Free(&used_total_, &used_per_setting_, key);
   return result.Pass();
 }
@@ -193,9 +189,8 @@ ValueStore::WriteResult SettingsStorageQuotaEnforcer::Remove(
 ValueStore::WriteResult SettingsStorageQuotaEnforcer::Remove(
     const std::vector<std::string>& keys) {
   WriteResult result = delegate_->Remove(keys);
-  if (result->HasError()) {
+  if (!result->status().ok())
     return result.Pass();
-  }
 
   for (std::vector<std::string>::const_iterator it = keys.begin();
       it != keys.end(); ++it) {
@@ -206,9 +201,8 @@ ValueStore::WriteResult SettingsStorageQuotaEnforcer::Remove(
 
 ValueStore::WriteResult SettingsStorageQuotaEnforcer::Clear() {
   WriteResult result = delegate_->Clear();
-  if (result->HasError()) {
+  if (!result->status().ok())
     return result.Pass();
-  }
 
   used_per_setting_.clear();
   used_total_ = 0;
@@ -241,16 +235,14 @@ bool SettingsStorageQuotaEnforcer::RestoreKey(const std::string& key) {
 
 void SettingsStorageQuotaEnforcer::CalculateUsage() {
   ReadResult maybe_settings = delegate_->Get();
-  if (maybe_settings->HasError()) {
+  if (!maybe_settings->status().ok()) {
     // Try to restore the database if it's corrupt.
-    if (maybe_settings->error().code == ValueStore::CORRUPTION &&
-        delegate_->Restore()) {
+    if (maybe_settings->status().IsCorrupted() && delegate_->Restore())
       maybe_settings = delegate_->Get();
-    }
 
-    if (maybe_settings->HasError()) {
+    if (!maybe_settings->status().ok()) {
       LOG(WARNING) << "Failed to get settings for quota:"
-                   << maybe_settings->error().message;
+                   << maybe_settings->status().message;
       return;
     }
   }

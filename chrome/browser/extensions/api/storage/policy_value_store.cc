@@ -18,9 +18,9 @@ namespace extensions {
 
 namespace {
 
-scoped_ptr<ValueStore::Error> ReadOnlyError() {
-  return ValueStore::Error::Create(ValueStore::READ_ONLY,
-                                   "This is a read-only store.");
+ValueStore::Status ReadOnlyError() {
+  return ValueStore::Status(ValueStore::READ_ONLY,
+                            "This is a read-only store.");
 }
 
 }  // namespace
@@ -60,14 +60,14 @@ void PolicyValueStore::SetCurrentPolicy(const policy::PolicyMap& policy) {
   // extension of a "new" key, which isn't new and was corrupted. Unfortunately,
   // there's not always a way around this - if the database is corrupted, there
   // may be no way of telling which keys were previously present.
-  if (read_result->IsCorrupted()) {
+  if (read_result->status().IsCorrupted()) {
     if (delegate_->Restore())
       read_result = delegate_->Get();
   }
 
-  if (read_result->HasError()) {
+  if (!read_result->status().ok()) {
     LOG(WARNING) << "Failed to read managed settings for extension "
-        << extension_id_ << ": " << read_result->error().message;
+                 << extension_id_ << ": " << read_result->status().message;
     // Leave |previous_policy| empty, so that events are generated for every
     // policy in |current_policy|.
   } else {
@@ -87,7 +87,7 @@ void PolicyValueStore::SetCurrentPolicy(const policy::PolicyMap& policy) {
   ValueStoreChangeList changes;
 
   WriteResult result = delegate_->Remove(removed_keys);
-  if (!result->HasError()) {
+  if (result->status().ok()) {
     changes.insert(
         changes.end(), result->changes().begin(), result->changes().end());
   }
@@ -96,7 +96,7 @@ void PolicyValueStore::SetCurrentPolicy(const policy::PolicyMap& policy) {
   // are configured by the domain administrator.
   ValueStore::WriteOptions options = ValueStore::IGNORE_QUOTA;
   result = delegate_->Set(options, current_policy);
-  if (!result->HasError()) {
+  if (result->status().ok()) {
     changes.insert(
         changes.end(), result->changes().begin(), result->changes().end());
   }

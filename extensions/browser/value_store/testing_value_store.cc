@@ -12,10 +12,13 @@ const char kGenericErrorMessage[] = "TestingValueStore configured to error";
 
 }  // namespace
 
-TestingValueStore::TestingValueStore()
-    : read_count_(0), write_count_(0), error_code_(OK) {}
+TestingValueStore::TestingValueStore() : read_count_(0), write_count_(0) {}
 
 TestingValueStore::~TestingValueStore() {}
+
+void TestingValueStore::set_status_code(StatusCode status_code) {
+  status_ = ValueStore::Status(status_code, kGenericErrorMessage);
+}
 
 size_t TestingValueStore::GetBytesInUse(const std::string& key) {
   // Let SettingsStorageQuotaEnforcer implement this.
@@ -43,8 +46,8 @@ ValueStore::ReadResult TestingValueStore::Get(const std::string& key) {
 ValueStore::ReadResult TestingValueStore::Get(
     const std::vector<std::string>& keys) {
   read_count_++;
-  if (error_code_ != OK)
-    return MakeReadResult(TestingError());
+  if (!status_.ok())
+    return MakeReadResult(status_);
 
   base::DictionaryValue* settings = new base::DictionaryValue();
   for (std::vector<std::string>::const_iterator it = keys.begin();
@@ -59,8 +62,8 @@ ValueStore::ReadResult TestingValueStore::Get(
 
 ValueStore::ReadResult TestingValueStore::Get() {
   read_count_++;
-  if (error_code_ != OK)
-    return MakeReadResult(TestingError());
+  if (!status_.ok())
+    return MakeReadResult(status_);
   return MakeReadResult(make_scoped_ptr(storage_.DeepCopy()));
 }
 
@@ -74,8 +77,8 @@ ValueStore::WriteResult TestingValueStore::Set(
 ValueStore::WriteResult TestingValueStore::Set(
     WriteOptions options, const base::DictionaryValue& settings) {
   write_count_++;
-  if (error_code_ != OK)
-    return MakeWriteResult(TestingError());
+  if (!status_.ok())
+    return MakeWriteResult(status_);
 
   scoped_ptr<ValueStoreChangeList> changes(new ValueStoreChangeList());
   for (base::DictionaryValue::Iterator it(settings);
@@ -101,8 +104,8 @@ ValueStore::WriteResult TestingValueStore::Remove(const std::string& key) {
 ValueStore::WriteResult TestingValueStore::Remove(
     const std::vector<std::string>& keys) {
   write_count_++;
-  if (error_code_ != OK)
-    return MakeWriteResult(TestingError());
+  if (!status_.ok())
+    return MakeWriteResult(status_);
 
   scoped_ptr<ValueStoreChangeList> changes(new ValueStoreChangeList());
   for (std::vector<std::string>::const_iterator it = keys.begin();
@@ -130,8 +133,4 @@ bool TestingValueStore::Restore() {
 
 bool TestingValueStore::RestoreKey(const std::string& key) {
   return true;
-}
-
-scoped_ptr<ValueStore::Error> TestingValueStore::TestingError() {
-  return ValueStore::Error::Create(error_code_, kGenericErrorMessage);
 }

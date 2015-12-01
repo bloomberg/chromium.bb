@@ -128,7 +128,7 @@ TEST_F(PolicyValueStoreTest, DontProvideRecommendedPolicies) {
                new base::FundamentalValue(456), NULL);
   store_->SetCurrentPolicy(policies);
   ValueStore::ReadResult result = store_->Get();
-  ASSERT_FALSE(result->HasError());
+  ASSERT_TRUE(result->status().ok());
   EXPECT_EQ(1u, result->settings().size());
   base::Value* value = NULL;
   EXPECT_FALSE(result->settings().Get("may", &value));
@@ -140,17 +140,17 @@ TEST_F(PolicyValueStoreTest, ReadOnly) {
   ValueStore::WriteOptions options = ValueStore::DEFAULTS;
 
   base::StringValue string_value("value");
-  EXPECT_TRUE(store_->Set(options, "key", string_value)->HasError());
+  EXPECT_FALSE(store_->Set(options, "key", string_value)->status().ok());
 
   base::DictionaryValue dict;
   dict.SetString("key", "value");
-  EXPECT_TRUE(store_->Set(options, dict)->HasError());
+  EXPECT_FALSE(store_->Set(options, dict)->status().ok());
 
-  EXPECT_TRUE(store_->Remove("key")->HasError());
+  EXPECT_FALSE(store_->Remove("key")->status().ok());
   std::vector<std::string> keys;
   keys.push_back("key");
-  EXPECT_TRUE(store_->Remove(keys)->HasError());
-  EXPECT_TRUE(store_->Clear()->HasError());
+  EXPECT_FALSE(store_->Remove(keys)->status().ok());
+  EXPECT_FALSE(store_->Clear()->status().ok());
 }
 
 TEST_F(PolicyValueStoreTest, NotifyOnChanges) {

@@ -40,7 +40,7 @@ class LeveldbValueStoreUnitTest : public testing::Test {
   void SetUp() override {
     ASSERT_TRUE(database_dir_.CreateUniqueTempDir());
     OpenStore();
-    ASSERT_FALSE(store_->Get()->HasError());
+    ASSERT_TRUE(store_->Get()->status().ok());
   }
 
   void TearDown() override {
@@ -72,8 +72,9 @@ TEST_F(LeveldbValueStoreUnitTest, RestoreKeyTest) {
 
   // Insert a valid pair.
   scoped_ptr<base::Value> value(new base::StringValue(kValue));
-  ASSERT_FALSE(
-      store()->Set(ValueStore::DEFAULTS, kNotCorruptKey, *value)->HasError());
+  ASSERT_TRUE(store()
+                  ->Set(ValueStore::DEFAULTS, kNotCorruptKey, *value)
+                  ->status().ok());
 
   // Insert a corrupt pair.
   const char kCorruptKey[] = "corrupt";
@@ -83,18 +84,18 @@ TEST_F(LeveldbValueStoreUnitTest, RestoreKeyTest) {
 
   // Verify corruption.
   ValueStore::ReadResult result = store()->Get(kCorruptKey);
-  ASSERT_TRUE(result->HasError());
-  ASSERT_EQ(ValueStore::CORRUPTION, result->error().code);
+  ASSERT_FALSE(result->status().ok());
+  ASSERT_EQ(ValueStore::CORRUPTION, result->status().code);
 
   // Restore and verify.
   ASSERT_TRUE(store()->RestoreKey(kCorruptKey));
   result = store()->Get(kCorruptKey);
-  EXPECT_FALSE(result->HasError());
+  EXPECT_TRUE(result->status().ok());
   EXPECT_TRUE(result->settings().empty());
 
   // Verify that the valid pair is still present.
   result = store()->Get(kNotCorruptKey);
-  EXPECT_FALSE(result->HasError());
+  EXPECT_TRUE(result->status().ok());
   EXPECT_TRUE(result->settings().HasKey(kNotCorruptKey));
   std::string value_string;
   EXPECT_TRUE(result->settings().GetString(kNotCorruptKey, &value_string));
@@ -114,9 +115,9 @@ TEST_F(LeveldbValueStoreUnitTest, RestoreDoesMinimumNecessary) {
   // Insert a collection of non-corrupted pairs.
   scoped_ptr<base::Value> value(new base::StringValue(kValue));
   for (size_t i = 0; i < kNotCorruptKeysSize; ++i) {
-    ASSERT_FALSE(store()
-                     ->Set(ValueStore::DEFAULTS, kNotCorruptKeys[i], *value)
-                     ->HasError());
+    ASSERT_TRUE(store()
+                    ->Set(ValueStore::DEFAULTS, kNotCorruptKeys[i], *value)
+                    ->status().ok());
   }
 
   // Insert a few corrupted pairs.
@@ -127,8 +128,8 @@ TEST_F(LeveldbValueStoreUnitTest, RestoreDoesMinimumNecessary) {
 
   // Verify that we broke it, and then fix it.
   ValueStore::ReadResult result = store()->Get();
-  ASSERT_TRUE(result->HasError());
-  ASSERT_EQ(ValueStore::CORRUPTION, result->error().code);
+  ASSERT_FALSE(result->status().ok());
+  ASSERT_EQ(ValueStore::CORRUPTION, result->status().code);
 
   ASSERT_TRUE(store()->Restore());
 
@@ -136,7 +137,7 @@ TEST_F(LeveldbValueStoreUnitTest, RestoreDoesMinimumNecessary) {
   std::string value_string;
   for (size_t i = 0; i < kNotCorruptKeysSize; ++i) {
     result = store()->Get(kNotCorruptKeys[i]);
-    EXPECT_FALSE(result->HasError());
+    EXPECT_TRUE(result->status().ok());
     EXPECT_TRUE(result->settings().HasKey(kNotCorruptKeys[i]));
     EXPECT_TRUE(
         result->settings().GetString(kNotCorruptKeys[i], &value_string));
@@ -159,9 +160,9 @@ TEST_F(LeveldbValueStoreUnitTest, RestoreFullDatabase) {
   // Generate a database.
   scoped_ptr<base::Value> value(new base::StringValue(kValue));
   for (size_t i = 0; i < kNotCorruptKeysSize; ++i) {
-    ASSERT_FALSE(store()
-                     ->Set(ValueStore::DEFAULTS, kNotCorruptKeys[i], *value)
-                     ->HasError());
+    ASSERT_TRUE(store()
+                    ->Set(ValueStore::DEFAULTS, kNotCorruptKeys[i], *value)
+                    ->status().ok());
   }
 
   // Close it (so we remove the lock), and replace all files with LolCats.
@@ -178,12 +179,12 @@ TEST_F(LeveldbValueStoreUnitTest, RestoreFullDatabase) {
 
   // We should definitely have an error.
   ValueStore::ReadResult result = store()->Get();
-  ASSERT_TRUE(result->HasError());
-  ASSERT_EQ(ValueStore::CORRUPTION, result->error().code);
+  ASSERT_FALSE(result->status().ok());
+  ASSERT_EQ(ValueStore::CORRUPTION, result->status().code);
 
   ASSERT_TRUE(store()->Restore());
   result = store()->Get();
-  EXPECT_FALSE(result->HasError());
+  EXPECT_TRUE(result->status().ok());
   // We couldn't recover anything, but we should be in a sane state again.
   EXPECT_EQ(0u, result->settings().size());
 }

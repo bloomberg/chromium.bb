@@ -64,7 +64,7 @@ class SettingsFunction : public UIThreadExtensionFunction {
   // error and returns. This also sets the |tried_restoring_storage_| flag to
   // ensure we don't enter a loop.
   // - |key| will be non-null only when reading/writing a single value.
-  ResponseValue HandleError(const ValueStore::Error& error,
+  ResponseValue HandleError(const ValueStore::Status& error,
                             const std::string* key,
                             ValueStore* storage);
 

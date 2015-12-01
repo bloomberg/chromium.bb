@@ -111,7 +111,7 @@ TEST_F(StorageApiUnittest, RestoreCorruptedStorage) {
   leveldb::WriteBatch batch;
   batch.Put(kKey, "[{(.*+\"\'\\");
   EXPECT_TRUE(leveldb_store->WriteToDbForTest(&batch));
-  EXPECT_TRUE(leveldb_store->Get(kKey)->IsCorrupted());
+  EXPECT_TRUE(leveldb_store->Get(kKey)->status().IsCorrupted());
 
   // Running another set should end up working (even though it will restore the
   // store behind the scenes).

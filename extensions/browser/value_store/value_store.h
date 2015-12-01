@@ -15,8 +15,8 @@
 // Interface for a storage area for Value objects.
 class ValueStore {
  public:
-  // Error codes returned from storage methods.
-  enum ErrorCode {
+  // Status codes returned from storage methods.
+  enum StatusCode {
     OK,
 
     // The failure was due to some kind of database corruption. Depending on
@@ -39,39 +39,29 @@ class ValueStore {
     OTHER_ERROR,
   };
 
-  // Bundles an ErrorCode with further metadata.
-  struct Error {
-    ~Error();
+  // The status (result) of an operation on a ValueStore.
+  struct Status {
+    Status();
+    Status(StatusCode code, const std::string& message);
+    ~Status();
 
-    static scoped_ptr<Error> Create(ErrorCode code,
-                                    const std::string& message) {
-      return make_scoped_ptr(new Error(code, message));
-    }
+    bool ok() const { return code == OK; }
 
-    // The error code.
-    const ErrorCode code;
+    bool IsCorrupted() const { return code == CORRUPTION; }
 
-    // Message associated with the error.
-    const std::string message;
+    // The status code.
+    StatusCode code;
 
-   private:
-    Error(ErrorCode code, const std::string& message);
-
-    DISALLOW_COPY_AND_ASSIGN(Error);
+    // Message associated with the status (error) if there is one.
+    std::string message;
   };
 
   // The result of a read operation (Get).
   class ReadResultType {
    public:
     explicit ReadResultType(scoped_ptr<base::DictionaryValue> settings);
-    explicit ReadResultType(scoped_ptr<Error> error);
+    explicit ReadResultType(const Status& status);
     ~ReadResultType();
-
-    bool HasError() const { return error_; }
-
-    bool IsCorrupted() const {
-      return error_.get() && error_->code == CORRUPTION;
-    }
 
     // Gets the settings read from the storage. Note that this represents
     // the root object. If you request the value for key "foo", that value will
@@ -83,13 +73,11 @@ class ValueStore {
       return settings_.Pass();
     }
 
-    // Only call if HasError is true.
-    const Error& error() const { return *error_; }
-    scoped_ptr<Error> PassError() { return error_.Pass(); }
+    const Status& status() const { return status_; }
 
    private:
     scoped_ptr<base::DictionaryValue> settings_;
-    scoped_ptr<Error> error_;
+    Status status_;
 
     DISALLOW_COPY_AND_ASSIGN(ReadResultType);
   };
@@ -99,24 +87,20 @@ class ValueStore {
   class WriteResultType {
    public:
     explicit WriteResultType(scoped_ptr<ValueStoreChangeList> changes);
-    explicit WriteResultType(scoped_ptr<Error> error);
+    explicit WriteResultType(const Status& status);
     ~WriteResultType();
-
-    bool HasError() const { return error_; }
 
     // Gets the list of changes to the settings which resulted from the write.
     // Won't be present if the NO_GENERATE_CHANGES WriteOptions was given.
-    // Only call if HasError is false.
+    // Only call if no error.
     ValueStoreChangeList& changes() { return *changes_; }
     scoped_ptr<ValueStoreChangeList> PassChanges() { return changes_.Pass(); }
 
-    // Only call if HasError is true.
-    const Error& error() const { return *error_; }
-    scoped_ptr<Error> PassError() { return error_.Pass(); }
+    const Status& status() const { return status_; }
 
    private:
     scoped_ptr<ValueStoreChangeList> changes_;
-    scoped_ptr<Error> error_;
+    Status status_;
 
     DISALLOW_COPY_AND_ASSIGN(WriteResultType);
   };
@@ -142,10 +126,16 @@ class ValueStore {
   static ReadResult MakeReadResult(scoped_ptr<T> arg) {
     return ReadResult(new ReadResultType(arg.Pass()));
   }
+  static ReadResult MakeReadResult(const Status& status) {
+    return ReadResult(new ReadResultType(status));
+  }
 
   template<typename T>
   static WriteResult MakeWriteResult(scoped_ptr<T> arg) {
     return WriteResult(new WriteResultType(arg.Pass()));
+  }
+  static WriteResult MakeWriteResult(const Status& status) {
+    return WriteResult(new WriteResultType(status));
   }
 
   // Gets the amount of space being used by a single value, in bytes.

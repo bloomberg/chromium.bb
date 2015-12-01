@@ -6,12 +6,14 @@
 
 #include "base/logging.h"
 
-// Implementation of Error.
+// Implementation of Status.
 
-ValueStore::Error::Error(ErrorCode code, const std::string& message)
+ValueStore::Status::Status() : code(OK) {}
+
+ValueStore::Status::Status(StatusCode code, const std::string& message)
     : code(code), message(message) {}
 
-ValueStore::Error::~Error() {}
+ValueStore::Status::~Status() {}
 
 // Implementation of ReadResultType.
 
@@ -20,10 +22,8 @@ ValueStore::ReadResultType::ReadResultType(
   CHECK(settings_);
 }
 
-ValueStore::ReadResultType::ReadResultType(scoped_ptr<Error> error)
-    : error_(error.Pass()) {
-  CHECK(error_);
-}
+ValueStore::ReadResultType::ReadResultType(const Status& status)
+    : status_(status) {}
 
 ValueStore::ReadResultType::~ReadResultType() {}
 
@@ -35,9 +35,7 @@ ValueStore::WriteResultType::WriteResultType(
   CHECK(changes_);
 }
 
-ValueStore::WriteResultType::WriteResultType(scoped_ptr<Error> error)
-    : error_(error.Pass()) {
-  CHECK(error_);
-}
+ValueStore::WriteResultType::WriteResultType(const Status& status)
+    : status_(status) {}
 
 ValueStore::WriteResultType::~WriteResultType() {}

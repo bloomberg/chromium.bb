@@ -20,7 +20,7 @@ class TestingValueStore : public ValueStore {
 
   // Sets the error code for requests. If OK, errors won't be thrown.
   // Defaults to OK.
-  void set_error_code(ErrorCode error_code) { error_code_ = error_code; }
+  void set_status_code(StatusCode status_code);
 
   // Accessors for the number of reads/writes done by this value store. Each
   // Get* operation (except for the BytesInUse ones) counts as one read, and
@@ -51,12 +51,10 @@ class TestingValueStore : public ValueStore {
   bool RestoreKey(const std::string& key) override;
 
  private:
-  scoped_ptr<ValueStore::Error> TestingError();
-
   base::DictionaryValue storage_;
   int read_count_;
   int write_count_;
-  ErrorCode error_code_;
+  ValueStore::Status status_;
 
   DISALLOW_COPY_AND_ASSIGN(TestingValueStore);
 };
