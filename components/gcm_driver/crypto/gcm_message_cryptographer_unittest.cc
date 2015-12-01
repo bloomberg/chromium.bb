@@ -31,6 +31,8 @@ const char kPeerPublicKeyCommon[] =
     "BAuzSrdIyKZsHnuOhqklkIKi6fl65V9OdPy6nFwI2SywL5-6I5SkkDtfIL9y7NkoEE345jv2Eo"
     "5n4NIbLJIBjTM";
 
+const char kAuthSecretCommon[] = "MyAuthenticationSecret";
+
 // A test vector contains the information necessary to either encrypt or decrypt
 // a message. These vectors were created using a JavaScript implementation of
 // the same RFCs that the GCMMessageCryptographer implements.
@@ -48,14 +50,14 @@ const TestVector kEncryptionTestVectors[] = {
     "AhA6n2oFYPWIh-cXwyv1m2C0JvmjHB4ZkXj8QylESXU",
     "tsJYqAGvFDk6lDEv7daecw",
     4096,
-    "Vhe0Wn01NnZ_AFDgdvD4rthl2Pz9u7-WX-BAHsGX"
+    "NFivl-fJJkKHJPvHlDM3P6SHyBdmr5Caqxm1m-Is"
    },
    // Empty message.
    { "",
     "lMyvTong4VR053jfCpWmMDGW5dEDAqiTZUIU-inhTjU",
     "wH3uvZqcN6oey9whiGpn1A",
     4096,
-    "l81ck9Au-SbeTqQdPx-ky7Y"
+    "Pnoyj0pZJ0daULfQFPWUlBA"
    },
    // Message with an invalid salt size.
    { "Hello, world!",
@@ -68,35 +70,35 @@ const TestVector kEncryptionTestVectors[] = {
 
 const TestVector kDecryptionTestVectors[] = {
   // Simple message.
-  { "bkXjWrS4fIVFJOnBgUG6ZY9Kgip6bDX7QYHueYVc",
+  { "o7t04QCaL2YHs_UQWqJo_4RZ8rnLCJsoQeAGbvVv",
     "47ZytAw9qHlm-Q8g-7rH81rUPzaCgGcoFvlS1qxQtQk",
     "EuR7EVetcaWpndXd_dKeyA",
     4096,
     "Hello, world!"
    },
    // Simple message with 16 bytes of padding.
-   { "IkCA6-h14nYSJHsCy0iC7BlkXuO4bc_dyNo_D_d5R1fVaG7jggdhdO29H-1d5w",
+   { "mCKryg4tyVSkEM5B5fmV8FzTcMvzB3a8PRii3SY3uM8nXOc4yLpB0XgXjnDKbw",
      "MYSsNybwrTzRIzQYUq_yFPc6ugcTrJdEZJDM4NswvUg",
      "8sEAMQYnufo2UkKl80cUGQ",
      4096,
      "Hello, world!"
    },
    // Empty message.
-   { "ebRdG2oMvjURqU4NXeY_XvM",
+   { "k27iDM90-Jmc6q5Eb9Nx2IM",
      "S3-Ki_-XtzR66gUp_zR75CC5JXO62pyr5fWfneTYwFE",
      "4RM6s19jJHdmqiVEJDp9jg",
      4096,
      ""
    },
    // Message with an invalid salt size.
-   { "rt4OiodS087DAQo6e24wA55k0hRPAHgz7OX7m-nj",
+   { "iGrOpmJC5XTTf7wtgdhZ_qT",
      "wW3Iy5ma803lLd-ysPdHUe2NB3HqXbY0XhCCdG5Y1Gw",
      "N7oMH_xohAhMhOY",
      4096,
      nullptr  // expected to fail
    },
    // Message with an invalid record size.
-   { "HNT3GJAt4XHmIagUhh-osH1",
+   { "iGrOpmJC5XTTf7wtgdhZ_qT",
      "kR5BMfqMKOD1yrLKE2giObXHI7merrMtnoO2oqneqXA",
      "SQeJSPrqHvTdSfAMF8bBzQ",
      8,
@@ -133,7 +135,8 @@ class GCMMessageCryptographerTest : public ::testing::Test {
 
     cryptographer_.reset(
         new GCMMessageCryptographer(GCMMessageCryptographer::Label::P256,
-                                    local_public_key, peer_public_key));
+                                    local_public_key, peer_public_key,
+                                    kAuthSecretCommon));
   }
 
  protected:
@@ -220,9 +223,10 @@ TEST_F(GCMMessageCryptographerTest, InvalidRecordPadding) {
 
   const std::string salt = GenerateRandomSalt();
 
-  const std::string nonce = cryptographer()->DeriveNonce(key(), salt);
+  const std::string ikm = cryptographer()->DeriveInputKeyingMaterial(key());
+  const std::string nonce = cryptographer()->DeriveNonce(ikm, salt);
   const std::string content_encryption_key =
-      cryptographer()->DeriveContentEncryptionKey(key(), salt);
+      cryptographer()->DeriveContentEncryptionKey(ikm, salt);
 
   ASSERT_GT(message.size(), 1u);
   const size_t record_size = message.size() + 1;
@@ -324,6 +328,56 @@ TEST_F(GCMMessageCryptographerTest, DecryptionTestVectors) {
   }
 }
 
+TEST_F(GCMMessageCryptographerTest, AuthSecretAffectsIKM) {
+  std::string public_key;
+  ASSERT_TRUE(base::Base64UrlDecode(
+      kLocalPublicKeyCommon, base::Base64UrlDecodePolicy::IGNORE_PADDING,
+      &public_key));
+
+  // Fake IKM to use in the DeriveInputKeyingMaterial calls.
+  const char kFakeIKM[] = "HelloWorld";
+
+  GCMMessageCryptographer hello_cryptographer(
+      GCMMessageCryptographer::Label::P256, public_key, public_key, "Hello");
+
+  GCMMessageCryptographer world_cryptographer(
+      GCMMessageCryptographer::Label::P256, public_key, public_key, "World");
+
+  ASSERT_NE(hello_cryptographer.DeriveInputKeyingMaterial(kFakeIKM), kFakeIKM);
+  ASSERT_NE(world_cryptographer.DeriveInputKeyingMaterial(kFakeIKM), kFakeIKM);
+
+  ASSERT_NE(hello_cryptographer.DeriveInputKeyingMaterial(kFakeIKM),
+            world_cryptographer.DeriveInputKeyingMaterial(kFakeIKM));
+
+  std::string salt = GenerateRandomSalt();
+
+  // Verify that the IKM actually gets used by the transformations.
+  size_t hello_record_size, world_record_size;
+  std::string hello_ciphertext, world_ciphertext;
+
+  ASSERT_TRUE(hello_cryptographer.Encrypt(kExamplePlaintext, key(), salt,
+                                          &hello_record_size,
+                                          &hello_ciphertext));
+  ASSERT_TRUE(world_cryptographer.Encrypt(kExamplePlaintext, key(), salt,
+                                          &world_record_size,
+                                          &world_ciphertext));
+
+  // If the ciphertexts differ despite the same key and salt, it got used.
+  ASSERT_NE(hello_ciphertext, world_ciphertext);
+
+  // Verify that the different ciphertexts can also be translated back to the
+  // plaintext content. This will fail if the auth secret isn't considered.
+  std::string hello_plaintext, world_plaintext;
+
+  ASSERT_TRUE(hello_cryptographer.Decrypt(hello_ciphertext, key(), salt,
+                                          hello_record_size, &hello_plaintext));
+  ASSERT_TRUE(world_cryptographer.Decrypt(world_ciphertext, key(), salt,
+                                          world_record_size, &world_plaintext));
+
+  EXPECT_EQ(kExamplePlaintext, hello_plaintext);
+  EXPECT_EQ(kExamplePlaintext, world_plaintext);
+}
+
 // Reference test against the HTTP encryption coding IETF draft. Both the
 // encrypting and decrypting routines of the GCMMessageCryptographer are
 // covered by this test.
@@ -413,7 +467,11 @@ TEST_F(GCMMessageCryptographerTest, ReferenceTest) {
   ASSERT_EQ(sender_shared_secret, receiver_shared_secret);
 
   GCMMessageCryptographer cryptographer(
-      GCMMessageCryptographer::Label::P256, receiver_public, sender_public);
+      GCMMessageCryptographer::Label::P256, receiver_public, sender_public,
+      "" /* auth_secret */);
+
+  // The reference vectors do not use an authentication secret.
+  cryptographer.set_allow_empty_auth_secret_for_tests(true);
 
   size_t record_size = 0;
   std::string ciphertext;

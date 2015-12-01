@@ -38,7 +38,8 @@ namespace gcm {
 // rather than returning the result. Do not rely on the timing of the callbacks.
 class GCMKeyStore {
  public:
-  using KeysCallback = base::Callback<void(const KeyPair& pair)>;
+  using KeysCallback = base::Callback<void(const KeyPair& pair,
+                                           const std::string& auth_secret)>;
   using DeleteCallback = base::Callback<void(bool success)>;
 
   GCMKeyStore(
@@ -68,6 +69,7 @@ class GCMKeyStore {
 
   void DidStoreKeys(const std::string& app_id,
                     const KeyPair& pair,
+                    const std::string& auth_secret,
                     const KeysCallback& callback,
                     bool success);
 
@@ -103,8 +105,10 @@ class GCMKeyStore {
   // finished initializing.
   GCMDelayedTaskController delayed_task_controller_;
 
-  // Mapping of an app id to the loaded EncryptedData structure.
+  // Mapping of an app id to the loaded key pair and authentication secrets.
+  // TODO(peter): Switch these to std::unordered_map<> once allowed.
   std::map<std::string, KeyPair> key_pairs_;
+  std::map<std::string, std::string> auth_secrets_;
 
   base::WeakPtrFactory<GCMKeyStore> weak_factory_;
 

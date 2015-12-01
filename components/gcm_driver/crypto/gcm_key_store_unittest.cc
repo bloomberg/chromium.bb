@@ -45,10 +45,10 @@ class GCMKeyStoreTest : public ::testing::Test {
   }
 
   // Callback to use with GCMKeyStore::{GetKeys, CreateKeys} calls.
-  void GotKeys(KeyPair* pair_out, const KeyPair& pair) {
-    DCHECK(pair_out);
-
+  void GotKeys(KeyPair* pair_out, std::string* auth_secret_out,
+               const KeyPair& pair, const std::string& auth_secret) {
     *pair_out = pair;
+    *auth_secret_out = auth_secret;
   }
 
   // Callback to use with GCMKeyStore::DeleteKeys calls.
@@ -70,21 +70,26 @@ class GCMKeyStoreTest : public ::testing::Test {
 
 TEST_F(GCMKeyStoreTest, CreatedByDefault) {
   KeyPair pair;
+  std::string auth_secret;
   gcm_key_store()->GetKeys(kFakeAppId,
                            base::Bind(&GCMKeyStoreTest::GotKeys,
-                                      base::Unretained(this), &pair));
+                                      base::Unretained(this), &pair,
+                                      &auth_secret));
 
   base::RunLoop().RunUntilIdle();
 
   ASSERT_FALSE(pair.IsInitialized());
   EXPECT_FALSE(pair.has_type());
+  EXPECT_EQ(0u, auth_secret.size());
 }
 
 TEST_F(GCMKeyStoreTest, CreateAndGetKeys) {
   KeyPair pair;
+  std::string auth_secret;
   gcm_key_store()->CreateKeys(kFakeAppId,
                               base::Bind(&GCMKeyStoreTest::GotKeys,
-                                         base::Unretained(this), &pair));
+                                         base::Unretained(this), &pair,
+                                         &auth_secret));
 
   base::RunLoop().RunUntilIdle();
 
@@ -95,10 +100,14 @@ TEST_F(GCMKeyStoreTest, CreateAndGetKeys) {
   EXPECT_GT(pair.public_key().size(), 0u);
   EXPECT_GT(pair.private_key().size(), 0u);
 
+  ASSERT_GT(auth_secret.size(), 0u);
+
   KeyPair read_pair;
+  std::string read_auth_secret;
   gcm_key_store()->GetKeys(kFakeAppId,
                            base::Bind(&GCMKeyStoreTest::GotKeys,
-                                      base::Unretained(this), &read_pair));
+                                      base::Unretained(this), &read_pair,
+                                      &read_auth_secret));
 
   base::RunLoop().RunUntilIdle();
 
@@ -107,13 +116,17 @@ TEST_F(GCMKeyStoreTest, CreateAndGetKeys) {
   EXPECT_EQ(pair.type(), read_pair.type());
   EXPECT_EQ(pair.private_key(), read_pair.private_key());
   EXPECT_EQ(pair.public_key(), read_pair.public_key());
+
+  EXPECT_EQ(auth_secret, read_auth_secret);
 }
 
 TEST_F(GCMKeyStoreTest, KeysPersistenceBetweenInstances) {
   KeyPair pair;
+  std::string auth_secret;
   gcm_key_store()->CreateKeys(kFakeAppId,
                               base::Bind(&GCMKeyStoreTest::GotKeys,
-                                         base::Unretained(this), &pair));
+                                         base::Unretained(this), &pair,
+                                         &auth_secret));
 
   base::RunLoop().RunUntilIdle();
 
@@ -123,30 +136,37 @@ TEST_F(GCMKeyStoreTest, KeysPersistenceBetweenInstances) {
   CreateKeyStore();
 
   KeyPair read_pair;
+  std::string read_auth_secret;
   gcm_key_store()->GetKeys(kFakeAppId,
                            base::Bind(&GCMKeyStoreTest::GotKeys,
-                                      base::Unretained(this), &read_pair));
+                                      base::Unretained(this), &read_pair,
+                                      &read_auth_secret));
 
   base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(read_pair.IsInitialized());
   EXPECT_TRUE(read_pair.has_type());
+  EXPECT_GT(read_auth_secret.size(), 0u);
 }
 
 TEST_F(GCMKeyStoreTest, CreateAndDeleteKeys) {
   KeyPair pair;
+  std::string auth_secret;
   gcm_key_store()->CreateKeys(kFakeAppId,
                               base::Bind(&GCMKeyStoreTest::GotKeys,
-                                         base::Unretained(this), &pair));
+                                         base::Unretained(this), &pair,
+                                         &auth_secret));
 
   base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(pair.IsInitialized());
 
   KeyPair read_pair;
+  std::string read_auth_secret;
   gcm_key_store()->GetKeys(kFakeAppId,
                            base::Bind(&GCMKeyStoreTest::GotKeys,
-                                      base::Unretained(this), &read_pair));
+                                      base::Unretained(this), &read_pair,
+                                      &read_auth_secret));
 
   base::RunLoop().RunUntilIdle();
 
@@ -164,7 +184,8 @@ TEST_F(GCMKeyStoreTest, CreateAndDeleteKeys) {
 
   gcm_key_store()->GetKeys(kFakeAppId,
                            base::Bind(&GCMKeyStoreTest::GotKeys,
-                                      base::Unretained(this), &read_pair));
+                                      base::Unretained(this), &read_pair,
+                                      &read_auth_secret));
 
   base::RunLoop().RunUntilIdle();
 
@@ -173,9 +194,11 @@ TEST_F(GCMKeyStoreTest, CreateAndDeleteKeys) {
 
 TEST_F(GCMKeyStoreTest, GetKeysMultipleAppIds) {
   KeyPair pair;
+  std::string auth_secret;
   gcm_key_store()->CreateKeys(kFakeAppId,
                               base::Bind(&GCMKeyStoreTest::GotKeys,
-                                         base::Unretained(this), &pair));
+                                         base::Unretained(this), &pair,
+                                         &auth_secret));
 
   base::RunLoop().RunUntilIdle();
 
@@ -183,16 +206,19 @@ TEST_F(GCMKeyStoreTest, GetKeysMultipleAppIds) {
 
   gcm_key_store()->CreateKeys(kSecondFakeAppId,
                               base::Bind(&GCMKeyStoreTest::GotKeys,
-                                         base::Unretained(this), &pair));
+                                         base::Unretained(this), &pair,
+                                         &auth_secret));
 
   base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(pair.IsInitialized());
 
   KeyPair read_pair;
+  std::string read_auth_secret;
   gcm_key_store()->GetKeys(kFakeAppId,
                            base::Bind(&GCMKeyStoreTest::GotKeys,
-                                      base::Unretained(this), &read_pair));
+                                      base::Unretained(this), &read_pair,
+                                      &read_auth_secret));
 
   base::RunLoop().RunUntilIdle();
 
@@ -202,18 +228,22 @@ TEST_F(GCMKeyStoreTest, GetKeysMultipleAppIds) {
 
 TEST_F(GCMKeyStoreTest, SuccessiveCallsBeforeInitialization) {
   KeyPair pair;
+  std::string auth_secret;
   gcm_key_store()->CreateKeys(kFakeAppId,
                               base::Bind(&GCMKeyStoreTest::GotKeys,
-                                         base::Unretained(this), &pair));
+                                         base::Unretained(this), &pair,
+                                         &auth_secret));
 
   // Deliberately do not run the message loop, so that the callback has not
   // been resolved yet. The following EXPECT() ensures this.
   EXPECT_FALSE(pair.IsInitialized());
 
   KeyPair read_pair;
+  std::string read_auth_secret;
   gcm_key_store()->GetKeys(kFakeAppId,
                            base::Bind(&GCMKeyStoreTest::GotKeys,
-                                      base::Unretained(this), &read_pair));
+                                      base::Unretained(this), &read_pair,
+                                      &read_auth_secret));
 
   EXPECT_FALSE(read_pair.IsInitialized());
 

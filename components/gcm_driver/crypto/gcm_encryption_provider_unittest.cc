@@ -58,13 +58,19 @@ class GCMEncryptionProviderTest : public ::testing::Test {
   }
 
   // To be used as a callback for GCMEncryptionProvider::GetPublicKey().
-  void DidGetPublicKey(std::string* key_out, const std::string& key) {
+  void DidGetPublicKey(std::string* key_out,
+                       std::string* auth_secret_out,
+                       const std::string& key,
+                       const std::string& auth_secret) {
     *key_out = key;
+    *auth_secret_out = auth_secret;
   }
 
   // To be used as a callback for GCMKeyStore::CreateKeys().
-  void DidCreateKeys(KeyPair* pair_out, const KeyPair& pair) {
+  void DidCreateKeys(KeyPair* pair_out, std::string* auth_secret_out,
+                     const KeyPair& pair, const std::string& auth_secret) {
     *pair_out = pair;
+    *auth_secret_out = auth_secret;
   }
 
  protected:
@@ -213,16 +219,17 @@ TEST_F(GCMEncryptionProviderTest, VerifiesExistingKeys) {
   EXPECT_EQ(GCMEncryptionProvider::DECRYPTION_FAILURE_NO_KEYS,
             failure_reason());
 
-  std::string public_key;
+  std::string public_key, auth_secret;
   encryption_provider()->GetPublicKey(
       kExampleAppId,
       base::Bind(&GCMEncryptionProviderTest::DidGetPublicKey,
-                 base::Unretained(this), &public_key));
+                 base::Unretained(this), &public_key, &auth_secret));
 
   // Getting (or creating) the public key will be done asynchronously.
   base::RunLoop().RunUntilIdle();
 
   ASSERT_GT(public_key.size(), 0u);
+  ASSERT_GT(auth_secret.size(), 0u);
 
   ASSERT_NO_FATAL_FAILURE(Decrypt(message));
   ASSERT_EQ(DECRYPTION_FAILED, decryption_result());
@@ -235,8 +242,8 @@ TEST_F(GCMEncryptionProviderTest, EncryptionRoundTrip) {
   // public/private key-pair and performing the cryptographic operations. This
   // is more of an integration test than a unit test.
 
-  KeyPair pair;
-  KeyPair server_pair;
+  KeyPair pair, server_pair;
+  std::string auth_secret, server_authentication;
 
   // Retrieve the public/private key-pair immediately from the key store, given
   // that the GCMEncryptionProvider will only share the public key with users.
@@ -244,12 +251,12 @@ TEST_F(GCMEncryptionProviderTest, EncryptionRoundTrip) {
   encryption_provider()->key_store_->CreateKeys(
       kExampleAppId,
       base::Bind(&GCMEncryptionProviderTest::DidCreateKeys,
-                 base::Unretained(this), &pair));
+                 base::Unretained(this), &pair, &auth_secret));
 
   encryption_provider()->key_store_->CreateKeys(
       std::string(kExampleAppId) + "-server",
       base::Bind(&GCMEncryptionProviderTest::DidCreateKeys,
-                 base::Unretained(this), &server_pair));
+                 base::Unretained(this), &server_pair, &server_authentication));
 
   // Creating the public keys will be done asynchronously.
   base::RunLoop().RunUntilIdle();
@@ -278,7 +285,7 @@ TEST_F(GCMEncryptionProviderTest, EncryptionRoundTrip) {
   // random |salt|, storing the result in |record_size| and the message.
   GCMMessageCryptographer cryptographer(
       GCMMessageCryptographer::Label::P256, pair.public_key(),
-      server_pair.public_key());
+      server_pair.public_key(), auth_secret);
 
   ASSERT_TRUE(cryptographer.Encrypt(kExampleMessage, shared_secret, salt,
                                     &record_size, &message.raw_data));

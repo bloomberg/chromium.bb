@@ -441,7 +441,8 @@ void PushMessagingServiceImpl::DidSubscribe(
       // Do not get a certificate if message payloads have not been enabled.
       if (!AreMessagePayloadsEnabled()) {
         DidSubscribeWithPublicKey(app_identifier, callback, subscription_id,
-                                  std::string() /* public_key */);
+                                  std::string() /* public_key */,
+                                  std::string() /* auth_secret */);
         return;
       }
 
@@ -475,7 +476,8 @@ void PushMessagingServiceImpl::DidSubscribeWithPublicKey(
     const PushMessagingAppIdentifier& app_identifier,
     const content::PushMessagingService::RegisterCallback& callback,
     const std::string& subscription_id,
-    const std::string& public_key) {
+    const std::string& public_key,
+    const std::string& auth_secret) {
   if (!public_key.size() && AreMessagePayloadsEnabled()) {
     SubscribeEndWithError(
         callback, content::PUSH_REGISTRATION_STATUS_PUBLIC_KEY_UNAVAILABLE);
@@ -486,13 +488,9 @@ void PushMessagingServiceImpl::DidSubscribeWithPublicKey(
 
   IncreasePushSubscriptionCount(1, false /* is_pending */);
 
-  // TODO(peter): Hook up the authentication tag in the gcm_driver.
-  std::string authentication;
-
   SubscribeEnd(callback, subscription_id,
                std::vector<uint8_t>(public_key.begin(), public_key.end()),
-               std::vector<uint8_t>(authentication.begin(),
-                                    authentication.end()),
+               std::vector<uint8_t>(auth_secret.begin(), auth_secret.end()),
                content::PUSH_REGISTRATION_STATUS_SUCCESS_FROM_PUSH_SERVICE);
 }
 
@@ -543,17 +541,14 @@ void PushMessagingServiceImpl::GetPublicEncryptionKey(
 
 void PushMessagingServiceImpl::DidGetPublicKey(
     const PushMessagingService::PublicKeyCallback& callback,
-    const std::string& public_key) const {
+    const std::string& public_key,
+    const std::string& auth_secret) const {
   // I/O errors might prevent the GCM Driver from retrieving a key-pair.
   const bool success = !!public_key.size();
 
-  // TODO(peter): Hook up the authentication tag in the gcm_driver.
-  std::string authentication;
-
   callback.Run(success,
                std::vector<uint8_t>(public_key.begin(), public_key.end()),
-               std::vector<uint8_t>(authentication.begin(),
-                                    authentication.end()));
+               std::vector<uint8_t>(auth_secret.begin(), auth_secret.end()));
 }
 
 // Unsubscribe methods ---------------------------------------------------------

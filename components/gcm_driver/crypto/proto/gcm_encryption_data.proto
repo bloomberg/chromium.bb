@@ -36,11 +36,15 @@ message KeyPair {
 // in case we need to force-cycle all keys, allowing the old keys to remain
 // valid for a period of time enabling the web app to update.
 //
-// Next tag: 3
+// Next tag: 4
 message EncryptionData {
   // The app id to whom this encryption data belongs.
   required string app_id = 1;
 
   // The actual public/private key-pairs.
   repeated KeyPair keys = 2;
+
+  // The authentication secret associated with the subscription. Must be a
+  // cryptographically secure number of at least 12 bytes.
+  optional bytes auth_secret = 3;
 }

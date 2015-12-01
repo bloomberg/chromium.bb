@@ -19,6 +19,10 @@ namespace gcm {
 // browsers still reporting the previous values.
 const char kDatabaseUMAClientName[] = "GCMKeyStore";
 
+// Number of cryptographically secure random bytes to generate as a key pair's
+// authentication secret. Must be at least 16 bytes.
+const size_t kAuthSecretBytes = 16;
+
 enum class GCMKeyStore::State {
    UNINITIALIZED,
    INITIALIZING,
@@ -47,13 +51,16 @@ void GCMKeyStore::GetKeys(const std::string& app_id,
 void GCMKeyStore::GetKeysAfterInitialize(const std::string& app_id,
                                          const KeysCallback& callback) {
   DCHECK(state_ == State::INITIALIZED || state_ == State::FAILED);
-  const auto iter = key_pairs_.find(app_id);
+  const auto& iter = key_pairs_.find(app_id);
   if (iter == key_pairs_.end() || state_ != State::INITIALIZED) {
-    callback.Run(KeyPair());
+    callback.Run(KeyPair(), std::string() /* auth_secret */);
     return;
   }
 
-  callback.Run(iter->second);
+  const auto& auth_secret_iter = auth_secrets_.find(app_id);
+  DCHECK(auth_secret_iter != auth_secrets_.end());
+
+  callback.Run(iter->second, auth_secret_iter->second);
 }
 
 void GCMKeyStore::CreateKeys(const std::string& app_id,
@@ -66,7 +73,7 @@ void GCMKeyStore::CreateKeysAfterInitialize(const std::string& app_id,
                                             const KeysCallback& callback) {
   DCHECK(state_ == State::INITIALIZED || state_ == State::FAILED);
   if (state_ != State::INITIALIZED) {
-    callback.Run(KeyPair());
+    callback.Run(KeyPair(), std::string() /* auth_secret */);
     return;
   }
 
@@ -77,13 +84,21 @@ void GCMKeyStore::CreateKeysAfterInitialize(const std::string& app_id,
   if (!CreateP256KeyPair(&private_key, &public_key_x509, &public_key)) {
     NOTREACHED() << "Unable to initialize a P-256 key pair.";
 
-    callback.Run(KeyPair());
+    callback.Run(KeyPair(), std::string() /* auth_secret */);
     return;
   }
+
+  std::string auth_secret;
+
+  // Create the authentication secret, which has to be a cryptographically
+  // secure random number of at least 128 bits (16 bytes).
+  crypto::RandBytes(base::WriteInto(&auth_secret, kAuthSecretBytes + 1),
+                    kAuthSecretBytes);
 
   // Store the keys in a new EncryptionData object.
   EncryptionData encryption_data;
   encryption_data.set_app_id(app_id);
+  encryption_data.set_auth_secret(auth_secret);
 
   KeyPair* pair = encryption_data.add_keys();
   pair->set_type(KeyPair::ECDH_P256);
@@ -103,24 +118,26 @@ void GCMKeyStore::CreateKeysAfterInitialize(const std::string& app_id,
   database_->UpdateEntries(
       entries_to_save.Pass(), keys_to_remove.Pass(),
       base::Bind(&GCMKeyStore::DidStoreKeys, weak_factory_.GetWeakPtr(), app_id,
-                 *pair, callback));
+                 *pair, auth_secret, callback));
 }
 
 void GCMKeyStore::DidStoreKeys(const std::string& app_id,
                                const KeyPair& pair,
+                               const std::string& auth_secret,
                                const KeysCallback& callback,
                                bool success) {
   DCHECK_EQ(0u, key_pairs_.count(app_id));
 
   if (!success) {
     DVLOG(1) << "Unable to store the created key in the GCM Key Store.";
-    callback.Run(KeyPair());
+    callback.Run(KeyPair(), std::string() /* auth_secret */);
     return;
   }
 
   key_pairs_[app_id] = pair;
+  auth_secrets_[app_id] = auth_secret;
 
-  callback.Run(key_pairs_[app_id]);
+  callback.Run(key_pairs_[app_id], auth_secret);
 }
 
 void GCMKeyStore::DeleteKeys(const std::string& app_id,
@@ -161,6 +178,7 @@ void GCMKeyStore::DidDeleteKeys(const std::string& app_id,
   }
 
   key_pairs_.erase(app_id);
+  auth_secrets_.erase(app_id);
 
   callback.Run(true /* success */);
 }
@@ -210,7 +228,9 @@ void GCMKeyStore::DidLoadKeys(bool success,
 
   for (const EncryptionData& entry : *entries) {
     DCHECK_EQ(1, entry.keys_size());
+
     key_pairs_[entry.app_id()] = entry.keys(0);
+    auth_secrets_[entry.app_id()] = entry.auth_secret();
   }
 
   state_ = State::INITIALIZED;

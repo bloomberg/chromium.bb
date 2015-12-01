@@ -127,7 +127,8 @@ void GCMEncryptionProvider::DecryptMessage(
 
 void GCMEncryptionProvider::DidGetPublicKey(const std::string& app_id,
                                             const PublicKeyCallback& callback,
-                                            const KeyPair& pair) {
+                                            const KeyPair& pair,
+                                            const std::string& auth_secret) {
   if (!pair.IsInitialized()) {
     key_store_->CreateKeys(
         app_id, base::Bind(&GCMEncryptionProvider::DidCreatePublicKey,
@@ -136,19 +137,21 @@ void GCMEncryptionProvider::DidGetPublicKey(const std::string& app_id,
   }
 
   DCHECK_EQ(KeyPair::ECDH_P256, pair.type());
-  callback.Run(pair.public_key());
+  callback.Run(pair.public_key(), auth_secret);
 }
 
 void GCMEncryptionProvider::DidCreatePublicKey(
     const PublicKeyCallback& callback,
-    const KeyPair& pair) {
+    const KeyPair& pair,
+    const std::string& auth_secret) {
   if (!pair.IsInitialized()) {
-    callback.Run(std::string());
+    callback.Run(std::string() /* public_key */,
+                 std::string() /* auth_secret */);
     return;
   }
 
   DCHECK_EQ(KeyPair::ECDH_P256, pair.type());
-  callback.Run(pair.public_key());
+  callback.Run(pair.public_key(), auth_secret);
 }
 
 void GCMEncryptionProvider::DecryptMessageWithKey(
@@ -158,7 +161,8 @@ void GCMEncryptionProvider::DecryptMessageWithKey(
     const std::string& salt,
     const std::string& dh,
     uint64_t rs,
-    const KeyPair& pair) {
+    const KeyPair& pair,
+    const std::string& auth_secret) {
   if (!pair.IsInitialized()) {
     DLOG(ERROR) << "Unable to retrieve the keys for the incoming message.";
     failure_callback.Run(DECRYPTION_FAILURE_NO_KEYS);
@@ -177,8 +181,8 @@ void GCMEncryptionProvider::DecryptMessageWithKey(
 
   std::string plaintext;
 
-  GCMMessageCryptographer cryptographer(
-      GCMMessageCryptographer::Label::P256, pair.public_key(), dh);
+  GCMMessageCryptographer cryptographer(GCMMessageCryptographer::Label::P256,
+                                        pair.public_key(), dh, auth_secret);
   if (!cryptographer.Decrypt(message.raw_data, shared_secret, salt, rs,
                              &plaintext)) {
     DLOG(ERROR) << "Unable to decrypt the incoming data.";

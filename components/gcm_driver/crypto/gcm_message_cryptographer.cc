@@ -73,13 +73,16 @@ const size_t GCMMessageCryptographer::kSaltSize = 16;
 GCMMessageCryptographer::GCMMessageCryptographer(
     Label label,
     const base::StringPiece& recipient_public_key,
-    const base::StringPiece& sender_public_key)
+    const base::StringPiece& sender_public_key,
+    const std::string& auth_secret)
     : content_encryption_key_info_(
           InfoForContentEncoding("aesgcm128", label, recipient_public_key,
                                  sender_public_key)),
       nonce_info_(
           InfoForContentEncoding("nonce", label, recipient_public_key,
-                                 sender_public_key)) {}
+                                 sender_public_key)),
+      auth_secret_(auth_secret) {
+}
 
 GCMMessageCryptographer::~GCMMessageCryptographer() {}
 
@@ -94,8 +97,10 @@ bool GCMMessageCryptographer::Encrypt(const base::StringPiece& plaintext,
   if (salt.size() != kSaltSize)
     return false;
 
-  std::string content_encryption_key = DeriveContentEncryptionKey(key, salt);
-  std::string nonce = DeriveNonce(key, salt);
+  std::string ikm = DeriveInputKeyingMaterial(key);
+
+  std::string content_encryption_key = DeriveContentEncryptionKey(ikm, salt);
+  std::string nonce = DeriveNonce(ikm, salt);
 
   // draft-thomson-http-encryption allows between 0 and 255 octets of padding to
   // be inserted before the enciphered content, with the length of the padding
@@ -120,12 +125,11 @@ bool GCMMessageCryptographer::Encrypt(const base::StringPiece& plaintext,
   return true;
 }
 
-bool GCMMessageCryptographer::Decrypt(
-    const base::StringPiece& ciphertext,
-    const base::StringPiece& key,
-    const base::StringPiece& salt,
-    size_t record_size,
-    std::string* plaintext) const {
+bool GCMMessageCryptographer::Decrypt(const base::StringPiece& ciphertext,
+                                      const base::StringPiece& key,
+                                      const base::StringPiece& salt,
+                                      size_t record_size,
+                                      std::string* plaintext) const {
   DCHECK(plaintext);
 
   if (salt.size() != kSaltSize || record_size <= 1)
@@ -140,8 +144,10 @@ bool GCMMessageCryptographer::Decrypt(
     return false;
   }
 
-  std::string content_encryption_key = DeriveContentEncryptionKey(key, salt);
-  std::string nonce = DeriveNonce(key, salt);
+  std::string ikm = DeriveInputKeyingMaterial(key);
+
+  std::string content_encryption_key = DeriveContentEncryptionKey(ikm, salt);
+  std::string nonce = DeriveNonce(ikm, salt);
 
   std::string decrypted_record;
   if (!EncryptDecryptRecordInternal(DECRYPT, ciphertext, content_encryption_key,
@@ -170,6 +176,22 @@ bool GCMMessageCryptographer::Decrypt(
   decoded_record_string_piece.CopyToString(plaintext);
 
   return true;
+}
+
+std::string GCMMessageCryptographer::DeriveInputKeyingMaterial(
+    const base::StringPiece& key) const {
+  if (allow_empty_auth_secret_for_tests_ && auth_secret_.empty())
+    return key.as_string();
+
+  CHECK(!auth_secret_.empty());
+
+  crypto::HKDF hkdf(key, auth_secret_,
+                    "Content-Encoding: auth",
+                    32, /* key_bytes_to_generate */
+                    0,  /* iv_bytes_to_generate */
+                    0   /* subkey_secret_bytes_to_generate */);
+
+  return hkdf.client_write_key().as_string();
 }
 
 std::string GCMMessageCryptographer::DeriveContentEncryptionKey(

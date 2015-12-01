@@ -151,7 +151,8 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
       const PushMessagingAppIdentifier& app_identifier,
       const content::PushMessagingService::RegisterCallback& callback,
       const std::string& subscription_id,
-      const std::string& public_key);
+      const std::string& public_key,
+      const std::string& auth_secret);
 
   void DidRequestPermission(
       const PushMessagingAppIdentifier& app_identifier,
@@ -162,7 +163,8 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   // GetPublicEncryptionKey method ---------------------------------------------
 
   void DidGetPublicKey(const PushMessagingService::PublicKeyCallback& callback,
-                       const std::string& public_key) const;
+                       const std::string& public_key,
+                       const std::string& auth_secret) const;
 
   // Unsubscribe methods -------------------------------------------------------
 
