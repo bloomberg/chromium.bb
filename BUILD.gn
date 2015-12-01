@@ -603,7 +603,7 @@ group("gn_only") {
     deps += [ "//components/proximity_auth:proximity_auth_unittests" ]
   }
 
-  if (!is_component_build && (is_win || is_linux)) {
+  if (is_win || is_linux) {
     deps += [ "//mash:all" ]
   }
 
