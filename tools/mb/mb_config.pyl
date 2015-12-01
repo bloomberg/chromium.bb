@@ -530,11 +530,11 @@
     'tryserver.chromium.perf': {
       'android_perf_bisect_builder': 'gyp_official_goma_minimal_symbols_android',
       'android_arm64_perf_bisect_builder': 'gyp_official_goma_minimal_symbols_android_arm64',
-      'linux_perf_bisect_builder': 'gyp_official_goma',
+      'linux_perf_bisect_builder': 'gn_official_goma',
       'mac_perf_bisect_builder': 'gyp_official_goma',
       'win_perf_bisect_builder': 'gyp_official_goma_minimal_symbols_x86',
       'winx64_bisect_builder': 'gyp_official_goma_minimal_symbols_x64',
-      'linux_perf_bisect': 'gyp_official_goma',
+      'linux_perf_bisect': 'gn_official_goma',
       'mac_10_11_perf_bisect': 'gyp_official_goma',
       'mac_10_10_perf_bisect': 'gyp_official_goma',
       'mac_retina_perf_bisect': 'gyp_official_goma',
@@ -552,6 +552,9 @@
       'android_nexus6_perf_bisect': 'gyp_official_goma_minimal_symbols_android',
       'android_nexus7_perf_bisect': 'gyp_official_goma_minimal_symbols_android',
       'android_nexus9_perf_bisect': 'gyp_official_goma_minimal_symbols_android_arm64',
+      'linux_fyi_perf_bisect': 'gn_official_goma',
+      'mac_fyi_perf_bisect': 'gyp_official_goma',
+      'win_fyi_perf_bisect': 'gyp_official_goma_minimal_symbols_x86',
     },
     'tryserver.chromium.win': {
       'win_chromium_gn_x64_dbg': 'gn_debug_bot_minimal_symbols',
