@@ -455,10 +455,8 @@ void GpuVideoDecoder::PictureReady(const media::Picture& picture) {
 
   DCHECK(decoder_texture_target_);
 
-  bool opaque = IsOpaque(config_.format());
-
   scoped_refptr<VideoFrame> frame(VideoFrame::WrapNativeTexture(
-      opaque ? PIXEL_FORMAT_XRGB : PIXEL_FORMAT_ARGB,
+      PIXEL_FORMAT_ARGB,
       gpu::MailboxHolder(pb.texture_mailbox(), gpu::SyncToken(),
                          decoder_texture_target_),
       BindToCurrentLoop(base::Bind(
