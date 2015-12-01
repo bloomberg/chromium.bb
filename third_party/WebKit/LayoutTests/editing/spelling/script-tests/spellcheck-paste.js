@@ -84,9 +84,6 @@ function pasteAndVerify(source, dest, expectedMarked)
     }
 };
 
-if (window.internals)
-    internals.settings.setAsynchronousSpellCheckingEnabled(true);
-
 tests.push(function() { pasteAndVerify(testSourcePlain, testInput, [[0, 2]]); });
 tests.push(function() { pasteAndVerify(testSourceDecorated, testInput, [[0, 2]]); });
 tests.push(function() { pasteAndVerify(testSourceMulti, testInput, [[0, 2], [3, 2]]); });

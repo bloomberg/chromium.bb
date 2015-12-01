@@ -25,7 +25,6 @@ function initSpellTest(testElementId, testText, testFunction, opt_doNotFinishTes
     }
     testFunctionCallback = testFunction;
     jsTestIsAsync = true;
-    internals.settings.setAsynchronousSpellCheckingEnabled(true);
     internals.settings.setSmartInsertDeleteEnabled(true);
     internals.settings.setSelectTrailingWhitespaceEnabled(false);
     internals.settings.setUnifiedTextCheckerEnabled(true);

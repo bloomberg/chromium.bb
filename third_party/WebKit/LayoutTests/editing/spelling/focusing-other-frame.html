@@ -16,8 +16,6 @@ description("Last word written in an editable in one frame should be " +
 "misspelled word in one frame and focus other frame. The word should be marked.");
 
 if (window.internals) {
-    internals.settings.setAsynchronousSpellCheckingEnabled(false);
-
     var frame1 = document.getElementById("frame1");
     var testEditable1 = frame1.contentWindow.document.createElement("div");
     testEditable1.setAttribute("contentEditable", "true");

@@ -3,10 +3,8 @@ description('Tests if the spellchecker behaves correctly when the spellcheck att
 
 jsTestIsAsync = true;
 
-if (window.internals) {
+if (window.internals)
     internals.settings.setUnifiedTextCheckerEnabled(true);
-    internals.settings.setAsynchronousSpellCheckingEnabled(true);
-}
 
 var parent = document.createElement("div");
 document.body.appendChild(parent);

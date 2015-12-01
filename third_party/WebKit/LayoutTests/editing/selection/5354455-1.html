@@ -10,7 +10,6 @@
 <script>
 function testIt(platform, expectedValue) {
     window.getSelection().removeAllRanges();
-    internals.settings.setAsynchronousSpellCheckingEnabled(true);
     internals.settings.setEditingBehavior(platform);
 
     paragraph = document.getElementById("text");

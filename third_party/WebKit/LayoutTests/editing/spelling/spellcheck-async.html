@@ -21,10 +21,8 @@ description("Test for Unified Spell Checker & Async Spell Checker.");
 
 jsTestIsAsync = true;
 
-if (window.internals) {
-    internals.settings.setAsynchronousSpellCheckingEnabled(true);
+if (window.internals)
     internals.settings.setUnifiedTextCheckerEnabled(true);
-}
 
 var container = document.getElementById('container');
 function removeChildren(node) {

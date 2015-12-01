@@ -119,9 +119,6 @@ function pasteAndVerify(source, dest, expectedMarked)
     }
 };
 
-if (window.internals)
-    internals.settings.setAsynchronousSpellCheckingEnabled(true);
-
 tests.push(function() { pasteAndVerify(testSourcePlain, testEditable, ["has"]); });
 tests.push(function() { pasteAndVerify(testSourceDecorated, testEditable, ["a"]); }); // Checks only 'a'.
 tests.push(function() { pasteAndVerify(testSourceMulti, testEditable, ["an", "an"]); });

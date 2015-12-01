@@ -15,8 +15,6 @@ description('Test if WebKit does not spellcheck text when pasting text to an ele
 
 jsTestIsAsync = true;
 
-internals.settings.setAsynchronousSpellCheckingEnabled(true);
-
 // Insert a misspelled word to initialize a spellchecker.
 var srcNode = document.getElementById('src');
 srcNode.focus();

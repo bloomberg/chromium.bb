@@ -3,10 +3,8 @@ description('Tests if the spellchecker behaves correctly when child has own '
 
 jsTestIsAsync = true;
 
-if (window.internals) {
+if (window.internals)
     internals.settings.setUnifiedTextCheckerEnabled(true);
-    internals.settings.setAsynchronousSpellCheckingEnabled(true);
-}
 
 var root = document.createElement("div");
 document.body.appendChild(root);

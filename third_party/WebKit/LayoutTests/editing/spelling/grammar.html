@@ -39,10 +39,8 @@ description("This tests whether the grammatically-incorrect phrase "
 
 jsTestIsAsync = true;
 
-if (window.internals) {
+if (window.internals)
     internals.settings.setUnifiedTextCheckerEnabled(true);
-    internals.settings.setAsynchronousSpellCheckingEnabled(true);
-}
 
 editingTest();
 </script>

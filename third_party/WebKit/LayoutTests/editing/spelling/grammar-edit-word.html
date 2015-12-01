@@ -14,10 +14,8 @@ description('Test if WebKit removes grammar markers when we edit a grammatically
 
 jsTestIsAsync = true;
 
-if (window.internals) {
+if (window.internals)
     internals.settings.setUnifiedTextCheckerEnabled(true);
-    internals.settings.setAsynchronousSpellCheckingEnabled(true);
-}
 
 function editAndCheckSentence()
 {

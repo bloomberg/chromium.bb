@@ -12,7 +12,6 @@ description('Test if Chrome WebKit does not remove a misspelled marker when movi
 
 jsTestIsAsync = true;
 
-internals.settings.setAsynchronousSpellCheckingEnabled(true);
 var node = document.getElementById('src');
 node.focus();
 document.execCommand("InsertText", false, 'z');

@@ -4,10 +4,8 @@ description('This tests if internals.hasSpellingMarker works for differnt type o
 
 jsTestIsAsync = true;
 
-if (window.internals) {
+if (window.internals)
     internals.settings.setUnifiedTextCheckerEnabled(true);
-    internals.settings.setAsynchronousSpellCheckingEnabled(true);
-}
 
 var testRoot = document.createElement("div");
 document.body.insertBefore(testRoot, document.body.firstChild);

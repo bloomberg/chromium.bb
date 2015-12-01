@@ -42,7 +42,6 @@ function test(div, frameDocument)
         return;
     }
 
-    internals.settings.setAsynchronousSpellCheckingEnabled(true);
     internals.settings.setUnifiedTextCheckerEnabled(true);
 
     shouldBecomeEqual('hasSpellingMarkerOnSetting(editableDiv, true)', 'true', function() {

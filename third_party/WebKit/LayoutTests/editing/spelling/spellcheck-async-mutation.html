@@ -30,10 +30,8 @@ description(
 
 var jsTestIsAsync = true;
 
-if (window.internals) {
-    internals.settings.setAsynchronousSpellCheckingEnabled(true);
+if (window.internals)
     internals.settings.setUnifiedTextCheckerEnabled(true);
-}
 
 var sourceIds = ['source'];
 var destElems = ['textarea', 'input', 'contenteditable'];

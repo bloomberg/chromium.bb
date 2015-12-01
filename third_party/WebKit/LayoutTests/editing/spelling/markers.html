@@ -18,10 +18,8 @@ description("Tests spelling and grammar markers for misspellings.");
 
 jsTestIsAsync = true;
 
-if (window.internals) {
+if (window.internals)
     internals.settings.setUnifiedTextCheckerEnabled(true);
-    internals.settings.setAsynchronousSpellCheckingEnabled(true);
-}
 
 function createEditableElement(parent) {
     var e = document.createElement('div');

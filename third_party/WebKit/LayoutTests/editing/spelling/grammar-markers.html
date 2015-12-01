@@ -12,9 +12,6 @@ description('This tests whether WebKit can render grammar markers when pasting t
 
 jsTestIsAsync = true;
 
-if (window.internals)
-    internals.settings.setAsynchronousSpellCheckingEnabled(true);
-
 if (window.testRunner)
     testRunner.dumpAsTextWithPixelResults();
 

@@ -48,10 +48,8 @@ description('This tests if the "spellcheck" attribute is implemented '
 
 jsTestIsAsync = true;
 
-if (window.internals) {
+if (window.internals)
     internals.settings.setUnifiedTextCheckerEnabled(true);
-    internals.settings.setAsynchronousSpellCheckingEnabled(true);
-}
 
 // Type misspelling to all input elements.
 var inputs = document.getElementsByTagName('input');

@@ -11,10 +11,8 @@ description('This tests for a bug when moving the caret backward through '
 
 jsTestIsAsync = true;
 
-if (window.internals) {
+if (window.internals)
     internals.settings.setUnifiedTextCheckerEnabled(true);
-    internals.settings.setAsynchronousSpellCheckingEnabled(true);
-}
 
 var div = document.getElementById("div");
 div.focus();

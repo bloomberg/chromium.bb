@@ -21,7 +21,6 @@ function insertText(text) {
 shouldBeTrue('insertText("z"); insertText("z"); insertText(" "); internals.hasSpellingMarker(document, 0, 2)');
 
 debug('Enable asynchronous spellchecking, delete two characters, and insert a space');
-internals.settings.setAsynchronousSpellCheckingEnabled(true);
 internals.settings.setUnifiedTextCheckerEnabled(true);
 
 testRunner.execCommand("DeleteBackward");

@@ -25,7 +25,6 @@ if (!window.internals) {
     log("Automatic testing impossible. Test manually.");
 } else {
     internals.settings.setUnifiedTextCheckerEnabled(true);
-    internals.settings.setAsynchronousSpellCheckingEnabled(false);
     internals.setContinuousSpellCheckingEnabled(true);
 
     shouldBe('internals.markerCountForNode(findFirstTextNode(testEditable), "spelling")', '0');
