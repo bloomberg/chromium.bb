@@ -21,7 +21,25 @@ cr.define('options.contentSettings', function() {
              contentType == 'media-stream-mic' ||
              contentType == 'media-stream-camera' ||
              contentType == 'midi-sysex' ||
-             contentType == 'zoomlevels');
+             contentType == 'zoomlevels' ||
+             IsChosenObjectType(contentType));
+  }
+
+  /**
+   * Returns whether exceptions of this type represent chosen objects.
+   *
+   * @param {string} contentType The type of the list.
+   */
+  function IsChosenObjectType(contentType) {
+    return contentType == 'usb-devices';
+  }
+
+  function ValueColumnForContentType(contentType) {
+    if (contentType == 'usb-devices')
+      return 'exception-usb-device-column';
+    if (contentType == 'zoomlevels')
+      return 'exception-zoom-column';
+    return 'exception-behavior-column';
   }
 
   /**
@@ -114,12 +132,14 @@ cr.define('options.contentSettings', function() {
         this.editable = false;
       }
 
-      if (this.contentType != 'zoomlevels') {
+      if (this.contentType != 'zoomlevels' &&
+          !IsChosenObjectType(this.contentType)) {
         this.addEditField(select, this.settingLabel);
         this.contentElement.appendChild(select);
       }
       select.className = 'exception-setting';
-      select.setAttribute('aria-labelledby', 'exception-behavior-column');
+      select.setAttribute('aria-labelledby',
+                          ValueColumnForContentType(this.contentType));
 
       if (this.pattern)
         select.setAttribute('displaymode', 'edit');
@@ -131,9 +151,20 @@ cr.define('options.contentSettings', function() {
         zoomLabel.textContent = this.dataItem.zoom;
         zoomLabel.className = 'exception-setting';
         zoomLabel.setAttribute('displaymode', 'static');
-        zoomLabel.setAttribute('aria-labelledby', 'exception-zoom-column');
         this.contentElement.appendChild(zoomLabel);
         this.zoomLabel = zoomLabel;
+      }
+
+      if (IsChosenObjectType(this.contentType) &&
+          this.dataItem.object !== undefined) {
+        this.deletable = true;
+
+        var objectLabel = cr.doc.createElement('span');
+        objectLabel.textContent = this.dataItem.objectName;
+        objectLabel.className = 'exception-setting';
+        objectLabel.setAttribute('displaymode', 'static');
+        this.contentElement.appendChild(objectLabel);
+        this.objectLabel = objectLabel;
       }
 
       // Used to track whether the URL pattern in the input is valid.
@@ -549,10 +580,18 @@ cr.define('options.contentSettings', function() {
         return;
 
       var dataItem = listItem.dataItem;
-      chrome.send('removeException', [listItem.contentType,
-                                      listItem.mode,
-                                      dataItem.origin,
-                                      dataItem.embeddingOrigin]);
+      if (IsChosenObjectType(this.contentType)) {
+        chrome.send('removeException', [listItem.contentType,
+                                        listItem.mode,
+                                        dataItem.origin,
+                                        dataItem.embeddingOrigin,
+                                        dataItem.object]);
+      } else {
+        chrome.send('removeException', [listItem.contentType,
+                                        listItem.mode,
+                                        dataItem.origin,
+                                        dataItem.embeddingOrigin]);
+      }
     },
   };
 
@@ -617,8 +656,11 @@ cr.define('options.contentSettings', function() {
           divs[i].hidden = true;
       }
 
-      $('exception-behavior-column').hidden = type == 'zoomlevels';
-      $('exception-zoom-column').hidden = type != 'zoomlevels';
+      var valueColumnId = ValueColumnForContentType(type);
+      var headers =
+          this.pageDiv.querySelectorAll('div.exception-value-column-header');
+      for (var i = 0; i < headers.length; ++i)
+        headers[i].hidden = (headers[i].id != valueColumnId);
     },
 
     /**

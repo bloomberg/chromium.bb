@@ -8060,6 +8060,9 @@ I don't think this site should be blocked!
       <message name="IDS_EXCEPTIONS_ACTION_HEADER" desc="A column header for the action column of the cookie/image/javascript/plugins exceptions dialog">
         Behavior
       </message>
+      <message name="IDS_EXCEPTIONS_USB_DEVICE_HEADER" desc="A column headers for the exceptions dialog indicating the name of a device the page has access to (e.g. 'Nexus 5')">
+        Device
+      </message>
       <message name="IDS_EXCEPTIONS_ZOOM_HEADER" desc="A column header for the exceptions dialog indicating the zoom level of pages (e.g. 110% magnification)">
         Zoom
       </message>
@@ -8140,6 +8143,13 @@ I don't think this site should be blocked!
       </message>
       <message name="IDS_HANDLERS_MANAGE" desc="The label on the button that launches the exceptions management page for a given content type">
         Manage handlers...
+      </message>
+
+      <message name="IDS_USB_DEVICES_HEADER_AND_TAB_LABEL" desc="Label for USB devices tab and a header on the Content Settings dialog (a page may be granted permission to connect to individual USB devices).">
+        USB Devices
+      </message>
+      <message name="IDS_USB_DEVICES_MANAGE_BUTTON" desc="Button on the Content Settings dialog that opens a dialog to manage USB devices pages have permission to connect to.">
+        Manage...
       </message>
 
       <message name="IDS_ZOOMLEVELS_HEADER_AND_TAB_LABEL" desc="Label for Zoom Level tab and a header the on Content Settings dialog (zoom levels indicate that a page should be shown for example at 110% magnification).">

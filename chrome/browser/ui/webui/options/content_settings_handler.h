@@ -31,6 +31,8 @@ class ContentSettingsHandler : public OptionsPageUIHandler,
                                public content::NotificationObserver,
                                public PepperFlashSettingsManager::Client {
  public:
+  struct ChooserTypeNameEntry;
+
   ContentSettingsHandler();
   ~ContentSettingsHandler() override;
 
@@ -149,6 +151,14 @@ class ContentSettingsHandler : public OptionsPageUIHandler,
   // Clobbers and rebuilds just the MIDI SysEx exception table.
   void UpdateMIDISysExExceptionsView();
 
+  // Clobbers and rebuilds all chooser-based exception tables.
+  void UpdateAllChooserExceptionsViewsFromModel();
+
+  // Clobbers and rebuilds the exception table for a particular chooser-based
+  // permission.
+  void UpdateChooserExceptionsViewFromModel(
+      const ChooserTypeNameEntry& chooser_type);
+
   // Modifies the zoom level exceptions list to display correct chrome
   // signin page entry. When the legacy (non-WebView-based) signin page
   // goes away, this function can be removed.
@@ -186,6 +196,11 @@ class ContentSettingsHandler : public OptionsPageUIHandler,
   // Removes one zoom level exception. |args| contains the parameters passed to
   // RemoveException().
   void RemoveZoomLevelException(const base::ListValue* args);
+
+  // Removes one exception for a chooser-based permission. |args| contains the
+  // parameters passed to RemoveException().
+  void RemoveChooserException(const ChooserTypeNameEntry* chooser_type,
+                              const base::ListValue* args);
 
   // Callbacks used by the page ------------------------------------------------
 
@@ -227,7 +242,9 @@ class ContentSettingsHandler : public OptionsPageUIHandler,
 
   // Returns exceptions constructed from the policy-set allowed URLs
   // for the content settings |type| mic or camera.
-  scoped_ptr<base::ListValue> GetPolicyAllowedUrls(ContentSettingsType type);
+  void GetPolicyAllowedUrls(
+      ContentSettingsType type,
+      std::vector<scoped_ptr<base::DictionaryValue>>* exceptions);
 
   // Fills in |exceptions| with Values for the given |type| from |map|.
   void GetExceptionsFromHostContentSettingsMap(
