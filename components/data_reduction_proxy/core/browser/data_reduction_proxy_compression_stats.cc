@@ -1126,6 +1126,8 @@ void DataReductionProxyCompressionStats::RecordDataUsage(
   if (current_data_usage_load_status_ != LOADED)
     return;
 
+  DCHECK(data_usage_reporting_enabled_.GetValue());
+
   if (!DataUsageStore::AreInSameInterval(data_usage_map_last_updated_, time)) {
     PersistDataUsage();
     data_usage_map_.clear();
@@ -1221,6 +1223,7 @@ void DataReductionProxyCompressionStats::OnDataUsageReportingPrefChanged() {
     }
   } else {
     DeleteHistoricalDataUsage();
+    current_data_usage_load_status_ = NOT_LOADED;
   }
 }
 

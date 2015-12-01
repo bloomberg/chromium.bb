@@ -428,6 +428,10 @@ class DataReductionProxyCompressionStatsTest : public testing::Test {
     pref_service()->SetBoolean(prefs::kDataUsageReportingEnabled, true);
   }
 
+  void DisableDataUsageReporting() {
+    pref_service()->SetBoolean(prefs::kDataUsageReportingEnabled, false);
+  }
+
   DataReductionProxyCompressionStats* compression_stats() {
     return compression_stats_.get();
   }
@@ -1079,6 +1083,34 @@ TEST_F(DataReductionProxyCompressionStatsTest, RecordDataUsageSingleSite) {
 
   GetHistoricalDataUsage(base::Bind(&DataUsageLoadVerifier::OnLoadDataUsage,
                                     base::Unretained(&verifier)),
+                         now);
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(DataReductionProxyCompressionStatsTest, DisableDataUsageRecording) {
+  EnableDataUsageReporting();
+  base::RunLoop().RunUntilIdle();
+
+  base::Time now = base::Time::Now();
+  RecordDataUsage("https://www.foo.com", 1000, 1250, now);
+
+  DisableDataUsageReporting();
+  base::RunLoop().RunUntilIdle();
+
+  // Data usage on disk must be deleted.
+  auto expected_data_usage1 =
+      make_scoped_ptr(new std::vector<data_reduction_proxy::DataUsageBucket>(
+          kNumExpectedBuckets));
+  DataUsageLoadVerifier verifier1(expected_data_usage1.Pass());
+  LoadHistoricalDataUsage(base::Bind(&DataUsageLoadVerifier::OnLoadDataUsage,
+                                     base::Unretained(&verifier1)));
+
+  // Public API must return an empty array.
+  auto expected_data_usage2 =
+      make_scoped_ptr(new std::vector<data_reduction_proxy::DataUsageBucket>());
+  DataUsageLoadVerifier verifier2(expected_data_usage2.Pass());
+  GetHistoricalDataUsage(base::Bind(&DataUsageLoadVerifier::OnLoadDataUsage,
+                                    base::Unretained(&verifier2)),
                          now);
   base::RunLoop().RunUntilIdle();
 }
