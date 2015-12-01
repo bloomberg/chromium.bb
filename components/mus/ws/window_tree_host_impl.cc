@@ -4,6 +4,7 @@
 
 #include "components/mus/ws/window_tree_host_impl.h"
 
+#include "base/debug/debugger.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/mus/common/types.h"
 #include "components/mus/ws/connection_manager.h"
@@ -16,6 +17,17 @@
 
 namespace mus {
 namespace ws {
+namespace {
+
+base::TimeDelta GetDefaultAckTimerDelay() {
+#if defined(NDEBUG)
+  return base::TimeDelta::FromMilliseconds(100);
+#else
+  return base::TimeDelta::FromMilliseconds(1000);
+#endif
+}
+
+}  // namespace
 
 WindowTreeHostImpl::WindowTreeHostImpl(
     mojom::WindowTreeHostClientPtr client,
@@ -363,10 +375,11 @@ void WindowTreeHostImpl::DispatchInputEventToWindow(ServerWindow* target,
   connection->DispatchInputEvent(target, event.Pass());
 
   // TOOD(sad): Adjust this delay, possibly make this dynamic.
-  const int kMaxEventAckDelayMs = 100;
-  event_ack_timer_.Start(FROM_HERE,
-                         base::TimeDelta::FromMilliseconds(kMaxEventAckDelayMs),
-                         this, &WindowTreeHostImpl::OnEventAckTimeout);
+  const base::TimeDelta max_delay = base::debug::BeingDebugged()
+                                        ? base::TimeDelta::FromDays(1)
+                                        : GetDefaultAckTimerDelay();
+  event_ack_timer_.Start(FROM_HERE, max_delay, this,
+                         &WindowTreeHostImpl::OnEventAckTimeout);
 }
 
 void WindowTreeHostImpl::OnWindowDestroyed(ServerWindow* window) {
