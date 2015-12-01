@@ -1012,8 +1012,7 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
     commands.GenerateHtmlIndex(index, files)
     html = osutils.ReadFile(index)
     for f in files:
-      # TODO(build): Use assertIn w/python-2.7.
-      self.assertTrue('>%s</a>' % f in html)
+      self.assertIn('>%s</a>' % f, html)
 
   def testGenerateHtmlIndexTupleDupe(self):
     """Verifies GenerateHtmlIndex gives us something unique (input: tuple)"""
@@ -1031,9 +1030,8 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
     html = osutils.ReadFile(index)
     for f in files:
       a = f.split('|')
-      # TODO(build): Use assertIn w/python-2.7.
-      self.assertTrue('href="%s"' % a[0] in html)
-      self.assertTrue('>%s</a>' % a[1] in html)
+      self.assertIn('href="%s"' % a[0], html)
+      self.assertIn('>%s</a>' % a[1], html)
 
   def testGenerateHtmlIndexDir(self):
     """Verifies GenerateHtmlIndex gives us something sane (input: dir)"""
@@ -1045,8 +1043,7 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
     commands.GenerateHtmlIndex(index, files)
     html = osutils.ReadFile(index)
     for f in files:
-      # TODO(build): Use assertIn w/python-2.7.
-      self.assertTrue('>%s</a>' % f in html)
+      self.assertIn('>%s</a>' % f, html)
 
   def testGenerateHtmlIndexFile(self):
     """Verifies GenerateHtmlIndex gives us something sane (input: file)"""
@@ -1057,8 +1054,7 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
     commands.GenerateHtmlIndex(index, filelist)
     html = osutils.ReadFile(index)
     for f in files:
-      # TODO(build): Use assertIn w/python-2.7.
-      self.assertTrue('>%s</a>' % f in html)
+      self.assertIn('>%s</a>' % f, html)
 
   def testArchiveGeneration(self):
     """Verifies BuildStandaloneImageArchive produces correct archives"""
