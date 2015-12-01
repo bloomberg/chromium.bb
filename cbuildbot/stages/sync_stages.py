@@ -1401,9 +1401,6 @@ class PreCQLauncherStage(SyncStage):
       pool: The current validation pool.
       current_time: datetime.datetime timestamp giving current database time.
     """
-    # TODO(akeshet) restore trybot launch retries here (there was
-    # no straightforward existing mechanism to include them in the
-    # transition to parallel pre-cq).
     timeout_statuses = (constants.CL_PRECQ_CONFIG_STATUS_LAUNCHED,
                         constants.CL_PRECQ_CONFIG_STATUS_INFLIGHT)
     config_progress = progress_map[change]
