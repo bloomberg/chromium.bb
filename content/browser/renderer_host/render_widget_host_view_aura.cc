@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
 
 #include <set>
+#include <utility>
 
 #include "base/auto_reset.h"
 #include "base/basictypes.h"
@@ -1194,14 +1195,14 @@ void RenderWidgetHostViewAura::OnSwapCompositorFrame(
   last_scroll_offset_ = frame->metadata.root_scroll_offset;
   if (!frame->delegated_frame_data)
     return;
-  delegated_frame_host_->SwapDelegatedFrame(
-      output_surface_id, frame->delegated_frame_data.Pass(),
-      frame->metadata.device_scale_factor, frame->metadata.latency_info,
-      &frame->metadata.satisfies_sequences);
-  SelectionUpdated(frame->metadata.selection.is_editable,
-                   frame->metadata.selection.is_empty_text_form_control,
-                   ConvertSelectionBound(frame->metadata.selection.start),
-                   ConvertSelectionBound(frame->metadata.selection.end));
+
+  cc::ViewportSelection selection = frame->metadata.selection;
+
+  delegated_frame_host_->SwapDelegatedFrame(output_surface_id,
+                                            std::move(frame));
+  SelectionUpdated(selection.is_editable, selection.is_empty_text_form_control,
+                   ConvertSelectionBound(selection.start),
+                   ConvertSelectionBound(selection.end));
 }
 
 void RenderWidgetHostViewAura::ClearCompositorFrame() {

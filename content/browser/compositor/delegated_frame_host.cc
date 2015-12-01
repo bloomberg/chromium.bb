@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/callback_helpers.h"
@@ -330,10 +331,11 @@ void DelegatedFrameHost::DidReceiveFrameFromRenderer(
 
 void DelegatedFrameHost::SwapDelegatedFrame(
     uint32 output_surface_id,
-    scoped_ptr<cc::DelegatedFrameData> frame_data,
-    float frame_device_scale_factor,
-    const std::vector<ui::LatencyInfo>& latency_info,
-    std::vector<uint32_t>* satisfies_sequences) {
+    scoped_ptr<cc::CompositorFrame> frame) {
+  DCHECK(frame->delegated_frame_data.get());
+  cc::DelegatedFrameData* frame_data = frame->delegated_frame_data.get();
+  float frame_device_scale_factor = frame->metadata.device_scale_factor;
+
   DCHECK(!frame_data->render_pass_list.empty());
 
   cc::RenderPass* root_pass = frame_data->render_pass_list.back().get();
@@ -353,7 +355,8 @@ void DelegatedFrameHost::SwapDelegatedFrame(
                                               &ack.resources);
 
     skipped_latency_info_list_.insert(skipped_latency_info_list_.end(),
-        latency_info.begin(), latency_info.end());
+                                      frame->metadata.latency_info.begin(),
+                                      frame->metadata.latency_info.end());
 
     client_->DelegatedFrameHostSendCompositorSwapAck(output_surface_id, ack);
     skipped_frames_ = true;
@@ -425,16 +428,11 @@ void DelegatedFrameHost::SwapDelegatedFrame(
         current_surface_size_ = frame_size;
         current_scale_factor_ = frame_device_scale_factor;
       }
-      scoped_ptr<cc::CompositorFrame> compositor_frame =
-          make_scoped_ptr(new cc::CompositorFrame());
-      compositor_frame->delegated_frame_data = frame_data.Pass();
 
-      compositor_frame->metadata.latency_info.swap(skipped_latency_info_list_);
-      compositor_frame->metadata.latency_info.insert(
-          compositor_frame->metadata.latency_info.end(),
-          latency_info.begin(),
-          latency_info.end());
-      compositor_frame->metadata.satisfies_sequences.swap(*satisfies_sequences);
+      frame->metadata.latency_info.insert(frame->metadata.latency_info.end(),
+                                          skipped_latency_info_list_.begin(),
+                                          skipped_latency_info_list_.end());
+      skipped_latency_info_list_.clear();
 
       gfx::Size desired_size = client_->DelegatedFrameHostDesiredSizeInDIP();
       if (desired_size != frame_size_in_dip && !desired_size.IsEmpty())
@@ -445,8 +443,8 @@ void DelegatedFrameHost::SwapDelegatedFrame(
         ack_callback = base::Bind(&DelegatedFrameHost::SurfaceDrawn,
                                   AsWeakPtr(), output_surface_id);
       }
-      surface_factory_->SubmitCompositorFrame(
-          surface_id_, compositor_frame.Pass(), ack_callback);
+      surface_factory_->SubmitCompositorFrame(surface_id_, std::move(frame),
+                                              ack_callback);
     } else {
       if (!resource_collection_.get()) {
         resource_collection_ = new cc::DelegatedFrameResourceCollection;
@@ -461,11 +459,11 @@ void DelegatedFrameHost::SwapDelegatedFrame(
           frame_size != frame_provider_->frame_size() ||
           frame_size_in_dip != current_frame_size_in_dip_) {
         frame_provider_ = new cc::DelegatedFrameProvider(
-            resource_collection_.get(), frame_data.Pass());
+            resource_collection_.get(), std::move(frame->delegated_frame_data));
         client_->DelegatedFrameHostGetLayer()->SetShowDelegatedContent(
             frame_provider_.get(), frame_size_in_dip);
       } else {
-        frame_provider_->SetFrameData(frame_data.Pass());
+        frame_provider_->SetFrameData(std::move(frame->delegated_frame_data));
       }
     }
   }
@@ -481,7 +479,8 @@ void DelegatedFrameHost::SwapDelegatedFrame(
     SendDelegatedFrameAck(output_surface_id);
   } else if (!use_surfaces_) {
     std::vector<ui::LatencyInfo>::const_iterator it;
-    for (it = latency_info.begin(); it != latency_info.end(); ++it)
+    for (it = frame->metadata.latency_info.begin();
+         it != frame->metadata.latency_info.end(); ++it)
       compositor_->SetLatencyInfo(*it);
     // If we've previously skipped any latency infos add them.
     for (it = skipped_latency_info_list_.begin();
