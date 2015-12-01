@@ -42,7 +42,7 @@ const unsigned kDefaultTestSize = 4 * SharedBuffer::kSegmentSize;
 void prepareReferenceData(char* buffer, size_t size)
 {
     for (size_t i = 0; i < size; ++i)
-        buffer[i] = i;
+        buffer[i] = static_cast<char>(i);
 }
 
 } // namespace

@@ -229,9 +229,9 @@ float ShapeResult::fillGlyphBufferForTextEmphasisRun(GlyphBuffer* glyphBuffer,
     // overlapping boundaries. Below we count grapheme clusters per HarfBuzz clusters,
     // then linearly split the sum of corresponding glyph advances by the number of
     // grapheme clusters in order to find positions for emphasis mark drawing.
-    uint16_t clusterStart = direction == RTL
+    uint16_t clusterStart = static_cast<uint16_t>(direction == RTL
         ? run->m_startIndex + run->m_numCharacters + runOffset
-        : run->glyphToCharacterIndex(0) + runOffset;
+        : run->glyphToCharacterIndex(0) + runOffset);
 
     float advanceSoFar = initialAdvance;
     unsigned numGlyphs = run->m_numGlyphs;
@@ -260,7 +260,7 @@ float ShapeResult::fillGlyphBufferForTextEmphasisRun(GlyphBuffer* glyphBuffer,
             if (direction == RTL)
                 clusterEnd = currentCharacterIndex;
             else
-                clusterEnd = isRunEnd ? run->m_startIndex + run->m_numCharacters + runOffset : run->glyphToCharacterIndex(i + 1) + runOffset;
+                clusterEnd = static_cast<uint16_t>(isRunEnd ? run->m_startIndex + run->m_numCharacters + runOffset : run->glyphToCharacterIndex(i + 1) + runOffset);
 
             graphemesInCluster = countGraphemesInCluster(textRun.characters16(), textRun.charactersLength(), clusterStart, clusterEnd);
             if (!graphemesInCluster || !clusterAdvance)

@@ -1173,7 +1173,7 @@ static size_t partitionPurgePage(PartitionPage* page, bool discard)
     if (unprovisionedBytes && discard) {
         ASSERT(truncatedSlots > 0);
         size_t numNewEntries = 0;
-        page->numUnprovisionedSlots += truncatedSlots;
+        page->numUnprovisionedSlots += static_cast<uint16_t>(truncatedSlots);
         // Rewrite the freelist.
         PartitionFreelistEntry** entryPtr = &page->freelistHead;
         for (size_t slotIndex = 0; slotIndex < numSlots; ++slotIndex) {
