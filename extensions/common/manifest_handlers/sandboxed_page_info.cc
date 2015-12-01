@@ -22,7 +22,7 @@ namespace keys = extensions::manifest_keys;
 namespace errors = manifest_errors;
 
 const char kDefaultSandboxedPageContentSecurityPolicy[] =
-    "sandbox allow-scripts allow-forms allow-popups";
+    "sandbox allow-scripts allow-forms allow-popups allow-modals";
 
 static base::LazyInstance<SandboxedPageInfo> g_empty_sandboxed_info =
     LAZY_INSTANCE_INITIALIZER;

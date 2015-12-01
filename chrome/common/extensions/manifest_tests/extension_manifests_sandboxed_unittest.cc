@@ -35,7 +35,8 @@ TEST_F(SandboxedPagesManifestTest, SandboxedPages) {
   scoped_refptr<Extension> extension5(
       LoadAndExpectSuccess("sandboxed_pages_valid_5.json"));
 
-  const char kSandboxedCSP[] = "sandbox allow-scripts allow-forms allow-popups";
+  const char kSandboxedCSP[] =
+      "sandbox allow-scripts allow-forms allow-popups allow-modals";
   const char kDefaultCSP[] =
       "script-src 'self' blob: filesystem: chrome-extension-resource:; "
       "object-src 'self' blob: filesystem:;";
