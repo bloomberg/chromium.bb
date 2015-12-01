@@ -17,6 +17,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/debug/dump_without_crashing.h"
+#include "base/feature_list.h"
 #include "base/files/file.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
@@ -431,6 +432,24 @@ std::string UintVectorToString(const std::vector<unsigned>& vector) {
     str += base::UintToString(it);
   }
   return str;
+}
+
+// Copies kEnableFeatures and kDisableFeatures to the renderer command line.
+// Generates them from the FeatureList override state, to take into account
+// overrides from FieldTrials.
+void CopyEnableDisableFeatureFlagsToRenderer(base::CommandLine* renderer_cmd) {
+  std::string enabled_features;
+  std::string disabled_features;
+  base::FeatureList::GetInstance()->GetFeatureOverrides(&enabled_features,
+                                                        &disabled_features);
+  if (!enabled_features.empty()) {
+    renderer_cmd->AppendSwitchASCII(switches::kEnableFeatures,
+                                    enabled_features);
+  }
+  if (!disabled_features.empty()) {
+    renderer_cmd->AppendSwitchASCII(switches::kDisableFeatures,
+                                    disabled_features);
+  }
 }
 
 }  // namespace
@@ -1306,7 +1325,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisableDisplayList2dCanvas,
     switches::kDisableDistanceFieldText,
     switches::kDisableEncryptedMedia,
-    switches::kDisableFeatures,
     switches::kDisableFileSystem,
     switches::kDisableGestureRequirementForMediaPlayback,
     switches::kDisableGpuCompositing,
@@ -1345,7 +1363,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableDistanceFieldText,
     switches::kEnableExperimentalCanvasFeatures,
     switches::kEnableExperimentalWebPlatformFeatures,
-    switches::kEnableFeatures,
     switches::kEnableHeapProfiling,
     switches::kEnableGPUClientLogging,
     switches::kEnableGpuClientTracing,
@@ -1486,6 +1503,8 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
   };
   renderer_cmd->CopySwitchesFrom(browser_cmd, kSwitchNames,
                                  arraysize(kSwitchNames));
+
+  CopyEnableDisableFeatureFlagsToRenderer(renderer_cmd);
 
   if (browser_cmd.HasSwitch(switches::kTraceStartup) &&
       BrowserMainLoop::GetInstance()->is_tracing_startup_for_duration()) {

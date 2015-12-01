@@ -8,6 +8,7 @@
 
 #include "base/format_macros.h"
 #include "base/metrics/field_trial.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -24,6 +25,13 @@ const char kFeatureOffByDefaultName[] = "OffByDefault";
 struct Feature kFeatureOffByDefault {
   kFeatureOffByDefaultName, FEATURE_DISABLED_BY_DEFAULT
 };
+
+std::string SortFeatureListString(const std::string& feature_list) {
+  std::vector<std::string> features =
+      FeatureList::SplitFeatureListString(feature_list);
+  std::sort(features.begin(), features.end());
+  return JoinString(features, ",");
+}
 
 }  // namespace
 
@@ -308,6 +316,27 @@ TEST_F(FeatureListTest, AssociateReportingFieldTrial) {
       EXPECT_EQ(kForcedOnGroupName, enable_trial->group_name());
     }
   }
+}
+
+TEST_F(FeatureListTest, GetFeatureOverrides) {
+  ClearFeatureListInstance();
+  FieldTrialList field_trial_list(nullptr);
+  scoped_ptr<FeatureList> feature_list(new FeatureList);
+  feature_list->InitializeFromCommandLine("A,X", "D");
+
+  FieldTrial* trial = FieldTrialList::CreateFieldTrial("Trial", "Group");
+  feature_list->RegisterFieldTrialOverride(kFeatureOffByDefaultName,
+                                           FeatureList::OVERRIDE_ENABLE_FEATURE,
+                                           trial);
+
+  RegisterFeatureListInstance(feature_list.Pass());
+
+  std::string enable_features;
+  std::string disable_features;
+  FeatureList::GetInstance()->GetFeatureOverrides(&enable_features,
+                                                  &disable_features);
+  EXPECT_EQ("A,OffByDefault,X", SortFeatureListString(enable_features));
+  EXPECT_EQ("D", SortFeatureListString(disable_features));
 }
 
 }  // namespace base

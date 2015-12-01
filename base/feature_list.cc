@@ -49,20 +49,6 @@ bool FeatureList::IsFeatureOverriddenFromCommandLine(
          !it->second.overridden_by_field_trial;
 }
 
-void FeatureList::RegisterFieldTrialOverride(const std::string& feature_name,
-                                             OverrideState override_state,
-                                             FieldTrial* field_trial) {
-  DCHECK(field_trial);
-  DCHECK(!ContainsKey(overrides_, feature_name) ||
-         !overrides_.find(feature_name)->second.field_trial)
-      << "Feature " << feature_name
-      << " has conflicting field trial overrides: "
-      << overrides_.find(feature_name)->second.field_trial->trial_name()
-      << " / " << field_trial->trial_name();
-
-  RegisterOverride(feature_name, override_state, field_trial);
-}
-
 void FeatureList::AssociateReportingFieldTrial(
     const std::string& feature_name,
     OverrideState for_overridden_state,
@@ -81,6 +67,43 @@ void FeatureList::AssociateReportingFieldTrial(
   }
 
   entry->field_trial = field_trial;
+}
+
+void FeatureList::RegisterFieldTrialOverride(const std::string& feature_name,
+                                             OverrideState override_state,
+                                             FieldTrial* field_trial) {
+  DCHECK(field_trial);
+  DCHECK(!ContainsKey(overrides_, feature_name) ||
+         !overrides_.find(feature_name)->second.field_trial)
+      << "Feature " << feature_name
+      << " has conflicting field trial overrides: "
+      << overrides_.find(feature_name)->second.field_trial->trial_name()
+      << " / " << field_trial->trial_name();
+
+  RegisterOverride(feature_name, override_state, field_trial);
+}
+
+void FeatureList::GetFeatureOverrides(std::string* enable_overrides,
+                                      std::string* disable_overrides) {
+  DCHECK(initialized_);
+
+  enable_overrides->clear();
+  disable_overrides->clear();
+
+  for (const auto& entry : overrides_) {
+    switch (entry.second.overridden_state) {
+      case OVERRIDE_ENABLE_FEATURE:
+        if (!enable_overrides->empty())
+          enable_overrides->push_back(',');
+        enable_overrides->append(entry.first);
+        break;
+      case OVERRIDE_DISABLE_FEATURE:
+        if (!disable_overrides->empty())
+          disable_overrides->push_back(',');
+        disable_overrides->append(entry.first);
+        break;
+    }
+  }
 }
 
 // static

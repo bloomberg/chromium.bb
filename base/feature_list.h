@@ -117,6 +117,13 @@ class BASE_EXPORT FeatureList {
                                   OverrideState override_state,
                                   FieldTrial* field_trial);
 
+  // Returns comma-separated lists of feature names (in the same format that is
+  // accepted by InitializeFromCommandLine()) corresponding to features that
+  // have been overridden - either through command-line or via FieldTrials.
+  // Must be called only after the instance has been initialized and registered.
+  void GetFeatureOverrides(std::string* enable_overrides,
+                           std::string* disable_overrides);
+
   // Returns whether the given |feature| is enabled. Must only be called after
   // the singleton instance has been registered via SetInstance(). Additionally,
   // a feature with a given name must only have a single corresponding Feature
