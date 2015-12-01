@@ -447,6 +447,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
                         base::TimeTicks::Now() - start_time_);
     UMA_HISTOGRAM_TIMES("SBClientDownload.DownloadRequestNetworkDuration",
                         base::TimeTicks::Now() - request_start_time_);
+
     FinishRequest(result, reason);
   }
 
@@ -710,15 +711,6 @@ class DownloadProtectionService::CheckClientDownloadRequest
 // the server if we're not on one of those platforms.
 // TODO(noelutz): change this code once the UI is done for Linux.
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
-    // User can manually blacklist a sha256 via flag, for testing.
-    // In this case we don't actually send the request.
-    if (item_ && service_ &&
-        service_->IsHashManuallyBlacklisted(item_->GetHash())) {
-      DVLOG(1) << "Download verdict overridden to DANGEROUS by flag.";
-      PostFinishTask(DANGEROUS, REASON_MANUAL_BLACKLIST);
-      return;
-    }
-
     // The URLFetcher is owned by the UI thread, so post a message to
     // start the pingback.
     BrowserThread::PostTask(
@@ -769,6 +761,19 @@ class DownloadProtectionService::CheckClientDownloadRequest
     }
 
     SendRequest();
+  }
+
+  // If the hash of either the original file or any executables within an
+  // archive matches the blacklist flag, return true.
+  bool IsDownloadManuallyBlacklisted(const ClientDownloadRequest& request) {
+    if (service_->IsHashManuallyBlacklisted(request.digests().sha256()))
+      return true;
+
+    for (auto bin_itr : request.archived_binary()) {
+      if (service_->IsHashManuallyBlacklisted(bin_itr.digests().sha256()))
+        return true;
+    }
+    return false;
   }
 
   void SendRequest() {
@@ -850,8 +855,18 @@ class DownloadProtectionService::CheckClientDownloadRequest
       FinishRequest(UNKNOWN, REASON_INVALID_REQUEST_PROTO);
       return;
     }
-    service_->client_download_request_callbacks_.Notify(item_, &request);
 
+    // User can manually blacklist a sha256 via flag, for testing.
+    // This is checked just before the request is sent, to verify the request
+    // would have been sent.  This emmulates the server returning a DANGEROUS
+    // verdict as closely as possible.
+    if (IsDownloadManuallyBlacklisted(request)) {
+      DVLOG(1) << "Download verdict overridden to DANGEROUS by flag.";
+      PostFinishTask(DANGEROUS, REASON_MANUAL_BLACKLIST);
+      return;
+    }
+
+    service_->client_download_request_callbacks_.Notify(item_, &request);
     DVLOG(2) << "Sending a request for URL: "
              << item_->GetUrlChain().back();
     DVLOG(2) << "Detected " << request.archived_binary().size() << " archived "
