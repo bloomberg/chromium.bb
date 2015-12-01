@@ -88,6 +88,9 @@ class AndroidPolicyWriter(xml_formatted_writer.XMLFormattedWriter):
   def BeginTemplate(self):
     comment_text = 'DO NOT MODIFY THIS FILE DIRECTLY!\n' \
                    'IT IS GENERATED FROM policy_templates.json.'
+    if self._GetChromiumVersionString():
+      comment_text += '\n' + self.config['build'] + ' version: '\
+                      + self._GetChromiumVersionString()
     comment_node = self._doc.createComment(comment_text)
     self._doc.insertBefore(comment_node, self._resources)
 
