@@ -27,12 +27,14 @@
 #define Clock_h
 
 #include "platform/PlatformExport.h"
+#include "wtf/Allocator.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
 
 namespace blink {
 
 class PLATFORM_EXPORT Clock {
+    USING_FAST_MALLOC(Clock);
 public:
     static PassOwnPtr<Clock> create();
 

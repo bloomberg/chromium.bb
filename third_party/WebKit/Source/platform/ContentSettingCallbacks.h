@@ -6,6 +6,7 @@
 #define ContentSettingCallbacks_h
 
 #include "platform/PlatformExport.h"
+#include "wtf/Allocator.h"
 #include "wtf/Functional.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
@@ -14,6 +15,7 @@
 namespace blink {
 
 class PLATFORM_EXPORT ContentSettingCallbacks {
+    USING_FAST_MALLOC(ContentSettingCallbacks);
     WTF_MAKE_NONCOPYABLE(ContentSettingCallbacks);
 public:
     static PassOwnPtr<ContentSettingCallbacks> create(PassOwnPtr<Closure> allowed, PassOwnPtr<Closure> denied);

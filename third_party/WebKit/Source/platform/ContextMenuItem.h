@@ -28,6 +28,7 @@
 #define ContextMenuItem_h
 
 #include "platform/PlatformExport.h"
+#include "wtf/Allocator.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/text/WTFString.h"
 
@@ -49,7 +50,7 @@ enum ContextMenuItemType {
 };
 
 class PLATFORM_EXPORT ContextMenuItem {
-    USING_FAST_MALLOC(ContextMenuItem);
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     ContextMenuItem(ContextMenuItemType, ContextMenuAction, const String& title, const String& icon, ContextMenu* subMenu = 0);
     ContextMenuItem(ContextMenuItemType, ContextMenuAction, const String& title, const String& icon, bool enabled, bool checked);

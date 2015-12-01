@@ -28,11 +28,13 @@
 #define ContentType_h
 
 #include "platform/PlatformExport.h"
+#include "wtf/Allocator.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
 class PLATFORM_EXPORT ContentType {
+    STACK_ALLOCATED();
 public:
     explicit ContentType(const String& type);
 

@@ -32,11 +32,13 @@
 #define ColorSuggestion_h
 
 #include "platform/graphics/Color.h"
+#include "wtf/Allocator.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
 struct ColorSuggestion {
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     Color color;
     String label;
 

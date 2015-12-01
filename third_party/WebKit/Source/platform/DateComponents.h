@@ -32,6 +32,7 @@
 #define DateComponents_h
 
 #include "platform/PlatformExport.h"
+#include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 #include "wtf/text/Unicode.h"
 #include <limits>
@@ -45,6 +46,7 @@ namespace blink {
 // * Time type: hour-minute-second-millisecond
 // * DateTime or DateTimeLocal type: year-month-day hour-minute-second-millisecond
 class PLATFORM_EXPORT DateComponents {
+    DISALLOW_NEW();
 public:
     DateComponents()
         : m_millisecond(0)
