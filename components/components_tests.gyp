@@ -125,6 +125,7 @@
     ],
     'crash_unittest_sources': [
       'crash/content/app/crash_keys_win_unittest.cc',
+      'crash/core/common/crash_keys_unittest.cc',
       'crash/core/common/objc_zombie_unittest.mm',
     ],
     'crx_file_unittest_sources': [

@@ -57,50 +57,6 @@ class CrashKeysTest : public testing::Test {
 
 CrashKeysTest* CrashKeysTest::self_ = NULL;
 
-TEST_F(CrashKeysTest, Switches) {
-  // Set three switches.
-  {
-    base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
-    for (int i = 1; i <= 3; ++i)
-      command_line.AppendSwitch(base::StringPrintf("--flag-%d", i));
-    crash_keys::SetSwitchesFromCommandLine(&command_line);
-    EXPECT_EQ("--flag-1", GetKeyValue("switch-1"));
-    EXPECT_EQ("--flag-2", GetKeyValue("switch-2"));
-    EXPECT_EQ("--flag-3", GetKeyValue("switch-3"));
-    EXPECT_FALSE(HasCrashKey("switch-4"));
-  }
-
-  // Set more than the max switches.
-  {
-    base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
-    const int kMax = crash_keys::kSwitchesMaxCount + 2;
-    EXPECT_GT(kMax, 15);
-    for (int i = 1; i <= kMax; ++i)
-      command_line.AppendSwitch(base::StringPrintf("--many-%d", i));
-    crash_keys::SetSwitchesFromCommandLine(&command_line);
-    EXPECT_EQ("--many-1", GetKeyValue("switch-1"));
-    EXPECT_EQ("--many-9", GetKeyValue("switch-9"));
-    EXPECT_EQ("--many-15", GetKeyValue("switch-15"));
-    EXPECT_FALSE(HasCrashKey("switch-16"));
-    EXPECT_FALSE(HasCrashKey("switch-17"));
-  }
-
-  // Set fewer to ensure that old ones are erased.
-  {
-    base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
-    for (int i = 1; i <= 5; ++i)
-      command_line.AppendSwitch(base::StringPrintf("--fewer-%d", i));
-    crash_keys::SetSwitchesFromCommandLine(&command_line);
-    EXPECT_EQ("--fewer-1", GetKeyValue("switch-1"));
-    EXPECT_EQ("--fewer-2", GetKeyValue("switch-2"));
-    EXPECT_EQ("--fewer-3", GetKeyValue("switch-3"));
-    EXPECT_EQ("--fewer-4", GetKeyValue("switch-4"));
-    EXPECT_EQ("--fewer-5", GetKeyValue("switch-5"));
-    for (int i = 6; i < 20; ++i)
-      EXPECT_FALSE(HasCrashKey(base::StringPrintf(crash_keys::kSwitch, i)));
-  }
-}
-
 TEST_F(CrashKeysTest, Extensions) {
   // Set three extensions.
   {
@@ -162,20 +118,21 @@ TEST_F(CrashKeysTest, Extensions) {
   }
 }
 
-#if defined(OS_CHROMEOS)
 TEST_F(CrashKeysTest, IgnoreBoringFlags) {
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   command_line.AppendSwitch("--enable-logging");
-  command_line.AppendSwitch("--user-data-dir=/tmp");
   command_line.AppendSwitch("--v=1");
-  command_line.AppendSwitch("--default-wallpaper-small=test.png");
 
   command_line.AppendSwitch("--vv=1");
   command_line.AppendSwitch("--vvv");
   command_line.AppendSwitch("--enable-multi-profiles");
   command_line.AppendSwitch("--device-management-url=https://foo/bar");
+#if defined(OS_CHROMEOS)
+  command_line.AppendSwitch("--user-data-dir=/tmp");
+  command_line.AppendSwitch("--default-wallpaper-small=test.png");
+#endif
 
-  crash_keys::SetSwitchesFromCommandLine(&command_line);
+  crash_keys::SetCrashKeysFromCommandLine(command_line);
 
   EXPECT_EQ("--vv=1", GetKeyValue("switch-1"));
   EXPECT_EQ("--vvv", GetKeyValue("switch-2"));
@@ -183,4 +140,3 @@ TEST_F(CrashKeysTest, IgnoreBoringFlags) {
   EXPECT_EQ("--device-management-url=https://foo/bar", GetKeyValue("switch-4"));
   EXPECT_FALSE(HasCrashKey("switch-5"));
 }
-#endif

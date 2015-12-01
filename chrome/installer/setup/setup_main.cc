@@ -1653,6 +1653,7 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
 
   installer::ConfigureCrashReporting(installer_state);
   installer::SetInitialCrashKeys(installer_state);
+  installer::SetCrashKeysFromCommandLine(cmd_line);
 
   // Make sure the process exits cleanly on unexpected errors.
   base::EnableTerminationOnHeapCorruption();

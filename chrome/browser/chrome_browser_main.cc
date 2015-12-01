@@ -967,8 +967,8 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
 
   // Reset the command line in the crash report details, since we may have
   // just changed it to include experiments.
-  crash_keys::SetSwitchesFromCommandLine(
-      base::CommandLine::ForCurrentProcess());
+  crash_keys::SetCrashKeysFromCommandLine(
+      *base::CommandLine::ForCurrentProcess());
 
   // Mac starts it earlier in |PreMainMessageLoopStart()| (because it is
   // needed when loading the MainMenu.nib and the language doesn't depend on

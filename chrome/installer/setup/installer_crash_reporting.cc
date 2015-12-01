@@ -4,6 +4,10 @@
 
 #include "chrome/installer/setup/installer_crash_reporting.h"
 
+#include <iterator>
+#include <vector>
+
+#include "base/command_line.h"
 #include "base/debug/crash_logging.h"
 #include "base/debug/leak_annotations.h"
 #include "base/logging.h"
@@ -127,7 +131,10 @@ size_t RegisterCrashKeys() {
     // kLargeSize, which is wasteful.)
     { kStateKey, crash_keys::kMediumSize },
   };
-  return base::debug::InitCrashKeys(&kFixedKeys[0], arraysize(kFixedKeys),
+  std::vector<base::debug::CrashKey> keys(std::begin(kFixedKeys),
+                                          std::end(kFixedKeys));
+  crash_keys::GetCrashKeysForCommandLineSwitches(&keys);
+  return base::debug::InitCrashKeys(keys.data(), keys.size(),
                                     crash_keys::kChunkMaxLength);
 }
 
@@ -144,6 +151,10 @@ void SetInitialCrashKeys(const InstallerState& state) {
   const base::string16 state_key = state.state_key();
   if (!state_key.empty())
     SetCrashKeyValue(kStateKey, base::UTF16ToUTF8(state_key));
+}
+
+void SetCrashKeysFromCommandLine(const base::CommandLine& command_line) {
+  crash_keys::SetSwitchesFromCommandLine(command_line, nullptr);
 }
 
 }  // namespace installer

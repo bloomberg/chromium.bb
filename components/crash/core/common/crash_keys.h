@@ -8,7 +8,12 @@
 #include <string>
 #include <vector>
 
+#include "base/debug/crash_logging.h"
 #include "build/build_config.h"
+
+namespace base {
+class CommandLine;
+}  // namespace base
 
 namespace crash_keys {
 
@@ -20,6 +25,20 @@ void ClearMetricsClientId();
 
 // Sets the list of active experiment/variations info.
 void SetVariationsList(const std::vector<std::string>& variations);
+
+// Adds a common set of crash keys for holding command-line switches to |keys|.
+void GetCrashKeysForCommandLineSwitches(
+    std::vector<base::debug::CrashKey>* keys);
+
+// A function returning true if |flag| is a switch that should be filtered out
+// of crash keys.
+using SwitchFilterFunction = bool (*)(const std::string& flag);
+
+// Sets the kNumSwitches key and a set of keys named using kSwitchFormat based
+// on the given |command_line|. If |skip_filter| is not null, ignore any switch
+// for which it returns true.
+void SetSwitchesFromCommandLine(const base::CommandLine& command_line,
+                                SwitchFilterFunction skip_filter);
 
 // Crash Key Constants /////////////////////////////////////////////////////////
 
@@ -70,6 +89,18 @@ extern const char kNumVariations[];
 // The experiments chunk. Hashed experiment names separated by |,|. This is
 // typically set by SetExperimentList.
 extern const char kVariations[];
+
+// The maximum number of command line switches to process. |kSwitchFormat|
+// should be formatted with an integer in the range [1, kSwitchesMaxCount].
+const size_t kSwitchesMaxCount = 15;
+
+// A printf-style format string naming the set of crash keys corresponding to
+// at most |kSwitchesMaxCount| command line switches.
+extern const char kSwitchFormat[];
+
+// The total number of switches, used to report the total in case more than
+// |kSwitchesMaxCount| are present.
+extern const char kNumSwitches[];
 
 // Used to help investigate bug 464926.
 extern const char kBug464926CrashKey[];

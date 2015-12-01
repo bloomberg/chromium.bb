@@ -5,6 +5,10 @@
 #ifndef CHROME_INSTALLER_SETUP_INSTALLER_CRASH_REPORTING_H_
 #define CHROME_INSTALLER_SETUP_INSTALLER_CRASH_REPORTING_H_
 
+namespace base {
+class CommandLine;
+}  // namespace base
+
 namespace installer {
 
 class InstallerState;
@@ -19,6 +23,9 @@ size_t RegisterCrashKeys();
 // vary during execution so this function will not need to be called more than
 // once.
 void SetInitialCrashKeys(const InstallerState& installer_state);
+
+// Sets crash keys for the switches given in |command_line|.
+void SetCrashKeysFromCommandLine(const base::CommandLine& command_line);
 
 }  // namespace installer
 

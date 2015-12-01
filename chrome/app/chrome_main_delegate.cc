@@ -814,7 +814,7 @@ void ChromeMainDelegate::PreSandboxStartup() {
 
   // After all the platform Breakpads have been initialized, store the command
   // line for crash reporting.
-  crash_keys::SetSwitchesFromCommandLine(&command_line);
+  crash_keys::SetCrashKeysFromCommandLine(command_line);
 }
 
 void ChromeMainDelegate::SandboxInitialized(const std::string& process_type) {
@@ -944,7 +944,7 @@ void ChromeMainDelegate::ZygoteForked() {
   breakpad::InitCrashReporter(process_type);
 
   // Reset the command line for the newly spawned process.
-  crash_keys::SetSwitchesFromCommandLine(command_line);
+  crash_keys::SetCrashKeysFromCommandLine(*command_line);
 }
 
 #endif  // OS_MACOSX
