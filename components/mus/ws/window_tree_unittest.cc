@@ -115,9 +115,9 @@ class TestWindowTreeClient : public mus::mojom::WindowTreeClient {
                                      Array<uint8_t> new_data) override {
     tracker_.OnWindowSharedPropertyChanged(window, name, new_data.Pass());
   }
-  void OnWindowInputEvent(uint32_t window,
-                          EventPtr event,
-                          const mojo::Callback<void()>& callback) override {
+  void OnWindowInputEvent(uint32_t event_id,
+                          uint32_t window,
+                          EventPtr event) override {
     tracker_.OnWindowInputEvent(window, event.Pass());
   }
   void OnWindowFocused(uint32_t focused_window_id) override {
@@ -289,6 +289,18 @@ EventPtr CreatePointerUpEvent(int x, int y) {
   return event.Pass();
 }
 
+EventPtr CreateMouseMoveEvent(int x, int y) {
+  EventPtr event(Event::New());
+  event->action = mus::mojom::EVENT_TYPE_POINTER_MOVE;
+  event->pointer_data = PointerData::New();
+  event->pointer_data->pointer_id = std::numeric_limits<uint32_t>::max();
+  event->pointer_data->location = LocationData::New();
+  event->pointer_data->location->x = x;
+  event->pointer_data->location->y = y;
+  event->pointer_data->kind = mojom::POINTER_KIND_MOUSE;
+  return event.Pass();
+}
+
 }  // namespace
 
 // -----------------------------------------------------------------------------
@@ -316,8 +328,20 @@ class WindowTreeTest : public testing::Test {
   TestWindowTreeClient* wm_client() { return wm_client_; }
 
   TestWindowTreeHostConnection* host_connection() { return host_connection_; }
-  DisplayManagerDelegate* display_manager_delegate() {
-    return host_connection()->window_tree_host();
+
+  void DispatchEventWithoutAck(mojom::EventPtr event) {
+    host_connection()->window_tree_host()->OnEvent(event.Pass());
+  }
+
+  void AckPreviousEvent() {
+    host_connection()
+        ->window_tree_host()
+        ->tree_awaiting_input_ack_->OnWindowInputEventAck(0);
+  }
+
+  void DispatchEventAndAckImmediately(mojom::EventPtr event) {
+    DispatchEventWithoutAck(event.Pass());
+    AckPreviousEvent();
   }
 
  protected:
@@ -392,9 +416,9 @@ TEST_F(WindowTreeTest, FocusOnPointer) {
 
   // Focus should not go to |child1| yet, since the parent still doesn't allow
   // active children.
-  display_manager_delegate()->OnEvent(CreatePointerDownEvent(21, 22));
+  DispatchEventAndAckImmediately(CreatePointerDownEvent(21, 22));
   EXPECT_EQ(nullptr, connection1->GetHost()->GetFocusedWindow());
-  display_manager_delegate()->OnEvent(CreatePointerUpEvent(21, 22));
+  DispatchEventAndAckImmediately(CreatePointerUpEvent(21, 22));
   connection1_client->tracker()->changes()->clear();
   wm_client()->tracker()->changes()->clear();
 
@@ -403,7 +427,7 @@ TEST_F(WindowTreeTest, FocusOnPointer) {
 
   // Focus should go to child1. This result in notifying both the window
   // manager and client connection being notified.
-  display_manager_delegate()->OnEvent(CreatePointerDownEvent(21, 22));
+  DispatchEventAndAckImmediately(CreatePointerDownEvent(21, 22));
   EXPECT_EQ(v1, connection1->GetHost()->GetFocusedWindow());
   ASSERT_GE(wm_client()->tracker()->changes()->size(), 1u);
   EXPECT_EQ("Focused id=2,1",
@@ -413,22 +437,22 @@ TEST_F(WindowTreeTest, FocusOnPointer) {
       "Focused id=2,1",
       ChangesToDescription1(*connection1_client->tracker()->changes())[0]);
 
-  display_manager_delegate()->OnEvent(CreatePointerUpEvent(21, 22));
+  DispatchEventAndAckImmediately(CreatePointerUpEvent(21, 22));
   wm_client()->tracker()->changes()->clear();
   connection1_client->tracker()->changes()->clear();
 
   // Press outside of the embedded window. Note that root cannot be focused
   // (because it cannot be activated). So the focus would not move in this case.
-  display_manager_delegate()->OnEvent(CreatePointerDownEvent(61, 22));
+  DispatchEventAndAckImmediately(CreatePointerDownEvent(61, 22));
   EXPECT_EQ(v1, host_connection()->window_tree_host()->GetFocusedWindow());
 
-  display_manager_delegate()->OnEvent(CreatePointerUpEvent(21, 22));
+  DispatchEventAndAckImmediately(CreatePointerUpEvent(21, 22));
   wm_client()->tracker()->changes()->clear();
   connection1_client->tracker()->changes()->clear();
 
   // Press in the same location. Should not get a focus change event (only input
   // event).
-  display_manager_delegate()->OnEvent(CreatePointerDownEvent(61, 22));
+  DispatchEventAndAckImmediately(CreatePointerDownEvent(61, 22));
   EXPECT_EQ(v1, host_connection()->window_tree_host()->GetFocusedWindow());
   ASSERT_EQ(wm_client()->tracker()->changes()->size(), 1u)
       << SingleChangeToDescription(*wm_client()->tracker()->changes());
@@ -480,7 +504,7 @@ TEST_F(WindowTreeTest, BasicInputEventTarget) {
 
   // Send an event to |v1|. |embed_connection| should get the event, not
   // |wm_client|, since |v1| lives inside an embedded window.
-  display_manager_delegate()->OnEvent(CreatePointerDownEvent(21, 22));
+  DispatchEventAndAckImmediately(CreatePointerDownEvent(21, 22));
   ASSERT_EQ(1u, wm_client()->tracker()->changes()->size());
   EXPECT_EQ("Focused id=2,1",
             ChangesToDescription1(*wm_client()->tracker()->changes())[0]);
@@ -489,6 +513,34 @@ TEST_F(WindowTreeTest, BasicInputEventTarget) {
             ChangesToDescription1(*embed_connection->tracker()->changes())[0]);
   EXPECT_EQ("InputEvent window=2,1 event_action=4",
             ChangesToDescription1(*embed_connection->tracker()->changes())[1]);
+}
+
+TEST_F(WindowTreeTest, EventAck) {
+  const WindowId embed_window_id(wm_connection()->id(), 1);
+  EXPECT_TRUE(
+      wm_connection()->NewWindow(embed_window_id, ServerWindow::Properties()));
+  EXPECT_TRUE(wm_connection()->SetWindowVisibility(embed_window_id, true));
+  EXPECT_TRUE(
+      wm_connection()->AddWindow(*(wm_connection()->root()), embed_window_id));
+  host_connection()->window_tree_host()->root_window()->SetBounds(
+      gfx::Rect(0, 0, 100, 100));
+
+  wm_client()->tracker()->changes()->clear();
+  DispatchEventWithoutAck(CreateMouseMoveEvent(21, 22));
+  ASSERT_EQ(1u, wm_client()->tracker()->changes()->size());
+  EXPECT_EQ("InputEvent window=0,2 event_action=5",
+            ChangesToDescription1(*wm_client()->tracker()->changes())[0]);
+  wm_client()->tracker()->changes()->clear();
+
+  // Send another event. This event shouldn't reach the client.
+  DispatchEventWithoutAck(CreateMouseMoveEvent(21, 22));
+  ASSERT_EQ(0u, wm_client()->tracker()->changes()->size());
+
+  // Ack the first event. That should trigger the dispatch of the second event.
+  AckPreviousEvent();
+  ASSERT_EQ(1u, wm_client()->tracker()->changes()->size());
+  EXPECT_EQ("InputEvent window=0,2 event_action=5",
+            ChangesToDescription1(*wm_client()->tracker()->changes())[0]);
 }
 
 }  // namespace ws

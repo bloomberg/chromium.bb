@@ -212,6 +212,9 @@ interface WindowTree {
   // Otherwise the existing state is used.
   SetImeVisibility(uint32 window_id, bool visible, mojo.TextInputState? state);
 
+  // See documentation for WindowTreeClient::OnWindowInputEvent().
+  OnWindowInputEventAck(uint32 event_id);
+
   // --------------------------------------------------------------------------
   // This section is for functions called from the window manager. It is
   // expected these will be pulled into an associated interface.
@@ -305,8 +308,11 @@ interface WindowTreeClient {
                                 string name,
                                 array<uint8>? new_data);
 
-  // Invoked when an event is targeted at the specified window.
-  OnWindowInputEvent(uint32 window, Event event) => ();
+  // Invoked when an event is targeted at the specified window. The client must
+  // call WindowTree::OnWindowInputEventAck() with the same |event_id| to notify
+  // that the event has been processed. The client will not receive farther
+  // events until the event is ack'ed.
+  OnWindowInputEvent(uint32 event_id, uint32 window, Event event);
 
   OnWindowFocused(uint32 focused_window_id);
 

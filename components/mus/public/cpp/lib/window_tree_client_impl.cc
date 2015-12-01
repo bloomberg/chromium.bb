@@ -562,16 +562,15 @@ void WindowTreeClientImpl::OnWindowSharedPropertyChanged(
   WindowPrivate(window).LocalSetSharedProperty(name, new_data.Pass());
 }
 
-void WindowTreeClientImpl::OnWindowInputEvent(
-    Id window_id,
-    mojom::EventPtr event,
-    const mojo::Callback<void()>& ack_callback) {
+void WindowTreeClientImpl::OnWindowInputEvent(uint32_t event_id,
+                                              Id window_id,
+                                              mojom::EventPtr event) {
   Window* window = GetWindowById(window_id);
   if (window) {
     FOR_EACH_OBSERVER(WindowObserver, *WindowPrivate(window).observers(),
                       OnWindowInputEvent(window, event));
   }
-  ack_callback.Run();
+  tree_->OnWindowInputEventAck(event_id);
 }
 
 void WindowTreeClientImpl::OnWindowFocused(Id focused_window_id) {

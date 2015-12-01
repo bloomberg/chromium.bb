@@ -170,9 +170,9 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   void OnWindowSharedPropertyChanged(Id window_id,
                                      const mojo::String& name,
                                      mojo::Array<uint8_t> new_data) override;
-  void OnWindowInputEvent(Id window_id,
-                          mojom::EventPtr event,
-                          const mojo::Callback<void()>& callback) override;
+  void OnWindowInputEvent(uint32_t event_id,
+                          Id window_id,
+                          mojom::EventPtr event) override;
   void OnWindowFocused(Id focused_window_id) override;
   void OnChangeCompleted(uint32_t change_id, bool success) override;
   void WmSetBounds(uint32_t change_id,

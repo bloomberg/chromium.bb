@@ -37,6 +37,7 @@ WindowTreeImpl::WindowTreeImpl(ConnectionManager* connection_manager,
       id_(connection_manager_->GetAndAdvanceNextConnectionId()),
       creator_id_(creator_id),
       client_(nullptr),
+      event_ack_id_(0),
       is_embed_root_(false) {
   ServerWindow* window = GetWindow(root_id);
   CHECK(window);
@@ -193,6 +194,18 @@ bool WindowTreeImpl::Embed(const WindowId& window_id,
   if (is_embed_root_)
     *connection_id = new_connection->id();
   return true;
+}
+
+void WindowTreeImpl::DispatchInputEvent(ServerWindow* target,
+                                        mojom::EventPtr event) {
+  DCHECK_EQ(0u, event_ack_id_);
+  // We do not want to create a sequential id for each event, because that can
+  // leak some information to the client. So instead, manufacture the id from
+  // the event pointer.
+  event_ack_id_ =
+      0x1000000 | (reinterpret_cast<uintptr_t>(event.get()) & 0xffffff);
+  client()->OnWindowInputEvent(
+      event_ack_id_, WindowIdToTransportId(target->id()), event.Pass());
 }
 
 void WindowTreeImpl::ProcessWindowBoundsChanged(const ServerWindow* window,
@@ -796,6 +809,15 @@ void WindowTreeImpl::SetImeVisibility(Id transport_window_id,
     if (host)
       host->SetImeVisibility(window, visible);
   }
+}
+
+void WindowTreeImpl::OnWindowInputEventAck(uint32_t event_id) {
+  if (event_ack_id_ == 0 || event_id != event_ack_id_) {
+    // TODO(sad): Something bad happened. Kill the client?
+    NOTIMPLEMENTED() << "Wrong event acked.";
+  }
+  event_ack_id_ = 0;
+  GetHost()->OnEventAck(this);
 }
 
 void WindowTreeImpl::SetClientArea(Id transport_window_id,

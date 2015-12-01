@@ -97,6 +97,7 @@ void TestWindowTree::SetImeVisibility(uint32_t window_id,
                                       bool visible,
                                       mojo::TextInputStatePtr state) {}
 
+void TestWindowTree::OnWindowInputEventAck(uint32_t event_id) {}
 void TestWindowTree::WmResponse(uint32_t change_id, bool response) {}
 
 }  // namespace mus

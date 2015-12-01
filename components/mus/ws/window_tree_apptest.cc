@@ -343,12 +343,11 @@ class TestWindowTreeClientImpl : public mojom::WindowTreeClient,
   void OnWindowDrawnStateChanged(uint32_t window, bool drawn) override {
     tracker()->OnWindowDrawnStateChanged(window, drawn);
   }
-  void OnWindowInputEvent(Id window_id,
-                          EventPtr event,
-                          const Callback<void()>& callback) override {
+  void OnWindowInputEvent(uint32_t event_id,
+                          Id window_id,
+                          EventPtr event) override {
     // Don't log input events as none of the tests care about them and they
     // may come in at random points.
-    callback.Run();
   }
   void OnWindowSharedPropertyChanged(uint32_t window,
                                      const String& name,

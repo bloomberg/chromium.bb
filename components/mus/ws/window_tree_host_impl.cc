@@ -30,7 +30,8 @@ WindowTreeHostImpl::WindowTreeHostImpl(
       event_dispatcher_(this),
       display_manager_(
           DisplayManager::Create(app_impl, gpu_state, surfaces_state)),
-      window_manager_(window_manager.Pass()) {
+      window_manager_(window_manager.Pass()),
+      tree_awaiting_input_ack_(nullptr) {
   display_manager_->Init(this);
   if (client_) {
     client_.set_connection_error_handler(base::Bind(
@@ -177,11 +178,39 @@ void WindowTreeHostImpl::OnClientClosed() {
   scoped_ptr<DisplayManager> temp = display_manager_.Pass();
 }
 
+void WindowTreeHostImpl::OnEventAck(mojom::WindowTree* tree) {
+  DCHECK_EQ(tree_awaiting_input_ack_, tree);
+  tree_awaiting_input_ack_ = nullptr;
+  event_ack_timer_.Stop();
+  DispatchNextEventFromQueue();
+}
+
+void WindowTreeHostImpl::OnEventAckTimeout() {
+  // TODO(sad): Figure out what we should do.
+  NOTIMPLEMENTED() << "Event ACK timed out.";
+  OnEventAck(tree_awaiting_input_ack_);
+}
+
+void WindowTreeHostImpl::DispatchNextEventFromQueue() {
+  if (event_queue_.empty())
+    return;
+  mojom::EventPtr next_event = event_queue_.front().Pass();
+  event_queue_.pop();
+  event_dispatcher_.OnEvent(next_event.Pass());
+}
+
 ServerWindow* WindowTreeHostImpl::GetRootWindow() {
   return root_.get();
 }
 
 void WindowTreeHostImpl::OnEvent(mojom::EventPtr event) {
+  // If this is still waiting for an ack from a previously sent event, then
+  // queue up the event to be dispatched once the ack is received.
+  if (event_ack_timer_.IsRunning()) {
+    // TODO(sad): Coalesce if possible.
+    event_queue_.push(event.Pass());
+    return;
+  }
   event_dispatcher_.OnEvent(event.Pass());
 }
 
@@ -318,6 +347,7 @@ ServerWindow* WindowTreeHostImpl::GetFocusedWindowForEventDispatcher() {
 void WindowTreeHostImpl::DispatchInputEventToWindow(ServerWindow* target,
                                                     bool in_nonclient_area,
                                                     mojom::EventPtr event) {
+  DCHECK(!event_ack_timer_.IsRunning());
   // If the event is in the non-client area the event goes to the owner of
   // the window. Otherwise if the window is an embed root, forward to the
   // embedded window.
@@ -329,9 +359,14 @@ void WindowTreeHostImpl::DispatchInputEventToWindow(ServerWindow* target,
     DCHECK(!in_nonclient_area);
     connection = connection_manager_->GetConnection(target->id().connection_id);
   }
-  connection->client()->OnWindowInputEvent(WindowIdToTransportId(target->id()),
-                                           event.Pass(),
-                                           base::Bind(&base::DoNothing));
+  tree_awaiting_input_ack_ = connection;
+  connection->DispatchInputEvent(target, event.Pass());
+
+  // TOOD(sad): Adjust this delay, possibly make this dynamic.
+  const int kMaxEventAckDelayMs = 100;
+  event_ack_timer_.Start(FROM_HERE,
+                         base::TimeDelta::FromMilliseconds(kMaxEventAckDelayMs),
+                         this, &WindowTreeHostImpl::OnEventAckTimeout);
 }
 
 void WindowTreeHostImpl::OnWindowDestroyed(ServerWindow* window) {

@@ -5,8 +5,11 @@
 #ifndef COMPONENTS_MUS_WS_WINDOW_TREE_HOST_IMPL_H_
 #define COMPONENTS_MUS_WS_WINDOW_TREE_HOST_IMPL_H_
 
+#include <queue>
+
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "components/mus/common/types.h"
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"
 #include "components/mus/ws/display_manager.h"
@@ -105,8 +108,14 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
       int32_t y_offset,
       mojo::InsetsPtr hit_area) override;
 
+  void OnEventAck(mojom::WindowTree* tree);
+
  private:
+  friend class WindowTreeTest;
+
   void OnClientClosed();
+  void OnEventAckTimeout();
+  void DispatchNextEventFromQueue();
 
   // DisplayManagerDelegate:
   ServerWindow* GetRootWindow() override;
@@ -147,12 +156,16 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
   scoped_ptr<DisplayManager> display_manager_;
   scoped_ptr<FocusController> focus_controller_;
   mojom::WindowManagerPtr window_manager_;
+  mojom::WindowTree* tree_awaiting_input_ack_;
 
   std::set<WindowId> activation_parents_;
 
   // Set of windows with surfaces that need to be destroyed once the frame
   // draws.
   std::set<ServerWindow*> windows_needing_frame_destruction_;
+
+  std::queue<mojom::EventPtr> event_queue_;
+  base::OneShotTimer event_ack_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeHostImpl);
 };
