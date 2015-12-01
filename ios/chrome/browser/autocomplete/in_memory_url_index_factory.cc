@@ -62,6 +62,7 @@ InMemoryURLIndexFactory::InMemoryURLIndexFactory()
           BrowserStateDependencyManager::GetInstance()) {
   DependsOn(ios::BookmarkModelFactory::GetInstance());
   DependsOn(ios::HistoryServiceFactory::GetInstance());
+  DependsOn(ios::TemplateURLServiceFactory::GetInstance());
 }
 
 InMemoryURLIndexFactory::~InMemoryURLIndexFactory() {}
