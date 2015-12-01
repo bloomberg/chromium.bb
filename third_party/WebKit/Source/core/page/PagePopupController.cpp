@@ -70,9 +70,9 @@ void PagePopupController::closePopup()
 
 void PagePopupController::selectFontsFromOwnerDocument(Document* targetDocument)
 {
-    if (!targetDocument || !m_popupClient)
-        return;
-    m_popupClient->selectFontsFromOwnerDocument(*targetDocument);
+    ASSERT(targetDocument);
+    if (m_popupClient)
+        m_popupClient->selectFontsFromOwnerDocument(*targetDocument);
 }
 
 String PagePopupController::localizeNumberString(const String& numberString)
