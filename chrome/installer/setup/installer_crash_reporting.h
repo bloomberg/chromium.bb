@@ -7,6 +7,7 @@
 
 namespace base {
 class CommandLine;
+class Version;
 }  // namespace base
 
 namespace installer {
@@ -26,6 +27,10 @@ void SetInitialCrashKeys(const InstallerState& installer_state);
 
 // Sets crash keys for the switches given in |command_line|.
 void SetCrashKeysFromCommandLine(const base::CommandLine& command_line);
+
+// Sets a crash key recording the version of the product which was present
+// before the installer was run.
+void SetCurrentVersionCrashKey(const base::Version* current_version);
 
 }  // namespace installer
 

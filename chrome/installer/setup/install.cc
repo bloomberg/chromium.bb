@@ -23,6 +23,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/setup/install_worker.h"
+#include "chrome/installer/setup/installer_crash_reporting.h"
 #include "chrome/installer/setup/setup_constants.h"
 #include "chrome/installer/setup/setup_util.h"
 #include "chrome/installer/setup/update_active_setup_version_work_item.h"
@@ -187,6 +188,8 @@ installer::InstallStatus InstallNewVersion(
   installer_state.UpdateStage(installer::BUILDING);
 
   current_version->reset(installer_state.GetCurrentVersion(original_state));
+  installer::SetCurrentVersionCrashKey(current_version->get());
+
   scoped_ptr<WorkItemList> install_list(WorkItem::CreateWorkItemList());
 
   AddInstallWorkItems(original_state,

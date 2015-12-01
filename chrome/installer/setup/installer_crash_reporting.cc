@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/version.h"
 #include "chrome/installer/setup/installer_crash_reporter_client.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/installer_state.h"
@@ -26,6 +27,7 @@ namespace {
 
 // Crash Keys
 
+const char kCurrentVersion[] = "current-version";
 const char kDistributionType[] = "dist-type";
 const char kIsMultiInstall[] = "multi-install";
 const char kIsSystemLevel[] = "system-level";
@@ -120,6 +122,7 @@ void ConfigureCrashReporting(const InstallerState& installer_state) {
 size_t RegisterCrashKeys() {
   const base::debug::CrashKey kFixedKeys[] = {
     { crash_keys::kClientId, crash_keys::kSmallSize },
+    { kCurrentVersion, crash_keys::kSmallSize },
     { kDistributionType, crash_keys::kSmallSize },
     { kIsMultiInstall, crash_keys::kSmallSize },
     { kIsSystemLevel, crash_keys::kSmallSize },
@@ -155,6 +158,15 @@ void SetInitialCrashKeys(const InstallerState& state) {
 
 void SetCrashKeysFromCommandLine(const base::CommandLine& command_line) {
   crash_keys::SetSwitchesFromCommandLine(command_line, nullptr);
+}
+
+void SetCurrentVersionCrashKey(const base::Version* current_version) {
+  if (current_version) {
+    base::debug::SetCrashKeyValue(kCurrentVersion,
+                                  current_version->GetString());
+  } else {
+    base::debug::ClearCrashKey(kCurrentVersion);
+  }
 }
 
 }  // namespace installer

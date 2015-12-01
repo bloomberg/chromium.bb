@@ -210,33 +210,20 @@
           ],
         },
         {
-          # GN version: //chrome/installer/setup
-          'target_name': 'setup',
-          'type': 'executable',
+          # GN version: //chrome/installer/setup:lib
+          'target_name': 'setup_lib',
+          'type': 'static_library',
           'dependencies': [
             'installer_util',
             'installer_util_strings',
             '../base/base.gyp:base',
-            '../chrome/common_constants.gyp:common_constants',
-            '../chrome/common_constants.gyp:version_header',
-            '../chrome_elf/chrome_elf.gyp:chrome_elf_constants',
             '../components/components.gyp:crash_component_breakpad_to_be_deleted',
-            '../rlz/rlz.gyp:rlz_lib',
-            '../third_party/zlib/zlib.gyp:zlib',
           ],
           'include_dirs': [
             '..',
             '<(INTERMEDIATE_DIR)',
-            '<(SHARED_INTERMEDIATE_DIR)/setup',
           ],
-          'direct_dependent_settings': {
-            'include_dirs': [
-              '<(SHARED_INTERMEDIATE_DIR)/setup',
-            ],
-          },
           'sources': [
-            '<(SHARED_INTERMEDIATE_DIR)/chrome/installer/util/installer_util_strings.rc',
-            'installer/mini_installer/chrome.release',
             'installer/setup/app_launcher_installer.cc',
             'installer/setup/app_launcher_installer.h',
             'installer/setup/archive_patch_helper.cc',
@@ -249,20 +236,41 @@
             'installer/setup/installer_crash_reporter_client.h',
             'installer/setup/installer_crash_reporting.cc',
             'installer/setup/installer_crash_reporting.h',
-            'installer/setup/setup.ico',
-            'installer/setup/setup.rc',
             'installer/setup/setup_constants.cc',
             'installer/setup/setup_constants.h',
+            'installer/setup/setup_util.cc',
+            'installer/setup/setup_util.h',
+            'installer/setup/update_active_setup_version_work_item.cc',
+            'installer/setup/update_active_setup_version_work_item.h',
+          ],
+        },
+        {
+          # GN version: //chrome/installer/setup
+          'target_name': 'setup',
+          'type': 'executable',
+          'dependencies': [
+            'setup_lib',
+            '../chrome/common_constants.gyp:common_constants',
+            '../chrome/common_constants.gyp:version_header',
+            '../chrome_elf/chrome_elf.gyp:chrome_elf_constants',
+            '../rlz/rlz.gyp:rlz_lib',
+            '../third_party/zlib/zlib.gyp:zlib',
+          ],
+          'include_dirs': [
+            '..',
+            '<(INTERMEDIATE_DIR)',
+            '<(SHARED_INTERMEDIATE_DIR)/setup',
+          ],
+          'sources': [
+            '<(SHARED_INTERMEDIATE_DIR)/chrome/installer/util/installer_util_strings.rc',
+            'installer/setup/setup.ico',
+            'installer/setup/setup.rc',
             'installer/setup/setup_exe_version.rc.version',
             'installer/setup/setup_main.cc',
             'installer/setup/setup_main.h',
             'installer/setup/setup_resource.h',
-            'installer/setup/setup_util.cc',
-            'installer/setup/setup_util.h',
             'installer/setup/uninstall.cc',
             'installer/setup/uninstall.h',
-            'installer/setup/update_active_setup_version_work_item.cc',
-            'installer/setup/update_active_setup_version_work_item.h',
           ],
           'msvs_settings': {
             'VCLinkerTool': {
@@ -323,9 +331,7 @@
           'target_name': 'setup_unittests',
           'type': 'executable',
           'dependencies': [
-            'installer_util',
-            'installer_util_strings',
-            '../base/base.gyp:base',
+            'setup_lib',
             '../base/base.gyp:base_i18n',
             '../base/base.gyp:test_support_base',
             '../testing/gmock.gyp:gmock',
@@ -335,12 +341,8 @@
             '..',
             '<(INTERMEDIATE_DIR)',
           ],
-          # TODO(robertshield): Move the items marked with "Move to lib"
-          # below into a separate lib and then link both setup.exe and
-          # setup_unittests.exe against that.
           'sources': [
             '<(SHARED_INTERMEDIATE_DIR)/chrome/installer/util/installer_util_strings.rc',
-            'installer/mini_installer/chrome.release',  # Move to lib
             'installer/mini_installer/appid.h',
             'installer/mini_installer/chrome_appid.cc',
             'installer/mini_installer/configuration.cc',
@@ -356,26 +358,13 @@
             'installer/mini_installer/mini_string_test.cc',
             'installer/mini_installer/regkey.cc',
             'installer/mini_installer/regkey.h',
-            'installer/setup/app_launcher_installer.cc',  # Move to lib
-            'installer/setup/app_launcher_installer.h',  # Move to lib
-            'installer/setup/archive_patch_helper.cc',  # Move to lib
-            'installer/setup/archive_patch_helper.h',   # Move to lib
             'installer/setup/archive_patch_helper_unittest.cc',
-            'installer/setup/install.cc',               # Move to lib
-            'installer/setup/install.h',                # Move to lib
             'installer/setup/install_unittest.cc',
-            'installer/setup/install_worker.cc',        # Move to lib
-            'installer/setup/install_worker.h',         # Move to lib
             'installer/setup/install_worker_unittest.cc',
             'installer/setup/memory_unittest.cc',
             'installer/setup/run_all_unittests.cc',
-            'installer/setup/setup_constants.cc',       # Move to lib
-            'installer/setup/setup_constants.h',        # Move to lib
-            'installer/setup/setup_util.cc',
             'installer/setup/setup_util_unittest.cc',
             'installer/setup/setup_util_unittest.h',
-            'installer/setup/update_active_setup_version_work_item.cc',  # Move to lib
-            'installer/setup/update_active_setup_version_work_item.h',   # Move to lib
             'installer/setup/update_active_setup_version_work_item_unittest.cc',
           ],
           'conditions': [
