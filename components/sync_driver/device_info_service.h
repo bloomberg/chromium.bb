@@ -52,7 +52,7 @@ class DeviceInfoService : public syncer_v2::ModelTypeService,
   void LoadMetadata(MetadataCallback callback) override;
   void GetData(ClientKeyList client_keys, DataCallback callback) override;
   void GetAllData(DataCallback callback) override;
-  std::string GetClientTag(const syncer_v2::EntityData* entity_data) override;
+  std::string GetClientTag(const syncer_v2::EntityData& entity_data) override;
 
   // DeviceInfoTracker implementation.
   bool IsSyncing() const override;

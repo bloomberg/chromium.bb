@@ -14,6 +14,12 @@
 
 namespace sync_driver_v2 {
 
+using syncer::SyncError;
+using syncer_v2::EntityChangeList;
+using syncer_v2::EntityData;
+using syncer_v2::EntityDataList;
+using syncer_v2::MetadataChangeList;
+using syncer_v2::SimpleMetadataChangeList;
 using sync_driver::DeviceInfo;
 using sync_pb::DeviceInfoSpecifics;
 
@@ -23,6 +29,8 @@ DeviceInfoService::DeviceInfoService(
       local_device_info_provider_(local_device_info_provider) {
   DCHECK(local_device_info_provider);
 
+  // This is not threadsafe, but presuably the provider initializes on the same
+  // thread as us so we're okay.
   if (local_device_info_provider->GetLocalDeviceInfo()) {
     OnProviderInitialized();
   } else {
@@ -34,23 +42,22 @@ DeviceInfoService::DeviceInfoService(
 
 DeviceInfoService::~DeviceInfoService() {}
 
-scoped_ptr<syncer_v2::MetadataChangeList>
-DeviceInfoService::CreateMetadataChangeList() {
-  return make_scoped_ptr(new syncer_v2::SimpleMetadataChangeList());
+scoped_ptr<MetadataChangeList> DeviceInfoService::CreateMetadataChangeList() {
+  return make_scoped_ptr(new SimpleMetadataChangeList());
 }
 
-syncer::SyncError DeviceInfoService::MergeSyncData(
-    scoped_ptr<syncer_v2::MetadataChangeList> metadata_change_list,
-    syncer_v2::EntityDataList entity_data_list) {
+SyncError DeviceInfoService::MergeSyncData(
+    scoped_ptr<MetadataChangeList> metadata_change_list,
+    EntityDataList entity_data_list) {
   // TODO(skym): Implementation.
-  return syncer::SyncError();
+  return SyncError();
 }
 
-syncer::SyncError DeviceInfoService::ApplySyncChanges(
-    scoped_ptr<syncer_v2::MetadataChangeList> metadata_change_list,
-    syncer_v2::EntityChangeList entity_changes) {
+SyncError DeviceInfoService::ApplySyncChanges(
+    scoped_ptr<MetadataChangeList> metadata_change_list,
+    EntityChangeList entity_changes) {
   // TODO(skym): Implementation.
-  return syncer::SyncError();
+  return SyncError();
 }
 
 void DeviceInfoService::LoadMetadata(MetadataCallback callback) {
@@ -66,10 +73,9 @@ void DeviceInfoService::GetAllData(DataCallback callback) {
   // TODO(skym): Implementation.
 }
 
-std::string DeviceInfoService::GetClientTag(
-    const syncer_v2::EntityData* entity_data) {
-  // TODO(skym): Implementation.
-  return "";
+std::string DeviceInfoService::GetClientTag(const EntityData& entity_data) {
+  DCHECK(entity_data.specifics.has_device_info());
+  return entity_data.specifics.device_info().cache_guid();
 }
 
 bool DeviceInfoService::IsSyncing() const {

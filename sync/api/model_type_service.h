@@ -65,7 +65,7 @@ class SYNC_EXPORT ModelTypeService {
   virtual void GetAllData(DataCallback callback) = 0;
 
   // Get or generate a client tag for |entity_data|.
-  virtual std::string GetClientTag(const EntityData* entity_data) = 0;
+  virtual std::string GetClientTag(const EntityData& entity_data) = 0;
 
   // TODO(skym): See crbug/547087, do we need all these accessors?
   syncer_v2::ModelTypeChangeProcessor* change_processor();
