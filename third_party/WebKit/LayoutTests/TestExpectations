@@ -1366,12 +1366,3 @@ crbug.com/558574 [ Win7 ] fast/forms/text/text-font-height-mismatch.html [ Failu
 crbug.com/558574 [ Win7 ] fast/text/emphasis.html [ Failure ]
 
 crbug.com/561595 [ XP ] plugins/webview-plugin-scroll.html [ Failure ]
-
-crbug.com/561519 [ Android ] css1/classification/list_style.html [ NeedsRebaseline ]
-crbug.com/561519 [ Android ] css1/classification/list_style_position.html [ NeedsRebaseline ]
-crbug.com/561519 [ Android ] css1/color_and_background/background_color.html [ NeedsRebaseline ]
-crbug.com/561519 [ Android ] css1/color_and_background/color.html [ NeedsRebaseline ]
-crbug.com/561519 [ Android ] css1/font_properties/font_style.html [ NeedsRebaseline ]
-crbug.com/561519 [ Android ] css1/font_properties/font_variant.html [ NeedsRebaseline ]
-crbug.com/561519 [ Android ] css1/formatting_model/canvas.html [ NeedsRebaseline ]
-crbug.com/561519 [ Android ] svg/canvas/canvas-pattern-svg.html [ NeedsRebaseline ]
