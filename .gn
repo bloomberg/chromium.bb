@@ -35,7 +35,7 @@ check_targets = [
   #"//cloud_print/*",
 
   #"//components/*",  # Needs nacl below.
-  #"//components:*",  # Some Android unit tests.
+  "//components:*",
   "//components/about_handler/*",
   "//components/about_ui/*",
   "//components/app_modal/*",

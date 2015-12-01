@@ -23,6 +23,10 @@
 #include "content/public/test/test_launcher.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_ANDROID)
+#include "content/browser/android/browser_jni_registrar.h"
+#endif
+
 namespace content {
 
 namespace {
@@ -195,6 +199,13 @@ bool AreAllSitesIsolatedForTesting() {
 void IsolateAllSitesForTesting(base::CommandLine* command_line) {
   command_line->AppendSwitch(switches::kSitePerProcess);
 }
+
+#if defined(OS_ANDROID)
+// Registers content/browser JNI bindings necessary for some types of tests.
+bool RegisterJniForTesting(JNIEnv* env) {
+  return content::android::RegisterBrowserJni(env);
+}
+#endif
 
 MessageLoopRunner::MessageLoopRunner()
     : loop_running_(false),

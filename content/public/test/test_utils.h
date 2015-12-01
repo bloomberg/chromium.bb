@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
+#include "build/build_config.h"
 #include "content/public/browser/browser_child_process_observer.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
@@ -16,6 +17,10 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents_observer.h"
+
+#if defined(OS_ANDROID)
+#include <jni.h>
+#endif
 
 namespace base {
 class Value;
@@ -69,6 +74,11 @@ bool AreAllSitesIsolatedForTesting();
 // site isolation and cross-process iframes. This must be called early in
 // the test; the flag will be read on the first real navigation.
 void IsolateAllSitesForTesting(base::CommandLine* command_line);
+
+#if defined(OS_ANDROID)
+// Registers content/browser JNI bindings necessary for some types of tests.
+bool RegisterJniForTesting(JNIEnv* env);
+#endif
 
 // Helper class to Run and Quit the message loop. Run and Quit can only happen
 // once per instance. Make a new instance for each use. Calling Quit after Run
