@@ -1740,16 +1740,19 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
                   shell()->web_contents()->GetRenderProcessHost()->GetID()));
   WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
       shell()->web_contents());
-  WebUIImpl* webui = web_contents->GetRenderManagerForTesting()->web_ui();
+  FrameTreeNode* root = web_contents->GetFrameTree()->root();
+  WebUIImpl* webui = root->current_frame_host()->web_ui();
   EXPECT_TRUE(webui);
-  EXPECT_FALSE(web_contents->GetRenderManagerForTesting()->pending_web_ui());
+  EXPECT_FALSE(
+      web_contents->GetRenderManagerForTesting()->GetNavigatingWebUI());
 
-  // Navigate to another WebUI URL that reuses the WebUI object.  Make sure we
-  // clear pending_web_ui() when it commits.
+  // Navigate to another WebUI URL that reuses the WebUI object. Make sure we
+  // clear GetNavigatingWebUI() when it commits.
   GURL webui_url2(webui_url.spec() + "#foo");
   NavigateToURL(shell(), webui_url2);
-  EXPECT_EQ(webui, web_contents->GetRenderManagerForTesting()->web_ui());
-  EXPECT_FALSE(web_contents->GetRenderManagerForTesting()->pending_web_ui());
+  EXPECT_EQ(webui, root->current_frame_host()->web_ui());
+  EXPECT_FALSE(
+      web_contents->GetRenderManagerForTesting()->GetNavigatingWebUI());
 }
 
 class RFHMProcessPerTabTest : public RenderFrameHostManagerTest {

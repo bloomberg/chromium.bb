@@ -30,7 +30,6 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
-#include "content/browser/webui/web_ui_impl.h"
 #include "content/common/frame_messages.h"
 #include "content/common/site_isolation_policy.h"
 #include "content/common/view_messages.h"
@@ -39,7 +38,6 @@
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/user_metrics.h"
-#include "content/public/browser/web_ui_controller.h"
 #include "content/public/common/browser_plugin_guest_mode.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/referrer.h"
@@ -207,6 +205,17 @@ bool RenderFrameHostManager::ClearRFHsPendingShutdown(FrameTreeNode* node) {
   return true;
 }
 
+// static
+bool RenderFrameHostManager::ClearWebUIInstances(FrameTreeNode* node) {
+  node->current_frame_host()->ClearAllWebUI();
+  if (node->render_manager()->pending_render_frame_host_)
+    node->render_manager()->pending_render_frame_host_->ClearAllWebUI();
+  // PlzNavigate
+  if (node->render_manager()->speculative_render_frame_host_)
+    node->render_manager()->speculative_render_frame_host_->ClearAllWebUI();
+  return true;
+}
+
 RenderFrameHostManager::RenderFrameHostManager(
     FrameTreeNode* frame_tree_node,
     RenderFrameHostDelegate* render_frame_delegate,
@@ -220,7 +229,6 @@ RenderFrameHostManager::RenderFrameHostManager(
       render_widget_delegate_(render_widget_delegate),
       proxy_hosts_(new RenderFrameProxyHostMap(this)),
       interstitial_page_(nullptr),
-      should_reuse_web_ui_(false),
       weak_factory_(this) {
   DCHECK(frame_tree_node_);
 }
@@ -244,10 +252,6 @@ RenderFrameHostManager::~RenderFrameHostManager() {
   // RenderFrameProxyHost) points to the RenderWidgetHostView associated with
   // the current RenderFrameHost and uses it during its destructor.
   ResetProxyHosts();
-
-  // Release the WebUI prior to resetting the current RenderFrameHost, as the
-  // WebUI accesses the RenderFrameHost during cleanup.
-  web_ui_.reset();
 
   // We should always have a current RenderFrameHost except in some tests.
   SetRenderFrameHost(scoped_ptr<RenderFrameHostImpl>());
@@ -287,6 +291,18 @@ RenderViewHostImpl* RenderFrameHostManager::pending_render_view_host() const {
   if (!pending_render_frame_host_)
     return nullptr;
   return pending_render_frame_host_->render_view_host();
+}
+
+WebUIImpl* RenderFrameHostManager::GetNavigatingWebUI() const {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBrowserSideNavigation)) {
+    if (speculative_render_frame_host_)
+      return speculative_render_frame_host_->web_ui();
+  } else {
+    if (pending_render_frame_host_)
+      return pending_render_frame_host_->web_ui();
+  }
+  return render_frame_host_->pending_web_ui();
 }
 
 RenderWidgetHostView* RenderFrameHostManager::GetRenderWidgetHostView() const {
@@ -357,27 +373,6 @@ void RenderFrameHostManager::RemoveOuterDelegateFrame() {
       outer_delegate_frame_tree_node);
 }
 
-void RenderFrameHostManager::SetPendingWebUI(const GURL& url, int bindings) {
-  pending_web_ui_ = CreateWebUI(url, bindings);
-  pending_and_current_web_ui_.reset();
-}
-
-scoped_ptr<WebUIImpl> RenderFrameHostManager::CreateWebUI(const GURL& url,
-                                                          int bindings) {
-  scoped_ptr<WebUIImpl> new_web_ui(delegate_->CreateWebUIForRenderManager(url));
-
-  // If we have assigned (zero or more) bindings to this NavigationEntry in the
-  // past, make sure we're not granting it different bindings than it had
-  // before.  If so, note it and don't give it any bindings, to avoid a
-  // potential privilege escalation.
-  if (new_web_ui && bindings != NavigationEntryImpl::kInvalidBindings &&
-      new_web_ui->GetBindings() != bindings) {
-    RecordAction(base::UserMetricsAction("ProcessSwapBindingsMismatch_RVHM"));
-    return nullptr;
-  }
-  return new_web_ui.Pass();
-}
-
 RenderFrameHostImpl* RenderFrameHostManager::Navigate(
     const GURL& dest_url,
     const FrameNavigationEntry& frame_entry,
@@ -425,6 +420,13 @@ RenderFrameHostImpl* RenderFrameHostManager::Navigate(
                         frame_tree_node_);
     if (!InitRenderView(dest_render_frame_host->render_view_host(), nullptr))
       return nullptr;
+
+    if (GetNavigatingWebUI()) {
+      // A new RenderView was created and there is a navigating WebUI which
+      // never interacted with it. So notify the WebUI using RenderViewCreated.
+      GetNavigatingWebUI()->RenderViewCreated(
+          dest_render_frame_host->render_view_host());
+    }
 
     // Now that we've created a new renderer, be sure to hide it if it isn't
     // our primary one.  Otherwise, we might crash if we try to call Show()
@@ -678,22 +680,37 @@ void RenderFrameHostManager::CommitPendingIfNecessary(
     RenderFrameHostImpl* render_frame_host,
     bool was_caused_by_user_gesture) {
   if (!pending_render_frame_host_ && !speculative_render_frame_host_) {
-    DCHECK(!should_reuse_web_ui_ || web_ui_);
+    // There's no pending/speculative RenderFrameHost so it must be that the
+    // current renderer process completed a navigation.
 
     // We should only hear this from our current renderer.
     DCHECK_EQ(render_frame_host_.get(), render_frame_host);
 
-    // Even when there is no pending RVH, there may be a pending Web UI.
-    if (pending_web_ui() || speculative_web_ui_)
-      CommitPending();
+    // If the current RenderFrameHost has a pending WebUI it must be committed.
+    // Note: When one tries to move same-site commit logic into RenderFrameHost
+    // itself, mind that the focus setting logic inside CommitPending also needs
+    // to be moved there.
+    if (render_frame_host_->pending_web_ui())
+      CommitPendingWebUI();
     return;
   }
 
   if (render_frame_host == pending_render_frame_host_.get() ||
       render_frame_host == speculative_render_frame_host_.get()) {
-    // The pending cross-process navigation completed, so show the renderer.
+    // A cross-process navigation completed, so show the new renderer. If a
+    // same-process navigation is also ongoing, it will be canceled when the
+    // pending/speculative RenderFrameHost replaces the current one in the
+    // commit call below.
     CommitPending();
   } else if (render_frame_host == render_frame_host_.get()) {
+    // A same-process navigation committed while a simultaneous cross-process
+    // navigation is still ongoing.
+
+    // If the current RenderFrameHost has a pending WebUI it must be committed.
+    if (render_frame_host_->pending_web_ui())
+      CommitPendingWebUI();
+
+    // Decide on canceling the ongoing cross-process navigation.
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kEnableBrowserSideNavigation)) {
       CleanUpNavigation();
@@ -708,7 +725,7 @@ void RenderFrameHostManager::CommitPendingIfNecessary(
     }
   } else {
     // No one else should be sending us DidNavigate in this state.
-    DCHECK(false);
+    NOTREACHED();
   }
 }
 
@@ -1023,45 +1040,57 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
   // if needed when it no longer breaks OAuth popups (see
   // https://crbug.com/440266).
   bool is_main_frame = frame_tree_node_->IsMainFrame();
+  bool notify_webui_of_rv_creation = false;
   if (current_site_instance == dest_site_instance.get() ||
       (!request.browser_initiated() && is_main_frame) ||
       (!is_main_frame && !dest_site_instance->RequiresDedicatedProcess() &&
        !current_site_instance->RequiresDedicatedProcess())) {
-    // Reuse the current RFH if its SiteInstance matches the the navigation's
-    // or if this is a subframe navigation. We only swap RFHs for subframes when
-    // --site-per-process is enabled.
-    CleanUpNavigation();
+    // Reuse the current RenderFrameHost if its SiteInstance matches the
+    // navigation's or if this is a subframe navigation. We only swap
+    // RenderFrameHosts for subframes when --site-per-process is enabled.
+
+    // GetFrameHostForNavigation will be called more than once during a
+    // navigation (currently twice, on request and when it's about to commit in
+    // the renderer). In the follow up calls an existing pending WebUI should
+    // not be recreated if the URL didn't change. So instead of calling
+    // CleanUpNavigation just discard the speculative RenderFrameHost if one
+    // exists.
+    if (speculative_render_frame_host_)
+      DiscardUnusedFrame(UnsetSpeculativeRenderFrameHost());
+
+    UpdatePendingWebUIOnCurrentFrameHost(request.common_params().url,
+                                         request.bindings());
+
     navigation_rfh = render_frame_host_.get();
 
-    // As SiteInstances are the same, check if the WebUI should be reused.
-    const NavigationEntry* current_navigation_entry =
-        delegate_->GetLastCommittedNavigationEntryForRenderManager();
-    should_reuse_web_ui_ = ShouldReuseWebUI(current_navigation_entry,
-                                            request.common_params().url);
-    if (!should_reuse_web_ui_) {
-      speculative_web_ui_ = CreateWebUI(request.common_params().url,
-                                        request.bindings());
-      // Make sure the current RenderViewHost has the right bindings.
-      if (speculative_web_ui() &&
-          !render_frame_host_->GetProcess()->IsForGuestsOnly()) {
-        render_frame_host_->render_view_host()->AllowBindings(
-            speculative_web_ui()->GetBindings());
-      }
-    }
+    DCHECK(!speculative_render_frame_host_);
   } else {
-    // If the SiteInstance for the final URL doesn't match the one from the
-    // speculatively created RenderFrameHost, create a new RenderFrameHost using
-    // this new SiteInstance.
+    // If the current RenderFrameHost cannot be used a speculative one is
+    // created with the SiteInstance for the current URL. If a speculative
+    // RenderFrameHost already exists we try as much as possible to reuse it and
+    // its associated WebUI.
+
+    // Check if an existing speculative RenderFrameHost can be reused.
     if (!speculative_render_frame_host_ ||
         speculative_render_frame_host_->GetSiteInstance() !=
             dest_site_instance.get()) {
+      // If a previous speculative RenderFrameHost didn't exist or if its
+      // SiteInstance differs from the one for the current URL, a new one needs
+      // to be created.
       CleanUpNavigation();
-      bool success = CreateSpeculativeRenderFrameHost(
-          request.common_params().url, current_site_instance,
-          dest_site_instance.get(), request.bindings());
+      bool success = CreateSpeculativeRenderFrameHost(current_site_instance,
+                                                      dest_site_instance.get());
       DCHECK(success);
     }
     DCHECK(speculative_render_frame_host_);
+
+    bool changed_web_ui = speculative_render_frame_host_->UpdatePendingWebUI(
+        request.common_params().url, request.bindings());
+    speculative_render_frame_host_->CommitPendingWebUI();
+    DCHECK_EQ(GetNavigatingWebUI(), speculative_render_frame_host_->web_ui());
+    notify_webui_of_rv_creation =
+        changed_web_ui && speculative_render_frame_host_->web_ui();
+
     navigation_rfh = speculative_render_frame_host_.get();
 
     // Check if our current RFH is live.
@@ -1083,9 +1112,9 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
   if (!navigation_rfh->IsRenderFrameLive()) {
     // Recreate the opener chain.
     CreateOpenerProxies(navigation_rfh->GetSiteInstance(), frame_tree_node_);
-    if (!InitRenderView(navigation_rfh->render_view_host(), nullptr)) {
+    if (!InitRenderView(navigation_rfh->render_view_host(), nullptr))
       return nullptr;
-    }
+    notify_webui_of_rv_creation = true;
 
     if (navigation_rfh == render_frame_host_.get()) {
       // TODO(nasko): This is a very ugly hack. The Chrome extensions process
@@ -1097,7 +1126,14 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
       delegate_->NotifyMainFrameSwappedFromRenderManager(
           nullptr, render_frame_host_->render_view_host());
     }
+    DCHECK(navigation_rfh->IsRenderFrameLive());
   }
+
+  // If a WebUI was created in a speculative RenderFrameHost or a new RenderView
+  // was created then the WebUI never interacted with the RenderView. Notify
+  // using RenderViewCreated.
+  if (notify_webui_of_rv_creation && GetNavigatingWebUI())
+    GetNavigatingWebUI()->RenderViewCreated(navigation_rfh->render_view_host());
 
   return navigation_rfh;
 }
@@ -1106,8 +1142,7 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
 void RenderFrameHostManager::CleanUpNavigation() {
   CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableBrowserSideNavigation));
-  speculative_web_ui_.reset();
-  should_reuse_web_ui_ = false;
+  render_frame_host_->ClearPendingWebUI();
   if (speculative_render_frame_host_)
     DiscardUnusedFrame(UnsetSpeculativeRenderFrameHost());
 }
@@ -1298,18 +1333,6 @@ bool RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
     return true;
 
   return false;
-}
-
-bool RenderFrameHostManager::ShouldReuseWebUI(
-    const NavigationEntry* current_entry,
-    const GURL& new_url) const {
-  NavigationControllerImpl& controller =
-      delegate_->GetControllerForRenderManager();
-  return current_entry && web_ui_ &&
-      (WebUIControllerFactoryRegistry::GetInstance()->GetWebUIType(
-          controller.GetBrowserContext(), current_entry->GetURL()) ==
-       WebUIControllerFactoryRegistry::GetInstance()->GetWebUIType(
-          controller.GetBrowserContext(), new_url));
 }
 
 SiteInstance* RenderFrameHostManager::GetSiteInstanceForNavigation(
@@ -1644,8 +1667,8 @@ void RenderFrameHostManager::CreatePendingRenderFrameHost(
   CreateProxiesForNewRenderFrameHost(old_instance, new_instance);
 
   // Create a non-swapped-out RFH with the given opener.
-  pending_render_frame_host_ = CreateRenderFrame(
-      new_instance, pending_web_ui(), create_render_frame_flags, nullptr);
+  pending_render_frame_host_ =
+      CreateRenderFrame(new_instance, create_render_frame_flags, nullptr);
 }
 
 void RenderFrameHostManager::CreateProxiesForNewRenderFrameHost(
@@ -1741,18 +1764,10 @@ scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrameHost(
 
 // PlzNavigate
 bool RenderFrameHostManager::CreateSpeculativeRenderFrameHost(
-    const GURL& url,
     SiteInstance* old_instance,
-    SiteInstance* new_instance,
-    int bindings) {
+    SiteInstance* new_instance) {
   CHECK(new_instance);
   CHECK_NE(old_instance, new_instance);
-  CHECK(!should_reuse_web_ui_);
-
-  // Note: |speculative_web_ui_| must be initialized before starting the
-  // |speculative_render_frame_host_| creation steps otherwise the WebUI
-  // won't be properly initialized.
-  speculative_web_ui_ = CreateWebUI(url, bindings);
 
   // The process for the new SiteInstance may (if we're sharing a process with
   // another host that already initialized it) or may not (we have our own
@@ -1767,19 +1782,13 @@ bool RenderFrameHostManager::CreateSpeculativeRenderFrameHost(
   if (delegate_->IsHidden())
     create_render_frame_flags |= CREATE_RF_HIDDEN;
   speculative_render_frame_host_ =
-      CreateRenderFrame(new_instance, speculative_web_ui_.get(),
-                        create_render_frame_flags, nullptr);
+      CreateRenderFrame(new_instance, create_render_frame_flags, nullptr);
 
-  if (!speculative_render_frame_host_) {
-    speculative_web_ui_.reset();
-    return false;
-  }
-  return true;
+  return !!speculative_render_frame_host_;
 }
 
 scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
     SiteInstance* instance,
-    WebUIImpl* web_ui,
     int flags,
     int* view_routing_id_ptr) {
   bool swapped_out = !!(flags & CREATE_RF_SWAPPED_OUT);
@@ -1894,21 +1903,6 @@ scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
     if (success) {
       if (view_routing_id_ptr)
         *view_routing_id_ptr = render_view_host->GetRoutingID();
-    }
-  }
-
-  // When a new RenderView is created by the renderer process, the new
-  // WebContents gets a RenderViewHost in the SiteInstance of its opener
-  // WebContents. If not used in the first navigation, this RVH is swapped out
-  // and is not granted bindings, so we may need to grant them when swapping it
-  // in.
-  if (web_ui && !new_render_frame_host->GetProcess()->IsForGuestsOnly()) {
-    int required_bindings = web_ui->GetBindings();
-    RenderViewHost* render_view_host =
-        new_render_frame_host->render_view_host();
-    if ((render_view_host->GetEnabledBindings() & required_bindings) !=
-            required_bindings) {
-      render_view_host->AllowBindings(required_bindings);
     }
   }
 
@@ -2030,31 +2024,6 @@ bool RenderFrameHostManager::InitRenderView(
   if (render_view_host->IsRenderViewLive())
     return true;
 
-  // If |render_view_host| is not for a proxy and the navigation is to a WebUI,
-  // and if the RenderView is not in a guest process, tell |render_view_host|
-  // about any bindings it will need enabled.
-  // TODO(carlosk): Move WebUI to RenderFrameHost in https://crbug.com/508850.
-  WebUIImpl* dest_web_ui = nullptr;
-  if (!proxy) {
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableBrowserSideNavigation)) {
-      dest_web_ui =
-          should_reuse_web_ui_ ? web_ui_.get() : speculative_web_ui_.get();
-    } else {
-      dest_web_ui = pending_web_ui();
-    }
-  }
-  if (dest_web_ui && !render_view_host->GetProcess()->IsForGuestsOnly()) {
-    render_view_host->AllowBindings(dest_web_ui->GetBindings());
-  } else {
-    // Ensure that we don't create an unprivileged RenderView in a WebUI-enabled
-    // process unless it's swapped out.
-    if (render_view_host->is_active()) {
-      CHECK(!ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
-                render_view_host->GetProcess()->GetID()));
-    }
-  }
-
   int opener_frame_routing_id =
       GetOpenerRoutingID(render_view_host->GetSiteInstance());
 
@@ -2143,49 +2112,33 @@ int RenderFrameHostManager::GetRoutingIdForSiteInstance(
   return MSG_ROUTING_NONE;
 }
 
-void RenderFrameHostManager::CommitPending() {
-  TRACE_EVENT1("navigation", "RenderFrameHostManager::CommitPending",
+void RenderFrameHostManager::CommitPendingWebUI() {
+  TRACE_EVENT1("navigation", "RenderFrameHostManager::CommitPendingWebUI",
                "FrameTreeNode id", frame_tree_node_->frame_tree_node_id());
-  bool browser_side_navigation =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBrowserSideNavigation);
+  DCHECK(render_frame_host_->pending_web_ui());
 
   // First check whether we're going to want to focus the location bar after
   // this commit.  We do this now because the navigation hasn't formally
-  // committed yet, so if we've already cleared |pending_web_ui_| the call chain
+  // committed yet, so if we've already cleared the pending WebUI the call chain
   // this triggers won't be able to figure out what's going on.
   bool will_focus_location_bar = delegate_->FocusLocationBarByDefault();
 
-  // Next commit the Web UI, if any. Either replace |web_ui_| with
-  // |pending_web_ui_|, or clear |web_ui_| if there is no pending WebUI, or
-  // leave |web_ui_| as is if reusing it.
-  DCHECK(!(pending_web_ui_ && pending_and_current_web_ui_));
-  if (pending_web_ui_ || speculative_web_ui_) {
-    DCHECK(!should_reuse_web_ui_);
-    web_ui_.reset(browser_side_navigation ? speculative_web_ui_.release()
-                                          : pending_web_ui_.release());
-  } else if (pending_and_current_web_ui_ || should_reuse_web_ui_) {
-    if (browser_side_navigation) {
-      DCHECK(web_ui_);
-      should_reuse_web_ui_ = false;
-    } else {
-      DCHECK_EQ(pending_and_current_web_ui_.get(), web_ui_.get());
-      pending_and_current_web_ui_.reset();
-    }
-  } else {
-    web_ui_.reset();
-  }
-  DCHECK(!speculative_web_ui_);
-  DCHECK(!should_reuse_web_ui_);
+  render_frame_host_->CommitPendingWebUI();
 
-  // It's possible for the pending_render_frame_host_ to be nullptr when we
-  // aren't crossing process boundaries. If so, we just needed to handle the Web
-  // UI committing above and we're done.
-  if (!pending_render_frame_host_ && !speculative_render_frame_host_) {
-    if (will_focus_location_bar)
-      delegate_->SetFocusToLocationBar(false);
-    return;
-  }
+  if (will_focus_location_bar)
+    delegate_->SetFocusToLocationBar(false);
+}
+
+void RenderFrameHostManager::CommitPending() {
+  TRACE_EVENT1("navigation", "RenderFrameHostManager::CommitPending",
+               "FrameTreeNode id", frame_tree_node_->frame_tree_node_id());
+  DCHECK(pending_render_frame_host_ || speculative_render_frame_host_);
+
+  // First check whether we're going to want to focus the location bar after
+  // this commit.  We do this now because the navigation hasn't formally
+  // committed yet, so if we've already cleared the pending WebUI the call chain
+  // this triggers won't be able to figure out what's going on.
+  bool will_focus_location_bar = delegate_->FocusLocationBarByDefault();
 
   // Remember if the page was focused so we can focus the new renderer in
   // that case.
@@ -2198,7 +2151,8 @@ void RenderFrameHostManager::CommitPending() {
   // Swap in the pending or speculative frame and make it active. Also ensure
   // the FrameTree stays in sync.
   scoped_ptr<RenderFrameHostImpl> old_render_frame_host;
-  if (!browser_side_navigation) {
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBrowserSideNavigation)) {
     DCHECK(!speculative_render_frame_host_);
     old_render_frame_host =
         SetRenderFrameHost(pending_render_frame_host_.Pass());
@@ -2368,9 +2322,6 @@ RenderFrameHostImpl* RenderFrameHostManager::UpdateStateForNavigate(
       dest_url, source_instance, dest_instance, nullptr, transition,
       dest_is_restore, dest_is_view_source_mode);
 
-  const NavigationEntry* current_entry =
-      delegate_->GetLastCommittedNavigationEntryForRenderManager();
-
   DCHECK(!pending_render_frame_host_);
 
   if (new_instance.get() != current_instance) {
@@ -2383,16 +2334,22 @@ RenderFrameHostImpl* RenderFrameHostManager::UpdateStateForNavigate(
 
     // New SiteInstance: create a pending RFH to navigate.
 
-    // This will possibly create (set to nullptr) a Web UI object for the
-    // pending page. We'll use this later to give the page special access. This
-    // must happen before the new renderer is created below so it will get
-    // bindings. It must also happen after the above conditional call to
-    // CancelPending(), otherwise CancelPending may clear the pending_web_ui_
-    // and the page will not have its bindings set appropriately.
-    SetPendingWebUI(dest_url, bindings);
     CreatePendingRenderFrameHost(current_instance, new_instance.get());
+    DCHECK(pending_render_frame_host_);
     if (!pending_render_frame_host_)
       return nullptr;
+
+    pending_render_frame_host_->UpdatePendingWebUI(dest_url, bindings);
+    pending_render_frame_host_->CommitPendingWebUI();
+    DCHECK_EQ(GetNavigatingWebUI(), pending_render_frame_host_->web_ui());
+
+    // If a WebUI exists in the pending RenderFrameHost it was just created, as
+    // well as the RenderView, and they never interacted. So notify it using
+    // RenderViewCreated.
+    if (pending_render_frame_host_->web_ui()) {
+      pending_render_frame_host_->web_ui()->RenderViewCreated(
+          pending_render_frame_host_->render_view_host());
+    }
 
     // Check if our current RFH is live before we set up a transition.
     if (!render_frame_host_->IsRenderFrameLive()) {
@@ -2406,16 +2363,12 @@ RenderFrameHostImpl* RenderFrameHostManager::UpdateStateForNavigate(
     }
     // Otherwise, it's safe to treat this as a pending cross-process transition.
 
-    // We now have a pending RFH.
-    DCHECK(pending_render_frame_host_);
-
     // We need to wait until the beforeunload handler has run, unless we are
     // transferring an existing request (in which case it has already run).
     // Suspend the new render view (i.e., don't let it send the cross-process
     // Navigate message) until we hear back from the old renderer's
     // beforeunload handler.  If the handler returns false, we'll have to
     // cancel the request.
-    //
     DCHECK(!pending_render_frame_host_->are_navigations_suspended());
     bool is_transfer = transferred_request_id != GlobalRequestID();
     if (is_transfer) {
@@ -2450,23 +2403,7 @@ RenderFrameHostImpl* RenderFrameHostManager::UpdateStateForNavigate(
   // delete the proxy.
   proxy_hosts_->Remove(new_instance.get()->GetId());
 
-  if (ShouldReuseWebUI(current_entry, dest_url)) {
-    pending_web_ui_.reset();
-    pending_and_current_web_ui_ = web_ui_->AsWeakPtr();
-  } else {
-    SetPendingWebUI(dest_url, bindings);
-    // Make sure the new RenderViewHost has the right bindings.
-    if (pending_web_ui() &&
-        !render_frame_host_->GetProcess()->IsForGuestsOnly()) {
-      render_frame_host_->render_view_host()->AllowBindings(
-          pending_web_ui()->GetBindings());
-    }
-  }
-
-  if (pending_web_ui() && render_frame_host_->IsRenderFrameLive()) {
-    pending_web_ui()->RenderViewReused(render_frame_host_->render_view_host(),
-                                       frame_tree_node_->IsMainFrame());
-  }
+  UpdatePendingWebUIOnCurrentFrameHost(dest_url, bindings);
 
   // The renderer can exit view source mode when any error or cancellation
   // happen. We must overwrite to recover the mode.
@@ -2479,9 +2416,39 @@ RenderFrameHostImpl* RenderFrameHostManager::UpdateStateForNavigate(
   return render_frame_host_.get();
 }
 
+void RenderFrameHostManager::UpdatePendingWebUIOnCurrentFrameHost(
+    const GURL& dest_url,
+    int entry_bindings) {
+  bool pending_webui_changed =
+      render_frame_host_->UpdatePendingWebUI(dest_url, entry_bindings);
+  DCHECK_EQ(GetNavigatingWebUI(), render_frame_host_->pending_web_ui());
+
+  if (render_frame_host_->pending_web_ui() && pending_webui_changed &&
+      render_frame_host_->IsRenderFrameLive()) {
+    // If a pending WebUI exists in the current RenderFrameHost and it has been
+    // updated and the associated RenderFrame is alive, notify the WebUI about
+    // the RenderView.
+    // Note: If the RenderFrame is not alive at this point the notification will
+    // happen later, when the RenderView is created.
+    if (render_frame_host_->pending_web_ui() == render_frame_host_->web_ui()) {
+      // If the active WebUI is being reused it has already interacting with
+      // this RenderView in the past, so call RenderViewReused.
+      render_frame_host_->pending_web_ui()->RenderViewReused(
+          render_frame_host_->render_view_host(),
+          frame_tree_node_->IsMainFrame());
+    } else {
+      // If this is a new WebUI it has never interacted with the existing
+      // RenderView so call RenderViewCreated.
+      render_frame_host_->pending_web_ui()->RenderViewCreated(
+          render_frame_host_->render_view_host());
+    }
+  }
+}
+
 void RenderFrameHostManager::CancelPending() {
   TRACE_EVENT1("navigation", "RenderFrameHostManager::CancelPending",
                "FrameTreeNode id", frame_tree_node_->frame_tree_node_id());
+  render_frame_host_->ClearPendingWebUI();
   DiscardUnusedFrame(UnsetPendingRenderFrameHost());
 }
 
@@ -2496,9 +2463,6 @@ RenderFrameHostManager::UnsetPendingRenderFrameHost() {
 
   // We no longer need to prevent the process from exiting.
   pending_render_frame_host->GetProcess()->RemovePendingView();
-
-  pending_web_ui_.reset();
-  pending_and_current_web_ui_.reset();
 
   return pending_render_frame_host.Pass();
 }
@@ -2674,8 +2638,7 @@ void RenderFrameHostManager::CreateOpenerProxiesForFrameTree(
         frame_tree->root()->render_manager()->CreateRenderFrameProxy(instance);
       } else {
         frame_tree->root()->render_manager()->CreateRenderFrame(
-            instance, nullptr, CREATE_RF_SWAPPED_OUT | CREATE_RF_HIDDEN,
-            nullptr);
+            instance, CREATE_RF_SWAPPED_OUT | CREATE_RF_HIDDEN, nullptr);
       }
     }
   }

@@ -430,6 +430,9 @@ WebContentsImpl::~WebContentsImpl() {
   frame_tree_.ForEach(
       base::Bind(&RenderFrameHostManager::ClearRFHsPendingShutdown));
 
+  // Destroy all WebUI instances.
+  frame_tree_.ForEach(base::Bind(&RenderFrameHostManager::ClearWebUIInstances));
+
   ClearAllPowerSaveBlockers();
 
   for (std::set<RenderWidgetHostImpl*>::iterator iter =
@@ -868,12 +871,13 @@ WebUI* WebContentsImpl::CreateSubframeWebUI(const GURL& url,
 }
 
 WebUI* WebContentsImpl::GetWebUI() const {
-  return GetRenderManager()->web_ui() ? GetRenderManager()->web_ui()
-      : GetRenderManager()->pending_web_ui();
+  WebUI* commited_web_ui = GetCommittedWebUI();
+  return commited_web_ui ? commited_web_ui
+                         : GetRenderManager()->GetNavigatingWebUI();
 }
 
 WebUI* WebContentsImpl::GetCommittedWebUI() const {
-  return GetRenderManager()->web_ui();
+  return frame_tree_.root()->current_frame_host()->web_ui();
 }
 
 void WebContentsImpl::SetUserAgentOverride(const std::string& override) {
@@ -940,8 +944,12 @@ const base::string16& WebContentsImpl::GetTitle() const {
   if (entry) {
     return entry->GetTitleForDisplay(accept_languages);
   }
-  WebUI* our_web_ui = GetRenderManager()->pending_web_ui() ?
-      GetRenderManager()->pending_web_ui() : GetRenderManager()->web_ui();
+
+  WebUI* navigating_web_ui = GetRenderManager()->GetNavigatingWebUI();
+  WebUI* our_web_ui = navigating_web_ui
+                          ? navigating_web_ui
+                          : GetRenderManager()->current_frame_host()->web_ui();
+
   if (our_web_ui) {
     // Don't override the title in view source mode.
     entry = controller_.GetVisibleEntry();
@@ -3934,18 +3942,6 @@ void WebContentsImpl::RenderViewCreated(RenderViewHost* render_view_host) {
       Source<WebContents>(this),
       Details<RenderViewHost>(render_view_host));
 
-  // When we're creating views, we're still doing initial setup, so we always
-  // use the pending Web UI rather than any possibly existing committed one.
-  if (GetRenderManager()->pending_web_ui())
-    GetRenderManager()->pending_web_ui()->RenderViewCreated(render_view_host);
-
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBrowserSideNavigation) &&
-      GetRenderManager()->speculative_web_ui()) {
-    GetRenderManager()->speculative_web_ui()->RenderViewCreated(
-        render_view_host);
-  }
-
   NavigationEntry* entry = controller_.GetPendingEntry();
   if (entry && entry->IsViewSourceMode()) {
     // Put the renderer in view source mode.
@@ -4360,7 +4356,7 @@ int WebContentsImpl::CreateSwappedOutRenderView(
     GetRenderManager()->CreateRenderFrameProxy(instance);
   } else {
     GetRenderManager()->CreateRenderFrame(
-        instance, nullptr, CREATE_RF_SWAPPED_OUT | CREATE_RF_HIDDEN,
+        instance, CREATE_RF_SWAPPED_OUT | CREATE_RF_HIDDEN,
         &render_view_routing_id);
   }
   return render_view_routing_id;
@@ -4534,7 +4530,7 @@ NavigationControllerImpl& WebContentsImpl::GetControllerForRenderManager() {
   return GetController();
 }
 
-scoped_ptr<WebUIImpl> WebContentsImpl::CreateWebUIForRenderManager(
+scoped_ptr<WebUIImpl> WebContentsImpl::CreateWebUIForRenderFrameHost(
     const GURL& url) {
   return scoped_ptr<WebUIImpl>(static_cast<WebUIImpl*>(CreateWebUI(
       url, std::string())));

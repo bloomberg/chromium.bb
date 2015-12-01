@@ -17,6 +17,7 @@
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/site_instance_impl.h"
+#include "content/browser/webui/web_ui_impl.h"
 #include "content/common/accessibility_mode_enums.h"
 #include "content/common/ax_content_node_data.h"
 #include "content/common/content_export.h"
@@ -218,6 +219,14 @@ class CONTENT_EXPORT RenderFrameHostImpl
   RenderViewHostImpl* render_view_host() { return render_view_host_; }
   RenderFrameHostDelegate* delegate() { return delegate_; }
   FrameTreeNode* frame_tree_node() { return frame_tree_node_; }
+
+  // Returns the associated WebUI or null if none applies.
+  WebUIImpl* web_ui() const { return web_ui_.get(); }
+
+  // Returns the pending WebUI, or null if none applies.
+  WebUIImpl* pending_web_ui() const {
+    return should_reuse_web_ui_ ? web_ui_.get() : pending_web_ui_.get();
+  }
 
   // Returns this RenderFrameHost's loading state. This method is only used by
   // FrameTreeNode. The proper way to check whether a frame is loading is to
@@ -478,6 +487,26 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // is the parent chain of the focused frame within the frame tree. In
   // addition, its associated RenderWidgetHost has to be focused.
   bool IsFocused();
+
+  // Updates the pending WebUI of this RenderFrameHost based on the provided
+  // |dest_url|, setting it to either none, a new instance or to reuse the
+  // currently active one. Returns true if the pending WebUI was updated.
+  // If this is a history navigation its NavigationEntry bindings should be
+  // provided through |entry_bindings| to allow verifying that they are not
+  // being set differently this time around. Otherwise |entry_bindings| should
+  // be set to NavigationEntryImpl::kInvalidBindings so that no checks are done.
+  bool UpdatePendingWebUI(const GURL& dest_url, int entry_bindings);
+
+  // Updates the active WebUI with the pending one set by the last call to
+  // UpdatePendingWebUI and then clears any pending data. If UpdatePendingWebUI
+  // was not called the active WebUI will simply be cleared.
+  void CommitPendingWebUI();
+
+  // Destroys the pending WebUI and resets related data.
+  void ClearPendingWebUI();
+
+  // Destroys all WebUI instances and resets related data.
+  void ClearAllWebUI();
 
   // Returns the Mojo ImageDownloader service.
   const image_downloader::ImageDownloaderPtr& GetMojoImageDownloader();
@@ -825,6 +854,22 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // PlzNavigate: before the navigation is ready to be committed, the
   // NavigationHandle for it is owned by the NavigationRequest.
   scoped_ptr<NavigationHandleImpl> navigation_handle_;
+
+  // The associated WebUIImpl and its type. They will be set if the current
+  // document is from WebUI source. Otherwise they will be null and
+  // WebUI::kNoWebUI, respectively.
+  scoped_ptr<WebUIImpl> web_ui_;
+  WebUI::TypeID web_ui_type_;
+
+  // The pending WebUIImpl and its type. These values will be used exclusively
+  // for same-site navigations to keep a transition of a WebUI in a pending
+  // state until the navigation commits.
+  scoped_ptr<WebUIImpl> pending_web_ui_;
+  WebUI::TypeID pending_web_ui_type_;
+
+  // If true the associated WebUI should be reused when CommitPendingWebUI is
+  // called (no pending instance should be set).
+  bool should_reuse_web_ui_;
 
   // NOTE: This must be the last member.
   base::WeakPtrFactory<RenderFrameHostImpl> weak_ptr_factory_;
