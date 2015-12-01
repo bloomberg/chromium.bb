@@ -108,7 +108,8 @@ void InitDaysAgoToRecencyScoreArray() {
 const size_t ScoredHistoryMatch::kMaxVisitsToScore = 10;
 bool ScoredHistoryMatch::also_do_hup_like_scoring_ = false;
 int ScoredHistoryMatch::bookmark_value_ = 1;
-bool ScoredHistoryMatch::fix_frequency_bugs_ = false;
+bool ScoredHistoryMatch::fix_typed_visit_bug_ = false;
+bool ScoredHistoryMatch::fix_few_visits_bug_ = false;
 bool ScoredHistoryMatch::allow_tld_matches_ = false;
 bool ScoredHistoryMatch::allow_scheme_matches_ = false;
 size_t ScoredHistoryMatch::num_title_words_to_allow_ = 10u;
@@ -410,7 +411,8 @@ void ScoredHistoryMatch::Init() {
   initialized = true;
   also_do_hup_like_scoring_ = OmniboxFieldTrial::HQPAlsoDoHUPLikeScoring();
   bookmark_value_ = OmniboxFieldTrial::HQPBookmarkValue();
-  fix_frequency_bugs_ = OmniboxFieldTrial::HQPFixFrequencyScoringBugs();
+  fix_typed_visit_bug_ = OmniboxFieldTrial::HQPFixTypedVisitBug();
+  fix_few_visits_bug_ = OmniboxFieldTrial::HQPFixFewVisitsBug();
   allow_tld_matches_ = OmniboxFieldTrial::HQPAllowMatchInTLDValue();
   allow_scheme_matches_ = OmniboxFieldTrial::HQPAllowMatchInSchemeValue();
   num_title_words_to_allow_ = OmniboxFieldTrial::HQPNumTitleWordsToAllow();
@@ -586,7 +588,7 @@ float ScoredHistoryMatch::GetFrequency(const base::Time& now,
   const size_t max_visit_to_score =
       std::min(visits.size(), ScoredHistoryMatch::kMaxVisitsToScore);
   for (size_t i = 0; i < max_visit_to_score; ++i) {
-    const ui::PageTransition page_transition = fix_frequency_bugs_ ?
+    const ui::PageTransition page_transition = fix_typed_visit_bug_ ?
       ui::PageTransitionStripQualifier(visits[i].second) : visits[i].second;
     int value_of_transition =
         (page_transition == ui::PAGE_TRANSITION_TYPED) ? 20 : 1;
@@ -596,7 +598,7 @@ float ScoredHistoryMatch::GetFrequency(const base::Time& now,
         GetRecencyScore((now - visits[i].first).InDays());
     summed_visit_points += (value_of_transition * bucket_weight);
   }
-  if (fix_frequency_bugs_)
+  if (fix_few_visits_bug_)
     return summed_visit_points / ScoredHistoryMatch::kMaxVisitsToScore;
   return visits.size() * summed_visit_points /
       ScoredHistoryMatch::kMaxVisitsToScore;

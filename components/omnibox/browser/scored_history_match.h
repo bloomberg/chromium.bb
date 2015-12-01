@@ -170,7 +170,8 @@ struct ScoredHistoryMatch : public history::HistoryMatch {
   static int bookmark_value_;
 
   // True if we should fix certain bugs in frequency scoring.
-  static bool fix_frequency_bugs_;
+  static bool fix_typed_visit_bug_;
+  static bool fix_few_visits_bug_;
 
   // If true, we allow input terms to match in the TLD (e.g., ".com").
   static bool allow_tld_matches_;

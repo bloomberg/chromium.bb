@@ -410,10 +410,16 @@ float OmniboxFieldTrial::HQPExperimentalTopicalityThreshold() {
   return static_cast<float>(topicality_threshold);
 }
 
-bool OmniboxFieldTrial::HQPFixFrequencyScoringBugs() {
+bool OmniboxFieldTrial::HQPFixTypedVisitBug() {
   return variations::GetVariationParamValue(
       kBundledExperimentFieldTrialName,
-      kHQPFixFrequencyScoringBugsRule) == "true";
+      kHQPFixTypedVisitBugRule) == "true";
+}
+
+bool OmniboxFieldTrial::HQPFixFewVisitsBug() {
+  return variations::GetVariationParamValue(
+      kBundledExperimentFieldTrialName,
+      kHQPFixFewVisitsBugRule) == "true";
 }
 
 size_t OmniboxFieldTrial::HQPNumTitleWordsToAllow() {
@@ -491,8 +497,9 @@ OmniboxFieldTrial::kMeasureSuggestPollingDelayFromLastKeystrokeRule[] =
     "MeasureSuggestPollingDelayFromLastKeystroke";
 const char OmniboxFieldTrial::kSuggestPollingDelayMsRule[] =
     "SuggestPollingDelayMs";
-const char OmniboxFieldTrial::kHQPFixFrequencyScoringBugsRule[] =
-    "HQPFixFrequencyScoringBugs";
+const char OmniboxFieldTrial::kHQPFixTypedVisitBugRule[] =
+    "HQPFixTypedVisitBug";
+const char OmniboxFieldTrial::kHQPFixFewVisitsBugRule[] = "HQPFixFewVisitsBug";
 const char OmniboxFieldTrial::kHQPNumTitleWordsRule[] = "HQPNumTitleWords";
 const char OmniboxFieldTrial::kHQPAlsoDoHUPLikeScoringRule[] =
     "HQPAlsoDoHUPLikeScoring";
