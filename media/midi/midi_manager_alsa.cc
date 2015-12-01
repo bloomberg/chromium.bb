@@ -493,9 +493,9 @@ MidiManagerAlsa::MidiPortStateBase::iterator
 MidiManagerAlsa::MidiPortStateBase::FindConnected(
     const MidiManagerAlsa::MidiPort& port) {
   // Exact match required for connected ports.
-  auto it = std::find_if(ports_.begin(), ports_.end(), [&port](MidiPort* p) {
-    return p->MatchConnected(port);
-  });
+  auto it = std::find_if(
+      ports_.begin(), ports_.end(),
+      [&port](scoped_ptr<MidiPort>& p) { return p->MatchConnected(port); });
   return it;
 }
 
@@ -519,9 +519,9 @@ MidiManagerAlsa::MidiPortStateBase::FindDisconnected(
     // Pass 1. Match on path, id, midi_device, port_id.
     // This is the best possible match for hardware card-based clients.
     // This will also match the empty id correctly for devices without an id.
-    auto it = std::find_if(ports_.begin(), ports_.end(), [&port](MidiPort* p) {
-      return p->MatchCardPass1(port);
-    });
+    auto it = std::find_if(
+        ports_.begin(), ports_.end(),
+        [&port](scoped_ptr<MidiPort>& p) { return p->MatchCardPass1(port); });
     if (it != ports_.end())
       return it;
 
@@ -530,9 +530,9 @@ MidiManagerAlsa::MidiPortStateBase::FindDisconnected(
       // This will give us a high-confidence match when a user moves a device to
       // another USB/Firewire/Thunderbolt/etc port, but only works if the device
       // has a hardware id.
-      it = std::find_if(ports_.begin(), ports_.end(), [&port](MidiPort* p) {
-        return p->MatchCardPass2(port);
-      });
+      it = std::find_if(
+          ports_.begin(), ports_.end(),
+          [&port](scoped_ptr<MidiPort>& p) { return p->MatchCardPass2(port); });
       if (it != ports_.end())
         return it;
     }
@@ -540,18 +540,18 @@ MidiManagerAlsa::MidiPortStateBase::FindDisconnected(
     // Else, we have a non-card-based client.
     // Pass 1. Match on client_id, port_id, client_name, port_name.
     // This will give us a reasonably good match.
-    auto it = std::find_if(ports_.begin(), ports_.end(), [&port](MidiPort* p) {
-      return p->MatchNoCardPass1(port);
-    });
+    auto it = std::find_if(
+        ports_.begin(), ports_.end(),
+        [&port](scoped_ptr<MidiPort>& p) { return p->MatchNoCardPass1(port); });
     if (it != ports_.end())
       return it;
 
     // Pass 2. Match on port_id, client_name, port_name.
     // This is weaker but similar to pass 2 in the hardware card-based clients
     // match.
-    it = std::find_if(ports_.begin(), ports_.end(), [&port](MidiPort* p) {
-      return p->MatchNoCardPass2(port);
-    });
+    it = std::find_if(
+        ports_.begin(), ports_.end(),
+        [&port](scoped_ptr<MidiPort>& p) { return p->MatchNoCardPass2(port); });
     if (it != ports_.end())
       return it;
   }
@@ -562,14 +562,9 @@ MidiManagerAlsa::MidiPortStateBase::FindDisconnected(
 
 MidiManagerAlsa::MidiPortStateBase::MidiPortStateBase() = default;
 
-void MidiManagerAlsa::TemporaryMidiPortState::Insert(
-    scoped_ptr<MidiPort> port) {
-  ports().push_back(port.release());
-}
-
 MidiManagerAlsa::MidiPortState::MidiPortState() = default;
 
-uint32 MidiManagerAlsa::MidiPortState::Insert(scoped_ptr<MidiPort> port) {
+uint32 MidiManagerAlsa::MidiPortState::push_back(scoped_ptr<MidiPort> port) {
   // Add the web midi index.
   uint32 web_port_index = 0;
   switch (port->type()) {
@@ -581,7 +576,7 @@ uint32 MidiManagerAlsa::MidiPortState::Insert(scoped_ptr<MidiPort> port) {
       break;
   }
   port->set_web_port_index(web_port_index);
-  ports().push_back(port.release());
+  MidiPortStateBase::push_back(port.Pass());
   return web_port_index;
 }
 
@@ -694,13 +689,13 @@ MidiManagerAlsa::AlsaSeqState::ToMidiPortState(const AlsaCardMap& alsa_cards) {
         PortDirection direction = port->direction();
         if (direction == PortDirection::kInput ||
             direction == PortDirection::kDuplex) {
-          midi_ports->Insert(make_scoped_ptr(new MidiPort(
+          midi_ports->push_back(make_scoped_ptr(new MidiPort(
               path, id, client_id, port_id, midi_device, client->name(),
               port->name(), manufacturer, version, MidiPort::Type::kInput)));
         }
         if (direction == PortDirection::kOutput ||
             direction == PortDirection::kDuplex) {
-          midi_ports->Insert(make_scoped_ptr(new MidiPort(
+          midi_ports->push_back(make_scoped_ptr(new MidiPort(
               path, id, client_id, port_id, midi_device, client->name(),
               port->name(), manufacturer, version, MidiPort::Type::kOutput)));
         }
@@ -1145,7 +1140,7 @@ void MidiManagerAlsa::UpdatePortStateAndGenerateEvents() {
   auto new_port_state = alsa_seq_state_.ToMidiPortState(alsa_cards_);
 
   // Disconnect any connected old ports that are now missing.
-  for (auto* old_port : port_state_) {
+  for (auto& old_port : port_state_) {
     if (old_port->connected() &&
         (new_port_state->FindConnected(*old_port) == new_port_state->end())) {
       old_port->set_connected(false);
@@ -1167,27 +1162,33 @@ void MidiManagerAlsa::UpdatePortStateAndGenerateEvents() {
   // Reconnect or add new ports.
   auto it = new_port_state->begin();
   while (it != new_port_state->end()) {
-    auto* new_port = *it;
+    auto& new_port = *it;
     auto old_port = port_state_.Find(*new_port);
     if (old_port == port_state_.end()) {
       // Add new port.
-      uint32 web_port_index = port_state_.Insert(make_scoped_ptr(new_port));
-      MidiPortInfo info(new_port->OpaqueKey(), new_port->manufacturer(),
-                        new_port->port_name(), new_port->version(),
+      const auto& opaque_key = new_port->OpaqueKey();
+      const auto& manufacturer = new_port->manufacturer();
+      const auto& port_name = new_port->port_name();
+      const auto& version = new_port->version();
+      const auto& type = new_port->type();
+      const auto& client_id = new_port->client_id();
+      const auto& port_id = new_port->port_id();
+
+      uint32 web_port_index = port_state_.push_back(new_port.Pass());
+      it = new_port_state->erase(it);
+
+      MidiPortInfo info(opaque_key, manufacturer, port_name, version,
                         MIDI_PORT_OPENED);
-      switch (new_port->type()) {
+      switch (type) {
         case MidiPort::Type::kInput:
-          if (Subscribe(web_port_index, new_port->client_id(),
-                        new_port->port_id()))
+          if (Subscribe(web_port_index, client_id, port_id))
             AddInputPort(info);
           break;
         case MidiPort::Type::kOutput:
-          if (CreateAlsaOutputPort(web_port_index, new_port->client_id(),
-                                   new_port->port_id()))
+          if (CreateAlsaOutputPort(web_port_index, client_id, port_id))
             AddOutputPort(info);
           break;
       }
-      it = new_port_state->weak_erase(it);
     } else if (!(*old_port)->connected()) {
       // Reconnect.
       uint32 web_port_index = (*old_port)->web_port_index();

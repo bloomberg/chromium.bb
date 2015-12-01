@@ -12,7 +12,6 @@
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
@@ -177,7 +176,7 @@ class MIDI_EXPORT MidiManagerAlsa final : public MidiManager {
 
   class MidiPortStateBase {
    public:
-    typedef ScopedVector<MidiPort>::iterator iterator;
+    typedef std::vector<scoped_ptr<MidiPort>>::iterator iterator;
 
     virtual ~MidiPortStateBase();
 
@@ -195,29 +194,31 @@ class MIDI_EXPORT MidiManagerAlsa final : public MidiManager {
 
    protected:
     MidiPortStateBase();
-
-    std::vector<MidiPort*>& ports() { return ports_.get(); }
+    iterator erase(iterator position) { return ports_.erase(position); }
+    void push_back(scoped_ptr<MidiPort> port) { ports_.push_back(port.Pass()); }
 
    private:
-    ScopedVector<MidiPort> ports_;
+    std::vector<scoped_ptr<MidiPort>> ports_;
 
     DISALLOW_COPY_AND_ASSIGN(MidiPortStateBase);
   };
 
   class TemporaryMidiPortState final : public MidiPortStateBase {
    public:
-    // Removes a port from the list without deleting it.
-    iterator weak_erase(iterator position) { return ports().erase(position); }
-
-    void Insert(scoped_ptr<MidiPort> port);
+    iterator erase(iterator position) {
+      return MidiPortStateBase::erase(position);
+    };
+    void push_back(scoped_ptr<MidiPort> port) {
+      MidiPortStateBase::push_back(port.Pass());
+    }
   };
 
   class MidiPortState final : public MidiPortStateBase {
    public:
     MidiPortState();
 
-    // Inserts a port. Returns web_port_index.
-    uint32 Insert(scoped_ptr<MidiPort> port);
+    // Inserts a port at the end. Returns web_port_index.
+    uint32 push_back(scoped_ptr<MidiPort> port);
 
    private:
     uint32 num_input_ports_ = 0;
