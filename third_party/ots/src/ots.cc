@@ -14,7 +14,7 @@
 #include <map>
 #include <vector>
 
-#include "woff2.h"
+#include "third_party/woff2/src/woff2_dec.h"
 
 // The OpenType Font File
 // http://www.microsoft.com/typography/otspec/cmap.htm
@@ -71,90 +71,63 @@ const struct {
   bool (*serialise)(ots::OTSStream *out, ots::Font *font);
   bool (*should_serialise)(ots::Font *font);
   void (*reuse)(ots::Font *font, ots::Font *other);
-  void (*free)(ots::Font *font);
   bool required;
 } table_parsers[] = {
   { OTS_TAG('m','a','x','p'), ots::ots_maxp_parse, ots::ots_maxp_serialise,
-    ots::ots_maxp_should_serialise, ots::ots_maxp_reuse, ots::ots_maxp_free,
-    true },
+    ots::ots_maxp_should_serialise, ots::ots_maxp_reuse, true },
   { OTS_TAG('h','e','a','d'), ots::ots_head_parse, ots::ots_head_serialise,
-    ots::ots_head_should_serialise, ots::ots_head_reuse, ots::ots_head_free,
-    true },
+    ots::ots_head_should_serialise, ots::ots_head_reuse, true },
   { OTS_TAG('O','S','/','2'), ots::ots_os2_parse, ots::ots_os2_serialise,
-    ots::ots_os2_should_serialise, ots::ots_os2_reuse, ots::ots_os2_free,
-    true },
+    ots::ots_os2_should_serialise, ots::ots_os2_reuse, true },
   { OTS_TAG('c','m','a','p'), ots::ots_cmap_parse, ots::ots_cmap_serialise,
-    ots::ots_cmap_should_serialise, ots::ots_cmap_reuse, ots::ots_cmap_free,
-    true },
+    ots::ots_cmap_should_serialise, ots::ots_cmap_reuse, true },
   { OTS_TAG('h','h','e','a'), ots::ots_hhea_parse, ots::ots_hhea_serialise,
-    ots::ots_hhea_should_serialise, ots::ots_hhea_reuse, ots::ots_hhea_free,
-    true },
+    ots::ots_hhea_should_serialise, ots::ots_hhea_reuse, true },
   { OTS_TAG('h','m','t','x'), ots::ots_hmtx_parse, ots::ots_hmtx_serialise,
-    ots::ots_hmtx_should_serialise, ots::ots_hmtx_reuse, ots::ots_hmtx_free,
-    true },
+    ots::ots_hmtx_should_serialise, ots::ots_hmtx_reuse, true },
   { OTS_TAG('n','a','m','e'), ots::ots_name_parse, ots::ots_name_serialise,
-    ots::ots_name_should_serialise, ots::ots_name_reuse, ots::ots_name_free,
-    true },
+    ots::ots_name_should_serialise, ots::ots_name_reuse, true },
   { OTS_TAG('p','o','s','t'), ots::ots_post_parse, ots::ots_post_serialise,
-    ots::ots_post_should_serialise, ots::ots_post_reuse, ots::ots_post_free,
-    true },
+    ots::ots_post_should_serialise, ots::ots_post_reuse, true },
   { OTS_TAG('l','o','c','a'), ots::ots_loca_parse, ots::ots_loca_serialise,
-    ots::ots_loca_should_serialise, ots::ots_loca_reuse, ots::ots_loca_free,
-    false },
+    ots::ots_loca_should_serialise, ots::ots_loca_reuse, false },
   { OTS_TAG('g','l','y','f'), ots::ots_glyf_parse, ots::ots_glyf_serialise,
-    ots::ots_glyf_should_serialise, ots::ots_glyf_reuse, ots::ots_glyf_free,
-    false },
+    ots::ots_glyf_should_serialise, ots::ots_glyf_reuse, false },
   { OTS_TAG('C','F','F',' '), ots::ots_cff_parse, ots::ots_cff_serialise,
-    ots::ots_cff_should_serialise, ots::ots_cff_reuse, ots::ots_cff_free,
-    false },
+    ots::ots_cff_should_serialise, ots::ots_cff_reuse, false },
   { OTS_TAG('V','D','M','X'), ots::ots_vdmx_parse, ots::ots_vdmx_serialise,
-    ots::ots_vdmx_should_serialise, ots::ots_vdmx_reuse, ots::ots_vdmx_free,
-    false },
+    ots::ots_vdmx_should_serialise, ots::ots_vdmx_reuse, false },
   { OTS_TAG('h','d','m','x'), ots::ots_hdmx_parse, ots::ots_hdmx_serialise,
-    ots::ots_hdmx_should_serialise, ots::ots_hdmx_reuse, ots::ots_hdmx_free,
-    false },
+    ots::ots_hdmx_should_serialise, ots::ots_hdmx_reuse, false },
   { OTS_TAG('g','a','s','p'), ots::ots_gasp_parse, ots::ots_gasp_serialise,
-    ots::ots_gasp_should_serialise, ots::ots_gasp_reuse, ots::ots_gasp_free,
-    false },
+    ots::ots_gasp_should_serialise, ots::ots_gasp_reuse, false },
   { OTS_TAG('c','v','t',' '), ots::ots_cvt_parse, ots::ots_cvt_serialise,
-    ots::ots_cvt_should_serialise, ots::ots_cvt_reuse, ots::ots_cvt_free,
-    false },
+    ots::ots_cvt_should_serialise, ots::ots_cvt_reuse, false },
   { OTS_TAG('f','p','g','m'), ots::ots_fpgm_parse, ots::ots_fpgm_serialise,
-    ots::ots_fpgm_should_serialise, ots::ots_fpgm_reuse, ots::ots_fpgm_free,
-    false },
+    ots::ots_fpgm_should_serialise, ots::ots_fpgm_reuse, false },
   { OTS_TAG('p','r','e','p'), ots::ots_prep_parse, ots::ots_prep_serialise,
-    ots::ots_prep_should_serialise, ots::ots_prep_reuse, ots::ots_prep_free,
-    false },
+    ots::ots_prep_should_serialise, ots::ots_prep_reuse, false },
   { OTS_TAG('L','T','S','H'), ots::ots_ltsh_parse, ots::ots_ltsh_serialise,
-    ots::ots_ltsh_should_serialise, ots::ots_ltsh_reuse, ots::ots_ltsh_free,
-    false },
+    ots::ots_ltsh_should_serialise, ots::ots_ltsh_reuse, false },
   { OTS_TAG('V','O','R','G'), ots::ots_vorg_parse, ots::ots_vorg_serialise,
-    ots::ots_vorg_should_serialise, ots::ots_vorg_reuse, ots::ots_vorg_free,
-    false },
+    ots::ots_vorg_should_serialise, ots::ots_vorg_reuse, false },
   { OTS_TAG('k','e','r','n'), ots::ots_kern_parse, ots::ots_kern_serialise,
-    ots::ots_kern_should_serialise, ots::ots_kern_reuse, ots::ots_kern_free,
-    false },
+    ots::ots_kern_should_serialise, ots::ots_kern_reuse, false },
   // We need to parse GDEF table in advance of parsing GSUB/GPOS tables
   // because they could refer GDEF table.
   { OTS_TAG('G','D','E','F'), ots::ots_gdef_parse, ots::ots_gdef_serialise,
-    ots::ots_gdef_should_serialise, ots::ots_gdef_reuse, ots::ots_gdef_free,
-    false },
+    ots::ots_gdef_should_serialise, ots::ots_gdef_reuse, false },
   { OTS_TAG('G','P','O','S'), ots::ots_gpos_parse, ots::ots_gpos_serialise,
-    ots::ots_gpos_should_serialise, ots::ots_gpos_reuse, ots::ots_gpos_free,
-    false },
+    ots::ots_gpos_should_serialise, ots::ots_gpos_reuse, false },
   { OTS_TAG('G','S','U','B'), ots::ots_gsub_parse, ots::ots_gsub_serialise,
-    ots::ots_gsub_should_serialise, ots::ots_gsub_reuse, ots::ots_gsub_free,
-    false },
+    ots::ots_gsub_should_serialise, ots::ots_gsub_reuse, false },
   { OTS_TAG('v','h','e','a'), ots::ots_vhea_parse, ots::ots_vhea_serialise,
-    ots::ots_vhea_should_serialise, ots::ots_vhea_reuse, ots::ots_vhea_free,
-    false },
+    ots::ots_vhea_should_serialise, ots::ots_vhea_reuse, false },
   { OTS_TAG('v','m','t','x'), ots::ots_vmtx_parse, ots::ots_vmtx_serialise,
-    ots::ots_vmtx_should_serialise, ots::ots_vmtx_reuse, ots::ots_vmtx_free,
-    false },
+    ots::ots_vmtx_should_serialise, ots::ots_vmtx_reuse, false },
   { OTS_TAG('M','A','T','H'), ots::ots_math_parse, ots::ots_math_serialise,
-    ots::ots_math_should_serialise, ots::ots_math_reuse, ots::ots_math_free,
-    false },
-  { 0, NULL, NULL, NULL, NULL, NULL, false },
+    ots::ots_math_should_serialise, ots::ots_math_reuse, false },
+  { 0, NULL, NULL, NULL, NULL, false },
 };
 
 bool ProcessGeneric(ots::OpenTypeFile *header,
@@ -361,10 +334,6 @@ bool ProcessWOFF(ots::OpenTypeFile *header,
     return OTS_FAILURE_MSG_HDR("invalid version tag");
   }
 
-  font->search_range = 0;
-  font->entry_selector = 0;
-  font->range_shift = 0;
-
   uint32_t reported_length;
   if (!file.ReadU32(&reported_length) || length != reported_length) {
     return OTS_FAILURE_MSG_HDR("incorrect file size in WOFF header");
@@ -495,9 +464,11 @@ bool ProcessWOFF(ots::OpenTypeFile *header,
 }
 
 bool ProcessWOFF2(ots::OpenTypeFile *header,
-                  ots::Font *font,
-                  ots::OTSStream *output, const uint8_t *data, size_t length) {
-  size_t decompressed_size = ots::ComputeWOFF2FinalSize(data, length);
+                  ots::OTSStream *output,
+                  const uint8_t *data,
+                  size_t length,
+                  uint32_t index) {
+  size_t decompressed_size = woff2::ComputeWOFF2FinalSize(data, length);
 
   if (decompressed_size == 0) {
     return OTS_FAILURE_MSG_HDR("Size of decompressed WOFF 2.0 is set to 0");
@@ -508,17 +479,21 @@ bool ProcessWOFF2(ots::OpenTypeFile *header,
   }
 
   std::vector<uint8_t> decompressed_buffer(decompressed_size);
-  if (!ots::ConvertWOFF2ToSFNT(font, &decompressed_buffer[0], decompressed_size,
-                               data, length)) {
+  if (!woff2::ConvertWOFF2ToTTF(&decompressed_buffer[0], decompressed_size,
+                                data, length)) {
     return OTS_FAILURE_MSG_HDR("Failed to convert WOFF 2.0 font to SFNT");
   }
-  return ProcessTTF(header, font, output, &decompressed_buffer[0], decompressed_size);
+
+  if (data[4] == 't' && data[5] == 't' && data[6] == 'c' && data[7] == 'f') {
+    return ProcessTTC(header, output, &decompressed_buffer[0], decompressed_size, index);
+  } else {
+    ots::Font font(header);
+    return ProcessTTF(header, &font, output, &decompressed_buffer[0], decompressed_size);
+  }
 }
 
 ots::TableAction GetTableAction(ots::OpenTypeFile *header, uint32_t tag) {
-  ots::TableAction action = ots::TABLE_ACTION_DEFAULT;
-
-  action = header->context->GetTableAction(htonl(tag));
+  ots::TableAction action = header->context->GetTableAction(tag);
 
   if (action == ots::TABLE_ACTION_DEFAULT) {
     action = ots::TABLE_ACTION_DROP;
@@ -538,7 +513,7 @@ ots::TableAction GetTableAction(ots::OpenTypeFile *header, uint32_t tag) {
 }
 
 bool GetTableData(const uint8_t *data,
-                  const OpenTypeTable table,
+                  const OpenTypeTable& table,
                   Arena *arena,
                   size_t *table_length,
                   const uint8_t **table_data) {
@@ -691,9 +666,7 @@ bool ProcessGeneric(ots::OpenTypeFile *header,
 
       if (action == ots::TABLE_ACTION_SANITIZE &&
           !table_parsers[i].parse(font, table_data, table_length)) {
-        // TODO: parsers should generate specific messages detailing the failure;
-        // once those are all added, we won't need a generic failure message here
-        return OTS_FAILURE_MSG_TAG("failed to parse table", table_parsers[i].tag);
+        return OTS_FAILURE();
       }
     } else if (action == ots::TABLE_ACTION_SANITIZE) {
       table_parsers[i].reuse(font, ot->second.first);
@@ -920,7 +893,7 @@ bool OTSContext::Process(OTSStream *output,
   if (data[0] == 'w' && data[1] == 'O' && data[2] == 'F' && data[3] == 'F') {
     result = ProcessWOFF(&header, &font, output, data, length);
   } else if (data[0] == 'w' && data[1] == 'O' && data[2] == 'F' && data[3] == '2') {
-    result = ProcessWOFF2(&header, &font, output, data, length);
+    result = ProcessWOFF2(&header, output, data, length, index);
   } else if (data[0] == 't' && data[1] == 't' && data[2] == 'c' && data[3] == 'f') {
     result = ProcessTTC(&header, output, data, length, index);
   } else {

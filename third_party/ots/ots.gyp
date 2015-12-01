@@ -27,6 +27,7 @@
       },
       'dependencies': [
         '../brotli/brotli.gyp:brotli',
+        '../woff2/woff2.gyp:woff2_dec',
         '../zlib/zlib.gyp:zlib',
       ],
       # TODO(jschuh): http://crbug.com/167187

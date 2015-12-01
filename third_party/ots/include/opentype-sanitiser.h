@@ -183,8 +183,7 @@ class OTSContext {
 
     // This function will be called when OTS needs to decide what to do for a
     // font table.
-    //   tag: table tag as an integer in big-endian byte order, independent of
-    //   platform endianness
+    //   tag: table tag formed with OTS_TAG() macro
     virtual TableAction GetTableAction(uint32_t tag) { return ots::TABLE_ACTION_DEFAULT; }
 };
 

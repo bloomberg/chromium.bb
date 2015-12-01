@@ -70,14 +70,13 @@ source_set("ots") {
     "src/vmtx.h",
     "src/vorg.cc",
     "src/vorg.h",
-    "src/woff2.cc",
-    "src/woff2.h",
   ]
 
   public_configs = [ ":ots_config" ]
 
   deps = [
     "//third_party/brotli",
+    "//third_party/woff2:woff2_dec",
     "//third_party/zlib",
   ]
 

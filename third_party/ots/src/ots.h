@@ -158,6 +158,7 @@ class Buffer {
   const uint8_t *buffer() const { return buffer_; }
   size_t offset() const { return offset_; }
   size_t length() const { return length_; }
+  size_t remaining() const { return length_ - offset_; }
 
   void set_offset(size_t newoffset) { offset_ = newoffset; }
 
@@ -230,8 +231,13 @@ FOR_EACH_TABLE_TYPE
 #undef F
 
 struct Font {
-  Font(const OpenTypeFile *f) {
-    file = f;
+  explicit Font(const OpenTypeFile *f)
+      : file(f),
+        version(0),
+        num_tables(0),
+        search_range(0),
+        entry_selector(0),
+        range_shift(0) {
 #define F(name, capname) \
     name = NULL; \
     name##_reused = false;
