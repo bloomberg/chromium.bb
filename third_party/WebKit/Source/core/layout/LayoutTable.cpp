@@ -801,7 +801,7 @@ void LayoutTable::updateColumnCache() const
     m_columnLayoutObjectsValid = true;
 }
 
-LayoutTableCol* LayoutTable::slowColElement(unsigned col, bool* startEdge, bool* endEdge) const
+LayoutTable::ColAndColGroup LayoutTable::slowColElement(unsigned col) const
 {
     ASSERT(m_hasColElements);
 
@@ -811,20 +811,32 @@ LayoutTableCol* LayoutTable::slowColElement(unsigned col, bool* startEdge, bool*
     unsigned columnCount = 0;
     for (unsigned i = 0; i < m_columnLayoutObjects.size(); i++) {
         LayoutTableCol* columnLayoutObject = m_columnLayoutObjects[i];
+        ASSERT(!columnLayoutObject->isTableColumnGroupWithColumnChildren());
         unsigned span = columnLayoutObject->span();
         unsigned startCol = columnCount;
         ASSERT(span >= 1);
         unsigned endCol = columnCount + span - 1;
         columnCount += span;
         if (columnCount > col) {
-            if (startEdge)
-                *startEdge = startCol == col;
-            if (endEdge)
-                *endEdge = endCol == col;
-            return columnLayoutObject;
+            ColAndColGroup colAndColGroup;
+            bool isAtStartEdge = startCol == col;
+            bool isAtEndEdge = endCol == col;
+            if (columnLayoutObject->isTableColumnGroup()) {
+                colAndColGroup.colgroup = columnLayoutObject;
+                colAndColGroup.adjoinsStartBorderOfColGroup = isAtStartEdge;
+                colAndColGroup.adjoinsEndBorderOfColGroup = isAtEndEdge;
+            } else {
+                colAndColGroup.col = columnLayoutObject;
+                colAndColGroup.colgroup = columnLayoutObject->enclosingColumnGroup();
+                if (colAndColGroup.colgroup) {
+                    colAndColGroup.adjoinsStartBorderOfColGroup = isAtStartEdge && !colAndColGroup.col->previousSibling();
+                    colAndColGroup.adjoinsEndBorderOfColGroup = isAtEndEdge && !colAndColGroup.col->nextSibling();
+                }
+            }
+            return colAndColGroup;
         }
     }
-    return nullptr;
+    return ColAndColGroup();
 }
 
 void LayoutTable::recalcSections() const
@@ -915,14 +927,14 @@ int LayoutTable::calcBorderStart() const
     if (tableStartBorder.style() > BHIDDEN)
         borderWidth = tableStartBorder.width();
 
-    if (LayoutTableCol* column = colElement(0)) {
+    // TODO(dgrogan): This logic doesn't properly account for the first column in the first column-group case.
+    if (LayoutTableCol* column = colElement(0).innermostColOrColGroup()) {
         // FIXME: We don't account for direction on columns and column groups.
         const BorderValue& columnAdjoiningBorder = column->style()->borderStart();
         if (columnAdjoiningBorder.style() == BHIDDEN)
             return 0;
         if (columnAdjoiningBorder.style() > BHIDDEN)
             borderWidth = std::max(borderWidth, columnAdjoiningBorder.width());
-        // FIXME: This logic doesn't properly account for the first column in the first column-group case.
     }
 
     if (const LayoutTableSection* topNonEmptySection = this->topNonEmptySection()) {
@@ -970,14 +982,15 @@ int LayoutTable::calcBorderEnd() const
         borderWidth = tableEndBorder.width();
 
     unsigned endColumn = numEffCols() - 1;
-    if (LayoutTableCol* column = colElement(endColumn)) {
+
+    // TODO(dgrogan): This logic doesn't properly account for the last column in the last column-group case.
+    if (LayoutTableCol* column = colElement(endColumn).innermostColOrColGroup()) {
         // FIXME: We don't account for direction on columns and column groups.
         const BorderValue& columnAdjoiningBorder = column->style()->borderEnd();
         if (columnAdjoiningBorder.style() == BHIDDEN)
             return 0;
         if (columnAdjoiningBorder.style() > BHIDDEN)
             borderWidth = std::max(borderWidth, columnAdjoiningBorder.width());
-        // FIXME: This logic doesn't properly account for the last column in the last column-group case.
     }
 
     if (const LayoutTableSection* topNonEmptySection = this->topNonEmptySection()) {
@@ -1396,8 +1409,9 @@ void LayoutTable::invalidatePaintOfSubtreesIfNeeded(PaintInvalidationState& chil
             continue;
         for (LayoutTableRow* row = toLayoutTableSection(section)->firstRow(); row; row = row->nextRow()) {
             for (LayoutTableCell* cell = row->firstCell(); cell; cell = cell->nextCell()) {
-                LayoutTableCol* column = colElement(cell->col());
-                LayoutTableCol* columnGroup = column ? column->enclosingColumnGroup() : 0;
+                ColAndColGroup colAndColGroup = colElement(cell->col());
+                LayoutTableCol* column = colAndColGroup.col;
+                LayoutTableCol* columnGroup = colAndColGroup.colgroup;
                 // Table cells paint container's background on the container's backing instead of its own (if any),
                 // so we must invalidate it by the containers.
                 bool invalidated = false;

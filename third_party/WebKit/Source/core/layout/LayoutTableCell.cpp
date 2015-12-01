@@ -107,7 +107,7 @@ void LayoutTableCell::colSpanOrRowSpanChanged()
 
 Length LayoutTableCell::logicalWidthFromColumns(LayoutTableCol* firstColForThisCell, Length widthFromStyle) const
 {
-    ASSERT(firstColForThisCell && firstColForThisCell == table()->colElement(col()));
+    ASSERT(firstColForThisCell && firstColForThisCell == table()->colElement(col()).innermostColOrColGroup());
     LayoutTableCol* tableCol = firstColForThisCell;
 
     unsigned colSpanCount = colSpan();
@@ -520,51 +520,38 @@ CollapsedBorderValue LayoutTableCell::computeCollapsedStartBorder(IncludeBorderC
     }
 
     // (5) Our column and column group's start borders.
-    bool startColEdge;
-    bool endColEdge;
-    if (LayoutTableCol* colElt = table->colElement(col(), &startColEdge, &endColEdge)) {
-        if (colElt->isTableColumnGroup() && startColEdge) {
-            // The |colElt| is a column group and is also the first colgroup (in case of spanned colgroups).
-            result = chooseBorder(result, CollapsedBorderValue(colElt->borderAdjoiningCellStartBorder(this), includeColor ? colElt->resolveColor(startColorProperty) : Color(), BCOLGROUP));
-            if (!result.exists())
-                return result;
-        } else if (!colElt->isTableColumnGroup()) {
-            // We first consider the |colElt| and irrespective of whether it is a spanned col or not, we apply
-            // its start border. This is as per HTML5 which states that: "For the purposes of the CSS table model,
-            // the col element is expected to be treated as if it was present as many times as its span attribute specifies".
-            result = chooseBorder(result, CollapsedBorderValue(colElt->borderAdjoiningCellStartBorder(this), includeColor ? colElt->resolveColor(startColorProperty) : Color(), BCOL));
-            if (!result.exists())
-                return result;
-            // Next, apply the start border of the enclosing colgroup but only if it is adjacent to the cell's edge.
-            if (LayoutTableCol* enclosingColumnGroup = colElt->enclosingColumnGroupIfAdjacentBefore()) {
-                result = chooseBorder(result, CollapsedBorderValue(enclosingColumnGroup->borderAdjoiningCellStartBorder(this), includeColor ? enclosingColumnGroup->resolveColor(startColorProperty) : Color(), BCOLGROUP));
-                if (!result.exists())
-                    return result;
-            }
-        }
+    LayoutTable::ColAndColGroup colAndColGroup = table->colElement(col());
+    if (colAndColGroup.colgroup && colAndColGroup.adjoinsStartBorderOfColGroup) {
+        // Only apply the colgroup's border if this cell touches the colgroup edge.
+        result = chooseBorder(result, CollapsedBorderValue(colAndColGroup.colgroup->borderAdjoiningCellStartBorder(this), includeColor ? colAndColGroup.colgroup->resolveColor(startColorProperty) : Color(), BCOLGROUP));
+        if (!result.exists())
+            return result;
+    }
+    if (colAndColGroup.col) {
+        // Always apply the col's border irrespective of whether this cell touches it. This is per HTML5:
+        // "For the purposes of the CSS table model, the col element is expected to be treated as if it
+        // "was present as many times as its span attribute specifies".
+        result = chooseBorder(result, CollapsedBorderValue(colAndColGroup.col->borderAdjoiningCellStartBorder(this), includeColor ? colAndColGroup.col->resolveColor(startColorProperty) : Color(), BCOL));
+        if (!result.exists())
+            return result;
     }
 
     // (6) The end border of the preceding column.
     if (cellBefore) {
-        if (LayoutTableCol* colElt = table->colElement(col() - 1, &startColEdge, &endColEdge)) {
-            if (colElt->isTableColumnGroup() && endColEdge) {
-                // The element is a colgroup and is also the last colgroup (in case of spanned colgroups).
-                result = chooseBorder(CollapsedBorderValue(colElt->borderAdjoiningCellAfter(this), includeColor ? colElt->resolveColor(endColorProperty) : Color(), BCOLGROUP), result);
-                if (!result.exists())
-                    return result;
-            } else if (colElt->isTableColumn()) {
-                // Resolve the collapsing border against the col's border ignoring any 'span' as per HTML5.
-                result = chooseBorder(CollapsedBorderValue(colElt->borderAdjoiningCellAfter(this), includeColor ? colElt->resolveColor(endColorProperty) : Color(), BCOL), result);
-                if (!result.exists())
-                    return result;
-                // Next, if the previous col has a parent colgroup then its end border should be applied
-                // but only if it is adjacent to the cell's edge.
-                if (LayoutTableCol* enclosingColumnGroup = colElt->enclosingColumnGroupIfAdjacentAfter()) {
-                    result = chooseBorder(CollapsedBorderValue(enclosingColumnGroup->borderAdjoiningCellEndBorder(this), includeColor ? enclosingColumnGroup->resolveColor(endColorProperty) : Color(), BCOLGROUP), result);
-                    if (!result.exists())
-                        return result;
-                }
-            }
+        LayoutTable::ColAndColGroup colAndColGroup = table->colElement(col() - 1);
+        // Only apply the colgroup's border if this cell touches the colgroup edge.
+        if (colAndColGroup.colgroup && colAndColGroup.adjoinsEndBorderOfColGroup) {
+            result = chooseBorder(CollapsedBorderValue(colAndColGroup.colgroup->borderAdjoiningCellEndBorder(this), includeColor ? colAndColGroup.colgroup->resolveColor(endColorProperty) : Color(), BCOLGROUP), result);
+            if (!result.exists())
+                return result;
+        }
+        // Always apply the col's border irrespective of whether this cell touches it. This is per HTML5:
+        // "For the purposes of the CSS table model, the col element is expected to be treated as if it
+        // "was present as many times as its span attribute specifies".
+        if (colAndColGroup.col) {
+            result = chooseBorder(CollapsedBorderValue(colAndColGroup.col->borderAdjoiningCellAfter(this), includeColor ? colAndColGroup.col->resolveColor(endColorProperty) : Color(), BCOL), result);
+            if (!result.exists())
+                return result;
         }
     }
 
@@ -615,50 +602,38 @@ CollapsedBorderValue LayoutTableCell::computeCollapsedEndBorder(IncludeBorderCol
     }
 
     // (5) Our column and column group's end borders.
-    bool startColEdge;
-    bool endColEdge;
-    if (LayoutTableCol* colElt = table->colElement(col() + colSpan() - 1, &startColEdge, &endColEdge)) {
-        if (colElt->isTableColumnGroup() && endColEdge) {
-            // The element is a colgroup and is also the last colgroup (in case of spanned colgroups).
-            result = chooseBorder(result, CollapsedBorderValue(colElt->borderAdjoiningCellEndBorder(this), includeColor ? colElt->resolveColor(endColorProperty) : Color(), BCOLGROUP));
-            if (!result.exists())
-                return result;
-        } else if (!colElt->isTableColumnGroup()) {
-            // First apply the end border of the column irrespective of whether it is spanned or not. This is as per
-            // HTML5 which states that: "For the purposes of the CSS table model, the col element is expected to be
-            // treated as if it was present as many times as its span attribute specifies".
-            result = chooseBorder(result, CollapsedBorderValue(colElt->borderAdjoiningCellEndBorder(this), includeColor ? colElt->resolveColor(endColorProperty) : Color(), BCOL));
-            if (!result.exists())
-                return result;
-            // Next, if it has a parent colgroup then we apply its end border but only if it is adjacent to the cell.
-            if (LayoutTableCol* enclosingColumnGroup = colElt->enclosingColumnGroupIfAdjacentAfter()) {
-                result = chooseBorder(result, CollapsedBorderValue(enclosingColumnGroup->borderAdjoiningCellEndBorder(this), includeColor ? enclosingColumnGroup->resolveColor(endColorProperty) : Color(), BCOLGROUP));
-                if (!result.exists())
-                    return result;
-            }
-        }
+    LayoutTable::ColAndColGroup colAndColGroup = table->colElement(col() + colSpan() - 1);
+    if (colAndColGroup.colgroup && colAndColGroup.adjoinsEndBorderOfColGroup) {
+        // Only apply the colgroup's border if this cell touches the colgroup edge.
+        result = chooseBorder(result, CollapsedBorderValue(colAndColGroup.colgroup->borderAdjoiningCellEndBorder(this), includeColor ? colAndColGroup.colgroup->resolveColor(endColorProperty) : Color(), BCOLGROUP));
+        if (!result.exists())
+            return result;
+    }
+    if (colAndColGroup.col) {
+        // Always apply the col's border irrespective of whether this cell touches it. This is per HTML5:
+        // "For the purposes of the CSS table model, the col element is expected to be treated as if it
+        // "was present as many times as its span attribute specifies".
+        result = chooseBorder(result, CollapsedBorderValue(colAndColGroup.col->borderAdjoiningCellEndBorder(this), includeColor ? colAndColGroup.col->resolveColor(endColorProperty) : Color(), BCOL));
+        if (!result.exists())
+            return result;
     }
 
     // (6) The start border of the next column.
     if (!isEndColumn) {
-        if (LayoutTableCol* colElt = table->colElement(col() + colSpan(), &startColEdge, &endColEdge)) {
-            if (colElt->isTableColumnGroup() && startColEdge) {
-                // This case is a colgroup without any col, we only compute it if it is adjacent to the cell's edge.
-                result = chooseBorder(result, CollapsedBorderValue(colElt->borderAdjoiningCellBefore(this), includeColor ? colElt->resolveColor(startColorProperty) : Color(), BCOLGROUP));
-                if (!result.exists())
-                    return result;
-            } else if (colElt->isTableColumn()) {
-                // Resolve the collapsing border against the col's border ignoring any 'span' as per HTML5.
-                result = chooseBorder(result, CollapsedBorderValue(colElt->borderAdjoiningCellBefore(this), includeColor ? colElt->resolveColor(startColorProperty) : Color(), BCOL));
-                if (!result.exists())
-                    return result;
-                // If we have a parent colgroup, resolve the border only if it is adjacent to the cell.
-                if (LayoutTableCol* enclosingColumnGroup = colElt->enclosingColumnGroupIfAdjacentBefore()) {
-                    result = chooseBorder(result, CollapsedBorderValue(enclosingColumnGroup->borderAdjoiningCellStartBorder(this), includeColor ? enclosingColumnGroup->resolveColor(startColorProperty) : Color(), BCOLGROUP));
-                    if (!result.exists())
-                        return result;
-                }
-            }
+        LayoutTable::ColAndColGroup colAndColGroup = table->colElement(col() + colSpan());
+        if (colAndColGroup.colgroup && colAndColGroup.adjoinsStartBorderOfColGroup) {
+            // Only apply the colgroup's border if this cell touches the colgroup edge.
+            result = chooseBorder(result, CollapsedBorderValue(colAndColGroup.colgroup->borderAdjoiningCellStartBorder(this), includeColor ? colAndColGroup.colgroup->resolveColor(startColorProperty) : Color(), BCOLGROUP));
+            if (!result.exists())
+                return result;
+        }
+        if (colAndColGroup.col) {
+            // Always apply the col's border irrespective of whether this cell touches it. This is per HTML5:
+            // "For the purposes of the CSS table model, the col element is expected to be treated as if it
+            // "was present as many times as its span attribute specifies".
+            result = chooseBorder(result, CollapsedBorderValue(colAndColGroup.col->borderAdjoiningCellBefore(this), includeColor ? colAndColGroup.col->resolveColor(startColorProperty) : Color(), BCOL));
+            if (!result.exists())
+                return result;
         }
     }
 
@@ -729,7 +704,7 @@ CollapsedBorderValue LayoutTableCell::computeCollapsedBeforeBorder(IncludeBorder
 
     if (!currSection) {
         // (8) Our column and column group's before borders.
-        LayoutTableCol* colElt = table->colElement(col());
+        LayoutTableCol* colElt = table->colElement(col()).innermostColOrColGroup();
         if (colElt) {
             result = chooseBorder(result, CollapsedBorderValue(colElt->style()->borderBefore(), includeColor ? colElt->resolveColor(beforeColorProperty) : Color(), BCOL));
             if (!result.exists())
@@ -799,7 +774,7 @@ CollapsedBorderValue LayoutTableCell::computeCollapsedAfterBorder(IncludeBorderC
 
     if (!currSection) {
         // (8) Our column and column group's after borders.
-        LayoutTableCol* colElt = table->colElement(col());
+        LayoutTableCol* colElt = table->colElement(col()).innermostColOrColGroup();
         if (colElt) {
             result = chooseBorder(result, CollapsedBorderValue(colElt->style()->borderAfter(), includeColor ? colElt->resolveColor(afterColorProperty) : Color(), BCOL));
             if (!result.exists())

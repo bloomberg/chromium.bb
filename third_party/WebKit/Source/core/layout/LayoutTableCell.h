@@ -137,7 +137,7 @@ public:
         Length styleWidth = style()->logicalWidth();
         if (!styleWidth.isAuto())
             return styleWidth;
-        if (LayoutTableCol* firstColumn = table()->colElement(col()))
+        if (LayoutTableCol* firstColumn = table()->colElement(col()).innermostColOrColGroup())
             return logicalWidthFromColumns(firstColumn, styleWidth);
         return styleWidth;
     }

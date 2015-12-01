@@ -284,12 +284,29 @@ public:
     // Return the first column or column-group.
     LayoutTableCol* firstColumn() const;
 
-    LayoutTableCol* colElement(unsigned col, bool* startEdge = nullptr, bool* endEdge = nullptr) const
+    struct ColAndColGroup {
+        ColAndColGroup()
+            : col(nullptr)
+            , colgroup(nullptr)
+            , adjoinsStartBorderOfColGroup(false)
+            , adjoinsEndBorderOfColGroup(false)
+        {
+        }
+        LayoutTableCol* col;
+        LayoutTableCol* colgroup;
+        bool adjoinsStartBorderOfColGroup;
+        bool adjoinsEndBorderOfColGroup;
+        LayoutTableCol* innermostColOrColGroup()
+        {
+            return col ? col : colgroup;
+        }
+    };
+    ColAndColGroup colElement(unsigned col) const
     {
         // The common case is to not have columns, make that case fast.
         if (!m_hasColElements)
-            return nullptr;
-        return slowColElement(col, startEdge, endEdge);
+            return ColAndColGroup();
+        return slowColElement(col);
     }
 
     bool needsSectionRecalc() const { return m_needsSectionRecalc; }
@@ -367,7 +384,7 @@ private:
     int firstLineBoxBaseline() const override;
     int inlineBlockBaseline(LineDirectionMode) const override;
 
-    LayoutTableCol* slowColElement(unsigned col, bool* startEdge, bool* endEdge) const;
+    ColAndColGroup slowColElement(unsigned col) const;
 
     void updateColumnCache() const;
     void invalidateCachedColumns();

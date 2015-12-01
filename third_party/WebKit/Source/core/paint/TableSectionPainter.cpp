@@ -177,8 +177,10 @@ void TableSectionPainter::paintCell(const LayoutTableCell& cell, const PaintInfo
         && BlockPainter(cell).intersectsPaintRect(paintInfo, paintOffset)) {
         // We need to handle painting a stack of backgrounds. This stack (from bottom to top) consists of
         // the column group, column, row group, row, and then the cell.
-        LayoutTableCol* column = m_layoutTableSection.table()->colElement(cell.col());
-        LayoutTableCol* columnGroup = column ? column->enclosingColumnGroup() : 0;
+
+        LayoutTable::ColAndColGroup colAndColGroup = m_layoutTableSection.table()->colElement(cell.col());
+        LayoutTableCol* column = colAndColGroup.col;
+        LayoutTableCol* columnGroup = colAndColGroup.colgroup;
         TableCellPainter tableCellPainter(cell);
 
         // Column groups and columns first.

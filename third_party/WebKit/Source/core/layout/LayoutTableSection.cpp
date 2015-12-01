@@ -1201,9 +1201,9 @@ int LayoutTableSection::calcBlockDirectionOuterBorder(BlockBorderSide side) cons
         const ComputedStyle& primaryCellStyle = current.primaryCell()->styleRef();
         const BorderValue& cb = side == BorderBefore ? primaryCellStyle.borderBefore() : primaryCellStyle.borderAfter(); // FIXME: Make this work with perpendicular and flipped cells.
         // FIXME: Don't repeat for the same col group
-        LayoutTableCol* colGroup = table()->colElement(c);
-        if (colGroup) {
-            const BorderValue& gb = side == BorderBefore ? colGroup->style()->borderBefore() : colGroup->style()->borderAfter();
+        LayoutTableCol* col = table()->colElement(c).innermostColOrColGroup();
+        if (col) {
+            const BorderValue& gb = side == BorderBefore ? col->style()->borderBefore() : col->style()->borderAfter();
             if (gb.style() == BHIDDEN || cb.style() == BHIDDEN)
                 continue;
             allHidden = false;
@@ -1242,8 +1242,8 @@ int LayoutTableSection::calcInlineDirectionOuterBorder(InlineBorderSide side) co
     if (sb.style() > BHIDDEN)
         borderWidth = sb.width();
 
-    if (LayoutTableCol* colGroup = table()->colElement(colIndex)) {
-        const BorderValue& gb = side == BorderStart ? colGroup->style()->borderStart() : colGroup->style()->borderEnd();
+    if (LayoutTableCol* col = table()->colElement(colIndex).innermostColOrColGroup()) {
+        const BorderValue& gb = side == BorderStart ? col->style()->borderStart() : col->style()->borderEnd();
         if (gb.style() == BHIDDEN)
             return -1;
         if (gb.style() > BHIDDEN && gb.width() > borderWidth)

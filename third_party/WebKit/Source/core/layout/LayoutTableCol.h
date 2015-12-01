@@ -81,20 +81,6 @@ public:
     bool isTableColumnGroup() const { return style()->display() == TABLE_COLUMN_GROUP; }
 
     LayoutTableCol* enclosingColumnGroup() const;
-    LayoutTableCol* enclosingColumnGroupIfAdjacentBefore() const
-    {
-        if (previousSibling())
-            return nullptr;
-        return enclosingColumnGroup();
-    }
-
-    LayoutTableCol* enclosingColumnGroupIfAdjacentAfter() const
-    {
-        if (nextSibling())
-            return nullptr;
-        return enclosingColumnGroup();
-    }
-
 
     // Returns the next column or column-group.
     LayoutTableCol* nextColumn() const;
