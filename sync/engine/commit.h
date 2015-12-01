@@ -5,7 +5,9 @@
 #ifndef SYNC_ENGINE_COMMIT_H_
 #define SYNC_ENGINE_COMMIT_H_
 
-#include "base/containers/scoped_ptr_map.h"
+#include <map>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "sync/base/sync_export.h"
 #include "sync/engine/commit_contribution.h"
@@ -36,8 +38,7 @@ class Syncer;
 // PostAndProcessCommitResponse() functions.  So they ended up here.
 class SYNC_EXPORT_PRIVATE Commit {
  public:
-  typedef base::ScopedPtrMap<ModelType, scoped_ptr<CommitContribution>>
-      ContributionMap;
+  typedef std::map<ModelType, scoped_ptr<CommitContribution>> ContributionMap;
 
   Commit(ContributionMap contributions,
          const sync_pb::ClientToServerMessage& message,
@@ -73,6 +74,8 @@ class SYNC_EXPORT_PRIVATE Commit {
 
   // Debug only flag used to indicate if it's safe to destruct the object.
   bool cleaned_up_;
+
+  DISALLOW_COPY_AND_ASSIGN(Commit);
 };
 
 }  // namespace syncer
