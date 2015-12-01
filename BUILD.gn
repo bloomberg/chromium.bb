@@ -4,7 +4,6 @@
 
 import("ffmpeg_options.gni")
 import("ffmpeg_generated.gni")
-import("//build/config/win/visual_studio_version.gni")
 
 # Path to platform configuration files.
 platform_config_root =
@@ -263,6 +262,8 @@ source_set("ffmpeg_internal") {
 
     defines += [ "_DARWIN_C_SOURCE" ]
   } else if (is_win) {
+    import("//build/config/win/visual_studio_version.gni")
+
     if ((visual_studio_version == "2013") || (visual_studio_version == "2013e")) {
       defines += [
         # VS 2015 supports these natively so they cannot be #defines.
