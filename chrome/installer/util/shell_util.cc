@@ -156,8 +156,8 @@ bool UserSpecificRegistrySuffix::GetSuffix(base::string16* suffix) {
 
 // This class represents a single registry entry (a key and its value). A
 // collection of registry entries should be collected into a list and written
-// atomically using a WorkItemList. This is preferred to writing to the registry
-// directly, because if anything goes wrong, they can be rolled back atomically.
+// transactionally using a WorkItemList. This is preferred to writing to the
+// registry directly, because if anything goes wrong, they can be rolled back.
 class RegistryEntry {
  public:
   // A bit-field enum of places to look for this key in the Windows registry.
@@ -212,15 +212,15 @@ class RegistryEntry {
     base::string16 delegate_clsid;
   };
 
-  // Create a object that represent default value of a key
+  // Create an object that represent default value of a key.
   RegistryEntry(const base::string16& key_path, const base::string16& value);
 
-  // Create a object that represent a key of type REG_SZ
+  // Create an object that represent a key of type REG_SZ.
   RegistryEntry(const base::string16& key_path,
                 const base::string16& name,
                 const base::string16& value);
 
-  // Create a object that represent a key of integer type
+  // Create an object that represent a key of integer type.
   RegistryEntry(const base::string16& key_path,
                 const base::string16& name,
                 DWORD value);
