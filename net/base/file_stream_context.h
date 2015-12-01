@@ -110,13 +110,12 @@ class FileStream::Context {
   };
 
   struct OpenResult {
-    MOVE_ONLY_TYPE_FOR_CPP_03(OpenResult, RValue)
+    MOVE_ONLY_TYPE_FOR_CPP_03(OpenResult)
    public:
     OpenResult();
     OpenResult(base::File file, IOResult error_code);
-    // C++03 move emulation of this type.
-    OpenResult(RValue other);
-    OpenResult& operator=(RValue other);
+    OpenResult(OpenResult&& other);
+    OpenResult& operator=(OpenResult&& other);
 
     base::File file;
     IOResult error_code;

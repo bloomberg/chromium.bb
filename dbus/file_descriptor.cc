@@ -21,9 +21,8 @@ void CHROME_DBUS_EXPORT FileDescriptor::Deleter::operator()(
       FROM_HERE, base::Bind(&base::DeletePointer<FileDescriptor>, fd), false);
 }
 
-FileDescriptor::FileDescriptor(RValue other)
-    : value_(-1), owner_(false), valid_(false) {
-  Swap(other.object);
+FileDescriptor::FileDescriptor(FileDescriptor&& other) : FileDescriptor() {
+  Swap(&other);
 }
 
 FileDescriptor::~FileDescriptor() {
@@ -31,8 +30,8 @@ FileDescriptor::~FileDescriptor() {
     base::File auto_closer(value_);
 }
 
-FileDescriptor& FileDescriptor::operator=(RValue other) {
-  Swap(other.object);
+FileDescriptor& FileDescriptor::operator=(FileDescriptor&& other) {
+  Swap(&other);
   return *this;
 }
 

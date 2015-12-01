@@ -55,15 +55,14 @@ struct AlbumInfo {
 };
 
 struct AlbumTableFiles {
-  MOVE_ONLY_TYPE_FOR_CPP_03(AlbumTableFiles, RValue)
+  MOVE_ONLY_TYPE_FOR_CPP_03(AlbumTableFiles)
  public:
   AlbumTableFiles();
   explicit AlbumTableFiles(const base::FilePath& directory_path);
   ~AlbumTableFiles();
 
-  // C++03 move emulation of this type.
-  AlbumTableFiles(RValue other);
-  AlbumTableFiles& operator=(RValue other);
+  AlbumTableFiles(AlbumTableFiles&& other);
+  AlbumTableFiles& operator=(AlbumTableFiles&& other);
 
   // Special empty file used to confirm existence of table.
   base::File indicator_file;

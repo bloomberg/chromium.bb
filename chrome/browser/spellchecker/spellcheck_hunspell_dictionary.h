@@ -92,14 +92,13 @@ class SpellcheckHunspellDictionary
 
   // Dictionary file information to be passed between the FILE and UI threads.
   struct DictionaryFile {
-    MOVE_ONLY_TYPE_FOR_CPP_03(DictionaryFile, RValue)
+    MOVE_ONLY_TYPE_FOR_CPP_03(DictionaryFile)
    public:
     DictionaryFile();
     ~DictionaryFile();
 
-    // C++03 move emulation of this type.
-    DictionaryFile(RValue other);
-    DictionaryFile& operator=(RValue other);
+    DictionaryFile(DictionaryFile&& other);
+    DictionaryFile& operator=(DictionaryFile&& other);
 
     // The desired location of the dictionary file, whether or not it exists.
     base::FilePath path;

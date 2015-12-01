@@ -36,7 +36,7 @@ namespace win {
 //     this explicitly is necessary because of bug 528394 and VC++ 2015.
 template <class Traits, class Verifier>
 class GenericScopedHandle {
-  MOVE_ONLY_TYPE_FOR_CPP_03(GenericScopedHandle, RValue)
+  MOVE_ONLY_TYPE_FOR_CPP_03(GenericScopedHandle)
 
  public:
   typedef typename Traits::Handle Handle;
@@ -47,9 +47,9 @@ class GenericScopedHandle {
     Set(handle);
   }
 
-  // Move constructor for C++03 move emulation of this type.
-  GenericScopedHandle(RValue other) : handle_(Traits::NullHandle()) {
-    Set(other.object->Take());
+  GenericScopedHandle(GenericScopedHandle&& other)
+      : handle_(Traits::NullHandle()) {
+    Set(other.Take());
   }
 
   ~GenericScopedHandle() {
@@ -60,11 +60,9 @@ class GenericScopedHandle {
     return Traits::IsHandleValid(handle_);
   }
 
-  // Move operator= for C++03 move emulation of this type.
-  GenericScopedHandle& operator=(RValue other) {
-    if (this != other.object) {
-      Set(other.object->Take());
-    }
+  GenericScopedHandle& operator=(GenericScopedHandle&& other) {
+    DCHECK_NE(this, &other);
+    Set(other.Take());
     return *this;
   }
 

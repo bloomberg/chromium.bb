@@ -4,6 +4,8 @@
 
 #include "chrome/common/media_galleries/picasa_types.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "chrome/common/media_galleries/pmp_constants.h"
 
@@ -66,26 +68,23 @@ AlbumTableFiles::AlbumTableFiles(const base::FilePath& directory_path)
 AlbumTableFiles::~AlbumTableFiles() {
 }
 
-AlbumTableFiles::AlbumTableFiles(RValue other)
-    : indicator_file(other.object->indicator_file.Pass()),
-      category_file(other.object->category_file.Pass()),
-      date_file(other.object->date_file.Pass()),
-      filename_file(other.object->filename_file.Pass()),
-      name_file(other.object->name_file.Pass()),
-      token_file(other.object->token_file.Pass()),
-      uid_file(other.object->uid_file.Pass()) {
-}
+AlbumTableFiles::AlbumTableFiles(AlbumTableFiles&& other)
+    : indicator_file(std::move(other.indicator_file)),
+      category_file(std::move(other.category_file)),
+      date_file(std::move(other.date_file)),
+      filename_file(std::move(other.filename_file)),
+      name_file(std::move(other.name_file)),
+      token_file(std::move(other.token_file)),
+      uid_file(std::move(other.uid_file)) {}
 
-AlbumTableFiles& AlbumTableFiles::operator=(RValue other) {
-  if (this != other.object) {
-    indicator_file = other.object->indicator_file.Pass();
-    category_file = other.object->category_file.Pass();
-    date_file = other.object->date_file.Pass();
-    filename_file = other.object->filename_file.Pass();
-    name_file = other.object->name_file.Pass();
-    token_file = other.object->token_file.Pass();
-    uid_file = other.object->uid_file.Pass();
-  }
+AlbumTableFiles& AlbumTableFiles::operator=(AlbumTableFiles&& other) {
+  indicator_file = std::move(other.indicator_file);
+  category_file = std::move(other.category_file);
+  date_file = std::move(other.date_file);
+  filename_file = std::move(other.filename_file);
+  name_file = std::move(other.name_file);
+  token_file = std::move(other.token_file);
+  uid_file = std::move(other.uid_file);
   return *this;
 }
 

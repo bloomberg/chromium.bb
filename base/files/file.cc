@@ -50,13 +50,12 @@ File::File(Error error_details)
       async_(false) {
 }
 
-File::File(RValue other)
-    : file_(other.object->TakePlatformFile()),
-      tracing_path_(other.object->tracing_path_),
-      error_details_(other.object->error_details()),
-      created_(other.object->created()),
-      async_(other.object->async_) {
-}
+File::File(File&& other)
+    : file_(other.TakePlatformFile()),
+      tracing_path_(other.tracing_path_),
+      error_details_(other.error_details()),
+      created_(other.created()),
+      async_(other.async_) {}
 
 File::~File() {
   // Go through the AssertIOAllowed logic.
@@ -72,15 +71,14 @@ File File::CreateForAsyncHandle(PlatformFile platform_file) {
   return file.Pass();
 }
 
-File& File::operator=(RValue other) {
-  if (this != other.object) {
-    Close();
-    SetPlatformFile(other.object->TakePlatformFile());
-    tracing_path_ = other.object->tracing_path_;
-    error_details_ = other.object->error_details();
-    created_ = other.object->created();
-    async_ = other.object->async_;
-  }
+File& File::operator=(File&& other) {
+  DCHECK_NE(this, &other);
+  Close();
+  SetPlatformFile(other.TakePlatformFile());
+  tracing_path_ = other.tracing_path_;
+  error_details_ = other.error_details();
+  created_ = other.created();
+  async_ = other.async_;
   return *this;
 }
 

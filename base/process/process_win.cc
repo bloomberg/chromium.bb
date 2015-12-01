@@ -25,21 +25,20 @@ Process::Process(ProcessHandle handle)
   CHECK_NE(handle, ::GetCurrentProcess());
 }
 
-Process::Process(RValue other)
-    : is_current_process_(other.object->is_current_process_),
-      process_(other.object->process_.Take()) {
-  other.object->Close();
+Process::Process(Process&& other)
+    : is_current_process_(other.is_current_process_),
+      process_(other.process_.Take()) {
+  other.Close();
 }
 
 Process::~Process() {
 }
 
-Process& Process::operator=(RValue other) {
-  if (this != other.object) {
-    process_.Set(other.object->process_.Take());
-    is_current_process_ = other.object->is_current_process_;
-    other.object->Close();
-  }
+Process& Process::operator=(Process&& other) {
+  DCHECK_NE(this, &other);
+  process_.Set(other.process_.Take());
+  is_current_process_ = other.is_current_process_;
+  other.Close();
   return *this;
 }
 

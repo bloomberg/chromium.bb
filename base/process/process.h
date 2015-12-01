@@ -32,19 +32,17 @@ namespace base {
 // the process dies, and it may be reused by the system, which means that it may
 // end up pointing to the wrong process.
 class BASE_EXPORT Process {
-  MOVE_ONLY_TYPE_FOR_CPP_03(Process, RValue)
+  MOVE_ONLY_TYPE_FOR_CPP_03(Process)
 
  public:
   explicit Process(ProcessHandle handle = kNullProcessHandle);
 
-  // Move constructor for C++03 move emulation of this type.
-  Process(RValue other);
+  Process(Process&& other);
 
   // The destructor does not terminate the process.
   ~Process();
 
-  // Move operator= for C++03 move emulation of this type.
-  Process& operator=(RValue other);
+  Process& operator=(Process&& other);
 
   // Returns an object for the current process.
   static Process Current();

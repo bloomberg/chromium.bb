@@ -19,7 +19,7 @@ class SurfaceTexture;
 // When going out of scope, Surface.release() is called on the Java object to
 // make sure server-side references (esp. wrt graphics memory) are released.
 class GL_EXPORT ScopedJavaSurface {
-  MOVE_ONLY_TYPE_FOR_CPP_03(ScopedJavaSurface, RValue);
+  MOVE_ONLY_TYPE_FOR_CPP_03(ScopedJavaSurface);
 
  public:
   ScopedJavaSurface();
@@ -33,8 +33,8 @@ class GL_EXPORT ScopedJavaSurface {
 
   // Move constructor. Take the surface from another ScopedJavaSurface object,
   // the latter no longer owns the surface afterwards.
-  ScopedJavaSurface(RValue rvalue);
-  ScopedJavaSurface& operator=(RValue rhs);
+  ScopedJavaSurface(ScopedJavaSurface&& rvalue);
+  ScopedJavaSurface& operator=(ScopedJavaSurface&& rhs);
 
   // Creates a ScopedJavaSurface that is owned externally, i.e.,
   // someone else is responsible to call Surface.release().

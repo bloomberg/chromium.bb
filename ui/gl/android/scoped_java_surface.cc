@@ -48,12 +48,12 @@ ScopedJavaSurface::ScopedJavaSurface(
   j_surface_.Reset(tmp);
 }
 
-ScopedJavaSurface::ScopedJavaSurface(RValue rvalue) {
-  MoveFrom(*rvalue.object);
+ScopedJavaSurface::ScopedJavaSurface(ScopedJavaSurface&& rvalue) {
+  MoveFrom(rvalue);
 }
 
-ScopedJavaSurface& ScopedJavaSurface::operator=(RValue rhs) {
-  MoveFrom(*rhs.object);
+ScopedJavaSurface& ScopedJavaSurface::operator=(ScopedJavaSurface&& rhs) {
+  MoveFrom(rhs);
   return *this;
 }
 

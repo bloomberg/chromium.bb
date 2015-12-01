@@ -4,6 +4,8 @@
 
 #include "net/base/file_stream_context.h"
 
+#include <utility>
+
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/profiler/scoped_tracker.h"
@@ -54,17 +56,13 @@ FileStream::Context::OpenResult::OpenResult(base::File file,
       error_code(error_code) {
 }
 
-FileStream::Context::OpenResult::OpenResult(RValue other)
-    : file(other.object->file.Pass()),
-      error_code(other.object->error_code) {
-}
+FileStream::Context::OpenResult::OpenResult(OpenResult&& other)
+    : file(std::move(other.file)), error_code(other.error_code) {}
 
 FileStream::Context::OpenResult& FileStream::Context::OpenResult::operator=(
-    RValue other) {
-  if (this != other.object) {
-    file = other.object->file.Pass();
-    error_code = other.object->error_code;
-  }
+    OpenResult&& other) {
+  file = std::move(other.file);
+  error_code = other.error_code;
   return *this;
 }
 

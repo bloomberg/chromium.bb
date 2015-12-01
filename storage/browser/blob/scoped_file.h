@@ -27,10 +27,7 @@ namespace storage {
 // TODO(kinuko): Probably this can be moved under base or somewhere more
 // common place.
 class STORAGE_EXPORT ScopedFile {
-  // To support destructive assignment from an l-value assignment.
-  // This provides Pass() method which creates an r-value for the current
-  // instance. (See base/move.h for details)
-  MOVE_ONLY_TYPE_FOR_CPP_03(ScopedFile, RValue)
+  MOVE_ONLY_TYPE_FOR_CPP_03(ScopedFile)
 
  public:
   typedef base::Callback<void(const base::FilePath&)> ScopeOutCallback;
@@ -53,9 +50,9 @@ class STORAGE_EXPORT ScopedFile {
 
   // Move constructor and operator. The data of r-value will be transfered
   // in a destructive way. (See base/move.h)
-  ScopedFile(RValue other);
-  ScopedFile& operator=(RValue rhs) {
-    MoveFrom(*rhs.object);
+  ScopedFile(ScopedFile&& other);
+  ScopedFile& operator=(ScopedFile&& rhs) {
+    MoveFrom(rhs);
     return *this;
   }
 

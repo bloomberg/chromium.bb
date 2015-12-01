@@ -10,6 +10,7 @@
 #include <algorithm>
 
 #include "base/basictypes.h"
+#include "base/logging.h"
 #include "base/move.h"
 
 namespace remoting {
@@ -20,11 +21,10 @@ namespace remoting {
 // move-only semantics and typed buffer getters.
 template <typename T>
 class TypedBuffer {
-  MOVE_ONLY_TYPE_FOR_CPP_03(TypedBuffer, RValue)
+  MOVE_ONLY_TYPE_FOR_CPP_03(TypedBuffer)
 
  public:
-  TypedBuffer() : buffer_(NULL), length_(0) {
-  }
+  TypedBuffer() : TypedBuffer(0) {}
 
   // Creates an instance of the object allocating a buffer of the given size.
   explicit TypedBuffer(uint32 length) : buffer_(NULL), length_(length) {
@@ -32,12 +32,7 @@ class TypedBuffer {
       buffer_ = reinterpret_cast<T*>(new uint8[length_]);
   }
 
-  // Move constructor for C++03 move emulation of this type.
-  TypedBuffer(RValue rvalue) : buffer_(NULL), length_(0) {
-    TypedBuffer temp;
-    temp.Swap(*rvalue.object);
-    Swap(temp);
-  }
+  TypedBuffer(TypedBuffer&& rvalue) : TypedBuffer() { Swap(rvalue); }
 
   ~TypedBuffer() {
     if (buffer_) {
@@ -46,11 +41,8 @@ class TypedBuffer {
     }
   }
 
-  // Move operator= for C++03 move emulation of this type.
-  TypedBuffer& operator=(RValue rvalue) {
-    TypedBuffer temp;
-    temp.Swap(*rvalue.object);
-    Swap(temp);
+  TypedBuffer& operator=(TypedBuffer&& rvalue) {
+    Swap(rvalue);
     return *this;
   }
 

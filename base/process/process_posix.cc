@@ -217,16 +217,14 @@ Process::Process(ProcessHandle handle) : process_(handle) {
 Process::~Process() {
 }
 
-Process::Process(RValue other)
-    : process_(other.object->process_) {
-  other.object->Close();
+Process::Process(Process&& other) : process_(other.process_) {
+  other.Close();
 }
 
-Process& Process::operator=(RValue other) {
-  if (this != other.object) {
-    process_ = other.object->process_;
-    other.object->Close();
-  }
+Process& Process::operator=(Process&& other) {
+  DCHECK_NE(this, &other);
+  process_ = other.process_;
+  other.Close();
   return *this;
 }
 

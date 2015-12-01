@@ -4,6 +4,8 @@
 
 #include "chrome/browser/spellchecker/spellcheck_hunspell_dictionary.h"
 
+#include <utility>
+
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
@@ -79,17 +81,15 @@ SpellcheckHunspellDictionary::DictionaryFile::~DictionaryFile() {
   }
 }
 
-SpellcheckHunspellDictionary::DictionaryFile::DictionaryFile(RValue other)
-    : path(other.object->path),
-      file(other.object->file.Pass()) {
-}
+SpellcheckHunspellDictionary::DictionaryFile::DictionaryFile(
+    DictionaryFile&& other)
+    : path(other.path), file(std::move(other.file)) {}
 
 SpellcheckHunspellDictionary::DictionaryFile&
-SpellcheckHunspellDictionary::DictionaryFile::operator=(RValue other) {
-  if (this != other.object) {
-    path = other.object->path;
-    file = other.object->file.Pass();
-  }
+    SpellcheckHunspellDictionary::DictionaryFile::
+    operator=(DictionaryFile&& other) {
+  path = other.path;
+  file = std::move(other.file);
   return *this;
 }
 

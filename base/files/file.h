@@ -53,7 +53,7 @@ typedef struct stat64 stat_wrapper_t;
 // to the OS is not considered const, even if there is no apparent change to
 // member variables.
 class BASE_EXPORT File {
-  MOVE_ONLY_TYPE_FOR_CPP_03(File, RValue)
+  MOVE_ONLY_TYPE_FOR_CPP_03(File)
 
  public:
   // FLAG_(OPEN|CREATE).* are mutually exclusive. You should specify exactly one
@@ -169,16 +169,14 @@ class BASE_EXPORT File {
   // Creates an object with a specific error_details code.
   explicit File(Error error_details);
 
-  // Move constructor for C++03 move emulation of this type.
-  File(RValue other);
+  File(File&& other);
 
   ~File();
 
   // Takes ownership of |platform_file|.
   static File CreateForAsyncHandle(PlatformFile platform_file);
 
-  // Move operator= for C++03 move emulation of this type.
-  File& operator=(RValue other);
+  File& operator=(File&& other);
 
   // Creates or opens the given file.
   void Initialize(const FilePath& path, uint32 flags);

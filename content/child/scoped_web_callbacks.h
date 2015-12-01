@@ -5,6 +5,8 @@
 #ifndef CONTENT_CHILD_SCOPED_WEB_CALLBACKS_H_
 #define CONTENT_CHILD_SCOPED_WEB_CALLBACKS_H_
 
+#include <utility>
+
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/move.h"
@@ -64,7 +66,7 @@
 // our desired default behavior before deleting the WebCallbacks.
 template <typename CallbacksType>
 class ScopedWebCallbacks {
-  MOVE_ONLY_TYPE_FOR_CPP_03(ScopedWebCallbacks, RValue);
+  MOVE_ONLY_TYPE_FOR_CPP_03(ScopedWebCallbacks);
 
  public:
   using DestructionCallback =
@@ -80,11 +82,11 @@ class ScopedWebCallbacks {
       destruction_callback_.Run(callbacks_.Pass());
   }
 
-  ScopedWebCallbacks(RValue other) { *this = other; }
+  ScopedWebCallbacks(ScopedWebCallbacks&& other) { *this = std::move(other); }
 
-  ScopedWebCallbacks& operator=(RValue other) {
-    callbacks_ = other.object->callbacks_.Pass();
-    destruction_callback_ = other.object->destruction_callback_;
+  ScopedWebCallbacks& operator=(ScopedWebCallbacks&& other) {
+    callbacks_ = std::move(other.callbacks_);
+    destruction_callback_ = other.destruction_callback_;
     return *this;
   }
 

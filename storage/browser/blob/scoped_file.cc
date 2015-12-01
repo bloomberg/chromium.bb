@@ -29,8 +29,8 @@ ScopedFile::ScopedFile(const base::FilePath& path,
       << " runner:" << file_task_runner.get();
 }
 
-ScopedFile::ScopedFile(RValue other) {
-  MoveFrom(*other.object);
+ScopedFile::ScopedFile(ScopedFile&& other) {
+  MoveFrom(other);
 }
 
 ScopedFile::~ScopedFile() {
