@@ -795,3 +795,10 @@ content.dll!content::BrowserThreadImpl::ProcessLauncherThreadRun
 content.dll!content::BrowserThreadImpl::Run
 base.dll!base::Thread::ThreadMain
 base.dll!base::`anonymous namespace'::ThreadFunc
+
+UNADDRESSABLE ACCESS
+name=bug_563817
+base.dll!base::CommandLine::HasSwitch
+base.dll!base::CommandLine::HasSwitch
+mojo_system_impl.dll!mojo::edk::Init
+mojo_system_impl.dll!mojo::embedder::Init
