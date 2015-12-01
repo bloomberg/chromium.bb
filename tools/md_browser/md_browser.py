@@ -101,6 +101,7 @@ class Handler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
   def _DoMD(self, path):
     extensions = [
+        'markdown.extensions.def_list',
         'markdown.extensions.fenced_code',
         'markdown.extensions.tables',
         'markdown.extensions.toc',
