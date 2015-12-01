@@ -66,7 +66,6 @@ class ShellSurface : public SurfaceDelegate,
  private:
   scoped_ptr<views::Widget> widget_;
   Surface* surface_;
-  ui::WindowShowState show_state_;
   base::string16 title_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellSurface);

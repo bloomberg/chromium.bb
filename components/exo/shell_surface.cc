@@ -6,6 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
+#include "ash/wm/window_state.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
@@ -44,15 +45,30 @@ class CustomFrameView : public views::NonClientFrameView {
   DISALLOW_COPY_AND_ASSIGN(CustomFrameView);
 };
 
+views::Widget::InitParams CreateWidgetInitParams(
+    views::WidgetDelegate* delegate) {
+  views::Widget::InitParams params;
+  params.type = views::Widget::InitParams::TYPE_WINDOW;
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.delegate = delegate;
+  params.shadow_type = views::Widget::InitParams::SHADOW_TYPE_NONE;
+  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+  params.show_state = ui::SHOW_STATE_NORMAL;
+  params.parent = ash::Shell::GetContainer(
+      ash::Shell::GetPrimaryRootWindow(), ash::kShellWindowId_DefaultContainer);
+  return params;
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // ShellSurface, public:
 
-ShellSurface::ShellSurface(Surface* surface)
-    : surface_(surface), show_state_(ui::SHOW_STATE_END) {
+ShellSurface::ShellSurface(Surface* surface) : surface_(surface) {
   surface_->SetSurfaceDelegate(this);
   surface_->AddSurfaceObserver(this);
+  surface_->SetVisible(true);
+  surface_->SetEnabled(true);
 }
 
 ShellSurface::~ShellSurface() {
@@ -67,30 +83,50 @@ ShellSurface::~ShellSurface() {
 void ShellSurface::SetToplevel() {
   TRACE_EVENT0("exo", "ShellSurface::SetToplevel");
 
-  if (!widget_)
-    show_state_ = ui::SHOW_STATE_NORMAL;
+  if (widget_) {
+    DLOG(WARNING) << "Shell surface already mapped";
+    return;
+  }
+
+  views::Widget::InitParams params = CreateWidgetInitParams(this);
+  params.bounds = gfx::Rect(gfx::Size(1, 1));
+  widget_.reset(new views::Widget);
+  widget_->Init(params);
+  widget_->GetNativeWindow()->set_owned_by_parent(false);
+
+  // The position of a standard top level shell surface is managed by Ash.
+  ash::wm::GetWindowState(widget_->GetNativeWindow())
+      ->set_window_position_managed(true);
 }
 
 void ShellSurface::SetMaximized() {
   TRACE_EVENT0("exo", "ShellSurface::SetMaximized");
 
   if (widget_) {
-    widget_->Maximize();
+    DLOG(WARNING) << "Shell surface already mapped";
     return;
   }
 
-  show_state_ = ui::SHOW_STATE_MAXIMIZED;
+  views::Widget::InitParams params = CreateWidgetInitParams(this);
+  params.show_state = ui::SHOW_STATE_MAXIMIZED;
+  widget_.reset(new views::Widget);
+  widget_->Init(params);
+  widget_->GetNativeWindow()->set_owned_by_parent(false);
 }
 
 void ShellSurface::SetFullscreen() {
   TRACE_EVENT0("exo", "ShellSurface::SetFullscreen");
 
   if (widget_) {
-    widget_->SetFullscreen(true);
+    DLOG(WARNING) << "Shell surface already mapped";
     return;
   }
 
-  show_state_ = ui::SHOW_STATE_FULLSCREEN;
+  views::Widget::InitParams params = CreateWidgetInitParams(this);
+  params.show_state = ui::SHOW_STATE_FULLSCREEN;
+  widget_.reset(new views::Widget);
+  widget_->Init(params);
+  widget_->GetNativeWindow()->set_owned_by_parent(false);
 }
 
 void ShellSurface::SetTitle(const base::string16& title) {
@@ -114,32 +150,14 @@ scoped_refptr<base::trace_event::TracedValue> ShellSurface::AsTracedValue()
 // SurfaceDelegate overrides:
 
 void ShellSurface::OnSurfaceCommit() {
-  if (widget_ || show_state_ == ui::SHOW_STATE_END) {
-    surface_->CommitSurfaceHierarchy();
-    if (widget_)
-      widget_->SetSize(widget_->non_client_view()->GetPreferredSize());
-    return;
-  }
-
-  views::Widget::InitParams params;
-  params.type = views::Widget::InitParams::TYPE_WINDOW;
-  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.delegate = this;
-  params.shadow_type = views::Widget::InitParams::SHADOW_TYPE_NONE;
-  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
-  params.show_state = show_state_;
-  params.parent = ash::Shell::GetContainer(
-      ash::Shell::GetPrimaryRootWindow(), ash::kShellWindowId_DefaultContainer);
-  widget_.reset(new views::Widget);
-  widget_->Init(params);
-  widget_->GetNativeWindow()->set_owned_by_parent(false);
-  widget_->GetNativeView()->SetName("ShellSurface");
-
   surface_->CommitSurfaceHierarchy();
-  surface_->SetVisible(true);
-  surface_->SetEnabled(true);
+  if (widget_) {
+    widget_->SetSize(widget_->non_client_view()->GetPreferredSize());
 
-  widget_->Show();
+    // Show widget if not already visible.
+    if (!widget_->GetNativeWindow()->TargetVisibility())
+      widget_->Show();
+  }
 }
 
 bool ShellSurface::IsSurfaceSynchronized() const {
