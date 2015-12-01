@@ -565,10 +565,10 @@ void WebRtcAudioRenderer::OnPlayStateChanged(
 
 void WebRtcAudioRenderer::PrepareSink() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  media::AudioParameters sink_params;
+  media::AudioParameters new_sink_params;
   {
     base::AutoLock lock(lock_);
-    sink_params = sink_params_;
+    new_sink_params = sink_params_;
   }
   // WebRTC does not yet support higher rates than 96000 on the client side
   // and 48000 is the preferred sample rate. Therefore, if 192000 is detected,
@@ -598,47 +598,50 @@ void WebRtcAudioRenderer::PrepareSink() {
   DVLOG(1) << "Using WebRTC output buffer size: " << frames_per_10ms;
   media::AudioParameters source_params(
       media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-      sink_params.channel_layout(), sample_rate, 16, frames_per_10ms);
-  source_params.set_channels_for_discrete(sink_params.channels());
+      new_sink_params.channel_layout(), sample_rate, 16, frames_per_10ms);
+  source_params.set_channels_for_discrete(new_sink_params.channels());
 
   const int frames_per_buffer = GetOptimalBufferSize(
       sample_rate, sink_->GetOutputParameters().frames_per_buffer());
 
-  sink_params.Reset(sink_params.format(), sink_params.channel_layout(),
-                    sample_rate, 16, frames_per_buffer);
+  new_sink_params.Reset(
+      new_sink_params.format(), new_sink_params.channel_layout(),
+      sample_rate, 16, frames_per_buffer);
 
   // Create a FIFO if re-buffering is required to match the source input with
   // the sink request. The source acts as provider here and the sink as
   // consumer.
-  int fifo_delay_milliseconds = 0;
-  scoped_ptr<media::AudioPullFifo> audio_fifo;
-  if (source_params.frames_per_buffer() != sink_params_.frames_per_buffer()) {
+  int new_fifo_delay_milliseconds = 0;
+  scoped_ptr<media::AudioPullFifo> new_audio_fifo;
+  if (source_params.frames_per_buffer() !=
+      new_sink_params.frames_per_buffer()) {
     DVLOG(1) << "Rebuffering from " << source_params.frames_per_buffer()
-             << " to " << sink_params_.frames_per_buffer();
-    audio_fifo.reset(new media::AudioPullFifo(
+             << " to " << new_sink_params.frames_per_buffer();
+    new_audio_fifo.reset(new media::AudioPullFifo(
         source_params.channels(), source_params.frames_per_buffer(),
         base::Bind(&WebRtcAudioRenderer::SourceCallback,
                    base::Unretained(this))));
 
-    if (sink_params.frames_per_buffer() > source_params.frames_per_buffer()) {
+    if (new_sink_params.frames_per_buffer() >
+        source_params.frames_per_buffer()) {
       int frame_duration_milliseconds =
           base::Time::kMillisecondsPerSecond /
           static_cast<double>(source_params.sample_rate());
-      fifo_delay_milliseconds = (sink_params_.frames_per_buffer() -
-                                 source_params.frames_per_buffer()) *
-                                frame_duration_milliseconds;
+      new_fifo_delay_milliseconds = (new_sink_params.frames_per_buffer() -
+                                     source_params.frames_per_buffer()) *
+                                    frame_duration_milliseconds;
     }
   }
 
   {
     base::AutoLock lock(lock_);
-    sink_params_ = sink_params;
-    fifo_delay_milliseconds_ = fifo_delay_milliseconds;
-    if (audio_fifo.get())
-      audio_fifo_ = audio_fifo.Pass();
+    sink_params_ = new_sink_params;
+    fifo_delay_milliseconds_ = new_fifo_delay_milliseconds;
+    if (new_audio_fifo.get())
+      audio_fifo_ = new_audio_fifo.Pass();
   }
 
-  sink_->Initialize(sink_params, this);
+  sink_->Initialize(new_sink_params, this);
 }
 
 }  // namespace content
