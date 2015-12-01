@@ -229,7 +229,7 @@ def swarming_trigger(swarming, raw_request):
         if err.get('debugInfo'):
           msg += '\nDebug info:\n%s' % err['debugInfo']
     elif result['error'].get('message'):
-      msg += '\nMessage: %s' % result['message']
+      msg += '\nMessage: %s' % result['error']['message']
 
     on_error.report(msg)
     return None
@@ -538,6 +538,18 @@ def retrieve_results(
     # request on GAE v2.
     result = net.url_read_json(result_url, retry_50x=False)
     if not result:
+      continue
+
+    if result.get('error'):
+      # An error occurred.
+      if result['error'].get('errors'):
+        for err in result['error']['errors']:
+          logging.warning(
+              'Error while reading task: %s; %s',
+              err.get('message'), err.get('debugInfo'))
+      elif result['error'].get('message'):
+        logging.warning(
+            'Error while reading task: %s', result['error']['message'])
       continue
 
     if result['state'] in State.STATES_NOT_RUNNING:
