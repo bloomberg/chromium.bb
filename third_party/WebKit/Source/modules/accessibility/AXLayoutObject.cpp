@@ -1436,7 +1436,7 @@ void AXLayoutObject::markCachedElementRectDirty() const
 
     // Marks children recursively, if this element changed.
     m_cachedElementRectDirty = true;
-    for (AXObject* child = firstChild(); child; child = child->nextSibling())
+    for (AXObject* child = rawFirstChild(); child; child = child->rawFirstSibling())
         child->markCachedElementRectDirty();
 }
 
@@ -1575,7 +1575,7 @@ AXObject* AXLayoutObject::computeParentIfExists() const
 // Low-level accessibility tree exploration, only for use within the accessibility module.
 //
 
-AXObject* AXLayoutObject::firstChild() const
+AXObject* AXLayoutObject::rawFirstChild() const
 {
     if (!m_layoutObject)
         return 0;
@@ -1588,7 +1588,7 @@ AXObject* AXLayoutObject::firstChild() const
     return axObjectCache().getOrCreate(firstChild);
 }
 
-AXObject* AXLayoutObject::nextSibling() const
+AXObject* AXLayoutObject::rawFirstSibling() const
 {
     if (!m_layoutObject)
         return 0;
@@ -1647,7 +1647,7 @@ void AXLayoutObject::addChildren()
     HeapVector<Member<AXObject>> ownedChildren;
     computeAriaOwnsChildren(ownedChildren);
 
-    for (AXObject* obj = firstChild(); obj; obj = obj->nextSibling()) {
+    for (AXObject* obj = rawFirstChild(); obj; obj = obj->rawFirstSibling()) {
         if (!axObjectCache().isAriaOwned(obj))
             addChild(obj);
     }

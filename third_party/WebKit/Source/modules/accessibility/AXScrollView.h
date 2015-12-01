@@ -72,7 +72,7 @@ private:
     AXObject* computeParentIfExists() const override;
 
     AXObject* webAreaObject() const;
-    AXObject* firstChild() const override { return webAreaObject(); }
+    AXObject* rawFirstChild() const override { return webAreaObject(); }
     AXScrollbar* addChildScrollbar(Scrollbar*);
     void removeChildScrollbar(AXObject*);
 

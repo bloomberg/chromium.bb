@@ -832,8 +832,8 @@ public:
     AXObject* parentObjectUnignored() const;
 
     // Low-level accessibility tree exploration, only for use within the accessibility module.
-    virtual AXObject* firstChild() const { return 0; }
-    virtual AXObject* nextSibling() const { return 0; }
+    virtual AXObject* rawFirstChild() const { return 0; }
+    virtual AXObject* rawFirstSibling() const { return 0; }
     AXObject* firstAccessibleObjectFromNode(const Node*);
     virtual void addChildren() { }
     virtual bool canHaveChildren() const { return true; }

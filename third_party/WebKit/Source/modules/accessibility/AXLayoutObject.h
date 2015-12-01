@@ -166,8 +166,8 @@ protected:
     AXObject* computeParentIfExists() const override;
 
     // Low-level accessibility tree exploration, only for use within the accessibility module.
-    AXObject* firstChild() const override;
-    AXObject* nextSibling() const override;
+    AXObject* rawFirstChild() const override;
+    AXObject* rawFirstSibling() const override;
     void addChildren() override;
     bool canHaveChildren() const override;
     void updateChildrenIfNecessary() override;

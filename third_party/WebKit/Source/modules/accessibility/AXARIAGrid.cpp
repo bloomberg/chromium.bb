@@ -94,7 +94,7 @@ void AXARIAGrid::addChildren()
         return;
 
     HeapVector<Member<AXObject>> children;
-    for (AXObject* child = firstChild(); child; child = child->nextSibling())
+    for (AXObject* child = rawFirstChild(); child; child = child->rawFirstSibling())
         children.append(child);
     computeAriaOwnsChildren(children);
 
