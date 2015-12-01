@@ -1645,14 +1645,14 @@ test("unit_tests") {
             chrome_tests_unit_gypi_values.chrome_unit_tests_offline_pages_sources,
             ".",
             "//chrome")
+    deps += [
+      ":unit_tests_java",
+      "//v8:v8_external_startup_data_assets",
+    ]
     deps -= [ "//third_party/libaddressinput" ]
 
     android_manifest =
         "//chrome/test/android/unit_tests_apk/AndroidManifest.xml"
-    apk_deps = [
-      ":unit_tests_java",
-      "//v8:v8_external_startup_data_assets",
-    ]
     isolate_file = "../unit_tests.isolate"
 
     # Some android targets still depend on --gc-sections to link.

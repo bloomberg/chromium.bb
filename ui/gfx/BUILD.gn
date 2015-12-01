@@ -708,7 +708,7 @@ test("gfx_unittests") {
   }
 
   if (is_android) {
-    apk_deps = [ "//ui/android:ui_java" ]
+    deps += [ "//ui/android:ui_java" ]
 
     sources -= [
       # Do not run display_change_notifier_unittest.cc on Android because it

@@ -138,9 +138,11 @@ test("device_unittests") {
 
   if (is_android) {
     sources -= [ "battery/battery_status_service_unittest.cc" ]
+    deps += [
+      ":bluetooth_test_java",
+      ":bluetooth_test_jni_headers",
+    ]
     deps -= [ "//device/battery" ]
-    deps += [ ":bluetooth_test_jni_headers" ]
-    apk_deps = [ ":bluetooth_test_java" ]
   }
 
   if (is_chromeos) {

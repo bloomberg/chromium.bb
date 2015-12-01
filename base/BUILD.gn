@@ -1525,7 +1525,7 @@ test("base_unittests") {
   }
 
   if (is_android) {
-    apk_deps = [
+    deps += [
       ":base_java",
       ":base_java_unittest_support",
     ]

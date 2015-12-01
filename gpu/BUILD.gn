@@ -177,7 +177,7 @@ test("gl_tests") {
 
   if (is_android) {
     libs += [ "android" ]
-    apk_deps = [ "//ui/android:ui_java" ]
+    deps += [ "//ui/android:ui_java" ]
   }
 }
 

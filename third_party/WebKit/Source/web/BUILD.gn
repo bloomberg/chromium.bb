@@ -140,7 +140,7 @@ test("webkit_unit_tests") {
   }
 
   if (is_android) {
-    apk_deps = [
+    deps += [
       "//base:base_java",
       "//content/shell/android:content_shell_assets",
       "//net/android:net_java",

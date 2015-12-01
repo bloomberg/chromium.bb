@@ -363,7 +363,7 @@ test("heap_unittests") {
     "//third_party/WebKit/Source/wtf:test_support",
   ]
   if (is_android) {
-    apk_deps = [
+    deps += [
       "//base:base_java",
       "//content/shell/android:content_shell_assets",
       "//net/android:net_java",

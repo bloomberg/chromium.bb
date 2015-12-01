@@ -441,17 +441,15 @@ test("content_browsertests") {
             "//content")
     sources -=
         [ "../browser/battery_status/battery_monitor_impl_browsertest.cc" ]
-    deps -= [ "//device/battery" ]
     deps += [
+      ":content_browsertests_java",
+      ":content_browsertests_manifest",
       "//content/shell:content_shell_lib",
+      "//content/shell/android:content_shell_assets",
       "//content/shell/android:content_shell_jni_headers",
       "//testing/android/native_test:native_test_support",
     ]
-    apk_deps = [
-      ":content_browsertests_java",
-      ":content_browsertests_manifest",
-      "//content/shell/android:content_shell_assets",
-    ]
+    deps -= [ "//device/battery" ]
     android_manifest =
         "${target_gen_dir}/content_browsertests_manifest/AndroidManifest.xml"
     isolate_file = "//content/content_browsertests.isolate"
@@ -708,7 +706,7 @@ test("content_unittests") {
     ]
     deps -= [ "//device/battery" ]
 
-    apk_deps = [
+    deps += [
       "//base:base_java_unittest_support",
       "//content/public/android:content_java",
       "//v8:v8_external_startup_data_assets",
@@ -830,7 +828,7 @@ test("content_gl_tests") {
   ]
 
   if (is_android) {
-    apk_deps = [
+    deps += [
       "//content/public/test/android:content_java_test_support",
       "//content/shell/android:content_shell_assets",
     ]
@@ -896,10 +894,8 @@ if (is_android) {
       deps += [
         "//gpu:test_support",
         "//media/base/android",
-        "//testing/gmock",
-      ]
-      apk_deps = [
         "//media/base/android:media_java",
+        "//testing/gmock",
         "//ui/android:ui_java",
       ]
     }

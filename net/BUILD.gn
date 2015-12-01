@@ -1600,25 +1600,23 @@ test("net_unittests") {
   }
 
   if (is_android) {
-    apk_deps = [
+    deps += [
+      ":net_test_jni_headers",
       "//base:base_java_unittest_support",
       "//net/android:net_java",
-      "//net/android:net_javatests",
       "//net/android:net_java_test_support",
+      "//net/android:net_javatests",
       "//net/android:net_unittests_apk_resources",
+
+      # TODO(mmenke):  This depends on test_support_base, which depends on
+      #                icu.  Figure out a way to remove that dependency.
+      "//testing/android/native_test:native_test_native_code",
       "//v8:v8_external_startup_data_assets",
     ]
     android_manifest = "//net/android/unittest_support/AndroidManifest.xml"
     sources -= [
       # See bug http://crbug.com/344533.
       "disk_cache/blockfile/index_table_v3_unittest.cc",
-    ]
-    deps += [
-      ":net_test_jni_headers",
-
-      # TODO(mmenke):  This depends on test_support_base, which depends on
-      #                icu.  Figure out a way to remove that dependency.
-      "//testing/android/native_test:native_test_native_code",
     ]
     set_sources_assignment_filter([])
     sources += [ "base/address_tracker_linux_unittest.cc" ]

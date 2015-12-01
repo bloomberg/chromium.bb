@@ -28,6 +28,7 @@ template("test") {
 
       # Don't use "*" to forward all variables since some (like output_name
       # and isolate_file) apply only to the APK below.
+      deps = []
       forward_variables_from(invoker,
                              [
                                "all_dependent_configs",
@@ -40,6 +41,7 @@ template("test") {
                                "data_deps",
                                "datadeps",
                                "defines",
+                               "deps",
                                "include_dirs",
                                "ldflags",
                                "lib_dirs",
@@ -53,13 +55,9 @@ template("test") {
                                "visibility",
                              ])
 
-      deps = []
       if (!defined(invoker.use_default_launcher) ||
           invoker.use_default_launcher) {
         deps += [ "//testing/android/native_test:native_test_native_code" ]
-      }
-      if (defined(invoker.deps)) {
-        deps += invoker.deps
       }
     }
 
@@ -67,22 +65,17 @@ template("test") {
       forward_variables_from(invoker,
                              [
                                "android_manifest",
+                               "deps",
                                "use_default_launcher",
                                "write_asset_list",
                              ])
-
       unittests_dep = ":$library_name"
       apk_name = main_target_name
       if (defined(invoker.output_name)) {
         apk_name = invoker.output_name
         unittests_binary = "lib${apk_name}.so"
       }
-      deps = [
-        ":$library_name",
-      ]
-      if (defined(invoker.apk_deps)) {
-        deps += invoker.apk_deps
-      }
+      deps += [ ":$library_name" ]
       if (defined(invoker.apk_asset_location)) {
         asset_location = invoker.apk_asset_location
       }

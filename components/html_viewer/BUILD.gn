@@ -328,7 +328,7 @@ test("html_viewer_unittests") {
   ]
 
   if (is_android) {
-    apk_deps = [ ":unittest_assets" ]
+    deps += [ ":unittest_assets" ]
     write_asset_list = true
   }
 

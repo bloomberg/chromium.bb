@@ -490,26 +490,23 @@ test("components_unittests") {
 
     deps += [
       "//components/invalidation/impl",
+      "//components/invalidation/impl:java",
       "//components/safe_json",
+      "//components/safe_json/android:safe_json_java",
       "//components/signin/core/browser",
+      "//components/signin/core/browser/android:java",
+      "//components/variations/android:variations_java",
+      "//content/public/android:content_java",
       "//content/public/android:content_java",
       "//content/public/browser",
       "//net",
+      "//ui/android:ui_java",
       "//ui/base",
       "//ui/gfx",
     ]
 
-    apk_deps = [
-      "//components/invalidation/impl:java",
-      "//components/safe_json/android:safe_json_java",
-      "//components/signin/core/browser/android:java",
-      "//components/variations/android:variations_java",
-      "//content/public/android:content_java",
-      "//ui/android:ui_java",
-    ]
-
     if (enable_configuration_policy) {
-      apk_deps += [ "//components/policy/android:policy_java" ]
+      deps += [ "//components/policy/android:policy_java" ]
     }
   }
 
@@ -702,7 +699,7 @@ test("components_browsertests") {
     isolate_file = "components_browsertests.isolate"
     android_manifest =
         "${target_gen_dir}/components_browsertests_manifest/AndroidManifest.xml"
-    apk_deps = [
+    deps += [
       ":components_browsertests_assets",
       ":components_browsertests_java",
       ":components_browsertests_manifest",

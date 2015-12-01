@@ -815,7 +815,7 @@ test("ui_base_unittests") {
   }
 
   if (is_android) {
-    apk_deps = [
+    deps += [
       "//chrome:resources",
       "//ui/android:ui_java",
     ]

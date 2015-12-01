@@ -157,7 +157,7 @@ if (!is_mac) {
     }
 
     if (is_android) {
-      apk_deps = [ "//net/android:net_java" ]
+      deps += [ "//net/android:net_java" ]
     }
   }
 
