@@ -83,7 +83,6 @@ ProfileResetter::~ProfileResetter() {
 void ProfileResetter::Reset(
     ProfileResetter::ResettableFlags resettable_flags,
     scoped_ptr<BrandcodedDefaultSettings> master_settings,
-    bool accepted_send_feedback,
     const base::Closure& callback) {
   DCHECK(CalledOnValidThread());
   DCHECK(master_settings);

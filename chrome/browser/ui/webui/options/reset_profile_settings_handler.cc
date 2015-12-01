@@ -204,7 +204,6 @@ void ResetProfileSettingsHandler::ResetProfile(bool send_settings) {
   resetter_->Reset(
       ProfileResetter::ALL,
       default_settings.Pass(),
-      send_settings,
       base::Bind(&ResetProfileSettingsHandler::OnResetProfileSettingsDone,
                  AsWeakPtr(),
                  send_settings));

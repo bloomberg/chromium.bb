@@ -60,11 +60,9 @@ class ProfileResetter : public base::NonThreadSafe,
 
   // Resets |resettable_flags| and calls |callback| on the UI thread on
   // completion. |default_settings| allows the caller to specify some default
-  // settings. |default_settings| shouldn't be NULL. |accepted_send_feedback|
-  // identifies whether the user accepted to send feedback or not.
+  // settings. |default_settings| shouldn't be NULL.
   void Reset(ResettableFlags resettable_flags,
              scoped_ptr<BrandcodedDefaultSettings> master_settings,
-             bool accepted_send_feedback,
              const base::Closure& callback);
 
   bool IsActive() const;

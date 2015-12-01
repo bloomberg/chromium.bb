@@ -35,7 +35,6 @@ void ProfileResetterTestBase::ResetAndWait(
       new BrandcodedDefaultSettings);
   resetter_->Reset(resettable_flags,
                    master_settings.Pass(),
-                   false,
                    base::Bind(&ProfileResetterMockObject::StopLoop,
                               base::Unretained(&mock_object_)));
   mock_object_.RunLoop();
@@ -48,7 +47,6 @@ void ProfileResetterTestBase::ResetAndWait(
       new BrandcodedDefaultSettings(prefs));
   resetter_->Reset(resettable_flags,
                    master_settings.Pass(),
-                   false,
                    base::Bind(&ProfileResetterMockObject::StopLoop,
                               base::Unretained(&mock_object_)));
   mock_object_.RunLoop();
