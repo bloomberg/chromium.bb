@@ -145,7 +145,7 @@ void WebDisplayItemListImpl::appendEndFloatClipItem(
 void WebDisplayItemListImpl::appendTransformItem(
     const blink::WebRect& visual_rect,
     const SkMatrix44& matrix) {
-  gfx::Transform transform;
+  gfx::Transform transform(gfx::Transform::kSkipInitialization);
   transform.matrix() = matrix;
 
   if (display_item_list_->RetainsIndividualDisplayItems()) {
@@ -237,7 +237,7 @@ void WebDisplayItemListImpl::appendScrollItem(
     const blink::WebRect& visual_rect,
     const blink::WebSize& scroll_offset,
     ScrollContainerId) {
-  SkMatrix44 matrix;
+  SkMatrix44 matrix(SkMatrix44::kUninitialized_Constructor);
   matrix.setTranslate(-scroll_offset.width, -scroll_offset.height, 0);
   // TODO(wkorman): Should we translate the visual rect as well?
   appendTransformItem(visual_rect, matrix);
