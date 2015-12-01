@@ -139,7 +139,8 @@ bool MediaRouterAction::ExecuteAction(bool by_user) {
   if (GetPlatformDelegate()) {
     media_router::MediaRouterMetrics::RecordMediaRouterDialogOrigin(
         GetPlatformDelegate()->CloseOverflowMenuIfOpen() ?
-            media_router::OVERFLOW_MENU : media_router::TOOLBAR);
+        media_router::MediaRouterDialogOpenOrigin::OVERFLOW_MENU :
+        media_router::MediaRouterDialogOpenOrigin::TOOLBAR);
   }
   return true;
 }

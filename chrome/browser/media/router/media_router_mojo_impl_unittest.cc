@@ -9,9 +9,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/histogram_tester.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/media/router/issue.h"
 #include "chrome/browser/media/router/media_route.h"
+#include "chrome/browser/media/router/media_router_metrics.h"
 #include "chrome/browser/media/router/media_router_mojo_test.h"
 #include "chrome/browser/media/router/media_router_type_converters.h"
 #include "chrome/browser/media/router/mock_media_router.h"
@@ -909,7 +911,13 @@ class MediaRouterMojoExtensionTest : public ::testing::Test {
     message_loop_.RunUntilIdle();
   }
 
- protected:
+  void ExpectWakeReasonBucketCount(MediaRouteProviderWakeReason reason,
+                                   int expected_count) {
+    histogram_tester_.ExpectBucketCount("MediaRouter.Provider.WakeReason",
+                                        static_cast<int>(reason),
+                                        expected_count);
+  }
+
   scoped_ptr<MediaRouterMojoImpl> media_router_;
   RegisterMediaRouteProviderHandler provide_handler_;
   TestProcessManager* process_manager_;
@@ -921,6 +929,7 @@ class MediaRouterMojoExtensionTest : public ::testing::Test {
   base::MessageLoop message_loop_;
   interfaces::MediaRouteProviderPtr media_route_provider_proxy_;
   scoped_ptr<mojo::Binding<interfaces::MediaRouteProvider>> binding_;
+  base::HistogramTester histogram_tester_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouterMojoExtensionTest);
 };
@@ -961,6 +970,7 @@ TEST_F(MediaRouterMojoExtensionTest, DeferredBindingAndSuspension) {
   BindMediaRouteProvider();
   RegisterMediaRouteProvider();
   ProcessEventLoop();
+  ExpectWakeReasonBucketCount(MediaRouteProviderWakeReason::CLOSE_ROUTE, 1);
 }
 
 TEST_F(MediaRouterMojoExtensionTest, AttemptedWakeupTooManyTimes) {
@@ -974,6 +984,7 @@ TEST_F(MediaRouterMojoExtensionTest, AttemptedWakeupTooManyTimes) {
       .WillOnce(testing::DoAll(media::RunCallback<1>(true), Return(true)));
   media_router_->CloseRoute(kRouteId);
   EXPECT_EQ(1u, media_router_->pending_requests_.size());
+  ExpectWakeReasonBucketCount(MediaRouteProviderWakeReason::CLOSE_ROUTE, 1);
 
   // Media route provider fails to connect to media router before extension is
   // suspended again, and |OnConnectionError| is invoked. Retry the wakeup.
@@ -988,6 +999,8 @@ TEST_F(MediaRouterMojoExtensionTest, AttemptedWakeupTooManyTimes) {
   // again, we will give up and the pending request queue will be drained.
   media_router_->OnConnectionError();
   EXPECT_TRUE(media_router_->pending_requests_.empty());
+  ExpectWakeReasonBucketCount(MediaRouteProviderWakeReason::CONNECTION_ERROR,
+                              MediaRouterMojoImpl::kMaxWakeupAttemptCount - 1);
 
   // Requests that comes in after queue is drained should be queued.
   EXPECT_CALL(*process_manager_, IsEventPageSuspended(kExtensionId))
@@ -1024,6 +1037,7 @@ TEST_F(MediaRouterMojoExtensionTest, WakeupFailedDrainsQueue) {
       .WillOnce(testing::DoAll(media::RunCallback<1>(true), Return(true)));
   media_router_->CloseRoute(kRouteId);
   EXPECT_EQ(1u, media_router_->pending_requests_.size());
+  ExpectWakeReasonBucketCount(MediaRouteProviderWakeReason::CLOSE_ROUTE, 1);
 }
 
 TEST_F(MediaRouterMojoExtensionTest, DropOldestPendingRequest) {

@@ -87,7 +87,7 @@ bool MediaRouterDialogController::ShowMediaRouterDialogForPresentation(
   ActivateInitiatorWebContents();
 
   media_router::MediaRouterMetrics::RecordMediaRouterDialogOrigin(
-      media_router::PAGE);
+      MediaRouterDialogOpenOrigin::PAGE);
 
   return true;
 }

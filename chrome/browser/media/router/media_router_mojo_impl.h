@@ -36,6 +36,8 @@ class EventPageTracker;
 
 namespace media_router {
 
+enum class MediaRouteProviderWakeReason;
+
 // MediaRouter implementation that delegates calls to the component extension.
 // Also handles the suspension and wakeup of the component extension.
 class MediaRouterMojoImpl : public MediaRouterBase,
@@ -278,6 +280,14 @@ class MediaRouterMojoImpl : public MediaRouterBase,
   // the pending request queue.
   void AttemptWakeEventPage();
 
+  // Sets the reason why we are attempting to wake the extension.  Since
+  // multiple tasks may be enqueued for execution each time the extension runs,
+  // we record the first such reason.
+  void SetWakeReason(MediaRouteProviderWakeReason reason);
+
+  // Clears the wake reason after the extension has been awoken.
+  void ClearWakeReason();
+
   // Pending requests queued to be executed once component extension
   // becomes ready.
   std::deque<base::Closure> pending_requests_;
@@ -338,6 +348,10 @@ class MediaRouterMojoImpl : public MediaRouterBase,
   interfaces::MediaRouter::SinkAvailability availability_;
 
   int wakeup_attempt_count_;
+
+  // Records the current reason the extension is being woken up.  Is set to
+  // MediaRouteProviderWakeReason::TOTAL_COUNT if there is no pending reason.
+  MediaRouteProviderWakeReason current_wake_reason_;
 
   base::WeakPtrFactory<MediaRouterMojoImpl> weak_factory_;
 

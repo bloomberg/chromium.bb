@@ -14,6 +14,7 @@
 #include "chrome/browser/media/router/issues_observer.h"
 #include "chrome/browser/media/router/local_media_routes_observer.h"
 #include "chrome/browser/media/router/media_router_factory.h"
+#include "chrome/browser/media/router/media_router_metrics.h"
 #include "chrome/browser/media/router/media_router_type_converters.h"
 #include "chrome/browser/media/router/media_routes_observer.h"
 #include "chrome/browser/media/router/media_sinks_observer.h"
@@ -98,6 +99,7 @@ MediaRouterMojoImpl::MediaRouterMojoImpl(
       has_local_display_route_(false),
       availability_(interfaces::MediaRouter::SINK_AVAILABILITY_UNAVAILABLE),
       wakeup_attempt_count_(0),
+      current_wake_reason_(MediaRouteProviderWakeReason::TOTAL_COUNT),
       weak_factory_(this) {
   DCHECK(event_page_tracker_);
 }
@@ -148,6 +150,7 @@ void MediaRouterMojoImpl::OnConnectionError() {
   if (!pending_requests_.empty()) {
     DLOG_WITH_INSTANCE(ERROR) << "A connection error while there are pending "
                                  "requests.";
+    SetWakeReason(MediaRouteProviderWakeReason::CONNECTION_ERROR);
     AttemptWakeEventPage();
   }
 }
@@ -163,6 +166,7 @@ void MediaRouterMojoImpl::RegisterMediaRouteProvider(
     DVLOG_WITH_INSTANCE(1)
         << "ExecutePendingRequests was called while extension is suspended.";
     media_route_provider_.reset();
+    SetWakeReason(MediaRouteProviderWakeReason::REGISTER_MEDIA_ROUTE_PROVIDER);
     AttemptWakeEventPage();
     return;
   }
@@ -280,6 +284,7 @@ void MediaRouterMojoImpl::CreateRoute(
     return;
   }
 
+  SetWakeReason(MediaRouteProviderWakeReason::CREATE_ROUTE);
   int tab_id = SessionTabHelper::IdForTab(web_contents);
   RunOrDefer(base::Bind(
       &MediaRouterMojoImpl::DoCreateRoute, base::Unretained(this), source_id,
@@ -301,6 +306,7 @@ void MediaRouterMojoImpl::JoinRoute(
     return;
   }
 
+  SetWakeReason(MediaRouteProviderWakeReason::JOIN_ROUTE);
   int tab_id = SessionTabHelper::IdForTab(web_contents);
   RunOrDefer(base::Bind(&MediaRouterMojoImpl::DoJoinRoute,
                         base::Unretained(this), source_id, presentation_id,
@@ -311,6 +317,7 @@ void MediaRouterMojoImpl::JoinRoute(
 void MediaRouterMojoImpl::CloseRoute(const MediaRoute::Id& route_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  SetWakeReason(MediaRouteProviderWakeReason::CLOSE_ROUTE);
   RunOrDefer(base::Bind(&MediaRouterMojoImpl::DoCloseRoute,
                         base::Unretained(this), route_id));
 }
@@ -321,6 +328,7 @@ void MediaRouterMojoImpl::SendRouteMessage(
     const SendRouteMessageCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  SetWakeReason(MediaRouteProviderWakeReason::SEND_SESSION_MESSAGE);
   RunOrDefer(base::Bind(&MediaRouterMojoImpl::DoSendSessionMessage,
                         base::Unretained(this), route_id, message, callback));
 }
@@ -331,6 +339,7 @@ void MediaRouterMojoImpl::SendRouteBinaryMessage(
     const SendRouteMessageCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  SetWakeReason(MediaRouteProviderWakeReason::SEND_SESSION_BINARY_MESSAGE);
   RunOrDefer(base::Bind(&MediaRouterMojoImpl::DoSendSessionBinaryMessage,
                         base::Unretained(this), route_id,
                         base::Passed(data.Pass()), callback));
@@ -349,6 +358,7 @@ void MediaRouterMojoImpl::ClearIssue(const Issue::Id& issue_id) {
 void MediaRouterMojoImpl::OnPresentationSessionDetached(
     const MediaRoute::Id& route_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  SetWakeReason(MediaRouteProviderWakeReason::PRESENTATION_SESSION_DETACHED);
   RunOrDefer(base::Bind(&MediaRouterMojoImpl::DoOnPresentationSessionDetached,
                         base::Unretained(this), route_id));
 }
@@ -375,6 +385,7 @@ bool MediaRouterMojoImpl::RegisterMediaSinksObserver(
   // TODO(imcheng): Implement caching. (crbug.com/492451)
   sinks_query->observers.AddObserver(observer);
   if (availability_ != interfaces::MediaRouter::SINK_AVAILABILITY_UNAVAILABLE) {
+    SetWakeReason(MediaRouteProviderWakeReason::START_OBSERVING_MEDIA_SINKS);
     RunOrDefer(base::Bind(&MediaRouterMojoImpl::DoStartObservingMediaSinks,
                           base::Unretained(this), source_id));
   } else {
@@ -405,6 +416,7 @@ void MediaRouterMojoImpl::UnregisterMediaSinksObserver(
     // Otherwise, the MRPM would have discarded the queries already.
     if (availability_ !=
         interfaces::MediaRouter::SINK_AVAILABILITY_UNAVAILABLE) {
+      SetWakeReason(MediaRouteProviderWakeReason::STOP_OBSERVING_MEDIA_SINKS);
       // The |sinks_queries_| entry will be removed in the immediate or deferred
       // |DoStopObservingMediaSinks| call.
       RunOrDefer(base::Bind(&MediaRouterMojoImpl::DoStopObservingMediaSinks,
@@ -420,6 +432,7 @@ void MediaRouterMojoImpl::RegisterMediaRoutesObserver(
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!routes_observers_.HasObserver(observer));
 
+  SetWakeReason(MediaRouteProviderWakeReason::START_OBSERVING_MEDIA_ROUTES);
   RunOrDefer(base::Bind(&MediaRouterMojoImpl::DoStartObservingMediaRoutes,
                         base::Unretained(this)));
   routes_observers_.AddObserver(observer);
@@ -432,6 +445,7 @@ void MediaRouterMojoImpl::UnregisterMediaRoutesObserver(
 
   routes_observers_.RemoveObserver(observer);
   if (!routes_observers_.might_have_observers()) {
+    SetWakeReason(MediaRouteProviderWakeReason::STOP_OBSERVING_MEDIA_ROUTES);
     RunOrDefer(base::Bind(&MediaRouterMojoImpl::DoStopObservingMediaRoutes,
                           base::Unretained(this)));
   }
@@ -481,6 +495,8 @@ void MediaRouterMojoImpl::UnregisterPresentationSessionMessagesObserver(
   observer_list->RemoveObserver(observer);
   if (!observer_list->might_have_observers()) {
     messages_observers_.erase(route_id);
+    SetWakeReason(
+        MediaRouteProviderWakeReason::STOP_LISTENING_FOR_ROUTE_MESSAGES);
     RunOrDefer(base::Bind(&MediaRouterMojoImpl::DoStopListeningForRouteMessages,
                           base::Unretained(this), route_id));
   }
@@ -787,12 +803,17 @@ void MediaRouterMojoImpl::ExecutePendingRequests() {
 }
 
 void MediaRouterMojoImpl::EventPageWakeComplete(bool success) {
-  if (success)
+  if (success) {
+    MediaRouterMetrics::RecordMediaRouteProviderWakeReason(
+        current_wake_reason_);
+    ClearWakeReason();
     return;
+  }
 
   // This is likely an non-retriable error. Drop the pending requests.
   DLOG_WITH_INSTANCE(ERROR)
       << "An error encountered while waking the event page.";
+  ClearWakeReason();
   DrainPendingRequests();
 }
 
@@ -801,6 +822,17 @@ void MediaRouterMojoImpl::DrainPendingRequests() {
       << "Draining request queue. (queue-length=" << pending_requests_.size()
       << ")";
   pending_requests_.clear();
+}
+
+void MediaRouterMojoImpl::SetWakeReason(MediaRouteProviderWakeReason reason) {
+  DCHECK(reason != MediaRouteProviderWakeReason::TOTAL_COUNT);
+  if (current_wake_reason_ == MediaRouteProviderWakeReason::TOTAL_COUNT)
+    current_wake_reason_ = reason;
+}
+
+void MediaRouterMojoImpl::ClearWakeReason() {
+  DCHECK(current_wake_reason_ != MediaRouteProviderWakeReason::TOTAL_COUNT);
+  current_wake_reason_ = MediaRouteProviderWakeReason::TOTAL_COUNT;
 }
 
 }  // namespace media_router

@@ -1915,7 +1915,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
 
       dialog_controller->ShowMediaRouterDialog();
       media_router::MediaRouterMetrics::RecordMediaRouterDialogOrigin(
-          media_router::CONTEXTUAL_MENU);
+          media_router::MediaRouterDialogOpenOrigin::CONTEXTUAL_MENU);
 #endif  // defined(ENABLE_MEDIA_ROUTER)
       break;
     }

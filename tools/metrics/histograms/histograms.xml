@@ -19345,6 +19345,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Location the user clicked to open the Media Router dialog.</summary>
 </histogram>
 
+<histogram name="MediaRouter.Provider.WakeReason"
+    enum="MediaRouteProviderWakeReason">
+  <owner>mfoltz@chromium.org</owner>
+  <summary>
+    Reason that the Media Router woke the Media Route Provider event page.
+  </summary>
+</histogram>
+
 <histogram name="MediaRouter.Ui.Action.StartLocalSessionSuccessful"
     enum="BooleanSuccess">
   <owner>apacible@chromium.org</owner>
@@ -68928,6 +68936,23 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="0" label="Queried"/>
   <int value="1" label="No external link"/>
   <int value="2" label="All external links protected"/>
+</enum>
+
+<enum name="MediaRouteProviderWakeReason" type="int">
+  <int value="0" label="CreateRoute"/>
+  <int value="1" label="JoinRoute"/>
+  <int value="2" label="CloseRoute"/>
+  <int value="3" label="SendSessionMessage"/>
+  <int value="4" label="SendSessionBinaryMessage"/>
+  <int value="5" label="PresentationSessionDetached"/>
+  <int value="6" label="StartObservingMediaSinks"/>
+  <int value="7" label="StopObservingMediaSinks"/>
+  <int value="8" label="StartObservingMediaRoutes"/>
+  <int value="9" label="StopObservingMediaRoutes"/>
+  <int value="10" label="ListenForRouteMessages"/>
+  <int value="11" label="StopListeningForRouteMessages"/>
+  <int value="12" label="ConnectionError"/>
+  <int value="13" label="RegisterMediaRouteProvider"/>
 </enum>
 
 <enum name="MediaRouterDialogOpenOrigin" type="int">
