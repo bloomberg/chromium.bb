@@ -160,18 +160,6 @@ LeafUnwindBlacklist::~LeafUnwindBlacklist() {}
 
 // Win32StackFrameUnwinder ----------------------------------------------------
 
-// hipis0e011b8.dll from McAfee Host Intrusion Prevention has been observed to
-// provide a pointer to a bogus RUNTIME_FUNCTION structure. This function checks
-// that the values in the structure look plausible.
-bool SanityCheckRuntimeFunction(PRUNTIME_FUNCTION runtime_function,
-                                ULONG64 image_base,
-                                DWORD64 program_counter) {
-  const DWORD64 program_counter_offset = program_counter - image_base;
-  return (runtime_function->BeginAddress <= runtime_function->EndAddress &&
-          program_counter_offset >= runtime_function->BeginAddress &&
-          program_counter_offset <= runtime_function->EndAddress);
-}
-
 Win32StackFrameUnwinder::UnwindFunctions::~UnwindFunctions() {}
 Win32StackFrameUnwinder::UnwindFunctions::UnwindFunctions() {}
 
@@ -188,13 +176,22 @@ bool Win32StackFrameUnwinder::TryUnwind(CONTEXT* context,
 
   ScopedModuleHandle frame_module =
       unwind_functions_->GetModuleForProgramCounter(context->Rip);
-  // The module may have been unloaded since we recorded the stack. Note that if
-  // this check detects module as valid, it still could be a different module at
-  // the same instruction pointer address (i.e. if the module was unloaded and a
-  // different module loaded in overlapping memory). This should occur extremely
-  // rarely.
-  if (!frame_module.IsValid())
+  if (!frame_module.IsValid()) {
+    // There's no loaded module containing the instruction pointer. This can be
+    // due to executing code that is not in a module. In particular,
+    // runtime-generated code associated with third-party injected DLLs
+    // typically is not in a module. It can also be due to the the module having
+    // been unloaded since we recorded the stack.  In the latter case the
+    // function unwind information was part of the unloaded module, so it's not
+    // possible to unwind further.
+    //
+    // If a module was found, it's still theoretically possible for the detected
+    // module module to be different than the one that was loaded when the stack
+    // was copied (i.e. if the module was unloaded and a different module loaded
+    // in overlapping memory). This likely would cause a crash, but has not been
+    // observed in practice.
     return false;
+  }
 
   ULONG64 image_base;
   // Try to look up unwind metadata for the current function.
@@ -202,9 +199,6 @@ bool Win32StackFrameUnwinder::TryUnwind(CONTEXT* context,
       unwind_functions_->LookupFunctionEntry(context->Rip, &image_base);
 
   if (runtime_function) {
-    if (!SanityCheckRuntimeFunction(runtime_function, image_base, context->Rip))
-      return false;
-
     unwind_functions_->VirtualUnwind(image_base, context->Rip, runtime_function,
                                      context);
     at_top_frame_ = false;
