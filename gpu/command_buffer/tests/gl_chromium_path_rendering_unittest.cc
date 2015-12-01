@@ -1196,9 +1196,8 @@ TEST_P(CHROMIUMPathRenderingWithTexturingTest,
   EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
 }
 
-// Fails on Nexus 9
 TEST_P(CHROMIUMPathRenderingWithTexturingTest,
-       DISABLED_TestProgramPathFragmentInputGenArgs) {
+       TestProgramPathFragmentInputGenArgs) {
   if (!IsApplicable())
     return;
 
