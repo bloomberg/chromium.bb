@@ -150,9 +150,11 @@ void WindowTreeClientImpl::WaitForEmbed() {
   // TODO(sky): deal with pipe being closed before we get OnEmbed().
 }
 
-void WindowTreeClientImpl::DestroyWindow(Id window_id) {
+void WindowTreeClientImpl::DestroyWindow(Window* window) {
   DCHECK(tree_);
-  tree_->DeleteWindow(window_id, ActionCompletedCallback());
+  const uint32_t change_id = ScheduleInFlightChange(make_scoped_ptr(
+      new CrashInFlightChange(window, ChangeType::DELETE_WINDOW)));
+  tree_->DeleteWindow(change_id, window->id());
 }
 
 void WindowTreeClientImpl::AddChild(Id child_id, Id parent_id) {

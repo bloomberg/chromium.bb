@@ -196,8 +196,7 @@ class WindowTreeImpl : public mojom::WindowTree, public AccessPolicyDelegate {
                  Id transport_window_id,
                  mojo::Map<mojo::String, mojo::Array<uint8_t>>
                      transport_properties) override;
-  void DeleteWindow(Id transport_window_id,
-                    const mojo::Callback<void(bool)>& callback) override;
+  void DeleteWindow(uint32_t change_id, Id transport_window_id) override;
   void AddWindow(Id parent_id,
                  Id child_id,
                  const mojo::Callback<void(bool)>& callback) override;

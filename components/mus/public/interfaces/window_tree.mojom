@@ -95,7 +95,7 @@ interface WindowTree {
   // Deletes a window. This does not recurse. No hierarchy change notifications
   // are sent as a result of this. Only the connection that created the window
   // can delete it.
-  DeleteWindow(uint32 window_id) => (bool success);
+  DeleteWindow(uint32 change_id, uint32 window_id);
 
   // Sets the specified bounds of the specified window.
   SetWindowBounds(uint32 change_id, uint32 window_id, mojo.Rect bounds);

@@ -167,7 +167,7 @@ void Window::Destroy() {
     return;
 
   if (connection_)
-    tree_client()->DestroyWindow(id_);
+    tree_client()->DestroyWindow(this);
   while (!children_.empty()) {
     Window* child = children_.front();
     if (!OwnsWindow(connection_, child)) {

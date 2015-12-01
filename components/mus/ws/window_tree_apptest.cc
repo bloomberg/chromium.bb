@@ -134,15 +134,6 @@ void GetWindowTree(WindowTree* ws,
   run_loop.Run();
 }
 
-bool DeleteWindow(WindowTree* ws, Id window_id) {
-  base::RunLoop run_loop;
-  bool result = false;
-  ws->DeleteWindow(window_id,
-                   base::Bind(&BoolResultCallback, &run_loop, &result));
-  run_loop.Run();
-  return result;
-}
-
 bool SetWindowVisibility(WindowTree* ws, Id window_id, bool visible) {
   base::RunLoop run_loop;
   bool result = false;
@@ -224,6 +215,12 @@ class TestWindowTreeClientImpl : public mojom::WindowTreeClient,
     change_completed_run_loop_.reset(new base::RunLoop);
     change_completed_run_loop_->Run();
     return on_change_completed_result_;
+  }
+
+  bool DeleteWindow(Id id) {
+    const uint32_t change_id = GetAndAdvanceChangeId();
+    tree()->DeleteWindow(change_id, id);
+    return WaitForChangeCompleted(change_id);
   }
 
   // Waits for all messages to be received by |ws|. This is done by attempting
@@ -1012,7 +1009,7 @@ TEST_F(WindowTreeAppTest, DeleteWindow) {
   {
     changes1()->clear();
     changes2()->clear();
-    ASSERT_TRUE(DeleteWindow(ws2(), window_2_2));
+    ASSERT_TRUE(ws_client2()->DeleteWindow(window_2_2));
     EXPECT_TRUE(changes2()->empty());
 
     ws_client1_->WaitForChangeCount(1);
@@ -1024,7 +1021,7 @@ TEST_F(WindowTreeAppTest, DeleteWindow) {
 // Verifies DeleteWindow isn't allowed from a separate connection.
 TEST_F(WindowTreeAppTest, DeleteWindowFromAnotherConnectionDisallowed) {
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
-  EXPECT_FALSE(DeleteWindow(ws2(), BuildWindowId(connection_id_1(), 1)));
+  EXPECT_FALSE(ws_client2()->DeleteWindow(BuildWindowId(connection_id_1(), 1)));
 }
 
 // Verifies if a window was deleted and then reused that other clients are
@@ -1050,7 +1047,7 @@ TEST_F(WindowTreeAppTest, ReuseDeletedWindowId) {
   // Delete 2.
   {
     changes1()->clear();
-    ASSERT_TRUE(DeleteWindow(ws2(), window_2_2));
+    ASSERT_TRUE(ws_client2()->DeleteWindow(window_2_2));
 
     ws_client1_->WaitForChangeCount(1);
     EXPECT_EQ("WindowDeleted window=" + IdToString(window_2_2),
@@ -1749,7 +1746,7 @@ TEST_F(WindowTreeAppTest, TransientWindowTracksTransientParentLifetime) {
             SingleChangeToDescription(*changes1()));
 
   changes1()->clear();
-  ASSERT_TRUE(DeleteWindow(ws2(), window_2_1));
+  ASSERT_TRUE(ws_client2()->DeleteWindow(window_2_1));
   ws_client1()->WaitForChangeCount(2);
   EXPECT_EQ("WindowDeleted window=" + IdToString(window_2_2),
             ChangesToDescription1(*changes1())[0]);

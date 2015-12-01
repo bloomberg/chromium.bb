@@ -43,7 +43,7 @@ class WindowTreeClientImpl : public WindowTreeConnection,
 
   // API exposed to the window implementations that pushes local changes to the
   // service.
-  void DestroyWindow(Id window_id);
+  void DestroyWindow(Window* window);
 
   // These methods take TransportIds. For windows owned by the current
   // connection, the connection id high word can be zero. In all cases, the

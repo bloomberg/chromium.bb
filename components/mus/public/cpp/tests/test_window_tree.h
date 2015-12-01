@@ -27,8 +27,7 @@ class TestWindowTree : public mojom::WindowTree {
       uint32_t change_id,
       uint32_t window_id,
       mojo::Map<mojo::String, mojo::Array<uint8_t>> properties) override;
-  void DeleteWindow(uint32_t window_id,
-                    const DeleteWindowCallback& callback) override;
+  void DeleteWindow(uint32_t change_id, uint32_t window_id) override;
   void SetWindowBounds(uint32_t change_id,
                        uint32_t window_id,
                        mojo::RectPtr bounds) override;

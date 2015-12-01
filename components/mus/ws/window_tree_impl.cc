@@ -634,8 +634,7 @@ void WindowTreeImpl::NewWindow(
       NewWindow(WindowIdFromTransportId(transport_window_id), properties));
 }
 
-void WindowTreeImpl::DeleteWindow(Id transport_window_id,
-                                  const Callback<void(bool)>& callback) {
+void WindowTreeImpl::DeleteWindow(uint32_t change_id, Id transport_window_id) {
   ServerWindow* window =
       GetWindow(WindowIdFromTransportId(transport_window_id));
   bool success = false;
@@ -646,7 +645,7 @@ void WindowTreeImpl::DeleteWindow(Id transport_window_id,
         connection_manager_->GetConnection(window->id().connection_id);
     success = connection && connection->DeleteWindowImpl(this, window);
   }
-  callback.Run(success);
+  client_->OnChangeCompleted(change_id, success);
 }
 
 void WindowTreeImpl::AddWindow(Id parent_id,
