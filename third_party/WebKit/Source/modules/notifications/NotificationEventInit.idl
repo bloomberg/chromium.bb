@@ -6,5 +6,5 @@
 
 dictionary NotificationEventInit : ExtendableEventInit {
     Notification notification;
-    [RuntimeEnabled=NotificationExperimental] DOMString action = "";
+    DOMString action = "";
 };
