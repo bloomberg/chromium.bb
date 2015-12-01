@@ -34,7 +34,7 @@ interface MutationEvent : Event {
     [Measure, LegacyInterfaceTypeChecking] void initMutationEvent([Default=Undefined] optional DOMString type,
                                                                   [Default=Undefined] optional boolean bubbles,
                                                                   [Default=Undefined] optional boolean cancelable,
-                                                                  [Default=Undefined] optional Node relatedNode,
+                                                                  [Default=Undefined] optional Node? relatedNode,
                                                                   [Default=Undefined] optional DOMString prevValue,
                                                                   [Default=Undefined] optional DOMString newValue,
                                                                   [Default=Undefined] optional DOMString attrName,

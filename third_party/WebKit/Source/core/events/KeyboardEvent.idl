@@ -45,7 +45,7 @@
     [CallWith=ScriptState, Measure, LegacyInterfaceTypeChecking] void initKeyboardEvent([Default=Undefined] optional DOMString type,
                                                                                         [Default=Undefined] optional boolean bubbles,
                                                                                         [Default=Undefined] optional boolean cancelable,
-                                                                                        [Default=Undefined] optional Window view,
+                                                                                        [Default=Undefined] optional Window? view,
                                                                                         [Default=Undefined] optional DOMString keyIdentifier,
                                                                                         [Default=Undefined] optional unsigned long location,
                                                                                         [Default=Undefined] optional boolean ctrlKey,

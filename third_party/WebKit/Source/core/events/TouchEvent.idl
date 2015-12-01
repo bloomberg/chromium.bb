@@ -41,7 +41,7 @@
                                                                                      [Default=Undefined] optional TouchList targetTouches,
                                                                                      [Default=Undefined] optional TouchList changedTouches,
                                                                                      [Default=Undefined] optional DOMString type,
-                                                                                     [Default=Undefined] optional Window view,
+                                                                                     [Default=Undefined] optional Window? view,
                                                                                      [Default=Undefined] optional long unused1,
                                                                                      [Default=Undefined] optional long unused2,
                                                                                      [Default=Undefined] optional long unused3,

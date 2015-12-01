@@ -37,7 +37,7 @@ interface TextEvent : UIEvent {
     [Measure, LegacyInterfaceTypeChecking] void initTextEvent([Default=Undefined] optional DOMString typeArg,
                                                               [Default=Undefined] optional boolean canBubbleArg,
                                                               [Default=Undefined] optional boolean cancelableArg,
-                                                              [Default=Undefined] optional Window viewArg,
+                                                              [Default=Undefined] optional Window? viewArg,
                                                               [Default=Undefined] optional DOMString dataArg);
 
 };
