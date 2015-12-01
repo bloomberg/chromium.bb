@@ -66,6 +66,10 @@
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/web/WebURLLoaderOptions.h"
 
+#if defined(OS_WIN)
+#include "base/win/scoped_handle.h"
+#endif
+
 namespace nacl {
 namespace {
 
@@ -121,6 +125,17 @@ class NaClPluginInstance {
  public:
   NaClPluginInstance(PP_Instance instance):
       nexe_load_manager(instance), pexe_size(0) {}
+  ~NaClPluginInstance() {
+    // Make sure that we do not leak a file descriptor if the NaCl loader
+    // process never called ppapi_start() to initialize PPAPI.
+    if (instance_info) {
+#if defined(OS_WIN)
+      base::win::ScopedHandle closer(instance_info->channel_handle.pipe.handle);
+#else
+      base::ScopedFD closer(instance_info->channel_handle.socket.fd);
+#endif
+    }
+  }
 
   NexeLoadManager nexe_load_manager;
   scoped_ptr<JsonManifest> json_manifest;
