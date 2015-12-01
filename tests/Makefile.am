@@ -233,9 +233,14 @@ dist_yaml_TESTS =				\
 	ko-g2_harness.yaml			\
 	letterDefTest_harness.yaml		\
 	nl-BE-g1_harness.yaml			\
+	no_harness.yaml				\
+	no_g1_harness.yaml			\
+	no_g2_harness.yaml			\
+	no_8dot_harness.yaml			\
 	nocross_harness.yaml			\
 	pl-pl-comp8_harness.yaml		\
 	sr-g1_harness.yaml			\
+	ta-ta-g1_harness.yaml			\
 	ta-ta-g1_harness.yaml
 
 TEST_EXTENSIONS = .yaml
