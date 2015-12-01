@@ -756,6 +756,10 @@ EphemeralRange LocalFrame::rangeForPoint(const IntPoint& framePoint)
 
 bool LocalFrame::isURLAllowed(const KURL& url) const
 {
+    // Exempt about: URLs from self-reference check.
+    if (url.protocolIsAbout())
+        return true;
+
     // We allow one level of self-reference because some sites depend on that,
     // but we don't allow more than one.
     bool foundSelfReference = false;
