@@ -791,7 +791,7 @@ inline const InlineIterator& LayoutBlockFlow::restartLayoutRunsAndFloatsInRange(
     return oldEnd;
 }
 
-void LayoutBlockFlow::appendFloatsToLastLine(LineLayoutState& layoutState, const InlineIterator& cleanLineStart)
+void LayoutBlockFlow::appendFloatsToLastLine(LineLayoutState& layoutState, const InlineIterator& cleanLineStart, const InlineBidiResolver& resolver, const BidiStatus& cleanLineBidiStatus)
 {
     const FloatingObjectSet& floatingObjectSet = m_floatingObjects->set();
     FloatingObjectSetIterator it = floatingObjectSet.begin();
@@ -806,8 +806,11 @@ void LayoutBlockFlow::appendFloatsToLastLine(LineLayoutState& layoutState, const
         FloatingObject& floatingObject = *it->get();
         // If we've reached the start of clean lines any remaining floating children belong to them.
         if (floatingObject.layoutObject() == cleanLineStart.object() && layoutState.endLine()) {
-            layoutState.setLastFloat(&floatingObject);
-            return;
+            layoutState.setEndLineMatched(layoutState.endLineMatched() || matchedEndLine(layoutState, resolver, cleanLineStart, cleanLineBidiStatus));
+            if (layoutState.endLineMatched()) {
+                layoutState.setLastFloat(&floatingObject);
+                return;
+            }
         }
         appendFloatingObjectToLastLine(floatingObject);
         ASSERT(floatingObject.layoutObject() == layoutState.floats()[layoutState.floatIndex()].object);
@@ -840,7 +843,7 @@ void LayoutBlockFlow::layoutRunsAndFloatsInRange(LineLayoutState& layoutState,
 
         // FIXME: Is this check necessary before the first iteration or can it be moved to the end?
         if (layoutState.endLine()) {
-            layoutState.setEndLineMatched(matchedEndLine(layoutState, resolver, cleanLineStart, cleanLineBidiStatus));
+            layoutState.setEndLineMatched(layoutState.endLineMatched() || matchedEndLine(layoutState, resolver, cleanLineStart, cleanLineBidiStatus));
             if (layoutState.endLineMatched()) {
                 resolver.setPosition(InlineIterator(resolver.position().root(), 0, 0), 0);
                 break;
@@ -936,8 +939,12 @@ void LayoutBlockFlow::layoutRunsAndFloatsInRange(LineLayoutState& layoutState,
                 layoutState.lineInfo().setFirstLine(false);
             clearFloats(lineBreaker.clear());
 
-            if (m_floatingObjects && lastRootBox())
-                appendFloatsToLastLine(layoutState, cleanLineStart);
+            if (m_floatingObjects && lastRootBox()) {
+                InlineBidiResolver endOfLineResolver;
+                endOfLineResolver.setPosition(endOfLine, numberOfIsolateAncestors(endOfLine));
+                endOfLineResolver.setStatus(resolver.status());
+                appendFloatsToLastLine(layoutState, cleanLineStart, endOfLineResolver, cleanLineBidiStatus);
+            }
         }
 
         lineMidpointState.reset();
@@ -1045,7 +1052,7 @@ void LayoutBlockFlow::linkToEndLineIfNeeded(LineLayoutState& layoutState)
     // This has to be done before adding in the bottom border/padding, or the float will
     // include the padding incorrectly. -dwh
     if (positionNewFloats() && lastRootBox())
-        appendFloatsToLastLine(layoutState, InlineIterator());
+        appendFloatsToLastLine(layoutState, InlineIterator(), InlineBidiResolver(), BidiStatus());
 }
 
 void LayoutBlockFlow::markDirtyFloatsForPaintInvalidation(Vector<FloatWithRect>& floats)
