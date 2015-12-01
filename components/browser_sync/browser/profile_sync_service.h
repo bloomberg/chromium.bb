@@ -640,6 +640,23 @@ class ProfileSyncService : public sync_driver::SyncService,
     AUTH_ERROR_LIMIT
   };
 
+  // The initial state of sync, for the Sync.InitialState histogram. Even if
+  // this value is CAN_START, sync startup might fail for reasons that we may
+  // want to consider logging in the future, such as sync being disabled via
+  // Google Dashboard (birthday error), a passphrase needed for decryption, or
+  // the version of Chrome being too old. This enum is used to back a UMA
+  // histogram, and should therefore be treated as append-only.
+  enum SyncInitialState {
+    CAN_START,                // Sync can attempt to start up.
+    NOT_SIGNED_IN,            // There is no signed in user.
+    NOT_REQUESTED,            // The user turned off sync.
+    NOT_REQUESTED_NOT_SETUP,  // The user turned off sync and setup completed
+                              // is false. Might indicate a stop-and-clear.
+    NEEDS_CONFIRMATION,       // The user must confirm sync settings.
+    IS_MANAGED,               // Sync is disallowed by enterprise policy.
+    SYNC_INITIAL_STATE_LIMIT
+  };
+
   friend class ProfileSyncServicePasswordTest;
   friend class SyncTest;
   friend class TestProfileSyncService;

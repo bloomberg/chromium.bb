@@ -47690,6 +47690,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Sync.InitialState" enum="SyncInitialState">
+  <owner>maxbogue@chromium.org</owner>
+  <summary>
+    An approximate state of sync at startup. Logs a few reasons sync definitely
+    wouldn't be able to start, or that it probably can start. The user having
+    turned off sync on mobile will be logged as &quot;turned off by user&quot;.
+    A dashboard stop and clear will fall under &quot;turned off and setup not
+    completed&quot;. See the SyncInitialState enum in profile_sync_service.h for
+    more information.
+  </summary>
+</histogram>
+
 <histogram name="Sync.InvalidationSessionsAndroid" enum="BooleanHit">
   <owner>pkotwicz@chromium.org</owner>
   <summary>
@@ -76854,6 +76866,15 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="TemporaryUnavailable"/>
   <int value="2" label="AuthenticationRequired"/>
   <int value="3" label="Disabled"/>
+</enum>
+
+<enum name="SyncInitialState" type="int">
+  <int value="0" label="Can attempt to start"/>
+  <int value="1" label="No signed in user"/>
+  <int value="2" label="Turned off by user"/>
+  <int value="3" label="Turned off and setup not completed"/>
+  <int value="4" label="Must confirm sync settings"/>
+  <int value="5" label="Disallowed by enterprise policy"/>
 </enum>
 
 <enum name="SyncKeystoreDecryptionFailure" type="int">

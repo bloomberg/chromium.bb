@@ -297,6 +297,23 @@ void ProfileSyncService::Initialize() {
 
   sync_prefs_.AddSyncPrefObserver(this);
 
+  SyncInitialState sync_state = CAN_START;
+  if (!IsSignedIn()) {
+    sync_state = NOT_SIGNED_IN;
+  } else if (IsManaged()) {
+    sync_state = IS_MANAGED;
+  } else if (!IsSyncRequested()) {
+    if (HasSyncSetupCompleted()) {
+      sync_state = NOT_REQUESTED;
+    } else {
+      sync_state = NOT_REQUESTED_NOT_SETUP;
+    }
+  } else if (!HasSyncSetupCompleted()) {
+    sync_state = NEEDS_CONFIRMATION;
+  }
+  UMA_HISTOGRAM_ENUMERATION("Sync.InitialState", sync_state,
+                            SYNC_INITIAL_STATE_LIMIT);
+
   // If sync isn't allowed, the only thing to do is to turn it off.
   if (!IsSyncAllowed()) {
     RequestStop(CLEAR_DATA);
