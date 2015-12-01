@@ -469,6 +469,14 @@ void View::SetPaintToLayer(bool paint_to_layer) {
   }
 }
 
+scoped_ptr<ui::Layer> View::RecreateLayer() {
+  scoped_ptr<ui::Layer> old_layer = LayerOwner::RecreateLayer();
+  Widget* widget = GetWidget();
+  if (widget)
+    widget->UpdateRootLayers();
+  return old_layer.Pass();
+}
+
 // RTL positioning -------------------------------------------------------------
 
 gfx::Rect View::GetMirroredBounds() const {

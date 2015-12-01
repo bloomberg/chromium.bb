@@ -33,7 +33,7 @@ class COMPOSITOR_EXPORT LayerOwner {
   //
   // This does not recurse. Existing children of the layer are moved to the new
   // layer.
-  scoped_ptr<Layer> RecreateLayer();
+  virtual scoped_ptr<Layer> RecreateLayer();
 
   ui::Layer* layer() { return layer_; }
   const ui::Layer* layer() const { return layer_; }

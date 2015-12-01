@@ -111,6 +111,14 @@ TEST_F(ViewAuraTest, RecreateLayersWithWindows) {
   ui::Layer* v5_layer = w2_layer->children()[0];
   ASSERT_EQ("v6", ui::test::ChildLayerNamesAsString(*v5_layer));
 
+  // Verify the value of Widget::GetRootLayers(). It should only include layers
+  // from layer-backed Views descended from the Widget's root View.
+  std::vector<ui::Layer*> old_w1_root_sublayers = w1->GetRootLayers();
+  ASSERT_EQ(3u, old_w1_root_sublayers.size());
+  EXPECT_EQ(v1_layer, old_w1_root_sublayers[0]);
+  EXPECT_EQ(v4_layer, old_w1_root_sublayers[1]);
+  EXPECT_EQ(v7_layer, old_w1_root_sublayers[2]);
+
   {
     scoped_ptr<ui::LayerTreeOwner> cloned_owner(
         wm::RecreateLayers(w1->GetNativeView()));
@@ -142,16 +150,30 @@ TEST_F(ViewAuraTest, RecreateLayersWithWindows) {
     EXPECT_EQ(v8_layer, v7_layer->children()[0]);
     EXPECT_EQ(v9_layer, v7_layer->children()[1]);
 
-    // The cloned layers should have the same hierarchy as old.
+    // The cloned layers should have the same hierarchy as old, but with new
+    // ui::Layer instances.
     ui::Layer* w1_new_layer = w1->GetNativeView()->layer();
     EXPECT_EQ("w1", w1_new_layer->name());
+    EXPECT_NE(w1_layer, w1_new_layer);
+    ui::Layer* v1_new_layer = w1_new_layer->children()[0];
+    ui::Layer* v4_new_layer = w1_new_layer->children()[1];
     ASSERT_EQ("v1 v4 w2 v7", ui::test::ChildLayerNamesAsString(*w1_new_layer));
+    EXPECT_NE(v1_layer, v1_new_layer);
+    EXPECT_NE(v4_layer, v4_new_layer);
     ui::Layer* w2_new_layer = w1_new_layer->children()[2];
     ASSERT_EQ("v5", ui::test::ChildLayerNamesAsString(*w2_new_layer));
     ui::Layer* v5_new_layer = w2_new_layer->children()[0];
     ASSERT_EQ("v6", ui::test::ChildLayerNamesAsString(*v5_new_layer));
     ui::Layer* v7_new_layer = w1_new_layer->children()[3];
     ASSERT_EQ("v8 v9", ui::test::ChildLayerNamesAsString(*v7_new_layer));
+    EXPECT_NE(v7_layer, v7_new_layer);
+
+    // Ensure Widget::GetRootLayers() is correctly updated.
+    std::vector<ui::Layer*> new_w1_root_sublayers = w1->GetRootLayers();
+    ASSERT_EQ(3u, new_w1_root_sublayers.size());
+    EXPECT_EQ(v1_new_layer, new_w1_root_sublayers[0]);
+    EXPECT_EQ(v4_new_layer, new_w1_root_sublayers[1]);
+    EXPECT_EQ(v7_new_layer, new_w1_root_sublayers[2]);
   }
   w1->CloseNow();
 }
