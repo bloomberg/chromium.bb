@@ -24,6 +24,7 @@
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/pickle.h"
 #include "base/time/time.h"
 #include "crypto/nss_util.h"
@@ -131,18 +132,19 @@ bool X509Certificate::IsSameOSCert(X509Certificate::OSCertHandle a,
 
 // static
 X509Certificate::OSCertHandle X509Certificate::CreateOSCertHandleFromBytes(
-    const char* data, int length) {
+    const char* data,
+    size_t length) {
   ScopedCFTypeRef<CFDataRef> cert_data(CFDataCreateWithBytesNoCopy(
-      kCFAllocatorDefault, reinterpret_cast<const UInt8 *>(data), length,
-      kCFAllocatorNull));
+      kCFAllocatorDefault, reinterpret_cast<const UInt8*>(data),
+      base::checked_cast<CFIndex>(length), kCFAllocatorNull));
   if (!cert_data)
-    return NULL;
+    return nullptr;
   OSCertHandle cert_handle = SecCertificateCreateWithData(NULL, cert_data);
   if (!cert_handle)
-    return NULL;
+    return nullptr;
   if (!IsValidOSCertHandle(cert_handle)) {
     CFRelease(cert_handle);
-    return NULL;
+    return nullptr;
   }
   return cert_handle;
 }
@@ -150,7 +152,7 @@ X509Certificate::OSCertHandle X509Certificate::CreateOSCertHandleFromBytes(
 // static
 X509Certificate::OSCertHandles X509Certificate::CreateOSCertHandlesFromBytes(
     const char* data,
-    int length,
+    size_t length,
     Format format) {
   return x509_util::CreateOSCertHandlesFromBytes(data, length, format);
 }

@@ -16,6 +16,7 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/pickle.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
@@ -41,7 +42,7 @@ void X509Certificate::Initialize() {
 // static
 X509Certificate* X509Certificate::CreateFromBytesWithNickname(
     const char* data,
-    int length,
+    size_t length,
     const char* nickname) {
   OSCertHandle cert_handle = CreateOSCertHandleFromBytesWithNickname(data,
                                                                      length,
@@ -160,19 +161,16 @@ bool X509Certificate::IsSameOSCert(X509Certificate::OSCertHandle a,
 
 // static
 X509Certificate::OSCertHandle X509Certificate::CreateOSCertHandleFromBytes(
-    const char* data, int length) {
+    const char* data,
+    size_t length) {
   return CreateOSCertHandleFromBytesWithNickname(data, length, NULL);
 }
 
 // static
 X509Certificate::OSCertHandle
-X509Certificate::CreateOSCertHandleFromBytesWithNickname(
-    const char* data,
-    int length,
-    const char* nickname) {
-  if (length < 0)
-    return NULL;
-
+X509Certificate::CreateOSCertHandleFromBytesWithNickname(const char* data,
+                                                         size_t length,
+                                                         const char* nickname) {
   crypto::EnsureNSSInit();
 
   if (!NSS_IsInitialized())
@@ -180,7 +178,7 @@ X509Certificate::CreateOSCertHandleFromBytesWithNickname(
 
   SECItem der_cert;
   der_cert.data = reinterpret_cast<unsigned char*>(const_cast<char*>(data));
-  der_cert.len  = length;
+  der_cert.len = base::checked_cast<unsigned>(length);
   der_cert.type = siDERCertBuffer;
 
   // Parse into a certificate structure.
@@ -192,7 +190,7 @@ X509Certificate::CreateOSCertHandleFromBytesWithNickname(
 // static
 X509Certificate::OSCertHandles X509Certificate::CreateOSCertHandlesFromBytes(
     const char* data,
-    int length,
+    size_t length,
     Format format) {
   return x509_util::CreateOSCertHandlesFromBytes(data, length, format);
 }

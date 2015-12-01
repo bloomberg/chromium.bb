@@ -148,8 +148,8 @@ void AddCertificatesFromBytes(const char* data, size_t length,
                               X509Certificate::OSCertHandles* output) {
   SecExternalFormat input_format = format;
   ScopedCFTypeRef<CFDataRef> local_data(CFDataCreateWithBytesNoCopy(
-      kCFAllocatorDefault, reinterpret_cast<const UInt8*>(data), length,
-      kCFAllocatorNull));
+      kCFAllocatorDefault, reinterpret_cast<const UInt8*>(data),
+      base::checked_cast<CFIndex>(length), kCFAllocatorNull));
 
   CFArrayRef items = NULL;
   OSStatus status;
@@ -298,7 +298,8 @@ bool X509Certificate::IsSameOSCert(X509Certificate::OSCertHandle a,
 
 // static
 X509Certificate::OSCertHandle X509Certificate::CreateOSCertHandleFromBytes(
-    const char* data, int length) {
+    const char* data,
+    size_t length) {
   CSSM_DATA cert_data;
   cert_data.Data = const_cast<uint8_t*>(reinterpret_cast<const uint8_t*>(data));
   cert_data.Length = length;
@@ -319,7 +320,9 @@ X509Certificate::OSCertHandle X509Certificate::CreateOSCertHandleFromBytes(
 
 // static
 X509Certificate::OSCertHandles X509Certificate::CreateOSCertHandlesFromBytes(
-    const char* data, int length, Format format) {
+    const char* data,
+    size_t length,
+    Format format) {
   OSCertHandles results;
 
   switch (format) {

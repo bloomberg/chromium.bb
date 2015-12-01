@@ -155,7 +155,7 @@ class NET_EXPORT X509Certificate
   // Returns NULL on failure.
   //
   // The returned pointer must be stored in a scoped_refptr<X509Certificate>.
-  static X509Certificate* CreateFromBytes(const char* data, int length);
+  static X509Certificate* CreateFromBytes(const char* data, size_t length);
 
 #if defined(USE_NSS_CERTS)
   // Create an X509Certificate from the DER-encoded representation.
@@ -166,7 +166,7 @@ class NET_EXPORT X509Certificate
   // This function differs from CreateFromBytes in that it takes a
   // nickname that will be used when the certificate is imported into PKCS#11.
   static X509Certificate* CreateFromBytesWithNickname(const char* data,
-                                                      int length,
+                                                      size_t length,
                                                       const char* nickname);
 
   // The default nickname of the certificate, based on the certificate type
@@ -189,7 +189,7 @@ class NET_EXPORT X509Certificate
   // certificates may have been serialized as. If an error occurs, an empty
   // collection will be returned.
   static CertificateList CreateCertificateListFromBytes(const char* data,
-                                                        int length,
+                                                        size_t length,
                                                         int format);
 
   // Appends a representation of this object to the given pickle.
@@ -362,7 +362,7 @@ class NET_EXPORT X509Certificate
   // Creates an OS certificate handle from the DER-encoded representation.
   // Returns NULL on failure.
   static OSCertHandle CreateOSCertHandleFromBytes(const char* data,
-                                                  int length);
+                                                  size_t length);
 
 #if defined(USE_NSS_CERTS)
   // Creates an OS certificate handle from the DER-encoded representation.
@@ -370,16 +370,15 @@ class NET_EXPORT X509Certificate
   // non-NULL.
   static OSCertHandle CreateOSCertHandleFromBytesWithNickname(
       const char* data,
-      int length,
+      size_t length,
       const char* nickname);
 #endif
 
   // Creates all possible OS certificate handles from |data| encoded in a
   // specific |format|. Returns an empty collection on failure.
-  static OSCertHandles CreateOSCertHandlesFromBytes(
-      const char* data,
-      int length,
-      Format format);
+  static OSCertHandles CreateOSCertHandlesFromBytes(const char* data,
+                                                    size_t length,
+                                                    Format format);
 
   // Duplicates (or adds a reference to) an OS certificate handle.
   static OSCertHandle DupOSCertHandle(OSCertHandle cert_handle);

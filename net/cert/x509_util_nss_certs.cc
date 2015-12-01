@@ -16,6 +16,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/pickle.h"
 #include "base/strings/stringprintf.h"
 #include "crypto/ec_private_key.h"
@@ -201,11 +202,9 @@ void GetSubjectAltName(CERTCertificate* cert_handle,
 
 X509Certificate::OSCertHandles CreateOSCertHandlesFromBytes(
     const char* data,
-    int length,
+    size_t length,
     X509Certificate::Format format) {
   X509Certificate::OSCertHandles results;
-  if (length < 0)
-    return results;
 
   crypto::EnsureNSSInit();
 
@@ -224,8 +223,9 @@ X509Certificate::OSCertHandles CreateOSCertHandlesFromBytes(
       // Make a copy since CERT_DecodeCertPackage may modify it
       std::vector<char> data_copy(data, data + length);
 
-      SECStatus result = CERT_DecodeCertPackage(&data_copy[0], length,
-                                                CollectCertsCallback, &results);
+      SECStatus result = CERT_DecodeCertPackage(
+          data_copy.data(), base::checked_cast<int>(data_copy.size()),
+          CollectCertsCallback, &results);
       if (result != SECSuccess)
         results.clear();
       break;

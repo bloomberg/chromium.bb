@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/pickle.h"
 #include "base/sha1.h"
 #include "base/strings/string_util.h"
@@ -94,7 +95,7 @@ void AddCertsFromStore(HCERTSTORE store,
 X509Certificate::OSCertHandles ParsePKCS7(const char* data, size_t length) {
   X509Certificate::OSCertHandles results;
   CERT_BLOB data_blob;
-  data_blob.cbData = length;
+  data_blob.cbData = base::checked_cast<DWORD>(length);
   data_blob.pbData = reinterpret_cast<BYTE*>(const_cast<char*>(data));
 
   HCERTSTORE out_store = NULL;
@@ -250,18 +251,25 @@ bool X509Certificate::IsSameOSCert(X509Certificate::OSCertHandle a,
 
 // static
 X509Certificate::OSCertHandle X509Certificate::CreateOSCertHandleFromBytes(
-    const char* data, int length) {
-  OSCertHandle cert_handle = NULL;
+    const char* data,
+    size_t length) {
+  if (!base::IsValueInRangeForNumericType<DWORD>(length))
+    return nullptr;
+  OSCertHandle cert_handle = nullptr;
   if (!CertAddEncodedCertificateToStore(
-      NULL, X509_ASN_ENCODING, reinterpret_cast<const BYTE*>(data),
-      length, CERT_STORE_ADD_USE_EXISTING, &cert_handle))
-    return NULL;
+          NULL, X509_ASN_ENCODING, reinterpret_cast<const BYTE*>(data),
+          base::checked_cast<DWORD>(length), CERT_STORE_ADD_USE_EXISTING,
+          &cert_handle)) {
+    return nullptr;
+  }
 
   return cert_handle;
 }
 
 X509Certificate::OSCertHandles X509Certificate::CreateOSCertHandlesFromBytes(
-    const char* data, int length, Format format) {
+    const char* data,
+    size_t length,
+    Format format) {
   OSCertHandles results;
   switch (format) {
     case FORMAT_SINGLE_CERTIFICATE: {

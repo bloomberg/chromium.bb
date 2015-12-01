@@ -47,7 +47,7 @@ void GetSubjectAltName(CERTCertificate* cert_handle,
 // |format|. Returns an empty collection on failure.
 X509Certificate::OSCertHandles CreateOSCertHandlesFromBytes(
     const char* data,
-    int length,
+    size_t length,
     X509Certificate::Format format);
 
 // Reads a single certificate from |pickle_iter| and returns a platform-specific
