@@ -33,9 +33,9 @@ static void StoreFrames(size_t number_of_frames,
     for (size_t j = 0; j < kNumberOfPackets; ++j) {
       Packet test_packet(1, 0);
       packets.push_back(
-          std::make_pair(
-              PacedPacketSender::MakePacketKey(kTicks, kSsrc, j),
-              new base::RefCountedData<Packet>(test_packet)));
+          std::make_pair(PacedPacketSender::MakePacketKey(
+                             kTicks, kSsrc, base::checked_cast<uint16>(j)),
+                         new base::RefCountedData<Packet>(test_packet)));
     }
     storage->StoreFrame(first_frame_id, packets);
     ++first_frame_id;
