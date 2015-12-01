@@ -35,16 +35,6 @@
     },
     {
       "archives": [],
-      "description": "Chrome 41 bundle, revision xxxxx",
-      "name": "pepper_41",
-      "recommended": "no",
-      "repath": "pepper_41",
-      "revision": 0,
-      "stability": "post_stable",
-      "version": 41
-    },
-    {
-      "archives": [],
       "description": "Chrome 42 bundle, revision xxxxx",
       "name": "pepper_42",
       "recommended": "no",
@@ -102,6 +92,16 @@
       "revision": 0,
       "stability": "post_stable",
       "version": 47
+    },
+    {
+      "archives": [],
+      "description": "Chrome 48 bundle, revision xxxxx",
+      "name": "pepper_48",
+      "recommended": "no",
+      "repath": "pepper_48",
+      "revision": 0,
+      "stability": "post_stable",
+      "version": 48
     },
     {
       "archives": [],
