@@ -21,7 +21,7 @@ BUILD_TOOLS_DIR = os.path.dirname(SCRIPT_DIR)
 sys.path.append(BUILD_TOOLS_DIR)
 import manifest_util
 import update_nacl_manifest
-from update_nacl_manifest import CANARY_BUNDLE_NAME, BIONIC_CANARY_BUNDLE_NAME
+from update_nacl_manifest import CANARY_BUNDLE_NAME
 
 
 HTTPS_BASE_URL = 'https://storage.googleapis.com' \
@@ -51,11 +51,6 @@ def GetPlatformArchiveUrl(host_os, version):
   return GetArchiveURL(basename, version)
 
 
-def GetBionicArchiveUrl(version):
-  basename = 'naclsdk_bionic.tar.bz2'
-  return GetArchiveURL(basename, version)
-
-
 def MakeGsUrl(rel_path):
   return update_nacl_manifest.GS_BUCKET_PATH + rel_path
 
@@ -82,10 +77,6 @@ def MakeArchive(url, host_os):
 
 def MakePlatformArchive(host_os, version):
   return MakeArchive(GetPlatformArchiveUrl(host_os, version), host_os)
-
-
-def MakeBionicArchive(host_os, version):
-  return MakeArchive(GetBionicArchiveUrl(version), host_os)
 
 
 def MakeNonPlatformArchive(basename, version):
@@ -285,9 +276,6 @@ B26_NONE = MakePlatformBundle(26)
 B26_0_1386_0_MLW = MakePlatformBundle(26, 177362, V26_0_1386_0, OS_MLW)
 B26_0_1386_1_MLW = MakePlatformBundle(26, 177439, V26_0_1386_1, OS_MLW)
 BTRUNK_140819_MLW = MakePlatformBundle(21, 140819, VTRUNK_140819, OS_MLW)
-BBIONIC_NONE = MakePepperBundle(0, stability=CANARY,
-                                bundle_name=BIONIC_CANARY_BUNDLE_NAME)
-BBIONIC_TRUNK_277776 = MakeBionicBundle(37, 277776, VTRUNK_277776, OS_L)
 NON_PEPPER_BUNDLE_NOARCHIVES = MakeNonPepperBundle('foo')
 NON_PEPPER_BUNDLE_ARCHIVES = MakeNonPepperBundle('bar', with_archives=True)
 
@@ -698,18 +686,6 @@ class TestUpdateManifest(unittest.TestCase):
     self._MakeDelegate()
     self.assertRaises(update_nacl_manifest.UnknownLockedBundleException,
                       self._Run, OS_MLW)
-
-  def testUpdateBionic(self):
-    bionic_bundle = copy.deepcopy(BBIONIC_NONE)
-    self.manifest = MakeManifest(bionic_bundle)
-    self.history.Add(OS_MW, CANARY, V37_0_2054_0)
-    self.files.Add(BBIONIC_TRUNK_277776)
-    self.version_mapping[V37_0_2054_0] = VTRUNK_277776
-    self._MakeDelegate()
-    self._Run(OS_MLW)
-    self._ReadUploadedManifest()
-    self._AssertUploadedManifestHasBundle(BBIONIC_TRUNK_277776, CANARY,
-                                          bundle_name=BIONIC_CANARY_BUNDLE_NAME)
 
 
 class TestUpdateVitals(unittest.TestCase):

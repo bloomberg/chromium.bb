@@ -14,11 +14,7 @@
 # If your project only builds in one or the other then this should be overridden
 # accordingly.
 #
-ifneq ($(ENABLE_BIONIC),)
-ALL_TOOLCHAINS ?= pnacl glibc clang-newlib bionic
-else
 ALL_TOOLCHAINS ?= pnacl glibc clang-newlib
-endif
 
 VALID_TOOLCHAINS ?= $(ALL_TOOLCHAINS)
 TOOLCHAIN ?= $(word 1,$(VALID_TOOLCHAINS))
@@ -428,7 +424,7 @@ ifneq (,$(findstring $(TOOLCHAIN),win))
 include $(NACL_SDK_ROOT)/tools/host_vc.mk
 endif
 
-ifneq (,$(findstring $(TOOLCHAIN),glibc bionic clang-newlib))
+ifneq (,$(findstring $(TOOLCHAIN),glibc clang-newlib))
 include $(NACL_SDK_ROOT)/tools/nacl_gcc.mk
 endif
 
