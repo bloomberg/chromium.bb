@@ -1360,6 +1360,8 @@ crbug.com/549314 [ XP ] inspector-protocol/layout-fonts/unicode-range-combining-
 
 crbug.com/563694 [ Linux Mac Debug ] svg/hixie/perf/005.xml [ Failure ]
 
+crbug.com/564109 [ Win7 XP ]  http/tests/webfont/font-display.html [ Pass Timeout Failure ]
+
 crbug.com/558574 [ Win7 ] fast/forms/text/text-font-height-mismatch.html [ Failure ]
 crbug.com/558574 [ Win7 ] fast/text/emphasis.html [ Failure ]
 
