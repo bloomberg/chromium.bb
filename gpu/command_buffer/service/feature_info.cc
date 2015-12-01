@@ -174,7 +174,8 @@ FeatureInfo::FeatureFlags::FeatureFlags()
       chromium_image_ycbcr_422(false),
       enable_subscribe_uniform(false),
       emulate_primitive_restart_fixed_index(false),
-      ext_render_buffer_format_bgra8888(false) {}
+      ext_render_buffer_format_bgra8888(false),
+      ext_multisample_compatibility(false) {}
 
 FeatureInfo::Workarounds::Workarounds() :
 #define GPU_OP(type, name) name(false),
@@ -796,6 +797,15 @@ void FeatureInfo::InitializeFeatures() {
           GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_SAMPLES_EXT);
       AddExtensionString("GL_EXT_multisampled_render_to_texture");
     }
+  }
+
+  if (!disable_all_multisample &&
+      (!gl_version_info_->is_es ||
+       extensions.Contains("GL_EXT_multisample_compatibility"))) {
+    AddExtensionString("GL_EXT_multisample_compatibility");
+    feature_flags_.ext_multisample_compatibility = true;
+    validators_.capability.AddValue(GL_MULTISAMPLE_EXT);
+    validators_.capability.AddValue(GL_SAMPLE_ALPHA_TO_ONE_EXT);
   }
 
   if (extensions.Contains("GL_INTEL_framebuffer_CMAA")) {

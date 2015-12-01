@@ -745,7 +745,13 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x8074, "GL_VERTEX_ARRAY_KHR",
     },
     {
+        0x809D, "GL_MULTISAMPLE_EXT",
+    },
+    {
         0x809E, "GL_SAMPLE_ALPHA_TO_COVERAGE",
+    },
+    {
+        0x809F, "GL_SAMPLE_ALPHA_TO_ONE_EXT",
     },
     {
         0x80A0, "GL_SAMPLE_COVERAGE",

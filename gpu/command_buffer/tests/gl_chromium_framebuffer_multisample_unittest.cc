@@ -44,7 +44,8 @@ TEST_F(GLChromiumFramebufferMultisampleTest, CachedBindingsTest) {
 }
 
 TEST_F(GLChromiumFramebufferMultisampleTest, DrawAndResolve) {
-  if (!GLTestHelper::HasExtension("GL_CHROMIUM_framebuffer_multisample")) {
+  if (!(GLTestHelper::HasExtension("GL_CHROMIUM_framebuffer_multisample") &&
+        GLTestHelper::HasExtension("GL_OES_rgb8_rgba8"))) {
     return;
   }
 

@@ -34,7 +34,11 @@ ContextState::EnableFlags::EnableFlags()
       rasterizer_discard(false),
       cached_rasterizer_discard(false),
       primitive_restart_fixed_index(false),
-      cached_primitive_restart_fixed_index(false) {}
+      cached_primitive_restart_fixed_index(false),
+      multisample_ext(true),
+      cached_multisample_ext(true),
+      sample_alpha_to_one_ext(false),
+      cached_sample_alpha_to_one_ext(false) {}
 
 void ContextState::Initialize() {
   blend_color_red = 0.0f;
@@ -176,6 +180,19 @@ void ContextState::InitCapabilities(const ContextState* prev_state) const {
         enable_flags.cached_stencil_test) {
       EnableDisable(GL_STENCIL_TEST, enable_flags.cached_stencil_test);
     }
+    if (feature_info_->feature_flags().ext_multisample_compatibility) {
+      if (prev_state->enable_flags.cached_multisample_ext !=
+          enable_flags.cached_multisample_ext) {
+        EnableDisable(GL_MULTISAMPLE_EXT, enable_flags.cached_multisample_ext);
+      }
+    }
+    if (feature_info_->feature_flags().ext_multisample_compatibility) {
+      if (prev_state->enable_flags.cached_sample_alpha_to_one_ext !=
+          enable_flags.cached_sample_alpha_to_one_ext) {
+        EnableDisable(GL_SAMPLE_ALPHA_TO_ONE_EXT,
+                      enable_flags.cached_sample_alpha_to_one_ext);
+      }
+    }
     if (feature_info_->IsES3Capable()) {
       if (prev_state->enable_flags.cached_rasterizer_discard !=
           enable_flags.cached_rasterizer_discard) {
@@ -200,6 +217,13 @@ void ContextState::InitCapabilities(const ContextState* prev_state) const {
     EnableDisable(GL_SAMPLE_COVERAGE, enable_flags.cached_sample_coverage);
     EnableDisable(GL_SCISSOR_TEST, enable_flags.cached_scissor_test);
     EnableDisable(GL_STENCIL_TEST, enable_flags.cached_stencil_test);
+    if (feature_info_->feature_flags().ext_multisample_compatibility) {
+      EnableDisable(GL_MULTISAMPLE_EXT, enable_flags.cached_multisample_ext);
+    }
+    if (feature_info_->feature_flags().ext_multisample_compatibility) {
+      EnableDisable(GL_SAMPLE_ALPHA_TO_ONE_EXT,
+                    enable_flags.cached_sample_alpha_to_one_ext);
+    }
     if (feature_info_->IsES3Capable()) {
       EnableDisable(GL_RASTERIZER_DISCARD,
                     enable_flags.cached_rasterizer_discard);
@@ -408,6 +432,10 @@ bool ContextState::GetEnabled(GLenum cap) const {
       return enable_flags.rasterizer_discard;
     case GL_PRIMITIVE_RESTART_FIXED_INDEX:
       return enable_flags.primitive_restart_fixed_index;
+    case GL_MULTISAMPLE_EXT:
+      return enable_flags.multisample_ext;
+    case GL_SAMPLE_ALPHA_TO_ONE_EXT:
+      return enable_flags.sample_alpha_to_one_ext;
     default:
       NOTREACHED();
       return false;
@@ -781,6 +809,18 @@ bool ContextState::GetStateAsGLint(GLenum pname,
             static_cast<GLint>(enable_flags.primitive_restart_fixed_index);
       }
       return true;
+    case GL_MULTISAMPLE_EXT:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLint>(enable_flags.multisample_ext);
+      }
+      return true;
+    case GL_SAMPLE_ALPHA_TO_ONE_EXT:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLint>(enable_flags.sample_alpha_to_one_ext);
+      }
+      return true;
     default:
       return false;
   }
@@ -1147,6 +1187,18 @@ bool ContextState::GetStateAsGLfloat(GLenum pname,
       if (params) {
         params[0] =
             static_cast<GLfloat>(enable_flags.primitive_restart_fixed_index);
+      }
+      return true;
+    case GL_MULTISAMPLE_EXT:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLfloat>(enable_flags.multisample_ext);
+      }
+      return true;
+    case GL_SAMPLE_ALPHA_TO_ONE_EXT:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLfloat>(enable_flags.sample_alpha_to_one_ext);
       }
       return true;
     default:

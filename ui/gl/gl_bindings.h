@@ -264,6 +264,12 @@
 #define GL_PATH_STENCIL_VALUE_MASK_CHROMIUM 0x90B9
 #endif
 
+#ifndef GL_EXT_multisample_compatibility
+#define GL_EXT_multisample_compatibility 1
+#define GL_MULTISAMPLE_EXT 0x809D
+#define GL_SAMPLE_ALPHA_TO_ONE_EXT 0x809F
+#endif /* GL_EXT_multisample_compatibility */
+
 #ifndef GL_KHR_blend_equation_advanced
 #define GL_KHR_blend_equation_advanced 1
 #define GL_COLORBURN_KHR                  0x929A

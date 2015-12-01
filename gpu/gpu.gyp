@@ -367,6 +367,7 @@
         'command_buffer/tests/gl_copy_texture_CHROMIUM_unittest.cc',
         'command_buffer/tests/gl_cube_map_texture_unittest.cc',
         'command_buffer/tests/gl_depth_texture_unittest.cc',
+        'command_buffer/tests/gl_ext_multisample_compatibility_unittest.cc',	
         'command_buffer/tests/gl_ext_srgb_unittest.cc',
         'command_buffer/tests/gl_fence_sync_unittest.cc',
         'command_buffer/tests/gl_gpu_memory_buffer_unittest.cc',

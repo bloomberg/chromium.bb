@@ -5156,6 +5156,22 @@ bool GLES2DecoderImpl::SetCapabilityState(GLenum cap, bool enabled) {
         return true;
       }
       return false;
+    case GL_MULTISAMPLE_EXT:
+      state_.enable_flags.multisample_ext = enabled;
+      if (state_.enable_flags.cached_multisample_ext != enabled ||
+          state_.ignore_cached_state) {
+        state_.enable_flags.cached_multisample_ext = enabled;
+        return true;
+      }
+      return false;
+    case GL_SAMPLE_ALPHA_TO_ONE_EXT:
+      state_.enable_flags.sample_alpha_to_one_ext = enabled;
+      if (state_.enable_flags.cached_sample_alpha_to_one_ext != enabled ||
+          state_.ignore_cached_state) {
+        state_.enable_flags.cached_sample_alpha_to_one_ext = enabled;
+        return true;
+      }
+      return false;
     default:
       NOTREACHED();
       return false;
