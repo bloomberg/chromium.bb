@@ -18,6 +18,9 @@ DeviceOrientationAbsoluteController::DeviceOrientationAbsoluteController(Documen
 
 DeviceOrientationAbsoluteController::~DeviceOrientationAbsoluteController()
 {
+#if !ENABLE(OILPAN)
+    stopUpdating();
+#endif
 }
 
 const char* DeviceOrientationAbsoluteController::supplementName()
