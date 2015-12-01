@@ -32,8 +32,9 @@ HARDLINK, HARDLINK_WITH_FALLBACK, SYMLINK, COPY = range(1, 5)
 
 
 if sys.platform == 'win32':
+  import locale
   from ctypes.wintypes import create_unicode_buffer
-  from ctypes.wintypes import windll, FormatError  # pylint: disable=E0611
+  from ctypes.wintypes import windll  # pylint: disable=E0611
   from ctypes.wintypes import GetLastError  # pylint: disable=E0611
 elif sys.platform == 'darwin':
   import Carbon.File  #  pylint: disable=F0401
@@ -41,6 +42,12 @@ elif sys.platform == 'darwin':
 
 
 if sys.platform == 'win32':
+  def FormatError(err):
+    """Returns a formatted error on Windows in unicode."""
+    # We need to take in account the current code page.
+    return ctypes.wintypes.FormatError(err).decode(
+        locale.getpreferredencoding(), 'replace')
+
   def QueryDosDevice(drive_letter):
     """Returns the Windows 'native' path for a DOS drive letter."""
     assert re.match(r'^[a-zA-Z]:$', drive_letter), drive_letter

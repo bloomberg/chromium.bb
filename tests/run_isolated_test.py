@@ -442,16 +442,16 @@ class RunIsolatedJsonTest(RunIsolatedTestBase):
       self.temp_join(u'foo.exe'), u'cmd with space',
       '${ISOLATED_OUTDIR}/out.txt',
     ]
-    isolated = json_dumps({'command': sub_cmd})
-    isolated_hash = isolateserver_mock.hash_content(isolated)
+    isolated_in = json_dumps({'command': sub_cmd})
+    isolated_in_hash = isolateserver_mock.hash_content(isolated_in)
     def get_storage(_isolate_server, _namespace):
-      return StorageFake({isolated_hash:isolated})
+      return StorageFake({isolated_in_hash:isolated_in})
     self.mock(isolateserver, 'get_storage', get_storage)
 
     out = os.path.join(self.tempdir, 'res.json')
     cmd = [
         '--no-log',
-        '--isolated', isolated_hash,
+        '--isolated', isolated_in_hash,
         '--cache', self.tempdir,
         '--isolate-server', 'https://localhost:1',
         '--json', out,
@@ -462,12 +462,27 @@ class RunIsolatedJsonTest(RunIsolatedTestBase):
     sub_cmd[2] = self.popen_calls[0][0][2]
     self.assertNotIn('ISOLATED_OUTDIR', sub_cmd[2])
     self.assertEqual([(sub_cmd, {'detached': True})], self.popen_calls)
+    isolated_out = {
+      'algo': 'sha-1',
+      'files': {
+        'out.txt': {
+          'h': isolateserver_mock.hash_content('generated data\n'),
+          's': 15,
+          'm': 0640,
+        },
+      },
+      'version': isolated_format.ISOLATED_FILE_VERSION,
+    }
+    if sys.platform == 'win32':
+      del isolated_out['files']['out.txt']['m']
+    isolated_out_hash = isolateserver_mock.hash_content(
+        json_dumps(isolated_out))
     expected = {
       u'exit_code': 0,
       u'had_hard_timeout': False,
       u'internal_failure': None,
       u'outputs_ref': {
-        u'isolated': u'e0a0fffa0910dd09e7ef4c89496116f60317e6c4',
+        u'isolated': isolated_out_hash,
         u'isolatedserver': u'http://localhost:1',
         u'namespace': u'default-gzip',
       },
