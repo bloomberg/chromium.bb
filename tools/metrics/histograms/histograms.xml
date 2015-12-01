@@ -5259,7 +5259,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>estark@chromium.org</owner>
   <summary>
     Number of times a cookie was set with a name prefixed by
-    &quot;$Secure-&quot; or &quot;$Host-&quot; (prefixes reserved by
+    &quot;__Secure-&quot; or &quot;__Host-&quot; (prefixes reserved by
     https://tools.ietf.org/html/draft-west-cookie-prefixes).
   </summary>
 </histogram>
@@ -5268,11 +5268,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>estark@chromium.org</owner>
   <summary>
     Number of times a cookie was set with a name prefixed by
-    &quot;$Secure-&quot; or &quot;$Host-&quot; that violate cookie prefix rules.
-    That is, a $Secure- cookie must be set over a secure connection with the
-    Secure attribute, and a $Host- cookie must be set over a secure connection,
-    with the Secure attribute, with no Domain attribute, and with a Path
-    attribute of &quot;/&quot;. (As defined in
+    &quot;__Secure-&quot; or &quot;__Host-&quot; that violate cookie prefix
+    rules. That is, a __Secure- cookie must be set over a secure connection with
+    the Secure attribute, and a __Host- cookie must be set over a secure
+    connection, with the Secure attribute, with no Domain attribute, and with a
+    Path attribute of &quot;/&quot;. (As defined in
     https://tools.ietf.org/html/draft-west-cookie-prefixes.)
   </summary>
 </histogram>

@@ -477,8 +477,8 @@ bool CanonicalCookie::FullCompare(const CanonicalCookie& other) const {
 // static
 CanonicalCookie::CookiePrefix CanonicalCookie::GetCookiePrefix(
     const std::string& name) {
-  const char kSecurePrefix[] = "$Secure-";
-  const char kHostPrefix[] = "$Host-";
+  const char kSecurePrefix[] = "__Secure-";
+  const char kHostPrefix[] = "__Host-";
   if (name.find(kSecurePrefix) == 0)
     return CanonicalCookie::COOKIE_PREFIX_SECURE;
   if (name.find(kHostPrefix) == 0)
