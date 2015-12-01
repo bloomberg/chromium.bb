@@ -13,7 +13,6 @@
         '../src/shared/platform/platform.gyp:*',
         '../src/shared/serialization/serialization.gyp:*',
         '../src/shared/srpc/srpc.gyp:*',
-        '../src/shared/utils/utils.gyp:*',
         '../src/trusted/cpu_features/cpu_features.gyp:*',
         '../src/trusted/debug_stub/debug_stub.gyp:*',
         '../src/trusted/desc/desc.gyp:*',

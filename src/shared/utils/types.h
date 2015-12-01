@@ -27,17 +27,6 @@ typedef enum {
 } Bool;
 #endif
 
-/*
- * It doesn't really make much sense to have all the diouxX formats, but
- * we include them for completeness/orthogonality.
- */
-#define NACL_PRIdBool  "d"
-#define NACL_PRIiBool  "i"
-#define NACL_PRIoBool  "o"
-#define NACL_PRIuBool  "u"
-#define NACL_PRIxBool  "x"
-#define NACL_PRIXBool  "X"
-
 EXTERN_C_END
 
 #endif   /* NATIVE_CLIENT_SRC_SHARED_UTILS_TYPES_H__ */
