@@ -21,6 +21,7 @@ source_set("renderer") {
     "//build/config/compiler:no_size_t_to_int_warning",
     "//content/public/common:mojo_shell_client",
   ]
+  defines = []
 
   deps = [
     # TODO(GYP) bug 376846 remove this. This should be inherited from //net but
@@ -239,5 +240,9 @@ source_set("renderer") {
       "vr/vr_type_converters.cc",
       "vr/vr_type_converters.h",
     ]
+  }
+
+  if (use_seccomp_bpf) {
+    defines += [ "USE_SECCOMP_BPF" ]
   }
 }
