@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
-#include "base/strings/string_util.h"
 #include "tools/gn/err.h"
 #include "tools/gn/token.h"
 
@@ -32,14 +31,9 @@ class Tokenizer {
   // The offset must be in the buffer.
   static bool IsNewline(const base::StringPiece& buffer, size_t offset);
 
-  static bool IsIdentifierFirstChar(char c) {
-    return base::IsAsciiAlpha(c) || c == '_';
-  }
+  static bool IsIdentifierFirstChar(char c);
 
-  static bool IsIdentifierContinuingChar(char c) {
-    // Also allow digits after the first char.
-    return IsIdentifierFirstChar(c) || base::IsAsciiDigit(c);
-  }
+  static bool IsIdentifierContinuingChar(char c);
 
  private:
   // InputFile must outlive the tokenizer and all generated tokens.

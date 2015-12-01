@@ -180,6 +180,16 @@ bool Tokenizer::IsNewline(const base::StringPiece& buffer, size_t offset) {
   return buffer[offset] == '\n';
 }
 
+// static
+bool Tokenizer::IsIdentifierFirstChar(char c) {
+  return base::IsAsciiAlpha(c) || c == '_';
+}
+
+// static
+bool Tokenizer::IsIdentifierContinuingChar(char c) {
+  // Also allow digits after the first char.
+  return IsIdentifierFirstChar(c) || base::IsAsciiDigit(c);
+}
 
 void Tokenizer::AdvanceToNextToken() {
   while (!at_end() && IsCurrentWhitespace())
