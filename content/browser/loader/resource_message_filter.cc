@@ -50,10 +50,12 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& message) {
 }
 
 void ResourceMessageFilter::GetContexts(
-    const ResourceHostMsg_Request& request,
+    ResourceType resource_type,
+    int origin_pid,
     ResourceContext** resource_context,
     net::URLRequestContext** request_context) {
-  return get_contexts_callback_.Run(request, resource_context, request_context);
+  return get_contexts_callback_.Run(resource_type, origin_pid, resource_context,
+                                    request_context);
 }
 
 const HostZoomMap* ResourceMessageFilter::GetHostZoomMap() const {

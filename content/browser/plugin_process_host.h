@@ -153,7 +153,8 @@ class CONTENT_EXPORT PluginProcessHost : public BrowserChildProcessHostDelegate,
   void CancelRequests();
 
   // Callback for ResourceMessageFilter.
-  void GetContexts(const ResourceHostMsg_Request& request,
+  void GetContexts(ResourceType resource_type,
+                   int origin_pid,
                    ResourceContext** resource_context,
                    net::URLRequestContext** request_context);
 

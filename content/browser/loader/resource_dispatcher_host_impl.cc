@@ -1216,7 +1216,8 @@ void ResourceDispatcherHostImpl::BeginRequest(
 
   ResourceContext* resource_context = NULL;
   net::URLRequestContext* request_context = NULL;
-  filter_->GetContexts(request_data, &resource_context, &request_context);
+  filter_->GetContexts(request_data.resource_type, request_data.origin_pid,
+                       &resource_context, &request_context);
   // http://crbug.com/90971
   CHECK(ContainsKey(active_resource_contexts_, resource_context));
 

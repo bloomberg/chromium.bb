@@ -422,11 +422,12 @@ void PluginProcessHost::OnChannelDestroyed(int renderer_id) {
     resource_context_map_.erase(renderer_id);
 }
 
-void PluginProcessHost::GetContexts(const ResourceHostMsg_Request& request,
+void PluginProcessHost::GetContexts(ResourceType resource_type,
+                                    int origin_pid,
                                     ResourceContext** resource_context,
                                     net::URLRequestContext** request_context) {
   *resource_context =
-      resource_context_map_[request.origin_pid].resource_context;
+      resource_context_map_[origin_pid].resource_context;
   *request_context = (*resource_context)->GetRequestContext();
 }
 

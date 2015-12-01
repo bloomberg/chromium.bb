@@ -38,12 +38,18 @@ class ServiceWorkerContextWrapper;
 // will not interfere with browser UI.
 class CONTENT_EXPORT ResourceMessageFilter : public BrowserMessageFilter {
  public:
-  typedef base::Callback<void(const ResourceHostMsg_Request&,
+  // TODO(ricea): Remove origin_pid when support for NPAPI plugins is removed.
+  // crbug.com/493212 is the tracking bug for NPAPI removal.
+  typedef base::Callback<void(ResourceType resource_type,
+                              int origin_pid,
                               ResourceContext**,
                               net::URLRequestContext**)> GetContextsCallback;
 
   // |appcache_service|, |blob_storage_context|, |file_system_context| may be
   // NULL in unittests or for requests from the (NPAPI) plugin process.
+  // The |origin_pid| argument to |get_contexts_callback| is not used
+  // (and may be invalid) for requests that are NOT from the NPAPI plugin
+  // process.
   ResourceMessageFilter(int child_id,
                         int process_type,
                         ChromeAppCacheService* appcache_service,
@@ -57,7 +63,10 @@ class CONTENT_EXPORT ResourceMessageFilter : public BrowserMessageFilter {
   void OnChannelClosing() override;
   bool OnMessageReceived(const IPC::Message& message) override;
 
-  void GetContexts(const ResourceHostMsg_Request& request,
+  // |origin_pid| is only required for NPAPI plugin processes. Its value is
+  // ignored otherwise.
+  void GetContexts(ResourceType resource_type,
+                   int origin_pid,
                    ResourceContext** resource_context,
                    net::URLRequestContext** request_context);
 
