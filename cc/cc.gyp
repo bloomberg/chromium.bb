@@ -77,6 +77,8 @@
         'animation/transform_operations.h',
         'base/completion_event.h',
         'base/container_util.h',
+        'base/contiguous_container.cc',
+        'base/contiguous_container.h',
         'base/delayed_unique_notifier.cc',
         'base/delayed_unique_notifier.h',
         'base/histograms.cc',

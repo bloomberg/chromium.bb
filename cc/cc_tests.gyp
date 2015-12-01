@@ -17,6 +17,7 @@
       'animation/scrollbar_animation_controller_linear_fade_unittest.cc',
       'animation/scrollbar_animation_controller_thinning_unittest.cc',
       'animation/transform_operations_unittest.cc',
+      'base/contiguous_container_unittest.cc',
       'base/delayed_unique_notifier_unittest.cc',
       'base/float_quad_unittest.cc',
       'base/histograms_unittest.cc',

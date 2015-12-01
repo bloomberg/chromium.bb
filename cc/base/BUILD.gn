@@ -8,6 +8,8 @@ source_set("base") {
   sources = [
     "completion_event.h",
     "container_util.h",
+    "contiguous_container.cc",
+    "contiguous_container.h",
     "delayed_unique_notifier.cc",
     "delayed_unique_notifier.h",
     "histograms.cc",
