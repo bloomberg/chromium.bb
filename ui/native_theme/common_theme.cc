@@ -16,49 +16,19 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/resources/grit/ui_resources.h"
 
-namespace {
-
-// Theme colors returned by GetSystemColor().
-
-// MenuItem:
-const SkColor kMenuBackgroundColor = SK_ColorWHITE;
-const SkColor kMenuHighlightBackgroundColor = SkColorSetRGB(0x42, 0x81, 0xF4);
-const SkColor kMenuInvertedSchemeHighlightBackgroundColor =
-    SkColorSetRGB(0x30, 0x30, 0x30);
-const SkColor kMenuBorderColor = SkColorSetRGB(0xBA, 0xBA, 0xBA);
-const SkColor kEnabledMenuButtonBorderColor =
-    SkColorSetARGB(0x24, 0x00, 0x00, 0x00);
-const SkColor kFocusedMenuButtonBorderColor =
-    SkColorSetARGB(0x48, 0x00, 0x00, 0x00);
-const SkColor kHoverMenuButtonBorderColor =
-    SkColorSetARGB(0x48, 0x00, 0x00, 0x00);
-const SkColor kMenuSeparatorColor = SkColorSetRGB(0xE9, 0xE9, 0xE9);
-const SkColor kEnabledMenuItemForegroundColor = SK_ColorBLACK;
-const SkColor kDisabledMenuItemForegroundColor =
-    SkColorSetRGB(0xA1, 0xA1, 0x92);
-const SkColor kHoverMenuItemBackgroundColor =
-    SkColorSetARGB(0xCC, 0xFF, 0xFF, 0xFF);
-// Button:
-const SkColor kButtonHoverBackgroundColor = SkColorSetRGB(0xEA, 0xEA, 0xEA);
-const SkColor kBlueButtonEnabledColor = SK_ColorWHITE;
-const SkColor kBlueButtonDisabledColor = SK_ColorWHITE;
-const SkColor kBlueButtonPressedColor = SK_ColorWHITE;
-const SkColor kBlueButtonHoverColor = SK_ColorWHITE;
-const SkColor kBlueButtonShadowColor = SkColorSetRGB(0x53, 0x8C, 0xEA);
-const SkColor kCallToActionColor = gfx::kGoogleBlue500;
-const SkColor kCallToActionColorInvert = gfx::kGoogleBlue300;
-// Material spinner/throbber:
-const SkColor kThrobberSpinningColor = gfx::kGoogleBlue500;
-const SkColor kThrobberWaitingColor = SkColorSetRGB(0xA6, 0xA6, 0xA6);
-const SkColor kThrobberLightColor = SkColorSetRGB(0xF4, 0xF8, 0xFD);
-
-}  // namespace
-
 namespace ui {
 
-bool CommonThemeGetSystemColor(NativeTheme::ColorId color_id, SkColor* color) {
+SkColor GetAuraColor(NativeTheme::ColorId color_id,
+                     const NativeTheme* base_theme) {
+  // Shared colors.
+  static const SkColor kTextfieldDefaultBackground = SK_ColorWHITE;
+  static const SkColor kTextfieldSelectionBackgroundFocused =
+      SkColorSetARGB(0x54, 0x60, 0xA8, 0xEB);
+
   // MD colors.
   if (ui::MaterialDesignController::IsModeMaterial()) {
+    // Dialogs:
+    static const SkColor kDialogBackgroundColorMd = SK_ColorWHITE;
     // MenuItem:
     const SkColor kMenuHighlightBackgroundColorMd =
         SkColorSetARGB(0x14, 0x00, 0x00, 0x00);
@@ -66,120 +36,372 @@ bool CommonThemeGetSystemColor(NativeTheme::ColorId color_id, SkColor* color) {
     // Link:
     const SkColor kLinkDisabledColorMd = SK_ColorBLACK;
     const SkColor kLinkEnabledColorMd = gfx::kGoogleBlue700;
+    // Results tables:
+    static const SkColor kResultsTableTextMd = SK_ColorBLACK;
+    static const SkColor kResultsTableDimmedTextMd =
+        SkColorSetRGB(0x64, 0x64, 0x64);
+    static const SkColor kPositiveTextColorMd = SkColorSetRGB(0x0b, 0x80, 0x43);
+    static const SkColor kNegativeTextColorMd = SkColorSetRGB(0xc5, 0x39, 0x29);
 
     switch (color_id) {
+      // Dialogs
+      case NativeTheme::kColorId_DialogBackground:
+      case NativeTheme::kColorId_BubbleBackground:
+        return kDialogBackgroundColorMd;
+
       // MenuItem
       case NativeTheme::kColorId_FocusedMenuItemBackgroundColor:
-        *color = kMenuHighlightBackgroundColorMd;
-        return true;
+        return kMenuHighlightBackgroundColorMd;
       case NativeTheme::kColorId_SelectedMenuItemForegroundColor:
-        *color = kSelectedMenuItemForegroundColorMd;
-        return true;
+        return kSelectedMenuItemForegroundColorMd;
       // Link
       case NativeTheme::kColorId_LinkDisabled:
-        *color = kLinkDisabledColorMd;
-        return true;
+        return kLinkDisabledColorMd;
       case NativeTheme::kColorId_LinkEnabled:
       case NativeTheme::kColorId_LinkPressed:
         // Normal and pressed share a color.
-        *color = kLinkEnabledColorMd;
-        return true;
+        return kLinkEnabledColorMd;
+
+      // Results Tables
+      case NativeTheme::kColorId_ResultsTableHoveredBackground:
+        return SkColorSetA(
+            base_theme->GetSystemColor(
+                NativeTheme::kColorId_ResultsTableNormalBackground),
+            0x0D);
+      case NativeTheme::kColorId_ResultsTableSelectedBackground:
+        return SkColorSetA(
+            base_theme->GetSystemColor(
+                NativeTheme::kColorId_ResultsTableNormalBackground),
+            0x14);
+      case NativeTheme::kColorId_ResultsTableNormalText:
+      case NativeTheme::kColorId_ResultsTableHoveredText:
+      case NativeTheme::kColorId_ResultsTableSelectedText:
+      case NativeTheme::kColorId_ResultsTableNormalHeadline:
+      case NativeTheme::kColorId_ResultsTableHoveredHeadline:
+      case NativeTheme::kColorId_ResultsTableSelectedHeadline:
+        return kResultsTableTextMd;
+      case NativeTheme::kColorId_ResultsTableNormalDimmedText:
+      case NativeTheme::kColorId_ResultsTableHoveredDimmedText:
+      case NativeTheme::kColorId_ResultsTableSelectedDimmedText:
+        return kResultsTableDimmedTextMd;
+      case NativeTheme::kColorId_ResultsTableNormalUrl:
+      case NativeTheme::kColorId_ResultsTableHoveredUrl:
+      case NativeTheme::kColorId_ResultsTableSelectedUrl:
+        return base_theme->GetSystemColor(NativeTheme::kColorId_LinkEnabled);
+      case NativeTheme::kColorId_ResultsTablePositiveText:
+      case NativeTheme::kColorId_ResultsTablePositiveHoveredText:
+      case NativeTheme::kColorId_ResultsTablePositiveSelectedText:
+        return kPositiveTextColorMd;
+      case NativeTheme::kColorId_ResultsTableNegativeText:
+      case NativeTheme::kColorId_ResultsTableNegativeHoveredText:
+      case NativeTheme::kColorId_ResultsTableNegativeSelectedText:
+        return kNegativeTextColorMd;
+
       default:
         break;
     }
   }
 
   // Pre-MD colors.
+  // Windows:
+  static const SkColor kWindowBackgroundColor = SK_ColorWHITE;
+  // Dialogs:
+  static const SkColor kDialogBackgroundColor = SkColorSetRGB(251, 251, 251);
+  // FocusableBorder:
+  static const SkColor kFocusedBorderColor = SkColorSetRGB(0x4D, 0x90, 0xFE);
+  static const SkColor kUnfocusedBorderColor = SkColorSetRGB(0xD9, 0xD9, 0xD9);
+  // Button:
+  static const SkColor kButtonBackgroundColor = SkColorSetRGB(0xDE, 0xDE, 0xDE);
+  static const SkColor kButtonEnabledColor = SkColorSetRGB(0x22, 0x22, 0x22);
+  static const SkColor kButtonHighlightColor = SkColorSetRGB(0, 0, 0);
+  static const SkColor kButtonHoverColor = kButtonEnabledColor;
+  static const SkColor kButtonHoverBackgroundColor =
+      SkColorSetRGB(0xEA, 0xEA, 0xEA);
+  static const SkColor kBlueButtonEnabledColor = SK_ColorWHITE;
+  static const SkColor kBlueButtonDisabledColor = SK_ColorWHITE;
+  static const SkColor kBlueButtonPressedColor = SK_ColorWHITE;
+  static const SkColor kBlueButtonHoverColor = SK_ColorWHITE;
+  static const SkColor kBlueButtonShadowColor = SkColorSetRGB(0x53, 0x8C, 0xEA);
+  static const SkColor kCallToActionColor = gfx::kGoogleBlue500;
+  // MenuItem:
+  static const SkColor kMenuBackgroundColor = SK_ColorWHITE;
+  static const SkColor kMenuHighlightBackgroundColor =
+      SkColorSetRGB(0x42, 0x81, 0xF4);
+  static const SkColor kMenuBorderColor = SkColorSetRGB(0xBA, 0xBA, 0xBA);
+  static const SkColor kEnabledMenuButtonBorderColor =
+      SkColorSetARGB(0x24, 0x00, 0x00, 0x00);
+  static const SkColor kFocusedMenuButtonBorderColor =
+      SkColorSetARGB(0x48, 0x00, 0x00, 0x00);
+  static const SkColor kHoverMenuButtonBorderColor =
+      SkColorSetARGB(0x48, 0x00, 0x00, 0x00);
+  static const SkColor kMenuSeparatorColor = SkColorSetRGB(0xE9, 0xE9, 0xE9);
+  static const SkColor kEnabledMenuItemForegroundColor = SK_ColorBLACK;
+  static const SkColor kDisabledMenuItemForegroundColor =
+      SkColorSetRGB(0xA1, 0xA1, 0x92);
+  static const SkColor kHoverMenuItemBackgroundColor =
+      SkColorSetARGB(0xCC, 0xFF, 0xFF, 0xFF);
+  // Label:
+  static const SkColor kLabelEnabledColor = kButtonEnabledColor;
+  static const SkColor kLabelBackgroundColor = SK_ColorWHITE;
+  // Link:
+  static const SkColor kLinkDisabledColor = SK_ColorBLACK;
+  static const SkColor kLinkEnabledColor = SkColorSetRGB(0, 51, 153);
+  static const SkColor kLinkPressedColor = SK_ColorRED;
+  // Textfield:
+  static const SkColor kTextfieldDefaultColor = SK_ColorBLACK;
+  static const SkColor kTextfieldReadOnlyColor = SK_ColorDKGRAY;
+  static const SkColor kTextfieldReadOnlyBackground = SK_ColorWHITE;
+  static const SkColor kTextfieldSelectionColor = color_utils::AlphaBlend(
+      SK_ColorBLACK, kTextfieldSelectionBackgroundFocused, 0xdd);
+  // Tooltip
+  static const SkColor kTooltipBackground = 0xFFFFFFCC;
+  static const SkColor kTooltipTextColor = kLabelEnabledColor;
+  // Tree
+  static const SkColor kTreeBackground = SK_ColorWHITE;
+  static const SkColor kTreeTextColor = SK_ColorBLACK;
+  static const SkColor kTreeSelectedTextColor = SK_ColorBLACK;
+  static const SkColor kTreeSelectionBackgroundColor =
+      SkColorSetRGB(0xEE, 0xEE, 0xEE);
+  static const SkColor kTreeArrowColor = SkColorSetRGB(0x7A, 0x7A, 0x7A);
+  // Table
+  static const SkColor kTableBackground = SK_ColorWHITE;
+  static const SkColor kTableTextColor = SK_ColorBLACK;
+  static const SkColor kTableSelectedTextColor = SK_ColorBLACK;
+  static const SkColor kTableSelectionBackgroundColor =
+      SkColorSetRGB(0xEE, 0xEE, 0xEE);
+  static const SkColor kTableGroupingIndicatorColor =
+      SkColorSetRGB(0xCC, 0xCC, 0xCC);
+  // Results Tables
+  static const SkColor kResultsTableSelectedBackground =
+      kTextfieldSelectionBackgroundFocused;
+  static const SkColor kResultsTableNormalText =
+      color_utils::AlphaBlend(SK_ColorBLACK, kTextfieldDefaultBackground, 0xDD);
+  static const SkColor kResultsTableHoveredBackground = color_utils::AlphaBlend(
+      kTextfieldSelectionBackgroundFocused, kTextfieldDefaultBackground, 0x40);
+  static const SkColor kResultsTableHoveredText = color_utils::AlphaBlend(
+      SK_ColorBLACK, kResultsTableHoveredBackground, 0xDD);
+  static const SkColor kResultsTableSelectedText = color_utils::AlphaBlend(
+      SK_ColorBLACK, kTextfieldSelectionBackgroundFocused, 0xDD);
+  static const SkColor kResultsTableNormalDimmedText =
+      color_utils::AlphaBlend(SK_ColorBLACK, kTextfieldDefaultBackground, 0xBB);
+  static const SkColor kResultsTableHoveredDimmedText = color_utils::AlphaBlend(
+      SK_ColorBLACK, kResultsTableHoveredBackground, 0xBB);
+  static const SkColor kResultsTableSelectedDimmedText =
+      color_utils::AlphaBlend(SK_ColorBLACK,
+                              kTextfieldSelectionBackgroundFocused, 0xBB);
+  static const SkColor kResultsTableNormalUrl = kTextfieldSelectionColor;
+  static const SkColor kResultsTableSelectedOrHoveredUrl =
+      SkColorSetARGB(0xff, 0x0b, 0x80, 0x43);
+  const SkColor kPositiveTextColor = SkColorSetRGB(0x0b, 0x80, 0x43);
+  const SkColor kNegativeTextColor = SkColorSetRGB(0xc5, 0x39, 0x29);
+  static const SkColor kResultsTablePositiveText = color_utils::AlphaBlend(
+      kPositiveTextColor, kTextfieldDefaultBackground, 0xDD);
+  static const SkColor kResultsTablePositiveHoveredText =
+      color_utils::AlphaBlend(kPositiveTextColor,
+                              kResultsTableHoveredBackground, 0xDD);
+  static const SkColor kResultsTablePositiveSelectedText =
+      color_utils::AlphaBlend(kPositiveTextColor,
+                              kTextfieldSelectionBackgroundFocused, 0xDD);
+  static const SkColor kResultsTableNegativeText = color_utils::AlphaBlend(
+      kNegativeTextColor, kTextfieldDefaultBackground, 0xDD);
+  static const SkColor kResultsTableNegativeHoveredText =
+      color_utils::AlphaBlend(kNegativeTextColor,
+                              kResultsTableHoveredBackground, 0xDD);
+  static const SkColor kResultsTableNegativeSelectedText =
+      color_utils::AlphaBlend(kNegativeTextColor,
+                              kTextfieldSelectionBackgroundFocused, 0xDD);
+  // Material spinner/throbber:
+  static const SkColor kThrobberSpinningColor = gfx::kGoogleBlue500;
+  static const SkColor kThrobberWaitingColor = SkColorSetRGB(0xA6, 0xA6, 0xA6);
+  static const SkColor kThrobberLightColor = SkColorSetRGB(0xF4, 0xF8, 0xFD);
+
   switch (color_id) {
+    // Windows
+    case NativeTheme::kColorId_WindowBackground:
+      return kWindowBackgroundColor;
+
+    // Dialogs
+    case NativeTheme::kColorId_DialogBackground:
+    case NativeTheme::kColorId_BubbleBackground:
+      return kDialogBackgroundColor;
+
+    // FocusableBorder
+    case NativeTheme::kColorId_FocusedBorderColor:
+      return kFocusedBorderColor;
+    case NativeTheme::kColorId_UnfocusedBorderColor:
+      return kUnfocusedBorderColor;
+
+    // Button
+    case NativeTheme::kColorId_ButtonBackgroundColor:
+      return kButtonBackgroundColor;
+    case NativeTheme::kColorId_ButtonEnabledColor:
+      return kButtonEnabledColor;
+    case NativeTheme::kColorId_ButtonHighlightColor:
+      return kButtonHighlightColor;
+    case NativeTheme::kColorId_ButtonHoverColor:
+      return kButtonHoverColor;
+    case NativeTheme::kColorId_ButtonHoverBackgroundColor:
+      return kButtonHoverBackgroundColor;
+    case NativeTheme::kColorId_BlueButtonEnabledColor:
+      return kBlueButtonEnabledColor;
+    case NativeTheme::kColorId_BlueButtonDisabledColor:
+      return kBlueButtonDisabledColor;
+    case NativeTheme::kColorId_BlueButtonPressedColor:
+      return kBlueButtonPressedColor;
+    case NativeTheme::kColorId_BlueButtonHoverColor:
+      return kBlueButtonHoverColor;
+    case NativeTheme::kColorId_BlueButtonShadowColor:
+      return kBlueButtonShadowColor;
+    case NativeTheme::kColorId_CallToActionColor:
+      return kCallToActionColor;
+
     // MenuItem
     case NativeTheme::kColorId_MenuBorderColor:
-      *color = kMenuBorderColor;
-      break;
+      return kMenuBorderColor;
     case NativeTheme::kColorId_EnabledMenuButtonBorderColor:
-      *color = kEnabledMenuButtonBorderColor;
-      break;
+      return kEnabledMenuButtonBorderColor;
     case NativeTheme::kColorId_FocusedMenuButtonBorderColor:
-      *color = kFocusedMenuButtonBorderColor;
-      break;
+      return kFocusedMenuButtonBorderColor;
     case NativeTheme::kColorId_HoverMenuButtonBorderColor:
-      *color = kHoverMenuButtonBorderColor;
-      break;
+      return kHoverMenuButtonBorderColor;
     case NativeTheme::kColorId_MenuSeparatorColor:
-      *color = kMenuSeparatorColor;
-      break;
+      return kMenuSeparatorColor;
     case NativeTheme::kColorId_MenuBackgroundColor:
-      *color = kMenuBackgroundColor;
-      break;
+      return kMenuBackgroundColor;
     case NativeTheme::kColorId_FocusedMenuItemBackgroundColor:
-      *color = kMenuHighlightBackgroundColor;
-      break;
+      return kMenuHighlightBackgroundColor;
     case NativeTheme::kColorId_HoverMenuItemBackgroundColor:
-      *color = kHoverMenuItemBackgroundColor;
-      break;
+      return kHoverMenuItemBackgroundColor;
     case NativeTheme::kColorId_EnabledMenuItemForegroundColor:
-      *color = kEnabledMenuItemForegroundColor;
-      break;
+      return kEnabledMenuItemForegroundColor;
     case NativeTheme::kColorId_DisabledMenuItemForegroundColor:
-      *color = kDisabledMenuItemForegroundColor;
-      break;
+      return kDisabledMenuItemForegroundColor;
     case NativeTheme::kColorId_DisabledEmphasizedMenuItemForegroundColor:
-      *color = SK_ColorBLACK;
-      break;
+      return SK_ColorBLACK;
     case NativeTheme::kColorId_SelectedMenuItemForegroundColor:
-      *color = SK_ColorWHITE;
-      break;
+      return SK_ColorWHITE;
     case NativeTheme::kColorId_ButtonDisabledColor:
-      *color = kDisabledMenuItemForegroundColor;
-      break;
-    // Button
-    case NativeTheme::kColorId_ButtonHoverBackgroundColor:
-      *color = kButtonHoverBackgroundColor;
-      break;
-    case NativeTheme::kColorId_BlueButtonEnabledColor:
-      *color = kBlueButtonEnabledColor;
-      break;
-    case NativeTheme::kColorId_BlueButtonDisabledColor:
-      *color = kBlueButtonDisabledColor;
-      break;
-    case NativeTheme::kColorId_BlueButtonPressedColor:
-      *color = kBlueButtonPressedColor;
-      break;
-    case NativeTheme::kColorId_BlueButtonHoverColor:
-      *color = kBlueButtonHoverColor;
-      break;
-    case NativeTheme::kColorId_BlueButtonShadowColor:
-      *color = kBlueButtonShadowColor;
-      break;
-    case NativeTheme::kColorId_CallToActionColor:
-      *color = kCallToActionColor;
-      break;
+      return kDisabledMenuItemForegroundColor;
+
+    // Label
+    case NativeTheme::kColorId_LabelEnabledColor:
+      return kLabelEnabledColor;
+    case NativeTheme::kColorId_LabelDisabledColor:
+      return base_theme->GetSystemColor(
+          NativeTheme::kColorId_ButtonDisabledColor);
+    case NativeTheme::kColorId_LabelBackgroundColor:
+      return kLabelBackgroundColor;
+
+    // Link
+    case NativeTheme::kColorId_LinkDisabled:
+      return kLinkDisabledColor;
+    case NativeTheme::kColorId_LinkEnabled:
+      return kLinkEnabledColor;
+    case NativeTheme::kColorId_LinkPressed:
+      return kLinkPressedColor;
+
+    // Textfield
+    case NativeTheme::kColorId_TextfieldDefaultColor:
+      return kTextfieldDefaultColor;
+    case NativeTheme::kColorId_TextfieldDefaultBackground:
+      return kTextfieldDefaultBackground;
+    case NativeTheme::kColorId_TextfieldReadOnlyColor:
+      return kTextfieldReadOnlyColor;
+    case NativeTheme::kColorId_TextfieldReadOnlyBackground:
+      return kTextfieldReadOnlyBackground;
+    case NativeTheme::kColorId_TextfieldSelectionColor:
+      return kTextfieldSelectionColor;
+    case NativeTheme::kColorId_TextfieldSelectionBackgroundFocused:
+      return kTextfieldSelectionBackgroundFocused;
+
+    // Tooltip
+    case NativeTheme::kColorId_TooltipBackground:
+      return kTooltipBackground;
+    case NativeTheme::kColorId_TooltipText:
+      return kTooltipTextColor;
+
+    // Tree
+    case NativeTheme::kColorId_TreeBackground:
+      return kTreeBackground;
+    case NativeTheme::kColorId_TreeText:
+      return kTreeTextColor;
+    case NativeTheme::kColorId_TreeSelectedText:
+    case NativeTheme::kColorId_TreeSelectedTextUnfocused:
+      return kTreeSelectedTextColor;
+    case NativeTheme::kColorId_TreeSelectionBackgroundFocused:
+    case NativeTheme::kColorId_TreeSelectionBackgroundUnfocused:
+      return kTreeSelectionBackgroundColor;
+    case NativeTheme::kColorId_TreeArrow:
+      return kTreeArrowColor;
+
+    // Table
+    case NativeTheme::kColorId_TableBackground:
+      return kTableBackground;
+    case NativeTheme::kColorId_TableText:
+      return kTableTextColor;
+    case NativeTheme::kColorId_TableSelectedText:
+    case NativeTheme::kColorId_TableSelectedTextUnfocused:
+      return kTableSelectedTextColor;
+    case NativeTheme::kColorId_TableSelectionBackgroundFocused:
+    case NativeTheme::kColorId_TableSelectionBackgroundUnfocused:
+      return kTableSelectionBackgroundColor;
+    case NativeTheme::kColorId_TableGroupingIndicatorColor:
+      return kTableGroupingIndicatorColor;
+
+    // Results Tables
+    case NativeTheme::kColorId_ResultsTableNormalBackground:
+      return kTextfieldDefaultBackground;
+    case NativeTheme::kColorId_ResultsTableHoveredBackground:
+      return kResultsTableHoveredBackground;
+    case NativeTheme::kColorId_ResultsTableSelectedBackground:
+      return kResultsTableSelectedBackground;
+    case NativeTheme::kColorId_ResultsTableNormalText:
+      return kResultsTableNormalText;
+    case NativeTheme::kColorId_ResultsTableHoveredText:
+      return kResultsTableHoveredText;
+    case NativeTheme::kColorId_ResultsTableSelectedText:
+      return kResultsTableSelectedText;
+    case NativeTheme::kColorId_ResultsTableNormalDimmedText:
+    case NativeTheme::kColorId_ResultsTableNormalHeadline:
+      return kResultsTableNormalDimmedText;
+    case NativeTheme::kColorId_ResultsTableHoveredDimmedText:
+    case NativeTheme::kColorId_ResultsTableHoveredHeadline:
+      return kResultsTableHoveredDimmedText;
+    case NativeTheme::kColorId_ResultsTableSelectedDimmedText:
+    case NativeTheme::kColorId_ResultsTableSelectedHeadline:
+      return kResultsTableSelectedDimmedText;
+    case NativeTheme::kColorId_ResultsTableNormalUrl:
+      return kResultsTableNormalUrl;
+    case NativeTheme::kColorId_ResultsTableHoveredUrl:
+    case NativeTheme::kColorId_ResultsTableSelectedUrl:
+      return kResultsTableSelectedOrHoveredUrl;
+    case NativeTheme::kColorId_ResultsTablePositiveText:
+      return kResultsTablePositiveText;
+    case NativeTheme::kColorId_ResultsTablePositiveHoveredText:
+      return kResultsTablePositiveHoveredText;
+    case NativeTheme::kColorId_ResultsTablePositiveSelectedText:
+      return kResultsTablePositiveSelectedText;
+    case NativeTheme::kColorId_ResultsTableNegativeText:
+      return kResultsTableNegativeText;
+    case NativeTheme::kColorId_ResultsTableNegativeHoveredText:
+      return kResultsTableNegativeHoveredText;
+    case NativeTheme::kColorId_ResultsTableNegativeSelectedText:
+      return kResultsTableNegativeSelectedText;
+
     // Material spinner/throbber
     case NativeTheme::kColorId_ThrobberSpinningColor:
-      *color = kThrobberSpinningColor;
-      break;
+      return kThrobberSpinningColor;
     case NativeTheme::kColorId_ThrobberWaitingColor:
-      *color = kThrobberWaitingColor;
-      break;
+      return kThrobberWaitingColor;
     case NativeTheme::kColorId_ThrobberLightColor:
-      *color = kThrobberLightColor;
+      return kThrobberLightColor;
+
+    case NativeTheme::kColorId_NumColors:
       break;
-    default:
-      return false;
   }
 
-  if (color_utils::IsInvertedColorScheme()) {
-    switch (color_id) {
-      case NativeTheme::kColorId_FocusedMenuItemBackgroundColor:
-        *color = kMenuInvertedSchemeHighlightBackgroundColor;
-        break;
-      case NativeTheme::kColorId_CallToActionColor:
-        *color = kCallToActionColorInvert;
-        break;
-      default:
-        *color = color_utils::InvertColor(*color);
-    }
-  }
-  return true;
+  NOTREACHED();
+  return gfx::kPlaceholderColor;
 }
 
 gfx::Size CommonThemeGetPartSize(NativeTheme::Part part,
@@ -212,47 +434,41 @@ void CommonThemePaintComboboxArrow(SkCanvas* canvas, const gfx::Rect& rect) {
 }
 
 void CommonThemePaintMenuSeparator(SkCanvas* canvas, const gfx::Rect& rect) {
-  SkColor color;
-  CommonThemeGetSystemColor(NativeTheme::kColorId_MenuSeparatorColor, &color);
   SkPaint paint;
-  paint.setColor(kMenuSeparatorColor);
+  paint.setColor(
+      GetAuraColor(NativeTheme::kColorId_MenuSeparatorColor, nullptr));
   int position_y = rect.y() + rect.height() / 2;
   canvas->drawLine(rect.x(), position_y, rect.right(), position_y, paint);
 }
 
 void CommonThemePaintMenuGutter(SkCanvas* canvas, const gfx::Rect& rect) {
-  SkColor color;
-  CommonThemeGetSystemColor(NativeTheme::kColorId_MenuSeparatorColor, &color);
   SkPaint paint;
-  paint.setColor(kMenuSeparatorColor);
+  paint.setColor(
+      GetAuraColor(NativeTheme::kColorId_MenuSeparatorColor, nullptr));
   int position_x = rect.x() + rect.width() / 2;
   canvas->drawLine(position_x, rect.y(), position_x, rect.bottom(), paint);
 }
 
 void CommonThemePaintMenuBackground(SkCanvas* canvas, const gfx::Rect& rect) {
-  SkColor color;
-  CommonThemeGetSystemColor(NativeTheme::kColorId_MenuBackgroundColor, &color);
   SkPaint paint;
-  paint.setColor(color);
+  paint.setColor(
+      GetAuraColor(NativeTheme::kColorId_MenuBackgroundColor, nullptr));
   canvas->drawRect(gfx::RectToSkRect(rect), paint);
 }
 
 void CommonThemePaintMenuItemBackground(SkCanvas* canvas,
                                         NativeTheme::State state,
                                         const gfx::Rect& rect) {
-  SkColor color;
   SkPaint paint;
   switch (state) {
     case NativeTheme::kNormal:
     case NativeTheme::kDisabled:
-      CommonThemeGetSystemColor(NativeTheme::kColorId_MenuBackgroundColor,
-                                &color);
-      paint.setColor(color);
+      paint.setColor(
+          GetAuraColor(NativeTheme::kColorId_MenuBackgroundColor, nullptr));
       break;
     case NativeTheme::kHovered:
-      CommonThemeGetSystemColor(
-          NativeTheme::kColorId_FocusedMenuItemBackgroundColor, &color);
-      paint.setColor(color);
+      paint.setColor(GetAuraColor(
+          NativeTheme::kColorId_FocusedMenuItemBackgroundColor, nullptr));
       break;
     default:
       NOTREACHED() << "Invalid state " << state;

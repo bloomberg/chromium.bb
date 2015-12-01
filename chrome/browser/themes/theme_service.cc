@@ -240,15 +240,13 @@ SkColor ThemeService::GetColor(int id) const {
       return IncreaseLightness(GetColor(Properties::COLOR_NTP_TEXT), 0.86);
     case Properties::COLOR_NTP_TEXT_LIGHT:
       return IncreaseLightness(GetColor(Properties::COLOR_NTP_TEXT), 0.40);
-    case Properties::COLOR_THROBBER_SPINNING:
-    case Properties::COLOR_THROBBER_WAITING: {
-      SkColor base_color;
-      bool found_color = ui::CommonThemeGetSystemColor(
-          id == Properties::COLOR_THROBBER_SPINNING
-              ? ui::NativeTheme::kColorId_ThrobberSpinningColor
-              : ui::NativeTheme::kColorId_ThrobberWaitingColor,
-          &base_color);
-      DCHECK(found_color);
+    case Properties::COLOR_TAB_THROBBER_SPINNING:
+    case Properties::COLOR_TAB_THROBBER_WAITING: {
+      SkColor base_color =
+          ui::GetAuraColor(id == Properties::COLOR_TAB_THROBBER_SPINNING
+                               ? ui::NativeTheme::kColorId_ThrobberSpinningColor
+                               : ui::NativeTheme::kColorId_ThrobberWaitingColor,
+                           nullptr);
       color_utils::HSL hsl = GetTint(Properties::TINT_BUTTONS);
       return color_utils::HSLShift(base_color, hsl);
     }

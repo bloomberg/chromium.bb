@@ -5,7 +5,6 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/sys_string_conversions.h"
-#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_models.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
 #include "chrome/browser/ui/chrome_style.h"
@@ -29,7 +28,7 @@
 #import "ui/base/cocoa/controls/hyperlink_button_cell.h"
 #include "ui/base/cocoa/window_size_constants.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/theme_provider.h"
+#include "ui/native_theme/native_theme_mac.h"
 
 namespace {
 
@@ -659,11 +658,9 @@ void CardUnmaskPromptViewBridge::PerformClose() {
   [mainView addSubview:progressOverlayView_];
 
   progressOverlayLabel_.reset([constrained_window::CreateLabel() retain]);
-  NSView* webContentView = bridge_->GetWebContents()->GetNativeView();
-  ui::ThemeProvider* themeProvider = [[webContentView window] themeProvider];
-  DCHECK(themeProvider);
-  NSColor* throbberBlueColor = themeProvider->GetNSColor(
-      ThemeProperties::COLOR_THROBBER_SPINNING);
+  NSColor* throbberBlueColor = gfx::SkColorToCalibratedNSColor(
+      ui::NativeThemeMac::instance()->GetSystemColor(
+          ui::NativeTheme::kColorId_ThrobberSpinningColor));
   [progressOverlayLabel_ setTextColor:throbberBlueColor];
   [progressOverlayView_ addSubview:progressOverlayLabel_];
 

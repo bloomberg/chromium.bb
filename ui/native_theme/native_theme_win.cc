@@ -24,6 +24,7 @@
 #include "third_party/skia/include/core/SkColorPriv.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "ui/base/resource/material_design/material_design_controller.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/gdi_util.h"
 #include "ui/gfx/geometry/rect.h"
@@ -452,7 +453,6 @@ void NativeThemeWin::PaintDirect(SkCanvas* canvas,
 
 SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
   // TODO: Obtain the correct colors using GetSysColor.
-  const SkColor kInvalidColorIdColor = SkColorSetRGB(255, 0, 128);
   const SkColor kUrlTextColor = SkColorSetRGB(0x0b, 0x80, 0x43);
   // Dialogs:
   const SkColor kDialogBackgroundColor = SkColorSetRGB(251, 251, 251);
@@ -463,7 +463,10 @@ SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
   const SkColor kButtonBackgroundColor = SkColorSetRGB(0xde, 0xde, 0xde);
   const SkColor kButtonHighlightColor = SkColorSetARGB(200, 255, 255, 255);
   const SkColor kButtonHoverColor = SkColorSetRGB(6, 45, 117);
+  const SkColor kCallToActionColorInvert = gfx::kGoogleBlue300;
   // MenuItem:
+  const SkColor kMenuSchemeHighlightBackgroundColorInvert =
+      SkColorSetRGB(0x30, 0x30, 0x30);
   // Link:
   const SkColor kLinkPressedColor = SkColorSetRGB(200, 0, 0);
   // Table:
@@ -538,7 +541,7 @@ SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
     case kColorId_TooltipBackground:
     case kColorId_TooltipText:
       NOTREACHED();
-      return kInvalidColorIdColor;
+      return gfx::kPlaceholderColor;
 
     // Tree
     // NOTE: these aren't right for all themes, but as close as I could get.
@@ -635,12 +638,18 @@ SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
       break;
   }
 
-  SkColor color;
-  if (CommonThemeGetSystemColor(color_id, &color))
-    return color;
+  if (color_utils::IsInvertedColorScheme()) {
+    switch (color_id) {
+      case NativeTheme::kColorId_FocusedMenuItemBackgroundColor:
+        return kMenuSchemeHighlightBackgroundColorInvert;
+      case NativeTheme::kColorId_CallToActionColor:
+        return kCallToActionColorInvert;
+      default:
+        return color_utils::InvertColor(GetAuraColor(color_id, this));
+    }
+  }
 
-  NOTREACHED();
-  return kInvalidColorIdColor;
+  return GetAuraColor(color_id, this);
 }
 
 void NativeThemeWin::PaintIndirect(SkCanvas* canvas,

@@ -80,7 +80,7 @@ void DownloadShelf::PaintDownloadProgress(
   SkPaint bg_paint;
   bg_paint.setStyle(SkPaint::kFill_Style);
   SkColor indicator_color =
-      theme_provider.GetColor(ThemeProperties::COLOR_THROBBER_SPINNING);
+      theme_provider.GetColor(ThemeProperties::COLOR_TAB_THROBBER_SPINNING);
   bg_paint.setColor(SkColorSetA(indicator_color, 0x33));
   bg_paint.setAntiAlias(true);
   const SkScalar kCenterPoint = kProgressIndicatorSize / 2.f;

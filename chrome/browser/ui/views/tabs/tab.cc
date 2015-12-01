@@ -1324,17 +1324,18 @@ void Tab::PaintIcon(gfx::Canvas* canvas) {
       waiting_state_.elapsed_time =
           base::TimeTicks::Now() - waiting_start_time_;
       gfx::PaintThrobberWaiting(
-          canvas, bounds, tp->GetColor(ThemeProperties::COLOR_THROBBER_WAITING),
+          canvas, bounds,
+          tp->GetColor(ThemeProperties::COLOR_TAB_THROBBER_WAITING),
           waiting_state_.elapsed_time);
     } else {
       if (loading_start_time_ == base::TimeTicks())
         loading_start_time_ = base::TimeTicks::Now();
 
       waiting_state_.color =
-          tp->GetColor(ThemeProperties::COLOR_THROBBER_WAITING);
+          tp->GetColor(ThemeProperties::COLOR_TAB_THROBBER_WAITING);
       gfx::PaintThrobberSpinningAfterWaiting(
           canvas, bounds,
-          tp->GetColor(ThemeProperties::COLOR_THROBBER_SPINNING),
+          tp->GetColor(ThemeProperties::COLOR_TAB_THROBBER_SPINNING),
           base::TimeTicks::Now() - loading_start_time_, &waiting_state_);
     }
   } else {

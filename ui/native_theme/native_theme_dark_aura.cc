@@ -32,9 +32,6 @@ SkColor NativeThemeDarkAura::GetSystemColor(ColorId color_id) const {
   static const SkColor kResultsTableDimmedText =
       SkColorSetA(kResultsTableText, 0x80);
 
-  static const SkColor kThrobberSpinning = SK_ColorWHITE;
-  static const SkColor kThrobberWaiting = SkColorSetA(kThrobberSpinning, 0x80);
-
   switch (color_id) {
     // Button
     case kColorId_CallToActionColor:
@@ -68,13 +65,6 @@ SkColor NativeThemeDarkAura::GetSystemColor(ColorId color_id) const {
     case kColorId_ResultsTableHoveredDimmedText:
     case kColorId_ResultsTableSelectedDimmedText:
       return kResultsTableDimmedText;
-
-    // Colors for the material spinner (aka throbber).
-    case kColorId_ThrobberSpinningColor:
-    case kColorId_ThrobberLightColor:
-      return kThrobberSpinning;
-    case kColorId_ThrobberWaitingColor:
-      return kThrobberWaiting;
 
     // Intentional pass-throughs to NativeThemeAura.
     case kColorId_ResultsTableHoveredBackground:

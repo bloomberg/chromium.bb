@@ -1011,9 +1011,9 @@ void Gtk2UI::LoadGtkValues() {
       theme->GetSystemColor(
           ui::NativeTheme::kColorId_TextfieldReadOnlyColor);
 
-  colors_[ThemeProperties::COLOR_THROBBER_SPINNING] =
+  colors_[ThemeProperties::COLOR_TAB_THROBBER_SPINNING] =
       theme->GetSystemColor(ui::NativeTheme::kColorId_ThrobberSpinningColor);
-  colors_[ThemeProperties::COLOR_THROBBER_WAITING] =
+  colors_[ThemeProperties::COLOR_TAB_THROBBER_WAITING] =
       theme->GetSystemColor(ui::NativeTheme::kColorId_ThrobberWaitingColor);
 }
 

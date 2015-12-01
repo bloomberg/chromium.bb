@@ -86,6 +86,13 @@ class ThemeProperties {
     // The color of a disabled toolbar button's icon.
     COLOR_TOOLBAR_BUTTON_ICON_INACTIVE,
 
+    // The throbber colors for tabs or anything on a toolbar (currently, only
+    // the download shelf). If you're adding a throbber elsewhere, such as in
+    // a dialog or bubble, you likely want
+    // NativeTheme::kColorId_ThrobberSpinningColor.
+    COLOR_TAB_THROBBER_SPINNING,
+    COLOR_TAB_THROBBER_WAITING,
+
     // These colors don't have constant default values. They are derived from
     // the runtime value of other colors.
     COLOR_NTP_SECTION_HEADER_TEXT,
@@ -93,8 +100,6 @@ class ThemeProperties {
     COLOR_NTP_SECTION_HEADER_RULE,
     COLOR_NTP_SECTION_HEADER_RULE_LIGHT,
     COLOR_NTP_TEXT_LIGHT,
-    COLOR_THROBBER_SPINNING,
-    COLOR_THROBBER_WAITING,
 #if defined(ENABLE_SUPERVISED_USERS)
     COLOR_SUPERVISED_USER_LABEL,
     COLOR_SUPERVISED_USER_LABEL_BACKGROUND,

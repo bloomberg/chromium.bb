@@ -18,10 +18,11 @@ namespace ui {
 
 // Drawing code that is common for all platforms.
 
-// Returns true and |color| if |color_id| is found, or false otherwise.
-bool NATIVE_THEME_EXPORT CommonThemeGetSystemColor(
-    NativeTheme::ColorId color_id,
-    SkColor* color);
+// Returns the color to use on Aura for |color_id|.  For a few colors that are
+// theme-specific, |base_theme| must be non-null; consult the code to see which
+// color IDs fall into this category.
+SkColor NATIVE_THEME_EXPORT GetAuraColor(NativeTheme::ColorId color_id,
+                                         const NativeTheme* base_theme);
 
 gfx::Size NATIVE_THEME_EXPORT CommonThemeGetPartSize(
     NativeTheme::Part part,
