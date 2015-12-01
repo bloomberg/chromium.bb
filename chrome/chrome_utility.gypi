@@ -230,4 +230,38 @@
       'msvs_disabled_warnings': [ 4267, ],
     },
   ],
+  'conditions': [
+    ['OS=="mac"', {
+      'targets': [
+        {
+          'target_name': 'crdmg',
+          'type': 'executable',
+          'dependencies': [
+            '../base/base.gyp:base',
+            '../third_party/zlib/zlib.gyp:zlib',
+          ],
+          'sources': [
+            'utility/safe_browsing/mac/convert_big_endian.h',
+            'utility/safe_browsing/mac/dmg_iterator.cc',
+            'utility/safe_browsing/mac/dmg_iterator.h',
+            'utility/safe_browsing/mac/hfs.cc',
+            'utility/safe_browsing/mac/hfs.h',
+            'utility/safe_browsing/mac/read_stream.cc',
+            'utility/safe_browsing/mac/read_stream.h',
+            'utility/safe_browsing/mac/udif.cc',
+            'utility/safe_browsing/mac/udif.h',
+            'utility/safe_browsing/mac/crdmg.cc',
+          ],
+          'link_settings': {
+            'libraries': [
+              '$(SDKROOT)/usr/lib/libbz2.dylib',
+            ],
+          },
+          'xcode_settings': {
+            'MACOSX_DEPLOYMENT_TARGET': '10.10',
+          },
+        },
+      ],
+    }],
+  ],
 }
