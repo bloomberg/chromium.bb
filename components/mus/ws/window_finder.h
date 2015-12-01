@@ -19,13 +19,14 @@ namespace ws {
 
 class ServerWindow;
 
-// Find the deepest visible child of |root| that contains |location| using
-// a previously submitted frame. |location| is initially in the coordinate
-// space of |root_window|. On return it is converted to the coordinates of the
-// return value.
-ServerWindow* FindDeepestVisibleWindow(ServerWindow* root_window,
-                                       cc::SurfaceId display_surface_id,
-                                       gfx::Point* location);
+// Find the deepest visible child of |root| that should receive an event at
+// |location|. |location| is initially in the coordinate space of
+// |root_window|, on return it is converted to the coordinates of the return
+// value.
+ServerWindow* FindDeepestVisibleWindowForEvents(
+    ServerWindow* root_window,
+    cc::SurfaceId display_surface_id,
+    gfx::Point* location);
 
 // Retrieve the transform to the provided |window|'s coordinate space from the
 // root.

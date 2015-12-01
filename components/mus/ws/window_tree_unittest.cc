@@ -17,6 +17,7 @@
 #include "components/mus/ws/display_manager_factory.h"
 #include "components/mus/ws/ids.h"
 #include "components/mus/ws/server_window.h"
+#include "components/mus/ws/server_window_surface_manager_test_api.h"
 #include "components/mus/ws/test_change_tracker.h"
 #include "components/mus/ws/window_tree_host_connection.h"
 #include "components/mus/ws/window_tree_impl.h"
@@ -409,6 +410,7 @@ TEST_F(WindowTreeTest, FocusOnPointer) {
   ServerWindow* v1 = connection1->GetWindow(child1);
   v1->SetVisible(true);
   v1->SetBounds(gfx::Rect(20, 20, 20, 20));
+  EnableHitTest(v1);
 
   TestWindowTreeClient* connection1_client = last_window_tree_client();
   connection1_client->tracker()->changes()->clear();
@@ -497,6 +499,7 @@ TEST_F(WindowTreeTest, BasicInputEventTarget) {
   ServerWindow* v1 = connection1->GetWindow(child1);
   v1->SetVisible(true);
   v1->SetBounds(gfx::Rect(20, 20, 20, 20));
+  EnableHitTest(v1);
 
   TestWindowTreeClient* embed_connection = last_window_tree_client();
   embed_connection->tracker()->changes()->clear();

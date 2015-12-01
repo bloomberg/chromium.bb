@@ -7,6 +7,7 @@
 #include "components/mus/public/cpp/event_matcher.h"
 #include "components/mus/ws/event_dispatcher_delegate.h"
 #include "components/mus/ws/server_window.h"
+#include "components/mus/ws/server_window_surface_manager_test_api.h"
 #include "components/mus/ws/test_server_window_delegate.h"
 #include "mojo/converters/input_events/input_events_type_converters.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -134,6 +135,7 @@ TEST(EventDispatcherTest, OnEvent) {
   ServerWindow child(&window_delegate, WindowId(1, 3));
   root.Add(&child);
   child.SetVisible(true);
+  EnableHitTest(&child);
 
   root.SetBounds(gfx::Rect(0, 0, 100, 100));
   child.SetBounds(gfx::Rect(10, 10, 20, 20));
@@ -210,6 +212,7 @@ TEST(EventDispatcherTest, Capture) {
 
   root.SetBounds(gfx::Rect(0, 0, 100, 100));
   child.SetBounds(gfx::Rect(10, 10, 20, 20));
+  EnableHitTest(&child);
 
   TestEventDispatcherDelegate event_dispatcher_delegate(&root);
   EventDispatcher dispatcher(&event_dispatcher_delegate);
@@ -252,6 +255,7 @@ TEST(EventDispatcherTest, CaptureMultipleMouseButtons) {
   ServerWindow child(&window_delegate, WindowId(1, 3));
   root.Add(&child);
   child.SetVisible(true);
+  EnableHitTest(&child);
 
   root.SetBounds(gfx::Rect(0, 0, 100, 100));
   child.SetBounds(gfx::Rect(10, 10, 20, 20));
@@ -299,6 +303,7 @@ TEST(EventDispatcherTest, ClientAreaGoesToOwner) {
   ServerWindow child(&window_delegate, WindowId(1, 3));
   root.Add(&child);
   child.SetVisible(true);
+  EnableHitTest(&child);
 
   root.SetBounds(gfx::Rect(0, 0, 100, 100));
   child.SetBounds(gfx::Rect(10, 10, 20, 20));
@@ -361,10 +366,12 @@ TEST(EventDispatcherTest, DontFocusOnSecondDown) {
   ServerWindow child1(&window_delegate, WindowId(1, 3));
   root.Add(&child1);
   child1.SetVisible(true);
+  EnableHitTest(&child1);
 
   ServerWindow child2(&window_delegate, WindowId(1, 4));
   root.Add(&child2);
   child2.SetVisible(true);
+  EnableHitTest(&child2);
 
   root.SetBounds(gfx::Rect(0, 0, 100, 100));
   child1.SetBounds(gfx::Rect(10, 10, 20, 20));
@@ -402,10 +409,12 @@ TEST(EventDispatcherTest, TwoPointersActive) {
   ServerWindow child1(&window_delegate, WindowId(1, 3));
   root.Add(&child1);
   child1.SetVisible(true);
+  EnableHitTest(&child1);
 
   ServerWindow child2(&window_delegate, WindowId(1, 4));
   root.Add(&child2);
   child2.SetVisible(true);
+  EnableHitTest(&child2);
 
   root.SetBounds(gfx::Rect(0, 0, 100, 100));
   child1.SetBounds(gfx::Rect(10, 10, 20, 20));
@@ -471,6 +480,7 @@ TEST(EventDispatcherTest, DestroyWindowWhileGettingEvents) {
       new ServerWindow(&window_delegate, WindowId(1, 3)));
   root.Add(child.get());
   child->SetVisible(true);
+  EnableHitTest(child.get());
 
   root.SetBounds(gfx::Rect(0, 0, 100, 100));
   child->SetBounds(gfx::Rect(10, 10, 20, 20));
@@ -498,6 +508,64 @@ TEST(EventDispatcherTest, DestroyWindowWhileGettingEvents) {
   EXPECT_EQ(nullptr, event_dispatcher_delegate.GetAndClearLastTarget());
   EXPECT_EQ(nullptr,
             event_dispatcher_delegate.GetAndClearLastDispatchedEvent().get());
+}
+
+TEST(EventDispatcherTest, MouseInExtendedHitTestRegion) {
+  TestServerWindowDelegate window_delegate;
+  ServerWindow root(&window_delegate, WindowId(1, 2));
+  window_delegate.set_root_window(&root);
+  root.SetVisible(true);
+
+  ServerWindow child(&window_delegate, WindowId(1, 3));
+  root.Add(&child);
+  child.SetVisible(true);
+  EnableHitTest(&child);
+
+  root.SetBounds(gfx::Rect(0, 0, 100, 100));
+  child.SetBounds(gfx::Rect(10, 10, 20, 20));
+
+  TestEventDispatcherDelegate event_dispatcher_delegate(&root);
+  EventDispatcher dispatcher(&event_dispatcher_delegate);
+  dispatcher.set_root(&root);
+
+  // Send event that is not over child.
+  const ui::MouseEvent ui_event(
+      ui::ET_MOUSE_PRESSED, gfx::Point(8, 9), gfx::Point(8, 9),
+      base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
+  dispatcher.OnEvent(
+      mojom::Event::From(static_cast<const ui::Event&>(ui_event)));
+  ASSERT_EQ(&root, event_dispatcher_delegate.last_target());
+  event_dispatcher_delegate.GetAndClearLastDispatchedEvent();
+
+  // Release the mouse.
+  const ui::MouseEvent release_event(
+      ui::ET_MOUSE_RELEASED, gfx::Point(8, 9), gfx::Point(8, 9),
+      base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
+  dispatcher.OnEvent(
+      mojom::Event::From(static_cast<const ui::Event&>(release_event)));
+
+  // The event should not have been dispatched to the delegate.
+  ASSERT_EQ(&root, event_dispatcher_delegate.last_target());
+  EXPECT_TRUE(event_dispatcher_delegate.GetAndClearLastDispatchedEvent());
+  EXPECT_FALSE(event_dispatcher_delegate.GetAndClearLastInNonclientArea());
+
+  // Change the extended hit test region and send event in extended hit test
+  // region.
+  child.set_extended_hit_test_region(gfx::Insets(5, 5, 5, 5));
+  dispatcher.OnEvent(
+      mojom::Event::From(static_cast<const ui::Event&>(ui_event)));
+  ASSERT_EQ(&child, event_dispatcher_delegate.last_target());
+  EXPECT_TRUE(event_dispatcher_delegate.GetAndClearLastInNonclientArea());
+  mojom::EventPtr dispatched_event_mojo =
+      event_dispatcher_delegate.GetAndClearLastDispatchedEvent();
+  ASSERT_TRUE(dispatched_event_mojo.get());
+  scoped_ptr<ui::Event> dispatched_event(
+      dispatched_event_mojo.To<scoped_ptr<ui::Event>>());
+  ASSERT_TRUE(dispatched_event.get());
+  ASSERT_TRUE(dispatched_event->IsMouseEvent());
+  ui::MouseEvent* dispatched_mouse_event =
+      static_cast<ui::MouseEvent*>(dispatched_event.get());
+  EXPECT_EQ(gfx::Point(-2, -1), dispatched_mouse_event->location());
 }
 
 }  // namespace ws

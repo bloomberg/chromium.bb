@@ -19,20 +19,34 @@ namespace mus {
 namespace ws {
 namespace {
 
+bool IsValidWindowForEvents(ServerWindow* window) {
+  ServerWindowSurfaceManager* surface_manager = window->surface_manager();
+  return surface_manager &&
+         surface_manager->HasSurfaceOfType(mojom::SURFACE_TYPE_DEFAULT);
+}
+
 ServerWindow* FindDeepestVisibleWindowNonSurface(ServerWindow* window,
                                                  gfx::Point* location) {
-  for (ServerWindow* child : window->GetChildren()) {
+  const ServerWindow::Windows children(window->GetChildren());
+  for (auto iter = children.rbegin(); iter != children.rend(); ++iter) {
+    ServerWindow* child = *iter;
     if (!child->visible())
       continue;
 
     // TODO(sky): support transform.
     gfx::Point child_location(location->x() - child->bounds().x(),
                               location->y() - child->bounds().y());
-    if (child_location.x() >= 0 && child_location.y() >= 0 &&
-        child_location.x() < child->bounds().width() &&
-        child_location.y() < child->bounds().height()) {
+    gfx::Rect child_bounds(child->bounds().size());
+    child_bounds.Inset(-child->extended_hit_test_region().left(),
+                       -child->extended_hit_test_region().top(),
+                       -child->extended_hit_test_region().right(),
+                       -child->extended_hit_test_region().bottom());
+    if (child_bounds.Contains(child_location)) {
       *location = child_location;
-      return FindDeepestVisibleWindowNonSurface(child, location);
+      ServerWindow* result =
+          FindDeepestVisibleWindowNonSurface(child, location);
+      if (IsValidWindowForEvents(result))
+        return result;
     }
   }
   return window;
@@ -65,9 +79,13 @@ bool HitTestSurfaceOfType(cc::SurfaceId display_surface_id,
 
 }  // namespace
 
-ServerWindow* FindDeepestVisibleWindow(ServerWindow* root_window,
-                                       cc::SurfaceId display_surface_id,
-                                       gfx::Point* location) {
+ServerWindow* FindDeepestVisibleWindowForEvents(
+    ServerWindow* root_window,
+    cc::SurfaceId display_surface_id,
+    gfx::Point* location) {
+  // TODO(sky): remove this when insets can be set on surface.
+  display_surface_id = cc::SurfaceId();
+
   if (display_surface_id.is_null()) {
     // Surface-based hit-testing will not return a valid target if no
     // CompositorFrame has been submitted (e.g. in unit-tests).

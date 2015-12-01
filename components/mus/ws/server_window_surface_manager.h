@@ -20,6 +20,7 @@ namespace ws {
 
 class ServerWindow;
 class ServerWindowSurface;
+class ServerWindowSurfaceManagerTestApi;
 
 // ServerWindowSurfaceManager tracks the surfaces associated with a
 // ServerWindow.
@@ -39,8 +40,10 @@ class ServerWindowSurfaceManager {
   ServerWindowSurface* GetDefaultSurface();
   ServerWindowSurface* GetUnderlaySurface();
   ServerWindowSurface* GetSurfaceByType(mojom::SurfaceType type);
+  bool HasSurfaceOfType(mojom::SurfaceType type);
 
  private:
+  friend class ServerWindowSurfaceManagerTestApi;
   friend class ServerWindowSurface;
 
   cc::SurfaceId GenerateId();

@@ -134,8 +134,18 @@ class ServerWindow {
   // Called when its appropriate to destroy surfaces scheduled for destruction.
   void DestroySurfacesScheduledForDestruction();
 
+  const gfx::Insets& extended_hit_test_region() const {
+    return extended_hit_test_region_;
+  }
+  void set_extended_hit_test_region(const gfx::Insets& insets) {
+    extended_hit_test_region_ = insets;
+  }
+
   ServerWindowSurfaceManager* GetOrCreateSurfaceManager();
   ServerWindowSurfaceManager* surface_manager() {
+    return surface_manager_.get();
+  }
+  const ServerWindowSurfaceManager* surface_manager() const {
     return surface_manager_.get();
   }
 
@@ -189,6 +199,10 @@ class ServerWindow {
   Properties properties_;
 
   gfx::Vector2d underlay_offset_;
+
+  // The hit test for windows extends outside the bounds of the window by this
+  // amount.
+  gfx::Insets extended_hit_test_region_;
 
   base::ObserverList<ServerWindowObserver> observers_;
 

@@ -215,7 +215,7 @@ void EventDispatcher::ProcessPointerEvent(mojom::EventPtr event) {
     } else {
       gfx::Point location(EventLocationToPoint(*event));
       pointer_target.window =
-          FindDeepestVisibleWindow(root_, surface_id_, &location);
+          FindDeepestVisibleWindowForEvents(root_, surface_id_, &location);
     }
     DispatchToPointerTarget(pointer_target, event.Pass());
     return;
@@ -227,7 +227,7 @@ void EventDispatcher::ProcessPointerEvent(mojom::EventPtr event) {
     const bool is_first_pointer_down = pointer_targets_.empty();
     gfx::Point location(EventLocationToPoint(*event));
     ServerWindow* target =
-        FindDeepestVisibleWindow(root_, surface_id_, &location);
+        FindDeepestVisibleWindowForEvents(root_, surface_id_, &location);
     DCHECK(target);
     if (!IsObservingWindow(target))
       target->AddObserver(this);

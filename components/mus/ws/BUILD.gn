@@ -120,10 +120,13 @@ test("window_manager_unittests") {
     "event_dispatcher_unittest.cc",
     "focus_controller_unittest.cc",
     "server_window_drawn_tracker_unittest.cc",
+    "server_window_surface_manager_test_api.cc",
+    "server_window_surface_manager_test_api.h",
     "test_server_window_delegate.cc",
     "test_server_window_delegate.h",
     "transient_windows_unittest.cc",
     "window_coordinate_conversions_unittest.cc",
+    "window_finder_unittest.cc",
     "window_tree_unittest.cc",
   ]
 

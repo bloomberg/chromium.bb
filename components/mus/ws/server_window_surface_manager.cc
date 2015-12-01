@@ -39,6 +39,10 @@ ServerWindowSurface* ServerWindowSurfaceManager::GetSurfaceByType(
   return iter == type_to_surface_map_.end() ? nullptr : iter->second.get();
 }
 
+bool ServerWindowSurfaceManager::HasSurfaceOfType(mojom::SurfaceType type) {
+  return type_to_surface_map_.count(type) > 0;
+}
+
 cc::SurfaceId ServerWindowSurfaceManager::GenerateId() {
   return surface_id_allocator_.GenerateId();
 }
