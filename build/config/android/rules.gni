@@ -1885,7 +1885,10 @@ template("instrumentation_test_apk") {
       "//tools/android/forwarder2",
       "//tools/android/md5sum",
     ]
-    run_findbugs = false
+
+    run_findbugs =
+        defined(invoker.run_findbugs) && invoker.run_findbugs &&
+        (defined(invoker.java_files) || defined(invoker.DEPRECATED_java_in_dir))
   }
 
   group(target_name) {
