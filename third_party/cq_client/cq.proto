@@ -150,9 +150,10 @@ message Verifiers {
       // Name of the builder.
       optional string name = 1;
 
-      // When true, the builder is triggered by CQ. Otherwise, it is expected to
-      // be triggered from another tryjob. Default value is true.
-      optional bool triggered_by_cq = 2;
+      // Optionally specify a builder name that triggers the given builder.
+      // Otherwise, CQ will trigger this builder (default). If in doubt, you
+      // probably won't need this.
+      optional string triggered_by = 2;
 
       // When this field is present, it marks given builder as experimental. It
       // is only executed on a given percentage of the CLs and the outcome does

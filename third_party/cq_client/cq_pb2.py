@@ -26,7 +26,7 @@ _sym_db = _symbol_database.Default()
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='cq.proto',
   package='',
-  serialized_pb=_b('\n\x08\x63q.proto\"\xc6\x02\n\x06\x43onfig\x12\x0f\n\x07version\x18\x01 \x01(\x05\x12\x0f\n\x07\x63q_name\x18\x02 \x01(\t\x12\x1d\n\tverifiers\x18\x03 \x01(\x0b\x32\n.Verifiers\x12\x15\n\rcq_status_url\x18\x04 \x01(\t\x12!\n\x19hide_ref_in_committed_msg\x18\x05 \x01(\x08\x12\x1a\n\x12\x63ommit_burst_delay\x18\x06 \x01(\x05\x12\x18\n\x10max_commit_burst\x18\x07 \x01(\x05\x12\x15\n\rin_production\x18\x08 \x01(\x08\x12\x1b\n\x08rietveld\x18\t \x01(\x0b\x32\t.Rietveld\x12\x17\n\x06gerrit\x18\x0f \x01(\x0b\x32\x07.Gerrit\x12\x14\n\x0cgit_repo_url\x18\n \x01(\t\x12\x12\n\ntarget_ref\x18\x0b \x01(\t\x12\x14\n\x0csvn_repo_url\x18\x0c \x01(\t\".\n\x08Rietveld\x12\x0b\n\x03url\x18\x01 \x01(\t\x12\x15\n\rproject_bases\x18\x02 \x03(\t\"#\n\x06Gerrit\x12\x19\n\x11\x63q_verified_label\x18\x01 \x01(\t\"\xd9\x06\n\tVerifiers\x12\x36\n\rreviewer_lgtm\x18\x01 \x01(\x0b\x32\x1f.Verifiers.ReviewerLgtmVerifier\x12\x36\n\x0btree_status\x18\x02 \x01(\x0b\x32!.Verifiers.TreeStatusLgtmVerifier\x12*\n\x07try_job\x18\x03 \x01(\x0b\x32\x19.Verifiers.TryJobVerifier\x12,\n\x08sign_cla\x18\x04 \x01(\x0b\x32\x1a.Verifiers.SignCLAVerifier\x1aZ\n\x14ReviewerLgtmVerifier\x12\x16\n\x0e\x63ommitter_list\x18\x01 \x01(\t\x12\x15\n\rmax_wait_secs\x18\x02 \x01(\x05\x12\x13\n\x0bno_lgtm_msg\x18\x03 \x01(\t\x1a\x31\n\x16TreeStatusLgtmVerifier\x12\x17\n\x0ftree_status_url\x18\x01 \x01(\t\x1a\xdf\x03\n\x0eTryJobVerifier\x12\x31\n\x07\x62uckets\x18\x01 \x03(\x0b\x32 .Verifiers.TryJobVerifier.Bucket\x12I\n\x14try_job_retry_config\x18\x02 \x01(\x0b\x32+.Verifiers.TryJobVerifier.TryJobRetryConfig\x1aO\n\x07\x42uilder\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x17\n\x0ftriggered_by_cq\x18\x02 \x01(\x08\x12\x1d\n\x15\x65xperiment_percentage\x18\x04 \x01(\x02\x1aK\n\x06\x42ucket\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x33\n\x08\x62uilders\x18\x02 \x03(\x0b\x32!.Verifiers.TryJobVerifier.Builder\x1a\xb0\x01\n\x11TryJobRetryConfig\x12\x1b\n\x13try_job_retry_quota\x18\x01 \x01(\x05\x12\x1a\n\x12global_retry_quota\x18\x02 \x01(\x05\x12\x1c\n\x14\x66\x61ilure_retry_weight\x18\x03 \x01(\x05\x12&\n\x1etransient_failure_retry_weight\x18\x04 \x01(\x05\x12\x1c\n\x14timeout_retry_weight\x18\x05 \x01(\x05\x1a\x11\n\x0fSignCLAVerifier')
+  serialized_pb=_b('\n\x08\x63q.proto\"\xc6\x02\n\x06\x43onfig\x12\x0f\n\x07version\x18\x01 \x01(\x05\x12\x0f\n\x07\x63q_name\x18\x02 \x01(\t\x12\x1d\n\tverifiers\x18\x03 \x01(\x0b\x32\n.Verifiers\x12\x15\n\rcq_status_url\x18\x04 \x01(\t\x12!\n\x19hide_ref_in_committed_msg\x18\x05 \x01(\x08\x12\x1a\n\x12\x63ommit_burst_delay\x18\x06 \x01(\x05\x12\x18\n\x10max_commit_burst\x18\x07 \x01(\x05\x12\x15\n\rin_production\x18\x08 \x01(\x08\x12\x1b\n\x08rietveld\x18\t \x01(\x0b\x32\t.Rietveld\x12\x17\n\x06gerrit\x18\x0f \x01(\x0b\x32\x07.Gerrit\x12\x14\n\x0cgit_repo_url\x18\n \x01(\t\x12\x12\n\ntarget_ref\x18\x0b \x01(\t\x12\x14\n\x0csvn_repo_url\x18\x0c \x01(\t\".\n\x08Rietveld\x12\x0b\n\x03url\x18\x01 \x01(\t\x12\x15\n\rproject_bases\x18\x02 \x03(\t\"#\n\x06Gerrit\x12\x19\n\x11\x63q_verified_label\x18\x01 \x01(\t\"\xd6\x06\n\tVerifiers\x12\x36\n\rreviewer_lgtm\x18\x01 \x01(\x0b\x32\x1f.Verifiers.ReviewerLgtmVerifier\x12\x36\n\x0btree_status\x18\x02 \x01(\x0b\x32!.Verifiers.TreeStatusLgtmVerifier\x12*\n\x07try_job\x18\x03 \x01(\x0b\x32\x19.Verifiers.TryJobVerifier\x12,\n\x08sign_cla\x18\x04 \x01(\x0b\x32\x1a.Verifiers.SignCLAVerifier\x1aZ\n\x14ReviewerLgtmVerifier\x12\x16\n\x0e\x63ommitter_list\x18\x01 \x01(\t\x12\x15\n\rmax_wait_secs\x18\x02 \x01(\x05\x12\x13\n\x0bno_lgtm_msg\x18\x03 \x01(\t\x1a\x31\n\x16TreeStatusLgtmVerifier\x12\x17\n\x0ftree_status_url\x18\x01 \x01(\t\x1a\xdc\x03\n\x0eTryJobVerifier\x12\x31\n\x07\x62uckets\x18\x01 \x03(\x0b\x32 .Verifiers.TryJobVerifier.Bucket\x12I\n\x14try_job_retry_config\x18\x02 \x01(\x0b\x32+.Verifiers.TryJobVerifier.TryJobRetryConfig\x1aL\n\x07\x42uilder\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x14\n\x0ctriggered_by\x18\x02 \x01(\t\x12\x1d\n\x15\x65xperiment_percentage\x18\x04 \x01(\x02\x1aK\n\x06\x42ucket\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x33\n\x08\x62uilders\x18\x02 \x03(\x0b\x32!.Verifiers.TryJobVerifier.Builder\x1a\xb0\x01\n\x11TryJobRetryConfig\x12\x1b\n\x13try_job_retry_quota\x18\x01 \x01(\x05\x12\x1a\n\x12global_retry_quota\x18\x02 \x01(\x05\x12\x1c\n\x14\x66\x61ilure_retry_weight\x18\x03 \x01(\x05\x12&\n\x1etransient_failure_retry_weight\x18\x04 \x01(\x05\x12\x1c\n\x14timeout_retry_weight\x18\x05 \x01(\x05\x1a\x11\n\x0fSignCLAVerifier')
 )
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
@@ -301,9 +301,9 @@ _VERIFIERS_TRYJOBVERIFIER_BUILDER = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='triggered_by_cq', full_name='Verifiers.TryJobVerifier.Builder.triggered_by_cq', index=1,
-      number=2, type=8, cpp_type=7, label=1,
-      has_default_value=False, default_value=False,
+      name='triggered_by', full_name='Verifiers.TryJobVerifier.Builder.triggered_by', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
@@ -326,7 +326,7 @@ _VERIFIERS_TRYJOBVERIFIER_BUILDER = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=930,
-  serialized_end=1009,
+  serialized_end=1006,
 )
 
 _VERIFIERS_TRYJOBVERIFIER_BUCKET = _descriptor.Descriptor(
@@ -361,8 +361,8 @@ _VERIFIERS_TRYJOBVERIFIER_BUCKET = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1011,
-  serialized_end=1086,
+  serialized_start=1008,
+  serialized_end=1083,
 )
 
 _VERIFIERS_TRYJOBVERIFIER_TRYJOBRETRYCONFIG = _descriptor.Descriptor(
@@ -418,8 +418,8 @@ _VERIFIERS_TRYJOBVERIFIER_TRYJOBRETRYCONFIG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1089,
-  serialized_end=1265,
+  serialized_start=1086,
+  serialized_end=1262,
 )
 
 _VERIFIERS_TRYJOBVERIFIER = _descriptor.Descriptor(
@@ -455,7 +455,7 @@ _VERIFIERS_TRYJOBVERIFIER = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=786,
-  serialized_end=1265,
+  serialized_end=1262,
 )
 
 _VERIFIERS_SIGNCLAVERIFIER = _descriptor.Descriptor(
@@ -476,8 +476,8 @@ _VERIFIERS_SIGNCLAVERIFIER = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1267,
-  serialized_end=1284,
+  serialized_start=1264,
+  serialized_end=1281,
 )
 
 _VERIFIERS = _descriptor.Descriptor(
@@ -527,7 +527,7 @@ _VERIFIERS = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=427,
-  serialized_end=1284,
+  serialized_end=1281,
 )
 
 _CONFIG.fields_by_name['verifiers'].message_type = _VERIFIERS
