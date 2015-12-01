@@ -156,7 +156,7 @@
     },
 
     'cfi': {
-      'gn_args': 'is_cfi=1',
+      'gn_args': 'is_cfi=true',
       'gyp_defines': 'cfi_vptr=1',
     },
 
