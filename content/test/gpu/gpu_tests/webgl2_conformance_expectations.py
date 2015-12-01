@@ -218,6 +218,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac'], bug=483282)
     self.Fail('conformance2/textures/misc/tex-storage-compressed-formats.html',
         ['mac'], bug=295792)
+    self.Fail('conformance2/renderbuffers/framebuffer-object-attachment.html',
+        ['mac'], bug=564020)
 
     # Mac 10.9 only.
     self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
@@ -232,6 +234,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux'], bug=483282)
     self.Fail('conformance2/samplers/samplers.html',
         ['linux'], bug=483282)
+    self.Fail('conformance2/renderbuffers/framebuffer-object-attachment.html',
+        ['linux'], bug=564020)
 
     # Linux AMD only.
     # It looks like AMD shader compiler rejects many valid ES3 semantics.
