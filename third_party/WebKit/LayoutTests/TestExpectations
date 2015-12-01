@@ -194,8 +194,6 @@ crbug.com/445100 fast/block/float/marquee-shrink-to-avoid-floats.html [ Failure 
 crbug.com/469657 fast/events/mouse-event-buttons-attribute.html [ Failure Pass ]
 crbug.com/469657 virtual/pointerevent/fast/events/mouse-event-buttons-attribute.html [ Failure Pass ]
 
-crbug.com/562217 [ Linux ] fast/filesystem/op-get-entry.html [ Failure Pass ]
-
 crbug.com/548226 [ Win ] fast/events/pointerevents/mouse-pointer-event-properties.html [ Failure Pass ]
 crbug.com/548226 [ Win ] virtual/pointerevent/fast/events/pointerevents/mouse-pointer-event-properties.html [ Failure Pass ]
 crbug.com/548226 [ Win ] virtual/trustedeventsdefaultaction/fast/events/pointerevents/mouse-pointer-event-properties.html [ Failure Pass ]
@@ -1367,4 +1365,3 @@ crbug.com/558574 [ Win7 ] fast/forms/text/text-font-height-mismatch.html [ Failu
 crbug.com/558574 [ Win7 ] fast/text/emphasis.html [ Failure ]
 
 crbug.com/561595 [ XP ] plugins/webview-plugin-scroll.html [ Failure ]
-crbug.com/563588 [ Mac ] fast/filesystem/op-get-entry.html [ Failure ]

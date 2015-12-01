@@ -9,7 +9,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/thread_task_runner_handle.h"
-#include "build/build_config.h"
 #include "content/public/test/test_file_system_options.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -67,7 +66,6 @@ TEST_F(SandboxFileSystemBackendDelegateTest, IsAccessValid) {
   EXPECT_FALSE(IsAccessValid(CreateFileSystemURL(".")));
   EXPECT_FALSE(IsAccessValid(CreateFileSystemURL("..")));
 
-#if defined(OS_WIN)
   // This is also disallowed due to Windows XP parent path handling.
   EXPECT_FALSE(IsAccessValid(CreateFileSystemURL("...")));
 
@@ -75,11 +73,6 @@ TEST_F(SandboxFileSystemBackendDelegateTest, IsAccessValid) {
   // on Windows.
   EXPECT_FALSE(IsAccessValid(CreateFileSystemURL(" ..")));
   EXPECT_FALSE(IsAccessValid(CreateFileSystemURL(".. ")));
-#else
-  EXPECT_TRUE(IsAccessValid(CreateFileSystemURL("...")));
-  EXPECT_TRUE(IsAccessValid(CreateFileSystemURL(" ..")));
-  EXPECT_TRUE(IsAccessValid(CreateFileSystemURL(".. ")));
-#endif
 
   // Similar but safe cases.
   EXPECT_TRUE(IsAccessValid(CreateFileSystemURL(" .")));
