@@ -23,7 +23,7 @@ namespace {
 const uint32_t g_transparent_color = 0x00000000;
 
 void LostContext(void*) {
-  DCHECK(false);
+  // TODO(fsamuel): Figure out if there's something useful to do here.
 }
 
 void OnGotContentHandlerID(uint32_t content_handler_id) {}
@@ -66,7 +66,7 @@ void BitmapUploader::Init(mojo::Shell* shell) {
   gles2_context_ = MojoGLES2CreateContext(
       gles2_client.PassInterface().PassHandle().release().value(),
       nullptr,
-      &LostContext, NULL, mojo::Environment::GetDefaultAsyncWaiter());
+      &LostContext, nullptr, mojo::Environment::GetDefaultAsyncWaiter());
   MojoGLES2MakeCurrent(gles2_context_);
 }
 
