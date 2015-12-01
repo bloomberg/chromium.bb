@@ -19,8 +19,8 @@ bool SameModes(const DisplayMode_Params& lhs, const DisplayMode_Params& rhs) {
 // Exclude 4K@60kHz becaseu this doesn't work in most devices/configuration now.
 // TODO(marcheu|oshima): Revisit this. crbug.com/39397
 bool IsModeBlackListed(const DisplayMode_Params& mode_params) {
-  return mode_params.size.width() >= 3840 && mode_params.size.width() >= 2160 &&
-         mode_params.refresh_rate >= 60.0f;
+  return mode_params.size.width() >= 3840 &&
+         mode_params.size.height() >= 2160 && mode_params.refresh_rate >= 60.0f;
 }
 
 }  // namespace
