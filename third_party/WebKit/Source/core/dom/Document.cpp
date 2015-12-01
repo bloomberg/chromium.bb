@@ -5739,6 +5739,10 @@ WebTaskRunner* Document::loadingTaskRunner() const
 {
     if (frame())
         return frame()->frameScheduler()->loadingTaskRunner();
+    if (m_importsController)
+        return m_importsController->master()->loadingTaskRunner();
+    if (m_contextDocument)
+        return m_contextDocument->loadingTaskRunner();
     return Platform::current()->currentThread()->scheduler()->loadingTaskRunner();
 }
 
@@ -5746,6 +5750,10 @@ WebTaskRunner* Document::timerTaskRunner() const
 {
     if (frame())
         return m_frame->frameScheduler()->timerTaskRunner();
+    if (m_importsController)
+        return m_importsController->master()->timerTaskRunner();
+    if (m_contextDocument)
+        return m_contextDocument->timerTaskRunner();
     return Platform::current()->currentThread()->scheduler()->timerTaskRunner();
 }
 
