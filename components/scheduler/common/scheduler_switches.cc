@@ -12,5 +12,9 @@ namespace switches {
 // done.
 const char kEnableVirtualizedTime[] = "enable-virtualized-time";
 
+// Disable task throttling of timer tasks from background pages.
+const char kDisableBackgroundTimerThrottling[] =
+    "disable-background-timer-throttling";
+
 }  // namespace switches
 }  // namespace scheduler

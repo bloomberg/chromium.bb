@@ -1462,6 +1462,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     cc::switches::kTopControlsShowThreshold,
 
     scheduler::switches::kEnableVirtualizedTime,
+    scheduler::switches::kDisableBackgroundTimerThrottling,
 
 #if defined(ENABLE_PLUGINS)
     switches::kEnablePepperTesting,

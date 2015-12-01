@@ -4,7 +4,9 @@
 
 #include "components/scheduler/renderer/renderer_web_scheduler_impl.h"
 
+#include "base/command_line.h"
 #include "components/scheduler/base/task_queue.h"
+#include "components/scheduler/common/scheduler_switches.h"
 #include "components/scheduler/renderer/renderer_scheduler_impl.h"
 #include "components/scheduler/renderer/web_view_scheduler_impl.h"
 #include "third_party/WebKit/public/platform/WebPassOwnPtr.h"
@@ -32,8 +34,10 @@ void RendererWebSchedulerImpl::resumeTimerQueue() {
 
 blink::WebPassOwnPtr<blink::WebViewScheduler>
 RendererWebSchedulerImpl::createWebViewScheduler(blink::WebView* web_view) {
-  return blink::adoptWebPtr(
-      new WebViewSchedulerImpl(web_view, renderer_scheduler_));
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  return blink::adoptWebPtr(new WebViewSchedulerImpl(
+      web_view, renderer_scheduler_,
+      command_line->HasSwitch(switches::kDisableBackgroundTimerThrottling)));
 }
 
 void RendererWebSchedulerImpl::addPendingNavigation() {

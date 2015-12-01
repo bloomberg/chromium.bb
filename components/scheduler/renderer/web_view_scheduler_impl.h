@@ -28,7 +28,8 @@ class WebFrameSchedulerImpl;
 class SCHEDULER_EXPORT WebViewSchedulerImpl : public blink::WebViewScheduler {
  public:
   WebViewSchedulerImpl(blink::WebView* web_view,
-                       RendererSchedulerImpl* renderer_scheduler);
+                       RendererSchedulerImpl* renderer_scheduler,
+                       bool disable_background_timer_throttling);
 
   ~WebViewSchedulerImpl() override;
 
@@ -50,6 +51,7 @@ class SCHEDULER_EXPORT WebViewSchedulerImpl : public blink::WebViewScheduler {
   blink::WebView* web_view_;
   RendererSchedulerImpl* renderer_scheduler_;
   bool page_in_background_;
+  bool disable_background_timer_throttling_;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewSchedulerImpl);
 };

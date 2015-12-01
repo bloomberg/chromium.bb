@@ -31,8 +31,8 @@ class WebViewSchedulerImplTest : public testing::Test {
     delagate_ = SchedulerTqmDelegateForTest::Create(
         mock_task_runner_, make_scoped_ptr(new TestTimeSource(clock_.get())));
     scheduler_.reset(new RendererSchedulerImpl(delagate_));
-    web_view_scheduler_.reset(
-        new WebViewSchedulerImpl(nullptr, scheduler_.get()));
+    web_view_scheduler_.reset(new WebViewSchedulerImpl(
+        nullptr, scheduler_.get(), DisableBackgroundTimerThrottling()));
     web_frame_scheduler_ = web_view_scheduler_->createWebFrameSchedulerImpl();
   }
 
@@ -42,6 +42,8 @@ class WebViewSchedulerImplTest : public testing::Test {
     scheduler_->Shutdown();
     scheduler_.reset();
   }
+
+  virtual bool DisableBackgroundTimerThrottling() const { return false; }
 
   scoped_ptr<base::SimpleTestTickClock> clock_;
   scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner_;
@@ -127,7 +129,7 @@ TEST_F(WebViewSchedulerImplTest, RepeatingLoadingTask_PageInBackground) {
 
 TEST_F(WebViewSchedulerImplTest, RepeatingTimers_OneBackgroundOneForeground) {
   scoped_ptr<WebViewSchedulerImpl> web_view_scheduler2(
-      new WebViewSchedulerImpl(nullptr, scheduler_.get()));
+      new WebViewSchedulerImpl(nullptr, scheduler_.get(), false));
   scoped_ptr<WebFrameSchedulerImpl> web_frame_scheduler2 =
       web_view_scheduler2->createWebFrameSchedulerImpl();
 
@@ -148,6 +150,29 @@ TEST_F(WebViewSchedulerImplTest, RepeatingTimers_OneBackgroundOneForeground) {
   mock_task_runner_->RunForPeriod(base::TimeDelta::FromSeconds(1));
   EXPECT_EQ(1000, run_count1);
   EXPECT_EQ(1, run_count2);
+}
+
+class WebViewSchedulerImplTestWithDisabledBackgroundTimerThrottling
+    : public WebViewSchedulerImplTest {
+ public:
+  WebViewSchedulerImplTestWithDisabledBackgroundTimerThrottling() {}
+  ~WebViewSchedulerImplTestWithDisabledBackgroundTimerThrottling() override {}
+
+  bool DisableBackgroundTimerThrottling() const override { return true; }
+};
+
+TEST_F(WebViewSchedulerImplTestWithDisabledBackgroundTimerThrottling,
+       RepeatingTimer_PageInBackground) {
+  web_view_scheduler_->setPageInBackground(true);
+
+  int run_count = 0;
+  web_frame_scheduler_->timerTaskRunner()->postDelayedTask(
+      BLINK_FROM_HERE,
+      new RepeatingTask(web_frame_scheduler_->timerTaskRunner(), &run_count),
+      1.0);
+
+  mock_task_runner_->RunForPeriod(base::TimeDelta::FromSeconds(1));
+  EXPECT_EQ(1000, run_count);
 }
 
 }  // namespace scheduler

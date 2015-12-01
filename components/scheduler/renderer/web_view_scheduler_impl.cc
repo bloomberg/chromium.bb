@@ -15,10 +15,13 @@ namespace scheduler {
 
 WebViewSchedulerImpl::WebViewSchedulerImpl(
     blink::WebView* web_view,
-    RendererSchedulerImpl* renderer_scheduler)
+    RendererSchedulerImpl* renderer_scheduler,
+    bool disable_background_timer_throttling)
     : web_view_(web_view),
       renderer_scheduler_(renderer_scheduler),
-      page_in_background_(false) {}
+      page_in_background_(false),
+      disable_background_timer_throttling_(
+          disable_background_timer_throttling) {}
 
 WebViewSchedulerImpl::~WebViewSchedulerImpl() {
   // TODO(alexclarke): Find out why we can't rely on the web view outliving the
@@ -29,7 +32,8 @@ WebViewSchedulerImpl::~WebViewSchedulerImpl() {
 }
 
 void WebViewSchedulerImpl::setPageInBackground(bool page_in_background) {
-  if (page_in_background_ == page_in_background)
+  if (disable_background_timer_throttling_ ||
+      page_in_background_ == page_in_background)
     return;
 
   page_in_background_ = page_in_background;
