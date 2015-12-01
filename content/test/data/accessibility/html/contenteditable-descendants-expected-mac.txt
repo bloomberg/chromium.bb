@@ -1,5 +1,5 @@
 AXWebArea
-++AXGroup AXValue='A contenteditable with a link and an   and a  .
+++AXTextArea AXValue='A contenteditable with a link and an   and a  .
 Always expose editable tables as tables.
 Editable list item.
 '
@@ -24,5 +24,5 @@ Editable list item.
 ++++++++AXStaticText AXValue='Editable list item.'
 ++AXGroup
 ++++AXStaticText AXValue='Non-editable paragraph.'
-++AXGroup AXValue='Should keep the role but change the state.'
+++AXTextArea AXValue='Should keep the role but change the state.'
 ++++AXStaticText AXValue='Should keep the role but change the state.'

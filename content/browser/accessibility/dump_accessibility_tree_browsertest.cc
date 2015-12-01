@@ -740,6 +740,21 @@ IN_PROC_BROWSER_TEST_F(
 }
 
 #if defined(OS_ANDROID)
+// Flaky failures: http://crbug.com/445929.
+#define MAYBE_AccessibilityContenteditableWithEmbeddedContenteditables \
+    DISABLED_AccessibilityContenteditableWithEmbeddedContenteditables
+#else
+#define MAYBE_AccessibilityContenteditableWithEmbeddedContenteditables \
+    AccessibilityContenteditableWithEmbeddedContenteditables
+#endif
+IN_PROC_BROWSER_TEST_F(
+    DumpAccessibilityTreeTest,
+    MAYBE_AccessibilityContenteditableWithEmbeddedContenteditables) {
+  RunHtmlTest(
+      FILE_PATH_LITERAL("contenteditable-with-embedded-contenteditables.html"));
+}
+
+#if defined(OS_ANDROID)
 // Flaky failures: http://crbug.com/515053.
 #define MAYBE_AccessibilityEm DISABLED_AccessibilityEm
 #else

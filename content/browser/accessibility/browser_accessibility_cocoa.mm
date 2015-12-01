@@ -210,7 +210,7 @@ AccessibilityMatchPredicate PredicateForSearchKey(NSString* searchKey) {
     };
   } else if ([searchKey isEqualToString:@"AXStaticTextSearchKey"]) {
     return [](BrowserAccessibility* start, BrowserAccessibility* current) {
-      return current->GetRole() == ui::AX_ROLE_STATIC_TEXT;
+      return current->IsTextOnlyObject();
     };
   } else if ([searchKey isEqualToString:@"AXStyleChangeSearchKey"]) {
     // TODO(dmazzoni): implement this.
@@ -945,8 +945,9 @@ bool InitializeAccessibilityTreeSearch(
     else
       return NSAccessibilityButtonRole;
   }
-  if (role == ui::AX_ROLE_TEXT_FIELD &&
-      browserAccessibility_->HasState(ui::AX_STATE_MULTILINE)) {
+  if ((role == ui::AX_ROLE_TEXT_FIELD &&
+       browserAccessibility_->HasState(ui::AX_STATE_MULTILINE)) ||
+      [self isRichEditTextField]) {
     return NSAccessibilityTextAreaRole;
   }
 
@@ -1433,6 +1434,34 @@ bool InitializeAccessibilityTreeSearch(
   children_.swap(*other);
 }
 
+// Indicates if this object is at the root of a rich edit text field.
+- (BOOL)isRichEditTextField {
+  if (!browserAccessibility_)
+    return NO;
+
+  if (browserAccessibility_->HasState(ui::AX_STATE_RICHLY_EDITABLE) &&
+      !(browserAccessibility_->GetParent() &&
+        browserAccessibility_->GetParent()->HasState(
+            ui::AX_STATE_RICHLY_EDITABLE))) {
+    return YES;
+  }
+
+  return NO;
+}
+
+// Returns the requested text range from this object's value attribute.
+- (NSString*)valueForRange:(NSRange)range {
+  if (!browserAccessibility_)
+    return nil;
+
+  base::string16 value =
+      browserAccessibility_->GetString16Attribute(ui::AX_ATTR_VALUE);
+  if (NSMaxRange(range) > value.size())
+    return nil;
+
+  return base::SysUTF16ToNSString(value.substr(range.location, range.length));
+}
+
 // Returns the accessibility value for the given attribute.  If the value isn't
 // supported this will return nil.
 - (id)accessibilityAttributeValue:(NSString*)attribute {
@@ -1492,10 +1521,14 @@ bool InitializeAccessibilityTreeSearch(
 
   if ([attribute isEqualToString:
       NSAccessibilityStringForRangeParameterizedAttribute]) {
-    NSRange range = [(NSValue*)parameter rangeValue];
-    base::string16 value = browserAccessibility_->GetString16Attribute(
-        ui::AX_ATTR_VALUE);
-    return base::SysUTF16ToNSString(value.substr(range.location, range.length));
+    return [self valueForRange:[(NSValue*)parameter rangeValue]];
+  }
+
+  if ([attribute
+          isEqualToString:
+              NSAccessibilityAttributedStringForRangeParameterizedAttribute]) {
+    NSString* value = [self valueForRange:[(NSValue*)parameter rangeValue]];
+    return [[[NSAttributedString alloc] initWithString:value] autorelease];
   }
 
   if ([attribute isEqualToString:
@@ -1641,6 +1674,7 @@ bool InitializeAccessibilityTreeSearch(
         NSAccessibilityCellForColumnAndRowParameterizedAttribute,
         nil]];
   }
+
   if (browserAccessibility_->IsEditableText()) {
     [ret addObjectsFromArray:[NSArray arrayWithObjects:
         NSAccessibilityLineForIndexParameterizedAttribute,
@@ -1654,11 +1688,13 @@ bool InitializeAccessibilityTreeSearch(
         NSAccessibilityStyleRangeForIndexParameterizedAttribute,
         nil]];
   }
+
   if ([self internalRole] == ui::AX_ROLE_STATIC_TEXT) {
     [ret addObjectsFromArray:[NSArray arrayWithObjects:
         NSAccessibilityBoundsForRangeParameterizedAttribute,
         nil]];
   }
+
   return ret;
 }
 
@@ -1952,6 +1988,7 @@ bool InitializeAccessibilityTreeSearch(
   if ([attribute isEqualToString:NSAccessibilityFocusedAttribute]) {
     if ([self internalRole] == ui::AX_ROLE_DATE_TIME)
       return NO;
+
     return GetState(browserAccessibility_, ui::AX_STATE_FOCUSABLE);
   }
 
@@ -1959,9 +1996,11 @@ bool InitializeAccessibilityTreeSearch(
     return browserAccessibility_->GetBoolAttribute(
         ui::AX_ATTR_CAN_SET_VALUE);
   }
+
   if ([attribute isEqualToString:NSAccessibilitySelectedTextRangeAttribute] &&
-      browserAccessibility_->IsEditableText())
+      browserAccessibility_->IsEditableText()) {
     return YES;
+  }
 
   return NO;
 }
@@ -1970,7 +2009,7 @@ bool InitializeAccessibilityTreeSearch(
 // tree.
 - (BOOL)accessibilityIsIgnored {
   if (!browserAccessibility_)
-    return true;
+    return YES;
 
   return [self isIgnored];
 }
