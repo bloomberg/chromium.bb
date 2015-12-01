@@ -1535,10 +1535,15 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
                        return;
                      }
                      GURL jsURL([result UTF8String]);
-                     // Make sure that the URL is as expected, and re-check
-                     // the origin to prevent race conditions.
+                     // Make sure that the window location is as expected,
+                     // and re-check the origin and web view URL to prevent
+                     // race conditions.
+                     // TODO(crbug.com/563568): The third check may drop same
+                     // document URL changes if pending URL change occurs
+                     // immediately after. Revisit heuristics to prevent this.
                      if (jsURL == url &&
-                         _documentURL.GetOrigin() == url.GetOrigin()) {
+                         _documentURL.GetOrigin() == url.GetOrigin() &&
+                         net::GURLWithNSURL([_wkWebView URL]) == url) {
                        [self URLDidChangeWithoutDocumentChange:url];
                      }
                  }];
