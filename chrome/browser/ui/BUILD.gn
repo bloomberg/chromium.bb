@@ -112,6 +112,7 @@ source_set("ui") {
       "//device/nfc",
       "//media",
       "//net:net_with_v8",
+      "//net:stale_while_revalidate_experiment_domains",
       "//storage/browser",
       "//storage/common",
       "//third_party/WebKit/public:resources",

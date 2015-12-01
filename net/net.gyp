@@ -53,6 +53,7 @@
         'base/registry_controlled_domains/effective_tld_names_unittest4.gperf',
         'base/registry_controlled_domains/effective_tld_names_unittest5.gperf',
         'base/registry_controlled_domains/effective_tld_names_unittest6.gperf',
+        'base/stale_while_revalidate_experiment_domains.gperf',
       ],
       'rules': [
         {
@@ -142,6 +143,7 @@
         'net_extras',
         'net_test_support',
         'simple_quic_tools',
+        'stale_while_revalidate_experiment_domains',
       ],
       'sources': [
         '<@(net_test_sources)',
@@ -846,6 +848,23 @@
         'tools/quic/quic_time_wait_list_manager.h',
         'tools/quic/synchronous_host_resolver.cc',
         'tools/quic/synchronous_host_resolver.h',
+      ],
+    },
+    {
+      # GN version: //net:stale_while_revalidate_experiment_domains
+      'target_name': 'stale_while_revalidate_experiment_domains',
+      'type': '<(component)',
+      'dependencies': [
+        '../base/base.gyp:base',
+        'net',
+        'net_derived_sources',
+      ],
+      'defines': [
+        'NET_IMPLEMENTATION',
+      ],
+      'sources': [
+        'base/stale_while_revalidate_experiment_domains.cc',
+        'base/stale_while_revalidate_experiment_domains.h',
       ],
     },
   ],

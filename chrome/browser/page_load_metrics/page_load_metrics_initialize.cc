@@ -7,6 +7,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/page_load_metrics/observers/from_gws_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/google_captcha_observer.h"
+#include "chrome/browser/page_load_metrics/observers/stale_while_revalidate_metrics_observer.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
 #include "components/rappor/rappor_service.h"
@@ -23,6 +24,11 @@ void RegisterPageLoadMetricsObservers(
   metrics->AddObserver(new FromGWSPageLoadMetricsObserver(metrics));
   metrics->AddObserver(
       new google_captcha_observer::GoogleCaptchaObserver(metrics));
+  // StaleWhileRevalidateMetricsObserver also deletes itself from
+  // OnPageLoadMetricsGoingAway.
+  // TODO(ricea): Remove this in April 2016 or before. crbug.com/348877
+  metrics->AddObserver(
+      new chrome::StaleWhileRevalidateMetricsObserver(metrics));
 }
 
 }  // namespace

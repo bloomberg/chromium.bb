@@ -79142,6 +79142,16 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="ChromeOS.MachineIdRegen.AgeSeconds"/>
 </histogram_suffixes>
 
+<histogram_suffixes name="Clients.StaleWhileRevalidateExperiment" separator="."
+    ordering="prefix">
+  <suffix name="Clients.StaleWhileRevalidateExperiment"
+      label="Timing was recorded on one of the domains of focus for
+             stale-while-revalidate"/>
+  <affected-histogram name="PageLoad.Timing2.NavigationToFirstLayout"/>
+  <affected-histogram name="PageLoad.Timing2.NavigationToFirstTextPaint"/>
+  <affected-histogram name="PageLoad.Timing2.NavigationToLoadEventFired"/>
+</histogram_suffixes>
+
 <histogram_suffixes name="ClockResolution" separator=".">
   <suffix name="HighResolutionClock"
       label="base::TimeTicks::IsHighResolution() is true for this measurement"/>

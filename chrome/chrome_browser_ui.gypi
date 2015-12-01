@@ -2874,6 +2874,7 @@
             '../content/app/resources/content_resources.gyp:content_resources',
             '../media/media.gyp:media',
             '../net/net.gyp:net_with_v8',
+            '../net/net.gyp:stale_while_revalidate_experiment_domains',
             '../storage/storage_browser.gyp:storage',
             '../storage/storage_common.gyp:storage_common',
             '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
