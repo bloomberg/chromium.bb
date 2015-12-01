@@ -112,11 +112,8 @@ class MimeUtil {
   bool IsDefaultCodecSupportedLowerCase(
       const std::string& mime_type_lower_case) const;
 
-  using MimeTypes = base::hash_set<std::string>;
-  MimeTypes media_map_;
-
   // A map of mime_types and hash map of the supported codecs for the mime_type.
-  MediaFormatMappings media_format_format_map_;
+  MediaFormatMappings media_format_map_;
 
   // Keeps track of whether proprietary codec support should be
   // advertised to callers.
@@ -131,55 +128,6 @@ class MimeUtil {
 // This variable is Leaky because it is accessed from WorkerPool threads.
 static base::LazyInstance<MimeUtil>::Leaky g_media_mime_util =
     LAZY_INSTANCE_INITIALIZER;
-
-
-// A list of media types: http://en.wikipedia.org/wiki/Internet_media_type
-// A comprehensive mime type list: http://plugindoc.mozdev.org/winmime.php
-// This set of codecs is supported by all variations of Chromium.
-static const char* const common_media_types[] = {
-  // Ogg.
-  "audio/ogg",
-  "application/ogg",
-#if !defined(OS_ANDROID)  // Android doesn't support Ogg Theora.
-  "video/ogg",
-#endif
-
-  // WebM.
-  "video/webm",
-  "audio/webm",
-
-  // Wav.
-  "audio/wav",
-  "audio/x-wav",
-
-#if defined(OS_ANDROID)
-  // HLS.
-  "application/vnd.apple.mpegurl",
-  "application/x-mpegurl",
-#endif
-};
-
-// List of proprietary types only supported by Google Chrome.
-static const char* const proprietary_media_types[] = {
-  // MPEG-4.
-  "video/mp4",
-  "video/x-m4v",
-  "audio/mp4",
-  "audio/x-m4a",
-
-  // MP3.
-  "audio/mp3",
-  "audio/x-mp3",
-  "audio/mpeg",
-
-  // AAC / ADTS
-  "audio/aac",
-
-#if defined(ENABLE_MPEG2TS_STREAM_PARSER)
-  // MPEG-2 TS.
-  "video/mp2t",
-#endif
-};
 
 #if defined(OS_ANDROID)
 static bool IsCodecSupportedOnAndroid(MimeUtil::Codec codec) {
@@ -230,11 +178,15 @@ static bool IsCodecSupportedOnAndroid(MimeUtil::Codec codec) {
 }
 #endif
 
+enum MediaFormatType { COMMON, PROPRIETARY };
+
 struct MediaFormat {
   const char* const mime_type;
+  MediaFormatType format_type;
   const char* const codecs_list;
 };
 
+#if defined(USE_PROPRIETARY_CODECS)
 // Following is the list of RFC 6381 compliant codecs:
 //   mp4a.66     - MPEG-2 AAC MAIN
 //   mp4a.67     - MPEG-2 AAC LC
@@ -269,37 +221,46 @@ static const char kMP4VideoCodecsExpression[] =
 #endif
     "mp4a.66,mp4a.67,mp4a.68,mp4a.69,mp4a.6B,mp4a.40.2,mp4a.40.02,mp4a.40.5,"
     "mp4a.40.05,mp4a.40.29";
+#endif  // USE_PROPRIETARY_CODECS
 
-// These containers are also included in
-// common_media_types/proprietary_media_types. See crbug.com/461012.
-static const MediaFormat format_codec_mappings[] = {
-    {"video/webm", "opus,vorbis,vp8,vp8.0,vp9,vp9.0"},
-    {"audio/webm", "opus,vorbis"},
-    {"audio/wav", "1"},
-    {"audio/x-wav", "1"},
-// Android does not support Opus in Ogg container.
+// A list of media types (https://en.wikipedia.org/wiki/Media_type) and
+// corresponding media codecs supported by these types/containers.
+// Media formats marked as PROPRIETARY are not supported by Chromium, only
+// Google Chrome browser supports them.
+static const MediaFormat kFormatCodecMappings[] = {
+    {"video/webm", COMMON, "opus,vorbis,vp8,vp8.0,vp9,vp9.0"},
+    {"audio/webm", COMMON, "opus,vorbis"},
+    {"audio/wav", COMMON, "1"},
+    {"audio/x-wav", COMMON, "1"},
 #if defined(OS_ANDROID)
-    {"video/ogg", "theora,vorbis"},
-    {"audio/ogg", "vorbis"},
-    {"application/ogg", "theora,vorbis"},
+    // Android does not support Opus in Ogg container.
+    // Android does not support Theora and thus video/ogg.
+    {"audio/ogg", COMMON, "vorbis"},
+    {"application/ogg", COMMON, "vorbis"},
 #else
-    {"video/ogg", "opus,theora,vorbis"},
-    {"audio/ogg", "opus,vorbis"},
-    {"application/ogg", "opus,theora,vorbis"},
+    {"video/ogg", COMMON, "opus,theora,vorbis"},
+    {"audio/ogg", COMMON, "opus,vorbis"},
+    {"application/ogg", COMMON, "opus,theora,vorbis"},
 #endif
-    {"audio/mpeg", "mp3"},
-    {"audio/mp3", ""},
-    {"audio/x-mp3", ""},
-    {"audio/aac", ""},
-    {"audio/mp4", kMP4AudioCodecsExpression},
-    {"audio/x-m4a", kMP4AudioCodecsExpression},
-    {"video/mp4", kMP4VideoCodecsExpression},
-    {"video/x-m4v", kMP4VideoCodecsExpression},
+#if defined(USE_PROPRIETARY_CODECS)
+    {"audio/mpeg", PROPRIETARY, "mp3"},
+    {"audio/mp3", PROPRIETARY, ""},
+    {"audio/x-mp3", PROPRIETARY, ""},
+    {"audio/aac", PROPRIETARY, ""},  // AAC / ADTS
+    {"audio/mp4", PROPRIETARY, kMP4AudioCodecsExpression},
+    {"audio/x-m4a", PROPRIETARY, kMP4AudioCodecsExpression},
+    {"video/mp4", PROPRIETARY, kMP4VideoCodecsExpression},
+    {"video/x-m4v", PROPRIETARY, kMP4VideoCodecsExpression},
 #if defined(ENABLE_MPEG2TS_STREAM_PARSER)
-    {"video/mp2t", kMP4VideoCodecsExpression},
+    {"video/mp2t", PROPRIETARY, kMP4VideoCodecsExpression},
 #endif
-    {"application/x-mpegurl", kMP4VideoCodecsExpression},
-    {"application/vnd.apple.mpegurl", kMP4VideoCodecsExpression}};
+#if defined(OS_ANDROID)
+    // HTTP Live Streaming (HLS)
+    {"application/x-mpegurl", PROPRIETARY, kMP4VideoCodecsExpression},
+    {"application/vnd.apple.mpegurl", PROPRIETARY, kMP4VideoCodecsExpression}
+#endif
+#endif  // USE_PROPRIETARY_CODECS
+};
 
 struct CodecIDMappings {
   const char* const codec_id;
@@ -423,13 +384,8 @@ SupportsType MimeUtil::AreSupportedCodecs(
 
 void MimeUtil::InitializeMimeTypeMaps() {
   // Initialize the supported media types.
-  for (size_t i = 0; i < arraysize(common_media_types); ++i)
-    media_map_.insert(common_media_types[i]);
 #if defined(USE_PROPRIETARY_CODECS)
   allow_proprietary_codecs_ = true;
-
-  for (size_t i = 0; i < arraysize(proprietary_media_types); ++i)
-    media_map_.insert(proprietary_media_types[i]);
 #endif
 
   for (size_t i = 0; i < arraysize(kUnambiguousCodecStringMap); ++i) {
@@ -443,10 +399,9 @@ void MimeUtil::InitializeMimeTypeMaps() {
   }
 
   // Initialize the supported media formats.
-  for (size_t i = 0; i < arraysize(format_codec_mappings); ++i) {
+  for (size_t i = 0; i < arraysize(kFormatCodecMappings); ++i) {
     std::vector<std::string> mime_type_codecs;
-    ParseCodecString(format_codec_mappings[i].codecs_list,
-                     &mime_type_codecs,
+    ParseCodecString(kFormatCodecMappings[i].codecs_list, &mime_type_codecs,
                      false);
 
     CodecSet codecs;
@@ -458,12 +413,13 @@ void MimeUtil::InitializeMimeTypeMaps() {
       codecs.insert(codec);
     }
 
-    media_format_format_map_[format_codec_mappings[i].mime_type] = codecs;
+    media_format_map_[kFormatCodecMappings[i].mime_type] = codecs;
   }
 }
 
 bool MimeUtil::IsSupportedMediaMimeType(const std::string& mime_type) const {
-  return media_map_.find(base::ToLowerASCII(mime_type)) != media_map_.end();
+  return media_format_map_.find(base::ToLowerASCII(mime_type)) !=
+         media_format_map_.end();
 }
 
 void MimeUtil::ParseCodecString(const std::string& codecs,
@@ -495,9 +451,9 @@ SupportsType MimeUtil::IsSupportedMediaFormat(
     const std::vector<std::string>& codecs) const {
   const std::string mime_type_lower_case = base::ToLowerASCII(mime_type);
   MediaFormatMappings::const_iterator it_media_format_map =
-      media_format_format_map_.find(mime_type_lower_case);
-  if (it_media_format_map == media_format_format_map_.end())
-    return codecs.empty() ? MayBeSupported : IsNotSupported;
+      media_format_map_.find(mime_type_lower_case);
+  if (it_media_format_map == media_format_map_.end())
+    return IsNotSupported;
 
   if (it_media_format_map->second.empty()) {
     // We get here if the mimetype does not expect a codecs parameter.
@@ -533,8 +489,9 @@ SupportsType MimeUtil::IsSupportedMediaFormat(
 }
 
 void MimeUtil::RemoveProprietaryMediaTypesAndCodecsForTests() {
-  for (size_t i = 0; i < arraysize(proprietary_media_types); ++i)
-    media_map_.erase(proprietary_media_types[i]);
+  for (size_t i = 0; i < arraysize(kFormatCodecMappings); ++i)
+    if (kFormatCodecMappings[i].format_type == PROPRIETARY)
+      media_format_map_.erase(kFormatCodecMappings[i].mime_type);
   allow_proprietary_codecs_ = false;
 }
 

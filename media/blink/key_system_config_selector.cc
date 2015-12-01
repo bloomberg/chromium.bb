@@ -283,14 +283,10 @@ bool KeySystemConfigSelector::IsSupportedContentType(
   // parameters can be rejected. http://crbug.com/417561
   std::string container_lower = base::ToLowerASCII(container_mime_type);
 
-  // Check that |container_mime_type| is supported by Chrome.
-  if (!media::IsSupportedMediaMimeType(container_lower))
-    return false;
-
-  // Check that |codecs| are supported by Chrome. This is done primarily to
-  // validate extended codecs, but it also ensures that the CDM cannot support
-  // codecs that Chrome does not (which could complicate the robustness
-  // algorithm).
+  // Check that |container_mime_type| and |codecs| are supported by Chrome. This
+  // is done primarily to validate extended codecs, but it also ensures that the
+  // CDM cannot support codecs that Chrome does not (which could complicate the
+  // robustness algorithm).
   std::vector<std::string> codec_vector;
   media::ParseCodecString(codecs, &codec_vector, false);
   if (!codec_vector.empty() &&

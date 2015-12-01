@@ -65,15 +65,11 @@ blink::WebMimeRegistry::SupportsType WebMimeRegistryImpl::supportsMediaMIMEType(
     const blink::WebString& codecs,
     const blink::WebString& key_system) {
   const std::string mime_type_ascii = ToASCIIOrEmpty(mime_type);
-  // Not supporting the container is a flat-out no.
-  if (!media::IsSupportedMediaMimeType(mime_type_ascii))
-    return IsNotSupported;
 
   // Mojo does not currently support any key systems.
   if (!key_system.isEmpty())
     return IsNotSupported;
 
-  // Check that codecs are appropriate for the container type.
   std::vector<std::string> codec_vector;
   media::ParseCodecString(ToASCIIOrEmpty(codecs), &codec_vector, false);
   return static_cast<WebMimeRegistry::SupportsType>(
