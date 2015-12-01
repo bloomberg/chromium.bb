@@ -273,6 +273,10 @@ class SmoothnessToughPinchZoomCases(_Smoothness):
   def Name(cls):
     return 'smoothness.tough_pinch_zoom_cases'
 
+  @classmethod
+  def ShouldDisable(cls, possible_browser):
+    return cls.IsSvelte(possible_browser)  # http://crbug.com/564008
+
 
 @benchmark.Enabled('chromeos', 'mac')
 class SmoothnessDesktopToughPinchZoomCases(_Smoothness):
@@ -301,6 +305,10 @@ class SmoothnessGpuRasterizationToughPinchZoomCases(_Smoothness):
   @classmethod
   def Name(cls):
     return 'smoothness.gpu_rasterization.tough_pinch_zoom_cases'
+
+  @classmethod
+  def ShouldDisable(cls, possible_browser):
+    return cls.IsSvelte(possible_browser)  # http://crbug.com/564008
 
 
 @benchmark.Enabled('chromeos', 'mac')
