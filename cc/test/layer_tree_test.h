@@ -24,6 +24,7 @@ class LayerTreeHostClient;
 class LayerTreeHostImpl;
 class TestContextProvider;
 class TestGpuMemoryBufferManager;
+class TestTaskGraphRunner;
 class TestWebGraphicsContext3D;
 
 // Creates the virtual viewport layer hierarchy under the given root_layer.
@@ -270,10 +271,7 @@ class LayerTreeTest : public testing::Test, public TestHooks {
     return layer_tree_host_ ? layer_tree_host_->task_runner_provider()
                             : nullptr;
   }
-  TaskGraphRunner* task_graph_runner() const {
-    return task_graph_runner_.get();
-  }
-
+  TaskGraphRunner* task_graph_runner() const;
   bool TestEnded() const { return ended_; }
 
   LayerTreeHost* layer_tree_host();
@@ -320,7 +318,7 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   scoped_ptr<base::Thread> impl_thread_;
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager_;
   scoped_ptr<TestGpuMemoryBufferManager> gpu_memory_buffer_manager_;
-  scoped_ptr<TaskGraphRunner> task_graph_runner_;
+  scoped_ptr<TestTaskGraphRunner> task_graph_runner_;
   base::CancelableClosure timeout_;
   scoped_refptr<TestContextProvider> compositor_contexts_;
   base::WeakPtr<LayerTreeTest> main_thread_weak_ptr_;

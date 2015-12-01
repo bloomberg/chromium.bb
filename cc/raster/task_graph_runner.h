@@ -5,20 +5,29 @@
 #ifndef CC_RASTER_TASK_GRAPH_RUNNER_H_
 #define CC_RASTER_TASK_GRAPH_RUNNER_H_
 
+#include <algorithm>
 #include <map>
 #include <vector>
 
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/synchronization/condition_variable.h"
+#include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
 
 namespace cc {
 
+class TaskGraphRunner;
+
+// A task which can be run by a TaskGraphRunner. To run a Task, it should be
+// inserted into a TaskGraph, which can then be scheduled on the
+// TaskGraphRunner.
 class CC_EXPORT Task : public base::RefCountedThreadSafe<Task> {
  public:
   typedef std::vector<scoped_refptr<Task>> Vector;
 
+  // Subclasses should implement this method. RunOnWorkerThread may be called
+  // on any thread, and subclasses are responsible for locking and thread
+  // safety.
   virtual void RunOnWorkerThread() = 0;
 
   void WillRun();
@@ -35,22 +44,13 @@ class CC_EXPORT Task : public base::RefCountedThreadSafe<Task> {
   bool did_run_;
 };
 
-// Dependencies are represented as edges in a task graph. Each graph node is
-// assigned a priority and a run count that matches the number of dependencies.
-// Priority range from 0 (most favorable scheduling) to UINT_MAX (least
-// favorable).
+// A task dependency graph describes the order in which to execute a set
+// of tasks. Dependencies are represented as edges. Each node is assigned
+// a priority and a run count that matches the number of dependencies.
+// Priority range from 0 (most favorable scheduling) to UINT_MAX
+// (least favorable).
 struct CC_EXPORT TaskGraph {
   struct Node {
-    class TaskComparator {
-     public:
-      explicit TaskComparator(const Task* task) : task_(task) {}
-
-      bool operator()(const Node& node) const { return node.task == task_; }
-
-     private:
-      const Task* task_;
-    };
-
     typedef std::vector<Node> Vector;
 
     Node(Task* task, size_t priority, size_t dependencies)
@@ -81,8 +81,6 @@ struct CC_EXPORT TaskGraph {
   Edge::Vector edges;
 };
 
-class TaskGraphRunner;
-
 // Opaque identifier that defines a namespace of tasks.
 class CC_EXPORT NamespaceToken {
  public:
@@ -92,142 +90,121 @@ class CC_EXPORT NamespaceToken {
   bool IsValid() const { return id_ != 0; }
 
  private:
-  friend class TaskGraphRunner;
+  friend class TaskGraphWorkQueue;
 
   explicit NamespaceToken(int id) : id_(id) {}
 
   int id_;
 };
 
-// A TaskGraphRunner is used to process tasks with dependencies. There can
-// be any number of TaskGraphRunner instances per thread. Tasks can be scheduled
-// from any thread and they can be run on any thread.
+// A TaskGraphRunner is an object that runs a set of tasks in the
+// order defined by a dependency graph. The TaskGraphRunner interface
+// provides a way of decoupling task scheduling from the mechanics of
+// how each task will be run. TaskGraphRunner provides the following
+// guarantees:
+//
+//   - Scheduled tasks will not run synchronously. That is, the
+//     ScheduleTasks() method will not call Task::Run() directly.
+//
+//   - Scheduled tasks are guaranteed to run in the order defined by
+//     dependency graph.
+//
+//   - Once scheduled, a task is guaranteed to end up in the
+//     |completed_tasks| vector populated by CollectCompletedTasks(),
+//     even if it later gets canceled by another call to ScheduleTasks().
+//
+// TaskGraphRunner does not guarantee that a task with high priority
+// runs after a task with low priority. The priority is just a hint
+// and a valid TaskGraphRunner might ignore it. Also it does not
+// guarantee a memory model for shared data between tasks. (In other
+// words, you should use your own synchronization/locking primitives if
+// you need to share data between tasks.)
+//
+// Implementations of TaskGraphRunner should be thread-safe in that all
+// methods must be safe to call on any thread.
+//
+// Some theoretical implementations of TaskGraphRunner:
+//
+//   - A TaskGraphRunner that uses a thread pool to run scheduled tasks.
+//
+//   - A TaskGraphRunner that has a method Run() that runs each task.
 class CC_EXPORT TaskGraphRunner {
  public:
-  TaskGraphRunner();
-  virtual ~TaskGraphRunner();
-
   // Returns a unique token that can be used to pass a task graph to
   // ScheduleTasks(). Valid tokens are always nonzero.
-  NamespaceToken GetNamespaceToken();
+  virtual NamespaceToken GetNamespaceToken() = 0;
 
   // Schedule running of tasks in |graph|. Tasks previously scheduled but no
   // longer needed will be canceled unless already running. Canceled tasks are
   // moved to |completed_tasks| without being run. The result is that once
   // scheduled, a task is guaranteed to end up in the |completed_tasks| queue
   // even if it later gets canceled by another call to ScheduleTasks().
-  void ScheduleTasks(NamespaceToken token, TaskGraph* graph);
+  virtual void ScheduleTasks(NamespaceToken token, TaskGraph* graph) = 0;
 
   // Wait for all scheduled tasks to finish running.
-  void WaitForTasksToFinishRunning(NamespaceToken token);
+  virtual void WaitForTasksToFinishRunning(NamespaceToken token) = 0;
 
   // Collect all completed tasks in |completed_tasks|.
-  void CollectCompletedTasks(NamespaceToken token,
-                             Task::Vector* completed_tasks);
+  virtual void CollectCompletedTasks(NamespaceToken token,
+                                     Task::Vector* completed_tasks) = 0;
 
-  // Run tasks until Shutdown() is called.
-  void Run();
+ protected:
+  virtual ~TaskGraphRunner() {}
+};
 
-  // Process all pending tasks, but don't wait/sleep. Return as soon as all
-  // tasks that can be run are taken care of.
-  void RunUntilIdle();
+// Helper class for iterating over all dependents of a task.
+class DependentIterator {
+ public:
+  DependentIterator(TaskGraph* graph, const Task* task)
+      : graph_(graph),
+        task_(task),
+        current_index_(static_cast<size_t>(-1)),
+        current_node_(NULL) {
+    ++(*this);
+  }
 
-  // Signals the Run method to return when it becomes idle. It will continue to
-  // process tasks and future tasks as long as they are scheduled.
-  // Warning: if the TaskGraphRunner remains busy, it may never quit.
-  void Shutdown();
+  TaskGraph::Node& operator->() const {
+    DCHECK_LT(current_index_, graph_->edges.size());
+    DCHECK_EQ(graph_->edges[current_index_].task, task_);
+    DCHECK(current_node_);
+    return *current_node_;
+  }
 
-  // Wait for all the tasks to finish running on all the namespaces.
-  void FlushForTesting();
+  TaskGraph::Node& operator*() const {
+    DCHECK_LT(current_index_, graph_->edges.size());
+    DCHECK_EQ(graph_->edges[current_index_].task, task_);
+    DCHECK(current_node_);
+    return *current_node_;
+  }
+
+  // Note: Performance can be improved by keeping edges sorted.
+  DependentIterator& operator++() {
+    // Find next dependency edge for |task_|.
+    do {
+      ++current_index_;
+      if (current_index_ == graph_->edges.size())
+        return *this;
+    } while (graph_->edges[current_index_].task != task_);
+
+    // Now find the node for the dependent of this edge.
+    TaskGraph::Node::Vector::iterator it = std::find_if(
+        graph_->nodes.begin(), graph_->nodes.end(),
+        [this](const TaskGraph::Node& node) {
+          return node.task == graph_->edges[current_index_].dependent;
+        });
+    DCHECK(it != graph_->nodes.end());
+    current_node_ = &(*it);
+
+    return *this;
+  }
+
+  operator bool() const { return current_index_ < graph_->edges.size(); }
 
  private:
-  struct PrioritizedTask {
-    typedef std::vector<PrioritizedTask> Vector;
-
-    PrioritizedTask(Task* task, size_t priority)
-        : task(task), priority(priority) {}
-
-    Task* task;
-    size_t priority;
-  };
-
-  typedef std::vector<const Task*> TaskVector;
-
-  struct TaskNamespace {
-    typedef std::vector<TaskNamespace*> Vector;
-
-    TaskNamespace();
-    ~TaskNamespace();
-
-    // Current task graph.
-    TaskGraph graph;
-
-    // Ordered set of tasks that are ready to run.
-    PrioritizedTask::Vector ready_to_run_tasks;
-
-    // Completed tasks not yet collected by origin thread.
-    Task::Vector completed_tasks;
-
-    // This set contains all currently running tasks.
-    TaskVector running_tasks;
-  };
-
-  typedef std::map<int, TaskNamespace> TaskNamespaceMap;
-
-  static bool CompareTaskPriority(const PrioritizedTask& a,
-                                  const PrioritizedTask& b) {
-    // In this system, numerically lower priority is run first.
-    return a.priority > b.priority;
-  }
-
-  static bool CompareTaskNamespacePriority(const TaskNamespace* a,
-                                           const TaskNamespace* b) {
-    DCHECK(!a->ready_to_run_tasks.empty());
-    DCHECK(!b->ready_to_run_tasks.empty());
-
-    // Compare based on task priority of the ready_to_run_tasks heap .front()
-    // will hold the max element of the heap, except after pop_heap, when max
-    // element is moved to .back().
-    return CompareTaskPriority(a->ready_to_run_tasks.front(),
-                               b->ready_to_run_tasks.front());
-  }
-
-  static bool HasFinishedRunningTasksInNamespace(
-      const TaskNamespace* task_namespace) {
-    return task_namespace->running_tasks.empty() &&
-           task_namespace->ready_to_run_tasks.empty();
-  }
-
-  // Run next task. Caller must acquire |lock_| prior to calling this function
-  // and make sure at least one task is ready to run.
-  void RunTaskWithLockAcquired();
-
-  // This lock protects all members of this class. Do not read or modify
-  // anything without holding this lock. Do not block while holding this lock.
-  mutable base::Lock lock_;
-
-  // Condition variable that is waited on by Run() until new tasks are ready to
-  // run or shutdown starts.
-  base::ConditionVariable has_ready_to_run_tasks_cv_;
-
-  // Condition variable that is waited on by origin threads until a namespace
-  // has finished running all associated tasks.
-  base::ConditionVariable has_namespaces_with_finished_running_tasks_cv_;
-
-  // Provides a unique id to each NamespaceToken.
-  int next_namespace_id_;
-
-  // This set contains all namespaces with pending, running or completed tasks
-  // not yet collected.
-  TaskNamespaceMap namespaces_;
-
-  // Ordered set of task namespaces that have ready to run tasks.
-  TaskNamespace::Vector ready_to_run_namespaces_;
-
-  // Set during shutdown. Tells Run() to return when no more tasks are pending.
-  bool shutdown_;
-
-  DISALLOW_COPY_AND_ASSIGN(TaskGraphRunner);
+  TaskGraph* graph_;
+  const Task* task_;
+  size_t current_index_;
+  TaskGraph::Node* current_node_;
 };
 
 }  // namespace cc

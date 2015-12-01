@@ -1150,6 +1150,10 @@ void LayerTreeTest::DestroyLayerTreeHost() {
   layer_tree_host_ = nullptr;
 }
 
+TaskGraphRunner* LayerTreeTest::task_graph_runner() const {
+  return task_graph_runner_.get();
+}
+
 LayerTreeHost* LayerTreeTest::layer_tree_host() {
   // We check for a null task_runner_provider here as we sometimes ask for the
   // layer tree host when the task_runner_provider does not exist, often for

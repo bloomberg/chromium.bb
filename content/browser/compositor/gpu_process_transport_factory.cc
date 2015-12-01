@@ -17,6 +17,7 @@
 #include "cc/base/histograms.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/output_surface.h"
+#include "cc/raster/single_thread_task_graph_runner.h"
 #include "cc/raster/task_graph_runner.h"
 #include "cc/surfaces/onscreen_display_client.h"
 #include "cc/surfaces/surface_display_output_surface.h"
@@ -82,24 +83,6 @@ using gpu::gles2::GLES2Interface;
 static const int kNumRetriesBeforeSoftwareFallback = 4;
 
 namespace content {
-namespace {
-
-class RasterThread : public base::SimpleThread {
- public:
-  RasterThread(cc::TaskGraphRunner* task_graph_runner)
-      : base::SimpleThread("CompositorTileWorker1"),
-        task_graph_runner_(task_graph_runner) {}
-
-  // Overridden from base::SimpleThread:
-  void Run() override { task_graph_runner_->Run(); }
-
- private:
-  cc::TaskGraphRunner* task_graph_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(RasterThread);
-};
-
-}  // namespace
 
 struct GpuProcessTransportFactory::PerCompositorData {
   int surface_id;
@@ -112,7 +95,7 @@ struct GpuProcessTransportFactory::PerCompositorData {
 
 GpuProcessTransportFactory::GpuProcessTransportFactory()
     : next_surface_id_namespace_(1u),
-      task_graph_runner_(new cc::TaskGraphRunner),
+      task_graph_runner_(new cc::SingleThreadTaskGraphRunner),
       callback_factory_(this) {
   ui::Layer::InitializeUILayerSettings();
   cc::SetClientNameForMetrics("Browser");
@@ -120,8 +103,8 @@ GpuProcessTransportFactory::GpuProcessTransportFactory()
   if (UseSurfacesEnabled())
     surface_manager_ = make_scoped_ptr(new cc::SurfaceManager);
 
-  raster_thread_.reset(new RasterThread(task_graph_runner_.get()));
-  raster_thread_->Start();
+  task_graph_runner_->Start("CompositorTileWorker1",
+                            base::SimpleThread::Options());
 #if defined(OS_WIN)
   software_backing_.reset(new OutputDeviceBacking);
 #endif
@@ -134,8 +117,6 @@ GpuProcessTransportFactory::~GpuProcessTransportFactory() {
   callback_factory_.InvalidateWeakPtrs();
 
   task_graph_runner_->Shutdown();
-  if (raster_thread_)
-    raster_thread_->Join();
 }
 
 scoped_ptr<WebGraphicsContext3DCommandBufferImpl>

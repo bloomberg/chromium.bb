@@ -22,6 +22,7 @@ class Thread;
 }
 
 namespace cc {
+class SingleThreadTaskGraphRunner;
 class SoftwareOutputDevice;
 class SurfaceManager;
 }
@@ -102,8 +103,7 @@ class GpuProcessTransportFactory
   base::ObserverList<ImageTransportFactoryObserver> observer_list_;
   scoped_ptr<cc::SurfaceManager> surface_manager_;
   uint32_t next_surface_id_namespace_;
-  scoped_ptr<cc::TaskGraphRunner> task_graph_runner_;
-  scoped_ptr<base::SimpleThread> raster_thread_;
+  scoped_ptr<cc::SingleThreadTaskGraphRunner> task_graph_runner_;
   scoped_refptr<ContextProviderCommandBuffer> shared_worker_context_provider_;
 
 #if defined(OS_WIN)

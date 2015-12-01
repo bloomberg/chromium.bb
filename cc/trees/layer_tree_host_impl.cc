@@ -58,6 +58,7 @@
 #include "cc/raster/gpu_rasterizer.h"
 #include "cc/raster/gpu_tile_task_worker_pool.h"
 #include "cc/raster/one_copy_tile_task_worker_pool.h"
+#include "cc/raster/synchronous_task_graph_runner.h"
 #include "cc/raster/tile_task_worker_pool.h"
 #include "cc/raster/zero_copy_tile_task_worker_pool.h"
 #include "cc/resources/memory_history.h"
@@ -2160,7 +2161,8 @@ void LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
   TaskGraphRunner* task_graph_runner = task_graph_runner_;
   if (is_synchronous_single_threaded_) {
     DCHECK(!single_thread_synchronous_task_graph_runner_);
-    single_thread_synchronous_task_graph_runner_.reset(new TaskGraphRunner);
+    single_thread_synchronous_task_graph_runner_.reset(
+        new SynchronousTaskGraphRunner);
     task_graph_runner = single_thread_synchronous_task_graph_runner_.get();
   }
 

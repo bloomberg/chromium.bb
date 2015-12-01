@@ -6,21 +6,13 @@
 
 namespace blimp {
 
-BlimpTaskGraphRunner::BlimpTaskGraphRunner()
-    : worker_thread_(
-          this,
-          "BlimpCompositorWorker",
-          base::SimpleThread::Options(base::ThreadPriority::BACKGROUND)) {
-  worker_thread_.Start();
+BlimpTaskGraphRunner::BlimpTaskGraphRunner() {
+  Start("BlimpCompositorWorker",
+        base::SimpleThread::Options(base::ThreadPriority::BACKGROUND));
 }
 
 BlimpTaskGraphRunner::~BlimpTaskGraphRunner() {
   Shutdown();
-  worker_thread_.Join();
-}
-
-void BlimpTaskGraphRunner::Run() {
-  cc::TaskGraphRunner::Run();
 }
 
 }  // namespace blimp

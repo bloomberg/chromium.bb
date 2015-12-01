@@ -8,25 +8,20 @@
 #include "base/macros.h"
 #include "base/threading/simple_thread.h"
 #include "blimp/common/blimp_common_export.h"
-#include "cc/raster/task_graph_runner.h"
+#include "cc/raster/single_thread_task_graph_runner.h"
 
 namespace blimp {
 
-// TaskGraphRunner that runs on a single thread.  See cc::TaskGraphRunner for
-// details. Used by client's compositor and engine's dummy UI context factory.
+// TaskGraphRunner that runs on a single thread.  See
+// cc::SingleThreadTaskGraphRunner for details. Used by client's compositor and
+// engine's dummy UI context factory.
 class BLIMP_COMMON_EXPORT BlimpTaskGraphRunner
-    : public cc::TaskGraphRunner,
-      public base::DelegateSimpleThread::Delegate {
+    : public cc::SingleThreadTaskGraphRunner {
  public:
   BlimpTaskGraphRunner();
   ~BlimpTaskGraphRunner() override;
 
  private:
-  // base::DelegateSimpleThread::Delegate implementation.
-  void Run() override;
-
-  base::DelegateSimpleThread worker_thread_;
-
   DISALLOW_COPY_AND_ASSIGN(BlimpTaskGraphRunner);
 };
 

@@ -13,6 +13,7 @@
 #include "cc/raster/gpu_tile_task_worker_pool.h"
 #include "cc/raster/one_copy_tile_task_worker_pool.h"
 #include "cc/raster/raster_buffer.h"
+#include "cc/raster/synchronous_task_graph_runner.h"
 #include "cc/raster/tile_task_runner.h"
 #include "cc/raster/zero_copy_tile_task_worker_pool.h"
 #include "cc/resources/resource_pool.h"
@@ -185,7 +186,7 @@ class TileTaskWorkerPoolPerfTestBase {
   TileTaskWorkerPoolPerfTestBase()
       : context_provider_(make_scoped_refptr(new PerfContextProvider)),
         task_runner_(new base::TestSimpleTaskRunner),
-        task_graph_runner_(new TaskGraphRunner),
+        task_graph_runner_(new SynchronousTaskGraphRunner),
         timer_(kWarmupRuns,
                base::TimeDelta::FromMilliseconds(kTimeLimitMillis),
                kTimeCheckInterval) {}
@@ -231,7 +232,7 @@ class TileTaskWorkerPoolPerfTestBase {
   scoped_ptr<FakeOutputSurface> output_surface_;
   scoped_ptr<ResourceProvider> resource_provider_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
-  scoped_ptr<TaskGraphRunner> task_graph_runner_;
+  scoped_ptr<SynchronousTaskGraphRunner> task_graph_runner_;
   LapTimer timer_;
 };
 

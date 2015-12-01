@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/raster/task_graph_runner.h"
-
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "cc/base/completion_event.h"
 #include "cc/debug/lap_timer.h"
+#include "cc/raster/synchronous_task_graph_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
 
@@ -46,7 +45,7 @@ class TaskGraphRunnerPerfTest : public testing::Test {
 
   // Overridden from testing::Test:
   void SetUp() override {
-    task_graph_runner_ = make_scoped_ptr(new TaskGraphRunner);
+    task_graph_runner_ = make_scoped_ptr(new SynchronousTaskGraphRunner);
     namespace_token_ = task_graph_runner_->GetNamespaceToken();
   }
   void TearDown() override { task_graph_runner_ = nullptr; }
@@ -267,7 +266,9 @@ class TaskGraphRunnerPerfTest : public testing::Test {
     return completed_tasks->size();
   }
 
-  scoped_ptr<TaskGraphRunner> task_graph_runner_;
+  // Test uses SynchronousTaskGraphRunner, as this implementation introduces
+  // minimal additional complexity over the TaskGraphWorkQueue helpers.
+  scoped_ptr<SynchronousTaskGraphRunner> task_graph_runner_;
   NamespaceToken namespace_token_;
   LapTimer timer_;
 };

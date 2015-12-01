@@ -6,22 +6,16 @@
 #define CC_TEST_TEST_TASK_GRAPH_RUNNER_H_
 
 #include "base/threading/simple_thread.h"
-#include "cc/raster/task_graph_runner.h"
+#include "cc/raster/single_thread_task_graph_runner.h"
 
 namespace cc {
 
-class TestTaskGraphRunner : public TaskGraphRunner,
-                            public base::DelegateSimpleThread::Delegate {
+class TestTaskGraphRunner : public SingleThreadTaskGraphRunner {
  public:
   TestTaskGraphRunner();
   ~TestTaskGraphRunner() override;
 
-  // Overridden from base::DelegateSimpleThread::Delegate:
-  void Run() override;
-
  private:
-  base::DelegateSimpleThread worker_thread_;
-
   DISALLOW_COPY_AND_ASSIGN(TestTaskGraphRunner);
 };
 

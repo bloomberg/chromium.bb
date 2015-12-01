@@ -6,18 +6,12 @@
 
 namespace cc {
 
-TestTaskGraphRunner::TestTaskGraphRunner()
-    : worker_thread_(this, "CompositorTileWorker1") {
-  worker_thread_.Start();
+TestTaskGraphRunner::TestTaskGraphRunner() {
+  Start("TestTaskGraphRunner", base::SimpleThread::Options());
 }
 
 TestTaskGraphRunner::~TestTaskGraphRunner() {
-  TaskGraphRunner::Shutdown();
-  worker_thread_.Join();
-}
-
-void TestTaskGraphRunner::Run() {
-  TaskGraphRunner::Run();
+  Shutdown();
 }
 
 }  // namespace cc

@@ -30,7 +30,7 @@
 #include "cc/output/context_provider.h"
 #include "cc/output/output_surface.h"
 #include "cc/output/output_surface_client.h"
-#include "cc/raster/task_graph_runner.h"
+#include "cc/raster/single_thread_task_graph_runner.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/onscreen_display_client.h"
 #include "cc/surfaces/surface_display_output_surface.h"
@@ -157,37 +157,24 @@ bool g_use_surface_manager = false;
 base::LazyInstance<cc::SurfaceManager> g_surface_manager =
     LAZY_INSTANCE_INITIALIZER;
 
-
 int g_surface_id_namespace = 0;
 
-class SingleThreadTaskGraphRunner
-    : public cc::TaskGraphRunner,
-      public base::DelegateSimpleThread::Delegate {
+class SingleThreadTaskGraphRunner : public cc::SingleThreadTaskGraphRunner {
  public:
-  SingleThreadTaskGraphRunner()
-      : worker_thread_(
-            this,
-            "CompositorTileWorker1",
-            base::SimpleThread::Options(base::ThreadPriority::BACKGROUND)) {
-    worker_thread_.Start();
+  SingleThreadTaskGraphRunner() {
+    Start("CompositorTileWorker1",
+          base::SimpleThread::Options(base::ThreadPriority::BACKGROUND));
   }
 
   ~SingleThreadTaskGraphRunner() override {
     Shutdown();
-    worker_thread_.Join();
   }
-
- private:
-  // Overridden from base::DelegateSimpleThread::Delegate:
-  void Run() override { cc::TaskGraphRunner::Run(); }
-
-  base::DelegateSimpleThread worker_thread_;
 };
 
 base::LazyInstance<SingleThreadTaskGraphRunner> g_task_graph_runner =
     LAZY_INSTANCE_INITIALIZER;
 
-} // anonymous namespace
+}  // anonymous namespace
 
 // static
 Compositor* Compositor::Create(CompositorClient* client,

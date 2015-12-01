@@ -6,34 +6,22 @@
 
 #include "base/logging.h"
 #include "base/threading/simple_thread.h"
-#include "cc/raster/task_graph_runner.h"
+#include "cc/raster/single_thread_task_graph_runner.h"
 
 namespace gles2 {
 
-class RasterThreadHelper::RasterThread : public base::SimpleThread {
- public:
-  RasterThread(cc::TaskGraphRunner* task_graph_runner)
-      : base::SimpleThread("CompositorTileWorker1"),
-        task_graph_runner_(task_graph_runner) {}
-
-  // Overridden from base::SimpleThread:
-  void Run() override { task_graph_runner_->Run(); }
-
- private:
-  cc::TaskGraphRunner* task_graph_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(RasterThread);
-};
-
 RasterThreadHelper::RasterThreadHelper()
-    : task_graph_runner_(new cc::TaskGraphRunner),
-      raster_thread_(new RasterThread(task_graph_runner_.get())) {
-  raster_thread_->Start();
+    : task_graph_runner_(new cc::SingleThreadTaskGraphRunner) {
+  task_graph_runner_->Start("CompositorTileWorker1",
+                            base::SimpleThread::Options());
 }
 
 RasterThreadHelper::~RasterThreadHelper() {
   task_graph_runner_->Shutdown();
-  raster_thread_->Join();
+}
+
+cc::TaskGraphRunner* RasterThreadHelper::task_graph_runner() {
+  return task_graph_runner_.get();
 }
 
 }  // namespace gles2

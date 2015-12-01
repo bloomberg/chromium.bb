@@ -69,6 +69,7 @@ class ScrollElasticityHelper;
 class ScrollbarLayerImplBase;
 class SwapPromise;
 class SwapPromiseMonitor;
+class SynchronousTaskGraphRunner;
 class TextureMailboxDeleter;
 class TopControlsManager;
 class UIResourceBitmap;
@@ -810,7 +811,8 @@ class CC_EXPORT LayerTreeHostImpl
 
   RenderingStatsInstrumentation* rendering_stats_instrumentation_;
   MicroBenchmarkControllerImpl micro_benchmark_controller_;
-  scoped_ptr<TaskGraphRunner> single_thread_synchronous_task_graph_runner_;
+  scoped_ptr<SynchronousTaskGraphRunner>
+      single_thread_synchronous_task_graph_runner_;
 
   // Optional callback to notify of new tree activations.
   base::Closure tree_activation_callback_;

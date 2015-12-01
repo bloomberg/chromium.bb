@@ -61,11 +61,9 @@ size_t TileTaskWorkerPool::kTaskSetFinishedTaskPriorityBase = 1u;
 // |kTaskSetFinishedTaskPriorityBase + kNumberOfTaskSets|.
 size_t TileTaskWorkerPool::kTileTaskPriorityBase = 10u;
 
-TileTaskWorkerPool::TileTaskWorkerPool() {
-}
+TileTaskWorkerPool::TileTaskWorkerPool() {}
 
-TileTaskWorkerPool::~TileTaskWorkerPool() {
-}
+TileTaskWorkerPool::~TileTaskWorkerPool() {}
 
 // static
 scoped_refptr<TileTask> TileTaskWorkerPool::CreateTaskSetFinishedTask(
@@ -99,8 +97,9 @@ void TileTaskWorkerPool::InsertNodeForTask(TaskGraph* graph,
                                            size_t priority,
                                            size_t dependencies) {
   DCHECK(std::find_if(graph->nodes.begin(), graph->nodes.end(),
-                      TaskGraph::Node::TaskComparator(task)) ==
-         graph->nodes.end());
+                      [task](const TaskGraph::Node& node) {
+                        return node.task == task;
+                      }) == graph->nodes.end());
   graph->nodes.push_back(TaskGraph::Node(task, priority, dependencies));
 }
 
@@ -126,7 +125,9 @@ void TileTaskWorkerPool::InsertNodesForRasterTask(
     // Add decode task if it doesn't already exists in graph.
     TaskGraph::Node::Vector::iterator decode_it =
         std::find_if(graph->nodes.begin(), graph->nodes.end(),
-                     TaskGraph::Node::TaskComparator(decode_task));
+                     [decode_task](const TaskGraph::Node& node) {
+                       return node.task == decode_task;
+                     });
     if (decode_it == graph->nodes.end())
       InsertNodeForTask(graph, decode_task, priority, 0u);
 

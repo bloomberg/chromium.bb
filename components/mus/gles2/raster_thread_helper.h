@@ -9,6 +9,7 @@
 
 namespace cc {
 class TaskGraphRunner;
+class SingleThreadTaskGraphRunner;
 }
 
 namespace gles2 {
@@ -18,13 +19,10 @@ class RasterThreadHelper {
   RasterThreadHelper();
   ~RasterThreadHelper();
 
-  cc::TaskGraphRunner* task_graph_runner() { return task_graph_runner_.get(); }
+  cc::TaskGraphRunner* task_graph_runner();
 
  private:
-  class RasterThread;
-
-  scoped_ptr<cc::TaskGraphRunner> task_graph_runner_;
-  scoped_ptr<RasterThread> raster_thread_;
+  scoped_ptr<cc::SingleThreadTaskGraphRunner> task_graph_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(RasterThreadHelper);
 };
