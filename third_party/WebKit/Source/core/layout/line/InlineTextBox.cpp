@@ -534,20 +534,23 @@ bool InlineTextBox::containsCaretOffset(int offset) const
 
 void InlineTextBox::characterWidths(Vector<float>& widths) const
 {
+    if (!m_len)
+        return;
+
     FontCachePurgePreventer fontCachePurgePreventer;
+    ASSERT(lineLayoutItem().text());
 
     const ComputedStyle& styleToUse = lineLayoutItem().styleRef(isFirstLineStyle());
     const Font& font = styleToUse.font();
 
-    TextRun textRun = constructTextRun(styleToUse, font);
-
-    SimpleShaper shaper(&font, textRun);
     float lastWidth = 0;
     widths.resize(m_len);
     for (unsigned i = 0; i < m_len; i++) {
-        shaper.advance(i + 1);
-        widths[i] = shaper.runWidthSoFar() - lastWidth;
-        lastWidth = shaper.runWidthSoFar();
+        StringView substringView = lineLayoutItem().text().createView();
+        substringView.narrow(start(), 1 + i);
+        TextRun textRun = constructTextRun(styleToUse, font, substringView, m_len);
+        widths[i] = font.width(textRun, nullptr, nullptr) - lastWidth;
+        lastWidth = font.width(textRun, nullptr, nullptr);
     }
 }
 
