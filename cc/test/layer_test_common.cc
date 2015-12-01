@@ -10,6 +10,7 @@
 #include "cc/quads/draw_quad.h"
 #include "cc/quads/render_pass.h"
 #include "cc/test/fake_output_surface.h"
+#include "cc/test/layer_tree_settings_for_testing.h"
 #include "cc/test/mock_occlusion_tracker.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -109,8 +110,7 @@ void LayerTestCommon::VerifyQuadsAreOccluded(const QuadList& quads,
 }
 
 LayerTestCommon::LayerImplTest::LayerImplTest()
-    : LayerImplTest(LayerTreeSettings()) {
-}
+    : LayerImplTest(LayerTreeSettingsForTesting()) {}
 
 LayerTestCommon::LayerImplTest::LayerImplTest(const LayerTreeSettings& settings)
     : client_(FakeLayerTreeHostClient::DIRECT_3D),

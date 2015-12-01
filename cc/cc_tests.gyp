@@ -229,6 +229,8 @@
       'test/layer_tree_pixel_resource_test.h',
       'test/layer_tree_pixel_test.cc',
       'test/layer_tree_pixel_test.h',
+      'test/layer_tree_settings_for_testing.cc',
+      'test/layer_tree_settings_for_testing.h',
       'test/layer_tree_test.cc',
       'test/layer_tree_test.h',
       'test/mock_occlusion_tracker.h',

@@ -35,6 +35,7 @@ class DelegatedRendererLayerImplTest : public testing::Test {
         output_surface_(FakeOutputSurface::Create3d()) {
     LayerTreeSettings settings;
     settings.minimum_occlusion_tracking_size = gfx::Size();
+    settings.verify_property_trees = true;
 
     host_impl_.reset(new FakeLayerTreeHostImpl(settings, &task_runner_provider_,
                                                &shared_bitmap_manager_,

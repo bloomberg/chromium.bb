@@ -21,7 +21,7 @@ namespace cc {
 class CC_EXPORT LayerTreeSettings {
  public:
   LayerTreeSettings();
-  ~LayerTreeSettings();
+  virtual ~LayerTreeSettings();
 
   RendererSettings renderer_settings;
   bool single_thread_proxy_scheduler;

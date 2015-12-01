@@ -14,6 +14,7 @@
 #include "cc/test/fake_picture_layer.h"
 #include "cc/test/fake_picture_layer_impl.h"
 #include "cc/test/fake_proxy.h"
+#include "cc/test/layer_tree_settings_for_testing.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/single_thread_proxy.h"
@@ -61,7 +62,7 @@ TEST(PictureLayerTest, NoTilesIfEmptyBounds) {
   FakeImplTaskRunnerProvider impl_task_runner_provider;
 
   TestSharedBitmapManager shared_bitmap_manager;
-  FakeLayerTreeHostImpl host_impl(LayerTreeSettings(),
+  FakeLayerTreeHostImpl host_impl(LayerTreeSettingsForTesting(),
                                   &impl_task_runner_provider,
                                   &shared_bitmap_manager, &task_graph_runner);
   host_impl.CreatePendingTree();
@@ -115,7 +116,7 @@ TEST(PictureLayerTest, SuitableForGpuRasterization) {
 // non-monotonically. This executes that code path under this scenario allowing
 // for the code to verify correctness with DCHECKs.
 TEST(PictureLayerTest, NonMonotonicSourceFrameNumber) {
-  LayerTreeSettings settings;
+  LayerTreeSettingsForTesting settings;
   settings.single_thread_proxy_scheduler = false;
   settings.use_zero_copy = true;
 

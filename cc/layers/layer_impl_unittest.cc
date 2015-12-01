@@ -65,18 +65,22 @@ namespace {
   EXPECT_FALSE(child->LayerPropertyChanged());                                 \
   EXPECT_FALSE(grand_child->LayerPropertyChanged());
 
-#define VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(code_to_test)                      \
-  root->ResetAllChangeTrackingForSubtree();                                    \
-  host_impl.ForcePrepareToDraw();                                              \
-  EXPECT_FALSE(host_impl.active_tree()->needs_update_draw_properties());       \
-  code_to_test;                                                                \
+#define VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(code_to_test)                \
+  root->ResetAllChangeTrackingForSubtree();                              \
+  host_impl.active_tree()->property_trees()->needs_rebuild = true;       \
+  host_impl.active_tree()->BuildPropertyTreesForTesting();               \
+  host_impl.ForcePrepareToDraw();                                        \
+  EXPECT_FALSE(host_impl.active_tree()->needs_update_draw_properties()); \
+  code_to_test;                                                          \
   EXPECT_TRUE(host_impl.active_tree()->needs_update_draw_properties());
 
-#define VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(code_to_test)                   \
-  root->ResetAllChangeTrackingForSubtree();                                    \
-  host_impl.ForcePrepareToDraw();                                              \
-  EXPECT_FALSE(host_impl.active_tree()->needs_update_draw_properties());       \
-  code_to_test;                                                                \
+#define VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(code_to_test)             \
+  root->ResetAllChangeTrackingForSubtree();                              \
+  host_impl.active_tree()->property_trees()->needs_rebuild = true;       \
+  host_impl.active_tree()->BuildPropertyTreesForTesting();               \
+  host_impl.ForcePrepareToDraw();                                        \
+  EXPECT_FALSE(host_impl.active_tree()->needs_update_draw_properties()); \
+  code_to_test;                                                          \
   EXPECT_FALSE(host_impl.active_tree()->needs_update_draw_properties());
 
 TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
@@ -263,6 +267,10 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
   LayerImpl* layer = layer_ptr.get();
   root->AddChild(std::move(layer_ptr));
   layer->SetScrollClipLayer(root->id());
+  scoped_ptr<LayerImpl> layer2_ptr =
+      LayerImpl::Create(host_impl.active_tree(), 3);
+  LayerImpl* layer2 = layer2_ptr.get();
+  root->AddChild(std::move(layer2_ptr));
   host_impl.active_tree()->BuildPropertyTreesForTesting();
   DCHECK(host_impl.CanDraw());
 
@@ -282,6 +290,10 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
   arbitrary_filters.Append(FilterOperation::CreateOpacityFilter(0.5f));
   SkXfermode::Mode arbitrary_blend_mode = SkXfermode::kMultiply_Mode;
 
+  // Set layer to draw content so that their draw property by property trees is
+  // verified.
+  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetDrawsContent(true));
+  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer2->SetDrawsContent(true));
   // Render surface functions.
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetHasRenderSurface(true));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetHasRenderSurface(true));
@@ -320,13 +332,11 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetContentsOpaque(true));
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
       layer->SetReplicaLayer(LayerImpl::Create(host_impl.active_tree(), 5)));
-  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetPosition(arbitrary_point_f));
+  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer2->SetPosition(arbitrary_point_f));
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetShouldFlattenTransform(false));
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->Set3dSortingContextId(1));
-
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
       layer->SetDoubleSided(false));  // constructor initializes it to "true".
-  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetDrawsContent(true));
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
       layer->SetBackgroundColor(arbitrary_color));
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
@@ -343,7 +353,8 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetFilters(arbitrary_filters));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetMasksToBounds(true));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetContentsOpaque(true));
-  VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetPosition(arbitrary_point_f));
+  VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(
+      layer2->SetPosition(arbitrary_point_f));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(layer->Set3dSortingContextId(1));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(
       layer->SetDoubleSided(false));  // constructor initializes it to "true".

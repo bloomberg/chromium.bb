@@ -4,6 +4,7 @@
 
 #include "cc/test/begin_frame_args_test.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
+#include "cc/test/layer_tree_settings_for_testing.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/trees/layer_tree_impl.h"
 
@@ -13,7 +14,7 @@ FakeLayerTreeHostImpl::FakeLayerTreeHostImpl(
     TaskRunnerProvider* task_runner_provider,
     SharedBitmapManager* manager,
     TaskGraphRunner* task_graph_runner)
-    : FakeLayerTreeHostImpl(LayerTreeSettings(),
+    : FakeLayerTreeHostImpl(LayerTreeSettingsForTesting(),
                             task_runner_provider,
                             manager,
                             task_graph_runner,
