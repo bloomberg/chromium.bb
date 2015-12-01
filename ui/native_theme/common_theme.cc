@@ -64,15 +64,13 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
 
       // Results Tables
       case NativeTheme::kColorId_ResultsTableHoveredBackground:
-        return SkColorSetA(
-            base_theme->GetSystemColor(
-                NativeTheme::kColorId_ResultsTableNormalBackground),
-            0x0D);
+        return SkColorSetA(base_theme->GetSystemColor(
+                               NativeTheme::kColorId_ResultsTableNormalText),
+                           0x0D);
       case NativeTheme::kColorId_ResultsTableSelectedBackground:
-        return SkColorSetA(
-            base_theme->GetSystemColor(
-                NativeTheme::kColorId_ResultsTableNormalBackground),
-            0x14);
+        return SkColorSetA(base_theme->GetSystemColor(
+                               NativeTheme::kColorId_ResultsTableNormalText),
+                           0x14);
       case NativeTheme::kColorId_ResultsTableNormalText:
       case NativeTheme::kColorId_ResultsTableHoveredText:
       case NativeTheme::kColorId_ResultsTableSelectedText:
