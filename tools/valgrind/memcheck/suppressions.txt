@@ -2031,19 +2031,6 @@
    fun:_ZN10extensions16UserScriptMaster7ObserveEiRKN7content18NotificationSourceERKNS1_19NotificationDetailsE
 }
 {
-   bug_234845
-   Memcheck:Leak
-   fun:malloc
-   fun:PORT_Alloc_Util
-   fun:pk11_CreateSymKey
-   fun:PK11_KeyGenWithTemplate
-   fun:pk11_TokenKeyGenWithFlagsAndKeyType
-   fun:pk11_RawPBEKeyGenWithKeyType
-   fun:PK11_PBEKeyGen
-   fun:PK11_ExportEncryptedPrivKeyInfo
-   fun:_ZN6crypto12ECPrivateKey25ExportEncryptedPrivateKeyERKSsiPSt6vectorIhSaIhEE
-}
-{
    bug_235584
    Memcheck:Leak
    fun:_Znw*
