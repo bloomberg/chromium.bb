@@ -9,6 +9,7 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/ScriptCallStack.h"
+#include "wtf/Atomics.h"
 #include <v8-profiler.h>
 
 namespace blink {
@@ -16,7 +17,6 @@ namespace blink {
 namespace ProfilerAgentState {
 static const char samplingInterval[] = "samplingInterval";
 static const char userInitiatedProfiling[] = "userInitiatedProfiling";
-static const char nextProfileId[] = "nextProfileId";
 }
 
 namespace {
@@ -108,6 +108,8 @@ PassRefPtr<TypeBuilder::Debugger::Location> currentDebugLocation()
     location->setColumnNumber(lastCaller.columnNumber());
     return location.release();
 }
+
+volatile int s_lastProfileId = 0;
 
 } // namespace
 
@@ -252,7 +254,7 @@ void V8ProfilerAgentImpl::stop(ErrorString* errorString, RefPtr<TypeBuilder::Pro
     if (profile) {
         *profile = cpuProfile;
         if (!cpuProfile && errorString)
-            *errorString = "Profile wasn't found";
+            *errorString = "Profile is not found";
     }
     m_frontendInitiatedProfileId = String();
     m_state->setBoolean(ProfilerAgentState::userInitiatedProfiling, false);
@@ -260,9 +262,7 @@ void V8ProfilerAgentImpl::stop(ErrorString* errorString, RefPtr<TypeBuilder::Pro
 
 String V8ProfilerAgentImpl::nextProfileId()
 {
-    long nextId = m_state->getLong(ProfilerAgentState::nextProfileId, 1);
-    m_state->setLong(ProfilerAgentState::nextProfileId, nextId + 1);
-    return String::number(nextId);
+    return String::number(atomicIncrement(&s_lastProfileId));
 }
 
 void V8ProfilerAgentImpl::startProfiling(const String& title)
