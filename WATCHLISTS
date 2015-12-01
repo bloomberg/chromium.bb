@@ -91,7 +91,6 @@
     'autofill': {
       'filepath': 'chrome/browser/autofill/|'\
                   'chrome/browser/resources/options/autofill_|'\
-                  'chrome/browser/sync/glue/autofill_|'\
                   'chrome/browser/ui/android/autofill/|'\
                   'chrome/browser/ui/autofill/|'\
                   'chrome/browser/ui/cocoa/autofill/|'\
@@ -101,10 +100,7 @@
                   'chrome/test/data/autofill/|'\
                   'components/autofill/|'\
                   'components/autofill/browser/webdata/|'\
-                  'components/webdata/|'\
-                  'content/public/common/password_|'\
-                  'content/public/renderer/password_|'\
-                  'content/renderer/password_',
+                  'components/webdata/',
     },
     'automation': {
       'filepath': 'chrome/browser/automation/|chrome/test/automation/',
