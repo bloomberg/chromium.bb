@@ -110,7 +110,7 @@ function adjustWindowRect(width, height, minWidth, minHeight) {
     if (typeof minHeight !== "number")
         minHeight = 0;
 
-    var windowRect = new Rectangle(0, 0, width, height);
+    var windowRect = new Rectangle(0, 0, Math.ceil(width), Math.ceil(height));
 
     if (!global.params.anchorRectInScreen)
         return windowRect;
