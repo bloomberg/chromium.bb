@@ -135,30 +135,6 @@ void BeginDownload(scoped_ptr<DownloadUrlParameters> params,
       params->callback());
 }
 
-class MapValueIteratorAdapter {
- public:
-  explicit MapValueIteratorAdapter(
-      base::hash_map<int64, DownloadItem*>::const_iterator iter)
-    : iter_(iter) {
-  }
-  ~MapValueIteratorAdapter() {}
-
-  DownloadItem* operator*() { return iter_->second; }
-
-  MapValueIteratorAdapter& operator++() {
-    ++iter_;
-    return *this;
-  }
-
-  bool operator!=(const MapValueIteratorAdapter& that) const {
-    return iter_ != that.iter_;
-  }
-
- private:
-  base::hash_map<int64, DownloadItem*>::const_iterator iter_;
-  // Allow copy and assign.
-};
-
 class DownloadItemFactoryImpl : public DownloadItemFactory {
  public:
   DownloadItemFactoryImpl() {}
