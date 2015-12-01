@@ -68,6 +68,11 @@ class PowerGpuRasterizationTypical10Mobile(perf_benchmark.PerfBenchmark):
   def Name(cls):
     return 'power.gpu_rasterization.typical_10_mobile'
 
+  @classmethod
+  def ShouldDisable(cls, possible_browser):
+    return cls.IsSvelte(possible_browser)  # http://crbug.com/563968
+
+
 @benchmark.Enabled('mac')
 class PowerTop10(perf_benchmark.PerfBenchmark):
   """Top 10 quiescent power test."""
