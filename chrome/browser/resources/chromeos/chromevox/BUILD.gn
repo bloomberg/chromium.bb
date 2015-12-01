@@ -19,15 +19,13 @@ chromevox_out_dir = "$root_out_dir/resources/chromeos/chromevox"
 
 group("chromevox") {
   deps = [
+    ":chromevox_copied_files",
+    ":chromevox_guest_manifest",
+    ":chromevox_manifest",
     "//chrome/browser/resources/chromeos/braille_ime:braille_ime_manifest",
     "//chrome/browser/resources/chromeos/chromevox/strings:chromevox_strings",
     "//chrome/third_party/chromevox:chromevox_third_party_resources",
     "//third_party/liblouis",
-
-    #<(DEPTH)/third_party/liblouis/liblouis_nacl.gyp:liblouis_nacl_wrapper_nacl'  # TODO(GYP)
-    ":chromevox_copied_files",
-    ":chromevox_guest_manifest",
-    ":chromevox_manifest",
   ]
   if (chromevox_compress_js) {
     deps += [
@@ -394,7 +392,6 @@ js2gtest("chromevox_unitjs_tests") {
 js2gtest("chromevox_extjs_tests") {
   test_type = "extension"
   sources = chromevox_tests_gypi_values.chromevox_tests_extjs_sources
-  sources -= [ "braille/liblouis_test.extjs" ]  # TODO(GYP)
   gen_include_files =
       chromevox_tests_gypi_values.chromevox_tests_ext_gen_include_sources
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]

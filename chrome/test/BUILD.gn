@@ -995,10 +995,8 @@ if (!is_android) {
         ]
         if (is_chromeos) {
           sources += [ "//third_party/liblouis/nacl_wrapper/liblouis_wrapper_browsertest.cc" ]
-          deps += [
-            "//chrome/browser/chromeos",
-            #'../third_party/liblouis/liblouis_nacl.gyp:liblouis_test_data',  TODO(GYP) bug 512906
-          ]
+          deps += [ "//chrome/browser/chromeos" ]
+          data_deps += [ "//third_party/liblouis:liblouis_test_data" ]
         }
       }
       if (is_win || is_linux) {

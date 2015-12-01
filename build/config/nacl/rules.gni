@@ -34,6 +34,7 @@ template("generate_nmf") {
                              "public_deps",
                              "stage_dependencies",
                              "testonly",
+                             "visibility",
                            ])
 
     # TODO(phosek): Remove this conditional once
