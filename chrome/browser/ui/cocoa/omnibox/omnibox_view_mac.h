@@ -75,7 +75,7 @@ class OmniboxViewMac : public OmniboxView,
   void OnInlineAutocompleteTextCleared() override;
   void OnRevertTemporaryText() override;
   void OnBeforePossibleChange() override;
-  bool OnAfterPossibleChange() override;
+  bool OnAfterPossibleChange(bool allow_keyword_ui_change) override;
   gfx::NativeView GetNativeView() const override;
   gfx::NativeView GetRelativeWindowForPopup() const override;
   void SetGrayTextAutocompletion(const base::string16& input) override;

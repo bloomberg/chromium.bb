@@ -30,7 +30,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, PopupStaysClosed) {
   // Input a keyword query and wait for suggestions from the extension.
   omnibox_view->OnBeforePossibleChange();
   omnibox_view->SetUserText(base::ASCIIToUTF16("keyword comman"));
-  omnibox_view->OnAfterPossibleChange();
+  omnibox_view->OnAfterPossibleChange(true);
   WaitForAutocompleteDone(autocomplete_controller);
   EXPECT_TRUE(autocomplete_controller->done());
   EXPECT_TRUE(popup_model->IsOpen());

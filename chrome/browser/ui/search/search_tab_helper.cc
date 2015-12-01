@@ -513,7 +513,7 @@ void SearchTabHelper::PasteIntoOmnibox(const base::string16& text) {
   omnibox->OnBeforePossibleChange();
   omnibox->model()->OnPaste();
   omnibox->SetUserText(text_to_paste);
-  omnibox->OnAfterPossibleChange();
+  omnibox->OnAfterPossibleChange(true);
 #endif
 }
 

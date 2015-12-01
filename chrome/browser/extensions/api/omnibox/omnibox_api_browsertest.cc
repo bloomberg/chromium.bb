@@ -149,7 +149,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, DISABLED_Basic) {
     OmniboxView* omnibox_view = location_bar->GetOmniboxView();
     omnibox_view->OnBeforePossibleChange();
     omnibox_view->SetUserText(ASCIIToUTF16("keyword command"));
-    omnibox_view->OnAfterPossibleChange();
+    omnibox_view->OnAfterPossibleChange(true);
     location_bar->AcceptInput();
     // This checks that the keyword provider (via javascript)
     // gets told to navigate to the string "command".
@@ -171,7 +171,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, OnInputEntered) {
       GetAutocompleteController(browser());
   omnibox_view->OnBeforePossibleChange();
   omnibox_view->SetUserText(ASCIIToUTF16("keyword command"));
-  omnibox_view->OnAfterPossibleChange();
+  omnibox_view->OnAfterPossibleChange(true);
 
   autocomplete_controller->Start(AutocompleteInput(
       ASCIIToUTF16("keyword command"), base::string16::npos, std::string(),
@@ -184,7 +184,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, OnInputEntered) {
 
   omnibox_view->OnBeforePossibleChange();
   omnibox_view->SetUserText(ASCIIToUTF16("keyword newtab"));
-  omnibox_view->OnAfterPossibleChange();
+  omnibox_view->OnAfterPossibleChange(true);
   WaitForAutocompleteDone(autocomplete_controller);
   EXPECT_TRUE(autocomplete_controller->done());
 

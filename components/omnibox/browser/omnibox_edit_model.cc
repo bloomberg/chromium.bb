@@ -319,7 +319,7 @@ bool OmniboxEditModel::CommitSuggestedText() {
   view_->OnBeforePossibleChange();
   view_->SetWindowTextAndCaretPos(final_text, final_text.length(), false,
       false);
-  view_->OnAfterPossibleChange();
+  view_->OnAfterPossibleChange(true);
   return true;
 }
 
@@ -890,20 +890,33 @@ void OmniboxEditModel::ClearKeyword() {
   // autocomplete to "xyz.com", hitting space will toggle into keyword mode, but
   // then hitting backspace could wind up with the default match as the "x y"
   // search, which feels bizarre.
-  const base::string16 window_text(keyword_ + view_->GetText());
   if (was_toggled_into_keyword_mode && has_temporary_text_) {
     // State 4 above.
     is_keyword_hint_ = true;
+    const base::string16 window_text = keyword_ + view_->GetText();
     view_->SetWindowTextAndCaretPos(window_text.c_str(), keyword_.length(),
         false, true);
   } else {
     // States 1-3 above.
     view_->OnBeforePossibleChange();
-    view_->SetWindowTextAndCaretPos(window_text.c_str(), keyword_.length(),
+    // Add a space after the keyword to allow the user to continue typing
+    // without re-enabling keyword mode.  The common case is state 3, where
+    // the user entered keyword mode unintentionally, so backspacing
+    // immediately out of keyword mode should keep the space.  In states 1 and
+    // 2, having the space is "safer" behavior.  For instance, if the user types
+    // "google.com f" or "google.com<tab>f" in the omnibox, moves the cursor to
+    // the left, and presses backspace to leave keyword mode (state 1), it's
+    // better to have the space because it may be what the user wanted.  The
+    // user can easily delete it.  On the other hand, if there is no space and
+    // the user wants it, it's more work to add because typing the space will
+    // enter keyword mode, which then the user would have to leave again.
+    const base::string16 window_text =
+        keyword_ + base::ASCIIToUTF16(" ") + view_->GetText();
+    view_->SetWindowTextAndCaretPos(window_text.c_str(), keyword_.length() + 1,
         false, false);
     keyword_.clear();
     is_keyword_hint_ = false;
-    view_->OnAfterPossibleChange();
+    view_->OnAfterPossibleChange(false);
   }
 }
 

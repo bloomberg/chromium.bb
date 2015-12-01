@@ -628,7 +628,7 @@ void OmniboxViewMac::OnBeforePossibleChange() {
   marked_range_before_change_ = GetMarkedRange();
 }
 
-bool OmniboxViewMac::OnAfterPossibleChange() {
+bool OmniboxViewMac::OnAfterPossibleChange(bool allow_keyword_ui_change) {
   // We should only arrive here when the field is focused.
   DCHECK(IsFirstResponder());
 
@@ -662,7 +662,7 @@ bool OmniboxViewMac::OnAfterPossibleChange() {
   const bool something_changed = model()->OnAfterPossibleChange(
       text_before_change_, new_text, new_selection.location,
       NSMaxRange(new_selection), selection_differs, text_differs,
-      just_deleted_text, !IsImeComposing());
+      just_deleted_text, allow_keyword_ui_change && !IsImeComposing());
 
   if (delete_was_pressed_ && at_end_of_edit)
     delete_at_end_pressed_ = true;
@@ -728,7 +728,7 @@ void OmniboxViewMac::OnBeforeChange() {
 
 void OmniboxViewMac::OnDidChange() {
   // Figure out what changed and notify the model.
-  OnAfterPossibleChange();
+  OnAfterPossibleChange(true);
 }
 
 void OmniboxViewMac::OnDidEndEditing() {

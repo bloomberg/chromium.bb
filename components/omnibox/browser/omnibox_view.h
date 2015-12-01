@@ -180,8 +180,9 @@ class OmniboxView {
   // automatic changes to the textfield that should not affect autocomplete.
   virtual void OnBeforePossibleChange() = 0;
   // OnAfterPossibleChange() returns true if there was a change that caused it
-  // to call UpdatePopup().
-  virtual bool OnAfterPossibleChange() = 0;
+  // to call UpdatePopup().  If |allow_keyword_ui_change| is false, we
+  // prevent alterations to the keyword UI state (enabled vs. disabled).
+  virtual bool OnAfterPossibleChange(bool allow_keyword_ui_change) = 0;
 
   // Returns the gfx::NativeView of the edit view.
   virtual gfx::NativeView GetNativeView() const = 0;

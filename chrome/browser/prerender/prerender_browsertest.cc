@@ -3925,7 +3925,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderOmniboxBrowserTest,
   omnibox_view->OnBeforePossibleChange();
   omnibox_view->SetUserText(base::UTF8ToUTF16(
       embedded_test_server()->GetURL("/empty.html?1").spec()));
-  omnibox_view->OnAfterPossibleChange();
+  omnibox_view->OnAfterPossibleChange(true);
   WaitForAutocompleteDone(omnibox_view);
 
   // Fake an omnibox prerender for a different URL.

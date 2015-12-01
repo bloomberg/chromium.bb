@@ -70,7 +70,9 @@ class TestingOmniboxView : public OmniboxView {
   }
   void OnRevertTemporaryText() override {}
   void OnBeforePossibleChange() override {}
-  bool OnAfterPossibleChange() override { return false; }
+  bool OnAfterPossibleChange(bool allow_keyword_ui_change) override {
+    return false;
+  }
   gfx::NativeView GetNativeView() const override { return NULL; }
   gfx::NativeView GetRelativeWindowForPopup() const override { return NULL; }
   void SetGrayTextAutocompletion(const base::string16& input) override {}

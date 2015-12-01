@@ -377,7 +377,7 @@ void OmniboxViewViews::ExecuteCommand(int command_id, int event_flags) {
       }
       OnBeforePossibleChange();
       location_bar_view_->command_updater()->ExecuteCommand(command_id);
-      OnAfterPossibleChange();
+      OnAfterPossibleChange(true);
       return;
   }
 }
@@ -403,7 +403,7 @@ void OmniboxViewViews::OnPaste() {
     // OnAfterPossibleChange(), even if identical contents are pasted.
     text_before_change_.clear();
     InsertOrReplaceText(text);
-    OnAfterPossibleChange();
+    OnAfterPossibleChange(true);
   }
 }
 
@@ -526,7 +526,7 @@ void OmniboxViewViews::OnBeforePossibleChange() {
   ime_composing_before_change_ = IsIMEComposing();
 }
 
-bool OmniboxViewViews::OnAfterPossibleChange() {
+bool OmniboxViewViews::OnAfterPossibleChange(bool allow_keyword_ui_change) {
   // See if the text or selection have changed since OnBeforePossibleChange().
   const base::string16 new_text = text();
   const gfx::Range new_sel = GetSelectedRange();
@@ -547,7 +547,8 @@ bool OmniboxViewViews::OnAfterPossibleChange() {
 
   const bool something_changed = model()->OnAfterPossibleChange(
       text_before_change_, new_text, new_sel.start(), new_sel.end(),
-      selection_differs, text_changed, just_deleted_text, !IsIMEComposing());
+      selection_differs, text_changed, just_deleted_text,
+      allow_keyword_ui_change && !IsIMEComposing());
 
   // If only selection was changed, we don't need to call model()'s
   // OnChanged() method, which is called in TextChanged().
@@ -966,7 +967,7 @@ void OmniboxViewViews::OnBeforeUserAction(views::Textfield* sender) {
 }
 
 void OmniboxViewViews::OnAfterUserAction(views::Textfield* sender) {
-  OnAfterPossibleChange();
+  OnAfterPossibleChange(true);
 }
 
 void OmniboxViewViews::OnAfterCutOrCopy(ui::ClipboardType clipboard_type) {
