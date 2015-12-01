@@ -15,9 +15,6 @@ namespace ui {
 namespace {
 
 #if defined(OS_CHROMEOS)
-// Determines whether touch events are enabled or disabled on ChromeOS only.
-bool touch_events_enabled = true;
-
 const int kSystemKeyModifierMask = EF_ALT_DOWN | EF_COMMAND_DOWN;
 #else
 const int kSystemKeyModifierMask = EF_ALT_DOWN;
@@ -43,18 +40,6 @@ bool IsSystemKeyModifier(int flags) {
   return (kSystemKeyModifierMask & flags) != 0 &&
          (EF_ALTGR_DOWN & flags) == 0;
 }
-
-#if defined(OS_CHROMEOS)
-
-void SetTouchEventsCrOsMasterSwitch(bool enabled) {
-  touch_events_enabled = enabled;
-}
-
-bool GetTouchEventsCrOsMasterSwitch() {
-  return touch_events_enabled;
-}
-
-#endif  // defined(OS_CHROMEOS)
 
 }  // namespace ui
 

@@ -15,7 +15,13 @@ namespace ui {
 
 namespace {
 
-bool ComputeTouchStatus() {
+enum class TouchEventsStatus {
+  AUTO,
+  DISABLED,
+  ENABLED,
+};
+
+TouchEventsStatus ComputeTouchFlagStatus() {
   auto* command_line = base::CommandLine::ForCurrentProcess();
   const std::string touch_enabled_switch =
       command_line->HasSwitch(switches::kTouchEvents) ?
@@ -24,27 +30,29 @@ bool ComputeTouchStatus() {
 
   if (touch_enabled_switch.empty() ||
       touch_enabled_switch == switches::kTouchEventsEnabled) {
-    return true;
+    return TouchEventsStatus::ENABLED;
   }
 
   if (touch_enabled_switch == switches::kTouchEventsAuto)
-    return IsTouchDevicePresent();
+    return TouchEventsStatus::AUTO;
 
   DLOG_IF(ERROR, touch_enabled_switch != switches::kTouchEventsDisabled) <<
       "Invalid --touch-events option: " << touch_enabled_switch;
-  return false;
+  return TouchEventsStatus::DISABLED;
 }
 
 }  // namespace
 
 bool AreTouchEventsEnabled() {
-  static bool touch_status = ComputeTouchStatus();
+  static TouchEventsStatus touch_flag_status = ComputeTouchFlagStatus();
 
-#if defined(OS_CHROMEOS)
-  return touch_status && GetTouchEventsCrOsMasterSwitch();
-#else
-  return touch_status;
-#endif  // !defined(OS_CHROMEOS)
+  // The #touch-events flag is used to force and simulate the presence or
+  // absence of touch devices. Only if the flag is set to AUTO, we need to check
+  // for the actual availability of touch devices.
+  if (touch_flag_status == TouchEventsStatus::AUTO)
+    return GetTouchScreensAvailability() == TouchScreensAvailability::ENABLED;
+
+  return touch_flag_status == TouchEventsStatus::ENABLED;
 }
 
 }  // namespace ui

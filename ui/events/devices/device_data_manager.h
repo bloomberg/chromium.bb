@@ -63,6 +63,9 @@ class EVENTS_DEVICES_EXPORT DeviceDataManager
   void AddObserver(InputDeviceEventObserver* observer);
   void RemoveObserver(InputDeviceEventObserver* observer);
 
+  void SetTouchscreensEnabled(bool enabled);
+  bool AreTouchscreensEnabled() const;
+
  protected:
   DeviceDataManager();
 
@@ -108,6 +111,8 @@ class EVENTS_DEVICES_EXPORT DeviceDataManager
   bool device_lists_complete_ = false;
 
   base::ObserverList<InputDeviceEventObserver> observers_;
+
+  bool touch_screens_enabled_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceDataManager);
 };

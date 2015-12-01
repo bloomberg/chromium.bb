@@ -28,7 +28,9 @@ SystemGestureEventFilter::~SystemGestureEventFilter() {
 
 void SystemGestureEventFilter::OnMouseEvent(ui::MouseEvent* event) {
 #if defined(OS_CHROMEOS)
-  if (event->type() == ui::ET_MOUSE_PRESSED && ui::IsTouchDevicePresent()) {
+  if (event->type() == ui::ET_MOUSE_PRESSED &&
+      ui::GetTouchScreensAvailability() ==
+          ui::TouchScreensAvailability::ENABLED) {
     Shell::GetInstance()->metrics()->RecordUserMetricsAction(UMA_MOUSE_DOWN);
   }
 #endif

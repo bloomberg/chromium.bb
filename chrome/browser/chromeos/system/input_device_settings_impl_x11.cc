@@ -25,6 +25,7 @@
 #include "ui/events/base_event_utils.h"
 #include "ui/events/devices/x11/device_data_manager_x11.h"
 #include "ui/events/devices/x11/device_list_cache_x11.h"
+#include "ui/events/devices/x11/touch_factory_x11.h"
 #include "ui/gfx/x/x11_types.h"
 
 namespace chromeos {
@@ -294,7 +295,7 @@ void InputDeviceSettingsImplX11::SetInternalTouchpadEnabled(bool enabled) {
 }
 
 void InputDeviceSettingsImplX11::SetTouchscreensEnabled(bool enabled) {
-  ui::SetTouchEventsCrOsMasterSwitch(enabled);
+  ui::TouchFactory::GetInstance()->SetTouchscreensEnabled(enabled);
 }
 
 void InputDeviceSettingsImplX11::GenerateTouchpadArguments(

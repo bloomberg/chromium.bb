@@ -1185,7 +1185,8 @@ bool Browser::CanOverscrollContent() const {
   // horizontal scrolling. We are purposefully biased towards "no" here,
   // so that we don't waste resources capturing screenshots for horizontal
   // overscroll navigation unnecessarily.
-  bool allow_overscroll = ui::IsTouchDevicePresent();
+  bool allow_overscroll = ui::GetTouchScreensAvailability() ==
+      ui::TouchScreensAvailability::ENABLED;
 #elif defined(USE_AURA)
   bool allow_overscroll = true;
 #else

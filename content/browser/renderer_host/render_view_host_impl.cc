@@ -467,7 +467,8 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
 
   prefs.touch_enabled = ui::AreTouchEventsEnabled();
   prefs.device_supports_touch = prefs.touch_enabled &&
-      ui::IsTouchDevicePresent();
+      ui::GetTouchScreensAvailability() ==
+          ui::TouchScreensAvailability::ENABLED;
   prefs.available_pointer_types = ui::GetAvailablePointerTypes();
   prefs.primary_pointer_type = ui::GetPrimaryPointerType();
   prefs.available_hover_types = ui::GetAvailableHoverTypes();

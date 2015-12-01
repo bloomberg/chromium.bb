@@ -17,13 +17,6 @@ EVENTS_BASE_EXPORT uint32 GetNextTouchEventId();
 // Checks if |flags| contains system key modifiers.
 EVENTS_BASE_EXPORT bool IsSystemKeyModifier(int flags);
 
-#if defined(OS_CHROMEOS)
-// On ChromeOS, touch events can be turned off completely using a debug
-// accelerator using the following functions.
-EVENTS_BASE_EXPORT void SetTouchEventsCrOsMasterSwitch(bool enabled);
-EVENTS_BASE_EXPORT bool GetTouchEventsCrOsMasterSwitch();
-#endif  // defined(OS_CHROMEOS)
-
 }  // namespace ui
 
 #endif  // UI_EVENTS_BASE_EVENT_UTILS_H_

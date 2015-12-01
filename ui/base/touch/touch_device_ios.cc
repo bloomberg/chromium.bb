@@ -6,8 +6,8 @@
 
 namespace ui {
 
-bool IsTouchDevicePresent() {
-  return true;
+TouchScreensAvailability GetTouchScreensAvailability() {
+  return TouchScreensAvailability::ENABLED;
 }
 
 }  // namespace ui

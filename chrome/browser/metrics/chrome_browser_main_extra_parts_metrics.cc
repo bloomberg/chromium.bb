@@ -243,8 +243,10 @@ void RecordTouchEventState() {
       touch_enabled_switch == switches::kTouchEventsEnabled) {
     state = UMA_TOUCH_EVENTS_ENABLED;
   } else if (touch_enabled_switch == switches::kTouchEventsAuto) {
-    state = ui::IsTouchDevicePresent() ?
-        UMA_TOUCH_EVENTS_AUTO_ENABLED : UMA_TOUCH_EVENTS_AUTO_DISABLED;
+    state = (ui::GetTouchScreensAvailability() ==
+             ui::TouchScreensAvailability::ENABLED)
+                ? UMA_TOUCH_EVENTS_AUTO_ENABLED
+                : UMA_TOUCH_EVENTS_AUTO_DISABLED;
   } else if (touch_enabled_switch == switches::kTouchEventsDisabled) {
     state = UMA_TOUCH_EVENTS_DISABLED;
   } else {

@@ -16,8 +16,13 @@
 
 namespace ui {
 
-// Returns true if a touch device is available.
-UI_BASE_EXPORT bool IsTouchDevicePresent();
+enum class TouchScreensAvailability {
+  NONE,      // No touch screens are present.
+  ENABLED,   // Touch screens are present and enabled.
+  DISABLED,  // Touch screens are present and disabled.
+};
+
+UI_BASE_EXPORT TouchScreensAvailability GetTouchScreensAvailability();
 
 // Returns the maximum number of simultaneous touch contacts supported
 // by the device. In the case of devices with multiple digitizers (e.g.

@@ -9,10 +9,21 @@
 
 namespace ui {
 
+namespace {
+
 bool IsTouchDevicePresent() {
   int value = GetSystemMetrics(SM_DIGITIZER);
   return (value & NID_READY) &&
       ((value & NID_INTEGRATED_TOUCH) || (value & NID_EXTERNAL_TOUCH));
+}
+
+}  // namespace
+
+TouchScreensAvailability GetTouchScreensAvailability() {
+  if (!IsTouchDevicePresent())
+    return TouchScreensAvailability::NONE;
+
+  return TouchScreensAvailability::ENABLED;
 }
 
 int MaxTouchPoints() {

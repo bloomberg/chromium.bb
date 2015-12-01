@@ -9,8 +9,21 @@
 
 namespace ui {
 
+namespace {
+
 bool IsTouchDevicePresent() {
-  return ui::DeviceDataManager::GetInstance()->touchscreen_devices().size() > 0;
+  return !DeviceDataManager::GetInstance()->touchscreen_devices().empty();
+}
+
+}  // namespace
+
+TouchScreensAvailability GetTouchScreensAvailability() {
+  if (!IsTouchDevicePresent())
+    return TouchScreensAvailability::NONE;
+
+  return DeviceDataManager::GetInstance()->AreTouchscreensEnabled() ?
+      TouchScreensAvailability::ENABLED :
+      TouchScreensAvailability::DISABLED;
 }
 
 int MaxTouchPoints() {

@@ -213,4 +213,12 @@ void DeviceDataManager::RemoveObserver(InputDeviceEventObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
+void DeviceDataManager::SetTouchscreensEnabled(bool enabled) {
+  touch_screens_enabled_ = enabled;
+}
+
+bool DeviceDataManager::AreTouchscreensEnabled() const {
+  return touch_screens_enabled_;
+}
+
 }  // namespace ui

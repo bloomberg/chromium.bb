@@ -8,8 +8,8 @@ namespace ui {
 
 // Platforms supporting touch link in an alternate implementation of this
 // method.
-bool IsTouchDevicePresent() {
-  return false;
+TouchScreensAvailability GetTouchScreensAvailability() {
+  return TouchScreensAvailability::NONE;
 }
 
 int MaxTouchPoints() {
