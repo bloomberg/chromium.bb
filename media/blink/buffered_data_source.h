@@ -39,9 +39,12 @@ class MEDIA_BLINK_EXPORT BufferedDataSourceHost {
   virtual ~BufferedDataSourceHost() {}
 };
 
-// This interface is temporary and will go away once MultibufferDataSource
-// has been fully evaluated.
-class BufferedDataSourceInterface : public DataSource {
+// A data source capable of loading URLs and buffering the data using an
+// in-memory sliding window.
+//
+// BufferedDataSource must be created and destroyed on the thread associated
+// with the |task_runner| passed in the constructor.
+class MEDIA_BLINK_EXPORT BufferedDataSource : public DataSource {
  public:
   // Used to specify video preload states. They are "hints" to the browser about
   // how aggressively the browser should load and buffer data.
@@ -55,59 +58,6 @@ class BufferedDataSourceInterface : public DataSource {
     METADATA,
     AUTO,
   };
-
-  // Executes |init_cb| with the result of initialization when it has completed.
-  //
-  // Method called on the render thread.
-  typedef base::Callback<void(bool)> InitializeCB;
-  virtual void Initialize(const InitializeCB& init_cb) = 0;
-
-  // Adjusts the buffering algorithm based on the given preload value.
-  virtual void SetPreload(Preload preload) = 0;
-
-  // Returns true if the media resource has a single origin, false otherwise.
-  // Only valid to call after Initialize() has completed.
-  //
-  // Method called on the render thread.
-  virtual bool HasSingleOrigin() = 0;
-
-  // Returns true if the media resource passed a CORS access control check.
-  virtual bool DidPassCORSAccessCheck() const = 0;
-
-  // Cancels initialization, any pending loaders, and any pending read calls
-  // from the demuxer. The caller is expected to release its reference to this
-  // object and never call it again.
-  //
-  // Method called on the render thread.
-  virtual void Abort() = 0;
-
-  // Notifies changes in playback state for controlling media buffering
-  // behavior.
-  virtual void MediaPlaybackRateChanged(double playback_rate) = 0;
-  virtual void MediaIsPlaying() = 0;
-  virtual void MediaIsPaused() = 0;
-  virtual bool media_has_played() const = 0;
-
-  // Returns true if the resource is local.
-  virtual bool assume_fully_buffered() = 0;
-
-  // Cancels any open network connections once reaching the deferred state for
-  // preload=metadata, non-streaming resources that have not started playback.
-  // If already deferred, connections will be immediately closed.
-  virtual void OnBufferingHaveEnough() = 0;
-
-  // Returns an estimate of the number of bytes held by the data source.
-  virtual int64_t GetMemoryUsage() const = 0;
-};
-
-// A data source capable of loading URLs and buffering the data using an
-// in-memory sliding window.
-//
-// BufferedDataSource must be created and destroyed on the thread associated
-// with the |task_runner| passed in the constructor.
-class MEDIA_BLINK_EXPORT BufferedDataSource
-    : NON_EXPORTED_BASE(public BufferedDataSourceInterface) {
- public:
   typedef base::Callback<void(bool)> DownloadingCB;
 
   // |url| and |cors_mode| are passed to the object. Buffered byte range changes
@@ -127,44 +77,44 @@ class MEDIA_BLINK_EXPORT BufferedDataSource
   //
   // Method called on the render thread.
   typedef base::Callback<void(bool)> InitializeCB;
-  void Initialize(const InitializeCB& init_cb) override;
+  void Initialize(const InitializeCB& init_cb);
 
   // Adjusts the buffering algorithm based on the given preload value.
-  void SetPreload(Preload preload) override;
+  void SetPreload(Preload preload);
 
   // Returns true if the media resource has a single origin, false otherwise.
   // Only valid to call after Initialize() has completed.
   //
   // Method called on the render thread.
-  bool HasSingleOrigin() override;
+  bool HasSingleOrigin();
 
   // Returns true if the media resource passed a CORS access control check.
-  bool DidPassCORSAccessCheck() const override;
+  bool DidPassCORSAccessCheck() const;
 
   // Cancels initialization, any pending loaders, and any pending read calls
   // from the demuxer. The caller is expected to release its reference to this
   // object and never call it again.
   //
   // Method called on the render thread.
-  void Abort() override;
+  void Abort();
 
   // Notifies changes in playback state for controlling media buffering
   // behavior.
-  void MediaPlaybackRateChanged(double playback_rate) override;
-  void MediaIsPlaying() override;
-  void MediaIsPaused() override;
-  bool media_has_played() const override;
+  void MediaPlaybackRateChanged(double playback_rate);
+  void MediaIsPlaying();
+  void MediaIsPaused();
+  bool media_has_played() const { return media_has_played_; }
 
   // Returns true if the resource is local.
-  bool assume_fully_buffered() override;
+  bool assume_fully_buffered() { return !url_.SchemeIsHTTPOrHTTPS(); }
 
   // Cancels any open network connections once reaching the deferred state for
   // preload=metadata, non-streaming resources that have not started playback.
   // If already deferred, connections will be immediately closed.
-  void OnBufferingHaveEnough() override;
+  void OnBufferingHaveEnough();
 
   // Returns an estimate of the number of bytes held by the data source.
-  int64_t GetMemoryUsage() const override;
+  int64_t GetMemoryUsage() const;
 
   // DataSource implementation.
   // Called from demuxer thread.

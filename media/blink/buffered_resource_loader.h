@@ -12,7 +12,6 @@
 #include "media/base/seekable_buffer.h"
 #include "media/blink/active_loader.h"
 #include "media/blink/media_blink_export.h"
-#include "media/blink/url_index.h"  // for kPositionNotSpecified
 #include "third_party/WebKit/public/platform/WebURLLoader.h"
 #include "third_party/WebKit/public/platform/WebURLLoaderClient.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
@@ -22,6 +21,8 @@
 namespace media {
 class MediaLog;
 class SeekableBuffer;
+
+const int64 kPositionNotSpecified = -1;
 
 // BufferedResourceLoader is single threaded and must be accessed on the
 // render thread. It wraps a WebURLLoader and does in-memory buffering,

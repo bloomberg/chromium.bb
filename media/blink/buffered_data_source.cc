@@ -115,14 +115,6 @@ BufferedDataSource::~BufferedDataSource() {
   DCHECK(render_task_runner_->BelongsToCurrentThread());
 }
 
-bool BufferedDataSource::media_has_played() const {
-  return media_has_played_;
-}
-
-bool BufferedDataSource::assume_fully_buffered() {
-  return !url_.SchemeIsHTTPOrHTTPS();
-}
-
 // A factory method to create BufferedResourceLoader using the read parameters.
 // This method can be overridden to inject mock BufferedResourceLoader object
 // for testing purpose.

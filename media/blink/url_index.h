@@ -214,7 +214,6 @@ class MEDIA_BLINK_EXPORT UrlIndex {
   scoped_refptr<UrlData> TryInsert(const scoped_refptr<UrlData>& url_data);
 
   blink::WebFrame* frame() const { return frame_; }
-  int block_shift() const { return block_shift_; }
 
  private:
   friend class UrlData;
