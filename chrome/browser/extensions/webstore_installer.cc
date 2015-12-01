@@ -4,10 +4,12 @@
 
 #include "chrome/browser/extensions/webstore_installer.h"
 
+#include <stdint.h>
+
+#include <limits>
 #include <set>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
@@ -121,8 +123,8 @@ void GetDownloadFilePath(
   // filename and when the download starts writing to it (think concurrently
   // running sharded browser tests installing the same test file, for
   // instance).
-  std::string random_number =
-      base::Uint64ToString(base::RandGenerator(kuint16max));
+  std::string random_number = base::Uint64ToString(
+      base::RandGenerator(std::numeric_limits<uint16_t>::max()));
 
   base::FilePath file =
       download_directory.AppendASCII(id + "_" + random_number + ".crx");
@@ -768,14 +770,14 @@ void WebstoreInstaller::RecordInterrupt(const DownloadItem* download) const {
 
   // Use logarithmic bin sizes up to 1 TB.
   const int kNumBuckets = 30;
-  const int64 kMaxSizeKb = 1 << kNumBuckets;
+  const int64_t kMaxSizeKb = 1 << kNumBuckets;
   UMA_HISTOGRAM_CUSTOM_COUNTS(
       "Extensions.WebstoreDownload.InterruptReceivedKBytes",
       download->GetReceivedBytes() / 1024,
       1,
       kMaxSizeKb,
       kNumBuckets);
-  int64 total_bytes = download->GetTotalBytes();
+  int64_t total_bytes = download->GetTotalBytes();
   if (total_bytes >= 0) {
     UMA_HISTOGRAM_CUSTOM_COUNTS(
         "Extensions.WebstoreDownload.InterruptTotalKBytes",

@@ -5,9 +5,10 @@
 #ifndef NET_TEST_SPAWNED_TEST_SERVER_SPAWNER_COMMUNICATOR_H_
 #define NET_TEST_SPAWNED_TEST_SERVER_SPAWNER_COMMUNICATOR_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/waitable_event.h"
@@ -60,7 +61,7 @@ class ScopedPortException;
 // fetched from spawner server or timed-out.
 class SpawnerCommunicator : public URLRequest::Delegate {
  public:
-  explicit SpawnerCommunicator(uint16 port);
+  explicit SpawnerCommunicator(uint16_t port);
   ~SpawnerCommunicator() override;
 
   // Starts an instance of the Python test server on the host/ machine.
@@ -68,7 +69,7 @@ class SpawnerCommunicator : public URLRequest::Delegate {
   // on the local machine that can be used to communicate with the remote
   // test server.
   bool StartServer(const std::string& arguments,
-                   uint16* port) WARN_UNUSED_RESULT;
+                   uint16_t* port) WARN_UNUSED_RESULT;
 
   bool StopServer() WARN_UNUSED_RESULT;
 
@@ -122,7 +123,7 @@ class SpawnerCommunicator : public URLRequest::Delegate {
   // used to control the startup and shutdown of the Python TestServer running
   // on the remote machine. On Android, this port will be redirected to the
   // same port on the host machine.
-  const uint16 port_;
+  const uint16_t port_;
 
   // Helper to add |port_| to the list of the globally explicitly allowed ports.
   scoped_ptr<ScopedPortException> allowed_port_;
