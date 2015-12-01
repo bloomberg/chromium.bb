@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/input/synthetic_pointer_gesture.h"
+#include "content/browser/renderer_host/input/synthetic_pointer_action.h"
 
 #include "base/logging.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
@@ -10,7 +10,7 @@
 
 namespace content {
 
-SyntheticPointerGesture::SyntheticPointerGesture(
+SyntheticPointerAction::SyntheticPointerAction(
     SyntheticGestureParams::GestureSourceType gesture_source_type,
     PointerActionType pointer_action_type,
     SyntheticPointer* synthetic_pointer,
@@ -22,9 +22,9 @@ SyntheticPointerGesture::SyntheticPointerGesture(
       index_(index),
       synthetic_pointer_(synthetic_pointer) {}
 
-SyntheticPointerGesture::~SyntheticPointerGesture() {}
+SyntheticPointerAction::~SyntheticPointerAction() {}
 
-SyntheticGesture::Result SyntheticPointerGesture::ForwardInputEvents(
+SyntheticGesture::Result SyntheticPointerAction::ForwardInputEvents(
     const base::TimeTicks& timestamp,
     SyntheticGestureTarget* target) {
   if (gesture_source_type_ == SyntheticGestureParams::DEFAULT_INPUT)
@@ -36,7 +36,7 @@ SyntheticGesture::Result SyntheticPointerGesture::ForwardInputEvents(
   return SyntheticGesture::GESTURE_FINISHED;
 }
 
-void SyntheticPointerGesture::ForwardTouchOrMouseInputEvents(
+void SyntheticPointerAction::ForwardTouchOrMouseInputEvents(
     const base::TimeTicks& timestamp,
     SyntheticGestureTarget* target) {
   switch (pointer_action_type_) {
