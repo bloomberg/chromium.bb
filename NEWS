@@ -12,10 +12,12 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
   report.
 - Fix some compile time warnings on Windows, thanks to Bue
   Vester-Andersen.
-- Fixes to the logging code by Arend Arends. 
+- Fixes to the logging code by Arend Arends.
 
 ** Other changes
 - Add test data for EUB symbols, thanks to Paul Wood
+- Clean up dead code i.e. remove support for (undocumented) nobreak
+  opcode. Thanks to Bue Vester-Andersen.
 
 ** Braille table improvements
 - New Mongolian table thanks to Tsengel Maidar and Sreeja Param.
