@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/extension_sync_service.h"
 
+#include "base/auto_reset.h"
 #include "base/basictypes.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/bookmark_app_helper.h"
@@ -127,6 +128,7 @@ ExtensionSyncService::ExtensionSyncService(Profile* profile)
     : profile_(profile),
       registry_observer_(this),
       prefs_observer_(this),
+      ignore_updates_(false),
       flare_(sync_start_util::GetFlareForSyncableService(profile->GetPath())) {
   registry_observer_.Add(ExtensionRegistry::Get(profile_));
   prefs_observer_.Add(ExtensionPrefs::Get(profile_));
@@ -143,7 +145,7 @@ ExtensionSyncService* ExtensionSyncService::Get(
 
 void ExtensionSyncService::SyncExtensionChangeIfNeeded(
     const Extension& extension) {
-  if (!extensions::util::ShouldSync(&extension, profile_))
+  if (ignore_updates_ || !extensions::util::ShouldSync(&extension, profile_))
     return;
 
   syncer::ModelType type =
@@ -298,6 +300,10 @@ ExtensionSyncData ExtensionSyncService::CreateSyncData(
 
 void ExtensionSyncService::ApplySyncData(
     const ExtensionSyncData& extension_sync_data) {
+  // Ignore any pref change notifications etc. while we're applying incoming
+  // sync data, so that we don't end up notifying ourselves.
+  base::AutoReset<bool> ignore_updates(&ignore_updates_, true);
+
   syncer::ModelType type = extension_sync_data.is_app() ? syncer::APPS
                                                         : syncer::EXTENSIONS;
   const std::string& id = extension_sync_data.id();
@@ -364,7 +370,9 @@ void ExtensionSyncService::ApplySyncData(
   int incoming_disable_reasons = extension_sync_data.disable_reasons();
   if (!!incoming_disable_reasons == extension_sync_data.enabled()) {
     // The enabled flag disagrees with the presence of disable reasons. This
-    // must come from an old (<M45) client which doesn't sync disable reasons.
+    // must either come from an old (<M45) client which doesn't sync disable
+    // reasons, or the extension is blacklisted (which doesn't have a
+    // corresponding disable reason).
     // Update |disable_reasons| based on the enabled flag.
     if (extension_sync_data.enabled())
       disable_reasons &= ~kKnownSyncableDisableReasons;
@@ -596,14 +604,16 @@ void ExtensionSyncService::OnExtensionUninstalled(
   // See crbug.com/256795.
   // Possible fix: Set NeedsSync here, then in MergeDataAndStartSyncing, if
   // NeedsSync is set but the extension isn't installed, send a sync deletion.
-  syncer::ModelType type =
-      extension->is_app() ? syncer::APPS : syncer::EXTENSIONS;
-  SyncBundle* bundle = GetSyncBundle(type);
-  if (bundle->IsSyncing()) {
-    bundle->PushSyncDeletion(extension->id(),
-                             CreateSyncData(*extension).GetSyncData());
-  } else if (extension_service()->is_ready() && !flare_.is_null()) {
-    flare_.Run(type);  // Tell sync to start ASAP.
+  if (!ignore_updates_) {
+    syncer::ModelType type =
+        extension->is_app() ? syncer::APPS : syncer::EXTENSIONS;
+    SyncBundle* bundle = GetSyncBundle(type);
+    if (bundle->IsSyncing()) {
+      bundle->PushSyncDeletion(extension->id(),
+                               CreateSyncData(*extension).GetSyncData());
+    } else if (extension_service()->is_ready() && !flare_.is_null()) {
+      flare_.Run(type);  // Tell sync to start ASAP.
+    }
   }
 
   pending_updates_.erase(extension->id());

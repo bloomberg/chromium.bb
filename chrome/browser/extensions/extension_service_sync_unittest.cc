@@ -278,6 +278,103 @@ TEST_F(ExtensionServiceSyncTest, IgnoreSyncChangesWhenLocalStateIsMoreRecent) {
   EXPECT_FALSE(service()->IsExtensionEnabled(good2));
 }
 
+TEST_F(ExtensionServiceSyncTest, DontSelfNotify) {
+  // Start the extension service with three extensions already installed.
+  base::FilePath source_install_dir =
+      data_dir().AppendASCII("good").AppendASCII("Extensions");
+  base::FilePath pref_path =
+      source_install_dir.DirName().Append(chrome::kPreferencesFilename);
+
+  InitializeInstalledExtensionService(pref_path, source_install_dir);
+
+  // The user has enabled sync.
+  ProfileSyncServiceFactory::GetForProfile(profile())->SetSyncSetupCompleted();
+  // Make sure ExtensionSyncService is created, so it'll be notified of changes.
+  extension_sync_service();
+
+  service()->Init();
+  ASSERT_TRUE(service()->is_ready());
+  ASSERT_EQ(3u, loaded_.size());
+  ASSERT_TRUE(service()->IsExtensionEnabled(good0));
+
+  syncer::FakeSyncChangeProcessor* processor =
+      new syncer::FakeSyncChangeProcessor;
+  extension_sync_service()->MergeDataAndStartSyncing(
+      syncer::EXTENSIONS,
+      syncer::SyncDataList(),
+      make_scoped_ptr(processor),
+      make_scoped_ptr(new syncer::SyncErrorFactoryMock));
+
+  processor->changes().clear();
+
+  // Simulate various incoming sync changes, and make sure they don't result in
+  // any outgoing changes.
+
+  {
+    const Extension* extension = service()->GetExtensionById(good0, true);
+    ASSERT_TRUE(extension);
+
+    // Disable the extension.
+    ExtensionSyncData data(*extension, false, Extension::DISABLE_USER_ACTION,
+                           false, false, ExtensionSyncData::BOOLEAN_UNSET);
+    syncer::SyncChangeList list(
+        1, data.GetSyncChange(syncer::SyncChange::ACTION_UPDATE));
+
+    extension_sync_service()->ProcessSyncChanges(FROM_HERE, list);
+
+    EXPECT_TRUE(processor->changes().empty());
+  }
+
+  {
+    const Extension* extension = service()->GetExtensionById(good0, true);
+    ASSERT_TRUE(extension);
+
+    // Set incognito enabled to true.
+    ExtensionSyncData data(*extension, false, Extension::DISABLE_NONE, true,
+                           false, ExtensionSyncData::BOOLEAN_UNSET);
+    syncer::SyncChangeList list(
+        1, data.GetSyncChange(syncer::SyncChange::ACTION_UPDATE));
+
+    extension_sync_service()->ProcessSyncChanges(FROM_HERE, list);
+
+    EXPECT_TRUE(processor->changes().empty());
+  }
+
+  {
+    const Extension* extension = service()->GetExtensionById(good0, true);
+    ASSERT_TRUE(extension);
+
+    // Add another disable reason.
+    ExtensionSyncData data(*extension, false,
+                           Extension::DISABLE_USER_ACTION |
+                               Extension::DISABLE_PERMISSIONS_INCREASE,
+                           false, false, ExtensionSyncData::BOOLEAN_UNSET);
+    syncer::SyncChangeList list(
+        1, data.GetSyncChange(syncer::SyncChange::ACTION_UPDATE));
+
+    extension_sync_service()->ProcessSyncChanges(FROM_HERE, list);
+
+    EXPECT_TRUE(processor->changes().empty());
+  }
+
+  {
+    const Extension* extension = service()->GetExtensionById(good0, true);
+    ASSERT_TRUE(extension);
+
+    // Uninstall the extension.
+    ExtensionSyncData data(*extension, false,
+                           Extension::DISABLE_USER_ACTION |
+                               Extension::DISABLE_PERMISSIONS_INCREASE,
+                           false, false, ExtensionSyncData::BOOLEAN_UNSET);
+    syncer::SyncChangeList list(
+        1, data.GetSyncChange(syncer::SyncChange::ACTION_DELETE));
+
+    extension_sync_service()->ProcessSyncChanges(FROM_HERE, list);
+
+    EXPECT_TRUE(processor->changes().empty());
+  }
+}
+
 TEST_F(ExtensionServiceSyncTest, GetSyncData) {
   InitializeEmptyExtensionService();
   InstallCRX(data_dir().AppendASCII("good.crx"), INSTALL_NEW);

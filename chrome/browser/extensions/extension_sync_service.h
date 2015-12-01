@@ -125,6 +125,12 @@ class ExtensionSyncService : public syncer::SyncableService,
   ScopedObserver<extensions::ExtensionPrefs,
                  extensions::ExtensionPrefsObserver> prefs_observer_;
 
+  // When this is set to true, any incoming updates (from the observers as well
+  // as from explicit SyncExtensionChangeIfNeeded calls) are ignored. This is
+  // set during ApplySyncData, so that ExtensionSyncService doesn't end up
+  // notifying itself while applying sync changes.
+  bool ignore_updates_;
+
   extensions::SyncBundle app_sync_bundle_;
   extensions::SyncBundle extension_sync_bundle_;
 
