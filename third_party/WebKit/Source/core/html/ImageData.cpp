@@ -179,6 +179,7 @@ ImageData::ImageData(const IntSize& size, PassRefPtr<DOMUint8ClampedArray> byteA
     : m_size(size)
     , m_data(byteArray)
 {
+    ASSERT(size.width() >= 0 && size.height() >= 0);
     ASSERT_WITH_SECURITY_IMPLICATION(static_cast<unsigned>(size.width() * size.height() * 4) <= m_data->length());
 }
 

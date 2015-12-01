@@ -35,9 +35,8 @@
     RaisesException=Constructor,
     GarbageCollected,
 ] interface ImageData {
-    // TODO(philipj): width/height should be unsigned long.
-    readonly attribute long width;
-    readonly attribute long height;
+    readonly attribute unsigned long width;
+    readonly attribute unsigned long height;
     // TODO(philipj): Expose data.
     // readonly attribute Uint8ClampedArray data;
 };
