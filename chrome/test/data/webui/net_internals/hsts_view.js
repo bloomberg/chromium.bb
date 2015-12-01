@@ -12,7 +12,7 @@ GEN_INCLUDE(['net_internals_test.js']);
  * A valid hash that can be set for a domain.
  * @type {string}
  */
-var VALID_HASH = 'sha1/Guzek9lMwR3KeIS8wwS9gBvVtIg=';
+var VALID_HASH = 'sha256/7HIpactkIAq2Y49orFOOQKurWxmmSFZhBCoQYcRhJ3Y=';
 
 /*
  * An invalid hash that can't be set for a domain.
