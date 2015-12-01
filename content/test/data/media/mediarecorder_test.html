@@ -42,6 +42,16 @@ function createAndStartWithTimeSliceMediaRecorder(stream, mimeType, slice) {
   });
 }
 
+function createMediaRecorder(stream, mimeType) {
+  return new Promise(function(resolve, reject) {
+    console.log('Starting MediaRecorder instance');
+    document.getElementById("video").src = URL.createObjectURL(stream);
+    var recorder = new MediaRecorder(stream, mimeType);
+    console.log('Recorder object created.');
+    resolve(recorder);
+  });
+}
+
 function testStartAndRecorderState() {
   console.log('testStartAndRecorderState started.');
   navigator.mediaDevices.getUserMedia(DEFAULT_CONSTRAINTS)
@@ -170,6 +180,188 @@ function testStartWithTimeSlice() {
         reportTestSuccess();
       });
 }
+
+function testStartAndStartEventTriggered() {
+  console.log('testStartAndStartEventTriggered started.');
+  var theRecorder;
+  var startEventReceived = false;
+  navigator.mediaDevices.getUserMedia(DEFAULT_CONSTRAINTS)
+      .then(function(stream) {
+        return createMediaRecorder(stream, DEFAULT_RECORDER_MIME_TYPE);
+      })
+      .then(function(recorder) {
+        theRecorder = recorder;
+        theRecorder.onstart = function(event) {
+          startEventReceived = true;
+        };
+      })
+      .then(function() {
+        theRecorder.start();
+      })
+      .then(function() {
+        return waitFor('Make sure the start event was received',
+            function() {
+              return startEventReceived == true;
+            });
+      })
+      .catch(function(err) {
+        return failTest(err.toString());
+      })
+      .then(function() {
+        reportTestSuccess();
+      });
+}
+
+function testStartStopAndStopEventTriggered() {
+  console.log('testStartStopAndStopEventTriggered started.');
+  var theRecorder;
+  var stopEventReceived = false;
+  navigator.mediaDevices.getUserMedia(DEFAULT_CONSTRAINTS)
+      .then(function(stream) {
+        return createAndStartMediaRecorder(stream, DEFAULT_RECORDER_MIME_TYPE);
+      })
+      .then(function(recorder) {
+        recorder.onstop = function(event) {
+          stopEventReceived = true;
+        };
+        recorder.stop();
+      })
+      .then(function() {
+        return waitFor('Make sure the stop event was received',
+            function() {
+              return stopEventReceived == true;
+            });
+      })
+      .catch(function(err) {
+        return failTest(err.toString());
+      })
+      .then(function() {
+        reportTestSuccess();
+      });
+}
+
+function testResumeAndRecorderState() {
+  var theRecorder;
+  console.log('testResumeAndRecorderState started.');
+  navigator.mediaDevices.getUserMedia(DEFAULT_CONSTRAINTS)
+      .then(function(stream) {
+        return createAndStartMediaRecorder(stream,
+            DEFAULT_RECORDER_MIME_TYPE);
+      })
+      .then(function(recorder) {
+        theRecorder = recorder;
+        theRecorder.pause();
+      })
+      .then(function() {
+        theRecorder.resume();
+      })
+      .then(function() {
+        assertEquals('recording', theRecorder.state);
+      })
+      .catch(function(err) {
+        return failTest(err.toString());
+      })
+      .then(function() {
+        reportTestSuccess();
+      });
+}
+
+function testResumeAndResumeEventTriggered() {
+  var theRecorder;
+  var resumeEventReceived = false;
+  console.log('testStartAndResumeEventTriggered started.');
+  navigator.mediaDevices.getUserMedia(DEFAULT_CONSTRAINTS)
+      .then(function(stream) {
+        return createAndStartMediaRecorder(stream,
+            DEFAULT_RECORDER_MIME_TYPE);
+      })
+      .then(function(recorder) {
+        theRecorder = recorder;
+        theRecorder.pause();
+      })
+      .then(function() {
+        theRecorder.onresume = function(event) {
+          resumeEventReceived = true;
+        }
+        theRecorder.resume();
+      })
+      .then(function() {
+        return waitFor('Making sure the resume event has been received',
+            function() {
+              return resumeEventReceived == true;
+            });
+      })
+      .catch(function(err) {
+        return failTest(err.toString());
+      })
+      .then(function() {
+        reportTestSuccess();
+      });
+}
+
+function testNoResumeWhileRecorderInactive() {
+  console.log('testNoResumeWhileRecorderInactive started.');
+  navigator.mediaDevices.getUserMedia(DEFAULT_CONSTRAINTS)
+      .then(function(stream) {
+        return createMediaRecorder(stream, DEFAULT_RECORDER_MIME_TYPE);
+      })
+      .then(function(recorder) {
+        recorder.resume();
+      })
+      .catch(function(err) {
+        reportTestSuccess();
+      })
+      .then(function() {
+        return failTest('Recorder resumed recording from inactive state.');
+      });
+}
+
+function testResumeAndDataAvailable() {
+  console.log('testResumeAndDataAvailable started.');
+  var theRecorder;
+  var videoSize = 0;
+  var emptyBlobs = 0;
+  navigator.mediaDevices.getUserMedia(DEFAULT_CONSTRAINTS)
+      .then(function(stream) {
+        return createAndStartMediaRecorder(stream,
+            DEFAULT_RECORDER_MIME_TYPE);
+      })
+      .then(function(recorder) {
+        theRecorder = recorder;
+        theRecorder.pause();
+      })
+      .then(function() {
+        theRecorder.ondataavailable = function(event) {
+          if (event.data.size > 0) {
+            videoSize  += event.data.size;
+          } else {
+            console.log('This dataavailable event is empty', event);
+            emptyBlobs += 1;
+          }
+        };
+      })
+      .then(function() {
+        theRecorder.resume();
+      })
+      .then(function() {
+        return waitFor('Make sure the recording has data after resuming',
+            function() {
+              return videoSize > 0;
+            });
+      })
+      .then(function() {
+        // There should be no empty blob while recording.
+        assertTrue(emptyBlobs == 0, 'Recording has ' + emptyBlobs +
+            ' empty blobs, there should be no such empty blobs.');
+      })
+      .catch(function(err) {
+        return failTest(err.toString());
+      })
+      .then(function() {
+        reportTestSuccess();
+      });
+}
+
 
 </script>
 </body>

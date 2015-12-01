@@ -75,4 +75,35 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcMediaRecorderTest,
   MakeTypicalCall("testStartWithTimeSlice();", kMediaRecorderHtmlFile);
 }
 
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcMediaRecorderTest, MediaRecorderStartEvent) {
+  MakeTypicalCall("testStartAndStartEventTriggered();", kMediaRecorderHtmlFile);
+}
+
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcMediaRecorderTest,
+                       MediaRecorderStopEvent) {
+  MakeTypicalCall("testStartStopAndStopEventTriggered();",
+      kMediaRecorderHtmlFile);
+}
+
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcMediaRecorderTest, MediaRecorderResume) {
+  MakeTypicalCall("testResumeAndRecorderState();", kMediaRecorderHtmlFile);
+}
+
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcMediaRecorderTest,
+                       MediaRecorderResumeEvent) {
+  MakeTypicalCall("testResumeAndResumeEventTriggered();",
+      kMediaRecorderHtmlFile);
+}
+
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcMediaRecorderTest,
+                       MediaRecorderNoResumeWhenRecorderInactive) {
+  MakeTypicalCall("testNoResumeWhileRecorderInactive();",
+      kMediaRecorderHtmlFile);
+}
+
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcMediaRecorderTest,
+                       MediaRecorderResumeAndDataAvailable) {
+  MakeTypicalCall("testResumeAndDataAvailable();", kMediaRecorderHtmlFile);
+}
+
 }  // namespace content
