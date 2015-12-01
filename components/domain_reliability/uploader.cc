@@ -27,16 +27,23 @@ const char kJsonMimeType[] = "application/json; charset=utf-8";
 
 class UploadUserData : public base::SupportsUserData::Data {
  public:
-  static net::URLFetcher::CreateDataCallback CreateCreateDataCallback() {
-    return base::Bind(&UploadUserData::CreateUploadUserData);
+  static net::URLFetcher::CreateDataCallback CreateCreateDataCallback(
+      int depth) {
+    return base::Bind(&UploadUserData::CreateUploadUserData, depth);
   }
 
   static const void* const kUserDataKey;
 
+  int depth() const { return depth_; }
+
  private:
-  static base::SupportsUserData::Data* CreateUploadUserData() {
-    return new UploadUserData();
+  UploadUserData(int depth) : depth_(depth) {}
+
+  static base::SupportsUserData::Data* CreateUploadUserData(int depth) {
+    return new UploadUserData(depth);
   }
+
+  int depth_;
 };
 
 const void* const UploadUserData::kUserDataKey =
@@ -62,6 +69,7 @@ class DomainReliabilityUploaderImpl
   // DomainReliabilityUploader implementation:
   void UploadReport(
       const std::string& report_json,
+      int max_upload_depth,
       const GURL& upload_url,
       const DomainReliabilityUploader::UploadCallback& callback) override {
     VLOG(1) << "Uploading report to " << upload_url;
@@ -87,7 +95,7 @@ class DomainReliabilityUploaderImpl
     fetcher->SetAutomaticallyRetryOn5xx(false);
     fetcher->SetURLRequestUserData(
         UploadUserData::kUserDataKey,
-        UploadUserData::CreateCreateDataCallback());
+        UploadUserData::CreateCreateDataCallback(max_upload_depth + 1));
     fetcher->Start();
 
     upload_callbacks_[fetcher] = callback;
@@ -165,9 +173,13 @@ scoped_ptr<DomainReliabilityUploader> DomainReliabilityUploader::Create(
 }
 
 // static
-bool DomainReliabilityUploader::URLRequestIsUpload(
+int DomainReliabilityUploader::GetURLRequestUploadDepth(
     const net::URLRequest& request) {
-  return request.GetUserData(UploadUserData::kUserDataKey) != nullptr;
+  UploadUserData* data = static_cast<UploadUserData*>(
+      request.GetUserData(UploadUserData::kUserDataKey));
+  if (!data)
+    return 0;
+  return data->depth();
 }
 
 }  // namespace domain_reliability

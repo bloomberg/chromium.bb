@@ -41,6 +41,7 @@ class TestCallback {
 class MockUploader : public DomainReliabilityUploader {
  public:
   typedef base::Callback<void(const std::string& report_json,
+                              int max_upload_depth,
                               const GURL& upload_url,
                               const UploadCallback& upload_callback)>
       UploadRequestCallback;
@@ -53,6 +54,7 @@ class MockUploader : public DomainReliabilityUploader {
 
   // DomainReliabilityUploader implementation:
   void UploadReport(const std::string& report_json,
+                    int max_upload_depth,
                     const GURL& upload_url,
                     const UploadCallback& callback) override;
 

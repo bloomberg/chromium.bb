@@ -76,7 +76,7 @@ class DomainReliabilityMonitorTest : public testing::Test {
     request.response_info.network_accessed = true;
     request.response_info.was_fetched_via_proxy = false;
     request.load_flags = 0;
-    request.is_upload = false;
+    request.upload_depth = 0;
     return request;
   }
 
@@ -162,18 +162,6 @@ TEST_F(DomainReliabilityMonitorTest, DoNotSendCookies) {
   RequestInfo request = MakeRequestInfo();
   request.url = GURL("http://example/");
   request.load_flags = net::LOAD_DO_NOT_SEND_COOKIES;
-  OnRequestLegComplete(request);
-
-  EXPECT_EQ(0u, CountQueuedBeacons(context));
-}
-
-// Make sure the monitor does not log upload requests.
-TEST_F(DomainReliabilityMonitorTest, IsUpload) {
-  DomainReliabilityContext* context = CreateAndAddContext();
-
-  RequestInfo request = MakeRequestInfo();
-  request.url = GURL("http://example/");
-  request.is_upload = true;
   OnRequestLegComplete(request);
 
   EXPECT_EQ(0u, CountQueuedBeacons(context));

@@ -30,6 +30,9 @@ void LogOnBeaconDidEvictHistogram(bool evicted) {
 }
 }  // namespace
 
+// static
+const int DomainReliabilityContext::kMaxUploadDepthToSchedule = 1;
+
 DomainReliabilityContext::Factory::~Factory() {
 }
 
@@ -77,8 +80,6 @@ void DomainReliabilityContext::OnBeacon(
     return;
   }
 
-  bool evicted = false;
-
   UMA_HISTOGRAM_SPARSE_SLOWLY("DomainReliability.ReportedBeaconError",
                               -beacon->chrome_error);
   if (!beacon->server_ip.empty()) {
@@ -88,13 +89,12 @@ void DomainReliabilityContext::OnBeacon(
   }
   // TODO(ttuttle): Histogram HTTP response code?
 
+  if (beacon->upload_depth <= kMaxUploadDepthToSchedule)
+    scheduler_.OnBeaconAdded();
   beacons_.push_back(beacon.release());
-  if (beacons_.size() > kMaxQueuedBeacons) {
+  bool evicted = beacons_.size() > kMaxQueuedBeacons;
+  if (evicted)
     RemoveOldestBeacon();
-    evicted = true;
-  }
-
-  scheduler_.OnBeaconAdded();
 
   LogOnBeaconDidEvictHistogram(evicted);
 }
@@ -138,20 +138,28 @@ void DomainReliabilityContext::ScheduleUpload(
 void DomainReliabilityContext::StartUpload() {
   MarkUpload();
 
-  DCHECK(upload_time_.is_null());
-  upload_time_ = time_->NowTicks();
   size_t collector_index = scheduler_.OnUploadStart();
   const GURL& collector_url = *config().collectors[collector_index];
 
-  std::string report_json;
-  scoped_ptr<const Value> report = CreateReport(upload_time_, collector_url);
-  base::JSONWriter::Write(*report, &report_json);
-  report.reset();
+  DCHECK(upload_time_.is_null());
+  upload_time_ = time_->NowTicks();
+  std::string report_json = "{}";
+  int max_upload_depth = -1;
+  bool wrote = base::JSONWriter::Write(
+      *CreateReport(upload_time_,
+                    collector_url,
+                    &max_upload_depth),
+                    &report_json);
+  DCHECK(wrote);
+  DCHECK_NE(-1, max_upload_depth);
 
   uploader_->UploadReport(
-      report_json, collector_url,
-      base::Bind(&DomainReliabilityContext::OnUploadComplete,
-                 weak_factory_.GetWeakPtr()));
+      report_json,
+      max_upload_depth,
+      collector_url,
+      base::Bind(
+          &DomainReliabilityContext::OnUploadComplete,
+          weak_factory_.GetWeakPtr()));
 
   UMA_HISTOGRAM_SPARSE_SLOWLY("DomainReliability.UploadCollectorIndex",
                               static_cast<int>(collector_index));
@@ -185,19 +193,25 @@ void DomainReliabilityContext::OnUploadComplete(
 
 scoped_ptr<const Value> DomainReliabilityContext::CreateReport(
     base::TimeTicks upload_time,
-    const GURL& collector_url) const {
+    const GURL& collector_url,
+    int* max_upload_depth_out) const {
+  int max_upload_depth = 0;
+
   scoped_ptr<ListValue> beacons_value(new ListValue());
   for (const auto& beacon : beacons_) {
     beacons_value->Append(beacon->ToValue(upload_time,
                                           *last_network_change_time_,
                                           collector_url,
                                           config().path_prefixes));
+    if (beacon->upload_depth > max_upload_depth)
+      max_upload_depth = beacon->upload_depth;
   }
 
   scoped_ptr<DictionaryValue> report_value(new DictionaryValue());
   report_value->SetString("reporter", upload_reporter_string_);
   report_value->Set("entries", beacons_value.release());
 
+  *max_upload_depth_out = max_upload_depth;
   return report_value.Pass();
 }
 

@@ -33,6 +33,11 @@ class MockableTime;
 // domain's config and beacon queue.
 class DOMAIN_RELIABILITY_EXPORT DomainReliabilityContext {
  public:
+  // Maximum upload depth to schedule an upload. If a beacon is based on a more
+  // deeply nested upload, it will be reported eventually, but will not itself
+  // trigger a new upload.
+  static const int kMaxUploadDepthToSchedule;
+
   class DOMAIN_RELIABILITY_EXPORT Factory {
    public:
     virtual ~Factory();
@@ -83,7 +88,8 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityContext {
   void OnUploadComplete(const DomainReliabilityUploader::UploadResult& result);
 
   scoped_ptr<const base::Value> CreateReport(base::TimeTicks upload_time,
-                                             const GURL& collector_url) const;
+                                             const GURL& collector_url,
+                                             int* max_beacon_depth_out) const;
 
   // Remembers the current state of the context when an upload starts. Can be
   // called multiple times in a row (without |CommitUpload|) if uploads fail

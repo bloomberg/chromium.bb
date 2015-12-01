@@ -34,6 +34,7 @@ scoped_ptr<DomainReliabilityBeacon> MakeBeacon(MockableTime* time) {
   beacon->http_response_code = -1;
   beacon->elapsed = base::TimeDelta::FromMilliseconds(250);
   beacon->start_time = time->NowTicks() - beacon->elapsed;
+  beacon->upload_depth = 0;
   return beacon.Pass();
 }
 
@@ -65,20 +66,25 @@ class DomainReliabilityContextTest : public testing::Test {
   TimeDelta retry_interval() const { return params_.upload_retry_interval; }
   TimeDelta zero_delta() const { return TimeDelta::FromMicroseconds(0); }
 
-  bool upload_pending() { return upload_pending_; }
+  bool upload_pending() const { return upload_pending_; }
 
-  const std::string& upload_report() {
-    DCHECK(upload_pending_);
+  const std::string& upload_report() const {
+    EXPECT_TRUE(upload_pending_);
     return upload_report_;
   }
 
-  const GURL& upload_url() {
-    DCHECK(upload_pending_);
+  int upload_max_depth() const {
+    EXPECT_TRUE(upload_pending_);
+    return upload_max_depth_;
+  }
+
+  const GURL& upload_url() const {
+    EXPECT_TRUE(upload_pending_);
     return upload_url_;
   }
 
   void CallUploadCallback(DomainReliabilityUploader::UploadResult result) {
-    DCHECK(upload_pending_);
+    ASSERT_TRUE(upload_pending_);
     upload_callback_.Run(result);
     upload_pending_ = false;
   }
@@ -100,10 +106,12 @@ class DomainReliabilityContextTest : public testing::Test {
  private:
   void OnUploadRequest(
       const std::string& report_json,
+      int max_upload_depth,
       const GURL& upload_url,
       const DomainReliabilityUploader::UploadCallback& callback) {
-    DCHECK(!upload_pending_);
+    ASSERT_FALSE(upload_pending_);
     upload_report_ = report_json;
+    upload_max_depth_ = max_upload_depth;
     upload_url_ = upload_url;
     upload_callback_ = callback;
     upload_pending_ = true;
@@ -111,6 +119,7 @@ class DomainReliabilityContextTest : public testing::Test {
 
   bool upload_pending_;
   std::string upload_report_;
+  int upload_max_depth_;
   GURL upload_url_;
   DomainReliabilityUploader::UploadCallback upload_callback_;
 };
@@ -127,7 +136,71 @@ TEST_F(DomainReliabilityContextTest, Report) {
   EXPECT_EQ(1u, beacons.size());
 }
 
-TEST_F(DomainReliabilityContextTest, Upload) {
+TEST_F(DomainReliabilityContextTest, MaxNestedBeaconSchedules) {
+  GURL url("http://example/always_report");
+  scoped_ptr<DomainReliabilityBeacon> beacon = MakeBeacon(&time_);
+  beacon->upload_depth = DomainReliabilityContext::kMaxUploadDepthToSchedule;
+  context_.OnBeacon(beacon.Pass());
+
+  BeaconVector beacons;
+  context_.GetQueuedBeaconsForTesting(&beacons);
+  EXPECT_EQ(1u, beacons.size());
+
+  time_.Advance(max_delay());
+  EXPECT_TRUE(upload_pending());
+}
+
+TEST_F(DomainReliabilityContextTest, OverlyNestedBeaconDoesNotSchedule) {
+  GURL url("http://example/always_report");
+  scoped_ptr<DomainReliabilityBeacon> beacon = MakeBeacon(&time_);
+  beacon->upload_depth =
+      DomainReliabilityContext::kMaxUploadDepthToSchedule + 1;
+  context_.OnBeacon(beacon.Pass());
+
+  BeaconVector beacons;
+  context_.GetQueuedBeaconsForTesting(&beacons);
+  EXPECT_EQ(1u, beacons.size());
+
+  time_.Advance(max_delay());
+  EXPECT_FALSE(upload_pending());
+}
+
+TEST_F(DomainReliabilityContextTest,
+    MaxNestedBeaconAfterOverlyNestedBeaconSchedules) {
+  // Add a beacon for a report that's too nested to schedule a beacon.
+  scoped_ptr<DomainReliabilityBeacon> beacon = MakeBeacon(&time_);
+  beacon->upload_depth =
+      DomainReliabilityContext::kMaxUploadDepthToSchedule + 1;
+  context_.OnBeacon(beacon.Pass());
+
+  BeaconVector beacons;
+  context_.GetQueuedBeaconsForTesting(&beacons);
+  EXPECT_EQ(1u, beacons.size());
+
+  time_.Advance(max_delay());
+  EXPECT_FALSE(upload_pending());
+
+  // Add a beacon for a report that should schedule a beacon, and make sure it
+  // doesn't schedule until the deadline.
+  beacon = MakeBeacon(&time_);
+  beacon->upload_depth = DomainReliabilityContext::kMaxUploadDepthToSchedule;
+  context_.OnBeacon(beacon.Pass());
+
+  context_.GetQueuedBeaconsForTesting(&beacons);
+  EXPECT_EQ(2u, beacons.size());
+
+  time_.Advance(max_delay());
+  EXPECT_TRUE(upload_pending());
+
+  // Check that both beacons were uploaded.
+  DomainReliabilityUploader::UploadResult result;
+  result.status = DomainReliabilityUploader::UploadResult::SUCCESS;
+  CallUploadCallback(result);
+
+  EXPECT_TRUE(CheckNoBeacons());
+}
+
+TEST_F(DomainReliabilityContextTest, ReportUpload) {
   context_.OnBeacon(MakeBeacon(&time_));
 
   BeaconVector beacons;
@@ -147,6 +220,7 @@ TEST_F(DomainReliabilityContextTest, Upload) {
   time_.Advance(max_delay());
   EXPECT_TRUE(upload_pending());
   EXPECT_EQ(kExpectedReport, upload_report());
+  EXPECT_EQ(0, upload_max_depth());
   EXPECT_EQ(GURL("https://exampleuploader/upload"), upload_url());
 
   DomainReliabilityUploader::UploadResult result;
@@ -178,6 +252,7 @@ TEST_F(DomainReliabilityContextTest, Upload_NetworkChanged) {
   time_.Advance(max_delay());
   EXPECT_TRUE(upload_pending());
   EXPECT_EQ(kExpectedReport, upload_report());
+  EXPECT_EQ(0, upload_max_depth());
   EXPECT_EQ(GURL("https://exampleuploader/upload"), upload_url());
 
   DomainReliabilityUploader::UploadResult result;

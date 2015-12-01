@@ -148,7 +148,7 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityMonitor
     net::LoadTimingInfo load_timing_info;
     net::ConnectionAttempts connection_attempts;
     net::IPEndPoint remote_endpoint;
-    bool is_upload;
+    int upload_depth;
   };
 
   void OnRequestLegComplete(const RequestInfo& info);

@@ -58,12 +58,13 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityUploader {
   // Uploads |report_json| to |upload_url| and calls |callback| when the upload
   // has either completed or failed.
   virtual void UploadReport(const std::string& report_json,
+                            int max_beacon_depth,
                             const GURL& upload_url,
                             const UploadCallback& callback) = 0;
 
   virtual void set_discard_uploads(bool discard_uploads) = 0;
 
-  static bool URLRequestIsUpload(const net::URLRequest& request);
+  static int GetURLRequestUploadDepth(const net::URLRequest& request);
 };
 
 }  // namespace domain_reliability

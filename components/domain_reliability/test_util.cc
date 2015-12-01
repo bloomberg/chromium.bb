@@ -95,9 +95,10 @@ MockUploader::~MockUploader() {}
 bool MockUploader::discard_uploads() const { return discard_uploads_; }
 
 void MockUploader::UploadReport(const std::string& report_json,
+                                int max_upload_depth,
                                 const GURL& upload_url,
                                 const UploadCallback& callback) {
-  callback_.Run(report_json, upload_url, callback);
+  callback_.Run(report_json, max_upload_depth, upload_url, callback);
 }
 
 void MockUploader::set_discard_uploads(bool discard_uploads) {

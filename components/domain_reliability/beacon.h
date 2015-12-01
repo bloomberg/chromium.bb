@@ -60,6 +60,11 @@ struct DOMAIN_RELIABILITY_EXPORT DomainReliabilityBeacon {
   base::TimeDelta elapsed;
   // Start time of the request.  Encoded as the request age in the final JSON.
   base::TimeTicks start_time;
+  // Length of the chain of Domain Reliability uploads leading to this report.
+  // Zero if the request was not caused by an upload, one if the request was
+  // caused by an upload that itself contained no beacons caused by uploads,
+  // et cetera.
+  int upload_depth;
 
   // Okay to copy and assign.
 };

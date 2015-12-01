@@ -266,7 +266,8 @@ DomainReliabilityMonitor::RequestInfo::RequestInfo(
       status(request.status()),
       response_info(request.response_info()),
       load_flags(request.load_flags()),
-      is_upload(DomainReliabilityUploader::URLRequestIsUpload(request)) {
+      upload_depth(
+          DomainReliabilityUploader::GetURLRequestUploadDepth(request)) {
   request.GetLoadTimingInfo(&load_timing_info);
   request.GetConnectionAttempts(&connection_attempts);
   if (!request.GetRemoteEndpoint(&remote_endpoint))
@@ -278,18 +279,17 @@ DomainReliabilityMonitor::RequestInfo::~RequestInfo() {}
 // static
 bool DomainReliabilityMonitor::RequestInfo::ShouldReportRequest(
     const DomainReliabilityMonitor::RequestInfo& request) {
-  // Don't report requests for Domain Reliability uploads or that weren't
-  // supposed to send cookies.
-  if (request.is_upload)
-    return false;
+  // Don't report requests that weren't supposed to send cookies.
   if (request.load_flags & net::LOAD_DO_NOT_SEND_COOKIES)
     return false;
+
   // Report requests that accessed the network or failed with an error code
   // that Domain Reliability is interested in.
   if (request.response_info.network_accessed)
     return true;
   if (URLRequestStatusToNetError(request.status) != net::OK)
     return true;
+
   return false;
 }
 
@@ -320,6 +320,7 @@ void DomainReliabilityMonitor::OnRequestLegComplete(
   beacon_template.elapsed = time_->NowTicks() - beacon_template.start_time;
   beacon_template.was_proxied = request.response_info.was_fetched_via_proxy;
   beacon_template.url = request.url;
+  beacon_template.upload_depth = request.upload_depth;
 
   // This is not foolproof -- it's possible that we'll see the same error twice
   // (e.g. an SSL error during connection on one attempt, and then an error
