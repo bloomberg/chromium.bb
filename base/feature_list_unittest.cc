@@ -335,8 +335,21 @@ TEST_F(FeatureListTest, GetFeatureOverrides) {
   std::string disable_features;
   FeatureList::GetInstance()->GetFeatureOverrides(&enable_features,
                                                   &disable_features);
-  EXPECT_EQ("A,OffByDefault,X", SortFeatureListString(enable_features));
+  EXPECT_EQ("A,OffByDefault<Trial,X", SortFeatureListString(enable_features));
   EXPECT_EQ("D", SortFeatureListString(disable_features));
+}
+
+TEST_F(FeatureListTest, InitializeFromCommandLine_WithFieldTrials) {
+  ClearFeatureListInstance();
+  FieldTrialList field_trial_list(nullptr);
+  FieldTrialList::CreateFieldTrial("Trial", "Group");
+  scoped_ptr<FeatureList> feature_list(new FeatureList);
+  feature_list->InitializeFromCommandLine("A,OffByDefault<Trial,X", "D");
+  RegisterFeatureListInstance(feature_list.Pass());
+
+  EXPECT_FALSE(FieldTrialList::IsTrialActive("Trial"));
+  EXPECT_TRUE(FeatureList::IsEnabled(kFeatureOffByDefault));
+  EXPECT_TRUE(FieldTrialList::IsTrialActive("Trial"));
 }
 
 }  // namespace base
