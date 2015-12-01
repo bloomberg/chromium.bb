@@ -91,6 +91,9 @@ source_set("test_support") {
 
   # New deps should go in the non-iOS section below.
   public_deps = [
+    "//content/test:test_support",
+  ]
+  deps = [
     "//base:prefs_test_support",
     "//base/test:test_support",
     "//chrome:resources",
@@ -118,7 +121,6 @@ source_set("test_support") {
     "//components/ui/zoom:test_support",
     "//components/update_client:test_support",
     "//content/public/app:both",
-    "//content/test:test_support",
     "//net",
     "//net:test_support",
     "//skia",
@@ -133,7 +135,7 @@ source_set("test_support") {
   ]
 
   if (!is_ios) {
-    public_deps += [
+    deps += [
       "//chrome/child",
       "//chrome/plugin",
       "//chrome/renderer",
@@ -163,7 +165,7 @@ source_set("test_support") {
   }
 
   if (is_android) {
-    public_deps -= [ "//ui/message_center:test_support" ]
+    deps -= [ "//ui/message_center:test_support" ]
     sources -= [
       "base/dialog_test_browser_window.cc",
       "base/dialog_test_browser_window.h",
@@ -173,37 +175,37 @@ source_set("test_support") {
   }
 
   if (enable_extensions) {
-    public_deps += [
+    deps += [
       "//chrome/common/extensions/api",
       "//extensions:test_support",
     ]
   }
 
   if (is_linux) {
-    public_deps += [ "//crypto:platform" ]
+    deps += [ "//crypto:platform" ]
   }
   if (is_mac) {
     sources += [
       "//chrome/app/chrome_crash_reporter_client.cc",
       "//chrome/app/chrome_crash_reporter_client_mac.mm",
     ]
-    public_deps += [
+    deps += [
       "//breakpad",
       "//components/crash/content/app",
       "//third_party/ocmock",
     ]
   }
   if (is_win) {
-    public_deps += [ "//third_party/wtl" ]
+    deps += [ "//third_party/wtl" ]
     if (use_aura) {
-      public_deps += [
+      deps += [
         "//win8:test_registrar_constants",
         "//win8:test_support_win8",
       ]
     }
   }
   if (is_chromeos) {
-    public_deps += [ "//components/ownership" ]
+    deps += [ "//components/ownership" ]
   }
 
   if (use_aura) {
@@ -214,18 +216,18 @@ source_set("test_support") {
   }
 
   if (enable_plugins && enable_pdf) {
-    public_deps += [ "//pdf" ]
+    deps += [ "//pdf" ]
   }
 
   if (use_ash) {
-    public_deps += [ "//ash:test_support" ]
+    deps += [ "//ash:test_support" ]
   }
   if (toolkit_views) {
-    public_deps += [ "//ui/views:test_support" ]
+    deps += [ "//ui/views:test_support" ]
   }
 
   if (enable_extensions) {
-    public_deps += [
+    deps += [
       "//chrome/common/extensions/api",
       "//extensions:test_support",
     ]
@@ -2211,7 +2213,7 @@ source_set("test_support_unit") {
     "base/run_all_unittests.cc",
   ]
 
-  public_deps = [
+  deps = [
     ":test_support",
     "//base",
     "//chrome:resources",

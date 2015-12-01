@@ -30,7 +30,6 @@
         'syncable_prefs',
         'sync_bookmarks',
         'sync_driver',
-        'sync_driver_features',
         'sync_sessions',
         'variations',
         'version_info',

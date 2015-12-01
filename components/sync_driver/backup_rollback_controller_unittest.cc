@@ -12,7 +12,6 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "components/sync_driver/signin_manager_wrapper.h"
-#include "components/sync_driver/sync_driver_features.h"
 #include "components/sync_driver/sync_driver_switches.h"
 #include "components/sync_driver/sync_prefs.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -22,7 +21,7 @@ using ::testing::Return;
 
 namespace {
 
-#if BUILDFLAG(ENABLE_PRE_SYNC_BACKUP)
+#if defined(ENABLE_PRE_SYNC_BACKUP)
 
 class MockSigninManagerWrapper : public SigninManagerWrapper {
  public:

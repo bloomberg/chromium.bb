@@ -1050,7 +1050,6 @@
         'components.gyp:ssl_errors',
         'components.gyp:suggestions',
         'components.gyp:sync_bookmarks',
-        'components.gyp:sync_driver_features',
         'components.gyp:sync_driver_test_support',
         'components.gyp:sync_sessions',
         'components.gyp:sync_sessions_test_support',
