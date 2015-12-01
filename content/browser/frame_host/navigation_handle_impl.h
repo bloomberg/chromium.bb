@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/navigation_throttle.h"
@@ -156,6 +157,9 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
       bool new_is_external_protocol,
       scoped_refptr<net::HttpResponseHeaders> response_headers,
       const ThrottleChecksFinishedCallback& callback);
+
+  // Returns the FrameTreeNode this navigation is happening in.
+  FrameTreeNode* frame_tree_node() { return frame_tree_node_; }
 
   // Called when the navigation was redirected. This will update the |url_| and
   // inform the delegate.

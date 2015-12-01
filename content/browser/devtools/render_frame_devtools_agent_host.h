@@ -23,6 +23,8 @@ namespace content {
 class BrowserContext;
 class DevToolsFrameTraceRecorder;
 class DevToolsProtocolHandler;
+class FrameTreeNode;
+class NavigationHandle;
 class RenderFrameHostImpl;
 
 #if defined(OS_ANDROID)
@@ -87,6 +89,9 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   void InspectElement(int x, int y) override;
 
   // WebContentsObserver overrides.
+  void DidStartNavigation(NavigationHandle* navigation_handle) override;
+  void ReadyToCommitNavigation(NavigationHandle* navigation_handle) override;
+  void DidFinishNavigation(NavigationHandle* navigation_handle) override;
   void RenderFrameHostChanged(RenderFrameHost* old_host,
                               RenderFrameHost* new_host) override;
   void FrameDeleted(RenderFrameHost* rfh) override;
@@ -111,6 +116,8 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   void AboutToNavigateRenderFrame(RenderFrameHost* old_host,
                                   RenderFrameHost* new_host);
 
+  void DispatchBufferedProtocolMessagesIfNecessary();
+
   void SetPending(RenderFrameHostImpl* host);
   void CommitPending();
   void DiscardPending();
@@ -125,10 +132,13 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   void OnSwapCompositorFrame(const IPC::Message& message);
   void DestroyOnRenderFrameGone();
 
+  bool MatchesMyTreeNode(NavigationHandle* navigation_handle);
+
   class FrameHostHolder;
 
   scoped_ptr<FrameHostHolder> current_;
   scoped_ptr<FrameHostHolder> pending_;
+
   // Stores per-host state between DisconnectWebContents and ConnectWebContents.
   scoped_ptr<FrameHostHolder> disconnected_;
 
@@ -149,6 +159,22 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
 #endif
   scoped_ptr<DevToolsProtocolHandler> protocol_handler_;
   bool current_frame_crashed_;
+
+  // PlzNavigate
+
+  // Handle that caused the setting of pending_.
+  NavigationHandle* pending_handle_;
+
+  // Navigation counter and queue for buffering protocol messages during a
+  // navigation.
+  int in_navigation_;
+
+  // <call_id> -> <session_id, message>
+  std::map<int, std::pair<int, std::string>>
+      in_navigation_protocol_message_buffer_;
+
+  // The FrameTreeNode associated with this agent.
+  FrameTreeNode* frame_tree_node_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderFrameDevToolsAgentHost);
 };
