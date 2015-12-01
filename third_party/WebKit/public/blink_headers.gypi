@@ -464,6 +464,7 @@
       "web/WebSharedWorker.h",
       "web/WebSharedWorkerClient.h",
       "web/WebSharedWorkerConnector.h",
+      "web/WebWorkerCreationErrors.h",
       "web/WebSharedWorkerRepositoryClient.h",
       "web/WebSocket.h",
       "web/WebSocketClient.h",

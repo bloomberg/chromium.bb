@@ -284,9 +284,9 @@ void SharedWorkerServiceImpl::CreateWorker(
     SharedWorkerMessageFilter* filter,
     ResourceContext* resource_context,
     const WorkerStoragePartitionId& partition_id,
-    bool* url_mismatch) {
+    blink::WebWorkerCreationError* creation_error) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  *url_mismatch = false;
+  *creation_error = blink::WebWorkerCreationErrorNone;
   scoped_ptr<SharedWorkerInstance> instance(
       new SharedWorkerInstance(params.url,
                                params.name,
@@ -303,7 +303,7 @@ void SharedWorkerServiceImpl::CreateWorker(
           params.render_frame_route_id));
   if (SharedWorkerPendingInstance* pending = FindPendingInstance(*instance)) {
     if (params.url != pending->instance()->url()) {
-      *url_mismatch = true;
+      *creation_error = blink::WebWorkerCreationErrorURLMismatch;
       return;
     }
     pending->AddRequest(request.Pass());
@@ -312,7 +312,7 @@ void SharedWorkerServiceImpl::CreateWorker(
   scoped_ptr<SharedWorkerPendingInstance> pending_instance(
       new SharedWorkerPendingInstance(instance.Pass()));
   pending_instance->AddRequest(request.Pass());
-  ReserveRenderProcessToCreateWorker(pending_instance.Pass(), url_mismatch);
+  ReserveRenderProcessToCreateWorker(pending_instance.Pass(), creation_error);
 }
 
 void SharedWorkerServiceImpl::ForwardToWorker(
@@ -466,11 +466,11 @@ void SharedWorkerServiceImpl::NotifyWorkerDestroyed(int worker_process_id,
 
 void SharedWorkerServiceImpl::ReserveRenderProcessToCreateWorker(
     scoped_ptr<SharedWorkerPendingInstance> pending_instance,
-    bool* url_mismatch) {
+    blink::WebWorkerCreationError* creation_error) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!FindPendingInstance(*pending_instance->instance()));
-  if (url_mismatch)
-    *url_mismatch = false;
+  if (creation_error)
+    *creation_error = blink::WebWorkerCreationErrorNone;
   if (!pending_instance->requests()->size())
     return;
   int worker_process_id = -1;
@@ -479,8 +479,8 @@ void SharedWorkerServiceImpl::ReserveRenderProcessToCreateWorker(
   SharedWorkerHost* host = FindSharedWorkerHost(*pending_instance->instance());
   if (host) {
     if (pending_instance->instance()->url() != host->instance()->url()) {
-      if (url_mismatch)
-        *url_mismatch = true;
+      if (creation_error)
+        *creation_error = blink::WebWorkerCreationErrorURLMismatch;
       return;
     }
     worker_process_id = host->process_id();

@@ -28,7 +28,8 @@ class SharedWorkerRepository : public RenderFrameObserver,
       const blink::WebString& name,
       DocumentID document_id,
       const blink::WebString& content_security_policy,
-      blink::WebContentSecurityPolicyType) override;
+      blink::WebContentSecurityPolicyType,
+      blink::WebWorkerCreationError* error) override;
   void documentDetached(DocumentID document_id) override;
 
  private:

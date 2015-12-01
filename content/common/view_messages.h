@@ -50,6 +50,7 @@
 #include "third_party/WebKit/public/web/WebMediaPlayerAction.h"
 #include "third_party/WebKit/public/web/WebPluginAction.h"
 #include "third_party/WebKit/public/web/WebPopupType.h"
+#include "third_party/WebKit/public/web/WebSharedWorkerCreationErrors.h"
 #include "third_party/WebKit/public/web/WebTextDirection.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/ime/text_input_mode.h"
@@ -85,6 +86,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(blink::WebPopupType,
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::WebScreenOrientationType,
                               blink::WebScreenOrientationUndefined,
                               blink::WebScreenOrientationLandscapeSecondary)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::WebWorkerCreationError,
+                          blink::WebWorkerCreationErrorLast)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebTextDirection,
                           blink::WebTextDirection::WebTextDirectionLast)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebDisplayMode,
@@ -374,6 +377,15 @@ IPC_STRUCT_BEGIN(ViewHostMsg_CreateWorker_Params)
 
   // RenderFrame routing id used to send messages back to the parent.
   IPC_STRUCT_MEMBER(int, render_frame_route_id)
+IPC_STRUCT_END()
+
+IPC_STRUCT_BEGIN(ViewHostMsg_CreateWorker_Reply)
+  // The route id for the created worker.
+  IPC_STRUCT_MEMBER(int, route_id)
+
+  // The error that occurred, if the browser failed to create the
+  // worker.
+  IPC_STRUCT_MEMBER(blink::WebWorkerCreationError, error)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(ViewHostMsg_DateTimeDialogValue_Params)
@@ -1129,10 +1141,11 @@ IPC_SYNC_MESSAGE_CONTROL1_2(ViewHostMsg_ResolveProxy,
 
 // A renderer sends this to the browser process when it wants to create a
 // worker.  The browser will create the worker process if necessary, and
-// will return the route id on success.  On error returns MSG_ROUTING_NONE.
+// will return the route id on in the reply on success.  On error returns
+// MSG_ROUTING_NONE and an error type.
 IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_CreateWorker,
                             ViewHostMsg_CreateWorker_Params,
-                            int /* route_id */)
+                            ViewHostMsg_CreateWorker_Reply)
 
 // A renderer sends this to the browser process when a document has been
 // detached. The browser will use this to constrain the lifecycle of worker

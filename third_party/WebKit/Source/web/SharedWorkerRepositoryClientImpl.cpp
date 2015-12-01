@@ -47,6 +47,7 @@
 #include "public/web/WebFrameClient.h"
 #include "public/web/WebKit.h"
 #include "public/web/WebSharedWorker.h"
+#include "public/web/WebSharedWorkerCreationErrors.h"
 #include "public/web/WebSharedWorkerRepositoryClient.h"
 #include "web/WebLocalFrameImpl.h"
 
@@ -128,8 +129,12 @@ void SharedWorkerRepositoryClientImpl::connect(SharedWorker* worker, PassOwnPtr<
         headerType = static_cast<WebContentSecurityPolicyType>((*headers)[0].second);
     }
 
-    OwnPtr<WebSharedWorkerConnector> webWorkerConnector = adoptPtr(m_client->createSharedWorkerConnector(url, name, getId(document), header, headerType));
+    WebWorkerCreationError creationError;
+    OwnPtr<WebSharedWorkerConnector> webWorkerConnector = adoptPtr(m_client->createSharedWorkerConnector(url, name, getId(document), header, headerType, &creationError));
     if (!webWorkerConnector) {
+        // TODO(estark): This assertion will shortly go away and each
+        // different error type will be handled. https://crbug.com/561216
+        ASSERT(creationError == WebWorkerCreationErrorURLMismatch);
         // Existing worker does not match this url, so return an error back to the caller.
         exceptionState.throwDOMException(URLMismatchError, "The location of the SharedWorker named '" + name + "' does not exactly match the provided URL ('" + url.elidedString() + "').");
         return;

@@ -9,6 +9,7 @@
 #include "content/common/devtools_messages.h"
 #include "content/common/view_messages.h"
 #include "content/common/worker_messages.h"
+#include "third_party/WebKit/public/web/WebSharedWorkerCreationErrors.h"
 
 namespace content {
 namespace {
@@ -77,18 +78,13 @@ int SharedWorkerMessageFilter::GetNextRoutingID() {
 
 void SharedWorkerMessageFilter::OnCreateWorker(
     const ViewHostMsg_CreateWorker_Params& params,
-    int* route_id) {
-  bool url_error = false;
-  *route_id = GetNextRoutingID();
+    ViewHostMsg_CreateWorker_Reply* reply) {
+  reply->route_id = GetNextRoutingID();
   SharedWorkerServiceImpl::GetInstance()->CreateWorker(
-      params,
-      *route_id,
-      this,
-      resource_context_,
-      WorkerStoragePartitionId(partition_),
-      &url_error);
-  if (url_error)
-    *route_id = MSG_ROUTING_NONE;
+      params, reply->route_id, this, resource_context_,
+      WorkerStoragePartitionId(partition_), &reply->error);
+  if (reply->error != blink::WebWorkerCreationErrorNone)
+    reply->route_id = MSG_ROUTING_NONE;
 }
 
 void SharedWorkerMessageFilter::OnForwardToWorker(const IPC::Message& message) {

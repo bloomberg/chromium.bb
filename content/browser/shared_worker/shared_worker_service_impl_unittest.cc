@@ -243,7 +243,7 @@ void PostCreateWorker(MockRendererProcessHost* renderer,
                       const std::string& name,
                       unsigned long long document_id,
                       int render_frame_route_id,
-                      int* connector_route_id) {
+                      ViewHostMsg_CreateWorker_Reply* reply) {
   ViewHostMsg_CreateWorker_Params params;
   params.url = GURL(url);
   params.name = base::ASCIIToUTF16(name);
@@ -251,8 +251,8 @@ void PostCreateWorker(MockRendererProcessHost* renderer,
   params.security_policy_type = blink::WebContentSecurityPolicyTypeReport;
   params.document_id = document_id;
   params.render_frame_route_id = render_frame_route_id;
-  EXPECT_TRUE(renderer->OnMessageReceived(
-      new ViewHostMsg_CreateWorker(params, connector_route_id)));
+  EXPECT_TRUE(
+      renderer->OnMessageReceived(new ViewHostMsg_CreateWorker(params, reply)));
 }
 
 class MockSharedWorkerConnector {
@@ -262,8 +262,7 @@ class MockSharedWorkerConnector {
         temporary_remote_port_route_id_(0),
         remote_port_id_(0),
         local_port_route_id_(0),
-        local_port_id_(0),
-        route_id_(0) {}
+        local_port_id_(0) {}
   void Create(const std::string& url,
               const std::string& name,
               unsigned long long document_id,
@@ -273,12 +272,8 @@ class MockSharedWorkerConnector {
                           &remote_port_id_,
                           &local_port_route_id_,
                           &local_port_id_);
-    PostCreateWorker(renderer_host_,
-                     url,
-                     name,
-                     document_id,
-                     render_frame_route_id,
-                     &route_id_);
+    PostCreateWorker(renderer_host_, url, name, document_id,
+                     render_frame_route_id, &create_worker_reply_);
   }
   void SendQueueMessages() {
     EXPECT_TRUE(renderer_host_->OnMessageReceived(
@@ -294,7 +289,8 @@ class MockSharedWorkerConnector {
   void SendConnect() {
     EXPECT_TRUE(
         renderer_host_->OnMessageReceived(new ViewHostMsg_ForwardToWorker(
-            WorkerMsg_Connect(route_id_, remote_port_id_, MSG_ROUTING_NONE))));
+            WorkerMsg_Connect(create_worker_reply_.route_id, remote_port_id_,
+                              MSG_ROUTING_NONE))));
   }
   void SendSendQueuedMessages(
       const std::vector<QueuedMessage>& queued_messages) {
@@ -308,7 +304,10 @@ class MockSharedWorkerConnector {
   int remote_port_id() { return remote_port_id_; }
   int local_port_route_id() { return local_port_route_id_; }
   int local_port_id() { return local_port_id_; }
-  int route_id() { return route_id_; }
+  int route_id() { return create_worker_reply_.route_id; }
+  blink::WebWorkerCreationError creation_error() {
+    return create_worker_reply_.error;
+  }
 
  private:
   MockRendererProcessHost* renderer_host_;
@@ -316,7 +315,7 @@ class MockSharedWorkerConnector {
   int remote_port_id_;
   int local_port_route_id_;
   int local_port_id_;
-  int route_id_;
+  ViewHostMsg_CreateWorker_Reply create_worker_reply_;
 };
 
 void CheckWorkerProcessMsgCreateWorker(
@@ -731,6 +730,8 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest) {
                        kDocumentIDs[1],
                        kRenderFrameRouteIDs[1]);
     EXPECT_EQ(MSG_ROUTING_NONE, connector1->route_id());
+    EXPECT_EQ(blink::WebWorkerCreationErrorURLMismatch,
+              connector1->creation_error());
     EXPECT_EQ(0U, renderer_host1->QueuedMessageCount());
     RunAllPendingInMessageLoop();
     EXPECT_EQ(0U, renderer_host1->QueuedMessageCount());

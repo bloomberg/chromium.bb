@@ -11,6 +11,7 @@
 
 class GURL;
 struct ViewHostMsg_CreateWorker_Params;
+struct ViewHostMsg_CreateWorker_Reply;
 
 namespace content {
 class MessagePortMessageFilter;
@@ -43,7 +44,7 @@ class CONTENT_EXPORT SharedWorkerMessageFilter : public BrowserMessageFilter {
  private:
   // Message handlers.
   void OnCreateWorker(const ViewHostMsg_CreateWorker_Params& params,
-                      int* route_id);
+                      ViewHostMsg_CreateWorker_Reply* reply);
   void OnForwardToWorker(const IPC::Message& message);
   void OnDocumentDetached(unsigned long long document_id);
   void OnWorkerContextClosed(int worker_route_id);

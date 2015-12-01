@@ -57,6 +57,7 @@ include_rules = [
   "+third_party/WebKit/public/web/WebPluginAction.h",
   "+third_party/WebKit/public/web/WebPopupType.h",
   "+third_party/WebKit/public/web/WebSandboxFlags.h",
+  "+third_party/WebKit/public/web/WebSharedWorkerCreationErrors.h",
   "+third_party/WebKit/public/web/WebTextDirection.h",
   "+third_party/WebKit/public/web/WebTreeScopeType.h",
   "+third_party/WebKit/public/web/WebWindowFeatures.h",
