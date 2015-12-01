@@ -1,0 +1,73 @@
+<html>
+<head>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/inspector-protocol-test.js"></script>
+<script>
+
+var animation;
+
+function startAnimation()
+{
+    animation = node.animate([{ width: "100px" }, { width: "2000px" }], { duration: 20, fill: "forwards" });
+}
+
+function cancelAnimation()
+{
+    animation.cancel();
+}
+
+function rafWidth(resolve, reject)
+{
+    function frameCallback()
+    {
+        resolve(node.offsetWidth);
+    }
+
+    if (window.testRunner)
+        testRunner.layoutAndPaintAsyncThen(frameCallback);
+}
+
+window.debugTest = true;
+function test()
+{
+    InspectorTest.eventHandler["Animation.animationStarted"] = onStarted;
+    InspectorTest.sendCommand("Animation.enable", {});
+    InspectorTest.evaluateInPage("startAnimation()", function() {});
+    var pausedWidth;
+
+    function onStarted(response)
+    {
+        InspectorTest.log("Animation started");
+        InspectorTest.invokePageFunctionPromise("rafWidth", []).then(pause.bind(null, response.params.animation.id));
+    }
+
+    function pause(id, width)
+    {
+        InspectorTest.log("Box is animating: " + (width != 100).toString());
+        InspectorTest.sendCommand("Animation.setPaused", { animations: [ id ], paused: true });
+        InspectorTest.evaluateInPage("cancelAnimation()", function() {});
+        InspectorTest.invokePageFunctionPromise("rafWidth", []).then(release.bind(null, id));
+    }
+
+    function release(id, width)
+    {
+        InspectorTest.log("Animation paused");
+        InspectorTest.log("Box is animating: " + (width != 100).toString());
+        InspectorTest.sendCommand("Animation.releaseAnimations", { animations: [ id ] });
+        InspectorTest.invokePageFunctionPromise("rafWidth", []).then(released);
+    }
+
+    function released(width)
+    {
+        InspectorTest.log("Animation released");
+        InspectorTest.log("Box is animating: " + (width != 100).toString());
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+</head>
+<body onload="runTest()">
+    Tests that the animation is correctly paused.
+    <div id="node" style="background-color: red; width: 100px"></div>
+</body>
+</html>

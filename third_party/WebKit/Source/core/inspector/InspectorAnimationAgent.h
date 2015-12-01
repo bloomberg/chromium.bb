@@ -45,6 +45,7 @@ public:
     void setTiming(ErrorString*, const String& animationId, double duration, double delay) override;
     void seekAnimations(ErrorString*, const RefPtr<JSONArray>& animationIds, double currentTime) override;
     void resolveAnimation(ErrorString*, const String& animationId, RefPtr<TypeBuilder::Runtime::RemoteObject>& result) override;
+    void releaseAnimations(ErrorString*, const RefPtr<JSONArray>& animationIds) override;
 
     // API for InspectorInstrumentation
     void didCreateAnimation(unsigned);
@@ -79,6 +80,7 @@ private:
     PersistentHeapHashMapWillBeHeapHashMap<String, Member<Animation>> m_idToAnimationClone;
     WillBeHeapHashMap<String, AnimationType> m_idToAnimationType;
     bool m_isCloning;
+    HashSet<String> m_clearedAnimations;
 };
 
 }

@@ -65,11 +65,14 @@ void InspectorAnimationAgent::enable(ErrorString*)
 void InspectorAnimationAgent::disable(ErrorString*)
 {
     setPlaybackRate(nullptr, 1);
+    for (const auto& clone : m_idToAnimationClone.values())
+        clone->cancel();
     m_state->setBoolean(AnimationAgentState::animationAgentEnabled, false);
     m_instrumentingAgents->setInspectorAnimationAgent(nullptr);
     m_idToAnimation.clear();
     m_idToAnimationType.clear();
     m_idToAnimationClone.clear();
+    m_clearedAnimations.clear();
 }
 
 void InspectorAnimationAgent::didCommitLoadForLocalFrame(LocalFrame* frame)
@@ -78,6 +81,7 @@ void InspectorAnimationAgent::didCommitLoadForLocalFrame(LocalFrame* frame)
         m_idToAnimation.clear();
         m_idToAnimationType.clear();
         m_idToAnimationClone.clear();
+        m_clearedAnimations.clear();
     }
 }
 
@@ -308,6 +312,25 @@ void InspectorAnimationAgent::seekAnimations(ErrorString* errorString, const Ref
     }
 }
 
+void InspectorAnimationAgent::releaseAnimations(ErrorString* errorString, const RefPtr<JSONArray>& animationIds)
+{
+    for (const auto& id : *animationIds) {
+        String animationId;
+        if (!(id->asString(&animationId))) {
+            *errorString = "Invalid argument type";
+            return;
+        }
+        Animation* clone = m_idToAnimationClone.get(animationId);
+        if (clone)
+            clone->cancel();
+        m_idToAnimationClone.remove(animationId);
+        m_idToAnimation.remove(animationId);
+        m_idToAnimationType.remove(animationId);
+        m_clearedAnimations.add(animationId);
+    }
+}
+
+
 void InspectorAnimationAgent::setTiming(ErrorString* errorString, const String& animationId, double duration, double delay)
 {
     Animation* animation = assertAnimation(errorString, animationId);
@@ -438,7 +461,7 @@ void InspectorAnimationAgent::didCreateAnimation(unsigned sequenceNumber)
 void InspectorAnimationAgent::animationPlayStateChanged(Animation* animation, Animation::AnimationPlayState oldPlayState, Animation::AnimationPlayState newPlayState)
 {
     const String& animationId = String::number(animation->sequenceNumber());
-    if (m_idToAnimation.get(animationId))
+    if (m_idToAnimation.get(animationId) || m_clearedAnimations.contains(animationId))
         return;
     if (newPlayState == Animation::Running || newPlayState == Animation::Finished)
         frontend()->animationStarted(buildObjectForAnimation(*animation));
@@ -486,6 +509,7 @@ DEFINE_TRACE(InspectorAnimationAgent)
     visitor->trace(m_idToAnimation);
     visitor->trace(m_idToAnimationType);
     visitor->trace(m_idToAnimationClone);
+    visitor->trace(m_clearedAnimations);
 #endif
     InspectorBaseAgent::trace(visitor);
 }
