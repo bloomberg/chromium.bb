@@ -12,9 +12,10 @@
 #include <string>
 #include <vector>
 
-#include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "build/build_config.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/cert/cert_verifier.h"
@@ -27,6 +28,11 @@
 #include "net/ssl/ssl_client_cert_type.h"
 #include "net/ssl/ssl_config_service.h"
 #include "net/ssl/ssl_failure_state.h"
+
+namespace base {
+class FilePath;
+class SequencedTaskRunner;
+}
 
 namespace net {
 
@@ -53,8 +59,13 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
     return ssl_session_cache_shard_;
   }
 
-  // Export ssl key log files if env variable is not set.
-  static void SetSSLKeyLogFile(const std::string& ssl_keylog_file);
+#if !defined(OS_NACL)
+  // Log SSL key material to |path| on |task_runner|. Must be called before any
+  // SSLClientSockets are created.
+  static void SetSSLKeyLogFile(
+      const base::FilePath& path,
+      const scoped_refptr<base::SequencedTaskRunner>& task_runner);
+#endif
 
   // SSLClientSocket implementation.
   void GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info) override;

@@ -324,6 +324,7 @@
       'linux-arm/crypto/sha/sha512-armv4.S',
       'src/crypto/chacha/chacha_vec_arm.S',
       'src/crypto/cpu-arm-asm.S',
+      'src/crypto/curve25519/asm/x25519-arm.S',
       'src/crypto/poly1305/poly1305_arm_asm.S',
     ],
     'boringssl_linux_x86_sources': [

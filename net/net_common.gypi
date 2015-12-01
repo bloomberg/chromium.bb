@@ -163,6 +163,8 @@
           'ssl/openssl_ssl_util.h',
           'ssl/ssl_client_session_cache_openssl.cc',
           'ssl/ssl_client_session_cache_openssl.h',
+          'ssl/ssl_key_logger.cc',
+          'ssl/ssl_key_logger.h',
           'ssl/ssl_platform_key.h',
           'ssl/ssl_platform_key_nss.cc',
           'ssl/ssl_platform_key_task_runner.cc',

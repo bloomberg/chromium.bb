@@ -51,6 +51,10 @@
 #include "base/win/windows_version.h"
 #endif
 
+#if !defined(OS_NACL)
+#include "net/ssl/ssl_key_logger.h"
+#endif
+
 #if defined(USE_NSS_CERTS) || defined(OS_IOS)
 #include "net/cert_net/nss_ocsp.h"
 #endif
@@ -146,11 +150,6 @@ ScopedX509Stack OSCertHandlesToOpenSSL(
   return stack.Pass();
 }
 
-int LogErrorCallback(const char* str, size_t len, void* context) {
-  LOG(ERROR) << base::StringPiece(str, len);
-  return 1;
-}
-
 bool EVP_MDToPrivateKeyHash(const EVP_MD* md, SSLPrivateKey::Hash* hash) {
   switch (EVP_MD_type(md)) {
     case NID_md5_sha1:
@@ -205,6 +204,16 @@ class SSLClientSocketOpenSSL::SSLContext {
   bool SetClientSocketForSSL(SSL* ssl, SSLClientSocketOpenSSL* socket) {
     return SSL_set_ex_data(ssl, ssl_socket_data_index_, socket) != 0;
   }
+
+#if !defined(OS_NACL)
+  void SetSSLKeyLogFile(
+      const base::FilePath& path,
+      const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
+    DCHECK(!ssl_key_logger_);
+    ssl_key_logger_.reset(new SSLKeyLogger(path, task_runner));
+    SSL_CTX_set_keylog_callback(ssl_ctx_.get(), KeyLogCallback);
+  }
+#endif
 
   static const SSL_PRIVATE_KEY_METHOD kPrivateKeyMethod;
 
@@ -335,11 +344,21 @@ class SSLClientSocketOpenSSL::SSLContext {
     return socket->PrivateKeySignCompleteCallback(out, out_len, max_out);
   }
 
+#if !defined(OS_NACL)
+  static void KeyLogCallback(const SSL* ssl, const char* line) {
+    GetInstance()->ssl_key_logger_->WriteLine(line);
+  }
+#endif
+
   // This is the index used with SSL_get_ex_data to retrieve the owner
   // SSLClientSocketOpenSSL object from an SSL instance.
   int ssl_socket_data_index_;
 
   ScopedSSL_CTX ssl_ctx_;
+
+#if !defined(OS_NACL)
+  scoped_ptr<SSLKeyLogger> ssl_key_logger_;
+#endif
 
   // TODO(davidben): Use a separate cache per URLRequestContext.
   // https://crbug.com/458365
@@ -489,17 +508,13 @@ SSLClientSocketOpenSSL::~SSLClientSocketOpenSSL() {
   Disconnect();
 }
 
+#if !defined(OS_NACL)
 void SSLClientSocketOpenSSL::SetSSLKeyLogFile(
-    const std::string& ssl_keylog_file) {
-  crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
-  BIO* bio = BIO_new_file(ssl_keylog_file.c_str(), "a");
-  if (!bio) {
-    LOG(ERROR) << "Failed to open " << ssl_keylog_file;
-    ERR_print_errors_cb(&LogErrorCallback, NULL);
-  } else {
-    SSL_CTX_set_keylog_bio(SSLContext::GetInstance()->ssl_ctx(), bio);
-  }
+    const base::FilePath& ssl_keylog_file,
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
+  SSLContext::GetInstance()->SetSSLKeyLogFile(ssl_keylog_file, task_runner);
 }
+#endif
 
 void SSLClientSocketOpenSSL::GetSSLCertRequestInfo(
     SSLCertRequestInfo* cert_request_info) {

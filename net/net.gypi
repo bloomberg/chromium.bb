@@ -1148,6 +1148,8 @@
       'ssl/client_cert_store_win.h',
       'ssl/ssl_config_service_defaults.cc',
       'ssl/ssl_config_service_defaults.h',
+      'ssl/ssl_key_logger.cc',
+      'ssl/ssl_key_logger.h',
       'ssl/ssl_platform_key.h',
       'ssl/ssl_platform_key_task_runner.cc',
       'ssl/ssl_platform_key_task_runner.h',

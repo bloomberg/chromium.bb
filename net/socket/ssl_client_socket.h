@@ -15,6 +15,11 @@
 #include "net/socket/stream_socket.h"
 #include "net/ssl/ssl_failure_state.h"
 
+namespace base {
+class FilePath;
+class SequencedTaskRunner;
+}
+
 namespace net {
 
 class CertPolicyEnforcer;
@@ -114,9 +119,16 @@ class NET_EXPORT SSLClientSocket : public SSLSocket {
 
   static const char* NextProtoStatusToString(const NextProtoStatus status);
 
-  // Export SSL key material to be logged to the specified file if platform
-  // uses OpenSSL. Must be called before SSLClientSockets are created.
-  static void SetSSLKeyLogFile(const std::string& ssl_keylog_file);
+  // Log SSL key material to |path| on |task_runner|. Must be called before any
+  // SSLClientSockets are created.
+  //
+  // TODO(davidben): Switch this to a parameter on the SSLClientSocketContext
+  // once https://crbug.com/458365 is resolved. This will require splitting
+  // SSLKeyLogger into an interface, built with OS_NACL and a non-NaCl
+  // SSLKeyLoggerImpl.
+  static void SetSSLKeyLogFile(
+      const base::FilePath& path,
+      const scoped_refptr<base::SequencedTaskRunner>& task_runner);
 
   // Returns true if |error| is OK or |load_flags| ignores certificate errors
   // and |error| is a certificate error.

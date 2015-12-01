@@ -83,9 +83,11 @@ const char* SSLClientSocket::NextProtoStatusToString(
 }
 
 // static
-void SSLClientSocket::SetSSLKeyLogFile(const std::string& ssl_keylog_file) {
-#if defined(USE_OPENSSL)
-  SSLClientSocketOpenSSL::SetSSLKeyLogFile(ssl_keylog_file);
+void SSLClientSocket::SetSSLKeyLogFile(
+    const base::FilePath& path,
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
+#if defined(USE_OPENSSL) && !defined(OS_NACL)
+  SSLClientSocketOpenSSL::SetSSLKeyLogFile(path, task_runner);
 #else
   NOTIMPLEMENTED();
 #endif

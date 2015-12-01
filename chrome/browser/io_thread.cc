@@ -13,6 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/debug/leak_tracker.h"
 #include "base/environment.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
 #include "base/prefs/pref_registry_simple.h"
@@ -23,6 +24,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread.h"
 #include "base/threading/worker_pool.h"
@@ -174,20 +176,24 @@ void ObserveKeychainEvents() {
 // Gets file path into ssl_keylog_file from command line argument or
 // environment variable. Command line argument has priority when
 // both specified.
-std::string GetSSLKeyLogFile(const base::CommandLine& command_line) {
+base::FilePath GetSSLKeyLogFile(const base::CommandLine& command_line) {
   if (command_line.HasSwitch(switches::kSSLKeyLogFile)) {
-    std::string file =
-      command_line.GetSwitchValueASCII(switches::kSSLKeyLogFile);
-    if (!file.empty()) {
-      return file;
-    }
-
+    base::FilePath path =
+        command_line.GetSwitchValuePath(switches::kSSLKeyLogFile);
+    if (!path.empty())
+      return path;
     LOG(WARNING) << "ssl-key-log-file argument missing";
   }
+
   scoped_ptr<base::Environment> env(base::Environment::Create());
-  std::string file;
-  env->GetVar("SSLKEYLOGFILE", &file);
-  return file;
+  std::string path_str;
+  env->GetVar("SSLKEYLOGFILE", &path_str);
+#if defined(OS_WIN)
+  // base::Environment returns environment variables in UTF-8 on Windows.
+  return base::FilePath(base::UTF8ToUTF16(path_str));
+#else
+  return base::FilePath(path_str);
+#endif
 }
 
 // Used for the "system" URLRequestContext.
@@ -587,9 +593,11 @@ void IOThread::Init() {
       *base::CommandLine::ForCurrentProcess();
 
   // Export ssl keys if log file specified.
-  std::string ssl_keylog_file = GetSSLKeyLogFile(command_line);
+  base::FilePath ssl_keylog_file = GetSSLKeyLogFile(command_line);
   if (!ssl_keylog_file.empty()) {
-      net::SSLClientSocket::SetSSLKeyLogFile(ssl_keylog_file);
+    net::SSLClientSocket::SetSSLKeyLogFile(
+        ssl_keylog_file,
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
   }
 
   DCHECK(!globals_);
