@@ -407,6 +407,10 @@ class SmoothnessImageDecodingCases(_Smoothness):
   def Name(cls):
     return 'smoothness.image_decoding_cases'
 
+  @classmethod
+  def ShouldDisable(cls, possible_browser):
+    return cls.IsSvelte(possible_browser)  # http://crbug.com/563974
+
 
 @benchmark.Disabled('android')  # http://crbug.com/513699
 class SmoothnessGpuImageDecodingCases(_Smoothness):
