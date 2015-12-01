@@ -75,18 +75,8 @@ WebNotificationData createWebNotificationData(ExecutionContext* executionContext
 
     const size_t maxActions = Notification::maxActions();
     for (const NotificationAction& action : options.actions()) {
-        if (action.action().isEmpty()) {
-            exceptionState.throwTypeError("NotificationAction `action` must not be empty.");
-            return WebNotificationData();
-        }
-
-        if (action.title().isEmpty()) {
-            exceptionState.throwTypeError("NotificationAction `title` must not be empty.");
-            return WebNotificationData();
-        }
-
         if (actions.size() >= maxActions)
-            continue;
+            break;
 
         WebNotificationAction webAction;
         webAction.action = action.action();

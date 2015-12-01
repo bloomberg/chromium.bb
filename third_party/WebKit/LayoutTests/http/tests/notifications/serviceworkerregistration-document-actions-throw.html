@@ -48,40 +48,6 @@
           }).catch(unreached_rejection(test));
 
       }, 'showNotification() must reject if a NotificationAction has no title.');
-
-      async_test(function(test) {
-          var scope = 'resources/scope/' + location.pathname + "/emptyaction";
-
-          getActiveServiceWorkerWithMessagePort(test, script, scope).then(function(workerInfo) {
-              assert_inherits(workerInfo.registration, 'showNotification', 'showNotification() must be exposed.');
-
-              workerInfo.registration.showNotification('Title', {
-                  actions: [{ action: "", title: "Foo" }]
-              }).then(unreached_fulfillment(test)).catch(function(error) {
-                  assert_equals(error.name, 'TypeError');
-                  assert_equals(error.message, "Failed to execute 'showNotification' on 'ServiceWorkerRegistration': NotificationAction `action` must not be empty.");
-                  test.done();
-              });
-          }).catch(unreached_rejection(test));
-
-      }, 'showNotification() must reject if a NotificationAction has an empty action.');
-
-      async_test(function(test) {
-          var scope = 'resources/scope/' + location.pathname + "/emptytitle";
-
-          getActiveServiceWorkerWithMessagePort(test, script, scope).then(function(workerInfo) {
-              assert_inherits(workerInfo.registration, 'showNotification', 'showNotification() must be exposed.');
-
-              workerInfo.registration.showNotification('Title', {
-                  actions: [{ action: "foo", title: "" }]
-              }).then(unreached_fulfillment(test)).catch(function(error) {
-                  assert_equals(error.name, 'TypeError');
-                  assert_equals(error.message, "Failed to execute 'showNotification' on 'ServiceWorkerRegistration': NotificationAction `title` must not be empty.");
-                  test.done();
-              });
-          }).catch(unreached_rejection(test));
-
-      }, 'showNotification() must reject if a NotificationAction has an empty title.');
     </script>
   </body>
 </html>

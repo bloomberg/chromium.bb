@@ -179,43 +179,6 @@ TEST_F(NotificationDataTest, DirectionValues)
     }
 }
 
-TEST_F(NotificationDataTest, RequiredActionProperties)
-{
-    NotificationOptions options;
-
-    // The NotificationAction.action property is required.
-    {
-        NotificationAction action;
-        action.setTitle(kNotificationActionTitle);
-
-        HeapVector<NotificationAction> actions;
-        actions.append(action);
-
-        options.setActions(actions);
-
-        TrackExceptionState exceptionState;
-        WebNotificationData notificationData = createWebNotificationData(executionContext(), kNotificationTitle, options, exceptionState);
-        ASSERT_TRUE(exceptionState.hadException());
-        EXPECT_EQ("NotificationAction `action` must not be empty.", exceptionState.message());
-    }
-
-    // The NotificationAction.title property is required.
-    {
-        NotificationAction action;
-        action.setAction(kNotificationActionAction);
-
-        HeapVector<NotificationAction> actions;
-        actions.append(action);
-
-        options.setActions(actions);
-
-        TrackExceptionState exceptionState;
-        WebNotificationData notificationData = createWebNotificationData(executionContext(), kNotificationTitle, options, exceptionState);
-        ASSERT_TRUE(exceptionState.hadException());
-        EXPECT_EQ("NotificationAction `title` must not be empty.", exceptionState.message());
-    }
-}
-
 TEST_F(NotificationDataTest, MaximumActionCount)
 {
     HeapVector<NotificationAction> actions;
