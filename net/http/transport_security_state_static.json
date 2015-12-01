@@ -56,7 +56,9 @@
         "DigiCertEVRoot",
         "Tor1",
         "Tor2",
-        "Tor3"
+        "Tor3",
+        "LetsEncryptAuthorityX1",
+        "LetsEncryptAuthorityX2"
       ]
     },
     {

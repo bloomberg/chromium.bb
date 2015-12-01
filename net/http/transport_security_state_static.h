@@ -545,6 +545,14 @@ static const char kSPKIHash_YahooBackup2[] =
     "\x76\x89\x67\x6e\xdc\xc4\x06\x71\x0b\xc7\xff\x65\x38\x44\x36\xd9"
     "\xee\x8e\x64\xef\xd0\x35\xbe\x95\x49\x25\xf6\x5c\x70\x37\x13\xb0";
 
+static const char kSPKIHash_LetsEncryptAuthorityX1[] =
+    "\x60\xb8\x75\x75\x44\x7d\xcb\xa2\xa3\x6b\x7d\x11\xac\x09\xfb\x24"
+    "\xa9\xdb\x40\x6f\xee\x12\xd2\xcc\x90\x18\x05\x17\x61\x6e\x8a\x18";
+
+static const char kSPKIHash_LetsEncryptAuthorityX2[] =
+    "\xb1\x11\xdd\x8a\x1c\x20\x91\xa8\x9b\xd4\xfd\x60\xc5\x7f\x07\x16"
+    "\xcc\xe5\x0f\xee\xff\x81\x37\xcd\xbe\xe0\x32\x6e\x02\xcf\x36\x2b";
+
 // The following is static data describing the hosts that are hardcoded with
 // certificate pins or HSTS information.
 
@@ -573,6 +581,8 @@ static const char* const kTorAcceptableCerts[] = {
   kSPKIHash_Tor1,
   kSPKIHash_Tor2,
   kSPKIHash_Tor3,
+  kSPKIHash_LetsEncryptAuthorityX1,
+  kSPKIHash_LetsEncryptAuthorityX2,
   NULL,
 };
 static const char* const kTwitterComAcceptableCerts[] = {
