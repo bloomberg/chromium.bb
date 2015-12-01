@@ -111,7 +111,6 @@ const char* const kPublicSessionWhitelist[] = {
     "ljacajndfccfgnfohlgkdphmbnpkjflk",  // Chrome Remote Desktop (Dev Build)
 };
 
-#if 0
 // List of manifest entries from https://developer.chrome.com/apps/manifest.
 // Unsafe entries are commented out and special cases too.
 const char* const kSafeManifestEntries[] = {
@@ -376,7 +375,6 @@ const char* const kSafePermissions[] = {
     // Web capabilities are safe.
     "webview",
 };
-#endif
 
 // Return true iff |entry| is contained in |char_array|.
 bool ArrayContainsImpl(const char* const char_array[],
@@ -398,7 +396,6 @@ bool ArrayContains(const char* const (&char_array)[N],
   return ArrayContainsImpl(char_array, N, entry);
 }
 
-#if 0
 // Returns true for platform apps that are considered safe for Public Sessions,
 // which among other things requires the manifest top-level entries to be
 // contained in the |kSafeManifestEntries| whitelist and all permissions to be
@@ -483,7 +480,6 @@ bool IsPlatformAppSafeForPublicSession(const extensions::Extension* extension) {
 
   return true;
 }
-#endif
 
 }  // namespace
 
@@ -527,7 +523,6 @@ bool DeviceLocalAccountManagementPolicyProvider::UserMayLoad(
       return true;
     }
 
-#if 0
     // Allow force-installed platform app if all manifest contents are
     // whitelisted.
     if ((extension->location() == extensions::Manifest::EXTERNAL_POLICY_DOWNLOAD
@@ -535,7 +530,6 @@ bool DeviceLocalAccountManagementPolicyProvider::UserMayLoad(
         && IsPlatformAppSafeForPublicSession(extension)) {
       return true;
     }
-#endif
   } else if (account_type_ == policy::DeviceLocalAccount::TYPE_KIOSK_APP) {
     // For single-app kiosk sessions, allow platform apps, extesions and
     // shared modules.
