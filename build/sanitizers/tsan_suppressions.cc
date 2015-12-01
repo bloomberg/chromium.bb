@@ -128,10 +128,6 @@ char kTSanDefaultSuppressions[] =
 // http://crbug.com/272095
 "race:base::g_top_manager\n"
 
-// http://crbug.com/273047
-"race:base::*::g_lazy_tls_ptr\n"
-"race:IPC::SyncChannel::ReceivedSyncMsgQueue::lazy_tls_ptr_\n"
-
 // http://crbug.com/280466
 "race:content::WebRtcAudioCapturer::SetCapturerSource\n"
 
