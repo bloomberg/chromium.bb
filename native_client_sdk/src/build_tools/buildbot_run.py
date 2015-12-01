@@ -63,6 +63,8 @@ def StepBuildSDK():
     new_script_dir = SCRIPT_DIR
 
   args = [sys.executable, 'build_sdk.py']
+  if 'bionic' in os.getenv('BUILDBOT_BUILDERNAME', ''):
+    args.append('--bionic')
 
   try:
     Run(args, cwd=new_script_dir)
@@ -85,6 +87,11 @@ def StepTestSDK():
     ])
 
   cmd.extend([sys.executable, 'test_sdk.py'])
+
+  # TODO(noelallen): crbug 386332
+  # For Bionic SDK, only build do a build test until we have hardware.
+  if 'bionic' in os.getenv('BUILDBOT_BUILDERNAME', ''):
+    cmd.extend(['build_examples', 'copy_tests', 'build_tests'])
   Run(cmd, cwd=SCRIPT_DIR)
 
 

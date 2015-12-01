@@ -156,6 +156,7 @@ Installing the stable bundle
          pepper_36 (beta)
          pepper_37 (dev)
          pepper_canary (canary)
+         bionic_canary (canary)
 
 
    The sample output above shows that several bundles are available for
@@ -224,6 +225,7 @@ Updating bundles
          pepper_36 (beta)
          pepper_37 (dev)
          pepper_canary (canary)
+         bionic_canary (canary)
 
    
    If you run ``naclsdk update`` now, it warns you with a message similar to

@@ -85,7 +85,7 @@ $(eval $(call LINKER_SCRIPT_RULE,{{name}},{{target['SOURCES'][0]}},{{target['SOU
 $(foreach src,$({{sources}}),$(eval $(call COMPILE_RULE,$(src),$({{cflags}}))))
 $(eval $(call LIB_RULE,{{name}},$({{sources}})))
 [[    if target['TYPE'] != 'static-lib':]]
-ifneq (,$(findstring $(TOOLCHAIN),glibc))
+ifneq (,$(findstring $(TOOLCHAIN),glibc bionic))
 $(eval $(call SO_RULE,{{name}},$({{sources}}),$(LIBS),$(DEPS)))
 endif
 [[  ]]

@@ -38,6 +38,7 @@ GS_SDK_MANIFEST_LOG = GS_BUCKET_PATH + MANIFEST_BASENAME + '.log'
 GS_MANIFEST_BACKUP_DIR = GS_BUCKET_PATH + 'manifest_backups/'
 
 CANARY_BUNDLE_NAME = 'pepper_canary'
+BIONIC_CANARY_BUNDLE_NAME = 'bionic_canary'
 CANARY = 'canary'
 NACLPORTS_ARCHIVE_NAME = 'naclports.tar.bz2'
 
@@ -122,6 +123,11 @@ def GetPlatformArchiveName(platform):
     The basename of the sdk archive for that platform.
   """
   return 'naclsdk_%s.tar.bz2' % platform
+
+
+def GetBionicArchiveName():
+  """Get the basename of an archive. Currently this is linux-only"""
+  return 'naclsdk_bionic.tar.bz2'
 
 
 def GetCanonicalArchiveName(url):
@@ -355,12 +361,14 @@ class VersionFinder(object):
         e.g. [('foo.tar.bz2', '18.0.1000.0'), ('bar.tar.bz2', '19.0.1100.20')]
         These archives must exist to consider a version for inclusion, as
         long as that version is greater than the archive's minimum version.
+    is_bionic: True if we are searching for bionic archives.
   """
-  def __init__(self, delegate, platforms, extra_archives=None):
+  def __init__(self, delegate, platforms, extra_archives=None, is_bionic=False):
     self.delegate = delegate
     self.history = delegate.GetHistory()
     self.platforms = platforms
     self.extra_archives = extra_archives
+    self.is_bionic = is_bionic
 
   def GetMostRecentSharedVersion(self, major_version):
     """Returns the most recent version of a pepper bundle that exists on all
@@ -413,7 +421,11 @@ class VersionFinder(object):
     """
     archive_urls = self._GetAvailableArchivesFor(version)
 
-    expected_archives = set(GetPlatformArchiveName(p) for p in self.platforms)
+    if self.is_bionic:
+      # Bionic currently is Linux-only.
+      expected_archives = set([GetBionicArchiveName()])
+    else:
+      expected_archives = set(GetPlatformArchiveName(p) for p in self.platforms)
 
     if self.extra_archives:
       for extra_archive, min_version, max_version in self.extra_archives:
@@ -796,7 +808,7 @@ def Run(delegate, platforms, extra_archives, fixed_bundle_versions=None):
   manifest = delegate.GetRepoManifest()
   auto_update_bundles = []
   for bundle in manifest.GetBundles():
-    if not bundle.name.startswith('pepper_'):
+    if not bundle.name.startswith(('pepper_', 'bionic_')):
       continue
     archives = bundle.GetArchives()
     if not archives:
@@ -810,7 +822,13 @@ def Run(delegate, platforms, extra_archives, fixed_bundle_versions=None):
 
   for bundle in auto_update_bundles:
     try:
-      if bundle.name == CANARY_BUNDLE_NAME:
+      if bundle.name == BIONIC_CANARY_BUNDLE_NAME:
+        logger.info('>>> Looking for most recent bionic_canary...')
+        # Ignore extra_archives on bionic; There is no naclports bundle yet.
+        version_finder = VersionFinder(delegate, platforms, None,
+                                       is_bionic=True)
+        version, channel, archives = version_finder.GetMostRecentSharedCanary()
+      elif bundle.name == CANARY_BUNDLE_NAME:
         logger.info('>>> Looking for most recent pepper_canary...')
         version_finder = VersionFinder(delegate, platforms, extra_archives)
         version, channel, archives = version_finder.GetMostRecentSharedCanary()
