@@ -10,6 +10,8 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 ** Bug fixes
 - Fix a bug in the findtable code. Thanks to Michael Katzmann for the
   report.
+- Fix some compile time warnings on Windows, thanks to Bue
+  Vester-Andersen.
 
 ** Other changes
 - Add test data for EUB symbols, thanks to Paul Wood
