@@ -99,6 +99,7 @@ class STORAGE_EXPORT QuotaEvictionHandler {
   // Returns next origin to evict.  It might return an empty GURL when there are
   // no evictable origins.
   virtual void GetEvictionOrigin(StorageType type,
+                                 const std::set<GURL>& extra_exceptions,
                                  int64 global_quota,
                                  const GetOriginCallback& callback) = 0;
 
@@ -396,12 +397,14 @@ class STORAGE_EXPORT QuotaManager
   void DidGetPersistentGlobalUsageForHistogram(int64 usage,
                                                int64 unlimited_usage);
 
-  std::set<GURL> GetEvictionOriginExceptions();
+  std::set<GURL> GetEvictionOriginExceptions(
+      const std::set<GURL>& extra_exceptions);
   void DidGetEvictionOrigin(const GetOriginCallback& callback,
                             const GURL& origin);
 
   // QuotaEvictionHandler.
   void GetEvictionOrigin(StorageType type,
+                         const std::set<GURL>& extra_exceptions,
                          int64 global_quota,
                          const GetOriginCallback& callback) override;
   void EvictOriginData(const GURL& origin,

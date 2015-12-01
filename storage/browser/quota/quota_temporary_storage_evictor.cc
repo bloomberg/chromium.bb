@@ -122,6 +122,8 @@ void QuotaTemporaryStorageEvictor::OnEvictionRoundStarted() {
 }
 
 void QuotaTemporaryStorageEvictor::OnEvictionRoundFinished() {
+  in_progress_eviction_origins_.clear();
+
   // Check if skipped round
   if (round_statistics_.num_evicted_origins_in_round) {
     ReportPerRoundHistogram();
@@ -196,7 +198,7 @@ void QuotaTemporaryStorageEvictor::OnGotUsageAndQuotaForEviction(
     // TODO(michaeln): if the reason for eviction is low physical disk space,
     // make 'unlimited' origins subject to eviction too.
     quota_eviction_handler_->GetEvictionOrigin(
-        kStorageTypeTemporary, qau.quota,
+        kStorageTypeTemporary, in_progress_eviction_origins_, qau.quota,
         base::Bind(&QuotaTemporaryStorageEvictor::OnGotEvictionOrigin,
                    weak_factory_.GetWeakPtr()));
   } else {
@@ -226,6 +228,8 @@ void QuotaTemporaryStorageEvictor::OnGotEvictionOrigin(const GURL& origin) {
     OnEvictionRoundFinished();
     return;
   }
+
+  in_progress_eviction_origins_.insert(origin);
 
   quota_eviction_handler_->EvictOriginData(origin, kStorageTypeTemporary,
       base::Bind(

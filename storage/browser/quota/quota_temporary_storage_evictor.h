@@ -6,6 +6,7 @@
 #define STORAGE_BROWSER_QUOTA_QUOTA_TEMPORARY_STORAGE_EVICTOR_H_
 
 #include <map>
+#include <set>
 #include <string>
 
 #include "base/memory/weak_ptr.h"
@@ -117,6 +118,7 @@ class STORAGE_EXPORT QuotaTemporaryStorageEvictor : public base::NonThreadSafe {
   EvictionRoundStatistics round_statistics_;
   base::Time time_of_end_of_last_nonskipped_round_;
   base::Time time_of_end_of_last_round_;
+  std::set<GURL> in_progress_eviction_origins_;
 
   int64 interval_ms_;
   bool repeated_eviction_;

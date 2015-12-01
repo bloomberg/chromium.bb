@@ -1525,8 +1525,9 @@ void QuotaManager::DidGetPersistentGlobalUsageForHistogram(
                        unlimited_origins);
 }
 
-std::set<GURL> QuotaManager::GetEvictionOriginExceptions() {
-  std::set<GURL> exceptions;
+std::set<GURL> QuotaManager::GetEvictionOriginExceptions(
+    const std::set<GURL>& extra_exceptions) {
+  std::set<GURL> exceptions = extra_exceptions;
   for (const auto& p : origins_in_use_) {
     if (p.second > 0)
       exceptions.insert(p.first);
@@ -1556,6 +1557,7 @@ void QuotaManager::DidGetEvictionOrigin(const GetOriginCallback& callback,
 }
 
 void QuotaManager::GetEvictionOrigin(StorageType type,
+                                     const std::set<GURL>& extra_exceptions,
                                      int64 global_quota,
                                      const GetOriginCallback& callback) {
   LazyInitialize();
@@ -1574,8 +1576,8 @@ void QuotaManager::GetEvictionOrigin(StorageType type,
     GetUsageTracker(kStorageTypeTemporary)->GetCachedOriginsUsage(&usage_map);
 
     temporary_storage_eviction_policy_->GetEvictionOrigin(
-        special_storage_policy_, GetEvictionOriginExceptions(), usage_map,
-        global_quota, did_get_origin_callback);
+        special_storage_policy_, GetEvictionOriginExceptions(extra_exceptions),
+        usage_map, global_quota, did_get_origin_callback);
 
     return;
   }
@@ -1630,9 +1632,9 @@ void QuotaManager::GetLRUOrigin(StorageType type,
 
   GURL* url = new GURL;
   PostTaskAndReplyWithResultForDBThread(
-      FROM_HERE,
-      base::Bind(&GetLRUOriginOnDBThread, type, GetEvictionOriginExceptions(),
-                 special_storage_policy_, base::Unretained(url)),
+      FROM_HERE, base::Bind(&GetLRUOriginOnDBThread, type,
+                            GetEvictionOriginExceptions(std::set<GURL>()),
+                            special_storage_policy_, base::Unretained(url)),
       base::Bind(&QuotaManager::DidGetLRUOrigin, weak_factory_.GetWeakPtr(),
                  base::Owned(url)));
 }
