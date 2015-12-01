@@ -40,7 +40,7 @@ TabsAutomationHandler.prototype = {
 
   /** @override */
   onLoadComplete: function(evt) {
-    global.backgroundObj.refreshMode(evt.target.docUrl);
+    ChromeVoxState.instance.refreshMode(evt.target.docUrl);
     var focused = evt.target.find({state: {focused: true}}) || evt.target;
     this.onFocus({target: focused, type: EventType.focus});
   }

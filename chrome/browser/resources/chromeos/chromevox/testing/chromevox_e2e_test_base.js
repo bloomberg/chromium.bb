@@ -73,7 +73,8 @@ ChromeVoxE2ETest.prototype = {
   /**
    * Launches the given document in a new tab.
    * @param {function() : void} doc Snippet wrapped inside of a function.
-   * @param {function()} opt_callback Called once the document is created.
+   * @param {function(url: string)} opt_callback Called once the
+   *     document is created.
    */
   runWithTab: function(doc, opt_callback) {
     var docString = TestUtils.extractHtmlFromCommentEncodedString(doc);
@@ -84,7 +85,10 @@ ChromeVoxE2ETest.prototype = {
       active: true,
       url: url
     };
-    chrome.tabs.create(createParams, opt_callback);
+    chrome.tabs.create(createParams, function(tab) {
+      if (opt_callback)
+        opt_callback(tab.url);
+    });
   },
 
   /**

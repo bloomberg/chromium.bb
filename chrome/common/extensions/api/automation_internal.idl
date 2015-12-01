@@ -97,6 +97,13 @@ namespace automationInternal {
 
     static void onAccessibilityTreeDestroyed(long treeID);
 
-    static void onTreeChange(long treeID, long nodeID, DOMString changeType);
+    static void onTreeChange(long observerID,
+                             long treeID,
+                             long nodeID,
+                             DOMString changeType);
+
+    static void onChildTreeID(long treeID, long nodeID);
+
+    static void onNodesRemoved(long treeID, long[] nodeIDs);
   };
 };

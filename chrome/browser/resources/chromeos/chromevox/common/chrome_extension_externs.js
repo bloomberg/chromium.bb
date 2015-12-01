@@ -275,37 +275,23 @@ chrome.automation.AutomationNode = function() {};
 
 
 /**
- * Get the automation tree for the tab with the given tabId, or the current tab
- * if no tabID is given, enabling automation if necessary. Returns a tree with a
- * placeholder root node; listen for the "loadComplete" event to get a
- * notification that the tree has fully loaded (the previous root node reference
- * will stop working at or before this point).
  * @param {number} tabId
  * @param {function(chrome.automation.AutomationNode):void} callback
- *     Called when the <code>AutomationNode</code> for the page is available.
  */
 chrome.automation.getTree = function(tabId, callback) {};
 
-/**
- * Get the automation tree for the whole desktop which consists of all on screen
- * views. Note this API is currently only supported on Chrome OS.
- * @param {function(!chrome.automation.AutomationNode):void} callback
- *     Called when the <code>AutomationNode</code> for the page is available.
- */
+/** @param {function(!chrome.automation.AutomationNode):void} callback */
 chrome.automation.getDesktop = function(callback) {};
 
 /**
- * Add a tree change observer. Tree change observers are static/global,
- * they listen to tree changes across all trees.
- * @param {function(chrome.automation.TreeChange):void} observer
- *     A listener for tree changes on the <code>AutomationNode</code> tree.
+ * @param {string} filter
+ * @param {function(chrome.automation.TreeChange) : void}
+ *    observer
  */
-chrome.automation.addTreeChangeObserver = function(observer) {};
+chrome.automation.addTreeChangeObserver = function(filter, observer) {};
 
 /**
- * Remove a tree change observer.
- * @param {function(chrome.automation.TreeChange):void} observer
- *     A listener for tree changes on the <code>AutomationNode</code> tree.
+ * @param {function(chrome.automation.TreeChange) : void} observer
  */
 chrome.automation.removeTreeChangeObserver = function(observer) {};
 
@@ -477,22 +463,6 @@ chrome.automation.TreeChange.prototype.target;
 chrome.automation.TreeChange.prototype.type;
 
 
-/**
- * @param {function(chrome.automation.TreeChange) : void}
- *    callback
- */
-chrome.automation.AutomationNode.prototype.addTreeChangeObserver =
-    function(callback) {};
-
-
-/**
- * @param {function(chrome.automation.TreeChange) : void}
- *    callback
- */
-chrome.automation.AutomationNode.prototype.removeTreeChangeObserver =
-    function(callback) {};
-
-
 chrome.automation.AutomationNode.prototype.doDefault = function() {};
 
 
@@ -521,6 +491,18 @@ chrome.automation.AutomationNode.prototype.containerLiveAtomic;
 
 /** @type {boolean} */
 chrome.automation.AutomationNode.prototype.containerLiveBusy;
+
+/** @type {string} */
+chrome.automation.AutomationNode.prototype.liveStatus;
+
+/** @type {string} */
+chrome.automation.AutomationNode.prototype.liveRelevant;
+
+/** @type {boolean} */
+chrome.automation.AutomationNode.prototype.liveAtomic;
+
+/** @type {boolean} */
+chrome.automation.AutomationNode.prototype.liveBusy;
 
 
 /**

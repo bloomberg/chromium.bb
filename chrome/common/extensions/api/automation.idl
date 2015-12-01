@@ -317,6 +317,14 @@
     TreeChangeType type;
   };
 
+  // Possible tree changes to listen to using addTreeChangeObserver.
+  // Note that listening to all tree changes can be expensive.
+  enum TreeChangeObserverFilter {
+    noTreeChanges,
+    liveRegionTreeChanges,
+    allTreeChanges
+  };
+
   // A listener for changes on the <code>AutomationNode</code> tree.
   callback TreeChangeObserver = void(TreeChange treeChange);
 
@@ -494,6 +502,35 @@
     long tableCellRowSpan;
 
     //
+    // Live region attributes.
+    //
+
+    // The type of region if this is the root of a live region.
+    // Possible values are 'polite' and 'assertive'.
+    DOMString liveStatus;
+
+    // The value of aria-relevant for a live region.
+    DOMString liveRelevant;
+
+    // The value of aria-atomic for a live region.
+    boolean liveAtomic;
+
+    // The value of aria-busy for a live region.
+    boolean liveBusy;
+
+    // The type of live region if this node is inside a live region.
+    DOMString containerLiveStatus;
+
+    // The value of aria-relevant if this node is inside a live region.
+    DOMString containerLiveRelevant;
+
+    // The value of aria-atomic if this node is inside a live region.
+    boolean containerLiveAtomic;
+
+    // The value of aria-busy if this node is inside a live region.
+    boolean containerLiveBusy;
+
+    //
     // Walking the tree.
     //
 
@@ -579,9 +616,11 @@
     [nocompile] static void getDesktop(RootCallback callback);
 
     // Add a tree change observer. Tree change observers are static/global, they
-    // listen to changes across all trees.
+    // listen to changes across all trees. Pass a filter to determine what
+    // specific tree changes to listen to, and note that listnening to all
+    // tree changes can be expensive.
     [nocompile] static void addTreeChangeObserver(
-        TreeChangeObserver observer);
+        TreeChangeObserverFilter filter, TreeChangeObserver observer);
 
     // Remove a tree change observer.
     [nocompile] static void removeTreeChangeObserver(

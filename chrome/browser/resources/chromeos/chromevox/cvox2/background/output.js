@@ -64,14 +64,30 @@ Output = function() {
   /**
    * Current global options.
    * @type {{speech: boolean, braille: boolean}}
+   * @private
    */
   this.formatOptions_ = {speech: true, braille: false};
 
   /**
    * Speech properties to apply to the entire output.
    * @type {!Object<*>}
+   * @private
    */
   this.speechProperties_ = {};
+
+  /**
+   * The speech category for the generated speech utterance.
+   * @type {cvox.TtsCategory}
+   * @private
+   */
+  this.speechCategory_ = cvox.TtsCategory.NAV;
+
+  /**
+   * The speech queue mode for the generated speech utterance.
+   * @type {cvox.QueueMode}
+   * @private
+   */
+  this.queueMode_ = cvox.QueueMode.QUEUE;
 };
 
 /**
@@ -587,6 +603,22 @@ Output.EventType = {
   NAVIGATE: 'navigate'
 };
 
+/**
+ * If true, the next speech utterance will flush instead of the normal
+ * queueing mode.
+ * @type {boolean}
+ * @private
+ */
+Output.flushNextSpeechUtterance_ = false;
+
+/**
+ * Calling this will make the next speech utterance flush even if it would
+ * normally queue or do a category flush.
+ */
+Output.flushNextSpeechUtterance = function() {
+  Output.flushNextSpeechUtterance_ = true;
+};
+
 Output.prototype = {
   /**
    * Gets the spoken output with separator '|'.
@@ -608,6 +640,17 @@ Output.prototype = {
    */
   get brailleOutputForTest() {
     return this.createBrailleOutput_();
+  },
+
+  /**
+   * @return {boolean} True if there's any speech that will be output.
+   */
+  get hasSpeech() {
+    for (var i = 0; i < this.speechBuffer_.length; i++) {
+      if (this.speechBuffer_[i].trim().length)
+        return true;
+    }
+    return false;
   },
 
   /**
@@ -668,7 +711,17 @@ Output.prototype = {
    * @return {!Output}
    */
   withSpeechCategory: function(category) {
-    this.speechProperties_['category'] = category;
+    this.speechCategory_ = category;
+    return this;
+  },
+
+  /**
+   * Applies the given speech queue mode to the output.
+   * @param {cvox.QueueMode} queueMode The queueMode for the speech.
+   * @return {!Output}
+   */
+  withQueueMode: function(queueMode) {
+    this.queueMode_ = queueMode;
     return this;
   },
 
@@ -676,14 +729,18 @@ Output.prototype = {
    * Apply a format string directly to the output buffer. This lets you
    * output a message directly to the buffer using the format syntax.
    * @param {string} formatStr
+   * @param {!chrome.automation.AutomationNode=} opt_node An optional
+   *     node to apply the formatting to.
    * @return {!Output}
    */
-  format: function(formatStr) {
+  format: function(formatStr, opt_node) {
+    var node = opt_node || null;
+
     this.formatOptions_ = {speech: true, braille: false};
-    this.format_(null, formatStr, this.speechBuffer_);
+    this.format_(node, formatStr, this.speechBuffer_);
 
     this.formatOptions_ = {speech: false, braille: true};
-    this.format_(null, formatStr, this.brailleBuffer_);
+    this.format_(node, formatStr, this.brailleBuffer_);
 
     return this;
   },
@@ -705,8 +762,14 @@ Output.prototype = {
    */
   go: function() {
     // Speech.
-    var queueMode = this.speechProperties_['category'] ?
-        cvox.QueueMode.CATEGORY_FLUSH : cvox.QueueMode.FLUSH;
+    var queueMode = this.queueMode_;
+    if (Output.flushNextSpeechUtterance_) {
+      queueMode = cvox.QueueMode.FLUSH;
+      Output.flushNextSpeechUtterance_ = false;
+    }
+
+    this.speechProperties_.category = this.speechCategory_;
+
     this.speechBuffer_.forEach(function(buff, i, a) {
       (function() {
         var scopedBuff = buff;
@@ -754,8 +817,10 @@ Output.prototype = {
     }
 
     // Display.
-    if (cvox.ChromeVox.isChromeOS)
+    if (cvox.ChromeVox.isChromeOS &&
+        this.speechCategory_ != cvox.TtsCategory.LIVE) {
       chrome.accessibilityPrivate.setFocusRing(this.locations_);
+    }
   },
 
   /**

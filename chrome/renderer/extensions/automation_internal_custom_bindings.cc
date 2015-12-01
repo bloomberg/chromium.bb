@@ -393,7 +393,10 @@ private:
 
 AutomationInternalCustomBindings::AutomationInternalCustomBindings(
     ScriptContext* context)
-    : ObjectBackedNativeHandler(context), is_active_profile_(true) {
+    : ObjectBackedNativeHandler(context),
+      is_active_profile_(true),
+      tree_change_observer_overall_filter_(
+          api::automation::TREE_CHANGE_OBSERVER_FILTER_NOTREECHANGES) {
   // It's safe to use base::Unretained(this) here because these bindings
   // will only be called on a valid AutomationInternalCustomBindings instance
   // and none of the functions have any side effects.
@@ -406,6 +409,8 @@ AutomationInternalCustomBindings::AutomationInternalCustomBindings(
   ROUTE_FUNCTION(GetRoutingID);
   ROUTE_FUNCTION(StartCachingAccessibilityTrees);
   ROUTE_FUNCTION(DestroyAccessibilityTree);
+  ROUTE_FUNCTION(AddTreeChangeObserver);
+  ROUTE_FUNCTION(RemoveTreeChangeObserver);
   ROUTE_FUNCTION(GetChildIDAtIndex);
   #undef ROUTE_FUNCTION
 
@@ -732,6 +737,51 @@ void AutomationInternalCustomBindings::DestroyAccessibilityTree(
   delete cache;
 }
 
+void AutomationInternalCustomBindings::AddTreeChangeObserver(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  if (args.Length() != 2 || !args[0]->IsNumber() || !args[1]->IsString()) {
+    ThrowInvalidArgumentsException(this);
+    return;
+  }
+
+  TreeChangeObserver observer;
+  observer.id = args[0]->Int32Value();
+  std::string filter_str = *v8::String::Utf8Value(args[1]);
+  observer.filter = api::automation::ParseTreeChangeObserverFilter(filter_str);
+
+  tree_change_observers_.push_back(observer);
+  UpdateOverallTreeChangeObserverFilter();
+}
+
+void AutomationInternalCustomBindings::RemoveTreeChangeObserver(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  if (args.Length() != 1 || !args[0]->IsNumber()) {
+    ThrowInvalidArgumentsException(this);
+    return;
+  }
+
+  int observer_id = args[0]->Int32Value();
+
+  for (auto iter = tree_change_observers_.begin();
+       iter != tree_change_observers_.end(); ++iter) {
+    if (iter->id == observer_id) {
+      tree_change_observers_.erase(iter);
+      break;
+    }
+  }
+
+  UpdateOverallTreeChangeObserverFilter();
+}
+
+void AutomationInternalCustomBindings::UpdateOverallTreeChangeObserverFilter() {
+  tree_change_observer_overall_filter_ =
+      api::automation::TREE_CHANGE_OBSERVER_FILTER_NOTREECHANGES;
+  for (const auto& observer : tree_change_observers_) {
+    tree_change_observer_overall_filter_ =
+        std::max(observer.filter, tree_change_observer_overall_filter_);
+  }
+}
+
 void AutomationInternalCustomBindings::RouteTreeIDFunction(
     const std::string& name,
     TreeIDFunction callback) {
@@ -816,14 +866,18 @@ void AutomationInternalCustomBindings::OnAccessibilityEvent(
 
   // Update the internal state whether it's the active profile or not.
   cache->location_offset = params.location_offset;
+  deleted_node_ids_.clear();
   if (!cache->tree.Unserialize(params.update)) {
     LOG(ERROR) << cache->tree.error();
     return;
   }
 
-  // Don't send the event if it's not the active profile.
+  // Don't send any events if it's not the active profile.
   if (!is_active_profile)
     return;
+
+  SendNodesRemovedEvent(&cache->tree, deleted_node_ids_);
+  deleted_node_ids_.clear();
 
   v8::Isolate* isolate = GetIsolate();
   v8::HandleScope handle_scope(isolate);
@@ -847,6 +901,7 @@ void AutomationInternalCustomBindings::OnNodeWillBeDeleted(ui::AXTree* tree,
   SendTreeChangeEvent(
       api::automation::TREE_CHANGE_TYPE_NODEREMOVED,
       tree, node);
+  deleted_node_ids_.push_back(node->id());
 }
 
 void AutomationInternalCustomBindings::OnSubtreeWillBeDeleted(
@@ -909,6 +964,25 @@ void AutomationInternalCustomBindings::SendTreeChangeEvent(
   if (!is_active_profile_)
     return;
 
+  // Always notify the custom bindings when there's a node with a child tree
+  // ID that might need to be loaded.
+  if (node->data().HasIntAttribute(ui::AX_ATTR_CHILD_TREE_ID))
+    SendChildTreeIDEvent(tree, node);
+
+  switch (tree_change_observer_overall_filter_) {
+    case api::automation::TREE_CHANGE_OBSERVER_FILTER_NOTREECHANGES:
+    default:
+      return;
+    case api::automation::TREE_CHANGE_OBSERVER_FILTER_LIVEREGIONTREECHANGES:
+      if (!node->data().HasStringAttribute(ui::AX_ATTR_CONTAINER_LIVE_STATUS) &&
+          node->data().role != ui::AX_ROLE_ALERT) {
+        return;
+      }
+      break;
+    case api::automation::TREE_CHANGE_OBSERVER_FILTER_ALLTREECHANGES:
+      break;
+  }
+
   auto iter = axtree_to_tree_cache_map_.find(tree);
   if (iter == axtree_to_tree_cache_map_.end())
     return;
@@ -918,11 +992,68 @@ void AutomationInternalCustomBindings::SendTreeChangeEvent(
   v8::Isolate* isolate = GetIsolate();
   v8::HandleScope handle_scope(isolate);
   v8::Context::Scope context_scope(context()->v8_context());
-  v8::Local<v8::Array> args(v8::Array::New(GetIsolate(), 3U));
+
+  for (const auto& observer : tree_change_observers_) {
+    switch (observer.filter) {
+      case api::automation::TREE_CHANGE_OBSERVER_FILTER_NOTREECHANGES:
+      default:
+        continue;
+      case api::automation::TREE_CHANGE_OBSERVER_FILTER_LIVEREGIONTREECHANGES:
+        if (!node->data().HasStringAttribute(
+                ui::AX_ATTR_CONTAINER_LIVE_STATUS) &&
+            node->data().role != ui::AX_ROLE_ALERT) {
+          continue;
+        }
+        break;
+      case api::automation::TREE_CHANGE_OBSERVER_FILTER_ALLTREECHANGES:
+        break;
+    }
+
+    v8::Local<v8::Array> args(v8::Array::New(GetIsolate(), 4U));
+    args->Set(0U, v8::Integer::New(GetIsolate(), observer.id));
+    args->Set(1U, v8::Integer::New(GetIsolate(), tree_id));
+    args->Set(2U, v8::Integer::New(GetIsolate(), node->id()));
+    args->Set(3U, CreateV8String(isolate, ToString(change_type)));
+    context()->DispatchEvent("automationInternal.onTreeChange", args);
+  }
+}
+
+void AutomationInternalCustomBindings::SendChildTreeIDEvent(ui::AXTree* tree,
+                                                            ui::AXNode* node) {
+  auto iter = axtree_to_tree_cache_map_.find(tree);
+  if (iter == axtree_to_tree_cache_map_.end())
+    return;
+
+  int tree_id = iter->second->tree_id;
+
+  v8::Isolate* isolate = GetIsolate();
+  v8::HandleScope handle_scope(isolate);
+  v8::Context::Scope context_scope(context()->v8_context());
+  v8::Local<v8::Array> args(v8::Array::New(GetIsolate(), 2U));
   args->Set(0U, v8::Integer::New(GetIsolate(), tree_id));
   args->Set(1U, v8::Integer::New(GetIsolate(), node->id()));
-  args->Set(2U, CreateV8String(isolate, ToString(change_type)));
-  context()->DispatchEvent("automationInternal.onTreeChange", args);
+  context()->DispatchEvent("automationInternal.onChildTreeID", args);
+}
+
+void AutomationInternalCustomBindings::SendNodesRemovedEvent(
+    ui::AXTree* tree,
+    const std::vector<int>& ids) {
+  auto iter = axtree_to_tree_cache_map_.find(tree);
+  if (iter == axtree_to_tree_cache_map_.end())
+    return;
+
+  int tree_id = iter->second->tree_id;
+
+  v8::Isolate* isolate = GetIsolate();
+  v8::HandleScope handle_scope(isolate);
+  v8::Context::Scope context_scope(context()->v8_context());
+  v8::Local<v8::Array> args(v8::Array::New(GetIsolate(), 2U));
+  args->Set(0U, v8::Integer::New(GetIsolate(), tree_id));
+  v8::Local<v8::Array> nodes(v8::Array::New(GetIsolate(), ids.size()));
+  args->Set(1U, nodes);
+  for (size_t i = 0; i < ids.size(); ++i)
+    nodes->Set(i, v8::Integer::New(GetIsolate(), ids[i]));
+  context()->DispatchEvent("automationInternal.onNodesRemoved", args);
 }
 
 }  // namespace extensions

@@ -29,6 +29,11 @@ struct TreeCache {
   ui::AXTree tree;
 };
 
+struct TreeChangeObserver {
+  int id;
+  api::automation::TreeChangeObserverFilter filter;
+};
+
 // The native component of custom bindings for the chrome.automationInternal
 // API.
 class AutomationInternalCustomBindings : public ObjectBackedNativeHandler,
@@ -72,6 +77,11 @@ class AutomationInternalCustomBindings : public ObjectBackedNativeHandler,
   // removed from our cache.
   // Args: int ax_tree_id
   void DestroyAccessibilityTree(
+      const v8::FunctionCallbackInfo<v8::Value>& args);
+
+  void AddTreeChangeObserver(const v8::FunctionCallbackInfo<v8::Value>& args);
+
+  void RemoveTreeChangeObserver(
       const v8::FunctionCallbackInfo<v8::Value>& args);
 
   void RouteTreeIDFunction(const std::string& name,
@@ -159,6 +169,8 @@ class AutomationInternalCustomBindings : public ObjectBackedNativeHandler,
   void OnAccessibilityEvent(const ExtensionMsg_AccessibilityEventParams& params,
                             bool is_active_profile);
 
+  void UpdateOverallTreeChangeObserverFilter();
+
   // AXTreeDelegate implementation.
   void OnTreeDataChanged(ui::AXTree* tree) override;
   void OnNodeWillBeDeleted(ui::AXTree* tree, ui::AXNode* node) override;
@@ -168,15 +180,20 @@ class AutomationInternalCustomBindings : public ObjectBackedNativeHandler,
   void OnAtomicUpdateFinished(ui::AXTree* tree,
                               bool root_changed,
                               const std::vector<Change>& changes) override;
-
   void SendTreeChangeEvent(api::automation::TreeChangeType change_type,
                            ui::AXTree* tree,
                            ui::AXNode* node);
+  void SendChildTreeIDEvent(ui::AXTree* tree, ui::AXNode* node);
+  void SendNodesRemovedEvent(ui::AXTree* tree, const std::vector<int>& ids);
 
   base::hash_map<int, TreeCache*> tree_id_to_tree_cache_map_;
   base::hash_map<ui::AXTree*, TreeCache*> axtree_to_tree_cache_map_;
   scoped_refptr<AutomationMessageFilter> message_filter_;
   bool is_active_profile_;
+  std::vector<TreeChangeObserver> tree_change_observers_;
+  api::automation::TreeChangeObserverFilter
+      tree_change_observer_overall_filter_;
+  std::vector<int> deleted_node_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(AutomationInternalCustomBindings);
 };

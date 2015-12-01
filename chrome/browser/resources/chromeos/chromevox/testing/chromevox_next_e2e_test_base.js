@@ -34,17 +34,17 @@ ChromeVoxNextE2ETest.prototype = {
   runWithLoadedTree: function(doc, callback) {
     callback = this.newCallback(callback);
     chrome.automation.getDesktop(function(r) {
-      var listener = function(evt) {
-        if (!evt.target.docUrl ||
-            evt.target.docUrl.indexOf('test') == -1)
-          return;
+      this.runWithTab(doc, function(newTabUrl) {
+        var listener = function(evt) {
+          if (!evt.target.docUrl || evt.target.docUrl != newTabUrl)
+            return;
 
-        r.removeEventListener('loadComplete', listener, true);
-        callback && callback(evt.target);
-        callback = null;
-      };
-      r.addEventListener('loadComplete', listener, true);
-      this.runWithTab(doc);
+          r.removeEventListener('loadComplete', listener, true);
+          callback && callback(evt.target);
+          callback = null;
+        };
+        r.addEventListener('loadComplete', listener, true);
+      }.bind(this));
     }.bind(this));
   },
 

@@ -14,16 +14,34 @@
   </ul>
   <button id="add">Add</button>
   <button id="remove">Remove</button>
+  <button id="live">Live</button>
+
+  <div id="dead_region1"></div>
+  <div id="live_region" aria-live="polite"></div>
+  <div id="dead_region2"></div>
 
 <script>
   document.getElementById('add').addEventListener('click', function() {
     var li = document.createElement('li');
-    li.innerText = "New";
+    li.innerText = 'New';
     document.getElementById('list').appendChild(li);
   });
   document.getElementById('remove').addEventListener('click', function() {
     var list = document.getElementById('list');
     list.removeChild(list.lastElementChild);
+  });
+  document.getElementById('live').addEventListener('click', function() {
+    var p1 = document.createElement('p');
+    p1.innerText = 'Dead';
+    document.getElementById('dead_region1').appendChild(p1);
+
+    var p = document.createElement('p');
+    p.innerText = 'Live';
+    document.getElementById('live_region').appendChild(p);
+
+    var p2 = document.createElement('p');
+    p2.innerText = 'Dead';
+    document.getElementById('dead_region2').appendChild(p2);
   });
 </script>
 

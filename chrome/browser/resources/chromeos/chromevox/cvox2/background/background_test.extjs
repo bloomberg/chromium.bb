@@ -216,49 +216,6 @@ TEST_F('BackgroundTest', 'ContinuousRead', function() {
   });
 });
 
-TEST_F('BackgroundTest', 'LiveRegionAddElement', function() {
-  var mockFeedback = this.createMockFeedback();
-  this.runWithLoadedTree(
-    function() {/*!
-      <h1>Document with live region</h1>
-      <p id="live" aria-live="polite"></p>
-      <button id="go">Go</button>
-      <script>
-        document.getElementById('go').addEventListener('click', function() {
-          document.getElementById('live').innerHTML = 'Hello, world';
-        }, false);
-      </script>
-    */},
-    function(rootNode) {
-      var go = rootNode.find({ role: RoleType.button });
-      mockFeedback.call(go.doDefault.bind(go))
-          .expectSpeech('Hello, world');
-      mockFeedback.replay();
-    });
-});
-
-TEST_F('BackgroundTest', 'LiveRegionRemoveElement', function() {
-  var mockFeedback = this.createMockFeedback();
-  this.runWithLoadedTree(
-    function() {/*!
-      <h1>Document with live region</h1>
-      <p id="live" aria-live="polite" aria-relevant="removals">Hello, world</p>
-      <button id="go">Go</button>
-      <script>
-        document.getElementById('go').addEventListener('click', function() {
-          document.getElementById('live').innerHTML = '';
-        }, false);
-      </script>
-    */},
-    function(rootNode) {
-      var go = rootNode.find({ role: RoleType.button });
-      go.doDefault();
-      mockFeedback.expectSpeech('removed:')
-          .expectSpeech('Hello, world');
-      mockFeedback.replay();
-    });
-});
-
 TEST_F('BackgroundTest', 'InitialFocus', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree('<a href="a">a</a>',

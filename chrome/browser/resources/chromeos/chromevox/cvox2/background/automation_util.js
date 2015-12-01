@@ -276,4 +276,25 @@ AutomationUtil.isTraversalRoot = function(node) {
   }
 };
 
+/**
+ * Determines whether the two given nodes come from the same webpage.
+ * @param {AutomationNode} a
+ * @param {AutomationNode} b
+ * @return {boolean}
+ */
+AutomationUtil.isInSameWebpage = function(a, b) {
+  if (!a || !b)
+    return false;
+
+  a = a.root;
+  while (a && a.parent && AutomationUtil.isInSameTree(a.parent, a))
+    a = a.parent.root;
+
+  b = b.root;
+  while (b && b.parent && AutomationUtil.isInSameTree(b.parent, b))
+    b = b.parent.root;
+
+  return a == b;
+};
+
 });  // goog.scope

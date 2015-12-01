@@ -25,6 +25,22 @@ AutomationUtilE2ETest.prototype = {
   basicDoc: function() {/*!
     <p><a href='#'></a>hello</p>
     <h1><ul><li>a</ul><button></h1>
+  */},
+
+  secondDoc: function() {/*!
+    <html>
+      <head><title>Second doc</title></head>
+      <body><div>Second</div></body>
+    </html>
+  */},
+
+  iframeDoc: function() {/*!
+    <html>
+      <head><title>Second doc</title></head>
+      <body>
+        <iframe src="data:text/html,<p>Inside</p>"></iframe>
+      </body>
+    </html>
   */}
 };
 
@@ -97,6 +113,61 @@ TEST_F('AutomationUtilE2ETest', 'GetDirection', function() {
     right = right.lastChild;
     assertEquals(Dir.BACKWARD, AutomationUtil.getDirection(right, left));
     assertEquals(Dir.FORWARD, AutomationUtil.getDirection(left, right));
-
   });
+});
+
+TEST_F('AutomationUtilE2ETest', 'IsInSameWebpage', function() {
+  this.runWithLoadedTree(this.basicDoc, function(root) {
+    this.runWithLoadedTree(this.secondDoc, function(root2) {
+      chrome.automation.getDesktop(this.newCallback(function(desktop) {
+        assertTrue(AutomationUtil.isInSameWebpage(root, root));
+        assertTrue(AutomationUtil.isInSameWebpage(root.firstChild, root));
+        assertTrue(AutomationUtil.isInSameWebpage(root, root.firstChild));
+
+        assertTrue(AutomationUtil.isInSameWebpage(root2, root2));
+        assertTrue(AutomationUtil.isInSameWebpage(root2.firstChild, root2));
+        assertTrue(AutomationUtil.isInSameWebpage(root2, root2.firstChild));
+
+        assertFalse(AutomationUtil.isInSameWebpage(root, root2));
+        assertFalse(AutomationUtil.isInSameWebpage(root.firstChild, root2));
+        assertFalse(AutomationUtil.isInSameWebpage(root2.firstChild));
+        assertFalse(AutomationUtil.isInSameWebpage(
+            root.firstChild, root2.firstChild));
+
+        assertFalse(AutomationUtil.isInSameWebpage(root, desktop));
+        assertFalse(AutomationUtil.isInSameWebpage(root2, desktop));
+      }.bind(this)));
+    }.bind(this));
+  }.bind(this));
+});
+
+TEST_F('AutomationUtilE2ETest', 'IsInSameWebpageIframe', function() {
+  // Wait for load complete on both outer frame and iframe.
+  var outerFrame;
+  var innerFrame;
+  var desktop;
+  var onSuccess = this.newCallback(function() {
+    assertTrue(AutomationUtil.isInSameWebpage(outerFrame, innerFrame));
+    assertFalse(AutomationUtil.isInSameWebpage(outerFrame, desktop));
+    assertFalse(AutomationUtil.isInSameWebpage(innerFrame, desktop));
+    assertFalse(AutomationUtil.isInSameWebpage(outerFrame.parent, innerFrame));
+  }.bind(this));
+
+  chrome.automation.getDesktop(function(r) {
+    desktop = r;
+    this.runWithTab(this.iframeDoc, function(newTabUrl) {
+      var listener = function(evt) {
+        if (evt.target.docUrl == newTabUrl)
+          outerFrame = evt.target;
+	if (evt.target.docUrl.indexOf('data:text/html') == 0)
+	  innerFrame = evt.target;
+
+        if (outerFrame && innerFrame) {
+          desktop.removeEventListener('loadComplete', listener, true);
+          onSuccess();
+        }
+      }.bind(this);
+      desktop.addEventListener('loadComplete', listener, true);
+    }.bind(this));
+  }.bind(this));
 });

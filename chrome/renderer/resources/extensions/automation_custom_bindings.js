@@ -22,6 +22,9 @@ var DestroyAccessibilityTree =
 var GetIntAttribute = nativeAutomationInternal.GetIntAttribute;
 var StartCachingAccessibilityTrees =
     nativeAutomationInternal.StartCachingAccessibilityTrees;
+var AddTreeChangeObserver = nativeAutomationInternal.AddTreeChangeObserver;
+var RemoveTreeChangeObserver =
+    nativeAutomationInternal.RemoveTreeChangeObserver;
 var schema = GetSchemaAdditions();
 
 /**
@@ -53,9 +56,15 @@ automationUtil.storeTreeCallback = function(id, callback) {
 
 /**
  * Global list of tree change observers.
- * @type {Array<TreeChangeObserver>}
+ * @type {Object<number, TreeChangeObserver>}
  */
-automationUtil.treeChangeObservers = [];
+automationUtil.treeChangeObserverMap = {};
+
+/**
+ * The id of the next tree change observer.
+ * @type {number}
+ */
+automationUtil.nextTreeChangeObserverId = 1;
 
 automation.registerCustomHook(function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
@@ -110,22 +119,27 @@ automation.registerCustomHook(function(bindingsAPI) {
   });
 
   function removeTreeChangeObserver(observer) {
-    var observers = automationUtil.treeChangeObservers;
-    for (var i = 0; i < observers.length; i++) {
-      if (observer == observers[i])
-        observers.splice(i, 1);
+    for (var id in automationUtil.treeChangeObserverMap) {
+      if (automationUtil.treeChangeObserverMap[id] == observer) {
+        RemoveTreeChangeObserver(id);
+        delete automationUtil.treeChangeObserverMap[id];
+        return;
+      }
     }
   }
   apiFunctions.setHandleRequest('removeTreeChangeObserver', function(observer) {
     removeTreeChangeObserver(observer);
   });
 
-  function addTreeChangeObserver(observer) {
+  function addTreeChangeObserver(filter, observer) {
     removeTreeChangeObserver(observer);
-    automationUtil.treeChangeObservers.push(observer);
+    var id = automationUtil.nextTreeChangeObserverId++;
+    AddTreeChangeObserver(id, filter);
+    automationUtil.treeChangeObserverMap[id] = observer;
   }
-  apiFunctions.setHandleRequest('addTreeChangeObserver', function(observer) {
-    addTreeChangeObserver(observer);
+  apiFunctions.setHandleRequest('addTreeChangeObserver',
+      function(filter, observer) {
+    addTreeChangeObserver(filter, observer);
   });
 
   apiFunctions.setHandleRequest('setDocumentSelection', function(params) {
@@ -147,7 +161,44 @@ automation.registerCustomHook(function(bindingsAPI) {
 
 });
 
-automationInternal.onTreeChange.addListener(function(treeID,
+automationInternal.onChildTreeID.addListener(function(treeID,
+                                                      nodeID) {
+  var tree = AutomationRootNode.getOrCreate(treeID);
+  if (!tree)
+    return;
+
+  var node = privates(tree).impl.get(nodeID);
+  if (!node)
+    return;
+
+  // A WebView in the desktop tree has a different AX tree as its child.
+  // When we encounter a WebView with a child AX tree id that we don't
+  // currently have cached, explicitly request that AX tree from the
+  // browser process and set up a callback when it loads to attach that
+  // tree as a child of this node and fire appropriate events.
+  var childTreeID = GetIntAttribute(treeID, nodeID, 'childTreeId');
+  if (!childTreeID)
+    return;
+
+  var subroot = AutomationRootNode.get(childTreeID);
+  if (!subroot) {
+    automationUtil.storeTreeCallback(childTreeID, function(root) {
+      privates(root).impl.setHostNode(node);
+
+      if (root.docLoaded)
+        privates(root).impl.dispatchEvent(schema.EventType.loadComplete);
+
+      privates(node).impl.dispatchEvent(schema.EventType.childrenChanged);
+    });
+
+    automationInternal.enableFrame(childTreeID);
+  } else {
+    privates(subroot).impl.setHostNode(node);
+  }
+});
+
+automationInternal.onTreeChange.addListener(function(observerID,
+                                                     treeID,
                                                      nodeID,
                                                      changeType) {
   var tree = AutomationRootNode.getOrCreate(treeID);
@@ -158,49 +209,25 @@ automationInternal.onTreeChange.addListener(function(treeID,
   if (!node)
     return;
 
-  if (node.role == 'webView' || node.role == 'embeddedObject') {
-    // A WebView in the desktop tree has a different AX tree as its child.
-    // When we encounter a WebView with a child AX tree id that we don't
-    // currently have cached, explicitly request that AX tree from the
-    // browser process and set up a callback when it loads to attach that
-    // tree as a child of this node and fire appropriate events.
-    var childTreeID = GetIntAttribute(treeID, nodeID, 'childTreeId');
-    if (!childTreeID)
-      return;
+  var observer = automationUtil.treeChangeObserverMap[observerID];
+  if (!observer)
+    return;
 
-    var subroot = AutomationRootNode.get(childTreeID);
-    if (!subroot) {
-      automationUtil.storeTreeCallback(childTreeID, function(root) {
-        privates(root).impl.setHostNode(node);
-
-        if (root.docLoaded)
-          privates(root).impl.dispatchEvent(schema.EventType.loadComplete);
-
-        privates(node).impl.dispatchEvent(schema.EventType.childrenChanged);
-      });
-
-      automationInternal.enableFrame(childTreeID);
-    } else {
-      privates(subroot).impl.setHostNode(node);
-    }
+  try {
+    observer({target: node, type: changeType});
+  } catch (e) {
+    exceptionHandler.handle('Error in tree change observer for ' +
+        treeChange.type, e);
   }
+});
 
-  var treeChange = {target: node, type: changeType};
+automationInternal.onNodesRemoved.addListener(function(treeID, nodeIDs) {
+  var tree = AutomationRootNode.getOrCreate(treeID);
+  if (!tree)
+    return;
 
-  // Make a copy of the observers in case one of these callbacks tries
-  // to change the list of observers.
-  var observers = automationUtil.treeChangeObservers.slice();
-  for (var i = 0; i < observers.length; i++) {
-    try {
-      observers[i](treeChange);
-    } catch (e) {
-      exceptionHandler.handle('Error in tree change observer for ' +
-          treeChange.type, e);
-    }
-  }
-
-  if (changeType == schema.TreeChangeType.nodeRemoved) {
-    privates(tree).impl.remove(nodeID);
+  for (var i = 0; i < nodeIDs.length; i++) {
+    privates(tree).impl.remove(nodeIDs[i]);
   }
 });
 

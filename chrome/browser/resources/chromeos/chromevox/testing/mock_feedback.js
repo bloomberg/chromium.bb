@@ -160,6 +160,55 @@ MockFeedback.prototype = {
   },
 
   /**
+   * Adds an expectation for one spoken utterance that will be enqueued
+   *     with a given queue mode.
+   * @param {string|RegExp} text One utterance expectation.
+   * @param {cvox.QueueMode} queueMode The expected queue mode.
+   * @return {MockFeedback} |this| for chaining
+   */
+  expectSpeechWithQueueMode: function(text, queueMode) {
+    assertFalse(this.replaying_);
+    this.pendingActions_.push({
+      perform: function() {
+        return !!MockFeedback.matchAndConsume_(
+            text, {queueMode: queueMode}, this.pendingUtterances_);
+        }.bind(this),
+      toString: function() {
+        return 'Speak \'' + text + '\' with mode ' + queueMode;
+      }
+    });
+    return this;
+  },
+
+  /**
+   * Adds an expectation for one spoken utterance that will be queued.
+   * @param {string|RegExp} text One utterance expectation.
+   * @return {MockFeedback} |this| for chaining
+   */
+  expectQueuedSpeech: function(text) {
+    return this.expectSpeechWithQueueMode(text, cvox.QueueMode.QUEUE);
+  },
+
+  /**
+   * Adds an expectation for one spoken utterance that will be flushed.
+   * @param {string|RegExp} text One utterance expectation.
+   * @return {MockFeedback} |this| for chaining
+   */
+  expectFlushingSpeech: function(text) {
+    return this.expectSpeechWithQueueMode(text, cvox.QueueMode.FLUSH);
+  },
+
+  /**
+   * Adds an expectation for one spoken utterance that will be queued
+   *     with the category flush mode.
+   * @param {string|RegExp} text One utterance expectation.
+   * @return {MockFeedback} |this| for chaining
+   */
+  expectCategoryFlushSpeech: function(text) {
+    return this.expectSpeechWithQueueMode(text, cvox.QueueMode.CATEGORY_FLUSH);
+  },
+
+  /**
    * Adds an expectation that the next spoken utterances do *not* match
    * the given arguments.
    *
@@ -299,6 +348,7 @@ MockFeedback.prototype = {
     }
     this.pendingUtterances_.push(
         {text: textString,
+         queueMode: queueMode,
          callback: callback});
     this.process_();
   },

@@ -4,7 +4,7 @@
 
 var allTests = [
   function testTreeChangedObserverForCreatingNode() {
-    chrome.automation.addTreeChangeObserver(function(change) {
+    chrome.automation.addTreeChangeObserver("allTreeChanges", function(change) {
       if (change.type == "subtreeCreated" && change.target.name == "New") {
         chrome.test.succeed();
       }
@@ -15,7 +15,7 @@ var allTests = [
   },
 
   function testTreeChangedObserverForRemovingNode() {
-    chrome.automation.addTreeChangeObserver(function(change) {
+    chrome.automation.addTreeChangeObserver("allTreeChanges", function(change) {
       if (change.type == "nodeRemoved" && change.target.role == "listItem") {
         chrome.test.succeed();
       }
@@ -23,7 +23,25 @@ var allTests = [
 
     var removeButton = rootNode.find({ attributes: { name: 'Remove' }});
     removeButton.doDefault();
+  },
+
+  function testTreeChangedObserverForLiveRegionsOnly() {
+    // This test would fail if we set the filter to allTreeChanges.
+    chrome.automation.addTreeChangeObserver(
+        "liveRegionTreeChanges",
+        function(change) {
+      if (change.target.name == 'Dead') {
+        chrome.test.fail();
+      }
+      if (change.target.name == 'Live') {
+        chrome.test.succeed();
+      }
+    });
+
+    var liveButton = rootNode.find({ attributes: { name: 'Live' }});
+    liveButton.doDefault();
   }
+
 ];
 
 setUpAndRunTests(allTests, 'tree_change.html');
