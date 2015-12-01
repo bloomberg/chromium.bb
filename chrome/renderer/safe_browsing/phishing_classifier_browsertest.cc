@@ -46,7 +46,8 @@ class PhishingClassifierTest : public InProcessBrowserTest {
       : url_tld_token_net_(features::kUrlTldToken + std::string("net")),
         page_link_domain_phishing_(features::kPageLinkDomain +
                                    std::string("phishing.com")),
-        page_term_login_(features::kPageTerm + std::string("login")) {
+        page_term_login_(features::kPageTerm + std::string("login")),
+        page_text_(base::ASCIIToUTF16("login")) {
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -108,6 +109,19 @@ class PhishingClassifierTest : public InProcessBrowserTest {
         base::Bind(&PhishingClassifierTest::HandleRequest,
                    base::Unretained(this)));
     ASSERT_TRUE(embedded_test_server()->Start());
+
+    host_resolver()->AddRule("*", "127.0.0.1");
+
+    // No scorer yet, so the classifier is not ready.
+    ASSERT_FALSE(classifier_->is_ready());
+
+    // Now set the scorer.
+    classifier_->set_phishing_scorer(scorer_.get());
+    ASSERT_TRUE(classifier_->is_ready());
+
+    // These tests don't exercise the extraction timing.
+    EXPECT_CALL(*clock_, Now())
+        .WillRepeatedly(::testing::Return(base::TimeTicks::Now()));
   }
 
   void TearDownOnMainThread() override {
@@ -196,6 +210,7 @@ class PhishingClassifierTest : public InProcessBrowserTest {
   const std::string url_tld_token_net_;
   const std::string page_link_domain_phishing_;
   const std::string page_term_login_;
+  const base::string16 page_text_;
 };
 
 // This test flakes on Mac with force compositing mode.
@@ -203,31 +218,20 @@ class PhishingClassifierTest : public InProcessBrowserTest {
 // Flaky on Chrome OS, running into a memory allocation error.
 // http://crbug.com/544085
 #if defined(OS_MACOSX) || defined(OS_CHROMEOS)
-#define MAYBE_TestClassification DISABLED_TestClassification
+#define MAYBE_TestClassificationOfPhishingDotCom \
+  DISABLED_TestClassificationOfPhishingDotCom
 #else
-#define MAYBE_TestClassification TestClassification
+#define MAYBE_TestClassificationOfPhishingDotCom \
+  TestClassificationOfPhishingDotCom
 #endif
-IN_PROC_BROWSER_TEST_F(PhishingClassifierTest, MAYBE_TestClassification) {
-  host_resolver()->AddRule("*", "127.0.0.1");
-
-  // No scorer yet, so the classifier is not ready.
-  ASSERT_FALSE(classifier_->is_ready());
-
-  // Now set the scorer.
-  classifier_->set_phishing_scorer(scorer_.get());
-  ASSERT_TRUE(classifier_->is_ready());
-
-  // This test doesn't exercise the extraction timing.
-  EXPECT_CALL(*clock_, Now())
-      .WillRepeatedly(::testing::Return(base::TimeTicks::Now()));
-
-  base::string16 page_text = base::ASCIIToUTF16("login");
+IN_PROC_BROWSER_TEST_F(PhishingClassifierTest,
+                       MAYBE_TestClassificationOfPhishingDotCom) {
   float phishy_score;
   FeatureMap features;
 
   LoadHtml("host.net",
       "<html><body><a href=\"http://phishing.com/\">login</a></body></html>");
-  EXPECT_TRUE(RunPhishingClassifier(&page_text, &phishy_score, &features));
+  EXPECT_TRUE(RunPhishingClassifier(&page_text_, &phishy_score, &features));
   // Note: features.features() might contain other features that simply aren't
   // in the model.
   EXPECT_THAT(features.features(),
@@ -235,11 +239,27 @@ IN_PROC_BROWSER_TEST_F(PhishingClassifierTest, MAYBE_TestClassification) {
                     Contains(Pair(page_link_domain_phishing_, 1.0)),
                     Contains(Pair(page_term_login_, 1.0))));
   EXPECT_FLOAT_EQ(0.5, phishy_score);
+}
+
+// This test flakes on Mac with force compositing mode.
+// http://crbug.com/316709
+// Flaky on Chrome OS, running into a memory allocation error.
+// http://crbug.com/544085
+#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#define MAYBE_TestClassificationOfSafeDotCom \
+  DISABLED_TestClassificationOfSafeDotCom
+#else
+#define MAYBE_TestClassificationOfSafeDotCom TestClassificationOfSafeDotCom
+#endif
+IN_PROC_BROWSER_TEST_F(PhishingClassifierTest,
+                       MAYBE_TestClassificationOfSafeDotCom) {
+  float phishy_score;
+  FeatureMap features;
 
   // Change the link domain to something non-phishy.
   LoadHtml("host.net",
            "<html><body><a href=\"http://safe.com/\">login</a></body></html>");
-  EXPECT_FALSE(RunPhishingClassifier(&page_text, &phishy_score, &features));
+  EXPECT_FALSE(RunPhishingClassifier(&page_text_, &phishy_score, &features));
   EXPECT_THAT(features.features(),
               AllOf(Contains(Pair(url_tld_token_net_, 1.0)),
                     Contains(Pair(page_term_login_, 1.0))));
@@ -247,12 +267,43 @@ IN_PROC_BROWSER_TEST_F(PhishingClassifierTest, MAYBE_TestClassification) {
               Not(Contains(Pair(page_link_domain_phishing_, 1.0))));
   EXPECT_GE(phishy_score, 0.0);
   EXPECT_LT(phishy_score, 0.5);
+}
+
+// This test flakes on Mac with force compositing mode.
+// http://crbug.com/316709
+// Flaky on Chrome OS, running into a memory allocation error.
+// http://crbug.com/544085
+#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#define MAYBE_TestClassificationWhenNoTld DISABLED_TestClassificationWhenNoTld
+#else
+#define MAYBE_TestClassificationWhenNoTld TestClassificationWhenNoTld
+#endif
+IN_PROC_BROWSER_TEST_F(PhishingClassifierTest,
+                       MAYBE_TestClassificationWhenNoTld) {
+  float phishy_score;
+  FeatureMap features;
 
   // Extraction should fail for this case since there is no TLD.
   LoadHtml("localhost", "<html><body>content</body></html>");
-  EXPECT_FALSE(RunPhishingClassifier(&page_text, &phishy_score, &features));
+  EXPECT_FALSE(RunPhishingClassifier(&page_text_, &phishy_score, &features));
   EXPECT_EQ(0U, features.features().size());
   EXPECT_EQ(PhishingClassifier::kInvalidScore, phishy_score);
+}
+
+// This test flakes on Mac with force compositing mode.
+// http://crbug.com/316709
+// Flaky on Chrome OS, running into a memory allocation error.
+// http://crbug.com/544085
+#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#define MAYBE_TestClassificationWhenNotHttp \
+  DISABLED_TestClassificationWhenNotHttp
+#else
+#define MAYBE_TestClassificationWhenNotHttp TestClassificationWhenNotHttp
+#endif
+IN_PROC_BROWSER_TEST_F(PhishingClassifierTest,
+                       MAYBE_TestClassificationWhenNotHttp) {
+  float phishy_score;
+  FeatureMap features;
 
   // Extraction should also fail for this case because the URL is not http.
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
@@ -263,13 +314,30 @@ IN_PROC_BROWSER_TEST_F(PhishingClassifierTest, MAYBE_TestClassification) {
   GURL test_url = https_server.GetURL("/title1.html");
   ui_test_utils::NavigateToURL(browser(),
                                test_url.ReplaceComponents(replace_host));
-  EXPECT_FALSE(RunPhishingClassifier(&page_text, &phishy_score, &features));
+  EXPECT_FALSE(RunPhishingClassifier(&page_text_, &phishy_score, &features));
   EXPECT_EQ(0U, features.features().size());
   EXPECT_EQ(PhishingClassifier::kInvalidScore, phishy_score);
+}
+
+// This test flakes on Mac with force compositing mode.
+// http://crbug.com/316709
+// Flaky on Chrome OS, running into a memory allocation error.
+// http://crbug.com/544085
+#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#define MAYBE_TestClassificationWhenPostRequest \
+  DISABLED_TestClassificationWhenPostRequest
+#else
+#define MAYBE_TestClassificationWhenPostRequest \
+  TestClassificationWhenPostRequest
+#endif
+IN_PROC_BROWSER_TEST_F(PhishingClassifierTest,
+                       MAYBE_TestClassificationWhenPostRequest) {
+  float phishy_score;
+  FeatureMap features;
 
   // Extraction should fail for this case because the URL is a POST request.
   LoadHtmlPost("host.net", "<html><body>content</body></html>");
-  EXPECT_FALSE(RunPhishingClassifier(&page_text, &phishy_score, &features));
+  EXPECT_FALSE(RunPhishingClassifier(&page_text_, &phishy_score, &features));
   EXPECT_EQ(0U, features.features().size());
   EXPECT_EQ(PhishingClassifier::kInvalidScore, phishy_score);
 }
@@ -281,11 +349,6 @@ IN_PROC_BROWSER_TEST_F(PhishingClassifierTest, MAYBE_TestClassification) {
 #define MAYBE_DisableDetection DisableDetection
 #endif
 IN_PROC_BROWSER_TEST_F(PhishingClassifierTest, MAYBE_DisableDetection) {
-  // No scorer yet, so the classifier is not ready.
-  EXPECT_FALSE(classifier_->is_ready());
-
-  // Now set the scorer.
-  classifier_->set_phishing_scorer(scorer_.get());
   EXPECT_TRUE(classifier_->is_ready());
 
   // Set a NULL scorer, which turns detection back off.

@@ -25,12 +25,11 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/render_frame.h"
-#include "content/public/renderer/render_view.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
@@ -41,8 +40,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
-#include "third_party/WebKit/public/web/WebView.h"
 #include "url/gurl.h"
 
 using base::ASCIIToUTF16;
@@ -144,9 +141,6 @@ class PhishingClassifierDelegateTest : public InProcessBrowserTest {
   }
 
  protected:
-  PhishingClassifierDelegateTest()
-      : render_view_routing_id_(MSG_ROUTING_NONE) {}
-
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kSingleProcess);
 #if defined(OS_WIN)
@@ -157,12 +151,10 @@ class PhishingClassifierDelegateTest : public InProcessBrowserTest {
 
   void SetUpOnMainThread() override {
     intercepting_filter_ = new InterceptingMessageFilter();
-    render_view_routing_id_ =
-        GetWebContents()->GetRenderViewHost()->GetRoutingID();
 
     GetWebContents()->GetRenderProcessHost()->AddFilter(
         intercepting_filter_.get());
-    content::RenderFrame* render_frame = GetRenderView()->GetMainRenderFrame();
+    content::RenderFrame* render_frame = GetRenderFrame();
     classifier_ = new StrictMock<MockPhishingClassifier>(render_frame);
     delegate_ = PhishingClassifierDelegate::Create(render_frame, classifier_);
 
@@ -222,8 +214,12 @@ class PhishingClassifierDelegateTest : public InProcessBrowserTest {
     return browser()->tab_strip_model()->GetActiveWebContents();
   }
 
-  content::RenderView* GetRenderView() {
-    return content::RenderView::FromRoutingID(render_view_routing_id_);
+  content::RenderFrame* GetRenderFrame() {
+    int render_frame_routing_id =
+        GetWebContents()->GetMainFrame()->GetRoutingID();
+    content::RenderFrame* render_frame =
+        content::RenderFrame::FromRoutingID(render_frame_routing_id);
+    return render_frame;
   }
 
   // Returns the URL that was loaded.
@@ -252,7 +248,6 @@ class PhishingClassifierDelegateTest : public InProcessBrowserTest {
   std::string response_content_;
   scoped_ptr<ClientPhishingRequest> verdict_;
   StrictMock<MockPhishingClassifier>* classifier_;  // Owned by |delegate_|.
-  int32_t render_view_routing_id_;
   PhishingClassifierDelegate* delegate_;  // Owned by the RenderView.
   scoped_refptr<content::MessageLoopRunner> runner_;
 };

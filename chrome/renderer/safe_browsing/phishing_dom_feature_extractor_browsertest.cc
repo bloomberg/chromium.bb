@@ -29,10 +29,10 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/interstitial_page.h"
-#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/renderer/render_view.h"
+#include "content/public/renderer/render_frame.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "net/dns/mock_host_resolver.h"
@@ -42,8 +42,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebScriptSource.h"
-#include "third_party/WebKit/public/web/WebView.h"
 
 using ::testing::DoAll;
 using ::testing::Invoke;
@@ -66,8 +66,7 @@ class PhishingDOMFeatureExtractorTest : public InProcessBrowserTest {
   }
 
  protected:
-  PhishingDOMFeatureExtractorTest()
-      : render_view_routing_id_(MSG_ROUTING_NONE), weak_factory_(this) {}
+  PhishingDOMFeatureExtractorTest() : weak_factory_(this) {}
 
   ~PhishingDOMFeatureExtractorTest() override {}
 
@@ -80,8 +79,6 @@ class PhishingDOMFeatureExtractorTest : public InProcessBrowserTest {
   }
 
   void SetUpOnMainThread() override {
-    render_view_routing_id_ =
-        GetWebContents()->GetRenderViewHost()->GetRoutingID();
     extractor_.reset(new PhishingDOMFeatureExtractor(&clock_));
 
     embedded_test_server()->RegisterRequestHandler(
@@ -91,8 +88,8 @@ class PhishingDOMFeatureExtractorTest : public InProcessBrowserTest {
     host_resolver()->AddRule("*", "127.0.0.1");
   }
 
-  // Runs the DOMFeatureExtractor on the RenderView, waiting for the
-  // completion callback.  Returns the success boolean from the callback.
+  // Runs the DOMFeatureExtractor, waiting for the completion callback.
+  // Returns the success boolean from the callback.
   bool ExtractFeatures(FeatureMap* features) {
     success_ = false;
     PostTaskToInProcessRendererAndWait(
@@ -103,9 +100,11 @@ class PhishingDOMFeatureExtractorTest : public InProcessBrowserTest {
   }
 
   blink::WebFrame* GetWebFrame() {
-    content::RenderView* render_view =
-        content::RenderView::FromRoutingID(render_view_routing_id_);
-    return render_view->GetWebView()->mainFrame();
+    int render_frame_routing_id =
+        GetWebContents()->GetMainFrame()->GetRoutingID();
+    content::RenderFrame* render_frame =
+        content::RenderFrame::FromRoutingID(render_frame_routing_id);
+    return render_frame->GetWebFrame();
   }
 
   void ExtractFeaturesInternal(FeatureMap* features) {
@@ -171,8 +170,6 @@ class PhishingDOMFeatureExtractorTest : public InProcessBrowserTest {
     ui_test_utils::NavigateToURL(browser(), url);
     return url;
   }
-
-  int32 render_view_routing_id_;
 
   // Map of url -> response body for network requests from the renderer.
   // Any urls not in this map are served a 404 error.

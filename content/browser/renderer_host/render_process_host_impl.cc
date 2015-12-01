@@ -2126,6 +2126,11 @@ RenderProcessHost* RenderProcessHost::FromID(int render_process_id) {
 bool RenderProcessHost::ShouldTryToUseExistingProcessHost(
     BrowserContext* browser_context,
     const GURL& url) {
+  // This needs to be checked first to ensure that --single-process
+  // and --site-per-process can be used together.
+  if (run_renderer_in_process())
+    return true;
+
   // If --site-per-process is enabled, do not try to reuse renderer processes
   // when over the limit.
   // TODO(nick): This is overly conservative and isn't launchable. Move this
@@ -2134,9 +2139,6 @@ bool RenderProcessHost::ShouldTryToUseExistingProcessHost(
   // also allow non-isolated sites to share processes. https://crbug.com/513036
   if (SiteIsolationPolicy::AreCrossProcessFramesPossible())
     return false;
-
-  if (run_renderer_in_process())
-    return true;
 
   // NOTE: Sometimes it's necessary to create more render processes than
   //       GetMaxRendererProcessCount(), for instance when we want to create
