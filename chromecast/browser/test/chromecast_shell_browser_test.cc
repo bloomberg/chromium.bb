@@ -28,6 +28,9 @@ class ChromecastShellBrowserTest : public ChromecastBrowserTest {
     NavigateToURL(web_contents(), url_);
   }
 
+  void PlayAudio(const std::string& media_file) {
+    PlayMedia("audio", media_file);
+  }
   void PlayVideo(const std::string& media_file) {
     PlayMedia("video", media_file);
   }
@@ -77,9 +80,15 @@ IN_PROC_BROWSER_TEST_F(ChromecastShellBrowserTest, EmptyTest) {
   EXPECT_TRUE(true);
 }
 
-IN_PROC_BROWSER_TEST_F(ChromecastShellBrowserTest, MediaPlayback) {
+IN_PROC_BROWSER_TEST_F(ChromecastShellBrowserTest, AudioPlaybackWavPcm) {
+  PlayAudio("bear_pcm.wav");
+}
+
+#if !defined(DISABLE_DISPLAY)
+IN_PROC_BROWSER_TEST_F(ChromecastShellBrowserTest, VideoPlaybackMp4) {
   PlayVideo("bear.mp4");
 }
+#endif
 
 }  // namespace shell
 }  // namespace chromecast
