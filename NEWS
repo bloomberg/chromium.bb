@@ -15,6 +15,7 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 - Add test data for EUB symbols, thanks to Paul Wood
 
 ** Braille table improvements
+- New Mongolian table thanks to Tsengel Maidar and Sreeja Param.
 - Improvements to the Chinese braille table thanks to Coscell Kao.
 - Massive improvements to Norwegian, thanks to Lars Bjørndal, Ammar
   Usama and Jostein Austvik Jacobsen. They added a 8 dot table and

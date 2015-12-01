@@ -237,6 +237,7 @@ dist_yaml_TESTS =				\
 	ko-2006-g2_harness.yaml			\
 	ko-g2_harness.yaml			\
 	letterDefTest_harness.yaml		\
+	mn-MN_harness.yaml			\
 	nl-BE-g1_harness.yaml			\
 	no_harness.yaml				\
 	no_g1_harness.yaml			\

@@ -183,6 +183,7 @@ table_files = \
 	marburg_unicode_defs.cti \
 	ml-in-g1.utb \
 	mn-in-g1.utb \
+	mn-MN.utb \
 	mr-in-g1.utb \
 	mt.ctb \
 	mun.ctb \
