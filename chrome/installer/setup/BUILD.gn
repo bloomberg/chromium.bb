@@ -24,7 +24,6 @@ if (is_win) {
       ":lib",
       "//base/allocator",
       "//build/config/sanitizers:deps",
-      "//components/crash/content/app",
       "//components/crash/content/app:app_breakpad_mac_win_to_be_deleted",
     ]
   }
@@ -57,7 +56,6 @@ if (is_win) {
       "//chrome/common:version_header",
       "//chrome/installer/util",
       "//chrome_elf:constants",
-      "//components/crash/content/app",
       "//components/crash/content/app:app_breakpad_mac_win_to_be_deleted",
       "//components/crash/content/app:lib",
       "//components/crash/core/common",
