@@ -847,22 +847,6 @@ void FileSystemChooseEntryFunction::RegisterTempExternalFileSystemForTest(
       path);
 }
 
-void FileSystemChooseEntryFunction::SetInitialPathOnFileThread(
-    const base::FilePath& suggested_name,
-    const base::FilePath& previous_path) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
-  if (!previous_path.empty() && base::DirectoryExists(previous_path)) {
-    initial_path_ = previous_path.Append(suggested_name);
-  } else {
-    base::FilePath documents_dir;
-    if (PathService::Get(chrome::DIR_USER_DOCUMENTS, &documents_dir)) {
-      initial_path_ = documents_dir.Append(suggested_name);
-    } else {
-      initial_path_ = suggested_name;
-    }
-  }
-}
-
 void FileSystemChooseEntryFunction::FilesSelected(
     const std::vector<base::FilePath>& paths) {
   DCHECK(!paths.empty());
@@ -1044,6 +1028,26 @@ void FileSystemChooseEntryFunction::BuildSuggestion(
   }
 }
 
+void FileSystemChooseEntryFunction::SetInitialPathAndShowPicker(
+    const base::FilePath& previous_path,
+    const base::FilePath& suggested_name,
+    const ui::SelectFileDialog::FileTypeInfo& file_type_info,
+    ui::SelectFileDialog::Type picker_type,
+    bool is_previous_path_directory) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (is_previous_path_directory) {
+    initial_path_ = previous_path.Append(suggested_name);
+  } else {
+    base::FilePath documents_dir;
+    if (PathService::Get(chrome::DIR_USER_DOCUMENTS, &documents_dir)) {
+      initial_path_ = documents_dir.Append(suggested_name);
+    } else {
+      initial_path_ = suggested_name;
+    }
+  }
+  ShowPicker(file_type_info, picker_type);
+}
+
 bool FileSystemChooseEntryFunction::RunAsync() {
   scoped_ptr<ChooseEntry::Params> params(ChooseEntry::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -1102,17 +1106,30 @@ bool FileSystemChooseEntryFunction::RunAsync() {
   base::FilePath previous_path = file_system_api::GetLastChooseEntryDirectory(
       ExtensionPrefs::Get(GetProfile()), extension()->id());
 
-  content::BrowserThread::PostTaskAndReply(
-      content::BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(&FileSystemChooseEntryFunction::SetInitialPathOnFileThread,
-                 this,
-                 suggested_name,
-                 previous_path),
-      base::Bind(&FileSystemChooseEntryFunction::ShowPicker,
-                 this,
-                 file_type_info,
-                 picker_type));
+  if (previous_path.empty()) {
+    SetInitialPathAndShowPicker(previous_path, suggested_name, file_type_info,
+                                picker_type, false);
+    return true;
+  }
+
+  base::Callback<void(bool)> set_initial_path_callback = base::Bind(
+      &FileSystemChooseEntryFunction::SetInitialPathAndShowPicker, this,
+      previous_path, suggested_name, file_type_info, picker_type);
+
+// Check whether the |previous_path| is a non-native directory.
+#if defined(OS_CHROMEOS)
+  if (file_manager::util::IsUnderNonNativeLocalPath(GetProfile(),
+                                                    previous_path)) {
+    file_manager::util::IsNonNativeLocalPathDirectory(
+        GetProfile(), previous_path, set_initial_path_callback);
+    return true;
+  }
+#endif
+  content::BrowserThread::PostTaskAndReplyWithResult(
+      content::BrowserThread::FILE, FROM_HERE,
+      base::Bind(&base::DirectoryExists, previous_path),
+      set_initial_path_callback);
+
   return true;
 }
 
