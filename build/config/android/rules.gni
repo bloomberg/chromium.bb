@@ -1628,8 +1628,11 @@ template("android_apk") {
   _extra_native_libs = []
   _extra_native_libs_deps = []
   if (_native_libs != []) {
+    _extra_native_libs_even_when_incremental = []
+    _extra_native_libs_even_when_incremental_deps = []
+
     if (is_debug) {
-      _extra_native_libs = [ android_gdbserver ]
+      _extra_native_libs_even_when_incremental = [ android_gdbserver ]
     }
 
     if (_use_chromium_linker) {
@@ -1691,9 +1694,12 @@ template("android_apk") {
 
     if (_native_libs != [] && !_create_abi_split) {
       deps += _native_libs_deps + _extra_native_libs_deps +
+              _extra_native_libs_even_when_incremental_deps +
               [ _native_libs_file_arg_dep ]
       native_libs_filearg = _native_libs_file_arg
       native_libs = _extra_native_libs
+      native_libs_even_when_incremental =
+          _extra_native_libs_even_when_incremental
 
       # Placeholders necessary for some older devices.
       # http://crbug.com/395038
@@ -1739,12 +1745,15 @@ template("android_apk") {
                                "public_deps",
                              ])
 
-      incremental_deps = deps + [ ":$_manifest_rule" ]
+      incremental_deps = deps + _extra_native_libs_even_when_incremental_deps +
+                         [ ":$_manifest_rule" ]
       deps = []
       deps = incremental_deps + _native_libs_deps + _extra_native_libs_deps +
              [ _native_libs_file_arg_dep ]
       native_libs_filearg = _native_libs_file_arg
       native_libs = _extra_native_libs
+      native_libs_even_when_incremental =
+          _extra_native_libs_even_when_incremental
     }
   }
 
@@ -1783,6 +1792,8 @@ template("android_apk") {
       args += [ "--native-libs=$_native_libs_file_arg" ]
     }
     if (_extra_native_libs != []) {
+      # Don't pass in _extra_native_libs_even_when_incremental, since these are
+      # end up in the apk and are not side-loaded.
       _rebased_extra_native_libs =
           rebase_path(_extra_native_libs, root_build_dir)
       args += [ "--native-libs=$_rebased_extra_native_libs" ]

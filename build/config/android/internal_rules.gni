@@ -846,6 +846,11 @@ template("create_apk") {
   if (defined(invoker.native_libs)) {
     _native_libs = invoker.native_libs
   }
+  _native_libs_even_when_incremental = []
+  if (defined(invoker.native_libs_even_when_incremental)) {
+    _native_libs_even_when_incremental =
+        invoker.native_libs_even_when_incremental
+  }
 
   # TODO(agrieve): Remove support for asset_location in favor of using
   # android_assets() everywhere (http://crbug.com/547162).
@@ -1024,7 +1029,7 @@ template("create_apk") {
                              "write_asset_list",
                            ])
     deps = _deps + [ ":${_package_resources_target_name}" ]
-    native_libs = _native_libs
+    native_libs = _native_libs + _native_libs_even_when_incremental
 
     if (defined(_dex_path)) {
       dex_path = _dex_path
@@ -1052,12 +1057,12 @@ template("create_apk") {
           get_label_info(_dex_target, "target_gen_dir") + "/bootstrap.dex"
     }
 
-    native_libs = []
+    native_libs = _native_libs_even_when_incremental
 
     # http://crbug.com/384638
     _has_native_libs =
         defined(invoker.native_libs_filearg) || _native_libs != []
-    if (_has_native_libs) {
+    if (_has_native_libs && _native_libs_even_when_incremental == []) {
       native_lib_placeholders = [ "libfix.crbug.384638.so" ]
     }
 
