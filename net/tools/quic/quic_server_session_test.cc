@@ -260,19 +260,13 @@ TEST_P(QuicServerSessionTest, MaxAvailableStreams) {
 
   // Establish available streams up to the server's limit.
   const int kLimitingStreamId =
-      FLAGS_allow_many_available_streams
-          ? kClientDataStreamId1 + (kAvailableStreamLimit)*2 + 2
-          : kClientDataStreamId1 + (session_->get_max_open_streams() - 1) * 2;
+      kClientDataStreamId1 + (kAvailableStreamLimit)*2 + 2;
   EXPECT_TRUE(QuicServerSessionPeer::GetOrCreateDynamicStream(
       session_.get(), kLimitingStreamId));
 
   // A further available stream will result in connection close.
-  if (FLAGS_allow_many_available_streams) {
-    EXPECT_CALL(*connection_,
-                SendConnectionClose(QUIC_TOO_MANY_AVAILABLE_STREAMS));
-  } else {
-    EXPECT_CALL(*connection_, SendConnectionClose(QUIC_TOO_MANY_OPEN_STREAMS));
-  }
+  EXPECT_CALL(*connection_,
+              SendConnectionClose(QUIC_TOO_MANY_AVAILABLE_STREAMS));
   // This forces stream kLimitingStreamId + 2 to become available, which
   // violates the quota.
   EXPECT_FALSE(QuicServerSessionPeer::GetOrCreateDynamicStream(
@@ -368,7 +362,7 @@ TEST_P(QuicServerSessionTest, BandwidthEstimates) {
       max_bandwidth_estimate_timestamp);
   // Queue up some pending data.
   session_->MarkConnectionLevelWriteBlocked(kCryptoStreamId,
-                                            net::kHighestPriority);
+                                            net::kV3HighestPriority);
   EXPECT_TRUE(session_->HasDataToWrite());
 
   // There will be no update sent yet - not enough time has passed.

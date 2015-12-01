@@ -85,9 +85,14 @@ class NET_EXPORT_PRIVATE QuicTime {
       return Delta(time_offset_ * d);
     }
 
-    // Returns the later delta of time1 and time2.
+    // Returns the larger delta of time1 and time2.
     static inline Delta Max(Delta delta1, Delta delta2) {
       return delta1 < delta2 ? delta2 : delta1;
+    }
+
+    // Returns the smaller delta of time1 and time2.
+    static inline Delta Min(Delta delta1, Delta delta2) {
+      return delta1 < delta2 ? delta1 : delta2;
     }
 
     inline bool IsZero() const { return time_offset_ == 0; }

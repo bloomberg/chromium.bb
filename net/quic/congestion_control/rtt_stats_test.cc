@@ -243,5 +243,23 @@ TEST_F(RttStatsTest, UpdateRttWithBadSendDeltas) {
   }
 }
 
+TEST_F(RttStatsTest, ResetAfterConnectionMigrations) {
+  rtt_stats_.UpdateRtt(QuicTime::Delta::FromMilliseconds(300),
+                       QuicTime::Delta::FromMilliseconds(100),
+                       QuicTime::Zero());
+  EXPECT_EQ(QuicTime::Delta::FromMilliseconds(200), rtt_stats_.latest_rtt());
+  EXPECT_EQ(QuicTime::Delta::FromMilliseconds(200), rtt_stats_.smoothed_rtt());
+  EXPECT_EQ(QuicTime::Delta::FromMilliseconds(300), rtt_stats_.min_rtt());
+  EXPECT_EQ(QuicTime::Delta::FromMilliseconds(300),
+            rtt_stats_.recent_min_rtt());
+
+  // Reset rtt stats on connection migrations.
+  rtt_stats_.OnConnectionMigration();
+  EXPECT_EQ(QuicTime::Delta::Zero(), rtt_stats_.latest_rtt());
+  EXPECT_EQ(QuicTime::Delta::Zero(), rtt_stats_.smoothed_rtt());
+  EXPECT_EQ(QuicTime::Delta::Zero(), rtt_stats_.min_rtt());
+  EXPECT_EQ(QuicTime::Delta::Zero(), rtt_stats_.recent_min_rtt());
+}
+
 }  // namespace test
 }  // namespace net

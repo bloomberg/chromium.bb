@@ -108,13 +108,6 @@ class QuicSpdyServerStreamTest : public ::testing::TestWithParam<QuicVersion> {
     session_.ActivateStream(stream_);
 
     QuicInMemoryCachePeer::ResetForTests();
-
-    string host = "";
-    string path = "/foo";
-    SpdyHeaderBlock response_headers;
-    StringPiece body("Yum");
-    QuicInMemoryCache::GetInstance()->AddResponse(host, path, response_headers,
-                                                  body);
   }
 
   ~QuicSpdyServerStreamTest() override {
@@ -217,29 +210,89 @@ TEST_P(QuicSpdyServerStreamTest, TestFramingExtraData) {
   EXPECT_EQ("POST", StreamHeadersValue(":method"));
 }
 
-TEST_P(QuicSpdyServerStreamTest, TestSendResponse) {
+TEST_P(QuicSpdyServerStreamTest, SendResponseWithIllegalResponseStatus) {
+  // Send a illegal response with response status not supported by HTTP/2.
   SpdyHeaderBlock* request_headers = stream_->mutable_headers();
-  (*request_headers)[":path"] = "/foo";
+  (*request_headers)[":path"] = "/bar";
   (*request_headers)[":authority"] = "";
   (*request_headers)[":version"] = "HTTP/1.1";
   (*request_headers)[":method"] = "GET";
 
   response_headers_[":version"] = "HTTP/1.1";
+  // HTTP/2 only supports integer responsecode, so "200 OK" is illegal.
   response_headers_[":status"] = "200 OK";
-  response_headers_["content-length"] = "3";
+  response_headers_["content-length"] = "5";
+  string body = "Yummm";
+  QuicInMemoryCache::GetInstance()->AddResponse("", "/bar", response_headers_,
+                                                body);
+
   stream_->set_fin_received(true);
 
   InSequence s;
   EXPECT_CALL(session_, WritevData(kHeadersStreamId, _, 0, false, _, nullptr));
-  EXPECT_CALL(session_, WritevData(_, _, _, _, _, _)).Times(1).
-      WillOnce(Return(QuicConsumedData(3, true)));
+  EXPECT_CALL(session_, WritevData(_, _, _, _, _, _))
+      .Times(1)
+      .WillOnce(Return(QuicConsumedData(
+          strlen(QuicSpdyServerStream::kErrorResponseBody), true)));
 
   QuicSpdyServerStreamPeer::SendResponse(stream_);
-  if (!FLAGS_quic_implement_stop_reading) {
-    EXPECT_TRUE(ReliableQuicStreamPeer::read_side_closed(stream_));
-  } else {
-    EXPECT_FALSE(ReliableQuicStreamPeer::read_side_closed(stream_));
-  }
+  EXPECT_FALSE(ReliableQuicStreamPeer::read_side_closed(stream_));
+  EXPECT_TRUE(stream_->reading_stopped());
+  EXPECT_TRUE(stream_->write_side_closed());
+}
+
+TEST_P(QuicSpdyServerStreamTest, SendPushResponseWith404Response) {
+  // Create a new promised stream with even id().
+  QuicSpdyServerStreamPeer* promised_stream =
+      new QuicSpdyServerStreamPeer(2, &session_);
+  session_.ActivateStream(promised_stream);
+
+  // Send a push response with response status 404, which will be regarded as
+  // invalid server push response.
+  SpdyHeaderBlock* request_headers = promised_stream->mutable_headers();
+  (*request_headers)[":path"] = "/bar";
+  (*request_headers)[":authority"] = "";
+  (*request_headers)[":version"] = "HTTP/1.1";
+  (*request_headers)[":method"] = "GET";
+
+  response_headers_[":version"] = "HTTP/1.1";
+  response_headers_[":status"] = "404";
+  response_headers_["content-length"] = "8";
+  string body = "NotFound";
+  QuicInMemoryCache::GetInstance()->AddResponse("", "/bar", response_headers_,
+                                                body);
+
+  InSequence s;
+  EXPECT_CALL(session_,
+              SendRstStream(promised_stream->id(), QUIC_STREAM_CANCELLED, 0));
+
+  QuicSpdyServerStreamPeer::SendResponse(promised_stream);
+}
+
+TEST_P(QuicSpdyServerStreamTest, SendResponseWithValidHeaders) {
+  // Add a request and response with valid headers.
+  SpdyHeaderBlock* request_headers = stream_->mutable_headers();
+  (*request_headers)[":path"] = "/bar";
+  (*request_headers)[":authority"] = "";
+  (*request_headers)[":version"] = "HTTP/1.1";
+  (*request_headers)[":method"] = "GET";
+
+  response_headers_[":version"] = "HTTP/1.1";
+  response_headers_[":status"] = "200";
+  response_headers_["content-length"] = "5";
+  string body = "Yummm";
+  QuicInMemoryCache::GetInstance()->AddResponse("", "/bar", response_headers_,
+                                                body);
+  stream_->set_fin_received(true);
+
+  InSequence s;
+  EXPECT_CALL(session_, WritevData(kHeadersStreamId, _, 0, false, _, nullptr));
+  EXPECT_CALL(session_, WritevData(_, _, _, _, _, _))
+      .Times(1)
+      .WillOnce(Return(QuicConsumedData(body.length(), true)));
+
+  QuicSpdyServerStreamPeer::SendResponse(stream_);
+  EXPECT_FALSE(ReliableQuicStreamPeer::read_side_closed(stream_));
   EXPECT_TRUE(stream_->reading_stopped());
   EXPECT_TRUE(stream_->write_side_closed());
 }
@@ -258,11 +311,7 @@ TEST_P(QuicSpdyServerStreamTest, TestSendErrorResponse) {
       WillOnce(Return(QuicConsumedData(3, true)));
 
   QuicSpdyServerStreamPeer::SendErrorResponse(stream_);
-  if (!FLAGS_quic_implement_stop_reading) {
-    EXPECT_TRUE(ReliableQuicStreamPeer::read_side_closed(stream_));
-  } else {
-    EXPECT_FALSE(ReliableQuicStreamPeer::read_side_closed(stream_));
-  }
+  EXPECT_FALSE(ReliableQuicStreamPeer::read_side_closed(stream_));
   EXPECT_TRUE(stream_->reading_stopped());
   EXPECT_TRUE(stream_->write_side_closed());
 }

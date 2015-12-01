@@ -9,6 +9,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
 #include "net/spdy/spdy_http_utils.h"
@@ -20,6 +21,16 @@ using std::string;
 
 namespace net {
 namespace tools {
+
+QuicInMemoryCache::ServerPushInfo::ServerPushInfo(
+    GURL request_url,
+    const SpdyHeaderBlock& headers,
+    net::SpdyPriority priority,
+    string body)
+    : request_url(request_url),
+      headers(headers),
+      priority(priority),
+      body(body) {}
 
 QuicInMemoryCache::Response::Response() : response_type_(REGULAR_RESPONSE) {}
 
@@ -43,6 +54,8 @@ const QuicInMemoryCache::Response* QuicInMemoryCache::GetResponse(
   return it->second;
 }
 
+typedef QuicInMemoryCache::ServerPushInfo ServerPushInfo;
+
 void QuicInMemoryCache::AddSimpleResponse(StringPiece host,
                                           StringPiece path,
                                           int response_code,
@@ -52,6 +65,16 @@ void QuicInMemoryCache::AddSimpleResponse(StringPiece host,
   response_headers["content-length"] =
       IntToString(static_cast<int>(body.length()));
   AddResponse(host, path, response_headers, body);
+}
+
+void QuicInMemoryCache::AddSimpleResponseWithServerPushResources(
+    StringPiece host,
+    StringPiece path,
+    int response_code,
+    StringPiece body,
+    list<ServerPushInfo> push_resources) {
+  AddSimpleResponse(host, path, response_code, body);
+  MaybeAddServerPushResources(host, path, push_resources);
 }
 
 void QuicInMemoryCache::AddDefaultResponse(Response* response) {
@@ -76,6 +99,7 @@ QuicInMemoryCache::QuicInMemoryCache() {}
 
 void QuicInMemoryCache::ResetForTests() {
   STLDeleteValues(&responses_);
+  server_push_resources_.clear();
 }
 
 void QuicInMemoryCache::InitializeFromDirectory(const string& cache_directory) {
@@ -149,18 +173,26 @@ void QuicInMemoryCache::InitializeFromDirectory(const string& cache_directory) {
   }
 }
 
+list<ServerPushInfo> QuicInMemoryCache::GetServerPushResources(
+    string request_url) {
+  list<ServerPushInfo> resources;
+  auto resource_range = server_push_resources_.equal_range(request_url);
+  for (auto it = resource_range.first; it != resource_range.second; ++it) {
+    resources.push_back(it->second);
+  }
+  return resources;
+}
+
 QuicInMemoryCache::~QuicInMemoryCache() {
   STLDeleteValues(&responses_);
 }
 
-void QuicInMemoryCache::AddResponseImpl(
-    StringPiece host,
-    StringPiece path,
-    SpecialResponseType response_type,
-    const SpdyHeaderBlock& response_headers,
-    StringPiece response_body) {
+void QuicInMemoryCache::AddResponseImpl(StringPiece host,
+                                        StringPiece path,
+                                        SpecialResponseType response_type,
+                                        const SpdyHeaderBlock& response_headers,
+                                        StringPiece response_body) {
   string key = GetKey(host, path);
-  VLOG(1) << "Adding response for: " << key;
   if (ContainsKey(responses_, key)) {
     LOG(DFATAL) << "Response for '" << key << "' already exists!";
     return;
@@ -174,6 +206,43 @@ void QuicInMemoryCache::AddResponseImpl(
 
 string QuicInMemoryCache::GetKey(StringPiece host, StringPiece path) const {
   return host.as_string() + path.as_string();
+}
+
+void QuicInMemoryCache::MaybeAddServerPushResources(
+    StringPiece request_host,
+    StringPiece request_path,
+    list<ServerPushInfo> push_resources) {
+  string request_url = request_host.as_string() + request_path.as_string();
+
+  for (const auto& push_resource : push_resources) {
+    if (PushResourceExistsInCache(request_url, push_resource)) {
+      continue;
+    }
+
+    DVLOG(1) << "Add request-resource association.";
+    server_push_resources_.insert(std::make_pair(request_url, push_resource));
+    string path = push_resource.request_url.path();
+    if (responses_.find(GetKey(request_host, path)) == responses_.end()) {
+      // Add a server push response to responses map, if it is not in the map.
+      SpdyHeaderBlock headers = push_resource.headers;
+      StringPiece body = push_resource.body;
+      DVLOG(1) << "Add response for push resource " << body;
+      AddResponse(request_host, path, headers, body);
+    }
+  }
+}
+
+bool QuicInMemoryCache::PushResourceExistsInCache(string original_request_url,
+                                                  ServerPushInfo resource) {
+  auto resource_range =
+      server_push_resources_.equal_range(original_request_url);
+  for (auto it = resource_range.first; it != resource_range.second; ++it) {
+    ServerPushInfo push_resource = it->second;
+    if (push_resource.request_url.spec() == resource.request_url.spec()) {
+      return true;
+    }
+  }
+  return false;
 }
 
 }  // namespace tools

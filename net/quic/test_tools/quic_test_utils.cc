@@ -329,15 +329,15 @@ TestQuicSpdyServerSession::TestQuicSpdyServerSession(
     QuicConnection* connection,
     const QuicConfig& config,
     const QuicCryptoServerConfig* crypto_config)
-    : QuicSpdySession(connection, config) {
-  crypto_stream_.reset(new QuicCryptoServerStream(crypto_config, this));
+    : QuicServerSession(config, connection, &visitor_, crypto_config) {
   Initialize();
 }
 
 TestQuicSpdyServerSession::~TestQuicSpdyServerSession() {}
 
 QuicCryptoServerStream* TestQuicSpdyServerSession::GetCryptoStream() {
-  return crypto_stream_.get();
+  return static_cast<QuicCryptoServerStream*>(
+      QuicServerSession::GetCryptoStream());
 }
 
 TestQuicSpdyClientSession::TestQuicSpdyClientSession(
@@ -655,7 +655,8 @@ size_t GetPacketLengthForOneStream(QuicVersion version,
       NullEncrypter().GetCiphertextSize(
           QuicFramer::GetMinAckFrameSize(PACKET_1BYTE_PACKET_NUMBER)) +
       GetPacketHeaderSize(connection_id_length, include_version,
-                          packet_number_length, is_in_fec_group);
+                          /*include_path_id=*/false, packet_number_length,
+                          is_in_fec_group);
   if (stream_length < ack_length) {
     *payload_length = 1 + ack_length - stream_length;
   }
@@ -756,6 +757,7 @@ MockQuicConnectionDebugVisitor::~MockQuicConnectionDebugVisitor() {}
 void CreateClientSessionForTest(QuicServerId server_id,
                                 bool supports_stateless_rejects,
                                 QuicTime::Delta connection_start_time,
+                                QuicVersionVector supported_versions,
                                 MockConnectionHelper* helper,
                                 QuicCryptoClientConfig* crypto_client_config,
                                 PacketSavingConnection** client_connection,
@@ -770,8 +772,8 @@ void CreateClientSessionForTest(QuicServerId server_id,
   QuicConfig config = supports_stateless_rejects
                           ? DefaultQuicConfigStatelessRejects()
                           : DefaultQuicConfig();
-  *client_connection =
-      new PacketSavingConnection(helper, Perspective::IS_CLIENT);
+  *client_connection = new PacketSavingConnection(
+      helper, Perspective::IS_CLIENT, supported_versions);
   *client_session = new TestQuicSpdyClientSession(
       *client_connection, config, server_id, crypto_client_config);
   (*client_connection)->AdvanceTime(connection_start_time);
@@ -779,6 +781,7 @@ void CreateClientSessionForTest(QuicServerId server_id,
 
 void CreateServerSessionForTest(QuicServerId server_id,
                                 QuicTime::Delta connection_start_time,
+                                QuicVersionVector supported_versions,
                                 MockConnectionHelper* helper,
                                 QuicCryptoServerConfig* server_crypto_config,
                                 PacketSavingConnection** server_connection,
@@ -790,8 +793,8 @@ void CreateServerSessionForTest(QuicServerId server_id,
       << "Connections must start at non-zero times, otherwise the "
       << "strike-register will be unhappy.";
 
-  *server_connection =
-      new PacketSavingConnection(helper, Perspective::IS_SERVER);
+  *server_connection = new PacketSavingConnection(
+      helper, Perspective::IS_SERVER, supported_versions);
   *server_session = new TestQuicSpdyServerSession(
       *server_connection, DefaultQuicConfig(), server_crypto_config);
 

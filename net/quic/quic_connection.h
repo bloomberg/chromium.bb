@@ -242,6 +242,10 @@ class NET_EXPORT_PRIVATE QuicConnectionDebugVisitor
   virtual void OnResumeConnectionState(
       const CachedNetworkParameters& cached_network_params) {}
 
+  // Called when the connection parameters are set from the supplied
+  // |config|.
+  virtual void OnSetFromConfig(const QuicConfig& config) {}
+
   // Called when RTT may have changed, including when an RTT is read from
   // the config.
   virtual void OnRttChanged(QuicTime::Delta rtt) const {}
@@ -647,8 +651,9 @@ class NET_EXPORT_PRIVATE QuicConnection
 
   // Do any work which logically would be done in OnPacket but can not be
   // safely done until the packet is validated.  Returns true if the packet
-  // can be handled, false otherwise.
-  virtual bool ProcessValidatedPacket();
+  // can be handled, false otherwise. Also migrates the connection if the packet
+  // can be handled and peer address changes.
+  virtual bool ProcessValidatedPacket(const QuicPacketHeader& header);
 
   // Send a packet to the peer, and takes ownership of the packet if the packet
   // cannot be written immediately.
@@ -736,16 +741,13 @@ class NET_EXPORT_PRIVATE QuicConnection
 
   void ProcessStopWaitingFrame(const QuicStopWaitingFrame& stop_waiting);
 
-  // Queues an ack or sets the ack alarm when an incoming packet arrives that
-  // should be acked.
-  void MaybeQueueAck();
-
-  // Checks if the last packet should instigate an ack.
-  bool ShouldLastPacketInstigateAck() const;
-
   // Sends any packets which are a response to the last packet, including both
   // acks and pending writes if an ack opened the congestion window.
   void MaybeSendInResponseToPacket();
+
+  // Queue an ack or set the ack alarm if needed.  |was_missing| is true if
+  // the most recently received packet was formerly missing.
+  void MaybeQueueAck(bool was_missing);
 
   // Gets the least unacked packet number, which is the next packet number
   // to be sent if there are no outstanding packets.
@@ -862,11 +864,15 @@ class NET_EXPORT_PRIVATE QuicConnection
 
   // Indicates whether an ack should be sent the next time we try to write.
   bool ack_queued_;
-  // Indicates how many consecutive packets have arrived without sending an ack.
+  // How many retransmittable packets have arrived without sending an ack.
+  QuicPacketCount num_retransmittable_packets_received_since_last_ack_sent_;
+  // How many consecutive packets have arrived without sending an ack.
   QuicPacketCount num_packets_received_since_last_ack_sent_;
   // Indicates how many consecutive times an ack has arrived which indicates
   // the peer needs to stop waiting for some packets.
   int stop_waiting_count_;
+  // When true, ack only every 10 packets as long as they arrive close together.
+  bool ack_decimation_enabled_;
 
   // Indicates the retransmit alarm is going to be set by the
   // ScopedRetransmitAlarmDelayer

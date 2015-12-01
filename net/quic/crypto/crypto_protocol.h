@@ -84,6 +84,7 @@ const QuicTag kMIN4 = TAG('M', 'I', 'N', '4');   // Min CWND of 4 packets,
                                                  // with a min rate of 1 BDP.
 const QuicTag kTLPR = TAG('T', 'L', 'P', 'R');   // Tail loss probe delay of
                                                  // 0.5RTT.
+const QuicTag kACKD = TAG('A', 'C', 'K', 'D');   // Ack decimation style acking.
 
 // Optional support of truncated Connection IDs.  If sent by a peer, the value
 // is the minimum number of bytes allowed for the connection ID sent to the

@@ -18,9 +18,6 @@ namespace test {
 class WriteBlockedListPeer;
 }  // namespace test
 
-const int kHighestPriority = 0;
-const int kLowestPriority = 7;
-
 template <typename IdType>
 class WriteBlockedList {
  public:
@@ -31,26 +28,26 @@ class WriteBlockedList {
   WriteBlockedList() {}
 
   static SpdyPriority ClampPriority(SpdyPriority priority) {
-    if (priority < kHighestPriority) {
+    if (priority < kV3HighestPriority) {
       LOG(DFATAL) << "Invalid priority: " << static_cast<int>(priority);
-      return kHighestPriority;
+      return kV3HighestPriority;
     }
-    if (priority > kLowestPriority) {
+    if (priority > kV3LowestPriority) {
       LOG(DFATAL) << "Invalid priority: " << static_cast<int>(priority);
-      return kLowestPriority;
+      return kV3LowestPriority;
     }
     return priority;
   }
 
   // Returns the priority of the highest priority list with sessions on it.
   SpdyPriority GetHighestPriorityWriteBlockedList() const {
-    for (SpdyPriority i = 0; i <= kLowestPriority; ++i) {
+    for (SpdyPriority i = 0; i <= kV3LowestPriority; ++i) {
       if (write_blocked_lists_[i].size() > 0) {
         return i;
       }
     }
     LOG(DFATAL) << "No blocked streams";
-    return kHighestPriority;
+    return kV3HighestPriority;
   }
 
   IdType PopFront(SpdyPriority priority) {
@@ -64,7 +61,7 @@ class WriteBlockedList {
 
   bool HasWriteBlockedStreamsGreaterThanPriority(SpdyPriority priority) const {
     priority = ClampPriority(priority);
-    for (SpdyPriority i = kHighestPriority; i < priority; ++i) {
+    for (SpdyPriority i = kV3HighestPriority; i < priority; ++i) {
       if (!write_blocked_lists_[i].empty()) {
         return true;
       }
@@ -73,7 +70,7 @@ class WriteBlockedList {
   }
 
   bool HasWriteBlockedStreams() const {
-    for (SpdyPriority i = kHighestPriority; i <= kLowestPriority; ++i) {
+    for (SpdyPriority i = kV3HighestPriority; i <= kV3LowestPriority; ++i) {
       if (!write_blocked_lists_[i].empty()) {
         return true;
       }
@@ -138,7 +135,7 @@ class WriteBlockedList {
 
   size_t NumBlockedStreams() const {
     size_t num_blocked_streams = 0;
-    for (SpdyPriority i = kHighestPriority; i <= kLowestPriority; ++i) {
+    for (SpdyPriority i = kV3HighestPriority; i <= kV3LowestPriority; ++i) {
       num_blocked_streams += write_blocked_lists_[i].size();
     }
     return num_blocked_streams;
@@ -186,7 +183,7 @@ class WriteBlockedList {
       }
     }
   }
-  BlockedList write_blocked_lists_[kLowestPriority + 1];
+  BlockedList write_blocked_lists_[kV3LowestPriority + 1];
   StreamToPriorityMap stream_to_priority_;
 };
 

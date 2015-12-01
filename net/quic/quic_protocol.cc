@@ -17,18 +17,20 @@ using std::string;
 namespace net {
 
 size_t GetPacketHeaderSize(const QuicPacketHeader& header) {
-  return GetPacketHeaderSize(header.public_header.connection_id_length,
-                             header.public_header.version_flag,
-                             header.public_header.packet_number_length,
-                             header.is_in_fec_group);
+  return GetPacketHeaderSize(
+      header.public_header.connection_id_length,
+      header.public_header.version_flag, header.public_header.multipath_flag,
+      header.public_header.packet_number_length, header.is_in_fec_group);
 }
 
 size_t GetPacketHeaderSize(QuicConnectionIdLength connection_id_length,
                            bool include_version,
+                           bool include_path_id,
                            QuicPacketNumberLength packet_number_length,
                            InFecGroup is_in_fec_group) {
   return kPublicFlagsSize + connection_id_length +
-         (include_version ? kQuicVersionSize : 0) + packet_number_length +
+         (include_version ? kQuicVersionSize : 0) +
+         (include_path_id ? kQuicPathIdSize : 0) + packet_number_length +
          kPrivateFlagsSize +
          (is_in_fec_group == IN_FEC_GROUP ? kFecGroupSize : 0);
 }
@@ -37,7 +39,8 @@ size_t GetStartOfFecProtectedData(QuicConnectionIdLength connection_id_length,
                                   bool include_version,
                                   QuicPacketNumberLength packet_number_length) {
   return GetPacketHeaderSize(connection_id_length, include_version,
-                             packet_number_length, IN_FEC_GROUP);
+                             /*include_path_id=*/false, packet_number_length,
+                             IN_FEC_GROUP);
 }
 
 size_t GetStartOfEncryptedData(QuicConnectionIdLength connection_id_length,
@@ -45,13 +48,15 @@ size_t GetStartOfEncryptedData(QuicConnectionIdLength connection_id_length,
                                QuicPacketNumberLength packet_number_length) {
   // Don't include the fec size, since encryption starts before private flags.
   return GetPacketHeaderSize(connection_id_length, include_version,
-                             packet_number_length, NOT_IN_FEC_GROUP) -
+                             /*include_path_id=*/false, packet_number_length,
+                             NOT_IN_FEC_GROUP) -
          kPrivateFlagsSize;
 }
 
 QuicPacketPublicHeader::QuicPacketPublicHeader()
     : connection_id(0),
       connection_id_length(PACKET_8BYTE_CONNECTION_ID),
+      multipath_flag(false),
       reset_flag(false),
       version_flag(false),
       packet_number_length(PACKET_6BYTE_PACKET_NUMBER) {}
@@ -60,6 +65,7 @@ QuicPacketPublicHeader::QuicPacketPublicHeader(
     const QuicPacketPublicHeader& other)
     : connection_id(other.connection_id),
       connection_id_length(other.connection_id_length),
+      multipath_flag(other.multipath_flag),
       reset_flag(other.reset_flag),
       version_flag(other.version_flag),
       packet_number_length(other.packet_number_length),
@@ -68,7 +74,8 @@ QuicPacketPublicHeader::QuicPacketPublicHeader(
 QuicPacketPublicHeader::~QuicPacketPublicHeader() {}
 
 QuicPacketHeader::QuicPacketHeader()
-    : packet_number(0),
+    : path_id(0),
+      packet_number(0),
       fec_flag(false),
       entropy_flag(false),
       entropy_hash(0),
@@ -77,6 +84,7 @@ QuicPacketHeader::QuicPacketHeader()
 
 QuicPacketHeader::QuicPacketHeader(const QuicPacketPublicHeader& header)
     : public_header(header),
+      path_id(0),
       packet_number(0),
       fec_flag(false),
       entropy_flag(false),
@@ -207,6 +215,7 @@ ostream& operator<<(ostream& os, const QuicPacketHeader& header) {
   os << "{ connection_id: " << header.public_header.connection_id
      << ", connection_id_length:" << header.public_header.connection_id_length
      << ", packet_number_length:" << header.public_header.packet_number_length
+     << ", multipath_flag: " << header.public_header.multipath_flag
      << ", reset_flag: " << header.public_header.reset_flag
      << ", version_flag: " << header.public_header.version_flag;
   if (header.public_header.version_flag) {
@@ -218,6 +227,7 @@ ostream& operator<<(ostream& os, const QuicPacketHeader& header) {
   os << ", fec_flag: " << header.fec_flag
      << ", entropy_flag: " << header.entropy_flag
      << ", entropy hash: " << static_cast<int>(header.entropy_hash)
+     << ", path_id: " << header.path_id
      << ", packet_number: " << header.packet_number
      << ", is_in_fec_group:" << header.is_in_fec_group
      << ", fec_group: " << header.fec_group << "}\n";
@@ -679,6 +689,9 @@ RetransmittableFrames::RetransmittableFrames(EncryptionLevel level)
     : encryption_level_(level),
       has_crypto_handshake_(NOT_HANDSHAKE),
       needs_padding_(false) {
+  // TODO(ianswett): Consider using an inlined vector instead, since this
+  // is very frequently a single frame.
+  frames_.reserve(2);
 }
 
 RetransmittableFrames::~RetransmittableFrames() {

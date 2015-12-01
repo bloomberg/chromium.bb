@@ -48,7 +48,11 @@ TcpCubicBytesSender::TcpCubicBytesSender(
       min4_mode_(false),
       max_congestion_window_(max_congestion_window * kDefaultTCPMSS),
       slowstart_threshold_(max_congestion_window * kDefaultTCPMSS),
-      last_cutback_exited_slowstart_(false) {}
+      last_cutback_exited_slowstart_(false),
+      initial_tcp_congestion_window_(initial_tcp_congestion_window *
+                                     kDefaultTCPMSS),
+      initial_max_tcp_congestion_window_(max_congestion_window *
+                                         kDefaultTCPMSS) {}
 
 TcpCubicBytesSender::~TcpCubicBytesSender() {
 }
@@ -349,6 +353,20 @@ void TcpCubicBytesSender::OnRetransmissionTimeout(bool packets_retransmitted) {
 
 CongestionControlType TcpCubicBytesSender::GetCongestionControlType() const {
   return reno_ ? kRenoBytes : kCubicBytes;
+}
+
+void TcpCubicBytesSender::OnConnectionMigration() {
+  hybrid_slow_start_.Restart();
+  cubic_.Reset();
+  prr_ = PrrSender();
+  num_acked_packets_ = 0;
+  largest_sent_packet_number_ = 0;
+  largest_acked_packet_number_ = 0;
+  largest_sent_at_last_cutback_ = 0;
+  congestion_window_ = initial_tcp_congestion_window_;
+  max_congestion_window_ = initial_max_tcp_congestion_window_;
+  slowstart_threshold_ = initial_max_tcp_congestion_window_;
+  last_cutback_exited_slowstart_ = false;
 }
 
 }  // namespace net

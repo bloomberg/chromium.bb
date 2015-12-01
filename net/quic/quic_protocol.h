@@ -111,6 +111,8 @@ const size_t kDefaultMaxStreamsPerConnection = 100;
 const size_t kPublicFlagsSize = 1;
 // Number of bytes reserved for version number in the packet header.
 const size_t kQuicVersionSize = 4;
+// Number of bytes reserved for path id in the packet header.
+const size_t kQuicPathIdSize = 1;
 // Number of bytes reserved for private flags in the packet header.
 const size_t kPrivateFlagsSize = 1;
 // Number of bytes reserved for FEC group in the packet header.
@@ -118,6 +120,8 @@ const size_t kFecGroupSize = 1;
 
 // Signifies that the QuicPacket will contain version of the protocol.
 const bool kIncludeVersion = true;
+// Signifies that the QuicPacket will contain path id.
+const bool kIncludePathId = true;
 
 // Index of the first byte in a QUIC packet which is used in hash calculation.
 const size_t kStartOfHashData = 0;
@@ -312,8 +316,11 @@ enum QuicPacketPublicFlags {
   PACKET_PUBLIC_FLAGS_4BYTE_PACKET = PACKET_FLAGS_4BYTE_PACKET << 4,
   PACKET_PUBLIC_FLAGS_6BYTE_PACKET = PACKET_FLAGS_6BYTE_PACKET << 4,
 
-  // All bits set (bits 6 and 7 are not currently used): 00111111
-  PACKET_PUBLIC_FLAGS_MAX = (1 << 6) - 1
+  // Bit 6: Does the packet header contain a path id?
+  PACKET_PUBLIC_FLAGS_MULTIPATH = 1 << 6,
+
+  // All bits set (bit7 are not currently used): 01111111
+  PACKET_PUBLIC_FLAGS_MAX = (1 << 7) - 1,
 };
 
 // The private flags are specified in one byte.
@@ -408,6 +415,7 @@ NET_EXPORT_PRIVATE size_t GetPacketHeaderSize(const QuicPacketHeader& header);
 NET_EXPORT_PRIVATE size_t
 GetPacketHeaderSize(QuicConnectionIdLength connection_id_length,
                     bool include_version,
+                    bool include_path_id,
                     QuicPacketNumberLength packet_number_length,
                     InFecGroup is_in_fec_group);
 
@@ -635,6 +643,7 @@ struct NET_EXPORT_PRIVATE QuicPacketPublicHeader {
   // public flags.
   QuicConnectionId connection_id;
   QuicConnectionIdLength connection_id_length;
+  bool multipath_flag;
   bool reset_flag;
   bool version_flag;
   QuicPacketNumberLength packet_number_length;
@@ -653,6 +662,7 @@ struct NET_EXPORT_PRIVATE QuicPacketHeader {
       std::ostream& os, const QuicPacketHeader& s);
 
   QuicPacketPublicHeader public_header;
+  QuicPathId path_id;
   QuicPacketNumber packet_number;
   bool fec_flag;
   bool entropy_flag;

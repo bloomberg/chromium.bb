@@ -5,12 +5,19 @@
 #ifndef NET_TOOLS_QUIC_QUIC_IN_MEMORY_CACHE_H_
 #define NET_TOOLS_QUIC_QUIC_IN_MEMORY_CACHE_H_
 
+#include <map>
 #include <string>
 
 #include "base/containers/hash_tables.h"
 #include "base/memory/singleton.h"
 #include "base/strings/string_piece.h"
+#include "net/quic/spdy_utils.h"
 #include "net/spdy/spdy_framer.h"
+#include "url/gurl.h"
+
+using base::StringPiece;
+using std::string;
+using std::list;
 
 namespace base {
 
@@ -32,6 +39,19 @@ class QuicServer;
 // `wget -p --save_headers <url>`
 class QuicInMemoryCache {
  public:
+  // A ServerPushInfo contains path of the push request and everything needed in
+  // comprising a response for the push request.
+  struct ServerPushInfo {
+    ServerPushInfo(GURL request_url,
+                   const net::SpdyHeaderBlock& headers,
+                   net::SpdyPriority priority,
+                   string body);
+    GURL request_url;
+    net::SpdyHeaderBlock headers;
+    net::SpdyPriority priority;
+    string body;
+  };
+
   enum SpecialResponseType {
     REGULAR_RESPONSE,  // Send the headers and body like a server should.
     CLOSE_CONNECTION,  // Close the connection (sending the close packet).
@@ -61,7 +81,7 @@ class QuicInMemoryCache {
    private:
     SpecialResponseType response_type_;
     SpdyHeaderBlock headers_;
-    std::string body_;
+    string body_;
 
     DISALLOW_COPY_AND_ASSIGN(Response);
   };
@@ -81,6 +101,17 @@ class QuicInMemoryCache {
                          int response_code,
                          base::StringPiece body);
 
+  // Add a simple response to the cache as AddSimpleResponse() does, and add
+  // some server push resources(resource path, corresponding response status and
+  // path) associated with it.
+  // Push resource implicitly come from the same host.
+  void AddSimpleResponseWithServerPushResources(
+      StringPiece host,
+      StringPiece path,
+      int response_code,
+      StringPiece body,
+      list<ServerPushInfo> push_resources);
+
   // Add a response to the cache.
   void AddResponse(base::StringPiece host,
                    base::StringPiece path,
@@ -97,10 +128,13 @@ class QuicInMemoryCache {
   void AddDefaultResponse(Response* response);
 
   // |cache_cirectory| can be generated using `wget -p --save-headers <url>`.
-  void InitializeFromDirectory(const std::string& cache_directory);
+  void InitializeFromDirectory(const string& cache_directory);
+
+  // Find all the server push resources associated with |request_url|.
+  list<ServerPushInfo> GetServerPushResources(string request_url);
 
  private:
-  typedef base::hash_map<std::string, Response*> ResponseMap;
+  typedef base::hash_map<string, Response*> ResponseMap;
 
   friend struct base::DefaultSingletonTraits<QuicInMemoryCache>;
   friend class test::QuicInMemoryCachePeer;
@@ -116,13 +150,27 @@ class QuicInMemoryCache {
                        const SpdyHeaderBlock& response_headers,
                        base::StringPiece response_body);
 
-  std::string GetKey(base::StringPiece host, base::StringPiece path) const;
+  string GetKey(base::StringPiece host, base::StringPiece path) const;
+
+  // Add some server push urls with given responses for specified
+  // request if these push resources are not associated with this request yet.
+  void MaybeAddServerPushResources(StringPiece request_host,
+                                   StringPiece request_path,
+                                   list<ServerPushInfo> push_resources);
+
+  // Check if push resource(push_host/push_path) associated with given request
+  // url already exists in server push map.
+  bool PushResourceExistsInCache(string original_request_url,
+                                 ServerPushInfo resource);
 
   // Cached responses.
   ResponseMap responses_;
 
   // The default response for cache misses, if set.
   scoped_ptr<Response> default_response_;
+
+  // A map from request URL to associated server push responses (if any).
+  std::multimap<string, ServerPushInfo> server_push_resources_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicInMemoryCache);
 };

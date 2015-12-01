@@ -799,5 +799,39 @@ TEST_F(TcpCubicSenderTest, PaceBelowCWND) {
                                       HAS_RETRANSMITTABLE_DATA).IsZero());
 }
 
+TEST_F(TcpCubicSenderTest, ResetAfterConnectionMigration) {
+  EXPECT_EQ(kDefaultWindowTCP, sender_->GetCongestionWindow());
+  EXPECT_EQ(kMaxCongestionWindow, sender_->slowstart_threshold());
+
+  // Starts with slow start.
+  sender_->SetNumEmulatedConnections(1);
+  const int kNumberOfAcks = 10;
+  for (int i = 0; i < kNumberOfAcks; ++i) {
+    // Send our full send window.
+    SendAvailableSendWindow();
+    AckNPackets(2);
+  }
+  SendAvailableSendWindow();
+  QuicByteCount expected_send_window =
+      kDefaultWindowTCP + (kDefaultTCPMSS * 2 * kNumberOfAcks);
+  EXPECT_EQ(expected_send_window, sender_->GetCongestionWindow());
+
+  // Loses a packet to exit slow start.
+  LoseNPackets(1);
+
+  // We should now have fallen out of slow start with a reduced window. Slow
+  // start threshold is also updated.
+  expected_send_window *= kRenoBeta;
+  EXPECT_EQ(expected_send_window, sender_->GetCongestionWindow());
+  EXPECT_EQ(expected_send_window / kDefaultTCPMSS,
+            sender_->slowstart_threshold());
+
+  // Resets cwnd and slow start threshold on connection migrations.
+  sender_->OnConnectionMigration();
+  EXPECT_EQ(kDefaultWindowTCP, sender_->GetCongestionWindow());
+  EXPECT_EQ(kMaxCongestionWindow, sender_->slowstart_threshold());
+  EXPECT_FALSE(sender_->hybrid_slow_start().started());
+}
+
 }  // namespace test
 }  // namespace net

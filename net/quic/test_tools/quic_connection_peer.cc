@@ -262,5 +262,10 @@ void QuicConnectionPeer::SetNextMtuProbeAt(QuicConnection* connection,
   connection->next_mtu_probe_at_ = number;
 }
 
+// static
+void QuicConnectionPeer::EnableAckDecimation(QuicConnection* connection) {
+  connection->ack_decimation_enabled_ = true;
+}
+
 }  // namespace test
 }  // namespace net

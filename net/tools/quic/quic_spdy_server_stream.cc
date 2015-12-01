@@ -152,6 +152,33 @@ void QuicSpdyServerStream::SendResponse() {
     return;
   }
 
+  // Examing response status, if it was not pure integer as typical h2 response
+  // status, send error response.
+  string request_url = request_headers_[":scheme"].as_string() + "://" +
+                       request_headers_[":authority"].as_string() +
+                       request_headers_[":path"].as_string();
+  int response_code;
+  SpdyHeaderBlock response_headers = response->headers();
+  if (!base::StringToInt(response_headers[":status"], &response_code)) {
+    DVLOG(1) << "Illegal (non-integer) response :status from cache: "
+             << response_headers[":status"].as_string() << " for request "
+             << request_url;
+    SendErrorResponse();
+    return;
+  }
+
+  if (id() % 2 == 0) {
+    // A server initiated stream is only used for a server push response,
+    // and only 200 and 30X response codes are supported for server push.
+    // This behavior mirrors the HTTP/2 implementation.
+    bool is_redirection = response_code / 100 == 3;
+    if (response_code != 200 && !is_redirection) {
+      LOG(WARNING) << "Response to server push request " << request_url
+                   << " result in response code " << response_code;
+      Reset(QUIC_STREAM_CANCELLED);
+      return;
+    }
+  }
   DVLOG(1) << "Sending response for stream " << id();
   SendHeadersAndBody(response->headers(), response->body());
 }
@@ -170,8 +197,6 @@ void QuicSpdyServerStream::SendHeadersAndBody(
   // This server only supports SPDY and HTTP, and neither handles bidirectional
   // streaming.
   if (!reading_stopped()) {
-    // If FLAGS_quic_implement_stop_reading is false,
-    // behaves as ReliableQuicStream::CloseReadSide().
     StopReading();
   }
 

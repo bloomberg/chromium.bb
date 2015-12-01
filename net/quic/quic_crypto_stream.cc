@@ -60,7 +60,7 @@ void QuicCryptoStream::OnDataAvailable() {
 }
 
 SpdyPriority QuicCryptoStream::Priority() const {
-  return net::kHighestPriority;  // The smallest priority is also the highest
+  return net::kV3HighestPriority;
 }
 
 void QuicCryptoStream::SendHandshakeMessage(

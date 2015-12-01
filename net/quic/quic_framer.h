@@ -394,6 +394,7 @@ class NET_EXPORT_PRIVATE QuicFramer {
   bool ProcessAuthenticatedHeader(QuicDataReader* reader,
                                   QuicPacketHeader* header);
 
+  bool ProcessPathId(QuicDataReader* reader, QuicPathId* path_id);
   bool ProcessPacketSequenceNumber(QuicDataReader* reader,
                                    QuicPacketNumberLength packet_number_length,
                                    QuicPacketNumber* packet_number);

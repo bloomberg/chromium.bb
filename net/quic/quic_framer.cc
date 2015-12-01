@@ -703,6 +703,9 @@ bool QuicFramer::AppendPacketHeader(const QuicPacketHeader& header,
   if (header.public_header.version_flag) {
     public_flags |= PACKET_PUBLIC_FLAGS_VERSION;
   }
+  if (header.public_header.multipath_flag) {
+    public_flags |= PACKET_PUBLIC_FLAGS_MULTIPATH;
+  }
 
   public_flags |=
       GetSequenceNumberFlags(header.public_header.packet_number_length)
@@ -753,6 +756,11 @@ bool QuicFramer::AppendPacketHeader(const QuicPacketHeader& header,
     writer->WriteUInt32(tag);
     DVLOG(1) << "version = " << quic_version_ << ", tag = '"
              << QuicUtils::TagToString(tag) << "'";
+  }
+
+  if (header.public_header.multipath_flag &&
+      !writer->WriteUInt8(header.path_id)) {
+    return false;
   }
 
   if (!AppendPacketSequenceNumber(header.public_header.packet_number_length,
@@ -845,6 +853,8 @@ bool QuicFramer::ProcessPublicHeader(QuicDataReader* reader,
     return false;
   }
 
+  public_header->multipath_flag =
+      (public_flags & PACKET_PUBLIC_FLAGS_MULTIPATH) != 0;
   public_header->reset_flag = (public_flags & PACKET_PUBLIC_FLAGS_RST) != 0;
   public_header->version_flag =
       (public_flags & PACKET_PUBLIC_FLAGS_VERSION) != 0;
@@ -1004,6 +1014,12 @@ QuicFramer::AckFrameInfo QuicFramer::GetAckFrameInfo(
 
 bool QuicFramer::ProcessUnauthenticatedHeader(QuicDataReader* encrypted_reader,
                                               QuicPacketHeader* header) {
+  if (header->public_header.multipath_flag &&
+      !ProcessPathId(encrypted_reader, &header->path_id)) {
+    set_detailed_error("Unable to read path id.");
+    return RaiseError(QUIC_INVALID_PACKET_HEADER);
+  }
+
   if (!ProcessPacketSequenceNumber(encrypted_reader,
                                    header->public_header.packet_number_length,
                                    &header->packet_number)) {
@@ -1059,6 +1075,14 @@ bool QuicFramer::ProcessAuthenticatedHeader(QuicDataReader* reader,
   // Set the last packet number after we have decrypted the packet
   // so we are confident is not attacker controlled.
   last_packet_number_ = header->packet_number;
+  return true;
+}
+
+bool QuicFramer::ProcessPathId(QuicDataReader* reader, QuicPathId* path_id) {
+  if (!reader->ReadBytes(path_id, 1)) {
+    return false;
+  }
+
   return true;
 }
 

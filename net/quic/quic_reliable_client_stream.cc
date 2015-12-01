@@ -74,7 +74,7 @@ SpdyPriority QuicReliableClientStream::Priority() const {
   if (delegate_ && delegate_->HasSendHeadersComplete()) {
     return QuicSpdyStream::Priority();
   }
-  return net::kHighestPriority;
+  return net::kV3HighestPriority;
 }
 
 int QuicReliableClientStream::WriteStreamData(

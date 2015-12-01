@@ -26,6 +26,7 @@
 #include "net/tools/quic/quic_dispatcher.h"
 #include "net/tools/quic/quic_per_connection_packet_writer.h"
 #include "net/tools/quic/quic_server_session.h"
+#include "net/tools/quic/test_tools/mock_quic_server_session_visitor.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace net {
@@ -459,7 +460,7 @@ class MockQuicSpdySession : public QuicSpdySession {
   DISALLOW_COPY_AND_ASSIGN(MockQuicSpdySession);
 };
 
-class TestQuicSpdyServerSession : public QuicSpdySession {
+class TestQuicSpdyServerSession : public tools::QuicServerSession {
  public:
   TestQuicSpdyServerSession(QuicConnection* connection,
                             const QuicConfig& config,
@@ -472,7 +473,7 @@ class TestQuicSpdyServerSession : public QuicSpdySession {
   QuicCryptoServerStream* GetCryptoStream() override;
 
  private:
-  scoped_ptr<QuicCryptoServerStream> crypto_stream_;
+  tools::test::MockQuicServerSessionVisitor visitor_;
 
   DISALLOW_COPY_AND_ASSIGN(TestQuicSpdyServerSession);
 };
@@ -738,6 +739,7 @@ class MockQuicConnectionDebugVisitor : public QuicConnectionDebugVisitor {
 //   Needed for strike-register nonce verification.  The client
 //   connection_start_time should be synchronized witht the server
 //   start time, otherwise nonce verification will fail.
+// supported_versions: Set of QUIC versions this client supports.
 // helper: Pointer to the MockConnectionHelper to use for the session.
 // crypto_client_config: Pointer to the crypto client config.
 // client_connection: Pointer reference for newly created
@@ -748,6 +750,7 @@ class MockQuicConnectionDebugVisitor : public QuicConnectionDebugVisitor {
 void CreateClientSessionForTest(QuicServerId server_id,
                                 bool supports_stateless_rejects,
                                 QuicTime::Delta connection_start_time,
+                                QuicVersionVector supported_versions,
                                 MockConnectionHelper* helper,
                                 QuicCryptoClientConfig* crypto_client_config,
                                 PacketSavingConnection** client_connection,
@@ -760,6 +763,7 @@ void CreateClientSessionForTest(QuicServerId server_id,
 //   Needed for strike-register nonce verification.  The server
 //   connection_start_time should be synchronized witht the client
 //   start time, otherwise nonce verification will fail.
+// supported_versions: Set of QUIC versions this server supports.
 // helper: Pointer to the MockConnectionHelper to use for the session.
 // crypto_server_config: Pointer to the crypto server config.
 // server_connection: Pointer reference for newly created
@@ -769,6 +773,7 @@ void CreateClientSessionForTest(QuicServerId server_id,
 //   session.  The new object will be owned by the caller.
 void CreateServerSessionForTest(QuicServerId server_id,
                                 QuicTime::Delta connection_start_time,
+                                QuicVersionVector supported_versions,
                                 MockConnectionHelper* helper,
                                 QuicCryptoServerConfig* crypto_server_config,
                                 PacketSavingConnection** server_connection,

@@ -43,6 +43,7 @@ const QuicPacketNumber kMask = kEpoch - 1;
 // Use fields in which each byte is distinct to ensure that every byte is
 // framed correctly. The values are otherwise arbitrary.
 const QuicConnectionId kConnectionId = UINT64_C(0xFEDCBA9876543210);
+const QuicPathId kPathId = 0x42;
 const QuicPacketNumber kPacketNumber = UINT64_C(0x123456789ABC);
 const QuicPacketNumber kLargestObserved = UINT64_C(0x0123456789ABF);
 const QuicPacketNumber kMissingPacket = UINT64_C(0x0123456789ABE);
@@ -62,49 +63,69 @@ size_t GetMinStreamFrameSize() {
   return kQuicFrameTypeSize + kQuicMaxStreamIdSize + kQuicMaxStreamOffsetSize;
 }
 
-// Index into the packet number offset in the header.
-size_t GetPacketNumberOffset(QuicConnectionIdLength connection_id_length,
-                             bool include_version) {
+// Index into the path id offset in the header (if present).
+size_t GetPathIdOffset(QuicConnectionIdLength connection_id_length,
+                       bool include_version) {
   return kConnectionIdOffset + connection_id_length +
          (include_version ? kQuicVersionSize : 0);
 }
 
-size_t GetPacketNumberOffset(bool include_version) {
-  return GetPacketNumberOffset(PACKET_8BYTE_CONNECTION_ID, include_version);
+// Index into the packet number offset in the header.
+size_t GetPacketNumberOffset(QuicConnectionIdLength connection_id_length,
+                             bool include_version,
+                             bool include_path_id) {
+  return kConnectionIdOffset + connection_id_length +
+         (include_version ? kQuicVersionSize : 0) +
+         (include_path_id ? kQuicPathIdSize : 0);
+}
+
+size_t GetPacketNumberOffset(bool include_version, bool include_path_id) {
+  return GetPacketNumberOffset(PACKET_8BYTE_CONNECTION_ID, include_version,
+                               include_path_id);
 }
 
 // Index into the private flags offset in the data packet header.
 size_t GetPrivateFlagsOffset(QuicConnectionIdLength connection_id_length,
-                             bool include_version) {
-  return GetPacketNumberOffset(connection_id_length, include_version) +
+                             bool include_version,
+                             bool include_path_id) {
+  return GetPacketNumberOffset(connection_id_length, include_version,
+                               include_path_id) +
          PACKET_6BYTE_PACKET_NUMBER;
 }
 
-size_t GetPrivateFlagsOffset(bool include_version) {
-  return GetPrivateFlagsOffset(PACKET_8BYTE_CONNECTION_ID, include_version);
+size_t GetPrivateFlagsOffset(bool include_version, bool include_path_id) {
+  return GetPrivateFlagsOffset(PACKET_8BYTE_CONNECTION_ID, include_version,
+                               include_path_id);
 }
 
 size_t GetPrivateFlagsOffset(bool include_version,
+                             bool include_path_id,
                              QuicPacketNumberLength packet_number_length) {
-  return GetPacketNumberOffset(PACKET_8BYTE_CONNECTION_ID, include_version) +
+  return GetPacketNumberOffset(PACKET_8BYTE_CONNECTION_ID, include_version,
+                               include_path_id) +
          packet_number_length;
 }
 
 // Index into the fec group offset in the header.
 size_t GetFecGroupOffset(QuicConnectionIdLength connection_id_length,
-                         bool include_version) {
-  return GetPrivateFlagsOffset(connection_id_length, include_version) +
+                         bool include_version,
+                         bool include_path_id) {
+  return GetPrivateFlagsOffset(connection_id_length, include_version,
+                               include_path_id) +
          kPrivateFlagsSize;
 }
 
-size_t GetFecGroupOffset(bool include_version) {
-  return GetPrivateFlagsOffset(PACKET_8BYTE_CONNECTION_ID, include_version) +
+size_t GetFecGroupOffset(bool include_version, bool include_path_id) {
+  return GetPrivateFlagsOffset(PACKET_8BYTE_CONNECTION_ID, include_version,
+                               include_path_id) +
          kPrivateFlagsSize;
 }
 
 size_t GetFecGroupOffset(bool include_version,
+                         bool include_path_id,
                          QuicPacketNumberLength packet_number_length) {
-  return GetPrivateFlagsOffset(include_version, packet_number_length) +
+  return GetPrivateFlagsOffset(include_version, include_path_id,
+                               packet_number_length) +
          kPrivateFlagsSize;
 }
 
@@ -445,7 +466,8 @@ class QuicFramerTest : public ::testing::TestWithParam<QuicVersion> {
       CheckProcessingFails(
           packet,
           i + GetPacketHeaderSize(PACKET_8BYTE_CONNECTION_ID, include_version,
-                                  PACKET_6BYTE_PACKET_NUMBER, NOT_IN_FEC_GROUP),
+                                  !kIncludePathId, PACKET_6BYTE_PACKET_NUMBER,
+                                  NOT_IN_FEC_GROUP),
           expected_error, QUIC_INVALID_STREAM_DATA);
     }
   }
@@ -608,10 +630,10 @@ TEST_P(QuicFramerTest, LargePacket) {
   };
 
   memset(packet + GetPacketHeaderSize(
-             PACKET_8BYTE_CONNECTION_ID, !kIncludeVersion,
+             PACKET_8BYTE_CONNECTION_ID, !kIncludeVersion, !kIncludePathId,
              PACKET_6BYTE_PACKET_NUMBER, NOT_IN_FEC_GROUP), 0,
          kMaxPacketSize - GetPacketHeaderSize(
-             PACKET_8BYTE_CONNECTION_ID, !kIncludeVersion,
+             PACKET_8BYTE_CONNECTION_ID, !kIncludeVersion, !kIncludePathId,
              PACKET_6BYTE_PACKET_NUMBER, NOT_IN_FEC_GROUP) + 1);
   // clang-format on
 
@@ -644,6 +666,7 @@ TEST_P(QuicFramerTest, PacketHeader) {
   EXPECT_EQ(QUIC_MISSING_PAYLOAD, framer_.error());
   ASSERT_TRUE(visitor_.header_.get());
   EXPECT_EQ(kConnectionId, visitor_.header_->public_header.connection_id);
+  EXPECT_FALSE(visitor_.header_->public_header.multipath_flag);
   EXPECT_FALSE(visitor_.header_->public_header.reset_flag);
   EXPECT_FALSE(visitor_.header_->public_header.version_flag);
   EXPECT_FALSE(visitor_.header_->fec_flag);
@@ -656,16 +679,17 @@ TEST_P(QuicFramerTest, PacketHeader) {
   // Now test framing boundaries.
   for (size_t i = 0;
        i < GetPacketHeaderSize(PACKET_8BYTE_CONNECTION_ID, !kIncludeVersion,
-                               PACKET_6BYTE_PACKET_NUMBER, NOT_IN_FEC_GROUP);
+                               !kIncludePathId, PACKET_6BYTE_PACKET_NUMBER,
+                               NOT_IN_FEC_GROUP);
        ++i) {
     string expected_error;
     if (i < kConnectionIdOffset) {
       expected_error = "Unable to read public flags.";
-    } else if (i < GetPacketNumberOffset(!kIncludeVersion)) {
+    } else if (i < GetPacketNumberOffset(!kIncludeVersion, !kIncludePathId)) {
       expected_error = "Unable to read ConnectionId.";
-    } else if (i < GetPrivateFlagsOffset(!kIncludeVersion)) {
+    } else if (i < GetPrivateFlagsOffset(!kIncludeVersion, !kIncludePathId)) {
       expected_error = "Unable to read packet number.";
-    } else if (i < GetFecGroupOffset(!kIncludeVersion)) {
+    } else if (i < GetFecGroupOffset(!kIncludeVersion, !kIncludePathId)) {
       expected_error = "Unable to read private flags.";
     } else {
       expected_error = "Unable to read first fec protected packet offset.";
@@ -695,6 +719,7 @@ TEST_P(QuicFramerTest, PacketHeaderWith4ByteConnectionId) {
   EXPECT_EQ(QUIC_MISSING_PAYLOAD, framer_.error());
   ASSERT_TRUE(visitor_.header_.get());
   EXPECT_EQ(kConnectionId, visitor_.header_->public_header.connection_id);
+  EXPECT_FALSE(visitor_.header_->public_header.multipath_flag);
   EXPECT_FALSE(visitor_.header_->public_header.reset_flag);
   EXPECT_FALSE(visitor_.header_->public_header.version_flag);
   EXPECT_FALSE(visitor_.header_->fec_flag);
@@ -707,19 +732,20 @@ TEST_P(QuicFramerTest, PacketHeaderWith4ByteConnectionId) {
   // Now test framing boundaries.
   for (size_t i = 0;
        i < GetPacketHeaderSize(PACKET_4BYTE_CONNECTION_ID, !kIncludeVersion,
-                               PACKET_6BYTE_PACKET_NUMBER, NOT_IN_FEC_GROUP);
+                               !kIncludePathId, PACKET_6BYTE_PACKET_NUMBER,
+                               NOT_IN_FEC_GROUP);
        ++i) {
     string expected_error;
     if (i < kConnectionIdOffset) {
       expected_error = "Unable to read public flags.";
     } else if (i < GetPacketNumberOffset(PACKET_4BYTE_CONNECTION_ID,
-                                         !kIncludeVersion)) {
+                                         !kIncludeVersion, !kIncludePathId)) {
       expected_error = "Unable to read ConnectionId.";
     } else if (i < GetPrivateFlagsOffset(PACKET_4BYTE_CONNECTION_ID,
-                                         !kIncludeVersion)) {
+                                         !kIncludeVersion, !kIncludePathId)) {
       expected_error = "Unable to read packet number.";
     } else if (i < GetFecGroupOffset(PACKET_4BYTE_CONNECTION_ID,
-                                     !kIncludeVersion)) {
+                                     !kIncludeVersion, !kIncludePathId)) {
       expected_error = "Unable to read private flags.";
     } else {
       expected_error = "Unable to read first fec protected packet offset.";
@@ -749,6 +775,7 @@ TEST_P(QuicFramerTest, PacketHeader1ByteConnectionId) {
   EXPECT_EQ(QUIC_MISSING_PAYLOAD, framer_.error());
   ASSERT_TRUE(visitor_.header_.get());
   EXPECT_EQ(kConnectionId, visitor_.header_->public_header.connection_id);
+  EXPECT_FALSE(visitor_.header_->public_header.multipath_flag);
   EXPECT_FALSE(visitor_.header_->public_header.reset_flag);
   EXPECT_FALSE(visitor_.header_->public_header.version_flag);
   EXPECT_FALSE(visitor_.header_->fec_flag);
@@ -761,19 +788,20 @@ TEST_P(QuicFramerTest, PacketHeader1ByteConnectionId) {
   // Now test framing boundaries.
   for (size_t i = 0;
        i < GetPacketHeaderSize(PACKET_1BYTE_CONNECTION_ID, !kIncludeVersion,
-                               PACKET_6BYTE_PACKET_NUMBER, NOT_IN_FEC_GROUP);
+                               !kIncludePathId, PACKET_6BYTE_PACKET_NUMBER,
+                               NOT_IN_FEC_GROUP);
        ++i) {
     string expected_error;
     if (i < kConnectionIdOffset) {
       expected_error = "Unable to read public flags.";
     } else if (i < GetPacketNumberOffset(PACKET_1BYTE_CONNECTION_ID,
-                                         !kIncludeVersion)) {
+                                         !kIncludeVersion, !kIncludePathId)) {
       expected_error = "Unable to read ConnectionId.";
     } else if (i < GetPrivateFlagsOffset(PACKET_1BYTE_CONNECTION_ID,
-                                         !kIncludeVersion)) {
+                                         !kIncludeVersion, !kIncludePathId)) {
       expected_error = "Unable to read packet number.";
     } else if (i < GetFecGroupOffset(PACKET_1BYTE_CONNECTION_ID,
-                                     !kIncludeVersion)) {
+                                     !kIncludeVersion, !kIncludePathId)) {
       expected_error = "Unable to read private flags.";
     } else {
       expected_error = "Unable to read first fec protected packet offset.";
@@ -803,6 +831,7 @@ TEST_P(QuicFramerTest, PacketHeaderWith0ByteConnectionId) {
   EXPECT_EQ(QUIC_MISSING_PAYLOAD, framer_.error());
   ASSERT_TRUE(visitor_.header_.get());
   EXPECT_EQ(kConnectionId, visitor_.header_->public_header.connection_id);
+  EXPECT_FALSE(visitor_.header_->public_header.multipath_flag);
   EXPECT_FALSE(visitor_.header_->public_header.reset_flag);
   EXPECT_FALSE(visitor_.header_->public_header.version_flag);
   EXPECT_FALSE(visitor_.header_->fec_flag);
@@ -815,19 +844,20 @@ TEST_P(QuicFramerTest, PacketHeaderWith0ByteConnectionId) {
   // Now test framing boundaries.
   for (size_t i = 0;
        i < GetPacketHeaderSize(PACKET_0BYTE_CONNECTION_ID, !kIncludeVersion,
-                               PACKET_6BYTE_PACKET_NUMBER, NOT_IN_FEC_GROUP);
+                               !kIncludePathId, PACKET_6BYTE_PACKET_NUMBER,
+                               NOT_IN_FEC_GROUP);
        ++i) {
     string expected_error;
     if (i < kConnectionIdOffset) {
       expected_error = "Unable to read public flags.";
     } else if (i < GetPacketNumberOffset(PACKET_0BYTE_CONNECTION_ID,
-                                         !kIncludeVersion)) {
+                                         !kIncludeVersion, !kIncludePathId)) {
       expected_error = "Unable to read ConnectionId.";
     } else if (i < GetPrivateFlagsOffset(PACKET_0BYTE_CONNECTION_ID,
-                                         !kIncludeVersion)) {
+                                         !kIncludeVersion, !kIncludePathId)) {
       expected_error = "Unable to read packet number.";
     } else if (i < GetFecGroupOffset(PACKET_0BYTE_CONNECTION_ID,
-                                     !kIncludeVersion)) {
+                                     !kIncludeVersion, !kIncludePathId)) {
       expected_error = "Unable to read private flags.";
     } else {
       expected_error = "Unable to read first fec protected packet offset.";
@@ -857,6 +887,7 @@ TEST_P(QuicFramerTest, PacketHeaderWithVersionFlag) {
   EXPECT_EQ(QUIC_MISSING_PAYLOAD, framer_.error());
   ASSERT_TRUE(visitor_.header_.get());
   EXPECT_EQ(kConnectionId, visitor_.header_->public_header.connection_id);
+  EXPECT_FALSE(visitor_.header_->public_header.multipath_flag);
   EXPECT_FALSE(visitor_.header_->public_header.reset_flag);
   EXPECT_TRUE(visitor_.header_->public_header.version_flag);
   EXPECT_EQ(GetParam(), visitor_.header_->public_header.versions[0]);
@@ -870,18 +901,138 @@ TEST_P(QuicFramerTest, PacketHeaderWithVersionFlag) {
   // Now test framing boundaries.
   for (size_t i = 0;
        i < GetPacketHeaderSize(PACKET_8BYTE_CONNECTION_ID, kIncludeVersion,
-                               PACKET_6BYTE_PACKET_NUMBER, NOT_IN_FEC_GROUP);
+                               !kIncludePathId, PACKET_6BYTE_PACKET_NUMBER,
+                               NOT_IN_FEC_GROUP);
        ++i) {
     string expected_error;
     if (i < kConnectionIdOffset) {
       expected_error = "Unable to read public flags.";
     } else if (i < kVersionOffset) {
       expected_error = "Unable to read ConnectionId.";
-    } else if (i < GetPacketNumberOffset(kIncludeVersion)) {
+    } else if (i < GetPacketNumberOffset(kIncludeVersion, !kIncludePathId)) {
       expected_error = "Unable to read protocol version.";
-    } else if (i < GetPrivateFlagsOffset(kIncludeVersion)) {
+    } else if (i < GetPrivateFlagsOffset(kIncludeVersion, !kIncludePathId)) {
       expected_error = "Unable to read packet number.";
-    } else if (i < GetFecGroupOffset(kIncludeVersion)) {
+    } else if (i < GetFecGroupOffset(kIncludeVersion, !kIncludePathId)) {
+      expected_error = "Unable to read private flags.";
+    } else {
+      expected_error = "Unable to read first fec protected packet offset.";
+    }
+    CheckProcessingFails(packet, i, expected_error, QUIC_INVALID_PACKET_HEADER);
+  }
+}
+
+TEST_P(QuicFramerTest, PacketHeaderWithMultipathFlag) {
+  // clang-format off
+  unsigned char packet[] = {
+    // public flags (version)
+    0x7C,
+    // connection_id
+    0x10, 0x32, 0x54, 0x76, 0x98, 0xBA, 0xDC, 0xFE,
+    // path_id
+    0x42,
+    // packet number
+    0xBC, 0x9A, 0x78, 0x56, 0x34, 0x12,
+    // private flags
+    0x00,
+  };
+  // clang-format on
+
+  QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
+  EXPECT_FALSE(framer_.ProcessPacket(encrypted));
+  EXPECT_EQ(QUIC_MISSING_PAYLOAD, framer_.error());
+  ASSERT_TRUE(visitor_.header_.get());
+  EXPECT_EQ(kConnectionId, visitor_.header_->public_header.connection_id);
+  EXPECT_TRUE(visitor_.header_->public_header.multipath_flag);
+  EXPECT_FALSE(visitor_.header_->public_header.reset_flag);
+  EXPECT_FALSE(visitor_.header_->public_header.version_flag);
+  EXPECT_FALSE(visitor_.header_->fec_flag);
+  EXPECT_FALSE(visitor_.header_->entropy_flag);
+  EXPECT_EQ(0, visitor_.header_->entropy_hash);
+  EXPECT_EQ(kPathId, visitor_.header_->path_id);
+  EXPECT_EQ(kPacketNumber, visitor_.header_->packet_number);
+  EXPECT_EQ(NOT_IN_FEC_GROUP, visitor_.header_->is_in_fec_group);
+  EXPECT_EQ(0u, visitor_.header_->fec_group);
+
+  // Now test framing boundaries.
+  for (size_t i = 0;
+       i < GetPacketHeaderSize(PACKET_8BYTE_CONNECTION_ID, !kIncludeVersion,
+                               kIncludePathId, PACKET_6BYTE_PACKET_NUMBER,
+                               NOT_IN_FEC_GROUP);
+       ++i) {
+    string expected_error;
+    if (i < kConnectionIdOffset) {
+      expected_error = "Unable to read public flags.";
+    } else if (i <
+               GetPathIdOffset(PACKET_8BYTE_CONNECTION_ID, !kIncludeVersion)) {
+      expected_error = "Unable to read ConnectionId.";
+    } else if (i < GetPacketNumberOffset(!kIncludeVersion, kIncludePathId)) {
+      expected_error = "Unable to read path id.";
+    } else if (i < GetPrivateFlagsOffset(!kIncludeVersion, kIncludePathId)) {
+      expected_error = "Unable to read packet number.";
+    } else if (i < GetFecGroupOffset(!kIncludeVersion, kIncludePathId)) {
+      expected_error = "Unable to read private flags.";
+    } else {
+      expected_error = "Unable to read first fec protected packet offset.";
+    }
+    CheckProcessingFails(packet, i, expected_error, QUIC_INVALID_PACKET_HEADER);
+  }
+}
+
+TEST_P(QuicFramerTest, PacketHeaderWithBothVersionFlagAndMultipathFlag) {
+  // clang-format off
+  unsigned char packet[] = {
+    // public flags (version)
+    0x7D,
+    // connection_id
+    0x10, 0x32, 0x54, 0x76, 0x98, 0xBA, 0xDC, 0xFE,
+    // version tag
+    'Q', '0', GetQuicVersionDigitTens(), GetQuicVersionDigitOnes(),
+    // path_id
+    0x42,
+    // packet number
+    0xBC, 0x9A, 0x78, 0x56, 0x34, 0x12,
+    // private flags
+    0x00,
+  };
+  // clang-format on
+
+  QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
+  EXPECT_FALSE(framer_.ProcessPacket(encrypted));
+  EXPECT_EQ(QUIC_MISSING_PAYLOAD, framer_.error());
+  ASSERT_TRUE(visitor_.header_.get());
+  EXPECT_EQ(kConnectionId, visitor_.header_->public_header.connection_id);
+  EXPECT_TRUE(visitor_.header_->public_header.multipath_flag);
+  EXPECT_FALSE(visitor_.header_->public_header.reset_flag);
+  EXPECT_TRUE(visitor_.header_->public_header.version_flag);
+  EXPECT_EQ(GetParam(), visitor_.header_->public_header.versions[0]);
+  EXPECT_FALSE(visitor_.header_->fec_flag);
+  EXPECT_FALSE(visitor_.header_->entropy_flag);
+  EXPECT_EQ(0, visitor_.header_->entropy_hash);
+  EXPECT_EQ(kPathId, visitor_.header_->path_id);
+  EXPECT_EQ(kPacketNumber, visitor_.header_->packet_number);
+  EXPECT_EQ(NOT_IN_FEC_GROUP, visitor_.header_->is_in_fec_group);
+  EXPECT_EQ(0u, visitor_.header_->fec_group);
+
+  // Now test framing boundaries.
+  for (size_t i = 0;
+       i < GetPacketHeaderSize(PACKET_8BYTE_CONNECTION_ID, !kIncludeVersion,
+                               kIncludePathId, PACKET_6BYTE_PACKET_NUMBER,
+                               NOT_IN_FEC_GROUP);
+       ++i) {
+    string expected_error;
+    if (i < kConnectionIdOffset) {
+      expected_error = "Unable to read public flags.";
+    } else if (i < kVersionOffset) {
+      expected_error = "Unable to read ConnectionId.";
+    } else if (i <
+               GetPathIdOffset(PACKET_8BYTE_CONNECTION_ID, kIncludeVersion)) {
+      expected_error = "Unable to read protocol version.";
+    } else if (i < GetPacketNumberOffset(kIncludeVersion, kIncludePathId)) {
+      expected_error = "Unable to read path id.";
+    } else if (i < GetPrivateFlagsOffset(kIncludeVersion, kIncludePathId)) {
+      expected_error = "Unable to read packet number.";
+    } else if (i < GetFecGroupOffset(kIncludeVersion, kIncludePathId)) {
       expected_error = "Unable to read private flags.";
     } else {
       expected_error = "Unable to read first fec protected packet offset.";
@@ -911,6 +1062,7 @@ TEST_P(QuicFramerTest, PacketHeaderWith4BytePacketNumber) {
   EXPECT_EQ(QUIC_MISSING_PAYLOAD, framer_.error());
   ASSERT_TRUE(visitor_.header_.get());
   EXPECT_EQ(kConnectionId, visitor_.header_->public_header.connection_id);
+  EXPECT_FALSE(visitor_.header_->public_header.multipath_flag);
   EXPECT_FALSE(visitor_.header_->public_header.reset_flag);
   EXPECT_FALSE(visitor_.header_->public_header.version_flag);
   EXPECT_FALSE(visitor_.header_->fec_flag);
@@ -923,17 +1075,18 @@ TEST_P(QuicFramerTest, PacketHeaderWith4BytePacketNumber) {
   // Now test framing boundaries.
   for (size_t i = 0;
        i < GetPacketHeaderSize(PACKET_8BYTE_CONNECTION_ID, !kIncludeVersion,
-                               PACKET_4BYTE_PACKET_NUMBER, NOT_IN_FEC_GROUP);
+                               !kIncludePathId, PACKET_4BYTE_PACKET_NUMBER,
+                               NOT_IN_FEC_GROUP);
        ++i) {
     string expected_error;
     if (i < kConnectionIdOffset) {
       expected_error = "Unable to read public flags.";
-    } else if (i < GetPacketNumberOffset(!kIncludeVersion)) {
+    } else if (i < GetPacketNumberOffset(!kIncludeVersion, !kIncludePathId)) {
       expected_error = "Unable to read ConnectionId.";
-    } else if (i < GetPrivateFlagsOffset(!kIncludeVersion,
+    } else if (i < GetPrivateFlagsOffset(!kIncludeVersion, !kIncludePathId,
                                          PACKET_4BYTE_PACKET_NUMBER)) {
       expected_error = "Unable to read packet number.";
-    } else if (i < GetFecGroupOffset(!kIncludeVersion,
+    } else if (i < GetFecGroupOffset(!kIncludeVersion, !kIncludePathId,
                                      PACKET_4BYTE_PACKET_NUMBER)) {
       expected_error = "Unable to read private flags.";
     } else {
@@ -964,6 +1117,7 @@ TEST_P(QuicFramerTest, PacketHeaderWith2BytePacketNumber) {
   EXPECT_EQ(QUIC_MISSING_PAYLOAD, framer_.error());
   ASSERT_TRUE(visitor_.header_.get());
   EXPECT_EQ(kConnectionId, visitor_.header_->public_header.connection_id);
+  EXPECT_FALSE(visitor_.header_->public_header.multipath_flag);
   EXPECT_FALSE(visitor_.header_->public_header.reset_flag);
   EXPECT_FALSE(visitor_.header_->public_header.version_flag);
   EXPECT_FALSE(visitor_.header_->fec_flag);
@@ -976,17 +1130,18 @@ TEST_P(QuicFramerTest, PacketHeaderWith2BytePacketNumber) {
   // Now test framing boundaries.
   for (size_t i = 0;
        i < GetPacketHeaderSize(PACKET_8BYTE_CONNECTION_ID, !kIncludeVersion,
-                               PACKET_2BYTE_PACKET_NUMBER, NOT_IN_FEC_GROUP);
+                               !kIncludePathId, PACKET_2BYTE_PACKET_NUMBER,
+                               NOT_IN_FEC_GROUP);
        ++i) {
     string expected_error;
     if (i < kConnectionIdOffset) {
       expected_error = "Unable to read public flags.";
-    } else if (i < GetPacketNumberOffset(!kIncludeVersion)) {
+    } else if (i < GetPacketNumberOffset(!kIncludeVersion, !kIncludePathId)) {
       expected_error = "Unable to read ConnectionId.";
-    } else if (i < GetPrivateFlagsOffset(!kIncludeVersion,
+    } else if (i < GetPrivateFlagsOffset(!kIncludeVersion, !kIncludePathId,
                                          PACKET_2BYTE_PACKET_NUMBER)) {
       expected_error = "Unable to read packet number.";
-    } else if (i < GetFecGroupOffset(!kIncludeVersion,
+    } else if (i < GetFecGroupOffset(!kIncludeVersion, !kIncludePathId,
                                      PACKET_2BYTE_PACKET_NUMBER)) {
       expected_error = "Unable to read private flags.";
     } else {
@@ -1017,6 +1172,7 @@ TEST_P(QuicFramerTest, PacketHeaderWith1BytePacketNumber) {
   EXPECT_EQ(QUIC_MISSING_PAYLOAD, framer_.error());
   ASSERT_TRUE(visitor_.header_.get());
   EXPECT_EQ(kConnectionId, visitor_.header_->public_header.connection_id);
+  EXPECT_FALSE(visitor_.header_->public_header.multipath_flag);
   EXPECT_FALSE(visitor_.header_->public_header.reset_flag);
   EXPECT_FALSE(visitor_.header_->public_header.version_flag);
   EXPECT_FALSE(visitor_.header_->fec_flag);
@@ -1029,17 +1185,18 @@ TEST_P(QuicFramerTest, PacketHeaderWith1BytePacketNumber) {
   // Now test framing boundaries.
   for (size_t i = 0;
        i < GetPacketHeaderSize(PACKET_8BYTE_CONNECTION_ID, !kIncludeVersion,
-                               PACKET_1BYTE_PACKET_NUMBER, NOT_IN_FEC_GROUP);
+                               !kIncludePathId, PACKET_1BYTE_PACKET_NUMBER,
+                               NOT_IN_FEC_GROUP);
        ++i) {
     string expected_error;
     if (i < kConnectionIdOffset) {
       expected_error = "Unable to read public flags.";
-    } else if (i < GetPacketNumberOffset(!kIncludeVersion)) {
+    } else if (i < GetPacketNumberOffset(!kIncludeVersion, !kIncludePathId)) {
       expected_error = "Unable to read ConnectionId.";
-    } else if (i < GetPrivateFlagsOffset(!kIncludeVersion,
+    } else if (i < GetPrivateFlagsOffset(!kIncludeVersion, !kIncludePathId,
                                          PACKET_1BYTE_PACKET_NUMBER)) {
       expected_error = "Unable to read packet number.";
-    } else if (i < GetFecGroupOffset(!kIncludeVersion,
+    } else if (i < GetFecGroupOffset(!kIncludeVersion, !kIncludePathId,
                                      PACKET_1BYTE_PACKET_NUMBER)) {
       expected_error = "Unable to read private flags.";
     } else {
@@ -1080,7 +1237,7 @@ TEST_P(QuicFramerTest, InvalidPublicFlagWithMatchingVersions) {
   // clang-format off
   unsigned char packet[] = {
     // public flags (8 byte connection_id and version flag and an unknown flag)
-    0x4D,
+    0x8D,
     // connection_id
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
@@ -1221,7 +1378,8 @@ TEST_P(QuicFramerTest, PaddingFrame) {
   // A packet with no frames is not acceptable.
   CheckProcessingFails(
       packet, GetPacketHeaderSize(PACKET_8BYTE_CONNECTION_ID, !kIncludeVersion,
-                                  PACKET_6BYTE_PACKET_NUMBER, NOT_IN_FEC_GROUP),
+                                  !kIncludePathId, PACKET_6BYTE_PACKET_NUMBER,
+                                  NOT_IN_FEC_GROUP),
       "Packet has no frames.", QUIC_MISSING_PAYLOAD);
 }
 
@@ -1761,7 +1919,8 @@ TEST_P(QuicFramerTest, AckFrameTwoTimestamp) {
     CheckProcessingFails(
         packet,
         i + GetPacketHeaderSize(PACKET_8BYTE_CONNECTION_ID, !kIncludeVersion,
-                                PACKET_6BYTE_PACKET_NUMBER, NOT_IN_FEC_GROUP),
+                                !kIncludePathId, PACKET_6BYTE_PACKET_NUMBER,
+                                NOT_IN_FEC_GROUP),
         expected_error, QUIC_INVALID_ACK_DATA);
   }
 }
@@ -1867,7 +2026,8 @@ TEST_P(QuicFramerTest, AckFrameOneTimestamp) {
     CheckProcessingFails(
         packet,
         i + GetPacketHeaderSize(PACKET_8BYTE_CONNECTION_ID, !kIncludeVersion,
-                                PACKET_6BYTE_PACKET_NUMBER, NOT_IN_FEC_GROUP),
+                                !kIncludePathId, PACKET_6BYTE_PACKET_NUMBER,
+                                NOT_IN_FEC_GROUP),
         expected_error, QUIC_INVALID_ACK_DATA);
   }
 }
@@ -1961,7 +2121,8 @@ TEST_P(QuicFramerTest, AckFrame) {
     CheckProcessingFails(
         packet,
         i + GetPacketHeaderSize(PACKET_8BYTE_CONNECTION_ID, !kIncludeVersion,
-                                PACKET_6BYTE_PACKET_NUMBER, NOT_IN_FEC_GROUP),
+                                !kIncludePathId, PACKET_6BYTE_PACKET_NUMBER,
+                                NOT_IN_FEC_GROUP),
         expected_error, QUIC_INVALID_ACK_DATA);
   }
 }
@@ -2065,7 +2226,8 @@ TEST_P(QuicFramerTest, AckFrameRevivedPackets) {
     CheckProcessingFails(
         packet,
         i + GetPacketHeaderSize(PACKET_8BYTE_CONNECTION_ID, !kIncludeVersion,
-                                PACKET_6BYTE_PACKET_NUMBER, NOT_IN_FEC_GROUP),
+                                !kIncludePathId, PACKET_6BYTE_PACKET_NUMBER,
+                                NOT_IN_FEC_GROUP),
         expected_error, QUIC_INVALID_ACK_DATA);
   }
 }
@@ -2240,7 +2402,8 @@ TEST_P(QuicFramerTest, StopWaitingFrame) {
     CheckProcessingFails(
         packet,
         i + GetPacketHeaderSize(PACKET_8BYTE_CONNECTION_ID, !kIncludeVersion,
-                                PACKET_6BYTE_PACKET_NUMBER, NOT_IN_FEC_GROUP),
+                                !kIncludePathId, PACKET_6BYTE_PACKET_NUMBER,
+                                NOT_IN_FEC_GROUP),
         expected_error, QUIC_INVALID_STOP_WAITING_DATA);
   }
 }
@@ -2300,7 +2463,8 @@ TEST_P(QuicFramerTest, RstStreamFrameQuic) {
     CheckProcessingFails(
         packet,
         i + GetPacketHeaderSize(PACKET_8BYTE_CONNECTION_ID, !kIncludeVersion,
-                                PACKET_6BYTE_PACKET_NUMBER, NOT_IN_FEC_GROUP),
+                                !kIncludePathId, PACKET_6BYTE_PACKET_NUMBER,
+                                NOT_IN_FEC_GROUP),
         expected_error, QUIC_INVALID_RST_STREAM_DATA);
   }
 }
@@ -2360,7 +2524,8 @@ TEST_P(QuicFramerTest, ConnectionCloseFrame) {
     CheckProcessingFails(
         packet,
         i + GetPacketHeaderSize(PACKET_8BYTE_CONNECTION_ID, !kIncludeVersion,
-                                PACKET_6BYTE_PACKET_NUMBER, NOT_IN_FEC_GROUP),
+                                !kIncludePathId, PACKET_6BYTE_PACKET_NUMBER,
+                                NOT_IN_FEC_GROUP),
         expected_error, QUIC_INVALID_CONNECTION_CLOSE_DATA);
   }
 }
@@ -2422,7 +2587,8 @@ TEST_P(QuicFramerTest, GoAwayFrame) {
     CheckProcessingFails(
         packet,
         i + GetPacketHeaderSize(PACKET_8BYTE_CONNECTION_ID, !kIncludeVersion,
-                                PACKET_6BYTE_PACKET_NUMBER, NOT_IN_FEC_GROUP),
+                                !kIncludePathId, PACKET_6BYTE_PACKET_NUMBER,
+                                NOT_IN_FEC_GROUP),
         expected_error, QUIC_INVALID_GOAWAY_DATA);
   }
 }
@@ -2474,7 +2640,8 @@ TEST_P(QuicFramerTest, WindowUpdateFrame) {
     CheckProcessingFails(
         packet,
         i + GetPacketHeaderSize(PACKET_8BYTE_CONNECTION_ID, !kIncludeVersion,
-                                PACKET_6BYTE_PACKET_NUMBER, NOT_IN_FEC_GROUP),
+                                !kIncludePathId, PACKET_6BYTE_PACKET_NUMBER,
+                                NOT_IN_FEC_GROUP),
         expected_error, QUIC_INVALID_WINDOW_UPDATE_DATA);
   }
 }
@@ -2517,7 +2684,8 @@ TEST_P(QuicFramerTest, BlockedFrame) {
     CheckProcessingFails(
         packet,
         i + GetPacketHeaderSize(PACKET_8BYTE_CONNECTION_ID, !kIncludeVersion,
-                                PACKET_6BYTE_PACKET_NUMBER, NOT_IN_FEC_GROUP),
+                                !kIncludePathId, PACKET_6BYTE_PACKET_NUMBER,
+                                NOT_IN_FEC_GROUP),
         expected_error, QUIC_INVALID_BLOCKED_DATA);
   }
 }
@@ -2834,9 +3002,9 @@ TEST_P(QuicFramerTest, BuildPaddingFramePacket) {
   };
   // clang-format on
 
-  uint64 header_size =
-      GetPacketHeaderSize(PACKET_8BYTE_CONNECTION_ID, !kIncludeVersion,
-                          PACKET_6BYTE_PACKET_NUMBER, NOT_IN_FEC_GROUP);
+  uint64 header_size = GetPacketHeaderSize(
+      PACKET_8BYTE_CONNECTION_ID, !kIncludeVersion, !kIncludePathId,
+      PACKET_6BYTE_PACKET_NUMBER, NOT_IN_FEC_GROUP);
   memset(packet + header_size + 1, 0x00, kMaxPacketSize - header_size - 1);
 
   scoped_ptr<QuicPacket> data(BuildDataPacket(header, frames));
@@ -2881,9 +3049,9 @@ TEST_P(QuicFramerTest, Build4ByteSequenceNumberPaddingFramePacket) {
   };
   // clang-format on
 
-  uint64 header_size =
-      GetPacketHeaderSize(PACKET_8BYTE_CONNECTION_ID, !kIncludeVersion,
-                          PACKET_4BYTE_PACKET_NUMBER, NOT_IN_FEC_GROUP);
+  uint64 header_size = GetPacketHeaderSize(
+      PACKET_8BYTE_CONNECTION_ID, !kIncludeVersion, !kIncludePathId,
+      PACKET_4BYTE_PACKET_NUMBER, NOT_IN_FEC_GROUP);
   memset(packet + header_size + 1, 0x00, kMaxPacketSize - header_size - 1);
 
   scoped_ptr<QuicPacket> data(BuildDataPacket(header, frames));
@@ -2928,9 +3096,9 @@ TEST_P(QuicFramerTest, Build2ByteSequenceNumberPaddingFramePacket) {
   };
   // clang-format on
 
-  uint64 header_size =
-      GetPacketHeaderSize(PACKET_8BYTE_CONNECTION_ID, !kIncludeVersion,
-                          PACKET_2BYTE_PACKET_NUMBER, NOT_IN_FEC_GROUP);
+  uint64 header_size = GetPacketHeaderSize(
+      PACKET_8BYTE_CONNECTION_ID, !kIncludeVersion, !kIncludePathId,
+      PACKET_2BYTE_PACKET_NUMBER, NOT_IN_FEC_GROUP);
   memset(packet + header_size + 1, 0x00, kMaxPacketSize - header_size - 1);
 
   scoped_ptr<QuicPacket> data(BuildDataPacket(header, frames));
@@ -2975,9 +3143,9 @@ TEST_P(QuicFramerTest, Build1ByteSequenceNumberPaddingFramePacket) {
   };
   // clang-format on
 
-  uint64 header_size =
-      GetPacketHeaderSize(PACKET_8BYTE_CONNECTION_ID, !kIncludeVersion,
-                          PACKET_1BYTE_PACKET_NUMBER, NOT_IN_FEC_GROUP);
+  uint64 header_size = GetPacketHeaderSize(
+      PACKET_8BYTE_CONNECTION_ID, !kIncludeVersion, !kIncludePathId,
+      PACKET_1BYTE_PACKET_NUMBER, NOT_IN_FEC_GROUP);
   memset(packet + header_size + 1, 0x00, kMaxPacketSize - header_size - 1);
 
   scoped_ptr<QuicPacket> data(BuildDataPacket(header, frames));
@@ -3125,6 +3293,119 @@ TEST_P(QuicFramerTest, BuildStreamFramePacketWithVersionFlag) {
       0x54, 0x76, 0x10, 0x32, 0xDC, 0xFE, 0x98, 0xBA,
       // data
       'h',  'e',  'l',  'l',  'o',  ' ',  'w',  'o',  'r', 'l', 'd', '!',
+  };
+  // clang-format on
+
+  QuicFramerPeer::SetPerspective(&framer_, Perspective::IS_CLIENT);
+  scoped_ptr<QuicPacket> data(BuildDataPacket(header, frames));
+  ASSERT_TRUE(data != nullptr);
+
+  test::CompareCharArraysWithHexError("constructed packet", data->data(),
+                                      data->length(), AsChars(packet),
+                                      arraysize(packet));
+}
+
+TEST_P(QuicFramerTest, BuildStreamFramePacketWithMultipathFlag) {
+  QuicPacketHeader header;
+  header.public_header.connection_id = kConnectionId;
+  header.public_header.multipath_flag = true;
+  header.public_header.reset_flag = false;
+  header.public_header.version_flag = false;
+  header.fec_flag = false;
+  header.entropy_flag = true;
+  header.path_id = kPathId;
+  header.packet_number = kPacketNumber;
+  header.fec_group = 0;
+
+  QuicStreamFrame stream_frame(kStreamId, true, kStreamOffset,
+                               StringPiece("hello world!"));
+
+  QuicFrames frames;
+  frames.push_back(QuicFrame(&stream_frame));
+
+  // clang-format off
+  unsigned char packet[] = {
+    // public flags (8 byte connection_id)
+    0x7C,
+    // connection_id
+    0x10, 0x32, 0x54, 0x76,
+    0x98, 0xBA, 0xDC, 0xFE,
+    // path_id
+    0x42,
+    // packet number
+    0xBC, 0x9A, 0x78, 0x56,
+    0x34, 0x12,
+    // private flags (entropy)
+    0x01,
+
+    // frame type (stream frame with fin and no length)
+    0xDF,
+    // stream id
+    0x04, 0x03, 0x02, 0x01,
+    // offset
+    0x54, 0x76, 0x10, 0x32,
+    0xDC, 0xFE, 0x98, 0xBA,
+    // data
+    'h',  'e',  'l',  'l',
+    'o',  ' ',  'w',  'o',
+    'r',  'l',  'd',  '!',
+  };
+  // clang-format on
+
+  scoped_ptr<QuicPacket> data(BuildDataPacket(header, frames));
+  ASSERT_TRUE(data != nullptr);
+
+  test::CompareCharArraysWithHexError("constructed packet", data->data(),
+                                      data->length(), AsChars(packet),
+                                      arraysize(packet));
+}
+
+TEST_P(QuicFramerTest, BuildStreamFramePacketWithBothVersionAndMultipathFlag) {
+  QuicPacketHeader header;
+  header.public_header.connection_id = kConnectionId;
+  header.public_header.multipath_flag = true;
+  header.public_header.reset_flag = false;
+  header.public_header.version_flag = true;
+  header.fec_flag = false;
+  header.entropy_flag = true;
+  header.path_id = kPathId;
+  header.packet_number = kPacketNumber;
+  header.fec_group = 0;
+
+  QuicStreamFrame stream_frame(kStreamId, true, kStreamOffset,
+                               StringPiece("hello world!"));
+
+  QuicFrames frames;
+  frames.push_back(QuicFrame(&stream_frame));
+
+  // clang-format off
+  unsigned char packet[] = {
+    // public flags (8 byte connection_id)
+    0x7D,
+    // connection_id
+    0x10, 0x32, 0x54, 0x76,
+    0x98, 0xBA, 0xDC, 0xFE,
+    // version tag
+    'Q', '0', GetQuicVersionDigitTens(), GetQuicVersionDigitOnes(),
+    // path_id
+    0x42,
+    // packet number
+    0xBC, 0x9A, 0x78, 0x56,
+    0x34, 0x12,
+    // private flags (entropy)
+    0x01,
+
+    // frame type (stream frame with fin and no length)
+    0xDF,
+    // stream id
+    0x04, 0x03, 0x02, 0x01,
+    // offset
+    0x54, 0x76, 0x10, 0x32,
+    0xDC, 0xFE, 0x98, 0xBA,
+    // data
+    'h',  'e',  'l',  'l',
+    'o',  ' ',  'w',  'o',
+    'r',  'l',  'd',  '!',
   };
   // clang-format on
 

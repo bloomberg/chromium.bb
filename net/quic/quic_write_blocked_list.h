@@ -101,14 +101,14 @@ class NET_EXPORT_PRIVATE QuicWriteBlockedList {
   // Headers and crypto streams are special cased to always resume first.
   void AddStream(QuicStreamId stream_id, SpdyPriority priority) {
     if (stream_id == kCryptoStreamId) {
-      DCHECK_EQ(net::kHighestPriority, priority);
+      DCHECK_EQ(kV3HighestPriority, priority);
       // TODO(avd) Add DCHECK(!crypto_stream_blocked_)
       crypto_stream_blocked_ = true;
       return;
     }
 
     if (stream_id == kHeadersStreamId) {
-      DCHECK_EQ(net::kHighestPriority, priority);
+      DCHECK_EQ(kV3HighestPriority, priority);
       // TODO(avd) Add DCHECK(!headers_stream_blocked_);
       headers_stream_blocked_ = true;
       return;
@@ -135,11 +135,11 @@ class NET_EXPORT_PRIVATE QuicWriteBlockedList {
   // batch writes for this priority level.  We will allow this stream to write
   // until it has written kBatchWriteSize bytes, it has no more data to write,
   // or a higher priority stream preempts.
-  QuicStreamId batch_write_stream_id_[kLowestPriority + 1];
+  QuicStreamId batch_write_stream_id_[kV3LowestPriority + 1];
   // Set to kBatchWriteSize when we set a new batch_write_stream_id_ for a given
   // priority.  This is decremented with each write the stream does until it is
   // done with its batch write.
-  int32 bytes_left_for_batch_write_[kLowestPriority + 1];
+  int32 bytes_left_for_batch_write_[kV3LowestPriority + 1];
   // Tracks the last priority popped for UpdateBytesForStream.
   SpdyPriority last_priority_popped_;
 

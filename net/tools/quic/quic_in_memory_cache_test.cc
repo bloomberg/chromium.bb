@@ -10,6 +10,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/stringprintf.h"
 #include "net/spdy/spdy_framer.h"
 #include "net/tools/balsa/balsa_headers.h"
 #include "net/tools/quic/quic_in_memory_cache.h"
@@ -18,11 +19,17 @@
 
 using base::IntToString;
 using base::StringPiece;
+using net::SpdyHeaderBlock;
 using std::string;
 
 namespace net {
 namespace tools {
 namespace test {
+
+namespace {
+typedef QuicInMemoryCache::Response Response;
+typedef QuicInMemoryCache::ServerPushInfo ServerPushInfo;
+};  // namespace
 
 class QuicInMemoryCacheTest : public ::testing::Test {
  protected:
@@ -130,6 +137,84 @@ TEST_F(QuicInMemoryCacheTest, DefaultResponse) {
   ASSERT_TRUE(response);
   ASSERT_TRUE(ContainsKey(response->headers(), ":status"));
   EXPECT_EQ("200", response->headers().find(":status")->second);
+}
+
+TEST_F(QuicInMemoryCacheTest, AddSimpleResponseWithServerPushResources) {
+  string request_host = "www.foo.com";
+  string response_body("hello response");
+  const size_t kNumResources = 5;
+  int NumResources = 5;
+  list<QuicInMemoryCache::ServerPushInfo> push_resources;
+  string scheme = "http";
+  for (int i = 0; i < NumResources; ++i) {
+    string path = "/server_push_src" + base::IntToString(i);
+    string url = scheme + "://" + request_host + path;
+    GURL resource_url(url);
+    string body = "This is server push response body for " + path;
+    SpdyHeaderBlock response_headers;
+    response_headers[":version"] = "HTTP/1.1";
+    response_headers[":status"] = "200";
+    response_headers["content-length"] = base::UintToString(body.size());
+    push_resources.push_back(
+        ServerPushInfo(resource_url, response_headers, i, body));
+  }
+
+  QuicInMemoryCache* cache = QuicInMemoryCache::GetInstance();
+  cache->AddSimpleResponseWithServerPushResources(
+      request_host, "/", 200, response_body, push_resources);
+  string request_url = request_host + "/";
+  std::list<ServerPushInfo> resources =
+      cache->GetServerPushResources(request_url);
+  ASSERT_EQ(kNumResources, resources.size());
+  for (const auto& push_resource : push_resources) {
+    ServerPushInfo resource = resources.front();
+    EXPECT_EQ(resource.request_url.spec(), push_resource.request_url.spec());
+    EXPECT_EQ(resource.priority, push_resource.priority);
+    resources.pop_front();
+  }
+}
+
+TEST_F(QuicInMemoryCacheTest, GetServerPushResourcesAndPushResponses) {
+  string request_host = "www.foo.com";
+  string response_body("hello response");
+  const size_t kNumResources = 4;
+  int NumResources = 4;
+  string scheme = "http";
+  string push_response_status[kNumResources] = {"200", "200", "301", "404"};
+  list<QuicInMemoryCache::ServerPushInfo> push_resources;
+  for (int i = 0; i < NumResources; ++i) {
+    string path = "/server_push_src" + base::IntToString(i);
+    string url = scheme + "://" + request_host + path;
+    GURL resource_url(url);
+    string body = "This is server push response body for " + path;
+    SpdyHeaderBlock response_headers;
+    response_headers[":version"] = "HTTP/1.1";
+    response_headers[":status"] = push_response_status[i];
+    response_headers["content-length"] = base::UintToString(body.size());
+    push_resources.push_back(
+        ServerPushInfo(resource_url, response_headers, i, body));
+  }
+  QuicInMemoryCache* cache = QuicInMemoryCache::GetInstance();
+  cache->AddSimpleResponseWithServerPushResources(
+      request_host, "/", 200, response_body, push_resources);
+  string request_url = request_host + "/";
+  std::list<ServerPushInfo> resources =
+      cache->GetServerPushResources(request_url);
+  ASSERT_EQ(kNumResources, resources.size());
+  int i = 0;
+  for (const auto& push_resource : push_resources) {
+    GURL url = resources.front().request_url;
+    string host = url.host();
+    string path = url.path();
+    const QuicInMemoryCache::Response* response =
+        cache->GetResponse(host, path);
+    ASSERT_TRUE(response);
+    ASSERT_TRUE(ContainsKey(response->headers(), ":status"));
+    EXPECT_EQ(push_response_status[i++],
+              response->headers().find(":status")->second);
+    EXPECT_EQ(push_resource.body, response->body());
+    resources.pop_front();
+  }
 }
 
 }  // namespace test

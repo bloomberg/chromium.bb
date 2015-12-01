@@ -823,7 +823,7 @@ TEST_P(QuicHttpStreamTest, Priority) {
   QuicReliableClientStream* reliable_stream =
       QuicHttpStreamPeer::GetQuicReliableClientStream(stream_.get());
   DCHECK(reliable_stream);
-  DCHECK_EQ(kHighestPriority, reliable_stream->Priority());
+  DCHECK_EQ(kV3HighestPriority, reliable_stream->Priority());
 
   EXPECT_EQ(OK, stream_->SendRequest(headers_, &response_,
                                      callback_.callback()));
@@ -875,12 +875,12 @@ TEST_P(QuicHttpStreamTest, CheckPriorityWithNoDelegate) {
   DCHECK(reliable_stream);
   QuicReliableClientStream::Delegate* delegate = reliable_stream->GetDelegate();
   DCHECK(delegate);
-  DCHECK_EQ(kHighestPriority, reliable_stream->Priority());
+  DCHECK_EQ(kV3HighestPriority, reliable_stream->Priority());
 
   // Set Delegate to nullptr and make sure Priority returns highest
   // priority.
   reliable_stream->SetDelegate(nullptr);
-  DCHECK_EQ(kHighestPriority, reliable_stream->Priority());
+  DCHECK_EQ(kV3HighestPriority, reliable_stream->Priority());
   reliable_stream->SetDelegate(delegate);
 
   EXPECT_EQ(0, stream_->GetTotalSentBytes());

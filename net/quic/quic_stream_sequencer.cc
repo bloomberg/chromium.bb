@@ -84,7 +84,7 @@ void QuicStreamSequencer::OnStreamFrame(const QuicStreamFrame& frame) {
   }
 
   if (byte_offset == buffered_frames_->BytesConsumed()) {
-    if (FLAGS_quic_implement_stop_reading && ignore_read_data_) {
+    if (ignore_read_data_) {
       FlushBufferedFrames();
     } else {
       stream_->OnDataAvailable();
@@ -117,7 +117,7 @@ bool QuicStreamSequencer::MaybeCloseStream() {
   // This will cause the stream to consume the FIN.
   // Technically it's an error if |num_bytes_consumed| isn't exactly
   // equal to |close_offset|, but error handling seems silly at this point.
-  if (FLAGS_quic_implement_stop_reading && ignore_read_data_) {
+  if (ignore_read_data_) {
     // The sequencer is discarding stream data and must notify the stream on
     // receipt of a FIN because the consumer won't.
     stream_->OnFinRead();

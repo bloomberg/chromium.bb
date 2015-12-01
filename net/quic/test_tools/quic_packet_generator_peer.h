@@ -17,7 +17,6 @@ namespace test {
 class QuicPacketGeneratorPeer {
  public:
   static QuicPacketCreator* GetPacketCreator(QuicPacketGenerator* generator);
-  static QuicTime::Delta GetFecTimeout(QuicPacketGenerator* generator);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicPacketGeneratorPeer);

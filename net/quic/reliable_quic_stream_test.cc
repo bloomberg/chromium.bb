@@ -60,7 +60,7 @@ class TestStream : public ReliableQuicStream {
     return should_process_data_ ? data_len : 0;
   }
 
-  SpdyPriority Priority() const override { return net::kHighestPriority; }
+  SpdyPriority Priority() const override { return net::kV3HighestPriority; }
 
   using ReliableQuicStream::WriteOrBufferData;
   using ReliableQuicStream::CloseWriteSide;
@@ -612,10 +612,6 @@ TEST_F(ReliableQuicStreamTest,
 // Verify that after the consumer calls StopReading(), the stream still sends
 // flow control updates.
 TEST_F(ReliableQuicStreamTest, StopReadingSendsFlowControl) {
-  if (!FLAGS_quic_implement_stop_reading) {
-    return;
-  }
-
   Initialize(kShouldProcessData);
 
   stream_->StopReading();
@@ -759,13 +755,8 @@ TEST_F(ReliableQuicStreamTest, EarlyResponseFinHandling) {
   // Receive remaining data and FIN for the request.
   QuicStreamFrame frame2(stream_->id(), true, 0, StringPiece("End"));
   stream_->OnStreamFrame(frame2);
-  if (FLAGS_quic_fix_fin_accounting) {
-    EXPECT_TRUE(stream_->fin_received());
-    EXPECT_TRUE(stream_->HasFinalReceivedByteOffset());
-  } else {
-    EXPECT_FALSE(stream_->fin_received());
-    EXPECT_FALSE(stream_->HasFinalReceivedByteOffset());
-  }
+  EXPECT_TRUE(stream_->fin_received());
+  EXPECT_TRUE(stream_->HasFinalReceivedByteOffset());
 }
 
 }  // namespace

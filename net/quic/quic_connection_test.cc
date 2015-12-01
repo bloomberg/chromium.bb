@@ -1516,11 +1516,14 @@ TEST_P(QuicConnectionTest, 20AcksCausesAckSend) {
   // But an ack with no missing packets will not send an ack.
   QuicAckFrame frame = InitAckFrame(1);
   EXPECT_CALL(*send_algorithm_, OnCongestionEvent(true, _, _, _));
-  for (int i = 0; i < 20; ++i) {
-    EXPECT_FALSE(ack_alarm->IsSet());
+  for (int i = 0; i < 19; ++i) {
     ProcessAckPacket(&frame);
+    EXPECT_FALSE(ack_alarm->IsSet());
   }
-  EXPECT_TRUE(ack_alarm->IsSet());
+  EXPECT_EQ(1u, writer_->packets_write_attempts());
+  // The 20th ack packet will cause an ack to be sent.
+  ProcessAckPacket(&frame);
+  EXPECT_EQ(2u, writer_->packets_write_attempts());
 }
 
 TEST_P(QuicConnectionTest, LeastUnackedLower) {
@@ -1837,7 +1840,7 @@ TEST_P(QuicConnectionTest, FECSending) {
   connection_.SendStreamDataWithStringWithFec(1, payload, 0, !kFin, nullptr);
   // Expect the FEC group to be closed after SendStreamDataWithString.
   EXPECT_FALSE(creator_->IsFecGroupOpen());
-  EXPECT_FALSE(creator_->IsFecProtected());
+  EXPECT_FALSE(QuicPacketCreatorPeer::IsFecProtected(creator_));
 }
 
 TEST_P(QuicConnectionTest, FECQueueing) {
@@ -1847,14 +1850,14 @@ TEST_P(QuicConnectionTest, FECQueueing) {
       connection_.version(), kIncludeVersion, PACKET_8BYTE_CONNECTION_ID,
       PACKET_1BYTE_PACKET_NUMBER, IN_FEC_GROUP, &payload_length);
   connection_.SetMaxPacketLength(length);
-  EXPECT_TRUE(creator_->IsFecEnabled());
+  EXPECT_TRUE(QuicPacketCreatorPeer::IsFecEnabled(creator_));
 
   EXPECT_EQ(0u, connection_.NumQueuedPackets());
   BlockOnNextWrite();
   const string payload(payload_length, 'a');
   connection_.SendStreamDataWithStringWithFec(1, payload, 0, !kFin, nullptr);
   EXPECT_FALSE(creator_->IsFecGroupOpen());
-  EXPECT_FALSE(creator_->IsFecProtected());
+  EXPECT_FALSE(QuicPacketCreatorPeer::IsFecProtected(creator_));
   if (generator_->fec_send_policy() == FEC_ALARM_TRIGGER) {
     // Expect the first data packet to be queued and not the FEC packet.
     EXPECT_EQ(1u, connection_.NumQueuedPackets());
@@ -1865,7 +1868,7 @@ TEST_P(QuicConnectionTest, FECQueueing) {
 }
 
 TEST_P(QuicConnectionTest, FECAlarmStoppedWhenFECPacketSent) {
-  EXPECT_TRUE(creator_->IsFecEnabled());
+  EXPECT_TRUE(QuicPacketCreatorPeer::IsFecEnabled(creator_));
   EXPECT_EQ(0u, QuicSentPacketManagerPeer::GetBytesInFlight(manager_));
   EXPECT_FALSE(connection_.GetFecAlarm()->IsSet());
 
@@ -1896,7 +1899,7 @@ TEST_P(QuicConnectionTest, FECAlarmStoppedWhenFECPacketSent) {
 }
 
 TEST_P(QuicConnectionTest, FECAlarmStoppedOnConnectionClose) {
-  EXPECT_TRUE(creator_->IsFecEnabled());
+  EXPECT_TRUE(QuicPacketCreatorPeer::IsFecEnabled(creator_));
   EXPECT_FALSE(connection_.GetFecAlarm()->IsSet());
   creator_->set_max_packets_per_fec_group(100);
 
@@ -1914,7 +1917,7 @@ TEST_P(QuicConnectionTest, FECAlarmStoppedOnConnectionClose) {
 
 TEST_P(QuicConnectionTest, RemoveFECFromInflightOnRetransmissionTimeout) {
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
-  EXPECT_TRUE(creator_->IsFecEnabled());
+  EXPECT_TRUE(QuicPacketCreatorPeer::IsFecEnabled(creator_));
   EXPECT_EQ(0u, QuicSentPacketManagerPeer::GetBytesInFlight(manager_));
   EXPECT_FALSE(connection_.GetFecAlarm()->IsSet());
 
@@ -1976,7 +1979,7 @@ TEST_P(QuicConnectionTest, RemoveFECFromInflightOnRetransmissionTimeout) {
 }
 
 TEST_P(QuicConnectionTest, RemoveFECFromInflightOnLossRetransmission) {
-  EXPECT_TRUE(creator_->IsFecEnabled());
+  EXPECT_TRUE(QuicPacketCreatorPeer::IsFecEnabled(creator_));
   EXPECT_FALSE(connection_.GetFecAlarm()->IsSet());
 
   // 1 FEC-protected data packet. FEC alarm should be set.
@@ -2064,7 +2067,7 @@ TEST_P(QuicConnectionTest, FECRemainsInflightOnTLPOfEarlierData) {
   // retransmission alarm fires.
   // Turn on TLP for this test.
   QuicSentPacketManagerPeer::SetMaxTailLossProbes(manager_, 1);
-  EXPECT_TRUE(creator_->IsFecEnabled());
+  EXPECT_TRUE(QuicPacketCreatorPeer::IsFecEnabled(creator_));
   EXPECT_EQ(0u, QuicSentPacketManagerPeer::GetBytesInFlight(manager_));
   EXPECT_FALSE(connection_.GetFecAlarm()->IsSet());
 
@@ -2110,7 +2113,7 @@ TEST_P(QuicConnectionTest, FECRemainsInflightOnTLPOfLaterData) {
   // sent for data packet 2 when the retransmission alarm fires. Turn on TLP for
   // this test.
   QuicSentPacketManagerPeer::SetMaxTailLossProbes(manager_, 1);
-  EXPECT_TRUE(creator_->IsFecEnabled());
+  EXPECT_TRUE(QuicPacketCreatorPeer::IsFecEnabled(creator_));
   EXPECT_EQ(0u, QuicSentPacketManagerPeer::GetBytesInFlight(manager_));
   EXPECT_FALSE(connection_.GetFecAlarm()->IsSet());
 
@@ -2177,7 +2180,7 @@ TEST_P(QuicConnectionTest, FECRemainsInflightOnTLPOfLaterData) {
 TEST_P(QuicConnectionTest, NoTLPForFECPacket) {
   // Turn on TLP for this test.
   QuicSentPacketManagerPeer::SetMaxTailLossProbes(manager_, 1);
-  EXPECT_TRUE(creator_->IsFecEnabled());
+  EXPECT_TRUE(QuicPacketCreatorPeer::IsFecEnabled(creator_));
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
 
   // Send 1 FEC-protected data packet. FEC alarm should be set.
@@ -2287,7 +2290,7 @@ TEST_P(QuicConnectionTest, FramePackingCryptoThenNonCrypto) {
 }
 
 TEST_P(QuicConnectionTest, FramePackingFEC) {
-  EXPECT_TRUE(creator_->IsFecEnabled());
+  EXPECT_TRUE(QuicPacketCreatorPeer::IsFecEnabled(creator_));
 
   CongestionBlockWrites();
 
@@ -4334,6 +4337,56 @@ TEST_P(QuicConnectionTest, SendDelayedAck) {
   EXPECT_FALSE(connection_.GetAckAlarm()->IsSet());
 }
 
+TEST_P(QuicConnectionTest, SendDelayedAckDecimation) {
+  QuicConnectionPeer::EnableAckDecimation(&connection_);
+
+  const size_t kMinRttMs = 40;
+  RttStats* rtt_stats = QuicSentPacketManagerPeer::GetRttStats(manager_);
+  rtt_stats->UpdateRtt(QuicTime::Delta::FromMilliseconds(kMinRttMs),
+                       QuicTime::Delta::Zero(), QuicTime::Zero());
+  // The ack time should be based on min_rtt/4, since it's less than the
+  // default delayed ack time.
+  QuicTime ack_time = clock_.ApproximateNow().Add(
+      QuicTime::Delta::FromMilliseconds(kMinRttMs / 4));
+  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
+  EXPECT_FALSE(connection_.GetAckAlarm()->IsSet());
+  const uint8 tag = 0x07;
+  connection_.SetDecrypter(ENCRYPTION_INITIAL, new StrictTaggingDecrypter(tag));
+  framer_.SetEncrypter(ENCRYPTION_INITIAL, new TaggingEncrypter(tag));
+  // Process a packet from the non-crypto stream.
+  frame1_.stream_id = 3;
+
+  // Process all the initial packets in order so there aren't missing packets.
+  QuicPacketNumber kFirstDecimatedPacket = 101;
+  for (unsigned int i = 0; i < kFirstDecimatedPacket - 1; ++i) {
+    EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(1);
+    ProcessDataPacketAtLevel(1 + i, 0, !kEntropyFlag, ENCRYPTION_INITIAL);
+  }
+  EXPECT_FALSE(connection_.GetAckAlarm()->IsSet());
+  // The same as ProcessPacket(1) except that ENCRYPTION_INITIAL is used
+  // instead of ENCRYPTION_NONE.
+  EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(1);
+  ProcessDataPacketAtLevel(kFirstDecimatedPacket, 0, !kEntropyFlag,
+                           ENCRYPTION_INITIAL);
+
+  // Check if delayed ack timer is running for the expected interval.
+  EXPECT_TRUE(connection_.GetAckAlarm()->IsSet());
+  EXPECT_EQ(ack_time, connection_.GetAckAlarm()->deadline());
+
+  // The 10th received packet causes an ack to be sent.
+  for (int i = 0; i < 9; ++i) {
+    EXPECT_TRUE(connection_.GetAckAlarm()->IsSet());
+    EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(1);
+    ProcessDataPacketAtLevel(kFirstDecimatedPacket + 1 + i, 0, !kEntropyFlag,
+                             ENCRYPTION_INITIAL);
+  }
+  // Check that ack is sent and that delayed ack alarm is reset.
+  EXPECT_EQ(2u, writer_->frame_count());
+  EXPECT_FALSE(writer_->stop_waiting_frames().empty());
+  EXPECT_FALSE(writer_->ack_frames().empty());
+  EXPECT_FALSE(connection_.GetAckAlarm()->IsSet());
+}
+
 TEST_P(QuicConnectionTest, SendDelayedAckOnHandshakeConfirmed) {
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
   ProcessPacket(1);
@@ -5285,7 +5338,7 @@ TEST_P(QuicConnectionTest, NetworkChangeVisitorConfigCallbackChangesFecState) {
       QuicSentPacketManagerPeer::GetNetworkChangeVisitor(manager_);
   EXPECT_TRUE(visitor);
   EXPECT_EQ(QuicTime::Delta::Zero(),
-            QuicPacketGeneratorPeer::GetFecTimeout(generator_));
+            QuicPacketCreatorPeer::GetFecTimeout(creator_));
 
   // Verify that sending a config with a new initial rtt changes fec timeout.
   // Create and process a config with a non-zero initial RTT.
@@ -5294,7 +5347,7 @@ TEST_P(QuicConnectionTest, NetworkChangeVisitorConfigCallbackChangesFecState) {
   config.SetInitialRoundTripTimeUsToSend(300000);
   connection_.SetFromConfig(config);
   EXPECT_LT(QuicTime::Delta::Zero(),
-            QuicPacketGeneratorPeer::GetFecTimeout(generator_));
+            QuicPacketCreatorPeer::GetFecTimeout(creator_));
 }
 
 TEST_P(QuicConnectionTest, NetworkChangeVisitorRttCallbackChangesFecState) {
@@ -5303,7 +5356,7 @@ TEST_P(QuicConnectionTest, NetworkChangeVisitorRttCallbackChangesFecState) {
       QuicSentPacketManagerPeer::GetNetworkChangeVisitor(manager_);
   EXPECT_TRUE(visitor);
   EXPECT_EQ(QuicTime::Delta::Zero(),
-            QuicPacketGeneratorPeer::GetFecTimeout(generator_));
+            QuicPacketCreatorPeer::GetFecTimeout(creator_));
 
   // Increase FEC timeout by increasing RTT.
   RttStats* rtt_stats = QuicSentPacketManagerPeer::GetRttStats(manager_);
@@ -5311,7 +5364,7 @@ TEST_P(QuicConnectionTest, NetworkChangeVisitorRttCallbackChangesFecState) {
                        QuicTime::Delta::Zero(), QuicTime::Zero());
   visitor->OnRttChange();
   EXPECT_LT(QuicTime::Delta::Zero(),
-            QuicPacketGeneratorPeer::GetFecTimeout(generator_));
+            QuicPacketCreatorPeer::GetFecTimeout(creator_));
 }
 
 TEST_P(QuicConnectionTest, OnPacketHeaderDebugVisitor) {
@@ -5333,7 +5386,7 @@ TEST_P(QuicConnectionTest, Pacing) {
   EXPECT_FALSE(server.sent_packet_manager().using_pacing());
 }
 
-TEST_P(QuicConnectionTest, ControlFramesInstigateAcks) {
+TEST_P(QuicConnectionTest, WindowUpdateInstigateAcks) {
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
 
   // Send a WINDOW_UPDATE frame.
@@ -5346,13 +5399,19 @@ TEST_P(QuicConnectionTest, ControlFramesInstigateAcks) {
   // Ensure that this has caused the ACK alarm to be set.
   QuicAlarm* ack_alarm = QuicConnectionPeer::GetAckAlarm(&connection_);
   EXPECT_TRUE(ack_alarm->IsSet());
+}
 
-  // Cancel alarm, and try again with BLOCKED frame.
-  ack_alarm->Cancel();
+TEST_P(QuicConnectionTest, BlockedFrameInstigateAcks) {
+  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
+
+  // Send a BLOCKED frame.
   QuicBlockedFrame blocked;
   blocked.stream_id = 3;
   EXPECT_CALL(visitor_, OnBlockedFrame(_));
   ProcessFramePacket(QuicFrame(&blocked));
+
+  // Ensure that this has caused the ACK alarm to be set.
+  QuicAlarm* ack_alarm = QuicConnectionPeer::GetAckAlarm(&connection_);
   EXPECT_TRUE(ack_alarm->IsSet());
 }
 
@@ -5396,11 +5455,11 @@ TEST_P(QuicConnectionTest, FecRTTMultiplierReceivedConnectionOption) {
   copt.push_back(kFRTT);
   QuicConfigPeer::SetReceivedConnectionOptions(&config, copt);
   float rtt_multiplier_for_fec_timeout =
-      generator_->rtt_multiplier_for_fec_timeout();
+      QuicPacketCreatorPeer::GetRttMultiplierForFecTimeout(creator_);
   connection_.SetFromConfig(config);
   // New RTT multiplier is half of the old RTT multiplier.
   EXPECT_EQ(rtt_multiplier_for_fec_timeout,
-            generator_->rtt_multiplier_for_fec_timeout() * 2);
+            QuicPacketCreatorPeer::GetRttMultiplierForFecTimeout(creator_) * 2);
 }
 
 TEST_P(QuicConnectionTest, DoNotSendGoAwayTwice) {

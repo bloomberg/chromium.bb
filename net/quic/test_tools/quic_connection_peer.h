@@ -121,6 +121,7 @@ class QuicConnectionPeer {
                                          QuicPacketCount packets);
   static void SetNextMtuProbeAt(QuicConnection* connection,
                                 QuicPacketNumber number);
+  static void EnableAckDecimation(QuicConnection* connection);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicConnectionPeer);

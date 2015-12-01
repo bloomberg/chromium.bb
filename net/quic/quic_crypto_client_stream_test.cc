@@ -263,11 +263,11 @@ class QuicCryptoClientStreamStatelessTest : public ::testing::Test {
                               CryptoTestUtils::ProofSourceForTesting()),
         server_id_(kServerHostname, kServerPort, PRIVACY_MODE_DISABLED) {
     TestQuicSpdyClientSession* client_session = nullptr;
-    CreateClientSessionForTest(server_id_,
-                               /* supports_stateless_rejects= */ true,
-                               QuicTime::Delta::FromSeconds(100000), &helper_,
-                               &client_crypto_config_, &client_connection_,
-                               &client_session);
+    CreateClientSessionForTest(
+        server_id_,
+        /* supports_stateless_rejects= */ true,
+        QuicTime::Delta::FromSeconds(100000), QuicSupportedVersions(), &helper_,
+        &client_crypto_config_, &client_connection_, &client_session);
     CHECK(client_session);
     client_session_.reset(client_session);
   }
@@ -287,8 +287,9 @@ class QuicCryptoClientStreamStatelessTest : public ::testing::Test {
   void InitializeFakeStatelessRejectServer() {
     TestQuicSpdyServerSession* server_session = nullptr;
     CreateServerSessionForTest(server_id_, QuicTime::Delta::FromSeconds(100000),
-                               &helper_, &server_crypto_config_,
-                               &server_connection_, &server_session);
+                               QuicSupportedVersions(), &helper_,
+                               &server_crypto_config_, &server_connection_,
+                               &server_session);
     CHECK(server_session);
     server_session_.reset(server_session);
     CryptoTestUtils::FakeServerOptions options;

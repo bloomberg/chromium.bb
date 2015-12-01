@@ -419,6 +419,12 @@ enum SpdyGoAwayStatus {
 // number between 0 and 3.
 typedef uint8 SpdyPriority;
 
+// Lowest and Highest here refer to SPDY priorities as described in
+
+// https://www.chromium.org/spdy/spdy-protocol/spdy-protocol-draft3-1#TOC-2.3.3-Stream-priority
+const SpdyPriority kV3HighestPriority = 0;
+const SpdyPriority kV3LowestPriority = 7;
+
 typedef uint64 SpdyPingId;
 
 typedef std::string SpdyProtocolId;

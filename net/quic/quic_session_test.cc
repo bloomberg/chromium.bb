@@ -36,7 +36,6 @@ using std::set;
 using std::string;
 using std::vector;
 using testing::CreateFunctor;
-using net::SpdyPriority;
 using testing::InSequence;
 using testing::Invoke;
 using testing::Return;
@@ -47,7 +46,7 @@ namespace net {
 namespace test {
 namespace {
 
-const SpdyPriority kHighestPriority = 0;
+const SpdyPriority kHighestPriority = kV3HighestPriority;
 const SpdyPriority kSomeMiddlePriority = 3;
 
 class TestCryptoStream : public QuicCryptoStream {
@@ -351,14 +350,9 @@ TEST_P(QuicSessionTestServer, TooManyAvailableStreams) {
   QuicStreamId stream_id2;
   EXPECT_NE(nullptr, session_.GetOrCreateDynamicStream(stream_id1));
   // A stream ID which is too large to create.
-  if (FLAGS_allow_many_available_streams) {
-    stream_id2 = stream_id1 + 2 * session_.get_max_available_streams() + 4;
-    EXPECT_CALL(*connection_,
-                SendConnectionClose(QUIC_TOO_MANY_AVAILABLE_STREAMS));
-  } else {
-    stream_id2 = stream_id1 + 2 * session_.get_max_open_streams();
-    EXPECT_CALL(*connection_, SendConnectionClose(QUIC_TOO_MANY_OPEN_STREAMS));
-  }
+  stream_id2 = stream_id1 + 2 * session_.get_max_available_streams() + 4;
+  EXPECT_CALL(*connection_,
+              SendConnectionClose(QUIC_TOO_MANY_AVAILABLE_STREAMS));
   EXPECT_EQ(nullptr, session_.GetOrCreateDynamicStream(stream_id2));
 }
 
@@ -737,12 +731,8 @@ TEST_P(QuicSessionTestServer, MultipleRstStreamsCauseSingleConnectionClose) {
 
   // Process first invalid stream reset, resulting in the connection being
   // closed.
-  if (FLAGS_allow_many_available_streams) {
-    EXPECT_CALL(*connection_,
-                SendConnectionClose(QUIC_TOO_MANY_AVAILABLE_STREAMS));
-  } else {
-    EXPECT_CALL(*connection_, SendConnectionClose(QUIC_TOO_MANY_OPEN_STREAMS));
-  }
+  EXPECT_CALL(*connection_,
+              SendConnectionClose(QUIC_TOO_MANY_AVAILABLE_STREAMS));
 
   const QuicStreamId kLargeInvalidStreamId = 99999999;
   QuicRstStreamFrame rst1(kLargeInvalidStreamId, QUIC_STREAM_NO_ERROR, 0);
@@ -1174,9 +1164,7 @@ TEST_P(QuicSessionTestClient, RecordFinAfterReadSideClosed) {
   // Receive a stream data frame with FIN.
   QuicStreamFrame frame(stream_id, true, 0, StringPiece());
   session_.OnStreamFrame(frame);
-  if (FLAGS_quic_fix_fin_accounting) {
-    EXPECT_TRUE(stream->fin_received());
-  }
+  EXPECT_TRUE(stream->fin_received());
 
   // Reset stream locally.
   EXPECT_CALL(*connection_, SendRstStream(stream->id(), _, _));
@@ -1189,11 +1177,10 @@ TEST_P(QuicSessionTestClient, RecordFinAfterReadSideClosed) {
   EXPECT_TRUE(QuicSessionPeer::IsStreamClosed(&session_, stream_id));
   EXPECT_EQ(nullptr, QuicSessionPeer::dynamic_streams(&session_)[stream_id]);
 
-  // Verify that there is no entry for the stream in
-  // locally_closed_streams_highest_offset_.
-  EXPECT_EQ(
-      FLAGS_quic_fix_fin_accounting ? 0u : 1u,
-      QuicSessionPeer::GetLocallyClosedStreamsHighestOffset(&session_).size());
+  // The stream is not waiting for the arrival of the peer's final offset as it
+  // was received with the FIN earlier.
+  EXPECT_EQ(0u, QuicSessionPeer::GetLocallyClosedStreamsHighestOffset(&session_)
+                    .size());
 }
 
 }  // namespace

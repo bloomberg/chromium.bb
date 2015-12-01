@@ -2059,17 +2059,10 @@ TEST_P(EndToEndTest, EarlyResponseFinRecording) {
   EXPECT_TRUE(it != map.end());
   QuicServerSession* server_session = it->second;
 
-  // Verify that the stream is not pending the arrival of the peer's final
-  // offset.
-  if (FLAGS_quic_fix_fin_accounting) {
-    EXPECT_EQ(0u, QuicSessionPeer::GetLocallyClosedStreamsHighestOffset(
-                      server_session)
-                      .size());
-  } else {
-    EXPECT_EQ(1u, QuicSessionPeer::GetLocallyClosedStreamsHighestOffset(
-                      server_session)
-                      .size());
-  }
+  // The stream is not waiting for the arrival of the peer's final offset.
+  EXPECT_EQ(
+      0u, QuicSessionPeer::GetLocallyClosedStreamsHighestOffset(server_session)
+              .size());
 
   server_thread_->Resume();
 }
@@ -2117,23 +2110,13 @@ TEST_P(EndToEndTest, LargePostEarlyResponse) {
   GenerateBody(&body, kBodySize);
   client_->SendData(body, true);
 
-  if (FLAGS_quic_implement_stop_reading) {
-    // Run the client to let any buffered data be sent.
-    // (This is OK despite already waiting for a response.)
-    client_->WaitForResponse();
-    // There should be no buffered data to write in the client's stream.
-    ReliableQuicStream* stream =
-        client_->client()->session()->GetStream(kClientDataStreamId1);
-    EXPECT_FALSE(stream != nullptr && stream->HasBufferedData());
-  } else {
-    // Run the client for 0.1 second to let any buffered data be sent.
-    // Must have a timeout, as the stream will not close and cause a return.
-    // (This is OK despite already waiting for a response.)
-    client_->WaitForResponseForMs(100);
-    // There will be buffered data to write in the client's stream.
-    ReliableQuicStream* stream = client_->client()->session()->GetStream(5);
-    EXPECT_TRUE(stream != nullptr && stream->HasBufferedData());
-  }
+  // Run the client to let any buffered data be sent.
+  // (This is OK despite already waiting for a response.)
+  client_->WaitForResponse();
+  // There should be no buffered data to write in the client's stream.
+  ReliableQuicStream* stream =
+      client_->client()->session()->GetStream(kClientDataStreamId1);
+  EXPECT_FALSE(stream != nullptr && stream->HasBufferedData());
 }
 
 }  // namespace

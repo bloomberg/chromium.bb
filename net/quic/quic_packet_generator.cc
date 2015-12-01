@@ -14,24 +14,6 @@ using base::StringPiece;
 
 namespace net {
 
-namespace {
-
-// We want to put some space between a protected packet and the FEC packet to
-// avoid losing them both within the same loss episode. On the other hand, we
-// expect to be able to recover from any loss in about an RTT. We resolve this
-// tradeoff by sending an FEC packet atmost half an RTT, or equivalently, half
-// the max number of in-flight packets,  the first protected packet. Since we
-// don't want to delay an FEC packet past half an RTT, we set the max FEC group
-// size to be half the current congestion window.
-const float kMaxPacketsInFlightMultiplierForFecGroupSize = 0.5;
-const float kRttMultiplierForFecTimeout = 0.5;
-
-// Minimum timeout for FEC alarm, set to half the minimum Tail Loss Probe
-// timeout of 10ms.
-const int64 kMinFecTimeoutMs = 5u;
-
-}  // namespace
-
 class QuicAckNotifier;
 
 QuicPacketGenerator::QuicPacketGenerator(QuicConnectionId connection_id,
@@ -42,10 +24,6 @@ QuicPacketGenerator::QuicPacketGenerator(QuicConnectionId connection_id,
       debug_delegate_(nullptr),
       packet_creator_(connection_id, framer, random_generator, this),
       batch_mode_(false),
-      fec_timeout_(QuicTime::Delta::Zero()),
-      rtt_multiplier_for_fec_timeout_(kRttMultiplierForFecTimeout),
-      should_fec_protect_(false),
-      fec_send_policy_(FEC_ANY_TRIGGER),
       should_send_ack_(false),
       should_send_stop_waiting_(false),
       ack_queued_(false),
@@ -91,13 +69,11 @@ QuicPacketGenerator::~QuicPacketGenerator() {
 
 void QuicPacketGenerator::OnCongestionWindowChange(
     QuicPacketCount max_packets_in_flight) {
-  packet_creator_.set_max_packets_per_fec_group(
-      static_cast<size_t>(kMaxPacketsInFlightMultiplierForFecGroupSize *
-                          max_packets_in_flight));
+  packet_creator_.OnCongestionWindowChange(max_packets_in_flight);
 }
 
 void QuicPacketGenerator::OnRttChange(QuicTime::Delta rtt) {
-  fec_timeout_ = rtt.Multiply(rtt_multiplier_for_fec_timeout_);
+  packet_creator_.OnRttChange(rtt);
 }
 
 void QuicPacketGenerator::SetShouldSendAck(bool also_send_stop_waiting) {
@@ -143,7 +119,8 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(
   }
 
   if (fec_protection == MUST_FEC_PROTECT) {
-    MaybeStartFecProtection();
+    packet_creator_.set_should_fec_protect(true);
+    packet_creator_.MaybeStartFecProtection();
   }
 
   if (!fin && (iov.total_length == 0)) {
@@ -190,7 +167,7 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(
       if (fec_protection == MUST_FEC_PROTECT) {
         // Turn off FEC protection when we're done writing protected data.
         DVLOG(1) << "Turning FEC protection OFF";
-        should_fec_protect_ = false;
+        packet_creator_.set_should_fec_protect(false);
       }
       break;
     }
@@ -203,7 +180,8 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(
 
   // Try to close FEC group since we've either run out of data to send or we're
   // blocked.
-  MaybeSendFecPacketAndCloseGroup(/*force=*/false, /*is_fec_timeout=*/false);
+  packet_creator_.MaybeSendFecPacketAndCloseGroup(/*force_send_fec=*/false,
+                                                  /*is_fec_timeout=*/false);
 
   DCHECK(InBatchMode() || !packet_creator_.HasPendingFrames());
   return QuicConsumedData(total_bytes_consumed, fin_consumed);
@@ -257,94 +235,23 @@ void QuicPacketGenerator::SendQueuedFrames(bool flush, bool is_fec_timeout) {
   if (flush || !InBatchMode()) {
     packet_creator_.Flush();
   }
-  MaybeSendFecPacketAndCloseGroup(flush, is_fec_timeout);
-}
-
-void QuicPacketGenerator::MaybeStartFecProtection() {
-  if (!packet_creator_.IsFecEnabled()) {
-    return;
-  }
-  DVLOG(1) << "Turning FEC protection ON";
-  should_fec_protect_ = true;
-  if (packet_creator_.IsFecProtected()) {
-    // Only start creator's FEC protection if not already on.
-    return;
-  }
-  if (HasQueuedFrames()) {
-    // TODO(jri): This currently requires that the generator flush out any
-    // pending frames when FEC protection is turned on. If current packet can be
-    // converted to an FEC protected packet, do it. This will require the
-    // generator to check if the resulting expansion still allows the incoming
-    // frame to be added to the packet.
-    SendQueuedFrames(/*flush=*/true, /*is_fec_timeout=*/false);
-  }
-  packet_creator_.StartFecProtectingPackets();
-  DCHECK(packet_creator_.IsFecProtected());
-}
-
-void QuicPacketGenerator::MaybeSendFecPacketAndCloseGroup(bool force,
-                                                          bool is_fec_timeout) {
-  if (ShouldSendFecPacket(force)) {
-    // If we want to send FEC packet only when FEC alaram goes off and if it is
-    // not a FEC timeout then close the group and dont send FEC packet.
-    if (fec_send_policy_ == FEC_ALARM_TRIGGER && !is_fec_timeout) {
-      ResetFecGroup();
-    } else {
-      // TODO(jri): SerializeFec can return a NULL packet, and this should cause
-      // an early return, with a call to delegate_->OnPacketGenerationError.
-      char buffer[kMaxPacketSize];
-      SerializedPacket serialized_fec =
-          packet_creator_.SerializeFec(buffer, kMaxPacketSize);
-      DCHECK(serialized_fec.packet);
-      delegate_->OnSerializedPacket(serialized_fec);
-    }
-  }
-
-  // Turn FEC protection off if creator's protection is on and the creator
-  // does not have an open FEC group.
-  // Note: We only wait until the frames queued in the creator are flushed;
-  // pending frames in the generator will not keep us from turning FEC off.
-  if (!should_fec_protect_ && packet_creator_.IsFecProtected() &&
-      !packet_creator_.IsFecGroupOpen()) {
-    packet_creator_.StopFecProtectingPackets();
-    DCHECK(!packet_creator_.IsFecProtected());
-  }
-}
-
-bool QuicPacketGenerator::ShouldSendFecPacket(bool force) {
-  return packet_creator_.IsFecProtected() &&
-         !packet_creator_.HasPendingFrames() &&
-         packet_creator_.ShouldSendFec(force);
-}
-
-void QuicPacketGenerator::ResetFecGroup() {
-  DCHECK(packet_creator_.IsFecGroupOpen());
-  packet_creator_.ResetFecGroup();
-  delegate_->OnResetFecGroup();
+  packet_creator_.MaybeSendFecPacketAndCloseGroup(flush, is_fec_timeout);
 }
 
 void QuicPacketGenerator::OnFecTimeout() {
   DCHECK(!InBatchMode());
-  if (!ShouldSendFecPacket(true)) {
+  if (!packet_creator_.ShouldSendFec(true)) {
     LOG(DFATAL) << "No FEC packet to send on FEC timeout.";
     return;
   }
   // Flush out any pending frames in the generator and the creator, and then
   // send out FEC packet.
   SendQueuedFrames(/*flush=*/true, /*is_fec_timeout=*/true);
-  MaybeSendFecPacketAndCloseGroup(/*force=*/true, /*is_fec_timeout=*/true);
 }
 
 QuicTime::Delta QuicPacketGenerator::GetFecTimeout(
     QuicPacketNumber packet_number) {
-  // Do not set up FEC alarm for |packet_number| it is not the first packet in
-  // the current group.
-  if (packet_creator_.IsFecGroupOpen() &&
-      (packet_number == packet_creator_.fec_group_number())) {
-    return QuicTime::Delta::Max(
-        fec_timeout_, QuicTime::Delta::FromMilliseconds(kMinFecTimeoutMs));
-  }
-  return QuicTime::Delta::Infinite();
+  return packet_creator_.GetFecTimeout(packet_number);
 }
 
 bool QuicPacketGenerator::InBatchMode() {
@@ -442,7 +349,8 @@ void QuicPacketGenerator::SetMaxPacketLength(QuicByteCount length, bool force) {
   // FEC group.
   if (!packet_creator_.CanSetMaxPacketLength() && force) {
     SendQueuedFrames(/*flush=*/true, /*is_fec_timeout=*/false);
-    MaybeSendFecPacketAndCloseGroup(/*force=*/true, /*is_fec_timeout=*/false);
+    packet_creator_.MaybeSendFecPacketAndCloseGroup(/*force_send_fec=*/true,
+                                                    /*is_fec_timeout=*/false);
     DCHECK(packet_creator_.CanSetMaxPacketLength());
   }
 
@@ -497,8 +405,9 @@ void QuicPacketGenerator::SetEncrypter(EncryptionLevel level,
 void QuicPacketGenerator::OnSerializedPacket(
     SerializedPacket* serialized_packet) {
   if (serialized_packet->packet == nullptr) {
-    LOG(DFATAL) << "Failed to SerializePacket. fec_policy:" << fec_send_policy_
-                << " should_fec_protect_:" << should_fec_protect_;
+    LOG(DFATAL) << "Failed to SerializePacket. fec_policy:" << fec_send_policy()
+                << " should_fec_protect_:"
+                << packet_creator_.should_fec_protect();
     delegate_->CloseConnection(QUIC_FAILED_TO_SERIALIZE_PACKET, false);
     return;
   }
@@ -508,7 +417,8 @@ void QuicPacketGenerator::OnSerializedPacket(
   ack_listeners_.clear();
 
   delegate_->OnSerializedPacket(*serialized_packet);
-  MaybeSendFecPacketAndCloseGroup(/*force=*/false, /*is_fec_timeout=*/false);
+  packet_creator_.MaybeSendFecPacketAndCloseGroup(/*force_send_fec=*/false,
+                                                  /*is_fec_timeout=*/false);
 
   // Maximum packet size may be only enacted while no packet is currently being
   // constructed, so here we have a good opportunity to actually change it.
@@ -519,6 +429,24 @@ void QuicPacketGenerator::OnSerializedPacket(
   // The packet has now been serialized, so the frames are no longer queued.
   ack_queued_ = false;
   stop_waiting_queued_ = false;
+}
+
+void QuicPacketGenerator::OnResetFecGroup() {
+  delegate_->OnResetFecGroup();
+}
+
+void QuicPacketGenerator::set_rtt_multiplier_for_fec_timeout(
+    float rtt_multiplier_for_fec_timeout) {
+  packet_creator_.set_rtt_multiplier_for_fec_timeout(
+      rtt_multiplier_for_fec_timeout);
+}
+
+FecSendPolicy QuicPacketGenerator::fec_send_policy() {
+  return packet_creator_.fec_send_policy();
+}
+
+void QuicPacketGenerator::set_fec_send_policy(FecSendPolicy fec_send_policy) {
+  packet_creator_.set_fec_send_policy(fec_send_policy);
 }
 
 }  // namespace net

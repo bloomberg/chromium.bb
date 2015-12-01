@@ -612,43 +612,21 @@ ReliableQuicStream* QuicSession::GetOrCreateDynamicStream(
   available_streams_.erase(stream_id);
 
   if (stream_id > largest_peer_created_stream_id_) {
-    if (FLAGS_allow_many_available_streams) {
-      // Check if the new number of available streams would cause the number of
-      // available streams to exceed the limit.  Note that the peer can create
-      // only alternately-numbered streams.
-      size_t additional_available_streams =
-          (stream_id - largest_peer_created_stream_id_) / 2 - 1;
-      size_t new_num_available_streams =
-          GetNumAvailableStreams() + additional_available_streams;
-      if (new_num_available_streams > get_max_available_streams()) {
-        DVLOG(1) << "Failed to create a new incoming stream with id:"
-                 << stream_id << ".  There are already "
-                 << GetNumAvailableStreams()
-                 << " streams available, which would become "
-                 << new_num_available_streams << ", which exceeds the limit "
-                 << get_max_available_streams() << ".";
-        CloseConnection(QUIC_TOO_MANY_AVAILABLE_STREAMS);
-        return nullptr;
-      }
-    } else {
-      // Check if the number of streams that will be created (including
-      // available streams) would cause the number of open streams to exceed the
-      // limit.  Note that the peer can create only alternately-numbered
-      // streams.
-      if ((stream_id - largest_peer_created_stream_id_) / 2 +
-              GetNumOpenStreams() >
-          get_max_open_streams()) {
-        DVLOG(1) << "Failed to create a new incoming stream with id:"
-                 << stream_id << ".  Already " << GetNumOpenStreams()
-                 << " streams open, would exceed max " << get_max_open_streams()
-                 << ".";
-        // We may already have sent a connection close due to multiple reset
-        // streams in the same packet.
-        if (connection()->connected()) {
-          connection()->SendConnectionClose(QUIC_TOO_MANY_OPEN_STREAMS);
-        }
-        return nullptr;
-      }
+    // Check if the new number of available streams would cause the number of
+    // available streams to exceed the limit.  Note that the peer can create
+    // only alternately-numbered streams.
+    size_t additional_available_streams =
+        (stream_id - largest_peer_created_stream_id_) / 2 - 1;
+    size_t new_num_available_streams =
+        GetNumAvailableStreams() + additional_available_streams;
+    if (new_num_available_streams > get_max_available_streams()) {
+      DVLOG(1) << "Failed to create a new incoming stream with id:" << stream_id
+               << ".  There are already " << GetNumAvailableStreams()
+               << " streams available, which would become "
+               << new_num_available_streams << ", which exceeds the limit "
+               << get_max_available_streams() << ".";
+      CloseConnection(QUIC_TOO_MANY_AVAILABLE_STREAMS);
+      return nullptr;
     }
     for (QuicStreamId id = largest_peer_created_stream_id_ + 2;
          id < stream_id;
@@ -657,18 +635,16 @@ ReliableQuicStream* QuicSession::GetOrCreateDynamicStream(
     }
     largest_peer_created_stream_id_ = stream_id;
   }
-  if (FLAGS_allow_many_available_streams) {
-    // Check if the new number of open streams would cause the number of
-    // open streams to exceed the limit.
-    if (GetNumOpenStreams() >= get_max_open_streams()) {
-      if (connection()->version() <= QUIC_VERSION_27) {
-        CloseConnection(QUIC_TOO_MANY_OPEN_STREAMS);
-      } else {
-        // Refuse to open the stream.
-        SendRstStream(stream_id, QUIC_REFUSED_STREAM, 0);
-      }
-      return nullptr;
+  // Check if the new number of open streams would cause the number of
+  // open streams to exceed the limit.
+  if (GetNumOpenStreams() >= get_max_open_streams()) {
+    if (connection()->version() <= QUIC_VERSION_27) {
+      CloseConnection(QUIC_TOO_MANY_OPEN_STREAMS);
+    } else {
+      // Refuse to open the stream.
+      SendRstStream(stream_id, QUIC_REFUSED_STREAM, 0);
     }
+    return nullptr;
   }
   ReliableQuicStream* stream = CreateIncomingDynamicStream(stream_id);
   if (stream == nullptr) {
@@ -711,14 +687,8 @@ bool QuicSession::IsClosedStream(QuicStreamId id) {
 }
 
 size_t QuicSession::GetNumOpenStreams() const {
-  if (FLAGS_allow_many_available_streams) {
-    return dynamic_stream_map_.size() - draining_streams_.size() +
-           locally_closed_streams_highest_offset_.size();
-  } else {
-    return dynamic_stream_map_.size() + available_streams_.size() -
-           draining_streams_.size() +
-           locally_closed_streams_highest_offset_.size();
-  }
+  return dynamic_stream_map_.size() - draining_streams_.size() +
+         locally_closed_streams_highest_offset_.size();
 }
 
 size_t QuicSession::GetNumActiveStreams() const {

@@ -16,19 +16,17 @@ namespace net {
 
 class QuicSpdySession;
 
-// Headers in QUIC are sent as SPDY SYN_STREAM or SYN_REPLY frames
-// over a reserved reliable stream with the id 3.  Each endpoint (client
-// and server) will allocate an instance of QuicHeadersStream to send
-// and receive headers.
+// Headers in QUIC are sent as HTTP/2 HEADERS frames over a reserved reliable
+// stream with the id 3.  Each endpoint (client and server) will allocate an
+// instance of QuicHeadersStream to send and receive headers.
 class NET_EXPORT_PRIVATE QuicHeadersStream : public ReliableQuicStream {
  public:
   explicit QuicHeadersStream(QuicSpdySession* session);
   ~QuicHeadersStream() override;
 
-  // Writes |headers| for |stream_id| in a SYN_STREAM or SYN_REPLY
-  // frame to the peer.  If |fin| is true, the fin flag will be set on
-  // the SPDY frame.  Returns the size, in bytes, of the resulting
-  // SPDY frame.
+  // Writes |headers| for |stream_id| in an HTTP/2 HEADERS frame to the peer.
+  // If |fin| is true, the fin flag will be set on the HEADERS frame.  Returns
+  // the size, in bytes, of the resulting HEADERS frame.
   size_t WriteHeaders(QuicStreamId stream_id,
                       const SpdyHeaderBlock& headers,
                       bool fin,
@@ -36,8 +34,8 @@ class NET_EXPORT_PRIVATE QuicHeadersStream : public ReliableQuicStream {
                       QuicAckListenerInterface* ack_listener);
 
   // Write |headers| for |promised_stream_id| on |original_stream_id| in a
-  // PUSH_PROMISE frame to peer. Return the size, in bytes, of the resulting
-  // SPDY frame.
+  // PUSH_PROMISE frame to peer.
+  // Return the size, in bytes, of the resulting PUSH_PROMISE frame.
   size_t WritePushPromise(QuicStreamId original_stream_id,
                           QuicStreamId promised_stream_id,
                           const SpdyHeaderBlock& headers,
@@ -52,16 +50,14 @@ class NET_EXPORT_PRIVATE QuicHeadersStream : public ReliableQuicStream {
 
   // The following methods are called by the SimpleVisitor.
 
-  // Called when a SYN_STREAM frame has been received.
-  void OnSynStream(SpdyStreamId stream_id,
-                   SpdyPriority priority,
-                   bool fin);
-
-  // Called when a SYN_REPLY frame been received.
-  void OnSynReply(SpdyStreamId stream_id, bool fin);
+  // Called when a HEADERS frame has been received.
+  void OnHeaders(SpdyStreamId stream_id,
+                 bool has_priority,
+                 SpdyPriority priority,
+                 bool fin);
 
   // Called when a chunk of header data is available. This is called
-  // after OnSynStream, or OnSynReply.
+  // after OnHeaders.
   // |stream_id| The stream receiving the header data.
   // |header_data| A buffer containing the header data chunk received.
   // |len| The length of the header data buffer. A length of zero indicates
