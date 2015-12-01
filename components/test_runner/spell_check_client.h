@@ -40,7 +40,6 @@ class SpellCheckClient : public blink::WebSpellCheckClient {
       const blink::WebVector<uint32_t>& markers,
       const blink::WebVector<unsigned>& marker_offsets,
       blink::WebTextCheckingCompletion* completion) override;
-  blink::WebString autoCorrectWord(const blink::WebString& word) override;
 
  private:
   void FinishLastTextCheck();

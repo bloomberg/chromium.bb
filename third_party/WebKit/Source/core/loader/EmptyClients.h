@@ -275,7 +275,6 @@ public:
 
     bool shouldEraseMarkersAfterChangeSelection(TextCheckingType) const override { return true; }
     void checkSpellingOfString(const String&, int*, int*) override {}
-    String getAutoCorrectSuggestionForMisspelledWord(const String&) override { return String(); }
     void checkGrammarOfString(const String&, Vector<GrammarDetail>&, int*, int*) override {}
     void requestCheckingOfString(PassRefPtrWillBeRawPtr<TextCheckingRequest>) override;
 };

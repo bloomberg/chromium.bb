@@ -9233,13 +9233,15 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Options_AutoSpellCorrection_Disable">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>groby@chromium.org</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated 11/2015</obsolete>
 </action>
 
 <action name="Options_AutoSpellCorrection_Enable">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>groby@chromium.org</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated 11/2015</obsolete>
 </action>
 
 <action name="Options_AutofillAddressAdded">

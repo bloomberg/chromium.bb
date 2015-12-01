@@ -52,7 +52,6 @@ public:
     void checkSpellingOfString(const String&, int* misspellingLocation, int* misspellingLength) override;
     void checkGrammarOfString(const String&, Vector<GrammarDetail>&,
         int* badGrammarLocation, int* badGrammarLength) override;
-    String getAutoCorrectSuggestionForMisspelledWord(const String&) override;
     void updateSpellingUIWithMisspelledWord(const String&) override;
     void showSpellingUI(bool show) override;
     bool spellingUIIsShowing() override;

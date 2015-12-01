@@ -1007,9 +1007,6 @@ const char kDisableMultilingualSpellChecker[] =
 const char kEnableMultilingualSpellChecker[] =
     "enable-multilingual-spellchecker";
 
-// Enables auto correction for misspelled words.
-const char kEnableSpellingAutoCorrect[]     = "enable-spelling-auto-correct";
-
 // Enables participation in the field trial for user feedback to spelling
 // service.
 const char kEnableSpellingFeedbackFieldTrial[] =

@@ -167,10 +167,7 @@ class SpellCheck::SpellcheckRequest {
 // and as such the SpellCheckProviders will never be notified of different
 // values.
 // TODO(groby): Simplify this.
-SpellCheck::SpellCheck()
-    : auto_spell_correct_turned_on_(false),
-      spellcheck_enabled_(true) {
-}
+SpellCheck::SpellCheck() : spellcheck_enabled_(true) {}
 
 SpellCheck::~SpellCheck() {
 }
@@ -212,8 +209,6 @@ bool SpellCheck::OnControlMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(SpellCheckMsg_Init, OnInit)
     IPC_MESSAGE_HANDLER(SpellCheckMsg_CustomDictionaryChanged,
                         OnCustomDictionaryChanged)
-    IPC_MESSAGE_HANDLER(SpellCheckMsg_EnableAutoSpellCorrect,
-                        OnEnableAutoSpellCorrect)
     IPC_MESSAGE_HANDLER(SpellCheckMsg_EnableSpellCheck, OnEnableSpellCheck)
     IPC_MESSAGE_HANDLER(SpellCheckMsg_RequestDocumentMarkers,
                         OnRequestDocumentMarkers)
@@ -225,8 +220,7 @@ bool SpellCheck::OnControlMessageReceived(const IPC::Message& message) {
 
 void SpellCheck::OnInit(
     const std::vector<SpellCheckBDictLanguage>& bdict_languages,
-    const std::set<std::string>& custom_words,
-    bool auto_spell_correct) {
+    const std::set<std::string>& custom_words) {
   languages_.clear();
   for (const auto& bdict_language : bdict_languages) {
     AddSpellcheckLanguage(
@@ -235,7 +229,6 @@ void SpellCheck::OnInit(
   }
 
   custom_dictionary_.Init(custom_words);
-  auto_spell_correct_turned_on_ = auto_spell_correct;
 #if !defined(USE_BROWSER_SPELLCHECKER)
   PostDelayedSpellCheckTask(pending_request_param_.release());
 #endif
@@ -249,10 +242,6 @@ void SpellCheck::OnCustomDictionaryChanged(
     return;
   DocumentMarkersRemover markersRemover(words_added);
   content::RenderView::ForEach(&markersRemover);
-}
-
-void SpellCheck::OnEnableAutoSpellCorrect(bool enable) {
-  auto_spell_correct_turned_on_ = enable;
 }
 
 void SpellCheck::OnEnableSpellCheck(bool enable) {
@@ -425,59 +414,6 @@ bool SpellCheck::SpellCheckParagraph(
   NOTREACHED();
   return true;
 #endif
-}
-
-base::string16 SpellCheck::GetAutoCorrectionWord(const base::string16& word,
-                                                 int tag) {
-  base::string16 autocorrect_word;
-  if (!auto_spell_correct_turned_on_)
-    return autocorrect_word;  // Return the empty string.
-
-  int word_length = static_cast<int>(word.size());
-  if (word_length < 2 ||
-      word_length > chrome::spellcheck_common::kMaxAutoCorrectWordSize)
-    return autocorrect_word;
-
-  if (InitializeIfNeeded())
-    return autocorrect_word;
-
-  base::char16 misspelled_word[
-      chrome::spellcheck_common::kMaxAutoCorrectWordSize + 1];
-  const base::char16* word_char = word.c_str();
-  for (int i = 0; i <= chrome::spellcheck_common::kMaxAutoCorrectWordSize;
-       ++i) {
-    if (i >= word_length)
-      misspelled_word[i] = 0;
-    else
-      misspelled_word[i] = word_char[i];
-  }
-
-  // Swap adjacent characters and spellcheck.
-  int misspelling_start, misspelling_len;
-  for (int i = 0; i < word_length - 1; i++) {
-    // Swap.
-    std::swap(misspelled_word[i], misspelled_word[i + 1]);
-
-    // Check spelling.
-    misspelling_start = misspelling_len = 0;
-    SpellCheckWord(misspelled_word, kNoOffset, word_length, tag,
-                   &misspelling_start, &misspelling_len, NULL);
-
-    // Make decision: if only one swap produced a valid word, then we want to
-    // return it. If we found two or more, we don't do autocorrection.
-    if (misspelling_len == 0) {
-      if (autocorrect_word.empty()) {
-        autocorrect_word.assign(misspelled_word);
-      } else {
-        autocorrect_word.clear();
-        break;
-      }
-    }
-
-    // Restore the swapped characters.
-    std::swap(misspelled_word[i], misspelled_word[i + 1]);
-  }
-  return autocorrect_word;
 }
 
 // OSX and Android use their own spell checkers

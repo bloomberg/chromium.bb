@@ -80,8 +80,6 @@ void LanguageOptionsHandlerCommon::GetLocalizedValues(
     { "isUsedForSpellChecking",
       IDS_OPTIONS_SETTINGS_IS_USED_FOR_SPELL_CHECKING },
     { "enableSpellCheck", IDS_OPTIONS_ENABLE_SPELLCHECK },
-    { "enableAutoSpellCorrection",
-      IDS_OPTIONS_ENABLE_AUTO_SPELL_CORRECTION },
     { "downloadingDictionary", IDS_OPTIONS_DICTIONARY_DOWNLOADING },
     { "downloadFailed", IDS_OPTIONS_DICTIONARY_DOWNLOAD_FAILED },
     { "retryButton", IDS_OPTIONS_DICTIONARY_DOWNLOAD_RETRY },
@@ -125,13 +123,6 @@ void LanguageOptionsHandlerCommon::GetLocalizedValues(
   localized_strings->Set("spellCheckLanguageCodeSet",
                          GetSpellCheckLanguageCodeSet());
   localized_strings->Set("uiLanguageCodeSet", GetUILanguageCodeSet());
-
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  bool enable_spelling_auto_correct =
-      command_line.HasSwitch(switches::kEnableSpellingAutoCorrect);
-  localized_strings->SetBoolean("enableSpellingAutoCorrect",
-                                enable_spelling_auto_correct);
 
   localized_strings->SetBoolean(
       "enableMultilingualSpellChecker",

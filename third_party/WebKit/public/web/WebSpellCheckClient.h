@@ -67,10 +67,6 @@ public:
                                        const WebVector<unsigned>& markerOffsets,
                                        WebTextCheckingCompletion* completionCallback) { }
 
-    // Computes an auto-corrected replacement for a misspelled word. If no
-    // replacement is found, then an empty string is returned.
-    virtual WebString autoCorrectWord(const WebString& misspelledWord) { return WebString(); }
-
     // Show or hide the spelling UI.
     virtual void showSpellingUI(bool show) { }
 

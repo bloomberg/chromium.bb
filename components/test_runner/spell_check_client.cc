@@ -140,13 +140,4 @@ void SpellCheckClient::FinishLastTextCheck() {
   web_test_proxy_->PostSpellCheckEvent(blink::WebString("FinishLastTextCheck"));
 }
 
-blink::WebString SpellCheckClient::autoCorrectWord(
-    const blink::WebString& word) {
-  // Returns an empty string as Mac WebKit ('WebKitSupport/WebEditorClient.mm')
-  // does. (If this function returns a non-empty string, WebKit replaces the
-  // given misspelled string with the result one. This process executes some
-  // editor commands and causes layout-test failures.)
-  return blink::WebString();
-}
-
 }  // namespace test_runner

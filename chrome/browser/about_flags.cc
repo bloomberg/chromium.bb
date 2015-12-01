@@ -786,19 +786,12 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_SILENT_DEBUGGER_EXTENSION_API_DESCRIPTION,
      kOsDesktop,
      SINGLE_VALUE_TYPE(switches::kSilentDebuggerExtensionAPI)},
-#if defined(ENABLE_SPELLCHECK)
-#if defined(OS_ANDROID)
+#if defined(ENABLE_SPELLCHECK) && defined(OS_ANDROID)
     {"enable-android-spellchecker",
      IDS_OPTIONS_ENABLE_SPELLCHECK,
      IDS_OPTIONS_ENABLE_ANDROID_SPELLCHECKER_DESCRIPTION,
      kOsAndroid,
      SINGLE_VALUE_TYPE(switches::kEnableAndroidSpellChecker)},
-#endif
-    {"spellcheck-autocorrect",
-     IDS_FLAGS_SPELLCHECK_AUTOCORRECT,
-     IDS_FLAGS_SPELLCHECK_AUTOCORRECT_DESCRIPTION,
-     kOsWin | kOsLinux | kOsCrOS,
-     SINGLE_VALUE_TYPE(switches::kEnableSpellingAutoCorrect)},
 #endif
 #if defined(ENABLE_SPELLCHECK) && \
     (defined(OS_LINUX) || defined(OS_WIN) || defined(OS_CHROMEOS))

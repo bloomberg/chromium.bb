@@ -143,10 +143,6 @@ class SpellcheckService : public KeyedService,
   // Pass all renderers some basic initialization information.
   void InitForAllRenderers();
 
-  // Reacts to a change in user preferences on whether auto-spell-correct should
-  // be enabled.
-  void OnEnableAutoSpellCorrectChanged();
-
   // Reacts to a change in user preference on which languages should be used for
   // spellchecking.
   void OnSpellCheckDictionariesChanged();

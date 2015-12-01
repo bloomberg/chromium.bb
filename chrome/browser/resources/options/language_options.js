@@ -235,12 +235,6 @@ cr.define('options', function() {
       $('add-language-overlay-ok-button').addEventListener(
           'click', this.handleAddLanguageOkButtonClick_.bind(this));
 
-      if (!cr.isChromeOS) {
-        // Show experimental features if enabled.
-        if (loadTimeData.getBoolean('enableSpellingAutoCorrect'))
-          $('auto-spell-correction-option').hidden = false;
-      }
-
       if (!(cr.isMac || cr.isChromeOS)) {
         // Handle spell check enable/disable.
         if (!this.isMultilingualSpellcheckerEnabled_()) {

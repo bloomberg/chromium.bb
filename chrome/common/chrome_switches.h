@@ -274,7 +274,6 @@ extern const char kEnableAndroidSpellChecker[];
 #endif
 extern const char kDisableMultilingualSpellChecker[];
 extern const char kEnableMultilingualSpellChecker[];
-extern const char kEnableSpellingAutoCorrect[];
 extern const char kEnableSpellingFeedbackFieldTrial[];
 extern const char kSpellingServiceFeedbackUrl[];
 extern const char kSpellingServiceFeedbackIntervalSeconds[];

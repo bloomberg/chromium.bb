@@ -87,14 +87,6 @@ class SpellCheck : public content::RenderProcessObserver,
       const base::string16& text,
       blink::WebVector<blink::WebTextCheckingResult>* results);
 
-  // Find a possible correctly spelled word for a misspelled word. Computes an
-  // empty string if input misspelled word is too long, there is ambiguity, or
-  // the correct spelling cannot be determined.
-  // NOTE: If using the platform spellchecker, this will send a *lot* of sync
-  // IPCs. We should probably refactor this if we ever plan to take it out from
-  // behind its command line flag.
-  base::string16 GetAutoCorrectionWord(const base::string16& word, int tag);
-
   // Requests to spellcheck the specified text in the background. This function
   // posts a background task and calls SpellCheckParagraph() in the task.
 #if !defined (USE_BROWSER_SPELLCHECKER)
@@ -134,11 +126,9 @@ class SpellCheck : public content::RenderProcessObserver,
 
   // Message handlers.
    void OnInit(const std::vector<SpellCheckBDictLanguage>& bdict_languages,
-               const std::set<std::string>& custom_words,
-               bool auto_spell_correct);
+               const std::set<std::string>& custom_words);
    void OnCustomDictionaryChanged(const std::set<std::string>& words_added,
                                   const std::set<std::string>& words_removed);
-  void OnEnableAutoSpellCorrect(bool enable);
   void OnEnableSpellCheck(bool enable);
   void OnRequestDocumentMarkers();
 
@@ -164,9 +154,6 @@ class SpellCheck : public content::RenderProcessObserver,
 
   // Custom dictionary spelling engine.
   CustomDictionaryEngine custom_dictionary_;
-
-  // Remember state for auto spell correct.
-  bool auto_spell_correct_turned_on_;
 
   // Remember state for spellchecking.
   bool spellcheck_enabled_;

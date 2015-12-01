@@ -89,7 +89,6 @@ static void findMisspellings(TextCheckerClient& client, const UChar* text, int s
             misspelling.decoration = TextDecorationTypeSpelling;
             misspelling.location = start + wordStart + misspellingLocation;
             misspelling.length = misspellingLength;
-            misspelling.replacement = client.getAutoCorrectSuggestionForMisspelledWord(String(text + misspelling.location, misspelling.length));
             results.append(misspelling);
         }
 

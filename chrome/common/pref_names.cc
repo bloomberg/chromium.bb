@@ -850,9 +850,6 @@ const char kLastClearBrowsingDataTime[] =
 // Boolean pref to define the default values for using spellchecker.
 const char kEnableContinuousSpellcheck[] = "browser.enable_spellchecking";
 
-// Boolean pref to define the default values for using auto spell correct.
-const char kEnableAutoSpellCorrect[] = "browser.enable_autospellcorrect";
-
 // Boolean pref to define the default setting for "block offensive words".
 // The old key value is kept to avoid unnecessary migration code.
 const char kSpeechRecognitionFilterProfanities[] =

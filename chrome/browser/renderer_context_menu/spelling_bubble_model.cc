@@ -23,12 +23,8 @@ using content::Referrer;
 using content::WebContents;
 
 SpellingBubbleModel::SpellingBubbleModel(Profile* profile,
-                                         WebContents* web_contents,
-                                         bool include_autocorrect)
-    : profile_(profile),
-      web_contents_(web_contents),
-      include_autocorrect_(include_autocorrect) {
-}
+                                         WebContents* web_contents)
+    : profile_(profile), web_contents_(web_contents) {}
 
 SpellingBubbleModel::~SpellingBubbleModel() {
 }
@@ -73,6 +69,4 @@ void SpellingBubbleModel::SetPref(bool enabled) {
   PrefService* pref = profile_->GetPrefs();
   DCHECK(pref);
   pref->SetBoolean(prefs::kSpellCheckUseSpellingService, enabled);
-  if (include_autocorrect_)
-    pref->SetBoolean(prefs::kEnableAutoSpellCorrect, enabled);
 }

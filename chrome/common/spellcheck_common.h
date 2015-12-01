@@ -29,8 +29,6 @@ static const int kFeedbackIntervalSeconds = 1800;  // 30 minutes
 // Max number of dictionary suggestions.
 static const int kMaxSuggestions = 5;
 
-static const int kMaxAutoCorrectWordSize = 8;
-
 // Maximum number of words in the custom spellcheck dictionary that can be
 // synced.
 static const size_t MAX_SYNCABLE_DICTIONARY_WORDS = 1300;

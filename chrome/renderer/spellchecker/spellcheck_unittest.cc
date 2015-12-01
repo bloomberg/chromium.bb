@@ -76,10 +76,6 @@ class SpellCheckTest : public testing::Test {
 #endif
   }
 
-  void EnableAutoCorrect(bool enable_autocorrect) {
-    spell_check_->OnEnableAutoSpellCorrect(enable_autocorrect);
-  }
-
   ~SpellCheckTest() override {}
 
   SpellCheck* spell_check() { return spell_check_.get(); }
@@ -855,36 +851,6 @@ TEST_F(SpellCheckTest, MAYBE_SpellCheckText) {
         << ".";
     EXPECT_EQ(0, misspelling_start);
     EXPECT_EQ(0, misspelling_length);
-  }
-}
-
-TEST_F(SpellCheckTest, GetAutoCorrectionWord_EN_US) {
-  static const struct {
-    // A misspelled word.
-    const char* input;
-
-    // An expected result for this test case.
-    // Should be an empty string if there are no suggestions for auto correct.
-    const char* expected_result;
-  } kTestCases[] = {
-    {"teh", "the"},
-    {"moer", "more"},
-    {"watre", "water"},
-    {"noen", ""},
-    {"what", ""},
-  };
-
-  EnableAutoCorrect(true);
-
-  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
-    base::string16 misspelled_word(base::UTF8ToUTF16(kTestCases[i].input));
-    base::string16 expected_autocorrect_word(
-        base::UTF8ToUTF16(kTestCases[i].expected_result));
-    base::string16 autocorrect_word = spell_check()->GetAutoCorrectionWord(
-        misspelled_word, 0);
-
-    // Check for spelling.
-    EXPECT_EQ(expected_autocorrect_word, autocorrect_word);
   }
 }
 

@@ -175,16 +175,6 @@ void SpellCheckProvider::requestCheckingOfText(
   UMA_HISTOGRAM_COUNTS("SpellCheck.api.async", text.length());
 }
 
-WebString SpellCheckProvider::autoCorrectWord(const WebString& word) {
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kEnableSpellingAutoCorrect)) {
-    UMA_HISTOGRAM_COUNTS("SpellCheck.api.autocorrect", word.length());
-    return spellcheck_->GetAutoCorrectionWord(word, routing_id());
-  }
-  return base::string16();
-}
-
 void SpellCheckProvider::showSpellingUI(bool show) {
 #if defined(USE_BROWSER_SPELLCHECKER)
   UMA_HISTOGRAM_BOOLEAN("SpellCheck.api.showUI", show);

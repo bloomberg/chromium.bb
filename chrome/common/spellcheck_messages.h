@@ -45,20 +45,15 @@ IPC_MESSAGE_CONTROL1(SpellCheckMsg_EnableSpellCheck,
 // Passes some initialization params from the browser to the renderer's
 // spellchecker. This can be called directly after startup or in (async)
 // response to a RequestDictionary ViewHost message.
-IPC_MESSAGE_CONTROL3(SpellCheckMsg_Init,
+IPC_MESSAGE_CONTROL2(SpellCheckMsg_Init,
                      std::vector<SpellCheckBDictLanguage> /* bdict_languages */,
-                     std::set<std::string> /* custom_dict_words */,
-                     bool /* auto spell correct */)
+                     std::set<std::string> /* custom_dict_words */)
 
 // Words have been added and removed in the custom dictionary; update the local
 // custom word list.
 IPC_MESSAGE_CONTROL2(SpellCheckMsg_CustomDictionaryChanged,
                      std::set<std::string> /* words_added */,
                      std::set<std::string> /* words_removed */)
-
-// Toggle the auto spell correct functionality.
-IPC_MESSAGE_CONTROL1(SpellCheckMsg_EnableAutoSpellCorrect,
-                     bool /* enable */)
 
 // Request a list of all document markers in the renderer for spelling service
 // feedback.

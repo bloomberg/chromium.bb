@@ -160,23 +160,6 @@ void SpellCheckerClientImpl::requestCheckingOfString(PassRefPtrWillBeRawPtr<Text
     }
 }
 
-String SpellCheckerClientImpl::getAutoCorrectSuggestionForMisspelledWord(const String& misspelledWord)
-{
-    if (!(isContinuousSpellCheckingEnabled() && m_webView->client()))
-        return String();
-
-    // Do not autocorrect words with capital letters in it except the
-    // first letter. This will remove cases changing "IMB" to "IBM".
-    for (size_t i = 1; i < misspelledWord.length(); i++) {
-        if (u_isupper(static_cast<UChar32>(misspelledWord[i])))
-            return String();
-    }
-
-    if (m_webView->spellCheckClient())
-        return m_webView->spellCheckClient()->autoCorrectWord(WebString(misspelledWord));
-    return String();
-}
-
 void SpellCheckerClientImpl::checkGrammarOfString(const String& text, WTF::Vector<GrammarDetail>& details, int* badGrammarLocation, int* badGrammarLength)
 {
     if (badGrammarLocation)
