@@ -19,6 +19,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/extension_registry.h"
@@ -29,6 +30,7 @@
 #include "extensions/common/feature_switch.h"
 #include "extensions/test/result_catcher.h"
 #include "grit/theme_resources.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/geometry/rect.h"
@@ -682,6 +684,52 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, TestTriggerBrowserAction) {
   std::string result;
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(tab, script, &result));
   EXPECT_EQ(result, "red");
+}
+
+// Test that a browser action popup with a web iframe works correctly. This
+// primarily targets --isolate-extensions and --site-per-process modes, where
+// the iframe runs in a separate process.  See https://crbug.com/546267.
+IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BrowserActionPopupWithIframe) {
+  host_resolver()->AddRule("*", "127.0.0.1");
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("browser_action/popup_with_iframe")));
+  BrowserActionTestUtil* actions_bar = GetBrowserActionsBar();
+  const Extension* extension = GetSingleLoadedExtension();
+  ASSERT_TRUE(extension) << message_;
+
+  // Simulate a click on the browser action to open the popup.
+  ASSERT_TRUE(OpenPopup(0));
+
+  // Find the RenderFrameHost associated with the iframe in the popup.
+  content::RenderFrameHost* frame_host = nullptr;
+  extensions::ProcessManager* manager =
+      extensions::ProcessManager::Get(browser()->profile());
+  std::set<content::RenderFrameHost*> frame_hosts =
+      manager->GetRenderFrameHostsForExtension(extension->id());
+  for (auto host : frame_hosts) {
+    if (host->GetFrameName() == "child_frame") {
+      frame_host = host;
+      break;
+    }
+  }
+
+  ASSERT_TRUE(frame_host);
+  EXPECT_EQ(extension->GetResourceURL("frame.html"),
+            frame_host->GetLastCommittedURL());
+  EXPECT_TRUE(frame_host->GetParent());
+
+  // Navigate the popup's iframe to a (cross-site) web page, and wait for that
+  // page to send a message, which will ensure that the page has loaded.
+  GURL foo_url(embedded_test_server()->GetURL("foo.com", "/popup_iframe.html"));
+  std::string script = "location.href = '" + foo_url.spec() + "'";
+  std::string result;
+  EXPECT_TRUE(
+      content::ExecuteScriptAndExtractString(frame_host, script, &result));
+  EXPECT_EQ("DONE", result);
+
+  EXPECT_TRUE(actions_bar->HidePopup());
 }
 
 }  // namespace

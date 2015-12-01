@@ -146,6 +146,16 @@ bool ExtensionViewHost::IsBackgroundPage() const {
 WebContents* ExtensionViewHost::OpenURLFromTab(
     WebContents* source,
     const OpenURLParams& params) {
+  // Supporting CURRENT_TAB is necessary for renderer-initiated, cross-site
+  // frame navigations with --isolate-extensions or --site-per-process.  These
+  // navigations cause cross-process transfers which utilize this function with
+  // CURRENT_TAB.  This means that the navigation should happen in the same
+  // ExtensionViewHost window.
+  bool is_transfer =
+      params.transferred_global_request_id != content::GlobalRequestID();
+  if (params.disposition == CURRENT_TAB && is_transfer)
+    return WebContentsDelegate::OpenURLFromTab(host_contents(), params);
+
   // Whitelist the dispositions we will allow to be opened.
   switch (params.disposition) {
     case SINGLETON_TAB:
