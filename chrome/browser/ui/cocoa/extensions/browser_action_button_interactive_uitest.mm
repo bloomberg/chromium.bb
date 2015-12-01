@@ -408,3 +408,50 @@ IN_PROC_BROWSER_TEST_F(BrowserActionButtonUiTest, TestOverflowContainerLayout) {
   resizeAndActivateWrench(kNumExtensions / 2, "GlobalError Half");
   resizeAndActivateWrench(1, "GlobalError One");
 }
+
+void AddExtensionWithMenuOpen(ToolbarController* toolbarController,
+                              ExtensionService* extensionService,
+                              const base::Closure& closure) {
+  AppMenuController* appMenuController =
+      [toolbarController appMenuController];
+
+  scoped_refptr<const extensions::Extension> extension =
+      extensions::extension_action_test_util::CreateActionExtension(
+          "extension",
+          extensions::extension_action_test_util::BROWSER_ACTION);
+  extensionService->AddExtension(extension.get());
+
+  base::RunLoop().RunUntilIdle();
+
+  // Close the app menu.
+  [appMenuController cancel];
+  EXPECT_FALSE([appMenuController isMenuOpen]);
+  base::MessageLoop::current()->PostTask(FROM_HERE, closure);
+}
+
+// Test adding an extension while the app menu is open. Regression test for
+// crbug.com/561237.
+IN_PROC_BROWSER_TEST_F(BrowserActionButtonUiTest, AddExtensionWithMenuOpen) {
+  // Add an extension to ensure the overflow menu is present.
+  scoped_refptr<const extensions::Extension> extension =
+      extensions::extension_action_test_util::CreateActionExtension(
+          "original extension",
+          extensions::extension_action_test_util::BROWSER_ACTION);
+  extension_service()->AddExtension(extension.get());
+  ASSERT_EQ(1, static_cast<int>(model()->toolbar_items().size()));
+  model()->SetVisibleIconCount(0);
+
+  MoveMouseToCenter(wrenchButton());
+
+  base::RunLoop runLoop;
+  // Click on the app menu, and pass in a callback to continue the test in
+  // AddExtensionWithMenuOpen (due to the blocking nature of Cocoa menus,
+  // passing in runLoop.QuitClosure() is not sufficient here.)
+  ui_controls::SendMouseEventsNotifyWhenDone(
+      ui_controls::LEFT, ui_controls::DOWN | ui_controls::UP,
+      base::Bind(&AddExtensionWithMenuOpen,
+                 base::Unretained(toolbarController()),
+                 extension_service(),
+                 runLoop.QuitClosure()));
+  runLoop.Run();
+}

@@ -5,7 +5,10 @@
 #import "chrome/browser/ui/cocoa/app_menu/app_menu_controller.h"
 
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/mac/bundle_locations.h"
+#include "base/memory/weak_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "base/strings/sys_string_conversions.h"
@@ -119,7 +122,8 @@ class ToolbarActionsBarObserverHelper : public ToolbarActionsBarObserver {
   ToolbarActionsBarObserverHelper(AppMenuController* controller,
                                   ToolbarActionsBar* toolbar_actions_bar)
       : controller_(controller),
-        scoped_observer_(this) {
+        scoped_observer_(this),
+        weak_ptr_factory_(this) {
     scoped_observer_.Add(toolbar_actions_bar);
   }
   ~ToolbarActionsBarObserverHelper() override {}
@@ -130,11 +134,24 @@ class ToolbarActionsBarObserverHelper : public ToolbarActionsBarObserver {
     scoped_observer_.RemoveAll();
   }
   void OnToolbarActionsBarDidStartResize() override {
+    // No point in having multiple pending update calls.
+    weak_ptr_factory_.InvalidateWeakPtrs();
+    // Edge case: If the resize is caused by an action being added while the
+    // menu is open, we need to wait for both toolbars to be updated. This can
+    // happen if a user's data is synced with the menu open.
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&ToolbarActionsBarObserverHelper::UpdateSubmenu,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
+
+  void UpdateSubmenu() {
     [controller_ updateBrowserActionsSubmenu];
   }
 
   AppMenuController* controller_;
   ScopedObserver<ToolbarActionsBar, ToolbarActionsBarObserver> scoped_observer_;
+  base::WeakPtrFactory<ToolbarActionsBarObserverHelper> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ToolbarActionsBarObserverHelper);
 };

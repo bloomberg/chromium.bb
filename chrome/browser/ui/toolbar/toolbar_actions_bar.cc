@@ -78,7 +78,7 @@ template<typename Type1, typename Type2, typename FunctionType>
 void SortContainer(std::vector<Type1>* to_sort,
                    const std::vector<Type2>& reference,
                    FunctionType equal) {
-  DCHECK_GE(to_sort->size(), reference.size()) <<
+  CHECK_GE(to_sort->size(), reference.size()) <<
       "|to_sort| must contain all elements in |reference|.";
   if (reference.empty())
     return;
