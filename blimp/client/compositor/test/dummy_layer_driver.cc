@@ -8,6 +8,7 @@
 #include "base/location.h"
 #include "base/task_runner.h"
 #include "base/thread_task_runner_handle.h"
+#include "blimp/client/compositor/blimp_compositor.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_settings.h"
 #include "cc/layers/solid_color_layer.h"
@@ -17,7 +18,7 @@
 namespace blimp {
 
 DummyLayerDriver::DummyLayerDriver()
-    : layer_(cc::SolidColorLayer::Create(cc::LayerSettings())),
+    : layer_(cc::SolidColorLayer::Create(BlimpCompositor::LayerSettings())),
       animation_running_(false),
       weak_factory_(this) {
   layer_->SetIsDrawable(true);

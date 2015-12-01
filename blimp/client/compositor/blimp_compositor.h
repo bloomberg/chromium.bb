@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "blimp/client/blimp_client_export.h"
 #include "blimp/client/compositor/render_widget_message_processor.h"
+#include "cc/layers/layer_settings.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "cc/trees/remote_proto_channel.h"
@@ -45,6 +46,9 @@ class BLIMP_CLIENT_EXPORT BlimpCompositor
 
  public:
   ~BlimpCompositor() override;
+
+  // Default layer settings for all Blimp layer instances.
+  static cc::LayerSettings LayerSettings();
 
   // Sets whether or not this compositor actually draws to the output surface.
   // Setting this to false will make the compositor drop all of its resources

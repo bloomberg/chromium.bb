@@ -101,6 +101,9 @@ void PopulateCommonLayerTreeSettings(cc::LayerTreeSettings* settings) {
   // TODO(dtrainor): Update this since https://crrev.com/1267603004 landed.
   // settings->scrollbar_show_scale_threshold = 1.05f;
 #endif
+
+  // Blimp always uses new cc::AnimationHost system.
+  settings->use_compositor_animation_timelines = true;
 }
 
 }  // namespace blimp

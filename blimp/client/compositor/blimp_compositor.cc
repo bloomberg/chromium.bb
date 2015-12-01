@@ -239,7 +239,8 @@ void BlimpCompositor::CreateLayerTreeHost(
   host_->SetDeviceScaleFactor(device_scale_factor_);
 
   // For testing, set the dummy Layer.
-  scoped_refptr<cc::Layer> root(cc::Layer::Create(cc::LayerSettings()));
+  scoped_refptr<cc::Layer> root(
+      cc::Layer::Create(BlimpCompositor::LayerSettings()));
   host_->SetRootLayer(root);
   g_dummy_layer_driver.Pointer()->SetParentLayer(root);
 }
@@ -282,6 +283,12 @@ void BlimpCompositor::HandlePendingOutputSurfaceRequest() {
   host_->SetOutputSurface(
       make_scoped_ptr(new BlimpOutputSurface(context_provider)));
   output_surface_request_pending_ = false;
+}
+
+cc::LayerSettings BlimpCompositor::LayerSettings() {
+  cc::LayerSettings settings;
+  settings.use_compositor_animation_timelines = true;
+  return settings;
 }
 
 }  // namespace blimp
