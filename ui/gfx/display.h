@@ -51,6 +51,8 @@ class GFX_EXPORT Display {
     TOUCH_SUPPORT_UNAVAILABLE,
   };
 
+  enum : int64 { kInvalidDisplayID = -1 };
+
   // Creates a display with kInvalidDisplayID as default.
   Display();
   explicit Display(int64 id);
@@ -141,8 +143,6 @@ class GFX_EXPORT Display {
 
   // True if there is an internal display.
   static bool HasInternalDisplay();
-
-  static const int64 kInvalidDisplayID;
 
  private:
   int64 id_;

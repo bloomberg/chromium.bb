@@ -22,6 +22,10 @@
 
 namespace {
 
+// Used for indicating that the .ico contains an icon (rather than a cursor)
+// image. This value is set in the |idType| field of the ICONDIR structure.
+const int kResourceTypeIcon = 1;
+
 struct ScopedICONINFO : ICONINFO {
   ScopedICONINFO() {
     hbmColor = NULL;

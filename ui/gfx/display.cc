@@ -52,8 +52,6 @@ int64 internal_display_id_ = -1;
 
 }  // namespace
 
-const int64 Display::kInvalidDisplayID = -1;
-
 // static
 float Display::GetForcedDeviceScaleFactor() {
   if (g_forced_device_scale_factor < 0)

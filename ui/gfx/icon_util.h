@@ -205,10 +205,6 @@ class GFX_EXPORT IconUtil {
 
   friend class IconUtilTest;
 
-  // Used for indicating that the .ico contains an icon (rather than a cursor)
-  // image. This value is set in the |idType| field of the ICONDIR structure.
-  static const int kResourceTypeIcon = 1;
-
   // Returns true if any pixel in the given pixels buffer has an non-zero alpha.
   static bool PixelsHaveAlpha(const uint32* pixels, size_t num_pixels);
 
