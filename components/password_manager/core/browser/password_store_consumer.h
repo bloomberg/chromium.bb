@@ -32,7 +32,7 @@ class PasswordStoreConsumer {
   virtual void OnGetPasswordStoreResults(
       ScopedVector<autofill::PasswordForm> results) = 0;
 
-  // TODO(crbug.com/562554): The argument's type would ideally be just
+  // TODO(crbug.com/561749): The argument's type would ideally be just
   // std::vector<scoped_ptr<InteractionsStats>>, but currently it is not
   // possible to pass that into a callback.
   virtual void OnGetSiteStatistics(
