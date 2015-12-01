@@ -50,6 +50,7 @@ AddLibcTest(env, 'uname.c')
 AddLibcTest(env, 'snprintf.c', golden_file=env.File('snprintf.stdout'))
 AddLibcTest(env, 'strtoll.c')
 AddLibcTest(env, 'strtoull.c')
+AddLibcTest(env, 'timezone.c')
 AddLibcTest(env, 'wcstoll.c', is_broken=env.Bit('nacl_glibc'))
 
 iconv_broken = (env.Bit('nacl_glibc') or
