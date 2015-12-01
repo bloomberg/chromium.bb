@@ -545,6 +545,7 @@ mojom("mojo_bindings") {
   import_dirs = [ "//mojo/services" ]
 
   deps = [
+    "//components/mus/public/interfaces",
     "//content/public/common:mojo_bindings",
     "//mojo/application/public/interfaces",
     "//skia/public/interfaces",
