@@ -82,7 +82,7 @@ public:
     static bool expandHashTableBacking(void*, size_t);
 
     template <typename Return, typename Metadata>
-    static Return malloc(size_t size)
+    static Return malloc(size_t size, const char* typeName)
     {
         return reinterpret_cast<Return>(Heap::allocate<Metadata>(size, IsEagerlyFinalizedType<Metadata>::value));
     }
@@ -229,7 +229,7 @@ public:
         // Consider using a LinkedHashSet instead if this compile-time assert fails:
         static_assert(!WTF::IsWeak<ValueArg>::value, "weak pointers in a ListHashSet will result in null entries in the set");
 
-        return malloc<void*, Node>(sizeof(Node));
+        return malloc<void*, Node>(sizeof(Node), nullptr /* Oilpan does not use the heap profiler at the moment. */);
     }
 
     template<typename VisitorDispatcher>

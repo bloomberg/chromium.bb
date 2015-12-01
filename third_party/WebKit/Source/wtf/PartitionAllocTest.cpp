@@ -71,6 +71,8 @@ const size_t kExtraAllocSize = WTF::kCookieSize * 2;
 const size_t kRealAllocSize = kTestAllocSize + kExtraAllocSize;
 const size_t kTestBucketIndex = kRealAllocSize >> WTF::kBucketShift;
 
+const char* kTypeName = nullptr;
+
 void TestSetup()
 {
     allocator.init();
@@ -137,7 +139,7 @@ PartitionPage* GetFullPage(size_t size)
     void* last = 0;
     size_t i;
     for (i = 0; i < numSlots; ++i) {
-        void* ptr = partitionAlloc(allocator.root(), size);
+        void* ptr = partitionAlloc(allocator.root(), size, kTypeName);
         EXPECT_TRUE(ptr);
         if (!i)
             first = partitionCookieFreePointerAdjust(ptr);
@@ -175,7 +177,7 @@ void CycleFreeCache(size_t size)
     ASSERT(!bucket->activePagesHead->numAllocatedSlots);
 
     for (size_t i = 0; i < kMaxFreeableSpans; ++i) {
-        void* ptr = partitionAlloc(allocator.root(), size);
+        void* ptr = partitionAlloc(allocator.root(), size, kTypeName);
         EXPECT_EQ(1, bucket->activePagesHead->numAllocatedSlots);
         partitionFree(ptr);
         EXPECT_EQ(0, bucket->activePagesHead->numAllocatedSlots);
@@ -186,7 +188,7 @@ void CycleFreeCache(size_t size)
 void CycleGenericFreeCache(size_t size)
 {
     for (size_t i = 0; i < kMaxFreeableSpans; ++i) {
-        void* ptr = partitionAllocGeneric(genericAllocator.root(), size);
+        void* ptr = partitionAllocGeneric(genericAllocator.root(), size, kTypeName);
         PartitionPage* page = partitionPointerToPage(partitionCookieFreePointerAdjust(ptr));
         PartitionBucket* bucket = page->bucket;
         EXPECT_EQ(1, bucket->activePagesHead->numAllocatedSlots);
@@ -271,7 +273,7 @@ TEST(PartitionAllocTest, Basic)
     EXPECT_EQ(seedPage, bucket->activePagesHead);
     EXPECT_EQ(0, bucket->activePagesHead->nextPage);
 
-    void* ptr = partitionAlloc(allocator.root(), kTestAllocSize);
+    void* ptr = partitionAlloc(allocator.root(), kTestAllocSize, kTypeName);
     EXPECT_TRUE(ptr);
     EXPECT_EQ(kPointerOffset, reinterpret_cast<size_t>(ptr) & kPartitionPageOffsetMask);
     // Check that the offset appears to include a guard page.
@@ -290,9 +292,9 @@ TEST(PartitionAllocTest, Basic)
 TEST(PartitionAllocTest, SimpleLeak)
 {
     TestSetup();
-    void* leakedPtr = partitionAlloc(allocator.root(), kTestAllocSize);
+    void* leakedPtr = partitionAlloc(allocator.root(), kTestAllocSize, kTypeName);
     (void)leakedPtr;
-    void* leakedPtr2 = partitionAllocGeneric(genericAllocator.root(), kTestAllocSize);
+    void* leakedPtr2 = partitionAllocGeneric(genericAllocator.root(), kTestAllocSize, kTypeName);
     (void)leakedPtr2;
     EXPECT_FALSE(allocator.shutdown());
     EXPECT_FALSE(genericAllocator.shutdown());
@@ -303,8 +305,8 @@ TEST(PartitionAllocTest, MultiAlloc)
 {
     TestSetup();
 
-    char* ptr1 = reinterpret_cast<char*>(partitionAlloc(allocator.root(), kTestAllocSize));
-    char* ptr2 = reinterpret_cast<char*>(partitionAlloc(allocator.root(), kTestAllocSize));
+    char* ptr1 = reinterpret_cast<char*>(partitionAlloc(allocator.root(), kTestAllocSize, kTypeName));
+    char* ptr2 = reinterpret_cast<char*>(partitionAlloc(allocator.root(), kTestAllocSize, kTypeName));
     EXPECT_TRUE(ptr1);
     EXPECT_TRUE(ptr2);
     ptrdiff_t diff = ptr2 - ptr1;
@@ -312,17 +314,17 @@ TEST(PartitionAllocTest, MultiAlloc)
 
     // Check that we re-use the just-freed slot.
     partitionFree(ptr2);
-    ptr2 = reinterpret_cast<char*>(partitionAlloc(allocator.root(), kTestAllocSize));
+    ptr2 = reinterpret_cast<char*>(partitionAlloc(allocator.root(), kTestAllocSize, kTypeName));
     EXPECT_TRUE(ptr2);
     diff = ptr2 - ptr1;
     EXPECT_EQ(static_cast<ptrdiff_t>(kRealAllocSize), diff);
     partitionFree(ptr1);
-    ptr1 = reinterpret_cast<char*>(partitionAlloc(allocator.root(), kTestAllocSize));
+    ptr1 = reinterpret_cast<char*>(partitionAlloc(allocator.root(), kTestAllocSize, kTypeName));
     EXPECT_TRUE(ptr1);
     diff = ptr2 - ptr1;
     EXPECT_EQ(static_cast<ptrdiff_t>(kRealAllocSize), diff);
 
-    char* ptr3 = reinterpret_cast<char*>(partitionAlloc(allocator.root(), kTestAllocSize));
+    char* ptr3 = reinterpret_cast<char*>(partitionAlloc(allocator.root(), kTestAllocSize, kTypeName));
     EXPECT_TRUE(ptr3);
     diff = ptr3 - ptr1;
     EXPECT_EQ(static_cast<ptrdiff_t>(kRealAllocSize * 2), diff);
@@ -393,7 +395,7 @@ TEST(PartitionAllocTest, PageTransitions)
     char* ptr = reinterpret_cast<char*>(partitionPageToPointer(page1)) + kPointerOffset;
     partitionFree(ptr);
     EXPECT_EQ(page1, bucket->activePagesHead);
-    (void) partitionAlloc(allocator.root(), kTestAllocSize);
+    (void)partitionAlloc(allocator.root(), kTestAllocSize, kTypeName);
     EXPECT_EQ(page1, bucket->activePagesHead);
     EXPECT_EQ(page2, bucket->activePagesHead->nextPage);
 
@@ -409,7 +411,7 @@ TEST(PartitionAllocTest, PageTransitions)
     partitionFree(ptr);
     // Trying to allocate at this time should cause us to cycle around to page2
     // and find the recently freed slot.
-    char* newPtr = reinterpret_cast<char*>(partitionAlloc(allocator.root(), kTestAllocSize));
+    char* newPtr = reinterpret_cast<char*>(partitionAlloc(allocator.root(), kTestAllocSize, kTypeName));
     EXPECT_EQ(ptr, newPtr);
     EXPECT_EQ(page2, bucket->activePagesHead);
     EXPECT_EQ(page3, page2->nextPage);
@@ -419,7 +421,7 @@ TEST(PartitionAllocTest, PageTransitions)
     ptr = reinterpret_cast<char*>(partitionPageToPointer(page1)) + kPointerOffset;
     partitionFree(ptr);
     // This allocation should be satisfied by page1.
-    newPtr = reinterpret_cast<char*>(partitionAlloc(allocator.root(), kTestAllocSize));
+    newPtr = reinterpret_cast<char*>(partitionAlloc(allocator.root(), kTestAllocSize, kTypeName));
     EXPECT_EQ(ptr, newPtr);
     EXPECT_EQ(page1, bucket->activePagesHead);
     EXPECT_EQ(page2, page1->nextPage);
@@ -429,7 +431,7 @@ TEST(PartitionAllocTest, PageTransitions)
     FreeFullPage(page1);
 
     // Allocating whilst in this state exposed a bug, so keep the test.
-    ptr = reinterpret_cast<char*>(partitionAlloc(allocator.root(), kTestAllocSize));
+    ptr = reinterpret_cast<char*>(partitionAlloc(allocator.root(), kTestAllocSize, kTypeName));
     partitionFree(ptr);
 
     TestShutdown();
@@ -521,29 +523,29 @@ TEST(PartitionAllocTest, GenericAlloc)
 {
     TestSetup();
 
-    void* ptr = partitionAllocGeneric(genericAllocator.root(), 1);
+    void* ptr = partitionAllocGeneric(genericAllocator.root(), 1, kTypeName);
     EXPECT_TRUE(ptr);
     partitionFreeGeneric(genericAllocator.root(), ptr);
-    ptr = partitionAllocGeneric(genericAllocator.root(), kGenericMaxBucketed + 1);
+    ptr = partitionAllocGeneric(genericAllocator.root(), kGenericMaxBucketed + 1, kTypeName);
     EXPECT_TRUE(ptr);
     partitionFreeGeneric(genericAllocator.root(), ptr);
 
-    ptr = partitionAllocGeneric(genericAllocator.root(), 1);
+    ptr = partitionAllocGeneric(genericAllocator.root(), 1, kTypeName);
     EXPECT_TRUE(ptr);
     void* origPtr = ptr;
     char* charPtr = static_cast<char*>(ptr);
     *charPtr = 'A';
 
     // Change the size of the realloc, remaining inside the same bucket.
-    void* newPtr = partitionReallocGeneric(genericAllocator.root(), ptr, 2);
+    void* newPtr = partitionReallocGeneric(genericAllocator.root(), ptr, 2, kTypeName);
     EXPECT_EQ(ptr, newPtr);
-    newPtr = partitionReallocGeneric(genericAllocator.root(), ptr, 1);
+    newPtr = partitionReallocGeneric(genericAllocator.root(), ptr, 1, kTypeName);
     EXPECT_EQ(ptr, newPtr);
-    newPtr = partitionReallocGeneric(genericAllocator.root(), ptr, kGenericSmallestBucket);
+    newPtr = partitionReallocGeneric(genericAllocator.root(), ptr, kGenericSmallestBucket, kTypeName);
     EXPECT_EQ(ptr, newPtr);
 
     // Change the size of the realloc, switching buckets.
-    newPtr = partitionReallocGeneric(genericAllocator.root(), ptr, kGenericSmallestBucket + 1);
+    newPtr = partitionReallocGeneric(genericAllocator.root(), ptr, kGenericSmallestBucket + 1, kTypeName);
     EXPECT_NE(newPtr, ptr);
     // Check that the realloc copied correctly.
     char* newCharPtr = static_cast<char*>(newPtr);
@@ -558,13 +560,13 @@ TEST(PartitionAllocTest, GenericAlloc)
     // The realloc moved. To check that the old allocation was freed, we can
     // do an alloc of the old allocation size and check that the old allocation
     // address is at the head of the freelist and reused.
-    void* reusedPtr = partitionAllocGeneric(genericAllocator.root(), 1);
+    void* reusedPtr = partitionAllocGeneric(genericAllocator.root(), 1, kTypeName);
     EXPECT_EQ(reusedPtr, origPtr);
     partitionFreeGeneric(genericAllocator.root(), reusedPtr);
 
     // Downsize the realloc.
     ptr = newPtr;
-    newPtr = partitionReallocGeneric(genericAllocator.root(), ptr, 1);
+    newPtr = partitionReallocGeneric(genericAllocator.root(), ptr, 1, kTypeName);
     EXPECT_EQ(newPtr, origPtr);
     newCharPtr = static_cast<char*>(newPtr);
     EXPECT_EQ(*newCharPtr, 'B');
@@ -572,7 +574,7 @@ TEST(PartitionAllocTest, GenericAlloc)
 
     // Upsize the realloc to outside the partition.
     ptr = newPtr;
-    newPtr = partitionReallocGeneric(genericAllocator.root(), ptr, kGenericMaxBucketed + 1);
+    newPtr = partitionReallocGeneric(genericAllocator.root(), ptr, kGenericMaxBucketed + 1, kTypeName);
     EXPECT_NE(newPtr, ptr);
     newCharPtr = static_cast<char*>(newPtr);
     EXPECT_EQ(*newCharPtr, 'C');
@@ -580,19 +582,19 @@ TEST(PartitionAllocTest, GenericAlloc)
 
     // Upsize and downsize the realloc, remaining outside the partition.
     ptr = newPtr;
-    newPtr = partitionReallocGeneric(genericAllocator.root(), ptr, kGenericMaxBucketed * 10);
+    newPtr = partitionReallocGeneric(genericAllocator.root(), ptr, kGenericMaxBucketed * 10, kTypeName);
     newCharPtr = static_cast<char*>(newPtr);
     EXPECT_EQ(*newCharPtr, 'D');
     *newCharPtr = 'E';
     ptr = newPtr;
-    newPtr = partitionReallocGeneric(genericAllocator.root(), ptr, kGenericMaxBucketed * 2);
+    newPtr = partitionReallocGeneric(genericAllocator.root(), ptr, kGenericMaxBucketed * 2, kTypeName);
     newCharPtr = static_cast<char*>(newPtr);
     EXPECT_EQ(*newCharPtr, 'E');
     *newCharPtr = 'F';
 
     // Downsize the realloc to inside the partition.
     ptr = newPtr;
-    newPtr = partitionReallocGeneric(genericAllocator.root(), ptr, 1);
+    newPtr = partitionReallocGeneric(genericAllocator.root(), ptr, 1, kTypeName);
     EXPECT_NE(newPtr, ptr);
     EXPECT_EQ(newPtr, origPtr);
     newCharPtr = static_cast<char*>(newPtr);
@@ -608,16 +610,16 @@ TEST(PartitionAllocTest, GenericAllocSizes)
 {
     TestSetup();
 
-    void* ptr = partitionAllocGeneric(genericAllocator.root(), 0);
+    void* ptr = partitionAllocGeneric(genericAllocator.root(), 0, kTypeName);
     EXPECT_TRUE(ptr);
     partitionFreeGeneric(genericAllocator.root(), ptr);
 
     // kPartitionPageSize is interesting because it results in just one
     // allocation per page, which tripped up some corner cases.
     size_t size = kPartitionPageSize - kExtraAllocSize;
-    ptr = partitionAllocGeneric(genericAllocator.root(), size);
+    ptr = partitionAllocGeneric(genericAllocator.root(), size, kTypeName);
     EXPECT_TRUE(ptr);
-    void* ptr2 = partitionAllocGeneric(genericAllocator.root(), size);
+    void* ptr2 = partitionAllocGeneric(genericAllocator.root(), size, kTypeName);
     EXPECT_TRUE(ptr2);
     partitionFreeGeneric(genericAllocator.root(), ptr);
     // Should be freeable at this point.
@@ -626,14 +628,14 @@ TEST(PartitionAllocTest, GenericAllocSizes)
     partitionFreeGeneric(genericAllocator.root(), ptr2);
 
     size = (((kPartitionPageSize * kMaxPartitionPagesPerSlotSpan) - kSystemPageSize) / 2) - kExtraAllocSize;
-    ptr = partitionAllocGeneric(genericAllocator.root(), size);
+    ptr = partitionAllocGeneric(genericAllocator.root(), size, kTypeName);
     EXPECT_TRUE(ptr);
     memset(ptr, 'A', size);
-    ptr2 = partitionAllocGeneric(genericAllocator.root(), size);
+    ptr2 = partitionAllocGeneric(genericAllocator.root(), size, kTypeName);
     EXPECT_TRUE(ptr2);
-    void* ptr3 = partitionAllocGeneric(genericAllocator.root(), size);
+    void* ptr3 = partitionAllocGeneric(genericAllocator.root(), size, kTypeName);
     EXPECT_TRUE(ptr3);
-    void* ptr4 = partitionAllocGeneric(genericAllocator.root(), size);
+    void* ptr4 = partitionAllocGeneric(genericAllocator.root(), size, kTypeName);
     EXPECT_TRUE(ptr4);
 
     page = partitionPointerToPage(partitionCookieFreePointerAdjust(ptr));
@@ -647,9 +649,9 @@ TEST(PartitionAllocTest, GenericAllocSizes)
     EXPECT_NE(-1, page->emptyCacheIndex);
     EXPECT_EQ(0, page->numAllocatedSlots);
     EXPECT_EQ(0, page->numUnprovisionedSlots);
-    void* newPtr = partitionAllocGeneric(genericAllocator.root(), size);
+    void* newPtr = partitionAllocGeneric(genericAllocator.root(), size, kTypeName);
     EXPECT_EQ(ptr3, newPtr);
-    newPtr = partitionAllocGeneric(genericAllocator.root(), size);
+    newPtr = partitionAllocGeneric(genericAllocator.root(), size, kTypeName);
     EXPECT_EQ(ptr2, newPtr);
 #if OS(LINUX) && !ENABLE(ASSERT)
     // On Linux, we have a guarantee that freelisting a page should cause its
@@ -667,7 +669,7 @@ TEST(PartitionAllocTest, GenericAllocSizes)
 
     // Can we allocate a massive (512MB) size?
     // Allocate 512MB, but +1, to test for cookie writing alignment issues.
-    ptr = partitionAllocGeneric(genericAllocator.root(), 512 * 1024 * 1024 + 1);
+    ptr = partitionAllocGeneric(genericAllocator.root(), 512 * 1024 * 1024 + 1, kTypeName);
     partitionFreeGeneric(genericAllocator.root(), ptr);
 
     // Check a more reasonable, but still direct mapped, size.
@@ -675,7 +677,7 @@ TEST(PartitionAllocTest, GenericAllocSizes)
     size = 20 * 1024 * 1024;
     size -= kSystemPageSize;
     size -= 1;
-    ptr = partitionAllocGeneric(genericAllocator.root(), size);
+    ptr = partitionAllocGeneric(genericAllocator.root(), size, kTypeName);
     char* charPtr = reinterpret_cast<char*>(ptr);
     *(charPtr + (size - 1)) = 'A';
     partitionFreeGeneric(genericAllocator.root(), ptr);
@@ -684,7 +686,7 @@ TEST(PartitionAllocTest, GenericAllocSizes)
     partitionFreeGeneric(genericAllocator.root(), 0);
 
     // Do we correctly get a null for a failed allocation?
-    EXPECT_EQ(0, partitionAllocGenericFlags(genericAllocator.root(), PartitionAllocReturnNull, 3u * 1024 * 1024 * 1024));
+    EXPECT_EQ(0, partitionAllocGenericFlags(genericAllocator.root(), PartitionAllocReturnNull, 3u * 1024 * 1024 * 1024, kTypeName));
 
     TestShutdown();
 }
@@ -702,7 +704,7 @@ TEST(PartitionAllocTest, GenericAllocGetSize)
     // Allocate something small.
     requestedSize = 511 - kExtraAllocSize;
     predictedSize = partitionAllocActualSize(genericAllocator.root(), requestedSize);
-    ptr = partitionAllocGeneric(genericAllocator.root(), requestedSize);
+    ptr = partitionAllocGeneric(genericAllocator.root(), requestedSize, kTypeName);
     EXPECT_TRUE(ptr);
     actualSize = partitionAllocGetSize(ptr);
     EXPECT_EQ(predictedSize, actualSize);
@@ -713,7 +715,7 @@ TEST(PartitionAllocTest, GenericAllocGetSize)
     // is an exact power of 2.
     requestedSize = (256 * 1024) - kExtraAllocSize;
     predictedSize = partitionAllocActualSize(genericAllocator.root(), requestedSize);
-    ptr = partitionAllocGeneric(genericAllocator.root(), requestedSize);
+    ptr = partitionAllocGeneric(genericAllocator.root(), requestedSize, kTypeName);
     EXPECT_TRUE(ptr);
     actualSize = partitionAllocGetSize(ptr);
     EXPECT_EQ(predictedSize, actualSize);
@@ -724,7 +726,7 @@ TEST(PartitionAllocTest, GenericAllocGetSize)
     // should return a larger size than we asked for now.
     requestedSize = (256 * 1024) - kSystemPageSize - kExtraAllocSize;
     predictedSize = partitionAllocActualSize(genericAllocator.root(), requestedSize);
-    ptr = partitionAllocGeneric(genericAllocator.root(), requestedSize);
+    ptr = partitionAllocGeneric(genericAllocator.root(), requestedSize, kTypeName);
     EXPECT_TRUE(ptr);
     actualSize = partitionAllocGetSize(ptr);
     EXPECT_EQ(predictedSize, actualSize);
@@ -737,7 +739,7 @@ TEST(PartitionAllocTest, GenericAllocGetSize)
     // Allocate something very large, and uneven.
     requestedSize = 512 * 1024 * 1024 - 1;
     predictedSize = partitionAllocActualSize(genericAllocator.root(), requestedSize);
-    ptr = partitionAllocGeneric(genericAllocator.root(), requestedSize);
+    ptr = partitionAllocGeneric(genericAllocator.root(), requestedSize, kTypeName);
     EXPECT_TRUE(ptr);
     actualSize = partitionAllocGetSize(ptr);
     EXPECT_EQ(predictedSize, actualSize);
@@ -758,11 +760,11 @@ TEST(PartitionAllocTest, Realloc)
     TestSetup();
 
     // realloc(0, size) should be equivalent to malloc().
-    void* ptr = partitionReallocGeneric(genericAllocator.root(), 0, kTestAllocSize);
+    void* ptr = partitionReallocGeneric(genericAllocator.root(), 0, kTestAllocSize, kTypeName);
     memset(ptr, 'A', kTestAllocSize);
     PartitionPage* page = partitionPointerToPage(partitionCookieFreePointerAdjust(ptr));
     // realloc(ptr, 0) should be equivalent to free().
-    void* ptr2 = partitionReallocGeneric(genericAllocator.root(), ptr, 0);
+    void* ptr2 = partitionReallocGeneric(genericAllocator.root(), ptr, 0, kTypeName);
     EXPECT_EQ(0, ptr2);
     EXPECT_EQ(partitionCookieFreePointerAdjust(ptr), page->freelistHead);
 
@@ -770,9 +772,9 @@ TEST(PartitionAllocTest, Realloc)
     // old allocation.
     size_t size = kSystemPageSize - kExtraAllocSize;
     EXPECT_EQ(size, partitionAllocActualSize(genericAllocator.root(), size));
-    ptr = partitionAllocGeneric(genericAllocator.root(), size);
+    ptr = partitionAllocGeneric(genericAllocator.root(), size, kTypeName);
     memset(ptr, 'A', size);
-    ptr2 = partitionReallocGeneric(genericAllocator.root(), ptr, size + 1);
+    ptr2 = partitionReallocGeneric(genericAllocator.root(), ptr, size + 1, kTypeName);
     EXPECT_NE(ptr, ptr2);
     char* charPtr2 = static_cast<char*>(ptr2);
     EXPECT_EQ('A', charPtr2[0]);
@@ -783,7 +785,7 @@ TEST(PartitionAllocTest, Realloc)
 
     // Test that shrinking an allocation with realloc() also copies everything
     // from the old allocation.
-    ptr = partitionReallocGeneric(genericAllocator.root(), ptr2, size - 1);
+    ptr = partitionReallocGeneric(genericAllocator.root(), ptr2, size - 1, kTypeName);
     EXPECT_NE(ptr2, ptr);
     char* charPtr = static_cast<char*>(ptr);
     EXPECT_EQ('A', charPtr[0]);
@@ -796,21 +798,21 @@ TEST(PartitionAllocTest, Realloc)
 
     // Test that shrinking a direct mapped allocation happens in-place.
     size = kGenericMaxBucketed + 16 * kSystemPageSize;
-    ptr = partitionAllocGeneric(genericAllocator.root(), size);
+    ptr = partitionAllocGeneric(genericAllocator.root(), size, kTypeName);
     size_t actualSize = partitionAllocGetSize(ptr);
-    ptr2 = partitionReallocGeneric(genericAllocator.root(), ptr, kGenericMaxBucketed + 8 * kSystemPageSize);
+    ptr2 = partitionReallocGeneric(genericAllocator.root(), ptr, kGenericMaxBucketed + 8 * kSystemPageSize, kTypeName);
     EXPECT_EQ(ptr, ptr2);
     EXPECT_EQ(actualSize - 8 * kSystemPageSize, partitionAllocGetSize(ptr2));
 
     // Test that a previously in-place shrunk direct mapped allocation can be
     // expanded up again within its original size.
-    ptr = partitionReallocGeneric(genericAllocator.root(), ptr2, size - kSystemPageSize);
+    ptr = partitionReallocGeneric(genericAllocator.root(), ptr2, size - kSystemPageSize, kTypeName);
     EXPECT_EQ(ptr2, ptr);
     EXPECT_EQ(actualSize - kSystemPageSize, partitionAllocGetSize(ptr));
 
     // Test that a direct mapped allocation is performed not in-place when the
     // new size is small enough.
-    ptr2 = partitionReallocGeneric(genericAllocator.root(), ptr, kSystemPageSize);
+    ptr2 = partitionReallocGeneric(genericAllocator.root(), ptr, kSystemPageSize, kTypeName);
     EXPECT_NE(ptr, ptr2);
 
     partitionFreeGeneric(genericAllocator.root(), ptr2);
@@ -829,7 +831,7 @@ TEST(PartitionAllocTest, PartialPageFreelists)
     PartitionBucket* bucket = &allocator.root()->buckets()[bucketIdx];
     EXPECT_EQ(0, bucket->emptyPagesHead);
 
-    void* ptr = partitionAlloc(allocator.root(), bigSize);
+    void* ptr = partitionAlloc(allocator.root(), bigSize, kTypeName);
     EXPECT_TRUE(ptr);
 
     PartitionPage* page = partitionPointerToPage(partitionCookieFreePointerAdjust(ptr));
@@ -842,25 +844,25 @@ TEST(PartitionAllocTest, PartialPageFreelists)
     EXPECT_EQ(1, page->numAllocatedSlots);
     EXPECT_EQ(2, page->numUnprovisionedSlots);
 
-    void* ptr2 = partitionAlloc(allocator.root(), bigSize);
+    void* ptr2 = partitionAlloc(allocator.root(), bigSize, kTypeName);
     EXPECT_TRUE(ptr2);
     EXPECT_FALSE(page->freelistHead);
     EXPECT_EQ(2, page->numAllocatedSlots);
     EXPECT_EQ(2, page->numUnprovisionedSlots);
 
-    void* ptr3 = partitionAlloc(allocator.root(), bigSize);
+    void* ptr3 = partitionAlloc(allocator.root(), bigSize, kTypeName);
     EXPECT_TRUE(ptr3);
     EXPECT_TRUE(page->freelistHead);
     EXPECT_EQ(3, page->numAllocatedSlots);
     EXPECT_EQ(0, page->numUnprovisionedSlots);
 
-    void* ptr4 = partitionAlloc(allocator.root(), bigSize);
+    void* ptr4 = partitionAlloc(allocator.root(), bigSize, kTypeName);
     EXPECT_TRUE(ptr4);
     EXPECT_FALSE(page->freelistHead);
     EXPECT_EQ(4, page->numAllocatedSlots);
     EXPECT_EQ(0, page->numUnprovisionedSlots);
 
-    void* ptr5 = partitionAlloc(allocator.root(), bigSize);
+    void* ptr5 = partitionAlloc(allocator.root(), bigSize, kTypeName);
     EXPECT_TRUE(ptr5);
 
     PartitionPage* page2 = partitionPointerToPage(partitionCookieFreePointerAdjust(ptr5));
@@ -868,8 +870,8 @@ TEST(PartitionAllocTest, PartialPageFreelists)
 
     // Churn things a little whilst there's a partial page freelist.
     partitionFree(ptr);
-    ptr = partitionAlloc(allocator.root(), bigSize);
-    void* ptr6 = partitionAlloc(allocator.root(), bigSize);
+    ptr = partitionAlloc(allocator.root(), bigSize, kTypeName);
+    void* ptr6 = partitionAlloc(allocator.root(), bigSize, kTypeName);
 
     partitionFree(ptr);
     partitionFree(ptr2);
@@ -888,7 +890,7 @@ TEST(PartitionAllocTest, PartialPageFreelists)
     bucket = &allocator.root()->buckets()[bucketIdx];
     EXPECT_EQ(0, bucket->emptyPagesHead);
 
-    ptr = partitionAlloc(allocator.root(), mediumSize);
+    ptr = partitionAlloc(allocator.root(), mediumSize, kTypeName);
     EXPECT_TRUE(ptr);
     page = partitionPointerToPage(partitionCookieFreePointerAdjust(ptr));
     EXPECT_EQ(1, page->numAllocatedSlots);
@@ -904,7 +906,7 @@ TEST(PartitionAllocTest, PartialPageFreelists)
     bucket = &allocator.root()->buckets()[bucketIdx];
     EXPECT_EQ(0, bucket->emptyPagesHead);
 
-    ptr = partitionAlloc(allocator.root(), smallSize);
+    ptr = partitionAlloc(allocator.root(), smallSize, kTypeName);
     EXPECT_TRUE(ptr);
     page = partitionPointerToPage(partitionCookieFreePointerAdjust(ptr));
     EXPECT_EQ(1, page->numAllocatedSlots);
@@ -921,7 +923,7 @@ TEST(PartitionAllocTest, PartialPageFreelists)
     bucket = &allocator.root()->buckets()[bucketIdx];
     EXPECT_EQ(0, bucket->emptyPagesHead);
 
-    ptr = partitionAlloc(allocator.root(), verySmallSize);
+    ptr = partitionAlloc(allocator.root(), verySmallSize, kTypeName);
     EXPECT_TRUE(ptr);
     page = partitionPointerToPage(partitionCookieFreePointerAdjust(ptr));
     EXPECT_EQ(1, page->numAllocatedSlots);
@@ -936,7 +938,7 @@ TEST(PartitionAllocTest, PartialPageFreelists)
     // And try an allocation size (against the generic allocator) that is
     // larger than a system page.
     size_t pageAndAHalfSize = (kSystemPageSize + (kSystemPageSize / 2)) - kExtraAllocSize;
-    ptr = partitionAllocGeneric(genericAllocator.root(), pageAndAHalfSize);
+    ptr = partitionAllocGeneric(genericAllocator.root(), pageAndAHalfSize, kTypeName);
     EXPECT_TRUE(ptr);
     page = partitionPointerToPage(partitionCookieFreePointerAdjust(ptr));
     EXPECT_EQ(1, page->numAllocatedSlots);
@@ -947,7 +949,7 @@ TEST(PartitionAllocTest, PartialPageFreelists)
 
     // And then make sure than exactly the page size only faults one page.
     size_t pageSize = kSystemPageSize - kExtraAllocSize;
-    ptr = partitionAllocGeneric(genericAllocator.root(), pageSize);
+    ptr = partitionAllocGeneric(genericAllocator.root(), pageSize, kTypeName);
     EXPECT_TRUE(ptr);
     page = partitionPointerToPage(partitionCookieFreePointerAdjust(ptr));
     EXPECT_EQ(1, page->numAllocatedSlots);
@@ -968,7 +970,7 @@ TEST(PartitionAllocTest, PageRefilling)
     // Grab two full pages and a non-full page.
     PartitionPage* page1 = GetFullPage(kTestAllocSize);
     PartitionPage* page2 = GetFullPage(kTestAllocSize);
-    void* ptr = partitionAlloc(allocator.root(), kTestAllocSize);
+    void* ptr = partitionAlloc(allocator.root(), kTestAllocSize, kTypeName);
     EXPECT_TRUE(ptr);
     EXPECT_NE(page1, bucket->activePagesHead);
     EXPECT_NE(page2, bucket->activePagesHead);
@@ -983,8 +985,8 @@ TEST(PartitionAllocTest, PageRefilling)
 
     // If we perform two allocations from the same bucket now, we expect to
     // refill both the nearly full pages.
-    (void) partitionAlloc(allocator.root(), kTestAllocSize);
-    (void) partitionAlloc(allocator.root(), kTestAllocSize);
+    (void)partitionAlloc(allocator.root(), kTestAllocSize, kTypeName);
+    (void)partitionAlloc(allocator.root(), kTestAllocSize, kTypeName);
     EXPECT_EQ(1, page->numAllocatedSlots);
 
     FreeFullPage(page2);
@@ -1090,7 +1092,7 @@ TEST(PartitionAllocTest, FreeCache)
     size_t bucketIdx = (bigSize + kExtraAllocSize) >> kBucketShift;
     PartitionBucket* bucket = &allocator.root()->buckets()[bucketIdx];
 
-    void* ptr = partitionAlloc(allocator.root(), bigSize);
+    void* ptr = partitionAlloc(allocator.root(), bigSize, kTypeName);
     EXPECT_TRUE(ptr);
     PartitionPage* page = partitionPointerToPage(partitionCookieFreePointerAdjust(ptr));
     EXPECT_EQ(0, bucket->emptyPagesHead);
@@ -1112,14 +1114,14 @@ TEST(PartitionAllocTest, FreeCache)
 
     // Check that an allocation works ok whilst in this state (a free'd page
     // as the active pages head).
-    ptr = partitionAlloc(allocator.root(), bigSize);
+    ptr = partitionAlloc(allocator.root(), bigSize, kTypeName);
     EXPECT_FALSE(bucket->emptyPagesHead);
     partitionFree(ptr);
 
     // Also check that a page that is bouncing immediately between empty and
     // used does not get freed.
     for (size_t i = 0; i < kMaxFreeableSpans * 2; ++i) {
-        ptr = partitionAlloc(allocator.root(), bigSize);
+        ptr = partitionAlloc(allocator.root(), bigSize, kTypeName);
         EXPECT_TRUE(page->freelistHead);
         partitionFree(ptr);
         EXPECT_TRUE(page->freelistHead);
@@ -1135,9 +1137,9 @@ TEST(PartitionAllocTest, LostFreePagesBug)
 
     size_t size = kPartitionPageSize - kExtraAllocSize;
 
-    void* ptr = partitionAllocGeneric(genericAllocator.root(), size);
+    void* ptr = partitionAllocGeneric(genericAllocator.root(), size, kTypeName);
     EXPECT_TRUE(ptr);
-    void* ptr2 = partitionAllocGeneric(genericAllocator.root(), size);
+    void* ptr2 = partitionAllocGeneric(genericAllocator.root(), size, kTypeName);
     EXPECT_TRUE(ptr2);
 
     PartitionPage* page = partitionPointerToPage(partitionCookieFreePointerAdjust(ptr));
@@ -1168,7 +1170,7 @@ TEST(PartitionAllocTest, LostFreePagesBug)
     EXPECT_EQ(&PartitionRootGeneric::gSeedPage, bucket->activePagesHead);
 
     // At this moment, we have two decommitted pages, on the empty list.
-    ptr = partitionAllocGeneric(genericAllocator.root(), size);
+    ptr = partitionAllocGeneric(genericAllocator.root(), size, kTypeName);
     EXPECT_TRUE(ptr);
     partitionFreeGeneric(genericAllocator.root(), ptr);
 
@@ -1181,7 +1183,7 @@ TEST(PartitionAllocTest, LostFreePagesBug)
     // We're now set up to trigger a historical bug by scanning over the active
     // pages list. The current code gets into a different state, but we'll keep
     // the test as being an interesting corner case.
-    ptr = partitionAllocGeneric(genericAllocator.root(), size);
+    ptr = partitionAllocGeneric(genericAllocator.root(), size, kTypeName);
     EXPECT_TRUE(ptr);
     partitionFreeGeneric(genericAllocator.root(), ptr);
 
@@ -1203,15 +1205,15 @@ static void DoReturnNullTest(size_t allocSize)
     // Work out the number of allocations for 6 GB of memory.
     const int numAllocations = (6 * 1024 * 1024) / (allocSize / 1024);
 
-    void** ptrs = reinterpret_cast<void**>(partitionAllocGeneric(genericAllocator.root(), numAllocations * sizeof(void*)));
+    void** ptrs = reinterpret_cast<void**>(partitionAllocGeneric(genericAllocator.root(), numAllocations * sizeof(void*), kTypeName));
     int i;
 
     for (i = 0; i < numAllocations; ++i) {
-        ptrs[i] = partitionAllocGenericFlags(genericAllocator.root(), PartitionAllocReturnNull, allocSize);
+        ptrs[i] = partitionAllocGenericFlags(genericAllocator.root(), PartitionAllocReturnNull, allocSize, kTypeName);
         if (!i)
             EXPECT_TRUE(ptrs[0]);
         if (!ptrs[i]) {
-            ptrs[i] = partitionAllocGenericFlags(genericAllocator.root(), PartitionAllocReturnNull, allocSize);
+            ptrs[i] = partitionAllocGenericFlags(genericAllocator.root(), PartitionAllocReturnNull, allocSize, kTypeName);
             EXPECT_FALSE(ptrs[i]);
             break;
         }
@@ -1225,7 +1227,7 @@ static void DoReturnNullTest(size_t allocSize)
     // check that freeing memory also works correctly after a failed allocation.
     for (--i; i >= 0; --i) {
         partitionFreeGeneric(genericAllocator.root(), ptrs[i]);
-        ptrs[i] = partitionAllocGenericFlags(genericAllocator.root(), PartitionAllocReturnNull, allocSize);
+        ptrs[i] = partitionAllocGenericFlags(genericAllocator.root(), PartitionAllocReturnNull, allocSize, kTypeName);
         EXPECT_TRUE(ptrs[i]);
         partitionFreeGeneric(genericAllocator.root(), ptrs[i]);
     }
@@ -1275,9 +1277,9 @@ TEST(PartitionAllocDeathTest, LargeAllocs)
 {
     TestSetup();
     // Largest alloc.
-    EXPECT_DEATH(partitionAllocGeneric(genericAllocator.root(), static_cast<size_t>(-1)), "");
+    EXPECT_DEATH(partitionAllocGeneric(genericAllocator.root(), static_cast<size_t>(-1), kTypeName), "");
     // And the smallest allocation we expect to die.
-    EXPECT_DEATH(partitionAllocGeneric(genericAllocator.root(), static_cast<size_t>(INT_MAX) + 1), "");
+    EXPECT_DEATH(partitionAllocGeneric(genericAllocator.root(), static_cast<size_t>(INT_MAX) + 1, kTypeName), "");
 
     TestShutdown();
 }
@@ -1287,7 +1289,7 @@ TEST(PartitionAllocDeathTest, ImmediateDoubleFree)
 {
     TestSetup();
 
-    void* ptr = partitionAllocGeneric(genericAllocator.root(), kTestAllocSize);
+    void* ptr = partitionAllocGeneric(genericAllocator.root(), kTestAllocSize, kTypeName);
     EXPECT_TRUE(ptr);
     partitionFreeGeneric(genericAllocator.root(), ptr);
 
@@ -1301,9 +1303,9 @@ TEST(PartitionAllocDeathTest, RefcountDoubleFree)
 {
     TestSetup();
 
-    void* ptr = partitionAllocGeneric(genericAllocator.root(), kTestAllocSize);
+    void* ptr = partitionAllocGeneric(genericAllocator.root(), kTestAllocSize, kTypeName);
     EXPECT_TRUE(ptr);
-    void* ptr2 = partitionAllocGeneric(genericAllocator.root(), kTestAllocSize);
+    void* ptr2 = partitionAllocGeneric(genericAllocator.root(), kTestAllocSize, kTypeName);
     EXPECT_TRUE(ptr2);
     partitionFreeGeneric(genericAllocator.root(), ptr);
     partitionFreeGeneric(genericAllocator.root(), ptr2);
@@ -1337,7 +1339,7 @@ TEST(PartitionAllocDeathTest, GuardPages)
 #undef ALIGN
     static_assert(kSize > kGenericMaxBucketed, "allocation not large enough for direct allocation");
     size_t size = kSize - kExtraAllocSize;
-    void* ptr = partitionAllocGeneric(genericAllocator.root(), size);
+    void* ptr = partitionAllocGeneric(genericAllocator.root(), size, kTypeName);
 
     EXPECT_TRUE(ptr);
     char* charPtr = reinterpret_cast<char*>(ptr) - kPointerOffset;
@@ -1358,7 +1360,7 @@ TEST(PartitionAllocDeathTest, FreeWrongPartitionPage)
 
     // This large size will result in a direct mapped allocation with guard
     // pages at either end.
-    void* ptr = partitionAllocGeneric(genericAllocator.root(), kPartitionPageSize * 2);
+    void* ptr = partitionAllocGeneric(genericAllocator.root(), kPartitionPageSize * 2, kTypeName);
     EXPECT_TRUE(ptr);
     char* badPtr = reinterpret_cast<char*>(ptr) + kPartitionPageSize;
 
@@ -1377,7 +1379,7 @@ TEST(PartitionAllocTest, DumpMemoryStats)
 {
     TestSetup();
     {
-        void* ptr = partitionAlloc(allocator.root(), kTestAllocSize);
+        void* ptr = partitionAlloc(allocator.root(), kTestAllocSize, kTypeName);
         MockPartitionStatsDumper mockStatsDumper;
         partitionDumpStats(allocator.root(), "mock_allocator", false /* detailed dump */, &mockStatsDumper);
         EXPECT_TRUE(mockStatsDumper.IsMemoryAllocationRecorded());
@@ -1387,7 +1389,7 @@ TEST(PartitionAllocTest, DumpMemoryStats)
 
     // This series of tests checks the active -> empty -> decommitted states.
     {
-        void* genericPtr = partitionAllocGeneric(genericAllocator.root(), 2048 - kExtraAllocSize);
+        void* genericPtr = partitionAllocGeneric(genericAllocator.root(), 2048 - kExtraAllocSize, kTypeName);
         {
             MockPartitionStatsDumper mockStatsDumperGeneric;
             partitionDumpStatsGeneric(genericAllocator.root(), "mock_generic_allocator", false /* detailed dump */, &mockStatsDumperGeneric);
@@ -1453,14 +1455,14 @@ TEST(PartitionAllocTest, DumpMemoryStats)
     // This test checks for correct empty page list accounting.
     {
         size_t size = kPartitionPageSize - kExtraAllocSize;
-        void* ptr1 = partitionAllocGeneric(genericAllocator.root(), size);
-        void* ptr2 = partitionAllocGeneric(genericAllocator.root(), size);
+        void* ptr1 = partitionAllocGeneric(genericAllocator.root(), size, kTypeName);
+        void* ptr2 = partitionAllocGeneric(genericAllocator.root(), size, kTypeName);
         partitionFreeGeneric(genericAllocator.root(), ptr1);
         partitionFreeGeneric(genericAllocator.root(), ptr2);
 
         CycleGenericFreeCache(kTestAllocSize);
 
-        ptr1 = partitionAllocGeneric(genericAllocator.root(), size);
+        ptr1 = partitionAllocGeneric(genericAllocator.root(), size, kTypeName);
 
         {
             MockPartitionStatsDumper mockStatsDumperGeneric;
@@ -1489,8 +1491,8 @@ TEST(PartitionAllocTest, DumpMemoryStats)
         size_t sizeBigger = (kGenericMaxBucketed * 2) + 1;
         size_t realSizeSmaller = (sizeSmaller + kSystemPageOffsetMask) & kSystemPageBaseMask;
         size_t realSizeBigger = (sizeBigger + kSystemPageOffsetMask) & kSystemPageBaseMask;
-        void* ptr = partitionAllocGeneric(genericAllocator.root(), sizeSmaller);
-        void* ptr2 = partitionAllocGeneric(genericAllocator.root(), sizeBigger);
+        void* ptr = partitionAllocGeneric(genericAllocator.root(), sizeSmaller, kTypeName);
+        void* ptr2 = partitionAllocGeneric(genericAllocator.root(), sizeBigger, kTypeName);
 
         {
             MockPartitionStatsDumper mockStatsDumperGeneric;
@@ -1531,15 +1533,15 @@ TEST(PartitionAllocTest, DumpMemoryStats)
 
         // Whilst we're here, allocate again and free with different ordering
         // to give a workout to our linked list code.
-        ptr = partitionAllocGeneric(genericAllocator.root(), sizeSmaller);
-        ptr2 = partitionAllocGeneric(genericAllocator.root(), sizeBigger);
+        ptr = partitionAllocGeneric(genericAllocator.root(), sizeSmaller, kTypeName);
+        ptr2 = partitionAllocGeneric(genericAllocator.root(), sizeBigger, kTypeName);
         partitionFreeGeneric(genericAllocator.root(), ptr);
         partitionFreeGeneric(genericAllocator.root(), ptr2);
     }
 
     // This test checks large-but-not-quite-direct allocations.
     {
-        void* ptr = partitionAllocGeneric(genericAllocator.root(), 65536 + 1);
+        void* ptr = partitionAllocGeneric(genericAllocator.root(), 65536 + 1, kTypeName);
 
         {
             MockPartitionStatsDumper mockStatsDumperGeneric;
@@ -1584,7 +1586,7 @@ TEST(PartitionAllocTest, DumpMemoryStats)
             EXPECT_EQ(0u, stats->numDecommittedPages);
         }
 
-        void* ptr2 = partitionAllocGeneric(genericAllocator.root(), 65536 + kSystemPageSize + 1);
+        void* ptr2 = partitionAllocGeneric(genericAllocator.root(), 65536 + kSystemPageSize + 1, kTypeName);
         EXPECT_EQ(ptr, ptr2);
 
         {
@@ -1619,7 +1621,7 @@ TEST(PartitionAllocTest, Purge)
 {
     TestSetup();
 
-    char* ptr = reinterpret_cast<char*>(partitionAllocGeneric(genericAllocator.root(), 2048 - kExtraAllocSize));
+    char* ptr = reinterpret_cast<char*>(partitionAllocGeneric(genericAllocator.root(), 2048 - kExtraAllocSize, kTypeName));
     partitionFreeGeneric(genericAllocator.root(), ptr);
     {
         MockPartitionStatsDumper mockStatsDumperGeneric;
@@ -1648,7 +1650,7 @@ TEST(PartitionAllocTest, Purge)
     // state of the free cache ring.
     partitionPurgeMemoryGeneric(genericAllocator.root(), PartitionPurgeDecommitEmptyPages);
 
-    char* bigPtr = reinterpret_cast<char*>(partitionAllocGeneric(genericAllocator.root(), 256 * 1024));
+    char* bigPtr = reinterpret_cast<char*>(partitionAllocGeneric(genericAllocator.root(), 256 * 1024, kTypeName));
     partitionFreeGeneric(genericAllocator.root(), bigPtr);
     partitionPurgeMemoryGeneric(genericAllocator.root(), PartitionPurgeDecommitEmptyPages);
 
@@ -1669,12 +1671,12 @@ TEST(PartitionAllocTest, PreferActiveOverEmpty)
     // Allocate 3 full slot spans worth of 8192-byte allocations.
     // Each slot span for this size is 16384 bytes, or 1 partition page and 2
     // slots.
-    void* ptr1 = partitionAllocGeneric(genericAllocator.root(), size);
-    void* ptr2 = partitionAllocGeneric(genericAllocator.root(), size);
-    void* ptr3 = partitionAllocGeneric(genericAllocator.root(), size);
-    void* ptr4 = partitionAllocGeneric(genericAllocator.root(), size);
-    void* ptr5 = partitionAllocGeneric(genericAllocator.root(), size);
-    void* ptr6 = partitionAllocGeneric(genericAllocator.root(), size);
+    void* ptr1 = partitionAllocGeneric(genericAllocator.root(), size, kTypeName);
+    void* ptr2 = partitionAllocGeneric(genericAllocator.root(), size, kTypeName);
+    void* ptr3 = partitionAllocGeneric(genericAllocator.root(), size, kTypeName);
+    void* ptr4 = partitionAllocGeneric(genericAllocator.root(), size, kTypeName);
+    void* ptr5 = partitionAllocGeneric(genericAllocator.root(), size, kTypeName);
+    void* ptr6 = partitionAllocGeneric(genericAllocator.root(), size, kTypeName);
 
     PartitionPage* page1 = partitionPointerToPage(partitionCookieFreePointerAdjust(ptr1));
     PartitionPage* page2 = partitionPointerToPage(partitionCookieFreePointerAdjust(ptr3));
@@ -1701,7 +1703,7 @@ TEST(PartitionAllocTest, PreferActiveOverEmpty)
 
     // A good choice here is to re-fill the third page since the first two are
     // empty. We used to fail that.
-    void* ptr7 = partitionAllocGeneric(genericAllocator.root(), size);
+    void* ptr7 = partitionAllocGeneric(genericAllocator.root(), size, kTypeName);
     EXPECT_EQ(ptr6, ptr7);
     EXPECT_EQ(page3, bucket->activePagesHead);
 
@@ -1718,8 +1720,8 @@ TEST(PartitionAllocTest, PurgeDiscardable)
 
     // Free the second of two 4096 byte allocations and then purge.
     {
-        void* ptr1 = partitionAllocGeneric(genericAllocator.root(), kSystemPageSize - kExtraAllocSize);
-        char* ptr2 = reinterpret_cast<char*>(partitionAllocGeneric(genericAllocator.root(), kSystemPageSize - kExtraAllocSize));
+        void* ptr1 = partitionAllocGeneric(genericAllocator.root(), kSystemPageSize - kExtraAllocSize, kTypeName);
+        char* ptr2 = reinterpret_cast<char*>(partitionAllocGeneric(genericAllocator.root(), kSystemPageSize - kExtraAllocSize, kTypeName));
         partitionFreeGeneric(genericAllocator.root(), ptr2);
         PartitionPage* page = partitionPointerToPage(partitionCookieFreePointerAdjust(ptr1));
         EXPECT_EQ(2u, page->numUnprovisionedSlots);
@@ -1745,8 +1747,8 @@ TEST(PartitionAllocTest, PurgeDiscardable)
     }
     // Free the first of two 4096 byte allocations and then purge.
     {
-        char* ptr1 = reinterpret_cast<char*>(partitionAllocGeneric(genericAllocator.root(), kSystemPageSize - kExtraAllocSize));
-        void* ptr2 = partitionAllocGeneric(genericAllocator.root(), kSystemPageSize - kExtraAllocSize);
+        char* ptr1 = reinterpret_cast<char*>(partitionAllocGeneric(genericAllocator.root(), kSystemPageSize - kExtraAllocSize, kTypeName));
+        void* ptr2 = partitionAllocGeneric(genericAllocator.root(), kSystemPageSize - kExtraAllocSize, kTypeName);
         partitionFreeGeneric(genericAllocator.root(), ptr1);
         {
             MockPartitionStatsDumper mockStatsDumperGeneric;
@@ -1768,10 +1770,10 @@ TEST(PartitionAllocTest, PurgeDiscardable)
         partitionFreeGeneric(genericAllocator.root(), ptr2);
     }
     {
-        char* ptr1 = reinterpret_cast<char*>(partitionAllocGeneric(genericAllocator.root(), 9216 - kExtraAllocSize));
-        void* ptr2 = partitionAllocGeneric(genericAllocator.root(), 9216 - kExtraAllocSize);
-        void* ptr3 = partitionAllocGeneric(genericAllocator.root(), 9216 - kExtraAllocSize);
-        void* ptr4 = partitionAllocGeneric(genericAllocator.root(), 9216 - kExtraAllocSize);
+        char* ptr1 = reinterpret_cast<char*>(partitionAllocGeneric(genericAllocator.root(), 9216 - kExtraAllocSize, kTypeName));
+        void* ptr2 = partitionAllocGeneric(genericAllocator.root(), 9216 - kExtraAllocSize, kTypeName);
+        void* ptr3 = partitionAllocGeneric(genericAllocator.root(), 9216 - kExtraAllocSize, kTypeName);
+        void* ptr4 = partitionAllocGeneric(genericAllocator.root(), 9216 - kExtraAllocSize, kTypeName);
         memset(ptr1, 'A', 9216 - kExtraAllocSize);
         memset(ptr2, 'A', 9216 - kExtraAllocSize);
         partitionFreeGeneric(genericAllocator.root(), ptr2);
@@ -1805,10 +1807,10 @@ TEST(PartitionAllocTest, PurgeDiscardable)
         partitionFreeGeneric(genericAllocator.root(), ptr4);
     }
     {
-        char* ptr1 = reinterpret_cast<char*>(partitionAllocGeneric(genericAllocator.root(), (64 * kSystemPageSize) - kExtraAllocSize));
+        char* ptr1 = reinterpret_cast<char*>(partitionAllocGeneric(genericAllocator.root(), (64 * kSystemPageSize) - kExtraAllocSize, kTypeName));
         memset(ptr1, 'A', (64 * kSystemPageSize) - kExtraAllocSize);
         partitionFreeGeneric(genericAllocator.root(), ptr1);
-        ptr1 = reinterpret_cast<char*>(partitionAllocGeneric(genericAllocator.root(), (61 * kSystemPageSize) - kExtraAllocSize));
+        ptr1 = reinterpret_cast<char*>(partitionAllocGeneric(genericAllocator.root(), (61 * kSystemPageSize) - kExtraAllocSize, kTypeName));
         {
             MockPartitionStatsDumper mockStatsDumperGeneric;
             partitionDumpStatsGeneric(genericAllocator.root(), "mock_generic_allocator", false /* detailed dump */, &mockStatsDumperGeneric);
@@ -1838,10 +1840,10 @@ TEST(PartitionAllocTest, PurgeDiscardable)
     // case where the freelist is rewritten.
     partitionPurgeMemoryGeneric(genericAllocator.root(), PartitionPurgeDecommitEmptyPages);
     {
-        char* ptr1 = reinterpret_cast<char*>(partitionAllocGeneric(genericAllocator.root(), kSystemPageSize - kExtraAllocSize));
-        void* ptr2 = partitionAllocGeneric(genericAllocator.root(), kSystemPageSize - kExtraAllocSize);
-        void* ptr3 = partitionAllocGeneric(genericAllocator.root(), kSystemPageSize - kExtraAllocSize);
-        void* ptr4 = partitionAllocGeneric(genericAllocator.root(), kSystemPageSize - kExtraAllocSize);
+        char* ptr1 = reinterpret_cast<char*>(partitionAllocGeneric(genericAllocator.root(), kSystemPageSize - kExtraAllocSize, kTypeName));
+        void* ptr2 = partitionAllocGeneric(genericAllocator.root(), kSystemPageSize - kExtraAllocSize, kTypeName);
+        void* ptr3 = partitionAllocGeneric(genericAllocator.root(), kSystemPageSize - kExtraAllocSize, kTypeName);
+        void* ptr4 = partitionAllocGeneric(genericAllocator.root(), kSystemPageSize - kExtraAllocSize, kTypeName);
         ptr1[0] = 'A';
         ptr1[kSystemPageSize] = 'A';
         ptr1[kSystemPageSize * 2] = 'A';
@@ -1877,9 +1879,9 @@ TEST(PartitionAllocTest, PurgeDiscardable)
         CheckPageInCore(ptr1 - kPointerOffset + (kSystemPageSize * 3), false);
 
         // Let's check we didn't brick the freelist.
-        void* ptr1b = partitionAllocGeneric(genericAllocator.root(), kSystemPageSize - kExtraAllocSize);
+        void* ptr1b = partitionAllocGeneric(genericAllocator.root(), kSystemPageSize - kExtraAllocSize, kTypeName);
         EXPECT_EQ(ptr1, ptr1b);
-        void* ptr2b = partitionAllocGeneric(genericAllocator.root(), kSystemPageSize - kExtraAllocSize);
+        void* ptr2b = partitionAllocGeneric(genericAllocator.root(), kSystemPageSize - kExtraAllocSize, kTypeName);
         EXPECT_EQ(ptr2, ptr2b);
         EXPECT_FALSE(page->freelistHead);
 
@@ -1890,10 +1892,10 @@ TEST(PartitionAllocTest, PurgeDiscardable)
     // This sub-test is similar, but tests a double-truncation.
     partitionPurgeMemoryGeneric(genericAllocator.root(), PartitionPurgeDecommitEmptyPages);
     {
-        char* ptr1 = reinterpret_cast<char*>(partitionAllocGeneric(genericAllocator.root(), kSystemPageSize - kExtraAllocSize));
-        void* ptr2 = partitionAllocGeneric(genericAllocator.root(), kSystemPageSize - kExtraAllocSize);
-        void* ptr3 = partitionAllocGeneric(genericAllocator.root(), kSystemPageSize - kExtraAllocSize);
-        void* ptr4 = partitionAllocGeneric(genericAllocator.root(), kSystemPageSize - kExtraAllocSize);
+        char* ptr1 = reinterpret_cast<char*>(partitionAllocGeneric(genericAllocator.root(), kSystemPageSize - kExtraAllocSize, kTypeName));
+        void* ptr2 = partitionAllocGeneric(genericAllocator.root(), kSystemPageSize - kExtraAllocSize, kTypeName);
+        void* ptr3 = partitionAllocGeneric(genericAllocator.root(), kSystemPageSize - kExtraAllocSize, kTypeName);
+        void* ptr4 = partitionAllocGeneric(genericAllocator.root(), kSystemPageSize - kExtraAllocSize, kTypeName);
         ptr1[0] = 'A';
         ptr1[kSystemPageSize] = 'A';
         ptr1[kSystemPageSize * 2] = 'A';

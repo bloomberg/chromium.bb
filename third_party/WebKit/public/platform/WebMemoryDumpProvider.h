@@ -25,7 +25,7 @@ class BLINK_PLATFORM_EXPORT WebMemoryDumpProvider {
 public:
     // Function types for functions that can be called on alloc and free to do
     // heap profiling.
-    typedef void AllocationHook(void* address, size_t);
+    typedef void AllocationHook(void* address, size_t, const char*);
     typedef void FreeHook(void* address);
 
     virtual ~WebMemoryDumpProvider();

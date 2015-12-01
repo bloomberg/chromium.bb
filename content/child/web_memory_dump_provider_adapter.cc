@@ -28,8 +28,9 @@ LazyInstance<Lock>::Leaky g_allocation_register_lock =
     LAZY_INSTANCE_INITIALIZER;
 bool g_heap_profiling_enabled = false;
 
-void ReportAllocation(void* address, size_t size) {
+void ReportAllocation(void* address, size_t size, const char* type_name) {
   AllocationContext context = AllocationContextTracker::GetContextSnapshot();
+  context.type_name = type_name;
   AutoLock lock(g_allocation_register_lock.Get());
 
   if (g_allocation_register)

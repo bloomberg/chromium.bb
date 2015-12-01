@@ -74,7 +74,7 @@ class PLATFORM_EXPORT GlyphPage : public RefCounted<GlyphPage> {
 public:
     static PassRefPtr<GlyphPage> createForMixedFontData(GlyphPageTreeNodeBase* owner)
     {
-        void* slot = WTF::Partitions::fastMalloc(sizeof(GlyphPage) + sizeof(SimpleFontData*) * GlyphPage::size);
+        void* slot = WTF::Partitions::fastMalloc(sizeof(GlyphPage) + sizeof(SimpleFontData*) * GlyphPage::size, WTF_HEAP_PROFILER_TYPE_NAME(GlyphPage));
         return adoptRef(new (slot) GlyphPage(owner));
     }
 

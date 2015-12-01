@@ -281,7 +281,7 @@ struct ListHashSetAllocator : public PartitionAllocator {
         Node* result = m_freeList;
 
         if (!result)
-            return static_cast<Node*>(WTF::Partitions::fastMalloc(sizeof(NodeBase)));
+            return static_cast<Node*>(WTF::Partitions::fastMalloc(sizeof(NodeBase), WTF_HEAP_PROFILER_TYPE_NAME(Node)));
 
         ASSERT(!result->m_isAllocated);
 

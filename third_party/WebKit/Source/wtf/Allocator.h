@@ -101,7 +101,7 @@ public: \
     \
     void* operator new(size_t size) \
     { \
-        return ::WTF::Partitions::fastMalloc(size);     \
+        return ::WTF::Partitions::fastMalloc(size, WTF_HEAP_PROFILER_TYPE_NAME(type)); \
     } \
     \
     void operator delete(void* p) \
@@ -111,7 +111,7 @@ public: \
     \
     void* operator new[](size_t size) \
     { \
-        return ::WTF::Partitions::fastMalloc(size);       \
+        return ::WTF::Partitions::fastMalloc(size, WTF_HEAP_PROFILER_TYPE_NAME(type)); \
     } \
     \
     void operator delete[](void* p) \

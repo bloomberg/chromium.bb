@@ -26,7 +26,7 @@
 #ifndef InstanceCounter_h
 #define InstanceCounter_h
 
-#include "wtf/Compiler.h"
+#include "wtf/TypeTraits.h"
 #include "wtf/WTFExport.h"
 
 namespace WTF {
@@ -35,28 +35,21 @@ class String;
 WTF_EXPORT String dumpRefCountedInstanceCounts();
 
 #if ENABLE(INSTANCE_COUNTER) || ENABLE(DETAILED_MEMORY_INFRA)
-WTF_EXPORT void incrementInstanceCount(const char* extractNameFunctionName, void* ptr);
-WTF_EXPORT void decrementInstanceCount(const char* extractNameFunctionName, void* ptr);
+WTF_EXPORT void incrementInstanceCount(const char* stringWithTypeName, void* ptr);
+WTF_EXPORT void decrementInstanceCount(const char* stringWithTypeName, void* ptr);
 
 WTF_EXPORT String extractTypeNameFromFunctionName(const char* funcName);
 
 template<typename T>
-inline const char* extractNameFunction()
-{
-    return WTF_PRETTY_FUNCTION;
-}
-
-
-template<typename T>
 inline void incrementInstanceCount(T* p)
 {
-    incrementInstanceCount(extractNameFunction<T>(), p);
+    incrementInstanceCount(getStringWithTypeName<T>(), p);
 }
 
 template<typename T>
 inline void decrementInstanceCount(T* p)
 {
-    decrementInstanceCount(extractNameFunction<T>(), p);
+    decrementInstanceCount(getStringWithTypeName<T>(), p);
 }
 
 #endif // ENABLE(INSTANCE_COUNTER) || ENABLE(DETAILED_MEMORY_INFRA)

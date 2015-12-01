@@ -192,7 +192,7 @@ static bool saveResultToString(xmlDocPtr resultDoc, xsltStylesheetPtr sheet, Str
 static char* allocateParameterArray(const char* data)
 {
     size_t length = strlen(data) + 1;
-    char* parameterArray = static_cast<char*>(WTF::Partitions::fastMalloc(length));
+    char* parameterArray = static_cast<char*>(WTF::Partitions::fastMalloc(length, WTF_HEAP_PROFILER_TYPE_NAME(XSLTProcessor)));
     memcpy(parameterArray, data, length);
     return parameterArray;
 }
@@ -202,7 +202,7 @@ static const char** xsltParamArrayFromParameterMap(XSLTProcessor::ParameterMap& 
     if (parameters.isEmpty())
         return nullptr;
 
-    const char** parameterArray = static_cast<const char**>(WTF::Partitions::fastMalloc(((parameters.size() * 2) + 1) * sizeof(char*)));
+    const char** parameterArray = static_cast<const char**>(WTF::Partitions::fastMalloc(((parameters.size() * 2) + 1) * sizeof(char*), WTF_HEAP_PROFILER_TYPE_NAME(XSLTProcessor)));
 
     unsigned index = 0;
     for (auto& parameter : parameters) {

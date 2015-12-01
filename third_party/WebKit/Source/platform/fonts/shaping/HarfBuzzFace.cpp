@@ -316,7 +316,7 @@ static hb_blob_t* harfBuzzSkiaGetTable(hb_face_t* face, hb_tag_t tag, void* user
         return nullptr;
     }
 
-    char* buffer = reinterpret_cast<char*>(WTF::Partitions::fastMalloc(tableSize));
+    char* buffer = reinterpret_cast<char*>(WTF::Partitions::fastMalloc(tableSize, WTF_HEAP_PROFILER_TYPE_NAME(HarfBuzzFontData)));
     if (!buffer)
         return nullptr;
     size_t actualSize = typeface->getTableData(tag, 0, tableSize, buffer);

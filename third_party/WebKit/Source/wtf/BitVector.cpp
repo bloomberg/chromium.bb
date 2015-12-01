@@ -80,7 +80,7 @@ BitVector::OutOfLineBits* BitVector::OutOfLineBits::create(size_t numBits)
     WTF_ANNOTATE_SCOPED_MEMORY_LEAK;
     numBits = (numBits + bitsInPointer() - 1) & ~(bitsInPointer() - 1);
     size_t size = sizeof(OutOfLineBits) + sizeof(uintptr_t) * (numBits / bitsInPointer());
-    void* allocation = Partitions::bufferMalloc(size);
+    void* allocation = Partitions::bufferMalloc(size, WTF_HEAP_PROFILER_TYPE_NAME(OutOfLineBits));
     OutOfLineBits* result = new (NotNull, allocation) OutOfLineBits(numBits);
     return result;
 }

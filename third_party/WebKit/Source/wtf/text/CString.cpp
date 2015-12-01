@@ -41,7 +41,7 @@ PassRefPtr<CStringBuffer> CStringBuffer::createUninitialized(size_t length)
 
     // The +1 is for the terminating NUL character.
     size_t size = sizeof(CStringBuffer) + length + 1;
-    CStringBuffer* stringBuffer = static_cast<CStringBuffer*>(Partitions::bufferMalloc(size));
+    CStringBuffer* stringBuffer = static_cast<CStringBuffer*>(Partitions::bufferMalloc(size, WTF_HEAP_PROFILER_TYPE_NAME(CStringBuffer)));
     return adoptRef(new (stringBuffer) CStringBuffer(length));
 }
 

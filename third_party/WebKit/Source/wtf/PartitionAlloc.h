@@ -102,6 +102,7 @@
 #include "wtf/CPU.h"
 #include "wtf/PageAllocator.h"
 #include "wtf/SpinLock.h"
+#include "wtf/TypeTraits.h"
 
 #include <limits.h>
 
@@ -406,24 +407,24 @@ WTF_EXPORT void partitionPurgeMemoryGeneric(PartitionRootGeneric*, int);
 
 WTF_EXPORT NEVER_INLINE void* partitionAllocSlowPath(PartitionRootBase*, int, size_t, PartitionBucket*);
 WTF_EXPORT NEVER_INLINE void partitionFreeSlowPath(PartitionPage*);
-WTF_EXPORT NEVER_INLINE void* partitionReallocGeneric(PartitionRootGeneric*, void*, size_t);
+WTF_EXPORT NEVER_INLINE void* partitionReallocGeneric(PartitionRootGeneric*, void*, size_t, const char* typeName);
 
 WTF_EXPORT void partitionDumpStats(PartitionRoot*, const char* partitionName, bool isLightDump, PartitionStatsDumper*);
 WTF_EXPORT void partitionDumpStatsGeneric(PartitionRootGeneric*, const char* partitionName, bool isLightDump, PartitionStatsDumper*);
 
 class WTF_EXPORT PartitionAllocHooks {
 public:
-    typedef void AllocationHook(void* address, size_t);
+    typedef void AllocationHook(void* address, size_t, const char* typeName);
     typedef void FreeHook(void* address);
 
     static void setAllocationHook(AllocationHook* hook) { m_allocationHook = hook; }
     static void setFreeHook(FreeHook* hook) { m_freeHook = hook; }
 
-    static void allocationHookIfEnabled(void* address, size_t size)
+    static void allocationHookIfEnabled(void* address, size_t size, const char* typeName)
     {
         AllocationHook* allocationHook = m_allocationHook;
         if (UNLIKELY(allocationHook != nullptr))
-            allocationHook(address, size);
+            allocationHook(address, size, typeName);
     }
 
     static void freeHookIfEnabled(void* address)
@@ -433,14 +434,14 @@ public:
             freeHook(address);
     }
 
-    static void reallocHookIfEnabled(void* oldAddress, void* newAddress, size_t size)
+    static void reallocHookIfEnabled(void* oldAddress, void* newAddress, size_t size, const char* typeName)
     {
         // Report a reallocation as a free followed by an allocation.
         AllocationHook* allocationHook = m_allocationHook;
         FreeHook* freeHook = m_freeHook;
         if (UNLIKELY(allocationHook && freeHook)) {
             freeHook(oldAddress);
-            allocationHook(newAddress, size);
+            allocationHook(newAddress, size, typeName);
         }
     }
 
@@ -450,6 +451,14 @@ private:
     static AllocationHook* m_allocationHook;
     static FreeHook* m_freeHook;
 };
+
+// In official builds, do not include type info string literals to avoid
+// bloating the binary.
+#if defined(OFFICIAL_BUILD)
+#define WTF_HEAP_PROFILER_TYPE_NAME(T) nullptr
+#else
+#define WTF_HEAP_PROFILER_TYPE_NAME(T) ::WTF::getStringWithTypeName<T>()
+#endif
 
 ALWAYS_INLINE PartitionFreelistEntry* partitionFreelistMask(PartitionFreelistEntry* ptr)
 {
@@ -656,7 +665,7 @@ ALWAYS_INLINE void* partitionBucketAlloc(PartitionRootBase* root, int flags, siz
     return ret;
 }
 
-ALWAYS_INLINE void* partitionAlloc(PartitionRoot* root, size_t size)
+ALWAYS_INLINE void* partitionAlloc(PartitionRoot* root, size_t size, const char* typeName)
 {
 #if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
     void* result = malloc(size);
@@ -671,7 +680,7 @@ ALWAYS_INLINE void* partitionAlloc(PartitionRoot* root, size_t size)
     ASSERT(size == index << kBucketShift);
     PartitionBucket* bucket = &root->buckets()[index];
     void* result = partitionBucketAlloc(root, 0, size, bucket);
-    PartitionAllocHooks::allocationHookIfEnabled(result, requestedSize);
+    PartitionAllocHooks::allocationHookIfEnabled(result, requestedSize, typeName);
     return result;
 #endif // defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
 }
@@ -732,7 +741,7 @@ ALWAYS_INLINE PartitionBucket* partitionGenericSizeToBucket(PartitionRootGeneric
     return bucket;
 }
 
-ALWAYS_INLINE void* partitionAllocGenericFlags(PartitionRootGeneric* root, int flags, size_t size)
+ALWAYS_INLINE void* partitionAllocGenericFlags(PartitionRootGeneric* root, int flags, size_t size, const char* typeName)
 {
 #if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
     void* result = malloc(size);
@@ -753,14 +762,14 @@ ALWAYS_INLINE void* partitionAllocGenericFlags(PartitionRootGeneric* root, int f
 #endif
     void* ret = partitionBucketAlloc(root, flags, size, bucket);
     spinLockUnlock(&root->lock);
-    PartitionAllocHooks::allocationHookIfEnabled(ret, requestedSize);
+    PartitionAllocHooks::allocationHookIfEnabled(ret, requestedSize, typeName);
     return ret;
 #endif
 }
 
-ALWAYS_INLINE void* partitionAllocGeneric(PartitionRootGeneric* root, size_t size)
+ALWAYS_INLINE void* partitionAllocGeneric(PartitionRootGeneric* root, size_t size, const char* typeName)
 {
-    return partitionAllocGenericFlags(root, 0, size);
+    return partitionAllocGenericFlags(root, 0, size, typeName);
 }
 
 ALWAYS_INLINE void partitionFreeGeneric(PartitionRootGeneric* root, void* ptr)

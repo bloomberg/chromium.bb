@@ -1043,13 +1043,13 @@ bool partitionReallocDirectMappedInPlace(PartitionRootGeneric* root, PartitionPa
     return true;
 }
 
-void* partitionReallocGeneric(PartitionRootGeneric* root, void* ptr, size_t newSize)
+void* partitionReallocGeneric(PartitionRootGeneric* root, void* ptr, size_t newSize, const char* typeName)
 {
 #if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
     return realloc(ptr, newSize);
 #else
     if (UNLIKELY(!ptr))
-        return partitionAllocGeneric(root, newSize);
+        return partitionAllocGeneric(root, newSize, typeName);
     if (UNLIKELY(!newSize)) {
         partitionFreeGeneric(root, ptr);
         return 0;
@@ -1067,7 +1067,7 @@ void* partitionReallocGeneric(PartitionRootGeneric* root, void* ptr, size_t newS
         // accessibility of memory pages and, if reducing the size, decommitting
         // them.
         if (partitionReallocDirectMappedInPlace(root, page, newSize)) {
-            PartitionAllocHooks::reallocHookIfEnabled(ptr, ptr, newSize);
+            PartitionAllocHooks::reallocHookIfEnabled(ptr, ptr, newSize, typeName);
             return ptr;
         }
     }
@@ -1086,7 +1086,7 @@ void* partitionReallocGeneric(PartitionRootGeneric* root, void* ptr, size_t newS
     }
 
     // This realloc cannot be resized in-place. Sadness.
-    void* ret = partitionAllocGeneric(root, newSize);
+    void* ret = partitionAllocGeneric(root, newSize, typeName);
     size_t copySize = actualOldSize;
     if (newSize < copySize)
         copySize = newSize;

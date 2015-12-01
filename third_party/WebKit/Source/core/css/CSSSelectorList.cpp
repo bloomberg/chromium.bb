@@ -41,7 +41,7 @@ CSSSelectorList::~CSSSelectorList()
 CSSSelectorList::CSSSelectorList(const CSSSelectorList& other)
 {
     unsigned otherLength = other.length();
-    m_selectorArray = reinterpret_cast<CSSSelector*>(WTF::Partitions::fastMalloc(sizeof(CSSSelector) * otherLength));
+    m_selectorArray = reinterpret_cast<CSSSelector*>(WTF::Partitions::fastMalloc(sizeof(CSSSelector) * otherLength, WTF_HEAP_PROFILER_TYPE_NAME(CSSSelector)));
     for (unsigned i = 0; i < otherLength; ++i)
         new (&m_selectorArray[i]) CSSSelector(other.m_selectorArray[i]);
 }
@@ -62,7 +62,7 @@ void CSSSelectorList::adoptSelectorVector(Vector<OwnPtr<CSSParserSelector>>& sel
             ++flattenedSize;
     }
     ASSERT(flattenedSize);
-    m_selectorArray = reinterpret_cast<CSSSelector*>(WTF::Partitions::fastMalloc(sizeof(CSSSelector) * flattenedSize));
+    m_selectorArray = reinterpret_cast<CSSSelector*>(WTF::Partitions::fastMalloc(sizeof(CSSSelector) * flattenedSize, WTF_HEAP_PROFILER_TYPE_NAME(CSSSelector)));
     size_t arrayIndex = 0;
     for (size_t i = 0; i < selectorVector.size(); ++i) {
         CSSParserSelector* current = selectorVector[i].get();

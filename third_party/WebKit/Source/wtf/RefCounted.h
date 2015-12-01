@@ -163,7 +163,11 @@ inline void adopted(RefCountedBase* object)
 
 template<typename T> class RefCounted : public RefCountedBase {
     WTF_MAKE_NONCOPYABLE(RefCounted);
-    USING_FAST_MALLOC(RefCounted);
+
+    // Put |T| in here instead of |RefCounted| so the heap profiler reports |T|
+    // instead of |RefCounted<T>|. This does not affect overloading of operator
+    // new.
+    USING_FAST_MALLOC(T);
 
 public:
     void deref()

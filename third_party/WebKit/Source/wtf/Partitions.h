@@ -91,9 +91,9 @@ public:
 
     static void dumpMemoryStats(bool isLightDump, PartitionStatsDumper*);
 
-    ALWAYS_INLINE static void* bufferMalloc(size_t n)
+    ALWAYS_INLINE static void* bufferMalloc(size_t n, const char* typeName)
     {
-        return partitionAllocGeneric(bufferPartition(), n);
+        return partitionAllocGeneric(bufferPartition(), n, typeName);
     }
     ALWAYS_INLINE static void bufferFree(void* p)
     {
@@ -103,19 +103,19 @@ public:
     {
         return partitionAllocActualSize(bufferPartition(), n);
     }
-    static void* fastMalloc(size_t n)
+    static void* fastMalloc(size_t n, const char* typeName)
     {
-        return partitionAllocGeneric(Partitions::fastMallocPartition(), n);
+        return partitionAllocGeneric(Partitions::fastMallocPartition(), n, typeName);
     }
-    static void* fastZeroedMalloc(size_t n)
+    static void* fastZeroedMalloc(size_t n, const char* typeName)
     {
-        void* result = fastMalloc(n);
+        void* result = fastMalloc(n, typeName);
         memset(result, 0, n);
         return result;
     }
-    static void* fastRealloc(void* p, size_t n)
+    static void* fastRealloc(void* p, size_t n, const char* typeName)
     {
-        return partitionReallocGeneric(Partitions::fastMallocPartition(), p, n);
+        return partitionReallocGeneric(Partitions::fastMallocPartition(), p, n, typeName);
     }
     static void fastFree(void* p)
     {

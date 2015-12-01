@@ -102,7 +102,7 @@ void ArrayBufferContents::allocateMemory(size_t size, InitializationPolicy polic
 {
     if (s_adjustAmountOfExternalAllocatedMemoryFunction)
         s_adjustAmountOfExternalAllocatedMemoryFunction(static_cast<int>(size));
-    data = partitionAllocGeneric(WTF::Partitions::bufferPartition(), size);
+    data = partitionAllocGeneric(WTF::Partitions::bufferPartition(), size, WTF_HEAP_PROFILER_TYPE_NAME(ArrayBufferContents));
     if (policy == ZeroInitialize && data)
         memset(data, '\0', size);
 }

@@ -62,7 +62,7 @@ static void* allocate(CFIndex size, CFOptionFlags, void*)
             underlyingString->ref(); // Balanced by call to deref in deallocate below.
         }
     }
-    StringImpl** header = static_cast<StringImpl**>(WTF::Partitions::fastMalloc(sizeof(StringImpl*) + size));
+    StringImpl** header = static_cast<StringImpl**>(WTF::Partitions::fastMalloc(sizeof(StringImpl*) + size, WTF_HEAP_PROFILER_TYPE_NAME(StringImpl*)));
     *header = underlyingString;
     return header + 1;
 }
@@ -72,7 +72,7 @@ static void* reallocate(void* pointer, CFIndex newSize, CFOptionFlags, void*)
     size_t newAllocationSize = sizeof(StringImpl*) + newSize;
     StringImpl** header = static_cast<StringImpl**>(pointer) - 1;
     ASSERT(!*header);
-    header = static_cast<StringImpl**>(WTF::Partitions::fastRealloc(header, newAllocationSize));
+    header = static_cast<StringImpl**>(WTF::Partitions::fastRealloc(header, newAllocationSize, WTF_HEAP_PROFILER_TYPE_NAME(StringImpl*)));
     return header + 1;
 }
 

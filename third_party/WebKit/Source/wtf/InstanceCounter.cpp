@@ -38,28 +38,28 @@ namespace WTF {
 #if ENABLE(INSTANCE_COUNTER) || ENABLE(DETAILED_MEMORY_INFRA)
 
 #if COMPILER(CLANG)
-const size_t extractNameFunctionPrefixLength = sizeof("const char *WTF::extractNameFunction() [T = ") - 1;
-const size_t extractNameFunctionPostfixLength = sizeof("]") - 1;
+const size_t stringWithTypeNamePrefixLength = sizeof("const char *WTF::getStringWithTypeName() [T = ") - 1;
+const size_t stringWithTypeNamePostfixLength = sizeof("]") - 1;
 #elif COMPILER(GCC)
-const size_t extractNameFunctionPrefixLength = sizeof("const char* WTF::extractNameFunction() [with T = ") - 1;
-const size_t extractNameFunctionPostfixLength = sizeof("]") - 1;
+const size_t stringWithTypeNamePrefixLength = sizeof("const char* WTF::getStringWithTypeName() [with T = ") - 1;
+const size_t stringWithTypeNamePostfixLength = sizeof("]") - 1;
 #elif COMPILER(MSVC)
-const size_t extractNameFunctionPrefixLength = sizeof("const char *__cdecl WTF::extractNameFunction<class ") - 1;
-const size_t extractNameFunctionPostfixLength = sizeof(">(void)") - 1;
+const size_t stringWithTypeNamePrefixLength = sizeof("const char *__cdecl WTF::getStringWithTypeName<class ") - 1;
+const size_t stringWithTypeNamePostfixLength = sizeof(">(void)") - 1;
 #else
 #warning "Extracting typename is supported only in compiler GCC, CLANG and MSVC at this moment"
 #endif
 
 // This function is used to stringify a typename T without using RTTI.
-// The result of extractNameFunction<T>() is given as |funcName|. |extractTypeNameFromFunctionName| then extracts a typename string from |funcName|.
+// The result of stringWithTypeName<T>() is given as |funcName|. |extractTypeNameFromFunctionName| then extracts a typename string from |funcName|.
 String extractTypeNameFromFunctionName(const char* funcName)
 {
 #if COMPILER(CLANG) || COMPILER(GCC) || COMPILER(MSVC)
     size_t funcNameLength = strlen(funcName);
-    ASSERT(funcNameLength > extractNameFunctionPrefixLength + extractNameFunctionPostfixLength);
+    ASSERT(funcNameLength > stringWithTypeNamePrefixLength + stringWithTypeNamePostfixLength);
 
-    const char* funcNameWithoutPrefix = funcName + extractNameFunctionPrefixLength;
-    return String(funcNameWithoutPrefix, funcNameLength - extractNameFunctionPrefixLength - extractNameFunctionPostfixLength);
+    const char* funcNameWithoutPrefix = funcName + stringWithTypeNamePrefixLength;
+    return String(funcNameWithoutPrefix, funcNameLength - stringWithTypeNamePrefixLength - stringWithTypeNamePostfixLength);
 #else
     return String("unknown");
 #endif
@@ -84,15 +84,15 @@ private:
     HashMap<String, int> m_counterMap;
 };
 
-void incrementInstanceCount(const char* extractNameFunctionName, void* ptr)
+void incrementInstanceCount(const char* stringWithTypeNameName, void* ptr)
 {
-    String instanceName = extractTypeNameFromFunctionName(extractNameFunctionName);
+    String instanceName = extractTypeNameFromFunctionName(stringWithTypeNameName);
     InstanceCounter::instance()->incrementInstanceCount(instanceName, ptr);
 }
 
-void decrementInstanceCount(const char* extractNameFunctionName, void* ptr)
+void decrementInstanceCount(const char* stringWithTypeNameName, void* ptr)
 {
-    String instanceName = extractTypeNameFromFunctionName(extractNameFunctionName);
+    String instanceName = extractTypeNameFromFunctionName(stringWithTypeNameName);
     InstanceCounter::instance()->decrementInstanceCount(instanceName, ptr);
 }
 

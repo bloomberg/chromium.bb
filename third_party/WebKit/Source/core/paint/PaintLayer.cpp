@@ -1093,7 +1093,7 @@ LayoutRect PaintLayer::paintingExtent(const PaintLayer* rootLayer, const LayoutS
 
 void* PaintLayer::operator new(size_t sz)
 {
-    return partitionAlloc(WTF::Partitions::layoutPartition(), sz);
+    return partitionAlloc(WTF::Partitions::layoutPartition(), sz, WTF_HEAP_PROFILER_TYPE_NAME(PaintLayer));
 }
 
 void PaintLayer::operator delete(void* ptr)

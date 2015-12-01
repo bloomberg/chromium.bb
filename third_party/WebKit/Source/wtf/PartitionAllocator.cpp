@@ -36,9 +36,9 @@
 
 namespace WTF {
 
-void* PartitionAllocator::allocateBacking(size_t size)
+void* PartitionAllocator::allocateBacking(size_t size, const char* typeName)
 {
-    return Partitions::bufferMalloc(size);
+    return Partitions::bufferMalloc(size, typeName);
 }
 
 void PartitionAllocator::freeVectorBacking(void* address)

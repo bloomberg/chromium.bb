@@ -150,7 +150,6 @@
 #define WTF_PRETTY_FUNCTION __FUNCTION__
 #endif
 
-
 /* NO_SANITIZE_UNRELATED_CAST - Disable runtime checks related to casts between
  * unrelated objects (-fsanitize=cfi-unrelated-cast or -fsanitize=vptr). */
 

@@ -55,7 +55,7 @@ static inline unsigned offsetInSegment(unsigned position)
 
 static inline char* allocateSegment()
 {
-    return static_cast<char*>(WTF::Partitions::fastMalloc(SharedBuffer::kSegmentSize));
+    return static_cast<char*>(WTF::Partitions::fastMalloc(SharedBuffer::kSegmentSize, WTF_HEAP_PROFILER_TYPE_NAME(SharedBuffer)));
 }
 
 static inline void freeSegment(char* p)

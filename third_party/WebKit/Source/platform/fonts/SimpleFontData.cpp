@@ -116,7 +116,7 @@ void SimpleFontData::platformInit()
     {
         size_t vdmxSize = face->getTableSize(vdmxTag);
         if (vdmxSize && vdmxSize < maxVDMXTableSize) {
-            uint8_t* vdmxTable = (uint8_t*) WTF::Partitions::fastMalloc(vdmxSize);
+            uint8_t* vdmxTable = (uint8_t*)WTF::Partitions::fastMalloc(vdmxSize, WTF_HEAP_PROFILER_TYPE_NAME(SimpleFontData));
             if (vdmxTable
                 && face->getTableData(vdmxTag, 0, vdmxSize, vdmxTable) == vdmxSize
                 && parseVDMX(&vdmxAscent, &vdmxDescent, vdmxTable, vdmxSize, pixelSize))

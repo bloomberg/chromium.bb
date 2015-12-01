@@ -25,7 +25,16 @@
 #include <cstddef>
 #include <utility>
 
+#include "wtf/Compiler.h"
+
 namespace WTF {
+
+// Returns a string that contains the type name of |T| as a substring.
+template<typename T>
+inline const char* getStringWithTypeName()
+{
+    return WTF_PRETTY_FUNCTION;
+}
 
 template<typename T> class RawPtr;
 

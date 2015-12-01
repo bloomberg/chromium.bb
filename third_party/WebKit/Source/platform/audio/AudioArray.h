@@ -78,7 +78,7 @@ public:
             // Again, check for integer overflow.
             RELEASE_ASSERT(initialSize + extraAllocationBytes >= initialSize);
 
-            T* allocation = static_cast<T*>(WTF::Partitions::fastMalloc(initialSize + extraAllocationBytes));
+            T* allocation = static_cast<T*>(WTF::Partitions::fastMalloc(initialSize + extraAllocationBytes, WTF_HEAP_PROFILER_TYPE_NAME(AudioArray<T>)));
             RELEASE_ASSERT(allocation);
 
             T* alignedData = alignedAddress(allocation, alignment);

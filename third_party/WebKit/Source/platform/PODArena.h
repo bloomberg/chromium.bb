@@ -64,7 +64,7 @@ public:
             return adoptRef(new FastMallocAllocator);
         }
 
-        void* allocate(size_t size) override { return WTF::Partitions::fastMalloc(size); }
+        void* allocate(size_t size) override { return WTF::Partitions::fastMalloc(size, WTF_HEAP_PROFILER_TYPE_NAME(PODArena)); }
         void free(void* ptr) override { WTF::Partitions::fastFree(ptr); }
 
     protected:

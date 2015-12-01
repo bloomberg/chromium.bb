@@ -161,7 +161,7 @@ static ObjectPaintPropertiesMap& objectPaintPropertiesMap()
 void* LayoutObject::operator new(size_t sz)
 {
     ASSERT(isMainThread());
-    return partitionAlloc(WTF::Partitions::layoutPartition(), sz);
+    return partitionAlloc(WTF::Partitions::layoutPartition(), sz, WTF_HEAP_PROFILER_TYPE_NAME(LayoutObject));
 }
 
 void LayoutObject::operator delete(void* ptr)
