@@ -690,8 +690,9 @@ void URLRequest::DoCancel(int error, const SSLInfo& ssl_info) {
   // TODO(csharrison) Remove this code when crbug.com/557430 is resolved.
   int64 request_time =
       (base::TimeTicks::Now() - creation_time_).InMilliseconds();
-  if (error == ERR_ABORTED && request_time <= 100 &&
-      load_flags_ & LOAD_MAIN_FRAME && base::RandDouble() < .0001) {
+  if (!has_notified_completion_ && error == ERR_ABORTED &&
+      request_time <= 100 && load_flags_ & LOAD_MAIN_FRAME &&
+      base::RandDouble() < .00001) {
     static int dump_times = 0;
     if (dump_times < 5) {
       char url_copy[256] = {0};
