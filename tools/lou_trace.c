@@ -274,13 +274,6 @@ main_loop(int backward_translation, char *table) {
   }
 }
 
-backTranslateWithTracing (const char *tableList, const widechar * inbuf,
-  				int *inlen, widechar * outbuf,
-  				int *outlen, formtype *typeform,
-  				char *spacing, int *outputPos,
-  				int *inputPos, int *cursorPos, int mode,
-  				const TranslationTableRule **rules, int *rulesLen);
-
 int
 main(int argc, char **argv) {
   int optc;
