@@ -21,11 +21,10 @@ namespace syncer {
 Commit::Commit(ContributionMap contributions,
                const sync_pb::ClientToServerMessage& message,
                ExtensionsActivity::Records extensions_activity_buffer)
-    : contributions_(contributions.Pass()),
+    : contributions_(std::move(contributions)),
       message_(message),
       extensions_activity_buffer_(extensions_activity_buffer),
-      cleaned_up_(false) {
-}
+      cleaned_up_(false) {}
 
 Commit::~Commit() {
   DCHECK(cleaned_up_);
@@ -88,7 +87,8 @@ Commit* Commit::Init(
   }
 
   // If we made it this far, then we've successfully prepared a commit message.
-  return new Commit(contributions.Pass(), message, extensions_activity_buffer);
+  return new Commit(std::move(contributions), message,
+                    extensions_activity_buffer);
 }
 
 SyncerError Commit::PostAndProcessResponse(

@@ -232,34 +232,6 @@ TEST(ScopedPtrMapTest, MoveAssign) {
   EXPECT_TRUE(destroyed);
 }
 
-template <typename Key, typename ScopedPtr>
-ScopedPtrMap<Key, ScopedPtr> PassThru(ScopedPtrMap<Key, ScopedPtr> scoper) {
-  return scoper;
-}
-
-TEST(ScopedPtrMapTest, Passed) {
-  bool destroyed = false;
-  ScopedPtrMap<int, scoped_ptr<ScopedDestroyer>> scoped_map;
-  ScopedDestroyer* elem = new ScopedDestroyer(&destroyed);
-  scoped_map.insert(0, make_scoped_ptr(elem));
-  EXPECT_EQ(elem, scoped_map.find(0)->second);
-  EXPECT_FALSE(destroyed);
-
-  base::Callback<ScopedPtrMap<int, scoped_ptr<ScopedDestroyer>>(void)>
-      callback = base::Bind(&PassThru<int, scoped_ptr<ScopedDestroyer>>,
-                            base::Passed(&scoped_map));
-  EXPECT_TRUE(scoped_map.empty());
-  EXPECT_FALSE(destroyed);
-
-  ScopedPtrMap<int, scoped_ptr<ScopedDestroyer>> result = callback.Run();
-  EXPECT_TRUE(scoped_map.empty());
-  EXPECT_EQ(elem, result.find(0)->second);
-  EXPECT_FALSE(destroyed);
-
-  result.clear();
-  EXPECT_TRUE(destroyed);
-};
-
 // Test that using a value type from a namespace containing an ignore_result
 // function compiles correctly.
 TEST(ScopedPtrMapTest, IgnoreResultCompile) {
