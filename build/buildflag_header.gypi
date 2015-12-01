@@ -31,7 +31,7 @@
 #    'includes': [ '../build/buildflag_header.gypi' ],
 #    'variables': {
 #       'buildflag_header_path': 'foo/foo_features.h',
-#       'buildflag_header_flags': [
+#       'buildflag_flags': [
 #         'ENABLE_DOOM_MELON=<(enable_doom_melon)',
 #         'ENABLE_SPACE_LASER=true',
 #         'SPAM_SERVER_URL="http://www.example.com/"',

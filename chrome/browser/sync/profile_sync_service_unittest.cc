@@ -43,6 +43,7 @@
 #include "components/sync_driver/pref_names.h"
 #include "components/sync_driver/signin_manager_wrapper.h"
 #include "components/sync_driver/sync_api_component_factory_mock.h"
+#include "components/sync_driver/sync_driver_features.h"
 #include "components/sync_driver/sync_driver_switches.h"
 #include "components/sync_driver/sync_prefs.h"
 #include "components/sync_driver/sync_service_observer.h"
@@ -684,7 +685,7 @@ TEST_F(ProfileSyncServiceTest, RevokeAccessTokenFromTokenService) {
   EXPECT_TRUE(service()->GetAccessTokenForTest().empty());
 }
 
-#if defined(ENABLE_PRE_SYNC_BACKUP)
+#if BUILDFLAG(ENABLE_PRE_SYNC_BACKUP)
 TEST_F(ProfileSyncServiceTest, DontStartBackupOnBrowserStart) {
   CreateServiceWithoutSignIn();
   InitializeForFirstSync();
@@ -783,7 +784,7 @@ TEST_F(ProfileSyncServiceTest, Rollback) {
   EXPECT_FALSE(delete_dir_param[1]);
 }
 
-#endif
+#endif  // ENABLE_PRE_SYNC_BACKUP
 
 // Verify that LastSyncedTime is cleared when the user signs out.
 TEST_F(ProfileSyncServiceTest, ClearLastSyncedTimeOnSignOut) {

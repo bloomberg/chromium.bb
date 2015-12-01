@@ -18,6 +18,7 @@
         'invalidation_public',
         'os_crypt',
         'signin_core_browser',
+        'sync_driver_features',
         'version_info',
       ],
       'include_dirs': [
@@ -150,6 +151,26 @@
           ],
         }],
       ],
+    },
+    {
+      # GN version: //components/sync_driver:features
+      'target_name': 'sync_driver_features',
+      'includes': [ '../build/buildflag_header.gypi' ],
+      'variables': {
+        'buildflag_header_path': 'components/sync_driver/sync_driver_features.h',
+        'variables': {
+          'conditions': [
+            ['OS=="win" or OS=="mac" or (OS=="linux" and chromeos==0)', {
+              'enable_pre_sync_backup%': 1,
+            }, {
+              'enable_pre_sync_backup%': 0,
+            }],
+          ],
+        },
+        'buildflag_flags': [
+          "ENABLE_PRE_SYNC_BACKUP=<(enable_pre_sync_backup)",
+        ],
+      },
     },
     {
       'target_name': 'sync_driver_test_support',
