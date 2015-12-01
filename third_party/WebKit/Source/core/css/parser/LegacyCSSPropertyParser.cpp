@@ -1090,6 +1090,24 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyWebkitColumnRule:
     case CSSPropertyWebkitColumnRuleColor:
     case CSSPropertyWebkitColumnRuleWidth:
+    case CSSPropertyClipPath:
+    case CSSPropertyFilter:
+    case CSSPropertyMask:
+    case CSSPropertyStrokeOpacity:
+    case CSSPropertyFillOpacity:
+    case CSSPropertyStopOpacity:
+    case CSSPropertyFloodOpacity:
+    case CSSPropertyBaselineShift:
+    case CSSPropertyStrokeMiterlimit:
+    case CSSPropertyStrokeWidth:
+    case CSSPropertyStrokeDashoffset:
+    case CSSPropertyCx:
+    case CSSPropertyCy:
+    case CSSPropertyX:
+    case CSSPropertyY:
+    case CSSPropertyR:
+    case CSSPropertyRx:
+    case CSSPropertyRy:
         validPrimitive = false;
         break;
 
@@ -1105,7 +1123,10 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         break;
 
     default:
-        return parseSVGValue(propId, important);
+        // If you crash here, it's because you added a css property and are not handling it
+        // in either this switch statement or the one in CSSPropertyParser::parseSingleValue.
+        ASSERT_WITH_MESSAGE(0, "unimplemented propertyID: %d", propId);
+        return false;
     }
 
     if (validPrimitive) {
@@ -5291,99 +5312,6 @@ CSSValueID cssValueKeywordID(const CSSParserString& string)
 bool CSSPropertyParser::isSystemColor(CSSValueID id)
 {
     return (id >= CSSValueActiveborder && id <= CSSValueWindowtext) || id == CSSValueMenu;
-}
-
-bool CSSPropertyParser::parseSVGValue(CSSPropertyID propId, bool important)
-{
-    CSSParserValue* value = m_valueList->current();
-    ASSERT(value);
-
-    CSSValueID id = value->id;
-
-    bool validPrimitive = false;
-    RefPtrWillBeRawPtr<CSSValue> parsedValue = nullptr;
-
-    switch (propId) {
-    /* The comment to the right defines all valid value of these
-     * properties as defined in SVG 1.1, Appendix N. Property index */
-    case CSSPropertyBaselineShift:
-    // baseline | super | sub | <percentage> | <length> | inherit
-        if (id == CSSValueBaseline || id == CSSValueSub || id == CSSValueSuper)
-            validPrimitive = true;
-        else
-            validPrimitive = validUnit(value, FLength | FPercent, SVGAttributeMode);
-        break;
-
-    case CSSPropertyClipPath:
-    case CSSPropertyFilter:
-    case CSSPropertyMask:
-        if (id == CSSValueNone) {
-            validPrimitive = true;
-        } else if (value->m_unit == CSSParserValue::URI) {
-            parsedValue = CSSURIValue::create(value->string);
-            if (parsedValue)
-                m_valueList->next();
-        }
-        break;
-
-    case CSSPropertyStrokeMiterlimit: // <miterlimit> | inherit
-        validPrimitive = validUnit(value, FNumber | FNonNeg, SVGAttributeMode);
-        break;
-
-    case CSSPropertyStrokeOpacity: // <opacity-value> | inherit
-    case CSSPropertyFillOpacity:
-    case CSSPropertyStopOpacity:
-    case CSSPropertyFloodOpacity:
-        validPrimitive = validUnit(value, FNumber | FPercent, SVGAttributeMode);
-        break;
-
-    /* Start of supported CSS properties with validation. This is needed for parseShortHand to work
-     * correctly and allows optimization in applyRule(..)
-     */
-
-    case CSSPropertyStrokeWidth: // <length> | inherit
-    case CSSPropertyStrokeDashoffset:
-    case CSSPropertyCx:
-    case CSSPropertyCy:
-    case CSSPropertyX:
-    case CSSPropertyY:
-    case CSSPropertyR:
-    case CSSPropertyRx:
-    case CSSPropertyRy:
-        validPrimitive = validUnit(value, FLength | FPercent, SVGAttributeMode);
-        break;
-
-    default:
-        // If you crash here, it's because you added a css property and are not handling it
-        // in either this switch statement or the one in CSSPropertyParser::parseValue
-        ASSERT_WITH_MESSAGE(0, "unimplemented propertyID: %d", propId);
-        return false;
-    }
-
-    if (validPrimitive) {
-        if (id)
-            parsedValue = CSSPrimitiveValue::createIdentifier(id);
-        else if (value->m_unit == CSSParserValue::String)
-            parsedValue = CSSStringValue::create(value->string);
-        else if (value->unit() >= CSSPrimitiveValue::UnitType::Number && value->unit() <= CSSPrimitiveValue::UnitType::Kilohertz)
-            parsedValue = CSSPrimitiveValue::create(value->fValue, value->unit());
-        else if (value->unit() == CSSPrimitiveValue::UnitType::Rems || value->unit() == CSSPrimitiveValue::UnitType::Chs)
-            parsedValue = CSSPrimitiveValue::create(value->fValue, value->unit());
-        else if (value->unit() == CSSPrimitiveValue::UnitType::QuirkyEms)
-            parsedValue = CSSPrimitiveValue::create(value->fValue, CSSPrimitiveValue::UnitType::QuirkyEms);
-        if (isCalculation(value)) {
-            // FIXME calc() http://webkit.org/b/16662 : actually create a CSSPrimitiveValue here, ie
-            // parsedValue = CSSPrimitiveValue::create(m_parsedCalculation.release());
-            m_parsedCalculation.release();
-            parsedValue = nullptr;
-        }
-        m_valueList->next();
-    }
-    if (!parsedValue || (m_valueList->current() && !inShorthand()))
-        return false;
-
-    addProperty(propId, parsedValue.release(), important);
-    return true;
 }
 
 } // namespace blink

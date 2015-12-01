@@ -21,43 +21,43 @@ function test(valueString, expectedValue) {
 
 debug("");
 debug("Test positive exponent values with 'e'");
-test(".5e2", "50px");
-test("5e1", "50px");
-test("0.5e2", "50px");
-test("+.5e2", "50px");
-test("+5e1", "50px");
-test("+0.5e2", "50px");
-test(".5e+2", "50px");
-test("5e+1", "50px");
-test("0.5e+2", "50px");
+test(".5e2", "50");
+test("5e1", "50");
+test("0.5e2", "50");
+test("+.5e2", "50");
+test("+5e1", "50");
+test("+0.5e2", "50");
+test(".5e+2", "50");
+test("5e+1", "50");
+test("0.5e+2", "50");
 
 debug("");
 debug("Test positive exponent values with 'E'");
-test(".5E2", "50px");
-test("5E1", "50px");
-test("0.5E2", "50px");
-test("+.5E2", "50px");
-test("+5E1", "50px");
-test("+0.5E2", "50px");
-test(".5E+2", "50px");
-test("5E+1", "50px");
-test("0.5E+2", "50px");
+test(".5E2", "50");
+test("5E1", "50");
+test("0.5E2", "50");
+test("+.5E2", "50");
+test("+5E1", "50");
+test("+0.5E2", "50");
+test(".5E+2", "50");
+test("5E+1", "50");
+test("0.5E+2", "50");
 
 debug("");
 debug("Test negative exponent values with 'e'");
-test("5000e-2", "50px");
-test("500e-1", "50px");
-test("+5000e-2", "50px");
-test("+500e-1", "50px");
+test("5000e-2", "50");
+test("500e-1", "50");
+test("+5000e-2", "50");
+test("+500e-1", "50");
 test("+5000e-2px", "50px");
 test("+500e-1px", "50px");
 
 debug("");
 debug("Test negative exponent values with 'E'");
-test("5000E-2", "50px");
-test("500E-1", "50px");
-test("+5000E-2", "50px");
-test("+500E-1", "50px");
+test("5000E-2", "50");
+test("500E-1", "50");
+test("+5000E-2", "50");
+test("+500E-1", "50");
 test("+5000.00E-2px", "50px");
 test("+500E-1px", "50px");
 
@@ -77,8 +77,8 @@ test("50ex", "50ex");
 
 debug("");
 debug("Trailing and leading whitespaces");
-test("       5e1", "50px");
-test("5e1      ", "50px");
+test("       5e1", "50");
+test("5e1      ", "50");
 
 debug("");
 debug("Test behavior on overflow");

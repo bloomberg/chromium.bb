@@ -2096,6 +2096,14 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeStrokeDasharray(CSSParserTokenRan
     return dashes.release();
 }
 
+static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeBaselineShift(CSSParserTokenRange& range)
+{
+    CSSValueID id = range.peek().id();
+    if (id == CSSValueBaseline || id == CSSValueSub || id == CSSValueSuper)
+        return consumeIdent(range);
+    return consumeLengthOrPercent(range, SVGAttributeMode, ValueRangeAll, UnitlessQuirk::Forbid);
+}
+
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSPropertyID unresolvedProperty)
 {
     CSSPropertyID property = resolveCSSPropertyID(unresolvedProperty);
@@ -2274,6 +2282,9 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
     case CSSPropertyMarkerStart:
     case CSSPropertyMarkerMid:
     case CSSPropertyMarkerEnd:
+    case CSSPropertyClipPath:
+    case CSSPropertyFilter:
+    case CSSPropertyMask:
         return consumeNoneOrURI(m_range);
     case CSSPropertyFlexBasis:
         return consumeFlexBasis(m_range, m_context.mode());
@@ -2284,6 +2295,25 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
         return consumeStrokeDasharray(m_range);
     case CSSPropertyWebkitColumnRuleWidth:
         return consumeColumnRuleWidth(m_range, m_context.mode());
+    case CSSPropertyStrokeOpacity:
+    case CSSPropertyFillOpacity:
+    case CSSPropertyStopOpacity:
+    case CSSPropertyFloodOpacity:
+        return consumeNumber(m_range, ValueRangeAll);
+    case CSSPropertyBaselineShift:
+        return consumeBaselineShift(m_range);
+    case CSSPropertyStrokeMiterlimit:
+        return consumeNumber(m_range, ValueRangeNonNegative);
+    case CSSPropertyStrokeWidth:
+    case CSSPropertyStrokeDashoffset:
+    case CSSPropertyCx:
+    case CSSPropertyCy:
+    case CSSPropertyX:
+    case CSSPropertyY:
+    case CSSPropertyR:
+    case CSSPropertyRx:
+    case CSSPropertyRy:
+        return consumeLengthOrPercent(m_range, SVGAttributeMode, ValueRangeAll, UnitlessQuirk::Forbid);
     default:
         return nullptr;
     }
