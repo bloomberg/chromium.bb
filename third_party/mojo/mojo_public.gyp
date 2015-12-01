@@ -386,6 +386,7 @@
         # languages yet.
         'mojom_files': [
           '../../mojo/public/interfaces/bindings/tests/test_associated_interfaces.mojom',
+          '../../mojo/public/interfaces/bindings/tests/validation_test_associated_interfaces.mojom',
         ],
       },
       'includes': [ 'mojom_bindings_generator_explicit.gypi' ],

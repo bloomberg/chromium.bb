@@ -39,6 +39,10 @@ enum ValidationError {
   VALIDATION_ERROR_ILLEGAL_POINTER,
   // A non-nullable pointer field is set to null.
   VALIDATION_ERROR_UNEXPECTED_NULL_POINTER,
+  // An interface ID is illegal.
+  VALIDATION_ERROR_ILLEGAL_INTERFACE_ID,
+  // A non-nullable interface ID field is set to invalid.
+  VALIDATION_ERROR_UNEXPECTED_INVALID_INTERFACE_ID,
   // |flags| in the message header is invalid. The flags are either
   // inconsistent with one another, inconsistent with other parts of the
   // message, or unexpected for the message receiver.  For example the

@@ -7,7 +7,10 @@
 
 #include <stdint.h>
 
+#include "mojo/public/cpp/bindings/lib/bindings_internal.h"
 #include "mojo/public/cpp/bindings/lib/bounds_checker.h"
+#include "mojo/public/cpp/bindings/lib/validate_params.h"
+#include "mojo/public/cpp/bindings/lib/validation_errors.h"
 #include "mojo/public/cpp/bindings/message.h"
 
 namespace mojo {
@@ -46,6 +49,80 @@ bool ValidateMessagePayload(const Message* message) {
 // interface_control_messages.mojom.
 bool ValidateControlRequest(const Message* message);
 bool ValidateControlResponse(const Message* message);
+
+// The following Validate.*NonNullable() functions validate that the given
+// |input| is not null/invalid.
+template <typename T>
+bool ValidatePointerNonNullable(const T& input, const char* error_message) {
+  if (input.offset)
+    return true;
+
+  ReportValidationError(VALIDATION_ERROR_UNEXPECTED_NULL_POINTER,
+                        error_message);
+  return false;
+}
+
+template <typename T>
+bool ValidateInlinedUnionNonNullable(const T& input,
+                                     const char* error_message) {
+  if (!input.is_null())
+    return true;
+
+  ReportValidationError(VALIDATION_ERROR_UNEXPECTED_NULL_POINTER,
+                        error_message);
+  return false;
+}
+
+bool ValidateHandleNonNullable(const Handle& input, const char* error_message);
+
+bool ValidateInterfaceIdNonNullable(InterfaceId input,
+                                    const char* error_message);
+
+template <typename T>
+bool ValidateArray(const ArrayPointer<T>& input,
+                   BoundsChecker* bounds_checker,
+                   const ArrayValidateParams* validate_params) {
+  if (!ValidateEncodedPointer(&input.offset)) {
+    ReportValidationError(VALIDATION_ERROR_ILLEGAL_POINTER);
+    return false;
+  }
+
+  return Array_Data<T>::Validate(DecodePointerRaw(&input.offset),
+                                 bounds_checker, validate_params);
+}
+
+template <typename T>
+bool ValidateMap(const StructPointer<T>& input,
+                 BoundsChecker* bounds_checker,
+                 const ArrayValidateParams* value_validate_params) {
+  if (!ValidateEncodedPointer(&input.offset)) {
+    ReportValidationError(VALIDATION_ERROR_ILLEGAL_POINTER);
+    return false;
+  }
+
+  return T::Validate(DecodePointerRaw(&input.offset), bounds_checker,
+                     value_validate_params);
+}
+
+template <typename T>
+bool ValidateStruct(const StructPointer<T>& input,
+                    BoundsChecker* bounds_checker) {
+  if (!ValidateEncodedPointer(&input.offset)) {
+    ReportValidationError(VALIDATION_ERROR_ILLEGAL_POINTER);
+    return false;
+  }
+
+  return T::Validate(DecodePointerRaw(&input.offset), bounds_checker);
+}
+
+template <typename T>
+bool ValidateInlinedUnion(const T& input, BoundsChecker* bounds_checker) {
+  return T::Validate(&input, bounds_checker, true);
+}
+
+bool ValidateHandle(const Handle& input, BoundsChecker* bounds_checker);
+
+bool ValidateAssociatedInterfaceId(InterfaceId input);
 
 }  // namespace internal
 }  // namespace mojo

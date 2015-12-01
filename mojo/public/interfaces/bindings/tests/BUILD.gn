@@ -42,6 +42,7 @@ mojom("test_associated_interfaces") {
   testonly = true
   sources = [
     "test_associated_interfaces.mojom",
+    "validation_test_associated_interfaces.mojom",
   ]
 
   with_environment = false

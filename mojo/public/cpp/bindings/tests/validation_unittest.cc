@@ -22,6 +22,7 @@
 #include "mojo/public/cpp/bindings/tests/validation_test_input_parser.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/public/cpp/test_support/test_support.h"
+#include "mojo/public/interfaces/bindings/tests/validation_test_associated_interfaces.mojom.h"
 #include "mojo/public/interfaces/bindings/tests/validation_test_interfaces.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -367,6 +368,15 @@ TEST_F(ValidationTest, Conformance) {
   validators.Append<ConformanceTestInterface::RequestValidator_>();
 
   RunValidationTests("conformance_", validators.GetHead());
+}
+
+TEST_F(ValidationTest, AssociatedConformace) {
+  DummyMessageReceiver dummy_receiver;
+  mojo::internal::FilterChain validators(&dummy_receiver);
+  validators.Append<mojo::internal::MessageHeaderValidator>();
+  validators.Append<AssociatedConformanceTestInterface::RequestValidator_>();
+
+  RunValidationTests("associated_conformance_", validators.GetHead());
 }
 
 // This test is similar to Conformance test but its goal is specifically

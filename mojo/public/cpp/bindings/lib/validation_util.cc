@@ -99,5 +99,40 @@ bool ValidateControlResponse(const Message* message) {
   return false;
 }
 
+bool ValidateHandleNonNullable(const Handle& input, const char* error_message) {
+  if (input.value() != kEncodedInvalidHandleValue)
+    return true;
+
+  ReportValidationError(VALIDATION_ERROR_UNEXPECTED_INVALID_HANDLE,
+                        error_message);
+  return false;
+}
+
+bool ValidateInterfaceIdNonNullable(InterfaceId input,
+                                    const char* error_message) {
+  if (IsValidInterfaceId(input))
+    return true;
+
+  ReportValidationError(VALIDATION_ERROR_UNEXPECTED_INVALID_INTERFACE_ID,
+                        error_message);
+  return false;
+}
+
+bool ValidateHandle(const Handle& input, BoundsChecker* bounds_checker) {
+  if (bounds_checker->ClaimHandle(input))
+    return true;
+
+  ReportValidationError(VALIDATION_ERROR_ILLEGAL_HANDLE);
+  return false;
+}
+
+bool ValidateAssociatedInterfaceId(InterfaceId input) {
+  if (!IsMasterInterfaceId(input))
+    return true;
+
+  ReportValidationError(VALIDATION_ERROR_ILLEGAL_INTERFACE_ID);
+  return false;
+}
+
 }  // namespace internal
 }  // namespace mojo

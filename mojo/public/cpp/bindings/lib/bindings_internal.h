@@ -44,10 +44,7 @@ union ArrayPointer {
 };
 static_assert(sizeof(ArrayPointer<char>) == 8, "Bad_sizeof(ArrayPointer)");
 
-union StringPointer {
-  uint64_t offset;
-  Array_Data<char>* ptr;
-};
+using StringPointer = ArrayPointer<char>;
 static_assert(sizeof(StringPointer) == 8, "Bad_sizeof(StringPointer)");
 
 
