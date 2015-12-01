@@ -41,16 +41,21 @@ class ContentVideoView {
   static ContentVideoView* GetInstance();
 
   // Getter method called by the Java class to get the media information.
-  bool IsPlaying(JNIEnv*, jobject obj);
-  void RequestMediaMetadata(JNIEnv*, jobject obj);
+  bool IsPlaying(JNIEnv*, const base::android::JavaParamRef<jobject>& obj);
+  void RequestMediaMetadata(JNIEnv*,
+                            const base::android::JavaParamRef<jobject>& obj);
 
   // Called when the Java fullscreen view is destroyed. If
   // |release_media_player| is true, |manager_| needs to release the player
   // as we are quitting the app.
-  void ExitFullscreen(JNIEnv*, jobject, jboolean release_media_player);
+  void ExitFullscreen(JNIEnv*,
+                      const base::android::JavaParamRef<jobject>&,
+                      jboolean release_media_player);
 
   // Called by the Java class to pass the surface object to the player.
-  void SetSurface(JNIEnv*, jobject obj, jobject surface);
+  void SetSurface(JNIEnv*,
+                  const base::android::JavaParamRef<jobject>& obj,
+                  const base::android::JavaParamRef<jobject>& surface);
 
   // Method called by |manager_| to inform the Java class about player status
   // change.
@@ -62,10 +67,14 @@ class ContentVideoView {
   void OnExitFullscreen();
 
   // Functions called to record fullscreen playback UMA metrics.
-  void RecordFullscreenPlayback(
-      JNIEnv*, jobject, bool is_portrait_video, bool is_orientation_portrait);
+  void RecordFullscreenPlayback(JNIEnv*,
+                                const base::android::JavaParamRef<jobject>&,
+                                bool is_portrait_video,
+                                bool is_orientation_portrait);
   void RecordExitFullscreenPlayback(
-      JNIEnv*, jobject, bool is_portrait_video,
+      JNIEnv*,
+      const base::android::JavaParamRef<jobject>&,
+      bool is_portrait_video,
       long playback_duration_in_milliseconds_before_orientation_change,
       long playback_duration_in_milliseconds_after_orientation_change);
 

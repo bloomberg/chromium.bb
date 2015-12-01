@@ -51,7 +51,7 @@ BackgroundSyncNetworkObserverAndroid::Observer::~Observer() {
 
 void BackgroundSyncNetworkObserverAndroid::Observer::
     NotifyConnectionTypeChanged(JNIEnv* env,
-                                jobject jcaller,
+                                const JavaParamRef<jobject>& jcaller,
                                 jint new_connection_type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(

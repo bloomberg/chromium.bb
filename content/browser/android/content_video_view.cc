@@ -122,8 +122,10 @@ void ContentVideoView::OnExitFullscreen() {
     Java_ContentVideoView_onExitFullscreen(env, content_video_view.obj());
 }
 
-void ContentVideoView::RecordFullscreenPlayback(
-    JNIEnv*, jobject, bool is_portrait_video, bool is_orientation_portrait) {
+void ContentVideoView::RecordFullscreenPlayback(JNIEnv*,
+                                                const JavaParamRef<jobject>&,
+                                                bool is_portrait_video,
+                                                bool is_orientation_portrait) {
   UMA_HISTOGRAM_BOOLEAN("MobileFullscreenVideo.OrientationPortrait",
                         is_orientation_portrait);
   UMA_HISTOGRAM_BOOLEAN("MobileFullscreenVideo.VideoPortrait",
@@ -131,7 +133,9 @@ void ContentVideoView::RecordFullscreenPlayback(
 }
 
 void ContentVideoView::RecordExitFullscreenPlayback(
-    JNIEnv*, jobject, bool is_portrait_video,
+    JNIEnv*,
+    const JavaParamRef<jobject>&,
+    bool is_portrait_video,
     long playback_duration_in_milliseconds_before_orientation_change,
     long playback_duration_in_milliseconds_after_orientation_change) {
   bool orientation_changed = (
@@ -172,24 +176,27 @@ void ContentVideoView::UpdateMediaMetadata() {
   }
 }
 
-bool ContentVideoView::IsPlaying(JNIEnv*, jobject obj) {
+bool ContentVideoView::IsPlaying(JNIEnv*, const JavaParamRef<jobject>& obj) {
   media::MediaPlayerAndroid* player = manager_->GetFullscreenPlayer();
   return player ? player->IsPlaying() : false;
 }
 
-void ContentVideoView::ExitFullscreen(
-    JNIEnv*, jobject, jboolean release_media_player) {
+void ContentVideoView::ExitFullscreen(JNIEnv*,
+                                      const JavaParamRef<jobject>&,
+                                      jboolean release_media_player) {
   j_content_video_view_.reset();
   manager_->ExitFullscreen(release_media_player);
 }
 
-void ContentVideoView::SetSurface(JNIEnv* env, jobject obj,
-                                  jobject surface) {
+void ContentVideoView::SetSurface(JNIEnv* env,
+                                  const JavaParamRef<jobject>& obj,
+                                  const JavaParamRef<jobject>& surface) {
   manager_->SetVideoSurface(
       gfx::ScopedJavaSurface::AcquireExternalSurface(surface));
 }
 
-void ContentVideoView::RequestMediaMetadata(JNIEnv* env, jobject obj) {
+void ContentVideoView::RequestMediaMetadata(JNIEnv* env,
+                                            const JavaParamRef<jobject>& obj) {
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&ContentVideoView::UpdateMediaMetadata,

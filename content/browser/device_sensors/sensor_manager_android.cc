@@ -76,8 +76,11 @@ SensorManagerAndroid* SensorManagerAndroid::GetInstance() {
       base::LeakySingletonTraits<SensorManagerAndroid>>::get();
 }
 
-void SensorManagerAndroid::GotOrientation(
-    JNIEnv*, jobject, double alpha, double beta, double gamma) {
+void SensorManagerAndroid::GotOrientation(JNIEnv*,
+                                          const JavaParamRef<jobject>&,
+                                          double alpha,
+                                          double beta,
+                                          double gamma) {
   base::AutoLock autolock(orientation_buffer_lock_);
 
   if (!device_orientation_buffer_)
@@ -95,8 +98,11 @@ void SensorManagerAndroid::GotOrientation(
   }
 }
 
-void SensorManagerAndroid::GotOrientationAbsolute(
-    JNIEnv*, jobject, double alpha, double beta, double gamma) {
+void SensorManagerAndroid::GotOrientationAbsolute(JNIEnv*,
+                                                  const JavaParamRef<jobject>&,
+                                                  double alpha,
+                                                  double beta,
+                                                  double gamma) {
   base::AutoLock autolock(orientation_absolute_buffer_lock_);
 
   if (!device_orientation_absolute_buffer_)
@@ -111,9 +117,11 @@ void SensorManagerAndroid::GotOrientationAbsolute(
   }
 }
 
-
-void SensorManagerAndroid::GotAcceleration(
-    JNIEnv*, jobject, double x, double y, double z) {
+void SensorManagerAndroid::GotAcceleration(JNIEnv*,
+                                           const JavaParamRef<jobject>&,
+                                           double x,
+                                           double y,
+                                           double z) {
   base::AutoLock autolock(motion_buffer_lock_);
 
   if (!device_motion_buffer_)
@@ -135,7 +143,11 @@ void SensorManagerAndroid::GotAcceleration(
 }
 
 void SensorManagerAndroid::GotAccelerationIncludingGravity(
-    JNIEnv*, jobject, double x, double y, double z) {
+    JNIEnv*,
+    const JavaParamRef<jobject>&,
+    double x,
+    double y,
+    double z) {
   base::AutoLock autolock(motion_buffer_lock_);
 
   if (!device_motion_buffer_)
@@ -156,8 +168,11 @@ void SensorManagerAndroid::GotAccelerationIncludingGravity(
   }
 }
 
-void SensorManagerAndroid::GotRotationRate(
-    JNIEnv*, jobject, double alpha, double beta, double gamma) {
+void SensorManagerAndroid::GotRotationRate(JNIEnv*,
+                                           const JavaParamRef<jobject>&,
+                                           double alpha,
+                                           double beta,
+                                           double gamma) {
   base::AutoLock autolock(motion_buffer_lock_);
 
   if (!device_motion_buffer_)
@@ -178,7 +193,9 @@ void SensorManagerAndroid::GotRotationRate(
   }
 }
 
-void SensorManagerAndroid::GotLight(JNIEnv*, jobject, double value) {
+void SensorManagerAndroid::GotLight(JNIEnv*,
+                                    const JavaParamRef<jobject>&,
+                                    double value) {
   base::AutoLock autolock(light_buffer_lock_);
 
   if (!device_light_buffer_)

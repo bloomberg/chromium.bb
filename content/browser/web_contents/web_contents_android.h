@@ -39,89 +39,130 @@ class CONTENT_EXPORT WebContentsAndroid
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
 
   // Methods called from Java
-  base::android::ScopedJavaLocalRef<jstring> GetTitle(JNIEnv* env,
-                                                      jobject obj) const;
-  base::android::ScopedJavaLocalRef<jstring> GetVisibleURL(JNIEnv* env,
-                                                           jobject obj) const;
-
-  bool IsLoading(JNIEnv* env, jobject obj) const;
-  bool IsLoadingToDifferentDocument(JNIEnv* env, jobject obj) const;
-
-  void Stop(JNIEnv* env, jobject obj);
-  void Cut(JNIEnv* env, jobject obj);
-  void Copy(JNIEnv* env, jobject obj);
-  void Paste(JNIEnv* env, jobject obj);
-  void Replace(JNIEnv* env, jobject obj, jstring jstr);
-  void SelectAll(JNIEnv* env, jobject obj);
-  void Unselect(JNIEnv* env, jobject obj);
-  jint GetBackgroundColor(JNIEnv* env, jobject obj);
-  base::android::ScopedJavaLocalRef<jstring> GetURL(JNIEnv* env, jobject) const;
-  base::android::ScopedJavaLocalRef<jstring> GetLastCommittedURL(JNIEnv* env,
-                                                                 jobject) const;
-  jboolean IsIncognito(JNIEnv* env, jobject obj);
-
-  void ResumeLoadingCreatedWebContents(JNIEnv* env, jobject obj);
-
-  void OnHide(JNIEnv* env, jobject obj);
-  void OnShow(JNIEnv* env, jobject obj);
-  void ReleaseMediaPlayers(JNIEnv* env, jobject jobj);
-
-  void ShowInterstitialPage(
-      JNIEnv* env, jobject obj, jstring jurl, jlong delegate_ptr);
-  jboolean IsShowingInterstitialPage(JNIEnv* env, jobject obj);
-  jboolean FocusLocationBarByDefault(JNIEnv* env, jobject obj);
-  jboolean IsRenderWidgetHostViewReady(JNIEnv* env, jobject obj);
-  void ExitFullscreen(JNIEnv* env, jobject obj);
-  void UpdateTopControlsState(
+  base::android::ScopedJavaLocalRef<jstring> GetTitle(
       JNIEnv* env,
-      jobject obj,
-      bool enable_hiding,
-      bool enable_showing,
-      bool animate);
-  void ShowImeIfNeeded(JNIEnv* env, jobject obj);
-  void ScrollFocusedEditableNodeIntoView(JNIEnv* env, jobject obj);
-  void SelectWordAroundCaret(JNIEnv* env, jobject obj);
-  void AdjustSelectionByCharacterOffset(JNIEnv* env,
-                                        jobject obj,
-                                        jint start_adjust,
-                                        jint end_adjust);
-  void InsertCSS(JNIEnv* env, jobject jobj, jstring jcss);
+      const base::android::JavaParamRef<jobject>& obj) const;
+  base::android::ScopedJavaLocalRef<jstring> GetVisibleURL(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj) const;
+
+  bool IsLoading(JNIEnv* env,
+                 const base::android::JavaParamRef<jobject>& obj) const;
+  bool IsLoadingToDifferentDocument(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj) const;
+
+  void Stop(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+  void Cut(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+  void Copy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+  void Paste(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+  void Replace(JNIEnv* env,
+               const base::android::JavaParamRef<jobject>& obj,
+               const base::android::JavaParamRef<jstring>& jstr);
+  void SelectAll(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+  void Unselect(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+  jint GetBackgroundColor(JNIEnv* env,
+                          const base::android::JavaParamRef<jobject>& obj);
+  base::android::ScopedJavaLocalRef<jstring> GetURL(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>&) const;
+  base::android::ScopedJavaLocalRef<jstring> GetLastCommittedURL(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>&) const;
+  jboolean IsIncognito(JNIEnv* env,
+                       const base::android::JavaParamRef<jobject>& obj);
+
+  void ResumeLoadingCreatedWebContents(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+
+  void OnHide(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+  void OnShow(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+  void ReleaseMediaPlayers(JNIEnv* env,
+                           const base::android::JavaParamRef<jobject>& jobj);
+
+  void ShowInterstitialPage(JNIEnv* env,
+                            const base::android::JavaParamRef<jobject>& obj,
+                            const base::android::JavaParamRef<jstring>& jurl,
+                            jlong delegate_ptr);
+  jboolean IsShowingInterstitialPage(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+  jboolean FocusLocationBarByDefault(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+  jboolean IsRenderWidgetHostViewReady(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+  void ExitFullscreen(JNIEnv* env,
+                      const base::android::JavaParamRef<jobject>& obj);
+  void UpdateTopControlsState(JNIEnv* env,
+                              const base::android::JavaParamRef<jobject>& obj,
+                              bool enable_hiding,
+                              bool enable_showing,
+                              bool animate);
+  void ShowImeIfNeeded(JNIEnv* env,
+                       const base::android::JavaParamRef<jobject>& obj);
+  void ScrollFocusedEditableNodeIntoView(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+  void SelectWordAroundCaret(JNIEnv* env,
+                             const base::android::JavaParamRef<jobject>& obj);
+  void AdjustSelectionByCharacterOffset(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jint start_adjust,
+      jint end_adjust);
+  void InsertCSS(JNIEnv* env,
+                 const base::android::JavaParamRef<jobject>& jobj,
+                 const base::android::JavaParamRef<jstring>& jcss);
   void EvaluateJavaScript(JNIEnv* env,
-                          jobject obj,
-                          jstring script,
-                          jobject callback);
-  void EvaluateJavaScriptForTests(JNIEnv* env,
-                                  jobject obj,
-                                  jstring script,
-                                  jobject callback);
+                          const base::android::JavaParamRef<jobject>& obj,
+                          const base::android::JavaParamRef<jstring>& script,
+                          const base::android::JavaParamRef<jobject>& callback);
+  void EvaluateJavaScriptForTests(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& script,
+      const base::android::JavaParamRef<jobject>& callback);
 
-  void AddMessageToDevToolsConsole(JNIEnv* env,
-                                   jobject jobj,
-                                   jint level,
-                                   jstring message);
+  void AddMessageToDevToolsConsole(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jobj,
+      jint level,
+      const base::android::JavaParamRef<jstring>& message);
 
-  void SendMessageToFrame(JNIEnv* env,
-                          jobject obj,
-                          jstring frame_name,
-                          jstring message,
-                          jstring target_origin);
+  void SendMessageToFrame(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& frame_name,
+      const base::android::JavaParamRef<jstring>& message,
+      const base::android::JavaParamRef<jstring>& target_origin);
 
-  jboolean HasAccessedInitialDocument(JNIEnv* env, jobject jobj);
+  jboolean HasAccessedInitialDocument(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jobj);
 
-  jint GetThemeColor(JNIEnv* env, jobject obj);
+  jint GetThemeColor(JNIEnv* env,
+                     const base::android::JavaParamRef<jobject>& obj);
 
-  void RequestAccessibilitySnapshot(JNIEnv* env,
-                                    jobject obj,
-                                    jobject callback,
-                                    jfloat y_offset,
-                                    jfloat x_scroll);
+  void RequestAccessibilitySnapshot(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobject>& callback,
+      jfloat y_offset,
+      jfloat x_scroll);
 
-  void ResumeMediaSession(JNIEnv* env, jobject obj);
-  void SuspendMediaSession(JNIEnv* env, jobject obj);
-  void StopMediaSession(JNIEnv* env, jobject obj);
+  void ResumeMediaSession(JNIEnv* env,
+                          const base::android::JavaParamRef<jobject>& obj);
+  void SuspendMediaSession(JNIEnv* env,
+                           const base::android::JavaParamRef<jobject>& obj);
+  void StopMediaSession(JNIEnv* env,
+                        const base::android::JavaParamRef<jobject>& obj);
 
-  base::android::ScopedJavaLocalRef<jstring> GetEncoding(JNIEnv* env,
-                                                         jobject obj) const;
+  base::android::ScopedJavaLocalRef<jstring> GetEncoding(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj) const;
 
   // Relay the access from Java layer to GetScaledContentBitmap through JNI.
   void GetContentBitmap(JNIEnv* env,

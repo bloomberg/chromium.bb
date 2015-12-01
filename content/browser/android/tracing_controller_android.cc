@@ -25,14 +25,16 @@ TracingControllerAndroid::TracingControllerAndroid(JNIEnv* env, jobject obj)
 
 TracingControllerAndroid::~TracingControllerAndroid() {}
 
-void TracingControllerAndroid::Destroy(JNIEnv* env, jobject obj) {
+void TracingControllerAndroid::Destroy(JNIEnv* env,
+                                       const JavaParamRef<jobject>& obj) {
   delete this;
 }
 
-bool TracingControllerAndroid::StartTracing(JNIEnv* env,
-                                            jobject obj,
-                                            jstring jcategories,
-                                            jstring jtraceoptions) {
+bool TracingControllerAndroid::StartTracing(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& jcategories,
+    const JavaParamRef<jstring>& jtraceoptions) {
   std::string categories =
       base::android::ConvertJavaStringToUTF8(env, jcategories);
   std::string options =
@@ -46,9 +48,10 @@ bool TracingControllerAndroid::StartTracing(JNIEnv* env,
       TracingController::StartTracingDoneCallback());
 }
 
-void TracingControllerAndroid::StopTracing(JNIEnv* env,
-                                           jobject obj,
-                                           jstring jfilepath) {
+void TracingControllerAndroid::StopTracing(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& jfilepath) {
   base::FilePath file_path(
       base::android::ConvertJavaStringToUTF8(env, jfilepath));
   if (!TracingController::GetInstance()->StopTracing(
@@ -77,8 +80,9 @@ void TracingControllerAndroid::OnTracingStopped() {
     Java_TracingControllerAndroid_onTracingStopped(env, obj.obj());
 }
 
-bool TracingControllerAndroid::GetKnownCategoryGroupsAsync(JNIEnv* env,
-                                                           jobject obj) {
+bool TracingControllerAndroid::GetKnownCategoryGroupsAsync(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   if (!TracingController::GetInstance()->GetCategories(
           base::Bind(&TracingControllerAndroid::OnKnownCategoriesReceived,
                      weak_factory_.GetWeakPtr()))) {

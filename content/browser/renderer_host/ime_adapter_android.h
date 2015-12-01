@@ -30,32 +30,51 @@ class ImeAdapterAndroid {
   // Called from java -> native
   // The java side is responsible to translate android KeyEvent various enums
   // and values into the corresponding blink::WebInputEvent.
-  bool SendKeyEvent(JNIEnv* env, jobject,
-                    jobject original_key_event,
-                    int action, int meta_state,
-                    long event_time, int key_code,
-                    int scan_code, bool is_system_key,
-                    int unicode_text);
+  bool SendKeyEvent(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>&,
+      const base::android::JavaParamRef<jobject>& original_key_event,
+      int action,
+      int meta_state,
+      long event_time,
+      int key_code,
+      int scan_code,
+      bool is_system_key,
+      int unicode_text);
   // |event_type| is a value of WebInputEvent::Type.
   bool SendSyntheticKeyEvent(JNIEnv*,
-                             jobject,
+                             const base::android::JavaParamRef<jobject>&,
                              int event_type,
                              long timestamp_ms,
                              int native_key_code,
                              int modifiers,
                              int unicode_char);
   void SetComposingText(JNIEnv*,
-                        jobject obj,
-                        jobject text,
-                        jstring text_str,
+                        const base::android::JavaParamRef<jobject>& obj,
+                        const base::android::JavaParamRef<jobject>& text,
+                        const base::android::JavaParamRef<jstring>& text_str,
                         int new_cursor_pos);
-  void CommitText(JNIEnv*, jobject, jstring text_str);
-  void FinishComposingText(JNIEnv* env, jobject);
-  void AttachImeAdapter(JNIEnv*, jobject java_object);
-  void SetEditableSelectionOffsets(JNIEnv*, jobject, int start, int end);
-  void SetComposingRegion(JNIEnv*, jobject, int start, int end);
-  void DeleteSurroundingText(JNIEnv*, jobject, int before, int after);
-  void ResetImeAdapter(JNIEnv*, jobject);
+  void CommitText(JNIEnv*,
+                  const base::android::JavaParamRef<jobject>&,
+                  const base::android::JavaParamRef<jstring>& text_str);
+  void FinishComposingText(JNIEnv* env,
+                           const base::android::JavaParamRef<jobject>&);
+  void AttachImeAdapter(
+      JNIEnv*,
+      const base::android::JavaParamRef<jobject>& java_object);
+  void SetEditableSelectionOffsets(JNIEnv*,
+                                   const base::android::JavaParamRef<jobject>&,
+                                   int start,
+                                   int end);
+  void SetComposingRegion(JNIEnv*,
+                          const base::android::JavaParamRef<jobject>&,
+                          int start,
+                          int end);
+  void DeleteSurroundingText(JNIEnv*,
+                             const base::android::JavaParamRef<jobject>&,
+                             int before,
+                             int after);
+  void ResetImeAdapter(JNIEnv*, const base::android::JavaParamRef<jobject>&);
 
   // Called from native -> java
   void CancelComposition();

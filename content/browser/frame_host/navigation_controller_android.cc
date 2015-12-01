@@ -90,97 +90,111 @@ NavigationControllerAndroid::GetJavaObject() {
   return base::android::ScopedJavaLocalRef<jobject>(obj_);
 }
 
-jboolean NavigationControllerAndroid::CanGoBack(JNIEnv* env, jobject obj) {
+jboolean NavigationControllerAndroid::CanGoBack(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   return navigation_controller_->CanGoBack();
 }
 
-jboolean NavigationControllerAndroid::CanGoForward(JNIEnv* env,
-                                                   jobject obj) {
+jboolean NavigationControllerAndroid::CanGoForward(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   return navigation_controller_->CanGoForward();
 }
 
-jboolean NavigationControllerAndroid::CanGoToOffset(JNIEnv* env,
-                                                    jobject obj,
-                                                    jint offset) {
+jboolean NavigationControllerAndroid::CanGoToOffset(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    jint offset) {
   return navigation_controller_->CanGoToOffset(offset);
 }
 
-void NavigationControllerAndroid::GoBack(JNIEnv* env, jobject obj) {
+void NavigationControllerAndroid::GoBack(JNIEnv* env,
+                                         const JavaParamRef<jobject>& obj) {
   navigation_controller_->GoBack();
 }
 
-void NavigationControllerAndroid::GoForward(JNIEnv* env, jobject obj) {
+void NavigationControllerAndroid::GoForward(JNIEnv* env,
+                                            const JavaParamRef<jobject>& obj) {
   navigation_controller_->GoForward();
 }
 
 void NavigationControllerAndroid::GoToOffset(JNIEnv* env,
-                                             jobject obj,
+                                             const JavaParamRef<jobject>& obj,
                                              jint offset) {
   navigation_controller_->GoToOffset(offset);
 }
 
-jboolean NavigationControllerAndroid::IsInitialNavigation(JNIEnv* env,
-                                                          jobject obj) {
+jboolean NavigationControllerAndroid::IsInitialNavigation(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   return navigation_controller_->IsInitialNavigation();
 }
 
-void NavigationControllerAndroid::LoadIfNecessary(JNIEnv* env, jobject obj) {
+void NavigationControllerAndroid::LoadIfNecessary(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   navigation_controller_->LoadIfNecessary();
 }
 
-void NavigationControllerAndroid::ContinuePendingReload(JNIEnv* env,
-                                                        jobject obj) {
+void NavigationControllerAndroid::ContinuePendingReload(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   navigation_controller_->ContinuePendingReload();
 }
 
 void NavigationControllerAndroid::Reload(JNIEnv* env,
-                                         jobject obj,
+                                         const JavaParamRef<jobject>& obj,
                                          jboolean check_for_repost) {
   navigation_controller_->Reload(check_for_repost);
 }
 
 void NavigationControllerAndroid::ReloadIgnoringCache(
     JNIEnv* env,
-    jobject obj,
+    const JavaParamRef<jobject>& obj,
     jboolean check_for_repost) {
   navigation_controller_->ReloadIgnoringCache(check_for_repost);
 }
 
 void NavigationControllerAndroid::ReloadDisableLoFi(
     JNIEnv* env,
-    jobject obj,
+    const JavaParamRef<jobject>& obj,
     jboolean check_for_repost) {
   navigation_controller_->ReloadDisableLoFi(check_for_repost);
 }
 
-void NavigationControllerAndroid::RequestRestoreLoad(JNIEnv* env, jobject obj) {
+void NavigationControllerAndroid::RequestRestoreLoad(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   navigation_controller_->SetNeedsReload();
 }
 
-void NavigationControllerAndroid::CancelPendingReload(JNIEnv* env,
-                                                      jobject obj) {
+void NavigationControllerAndroid::CancelPendingReload(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   navigation_controller_->CancelPendingReload();
 }
 
-void NavigationControllerAndroid::GoToNavigationIndex(JNIEnv* env,
-                                                      jobject obj,
-                                                      jint index) {
+void NavigationControllerAndroid::GoToNavigationIndex(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    jint index) {
   navigation_controller_->GoToIndex(index);
 }
 
 void NavigationControllerAndroid::LoadUrl(
     JNIEnv* env,
-    jobject obj,
-    jstring url,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& url,
     jint load_url_type,
     jint transition_type,
-    jstring j_referrer_url,
+    const JavaParamRef<jstring>& j_referrer_url,
     jint referrer_policy,
     jint ua_override_option,
-    jstring extra_headers,
-    jbyteArray post_data,
-    jstring base_url_for_data_url,
-    jstring virtual_url_for_data_url,
+    const JavaParamRef<jstring>& extra_headers,
+    const JavaParamRef<jbyteArray>& post_data,
+    const JavaParamRef<jstring>& base_url_for_data_url,
+    const JavaParamRef<jstring>& virtual_url_for_data_url,
     jboolean can_load_local_resources,
     jboolean is_renderer_initiated,
     jboolean should_replace_current_entry) {
@@ -227,15 +241,18 @@ void NavigationControllerAndroid::LoadUrl(
   navigation_controller_->LoadURLWithParams(params);
 }
 
-void NavigationControllerAndroid::ClearHistory(JNIEnv* env, jobject obj) {
+void NavigationControllerAndroid::ClearHistory(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   // TODO(creis): Do callers of this need to know if it fails?
   if (navigation_controller_->CanPruneAllButLastCommitted())
     navigation_controller_->PruneAllButLastCommitted();
 }
 
-jint NavigationControllerAndroid::GetNavigationHistory(JNIEnv* env,
-                                                       jobject obj,
-                                                       jobject history) {
+jint NavigationControllerAndroid::GetNavigationHistory(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& history) {
   // Iterate through navigation entries to populate the list
   int count = navigation_controller_->GetEntryCount();
   for (int i = 0; i < count; ++i) {
@@ -248,8 +265,8 @@ jint NavigationControllerAndroid::GetNavigationHistory(JNIEnv* env,
 
 void NavigationControllerAndroid::GetDirectedNavigationHistory(
     JNIEnv* env,
-    jobject obj,
-    jobject history,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& history,
     jboolean is_forward,
     jint max_entries) {
   // Iterate through navigation entries to populate the list
@@ -271,30 +288,32 @@ void NavigationControllerAndroid::GetDirectedNavigationHistory(
 ScopedJavaLocalRef<jstring>
 NavigationControllerAndroid::GetOriginalUrlForVisibleNavigationEntry(
     JNIEnv* env,
-    jobject obj) {
+    const JavaParamRef<jobject>& obj) {
   NavigationEntry* entry = navigation_controller_->GetVisibleEntry();
   if (entry == NULL)
     return ScopedJavaLocalRef<jstring>(env, NULL);
   return ConvertUTF8ToJavaString(env, entry->GetOriginalRequestURL().spec());
 }
 
-void NavigationControllerAndroid::ClearSslPreferences(JNIEnv* env,
-                                                      jobject obj) {
+void NavigationControllerAndroid::ClearSslPreferences(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   content::SSLHostStateDelegate* delegate =
       navigation_controller_->GetBrowserContext()->GetSSLHostStateDelegate();
   if (delegate)
     delegate->Clear();
 }
 
-bool NavigationControllerAndroid::GetUseDesktopUserAgent(JNIEnv* env,
-                                                         jobject obj) {
+bool NavigationControllerAndroid::GetUseDesktopUserAgent(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   NavigationEntry* entry = navigation_controller_->GetVisibleEntry();
   return entry && entry->GetIsOverridingUserAgent();
 }
 
 void NavigationControllerAndroid::SetUseDesktopUserAgent(
     JNIEnv* env,
-    jobject obj,
+    const JavaParamRef<jobject>& obj,
     jboolean enabled,
     jboolean reload_on_state_change) {
   if (GetUseDesktopUserAgent(env, obj) == enabled)
@@ -318,7 +337,7 @@ void NavigationControllerAndroid::SetUseDesktopUserAgent(
 
 base::android::ScopedJavaLocalRef<jobject>
 NavigationControllerAndroid::GetEntryAtIndex(JNIEnv* env,
-                                             jobject obj,
+                                             const JavaParamRef<jobject>& obj,
                                              int index) {
   if (index < 0 || index >= navigation_controller_->GetEntryCount())
     return base::android::ScopedJavaLocalRef<jobject>();
@@ -329,7 +348,8 @@ NavigationControllerAndroid::GetEntryAtIndex(JNIEnv* env,
 }
 
 base::android::ScopedJavaLocalRef<jobject>
-NavigationControllerAndroid::GetPendingEntry(JNIEnv* env, jobject obj) {
+NavigationControllerAndroid::GetPendingEntry(JNIEnv* env,
+                                             const JavaParamRef<jobject>& obj) {
   content::NavigationEntry* entry = navigation_controller_->GetPendingEntry();
 
   if (!entry)
@@ -339,31 +359,35 @@ NavigationControllerAndroid::GetPendingEntry(JNIEnv* env, jobject obj) {
       env, entry, navigation_controller_->GetPendingEntryIndex());
 }
 
-jint NavigationControllerAndroid::GetLastCommittedEntryIndex(JNIEnv* env,
-                                                             jobject obj) {
+jint NavigationControllerAndroid::GetLastCommittedEntryIndex(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   return navigation_controller_->GetLastCommittedEntryIndex();
 }
 
-jboolean NavigationControllerAndroid::RemoveEntryAtIndex(JNIEnv* env,
-                                                         jobject obj,
-                                                         jint index) {
+jboolean NavigationControllerAndroid::RemoveEntryAtIndex(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    jint index) {
   return navigation_controller_->RemoveEntryAtIndex(index);
 }
 
-jboolean NavigationControllerAndroid::CanCopyStateOver(JNIEnv* env,
-                                                       jobject obj) {
+jboolean NavigationControllerAndroid::CanCopyStateOver(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   return navigation_controller_->GetEntryCount() == 0 &&
       !navigation_controller_->GetPendingEntry();
 }
 
-jboolean NavigationControllerAndroid::CanPruneAllButLastCommitted(JNIEnv* env,
-                                                                  jobject obj) {
+jboolean NavigationControllerAndroid::CanPruneAllButLastCommitted(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   return navigation_controller_->CanPruneAllButLastCommitted();
 }
 
 void NavigationControllerAndroid::CopyStateFrom(
     JNIEnv* env,
-    jobject obj,
+    const JavaParamRef<jobject>& obj,
     jlong source_navigation_controller_android) {
   navigation_controller_->CopyStateFrom(
       *(reinterpret_cast<NavigationControllerAndroid*>(
@@ -372,7 +396,7 @@ void NavigationControllerAndroid::CopyStateFrom(
 
 void NavigationControllerAndroid::CopyStateFromAndPrune(
     JNIEnv* env,
-    jobject obj,
+    const JavaParamRef<jobject>& obj,
     jlong source_navigation_controller_android,
     jboolean replace_entry) {
   navigation_controller_->CopyStateFromAndPrune(

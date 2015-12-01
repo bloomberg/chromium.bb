@@ -62,11 +62,13 @@ class CONTENT_EXPORT MediaSession
 
   // Called when the Android system requests the MediaSession to be suspended.
   // Called by Java through JNI.
-  void OnSuspend(JNIEnv* env, jobject obj, jboolean temporary);
+  void OnSuspend(JNIEnv* env,
+                 const base::android::JavaParamRef<jobject>& obj,
+                 jboolean temporary);
 
   // Called when the Android system requests the MediaSession to be resumed.
   // Called by Java through JNI.
-  void OnResume(JNIEnv* env, jobject obj);
+  void OnResume(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
 
   // Called when the user requests resuming the session. No-op if the session is
   // not controllable.

@@ -38,10 +38,12 @@ class DateTimeChooserAndroid {
                   const std::vector<DateTimeSuggestion>& suggestions);
 
   // Replaces the current value
-  void ReplaceDateTime(JNIEnv* env, jobject, jdouble value);
+  void ReplaceDateTime(JNIEnv* env,
+                       const base::android::JavaRef<jobject>&,
+                       jdouble value);
 
   // Closes the dialog without propagating any changes.
-  void CancelDialog(JNIEnv* env, jobject);
+  void CancelDialog(JNIEnv* env, const base::android::JavaRef<jobject>&);
 
  private:
   RenderViewHost* host_;

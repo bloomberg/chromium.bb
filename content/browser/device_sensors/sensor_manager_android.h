@@ -35,17 +35,35 @@ class CONTENT_EXPORT SensorManagerAndroid {
   static SensorManagerAndroid* GetInstance();
 
   // Called from Java via JNI.
-  void GotLight(JNIEnv*, jobject, double value);
-  void GotOrientation(JNIEnv*, jobject,
-                      double alpha, double beta, double gamma);
-  void GotOrientationAbsolute(JNIEnv*, jobject,
-                      double alpha, double beta, double gamma);
-  void GotAcceleration(JNIEnv*, jobject,
-                       double x, double y, double z);
-  void GotAccelerationIncludingGravity(JNIEnv*, jobject,
-                                       double x, double y, double z);
-  void GotRotationRate(JNIEnv*, jobject,
-                       double alpha, double beta, double gamma);
+  void GotLight(JNIEnv*,
+                const base::android::JavaParamRef<jobject>&,
+                double value);
+  void GotOrientation(JNIEnv*,
+                      const base::android::JavaParamRef<jobject>&,
+                      double alpha,
+                      double beta,
+                      double gamma);
+  void GotOrientationAbsolute(JNIEnv*,
+                              const base::android::JavaParamRef<jobject>&,
+                              double alpha,
+                              double beta,
+                              double gamma);
+  void GotAcceleration(JNIEnv*,
+                       const base::android::JavaParamRef<jobject>&,
+                       double x,
+                       double y,
+                       double z);
+  void GotAccelerationIncludingGravity(
+      JNIEnv*,
+      const base::android::JavaParamRef<jobject>&,
+      double x,
+      double y,
+      double z);
+  void GotRotationRate(JNIEnv*,
+                       const base::android::JavaParamRef<jobject>&,
+                       double alpha,
+                       double beta,
+                       double gamma);
 
   // Shared memory related methods.
   void StartFetchingDeviceLightData(DeviceLightHardwareBuffer* buffer);

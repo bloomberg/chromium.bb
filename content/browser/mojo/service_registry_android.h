@@ -26,16 +26,21 @@ class CONTENT_EXPORT ServiceRegistryAndroid {
   virtual ~ServiceRegistryAndroid();
 
   // Methods called from Java.
-  void AddService(JNIEnv* env,
-                  jobject j_service_registry,
-                  jobject j_manager,
-                  jobject j_factory,
-                  jstring j_name);
-  void RemoveService(JNIEnv* env, jobject j_service_registry, jstring j_name);
-  void ConnectToRemoteService(JNIEnv* env,
-                              jobject j_service_registry,
-                              jstring j_name,
-                              jint handle);
+  void AddService(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& j_service_registry,
+      const base::android::JavaParamRef<jobject>& j_manager,
+      const base::android::JavaParamRef<jobject>& j_factory,
+      const base::android::JavaParamRef<jstring>& j_name);
+  void RemoveService(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& j_service_registry,
+      const base::android::JavaParamRef<jstring>& j_name);
+  void ConnectToRemoteService(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& j_service_registry,
+      const base::android::JavaParamRef<jstring>& j_name,
+      jint handle);
 
   const base::android::ScopedJavaGlobalRef<jobject>& GetObj() { return obj_; }
 

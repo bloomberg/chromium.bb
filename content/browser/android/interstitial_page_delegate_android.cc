@@ -31,13 +31,16 @@ InterstitialPageDelegateAndroid::~InterstitialPageDelegateAndroid() {
     Java_InterstitialPageDelegateAndroid_onNativeDestroyed(env, obj.obj());
 }
 
-void InterstitialPageDelegateAndroid::Proceed(JNIEnv* env, jobject obj) {
+void InterstitialPageDelegateAndroid::Proceed(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   if (page_)
     page_->Proceed();
 }
 
-void InterstitialPageDelegateAndroid::DontProceed(JNIEnv* env,
-                                                  jobject obj) {
+void InterstitialPageDelegateAndroid::DontProceed(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   if (page_)
     page_->DontProceed();
 }

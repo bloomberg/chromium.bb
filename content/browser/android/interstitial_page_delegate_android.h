@@ -31,8 +31,9 @@ class InterstitialPageDelegateAndroid : public InterstitialPageDelegate {
   void set_interstitial_page(InterstitialPage* page) { page_ = page; }
 
   // Methods called from Java.
-  void Proceed(JNIEnv* env, jobject obj);
-  void DontProceed(JNIEnv* env, jobject obj);
+  void Proceed(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+  void DontProceed(JNIEnv* env,
+                   const base::android::JavaParamRef<jobject>& obj);
 
   // Implementation of InterstitialPageDelegate
   std::string GetHTMLContents() override;

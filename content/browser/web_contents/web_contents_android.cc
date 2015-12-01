@@ -281,56 +281,65 @@ WebContentsAndroid::GetJavaObject() {
 }
 
 ScopedJavaLocalRef<jstring> WebContentsAndroid::GetTitle(
-    JNIEnv* env, jobject obj) const {
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) const {
   return base::android::ConvertUTF16ToJavaString(env,
                                                  web_contents_->GetTitle());
 }
 
 ScopedJavaLocalRef<jstring> WebContentsAndroid::GetVisibleURL(
-    JNIEnv* env, jobject obj) const {
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) const {
   return base::android::ConvertUTF8ToJavaString(
       env, web_contents_->GetVisibleURL().spec());
 }
 
-bool WebContentsAndroid::IsLoading(JNIEnv* env, jobject obj) const {
+bool WebContentsAndroid::IsLoading(JNIEnv* env,
+                                   const JavaParamRef<jobject>& obj) const {
   return web_contents_->IsLoading();
 }
 
-bool WebContentsAndroid::IsLoadingToDifferentDocument(JNIEnv* env,
-                                                      jobject obj) const {
+bool WebContentsAndroid::IsLoadingToDifferentDocument(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) const {
   return web_contents_->IsLoadingToDifferentDocument();
 }
 
-void WebContentsAndroid::Stop(JNIEnv* env, jobject obj) {
+void WebContentsAndroid::Stop(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   web_contents_->Stop();
 }
 
-void WebContentsAndroid::Cut(JNIEnv* env, jobject obj) {
+void WebContentsAndroid::Cut(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   web_contents_->Cut();
 }
 
-void WebContentsAndroid::Copy(JNIEnv* env, jobject obj) {
+void WebContentsAndroid::Copy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   web_contents_->Copy();
 }
 
-void WebContentsAndroid::Paste(JNIEnv* env, jobject obj) {
+void WebContentsAndroid::Paste(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   web_contents_->Paste();
 }
 
-void WebContentsAndroid::Replace(JNIEnv* env, jobject obj, jstring jstr) {
+void WebContentsAndroid::Replace(JNIEnv* env,
+                                 const JavaParamRef<jobject>& obj,
+                                 const JavaParamRef<jstring>& jstr) {
   web_contents_->Replace(base::android::ConvertJavaStringToUTF16(env, jstr));
 }
 
-void WebContentsAndroid::SelectAll(JNIEnv* env, jobject obj) {
+void WebContentsAndroid::SelectAll(JNIEnv* env,
+                                   const JavaParamRef<jobject>& obj) {
   web_contents_->SelectAll();
 }
 
-void WebContentsAndroid::Unselect(JNIEnv* env, jobject obj) {
+void WebContentsAndroid::Unselect(JNIEnv* env,
+                                  const JavaParamRef<jobject>& obj) {
   web_contents_->Unselect();
 }
 
-void WebContentsAndroid::InsertCSS(
-    JNIEnv* env, jobject jobj, jstring jcss) {
+void WebContentsAndroid::InsertCSS(JNIEnv* env,
+                                   const JavaParamRef<jobject>& jobj,
+                                   const JavaParamRef<jstring>& jcss) {
   web_contents_->InsertCSS(base::android::ConvertJavaStringToUTF8(env, jcss));
 }
 
@@ -348,55 +357,59 @@ RenderWidgetHostViewAndroid*
   return static_cast<RenderWidgetHostViewAndroid*>(rwhv);
 }
 
-jint WebContentsAndroid::GetBackgroundColor(JNIEnv* env, jobject obj) {
+jint WebContentsAndroid::GetBackgroundColor(JNIEnv* env,
+                                            const JavaParamRef<jobject>& obj) {
   RenderWidgetHostViewAndroid* rwhva = GetRenderWidgetHostViewAndroid();
   if (!rwhva)
     return SK_ColorWHITE;
   return rwhva->GetCachedBackgroundColor();
 }
 
-ScopedJavaLocalRef<jstring> WebContentsAndroid::GetURL(JNIEnv* env,
-                                                       jobject obj) const {
+ScopedJavaLocalRef<jstring> WebContentsAndroid::GetURL(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) const {
   return ConvertUTF8ToJavaString(env, web_contents_->GetURL().spec());
 }
 
 ScopedJavaLocalRef<jstring> WebContentsAndroid::GetLastCommittedURL(
     JNIEnv* env,
-    jobject) const {
+    const JavaParamRef<jobject>&) const {
   return ConvertUTF8ToJavaString(env,
                                  web_contents_->GetLastCommittedURL().spec());
 }
 
-
-jboolean WebContentsAndroid::IsIncognito(JNIEnv* env, jobject obj) {
+jboolean WebContentsAndroid::IsIncognito(JNIEnv* env,
+                                         const JavaParamRef<jobject>& obj) {
   return web_contents_->GetBrowserContext()->IsOffTheRecord();
 }
 
-void WebContentsAndroid::ResumeLoadingCreatedWebContents(JNIEnv* env,
-                                                         jobject obj) {
+void WebContentsAndroid::ResumeLoadingCreatedWebContents(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   web_contents_->ResumeLoadingCreatedWebContents();
 }
 
-void WebContentsAndroid::OnHide(JNIEnv* env, jobject obj) {
+void WebContentsAndroid::OnHide(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   web_contents_->WasHidden();
 }
 
-void WebContentsAndroid::OnShow(JNIEnv* env, jobject obj) {
+void WebContentsAndroid::OnShow(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   web_contents_->WasShown();
 }
 
-void WebContentsAndroid::ReleaseMediaPlayers(JNIEnv* env, jobject jobj) {
+void WebContentsAndroid::ReleaseMediaPlayers(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jobj) {
 #if defined(ENABLE_BROWSER_CDMS)
   web_contents_->ForEachFrame(
       base::Bind(&ReleaseAllMediaPlayers, base::Unretained(web_contents_)));
 #endif // defined(ENABLE_BROWSER_CDMS)
 }
 
-void WebContentsAndroid::ShowInterstitialPage(
-    JNIEnv* env,
-    jobject obj,
-    jstring jurl,
-    jlong delegate_ptr) {
+void WebContentsAndroid::ShowInterstitialPage(JNIEnv* env,
+                                              const JavaParamRef<jobject>& obj,
+                                              const JavaParamRef<jstring>& jurl,
+                                              jlong delegate_ptr) {
   GURL url(base::android::ConvertJavaStringToUTF8(env, jurl));
   InterstitialPageDelegateAndroid* delegate =
       reinterpret_cast<InterstitialPageDelegateAndroid*>(delegate_ptr);
@@ -406,30 +419,33 @@ void WebContentsAndroid::ShowInterstitialPage(
   interstitial->Show();
 }
 
-jboolean WebContentsAndroid::IsShowingInterstitialPage(JNIEnv* env,
-                                                        jobject obj) {
+jboolean WebContentsAndroid::IsShowingInterstitialPage(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   return web_contents_->ShowingInterstitialPage();
 }
 
-jboolean WebContentsAndroid::FocusLocationBarByDefault(JNIEnv* env,
-                                                       jobject obj) {
+jboolean WebContentsAndroid::FocusLocationBarByDefault(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   return web_contents_->FocusLocationBarByDefault();
 }
 
 jboolean WebContentsAndroid::IsRenderWidgetHostViewReady(
     JNIEnv* env,
-    jobject obj) {
+    const JavaParamRef<jobject>& obj) {
   RenderWidgetHostViewAndroid* view = GetRenderWidgetHostViewAndroid();
   return view && view->HasValidFrame();
 }
 
-void WebContentsAndroid::ExitFullscreen(JNIEnv* env, jobject obj) {
+void WebContentsAndroid::ExitFullscreen(JNIEnv* env,
+                                        const JavaParamRef<jobject>& obj) {
   web_contents_->ExitFullscreen();
 }
 
 void WebContentsAndroid::UpdateTopControlsState(
     JNIEnv* env,
-    jobject obj,
+    const JavaParamRef<jobject>& obj,
     bool enable_hiding,
     bool enable_showing,
     bool animate) {
@@ -442,7 +458,8 @@ void WebContentsAndroid::UpdateTopControlsState(
                                                 animate));
 }
 
-void WebContentsAndroid::ShowImeIfNeeded(JNIEnv* env, jobject obj) {
+void WebContentsAndroid::ShowImeIfNeeded(JNIEnv* env,
+                                         const JavaParamRef<jobject>& obj) {
   RenderViewHost* host = web_contents_->GetRenderViewHost();
   if (!host)
     return;
@@ -451,7 +468,7 @@ void WebContentsAndroid::ShowImeIfNeeded(JNIEnv* env, jobject obj) {
 
 void WebContentsAndroid::ScrollFocusedEditableNodeIntoView(
     JNIEnv* env,
-    jobject obj) {
+    const JavaParamRef<jobject>& obj) {
   RenderViewHost* host = web_contents_->GetRenderViewHost();
   if (!host)
     return;
@@ -459,24 +476,28 @@ void WebContentsAndroid::ScrollFocusedEditableNodeIntoView(
       host->GetRoutingID(), gfx::Rect()));
 }
 
-void WebContentsAndroid::SelectWordAroundCaret(JNIEnv* env, jobject obj) {
+void WebContentsAndroid::SelectWordAroundCaret(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   RenderViewHost* host = web_contents_->GetRenderViewHost();
   if (!host)
     return;
   host->SelectWordAroundCaret();
 }
 
-void WebContentsAndroid::AdjustSelectionByCharacterOffset(JNIEnv* env,
-                                                          jobject obj,
-                                                          jint start_adjust,
-                                                          jint end_adjust) {
+void WebContentsAndroid::AdjustSelectionByCharacterOffset(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    jint start_adjust,
+    jint end_adjust) {
   web_contents_->AdjustSelectionByCharacterOffset(start_adjust, end_adjust);
 }
 
-void WebContentsAndroid::EvaluateJavaScript(JNIEnv* env,
-                                            jobject obj,
-                                            jstring script,
-                                            jobject callback) {
+void WebContentsAndroid::EvaluateJavaScript(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& script,
+    const JavaParamRef<jobject>& callback) {
   RenderViewHost* rvh = web_contents_->GetRenderViewHost();
   DCHECK(rvh);
 
@@ -506,10 +527,11 @@ void WebContentsAndroid::EvaluateJavaScript(JNIEnv* env,
       ConvertJavaStringToUTF16(env, script), js_callback);
 }
 
-void WebContentsAndroid::EvaluateJavaScriptForTests(JNIEnv* env,
-                                                    jobject obj,
-                                                    jstring script,
-                                                    jobject callback) {
+void WebContentsAndroid::EvaluateJavaScriptForTests(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& script,
+    const JavaParamRef<jobject>& callback) {
   RenderViewHost* rvh = web_contents_->GetRenderViewHost();
   DCHECK(rvh);
 
@@ -539,10 +561,11 @@ void WebContentsAndroid::EvaluateJavaScriptForTests(JNIEnv* env,
       ConvertJavaStringToUTF16(env, script), js_callback);
 }
 
-void WebContentsAndroid::AddMessageToDevToolsConsole(JNIEnv* env,
-                                                     jobject jobj,
-                                                     jint level,
-                                                     jstring message) {
+void WebContentsAndroid::AddMessageToDevToolsConsole(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jobj,
+    jint level,
+    const JavaParamRef<jstring>& message) {
   DCHECK_GE(level, 0);
   DCHECK_LE(level, CONSOLE_MESSAGE_LEVEL_LAST);
 
@@ -551,11 +574,12 @@ void WebContentsAndroid::AddMessageToDevToolsConsole(JNIEnv* env,
       ConvertJavaStringToUTF8(env, message));
 }
 
-void WebContentsAndroid::SendMessageToFrame(JNIEnv* env,
-                                            jobject obj,
-                                            jstring frame_name,
-                                            jstring message,
-                                            jstring target_origin) {
+void WebContentsAndroid::SendMessageToFrame(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& frame_name,
+    const JavaParamRef<jstring>& message,
+    const JavaParamRef<jstring>& target_origin) {
   base::string16 source_origin;
   base::string16 j_target_origin(ConvertJavaStringToUTF16(env, target_origin));
   base::string16 j_message(ConvertJavaStringToUTF16(env, message));
@@ -566,20 +590,22 @@ void WebContentsAndroid::SendMessageToFrame(JNIEnv* env,
 
 jboolean WebContentsAndroid::HasAccessedInitialDocument(
     JNIEnv* env,
-    jobject jobj) {
+    const JavaParamRef<jobject>& jobj) {
   return static_cast<WebContentsImpl*>(web_contents_)->
       HasAccessedInitialDocument();
 }
 
-jint WebContentsAndroid::GetThemeColor(JNIEnv* env, jobject obj) {
+jint WebContentsAndroid::GetThemeColor(JNIEnv* env,
+                                       const JavaParamRef<jobject>& obj) {
   return web_contents_->GetThemeColor();
 }
 
-void WebContentsAndroid::RequestAccessibilitySnapshot(JNIEnv* env,
-                                                      jobject obj,
-                                                      jobject callback,
-                                                      jfloat y_offset,
-                                                      jfloat x_scroll) {
+void WebContentsAndroid::RequestAccessibilitySnapshot(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& callback,
+    jfloat y_offset,
+    jfloat x_scroll) {
   // Secure the Java callback in a scoped object and give ownership of it to the
   // base::Callback.
   ScopedJavaGlobalRef<jobject> j_callback;
@@ -596,20 +622,24 @@ void WebContentsAndroid::RequestAccessibilitySnapshot(JNIEnv* env,
       snapshot_callback);
 }
 
-void WebContentsAndroid::ResumeMediaSession(JNIEnv* env, jobject obj) {
+void WebContentsAndroid::ResumeMediaSession(JNIEnv* env,
+                                            const JavaParamRef<jobject>& obj) {
   web_contents_->ResumeMediaSession();
 }
 
-void WebContentsAndroid::SuspendMediaSession(JNIEnv* env, jobject obj) {
+void WebContentsAndroid::SuspendMediaSession(JNIEnv* env,
+                                             const JavaParamRef<jobject>& obj) {
   web_contents_->SuspendMediaSession();
 }
 
-void WebContentsAndroid::StopMediaSession(JNIEnv* env, jobject obj) {
+void WebContentsAndroid::StopMediaSession(JNIEnv* env,
+                                          const JavaParamRef<jobject>& obj) {
   web_contents_->StopMediaSession();
 }
 
-ScopedJavaLocalRef<jstring>  WebContentsAndroid::GetEncoding(
-    JNIEnv* env, jobject obj) const {
+ScopedJavaLocalRef<jstring> WebContentsAndroid::GetEncoding(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) const {
   return base::android::ConvertUTF8ToJavaString(env,
                                                 web_contents_->GetEncoding());
 }

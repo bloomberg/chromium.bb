@@ -52,12 +52,15 @@ static jlong Init(JNIEnv* env,
   return reinterpret_cast<intptr_t>(content_view_render_view);
 }
 
-void ContentViewRenderView::Destroy(JNIEnv* env, jobject obj) {
+void ContentViewRenderView::Destroy(JNIEnv* env,
+                                    const JavaParamRef<jobject>& obj) {
   delete this;
 }
 
 void ContentViewRenderView::SetCurrentContentViewCore(
-    JNIEnv* env, jobject obj, jlong native_content_view_core) {
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    jlong native_content_view_core) {
   InitCompositor();
   ContentViewCoreImpl* content_view_core =
       reinterpret_cast<ContentViewCoreImpl*>(native_content_view_core);
@@ -65,19 +68,25 @@ void ContentViewRenderView::SetCurrentContentViewCore(
                                               : scoped_refptr<cc::Layer>());
 }
 
-void ContentViewRenderView::SurfaceCreated(
-    JNIEnv* env, jobject obj) {
+void ContentViewRenderView::SurfaceCreated(JNIEnv* env,
+                                           const JavaParamRef<jobject>& obj) {
   current_surface_format_ = 0;
   InitCompositor();
 }
 
-void ContentViewRenderView::SurfaceDestroyed(JNIEnv* env, jobject obj) {
+void ContentViewRenderView::SurfaceDestroyed(JNIEnv* env,
+                                             const JavaParamRef<jobject>& obj) {
   compositor_->SetSurface(NULL);
   current_surface_format_ = 0;
 }
 
-void ContentViewRenderView::SurfaceChanged(JNIEnv* env, jobject obj,
-    jint format, jint width, jint height, jobject surface) {
+void ContentViewRenderView::SurfaceChanged(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    jint format,
+    jint width,
+    jint height,
+    const JavaParamRef<jobject>& surface) {
   if (current_surface_format_ != format) {
     current_surface_format_ = format;
     compositor_->SetSurface(surface);
@@ -86,12 +95,16 @@ void ContentViewRenderView::SurfaceChanged(JNIEnv* env, jobject obj,
 }
 
 void ContentViewRenderView::SetOverlayVideoMode(
-    JNIEnv* env, jobject obj, bool enabled) {
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    bool enabled) {
   compositor_->SetHasTransparentBackground(enabled);
   SetNeedsComposite(env, obj);
 }
 
-void ContentViewRenderView::SetNeedsComposite(JNIEnv* env, jobject obj) {
+void ContentViewRenderView::SetNeedsComposite(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   if (compositor_)
     compositor_->SetNeedsComposite();
 }
@@ -111,8 +124,9 @@ void ContentViewRenderView::InitCompositor() {
     compositor_.reset(Compositor::Create(this, root_window_));
 }
 
-jlong ContentViewRenderView::GetUIResourceProvider(JNIEnv* env,
-                                                   jobject obj) {
+jlong ContentViewRenderView::GetUIResourceProvider(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   if (!compositor_)
     return 0;
   return reinterpret_cast<intptr_t>(&compositor_->GetUIResourceProvider());

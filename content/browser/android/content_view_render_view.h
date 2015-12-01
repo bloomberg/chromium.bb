@@ -29,19 +29,31 @@ class ContentViewRenderView : public CompositorClient {
                         gfx::NativeWindow root_window);
 
   // Methods called from Java via JNI -----------------------------------------
-  void Destroy(JNIEnv* env, jobject obj);
-  void SetCurrentContentViewCore(JNIEnv* env, jobject obj,
-                                 jlong native_content_view_core);
-  void SurfaceCreated(JNIEnv* env, jobject obj);
-  void SurfaceDestroyed(JNIEnv* env, jobject obj);
-  void SurfaceChanged(JNIEnv* env, jobject obj,
-                      jint format, jint width, jint height, jobject surface);
-  void SetOverlayVideoMode(JNIEnv* env, jobject obj, bool enabled);
-  void SetNeedsComposite(JNIEnv* env, jobject obj);
+  void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+  void SetCurrentContentViewCore(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jlong native_content_view_core);
+  void SurfaceCreated(JNIEnv* env,
+                      const base::android::JavaParamRef<jobject>& obj);
+  void SurfaceDestroyed(JNIEnv* env,
+                        const base::android::JavaParamRef<jobject>& obj);
+  void SurfaceChanged(JNIEnv* env,
+                      const base::android::JavaParamRef<jobject>& obj,
+                      jint format,
+                      jint width,
+                      jint height,
+                      const base::android::JavaParamRef<jobject>& surface);
+  void SetOverlayVideoMode(JNIEnv* env,
+                           const base::android::JavaParamRef<jobject>& obj,
+                           bool enabled);
+  void SetNeedsComposite(JNIEnv* env,
+                         const base::android::JavaParamRef<jobject>& obj);
 
   // TODO(yusufo): Remove this once the compositor code is
   // refactored to use a unified system.
-  jlong GetUIResourceProvider(JNIEnv* env, jobject obj);
+  jlong GetUIResourceProvider(JNIEnv* env,
+                              const base::android::JavaParamRef<jobject>& obj);
 
   // CompositorClient implementation
   void UpdateLayerTreeHost() override;
