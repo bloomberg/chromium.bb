@@ -171,6 +171,8 @@ public class MediaSessionTabHelper {
             return MediaSessionUMA.MEDIA_SESSION_ACTION_SOURCE_MEDIA_NOTIFICATION;
         } else if (source == MediaNotificationListener.ACTION_SOURCE_MEDIA_SESSION) {
             return MediaSessionUMA.MEDIA_SESSION_ACTION_SOURCE_MEDIA_SESSION;
+        } else if (source == MediaNotificationListener.ACTION_SOURCE_HEADSET_UNPLUG) {
+            return MediaSessionUMA.MEDIA_SESSION_ACTION_SOURCE_HEADSET_UNPLUG;
         }
 
         assert false;

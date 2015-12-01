@@ -68967,6 +68967,7 @@ To add a new entry, add it with any value and run test to compute valid value.
 <enum name="MediaSessionActionSource" type="int">
   <int value="0" label="Media Notification"/>
   <int value="1" label="MediaSession (Android)"/>
+  <int value="2" label="Headset Unplugged"/>
 </enum>
 
 <enum name="MediaSessionSuspendedSource" type="int">

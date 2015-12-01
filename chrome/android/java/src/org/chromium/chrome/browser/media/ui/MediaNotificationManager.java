@@ -7,12 +7,15 @@ package org.chromium.chrome.browser.media.ui;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.media.AudioManager;
 import android.os.Build;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
@@ -27,6 +30,7 @@ import android.widget.RemoteViews;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Log;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.tab.Tab;
 
@@ -162,6 +166,8 @@ public class MediaNotificationManager {
                 manager.onPlay(MediaNotificationListener.ACTION_SOURCE_MEDIA_NOTIFICATION);
             } else if (ACTION_PAUSE.equals(action)) {
                 manager.onPause(MediaNotificationListener.ACTION_SOURCE_MEDIA_NOTIFICATION);
+            } else if (AudioManager.ACTION_AUDIO_BECOMING_NOISY.equals(action)) {
+                manager.onPause(MediaNotificationListener.ACTION_SOURCE_HEADSET_UNPLUG);
             }
         }
     }
@@ -171,6 +177,33 @@ public class MediaNotificationManager {
      */
     public static final class PlaybackListenerService extends ListenerService {
         private static final int NOTIFICATION_ID = R.id.media_playback_notification;
+
+        @Override
+        public void onCreate() {
+            super.onCreate();
+            IntentFilter filter = new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
+            registerReceiver(mAudioBecomingNoisyReceiver, filter);
+        }
+
+        @Override
+        public void onDestroy() {
+            unregisterReceiver(mAudioBecomingNoisyReceiver);
+            super.onDestroy();
+        }
+
+        private BroadcastReceiver mAudioBecomingNoisyReceiver = new BroadcastReceiver() {
+                @Override
+                public void onReceive(Context context, Intent intent) {
+                    if (!AudioManager.ACTION_AUDIO_BECOMING_NOISY.equals(intent.getAction())) {
+                        return;
+                    }
+
+                    Intent i = new Intent(context, PlaybackListenerService.class);
+                    i.setAction(intent.getAction());
+                    i.putExtra(ListenerService.EXTRA_NOTIFICATION_ID, NOTIFICATION_ID);
+                    context.startService(i);
+                }
+            };
     }
 
     /**
@@ -297,6 +330,11 @@ public class MediaNotificationManager {
         if (sManagers == null) return null;
 
         return sManagers.get(notificationId);
+    }
+
+    @VisibleForTesting
+    protected static boolean hasManagerForTesting(int notificationId) {
+        return getManager(notificationId) != null;
     }
 
     private final Context mContext;
