@@ -47,11 +47,8 @@ base::android::ScopedJavaLocalRef<jobject>
 base::android::ScopedJavaLocalRef<jobject> GetRealObject(
     JNIEnv* env, jweak obj) {
   jobject real = NULL;
-  if (obj) {
+  if (obj)
     real = env->NewLocalRef(obj);
-    if (!real)
-      DLOG(ERROR) << "The real object has been deleted!";
-  }
   return base::android::ScopedJavaLocalRef<jobject>(env, real);
 }
 
