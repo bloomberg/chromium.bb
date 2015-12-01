@@ -740,14 +740,6 @@ name=bug_536803
 *!blink::SecurityOriginTest_Suborigins_Test::TestBody
 *!testing::internal::HandleExceptionsInMethodIfSupported<>
 
-UNADDRESSABLE ACCESS
-name=bug_554520
-*!gl::Program::release
-*!gl::State::reset
-*!gl::State::~State
-*!`anonymous namespace'::ValidationESTest_DrawElementsWithMaxIndexGivesError_Test::TestBody
-*!testing::internal::HandleExceptionsInMethodIfSupported<>
-
 HANDLE LEAK
 name=bug_555058_a
 system call NtCreateUserProcess
