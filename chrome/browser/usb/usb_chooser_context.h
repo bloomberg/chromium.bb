@@ -8,6 +8,8 @@
 #include <map>
 #include <set>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/scoped_observer.h"
@@ -19,6 +21,17 @@ class UsbChooserContext : public ChooserContextBase,
  public:
   explicit UsbChooserContext(Profile* profile);
   ~UsbChooserContext() override;
+
+  // These methods from ChooserContextBase are overridden in order to expose
+  // ephemeral devices through the public interface.
+  std::vector<scoped_ptr<base::DictionaryValue>> GetGrantedObjects(
+      const GURL& requesting_origin,
+      const GURL& embedding_origin) override;
+  std::vector<scoped_ptr<ChooserContextBase::Object>> GetAllGrantedObjects()
+      override;
+  void RevokeObjectPermission(const GURL& requesting_origin,
+                              const GURL& embedding_origin,
+                              const base::DictionaryValue& object) override;
 
   // Grants |requesting_origin| access to the USB device known to
   // device::UsbService as |guid|.
@@ -45,7 +58,8 @@ class UsbChooserContext : public ChooserContextBase,
   // device::UsbService::Observer implementation.
   void OnDeviceRemoved(scoped_refptr<device::UsbDevice> device) override;
 
-  std::map<GURL, std::set<std::string>> ephemeral_devices_;
+  bool is_off_the_record_;
+  std::map<std::pair<GURL, GURL>, std::set<std::string>> ephemeral_devices_;
   device::UsbService* usb_service_;
   ScopedObserver<device::UsbService, device::UsbService::Observer> observer_;
 

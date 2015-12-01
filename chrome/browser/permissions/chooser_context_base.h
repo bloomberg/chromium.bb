@@ -44,13 +44,19 @@ class ChooserContextBase : public KeyedService {
 
   // Returns the list of objects that |requesting_origin| has been granted
   // permission to access when embedded within |embedding_origin|.
-  std::vector<scoped_ptr<base::DictionaryValue>> GetGrantedObjects(
+  //
+  // This method may be extended by a subclass to return objects not stored in
+  // |host_content_settings_map_|.
+  virtual std::vector<scoped_ptr<base::DictionaryValue>> GetGrantedObjects(
       const GURL& requesting_origin,
       const GURL& embedding_origin);
 
   // Returns the set of all objects that any origin has been granted permission
   // to access.
-  std::vector<scoped_ptr<Object>> GetAllGrantedObjects();
+  //
+  // This method may be extended by a subclass to return objects not stored in
+  // |host_content_settings_map_|.
+  virtual std::vector<scoped_ptr<Object>> GetAllGrantedObjects();
 
   // Grants |requesting_origin| access to |object| when embedded within
   // |embedding_origin| by writing it into |host_content_settings_map_|.
@@ -60,9 +66,13 @@ class ChooserContextBase : public KeyedService {
 
   // Revokes |requesting_origin|'s permission to access |object| when embedded
   // within |embedding_origin|.
-  void RevokeObjectPermission(const GURL& requesting_origin,
-                              const GURL& embedding_origin,
-                              const base::DictionaryValue& object);
+  //
+  // This method may be extended by a subclass to revoke permission to access
+  // objects returned by GetPreviouslyChosenObjects but not stored in
+  // |host_content_settings_map_|.
+  virtual void RevokeObjectPermission(const GURL& requesting_origin,
+                                      const GURL& embedding_origin,
+                                      const base::DictionaryValue& object);
 
   // Validates the structure of an object read from
   // |host_content_settings_map_|.
