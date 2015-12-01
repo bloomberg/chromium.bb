@@ -26,6 +26,7 @@
 #include "./round.h"
 #include "./store_bytes.h"
 #include "./table_tags.h"
+#include "./woff2_common.h"
 
 namespace woff2 {
 
@@ -37,28 +38,6 @@ void StoreLoca(int index_fmt, uint32_t value, size_t* offset, uint8_t* dst) {
   } else {
     StoreU32(value, offset, dst);
   }
-}
-
-void NormalizeSimpleGlyphBoundingBox(Glyph* glyph) {
-  if (glyph->contours.empty() || glyph->contours[0].empty()) {
-    return;
-  }
-  int16_t x_min = glyph->contours[0][0].x;
-  int16_t y_min = glyph->contours[0][0].y;
-  int16_t x_max = x_min;
-  int16_t y_max = y_min;
-  for (const auto& contour : glyph->contours) {
-    for (const auto& point : contour) {
-      if (point.x < x_min) x_min = point.x;
-      if (point.x > x_max) x_max = point.x;
-      if (point.y < y_min) y_min = point.y;
-      if (point.y > y_max) y_max = point.y;
-    }
-  }
-  glyph->x_min = x_min;
-  glyph->y_min = y_min;
-  glyph->x_max = x_max;
-  glyph->y_max = y_max;
 }
 
 }  // namespace
@@ -87,7 +66,6 @@ bool WriteNormalizedLoca(int index_fmt, int num_glyphs, Font* font) {
         (glyph_size > 0 && !ReadGlyph(glyph_data, glyph_size, &glyph))) {
       return FONT_COMPRESSION_FAILURE();
     }
-    NormalizeSimpleGlyphBoundingBox(&glyph);
     size_t glyf_dst_size = glyf_table->buffer.size() - glyf_offset;
     if (!StoreGlyph(glyph, glyf_dst + glyf_offset, &glyf_dst_size)) {
       return FONT_COMPRESSION_FAILURE();
@@ -123,6 +101,9 @@ bool MakeEditableBuffer(Font* font, int tableTag) {
   if (table == NULL) {
     return FONT_COMPRESSION_FAILURE();
   }
+  if (table->IsReused()) {
+    return true;
+  }
   int sz = Round4(table->length);
   table->buffer.resize(sz);
   uint8_t* buf = &table->buffer[0];
@@ -134,20 +115,28 @@ bool MakeEditableBuffer(Font* font, int tableTag) {
 }  // namespace
 
 bool NormalizeGlyphs(Font* font) {
-  Font::Table* cff_table = font->FindTable(kCffTableTag);
   Font::Table* head_table = font->FindTable(kHeadTableTag);
   Font::Table* glyf_table = font->FindTable(kGlyfTableTag);
   Font::Table* loca_table = font->FindTable(kLocaTableTag);
   if (head_table == NULL) {
     return FONT_COMPRESSION_FAILURE();
   }
-  // CFF, no loca, no glyf is OK for CFF. If so, don't normalize.
-  if (cff_table != NULL && loca_table == NULL && glyf_table == NULL) {
+  // If you don't have glyf/loca this transform isn't very interesting
+  if (loca_table == NULL && glyf_table == NULL) {
     return true;
   }
-  if (loca_table == NULL || glyf_table == NULL) {
+  // It would be best if you didn't have just one of glyf/loca
+  if ((glyf_table == NULL) != (loca_table == NULL)) {
     return FONT_COMPRESSION_FAILURE();
   }
+  // Must share neither or both loca & glyf
+  if (loca_table->IsReused() != glyf_table->IsReused()) {
+    return FONT_COMPRESSION_FAILURE();
+  }
+  if (loca_table->IsReused()) {
+    return true;
+  }
+
   int index_fmt = head_table->data[51];
   int num_glyphs = NumGlyphs(*font);
 
@@ -184,25 +173,15 @@ bool NormalizeGlyphs(Font* font) {
 
 bool NormalizeOffsets(Font* font) {
   uint32_t offset = 12 + 16 * font->num_tables;
-  for (auto& i : font->tables) {
-    i.second.offset = offset;
-    offset += Round4(i.second.length);
+  for (auto tag : font->OutputOrderedTags()) {
+    auto& table = font->tables[tag];
+    table.offset = offset;
+    offset += Round4(table.length);
   }
   return true;
 }
 
 namespace {
-
-uint32_t ComputeChecksum(const uint8_t* buf, size_t size) {
-  uint32_t checksum = 0;
-  for (size_t i = 0; i < size; i += 4) {
-    checksum += ((buf[i] << 24) |
-                 (buf[i + 1] << 16) |
-                 (buf[i + 2] << 8) |
-                 buf[i + 3]);
-  }
-  return checksum;
-}
 
 uint32_t ComputeHeaderChecksum(const Font& font) {
   uint32_t checksum = font.flavor;
@@ -212,10 +191,14 @@ uint32_t ComputeHeaderChecksum(const Font& font) {
   checksum += (font.num_tables << 16 | search_range);
   checksum += (max_pow2 << 16 | range_shift);
   for (const auto& i : font.tables) {
-    checksum += i.second.tag;
-    checksum += i.second.checksum;
-    checksum += i.second.offset;
-    checksum += i.second.length;
+    const Font::Table* table = &i.second;
+    if (table->IsReused()) {
+      table = table->reuse_of;
+    }
+    checksum += table->tag;
+    checksum += table->checksum;
+    checksum += table->offset;
+    checksum += table->length;
   }
   return checksum;
 }
@@ -224,30 +207,116 @@ uint32_t ComputeHeaderChecksum(const Font& font) {
 
 bool FixChecksums(Font* font) {
   Font::Table* head_table = font->FindTable(kHeadTableTag);
-  if (head_table == NULL || head_table->length < 12) {
+  if (head_table == NULL) {
     return FONT_COMPRESSION_FAILURE();
   }
+  if (head_table->reuse_of != NULL) {
+    head_table = head_table->reuse_of;
+  }
+  if (head_table->length < 12) {
+    return FONT_COMPRESSION_FAILURE();
+  }
+
   uint8_t* head_buf = &head_table->buffer[0];
   size_t offset = 8;
   StoreU32(0, &offset, head_buf);
   uint32_t file_checksum = 0;
+  uint32_t head_checksum = 0;
   for (auto& i : font->tables) {
     Font::Table* table = &i.second;
-    table->checksum = ComputeChecksum(table->data, table->length);
+    if (table->IsReused()) {
+      table = table->reuse_of;
+    }
+    table->checksum = ComputeULongSum(table->data, table->length);
     file_checksum += table->checksum;
+
+    if (table->tag == kHeadTableTag) {
+      head_checksum = table->checksum;
+    }
   }
+
   file_checksum += ComputeHeaderChecksum(*font);
   offset = 8;
   StoreU32(0xb1b0afba - file_checksum, &offset, head_buf);
+
   return true;
 }
 
-bool NormalizeFont(Font* font) {
+namespace {
+bool MarkTransformed(Font* font) {
+  Font::Table* head_table = font->FindTable(kHeadTableTag);
+  if (head_table == NULL) {
+    return FONT_COMPRESSION_FAILURE();
+  }
+  if (head_table->reuse_of != NULL) {
+    head_table = head_table->reuse_of;
+  }
+  if (head_table->length < 17) {
+    return FONT_COMPRESSION_FAILURE();
+  }
+  // set bit 11 of head table 'flags' to indicate that font has undergone
+  // lossless modifying transform
+  int head_flags = head_table->data[16];
+  head_table->buffer[16] = head_flags | 0x08;
+  return true;
+}
+}  // namespace
+
+
+bool NormalizeWithoutFixingChecksums(Font* font) {
   return (MakeEditableBuffer(font, kHeadTableTag) &&
           RemoveDigitalSignature(font) &&
+          MarkTransformed(font) &&
           NormalizeGlyphs(font) &&
-          NormalizeOffsets(font) &&
+          NormalizeOffsets(font));
+}
+
+bool NormalizeFont(Font* font) {
+  return (NormalizeWithoutFixingChecksums(font) &&
           FixChecksums(font));
+}
+
+bool NormalizeFontCollection(FontCollection* font_collection) {
+  if (font_collection->fonts.size() == 1) {
+    return NormalizeFont(&font_collection->fonts[0]);
+  }
+
+  uint32_t offset = CollectionHeaderSize(font_collection->header_version,
+    font_collection->fonts.size());
+  for (auto& font : font_collection->fonts) {
+    if (!NormalizeWithoutFixingChecksums(&font)) {
+#ifdef FONT_COMPRESSION_BIN
+      fprintf(stderr, "Font normalization failed.\n");
+#endif
+      return FONT_COMPRESSION_FAILURE();
+    }
+    offset += kSfntHeaderSize + kSfntEntrySize * font.num_tables;
+  }
+
+  // Start table offsets after TTC Header and Sfnt Headers
+  for (auto& font : font_collection->fonts) {
+    for (auto tag : font.OutputOrderedTags()) {
+      Font::Table& table = font.tables[tag];
+      if (table.IsReused()) {
+        table.offset = table.reuse_of->offset;
+      } else {
+        table.offset = offset;
+        offset += Round4(table.length);
+      }
+    }
+  }
+
+  // Now we can fix the checksums
+  for (auto& font : font_collection->fonts) {
+    if (!FixChecksums(&font)) {
+#ifdef FONT_COMPRESSION_BIN
+      fprintf(stderr, "Failed to fix checksums\n");
+#endif
+      return FONT_COMPRESSION_FAILURE();
+    }
+  }
+
+  return true;
 }
 
 } // namespace woff2

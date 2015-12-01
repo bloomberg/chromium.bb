@@ -1,6 +1,6 @@
 Name: woff2
 URL: https://github.com/google/woff2
-Version: 445f541996fe8376f3976d35692fd2b9a6eedf2d
+Version: b2e7af9f6fbc03ae1926717caa161e1de70c1f95
 License: Apache 2.0
 License File: LICENSE
 Security Critical: yes
@@ -13,4 +13,3 @@ Local Modifications:
 
 - BUILD.gn: Added.
 - woff2.gyp: Added.
-- Cherry-picked https://github.com/google/woff2/commit/0c1ec8895bce7c7b2da66ebc6e9887ef2e0c1a55.

@@ -17,18 +17,22 @@
 #include "./woff2_dec.h"
 
 #include <stdlib.h>
+#include <algorithm>
 #include <complex>
 #include <cstring>
 #include <limits>
 #include <string>
-#include <algorithm>
 #include <vector>
+#include <map>
+#include <memory>
 
 #include "./buffer.h"
 #include "./decode.h"
+#include "./port.h"
 #include "./round.h"
 #include "./store_bytes.h"
 #include "./table_tags.h"
+#include "./variable_length.h"
 #include "./woff2_common.h"
 
 namespace woff2 {
@@ -56,70 +60,17 @@ const int FLAG_WE_HAVE_AN_X_AND_Y_SCALE = 1 << 6;
 const int FLAG_WE_HAVE_A_TWO_BY_TWO = 1 << 7;
 const int FLAG_WE_HAVE_INSTRUCTIONS = 1 << 8;
 
-const size_t kSfntHeaderSize = 12;
-const size_t kSfntEntrySize = 16;
 const size_t kCheckSumAdjustmentOffset = 8;
 
 const size_t kEndPtsOfContoursOffset = 10;
 const size_t kCompositeGlyphBegin = 10;
 
-// Based on section 6.1.1 of MicroType Express draft spec
-bool Read255UShort(Buffer* buf, unsigned int* value) {
-  static const int kWordCode = 253;
-  static const int kOneMoreByteCode2 = 254;
-  static const int kOneMoreByteCode1 = 255;
-  static const int kLowestUCode = 253;
-  uint8_t code = 0;
-  if (!buf->ReadU8(&code)) {
-    return FONT_COMPRESSION_FAILURE();
-  }
-  if (code == kWordCode) {
-    uint16_t result = 0;
-    if (!buf->ReadU16(&result)) {
-      return FONT_COMPRESSION_FAILURE();
-    }
-    *value = result;
-    return true;
-  } else if (code == kOneMoreByteCode1) {
-    uint8_t result = 0;
-    if (!buf->ReadU8(&result)) {
-      return FONT_COMPRESSION_FAILURE();
-    }
-    *value = result + kLowestUCode;
-    return true;
-  } else if (code == kOneMoreByteCode2) {
-    uint8_t result = 0;
-    if (!buf->ReadU8(&result)) {
-      return FONT_COMPRESSION_FAILURE();
-    }
-    *value = result + kLowestUCode * 2;
-    return true;
-  } else {
-    *value = code;
-    return true;
-  }
-}
-
-bool ReadBase128(Buffer* buf, uint32_t* value) {
-  uint32_t result = 0;
-  for (size_t i = 0; i < 5; ++i) {
-    uint8_t code = 0;
-    if (!buf->ReadU8(&code)) {
-      return FONT_COMPRESSION_FAILURE();
-    }
-    // If any of the top seven bits are set then we're about to overflow.
-    if (result & 0xfe000000) {
-      return FONT_COMPRESSION_FAILURE();
-    }
-    result = (result << 7) | (code & 0x7f);
-    if ((code & 0x80) == 0) {
-      *value = result;
-      return true;
-    }
-  }
-  // Make sure not to exceed the size bound
-  return FONT_COMPRESSION_FAILURE();
-}
+// metadata for a TTC font entry
+struct TtcFont {
+  uint32_t flavor;
+  uint32_t dst_offset;
+  std::vector<uint16_t> table_indices;
+};
 
 int WithSign(int flag, int baseval) {
   // Precondition: 0 <= baseval < 65536 (to avoid integer overflow)
@@ -127,12 +78,11 @@ int WithSign(int flag, int baseval) {
 }
 
 bool TripletDecode(const uint8_t* flags_in, const uint8_t* in, size_t in_size,
-    unsigned int n_points, std::vector<Point>* result,
-    size_t* in_bytes_consumed) {
+    unsigned int n_points, Point* result, size_t* in_bytes_consumed) {
   int x = 0;
   int y = 0;
 
-  if (n_points > in_size) {
+  if (PREDICT_FALSE(n_points > in_size)) {
     return FONT_COMPRESSION_FAILURE();
   }
   unsigned int triplet_index = 0;
@@ -151,8 +101,8 @@ bool TripletDecode(const uint8_t* flags_in, const uint8_t* in, size_t in_size,
     } else {
       n_data_bytes = 4;
     }
-    if (triplet_index + n_data_bytes > in_size ||
-        triplet_index + n_data_bytes < triplet_index) {
+    if (PREDICT_FALSE(triplet_index + n_data_bytes > in_size ||
+        triplet_index + n_data_bytes < triplet_index)) {
       return FONT_COMPRESSION_FAILURE();
     }
     int dx, dy;
@@ -185,11 +135,7 @@ bool TripletDecode(const uint8_t* flags_in, const uint8_t* in, size_t in_size,
     // Possible overflow but coordinate values are not security sensitive
     x += dx;
     y += dy;
-    result->push_back(Point());
-    Point& back = result->back();
-    back.x = x;
-    back.y = y;
-    back.on_curve = on_curve;
+    *result++ = {x, y, on_curve};
   }
   *in_bytes_consumed = triplet_index;
   return true;
@@ -197,7 +143,7 @@ bool TripletDecode(const uint8_t* flags_in, const uint8_t* in, size_t in_size,
 
 // This function stores just the point data. On entry, dst points to the
 // beginning of a simple glyph. Returns true on success.
-bool StorePoints(const std::vector<Point>& points,
+bool StorePoints(unsigned int n_points, const Point* points,
     unsigned int n_contours, unsigned int instruction_length,
     uint8_t* dst, size_t dst_size, size_t* glyph_size) {
   // I believe that n_contours < 65536, in which case this is safe. However, a
@@ -211,7 +157,7 @@ bool StorePoints(const std::vector<Point>& points,
   unsigned int x_bytes = 0;
   unsigned int y_bytes = 0;
 
-  for (unsigned int i = 0; i < points.size(); ++i) {
+  for (unsigned int i = 0; i < n_points; ++i) {
     const Point& point = points[i];
     int flag = point.on_curve ? kGlyfOnCurve : 0;
     int dx = point.x - last_x;
@@ -238,12 +184,12 @@ bool StorePoints(const std::vector<Point>& points,
       repeat_count++;
     } else {
       if (repeat_count != 0) {
-        if (flag_offset >= dst_size) {
+        if (PREDICT_FALSE(flag_offset >= dst_size)) {
           return FONT_COMPRESSION_FAILURE();
         }
         dst[flag_offset++] = repeat_count;
       }
-      if (flag_offset >= dst_size) {
+      if (PREDICT_FALSE(flag_offset >= dst_size)) {
         return FONT_COMPRESSION_FAILURE();
       }
       dst[flag_offset++] = flag;
@@ -255,15 +201,15 @@ bool StorePoints(const std::vector<Point>& points,
   }
 
   if (repeat_count != 0) {
-    if (flag_offset >= dst_size) {
+    if (PREDICT_FALSE(flag_offset >= dst_size)) {
       return FONT_COMPRESSION_FAILURE();
     }
     dst[flag_offset++] = repeat_count;
   }
   unsigned int xy_bytes = x_bytes + y_bytes;
-  if (xy_bytes < x_bytes ||
+  if (PREDICT_FALSE(xy_bytes < x_bytes ||
       flag_offset + xy_bytes < flag_offset ||
-      flag_offset + xy_bytes > dst_size) {
+      flag_offset + xy_bytes > dst_size)) {
     return FONT_COMPRESSION_FAILURE();
   }
 
@@ -271,7 +217,7 @@ bool StorePoints(const std::vector<Point>& points,
   int y_offset = flag_offset + x_bytes;
   last_x = 0;
   last_y = 0;
-  for (unsigned int i = 0; i < points.size(); ++i) {
+  for (unsigned int i = 0; i < n_points; ++i) {
     int dx = points[i].x - last_x;
     if (dx == 0) {
       // pass
@@ -298,57 +244,31 @@ bool StorePoints(const std::vector<Point>& points,
 
 // Compute the bounding box of the coordinates, and store into a glyf buffer.
 // A precondition is that there are at least 10 bytes available.
-void ComputeBbox(const std::vector<Point>& points, uint8_t* dst) {
+void ComputeBbox(unsigned int n_points, const Point* points, uint8_t* dst) {
   int x_min = 0;
   int y_min = 0;
   int x_max = 0;
   int y_max = 0;
 
-  for (unsigned int i = 0; i < points.size(); ++i) {
+  if (n_points > 0) {
+    x_min = points[0].x;
+    x_max = points[0].x;
+    y_min = points[0].y;
+    y_max = points[0].y;
+  }
+  for (unsigned int i = 1; i < n_points; ++i) {
     int x = points[i].x;
     int y = points[i].y;
-    if (i == 0 || x < x_min) x_min = x;
-    if (i == 0 || x > x_max) x_max = x;
-    if (i == 0 || y < y_min) y_min = y;
-    if (i == 0 || y > y_max) y_max = y;
+    x_min = std::min(x, x_min);
+    x_max = std::max(x, x_max);
+    y_min = std::min(y, y_min);
+    y_max = std::max(y, y_max);
   }
   size_t offset = 2;
   offset = Store16(dst, offset, x_min);
   offset = Store16(dst, offset, y_min);
   offset = Store16(dst, offset, x_max);
   offset = Store16(dst, offset, y_max);
-}
-
-// Process entire bbox stream. This is done as a separate pass to allow for
-// composite bbox computations (an optional more aggressive transform).
-bool ProcessBboxStream(Buffer* bbox_stream, unsigned int n_glyphs,
-    const std::vector<uint32_t>& loca_values, uint8_t* glyf_buf,
-    size_t glyf_buf_length) {
-  const uint8_t* buf = bbox_stream->buffer();
-  if (n_glyphs >= 65536 || loca_values.size() != n_glyphs + 1) {
-    return FONT_COMPRESSION_FAILURE();
-  }
-  // Safe because n_glyphs is bounded
-  unsigned int bitmap_length = ((n_glyphs + 31) >> 5) << 2;
-  if (!bbox_stream->Skip(bitmap_length)) {
-    return FONT_COMPRESSION_FAILURE();
-  }
-  for (unsigned int i = 0; i < n_glyphs; ++i) {
-    if (buf[i >> 3] & (0x80 >> (i & 7))) {
-      uint32_t loca_offset = loca_values[i];
-      if (loca_values[i + 1] - loca_offset < kEndPtsOfContoursOffset) {
-        return FONT_COMPRESSION_FAILURE();
-      }
-      if (glyf_buf_length < 2 + 10 ||
-          loca_offset > glyf_buf_length - 2 - 10) {
-        return FONT_COMPRESSION_FAILURE();
-      }
-      if (!bbox_stream->Read(glyf_buf + loca_offset + 2, 8)) {
-        return FONT_COMPRESSION_FAILURE();
-      }
-    }
-  }
-  return true;
 }
 
 bool ProcessComposite(Buffer* composite_stream, uint8_t* dst,
@@ -358,7 +278,7 @@ bool ProcessComposite(Buffer* composite_stream, uint8_t* dst,
 
   uint16_t flags = FLAG_MORE_COMPONENTS;
   while (flags & FLAG_MORE_COMPONENTS) {
-    if (!composite_stream->ReadU16(&flags)) {
+    if (PREDICT_FALSE(!composite_stream->ReadU16(&flags))) {
       return FONT_COMPRESSION_FAILURE();
     }
     we_have_instructions |= (flags & FLAG_WE_HAVE_INSTRUCTIONS) != 0;
@@ -375,12 +295,12 @@ bool ProcessComposite(Buffer* composite_stream, uint8_t* dst,
     } else if (flags & FLAG_WE_HAVE_A_TWO_BY_TWO) {
       arg_size += 8;
     }
-    if (!composite_stream->Skip(arg_size)) {
+    if (PREDICT_FALSE(!composite_stream->Skip(arg_size))) {
       return FONT_COMPRESSION_FAILURE();
     }
   }
   size_t composite_glyph_size = composite_stream->offset() - start_offset;
-  if (composite_glyph_size + kCompositeGlyphBegin > dst_size) {
+  if (PREDICT_FALSE(composite_glyph_size + kCompositeGlyphBegin > dst_size)) {
     return FONT_COMPRESSION_FAILURE();
   }
   Store16(dst, 0, 0xffff);  // nContours = -1 for composite glyph
@@ -394,13 +314,13 @@ bool ProcessComposite(Buffer* composite_stream, uint8_t* dst,
 
 // Build TrueType loca table
 bool StoreLoca(const std::vector<uint32_t>& loca_values, int index_format,
-    uint8_t* dst, size_t dst_size) {
+               uint8_t* dst, size_t dst_size) {
   const uint64_t loca_size = loca_values.size();
   const uint64_t offset_size = index_format ? 4 : 2;
-  if ((loca_size << 2) >> 2 != loca_size) {
+  if (PREDICT_FALSE((loca_size << 2) >> 2 != loca_size)) {
     return FONT_COMPRESSION_FAILURE();
   }
-  if (offset_size * loca_size > dst_size) {
+  if (PREDICT_FALSE(offset_size * loca_size > dst_size)) {
     return FONT_COMPRESSION_FAILURE();
   }
   size_t offset = 0;
@@ -417,33 +337,34 @@ bool StoreLoca(const std::vector<uint32_t>& loca_values, int index_format,
 
 // Reconstruct entire glyf table based on transformed original
 bool ReconstructGlyf(const uint8_t* data, size_t data_size,
-    uint8_t* dst, size_t dst_size,
-    uint8_t* loca_buf, size_t loca_size) {
+                     uint8_t* dst, size_t dst_size,
+                     uint8_t* loca_buf, size_t loca_size) {
   static const int kNumSubStreams = 7;
   Buffer file(data, data_size);
   uint32_t version;
   std::vector<std::pair<const uint8_t*, size_t> > substreams(kNumSubStreams);
 
-  if (!file.ReadU32(&version)) {
+  if (PREDICT_FALSE(!file.ReadU32(&version))) {
     return FONT_COMPRESSION_FAILURE();
   }
   uint16_t num_glyphs;
   uint16_t index_format;
-  if (!file.ReadU16(&num_glyphs) ||
-      !file.ReadU16(&index_format)) {
+  if (PREDICT_FALSE(!file.ReadU16(&num_glyphs) ||
+      !file.ReadU16(&index_format))) {
     return FONT_COMPRESSION_FAILURE();
   }
+
   unsigned int offset = (2 + kNumSubStreams) * 4;
-  if (offset > data_size) {
+  if (PREDICT_FALSE(offset > data_size)) {
     return FONT_COMPRESSION_FAILURE();
   }
   // Invariant from here on: data_size >= offset
   for (int i = 0; i < kNumSubStreams; ++i) {
     uint32_t substream_size;
-    if (!file.ReadU32(&substream_size)) {
+    if (PREDICT_FALSE(!file.ReadU32(&substream_size))) {
       return FONT_COMPRESSION_FAILURE();
     }
-    if (substream_size > data_size - offset) {
+    if (PREDICT_FALSE(substream_size > data_size - offset)) {
       return FONT_COMPRESSION_FAILURE();
     }
     substreams[i] = std::make_pair(data + offset, substream_size);
@@ -459,12 +380,23 @@ bool ReconstructGlyf(const uint8_t* data, size_t data_size,
 
   std::vector<uint32_t> loca_values(num_glyphs + 1);
   std::vector<unsigned int> n_points_vec;
-  std::vector<Point> points;
+  std::unique_ptr<Point[]> points;
+  size_t points_size = 0;
   uint32_t loca_offset = 0;
+  const uint8_t* bbox_bitmap = bbox_stream.buffer();
+  // Safe because num_glyphs is bounded
+  unsigned int bitmap_length = ((num_glyphs + 31) >> 5) << 2;
+  if (!bbox_stream.Skip(bitmap_length)) {
+    return FONT_COMPRESSION_FAILURE();
+  }
   for (unsigned int i = 0; i < num_glyphs; ++i) {
     size_t glyph_size = 0;
     uint16_t n_contours = 0;
-    if (!n_contour_stream.ReadU16(&n_contours)) {
+    bool have_bbox = false;
+    if (bbox_bitmap[i >> 3] & (0x80 >> (i & 7))) {
+      have_bbox = true;
+    }
+    if (PREDICT_FALSE(!n_contour_stream.ReadU16(&n_contours))) {
       return FONT_COMPRESSION_FAILURE();
     }
     uint8_t* glyf_dst = dst + loca_offset;
@@ -473,20 +405,27 @@ bool ReconstructGlyf(const uint8_t* data, size_t data_size,
       // composite glyph
       bool have_instructions = false;
       unsigned int instruction_size = 0;
-      if (!ProcessComposite(&composite_stream, glyf_dst, glyf_dst_size,
-            &glyph_size, &have_instructions)) {
+      if (PREDICT_FALSE(!have_bbox)) {
+        // composite glyphs must have an explicit bbox
+        return FONT_COMPRESSION_FAILURE();
+      }
+      if (PREDICT_FALSE(!ProcessComposite(&composite_stream, glyf_dst,
+            glyf_dst_size, &glyph_size, &have_instructions))) {
+        return FONT_COMPRESSION_FAILURE();
+      }
+      if (PREDICT_FALSE(!bbox_stream.Read(glyf_dst + 2, 8))) {
         return FONT_COMPRESSION_FAILURE();
       }
       if (have_instructions) {
-        if (!Read255UShort(&glyph_stream, &instruction_size)) {
+        if (PREDICT_FALSE(!Read255UShort(&glyph_stream, &instruction_size))) {
           return FONT_COMPRESSION_FAILURE();
         }
-        if (instruction_size + 2 > glyf_dst_size - glyph_size) {
+        if (PREDICT_FALSE(instruction_size + 2 > glyf_dst_size - glyph_size)) {
           return FONT_COMPRESSION_FAILURE();
         }
         Store16(glyf_dst, glyph_size, instruction_size);
-        if (!instruction_stream.Read(glyf_dst + glyph_size + 2,
-              instruction_size)) {
+        if (PREDICT_FALSE(!instruction_stream.Read(glyf_dst + glyph_size + 2,
+              instruction_size))) {
           return FONT_COMPRESSION_FAILURE();
         }
         glyph_size += instruction_size + 2;
@@ -494,21 +433,22 @@ bool ReconstructGlyf(const uint8_t* data, size_t data_size,
     } else if (n_contours > 0) {
       // simple glyph
       n_points_vec.clear();
-      points.clear();
       unsigned int total_n_points = 0;
       unsigned int n_points_contour;
       for (unsigned int j = 0; j < n_contours; ++j) {
-        if (!Read255UShort(&n_points_stream, &n_points_contour)) {
+        if (PREDICT_FALSE(
+            !Read255UShort(&n_points_stream, &n_points_contour))) {
           return FONT_COMPRESSION_FAILURE();
         }
         n_points_vec.push_back(n_points_contour);
-        if (total_n_points + n_points_contour < total_n_points) {
+        if (PREDICT_FALSE(total_n_points + n_points_contour < total_n_points)) {
           return FONT_COMPRESSION_FAILURE();
         }
         total_n_points += n_points_contour;
       }
       unsigned int flag_size = total_n_points;
-      if (flag_size > flag_stream.length() - flag_stream.offset()) {
+      if (PREDICT_FALSE(
+          flag_size > flag_stream.length() - flag_stream.offset())) {
         return FONT_COMPRESSION_FAILURE();
       }
       const uint8_t* flags_buf = flag_stream.buffer() + flag_stream.offset();
@@ -516,58 +456,69 @@ bool ReconstructGlyf(const uint8_t* data, size_t data_size,
         glyph_stream.offset();
       size_t triplet_size = glyph_stream.length() - glyph_stream.offset();
       size_t triplet_bytes_consumed = 0;
-      if (!TripletDecode(flags_buf, triplet_buf, triplet_size, total_n_points,
-            &points, &triplet_bytes_consumed)) {
+      if (points_size < total_n_points) {
+        points_size = total_n_points;
+        points.reset(new Point[points_size]);
+      }
+      if (PREDICT_FALSE(!TripletDecode(flags_buf, triplet_buf, triplet_size,
+          total_n_points, points.get(), &triplet_bytes_consumed))) {
         return FONT_COMPRESSION_FAILURE();
       }
       const uint32_t header_and_endpts_contours_size =
           kEndPtsOfContoursOffset + 2 * n_contours;
-      if (glyf_dst_size < header_and_endpts_contours_size) {
+      if (PREDICT_FALSE(glyf_dst_size < header_and_endpts_contours_size)) {
         return FONT_COMPRESSION_FAILURE();
       }
       Store16(glyf_dst, 0, n_contours);
-      ComputeBbox(points, glyf_dst);
+      if (have_bbox) {
+        if (PREDICT_FALSE(!bbox_stream.Read(glyf_dst + 2, 8))) {
+          return FONT_COMPRESSION_FAILURE();
+        }
+      } else {
+        ComputeBbox(total_n_points, points.get(), glyf_dst);
+      }
       size_t offset = kEndPtsOfContoursOffset;
       int end_point = -1;
       for (unsigned int contour_ix = 0; contour_ix < n_contours; ++contour_ix) {
         end_point += n_points_vec[contour_ix];
-        if (end_point >= 65536) {
+        if (PREDICT_FALSE(end_point >= 65536)) {
           return FONT_COMPRESSION_FAILURE();
         }
         offset = Store16(glyf_dst, offset, end_point);
       }
-      if (!flag_stream.Skip(flag_size)) {
+      if (PREDICT_FALSE(!flag_stream.Skip(flag_size))) {
         return FONT_COMPRESSION_FAILURE();
       }
-      if (!glyph_stream.Skip(triplet_bytes_consumed)) {
+      if (PREDICT_FALSE(!glyph_stream.Skip(triplet_bytes_consumed))) {
         return FONT_COMPRESSION_FAILURE();
       }
       unsigned int instruction_size;
-      if (!Read255UShort(&glyph_stream, &instruction_size)) {
+      if (PREDICT_FALSE(!Read255UShort(&glyph_stream, &instruction_size))) {
         return FONT_COMPRESSION_FAILURE();
       }
-      if (glyf_dst_size - header_and_endpts_contours_size <
-          instruction_size + 2) {
+      if (PREDICT_FALSE(glyf_dst_size - header_and_endpts_contours_size <
+          instruction_size + 2)) {
         return FONT_COMPRESSION_FAILURE();
       }
       uint8_t* instruction_dst = glyf_dst + header_and_endpts_contours_size;
       Store16(instruction_dst, 0, instruction_size);
-      if (!instruction_stream.Read(instruction_dst + 2, instruction_size)) {
+      if (PREDICT_FALSE(
+          !instruction_stream.Read(instruction_dst + 2, instruction_size))) {
         return FONT_COMPRESSION_FAILURE();
       }
-      if (!StorePoints(points, n_contours, instruction_size,
-            glyf_dst, glyf_dst_size, &glyph_size)) {
+      if (PREDICT_FALSE(!StorePoints(total_n_points, points.get(), n_contours,
+            instruction_size, glyf_dst, glyf_dst_size, &glyph_size))) {
         return FONT_COMPRESSION_FAILURE();
       }
     } else {
       glyph_size = 0;
     }
     loca_values[i] = loca_offset;
-    if (glyph_size + 3 < glyph_size) {
+    if (PREDICT_FALSE(glyph_size + 3 < glyph_size)) {
       return FONT_COMPRESSION_FAILURE();
     }
     glyph_size = Round4(glyph_size);
-    if (glyph_size > dst_size - loca_offset) {
+    if (PREDICT_FALSE(glyph_size > dst_size - loca_offset)) {
       // This shouldn't happen, but this test defensively maintains the
       // invariant that loca_offset <= dst_size.
       return FONT_COMPRESSION_FAILURE();
@@ -575,10 +526,6 @@ bool ReconstructGlyf(const uint8_t* data, size_t data_size,
     loca_offset += glyph_size;
   }
   loca_values[num_glyphs] = loca_offset;
-  if (!ProcessBboxStream(&bbox_stream, num_glyphs, loca_values,
-          dst, dst_size)) {
-    return FONT_COMPRESSION_FAILURE();
-  }
   return StoreLoca(loca_values, index_format, loca_buf, loca_size);
 }
 
@@ -595,29 +542,36 @@ const Table* FindTable(const std::vector<Table>& tables, uint32_t tag) {
   return NULL;
 }
 
+bool ReconstructTransformedGlyf(const uint8_t* transformed_buf,
+    size_t transformed_size, const Table* glyf_table, const Table* loca_table,
+    uint8_t* dst, size_t dst_length) {
+  if (PREDICT_FALSE(glyf_table == NULL || loca_table == NULL)) {
+    return FONT_COMPRESSION_FAILURE();
+  }
+  if (PREDICT_FALSE(static_cast<uint64_t>(glyf_table->dst_offset +
+      glyf_table->dst_length) > dst_length)) {
+    return FONT_COMPRESSION_FAILURE();
+  }
+  if (PREDICT_FALSE(static_cast<uint64_t>(loca_table->dst_offset +
+     loca_table->dst_length) > dst_length)) {
+    return FONT_COMPRESSION_FAILURE();
+  }
+  return ReconstructGlyf(transformed_buf, transformed_size,
+                         dst + glyf_table->dst_offset, glyf_table->dst_length,
+                         dst + loca_table->dst_offset, loca_table->dst_length);
+}
+
 bool ReconstructTransformed(const std::vector<Table>& tables, uint32_t tag,
     const uint8_t* transformed_buf, size_t transformed_size,
     uint8_t* dst, size_t dst_length) {
   if (tag == kGlyfTableTag) {
     const Table* glyf_table = FindTable(tables, tag);
     const Table* loca_table = FindTable(tables, kLocaTableTag);
-    if (glyf_table == NULL || loca_table == NULL) {
-      return FONT_COMPRESSION_FAILURE();
-    }
-    if (static_cast<uint64_t>(glyf_table->dst_offset + glyf_table->dst_length) >
-        dst_length) {
-      return FONT_COMPRESSION_FAILURE();
-    }
-    if (static_cast<uint64_t>(loca_table->dst_offset + loca_table->dst_length) >
-        dst_length) {
-      return FONT_COMPRESSION_FAILURE();
-    }
-    return ReconstructGlyf(transformed_buf, transformed_size,
-        dst + glyf_table->dst_offset, glyf_table->dst_length,
-        dst + loca_table->dst_offset, loca_table->dst_length);
+    return ReconstructTransformedGlyf(transformed_buf, transformed_size,
+                                      glyf_table, loca_table, dst, dst_length);
   } else if (tag == kLocaTableTag) {
     // processing was already done by glyf table, but validate
-    if (!FindTable(tables, kGlyfTableTag)) {
+    if (PREDICT_FALSE(!FindTable(tables, kGlyfTableTag))) {
       return FONT_COMPRESSION_FAILURE();
     }
   } else {
@@ -627,20 +581,76 @@ bool ReconstructTransformed(const std::vector<Table>& tables, uint32_t tag,
   return true;
 }
 
-uint32_t ComputeChecksum(const uint8_t* buf, size_t size) {
-  uint32_t checksum = 0;
-  for (size_t i = 0; i < size; i += 4) {
-    // We assume the addition is mod 2^32, which is valid because unsigned
-    checksum += (buf[i] << 24) | (buf[i + 1] << 16) |
-      (buf[i + 2] << 8) | buf[i + 3];
+uint32_t ComputeChecksum(const Table* table, const uint8_t* dst) {
+  return ComputeULongSum(dst + table->dst_offset, table->dst_length);
+}
+
+const Table* FindTable(TtcFont ttc_font, const std::vector<Table>& tables,
+  uint32_t tag) {
+  for (const auto i : ttc_font.table_indices) {
+    if (tables[i].tag == tag) return &tables[i];
   }
-  return checksum;
+  return NULL;
+}
+
+bool FixCollectionChecksums(size_t header_version,
+  const std::vector<Table>& tables, const std::vector<TtcFont>& ttc_fonts,
+  uint8_t* dst) {
+  size_t offset = CollectionHeaderSize(header_version, ttc_fonts.size());
+
+  for (const auto& ttc_font : ttc_fonts) {
+    offset += 12;  // move to start of Offset Table
+    const std::vector<uint16_t>& table_indices = ttc_font.table_indices;
+
+    const Table* head_table = FindTable(ttc_font, tables, kHeadTableTag);
+    if (PREDICT_FALSE(head_table == NULL ||
+        head_table->dst_length < kCheckSumAdjustmentOffset + 4)) {
+      return FONT_COMPRESSION_FAILURE();
+    }
+
+    size_t first_table_offset = std::numeric_limits<size_t>::max();
+    for (const auto index : table_indices) {
+      const auto& table = tables[index];
+      if (table.dst_offset < first_table_offset) {
+        first_table_offset = table.dst_offset;
+      }
+    }
+
+    size_t adjustment_offset = head_table->dst_offset
+      + kCheckSumAdjustmentOffset;
+    StoreU32(dst, adjustment_offset, 0);
+
+    uint32_t file_checksum = 0;
+    // compute each tables checksum
+    for (size_t i = 0; i < table_indices.size(); i++) {
+      const Table& table = tables[table_indices[i]];
+      uint32_t table_checksum = ComputeChecksum(&table, dst);
+      size_t checksum_offset = offset + 4;  // skip past tag to checkSum
+
+      // write the checksum for the Table Record
+      StoreU32(dst, checksum_offset, table_checksum);
+      file_checksum += table_checksum;
+      // next Table Record
+      offset += 16;
+    }
+
+    size_t header_size = kSfntHeaderSize +
+      kSfntEntrySize * table_indices.size();
+    uint32_t header_checksum = ComputeULongSum(dst + ttc_font.dst_offset,
+                                               header_size);
+
+    file_checksum += header_checksum;
+    uint32_t checksum_adjustment = 0xb1b0afba - file_checksum;
+    StoreU32(dst, adjustment_offset, checksum_adjustment);
+  }
+
+  return true;
 }
 
 bool FixChecksums(const std::vector<Table>& tables, uint8_t* dst) {
   const Table* head_table = FindTable(tables, kHeadTableTag);
-  if (head_table == NULL ||
-      head_table->dst_length < kCheckSumAdjustmentOffset + 4) {
+  if (PREDICT_FALSE(head_table == NULL ||
+      head_table->dst_length < kCheckSumAdjustmentOffset + 4)) {
     return FONT_COMPRESSION_FAILURE();
   }
   size_t adjustment_offset = head_table->dst_offset + kCheckSumAdjustmentOffset;
@@ -648,15 +658,12 @@ bool FixChecksums(const std::vector<Table>& tables, uint8_t* dst) {
   size_t n_tables = tables.size();
   uint32_t file_checksum = 0;
   for (size_t i = 0; i < n_tables; ++i) {
-    const Table* table = &tables[i];
-    size_t table_length = table->dst_length;
-    uint8_t* table_data = dst + table->dst_offset;
-    uint32_t checksum = ComputeChecksum(table_data, table_length);
+    uint32_t checksum = ComputeChecksum(&tables[i], dst);
     StoreU32(dst, kSfntHeaderSize + i * kSfntEntrySize + 4, checksum);
     file_checksum += checksum;
   }
-  file_checksum += ComputeChecksum(dst,
-      kSfntHeaderSize + kSfntEntrySize * n_tables);
+  file_checksum += ComputeULongSum(dst,
+                                   kSfntHeaderSize + kSfntEntrySize * n_tables);
   uint32_t checksum_adjustment = 0xb1b0afba - file_checksum;
   StoreU32(dst, adjustment_offset, checksum_adjustment);
   return true;
@@ -667,47 +674,47 @@ bool Woff2Uncompress(uint8_t* dst_buf, size_t dst_size,
   size_t uncompressed_size = dst_size;
   int ok = BrotliDecompressBuffer(src_size, src_buf,
                                   &uncompressed_size, dst_buf);
-  if (!ok || uncompressed_size != dst_size) {
+  if (PREDICT_FALSE(!ok || uncompressed_size != dst_size)) {
     return FONT_COMPRESSION_FAILURE();
   }
   return true;
 }
 
-bool ReadShortDirectory(Buffer* file, std::vector<Table>* tables,
+bool ReadTableDirectory(Buffer* file, std::vector<Table>* tables,
     size_t num_tables) {
   for (size_t i = 0; i < num_tables; ++i) {
     Table* table = &(*tables)[i];
     uint8_t flag_byte;
-    if (!file->ReadU8(&flag_byte)) {
+    if (PREDICT_FALSE(!file->ReadU8(&flag_byte))) {
       return FONT_COMPRESSION_FAILURE();
     }
     uint32_t tag;
     if ((flag_byte & 0x3f) == 0x3f) {
-      if (!file->ReadU32(&tag)) {
+      if (PREDICT_FALSE(!file->ReadU32(&tag))) {
         return FONT_COMPRESSION_FAILURE();
       }
     } else {
       tag = kKnownTags[flag_byte & 0x3f];
     }
     // Bits 6 and 7 are reserved and must be 0.
-    if ((flag_byte & 0xC0) != 0) {
+    if (PREDICT_FALSE((flag_byte & 0xC0)) != 0) {
       return FONT_COMPRESSION_FAILURE();
     }
     uint32_t flags = 0;
-    if (i > 0) {
-      flags |= kWoff2FlagsContinueStream;
-    }
     // Always transform the glyf and loca tables
     if (tag == kGlyfTableTag || tag == kLocaTableTag) {
       flags |= kWoff2FlagsTransform;
     }
     uint32_t dst_length;
-    if (!ReadBase128(file, &dst_length)) {
+    if (PREDICT_FALSE(!ReadBase128(file, &dst_length))) {
       return FONT_COMPRESSION_FAILURE();
     }
     uint32_t transform_length = dst_length;
     if ((flags & kWoff2FlagsTransform) != 0) {
-      if (!ReadBase128(file, &transform_length)) {
+      if (PREDICT_FALSE(!ReadBase128(file, &transform_length))) {
+        return FONT_COMPRESSION_FAILURE();
+      }
+      if (PREDICT_FALSE(tag == kLocaTableTag && transform_length)) {
         return FONT_COMPRESSION_FAILURE();
       }
     }
@@ -732,170 +739,369 @@ size_t ComputeWOFF2FinalSize(const uint8_t* data, size_t length) {
   return total_length;
 }
 
+// Writes a single Offset Table entry
+size_t StoreOffsetTable(uint8_t* result, size_t offset, uint32_t flavor,
+                        uint16_t num_tables) {
+  offset = StoreU32(result, offset, flavor);  // sfnt version
+  offset = Store16(result, offset, num_tables);  // num_tables
+  unsigned max_pow2 = 0;
+  while (1u << (max_pow2 + 1) <= num_tables) {
+    max_pow2++;
+  }
+  const uint16_t output_search_range = (1u << max_pow2) << 4;
+  offset = Store16(result, offset, output_search_range);  // searchRange
+  offset = Store16(result, offset, max_pow2);  // entrySelector
+  // rangeShift
+  offset = Store16(result, offset, (num_tables << 4) - output_search_range);
+  return offset;
+}
+
+size_t StoreTableEntry(uint8_t* result, const Table& table, size_t offset) {
+  offset = StoreU32(result, offset, table.tag);
+  offset = StoreU32(result, offset, 0);  // checksum, to fill in later
+  offset = StoreU32(result, offset, table.dst_offset);
+  offset = StoreU32(result, offset, table.dst_length);
+  return offset;
+}
+
+// First table goes after all the headers, table directory, etc
+uint64_t ComputeOffsetToFirstTable(const uint32_t header_version,
+                                   const uint16_t num_tables,
+                                   const std::vector<TtcFont>& ttc_fonts) {
+  uint64_t offset = kSfntHeaderSize +
+    kSfntEntrySize * static_cast<uint64_t>(num_tables);
+  if (header_version) {
+    offset = CollectionHeaderSize(header_version, ttc_fonts.size())
+      + kSfntHeaderSize * ttc_fonts.size();
+    for (const auto& ttc_font : ttc_fonts) {
+      offset +=
+        kSfntEntrySize * ttc_font.table_indices.size();
+    }
+  }
+  return offset;
+}
+
 bool ConvertWOFF2ToTTF(uint8_t* result, size_t result_length,
                        const uint8_t* data, size_t length) {
   Buffer file(data, length);
 
   uint32_t signature;
   uint32_t flavor;
-  if (!file.ReadU32(&signature) || signature != kWoff2Signature ||
-      !file.ReadU32(&flavor)) {
+  if (PREDICT_FALSE(!file.ReadU32(&signature) || signature != kWoff2Signature ||
+      !file.ReadU32(&flavor))) {
     return FONT_COMPRESSION_FAILURE();
   }
 
   // TODO(user): Should call IsValidVersionTag() here.
 
   uint32_t reported_length;
-  if (!file.ReadU32(&reported_length) || length != reported_length) {
+  if (PREDICT_FALSE(
+      !file.ReadU32(&reported_length) || length != reported_length)) {
     return FONT_COMPRESSION_FAILURE();
   }
   uint16_t num_tables;
-  if (!file.ReadU16(&num_tables) || !num_tables) {
+  if (PREDICT_FALSE(!file.ReadU16(&num_tables) || !num_tables)) {
     return FONT_COMPRESSION_FAILURE();
   }
   // We don't care about these fields of the header:
   //   uint16_t reserved
-  //   uint32_t total_sfnt_size
-  if (!file.Skip(6)) {
+  //   uint32_t total_sfnt_size, the caller already passes it as result_length
+  if (PREDICT_FALSE(!file.Skip(6))) {
     return FONT_COMPRESSION_FAILURE();
   }
   uint32_t compressed_length;
-  if (!file.ReadU32(&compressed_length)) {
+  if (PREDICT_FALSE(!file.ReadU32(&compressed_length))) {
     return FONT_COMPRESSION_FAILURE();
   }
   // We don't care about these fields of the header:
   //   uint16_t major_version, minor_version
-  //   uint32_t meta_offset, meta_length, meta_orig_length
-  //   uint32_t priv_offset, priv_length
-  if (!file.Skip(24)) {
+  if (PREDICT_FALSE(!file.Skip(2 * 2))) {
     return FONT_COMPRESSION_FAILURE();
   }
-  std::vector<Table> tables(num_tables);
-  // Note: change below to ReadLongDirectory to enable long format.
-  if (!ReadShortDirectory(&file, &tables, num_tables)) {
+  uint32_t meta_offset;
+  uint32_t meta_length;
+  uint32_t meta_length_orig;
+  if (PREDICT_FALSE(!file.ReadU32(&meta_offset) ||
+      !file.ReadU32(&meta_length) ||
+      !file.ReadU32(&meta_length_orig))) {
     return FONT_COMPRESSION_FAILURE();
   }
-  uint64_t src_offset = file.offset();
-  uint64_t dst_offset = kSfntHeaderSize +
-      kSfntEntrySize * static_cast<uint64_t>(num_tables);
-  uint64_t uncompressed_sum = 0;
-  for (uint16_t i = 0; i < num_tables; ++i) {
-    Table* table = &tables[i];
-    table->src_offset = src_offset;
-    table->src_length = (i == 0 ? compressed_length : 0);
-    src_offset += table->src_length;
-    if (src_offset > std::numeric_limits<uint32_t>::max()) {
+  if (meta_offset) {
+    if (PREDICT_FALSE(
+        meta_offset >= length || length - meta_offset < meta_length)) {
       return FONT_COMPRESSION_FAILURE();
     }
-    src_offset = Round4(src_offset);  // TODO: reconsider
+  }
+  uint32_t priv_offset;
+  uint32_t priv_length;
+  if (PREDICT_FALSE(!file.ReadU32(&priv_offset) ||
+      !file.ReadU32(&priv_length))) {
+    return FONT_COMPRESSION_FAILURE();
+  }
+  if (priv_offset) {
+    if (PREDICT_FALSE(
+        priv_offset >= length || length - priv_offset < priv_length)) {
+      return FONT_COMPRESSION_FAILURE();
+    }
+  }
+  std::vector<Table> tables(num_tables);
+  if (PREDICT_FALSE(!ReadTableDirectory(&file, &tables, num_tables))) {
+    return FONT_COMPRESSION_FAILURE();
+  }
+
+  uint32_t header_version = 0;
+  // for each font in a ttc, metadata to use when rebuilding
+  std::vector<TtcFont> ttc_fonts;
+  std::map<const Table*, const Table*> loca_by_glyf;
+
+  if (flavor == kTtcFontFlavor) {
+    if (PREDICT_FALSE(!file.ReadU32(&header_version))) {
+      return FONT_COMPRESSION_FAILURE();
+    }
+    uint32_t num_fonts;
+    if (PREDICT_FALSE(!Read255UShort(&file, &num_fonts) || !num_fonts)) {
+      return FONT_COMPRESSION_FAILURE();
+    }
+    ttc_fonts.resize(num_fonts);
+
+    for (uint32_t i = 0; i < num_fonts; i++) {
+      TtcFont& ttc_font = ttc_fonts[i];
+      uint32_t num_tables;
+      if (PREDICT_FALSE(!Read255UShort(&file, &num_tables) || !num_tables)) {
+        return FONT_COMPRESSION_FAILURE();
+      }
+      if (PREDICT_FALSE(!file.ReadU32(&ttc_font.flavor))) {
+        return FONT_COMPRESSION_FAILURE();
+      }
+
+      ttc_font.table_indices.resize(num_tables);
+
+      const Table* glyf_table = NULL;
+      const Table* loca_table = NULL;
+      uint16_t glyf_idx;
+      uint16_t loca_idx;
+
+      for (uint32_t j = 0; j < num_tables; j++) {
+        unsigned int table_idx;
+        if (PREDICT_FALSE(!Read255UShort(&file, &table_idx))) {
+          return FONT_COMPRESSION_FAILURE();
+        }
+        ttc_font.table_indices[j] = table_idx;
+
+        const Table& table = tables[table_idx];
+        if (table.tag == kLocaTableTag) {
+          loca_table = &table;
+          loca_idx = table_idx;
+        }
+        if (table.tag == kGlyfTableTag) {
+          glyf_table = &table;
+          glyf_idx = table_idx;
+        }
+
+      }
+
+      if (PREDICT_FALSE((glyf_table == NULL) != (loca_table == NULL))) {
+#ifdef FONT_COMPRESSION_BIN
+        fprintf(stderr, "Cannot have just one of glyf/loca\n");
+#endif
+        return FONT_COMPRESSION_FAILURE();
+      }
+
+      if (glyf_table != NULL && loca_table != NULL) {
+        loca_by_glyf[glyf_table] = loca_table;
+      }
+    }
+  }
+
+  const uint64_t first_table_offset =
+    ComputeOffsetToFirstTable(header_version, num_tables, ttc_fonts);
+
+  if (PREDICT_FALSE(first_table_offset > result_length)) {
+    return FONT_COMPRESSION_FAILURE();
+  }
+
+  uint64_t compressed_offset = file.offset();
+  if (PREDICT_FALSE(compressed_offset > std::numeric_limits<uint32_t>::max())) {
+    return FONT_COMPRESSION_FAILURE();
+  }
+  uint64_t src_offset = Round4(compressed_offset + compressed_length);
+  uint64_t dst_offset = first_table_offset;
+
+
+  for (uint16_t i = 0; i < num_tables; ++i) {
+    Table* table = &tables[i];
     table->dst_offset = dst_offset;
     dst_offset += table->dst_length;
-    if (dst_offset > std::numeric_limits<uint32_t>::max()) {
+    if (PREDICT_FALSE(dst_offset > std::numeric_limits<uint32_t>::max())) {
       return FONT_COMPRESSION_FAILURE();
     }
     dst_offset = Round4(dst_offset);
+  }
+  if (PREDICT_FALSE(src_offset > length || dst_offset != result_length)) {
+#ifdef FONT_COMPRESSION_BIN
+    fprintf(stderr, "offset fail; src_offset %" PRIu64 " length %lu "
+      "dst_offset %" PRIu64 " result_length %lu\n",
+      src_offset, length, dst_offset, result_length);
+#endif
+    return FONT_COMPRESSION_FAILURE();
+  }
 
-    uncompressed_sum += table->src_length;
-    if (uncompressed_sum > std::numeric_limits<uint32_t>::max()) {
+  // Re-order tables in output (OTSpec) order
+  std::vector<Table> sorted_tables(tables);
+  if (header_version) {
+    // collection; we have to sort the table offset vector in each font
+    for (auto& ttc_font : ttc_fonts) {
+      std::map<uint32_t, uint16_t> sorted_index_by_tag;
+      for (auto table_index : ttc_font.table_indices) {
+        sorted_index_by_tag[tables[table_index].tag] = table_index;
+      }
+      uint16_t index = 0;
+      for (auto& i : sorted_index_by_tag) {
+        ttc_font.table_indices[index++] = i.second;
+      }
+    }
+  } else {
+    // non-collection; we can just sort the tables
+    std::sort(sorted_tables.begin(), sorted_tables.end());
+  }
+
+  if (meta_offset) {
+    if (PREDICT_FALSE(src_offset != meta_offset)) {
+      return FONT_COMPRESSION_FAILURE();
+    }
+    src_offset = Round4(meta_offset + meta_length);
+    if (PREDICT_FALSE(src_offset > std::numeric_limits<uint32_t>::max())) {
       return FONT_COMPRESSION_FAILURE();
     }
   }
-  // Enforce same 30M limit on uncompressed tables as OTS
-  if (uncompressed_sum > 30 * 1024 * 1024) {
-    return FONT_COMPRESSION_FAILURE();
-  }
-  if (src_offset > length || dst_offset > result_length) {
-    return FONT_COMPRESSION_FAILURE();
+
+  if (priv_offset) {
+    if (PREDICT_FALSE(src_offset != priv_offset)) {
+      return FONT_COMPRESSION_FAILURE();
+    }
+    src_offset = Round4(priv_offset + priv_length);
+    if (PREDICT_FALSE(src_offset > std::numeric_limits<uint32_t>::max())) {
+      return FONT_COMPRESSION_FAILURE();
+    }
   }
 
-  const uint32_t sfnt_header_and_table_directory_size = 12 + 16 * num_tables;
-  if (sfnt_header_and_table_directory_size > result_length) {
+  if (PREDICT_FALSE(src_offset != Round4(length))) {
     return FONT_COMPRESSION_FAILURE();
   }
 
   // Start building the font
   size_t offset = 0;
-  offset = StoreU32(result, offset, flavor);
-  offset = Store16(result, offset, num_tables);
-  unsigned max_pow2 = 0;
-  while (1u << (max_pow2 + 1) <= num_tables) {
-    max_pow2++;
-  }
-  const uint16_t output_search_range = (1u << max_pow2) << 4;
-  offset = Store16(result, offset, output_search_range);
-  offset = Store16(result, offset, max_pow2);
-  offset = Store16(result, offset, (num_tables << 4) - output_search_range);
+  size_t offset_table = 0;
+  if (header_version) {
+    // TTC header
+    offset = StoreU32(result, offset, flavor);  // TAG TTCTag
+    offset = StoreU32(result, offset, header_version);  // FIXED Version
+    offset = StoreU32(result, offset, ttc_fonts.size());  // ULONG numFonts
+    // Space for ULONG OffsetTable[numFonts] (zeroed initially)
+    offset_table = offset;  // keep start of offset table for later
+    for (size_t i = 0; i < ttc_fonts.size(); i++) {
+      offset = StoreU32(result, offset, 0);  // will fill real values in later
+    }
+    // space for DSIG fields for header v2
+    if (header_version == 0x00020000) {
+      offset = StoreU32(result, offset, 0);  // ULONG ulDsigTag
+      offset = StoreU32(result, offset, 0);  // ULONG ulDsigLength
+      offset = StoreU32(result, offset, 0);  // ULONG ulDsigOffset
+    }
 
-  // sort tags in the table directory in ascending alphabetical order
-  std::vector<Table> sorted_tables(tables);
-  std::sort(sorted_tables.begin(), sorted_tables.end());
+    // write Offset Tables and store the location of each in TTC Header
+    for (auto& ttc_font : ttc_fonts) {
+      // write Offset Table location into TTC Header
+      offset_table = StoreU32(result, offset_table, offset);
 
-  for (uint16_t i = 0; i < num_tables; ++i) {
-    const Table* table = &sorted_tables[i];
-    offset = StoreU32(result, offset, table->tag);
-    offset = StoreU32(result, offset, 0);  // checksum, to fill in later
-    offset = StoreU32(result, offset, table->dst_offset);
-    offset = StoreU32(result, offset, table->dst_length);
+      // write the actual offset table so our header doesn't lie
+      ttc_font.dst_offset = offset;
+      offset = StoreOffsetTable(result, offset, ttc_font.flavor,
+                                ttc_font.table_indices.size());
+
+      // write table entries
+      for (const auto table_index : ttc_font.table_indices) {
+        offset = StoreTableEntry(result, tables[table_index], offset);
+      }
+    }
+  } else {
+    offset = StoreOffsetTable(result, offset, flavor, num_tables);
+    for (uint16_t i = 0; i < num_tables; ++i) {
+      offset = StoreTableEntry(result, sorted_tables[i], offset);
+    }
   }
+
   std::vector<uint8_t> uncompressed_buf;
-  bool continue_valid = false;
   const uint8_t* transform_buf = NULL;
+  uint64_t total_size = 0;
+  for (uint16_t i = 0; i < num_tables; ++i) {
+    total_size += tables[i].transform_length;
+    if (PREDICT_FALSE(total_size > std::numeric_limits<uint32_t>::max())) {
+      return FONT_COMPRESSION_FAILURE();
+    }
+  }
+  uncompressed_buf.resize(total_size);
+  const uint8_t* src_buf = data + compressed_offset;
+  if (PREDICT_FALSE(!Woff2Uncompress(&uncompressed_buf[0], total_size,
+                       src_buf, compressed_length))) {
+    return FONT_COMPRESSION_FAILURE();
+  }
+  transform_buf = &uncompressed_buf[0];
+
   for (uint16_t i = 0; i < num_tables; ++i) {
     const Table* table = &tables[i];
     uint32_t flags = table->flags;
-    const uint8_t* src_buf = data + table->src_offset;
     size_t transform_length = table->transform_length;
-    if ((flags & kWoff2FlagsContinueStream) != 0) {
-      if (!continue_valid) {
-        return FONT_COMPRESSION_FAILURE();
-      }
-    } else if ((flags & kWoff2FlagsContinueStream) == 0) {
-      uint64_t total_size = transform_length;
-      for (uint16_t j = i + 1; j < num_tables; ++j) {
-        if ((tables[j].flags & kWoff2FlagsContinueStream) == 0) {
-          break;
-        }
-        total_size += tables[j].transform_length;
-        if (total_size > std::numeric_limits<uint32_t>::max()) {
-          return FONT_COMPRESSION_FAILURE();
-        }
-      }
-      uncompressed_buf.resize(total_size);
-      if (!Woff2Uncompress(&uncompressed_buf[0], total_size,
-                           src_buf, compressed_length)) {
-        return FONT_COMPRESSION_FAILURE();
-      }
-      transform_buf = &uncompressed_buf[0];
-      continue_valid = true;
-    } else {
-      return FONT_COMPRESSION_FAILURE();
-    }
 
     if ((flags & kWoff2FlagsTransform) == 0) {
-      if (transform_length != table->dst_length) {
+      if (PREDICT_FALSE(transform_length != table->dst_length)) {
         return FONT_COMPRESSION_FAILURE();
       }
-      if (static_cast<uint64_t>(table->dst_offset + transform_length) >
-          result_length) {
+      if (PREDICT_FALSE(static_cast<uint64_t>(table->dst_offset +
+          transform_length) > result_length)) {
         return FONT_COMPRESSION_FAILURE();
       }
+
       std::memcpy(result + table->dst_offset, transform_buf,
           transform_length);
     } else {
-      if (!ReconstructTransformed(tables, table->tag,
-            transform_buf, transform_length, result, result_length)) {
-        return FONT_COMPRESSION_FAILURE();
+      if (header_version) {
+        if (table->tag == kGlyfTableTag) {
+          const Table* loca_table = loca_by_glyf[table];
+          if (PREDICT_FALSE(!ReconstructTransformedGlyf(transform_buf,
+              transform_length, table, loca_table, result, result_length))) {
+            return FONT_COMPRESSION_FAILURE();
+          }
+        } else if (PREDICT_FALSE(table->tag != kLocaTableTag)) {
+          // transform for this tag not known
+          return FONT_COMPRESSION_FAILURE();
+        }
+      } else {
+        if (PREDICT_FALSE(!ReconstructTransformed(tables, table->tag,
+                transform_buf, transform_length, result, result_length))) {
+          return FONT_COMPRESSION_FAILURE();
+        }
       }
     }
-    if (continue_valid) {
-      transform_buf += transform_length;
-      if (transform_buf > &uncompressed_buf[0] + uncompressed_buf.size()) {
-        return FONT_COMPRESSION_FAILURE();
-      }
+    transform_buf += transform_length;
+    if (PREDICT_FALSE(
+        transform_buf > &uncompressed_buf[0] + uncompressed_buf.size())) {
+      return FONT_COMPRESSION_FAILURE();
     }
   }
 
-  return FixChecksums(sorted_tables, result);
+  if (header_version) {
+    if (PREDICT_FALSE(
+        !FixCollectionChecksums(header_version, tables, ttc_fonts, result))) {
+      return FONT_COMPRESSION_FAILURE();
+    }
+  } else {
+    if (PREDICT_FALSE(!FixChecksums(sorted_tables, result))) {
+      return FONT_COMPRESSION_FAILURE();
+    }
+  }
+
+  return true;
 }
 
 } // namespace woff2
