@@ -2134,7 +2134,6 @@ def GetConfig():
   site_config.AddConfig(
       _release, 'bayleybay-release',
       boards=['bayleybay'],
-      hw_tests=[],
       vm_tests=[],
       unittests=False,
   )
@@ -2142,7 +2141,6 @@ def GetConfig():
   site_config.AddConfig(
       _release, 'beltino-release',
       boards=['beltino'],
-      hw_tests=[],
       vm_tests=[],
   )
 
@@ -2151,7 +2149,6 @@ def GetConfig():
   site_config.AddConfig(
       _release, 'bobcat-release',
       boards=['bobcat'],
-      hw_tests=[],
       profile='minimal',
       # This build doesn't generate signed images, so don't try to release them.
       paygen=False,
@@ -2293,7 +2290,6 @@ def GetConfig():
   site_config.AddConfig(
       _release, 'rush-release',
       _base_configs['rush'],
-      hw_tests=[],
       # This build doesn't generate signed images, so don't try to release them.
       paygen=False,
       signer_tests=False,
@@ -2307,20 +2303,17 @@ def GetConfig():
       paygen=False,
       signer_tests=False,
       push_image=False,
-      hw_tests=[],
   )
 
   site_config.AddConfig(
       _release, 'veyron_mickey-release',
       _base_configs['veyron_mickey'],
-      hw_tests=[],
       vm_tests=[],
   )
 
   site_config.AddConfig(
       _release, 'veyron_romy-release',
       _base_configs['veyron_romy'],
-      hw_tests=[],
       vm_tests=[],
   )
 
