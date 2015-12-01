@@ -4,9 +4,11 @@
 
 #include "chrome/browser/sync/test/integration/sync_test.h"
 
+#include <stdint.h>
+
+#include <limits>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/guid.h"
@@ -855,7 +857,7 @@ bool SyncTest::SetUpLocalPythonTestServer() {
     LOG(ERROR) << "Could not find valid xmpp_port value";
     return false;
   }
-  if ((xmpp_port <= 0) || (xmpp_port > kuint16max)) {
+  if ((xmpp_port <= 0) || (xmpp_port > std::numeric_limits<uint16_t>::max())) {
     LOG(ERROR) << "Invalid xmpp port: " << xmpp_port;
     return false;
   }

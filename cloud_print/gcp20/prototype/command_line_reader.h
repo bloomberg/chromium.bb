@@ -5,15 +5,15 @@
 #ifndef CLOUD_PRINT_GCP20_PROTOTYPE_COMMAND_LINE_READER_H_
 #define CLOUD_PRINT_GCP20_PROTOTYPE_COMMAND_LINE_READER_H_
 
-#include <string>
+#include <stdint.h>
 
-#include "base/basictypes.h"
+#include <string>
 
 namespace command_line_reader {
 
-uint16 ReadHttpPort(uint16 default_value);
+uint16_t ReadHttpPort(uint16_t default_value);
 
-uint32 ReadTtl(uint32 default_value);
+uint32_t ReadTtl(uint32_t default_value);
 
 std::string ReadServiceNamePrefix(const std::string& default_value);
 

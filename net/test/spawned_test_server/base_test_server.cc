@@ -4,6 +4,9 @@
 
 #include "net/test/spawned_test_server/base_test_server.h"
 
+#include <stdint.h>
+
+#include <limits>
 #include <string>
 #include <vector>
 
@@ -285,11 +288,11 @@ bool BaseTestServer::GetAddressList(AddressList* address_list) const {
   return true;
 }
 
-uint16 BaseTestServer::GetPort() {
+uint16_t BaseTestServer::GetPort() {
   return host_port_pair_.port();
 }
 
-void BaseTestServer::SetPort(uint16 port) {
+void BaseTestServer::SetPort(uint16_t port) {
   host_port_pair_.set_port(port);
 }
 
@@ -414,7 +417,7 @@ bool BaseTestServer::ParseServerData(const std::string& server_data) {
     LOG(ERROR) << "Could not find port value";
     return false;
   }
-  if ((port <= 0) || (port > kuint16max)) {
+  if ((port <= 0) || (port > std::numeric_limits<uint16_t>::max())) {
     LOG(ERROR) << "Invalid port value: " << port;
     return false;
   }

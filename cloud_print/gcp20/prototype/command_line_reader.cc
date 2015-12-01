@@ -4,6 +4,8 @@
 
 #include "cloud_print/gcp20/prototype/command_line_reader.h"
 
+#include <limits>
+
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
@@ -11,8 +13,8 @@
 
 namespace command_line_reader {
 
-uint16 ReadHttpPort(uint16 default_value) {
-  uint32 http_port = 0;
+uint16_t ReadHttpPort(uint16_t default_value) {
+  uint32_t http_port = 0;
 
   std::string http_port_string =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
@@ -21,17 +23,17 @@ uint16 ReadHttpPort(uint16 default_value) {
   if (!base::StringToUint(http_port_string, &http_port))
     http_port = default_value;
 
-  if (http_port > kuint16max) {
+  if (http_port > std::numeric_limits<uint16_t>::max()) {
     LOG(ERROR) << "HTTP Port is too large";
     http_port = default_value;
   }
 
   VLOG(1) << "HTTP port for responses: " << http_port;
-  return static_cast<uint16>(http_port);
+  return static_cast<uint16_t>(http_port);
 }
 
-uint32 ReadTtl(uint32 default_value) {
-  uint32 ttl = 0;
+uint32_t ReadTtl(uint32_t default_value) {
+  uint32_t ttl = 0;
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
   if (!base::StringToUint(

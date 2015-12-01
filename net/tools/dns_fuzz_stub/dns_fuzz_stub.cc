@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include <algorithm>
+#include <limits>
 #include <sstream>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
@@ -39,15 +41,17 @@ void CrashNullPointerDereference(void) {
 }
 
 bool FitsUint8(int num) {
-  return (num >= 0) && (num <= kuint8max);
+  return (num >= 0) && (num <= std::numeric_limits<uint8_t>::max());
 }
 
 bool FitsUint16(int num) {
-  return (num >= 0) && (num <= kuint16max);
+  return (num >= 0) && (num <= std::numeric_limits<uint16_t>::max());
 }
 
 bool ReadTestCase(const char* filename,
-                  uint16* id, std::string* qname, uint16* qtype,
+                  uint16_t* id,
+                  std::string* qname,
+                  uint16_t* qtype,
                   std::vector<char>* resp_buf,
                   bool* crash_test) {
   base::FilePath filepath = base::FilePath::FromUTF8Unsafe(filename);
@@ -85,7 +89,7 @@ bool ReadTestCase(const char* filename,
     LOG(ERROR) << filename << ": id is out of range.";
     return false;
   }
-  *id = static_cast<uint16>(id_int);
+  *id = static_cast<uint16_t>(id_int);
 
   if (!dict->GetStringASCII("qname", qname)) {
     LOG(ERROR) << filename << ": qname is missing or not a string.";
@@ -101,7 +105,7 @@ bool ReadTestCase(const char* filename,
     LOG(ERROR) << filename << ": qtype is out of range.";
     return false;
   }
-  *qtype = static_cast<uint16>(qtype_int);
+  *qtype = static_cast<uint16_t>(qtype_int);
 
   base::ListValue* resp_list;
   if (!dict->GetList("response", &resp_list)) {
@@ -134,7 +138,9 @@ bool ReadTestCase(const char* filename,
   return true;
 }
 
-void RunTestCase(uint16 id, std::string& qname, uint16 qtype,
+void RunTestCase(uint16_t id,
+                 std::string& qname,
+                 uint16_t qtype,
                  std::vector<char>& resp_buf) {
   net::DnsQuery query(id, qname, qtype);
   net::DnsResponse response;
@@ -165,9 +171,9 @@ void RunTestCase(uint16 id, std::string& qname, uint16 qtype,
 }
 
 bool ReadAndRunTestCase(const char* filename) {
-  uint16 id = 0;
+  uint16_t id = 0;
   std::string qname;
-  uint16 qtype = 0;
+  uint16_t qtype = 0;
   std::vector<char> resp_buf;
   bool crash_test = false;
 

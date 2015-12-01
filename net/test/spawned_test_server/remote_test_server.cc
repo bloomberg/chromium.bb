@@ -4,6 +4,9 @@
 
 #include "net/test/spawned_test_server/remote_test_server.h"
 
+#include <stdint.h>
+
+#include <limits>
 #include <vector>
 
 #include "base/base_paths.h"
@@ -108,7 +111,7 @@ bool RemoteTestServer::Start() {
     return false;
 
   // Start the Python test server on the remote machine.
-  uint16 test_server_port;
+  uint16_t test_server_port;
   if (!spawner_communicator_->StartServer(arguments_string,
                                           &test_server_port)) {
     return false;
@@ -184,13 +187,15 @@ bool RemoteTestServer::Init(const base::FilePath& document_root) {
   // Verify the ports information.
   base::StringToInt(ports[0], &spawner_server_port_);
   if (!spawner_server_port_ ||
-      static_cast<uint32>(spawner_server_port_) >= kuint16max)
+      static_cast<uint32_t>(spawner_server_port_) >=
+          std::numeric_limits<uint16_t>::max())
     return false;
 
   // Allow the test_server_port to be 0, which means the test server spawner
   // will pick up a random port to run the test server.
   base::StringToInt(ports[1], &test_server_port);
-  if (static_cast<uint32>(test_server_port) >= kuint16max)
+  if (static_cast<uint32_t>(test_server_port) >=
+      std::numeric_limits<uint16_t>::max())
     return false;
   SetPort(test_server_port);
 

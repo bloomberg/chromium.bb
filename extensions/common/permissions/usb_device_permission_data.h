@@ -4,9 +4,10 @@
 #ifndef EXTENSIONS_COMMON_PERMISSIONS_USB_DEVICE_PERMISSION_DATA_H_
 #define EXTENSIONS_COMMON_PERMISSIONS_USB_DEVICE_PERMISSION_DATA_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "extensions/common/permissions/api_permission.h"
 
@@ -20,7 +21,7 @@ namespace extensions {
 
 // A pattern that can be used to match a USB device permission.
 // Should be of the format: vendorId:productId, where both vendorId and
-// productId are decimal strings representing uint16 values.
+// productId are decimal strings representing uint16_t values.
 class UsbDevicePermissionData {
  public:
   enum SpecialInterfaces {
@@ -35,8 +36,8 @@ class UsbDevicePermissionData {
   };
 
   UsbDevicePermissionData();
-  UsbDevicePermissionData(uint16 vendor_id,
-                          uint16 product_id,
+  UsbDevicePermissionData(uint16_t vendor_id,
+                          uint16_t product_id,
                           int interface_id);
 
   // Check if |param| (which must be a UsbDevicePermissionData::CheckParam)
@@ -52,17 +53,17 @@ class UsbDevicePermissionData {
   bool operator<(const UsbDevicePermissionData& rhs) const;
   bool operator==(const UsbDevicePermissionData& rhs) const;
 
-  const uint16& vendor_id() const { return vendor_id_; }
-  const uint16& product_id() const { return product_id_; }
+  const uint16_t& vendor_id() const { return vendor_id_; }
+  const uint16_t& product_id() const { return product_id_; }
 
   // These accessors are provided for IPC_STRUCT_TRAITS_MEMBER.  Please
   // think twice before using them for anything else.
-  uint16& vendor_id() { return vendor_id_; }
-  uint16& product_id() { return product_id_; }
+  uint16_t& vendor_id() { return vendor_id_; }
+  uint16_t& product_id() { return product_id_; }
 
  private:
-  uint16 vendor_id_;
-  uint16 product_id_;
+  uint16_t vendor_id_;
+  uint16_t product_id_;
   int interface_id_;
 };
 
