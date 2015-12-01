@@ -8,7 +8,7 @@
 #include <map>
 #include <vector>
 
-#include "media/cast/cast_config.h"
+#include "media/cast/net/cast_transport_config.h"
 #include "media/cast/net/rtp/rtp_defines.h"
 
 namespace media {

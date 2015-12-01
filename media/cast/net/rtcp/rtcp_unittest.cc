@@ -7,10 +7,10 @@
 
 #include "base/bind.h"
 #include "base/test/simple_test_tick_clock.h"
-#include "media/cast/cast_defines.h"
 #include "media/cast/net/cast_transport_config.h"
 #include "media/cast/net/pacing/paced_sender.h"
 #include "media/cast/net/rtcp/rtcp.h"
+#include "media/cast/net/rtcp/rtcp_utility.h"
 #include "media/cast/test/skewed_tick_clock.h"
 #include "testing/gmock/include/gmock/gmock.h"
 

@@ -9,7 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "media/base/video_frame.h"
-#include "media/cast/cast_config.h"
+#include "media/cast/constants.h"
 #include "media/cast/net/cast_transport_config.h"
 
 namespace media {
@@ -31,9 +31,9 @@ class VideoDecoder {
                Codec codec);
   virtual ~VideoDecoder();
 
-  // Returns STATUS_INITIALIZED if the decoder was successfully constructed from
-  // the given FrameReceiverConfig.  If this method returns any other value,
-  // calls to DecodeFrame() will not succeed.
+  // Returns STATUS_INITIALIZED if the decoder was successfully constructed.  If
+  // this method returns any other value, calls to DecodeFrame() will not
+  // succeed.
   OperationalStatus InitializationResult() const;
 
   // Decode the payload in |encoded_frame| asynchronously.  |callback| will be

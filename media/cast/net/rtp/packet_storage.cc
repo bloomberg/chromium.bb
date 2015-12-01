@@ -5,7 +5,7 @@
 #include "media/cast/net/rtp/packet_storage.h"
 
 #include "base/logging.h"
-#include "media/cast/cast_defines.h"
+#include "media/cast/constants.h"
 
 namespace media {
 namespace cast {

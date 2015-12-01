@@ -9,7 +9,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/sys_byteorder.h"
-#include "media/cast/cast_defines.h"
 #include "third_party/opus/src/include/opus.h"
 
 namespace media {

@@ -4,9 +4,12 @@
 
 #include "media/cast/net/rtcp/rtcp.h"
 
-#include "media/cast/cast_config.h"
-#include "media/cast/cast_defines.h"
+#include <limits>
+
+#include "base/time/time.h"
 #include "media/cast/cast_environment.h"
+#include "media/cast/constants.h"
+#include "media/cast/net/cast_transport_config.h"
 #include "media/cast/net/cast_transport_defines.h"
 #include "media/cast/net/pacing/paced_sender.h"
 #include "media/cast/net/rtcp/rtcp_builder.h"
@@ -18,13 +21,36 @@ using base::TimeDelta;
 namespace media {
 namespace cast {
 
-static const int32 kStatsHistoryWindowMs = 10000;  // 10 seconds.
-// Reject packets that are older than 0.5 seconds older than
-// the newest packet we've seen so far. This protect internal
-// states from crazy routers. (Based on RRTR)
-static const int32 kOutOfOrderMaxAgeMs = 500;
-
 namespace {
+
+enum {
+  kStatsHistoryWindowMs = 10000,  // 10 seconds.
+
+  // Reject packets that are older than 0.5 seconds older than
+  // the newest packet we've seen so far. This protects internal
+  // states from crazy routers. (Based on RRTR)
+  kOutOfOrderMaxAgeMs = 500,
+
+  // Minimum number of bytes required to make a valid RTCP packet.
+  kMinLengthOfRtcp = 8,
+};
+
+// Create a NTP diff from seconds and fractions of seconds; delay_fraction is
+// fractions of a second where 0x80000000 is half a second.
+uint32_t ConvertToNtpDiff(uint32_t delay_seconds, uint32_t delay_fraction) {
+  return ((delay_seconds & 0x0000FFFF) << 16) +
+         ((delay_fraction & 0xFFFF0000) >> 16);
+}
+
+// Parse a NTP diff value into a base::TimeDelta.
+base::TimeDelta ConvertFromNtpDiff(uint32_t ntp_delay) {
+  int64_t delay_us =
+      (ntp_delay & 0x0000ffff) * base::Time::kMicrosecondsPerSecond;
+  delay_us >>= 16;
+  delay_us +=
+      ((ntp_delay & 0xffff0000) >> 16) * base::Time::kMicrosecondsPerSecond;
+  return base::TimeDelta::FromMicroseconds(delay_us);
+}
 
 // A receiver frame event is identified by frame RTP timestamp, event timestamp
 // and event type.
@@ -72,9 +98,9 @@ Rtcp::Rtcp(const RtcpCastMessageCallback& cast_callback,
       local_clock_ahead_by_(ClockDriftSmoother::GetDefaultTimeConstant()),
       lip_sync_rtp_timestamp_(0),
       lip_sync_ntp_timestamp_(0),
-      largest_seen_timestamp_(
-          base::TimeTicks::FromInternalValue(kint64min)) {
-}
+      largest_seen_timestamp_(base::TimeTicks::FromInternalValue(
+          std::numeric_limits<int64_t>::min())),
+      ack_frame_id_wrap_helper_(kFirstFrameId - 1) {}
 
 Rtcp::~Rtcp() {}
 

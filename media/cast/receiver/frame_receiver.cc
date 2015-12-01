@@ -10,7 +10,10 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "media/cast/cast_config.h"
+#include "media/cast/cast_defines.h"
 #include "media/cast/cast_environment.h"
+#include "media/cast/constants.h"
 
 namespace {
 const int kMinSchedulingDelayMs = 1;
@@ -336,7 +339,7 @@ void FrameReceiver::ScheduleNextRtcpReport() {
       CastEnvironment::MAIN, FROM_HERE,
       base::Bind(&FrameReceiver::SendNextRtcpReport,
                  weak_factory_.GetWeakPtr()),
-      base::TimeDelta::FromMilliseconds(kDefaultRtcpIntervalMs));
+      base::TimeDelta::FromMilliseconds(kRtcpReportIntervalMs));
 }
 
 void FrameReceiver::SendNextRtcpReport() {

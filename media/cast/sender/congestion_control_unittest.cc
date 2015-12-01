@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/test/simple_test_tick_clock.h"
-#include "media/cast/cast_defines.h"
 #include "media/cast/sender/congestion_control.h"
 #include "media/cast/test/fake_single_thread_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"

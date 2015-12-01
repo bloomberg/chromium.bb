@@ -14,6 +14,8 @@
 #include "base/time/time.h"
 #include "media/base/audio_bus.h"
 #include "media/cast/cast_config.h"
+#include "media/cast/cast_defines.h"
+#include "media/cast/cast_sender.h"
 #include "media/cast/sender/frame_sender.h"
 
 namespace media {

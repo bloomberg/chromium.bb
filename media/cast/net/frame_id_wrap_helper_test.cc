@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include <gtest/gtest.h>
-#include "media/cast/cast_defines.h"
+#include "media/cast/constants.h"
 #include "media/cast/net/cast_transport_defines.h"
 
 namespace media {
@@ -11,7 +11,7 @@ namespace cast {
 
 class FrameIdWrapHelperTest : public ::testing::Test {
  protected:
-  FrameIdWrapHelperTest() {}
+  FrameIdWrapHelperTest() : frame_id_wrap_helper_(kFirstFrameId - 1) {}
   ~FrameIdWrapHelperTest() override {}
 
   void RunOneTest(uint32 starting_point, int iterations) {
@@ -39,7 +39,10 @@ class FrameIdWrapHelperTest : public ::testing::Test {
 };
 
 TEST_F(FrameIdWrapHelperTest, FirstFrame) {
-  EXPECT_EQ(kStartFrameId, frame_id_wrap_helper_.MapTo32bitsFrameId(255u));
+  uint32_t expected_frame_id = kFirstFrameId;
+  EXPECT_EQ(expected_frame_id, frame_id_wrap_helper_.MapTo32bitsFrameId(0u));
+  --expected_frame_id;
+  EXPECT_EQ(expected_frame_id, frame_id_wrap_helper_.MapTo32bitsFrameId(255u));
 }
 
 TEST_F(FrameIdWrapHelperTest, Rollover) {

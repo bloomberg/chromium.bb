@@ -5,9 +5,7 @@
 #ifndef MEDIA_CAST_CAST_CONFIG_H_
 #define MEDIA_CAST_CAST_CONFIG_H_
 
-#include <list>
 #include <string>
-#include <vector>
 
 #include "base/basictypes.h"
 #include "base/callback.h"
@@ -15,7 +13,6 @@
 #include "base/memory/shared_memory.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
-#include "media/cast/cast_defines.h"
 #include "media/cast/net/cast_transport_config.h"
 
 namespace media {
@@ -23,8 +20,41 @@ class VideoEncodeAccelerator;
 
 namespace cast {
 
+// TODO(miu): Eliminate these after moving "default config" into the top-level
+// media/cast directory.  http://crbug.com/530839
+enum SuggestedDefaults {
+  // Audio encoder bitrate.  Zero means "auto," which asks the encoder to select
+  // a bitrate that dynamically adjusts to the content.  Otherwise, a constant
+  // bitrate is used.
+  kDefaultAudioEncoderBitrate = 0,
+
+  // Suggested default audio sampling rate.
+  kDefaultAudioSamplingRate = 48000,
+
+  // Suggested default maximum video frame rate.
+  kDefaultMaxFrameRate = 30,
+
+  // End-to-end latency in milliseconds.
+  //
+  // DO NOT USE THIS (400 ms is proven as ideal for general-purpose use).
+  //
+  // TODO(miu): Change to 400, and confirm nothing has broken in later change.
+  // http://crbug.com/530839
+  kDefaultRtpMaxDelayMs = 100,
+
+  // RTP payload types that identify an RTP stream as audio or video.
+  kDefaultRtpAudioPayloadType = 127,
+  kDefaultRtpVideoPayloadType = 96,
+
+  // Suggested minimum and maximum video bitrates for general-purpose use (up to
+  // 1080p, 30 FPS).
+  kDefaultMinVideoKbps = 300,
+  kDefaultMaxVideoKbps = 5000,
+};
+
 // TODO(miu): Merge AudioSenderConfig and VideoSenderConfig and make their
 // naming/documentation consistent with FrameReceiverConfig.
+// http://crbug.com/530839
 struct AudioSenderConfig {
   AudioSenderConfig();
   ~AudioSenderConfig();
@@ -159,23 +189,12 @@ struct FrameReceiverConfig {
   std::string aes_iv_mask;
 };
 
-// Import from media::cast.
-
-typedef Packet Packet;
-typedef PacketList PacketList;
-
-// Callback that is run to update the client with current status.  This is used
-// to allow the client to wait for asynchronous initialization to complete
-// before sending frames, and also to be notified of any runtime errors that
-// have halted the session.
-typedef base::Callback<void(OperationalStatus)> StatusChangeCallback;
-
+// TODO(miu): Remove the CreateVEA callbacks.  http://crbug.com/454029
 typedef base::Callback<void(scoped_refptr<base::SingleThreadTaskRunner>,
                             scoped_ptr<media::VideoEncodeAccelerator>)>
     ReceiveVideoEncodeAcceleratorCallback;
 typedef base::Callback<void(const ReceiveVideoEncodeAcceleratorCallback&)>
     CreateVideoEncodeAcceleratorCallback;
-
 typedef base::Callback<void(scoped_ptr<base::SharedMemory>)>
     ReceiveVideoEncodeMemoryCallback;
 typedef base::Callback<void(size_t size,

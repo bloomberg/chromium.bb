@@ -17,6 +17,8 @@
 #include "base/synchronization/lock.h"
 #include "media/base/mac/corevideo_glue.h"
 #include "media/base/mac/video_frame_mac.h"
+#include "media/cast/cast_defines.h"
+#include "media/cast/constants.h"
 #include "media/cast/sender/video_frame_factory.h"
 
 namespace media {
@@ -320,7 +322,7 @@ H264VideoToolboxEncoder::H264VideoToolboxEncoder(
       videotoolbox_glue_(VideoToolboxGlue::Get()),
       video_config_(video_config),
       status_change_cb_(status_change_cb),
-      last_frame_id_(kStartFrameId),
+      last_frame_id_(kFirstFrameId - 1),
       encode_next_frame_as_keyframe_(false),
       power_suspended_(false),
       weak_factory_(this) {

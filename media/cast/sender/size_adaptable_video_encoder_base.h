@@ -10,6 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
+#include "media/cast/constants.h"
 #include "media/cast/sender/video_encoder.h"
 #include "ui/gfx/geometry/size.h"
 

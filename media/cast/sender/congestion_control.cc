@@ -15,12 +15,13 @@
 
 #include "media/cast/sender/congestion_control.h"
 
+#include <algorithm>
 #include <deque>
 
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
-#include "media/cast/cast_config.h"
 #include "media/cast/cast_defines.h"
+#include "media/cast/constants.h"
 
 namespace media {
 namespace cast {
@@ -175,10 +176,9 @@ void AdaptiveCongestionControl::UpdateRtt(base::TimeDelta rtt) {
 
 void AdaptiveCongestionControl::UpdateTargetPlayoutDelay(
     base::TimeDelta delay) {
-  const int max_unacked_frames =
-      std::min(kMaxUnackedFrames,
-               1 + static_cast<int>(delay * max_frame_rate_ /
-                                    base::TimeDelta::FromSeconds(1)));
+  const int max_unacked_frames = std::min<int>(
+      kMaxUnackedFrames, 1 + static_cast<int>(delay * max_frame_rate_ /
+                                              base::TimeDelta::FromSeconds(1)));
   DCHECK_GT(max_unacked_frames, 0);
   history_size_ = max_unacked_frames + kHistorySize;
   PruneFrameStats();

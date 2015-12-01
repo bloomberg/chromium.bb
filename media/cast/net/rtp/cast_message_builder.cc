@@ -5,10 +5,27 @@
 #include "media/cast/net/rtp/cast_message_builder.h"
 
 #include "media/cast/cast_defines.h"
+#include "media/cast/constants.h"
 #include "media/cast/net/rtp/framer.h"
 
 namespace media {
 namespace cast {
+
+namespace {
+
+// TODO(miu): These should probably be dynamic and computed base on configured
+// end-to-end latency and packet loss rates.  http://crbug.com/563784
+enum {
+  // Number of milliseconds between sending of ACK/NACK Cast Message RTCP
+  // packets back to the sender.
+  kCastMessageUpdateIntervalMs = 33,
+
+  // Number of milliseconds between repeating a NACK for packets in the same
+  // frame.
+  kNackRepeatIntervalMs = 30,
+};
+
+}  // namespace
 
 CastMessageBuilder::CastMessageBuilder(
     base::TickClock* clock,
@@ -26,8 +43,8 @@ CastMessageBuilder::CastMessageBuilder(
       cast_msg_(media_ssrc),
       slowing_down_ack_(false),
       acked_last_frame_(true),
-      last_acked_frame_id_(kStartFrameId) {
-  cast_msg_.ack_frame_id = kStartFrameId;
+      last_acked_frame_id_(kFirstFrameId - 1) {
+  cast_msg_.ack_frame_id = kFirstFrameId - 1;
 }
 
 CastMessageBuilder::~CastMessageBuilder() {}
@@ -114,7 +131,7 @@ void CastMessageBuilder::UpdateCastMessage() {
 }
 
 void CastMessageBuilder::Reset() {
-  cast_msg_.ack_frame_id = kStartFrameId;
+  cast_msg_.ack_frame_id = kFirstFrameId - 1;
   cast_msg_.missing_frames_and_packets.clear();
   time_last_nacked_map_.clear();
 }

@@ -7,6 +7,8 @@
 #include "base/json/json_writer.h"
 #include "base/values.h"
 #include "media/base/video_frame.h"
+#include "media/cast/cast_defines.h"
+#include "media/cast/constants.h"
 
 #ifndef OFFICIAL_BUILD
 

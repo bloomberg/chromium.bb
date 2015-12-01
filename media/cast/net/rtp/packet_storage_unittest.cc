@@ -11,7 +11,7 @@
 
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
-#include "media/cast/cast_defines.h"
+#include "media/cast/constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace media {

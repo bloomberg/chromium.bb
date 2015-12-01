@@ -4,6 +4,7 @@ include_rules = [
   "+media/cast/cast_defines.h",
   "+media/cast/cast_environment.h",
   "+media/cast/common",
+  "+media/cast/constants.h",
   "+media/cast/logging",
   "+media/cast/net",
   "+net",

@@ -12,6 +12,7 @@
 #include "media/base/video_frame.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
+#include "media/cast/cast_sender.h"
 #include "media/cast/sender/sender_encoded_frame.h"
 #include "media/cast/sender/video_frame_factory.h"
 

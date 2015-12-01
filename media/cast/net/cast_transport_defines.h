@@ -10,14 +10,16 @@
 #include <map>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 
 namespace media {
 namespace cast {
 
-// TODO(mikhal): Implement and add more types.
+// Enums used to indicate transport readiness state.
 enum CastTransportStatus {
   TRANSPORT_AUDIO_UNINITIALIZED = 0,
   TRANSPORT_VIDEO_UNINITIALIZED,
@@ -28,38 +30,35 @@ enum CastTransportStatus {
   CAST_TRANSPORT_STATUS_LAST = TRANSPORT_SOCKET_ERROR
 };
 
+// kRtcpCastAllPacketsLost is used in PacketIDSet and
+// on the wire to mean that ALL packets for a particular
+// frame are lost.
+const uint16_t kRtcpCastAllPacketsLost = 0xffff;
+
+// kRtcpCastLastPacket is used in PacketIDSet to ask for
+// the last packet of a frame to be retransmitted.
+const uint16_t kRtcpCastLastPacket = 0xfffe;
+
 const size_t kMaxIpPacketSize = 1500;
-// Each uint16 represents one packet id within a cast frame.
-typedef std::set<uint16> PacketIdSet;
-// Each uint8 represents one cast frame.
-typedef std::map<uint8, PacketIdSet> MissingFramesAndPacketsMap;
-
-// Rtcp defines.
-
-enum RtcpPacketFields {
-  kPacketTypeLow = 194,  // SMPTE time-code mapping.
-  kPacketTypeSenderReport = 200,
-  kPacketTypeReceiverReport = 201,
-  kPacketTypeApplicationDefined = 204,
-  kPacketTypeGenericRtpFeedback = 205,
-  kPacketTypePayloadSpecific = 206,
-  kPacketTypeXr = 207,
-  kPacketTypeHigh = 210,  // Port Mapping.
-};
 
 // Each uint16 represents one packet id within a cast frame.
-typedef std::set<uint16> PacketIdSet;
+// Can also contain kRtcpCastAllPacketsLost and kRtcpCastLastPacket.
+using PacketIdSet = std::set<uint16_t>;
 // Each uint8 represents one cast frame.
-typedef std::map<uint8, PacketIdSet> MissingFramesAndPacketsMap;
+using MissingFramesAndPacketsMap = std::map<uint8_t, PacketIdSet>;
+
+using Packet = std::vector<uint8_t>;
+using PacketRef = scoped_refptr<base::RefCountedData<Packet>>;
+using PacketList = std::vector<PacketRef>;
 
 class FrameIdWrapHelperTest;
 
 // TODO(miu): UGLY IN-LINE DEFINITION IN HEADER FILE!  Move to appropriate
-// location, separated into .h and .cc files.
+// location, separated into .h and .cc files.  http://crbug.com/530839
 class FrameIdWrapHelper {
  public:
-  FrameIdWrapHelper()
-      : largest_frame_id_seen_(kStartFrameId) {}
+  explicit FrameIdWrapHelper(uint32_t start_frame_id)
+      : largest_frame_id_seen_(start_frame_id) {}
 
   uint32 MapTo32bitsFrameId(const uint8 over_the_wire_frame_id) {
     uint32 ret = (largest_frame_id_seen_ & ~0xff) | over_the_wire_frame_id;
@@ -77,7 +76,6 @@ class FrameIdWrapHelper {
 
  private:
   friend class FrameIdWrapHelperTest;
-  static const uint32 kStartFrameId = UINT32_C(0xffffffff);
 
   uint32 largest_frame_id_seen_;
 

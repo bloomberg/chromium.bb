@@ -11,6 +11,7 @@
 #include "base/strings/stringprintf.h"
 #include "media/base/video_frame.h"
 #include "media/cast/cast_defines.h"
+#include "media/cast/constants.h"
 #include "third_party/libvpx_new/source/libvpx/vpx/vp8cx.h"
 
 namespace media {
@@ -30,7 +31,7 @@ Vp8Encoder::Vp8Encoder(const VideoSenderConfig& video_config)
     : cast_config_(video_config),
       key_frame_requested_(true),
       bitrate_kbit_(cast_config_.start_bitrate / 1000),
-      last_encoded_frame_id_(kStartFrameId),
+      last_encoded_frame_id_(kFirstFrameId - 1),
       has_seen_zero_length_encoded_frame_(false) {
   config_.g_timebase.den = 0;  // Not initialized.
 

@@ -7,6 +7,7 @@
 #include "base/big_endian.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
+#include "media/cast/constants.h"
 
 namespace media {
 namespace cast {

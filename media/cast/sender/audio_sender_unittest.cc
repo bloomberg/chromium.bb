@@ -12,6 +12,7 @@
 #include "media/base/media.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
+#include "media/cast/constants.h"
 #include "media/cast/net/cast_transport_config.h"
 #include "media/cast/net/cast_transport_sender_impl.h"
 #include "media/cast/sender/audio_sender.h"
@@ -150,7 +151,7 @@ TEST_F(AudioSenderTest, RtcpTimer) {
 
   // Make sure that we send at least one RTCP packet.
   base::TimeDelta max_rtcp_timeout =
-      base::TimeDelta::FromMilliseconds(1 + kDefaultRtcpIntervalMs * 3 / 2);
+      base::TimeDelta::FromMilliseconds(1 + kRtcpReportIntervalMs * 3 / 2);
   testing_clock_->Advance(max_rtcp_timeout);
   task_runner_->RunTasks();
   EXPECT_LE(1, transport_.number_of_rtp_packets());

@@ -120,7 +120,7 @@ class RtpPacketizerTest : public ::testing::Test {
         pacer_.get(), &packet_storage_, config_));
     video_frame_.dependency = EncodedFrame::DEPENDENT;
     video_frame_.frame_id = 0;
-    video_frame_.referenced_frame_id = kStartFrameId;
+    video_frame_.referenced_frame_id = video_frame_.frame_id - 1;
     video_frame_.data.assign(kFrameSize, 123);
     video_frame_.rtp_timestamp = 0x0055aa11;
   }

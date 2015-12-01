@@ -29,7 +29,6 @@
 #include "media/base/limits.h"
 #include "media/base/video_frame.h"
 #include "media/cast/cast_config.h"
-#include "media/cast/cast_defines.h"
 #include "media/cast/cast_sender.h"
 #include "media/cast/net/cast_transport_config.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
@@ -70,8 +69,8 @@ CastRtpPayloadParams DefaultVp8Payload() {
   payload.ssrc = 11;
   payload.feedback_ssrc = 12;
   payload.clock_rate = media::cast::kVideoFrequency;
-  payload.max_bitrate = media::cast::kDefaultMaxVideoBitRate;
-  payload.min_bitrate = media::cast::kDefaultMinVideoBitRate;
+  payload.max_bitrate = media::cast::kDefaultMaxVideoKbps;
+  payload.min_bitrate = media::cast::kDefaultMinVideoKbps;
   payload.channels = 1;
   payload.max_frame_rate = media::cast::kDefaultMaxFrameRate;
   payload.codec_name = kCodecNameVp8;
@@ -85,8 +84,8 @@ CastRtpPayloadParams DefaultH264Payload() {
   payload.ssrc = 11;
   payload.feedback_ssrc = 12;
   payload.clock_rate = media::cast::kVideoFrequency;
-  payload.max_bitrate = media::cast::kDefaultMaxVideoBitRate;
-  payload.min_bitrate = media::cast::kDefaultMinVideoBitRate;
+  payload.max_bitrate = media::cast::kDefaultMaxVideoKbps;
+  payload.min_bitrate = media::cast::kDefaultMinVideoKbps;
   payload.channels = 1;
   payload.max_frame_rate = media::cast::kDefaultMaxFrameRate;
   payload.codec_name = kCodecNameH264;
@@ -179,8 +178,17 @@ bool ToAudioSenderConfig(const CastRtpParams& params,
   config->rtp_payload_type = params.payload.payload_type;
   config->use_external_encoder = false;
   config->frequency = params.payload.clock_rate;
-  if (config->frequency < media::cast::kMinSampleRateForEncoding)
-    return false;
+  // Sampling rate must be one of the Opus-supported values.
+  switch (config->frequency) {
+    case 48000:
+    case 24000:
+    case 16000:
+    case 12000:
+    case 8000:
+      break;
+    default:
+      return false;
+  }
   config->channels = params.payload.channels;
   if (config->channels < 1)
     return false;

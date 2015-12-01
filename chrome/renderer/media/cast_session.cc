@@ -10,7 +10,6 @@
 #include "content/public/renderer/video_encode_accelerator.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_frame.h"
-#include "media/cast/cast_config.h"
 #include "media/cast/cast_sender.h"
 #include "media/cast/logging/logging_defines.h"
 

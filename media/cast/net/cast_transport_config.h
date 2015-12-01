@@ -6,12 +6,9 @@
 #define MEDIA_CAST_NET_CAST_TRANSPORT_CONFIG_H_
 
 #include <string>
-#include <vector>
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "base/memory/linked_ptr.h"
-#include "base/memory/ref_counted.h"
 #include "base/stl_util.h"
 #include "media/cast/net/cast_transport_defines.h"
 
@@ -121,10 +118,6 @@ struct EncodedFrame {
   // The encoded signal data.
   std::string data;
 };
-
-typedef std::vector<uint8> Packet;
-typedef scoped_refptr<base::RefCountedData<Packet> > PacketRef;
-typedef std::vector<PacketRef> PacketList;
 
 typedef base::Callback<void(scoped_ptr<Packet> packet)> PacketReceiverCallback;
 typedef base::Callback<bool(scoped_ptr<Packet> packet)>

@@ -12,7 +12,6 @@
 #include "base/values.h"
 #include "media/base/video_frame_pool.h"
 #include "media/base/video_util.h"
-#include "media/cast/cast_defines.h"
 #include "media/cast/cast_environment.h"
 // VPX_CODEC_DISABLE_COMPAT excludes parts of the libvpx API that provide
 // backwards compatibility for legacy applications using the library.

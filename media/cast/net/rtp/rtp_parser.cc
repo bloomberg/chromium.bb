@@ -6,7 +6,7 @@
 
 #include "base/big_endian.h"
 #include "base/logging.h"
-#include "media/cast/cast_defines.h"
+#include "media/cast/constants.h"
 #include "media/cast/net/rtp/rtp_defines.h"
 
 namespace media {
@@ -23,7 +23,8 @@ bool RtpParser::ParseSsrc(const uint8* packet,
 
 RtpParser::RtpParser(uint32 expected_sender_ssrc, uint8 expected_payload_type)
     : expected_sender_ssrc_(expected_sender_ssrc),
-      expected_payload_type_(expected_payload_type) {}
+      expected_payload_type_(expected_payload_type),
+      frame_id_wrap_helper_(kFirstFrameId - 1) {}
 
 RtpParser::~RtpParser() {}
 

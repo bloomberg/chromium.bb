@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "media/base/audio_bus.h"
 #include "media/base/media.h"
+#include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/sender/audio_encoder.h"
 #include "media/cast/test/fake_single_thread_task_runner.h"

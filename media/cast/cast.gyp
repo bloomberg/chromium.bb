@@ -40,6 +40,7 @@
         'common/clock_drift_smoother.h',
         'common/transport_encryption_handler.cc',
         'common/transport_encryption_handler.h',
+        'constants.h',
         'logging/encoding_event_subscriber.cc',
         'logging/encoding_event_subscriber.h',
         'logging/log_deserializer.cc',

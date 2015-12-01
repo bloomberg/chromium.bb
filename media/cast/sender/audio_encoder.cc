@@ -15,7 +15,6 @@
 #include "base/sys_byteorder.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
-#include "media/cast/cast_defines.h"
 
 #if !defined(OS_IOS)
 #include "third_party/opus/src/include/opus.h"

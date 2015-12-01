@@ -17,6 +17,8 @@
 #include "media/base/media.h"
 #include "media/base/media_switches.h"
 #include "media/base/media_util.h"
+#include "media/cast/cast_defines.h"
+#include "media/cast/constants.h"
 #include "media/cast/sender/h264_vt_encoder.h"
 #include "media/cast/sender/video_frame_factory.h"
 #include "media/cast/test/utility/default_config.h"

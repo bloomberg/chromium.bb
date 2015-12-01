@@ -23,9 +23,6 @@ RtcpReceiverFrameLogMessage::RtcpReceiverFrameLogMessage(uint32 timestamp)
     : rtp_timestamp_(timestamp) {}
 RtcpReceiverFrameLogMessage::~RtcpReceiverFrameLogMessage() {}
 
-RtcpNackMessage::RtcpNackMessage() : remote_ssrc(0u) {}
-RtcpNackMessage::~RtcpNackMessage() {}
-
 RtcpReceiverReferenceTimeReport::RtcpReceiverReferenceTimeReport()
     : remote_ssrc(0u), ntp_seconds(0u), ntp_fraction(0u) {}
 RtcpReceiverReferenceTimeReport::~RtcpReceiverReferenceTimeReport() {}

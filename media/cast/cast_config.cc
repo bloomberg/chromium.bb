@@ -5,7 +5,19 @@
 #include "media/cast/cast_config.h"
 
 namespace {
+
 const float kDefaultCongestionControlBackOff = 0.875f;
+
+enum {
+  // Minimum and Maximum VP8 quantizer in default configuration.
+  kDefaultMaxQp = 63,
+  kDefaultMinQp = 4,
+
+  // Number of video buffers in default configuration (applies only to certain
+  // external codecs).
+  kDefaultNumberOfVideoBuffers = 1,
+};
+
 }  // namespace
 
 namespace media {
@@ -33,9 +45,9 @@ VideoSenderConfig::VideoSenderConfig()
       rtp_payload_type(0),
       use_external_encoder(false),
       congestion_control_back_off(kDefaultCongestionControlBackOff),
-      max_bitrate(5000000),
-      min_bitrate(1000000),
-      start_bitrate(5000000),
+      max_bitrate(kDefaultMaxVideoKbps * 1000),
+      min_bitrate(kDefaultMinVideoKbps * 1000),
+      start_bitrate(kDefaultMaxVideoKbps * 1000),
       max_qp(kDefaultMaxQp),
       min_qp(kDefaultMinQp),
       max_frame_rate(kDefaultMaxFrameRate),
@@ -54,7 +66,7 @@ AudioSenderConfig::AudioSenderConfig()
       use_external_encoder(false),
       frequency(0),
       channels(0),
-      bitrate(0),
+      bitrate(kDefaultAudioEncoderBitrate),
       codec(CODEC_AUDIO_OPUS) {}
 
 AudioSenderConfig::~AudioSenderConfig() {}

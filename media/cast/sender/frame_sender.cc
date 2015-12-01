@@ -5,6 +5,8 @@
 #include "media/cast/sender/frame_sender.h"
 
 #include "base/trace_event/trace_event.h"
+#include "media/cast/cast_defines.h"
+#include "media/cast/constants.h"
 #include "media/cast/sender/sender_encoded_frame.h"
 
 namespace media {
@@ -66,7 +68,7 @@ void FrameSender::ScheduleNextRtcpReport() {
       CastEnvironment::MAIN, FROM_HERE,
       base::Bind(&FrameSender::SendRtcpReport, weak_factory_.GetWeakPtr(),
                  true),
-      base::TimeDelta::FromMilliseconds(kDefaultRtcpIntervalMs));
+      base::TimeDelta::FromMilliseconds(kRtcpReportIntervalMs));
 }
 
 void FrameSender::SendRtcpReport(bool schedule_future_reports) {

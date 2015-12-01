@@ -9,8 +9,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "media/base/audio_bus.h"
-#include "media/cast/cast_defines.h"
 #include "media/cast/cast_environment.h"
+#include "media/cast/constants.h"
 #include "media/cast/sender/sender_encoded_frame.h"
 
 namespace base {

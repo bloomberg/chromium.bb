@@ -4,6 +4,7 @@
 
 #include "media/cast/net/rtcp/receiver_rtcp_event_subscriber.h"
 
+#include <algorithm>
 #include <utility>
 
 namespace media {

@@ -4,11 +4,25 @@
 
 #include "media/cast/net/rtcp/rtcp_utility.h"
 
+#include <cmath>
+
 #include "base/logging.h"
 #include "media/cast/net/cast_transport_defines.h"
 
 namespace media {
 namespace cast {
+
+namespace {
+
+// January 1970, in NTP seconds.
+// Network Time Protocol (NTP), which is in seconds relative to 0h UTC on
+// 1 January 1900.
+const int64_t kUnixEpochInNtpSeconds = INT64_C(2208988800);
+
+// Magic fractional unit. Used to convert time (in microseconds) to/from
+// fractional NTP seconds.
+const double kMagicFractionalUnit = 4.294967296E3;
+}
 
 RtcpParser::RtcpParser(uint32 local_ssrc, uint32 remote_ssrc) :
     local_ssrc_(local_ssrc),
@@ -379,6 +393,51 @@ CastLoggingEvent TranslateToLogEventFromWireFormat(uint8 event) {
       VLOG(1) << "Unexpected log message received: " << static_cast<int>(event);
       return UNKNOWN;
   }
+}
+
+void ConvertTimeToFractions(int64_t ntp_time_us,
+                            uint32_t* seconds,
+                            uint32_t* fractions) {
+  DCHECK_GE(ntp_time_us, 0) << "Time must NOT be negative";
+  const int64_t seconds_component =
+      ntp_time_us / base::Time::kMicrosecondsPerSecond;
+  // NTP time will overflow in the year 2036.  Also, make sure unit tests don't
+  // regress and use an origin past the year 2036.  If this overflows here, the
+  // inverse calculation fails to compute the correct TimeTicks value, throwing
+  // off the entire system.
+  DCHECK_LT(seconds_component, INT64_C(4263431296))
+      << "One year left to fix the NTP year 2036 wrap-around issue!";
+  *seconds = static_cast<uint32>(seconds_component);
+  *fractions =
+      static_cast<uint32>((ntp_time_us % base::Time::kMicrosecondsPerSecond) *
+                          kMagicFractionalUnit);
+}
+
+void ConvertTimeTicksToNtp(const base::TimeTicks& time,
+                           uint32_t* ntp_seconds,
+                           uint32_t* ntp_fractions) {
+  base::TimeDelta elapsed_since_unix_epoch =
+      time - base::TimeTicks::UnixEpoch();
+
+  int64_t ntp_time_us =
+      elapsed_since_unix_epoch.InMicroseconds() +
+      (kUnixEpochInNtpSeconds * base::Time::kMicrosecondsPerSecond);
+
+  ConvertTimeToFractions(ntp_time_us, ntp_seconds, ntp_fractions);
+}
+
+base::TimeTicks ConvertNtpToTimeTicks(uint32_t ntp_seconds,
+                                      uint32_t ntp_fractions) {
+  // We need to ceil() here because the calculation of |fractions| in
+  // ConvertTimeToFractions() effectively does a floor().
+  int64_t ntp_time_us =
+      ntp_seconds * base::Time::kMicrosecondsPerSecond +
+      static_cast<int64_t>(std::ceil(ntp_fractions / kMagicFractionalUnit));
+
+  base::TimeDelta elapsed_since_unix_epoch = base::TimeDelta::FromMicroseconds(
+      ntp_time_us -
+      (kUnixEpochInNtpSeconds * base::Time::kMicrosecondsPerSecond));
+  return base::TimeTicks::UnixEpoch() + elapsed_since_unix_epoch;
 }
 
 }  // namespace cast

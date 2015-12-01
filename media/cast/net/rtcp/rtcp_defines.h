@@ -5,11 +5,10 @@
 #ifndef MEDIA_CAST_RTCP_RTCP_DEFINES_H_
 #define MEDIA_CAST_RTCP_RTCP_DEFINES_H_
 
-#include <map>
-#include <set>
+#include <list>
 
-#include "media/cast/cast_config.h"
-#include "media/cast/cast_defines.h"
+#include "base/callback_forward.h"
+#include "base/memory/scoped_ptr.h"
 #include "media/cast/logging/logging_defines.h"
 #include "media/cast/net/cast_transport_defines.h"
 
@@ -19,6 +18,23 @@ namespace cast {
 static const size_t kRtcpCastLogHeaderSize = 12;
 static const size_t kRtcpReceiverFrameLogSize = 8;
 static const size_t kRtcpReceiverEventLogSize = 4;
+
+// The maximum number of Cast receiver events to keep in history for the
+// purpose of sending the events through RTCP.
+// The number chosen should be more than the number of events that can be
+// stored in a RTCP packet.
+const size_t kReceiverRtcpEventHistorySize = 512;
+
+enum RtcpPacketFields {
+  kPacketTypeLow = 194,  // SMPTE time-code mapping.
+  kPacketTypeSenderReport = 200,
+  kPacketTypeReceiverReport = 201,
+  kPacketTypeApplicationDefined = 204,
+  kPacketTypeGenericRtpFeedback = 205,
+  kPacketTypePayloadSpecific = 206,
+  kPacketTypeXr = 207,
+  kPacketTypeHigh = 210,  // Port Mapping.
+};
 
 // Handle the per frame ACK and NACK messages.
 struct RtcpCastMessage {
@@ -58,16 +74,6 @@ struct RtcpReceiverFrameLogMessage {
 };
 
 typedef std::list<RtcpReceiverFrameLogMessage> RtcpReceiverLogMessage;
-
-struct RtcpNackMessage {
-  RtcpNackMessage();
-  ~RtcpNackMessage();
-
-  uint32 remote_ssrc;
-  std::list<uint16> nack_list;
-
-  DISALLOW_COPY_AND_ASSIGN(RtcpNackMessage);
-};
 
 struct RtcpReceiverReferenceTimeReport {
   RtcpReceiverReferenceTimeReport();

@@ -5,6 +5,8 @@
 #include "media/cast/net/rtp/framer.h"
 
 #include "base/logging.h"
+#include "media/cast/cast_defines.h"
+#include "media/cast/constants.h"
 
 namespace media {
 namespace cast {
@@ -25,8 +27,8 @@ Framer::Framer(base::TickClock* clock,
                                  decoder_faster_than_max_frame_rate,
                                  max_unacked_frames)),
       waiting_for_key_(true),
-      last_released_frame_(kStartFrameId),
-      newest_frame_id_(kStartFrameId) {
+      last_released_frame_(kFirstFrameId - 1),
+      newest_frame_id_(kFirstFrameId - 1) {
   DCHECK(incoming_payload_feedback) << "Invalid argument";
 }
 
@@ -117,8 +119,8 @@ void Framer::AckFrame(uint32 frame_id) {
 
 void Framer::Reset() {
   waiting_for_key_ = true;
-  last_released_frame_ = kStartFrameId;
-  newest_frame_id_ = kStartFrameId;
+  last_released_frame_ = kFirstFrameId - 1;
+  newest_frame_id_ = kFirstFrameId - 1;
   frames_.clear();
   cast_msg_builder_->Reset();
 }

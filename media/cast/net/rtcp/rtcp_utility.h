@@ -6,9 +6,8 @@
 #define MEDIA_CAST_RTCP_RTCP_UTILITY_H_
 
 #include "base/big_endian.h"
-#include "media/cast/cast_config.h"
-#include "media/cast/cast_defines.h"
 #include "media/cast/logging/logging_defines.h"
+#include "media/cast/net/cast_transport_config.h"
 #include "media/cast/net/rtcp/rtcp_defines.h"
 
 namespace media {
@@ -114,6 +113,22 @@ uint8 ConvertEventTypeToWireFormat(CastLoggingEvent event);
 
 // The inverse of |ConvertEventTypeToWireFormat()|.
 CastLoggingEvent TranslateToLogEventFromWireFormat(uint8 event);
+
+// Splits an NTP timestamp having a microsecond timebase into the standard two
+// 32-bit integer wire format.
+void ConvertTimeToFractions(int64_t ntp_time_us,
+                            uint32_t* seconds,
+                            uint32_t* fractions);
+
+// Maps a base::TimeTicks value to an NTP timestamp comprised of two components.
+void ConvertTimeTicksToNtp(const base::TimeTicks& time,
+                           uint32_t* ntp_seconds,
+                           uint32_t* ntp_fractions);
+
+// Maps an NTP timestamp, comprised of two components, to a base::TimeTicks
+// value.
+base::TimeTicks ConvertNtpToTimeTicks(uint32_t ntp_seconds,
+                                      uint32_t ntp_fractions);
 
 }  // namespace cast
 }  // namespace media
