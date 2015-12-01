@@ -2207,6 +2207,7 @@
         'test_support_unit',
         # 3) anything tests directly depend on
         '../components/components.gyp:generate_version_info',
+        '../components/components.gyp:sync_driver_features',
         '../courgette/courgette.gyp:courgette_lib',
         '../google_apis/google_apis.gyp:google_apis',
         '../skia/skia.gyp:skia',
