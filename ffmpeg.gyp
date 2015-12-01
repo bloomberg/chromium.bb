@@ -272,6 +272,16 @@
                     '-DHAVE_VFP_ARGS=0'
                   ],
                 }],
+                ['clang==1', {
+                  # TODO(hans) Enable integrated-as (crbug.com/124610).
+                  'cflags': [ '-fno-integrated-as' ],
+                  'conditions': [
+                    ['OS == "android"', {
+                      # Else /usr/bin/as gets picked up.
+                      'cflags': [ '-B<(android_toolchain)' ],
+                    }],
+                  ],
+                }],
               ],
             }],
             ['os_posix == 1 and OS != "mac"', {
