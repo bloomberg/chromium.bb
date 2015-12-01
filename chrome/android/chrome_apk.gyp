@@ -290,6 +290,7 @@
         '../../chrome/chrome.gyp:chrome_java',
         '../../chrome/chrome.gyp:chrome_java_test_support',
         '../../components/components.gyp:invalidation_javatests',
+        '../../components/components.gyp:gcm_driver_java',
         '../../components/components.gyp:offline_pages_enums_java',
         '../../components/components.gyp:precache_javatests',
         '../../components/components.gyp:web_contents_delegate_android_java',

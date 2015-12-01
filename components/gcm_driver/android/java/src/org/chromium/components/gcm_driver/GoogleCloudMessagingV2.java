@@ -20,14 +20,14 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.Nullable;
 
 /**
  * Temporary code for sending subtypes when (un)subscribing with GCM.
  * Subtypes are experimental and may change without notice!
  * TODO(johnme): Remove this file, once we switch to the GMS client library.
  */
-public class GoogleCloudMessagingV2 {
-
+public class GoogleCloudMessagingV2 implements GoogleCloudMessagingSubscriber {
     private static final String GOOGLE_PLAY_SERVICES_PACKAGE = "com.google.android.gms";
     private static final long REGISTER_TIMEOUT = 5000;
     private static final String ACTION_C2DM_REGISTER = "com.google.android.c2dm.intent.REGISTER";
@@ -50,7 +50,9 @@ public class GoogleCloudMessagingV2 {
         mContext = context;
     }
 
-    public String subscribe(String source, String subtype, Bundle data) throws IOException {
+    @Override
+    public String subscribe(String source, String subtype, @Nullable Bundle data)
+            throws IOException {
         if (data == null) {
             data = new Bundle();
         }
@@ -59,7 +61,9 @@ public class GoogleCloudMessagingV2 {
         return result.getString(EXTRA_REGISTRATION_ID);
     }
 
-    public void unsubscribe(String source, String subtype, Bundle data) throws IOException {
+    @Override
+    public void unsubscribe(String source, String subtype, @Nullable Bundle data)
+            throws IOException {
         if (data == null) {
             data = new Bundle();
         }

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Android Push API instrumentation test page</title>
+    <link rel="manifest" href="manifest.json">
+  </head>
+  <body>
+    <!-- This page is used by the PushMessagingTest instrumentation test. -->
+    <script src="../notifications/notification_test_utils.js"></script>
+    <script>
+      // PushMessagingTest observes changes to the tab title as an asynchronous
+      // response mechanism from JavaScript to Java.
+      // TODO(mvanouwerkerk): Use DomAutomationController - crbug.com/562487
+      function respondToTest(result) {
+        document.title = result;
+      }
+
+      function subscribePush() {
+        GetActivatedServiceWorker(
+            'push_messaging_test_worker_android.js', location.pathname)
+          .then(registration =>
+                  registration.pushManager.subscribe({ userVisibleOnly: true }))
+          .then(subscription => respondToTest('subscribe ok'))
+          .catch(error => respondToTest('subscribe fail: ' + error));
+      }
+    </script>
+  </body>
+</html>

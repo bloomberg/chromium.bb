@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.notifications;
 
-import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
-
 import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.content.Context;
@@ -16,24 +14,16 @@ import android.test.suitebuilder.annotation.LargeTest;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.preferences.website.ContentSetting;
-import org.chromium.chrome.browser.preferences.website.PushNotificationInfo;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
-import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.TestHttpServerClient;
-import org.chromium.chrome.test.util.browser.notifications.MockNotificationManagerProxy;
 import org.chromium.chrome.test.util.browser.notifications.MockNotificationManagerProxy.NotificationEntry;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.TimeoutException;
 
 /**
  * Instrumentation tests for the Notification UI Manager implementation on Android.
@@ -44,105 +34,9 @@ import java.util.concurrent.TimeoutException;
 @SuppressLint("NewApi")
 // TODO(peter): fix deprecation warnings crbug.com/528076
 @SuppressWarnings("deprecation")
-public class NotificationUIManagerTest extends ChromeActivityTestCaseBase<ChromeActivity> {
+public class NotificationUIManagerTest extends NotificationTestBase {
     private static final String NOTIFICATION_TEST_PAGE =
             TestHttpServerClient.getUrl("chrome/test/data/notifications/android_test.html");
-
-    /** The maximum time to wait for a criteria to become valid. */
-    private static final long MAX_TIME_TO_POLL_MS = scaleTimeout(6000);
-
-    /** The polling interval to wait between checking for a satisfied criteria. */
-    private static final long POLLING_INTERVAL_MS = 50;
-
-    private MockNotificationManagerProxy mMockNotificationManager;
-
-    public NotificationUIManagerTest() {
-        super(ChromeActivity.class);
-    }
-
-    /**
-     * Returns the origin of the HTTP server the test is being ran on.
-     */
-    private static String getOrigin() {
-        return TestHttpServerClient.getUrl("");
-    }
-
-    /**
-     * Sets the permission to use Web Notifications for the test HTTP server's origin to |setting|.
-     */
-    private void setNotificationContentSettingForCurrentOrigin(final ContentSetting setting)
-            throws InterruptedException, TimeoutException {
-        final String origin = getOrigin();
-
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                // The notification content setting does not consider the embedder origin.
-                PushNotificationInfo pushNotificationInfo = new PushNotificationInfo(
-                        origin, "", false);
-                pushNotificationInfo.setContentSetting(setting);
-            }
-        });
-
-        String permission = runJavaScriptCodeInCurrentTab("Notification.permission");
-        if (setting == ContentSetting.ALLOW) {
-            assertEquals("\"granted\"", permission);
-        } else if (setting == ContentSetting.BLOCK) {
-            assertEquals("\"denied\"", permission);
-        } else {
-            assertEquals("\"default\"", permission);
-        }
-    }
-
-    /**
-     * Shows a notification with |title| and |options|, waits until it has been displayed and then
-     * returns the Notification object to the caller. Requires that only a single notification is
-     * being displayed in the notification manager.
-     *
-     * @param title Title of the Web Notification to show.
-     * @param options Optional map of options to include when showing the notification.
-     * @return The Android Notification object, as shown in the framework.
-     */
-    private Notification showAndGetNotification(String title, String options) throws Exception {
-        runJavaScriptCodeInCurrentTab("showNotification(\"" + title + "\", " + options + ");");
-        assertTrue(waitForNotificationManagerMutation());
-
-        List<NotificationEntry> notifications = mMockNotificationManager.getNotifications();
-        assertEquals(1, notifications.size());
-
-        return notifications.get(0).notification;
-    }
-
-    /**
-     * Waits for a mutation to occur in the mocked notification manager. This indicates that Chrome
-     * called into Android to notify or cancel a notification.
-     *
-     * @return Whether the wait was successful.
-     */
-    private boolean waitForNotificationManagerMutation() throws Exception {
-        return CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mMockNotificationManager.getMutationCountAndDecrement() > 0;
-            }
-        }, MAX_TIME_TO_POLL_MS, POLLING_INTERVAL_MS);
-    }
-
-    @Override
-    public void startMainActivity() throws InterruptedException {
-        // The NotificationUIManager must be overriden prior to the browser process starting.
-        mMockNotificationManager = new MockNotificationManagerProxy();
-        NotificationUIManager.overrideNotificationManagerForTesting(mMockNotificationManager);
-
-        startMainActivityWithURL(NOTIFICATION_TEST_PAGE);
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
-        NotificationUIManager.overrideNotificationManagerForTesting(null);
-
-        super.tearDown();
-    }
 
     /**
      * Verifies that the intended default properties of a notification will indeed be set on the
@@ -151,6 +45,7 @@ public class NotificationUIManagerTest extends ChromeActivityTestCaseBase<Chrome
     @MediumTest
     @Feature({"Browser", "Notifications"})
     public void testDefaultNotificationProperties() throws Exception {
+        loadUrl(NOTIFICATION_TEST_PAGE);
         setNotificationContentSettingForCurrentOrigin(ContentSetting.ALLOW);
 
         Notification notification = showAndGetNotification("MyNotification", "{ body: 'Hello' }");
@@ -188,6 +83,7 @@ public class NotificationUIManagerTest extends ChromeActivityTestCaseBase<Chrome
     @MediumTest
     @Feature({"Browser", "Notifications"})
     public void testNotificationSilentProperty() throws Exception {
+        loadUrl(NOTIFICATION_TEST_PAGE);
         setNotificationContentSettingForCurrentOrigin(ContentSetting.ALLOW);
 
         Notification notification = showAndGetNotification("MyNotification", "{ silent: true }");
@@ -203,6 +99,7 @@ public class NotificationUIManagerTest extends ChromeActivityTestCaseBase<Chrome
     @MediumTest
     @Feature({"Browser", "Notifications"})
     public void testShowNotificationWithIcon() throws Exception {
+        loadUrl(NOTIFICATION_TEST_PAGE);
         setNotificationContentSettingForCurrentOrigin(ContentSetting.ALLOW);
 
         Notification notification = showAndGetNotification("MyNotification", "{icon: 'icon.png'}");
@@ -223,6 +120,7 @@ public class NotificationUIManagerTest extends ChromeActivityTestCaseBase<Chrome
     @MediumTest
     @Feature({"Browser", "Notifications"})
     public void testShowNotificationWithoutIcon() throws Exception {
+        loadUrl(NOTIFICATION_TEST_PAGE);
         setNotificationContentSettingForCurrentOrigin(ContentSetting.ALLOW);
 
         Notification notification = showAndGetNotification("NoIconNotification", "{}");
@@ -254,6 +152,7 @@ public class NotificationUIManagerTest extends ChromeActivityTestCaseBase<Chrome
     @MediumTest
     @Feature({"Browser", "Notifications"})
     public void testEnsureNormalizedIconBehavior() throws Exception {
+        loadUrl(NOTIFICATION_TEST_PAGE);
         setNotificationContentSettingForCurrentOrigin(ContentSetting.ALLOW);
 
         // Create a notification to ensure that the NotificationUIManager is initialized.
@@ -302,6 +201,7 @@ public class NotificationUIManagerTest extends ChromeActivityTestCaseBase<Chrome
     @LargeTest
     @Feature({"Browser", "Notifications"})
     public void testNotificationContentIntentClosesNotification() throws Exception {
+        loadUrl(NOTIFICATION_TEST_PAGE);
         setNotificationContentSettingForCurrentOrigin(ContentSetting.ALLOW);
 
         Notification notification = showAndGetNotification("MyNotification", "{}");
@@ -313,9 +213,7 @@ public class NotificationUIManagerTest extends ChromeActivityTestCaseBase<Chrome
         // The Service Worker will close the notification upon receiving the notificationclick
         // event. This will eventually bubble up to a call to cancel() in the NotificationManager.
         assertTrue(waitForNotificationManagerMutation());
-
-        List<NotificationEntry> notifications = mMockNotificationManager.getNotifications();
-        assertTrue(notifications.isEmpty());
+        assertTrue(getNotificationEntries().isEmpty());
     }
 
     /**
@@ -326,11 +224,12 @@ public class NotificationUIManagerTest extends ChromeActivityTestCaseBase<Chrome
     @MediumTest
     @Feature({"Browser", "Notifications"})
     public void testNotificationTagReplacement() throws Exception {
+        loadUrl(NOTIFICATION_TEST_PAGE);
         setNotificationContentSettingForCurrentOrigin(ContentSetting.ALLOW);
 
         runJavaScriptCodeInCurrentTab("showNotification('MyNotification', {tag: 'myTag'});");
         assertTrue(waitForNotificationManagerMutation());
-        List<NotificationEntry> notifications = mMockNotificationManager.getNotifications();
+        List<NotificationEntry> notifications = getNotificationEntries();
         String tag = notifications.get(0).tag;
         int id = notifications.get(0).id;
 
@@ -338,7 +237,7 @@ public class NotificationUIManagerTest extends ChromeActivityTestCaseBase<Chrome
         assertTrue(waitForNotificationManagerMutation());
 
         // Verify that the notification was successfully replaced.
-        notifications = mMockNotificationManager.getNotifications();
+        notifications = getNotificationEntries();
         assertEquals(1, notifications.size());
         assertEquals("SecondNotification",
                 notifications.get(0).notification.extras.getString(Notification.EXTRA_TITLE));
@@ -358,12 +257,13 @@ public class NotificationUIManagerTest extends ChromeActivityTestCaseBase<Chrome
     @LargeTest
     @Feature({"Browser", "Notifications"})
     public void testShowAndCloseMultipleNotifications() throws Exception {
+        loadUrl(NOTIFICATION_TEST_PAGE);
         setNotificationContentSettingForCurrentOrigin(ContentSetting.ALLOW);
 
         // Open the first notification and verify it is displayed.
         runJavaScriptCodeInCurrentTab("showNotification('One');");
         assertTrue(waitForNotificationManagerMutation());
-        List<NotificationEntry> notifications = mMockNotificationManager.getNotifications();
+        List<NotificationEntry> notifications = getNotificationEntries();
         assertEquals(1, notifications.size());
         Notification notificationOne = notifications.get(0).notification;
         assertEquals("One", notificationOne.extras.getString(Notification.EXTRA_TITLE));
@@ -371,7 +271,7 @@ public class NotificationUIManagerTest extends ChromeActivityTestCaseBase<Chrome
         // Open the second notification and verify it is displayed.
         runJavaScriptCodeInCurrentTab("showNotification('Two');");
         assertTrue(waitForNotificationManagerMutation());
-        notifications = mMockNotificationManager.getNotifications();
+        notifications = getNotificationEntries();
         assertEquals(2, notifications.size());
         Notification notificationTwo = notifications.get(1).notification;
         assertEquals("Two", notificationTwo.extras.getString(Notification.EXTRA_TITLE));
@@ -395,7 +295,7 @@ public class NotificationUIManagerTest extends ChromeActivityTestCaseBase<Chrome
         // upon receiving the event.
         notificationOne.contentIntent.send();
         assertTrue(waitForNotificationManagerMutation());
-        notifications = mMockNotificationManager.getNotifications();
+        notifications = getNotificationEntries();
         assertEquals(1, notifications.size());
         assertEquals("Two",
                 notifications.get(0).notification.extras.getString(Notification.EXTRA_TITLE));
@@ -403,8 +303,7 @@ public class NotificationUIManagerTest extends ChromeActivityTestCaseBase<Chrome
         // Close the last notification and verify that none remain.
         notifications.get(0).notification.contentIntent.send();
         assertTrue(waitForNotificationManagerMutation());
-        notifications = mMockNotificationManager.getNotifications();
-        assertTrue(notifications.isEmpty());
+        assertTrue(getNotificationEntries().isEmpty());
     }
 
     /**
