@@ -13,6 +13,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "remoting/protocol/transport.h"
+#include "remoting/protocol/webrtc_data_stream_adapter.h"
 #include "remoting/signaling/signal_strategy.h"
 #include "third_party/libjingle/source/talk/app/webrtc/peerconnectioninterface.h"
 
@@ -89,6 +90,8 @@ class WebrtcTransport : public Transport,
 
   std::list<rtc::scoped_refptr<webrtc::MediaStreamInterface>>
       unclaimed_streams_;
+
+  WebrtcDataStreamAdapter data_stream_adapter_;
 
   base::WeakPtrFactory<WebrtcTransport> weak_factory_;
 

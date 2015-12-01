@@ -225,9 +225,7 @@ DatagramChannelFactory* WebrtcTransport::GetDatagramChannelFactory() {
 
 StreamChannelFactory* WebrtcTransport::GetStreamChannelFactory() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  // TODO(sergeyu): Implement data stream support.
-  NOTIMPLEMENTED();
-  return nullptr;
+  return &data_stream_adapter_;
 }
 
 StreamChannelFactory* WebrtcTransport::GetMultiplexedChannelFactory() {
@@ -261,6 +259,9 @@ void WebrtcTransport::DoStart(rtc::Thread* worker_thread) {
   peer_connection_ = peer_connection_factory_->CreatePeerConnection(
       rtc_config, &constraints, port_allocator_factory_, nullptr, this);
 
+  data_stream_adapter_.Initialize(peer_connection_,
+                                  role_ == TransportRole::SERVER);
+
   if (role_ == TransportRole::CLIENT) {
     webrtc::FakeConstraints offer_config;
     offer_config.AddMandatory(
@@ -269,6 +270,9 @@ void WebrtcTransport::DoStart(rtc::Thread* worker_thread) {
     offer_config.AddMandatory(
         webrtc::MediaConstraintsInterface::kOfferToReceiveAudio,
         webrtc::MediaConstraintsInterface::kValueFalse);
+    offer_config.AddMandatory(
+        webrtc::MediaConstraintsInterface::kEnableDtlsSrtp,
+        webrtc::MediaConstraintsInterface::kValueTrue);
     peer_connection_->CreateOffer(
         CreateSessionDescriptionObserver::Create(
             base::Bind(&WebrtcTransport::OnLocalSessionDescriptionCreated,
@@ -386,7 +390,7 @@ void WebrtcTransport::OnRemoveStream(webrtc::MediaStreamInterface* stream) {
 void WebrtcTransport::OnDataChannel(
     webrtc::DataChannelInterface* data_channel) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  // TODO(sergeyu): Use the data channel.
+  data_stream_adapter_.OnIncomingDataChannel(data_channel);
 }
 
 void WebrtcTransport::OnRenegotiationNeeded() {

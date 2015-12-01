@@ -7,10 +7,13 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "jingle/glue/thread_wrapper.h"
+#include "net/base/io_buffer.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "remoting/protocol/chromium_port_allocator_factory.h"
+#include "remoting/protocol/connection_tester.h"
 #include "remoting/protocol/fake_authenticator.h"
 #include "remoting/protocol/network_settings.h"
+#include "remoting/protocol/p2p_stream_socket.h"
 #include "remoting/signaling/fake_signal_strategy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
@@ -21,6 +24,7 @@ namespace protocol {
 namespace {
 
 const char kTestJid[] = "client@gmail.com/321";
+const char kChannelName[] = "test_channel";
 
 class TestTransportEventHandler : public Transport::EventHandler {
  public:
@@ -82,12 +86,49 @@ class WebrtcTransportTest : public testing::Test {
   }
 
  protected:
-  void WaitUntilConnected() {
-    host_event_handler_.set_error_callback(base::Bind(
-        &WebrtcTransportTest::QuitRunLoopOnError, base::Unretained(this)));
-    client_event_handler_.set_error_callback(base::Bind(
-        &WebrtcTransportTest::QuitRunLoopOnError, base::Unretained(this)));
+  void InitializeConnection() {
+    signal_strategy_.reset(new FakeSignalStrategy(kTestJid));
 
+    host_transport_factory_.reset(new WebrtcTransportFactory(
+        signal_strategy_.get(),
+        ChromiumPortAllocatorFactory::Create(network_settings_, nullptr),
+        TransportRole::SERVER));
+    host_transport_ = host_transport_factory_->CreateTransport();
+    host_authenticator_.reset(new FakeAuthenticator(
+        FakeAuthenticator::HOST, 0, FakeAuthenticator::ACCEPT, false));
+
+    client_transport_factory_.reset(new WebrtcTransportFactory(
+        signal_strategy_.get(),
+        ChromiumPortAllocatorFactory::Create(network_settings_, nullptr),
+        TransportRole::CLIENT));
+    client_transport_ = client_transport_factory_->CreateTransport();
+    host_authenticator_.reset(new FakeAuthenticator(
+        FakeAuthenticator::CLIENT, 0, FakeAuthenticator::ACCEPT, false));
+
+    // Connect signaling between the two WebrtcTransport objects.
+    host_event_handler_.set_transport_info_callback(
+        base::Bind(&WebrtcTransportTest::ProcessTransportInfo,
+                   base::Unretained(this), &client_transport_));
+    client_event_handler_.set_transport_info_callback(
+        base::Bind(&WebrtcTransportTest::ProcessTransportInfo,
+                   base::Unretained(this), &host_transport_));
+  }
+
+  void StartConnection() {
+    host_event_handler_.set_connected_callback(base::Bind(&base::DoNothing));
+    client_event_handler_.set_connected_callback(base::Bind(&base::DoNothing));
+
+    host_event_handler_.set_error_callback(base::Bind(
+        &WebrtcTransportTest::OnSessionError, base::Unretained(this)));
+    client_event_handler_.set_error_callback(base::Bind(
+        &WebrtcTransportTest::OnSessionError, base::Unretained(this)));
+
+    host_transport_->Start(&host_event_handler_, host_authenticator_.get());
+    client_transport_->Start(&client_event_handler_,
+                             client_authenticator_.get());
+  }
+
+  void WaitUntilConnected() {
     int counter = 2;
     host_event_handler_.set_connected_callback(
         base::Bind(&WebrtcTransportTest::QuitRunLoopOnCounter,
@@ -102,7 +143,28 @@ class WebrtcTransportTest : public testing::Test {
     EXPECT_EQ(OK, error_);
   }
 
-  void QuitRunLoopOnError(ErrorCode error) {
+  void CreateDataStream() {
+    client_transport_->GetStreamChannelFactory()->CreateChannel(
+        kChannelName, base::Bind(&WebrtcTransportTest::OnClientChannelCreated,
+                                 base::Unretained(this)));
+    host_transport_->GetStreamChannelFactory()->CreateChannel(
+        kChannelName, base::Bind(&WebrtcTransportTest::OnHostChannelCreated,
+                                 base::Unretained(this)));
+  }
+
+  void OnClientChannelCreated(scoped_ptr<P2PStreamSocket> socket) {
+    client_socket_ = socket.Pass();
+    if (run_loop_ && host_socket_)
+      run_loop_->Quit();
+  }
+
+  void OnHostChannelCreated(scoped_ptr<P2PStreamSocket> socket) {
+    host_socket_ = socket.Pass();
+    if (run_loop_ && client_socket_)
+      run_loop_->Quit();
+  }
+
+  void OnSessionError(ErrorCode error) {
     error_ = error;
     run_loop_->Quit();
   }
@@ -131,40 +193,33 @@ class WebrtcTransportTest : public testing::Test {
   TestTransportEventHandler client_event_handler_;
   scoped_ptr<FakeAuthenticator> client_authenticator_;
 
+  scoped_ptr<P2PStreamSocket> client_socket_;
+  scoped_ptr<P2PStreamSocket> host_socket_;
+
   ErrorCode error_ = OK;
 };
 
 TEST_F(WebrtcTransportTest, Connects) {
-  signal_strategy_.reset(new FakeSignalStrategy(kTestJid));
-
-  host_transport_factory_.reset(new WebrtcTransportFactory(
-      signal_strategy_.get(),
-      ChromiumPortAllocatorFactory::Create(network_settings_, nullptr),
-      TransportRole::SERVER));
-  host_transport_ = host_transport_factory_->CreateTransport();
-  host_authenticator_.reset(new FakeAuthenticator(
-      FakeAuthenticator::HOST, 0, FakeAuthenticator::ACCEPT, false));
-
-  client_transport_factory_.reset(new WebrtcTransportFactory(
-      signal_strategy_.get(),
-      ChromiumPortAllocatorFactory::Create(network_settings_, nullptr),
-      TransportRole::CLIENT));
-  client_transport_ = client_transport_factory_->CreateTransport();
-  host_authenticator_.reset(new FakeAuthenticator(
-      FakeAuthenticator::CLIENT, 0, FakeAuthenticator::ACCEPT, false));
-
-  // Connect signaling between the two WebrtcTransport objects.
-  host_event_handler_.set_transport_info_callback(
-      base::Bind(&WebrtcTransportTest::ProcessTransportInfo,
-                 base::Unretained(this), &client_transport_));
-  client_event_handler_.set_transport_info_callback(
-      base::Bind(&WebrtcTransportTest::ProcessTransportInfo,
-                 base::Unretained(this), &host_transport_));
-
-  host_transport_->Start(&host_event_handler_, host_authenticator_.get());
-  client_transport_->Start(&client_event_handler_, client_authenticator_.get());
-
+  InitializeConnection();
+  StartConnection();
   WaitUntilConnected();
+}
+
+TEST_F(WebrtcTransportTest, DataStream) {
+  InitializeConnection();
+  CreateDataStream();
+  StartConnection();
+
+  run_loop_.reset(new base::RunLoop());
+  run_loop_->Run();
+
+  const int kMessageSize = 1024;
+  const int kMessages = 100;
+  StreamConnectionTester tester(host_socket_.get(), client_socket_.get(),
+                                kMessageSize, kMessages);
+  tester.Start();
+  message_loop_.Run();
+  tester.CheckResults();
 }
 
 }  // namespace protocol
