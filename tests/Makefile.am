@@ -200,6 +200,10 @@ XFAIL_TESTS =					\
 	en_gb_g1_italics			\
 	squash_space
 
+# en-ueb-symbols_harness.yaml defines the desired behaviour.
+# Apparently the tables aren't quite there yet.
+XFAIL_TESTS += en-ueb-symbols_harness.yaml
+
 dist_yaml_TESTS =				\
 	ar-ar-g1_harness.yaml			\
 	ar-fa_harness.yaml			\
@@ -213,6 +217,7 @@ dist_yaml_TESTS =				\
 	en-gb-g1_harness.yaml			\
 	en-ueb-g1_harness.yaml			\
 	en-ueb-g2-dictionary_harness.yaml	\
+	en-ueb-symbols_harness.yaml		\
 	en-us-g2-dictionary_harness.yaml	\
 	en-us-g2-end-emphasis_harness.yaml	\
 	eo-g1_harness.yaml			\
@@ -234,9 +239,14 @@ dist_yaml_TESTS =				\
 	letterDefTest_harness.yaml		\
 	mn-MN_harness.yaml			\
 	nl-BE-g1_harness.yaml			\
+	no_harness.yaml				\
+	no_g1_harness.yaml			\
+	no_g2_harness.yaml			\
+	no_8dot_harness.yaml			\
 	nocross_harness.yaml			\
 	pl-pl-comp8_harness.yaml		\
 	sr-g1_harness.yaml			\
+	ta-ta-g1_harness.yaml			\
 	ta-ta-g1_harness.yaml
 
 TEST_EXTENSIONS = .yaml

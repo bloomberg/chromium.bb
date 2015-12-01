@@ -3,13 +3,24 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 * Noteworthy changes in release 2.6.5 (2015-11-30)
 
 ** New features
-- New Mongolian table thanks to Tsengel Maidar and Sreeja Param.
+- A DEF file is now generated automatically for the windows builds.
+  Thanks to Christian Egli
+- lou_trace supports backtranslation now. Thanks to Bert Frees
 
 ** Bug fixes
+- Fix a bug in the findtable code. Thanks to Michael Katzmann for the
+  report.
 
 ** Other changes
+- Add test data for EUB symbols, thanks to Paul Wood
 
 ** Braille table improvements
+- New Mongolian table thanks to Tsengel Maidar and Sreeja Param.
+- Improvements to the Chinese braille table thanks to Coscell Kao.
+- Massive improvements to Norwegian, thanks to Lars Bjørndal, Ammar
+  Usama and Jostein Austvik Jacobsen. They added a 8 dot table and
+  lots of test data.
+- Improvements to Hungarian, thanks to Attila Hammer
 
 * Noteworthy changes in release 2.6.4 (2015-08-31)
 This is a minor release in terms of features. But in terms of test

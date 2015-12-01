@@ -197,6 +197,8 @@ table_files = \
 	nl-BE-g1.ctb \
 	nl-NL-chardefs.cti \
 	nl-NL-g1.ctb \
+	no-no-8dot.utb \
+	no-no-chardefs6.uti \
 	no-no.ctb \
 	no-no.dis \
 	no-no-g0.utb \
@@ -205,6 +207,7 @@ table_files = \
 	no-no-g3.ctb \
 	no-no-generic.ctb \
 	no-no-generic.dis \
+	no-no-latinLetterDef6Dots_diacritics.uti \
 	np-in-g1.utb \
 	or-in-g1.utb \
 	oriya.cti \

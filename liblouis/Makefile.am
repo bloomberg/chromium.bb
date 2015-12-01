@@ -22,6 +22,13 @@ liblouis_la_LDFLAGS =	\
 	-version-info $(LIBLOUIS_CURRENT):$(LIBLOUIS_REVISION):$(LIBLOUIS_AGE) -no-undefined \
 	$(LTLIBINTL)
 
+if HAVE_LD_OUTPUT_DEF
+liblouis_la_LDFLAGS += -Wl,--output-def,liblouis-$(DLL_VERSION).def
+defexecdir = $(bindir)
+defexec_DATA = liblouis-$(DLL_VERSION).def
+DISTCLEANFILES = $(defexec_DATA)
+endif
+
 liblouis_la_SOURCES =				\
 	lou_backTranslateString.c		\
 	compileTranslationTable.c		\
@@ -38,3 +45,4 @@ liblouis_la_SOURCES =				\
 # i.e. ucs2 dist and ucs4 build and vice versa.
 nodist_liblouis_la_SOURCES = \
 	liblouis.h
+

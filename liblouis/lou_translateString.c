@@ -53,24 +53,22 @@ lou_translateString (const char *tableList, const widechar
 }
 
 int EXPORT_CALL
-lou_translate (const char *tableList, const widechar
-	       * inbufx,
+lou_translate (const char *tableList, const widechar * inbufx,
 	       int *inlen, widechar * outbuf, int *outlen,
 	       formtype *typeform, char *spacing, int *outputPos,
 	       int *inputPos, int *cursorPos, int modex)
 {
-  return trace_translate (tableList, inbufx, inlen, outbuf, outlen,
-			  typeform, spacing, outputPos, inputPos, cursorPos,
-			  NULL, NULL, modex);
+  return translateWithTracing (tableList, inbufx, inlen, outbuf, outlen,
+			       typeform, spacing, outputPos, inputPos, cursorPos,
+			       modex, NULL, NULL);
 }
 
 int
-trace_translate (const char *tableList, const widechar * inbufx,
-		 int *inlen, widechar * outbuf, int *outlen,
-		 formtype *typeform, char *spacing, int *outputPos,
-		 int *inputPos, int *cursorPos,
-		 const TranslationTableRule ** rules, int *rulesLen,
-		 int modex)
+translateWithTracing (const char *tableList, const widechar * inbufx,
+		      int *inlen, widechar * outbuf, int *outlen,
+		      formtype *typeform, char *spacing, int *outputPos,
+		      int *inputPos, int *cursorPos, int modex,
+		      const TranslationTableRule **rules, int *rulesLen)
 {
   int k;
   int goodTrans = 1;
@@ -398,7 +396,7 @@ hyphenate (const widechar * word, int wordSize, char *hyphens)
 	  /* Need to ensure that we don't overrun hyphens,
 	   * in some cases hyphenPattern is longer than the remaining letters,
 	   * and if we write out all of it we would have overshot our buffer. */
-	  limit = MIN (strlen (hyphenPattern), wordSize - patternOffset);
+	  limit = MIN ((int)strlen (hyphenPattern), wordSize - patternOffset);
 	  for (k = 0; k < limit; k++)
 	    {
 	      if (hyphens[patternOffset + k] < hyphenPattern[k])
@@ -721,7 +719,7 @@ static int
 checkMultCaps ()
 {
   int k;
-  for (k = 0; k < table->lenBeginCaps; k++)
+  for (k = 0; k < (int) table->lenBeginCaps; k++)
     if (k >= srcmax - src ||
 	!checkAttr (currentInput[src + k], CTC_UpperCase, 0))
       return 0;
@@ -1350,9 +1348,9 @@ for_selectRule ()
 		  case CTO_ExactDots:
 		    return;
 		  case CTO_NoCross:
-if (dontContract || (mode & noContractions))
+		    if (dontContract || (mode & noContractions))
 		      break;
-		    		    if (syllableBreak ())
+		    if (syllableBreak ())
 		      break;
 		    return;
 		  case CTO_Context:
@@ -1557,7 +1555,7 @@ undefinedCharacter (widechar c)
       return 1;
     }
   display = showString (&c, 1);
-  for (k = 0; k < strlen (display); k++)
+  for (k = 0; k < (int) strlen (display); k++)
     displayDots[k] = getDotsForChar (display[k]);
   if (!for_updatePositions (displayDots, 1, strlen(display)))
     return 0;
@@ -1837,8 +1835,9 @@ translateString ()
       if (!insertIndicators ())
         goto failure;
       for_selectRule ();
-      if (appliedRules != NULL && appliedRulesCount < maxAppliedRules)
-        appliedRules[appliedRulesCount++] = transRule;
+      if (transOpcode != CTO_Context)
+	if (appliedRules != NULL && appliedRulesCount < maxAppliedRules)
+	  appliedRules[appliedRulesCount++] = transRule;
       srcIncremented = 1;
       prevSrc = src;
       switch (transOpcode)        /*Rules that pre-empt context and swap */
@@ -2152,29 +2151,9 @@ lou_hyphenate (const char *tableList, const widechar
 	    hyphens2[hyphPos] = '0';
 	}
       for (kk = wordStart; kk < wordStart + k; kk++)
-	if (!table->noBreak || hyphens2[kk] == '0')
+	if (hyphens2[kk] == '0')
 	  hyphens[kk] = hyphens2[kk];
-	else
-	  {
-	    TranslationTableRule *noBreakRule = (TranslationTableRule *)
-	      & table->ruleArea[table->noBreak];
-	    int kkk;
-	    if (kk > 0)
-	      for (kkk = 0; kkk < noBreakRule->charslen; kkk++)
-		if (workingBuffer2[kk - 1] == noBreakRule->charsdots[kkk])
-		  {
-		    hyphens[kk] = '0';
-		    break;
-		  }
-	    for (kkk = 0; kkk < noBreakRule->dotslen; kkk++);
-	    if (workingBuffer2[kk] ==
-		noBreakRule->charsdots[noBreakRule->charslen + kkk])
-	      {
-		hyphens[kk] = '0';
-		break;
-	      }
-	  }
-    }
+	}
   for (k = 0; k < inlen; k++)
     if (hyphens[k] & 1)
       hyphens[k] = '1';

@@ -19,14 +19,18 @@ harness_TESTS =					\
 	letterDefTest_harness.txt		\
 	nocross_harness.txt			\
 	ta-ta-g1_harness.txt			\
-	chr-us-g1_harness.txt		\
-	nl-BE-g1_harness.txt		\
-	en-us-g2-end-emphasis_harness.txt		\
-	pl-pl-comp8_harness.txt		\
-	fr-bfu-g2_harness.txt		\
-	en-ueb-g1_harness.txt		\
-	hr-8dots_harness.txt		\
-	sr-g1_harness.txt
+	chr-us-g1_harness.txt			\
+	nl-BE-g1_harness.txt			\
+	en-us-g2-end-emphasis_harness.txt	\
+	pl-pl-comp8_harness.txt			\
+	fr-bfu-g2_harness.txt			\
+	en-ueb-g1_harness.txt			\
+	hr-8dots_harness.txt			\
+	sr-g1_harness.txt			\
+	no_harness.txt				\
+	no_harness_g1.txt			\
+	no_harness_g2.txt			\
+	no_harness_8dot.txt
 
 EXTRA_DIST = $(harness_TESTS)			\
 	     runHarness.py
@@ -46,7 +50,7 @@ runall runAll:
 	@$(harness_ENVIRONMENT) $(HARNESS_DIR)/runHarness.py
 
 $(harness_TESTS):
-	@$(harness_ENVIRONMENT) $(HARNESS_DIR)/runHarness.py --compact_output $@
+	@$(harness_ENVIRONMENT) $(HARNESS_DIR)/runHarness.py $@
 else
 runall runAll:
 	@echo Please configure with --enable-ucs4

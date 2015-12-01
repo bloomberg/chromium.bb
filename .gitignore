@@ -84,7 +84,6 @@ TAGS
 /gnulib/arg-nonnull.h
 /gnulib/c++defs.h
 /gnulib/m4/absolute-header.m4
-/gnulib/m4/ld-output-def.m4
 /gnulib/stddef.h
 /gnulib/stdlib.h
 /gnulib/string.h
@@ -127,6 +126,7 @@ TAGS
 /tests/backtranslate_with_letsign
 /tests/capitalized_with_sentance
 /tests/capitalized_word
+/tests/check_yaml
 /tests/en_gb_g1_italics
 /tests/getTable
 /tests/hash_collision
@@ -191,4 +191,3 @@ TAGS
 /tools/gnulib/sys/
 /tools/gnulib/unistd.h
 /tools/gnulib/warn-on-use.h
-/tests/check_yaml

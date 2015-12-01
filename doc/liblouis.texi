@@ -105,6 +105,7 @@ Fifth Floor, Boston, MA 02110-1301, USA.
 * Testing Translation Tables interactively::
 * Automated Testing of Translation Tables::
 * Programming with liblouis::
+* Concept Index::
 * Opcode Index::
 * Function Index::
 * Program Index::
@@ -372,14 +373,19 @@ Full 32-bit value.
 @end table
 
 The dots operand is a braille dot pattern. The real braille dots, 1
-through 8, must be specified with their standard numbers. liblouis
-recognizes "virtual dots," which are used for special purposes, such
-as distinguishing accent marks. There are seven virtual dots. They are
-specified by the number 9 and the letters @samp{a} through @samp{f}.
+through 8, must be specified with their standard numbers.
+
+@cindex virtual dots
+@anchor{virtual dots}
+liblouis recognizes @emph{virtual dots}, which are used for special
+purposes, such as distinguishing accent marks. There are seven virtual
+dots. They are specified by the number 9 and the letters @samp{a}
+through @samp{f}.
+
 For a multi-cell dot pattern, the cell specifications must be
 separated from one another by a dash (@samp{-}). For example, the
 contraction for the English word @samp{lord} (the letter @samp{l}
-preceded by dot 5) would be specified as 5-123. A space may be
+preceded by dot 5) would be specified as @samp{5-123}. A space may be
 specified with the special dot number 0.
 
 An opcode which is helpful in writing translation tables is
@@ -942,7 +948,7 @@ may require more than one cell. The first operand must be a character
 with a decimal representation from 0 to 255 inclusive. The second
 operand may specify as many cells as necessary. The opcode is somewhat
 of a misnomer, since any dots, not just dots 1 through 6, can be
-specified. This even includes virtual dots.
+specified. This even includes virtual dots (@pxref{virtual dots}).
 
 @opcode{nocont, characters}
 Like @code{compbrl}, except that the string is uncontracted.
@@ -1740,11 +1746,27 @@ translation table and an input string.
 lou_trace [OPTIONS] TABLE[,TABLE,...]
 @end example
 
-@command{lou_trace} accepts all the standard options (@pxref{common
-options}). Once started you can type an input string followed by
-@kbd{@key{RET}}. @command{lou_trace} will print the braille
-translation followed by list of rules that were applied to produce the
-translation. A possible invocation is listed in the following example:
+Aside from the standard options (@pxref{common options})
+@command{lou_trace} also accepts the following options:
+
+@table @option
+
+@item --forward
+@itemx -f
+Trace a forward translation.
+
+@item --backward
+@itemx -b
+Trace a backward translation.
+
+@end table
+
+If no options are given forward translation is assumed.
+
+Once started you can type an input string followed by @kbd{@key{RET}}.
+@command{lou_trace} will print the braille translation followed by
+list of rules that were applied to produce the translation. A possible
+invocation is listed in the following example:
 
 @example
 $ lou_trace tables/en-us-g2.ctb 
@@ -2814,6 +2836,10 @@ There are Python bindings for @code{lou_translateString},
 instructions see the the @file{README} file in the @file{python}
 directory. Usage information is included in the Python module itself.
 
+
+@node Concept Index
+@unnumbered Concept Index
+@printindex cp
 
 @node Opcode Index
 @unnumbered Opcode Index

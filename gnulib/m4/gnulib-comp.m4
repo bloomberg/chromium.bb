@@ -43,6 +43,7 @@ AC_DEFUN([gl_EARLY],
   AC_REQUIRE([gl_USE_SYSTEM_EXTENSIONS])
   # Code from module extern-inline:
   # Code from module include_next:
+  # Code from module lib-msvc-compat:
   # Code from module malloc-gnu:
   # Code from module malloc-posix:
   # Code from module realloc-gnu:
@@ -76,6 +77,7 @@ AC_DEFUN([gl_INIT],
   gl_COMMON
   gl_source_base='gnulib'
   AC_REQUIRE([gl_EXTERN_INLINE])
+  gl_LD_OUTPUT_DEF
   gl_FUNC_MALLOC_GNU
   if test $REPLACE_MALLOC = 1; then
     AC_LIBOBJ([malloc])
@@ -270,6 +272,7 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/extern-inline.m4
   m4/gnulib-common.m4
   m4/include_next.m4
+  m4/ld-output-def.m4
   m4/malloc.m4
   m4/off_t.m4
   m4/realloc.m4
