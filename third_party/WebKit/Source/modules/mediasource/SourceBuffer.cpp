@@ -153,6 +153,7 @@ const AtomicString& SourceBuffer::sequenceKeyword()
 
 void SourceBuffer::setMode(const AtomicString& newMode, ExceptionState& exceptionState)
 {
+    WTF_LOG(Media, "SourceBuffer::setMode %p newMode=%s", this, newMode.utf8().data());
     // Section 3.1 On setting mode attribute steps.
     // 1. Let new mode equal the new value being assigned to this attribute.
     // 2. If this object has been removed from the sourceBuffers attribute of the parent media source, then throw
@@ -201,6 +202,7 @@ double SourceBuffer::timestampOffset() const
 
 void SourceBuffer::setTimestampOffset(double offset, ExceptionState& exceptionState)
 {
+    WTF_LOG(Media, "SourceBuffer::setTimestampOffset %p offset=%f", this, offset);
     // Section 3.1 timestampOffset attribute setter steps.
     // https://dvcs.w3.org/hg/html-media/raw-file/tip/media-source/media-source.html#widl-SourceBuffer-timestampOffset
     // 1. Let new timestamp offset equal the new value being assigned to this attribute.
@@ -233,6 +235,7 @@ double SourceBuffer::appendWindowStart() const
 
 void SourceBuffer::setAppendWindowStart(double start, ExceptionState& exceptionState)
 {
+    WTF_LOG(Media, "SourceBuffer::setAppendWindowStart %p start=%f", this, start);
     // Section 3.1 appendWindowStart attribute setter steps.
     // https://dvcs.w3.org/hg/html-media/raw-file/tip/media-source/media-source.html#widl-SourceBuffer-appendWindowStart
     // 1. If this object has been removed from the sourceBuffers attribute of the parent media source then throw an
@@ -261,6 +264,7 @@ double SourceBuffer::appendWindowEnd() const
 
 void SourceBuffer::setAppendWindowEnd(double end, ExceptionState& exceptionState)
 {
+    WTF_LOG(Media, "SourceBuffer::setAppendWindowEnd %p end=%f", this, end);
     // Section 3.1 appendWindowEnd attribute setter steps.
     // https://dvcs.w3.org/hg/html-media/raw-file/tip/media-source/media-source.html#widl-SourceBuffer-appendWindowEnd
     // 1. If this object has been removed from the sourceBuffers attribute of the parent media source then throw an
@@ -320,6 +324,7 @@ void SourceBuffer::appendStream(Stream* stream, unsigned long long maxSize, Exce
 
 void SourceBuffer::abort(ExceptionState& exceptionState)
 {
+    WTF_LOG(Media, "SourceBuffer::abort %p", this);
     // Section 3.2 abort() method steps.
     // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#widl-SourceBuffer-abort-void
     // 1. If this object has been removed from the sourceBuffers attribute of the parent media source
@@ -468,6 +473,7 @@ void SourceBuffer::removedFromMediaSource()
 
 void SourceBuffer::initializationSegmentReceived()
 {
+    WTF_LOG(Media, "SourceBuffer::initializationSegmentReceived %p", this);
     ASSERT(m_source);
     ASSERT(m_updating);
 
@@ -791,6 +797,7 @@ void SourceBuffer::clearAppendStreamState()
 
 void SourceBuffer::appendError(bool decodeError)
 {
+    WTF_LOG(Media, "SourceBuffer::appendError %p decodeError=%d", this, decodeError);
     // Section 3.5.3 Append Error Algorithm
     // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#sourcebuffer-append-error
 
