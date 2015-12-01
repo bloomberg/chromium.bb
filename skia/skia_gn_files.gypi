@@ -10,6 +10,7 @@
     '<(skia_src_path)/fonts/SkRemotableFontMgr.cpp',
     '<(skia_src_path)/images/SkScaledBitmapSampler.cpp',
     '<(skia_src_path)/ports/SkFontConfigInterface_direct.cpp',
+    '<(skia_src_path)/ports/SkFontConfigInterface_direct_factory.cpp',
     '<(skia_src_path)/ports/SkFontHost_fontconfig.cpp',
     '<(skia_src_path)/ports/SkFontHost_FreeType_common.cpp',
     '<(skia_src_path)/ports/SkFontHost_FreeType.cpp',
