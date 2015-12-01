@@ -10,6 +10,10 @@
 
 namespace cc {
 
+namespace proto {
+class LayerTreeDebugState;
+}  // namespace proto
+
 class CC_EXPORT LayerTreeDebugState {
  public:
   LayerTreeDebugState();
@@ -39,6 +43,9 @@ class CC_EXPORT LayerTreeDebugState {
   bool ShowHudInfo() const;
   bool ShowHudRects() const;
   bool ShowMemoryStats() const;
+
+  void ToProtobuf(proto::LayerTreeDebugState* proto) const;
+  void FromProtobuf(const proto::LayerTreeDebugState& proto);
 
   static bool Equal(const LayerTreeDebugState& a, const LayerTreeDebugState& b);
   static LayerTreeDebugState Unite(const LayerTreeDebugState& a,

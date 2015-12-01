@@ -599,6 +599,7 @@
         'proto/display_item.proto',
         'proto/layer.proto',
         'proto/layer_position_constraint.proto',
+        'proto/layer_tree_debug_state.proto',
         'proto/point.proto',
         'proto/point3f.proto',
         'proto/pointf.proto',

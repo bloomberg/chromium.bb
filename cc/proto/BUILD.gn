@@ -33,6 +33,7 @@ proto_library("proto_internal") {
     "display_item.proto",
     "layer.proto",
     "layer_position_constraint.proto",
+    "layer_tree_debug_state.proto",
     "point.proto",
     "point3f.proto",
     "pointf.proto",

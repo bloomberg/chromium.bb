@@ -5,6 +5,7 @@
 #include "cc/debug/layer_tree_debug_state.h"
 
 #include "base/logging.h"
+#include "cc/proto/layer_tree_debug_state.pb.h"
 
 namespace cc {
 
@@ -51,6 +52,46 @@ bool LayerTreeDebugState::ShowHudRects() const {
 
 bool LayerTreeDebugState::ShowMemoryStats() const {
   return show_fps_counter;
+}
+
+void LayerTreeDebugState::ToProtobuf(proto::LayerTreeDebugState* proto) const {
+  proto->set_show_fps_counter(show_fps_counter);
+  proto->set_show_debug_borders(show_debug_borders);
+  proto->set_show_paint_rects(show_paint_rects);
+  proto->set_show_property_changed_rects(show_property_changed_rects);
+  proto->set_show_surface_damage_rects(show_surface_damage_rects);
+  proto->set_show_screen_space_rects(show_screen_space_rects);
+  proto->set_show_replica_screen_space_rects(show_replica_screen_space_rects);
+  proto->set_show_touch_event_handler_rects(show_touch_event_handler_rects);
+  proto->set_show_wheel_event_handler_rects(show_wheel_event_handler_rects);
+  proto->set_show_scroll_event_handler_rects(show_scroll_event_handler_rects);
+  proto->set_show_non_fast_scrollable_rects(show_non_fast_scrollable_rects);
+  proto->set_show_layer_animation_bounds_rects(
+      show_layer_animation_bounds_rects);
+  proto->set_slow_down_raster_scale_factor(slow_down_raster_scale_factor);
+  proto->set_rasterize_only_visible_content(rasterize_only_visible_content);
+  proto->set_show_picture_borders(show_picture_borders);
+  proto->set_record_rendering_stats(record_rendering_stats_);
+}
+
+void LayerTreeDebugState::FromProtobuf(
+    const proto::LayerTreeDebugState& proto) {
+  show_fps_counter = proto.show_fps_counter();
+  show_debug_borders = proto.show_debug_borders();
+  show_paint_rects = proto.show_paint_rects();
+  show_property_changed_rects = proto.show_property_changed_rects();
+  show_surface_damage_rects = proto.show_surface_damage_rects();
+  show_screen_space_rects = proto.show_screen_space_rects();
+  show_replica_screen_space_rects = proto.show_replica_screen_space_rects();
+  show_touch_event_handler_rects = proto.show_touch_event_handler_rects();
+  show_wheel_event_handler_rects = proto.show_wheel_event_handler_rects();
+  show_scroll_event_handler_rects = proto.show_scroll_event_handler_rects();
+  show_non_fast_scrollable_rects = proto.show_non_fast_scrollable_rects();
+  show_layer_animation_bounds_rects = proto.show_layer_animation_bounds_rects();
+  slow_down_raster_scale_factor = proto.slow_down_raster_scale_factor();
+  rasterize_only_visible_content = proto.rasterize_only_visible_content();
+  show_picture_borders = proto.show_picture_borders();
+  record_rendering_stats_ = proto.record_rendering_stats();
 }
 
 bool LayerTreeDebugState::Equal(const LayerTreeDebugState& a,
