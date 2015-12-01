@@ -342,6 +342,11 @@ def CheckLongLines(input_api, output_api, maxlen, source_file_filter=None):
     if any((url in line) for url in ('file://', 'http://', 'https://')):
       return True
 
+    # If 'line-too-long' is explictly suppressed for the line, any length is
+    # acceptable.
+    if 'pylint: disable=line-too-long' in line and file_extension == 'py':
+      return True
+
     if line_len > extra_maxlen:
       return False
 
@@ -349,9 +354,6 @@ def CheckLongLines(input_api, output_api, maxlen, source_file_filter=None):
       return True
 
     if '<include' in line and file_extension in ('css', 'html', 'js'):
-      return True
-
-    if 'pylint: disable=line-too-long' in line and file_extension == 'py':
       return True
 
     return input_api.re.match(
