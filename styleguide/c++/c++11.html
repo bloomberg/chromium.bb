@@ -90,6 +90,15 @@ C++ Templates Angle Brackets Pitfall</a></td>
 </tr>
 
 <tr>
+<td>Arrays</td>
+<td><code>std::array</code></td>
+<td>A fixed-size replacement for built-in arrays, with STL support</td>
+<td><a href="http://en.cppreference.com/w/cpp/container/array">
+std::array</a></td>
+<td>Useful in performance-critical situations, with small, fixed-size arrays. In most cases, consider std::vector instead. std::vector is cheaper to std::move and is more widely used. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/cxx/pVRQCRWHEU8">Discussion thread</a>.</td>
+</tr>
+
+<tr>
 <td>Automatic Types</td>
 <td><code>auto</code></td>
 <td>Automatic type deduction</td>
@@ -681,15 +690,6 @@ std::allocator_traits</a></td>
 <td><code>std::atomic</code> and others in <code>&lt;atomic&gt;</code></td>
 <td>Fine-grained atomic types and operations</td>
 <td><a href="http://en.cppreference.com/w/cpp/atomic">&lt;atomic&gt;</a></td>
-<td></td>
-</tr>
-
-<tr>
-<td>Arrays</td>
-<td><code>std::array</code></td>
-<td>A fixed-size replacement for built-in arrays, with STL support</td>
-<td><a href="http://en.cppreference.com/w/cpp/container/array">
-std::array</a></td>
 <td></td>
 </tr>
 
