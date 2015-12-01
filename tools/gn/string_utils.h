@@ -35,22 +35,4 @@ bool ExpandStringLiteral(Scope* scope,
                          Value* result,
                          Err* err);
 
-// Removes the given prefix from the string. Asserts if the string does
-// not have the given prefix.
-//
-// Note: could potentially return a StringPiece into the str.
-std::string RemovePrefix(const std::string& str, const std::string& prefix);
-
-// Appends the given string piece to the given string. This avoids an
-// intermediate copy.
-inline void AppendStringPiece(std::string* dest,
-                              const base::StringPiece& piece) {
-  dest->append(piece.data(), piece.size());
-}
-
-// Removes the trailing slash from the given string. This asserts that either
-// the string is empty or it ends with a slash (normally used to process
-// directories).
-void TrimTrailingSlash(std::string* str);
-
 #endif  // TOOLS_GN_STRING_UTILS_H_
