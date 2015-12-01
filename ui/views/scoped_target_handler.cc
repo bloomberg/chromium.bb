@@ -26,6 +26,7 @@ ScopedTargetHandler::~ScopedTargetHandler() {
 
 void ScopedTargetHandler::OnEvent(ui::Event* event) {
   bool destroyed = false;
+  bool* old_destroyed_flag = destroyed_flag_;
   destroyed_flag_ = &destroyed;
 
   if (original_handler_)
@@ -33,9 +34,12 @@ void ScopedTargetHandler::OnEvent(ui::Event* event) {
   else
     EventHandler::OnEvent(event);
 
-  if (destroyed)
+  if (destroyed) {
+    if (old_destroyed_flag)
+      *old_destroyed_flag = true;
     return;
-  destroyed_flag_ = NULL;
+  }
+  destroyed_flag_ = old_destroyed_flag;
 
   new_handler_->OnEvent(event);
 }

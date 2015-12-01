@@ -590,6 +590,7 @@
       'layout/grid_layout_unittest.cc',
       'rect_based_targeting_utils_unittest.cc',
       'run_all_unittests.cc',
+      'scoped_target_handler_unittest.cc',
       'style/mac/dialog_button_border_mac_unittest.cc',
       'view_model_unittest.cc',
       'view_model_utils_unittest.cc',
