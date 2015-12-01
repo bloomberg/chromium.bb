@@ -92,11 +92,6 @@ QuicData* DecryptWithNonce(ChaCha20Poly1305Decrypter* decrypter,
 }
 
 TEST(ChaCha20Poly1305DecrypterTest, Decrypt) {
-  if (!ChaCha20Poly1305Decrypter::IsSupported()) {
-    LOG(INFO) << "ChaCha20+Poly1305 not supported. Test skipped.";
-    return;
-  }
-
   for (size_t i = 0; test_vectors[i].key != nullptr; i++) {
     // If not present then decryption is expected to fail.
     bool has_pt = test_vectors[i].pt;

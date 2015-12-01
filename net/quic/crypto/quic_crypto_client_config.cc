@@ -369,9 +369,7 @@ void QuicCryptoClientConfig::SetDefaults() {
 
   // Authenticated encryption algorithms. Prefer ChaCha20 by default.
   aead.clear();
-  if (ChaCha20Poly1305Encrypter::IsSupported()) {
-    aead.push_back(kCC12);
-  }
+  aead.push_back(kCC12);
   aead.push_back(kAESG);
 
   disable_ecdsa_ = false;

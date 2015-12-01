@@ -293,11 +293,7 @@ QuicServerConfigProtobuf* QuicCryptoServerConfig::GenerateConfig(
   } else {
     msg.SetTaglist(kKEXS, kC255, 0);
   }
-  if (ChaCha20Poly1305Encrypter::IsSupported()) {
-    msg.SetTaglist(kAEAD, kAESG, kCC12, 0);
-  } else {
-    msg.SetTaglist(kAEAD, kAESG, 0);
-  }
+  msg.SetTaglist(kAEAD, kAESG, kCC12, 0);
   msg.SetStringPiece(kPUBS, encoded_public_values);
 
   if (options.expiry_time.IsZero()) {

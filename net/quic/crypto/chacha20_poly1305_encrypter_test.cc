@@ -58,11 +58,6 @@ QuicData* EncryptWithNonce(ChaCha20Poly1305Encrypter* encrypter,
 }
 
 TEST(ChaCha20Poly1305EncrypterTest, Encrypt) {
-  if (!ChaCha20Poly1305Encrypter::IsSupported()) {
-    LOG(INFO) << "ChaCha20+Poly1305 not supported. Test skipped.";
-    return;
-  }
-
   for (size_t i = 0; test_vectors[i].key != nullptr; i++) {
     // Decode the test vector.
     string key;
