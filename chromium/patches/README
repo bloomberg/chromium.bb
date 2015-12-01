@@ -1,11 +1,14 @@
 Current Status as of November 10, 2015
 
 Upstream cherry-picks:
-  Commit 17e394b99da027a9b31a9fd495add3137c0f0422 fixes crash in matroskadec.c.
+  Commit a5034b324cad4c29d47ef285a30b0705e6eb0384 fixes crash in matroskadec.c.
     See https://crbug.com/484423.
 
   Commit 50ce510ac4e3ed093c051738242a9a75aeeb36ce fixes TSAN data race warning
     in pthread_slice.c. See https://crbug.com/448215.
+
+  Commit 5e6ce28dabe002a6130f17b59c454bdee33088f7 fixes mp3 seeking for CBR
+    content. See https://crbug.com/545914.
 
 Autorename:
   autorename_* files are renamed copies of various files that would cause
