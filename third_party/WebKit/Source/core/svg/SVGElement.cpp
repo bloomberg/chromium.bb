@@ -858,9 +858,9 @@ void SVGElement::sendSVGLoadEventToSelfAndAncestorChainIfPossible()
     toSVGElement(parent)->sendSVGLoadEventToSelfAndAncestorChainIfPossible();
 }
 
-void SVGElement::attributeChanged(const QualifiedName& name, const AtomicString& newValue, AttributeModificationReason)
+void SVGElement::attributeChanged(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& newValue, AttributeModificationReason)
 {
-    Element::attributeChanged(name, newValue);
+    Element::attributeChanged(name, oldValue, newValue);
 
     if (name == HTMLNames::idAttr)
         rebuildAllIncomingReferences();

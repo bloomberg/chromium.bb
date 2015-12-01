@@ -88,7 +88,7 @@ void HTMLScriptElement::parseAttribute(const QualifiedName& name, const AtomicSt
         HTMLElement::parseAttribute(name, value);
 }
 
-void HTMLScriptElement::attributeWillChange(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& newValue)
+void HTMLScriptElement::attributeChanged(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& newValue, AttributeModificationReason reason)
 {
     if (name == srcAttr && inDocument()) {
         V8DOMActivityLogger* activityLogger = V8DOMActivityLogger::currentActivityLoggerIfIsolatedWorld();
@@ -101,7 +101,7 @@ void HTMLScriptElement::attributeWillChange(const QualifiedName& name, const Ato
             activityLogger->logEvent("blinkSetAttribute", argv.size(), argv.data());
         }
     }
-    HTMLElement::attributeWillChange(name, oldValue, newValue);
+    HTMLElement::attributeChanged(name, oldValue, newValue, reason);
 }
 
 Node::InsertionNotificationRequest HTMLScriptElement::insertedInto(ContainerNode* insertionPoint)

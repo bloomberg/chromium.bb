@@ -32,7 +32,7 @@ class HTMLMarqueeElement final : public HTMLElement {
 public:
     static PassRefPtrWillBeRawPtr<HTMLMarqueeElement> create(Document&);
 
-    void attributeWillChange(const QualifiedName&, const AtomicString& oldValue, const AtomicString& newValue) final;
+    void attributeChanged(const QualifiedName&, const AtomicString& oldValue, const AtomicString& newValue, AttributeModificationReason) final;
     InsertionNotificationRequest insertedInto(ContainerNode*) final;
     void removedFrom(ContainerNode*) final;
 

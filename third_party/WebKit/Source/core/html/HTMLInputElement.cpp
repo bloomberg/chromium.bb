@@ -502,11 +502,11 @@ void HTMLInputElement::updateType()
         ASSERT(elementData());
         AttributeCollection attributes = attributesWithoutUpdate();
         if (const Attribute* height = attributes.find(heightAttr))
-            attributeChanged(heightAttr, height->value());
+            HTMLTextFormControlElement::attributeChanged(heightAttr, height->value(), height->value());
         if (const Attribute* width = attributes.find(widthAttr))
-            attributeChanged(widthAttr, width->value());
+            HTMLTextFormControlElement::attributeChanged(widthAttr, width->value(), width->value());
         if (const Attribute* align = attributes.find(alignAttr))
-            attributeChanged(alignAttr, align->value());
+            HTMLTextFormControlElement::attributeChanged(alignAttr, align->value(), align->value());
     }
 
     if (document().focusedElement() == this)
@@ -667,7 +667,7 @@ void HTMLInputElement::collectStyleForPresentationAttribute(const QualifiedName&
     }
 }
 
-void HTMLInputElement::attributeWillChange(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& newValue)
+void HTMLInputElement::attributeChanged(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& newValue, AttributeModificationReason reason)
 {
     if (name == formactionAttr && inDocument()) {
         V8DOMActivityLogger* activityLogger = V8DOMActivityLogger::currentActivityLoggerIfIsolatedWorld();
@@ -680,7 +680,7 @@ void HTMLInputElement::attributeWillChange(const QualifiedName& name, const Atom
             activityLogger->logEvent("blinkSetAttribute", argv.size(), argv.data());
         }
     }
-    HTMLTextFormControlElement::attributeWillChange(name, oldValue, newValue);
+    HTMLTextFormControlElement::attributeChanged(name, oldValue, newValue, reason);
 }
 
 void HTMLInputElement::parseAttribute(const QualifiedName& name, const AtomicString& value)

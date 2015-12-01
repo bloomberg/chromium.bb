@@ -228,7 +228,7 @@ Node::InsertionNotificationRequest HTMLButtonElement::insertedInto(ContainerNode
     return HTMLFormControlElement::insertedInto(insertionPoint);
 }
 
-void HTMLButtonElement::attributeWillChange(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& newValue)
+void HTMLButtonElement::attributeChanged(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& newValue, AttributeModificationReason reason)
 {
     if (name == formactionAttr && inDocument()) {
         V8DOMActivityLogger* activityLogger = V8DOMActivityLogger::currentActivityLoggerIfIsolatedWorld();
@@ -241,7 +241,7 @@ void HTMLButtonElement::attributeWillChange(const QualifiedName& name, const Ato
             activityLogger->logEvent("blinkSetAttribute", argv.size(), argv.data());
         }
     }
-    HTMLFormControlElement::attributeWillChange(name, oldValue, newValue);
+    HTMLFormControlElement::attributeChanged(name, oldValue, newValue, reason);
 }
 
 } // namespace

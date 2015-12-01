@@ -52,7 +52,7 @@ private:
     HTMLScriptElement(Document&, bool wasInsertedByParser, bool alreadyStarted);
 
     void parseAttribute(const QualifiedName&, const AtomicString&) override;
-    void attributeWillChange(const QualifiedName&, const AtomicString& oldValue, const AtomicString& newValue) override;
+    void attributeChanged(const QualifiedName&, const AtomicString& oldValue, const AtomicString& newValue, AttributeModificationReason) override;
     InsertionNotificationRequest insertedInto(ContainerNode*) override;
     void didNotifySubtreeInsertionsToDocument() override;
     void childrenChanged(const ChildrenChange&) override;

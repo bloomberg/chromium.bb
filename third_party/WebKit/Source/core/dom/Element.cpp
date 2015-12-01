@@ -1171,7 +1171,7 @@ static inline AtomicString makeIdForStyleResolution(const AtomicString& value, b
     return value;
 }
 
-void Element::attributeChanged(const QualifiedName& name, const AtomicString& newValue, AttributeModificationReason reason)
+void Element::attributeChanged(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& newValue, AttributeModificationReason reason)
 {
     if (ElementShadow* parentElementShadow = shadowWhereNodeCanBeDistributed(*this)) {
         if (shouldInvalidateDistributionWhenAttributeChanged(parentElementShadow, name, newValue))
@@ -1231,7 +1231,7 @@ inline void Element::attributeChangedFromParserOrByCloning(const QualifiedName& 
 {
     if (name == isAttr)
         CustomElementRegistrationContext::setTypeExtension(this, newValue);
-    attributeChanged(name, newValue, reason);
+    attributeChanged(name, nullAtom, newValue, reason);
 }
 
 template <typename CharacterType>
@@ -3125,8 +3125,6 @@ void Element::willModifyAttribute(const QualifiedName& name, const AtomicString&
     if (OwnPtrWillBeRawPtr<MutationObserverInterestGroup> recipients = MutationObserverInterestGroup::createForAttributesMutation(*this, name))
         recipients->enqueueMutationRecord(MutationRecord::createAttributes(this, name, oldValue));
 
-    attributeWillChange(name, oldValue, newValue);
-
     InspectorInstrumentation::willModifyDOMAttr(this, oldValue, newValue);
 }
 
@@ -3134,7 +3132,7 @@ void Element::didAddAttribute(const QualifiedName& name, const AtomicString& val
 {
     if (name == HTMLNames::idAttr)
         updateId(nullAtom, value);
-    attributeChanged(name, value);
+    attributeChanged(name, nullAtom, value);
     InspectorInstrumentation::didModifyDOMAttr(this, name, value);
     dispatchSubtreeModifiedEvent();
 }
@@ -3143,7 +3141,7 @@ void Element::didModifyAttribute(const QualifiedName& name, const AtomicString& 
 {
     if (name == HTMLNames::idAttr)
         updateId(oldValue, newValue);
-    attributeChanged(name, newValue);
+    attributeChanged(name, oldValue, newValue);
     InspectorInstrumentation::didModifyDOMAttr(this, name, newValue);
     // Do not dispatch a DOMSubtreeModified event here; see bug 81141.
 }
@@ -3152,7 +3150,7 @@ void Element::didRemoveAttribute(const QualifiedName& name, const AtomicString& 
 {
     if (name == HTMLNames::idAttr)
         updateId(oldValue, nullAtom);
-    attributeChanged(name, nullAtom);
+    attributeChanged(name, oldValue, nullAtom);
     InspectorInstrumentation::didRemoveDOMAttr(this, name);
     dispatchSubtreeModifiedEvent();
 }

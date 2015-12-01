@@ -235,14 +235,14 @@ void HTMLLabelElement::updateLabel(TreeScope& scope, const AtomicString& oldForA
         scope.addLabel(newForAttributeValue, this);
 }
 
-void HTMLLabelElement::attributeWillChange(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& newValue)
+void HTMLLabelElement::attributeChanged(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& newValue, AttributeModificationReason reason)
 {
     if (name == HTMLNames::forAttr) {
         TreeScope& scope = treeScope();
         if (scope.shouldCacheLabelsByForAttribute())
             updateLabel(scope, oldValue, newValue);
     }
-    HTMLElement::attributeWillChange(name, oldValue, newValue);
+    HTMLElement::attributeChanged(name, oldValue, newValue, reason);
 }
 
 Node::InsertionNotificationRequest HTMLLabelElement::insertedInto(ContainerNode* insertionPoint)

@@ -535,7 +535,7 @@ void HTMLFormElement::parseAttribute(const QualifiedName& name, const AtomicStri
     }
 }
 
-void HTMLFormElement::attributeWillChange(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& newValue)
+void HTMLFormElement::attributeChanged(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& newValue, AttributeModificationReason reason)
 {
     if (name == actionAttr && inDocument()) {
         V8DOMActivityLogger* activityLogger = V8DOMActivityLogger::currentActivityLoggerIfIsolatedWorld();
@@ -548,7 +548,7 @@ void HTMLFormElement::attributeWillChange(const QualifiedName& name, const Atomi
             activityLogger->logEvent("blinkSetAttribute", argv.size(), argv.data());
         }
     }
-    HTMLElement::attributeWillChange(name, oldValue, newValue);
+    HTMLElement::attributeChanged(name, oldValue, newValue, reason);
 }
 
 void HTMLFormElement::associate(FormAssociatedElement& e)

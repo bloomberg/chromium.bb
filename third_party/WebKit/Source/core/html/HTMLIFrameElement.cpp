@@ -93,7 +93,7 @@ void HTMLIFrameElement::collectStyleForPresentationAttribute(const QualifiedName
     }
 }
 
-void HTMLIFrameElement::attributeWillChange(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& newValue)
+void HTMLIFrameElement::attributeChanged(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& newValue, AttributeModificationReason reason)
 {
     if (name == srcAttr && inDocument()) {
         V8DOMActivityLogger* activityLogger = V8DOMActivityLogger::currentActivityLoggerIfIsolatedWorld();
@@ -106,7 +106,7 @@ void HTMLIFrameElement::attributeWillChange(const QualifiedName& name, const Ato
             activityLogger->logEvent("blinkSetAttribute", argv.size(), argv.data());
         }
     }
-    HTMLFrameElementBase::attributeWillChange(name, oldValue, newValue);
+    HTMLFrameElementBase::attributeChanged(name, oldValue, newValue, reason);
 }
 
 void HTMLIFrameElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
