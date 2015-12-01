@@ -6399,6 +6399,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_APPS_SHOW_ON_FIRST_PAINT_DESCRIPTION" desc="Description of flag to enable show-on-first-paint for apps.">
         Show apps windows after the first paint. Windows will be shown significantly later for heavy apps loading resources synchronously but it will be insignificant for apps that load most of their resources asynchronously.
       </message>
+      <message name="IDS_FLAGS_PERMISSIONS_BLACKLIST_NAME" desc="Title for the flag to enable the permissions blacklist.">
+        Permissions Blacklist
+      </message>
+      <message name="IDS_FLAGS_PERMISSIONS_BLACKLIST_DESCRIPTION" desc="Description for the flag to enable the permissions blacklist.">
+        Enables the Permissions Blacklist, which blocks permissions for blacklisted sites for Safe Browsing users.
+      </message>
       <message name="IDS_FLAGS_SITE_ENGAGEMENT_SERVICE_NAME" desc="Title for the flag to enable the site engagement service.">
         Site Engagement Service
       </message>

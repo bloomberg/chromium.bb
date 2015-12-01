@@ -67577,6 +67577,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-951394314" label="top-chrome-md"/>
   <int value="-949178861" label="enable-new-avatar-menu"/>
   <int value="-938178614" label="enable-suggestions-with-substring-match"/>
+  <int value="-933316841" label="enable-permissions-blacklist"/>
   <int value="-926422468" label="disable-embedded-shared-worker"/>
   <int value="-918618075" label="enable-service-worker"/>
   <int value="-914210146" label="enable-web-based-signin"/>
@@ -67870,6 +67871,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1479248574" label="disable-voice-input"/>
   <int value="1481562816" label="disable-password-link"/>
   <int value="1486171015" label="disable-fill-on-account-select"/>
+  <int value="1489915799" label="disable-permissions-blacklist"/>
   <int value="1490043732" label="enable-fill-on-account-select"/>
   <int value="1490255042" label="enable-overlay-scrollbar"/>
   <int value="1495341532" label="disable-mtp-write-support"/>

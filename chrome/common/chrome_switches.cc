@@ -302,6 +302,10 @@ const char kDisablePasswordManagerReauthentication[] =
 // Disable the new material UI - requires out of process PDF plugin.
 const char kDisablePdfMaterialUI[]          = "disable-pdf-material-ui";
 
+// Disables the Permissions Blacklist, which blocks access to permissions
+// for blacklisted sites.
+const char kDisablePermissionsBlacklist[] = "disable-permissions-blacklist";
+
 // Disable pop-up blocking.
 const char kDisablePopupBlocking[]          = "disable-popup-blocking";
 
@@ -461,6 +465,10 @@ const char kEnablePanels[]                  = "enable-panels";
 
 // Enable the new material UI - requires out of process PDF plugin.
 const char kEnablePdfMaterialUI[]           = "enable-pdf-material-ui";
+
+// Enables the Permissions Blacklist, which blocks access to permissions
+// for blacklisted sites.
+const char kEnablePermissionsBlacklist[] = "enable-permissions-blacklist";
 
 // Enables a number of potentially annoying security features (strict mixed
 // content mode, powerful feature restrictions, etc.)
