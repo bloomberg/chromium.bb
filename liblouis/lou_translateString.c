@@ -396,7 +396,7 @@ hyphenate (const widechar * word, int wordSize, char *hyphens)
 	  /* Need to ensure that we don't overrun hyphens,
 	   * in some cases hyphenPattern is longer than the remaining letters,
 	   * and if we write out all of it we would have overshot our buffer. */
-	  limit = MIN (strlen (hyphenPattern), wordSize - patternOffset);
+	  limit = MIN ((int)strlen (hyphenPattern), wordSize - patternOffset);
 	  for (k = 0; k < limit; k++)
 	    {
 	      if (hyphens[patternOffset + k] < hyphenPattern[k])
@@ -719,7 +719,7 @@ static int
 checkMultCaps ()
 {
   int k;
-  for (k = 0; k < table->lenBeginCaps; k++)
+  for (k = 0; k < (int) table->lenBeginCaps; k++)
     if (k >= srcmax - src ||
 	!checkAttr (currentInput[src + k], CTC_UpperCase, 0))
       return 0;
@@ -1555,7 +1555,7 @@ undefinedCharacter (widechar c)
       return 1;
     }
   display = showString (&c, 1);
-  for (k = 0; k < strlen (display); k++)
+  for (k = 0; k < (int) strlen (display); k++)
     displayDots[k] = getDotsForChar (display[k]);
   if (!for_updatePositions (displayDots, 1, strlen(display)))
     return 0;

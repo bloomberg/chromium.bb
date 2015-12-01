@@ -1424,7 +1424,7 @@ hexValue (FileInfo * nested, const widechar * digits, int length)
 }
 
 #define MAXBYTES 7
-static int first0Bit[MAXBYTES] = { 0x80, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC, 0XFE };
+static unsigned int first0Bit[MAXBYTES] = { 0x80, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC, 0XFE };
 
 static int
 parseChars (FileInfo * nested, CharsString * result, CharsString * token)
