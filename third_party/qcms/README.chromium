@@ -117,6 +117,8 @@ The following changes have been made since qcms was imported:
    - https://code.google.com/p/chromium/issues/detail?id=551568
  - Minimize transform RMS in qcms_transform_data_rgb(a)_out_lut
    - https://code.google.com/p/chromium/issues/detail?id=532910
+ - Allow negative XYZ for display profiles on the APPLE port
+   - https://code.google.com/p/chromium/issues/detail?id=562951
 
 For the Chromium changes, since the import, in a patch format run:
   git diff b8456f38 src
