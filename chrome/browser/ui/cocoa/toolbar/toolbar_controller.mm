@@ -38,11 +38,11 @@
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_editor.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #import "chrome/browser/ui/cocoa/menu_button.h"
+#import "chrome/browser/ui/cocoa/toolbar/app_toolbar_button_cell.h"
 #import "chrome/browser/ui/cocoa/toolbar/back_forward_menu_controller.h"
 #import "chrome/browser/ui/cocoa/toolbar/reload_button_cocoa.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_button_cocoa.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_view_cocoa.h"
-#import "chrome/browser/ui/cocoa/toolbar/wrench_toolbar_button_cell.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/app_menu_badge_controller.h"
@@ -674,8 +674,8 @@ class NotificationBridge : public AppMenuBadgeController::Delegate {
 
 - (void)updateWrenchButtonSeverity:(AppMenuIconPainter::Severity)severity
                            animate:(BOOL)animate {
-  WrenchToolbarButtonCell* cell =
-      base::mac::ObjCCastStrict<WrenchToolbarButtonCell>([wrenchButton_ cell]);
+  AppToolbarButtonCell* cell =
+      base::mac::ObjCCastStrict<AppToolbarButtonCell>([wrenchButton_ cell]);
   [cell setSeverity:severity shouldAnimate:animate];
 }
 

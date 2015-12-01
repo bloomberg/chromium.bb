@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/toolbar/wrench_toolbar_button_cell.h"
+#import "chrome/browser/ui/cocoa/toolbar/app_toolbar_button_cell.h"
 
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #include "ui/gfx/canvas_skia_paint.h"
@@ -23,12 +23,12 @@ class AppMenuIconPainterDelegateMac : public AppMenuIconPainter::Delegate {
   DISALLOW_COPY_AND_ASSIGN(AppMenuIconPainterDelegateMac);
 };
 
-@interface WrenchToolbarButtonCell ()
+@interface AppToolbarButtonCell ()
 - (void)commonInit;
 - (AppMenuIconPainter::BezelType)currentBezelType;
 @end
 
-@implementation WrenchToolbarButtonCell
+@implementation AppToolbarButtonCell
 
 - (id)initTextCell:(NSString*)text {
   if ((self = [super initTextCell:text])) {

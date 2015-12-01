@@ -27,7 +27,7 @@
                 <button toolTip="^IDS_APPMENU_TOOLTIP" id="38" customClass="MenuButton">
                     <rect key="frame" x="572" y="4" width="29" height="29"/>
                     <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
-                    <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" imagePosition="only" alignment="center" borderStyle="border" inset="2" id="39" customClass="WrenchToolbarButtonCell">
+                    <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" imagePosition="only" alignment="center" borderStyle="border" inset="2" id="39" customClass="AppToolbarButtonCell">
                         <behavior key="behavior" lightByContents="YES"/>
                         <font key="font" metaFont="system"/>
                     </buttonCell>
