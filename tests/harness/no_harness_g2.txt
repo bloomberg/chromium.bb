@@ -1,0 +1,50 @@
+
+{
+  "tables": [
+    "unicode.dis",
+    "no-no-g2.ctb"
+  ],
+  "tests": [ 
+  
+
+
+{ "data": [ {  "comment": "contraction example2",  "input": "Det tyngste regnet", "output": "⠠⠙⠬ ⠞⠽⠝⠛⠎⠳ ⠗⠑⠛⠝⠬"   } ] },
+{ "data": [ {  "comment": "contraction example3",  "input": "faller på huset", "output": "⠋⠁⠇⠇⠱ ⠏ ⠓⠥⠎⠬"   } ] },
+{ "data": [ {  "comment": "contraction example4",  "input": "der taket", "output": "⠾ ⠞⠁⠅⠬"   } ] },
+{ "data": [ {  "comment": "contraction example5",  "input": "lekker mest.", "output": "⠇⠑⠅⠅⠱ ⠍⠑⠎⠞⠄"   } ] },
+{ "data": [ {  "comment": "contraction example6",  "input": "Hold deg tett", "output": "⠠⠓⠕⠇⠙ ⠙⠛ ⠞⠬⠞"   } ] },
+{ "data": [ {  "comment": "contraction example7",  "input": "ved treet", "output": "⠧ ⠞⠗⠑⠬"   } ] },
+{ "data": [ {  "comment": "contraction example8",  "input": "så faller frukten", "output": "⠎⠡ ⠋⠁⠇⠇⠱ ⠋⠗⠥⠅⠞⠣"   } ] },
+{ "data": [ {  "comment": "contraction example9",  "input": "ned på deg", "output": "⠝⠑⠙ ⠏ ⠙⠛"   } ] },
+{ "data": [ {  "comment": "contraction example10",  "input": "Alle andre spiser", "output": "⠠⠁⠑ ⠁⠷ ⠎⠏⠊⠎⠱"   } ] },
+{ "data": [ {  "comment": "contraction example11",  "input": "maten til skilpadden.", "output": "⠍⠁⠞⠣ ⠞ ⠎⠅⠊⠇⠏⠁⠙⠙⠣⠄"   } ] },
+{ "data": [ {  "comment": "contraction example12",  "input": "hva kan den gjøre,", "output": "⠓⠧⠁ ⠅ ⠙⠣ ⠛⠚⠪⠷⠂"   } ] },
+{ "data": [ {  "comment": "contraction example13",  "input": "som ikke har", "output": "⠎ ⠊⠅ ⠗"   } ] },
+{ "data": [ {  "comment": "contraction example14",  "input": "raske føtter?", "output": "⠗⠁⠎⠅⠑ ⠋⠪⠞⠞⠱⠢"   } ] },
+{ "data": [ {  "comment": "contraction example15",  "input": "Handler jeg", "output": "⠠⠓⠁⠝⠙⠇⠱ ⠚"   } ] },
+{ "data": [ {  "comment": "contraction example16",  "input": "med salt,", "output": "⠩ ⠎⠁⠇⠞⠂"   } ] },
+{ "data": [ {  "comment": "contraction example17",  "input": "regner det;", "output": "⠗⠑⠛⠝⠱ ⠙⠬⠆"   } ] },
+{ "data": [ {  "comment": "contraction example18",  "input": "handler jeg", "output": "⠓⠁⠝⠙⠇⠱ ⠚"   } ] },
+{ "data": [ {  "comment": "contraction example19",  "input": "med mel,", "output": "⠩ ⠍⠑⠇⠂"   } ] },
+{ "data": [ {  "comment": "contraction example20",  "input": "så blåser", "output": "⠎⠡ ⠃⠇⠡⠎⠱"   } ] },
+{ "data": [ {  "comment": "contraction example21",  "input": "det opp.", "output": "⠙⠬ ⠕⠏⠏⠄"   } ] },
+{ "data": [ {  "comment": "contraction example22",  "input": "Prisen på hatten", "output": "⠠⠏⠗⠊⠎⠣ ⠏ ⠓⠁⠞⠞⠣"   } ] },
+{ "data": [ {  "comment": "contraction example23",  "input": "er ingen målestokk", "output": "⠱ ⠊⠑ ⠍⠡⠇⠑⠎⠞⠕⠅⠅"   } ] },
+{ "data": [ {  "comment": "contraction example24",  "input": "på hvor glup", "output": "⠏ ⠺ ⠛⠇⠥⠏"   } ] },
+{ "data": [ {  "comment": "contraction example25",  "input": "du er.", "output": "⠙ ⠱⠄"   } ] },
+{ "data": [ {  "comment": "contraction example26",  "input": "Du kan ikke", "output": "⠠⠙ ⠅ ⠊⠅"   } ] },
+{ "data": [ {  "comment": "contraction example27",  "input": "lære en krabbe", "output": "⠇⠜⠷ ⠣ ⠅⠗⠁⠃⠃⠑"   } ] },
+{ "data": [ {  "comment": "contraction example28",  "input": "å gå rett", "output": "⠡ ⠛⠡ ⠗⠬⠞"   } ] },
+{ "data": [ {  "comment": "contraction example29",  "input": "Det er ikke", "output": "⠠⠙⠬ ⠱ ⠊⠅"   } ] },
+{ "data": [ {  "comment": "contraction example30",  "input": "plass til", "output": "⠏⠇⠁⠎⠎ ⠞"   } ] },
+{ "data": [ {  "comment": "contraction example31",  "input": "to føtter", "output": "⠞⠕ ⠋⠪⠞⠞⠱"   } ] },
+{ "data": [ {  "comment": "contraction example32",  "input": "i én sko.", "output": "⠊ ⠿⠝ ⠎⠅⠕⠄"   } ] },
+{ "data": [ {  "comment": "contraction example32",  "input": "ett", "output": "⠬⠞"   } ] },
+{ "data": [ {  "comment": "contraction example32",  "input": "sett", "output": "⠎⠬⠞"   } ] }
+
+
+
+   
+    
+  ]
+}
