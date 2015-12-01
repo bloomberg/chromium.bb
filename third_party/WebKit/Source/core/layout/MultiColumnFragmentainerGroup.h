@@ -60,7 +60,7 @@ public:
     LayoutUnit logicalHeightInFlowThread() const { return m_logicalBottomInFlowThread - m_logicalTopInFlowThread; }
 
     void resetColumnHeight();
-    bool recalculateColumnHeight(BalancedColumnHeightCalculation calculationMode);
+    bool recalculateColumnHeight();
 
     LayoutSize flowThreadTranslationAtOffset(LayoutUnit offsetInFlowThread) const;
     LayoutUnit columnLogicalTopForOffset(LayoutUnit offsetInFlowThread) const;

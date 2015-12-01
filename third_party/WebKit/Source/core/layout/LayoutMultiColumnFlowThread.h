@@ -35,8 +35,6 @@ namespace blink {
 class LayoutMultiColumnSet;
 class LayoutMultiColumnSpannerPlaceholder;
 
-enum BalancedColumnHeightCalculation { GuessFromFlowThreadPortion, StretchBySpaceShortage };
-
 // Flow thread implementation for CSS multicol. This will be inserted as an anonymous child block of
 // the actual multicol container (i.e. the LayoutBlockFlow whose style computes to non-auto
 // column-count and/or column-width). LayoutMultiColumnFlowThread is the heart of the multicol
@@ -178,8 +176,6 @@ public:
     LayoutMultiColumnSet* columnSetAtBlockOffset(LayoutUnit) const final;
 
     void layoutColumns(SubtreeLayoutScope&);
-
-    bool isInInitialLayoutPass() const { return !m_inBalancingPass; }
 
     // Skip past a column spanner during flow thread layout. Spanners are not laid out inside the
     // flow thread, since the flow thread is not in a spanner's containing block chain (since the

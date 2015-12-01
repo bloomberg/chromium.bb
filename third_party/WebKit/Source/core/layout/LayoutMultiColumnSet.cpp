@@ -38,6 +38,7 @@ LayoutMultiColumnSet::LayoutMultiColumnSet(LayoutFlowThread* flowThread)
     : LayoutBlockFlow(nullptr)
     , m_fragmentainerGroups(*this)
     , m_flowThread(flowThread)
+    , m_initialHeightCalculated(false)
 {
 }
 
@@ -244,13 +245,20 @@ LayoutUnit LayoutMultiColumnSet::pageLogicalTopForOffset(LayoutUnit offset) cons
     return fragmentainerGroupAtFlowThreadOffset(offset).columnLogicalTopForOffset(offset);
 }
 
-bool LayoutMultiColumnSet::recalculateColumnHeight(BalancedColumnHeightCalculation calculationMode)
+bool LayoutMultiColumnSet::recalculateColumnHeight()
 {
-    if (calculationMode == GuessFromFlowThreadPortion)
-        m_tallestUnbreakableLogicalHeight = LayoutUnit();
+    if (m_oldLogicalTop != logicalTop() && multiColumnFlowThread()->enclosingFlowThread()) {
+        // Preceding spanners or column sets have been moved or resized. This means that the
+        // fragmentainer groups that we have inserted need to be re-inserted. Restart column
+        // balancing.
+        resetColumnHeight();
+        return true;
+    }
+
     bool changed = false;
     for (auto& group : m_fragmentainerGroups)
-        changed = group.recalculateColumnHeight(calculationMode) || changed;
+        changed = group.recalculateColumnHeight() || changed;
+    m_initialHeightCalculated = true;
     return changed;
 }
 
@@ -258,6 +266,8 @@ void LayoutMultiColumnSet::resetColumnHeight()
 {
     m_fragmentainerGroups.deleteExtraGroups();
     m_fragmentainerGroups.first().resetColumnHeight();
+    m_tallestUnbreakableLogicalHeight = LayoutUnit();
+    m_initialHeightCalculated = false;
 }
 
 void LayoutMultiColumnSet::beginFlow(LayoutUnit offsetInFlowThread)

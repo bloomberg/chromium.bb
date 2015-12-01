@@ -372,6 +372,11 @@ void LayoutMultiColumnFlowThread::layoutColumns(SubtreeLayoutScope& layoutScope)
         }
         if (!m_needsColumnHeightsRecalculation)
             m_needsColumnHeightsRecalculation = columnSet->heightIsAuto();
+        // Since column sets are regular block flow objects, and their position is changed in
+        // regular block layout code (with no means for the multicol code to notice unless we add
+        // hooks there), store the previous position now. If it changes in the imminent layout
+        // pass, we may have to rebalance its columns.
+        columnSet->storeOldPosition();
     }
 
     invalidateColumnSets();
@@ -393,7 +398,7 @@ bool LayoutMultiColumnFlowThread::recalculateColumnHeights()
     // columns, unless we have a bug.
     bool needsRelayout = false;
     for (LayoutMultiColumnSet* multicolSet = firstMultiColumnSet(); multicolSet; multicolSet = multicolSet->nextSiblingMultiColumnSet())
-        needsRelayout |= multicolSet->recalculateColumnHeight(m_inBalancingPass ? StretchBySpaceShortage : GuessFromFlowThreadPortion);
+        needsRelayout |= multicolSet->recalculateColumnHeight();
 
     if (needsRelayout)
         setChildNeedsLayout(MarkOnlyThis);
@@ -929,15 +934,15 @@ void LayoutMultiColumnFlowThread::contentWasLaidOut(LayoutUnit logicalTopInFlowT
     bool mayBeNested = multiColumnBlockFlow()->isInsideFlowThread();
     if (!mayBeNested)
         return;
-    if (!isInInitialLayoutPass()) {
+    LayoutMultiColumnSet* columnSet = columnSetAtBlockOffset(logicalTopInFlowThreadAfterPagination);
+    if (!columnSet)
+        return;
+    if (columnSet->isInitialHeightCalculated()) {
         // We only insert additional fragmentainer groups in the initial layout pass. We only want
         // to balance columns in the last fragmentainer group (if we need to balance at all), so we
         // want that last fragmentainer group to be the same one in all layout passes that follow.
         return;
     }
-    LayoutMultiColumnSet* columnSet = columnSetAtBlockOffset(logicalTopInFlowThreadAfterPagination);
-    if (!columnSet)
-        return;
     MultiColumnFragmentainerGroup& row = columnSet->fragmentainerGroupAtFlowThreadOffset(logicalTopInFlowThreadAfterPagination);
     if (!row.isLastGroup())
         return;

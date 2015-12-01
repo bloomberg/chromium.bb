@@ -58,7 +58,7 @@ void MultiColumnFragmentainerGroup::resetColumnHeight()
     }
 }
 
-bool MultiColumnFragmentainerGroup::recalculateColumnHeight(BalancedColumnHeightCalculation calculationMode)
+bool MultiColumnFragmentainerGroup::recalculateColumnHeight()
 {
     LayoutUnit oldColumnHeight = m_columnHeight;
 
@@ -69,7 +69,7 @@ bool MultiColumnFragmentainerGroup::recalculateColumnHeight(BalancedColumnHeight
     // passes as well.
     if (isLastGroup() && m_columnSet.heightIsAuto()) {
         LayoutUnit newColumnHeight;
-        if (calculationMode == GuessFromFlowThreadPortion) {
+        if (!m_columnSet.isInitialHeightCalculated()) {
             // Initial balancing: Start with the lowest imaginable column height. Also calculate the
             // height of the tallest piece of unbreakable content. Columns should never get any
             // shorter than that (unless constrained by max-height). Propagate this to our

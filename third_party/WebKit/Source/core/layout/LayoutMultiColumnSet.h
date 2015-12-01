@@ -119,10 +119,13 @@ public:
     // (Re-)calculate the column height if it's auto. This is first and foremost needed by sets that
     // are to balance the column height, but even when it isn't to be balanced, this is necessary if
     // the multicol container's height is constrained.
-    bool recalculateColumnHeight(BalancedColumnHeightCalculation);
+    bool recalculateColumnHeight();
 
     // Reset previously calculated column height. Will mark for layout if needed.
     void resetColumnHeight();
+
+    void storeOldPosition() { m_oldLogicalTop = logicalTop(); }
+    bool isInitialHeightCalculated() const { return m_initialHeightCalculated; }
 
     // Layout of flow thread content that's to be rendered inside this column set begins. This
     // happens at the beginning of flow thread layout, and when advancing from a previous column set
@@ -181,6 +184,11 @@ private:
     // every fragmentainer group (but rather here, in the column set), since we only need the
     // largest one among them.
     LayoutUnit m_tallestUnbreakableLogicalHeight;
+
+    // Logical top in previous layout pass.
+    LayoutUnit m_oldLogicalTop;
+
+    bool m_initialHeightCalculated;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutMultiColumnSet, isLayoutMultiColumnSet());
