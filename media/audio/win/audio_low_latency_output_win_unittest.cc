@@ -380,10 +380,12 @@ TEST(WASAPIAudioOutputStreamTest, ValidPacketSize) {
   uint32 bytes_per_packet = aosw.channels() * aosw.samples_per_packet() *
       (aosw.bits_per_sample() / 8);
 
-  // Wait for the first callback and verify its parameters.
+  // Wait for the first callback and verify its parameters.  Ignore any
+  // subsequent callbacks that might arrive.
   EXPECT_CALL(source, OnMoreData(NotNull(), HasValidDelay(bytes_per_packet)))
       .WillOnce(DoAll(QuitLoop(loop.task_runner()),
-                      Return(aosw.samples_per_packet())));
+                      Return(aosw.samples_per_packet())))
+      .WillRepeatedly(Return(0));
 
   aos->Start(&source);
   loop.PostDelayedTask(FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
