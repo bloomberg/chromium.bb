@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_API_METADATA_CHANGES_H_
-#define SYNC_API_METADATA_CHANGES_H_
+#ifndef SYNC_API_METADATA_CHANGE_LIST_H_
+#define SYNC_API_METADATA_CHANGE_LIST_H_
 
 #include "sync/base/sync_export.h"
 
 namespace syncer_v2 {
 
 // Interface used by the processor and service to communicate about metadata.
-class SYNC_EXPORT MetadataChanges {
+class SYNC_EXPORT MetadataChangeList {
  public:
-  MetadataChanges() {}
-  virtual ~MetadataChanges() {}
+  MetadataChangeList() {}
+  virtual ~MetadataChangeList() {}
 };
 
 }  // namespace syncer_v2
 
-#endif  // SYNC_API_METADATA_CHANGES_H_
+#endif  // SYNC_API_METADATA_CHANGE_LIST_H_

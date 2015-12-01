@@ -9,7 +9,7 @@
 
 namespace syncer_v2 {
 
-// Interface used by the processor and service to communicate about metadata.
+// Interface used by the processor to read metadata requested from the service.
 class SYNC_EXPORT MetadataBatch {
  public:
   MetadataBatch() {}

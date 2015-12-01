@@ -34,20 +34,20 @@ DeviceInfoService::DeviceInfoService(
 
 DeviceInfoService::~DeviceInfoService() {}
 
-syncer_v2::MetadataChanges* DeviceInfoService::CreateMetadataChanges() {
-  // TODO(skym): Implementation.
-  return nullptr;
+scoped_ptr<syncer_v2::MetadataChangeList>
+DeviceInfoService::CreateMetadataChangeList() {
+  return make_scoped_ptr(new syncer_v2::SimpleMetadataChangeList());
 }
 
 syncer::SyncError DeviceInfoService::MergeSyncData(
-    syncer_v2::MetadataChanges* metadata_changes,
+    scoped_ptr<syncer_v2::MetadataChangeList> metadata_change_list,
     syncer_v2::EntityDataList entity_data_list) {
   // TODO(skym): Implementation.
   return syncer::SyncError();
 }
 
 syncer::SyncError DeviceInfoService::ApplySyncChanges(
-    syncer_v2::MetadataChanges* metadata_changes,
+    scoped_ptr<syncer_v2::MetadataChangeList> metadata_change_list,
     syncer_v2::EntityChangeList entity_changes) {
   // TODO(skym): Implementation.
   return syncer::SyncError();

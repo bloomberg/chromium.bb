@@ -147,13 +147,12 @@ void SharedModelTypeProcessor::OnConnect(scoped_ptr<CommitQueue> worker) {
   FlushPendingCommitRequests();
 }
 
-void SharedModelTypeProcessor::Put(
-    const std::string& client_tag,
-    const std::string& non_unique_name,
-    const sync_pb::EntitySpecifics& specifics,
-    MetadataChanges* metadata_changes) {
+void SharedModelTypeProcessor::Put(const std::string& client_tag,
+                                   const std::string& non_unique_name,
+                                   const sync_pb::EntitySpecifics& specifics,
+                                   MetadataChangeList* metadata_change_list) {
   // TODO(skym): Update for new approach. Different objects, different caching,
-  // different loopups, metadat_changes, etc.
+  // different loopups, metadata_change_list, etc.
 
   DCHECK_EQ(type_, syncer::GetModelTypeFromSpecifics(specifics));
 
@@ -173,8 +172,9 @@ void SharedModelTypeProcessor::Put(
   FlushPendingCommitRequests();
 }
 
-void SharedModelTypeProcessor::Delete(const std::string& client_key,
-                                      MetadataChanges* metadata_changes) {
+void SharedModelTypeProcessor::Delete(
+    const std::string& client_key,
+    MetadataChangeList* metadata_change_list) {
   // TODO(skym): Update for new approach. Different caching, different lookup,
   // metadata changes.
 

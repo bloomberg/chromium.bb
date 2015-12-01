@@ -69,9 +69,9 @@ class SYNC_EXPORT_PRIVATE SharedModelTypeProcessor
   void Put(const std::string& client_key,
            const std::string& non_unique_name,
            const sync_pb::EntitySpecifics& specifics,
-           MetadataChanges* metadata_changes) override;
+           MetadataChangeList* metadata_change_list) override;
   void Delete(const std::string& client_key,
-              MetadataChanges* metadata_changes) override;
+              MetadataChangeList* metadata_change_list) override;
 
   // Returns the list of pending updates.
   //

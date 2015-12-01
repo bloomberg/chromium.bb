@@ -9,7 +9,7 @@
 
 namespace syncer_v2 {
 
-// Interface used by the processor and service to communicate about data.
+// Interface used by the processor to read data requested from the service.
 class SYNC_EXPORT DataBatch {
  public:
   DataBatch() {}

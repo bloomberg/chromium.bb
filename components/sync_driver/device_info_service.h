@@ -15,6 +15,7 @@
 #include "components/sync_driver/device_info_tracker.h"
 #include "components/sync_driver/local_device_info_provider.h"
 #include "sync/api/model_type_service.h"
+#include "sync/internal_api/public/simple_metadata_change_list.h"
 
 namespace syncer {
 class SyncError;
@@ -41,12 +42,12 @@ class DeviceInfoService : public syncer_v2::ModelTypeService,
   ~DeviceInfoService() override;
 
   // ModelTypeService implementation.
-  syncer_v2::MetadataChanges* CreateMetadataChanges() override;
+  scoped_ptr<syncer_v2::MetadataChangeList> CreateMetadataChangeList() override;
   syncer::SyncError MergeSyncData(
-      syncer_v2::MetadataChanges* metadata_changes,
+      scoped_ptr<syncer_v2::MetadataChangeList> metadata_change_list,
       syncer_v2::EntityDataList entity_data_list) override;
   syncer::SyncError ApplySyncChanges(
-      syncer_v2::MetadataChanges* metadata_changes,
+      scoped_ptr<syncer_v2::MetadataChangeList> metadata_change_list,
       syncer_v2::EntityChangeList entity_changes) override;
   void LoadMetadata(MetadataCallback callback) override;
   void GetData(ClientKeyList client_keys, DataCallback callback) override;

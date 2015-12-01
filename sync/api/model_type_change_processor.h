@@ -17,7 +17,7 @@ class SyncError;
 
 namespace syncer_v2 {
 
-class MetadataChanges;
+class MetadataChangeList;
 
 // Interface used by the ModelTypeService to inform sync of local
 // changes.
@@ -30,11 +30,11 @@ class SYNC_EXPORT ModelTypeChangeProcessor {
   virtual void Put(const std::string& client_key,
                    const std::string& non_unique_name,
                    const sync_pb::EntitySpecifics& specifics,
-                   MetadataChanges* metadata_changes) = 0;
+                   MetadataChangeList* metadata_change_list) = 0;
 
   // Inform the processor of a deleted entity.
   virtual void Delete(const std::string& client_key,
-                      MetadataChanges* metadata_changes) = 0;
+                      MetadataChangeList* metadata_change_list) = 0;
 };
 
 }  // namespace syncer_v2
