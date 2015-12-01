@@ -17,12 +17,6 @@ enum IncludeType {
   INCLUDE_USER     // #include "..."
 };
 
-// Returns true if str starts with the prefix.
-bool StartsWith(const base::StringPiece& str, const base::StringPiece& prefix) {
-  base::StringPiece extracted = str.substr(0, prefix.size());
-  return extracted == prefix;
-}
-
 // Returns a new string piece referencing the same buffer as the argument, but
 // with leading space trimmed. This only checks for space and tab characters
 // since we're dealing with lines in C source files.
@@ -46,11 +40,12 @@ base::StringPiece TrimLeadingWhitespace(const base::StringPiece& str) {
 // We assume the line has leading whitespace trimmed. We also assume that empty
 // lines have already been filtered out.
 bool ShouldCountTowardNonIncludeLines(const base::StringPiece& line) {
-  if (StartsWith(line, "//"))
+  if (base::StartsWith(line, "//", base::CompareCase::SENSITIVE))
     return false;  // Don't count comments.
-  if (StartsWith(line, "/*") || StartsWith(line, " *"))
+  if (base::StartsWith(line, "/*", base::CompareCase::SENSITIVE) ||
+      base::StartsWith(line, " *", base::CompareCase::SENSITIVE))
     return false;  // C-style comment blocks with stars along the left side.
-  if (StartsWith(line, "#"))
+  if (base::StartsWith(line, "#", base::CompareCase::SENSITIVE))
     return false;  // Don't count preprocessor.
   if (base::ContainsOnlyChars(line, base::kWhitespaceASCII))
     return false;  // Don't count whitespace lines.
@@ -76,9 +71,11 @@ IncludeType ExtractInclude(const base::StringPiece& line,
     return INCLUDE_NONE;
 
   base::StringPiece contents;
-  if (StartsWith(trimmed, base::StringPiece(kInclude, kIncludeLen)))
+  if (base::StartsWith(trimmed, base::StringPiece(kInclude, kIncludeLen),
+                       base::CompareCase::SENSITIVE))
     contents = TrimLeadingWhitespace(trimmed.substr(kIncludeLen));
-  else if (StartsWith(trimmed, base::StringPiece(kImport, kImportLen)))
+  else if (base::StartsWith(trimmed, base::StringPiece(kImport, kImportLen),
+                            base::CompareCase::SENSITIVE))
     contents = TrimLeadingWhitespace(trimmed.substr(kImportLen));
 
   if (contents.empty())
