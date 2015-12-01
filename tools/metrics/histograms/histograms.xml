@@ -63559,6 +63559,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1037" label="SVGSVGElementFragmentSVGViewElement"/>
   <int value="1038" label="PresentationConnectionClose"/>
   <int value="1039" label="SVG1DOMShape"/>
+  <int value="1040" label="SVG1DOMText"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">
