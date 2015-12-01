@@ -203,6 +203,7 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
       is_local_resource_(false),
       interpolator_(&default_tick_clock_),
       frame_id_(frame_id),
+      suppress_deleting_texture_(false),
       weak_factory_(this) {
   DCHECK(player_manager_);
   DCHECK(cdm_factory_);
@@ -989,6 +990,7 @@ void WebMediaPlayerAndroid::OnDidExitFullscreen() {
   if (!paused() && needs_establish_peer_) {
     TryCreateStreamTextureProxyIfNeeded();
     EstablishSurfaceTexturePeer();
+    suppress_deleting_texture_ = true;
   }
 
 #if defined(VIDEO_HOLE)
@@ -1333,8 +1335,13 @@ void WebMediaPlayerAndroid::PutCurrentFrame() {
 
 void WebMediaPlayerAndroid::ResetStreamTextureProxy() {
   DCHECK(main_thread_checker_.CalledOnValidThread());
-
-  RemoveSurfaceTextureAndProxy();
+  // When suppress_deleting_texture_ is true,  OnDidExitFullscreen has already
+  // re-connected surface texture for embedded playback. There is no need to
+  // delete them and create again. In fact, Android gives MediaPlayer erorr
+  // code: what == 1, extra == -19 when Android WebView tries to create, delete
+  // then create the surface textures for a video in quick succession.
+  if (!suppress_deleting_texture_)
+    RemoveSurfaceTextureAndProxy();
 
   TryCreateStreamTextureProxyIfNeeded();
   if (needs_establish_peer_ && is_playing_)
@@ -1905,6 +1912,7 @@ void WebMediaPlayerAndroid::enterFullscreen() {
     player_manager_->EnterFullscreen(player_id_);
   SetNeedsEstablishPeer(false);
   is_fullscreen_ = true;
+  suppress_deleting_texture_ = false;
 }
 
 bool WebMediaPlayerAndroid::IsHLSStream() const {
