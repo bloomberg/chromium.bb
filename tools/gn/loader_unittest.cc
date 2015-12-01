@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/memory/linked_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "tools/gn/build_settings.h"
@@ -55,8 +54,7 @@ class MockInputFileManager {
     return true;
   }
 
-  // Owning pointers.
-  typedef std::map<SourceFile, linked_ptr<CannedResult> > CannedResponseMap;
+  typedef std::map<SourceFile, scoped_ptr<CannedResult> > CannedResponseMap;
   CannedResponseMap canned_responses_;
 
   std::vector< std::pair<SourceFile, Callback> > pending_;
@@ -70,7 +68,7 @@ LoaderImpl::AsyncLoadFileCallback MockInputFileManager::GetCallback() {
 // Sets a given response for a given source file.
 void MockInputFileManager::AddCannedResponse(const SourceFile& source_file,
                                              const std::string& source) {
-  CannedResult* canned = new CannedResult;
+  scoped_ptr<CannedResult> canned(new CannedResult);
   canned->input_file.reset(new InputFile(source_file));
   canned->input_file->SetContents(source);
 
@@ -83,7 +81,7 @@ void MockInputFileManager::AddCannedResponse(const SourceFile& source_file,
   canned->root = Parser::Parse(canned->tokens, &err).Pass();
   EXPECT_FALSE(err.has_error());
 
-  canned_responses_[source_file] = linked_ptr<CannedResult>(canned);
+  canned_responses_[source_file] = std::move(canned);
 }
 
 bool MockInputFileManager::HasOnePending(const SourceFile& f) const {
