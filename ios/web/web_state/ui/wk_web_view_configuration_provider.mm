@@ -9,7 +9,7 @@
 
 #include "base/ios/ios_util.h"
 #import "base/ios/weak_nsobject.h"
-#import "base/logging.h"
+#include "base/logging.h"
 #include "ios/web/public/browser_state.h"
 #import "ios/web/web_state/js/page_script_util.h"
 #import "ios/web/web_state/ui/crw_wk_script_message_router.h"
