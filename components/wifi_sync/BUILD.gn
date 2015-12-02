@@ -22,20 +22,21 @@ source_set("wifi_sync") {
 
   deps = [
     "//base",
+    "//base:i18n",
+    "//components/keyed_service/content",
+    "//components/keyed_service/core",
     "//components/onc",
+    "//content/public/browser",
     "//sync",
   ]
+
+  if (is_chromeos) {
+    deps += [ "//chromeos" ]
+  }
 }
 
 source_set("unit_tests") {
   testonly = true
-
-  deps = [
-    ":wifi_sync",
-    "//sync",
-    "//testing/gmock",
-    "//testing/gtest",
-  ]
 
   sources = [
     "wifi_config_delegate_chromeos_unittest.cc",
@@ -43,5 +44,15 @@ source_set("unit_tests") {
     "wifi_credential_unittest.cc",
     "wifi_security_class_chromeos_unittest.cc",
     "wifi_security_class_unittest.cc",
+  ]
+
+  deps = [
+    ":wifi_sync",
+    "//base",
+    "//chromeos",
+    "//components/onc",
+    "//sync:test_support_sync_api",
+    "//testing/gmock",
+    "//testing/gtest",
   ]
 }
