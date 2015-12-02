@@ -32,9 +32,9 @@ def IsSDKBuilder():
     (win|mac|linux)_nacl_sdk_build
 
   Builder names:
-    (windows|mac|linux)-sdk-multi(bionic)(rel)?"""
+    (windows|mac|linux)-sdk-multi(rel)?"""
   bot =  os.getenv('BUILDBOT_BUILDERNAME', '')
-  return '-sdk-multi' in bot or '-sdk-bionic-multi' in bot
+  return '-sdk-multi' in bot
 
 
 def ErrorExit(msg):

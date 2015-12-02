@@ -1,5 +1,5 @@
 {
-  'TOOLS': ['bionic', 'glibc', 'pnacl', 'linux', 'mac', 'clang-newlib'],
+  'TOOLS': ['glibc', 'pnacl', 'linux', 'mac', 'clang-newlib'],
   'SEARCH': [
     '.',
     '../ppapi_simple'

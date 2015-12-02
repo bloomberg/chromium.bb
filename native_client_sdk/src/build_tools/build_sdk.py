@@ -67,7 +67,6 @@ options = None
 TOOLCHAIN_PACKAGE_MAP = {
     'arm_glibc': ('nacl_arm_glibc', '%(platform)s_arm_glibc', 'arm'),
     'x86_glibc': ('nacl_x86_glibc', '%(platform)s_x86_glibc', 'x86'),
-    'arm_bionic': ('nacl_arm_bionic', '%(platform)s_arm_bionic', 'arm'),
     'pnacl': ('pnacl_newlib', '%(platform)s_pnacl', 'pnacl')
     }
 
@@ -85,7 +84,7 @@ def GetToolchainDir(pepperdir, tcname):
 def GetToolchainLibc(tcname):
   if tcname == 'pnacl':
     return 'newlib'
-  for libc in ('bionic', 'glibc', 'newlib', 'host'):
+  for libc in ('glibc', 'newlib', 'host'):
     if libc in tcname:
       return libc
 
@@ -125,10 +124,7 @@ def GetGypBuiltLib(tcname, arch):
   else:
     lib_suffix = ''
 
-  if tcname == 'arm_bionic':
-    tcdir = 'tc_newlib'
-  else:
-    tcdir = 'tc_' + GetToolchainLibc(tcname)
+  tcdir = 'tc_' + GetToolchainLibc(tcname)
 
   if tcname == 'pnacl':
     if arch is None:
@@ -167,9 +163,6 @@ def GetPNaClTranslatorLib(tcpath, arch):
 def BuildStepDownloadToolchains(toolchains):
   buildbot_common.BuildStep('Running package_version.py')
   args = [sys.executable, PKGVER, '--mode', 'nacl_core_sdk']
-  if 'arm_bionic' in toolchains:
-    build_platform = '%s_x86' % getos.GetPlatform()
-    args.extend(['--append', os.path.join(build_platform, 'nacl_arm_bionic')])
   args.extend(['sync', '--extract'])
   buildbot_common.Run(args, cwd=NACL_DIR)
 
@@ -293,9 +286,6 @@ NACL_HEADER_MAP = {
       ('native_client/src/untrusted/valgrind/dynamic_annotations.h', 'nacl/'),
       ('ppapi/nacl_irt/public/irt_ppapi.h', ''),
   ],
-  'bionic': [
-      ('ppapi/nacl_irt/public/irt_ppapi.h', ''),
-  ],
 }
 
 def InstallFiles(src_root, dest_root, file_list):
@@ -354,13 +344,6 @@ def MakeNinjaRelPath(path):
 # already provided by the toolchain.
 # Mapping from libc to libraries gyp-build trusted libraries
 TOOLCHAIN_LIBS = {
-  'bionic' : [
-    'libminidump_generator.a',
-    'libnacl_dyncode.a',
-    'libnacl_exception.a',
-    'libnacl_list_mappings.a',
-    'libppapi.a',
-  ],
   'newlib' : [
     'libminidump_generator.a',
     'libnacl.a',
@@ -452,7 +435,7 @@ def GypNinjaInstall(pepperdir, toolchains):
       xarches = (None, 'ia32', 'x64', 'arm')
     elif tc in ('x86_glibc', 'x86_newlib'):
       xarches = ('ia32', 'x64')
-    elif tc in ('arm_glibc', 'arm_bionic'):
+    elif tc == 'arm_glibc':
       xarches = ('arm',)
     else:
       raise AssertionError('unexpected toolchain value: %s' % tc)
@@ -869,12 +852,7 @@ def BuildStepBuildAppEngine(pepperdir, chrome_revision):
 
 def main(args):
   parser = argparse.ArgumentParser(description=__doc__)
-  parser.add_argument('--nacl-tree-path',
-      help='Path to native client tree for bionic build.',
-      dest='nacl_tree_path')
   parser.add_argument('--qemu', help='Add qemu for ARM.',
-      action='store_true')
-  parser.add_argument('--bionic', help='Add bionic build.',
       action='store_true')
   parser.add_argument('--tar', help='Force the tar step.',
       action='store_true')
@@ -912,29 +890,6 @@ def main(args):
 
   buildbot_common.BuildStep('build_sdk')
 
-  if options.nacl_tree_path:
-    options.bionic = True
-    toolchain_build = os.path.join(options.nacl_tree_path, 'toolchain_build')
-    print 'WARNING: Building bionic toolchain from NaCl checkout.'
-    print 'This option builds bionic from the sources currently in the'
-    print 'provided NativeClient checkout, and the results instead of '
-    print 'downloading a toolchain from the builder. This may result in a'
-    print 'NaCl SDK that can not run on ToT chrome.'
-    print 'NOTE:  To clobber you will need to run toolchain_build_bionic.py'
-    print 'directly from the NativeClient checkout.'
-    print ''
-    response = raw_input("Type 'y' and hit enter to continue.\n")
-    if response != 'y' and response != 'Y':
-      print 'Aborting.'
-      return 1
-
-    # Get head version of NativeClient tree
-    buildbot_common.BuildStep('Build bionic toolchain.')
-    buildbot_common.Run([sys.executable, 'toolchain_build_bionic.py', '-f'],
-                        cwd=toolchain_build)
-  else:
-    toolchain_build = None
-
   if buildbot_common.IsSDKBuilder():
     options.archive = True
     # TODO(binji): re-enable app_engine build when the linux builder stops
@@ -946,11 +901,6 @@ def main(args):
   # NOTE: order matters here. This will be the order that is specified in the
   # Makefiles; the first toolchain will be the default.
   toolchains = ['pnacl', 'x86_glibc', 'arm_glibc', 'clang-newlib', 'host']
-
-  # Changes for experimental bionic builder
-  if options.bionic:
-    toolchains.append('arm_bionic')
-    options.build_app_engine = False
 
   print 'Building: ' + ' '.join(toolchains)
   platform = getos.GetPlatform()
@@ -965,10 +915,7 @@ def main(args):
   pepper_old = str(chrome_version - 1)
   pepperdir = os.path.join(OUT_DIR, 'pepper_' + pepper_ver)
   pepperdir_old = os.path.join(OUT_DIR, 'pepper_' + pepper_old)
-  if options.bionic:
-    tarname = 'naclsdk_bionic.tar.bz2'
-  else:
-    tarname = 'naclsdk_%s.tar.bz2' % platform
+  tarname = 'naclsdk_%s.tar.bz2' % platform
   tarfile = os.path.join(OUT_DIR, tarname)
 
   if options.release:
@@ -993,16 +940,7 @@ def main(args):
     BuildStepCleanPepperDirs(pepperdir, pepperdir_old)
     BuildStepMakePepperDirs(pepperdir, ['include', 'toolchain', 'tools'])
     BuildStepDownloadToolchains(toolchains)
-    if options.nacl_tree_path:
-      # Instead of untarring, copy the raw bionic toolchain
-      not_bionic = [i for i in toolchains if i != 'arm_bionic']
-      BuildStepUntarToolchains(pepperdir, not_bionic)
-      tcname = GetToolchainDirName('arm_bionic')
-      srcdir = os.path.join(toolchain_build, 'out', tcname)
-      bionicdir = os.path.join(pepperdir, 'toolchain', tcname)
-      oshelpers.Copy(['-r', srcdir, bionicdir])
-    else:
-      BuildStepUntarToolchains(pepperdir, toolchains)
+    BuildStepUntarToolchains(pepperdir, toolchains)
     if platform == 'linux':
       buildbot_common.Move(os.path.join(pepperdir, 'toolchain', 'arm_trusted'),
                            os.path.join(OUT_DIR, 'arm_trusted'))
@@ -1044,8 +982,7 @@ def main(args):
   GenerateNotice(pepperdir)
 
   # Verify the SDK contains what we expect.
-  if not options.bionic:
-    BuildStepVerifyFilelist(pepperdir)
+  BuildStepVerifyFilelist(pepperdir)
 
   if options.tar:
     BuildStepTarBundle(pepper_ver, tarfile)

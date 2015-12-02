@@ -44,7 +44,6 @@ source_set("nacl_io") {
     "kernel_intercept.cc",
     "kernel_object.cc",
     "kernel_proxy.cc",
-    "kernel_wrap_bionic.cc",
     "kernel_wrap_dummy.cc",
     "kernel_wrap_glibc.cc",
     "kernel_wrap_irt_ext.c",

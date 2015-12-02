@@ -70,8 +70,7 @@ Error JsFsNode::GetStat(struct stat* stat) {
     return EINVAL;
   }
 
-  // TODO(binji): find out the size of bionic stat fields.
-#if defined(__native_client__) && !defined(__BIONIC__)
+#if defined(__native_client__)
 #if defined(__GLIBC__)
 const char* format = "%d%lld%d%d%d%d%lld%lld%lld%lld%lld%lld%lld";
 #else

@@ -1,5 +1,5 @@
 {
-  'TOOLS': ['clang-newlib', 'glibc', 'bionic', 'pnacl', 'linux', 'mac'],
+  'TOOLS': ['clang-newlib', 'glibc', 'pnacl', 'linux', 'mac'],
   'SEARCH': [
     '.',
     'pepper',
@@ -37,7 +37,6 @@
         "kernel_intercept.cc",
         "kernel_object.cc",
         "kernel_proxy.cc",
-        "kernel_wrap_bionic.cc",
         "kernel_wrap_dummy.cc",
         "kernel_wrap_glibc.cc",
         "kernel_wrap_irt_ext.c",

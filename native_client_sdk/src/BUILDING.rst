@@ -84,8 +84,8 @@ You can build a specific toolchain/configuration combination::
 
   make TOOLCHAIN=newlib CONFIG=Debug -j8
 
-The valid toolchains are: `newlib`, `glibc`, `clang-newlib`, `pnacl` and
-`bionic`.  The valid configurations are: `Debug` and `Release`.
+The valid toolchains are: `newlib`, `glibc`, `clang-newlib` and `pnacl`.
+The valid configurations are: `Debug` and `Release`.
 
 To run the example::
 

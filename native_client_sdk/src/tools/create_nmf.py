@@ -552,13 +552,6 @@ def GetDefaultLibPath(config):
       'ports/lib/glibc_arm/%s' % config_fallback,
     ]
 
-  bionic_dir = 'toolchain/%s_arm_bionic' % osname
-  if os.path.isdir(os.path.join(sdk_root, bionic_dir)):
-    libpath += [
-      '%s/arm-nacl/lib' % bionic_dir,
-      '%s/arm-nacl/usr/lib' % bionic_dir,
-      'lib/bionic_arm/%s' % config,
-    ]
   libpath = [os.path.normpath(p) for p in libpath]
   libpath = [os.path.join(sdk_root, p) for p in libpath]
   libpath.append(os.path.join(sdk_root, 'tools'))

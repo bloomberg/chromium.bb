@@ -10,7 +10,6 @@
 #
 # Macros for TOOLS
 #
-ifneq ($(TOOLCHAIN),bionic)
 X86_32_CC := $(NACL_COMPILER_PREFIX) $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) -a x86_32 --tool=cc)
 X86_32_CXX := $(NACL_COMPILER_PREFIX) $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) -a x86_32 --tool=c++)
 X86_32_LINK := $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) -a x86_32 --tool=c++)
@@ -24,7 +23,6 @@ X86_64_LINK := $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) -a x86_64 --tool=c++)
 X86_64_LIB := $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) -a x86_64 --tool=ar)
 X86_64_STRIP := $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) -a x86_64 --tool=strip)
 X86_64_NM := $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) -a x86_64 --tool=nm)
-endif
 
 ARM_CC := $(NACL_COMPILER_PREFIX) $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) -a arm --tool=cc)
 ARM_CXX := $(NACL_COMPILER_PREFIX) $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) -a arm --tool=c++)
@@ -69,18 +67,6 @@ else
 X86_32_LDFLAGS ?= -Wl,-Map,$(X86_32_OUTDIR)/$(TARGET)_x86_32.map
 X86_64_LDFLAGS ?= -Wl,-Map,$(X86_64_OUTDIR)/$(TARGET)_x86_64.map
 ARM_LDFLAGS ?= -Wl,-Map,$(ARM_OUTDIR)/$(TARGET)_arm.map
-endif
-
-#
-# Choose between static and dynamic linking for Bionic
-# (Default to dynamic)
-#
-ifeq ($(TOOLCHAIN),bionic)
-ifeq (,$(BIONIC_USE_DYNAMIC))
-BIONIC_LINK:=-static
-else
-BIONIC_LINK:=-Wl,-Ttext-segment=0x100000
-endif
 endif
 
 LDFLAGS_SHARED = -shared
@@ -174,10 +160,7 @@ endef
 # Determine which architectures to build for.  The user can set NACL_ARCH or
 # ARCHES in the environment to control this.
 #
-ifneq ($(TOOLCHAIN),bionic)
-VALID_ARCHES := x86_32 x86_64
-endif
-VALID_ARCHES += arm
+VALID_ARCHES := x86_32 x86_64 arm
 
 ifdef NACL_ARCH
 ifeq (,$(findstring $(NACL_ARCH),$(VALID_ARCHES)))
@@ -361,7 +344,7 @@ ifneq (,$(findstring arm,$(ARCHES)))
 all: $(ARM_OUTDIR)/$(1)_arm.nexe
 $(ARM_OUTDIR)/$(1)_arm.nexe: $(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_arm)) $(foreach dep,$(4),$(STAMPDIR)/$(dep).stamp)
 	$(MKDIR) -p $$(dir $$@)
-	$(call LOG,LINK,$$@,$(ARM_LINK) $(BIONIC_LINK) -o $$@ $$(filter %.o,$$^) $(NACL_LDFLAGS) $(ARM_LDFLAGS) $(LDFLAGS) $(foreach path,$(6),-L$(path)/$(TOOLCHAIN)_arm/$(CONFIG_DIR) -L$(path)/$(TOOLCHAIN)_arm/$(CONFIG)) $(foreach lib,$(3),-l$(lib)) $(5))
+	$(call LOG,LINK,$$@,$(ARM_LINK) -o $$@ $$(filter %.o,$$^) $(NACL_LDFLAGS) $(ARM_LDFLAGS) $(LDFLAGS) $(foreach path,$(6),-L$(path)/$(TOOLCHAIN)_arm/$(CONFIG_DIR) -L$(path)/$(TOOLCHAIN)_arm/$(CONFIG)) $(foreach lib,$(3),-l$(lib)) $(5))
 	$(call LOG,VALIDATE,$$@,$(NCVAL) $$@)
 endif
 endef

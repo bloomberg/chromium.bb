@@ -10,7 +10,6 @@ import os
 import sys
 
 VALID_TOOLCHAINS = [
-  'bionic',
   'clang-newlib',
   'newlib',
   'glibc',
