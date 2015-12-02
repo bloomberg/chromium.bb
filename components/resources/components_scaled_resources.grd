@@ -16,6 +16,7 @@
     <structures fallback_to_low_resolution="true">
       <part file="autofill_scaled_resources.grdp" />
       <part file="crash_scaled_resources.grdp" />
+      <part file="flags_ui_scaled_resources.grdp" />
       <part file="omnibox_scaled_resources.grdp" />
       <part file="version_ui_scaled_resources.grdp" />
     </structures>
