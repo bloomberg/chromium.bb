@@ -22,6 +22,11 @@
   },
   {
     "prefix": "threaded",
+    "base": "fast/compositorworker",
+    "args": ["--enable-threaded-compositing"]
+  },
+  {
+    "prefix": "threaded",
     "base": "compositing/webgl",
     "args": ["--enable-threaded-compositing"]
   },

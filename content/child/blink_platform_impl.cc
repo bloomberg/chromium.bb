@@ -25,6 +25,7 @@
 #include "base/sys_info.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/platform_thread.h"
+#include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "base/trace_event/memory_allocator_dump_guid.h"
 #include "base/trace_event/memory_dump_manager.h"
@@ -458,7 +459,8 @@ BlinkPlatformImpl::BlinkPlatformImpl()
 
 BlinkPlatformImpl::BlinkPlatformImpl(
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner)
-    : main_thread_task_runner_(main_thread_task_runner) {
+    : main_thread_task_runner_(main_thread_task_runner),
+      compositor_thread_(nullptr) {
   InternalInit();
 }
 
@@ -478,9 +480,11 @@ void BlinkPlatformImpl::InternalInit() {
   }
 }
 
-void BlinkPlatformImpl::UpdateWebThreadTLS(blink::WebThread* thread) {
+void BlinkPlatformImpl::UpdateWebThreadTLS(blink::WebThread* thread,
+                                           base::WaitableEvent* event) {
   DCHECK(!current_thread_slot_.Get());
   current_thread_slot_.Set(thread);
+  event->Signal();
 }
 
 BlinkPlatformImpl::~BlinkPlatformImpl() {
@@ -545,11 +549,20 @@ bool BlinkPlatformImpl::portAllowed(const blink::WebURL& url) const {
 }
 
 blink::WebThread* BlinkPlatformImpl::createThread(const char* name) {
-  scheduler::WebThreadImplForWorkerScheduler* thread =
-      new scheduler::WebThreadImplForWorkerScheduler(name);
+  return createThreadWithOptions(name, base::Thread::Options()).release();
+}
+
+scoped_ptr<scheduler::WebThreadBase> BlinkPlatformImpl::createThreadWithOptions(
+    const char* name,
+    base::Thread::Options options) {
+  scoped_ptr<scheduler::WebThreadBase> thread(
+      new scheduler::WebThreadImplForWorkerScheduler(name, options));
+  base::WaitableEvent event(false, false);
   thread->TaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&BlinkPlatformImpl::UpdateWebThreadTLS,
-                            base::Unretained(this), thread));
+      FROM_HERE,
+      base::Bind(&BlinkPlatformImpl::UpdateWebThreadTLS, base::Unretained(this),
+                 base::Unretained(thread.get()), base::Unretained(&event)));
+  event.Wait();
   return thread;
 }
 
@@ -1117,6 +1130,10 @@ double BlinkPlatformImpl::systemTraceTime() {
 void BlinkPlatformImpl::cryptographicallyRandomValues(
     unsigned char* buffer, size_t length) {
   base::RandBytes(buffer, length);
+}
+
+blink::WebThread* BlinkPlatformImpl::compositorThread() const {
+  return compositor_thread_;
 }
 
 blink::WebGestureCurve* BlinkPlatformImpl::createFlingAnimationCurve(
