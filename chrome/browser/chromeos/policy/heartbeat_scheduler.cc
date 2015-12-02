@@ -41,6 +41,7 @@ const char* kHeartbeatDomainNameKey = "domain_name";
 const char* kHeartbeatDeviceIDKey = "device_id";
 const char* kHeartbeatTypeValue = "hb";
 const char* kUpstreamNotificationNotifyKey = "notify";
+const char* kUpstreamNotificationRegIdKey = "registration_id";
 
 // If we get an error registering with GCM, try again in two minutes.
 const int64 kRegistrationRetryDelayMs = 2 * 60 * 1000;
@@ -372,6 +373,7 @@ void HeartbeatScheduler::SignUpUpstreamNotification() {
   message.data[kGcmMessageTypeKey] = kUpstreamNotificationSignUpListeningEvents;
   message.data[kUpstreamNotificationNotifyKey] =
       GetDestinationID() + kHeartbeatGCMSenderSuffix;
+  message.data[kUpstreamNotificationRegIdKey] = registration_id_;
   gcm_driver_->Send(kHeartbeatGCMAppID,
                     kUpstreamNotificationSignUpDestinationID, message,
                     base::Bind(&HeartbeatScheduler::OnUpstreamNotificationSent,
