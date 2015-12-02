@@ -457,6 +457,7 @@
           maxNumberOfLines:message_center::kContextMessageLineLimit];
   [contextMessage_ setString:base::SysUTF16ToNSString(elided)];
   [contextMessage_ sizeToFit];
+
   NSRect contextMessageFrame = [contextMessage_ frame];
 
   if (notification->context_message().empty() &&
@@ -472,6 +473,7 @@
         NSHeight(contextMessageFrame);
     contextMessageFrame.size.height = NSHeight([contextMessage_ frame]);
   }
+  NSRect settingsButtonFrame = [settingsButton_ frame];
 
   // Create the list item views (up to a maximum).
   [listView_ removeFromSuperview];
@@ -661,6 +663,7 @@
   [title_ setFrame:titleFrame];
   [message_ setFrame:messageFrame];
   [contextMessage_ setFrame:contextMessageFrame];
+  [settingsButton_ setFrame:settingsButtonFrame];
   [listView_ setFrame:listFrame];
   [progressBarView_ setFrame:progressBarFrame];
 
