@@ -224,8 +224,6 @@
       'browser/ui/webui/chromeos/first_run/first_run_ui.h',
       'browser/ui/webui/chromeos/image_source.cc',
       'browser/ui/webui/chromeos/image_source.h',
-      'browser/ui/webui/chromeos/imageburner/imageburner_ui.cc',
-      'browser/ui/webui/chromeos/imageburner/imageburner_ui.h',
       'browser/ui/webui/chromeos/keyboard_overlay_ui.cc',
       'browser/ui/webui/chromeos/keyboard_overlay_ui.h',
       'browser/ui/webui/chromeos/login/app_launch_splash_screen_handler.cc',
