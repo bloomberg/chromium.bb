@@ -9,7 +9,7 @@
     Custom=VisitDOMWrapper,
     Constructor(DOMString type, PromiseRejectionEventInit eventInitDict),
     ConstructorCallWith=ScriptState,
-    Exposed=(Window,Worker,ServiceWorker),
+    Exposed=(Window,Worker),
 ] interface PromiseRejectionEvent : Event {
     [Custom=Getter] readonly attribute Promise<any> promise;
     [CallWith=ScriptState] readonly attribute any reason;
