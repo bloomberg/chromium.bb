@@ -7,10 +7,13 @@ package org.chromium.chrome.browser.document;
 import android.annotation.TargetApi;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.os.Build;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.Menu;
+import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.Window;
 
@@ -29,6 +32,9 @@ import org.chromium.chrome.browser.KeyboardShortcuts;
 import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerDocument;
+import org.chromium.chrome.browser.compositor.layouts.LayoutManagerDocumentTabSwitcher;
+import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
+import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior.OverviewModeObserver;
 import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkUtils;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
@@ -618,7 +624,64 @@ public class DocumentActivity extends ChromeActivity {
 
         ToolbarControlContainer controlContainer =
                 (ToolbarControlContainer) findViewById(R.id.control_container);
-        LayoutManagerDocument layoutDriver = new LayoutManagerDocument(getCompositorViewHolder());
+        LayoutManagerDocument layoutDriver = null;
+        OverviewModeBehavior overviewModeBehavior = null;
+        OnClickListener tabSwitcherClickHandler = null;
+        if (FeatureUtilities.isTabSwitchingEnabledInDocumentMode()) {
+            LayoutManagerDocumentTabSwitcher layoutDriverTabSwitcher =
+                    new LayoutManagerDocumentTabSwitcher(getCompositorViewHolder());
+            layoutDriverTabSwitcher.addOverviewModeObserver(new OverviewModeObserver() {
+                @Override
+                public void onOverviewModeStartedShowing(boolean showToolbar) {
+                    if (mFindToolbarManager != null) mFindToolbarManager.hideToolbar();
+                    if (getAssistStatusHandler() != null) {
+                        getAssistStatusHandler().updateAssistState();
+                    }
+                    ApiCompatibilityUtils.setStatusBarColor(getWindow(), Color.BLACK);
+                    StartupMetrics.getInstance().recordOpenedTabSwitcher();
+                }
+
+                @Override
+                public void onOverviewModeFinishedShowing() {}
+
+                @Override
+                public void onOverviewModeStartedHiding(
+                        boolean showToolbar, boolean delayAnimation) {}
+
+                @Override
+                public void onOverviewModeFinishedHiding() {
+                    if (getAssistStatusHandler() != null) {
+                        getAssistStatusHandler().updateAssistState();
+                    }
+                    if (getActivityTab() != null) {
+                        LayoutManagerDocumentTabSwitcher manager =
+                                (LayoutManagerDocumentTabSwitcher) getCompositorViewHolder()
+                                .getLayoutManager();
+                        boolean isInOverviewMode = manager != null && manager.overviewVisible();
+                        setStatusBarColor(getActivityTab(),
+                                isInOverviewMode ? Color.BLACK : getActivityTab().getThemeColor());
+                    }
+                }
+            });
+            layoutDriver = layoutDriverTabSwitcher;
+            overviewModeBehavior = layoutDriverTabSwitcher;
+
+            tabSwitcherClickHandler = new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (getFullscreenManager() != null
+                            && getFullscreenManager().getPersistentFullscreenMode()) {
+                        return;
+                    }
+                    LayoutManagerDocumentTabSwitcher manager =
+                            (LayoutManagerDocumentTabSwitcher) getCompositorViewHolder()
+                            .getLayoutManager();
+                    manager.toggleOverview();
+                }
+            };
+        } else {
+            layoutDriver = new LayoutManagerDocument(getCompositorViewHolder());
+        }
         initializeCompositorContent(layoutDriver, findViewById(R.id.url_bar),
                 (ViewGroup) findViewById(android.R.id.content), controlContainer);
 
@@ -631,7 +694,8 @@ public class DocumentActivity extends ChromeActivity {
         }
 
         getToolbarManager().initializeWithNative(getTabModelSelector(), getFullscreenManager(),
-                mFindToolbarManager, null, layoutDriver, null, null, null, null);
+                mFindToolbarManager, overviewModeBehavior, layoutDriver, tabSwitcherClickHandler,
+                null, null, null);
 
         mDocumentTab.setFullscreenManager(getFullscreenManager());
 

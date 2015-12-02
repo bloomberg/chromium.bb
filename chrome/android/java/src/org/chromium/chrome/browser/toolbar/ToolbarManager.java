@@ -63,6 +63,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.toolbar.ActionModeController.ActionBarDelegate;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.findinpage.FindToolbarManager;
 import org.chromium.chrome.browser.widget.findinpage.FindToolbarObserver;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -146,6 +147,8 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
     private HomepageStateListener mHomepageStateListener;
 
     private boolean mInitializedWithNative;
+
+    private boolean mShouldUpdateTabCount = true;
 
     /**
      * Creates a ToolbarManager object.
@@ -679,6 +682,12 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         mNativeLibraryReady = true;
         mToolbar.onNativeLibraryReady();
 
+        if (FeatureUtilities.isTabSwitchingEnabledInDocumentMode()) {
+            // We want to give a similar look and feel as Android's overview mode button
+            // by not updating tab count and keep the button as a rounded square.
+            mShouldUpdateTabCount = false;
+        }
+
         final TemplateUrlService templateUrlService = TemplateUrlService.getInstance();
         TemplateUrlService.LoadListener mTemplateServiceLoadListener =
                 new TemplateUrlService.LoadListener() {
@@ -907,7 +916,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
      * Updates the current number of Tabs based on the TabModel this Toolbar contains.
      */
     private void updateTabCount() {
-        if (!mTabRestoreCompleted) return;
+        if (!mTabRestoreCompleted || !mShouldUpdateTabCount) return;
         mToolbar.updateTabCountVisuals(mTabModelSelector.getCurrentModel().getCount());
     }
 

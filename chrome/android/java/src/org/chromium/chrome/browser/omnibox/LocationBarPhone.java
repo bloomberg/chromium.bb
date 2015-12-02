@@ -140,7 +140,9 @@ public class LocationBarPhone extends LocationBarLayout {
      * @return Whether the menu should be shown in the omnibox instead of outside of it.
      */
     public boolean showMenuButtonInOmnibox() {
-        return FeatureUtilities.isDocumentMode(getContext());
+        // When we show tab switching button, we prefer to show menu right to the tab switcher
+        // button.
+        return !FeatureUtilities.isTabSwitchingEnabled(getContext());
     }
 
     /**

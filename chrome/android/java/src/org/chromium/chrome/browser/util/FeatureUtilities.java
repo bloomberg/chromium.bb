@@ -135,6 +135,26 @@ public class FeatureUtilities {
         nativeSetCustomTabVisible(visible);
     }
 
+    /**
+     * Check whether tab switching is enabled for the current context.
+     * Note that this may return false if native library is not yet ready.
+     * @param context The context
+     * @return Whether tab switching is enabled for the current context.
+     */
+    public static boolean isTabSwitchingEnabled(Context context) {
+        return !isDocumentMode(context) || isTabSwitchingEnabledInDocumentMode();
+    }
+
+    /**
+     * Check whether tab switching is enabled in document mode.
+     * Note that this may return false if native library is not yet ready.
+     * @return Whether tab switching is enabled in document mode.
+     */
+    public static boolean isTabSwitchingEnabledInDocumentMode() {
+        return CommandLine.getInstance().hasSwitch(
+                ChromeSwitches.ENABLE_TAB_SWITCHER_IN_DOCUMENT_MODE);
+    }
+
     private static void initResetListener() {
         if (sResetListener != null) return;
 

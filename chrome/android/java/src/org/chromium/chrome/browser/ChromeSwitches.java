@@ -198,6 +198,12 @@ public abstract class ChromeSwitches {
     public static final String DISABLE_WEB_NOTIFICATION_CUSTOM_LAYOUTS =
             "disable-web-notification-custom-layouts";
 
+    /**
+     * Enable tab switcher in document mode (merged tabs and apps option).
+     */
+    public static final String ENABLE_TAB_SWITCHER_IN_DOCUMENT_MODE =
+            "enable-tab-switcher-in-document-mode";
+
     // Prevent instantiation.
     private ChromeSwitches() {}
 }

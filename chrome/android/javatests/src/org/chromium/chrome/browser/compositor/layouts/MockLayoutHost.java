@@ -158,4 +158,8 @@ class MockLayoutHost implements LayoutManagerHost, LayoutRenderHost {
     public float getTopControlsUrlBarAlpha() {
         return 1f;
     }
+
+    @Override
+    public void hideKeyboard(Runnable postHideTask) {
+    }
 }

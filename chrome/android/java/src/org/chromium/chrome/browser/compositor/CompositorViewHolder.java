@@ -735,12 +735,7 @@ public class CompositorViewHolder extends FrameLayout
                 && mView != null;
     }
 
-    /**
-     * Hides the the keyboard if it was opened for the ContentView.
-     * @param postHideTask A task to run after the keyboard is done hiding and the view's
-     *         layout has been updated.  If the keyboard was not shown, the task will run
-     *         immediately.
-     */
+    @Override
     public void hideKeyboard(Runnable postHideTask) {
         // When this is called we actually want to hide the keyboard whatever owns it.
         // This includes hiding the keyboard, and dropping focus from the URL bar.

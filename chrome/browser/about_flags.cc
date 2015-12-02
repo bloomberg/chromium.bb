@@ -2067,6 +2067,12 @@ const FeatureEntry kFeatureEntries[] = {
          autofill::switches::kEnableOfferUploadCreditCards,
          autofill::switches::kDisableOfferUploadCreditCards)},
 #endif  // defined(TOOLKIT_VIEWS)
+#if defined(OS_ANDROID)
+    {"enable-tab-switcher-in-document-mode",
+     IDS_FLAGS_TAB_SWITCHER_IN_DOCUMENT_MODE_NAME,
+     IDS_FLAGS_TAB_SWITCHER_IN_DOCUMENT_MODE_DESCRIPTION, kOsAndroid,
+     SINGLE_VALUE_TYPE(switches::kEnableTabSwitcherInDocumentMode)},
+#endif  // OS_ANDROID
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.
@@ -2111,6 +2117,14 @@ bool SkipConditionalFeatureEntry(const FeatureEntry& entry) {
   if (!strcmp("enable-data-reduction-proxy-carrier-test",
               entry.internal_name) &&
       channel != version_info::Channel::DEV &&
+      channel != version_info::Channel::CANARY &&
+      channel != version_info::Channel::UNKNOWN) {
+    return true;
+  }
+  // enable-tab-switcher-in-document-mode is only available for Chromium
+  // builds and the Canary channel.
+  if (!strcmp("enable-tab-switcher-in-document-mode",
+              entry.internal_name) &&
       channel != version_info::Channel::CANARY &&
       channel != version_info::Channel::UNKNOWN) {
     return true;

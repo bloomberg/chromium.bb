@@ -290,51 +290,83 @@ public class ToolbarPhone extends ToolbarLayout
                     getResources().getDimensionPixelSize(R.dimen.document_toolbar_menu_offset));
         }
 
-        finishInflateForTabSwitchingResources();
+        if (FeatureUtilities.isTabSwitchingEnabled(getContext())) {
+            inflateTabSwitchingResources();
+        } else {
+            hideTabSwitchingResources();
+        }
 
         setWillNotDraw(false);
     }
 
-    private boolean isTabSwitchingEnabled() {
-        return !FeatureUtilities.isDocumentMode(getContext());
-    }
-
-    private void finishInflateForTabSwitchingResources() {
+    private void inflateTabSwitchingResources() {
         mToggleTabStackButton = (ImageView) findViewById(R.id.tab_switcher_button);
         mNewTabButton = (NewTabButton) findViewById(R.id.new_tab_button);
 
-        if (!isTabSwitchingEnabled()) {
-            assert mToolbarButtonsContainer.indexOfChild(mToggleTabStackButton) >= 0;
-            mToolbarButtonsContainer.removeView(mToggleTabStackButton);
-            mToggleTabStackButton = null;
-            assert indexOfChild(mNewTabButton) >= 0;
-            removeView(mNewTabButton);
-            mNewTabButton = null;
-        } else {
-            mToggleTabStackButton.setClickable(false);
-            Resources resources = getResources();
-            mTabSwitcherButtonDrawable =
-                    TabSwitcherDrawable.createTabSwitcherDrawable(resources, false);
-            mTabSwitcherButtonDrawableLight =
-                    TabSwitcherDrawable.createTabSwitcherDrawable(resources, true);
-            mToggleTabStackButton.setImageDrawable(mTabSwitcherButtonDrawable);
-            mTabSwitcherModeViews.add(mNewTabButton);
+        mToggleTabStackButton.setClickable(false);
+        Resources resources = getResources();
+        mTabSwitcherButtonDrawable =
+                TabSwitcherDrawable.createTabSwitcherDrawable(resources, false);
+        mTabSwitcherButtonDrawableLight =
+                TabSwitcherDrawable.createTabSwitcherDrawable(resources, true);
+        mToggleTabStackButton.setImageDrawable(mTabSwitcherButtonDrawable);
+        mTabSwitcherModeViews.add(mNewTabButton);
 
-            // Ensure that the new tab button will not draw over the toolbar buttons if the
-            // translated string is long.  Set a margin to the size of the toolbar button container
-            // for the new tab button.
-            WindowManager wm = (WindowManager) getContext().getSystemService(
-                    Context.WINDOW_SERVICE);
-            Point screenSize = new Point();
-            wm.getDefaultDisplay().getSize(screenSize);
+        // Ensure that the new tab button will not draw over the toolbar buttons if the
+        // translated string is long.  Set a margin to the size of the toolbar button container
+        // for the new tab button.
+        WindowManager wm = (WindowManager) getContext().getSystemService(
+                Context.WINDOW_SERVICE);
+        Point screenSize = new Point();
+        wm.getDefaultDisplay().getSize(screenSize);
 
-            mToolbarButtonsContainer.measure(
-                    MeasureSpec.makeMeasureSpec(screenSize.x, MeasureSpec.AT_MOST),
-                    MeasureSpec.makeMeasureSpec(screenSize.y, MeasureSpec.AT_MOST));
+        mToolbarButtonsContainer.measure(
+                MeasureSpec.makeMeasureSpec(screenSize.x, MeasureSpec.AT_MOST),
+                MeasureSpec.makeMeasureSpec(screenSize.y, MeasureSpec.AT_MOST));
 
-            ApiCompatibilityUtils.setMarginEnd(getFrameLayoutParams(mNewTabButton),
-                    mToolbarButtonsContainer.getMeasuredWidth());
-        }
+        ApiCompatibilityUtils.setMarginEnd(getFrameLayoutParams(mNewTabButton),
+                mToolbarButtonsContainer.getMeasuredWidth());
+    }
+
+    private void hideTabSwitchingResources() {
+        ImageView toggleTabStackButton = (ImageView) findViewById(R.id.tab_switcher_button);
+        toggleTabStackButton.setVisibility(View.GONE);
+        // We don't need to hide new tab button since it's invisible by default.
+    }
+
+    private void unhideTabSwitchingResources() {
+        ImageView toggleTabStackButton = (ImageView) findViewById(R.id.tab_switcher_button);
+        toggleTabStackButton.setVisibility(View.VISIBLE);
+    }
+
+    private void enableTabSwitchingResources() {
+        mToggleTabStackButton.setOnClickListener(this);
+        mToggleTabStackButton.setOnLongClickListener(this);
+        mToggleTabStackButton.setOnKeyListener(new KeyboardNavigationListener() {
+            @Override
+            public View getNextFocusForward() {
+                if (mMenuButton != null && mMenuButton.isShown()) {
+                    return mMenuButton;
+                } else {
+                    return getCurrentTabView();
+                }
+            }
+
+            @Override
+            public View getNextFocusBackward() {
+                return findViewById(R.id.url_bar);
+            }
+        });
+        mNewTabButton.setOnClickListener(this);
+    }
+
+    private void removeTabSwitchingResources() {
+        ImageView toggleTabStackButton = (ImageView) findViewById(R.id.tab_switcher_button);
+        NewTabButton newTabButton = (NewTabButton) findViewById(R.id.new_tab_button);
+        assert mToolbarButtonsContainer.indexOfChild(toggleTabStackButton) >= 0;
+        mToolbarButtonsContainer.removeView(toggleTabStackButton);
+        assert indexOfChild(newTabButton) >= 0;
+        removeView(newTabButton);
     }
 
     /**
@@ -345,26 +377,20 @@ public class ToolbarPhone extends ToolbarLayout
         super.onNativeLibraryReady();
         getLocationBar().onNativeLibraryReady();
 
-        if (isTabSwitchingEnabled()) {
-            mToggleTabStackButton.setOnClickListener(this);
-            mToggleTabStackButton.setOnLongClickListener(this);
-            mToggleTabStackButton.setOnKeyListener(new KeyboardNavigationListener() {
-                @Override
-                public View getNextFocusForward() {
-                    if (mMenuButton != null && mMenuButton.isShown()) {
-                        return mMenuButton;
-                    } else {
-                        return getCurrentTabView();
-                    }
-                }
-
-                @Override
-                public View getNextFocusBackward() {
-                    return findViewById(R.id.url_bar);
-                }
-            });
-            mNewTabButton.setOnClickListener(this);
+        if (FeatureUtilities.isTabSwitchingEnabledInDocumentMode()) {
+            // We might have hidden some buttons at onFinishInflate() because it was called
+            // before native library is ready and chrome switch can be correctly read.
+            // Now recover those buttons. Since we want to show toolbar even before native
+            // library is ready, and as tab switching is experimental, this is unavoidable.
+            unhideTabSwitchingResources();
+            inflateTabSwitchingResources();
+            enableTabSwitchingResources();
+        } else if (FeatureUtilities.isDocumentMode(getContext())) {
+            removeTabSwitchingResources();
+        } else {  // non-document mode
+            enableTabSwitchingResources();
         }
+
         mHomeButton.setOnClickListener(this);
 
         mMenuButton.setOnKeyListener(new KeyboardNavigationListener() {

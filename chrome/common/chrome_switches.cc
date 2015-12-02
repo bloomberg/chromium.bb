@@ -1148,6 +1148,10 @@ const char kEnablePhysicalWeb[] = "enable-physical-web";
 
 // Specifies Android phone page loading progress bar animation.
 const char kProgressBarAnimation[]          = "progress-bar-animation";
+
+// Enabled tab switcher in document mode.
+const char kEnableTabSwitcherInDocumentMode[] =
+    "enable-tab-switcher-in-document-mode";
 #endif  // defined(OS_ANDROID)
 
 #if defined(USE_ASH)
