@@ -414,6 +414,10 @@ interface PermissionStatus : EventTarget
 interface Permissions
     method constructor
     method query
+interface PromiseRejectionEvent : Event
+    getter promise
+    getter reason
+    method constructor
 interface PushEvent : ExtendableEvent
     method constructor
 interface PushManager
@@ -579,6 +583,8 @@ interface WorkerGlobalScope : EventTarget
     getter location
     getter navigator
     getter onerror
+    getter onrejectionhandled
+    getter onunhandledrejection
     getter performance
     getter self
     getter webkitIndexedDB
@@ -598,6 +604,8 @@ interface WorkerGlobalScope : EventTarget
     method webkitResolveLocalFileSystemURL
     setter console
     setter onerror
+    setter onrejectionhandled
+    setter onunhandledrejection
 interface WorkerLocation
     getter hash
     getter host
