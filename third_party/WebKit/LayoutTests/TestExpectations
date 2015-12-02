@@ -50,11 +50,6 @@ crbug.com/504613 crbug.com/524248 paint/images/image-backgrounds-not-antialiased
 crbug.com/504613 crbug.com/524248 virtual/spv2/paint/images/image-backgrounds-not-antialiased.html [ Skip ]
 crbug.com/504613 crbug.com/524248 virtual/syncpaint/paint/images/image-backgrounds-not-antialiased.html [ Skip ]
 crbug.com/502531 fast/borders/border-antialiasing.html [ Failure ]
-crbug.com/66498 [ XP ] ietestcenter/css3/bordersbackgrounds/background-repeat-space-padding-box.htm [ NeedsRebaseline ]
-crbug.com/66498 [ XP ] svg/as-background-image/background-repeat.html [ NeedsRebaseline ]
-crbug.com/66498 [ XP ] svg/wicd/test-scalable-background-image1.xhtml [ NeedsRebaseline ]
-crbug.com/66498 [ XP ] svg/zoom/page/zoom-background-images.html [ NeedsRebaseline ]
-crbug.com/66498 [ XP ] virtual/spv2/paint/invalidation/spv2/background-resize-width.html [ NeedsRebaseline ]
 
 crbug.com/538697 [ Win7 Debug ] virtual/threaded/printing/webgl-oversized-printing.html [ Crash ]
 crbug.com/538697 [ Win7 Debug ] printing/webgl-oversized-printing.html [ Crash ]
