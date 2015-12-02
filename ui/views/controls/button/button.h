@@ -69,6 +69,11 @@ class VIEWS_EXPORT Button : public View {
   // Cause the button to notify the listener that a click occurred.
   virtual void NotifyClick(const ui::Event& event);
 
+  // Called when a button gets released without triggering an action.
+  // Note: This is only wired up for mouse button events and not gesture
+  // events.
+  virtual void OnClickCanceled(const ui::Event& event);
+
   // The button's listener. Notified when clicked.
   ButtonListener* listener_;
 

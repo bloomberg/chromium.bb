@@ -94,24 +94,21 @@ void ToolbarButton::Layout() {
 }
 
 bool ToolbarButton::OnMousePressed(const ui::MouseEvent& event) {
-  if (enabled() && ShouldShowMenu() &&
-      IsTriggerableEvent(event) && HitTestPoint(event.location())) {
-    // Store the y pos of the mouse coordinates so we can use them later to
-    // determine if the user dragged the mouse down (which should pop up the
-    // drag down menu immediately, instead of waiting for the timer)
-    y_position_on_lbuttondown_ = event.y();
+  if (IsTriggerableEvent(event)) {
+    if (enabled() && ShouldShowMenu() && HitTestPoint(event.location())) {
+      // Store the y pos of the mouse coordinates so we can use them later to
+      // determine if the user dragged the mouse down (which should pop up the
+      // drag down menu immediately, instead of waiting for the timer)
+      y_position_on_lbuttondown_ = event.y();
 
-    // Schedule a task that will show the menu.
-    const int kMenuTimerDelay = 500;
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::Bind(&ToolbarButton::ShowDropDownMenu,
-                              show_menu_factory_.GetWeakPtr(),
-                              ui::GetMenuSourceTypeForEvent(event)),
-        base::TimeDelta::FromMilliseconds(kMenuTimerDelay));
-  }
-
-  // views::Button actions are only triggered by left and middle mouse clicks.
-  if (event.IsLeftMouseButton() || event.IsMiddleMouseButton()) {
+      // Schedule a task that will show the menu.
+      const int kMenuTimerDelay = 500;
+      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+          FROM_HERE, base::Bind(&ToolbarButton::ShowDropDownMenu,
+                                show_menu_factory_.GetWeakPtr(),
+                                ui::GetMenuSourceTypeForEvent(event)),
+          base::TimeDelta::FromMilliseconds(kMenuTimerDelay));
+    }
     ink_drop_animation_controller_->AnimateToState(
         views::InkDropState::ACTION_PENDING);
   }
@@ -143,9 +140,6 @@ void ToolbarButton::OnMouseReleased(const ui::MouseEvent& event) {
 
   if (IsTriggerableEvent(event))
     show_menu_factory_.InvalidateWeakPtrs();
-
-  if (!HitTestPoint(event.location()))
-    ink_drop_animation_controller_->AnimateToState(views::InkDropState::HIDDEN);
 }
 
 void ToolbarButton::OnMouseCaptureLost() {
@@ -259,6 +253,11 @@ void ToolbarButton::NotifyClick(const ui::Event& event) {
   LabelButton::NotifyClick(event);
   ink_drop_animation_controller_->AnimateToState(
       views::InkDropState::QUICK_ACTION);
+}
+
+void ToolbarButton::OnClickCanceled(const ui::Event& event) {
+  LabelButton::OnClickCanceled(event);
+  ink_drop_animation_controller_->AnimateToState(views::InkDropState::HIDDEN);
 }
 
 bool ToolbarButton::ShouldShowMenu() {

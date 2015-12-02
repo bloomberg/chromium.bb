@@ -36,12 +36,20 @@ class TestCustomButton : public CustomButton, public ButtonListener {
   ~TestCustomButton() override {}
 
   void ButtonPressed(Button* sender, const ui::Event& event) override {
-    notified_ = true;
+    pressed_ = true;
   }
 
-  bool notified() { return notified_; }
+  void OnClickCanceled(const ui::Event& event) override {
+    canceled_ = true;
+  }
 
-  void Reset() { notified_ = false; }
+  bool pressed() { return pressed_; }
+  bool canceled() { return canceled_; }
+
+  void Reset() {
+    pressed_ = false;
+    canceled_ = false;
+  }
 
   // CustomButton methods:
   bool IsChildWidget() const override { return is_child_widget_; }
@@ -51,7 +59,8 @@ class TestCustomButton : public CustomButton, public ButtonListener {
   void set_focus_in_child_widget(bool b) { focus_in_child_widget_ = b; }
 
  private:
-  bool notified_ = false;
+  bool pressed_ = false;
+  bool canceled_ = false;
   bool is_child_widget_ = false;
   bool focus_in_child_widget_ = false;
 
@@ -202,13 +211,13 @@ TEST_F(CustomButtonTest, NotifyAction) {
       ui::ET_MOUSE_PRESSED, center, center, ui::EventTimeForNow(),
       ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
   EXPECT_EQ(CustomButton::STATE_PRESSED, button()->state());
-  EXPECT_FALSE(button()->notified());
+  EXPECT_FALSE(button()->pressed());
 
   button()->OnMouseReleased(ui::MouseEvent(
       ui::ET_MOUSE_RELEASED, center, center, ui::EventTimeForNow(),
       ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
   EXPECT_EQ(CustomButton::STATE_HOVERED, button()->state());
-  EXPECT_TRUE(button()->notified());
+  EXPECT_TRUE(button()->pressed());
 
   // Set the notify action to its listener on mouse press.
   button()->Reset();
@@ -217,7 +226,7 @@ TEST_F(CustomButtonTest, NotifyAction) {
       ui::ET_MOUSE_PRESSED, center, center, ui::EventTimeForNow(),
       ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
   EXPECT_EQ(CustomButton::STATE_PRESSED, button()->state());
-  EXPECT_TRUE(button()->notified());
+  EXPECT_TRUE(button()->pressed());
 
   // The button should no longer notify on mouse release.
   button()->Reset();
@@ -225,7 +234,7 @@ TEST_F(CustomButtonTest, NotifyAction) {
       ui::ET_MOUSE_RELEASED, center, center, ui::EventTimeForNow(),
       ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
   EXPECT_EQ(CustomButton::STATE_HOVERED, button()->state());
-  EXPECT_FALSE(button()->notified());
+  EXPECT_FALSE(button()->pressed());
 }
 
 TEST_F(CustomButtonTest, HandleAccelerator) {
@@ -234,25 +243,58 @@ TEST_F(CustomButtonTest, HandleAccelerator) {
   EXPECT_FALSE(button()->FocusInChildWidget());
   EXPECT_FALSE(widget()->IsActive());
   button()->AcceleratorPressed(ui::Accelerator(ui::VKEY_RETURN, ui::EF_NONE));
-  EXPECT_FALSE(button()->notified());
+  EXPECT_FALSE(button()->pressed());
   // Child without focus.
   button()->set_child_widget(true);
   button()->set_focus_in_child_widget(false);
   button()->AcceleratorPressed(ui::Accelerator(ui::VKEY_RETURN, ui::EF_NONE));
-  EXPECT_FALSE(button()->notified());
+  EXPECT_FALSE(button()->pressed());
   button()->Reset();
   // Child with focus.
   button()->set_child_widget(true);
   button()->set_focus_in_child_widget(true);
   button()->AcceleratorPressed(ui::Accelerator(ui::VKEY_RETURN, ui::EF_NONE));
-  EXPECT_TRUE(button()->notified());
+  EXPECT_TRUE(button()->pressed());
   button()->Reset();
   // Not a child, but active.
   button()->set_child_widget(false);
   button()->set_focus_in_child_widget(true);
   widget()->set_active(true);
   button()->AcceleratorPressed(ui::Accelerator(ui::VKEY_RETURN, ui::EF_NONE));
-  EXPECT_TRUE(button()->notified());
+  EXPECT_TRUE(button()->pressed());
+}
+
+// Tests that OnClickCanceled gets called when NotifyClick is not expected
+// anymore.
+TEST_F(CustomButtonTest, NotifyActionNoClick) {
+  gfx::Point center(10, 10);
+
+  // By default the button should notify its listener on mouse release.
+  button()->OnMousePressed(ui::MouseEvent(
+      ui::ET_MOUSE_PRESSED, center, center, ui::EventTimeForNow(),
+      ui::EF_RIGHT_MOUSE_BUTTON, ui::EF_RIGHT_MOUSE_BUTTON));
+  EXPECT_FALSE(button()->canceled());
+
+  button()->OnMouseReleased(ui::MouseEvent(
+      ui::ET_MOUSE_RELEASED, center, center, ui::EventTimeForNow(),
+      ui::EF_RIGHT_MOUSE_BUTTON, ui::EF_RIGHT_MOUSE_BUTTON));
+  EXPECT_TRUE(button()->canceled());
+
+  // Set the notify action to its listener on mouse press.
+  button()->Reset();
+  button()->set_notify_action(CustomButton::NOTIFY_ON_PRESS);
+  button()->OnMousePressed(ui::MouseEvent(
+      ui::ET_MOUSE_PRESSED, center, center, ui::EventTimeForNow(),
+      ui::EF_RIGHT_MOUSE_BUTTON, ui::EF_RIGHT_MOUSE_BUTTON));
+  // OnClickCanceled is only sent on mouse release.
+  EXPECT_FALSE(button()->canceled());
+
+  // The button should no longer notify on mouse release.
+  button()->Reset();
+  button()->OnMouseReleased(ui::MouseEvent(
+      ui::ET_MOUSE_RELEASED, center, center, ui::EventTimeForNow(),
+      ui::EF_RIGHT_MOUSE_BUTTON, ui::EF_RIGHT_MOUSE_BUTTON));
+  EXPECT_FALSE(button()->canceled());
 }
 
 // No touch on desktop Mac. Tracked in http://crbug.com/445520.

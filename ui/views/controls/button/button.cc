@@ -74,4 +74,6 @@ void Button::NotifyClick(const ui::Event& event) {
     listener_->ButtonPressed(this, event);
 }
 
+void Button::OnClickCanceled(const ui::Event& event) {}
+
 }  // namespace views

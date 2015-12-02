@@ -66,6 +66,7 @@ class ToolbarButton : public views::LabelButton,
   // views::LabelButton:
   bool ShouldEnterPushedState(const ui::Event& event) override;
   void NotifyClick(const ui::Event& event) override;
+  void OnClickCanceled(const ui::Event& event) override;
 
   // Returns if menu should be shown. Override this to change default behavior.
   virtual bool ShouldShowMenu();
@@ -90,7 +91,7 @@ class ToolbarButton : public views::LabelButton,
   // Indicates if menu is currently showing.
   bool menu_showing_;
 
-  // Y position of mouse when left mouse button is pressed
+  // Y position of mouse when left mouse button is pressed.
   int y_position_on_lbuttondown_;
 
   // Menu runner to display drop down menu.

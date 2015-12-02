@@ -137,16 +137,16 @@ const char* CustomButton::GetClassName() const {
 }
 
 bool CustomButton::OnMousePressed(const ui::MouseEvent& event) {
-  if (state_ != STATE_DISABLED) {
-    if (ShouldEnterPushedState(event) && HitTestPoint(event.location()))
-      SetState(STATE_PRESSED);
-    if (request_focus_on_press_)
-      RequestFocus();
-    if (IsTriggerableEvent(event) && notify_action_ == NOTIFY_ON_PRESS) {
-      NotifyClick(event);
-      // NOTE: We may be deleted at this point (by the listener's notification
-      // handler).
-    }
+  if (state_ == STATE_DISABLED)
+    return true;
+  if (ShouldEnterPushedState(event) && HitTestPoint(event.location()))
+    SetState(STATE_PRESSED);
+  if (request_focus_on_press_)
+    RequestFocus();
+  if (IsTriggerableEvent(event) && notify_action_ == NOTIFY_ON_PRESS) {
+    NotifyClick(event);
+    // NOTE: We may be deleted at this point (by the listener's notification
+    // handler).
   }
   return true;
 }
@@ -162,20 +162,21 @@ bool CustomButton::OnMouseDragged(const ui::MouseEvent& event) {
 }
 
 void CustomButton::OnMouseReleased(const ui::MouseEvent& event) {
-  if (state_ == STATE_DISABLED)
-    return;
-
-  if (!HitTestPoint(event.location())) {
-    SetState(STATE_NORMAL);
-    return;
+  if (state_ != STATE_DISABLED) {
+    if (!HitTestPoint(event.location())) {
+      SetState(STATE_NORMAL);
+    } else {
+      SetState(STATE_HOVERED);
+      if (IsTriggerableEvent(event) && notify_action_ == NOTIFY_ON_RELEASE) {
+        NotifyClick(event);
+        // NOTE: We may be deleted at this point (by the listener's notification
+        // handler).
+        return;
+      }
+    }
   }
-
-  SetState(STATE_HOVERED);
-  if (IsTriggerableEvent(event) && notify_action_ == NOTIFY_ON_RELEASE) {
-    NotifyClick(event);
-    // NOTE: We may be deleted at this point (by the listener's notification
-    // handler).
-  }
+  if (notify_action_ == NOTIFY_ON_RELEASE)
+    OnClickCanceled(event);
 }
 
 void CustomButton::OnMouseCaptureLost() {
