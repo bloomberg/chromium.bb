@@ -607,6 +607,7 @@
         'proto/rect.proto',
         'proto/rectf.proto',
         'proto/region.proto',
+        'proto/renderer_settings.proto',
         'proto/scroll_offset.proto',
         'proto/size.proto',
         'proto/sizef.proto',

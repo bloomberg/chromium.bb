@@ -41,6 +41,7 @@ proto_library("proto_internal") {
     "rect.proto",
     "rectf.proto",
     "region.proto",
+    "renderer_settings.proto",
     "scroll_offset.proto",
     "size.proto",
     "sizef.proto",

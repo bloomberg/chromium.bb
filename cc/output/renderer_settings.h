@@ -10,6 +10,10 @@
 
 namespace cc {
 
+namespace proto {
+class RendererSettings;
+}  // namespace proto
+
 class CC_EXPORT RendererSettings {
  public:
   RendererSettings();
@@ -28,6 +32,11 @@ class CC_EXPORT RendererSettings {
   bool use_rgba_4444_textures;
   size_t texture_id_allocation_chunk_size;
   bool use_gpu_memory_buffer_resources;
+
+  void ToProtobuf(proto::RendererSettings* proto) const;
+  void FromProtobuf(const proto::RendererSettings& proto);
+
+  bool operator==(const RendererSettings& other) const;
 };
 
 }  // namespace cc

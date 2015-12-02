@@ -79,6 +79,7 @@
       'output/output_surface_unittest.cc',
       'output/overlay_unittest.cc',
       'output/renderer_pixeltest.cc',
+      'output/renderer_settings_unittest.cc',
       'output/renderer_unittest.cc',
       'output/shader_unittest.cc',
       'output/software_renderer_unittest.cc',
