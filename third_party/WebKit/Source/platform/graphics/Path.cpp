@@ -142,14 +142,26 @@ void Path::apply(void* info, PathApplierFunction function) const
             pathElement.type = PathElementAddCurveToPoint;
             pathElement.points = convertPathPoints(pathPoints, &pts[1], 3);
             break;
+        case SkPath::kConic_Verb: {
+            // Approximate with quads.  Use two for now, increase if more precision is needed.
+            const int kPow2 = 1;
+            const unsigned quadCount = 1 << kPow2;
+            SkPoint quads[1 + 2 * quadCount];
+            SkPath::ConvertConicToQuads(pts[0], pts[1], pts[2], iter.conicWeight(), quads, kPow2);
+
+            pathElement.type = PathElementAddQuadCurveToPoint;
+            for (unsigned i = 0; i < quadCount; ++i) {
+                pathElement.points = convertPathPoints(pathPoints, &quads[1 + 2 * i], 2);
+                function(info, &pathElement);
+            }
+            continue;
+        }
         case SkPath::kClose_Verb:
             pathElement.type = PathElementCloseSubpath;
             pathElement.points = convertPathPoints(pathPoints, 0, 0);
             break;
         case SkPath::kDone_Verb:
             return;
-        default: // place-holder for kConic_Verb, when that lands from skia
-            break;
         }
         function(info, &pathElement);
     }
@@ -357,7 +369,8 @@ void Path::addArc(const FloatPoint& p, float radius, float startAngle, float end
 
 void Path::addRect(const FloatRect& rect)
 {
-    m_path.addRect(rect);
+    // Start at upper-left, add clock-wise.
+    m_path.addRect(rect, SkPath::kCW_Direction, 0);
 }
 
 void Path::addEllipse(const FloatPoint& p, float radiusX, float radiusY, float rotation, float startAngle, float endAngle, bool anticlockwise)
@@ -382,7 +395,8 @@ void Path::addEllipse(const FloatPoint& p, float radiusX, float radiusY, float r
 
 void Path::addEllipse(const FloatRect& rect)
 {
-    m_path.addOval(rect);
+    // Start at 3 o'clock, add clock-wise.
+    m_path.addOval(rect, SkPath::kCW_Direction, 1);
 }
 
 void Path::addRoundedRect(const FloatRoundedRect& r)
@@ -441,39 +455,10 @@ void Path::addRoundedRect(const FloatRect& rect, const FloatSize& topLeftRadius,
 
 void Path::addPathForRoundedRect(const FloatRect& rect, const FloatSize& topLeftRadius, const FloatSize& topRightRadius, const FloatSize& bottomLeftRadius, const FloatSize& bottomRightRadius)
 {
-    addBeziersForRoundedRect(rect, topLeftRadius, topRightRadius, bottomLeftRadius, bottomRightRadius);
-}
-
-// Approximation of control point positions on a bezier to simulate a quarter of a circle.
-// This is 1-kappa, where kappa = 4 * (sqrt(2) - 1) / 3
-static const float gCircleControlPoint = 0.447715f;
-
-void Path::addBeziersForRoundedRect(const FloatRect& rect, const FloatSize& topLeftRadius, const FloatSize& topRightRadius, const FloatSize& bottomLeftRadius, const FloatSize& bottomRightRadius)
-{
-    moveTo(FloatPoint(rect.x() + topLeftRadius.width(), rect.y()));
-
-    addLineTo(FloatPoint(rect.maxX() - topRightRadius.width(), rect.y()));
-    if (topRightRadius.width() > 0 || topRightRadius.height() > 0)
-        addBezierCurveTo(FloatPoint(rect.maxX() - topRightRadius.width() * gCircleControlPoint, rect.y()),
-            FloatPoint(rect.maxX(), rect.y() + topRightRadius.height() * gCircleControlPoint),
-            FloatPoint(rect.maxX(), rect.y() + topRightRadius.height()));
-    addLineTo(FloatPoint(rect.maxX(), rect.maxY() - bottomRightRadius.height()));
-    if (bottomRightRadius.width() > 0 || bottomRightRadius.height() > 0)
-        addBezierCurveTo(FloatPoint(rect.maxX(), rect.maxY() - bottomRightRadius.height() * gCircleControlPoint),
-            FloatPoint(rect.maxX() - bottomRightRadius.width() * gCircleControlPoint, rect.maxY()),
-            FloatPoint(rect.maxX() - bottomRightRadius.width(), rect.maxY()));
-    addLineTo(FloatPoint(rect.x() + bottomLeftRadius.width(), rect.maxY()));
-    if (bottomLeftRadius.width() > 0 || bottomLeftRadius.height() > 0)
-        addBezierCurveTo(FloatPoint(rect.x() + bottomLeftRadius.width() * gCircleControlPoint, rect.maxY()),
-            FloatPoint(rect.x(), rect.maxY() - bottomLeftRadius.height() * gCircleControlPoint),
-            FloatPoint(rect.x(), rect.maxY() - bottomLeftRadius.height()));
-    addLineTo(FloatPoint(rect.x(), rect.y() + topLeftRadius.height()));
-    if (topLeftRadius.width() > 0 || topLeftRadius.height() > 0)
-        addBezierCurveTo(FloatPoint(rect.x(), rect.y() + topLeftRadius.height() * gCircleControlPoint),
-            FloatPoint(rect.x() + topLeftRadius.width() * gCircleControlPoint, rect.y()),
-            FloatPoint(rect.x() + topLeftRadius.width(), rect.y()));
-
-    closeSubpath();
+    // Start at upper-left (after corner radii), add clock-wise.
+    m_path.addRRect(
+        FloatRoundedRect(rect, topLeftRadius, topRightRadius, bottomLeftRadius, bottomRightRadius),
+        SkPath::kCW_Direction, 0);
 }
 
 void Path::addPath(const Path& src, const AffineTransform& transform)
