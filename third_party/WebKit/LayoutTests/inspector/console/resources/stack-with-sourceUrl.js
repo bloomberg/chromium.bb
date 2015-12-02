@@ -7,4 +7,4 @@ function namedFunction()
 
 namedFunction();
 
-//@ sourceURL=foob.js
+//# sourceURL=foob.js

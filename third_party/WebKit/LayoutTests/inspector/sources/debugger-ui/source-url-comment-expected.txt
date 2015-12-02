@@ -13,10 +13,6 @@ Running: testSourceURLComment
 function keepAlive() {}
 hasSourceURL: true
 
-Running: testDeprecatedSourceURLComment
-function keepAlive() {}
-hasSourceURL: true
-
 Running: testSourceURLAndMappingURLComment
 function keepAlive() {}
 //# sourceMappingURL=sourceMappingURL.map

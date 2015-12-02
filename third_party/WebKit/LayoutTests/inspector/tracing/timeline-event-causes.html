@@ -21,7 +21,7 @@ function test()
             }
 
             var source = setTimeoutFunction.toString();
-            source += "\n//@ sourceURL=setTimeoutFunction.js";
+            source += "\n//# sourceURL=setTimeoutFunction.js";
             InspectorTest.evaluateInPage(source);
 
             InspectorTest.invokeAsyncWithTimeline("setTimeoutFunction", finishAndRunNextTest);
@@ -47,7 +47,7 @@ function test()
             }
 
             var source = requestAnimationFrameFunction.toString();
-            source += "\n//@ sourceURL=requestAnimationFrameFunction.js";
+            source += "\n//# sourceURL=requestAnimationFrameFunction.js";
             InspectorTest.evaluateInPage(source);
 
             InspectorTest.invokeAsyncWithTimeline("requestAnimationFrameFunction", finishAndRunNextTest);
@@ -75,7 +75,7 @@ function test()
             }
 
             var source = styleRecalcFunction.toString();
-            source += "\n//@ sourceURL=styleRecalcFunction.js";
+            source += "\n//# sourceURL=styleRecalcFunction.js";
             InspectorTest.evaluateInPage(source);
 
             InspectorTest.evaluateWithTimeline("styleRecalcFunction()", finishAndRunNextTest);
@@ -103,7 +103,7 @@ function test()
             }
 
             var source = layoutFunction.toString();
-            source += "\n//@ sourceURL=layoutFunction.js";
+            source += "\n//# sourceURL=layoutFunction.js";
             InspectorTest.evaluateInPage(source);
 
             InspectorTest.evaluateWithTimeline("layoutFunction()", finishAndRunNextTest);

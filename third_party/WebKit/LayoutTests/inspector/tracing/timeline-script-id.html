@@ -22,7 +22,7 @@ function test()
     }
 
     var source = performActions.toString();
-    source += "\n//@ sourceURL=performActions.js";
+    source += "\n//# sourceURL=performActions.js";
     InspectorTest.evaluateInPage(source, startTimeline);
 
     function startTimeline()

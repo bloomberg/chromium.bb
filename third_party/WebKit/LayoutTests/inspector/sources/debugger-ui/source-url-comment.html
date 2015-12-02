@@ -13,11 +13,6 @@ function doEval()
     eval("function keepAlive() {}\n//# sourceURL=evalURL.js");
 }
 
-function doDeprecatedEval()
-{
-    eval("function keepAlive() {}\n//@ sourceURL=deprecatedEvalURL.js");
-}
-
 function doEvalWithNonRelativeURL()
 {
     eval("function relativeURLScript() {}\n//# sourceURL=/js/nonRelativeURL.js");
@@ -124,19 +119,6 @@ function test()
             }
         },
 
-        function testDeprecatedSourceURLComment(next)
-        {
-            InspectorTest.showScriptSource("deprecatedEvalURL.js", didShowScriptSource);
-            InspectorTest.evaluateInPage("setTimeout(doDeprecatedEval, 0)");
-
-            function didShowScriptSource(sourceFrame)
-            {
-                InspectorTest.addResult(sourceFrame.textEditor.text());
-                forEachScriptMatchingURL("deprecatedEvalURL.js", checkScriptSourceURL);
-                next();
-            }
-        },
-
         function testSourceURLAndMappingURLComment(next)
         {
             InspectorTest.showScriptSource("sourceURL.js", didShowScriptSource);
@@ -186,7 +168,7 @@ function test()
     function checkScriptSourceURL(script)
     {
         InspectorTest.addResult("hasSourceURL: " + script.hasSourceURL);
-    }    
+    }
 };
 
 </script>
