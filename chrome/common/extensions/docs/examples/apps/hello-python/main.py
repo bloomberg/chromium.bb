@@ -14,7 +14,7 @@ import urllib
 import logging
 import os
 import time
-from django.utils import simplejson
+import json
 
 # Configuration
 
@@ -87,8 +87,8 @@ def parse_license_data(userid):
     response_text = fetch_license_data(userid)
     try:
       logging.debug('Attempting to JSON parse: %s' % response_text)
-      json = simplejson.loads(response_text)
-      logging.debug('Got license server response: %s' % json)
+      response = json.loads(response_text)
+      logging.debug('Got license server response: %s' % response)
     except ValueError:
       logging.exception('Could not parse response as JSON: %s' % response_text)
       license['error'] = True
@@ -98,11 +98,12 @@ def parse_license_data(userid):
     license['error'] = True
     license['message'] = 'Could not fetch license data'
 
-  if json.has_key('error'):
+  if response.has_key('error'):
     license['error'] = True
-    license['message'] = json['error']['message']
-  elif json['result'] == 'YES' and json['accessLevel'] in VALID_ACCESS_LEVELS:
-    license['access'] = json['accessLevel']
+    license['message'] = response['error']['message']
+  elif (response['result'] == 'YES'
+        and response['accessLevel'] in VALID_ACCESS_LEVELS):
+    license['access'] = response['accessLevel']
 
   return license
 

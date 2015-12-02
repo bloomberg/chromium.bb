@@ -46,7 +46,7 @@ import multiprocessing
 import os
 import shutil
 import stopit
-import simplejson as json
+import json
 import tempfile
 import time
 
