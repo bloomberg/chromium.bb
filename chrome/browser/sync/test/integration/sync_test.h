@@ -46,6 +46,7 @@ class P2PSyncRefresher;
 
 namespace base {
 class CommandLine;
+class ScopedTempDir;
 }
 
 namespace fake_server {
@@ -287,14 +288,15 @@ class SyncTest : public InProcessBrowserTest {
   scoped_ptr<fake_server::FakeServer> fake_server_;
 
  private:
-  // Helper to ProfileManager::CreateProfileAsync that creates a new profile
-  // used for UI Signin. Blocks until profile is created. If
-  // |path_outside_user_data_dir| is true then profile's path is created outside
-  // user data dir which allows signing-in multiple profiles to same account.
-  static Profile* MakeProfileForUISignin(const base::FilePath::StringType name,
-                                         bool path_outside_user_data_dir);
+  // Handles Profile creation for given index. Profile's path and type is
+  // determined at runtime based on server type.
+  void CreateProfile(int index);
 
-  // Callback for CreateNewProfile() method. It runs the quit_closure once
+  // Helper to ProfileManager::CreateProfileAsync that creates a new profile
+  // used for UI Signin. Blocks until profile is created.
+  static Profile* MakeProfileForUISignin(base::FilePath profile_path);
+
+  // Callback for MakeProfileForUISignin() method. It runs the quit_closure once
   // profile is created successfully.
   static void CreateProfileCallback(const base::Closure& quit_closure,
                                     Profile* profile,
@@ -302,7 +304,7 @@ class SyncTest : public InProcessBrowserTest {
 
   // Helper to Profile::CreateProfile that handles path creation. It creates
   // a profile then registers it as a testing profile.
-  Profile* MakeProfile(const base::FilePath::StringType name);
+  Profile* MakeTestProfile(base::FilePath profile_path);
 
   // Helper method used to create a Gaia account at runtime.
   // This function should only be called when running against external servers
@@ -387,6 +389,11 @@ class SyncTest : public InProcessBrowserTest {
   // data contained within its own subdirectory under the chrome user data
   // directory. Profiles are owned by the ProfileManager.
   std::vector<Profile*> profiles_;
+
+  // Collection of profile paths used by a test. Each profile has a unique path
+  // which should be cleaned up at test shutdown. Profile paths inside the
+  // default user data dir gets deleted at InProcessBrowserTest teardown.
+  std::vector<base::ScopedTempDir*> tmp_profile_paths_;
 
   // Collection of pointers to the browser objects used by a test. One browser
   // instance is created for each sync profile. Browser object lifetime is

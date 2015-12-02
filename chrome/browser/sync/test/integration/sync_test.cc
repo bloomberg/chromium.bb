@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/guid.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -309,6 +310,33 @@ bool SyncTest::CreateGaiaAccount(const std::string& username,
   return entry->GetHttpStatusCode() == 200;
 }
 
+void SyncTest::CreateProfile(int index) {
+  tmp_profile_paths_[index] = new base::ScopedTempDir();
+  if (UsingExternalServers() && num_clients_ > 1) {
+    // For multi profile UI signin, profile paths should be outside user data
+    // dir to allow signing-in multiple profiles to same account. Otherwise, we
+    // get an error that the profile has already signed in on this device.
+    CHECK(tmp_profile_paths_[index]->CreateUniqueTempDir());
+  } else {
+    // Create new profiles in user data dir so that other profiles can know
+    // about it. This is needed in tests such as supervised user cases which
+    // assume browser->profile() as the custodian profile.
+    base::FilePath user_data_dir;
+    PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+    CHECK(
+      tmp_profile_paths_[index]->CreateUniqueTempDirUnderPath(user_data_dir));
+  }
+  base::FilePath profile_path = tmp_profile_paths_[index]->path();
+  if (UsingExternalServers()) {
+    // If running against an EXTERNAL_LIVE_SERVER, we signin profiles using real
+    // GAIA server. This requires creating profiles with no test hooks.
+    profiles_[index] = MakeProfileForUISignin(profile_path);
+  } else {
+    // Without need of real GAIA authentication, we create new test profiles.
+    profiles_[index] = MakeTestProfile(profile_path);
+  }
+}
+
 // Called when the ProfileManager has created a profile.
 // static
 void SyncTest::CreateProfileCallback(const base::Closure& quit_closure,
@@ -329,22 +357,7 @@ void SyncTest::CreateProfileCallback(const base::Closure& quit_closure,
 // UI signin we need profiles in unique user data dir's and we need to use
 // ProfileManager::CreateProfileAsync() for proper profile creation.
 // static
-Profile* SyncTest::MakeProfileForUISignin(
-    const base::FilePath::StringType name,
-    bool path_outside_user_data_dir) {
-  // For multi profile UI signin, profile paths should be outside user data dir.
-  // Otherwise, we get an error that the profile has already signed in on this
-  // device.
-  // Note that prefix |name| is implemented only on Win. On other platforms the
-  // com.google.Chrome.XXXXXX prefix is used.
-  base::FilePath profile_path;
-  if (path_outside_user_data_dir) {
-    CHECK(base::CreateNewTempDirectory(name, &profile_path));
-  } else {
-    PathService::Get(chrome::DIR_USER_DATA, &profile_path);
-    profile_path = profile_path.Append(name);
-  }
-
+Profile* SyncTest::MakeProfileForUISignin(base::FilePath profile_path) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   base::RunLoop run_loop;
   ProfileManager::CreateCallback create_callback = base::Bind(
@@ -358,28 +371,18 @@ Profile* SyncTest::MakeProfileForUISignin(
   return profile_manager->GetProfileByPath(profile_path);
 }
 
-Profile* SyncTest::MakeProfile(const base::FilePath::StringType name) {
-  base::FilePath path;
-  // Create new profiles in user data dir so that other profiles can know about
-  // it. This is needed in tests such as supervised user cases which assume
-  // browser->profile() as the custodian profile.
-  PathService::Get(chrome::DIR_USER_DATA, &path);
-  path = path.Append(name);
-
-  if (!base::PathExists(path))
-    CHECK(base::CreateDirectory(path));
-
+Profile* SyncTest::MakeTestProfile(base::FilePath profile_path) {
   if (!preexisting_preferences_file_contents_.empty()) {
-    base::FilePath pref_path(path.Append(chrome::kPreferencesFilename));
+    base::FilePath pref_path(profile_path.Append(chrome::kPreferencesFilename));
     const char* contents = preexisting_preferences_file_contents_.c_str();
     size_t contents_length = preexisting_preferences_file_contents_.size();
     if (!base::WriteFile(pref_path, contents, contents_length)) {
       LOG(FATAL) << "Preexisting Preferences file could not be written.";
     }
   }
-
-  Profile* profile =
-      Profile::CreateProfile(path, NULL, Profile::CREATE_MODE_SYNCHRONOUS);
+  Profile* profile = Profile::CreateProfile(profile_path,
+                                            NULL,
+                                            Profile::CREATE_MODE_SYNCHRONOUS);
   g_browser_process->profile_manager()->RegisterTestingProfile(profile,
                                                                true,
                                                                true);
@@ -442,6 +445,7 @@ bool SyncTest::SetupClients() {
 
   // Create the required number of sync profiles, browsers and clients.
   profiles_.resize(num_clients_);
+  tmp_profile_paths_.resize(num_clients_);
   browsers_.resize(num_clients_);
   clients_.resize(num_clients_);
   invalidation_forwarders_.resize(num_clients_);
@@ -457,7 +461,10 @@ bool SyncTest::SetupClients() {
 
   // Create the verifier profile.
   if (use_verifier_) {
-    verifier_ = MakeProfile(FILE_PATH_LITERAL("Verifier"));
+    base::FilePath user_data_dir;
+    PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+    verifier_ = MakeTestProfile(
+        user_data_dir.Append(FILE_PATH_LITERAL("Verifier")));
     bookmarks::test::WaitForBookmarkModelToLoad(
         BookmarkModelFactory::GetForProfile(verifier()));
     ui_test_utils::WaitForHistoryToLoad(HistoryServiceFactory::GetForProfile(
@@ -472,19 +479,7 @@ bool SyncTest::SetupClients() {
 }
 
 void SyncTest::InitializeInstance(int index) {
-  base::FilePath::StringType profile_name =
-      base::StringPrintf(FILE_PATH_LITERAL("Profile%d"), index);
-  // If running against an EXTERNAL_LIVE_SERVER, we need to signin profiles
-  // using real GAIA server. This requires creating profiles with no test hooks.
-  if (UsingExternalServers()) {
-    bool path_outside_user_data_dir = (num_clients_ > 1);
-    profiles_[index] =
-        MakeProfileForUISignin(profile_name, path_outside_user_data_dir);
-  } else {
-    // Without need of real GAIA authentication, we create new test profiles.
-    profiles_[index] = MakeProfile(profile_name);
-  }
-
+  CreateProfile(index);
   EXPECT_FALSE(GetProfile(index) == NULL) << "Could not create Profile "
                                           << index << ".";
 
