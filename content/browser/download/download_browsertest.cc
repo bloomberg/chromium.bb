@@ -1181,57 +1181,6 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeInterruptedDownloadNoRange) {
   recorder.CompareToExpectedRecord(expected_record, arraysize(expected_record));
 }
 
-// Confirm restart fallback happens if a precondition is failed.
-IN_PROC_BROWSER_TEST_F(DownloadContentTest,
-                       ResumeInterruptedDownloadBadPrecondition) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableDownloadResumption);
-  ASSERT_TRUE(spawned_test_server()->Start());
-
-  GURL url = spawned_test_server()->GetURL(base::StringPrintf(
-      // First download hits an RST, rest don't, precondition fail.
-      "rangereset?size=%d&rst_boundary=%d&"
-      "token=BadPrecondition&rst_limit=1&fail_precondition=2",
-      GetSafeBufferChunk() * 3, GetSafeBufferChunk()));
-
-  // Start the download and wait for first data chunk.
-  DownloadItem* download(StartDownloadAndReturnItem(url));
-  WaitForData(download, GetSafeBufferChunk());
-
-  RecordingDownloadObserver recorder(download);
-
-  ReleaseRSTAndConfirmInterruptForResume(download);
-  ConfirmFileStatusForResume(
-      download, true, GetSafeBufferChunk(), GetSafeBufferChunk() * 3,
-      base::FilePath(FILE_PATH_LITERAL("rangereset.crdownload")));
-  EXPECT_EQ("BadPrecondition2", download->GetETag());
-
-  DownloadUpdatedObserver completion_observer(
-      download, base::Bind(DownloadCompleteFilter));
-  download->Resume();
-  completion_observer.WaitForEvent();
-
-  ConfirmFileStatusForResume(
-      download, true, GetSafeBufferChunk() * 3, GetSafeBufferChunk() * 3,
-      base::FilePath(FILE_PATH_LITERAL("rangereset")));
-  EXPECT_EQ("BadPrecondition0", download->GetETag());
-
-  static const RecordingDownloadObserver::RecordStruct expected_record[] = {
-    // Result of RST
-    {DownloadItem::INTERRUPTED, GetSafeBufferChunk()},
-    // Starting continuation
-    {DownloadItem::IN_PROGRESS, GetSafeBufferChunk()},
-    // Server precondition fail.
-    {DownloadItem::INTERRUPTED, 0},
-    // Notification of successful restart.
-    {DownloadItem::IN_PROGRESS, 0},
-    // Completion.
-    {DownloadItem::COMPLETE, GetSafeBufferChunk() * 3},
-  };
-
-  recorder.CompareToExpectedRecord(expected_record, arraysize(expected_record));
-}
-
 // Confirm we don't try to resume if we don't have a verifier.
 IN_PROC_BROWSER_TEST_F(DownloadContentTest,
                        ResumeInterruptedDownloadNoVerifiers) {

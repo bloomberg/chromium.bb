@@ -86,9 +86,12 @@ INTERRUPT_REASON(SERVER_FAILED, 30)
 // Internal use only:  must restart from the beginning.
 INTERRUPT_REASON(SERVER_NO_RANGE, 31)
 
-// The download request does not meet the specified precondition.
-// Internal use only:  the file has changed on the server.
-INTERRUPT_REASON(SERVER_PRECONDITION, 32)
+// Precondition failed. This type of interruption could legitimately occur if a
+// partial download resumption was attempted using a If-Match header. However,
+// the downloads logic no longer uses If-Match headers and instead uses If-Range
+// headers where a precondition failure is not expected.
+//
+// Obsolete: INTERRUPT_REASON(SERVER_PRECONDITION, 32)
 
 // The server does not have the requested data.
 // "Unable to get file".

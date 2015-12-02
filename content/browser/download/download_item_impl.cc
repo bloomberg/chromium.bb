@@ -891,7 +891,6 @@ DownloadItemImpl::ResumeMode DownloadItemImpl::GetResumeMode() const {
         mode = RESUME_MODE_IMMEDIATE_CONTINUE;
       break;
 
-    case DOWNLOAD_INTERRUPT_REASON_SERVER_PRECONDITION:
     case DOWNLOAD_INTERRUPT_REASON_SERVER_NO_RANGE:
     case DOWNLOAD_INTERRUPT_REASON_FILE_TOO_SHORT:
       if (force_user)

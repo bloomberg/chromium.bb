@@ -1629,6 +1629,12 @@ class TestPageHandler(testserver_base.BasePageHandler):
     # a range?
     range_response = False
     range_header = self.headers.getheader('range')
+
+    if fail_precondition and self.headers.getheader('If-Range'):
+      # Failing a precondition for an If-Range just means that we are going to
+      # return the entire entity ignoring the Range header.
+      respond_to_range = False
+
     if range_header and respond_to_range:
       mo = re.match("bytes=(\d*)-(\d*)", range_header)
       if mo.group(1):
@@ -1640,13 +1646,6 @@ class TestPageHandler(testserver_base.BasePageHandler):
       range_response = True
       if last_byte < first_byte:
         return False
-
-    if (fail_precondition and
-        (self.headers.getheader('If-Modified-Since') or
-         self.headers.getheader('If-Match'))):
-      self.send_response(412)
-      self.end_headers()
-      return True
 
     if range_response:
       self.send_response(206)

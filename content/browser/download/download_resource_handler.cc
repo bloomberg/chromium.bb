@@ -408,11 +408,6 @@ void DownloadResourceHandler::OnResponseCompleted(
       case net::HTTP_NOT_FOUND:
         reason = DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT;
         break;
-      case net::HTTP_PRECONDITION_FAILED:
-        // Failed our 'If-Unmodified-Since' or 'If-Match'; see
-        // download_manager_impl.cc BeginDownload()
-        reason = DOWNLOAD_INTERRUPT_REASON_SERVER_PRECONDITION;
-        break;
       case net::HTTP_REQUESTED_RANGE_NOT_SATISFIABLE:
         // Retry by downloading from the start automatically:
         // If we haven't received data when we get this error, we won't.

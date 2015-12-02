@@ -175,7 +175,6 @@ base::string16 InterruptReasonStatusMessage(
       NOTREACHED();
       // fallthrough
     case content::DOWNLOAD_INTERRUPT_REASON_SERVER_NO_RANGE:
-    case content::DOWNLOAD_INTERRUPT_REASON_SERVER_PRECONDITION:
     case content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED:
       string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS;
   }
@@ -256,7 +255,6 @@ base::string16 InterruptReasonMessage(content::DownloadInterruptReason reason) {
       NOTREACHED();
       // fallthrough
     case content::DOWNLOAD_INTERRUPT_REASON_SERVER_NO_RANGE:
-    case content::DOWNLOAD_INTERRUPT_REASON_SERVER_PRECONDITION:
     case content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED:
       string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS;
   }

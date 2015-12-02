@@ -88,20 +88,21 @@ void BeginDownload(scoped_ptr<DownloadUrlParameters> params,
   // We shouldn't be asked to continue if we don't have a verifier.
   DCHECK(params->offset() == 0 || has_etag || has_last_modified);
 
-  if (params->offset() > 0) {
+  if (params->offset() > 0 && (has_etag || has_last_modified)) {
     request->SetExtraRequestHeaderByName(
         "Range",
         base::StringPrintf("bytes=%" PRId64 "-", params->offset()),
         true);
 
-    if (has_last_modified) {
-      request->SetExtraRequestHeaderByName("If-Unmodified-Since",
-                                           params->last_modified(),
-                                           true);
-    }
-    if (has_etag) {
-      request->SetExtraRequestHeaderByName("If-Match", params->etag(), true);
-    }
+    // In accordance with RFC 2616 Section 14.27, use If-Range to specify that
+    // the server return the entire entity if the validator doesn't match.
+    // Last-Modified can be used in the absence of ETag as a validator if the
+    // response headers satisfied the HttpUtil::HasStrongValidators() predicate.
+    //
+    // This function assumes that HasStrongValidators() was true and that the
+    // ETag and Last-Modified header values supplied are valid.
+    request->SetExtraRequestHeaderByName(
+        "If-Range", has_etag ? params->etag() : params->last_modified(), true);
   }
 
   for (DownloadUrlParameters::RequestHeadersType::const_iterator iter
