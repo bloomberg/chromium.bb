@@ -97,7 +97,8 @@ class _ApkDelegate(object):
     params = install_wrapper.GetInstallParameters()
 
     installer.Install(device, self._apk_helper, split_globs=params['splits'],
-                      lib_dir=params['lib_dir'], dex_files=params['dex_files'])
+                      native_libs=params['native_libs'],
+                      dex_files=params['dex_files'])
 
   def Run(self, test, device, flags=None, **kwargs):
     extras = dict(self._extras)
