@@ -13,6 +13,12 @@ namespace base {
 class RefCountedMemory;
 }
 
+namespace content {
+class RenderViewHost;
+}
+
+class MdDownloadsDOMHandler;
+
 class MdDownloadsUI : public content::WebUIController {
  public:
   explicit MdDownloadsUI(content::WebUI* web_ui);
@@ -20,7 +26,12 @@ class MdDownloadsUI : public content::WebUIController {
   static base::RefCountedMemory* GetFaviconResourceBytes(
       ui::ScaleFactor scale_factor);
 
+  // content::WebUIController:
+  void RenderViewReused(content::RenderViewHost* render_view_host) override;
+
  private:
+  MdDownloadsDOMHandler* handler_;  // Weak.
+
   DISALLOW_COPY_AND_ASSIGN(MdDownloadsUI);
 };
 

@@ -1531,6 +1531,27 @@ cr.define('downloads', function() {
   /** @constructor */
   function ActionService() {}
 
+  /**
+   * @param {string} s
+   * @return {string} |s| without whitespace at the beginning or end.
+   */
+  function trim(s) { return s.trim(); }
+
+  /**
+   * @param {string|undefined} value
+   * @return {boolean} Whether |value| is truthy.
+   */
+  function truthy(value) { return !!value; }
+
+  /**
+   * @param {string} searchText Input typed by the user into a search box.
+   * @return {Array<string>} A list of terms extracted from |searchText|.
+   */
+  ActionService.splitTerms = function(searchText) {
+    // Split quoted terms (e.g., 'The "lazy" dog' => ['The', 'lazy', 'dog']).
+    return searchText.split(/"([^"]*)"/).map(trim).filter(truthy);
+  };
+
   ActionService.prototype = {
     /** @param {string} id ID of the download to cancel. */
     cancel: chromeSendWithId('cancel'),
@@ -1557,12 +1578,15 @@ cr.define('downloads', function() {
     /** @param {string} id ID of the download that the user started dragging. */
     drag: chromeSendWithId('drag'),
 
+    /** @private {boolean} */
+    isSearching_: false,
+
     /**
      * @return {boolean} Whether the user is currently searching for downloads
      *     (i.e. has a non-empty search term).
      */
     isSearching: function() {
-      return this.searchText_.length > 0;
+      return this.isSearching_;
     },
 
     /** Opens the current local destination for downloads. */
@@ -1595,9 +1619,10 @@ cr.define('downloads', function() {
 
       this.searchText_ = searchText;
 
-      // Split quoted terms (e.g., 'The "lazy" dog' => ['The', 'lazy', 'dog']).
-      function trim(s) { return s.trim(); }
-      chrome.send('getDownloads', searchText.split(/"([^"]*)"/).map(trim));
+      var terms = ActionService.splitTerms(searchText);
+      this.isSearching_ = terms.length > 0;
+
+      chrome.send('getDownloads', terms);
     },
 
     /**
@@ -16937,17 +16962,58 @@ cr.define('downloads', function() {
 
     properties: {
       hasDownloads_: {
+        observer: 'hasDownloadsChanged_',
         type: Boolean,
-        value: false,
       },
 
       items_: {
         type: Array,
+        value: function() { return []; },
       },
     },
 
     hostAttributes: {
       loading: true,
+    },
+
+    observers: [
+      'itemsChanged_(items_.*)',
+    ],
+
+    /** @private */
+    clearAll_: function() {
+      this.set('items_', []);
+    },
+
+    /** @private */
+    hasDownloadsChanged_: function() {
+      if (loadTimeData.getBoolean('allowDeletingHistory'))
+        this.$.toolbar.downloadsShowing = this.hasDownloads_;
+
+      if (this.hasDownloads_) {
+        this.$['downloads-list'].fire('iron-resize');
+      } else {
+        var isSearching = downloads.ActionService.getInstance().isSearching();
+        var messageToShow = isSearching ? 'noSearchResults' : 'noDownloads';
+        this.$['no-downloads'].querySelector('span').textContent =
+            loadTimeData.getString(messageToShow);
+      }
+    },
+
+    /**
+     * @param {number} index
+     * @param {!Array<!downloads.Data>} list
+     * @private
+     */
+    insertItems_: function(index, list) {
+      this.splice.apply(this, ['items_', index, 0].concat(list));
+      this.updateHideDates_(index, index + list.length);
+      this.removeAttribute('loading');
+    },
+
+    /** @private */
+    itemsChanged_: function() {
+      this.hasDownloads_ = this.items_.length > 0;
     },
 
     /**
@@ -16988,78 +17054,65 @@ cr.define('downloads', function() {
     },
 
     /**
-     * @return {number} The number of downloads shown on the page.
+     * @param {number} index
      * @private
      */
-    size_: function() {
-      return this.items_.length;
+    removeItem_: function(index) {
+      this.splice('items_', index, 1);
+      this.updateHideDates_(index, index);
     },
 
     /**
-     * Called when all items need to be updated.
-     * @param {!Array<!downloads.Data>} list A list of new download data.
+     * @param {number} start
+     * @param {number} end
      * @private
      */
-    updateAll_: function(list) {
-      /** @private {!Object<number>} */
-      this.idToIndex_ = {};
-
-      for (var i = 0; i < list.length; ++i) {
-        var data = list[i];
-
-        this.idToIndex_[data.id] = data.index = i;
-
-        var prev = list[i - 1];
-        data.hideDate = !!prev && prev.date_string == data.date_string;
+    updateHideDates_: function(start, end) {
+      for (var i = start; i <= end; ++i) {
+        var current = this.items_[i];
+        if (!current)
+          continue;
+        var prev = this.items_[i - 1];
+        current.hideDate = !!prev && prev.date_string == current.date_string;
       }
-
-      // TODO(dbeam): this resets the scroll position, which is a huge bummer.
-      // Removing something from the bottom of the list should not scroll you
-      // back to the top. The grand plan is to restructure how the C++ sends the
-      // JS data so that it only gets updates (rather than the most recent set
-      // of items). TL;DR - we can't ship with this bug.
-      this.items_ = list;
-
-      var hasDownloads = this.size_() > 0;
-      if (!hasDownloads) {
-        var isSearching = downloads.ActionService.getInstance().isSearching();
-        var messageToShow = isSearching ? 'noSearchResults' : 'noDownloads';
-        this.$['no-downloads'].querySelector('span').textContent =
-            loadTimeData.getString(messageToShow);
-      }
-      this.hasDownloads_ = hasDownloads;
-
-      if (loadTimeData.getBoolean('allowDeletingHistory'))
-        this.$.toolbar.downloadsShowing = this.hasDownloads_;
-
-      this.removeAttribute('loading');
     },
 
     /**
+     * @param {number} index
      * @param {!downloads.Data} data
      * @private
      */
-    updateItem_: function(data) {
-      var index = this.idToIndex_[data.id];
+    updateItem_: function(index, data) {
       this.set('items_.' + index, data);
+      this.updateHideDates_(index, index);
       this.$['downloads-list'].updateSizeForItem(index);
     },
   });
 
-  Manager.size = function() {
-    return document.querySelector('downloads-manager').size_();
+  Manager.clearAll = function() {
+    Manager.get().clearAll_();
   };
 
-  Manager.updateAll = function(list) {
-    document.querySelector('downloads-manager').updateAll_(list);
+  /** @return {!downloads.Manager} */
+  Manager.get = function() {
+    return /** @type {!downloads.Manager} */(
+        queryRequiredElement('downloads-manager'));
   };
 
-  Manager.updateItem = function(item) {
-    document.querySelector('downloads-manager').updateItem_(item);
+  Manager.insertItems = function(index, list) {
+    Manager.get().insertItems_(index, list);
   };
 
   Manager.onLoad = function() {
-    document.querySelector('downloads-manager').onLoad_();
+    Manager.get().onLoad_();
+  };
+
+  Manager.removeItem = function(index) {
+    Manager.get().removeItem_(index);
+  };
+
+  Manager.updateItem = function(index, data) {
+    Manager.get().updateItem_(index, data);
   };
 
   return {Manager: Manager};

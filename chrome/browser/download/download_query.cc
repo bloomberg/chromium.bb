@@ -69,35 +69,6 @@ template<> bool GetAs(const base::Value& in, std::vector<base::string16>* out) {
 // The next several functions are helpers for making Callbacks that access
 // DownloadItem fields.
 
-static bool MatchesQuery(
-    const std::vector<base::string16>& query_terms,
-    const DownloadItem& item) {
-  DCHECK(!query_terms.empty());
-  base::string16 url_raw(base::UTF8ToUTF16(item.GetOriginalUrl().spec()));
-  base::string16 url_formatted = url_raw;
-  if (item.GetBrowserContext()) {
-    Profile* profile = Profile::FromBrowserContext(item.GetBrowserContext());
-    url_formatted = url_formatter::FormatUrl(
-        item.GetOriginalUrl(),
-        profile->GetPrefs()->GetString(prefs::kAcceptLanguages));
-  }
-  base::string16 path(item.GetTargetFilePath().LossyDisplayName());
-
-  for (std::vector<base::string16>::const_iterator it = query_terms.begin();
-       it != query_terms.end(); ++it) {
-    base::string16 term = base::i18n::ToLower(*it);
-    if (!base::i18n::StringSearchIgnoringCaseAndAccents(
-            term, url_raw, NULL, NULL) &&
-        !base::i18n::StringSearchIgnoringCaseAndAccents(
-            term, url_formatted, NULL, NULL) &&
-        !base::i18n::StringSearchIgnoringCaseAndAccents(
-            term, path, NULL, NULL)) {
-      return false;
-    }
-  }
-  return true;
-}
-
 static int64 GetStartTimeMsEpoch(const DownloadItem& item) {
   return (item.GetStartTime() - base::Time::UnixEpoch()).InMilliseconds();
 }
@@ -236,6 +207,37 @@ static ComparisonType Compare(
 }
 
 }  // anonymous namespace
+
+// static
+bool DownloadQuery::MatchesQuery(const std::vector<base::string16>& query_terms,
+                                 const DownloadItem& item) {
+  if (query_terms.empty())
+    return true;
+
+  base::string16 url_raw(base::UTF8ToUTF16(item.GetOriginalUrl().spec()));
+  base::string16 url_formatted = url_raw;
+  if (item.GetBrowserContext()) {
+    Profile* profile = Profile::FromBrowserContext(item.GetBrowserContext());
+    url_formatted = url_formatter::FormatUrl(
+        item.GetOriginalUrl(),
+        profile->GetPrefs()->GetString(prefs::kAcceptLanguages));
+  }
+  base::string16 path(item.GetTargetFilePath().LossyDisplayName());
+
+  for (std::vector<base::string16>::const_iterator it = query_terms.begin();
+       it != query_terms.end(); ++it) {
+    base::string16 term = base::i18n::ToLower(*it);
+    if (!base::i18n::StringSearchIgnoringCaseAndAccents(
+            term, url_raw, NULL, NULL) &&
+        !base::i18n::StringSearchIgnoringCaseAndAccents(
+            term, url_formatted, NULL, NULL) &&
+        !base::i18n::StringSearchIgnoringCaseAndAccents(
+            term, path, NULL, NULL)) {
+      return false;
+    }
+  }
+  return true;
+}
 
 DownloadQuery::DownloadQuery() : limit_(kuint32max), skip_(0U) {}
 DownloadQuery::~DownloadQuery() {}
