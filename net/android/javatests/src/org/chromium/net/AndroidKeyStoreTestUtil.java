@@ -24,7 +24,6 @@ public class AndroidKeyStoreTestUtil {
 
     private static final String TAG = "AndroidKeyStoreTestUtil";
 
-    private static final DefaultAndroidKeyStore sKeyStore = new DefaultAndroidKeyStore();
     /**
      * Called from native code to create a PrivateKey object from its
      * encoded PKCS#8 representation.
@@ -32,7 +31,7 @@ public class AndroidKeyStoreTestUtil {
      * @return new PrivateKey handle, or null in case of error.
      */
     @CalledByNative
-    public static AndroidPrivateKey createPrivateKeyFromPKCS8(int type, byte[] encodedKey) {
+    public static PrivateKey createPrivateKeyFromPKCS8(int type, byte[] encodedKey) {
         String algorithm = null;
         switch (type) {
             case PrivateKeyType.RSA:
@@ -49,7 +48,7 @@ public class AndroidKeyStoreTestUtil {
             KeyFactory factory = KeyFactory.getInstance(algorithm);
             KeySpec ks = new PKCS8EncodedKeySpec(encodedKey);
             PrivateKey key = factory.generatePrivate(ks);
-            return sKeyStore.createKey(key);
+            return key;
 
         } catch (NoSuchAlgorithmException e) {
             Log.e(TAG, "Could not create " + algorithm + " factory instance!");

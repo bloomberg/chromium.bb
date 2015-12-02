@@ -710,7 +710,7 @@ public class AwContents implements SmartClipProvider,
         mWebContentsDelegate = new AwWebContentsDelegateAdapter(
                 this, contentsClient, mContentViewClient, mContext, mContainerView);
         mContentsClientBridge = new AwContentsClientBridge(mContext, contentsClient,
-                mBrowserContext.getKeyStore(), AwContentsStatics.getClientCertLookupTable());
+                AwContentsStatics.getClientCertLookupTable());
         mZoomControls = new AwZoomControls(this);
         mBackgroundThreadClient = new BackgroundThreadClientImpl();
         mIoThreadClient = new IoThreadClientImpl();

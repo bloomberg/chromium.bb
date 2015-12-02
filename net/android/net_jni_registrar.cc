@@ -6,7 +6,6 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
-#include "net/android/android_private_key.h"
 #include "net/android/gurl_utils.h"
 #include "net/android/http_auth_negotiate_android.h"
 #include "net/android/keystore.h"
@@ -25,7 +24,6 @@ namespace android {
 
 static base::android::RegistrationMethod kNetRegisteredMethods[] = {
     {"AndroidCertVerifyResult", RegisterCertVerifyResult},
-    {"AndroidPrivateKey", RegisterAndroidPrivateKey},
     {"AndroidKeyStore", RegisterKeyStore},
     {"AndroidNetworkLibrary", RegisterNetworkLibrary},
     {"AndroidTrafficStats", traffic_stats::Register},

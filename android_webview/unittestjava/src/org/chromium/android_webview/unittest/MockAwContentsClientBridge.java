@@ -7,9 +7,6 @@ package org.chromium.android_webview.unittest;
 import org.chromium.android_webview.AwContentsClientBridge;
 import org.chromium.android_webview.ClientCertLookupTable;
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.net.AndroidKeyStore;
-import org.chromium.net.AndroidPrivateKey;
-import org.chromium.net.DefaultAndroidKeyStore;
 
 class MockAwContentsClientBridge extends AwContentsClientBridge {
 
@@ -17,7 +14,7 @@ class MockAwContentsClientBridge extends AwContentsClientBridge {
     private String[] mKeyTypes;
 
     public MockAwContentsClientBridge() {
-        super(new DefaultAndroidKeyStore(), new ClientCertLookupTable());
+        super(new ClientCertLookupTable());
     }
 
     @Override
@@ -40,16 +37,6 @@ class MockAwContentsClientBridge extends AwContentsClientBridge {
     @CalledByNative
     private int getRequestId() {
         return mId;
-    }
-
-    @CalledByNative
-    private AndroidPrivateKey createTestPrivateKey() {
-        return new AndroidPrivateKey() {
-            @Override
-            public AndroidKeyStore getKeyStore() {
-                return null;
-            }
-        };
     }
 
     @CalledByNative

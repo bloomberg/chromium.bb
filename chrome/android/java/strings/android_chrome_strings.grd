@@ -1284,14 +1284,6 @@ You are signing in with a managed account and giving its administrator control o
         Refreshing page
       </message>
 
-      <!-- Smartcard certificate support -->
-      <message name="IDS_SMARTCARD_DIALOG_TITLE" desc="Title of a dialog asking whether to use Android default keystore or a smartcard for certificate authentication.">
-        Choose certificate for authentication
-      </message>
-      <message name="IDS_SMARTCARD_CERTIFICATE_OPTION" desc="An option to use Smart Card when a dialog asking whether to use Android default keystore or a Smart Card for certificate authentication.">
-        Smart card
-      </message>
-
       <!-- App banner strings -->
       <message name="IDS_APP_BANNER_INSTALLING" desc="Button text indicating that an application is being installed. [CHAR-LIMIT=25]">
         Installing…

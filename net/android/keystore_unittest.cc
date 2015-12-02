@@ -408,7 +408,7 @@ void DoKeySigningWithWrapper(EVP_PKEY* wrapper_key,
 
 }  // namespace
 
-TEST(AndroidKeyStore,GetRSAKeyModulus) {
+TEST(AndroidKeyStore, GetRSAKeyModulus) {
   crypto::OpenSSLErrStackTracer err_trace(FROM_HERE);
   InitEnv();
 

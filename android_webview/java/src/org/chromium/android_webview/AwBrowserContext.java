@@ -8,7 +8,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 import org.chromium.content.browser.ContentViewStatics;
-import org.chromium.net.DefaultAndroidKeyStore;
 
 /**
  * Java side of the Browser Context: contains all the java side objects needed to host one
@@ -20,12 +19,11 @@ import org.chromium.net.DefaultAndroidKeyStore;
 public class AwBrowserContext {
     private static final String HTTP_AUTH_DATABASE_FILE = "http_auth.db";
 
-    private SharedPreferences mSharedPreferences;
+    private final SharedPreferences mSharedPreferences;
 
     private AwGeolocationPermissions mGeolocationPermissions;
     private AwFormDatabase mFormDatabase;
     private HttpAuthDatabase mHttpAuthDatabase;
-    private DefaultAndroidKeyStore mLocalKeyStore;
     private AwMessagePortService mMessagePortService;
 
     public AwBrowserContext(SharedPreferences sharedPreferences, Context applicationContext) {
@@ -51,13 +49,6 @@ public class AwBrowserContext {
             mHttpAuthDatabase = HttpAuthDatabase.newInstance(context, HTTP_AUTH_DATABASE_FILE);
         }
         return mHttpAuthDatabase;
-    }
-
-    public DefaultAndroidKeyStore getKeyStore() {
-        if (mLocalKeyStore == null) {
-            mLocalKeyStore = new DefaultAndroidKeyStore();
-        }
-        return mLocalKeyStore;
     }
 
     public AwMessagePortService getMessagePortService() {

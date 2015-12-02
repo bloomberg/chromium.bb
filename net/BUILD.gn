@@ -1194,7 +1194,6 @@ if (is_android) {
       "android/java/src/org/chromium/net/AndroidCertVerifyResult.java",
       "android/java/src/org/chromium/net/AndroidKeyStore.java",
       "android/java/src/org/chromium/net/AndroidNetworkLibrary.java",
-      "android/java/src/org/chromium/net/AndroidPrivateKey.java",
       "android/java/src/org/chromium/net/AndroidTrafficStats.java",
       "android/java/src/org/chromium/net/GURLUtils.java",
       "android/java/src/org/chromium/net/HttpNegotiateAuthenticator.java",

@@ -394,8 +394,6 @@
       'quic/stream_sequencer_buffer.h',
     ],
     'net_non_nacl_sources': [
-      'android/android_private_key.cc',
-      'android/android_private_key.h',
       'android/cert_verify_result_android.cc',
       'android/cert_verify_result_android.h',
       'android/gurl_utils.cc',

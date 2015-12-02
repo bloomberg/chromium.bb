@@ -13,8 +13,6 @@ import android.webkit.ValueCallback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.net.AndroidPrivateKey;
-import org.chromium.net.DefaultAndroidKeyStore;
 
 import java.security.Principal;
 import java.security.PrivateKey;
@@ -39,23 +37,18 @@ public class AwContentsClientBridge {
     // The native peer of this object.
     private long mNativeContentsClientBridge;
 
-    private DefaultAndroidKeyStore mLocalKeyStore;
-
-    private ClientCertLookupTable mLookupTable;
+    private final ClientCertLookupTable mLookupTable;
 
     // Used for mocking this class in tests.
-    protected AwContentsClientBridge(DefaultAndroidKeyStore keyStore,
-            ClientCertLookupTable table) {
-        mLocalKeyStore = keyStore;
+    protected AwContentsClientBridge(ClientCertLookupTable table) {
         mLookupTable = table;
     }
 
     public AwContentsClientBridge(Context context, AwContentsClient client,
-            DefaultAndroidKeyStore keyStore, ClientCertLookupTable table) {
+            ClientCertLookupTable table) {
         assert client != null;
         mContext = context;
         mClient = client;
-        mLocalKeyStore = keyStore;
         mLookupTable = table;
     }
 
@@ -67,9 +60,9 @@ public class AwContentsClientBridge {
      */
     public class ClientCertificateRequestCallback {
 
-        private int mId;
-        private String mHost;
-        private int mPort;
+        private final int mId;
+        private final String mHost;
+        private final int mPort;
         private boolean mIsCalled;
 
         public ClientCertificateRequestCallback(int id, String host, int port) {
@@ -109,9 +102,7 @@ public class AwContentsClientBridge {
         private void proceedOnUiThread(PrivateKey privateKey, X509Certificate[] chain) {
             checkIfCalled();
 
-            AndroidPrivateKey key = mLocalKeyStore.createKey(privateKey);
-
-            if (key == null || chain == null || chain.length == 0) {
+            if (privateKey == null || chain == null || chain.length == 0) {
                 Log.w(TAG, "Empty client certificate chain?");
                 provideResponse(null, null);
                 return;
@@ -127,8 +118,8 @@ public class AwContentsClientBridge {
                 provideResponse(null, null);
                 return;
             }
-            mLookupTable.allow(mHost, mPort, key, encodedChain);
-            provideResponse(key, encodedChain);
+            mLookupTable.allow(mHost, mPort, privateKey, encodedChain);
+            provideResponse(privateKey, encodedChain);
         }
 
         private void ignoreOnUiThread() {
@@ -149,10 +140,10 @@ public class AwContentsClientBridge {
             mIsCalled = true;
         }
 
-        private void provideResponse(AndroidPrivateKey androidKey, byte[][] certChain) {
+        private void provideResponse(PrivateKey privateKey, byte[][] certChain) {
             if (mNativeContentsClientBridge == 0) return;
             nativeProvideClientCertificateResponse(mNativeContentsClientBridge, mId,
-                    certChain, androidKey);
+                    certChain, privateKey);
         }
     }
 
@@ -275,7 +266,7 @@ public class AwContentsClientBridge {
     private native void nativeProceedSslError(long nativeAwContentsClientBridge, boolean proceed,
             int id);
     private native void nativeProvideClientCertificateResponse(long nativeAwContentsClientBridge,
-            int id, byte[][] certChain, AndroidPrivateKey androidKey);
+            int id, byte[][] certChain, PrivateKey androidKey);
 
     private native void nativeConfirmJsResult(long nativeAwContentsClientBridge, int id,
             String prompt);

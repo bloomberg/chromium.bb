@@ -4,8 +4,7 @@
 
 package org.chromium.android_webview;
 
-import org.chromium.net.AndroidPrivateKey;
-
+import java.security.PrivateKey;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -22,9 +21,9 @@ public class ClientCertLookupTable {
      * A container for the certificate data.
      */
     public static class Cert {
-        AndroidPrivateKey mPrivateKey;
+        PrivateKey mPrivateKey;
         byte[][] mCertChain;
-        public Cert(AndroidPrivateKey privateKey, byte[][] certChain) {
+        public Cert(PrivateKey privateKey, byte[][] certChain) {
             this.mPrivateKey = privateKey;
             byte[][] newChain = new byte[certChain.length][];
             for (int i = 0; i < certChain.length; i++) {
@@ -48,7 +47,7 @@ public class ClientCertLookupTable {
         mDenieds = new HashSet<String>();
     }
 
-    public void allow(String host, int port, AndroidPrivateKey privateKey, byte[][] chain) {
+    public void allow(String host, int port, PrivateKey privateKey, byte[][] chain) {
         String host_and_port = hostAndPort(host, port);
         mCerts.put(host_and_port, new Cert(privateKey, chain));
         mDenieds.remove(host_and_port);

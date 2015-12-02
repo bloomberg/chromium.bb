@@ -13,16 +13,6 @@ android_library("net_java") {
   srcjar_deps = [
     ":net_errors_java",
     ":net_android_java_enums_srcjar",
-    ":remote_android_keystore_aidl",
-  ]
-}
-
-android_aidl("remote_android_keystore_aidl") {
-  interface_file =
-      "java/src/org/chromium/net/IRemoteAndroidKeyStoreInterface.aidl"
-  sources = [
-    "java/src/org/chromium/net/IRemoteAndroidKeyStore.aidl",
-    "java/src/org/chromium/net/IRemoteAndroidKeyStoreCallbacks.aidl",
   ]
 }
 

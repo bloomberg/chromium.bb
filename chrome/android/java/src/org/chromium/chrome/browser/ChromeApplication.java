@@ -82,8 +82,6 @@ import org.chromium.chrome.browser.services.AccountsChangedReceiver;
 import org.chromium.chrome.browser.services.AndroidEduOwnerCheckCallback;
 import org.chromium.chrome.browser.services.GoogleServicesManager;
 import org.chromium.chrome.browser.share.ShareHelper;
-import org.chromium.chrome.browser.smartcard.EmptyPKCS11AuthenticationManager;
-import org.chromium.chrome.browser.smartcard.PKCS11AuthenticationManager;
 import org.chromium.chrome.browser.sync.GmsCoreSyncListener;
 import org.chromium.chrome.browser.sync.SyncController;
 import org.chromium.chrome.browser.tab.AuthenticatorNavigationInterceptor;
@@ -451,8 +449,6 @@ public class ChromeApplication extends ContentApplication {
         GoogleServicesManager.get(this).onMainActivityStart();
         RevenueStats.getInstance();
 
-        getPKCS11AuthenticationManager().initialize(ChromeApplication.this);
-
         mDevToolsServer = new DevToolsServer(DEV_TOOLS_SERVER_SOCKET_PREFIX);
         mDevToolsServer.setRemoteDebuggingEnabled(
                 true, DevToolsServer.Security.ALLOW_DEBUG_PERMISSION);
@@ -595,12 +591,6 @@ public class ChromeApplication extends ContentApplication {
     @CalledByNative
     protected boolean areParentalControlsEnabled() {
         return PartnerBrowserCustomizations.isIncognitoDisabled();
-    }
-
-    // TODO(yfriedman): This is too widely available. Plumb this through ChromeNetworkDelegate
-    // instead.
-    protected PKCS11AuthenticationManager getPKCS11AuthenticationManager() {
-        return EmptyPKCS11AuthenticationManager.getInstance();
     }
 
     /**
