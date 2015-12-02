@@ -317,7 +317,7 @@ void ResourceLoader::OnSSLCertificateError(net::URLRequest* request,
 
   SSLManager::OnSSLCertificateError(
       weak_ptr_factory_.GetWeakPtr(), info->GetResourceType(), request_->url(),
-      info->GetWebContentsForRequest(), ssl_info, fatal);
+      info->GetWebContentsGetterForRequest(), ssl_info, fatal);
 }
 
 void ResourceLoader::OnBeforeNetworkStart(net::URLRequest* unused,

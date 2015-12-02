@@ -26,16 +26,15 @@ class DownloadResourceThrottle
   struct DownloadRequestInfo {
     DownloadRequestInfo(
         scoped_refptr<DownloadRequestLimiter> limiter,
-        int render_process_id,
-        int render_view_id,
+        const content::ResourceRequestInfo::WebContentsGetter&
+            web_contents_getter,
         const GURL& url,
         const std::string& request_method,
         const DownloadRequestLimiter::Callback& continue_callback);
     ~DownloadRequestInfo();
 
     scoped_refptr<DownloadRequestLimiter> limiter;
-    int render_process_id;
-    int render_view_id;
+    content::ResourceRequestInfo::WebContentsGetter web_contents_getter;
     GURL url;
     std::string request_method;
     DownloadRequestLimiter::Callback continue_callback;
@@ -43,11 +42,12 @@ class DownloadResourceThrottle
     DISALLOW_COPY_AND_ASSIGN(DownloadRequestInfo);
   };
 
-  DownloadResourceThrottle(scoped_refptr<DownloadRequestLimiter> limiter,
-                           int render_process_id,
-                           int render_view_id,
-                           const GURL& url,
-                           const std::string& request_method);
+  DownloadResourceThrottle(
+      scoped_refptr<DownloadRequestLimiter> limiter,
+      const content::ResourceRequestInfo::WebContentsGetter&
+          web_contents_getter,
+      const GURL& url,
+      const std::string& request_method);
 
   // content::ResourceThrottle implementation:
   void WillStartRequest(bool* defer) override;

@@ -16,6 +16,7 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents_observer.h"
 
 class HostContentSettingsMap;
@@ -182,8 +183,8 @@ class DownloadRequestLimiter
   DownloadStatus GetDownloadStatus(content::WebContents* tab);
 
   // Check if download can proceed and notifies the callback on UI thread.
-  void CanDownload(int render_process_host_id,
-                   int render_view_id,
+  void CanDownload(const content::ResourceRequestInfo::WebContentsGetter&
+                       web_contents_getter,
                    const GURL& url,
                    const std::string& request_method,
                    const Callback& callback);
@@ -215,11 +216,12 @@ class DownloadRequestLimiter
                        const Callback& callback);
 
   // Invoked when decision to download has been made.
-  void OnCanDownloadDecided(int render_process_host_id,
-                            int render_view_id,
-                            const std::string& request_method,
-                            const Callback& orig_callback,
-                            bool allow);
+  void OnCanDownloadDecided(
+      const content::ResourceRequestInfo::WebContentsGetter&
+          web_contents_getter,
+      const std::string& request_method,
+      const Callback& orig_callback,
+      bool allow);
 
   // Removes the specified TabDownloadState from the internal map and deletes
   // it. This has the effect of resetting the status for the tab to

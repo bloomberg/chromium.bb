@@ -56,8 +56,7 @@ class DownloadControllerAndroidImpl : public DownloadControllerAndroid,
 
   // DownloadControllerAndroid implementation.
   void AcquireFileAccessPermission(
-      int render_process_id,
-      int render_view_id,
+      WebContents* web_contents,
       const AcquireFileAccessPermissionCallback& callback) override;
 
  private:

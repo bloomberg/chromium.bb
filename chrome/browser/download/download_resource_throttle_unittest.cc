@@ -6,6 +6,7 @@
 #include "base/run_loop.h"
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/download/download_resource_throttle.h"
+#include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
@@ -78,7 +79,9 @@ class DownloadResourceThrottleTest : public ChromeRenderViewHostTestHarness {
 
   void StartThrottleOnIOThread(int process_id, int render_view_id) {
     throttle_ = new DownloadResourceThrottle(
-        limiter_, process_id, render_view_id, GURL(kTestUrl), "GET");
+        limiter_,
+        base::Bind(&tab_util::GetWebContentsByID, process_id, render_view_id),
+        GURL(kTestUrl), "GET");
     throttle_->set_controller_for_testing(&resource_controller_);
     bool defer;
     throttle_->WillStartRequest(&defer);

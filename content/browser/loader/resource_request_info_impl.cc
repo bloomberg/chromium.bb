@@ -187,8 +187,8 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
 ResourceRequestInfoImpl::~ResourceRequestInfoImpl() {
 }
 
-base::Callback<WebContents*(void)>
-ResourceRequestInfoImpl::GetWebContentsForRequest() const {
+ResourceRequestInfo::WebContentsGetter
+ResourceRequestInfoImpl::GetWebContentsGetterForRequest() const {
   // PlzNavigate: navigation requests are created with a valid FrameTreeNode ID
   // and invalid RenderProcessHost and RenderFrameHost IDs. The FrameTreeNode
   // ID should be used to access the WebContents.

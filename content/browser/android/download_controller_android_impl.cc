@@ -182,16 +182,10 @@ void DownloadControllerAndroidImpl::CancelDeferredDownload(
 }
 
 void DownloadControllerAndroidImpl::AcquireFileAccessPermission(
-    int render_process_id,
-    int render_view_id,
+    WebContents* web_contents,
     const DownloadControllerAndroid::AcquireFileAccessPermissionCallback& cb) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  WebContents* web_contents = GetWebContents(render_process_id, render_view_id);
-  if (!web_contents) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE, base::Bind(cb, false));
-    return;
-  }
+  DCHECK(web_contents);
 
   ScopedJavaLocalRef<jobject> view =
       GetContentViewCoreFromWebContents(web_contents);
@@ -355,7 +349,7 @@ void DownloadControllerAndroidImpl::StartAndroidDownload(
   }
 
   AcquireFileAccessPermission(
-      render_process_id, render_view_id,
+      web_contents,
       base::Bind(&DownloadControllerAndroidImpl::StartAndroidDownloadInternal,
                  base::Unretained(this), render_process_id, render_view_id,
                  info));
@@ -531,9 +525,8 @@ void DownloadControllerAndroidImpl::StartContextMenuDownload(
   int process_id = web_contents->GetRenderProcessHost()->GetID();
   int routing_id = web_contents->GetRoutingID();
   AcquireFileAccessPermission(
-      process_id, routing_id,
-      base::Bind(&CreateContextMenuDownload, process_id, routing_id, params,
-                 is_link, extra_headers));
+      web_contents, base::Bind(&CreateContextMenuDownload, process_id,
+                               routing_id, params, is_link, extra_headers));
 }
 
 void DownloadControllerAndroidImpl::DangerousDownloadValidated(
