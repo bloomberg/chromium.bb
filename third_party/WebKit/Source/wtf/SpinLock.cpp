@@ -32,6 +32,8 @@
 #define YIELD_PROCESSOR __asm__ __volatile__("pause")
 #elif CPU(ARM) || CPU(ARM64)
 #define YIELD_PROCESSOR __asm__ __volatile__("yield")
+#elif defined(__mips__) && __mips_isa_rev >= 2
+#define YIELD_PROCESSOR __asm__ __volatile__("pause")
 #endif
 #endif
 
