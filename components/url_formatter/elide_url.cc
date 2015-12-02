@@ -349,9 +349,8 @@ base::string16 ElideHost(const GURL& url,
   if (subdomain_width <= 0)
     return base::string16(gfx::kEllipsisUTF16) + kDot + url_domain;
 
-  const base::string16 elided_subdomain = gfx::ElideText(
-      url_subdomain, font_list, subdomain_width, gfx::ELIDE_HEAD);
-  return elided_subdomain + url_domain;
+  return gfx::ElideText(url_host, font_list, available_pixel_width,
+                        gfx::ELIDE_HEAD);
 }
 
 #endif  // !defined(OS_ANDROID) || defined(USE_AURA)
