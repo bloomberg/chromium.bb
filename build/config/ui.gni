@@ -69,11 +69,6 @@ if (use_ozone) {
   use_glib = false
 }
 
-# Turn off Wayland if glib is enabled.
-if (use_glib) {
-  enable_wayland_server = false
-}
-
 if (is_linux && !use_ozone) {
   use_cairo = true
   use_pango = true

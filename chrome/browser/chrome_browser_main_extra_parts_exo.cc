@@ -4,6 +4,10 @@
 
 #include "chrome/browser/chrome_browser_main_extra_parts_exo.h"
 
+#if defined(USE_GLIB)
+#include <glib.h>
+#endif
+
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/ui/ash/ash_util.h"
@@ -12,6 +16,61 @@
 #include "components/exo/wayland/server.h"
 #include "content/public/browser/browser_thread.h"
 
+#if defined(USE_GLIB)
+namespace {
+
+gboolean WaylandSourcePrepare(GSource* source, gint* timeout_ms) {
+  *timeout_ms = -1;
+  return FALSE;
+}
+
+gboolean WaylandSourceCheck(GSource* source) {
+  return TRUE;
+}
+
+gboolean WaylandSourceDispatch(GSource* source,
+                               GSourceFunc unused_func,
+                               gpointer data) {
+  exo::wayland::Server* server = static_cast<exo::wayland::Server*>(data);
+  server->Dispatch(base::TimeDelta());
+  server->Flush();
+  return TRUE;
+}
+
+GSourceFuncs g_wayland_source_funcs = {WaylandSourcePrepare, WaylandSourceCheck,
+                                       WaylandSourceDispatch, nullptr};
+
+}  // namespace
+
+class ChromeBrowserMainExtraPartsExo::WaylandWatcher {
+ public:
+  explicit WaylandWatcher(exo::wayland::Server* server)
+      : wayland_poll_(new GPollFD),
+        wayland_source_(
+            g_source_new(&g_wayland_source_funcs, sizeof(GSource))) {
+    wayland_poll_->fd = server->GetFileDescriptor();
+    wayland_poll_->events = G_IO_IN;
+    wayland_poll_->revents = 0;
+    g_source_add_poll(wayland_source_, wayland_poll_.get());
+    g_source_set_can_recurse(wayland_source_, TRUE);
+    g_source_set_callback(wayland_source_, nullptr, server, nullptr);
+    g_source_attach(wayland_source_, g_main_context_default());
+  }
+  ~WaylandWatcher() {
+    g_source_destroy(wayland_source_);
+    g_source_unref(wayland_source_);
+  }
+
+ private:
+  // The poll attached to |wayland_source_|.
+  scoped_ptr<GPollFD> wayland_poll_;
+
+  // The GLib event source for wayland events.
+  GSource* wayland_source_;
+
+  DISALLOW_COPY_AND_ASSIGN(WaylandWatcher);
+};
+#else
 class ChromeBrowserMainExtraPartsExo::WaylandWatcher
     : public base::MessagePumpLibevent::Watcher {
  public:
@@ -35,6 +94,7 @@ class ChromeBrowserMainExtraPartsExo::WaylandWatcher
 
   DISALLOW_COPY_AND_ASSIGN(WaylandWatcher);
 };
+#endif
 
 ChromeBrowserMainExtraPartsExo::ChromeBrowserMainExtraPartsExo()
     : display_(new exo::Display) {}
