@@ -237,6 +237,7 @@ template("mac_toolchain") {
       current_os = invoker.toolchain_os
 
       # These values need to be passed through unchanged.
+      host_toolchain = host_toolchain
       target_os = target_os
       target_cpu = target_cpu
 

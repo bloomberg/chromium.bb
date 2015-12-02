@@ -220,6 +220,9 @@ template("msvc_toolchain") {
         is_clang = invoker.is_clang
       }
       current_os = invoker.current_os
+
+      # This value needs to be passed through unchanged.
+      host_toolchain = host_toolchain
     }
   }
 }
