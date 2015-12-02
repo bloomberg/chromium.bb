@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.compositor.layouts.phone.stack;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
-import android.animation.AnimatorSet;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.RectF;
@@ -229,7 +228,7 @@ public class Stack {
 
     // Running set of animations applied to tabs.
     private ChromeAnimation<?> mTabAnimations;
-    private AnimatorSet mViewAnimations;
+    private Animator mViewAnimations;
 
     // The parent Layout
     private final StackLayout mLayout;
@@ -513,7 +512,7 @@ public class Stack {
 
             // First try to build a View animation.  Then fallback to the compositor animation if
             // one isn't created.
-            mViewAnimations = mViewAnimationFactory.createAnimatorSetForType(
+            mViewAnimations = mViewAnimationFactory.createAnimatorForType(
                     type, mStackTabs, mLayout.getViewContainer(), mTabModel, focusIndex);
 
             if (mViewAnimations != null) {
