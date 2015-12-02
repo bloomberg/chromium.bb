@@ -49,9 +49,6 @@ class BLIMP_NET_EXPORT BrowserConnectionHandler
  private:
   void DropCurrentConnection();
 
-  // Holds network resources while there is a Client connected.
-  scoped_ptr<BlimpConnection> connection_;
-
   // Routes incoming messages to the relevant feature-specific handlers.
   scoped_ptr<BlimpMessageDemultiplexer> demultiplexer_;
 
@@ -61,6 +58,9 @@ class BLIMP_NET_EXPORT BrowserConnectionHandler
   // Routes outgoing messages from feature-specific handlers to a single
   // message stream.
   scoped_ptr<BlimpMessageMultiplexer> multiplexer_;
+
+  // Holds network resources while there is a Client connected.
+  scoped_ptr<BlimpConnection> connection_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserConnectionHandler);
 };

@@ -5,10 +5,15 @@
 #ifndef BLIMP_NET_BLIMP_MESSAGE_OUTPUT_BUFFER_H_
 #define BLIMP_NET_BLIMP_MESSAGE_OUTPUT_BUFFER_H_
 
+#include <list>
+#include <queue>
+#include <utility>
+
 #include "base/macros.h"
 #include "blimp/net/blimp_message_checkpoint_observer.h"
 #include "blimp/net/blimp_message_processor.h"
 #include "blimp/net/blimp_net_export.h"
+#include "net/base/completion_callback.h"
 
 namespace blimp {
 
@@ -16,19 +21,23 @@ class BlimpConnection;
 
 // Provides a FIFO buffer for reliable, ordered message delivery.
 // Messages are retained for redelivery until they are acknowledged by the
-// receiving end (via BlimpMessageAckObserver).
+// receiving end (via BlimpMessageCheckpointObserver).
+// Messages can be paired with callbacks that are invoked on successful
+// message acknowledgement.
 // (Redelivery will be used in a future CL to implement Fast Recovery
 // of dropped connections.)
 class BLIMP_NET_EXPORT BlimpMessageOutputBuffer
     : public BlimpMessageProcessor,
       public BlimpMessageCheckpointObserver {
  public:
-  BlimpMessageOutputBuffer();
+  explicit BlimpMessageOutputBuffer(int max_buffer_size_bytes);
   ~BlimpMessageOutputBuffer() override;
 
-  // Sets the processor to receive messages from this buffer.
-  // TODO(kmarshall): implement this.
-  void set_output_processor(BlimpMessageProcessor* processor) {}
+  // Sets the processor that will be used for writing buffered messages.
+  void SetOutputProcessor(BlimpMessageProcessor* processor);
+
+  // Marks all messages in buffer for retransmission.
+  void RetransmitBufferedMessages();
 
   // BlimpMessageProcessor implementation.
   // |callback|, if set, will be called once the remote end has acknowledged the
@@ -37,13 +46,51 @@ class BLIMP_NET_EXPORT BlimpMessageOutputBuffer
                       const net::CompletionCallback& callback) override;
 
   // MessageCheckpointObserver implementation.
-  // Flushes acknowledged messages from the buffer and invokes their
-  // |callbacks|, if any.
-  // Callbacks should not destroy |this| so as to not interfere with the
-  // processing of any other pending callbacks.
   void OnMessageCheckpoint(int64 message_id) override;
 
+  int GetBufferByteSizeForTest() const;
+  int GetUnacknowledgedMessageCountForTest() const;
+
  private:
+  struct BufferEntry {
+    BufferEntry(scoped_ptr<BlimpMessage> message,
+                net::CompletionCallback callback);
+    ~BufferEntry();
+
+    const scoped_ptr<BlimpMessage> message;
+    const net::CompletionCallback callback;
+  };
+
+  typedef std::list<scoped_ptr<BufferEntry>> MessageBuffer;
+
+  // Writes the next message in the buffer if an output processor is attached
+  // and the buffer contains a message.
+  void WriteNextMessageIfReady();
+
+  // Receives the completion status of a write operation.
+  void OnWriteComplete(int result);
+
+  BlimpMessageProcessor* output_processor_ = nullptr;
+  net::CancelableCompletionCallback write_complete_cb_;
+
+  // Maximum serialized footprint of buffered messages.
+  int max_buffer_size_bytes_;
+
+  // Serialized footprint of the messages contained in the write and ack
+  // buffers.
+  int current_buffer_size_bytes_ = 0;
+
+  // The ID used by the last outgoing message.
+  int64 prev_message_id_ = 0;
+
+  // List of unsent messages.
+  MessageBuffer write_buffer_;
+
+  // List of messages that are sent and awaiting acknoweldgement.
+  // The messages in |ack_buffer_| are contiguous with the messages in
+  // |write_buffer_|.
+  MessageBuffer ack_buffer_;
+
   DISALLOW_COPY_AND_ASSIGN(BlimpMessageOutputBuffer);
 };
 

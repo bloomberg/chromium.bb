@@ -40,21 +40,27 @@ message BlimpMessage {
     INPUT = 4;
     COMPOSITOR = 5;
   }
+
+  // Sequence number of this message, used for message acknowledgement.
+  // The sender may omit this value if it is exactly one higher than the
+  // message that was previously sent.
+  optional int64 message_id = 1;
+
   // Identifies the feature type of this message.
   // The feature-specific contents are contained in optional fields of the same
   // name (example: use |compositor| field for type=COMPOSITOR.)
-  optional Type type = 1;
+  optional Type type = 2;
 
   // Uniquely identifies the Blimp session that originated this message.
   // Session IDs are invalidated whenever new sessions are created.
   // If a message's |session_id| does not match the client's session ID,
   // then the message may have originated from a discarded session and can be
   // safely ignored.
-  optional int32 session_id = 2;
+  optional int32 session_id = 3;
 
   // ID of the tab that is referenced by this message.
   // Messages that are tab-agnostic may leave this field unset.
-  optional int32 target_tab_id = 3;
+  optional int32 target_tab_id = 4;
 
   // Feature-specific messages follow.
   // Only one of these fields may be set per BlimpMessage.

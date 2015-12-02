@@ -67,6 +67,10 @@ ACTION_TEMPLATE(FillBufferFromString,
   memcpy(testing::get<buf_idx>(args)->data(), str.data(), str.size());
 }
 
+// Returns true if |buf| has a prefix of |str|.
+// Behavior is undefined if len(buf) < len(str).
+bool BufferStartsWith(net::GrowableIOBuffer* buf, const std::string& str);
+
 // GMock action that writes data from a blimp message to an IOBuffer .
 //
 //   buf_idx (template parameter 0): 0-based index of the IOBuffer arg.
@@ -176,10 +180,6 @@ class MockBlimpMessageProcessor : public BlimpMessageProcessor {
                void(const BlimpMessage& message,
                     const net::CompletionCallback& callback));
 };
-
-// Returns true if |buf| has a prefix of |str|.
-// Behavior is undefined if len(buf) < len(str).
-bool BufferStartsWith(net::GrowableIOBuffer* buf, const std::string& str);
 
 }  // namespace blimp
 

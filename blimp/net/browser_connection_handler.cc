@@ -13,10 +13,17 @@
 #include "blimp/net/blimp_message_processor.h"
 
 namespace blimp {
+namespace {
+
+// Maximum footprint of the output buffer.
+// TODO(kmarshall): Use a value that's computed from the platform.
+const int kMaxBufferSizeBytes = 1 << 24;
+
+}  // namespace
 
 BrowserConnectionHandler::BrowserConnectionHandler()
     : demultiplexer_(new BlimpMessageDemultiplexer),
-      output_buffer_(new BlimpMessageOutputBuffer),
+      output_buffer_(new BlimpMessageOutputBuffer(kMaxBufferSizeBytes)),
       multiplexer_(new BlimpMessageMultiplexer(output_buffer_.get())) {}
 
 BrowserConnectionHandler::~BrowserConnectionHandler() {}
@@ -37,7 +44,7 @@ void BrowserConnectionHandler::HandleConnection(
 
   // Connect the incoming & outgoing message streams.
   connection_->SetIncomingMessageProcessor(demultiplexer_.get());
-  output_buffer_->set_output_processor(
+  output_buffer_->SetOutputProcessor(
       connection_->GetOutgoingMessageProcessor());
 }
 
@@ -45,7 +52,7 @@ void BrowserConnectionHandler::DropCurrentConnection() {
   if (!connection_)
     return;
   connection_->SetIncomingMessageProcessor(nullptr);
-  output_buffer_->set_output_processor(nullptr);
+  output_buffer_->SetOutputProcessor(nullptr);
   connection_.reset();
 }
 
