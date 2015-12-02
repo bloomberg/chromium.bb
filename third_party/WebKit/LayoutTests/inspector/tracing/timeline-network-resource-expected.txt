@@ -5,12 +5,14 @@ Script resource loaded
 ResourceSendRequest Properties:
 {
     data : {
+        frame : <string>
         requestId : <string>
         requestMethod : "GET"
         stackTrace : <object>
         url : .../inspector/tracing/timeline-network-resource.js
     }
     endTime : <number>
+    frameId : <string>
     stackTrace : <object>
     startTime : <number>
     thread : <string>
@@ -21,11 +23,13 @@ Text details for ResourceSendRequest: timeline-network-resource.js
 ResourceReceiveResponse Properties:
 {
     data : {
+        frame : <string>
         mimeType : <string>
         requestId : <string>
         statusCode : 0
     }
     endTime : <number>
+    frameId : <string>
     startTime : <number>
     thread : <string>
     type : "ResourceReceiveResponse"

@@ -222,10 +222,13 @@ InspectorTest.innerPrintTimelinePresentationRecords = function(records, typeName
 // Dump just the record name, indenting output on separate lines for subrecords
 InspectorTest.dumpTimelineRecord = function(record, detailsCallback, level, filterTypes)
 {
-    level = level || 0;
-    var message = "----".repeat(level);
+    if (typeof level !== "number")
+        level = 0;
+    var message = "";
+    for (var i = 0; i < level ; ++i)
+        message = "----" + message;
     if (level > 0)
-        message += "> ";
+        message = message + "> ";
     if (record.type() === WebInspector.TimelineModel.RecordType.TimeStamp
         || record.type() === WebInspector.TimelineModel.RecordType.ConsoleTime) {
         message += WebInspector.TimelineUIUtils.eventTitle(record.traceEvent());
@@ -247,10 +250,13 @@ InspectorTest.dumpTimelineRecord = function(record, detailsCallback, level, filt
 
 InspectorTest.dumpTimelineModelRecord = function(record, level)
 {
-    level = level || 0;
-    var prefix = "----".repeat(level);
+    if (typeof level !== "number")
+        level = 0;
+    var prefix = "";
+    for (var i = 0; i < level ; ++i)
+        prefix = "----" + prefix;
     if (level > 0)
-        prefix += "> ";
+        prefix = prefix + "> ";
     InspectorTest.addResult(prefix + record.type() + ": " + (WebInspector.TimelineUIUtils.buildDetailsTextForTraceEvent(record.traceEvent(), null) || ""));
 
     var numChildren = record.children() ? record.children().length : 0;
@@ -262,10 +268,13 @@ InspectorTest.dumpTimelineModelRecord = function(record, level)
 InspectorTest.dumpPresentationRecord = function(presentationRecord, detailsCallback, level, filterTypes)
 {
     var record = !presentationRecord.presentationParent() ? null : presentationRecord.record();
-    level = level || 0;
-    var message = "----".repeat(level);
+    if (typeof level !== "number")
+        level = 0;
+    var message = "";
+    for (var i = 0; i < level ; ++i)
+        message = "----" + message;
     if (level > 0)
-        message += "> ";
+        message = message + "> ";
     if (!record) {
         message += "Root";
     } else if (presentationRecord.coalesced()) {

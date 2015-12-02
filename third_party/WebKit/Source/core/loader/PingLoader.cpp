@@ -40,6 +40,7 @@
 #include "core/frame/FrameConsole.h"
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/InspectorInstrumentation.h"
+#include "core/inspector/InspectorTraceEvents.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/MixedContentChecker.h"
@@ -140,6 +141,7 @@ PingLoader::PingLoader(LocalFrame* frame, ResourceRequest& request, const FetchI
 {
     frame->loader().client()->didDispatchPingLoader(request.url());
 
+    TRACE_EVENT_INSTANT1("devtools.timeline", "ResourceSendRequest", TRACE_EVENT_SCOPE_THREAD, "data", InspectorSendRequestEvent::data(m_identifier, frame, request));
     InspectorInstrumentation::willSendRequest(frame, m_identifier, frame->loader().documentLoader(), request, ResourceResponse(), initiatorInfo);
 
     m_loader = adoptPtr(Platform::current()->createURLLoader());
@@ -171,6 +173,7 @@ void PingLoader::dispose()
 void PingLoader::didReceiveResponse(WebURLLoader*, const WebURLResponse& response)
 {
     if (LocalFrame* frame = this->frame()) {
+        TRACE_EVENT_INSTANT1("devtools.timeline", "ResourceFinish", TRACE_EVENT_SCOPE_THREAD, "data", InspectorResourceFinishEvent::data(m_identifier, 0, true));
         const ResourceResponse& resourceResponse = response.toResourceResponse();
         InspectorInstrumentation::didReceiveResourceResponse(frame, m_identifier, 0, resourceResponse, 0);
         didFailLoading(frame);
@@ -180,29 +183,37 @@ void PingLoader::didReceiveResponse(WebURLLoader*, const WebURLResponse& respons
 
 void PingLoader::didReceiveData(WebURLLoader*, const char*, int, int)
 {
-    if (LocalFrame* frame = this->frame())
+    if (LocalFrame* frame = this->frame()) {
+        TRACE_EVENT_INSTANT1("devtools.timeline", "ResourceFinish", TRACE_EVENT_SCOPE_THREAD, "data", InspectorResourceFinishEvent::data(m_identifier, 0, true));
         didFailLoading(frame);
+    }
     dispose();
 }
 
 void PingLoader::didFinishLoading(WebURLLoader*, double, int64_t)
 {
-    if (LocalFrame* frame = this->frame())
+    if (LocalFrame* frame = this->frame()) {
+        TRACE_EVENT_INSTANT1("devtools.timeline", "ResourceFinish", TRACE_EVENT_SCOPE_THREAD, "data", InspectorResourceFinishEvent::data(m_identifier, 0, true));
         didFailLoading(frame);
+    }
     dispose();
 }
 
 void PingLoader::didFail(WebURLLoader*, const WebURLError& resourceError)
 {
-    if (LocalFrame* frame = this->frame())
+    if (LocalFrame* frame = this->frame()) {
+        TRACE_EVENT_INSTANT1("devtools.timeline", "ResourceFinish", TRACE_EVENT_SCOPE_THREAD, "data", InspectorResourceFinishEvent::data(m_identifier, 0, true));
         didFailLoading(frame);
+    }
     dispose();
 }
 
 void PingLoader::timeout(Timer<PingLoader>*)
 {
-    if (LocalFrame* frame = this->frame())
+    if (LocalFrame* frame = this->frame()) {
+        TRACE_EVENT_INSTANT1("devtools.timeline", "ResourceFinish", TRACE_EVENT_SCOPE_THREAD, "data", InspectorResourceFinishEvent::data(m_identifier, 0, true));
         didFailLoading(frame);
+    }
     dispose();
 }
 

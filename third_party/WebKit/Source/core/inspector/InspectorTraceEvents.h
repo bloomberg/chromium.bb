@@ -164,6 +164,22 @@ namespace InspectorScrollInvalidationTrackingEvent {
 PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const LayoutObject&);
 }
 
+namespace InspectorSendRequestEvent {
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(unsigned long identifier, LocalFrame*, const ResourceRequest&);
+}
+
+namespace InspectorReceiveResponseEvent {
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(unsigned long identifier, LocalFrame*, const ResourceResponse&);
+}
+
+namespace InspectorReceiveDataEvent {
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(unsigned long identifier, LocalFrame*, int encodedDataLength);
+}
+
+namespace InspectorResourceFinishEvent {
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(unsigned long identifier, double finishTime, bool didFail);
+}
+
 namespace InspectorTimerInstallEvent {
 PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(ExecutionContext*, int timerId, int timeout, bool singleShot);
 }

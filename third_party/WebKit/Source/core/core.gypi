@@ -1492,8 +1492,6 @@
             'fetch/FontResource.h',
             'fetch/ImageResource.cpp',
             'fetch/ImageResource.h',
-            'fetch/InspectorFetchTraceEvents.cpp',
-            'fetch/InspectorFetchTraceEvents.h',
             'fetch/IntegrityMetadata.cpp',
             'fetch/IntegrityMetadata.h',
             'fetch/LinkFetchResource.cpp',

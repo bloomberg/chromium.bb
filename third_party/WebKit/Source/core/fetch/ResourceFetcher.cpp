@@ -31,7 +31,6 @@
 #include "core/fetch/CrossOriginAccessControl.h"
 #include "core/fetch/FetchContext.h"
 #include "core/fetch/FetchInitiatorTypeNames.h"
-#include "core/fetch/InspectorFetchTraceEvents.h"
 #include "core/fetch/MemoryCache.h"
 #include "core/fetch/ResourceLoader.h"
 #include "core/fetch/ResourceLoaderSet.h"
@@ -68,7 +67,7 @@ enum SriResourceIntegrityMismatchEvent {
     SriResourceIntegrityMismatchEventCount
 };
 
-} // namespace
+}
 
 static void RecordSriResourceIntegrityMismatchEvent(SriResourceIntegrityMismatchEvent event)
 {
@@ -339,9 +338,6 @@ void ResourceFetcher::moveCachedNonBlockingResourceToBlocking(Resource* resource
 ResourcePtr<Resource> ResourceFetcher::requestResource(FetchRequest& request, const ResourceFactory& factory, const SubstituteData& substituteData)
 {
     ASSERT(request.options().synchronousPolicy == RequestAsynchronously || factory.type() == Resource::Raw || factory.type() == Resource::XSLStyleSheet);
-    unsigned long identifier = createUniqueIdentifier();
-    TRACE_EVENT1("devtools.timeline", "ResourceSendRequest",
-        "data", InspectorSendRequestEvent::data(identifier, request.resourceRequest()));
 
     context().upgradeInsecureRequest(request);
     context().addClientHintsIfNecessary(request);
@@ -411,7 +407,7 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(FetchRequest& request, co
         m_deadStatsRecorder.update(policy);
 
     if (policy != Use)
-        resource->setIdentifier(identifier);
+        resource->setIdentifier(createUniqueIdentifier());
 
     if (!request.forPreload() || policy != Use) {
         ResourceLoadPriority priority = loadPriority(factory.type(), request, ResourcePriority::NotVisible);

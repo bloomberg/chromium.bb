@@ -398,6 +398,54 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorScrollInvalidationTrac
     return value.release();
 }
 
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorSendRequestEvent::data(unsigned long identifier, LocalFrame* frame, const ResourceRequest& request)
+{
+    String requestId = IdentifiersFactory::requestId(identifier);
+
+    RefPtr<TracedValue> value = TracedValue::create();
+    value->setString("requestId", requestId);
+    value->setString("frame", toHexString(frame));
+    value->setString("url", request.url().string());
+    value->setString("requestMethod", request.httpMethod());
+    setCallStack(value.get());
+    return value.release();
+}
+
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorReceiveResponseEvent::data(unsigned long identifier, LocalFrame* frame, const ResourceResponse& response)
+{
+    String requestId = IdentifiersFactory::requestId(identifier);
+
+    RefPtr<TracedValue> value = TracedValue::create();
+    value->setString("requestId", requestId);
+    value->setString("frame", toHexString(frame));
+    value->setInteger("statusCode", response.httpStatusCode());
+    value->setString("mimeType", response.mimeType().string().isolatedCopy());
+    return value.release();
+}
+
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorReceiveDataEvent::data(unsigned long identifier, LocalFrame* frame, int encodedDataLength)
+{
+    String requestId = IdentifiersFactory::requestId(identifier);
+
+    RefPtr<TracedValue> value = TracedValue::create();
+    value->setString("requestId", requestId);
+    value->setString("frame", toHexString(frame));
+    value->setInteger("encodedDataLength", encodedDataLength);
+    return value.release();
+}
+
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorResourceFinishEvent::data(unsigned long identifier, double finishTime, bool didFail)
+{
+    String requestId = IdentifiersFactory::requestId(identifier);
+
+    RefPtr<TracedValue> value = TracedValue::create();
+    value->setString("requestId", requestId);
+    value->setBoolean("didFail", didFail);
+    if (finishTime)
+        value->setDouble("networkTime", finishTime);
+    return value.release();
+}
+
 static LocalFrame* frameForExecutionContext(ExecutionContext* context)
 {
     LocalFrame* frame = nullptr;
