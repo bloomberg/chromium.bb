@@ -26,7 +26,7 @@ or later):
 
 ```shell
 tools/clang/scripts/update.py --force-local-build --without-android \
---with-chrome-tools <tools>
+--tools <tools>
 ```
 
 `<tools>` is a semicolon delimited list of subdirectories in `tools/clang` to
@@ -36,7 +36,7 @@ plugin and the empty\_string tool, run the following:
 
 ```shell
 tools/clang/scripts/update.py --force-local-build --without-android \
---with-chrome-tools "plugins;empty_string"
+--tools plugins empty_string
 ```
 
 When writing AST matchers, the following can be helpful to see what clang thinks
