@@ -86,22 +86,16 @@ std::string PasswordGenerator::Generate() const {
   // No special characters included for now.
   unsigned int mode = S_NB | S_CL | S_SL;
 
-  // gen_pron_pass() doesn't guarantee that it includes all of the type given
-  // in mode, so regenerate a few times if neccessary.
-  // TODO(gcasto): Is it worth regenerating at all?
-  for (int i = 0; i < 10; ++i) {
-    gen_pron_pass(password, unused_hypenated_password,
-                  password_length_, password_length_, mode);
-    if (VerifyPassword(password))
-      return std::string(password);
-  }
+  // Generate the password by gen_pron_pass(), if it is not conforming then
+  // force fix it.
+  gen_pron_pass(password, unused_hypenated_password, password_length_,
+                password_length_, mode);
 
-  // If the password still isn't conforming after a few iterations, force it
-  // to be so. This may change a syllable in the password.
   std::string str_password(password);
-  if (!VerifyPassword(str_password)) {
-    ForceFixPassword(&str_password);
-  }
+  if (VerifyPassword(str_password))
+    return str_password;
+
+  ForceFixPassword(&str_password);
   return str_password;
 }
 
