@@ -83,6 +83,7 @@ if (enable_nacl) {
       ":nacl_switches",
       "//base",
       "//base/third_party/dynamic_annotations",
+      "//components/url_formatter",
       "//content/public/browser",
       "//content/public/common",
       "//ipc",
@@ -102,14 +103,12 @@ if (enable_nacl) {
       ]
 
       deps += [
+        ":nacl_helper_integration",
         "//sandbox/linux:sandbox_services",
         "//sandbox/linux:suid_sandbox_client",
       ]
 
-      data_deps += [
-        ":nacl_helper",
-        ":helper_nonsfi",
-      ]
+      data_deps += [ ":helper_nonsfi" ]
     }
   }
 
@@ -198,6 +197,7 @@ if (enable_nacl) {
         "//content/public/common",
         "//crypto",
         "//ipc",
+        "//sandbox/linux:sandbox_services",
       ]
 
       cflags = [ "-fPIE" ]
@@ -206,6 +206,16 @@ if (enable_nacl) {
 
       data_deps = [
         "//native_client/src/trusted/service_runtime/linux:bootstrap",
+      ]
+    }
+
+    # For setting up nacl_helper.
+    source_set("nacl_helper_integration") {
+      public = [
+        "loader/nacl_helper_linux.h",
+      ]
+      data_deps = [
+        ":nacl_helper",
       ]
     }
 
@@ -283,9 +293,11 @@ if (enable_nacl) {
         "loader/sandbox_linux/nacl_sandbox_linux.h",
       ]
       deps = [
+        ":nacl_switches",
         "//base",
         "//content",
         "//sandbox/linux:sandbox",
+        "//sandbox/linux:sandbox_services_headers",
       ]
     }
 

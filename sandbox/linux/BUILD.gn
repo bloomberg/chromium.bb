@@ -33,15 +33,15 @@ if (is_nacl_nonsfi) {
 # the setuid sandbox and is its own target.
 
 group("sandbox") {
-  deps = [
+  public_deps = [
     ":sandbox_services",
   ]
 
   if (compile_suid_client || is_nacl_nonsfi) {
-    deps += [ ":suid_sandbox_client" ]
+    public_deps += [ ":suid_sandbox_client" ]
   }
   if (use_seccomp_bpf || is_nacl_nonsfi) {
-    deps += [
+    public_deps += [
       ":seccomp_bpf",
       ":seccomp_bpf_helpers",
     ]
