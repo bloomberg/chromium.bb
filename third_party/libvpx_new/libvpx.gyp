@@ -48,6 +48,18 @@
     'shared_generated_dir': '<(SHARED_INTERMEDIATE_DIR)/third_party/libvpx_new',
   },
   'target_defaults': {
+    'conditions': [
+      ['target_arch=="arm" and clang==1', {
+        # TODO(hans) Enable integrated-as (crbug.com/124610).
+        'cflags': [ '-fno-integrated-as' ],
+        'conditions': [
+          ['OS == "android"', {
+            # Else /usr/bin/as gets picked up.
+            'cflags': [ '-B<(android_toolchain)' ],
+          }],
+        ],
+      }],
+    ],
     'target_conditions': [
       ['<(libvpx_build_vp9)==0', {
         'sources/': [ ['exclude', '(^|/)vp9/'], ],

@@ -33,9 +33,9 @@ config("compiler") {
   if (is_clang) {
     rebased_android_toolchain_root =
         rebase_path(android_toolchain_root, root_build_dir)
-    if (current_cpu == "arm" || current_cpu == "mipsel") {
+    if (current_cpu == "mipsel") {
       cflags += [
-        # TODO(hans) Enable integrated-as (crbug.com/124610).
+        # TODO(gordanac) Enable integrated-as.
         "-no-integrated-as",
         "-B${rebased_android_toolchain_root}/bin",  # Else /usr/bin/as gets picked up.
       ]

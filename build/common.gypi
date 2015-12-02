@@ -3996,13 +3996,6 @@
                       }],
                     ],
                   }],
-                  ['clang==1 and OS!="android"', {
-                    'cflags': [
-                      # We need to disable clang's builtin assembler as it can't
-                      # handle several asm files, crbug.com/124610
-                      '-no-integrated-as',
-                    ],
-                  }],
                   ['arm_tune!=""', {
                     'cflags': [
                       '-mtune=<(arm_tune)',
@@ -4115,11 +4108,6 @@
                           '-fno-tree-sra',
                           '-fno-caller-saves',
                           '-Wno-psabi',
-                        ],
-                        'cflags': [
-                          # TODO(hans) Enable integrated-as (crbug.com/124610).
-                          '-no-integrated-as',
-                          '-B<(android_toolchain)',  # Else /usr/bin/as gets picked up.
                         ],
                       }],
                       ['clang==1 and linux_use_bundled_gold==0', {
@@ -4244,9 +4232,6 @@
                     ],
                   }],
                   ['clang==1 and OS=="android"', {
-                    'cflags': [
-                      '-B<(android_toolchain)',  # Else /usr/bin/as gets picked up.
-                    ],
                     'ldflags': [
                       # Let clang find the ld in the NDK.
                       '--gcc-toolchain=<(android_toolchain)/..',

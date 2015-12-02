@@ -48,6 +48,17 @@ config("libvpx_config") {
     "//third_party/libvpx_new/source/libvpx",
     "$root_gen_dir/third_party/libvpx_new",  # Provides vpx_rtcd.h.
   ]
+
+  if (current_cpu == "arm" && is_clang) {
+    # TODO(hans) Enable integrated-as (crbug.com/124610).
+    asmflags = [ "-fno-integrated-as" ]
+    if (is_android) {
+      rebased_android_toolchain_root =
+          rebase_path(android_toolchain_root, root_build_dir)
+      # Else /usr/bin/as gets picked up.
+      asmflags += [ "-B${rebased_android_toolchain_root}/bin" ]
+    }
+  }
 }
 
 # gn orders flags on a target before flags from configs. The default config

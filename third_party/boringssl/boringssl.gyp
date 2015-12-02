@@ -36,6 +36,16 @@
             }],
           ],
         }],
+        ['target_arch == "arm" and clang == 1', {
+          # TODO(hans) Enable integrated-as (crbug.com/124610).
+          'cflags': [ '-fno-integrated-as' ],
+          'conditions': [
+            ['OS == "android"', {
+              # Else /usr/bin/as gets picked up.
+              'cflags': [ '-B<(android_toolchain)' ],
+            }],
+          ],
+        }],
         ['target_arch == "arm64" and msan == 0', {
           'conditions': [
             ['OS == "linux" or OS == "android"', {

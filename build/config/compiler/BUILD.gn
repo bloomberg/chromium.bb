@@ -588,13 +588,7 @@ config("compiler_codegen") {
         ]
       }
     } else if (current_cpu == "arm") {
-      if (is_clang) {
-        if (!is_android) {
-          # We need to disable clang's builtin assembler as it can't
-          # handle several asm files, crbug.com/124610
-          cflags += [ "-no-integrated-as" ]
-        }
-      } else {
+      if (!is_clang) {
         # Clang doesn't support these flags.
         cflags += [
           # The tree-sra optimization (scalar replacement for
