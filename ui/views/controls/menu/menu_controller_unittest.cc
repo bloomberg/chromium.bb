@@ -131,6 +131,10 @@ class TestMenuItemViewShown : public MenuItemView {
   }
   ~TestMenuItemViewShown() override {}
 
+  void SetController(MenuController* controller) {
+    set_controller(controller);
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(TestMenuItemViewShown);
 };
@@ -231,6 +235,14 @@ class MenuControllerTest : public ViewsTestBase {
         parent, index, MenuController::INCREMENT_SELECTION_UP);
   }
 
+  void SelectByChar(base::char16 character) {
+    menu_controller_->SelectByChar(character);
+  }
+
+  void SetIsCombobox(bool is_combobox) {
+    menu_controller_->set_is_combobox(is_combobox);
+  }
+
   void RunMenu() {
     menu_controller_->RunMessageLoop(false);
   }
@@ -285,6 +297,7 @@ class MenuControllerTest : public ViewsTestBase {
     menu_controller_->showing_ = true;
     menu_controller_->SetSelection(
         menu_item_.get(), MenuController::SELECTION_UPDATE_IMMEDIATELY);
+    menu_item_->SetController(menu_controller_);
   }
 
   scoped_ptr<Widget> owner_;
@@ -479,6 +492,22 @@ TEST_F(MenuControllerTest, PreviousSelectedItem) {
   // Move up and select a previous (in our case the last enabled) item.
   DecrementSelection();
   EXPECT_EQ(3, pending_state_item()->GetCommand());
+
+  // Clear references in menu controller to the menu item that is going away.
+  ResetSelection();
+}
+
+// Tests that opening menu and calling SelectByChar works correctly.
+TEST_F(MenuControllerTest, SelectByChar) {
+  SetIsCombobox(true);
+
+  // Handle null character should do nothing.
+  SelectByChar(0);
+  EXPECT_EQ(0, pending_state_item()->GetCommand());
+
+  // Handle searching for 'f'; should find "Four".
+  SelectByChar('f');
+  EXPECT_EQ(4, pending_state_item()->GetCommand());
 
   // Clear references in menu controller to the menu item that is going away.
   ResetSelection();

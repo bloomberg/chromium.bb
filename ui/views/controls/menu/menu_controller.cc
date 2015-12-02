@@ -2135,6 +2135,9 @@ void MenuController::AcceptOrSelect(MenuItemView* parent,
 }
 
 void MenuController::SelectByChar(base::char16 character) {
+  if (!character)
+    return;
+
   base::char16 char_array[] = { character, 0 };
   base::char16 key = base::i18n::ToLower(char_array)[0];
   MenuItemView* item = pending_state_.item;
