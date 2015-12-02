@@ -35,6 +35,3 @@ MDnsTest.RefreshQuery
 ProxyResolverV8TracingTest.Terminate
 ProxyResolverV8TracingWrapperTest.Dns
 ProxyResolverV8TracingWrapperTest.Terminate
-
-# http://crbug.com/562414
-NetworkQualityEstimatorTest.TestGetMedianRTTSince

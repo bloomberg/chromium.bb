@@ -716,8 +716,8 @@ TEST(NetworkQualityEstimatorTest, TestGetMedianRTTSince) {
   std::map<std::string, std::string> variation_params;
   TestNetworkQualityEstimator estimator(variation_params);
   base::TimeTicks now = base::TimeTicks::Now();
-  base::TimeTicks old =
-      base::TimeTicks::Now() - base::TimeDelta::FromMilliseconds(1);
+  base::TimeTicks old = now - base::TimeDelta::FromMilliseconds(1);
+  ASSERT_NE(old, now);
 
   // First sample has very old timestamp.
   estimator.downstream_throughput_kbps_observations_.AddObservation(
