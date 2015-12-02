@@ -52,9 +52,9 @@ window.onload = function() {
   ];
   stylesheet = document.styleSheets[0];
   document.body.offsetTop;
-  stylesheet.insertRule(rules[0], stylesheet.length);
+  stylesheet.insertRule(rules[0], stylesheet.cssRules.length);
   document.body.offsetTop;
-  stylesheet.insertRule(rules[1], stylesheet.length)
+  stylesheet.insertRule(rules[1], stylesheet.cssRules.length)
   document.body.innerHTML = "PASS: reparenting a counter node subtree that contains resets does not cause a crash.";
 }
 </script>

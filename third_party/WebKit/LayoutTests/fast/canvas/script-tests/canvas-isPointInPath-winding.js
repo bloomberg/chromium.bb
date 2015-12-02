@@ -38,6 +38,7 @@ function prepareTestScenario() {
     path.rect(0, 0, 100, 100);
     path.rect(25, 25, 50, 50);
     shouldBeTrue("ctx.isPointInPath(path, 50, 50)");
+    shouldBeTrue("ctx.isPointInPath(path, 50, 50, undefined)");
     shouldBeFalse("ctx.isPointInPath(path, NaN, 50)");
     shouldBeFalse("ctx.isPointInPath(path, 50, NaN)");
     debug('');
@@ -71,7 +72,6 @@ function prepareTestScenario() {
     shouldThrow("ctx.isPointInPath(undefined, 50, 50, 'nonzero')");
     shouldThrow("ctx.isPointInPath(undefined, 50, 50, 'evenodd')");
     shouldThrow("ctx.isPointInPath(undefined, 50, 50, undefined)");
-    shouldThrow("ctx.isPointInPath(path, 50, 50, undefined)");
     shouldThrow("ctx.isPointInPath([], 50, 50)");
     shouldThrow("ctx.isPointInPath([], 50, 50, 'nonzero')");
     shouldThrow("ctx.isPointInPath([], 50, 50, 'evenodd')");

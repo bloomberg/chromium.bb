@@ -50,10 +50,8 @@ PASS ctx.clip([], 'evenodd') threw exception TypeError: Failed to execute 'clip'
 PASS ctx.clip({}, 'evenodd') threw exception TypeError: Failed to execute 'clip' on 'CanvasRenderingContext2D': parameter 1 is not of type 'Path2D'..
 PASS ctx.clip('gazonk') threw exception TypeError: Failed to execute 'clip' on 'CanvasRenderingContext2D': The provided value 'gazonk' is not a valid enum value of type CanvasFillRule..
 PASS ctx.clip(path, 'gazonk') threw exception TypeError: Failed to execute 'clip' on 'CanvasRenderingContext2D': The provided value 'gazonk' is not a valid enum value of type CanvasFillRule..
-PASS ctx.clip(undefined) threw exception TypeError: Failed to execute 'clip' on 'CanvasRenderingContext2D': The provided value 'undefined' is not a valid enum value of type CanvasFillRule..
 PASS ctx.clip(undefined, undefined) threw exception TypeError: Failed to execute 'clip' on 'CanvasRenderingContext2D': parameter 1 is not of type 'Path2D'..
 PASS ctx.clip(undefined, 'nonzero') threw exception TypeError: Failed to execute 'clip' on 'CanvasRenderingContext2D': parameter 1 is not of type 'Path2D'..
-PASS ctx.clip(path, undefined) threw exception TypeError: Failed to execute 'clip' on 'CanvasRenderingContext2D': The provided value 'undefined' is not a valid enum value of type CanvasFillRule..
 PASS successfullyParsed is true
 
 TEST COMPLETE

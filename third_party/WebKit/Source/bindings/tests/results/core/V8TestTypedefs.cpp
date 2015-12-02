@@ -154,7 +154,13 @@ static void voidMethodArrayOfLongsArgMethod(const v8::FunctionCallbackInfo<v8::V
     TestTypedefs* impl = V8TestTypedefs::toImpl(info.Holder());
     Vector<int> arrayOfLongsArg;
     {
-        if (UNLIKELY(info.Length() <= 0)) {
+        int numArgsPassed = info.Length();
+        while (numArgsPassed > 0) {
+            if (!info[numArgsPassed - 1]->IsUndefined())
+                break;
+            --numArgsPassed;
+        }
+        if (UNLIKELY(numArgsPassed <= 0)) {
             impl->voidMethodArrayOfLongsArg();
             return;
         }

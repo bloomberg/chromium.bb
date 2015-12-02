@@ -74,6 +74,17 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
 {{generate_argument_var_declaration(argument)}};
 {% endfor %}
 {
+    {% if method.has_optional_argument_without_default_value %}
+    {# Count the effective number of arguments.  (arg1, arg2, undefined) is
+       interpreted as two arguments are passed and (arg1, undefined, arg3) is
+       interpreted as three arguments are passed. #}
+    int numArgsPassed = info.Length();
+    while (numArgsPassed > 0) {
+        if (!info[numArgsPassed - 1]->IsUndefined())
+            break;
+        --numArgsPassed;
+    }
+    {% endif %}
     {% for argument in method.arguments %}
     {% if argument.set_default_value %}
     if (!info[{{argument.index}}]->IsUndefined()) {
@@ -102,13 +113,11 @@ RefPtrWillBeRawPtr<{{argument.idl_type}}> {{argument.name}}
 
 {######################################}
 {% macro generate_argument(method, argument, world_suffix) %}
-{% if argument.is_optional and not argument.has_default and
-      not argument.is_dictionary and
-      not argument.is_callback_interface %}
+{% if argument.is_optional_without_default_value %}
 {# Optional arguments without a default value generate an early call with
    fewer arguments if they are omitted.
    Optional Dictionary arguments default to empty dictionary. #}
-if (UNLIKELY(info.Length() <= {{argument.index}})) {
+if (UNLIKELY(numArgsPassed <= {{argument.index}})) {
     {% if world_suffix %}
     {{cpp_method_call(method, argument.v8_set_return_value_for_main_world, argument.cpp_value) | indent}}
     {% else %}

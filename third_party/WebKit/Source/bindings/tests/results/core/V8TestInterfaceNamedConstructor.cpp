@@ -125,6 +125,12 @@ static void V8TestInterfaceNamedConstructorConstructorCallback(const v8::Functio
     V8StringResource<> defaultNullStringOptionalstringArg;
     V8StringResource<> optionalStringArg;
     {
+        int numArgsPassed = info.Length();
+        while (numArgsPassed > 0) {
+            if (!info[numArgsPassed - 1]->IsUndefined())
+                break;
+            --numArgsPassed;
+        }
         stringArg = info[0];
         if (!stringArg.prepare())
             return;
@@ -144,7 +150,7 @@ static void V8TestInterfaceNamedConstructorConstructorCallback(const v8::Functio
         } else {
             defaultNullStringOptionalstringArg = nullptr;
         }
-        if (UNLIKELY(info.Length() <= 5)) {
+        if (UNLIKELY(numArgsPassed <= 5)) {
             Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
             RefPtr<TestInterfaceNamedConstructor> impl = TestInterfaceNamedConstructor::createForJSConstructor(document, stringArg, defaultUndefinedOptionalBooleanArg, defaultUndefinedOptionalLongArg, defaultUndefinedOptionalStringArg, defaultNullStringOptionalstringArg, exceptionState);
             if (exceptionState.hadException()) {

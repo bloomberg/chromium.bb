@@ -118,10 +118,13 @@ def method_context(interface, method, is_visible=True):
     if 'LenientThis' in extended_attributes:
         raise Exception('[LenientThis] is not supported for operations.')
 
+    argument_contexts = [
+        argument_context(interface, method, argument, index, is_visible=is_visible)
+        for index, argument in enumerate(arguments)]
+
     return {
         'activity_logging_world_list': v8_utilities.activity_logging_world_list(method),  # [ActivityLogging]
-        'arguments': [argument_context(interface, method, argument, index, is_visible=is_visible)
-                      for index, argument in enumerate(arguments)],
+        'arguments': argument_contexts,
         'argument_declarations_for_private_script':
             argument_declarations_for_private_script(interface, method),
         'conditional_string': v8_utilities.conditional_string(method),
@@ -145,6 +148,9 @@ def method_context(interface, method, is_visible=True):
             any(argument for argument in arguments
                 if (argument.idl_type.name == 'SerializedScriptValue' or
                     argument_conversion_needs_exception_state(method, argument))),
+        'has_optional_argument_without_default_value':
+            any(True for argument_context in argument_contexts
+                if argument_context['is_optional_without_default_value']),
         'idl_type': idl_type.base_type,
         'is_call_with_execution_context': has_extended_attribute_value(method, 'CallWith', 'ExecutionContext'),
         'is_call_with_script_arguments': is_call_with_script_arguments,
@@ -219,7 +225,7 @@ def argument_context(interface, method, argument, index, is_visible=True):
     this_cpp_type = idl_type.cpp_type_args(extended_attributes=extended_attributes,
                                            raw_type=True,
                                            used_as_variadic_argument=argument.is_variadic)
-    return {
+    context = {
         'cpp_type': (
             v8_types.cpp_template_type('Nullable', this_cpp_type)
             if idl_type.is_explicit_nullable and not argument.is_variadic
@@ -256,6 +262,14 @@ def argument_context(interface, method, argument, index, is_visible=True):
         'v8_set_return_value_for_main_world': v8_set_return_value(interface.name, method, this_cpp_value, for_main_world=True),
         'v8_value_to_local_cpp_value': v8_value_to_local_cpp_value(method, argument, index),
     }
+    context.update({
+        'is_optional_without_default_value':
+            context['is_optional'] and
+            not context['has_default'] and
+            not context['is_dictionary'] and
+            not context['is_callback_interface'],
+    })
+    return context
 
 
 def argument_declarations_for_private_script(interface, method):

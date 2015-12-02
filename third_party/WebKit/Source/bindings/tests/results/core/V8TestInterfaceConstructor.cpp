@@ -135,10 +135,16 @@ static void constructor3(const v8::FunctionCallbackInfo<v8::Value>& info)
     V8StringResource<> arg;
     V8StringResource<> optArg;
     {
+        int numArgsPassed = info.Length();
+        while (numArgsPassed > 0) {
+            if (!info[numArgsPassed - 1]->IsUndefined())
+                break;
+            --numArgsPassed;
+        }
         arg = info[0];
         if (!arg.prepare())
             return;
-        if (UNLIKELY(info.Length() <= 1)) {
+        if (UNLIKELY(numArgsPassed <= 1)) {
             ScriptState* scriptState = ScriptState::current(info.GetIsolate());
             ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
             Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
@@ -291,10 +297,16 @@ static void V8TestInterfaceConstructorConstructorCallback(const v8::FunctionCall
     V8StringResource<> arg;
     V8StringResource<> optArg;
     {
+        int numArgsPassed = info.Length();
+        while (numArgsPassed > 0) {
+            if (!info[numArgsPassed - 1]->IsUndefined())
+                break;
+            --numArgsPassed;
+        }
         arg = info[0];
         if (!arg.prepare())
             return;
-        if (UNLIKELY(info.Length() <= 1)) {
+        if (UNLIKELY(numArgsPassed <= 1)) {
             ScriptState* scriptState = ScriptState::current(info.GetIsolate());
             ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
             Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));

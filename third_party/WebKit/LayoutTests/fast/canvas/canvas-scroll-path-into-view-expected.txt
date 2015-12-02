@@ -93,7 +93,6 @@ PASS testValue is 660
 
 Test case 5: exceptions
 PASS context.scrollPathIntoView(null); threw exception TypeError: Failed to execute 'scrollPathIntoView' on 'CanvasRenderingContext2D': parameter 1 is not of type 'Path2D'..
-PASS context.scrollPathIntoView(undefined); threw exception TypeError: Failed to execute 'scrollPathIntoView' on 'CanvasRenderingContext2D': parameter 1 is not of type 'Path2D'..
 PASS context.scrollPathIntoView([]); threw exception TypeError: Failed to execute 'scrollPathIntoView' on 'CanvasRenderingContext2D': parameter 1 is not of type 'Path2D'..
 PASS context.scrollPathIntoView({}); threw exception TypeError: Failed to execute 'scrollPathIntoView' on 'CanvasRenderingContext2D': parameter 1 is not of type 'Path2D'..
 

@@ -1220,9 +1220,12 @@ def constructor_context(interface, constructor):
     is_constructor_raises_exception = \
         interface.extended_attributes.get('RaisesException') == 'Constructor'
 
+    argument_contexts = [
+        v8_methods.argument_context(interface, constructor, argument, index)
+        for index, argument in enumerate(constructor.arguments)]
+
     return {
-        'arguments': [v8_methods.argument_context(interface, constructor, argument, index)
-                      for index, argument in enumerate(constructor.arguments)],
+        'arguments': argument_contexts,
         'cpp_type': cpp_template_type(
             cpp_ptr_type('RefPtr', 'RawPtr', gc_type(interface)),
             cpp_name(interface)),
@@ -1233,6 +1236,9 @@ def constructor_context(interface, constructor):
             any(argument for argument in constructor.arguments
                 if argument.idl_type.name == 'SerializedScriptValue' or
                    argument.idl_type.v8_conversion_needs_exception_state),
+        'has_optional_argument_without_default_value':
+            any(True for argument_context in argument_contexts
+                if argument_context['is_optional_without_default_value']),
         'is_call_with_document':
             # [ConstructorCallWith=Document]
             has_extended_attribute_value(interface,

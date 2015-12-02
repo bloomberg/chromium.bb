@@ -99,6 +99,12 @@ static void constructor4(const v8::FunctionCallbackInfo<v8::Value>& info)
     Dictionary defaultUndefinedOptionalDictionaryArg;
     V8StringResource<> optionalStringArg;
     {
+        int numArgsPassed = info.Length();
+        while (numArgsPassed > 0) {
+            if (!info[numArgsPassed - 1]->IsUndefined())
+                break;
+            --numArgsPassed;
+        }
         testInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
         if (!testInterfaceEmptyArg) {
             exceptionState.throwTypeError("parameter 1 is not of type 'TestInterfaceEmpty'.");
@@ -126,7 +132,7 @@ static void constructor4(const v8::FunctionCallbackInfo<v8::Value>& info)
         defaultUndefinedOptionalDictionaryArg = Dictionary(info[4], info.GetIsolate(), exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
-        if (UNLIKELY(info.Length() <= 5)) {
+        if (UNLIKELY(numArgsPassed <= 5)) {
             RefPtr<TestInterfaceConstructor2> impl = TestInterfaceConstructor2::create(testInterfaceEmptyArg, longArg, defaultUndefinedOptionalStringArg, defaultNullStringOptionalStringArg, defaultUndefinedOptionalDictionaryArg);
             v8::Local<v8::Object> wrapper = info.Holder();
             wrapper = impl->associateWithWrapper(info.GetIsolate(), &V8TestInterfaceConstructor2::wrapperTypeInfo, wrapper);

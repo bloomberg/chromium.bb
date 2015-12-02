@@ -6616,7 +6616,13 @@ static void voidMethodOptionalVoidCallbackFunctionArgMethod(const v8::FunctionCa
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     ScriptValue voidCallbackFunctionArg;
     {
-        if (UNLIKELY(info.Length() <= 0)) {
+        int numArgsPassed = info.Length();
+        while (numArgsPassed > 0) {
+            if (!info[numArgsPassed - 1]->IsUndefined())
+                break;
+            --numArgsPassed;
+        }
+        if (UNLIKELY(numArgsPassed <= 0)) {
             impl->voidMethodOptionalVoidCallbackFunctionArg();
             return;
         }
@@ -8227,7 +8233,13 @@ static void voidMethodOptionalStringArgMethod(const v8::FunctionCallbackInfo<v8:
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     V8StringResource<> optionalStringArg;
     {
-        if (UNLIKELY(info.Length() <= 0)) {
+        int numArgsPassed = info.Length();
+        while (numArgsPassed > 0) {
+            if (!info[numArgsPassed - 1]->IsUndefined())
+                break;
+            --numArgsPassed;
+        }
+        if (UNLIKELY(numArgsPassed <= 0)) {
             impl->voidMethodOptionalStringArg();
             return;
         }
@@ -8250,7 +8262,13 @@ static void voidMethodOptionalTestInterfaceEmptyArgMethod(const v8::FunctionCall
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     TestInterfaceEmpty* optionalTestInterfaceEmptyArg;
     {
-        if (UNLIKELY(info.Length() <= 0)) {
+        int numArgsPassed = info.Length();
+        while (numArgsPassed > 0) {
+            if (!info[numArgsPassed - 1]->IsUndefined())
+                break;
+            --numArgsPassed;
+        }
+        if (UNLIKELY(numArgsPassed <= 0)) {
             impl->voidMethodOptionalTestInterfaceEmptyArg();
             return;
         }
@@ -8276,7 +8294,13 @@ static void voidMethodOptionalLongArgMethod(const v8::FunctionCallbackInfo<v8::V
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     int optionalLongArg;
     {
-        if (UNLIKELY(info.Length() <= 0)) {
+        int numArgsPassed = info.Length();
+        while (numArgsPassed > 0) {
+            if (!info[numArgsPassed - 1]->IsUndefined())
+                break;
+            --numArgsPassed;
+        }
+        if (UNLIKELY(numArgsPassed <= 0)) {
             impl->voidMethodOptionalLongArg();
             return;
         }
@@ -8300,7 +8324,13 @@ static void stringMethodOptionalLongArgMethod(const v8::FunctionCallbackInfo<v8:
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     int optionalLongArg;
     {
-        if (UNLIKELY(info.Length() <= 0)) {
+        int numArgsPassed = info.Length();
+        while (numArgsPassed > 0) {
+            if (!info[numArgsPassed - 1]->IsUndefined())
+                break;
+            --numArgsPassed;
+        }
+        if (UNLIKELY(numArgsPassed <= 0)) {
             v8SetReturnValueString(info, impl->stringMethodOptionalLongArg(), info.GetIsolate());
             return;
         }
@@ -8324,7 +8354,13 @@ static void testInterfaceEmptyMethodOptionalLongArgMethod(const v8::FunctionCall
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     int optionalLongArg;
     {
-        if (UNLIKELY(info.Length() <= 0)) {
+        int numArgsPassed = info.Length();
+        while (numArgsPassed > 0) {
+            if (!info[numArgsPassed - 1]->IsUndefined())
+                break;
+            --numArgsPassed;
+        }
+        if (UNLIKELY(numArgsPassed <= 0)) {
             v8SetReturnValue(info, impl->testInterfaceEmptyMethodOptionalLongArg());
             return;
         }
@@ -8348,7 +8384,13 @@ static void longMethodOptionalLongArgMethod(const v8::FunctionCallbackInfo<v8::V
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     int optionalLongArg;
     {
-        if (UNLIKELY(info.Length() <= 0)) {
+        int numArgsPassed = info.Length();
+        while (numArgsPassed > 0) {
+            if (!info[numArgsPassed - 1]->IsUndefined())
+                break;
+            --numArgsPassed;
+        }
+        if (UNLIKELY(numArgsPassed <= 0)) {
             v8SetReturnValueInt(info, impl->longMethodOptionalLongArg());
             return;
         }
@@ -8378,10 +8420,16 @@ static void voidMethodLongArgOptionalLongArgMethod(const v8::FunctionCallbackInf
     int longArg;
     int optionalLongArg;
     {
+        int numArgsPassed = info.Length();
+        while (numArgsPassed > 0) {
+            if (!info[numArgsPassed - 1]->IsUndefined())
+                break;
+            --numArgsPassed;
+        }
         longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
-        if (UNLIKELY(info.Length() <= 1)) {
+        if (UNLIKELY(numArgsPassed <= 1)) {
             impl->voidMethodLongArgOptionalLongArg(longArg);
             return;
         }
@@ -8412,17 +8460,23 @@ static void voidMethodLongArgOptionalLongArgOptionalLongArgMethod(const v8::Func
     int optionalLongArg1;
     int optionalLongArg2;
     {
+        int numArgsPassed = info.Length();
+        while (numArgsPassed > 0) {
+            if (!info[numArgsPassed - 1]->IsUndefined())
+                break;
+            --numArgsPassed;
+        }
         longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
-        if (UNLIKELY(info.Length() <= 1)) {
+        if (UNLIKELY(numArgsPassed <= 1)) {
             impl->voidMethodLongArgOptionalLongArgOptionalLongArg(longArg);
             return;
         }
         optionalLongArg1 = toInt32(info.GetIsolate(), info[1], NormalConversion, exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
-        if (UNLIKELY(info.Length() <= 2)) {
+        if (UNLIKELY(numArgsPassed <= 2)) {
             impl->voidMethodLongArgOptionalLongArgOptionalLongArg(longArg, optionalLongArg1);
             return;
         }
@@ -8452,10 +8506,16 @@ static void voidMethodLongArgOptionalTestInterfaceEmptyArgMethod(const v8::Funct
     int longArg;
     TestInterfaceEmpty* optionalTestInterfaceEmpty;
     {
+        int numArgsPassed = info.Length();
+        while (numArgsPassed > 0) {
+            if (!info[numArgsPassed - 1]->IsUndefined())
+                break;
+            --numArgsPassed;
+        }
         longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
-        if (UNLIKELY(info.Length() <= 1)) {
+        if (UNLIKELY(numArgsPassed <= 1)) {
             impl->voidMethodLongArgOptionalTestInterfaceEmptyArg(longArg);
             return;
         }
@@ -8488,13 +8548,19 @@ static void voidMethodTestInterfaceEmptyArgOptionalLongArgMethod(const v8::Funct
     TestInterfaceEmpty* optionalTestInterfaceEmpty;
     int longArg;
     {
+        int numArgsPassed = info.Length();
+        while (numArgsPassed > 0) {
+            if (!info[numArgsPassed - 1]->IsUndefined())
+                break;
+            --numArgsPassed;
+        }
         optionalTestInterfaceEmpty = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
         if (!optionalTestInterfaceEmpty) {
             exceptionState.throwTypeError("parameter 1 is not of type 'TestInterfaceEmpty'.");
             exceptionState.throwIfNeeded();
             return;
         }
-        if (UNLIKELY(info.Length() <= 1)) {
+        if (UNLIKELY(numArgsPassed <= 1)) {
             impl->voidMethodTestInterfaceEmptyArgOptionalLongArg(optionalTestInterfaceEmpty);
             return;
         }
@@ -9079,10 +9145,16 @@ static void overloadedMethodB2Method(const v8::FunctionCallbackInfo<v8::Value>& 
     V8StringResource<> stringArg;
     int longArg;
     {
+        int numArgsPassed = info.Length();
+        while (numArgsPassed > 0) {
+            if (!info[numArgsPassed - 1]->IsUndefined())
+                break;
+            --numArgsPassed;
+        }
         stringArg = info[0];
         if (!stringArg.prepare())
             return;
-        if (UNLIKELY(info.Length() <= 1)) {
+        if (UNLIKELY(numArgsPassed <= 1)) {
             impl->overloadedMethodB(stringArg);
             return;
         }
@@ -9328,7 +9400,13 @@ static void overloadedMethodF1Method(const v8::FunctionCallbackInfo<v8::Value>& 
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     V8StringResource<> stringArg;
     {
-        if (UNLIKELY(info.Length() <= 0)) {
+        int numArgsPassed = info.Length();
+        while (numArgsPassed > 0) {
+            if (!info[numArgsPassed - 1]->IsUndefined())
+                break;
+            --numArgsPassed;
+        }
+        if (UNLIKELY(numArgsPassed <= 0)) {
             impl->overloadedMethodF();
             return;
         }
@@ -10427,7 +10505,13 @@ static void callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArgMethod
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     bool optionalBooleanArg;
     {
-        if (UNLIKELY(info.Length() <= 0)) {
+        int numArgsPassed = info.Length();
+        while (numArgsPassed > 0) {
+            if (!info[numArgsPassed - 1]->IsUndefined())
+                break;
+            --numArgsPassed;
+        }
+        if (UNLIKELY(numArgsPassed <= 0)) {
             ScriptState* scriptState = ScriptState::current(info.GetIsolate());
             RefPtrWillBeRawPtr<ScriptArguments> scriptArguments(createScriptArguments(scriptState, info, 1));
             impl->callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArg(scriptState, scriptArguments.release());
@@ -11324,7 +11408,13 @@ static void raisesExceptionVoidMethodOptionalLongArgMethod(const v8::FunctionCal
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     int optionalLongArg;
     {
-        if (UNLIKELY(info.Length() <= 0)) {
+        int numArgsPassed = info.Length();
+        while (numArgsPassed > 0) {
+            if (!info[numArgsPassed - 1]->IsUndefined())
+                break;
+            --numArgsPassed;
+        }
+        if (UNLIKELY(numArgsPassed <= 0)) {
             impl->raisesExceptionVoidMethodOptionalLongArg(exceptionState);
             if (exceptionState.hadException()) {
                 exceptionState.throwIfNeeded();
@@ -11855,12 +11945,18 @@ static void useToImpl4ArgumentsCheckingIfPossibleWithOptionalArgMethod(const v8:
     Node* node1;
     Node* node2;
     {
+        int numArgsPassed = info.Length();
+        while (numArgsPassed > 0) {
+            if (!info[numArgsPassed - 1]->IsUndefined())
+                break;
+            --numArgsPassed;
+        }
         node1 = V8Node::toImplWithTypeCheck(info.GetIsolate(), info[0]);
         if (!node1) {
             V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("useToImpl4ArgumentsCheckingIfPossibleWithOptionalArg", "TestObject", "parameter 1 is not of type 'Node'."));
             return;
         }
-        if (UNLIKELY(info.Length() <= 1)) {
+        if (UNLIKELY(numArgsPassed <= 1)) {
             impl->useToImpl4ArgumentsCheckingIfPossibleWithOptionalArg(node1);
             return;
         }

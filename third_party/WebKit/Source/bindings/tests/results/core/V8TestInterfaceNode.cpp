@@ -289,7 +289,13 @@ static void perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArgMethod(con
     TestInterfaceNode* impl = V8TestInterfaceNode::toImpl(info.Holder());
     bool optionalBooleanArgument;
     {
-        if (UNLIKELY(info.Length() <= 0)) {
+        int numArgsPassed = info.Length();
+        while (numArgsPassed > 0) {
+            if (!info[numArgsPassed - 1]->IsUndefined())
+                break;
+            --numArgsPassed;
+        }
+        if (UNLIKELY(numArgsPassed <= 0)) {
             v8SetReturnValueFast(info, WTF::getPtr(impl->perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArg()), impl);
             return;
         }
@@ -313,7 +319,13 @@ static void perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArgMethodForM
     TestInterfaceNode* impl = V8TestInterfaceNode::toImpl(info.Holder());
     bool optionalBooleanArgument;
     {
-        if (UNLIKELY(info.Length() <= 0)) {
+        int numArgsPassed = info.Length();
+        while (numArgsPassed > 0) {
+            if (!info[numArgsPassed - 1]->IsUndefined())
+                break;
+            --numArgsPassed;
+        }
+        if (UNLIKELY(numArgsPassed <= 0)) {
             v8SetReturnValueForMainWorld(info, WTF::getPtr(impl->perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArg()));
             return;
         }
