@@ -363,7 +363,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::Bind(&SessionManagerClientImpl::OnArcMethod,
                    weak_ptr_factory_.GetWeakPtr(),
-                   login_manager::kSessionManagerStartArcInstance, callback));
+                   login_manager::kSessionManagerStopArcInstance, callback));
   }
 
  protected:
