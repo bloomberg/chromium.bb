@@ -443,8 +443,9 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // Statistics for the current domain.
   std::vector<scoped_ptr<InteractionsStats>> interactions_stats_;
 
-  // Stores provisionally saved form until |pending_credentials_| is created.
+  // Stores a submitted form.
   scoped_ptr<const autofill::PasswordForm> provisionally_saved_form_;
+
   // Stores if for creating |pending_credentials_| other possible usernames
   // option should apply.
   OtherPossibleUsernamesAction other_possible_username_action_;
@@ -453,8 +454,10 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // scoring.
   const std::vector<std::string> form_path_segments_;
 
-  // Stores updated credentials when the form was submitted but success is
-  // still unknown.
+  // Stores updated credentials when the form was submitted but success is still
+  // unknown. This variable contains credentials that are ready to be written
+  // (saved or updated) to a password store. It is calculated based on
+  // |provisionally_saved_form_| and |best_matches_|.
   autofill::PasswordForm pending_credentials_;
 
   // Whether pending_credentials_ stores a new login or is an update

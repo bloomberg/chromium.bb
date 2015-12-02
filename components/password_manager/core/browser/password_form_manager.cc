@@ -323,6 +323,7 @@ void PasswordFormManager::FetchDataFromPasswordStore(
     logger->LogNumber(Logger::STRING_FORM_MANAGER_STATE, state_);
   }
 
+  provisionally_saved_form_.reset();
   state_ = MATCHING_PHASE;
 
   PasswordStore* password_store = client_->GetPasswordStore();
@@ -903,7 +904,8 @@ bool PasswordFormManager::UploadChangePasswordForm(
   DCHECK(password_type == autofill::NEW_PASSWORD ||
          password_type == autofill::PROBABLY_NEW_PASSWORD ||
          autofill::NOT_NEW_PASSWORD);
-  if (pending_credentials_.new_password_element.empty()) {
+  if (!provisionally_saved_form_ ||
+      provisionally_saved_form_->new_password_element.empty()) {
     // |new_password_element| is empty for non change password forms, for
     // example when the password was overriden.
     return false;
@@ -916,10 +918,12 @@ bool PasswordFormManager::UploadChangePasswordForm(
   // Create a map from field names to field types.
   std::map<base::string16, autofill::ServerFieldType> field_types;
   if (!pending_credentials_.username_element.empty())
-    field_types[pending_credentials_.username_element] = autofill::USERNAME;
+    field_types[provisionally_saved_form_->username_element] =
+        autofill::USERNAME;
   if (!pending_credentials_.password_element.empty())
-    field_types[pending_credentials_.password_element] = autofill::PASSWORD;
-  field_types[pending_credentials_.new_password_element] = password_type;
+    field_types[provisionally_saved_form_->password_element] =
+        autofill::PASSWORD;
+  field_types[provisionally_saved_form_->new_password_element] = password_type;
   // Find all password fields after |new_password_element| and set their type to
   // |password_type|. They are considered to be confirmation fields.
   const autofill::FormData& form_data = observed_form_.form_data;
@@ -932,7 +936,7 @@ bool PasswordFormManager::UploadChangePasswordForm(
       field_types[field.name] = password_type;
       // We don't care about password fields after a confirmation field.
       break;
-    } else if (field.name == pending_credentials_.new_password_element) {
+    } else if (field.name == provisionally_saved_form_->new_password_element) {
       is_new_password_field_found = true;
     }
   }
@@ -1119,18 +1123,13 @@ void PasswordFormManager::CreatePendingCredentials() {
   if (has_generated_password_)
     pending_credentials_.type = PasswordForm::TYPE_GENERATED;
 
-  if (client_->IsUpdatePasswordUIEnabled() &&
-      provisionally_saved_form_->IsPossibleChangePasswordForm()) {
-    // We need to store |password_element| and |new_password_element| in order
-    // to be able determine which field is password and which is new password
-    // during sending a vote.
-    pending_credentials_.password_element =
-        provisionally_saved_form_->password_element;
-    pending_credentials_.new_password_element =
-        provisionally_saved_form_->new_password_element;
-  }
-
-  provisionally_saved_form_.reset();
+  // In case of change password forms we need to leave
+  // |provisionally_saved_form_| in order to be able to determine which field is
+  // password and which is a new password during sending a vote in other cases
+  // we can reset |provisionally_saved_form_|.
+  if (!client_->IsUpdatePasswordUIEnabled() ||
+      !provisionally_saved_form_->IsPossibleChangePasswordForm())
+    provisionally_saved_form_.reset();
 }
 
 uint32_t PasswordFormManager::ScoreResult(const PasswordForm& candidate) const {
