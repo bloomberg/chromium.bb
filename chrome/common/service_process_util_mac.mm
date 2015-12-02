@@ -91,14 +91,8 @@ base::FilePath GetServiceProcessSocketName() {
   PathService::Get(base::DIR_TEMP, &socket_name);
   std::string pipe_name = GetServiceProcessScopedName("srv");
   socket_name = socket_name.Append(pipe_name);
-  UMA_HISTOGRAM_CUSTOM_COUNTS("CloudPrint.ServiceProcessSocketLength",
-                              socket_name.value().size(), 75, 124, 50);
-  if (socket_name.value().size() < IPC::kMaxSocketNameLength)
-    return socket_name;
-  // Fallback to /tmp if $TMPDIR is too long.
-  // TODO(vitalybuka): Investigate how often we get there.
-  // See http://crbug.com/466644
-  return base::FilePath("/tmp").Append(pipe_name);
+  CHECK_LT(socket_name.value().size(), IPC::kMaxSocketNameLength);
+  return socket_name;
 }
 
 }  // namespace

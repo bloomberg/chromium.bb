@@ -4604,9 +4604,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="CloudPrint.ServiceProcessSocketLength">
   <owner>vitalybuka@chromium.org</owner>
+  <obsolete>
+    Deprecated as of 12/2015. Confirm assumption about socket name size.
+    http://crbug.com/466644
+  </obsolete>
   <summary>
     Temporarily histogram with size of IPC sockets in default location.
-    TODO(vitalybuka) Remove after investigation http://crbug.com/466644
   </summary>
 </histogram>
 
