@@ -22,13 +22,13 @@
 
 interface HTMLTableElement : HTMLElement {
     // TODO(philipj): The caption, tHead and tFoot setters should never throw.
-    [RaisesException=Setter, LegacyInterfaceTypeChecking] attribute HTMLTableCaptionElement? caption;
+    [RaisesException=Setter] attribute HTMLTableCaptionElement? caption;
     HTMLTableCaptionElement createCaption();
     void deleteCaption();
-    [RaisesException=Setter, LegacyInterfaceTypeChecking] attribute HTMLTableSectionElement? tHead;
+    [RaisesException=Setter] attribute HTMLTableSectionElement? tHead;
     HTMLTableSectionElement createTHead();
     void deleteTHead();
-    [RaisesException=Setter, LegacyInterfaceTypeChecking] attribute HTMLTableSectionElement? tFoot;
+    [RaisesException=Setter] attribute HTMLTableSectionElement? tFoot;
     HTMLTableSectionElement createTFoot();
     void deleteTFoot();
     readonly attribute HTMLCollection tBodies;

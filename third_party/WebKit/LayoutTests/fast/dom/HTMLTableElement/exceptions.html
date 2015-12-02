@@ -9,6 +9,17 @@
 
         var t = document.createElement('table');
 
+        // TODO(philipj): Setting caption/tHead/tFoot to null should not throw
+        // an exception, it should just remove the old caption/thead/tfoot.
+        shouldThrow("t.caption = null");
+        shouldThrow("t.caption = document.body");
+
+        shouldThrow("t.tHead = null");
+        shouldThrow("t.tHead = document.body");
+
+        shouldThrow("t.tFoot = null");
+        shouldThrow("t.tFoot = document.body");
+
         shouldThrow("t.insertRow(-2)");
         shouldThrow("t.insertRow(1)");
 
