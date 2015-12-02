@@ -160,7 +160,7 @@ cr.define('options.contentSettings', function() {
         this.deletable = true;
 
         var objectLabel = cr.doc.createElement('span');
-        objectLabel.textContent = this.dataItem.objectName;
+        objectLabel.textContent = this.dataItem['objectName'];
         objectLabel.className = 'exception-setting';
         objectLabel.setAttribute('displaymode', 'static');
         this.contentElement.appendChild(objectLabel);
