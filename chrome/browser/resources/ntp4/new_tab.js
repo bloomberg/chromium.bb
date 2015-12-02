@@ -333,7 +333,7 @@ cr.define('ntp', function() {
 
   /**
    * Called when the theme has changed.
-   * @param {Object} opt_themeData Not used; only exists to match equivalent
+   * @param {Object=} opt_themeData Not used; only exists to match equivalent
    *     function in incognito NTP.
    */
   function themeChanged(opt_themeData) {
