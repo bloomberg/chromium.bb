@@ -9,6 +9,7 @@
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/common/proto/compositor.pb.h"
 #include "blimp/common/proto/render_widget.pb.h"
+#include "blimp/net/test_common.h"
 #include "cc/proto/compositor_message.pb.h"
 #include "net/base/net_errors.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -23,24 +24,6 @@ using testing::SaveArg;
 namespace blimp {
 
 namespace {
-class MockBlimpMessageProcessor : public BlimpMessageProcessor {
- public:
-  MockBlimpMessageProcessor() {}
-
-  ~MockBlimpMessageProcessor() override {}
-
-  // Adapts calls from ProcessMessage to MockableProcessMessage by
-  // unboxing the |message| scoped_ptr for GMock compatibility.
-  void ProcessMessage(scoped_ptr<BlimpMessage> message,
-                      const net::CompletionCallback& callback) {
-    MockableProcessMessage(*message);
-    if (!callback.is_null())
-      callback.Run(net::OK);
-  }
-
-  MOCK_METHOD1(MockableProcessMessage,
-               void(const BlimpMessage& message));
-};
 
 class MockRenderWidgetMessageDelegate
     : public RenderWidgetMessageProcessor::RenderWidgetMessageDelegate {
@@ -130,17 +113,17 @@ TEST_F(RenderWidgetMessageProcessorTest, RepliesHaveCorrectRenderWidgetId) {
   SendRenderWidgetMessage(&processor_, 2, 1U);
 
   EXPECT_CALL(out_processor_,
-              MockableProcessMessage(CompMsgEquals(1, 2U))).Times(1);
+              MockableProcessMessage(CompMsgEquals(1, 2U), _)).Times(1);
   processor_.SendCompositorMessage(1, cc::proto::CompositorMessage());
 
   SendRenderWidgetMessage(&processor_, 1, 3U);
 
   EXPECT_CALL(out_processor_,
-              MockableProcessMessage(CompMsgEquals(1, 3U))).Times(1);
+              MockableProcessMessage(CompMsgEquals(1, 3U), _)).Times(1);
   processor_.SendCompositorMessage(1, cc::proto::CompositorMessage());
 
   EXPECT_CALL(out_processor_,
-              MockableProcessMessage(CompMsgEquals(2, 1U))).Times(1);
+              MockableProcessMessage(CompMsgEquals(2, 1U), _)).Times(1);
   processor_.SendCompositorMessage(2, cc::proto::CompositorMessage());
 }
 

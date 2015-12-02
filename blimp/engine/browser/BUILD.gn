@@ -54,6 +54,7 @@ source_set("unit_tests") {
     "//blimp/common/proto",
     "//blimp/engine/common",
     "//blimp/net:blimp_net",
+    "//blimp/net:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]

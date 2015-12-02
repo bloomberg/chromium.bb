@@ -11,6 +11,7 @@
 #include "blimp/common/proto/compositor.pb.h"
 #include "blimp/common/proto/render_widget.pb.h"
 #include "blimp/net/input_message_generator.h"
+#include "blimp/net/test_common.h"
 #include "net/base/net_errors.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -25,24 +26,6 @@ using testing::SaveArg;
 namespace blimp {
 
 namespace {
-class MockBlimpMessageProcessor : public BlimpMessageProcessor {
- public:
-  MockBlimpMessageProcessor() {}
-
-  ~MockBlimpMessageProcessor() override {}
-
-  // Adapts calls from ProcessMessage to MockableProcessMessage by
-  // unboxing the |message| scoped_ptr for GMock compatibility.
-  void ProcessMessage(scoped_ptr<BlimpMessage> message,
-                      const net::CompletionCallback& callback) {
-    MockableProcessMessage(*message);
-    if (!callback.is_null())
-      callback.Run(net::OK);
-  }
-
-  MOCK_METHOD1(MockableProcessMessage,
-               void(const BlimpMessage& message));
-};
 
 class MockHostRenderWidgetMessageDelegate
     : public EngineRenderWidgetMessageProcessor::RenderWidgetMessageDelegate {
@@ -167,7 +150,7 @@ TEST_F(EngineRenderWidgetMessageProcessorTest, DropsStaleMessages) {
   SendCompositorMessage(&processor_, 1, 1U, payload);
 
   EXPECT_CALL(out_processor_,
-              MockableProcessMessage(BlimpRWMsgEquals(1, 2U))).Times(1);
+              MockableProcessMessage(BlimpRWMsgEquals(1, 2U), _)).Times(1);
   processor_.OnRenderWidgetInitialized(1);
 
   EXPECT_CALL(delegate1_, MockableOnCompositorMessageReceived(
@@ -191,15 +174,15 @@ TEST_F(EngineRenderWidgetMessageProcessorTest,
   std::vector<uint8_t> payload = { 'a', 'b', 'c', 'd' };
 
   EXPECT_CALL(out_processor_,
-              MockableProcessMessage(BlimpRWMsgEquals(1, 2U))).Times(1);
+              MockableProcessMessage(BlimpRWMsgEquals(1, 2U), _)).Times(1);
   processor_.OnRenderWidgetInitialized(1);
 
   EXPECT_CALL(out_processor_,
-              MockableProcessMessage(BlimpRWMsgEquals(2, 2U))).Times(1);
+              MockableProcessMessage(BlimpRWMsgEquals(2, 2U), _)).Times(1);
   processor_.OnRenderWidgetInitialized(2);
 
   EXPECT_CALL(out_processor_, MockableProcessMessage(
-      BlimpCompMsgEquals(1, 2U, payload))).Times(1);
+      BlimpCompMsgEquals(1, 2U, payload), _)).Times(1);
 
   processor_.SendCompositorMessage(1, payload);
 }
