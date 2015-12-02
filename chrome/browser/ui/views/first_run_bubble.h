@@ -6,9 +6,14 @@
 #define CHROME_BROWSER_UI_VIEWS_FIRST_RUN_BUBBLE_H_
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/events/event.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/link_listener.h"
+
+namespace views {
+class EventMonitor;
+}
 
 class Browser;
 
@@ -40,16 +45,12 @@ class FirstRunBubble : public views::BubbleDelegateView,
     void OnGestureEvent(ui::GestureEvent* event) override;
 
    private:
-    void AddEventObservers();
-    void RemoveEventObservers();
-
     void CloseBubble();
 
     // The bubble instance.
     FirstRunBubble* bubble_;
 
-    // The widget we are observing for keyboard events.
-    views::Widget* anchor_widget_;
+    scoped_ptr<views::EventMonitor> event_monitor_;
 
     DISALLOW_COPY_AND_ASSIGN(FirstRunBubbleCloser);
   };

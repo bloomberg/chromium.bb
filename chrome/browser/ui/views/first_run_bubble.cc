@@ -10,11 +10,11 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/search_engines/util.h"
-#include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
+#include "ui/views/event_monitor.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
@@ -102,15 +102,12 @@ void FirstRunBubble::LinkClicked(views::Link* source, int event_flags) {
 FirstRunBubble::FirstRunBubbleCloser::FirstRunBubbleCloser(
     FirstRunBubble* bubble,
     views::View* anchor_view)
-    : bubble_(bubble),
-      anchor_widget_(anchor_view->GetWidget()) {
-  AddEventObservers();
+    : bubble_(bubble) {
+  event_monitor_ = views::EventMonitor::CreateWindowMonitor(
+      this, anchor_view->GetWidget()->GetNativeWindow());
 }
 
-FirstRunBubble::FirstRunBubbleCloser::~FirstRunBubbleCloser() {
-  if (anchor_widget_)
-    RemoveEventObservers();
-}
+FirstRunBubble::FirstRunBubbleCloser::~FirstRunBubbleCloser() {}
 
 void FirstRunBubble::FirstRunBubbleCloser::OnKeyEvent(ui::KeyEvent* event) {
   CloseBubble();
@@ -130,21 +127,11 @@ void FirstRunBubble::FirstRunBubbleCloser::OnGestureEvent(
   }
 }
 
-void FirstRunBubble::FirstRunBubbleCloser::AddEventObservers() {
-  anchor_widget_->GetNativeView()->AddPreTargetHandler(this);
-}
-
-void FirstRunBubble::FirstRunBubbleCloser::RemoveEventObservers() {
-  DCHECK(anchor_widget_);
-  anchor_widget_->GetNativeView()->RemovePreTargetHandler(this);
-  anchor_widget_ = nullptr;
-}
-
 void FirstRunBubble::FirstRunBubbleCloser::CloseBubble() {
-  if (!anchor_widget_)
+  if (!event_monitor_)
     return;
 
-  RemoveEventObservers();
+  event_monitor_.reset();
   DCHECK(bubble_);
   bubble_->GetWidget()->Close();
   bubble_ = nullptr;
