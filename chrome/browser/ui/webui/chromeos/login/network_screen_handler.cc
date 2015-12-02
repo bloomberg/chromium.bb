@@ -20,6 +20,8 @@
 #include "chrome/browser/chromeos/login/screens/core_oobe_actor.h"
 #include "chrome/browser/chromeos/login/screens/network_model.h"
 #include "chrome/browser/chromeos/login/ui/input_events_blocker.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
@@ -183,7 +185,7 @@ void NetworkScreenHandler::GetAdditionalParameters(
     language_list.reset(GetMinimalUILanguageList().release());
 
   // GetAdditionalParameters() is called when OOBE language is updated.
-  // This happens in two diferent cases:
+  // This happens in three different cases:
   //
   // 1) User selects new locale on OOBE screen. We need to sync active input
   // methods with locale, so EnableLoginLayouts() is needed.
@@ -202,8 +204,17 @@ void NetworkScreenHandler::GetAdditionalParameters(
   // So we need to disable activation of login layouts if we are already in
   // active user session.
   //
+  // 3) This is the bootstrapping process for the remora device. The locale &
+  // input of the remora device is set up by a shark device. In this case we
+  // don't want EnableLoginLayout() to reset the input method to the hardware
+  // default method.
+  const bool is_remora = g_browser_process->platform_part()
+                             ->browser_policy_connector_chromeos()
+                             ->GetDeviceCloudPolicyManager()
+                             ->IsRemoraRequisition();
+
   const bool enable_layouts =
-      !user_manager::UserManager::Get()->IsUserLoggedIn();
+      !user_manager::UserManager::Get()->IsUserLoggedIn() && !is_remora;
 
   dict->Set("languageList", language_list.release());
   dict->Set(

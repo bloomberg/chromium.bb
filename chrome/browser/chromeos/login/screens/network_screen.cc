@@ -4,13 +4,11 @@
 
 #include "chrome/browser/chromeos/login/screens/network_screen.h"
 
-#include "base/json/json_writer.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/base/locale_util.h"
 #include "chrome/browser/chromeos/customization/customization_document.h"
@@ -27,9 +25,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/network/network_handler.h"
-#include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
-#include "chromeos/network/network_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -66,12 +62,6 @@ NetworkScreen::NetworkScreen(BaseScreenDelegate* base_screen_delegate,
 
   input_method::InputMethodManager::Get()->AddObserver(this);
   InitializeTimezoneObserver();
-}
-
-void NetworkScreen::InitializeTimezoneObserver() {
-  timezone_subscription_ = CrosSettings::Get()->AddSettingsObserver(
-      kSystemTimezone, base::Bind(&NetworkScreen::OnSystemTimezoneChanged,
-                                  base::Unretained(this)));
 }
 
 NetworkScreen::~NetworkScreen() {
@@ -190,16 +180,21 @@ void NetworkScreen::InputMethodChanged(
 ////////////////////////////////////////////////////////////////////////////////
 // NetworkScreen, setters and getters for input method and timezone.
 
-void NetworkScreen::SetApplicationLocale(const std::string& locale) {
-  const std::string app_locale = g_browser_process->GetApplicationLocale();
-  if (app_locale == locale)
+void NetworkScreen::SetApplicationLocaleAndInputMethod(
+    const std::string& locale,
+    const std::string& input_method) {
+  const std::string& app_locale = g_browser_process->GetApplicationLocale();
+  if (app_locale == locale || locale.empty()) {
+    // If the locale doesn't change, set input method directly.
+    SetInputMethod(input_method);
     return;
+  }
 
   // Block UI while resource bundle is being reloaded.
   // (InputEventsBlocker will live until callback is finished.)
   locale_util::SwitchLanguageCallback callback(base::Bind(
       &NetworkScreen::OnLanguageChangedCallback, weak_factory_.GetWeakPtr(),
-      base::Owned(new chromeos::InputEventsBlocker)));
+      base::Owned(new chromeos::InputEventsBlocker), input_method));
   locale_util::SwitchLanguage(locale, true /* enableLocaleKeyboardLayouts */,
                               true /* login_layouts_only */, callback,
                               ProfileManager::GetActiveUserProfile());
@@ -209,13 +204,6 @@ std::string NetworkScreen::GetApplicationLocale() {
   return g_browser_process->GetApplicationLocale();
 }
 
-void NetworkScreen::SetInputMethod(const std::string& input_method) {
-  input_method_ = input_method;
-  input_method::InputMethodManager::Get()
-      ->GetActiveIMEState()
-      ->ChangeInputMethod(input_method_, false /* show_message */);
-}
-
 std::string NetworkScreen::GetInputMethod() const {
   return input_method_;
 }
@@ -223,7 +211,7 @@ std::string NetworkScreen::GetInputMethod() const {
 void NetworkScreen::SetTimezone(const std::string& timezone_id) {
   std::string current_timezone_id;
   CrosSettings::Get()->GetString(kSystemTimezone, &current_timezone_id);
-  if (current_timezone_id == timezone_id)
+  if (current_timezone_id == timezone_id || timezone_id.empty())
     return;
   timezone_ = timezone_id;
   CrosSettings::Get()->SetString(kSystemTimezone, timezone_id);
@@ -237,31 +225,7 @@ void NetworkScreen::GetConnectedWifiNetwork(std::string* out_onc_spec) {
   // Currently We can only transfer unsecured WiFi configuration from shark to
   // remora. There is no way to get password for a secured Wifi network in Cros
   // for security reasons.
-  const NetworkState* network_state =
-      NetworkHandler::Get()->network_state_handler()->ConnectedNetworkByType(
-          NetworkTypePattern::WiFi());
-
-  if (!network_state)
-    return;
-
-  scoped_ptr<base::DictionaryValue> current_onc =
-      network_util::TranslateNetworkStateToONC(network_state);
-  std::string security;
-  current_onc->GetString(
-      onc::network_config::WifiProperty(onc::wifi::kSecurity), &security);
-  if (security != onc::wifi::kSecurityNone)
-    return;
-
-  const std::string hex_ssid = network_state->GetHexSsid();
-
-  scoped_ptr<base::DictionaryValue> copied_onc(new base::DictionaryValue());
-  copied_onc->Set(onc::toplevel_config::kType,
-                  new base::StringValue(onc::network_type::kWiFi));
-  copied_onc->Set(onc::network_config::WifiProperty(onc::wifi::kHexSSID),
-                  new base::StringValue(hex_ssid));
-  copied_onc->Set(onc::network_config::WifiProperty(onc::wifi::kSecurity),
-                  new base::StringValue(security));
-  base::JSONWriter::Write(*copied_onc.get(), out_onc_spec);
+  network_state_helper_->GetConnectedWifiNetwork(out_onc_spec);
 }
 
 void NetworkScreen::CreateAndConnectNetworkFromOnc(
@@ -284,6 +248,44 @@ void NetworkScreen::RemoveObserver(Observer* observer) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // NetworkScreen, private:
+
+void NetworkScreen::SetApplicationLocale(const std::string& locale) {
+  const std::string& app_locale = g_browser_process->GetApplicationLocale();
+  if (app_locale == locale || locale.empty())
+    return;
+
+  // Block UI while resource bundle is being reloaded.
+  // (InputEventsBlocker will live until callback is finished.)
+  locale_util::SwitchLanguageCallback callback(base::Bind(
+      &NetworkScreen::OnLanguageChangedCallback, weak_factory_.GetWeakPtr(),
+      base::Owned(new chromeos::InputEventsBlocker), std::string()));
+  locale_util::SwitchLanguage(locale, true /* enableLocaleKeyboardLayouts */,
+                              true /* login_layouts_only */, callback,
+                              ProfileManager::GetActiveUserProfile());
+}
+
+void NetworkScreen::SetInputMethod(const std::string& input_method) {
+  const std::vector<std::string>& input_methods =
+      input_method::InputMethodManager::Get()
+          ->GetActiveIMEState()
+          ->GetActiveInputMethodIds();
+  if (input_method.empty() ||
+      std::find(input_methods.begin(), input_methods.end(), input_method) ==
+          input_methods.end()) {
+    LOG(WARNING) << "The input method is empty or ineligible!";
+    return;
+  }
+  input_method_ = input_method;
+  input_method::InputMethodManager::Get()
+      ->GetActiveIMEState()
+      ->ChangeInputMethod(input_method_, false /* show_message */);
+}
+
+void NetworkScreen::InitializeTimezoneObserver() {
+  timezone_subscription_ = CrosSettings::Get()->AddSettingsObserver(
+      kSystemTimezone, base::Bind(&NetworkScreen::OnSystemTimezoneChanged,
+                                  base::Unretained(this)));
+}
 
 void NetworkScreen::Refresh() {
   SubscribeNetworkNotification();
@@ -393,6 +395,7 @@ void NetworkScreen::OnContinueButtonPressed() {
 
 void NetworkScreen::OnLanguageChangedCallback(
     const InputEventsBlocker* /* input_events_blocker */,
+    const std::string& input_method,
     const locale_util::LanguageSwitchResult& result) {
   if (!selected_language_code_.empty()) {
     // We still do not have device owner, so owner settings are not applied.
@@ -405,6 +408,7 @@ void NetworkScreen::OnLanguageChangedCallback(
       new locale_util::LanguageSwitchResult(result)));
 
   AccessibilityManager::Get()->OnLocaleChanged();
+  SetInputMethod(input_method);
 }
 
 void NetworkScreen::ScheduleResolveLanguageList(

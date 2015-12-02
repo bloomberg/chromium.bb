@@ -338,13 +338,10 @@ void BluetoothControllerPairingController::SetHostConfiguration(
   pairing_api::ConfigureHost host_config;
   host_config.set_api_version(kPairingAPIVersion);
   host_config.mutable_parameters()->set_accepted_eula(accepted_eula);
-  if (!lang.empty())
-    host_config.mutable_parameters()->set_lang(lang);
-  if (!timezone.empty())
-    host_config.mutable_parameters()->set_timezone(timezone);
+  host_config.mutable_parameters()->set_lang(lang);
+  host_config.mutable_parameters()->set_timezone(timezone);
   host_config.mutable_parameters()->set_send_reports(send_reports);
-  if (!keyboard_layout.empty())
-    host_config.mutable_parameters()->set_keyboard_layout(keyboard_layout);
+  host_config.mutable_parameters()->set_keyboard_layout(keyboard_layout);
 
   int size = 0;
   scoped_refptr<net::IOBuffer> io_buffer(

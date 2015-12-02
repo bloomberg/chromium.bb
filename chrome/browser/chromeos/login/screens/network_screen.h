@@ -80,10 +80,12 @@ class NetworkScreen : public NetworkModel,
                           Profile* profile,
                           bool show_message) override;
 
-  void SetApplicationLocale(const std::string& locale);
+  // Set locale and input method. If |locale| is empty or doesn't change, set
+  // the |input_method| directly. If |input_method| is empty or ineligible, we
+  // don't change the current |input_method|.
+  void SetApplicationLocaleAndInputMethod(const std::string& locale,
+                                          const std::string& input_method);
   std::string GetApplicationLocale();
-
-  void SetInputMethod(const std::string& input_method);
   std::string GetInputMethod() const;
 
   void SetTimezone(const std::string& timezone_id);
@@ -101,6 +103,9 @@ class NetworkScreen : public NetworkModel,
   friend class NetworkScreenTest;
   FRIEND_TEST_ALL_PREFIXES(NetworkScreenTest, Timeout);
   FRIEND_TEST_ALL_PREFIXES(NetworkScreenTest, CanConnect);
+
+  void SetApplicationLocale(const std::string& locale);
+  void SetInputMethod(const std::string& input_method);
 
   // Subscribe to timezone changes.
   void InitializeTimezoneObserver();
@@ -140,6 +145,7 @@ class NetworkScreen : public NetworkModel,
   // Async callback after ReloadResourceBundle(locale) completed.
   void OnLanguageChangedCallback(
       const InputEventsBlocker* input_events_blocker,
+      const std::string& input_method,
       const locale_util::LanguageSwitchResult& result);
 
   // Starts resolving language list on BlockingPool.

@@ -1079,9 +1079,8 @@ void WizardController::ConfigureHostRequested(
   SetUsageStatisticsReporting(send_reports);
 
   NetworkScreen* network_screen = NetworkScreen::Get(this);
-  network_screen->SetApplicationLocale(lang);
+  network_screen->SetApplicationLocaleAndInputMethod(lang, keyboard_layout);
   network_screen->SetTimezone(timezone);
-  network_screen->SetInputMethod(keyboard_layout);
 }
 
 void WizardController::AddNetworkRequested(const std::string& onc_spec) {

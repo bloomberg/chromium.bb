@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
+#include "base/json/json_writer.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
@@ -19,6 +20,7 @@
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/network_util.h"
 #include "components/guest_view/browser/guest_view_manager.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
@@ -127,6 +129,34 @@ base::string16 NetworkStateHelper::GetCurrentNetworkName() const {
     return base::UTF8ToUTF16(network->name());
   }
   return base::string16();
+}
+
+void NetworkStateHelper::GetConnectedWifiNetwork(std::string* out_onc_spec) {
+  const NetworkState* network_state =
+      NetworkHandler::Get()->network_state_handler()->ConnectedNetworkByType(
+          NetworkTypePattern::WiFi());
+
+  if (!network_state)
+    return;
+
+  scoped_ptr<base::DictionaryValue> current_onc =
+      network_util::TranslateNetworkStateToONC(network_state);
+  std::string security;
+  current_onc->GetString(
+      onc::network_config::WifiProperty(onc::wifi::kSecurity), &security);
+  if (security != onc::wifi::kSecurityNone)
+    return;
+
+  const std::string hex_ssid = network_state->GetHexSsid();
+
+  scoped_ptr<base::DictionaryValue> copied_onc(new base::DictionaryValue());
+  copied_onc->Set(onc::toplevel_config::kType,
+                  new base::StringValue(onc::network_type::kWiFi));
+  copied_onc->Set(onc::network_config::WifiProperty(onc::wifi::kHexSSID),
+                  new base::StringValue(hex_ssid));
+  copied_onc->Set(onc::network_config::WifiProperty(onc::wifi::kSecurity),
+                  new base::StringValue(security));
+  base::JSONWriter::Write(*copied_onc.get(), out_onc_spec);
 }
 
 void NetworkStateHelper::CreateAndConnectNetworkFromOnc(

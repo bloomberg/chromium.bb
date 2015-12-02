@@ -64,6 +64,12 @@ class NetworkStateHelper {
   // Ethernet > WiFi > Cellular. Same for connecting network.
   virtual base::string16 GetCurrentNetworkName() const;
 
+  // Get current connected Wifi network configuration. Used in shark/remora
+  // mode. Note currently only unsecured Wifi network configuration can be
+  // gotten since there is no way to get password for a secured Wifi newwork
+  // in Cros for security reasons.
+  virtual void GetConnectedWifiNetwork(std::string* out_onc_spec);
+
   // Add and apply a network configuration. Used in shark/remora mode.
   virtual void CreateAndConnectNetworkFromOnc(
       const std::string& onc_spec,
