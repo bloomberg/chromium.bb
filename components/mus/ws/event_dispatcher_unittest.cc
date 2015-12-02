@@ -166,6 +166,42 @@ TEST(EventDispatcherTest, OnEvent) {
   EXPECT_EQ(gfx::Point(10, 15), dispatched_mouse_event->location());
 }
 
+TEST(EventDispatcherTest, AcceleratorBasic) {
+  TestEventDispatcherDelegate event_dispatcher_delegate(nullptr);
+  EventDispatcher dispatcher(&event_dispatcher_delegate);
+  uint32_t accelerator_1 = 1;
+  mojom::EventMatcherPtr matcher = mus::CreateKeyMatcher(
+      mus::mojom::KEYBOARD_CODE_W, mus::mojom::EVENT_FLAGS_CONTROL_DOWN);
+  EXPECT_TRUE(dispatcher.AddAccelerator(accelerator_1, matcher.Pass()));
+
+  uint32_t accelerator_2 = 2;
+  matcher = mus::CreateKeyMatcher(mus::mojom::KEYBOARD_CODE_N,
+                                  mus::mojom::EVENT_FLAGS_NONE);
+  EXPECT_TRUE(dispatcher.AddAccelerator(accelerator_2, matcher.Pass()));
+
+  // Attempting to add a new accelerator with the same id should fail.
+  matcher = mus::CreateKeyMatcher(mus::mojom::KEYBOARD_CODE_T,
+                                  mus::mojom::EVENT_FLAGS_NONE);
+  EXPECT_FALSE(dispatcher.AddAccelerator(accelerator_2, matcher.Pass()));
+
+  // Adding the accelerator with the same id should succeed once the existing
+  // accelerator is removed.
+  dispatcher.RemoveAccelerator(accelerator_2);
+  matcher = mus::CreateKeyMatcher(mus::mojom::KEYBOARD_CODE_T,
+                                  mus::mojom::EVENT_FLAGS_NONE);
+  EXPECT_TRUE(dispatcher.AddAccelerator(accelerator_2, matcher.Pass()));
+
+  // Attempting to add an accelerator with the same matcher should fail.
+  uint32_t accelerator_3 = 3;
+  matcher = mus::CreateKeyMatcher(mus::mojom::KEYBOARD_CODE_T,
+                                  mus::mojom::EVENT_FLAGS_NONE);
+  EXPECT_FALSE(dispatcher.AddAccelerator(accelerator_3, matcher.Pass()));
+
+  matcher = mus::CreateKeyMatcher(mus::mojom::KEYBOARD_CODE_T,
+                                  mus::mojom::EVENT_FLAGS_CONTROL_DOWN);
+  EXPECT_TRUE(dispatcher.AddAccelerator(accelerator_3, matcher.Pass()));
+}
+
 TEST(EventDispatcherTest, EventMatching) {
   TestServerWindowDelegate window_delegate;
   ServerWindow root(&window_delegate, WindowId(1, 2));

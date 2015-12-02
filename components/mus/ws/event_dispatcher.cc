@@ -109,7 +109,6 @@ class EventMatcher {
     return true;
   }
 
-#if !defined(NDEBUG)
   bool Equals(const EventMatcher& matcher) const {
     return fields_to_match_ == matcher.fields_to_match_ &&
            event_type_ == matcher.event_type_ &&
@@ -118,7 +117,6 @@ class EventMatcher {
            pointer_kind_ == matcher.pointer_kind_ &&
            pointer_region_ == matcher.pointer_region_;
   }
-#endif
 
  private:
   enum MatchFields {
@@ -153,16 +151,16 @@ EventDispatcher::~EventDispatcher() {
   }
 }
 
-void EventDispatcher::AddAccelerator(uint32_t id,
+bool EventDispatcher::AddAccelerator(uint32_t id,
                                      mojom::EventMatcherPtr event_matcher) {
   EventMatcher matcher(*event_matcher);
-#if !defined(NDEBUG)
+  // If an accelerator with the same id or matcher already exists, then abort.
   for (const auto& pair : accelerators_) {
-    DCHECK_NE(pair.first, id);
-    DCHECK(!matcher.Equals(pair.second));
+    if (pair.first == id || matcher.Equals(pair.second))
+      return false;
   }
-#endif
   accelerators_.insert(Entry(id, matcher));
+  return true;
 }
 
 void EventDispatcher::RemoveAccelerator(uint32_t id) {

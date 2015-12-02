@@ -97,7 +97,8 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
   void SetSize(mojo::SizePtr size) override;
   void SetTitle(const mojo::String& title) override;
   void AddAccelerator(uint32_t id,
-                      mojom::EventMatcherPtr event_matcher) override;
+                      mojom::EventMatcherPtr event_matcher,
+                      const AddAcceleratorCallback& callback) override;
   void RemoveAccelerator(uint32_t id) override;
   void AddActivationParent(uint32_t window_id) override;
   void RemoveActivationParent(uint32_t window_id) override;

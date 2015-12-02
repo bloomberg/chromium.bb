@@ -24,8 +24,10 @@ interface WindowTreeHost {
   // Add and remove accelerators. When accelerators are registered the
   // WindowTreeHostClient receives the event via OnAccelerator() rather than the
   // target window. The id is defined by the client and can be used to more
-  // easily identify the accelerator's action.
-  AddAccelerator(uint32 id, EventMatcher matcher);
+  // easily identify the accelerator's action. If an accelerator with the same
+  // id or the same matcher already exists, then the accelerator is not added,
+  // and returns false.
+  AddAccelerator(uint32 id, EventMatcher matcher) => (bool success);
   RemoveAccelerator(uint32 id);
 
   // Enables (or disables) child windows of |window_id| to be activated.

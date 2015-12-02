@@ -33,7 +33,10 @@ class EventDispatcher : public ServerWindowObserver {
 
   void set_surface_id(cc::SurfaceId surface_id) { surface_id_ = surface_id; }
 
-  void AddAccelerator(uint32_t id, mojom::EventMatcherPtr event_matcher);
+  // Adds an accelerator with the given id and event-matcher. If an accelerator
+  // already exists with the same id or the same matcher, then the accelerator
+  // is not added. Returns whether adding the accelerator was successful or not.
+  bool AddAccelerator(uint32_t id, mojom::EventMatcherPtr event_matcher);
   void RemoveAccelerator(uint32_t id);
 
   void OnEvent(mojom::EventPtr event);

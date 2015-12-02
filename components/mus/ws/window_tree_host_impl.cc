@@ -139,9 +139,12 @@ void WindowTreeHostImpl::SetTitle(const mojo::String& title) {
   display_manager_->SetTitle(title.To<base::string16>());
 }
 
-void WindowTreeHostImpl::AddAccelerator(uint32_t id,
-                                        mojom::EventMatcherPtr event_matcher) {
-  event_dispatcher_.AddAccelerator(id, event_matcher.Pass());
+void WindowTreeHostImpl::AddAccelerator(
+    uint32_t id,
+    mojom::EventMatcherPtr event_matcher,
+    const AddAcceleratorCallback& callback) {
+  bool success = event_dispatcher_.AddAccelerator(id, event_matcher.Pass());
+  callback.Run(success);
 }
 
 void WindowTreeHostImpl::RemoveAccelerator(uint32_t id) {

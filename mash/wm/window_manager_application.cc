@@ -4,6 +4,7 @@
 
 #include "mash/wm/window_manager_application.h"
 
+#include "base/bind.h"
 #include "components/mus/common/util.h"
 #include "components/mus/public/cpp/event_matcher.h"
 #include "components/mus/public/cpp/window.h"
@@ -23,6 +24,11 @@ namespace mash {
 namespace wm {
 namespace {
 const uint32_t kWindowSwitchCmd = 1;
+
+void AssertTrue(bool success) {
+  DCHECK(success);
+}
+
 }  // namespace
 
 WindowManagerApplication::WindowManagerApplication()
@@ -53,7 +59,8 @@ void WindowManagerApplication::AddAccelerators() {
   window_tree_host_->AddAccelerator(
       kWindowSwitchCmd,
       mus::CreateKeyMatcher(mus::mojom::KEYBOARD_CODE_TAB,
-                            mus::mojom::EVENT_FLAGS_CONTROL_DOWN));
+                            mus::mojom::EVENT_FLAGS_CONTROL_DOWN),
+      base::Bind(&AssertTrue));
 }
 
 void WindowManagerApplication::Initialize(mojo::ApplicationImpl* app) {

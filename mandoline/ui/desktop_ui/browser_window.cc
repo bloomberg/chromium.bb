@@ -208,27 +208,31 @@ void BrowserWindow::OnEmbed(mus::Window* root) {
   host_->AddAccelerator(
       static_cast<uint32_t>(BrowserCommand::CLOSE),
       mus::CreateKeyMatcher(mus::mojom::KEYBOARD_CODE_W,
-                            mus::mojom::EVENT_FLAGS_CONTROL_DOWN));
+                            mus::mojom::EVENT_FLAGS_CONTROL_DOWN),
+      mus::mojom::WindowTreeHost::AddAcceleratorCallback());
   host_->AddAccelerator(
       static_cast<uint32_t>(BrowserCommand::FOCUS_OMNIBOX),
       mus::CreateKeyMatcher(mus::mojom::KEYBOARD_CODE_L,
-                            mus::mojom::EVENT_FLAGS_CONTROL_DOWN));
+                            mus::mojom::EVENT_FLAGS_CONTROL_DOWN),
+      mus::mojom::WindowTreeHost::AddAcceleratorCallback());
   host_->AddAccelerator(
       static_cast<uint32_t>(BrowserCommand::NEW_WINDOW),
       mus::CreateKeyMatcher(mus::mojom::KEYBOARD_CODE_N,
-                            mus::mojom::EVENT_FLAGS_CONTROL_DOWN));
+                            mus::mojom::EVENT_FLAGS_CONTROL_DOWN),
+      mus::mojom::WindowTreeHost::AddAcceleratorCallback());
   host_->AddAccelerator(
       static_cast<uint32_t>(BrowserCommand::SHOW_FIND),
       mus::CreateKeyMatcher(mus::mojom::KEYBOARD_CODE_F,
-                            mus::mojom::EVENT_FLAGS_CONTROL_DOWN));
-  host_->AddAccelerator(
-      static_cast<uint32_t>(BrowserCommand::GO_BACK),
-      mus::CreateKeyMatcher(mus::mojom::KEYBOARD_CODE_LEFT,
-                            mus::mojom::EVENT_FLAGS_ALT_DOWN));
-  host_->AddAccelerator(
-      static_cast<uint32_t>(BrowserCommand::GO_FORWARD),
-      mus::CreateKeyMatcher(mus::mojom::KEYBOARD_CODE_RIGHT,
-                            mus::mojom::EVENT_FLAGS_ALT_DOWN));
+                            mus::mojom::EVENT_FLAGS_CONTROL_DOWN),
+      mus::mojom::WindowTreeHost::AddAcceleratorCallback());
+  host_->AddAccelerator(static_cast<uint32_t>(BrowserCommand::GO_BACK),
+                        mus::CreateKeyMatcher(mus::mojom::KEYBOARD_CODE_LEFT,
+                                              mus::mojom::EVENT_FLAGS_ALT_DOWN),
+                        mus::mojom::WindowTreeHost::AddAcceleratorCallback());
+  host_->AddAccelerator(static_cast<uint32_t>(BrowserCommand::GO_FORWARD),
+                        mus::CreateKeyMatcher(mus::mojom::KEYBOARD_CODE_RIGHT,
+                                              mus::mojom::EVENT_FLAGS_ALT_DOWN),
+                        mus::mojom::WindowTreeHost::AddAcceleratorCallback());
   // Now that we're ready, load the default url.
   LoadURL(default_url_);
 
