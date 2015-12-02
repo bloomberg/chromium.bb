@@ -294,6 +294,7 @@
       'browser/media/webrtc_browsertest.cc',
       'browser/media/webrtc_getusermedia_browsertest.cc',
       'browser/media/webrtc_internals_browsertest.cc',
+      'browser/media/webrtc_ip_permissions_browsertest.cc',
       'browser/media/webrtc_media_recorder_browsertest.cc',
       'browser/media/webrtc_webcam_browsertest.cc',
       'test/webrtc_content_browsertest_base.cc',

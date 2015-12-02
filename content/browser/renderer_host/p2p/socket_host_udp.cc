@@ -133,7 +133,8 @@ bool P2PSocketHostUdp::Init(const net::IPEndPoint& local_address,
 
   int result = socket_->Listen(local_address);
   if (result < 0) {
-    LOG(ERROR) << "bind() failed: " << result;
+    LOG(ERROR) << "bind() to " << local_address.ToString()
+               << " failed: " << result;
     OnError();
     return false;
   }

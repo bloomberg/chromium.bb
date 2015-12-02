@@ -33,12 +33,11 @@ void WebRtcContentBrowserTest::SetUpCommandLine(
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnforceWebRtcIPPermissionCheck);
 
-#if defined(OS_ANDROID)
-  // For OS_ANDROID, include loopback interface in network list, in case the
-  // test device doesn't have other interfaces available.
+  // Loopback interface is the non-default local address. They should only be in
+  // the candidate list if the ip handling policy is "default" AND the media
+  // permission is granted.
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kAllowLoopbackInPeerConnection);
-#endif
 }
 
 void WebRtcContentBrowserTest::SetUp() {

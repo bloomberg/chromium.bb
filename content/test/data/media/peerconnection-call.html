@@ -845,15 +845,20 @@
   function callWithDevicePermissionGranted() {
     var pc = new webkitRTCPeerConnection(null, null);
     gatherIceCandidates(pc, function(candidates) {
+      var hasLoopbackCandidate = false;
       assertEquals(candidates.length > 0, true);
       for (i = 0; i < candidates.length; i++) {
-        assertEquals(iceCandidateIsLoopback(candidates[i]), false);
+        hasLoopbackCandidate |= iceCandidateIsLoopback(candidates[i]);
       }
-      reportTestSuccess();
+      if (hasLoopbackCandidate) {
+        reportTestSuccess();
+      } else {
+        failTest('expect to see non-default host interface');
+      }
     });
   }
 
-  function callWithDevicePermissionDeniedAndEmptyIceServers() {
+  function callWithNoCandidateExpected() {
     var pc = new webkitRTCPeerConnection({iceServers:[]}, null);
     gatherIceCandidates(pc, function(candidates) {
       assertEquals(candidates.length, 0);
@@ -861,23 +866,18 @@
     });
   }
 
-  function callAndExpectLoopbackCandidates() {
+  function callAndExpectNonLoopbackCandidates() {
     var pc = new webkitRTCPeerConnection(null, null);
     gatherIceCandidates(pc, function(candidates) {
+      var hasCandidate = false;
       assertEquals(candidates.length > 0, true);
       for (i = 0; i < candidates.length; i++) {
-        assertEquals(iceCandidateIsLoopback(candidates[i]), true);
+        hasCandidate = true;
+        assertEquals(iceCandidateIsLoopback(candidates[i]), false);
       }
+      assertTrue(hasCandidate, 'expect to see at least one non-loopback candidate');
       reportTestSuccess();
     });
-  }
-
-  function callWithDevicePermissionDeniedAndUndefinedIceServers() {
-    callAndExpectLoopbackCandidates();
-  }
-
-  function callWithMultipleRoutesDisabledAndUndefinedIceServers() {
-    callAndExpectLoopbackCandidates();
   }
 
   function onOfferCreated(offer, caller, callee) {

@@ -129,13 +129,20 @@ void IpcNetworkManager::OnNetworkListChanged(
     network_v4->AddIP(ip_address_v4);
     networks.push_back(network_v4);
 
-    std::string name_v6("loopback_ipv6");
-    rtc::IPAddress ip_address_v6(in6addr_loopback);
-    rtc::Network* network_v6 = new rtc::Network(
-        name_v6, name_v6, ip_address_v6, 64, rtc::ADAPTER_TYPE_UNKNOWN);
-    network_v6->set_default_local_address_provider(this);
-    network_v6->AddIP(ip_address_v6);
-    networks.push_back(network_v6);
+    rtc::IPAddress ipv6_default_address;
+    // Only add IPv6 loopback if we can get default local address for IPv6. If
+    // we can't, it means that we don't have IPv6 enabled on this machine and
+    // bind() to the IPv6 loopback address will fail.
+    if (GetDefaultLocalAddress(AF_INET6, &ipv6_default_address)) {
+      DCHECK(!ipv6_default_address.IsNil());
+      std::string name_v6("loopback_ipv6");
+      rtc::IPAddress ip_address_v6(in6addr_loopback);
+      rtc::Network* network_v6 = new rtc::Network(
+          name_v6, name_v6, ip_address_v6, 64, rtc::ADAPTER_TYPE_UNKNOWN);
+      network_v6->set_default_local_address_provider(this);
+      network_v6->AddIP(ip_address_v6);
+      networks.push_back(network_v6);
+    }
   }
 
   bool changed = false;
