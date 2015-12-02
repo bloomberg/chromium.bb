@@ -63,7 +63,12 @@ function openGalleryWindow(urls) {
       });
     });
   }).then(function(gallery) {
+    // If the window is minimized, we need to restore it first.
+    if (gallery.rawAppWindow.isMinimized())
+      gallery.rawAppWindow.restore();
+
     gallery.rawAppWindow.show();
+
     return gallery.rawAppWindow.contentWindow.appID;
   }).catch(function(error) {
     console.error('Launch failed' + error.stack || error);
