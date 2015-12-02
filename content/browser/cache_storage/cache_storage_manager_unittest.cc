@@ -772,8 +772,8 @@ class MigratedLegacyCacheDirectoryNameTest : public CacheStorageManagerTest {
     EXPECT_TRUE(CachePut(callback_cache_, stored_url_));
     base::FilePath new_path = callback_cache_->path();
 
-    // Close the cache.
-    callback_cache_ = nullptr;
+    // Close the cache's backend so that the files can be moved.
+    callback_cache_->Close(base::Bind(&base::DoNothing));
     base::RunLoop().RunUntilIdle();
 
     // Legacy index files didn't have the cache directory, so remove it from the
