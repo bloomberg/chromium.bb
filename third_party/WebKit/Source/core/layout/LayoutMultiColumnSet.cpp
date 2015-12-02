@@ -146,6 +146,14 @@ LayoutMultiColumnSet* LayoutMultiColumnSet::previousSiblingMultiColumnSet() cons
     return nullptr;
 }
 
+bool LayoutMultiColumnSet::hasFragmentainerGroupForColumnAt(LayoutUnit offsetInFlowThread) const
+{
+    const MultiColumnFragmentainerGroup& lastRow = lastFragmentainerGroup();
+    if (lastRow.logicalTopInFlowThread() > offsetInFlowThread)
+        return true;
+    return offsetInFlowThread - lastRow.logicalTopInFlowThread() < lastRow.logicalHeight() * usedColumnCount();
+}
+
 MultiColumnFragmentainerGroup& LayoutMultiColumnSet::appendNewFragmentainerGroup()
 {
     MultiColumnFragmentainerGroup newGroup(*this);

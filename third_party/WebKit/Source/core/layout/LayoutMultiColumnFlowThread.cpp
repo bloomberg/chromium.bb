@@ -439,44 +439,33 @@ LayoutMultiColumnFlowThread* LayoutMultiColumnFlowThread::enclosingFlowThread() 
     return nullptr;
 }
 
-bool LayoutMultiColumnFlowThread::hasFragmentainerGroupForColumnAt(LayoutUnit offsetInFlowThread) const
+void LayoutMultiColumnFlowThread::appendNewFragmentainerGroupIfNeeded(LayoutUnit offsetInFlowThread)
 {
-    // If there's no enclosing flow thread, there'll always be only one fragmentainer group, and it
-    // can hold as many columns as we like. We shouldn't even be here in that case.
-    ASSERT(enclosingFlowThread());
-
     if (!isPageLogicalHeightKnown()) {
         // If we have no clue about the height of the multicol container, bail. This situation
         // occurs initially when an auto-height multicol container is nested inside another
         // auto-height multicol container. We need at least an estimated height of the outer
         // multicol container before we can check what an inner fragmentainer group has room for.
-        // Its height height is indefinite for now.
-        return true;
+        // Its height is indefinite for now.
+        return;
+    }
+    LayoutMultiColumnSet* columnSet = columnSetAtBlockOffset(offsetInFlowThread);
+    if (columnSet->isInitialHeightCalculated()) {
+        // We only insert additional fragmentainer groups in the initial layout pass. We only want
+        // to balance columns in the last fragmentainer group (if we need to balance at all), so we
+        // want that last fragmentainer group to be the same one in all layout passes that follow.
+        return;
     }
 
-    LayoutMultiColumnSet* lastColumnSet = lastMultiColumnSet();
-    if (!lastColumnSet) {
-        ASSERT_NOT_REACHED();
-        return true;
-    }
-    if (lastColumnSet->logicalTopInFlowThread() > offsetInFlowThread)
-        return true;
-    const MultiColumnFragmentainerGroup& lastRow = lastColumnSet->lastFragmentainerGroup();
-    if (lastRow.logicalTopInFlowThread() > offsetInFlowThread)
-        return true;
-    return offsetInFlowThread - lastRow.logicalTopInFlowThread() < lastRow.logicalHeight() * lastColumnSet->usedColumnCount();
-}
+    if (!columnSet->hasFragmentainerGroupForColumnAt(offsetInFlowThread)) {
+        LayoutMultiColumnFlowThread* enclosingFlowThread = this->enclosingFlowThread();
+        if (!enclosingFlowThread)
+            return; // Not nested. We'll never need more rows than the one we already have then.
 
-void LayoutMultiColumnFlowThread::appendNewFragmentainerGroupIfNeeded(LayoutUnit offsetInFlowThread)
-{
-    LayoutMultiColumnFlowThread* enclosingFlowThread = this->enclosingFlowThread();
-    if (!enclosingFlowThread)
-        return; // Not nested. We'll never need more rows than the one we already have then.
-    if (!hasFragmentainerGroupForColumnAt(offsetInFlowThread)) {
         // We have run out of columns here, so we add another row to hold more columns. When we add
         // a new row, it implicitly means that we're inserting another column in our enclosing
         // multicol container. That in turn may mean that we've run out of columns there too.
-        const MultiColumnFragmentainerGroup& newRow = lastMultiColumnSet()->appendNewFragmentainerGroup();
+        const MultiColumnFragmentainerGroup& newRow = columnSet->appendNewFragmentainerGroup();
         enclosingFlowThread->appendNewFragmentainerGroupIfNeeded(newRow.blockOffsetInEnclosingFlowThread());
     }
 }
@@ -933,18 +922,6 @@ void LayoutMultiColumnFlowThread::contentWasLaidOut(LayoutUnit logicalTopInFlowT
     // thread for real.
     bool mayBeNested = multiColumnBlockFlow()->isInsideFlowThread();
     if (!mayBeNested)
-        return;
-    LayoutMultiColumnSet* columnSet = columnSetAtBlockOffset(logicalTopInFlowThreadAfterPagination);
-    if (!columnSet)
-        return;
-    if (columnSet->isInitialHeightCalculated()) {
-        // We only insert additional fragmentainer groups in the initial layout pass. We only want
-        // to balance columns in the last fragmentainer group (if we need to balance at all), so we
-        // want that last fragmentainer group to be the same one in all layout passes that follow.
-        return;
-    }
-    MultiColumnFragmentainerGroup& row = columnSet->fragmentainerGroupAtFlowThreadOffset(logicalTopInFlowThreadAfterPagination);
-    if (!row.isLastGroup())
         return;
     appendNewFragmentainerGroupIfNeeded(logicalTopInFlowThreadAfterPagination);
 }

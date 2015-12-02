@@ -96,6 +96,9 @@ public:
     LayoutMultiColumnSet* nextSiblingMultiColumnSet() const;
     LayoutMultiColumnSet* previousSiblingMultiColumnSet() const;
 
+    // Return true if we have a fragmentainer group that can hold a column at the specified flow thread block offset.
+    bool hasFragmentainerGroupForColumnAt(LayoutUnit offsetInFlowThread) const;
+
     MultiColumnFragmentainerGroup& appendNewFragmentainerGroup();
 
     LayoutUnit logicalTopInFlowThread() const;
