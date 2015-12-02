@@ -94,6 +94,11 @@
 #include "third_party/skia/include/core/SkPixelRef.h"
 #endif  // defined(OS_POSIX)
 
+#if defined(MOJO_SHELL_CLIENT)
+#include "content/public/common/mojo_shell_connection.h"
+#include "content/renderer/render_widget_mus_connection.h"
+#endif
+
 #include "third_party/WebKit/public/web/WebWidget.h"
 
 using blink::WebCompositionUnderline;
@@ -1012,6 +1017,14 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(bool fallback) {
   bool use_software = fallback;
   if (command_line.HasSwitch(switches::kDisableGpuCompositing))
     use_software = true;
+
+#if defined(MOJO_SHELL_CLIENT)
+  if (MojoShellConnection::Get() && !use_software) {
+    RenderWidgetMusConnection* connection =
+        RenderWidgetMusConnection::GetOrCreate(routing_id());
+    return connection->CreateOutputSurface();
+  }
+#endif
 
   scoped_refptr<ContextProviderCommandBuffer> context_provider;
   scoped_refptr<ContextProviderCommandBuffer> worker_context_provider;

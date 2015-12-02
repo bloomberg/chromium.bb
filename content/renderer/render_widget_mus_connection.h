@@ -6,6 +6,7 @@
 #define CONTENT_RENDERER_RENDER_WIDGET_MUS_CONNECTION_H_
 
 #include "base/macros.h"
+#include "cc/output/output_surface.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_observer.h"
 #include "components/mus/public/cpp/window_surface.h"
@@ -18,14 +19,20 @@ namespace content {
 class RenderWidgetMusConnection : public mus::WindowTreeDelegate,
                                   public mus::WindowObserver {
  public:
-  RenderWidgetMusConnection(
-      int routing_id,
-      mojo::InterfaceRequest<mus::mojom::WindowTreeClient> request);
+  explicit RenderWidgetMusConnection(int routing_id);
   ~RenderWidgetMusConnection() override;
 
- private:
-  void SubmitCompositorFrame();
+  // Connect to a WindowTreeClient request.
+  void Bind(mojo::InterfaceRequest<mus::mojom::WindowTreeClient> request);
 
+  // Create a cc output surface.
+  scoped_ptr<cc::OutputSurface> CreateOutputSurface();
+
+  // Get the connection from a routing_id, if the connection doesn't exist,
+  // a new connection will be created.
+  static RenderWidgetMusConnection* GetOrCreate(int routing_id);
+
+ private:
   // WindowTreeDelegate implementation:
   void OnConnectionLost(mus::WindowTreeConnection* connection) override;
   void OnEmbed(mus::Window* root) override;
@@ -36,7 +43,7 @@ class RenderWidgetMusConnection : public mus::WindowTreeDelegate,
 
   const int routing_id_;
   mus::Window* root_;
-  scoped_ptr<mus::WindowSurface> surface_;
+  scoped_ptr<mus::WindowSurfaceBinding> window_surface_binding_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetMusConnection);
 };

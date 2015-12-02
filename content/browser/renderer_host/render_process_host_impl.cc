@@ -224,6 +224,7 @@
 
 #if defined(MOJO_SHELL_CLIENT)
 #include "content/browser/mojo/mojo_shell_client_host.h"
+#include "content/common/mojo/mojo_shell_connection_impl.h"
 #endif
 
 #if defined(OS_WIN)
@@ -1544,6 +1545,11 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
       renderer_cmd->AppendSwitch(switches::kWaitForDebugger);
     }
   }
+
+#if defined(MOJO_SHELL_CLIENT)
+  if (IsRunningInMojoShell())
+    renderer_cmd->AppendSwitch(switches::kEnableMojoShellConnection);
+#endif
 }
 
 base::ProcessHandle RenderProcessHostImpl::GetHandle() const {

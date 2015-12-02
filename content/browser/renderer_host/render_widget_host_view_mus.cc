@@ -62,7 +62,12 @@ bool RenderWidgetHostViewMus::IsShowing() {
 
 void RenderWidgetHostViewMus::SetSize(const gfx::Size& size) {
   size_ = size;
-  window_->window()->SetBounds(gfx::Rect(size));
+  gfx::Rect bounds = window_->window()->bounds();
+  // TODO(fsamuel): figure out position.
+  bounds.set_x(10);
+  bounds.set_y(150);
+  bounds.set_size(size);
+  window_->window()->SetBounds(bounds);
   host_->WasResized();
 }
 

@@ -4,7 +4,14 @@
 
 #include "content/renderer/render_widget_mus_connection.h"
 
+#include <map>
+
+#include "base/lazy_instance.h"
+#include "components/mus/public/cpp/context_provider.h"
+#include "components/mus/public/cpp/output_surface.h"
+#include "components/mus/public/interfaces/command_buffer.mojom.h"
 #include "components/mus/public/interfaces/compositor_frame.mojom.h"
+#include "components/mus/public/interfaces/gpu.mojom.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "content/public/common/mojo_shell_connection.h"
 #include "mojo/application/public/cpp/application_impl.h"
@@ -13,67 +20,72 @@
 
 namespace content {
 
-RenderWidgetMusConnection::RenderWidgetMusConnection(
-    int routing_id,
-    mojo::InterfaceRequest<mus::mojom::WindowTreeClient> request)
+namespace {
+
+typedef std::map<int, RenderWidgetMusConnection*> ConnectionMap;
+base::LazyInstance<ConnectionMap>::Leaky g_connections =
+    LAZY_INSTANCE_INITIALIZER;
+}
+
+RenderWidgetMusConnection::RenderWidgetMusConnection(int routing_id)
     : routing_id_(routing_id), root_(nullptr) {
-  // TODO(fsamuel): We should probably introduce a
-  // RenderWidgetMusConnection::FromRoutingID that's usable from RenderWidget.
-  // TODO(fsamuel): We probably want to pause processing of incoming
-  // messages until we have an associated RenderWidget.
+  DCHECK(routing_id);
+}
+
+RenderWidgetMusConnection::~RenderWidgetMusConnection() {}
+
+void RenderWidgetMusConnection::Bind(
+    mojo::InterfaceRequest<mus::mojom::WindowTreeClient> request) {
+  DCHECK(!root_);
   mus::WindowTreeConnection::Create(
       this, request.Pass(),
       mus::WindowTreeConnection::CreateType::DONT_WAIT_FOR_EMBED);
 }
 
-RenderWidgetMusConnection::~RenderWidgetMusConnection() {}
+scoped_ptr<cc::OutputSurface> RenderWidgetMusConnection::CreateOutputSurface() {
+  DCHECK(!window_surface_binding_);
+  mus::mojom::GpuPtr gpu_service;
+  MojoShellConnection::Get()->GetApplication()->ConnectToService("mojo:mus",
+                                                                 &gpu_service);
+  mus::mojom::CommandBufferPtr cb;
+  gpu_service->CreateOffscreenGLES2Context(GetProxy(&cb));
+  scoped_refptr<cc::ContextProvider> context_provider(
+      new mus::ContextProvider(cb.PassInterface().PassHandle()));
+  scoped_ptr<cc::OutputSurface> output_surface(new mus::OutputSurface(
+      context_provider, mus::WindowSurface::Create(&window_surface_binding_)));
+  if (root_) {
+    root_->AttachSurface(mus::mojom::SURFACE_TYPE_DEFAULT,
+                         window_surface_binding_.Pass());
+  }
+  return output_surface.Pass();
+}
 
-void RenderWidgetMusConnection::SubmitCompositorFrame() {
-  const gfx::Rect bounds(root_->bounds());
-  mus::mojom::PassPtr pass = mojo::CreateDefaultPass(1, bounds);
-  mus::mojom::CompositorFramePtr frame = mus::mojom::CompositorFrame::New();
+// static
+RenderWidgetMusConnection* RenderWidgetMusConnection::GetOrCreate(
+    int routing_id) {
+  auto it = g_connections.Get().find(routing_id);
+  if (it != g_connections.Get().end())
+    return it->second;
 
-  mus::mojom::CompositorFrameMetadataPtr meta =
-      mus::mojom::CompositorFrameMetadata::New();
-  meta->device_scale_factor = 1.0f;
-  frame->metadata = meta.Pass();
-
-  frame->resources.resize(0u);
-
-  pass->quads.resize(0u);
-  pass->shared_quad_states.push_back(mojo::CreateDefaultSQS(bounds.size()));
-
-  mus::mojom::QuadPtr quad = mus::mojom::Quad::New();
-  quad->material = mus::mojom::MATERIAL_SOLID_COLOR;
-  quad->rect = mojo::Rect::From(bounds);
-  quad->opaque_rect = mojo::Rect::New();
-  quad->visible_rect = mojo::Rect::From(bounds);
-  quad->needs_blending = false;
-  quad->shared_quad_state_index = 0u;
-
-  mus::mojom::SolidColorQuadStatePtr color_state =
-      mus::mojom::SolidColorQuadState::New();
-  color_state->color = mus::mojom::Color::New();
-  color_state->color->rgba = 0xff00ff00;
-  color_state->force_anti_aliasing_off = false;
-
-  quad->solid_color_quad_state = color_state.Pass();
-  pass->quads.push_back(quad.Pass());
-  frame->passes.push_back(pass.Pass());
-  surface_->SubmitCompositorFrame(frame.Pass(), mojo::Closure());
+  RenderWidgetMusConnection* connection =
+      new RenderWidgetMusConnection(routing_id);
+  g_connections.Get().insert(std::make_pair(routing_id, connection));
+  return connection;
 }
 
 void RenderWidgetMusConnection::OnConnectionLost(
     mus::WindowTreeConnection* connection) {
+  g_connections.Get().erase(routing_id_);
   delete this;
 }
 
 void RenderWidgetMusConnection::OnEmbed(mus::Window* root) {
   root_ = root;
   root_->AddObserver(this);
-  surface_ = root_->RequestSurface(mus::mojom::SURFACE_TYPE_DEFAULT);
-  surface_->BindToThread();
-  SubmitCompositorFrame();
+  if (window_surface_binding_) {
+    root->AttachSurface(mus::mojom::SURFACE_TYPE_DEFAULT,
+                        window_surface_binding_.Pass());
+  }
 }
 
 void RenderWidgetMusConnection::OnUnembed() {}
@@ -82,7 +94,6 @@ void RenderWidgetMusConnection::OnWindowBoundsChanged(
     mus::Window* window,
     const gfx::Rect& old_bounds,
     const gfx::Rect& new_bounds) {
-  SubmitCompositorFrame();
 }
 
 }  // namespace content

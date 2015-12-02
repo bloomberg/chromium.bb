@@ -94,11 +94,12 @@ int RendererMain(const MainFunctionParams& parameters) {
   base::trace_event::TraceLog::GetInstance()->SetProcessSortIndex(
       kTraceEventRendererProcessSortIndex);
 
-#if defined(MOJO_SHELL_CLIENT)
-  MojoShellConnectionImpl::Create();
-#endif
-
   const base::CommandLine& parsed_command_line = parameters.command_line;
+
+#if defined(MOJO_SHELL_CLIENT)
+  if (parsed_command_line.HasSwitch(switches::kEnableMojoShellConnection))
+    MojoShellConnectionImpl::Create();
+#endif
 
 #if defined(OS_MACOSX)
   base::mac::ScopedNSAutoreleasePool* pool = parameters.autorelease_pool;

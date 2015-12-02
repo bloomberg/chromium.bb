@@ -52,7 +52,9 @@ class RenderWidgetWindowTreeClientFactoryImpl
   void CreateWindowTreeClientForRenderWidget(
       uint32_t routing_id,
       mojo::InterfaceRequest<mus::mojom::WindowTreeClient> request) override {
-    new RenderWidgetMusConnection(routing_id, request.Pass());
+    RenderWidgetMusConnection* connection =
+        RenderWidgetMusConnection::GetOrCreate(routing_id);
+    connection->Bind(request.Pass());
   }
 
   mojo::WeakBindingSet<mojom::RenderWidgetWindowTreeClientFactory> bindings_;

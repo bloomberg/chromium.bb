@@ -983,6 +983,9 @@ const char kMemoryPressureThresholdsMb[] = "memory-pressure-thresholds-mb";
 const char kTraceExportEventsToETW[] = "trace-export-events-to-etw";
 #endif
 
+// Enable the Mojo shell connection in renderers.
+const char kEnableMojoShellConnection[] = "enable-mojo-shell-connection";
+
 // Don't dump stuff here, follow the same order as the header.
 
 }  // namespace switches
