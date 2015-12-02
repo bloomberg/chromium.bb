@@ -6,6 +6,8 @@
 
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"
+#include "mash/wm/frame/frame_border_hit_test_controller.h"
+#include "mash/wm/frame/move_event_handler.h"
 #include "mash/wm/frame/non_client_frame_view_mash.h"
 #include "mash/wm/property_util.h"
 #include "mash/wm/shadow.h"
@@ -92,7 +94,12 @@ class WmNativeWidgetMus : public views::NativeWidgetMus {
                         shell,
                         window,
                         mus::mojom::SURFACE_TYPE_UNDERLAY) {}
-  ~WmNativeWidgetMus() override {}
+  ~WmNativeWidgetMus() override {
+    if (move_event_handler_) {
+      GetNativeView()->GetHost()->window()->RemovePreTargetHandler(
+          move_event_handler_.get());
+    }
+  }
 
   // NativeWidgetMus:
   views::NonClientFrameView* CreateNonClientFrameView() override {
@@ -100,6 +107,9 @@ class WmNativeWidgetMus : public views::NativeWidgetMus {
         static_cast<views::internal::NativeWidgetPrivate*>(this)->GetWidget();
     NonClientFrameViewMash* frame_view =
         new NonClientFrameViewMash(widget, window());
+    aura::Window* root_window = GetNativeView()->GetHost()->window();
+    move_event_handler_.reset(new MoveEventHandler(window(), GetNativeView()));
+    root_window->AddPreTargetHandler(move_event_handler_.get());
     return frame_view;
   }
   void InitNativeWidget(const views::Widget::InitParams& params) override {
@@ -129,6 +139,8 @@ class WmNativeWidgetMus : public views::NativeWidgetMus {
   // The shadow, may be null.
   scoped_ptr<Shadow> shadow_;
 
+  scoped_ptr<MoveEventHandler> move_event_handler_;
+
   DISALLOW_COPY_AND_ASSIGN(WmNativeWidgetMus);
 };
 
@@ -153,7 +165,8 @@ NonClientFrameController::NonClientFrameController(
       Shadow::GetInteriorInsetForStyle(Shadow::STYLE_ACTIVE);
   mus_window_tree_host_->SetUnderlaySurfaceOffsetAndExtendedHitArea(
       window->id(), shadow_inset, shadow_inset,
-      mojo::Insets::From(gfx::Insets()));
+      mojo::Insets::From(
+          FrameBorderHitTestController::GetResizeOutsideBoundsSize()));
 }
 
 // static

@@ -8,6 +8,7 @@
 #include "base/macros.h"
 
 namespace gfx {
+class Insets;
 class Point;
 }
 
@@ -23,6 +24,10 @@ class FrameCaptionButtonContainerView;
 // Class which manages the hittest override bounds for |frame|.
 class FrameBorderHitTestController {
  public:
+  // Returns the amount of space resizes are allowed to occur outside the
+  // bounds of windows.
+  static gfx::Insets GetResizeOutsideBoundsSize();
+
   // Does the non client hit test on behalf of |view|. |point_in_widget| must be
   // in the coordinates of |view|'s widget.
   static int NonClientHitTest(

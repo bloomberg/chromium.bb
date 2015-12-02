@@ -28,7 +28,6 @@ namespace mash {
 namespace wm {
 
 class FrameCaptionButtonContainerView;
-class MoveLoop;
 
 class NonClientFrameViewMash : public views::NonClientFrameView,
                                public mus::WindowObserver {
@@ -64,10 +63,6 @@ class NonClientFrameViewMash : public views::NonClientFrameView,
   gfx::Size GetMaximumSize() const override;
   void OnPaint(gfx::Canvas* canvas) override;
   void PaintChildren(const ui::PaintContext& context) override;
-  bool OnMousePressed(const ui::MouseEvent& event) override;
-  bool OnMouseDragged(const ui::MouseEvent& event) override;
-  void OnMouseReleased(const ui::MouseEvent& event) override;
-  void OnMouseCaptureLost() override;
 
   // mus::WindowObserver:
   void OnWindowClientAreaChanged(mus::Window* window,
@@ -83,16 +78,11 @@ class NonClientFrameViewMash : public views::NonClientFrameView,
   // Height from top of window to top of client area.
   int NonClientTopBorderHeight() const;
 
-  bool StartMoveLoopIfNecessary(const ui::Event& event);
-  void ContinueMove(const ui::Event& event);
-  void StopMove();
-
   // Not owned.
   views::Widget* frame_;
 
   mus::Window* window_;
   ui::PaintCache paint_cache_;
-  scoped_ptr<MoveLoop> move_loop_;
 
   // View which contains the title and window controls.
   class HeaderView;

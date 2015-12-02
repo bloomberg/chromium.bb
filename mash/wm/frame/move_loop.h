@@ -38,19 +38,21 @@ class MoveLoop : public mus::WindowObserver {
     OTHER,
   };
 
-  // Number of pixels in which a resize is triggered.
-  static const int kResizeSize = 8;
-
   ~MoveLoop() override;
 
   // If a move/resize loop should occur for the specified parameters creates
   // and returns a new MoveLoop. All events should be funneled to the MoveLoop
-  // until done (Move()).
+  // until done (Move()). |ht_location| is one of the constants defined by
+  // HitTestCompat.
   static scoped_ptr<MoveLoop> Create(mus::Window* target,
+                                     int ht_location,
                                      const mus::mojom::Event& event);
 
   // Processes an event for a move/resize loop.
   MoveResult Move(const mus::mojom::Event& event);
+
+  // If possible reverts any changes made during the move loop.
+  void Revert();
 
  private:
   enum class Type {
@@ -64,8 +66,9 @@ class MoveLoop : public mus::WindowObserver {
            HorizontalLocation h_loc,
            VerticalLocation v_loc);
 
-  static void DetermineType(mus::Window* target,
-                            const gfx::Point& location,
+  // Determines the type of move from the specified HitTestCompat value.
+  // Returns true if a move/resize should occur.
+  static bool DetermineType(int ht_location,
                             Type* type,
                             HorizontalLocation* h_loc,
                             VerticalLocation* v_loc);
@@ -77,8 +80,6 @@ class MoveLoop : public mus::WindowObserver {
   // After this the MoveLoop is still ongoing and won't stop until the
   // appropriate event is received.
   void Cancel();
-
-  void Revert();
 
   gfx::Rect DetermineBoundsFromDelta(const gfx::Vector2d& delta);
 

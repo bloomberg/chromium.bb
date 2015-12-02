@@ -12,6 +12,6 @@ group("example") {
     "//mash/example/views_examples",
     "//mash/example/window_type_launcher",
     "//mash/wm",
-    "//mojo/runner",
+    "//mojo/runner:mojo_runner",
   ]
 }

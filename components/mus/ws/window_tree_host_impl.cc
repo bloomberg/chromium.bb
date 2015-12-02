@@ -177,8 +177,7 @@ void WindowTreeHostImpl::SetUnderlaySurfaceOffsetAndExtendedHitArea(
     return;
 
   window->SetUnderlayOffset(gfx::Vector2d(x_offset, y_offset));
-
-  // TODO(sky): support hit area.
+  window->set_extended_hit_test_region(hit_area.To<gfx::Insets>());
 }
 
 void WindowTreeHostImpl::OnClientClosed() {

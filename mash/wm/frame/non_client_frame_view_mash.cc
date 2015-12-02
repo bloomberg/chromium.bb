@@ -13,7 +13,6 @@
 #include "mash/wm/frame/default_header_painter.h"
 #include "mash/wm/frame/frame_border_hit_test_controller.h"
 #include "mash/wm/frame/header_painter.h"
-#include "mash/wm/frame/move_loop.h"
 #include "mojo/converters/input_events/input_events_type_converters.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/paint_recorder.h"
@@ -282,23 +281,6 @@ void NonClientFrameViewMash::PaintChildren(const ui::PaintContext& context) {
                               SkXfermode::kSrc_Mode);
 }
 
-bool NonClientFrameViewMash::OnMousePressed(const ui::MouseEvent& event) {
-  return StartMoveLoopIfNecessary(event);
-}
-
-bool NonClientFrameViewMash::OnMouseDragged(const ui::MouseEvent& event) {
-  ContinueMove(event);
-  return move_loop_.get() != nullptr;
-}
-
-void NonClientFrameViewMash::OnMouseReleased(const ui::MouseEvent& event) {
-  ContinueMove(event);
-}
-
-void NonClientFrameViewMash::OnMouseCaptureLost() {
-  StopMove();
-}
-
 void NonClientFrameViewMash::OnWindowClientAreaChanged(
     mus::Window* window,
     const gfx::Insets& old_client_area) {
@@ -313,27 +295,6 @@ void NonClientFrameViewMash::OnWindowClientAreaChanged(
 void NonClientFrameViewMash::OnWindowDestroyed(mus::Window* window) {
   window_->RemoveObserver(this);
   window_ = nullptr;
-}
-
-bool NonClientFrameViewMash::StartMoveLoopIfNecessary(const ui::Event& event) {
-  if (move_loop_)
-    return false;
-  // TODO(sky): convert MoveLoop to take ui::Event.
-  // TODO(sky): pass in hit test result.
-  move_loop_ = MoveLoop::Create(window_, *mus::mojom::Event::From(event));
-  return true;
-}
-
-void NonClientFrameViewMash::ContinueMove(const ui::Event& event) {
-  // TODO(sky): convert MoveLoop to take ui::Event.
-  if (move_loop_ &&
-      move_loop_->Move(*mus::mojom::Event::From(event)) == MoveLoop::DONE) {
-    move_loop_.reset();
-  }
-}
-
-void NonClientFrameViewMash::StopMove() {
-  move_loop_.reset();
 }
 
 views::View* NonClientFrameViewMash::GetHeaderView() {

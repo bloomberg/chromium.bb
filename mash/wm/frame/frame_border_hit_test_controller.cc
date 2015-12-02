@@ -8,6 +8,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/window/non_client_view.h"
@@ -26,6 +27,12 @@ const int kResizeAreaCornerSize = 16;
 const int kResizeOutsideBoundsSize = 6;
 const int kResizeOutsideBoundsScaleForTouch = 5;
 const int kResizeInsideBoundsSize = 1;
+
+// static
+gfx::Insets FrameBorderHitTestController::GetResizeOutsideBoundsSize() {
+  return gfx::Insets(kResizeOutsideBoundsSize, kResizeOutsideBoundsSize,
+                     kResizeOutsideBoundsSize, kResizeOutsideBoundsSize);
+}
 
 // static
 int FrameBorderHitTestController::NonClientHitTest(

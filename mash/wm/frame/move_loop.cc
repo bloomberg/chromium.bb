@@ -8,6 +8,7 @@
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/interfaces/input_event_constants.mojom.h"
 #include "mash/wm/property_util.h"
+#include "ui/base/hit_test.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -15,11 +16,6 @@ namespace mash {
 namespace wm {
 
 namespace {
-
-gfx::Point EventLocationToPoint(const mus::mojom::Event& event) {
-  return gfx::ToFlooredPoint(gfx::PointF(event.pointer_data->location->x,
-                                         event.pointer_data->location->y));
-}
 
 gfx::Point EventScreenLocationToPoint(const mus::mojom::Event& event) {
   return gfx::ToFlooredPoint(
@@ -34,12 +30,6 @@ mus::mojom::EventFlags MouseOnlyEventFlags(mus::mojom::EventFlags flags) {
                mus::mojom::EVENT_FLAGS_RIGHT_MOUSE_BUTTON));
 }
 
-gfx::Rect ClientAreaBounds(const mus::Window* window) {
-  gfx::Rect client_area(window->bounds().size());
-  client_area.Inset(window->client_area());
-  return client_area;
-}
-
 }  // namespace
 
 MoveLoop::~MoveLoop() {
@@ -49,14 +39,9 @@ MoveLoop::~MoveLoop() {
 
 // static
 scoped_ptr<MoveLoop> MoveLoop::Create(mus::Window* target,
+                                      int ht_location,
                                       const mus::mojom::Event& event) {
   DCHECK_EQ(event.action, mus::mojom::EVENT_TYPE_POINTER_DOWN);
-  const gfx::Point location(EventLocationToPoint(event));
-  if (!gfx::Rect(target->bounds().size()).Contains(location) ||
-      ClientAreaBounds(target).Contains(location)) {
-    return nullptr;
-  }
-
   // Start a move on left mouse, or any other type of pointer.
   if (event.pointer_data->kind == mus::mojom::POINTER_KIND_MOUSE &&
       MouseOnlyEventFlags(event.flags) !=
@@ -67,7 +52,8 @@ scoped_ptr<MoveLoop> MoveLoop::Create(mus::Window* target,
   Type type;
   HorizontalLocation h_loc;
   VerticalLocation v_loc;
-  DetermineType(target, location, &type, &h_loc, &v_loc);
+  if (!DetermineType(ht_location, &type, &h_loc, &v_loc))
+    return nullptr;
 
   return make_scoped_ptr(new MoveLoop(target, event, type, h_loc, v_loc));
 }
@@ -103,6 +89,15 @@ MoveLoop::MoveResult MoveLoop::Move(const mus::mojom::Event& event) {
   return MoveResult::CONTINUE;
 }
 
+void MoveLoop::Revert() {
+  if (!target_)
+    return;
+
+  base::AutoReset<bool> resetter(&changing_bounds_, true);
+  target_->SetBounds(initial_window_bounds_);
+  SetWindowUserSetBounds(target_, initial_user_set_bounds_);
+}
+
 MoveLoop::MoveLoop(mus::Window* target,
                    const mus::mojom::Event& event,
                    Type type,
@@ -121,40 +116,57 @@ MoveLoop::MoveLoop(mus::Window* target,
 }
 
 // static
-void MoveLoop::DetermineType(mus::Window* target,
-                             const gfx::Point& location,
+bool MoveLoop::DetermineType(int ht_location,
                              Type* type,
                              HorizontalLocation* h_loc,
                              VerticalLocation* v_loc) {
   *h_loc = HorizontalLocation::OTHER;
   *v_loc = VerticalLocation::OTHER;
-  const int resize_size = static_cast<int>(
-      kResizeSize *
-      std::max(1.f, target->viewport_metrics().device_pixel_ratio));
-
-  const gfx::Rect client_area(ClientAreaBounds(target));
-  if (location.x() < client_area.x())
-    *h_loc = HorizontalLocation::LEFT;
-  else if (location.x() >= client_area.right())
-    *h_loc = HorizontalLocation::RIGHT;
-  else
-    *h_loc = HorizontalLocation::OTHER;
-
-  if (location.y() < resize_size)
-    *v_loc = VerticalLocation::TOP;
-  else if (location.y() >= client_area.bottom())
-    *v_loc = VerticalLocation::BOTTOM;
-  else
-    *v_loc = VerticalLocation::OTHER;
-
-  if (*v_loc == VerticalLocation::OTHER && location.y() >= resize_size &&
-      *h_loc == HorizontalLocation::OTHER) {
-    *type = Type::MOVE;
-    return;
+  switch (ht_location) {
+    case HTCAPTION:
+      *type = Type::MOVE;
+      *v_loc = VerticalLocation::TOP;
+      return true;
+    case HTTOPLEFT:
+      *type = Type::RESIZE;
+      *v_loc = VerticalLocation::TOP;
+      *h_loc = HorizontalLocation::LEFT;
+      return true;
+    case HTTOP:
+      *type = Type::RESIZE;
+      *v_loc = VerticalLocation::TOP;
+      return true;
+    case HTTOPRIGHT:
+      *type = Type::RESIZE;
+      *v_loc = VerticalLocation::TOP;
+      *h_loc = HorizontalLocation::RIGHT;
+      return true;
+    case HTRIGHT:
+      *type = Type::RESIZE;
+      *h_loc = HorizontalLocation::RIGHT;
+      return true;
+    case HTBOTTOMRIGHT:
+      *type = Type::RESIZE;
+      *v_loc = VerticalLocation::BOTTOM;
+      *h_loc = HorizontalLocation::RIGHT;
+      return true;
+    case HTBOTTOM:
+      *type = Type::RESIZE;
+      *v_loc = VerticalLocation::BOTTOM;
+      return true;
+    case HTBOTTOMLEFT:
+      *type = Type::RESIZE;
+      *v_loc = VerticalLocation::BOTTOM;
+      *h_loc = HorizontalLocation::LEFT;
+      return true;
+    case HTLEFT:
+      *type = Type::RESIZE;
+      *h_loc = HorizontalLocation::LEFT;
+      return true;
+    default:
+      break;
   }
-  *type = Type::RESIZE;
-  DCHECK(*h_loc != HorizontalLocation::OTHER ||
-         *v_loc != VerticalLocation::OTHER);
+  return false;
 }
 
 void MoveLoop::MoveImpl(const mus::mojom::Event& event) {
@@ -169,12 +181,6 @@ void MoveLoop::MoveImpl(const mus::mojom::Event& event) {
 void MoveLoop::Cancel() {
   target_->RemoveObserver(this);
   target_ = nullptr;
-}
-
-void MoveLoop::Revert() {
-  base::AutoReset<bool> resetter(&changing_bounds_, true);
-  target_->SetBounds(initial_window_bounds_);
-  SetWindowUserSetBounds(target_, initial_user_set_bounds_);
 }
 
 gfx::Rect MoveLoop::DetermineBoundsFromDelta(const gfx::Vector2d& delta) {
