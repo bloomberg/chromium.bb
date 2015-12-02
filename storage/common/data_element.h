@@ -11,6 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
+#include "base/gtest_prod_util.h"
 #include "base/logging.h"
 #include "base/time/time.h"
 #include "storage/common/storage_common_export.h"
@@ -131,6 +132,7 @@ class STORAGE_COMMON_EXPORT DataElement {
   void SetToDiskCacheEntryRange(uint64 offset, uint64 length);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(BlobAsyncTransportStrategyTest, TestInvalidParams);
   friend STORAGE_COMMON_EXPORT void PrintTo(const DataElement& x,
                                             ::std::ostream* os);
   Type type_;

@@ -55,7 +55,10 @@ class STORAGE_EXPORT BlobStorageContext
   // To cleanly use a builder multiple times, please call Clone() on the
   // builder, or even better for memory savings, clear the builder and append
   // the previously constructed blob.
-  scoped_ptr<BlobDataHandle> AddFinishedBlob(BlobDataBuilder* builder);
+  scoped_ptr<BlobDataHandle> AddFinishedBlob(const BlobDataBuilder& builder);
+
+  // Deprecated, use const ref version above.
+  scoped_ptr<BlobDataHandle> AddFinishedBlob(const BlobDataBuilder* builder);
 
   // Useful for coining blob urls from within the browser process.
   bool RegisterPublicBlobURL(const GURL& url, const std::string& uuid);

@@ -12,6 +12,9 @@
 
 namespace storage {
 
+const char BlobDataBuilder::kAppendFutureFileTemporaryFileName[] =
+    "kFakeFilenameToBeChangedByPopulateFutureFile";
+
 BlobDataBuilder::BlobDataBuilder(const std::string& uuid) : uuid_(uuid) {
 }
 BlobDataBuilder::~BlobDataBuilder() {
@@ -65,6 +68,7 @@ bool BlobDataBuilder::PopulateFutureData(size_t index,
                                          const char* data,
                                          size_t offset,
                                          size_t length) {
+  DCHECK_LT(index, items_.size());
   DCHECK(data);
   DataElement* element = items_.at(index)->data_element_ptr();
 
@@ -90,6 +94,40 @@ bool BlobDataBuilder::PopulateFutureData(size_t index,
     return false;
   }
   std::memcpy(element->mutable_bytes() + offset, data, length);
+  return true;
+}
+
+size_t BlobDataBuilder::AppendFutureFile(uint64_t offset, uint64_t length) {
+  CHECK_NE(length, 0ull);
+  scoped_ptr<DataElement> element(new DataElement());
+  element->SetToFilePathRange(base::FilePath::FromUTF8Unsafe(std::string(
+                                  kAppendFutureFileTemporaryFileName)),
+                              offset, length, base::Time());
+  items_.push_back(new BlobDataItem(element.Pass()));
+  return items_.size() - 1;
+}
+
+bool BlobDataBuilder::PopulateFutureFile(
+    size_t index,
+    const scoped_refptr<ShareableFileReference>& file_reference,
+    const base::Time& expected_modification_time) {
+  DCHECK_LT(index, items_.size());
+  DataElement* old_element = items_.at(index)->data_element_ptr();
+
+  if (old_element->type() != DataElement::TYPE_FILE) {
+    DVLOG(1) << "Invalid item type.";
+    return false;
+  } else if (old_element->path().AsUTF8Unsafe() !=
+             std::string(kAppendFutureFileTemporaryFileName)) {
+    DVLOG(1) << "Item not created by AppendFutureFile";
+    return false;
+  }
+  uint64_t length = old_element->length();
+  uint64_t offset = old_element->offset();
+  scoped_ptr<DataElement> element(new DataElement());
+  element->SetToFilePathRange(file_reference->path(), offset, length,
+                              expected_modification_time);
+  items_[index] = new BlobDataItem(element.Pass(), file_reference);
   return true;
 }
 

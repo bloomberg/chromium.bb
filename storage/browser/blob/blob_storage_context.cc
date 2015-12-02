@@ -93,30 +93,36 @@ scoped_ptr<BlobDataHandle> BlobStorageContext::GetBlobDataFromPublicURL(
 }
 
 scoped_ptr<BlobDataHandle> BlobStorageContext::AddFinishedBlob(
-    BlobDataBuilder* external_builder) {
+    const BlobDataBuilder& external_builder) {
   TRACE_EVENT0("Blob", "Context::AddFinishedBlob");
-  StartBuildingBlob(external_builder->uuid_);
-  BlobMap::iterator found = blob_map_.find(external_builder->uuid_);
+  StartBuildingBlob(external_builder.uuid_);
+  BlobMap::iterator found = blob_map_.find(external_builder.uuid_);
   DCHECK(found != blob_map_.end());
   BlobMapEntry* entry = found->second;
   InternalBlobData::Builder* target_blob_builder = entry->data_builder.get();
   DCHECK(target_blob_builder);
 
   target_blob_builder->set_content_disposition(
-      external_builder->content_disposition_);
-  for (const auto& blob_item : external_builder->items_) {
-    if (!AppendAllocatedBlobItem(external_builder->uuid_, blob_item,
+      external_builder.content_disposition_);
+  for (const auto& blob_item : external_builder.items_) {
+    if (!AppendAllocatedBlobItem(external_builder.uuid_, blob_item,
                                  target_blob_builder)) {
       BlobEntryExceededMemory(entry);
       break;
     }
   }
 
-  FinishBuildingBlob(external_builder->uuid_, external_builder->content_type_);
+  FinishBuildingBlob(external_builder.uuid_, external_builder.content_type_);
   scoped_ptr<BlobDataHandle> handle =
-      GetBlobDataFromUUID(external_builder->uuid_);
-  DecrementBlobRefCount(external_builder->uuid_);
+      GetBlobDataFromUUID(external_builder.uuid_);
+  DecrementBlobRefCount(external_builder.uuid_);
   return handle.Pass();
+}
+
+scoped_ptr<BlobDataHandle> BlobStorageContext::AddFinishedBlob(
+    const BlobDataBuilder* builder) {
+  DCHECK(builder);
+  return AddFinishedBlob(*builder);
 }
 
 bool BlobStorageContext::RegisterPublicBlobURL(const GURL& blob_url,

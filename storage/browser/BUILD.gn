@@ -6,6 +6,10 @@
 component("browser") {
   output_name = "storage_browser"
   sources = [
+    "blob/blob_async_builder_host.cc",
+    "blob/blob_async_builder_host.h",
+    "blob/blob_async_transport_strategy.cc",
+    "blob/blob_async_transport_strategy.h",
     "blob/blob_data_builder.cc",
     "blob/blob_data_builder.h",
     "blob/blob_data_handle.cc",

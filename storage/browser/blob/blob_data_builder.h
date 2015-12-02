@@ -23,10 +23,15 @@ class Entry;
 
 namespace storage {
 class BlobStorageContext;
+class ShareableFileReference;
 
 class STORAGE_EXPORT BlobDataBuilder {
  public:
   using DataHandle = BlobDataItem::DataHandle;
+
+  // This is the filename used for the temporary file items added by
+  // AppendFutureFile.
+  const static char kAppendFutureFileTemporaryFileName[];
 
   explicit BlobDataBuilder(const std::string& uuid);
   ~BlobDataBuilder();
@@ -49,8 +54,7 @@ class STORAGE_EXPORT BlobDataBuilder {
 
   // Adds an item that is flagged for future data population. The memory is not
   // allocated until the first call to PopulateFutureData. Returns the index of
-  // the item (to be used in PopulateFutureData).
-  // Length cannot be 0.
+  // the item (to be used in PopulateFutureData). |length| cannot be 0.
   size_t AppendFutureData(size_t length);
 
   // Populates a part of an item previously allocated with AppendFutureData.
@@ -64,6 +68,22 @@ class STORAGE_EXPORT BlobDataBuilder {
                           const char* data,
                           size_t offset,
                           size_t length);
+
+  // Adds an item that is flagged for future data population. Use
+  // 'PopulateFutureFile' to set the file path and expected modification time
+  // of this file. Returns the index of the item (to be used in
+  // PopulateFutureFile). The temporary filename used by this method is
+  // kAppendFutureFileTemporaryFileName. |length| cannot be 0.
+  size_t AppendFutureFile(uint64_t offset, uint64_t length);
+
+  // Populates a part of an item previously allocated with AppendFutureFile.
+  // Returns true if:
+  // * The item was created by using AppendFutureFile and
+  // * The filepath is valid.
+  bool PopulateFutureFile(
+      size_t index,
+      const scoped_refptr<ShareableFileReference>& file_reference,
+      const base::Time& expected_modification_time);
 
   // You must know the length of the file, you cannot use kuint64max to specify
   // the whole file.  This method creates a ShareableFileReference to the given

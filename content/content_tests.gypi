@@ -359,6 +359,8 @@
       'browser/background_sync/background_sync_network_observer_unittest.cc',
       'browser/background_sync/background_sync_power_observer_unittest.cc',
       'browser/background_sync/background_sync_service_impl_unittest.cc',
+      'browser/blob_storage/blob_async_builder_host_unittest.cc',
+      'browser/blob_storage/blob_async_transport_strategy_unittest.cc',
       'browser/blob_storage/blob_storage_registry_unittest.cc',
       'browser/browser_io_surface_manager_mac_unittest.cc',
       'browser/browser_thread_unittest.cc',
