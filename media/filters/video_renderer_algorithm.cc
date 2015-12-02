@@ -484,6 +484,7 @@ void VideoRendererAlgorithm::UpdateFrameStatistics() {
   // Compute |average_frame_duration_|, a moving average of the last few frames;
   // see kMovingAverageSamples for the exact number.
   average_frame_duration_ = frame_duration_calculator_.Average();
+  const base::TimeDelta deviation = frame_duration_calculator_.Deviation();
 
   // Update the frame end time for the last frame based on the average.
   frame_queue_.back().end_time =
@@ -505,7 +506,8 @@ void VideoRendererAlgorithm::UpdateFrameStatistics() {
     return;
 
   const bool cadence_changed = cadence_estimator_.UpdateCadenceEstimate(
-      render_interval_, average_frame_duration_, max_acceptable_drift_);
+      render_interval_, average_frame_duration_, deviation,
+      max_acceptable_drift_);
 
   // No need to update cadence if there's been no change; cadence will be set
   // as frames are added to the queue.

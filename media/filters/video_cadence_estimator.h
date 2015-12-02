@@ -88,6 +88,7 @@ class MEDIA_EXPORT VideoCadenceEstimator {
   // Returns true if the cadence has changed since the last call.
   bool UpdateCadenceEstimate(base::TimeDelta render_interval,
                              base::TimeDelta frame_duration,
+                             base::TimeDelta frame_duration_deviation,
                              base::TimeDelta max_acceptable_drift);
 
   // Returns true if a useful cadence was found.
@@ -152,6 +153,8 @@ class MEDIA_EXPORT VideoCadenceEstimator {
   // The minimum amount of time allowed before a glitch occurs before confirming
   // cadence for a given render interval and frame duration.
   const base::TimeDelta minimum_time_until_max_drift_;
+
+  bool is_variable_frame_rate_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoCadenceEstimator);
 };

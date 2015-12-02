@@ -26,6 +26,9 @@ class MEDIA_EXPORT MovingAverage {
   // Returns the current average of all held samples.
   base::TimeDelta Average() const;
 
+  // Returns the standard deviation of all held samples.
+  base::TimeDelta Deviation() const;
+
   // Resets the state of the class to its initial post-construction state.
   void Reset();
 
@@ -40,6 +43,7 @@ class MEDIA_EXPORT MovingAverage {
 
   std::vector<base::TimeDelta> samples_;
   base::TimeDelta total_;
+  uint64_t square_sum_us_;
 
   DISALLOW_COPY_AND_ASSIGN(MovingAverage);
 };

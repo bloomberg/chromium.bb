@@ -1180,7 +1180,7 @@ TEST_F(VideoRendererAlgorithmTest, CadenceBasedTest) {
 }
 
 // Rotate through various playback rates and ensure algorithm adapts correctly.
-TEST_F(VideoRendererAlgorithmTest, VariableFrameRateCadence) {
+TEST_F(VideoRendererAlgorithmTest, VariablePlaybackRateCadence) {
   TickGenerator frame_tg(base::TimeTicks(), NTSC(30));
   TickGenerator display_tg(tick_clock_->NowTicks(), 60);
 
@@ -1239,6 +1239,51 @@ TEST_F(VideoRendererAlgorithmTest, UglyTimestampsHaveCadence) {
     if (cadence_detected)
       ASSERT_TRUE(is_using_cadence());
   }
+}
+
+// Ensures media with variable frame rate should not be applied with Cadence.
+TEST_F(VideoRendererAlgorithmTest, VariableFrameRateNoCadence) {
+  TickGenerator display_tg(tick_clock_->NowTicks(), 60);
+  time_source_.StartTicking();
+
+  const int kBadTimestampsMs[] = {200,  200,  200,  200,  200,  1000,
+                                  1000, 1000, 1000, 200,  200,  200,
+                                  200,  200,  1000, 1000, 1000, 1000};
+
+  // Run throught ~10 seconds worth of frames.
+  bool cadence_detected = false;
+  bool cadence_turned_off = false;
+  base::TimeDelta timestamp;
+  for (size_t i = 0; i < arraysize(kBadTimestampsMs);) {
+    while (algorithm_.EffectiveFramesQueued() < 3) {
+      algorithm_.EnqueueFrame(CreateFrame(timestamp));
+      timestamp += base::TimeDelta::FromMilliseconds(
+          kBadTimestampsMs[i % arraysize(kBadTimestampsMs)]);
+      ++i;
+    }
+
+    size_t frames_dropped = 0;
+    RenderAndStep(&display_tg, &frames_dropped);
+    ASSERT_EQ(0u, frames_dropped);
+
+    // Cadence would be detected during the first second, and then
+    // it should be off due to variable FPS detection, and then for this
+    // sample, it should never be on.
+    if (is_using_cadence())
+      cadence_detected = true;
+
+    if (cadence_detected) {
+      if (!is_using_cadence())
+        cadence_turned_off = true;
+    }
+
+    if (cadence_turned_off) {
+      ASSERT_FALSE(is_using_cadence());
+    }
+  }
+
+  // Make sure Cadence is turned off somewhen, not always on.
+  ASSERT_TRUE(cadence_turned_off);
 }
 
 TEST_F(VideoRendererAlgorithmTest, EnqueueFrames) {
