@@ -586,7 +586,7 @@ void shell_surface_move(wl_client* client,
                         wl_resource* resource,
                         wl_resource* seat_resource,
                         uint32_t serial) {
-  NOTIMPLEMENTED();
+  GetUserDataAs<ShellSurface>(resource)->Move();
 }
 
 void shell_surface_resize(wl_client* client,

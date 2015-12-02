@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/exo/buffer.h"
 #include "components/exo/shell_surface.h"
@@ -80,6 +81,27 @@ TEST_F(ShellSurfaceTest, SetTitle) {
 
   shell_surface->SetTitle(base::string16(base::ASCIIToUTF16("test")));
   surface->Commit();
+}
+
+void DestroyShellSurface(scoped_ptr<ShellSurface>* shell_surface) {
+  shell_surface->reset();
+}
+
+TEST_F(ShellSurfaceTest, Move) {
+  scoped_ptr<Surface> surface(new Surface);
+  scoped_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
+
+  // Map shell surface.
+  shell_surface->SetToplevel();
+  surface->Commit();
+
+  // Post a task that will destroy the shell surface and then start an
+  // interactive move. The interactive move should end when surface is
+  // destroyed.
+  base::MessageLoopForUI::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&DestroyShellSurface, base::Unretained(&shell_surface)));
+  shell_surface->Move();
 }
 
 }  // namespace

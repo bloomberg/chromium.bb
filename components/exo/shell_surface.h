@@ -45,6 +45,9 @@ class ShellSurface : public SurfaceDelegate,
   // Set title for surface.
   void SetTitle(const base::string16& title);
 
+  // Start an interactive move of surface.
+  void Move();
+
   // Returns a trace value representing the state of the surface.
   scoped_refptr<base::trace_event::TracedValue> AsTracedValue() const;
 

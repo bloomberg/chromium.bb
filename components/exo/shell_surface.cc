@@ -138,6 +138,15 @@ void ShellSurface::SetTitle(const base::string16& title) {
     widget_->UpdateWindowTitle();
 }
 
+void ShellSurface::Move() {
+  TRACE_EVENT0("exo", "ShellSurface::Move");
+
+  if (widget_) {
+    widget_->RunMoveLoop(gfx::Vector2d(), views::Widget::MOVE_LOOP_SOURCE_MOUSE,
+                         views::Widget::MOVE_LOOP_ESCAPE_BEHAVIOR_DONT_HIDE);
+  }
+}
+
 scoped_refptr<base::trace_event::TracedValue> ShellSurface::AsTracedValue()
     const {
   scoped_refptr<base::trace_event::TracedValue> value =
