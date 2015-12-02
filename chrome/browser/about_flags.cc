@@ -2073,6 +2073,11 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_TAB_SWITCHER_IN_DOCUMENT_MODE_DESCRIPTION, kOsAndroid,
      SINGLE_VALUE_TYPE(switches::kEnableTabSwitcherInDocumentMode)},
 #endif  // OS_ANDROID
+     {"enable-md-history",
+      IDS_FLAGS_ENABLE_MATERIAL_DESIGN_HISTORY_NAME,
+      IDS_FLAGS_ENABLE_MATERIAL_DESIGN_HISTORY_DESCRIPTION,
+      kOsDesktop | kOsAndroid,
+      SINGLE_VALUE_TYPE(switches::kEnableMaterialDesignHistory)},
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

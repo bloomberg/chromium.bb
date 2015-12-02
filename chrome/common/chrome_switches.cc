@@ -427,6 +427,9 @@ const char kEnableMaterialDesignDownloads[] = "enable-md-downloads";
 // Enables the Material Design version of chrome://extensions.
 const char kEnableMaterialDesignExtensions[] = "enable-md-extensions";
 
+// Enables the Material Design version of chrome://history.
+const char kEnableMaterialDesignHistory[] = "enable-md-history";
+
 // Enables the Material Design policy page at chrome://md-policy.
 const char kEnableMaterialDesignPolicyPage[]  = "enable-md-policy-page";
 
@@ -1337,6 +1340,11 @@ bool AboutInSettingsEnabled() {
 bool MdExtensionsEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       ::switches::kEnableMaterialDesignExtensions);
+}
+
+bool MdHistoryEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      ::switches::kEnableMaterialDesignHistory);
 }
 
 bool MdPolicyPageEnabled() {

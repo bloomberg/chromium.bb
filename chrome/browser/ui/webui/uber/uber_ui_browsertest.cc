@@ -88,6 +88,14 @@ IN_PROC_BROWSER_TEST_F(UberUIBrowserTest, EnableMdExtensionsHidesExtensions) {
   EXPECT_TRUE(GetJsBool("$('extensions').hidden"));
 }
 
+IN_PROC_BROWSER_TEST_F(UberUIBrowserTest, EnableMdHistoryHidesHistory) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+    ::switches::kEnableMaterialDesignHistory);
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIUberFrameURL));
+  SelectTab();
+  EXPECT_TRUE(GetJsBool("$('history').hidden"));
+}
+
 IN_PROC_BROWSER_TEST_F(UberUIBrowserTest,
                        EnableSettingsWindowHidesSettingsAndHelp) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(

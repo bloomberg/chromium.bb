@@ -124,6 +124,7 @@ extern const char kEnableExtensionActivityLogTesting[];
 extern const char kEnableFastUnload[];
 extern const char kEnableMaterialDesignDownloads[];
 extern const char kEnableMaterialDesignExtensions[];
+extern const char kEnableMaterialDesignHistory[];
 extern const char kEnableMaterialDesignPolicyPage[];
 extern const char kEnableNaCl[];
 extern const char kEnableNavigationTracing[];
@@ -398,6 +399,7 @@ extern const char kEnableWaylandServer[];
 
 bool AboutInSettingsEnabled();
 bool MdExtensionsEnabled();
+bool MdHistoryEnabled();
 bool MdPolicyPageEnabled();
 bool PdfMaterialUIEnabled();
 bool SettingsWindowEnabled();

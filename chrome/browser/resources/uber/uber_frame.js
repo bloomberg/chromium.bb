@@ -109,6 +109,7 @@ cr.define('uber_frame', function() {
     $('settings').hidden = hideSettingsAndHelp;
     $('help').hidden = hideSettingsAndHelp;
     $('extensions').hidden = loadTimeData.getBoolean('hideExtensions');
+    $('history').hidden = loadTimeData.getBoolean('hideHistory');
   }
 
   /**

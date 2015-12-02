@@ -105,6 +105,8 @@ content::WebUIDataSource* CreateUberFrameHTMLSource(
   bool overrides_history =
       HasExtensionType(browser_context, chrome::kChromeUIHistoryHost);
   source->AddString("overridesHistory", overrides_history ? "yes" : "no");
+  source->AddBoolean("hideHistory",
+                     ::switches::MdHistoryEnabled() && !overrides_history);
   source->DisableDenyXFrameOptions();
   source->OverrideContentSecurityPolicyFrameSrc("frame-src chrome:;");
 

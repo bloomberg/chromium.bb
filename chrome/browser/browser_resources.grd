@@ -185,6 +185,11 @@
       </if>
       <include name="IDR_HISTORY_HTML" file="resources\history\history.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_HISTORY_JS" file="resources\history\history.js" flattenhtml="true" type="BINDATA" />
+
+      <if expr="not is_ios">
+        <include name="IDR_MD_HISTORY_HISTORY_HTML" file="resources\md_history\history.html" type="BINDATA" />
+      </if>
+
       <include name="IDR_OTHER_DEVICES_JS" file="resources\history\other_devices.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_IDENTITY_API_SCOPE_APPROVAL_MANIFEST" file="resources\identity_scope_approval_dialog\manifest.json" type="BINDATA" />
       <include name="IDR_NEW_INLINE_LOGIN_HTML" file="resources\inline_login\new_inline_login.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />

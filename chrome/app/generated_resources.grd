@@ -5089,18 +5089,26 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
       <!-- Material Design version of chrome://policy -->
       <message name="IDS_FLAGS_ENABLE_MATERIAL_DESIGN_POLICY_PAGE_NAME" desc="Name for the flag to enable the material design policy page.">
-          Enable Material Design policy page
+        Enable Material Design policy page
       </message>
       <message name="IDS_FLAGS_ENABLE_MATERIAL_DESIGN_POLICY_PAGE_DESCRIPTION" desc="Description for the flag to enable the material design policy page.">
-          If enabled, the chrome://md-policy URL loads the Material Design policy page.
+        If enabled, the chrome://md-policy URL loads the Material Design policy page.
       </message>
 
       <!-- Material Design version of chrome://downloads -->
       <message name="IDS_FLAGS_ENABLE_MATERIAL_DESIGN_DOWNLOADS_NAME" desc="Name for the flag to enable the material design downloads page.">
-          Enable Material Design downloads
+        Enable Material Design downloads
       </message>
       <message name="IDS_FLAGS_ENABLE_MATERIAL_DESIGN_DOWNLOADS_DESCRIPTION" desc="Description for the flag to enable the material design downloads page.">
-          If enabled, the chrome://downloads/ URL loads the Material Design downloads page.
+        If enabled, the chrome://downloads/ URL loads the Material Design downloads page.
+      </message>
+
+      <!-- Material Design version of chrome://history -->
+      <message name="IDS_FLAGS_ENABLE_MATERIAL_DESIGN_HISTORY_NAME" desc="Name for the flag to enable the material design history page.">
+        Enable Material Design history
+      </message>
+      <message name="IDS_FLAGS_ENABLE_MATERIAL_DESIGN_HISTORY_DESCRIPTION" desc="Description for the flag to enable the material design history page.">
+        If enabled, the chrome://history/ URL loads the Material Design history page.
       </message>
 
       <!-- Components -->
