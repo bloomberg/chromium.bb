@@ -4160,8 +4160,6 @@ void BrowserAccessibilityWin::InitRoleAndState() {
     ia_state |= STATE_SYSTEM_FOCUSABLE;
   if (HasState(ui::AX_STATE_HASPOPUP))
     ia_state |= STATE_SYSTEM_HASPOPUP;
-  if (HasState(ui::AX_STATE_INDETERMINATE))
-    ia_state |= STATE_SYSTEM_INDETERMINATE;
   if (HasIntAttribute(ui::AX_ATTR_INVALID_STATE) &&
       GetIntAttribute(ui::AX_ATTR_INVALID_STATE) != ui::AX_INVALID_STATE_FALSE)
     ia2_state |= IA2_STATE_INVALID_ENTRY;
@@ -4210,7 +4208,7 @@ void BrowserAccessibilityWin::InitRoleAndState() {
   if (IsEditableText())
     ia2_state |= IA2_STATE_EDITABLE;
 
-  if (GetBoolAttribute(ui::AX_ATTR_BUTTON_MIXED))
+  if (GetBoolAttribute(ui::AX_ATTR_STATE_MIXED))
     ia_state |= STATE_SYSTEM_MIXED;
 
   if (GetBoolAttribute(ui::AX_ATTR_CAN_SET_VALUE))

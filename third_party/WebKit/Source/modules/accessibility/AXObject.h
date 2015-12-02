@@ -198,7 +198,6 @@ enum AccessibilityState {
     AXFocusedState,
     AXHaspopupState,
     AXHoveredState,
-    AXIndeterminateState,
     AXInvisibleState,
     AXLinkedState,
     AXMultilineState,
@@ -631,7 +630,6 @@ public:
     virtual AccessibilityExpanded isExpanded() const { return ExpandedUndefined; }
     virtual bool isFocused() const { return false; }
     virtual bool isHovered() const { return false; }
-    virtual bool isIndeterminate() const { return false; }
     virtual bool isLinked() const { return false; }
     virtual bool isLoaded() const { return false; }
     virtual bool isMultiSelectable() const { return false; }

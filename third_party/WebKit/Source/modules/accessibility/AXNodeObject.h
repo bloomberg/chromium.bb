@@ -123,7 +123,6 @@ protected:
     bool isClickable() const final;
     bool isEnabled() const override;
     AccessibilityExpanded isExpanded() const override;
-    bool isIndeterminate() const final;
     bool isPressed() const final;
     bool isReadOnly() const override;
     bool isRequired() const final;
@@ -205,6 +204,7 @@ protected:
 private:
     RawPtrWillBeMember<Node> m_node;
 
+    bool isNativeCheckboxInMixedState() const;
     String textFromDescendants(AXObjectSet& visited) const;
     String nativeTextAlternative(AXObjectSet& visited, AXNameFrom&, AXRelatedObjectVector*, NameSources*, bool* foundTextAlternative) const;
     float stepValueForRange() const;

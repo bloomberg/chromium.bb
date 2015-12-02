@@ -1333,8 +1333,7 @@ bool InitializeAccessibilityTreeSearch(
             1 :
             value;
 
-    if (browserAccessibility_->GetBoolAttribute(
-        ui::AX_ATTR_BUTTON_MIXED)) {
+    if (browserAccessibility_->GetBoolAttribute(ui::AX_ATTR_STATE_MIXED)) {
       value = 2;
     }
     return [NSNumber numberWithInt:value];

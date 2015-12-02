@@ -113,7 +113,6 @@ public:
     BLINK_EXPORT WebAXExpanded isExpanded() const;
     BLINK_EXPORT bool isFocused() const;
     BLINK_EXPORT bool isHovered() const;
-    BLINK_EXPORT bool isIndeterminate() const;
     BLINK_EXPORT bool isLinked() const;
     BLINK_EXPORT bool isLoaded() const;
     BLINK_EXPORT bool isMultiSelectable() const;

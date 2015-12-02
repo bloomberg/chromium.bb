@@ -208,7 +208,6 @@
     haspopup,
     horizontal,
     hovered,
-    indeterminate,
     invisible,
     linked,
     multiline,
@@ -340,8 +339,9 @@
   };
 
   [cpp_enum_prefix_override="ax_attr"] enum AXBoolAttribute {
-    // True if a checkbox or radio button is in the "mixed" state.
-    button_mixed,
+    // True if an ARIA toggle button, a checkbox or
+    // a menu item checkbox is in the "mixed" state.
+    STATE_mixed,
 
     // Live region attributes.
     container_live_atomic,

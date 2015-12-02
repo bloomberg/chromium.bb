@@ -308,7 +308,6 @@ STATIC_ASSERT_MATCHING_ENUM(WebAXStateFocusable, AXFocusableState);
 STATIC_ASSERT_MATCHING_ENUM(WebAXStateFocused, AXFocusedState);
 STATIC_ASSERT_MATCHING_ENUM(WebAXStateHaspopup, AXHaspopupState);
 STATIC_ASSERT_MATCHING_ENUM(WebAXStateHovered, AXHoveredState);
-STATIC_ASSERT_MATCHING_ENUM(WebAXStateIndeterminate, AXIndeterminateState);
 STATIC_ASSERT_MATCHING_ENUM(WebAXStateInvisible, AXInvisibleState);
 STATIC_ASSERT_MATCHING_ENUM(WebAXStateLinked, AXLinkedState);
 STATIC_ASSERT_MATCHING_ENUM(WebAXStateMultiline, AXMultilineState);

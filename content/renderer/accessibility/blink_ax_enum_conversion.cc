@@ -34,9 +34,6 @@ uint32 AXStateFromBlink(const blink::WebAXObject& o) {
   if (o.isHovered())
     state |= (1 << ui::AX_STATE_HOVERED);
 
-  if (o.isIndeterminate())
-    state |= (1 << ui::AX_STATE_INDETERMINATE);
-
   if (!o.isVisible())
     state |= (1 << ui::AX_STATE_INVISIBLE);
 

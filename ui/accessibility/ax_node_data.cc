@@ -277,8 +277,6 @@ std::string AXNodeData::ToString() const {
     result += " HASPOPUP";
   if (state & (1 << AX_STATE_HOVERED))
     result += " HOVERED";
-  if (state & (1 << AX_STATE_INDETERMINATE))
-    result += " INDETERMINATE";
   if (state & (1 << AX_STATE_INVISIBLE))
     result += " INVISIBLE";
   if (state & (1 << AX_STATE_LINKED))
@@ -558,7 +556,7 @@ std::string AXNodeData::ToString() const {
   for (size_t i = 0; i < bool_attributes.size(); ++i) {
     std::string value = bool_attributes[i].second ? "true" : "false";
     switch (bool_attributes[i].first) {
-      case AX_ATTR_BUTTON_MIXED:
+      case AX_ATTR_STATE_MIXED:
         result += " mixed=" + value;
         break;
       case AX_ATTR_LIVE_ATOMIC:

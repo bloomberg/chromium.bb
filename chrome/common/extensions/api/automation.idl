@@ -195,7 +195,6 @@
     haspopup,
     horizontal,
     hovered,
-    indeterminate,
     invisible,
     linked,
     multiline,
@@ -262,7 +261,7 @@
     object? state;
 
     // A map of attribute name to expected value, for example
-    // <code>{ name: 'Root directory', button_mixed: true }</code>.
+    // <code>{ name: 'Root directory', checkbox_mixed: true }</code>.
     // String attribute values may be specified as a regex, for example
     // <code>{ name: /stralia$/</code> }</code>.
     // Unless specifying a regex, the expected value must be an exact match

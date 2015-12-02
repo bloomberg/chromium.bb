@@ -365,7 +365,7 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
   if (src.isAriaReadOnly())
     dst->AddBoolAttribute(ui::AX_ATTR_ARIA_READONLY, true);
   if (src.isButtonStateMixed())
-    dst->AddBoolAttribute(ui::AX_ATTR_BUTTON_MIXED, true);
+    dst->AddBoolAttribute(ui::AX_ATTR_STATE_MIXED, true);
   if (src.canSetValueAttribute())
     dst->AddBoolAttribute(ui::AX_ATTR_CAN_SET_VALUE, true);
   if (src.hasComputedStyle()) {

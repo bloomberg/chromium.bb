@@ -909,17 +909,15 @@ String AXObject::actionVerb() const
 
 AccessibilityButtonState AXObject::checkboxOrRadioValue() const
 {
-    // If this is a real checkbox or radio button, AXLayoutObject will handle.
-    // If it's an ARIA checkbox or radio, the aria-checked attribute should be used.
-
-    const AtomicString& result = getAttribute(aria_checkedAttr);
-    if (equalIgnoringCase(result, "true"))
+    const AtomicString& checkedAttribute = getAttribute(aria_checkedAttr);
+    if (equalIgnoringCase(checkedAttribute, "true"))
         return ButtonStateOn;
-    if (equalIgnoringCase(result, "mixed")) {
+
+    if (equalIgnoringCase(checkedAttribute, "mixed")) {
+        // Only checkboxes should support the mixed state.
         AccessibilityRole role = ariaRoleAttribute();
-        if (role == RadioButtonRole || role == MenuItemRadioRole || role == SwitchRole)
-            return ButtonStateOff;
-        return ButtonStateMixed;
+        if (role == CheckBoxRole || role == MenuItemCheckBoxRole)
+            return ButtonStateMixed;
     }
 
     return ButtonStateOff;

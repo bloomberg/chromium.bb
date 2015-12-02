@@ -205,7 +205,6 @@ enum WebAXState {
     WebAXStateFocused,
     WebAXStateHaspopup,
     WebAXStateHovered,
-    WebAXStateIndeterminate,
     WebAXStateInvisible,
     WebAXStateLinked,
     WebAXStateMultiline,

@@ -994,15 +994,6 @@ AccessibilityExpanded AXNodeObject::isExpanded() const
     return ExpandedUndefined;
 }
 
-bool AXNodeObject::isIndeterminate() const
-{
-    Node* node = this->node();
-    if (!isHTMLInputElement(node))
-        return false;
-
-    return toHTMLInputElement(node)->shouldAppearIndeterminate();
-}
-
 bool AXNodeObject::isPressed() const
 {
     if (!isButton())
@@ -1244,6 +1235,9 @@ String AXNodeObject::text() const
 
 AccessibilityButtonState AXNodeObject::checkboxOrRadioValue() const
 {
+    if (isNativeCheckboxInMixedState())
+        return ButtonStateMixed;
+
     if (isNativeCheckboxOrRadio())
         return isChecked() ? ButtonStateOn : ButtonStateOff;
 
@@ -1485,6 +1479,16 @@ AXObject* AXNodeObject::findChildWithTagName(const HTMLQualifiedName& tagName) c
             return child;
     }
     return 0;
+}
+
+bool AXNodeObject::isNativeCheckboxInMixedState() const
+{
+    if (!isHTMLInputElement(m_node))
+        return false;
+
+    HTMLInputElement* input = toHTMLInputElement(m_node);
+    return input->type() == InputTypeNames::checkbox
+        && input->shouldAppearIndeterminate();
 }
 
 //

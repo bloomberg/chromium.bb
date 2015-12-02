@@ -313,14 +313,6 @@ bool WebAXObject::isHovered() const
     return m_private->isHovered();
 }
 
-bool WebAXObject::isIndeterminate() const
-{
-    if (isDetached())
-        return false;
-
-    return m_private->isIndeterminate();
-}
-
 bool WebAXObject::isLinked() const
 {
     if (isDetached())
