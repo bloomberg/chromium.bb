@@ -245,8 +245,6 @@ class SpdyNetworkTransactionTest
       const HttpResponseInfo* response = trans_->GetResponseInfo();
       ASSERT_TRUE(response != NULL);
       ASSERT_TRUE(response->headers.get() != NULL);
-      EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
-      EXPECT_EQ(spdy_enabled_, response->was_fetched_via_spdy);
       if (HttpStreamFactory::spdy_enabled()) {
         EXPECT_EQ(
             HttpResponseInfo::ConnectionInfoFromNextProto(
@@ -257,8 +255,12 @@ class SpdyNetworkTransactionTest
                   response->connection_info);
       }
       if (spdy_enabled_) {
+        EXPECT_EQ("HTTP/1.1 200", response->headers->GetStatusLine());
+        EXPECT_TRUE(response->was_fetched_via_spdy);
         EXPECT_TRUE(response->was_npn_negotiated);
       } else {
+        EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
+        EXPECT_FALSE(response->was_fetched_via_spdy);
         // If SPDY is disabled, an HTTP request should not be diverted
         // over an SSL session.
         EXPECT_EQ(request_.url.SchemeIs("https"),
@@ -769,7 +771,7 @@ TEST_P(SpdyNetworkTransactionTest, Get) {
   helper.RunToCompletion(&data);
   TransactionHelperResult out = helper.output();
   EXPECT_EQ(OK, out.rv);
-  EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
+  EXPECT_EQ("HTTP/1.1 200", out.status_line);
   EXPECT_EQ("hello!", out.response_data);
 }
 
@@ -844,7 +846,7 @@ TEST_P(SpdyNetworkTransactionTest, GetAtEachPriority) {
     helper.RunToCompletion(&data);
     TransactionHelperResult out = helper.output();
     EXPECT_EQ(OK, out.rv);
-    EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
+    EXPECT_EQ("HTTP/1.1 200", out.status_line);
     EXPECT_EQ("hello!", out.response_data);
   }
 }
@@ -951,7 +953,7 @@ TEST_P(SpdyNetworkTransactionTest, ThreeGets) {
   EXPECT_EQ(OK, out.rv);
 
   EXPECT_EQ(OK, out.rv);
-  EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
+  EXPECT_EQ("HTTP/1.1 200", out.status_line);
   EXPECT_EQ("hello!hello!", out.response_data);
 }
 
@@ -1024,7 +1026,7 @@ TEST_P(SpdyNetworkTransactionTest, TwoGetsLateBinding) {
   out.response_info = *response1;
   out.rv = ReadTransaction(trans1.get(), &out.response_data);
   EXPECT_EQ(OK, out.rv);
-  EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
+  EXPECT_EQ("HTTP/1.1 200", out.status_line);
   EXPECT_EQ("hello!hello!", out.response_data);
 
   const HttpResponseInfo* response2 = trans2->GetResponseInfo();
@@ -1034,7 +1036,7 @@ TEST_P(SpdyNetworkTransactionTest, TwoGetsLateBinding) {
   out.response_info = *response2;
   out.rv = ReadTransaction(trans2.get(), &out.response_data);
   EXPECT_EQ(OK, out.rv);
-  EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
+  EXPECT_EQ("HTTP/1.1 200", out.status_line);
   EXPECT_EQ("hello!hello!", out.response_data);
 
   helper.VerifyDataConsumed();
@@ -1122,7 +1124,7 @@ TEST_P(SpdyNetworkTransactionTest, TwoGetsLateBindingFromPreconnect) {
   out.response_info = *response1;
   out.rv = ReadTransaction(trans1.get(), &out.response_data);
   EXPECT_EQ(OK, out.rv);
-  EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
+  EXPECT_EQ("HTTP/1.1 200", out.status_line);
   EXPECT_EQ("hello!hello!", out.response_data);
 
   const HttpResponseInfo* response2 = trans2->GetResponseInfo();
@@ -1132,7 +1134,7 @@ TEST_P(SpdyNetworkTransactionTest, TwoGetsLateBindingFromPreconnect) {
   out.response_info = *response2;
   out.rv = ReadTransaction(trans2.get(), &out.response_data);
   EXPECT_EQ(OK, out.rv);
-  EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
+  EXPECT_EQ("HTTP/1.1 200", out.status_line);
   EXPECT_EQ("hello!hello!", out.response_data);
 
   helper.VerifyDataConsumed();
@@ -1245,7 +1247,7 @@ TEST_P(SpdyNetworkTransactionTest, ThreeGetsWithMaxConcurrent) {
     out.response_info = *response1;
     out.rv = ReadTransaction(trans1.get(), &out.response_data);
     EXPECT_EQ(OK, out.rv);
-    EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
+    EXPECT_EQ("HTTP/1.1 200", out.status_line);
     EXPECT_EQ("hello!hello!", out.response_data);
 
     const HttpResponseInfo* response2 = trans2->GetResponseInfo();
@@ -1253,7 +1255,7 @@ TEST_P(SpdyNetworkTransactionTest, ThreeGetsWithMaxConcurrent) {
     out.response_info = *response2;
     out.rv = ReadTransaction(trans2.get(), &out.response_data);
     EXPECT_EQ(OK, out.rv);
-    EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
+    EXPECT_EQ("HTTP/1.1 200", out.status_line);
     EXPECT_EQ("hello!hello!", out.response_data);
 
     const HttpResponseInfo* response3 = trans3->GetResponseInfo();
@@ -1261,7 +1263,7 @@ TEST_P(SpdyNetworkTransactionTest, ThreeGetsWithMaxConcurrent) {
     out.response_info = *response3;
     out.rv = ReadTransaction(trans3.get(), &out.response_data);
     EXPECT_EQ(OK, out.rv);
-    EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
+    EXPECT_EQ("HTTP/1.1 200", out.status_line);
     EXPECT_EQ("hello!hello!", out.response_data);
 
     helper.VerifyDataConsumed();
@@ -1388,7 +1390,7 @@ TEST_P(SpdyNetworkTransactionTest, FourGetsWithMaxConcurrentPriority) {
   out.response_info = *response1;
   out.rv = ReadTransaction(trans1.get(), &out.response_data);
   EXPECT_EQ(OK, out.rv);
-  EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
+  EXPECT_EQ("HTTP/1.1 200", out.status_line);
   EXPECT_EQ("hello!hello!", out.response_data);
 
   const HttpResponseInfo* response2 = trans2->GetResponseInfo();
@@ -1396,7 +1398,7 @@ TEST_P(SpdyNetworkTransactionTest, FourGetsWithMaxConcurrentPriority) {
   out.response_info = *response2;
   out.rv = ReadTransaction(trans2.get(), &out.response_data);
   EXPECT_EQ(OK, out.rv);
-  EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
+  EXPECT_EQ("HTTP/1.1 200", out.status_line);
   EXPECT_EQ("hello!hello!", out.response_data);
 
   // notice: response3 gets two hellos, response4 gets one
@@ -1406,7 +1408,7 @@ TEST_P(SpdyNetworkTransactionTest, FourGetsWithMaxConcurrentPriority) {
   out.response_info = *response3;
   out.rv = ReadTransaction(trans3.get(), &out.response_data);
   EXPECT_EQ(OK, out.rv);
-  EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
+  EXPECT_EQ("HTTP/1.1 200", out.status_line);
   EXPECT_EQ("hello!hello!", out.response_data);
 
   out.rv = callback4.WaitForResult();
@@ -1416,7 +1418,7 @@ TEST_P(SpdyNetworkTransactionTest, FourGetsWithMaxConcurrentPriority) {
   out.response_info = *response4;
   out.rv = ReadTransaction(trans4.get(), &out.response_data);
   EXPECT_EQ(OK, out.rv);
-  EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
+  EXPECT_EQ("HTTP/1.1 200", out.status_line);
   EXPECT_EQ("hello!", out.response_data);
   helper.VerifyDataConsumed();
   EXPECT_EQ(OK, out.rv);
@@ -1510,7 +1512,7 @@ TEST_P(SpdyNetworkTransactionTest, ThreeGetsWithMaxConcurrentDelete) {
   out.response_info = *response1;
   out.rv = ReadTransaction(trans1.get(), &out.response_data);
   EXPECT_EQ(OK, out.rv);
-  EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
+  EXPECT_EQ("HTTP/1.1 200", out.status_line);
   EXPECT_EQ("hello!hello!", out.response_data);
 
   const HttpResponseInfo* response2 = trans2->GetResponseInfo();
@@ -1519,7 +1521,7 @@ TEST_P(SpdyNetworkTransactionTest, ThreeGetsWithMaxConcurrentDelete) {
   out.response_info = *response2;
   out.rv = ReadTransaction(trans2.get(), &out.response_data);
   EXPECT_EQ(OK, out.rv);
-  EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
+  EXPECT_EQ("HTTP/1.1 200", out.status_line);
   EXPECT_EQ("hello!hello!", out.response_data);
   helper.VerifyDataConsumed();
   EXPECT_EQ(OK, out.rv);
@@ -1681,7 +1683,7 @@ TEST_P(SpdyNetworkTransactionTest, Put) {
   TransactionHelperResult out = helper.output();
 
   EXPECT_EQ(OK, out.rv);
-  EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
+  EXPECT_EQ("HTTP/1.1 200", out.status_line);
 }
 
 // Test that a simple HEAD request works.
@@ -1714,7 +1716,7 @@ TEST_P(SpdyNetworkTransactionTest, Head) {
   TransactionHelperResult out = helper.output();
 
   EXPECT_EQ(OK, out.rv);
-  EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
+  EXPECT_EQ("HTTP/1.1 200", out.status_line);
 }
 
 // Test that a simple POST works.
@@ -1739,7 +1741,7 @@ TEST_P(SpdyNetworkTransactionTest, Post) {
   helper.RunToCompletion(&data);
   TransactionHelperResult out = helper.output();
   EXPECT_EQ(OK, out.rv);
-  EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
+  EXPECT_EQ("HTTP/1.1 200", out.status_line);
   EXPECT_EQ("hello!", out.response_data);
 }
 
@@ -1765,7 +1767,7 @@ TEST_P(SpdyNetworkTransactionTest, FilePost) {
   helper.RunToCompletion(&data);
   TransactionHelperResult out = helper.output();
   EXPECT_EQ(OK, out.rv);
-  EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
+  EXPECT_EQ("HTTP/1.1 200", out.status_line);
   EXPECT_EQ("hello!", out.response_data);
 }
 
@@ -1814,7 +1816,7 @@ TEST_P(SpdyNetworkTransactionTest, ComplexPost) {
   helper.RunToCompletion(&data);
   TransactionHelperResult out = helper.output();
   EXPECT_EQ(OK, out.rv);
-  EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
+  EXPECT_EQ("HTTP/1.1 200", out.status_line);
   EXPECT_EQ("hello!", out.response_data);
 }
 
@@ -1847,7 +1849,7 @@ TEST_P(SpdyNetworkTransactionTest, ChunkedPost) {
   helper.RunToCompletion(&data);
   TransactionHelperResult out = helper.output();
   EXPECT_EQ(OK, out.rv);
-  EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
+  EXPECT_EQ("HTTP/1.1 200", out.status_line);
   EXPECT_EQ(kUploadData, out.response_data);
 }
 
@@ -1899,7 +1901,7 @@ TEST_P(SpdyNetworkTransactionTest, DelayedChunkedPost) {
 
   TransactionHelperResult out = helper.output();
   EXPECT_EQ(OK, out.rv);
-  EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
+  EXPECT_EQ("HTTP/1.1 200", out.status_line);
   EXPECT_EQ(expected_response, out.response_data);
 }
 
@@ -1939,7 +1941,7 @@ TEST_P(SpdyNetworkTransactionTest, NullPost) {
   helper.RunToCompletion(&data);
   TransactionHelperResult out = helper.output();
   EXPECT_EQ(OK, out.rv);
-  EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
+  EXPECT_EQ("HTTP/1.1 200", out.status_line);
   EXPECT_EQ("hello!", out.response_data);
 }
 
@@ -1982,7 +1984,7 @@ TEST_P(SpdyNetworkTransactionTest, EmptyPost) {
   helper.RunToCompletion(&data);
   TransactionHelperResult out = helper.output();
   EXPECT_EQ(OK, out.rv);
-  EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
+  EXPECT_EQ("HTTP/1.1 200", out.status_line);
   EXPECT_EQ("hello!", out.response_data);
 }
 
@@ -2019,7 +2021,7 @@ TEST_P(SpdyNetworkTransactionTest, ResponseBeforePostCompletes) {
   data.RunFor(3);
 
   const HttpResponseInfo* response = helper.trans()->GetResponseInfo();
-  EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
+  EXPECT_EQ("HTTP/1.1 200", response->headers->GetStatusLine());
 
   // Finish sending the request body.
   upload_chunked_data_stream()->AppendData(kUploadData, kUploadDataSize, true);
@@ -2207,7 +2209,7 @@ TEST_P(SpdyNetworkTransactionTest, ResetPushWithTransferEncoding) {
   helper.RunToCompletion(&data);
   TransactionHelperResult out = helper.output();
   EXPECT_EQ(OK, out.rv);
-  EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
+  EXPECT_EQ("HTTP/1.1 200", out.status_line);
   EXPECT_EQ("hello!", out.response_data);
 
   helper.session()->spdy_session_pool()->CloseAllSessions();
@@ -2605,7 +2607,7 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushSingleDataFrame) {
 
   // Verify the SYN_REPLY.
   EXPECT_TRUE(response.headers.get() != NULL);
-  EXPECT_EQ("HTTP/1.1 200 OK", response.headers->GetStatusLine());
+  EXPECT_EQ("HTTP/1.1 200", response.headers->GetStatusLine());
 
   // Verify the pushed stream.
   EXPECT_TRUE(response2.headers.get() != NULL);
@@ -2648,7 +2650,7 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushBeforeSynReply) {
 
   // Verify the SYN_REPLY.
   EXPECT_TRUE(response.headers.get() != NULL);
-  EXPECT_EQ("HTTP/1.1 200 OK", response.headers->GetStatusLine());
+  EXPECT_EQ("HTTP/1.1 200", response.headers->GetStatusLine());
 
   // Verify the pushed stream.
   EXPECT_TRUE(response2.headers.get() != NULL);
@@ -2691,7 +2693,7 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushSingleDataFrame2) {
 
   // Verify the SYN_REPLY.
   EXPECT_TRUE(response.headers.get() != NULL);
-  EXPECT_EQ("HTTP/1.1 200 OK", response.headers->GetStatusLine());
+  EXPECT_EQ("HTTP/1.1 200", response.headers->GetStatusLine());
 
   // Verify the pushed stream.
   EXPECT_TRUE(response2.headers.get() != NULL);
@@ -2745,7 +2747,7 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushServerAborted) {
   // Verify the SYN_REPLY.
   HttpResponseInfo response = *trans->GetResponseInfo();
   EXPECT_TRUE(response.headers.get() != NULL);
-  EXPECT_EQ("HTTP/1.1 200 OK", response.headers->GetStatusLine());
+  EXPECT_EQ("HTTP/1.1 200", response.headers->GetStatusLine());
 }
 
 // Verify that we don't leak streams and that we properly send a reset
@@ -2791,7 +2793,7 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushDuplicate) {
 
   // Verify the SYN_REPLY.
   EXPECT_TRUE(response.headers.get() != NULL);
-  EXPECT_EQ("HTTP/1.1 200 OK", response.headers->GetStatusLine());
+  EXPECT_EQ("HTTP/1.1 200", response.headers->GetStatusLine());
 
   // Verify the pushed stream.
   EXPECT_TRUE(response2.headers.get() != NULL);
@@ -2845,7 +2847,7 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushMultipleDataFrame) {
 
   // Verify the SYN_REPLY.
   EXPECT_TRUE(response.headers.get() != NULL);
-  EXPECT_EQ("HTTP/1.1 200 OK", response.headers->GetStatusLine());
+  EXPECT_EQ("HTTP/1.1 200", response.headers->GetStatusLine());
 
   // Verify the pushed stream.
   EXPECT_TRUE(response2.headers.get() != NULL);
@@ -2898,7 +2900,7 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushMultipleDataFrameInterrupted) {
 
   // Verify the SYN_REPLY.
   EXPECT_TRUE(response.headers.get() != NULL);
-  EXPECT_EQ("HTTP/1.1 200 OK", response.headers->GetStatusLine());
+  EXPECT_EQ("HTTP/1.1 200", response.headers->GetStatusLine());
 
   // Verify the pushed stream.
   EXPECT_TRUE(response2.headers.get() != NULL);
@@ -2957,7 +2959,7 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushInvalidAssociatedStreamID0) {
   // Verify the SYN_REPLY.
   HttpResponseInfo response = *trans->GetResponseInfo();
   EXPECT_TRUE(response.headers.get() != NULL);
-  EXPECT_EQ("HTTP/1.1 200 OK", response.headers->GetStatusLine());
+  EXPECT_EQ("HTTP/1.1 200", response.headers->GetStatusLine());
 }
 
 TEST_P(SpdyNetworkTransactionTest, ServerPushInvalidAssociatedStreamID9) {
@@ -3006,7 +3008,7 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushInvalidAssociatedStreamID9) {
   // Verify the SYN_REPLY.
   HttpResponseInfo response = *trans->GetResponseInfo();
   EXPECT_TRUE(response.headers.get() != NULL);
-  EXPECT_EQ("HTTP/1.1 200 OK", response.headers->GetStatusLine());
+  EXPECT_EQ("HTTP/1.1 200", response.headers->GetStatusLine());
 }
 
 TEST_P(SpdyNetworkTransactionTest, ServerPushNoURL) {
@@ -3059,7 +3061,7 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushNoURL) {
   // Verify the SYN_REPLY.
   HttpResponseInfo response = *trans->GetResponseInfo();
   EXPECT_TRUE(response.headers.get() != NULL);
-  EXPECT_EQ("HTTP/1.1 200 OK", response.headers->GetStatusLine());
+  EXPECT_EQ("HTTP/1.1 200", response.headers->GetStatusLine());
 }
 
 // Verify that various SynReply headers parse correctly through the
@@ -3132,7 +3134,7 @@ TEST_P(SpdyNetworkTransactionTest, SynReplyHeaders) {
     TransactionHelperResult out = helper.output();
 
     EXPECT_EQ(OK, out.rv);
-    EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
+    EXPECT_EQ("HTTP/1.1 200", out.status_line);
     EXPECT_EQ("hello!", out.response_data);
 
     scoped_refptr<HttpResponseHeaders> headers = out.response_info.headers;
@@ -3240,7 +3242,7 @@ TEST_P(SpdyNetworkTransactionTest, SynReplyHeadersVary) {
     TransactionHelperResult out = helper.output();
 
     EXPECT_EQ(OK, out.rv) << i;
-    EXPECT_EQ("HTTP/1.1 200 OK", out.status_line) << i;
+    EXPECT_EQ("HTTP/1.1 200", out.status_line) << i;
     EXPECT_EQ("hello!", out.response_data) << i;
 
     // Test the response information.
@@ -3513,7 +3515,7 @@ TEST_P(SpdyNetworkTransactionTest, PartialWrite) {
   helper.RunToCompletion(&data);
   TransactionHelperResult out = helper.output();
   EXPECT_EQ(OK, out.rv);
-  EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
+  EXPECT_EQ("HTTP/1.1 200", out.status_line);
   EXPECT_EQ("hello!", out.response_data);
 }
 
@@ -3576,7 +3578,7 @@ TEST_P(SpdyNetworkTransactionTest, NetLog) {
   helper.RunToCompletion(&data);
   TransactionHelperResult out = helper.output();
   EXPECT_EQ(OK, out.rv);
-  EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
+  EXPECT_EQ("HTTP/1.1 200", out.status_line);
   EXPECT_EQ("hello!", out.response_data);
 
   // Check that the NetLog was filled reasonably.
@@ -3729,7 +3731,7 @@ TEST_P(SpdyNetworkTransactionTest, BufferFull) {
   helper.VerifyDataConsumed();
 
   EXPECT_EQ(OK, out.rv);
-  EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
+  EXPECT_EQ("HTTP/1.1 200", out.status_line);
   EXPECT_EQ("goodbye world", out.response_data);
 }
 
@@ -3825,7 +3827,7 @@ TEST_P(SpdyNetworkTransactionTest, Buffering) {
   helper.VerifyDataConsumed();
 
   EXPECT_EQ(OK, out.rv);
-  EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
+  EXPECT_EQ("HTTP/1.1 200", out.status_line);
   EXPECT_EQ("messagemessagemessagemessage", out.response_data);
 }
 
@@ -3909,7 +3911,7 @@ TEST_P(SpdyNetworkTransactionTest, BufferedAll) {
   helper.VerifyDataConsumed();
 
   EXPECT_EQ(OK, out.rv);
-  EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
+  EXPECT_EQ("HTTP/1.1 200", out.status_line);
   EXPECT_EQ("messagemessagemessagemessage", out.response_data);
 }
 
@@ -4150,7 +4152,7 @@ TEST_P(SpdyNetworkTransactionTest, SettingsSaved) {
   helper.VerifyDataConsumed();
   TransactionHelperResult out = helper.output();
   EXPECT_EQ(OK, out.rv);
-  EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
+  EXPECT_EQ("HTTP/1.1 200", out.status_line);
   EXPECT_EQ("hello!", out.response_data);
 
   {
@@ -4278,7 +4280,7 @@ TEST_P(SpdyNetworkTransactionTest, SettingsPlayback) {
   helper.VerifyDataConsumed();
   TransactionHelperResult out = helper.output();
   EXPECT_EQ(OK, out.rv);
-  EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
+  EXPECT_EQ("HTTP/1.1 200", out.status_line);
   EXPECT_EQ("hello!", out.response_data);
 
   {
@@ -4623,7 +4625,7 @@ TEST_P(SpdyNetworkTransactionTest, ProxyConnect) {
   // Verify the SYN_REPLY.
   HttpResponseInfo response = *trans->GetResponseInfo();
   ASSERT_TRUE(response.headers.get() != NULL);
-  EXPECT_EQ("HTTP/1.1 200 OK", response.headers->GetStatusLine());
+  EXPECT_EQ("HTTP/1.1 200", response.headers->GetStatusLine());
 
   std::string response_data;
   ASSERT_EQ(OK, ReadTransaction(trans, &response_data));
@@ -4686,7 +4688,7 @@ TEST_P(SpdyNetworkTransactionTest, DirectConnectProxyReconnect) {
   out.rv = ReadTransaction(trans, &out.response_data);
   EXPECT_EQ(OK, out.rv);
   out.status_line = response->headers->GetStatusLine();
-  EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
+  EXPECT_EQ("HTTP/1.1 200", out.status_line);
   EXPECT_EQ("hello!", out.response_data);
 
   // Check that the SpdySession is still in the SpdySessionPool.
@@ -4761,7 +4763,7 @@ TEST_P(SpdyNetworkTransactionTest, DirectConnectProxyReconnect) {
 
   HttpResponseInfo response_proxy = *trans_proxy->GetResponseInfo();
   ASSERT_TRUE(response_proxy.headers.get() != NULL);
-  EXPECT_EQ("HTTP/1.1 200 OK", response_proxy.headers->GetStatusLine());
+  EXPECT_EQ("HTTP/1.1 200", response_proxy.headers->GetStatusLine());
 
   std::string response_data;
   ASSERT_EQ(OK, ReadTransaction(trans_proxy, &response_data));
@@ -4852,7 +4854,7 @@ TEST_P(SpdyNetworkTransactionTest, VerifyRetryOnConnectionReset) {
       std::string response_data;
       rv = ReadTransaction(trans.get(), &response_data);
       EXPECT_EQ(OK, rv);
-      EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
+      EXPECT_EQ("HTTP/1.1 200", response->headers->GetStatusLine());
       EXPECT_EQ("hello!", response_data);
       base::RunLoop().RunUntilIdle();
     }
@@ -4884,7 +4886,7 @@ TEST_P(SpdyNetworkTransactionTest, SpdyOnOffToggle) {
   helper.RunToCompletion(&data);
   TransactionHelperResult out = helper.output();
   EXPECT_EQ(OK, out.rv);
-  EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
+  EXPECT_EQ("HTTP/1.1 200", out.status_line);
   EXPECT_EQ("hello!", out.response_data);
 
   HttpStreamFactory::set_spdy_enabled(false);
@@ -5061,11 +5063,11 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushWithHeaders) {
 
   // Verify the SYN_REPLY.
   EXPECT_TRUE(response.headers.get() != NULL);
-  EXPECT_EQ("HTTP/1.1 200 OK", response.headers->GetStatusLine());
+  EXPECT_EQ("HTTP/1.1 200", response.headers->GetStatusLine());
 
   // Verify the pushed stream.
   EXPECT_TRUE(response2.headers.get() != NULL);
-  EXPECT_EQ("HTTP/1.1 200 OK", response2.headers->GetStatusLine());
+  EXPECT_EQ("HTTP/1.1 200", response2.headers->GetStatusLine());
 }
 
 TEST_P(SpdyNetworkTransactionTest, ServerPushClaimBeforeHeaders) {
@@ -5173,11 +5175,11 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushClaimBeforeHeaders) {
 
   // Verify the SYN_REPLY.
   EXPECT_TRUE(response.headers.get() != NULL);
-  EXPECT_EQ("HTTP/1.1 200 OK", response.headers->GetStatusLine());
+  EXPECT_EQ("HTTP/1.1 200", response.headers->GetStatusLine());
 
   // Verify the pushed stream.
   EXPECT_TRUE(response2.headers.get() != NULL);
-  EXPECT_EQ("HTTP/1.1 200 OK", response2.headers->GetStatusLine());
+  EXPECT_EQ("HTTP/1.1 200", response2.headers->GetStatusLine());
 
   // Read the final EOF (which will close the session)
   data.RunFor(1);
@@ -5307,11 +5309,11 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushWithTwoHeaderFrames) {
 
   // Verify the SYN_REPLY.
   EXPECT_TRUE(response.headers.get() != NULL);
-  EXPECT_EQ("HTTP/1.1 200 OK", response.headers->GetStatusLine());
+  EXPECT_EQ("HTTP/1.1 200", response.headers->GetStatusLine());
 
   // Verify the pushed stream.
   EXPECT_TRUE(response2.headers.get() != NULL);
-  EXPECT_EQ("HTTP/1.1 200 OK", response2.headers->GetStatusLine());
+  EXPECT_EQ("HTTP/1.1 200", response2.headers->GetStatusLine());
 
   // Verify we got all the headers from all header blocks.
   if (spdy_util_.spdy_version() < HTTP2)
@@ -5423,7 +5425,7 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushWithNoStatusHeaderFrames) {
 
   // Verify the SYN_REPLY.
   EXPECT_TRUE(response.headers.get() != NULL);
-  EXPECT_EQ("HTTP/1.1 200 OK", response.headers->GetStatusLine());
+  EXPECT_EQ("HTTP/1.1 200", response.headers->GetStatusLine());
 
   // Read the final EOF (which will close the session).
   data.RunFor(1);
@@ -5626,7 +5628,7 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushCrossOriginCorrectness) {
 
     // Verify the SYN_REPLY.
     EXPECT_TRUE(response.headers.get() != NULL);
-    EXPECT_EQ("HTTP/1.1 200 OK", response.headers->GetStatusLine());
+    EXPECT_EQ("HTTP/1.1 200", response.headers->GetStatusLine());
   }
 }
 
@@ -5677,7 +5679,7 @@ TEST_P(SpdyNetworkTransactionTest, RetryAfterRefused) {
   // Verify the SYN_REPLY.
   HttpResponseInfo response = *trans->GetResponseInfo();
   EXPECT_TRUE(response.headers.get() != NULL);
-  EXPECT_EQ("HTTP/1.1 200 OK", response.headers->GetStatusLine());
+  EXPECT_EQ("HTTP/1.1 200", response.headers->GetStatusLine());
 }
 
 TEST_P(SpdyNetworkTransactionTest, OutOfOrderSynStream) {
@@ -6005,7 +6007,7 @@ TEST_P(SpdyNetworkTransactionTest, WindowUpdateSent) {
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response != NULL);
   ASSERT_TRUE(response->headers.get() != NULL);
-  EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
+  EXPECT_EQ("HTTP/1.1 200", response->headers->GetStatusLine());
   EXPECT_TRUE(response->was_fetched_via_spdy);
 
   // Issue a read which will cause a WINDOW_UPDATE to be sent and window
@@ -6543,7 +6545,7 @@ TEST_P(SpdyNetworkTransactionTest, LargeRequest) {
   TransactionHelperResult out = helper.output();
 
   EXPECT_EQ(OK, out.rv);
-  EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
+  EXPECT_EQ("HTTP/1.1 200", out.status_line);
   EXPECT_EQ("hello!", out.response_data);
 }
 
@@ -6574,7 +6576,7 @@ class SpdyNetworkTransactionNoTLSUsageCheckTest
     helper.RunToCompletionWithSSLData(&data, ssl_provider.Pass());
     TransactionHelperResult out = helper.output();
     EXPECT_EQ(OK, out.rv);
-    EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
+    EXPECT_EQ("HTTP/1.1 200", out.status_line);
     EXPECT_EQ("hello!", out.response_data);
   }
 };

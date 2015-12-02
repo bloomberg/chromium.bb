@@ -163,7 +163,7 @@ TestData response_headers_tests[] = {
      "hTtP/0.9 201\n"
      "Content-TYPE: text/html; charset=utf-8\n",
 
-     "HTTP/1.0 201 OK\n"
+     "HTTP/1.0 201\n"
      "Content-TYPE: text/html; charset=utf-8\n",
 
      201,
@@ -178,12 +178,12 @@ TestData response_headers_tests[] = {
 
      200,
      HttpVersion(0, 9)},
-    {// Add missing OK.
+    {// Do not add missing status text.
 
      "HTTP/1.1 201\n"
      "Content-TYPE: text/html; charset=utf-8\n",
 
-     "HTTP/1.1 201 OK\n"
+     "HTTP/1.1 201\n"
      "Content-TYPE: text/html; charset=utf-8\n",
 
      201,
@@ -202,7 +202,7 @@ TestData response_headers_tests[] = {
 
      "HTTP/1.1 -1  Unknown\n",
 
-     "HTTP/1.1 200 OK\n",
+     "HTTP/1.1 200\n",
 
      200,
      HttpVersion(1, 1)},
@@ -1812,8 +1812,8 @@ TEST(HttpResponseHeadersTest, GetStatusTextMissing) {
   std::string headers("HTTP/1.1 404");
   HeadersToRaw(&headers);
   scoped_refptr<HttpResponseHeaders> parsed(new HttpResponseHeaders(headers));
-  // Since the status line gets normalized, we have OK.
-  EXPECT_EQ(std::string("OK"), parsed->GetStatusText());
+  EXPECT_EQ(std::string("HTTP/1.1 404"), parsed->GetStatusLine());
+  EXPECT_TRUE(parsed->GetStatusText().empty());
 }
 
 TEST(HttpResponseHeadersTest, GetStatusTextMultiSpace) {
@@ -1827,9 +1827,9 @@ TEST(HttpResponseHeadersTest, GetStatusBadStatusLine) {
   std::string headers("Foo bar.");
   HeadersToRaw(&headers);
   scoped_refptr<HttpResponseHeaders> parsed(new HttpResponseHeaders(headers));
-  // The bad status line would have gotten rewritten as
-  // HTTP/1.0 200 OK.
-  EXPECT_EQ(std::string("OK"), parsed->GetStatusText());
+  // The bad status line should be rewritten.
+  EXPECT_EQ(std::string("HTTP/1.0 200"), parsed->GetStatusLine());
+  EXPECT_TRUE(parsed->GetStatusText().empty());
 }
 
 struct AddHeaderTestData {

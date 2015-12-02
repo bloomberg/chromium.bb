@@ -257,7 +257,7 @@ TEST_F(QuicEndToEndTest, LargeGetWithNoPacketLoss) {
   // Will terminate when the last consumer completes.
   base::MessageLoop::current()->Run();
 
-  CheckResponse(consumer, "HTTP/1.1 200 OK", response);
+  CheckResponse(consumer, "HTTP/1.1 200", response);
 }
 
 TEST_F(QuicEndToEndTest, LargePostWithNoPacketLoss) {
@@ -272,7 +272,7 @@ TEST_F(QuicEndToEndTest, LargePostWithNoPacketLoss) {
   // Will terminate when the last consumer completes.
   base::MessageLoop::current()->Run();
 
-  CheckResponse(consumer, "HTTP/1.1 200 OK", kResponseBody);
+  CheckResponse(consumer, "HTTP/1.1 200", kResponseBody);
 }
 
 TEST_F(QuicEndToEndTest, LargePostWithPacketLoss) {
@@ -289,7 +289,7 @@ TEST_F(QuicEndToEndTest, LargePostWithPacketLoss) {
   // Will terminate when the last consumer completes.
   base::MessageLoop::current()->Run();
 
-  CheckResponse(consumer, "HTTP/1.1 200 OK", kResponseBody);
+  CheckResponse(consumer, "HTTP/1.1 200", kResponseBody);
 }
 
 // crbug.com/536845
@@ -318,7 +318,7 @@ TEST_F(QuicEndToEndTest, MAYBE_UberTest) {
   base::MessageLoop::current()->Run();
 
   for (size_t i = 0; i < num_requests; ++i) {
-    CheckResponse(*consumers[i], "HTTP/1.1 200 OK", kResponseBody);
+    CheckResponse(*consumers[i], "HTTP/1.1 200", kResponseBody);
   }
   STLDeleteElements(&consumers);
 }

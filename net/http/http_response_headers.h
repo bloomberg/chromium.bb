@@ -109,7 +109,7 @@ class NET_EXPORT HttpResponseHeaders
 
   // Creates a normalized header string.  The output will be formatted exactly
   // like so:
-  //     HTTP/<version> <status_code> <status_text>\n
+  //     HTTP/<version> <status_code>[ <status_text>]\n
   //     [<header-name>: <header-values>\n]*
   // meaning, each line is \n-terminated, and there is no extra whitespace
   // beyond the single space separators shown (of course, values can contain
@@ -143,9 +143,7 @@ class NET_EXPORT HttpResponseHeaders
   //
   bool GetNormalizedHeader(const std::string& name, std::string* value) const;
 
-  // Returns the normalized status line.  For HTTP/0.9 responses (i.e.,
-  // responses that lack a status line), this is the manufactured string
-  // "HTTP/0.9 200 OK".
+  // Returns the normalized status line.
   std::string GetStatusLine() const;
 
   // Get the HTTP version of the normalized status line.

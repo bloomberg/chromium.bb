@@ -530,12 +530,22 @@ std::string HttpResponseHeaders::GetStatusLine() const {
 
 std::string HttpResponseHeaders::GetStatusText() const {
   // GetStatusLine() is already normalized, so it has the format:
-  // <http_version> SP <response_code> SP <status_text>
+  // '<http_version> SP <response_code>' or
+  // '<http_version> SP <response_code> SP <status_text>'.
   std::string status_text = GetStatusLine();
   std::string::const_iterator begin = status_text.begin();
   std::string::const_iterator end = status_text.end();
-  for (int i = 0; i < 2; ++i)
-    begin = std::find(begin, end, ' ') + 1;
+  // Seek to beginning of <response_code>.
+  begin = std::find(begin, end, ' ');
+  CHECK(begin != end);
+  ++begin;
+  CHECK(begin != end);
+  // See if there is another space.
+  begin = std::find(begin, end, ' ');
+  if (begin == end)
+    return std::string();
+  ++begin;
+  CHECK(begin != end);
   return std::string(begin, end);
 }
 
@@ -695,40 +705,36 @@ void HttpResponseHeaders::ParseStatusLine(
   }
 
   // Skip whitespace.
-  while (*p == ' ')
+  while (p < line_end && *p == ' ')
     ++p;
 
   std::string::const_iterator code = p;
-  while (*p >= '0' && *p <= '9')
+  while (p < line_end && *p >= '0' && *p <= '9')
     ++p;
 
   if (p == code) {
     DVLOG(1) << "missing response status number; assuming 200";
-    raw_headers_.append(" 200 OK");
+    raw_headers_.append(" 200");
     response_code_ = 200;
     return;
   }
   raw_headers_.push_back(' ');
   raw_headers_.append(code, p);
-  raw_headers_.push_back(' ');
   base::StringToInt(StringPiece(code, p), &response_code_);
 
   // Skip whitespace.
-  while (*p == ' ')
+  while (p < line_end && *p == ' ')
     ++p;
 
   // Trim trailing whitespace.
   while (line_end > p && line_end[-1] == ' ')
     --line_end;
 
-  if (p == line_end) {
-    DVLOG(1) << "missing response status text; assuming OK";
-    // Not super critical what we put here. Just use "OK"
-    // even if it isn't descriptive of response_code_.
-    raw_headers_.append("OK");
-  } else {
-    raw_headers_.append(p, line_end);
-  }
+  if (p == line_end)
+    return;
+
+  raw_headers_.push_back(' ');
+  raw_headers_.append(p, line_end);
 }
 
 size_t HttpResponseHeaders::FindHeader(size_t from,
