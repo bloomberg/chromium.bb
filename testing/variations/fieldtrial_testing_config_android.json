@@ -103,6 +103,15 @@
     ],
     "EnhancedBookmarks": [
         {
+            "group_name": "Launch EnableEnhancedBookmarks",
+            "params": {
+                "id": "Fake_id_to_trigger_experiment_code"
+            }
+        },
+        {
+            "group_name": "Launch Control"
+        },
+        {
             "group_name": "EnableEnhancedBookmarks",
             "params": {
                 "id": "Fake_id_to_trigger_experiment_code"
