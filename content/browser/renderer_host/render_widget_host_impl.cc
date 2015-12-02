@@ -46,6 +46,7 @@
 #include "content/browser/renderer_host/render_widget_host_owner_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/content_constants_internal.h"
+#include "content/common/content_switches_internal.h"
 #include "content/common/cursors/webcursor.h"
 #include "content/common/frame_messages.h"
 #include "content/common/gpu/gpu_messages.h"
@@ -1263,6 +1264,8 @@ void RenderWidgetHostImpl::GetWebScreenInfo(blink::WebScreenInfo* result) {
   // TODO(sievers): find a way to make this done another way so the method
   // can be const.
   latency_tracker_.set_device_scale_factor(result->deviceScaleFactor);
+  if (IsUseZoomForDSFEnabled())
+    input_router_->SetDeviceScaleFactor(result->deviceScaleFactor);
 }
 
 bool RenderWidgetHostImpl::GetScreenColorProfile(

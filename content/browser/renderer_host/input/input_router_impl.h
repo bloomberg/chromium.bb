@@ -68,6 +68,7 @@ class CONTENT_EXPORT InputRouterImpl
   void NotifySiteIsMobileOptimized(bool is_mobile_optimized) override;
   void RequestNotificationWhenFlushed() override;
   bool HasPendingEvents() const override;
+  void SetDeviceScaleFactor(float device_scale_factor) override;
 
   // IPC::Listener
   bool OnMessageReceived(const IPC::Message& message) override;
@@ -250,6 +251,8 @@ private:
   TouchActionFilter touch_action_filter_;
   InputEventStreamValidator input_stream_validator_;
   InputEventStreamValidator output_stream_validator_;
+
+  float device_scale_factor_;
 
   DISALLOW_COPY_AND_ASSIGN(InputRouterImpl);
 };

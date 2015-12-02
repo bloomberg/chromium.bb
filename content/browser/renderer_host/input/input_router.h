@@ -55,6 +55,10 @@ class InputRouter : public IPC::Listener {
 
   // Whether there are any events pending dispatch to or ack from the renderer.
   virtual bool HasPendingEvents() const = 0;
+
+  // A scale factor to scale the coordinate in WebInputEvent from DIP
+  // to viewport.
+  virtual void SetDeviceScaleFactor(float device_scale_factor) = 0;
 };
 
 }  // namespace content

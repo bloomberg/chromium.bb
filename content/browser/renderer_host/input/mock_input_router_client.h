@@ -8,10 +8,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/renderer_host/input/input_router_client.h"
 #include "content/common/input/did_overscroll_params.h"
+#include "content/common/input/input_event.h"
 
 namespace content {
 
-class InputEvent;
 class InputRouter;
 
 class MockInputRouterClient : public InputRouterClient {
@@ -47,6 +47,9 @@ class MockInputRouterClient : public InputRouterClient {
   }
   void set_allow_send_event(bool allow) {
     filter_state_ = INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS;
+  }
+  const blink::WebInputEvent* last_filter_event() const {
+    return last_filter_event_->web_event.get();
   }
 
  private:

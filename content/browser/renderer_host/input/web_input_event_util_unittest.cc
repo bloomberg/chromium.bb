@@ -10,6 +10,7 @@
 #include <cmath>
 
 #include "content/browser/renderer_host/input/web_input_event_util.h"
+#include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/common/input/web_input_event_traits.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/blink/blink_event_util.h"
@@ -120,6 +121,14 @@ TEST(WebInputEventUtilTest, ScrollUpdateConversion) {
   EXPECT_EQ(delta.x(), web_event.data.scrollUpdate.deltaX);
   EXPECT_EQ(delta.y(), web_event.data.scrollUpdate.deltaY);
   EXPECT_TRUE(web_event.data.scrollUpdate.previousUpdateInSequencePrevented);
+}
+
+TEST(WebInputEventUtilTest, NoScalingWith1DSF) {
+  auto event =
+      SyntheticWebMouseEventBuilder::Build(blink::WebInputEvent::MouseMove,
+                                           10, 10, 0);
+  EXPECT_FALSE(ConvertWebInputEventToViewport(event, 1.f));
+  EXPECT_TRUE(ConvertWebInputEventToViewport(event, 2.f));
 }
 
 }  // namespace content

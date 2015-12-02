@@ -15,6 +15,7 @@
 #include "content/browser/renderer_host/input/input_router_client.h"
 #include "content/browser/renderer_host/input/touch_event_queue.h"
 #include "content/browser/renderer_host/input/touchpad_tap_suppression_controller.h"
+#include "content/browser/renderer_host/input/web_input_event_util.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/edit_command.h"
 #include "content/common/input/input_event_ack_state.h"
@@ -77,7 +78,8 @@ InputRouterImpl::InputRouterImpl(IPC::Sender* sender,
       flush_requested_(false),
       active_renderer_fling_count_(0),
       touch_event_queue_(this, config.touch_config),
-      gesture_event_queue_(this, this, config.gesture_config) {
+      gesture_event_queue_(this, this, config.gesture_config),
+      device_scale_factor_(1.f) {
   DCHECK(sender);
   DCHECK(client);
   DCHECK(ack_handler);
@@ -258,6 +260,10 @@ bool InputRouterImpl::HasPendingEvents() const {
          active_renderer_fling_count_ > 0;
 }
 
+void InputRouterImpl::SetDeviceScaleFactor(float device_scale_factor) {
+  device_scale_factor_ = device_scale_factor;
+}
+
 bool InputRouterImpl::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(InputRouterImpl, message)
@@ -412,12 +418,17 @@ bool InputRouterImpl::OfferToClient(const WebInputEvent& input_event,
 
 bool InputRouterImpl::OfferToRenderer(const WebInputEvent& input_event,
                                       const ui::LatencyInfo& latency_info) {
-  if (Send(new InputMsg_HandleInputEvent(routing_id(), &input_event,
+  scoped_ptr<blink::WebInputEvent> event_in_viewport =
+      ConvertWebInputEventToViewport(input_event, device_scale_factor_);
+  const WebInputEvent* event_to_send =
+      event_in_viewport ? event_in_viewport.get() : &input_event;
+
+  if (Send(new InputMsg_HandleInputEvent(routing_id(), event_to_send,
                                          latency_info))) {
     // Ack messages for ignored ack event types should never be sent by the
     // renderer. Consequently, such event types should not affect event time
     // or in-flight event count metrics.
-    if (WebInputEventTraits::WillReceiveAckFromRenderer(input_event)) {
+    if (WebInputEventTraits::WillReceiveAckFromRenderer(*event_to_send)) {
       input_event_start_time_ = TimeTicks::Now();
       client_->IncrementInFlightEventCount();
     }
