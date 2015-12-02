@@ -96,13 +96,13 @@ void SVGEllipseElement::collectStyleForPresentationAttribute(const QualifiedName
 {
     RefPtrWillBeRawPtr<SVGAnimatedPropertyBase> property = propertyFromAttribute(name);
     if (property == m_cx)
-        addSVGLengthPropertyToPresentationAttributeStyle(style, CSSPropertyCx, *m_cx->currentValue());
+        addPropertyToPresentationAttributeStyle(style, CSSPropertyCx, m_cx->currentValue()->asCSSPrimitiveValue());
     else if (property == m_cy)
-        addSVGLengthPropertyToPresentationAttributeStyle(style, CSSPropertyCy, *m_cy->currentValue());
+        addPropertyToPresentationAttributeStyle(style, CSSPropertyCy, m_cy->currentValue()->asCSSPrimitiveValue());
     else if (property == m_rx)
-        addSVGLengthPropertyToPresentationAttributeStyle(style, CSSPropertyRx, *m_rx->currentValue());
+        addPropertyToPresentationAttributeStyle(style, CSSPropertyRx, m_rx->currentValue()->asCSSPrimitiveValue());
     else if (property == m_ry)
-        addSVGLengthPropertyToPresentationAttributeStyle(style, CSSPropertyRy, *m_ry->currentValue());
+        addPropertyToPresentationAttributeStyle(style, CSSPropertyRy, m_ry->currentValue()->asCSSPrimitiveValue());
     else
         SVGGeometryElement::collectStyleForPresentationAttribute(name, value, style);
 }

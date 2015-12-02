@@ -53,10 +53,6 @@ public:
     PassRefPtrWillBeRawPtr<SVGPropertyBase> cloneForAnimation(const String&) const override;
 
     CSSPrimitiveValue::UnitType typeWithCalcResolved() const { return m_value->typeWithCalcResolved(); }
-    CSSPrimitiveValue::UnitType cssUnitTypeQuirk() const
-    {
-        return m_value->typeWithCalcResolved();
-    }
     void setUnitType(CSSPrimitiveValue::UnitType);
     SVGLengthMode unitMode() const { return static_cast<SVGLengthMode>(m_unitMode); }
 
@@ -71,6 +67,8 @@ public:
     {
         m_value = CSSPrimitiveValue::create(value, m_value->typeWithCalcResolved());
     }
+
+    CSSPrimitiveValue* asCSSPrimitiveValue() const { return m_value.get(); }
 
     // Resolves LengthTypePercentage into a normalized floating point number (full value is 1.0).
     float valueAsPercentage() const;

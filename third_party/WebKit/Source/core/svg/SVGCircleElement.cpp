@@ -87,11 +87,11 @@ void SVGCircleElement::collectStyleForPresentationAttribute(const QualifiedName&
 {
     RefPtrWillBeRawPtr<SVGAnimatedPropertyBase> property = propertyFromAttribute(name);
     if (property == m_cx)
-        addSVGLengthPropertyToPresentationAttributeStyle(style, CSSPropertyCx, *m_cx->currentValue());
+        addPropertyToPresentationAttributeStyle(style, CSSPropertyCx, m_cx->currentValue()->asCSSPrimitiveValue());
     else if (property == m_cy)
-        addSVGLengthPropertyToPresentationAttributeStyle(style, CSSPropertyCy, *m_cy->currentValue());
+        addPropertyToPresentationAttributeStyle(style, CSSPropertyCy, m_cy->currentValue()->asCSSPrimitiveValue());
     else if (property == m_r)
-        addSVGLengthPropertyToPresentationAttributeStyle(style, CSSPropertyR, *m_r->currentValue());
+        addPropertyToPresentationAttributeStyle(style, CSSPropertyR, m_r->currentValue()->asCSSPrimitiveValue());
     else
         SVGGeometryElement::collectStyleForPresentationAttribute(name, value, style);
 }

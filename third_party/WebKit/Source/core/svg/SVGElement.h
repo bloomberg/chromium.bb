@@ -114,7 +114,6 @@ public:
 
     void invalidateSVGAttributes() { ensureUniqueElementData().m_animatedSVGAttributesAreDirty = true; }
     void invalidateSVGPresentationAttributeStyle() { ensureUniqueElementData().m_presentationAttributeStyleIsDirty = true; }
-    void addSVGLengthPropertyToPresentationAttributeStyle(MutableStylePropertySet*, CSSPropertyID, SVGLength&);
 
     const WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement>>& instancesForElement() const;
     void mapInstanceToElement(SVGElement*);

@@ -743,13 +743,6 @@ void SVGElement::collectStyleForPresentationAttribute(const QualifiedName& name,
         addPropertyToPresentationAttributeStyle(style, propertyID, value);
 }
 
-void SVGElement::addSVGLengthPropertyToPresentationAttributeStyle(MutableStylePropertySet* style, CSSPropertyID property, SVGLength& length)
-{
-    addPropertyToPresentationAttributeStyle(style, property,
-        length.valueInSpecifiedUnits(),
-        length.cssUnitTypeQuirk());
-}
-
 bool SVGElement::haveLoadedRequiredResources()
 {
     for (SVGElement* child = Traversal<SVGElement>::firstChild(*this); child; child = Traversal<SVGElement>::nextSibling(*child)) {

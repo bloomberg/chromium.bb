@@ -3533,6 +3533,12 @@ void Element::addPropertyToPresentationAttributeStyle(MutableStylePropertySet* s
     style->setProperty(propertyID, value, false);
 }
 
+void Element::addPropertyToPresentationAttributeStyle(MutableStylePropertySet*  style, CSSPropertyID propertyID, PassRefPtrWillBeRawPtr<CSSValue> value)
+{
+    ASSERT(isStyledElement());
+    style->setProperty(propertyID, value);
+}
+
 bool Element::supportsStyleSharing() const
 {
     if (!isStyledElement() || !parentOrShadowHostElement())

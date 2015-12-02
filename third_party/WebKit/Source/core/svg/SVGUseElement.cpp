@@ -191,9 +191,9 @@ void SVGUseElement::collectStyleForPresentationAttribute(const QualifiedName& na
 {
     RefPtrWillBeRawPtr<SVGAnimatedPropertyBase> property = propertyFromAttribute(name);
     if (property == m_x)
-        addSVGLengthPropertyToPresentationAttributeStyle(style, CSSPropertyX, *m_x->currentValue());
+        addPropertyToPresentationAttributeStyle(style, CSSPropertyX, m_x->currentValue()->asCSSPrimitiveValue());
     else if (property == m_y)
-        addSVGLengthPropertyToPresentationAttributeStyle(style, CSSPropertyY, *m_y->currentValue());
+        addPropertyToPresentationAttributeStyle(style, CSSPropertyY, m_y->currentValue()->asCSSPrimitiveValue());
     else
         SVGGraphicsElement::collectStyleForPresentationAttribute(name, value, style);
 }

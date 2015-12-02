@@ -116,17 +116,17 @@ void SVGRectElement::collectStyleForPresentationAttribute(const QualifiedName& n
 {
     RefPtrWillBeRawPtr<SVGAnimatedPropertyBase> property = propertyFromAttribute(name);
     if (property == m_x)
-        addSVGLengthPropertyToPresentationAttributeStyle(style, CSSPropertyX, *m_x->currentValue());
+        addPropertyToPresentationAttributeStyle(style, CSSPropertyX, m_x->currentValue()->asCSSPrimitiveValue());
     else if (property == m_y)
-        addSVGLengthPropertyToPresentationAttributeStyle(style, CSSPropertyY, *m_y->currentValue());
+        addPropertyToPresentationAttributeStyle(style, CSSPropertyY, m_y->currentValue()->asCSSPrimitiveValue());
     else if (property == m_width)
-        addSVGLengthPropertyToPresentationAttributeStyle(style, CSSPropertyWidth, *m_width->currentValue());
+        addPropertyToPresentationAttributeStyle(style, CSSPropertyWidth, m_width->currentValue()->asCSSPrimitiveValue());
     else if (property == m_height)
-        addSVGLengthPropertyToPresentationAttributeStyle(style, CSSPropertyHeight, *m_height->currentValue());
+        addPropertyToPresentationAttributeStyle(style, CSSPropertyHeight, m_height->currentValue()->asCSSPrimitiveValue());
     else if (property == m_rx)
-        addSVGLengthPropertyToPresentationAttributeStyle(style, CSSPropertyRx, *m_rx->currentValue());
+        addPropertyToPresentationAttributeStyle(style, CSSPropertyRx, m_rx->currentValue()->asCSSPrimitiveValue());
     else if (property == m_ry)
-        addSVGLengthPropertyToPresentationAttributeStyle(style, CSSPropertyRy, *m_ry->currentValue());
+        addPropertyToPresentationAttributeStyle(style, CSSPropertyRy, m_ry->currentValue()->asCSSPrimitiveValue());
     else
         SVGGeometryElement::collectStyleForPresentationAttribute(name, value, style);
 }
