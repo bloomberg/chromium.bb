@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.contextualsearch;
+package org.chromium.chrome.browser.compositor.bottombar;
 
 import android.content.Context;
 import android.test.InstrumentationTestCase;
@@ -11,11 +11,7 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
-import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelContent;
-import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelHost;
-import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager.PanelPriority;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
