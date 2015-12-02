@@ -294,6 +294,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Android.SeccompStatus.RendererSandbox"
+    enum="AndroidSeccompSandboxStatus">
+  <owner>rsesek@chromium.org</owner>
+  <summary>
+    Reports the status of the seccomp-bpf sandbox in renderer processes.
+    Anything other than &quot;Sandbox Engaged&quot; indicates the sandbox is not
+    turned on. See https://crbug.com/477049.
+  </summary>
+</histogram>
+
 <histogram name="Android.SeccompStatus.Syscall" enum="AndroidSeccompStatus">
   <owner>rsesek@chromium.org</owner>
   <summary>
@@ -54954,6 +54964,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1" label="TrimMemoryRunningLow"/>
   <int value="2" label="TrimMemoryRunningCritical"/>
   <int value="3" label="LowMemory"/>
+</enum>
+
+<enum name="AndroidSeccompSandboxStatus" type="int">
+  <int value="0" label="Not Supported"/>
+  <int value="1" label="Detection Failed"/>
+  <int value="2" label="Feature Disabled"/>
+  <int value="3" label="Feature Enabled"/>
+  <int value="4" label="Sandbox Engaged"/>
 </enum>
 
 <enum name="AndroidSeccompStatus" type="int">
