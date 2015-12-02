@@ -20,7 +20,6 @@ import android.os.Process;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceFragment.OnPreferenceStartFragmentCallback;
-import android.support.v4.view.ViewCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -91,9 +90,6 @@ public class Preferences extends AppCompatActivity implements
         boolean displayHomeAsUp = getIntent().getBooleanExtra(EXTRA_DISPLAY_HOME_AS_UP, true);
 
         if (displayHomeAsUp) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
-        // This must be called before the fragment transaction below.
-        workAroundPlatformBugs();
 
         // If savedInstanceState is non-null, then the activity is being
         // recreated and super.onCreate() has already recreated the fragment.
@@ -235,21 +231,5 @@ public class Preferences extends AppCompatActivity implements
             // Something terribly wrong has happened.
             throw new RuntimeException(ex);
         }
-    }
-
-    private void workAroundPlatformBugs() {
-        // Workaround for an Android bug where the fragment's view may not be attached to the view
-        // hierarchy. http://b/18525402
-        getSupportActionBar();
-
-        // Workaround for HTC One S bug which causes all the text in settings to turn white.
-        // This must be called after setContentView().
-        // https://code.google.com/p/android/issues/detail?id=78819
-        ViewCompat.postOnAnimation(getWindow().getDecorView(), new Runnable() {
-            @Override
-            public void run() {
-                setTheme(R.style.PreferencesTheme);
-            }
-        });
     }
 }
