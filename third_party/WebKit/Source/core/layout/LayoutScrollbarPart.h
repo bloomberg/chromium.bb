@@ -105,8 +105,7 @@ private:
 
     void setNeedsPaintInvalidation();
 
-    GC_PLUGIN_IGNORE("http://crbug.com/509911")
-    LayoutScrollbar* m_scrollbar;
+    RawPtrWillBeUntracedMember<LayoutScrollbar> m_scrollbar;
     ScrollbarPart m_part;
 };
 
