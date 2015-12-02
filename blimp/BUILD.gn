@@ -4,9 +4,15 @@
 
 import("//testing/test.gni")
 
-# Metatarget for all of Blimp's feature code.
+# Convenience meta-target for all of Blimp's production & test code.
 group("blimp") {
+  # In spite of the name, this really just means that non-test targets
+  # cannot depend on this one, and that it can depend on test targets,
+  # which fits how we intend to use it.
+  testonly = true
+
   deps = [
+    ":blimp_tests",
     "//blimp/client:blimp_client",
     "//blimp/common:blimp_common",
   ]
@@ -16,7 +22,10 @@ group("blimp") {
   }
 
   if (is_linux) {
-    deps += [ "//blimp/engine:blimp_engine" ]
+    deps += [
+      "//blimp/engine:blimp_engine",
+      "//blimp/engine:blimp_engine_bundle",
+    ]
   }
 }
 

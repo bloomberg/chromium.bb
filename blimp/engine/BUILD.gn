@@ -79,35 +79,37 @@ if (is_linux) {
 
   # Builds and bundles the engine into a tarball that can be used to build a
   # Docker image.
-  action("bundle_blimp_engine") {
+  action("blimp_engine_bundle") {
     script = "//blimp/tools/bundle-engine.py"
-    target = "//blimp/engine:blimp_engine"
 
     # These form the arguments to the script.
-    build_dir = rebase_path(root_out_dir)
-    dockerfile = rebase_path("//blimp/engine/Dockerfile")
-    manifest = rebase_path("//blimp/engine/engine-manifest.txt")
-    bundle = "$root_out_dir/blimp_engine_bundle.tar"
+    _rebased_out_dir = rebase_path(root_out_dir)
+    _rebased_dockerfile = rebase_path("//blimp/engine/Dockerfile")
+    _rebased_manifest = rebase_path("//blimp/engine/engine-manifest.txt")
+    _bundle = "$root_out_dir/blimp_engine_bundle.tar"
 
+    # Detail the target & "source"-file dependencies, and output, for GN.
     deps = [
-      target,
+      "//blimp/engine:blimp_engine",
     ]
-    inputs = [
-      dockerfile,
-      manifest,
+    sources = [
+      _rebased_dockerfile,
+      _rebased_manifest,
     ]
     outputs = [
-      bundle,
+      _bundle,
     ]
+
+    # Manually specify the actual arguments to the script.
     args = [
       "--build-dir",
-      build_dir,
+      _rebased_out_dir,
       "--dockerfile",
-      dockerfile,
+      _rebased_dockerfile,
       "--manifest",
-      manifest,
+      _rebased_manifest,
       "--output",
-      rebase_path(bundle),
+      rebase_path(_bundle),
     ]
   }
 }
