@@ -34,6 +34,8 @@ proto_library("proto_internal") {
     "layer.proto",
     "layer_position_constraint.proto",
     "layer_tree_debug_state.proto",
+    "managed_memory_policy.proto",
+    "memory_allocation.proto",
     "point.proto",
     "point3f.proto",
     "pointf.proto",
