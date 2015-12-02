@@ -232,10 +232,8 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator
   // Returns false and flushes current open packet if the pending frame cannot
   // fit into current open packet.
   bool AddNextPendingFrame();
-  // Adds a frame and takes ownership of the underlying buffer.
-  bool AddFrame(const QuicFrame& frame,
-                UniqueStreamBuffer buffer,
-                bool needs_padding);
+  // Adds a |frame| and pads it if |needs_padding| is true.
+  bool AddFrame(const QuicFrame& frame, bool needs_padding);
 
   DelegateInterface* delegate_;
   DebugDelegate* debug_delegate_;

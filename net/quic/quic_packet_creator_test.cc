@@ -554,10 +554,8 @@ TEST_P(QuicPacketCreatorTest, ReserializeFramesWithSequenceNumberLength) {
 TEST_P(QuicPacketCreatorTest, ReserializeFramesWithPadding) {
   QuicFrame frame;
   QuicIOVector io_vector(MakeIOVector("fake handshake message data"));
-  UniqueStreamBuffer stream_buffer;
   QuicPacketCreatorPeer::CreateStreamFrame(&creator_, kCryptoStreamId,
-                                           io_vector, 0u, 0u, false, &frame,
-                                           &stream_buffer);
+                                           io_vector, 0u, 0u, false, &frame);
   RetransmittableFrames frames(ENCRYPTION_NONE);
   frames.AddFrame(frame);
   frames.set_needs_padding(true);
@@ -579,10 +577,8 @@ TEST_P(QuicPacketCreatorTest, ReserializeFramesWithFullPacketAndPadding) {
 
     QuicFrame frame;
     QuicIOVector io_vector(MakeIOVector(data));
-    UniqueStreamBuffer stream_buffer;
-    QuicPacketCreatorPeer::CreateStreamFrame(&creator_, kCryptoStreamId,
-                                             io_vector, 0, kOffset, false,
-                                             &frame, &stream_buffer);
+    QuicPacketCreatorPeer::CreateStreamFrame(
+        &creator_, kCryptoStreamId, io_vector, 0, kOffset, false, &frame);
     RetransmittableFrames frames(ENCRYPTION_NONE);
     frames.AddFrame(frame);
     frames.set_needs_padding(true);
@@ -783,10 +779,8 @@ TEST_P(QuicPacketCreatorTest, StreamFrameConsumption) {
     size_t bytes_free = delta > 0 ? 0 : 0 - delta;
     QuicFrame frame;
     QuicIOVector io_vector(MakeIOVector(data));
-    UniqueStreamBuffer stream_buffer;
     size_t bytes_consumed = QuicPacketCreatorPeer::CreateStreamFrame(
-        &creator_, kClientDataStreamId1, io_vector, 0u, kOffset, false, &frame,
-        &stream_buffer);
+        &creator_, kClientDataStreamId1, io_vector, 0u, kOffset, false, &frame);
     EXPECT_EQ(capacity - bytes_free, bytes_consumed);
 
     ASSERT_TRUE(creator_.AddSavedFrame(frame));
@@ -817,10 +811,8 @@ TEST_P(QuicPacketCreatorTest, StreamFrameConsumptionWithFec) {
     size_t bytes_free = delta > 0 ? 0 : 0 - delta;
     QuicFrame frame;
     QuicIOVector io_vector(MakeIOVector(data));
-    UniqueStreamBuffer stream_buffer;
     size_t bytes_consumed = QuicPacketCreatorPeer::CreateStreamFrame(
-        &creator_, kClientDataStreamId1, io_vector, 0u, kOffset, false, &frame,
-        &stream_buffer);
+        &creator_, kClientDataStreamId1, io_vector, 0u, kOffset, false, &frame);
     EXPECT_EQ(capacity - bytes_free, bytes_consumed);
 
     ASSERT_TRUE(creator_.AddSavedFrame(frame));
