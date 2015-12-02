@@ -154,8 +154,8 @@ public class ContextualSearchLayout extends ContextualSearchSupportedLayout {
 
     @Override
     protected void hideContextualSearch(boolean immediately) {
-        if (isActive() && mBaseTab != null) {
-            startHiding(mBaseTab.getId(), false);
+        if (isActive()) {
+            startHiding(Tab.INVALID_TAB_ID, false);
             if (immediately) doneHiding();
         }
     }
