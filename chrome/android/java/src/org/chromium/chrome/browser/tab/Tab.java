@@ -182,8 +182,8 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     /** Listens to gesture events fired by the ContentViewCore. */
     private GestureStateListener mGestureStateListener;
 
-    /** The parent view of the ContentView and the InfoBarContainer. */
-    private FrameLayout mContentViewParent;
+    /** The parent view of the ContentView, NativePage's view and the InfoBarContainer. */
+    private FrameLayout mTabView;
 
     /** A list of Tab observers.  These are used to broadcast Tab events to listeners. */
     private final ObserverList<TabObserver> mObservers = new ObserverList<TabObserver>();
@@ -780,7 +780,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      *         This can be {@code null}, if the tab is frozen or being initialized or destroyed.
      */
     public View getView() {
-        return mNativePage != null ? mNativePage.getView() : mContentViewParent;
+        return mTabView;
     }
 
     /**
@@ -1200,8 +1200,13 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      */
     private void showNativePage(NativePage nativePage) {
         if (mNativePage == nativePage) return;
-        NativePage previousNativePage = mNativePage;
+        destroyNativePage();
         mNativePage = nativePage;
+
+        mTabView.addView(nativePage.getView(),
+                mTabView.indexOfChild(mContentViewCore.getContainerView()) + 1,
+                new FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+
         pushNativePageStateToNavigationEntry();
         // Notifying of theme color change before content change because some of
         // the observers depend on the theme information being correct in
@@ -1212,7 +1217,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         for (TabObserver observer : mObservers) {
             observer.onContentChanged(this);
         }
-        destroyNativePageInternal(previousNativePage);
     }
 
     /**
@@ -1221,7 +1225,8 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      */
     public void freezeNativePage() {
         if (mNativePage == null || mNativePage instanceof FrozenNativePage) return;
-        assert mNativePage.getView().getParent() == null : "Cannot freeze visible native page";
+        assert mNativePage.getView().getWindowToken() == null : "Cannot freeze visible native page";
+        mTabView.removeView(mNativePage.getView());
         mNativePage = FrozenNativePage.freeze(mNativePage);
     }
 
@@ -1232,10 +1237,9 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         updateTitle();
 
         if (mNativePage == null) return;
-        NativePage previousNativePage = mNativePage;
-        mNativePage = null;
+        destroyNativePage();
         for (TabObserver observer : mObservers) observer.onContentChanged(this);
-        destroyNativePageInternal(previousNativePage);
+
     }
 
     /**
@@ -1503,9 +1507,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     private void setContentViewCore(ContentViewCore cvc) {
         try {
             TraceEvent.begin("ChromeTab.setContentViewCore");
-            NativePage previousNativePage = mNativePage;
-            mNativePage = null;
-            destroyNativePageInternal(previousNativePage);
+            destroyNativePage();
 
             mContentViewCore = cvc;
             cvc.getContainerView().setOnHierarchyChangeListener(this);
@@ -1516,12 +1518,12 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             // ContentView -- causes problems since then the ContentView would contain both real
             // views (the infobars) and virtual views (the web page elements), which breaks Android
             // accessibility. http://crbug.com/416663
-            if (mContentViewParent != null) {
+            if (mTabView != null) {
                 assert false;
-                mContentViewParent.removeAllViews();
+                mTabView.removeAllViews();
             }
-            mContentViewParent = new FrameLayout(mThemedApplicationContext);
-            mContentViewParent.addView(cvc.getContainerView(),
+            mTabView = new FrameLayout(mThemedApplicationContext);
+            mTabView.addView(cvc.getContainerView(),
                     new FrameLayout.LayoutParams(
                             LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
 
@@ -1545,9 +1547,9 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
                 // The InfoBarContainer needs to be created after the ContentView has been natively
                 // initialized.
                 mInfoBarContainer =  new InfoBarContainer(
-                        mThemedApplicationContext, getId(), mContentViewParent, this);
+                        mThemedApplicationContext, getId(), mTabView, this);
             } else {
-                mInfoBarContainer.onParentViewChanged(getId(), mContentViewParent);
+                mInfoBarContainer.onParentViewChanged(getId(), mTabView);
             }
             mInfoBarContainer.setContentViewCore(mContentViewCore);
 
@@ -1692,9 +1694,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         for (TabObserver observer : mObservers) observer.onDestroyed(this);
         mObservers.clear();
 
-        NativePage currentNativePage = mNativePage;
-        mNativePage = null;
-        destroyNativePageInternal(currentNativePage);
+        destroyNativePage();
         destroyContentViewCore(true);
 
         // Destroys the native tab after destroying the ContentView but before destroying the
@@ -2013,11 +2013,12 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         mGroupedWithParent = groupedWithParent;
     }
 
-    private void destroyNativePageInternal(NativePage nativePage) {
-        if (nativePage == null) return;
-        assert nativePage != mNativePage : "Attempting to destroy active page.";
+    private void destroyNativePage() {
+        if (mNativePage == null) return;
 
-        nativePage.destroy();
+        mTabView.removeView(mNativePage.getView());
+        mNativePage.destroy();
+        mNativePage = null;
     }
 
     /**
@@ -2049,7 +2050,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             mSwipeRefreshHandler.setContentViewCore(null);
             mSwipeRefreshHandler = null;
         }
-        mContentViewParent = null;
+        mTabView = null;
         mContentViewCore.destroy();
         mContentViewCore = null;
 
@@ -2162,8 +2163,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             mContentViewCore.onHide();
         }
         destroyContentViewCore(deleteOldNativeWebContents);
-        NativePage previousNativePage = mNativePage;
-        mNativePage = null;
         setContentViewCore(newContentViewCore);
         // Size of the new ContentViewCore is zero at this point. If we don't call onSizeChanged(),
         // next onShow() call would send a resize message with the current ContentViewCore size
@@ -2173,7 +2172,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         mContentViewCore.onSizeChanged(originalWidth, originalHeight, 0, 0);
         mContentViewCore.onShow();
         mContentViewCore.attachImeAdapter();
-        destroyNativePageInternal(previousNativePage);
         mWebContentsObserver.didChangeThemeColor(
                 getWebContents().getThemeColor(mDefaultThemeColor));
         for (TabObserver observer : mObservers) {
