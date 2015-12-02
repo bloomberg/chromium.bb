@@ -4,6 +4,7 @@
 
 #include <windows.h>  // NOLINT
 #include <shlwapi.h>  // NOLINT
+#include <userenv.h>  // NOLINT
 
 #include "chrome/app/main_dll_loader_win.h"
 
@@ -42,6 +43,7 @@
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/module_util_win.h"
 #include "chrome/installer/util/util_constants.h"
+#include "components/crash/content/app/crash_keys_win.h"
 #include "components/crash/content/app/crash_reporter_client.h"
 #include "components/crash/content/app/crashpad.h"
 #include "components/startup_metric_utils/browser/pre_read_field_trial_utils_win.h"
@@ -99,6 +101,39 @@ void ClearDidRun(const base::FilePath& dll_path) {
 }
 
 typedef int (*InitMetro)();
+
+#if defined(KASKO)
+
+// Returns a string containing a list of all modifiers for the loaded profile.
+std::wstring GetProfileType() {
+  std::wstring profile_type;
+  DWORD profile_bits = 0;
+  if (::GetProfileType(&profile_bits)) {
+    static const struct {
+      DWORD bit;
+      const wchar_t* name;
+    } kBitNames[] = {
+      { PT_MANDATORY, L"mandatory" },
+      { PT_ROAMING, L"roaming" },
+      { PT_TEMPORARY, L"temporary" },
+    };
+    for (size_t i = 0; i < arraysize(kBitNames); ++i) {
+      const DWORD this_bit = kBitNames[i].bit;
+      if ((profile_bits & this_bit) != 0) {
+        profile_type.append(kBitNames[i].name);
+        profile_bits &= ~this_bit;
+        if (profile_bits != 0)
+          profile_type.append(L", ");
+      }
+    }
+  } else {
+    DWORD last_error = ::GetLastError();
+    base::SStringPrintf(&profile_type, L"error %u", last_error);
+  }
+  return profile_type;
+}
+
+#endif  // KASKO
 
 }  // namespace
 
@@ -288,13 +323,24 @@ void ChromeDllLoader::OnBeforeLaunch(const std::string& process_type,
                   switches::kFullMemoryCrashReport)) {
             minidump_type = kasko::api::FULL_DUMP_TYPE;
           } else {
-            bool is_per_user_install =
-                g_chrome_crash_client.Get().GetIsPerUserInstall(
-                    base::FilePath(exe_path));
-            if (g_chrome_crash_client.Get().GetShouldDumpLargerDumps(
+            // TODO(scottmg): Point this at the common global one when it's
+            // moved back into the .exe. http://crbug.com/546288.
+            ChromeCrashReporterClient chrome_crash_client;
+            bool is_per_user_install = chrome_crash_client.GetIsPerUserInstall(
+                base::FilePath(exe_path));
+            if (chrome_crash_client.GetShouldDumpLargerDumps(
                     is_per_user_install)) {
               minidump_type = kasko::api::LARGER_DUMP_TYPE;
             }
+
+            // TODO(scottmg): http://crbug.com/564329 Breakpad is no longer
+            // initialized. For now, initialize the CustomInfoEntries here so
+            // Kasko can pull them out.
+            static breakpad::CrashKeysWin crash_keys_win;
+            crash_keys_win.GetCustomInfo(
+                exe_path.value(), base::UTF8ToUTF16(process_type),
+                GetProfileType(), base::CommandLine::ForCurrentProcess(),
+                &chrome_crash_client);
           }
 
           kasko_client_.reset(

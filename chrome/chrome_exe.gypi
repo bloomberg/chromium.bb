@@ -112,6 +112,9 @@
               'dependencies': [
                 'kasko_dll',
               ],
+              'sources': [
+                'app/chrome_crash_reporter_client.cc',
+              ],
             }],
             ['win_console_app==1', {
               'defines': ['WIN_CONSOLE_APP'],
