@@ -32,6 +32,7 @@
 #include "content/renderer/media/webrtc_audio_device_impl.h"
 #include "content/renderer/media/webrtc_uma_histograms.h"
 #include "content/renderer/render_thread_impl.h"
+#include "media/base/media_switches.h"
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"
 #include "third_party/WebKit/public/platform/WebRTCConfiguration.h"
 #include "third_party/WebKit/public/platform/WebRTCDataChannelInit.h"
@@ -872,6 +873,9 @@ bool RTCPeerConnectionHandler::initialize(
 
   webrtc::PeerConnectionInterface::RTCConfiguration config;
   GetNativeRtcConfiguration(server_configuration, &config);
+  config.disable_prerenderer_smoothing =
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableRTCSmoothnessAlgorithm);
 
   RTCMediaConstraints constraints(options);
 
