@@ -61,7 +61,7 @@ enum LengthInterpolatedUnit {
 };
 
 static const CSSPrimitiveValue::UnitType unitTypes[] = {
-    CSSPrimitiveValue::UnitType::Number,
+    CSSPrimitiveValue::UnitType::UserUnits,
     CSSPrimitiveValue::UnitType::Percentage,
     CSSPrimitiveValue::UnitType::Ems,
     CSSPrimitiveValue::UnitType::Exs,
