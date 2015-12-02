@@ -97,15 +97,19 @@ ProfileSyncServiceAndroid::ProfileSyncServiceAndroid(JNIEnv* env, jobject obj)
 
   sync_service_ =
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile_);
-  DCHECK(sync_service_);
 }
 
-void ProfileSyncServiceAndroid::Init() {
-  sync_service_->AddObserver(this);
+bool ProfileSyncServiceAndroid::Init() {
+  if (sync_service_) {
+    sync_service_->AddObserver(this);
+    return true;
+  } else {
+    return false;
+  }
 }
 
 ProfileSyncServiceAndroid::~ProfileSyncServiceAndroid() {
-  if (sync_service_->HasObserver(this)) {
+  if (sync_service_ && sync_service_->HasObserver(this)) {
     sync_service_->RemoveObserver(this);
   }
 }
@@ -442,6 +446,10 @@ bool ProfileSyncServiceAndroid::Register(JNIEnv* env) {
 static jlong Init(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   ProfileSyncServiceAndroid* profile_sync_service_android =
       new ProfileSyncServiceAndroid(env, obj);
-  profile_sync_service_android->Init();
-  return reinterpret_cast<intptr_t>(profile_sync_service_android);
+  if (profile_sync_service_android->Init()) {
+    return reinterpret_cast<intptr_t>(profile_sync_service_android);
+  } else {
+    delete profile_sync_service_android;
+    return 0;
+  }
 }

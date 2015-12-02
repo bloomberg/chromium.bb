@@ -49,6 +49,7 @@ public class PassphraseActivity extends FragmentActivity implements
             Log.e(TAG, "Failed to start browser process.", e);
             ChromeApplication.reportStartupErrorAndExit(e);
         }
+        assert ProfileSyncService.get() != null;
         getFragmentManager().addOnBackStackChangedListener(this);
     }
 

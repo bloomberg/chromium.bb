@@ -165,6 +165,21 @@ public class PrecacheLauncherTest extends NativeLibraryTestBase {
         assertEquals(EnumSet.of(FailureReason.NATIVE_SHOULD_RUN_IS_FALSE), failureReasons());
     }
 
+    @SmallTest
+    @Feature({"Precache"})
+    public void testUpdateEnabledNullProfileSyncService() {
+        ProfileSyncService.overrideForTests(null);
+
+        mLauncher.updateEnabled(getTargetContext());
+        waitUntilUiThreadIdle();
+
+        assertEquals(false, isPrecachingEnabled());
+        assertEquals(EnumSet.of(FailureReason.SYNC_NOT_INITIALIZED,
+                             FailureReason.PRERENDER_PRIVACY_PREFERENCE_NOT_ENABLED,
+                             FailureReason.NATIVE_SHOULD_RUN_IS_FALSE),
+                failureReasons());
+    }
+
     /** Return the Context for the Chromium app. */
     private Context getTargetContext() {
         return getInstrumentation().getTargetContext();

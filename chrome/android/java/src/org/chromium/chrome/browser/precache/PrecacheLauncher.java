@@ -144,7 +144,7 @@ public abstract class PrecacheLauncher {
                 mCalled = true;
                 final ProfileSyncService sync = ProfileSyncService.get();
 
-                if (mListener == null) {
+                if (mListener == null && sync != null) {
                     mListener = new ProfileSyncService.SyncStateChangedListener() {
                         public void syncStateChanged() {
                             if (sync.isBackendInitialized()) {
@@ -156,8 +156,10 @@ public abstract class PrecacheLauncher {
                     sync.addSyncStateChangedListener(mListener);
                 }
 
-                // Call the listener once, in case the sync backend is already initialized.
-                mListener.syncStateChanged();
+                if (mListener != null) {
+                    // Call the listener once, in case the sync backend is already initialized.
+                    mListener.syncStateChanged();
+                }
                 Log.v(TAG, "updateEnabled complete");
             }
         });

@@ -20,6 +20,7 @@ import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInFlowObserver;
+import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.ui.SyncCustomizationFragment;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.sync.signin.AccountManagerHelper;
@@ -120,6 +121,7 @@ public final class FirstRunSignInProcessor {
      * Opens Sync settings as requested in the FRE sign-in dialog.
      */
     private static void openSyncSettings(Activity activity) {
+        if (ProfileSyncService.get() == null) return;
         String accountName = ChromeSigninController.get(activity).getSignedInAccountName();
         if (TextUtils.isEmpty(accountName)) return;
         Intent intent = PreferencesLauncher.createIntentForSettingsPage(

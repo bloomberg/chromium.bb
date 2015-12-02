@@ -64,6 +64,7 @@ public class PassphraseDialogFragment extends DialogFragment implements OnClickL
      * Create a new instanceof of {@link PassphraseDialogFragment} and set its arguments.
      */
     public static PassphraseDialogFragment newInstance(Fragment target) {
+        assert ProfileSyncService.get() != null;
         PassphraseDialogFragment dialog = new PassphraseDialogFragment();
         if (target != null) {
             dialog.setTargetFragment(target, -1);

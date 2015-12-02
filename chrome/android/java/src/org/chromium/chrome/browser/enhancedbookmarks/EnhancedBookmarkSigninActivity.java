@@ -99,7 +99,10 @@ public class EnhancedBookmarkSigninActivity extends EnhancedBookmarkActivityBase
 
     @Override
     public void enableSync() {
-        SyncController.get(this).start();
+        final SyncController syncController = SyncController.get(this);
+        if (syncController != null) {
+            syncController.start();
+        }
     }
 
     @Override

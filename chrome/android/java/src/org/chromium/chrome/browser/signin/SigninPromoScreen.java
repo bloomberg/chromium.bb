@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.SigninManager.SignInFlowObserver;
+import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.ui.SyncCustomizationFragment;
 import org.chromium.chrome.browser.widget.AlwaysDismissedDialog;
 import org.chromium.sync.signin.AccountManagerHelper;
@@ -138,12 +139,14 @@ public class SigninPromoScreen
 
     @Override
     public void onSettingsButtonClicked(String accountName) {
-        Intent intent = PreferencesLauncher.createIntentForSettingsPage(getContext(),
-                SyncCustomizationFragment.class.getName());
-        Bundle args = new Bundle();
-        args.putString(SyncCustomizationFragment.ARGUMENT_ACCOUNT, accountName);
-        intent.putExtra(Preferences.EXTRA_SHOW_FRAGMENT_ARGUMENTS, args);
-        getContext().startActivity(intent);
+        if (ProfileSyncService.get() != null) {
+            Intent intent = PreferencesLauncher.createIntentForSettingsPage(getContext(),
+                    SyncCustomizationFragment.class.getName());
+            Bundle args = new Bundle();
+            args.putString(SyncCustomizationFragment.ARGUMENT_ACCOUNT, accountName);
+            intent.putExtra(Preferences.EXTRA_SHOW_FRAGMENT_ARGUMENTS, args);
+            getContext().startActivity(intent);
+        }
 
         SigninPromoUma.recordAction(SigninPromoUma.SIGNIN_PROMO_ACCEPTED_WITH_ADVANCED);
         dismiss();

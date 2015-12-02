@@ -174,6 +174,20 @@ public class InvalidationControllerTest {
     }
 
     /**
+     * Test that ensureStartedAndUpdateRegisteredTypes() does not send any intents if
+     * ProfileSyncService is null.
+     */
+    @Test
+    @Feature({"Sync"})
+    public void testNullProfileSyncService() throws Exception {
+        ProfileSyncService.overrideForTests(null);
+
+        InvalidationController controller = new InvalidationController(mContext, false, false);
+        controller.ensureStartedAndUpdateRegisteredTypes();
+        assertNoNewIntents();
+    }
+
+    /**
      * Test that creating an InvalidationController object registers an ApplicationStateListener.
      */
     @Test

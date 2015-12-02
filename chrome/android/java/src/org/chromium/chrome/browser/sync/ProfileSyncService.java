@@ -18,6 +18,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import javax.annotation.Nullable;
+
 /**
  * JNI wrapper for the native ProfileSyncService.
  *
@@ -65,6 +67,7 @@ public class ProfileSyncService {
     };
 
     private static ProfileSyncService sProfileSyncService;
+    private static boolean sInitialized = false;
 
     // Sync state changes more often than listeners are added/removed, so using CopyOnWrite.
     private final List<SyncStateChangedListener> mListeners =
@@ -77,15 +80,21 @@ public class ProfileSyncService {
     private long mNativeProfileSyncServiceAndroid;
 
     /**
-     * Retrieves or creates the ProfileSyncService singleton instance.
+     * Retrieves or creates the ProfileSyncService singleton instance. Returns null if sync is
+     * disabled (via flag or variation).
      *
      * Can only be accessed on the main thread.
      */
+    @Nullable
     @SuppressFBWarnings("LI_LAZY_INIT")
     public static ProfileSyncService get() {
         ThreadUtils.assertOnUiThread();
-        if (sProfileSyncService == null) {
+        if (!sInitialized) {
             sProfileSyncService = new ProfileSyncService();
+            if (sProfileSyncService.mNativeProfileSyncServiceAndroid == 0) {
+                sProfileSyncService = null;
+            }
+            sInitialized = true;
         }
         return sProfileSyncService;
     }
@@ -93,6 +102,7 @@ public class ProfileSyncService {
     @VisibleForTesting
     public static void overrideForTests(ProfileSyncService profileSyncService) {
         sProfileSyncService = profileSyncService;
+        sInitialized = true;
     }
 
     protected ProfileSyncService() {

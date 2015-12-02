@@ -442,7 +442,10 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
 
     @Override
     public void enableSync() {
-        SyncController.get(mContext).start();
+        SyncController syncController = SyncController.get(mContext);
+        if (syncController != null) {
+            syncController.start();
+        }
     }
 
     @Override

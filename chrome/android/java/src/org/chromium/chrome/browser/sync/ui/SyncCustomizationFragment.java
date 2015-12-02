@@ -115,6 +115,7 @@ public class SyncCustomizationFragment extends PreferenceFragment
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         mProfileSyncService = ProfileSyncService.get();
+        assert mProfileSyncService != null;
         mIsBackendInitialized = mProfileSyncService.isBackendInitialized();
         mIsPassphraseRequired =
                 mIsBackendInitialized && mProfileSyncService.isPassphraseRequiredForDecryption();

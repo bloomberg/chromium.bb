@@ -30,9 +30,11 @@ class ProfileSyncServiceAndroid : public sync_driver::SyncServiceObserver {
  public:
 
   ProfileSyncServiceAndroid(JNIEnv* env, jobject obj);
+  ~ProfileSyncServiceAndroid() override;
 
   // This method should be called once right after contructing the object.
-  void Init();
+  // Returns false if we didn't get a ProfileSyncService.
+  bool Init();
 
   // sync_driver::SyncServiceObserver:
   void OnStateChanged() override;
@@ -129,8 +131,6 @@ class ProfileSyncServiceAndroid : public sync_driver::SyncServiceObserver {
   static bool Register(JNIEnv* env);
 
  private:
-  ~ProfileSyncServiceAndroid() override;
-
   // A reference to the Chrome profile object.
   Profile* profile_;
 

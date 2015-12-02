@@ -28,6 +28,8 @@ import org.chromium.sync.PassphraseType;
 import org.chromium.sync.signin.AccountManagerHelper;
 import org.chromium.sync.signin.ChromeSigninController;
 
+import javax.annotation.Nullable;
+
 /**
  * SyncController handles the coordination of sync state between the invalidation controller,
  * the Android sync settings, and the native sync code.
@@ -60,6 +62,7 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
     public static final String SESSION_TAG_PREFIX = "session_sync";
 
     private static SyncController sInstance;
+    private static boolean sInitialized = false;
 
     private final Context mContext;
     private final ChromeSigninController mChromeSigninController;
@@ -105,10 +108,14 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
      * @param context the current context.
      * @return the singleton instance.
      */
+    @Nullable
     public static SyncController get(Context context) {
         ThreadUtils.assertOnUiThread();
-        if (sInstance == null) {
-            sInstance = new SyncController(context.getApplicationContext());
+        if (!sInitialized) {
+            if (ProfileSyncService.get() != null) {
+                sInstance = new SyncController(context.getApplicationContext());
+            }
+            sInitialized = true;
         }
         return sInstance;
     }

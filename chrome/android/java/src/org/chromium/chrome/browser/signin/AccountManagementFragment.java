@@ -147,7 +147,10 @@ public class AccountManagementFragment extends PreferenceFragment
         super.onResume();
         SigninManager.get(getActivity()).addSignInStateObserver(this);
         ProfileDownloader.addObserver(this);
-        ProfileSyncService.get().addSyncStateChangedListener(this);
+        ProfileSyncService syncService = ProfileSyncService.get();
+        if (syncService != null) {
+            syncService.addSyncStateChangedListener(this);
+        }
 
         update();
     }
@@ -157,7 +160,10 @@ public class AccountManagementFragment extends PreferenceFragment
         super.onPause();
         SigninManager.get(getActivity()).removeSignInStateObserver(this);
         ProfileDownloader.removeObserver(this);
-        ProfileSyncService.get().removeSyncStateChangedListener(this);
+        ProfileSyncService syncService = ProfileSyncService.get();
+        if (syncService != null) {
+            syncService.removeSyncStateChangedListener(this);
+        }
     }
 
     /**
@@ -428,6 +434,8 @@ public class AccountManagementFragment extends PreferenceFragment
                                 ProfileAccountManagementMetrics.CLICK_PRIMARY_ACCOUNT,
                                 mGaiaServiceType);
 
+                        if (ProfileSyncService.get() == null) return true;
+
                         if (AndroidSyncSettings.isMasterSyncEnabled(activity)) {
                             Bundle args = new Bundle();
                             args.putString(
@@ -521,6 +529,10 @@ public class AccountManagementFragment extends PreferenceFragment
 
         if (!AndroidSyncSettings.isMasterSyncEnabled(activity)) {
             return res.getString(R.string.sync_android_master_sync_disabled);
+        }
+
+        if (profileSyncService == null) {
+            return res.getString(R.string.sync_is_disabled);
         }
 
         if (profileSyncService.getAuthError() != GoogleServiceAuthError.State.NONE) {
