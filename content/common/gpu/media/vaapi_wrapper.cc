@@ -22,6 +22,7 @@
 #include "ui/gfx/x/x11_types.h"
 #elif defined(USE_OZONE)
 #include "third_party/libva/va/drm/va_drm.h"
+#include "third_party/libva/va/va_drmcommon.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 #endif  // USE_X11
@@ -55,6 +56,36 @@ using content_common_gpu_media::StubPathMap;
       return (ret);                                        \
     }                                                      \
   } while (0)
+
+#if defined(USE_OZONE)
+namespace {
+
+uint32_t BufferFormatToVAFourCC(gfx::BufferFormat fmt) {
+  switch (fmt) {
+    case gfx::BufferFormat::BGRX_8888:
+      return VA_FOURCC_BGRX;
+    case gfx::BufferFormat::UYVY_422:
+      return VA_FOURCC_UYVY;
+    default:
+      NOTREACHED();
+      return 0;
+  }
+}
+
+uint32_t BufferFormatToVARTFormat(gfx::BufferFormat fmt) {
+  switch (fmt) {
+    case gfx::BufferFormat::UYVY_422:
+      return VA_RT_FORMAT_YUV422;
+    case gfx::BufferFormat::BGRX_8888:
+      return VA_RT_FORMAT_RGB32;
+    default:
+      NOTREACHED();
+      return 0;
+  }
+}
+
+}  // namespace
+#endif
 
 namespace content {
 
@@ -147,7 +178,7 @@ VaapiWrapper::~VaapiWrapper() {
 }
 
 // static
-scoped_ptr<VaapiWrapper> VaapiWrapper::Create(
+scoped_refptr<VaapiWrapper> VaapiWrapper::Create(
     CodecMode mode,
     VAProfile va_profile,
     const base::Closure& report_error_to_uma_cb) {
@@ -156,24 +187,24 @@ scoped_ptr<VaapiWrapper> VaapiWrapper::Create(
     return nullptr;
   }
 
-  scoped_ptr<VaapiWrapper> vaapi_wrapper(new VaapiWrapper());
+  scoped_refptr<VaapiWrapper> vaapi_wrapper(new VaapiWrapper());
   if (vaapi_wrapper->VaInitialize(report_error_to_uma_cb)) {
     if (vaapi_wrapper->Initialize(mode, va_profile))
-      return vaapi_wrapper.Pass();
+      return vaapi_wrapper;
   }
   LOG(ERROR) << "Failed to create VaapiWrapper for va_profile: " << va_profile;
   return nullptr;
 }
 
 // static
-scoped_ptr<VaapiWrapper> VaapiWrapper::CreateForVideoCodec(
+scoped_refptr<VaapiWrapper> VaapiWrapper::CreateForVideoCodec(
     CodecMode mode,
     media::VideoCodecProfile profile,
     const base::Closure& report_error_to_uma_cb) {
   VAProfile va_profile = ProfileToVAProfile(profile, mode);
-  scoped_ptr<VaapiWrapper> vaapi_wrapper =
+  scoped_refptr<VaapiWrapper> vaapi_wrapper =
       Create(mode, va_profile, report_error_to_uma_cb);
-  return vaapi_wrapper.Pass();
+  return vaapi_wrapper;
 }
 
 // static
@@ -592,6 +623,84 @@ scoped_refptr<VASurface> VaapiWrapper::CreateUnownedSurface(
 
   return va_surface;
 }
+
+#if defined(USE_OZONE)
+scoped_refptr<VASurface> VaapiWrapper::CreateVASurfaceForPixmap(
+    const scoped_refptr<ui::NativePixmap>& pixmap) {
+  // Get the dmabuf of the created buffer.
+  int dmabuf_fd = pixmap->GetDmaBufFd();
+  if (dmabuf_fd < 0) {
+    LOG(ERROR) << "Failed to get dmabuf from an Ozone NativePixmap";
+    return nullptr;
+  }
+  int dmabuf_pitch = pixmap->GetDmaBufPitch();
+  gfx::Size pixmap_size = pixmap->GetBufferSize();
+
+  // Create a VASurface out of the created buffer using the dmabuf.
+  VASurfaceAttribExternalBuffers va_attrib_extbuf;
+  memset(&va_attrib_extbuf, 0, sizeof(va_attrib_extbuf));
+  va_attrib_extbuf.pixel_format =
+      BufferFormatToVAFourCC(pixmap->GetBufferFormat());
+  va_attrib_extbuf.width = pixmap_size.width();
+  va_attrib_extbuf.height = pixmap_size.height();
+  va_attrib_extbuf.data_size = pixmap_size.height() * dmabuf_pitch;
+  va_attrib_extbuf.num_planes = 1;
+  va_attrib_extbuf.pitches[0] = dmabuf_pitch;
+  va_attrib_extbuf.offsets[0] = 0;
+  va_attrib_extbuf.buffers = reinterpret_cast<unsigned long*>(&dmabuf_fd);
+  va_attrib_extbuf.num_buffers = 1;
+  va_attrib_extbuf.flags = 0;
+  va_attrib_extbuf.private_data = NULL;
+
+  std::vector<VASurfaceAttrib> va_attribs;
+  va_attribs.resize(2);
+
+  va_attribs[0].type = VASurfaceAttribMemoryType;
+  va_attribs[0].flags = VA_SURFACE_ATTRIB_SETTABLE;
+  va_attribs[0].value.type = VAGenericValueTypeInteger;
+  va_attribs[0].value.value.i = VA_SURFACE_ATTRIB_MEM_TYPE_DRM_PRIME;
+
+  va_attribs[1].type = VASurfaceAttribExternalBufferDescriptor;
+  va_attribs[1].flags = VA_SURFACE_ATTRIB_SETTABLE;
+  va_attribs[1].value.type = VAGenericValueTypePointer;
+  va_attribs[1].value.value.p = &va_attrib_extbuf;
+
+  scoped_refptr<VASurface> va_surface =
+      CreateUnownedSurface(BufferFormatToVARTFormat(pixmap->GetBufferFormat()),
+                           pixmap_size, va_attribs);
+  if (!va_surface) {
+    LOG(ERROR) << "Failed to create VASurface for an Ozone NativePixmap";
+    return nullptr;
+  }
+
+  return va_surface;
+}
+
+bool VaapiWrapper::ProcessPixmap(
+    const scoped_refptr<ui::NativePixmap>& source_pixmap,
+    scoped_refptr<ui::NativePixmap> target_pixmap) {
+  scoped_refptr<VASurface> va_surface = CreateVASurfaceForPixmap(source_pixmap);
+  if (!va_surface) {
+    LOG(ERROR) << "Failed creating VA Surface for source_pixmap";
+    return false;
+  }
+
+  scoped_refptr<VASurface> processed_va_surface =
+      CreateVASurfaceForPixmap(target_pixmap);
+  if (!processed_va_surface) {
+    LOG(ERROR) << "Failed creating processed VA Surface for pixmap";
+    return false;
+  }
+
+  if (!BlitSurface(va_surface, processed_va_surface)) {
+    LOG(ERROR) << "Failed scaling NativePixmap";
+    return false;
+  }
+
+  return true;
+}
+
+#endif
 
 void VaapiWrapper::DestroyUnownedSurface(VASurfaceID va_surface_id) {
   base::AutoLock auto_lock(*va_lock_);
@@ -1071,7 +1180,7 @@ bool VaapiWrapper::PostSandboxInitialization() {
 VaapiWrapper::LazyProfileInfos::LazyProfileInfos() {
   static_assert(arraysize(supported_profiles_) == kCodecModeMax,
                 "The array size of supported profile is incorrect.");
-  scoped_ptr<VaapiWrapper> vaapi_wrapper(new VaapiWrapper());
+  scoped_refptr<VaapiWrapper> vaapi_wrapper(new VaapiWrapper());
   if (!vaapi_wrapper->VaInitialize(base::Bind(&base::DoNothing)))
     return;
   for (size_t i = 0; i < kCodecModeMax; ++i) {

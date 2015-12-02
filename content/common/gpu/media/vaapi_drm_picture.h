@@ -31,7 +31,7 @@ class VaapiWrapper;
 // Implementation of VaapiPicture for the ozone/drm backed chromium.
 class VaapiDrmPicture : public VaapiPicture {
  public:
-  VaapiDrmPicture(VaapiWrapper* vaapi_wrapper,
+  VaapiDrmPicture(const scoped_refptr<VaapiWrapper>& vaapi_wrapper,
                   const base::Callback<bool(void)>& make_context_current,
                   int32 picture_buffer_id,
                   uint32 texture_id,
@@ -48,42 +48,17 @@ class VaapiDrmPicture : public VaapiPicture {
   bool AllowOverlay() const override;
 
  private:
-  // Calls ProcessPixmap() if weak_ptr is not NULL.
-  static scoped_refptr<ui::NativePixmap> CallProcessPixmap(
-      base::WeakPtr<VaapiDrmPicture> weak_ptr,
-      gfx::Size target_size,
-      gfx::BufferFormat target_format);
-  // Use VPP to process underlying pixmap_, scaling to |target_size| and
-  // converting to |target_format|.
-  scoped_refptr<ui::NativePixmap> ProcessPixmap(
-      gfx::Size target_size,
-      gfx::BufferFormat target_format);
-  scoped_refptr<VASurface> CreateVASurfaceForPixmap(
-      scoped_refptr<ui::NativePixmap> pixmap,
-      gfx::Size pixmap_size);
-  scoped_refptr<ui::NativePixmap> CreateNativePixmap(gfx::Size size,
-                                                     gfx::BufferFormat format);
-
-  VaapiWrapper* vaapi_wrapper_;  // Not owned.
+  scoped_refptr<VaapiWrapper> vaapi_wrapper_;
   base::Callback<bool(void)> make_context_current_;
 
   // Ozone buffer, the storage of the EGLImage and the VASurface.
   scoped_refptr<ui::NativePixmap> pixmap_;
-
-  // Ozone buffer, the storage of the processed buffer for overlay.
-  scoped_refptr<ui::NativePixmap> processed_pixmap_;
 
   // EGLImage bound to the GL textures used by the VDA client.
   scoped_refptr<gl::GLImage> gl_image_;
 
   // VASurface used to transfer from the decoder's pixel format.
   scoped_refptr<VASurface> va_surface_;
-
-  // VaSurface used to apply processing.
-  scoped_refptr<VASurface> processed_va_surface_;
-
-  // The WeakPtrFactory for VaapiDrmPicture.
-  base::WeakPtrFactory<VaapiDrmPicture> weak_this_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(VaapiDrmPicture);
 };

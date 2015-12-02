@@ -223,7 +223,7 @@ class CONTENT_EXPORT VaapiVideoDecodeAccelerator
   typedef std::queue<int32> OutputBuffers;
   OutputBuffers output_buffers_;
 
-  scoped_ptr<VaapiWrapper> vaapi_wrapper_;
+  scoped_refptr<VaapiWrapper> vaapi_wrapper_;
 
   typedef std::map<int32, linked_ptr<VaapiPicture>> Pictures;
   // All allocated Pictures, regardless of their current state.

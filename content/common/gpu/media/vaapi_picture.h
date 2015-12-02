@@ -51,7 +51,7 @@ class VaapiPicture : public base::NonThreadSafe {
   // |picture_buffer_id| and bound to |texture_id|.
   // |make_context_current| is provided for the GL operations.
   static linked_ptr<VaapiPicture> CreatePicture(
-      VaapiWrapper* vaapi_wrapper,
+      const scoped_refptr<VaapiWrapper>& vaapi_wrapper,
       const base::Callback<bool(void)> make_context_current,
       int32 picture_buffer_id,
       uint32 texture_id,

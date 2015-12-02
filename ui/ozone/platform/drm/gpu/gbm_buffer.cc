@@ -19,6 +19,8 @@
 #include "ui/ozone/platform/drm/gpu/gbm_device.h"
 #include "ui/ozone/platform/drm/gpu/gbm_surface_factory.h"
 #include "ui/ozone/platform/drm/gpu/gbm_surfaceless.h"
+#include "ui/ozone/public/ozone_platform.h"
+#include "ui/ozone/public/surface_factory_ozone.h"
 
 namespace {
 // Optimal format for rendering on overlay.
@@ -93,7 +95,21 @@ void GbmPixmap::SetProcessingCallback(
 scoped_refptr<NativePixmap> GbmPixmap::GetProcessedPixmap(
     gfx::Size target_size,
     gfx::BufferFormat target_format) {
-  return processing_callback_.Run(target_size, target_format);
+  ui::OzonePlatform* platform = ui::OzonePlatform::GetInstance();
+  ui::SurfaceFactoryOzone* factory = platform->GetSurfaceFactoryOzone();
+  // Create a buffer from Ozone.
+  scoped_refptr<ui::NativePixmap> processed_pixmap =
+      factory->CreateNativePixmap(gfx::kNullAcceleratedWidget, target_size,
+                                  target_format, gfx::BufferUsage::SCANOUT);
+  if (!processed_pixmap) {
+    LOG(ERROR) << "Failed creating an Ozone NativePixmap for processing";
+    return nullptr;
+  }
+  if (!processing_callback_.Run(this, processed_pixmap)) {
+    LOG(ERROR) << "Failed processing NativePixmap";
+    return nullptr;
+  }
+  return processed_pixmap;
 }
 
 gfx::NativePixmapHandle GbmPixmap::ExportHandle() {
@@ -127,6 +143,10 @@ int GbmPixmap::GetDmaBufPitch() const {
 
 gfx::BufferFormat GbmPixmap::GetBufferFormat() const {
   return GetBufferFormatFromFourCCFormat(buffer_->GetFramebufferPixelFormat());
+}
+
+gfx::Size GbmPixmap::GetBufferSize() const {
+  return buffer_->GetSize();
 }
 
 bool GbmPixmap::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,

@@ -730,7 +730,7 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
              << " VASurfaceID: " << va_surface_ids[i];
 
     linked_ptr<VaapiPicture> picture(VaapiPicture::CreatePicture(
-        vaapi_wrapper_.get(), make_context_current_, buffers[i].id(),
+        vaapi_wrapper_, make_context_current_, buffers[i].id(),
         buffers[i].texture_id(), requested_pic_size_));
 
     scoped_refptr<gl::GLImage> image = picture->GetImageToBind();

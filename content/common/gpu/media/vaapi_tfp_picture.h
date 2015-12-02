@@ -30,7 +30,7 @@ class VaapiWrapper;
 // Implementation of VaapiPicture for the X11 backed chromium.
 class VaapiTFPPicture : public VaapiPicture {
  public:
-  VaapiTFPPicture(VaapiWrapper* vaapi_wrapper,
+  VaapiTFPPicture(const scoped_refptr<VaapiWrapper>& vaapi_wrapper,
                   const base::Callback<bool(void)> make_context_current,
                   int32 picture_buffer_id,
                   uint32 texture_id,
@@ -45,7 +45,7 @@ class VaapiTFPPicture : public VaapiPicture {
   scoped_refptr<gl::GLImage> GetImageToBind() override;
 
  private:
-  VaapiWrapper* vaapi_wrapper_;  // Not owned.
+  scoped_refptr<VaapiWrapper> vaapi_wrapper_;
 
   base::Callback<bool(void)> make_context_current_;
   Display* x_display_;

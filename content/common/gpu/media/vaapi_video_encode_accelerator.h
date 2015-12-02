@@ -150,7 +150,7 @@ class CONTENT_EXPORT VaapiVideoEncodeAccelerator
 
   // VaapiWrapper is the owner of all HW resources (surfaces and buffers)
   // and will free them on destruction.
-  scoped_ptr<VaapiWrapper> vaapi_wrapper_;
+  scoped_refptr<VaapiWrapper> vaapi_wrapper_;
 
   // Input profile and sizes.
   media::VideoCodecProfile profile_;

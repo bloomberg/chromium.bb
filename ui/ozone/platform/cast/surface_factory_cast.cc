@@ -194,6 +194,8 @@ scoped_refptr<NativePixmap> SurfaceFactoryCast::CreateNativePixmap(
     gfx::BufferFormat GetBufferFormat() const override {
       return gfx::BufferFormat::BGRA_8888;
     }
+    gfx::Size GetBufferSize() const override { return gfx::Size(); }
+
     bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
                               int plane_z_order,
                               gfx::OverlayTransform plane_transform,

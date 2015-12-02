@@ -52,7 +52,7 @@ class VaapiJpegDecoderTest : public ::testing::Test {
                     const std::string& md5sum);
 
  protected:
-  scoped_ptr<VaapiWrapper> wrapper_;
+  scoped_refptr<VaapiWrapper> wrapper_;
   std::string jpeg_data_;
 };
 

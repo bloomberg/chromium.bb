@@ -55,6 +55,7 @@ class GbmPixmap : public NativePixmap {
   int GetDmaBufFd() const override;
   int GetDmaBufPitch() const override;
   gfx::BufferFormat GetBufferFormat() const override;
+  gfx::Size GetBufferSize() const override;
   bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
                             int plane_z_order,
                             gfx::OverlayTransform plane_transform,

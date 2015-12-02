@@ -31,6 +31,12 @@
 #include "third_party/libva/va/va_x11.h"
 #endif  // USE_X11
 
+#if defined(USE_OZONE)
+namespace ui {
+class NativePixmap;
+}
+#endif
+
 namespace content {
 
 // This class handles VA-API calls and ensures proper locking of VA-API calls
@@ -43,7 +49,8 @@ namespace content {
 // It is also responsible for managing and freeing VABuffers (not VASurfaces),
 // which are used to queue parameters and slice data to the HW codec,
 // as well as underlying memory for VASurfaces themselves.
-class CONTENT_EXPORT VaapiWrapper {
+class CONTENT_EXPORT VaapiWrapper
+    : public base::RefCountedThreadSafe<VaapiWrapper> {
  public:
   enum CodecMode {
     kDecode,
@@ -54,7 +61,7 @@ class CONTENT_EXPORT VaapiWrapper {
   // Return an instance of VaapiWrapper initialized for |va_profile| and
   // |mode|. |report_error_to_uma_cb| will be called independently from
   // reporting errors to clients via method return values.
-  static scoped_ptr<VaapiWrapper> Create(
+  static scoped_refptr<VaapiWrapper> Create(
       CodecMode mode,
       VAProfile va_profile,
       const base::Closure& report_error_to_uma_cb);
@@ -63,7 +70,7 @@ class CONTENT_EXPORT VaapiWrapper {
   // |profile| to VAProfile.
   // |report_error_to_uma_cb| will be called independently from reporting
   // errors to clients via method return values.
-  static scoped_ptr<VaapiWrapper> CreateForVideoCodec(
+  static scoped_refptr<VaapiWrapper> CreateForVideoCodec(
       CodecMode mode,
       media::VideoCodecProfile profile,
       const base::Closure& report_error_to_uma_cb);
@@ -78,8 +85,6 @@ class CONTENT_EXPORT VaapiWrapper {
 
   // Return true when JPEG decode is supported.
   static bool IsJpegDecodeSupported();
-
-  ~VaapiWrapper();
 
   // Create |num_surfaces| backing surfaces in driver for VASurfaces of
   // |va_format|, each of size |size|. Returns true when successful, with the
@@ -105,6 +110,20 @@ class CONTENT_EXPORT VaapiWrapper {
       unsigned int va_format,
       const gfx::Size& size,
       const std::vector<VASurfaceAttrib>& va_attribs);
+
+#if defined(USE_OZONE)
+  // Create a VASurface for |pixmap|. The ownership of the surface is
+  // transferred to the caller. It differs from surfaces created using
+  // CreateSurfaces(), where VaapiWrapper is the owner of the surfaces.
+  scoped_refptr<VASurface> CreateVASurfaceForPixmap(
+      const scoped_refptr<ui::NativePixmap>& pixmap);
+
+  // Use VPP to process |source_pixmap| to |target_pixmap| with scaling and
+  // color space conversion.
+  bool ProcessPixmap(const scoped_refptr<ui::NativePixmap>& source_pixmap,
+                     scoped_refptr<ui::NativePixmap> target_pixmap);
+
+#endif
 
   // Submit parameters or slice data of |va_buffer_type|, copying them from
   // |buffer| of size |size|, into HW codec. The data in |buffer| is no
@@ -199,6 +218,8 @@ class CONTENT_EXPORT VaapiWrapper {
   unsigned int va_surface_format() const { return va_surface_format_; }
 
  private:
+  friend class base::RefCountedThreadSafe<VaapiWrapper>;
+
   struct ProfileInfo {
     VAProfile va_profile;
     gfx::Size max_resolution;
@@ -262,6 +283,7 @@ class CONTENT_EXPORT VaapiWrapper {
   };
 
   VaapiWrapper();
+  ~VaapiWrapper();
 
   bool Initialize(CodecMode mode, VAProfile va_profile);
   void Deinitialize();
