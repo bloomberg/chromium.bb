@@ -315,7 +315,7 @@ void LayoutBlock::invalidatePaintOfSubtreesIfNeeded(PaintInvalidationState& chil
 
             // One of the layoutObjects we're skipping over here may be the child's paint invalidation container,
             // so we can't pass our own paint invalidation container along.
-            const LayoutBoxModelObject& paintInvalidationContainerForChild = *box->containerForPaintInvalidation();
+            const LayoutBoxModelObject& paintInvalidationContainerForChild = box->containerForPaintInvalidation();
 
             // If it's a new paint invalidation container, we won't have properly accumulated the offset into the
             // PaintInvalidationState.

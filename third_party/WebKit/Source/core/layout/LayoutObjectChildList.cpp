@@ -186,7 +186,7 @@ void LayoutObjectChildList::invalidatePaintOnRemoval(LayoutObject& oldChild)
         oldChild.view()->setShouldDoFullPaintInvalidation();
         return;
     }
-    oldChild.invalidatePaintOfPreviousPaintInvalidationRect(*oldChild.containerForPaintInvalidation(), PaintInvalidationLayoutObjectRemoval);
+    oldChild.invalidatePaintOfPreviousPaintInvalidationRect(oldChild.containerForPaintInvalidation(), PaintInvalidationLayoutObjectRemoval);
 }
 
 } // namespace blink

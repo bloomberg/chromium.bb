@@ -286,10 +286,9 @@ void LayoutBoxModelObject::createLayer(PaintLayerType type)
     // descendants to change paint invalidation container. Therefore we must eagerly invalidate
     // them on the original paint invalidation container before creating the layer.
     if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled() && isRooted() && styleRef().isTreatedAsOrStackingContext()) {
-        if (const LayoutBoxModelObject* currentPaintInvalidationContainer = containerForPaintInvalidation()) {
-            if (!currentPaintInvalidationContainer->styleRef().isStackingContext())
-                invalidatePaintIncludingNonSelfPaintingLayerDescendants(*currentPaintInvalidationContainer);
-        }
+        const LayoutBoxModelObject& currentPaintInvalidationContainer = containerForPaintInvalidation();
+        if (!currentPaintInvalidationContainer.styleRef().isStackingContext())
+            invalidatePaintIncludingNonSelfPaintingLayerDescendants(currentPaintInvalidationContainer);
     }
 
     ASSERT(!m_layer);
@@ -353,7 +352,7 @@ void LayoutBoxModelObject::invalidateTreeIfNeeded(PaintInvalidationState& paintI
     bool establishesNewPaintInvalidationContainer = isPaintInvalidationContainer();
     const LayoutBoxModelObject& newPaintInvalidationContainer = *adjustCompositedContainerForSpecialAncestors(establishesNewPaintInvalidationContainer ? this : &paintInvalidationState.paintInvalidationContainer());
     // FIXME: This assert should be re-enabled when we move paint invalidation to after compositing update. crbug.com/360286
-    // ASSERT(&newPaintInvalidationContainer == containerForPaintInvalidation());
+    // ASSERT(&newPaintInvalidationContainer == &containerForPaintInvalidation());
 
     LayoutRect previousPaintInvalidationRect = this->previousPaintInvalidationRect();
 

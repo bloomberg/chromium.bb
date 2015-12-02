@@ -1039,10 +1039,7 @@ public:
     // Return the LayoutBoxModelObject in the container chain which is responsible for painting this object, or layout view
     // if painting is root-relative. This is the container that should be passed to the 'forPaintInvalidation'
     // methods.
-    const LayoutBoxModelObject& containerForPaintInvalidationOnRootedTree() const;
-
-    // This method will be deprecated in a long term, replaced by containerForPaintInvalidationOnRootedTree.
-    const LayoutBoxModelObject* containerForPaintInvalidation() const;
+    const LayoutBoxModelObject& containerForPaintInvalidation() const;
 
     const LayoutBoxModelObject* adjustCompositedContainerForSpecialAncestors(const LayoutBoxModelObject* paintInvalidationContainer) const;
     bool isPaintInvalidationContainer() const;
@@ -1053,10 +1050,10 @@ public:
     }
 
     // Returns the paint invalidation rect for this LayoutObject in the coordinate space of the paint backing (typically a GraphicsLayer) for |paintInvalidationContainer|.
-    LayoutRect computePaintInvalidationRect(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* = nullptr) const;
+    LayoutRect computePaintInvalidationRect(const LayoutBoxModelObject& paintInvalidationContainer, const PaintInvalidationState* = nullptr) const;
 
     // Returns the rect bounds needed to invalidate the paint of this object, in the coordinate space of the layoutObject backing of |paintInvalidationContainer|
-    LayoutRect boundsRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* = nullptr) const;
+    LayoutRect boundsRectForPaintInvalidation(const LayoutBoxModelObject& paintInvalidationContainer, const PaintInvalidationState* = nullptr) const;
 
     // Actually do the paint invalidate of rect r for this object which has been computed in the coordinate space
     // of the GraphicsLayer backing of |paintInvalidationContainer|. Note that this coordinaten space is not the same

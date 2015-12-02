@@ -403,7 +403,8 @@ public:
     static void mapRectToPaintInvalidationBacking(const LayoutObject*, const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect&, const PaintInvalidationState* = 0);
 
     // Computes the bounding paint invalidation rect for |layoutObject|, in the coordinate space of |paintInvalidationContainer|'s GraphicsLayer backing.
-    static LayoutRect computePaintInvalidationRect(const LayoutObject*, const PaintLayer* paintInvalidationContainer, const PaintInvalidationState* = 0);
+    // TODO(jchaffraix): |paintInvalidationContainer| should be a reference.
+    static LayoutRect computePaintInvalidationRect(const LayoutObject&, const PaintLayer* paintInvalidationContainer, const PaintInvalidationState* = 0);
 
     bool paintsWithTransparency(GlobalPaintFlags globalPaintFlags) const
     {

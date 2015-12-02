@@ -1078,17 +1078,11 @@ void LayoutObject::paint(const PaintInfo&, const LayoutPoint&) const
 {
 }
 
-const LayoutBoxModelObject* LayoutObject::containerForPaintInvalidation() const
-{
-    RELEASE_ASSERT(isRooted());
-    return adjustCompositedContainerForSpecialAncestors(enclosingCompositedContainer());
-}
-
-const LayoutBoxModelObject& LayoutObject::containerForPaintInvalidationOnRootedTree() const
+const LayoutBoxModelObject& LayoutObject::containerForPaintInvalidation() const
 {
     RELEASE_ASSERT(isRooted());
 
-    const LayoutBoxModelObject* paintInvalidationContainer = containerForPaintInvalidation();
+    const LayoutBoxModelObject* paintInvalidationContainer = adjustCompositedContainerForSpecialAncestors(enclosingCompositedContainer());
     ASSERT(paintInvalidationContainer);
 
     return *paintInvalidationContainer;
@@ -1183,9 +1177,9 @@ static PassRefPtr<TraceEvent::ConvertableToTraceFormat> jsonObjectForPaintInvali
     return value;
 }
 
-LayoutRect LayoutObject::computePaintInvalidationRect(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
+LayoutRect LayoutObject::computePaintInvalidationRect(const LayoutBoxModelObject& paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
 {
-    return clippedOverflowRectForPaintInvalidation(paintInvalidationContainer, paintInvalidationState);
+    return clippedOverflowRectForPaintInvalidation(&paintInvalidationContainer, paintInvalidationState);
 }
 
 
@@ -1261,11 +1255,9 @@ void LayoutObject::invalidateDisplayItemClients(const LayoutBoxModelObject& pain
         enclosingLayer->setNeedsRepaint();
 }
 
-LayoutRect LayoutObject::boundsRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
+LayoutRect LayoutObject::boundsRectForPaintInvalidation(const LayoutBoxModelObject& paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
 {
-    if (!paintInvalidationContainer)
-        return computePaintInvalidationRect(paintInvalidationContainer, paintInvalidationState);
-    return PaintLayer::computePaintInvalidationRect(this, paintInvalidationContainer->layer(), paintInvalidationState);
+    return PaintLayer::computePaintInvalidationRect(*this, paintInvalidationContainer.layer(), paintInvalidationState);
 }
 
 const LayoutBoxModelObject* LayoutObject::invalidatePaintRectangleInternal(const LayoutRect& dirtyRect) const
@@ -1278,7 +1270,7 @@ const LayoutBoxModelObject* LayoutObject::invalidatePaintRectangleInternal(const
     if (view()->document().printing())
         return nullptr; // Don't invalidate paints if we're printing.
 
-    const LayoutBoxModelObject& paintInvalidationContainer = containerForPaintInvalidationOnRootedTree();
+    const LayoutBoxModelObject& paintInvalidationContainer = containerForPaintInvalidation();
     LayoutRect dirtyRectOnBacking = dirtyRect;
     PaintLayer::mapRectToPaintInvalidationBacking(this, &paintInvalidationContainer, dirtyRectOnBacking);
     invalidatePaintUsingContainer(paintInvalidationContainer, dirtyRectOnBacking, PaintInvalidationRectangle);
@@ -1400,7 +1392,7 @@ PaintInvalidationReason LayoutObject::invalidatePaintIfNeeded(PaintInvalidationS
 
     const LayoutRect oldBounds = previousPaintInvalidationRect();
     const LayoutPoint oldLocation = RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled() ? LayoutPoint() : previousPositionFromPaintInvalidationBacking();
-    LayoutRect newBounds = boundsRectForPaintInvalidation(&paintInvalidationContainer, &paintInvalidationState);
+    LayoutRect newBounds = boundsRectForPaintInvalidation(paintInvalidationContainer, &paintInvalidationState);
     LayoutPoint newLocation = RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled() ? LayoutPoint() : PaintLayer::positionFromPaintInvalidationBacking(this, &paintInvalidationContainer, &paintInvalidationState);
 
     // Composited scrolling should not be included in the bounds and position tracking, because the graphics layer backing the scroller
@@ -1525,7 +1517,7 @@ LayoutRect LayoutObject::previousPaintInvalidationRectIncludingCompositedScrolli
 
 void LayoutObject::adjustPreviousPaintInvalidationForScrollIfNeeded(const DoubleSize& scrollDelta)
 {
-    if (containerForPaintInvalidation()->usesCompositedScrolling())
+    if (containerForPaintInvalidation().usesCompositedScrolling())
         return;
     m_previousPaintInvalidationRect.move(LayoutSize(scrollDelta));
 }
@@ -2253,7 +2245,7 @@ void LayoutObject::localToContainerRects(Vector<LayoutRect>& rects, const Layout
 
 FloatPoint LayoutObject::localToInvalidationBackingPoint(const LayoutPoint& localPoint, PaintLayer** backingLayer)
 {
-    const LayoutBoxModelObject& paintInvalidationContainer = containerForPaintInvalidationOnRootedTree();
+    const LayoutBoxModelObject& paintInvalidationContainer = containerForPaintInvalidation();
     ASSERT(paintInvalidationContainer.layer());
 
     if (backingLayer)
@@ -3421,7 +3413,7 @@ void LayoutObject::invalidatePaintOfPreviousPaintInvalidationRect(const LayoutBo
 void LayoutObject::invalidatePaintIncludingNonCompositingDescendants()
 {
     // Since we're only painting non-composited layers, we know that they all share the same paintInvalidationContainer.
-    const LayoutBoxModelObject& paintInvalidationContainer = containerForPaintInvalidationOnRootedTree();
+    const LayoutBoxModelObject& paintInvalidationContainer = containerForPaintInvalidation();
     traverseNonCompositingDescendants(*this, [&paintInvalidationContainer](LayoutObject& object) {
         object.invalidatePaintOfPreviousPaintInvalidationRect(paintInvalidationContainer, PaintInvalidationLayer);
     });

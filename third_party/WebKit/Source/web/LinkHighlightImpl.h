@@ -83,11 +83,11 @@ private:
     void releaseResources();
     void computeQuads(const Node&, Vector<FloatQuad>&) const;
 
-    void attachLinkHighlightToCompositingLayer(const LayoutBoxModelObject* paintInvalidationContainer);
+    void attachLinkHighlightToCompositingLayer(const LayoutBoxModelObject& paintInvalidationContainer);
     void clearGraphicsLayerLinkHighlightPointer();
     // This function computes the highlight path, and returns true if it has changed
     // size since the last call to this function.
-    bool computeHighlightLayerPathAndPosition(const LayoutBoxModelObject*);
+    bool computeHighlightLayerPathAndPosition(const LayoutBoxModelObject&);
 
     OwnPtr<WebContentLayer> m_contentLayer;
     OwnPtr<WebLayer> m_clipLayer;

@@ -19,7 +19,7 @@ PaintInvalidationState::PaintInvalidationState(const LayoutView& layoutView, Vec
     , m_forcedSubtreeInvalidationWithinContainer(false)
     , m_forcedSubtreeInvalidationRectUpdateWithinContainer(false)
     , m_viewClippingAndScrollOffsetDisabled(false)
-    , m_paintInvalidationContainer(*layoutView.containerForPaintInvalidation())
+    , m_paintInvalidationContainer(layoutView.containerForPaintInvalidation())
     , m_pendingDelayedPaintInvalidations(pendingDelayedPaintInvalidations)
 {
     bool establishesPaintInvalidationContainer = layoutView == m_paintInvalidationContainer;

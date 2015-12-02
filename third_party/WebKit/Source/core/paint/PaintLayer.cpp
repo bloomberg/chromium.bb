@@ -549,12 +549,12 @@ void PaintLayer::mapRectToPaintInvalidationBacking(const LayoutObject* layoutObj
     mapRectToPaintBackingCoordinates(paintInvalidationContainer, rect);
 }
 
-LayoutRect PaintLayer::computePaintInvalidationRect(const LayoutObject* layoutObject, const PaintLayer* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState)
+LayoutRect PaintLayer::computePaintInvalidationRect(const LayoutObject& layoutObject, const PaintLayer* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState)
 {
     if (!paintInvalidationContainer->groupedMapping())
-        return layoutObject->computePaintInvalidationRect(paintInvalidationContainer->layoutObject(), paintInvalidationState);
+        return layoutObject.computePaintInvalidationRect(*paintInvalidationContainer->layoutObject(), paintInvalidationState);
 
-    LayoutRect rect = layoutObject->clippedOverflowRectForPaintInvalidation(paintInvalidationContainer->layoutObject(), paintInvalidationState);
+    LayoutRect rect = layoutObject.clippedOverflowRectForPaintInvalidation(paintInvalidationContainer->layoutObject(), paintInvalidationState);
     mapRectToPaintBackingCoordinates(paintInvalidationContainer->layoutObject(), rect);
     return rect;
 }

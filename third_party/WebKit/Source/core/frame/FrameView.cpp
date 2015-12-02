@@ -2032,7 +2032,7 @@ IntRect FrameView::windowClipRect(IncludeScrollbarsInRect scrollbarInclusion) co
     ASSERT(m_frame->view() == this);
 
     LayoutRect clipRect(LayoutPoint(), LayoutSize(visibleContentSize(scrollbarInclusion)));
-    layoutView()->mapRectToPaintInvalidationBacking(layoutView()->containerForPaintInvalidation(), clipRect, nullptr);
+    layoutView()->mapRectToPaintInvalidationBacking(&layoutView()->containerForPaintInvalidation(), clipRect, nullptr);
     return enclosingIntRect(clipRect);
 }
 
@@ -3862,16 +3862,16 @@ void FrameView::collectFrameTimingRequests(GraphicsLayerFrameTimingRequests& gra
     Frame* frame = m_frame.get();
     LocalFrame* localFrame = toLocalFrame(frame);
     LayoutRect viewRect = localFrame->contentLayoutObject()->viewRect();
-    const LayoutBoxModelObject* paintInvalidationContainer = localFrame->contentLayoutObject()->containerForPaintInvalidation();
+    const LayoutBoxModelObject& paintInvalidationContainer = localFrame->contentLayoutObject()->containerForPaintInvalidation();
     // If the frame is being throttled, its compositing state may not be up to date.
-    if (!paintInvalidationContainer->enclosingLayer()->isAllowedToQueryCompositingState())
+    if (!paintInvalidationContainer.enclosingLayer()->isAllowedToQueryCompositingState())
         return;
-    const GraphicsLayer* graphicsLayer = paintInvalidationContainer->enclosingLayer()->graphicsLayerBacking();
+    const GraphicsLayer* graphicsLayer = paintInvalidationContainer.enclosingLayer()->graphicsLayerBacking();
 
     if (!graphicsLayer)
         return;
 
-    PaintLayer::mapRectToPaintInvalidationBacking(localFrame->contentLayoutObject(), paintInvalidationContainer, viewRect);
+    PaintLayer::mapRectToPaintInvalidationBacking(localFrame->contentLayoutObject(), &paintInvalidationContainer, viewRect);
 
     graphicsLayerTimingRequests.add(graphicsLayer, Vector<std::pair<int64_t, WebRect>>()).storedValue->value.append(std::make_pair(m_frame->frameID(), enclosingIntRect(viewRect)));
 }
