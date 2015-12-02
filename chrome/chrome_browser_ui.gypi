@@ -2690,6 +2690,8 @@
       'browser/ui/extensions/extension_toolbar_icon_surfacing_bubble_delegate.h',
       'browser/ui/extensions/hosted_app_browser_controller.cc',
       'browser/ui/extensions/hosted_app_browser_controller.h',
+      'browser/ui/extensions/icon_with_badge_image_source.cc',
+      'browser/ui/extensions/icon_with_badge_image_source.h',
       'browser/ui/webui/extensions/chromeos/kiosk_apps_handler.cc',
       'browser/ui/webui/extensions/chromeos/kiosk_apps_handler.h',
       'browser/ui/webui/extensions/extension_basic_info.cc',

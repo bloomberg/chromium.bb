@@ -219,9 +219,7 @@ static_library("common") {
 
   if (is_android) {
     sources -= [
-      "badge_util.cc",
       "channel_info_posix.cc",
-      "icon_with_badge_image_source.cc",
       "media_galleries/metadata_types.h",
     ]
   } else {

@@ -32,6 +32,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/feature_switch.h"
 #include "grit/theme_resources.h"
+#include "ui/base/resource/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -50,6 +51,9 @@ enum DimensionType { WIDTH, HEIGHT };
 
 // Returns the width or height of the toolbar action icon size.
 int GetIconDimension(DimensionType type) {
+  if (ui::MaterialDesignController::IsModeMaterial())
+    return 28;
+
   static bool initialized = false;
   static int icon_height = 0;
   static int icon_width = 0;

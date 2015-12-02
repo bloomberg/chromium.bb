@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_ICON_WITH_BADGE_IMAGE_SOURCE_H_
-#define CHROME_COMMON_ICON_WITH_BADGE_IMAGE_SOURCE_H_
+#ifndef CHROME_BROWSER_UI_EXTENSIONS_ICON_WITH_BADGE_IMAGE_SOURCE_H_
+#define CHROME_BROWSER_UI_EXTENSIONS_ICON_WITH_BADGE_IMAGE_SOURCE_H_
 
 #include <string>
 
+#include "base/macros.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/image/image.h"
@@ -16,8 +17,6 @@ class Size;
 }
 
 // CanvasImageSource for creating extension icon with a badge.
-// TODO(devlin): This class and its buddy badge_util don't really belong in
-// chrome/common/.
 class IconWithBadgeImageSource : public gfx::CanvasImageSource {
  public:
   // The data representing a badge to be painted over the base image.
@@ -52,6 +51,9 @@ class IconWithBadgeImageSource : public gfx::CanvasImageSource {
   // gfx::CanvasImageSource:
   void Draw(gfx::Canvas* canvas) override;
 
+  // Paints |badge_|, if any, on |canvas|.
+  void PaintBadge(gfx::Canvas* canvas);
+
   // Paints a decoration over the base icon to indicate that the action wants to
   // run.
   void PaintDecoration(gfx::Canvas* canvas);
@@ -73,4 +75,4 @@ class IconWithBadgeImageSource : public gfx::CanvasImageSource {
   DISALLOW_COPY_AND_ASSIGN(IconWithBadgeImageSource);
 };
 
-#endif  // CHROME_COMMON_ICON_WITH_BADGE_IMAGE_SOURCE_H_
+#endif  // CHROME_BROWSER_UI_EXTENSIONS_ICON_WITH_BADGE_IMAGE_SOURCE_H_

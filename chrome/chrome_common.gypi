@@ -10,8 +10,6 @@
       'common/attrition_experiments.h',
       'common/auto_start_linux.cc',
       'common/auto_start_linux.h',
-      'common/badge_util.cc',
-      'common/badge_util.h',
       'common/channel_info.cc',
       'common/channel_info.h',
       'common/channel_info_android.cc',
@@ -42,8 +40,6 @@
       'common/custom_handlers/protocol_handler.cc',
       'common/custom_handlers/protocol_handler.h',
       'common/descriptors_android.h',
-      'common/icon_with_badge_image_source.cc',
-      'common/icon_with_badge_image_source.h',
       'common/ini_parser.cc',
       'common/ini_parser.h',
       'common/instant_types.cc',
@@ -492,12 +488,10 @@
         }],
         ['OS=="android"', {
           'sources!': [
-            'common/badge_util.cc',
             'common/channel_info_posix.cc',
             'common/extensions/api/spellcheck/spellcheck_handler.cc',
             'common/extensions/manifest_handlers/extension_action_handler.cc',
             'common/extensions/manifest_handlers/minimum_chrome_version_checker.cc',
-            'common/icon_with_badge_image_source.cc',
             'common/media_galleries/metadata_types.h',
           ],
         }, {
