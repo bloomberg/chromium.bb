@@ -117,12 +117,12 @@ def ReplicatePublished(self, target, group_name, resource_type):
 #GOOGLE_CHANGE(pss) - FROM THIS:
 # def GetPublished(self, group_name, resource_type):
 #   """Returns a list of the published resources of the specified type.
-# 
+#
 #   Args:
 #     self: Environment in which this function was called.
 #     group_name: Name of resource group, or a list of names of resource groups.
 #     resource_type: Type of resources (string), or a list of resource types.
-# 
+#
 #   Returns:
 #     A flattened list of the source nodes from calls to Publish() for the
 #         specified group and resource type.  Returns an empty list if there are
