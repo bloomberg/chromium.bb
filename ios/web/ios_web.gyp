@@ -160,6 +160,8 @@
         'public/load_committed_details.h',
         'public/navigation_item.h',
         'public/navigation_manager.h',
+        'public/origin_util.cc',
+        'public/origin_util.h',
         'public/referrer.h',
         'public/referrer_util.cc',
         'public/referrer_util.h',
