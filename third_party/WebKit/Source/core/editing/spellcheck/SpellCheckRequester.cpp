@@ -83,6 +83,11 @@ void SpellCheckRequest::dispose()
 // static
 PassRefPtrWillBeRawPtr<SpellCheckRequest> SpellCheckRequest::create(TextCheckingTypeMask textCheckingOptions, TextCheckingProcessType processType, const EphemeralRange& checkingRange, const EphemeralRange& paragraphRange, int requestNumber)
 {
+    if (checkingRange.isNull())
+        return nullptr;
+    if (!checkingRange.startPosition().computeContainerNode()->rootEditableElement())
+        return nullptr;
+
     String text = plainText(checkingRange, TextIteratorEmitsObjectReplacementCharacter);
     if (text.isEmpty())
         return nullptr;
