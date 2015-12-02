@@ -80,7 +80,6 @@ public:
     WebString defaultLocale() override;
     WebCompositorSupport* compositorSupport() override;
     WebThread* currentThread() override;
-    WebUnitTestSupport* unitTestSupport() override;
 
 protected:
     const Config m_config;

@@ -5,7 +5,6 @@
 #ifndef COMPONENTS_SCHEDULER_CHILD_WEBTHREAD_IMPL_FOR_WORKER_SCHEDULER_H_
 #define COMPONENTS_SCHEDULER_CHILD_WEBTHREAD_IMPL_FOR_WORKER_SCHEDULER_H_
 
-#include "base/threading/thread.h"
 #include "components/scheduler/base/task_queue_manager.h"
 #include "components/scheduler/child/webthread_base.h"
 
@@ -29,8 +28,6 @@ class SCHEDULER_EXPORT WebThreadImplForWorkerScheduler
       public base::MessageLoop::DestructionObserver {
  public:
   explicit WebThreadImplForWorkerScheduler(const char* name);
-  WebThreadImplForWorkerScheduler(const char* name,
-                                  base::Thread::Options options);
   ~WebThreadImplForWorkerScheduler() override;
 
   // blink::WebThread implementation.

@@ -6,7 +6,6 @@
 #define CompositorWorker_h
 
 #include "core/workers/InProcessWorkerBase.h"
-#include "modules/ModulesExport.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/AtomicString.h"
 
@@ -16,7 +15,7 @@ class ExceptionState;
 class ExecutionContext;
 class WorkerGlobalScopeProxy;
 
-class MODULES_EXPORT CompositorWorker final : public InProcessWorkerBase {
+class CompositorWorker final : public InProcessWorkerBase {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static CompositorWorker* create(ExecutionContext*, const String& url, ExceptionState&);

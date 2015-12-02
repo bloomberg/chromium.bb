@@ -72,7 +72,6 @@ class GpuVideoAcceleratorFactories;
 
 namespace scheduler {
 class RendererScheduler;
-class WebThreadBase;
 }
 
 namespace v8 {
@@ -465,8 +464,6 @@ class CONTENT_EXPORT RenderThreadImpl
 
   void Init();
 
-  void InitializeCompositorThread();
-
   void OnCreateNewFrame(FrameMsg_NewFrame_Params params);
   void OnCreateNewFrameProxy(int routing_id,
                              int render_view_routing_id,
@@ -591,7 +588,7 @@ class CONTENT_EXPORT RenderThreadImpl
   scoped_ptr<base::Thread> file_thread_;
 
   // May be null if overridden by ContentRendererClient.
-  scoped_ptr<scheduler::WebThreadBase> compositor_thread_;
+  scoped_ptr<base::Thread> compositor_thread_;
 
   // Utility class to provide GPU functionalities to media.
   scoped_ptr<content::RendererGpuVideoAcceleratorFactories> gpu_factories_;

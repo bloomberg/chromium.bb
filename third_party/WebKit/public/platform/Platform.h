@@ -434,10 +434,6 @@ public:
     // Returns an interface to the main thread. Can be null if blink was initialized on a thread without a message loop.
     BLINK_PLATFORM_EXPORT WebThread* mainThread() const;
 
-    // Returns an interface to the compositor thread. This can be null if the
-    // renderer was created with threaded rendering desabled.
-    virtual WebThread* compositorThread() const { return 0; }
-
     // Vibration -----------------------------------------------------------
 
     // Starts a vibration for the given duration in milliseconds. If there is currently an active

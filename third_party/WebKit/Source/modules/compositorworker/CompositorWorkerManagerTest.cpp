@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "modules/compositorworker/CompositorWorkerThread.h"
+#include "modules/compositorworker/CompositorWorkerManager.h"
 
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/V8GCController.h"
@@ -12,10 +12,10 @@
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerObjectProxy.h"
 #include "core/workers/WorkerThreadStartupData.h"
+#include "modules/compositorworker/CompositorWorkerThread.h"
 #include "platform/NotImplemented.h"
 #include "platform/ThreadSafeFunctional.h"
 #include "platform/heap/Handle.h"
-#include "platform/testing/TestingPlatformSupport.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebWaitableEvent.h"
@@ -32,7 +32,7 @@ public:
     {
     }
 
-    ~TestCompositorWorkerThread() override {}
+    ~TestCompositorWorkerThread() override { }
 
     void setCallbackAfterV8Termination(PassOwnPtr<Function<void()>> callback)
     {
@@ -51,11 +51,9 @@ private:
         if (m_v8TerminationCallback)
             (*m_v8TerminationCallback)();
     }
-
     void willDestroyIsolate() override
     {
-        v8::Isolate::GetCurrent()->RequestGarbageCollectionForTesting(v8::Isolate::kFullGarbageCollection);
-        Heap::collectAllGarbage();
+        V8GCController::collectAllGarbageForTesting(v8::Isolate::GetCurrent());
         CompositorWorkerThread::willDestroyIsolate();
     }
 
@@ -72,16 +70,16 @@ public:
     }
 
     // (Empty) WorkerReportingProxy implementation:
-    virtual void reportException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL, int exceptionId) {}
-    void reportConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>) override {}
-    void postMessageToPageInspector(const String&) override {}
-    void postWorkerConsoleAgentEnabled() override {}
+    virtual void reportException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL, int exceptionId) { }
+    void reportConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>) override { }
+    void postMessageToPageInspector(const String&) override { }
+    void postWorkerConsoleAgentEnabled() override { }
 
-    void didEvaluateWorkerScript(bool success) override {}
-    void workerGlobalScopeStarted(WorkerGlobalScope*) override {}
-    void workerGlobalScopeClosed() override {}
-    void workerThreadTerminated() override {}
-    void willDestroyWorkerGlobalScope() override {}
+    void didEvaluateWorkerScript(bool success) override { }
+    void workerGlobalScopeStarted(WorkerGlobalScope*) override { }
+    void workerGlobalScopeClosed() override { }
+    void workerThreadTerminated() override { }
+    void willDestroyWorkerGlobalScope() override { }
 
     ExecutionContext* executionContext() override { return m_executionContext.get(); }
 
@@ -95,32 +93,9 @@ private:
     RefPtrWillBePersistent<ExecutionContext> m_executionContext;
 };
 
-class CompositorWorkerTestPlatform : public TestingPlatformSupport {
-public:
-    CompositorWorkerTestPlatform()
-        : m_thread(adoptPtr(m_oldPlatform->createThread("Compositor")))
-    {
-    }
-
-    WebThread* compositorThread() const override
-    {
-        return m_thread.get();
-    }
-
-    WebWaitableEvent* createWaitableEvent(
-        WebWaitableEvent::ResetPolicy policy,
-        WebWaitableEvent::InitialState state) override
-    {
-        return m_oldPlatform->createWaitableEvent(policy, state);
-    }
-
-private:
-    OwnPtr<WebThread> m_thread;
-};
-
 } // namespace
 
-class CompositorWorkerThreadTest : public ::testing::Test {
+class CompositorWorkerManagerTest : public ::testing::Test {
 public:
     void SetUp() override
     {
@@ -131,8 +106,8 @@ public:
 
     void TearDown() override
     {
-        ASSERT(!hasThread());
-        ASSERT(!hasIsolate());
+        ASSERT(!managerHasThread());
+        ASSERT(!managerHasIsolate());
         m_page.clear();
     }
 
@@ -162,7 +137,7 @@ public:
     void checkWorkerCanExecuteScript(WorkerThread* worker)
     {
         OwnPtr<WebWaitableEvent> waitEvent = adoptPtr(Platform::current()->createWaitableEvent());
-        worker->backingThread().platformThread().taskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&CompositorWorkerThreadTest::executeScriptInWorker, AllowCrossThreadAccess(this),
+        worker->backingThread().platformThread().taskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&CompositorWorkerManagerTest::executeScriptInWorker, AllowCrossThreadAccess(this),
             AllowCrossThreadAccess(worker), AllowCrossThreadAccess(waitEvent.get())));
         waitEvent->wait();
     }
@@ -173,14 +148,14 @@ public:
         waitEvent->wait();
     }
 
-    bool hasThread() const
+    bool managerHasThread() const
     {
-        return CompositorWorkerThread::hasThreadForTest();
+        return CompositorWorkerManager::instance()->m_thread;
     }
 
-    bool hasIsolate() const
+    bool managerHasIsolate() const
     {
-        return CompositorWorkerThread::hasIsolateForTest();
+        return CompositorWorkerManager::instance()->m_isolate;
     }
 
 private:
@@ -195,10 +170,9 @@ private:
     OwnPtr<DummyPageHolder> m_page;
     RefPtr<SecurityOrigin> m_securityOrigin;
     OwnPtr<WorkerObjectProxy> m_objectProxy;
-    CompositorWorkerTestPlatform m_testPlatform;
 };
 
-TEST_F(CompositorWorkerThreadTest, Basic)
+TEST_F(CompositorWorkerManagerTest, Basic)
 {
     OwnPtr<WebWaitableEvent> creationEvent = adoptPtr(Platform::current()->createWaitableEvent());
     RefPtr<CompositorWorkerThread> compositorWorker = createCompositorWorker(creationEvent.get());
@@ -208,12 +182,12 @@ TEST_F(CompositorWorkerThreadTest, Basic)
 }
 
 // Tests that the same WebThread is used for new workers if the WebThread is still alive.
-TEST_F(CompositorWorkerThreadTest, CreateSecondAndTerminateFirst)
+TEST_F(CompositorWorkerManagerTest, CreateSecondAndTerminateFirst)
 {
     // Create the first worker and wait until it is initialized.
     OwnPtr<WebWaitableEvent> firstCreationEvent = adoptPtr(Platform::current()->createWaitableEvent());
     RefPtr<CompositorWorkerThread> firstWorker = createCompositorWorker(firstCreationEvent.get());
-    WebThreadSupportingGC* firstThread = CompositorWorkerThread::sharedBackingThread();
+    WebThreadSupportingGC* firstThread = &CompositorWorkerManager::instance()->compositorWorkerThread();
     ASSERT(firstThread);
     waitForWaitableEventAfterIteratingCurrentLoop(firstCreationEvent.get());
     v8::Isolate* firstIsolate = firstWorker->isolate();
@@ -226,7 +200,7 @@ TEST_F(CompositorWorkerThreadTest, CreateSecondAndTerminateFirst)
 
     // Wait until the second worker is initialized. Verify that the second worker is using the same
     // thread and Isolate as the first worker.
-    WebThreadSupportingGC* secondThread = CompositorWorkerThread::sharedBackingThread();
+    WebThreadSupportingGC* secondThread = &CompositorWorkerManager::instance()->compositorWorkerThread();
     ASSERT(secondThread);
     waitForWaitableEventAfterIteratingCurrentLoop(secondCreationEvent.get());
     EXPECT_EQ(firstThread, secondThread);
@@ -248,12 +222,12 @@ static void checkCurrentIsolate(v8::Isolate* isolate, WebWaitableEvent* event)
 }
 
 // Tests that a new WebThread is created if all existing workers are terminated before a new worker is created.
-TEST_F(CompositorWorkerThreadTest, TerminateFirstAndCreateSecond)
+TEST_F(CompositorWorkerManagerTest, TerminateFirstAndCreateSecond)
 {
     // Create the first worker, wait until it is initialized, and terminate it.
     OwnPtr<WebWaitableEvent> creationEvent = adoptPtr(Platform::current()->createWaitableEvent());
     RefPtr<CompositorWorkerThread> compositorWorker = createCompositorWorker(creationEvent.get());
-    WebThreadSupportingGC* firstThread = CompositorWorkerThread::sharedBackingThread();
+    WebThreadSupportingGC* firstThread = &CompositorWorkerManager::instance()->compositorWorkerThread();
     waitForWaitableEventAfterIteratingCurrentLoop(creationEvent.get());
     ASSERT(compositorWorker->isolate());
     compositorWorker->terminateAndWait();
@@ -262,7 +236,7 @@ TEST_F(CompositorWorkerThreadTest, TerminateFirstAndCreateSecond)
     // thread will have been destroyed after destroying the first worker.
     creationEvent = adoptPtr(Platform::current()->createWaitableEvent());
     compositorWorker = createCompositorWorker(creationEvent.get());
-    WebThreadSupportingGC* secondThread = CompositorWorkerThread::sharedBackingThread();
+    WebThreadSupportingGC* secondThread = &CompositorWorkerManager::instance()->compositorWorkerThread();
     EXPECT_NE(firstThread, secondThread);
     waitForWaitableEventAfterIteratingCurrentLoop(creationEvent.get());
 
@@ -276,7 +250,7 @@ TEST_F(CompositorWorkerThreadTest, TerminateFirstAndCreateSecond)
 }
 
 // Tests that v8::Isolate and WebThread are correctly set-up if a worker is created while another is terminating.
-TEST_F(CompositorWorkerThreadTest, CreatingSecondDuringTerminationOfFirst)
+TEST_F(CompositorWorkerManagerTest, CreatingSecondDuringTerminationOfFirst)
 {
     OwnPtr<WebWaitableEvent> firstCreationEvent = adoptPtr(Platform::current()->createWaitableEvent());
     RefPtr<TestCompositorWorkerThread> firstWorker = createCompositorWorker(firstCreationEvent.get());
@@ -288,7 +262,7 @@ TEST_F(CompositorWorkerThreadTest, CreatingSecondDuringTerminationOfFirst)
     // the first worker terminates its isolate.
     OwnPtr<WebWaitableEvent> secondCreationEvent = adoptPtr(Platform::current()->createWaitableEvent());
     RefPtr<CompositorWorkerThread> secondWorker;
-    firstWorker->setCallbackAfterV8Termination(bind(&CompositorWorkerThreadTest::createWorkerAdapter, this, &secondWorker, secondCreationEvent.get()));
+    firstWorker->setCallbackAfterV8Termination(bind(&CompositorWorkerManagerTest::createWorkerAdapter, this, &secondWorker, secondCreationEvent.get()));
     firstWorker->terminateAndWait();
     ASSERT(secondWorker);
 

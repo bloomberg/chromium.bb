@@ -30,11 +30,6 @@
 
 namespace base {
 class MessageLoop;
-class WaitableEvent;
-}
-
-namespace scheduler {
-class WebThreadBase;
 }
 
 namespace content {
@@ -177,7 +172,6 @@ class CONTENT_EXPORT BlinkPlatformImpl
   double systemTraceTime() override;
   void cryptographicallyRandomValues(unsigned char* buffer,
                                      size_t length) override;
-  blink::WebThread* compositorThread() const override;
   blink::WebGestureCurve* createFlingAnimationCurve(
       blink::WebGestureDevice device_source,
       const blink::WebFloatPoint& velocity,
@@ -198,20 +192,9 @@ class CONTENT_EXPORT BlinkPlatformImpl
   blink::WebString domKeyStringFromEnum(int dom_key) override;
   int domKeyEnumFromString(const blink::WebString& key_string) override;
 
-  scoped_ptr<scheduler::WebThreadBase> createThreadWithOptions(
-      const char* name,
-      base::Thread::Options);
-
-  // This class does *not* own |compositor_thread|. It is the responsibility of
-  // the caller to ensure that the compositor thread is cleared before it is
-  // destructed.
-  void set_compositor_thread(scheduler::WebThreadBase* compositor_thread) {
-    compositor_thread_ = compositor_thread;
-  }
-
  private:
   void InternalInit();
-  void UpdateWebThreadTLS(blink::WebThread* thread, base::WaitableEvent* event);
+  void UpdateWebThreadTLS(blink::WebThread* thread);
 
   bool IsMainThread() const;
 
@@ -233,8 +216,6 @@ class CONTENT_EXPORT BlinkPlatformImpl
   scoped_refptr<PushDispatcher> push_dispatcher_;
   scoped_ptr<PermissionDispatcher> permission_client_;
   scoped_ptr<BackgroundSyncProvider> main_thread_sync_provider_;
-
-  scheduler::WebThreadBase* compositor_thread_;
 };
 
 }  // namespace content
