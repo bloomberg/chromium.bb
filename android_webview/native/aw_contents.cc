@@ -22,6 +22,7 @@
 #include "android_webview/native/aw_browser_dependency_factory.h"
 #include "android_webview/native/aw_contents_client_bridge.h"
 #include "android_webview/native/aw_contents_io_thread_client_impl.h"
+#include "android_webview/native/aw_contents_lifecycle_notifier.h"
 #include "android_webview/native/aw_message_port_service_impl.h"
 #include "android_webview/native/aw_pdf_exporter.h"
 #include "android_webview/native/aw_picture.h"
@@ -209,6 +210,7 @@ AwContents::AwContents(scoped_ptr<WebContents> web_contents)
     InitAutofillIfNecessary(autofill_manager_delegate->GetSaveFormData());
   content::SynchronousCompositor::SetClientForWebContents(
       web_contents_.get(), &browser_view_renderer_);
+  AwContentsLifecycleNotifier::OnWebViewCreated();
 }
 
 void AwContents::SetJavaPeers(JNIEnv* env,
@@ -293,9 +295,12 @@ AwContents::~AwContents() {
   // Chromium, because the app process may continue to run for a long time
   // without ever using another WebView.
   if (instance_count == 0) {
+    // TODO(timvolodine): consider moving NotifyMemoryPressure to
+    // AwContentsLifecycleNotifier (crbug.com/522988).
     base::MemoryPressureListener::NotifyMemoryPressure(
         base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
   }
+  AwContentsLifecycleNotifier::OnWebViewDestroyed();
 }
 
 base::android::ScopedJavaLocalRef<jobject>

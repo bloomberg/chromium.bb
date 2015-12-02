@@ -10,6 +10,7 @@
 #include "android_webview/native/aw_contents_background_thread_client.h"
 #include "android_webview/native/aw_contents_client_bridge.h"
 #include "android_webview/native/aw_contents_io_thread_client_impl.h"
+#include "android_webview/native/aw_contents_lifecycle_notifier.h"
 #include "android_webview/native/aw_contents_statics.h"
 #include "android_webview/native/aw_debug.h"
 #include "android_webview/native/aw_dev_tools_server.h"
@@ -59,6 +60,7 @@ static base::android::RegistrationMethod kWebViewRegisteredMethods[] = {
   { "InputStream", RegisterInputStream },
   { "JavaBrowserViewRendererHelper", RegisterJavaBrowserViewRendererHelper },
   { "AwMessagePortService", RegisterAwMessagePortService },
+  { "AwContentsLifecycleNotifier", RegisterAwContentsLifecycleNotifier },
 };
 
 bool RegisterJni(JNIEnv* env) {
