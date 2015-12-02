@@ -4128,7 +4128,7 @@ static WebPoint bottomRightMinusOne(const WebRect& rect)
 
 static WebRect elementBounds(WebFrame* frame, const WebString& id)
 {
-    return frame->document().getElementById(id).boundsInViewportSpace();
+    return frame->document().getElementById(id).boundsInViewport();
 }
 
 static std::string selectionAsString(WebFrame* frame)

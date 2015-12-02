@@ -2408,12 +2408,6 @@ unsigned Internals::canvasFontCacheMaxFonts()
     return CanvasFontCache::maxFonts();
 }
 
-ClientRect* Internals::boundsInViewportSpace(Element* element)
-{
-    ASSERT(element);
-    return ClientRect::create(element->boundsInViewportSpace());
-}
-
 void Internals::setScrollChain(
     ScrollState* scrollState, const WillBeHeapVector<RefPtrWillBeMember<Element>>& elements, ExceptionState&)
 {

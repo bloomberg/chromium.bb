@@ -714,10 +714,6 @@ void AutofillAgent::QueryAutofillSuggestions(
     WebFormControlElementToFormField(element, form_util::EXTRACT_VALUE, &field);
   }
 
-  gfx::RectF bounding_box_scaled = form_util::GetScaledBoundingBox(
-      render_frame()->GetRenderView()->GetWebView()->pageScaleFactor(),
-      &element_);
-
   std::vector<base::string16> data_list_values;
   std::vector<base::string16> data_list_labels;
   const WebInputElement* input_element = toWebInputElement(&element);
@@ -736,7 +732,8 @@ void AutofillAgent::QueryAutofillSuggestions(
                                        data_list_labels));
 
   Send(new AutofillHostMsg_QueryFormFieldAutofill(
-      routing_id(), autofill_query_id_, form, field, bounding_box_scaled));
+      routing_id(), autofill_query_id_, form, field,
+      gfx::RectF(element_.boundsInViewport())));
 }
 
 void AutofillAgent::FillFieldWithValue(const base::string16& value,

@@ -1079,7 +1079,7 @@ bool PepperPluginInstanceImpl::HandleInputEvent(
       event.type == blink::WebInputEvent::MouseDown &&
       (event.modifiers & blink::WebInputEvent::LeftButtonDown)) {
     has_been_clicked_ = true;
-    blink::WebRect bounds = container()->element().boundsInViewportSpace();
+    blink::WebRect bounds = container()->element().boundsInViewport();
     RecordFlashClickSizeMetric(bounds.width, bounds.height);
   }
 

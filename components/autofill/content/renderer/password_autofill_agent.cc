@@ -1420,7 +1420,6 @@ bool PasswordAutofillAgent::ShowSuggestionPopup(
     DCHECK(iter != web_input_to_password_info_.end());
     selected_element = iter->second.password_field;
   }
-  gfx::Rect bounding_box(selected_element.boundsInViewportSpace());
 
   blink::WebInputElement username;
   if (!show_on_password_field || !user_input.isPasswordField()) {
@@ -1430,12 +1429,6 @@ bool PasswordAutofillAgent::ShowSuggestionPopup(
       web_element_to_password_info_key_.find(user_input);
   DCHECK(key_it != web_element_to_password_info_key_.end());
 
-  float scale =
-      render_frame()->GetRenderView()->GetWebView()->pageScaleFactor();
-  gfx::RectF bounding_box_scaled(bounding_box.x() * scale,
-                                 bounding_box.y() * scale,
-                                 bounding_box.width() * scale,
-                                 bounding_box.height() * scale);
   int options = 0;
   if (show_all)
     options |= SHOW_ALL;
@@ -1444,9 +1437,10 @@ bool PasswordAutofillAgent::ShowSuggestionPopup(
   base::string16 username_string(
       username.isNull() ? base::string16()
                         : static_cast<base::string16>(user_input.value()));
+
   Send(new AutofillHostMsg_ShowPasswordSuggestions(
       routing_id(), key_it->second, field.text_direction, username_string,
-      options, bounding_box_scaled));
+      options, gfx::RectF(selected_element.boundsInViewport())));
   username_query_prefix_ = username_string;
   return CanShowSuggestion(fill_data, username_string, show_all);
 }

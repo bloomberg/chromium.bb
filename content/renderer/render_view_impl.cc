@@ -1941,7 +1941,7 @@ void RenderViewImpl::focusedNodeChanged(const WebNode& fromNode,
   bool is_editable = false;
   if (!toNode.isNull() && toNode.isElementNode()) {
     WebElement element = const_cast<WebNode&>(toNode).to<WebElement>();
-    node_bounds = gfx::Rect(element.boundsInViewportSpace());
+    node_bounds = gfx::Rect(element.boundsInViewport());
     is_editable = element.isEditable();
   }
   Send(new ViewHostMsg_FocusedNodeChanged(routing_id_, is_editable,

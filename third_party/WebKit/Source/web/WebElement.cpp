@@ -146,9 +146,9 @@ bool WebElement::hasNonEmptyLayoutSize() const
     return constUnwrap<Element>()->hasNonEmptyLayoutSize();
 }
 
-WebRect WebElement::boundsInViewportSpace()
+WebRect WebElement::boundsInViewport()
 {
-    return unwrap<Element>()->boundsInViewportSpace();
+    return unwrap<Element>()->boundsInViewport();
 }
 
 WebImage WebElement::imageContents()

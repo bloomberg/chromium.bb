@@ -368,7 +368,7 @@ TEST_F(WebPluginContainerTest, GestureLongPressReachesPlugin)
     EXPECT_EQ(WebInputEvent::Undefined, testPlugin->getLastInputEventType());
 
     // Next, send an event that does hit the plugin, and verify it does receive it.
-    WebRect rect = pluginContainerOneElement.boundsInViewportSpace();
+    WebRect rect = pluginContainerOneElement.boundsInViewport();
     event.x = rect.x + rect.width / 2;
     event.y = rect.y + rect.height / 2;
 
@@ -395,7 +395,7 @@ TEST_F(WebPluginContainerTest, IsRectTopmostTest)
         toWebPluginContainerImpl(getWebPluginContainer(webView, WebString::fromUTF8("translated-plugin")));
     pluginContainerImpl->setFrameRect(IntRect(0, 0, 300, 300));
 
-    WebRect rect = pluginContainerImpl->element().boundsInViewportSpace();
+    WebRect rect = pluginContainerImpl->element().boundsInViewport();
     EXPECT_TRUE(pluginContainerImpl->isRectTopmost(rect));
 
     // Cause the plugin's frame to be detached.

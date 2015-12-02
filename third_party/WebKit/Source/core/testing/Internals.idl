@@ -319,8 +319,6 @@
     boolean isInCanvasFontCache(Document document, DOMString fontString);
     unsigned long canvasFontCacheMaxFonts();
 
-    ClientRect boundsInViewportSpace(Element element);
-
     DictionaryTest dictionaryTest();
     UnionTypesTest unionTypesTest();
     [RaisesException] void setScrollChain(ScrollState scrollState, Element[] elements);

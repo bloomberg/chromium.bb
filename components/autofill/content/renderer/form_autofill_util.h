@@ -229,9 +229,6 @@ bool IsWebpageEmpty(const blink::WebFrame* frame);
 // are of the type <script>, <meta>, or <title>.
 bool IsWebElementEmpty(const blink::WebElement& element);
 
-// Return a gfx::RectF that is the bounding box for |element| scaled by |scale|.
-gfx::RectF GetScaledBoundingBox(float scale, blink::WebElement* element);
-
 // Previews |suggestion| in |input_element| and highlights the suffix of
 // |suggestion| not included in the |input_element| text. |input_element| must
 // not be null. |user_input| should be the text typed by the user into

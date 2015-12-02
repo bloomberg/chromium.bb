@@ -2923,10 +2923,8 @@ bool EventHandler::sendContextMenuEventForKey(Element* overrideTargetElement)
         int y = firstRect.maxY() ? firstRect.maxY() - 1 : 0;
         locationInRootFrame = view->contentsToRootFrame(IntPoint(x, y));
     } else if (focusedElement) {
-        IntRect clippedRect = focusedElement->boundsInViewportSpace();
-        // FIXME: boundsInViewportSpace is actually in the weird scaled but untranslated coordinate space of
-        // the old-style visual viewport. crbug.com/459591.
-        locationInRootFrame = flooredIntPoint(visualViewport.viewportCSSPixelsToRootFrame(clippedRect.center()));
+        IntRect clippedRect = focusedElement->boundsInViewport();
+        locationInRootFrame = visualViewport.viewportToRootFrame(clippedRect.center());
     } else {
         locationInRootFrame = IntPoint(
             rightAligned

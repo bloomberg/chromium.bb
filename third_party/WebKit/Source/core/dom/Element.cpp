@@ -995,7 +995,7 @@ bool Element::hasNonEmptyLayoutSize() const
     return false;
 }
 
-IntRect Element::boundsInViewportSpace()
+IntRect Element::boundsInViewport()
 {
     document().updateLayoutIgnorePendingStylesheets();
 
@@ -1021,7 +1021,7 @@ IntRect Element::boundsInViewportSpace()
     for (size_t i = 1; i < quads.size(); ++i)
         result.unite(quads[i].enclosingBoundingBox());
 
-    return view->soonToBeRemovedContentsToUnscaledViewport(result);
+    return view->contentsToViewport(result);
 }
 
 ClientRectList* Element::getClientRects()

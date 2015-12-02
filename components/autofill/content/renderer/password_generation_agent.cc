@@ -411,27 +411,16 @@ bool PasswordGenerationAgent::TextDidChangeInTextField(
 }
 
 void PasswordGenerationAgent::ShowGenerationPopup() {
-  gfx::RectF bounding_box_scaled = form_util::GetScaledBoundingBox(
-      render_frame()->GetRenderView()->GetWebView()->pageScaleFactor(),
-      &generation_element_);
-
   Send(new AutofillHostMsg_ShowPasswordGenerationPopup(
-      routing_id(),
-      bounding_box_scaled,
-      generation_element_.maxLength(),
-      *generation_form_data_->form));
+      routing_id(), gfx::RectF(generation_element_.boundsInViewport()),
+      generation_element_.maxLength(), *generation_form_data_->form));
 
   generation_popup_shown_ = true;
 }
 
 void PasswordGenerationAgent::ShowEditingPopup() {
-  gfx::RectF bounding_box_scaled = form_util::GetScaledBoundingBox(
-      render_frame()->GetRenderView()->GetWebView()->pageScaleFactor(),
-      &generation_element_);
-
   Send(new AutofillHostMsg_ShowPasswordEditingPopup(
-      routing_id(),
-      bounding_box_scaled,
+      routing_id(), gfx::RectF(generation_element_.boundsInViewport()),
       *generation_form_data_->form));
 
   editing_popup_shown_ = true;

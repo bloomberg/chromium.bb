@@ -349,8 +349,6 @@ public:
     void setNetworkStateNotifierTestOnly(bool);
     void setNetworkConnectionInfo(const String&, double downlinkMaxMbps, ExceptionState&);
 
-    ClientRect* boundsInViewportSpace(Element*);
-
     unsigned countHitRegions(CanvasRenderingContext*);
 
     bool isInCanvasFontCache(Document*, const String&);

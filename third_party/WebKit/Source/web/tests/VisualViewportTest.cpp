@@ -1398,11 +1398,15 @@ TEST_P(ParameterizedVisualViewportTest, ElementBoundsInViewportSpaceAccountsForV
     visualViewport.setScale(2);
     visualViewport.setLocation(scrollDelta);
 
-    IntRect boundsInViewport = inputElement->boundsInViewportSpace();
+    const IntRect boundsInViewport = inputElement->boundsInViewport();
+    IntRect expectedBounds = bounds;
+    expectedBounds.scale(2.f);
+    IntPoint expectedScrollDelta = scrollDelta;
+    expectedScrollDelta.scale(2.f, 2.f);
 
-    EXPECT_POINT_EQ(IntPoint(bounds.location() - scrollDelta),
+    EXPECT_POINT_EQ(IntPoint(expectedBounds.location() - expectedScrollDelta),
         boundsInViewport.location());
-    EXPECT_SIZE_EQ(bounds.size(), boundsInViewport.size());
+    EXPECT_SIZE_EQ(expectedBounds.size(), boundsInViewport.size());
 }
 
 // Tests that when a new frame is created, it is created with the intended
