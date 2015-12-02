@@ -31,6 +31,7 @@
 #include "config.h"
 #include "platform/Decimal.h"
 
+#include "wtf/Allocator.h"
 #include "wtf/MathExtras.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/text/StringBuilder.h"
@@ -50,6 +51,7 @@ static const uint64_t MaxCoefficient = UINT64_C(0xDE0B6B3A763FFFF); // 999999999
 
 // This class handles Decimal special values.
 class SpecialValueHandler {
+    STACK_ALLOCATED();
     WTF_MAKE_NONCOPYABLE(SpecialValueHandler);
 public:
     enum HandleResult {

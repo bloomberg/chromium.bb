@@ -13,6 +13,7 @@
 
 #include "platform/PlatformExport.h"
 #include "public/platform/WebCrypto.h"
+#include "wtf/Allocator.h"
 #include "wtf/HashSet.h"
 #include "wtf/StringHasher.h"
 #include "wtf/Vector.h"
@@ -39,6 +40,7 @@ PLATFORM_EXPORT void finishDigestor(WebCryptoDigestor*, DigestValue& digestResul
 namespace WTF {
 
 struct DigestValueHash {
+    STATIC_ONLY(DigestValueHash);
     static unsigned hash(const blink::DigestValue& v)
     {
         return StringHasher::computeHash(v.data(), v.size());
@@ -51,15 +53,18 @@ struct DigestValueHash {
 };
 template <>
 struct DefaultHash<blink::DigestValue> {
+    STATIC_ONLY(DefaultHash);
     typedef DigestValueHash Hash;
 };
 
 template <>
 struct DefaultHash<blink::HashAlgorithm> {
+    STATIC_ONLY(DefaultHash);
     typedef IntHash<blink::HashAlgorithm> Hash;
 };
 template <>
 struct HashTraits<blink::HashAlgorithm> : UnsignedWithZeroKeyHashTraits<blink::HashAlgorithm> {
+    STATIC_ONLY(HashTraits);
 };
 
 } // namespace WTF

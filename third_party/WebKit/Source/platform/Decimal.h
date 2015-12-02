@@ -32,6 +32,7 @@
 #define Decimal_h
 
 #include "platform/PlatformExport.h"
+#include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
 #include "wtf/text/WTFString.h"
 #include <stdint.h>
@@ -57,6 +58,7 @@ public:
 
     // You should not use EncodedData other than unit testing.
     class EncodedData {
+        DISALLOW_NEW();
         // For accessing FormatClass.
         friend class Decimal;
         friend class DecimalPrivate::SpecialValueHandler;

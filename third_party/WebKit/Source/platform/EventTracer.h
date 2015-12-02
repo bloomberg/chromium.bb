@@ -32,6 +32,7 @@
 #define EventTracer_h
 
 #include "platform/PlatformExport.h"
+#include "wtf/Allocator.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
@@ -60,6 +61,7 @@ public:
 PLATFORM_EXPORT extern TraceEvent::TraceEventAPIAtomicWord* traceSamplingState[3];
 
 class PLATFORM_EXPORT EventTracer {
+    STATIC_ONLY(EventTracer);
 public:
     static void initialize();
     static const unsigned char* getTraceCategoryEnabledFlag(const char*);
