@@ -1,0 +1,25 @@
+<!doctype html>
+<title>autoplay clears the autoplaying flag</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
+<div id="log"></div>
+<script>
+async_test(function(t)
+{
+    var a = document.createElement('audio');
+    a.src = 'data:audio/wav;base64,UklGRjQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YRAAAAAAAAAA//8CAP3/BAD7/wQA';
+    a.autoplay = true;
+    a.addEventListener('ended', function()
+    {
+        a.currentTime = 0;
+    });
+    a.addEventListener('seeked', t.step_func(function()
+    {
+        assert_true(a.paused);
+        assert_true(a.readyState == a.HAVE_ENOUGH_DATA);
+        t.done();
+    }));
+    document.body.appendChild(a);
+});
+</script>

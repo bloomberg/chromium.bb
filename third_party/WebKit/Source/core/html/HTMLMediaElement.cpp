@@ -1556,6 +1556,7 @@ void HTMLMediaElement::setReadyState(ReadyState state)
                 invalidateCachedTime();
                 scheduleEvent(EventTypeNames::play);
                 scheduleEvent(EventTypeNames::playing);
+                m_autoplaying = false;
             }
         }
 
