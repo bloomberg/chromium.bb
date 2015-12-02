@@ -44,6 +44,7 @@ public:
     ScrollbarButtonsPlacement buttonsPlacement() const override;
 
     bool paint(const ScrollbarThemeClient*, GraphicsContext*, const CullRect&) override;
+    bool invalidateOnWindowActiveChange() const override { return true; }
 
 protected:
     IntRect trackRect(const ScrollbarThemeClient*, bool painting = false) override;

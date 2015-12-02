@@ -30,6 +30,11 @@
 #include "platform/PlatformGestureEvent.h"
 #include "platform/PlatformMouseEvent.h"
 #include "platform/graphics/paint/CullRect.h"
+// See windowActiveChangedForSnowLeopardOnly() below.
+// TODO(ellyjones): remove this when Snow Leopard support is gone.
+#if OS(MACOSX)
+#include "platform/mac/VersionUtilMac.h"
+#endif
 #include "platform/scroll/ScrollAnimatorBase.h"
 #include "platform/scroll/ScrollableArea.h"
 #include "platform/scroll/ScrollbarTheme.h"
@@ -491,6 +496,21 @@ bool Scrollbar::shouldParticipateInHitTesting()
     if (!isOverlayScrollbar())
         return true;
     return m_scrollableArea->scrollAnimator()->shouldScrollbarParticipateInHitTesting(this);
+}
+
+// Don't use this method. It will be removed later.
+// TODO(ellyjones): remove this method after Snow Leopard support drops.
+void Scrollbar::windowActiveChangedForSnowLeopardOnly()
+{
+#if OS(MACOSX)
+    // On Snow Leopard, scrollbars need to be invalidated when the window
+    // activity changes so that they take on the "inactive" scrollbar
+    // appearance. Later OS X releases do not have such an appearance.
+    if (m_theme && m_theme->invalidateOnWindowActiveChange()) {
+        ASSERT(IsOSSnowLeopard());
+        invalidate();
+    }
+#endif
 }
 
 bool Scrollbar::isWindowActive() const

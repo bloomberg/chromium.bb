@@ -9,7 +9,10 @@
 
 namespace blink {
 
-// Mavericks is Mac OS X 10.7, Darwin 11.
+// Snow Leopard is Mac OS X 10.6, Darwin 10.
+PLATFORM_EXPORT bool IsOSSnowLeopard();
+
+// Lion is Mac OS X 10.7, Darwin 11.
 PLATFORM_EXPORT bool IsOSLionOrEarlier();
 
 // Mavericks is Mac OS X 10.9, Darwin 13.

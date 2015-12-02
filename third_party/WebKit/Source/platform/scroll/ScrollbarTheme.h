@@ -69,6 +69,7 @@ public:
     virtual void updateScrollbarOverlayStyle(const ScrollbarThemeClient*) { }
 
     virtual bool invalidateOnMouseEnterExit() { return false; }
+    virtual bool invalidateOnWindowActiveChange() const { return false; }
 
     virtual void paintScrollCorner(GraphicsContext*, const DisplayItemClientWrapper&, const IntRect& cornerRect);
     virtual void paintTickmarks(GraphicsContext*, const ScrollbarThemeClient*, const IntRect&) { }

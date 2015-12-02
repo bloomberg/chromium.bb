@@ -109,6 +109,7 @@ public:
     bool isOverlayScrollbar() const override;
     bool shouldParticipateInHitTesting();
 
+    void windowActiveChangedForSnowLeopardOnly();
     bool isWindowActive() const;
 
     bool gestureEvent(const PlatformGestureEvent&);

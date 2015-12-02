@@ -346,6 +346,8 @@ void FrameView::invalidateAllCustomScrollbarsOnActiveChanged()
             toFrameView(widget)->invalidateAllCustomScrollbarsOnActiveChanged();
         else if (usesWindowInactiveSelector && widget->isScrollbar() && toScrollbar(widget)->isCustomScrollbar())
             toScrollbar(widget)->styleChanged();
+        if (widget->isScrollbar())
+            toScrollbar(widget)->windowActiveChangedForSnowLeopardOnly();
     }
     if (usesWindowInactiveSelector)
         recalculateCustomScrollbarStyle();
