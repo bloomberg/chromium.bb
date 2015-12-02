@@ -417,6 +417,11 @@ bool ExternalDataUseObserver::MatchesAppPackageName(
   return false;
 }
 
+DataUseTabModel* ExternalDataUseObserver::GetDataUseTabModel() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return data_use_tab_model_.get();
+}
+
 ExternalDataUseObserver::DataUseReportKey::DataUseReportKey(
     const std::string& label,
     net::NetworkChangeNotifier::ConnectionType connection_type,

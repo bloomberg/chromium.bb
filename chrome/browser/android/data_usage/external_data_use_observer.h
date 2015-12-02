@@ -98,27 +98,26 @@ class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
   bool MatchesAppPackageName(const std::string& app_package_name,
                              std::string* label) const;
 
-  DataUseTabModel* data_use_tab_model() const {
-    return data_use_tab_model_.get();
-  }
+  DataUseTabModel* GetDataUseTabModel() const;
 
  private:
   friend class DataUseTabModelTest;
   friend class ExternalDataUseObserverTest;
-  FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, SingleRegex);
-  FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, TwoRegex);
-  FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, MultipleRegex);
+  FRIEND_TEST_ALL_PREFIXES(DataUseUITabModelTest, ReportTabEventsTest);
+  FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, BufferDataUseReports);
+  FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, BufferSize);
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, ChangeRegex);
+  FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, HashFunction);
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, LabelRemoved);
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, MultipleMatchingRules);
-  FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, ReportsMergedCorrectly);
-  FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest,
-                           TimestampsMergedCorrectly);
-  FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, HashFunction);
-  FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, BufferSize);
+  FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, MultipleRegex);
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest,
                            PeriodicFetchMatchingRules);
-  FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, BufferDataUseReports);
+  FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, ReportsMergedCorrectly);
+  FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, SingleRegex);
+  FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest,
+                           TimestampsMergedCorrectly);
+  FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, TwoRegex);
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, Variations);
 
   // DataUseReportKey is a unique identifier for a data use report.

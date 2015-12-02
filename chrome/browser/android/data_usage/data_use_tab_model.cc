@@ -5,11 +5,13 @@
 #include "chrome/browser/android/data_usage/data_use_tab_model.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/android/data_usage/external_data_use_observer.h"
-#include "chrome/browser/android/data_usage/tab_data_use_entry.h"
+#include "components/data_usage/core/data_use.h"
 #include "components/variations/variations_associated_data.h"
+#include "url/gurl.h"
 
 namespace {
 
@@ -25,7 +27,7 @@ const char kUMAUnexpiredTabEntryRemovalDurationMinutesHistogram[] =
     "DataUse.TabModel.UnexpiredTabEntryRemovalDuration";
 
 // Returns true if |tab_id| is a valid tab ID.
-bool IsValidTabID(int32_t tab_id) {
+bool IsValidTabID(SessionID::id_type tab_id) {
   return tab_id >= 0;
 }
 
@@ -53,9 +55,11 @@ DataUseTabModel::DataUseTabModel(
     const ExternalDataUseObserver* data_use_observer,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
     : data_use_observer_(data_use_observer),
-      observer_list_(new base::ObserverListThreadSafe<TabDataUseObserver>),
       max_tab_entries_(GetMaxTabEntries()),
-      weak_factory_(this) {}
+      ui_task_runner_(ui_task_runner),
+      weak_factory_(this) {
+  DCHECK(ui_task_runner_);
+}
 
 DataUseTabModel::~DataUseTabModel() {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -66,7 +70,7 @@ base::WeakPtr<DataUseTabModel> DataUseTabModel::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
-void DataUseTabModel::OnNavigationEvent(int32_t tab_id,
+void DataUseTabModel::OnNavigationEvent(SessionID::id_type tab_id,
                                         TransitionType transition,
                                         const GURL& url,
                                         const std::string& package) {
@@ -75,6 +79,7 @@ void DataUseTabModel::OnNavigationEvent(int32_t tab_id,
 
   switch (transition) {
     case TRANSITION_OMNIBOX_SEARCH:
+    case TRANSITION_OMNIBOX_NAVIGATION:
     case TRANSITION_FROM_EXTERNAL_APP: {
       // Enter events.
       bool start_tracking = false;
@@ -103,11 +108,8 @@ void DataUseTabModel::OnNavigationEvent(int32_t tab_id,
       break;
     }
 
-    case TRANSITION_FROM_NAVSUGGEST:
-    case TRANSITION_OMNIBOX_NAVIGATION:
     case TRANSITION_BOOKMARK:
     case TRANSITION_HISTORY_ITEM:
-    case TRANSITION_TO_EXTERNAL_APP:
       // Exit events.
       EndTrackingDataUse(tab_id);
       break;
@@ -118,7 +120,7 @@ void DataUseTabModel::OnNavigationEvent(int32_t tab_id,
   }
 }
 
-void DataUseTabModel::OnTabCloseEvent(int32_t tab_id) {
+void DataUseTabModel::OnTabCloseEvent(SessionID::id_type tab_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(IsValidTabID(tab_id));
 
@@ -159,29 +161,38 @@ bool DataUseTabModel::GetLabelForDataUse(const data_usage::DataUse& data_use,
   return false;  // Tab session not found.
 }
 
-void DataUseTabModel::AddObserver(TabDataUseObserver* observer) {
-  observer_list_->AddObserver(observer);
-}
-
-void DataUseTabModel::RemoveObserver(TabDataUseObserver* observer) {
-  observer_list_->RemoveObserver(observer);
+void DataUseTabModel::AddObserver(base::WeakPtr<TabDataUseObserver> observer) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  observers_.push_back(observer);
 }
 
 base::TimeTicks DataUseTabModel::Now() const {
   return base::TimeTicks::Now();
 }
 
-void DataUseTabModel::NotifyObserversOfTrackingStarting(int32_t tab_id) {
-  observer_list_->Notify(FROM_HERE, &TabDataUseObserver::NotifyTrackingStarting,
-                         tab_id);
+void DataUseTabModel::NotifyObserversOfTrackingStarting(
+    SessionID::id_type tab_id) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(ui_task_runner_);
+  for (const auto& observer : observers_) {
+    ui_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&TabDataUseObserver::NotifyTrackingStarting,
+                              observer, tab_id));
+  }
 }
 
-void DataUseTabModel::NotifyObserversOfTrackingEnding(int32_t tab_id) {
-  observer_list_->Notify(FROM_HERE, &TabDataUseObserver::NotifyTrackingEnding,
-                         tab_id);
+void DataUseTabModel::NotifyObserversOfTrackingEnding(
+    SessionID::id_type tab_id) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(ui_task_runner_);
+  for (const auto& observer : observers_) {
+    ui_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&TabDataUseObserver::NotifyTrackingEnding,
+                              observer, tab_id));
+  }
 }
 
-void DataUseTabModel::StartTrackingDataUse(int32_t tab_id,
+void DataUseTabModel::StartTrackingDataUse(SessionID::id_type tab_id,
                                            const std::string& label) {
   // TODO(rajendrant): Explore ability to handle changes in label for current
   // session.
@@ -202,7 +213,7 @@ void DataUseTabModel::StartTrackingDataUse(int32_t tab_id,
     CompactTabEntries();  // Keep total number of tab entries within limit.
 }
 
-void DataUseTabModel::EndTrackingDataUse(int32_t tab_id) {
+void DataUseTabModel::EndTrackingDataUse(SessionID::id_type tab_id) {
   TabEntryMap::iterator tab_entry_iterator = active_tabs_.find(tab_id);
   if (tab_entry_iterator != active_tabs_.end() &&
       tab_entry_iterator->second.EndTracking()) {

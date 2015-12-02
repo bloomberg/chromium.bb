@@ -27,9 +27,9 @@ class DataUseTabHelper : public content::WebContentsObserver,
   explicit DataUseTabHelper(content::WebContents* web_contents);
 
   // Overridden from content::WebContentsObserver:
-  void ReadyToCommitNavigation(
+  void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
-  void FrameDeleted(content::RenderFrameHost* render_frame_host) override;
+  void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
 
   DISALLOW_COPY_AND_ASSIGN(DataUseTabHelper);
 };

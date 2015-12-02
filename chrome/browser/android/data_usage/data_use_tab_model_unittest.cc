@@ -8,7 +8,9 @@
 
 #include <string>
 
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/histogram_tester.h"
@@ -19,9 +21,13 @@
 #include "components/data_usage/core/data_use_aggregator.h"
 #include "components/data_usage/core/data_use_amortizer.h"
 #include "components/data_usage/core/data_use_annotator.h"
+#include "components/sessions/core/session_id.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/network_change_notifier.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace {
 
@@ -49,6 +55,7 @@ namespace chrome {
 namespace android {
 
 // Test version of |DataUseTabModel|, which permits overriding of calls to Now.
+// TODO(rajendrant): Move this class to anonymous namespace.
 class DataUseTabModelNowTest : public DataUseTabModel {
  public:
   DataUseTabModelNowTest(
@@ -58,6 +65,8 @@ class DataUseTabModelNowTest : public DataUseTabModel {
 
   ~DataUseTabModelNowTest() override {}
 
+  // TODO(rajendrant): Change this test class to use a SimpleTestTickClock
+  // instead.
   void AdvanceTime(base::TimeDelta now_offset) { now_offset_ = now_offset; }
 
  private:
@@ -73,7 +82,8 @@ class DataUseTabModelNowTest : public DataUseTabModel {
 
 class DataUseTabModelTest : public testing::Test {
  public:
-  DataUseTabModelTest() {}
+  DataUseTabModelTest()
+      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
 
  protected:
   void SetUp() override {
@@ -81,17 +91,22 @@ class DataUseTabModelTest : public testing::Test {
         scoped_ptr<data_usage::DataUseAnnotator>(),
         scoped_ptr<data_usage::DataUseAmortizer>()));
     data_use_observer_.reset(new ExternalDataUseObserver(
-        data_use_aggregator_.get(), message_loop_.task_runner().get(),
-        message_loop_.task_runner().get()));
+        data_use_aggregator_.get(),
+        content::BrowserThread::GetMessageLoopProxyForThread(
+            content::BrowserThread::IO),
+        content::BrowserThread::GetMessageLoopProxyForThread(
+            content::BrowserThread::UI)));
     data_use_tab_model_ = new DataUseTabModelNowTest(
-        data_use_observer_.get(), message_loop_.task_runner().get());
+        data_use_observer_.get(),
+        content::BrowserThread::GetMessageLoopProxyForThread(
+            content::BrowserThread::UI));
 
     // |data_use_tab_model_| will be owned by |data_use_observer_|.
     data_use_observer_->data_use_tab_model_.reset(data_use_tab_model_);
   }
 
   // Returns true if tab entry for |tab_id| exists in |active_tabs_|.
-  bool IsTabEntryExists(int32_t tab_id) const {
+  bool IsTabEntryExists(SessionID::id_type tab_id) const {
     return data_use_tab_model_->active_tabs_.find(tab_id) !=
            data_use_tab_model_->active_tabs_.end();
   }
@@ -104,7 +119,7 @@ class DataUseTabModelTest : public testing::Test {
 
   // Returns true if the tracking session for tab with id |tab_id| is currently
   // active.
-  bool IsTrackingDataUse(int32_t tab_id) const {
+  bool IsTrackingDataUse(SessionID::id_type tab_id) const {
     auto tab_entry_iterator = data_use_tab_model_->active_tabs_.find(tab_id);
     if (tab_entry_iterator == data_use_tab_model_->active_tabs_.end())
       return false;
@@ -113,21 +128,21 @@ class DataUseTabModelTest : public testing::Test {
 
   // Checks if the DataUse object for the given |tab_id| with request start time
   // |at_time| is labeled as an empty string.
-  void ExpectEmptyDataUseLabelAtTime(int32_t tab_id,
+  void ExpectEmptyDataUseLabelAtTime(SessionID::id_type tab_id,
                                      const base::TimeTicks& at_time) const {
     ExpectDataUseLabelAtTimeWithReturn(tab_id, at_time, false, std::string());
   }
 
   // Checks if the DataUse object for the given |tab_id| is labeled as an empty
   // string.
-  void ExpectEmptyDataUseLabel(int32_t tab_id) const {
+  void ExpectEmptyDataUseLabel(SessionID::id_type tab_id) const {
     ExpectDataUseLabelAtTimeWithReturn(tab_id, base::TimeTicks::Now(), false,
                                        std::string());
   }
 
   // Checks if the DataUse object for given |tab_id| is labeled as
   // |expected_label|.
-  void ExpectDataUseLabel(int32_t tab_id,
+  void ExpectDataUseLabel(SessionID::id_type tab_id,
                           const std::string& expected_label) const {
     ExpectDataUseLabelAtTimeWithReturn(tab_id, base::TimeTicks::Now(), true,
                                        expected_label);
@@ -137,7 +152,7 @@ class DataUseTabModelTest : public testing::Test {
   // request start time |at_time|, as |expected_label| and returns
   // |expected_return|.
   void ExpectDataUseLabelAtTimeWithReturn(
-      int32_t tab_id,
+      SessionID::id_type tab_id,
       const base::TimeTicks& at_time,
       bool expected_return,
       const std::string& expected_label) const {
@@ -152,11 +167,12 @@ class DataUseTabModelTest : public testing::Test {
     EXPECT_EQ(expected_label, actual_label);
   }
 
-  void StartTrackingDataUse(int32_t tab_id, const std::string& label) {
+  void StartTrackingDataUse(SessionID::id_type tab_id,
+                            const std::string& label) {
     data_use_tab_model_->StartTrackingDataUse(tab_id, label);
   }
 
-  void EndTrackingDataUse(int32_t tab_id) {
+  void EndTrackingDataUse(SessionID::id_type tab_id) {
     data_use_tab_model_->EndTrackingDataUse(tab_id);
   }
 
@@ -168,20 +184,33 @@ class DataUseTabModelTest : public testing::Test {
                                            labels);
   }
 
+  content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<data_usage::DataUseAggregator> data_use_aggregator_;
   scoped_ptr<ExternalDataUseObserver> data_use_observer_;
 
   // Pointer to the tab model within and owned by ExternalDataUseObserver.
   DataUseTabModelNowTest* data_use_tab_model_;
 
-  base::MessageLoop message_loop_;
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DataUseTabModelTest);
 };
 
 // Mock observer to track the calls to start and end tracking events.
+// TODO(rajendrant): Move this class to anonymous namespace.
 class MockTabDataUseObserver : public DataUseTabModel::TabDataUseObserver {
  public:
-  MOCK_METHOD1(NotifyTrackingStarting, void(int32_t tab_id));
-  MOCK_METHOD1(NotifyTrackingEnding, void(int32_t tab_id));
+  MockTabDataUseObserver() : weak_ptr_factory_(this) {}
+  MOCK_METHOD1(NotifyTrackingStarting, void(SessionID::id_type tab_id));
+  MOCK_METHOD1(NotifyTrackingEnding, void(SessionID::id_type tab_id));
+
+  base::WeakPtr<MockTabDataUseObserver> GetWeakPtr() {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
+
+ private:
+  base::WeakPtrFactory<MockTabDataUseObserver> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockTabDataUseObserver);
 };
 
 // Starts and ends tracking a single tab and checks if its label is returned
@@ -249,21 +278,26 @@ TEST_F(DataUseTabModelTest, ObserverStartEndEvents) {
   EXPECT_CALL(mock_observer, NotifyTrackingStarting(kTabID1)).Times(1);
   EXPECT_CALL(mock_observer, NotifyTrackingEnding(kTabID1)).Times(1);
 
-  data_use_tab_model_->AddObserver(&mock_observer);
+  data_use_tab_model_->AddObserver(mock_observer.GetWeakPtr());
+  EXPECT_EQ(1U, data_use_tab_model_->observers_.size());
   StartTrackingDataUse(kTabID1, kTestLabel1);
   EndTrackingDataUse(kTabID1);
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 // Checks that multiple mock observers receive start and end tracking events for
 // multiple tabs.
 TEST_F(DataUseTabModelTest, MultipleObserverMultipleStartEndEvents) {
   MockTabDataUseObserver mock_observers[kMaxMockObservers];
+  size_t expected_observer_count = 0;
+  EXPECT_EQ(expected_observer_count, data_use_tab_model_->observers_.size());
 
   for (auto& mock_observer : mock_observers) {
     // Add the observer.
-    data_use_tab_model_->AddObserver(&mock_observer);
+    data_use_tab_model_->AddObserver(mock_observer.GetWeakPtr());
+    ++expected_observer_count;
+    EXPECT_EQ(expected_observer_count, data_use_tab_model_->observers_.size());
 
     // Expect start and end events for tab ids 1-3.
     EXPECT_CALL(mock_observer, NotifyTrackingStarting(kTabID1)).Times(1);
@@ -282,34 +316,7 @@ TEST_F(DataUseTabModelTest, MultipleObserverMultipleStartEndEvents) {
   EndTrackingDataUse(kTabID2);
   EndTrackingDataUse(kTabID3);
 
-  message_loop_.RunUntilIdle();
-}
-
-// Checks that the observer is not notified of start and end events after
-// RemoveObserver.
-TEST_F(DataUseTabModelTest, ObserverNotNotifiedAfterRemove) {
-  MockTabDataUseObserver mock_observer;
-
-  // Observer notified of start and end events.
-  EXPECT_CALL(mock_observer, NotifyTrackingStarting(kTabID1)).Times(1);
-  EXPECT_CALL(mock_observer, NotifyTrackingEnding(kTabID1)).Times(1);
-
-  data_use_tab_model_->AddObserver(&mock_observer);
-  StartTrackingDataUse(kTabID1, kTestLabel1);
-  EndTrackingDataUse(kTabID1);
-
-  message_loop_.RunUntilIdle();
-  testing::Mock::VerifyAndClear(&mock_observer);
-
-  // Observer should not be notified after RemoveObserver.
-  EXPECT_CALL(mock_observer, NotifyTrackingStarting(kTabID1)).Times(0);
-  EXPECT_CALL(mock_observer, NotifyTrackingEnding(kTabID1)).Times(0);
-
-  data_use_tab_model_->RemoveObserver(&mock_observer);
-  StartTrackingDataUse(kTabID1, kTestLabel1);
-  EndTrackingDataUse(kTabID1);
-
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 // Checks that tab close event updates the close time of the tab entry.
@@ -348,7 +355,7 @@ TEST_F(DataUseTabModelTest, OnTrackingLabelRemoved) {
   StartTrackingDataUse(kTabID1, kTestLabel1);
   StartTrackingDataUse(kTabID2, kTestLabel2);
   StartTrackingDataUse(kTabID3, kTestLabel3);
-  data_use_tab_model_->AddObserver(&mock_observer);
+  data_use_tab_model_->AddObserver(mock_observer.GetWeakPtr());
   ExpectTabEntrySize(TabEntrySize::THREE);
 
   EXPECT_TRUE(IsTrackingDataUse(kTabID1));
@@ -359,7 +366,7 @@ TEST_F(DataUseTabModelTest, OnTrackingLabelRemoved) {
   EXPECT_CALL(mock_observer, NotifyTrackingEnding(kTabID2)).Times(1);
 
   data_use_tab_model_->OnTrackingLabelRemoved(kTestLabel2);
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(IsTrackingDataUse(kTabID1));
   EXPECT_FALSE(IsTrackingDataUse(kTabID2));
@@ -368,7 +375,7 @@ TEST_F(DataUseTabModelTest, OnTrackingLabelRemoved) {
   EXPECT_CALL(mock_observer, NotifyTrackingEnding(kTabID3)).Times(1);
 
   data_use_tab_model_->OnTrackingLabelRemoved(kTestLabel3);
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(IsTrackingDataUse(kTabID1));
   EXPECT_FALSE(IsTrackingDataUse(kTabID2));
@@ -378,8 +385,9 @@ TEST_F(DataUseTabModelTest, OnTrackingLabelRemoved) {
 // Checks that |active_tabs_| does not grow beyond GetMaxTabEntriesForTests tab
 // entries.
 TEST_F(DataUseTabModelTest, CompactTabEntriesWithinMaxLimit) {
-  const size_t max_tab_entries = data_use_tab_model_->max_tab_entries_;
-  uint32_t tab_id = 1;
+  const int32_t max_tab_entries =
+      static_cast<int32_t>(data_use_tab_model_->max_tab_entries_);
+  SessionID::id_type tab_id = 1;
 
   ExpectTabEntrySize(TabEntrySize::ZERO);
 
@@ -392,7 +400,8 @@ TEST_F(DataUseTabModelTest, CompactTabEntriesWithinMaxLimit) {
     ++tab_id;
   }
 
-  uint32_t oldest_tab_id = 1;  // oldest tab entry that will be removed first.
+  // Oldest tab entry that will be removed first.
+  SessionID::id_type oldest_tab_id = 1;
 
   // Starting and ending more tracking tab entries does not increase the size of
   // |active_tabs_|.
@@ -461,8 +470,9 @@ TEST_F(DataUseTabModelTest, UnexpiredTabEntryRemovaltimeHistogram) {
   const char kUMAUnexpiredTabEntryRemovalDurationMinutesHistogram[] =
       "DataUse.TabModel.UnexpiredTabEntryRemovalDuration";
   base::HistogramTester histogram_tester;
-  const size_t max_tab_entries = data_use_tab_model_->max_tab_entries_;
-  uint32_t tab_id = 1;
+  const int32_t max_tab_entries =
+      static_cast<int32_t>(data_use_tab_model_->max_tab_entries_);
+  SessionID::id_type tab_id = 1;
 
   while (tab_id <= max_tab_entries) {
     std::string tab_label = base::StringPrintf("label_%d", tab_id);
@@ -558,11 +568,6 @@ TEST_F(DataUseTabModelTest, NavigationEnterAndExitEvent) {
       GURL("http://foo.com/"), std::string());
   ExpectTabEntrySize(TabEntrySize::ONE);
   EXPECT_TRUE(IsTrackingDataUse(kTabID1));
-
-  data_use_tab_model_->OnNavigationEvent(
-      kTabID1, DataUseTabModel::TRANSITION_FROM_NAVSUGGEST, GURL(),
-      std::string());
-  EXPECT_FALSE(IsTrackingDataUse(kTabID1));
 }
 
 // Tests that any of the Enter transition events start the tracking.
@@ -581,7 +586,7 @@ TEST_F(DataUseTabModelTest, AllNavigationEnterEvents) {
        std::string(), kTestLabel2},
   };
   std::vector<std::string> app_package_names, domain_regexes, labels;
-  int32_t tab_id = 1;
+  SessionID::id_type tab_id = 1;
 
   app_package_names.push_back("com.google.package.foo");
   domain_regexes.push_back(std::string());
@@ -611,13 +616,10 @@ TEST_F(DataUseTabModelTest, AllNavigationEnterEvents) {
 // Tests that any of the Exit transition events end the tracking.
 TEST_F(DataUseTabModelTest, AllNavigationExitEvents) {
   DataUseTabModel::TransitionType all_exit_transitions[] = {
-      DataUseTabModel::TRANSITION_TO_EXTERNAL_APP,
-      DataUseTabModel::TRANSITION_FROM_NAVSUGGEST,
-      DataUseTabModel::TRANSITION_OMNIBOX_NAVIGATION,
       DataUseTabModel::TRANSITION_BOOKMARK,
       DataUseTabModel::TRANSITION_HISTORY_ITEM};
   std::vector<std::string> app_package_names, domain_regexes, labels;
-  int32_t tab_id = 1;
+  SessionID::id_type tab_id = 1;
 
   app_package_names.push_back(std::string());
   domain_regexes.push_back("http://foo.com/");

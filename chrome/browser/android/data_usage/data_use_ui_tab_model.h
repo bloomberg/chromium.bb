@@ -5,20 +5,24 @@
 #ifndef CHROME_BROWSER_ANDROID_DATA_USAGE_DATA_USE_UI_TAB_MODEL_H_
 #define CHROME_BROWSER_ANDROID_DATA_USAGE_DATA_USE_UI_TAB_MODEL_H_
 
-#include <stdint.h>
-
 #include <string>
-#include <unordered_map>
 
+#include "base/containers/hash_tables.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
+#include "chrome/browser/android/data_usage/data_use_tab_model.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/sessions/core/session_id.h"
 #include "ui/base/page_transition_types.h"
 
 class GURL;
+
+namespace base {
+class SingleThreadTaskRunner;
+}
 
 namespace chrome {
 
@@ -32,10 +36,14 @@ namespace android {
 // and tab closure events to the DataUseTabModel, and receives tab tracking
 // transitions (start/end) from the DataUseTabModel, which it conveys to UI
 // notification logic. DataUseUITabModel is not thread-safe, and should be
-// accessed only on the UI thread.
+// accessed only on the UI thread. DataUseUITabModel is registered as a
+// DataUseTabModel::TabDataUseObserver, and gets notified when tracking has
+// started and ended on a tab. DataUseUITabModel is not thread safe, and should
+// only be accessed only on UI thread.
 // TODO(tbansal): DataUseTabModel should notify DataUseUITabModel when a tab
 // is removed from the list of tabs.
-class DataUseUITabModel : public KeyedService {
+class DataUseUITabModel : public KeyedService,
+                          public DataUseTabModel::TabDataUseObserver {
  public:
   explicit DataUseUITabModel(
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
@@ -46,29 +54,36 @@ class DataUseUITabModel : public KeyedService {
   // are restored when Chromium restarts are not reported.
   void ReportBrowserNavigation(const GURL& gurl,
                                ui::PageTransition page_transition,
-                               int32_t tab_id) const;
+                               SessionID::id_type tab_id) const;
 
   // Reports a tab closure for the tab with |tab_id| to the DataUseTabModel on
   // IO thread. The tab could either have been closed or evicted from the memory
   // by Android.
-  void ReportTabClosure(int32_t tab_id);
+  void ReportTabClosure(SessionID::id_type tab_id);
 
   // Reports a custom tab navigation to the DataUseTabModel on the IO thread.
   // Includes the |tab_id|, |url|, and |package_name| for the navigation.
-  void ReportCustomTabInitialNavigation(int32_t tab_id,
+  void ReportCustomTabInitialNavigation(SessionID::id_type tab_id,
                                         const std::string& url,
                                         const std::string& package_name);
 
   // Returns true if data use tracking has been started for the tab with id
   // |tab_id|. Calling this function resets the state of the tab.
-  bool HasDataUseTrackingStarted(int32_t tab_id);
+  bool HasDataUseTrackingStarted(SessionID::id_type tab_id);
 
   // Returns true if data use tracking has ended for the tab with id |tab_id|.
   // Calling this function resets the state of the tab.
-  bool HasDataUseTrackingEnded(int32_t tab_id);
+  bool HasDataUseTrackingEnded(SessionID::id_type tab_id);
+
+  // Sets the weak pointer to DataUseTabModel.
+  void SetDataUseTabModel(base::WeakPtr<DataUseTabModel> data_use_tab_model);
+
+  base::WeakPtr<DataUseUITabModel> GetWeakPtr();
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(DataUseUITabModelTest, ConvertTransitionType);
   FRIEND_TEST_ALL_PREFIXES(DataUseUITabModelTest, EntranceExitState);
+  FRIEND_TEST_ALL_PREFIXES(DataUseUITabModelTest, ReportTabEventsTest);
 
   // DataUseTrackingEvent indicates the state of a tab.
   enum DataUseTrackingEvent {
@@ -79,29 +94,43 @@ class DataUseUITabModel : public KeyedService {
     DATA_USE_TRACKING_ENDED,
   };
 
-  typedef std::unordered_map<int32_t, DataUseTrackingEvent> TabEvents;
+  typedef base::hash_map<SessionID::id_type, DataUseTrackingEvent> TabEvents;
 
-  // DataUseTabModel::Observer implementation:
-  // TODO(tbansal): Add override once DataUseTabModel is checked in.
-  void OnTrackingStarted(int32_t tab_id);
-  void OnTrackingEnded(int32_t tab_id);
+  // DataUseTabModel::TabDataUseObserver implementation:
+  void NotifyTrackingStarting(SessionID::id_type tab_id) override;
+  void NotifyTrackingEnding(SessionID::id_type tab_id) override;
 
   // Creates |event| for tab with id |tab_id| and value |event|, if there is no
   // existing entry for |tab_id|, and returns true. Otherwise, returns false
   // without modifying the entry.
-  bool MaybeCreateTabEvent(int32_t tab_id, DataUseTrackingEvent event);
+  bool MaybeCreateTabEvent(SessionID::id_type tab_id,
+                           DataUseTrackingEvent event);
 
   // Removes event entry for |tab_id|, if the entry is equal to |event|, and
   // returns true. Otherwise, returns false without modifying the entry.
-  bool RemoveTabEvent(int32_t tab_id, DataUseTrackingEvent event);
+  bool RemoveTabEvent(SessionID::id_type tab_id, DataUseTrackingEvent event);
+
+  // Converts |page_transition| to DataUseTabModel::TransitionType enum.
+  // Returns true if conversion was successful, and updates |transition_type|.
+  // Otherwise, returns false, and |transition_type| is not changed.
+  // |transition_type| must not be null.
+  bool ConvertTransitionType(
+      ui::PageTransition page_transition,
+      DataUseTabModel::TransitionType* transition_type) const;
 
   // |tab_events_| stores tracking events of multiple tabs.
   TabEvents tab_events_;
 
-  // |io_task_runner_| accesses DataUseTabModel members on IO thread.
+  // |data_use_tab_model_| is notified by |this| about browser navigations
+  // and tab closures on IO thread. |data_use_tab_model_| should only be
+  // used on IO thread.
+  base::WeakPtr<DataUseTabModel> data_use_tab_model_;
+
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   base::ThreadChecker thread_checker_;
+
+  base::WeakPtrFactory<DataUseUITabModel> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DataUseUITabModel);
 };

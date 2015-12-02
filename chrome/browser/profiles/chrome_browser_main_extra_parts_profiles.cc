@@ -123,7 +123,9 @@
 #include "chrome/browser/extensions/api/platform_keys/verify_trust_api.h"
 #endif
 
-#if !defined(OS_ANDROID)
+#if defined(OS_ANDROID)
+#include "chrome/browser/android/data_usage/data_use_ui_tab_model_factory.h"
+#else
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
 #endif
@@ -191,6 +193,9 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   BookmarkUndoServiceFactory::GetInstance();
 #if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
   CaptivePortalServiceFactory::GetInstance();
+#endif
+#if defined(OS_ANDROID)
+  chrome::android::DataUseUITabModelFactory::GetInstance();
 #endif
   GeolocationPermissionContextFactory::GetInstance();
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)

@@ -7,8 +7,8 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
 
@@ -18,27 +18,39 @@ namespace android {
 
 DataUseUITabModel::DataUseUITabModel(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
-    : io_task_runner_(io_task_runner) {
+    : io_task_runner_(io_task_runner), weak_factory_(this) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(io_task_runner_);
 }
 
-DataUseUITabModel::~DataUseUITabModel() {}
+DataUseUITabModel::~DataUseUITabModel() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+}
 
 void DataUseUITabModel::ReportBrowserNavigation(
     const GURL& gurl,
     ui::PageTransition page_transition,
-    int32_t tab_id) const {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    SessionID::id_type tab_id) const {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_LE(0, tab_id);
 
-  // TODO(tbansal): Post to DataUseTabModel on IO thread.
+  DataUseTabModel::TransitionType transition_type;
+
+  if (ConvertTransitionType(page_transition, &transition_type)) {
+    io_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&DataUseTabModel::OnNavigationEvent, data_use_tab_model_,
+                   tab_id, transition_type, gurl, std::string()));
+  }
 }
 
-void DataUseUITabModel::ReportTabClosure(int32_t tab_id) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+void DataUseUITabModel::ReportTabClosure(SessionID::id_type tab_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_LE(0, tab_id);
 
-  // TODO(tbansal): Post to DataUseTabModel on IO thread.
+  io_task_runner_->PostTask(FROM_HERE,
+                            base::Bind(&DataUseTabModel::OnTabCloseEvent,
+                                       data_use_tab_model_, tab_id));
 
   // Clear out local state.
   TabEvents::iterator it = tab_events_.find(tab_id);
@@ -48,14 +60,33 @@ void DataUseUITabModel::ReportTabClosure(int32_t tab_id) {
 }
 
 void DataUseUITabModel::ReportCustomTabInitialNavigation(
-    int32_t tab_id,
+    SessionID::id_type tab_id,
     const std::string& url,
     const std::string& package_name) {
-  // TODO(tbansal): Post to DataUseTabModel on IO thread.
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (tab_id <= 0)
+    return;
+
+  io_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&DataUseTabModel::OnNavigationEvent, data_use_tab_model_,
+                 tab_id, DataUseTabModel::TRANSITION_FROM_EXTERNAL_APP,
+                 GURL(url), package_name));
 }
 
-void DataUseUITabModel::OnTrackingStarted(int32_t tab_id) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+void DataUseUITabModel::SetDataUseTabModel(
+    base::WeakPtr<DataUseTabModel> data_use_tab_model) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  data_use_tab_model_ = data_use_tab_model;
+}
+
+base::WeakPtr<DataUseUITabModel> DataUseUITabModel::GetWeakPtr() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return weak_factory_.GetWeakPtr();
+}
+
+void DataUseUITabModel::NotifyTrackingStarting(SessionID::id_type tab_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (MaybeCreateTabEvent(tab_id, DATA_USE_TRACKING_STARTED))
@@ -65,8 +96,7 @@ void DataUseUITabModel::OnTrackingStarted(int32_t tab_id) {
   RemoveTabEvent(tab_id, DATA_USE_TRACKING_ENDED);
 }
 
-void DataUseUITabModel::OnTrackingEnded(int32_t tab_id) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+void DataUseUITabModel::NotifyTrackingEnding(SessionID::id_type tab_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (MaybeCreateTabEvent(tab_id, DATA_USE_TRACKING_ENDED))
@@ -76,8 +106,7 @@ void DataUseUITabModel::OnTrackingEnded(int32_t tab_id) {
   RemoveTabEvent(tab_id, DATA_USE_TRACKING_STARTED);
 }
 
-bool DataUseUITabModel::HasDataUseTrackingStarted(int32_t tab_id) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+bool DataUseUITabModel::HasDataUseTrackingStarted(SessionID::id_type tab_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   TabEvents::iterator it = tab_events_.find(tab_id);
@@ -87,8 +116,7 @@ bool DataUseUITabModel::HasDataUseTrackingStarted(int32_t tab_id) {
   return RemoveTabEvent(tab_id, DATA_USE_TRACKING_STARTED);
 }
 
-bool DataUseUITabModel::HasDataUseTrackingEnded(int32_t tab_id) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+bool DataUseUITabModel::HasDataUseTrackingEnded(SessionID::id_type tab_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   TabEvents::iterator it = tab_events_.find(tab_id);
@@ -98,18 +126,15 @@ bool DataUseUITabModel::HasDataUseTrackingEnded(int32_t tab_id) {
   return RemoveTabEvent(tab_id, DATA_USE_TRACKING_ENDED);
 }
 
-bool DataUseUITabModel::MaybeCreateTabEvent(int32_t tab_id,
+bool DataUseUITabModel::MaybeCreateTabEvent(SessionID::id_type tab_id,
                                             DataUseTrackingEvent event) {
-  TabEvents::iterator it = tab_events_.find(tab_id);
-  if (it == tab_events_.end()) {
-    tab_events_.insert(std::make_pair(tab_id, event));
-    return true;
-  }
-  return false;
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return tab_events_.insert(std::make_pair(tab_id, event)).second;
 }
 
-bool DataUseUITabModel::RemoveTabEvent(int32_t tab_id,
+bool DataUseUITabModel::RemoveTabEvent(SessionID::id_type tab_id,
                                        DataUseTrackingEvent event) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   TabEvents::iterator it = tab_events_.find(tab_id);
   DCHECK(it != tab_events_.end());
   if (it->second == event) {
@@ -117,6 +142,45 @@ bool DataUseUITabModel::RemoveTabEvent(int32_t tab_id,
     return true;
   }
   return false;
+}
+
+bool DataUseUITabModel::ConvertTransitionType(
+    ui::PageTransition page_transition,
+    DataUseTabModel::TransitionType* transition_type) const {
+  if (!ui::PageTransitionIsMainFrame(page_transition) ||
+      !ui::PageTransitionIsNewNavigation(page_transition)) {
+    return false;
+  }
+
+  switch (page_transition & ui::PAGE_TRANSITION_CORE_MASK) {
+    case ui::PAGE_TRANSITION_LINK:
+      if ((page_transition & ui::PAGE_TRANSITION_FROM_API) != 0) {
+        // Clicking on bookmarks.
+        *transition_type = DataUseTabModel::TRANSITION_BOOKMARK;
+        return true;
+      }
+      return false;  // Newtab, clicking on a link.
+    case ui::PAGE_TRANSITION_TYPED:
+      *transition_type = DataUseTabModel::TRANSITION_OMNIBOX_NAVIGATION;
+      return true;
+    case ui::PAGE_TRANSITION_AUTO_BOOKMARK:
+      // Auto bookmark from newtab page.
+      *transition_type = DataUseTabModel::TRANSITION_BOOKMARK;
+      return true;
+    case ui::PAGE_TRANSITION_AUTO_TOPLEVEL:
+      // History menu.
+      *transition_type = DataUseTabModel::TRANSITION_HISTORY_ITEM;
+      return true;
+    case ui::PAGE_TRANSITION_GENERATED:
+      // Omnibox search (e.g., searching for "tacos").
+      *transition_type = DataUseTabModel::TRANSITION_OMNIBOX_SEARCH;
+      return true;
+    case ui::PAGE_TRANSITION_RELOAD:
+      // Restored tabs.
+      return false;
+    default:
+      return false;
+  }
 }
 
 }  // namespace android

@@ -9,13 +9,11 @@
 #include "chrome/browser/android/data_usage/data_use_ui_tab_model_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
+#include "components/sessions/core/session_id.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/render_frame_host.h"
 #include "ui/base/page_transition_types.h"
-
-namespace content {
-class RenderFrameHost;
-}
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(DataUseTabHelper);
 
@@ -26,32 +24,40 @@ DataUseTabHelper::DataUseTabHelper(content::WebContents* web_contents)
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 }
 
-void DataUseTabHelper::ReadyToCommitNavigation(
+void DataUseTabHelper::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  // TODO(tbansal): Consider the case of a page that provides a navigation bar
+  // and loads pages in a sub-frame.
+  if (!navigation_handle->IsInMainFrame())
+    return;
 
   // Notify the DataUseUITabModel.
   chrome::android::DataUseUITabModel* data_use_ui_tab_model =
       chrome::android::DataUseUITabModelFactory::GetForBrowserContext(
           Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
-  if (data_use_ui_tab_model) {
+  SessionID::id_type tab_id = SessionTabHelper::IdForTab(web_contents());
+  if (data_use_ui_tab_model && tab_id >= 0) {
     data_use_ui_tab_model->ReportBrowserNavigation(
         navigation_handle->GetURL(),
         ui::PageTransitionFromInt(navigation_handle->GetPageTransition()),
-        SessionTabHelper::IdForTab(web_contents()));
+        tab_id);
   }
 }
 
-void DataUseTabHelper::FrameDeleted(
+void DataUseTabHelper::RenderFrameDeleted(
     content::RenderFrameHost* render_frame_host) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  // Check if it is a main frame.
+  if (render_frame_host->GetParent())
+    return;
 
   // Notify the DataUseUITabModel.
   chrome::android::DataUseUITabModel* data_use_ui_tab_model =
       chrome::android::DataUseUITabModelFactory::GetForBrowserContext(
           Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
-  if (data_use_ui_tab_model) {
-    data_use_ui_tab_model->ReportTabClosure(
-        SessionTabHelper::IdForTab(web_contents()));
-  }
+  SessionID::id_type tab_id = SessionTabHelper::IdForTab(web_contents());
+  if (data_use_ui_tab_model && tab_id >= 0)
+    data_use_ui_tab_model->ReportTabClosure(tab_id);
 }

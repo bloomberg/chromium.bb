@@ -12,6 +12,7 @@
 #include "chrome/browser/android/data_usage/data_use_ui_tab_model_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
+#include "components/sessions/core/session_id.h"
 #include "jni/DataUseTabUIManager_jni.h"
 
 // static
@@ -22,8 +23,11 @@ jboolean CheckDataUseTrackingStarted(JNIEnv* env,
   Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
   chrome::android::DataUseUITabModel* data_use_ui_tab_model =
       chrome::android::DataUseUITabModelFactory::GetForBrowserContext(profile);
-  if (data_use_ui_tab_model)
-    return data_use_ui_tab_model->HasDataUseTrackingStarted(tab_id);
+  DCHECK_LE(0, static_cast<SessionID::id_type>(tab_id));
+  if (data_use_ui_tab_model) {
+    return data_use_ui_tab_model->HasDataUseTrackingStarted(
+        static_cast<SessionID::id_type>(tab_id));
+  }
   return false;
 }
 
@@ -35,8 +39,11 @@ jboolean CheckDataUseTrackingEnded(JNIEnv* env,
   Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
   chrome::android::DataUseUITabModel* data_use_ui_tab_model =
       chrome::android::DataUseUITabModelFactory::GetForBrowserContext(profile);
-  if (data_use_ui_tab_model)
-    return data_use_ui_tab_model->HasDataUseTrackingEnded(tab_id);
+  DCHECK_LE(0, static_cast<SessionID::id_type>(tab_id));
+  if (data_use_ui_tab_model) {
+    return data_use_ui_tab_model->HasDataUseTrackingEnded(
+        static_cast<SessionID::id_type>(tab_id));
+  }
   return false;
 }
 
@@ -50,9 +57,11 @@ void OnCustomTabInitialNavigation(JNIEnv* env,
   Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
   chrome::android::DataUseUITabModel* data_use_ui_tab_model =
       chrome::android::DataUseUITabModelFactory::GetForBrowserContext(profile);
+  DCHECK_LE(0, static_cast<SessionID::id_type>(tab_id));
   if (data_use_ui_tab_model) {
     data_use_ui_tab_model->ReportCustomTabInitialNavigation(
-        tab_id, ConvertJavaStringToUTF8(env, url),
+        static_cast<SessionID::id_type>(tab_id),
+        ConvertJavaStringToUTF8(env, url),
         ConvertJavaStringToUTF8(env, package_name));
   }
 }
