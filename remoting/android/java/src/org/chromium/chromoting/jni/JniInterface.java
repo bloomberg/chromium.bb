@@ -210,6 +210,7 @@ public class JniInterface {
         nativeDisconnect();
         sConnectionListener = null;
         sConnected = false;
+        sCapabilityManager.onHostDisconnect();
 
         // Drop the reference to free the Bitmap for GC.
         synchronized (sFrameLock) {

@@ -12,4 +12,5 @@ package org.chromium.chromoting;
  */
 public class Capabilities {
     public static final String CAST_CAPABILITY = "casting";
+    public static final String TOUCH_CAPABILITY = "touchEvents";
 }

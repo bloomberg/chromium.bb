@@ -159,9 +159,6 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
 
         mRenderData = new RenderData();
         mInputHandler = new TouchInputHandler(this, context, mRenderData);
-        // TODO(joedow): Move this into a method which will choose the correct input strategy
-        //               based on host support and current toggle setting in the UI.
-        mInputHandler.setInputStrategy(new TrackpadInputStrategy(this, mRenderData));
 
         mRepaintPending = false;
 
@@ -390,6 +387,34 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
                 requestRepaint();
             }
             mInputAnimationRunning = enabled;
+        }
+    }
+
+    /** Updates the current InputStrategy used by the TouchInputHandler. */
+    public void changeInputMode(
+            Desktop.InputMode inputMode, CapabilityManager.HostCapability hostTouchCapability) {
+        // In order to set the correct input strategy, we need to know the current input mode and
+        // the host input capabilities.
+        if (!inputMode.isSet() || !hostTouchCapability.isSet()) {
+            return;
+        }
+
+        switch (inputMode) {
+            case TRACKPAD:
+                mInputHandler.setInputStrategy(new TrackpadInputStrategy(this, mRenderData));
+                break;
+
+            case TOUCH:
+                if (hostTouchCapability.isSupported()) {
+                    // TODO(joedow): Set the touch input strategy.
+                } else {
+                    // TODO(joedow): Set the simulated touch input strategy.
+                }
+                break;
+
+            default:
+                // Unreachable, but required by Google Java style and findbugs.
+                assert false : "Unreached";
         }
     }
 }

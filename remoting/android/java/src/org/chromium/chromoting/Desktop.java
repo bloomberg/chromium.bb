@@ -33,18 +33,35 @@ import org.chromium.chromoting.help.HelpContext;
 import org.chromium.chromoting.help.HelpSingleton;
 import org.chromium.chromoting.jni.JniInterface;
 
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
 /**
  * A simple screen that does nothing except display a DesktopView and notify it of rotations.
  */
-public class Desktop extends AppCompatActivity implements View.OnSystemUiVisibilityChangeListener {
+public class Desktop
+        extends AppCompatActivity implements View.OnSystemUiVisibilityChangeListener,
+                                             CapabilityManager.CapabilitiesChangedListener {
+    /** Used to set/store the selected input mode. */
+    public enum InputMode {
+        UNKNOWN,
+        TRACKPAD,
+        TOUCH;
+
+        public boolean isSet() {
+            return this != UNKNOWN;
+        }
+    }
+
     /**
      * Preference used for displaying an interestitial dialog only when the user first accesses the
      * Cardboard function.
      */
     private static final String PREFERENCE_CARDBOARD_DIALOG_SEEN = "cardboard_dialog_seen";
+
+    /** Preference used to track the last input mode selected by the user. */
+    private static final String PREFERENCE_INPUT_MODE = "input_mode";
 
     /** The amount of time to wait to hide the Actionbar after user input is seen. */
     private static final int ACTIONBAR_AUTO_HIDE_DELAY_MS = 3000;
@@ -68,6 +85,13 @@ public class Desktop extends AppCompatActivity implements View.OnSystemUiVisibil
 
     /** The Toolbar instance backing our SupportActionBar. */
     private Toolbar mToolbar;
+
+    /** Tracks the current input mode (e.g. trackpad/touch). */
+    private InputMode mInputMode = InputMode.UNKNOWN;
+
+    /** Indicates whether the remote host supports touch injection. */
+    private CapabilityManager.HostCapability mHostTouchCapability =
+            CapabilityManager.HostCapability.UNKNOWN;
 
     /** Called when the activity is first created. */
     @Override
@@ -100,6 +124,8 @@ public class Desktop extends AppCompatActivity implements View.OnSystemUiVisibil
         mActivityLifecycleListener = CapabilityManager.getInstance().onActivityAcceptingListener(
                 this, Capabilities.CAST_CAPABILITY);
         mActivityLifecycleListener.onActivityCreated(this, savedInstanceState);
+
+        mInputMode = getInitialInputModeValue();
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             attachKeyboardVisibilityListener();
@@ -136,6 +162,7 @@ public class Desktop extends AppCompatActivity implements View.OnSystemUiVisibil
         mActivityLifecycleListener.onActivityStarted(this);
         JniInterface.enableVideoChannel(true);
         mRemoteHostDesktop.attachRedrawCallback();
+        CapabilityManager.getInstance().addListener(this);
     }
 
     @Override
@@ -158,6 +185,7 @@ public class Desktop extends AppCompatActivity implements View.OnSystemUiVisibil
 
     @Override
     protected void onStop() {
+        CapabilityManager.getInstance().removeListener(this);
         mActivityLifecycleListener.onActivityStopped(this);
         super.onStop();
         if (mSwitchToCardboardDesktopActivity) {
@@ -219,7 +247,78 @@ public class Desktop extends AppCompatActivity implements View.OnSystemUiVisibil
 
         ChromotingUtil.tintMenuIcons(this, menu);
 
+        // Wait to set the input mode until after the default tinting has been applied.
+        setInputMode(mInputMode);
+
         return super.onCreateOptionsMenu(menu);
+    }
+
+    private InputMode getInitialInputModeValue() {
+        // Load the previously-selected input mode from Preferences.
+        // TODO(joedow): Evaluate and determine if we should use a different input mode based on
+        //               a device characteristic such as screen size.
+        InputMode inputMode = InputMode.TRACKPAD;
+        String previousInputMode =
+                getPreferences(MODE_PRIVATE)
+                        .getString(PREFERENCE_INPUT_MODE, inputMode.name());
+
+        try {
+            inputMode = InputMode.valueOf(previousInputMode);
+        } catch (IllegalArgumentException ex) {
+            // Invalid or unexpected value was found, just use the default mode.
+        }
+
+        return inputMode;
+    }
+
+    private void toggleInputMode() {
+        if (mInputMode == InputMode.TRACKPAD) {
+            setInputMode(InputMode.TOUCH);
+        } else if (mInputMode == InputMode.TOUCH) {
+            setInputMode(InputMode.TRACKPAD);
+        }
+    }
+
+    private void setInputMode(InputMode inputMode) {
+        String titleText;
+        int inputModeItemColorId;
+        if (inputMode == InputMode.TRACKPAD) {
+            titleText = getString(R.string.select_trackpad_mode);
+            inputModeItemColorId = R.attr.colorControlNormal;
+        } else if (inputMode == InputMode.TOUCH) {
+            titleText = getString(R.string.select_touch_mode);
+            inputModeItemColorId = R.attr.colorControlActivated;
+        } else {
+            assert false : "Unreached";
+            return;
+        }
+
+        mInputMode = inputMode;
+        getPreferences(MODE_PRIVATE)
+                .edit()
+                .putString(PREFERENCE_INPUT_MODE, mInputMode.name())
+                .apply();
+
+        Menu menu = mToolbar.getMenu();
+        MenuItem inputModeMenuItem = menu.findItem(R.id.actionbar_input_mode);
+        if (inputModeMenuItem != null) {
+            inputModeMenuItem.setTitle(titleText);
+            int color = ChromotingUtil.getColorAttribute(this, inputModeItemColorId);
+            ChromotingUtil.tintMenuIcon(inputModeMenuItem, color);
+        }
+
+        mRemoteHostDesktop.changeInputMode(mInputMode, mHostTouchCapability);
+    }
+
+    @Override
+    public void onCapabilitiesChanged(List<String> newCapabilities) {
+        if (newCapabilities.contains(Capabilities.TOUCH_CAPABILITY)) {
+            mHostTouchCapability = CapabilityManager.HostCapability.SUPPORTED;
+        } else {
+            mHostTouchCapability = CapabilityManager.HostCapability.UNSUPPORTED;
+        }
+
+        mRemoteHostDesktop.changeInputMode(mInputMode, mHostTouchCapability);
     }
 
     // Any time an onTouchListener is attached, a lint warning about filtering touch events is
@@ -376,6 +475,10 @@ public class Desktop extends AppCompatActivity implements View.OnSystemUiVisibil
 
         if (id == R.id.actionbar_cardboard) {
             onCardboardItemSelected();
+            return true;
+        }
+        if (id == R.id.actionbar_input_mode) {
+            toggleInputMode();
             return true;
         }
         if (id == R.id.actionbar_keyboard) {

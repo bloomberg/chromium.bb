@@ -10,6 +10,7 @@ import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.util.TypedValue;
 import android.view.Menu;
+import android.view.MenuItem;
 
 import org.chromium.base.ApiCompatibilityUtils;
 
@@ -27,10 +28,19 @@ public abstract class ChromotingUtil {
         int color = getColorAttribute(context, R.attr.colorControlNormal);
         int items = menu.size();
         for (int i = 0; i < items; i++) {
-            Drawable icon = menu.getItem(i).getIcon();
-            if (icon != null) {
-                icon.mutate().setColorFilter(color, PorterDuff.Mode.SRC_IN);
-            }
+            ChromotingUtil.tintMenuIcon(menu.getItem(i), color);
+        }
+    }
+
+    /**
+     * Sets a color filter on the specified MenuItem.
+     * @param menuItem MenuItem to tint.
+     * @param color Color to set on the menuItem.
+     */
+    public static void tintMenuIcon(MenuItem menuItem, int color) {
+        Drawable icon = menuItem.getIcon();
+        if (icon != null) {
+            icon.mutate().setColorFilter(color, PorterDuff.Mode.SRC_IN);
         }
     }
 

@@ -27,6 +27,27 @@ import java.util.List;
  * different capabilities at different stages of the application.
  */
 public class CapabilityManager {
+    /** Used to allow objects to receive notifications when the host capabilites are received. */
+    public interface CapabilitiesChangedListener {
+        void onCapabilitiesChanged(List<String> newCapabilities);
+    }
+
+    /** Tracks whether the remote host supports a capability. */
+    public enum HostCapability {
+        UNKNOWN,
+        SUPPORTED,
+        UNSUPPORTED;
+
+        public boolean isSet() {
+            return this != UNKNOWN;
+        }
+
+        public boolean isSupported() {
+            assert isSet();
+            return this == SUPPORTED;
+        }
+    }
+
     private static final String TAG = "Chromoting";
 
     /** Lazily-initialized singleton object that can be used from different Activities. */
@@ -44,11 +65,17 @@ public class CapabilityManager {
     /** List of extensions to the client based on capabilities negotiated with the host. */
     private List<ClientExtension> mClientExtensions;
 
+    /** Maintains a list of listeners to notify when host capabilities are received. */
+    private List<CapabilitiesChangedListener> mCapabilitiesChangedListeners;
+
     private CapabilityManager() {
         mLocalCapabilities = new ArrayList<String>();
         mClientExtensions = new ArrayList<ClientExtension>();
 
         mLocalCapabilities.add(Capabilities.CAST_CAPABILITY);
+        mLocalCapabilities.add(Capabilities.TOUCH_CAPABILITY);
+
+        mCapabilitiesChangedListeners = new ArrayList<CapabilitiesChangedListener>();
     }
 
     /**
@@ -64,11 +91,42 @@ public class CapabilityManager {
     }
 
     /**
+     * Cleans up host specific state when the connection has been terminated.
+     */
+    public void onHostDisconnect() {
+        mNegotiatedCapabilities = null;
+    }
+
+    /**
      * Returns a space-separated list (required by host) of the capabilities supported by
      * this client.
      */
     public String getLocalCapabilities() {
         return TextUtils.join(" ", mLocalCapabilities);
+    }
+
+    /**
+     * Registers the given listener object so it is notified when host capabilities are negotiated.
+     */
+    public void addListener(CapabilitiesChangedListener listener) {
+        assert !mCapabilitiesChangedListeners.contains(listener);
+        mCapabilitiesChangedListeners.add(listener);
+
+        // If we have already received the host capabilities before this listener was registered,
+        // then fire the event for this listener immediately.
+        if (mNegotiatedCapabilities != null) {
+            // Clone the capabilities list passed to the caller to prevent them from mutating it.
+            listener.onCapabilitiesChanged(new ArrayList<>(mNegotiatedCapabilities));
+        }
+    }
+
+    /**
+     * Removes the given listener object from the list of change listeners.
+     */
+    public void removeListener(CapabilitiesChangedListener listener) {
+        assert mCapabilitiesChangedListeners.contains(listener);
+
+        mCapabilitiesChangedListeners.remove(listener);
     }
 
     /**
@@ -97,16 +155,23 @@ public class CapabilityManager {
     }
 
     /**
-     * Receives the capabilities negotiated between client and host and creates the appropriate
-     * extension handlers.
-     *
-     * Currently only the CAST_CAPABILITY exists, so that is the only extension constructed.
+     * Receives the capabilities negotiated between client and host, creates the appropriate
+     * extension handlers, and notifies registered listeners of the change.
      */
     public void setNegotiatedCapabilities(String capabilities) {
         mNegotiatedCapabilities = Arrays.asList(capabilities.split(" "));
         mClientExtensions.clear();
         if (isCapabilityEnabled(Capabilities.CAST_CAPABILITY)) {
             mClientExtensions.add(maybeCreateCastExtensionHandler());
+        }
+
+        // Clone the list of listeners to prevent problems if the callback calls back into this
+        // object and removes itself from the list of listeners.
+        List<CapabilitiesChangedListener> listeners =
+                new ArrayList<>(mCapabilitiesChangedListeners);
+        for (CapabilitiesChangedListener listener : listeners) {
+            // Clone the capabilities list passed to the caller to prevent them from mutating it.
+            listener.onCapabilitiesChanged(new ArrayList<>(mNegotiatedCapabilities));
         }
     }
 
