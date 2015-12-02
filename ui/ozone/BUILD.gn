@@ -120,14 +120,11 @@ component("ozone") {
 
   defines = [ "OZONE_IMPLEMENTATION" ]
 
-  public_deps = [
-    ":ozone_base",
-  ]
-
   deps =
       [
         ":generate_constructor_list",
         ":generate_ozone_platform_list",
+        ":ozone_base",
         "//base",
         "//ipc",
         "//skia",
