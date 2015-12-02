@@ -4,15 +4,12 @@
 
 package org.chromium.sync.test.util;
 
-import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
-
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.accounts.AuthenticatorDescription;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
-import android.os.Handler;
 
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
@@ -37,9 +34,6 @@ import java.util.concurrent.TimeUnit;
  * Currently, this implementation supports adding and removing accounts, handling credentials
  * (including confirming them), and handling of dummy auth tokens.
  *
- * If you want the MockAccountManager to popup an activity for granting/denying access to an
- * authtokentype for a given account, use prepareGrantAppPermission(...).
- *
  * If you want to auto-approve a given authtokentype, use addAccountHolderExplicitly(...) with
  * an AccountHolder you have built with hasBeenAccepted("yourAuthTokenType", true).
  *
@@ -50,20 +44,9 @@ public class MockAccountManager implements AccountManagerDelegate {
 
     private static final String TAG = "MockAccountManager";
 
-    private static final long WAIT_TIME_FOR_GRANT_BROADCAST_MS = scaleTimeout(20000);
-
-    static final String MUTEX_WAIT_ACTION =
-            "org.chromium.sync.test.util.MockAccountManager.MUTEX_WAIT_ACTION";
-
     protected final Context mContext;
 
-    private final Context mTestContext;
-
     private final Set<AccountHolder> mAccounts;
-
-    private final Handler mMainHandler;
-
-    private final SingleThreadedExecutor mExecutor;
 
     // Tracks the number of in-progress getAccountsByType() tasks so that tests can wait for
     // their completion.
@@ -72,11 +55,6 @@ public class MockAccountManager implements AccountManagerDelegate {
     @VisibleForTesting
     public MockAccountManager(Context context, Context testContext, Account... accounts) {
         mContext = context;
-        // The manifest that is backing testContext needs to provide the
-        // MockGrantCredentialsPermissionActivity.
-        mTestContext = testContext;
-        mMainHandler = new Handler(mContext.getMainLooper());
-        mExecutor = new SingleThreadedExecutor();
         mGetAccountsTaskCounter = new ZeroCounter();
         mAccounts = new HashSet<AccountHolder>();
         if (accounts != null) {
