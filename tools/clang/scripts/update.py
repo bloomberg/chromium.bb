@@ -27,18 +27,16 @@ import zipfile
 # https://code.google.com/p/chromium/wiki/UpdatingClang
 # Reverting problematic clang rolls is safe, though.
 # Note: this revision is only used for Windows. Other platforms use update.sh.
-# TODO(thakis): Use the same revision on Windows and non-Windows.
-# TODO(thakis): Remove update.sh, use update.py everywhere.
-LLVM_WIN_REVISION = '254049'
+CLANG_REVISION = '254049'
 
 use_head_revision = 'LLVM_FORCE_HEAD_REVISION' in os.environ
 if use_head_revision:
-  LLVM_WIN_REVISION = 'HEAD'
+  CLANG_REVISION = 'HEAD'
 
 # This is incremented when pushing a new build of Clang at the same revision.
 CLANG_SUB_REVISION=1
 
-PACKAGE_VERSION = "%s-%s" % (LLVM_WIN_REVISION, CLANG_SUB_REVISION)
+PACKAGE_VERSION = "%s-%s" % (CLANG_REVISION, CLANG_SUB_REVISION)
 
 # Path constants. (All of these should be absolute paths.)
 THIS_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -204,9 +202,9 @@ def CopyDirectoryContents(src, dst, filename_filter=None):
 
 def Checkout(name, url, dir):
   """Checkout the SVN module at url into dir. Use name for the log message."""
-  print "Checking out %s r%s into '%s'" % (name, LLVM_WIN_REVISION, dir)
+  print "Checking out %s r%s into '%s'" % (name, CLANG_REVISION, dir)
 
-  command = ['svn', 'checkout', '--force', url + '@' + LLVM_WIN_REVISION, dir]
+  command = ['svn', 'checkout', '--force', url + '@' + CLANG_REVISION, dir]
   if RunCommand(command, fail_hard=False):
     return
 
@@ -335,8 +333,8 @@ def UpdateClang(args):
       # builds on linux.
       if 'LLVM_DOWNLOAD_GOLD_PLUGIN' in os.environ or (
           sys.platform.startswith('linux') and
-          'buildtype=Official' in sys.environ.get('GYP_DEFINES', '') and
-          'branding=Chrome' in sys.environ.get('GYP_DEFINES', '')):
+          'buildtype=Official' in os.environ.get('GYP_DEFINES', '') and
+          'branding=Chrome' in os.environ.get('GYP_DEFINES', '')):
         RunCommand(['python', CHROMIUM_DIR+'/build/download_gold_plugin.py'])
       WriteStampFile(PACKAGE_VERSION)
       return 0
@@ -507,7 +505,7 @@ def UpdateClang(args):
     binutils_incdir = os.path.join(BINUTILS_DIR, 'Linux_x64/Release/include')
 
   # If building at head, define a macro that plugins can use for #ifdefing
-  # out code that builds at head, but not at LLVM_WIN_REVISION or vice versa.
+  # out code that builds at head, but not at CLANG_REVISION or vice versa.
   if use_head_revision:
     cflags += ['-DLLVM_FORCE_HEAD_REVISION']
     cxxflags += ['-DLLVM_FORCE_HEAD_REVISION']
@@ -708,31 +706,6 @@ def UpdateClang(args):
 
 
 def main():
-  if not sys.platform in ['win32', 'cygwin']:
-    # For non-Windows, fall back to update.sh.
-    # TODO(hans): Make update.py replace update.sh completely.
-
-    # This script is called by gclient. gclient opens its hooks subprocesses
-    # with (stdout=subprocess.PIPE, stderr=subprocess.STDOUT) and then does
-    # custom output processing that breaks printing '\r' characters for
-    # single-line updating status messages as printed by curl and wget.
-    # Work around this by setting stderr of the update.sh process to stdin (!):
-    # gclient doesn't redirect stdin, and while stdin itself is read-only, a
-    # dup()ed sys.stdin is writable, try
-    #   fd2 = os.dup(sys.stdin.fileno()); os.write(fd2, 'hi')
-    # TODO: Fix gclient instead, http://crbug.com/95350
-    if '--no-stdin-hack' in sys.argv:
-      sys.argv.remove('--no-stdin-hack')
-      stderr = None
-    else:
-      try:
-        stderr = os.fdopen(os.dup(sys.stdin.fileno()))
-      except:
-        stderr = sys.stderr
-    return subprocess.call(
-        [os.path.join(os.path.dirname(__file__), 'update.sh')] + sys.argv[1:],
-        stderr=stderr)
-
   parser = argparse.ArgumentParser(description='Build Clang.')
   parser.add_argument('--bootstrap', action='store_true',
                       help='first build clang with CC, then with itself.')
@@ -756,11 +729,6 @@ def main():
                       help='don\tt build Android ASan runtime (linux only)',
                       dest='with_android',
                       default=sys.platform.startswith('linux'))
-
-  # For now, these flags are only used for the non-Windows flow, but argparser
-  # gets mad if it sees a flag it doesn't recognize.
-  parser.add_argument('--no-stdin-hack', action='store_true')
-
   args = parser.parse_args()
 
   if args.if_needed:
@@ -782,7 +750,7 @@ def main():
       print 'Skipping Clang update (make_clang_dir= was set in GYP_DEFINES).'
       return 0
 
-  global LLVM_WIN_REVISION, PACKAGE_VERSION
+  global CLANG_REVISION, PACKAGE_VERSION
   if args.print_revision:
     if use_head_revision:
       print GetSvnRevision(LLVM_DIR)
@@ -802,8 +770,8 @@ def main():
   if use_head_revision:
     # Use a real revision number rather than HEAD to make sure that the stamp
     # file logic works.
-    LLVM_WIN_REVISION = GetSvnRevision(LLVM_REPO_URL)
-    PACKAGE_VERSION = LLVM_WIN_REVISION + '-0'
+    CLANG_REVISION = GetSvnRevision(LLVM_REPO_URL)
+    PACKAGE_VERSION = CLANG_REVISION + '-0'
 
     args.force_local_build = True
     if 'OS=android' not in os.environ.get('GYP_DEFINES', ''):

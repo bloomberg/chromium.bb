@@ -109,8 +109,7 @@ def main():
     shutil.rmtree(LLVM_BUILD_DIR, ignore_errors=True)
 
     build_cmd = [sys.executable, os.path.join(THIS_DIR, 'update.py'),
-                 '--bootstrap', '--force-local-build', '--run-tests',
-                 '--no-stdin-hack']
+                 '--bootstrap', '--force-local-build', '--run-tests']
     if args.gcc_toolchain is not None:
       build_cmd.extend(['--gcc-toolchain', args.gcc_toolchain])
     TeeCmd(build_cmd, log)
