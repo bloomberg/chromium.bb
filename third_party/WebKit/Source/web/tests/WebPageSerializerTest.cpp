@@ -140,7 +140,7 @@ TEST_F(WebPageSerializerTest, URLAttributeValues)
 
     const char* expectedHTML =
         "\n<!-- saved from url=(0020)http://www.test.com/ -->\n"
-        "<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"><meta charset=\"utf8\">\n"
+        "<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">\n"
         "</head><body><img src=\"javascript:&quot;\">\n"
         "<a href=\"http://www.test.com/local#&quot;\">local</a>\n"
         "<a href=\"http://www.example.com/#&quot;&gt;&lt;script&gt;alert(0)&lt;/script&gt;\">external</a>\n"
@@ -163,7 +163,7 @@ TEST_F(WebPageSerializerTest, EncodingAndNormalization)
     const char* expectedHTML =
         "<!DOCTYPE html>\n"
         "<!-- saved from url=(0020)http://www.test.com/ -->\n"
-        "<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=EUC-KR\"><meta charset=\"euc-kr\">\n"
+        "<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=EUC-KR\">\n"
         "<title>Ensure NFC normalization is not performed by page serializer</title>\n"
         "</head><body>\n"
         "\xe4\xc5\xd1\xe2\n"

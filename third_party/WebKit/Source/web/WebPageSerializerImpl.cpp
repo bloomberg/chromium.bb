@@ -90,6 +90,7 @@
 #include "core/html/HTMLMetaElement.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
+#include "core/page/PageSerializer.h"
 #include "public/platform/WebVector.h"
 #include "web/WebLocalFrameImpl.h"
 #include "wtf/text/TextEncoding.h"
@@ -130,19 +131,11 @@ String WebPageSerializerImpl::preActionBeforeSerializeOpenTag(
         // have overrided the META which have correct charset declaration after
         // serializing open tag of HEAD element.
         ASSERT(element);
-        if (isHTMLMetaElement(*element)) {
-            const HTMLMetaElement& meta = toHTMLMetaElement(*element);
-            // Check whether the META tag has declared charset or not.
-            String equiv = meta.httpEquiv();
-            if (equalIgnoringCase(equiv, "content-type")) {
-                String content = meta.content();
-                if (content.length() && content.contains("charset", TextCaseInsensitive)) {
-                    // Find META tag declared charset, we need to skip it when
-                    // serializing DOM.
-                    param->skipMetaElement = element;
-                    *needSkip = true;
-                }
-            }
+        if (isCharsetSpecifyingNode(*element)) {
+            // Found META tag declared charset, we need to skip it when
+            // serializing DOM.
+            param->skipMetaElement = element;
+            *needSkip = true;
         } else if (isHTMLHtmlElement(*element)) {
             // Check something before processing the open tag of HEAD element.
             // First we add doc type declaration if original document has it.

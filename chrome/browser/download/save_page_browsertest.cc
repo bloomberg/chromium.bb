@@ -12,6 +12,7 @@
 #include "base/prefs/pref_member.h"
 #include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
+#include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_file_util.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -61,6 +62,22 @@ using testing::ContainsRegex;
 using testing::HasSubstr;
 
 namespace {
+
+// Returns file contents with each continuous run of whitespace replaced by a
+// single space.
+std::string ReadFileAndCollapseWhitespace(const base::FilePath& file_path) {
+  std::string file_contents;
+  if (!base::ReadFileToString(file_path, &file_contents)) {
+    ADD_FAILURE() << "Failed to read \"" << file_path.value() << "\" file.";
+    return std::string();
+  }
+
+  std::vector<std::string> words =
+      base::SplitString(file_contents, " \t\r\n", base::TRIM_WHITESPACE,
+                        base::SPLIT_WANT_NONEMPTY);
+
+  return base::JoinString(words, " ");
+}
 
 // Waits for an item record in the downloads database to match |filter|. See
 // DownloadStoredProperly() below for an example filter.
@@ -182,8 +199,6 @@ bool DownloadStoredProperly(
   }
   return true;
 }
-
-const base::FilePath::CharType kTestDir[] = FILE_PATH_LITERAL("save_page");
 
 static const char kAppendedExtension[] = ".html";
 
@@ -392,6 +407,12 @@ class SavePageBrowserTest : public InProcessBrowserTest {
     return download_manager;
   }
 
+  // Returns full path to a file in chrome/test/data/save_page directory.
+  base::FilePath GetTestDirFile(const std::string& file_name) {
+    const base::FilePath::CharType kTestDir[] = FILE_PATH_LITERAL("save_page");
+    return test_dir_.Append(base::FilePath(kTestDir)).AppendASCII(file_name);
+  }
+
   // Path to directory containing test data.
   base::FilePath test_dir_;
 
@@ -412,8 +433,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveHTMLOnly) {
 
   EXPECT_TRUE(base::PathExists(full_file_name));
   EXPECT_FALSE(base::PathExists(dir));
-  EXPECT_TRUE(base::ContentsEqual(test_dir_.Append(base::FilePath(
-      kTestDir)).Append(FILE_PATH_LITERAL("a.htm")), full_file_name));
+  EXPECT_TRUE(base::ContentsEqual(GetTestDirFile("a.htm"), full_file_name));
 }
 
 IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveHTMLOnlyCancel) {
@@ -511,9 +531,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveViewSourceHTMLOnly) {
 
   EXPECT_TRUE(base::PathExists(full_file_name));
   EXPECT_FALSE(base::PathExists(dir));
-  EXPECT_TRUE(base::ContentsEqual(
-      test_dir_.Append(base::FilePath(kTestDir)).AppendASCII("a.htm"),
-      full_file_name));
+  EXPECT_TRUE(base::ContentsEqual(GetTestDirFile("a.htm"), full_file_name));
 }
 
 IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveCompleteHTML) {
@@ -526,15 +544,13 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveCompleteHTML) {
 
   EXPECT_TRUE(base::PathExists(full_file_name));
   EXPECT_TRUE(base::PathExists(dir));
-  EXPECT_TRUE(base::TextContentsEqual(
-      test_dir_.Append(base::FilePath(kTestDir)).AppendASCII("b.saved1.htm"),
-      full_file_name));
-  EXPECT_TRUE(base::ContentsEqual(
-      test_dir_.Append(base::FilePath(kTestDir)).AppendASCII("1.png"),
-      dir.AppendASCII("1.png")));
-  EXPECT_TRUE(base::ContentsEqual(
-      test_dir_.Append(base::FilePath(kTestDir)).AppendASCII("1.css"),
-      dir.AppendASCII("1.css")));
+
+  EXPECT_EQ(ReadFileAndCollapseWhitespace(full_file_name),
+            ReadFileAndCollapseWhitespace(GetTestDirFile("b.saved1.htm")));
+  EXPECT_TRUE(
+      base::ContentsEqual(GetTestDirFile("1.png"), dir.AppendASCII("1.png")));
+  EXPECT_EQ(ReadFileAndCollapseWhitespace(dir.AppendASCII("1.css")),
+            ReadFileAndCollapseWhitespace(GetTestDirFile("1.css")));
 }
 
 IN_PROC_BROWSER_TEST_F(SavePageBrowserTest,
@@ -602,15 +618,13 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, FileNameFromPageTitle) {
 
   EXPECT_TRUE(base::PathExists(full_file_name));
   EXPECT_TRUE(base::PathExists(dir));
-  EXPECT_TRUE(base::TextContentsEqual(
-      test_dir_.Append(base::FilePath(kTestDir)).AppendASCII("b.saved2.htm"),
-      full_file_name));
-  EXPECT_TRUE(base::ContentsEqual(
-      test_dir_.Append(base::FilePath(kTestDir)).AppendASCII("1.png"),
-      dir.AppendASCII("1.png")));
-  EXPECT_TRUE(base::ContentsEqual(
-      test_dir_.Append(base::FilePath(kTestDir)).AppendASCII("1.css"),
-      dir.AppendASCII("1.css")));
+
+  EXPECT_EQ(ReadFileAndCollapseWhitespace(full_file_name),
+            ReadFileAndCollapseWhitespace(GetTestDirFile("b.saved2.htm")));
+  EXPECT_TRUE(
+      base::ContentsEqual(GetTestDirFile("1.png"), dir.AppendASCII("1.png")));
+  EXPECT_EQ(ReadFileAndCollapseWhitespace(dir.AppendASCII("1.css")),
+            ReadFileAndCollapseWhitespace(GetTestDirFile("1.css")));
 }
 
 IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, RemoveFromList) {
@@ -633,8 +647,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, RemoveFromList) {
 
   EXPECT_TRUE(base::PathExists(full_file_name));
   EXPECT_FALSE(base::PathExists(dir));
-  EXPECT_TRUE(base::ContentsEqual(test_dir_.Append(base::FilePath(
-      kTestDir)).Append(FILE_PATH_LITERAL("a.htm")), full_file_name));
+  EXPECT_TRUE(base::ContentsEqual(GetTestDirFile("a.htm"), full_file_name));
 }
 
 // This tests that a webpage with the title "test.exe" is saved as

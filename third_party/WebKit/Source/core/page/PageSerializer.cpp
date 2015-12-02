@@ -72,7 +72,7 @@
 
 namespace blink {
 
-static bool isCharsetSpecifyingNode(const Node& node)
+bool isCharsetSpecifyingNode(const Node& node)
 {
     if (!isHTMLMetaElement(node))
         return false;
