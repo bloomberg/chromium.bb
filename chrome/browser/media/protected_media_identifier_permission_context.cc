@@ -48,6 +48,7 @@ ProtectedMediaIdentifierPermissionContext::
     ~ProtectedMediaIdentifierPermissionContext() {
 }
 
+#if defined(OS_CHROMEOS)
 void ProtectedMediaIdentifierPermissionContext::RequestPermission(
     content::WebContents* web_contents,
     const PermissionRequestID& id,
@@ -93,7 +94,6 @@ void ProtectedMediaIdentifierPermissionContext::RequestPermission(
 
   DCHECK_EQ(CONTENT_SETTING_ASK, content_setting);
 
-#if defined(OS_CHROMEOS)
   // Since the dialog is modal, we only support one prompt per |web_contents|.
   // Reject the new one if there is already one pending. See
   // http://crbug.com/447005
@@ -114,11 +114,8 @@ void ProtectedMediaIdentifierPermissionContext::RequestPermission(
                  requesting_origin, embedding_origin, callback));
   pending_requests_.insert(
       std::make_pair(web_contents, std::make_pair(widget, id)));
-#else
-  PermissionContextBase::RequestPermission(web_contents, id, requesting_origin,
-                                           user_gesture, callback);
-#endif
 }
+#endif  // defined(OS_CHROMEOS)
 
 ContentSetting ProtectedMediaIdentifierPermissionContext::GetPermissionStatus(
       const GURL& requesting_origin,

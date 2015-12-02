@@ -33,44 +33,7 @@ void DurableStoragePermissionContext::DecidePermission(
     const GURL& embedding_origin,
     bool user_gesture,
     const BrowserPermissionCallback& callback) {
-  // TODO(dgrogan): Reuse the base class's implementation of everything from
-  // here to using bookmarks.
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-
-  if (!requesting_origin.is_valid() || !embedding_origin.is_valid()) {
-    std::string type_name =
-        content_settings::WebsiteSettingsRegistry::GetInstance()
-            ->Get(CONTENT_SETTINGS_TYPE_DURABLE_STORAGE)
-            ->name();
-
-    DVLOG(1) << "Attempt to use " << type_name
-             << " from an invalid URL: " << requesting_origin << ","
-             << embedding_origin << " (" << type_name
-             << " is not supported in popups)";
-    NotifyPermissionSet(id, requesting_origin, embedding_origin, callback,
-                        false /* persist */, CONTENT_SETTING_BLOCK);
-    return;
-  }
-
-  if (IsRestrictedToSecureOrigins() &&
-      !content::IsOriginSecure(requesting_origin)) {
-    NotifyPermissionSet(id, requesting_origin, embedding_origin, callback,
-                        false /* persist */, CONTENT_SETTING_BLOCK);
-    return;
-  }
-
-  ContentSetting content_setting =
-      HostContentSettingsMapFactory::GetForProfile(profile())
-          ->GetContentSettingAndMaybeUpdateLastUsage(
-              requesting_origin, embedding_origin,
-              CONTENT_SETTINGS_TYPE_DURABLE_STORAGE, std::string());
-
-  DCHECK_NE(CONTENT_SETTING_BLOCK, content_setting);
-  if (content_setting == CONTENT_SETTING_ALLOW) {
-    NotifyPermissionSet(id, requesting_origin, embedding_origin, callback,
-                        false /* persist */, content_setting);
-    return;
-  }
 
   // TODO(dgrogan): Remove bookmarks check in favor of site engagement. In the
   // meantime maybe grant permission to A2HS origins as well.

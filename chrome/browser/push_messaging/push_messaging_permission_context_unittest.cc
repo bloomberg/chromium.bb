@@ -6,11 +6,12 @@
 
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/permissions/permission_request_id.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/browser/web_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 const char kOriginA[] = "https://origina.org";
@@ -44,7 +45,8 @@ class TestPushMessagingPermissionContext
   bool permission_granted_;
 };
 
-class PushMessagingPermissionContextTest : public testing::Test {
+class PushMessagingPermissionContextTest
+    : public ChromeRenderViewHostTestHarness {
  public:
   PushMessagingPermissionContextTest() {}
 
@@ -63,8 +65,6 @@ class PushMessagingPermissionContextTest : public testing::Test {
     host_content_settings_map->SetContentSetting(
         insecure_pattern, insecure_pattern, setting, std::string(), value);
   }
-
-  content::TestBrowserThreadBundle thread_bundle_;
 };
 
 TEST_F(PushMessagingPermissionContextTest, HasPermissionPrompt) {
@@ -181,8 +181,10 @@ TEST_F(PushMessagingPermissionContextTest, DecidePermission) {
   EXPECT_FALSE(context.was_granted());
 
   // Insecure origin
-  context.DecidePermission(NULL, request_id, GURL(kInsecureOrigin),
-                           GURL(kInsecureOrigin), true, callback);
+  SetContents(CreateTestWebContents());
+  NavigateAndCommit(GURL(kInsecureOrigin));
+  context.RequestPermission(web_contents(), request_id, GURL(kInsecureOrigin),
+                            true, callback);
   EXPECT_FALSE(context.was_persisted());
   EXPECT_FALSE(context.was_granted());
 }

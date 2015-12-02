@@ -65,7 +65,7 @@ ContentSetting PushMessagingPermissionContext::GetPermissionStatus(
 //  - You need to request it from a top level domain
 //  - You need to have notification permission granted.
 //  - You need to not have push permission explicitly blocked.
-//  - If those two things are true it is granted without prompting.
+//  - If those 3 things are true it is granted without prompting.
 // This is done to avoid double prompting for notifications and push.
 void PushMessagingPermissionContext::DecidePermission(
     content::WebContents* web_contents,
@@ -77,13 +77,6 @@ void PushMessagingPermissionContext::DecidePermission(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 #if defined(ENABLE_NOTIFICATIONS)
   if (requesting_origin != embedding_origin) {
-    NotifyPermissionSet(id, requesting_origin, embedding_origin, callback,
-                        false /* persist */, CONTENT_SETTING_BLOCK);
-    return;
-  }
-
-  if (IsRestrictedToSecureOrigins() &&
-      !content::IsOriginSecure(requesting_origin)) {
     NotifyPermissionSet(id, requesting_origin, embedding_origin, callback,
                         false /* persist */, CONTENT_SETTING_BLOCK);
     return;

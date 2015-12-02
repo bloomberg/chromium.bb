@@ -38,13 +38,14 @@ class ProtectedMediaIdentifierPermissionContext
  public:
   explicit ProtectedMediaIdentifierPermissionContext(Profile* profile);
 
-  // In addition to the base class flow checks that it is only code from
-  // valid iframes. It also adds special logic when called through an extension.
+  // PermissionContextBase implementation.
+#if defined(OS_CHROMEOS)
   void RequestPermission(content::WebContents* web_contents,
                          const PermissionRequestID& id,
                          const GURL& requesting_origin,
                          bool user_gesture,
                          const BrowserPermissionCallback& callback) override;
+#endif  // defined(OS_CHROMEOS)
   ContentSetting GetPermissionStatus(
       const GURL& requesting_origin,
       const GURL& embedding_origin) const override;

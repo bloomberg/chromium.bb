@@ -71,12 +71,49 @@ void PermissionContextBase::RequestPermission(
     return;
   }
 
-  DecidePermission(web_contents,
-                   id,
-                   requesting_frame.GetOrigin(),
-                   web_contents->GetLastCommittedURL().GetOrigin(),
-                   user_gesture,
-                   callback);
+  GURL requesting_origin = requesting_frame.GetOrigin();
+  GURL embedding_origin = web_contents->GetLastCommittedURL().GetOrigin();
+
+  if (!requesting_origin.is_valid() || !embedding_origin.is_valid()) {
+    std::string type_name =
+        content_settings::WebsiteSettingsRegistry::GetInstance()
+            ->Get(permission_type_)
+            ->name();
+
+    DVLOG(1) << "Attempt to use " << type_name
+             << " from an invalid URL: " << requesting_origin << ","
+             << embedding_origin << " (" << type_name
+             << " is not supported in popups)";
+    NotifyPermissionSet(id, requesting_origin, embedding_origin, callback,
+                        false /* persist */, CONTENT_SETTING_BLOCK);
+    return;
+  }
+
+  if (IsRestrictedToSecureOrigins() &&
+      !content::IsOriginSecure(requesting_origin)) {
+    NotifyPermissionSet(id, requesting_origin, embedding_origin, callback,
+                        false /* persist */, CONTENT_SETTING_BLOCK);
+    return;
+  }
+
+  ContentSetting content_setting =
+      HostContentSettingsMapFactory::GetForProfile(profile_)
+          ->GetContentSettingAndMaybeUpdateLastUsage(
+              requesting_origin, embedding_origin, permission_type_,
+              std::string());
+
+  if (content_setting == CONTENT_SETTING_ALLOW ||
+      content_setting == CONTENT_SETTING_BLOCK) {
+    NotifyPermissionSet(id, requesting_origin, embedding_origin, callback,
+                        false /* persist */, content_setting);
+    return;
+  }
+
+  PermissionUmaUtil::PermissionRequested(permission_type_, requesting_origin,
+                                         embedding_origin, profile_);
+
+  DecidePermission(web_contents, id, requesting_origin, embedding_origin,
+                   user_gesture, callback);
 }
 
 ContentSetting PermissionContextBase::GetPermissionStatus(
@@ -133,44 +170,6 @@ void PermissionContextBase::DecidePermission(
     bool user_gesture,
     const BrowserPermissionCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  if (!requesting_origin.is_valid() || !embedding_origin.is_valid()) {
-    std::string type_name =
-        content_settings::WebsiteSettingsRegistry::GetInstance()
-            ->Get(permission_type_)
-            ->name();
-
-    DVLOG(1) << "Attempt to use " << type_name
-             << " from an invalid URL: " << requesting_origin << ","
-             << embedding_origin << " (" << type_name
-             << " is not supported in popups)";
-    NotifyPermissionSet(id, requesting_origin, embedding_origin, callback,
-                        false /* persist */, CONTENT_SETTING_BLOCK);
-    return;
-  }
-
-  if (IsRestrictedToSecureOrigins() &&
-      !content::IsOriginSecure(requesting_origin)) {
-    NotifyPermissionSet(id, requesting_origin, embedding_origin, callback,
-                        false /* persist */, CONTENT_SETTING_BLOCK);
-    return;
-  }
-
-  ContentSetting content_setting =
-      HostContentSettingsMapFactory::GetForProfile(profile_)
-          ->GetContentSettingAndMaybeUpdateLastUsage(
-              requesting_origin, embedding_origin, permission_type_,
-              std::string());
-
-  if (content_setting == CONTENT_SETTING_ALLOW ||
-      content_setting == CONTENT_SETTING_BLOCK) {
-    NotifyPermissionSet(id, requesting_origin, embedding_origin, callback,
-                        false /* persist */, content_setting);
-    return;
-  }
-
-  PermissionUmaUtil::PermissionRequested(
-      permission_type_, requesting_origin, embedding_origin, profile_);
 
 #if !defined(OS_ANDROID)
   PermissionBubbleManager* bubble_manager =

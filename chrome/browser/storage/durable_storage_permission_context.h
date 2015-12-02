@@ -15,6 +15,7 @@ class DurableStoragePermissionContext : public PermissionContextBase {
   explicit DurableStoragePermissionContext(Profile* profile);
   ~DurableStoragePermissionContext() override = default;
 
+  // PermissionContextBase implementation.
   // Grant if requesting_origin is bookmarked or already granted.
   void DecidePermission(content::WebContents* web_contents,
                         const PermissionRequestID& id,
@@ -22,11 +23,9 @@ class DurableStoragePermissionContext : public PermissionContextBase {
                         const GURL& embedding_origin,
                         bool user_gesture,
                         const BrowserPermissionCallback& callback) override;
-
   void UpdateContentSetting(const GURL& requesting_origin,
                             const GURL& embedding_origin,
                             ContentSetting content_setting) override;
-
   bool IsRestrictedToSecureOrigins() const override;
 
  private:
