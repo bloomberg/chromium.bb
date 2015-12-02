@@ -348,6 +348,8 @@ GLRenderer::GLRenderer(RendererClient* client,
 
   capabilities_.using_partial_swap =
       settings_->partial_swap_enabled && context_caps.gpu.post_sub_buffer;
+  capabilities_.allow_empty_swap = capabilities_.using_partial_swap ||
+                                   context_caps.gpu.commit_overlay_planes;
 
   DCHECK(!context_caps.gpu.iosurface || context_caps.gpu.texture_rectangle);
 
@@ -2618,11 +2620,14 @@ void GLRenderer::SwapBuffers(const CompositorFrameMetadata& metadata) {
         gfx::Rect(swap_buffer_rect_.x(),
                   FlippedRootFramebuffer() ? flipped_y_pos_of_rect_bottom
                                            : swap_buffer_rect_.y(),
-                  swap_buffer_rect_.width(),
-                  swap_buffer_rect_.height());
+                  swap_buffer_rect_.width(), swap_buffer_rect_.height());
   } else {
-    compositor_frame.gl_frame_data->sub_buffer_rect =
-        gfx::Rect(output_surface_->SurfaceSize());
+    // Expand the swap rect to the full surface unless it's empty, and empty
+    // swap is allowed.
+    if (!swap_buffer_rect_.IsEmpty() || !capabilities_.allow_empty_swap) {
+      swap_buffer_rect_ = gfx::Rect(surface_size);
+    }
+    compositor_frame.gl_frame_data->sub_buffer_rect = swap_buffer_rect_;
   }
   output_surface_->SwapBuffers(&compositor_frame);
 

@@ -97,9 +97,13 @@ class OutputSurfaceWithoutParent : public cc::OutputSurface,
 
   void SwapBuffers(cc::CompositorFrame* frame) override {
     GetCommandBufferProxy()->SetLatencyInfo(frame->metadata.latency_info);
-    DCHECK(frame->gl_frame_data->sub_buffer_rect ==
-           gfx::Rect(frame->gl_frame_data->size));
-    context_provider_->ContextSupport()->Swap();
+    if (frame->gl_frame_data->sub_buffer_rect.IsEmpty()) {
+      context_provider_->ContextSupport()->CommitOverlayPlanes();
+    } else {
+      DCHECK(frame->gl_frame_data->sub_buffer_rect ==
+             gfx::Rect(frame->gl_frame_data->size));
+      context_provider_->ContextSupport()->Swap();
+    }
     client_->DidSwapBuffers();
   }
 

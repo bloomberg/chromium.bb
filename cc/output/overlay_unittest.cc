@@ -23,6 +23,7 @@
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/test_context_provider.h"
 #include "cc/test/test_shared_bitmap_manager.h"
+#include "cc/test/test_web_graphics_context_3d.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -1744,7 +1745,40 @@ TEST_F(GLRendererWithOverlaysTest, NoValidatorNoOverlay) {
   Mock::VerifyAndClearExpectations(&scheduler_);
 }
 
-TEST_F(GLRendererWithOverlaysTest, OccludedQuadNotDrawn) {
+// GLRenderer skips drawing occluded quads when partial swap is enabled.
+TEST_F(GLRendererWithOverlaysTest, OccludedQuadNotDrawnWhenPartialSwapEnabled) {
+  provider_->TestContext3d()->set_have_post_sub_buffer(true);
+  settings_.partial_swap_enabled = true;
+  bool use_validator = true;
+  Init(use_validator);
+  renderer_->set_expect_overlays(true);
+  gfx::Rect viewport_rect(16, 16);
+
+  scoped_ptr<RenderPass> pass = CreateRenderPass();
+
+  CreateFullscreenCandidateQuad(resource_provider_.get(),
+                                pass->shared_quad_state_list.back(),
+                                pass.get());
+  CreateFullscreenOpaqueQuad(resource_provider_.get(),
+                             pass->shared_quad_state_list.back(), pass.get());
+  CreateFullscreenOpaqueQuad(resource_provider_.get(),
+                             pass->shared_quad_state_list.back(), pass.get());
+
+  RenderPassList pass_list;
+  pass_list.push_back(std::move(pass));
+
+  output_surface_->set_is_displayed_as_overlay_plane(true);
+  EXPECT_CALL(*renderer_, DoDrawQuad(_, _, _)).Times(0);
+  EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _)).Times(2);
+  renderer_->DrawFrame(&pass_list, 1.f, viewport_rect, viewport_rect, false);
+  SwapBuffers();
+  Mock::VerifyAndClearExpectations(renderer_.get());
+  Mock::VerifyAndClearExpectations(&scheduler_);
+}
+
+// GLRenderer skips drawing occluded quads when empty swap is enabled.
+TEST_F(GLRendererWithOverlaysTest, OccludedQuadNotDrawnWhenEmptySwapAllowed) {
+  provider_->TestContext3d()->set_have_commit_overlay_planes(true);
   bool use_validator = true;
   Init(use_validator);
   renderer_->set_expect_overlays(true);
