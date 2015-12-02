@@ -93,7 +93,7 @@ class NET_EXPORT DefaultChannelIDStore : public ChannelIDStore {
   void InitStore();
 
   // Callback for backing store loading completion.
-  void OnLoaded(scoped_ptr<ScopedVector<ChannelID> > certs);
+  void OnLoaded(scoped_ptr<std::vector<scoped_ptr<ChannelID>>> certs);
 
   // Syncronous methods which do the actual work. Can only be called after
   // initialization is complete.
@@ -127,7 +127,7 @@ class NET_EXPORT DefaultChannelIDStore : public ChannelIDStore {
   bool loaded_;
 
   // Tasks that are waiting to be run once we finish loading.
-  ScopedVector<Task> waiting_tasks_;
+  std::vector<scoped_ptr<Task>> waiting_tasks_;
   base::TimeTicks waiting_tasks_start_time_;
 
   scoped_refptr<PersistentStore> store_;
@@ -145,7 +145,7 @@ typedef base::RefCountedThreadSafe<DefaultChannelIDStore::PersistentStore>
 class NET_EXPORT DefaultChannelIDStore::PersistentStore
     : public RefcountedPersistentStore {
  public:
-  typedef base::Callback<void(scoped_ptr<ScopedVector<ChannelID> >)>
+  typedef base::Callback<void(scoped_ptr<std::vector<scoped_ptr<ChannelID>>>)>
       LoadedCallback;
 
   // Initializes the store and retrieves the existing channel_ids. This will be

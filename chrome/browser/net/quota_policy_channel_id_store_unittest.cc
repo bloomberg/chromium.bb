@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <vector>
+
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -29,7 +31,8 @@ const base::FilePath::CharType kTestChannelIDFilename[] =
 
 class QuotaPolicyChannelIDStoreTest : public testing::Test {
  public:
-  void Load(ScopedVector<net::DefaultChannelIDStore::ChannelID>* channel_ids) {
+  void Load(std::vector<scoped_ptr<net::DefaultChannelIDStore::ChannelID>>*
+                channel_ids) {
     base::RunLoop run_loop;
     store_->Load(base::Bind(&QuotaPolicyChannelIDStoreTest::OnLoaded,
                             base::Unretained(this),
@@ -39,9 +42,10 @@ class QuotaPolicyChannelIDStoreTest : public testing::Test {
     channel_ids_.clear();
   }
 
-  void OnLoaded(base::RunLoop* run_loop,
-                scoped_ptr<ScopedVector<net::DefaultChannelIDStore::ChannelID> >
-                    channel_ids) {
+  void OnLoaded(
+      base::RunLoop* run_loop,
+      scoped_ptr<std::vector<scoped_ptr<net::DefaultChannelIDStore::ChannelID>>>
+          channel_ids) {
     channel_ids_.swap(*channel_ids);
     run_loop->Quit();
   }
@@ -53,7 +57,7 @@ class QuotaPolicyChannelIDStoreTest : public testing::Test {
         temp_dir_.path().Append(kTestChannelIDFilename),
         base::ThreadTaskRunnerHandle::Get(),
         NULL);
-    ScopedVector<net::DefaultChannelIDStore::ChannelID> channel_ids;
+    std::vector<scoped_ptr<net::DefaultChannelIDStore::ChannelID>> channel_ids;
     Load(&channel_ids);
     ASSERT_EQ(0u, channel_ids.size());
   }
@@ -65,7 +69,7 @@ class QuotaPolicyChannelIDStoreTest : public testing::Test {
 
   base::ScopedTempDir temp_dir_;
   scoped_refptr<QuotaPolicyChannelIDStore> store_;
-  ScopedVector<net::DefaultChannelIDStore::ChannelID> channel_ids_;
+  std::vector<scoped_ptr<net::DefaultChannelIDStore::ChannelID>> channel_ids_;
   base::MessageLoop loop_;
 };
 
@@ -80,7 +84,7 @@ TEST_F(QuotaPolicyChannelIDStoreTest, TestPersistence) {
       "foo.com", base::Time::FromInternalValue(3),
       make_scoped_ptr(foo_key->Copy())));
 
-  ScopedVector<net::DefaultChannelIDStore::ChannelID> channel_ids;
+  std::vector<scoped_ptr<net::DefaultChannelIDStore::ChannelID>> channel_ids;
   // Replace the store effectively destroying the current one and forcing it
   // to write its data to disk. Then we can see if after loading it again it
   // is still there.
@@ -98,11 +102,11 @@ TEST_F(QuotaPolicyChannelIDStoreTest, TestPersistence) {
   net::DefaultChannelIDStore::ChannelID* goog_channel_id;
   net::DefaultChannelIDStore::ChannelID* foo_channel_id;
   if (channel_ids[0]->server_identifier() == "google.com") {
-    goog_channel_id = channel_ids[0];
-    foo_channel_id = channel_ids[1];
+    goog_channel_id = channel_ids[0].get();
+    foo_channel_id = channel_ids[1].get();
   } else {
-    goog_channel_id = channel_ids[1];
-    foo_channel_id = channel_ids[0];
+    goog_channel_id = channel_ids[1].get();
+    foo_channel_id = channel_ids[0].get();
   }
   ASSERT_EQ("google.com", goog_channel_id->server_identifier());
   EXPECT_TRUE(net::KeysEqual(goog_key.get(), goog_channel_id->key()));
@@ -137,7 +141,7 @@ TEST_F(QuotaPolicyChannelIDStoreTest, TestPolicy) {
       "nonpersistent.com", base::Time::FromInternalValue(3),
       make_scoped_ptr(crypto::ECPrivateKey::Create())));
 
-  ScopedVector<net::DefaultChannelIDStore::ChannelID> channel_ids;
+  std::vector<scoped_ptr<net::DefaultChannelIDStore::ChannelID>> channel_ids;
   // Replace the store effectively destroying the current one and forcing it
   // to write its data to disk. Then we can see if after loading it again it
   // is still there.

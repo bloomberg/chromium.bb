@@ -302,16 +302,16 @@ void DefaultChannelIDStore::InitStore() {
 }
 
 void DefaultChannelIDStore::OnLoaded(
-    scoped_ptr<ScopedVector<ChannelID> > channel_ids) {
+    scoped_ptr<std::vector<scoped_ptr<ChannelID>>> channel_ids) {
   DCHECK(CalledOnValidThread());
-
-  for (std::vector<ChannelID*>::const_iterator it = channel_ids->begin();
+  for (std::vector<scoped_ptr<ChannelID>>::iterator it = channel_ids->begin();
        it != channel_ids->end(); ++it) {
     DCHECK(channel_ids_.find((*it)->server_identifier()) ==
            channel_ids_.end());
-    channel_ids_[(*it)->server_identifier()] = *it;
+    std::string ident = (*it)->server_identifier();
+    channel_ids_[ident] = it->release();
   }
-  channel_ids->weak_clear();
+  channel_ids->clear();
 
   loaded_ = true;
 
@@ -327,10 +327,8 @@ void DefaultChannelIDStore::OnLoaded(
   UMA_HISTOGRAM_COUNTS_100("DomainBoundCerts.TaskWaitCount",
                            waiting_tasks_.size());
 
-
-  for (ScopedVector<Task>::iterator i = waiting_tasks_.begin();
-       i != waiting_tasks_.end(); ++i)
-    (*i)->Run(this);
+  for (scoped_ptr<Task>& i : waiting_tasks_)
+    i->Run(this);
   waiting_tasks_.clear();
 }
 

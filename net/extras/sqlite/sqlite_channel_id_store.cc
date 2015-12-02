@@ -5,6 +5,7 @@
 #include "net/extras/sqlite/sqlite_channel_id_store.h"
 
 #include <set>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/bind.h"
@@ -13,7 +14,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
@@ -82,7 +82,7 @@ class SQLiteChannelIDStore::Backend
   }
 
   void LoadInBackground(
-      ScopedVector<DefaultChannelIDStore::ChannelID>* channel_ids);
+      std::vector<scoped_ptr<DefaultChannelIDStore::ChannelID>>* channel_ids);
 
   // Database upgrade statements.
   bool EnsureDatabaseVersion();
@@ -148,9 +148,10 @@ void SQLiteChannelIDStore::Backend::Load(
     const LoadedCallback& loaded_callback) {
   // This function should be called only once per instance.
   DCHECK(!db_.get());
-  scoped_ptr<ScopedVector<DefaultChannelIDStore::ChannelID> > channel_ids(
-      new ScopedVector<DefaultChannelIDStore::ChannelID>());
-  ScopedVector<DefaultChannelIDStore::ChannelID>* channel_ids_ptr =
+  scoped_ptr<std::vector<scoped_ptr<DefaultChannelIDStore::ChannelID>>>
+      channel_ids(
+          new std::vector<scoped_ptr<DefaultChannelIDStore::ChannelID>>());
+  std::vector<scoped_ptr<DefaultChannelIDStore::ChannelID>>* channel_ids_ptr =
       channel_ids.get();
 
   background_task_runner_->PostTaskAndReply(
@@ -160,7 +161,7 @@ void SQLiteChannelIDStore::Backend::Load(
 }
 
 void SQLiteChannelIDStore::Backend::LoadInBackground(
-    ScopedVector<DefaultChannelIDStore::ChannelID>* channel_ids) {
+    std::vector<scoped_ptr<DefaultChannelIDStore::ChannelID>>* channel_ids) {
   DCHECK(background_task_runner_->RunsTasksOnCurrentThread());
 
   // This method should be called only once per instance.
@@ -230,7 +231,7 @@ void SQLiteChannelIDStore::Backend::LoadInBackground(
         new DefaultChannelIDStore::ChannelID(
             smt.ColumnString(0),  // host
             base::Time::FromInternalValue(smt.ColumnInt64(3)), key.Pass()));
-    channel_ids->push_back(channel_id.release());
+    channel_ids->push_back(std::move(channel_id));
   }
 
   UMA_HISTOGRAM_COUNTS_10000(

@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <vector>
+
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_vector.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
 #include "crypto/ec_private_key.h"
@@ -27,7 +29,8 @@ const base::FilePath::CharType kTestChannelIDFilename[] =
 
 class SQLiteChannelIDStoreTest : public testing::Test {
  public:
-  void Load(ScopedVector<DefaultChannelIDStore::ChannelID>* channel_ids) {
+  void Load(
+      std::vector<scoped_ptr<DefaultChannelIDStore::ChannelID>>* channel_ids) {
     base::RunLoop run_loop;
     store_->Load(base::Bind(&SQLiteChannelIDStoreTest::OnLoaded,
                             base::Unretained(this),
@@ -39,7 +42,8 @@ class SQLiteChannelIDStoreTest : public testing::Test {
 
   void OnLoaded(
       base::RunLoop* run_loop,
-      scoped_ptr<ScopedVector<DefaultChannelIDStore::ChannelID> > channel_ids) {
+      scoped_ptr<std::vector<scoped_ptr<DefaultChannelIDStore::ChannelID>>>
+          channel_ids) {
     channel_ids_.swap(*channel_ids);
     run_loop->Quit();
   }
@@ -101,7 +105,7 @@ class SQLiteChannelIDStoreTest : public testing::Test {
     store_ = new SQLiteChannelIDStore(
         temp_dir_.path().Append(kTestChannelIDFilename),
         base::ThreadTaskRunnerHandle::Get());
-    ScopedVector<DefaultChannelIDStore::ChannelID> channel_ids;
+    std::vector<scoped_ptr<DefaultChannelIDStore::ChannelID>> channel_ids;
     Load(&channel_ids);
     ASSERT_EQ(0u, channel_ids.size());
     // Make sure the store gets written at least once.
@@ -113,7 +117,7 @@ class SQLiteChannelIDStoreTest : public testing::Test {
 
   base::ScopedTempDir temp_dir_;
   scoped_refptr<SQLiteChannelIDStore> store_;
-  ScopedVector<DefaultChannelIDStore::ChannelID> channel_ids_;
+  std::vector<scoped_ptr<DefaultChannelIDStore::ChannelID>> channel_ids_;
   scoped_ptr<crypto::ECPrivateKey> google_key_;
 };
 
@@ -124,7 +128,7 @@ TEST_F(SQLiteChannelIDStoreTest, TestPersistence) {
       "foo.com", base::Time::FromInternalValue(3),
       make_scoped_ptr(foo_key->Copy())));
 
-  ScopedVector<DefaultChannelIDStore::ChannelID> channel_ids;
+  std::vector<scoped_ptr<DefaultChannelIDStore::ChannelID>> channel_ids;
   // Replace the store effectively destroying the current one and forcing it
   // to write its data to disk. Then we can see if after loading it again it
   // is still there.
@@ -141,11 +145,11 @@ TEST_F(SQLiteChannelIDStoreTest, TestPersistence) {
   DefaultChannelIDStore::ChannelID* goog_channel_id;
   DefaultChannelIDStore::ChannelID* foo_channel_id;
   if (channel_ids[0]->server_identifier() == "google.com") {
-    goog_channel_id = channel_ids[0];
-    foo_channel_id = channel_ids[1];
+    goog_channel_id = channel_ids[0].get();
+    foo_channel_id = channel_ids[1].get();
   } else {
-    goog_channel_id = channel_ids[1];
-    foo_channel_id = channel_ids[0];
+    goog_channel_id = channel_ids[1].get();
+    foo_channel_id = channel_ids[0].get();
   }
   ASSERT_EQ("google.com", goog_channel_id->server_identifier());
   EXPECT_TRUE(KeysEqual(google_key_.get(), goog_channel_id->key()));
@@ -180,7 +184,7 @@ TEST_F(SQLiteChannelIDStoreTest, TestDeleteAll) {
       "foo.com", base::Time::FromInternalValue(3),
       make_scoped_ptr(crypto::ECPrivateKey::Create())));
 
-  ScopedVector<DefaultChannelIDStore::ChannelID> channel_ids;
+  std::vector<scoped_ptr<DefaultChannelIDStore::ChannelID>> channel_ids;
   // Replace the store effectively destroying the current one and forcing it
   // to write its data to disk. Then we can see if after loading it again it
   // is still there.
@@ -262,7 +266,7 @@ TEST_F(SQLiteChannelIDStoreTest, TestUpgradeV1) {
   for (int i = 0; i < 2; ++i) {
     SCOPED_TRACE(i);
 
-    ScopedVector<DefaultChannelIDStore::ChannelID> channel_ids;
+    std::vector<scoped_ptr<DefaultChannelIDStore::ChannelID>> channel_ids;
     store_ = new SQLiteChannelIDStore(v1_db_path,
                                       base::ThreadTaskRunnerHandle::Get());
 
@@ -334,7 +338,7 @@ TEST_F(SQLiteChannelIDStoreTest, TestUpgradeV2) {
   for (int i = 0; i < 2; ++i) {
     SCOPED_TRACE(i);
 
-    ScopedVector<DefaultChannelIDStore::ChannelID> channel_ids;
+    std::vector<scoped_ptr<DefaultChannelIDStore::ChannelID>> channel_ids;
     store_ = new SQLiteChannelIDStore(v2_db_path,
                                       base::ThreadTaskRunnerHandle::Get());
 
@@ -412,7 +416,7 @@ TEST_F(SQLiteChannelIDStoreTest, TestUpgradeV3) {
   for (int i = 0; i < 2; ++i) {
     SCOPED_TRACE(i);
 
-    ScopedVector<DefaultChannelIDStore::ChannelID> channel_ids;
+    std::vector<scoped_ptr<DefaultChannelIDStore::ChannelID>> channel_ids;
     store_ = new SQLiteChannelIDStore(v3_db_path,
                                       base::ThreadTaskRunnerHandle::Get());
 
@@ -506,7 +510,7 @@ TEST_F(SQLiteChannelIDStoreTest, TestUpgradeV4) {
   for (int i = 0; i < 2; ++i) {
     SCOPED_TRACE(i);
 
-    ScopedVector<DefaultChannelIDStore::ChannelID> channel_ids;
+    std::vector<scoped_ptr<DefaultChannelIDStore::ChannelID>> channel_ids;
     store_ = new SQLiteChannelIDStore(v4_db_path,
                                       base::ThreadTaskRunnerHandle::Get());
 

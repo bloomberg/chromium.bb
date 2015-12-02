@@ -87,13 +87,14 @@ class MockPersistentStore
 MockPersistentStore::MockPersistentStore() {}
 
 void MockPersistentStore::Load(const LoadedCallback& loaded_callback) {
-  scoped_ptr<ScopedVector<DefaultChannelIDStore::ChannelID> >
-      channel_ids(new ScopedVector<DefaultChannelIDStore::ChannelID>());
+  scoped_ptr<std::vector<scoped_ptr<DefaultChannelIDStore::ChannelID>>>
+      channel_ids(
+          new std::vector<scoped_ptr<DefaultChannelIDStore::ChannelID>>());
   ChannelIDMap::iterator it;
 
   for (it = channel_ids_.begin(); it != channel_ids_.end(); ++it) {
     channel_ids->push_back(
-        new DefaultChannelIDStore::ChannelID(it->second));
+        make_scoped_ptr(new DefaultChannelIDStore::ChannelID(it->second)));
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(

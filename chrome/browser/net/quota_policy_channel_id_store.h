@@ -7,6 +7,7 @@
 
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
@@ -50,7 +51,8 @@ class QuotaPolicyChannelIDStore
   void SetForceKeepSessionState() override;
 
  private:
-  typedef ScopedVector<net::DefaultChannelIDStore::ChannelID> ChannelIDVector;
+  typedef std::vector<scoped_ptr<net::DefaultChannelIDStore::ChannelID>>
+      ChannelIDVector;
 
   ~QuotaPolicyChannelIDStore() override;
 
