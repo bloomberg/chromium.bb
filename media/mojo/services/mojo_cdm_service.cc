@@ -5,6 +5,7 @@
 #include "media/mojo/services/mojo_cdm_service.h"
 
 #include <map>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
@@ -65,7 +66,6 @@ base::LazyInstance<CdmManager>::Leaky g_cdm_manager = LAZY_INSTANCE_INITIALIZER;
 }  // namespace
 
 using SimpleMojoCdmPromise = MojoCdmPromise<>;
-using CdmIdMojoCdmPromise = MojoCdmPromise<int>;
 using NewSessionMojoCdmPromise = MojoCdmPromise<std::string>;
 
 int MojoCdmService::next_cdm_id_ = CdmContext::kInvalidCdmId + 1;
@@ -103,12 +103,10 @@ void MojoCdmService::SetClient(
   client_ = client.Pass();
 }
 
-void MojoCdmService::Initialize(
-    const mojo::String& key_system,
-    const mojo::String& security_origin,
-    interfaces::CdmConfigPtr cdm_config,
-    const mojo::Callback<void(interfaces::CdmPromiseResultPtr, int32_t)>&
-        callback) {
+void MojoCdmService::Initialize(const mojo::String& key_system,
+                                const mojo::String& security_origin,
+                                interfaces::CdmConfigPtr cdm_config,
+                                const InitializeCallback& callback) {
   DVLOG(1) << __FUNCTION__ << ": " << key_system;
   DCHECK(!cdm_);
 
@@ -120,9 +118,7 @@ void MojoCdmService::Initialize(
       base::Bind(&MojoCdmService::OnLegacySessionError, weak_this),
       base::Bind(&MojoCdmService::OnSessionKeysChange, weak_this),
       base::Bind(&MojoCdmService::OnSessionExpirationUpdate, weak_this),
-      base::Bind(
-          &MojoCdmService::OnCdmCreated, weak_this,
-          base::Passed(make_scoped_ptr(new CdmIdMojoCdmPromise(callback)))));
+      base::Bind(&MojoCdmService::OnCdmCreated, weak_this, callback));
 }
 
 void MojoCdmService::SetServerCertificate(
@@ -184,22 +180,25 @@ void MojoCdmService::RemoveSession(
                       make_scoped_ptr(new SimpleMojoCdmPromise(callback)));
 }
 
-void MojoCdmService::GetDecryptor(
-    mojo::InterfaceRequest<interfaces::Decryptor> decryptor) {
-  NOTIMPLEMENTED();
-}
-
 CdmContext* MojoCdmService::GetCdmContext() {
   return cdm_->GetCdmContext();
 }
 
-void MojoCdmService::OnCdmCreated(scoped_ptr<CdmIdMojoCdmPromise> promise,
+void MojoCdmService::OnCdmCreated(const InitializeCallback& callback,
                                   const scoped_refptr<MediaKeys>& cdm,
                                   const std::string& error_message) {
+  interfaces::CdmPromiseResultPtr cdm_promise_result(
+      interfaces::CdmPromiseResult::New());
+
   // TODO(xhwang): This should not happen when KeySystemInfo is properly
   // populated. See http://crbug.com/469366
   if (!cdm || !context_) {
-    promise->reject(MediaKeys::NOT_SUPPORTED_ERROR, 0, error_message);
+    cdm_promise_result->success = false;
+    cdm_promise_result->exception =
+        interfaces::CDM_EXCEPTION_NOT_SUPPORTED_ERROR;
+    cdm_promise_result->system_code = 0;
+    cdm_promise_result->error_message = error_message;
+    callback.Run(std::move(cdm_promise_result), 0, nullptr);
     return;
   }
 
@@ -209,8 +208,22 @@ void MojoCdmService::OnCdmCreated(scoped_ptr<CdmIdMojoCdmPromise> promise,
   context_->RegisterCdm(cdm_id_, this);
   g_cdm_manager.Get().RegisterCdm(cdm_id_, cdm);
 
+  // If |cdm| has a decryptor, create the MojoDecryptorService
+  // and pass the connection back to the client.
+  interfaces::DecryptorPtr decryptor_service;
+  CdmContext* const cdm_context = GetCdmContext();
+  if (cdm_context && cdm_context->GetDecryptor()) {
+    // MojoDecryptorService takes a reference to the CDM, but it is still owned
+    // by |this|.
+    decryptor_.reset(new MojoDecryptorService(
+        cdm_, GetProxy(&decryptor_service),
+        base::Bind(&MojoCdmService::OnDecryptorConnectionError, weak_this_)));
+  }
+
   DVLOG(1) << __FUNCTION__ << ": CDM successfully created with ID " << cdm_id_;
-  promise->resolve(cdm_id_);
+  cdm_promise_result->success = true;
+  callback.Run(std::move(cdm_promise_result), cdm_id_,
+               std::move(decryptor_service));
 }
 
 void MojoCdmService::OnSessionMessage(const std::string& session_id,
@@ -256,6 +269,14 @@ void MojoCdmService::OnLegacySessionError(const std::string& session_id,
   client_->OnLegacySessionError(
       session_id, static_cast<interfaces::CdmException>(exception), system_code,
       error_message);
+}
+
+void MojoCdmService::OnDecryptorConnectionError() {
+  DVLOG(2) << __FUNCTION__;
+
+  // MojoDecryptorService has lost connectivity to it's client, so it can be
+  // freed.
+  decryptor_.reset();
 }
 
 }  // namespace media

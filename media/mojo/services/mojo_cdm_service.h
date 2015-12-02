@@ -14,6 +14,7 @@
 #include "media/mojo/interfaces/content_decryption_module.mojom.h"
 #include "media/mojo/services/mojo_cdm_promise.h"
 #include "media/mojo/services/mojo_cdm_service_context.h"
+#include "media/mojo/services/mojo_decryptor_service.h"
 #include "mojo/application/public/interfaces/service_provider.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
@@ -49,8 +50,7 @@ class MojoCdmService : public interfaces::ContentDecryptionModule {
   void Initialize(const mojo::String& key_system,
                   const mojo::String& security_origin,
                   interfaces::CdmConfigPtr cdm_config,
-                  const mojo::Callback<void(interfaces::CdmPromiseResultPtr,
-                                            int32_t)>& callback) final;
+                  const InitializeCallback& callback) final;
   void SetServerCertificate(
       mojo::Array<uint8_t> certificate_data,
       const mojo::Callback<void(interfaces::CdmPromiseResultPtr)>& callback)
@@ -78,15 +78,13 @@ class MojoCdmService : public interfaces::ContentDecryptionModule {
       const mojo::String& session_id,
       const mojo::Callback<void(interfaces::CdmPromiseResultPtr)>& callback)
       final;
-  void GetDecryptor(
-      mojo::InterfaceRequest<interfaces::Decryptor> decryptor) final;
 
   // Get CdmContext to be used by the media pipeline.
   CdmContext* GetCdmContext();
 
  private:
   // Callback for CdmFactory::Create().
-  void OnCdmCreated(scoped_ptr<MojoCdmPromise<int>> promise,
+  void OnCdmCreated(const InitializeCallback& callback,
                     const scoped_refptr<MediaKeys>& cdm,
                     const std::string& error_message);
 
@@ -106,6 +104,9 @@ class MojoCdmService : public interfaces::ContentDecryptionModule {
                             uint32_t system_code,
                             const std::string& error_message);
 
+  // Callback for when |decryptor_| loses connectivity.
+  void OnDecryptorConnectionError();
+
   // CDM ID to be assigned to the next successfully initialized CDM. This ID is
   // unique per process. It will be used to locate the CDM by the media players
   // living in the same process.
@@ -117,6 +118,8 @@ class MojoCdmService : public interfaces::ContentDecryptionModule {
   mojo::ServiceProvider* service_provider_;
   CdmFactory* cdm_factory_;
   scoped_refptr<MediaKeys> cdm_;
+
+  scoped_ptr<MojoDecryptorService> decryptor_;
 
   // Set to a valid CDM ID if the |cdm_| is successfully created.
   int cdm_id_;

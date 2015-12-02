@@ -4,11 +4,14 @@
 
 #include "media/mojo/services/mojo_cdm.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "media/base/cdm_context.h"
 #include "media/base/cdm_key_information.h"
 #include "media/base/cdm_promise.h"
+#include "media/mojo/interfaces/decryptor.mojom.h"
 #include "media/mojo/services/media_type_converters.h"
 #include "mojo/application/public/cpp/connect.h"
 #include "mojo/application/public/interfaces/service_provider.mojom.h"
@@ -160,6 +163,7 @@ CdmContext* MojoCdm::GetCdmContext() {
 }
 
 media::Decryptor* MojoCdm::GetDecryptor() {
+  // TODO(jrummell): Return a decryptor using |decryptor_ptr_|.
   return nullptr;
 }
 
@@ -224,7 +228,8 @@ void MojoCdm::OnSessionExpirationUpdate(const mojo::String& session_id,
 
 void MojoCdm::OnCdmInitialized(scoped_ptr<CdmInitializedPromise> promise,
                                interfaces::CdmPromiseResultPtr result,
-                               int cdm_id) {
+                               int cdm_id,
+                               interfaces::DecryptorPtr decryptor) {
   DVLOG(2) << __FUNCTION__ << " cdm_id: " << cdm_id;
   if (!result->success) {
     RejectPromise(promise.Pass(), result.Pass());
@@ -233,6 +238,7 @@ void MojoCdm::OnCdmInitialized(scoped_ptr<CdmInitializedPromise> promise,
 
   DCHECK_NE(CdmContext::kInvalidCdmId, cdm_id);
   cdm_id_ = cdm_id;
+  decryptor_ptr_ = std::move(decryptor);
   promise->resolve();
 }
 

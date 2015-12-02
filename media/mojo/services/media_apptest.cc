@@ -12,6 +12,7 @@
 #include "media/base/test_helpers.h"
 #include "media/cdm/key_system_names.h"
 #include "media/mojo/interfaces/content_decryption_module.mojom.h"
+#include "media/mojo/interfaces/decryptor.mojom.h"
 #include "media/mojo/interfaces/renderer.mojom.h"
 #include "media/mojo/interfaces/service_factory.mojom.h"
 #include "media/mojo/services/media_type_converters.h"
@@ -71,7 +72,9 @@ class MediaAppTest : public mojo::test::ApplicationTestBase {
   // MOCK_METHOD* doesn't support move only types. Work around this by having
   // an extra method.
   MOCK_METHOD2(OnCdmInitializedInternal, void(bool result, int cdm_id));
-  void OnCdmInitialized(interfaces::CdmPromiseResultPtr result, int cdm_id) {
+  void OnCdmInitialized(interfaces::CdmPromiseResultPtr result,
+                        int cdm_id,
+                        interfaces::DecryptorPtr decryptor) {
     OnCdmInitializedInternal(result->success, cdm_id);
   }
 

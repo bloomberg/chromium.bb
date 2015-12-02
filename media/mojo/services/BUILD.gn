@@ -118,6 +118,8 @@ source_set("cdm_service") {
     "mojo_cdm_service.h",
     "mojo_cdm_service_context.cc",
     "mojo_cdm_service_context.h",
+    "mojo_decryptor_service.cc",
+    "mojo_decryptor_service.h",
     "mojo_type_trait.h",
   ]
 

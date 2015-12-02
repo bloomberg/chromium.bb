@@ -98,11 +98,12 @@ class MojoCdm : public MediaKeys,
                                  double new_expiry_time_sec) final;
 
   // Callback for InitializeCdm.
-  // Note: Cannot use OnPromiseResult() below since we need an extra parameter
-  // |cdm_id|, which isn't needed in CdmInitializedPromise.
+  // Note: Cannot use OnPromiseResult() below since we need an extra parameters
+  // |cdm_id| and |decryptor|, which isn't needed in CdmInitializedPromise.
   void OnCdmInitialized(scoped_ptr<CdmInitializedPromise> promise,
                         interfaces::CdmPromiseResultPtr result,
-                        int cdm_id);
+                        int cdm_id,
+                        interfaces::DecryptorPtr decryptor);
 
   // Callbacks to handle CDM promises.
   // We have to inline this method, since MS VS 2013 compiler fails to compile
@@ -121,6 +122,8 @@ class MojoCdm : public MediaKeys,
   interfaces::ContentDecryptionModulePtr remote_cdm_;
   mojo::Binding<ContentDecryptionModuleClient> binding_;
   int cdm_id_;
+
+  interfaces::DecryptorPtr decryptor_ptr_;
 
   // Callbacks for firing session events.
   SessionMessageCB session_message_cb_;
