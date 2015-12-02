@@ -9,7 +9,7 @@ DEVICE_WEBVIEW_TEST_PATH="/sdcard/android_webview/tools/WebViewShell/test/"
 TESTRUNNER="../../../../build/android/test_runner.py"
 
 $TESTRUNNER instrumentation \
-    --test-apk AndroidWebViewShell \
+    --test-apk SystemWebViewShellLayoutTest \
     -f 'WebViewLayoutTest*' \
     --isolate-file-path android_webview/system_webview_shell_test_apk.isolate
 
