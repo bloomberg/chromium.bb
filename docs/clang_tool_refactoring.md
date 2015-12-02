@@ -25,7 +25,7 @@ Build your tool by running the following command (requires cmake version 2.8.10
 or later):
 
 ```shell
-tools/clang/scripts/update.sh --force-local-build --without-android \
+tools/clang/scripts/update.py --force-local-build --without-android \
 --with-chrome-tools <tools>
 ```
 
@@ -35,7 +35,7 @@ build. The resulting binary will end up in
 plugin and the empty\_string tool, run the following:
 
 ```shell
-tools/clang/scripts/update.sh --force-local-build --without-android \
+tools/clang/scripts/update.py --force-local-build --without-android \
 --with-chrome-tools "plugins;empty_string"
 ```
 

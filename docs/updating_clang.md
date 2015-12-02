@@ -2,7 +2,7 @@
 
 1.  Sync your Chromium tree to the latest revision to pick up any plugin
     changes and test the new compiler against ToT
-1.  Update clang revision in tools/clang/scripts/update.sh, upload CL to
+1.  Update clang revision in tools/clang/scripts/update.py, upload CL to
     rietveld
 1.  Run tools/clang/scripts/package.py to create a tgz of the binary (mac and
     linux)

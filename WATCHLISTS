@@ -246,7 +246,7 @@
                   'chrome/browser/resources/chromeos/',
     },
     'clang_update': {
-      'filepath': 'tools/clang/scripts/update.sh'
+      'filepath': 'tools/clang/scripts/update.py'
     },
     'clipboard': {
       'filepath': 'clipboard|dnd|drag|drop',

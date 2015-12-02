@@ -443,7 +443,7 @@
       'mac_want_real_dsym%': 'default',
 
       # If this is set, the clang plugins used on the buildbot will be used.
-      # Run tools/clang/scripts/update.sh to make sure they are compiled.
+      # Run tools/clang/scripts/update.py to make sure they are compiled.
       # This causes 'clang_chrome_plugins_flags' to be set.
       # Has no effect if 'clang' is not set as well.
       'clang_use_chrome_plugins%': 1,

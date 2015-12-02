@@ -3,8 +3,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Windows can't run .sh files, so this is a Python implementation of
-update.sh. This script should replace update.sh on all platforms eventually."""
+"""This script is used to download prebuilt clang binaries.
+
+It is also used by package.py to build the prebuilt clang binaries."""
 
 import argparse
 import cStringIO
@@ -26,7 +27,6 @@ import zipfile
 # Do NOT CHANGE this if you don't know what you're doing -- see
 # https://code.google.com/p/chromium/wiki/UpdatingClang
 # Reverting problematic clang rolls is safe, though.
-# Note: this revision is only used for Windows. Other platforms use update.sh.
 CLANG_REVISION = '254049'
 
 use_head_revision = 'LLVM_FORCE_HEAD_REVISION' in os.environ

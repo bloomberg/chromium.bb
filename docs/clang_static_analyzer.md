@@ -13,7 +13,7 @@ You need an llvm checkout to get `scan-build` and `scan-view`; the easiest way
 to get that is to run
 
 ```shell
-tools/clang/scripts/update.sh --force-local-build --without-android
+tools/clang/scripts/update.py --force-local-build --without-android
 ```
 
 ## With make
