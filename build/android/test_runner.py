@@ -98,7 +98,8 @@ def AddCommonOptions(parser):
   group.add_argument('--adb-path',
                      help=('Specify the absolute path of the adb binary that '
                            'should be used.'))
-  group.add_argument('--json-results-file', dest='json_results_file',
+  group.add_argument('--json-results-file', '--test-launcher-summary-output',
+                     dest='json_results_file',
                      help='If set, will dump results in JSON form '
                           'to specified file.')
 
