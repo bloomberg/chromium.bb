@@ -51,14 +51,14 @@ public:
     HTMLTableSectionElement* tFoot() const;
     void setTFoot(PassRefPtrWillBeRawPtr<HTMLTableSectionElement>, ExceptionState&);
 
-    PassRefPtrWillBeRawPtr<HTMLElement> createTHead();
+    PassRefPtrWillBeRawPtr<HTMLTableSectionElement> createTHead();
     void deleteTHead();
-    PassRefPtrWillBeRawPtr<HTMLElement> createTFoot();
+    PassRefPtrWillBeRawPtr<HTMLTableSectionElement> createTFoot();
     void deleteTFoot();
-    PassRefPtrWillBeRawPtr<HTMLElement> createTBody();
-    PassRefPtrWillBeRawPtr<HTMLElement> createCaption();
+    PassRefPtrWillBeRawPtr<HTMLTableSectionElement> createTBody();
+    PassRefPtrWillBeRawPtr<HTMLTableCaptionElement> createCaption();
     void deleteCaption();
-    PassRefPtrWillBeRawPtr<HTMLElement> insertRow(int index, ExceptionState&);
+    PassRefPtrWillBeRawPtr<HTMLTableRowElement> insertRow(int index, ExceptionState&);
     void deleteRow(int index, ExceptionState&);
 
     PassRefPtrWillBeRawPtr<HTMLTableRowsCollection> rows();

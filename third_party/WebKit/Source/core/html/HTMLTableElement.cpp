@@ -117,7 +117,7 @@ void HTMLTableElement::setTFoot(PassRefPtrWillBeRawPtr<HTMLTableSectionElement> 
     insertBefore(newFoot, child, exceptionState);
 }
 
-PassRefPtrWillBeRawPtr<HTMLElement> HTMLTableElement::createTHead()
+PassRefPtrWillBeRawPtr<HTMLTableSectionElement> HTMLTableElement::createTHead()
 {
     if (HTMLTableSectionElement* existingHead = tHead())
         return existingHead;
@@ -131,7 +131,7 @@ void HTMLTableElement::deleteTHead()
     removeChild(tHead(), IGNORE_EXCEPTION);
 }
 
-PassRefPtrWillBeRawPtr<HTMLElement> HTMLTableElement::createTFoot()
+PassRefPtrWillBeRawPtr<HTMLTableSectionElement> HTMLTableElement::createTFoot()
 {
     if (HTMLTableSectionElement* existingFoot = tFoot())
         return existingFoot;
@@ -145,7 +145,7 @@ void HTMLTableElement::deleteTFoot()
     removeChild(tFoot(), IGNORE_EXCEPTION);
 }
 
-PassRefPtrWillBeRawPtr<HTMLElement> HTMLTableElement::createTBody()
+PassRefPtrWillBeRawPtr<HTMLTableSectionElement> HTMLTableElement::createTBody()
 {
     RefPtrWillBeRawPtr<HTMLTableSectionElement> body = HTMLTableSectionElement::create(tbodyTag, document());
     Node* referenceElement = lastBody() ? lastBody()->nextSibling() : 0;
@@ -154,7 +154,7 @@ PassRefPtrWillBeRawPtr<HTMLElement> HTMLTableElement::createTBody()
     return body.release();
 }
 
-PassRefPtrWillBeRawPtr<HTMLElement> HTMLTableElement::createCaption()
+PassRefPtrWillBeRawPtr<HTMLTableCaptionElement> HTMLTableElement::createCaption()
 {
     if (HTMLTableCaptionElement* existingCaption = caption())
         return existingCaption;
@@ -173,7 +173,7 @@ HTMLTableSectionElement* HTMLTableElement::lastBody() const
     return toHTMLTableSectionElement(Traversal<HTMLElement>::lastChild(*this, HasHTMLTagName(tbodyTag)));
 }
 
-PassRefPtrWillBeRawPtr<HTMLElement> HTMLTableElement::insertRow(int index, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<HTMLTableRowElement> HTMLTableElement::insertRow(int index, ExceptionState& exceptionState)
 {
     if (index < -1) {
         exceptionState.throwDOMException(IndexSizeError, "The index provided (" + String::number(index) + ") is less than -1.");
