@@ -1,0 +1,24 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+group("headless") {
+  deps = [
+    "//headless:headless_lib",
+  ]
+}
+
+static_library("headless_lib") {
+  sources = [
+    "public/headless_browser.cc",
+    "public/headless_browser.h",
+    "public/headless_export.h",
+    "public/network.h",
+    "public/web_contents.h",
+    "public/web_frame.h",
+  ]
+
+  deps = [
+    "//base",
+  ]
+}
