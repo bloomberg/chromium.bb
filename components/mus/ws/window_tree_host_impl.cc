@@ -190,7 +190,11 @@ void WindowTreeHostImpl::OnClientClosed() {
 }
 
 void WindowTreeHostImpl::OnEventAck(mojom::WindowTree* tree) {
-  DCHECK_EQ(tree_awaiting_input_ack_, tree);
+  if (tree_awaiting_input_ack_ != tree) {
+    // TODO(sad): The ack must have arrived after the timeout. We should do
+    // something here, and in OnEventAckTimeout().
+    return;
+  }
   tree_awaiting_input_ack_ = nullptr;
   event_ack_timer_.Stop();
   DispatchNextEventFromQueue();
