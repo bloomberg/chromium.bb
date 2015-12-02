@@ -354,7 +354,6 @@ void JsonPrefStore::OnFileRead(scoped_ptr<ReadResult> read_result) {
       case PREF_READ_ERROR_NO_FILE:
         // If the file just doesn't exist, maybe this is first run.  In any case
         // there's no harm in writing out default prefs in this case.
-        break;
       case PREF_READ_ERROR_JSON_PARSE:
       case PREF_READ_ERROR_JSON_REPEAT:
         break;
@@ -362,8 +361,6 @@ void JsonPrefStore::OnFileRead(scoped_ptr<ReadResult> read_result) {
         // This is a special error code to be returned by ReadPrefs when it
         // can't complete synchronously, it should never be returned by the read
         // operation itself.
-        NOTREACHED();
-        break;
       case PREF_READ_ERROR_MAX_ENUM:
         NOTREACHED();
         break;
