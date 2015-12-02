@@ -115,6 +115,7 @@ WebGL2RenderingContextBase::WebGL2RenderingContextBase(HTMLCanvasElement* passed
     m_supportedInternalFormatsStorage.insert(kSupportedInternalFormatsStorage, kSupportedInternalFormatsStorage + arraysize(kSupportedInternalFormatsStorage));
     m_supportedInternalFormatsStorage.insert(kCompressedTextureFormatsETC2EAC, kCompressedTextureFormatsETC2EAC + arraysize(kCompressedTextureFormatsETC2EAC));
     m_compressedTextureFormatsETC2EAC.insert(kCompressedTextureFormatsETC2EAC, kCompressedTextureFormatsETC2EAC + arraysize(kCompressedTextureFormatsETC2EAC));
+    m_compressedTextureFormats.append(kCompressedTextureFormatsETC2EAC, arraysize(kCompressedTextureFormatsETC2EAC));
 }
 
 WebGL2RenderingContextBase::~WebGL2RenderingContextBase()

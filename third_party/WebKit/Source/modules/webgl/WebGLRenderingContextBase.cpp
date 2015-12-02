@@ -5921,6 +5921,12 @@ bool WebGLRenderingContextBase::validateCompressedTexFuncData(const char* functi
         }
         break;
     case GC3D_COMPRESSED_ATC_RGB_AMD:
+    case GL_COMPRESSED_R11_EAC:
+    case GL_COMPRESSED_SIGNED_R11_EAC:
+    case GL_COMPRESSED_RGB8_ETC2:
+    case GL_COMPRESSED_SRGB8_ETC2:
+    case GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2:
+    case GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2:
     case GL_ETC1_RGB8_OES:
         {
             bytesRequired = floor(static_cast<double>((width + 3) / 4)) * floor(static_cast<double>((height + 3) / 4)) * 8;
@@ -5928,6 +5934,10 @@ bool WebGLRenderingContextBase::validateCompressedTexFuncData(const char* functi
         break;
     case GC3D_COMPRESSED_ATC_RGBA_EXPLICIT_ALPHA_AMD:
     case GC3D_COMPRESSED_ATC_RGBA_INTERPOLATED_ALPHA_AMD:
+    case GL_COMPRESSED_RG11_EAC:
+    case GL_COMPRESSED_SIGNED_RG11_EAC:
+    case GL_COMPRESSED_RGBA8_ETC2_EAC:
+    case GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC:
         {
             bytesRequired = floor(static_cast<double>((width + 3) / 4)) * floor(static_cast<double>((height + 3) / 4)) * 16;
         }
@@ -5966,6 +5976,20 @@ bool WebGLRenderingContextBase::validateCompressedTexDimensions(const char* func
     bool heightValid = false;
 
     switch (format) {
+    case GL_COMPRESSED_R11_EAC:
+    case GL_COMPRESSED_SIGNED_R11_EAC:
+    case GL_COMPRESSED_RG11_EAC:
+    case GL_COMPRESSED_SIGNED_RG11_EAC:
+    case GL_COMPRESSED_RGB8_ETC2:
+    case GL_COMPRESSED_SRGB8_ETC2:
+    case GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2:
+    case GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2:
+    case GL_COMPRESSED_RGBA8_ETC2_EAC:
+    case GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC: {
+        widthValid = true;
+        heightValid = true;
+        break;
+    }
     case GL_COMPRESSED_RGBA_ASTC_4x4_KHR:
     case GL_COMPRESSED_RGBA_ASTC_5x4_KHR:
     case GL_COMPRESSED_RGBA_ASTC_5x5_KHR:
