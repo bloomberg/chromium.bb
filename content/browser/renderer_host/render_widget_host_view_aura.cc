@@ -451,7 +451,7 @@ class RenderWidgetHostViewAura::WindowAncestorObserver
 RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host,
                                                    bool is_guest_view_hack)
     : host_(RenderWidgetHostImpl::From(host)),
-      window_(new aura::Window(this)),
+      window_(nullptr),
       delegated_frame_host_(new DelegatedFrameHost(this)),
       in_shutdown_(false),
       in_bounds_changed_(false),
@@ -482,14 +482,6 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host,
       weak_ptr_factory_(this) {
   if (!is_guest_view_hack_)
     host_->SetView(this);
-
-  window_observer_.reset(new WindowObserver(this));
-
-  aura::client::SetTooltipText(window_, &tooltip_);
-  aura::client::SetActivationDelegate(window_, this);
-  aura::client::SetFocusChangeObserver(window_, this);
-  window_->set_layer_owner_delegate(delegated_frame_host_.get());
-  gfx::Screen::GetScreenFor(window_)->AddObserver(this);
 
   // Let the page-level input event router know about our surface ID
   // namespace for surface-based hit testing.
@@ -524,6 +516,7 @@ bool RenderWidgetHostViewAura::OnMessageReceived(
 
 void RenderWidgetHostViewAura::InitAsChild(
     gfx::NativeView parent_view) {
+  CreateAuraWindow();
   window_->SetType(ui::wm::WINDOW_TYPE_CONTROL);
   window_->Init(ui::LAYER_SOLID_COLOR);
   window_->SetName("RenderWidgetHostViewAura");
@@ -540,6 +533,7 @@ void RenderWidgetHostViewAura::InitAsChild(
 void RenderWidgetHostViewAura::InitAsPopup(
     RenderWidgetHostView* parent_host_view,
     const gfx::Rect& bounds_in_screen) {
+  CreateAuraWindow();
   popup_parent_host_view_ =
       static_cast<RenderWidgetHostViewAura*>(parent_host_view);
 
@@ -591,6 +585,7 @@ void RenderWidgetHostViewAura::InitAsPopup(
 
 void RenderWidgetHostViewAura::InitAsFullscreen(
     RenderWidgetHostView* reference_host_view) {
+  CreateAuraWindow();
   is_fullscreen_ = true;
   window_->SetType(ui::wm::WINDOW_TYPE_NORMAL);
   window_->Init(ui::LAYER_SOLID_COLOR);
@@ -2472,9 +2467,18 @@ RenderWidgetHostViewAura::~RenderWidgetHostViewAura() {
   }
   delegated_frame_host_.reset();
   window_observer_.reset();
-  if (window_->GetHost())
-    window_->GetHost()->RemoveObserver(this);
-  UnlockMouse();
+  if (window_) {
+    if (window_->GetHost())
+      window_->GetHost()->RemoveObserver(this);
+    UnlockMouse();
+    aura::client::SetTooltipText(window_, NULL);
+    gfx::Screen::GetScreenFor(window_)->RemoveObserver(this);
+
+    // This call is usually no-op since |this| object is already removed from
+    // the Aura root window and we don't have a way to get an input method
+    // object associated with the window, but just in case.
+    DetachFromInputMethod();
+  }
   if (popup_parent_host_view_) {
     DCHECK(popup_parent_host_view_->popup_child_host_view_ == NULL ||
            popup_parent_host_view_->popup_child_host_view_ == this);
@@ -2486,13 +2490,6 @@ RenderWidgetHostViewAura::~RenderWidgetHostViewAura() {
     popup_child_host_view_->popup_parent_host_view_ = NULL;
   }
   event_filter_for_popup_exit_.reset();
-  aura::client::SetTooltipText(window_, NULL);
-  gfx::Screen::GetScreenFor(window_)->RemoveObserver(this);
-
-  // This call is usually no-op since |this| object is already removed from the
-  // Aura root window and we don't have a way to get an input method object
-  // associated with the window, but just in case.
-  DetachFromInputMethod();
 
 #if defined(OS_WIN)
   // The LegacyRenderWidgetHostHWND window should have been destroyed in
@@ -2500,6 +2497,18 @@ RenderWidgetHostViewAura::~RenderWidgetHostViewAura() {
   // be set to NULL.
   DCHECK(!legacy_render_widget_host_HWND_);
 #endif
+}
+
+void RenderWidgetHostViewAura::CreateAuraWindow() {
+  DCHECK(!window_);
+  window_ = new aura::Window(this);
+  window_observer_.reset(new WindowObserver(this));
+
+  aura::client::SetTooltipText(window_, &tooltip_);
+  aura::client::SetActivationDelegate(window_, this);
+  aura::client::SetFocusChangeObserver(window_, this);
+  window_->set_layer_owner_delegate(delegated_frame_host_.get());
+  gfx::Screen::GetScreenFor(window_)->AddObserver(this);
 }
 
 void RenderWidgetHostViewAura::UpdateCursorIfOverSelf() {

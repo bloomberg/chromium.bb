@@ -378,6 +378,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   class WindowAncestorObserver;
   friend class WindowAncestorObserver;
 
+  void CreateAuraWindow();
+
   void UpdateCursorIfOverSelf();
 
   // Tracks whether SnapToPhysicalPixelBoundary() has been called.

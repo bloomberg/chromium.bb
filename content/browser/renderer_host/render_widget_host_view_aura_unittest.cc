@@ -371,6 +371,7 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
   RenderWidgetHostViewAuraTest()
       : widget_host_uses_shutdown_to_destroy_(false),
         is_guest_view_hack_(false),
+        explicit_delete_view_(false),
         browser_thread_for_ui_(BrowserThread::UI, &message_loop_) {}
 
   void SetUpEnvironment() {
@@ -411,6 +412,9 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
     if (view_)
       view_->Destroy();
 
+    if (explicit_delete_view_)
+      delete view_;
+
     if (widget_host_uses_shutdown_to_destroy_)
       widget_host_->Shutdown();
     else
@@ -433,6 +437,10 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
 
   void set_widget_host_uses_shutdown_to_destroy(bool use) {
     widget_host_uses_shutdown_to_destroy_ = use;
+  }
+
+  void set_explicit_delete_view(bool val) {
+    explicit_delete_view_ = val;
   }
 
   void SimulateMemoryPressure(
@@ -499,6 +507,8 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
   bool widget_host_uses_shutdown_to_destroy_;
 
   bool is_guest_view_hack_;
+
+  bool explicit_delete_view_;
 
   base::MessageLoopForUI message_loop_;
   BrowserThreadImpl browser_thread_for_ui_;
@@ -758,6 +768,10 @@ class RenderWidgetHostViewAuraShutdownTest
  private:
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAuraShutdownTest);
 };
+
+TEST_F(RenderWidgetHostViewAuraTest, CrashInDestructor) {
+  set_explicit_delete_view(true);
+}
 
 // Checks that a fullscreen view has the correct show-state and receives the
 // focus.

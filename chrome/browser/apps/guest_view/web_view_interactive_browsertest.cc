@@ -313,7 +313,8 @@ class WebViewInteractiveTest
     ~PopupCreatedObserver() {}
 
     void Wait() {
-      if (CountWidgets() == initial_widget_count_ + 1) {
+      if (CountWidgets() == initial_widget_count_ + 1 &&
+          last_render_widget_host_->GetView()->GetNativeView()) {
         gfx::Rect popup_bounds =
             last_render_widget_host_->GetView()->GetViewBounds();
         if (!popup_bounds.size().IsEmpty()) {
