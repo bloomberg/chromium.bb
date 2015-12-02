@@ -9,7 +9,7 @@
 #include "base/values.h"
 #include "cc/base/math_util.h"
 #include "content/public/child/v8_value_converter.h"
-#include "content/renderer/chrome_object_extensions_utils.h"
+#include "content/public/renderer/chrome_object_extensions_utils.h"
 #include "content/renderer/render_thread_impl.h"
 #include "gin/arguments.h"
 #include "gin/handle.h"

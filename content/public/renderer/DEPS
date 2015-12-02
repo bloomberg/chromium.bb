@@ -4,6 +4,7 @@ include_rules = [
   "+media/base",
   "+media/renderers",
   "+media/video",
+  "+gin",
   "+v8/include/v8.h",
 ]
 

@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/chrome_object_extensions_utils.h"
+#include "content/public/renderer/chrome_object_extensions_utils.h"
 
 #include "gin/converter.h"
 #include "v8/include/v8.h"
 
 namespace content {
 
-v8::Local<v8::Object> GetOrCreateChromeObject(
-    v8::Isolate* isolate, v8::Local<v8::Object> global) {
+v8::Local<v8::Object> GetOrCreateChromeObject(v8::Isolate* isolate,
+                                              v8::Local<v8::Object> global) {
   v8::Local<v8::Object> chrome;
   v8::Local<v8::Value> chrome_value =
       global->Get(gin::StringToV8(isolate, "chrome"));
@@ -23,4 +23,4 @@ v8::Local<v8::Object> GetOrCreateChromeObject(
   return chrome;
 }
 
-} // namespace content
+}  // namespace content
