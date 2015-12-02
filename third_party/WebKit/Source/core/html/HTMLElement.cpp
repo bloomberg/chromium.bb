@@ -359,11 +359,13 @@ const AtomicString& HTMLElement::eventNameForAttributeName(const QualifiedName& 
 
 void HTMLElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)
 {
-    if (name == tabindexAttr)
+    if (name == tabindexAttr || name == XMLNames::langAttr)
         return Element::parseAttribute(name, oldValue, value);
 
     if (name == dirAttr) {
         dirAttributeChanged(value);
+    } else if (name == langAttr) {
+        pseudoStateChanged(CSSSelector::PseudoLang);
     } else {
         const AtomicString& eventName = eventNameForAttributeName(name);
         if (!eventName.isNull())

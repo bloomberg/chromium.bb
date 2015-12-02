@@ -305,6 +305,7 @@ InvalidationSet* RuleFeatureSet::invalidationSetForSelector(const CSSSelector& s
         case CSSSelector::PseudoInvalid:
         case CSSSelector::PseudoIndeterminate:
         case CSSSelector::PseudoTarget:
+        case CSSSelector::PseudoLang:
         case CSSSelector::PseudoInRange:
         case CSSSelector::PseudoOutOfRange:
         case CSSSelector::PseudoUnresolved:

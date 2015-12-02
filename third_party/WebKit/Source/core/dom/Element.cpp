@@ -2227,6 +2227,8 @@ void Element::parseAttribute(const QualifiedName& name, const AtomicString&, con
             // Clamp tabindex to the range of 'short' to match Firefox's behavior.
             setTabIndexExplicitly(max(static_cast<int>(std::numeric_limits<short>::min()), std::min(tabindex, static_cast<int>(std::numeric_limits<short>::max()))));
         }
+    } else if (name == XMLNames::langAttr) {
+        pseudoStateChanged(CSSSelector::PseudoLang);
     }
 }
 
