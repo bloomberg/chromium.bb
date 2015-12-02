@@ -32,6 +32,7 @@
 #include "platform/audio/AudioArray.h"
 #include "platform/audio/DynamicsCompressorKernel.h"
 #include "platform/audio/ZeroPole.h"
+#include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
 
@@ -45,6 +46,7 @@ class AudioBus;
 // making the sound richer, fuller, and more controlled.
 
 class PLATFORM_EXPORT DynamicsCompressor {
+    USING_FAST_MALLOC(DynamicsCompressor);
     WTF_MAKE_NONCOPYABLE(DynamicsCompressor);
 public:
     enum {

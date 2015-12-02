@@ -30,6 +30,7 @@
 #define Distance_h
 
 #include "platform/PlatformExport.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -37,6 +38,7 @@ namespace blink {
 // http://connect.creativelabs.com/openal/Documentation/OpenAL%201.1%20Specification.htm.
 
 class PLATFORM_EXPORT DistanceEffect {
+    DISALLOW_NEW();
 public:
     enum ModelType {
         ModelLinear = 0,

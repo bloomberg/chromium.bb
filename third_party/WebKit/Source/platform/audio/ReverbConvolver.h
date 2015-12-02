@@ -35,6 +35,7 @@
 #include "platform/audio/ReverbAccumulationBuffer.h"
 #include "platform/audio/ReverbConvolverStage.h"
 #include "platform/audio/ReverbInputBuffer.h"
+#include "wtf/Allocator.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
@@ -45,6 +46,7 @@ class AudioChannel;
 class WebThread;
 
 class PLATFORM_EXPORT ReverbConvolver {
+    USING_FAST_MALLOC(ReverbConvolver);
     WTF_MAKE_NONCOPYABLE(ReverbConvolver);
 public:
     // maxFFTSize can be adjusted (from say 2048 to 32768) depending on how much precision is necessary.

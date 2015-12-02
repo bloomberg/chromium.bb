@@ -32,6 +32,7 @@
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/AudioFIFO.h"
 #include "platform/audio/AudioSourceProvider.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -42,6 +43,8 @@ namespace blink {
 // with a "push" FIFO, where the sender pushes data to the FIFO which will itself push the data to
 // the receiver when the FIFO is full.
 class PLATFORM_EXPORT AudioPullFIFO {
+    USING_FAST_MALLOC(AudioPullFIFO);
+    WTF_MAKE_NONCOPYABLE(AudioPullFIFO);
 public:
     // Create a FIFO that gets data from |provider|. The FIFO will be large enough to hold
     // |fifoLength| frames of data of |numberOfChannels| channels. The AudioSourceProvider will be

@@ -34,6 +34,7 @@
 #include "platform/audio/AudioSourceProvider.h"
 #include "public/platform/WebAudioDevice.h"
 #include "public/platform/WebVector.h"
+#include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/text/WTFString.h"
 
@@ -45,6 +46,7 @@ class AudioPullFIFO;
 // An AudioDestination using Chromium's audio system
 
 class PLATFORM_EXPORT AudioDestination : public WebAudioDevice::RenderCallback, public AudioSourceProvider {
+    USING_FAST_MALLOC(AudioDestination);
     WTF_MAKE_NONCOPYABLE(AudioDestination);
 public:
     AudioDestination(AudioIOCallback&, const String& inputDeviceId, unsigned numberOfInputChannels, unsigned numberOfOutputChannels, float sampleRate);

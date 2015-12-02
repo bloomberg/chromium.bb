@@ -31,6 +31,7 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/audio/AudioArray.h"
+#include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Threading.h"
@@ -51,6 +52,7 @@ namespace blink {
 // and reverse FFT, internally storing the resultant frequency-domain data.
 
 class PLATFORM_EXPORT FFTFrame {
+    USING_FAST_MALLOC(FFTFrame);
 public:
     // The constructors, destructor, and methods up to the CROSS-PLATFORM section have platform-dependent implementations.
 

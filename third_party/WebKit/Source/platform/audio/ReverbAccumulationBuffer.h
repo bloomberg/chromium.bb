@@ -31,6 +31,8 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/audio/AudioArray.h"
+#include "wtf/Allocator.h"
+#include "wtf/Noncopyable.h"
 
 namespace blink {
 
@@ -38,6 +40,8 @@ namespace blink {
 // writing/accumulating to it at different delay offsets from the read position.  The read operation will zero the memory
 // just read from the buffer, so it will be ready for accumulation the next time around.
 class PLATFORM_EXPORT ReverbAccumulationBuffer {
+    DISALLOW_NEW();
+    WTF_MAKE_NONCOPYABLE(ReverbAccumulationBuffer);
 public:
     ReverbAccumulationBuffer(size_t length);
 

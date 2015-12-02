@@ -33,12 +33,16 @@
 
 #include "platform/audio/AudioArray.h"
 #include "platform/audio/DirectConvolver.h"
+#include "wtf/Allocator.h"
+#include "wtf/Noncopyable.h"
 
 namespace blink {
 
 // UpSampler up-samples the source stream by a factor of 2x.
 
 class PLATFORM_EXPORT UpSampler {
+    USING_FAST_MALLOC(UpSampler);
+    WTF_MAKE_NONCOPYABLE(UpSampler);
 public:
     UpSampler(size_t inputBlockSize);
 

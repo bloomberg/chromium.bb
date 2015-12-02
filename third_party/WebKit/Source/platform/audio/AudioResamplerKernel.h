@@ -27,6 +27,7 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/audio/AudioArray.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -36,6 +37,8 @@ class AudioResampler;
 // It uses a simple linear interpolation for good performance.
 
 class PLATFORM_EXPORT AudioResamplerKernel {
+    USING_FAST_MALLOC(AudioResamplerKernel);
+    WTF_MAKE_NONCOPYABLE(AudioResamplerKernel);
 public:
     AudioResamplerKernel(AudioResampler*);
 

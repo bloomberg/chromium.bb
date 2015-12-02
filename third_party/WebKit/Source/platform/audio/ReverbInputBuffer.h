@@ -31,11 +31,15 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/audio/AudioArray.h"
+#include "wtf/Allocator.h"
+#include "wtf/Noncopyable.h"
 
 namespace blink {
 
 // ReverbInputBuffer is used to buffer input samples for deferred processing by the background threads.
 class PLATFORM_EXPORT ReverbInputBuffer {
+    DISALLOW_NEW();
+    WTF_MAKE_NONCOPYABLE(ReverbInputBuffer);
 public:
     ReverbInputBuffer(size_t length);
 

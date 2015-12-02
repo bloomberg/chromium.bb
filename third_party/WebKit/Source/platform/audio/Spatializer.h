@@ -6,6 +6,8 @@
 #define Spatializer_h
 
 #include "platform/PlatformExport.h"
+#include "wtf/Allocator.h"
+#include "wtf/Noncopyable.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace blink {
@@ -14,6 +16,8 @@ class AudioBus;
 
 // Abstract base class for spatializing a mono or stereo source.
 class PLATFORM_EXPORT Spatializer {
+    USING_FAST_MALLOC(Spatializer);
+    WTF_MAKE_NONCOPYABLE(Spatializer);
 public:
     enum {
         PanningModelEqualPower = 0

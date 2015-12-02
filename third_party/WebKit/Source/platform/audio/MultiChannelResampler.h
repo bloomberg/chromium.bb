@@ -30,6 +30,7 @@
 #define MultiChannelResampler_h
 
 #include "platform/audio/SincResampler.h"
+#include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
 
@@ -38,6 +39,7 @@ namespace blink {
 class AudioBus;
 
 class PLATFORM_EXPORT MultiChannelResampler {
+    USING_FAST_MALLOC(MultiChannelResampler);
     WTF_MAKE_NONCOPYABLE(MultiChannelResampler);
 public:
     MultiChannelResampler(double scaleFactor, unsigned numberOfChannels);

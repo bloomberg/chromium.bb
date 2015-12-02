@@ -31,6 +31,8 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/audio/AudioArray.h"
+#include "wtf/Allocator.h"
+#include "wtf/Noncopyable.h"
 
 #if USE(WEBAUDIO_IPP)
 #include <ipps.h>
@@ -39,6 +41,8 @@
 namespace blink {
 
 class PLATFORM_EXPORT DirectConvolver {
+    USING_FAST_MALLOC(DirectConvolver);
+    WTF_MAKE_NONCOPYABLE(DirectConvolver);
 public:
     DirectConvolver(size_t inputBlockSize);
 

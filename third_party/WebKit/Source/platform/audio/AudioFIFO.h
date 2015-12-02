@@ -30,10 +30,13 @@
 #define AudioFIFO_h
 
 #include "platform/audio/AudioBus.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
 class AudioFIFO {
+    USING_FAST_MALLOC(AudioFIFO);
+    WTF_MAKE_NONCOPYABLE(AudioFIFO);
 public:
     // Create a FIFO large enough to hold |fifoLength| frames of data of |numberOfChannels| channels.
     AudioFIFO(unsigned numberOfChannels, size_t fifoLength);

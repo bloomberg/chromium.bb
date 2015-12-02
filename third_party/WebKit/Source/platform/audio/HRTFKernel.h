@@ -30,6 +30,8 @@
 #define HRTFKernel_h
 
 #include "platform/audio/FFTFrame.h"
+#include "wtf/Allocator.h"
+#include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
@@ -48,6 +50,8 @@ class AudioChannel;
 //      m_fftFrame is the frequency-domain representation of the impulse response with the delay removed
 //      m_frameDelay is the leading delay of the original impulse response.
 class PLATFORM_EXPORT HRTFKernel {
+    USING_FAST_MALLOC(HRTFKernel);
+    WTF_MAKE_NONCOPYABLE(HRTFKernel);
 public:
     // Note: this is destructive on the passed in AudioChannel.
     // The length of channel must be a power of two.

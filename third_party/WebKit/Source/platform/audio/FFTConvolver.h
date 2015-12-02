@@ -31,10 +31,14 @@
 
 #include "platform/audio/AudioArray.h"
 #include "platform/audio/FFTFrame.h"
+#include "wtf/Allocator.h"
+#include "wtf/Noncopyable.h"
 
 namespace blink {
 
 class PLATFORM_EXPORT FFTConvolver {
+    USING_FAST_MALLOC(FFTConvolver);
+    WTF_MAKE_NONCOPYABLE(FFTConvolver);
 public:
     // fftSize must be a power of two
     FFTConvolver(size_t fftSize);

@@ -30,6 +30,8 @@
 #define Panner_h
 
 #include "platform/PlatformExport.h"
+#include "wtf/Allocator.h"
+#include "wtf/Noncopyable.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace blink {
@@ -40,6 +42,8 @@ class HRTFDatabaseLoader;
 // Abstract base class for panning a mono or stereo source.
 
 class PLATFORM_EXPORT Panner {
+    USING_FAST_MALLOC(Panner);
+    WTF_MAKE_NONCOPYABLE(Panner);
 public:
     enum {
         PanningModelEqualPower = 0,

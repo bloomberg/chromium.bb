@@ -30,12 +30,14 @@
 #define ZeroPole_h
 
 #include "platform/PlatformExport.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
 // ZeroPole is a simple filter with one zero and one pole.
 
 class PLATFORM_EXPORT ZeroPole {
+    DISALLOW_NEW();
 public:
     ZeroPole()
         : m_zero(0)

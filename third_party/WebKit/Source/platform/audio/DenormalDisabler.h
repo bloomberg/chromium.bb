@@ -25,6 +25,7 @@
 #ifndef DenormalDisabler_h
 #define DenormalDisabler_h
 
+#include "wtf/Allocator.h"
 #include "wtf/CPU.h"
 #include "wtf/MathExtras.h"
 #include <float.h>
@@ -51,6 +52,7 @@ namespace blink {
 
 #if HAVE(DENORMAL)
 class DenormalDisabler {
+    DISALLOW_NEW();
 public:
     DenormalDisabler()
             : m_savedCSR(0)

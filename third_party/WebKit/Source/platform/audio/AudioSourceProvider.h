@@ -30,6 +30,7 @@
 #define AudioSourceProvider_h
 
 #include "platform/PlatformExport.h"
+#include "wtf/Allocator.h"
 #include <cstddef>
 
 namespace blink {
@@ -39,7 +40,11 @@ class AudioSourceProviderClient;
 
 // Abstract base-class for a pull-model client.
 class PLATFORM_EXPORT AudioSourceProvider {
+    USING_FAST_MALLOC(AudioSourceProvider);
+    WTF_MAKE_NONCOPYABLE(AudioSourceProvider);
 public:
+    AudioSourceProvider() { }
+
     // provideInput() gets called repeatedly to render time-slices of a continuous audio stream.
     virtual void provideInput(AudioBus* bus, size_t framesToProcess) = 0;
 

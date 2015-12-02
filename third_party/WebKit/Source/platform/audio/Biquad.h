@@ -31,6 +31,7 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/audio/AudioArray.h"
+#include "wtf/Allocator.h"
 #include <complex>
 #include <sys/types.h>
 
@@ -46,6 +47,7 @@ namespace blink {
 //    lowpass, highpass, shelving, parameteric, notch, allpass, ...
 
 class PLATFORM_EXPORT Biquad final {
+    DISALLOW_NEW();
 public:
     Biquad();
     ~Biquad();

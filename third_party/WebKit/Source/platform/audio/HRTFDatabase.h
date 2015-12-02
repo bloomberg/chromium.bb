@@ -30,6 +30,7 @@
 #define HRTFDatabase_h
 
 #include "platform/audio/HRTFElevation.h"
+#include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
@@ -41,6 +42,7 @@ namespace blink {
 class HRTFKernel;
 
 class PLATFORM_EXPORT HRTFDatabase {
+    USING_FAST_MALLOC(HRTFDatabase);
     WTF_MAKE_NONCOPYABLE(HRTFDatabase);
 public:
     static PassOwnPtr<HRTFDatabase> create(float sampleRate);

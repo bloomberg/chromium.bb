@@ -32,12 +32,16 @@
 #include "platform/PlatformExport.h"
 #include "platform/audio/AudioArray.h"
 #include "platform/audio/AudioSourceProvider.h"
+#include "wtf/Allocator.h"
+#include "wtf/Noncopyable.h"
 
 namespace blink {
 
 // SincResampler is a high-quality sample-rate converter.
 
 class PLATFORM_EXPORT SincResampler {
+    USING_FAST_MALLOC(SincResampler);
+    WTF_MAKE_NONCOPYABLE(SincResampler);
 public:
     // scaleFactor == sourceSampleRate / destinationSampleRate
     // kernelSize can be adjusted for quality (higher is better)

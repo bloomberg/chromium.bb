@@ -33,12 +33,16 @@
 
 #include "platform/audio/AudioArray.h"
 #include "platform/audio/DirectConvolver.h"
+#include "wtf/Allocator.h"
+#include "wtf/Noncopyable.h"
 
 namespace blink {
 
 // DownSampler down-samples the source stream by a factor of 2x.
 
 class PLATFORM_EXPORT DownSampler {
+    USING_FAST_MALLOC(DownSampler);
+    WTF_MAKE_NONCOPYABLE(DownSampler);
 public:
     DownSampler(size_t inputBlockSize);
 

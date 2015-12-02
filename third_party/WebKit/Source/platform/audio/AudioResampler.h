@@ -28,6 +28,7 @@
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/AudioResamplerKernel.h"
 #include "platform/audio/AudioSourceProvider.h"
+#include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/Vector.h"
@@ -39,6 +40,7 @@ namespace blink {
 // The default constructor defaults to single-channel (mono).
 
 class PLATFORM_EXPORT AudioResampler {
+    DISALLOW_NEW();
     WTF_MAKE_NONCOPYABLE(AudioResampler);
 public:
     AudioResampler();

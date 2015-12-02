@@ -29,6 +29,7 @@
 #ifndef AudioArray_h
 #define AudioArray_h
 
+#include "wtf/Allocator.h"
 #include "wtf/Partitions.h"
 #include "wtf/Vector.h"
 #include <string.h>
@@ -37,6 +38,8 @@ namespace blink {
 
 template<typename T>
 class AudioArray {
+    USING_FAST_MALLOC(AudioArray);
+    WTF_MAKE_NONCOPYABLE(AudioArray);
 public:
     AudioArray() : m_allocation(nullptr), m_alignedData(nullptr), m_size(0) { }
     explicit AudioArray(size_t n) : m_allocation(nullptr), m_alignedData(nullptr), m_size(0)

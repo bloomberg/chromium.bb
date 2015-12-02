@@ -31,12 +31,14 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/geometry/FloatPoint3D.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
 // Cone gain is defined according to the OpenAL specification
 
 class PLATFORM_EXPORT ConeEffect {
+    DISALLOW_NEW();
 public:
     ConeEffect();
 
