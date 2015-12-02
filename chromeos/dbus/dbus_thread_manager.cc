@@ -10,7 +10,6 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/amplifier_client.h"
 #include "chromeos/dbus/ap_manager_client.h"
-#include "chromeos/dbus/arc_bridge_client.h"
 #include "chromeos/dbus/audio_dsp_client.h"
 #include "chromeos/dbus/cras_audio_client.h"
 #include "chromeos/dbus/cros_disks_client.h"
@@ -106,10 +105,6 @@ dbus::Bus* DBusThreadManager::GetSystemBus() {
 
 AmplifierClient* DBusThreadManager::GetAmplifierClient() {
   return client_bundle_->amplifier_client();
-}
-
-ArcBridgeClient* DBusThreadManager::GetArcBridgeClient() {
-  return client_bundle_->arc_bridge_client();
 }
 
 ApManagerClient* DBusThreadManager::GetApManagerClient() {
@@ -246,7 +241,6 @@ UpdateEngineClient* DBusThreadManager::GetUpdateEngineClient() {
 void DBusThreadManager::InitializeClients() {
   GetAmplifierClient()->Init(GetSystemBus());
   GetApManagerClient()->Init(GetSystemBus());
-  GetArcBridgeClient()->Init(GetSystemBus());
   GetAudioDspClient()->Init(GetSystemBus());
   GetCrasAudioClient()->Init(GetSystemBus());
   GetCrosDisksClient()->Init(GetSystemBus());
@@ -395,11 +389,6 @@ DBusThreadManagerSetter::~DBusThreadManagerSetter() {
 void DBusThreadManagerSetter::SetAmplifierClient(
     scoped_ptr<AmplifierClient> client) {
   DBusThreadManager::Get()->client_bundle_->amplifier_client_ = client.Pass();
-}
-
-void DBusThreadManagerSetter::SetArcBridgeClient(
-    scoped_ptr<ArcBridgeClient> client) {
-  DBusThreadManager::Get()->client_bundle_->arc_bridge_client_ = client.Pass();
 }
 
 void DBusThreadManagerSetter::SetAudioDspClient(
