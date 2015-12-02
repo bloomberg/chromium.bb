@@ -106,12 +106,9 @@ static_library("blacklist") {
     "blacklist/blacklist_interceptions.h",
   ]
   deps = [
-    # Depend on base_static, but do NOT take a dependency on base.gyp:base
-    # as that would risk pulling in base's link-time dependencies which
-    # chrome_elf cannot do.
     ":breakpad",
     ":constants",
-    "//base:base_static",
+    "//base",
     "//sandbox:sandbox",
   ]
 }
