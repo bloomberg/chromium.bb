@@ -15,6 +15,7 @@
 #endif
 
 using blink::WebMouseEvent;
+using blink::WebMouseWheelEvent;
 
 namespace content {
 
@@ -51,6 +52,41 @@ TEST(WebInputEventBuilderTest, TestMouseEventScale) {
 
   command_line->AppendSwitchASCII(switches::kForceDeviceScaleFactor, "1");
   gfx::Display::ResetForceDeviceScaleFactorForTesting();
+}
+
+// Test that hasPreciseScrollingDeltas is true for wheel events that generate
+// high precision scroll deltas.
+TEST(WebInputEventBuilderTest, TestPreciseScrollingDelta) {
+  LPARAM lparam = MAKELPARAM(300, 200);
+
+  // wheel_delta is equal to WHEEL_DELTA, scroll up
+  WebMouseWheelEvent evt =
+      WebMouseWheelEventBuilder::Build(::GetDesktopWindow(), WM_MOUSEWHEEL,
+                                       MAKEWPARAM(0, 120), lparam, 100);
+  EXPECT_EQ(1, evt.wheelTicksY);
+  EXPECT_EQ(100, evt.deltaY);
+  EXPECT_FALSE(evt.hasPreciseScrollingDeltas);
+
+  // wheel_delta is a multiple of WHEEL_DELTA, scroll up
+  evt = WebMouseWheelEventBuilder::Build(::GetDesktopWindow(), WM_MOUSEWHEEL,
+                                         MAKEWPARAM(0, 360), lparam, 100);
+  EXPECT_EQ(3, evt.wheelTicksY);
+  EXPECT_EQ(300, evt.deltaY);
+  EXPECT_FALSE(evt.hasPreciseScrollingDeltas);
+
+  // wheel_delta is a multiple of WHEEL_DELTA, scroll down
+  evt = WebMouseWheelEventBuilder::Build(::GetDesktopWindow(), WM_MOUSEWHEEL,
+                                         MAKEWPARAM(0, -360), lparam, 100);
+  EXPECT_EQ(-3, evt.wheelTicksY);
+  EXPECT_EQ(-300, evt.deltaY);
+  EXPECT_FALSE(evt.hasPreciseScrollingDeltas);
+
+  // high precision scroll, wheel_delta not a multiple of WHEEL_DELTA
+  evt = WebMouseWheelEventBuilder::Build(::GetDesktopWindow(), WM_MOUSEWHEEL,
+                                         MAKEWPARAM(0, 3), lparam, 100);
+  EXPECT_FLOAT_EQ(0.025f, evt.wheelTicksY);
+  EXPECT_FLOAT_EQ(2.5f, evt.deltaY);
+  EXPECT_TRUE(evt.hasPreciseScrollingDeltas);
 }
 #endif
 

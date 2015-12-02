@@ -288,7 +288,16 @@ WebMouseWheelEvent WebMouseWheelEventBuilder::Build(HWND hwnd,
     result.globalX = static_cast<short>(LOWORD(lparam));
     result.globalY = static_cast<short>(HIWORD(lparam));
 
-    wheel_delta = static_cast<float>(GET_WHEEL_DELTA_WPARAM(wparam));
+    short wheel_delta_wparam = GET_WHEEL_DELTA_WPARAM(wparam);
+    // The current heuristic for setting hasPreciseScrollingDelta is whether or
+    // not wheel_delta is an exact multiple of WHEEL_DELTA. Note that high
+    // precision trackpads can occasionally generate deltas that are an exact
+    // multiple of WHEEL_DELTA.
+    if (wheel_delta_wparam % WHEEL_DELTA != 0)
+      result.hasPreciseScrollingDeltas = true;
+
+    wheel_delta = static_cast<float>(wheel_delta_wparam);
+
     if (message == WM_MOUSEHWHEEL) {
       horizontal_scroll = true;
       wheel_delta = -wheel_delta;  // Windows is <- -/+ ->, WebKit <- +/- ->.
