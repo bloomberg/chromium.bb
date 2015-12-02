@@ -117,9 +117,8 @@ void RasterWorkerPool::Shutdown() {
     DCHECK(!shutdown_);
     shutdown_ = true;
 
-    // Wake up a worker so it knows it should exit. This will cause all workers
-    // to exit as each will wake up another worker before exiting.
-    has_ready_to_run_tasks_cv_.Signal();
+    // Wake up all workers so they exit.
+    has_ready_to_run_tasks_cv_.Broadcast();
   }
   while (!threads_.empty()) {
     threads_.back()->Join();
@@ -177,10 +176,6 @@ void RasterWorkerPool::Run() {
 
     RunTaskWithLockAcquired();
   }
-
-  // We noticed we should exit. Wake up the next worker so it knows it should
-  // exit as well (because the Shutdown() code only signals once).
-  has_ready_to_run_tasks_cv_.Signal();
 }
 
 void RasterWorkerPool::FlushForTesting() {
@@ -242,10 +237,6 @@ void RasterWorkerPool::WaitForTasksToFinishRunning(cc::NamespaceToken token) {
 
     while (!work_queue_.HasFinishedRunningTasksInNamespace(task_namespace))
       has_namespaces_with_finished_running_tasks_cv_.Wait();
-
-    // There may be other namespaces that have finished running tasks, so wake
-    // up another origin thread.
-    has_namespaces_with_finished_running_tasks_cv_.Signal();
   }
 }
 
@@ -276,7 +267,8 @@ void RasterWorkerPool::RunTaskWithLockAcquired() {
   cc::Task* task = prioritized_task.task;
 
   // There may be more work available, so wake up another worker thread.
-  has_ready_to_run_tasks_cv_.Signal();
+  if (work_queue_.HasReadyToRunTasks())
+    has_ready_to_run_tasks_cv_.Signal();
 
   // Call WillRun() before releasing |lock_| and running task.
   task->WillRun();
@@ -292,10 +284,10 @@ void RasterWorkerPool::RunTaskWithLockAcquired() {
 
   work_queue_.CompleteTask(prioritized_task);
 
-  // If namespace has finished running all tasks, wake up origin thread.
+  // If namespace has finished running all tasks, wake up origin threads.
   if (work_queue_.HasFinishedRunningTasksInNamespace(
           prioritized_task.task_namespace))
-    has_namespaces_with_finished_running_tasks_cv_.Signal();
+    has_namespaces_with_finished_running_tasks_cv_.Broadcast();
 }
 
 RasterWorkerPool::ClosureTask::ClosureTask(const base::Closure& closure)
