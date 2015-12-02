@@ -597,6 +597,7 @@
         '--with-remote_protocols="CUPS dnssd"',
         '--enable-libusb',
       ],
+      'pre_build': 'scripts/pre-build/libcups2.sh',
       'includes': ['standard_instrumented_package_target.gypi'],
     },
     {
