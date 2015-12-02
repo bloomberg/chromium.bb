@@ -96,6 +96,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Skip('conformance2/textures/webgl_canvas/*', bug=483282)
     self.Fail('conformance2/textures/misc/tex-storage-2d.html', bug=483282)
 
+    # Remove after we roll in https://github.com/KhronosGroup/WebGL/pull/1342.
+    self.Fail('conformance2/state/gl-get-calls.html', bug=483282)
+
     # Windows only.
     self.Skip('deqp/functional/gles3/readpixel.html', ['win'], bug=483282)
     self.Skip('deqp/functional/gles3/texturestatequery.html',
