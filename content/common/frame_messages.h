@@ -382,12 +382,17 @@ IPC_STRUCT_BEGIN(FrameMsg_NewFrame_Params)
   IPC_STRUCT_MEMBER(FrameMsg_NewFrame_WidgetParams, widget_params)
 IPC_STRUCT_END()
 
+// Parameters included with an OpenURL request.  |frame_unique_name| is only
+// specified if |is_history_navigation_in_new_child| is true, for the case that
+// the browser process should look for an existing history item for the frame.
 IPC_STRUCT_BEGIN(FrameHostMsg_OpenURL_Params)
   IPC_STRUCT_MEMBER(GURL, url)
   IPC_STRUCT_MEMBER(content::Referrer, referrer)
   IPC_STRUCT_MEMBER(WindowOpenDisposition, disposition)
   IPC_STRUCT_MEMBER(bool, should_replace_current_entry)
   IPC_STRUCT_MEMBER(bool, user_gesture)
+  IPC_STRUCT_MEMBER(bool, is_history_navigation_in_new_child)
+  IPC_STRUCT_MEMBER(std::string, frame_unique_name)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(FrameMsg_TextTrackSettings_Params)

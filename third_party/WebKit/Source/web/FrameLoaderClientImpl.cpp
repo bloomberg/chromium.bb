@@ -583,12 +583,23 @@ NavigationPolicy FrameLoaderClientImpl::decidePolicyForNavigation(const Resource
 
     WebDataSourceImpl* ds = WebDataSourceImpl::fromDocumentLoader(loader);
 
+    // Newly created child frames may need to be navigated to a history item
+    // during a back/forward navigation. This will only happen when the parent
+    // is a LocalFrame doing a back/forward navigation that has not completed.
+    // (If the load has completed and the parent later adds a frame with script,
+    // we do not want to use a history item for it.)
+    bool isHistoryNavigationInNewChildFrame = m_webFrame->parent()
+        && m_webFrame->parent()->isWebLocalFrame()
+        && isBackForwardLoadType(toWebLocalFrameImpl(m_webFrame->parent())->frame()->loader().loadType())
+        && !toWebLocalFrameImpl(m_webFrame->parent())->frame()->document()->loadEventFinished();
+
     WrappedResourceRequest wrappedResourceRequest(request);
     WebFrameClient::NavigationPolicyInfo navigationInfo(wrappedResourceRequest);
     navigationInfo.navigationType = static_cast<WebNavigationType>(type);
     navigationInfo.defaultPolicy = static_cast<WebNavigationPolicy>(policy);
     navigationInfo.extraData = ds ? ds->extraData() : nullptr;
     navigationInfo.replacesCurrentHistoryItem = replacesCurrentHistoryItem;
+    navigationInfo.isHistoryNavigationInNewChildFrame = isHistoryNavigationInNewChildFrame;
 
     WebNavigationPolicy webPolicy = m_webFrame->client()->decidePolicyForNavigation(navigationInfo);
     return static_cast<NavigationPolicy>(webPolicy);

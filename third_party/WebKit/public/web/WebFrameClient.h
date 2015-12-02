@@ -221,6 +221,7 @@ public:
         WebNavigationType navigationType;
         WebNavigationPolicy defaultPolicy;
         bool replacesCurrentHistoryItem;
+        bool isHistoryNavigationInNewChildFrame;
 
         NavigationPolicyInfo(WebURLRequest& urlRequest)
             : extraData(nullptr)
@@ -228,6 +229,7 @@ public:
             , navigationType(WebNavigationTypeOther)
             , defaultPolicy(WebNavigationPolicyIgnore)
             , replacesCurrentHistoryItem(false)
+            , isHistoryNavigationInNewChildFrame(false)
         {
         }
     };
@@ -239,7 +241,7 @@ public:
 
     // During a history navigation, we may choose to load new subframes from history as well.
     // This returns such a history item if appropriate.
-    virtual WebHistoryItem historyItemForNewChildFrame(WebFrame*) { return WebHistoryItem(); }
+    virtual WebHistoryItem historyItemForNewChildFrame() { return WebHistoryItem(); }
 
     // Whether the client is handling a navigation request.
     virtual bool hasPendingNavigation(WebLocalFrame*) { return false; }

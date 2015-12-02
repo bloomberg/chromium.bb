@@ -2322,6 +2322,7 @@ TEST_F(NavigationControllerTest, BackSubframe) {
   params.did_create_new_entry = true;
   params.url = url3;
   params.transition = ui::PAGE_TRANSITION_MANUAL_SUBFRAME;
+  params.page_state = PageState::CreateFromURL(url3);
   EXPECT_TRUE(controller.RendererDidNavigate(subframe, params, &details));
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
@@ -2346,6 +2347,7 @@ TEST_F(NavigationControllerTest, BackSubframe) {
   params.did_create_new_entry = false;
   params.url = url2;
   params.transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
+  params.page_state = PageState::CreateFromURL(url2);
   EXPECT_TRUE(controller.RendererDidNavigate(subframe, params, &details));
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
@@ -2360,8 +2362,9 @@ TEST_F(NavigationControllerTest, BackSubframe) {
   params.page_id = 1;
   params.nav_entry_id = entry1->GetUniqueID();
   params.did_create_new_entry = false;
-  params.url = url1;
+  params.url = subframe_url;
   params.transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
+  params.page_state = PageState::CreateFromURL(subframe_url);
   EXPECT_TRUE(controller.RendererDidNavigate(subframe, params, &details));
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;

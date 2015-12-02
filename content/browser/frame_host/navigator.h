@@ -96,6 +96,14 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
       NavigationController::ReloadType reload_type,
       bool is_same_document_history_load);
 
+  // Called on a newly created subframe during a history navigation. The browser
+  // process looks up the corresponding FrameNavigationEntry for the new frame
+  // based on |unique_name| and navigates it in the correct process. Returns
+  // false if the FrameNavigationEntry can't be found or the navigation fails.
+  // This is only used in OOPIF-enabled modes.
+  virtual bool NavigateNewChildFrame(RenderFrameHostImpl* render_frame_host,
+                                     const std::string& unique_name);
+
   // Navigation requests -------------------------------------------------------
 
   virtual base::TimeTicks GetCurrentLoadStart();

@@ -811,6 +811,17 @@ void RenderFrameHostImpl::OnFrameFocused() {
 }
 
 void RenderFrameHostImpl::OnOpenURL(const FrameHostMsg_OpenURL_Params& params) {
+  if (params.is_history_navigation_in_new_child) {
+    DCHECK(SiteIsolationPolicy::UseSubframeNavigationEntries());
+
+    // Try to find a FrameNavigationEntry that matches this frame instead, based
+    // on the frame's unique name.  If this can't be found, fall back to the
+    // default params using OpenURL below.
+    if (frame_tree_node_->navigator()->NavigateNewChildFrame(
+            this, params.frame_unique_name))
+      return;
+  }
+
   OpenURL(params, GetSiteInstance());
 }
 

@@ -55,6 +55,9 @@ class CONTENT_EXPORT FrameNavigationEntry
   // |frame_unique_name|, if we can move unique name computation to the browser
   // process.
   int frame_tree_node_id() const { return frame_tree_node_id_; }
+  void set_frame_tree_node_id(int frame_tree_node_id) {
+    frame_tree_node_id_ = frame_tree_node_id;
+  }
 
   // The unique name of the frame this entry is for.  This is a stable name for
   // the frame based on its position in the tree and relation to other named

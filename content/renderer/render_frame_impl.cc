@@ -2599,16 +2599,14 @@ void RenderFrameImpl::loadURLExternally(const blink::WebURLRequest& request,
                                                    request.url(), referrer,
                                                    suggested_name));
   } else {
-    OpenURL(request.url(), referrer, policy, should_replace_current_entry);
+    OpenURL(request.url(), referrer, policy, should_replace_current_entry,
+            false);
   }
 }
 
-blink::WebHistoryItem RenderFrameImpl::historyItemForNewChildFrame(
-    blink::WebFrame* frame) {
-  DCHECK(!frame_ || frame_ == frame);
-
-  // TODO(creis): In OOPIF enabled modes, send an IPC to the browser process
-  // telling it to navigate the new frame.  See https://crbug.com/502317.
+blink::WebHistoryItem RenderFrameImpl::historyItemForNewChildFrame() {
+  // OOPIF enabled modes will punt this navigation to the browser in
+  // decidePolicyForNavigation.
   if (SiteIsolationPolicy::UseSubframeNavigationEntries())
     return WebHistoryItem();
 
@@ -4509,7 +4507,7 @@ WebNavigationPolicy RenderFrameImpl::decidePolicyForNavigation(
         // fixing http://crbug.com/101395.
         if (frame_->parent() == NULL) {
           OpenURL(info.urlRequest.url(), referrer, info.defaultPolicy,
-                  info.replacesCurrentHistoryItem);
+                  info.replacesCurrentHistoryItem, false);
           return blink::WebNavigationPolicyIgnore;  // Suppress the load here.
         }
 
@@ -4532,8 +4530,20 @@ WebNavigationPolicy RenderFrameImpl::decidePolicyForNavigation(
   if (is_content_initiated && IsTopLevelNavigation(frame_) &&
       render_view_->renderer_preferences_
           .browser_handles_all_top_level_requests) {
-    OpenURL(url, referrer, info.defaultPolicy, info.replacesCurrentHistoryItem);
+    OpenURL(url, referrer, info.defaultPolicy, info.replacesCurrentHistoryItem,
+            false);
     return blink::WebNavigationPolicyIgnore;  // Suppress the load here.
+  }
+
+  // In OOPIF-enabled modes, back/forward navigations in newly created subframes
+  // should be sent to the browser in case there is a matching
+  // FrameNavigationEntry.  If none is found, fall back to the default url.
+  if (SiteIsolationPolicy::UseSubframeNavigationEntries() &&
+      info.isHistoryNavigationInNewChildFrame && is_content_initiated) {
+    OpenURL(url, referrer, info.defaultPolicy, info.replacesCurrentHistoryItem,
+            true);
+    // Suppress the load in Blink but mark the frame as loading.
+    return blink::WebNavigationPolicyHandledByClient;
   }
 
   // Use the frame's original request's URL rather than the document's URL for
@@ -4595,7 +4605,7 @@ WebNavigationPolicy RenderFrameImpl::decidePolicyForNavigation(
 
     if (should_fork) {
       OpenURL(url, send_referrer ? referrer : Referrer(), info.defaultPolicy,
-              info.replacesCurrentHistoryItem);
+              info.replacesCurrentHistoryItem, false);
       return blink::WebNavigationPolicyIgnore;  // Suppress the load here.
     }
   }
@@ -4635,7 +4645,7 @@ WebNavigationPolicy RenderFrameImpl::decidePolicyForNavigation(
   if (is_fork) {
     // Open the URL via the browser, not via WebKit.
     OpenURL(url, Referrer(), info.defaultPolicy,
-            info.replacesCurrentHistoryItem);
+            info.replacesCurrentHistoryItem, false);
     return blink::WebNavigationPolicyIgnore;
   }
 
@@ -4695,7 +4705,8 @@ void RenderFrameImpl::OnGetSerializedHtmlWithLocalLinks(
 void RenderFrameImpl::OpenURL(const GURL& url,
                               const Referrer& referrer,
                               WebNavigationPolicy policy,
-                              bool should_replace_current_entry) {
+                              bool should_replace_current_entry,
+                              bool is_history_navigation_in_new_child) {
   FrameHostMsg_OpenURL_Params params;
   params.url = url;
   params.referrer = referrer;
@@ -4722,6 +4733,12 @@ void RenderFrameImpl::OpenURL(const GURL& url,
       policy == blink::WebNavigationPolicyNewWindow ||
       policy == blink::WebNavigationPolicyNewPopup) {
     WebUserGestureIndicator::consumeUserGesture();
+  }
+
+  if (is_history_navigation_in_new_child) {
+    DCHECK(SiteIsolationPolicy::UseSubframeNavigationEntries());
+    params.is_history_navigation_in_new_child = true;
+    params.frame_unique_name = frame_->uniqueName().utf8();
   }
 
   Send(new FrameHostMsg_OpenURL(routing_id_, params));
@@ -4856,6 +4873,8 @@ void RenderFrameImpl::NavigateInternal(
                   : blink::WebHistoryDifferentDocumentLoad;
 
           // Navigate the frame directly.
+          // TODO(creis): Use InitialHistoryLoad rather than BackForward for a
+          // history navigation in a newly created subframe.
           WebURLRequest request =
               frame_->requestFromHistoryItem(history_item, cache_policy);
           frame_->load(request, blink::WebFrameLoadType::BackForward,

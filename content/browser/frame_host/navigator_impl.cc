@@ -255,7 +255,8 @@ bool NavigatorImpl::NavigateToEntry(
     const FrameNavigationEntry& frame_entry,
     const NavigationEntryImpl& entry,
     NavigationController::ReloadType reload_type,
-    bool is_same_document_history_load) {
+    bool is_same_document_history_load,
+    bool is_pending_entry) {
   TRACE_EVENT0("browser,navigation", "NavigatorImpl::NavigateToEntry");
 
   GURL dest_url = frame_entry.url();
@@ -303,8 +304,8 @@ bool NavigatorImpl::NavigateToEntry(
                       entry, reload_type, is_same_document_history_load,
                       navigation_start);
 
-    // Notify observers about navigation.
-    if (delegate_)
+    // Notify observers about navigation if this is for the pending entry.
+    if (delegate_ && is_pending_entry)
       delegate_->DidStartNavigationToPendingEntry(dest_url, reload_type);
 
     return true;
@@ -316,7 +317,8 @@ bool NavigatorImpl::NavigateToEntry(
     return false;  // Unable to create the desired RenderFrameHost.
 
   // Make sure no code called via RFHM::Navigate clears the pending entry.
-  CHECK_EQ(controller_->GetPendingEntry(), &entry);
+  if (is_pending_entry)
+    CHECK_EQ(controller_->GetPendingEntry(), &entry);
 
   // For security, we should never send non-Web-UI URLs to a Web UI renderer.
   // Double check that here.
@@ -360,7 +362,8 @@ bool NavigatorImpl::NavigateToEntry(
   }
 
   // Make sure no code called via RFH::Navigate clears the pending entry.
-  CHECK_EQ(controller_->GetPendingEntry(), &entry);
+  if (is_pending_entry)
+    CHECK_EQ(controller_->GetPendingEntry(), &entry);
 
   if (controller_->GetPendingEntryIndex() == -1 &&
       dest_url.SchemeIs(url::kJavaScriptScheme)) {
@@ -376,9 +379,8 @@ bool NavigatorImpl::NavigateToEntry(
   }
 
   // Notify observers about navigation.
-  if (delegate_) {
+  if (delegate_ && is_pending_entry)
     delegate_->DidStartNavigationToPendingEntry(dest_url, reload_type);
-  }
 
   return true;
 }
@@ -390,7 +392,31 @@ bool NavigatorImpl::NavigateToPendingEntry(
     bool is_same_document_history_load) {
   return NavigateToEntry(frame_tree_node, frame_entry,
                          *controller_->GetPendingEntry(), reload_type,
-                         is_same_document_history_load);
+                         is_same_document_history_load, true);
+}
+
+bool NavigatorImpl::NavigateNewChildFrame(
+    RenderFrameHostImpl* render_frame_host,
+    const std::string& unique_name) {
+  NavigationEntryImpl* entry =
+      controller_->GetEntryWithUniqueID(render_frame_host->nav_entry_id());
+  if (!entry)
+    return false;
+
+  FrameNavigationEntry* frame_entry =
+      entry->GetFrameEntryByUniqueName(unique_name);
+  if (!frame_entry)
+    return false;
+
+  // Update the FrameNavigationEntry's FrameTreeNode ID (which is currently the
+  // ID of the old FrameTreeNode that no longer exists) to be the ID of the
+  // newly created frame.
+  frame_entry->set_frame_tree_node_id(
+      render_frame_host->frame_tree_node()->frame_tree_node_id());
+
+  return NavigateToEntry(render_frame_host->frame_tree_node(), *frame_entry,
+                         *entry, NavigationControllerImpl::NO_RELOAD, false,
+                         false);
 }
 
 void NavigatorImpl::DidNavigate(

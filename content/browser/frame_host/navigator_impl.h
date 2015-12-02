@@ -56,6 +56,8 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
                               const FrameNavigationEntry& frame_entry,
                               NavigationController::ReloadType reload_type,
                               bool is_same_document_history_load) override;
+  bool NavigateNewChildFrame(RenderFrameHostImpl* render_frame_host,
+                             const std::string& unique_name) override;
   void RequestOpenURL(RenderFrameHostImpl* render_frame_host,
                       const GURL& url,
                       SiteInstance* source_site_instance,
@@ -98,13 +100,15 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
   friend class NavigatorTestWithBrowserSideNavigation;
   ~NavigatorImpl() override;
 
-  // Navigates to the given entry, which must be the pending entry.  Private
-  // because all callers should use NavigateToPendingEntry.
+  // Navigates to the given entry, which might be the pending entry (if
+  // |is_pending_entry| is true).  Private because all callers should use either
+  // NavigateToPendingEntry or NavigateToNewChildFrame.
   bool NavigateToEntry(FrameTreeNode* frame_tree_node,
                        const FrameNavigationEntry& frame_entry,
                        const NavigationEntryImpl& entry,
                        NavigationController::ReloadType reload_type,
-                       bool is_same_document_history_load);
+                       bool is_same_document_history_load,
+                       bool is_pending_entry);
 
   bool ShouldAssignSiteForURL(const GURL& url);
 

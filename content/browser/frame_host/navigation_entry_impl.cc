@@ -596,6 +596,24 @@ FrameNavigationEntry* NavigationEntryImpl::GetFrameEntry(
   return tree_node ? tree_node->frame_entry.get() : nullptr;
 }
 
+FrameNavigationEntry* NavigationEntryImpl::GetFrameEntryByUniqueName(
+    const std::string& unique_name) const {
+  NavigationEntryImpl::TreeNode* node = nullptr;
+  std::queue<NavigationEntryImpl::TreeNode*> work_queue;
+  work_queue.push(root_node());
+  while (!work_queue.empty()) {
+    node = work_queue.front();
+    work_queue.pop();
+    if (node->frame_entry->frame_unique_name() == unique_name)
+      return node->frame_entry.get();
+
+    // Enqueue any children and keep looking.
+    for (auto& child : node->children)
+      work_queue.push(child);
+  }
+  return nullptr;
+}
+
 void NavigationEntryImpl::SetScreenshotPNGData(
     scoped_refptr<base::RefCountedBytes> png_data) {
   screenshot_ = png_data;

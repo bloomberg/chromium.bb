@@ -450,8 +450,7 @@ class CONTENT_EXPORT RenderFrameImpl
                          bool should_replace_current_entry) override;
   blink::WebNavigationPolicy decidePolicyForNavigation(
       const NavigationPolicyInfo& info) override;
-  blink::WebHistoryItem historyItemForNewChildFrame(
-      blink::WebFrame* frame) override;
+  blink::WebHistoryItem historyItemForNewChildFrame() override;
   void willSendSubmitEvent(blink::WebLocalFrame* frame,
                            const blink::WebFormElement& form) override;
   void willSubmitForm(blink::WebLocalFrame* frame,
@@ -772,10 +771,15 @@ class CONTENT_EXPORT RenderFrameImpl
       std::vector<base::FilePath> equivalent_local_paths,
       base::FilePath local_directory_path);
 
+  // Requests that the browser process navigates to |url|. If
+  // |is_history_navigation_in_new_child| is true, the browser process should
+  // look for a matching FrameNavigationEntry in the last committed entry to use
+  // instead of |url|.
   void OpenURL(const GURL& url,
                const Referrer& referrer,
                blink::WebNavigationPolicy policy,
-               bool should_replace_current_entry);
+               bool should_replace_current_entry,
+               bool is_history_navigation_in_new_child);
 
   // Performs a navigation in the frame. This provides a unified function for
   // the current code path and the browser-side navigation path (in

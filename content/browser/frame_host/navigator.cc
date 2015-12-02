@@ -26,6 +26,11 @@ bool Navigator::NavigateToPendingEntry(
   return false;
 }
 
+bool Navigator::NavigateNewChildFrame(RenderFrameHostImpl* render_frame_host,
+                                      const std::string& unique_name) {
+  return false;
+}
+
 base::TimeTicks Navigator::GetCurrentLoadStart() {
   return base::TimeTicks::Now();
 }

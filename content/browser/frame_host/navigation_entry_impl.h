@@ -192,6 +192,15 @@ class CONTENT_EXPORT NavigationEntryImpl
   // there is one in this NavigationEntry.
   FrameNavigationEntry* GetFrameEntry(FrameTreeNode* frame_tree_node) const;
 
+  // Returns the FrameNavigationEntry corresponding to the frame with the given
+  // |unique_name|, if any. This is useful when the FrameTreeNode cannot be used
+  // to find the entry, such as for a newly created subframe in a history
+  // navigation. Callers should update the FrameTreeNode ID of the entry so that
+  // it can be found with |GetFrameEntry| above.
+  // TODO(creis): Generate or verify the unique_name in the browser process.
+  FrameNavigationEntry* GetFrameEntryByUniqueName(
+      const std::string& unique_name) const;
+
   void set_unique_id(int unique_id) {
     unique_id_ = unique_id;
   }
