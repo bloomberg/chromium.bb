@@ -33,8 +33,7 @@ var test = function()
 
     function localScopeObject()
     {
-        var pane = WebInspector.panels.sources.sidebarPanes.scopechain;
-        var localsSection = pane._sections[0];
+        var localsSection = InspectorTest.scopeChainSections()[0];
         return localsSection._object;
     }
 

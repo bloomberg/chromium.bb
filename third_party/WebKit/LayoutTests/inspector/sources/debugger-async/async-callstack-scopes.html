@@ -83,19 +83,9 @@ function test()
             InspectorTest.assertGreaterOrEqual(index, 0);
             var frame = callStackPane.callFrames[index];
             InspectorTest.addResult((index + 1) + ") " + frame.title() + " " + frame.subtitle());
-            expandScopeChain();
+            InspectorTest.expandScopeVariablesSidebarPane(printScopeChain);
         }
 
-        function expandScopeChain()
-        {
-            // Expand all but global scopes. Expanding global scope takes too long
-            // so we keep it collapsed.
-            var sections = scopeChainPane._sections;
-            // global scope is always the last one.
-            for (var i = 0; i < sections.length - 1; ++i)
-                sections[i].expand();
-            InspectorTest.runAfterPendingDispatches(printScopeChain);
-        }
 
         function printScopeChain()
         {

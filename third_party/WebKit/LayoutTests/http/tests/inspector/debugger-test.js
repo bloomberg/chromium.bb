@@ -408,7 +408,7 @@ InspectorTest.dumpBreakpointSidebarPane = function(title)
 InspectorTest.dumpScopeVariablesSidebarPane = function()
 {
     InspectorTest.addResult("Scope variables sidebar pane:");
-    var sections = WebInspector.panels.sources.sidebarPanes.scopechain._sections;
+    var sections = InspectorTest.scopeChainSections();
     for (var i = 0; i < sections.length; ++i) {
         var textContent = InspectorTest.textContentWithLineBreaks(sections[i].element);
         var text = InspectorTest.clearSpecificInfoFromStackFrames(textContent);
@@ -419,10 +419,20 @@ InspectorTest.dumpScopeVariablesSidebarPane = function()
     }
 };
 
+InspectorTest.scopeChainSections = function()
+{
+    var children = WebInspector.panels.sources.sidebarPanes.scopechain.contentElement.children;
+    var sections = [];
+    for (var i = 0; i < children.length; ++i)
+        sections.push(children[i]._section);
+
+    return sections;
+}
+
 InspectorTest.expandScopeVariablesSidebarPane = function(callback)
 {
     // Expand all but the global scope. Expanding global scope takes for too long so we keep it collapsed.
-    var sections = WebInspector.panels.sources.sidebarPanes.scopechain._sections;
+    var sections = InspectorTest.scopeChainSections();
     for (var i = 0; i < sections.length - 1; ++i)
         sections[i].expand();
     InspectorTest.runAfterPendingDispatches(callback);
