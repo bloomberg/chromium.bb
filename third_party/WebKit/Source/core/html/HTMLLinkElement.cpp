@@ -26,7 +26,6 @@
 #include "core/html/HTMLLinkElement.h"
 
 #include "bindings/core/v8/ScriptEventListener.h"
-#include "bindings/core/v8/V8DOMActivityLogger.h"
 #include "core/HTMLNames.h"
 #include "core/css/MediaList.h"
 #include "core/css/MediaQueryEvaluator.h"
@@ -259,17 +258,8 @@ void HTMLLinkElement::process()
 
 Node::InsertionNotificationRequest HTMLLinkElement::insertedInto(ContainerNode* insertionPoint)
 {
-    if (insertionPoint->inDocument()) {
-        V8DOMActivityLogger* activityLogger = V8DOMActivityLogger::currentActivityLoggerIfIsolatedWorld();
-        if (activityLogger) {
-            Vector<String> argv;
-            argv.append("link");
-            argv.append(fastGetAttribute(relAttr));
-            argv.append(fastGetAttribute(hrefAttr));
-            activityLogger->logEvent("blinkAddElement", argv.size(), argv.data());
-        }
-    }
     HTMLElement::insertedInto(insertionPoint);
+    logEventIfIsolatedWorldAndInDocument("blinkAddElement", "link", fastGetAttribute(relAttr), fastGetAttribute(hrefAttr));
     if (!insertionPoint->inDocument())
         return InsertionDone;
 
@@ -466,17 +456,8 @@ DEFINE_TRACE(HTMLLinkElement)
 
 void HTMLLinkElement::attributeChanged(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& newValue, AttributeModificationReason reason)
 {
-    if (name == hrefAttr && inDocument()) {
-        V8DOMActivityLogger* activityLogger = V8DOMActivityLogger::currentActivityLoggerIfIsolatedWorld();
-        if (activityLogger) {
-            Vector<String> argv;
-            argv.append("link");
-            argv.append(hrefAttr.toString());
-            argv.append(oldValue);
-            argv.append(newValue);
-            activityLogger->logEvent("blinkSetAttribute", argv.size(), argv.data());
-        }
-    }
+    if (name == hrefAttr)
+        logEventIfIsolatedWorldAndInDocument("blinkSetAttribute", "link", hrefAttr.toString(), oldValue, newValue);
     HTMLElement::attributeChanged(name, oldValue, newValue, reason);
 }
 

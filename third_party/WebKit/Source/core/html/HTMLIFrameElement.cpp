@@ -25,7 +25,6 @@
 #include "config.h"
 #include "core/html/HTMLIFrameElement.h"
 
-#include "bindings/core/v8/V8DOMActivityLogger.h"
 #include "core/CSSPropertyNames.h"
 #include "core/HTMLNames.h"
 #include "core/frame/UseCounter.h"
@@ -95,17 +94,8 @@ void HTMLIFrameElement::collectStyleForPresentationAttribute(const QualifiedName
 
 void HTMLIFrameElement::attributeChanged(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& newValue, AttributeModificationReason reason)
 {
-    if (name == srcAttr && inDocument()) {
-        V8DOMActivityLogger* activityLogger = V8DOMActivityLogger::currentActivityLoggerIfIsolatedWorld();
-        if (activityLogger) {
-            Vector<String> argv;
-            argv.append("iframe");
-            argv.append(srcAttr.toString());
-            argv.append(oldValue);
-            argv.append(newValue);
-            activityLogger->logEvent("blinkSetAttribute", argv.size(), argv.data());
-        }
-    }
+    if (name == srcAttr)
+        logEventIfIsolatedWorldAndInDocument("blinkSetAttribute", "iframe", srcAttr.toString(), oldValue, newValue);
     HTMLFrameElementBase::attributeChanged(name, oldValue, newValue, reason);
 }
 
@@ -142,18 +132,10 @@ LayoutObject* HTMLIFrameElement::createLayoutObject(const ComputedStyle&)
 
 Node::InsertionNotificationRequest HTMLIFrameElement::insertedInto(ContainerNode* insertionPoint)
 {
-    if (insertionPoint->inDocument()) {
-        V8DOMActivityLogger* activityLogger = V8DOMActivityLogger::currentActivityLoggerIfIsolatedWorld();
-        if (activityLogger) {
-            Vector<String> argv;
-            argv.append("iframe");
-            argv.append(fastGetAttribute(srcAttr));
-            activityLogger->logEvent("blinkAddElement", argv.size(), argv.data());
-        }
-    }
     InsertionNotificationRequest result = HTMLFrameElementBase::insertedInto(insertionPoint);
     if (insertionPoint->inDocument() && document().isHTMLDocument() && !insertionPoint->isInShadowTree())
         toHTMLDocument(document()).addExtraNamedItem(m_name);
+    logEventIfIsolatedWorldAndInDocument("blinkAddElement", "iframe", fastGetAttribute(srcAttr));
     return result;
 }
 

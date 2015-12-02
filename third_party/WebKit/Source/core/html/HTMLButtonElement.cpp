@@ -26,7 +26,6 @@
 #include "config.h"
 #include "core/html/HTMLButtonElement.h"
 
-#include "bindings/core/v8/V8DOMActivityLogger.h"
 #include "core/HTMLNames.h"
 #include "core/dom/Attribute.h"
 #include "core/events/KeyboardEvent.h"
@@ -214,33 +213,15 @@ bool HTMLButtonElement::supportsAutofocus() const
 
 Node::InsertionNotificationRequest HTMLButtonElement::insertedInto(ContainerNode* insertionPoint)
 {
-    if (insertionPoint->inDocument()) {
-        V8DOMActivityLogger* activityLogger = V8DOMActivityLogger::currentActivityLoggerIfIsolatedWorld();
-        if (activityLogger) {
-            Vector<String> argv;
-            argv.append("button");
-            argv.append(fastGetAttribute(typeAttr));
-            argv.append(fastGetAttribute(formmethodAttr));
-            argv.append(fastGetAttribute(formactionAttr));
-            activityLogger->logEvent("blinkAddElement", argv.size(), argv.data());
-        }
-    }
-    return HTMLFormControlElement::insertedInto(insertionPoint);
+    InsertionNotificationRequest request = HTMLFormControlElement::insertedInto(insertionPoint);
+    logEventIfIsolatedWorldAndInDocument("blinkAddElement", "button", fastGetAttribute(typeAttr), fastGetAttribute(formmethodAttr), fastGetAttribute(formactionAttr));
+    return request;
 }
 
 void HTMLButtonElement::attributeChanged(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& newValue, AttributeModificationReason reason)
 {
-    if (name == formactionAttr && inDocument()) {
-        V8DOMActivityLogger* activityLogger = V8DOMActivityLogger::currentActivityLoggerIfIsolatedWorld();
-        if (activityLogger) {
-            Vector<String> argv;
-            argv.append("button");
-            argv.append(formactionAttr.toString());
-            argv.append(oldValue);
-            argv.append(newValue);
-            activityLogger->logEvent("blinkSetAttribute", argv.size(), argv.data());
-        }
-    }
+    if (name == formactionAttr)
+        logEventIfIsolatedWorldAndInDocument("blinkSetAttribute", "button", formactionAttr.toString(), oldValue, newValue);
     HTMLFormControlElement::attributeChanged(name, oldValue, newValue, reason);
 }
 

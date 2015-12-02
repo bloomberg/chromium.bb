@@ -30,6 +30,7 @@
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/V8DOMActivityLogger.h"
 #include "bindings/core/v8/V8DOMWrapper.h"
 #include "bindings/core/v8/V8PerContextData.h"
 #include "core/CSSValueKeywords.h"
@@ -3567,6 +3568,48 @@ bool Element::supportsStyleSharing() const
     if (Fullscreen::isActiveFullScreenElement(*this))
         return false;
     return true;
+}
+
+void Element::logEventIfIsolatedWorldAndInDocument(const String& eventName, const String& arg1, const String& arg2)
+{
+    if (!inDocument())
+        return;
+    V8DOMActivityLogger* activityLogger = V8DOMActivityLogger::currentActivityLoggerIfIsolatedWorld();
+    if (!activityLogger)
+        return;
+    Vector<String, 2> argv;
+    argv.append(arg1);
+    argv.append(arg2);
+    activityLogger->logEvent(eventName, argv.size(), argv.data());
+}
+
+void Element::logEventIfIsolatedWorldAndInDocument(const String& eventName, const String& arg1, const String& arg2, const String& arg3)
+{
+    if (!inDocument())
+        return;
+    V8DOMActivityLogger* activityLogger = V8DOMActivityLogger::currentActivityLoggerIfIsolatedWorld();
+    if (!activityLogger)
+        return;
+    Vector<String, 3> argv;
+    argv.append(arg1);
+    argv.append(arg2);
+    argv.append(arg3);
+    activityLogger->logEvent(eventName, argv.size(), argv.data());
+}
+
+void Element::logEventIfIsolatedWorldAndInDocument(const String& eventName, const String& arg1, const String& arg2, const String& arg3, const String& arg4)
+{
+    if (!inDocument())
+        return;
+    V8DOMActivityLogger* activityLogger = V8DOMActivityLogger::currentActivityLoggerIfIsolatedWorld();
+    if (!activityLogger)
+        return;
+    Vector<String, 4> argv;
+    argv.append(arg1);
+    argv.append(arg2);
+    argv.append(arg3);
+    argv.append(arg4);
+    activityLogger->logEvent(eventName, argv.size(), argv.data());
 }
 
 DEFINE_TRACE(Element)

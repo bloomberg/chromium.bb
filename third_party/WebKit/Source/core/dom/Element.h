@@ -533,6 +533,12 @@ public:
     void incrementProxyCount();
     void decrementProxyCount();
 
+    // Helpers for V8DOMActivityLogger::logEvent.  They call logEvent only if
+    // the element is inDocument() and the context is an isolated world.
+    void logEventIfIsolatedWorldAndInDocument(const String& eventName, const String& arg1, const String& arg2);
+    void logEventIfIsolatedWorldAndInDocument(const String& eventName, const String& arg1, const String& arg2, const String& arg3);
+    void logEventIfIsolatedWorldAndInDocument(const String& eventName, const String& arg1, const String& arg2, const String& arg3, const String& arg4);
+
     DECLARE_VIRTUAL_TRACE();
 
     SpellcheckAttributeState spellcheckAttributeState() const;

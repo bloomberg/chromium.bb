@@ -25,7 +25,6 @@
 
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "bindings/core/v8/ScriptEventListener.h"
-#include "bindings/core/v8/V8DOMActivityLogger.h"
 #include "core/HTMLNames.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/Document.h"
@@ -90,35 +89,17 @@ void HTMLScriptElement::parseAttribute(const QualifiedName& name, const AtomicSt
 
 void HTMLScriptElement::attributeChanged(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& newValue, AttributeModificationReason reason)
 {
-    if (name == srcAttr && inDocument()) {
-        V8DOMActivityLogger* activityLogger = V8DOMActivityLogger::currentActivityLoggerIfIsolatedWorld();
-        if (activityLogger) {
-            Vector<String> argv;
-            argv.append("script");
-            argv.append(srcAttr.toString());
-            argv.append(oldValue);
-            argv.append(newValue);
-            activityLogger->logEvent("blinkSetAttribute", argv.size(), argv.data());
-        }
-    }
+    if (name == srcAttr)
+        logEventIfIsolatedWorldAndInDocument("blinkSetAttribute", "script", srcAttr.toString(), oldValue, newValue);
     HTMLElement::attributeChanged(name, oldValue, newValue, reason);
 }
 
 Node::InsertionNotificationRequest HTMLScriptElement::insertedInto(ContainerNode* insertionPoint)
 {
-    if (insertionPoint->inDocument()) {
-        V8DOMActivityLogger* activityLogger = V8DOMActivityLogger::currentActivityLoggerIfIsolatedWorld();
-        if (activityLogger) {
-            Vector<String> argv;
-            argv.append("script");
-            argv.append(fastGetAttribute(srcAttr));
-            activityLogger->logEvent("blinkAddElement", argv.size(), argv.data());
-        }
-
-        if (hasSourceAttribute() && !loader()->isScriptTypeSupported(ScriptLoader::DisallowLegacyTypeInTypeAttribute))
-            UseCounter::count(document(), UseCounter::ScriptElementWithInvalidTypeHasSrc);
-    }
+    if (insertionPoint->inDocument() && hasSourceAttribute() && !loader()->isScriptTypeSupported(ScriptLoader::DisallowLegacyTypeInTypeAttribute))
+        UseCounter::count(document(), UseCounter::ScriptElementWithInvalidTypeHasSrc);
     HTMLElement::insertedInto(insertionPoint);
+    logEventIfIsolatedWorldAndInDocument("blinkAddElement", "script", fastGetAttribute(srcAttr));
     return InsertionShouldCallDidNotifySubtreeInsertions;
 }
 

@@ -24,7 +24,6 @@
 #include "config.h"
 #include "core/html/HTMLAnchorElement.h"
 
-#include "bindings/core/v8/V8DOMActivityLogger.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/events/MouseEvent.h"
 #include "core/frame/FrameHost.h"
@@ -179,17 +178,8 @@ void HTMLAnchorElement::setActive(bool down)
 
 void HTMLAnchorElement::attributeChanged(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& newValue, AttributeModificationReason reason)
 {
-    if (name == hrefAttr && inDocument()) {
-        V8DOMActivityLogger* activityLogger = V8DOMActivityLogger::currentActivityLoggerIfIsolatedWorld();
-        if (activityLogger) {
-            Vector<String> argv;
-            argv.append("a");
-            argv.append(hrefAttr.toString());
-            argv.append(oldValue);
-            argv.append(newValue);
-            activityLogger->logEvent("blinkSetAttribute", argv.size(), argv.data());
-        }
-    }
+    if (name == hrefAttr)
+        logEventIfIsolatedWorldAndInDocument("blinkSetAttribute", "a", hrefAttr.toString(), oldValue, newValue);
     HTMLElement::attributeChanged(name, oldValue, newValue, reason);
 }
 
@@ -401,16 +391,9 @@ bool HTMLAnchorElement::isInteractiveContent() const
 
 Node::InsertionNotificationRequest HTMLAnchorElement::insertedInto(ContainerNode* insertionPoint)
 {
-    if (insertionPoint->inDocument()) {
-        V8DOMActivityLogger* activityLogger = V8DOMActivityLogger::currentActivityLoggerIfIsolatedWorld();
-        if (activityLogger) {
-            Vector<String> argv;
-            argv.append("a");
-            argv.append(fastGetAttribute(hrefAttr));
-            activityLogger->logEvent("blinkAddElement", argv.size(), argv.data());
-        }
-    }
-    return HTMLElement::insertedInto(insertionPoint);
+    InsertionNotificationRequest request = HTMLElement::insertedInto(insertionPoint);
+    logEventIfIsolatedWorldAndInDocument("blinkAddElement", "a", fastGetAttribute(hrefAttr));
+    return request;
 }
 
 } // namespace blink
