@@ -288,8 +288,8 @@ FakeBluetoothDeviceClient::FakeBluetoothDeviceClient()
 
   properties->modalias.ReplaceValue("usb:v05ACp030Dd0306");
 
-  properties_map_.insert(dbus::ObjectPath(kPairedDevicePath),
-                         properties.Pass());
+  properties_map_.insert(std::make_pair(dbus::ObjectPath(kPairedDevicePath),
+                                        std::move(properties)));
   device_list_.push_back(dbus::ObjectPath(kPairedDevicePath));
 
   properties.reset(new Properties(base::Bind(
@@ -308,8 +308,8 @@ FakeBluetoothDeviceClient::FakeBluetoothDeviceClient()
 
   properties->modalias.ReplaceValue("usb:v05ACp030Dd0306");
 
-  properties_map_.insert(dbus::ObjectPath(kPairedUnconnectableDevicePath),
-                         properties.Pass());
+  properties_map_.insert(std::make_pair(
+      dbus::ObjectPath(kPairedUnconnectableDevicePath), std::move(properties)));
   device_list_.push_back(dbus::ObjectPath(kPairedUnconnectableDevicePath));
 }
 
@@ -338,7 +338,7 @@ FakeBluetoothDeviceClient::Properties* FakeBluetoothDeviceClient::GetProperties(
     const dbus::ObjectPath& object_path) {
   PropertiesMap::const_iterator iter = properties_map_.find(object_path);
   if (iter != properties_map_.end())
-    return iter->second;
+    return iter->second.get();
   return NULL;
 }
 
@@ -348,8 +348,8 @@ FakeBluetoothDeviceClient::GetPairingOptions(
   PairingOptionsMap::const_iterator iter =
       pairing_options_map_.find(object_path);
   if (iter != pairing_options_map_.end())
-    return iter->second;
-  return iter != pairing_options_map_.end() ? iter->second : nullptr;
+    return iter->second.get();
+  return iter != pairing_options_map_.end() ? iter->second.get() : nullptr;
 }
 
 void FakeBluetoothDeviceClient::Connect(const dbus::ObjectPath& object_path,
@@ -706,7 +706,7 @@ void FakeBluetoothDeviceClient::CreateDevice(
     NOTREACHED();
   }
 
-  properties_map_.insert(device_path, properties.Pass());
+  properties_map_.insert(std::make_pair(device_path, std::move(properties)));
   device_list_.push_back(device_path);
   FOR_EACH_OBSERVER(BluetoothDeviceClient::Observer, observers_,
                     DeviceAdded(device_path));
@@ -739,9 +739,9 @@ void FakeBluetoothDeviceClient::CreateDeviceWithProperties(
   options->pairing_action = props.pairing_action;
   options->incoming = props.incoming;
 
-  properties_map_.insert(device_path, properties.Pass());
+  properties_map_.insert(std::make_pair(device_path, std::move(properties)));
   device_list_.push_back(device_path);
-  pairing_options_map_.insert(device_path, options.Pass());
+  pairing_options_map_.insert(std::make_pair(device_path, std::move(options)));
   FOR_EACH_OBSERVER(BluetoothDeviceClient::Observer, observers_,
                     DeviceAdded(device_path));
 }
@@ -995,7 +995,7 @@ void FakeBluetoothDeviceClient::RemoveDevice(
     return;
 
   PropertiesMap::const_iterator iter = properties_map_.find(device_path);
-  Properties* properties = iter->second;
+  Properties* properties = iter->second.get();
 
   VLOG(1) << "removing device: " << properties->alias.value();
   device_list_.erase(listiter);
@@ -1448,7 +1448,7 @@ void FakeBluetoothDeviceClient::UpdateDeviceRSSI(
     VLOG(2) << "Fake device does not exist: " << object_path.value();
     return;
   }
-  Properties* properties = iter->second;
+  Properties* properties = iter->second.get();
   DCHECK(properties);
   properties->rssi.ReplaceValue(rssi);
 }

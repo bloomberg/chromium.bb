@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "base/containers/scoped_ptr_map.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"

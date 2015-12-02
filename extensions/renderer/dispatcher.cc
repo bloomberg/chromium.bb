@@ -8,7 +8,6 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "base/containers/scoped_ptr_map.h"
 #include "base/debug/alias.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"

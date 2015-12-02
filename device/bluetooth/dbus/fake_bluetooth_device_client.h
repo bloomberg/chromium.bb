@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/containers/scoped_ptr_map.h"
 #include "base/observer_list.h"
 #include "dbus/object_path.h"
 #include "dbus/property.h"
@@ -297,15 +296,14 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothDeviceClient
   base::ObserverList<Observer> observers_;
 
   using PropertiesMap =
-      base::ScopedPtrMap<const dbus::ObjectPath, scoped_ptr<Properties>>;
+      std::map<const dbus::ObjectPath, scoped_ptr<Properties>>;
   PropertiesMap properties_map_;
   std::vector<dbus::ObjectPath> device_list_;
 
   // Properties which are used to decied which method of pairing should
   // be done on request.
   using PairingOptionsMap =
-      base::ScopedPtrMap<const dbus::ObjectPath,
-                         scoped_ptr<SimulatedPairingOptions>>;
+      std::map<const dbus::ObjectPath, scoped_ptr<SimulatedPairingOptions>>;
   PairingOptionsMap pairing_options_map_;
 
   int simulation_interval_ms_;

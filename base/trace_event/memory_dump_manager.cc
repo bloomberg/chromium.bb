@@ -456,7 +456,7 @@ void MemoryDumpManager::FinalizeDumpAndAddToTrace(
 
   for (const auto& kv : pmd_async_state->process_dumps) {
     ProcessId pid = kv.first;  // kNullProcessId for the current process.
-    ProcessMemoryDump* process_memory_dump = kv.second;
+    ProcessMemoryDump* process_memory_dump = kv.second.get();
     TracedValue* traced_value = new TracedValue();
     scoped_refptr<ConvertableToTraceFormat> event_value(traced_value);
     process_memory_dump->AsValueInto(traced_value);
@@ -651,9 +651,9 @@ ProcessMemoryDump* MemoryDumpManager::ProcessMemoryDumpAsyncState::
   auto iter = process_dumps.find(pid);
   if (iter == process_dumps.end()) {
     scoped_ptr<ProcessMemoryDump> new_pmd(new ProcessMemoryDump(session_state));
-    iter = process_dumps.insert(pid, std::move(new_pmd)).first;
+    iter = process_dumps.insert(std::make_pair(pid, std::move(new_pmd))).first;
   }
-  return iter->second;
+  return iter->second.get();
 }
 
 }  // namespace trace_event

@@ -5,12 +5,12 @@
 #ifndef BASE_TRACE_EVENT_MEMORY_DUMP_MANAGER_H_
 #define BASE_TRACE_EVENT_MEMORY_DUMP_MANAGER_H_
 
+#include <map>
 #include <memory>
 #include <set>
 
 #include "base/atomicops.h"
 #include "base/containers/hash_tables.h"
-#include "base/containers/scoped_ptr_map.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
@@ -186,7 +186,7 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
     // being dumped from the current process. Typically each process dumps only
     // for itself, unless dump providers specify a different |target_process| in
     // MemoryDumpProvider::Options.
-    ScopedPtrMap<ProcessId, scoped_ptr<ProcessMemoryDump>> process_dumps;
+    std::map<ProcessId, scoped_ptr<ProcessMemoryDump>> process_dumps;
 
     // The arguments passed to the initial CreateProcessDump() request.
     const MemoryDumpRequestArgs req_args;
