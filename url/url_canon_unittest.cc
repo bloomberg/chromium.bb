@@ -1990,6 +1990,8 @@ TEST(URLCanonTest, ResolveRelativeURL) {
       // Non-hierarchical base: absolute input should succeed.
     {"data:foobar", false, false, "http://host/", true, false, false, NULL},
     {"data:foobar", false, false, "http:host", true, false, false, NULL},
+      // Non-hierarchical base: empty URL should give error.
+    {"data:foobar", false, false, "", false, false, false, NULL},
       // Invalid schemes should be treated as relative.
     {"http://foo/bar", true, false, "./asd:fgh", true, true, true, "http://foo/asd:fgh"},
     {"http://foo/bar", true, false, ":foo", true, true, true, "http://foo/:foo"},

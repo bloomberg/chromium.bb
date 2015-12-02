@@ -449,6 +449,7 @@ TEST_F(PasswordGenerationAgentTest, DynamicFormTest) {
 
   ExecuteJavaScriptForTests(
       "var form = document.createElement('form');"
+      "form.action='http://www.random.com';"
       "var username = document.createElement('input');"
       "username.type = 'text';"
       "username.id = 'dynamic_username';"

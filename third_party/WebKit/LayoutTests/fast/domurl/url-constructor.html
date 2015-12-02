@@ -32,6 +32,12 @@ test(function() {
         new URL();
     }, 'TypeError: Failed to construct \'URL\': 1 argument required, but only 0 present.');
     assertThrows(function() {
+        new URL('');
+    }, 'TypeError: Failed to construct \'URL\': Invalid URL');
+    assertThrows(function() {
+        new URL('','about:blank');
+    }, 'TypeError: Failed to construct \'URL\': Invalid URL');
+    assertThrows(function() {
         new URL('abc');
     }, 'TypeError: Failed to construct \'URL\': Invalid URL');
     assertThrows(function() {

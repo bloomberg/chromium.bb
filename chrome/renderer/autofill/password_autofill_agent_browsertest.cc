@@ -553,7 +553,7 @@ TEST_F(PasswordAutofillAgentTest, InitialAutocompleteForEmptyAction) {
 
   // Set the expected form origin and action URLs.
   UpdateOriginForHTML(kEmptyActionFormHTML);
-  fill_data_.action = fill_data_.origin;
+  fill_data_.action = GURL();
 
   // Simulate the browser sending back the login info, it triggers the
   // autocomplete.
@@ -1400,7 +1400,7 @@ TEST_F(PasswordAutofillAgentTest,
 TEST_F(PasswordAutofillAgentTest,
        RememberLastNonEmptyUsernameAndPasswordOnSubmit_New) {
   const char kNewPasswordFormHTML[] =
-      "<FORM name='LoginTestForm'>"
+      "<FORM name='LoginTestForm' action='http://www.bidule.com'>"
       "  <INPUT type='text' id='username' autocomplete='username'/>"
       "  <INPUT type='password' id='password' autocomplete='new-password'/>"
       "  <INPUT type='submit' value='Login'/>"

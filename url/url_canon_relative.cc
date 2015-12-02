@@ -75,6 +75,10 @@ bool DoIsRelativeURL(const char* base,
   TrimURL(url, &begin, &url_len);
   if (begin >= url_len) {
     // Empty URLs are relative, but do nothing.
+    if (!is_base_hierarchical) {
+      // Don't allow relative URLs if the base scheme doesn't support it.
+      return false;
+    }
     *relative_component = Component(begin, 0);
     *is_relative = true;
     return true;
