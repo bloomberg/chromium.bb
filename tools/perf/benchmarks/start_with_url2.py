@@ -42,8 +42,15 @@ class StartWithUrlWarmTBM(startup2._StartupPerfBenchmark):
   """Measures stimetime to start Chrome warm with startup URLs."""
 
   page_set = page_sets.StartupPagesPageSetTBM
-  options = {'pageset_repeat': 10}
+  options = {'pageset_repeat': 11}
 
   @classmethod
   def Name(cls):
     return 'start_with_url2.warm.startup_pages'
+
+  @classmethod
+  def ValueCanBeAddedPredicate(cls, value, is_first_result):
+    del value  # unused
+    # Ignores first results because the first invocation is actualy cold since
+    # we are loading the profile for the first time.
+    return not is_first_result
