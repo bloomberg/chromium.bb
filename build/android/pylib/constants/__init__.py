@@ -15,6 +15,7 @@ import subprocess
 
 import devil.android.sdk.keyevent
 from devil.android.sdk import version_codes
+from devil.constants import exit_codes
 
 keyevent = devil.android.sdk.keyevent
 
@@ -280,6 +281,6 @@ def _FindAdbPath():
     return os.path.join(ANDROID_SDK_ROOT, 'platform-tools', 'adb')
 
 # Exit codes
-ERROR_EXIT_CODE = 1
-INFRA_EXIT_CODE = 87
-WARNING_EXIT_CODE = 88
+ERROR_EXIT_CODE = exit_codes.ERROR
+INFRA_EXIT_CODE = exit_codes.INFRA
+WARNING_EXIT_CODE = exit_codes.WARNING
