@@ -529,7 +529,9 @@ PassRefPtr<ComputedStyle> StyleResolver::styleForDocument(Document& document)
     RefPtr<ComputedStyle> documentStyle = ComputedStyle::create();
     documentStyle->setRTLOrdering(document.visuallyOrdered() ? VisualOrder : LogicalOrder);
     documentStyle->setZoom(frame && !document.printing() ? frame->pageZoomFactor() : 1);
-    documentStyle->setLocale(document.contentLanguage());
+    FontDescription documentFontDescription = documentStyle->fontDescription();
+    documentFontDescription.setLocale(document.contentLanguage());
+    documentStyle->setFontDescription(documentFontDescription);
     documentStyle->setZIndex(0);
     documentStyle->setUserModify(document.inDesignMode() ? READ_WRITE : READ_ONLY);
     // These are designed to match the user-agent stylesheet values for the document element

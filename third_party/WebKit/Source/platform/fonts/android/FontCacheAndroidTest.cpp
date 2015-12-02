@@ -17,7 +17,8 @@ TEST(FontCacheAndroid, fallbackFontForCharacter)
     const UChar32 testChar = 228;
 
     FontDescription fontDescription;
-    fontDescription.setScript(USCRIPT_SIMPLIFIED_HAN);
+    fontDescription.setLocale("zh");
+    ASSERT_EQ(USCRIPT_SIMPLIFIED_HAN, fontDescription.script());
     fontDescription.setGenericFamily(FontDescription::StandardFamily);
 
     FontCache* fontCache = FontCache::fontCache();

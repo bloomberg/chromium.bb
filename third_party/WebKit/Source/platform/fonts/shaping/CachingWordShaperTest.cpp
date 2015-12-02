@@ -18,7 +18,8 @@ protected:
     void SetUp() override
     {
         fontDescription.setComputedSize(12.0);
-        fontDescription.setScript(USCRIPT_LATIN);
+        fontDescription.setLocale("en");
+        ASSERT_EQ(USCRIPT_LATIN, fontDescription.script());
         fontDescription.setGenericFamily(FontDescription::StandardFamily);
 
         font = Font(fontDescription);

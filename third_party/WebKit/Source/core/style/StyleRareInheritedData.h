@@ -150,8 +150,6 @@ public:
     short hyphenationLimitAfter;
     short hyphenationLimitLines;
 
-    AtomicString locale;
-
     AtomicString textEmphasisCustomMark;
     RefPtr<QuotesData> quotes;
 

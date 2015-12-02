@@ -11,7 +11,6 @@
 #include "core/frame/Settings.h"
 #include "core/style/ComputedStyle.h"
 #include "core/testing/DummyPageHolder.h"
-#include "platform/text/LocaleToScriptMapping.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -141,11 +140,10 @@ static void fontSizeValue(FontBuilder& b)
 static void fontScriptBase(FontDescription& d)
 {
     d.setLocale("no");
-    d.setScript(localeToScriptCodeForFontSelection("no"));
 }
 static void fontScriptValue(FontBuilder& b)
 {
-    b.setScript("se");
+    b.setLocale("se");
 }
 
 INSTANTIATE_TEST_CASE_P(AllFields, FontBuilderAdditiveTest,

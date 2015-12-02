@@ -763,11 +763,10 @@ void StyleBuilderFunctions::applyValueCSSPropertyWebkitLocale(StyleResolverState
 {
     if (value->isPrimitiveValue()) {
         ASSERT(toCSSPrimitiveValue(value)->getValueID() == CSSValueAuto);
-        state.style()->setLocale(nullAtom);
+        state.fontBuilder().setLocale(nullAtom);
     } else {
-        state.style()->setLocale(AtomicString(toCSSStringValue(value)->value()));
+        state.fontBuilder().setLocale(AtomicString(toCSSStringValue(value)->value()));
     }
-    state.fontBuilder().setScript(state.style()->locale());
 }
 
 void StyleBuilderFunctions::applyInitialCSSPropertyWebkitAppRegion(StyleResolverState&)

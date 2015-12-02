@@ -94,7 +94,7 @@ font-variant-ligatures inherited, font, name_for_methods=VariantLigatures, conve
 font-weight interpolable, inherited, font, type_name=FontWeight, name_for_methods=Weight, converter=convertFontWeight
 font-feature-settings inherited, font, name_for_methods=FeatureSettings, converter=convertFontFeatureSettings
 -webkit-font-smoothing inherited, font, type_name=FontSmoothingMode
--webkit-locale inherited, custom_value
+-webkit-locale inherited, font, custom_value
 text-orientation inherited, custom_value
 -webkit-text-orientation inherited, custom_value
 writing-mode inherited, custom_value

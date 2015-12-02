@@ -58,7 +58,7 @@ public:
     void setStretch(FontStretch);
     void setFamilyDescription(const FontDescription::FamilyDescription&);
     void setFeatureSettings(PassRefPtr<FontFeatureSettings>);
-    void setScript(const AtomicString& locale);
+    void setLocale(const AtomicString&);
     void setStyle(FontStyle);
     void setVariant(FontVariant);
     void setVariantLigatures(const FontDescription::VariantLigatures&);
@@ -81,6 +81,7 @@ public:
     static TextRenderingMode initialTextRendering() { return AutoTextRendering; }
     static FontVariant initialVariant() { return FontVariantNormal; }
     static FontDescription::VariantLigatures initialVariantLigatures() { return FontDescription::VariantLigatures(); }
+    static const AtomicString& initialLocale() { return nullAtom; }
     static FontStyle initialStyle() { return FontStyleNormal; }
     static FontDescription::Kerning initialKerning() { return FontDescription::AutoKerning; }
     static FontSmoothingMode initialFontSmoothing() { return AutoSmoothing; }
@@ -109,7 +110,7 @@ private:
         Stretch,
         Family,
         FeatureSettings,
-        Script,
+        Locale,
         Style,
         SizeAdjust,
         Variant,

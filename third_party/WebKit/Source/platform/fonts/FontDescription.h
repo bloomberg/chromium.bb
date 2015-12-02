@@ -35,6 +35,7 @@
 #include "platform/fonts/FontWidthVariant.h"
 #include "platform/fonts/TextRenderingMode.h"
 #include "platform/fonts/TypesettingFeatures.h"
+#include "platform/text/LocaleToScriptMapping.h"
 #include "wtf/Allocator.h"
 #include "wtf/MathExtras.h"
 
@@ -206,8 +207,11 @@ public:
     void setTextRendering(TextRenderingMode rendering) { m_fields.m_textRendering = rendering; updateTypesettingFeatures(); }
     void setOrientation(FontOrientation orientation) { m_fields.m_orientation = static_cast<unsigned>(orientation); }
     void setWidthVariant(FontWidthVariant widthVariant) { m_fields.m_widthVariant = widthVariant; }
-    void setScript(UScriptCode s) { m_fields.m_script = s; }
-    void setLocale(const AtomicString& locale) { m_locale = locale; }
+    void setLocale(const AtomicString& locale)
+    {
+        m_locale = locale;
+        m_fields.m_script = localeToScriptCodeForFontSelection(locale);
+    }
     void setSyntheticBold(bool syntheticBold) { m_fields.m_syntheticBold = syntheticBold; }
     void setSyntheticItalic(bool syntheticItalic) { m_fields.m_syntheticItalic = syntheticItalic; }
     void setFeatureSettings(PassRefPtr<FontFeatureSettings> settings) { m_featureSettings = settings; }
