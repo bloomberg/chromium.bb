@@ -44,6 +44,7 @@ const uint32_t VORGTag = OT_MAKE_TAG('V', 'O', 'R', 'G');
 #pragma pack(1)
 
 struct HheaTable {
+    DISALLOW_NEW();
     OpenType::Fixed version;
     OpenType::Int16 ascender;
     OpenType::Int16 descender;
@@ -61,6 +62,7 @@ struct HheaTable {
 };
 
 struct VheaTable {
+    DISALLOW_NEW();
     OpenType::Fixed version;
     OpenType::Int16 ascent;
     OpenType::Int16 descent;
@@ -78,25 +80,31 @@ struct VheaTable {
 };
 
 struct HmtxTable {
+    DISALLOW_NEW();
     struct Entry {
+        DISALLOW_NEW();
         OpenType::UInt16 advanceWidth;
         OpenType::Int16 lsb;
     } entries[1];
 };
 
 struct VmtxTable {
+    DISALLOW_NEW();
     struct Entry {
+        DISALLOW_NEW();
         OpenType::UInt16 advanceHeight;
         OpenType::Int16 topSideBearing;
     } entries[1];
 };
 
 struct VORGTable {
+    DISALLOW_NEW();
     OpenType::UInt16 majorVersion;
     OpenType::UInt16 minorVersion;
     OpenType::Int16 defaultVertOriginY;
     OpenType::UInt16 numVertOriginYMetrics;
     struct VertOriginYMetrics {
+        DISALLOW_NEW();
         OpenType::UInt16 glyphIndex;
         OpenType::Int16 vertOriginY;
     } vertOriginYMetrics[1];

@@ -27,6 +27,7 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/fonts/Glyph.h"
+#include "wtf/Allocator.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"

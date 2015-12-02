@@ -36,6 +36,7 @@ namespace blink {
 class SharedFontFamily;
 
 class PLATFORM_EXPORT FontFamily {
+    DISALLOW_NEW();
 public:
     FontFamily() { }
     ~FontFamily();
@@ -55,6 +56,8 @@ private:
 };
 
 class PLATFORM_EXPORT SharedFontFamily : public FontFamily, public RefCounted<SharedFontFamily> {
+    USING_FAST_MALLOC(SharedFontFamily);
+    WTF_MAKE_NONCOPYABLE(SharedFontFamily);
 public:
     static PassRefPtr<SharedFontFamily> create()
     {

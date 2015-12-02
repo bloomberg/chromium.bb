@@ -38,6 +38,7 @@
 #include "platform/fonts/FontOrientation.h"
 #include "platform/fonts/FontRenderStyle.h"
 #include "platform/fonts/opentype/OpenTypeVerticalData.h"
+#include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 #include "wtf/HashTableDeletedValueType.h"
 #include "wtf/RefPtr.h"
@@ -66,6 +67,7 @@ class GraphicsContext;
 class HarfBuzzFace;
 
 class PLATFORM_EXPORT FontPlatformData {
+    USING_FAST_MALLOC(FontPlatformData);
 public:
     // Used for deleted values in the font cache's hash tables. The hash table
     // will create us with this structure, and it will compare other values

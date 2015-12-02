@@ -34,6 +34,7 @@
 #include "platform/fonts/FallbackListCompositeKey.h"
 #include "platform/fonts/FontCacheKey.h"
 #include "platform/fonts/FontFaceCreationParams.h"
+#include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassRefPtr.h"
@@ -190,6 +191,8 @@ private:
 };
 
 class PLATFORM_EXPORT FontCachePurgePreventer {
+    USING_FAST_MALLOC(FontCachePurgePreventer);
+    WTF_MAKE_NONCOPYABLE(FontCachePurgePreventer);
 public:
     FontCachePurgePreventer() { FontCache::fontCache()->disablePurging(); }
     ~FontCachePurgePreventer() { FontCache::fontCache()->enablePurging(); }

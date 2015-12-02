@@ -112,6 +112,9 @@ HarfBuzzFace::~HarfBuzzFace()
 }
 
 struct HarfBuzzFontData {
+    USING_FAST_MALLOC(HarfBuzzFontData);
+    WTF_MAKE_NONCOPYABLE(HarfBuzzFontData);
+public:
     HarfBuzzFontData(WTF::HashMap<uint32_t, uint16_t>* glyphCacheForFaceCacheEntry, hb_face_t* face, unsigned rangeFrom, unsigned rangeTo)
         : m_glyphCacheForFaceCacheEntry(glyphCacheForFaceCacheEntry)
         , m_face(face)

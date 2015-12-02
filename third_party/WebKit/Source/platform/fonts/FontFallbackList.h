@@ -26,6 +26,7 @@
 #include "platform/fonts/FontSelector.h"
 #include "platform/fonts/SimpleFontData.h"
 #include "platform/fonts/shaping/ShapeCache.h"
+#include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 #include "wtf/MainThread.h"
 #include "wtf/WeakPtr.h"
@@ -43,6 +44,7 @@ public:
     typedef HashMap<int, GlyphPageTreeNodeBase*, DefaultHash<int>::Hash> GlyphPages;
 
     class GlyphPagesStateSaver {
+        STACK_ALLOCATED();
     public:
         GlyphPagesStateSaver(FontFallbackList& fallbackList)
             : m_fallbackList(fallbackList)

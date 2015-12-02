@@ -34,6 +34,7 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/fonts/FontOrientation.h"
+#include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/RefPtr.h"
@@ -47,6 +48,7 @@ class FontPlatformData;
 class SharedBuffer;
 
 class PLATFORM_EXPORT FontCustomPlatformData {
+    USING_FAST_MALLOC(FontCustomPlatformData);
     WTF_MAKE_NONCOPYABLE(FontCustomPlatformData);
 public:
     static PassOwnPtr<FontCustomPlatformData> create(SharedBuffer*, String& otsParseMessage);

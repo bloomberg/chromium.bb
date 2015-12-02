@@ -37,6 +37,7 @@
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/text/TextRun.h"
+#include "wtf/Allocator.h"
 #include "wtf/Deque.h"
 #include "wtf/HashSet.h"
 #include "wtf/OwnPtr.h"
@@ -141,6 +142,7 @@ public:
     };
 
     struct HolesQueueItem {
+        DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
         HolesQueueItemAction m_action;
         unsigned m_startIndex;
         unsigned m_numCharacters;

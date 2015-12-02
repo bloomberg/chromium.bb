@@ -31,6 +31,7 @@
 #ifndef FontFaceCreationParams_h
 #define FontFaceCreationParams_h
 
+#include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
 #include "wtf/StringHasher.h"
 #include "wtf/text/AtomicString.h"
@@ -44,12 +45,7 @@ enum FontFaceCreationType {
 };
 
 class FontFaceCreationParams {
-    FontFaceCreationType m_creationType;
-    AtomicString m_family;
-    CString m_filename;
-    int m_fontconfigInterfaceId;
-    int m_ttcIndex;
-
+    USING_FAST_MALLOC(FontFaceCreationParams);
 public:
     FontFaceCreationParams()
         : m_creationType(CreateFontByFamily), m_family(AtomicString()), m_filename(CString()), m_fontconfigInterfaceId(0), m_ttcIndex(0)
@@ -120,6 +116,12 @@ public:
             && m_ttcIndex == other.m_ttcIndex;
     }
 
+private:
+    FontFaceCreationType m_creationType;
+    AtomicString m_family;
+    CString m_filename;
+    int m_fontconfigInterfaceId;
+    int m_ttcIndex;
 };
 
 } // namespace blink

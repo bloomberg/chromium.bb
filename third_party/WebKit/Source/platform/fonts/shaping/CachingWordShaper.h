@@ -29,6 +29,7 @@
 
 #include "platform/geometry/FloatRect.h"
 #include "platform/text/TextRun.h"
+#include "wtf/Allocator.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
 
@@ -41,6 +42,7 @@ class ShapeCache;
 struct GlyphData;
 
 class PLATFORM_EXPORT CachingWordShaper final {
+    STACK_ALLOCATED();
     WTF_MAKE_NONCOPYABLE(CachingWordShaper);
 public:
     CachingWordShaper(ShapeCache* cache) : m_shapeCache(cache) { }

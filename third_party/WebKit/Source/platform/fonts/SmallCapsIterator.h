@@ -8,10 +8,14 @@
 #include "platform/fonts/FontOrientation.h"
 #include "platform/fonts/ScriptRunIterator.h"
 #include "platform/fonts/UTF16TextIterator.h"
+#include "wtf/Allocator.h"
+#include "wtf/Noncopyable.h"
 
 namespace blink {
 
 class PLATFORM_EXPORT SmallCapsIterator {
+    USING_FAST_MALLOC(SmallCapsIterator);
+    WTF_MAKE_NONCOPYABLE(SmallCapsIterator);
 public:
     enum SmallCapsBehavior {
         SmallCapsSameCase,

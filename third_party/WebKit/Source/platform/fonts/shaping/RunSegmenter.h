@@ -11,6 +11,8 @@
 #include "platform/fonts/ScriptRunIterator.h"
 #include "platform/fonts/SmallCapsIterator.h"
 #include "platform/fonts/UTF16TextIterator.h"
+#include "wtf/Allocator.h"
+#include "wtf/Noncopyable.h"
 
 #include <unicode/uscript.h>
 
@@ -20,11 +22,13 @@ namespace blink {
 // OrientationIterator and SmallCapsIterator, depending on orientaton and
 // font-variant of the text run.
 class PLATFORM_EXPORT RunSegmenter {
-
+    STACK_ALLOCATED();
+    WTF_MAKE_NONCOPYABLE(RunSegmenter);
 public:
 
     // Indices into the UTF-16 buffer that is passed in
     struct RunSegmenterRange {
+        DISALLOW_NEW();
         unsigned start;
         unsigned end;
         UScriptCode script;

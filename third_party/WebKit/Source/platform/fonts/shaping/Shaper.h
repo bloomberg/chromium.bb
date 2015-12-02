@@ -33,7 +33,9 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/geometry/FloatPoint.h"
+#include "wtf/Allocator.h"
 #include "wtf/HashSet.h"
+#include "wtf/Noncopyable.h"
 
 namespace blink {
 
@@ -46,6 +48,8 @@ class TextRun;
 struct GlyphData;
 
 class PLATFORM_EXPORT Shaper {
+    DISALLOW_NEW();
+    WTF_MAKE_NONCOPYABLE(Shaper);
 protected:
     Shaper(const Font*, const TextRun&, const GlyphData* emphasisData = nullptr,
         HashSet<const SimpleFontData*>* fallbackFonts = nullptr, FloatRect* = nullptr);

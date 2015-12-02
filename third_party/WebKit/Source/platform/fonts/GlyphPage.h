@@ -33,6 +33,7 @@
 #include "platform/PlatformExport.h"
 #include "platform/fonts/CustomFontData.h"
 #include "platform/fonts/Glyph.h"
+#include "wtf/Allocator.h"
 #include "wtf/Partitions.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -48,6 +49,7 @@ class GlyphPageTreeNodeBase;
 // Holds the glyph index and the corresponding SimpleFontData information for a given
 // character.
 struct GlyphData {
+    DISALLOW_NEW();
     GlyphData(Glyph g = 0, const SimpleFontData* f = 0)
         : glyph(g)
         , fontData(f)

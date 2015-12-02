@@ -31,10 +31,12 @@
 #include "config.h"
 #include "VDMXParser.h"
 
+#include "wtf/Allocator.h"
+#include "wtf/ByteOrder.h"
+#include "wtf/Noncopyable.h"
+
 #include <stdlib.h>
 #include <string.h>
-
-#include "wtf/ByteOrder.h"
 
 // Buffer helper class
 //
@@ -42,6 +44,8 @@
 // out-of-bounds errors. As a family they return false if anything is amiss,
 // updating the current offset otherwise.
 class Buffer {
+    STACK_ALLOCATED();
+    WTF_MAKE_NONCOPYABLE(Buffer);
 public:
     Buffer(const uint8_t* buffer, size_t length)
         : m_buffer(buffer)

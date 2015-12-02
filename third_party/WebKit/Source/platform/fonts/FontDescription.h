@@ -35,6 +35,7 @@
 #include "platform/fonts/FontWidthVariant.h"
 #include "platform/fonts/TextRenderingMode.h"
 #include "platform/fonts/TypesettingFeatures.h"
+#include "wtf/Allocator.h"
 #include "wtf/MathExtras.h"
 
 #include "wtf/RefPtr.h"
@@ -46,6 +47,7 @@ namespace blink {
 const float FontSizeAdjustNone = -1;
 
 class PLATFORM_EXPORT FontDescription {
+    USING_FAST_MALLOC(FontDescription);
 public:
     enum GenericFamilyType { NoFamily, StandardFamily, SerifFamily, SansSerifFamily,
                              MonospaceFamily, CursiveFamily, FantasyFamily, PictographFamily };
@@ -91,6 +93,7 @@ public:
     bool operator!=(const FontDescription& other) const { return !(*this == other); }
 
     struct VariantLigatures {
+        STACK_ALLOCATED();
         VariantLigatures(LigaturesState state = NormalLigaturesState)
             : common(state)
             , discretionary(state)
@@ -106,6 +109,7 @@ public:
     };
 
     struct Size {
+        STACK_ALLOCATED();
         Size(unsigned keyword, float value, bool isAbsolute)
             : keyword(keyword)
             , isAbsolute(isAbsolute)
@@ -118,6 +122,7 @@ public:
     };
 
     struct FamilyDescription {
+        STACK_ALLOCATED();
         FamilyDescription(GenericFamilyType genericFamily) : genericFamily(genericFamily) { }
         FamilyDescription(GenericFamilyType genericFamily, const FontFamily& family)
             : genericFamily(genericFamily)
@@ -245,6 +250,7 @@ private:
     float m_wordSpacing;
 
     struct BitFields {
+        DISALLOW_NEW();
         unsigned m_orientation : static_cast<unsigned>(FontOrientation::BitCount);
 
         unsigned m_widthVariant : 2; // FontWidthVariant

@@ -38,6 +38,7 @@
 namespace blink {
 
 struct SameSizeAsFontDescription {
+    DISALLOW_NEW();
     FontFamily familyList;
     RefPtr<FontFeatureSettings> m_featureSettings;
     AtomicString locale;

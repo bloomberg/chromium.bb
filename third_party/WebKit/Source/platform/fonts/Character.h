@@ -35,6 +35,7 @@
 #include "platform/text/TextDirection.h"
 #include "platform/text/TextPath.h"
 #include "platform/text/TextRun.h"
+#include "wtf/Allocator.h"
 #include "wtf/HashSet.h"
 #include "wtf/text/CharacterNames.h"
 #include "wtf/text/WTFString.h"
@@ -42,6 +43,7 @@
 namespace blink {
 
 class PLATFORM_EXPORT Character {
+    STATIC_ONLY(Character);
 public:
     static CodePath characterRangeCodePath(const LChar*, unsigned) { return SimplePath; }
     static CodePath characterRangeCodePath(const UChar*, unsigned len);
@@ -122,9 +124,6 @@ public:
 
     static String normalizeSpaces(const LChar*, unsigned length);
     static String normalizeSpaces(const UChar*, unsigned length);
-
-private:
-    Character();
 };
 
 } // namespace blink

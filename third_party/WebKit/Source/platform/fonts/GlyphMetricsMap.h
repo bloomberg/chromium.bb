@@ -31,6 +31,7 @@
 
 #include "platform/fonts/Glyph.h"
 #include "platform/geometry/FloatRect.h"
+#include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
 #include "wtf/HashMap.h"
 #include "wtf/OwnPtr.h"
@@ -42,6 +43,7 @@ namespace blink {
 const float cGlyphSizeUnknown = -1;
 
 template<class T> class GlyphMetricsMap {
+    USING_FAST_MALLOC(GlyphMetricsMap);
     WTF_MAKE_NONCOPYABLE(GlyphMetricsMap);
 public:
     GlyphMetricsMap() : m_filledPrimaryPage(false) { }
@@ -57,8 +59,11 @@ public:
 
 private:
     class GlyphMetricsPage {
+        USING_FAST_MALLOC(GlyphMetricsPage);
+        WTF_MAKE_NONCOPYABLE(GlyphMetricsPage);
     public:
         static const size_t size = 256; // Usually covers Latin-1 in a single page.
+        GlyphMetricsPage() { }
 
         T metricsForGlyph(Glyph glyph) const { return m_metrics[glyph % size]; }
         void setMetricsForGlyph(Glyph glyph, const T& metrics)

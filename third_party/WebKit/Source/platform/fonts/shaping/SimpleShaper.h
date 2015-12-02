@@ -40,6 +40,8 @@ class TextRun;
 struct GlyphData;
 
 struct PLATFORM_EXPORT SimpleShaper : public Shaper {
+    // SVGTextMetricsCalculator wants to allocate SimpleShaper by using
+    // operator new.
     USING_FAST_MALLOC(SimpleShaper);
 public:
     SimpleShaper(const Font*, const TextRun&, const GlyphData* emphasisData = nullptr,
@@ -59,6 +61,7 @@ private:
     float m_runWidthSoFar;
 
     struct CharacterData {
+        STACK_ALLOCATED();
         UChar32 character;
         unsigned clusterLength;
         int characterOffset;

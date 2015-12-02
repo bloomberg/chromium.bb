@@ -8,10 +8,14 @@
 #include "platform/fonts/FontOrientation.h"
 #include "platform/fonts/ScriptRunIterator.h"
 #include "platform/fonts/UTF16TextIterator.h"
+#include "wtf/Allocator.h"
+#include "wtf/Noncopyable.h"
 
 namespace blink {
 
 class PLATFORM_EXPORT OrientationIterator {
+    USING_FAST_MALLOC(OrientationIterator);
+    WTF_MAKE_NONCOPYABLE(OrientationIterator);
 public:
     enum RenderOrientation {
         OrientationKeep,

@@ -22,11 +22,13 @@
 #ifndef Latin1TextIterator_h
 #define Latin1TextIterator_h
 
+#include "wtf/Allocator.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
 class Latin1TextIterator {
+    STACK_ALLOCATED();
 public:
     // The passed in LChar pointer starts at 'offset'.
     // The iterator operates on the range [offset, endOffset].

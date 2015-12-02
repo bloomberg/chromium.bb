@@ -7,6 +7,7 @@
 
 #include "platform/fonts/FontCacheKey.h"
 #include "platform/fonts/FontDescription.h"
+#include "wtf/Allocator.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashTableDeletedValueType.h"
 
@@ -20,6 +21,7 @@ class FontDescription;
 // TODO(eae,drott): Ideally this should be replaced by a combination of
 // FontDescription and CSSFontSelector.
 struct FallbackListCompositeKey {
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     FallbackListCompositeKey(const FontDescription& fontDescription)
         : m_hash(fontDescription.styleHashWithoutFamilyList() << 1)
@@ -82,6 +84,7 @@ private:
 };
 
 struct FallbackListCompositeKeyHash {
+    STATIC_ONLY(FallbackListCompositeKeyHash);
     static unsigned hash(const FallbackListCompositeKey& key)
     {
         return key.hash();
@@ -95,7 +98,9 @@ struct FallbackListCompositeKeyHash {
     static const bool safeToCompareToEmptyOrDeleted = false;
 };
 
-struct FallbackListCompositeKeyTraits : WTF::SimpleClassHashTraits<FallbackListCompositeKey> { };
+struct FallbackListCompositeKeyTraits : WTF::SimpleClassHashTraits<FallbackListCompositeKey> {
+    STATIC_ONLY(FallbackListCompositeKeyTraits);
+};
 
 } // namespace blink
 

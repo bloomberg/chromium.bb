@@ -27,6 +27,7 @@
 #ifndef FontTraits_h
 #define FontTraits_h
 
+#include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
 
 namespace blink {
@@ -73,6 +74,7 @@ enum FontVariant {
 typedef unsigned FontTraitsBitfield;
 
 struct FontTraits {
+    DISALLOW_NEW();
     FontTraits(FontStyle style, FontVariant variant, FontWeight weight, FontStretch stretch)
     {
         m_traits.m_style = style;

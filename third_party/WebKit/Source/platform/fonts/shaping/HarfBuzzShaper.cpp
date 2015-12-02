@@ -56,6 +56,8 @@ namespace blink {
 
 template<typename T>
 class HarfBuzzScopedPtr {
+    STACK_ALLOCATED();
+    WTF_MAKE_NONCOPYABLE(HarfBuzzScopedPtr);
 public:
     typedef void (*DestroyFunction)(T*);
 

@@ -31,7 +31,9 @@
 #ifndef HarfBuzzFace_h
 #define HarfBuzzFace_h
 
+#include "wtf/Allocator.h"
 #include "wtf/HashMap.h"
+#include "wtf/Noncopyable.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
@@ -44,6 +46,7 @@ namespace blink {
 class FontPlatformData;
 
 class HarfBuzzFace : public RefCounted<HarfBuzzFace> {
+    WTF_MAKE_NONCOPYABLE(HarfBuzzFace);
 public:
     static const hb_tag_t vertTag;
     static const hb_tag_t vrt2Tag;
@@ -77,6 +80,7 @@ namespace WTF {
 
 template<typename T> struct OwnedPtrDeleter;
 template<> struct OwnedPtrDeleter<hb_font_t> {
+    STATIC_ONLY(OwnedPtrDeleter);
     static void deletePtr(hb_font_t* font)
     {
         if (font)

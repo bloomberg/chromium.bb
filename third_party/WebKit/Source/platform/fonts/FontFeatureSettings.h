@@ -27,6 +27,7 @@
 #define FontFeatureSettings_h
 
 #include "platform/PlatformExport.h"
+#include "wtf/Allocator.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
@@ -36,6 +37,7 @@
 namespace blink {
 
 class PLATFORM_EXPORT FontFeature {
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     FontFeature(const AtomicString& tag, int value);
     bool operator==(const FontFeature&);
@@ -49,6 +51,7 @@ private:
 };
 
 class PLATFORM_EXPORT FontFeatureSettings : public RefCounted<FontFeatureSettings> {
+    WTF_MAKE_NONCOPYABLE(FontFeatureSettings);
 public:
     static PassRefPtr<FontFeatureSettings> create()
     {

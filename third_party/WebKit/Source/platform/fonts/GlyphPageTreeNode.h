@@ -30,6 +30,7 @@
 #define GlyphPageTreeNode_h
 
 #include "platform/fonts/GlyphPage.h"
+#include "wtf/Allocator.h"
 #include "wtf/HashMap.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
@@ -152,6 +153,7 @@ private:
     PassRefPtr<GlyphPage> initializePage();
 
     struct UScriptCodeHashTraits : WTF::GenericHashTraits<UScriptCode> {
+        STATIC_ONLY(UScriptCodeHashTraits);
         static UScriptCode emptyValue() { return USCRIPT_CODE_LIMIT; }
         static void constructDeletedValue(UScriptCode& slot, bool) { slot = USCRIPT_INVALID_CODE; }
         static bool isDeletedValue(UScriptCode value) { return value == USCRIPT_INVALID_CODE; }

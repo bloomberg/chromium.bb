@@ -30,11 +30,14 @@
 #ifndef FontRenderStyle_h
 #define FontRenderStyle_h
 
+#include "wtf/Allocator.h"
+
 namespace blink {
 
 // FontRenderStyle describes the user's preferences for rendering a font at a
 // given size.
 struct FontRenderStyle {
+    DISALLOW_NEW();
     enum {
         NoPreference = 2,
     };

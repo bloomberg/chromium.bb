@@ -32,6 +32,7 @@
 #define OpenTypeSanitizer_h
 
 #include "opentype-sanitiser.h"
+#include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 #include "wtf/text/WTFString.h"
 
@@ -40,6 +41,7 @@ namespace blink {
 class SharedBuffer;
 
 class OpenTypeSanitizer {
+    STACK_ALLOCATED();
 public:
     explicit OpenTypeSanitizer(SharedBuffer* buffer)
         : m_buffer(buffer)
@@ -60,6 +62,7 @@ private:
 };
 
 class BlinkOTSContext: public ots::OTSContext {
+    DISALLOW_NEW();
 public:
         BlinkOTSContext()
             : m_errorString("")

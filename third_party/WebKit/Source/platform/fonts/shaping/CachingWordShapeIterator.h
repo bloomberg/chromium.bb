@@ -31,13 +31,14 @@
 #include "platform/fonts/shaping/CachingWordShapeIterator.h"
 #include "platform/fonts/shaping/HarfBuzzShaper.h"
 #include "platform/fonts/shaping/ShapeCache.h"
+#include "wtf/Allocator.h"
 #include "wtf/text/CharacterNames.h"
 
 namespace blink {
 
 class CachingWordShapeIterator final {
+    STACK_ALLOCATED();
     WTF_MAKE_NONCOPYABLE(CachingWordShapeIterator);
-    USING_FAST_MALLOC(CachingWordShapeIterator);
 public:
     CachingWordShapeIterator(ShapeCache* cache, const TextRun& run,
         const Font* font)

@@ -21,6 +21,7 @@
 #define FontMetrics_h
 
 #include "platform/fonts/FontBaseline.h"
+#include "wtf/Allocator.h"
 #include "wtf/MathExtras.h"
 
 namespace blink {
@@ -28,6 +29,7 @@ namespace blink {
 const unsigned gDefaultUnitsPerEm = 1000;
 
 class FontMetrics {
+    DISALLOW_NEW();
 public:
     FontMetrics()
         : m_unitsPerEm(gDefaultUnitsPerEm)

@@ -6,7 +6,9 @@
 #define ScriptRunIterator_h
 
 #include "platform/PlatformExport.h"
+#include "wtf/Allocator.h"
 #include "wtf/Deque.h"
+#include "wtf/Noncopyable.h"
 #include "wtf/Vector.h"
 #include "wtf/dtoa/utils.h"
 
@@ -18,6 +20,8 @@ namespace blink {
 class ScriptData;
 
 class PLATFORM_EXPORT ScriptRunIterator {
+    USING_FAST_MALLOC(ScriptRunIterator);
+    WTF_MAKE_NONCOPYABLE(ScriptRunIterator);
 public:
     ScriptRunIterator(const UChar* text, size_t length);
 
@@ -30,6 +34,7 @@ public:
 
 private:
     struct BracketRec {
+        DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
         UChar32 ch;
         UScriptCode script;
     };
@@ -60,8 +65,6 @@ private:
     UScriptCode m_commonPreferred;
 
     const ScriptData* m_scriptData;
-
-    DISALLOW_COPY_AND_ASSIGN(ScriptRunIterator);
 };
 
 // ScriptData is a wrapper which returns a set of scripts for a particular
@@ -70,6 +73,8 @@ private:
 // the returned values, which are essential for mergeSets method to work
 // correctly.
 class PLATFORM_EXPORT ScriptData {
+    USING_FAST_MALLOC(ScriptData);
+    WTF_MAKE_NONCOPYABLE(ScriptData);
 protected:
     ScriptData() = default;
 
@@ -90,9 +95,6 @@ public:
     virtual UChar32 getPairedBracket(UChar32) const = 0;
 
     virtual PairedBracketType getPairedBracketType(UChar32) const = 0;
-
-private:
-    DISALLOW_COPY_AND_ASSIGN(ScriptData);
 };
 
 class PLATFORM_EXPORT ICUScriptData : public ScriptData {
@@ -108,13 +110,6 @@ public:
     UChar32 getPairedBracket(UChar32) const override;
 
     PairedBracketType getPairedBracketType(UChar32) const override;
-
-private:
-    ICUScriptData()
-    {
-    }
-
-    DISALLOW_COPY_AND_ASSIGN(ICUScriptData);
 };
 }
 

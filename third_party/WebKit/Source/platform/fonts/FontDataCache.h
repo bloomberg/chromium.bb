@@ -41,6 +41,7 @@ namespace blink {
 class SimpleFontData;
 
 struct FontDataCacheKeyHash {
+    STATIC_ONLY(FontDataCacheKeyHash);
     static unsigned hash(const FontPlatformData& platformData)
     {
         return platformData.hash();
@@ -55,6 +56,7 @@ struct FontDataCacheKeyHash {
 };
 
 struct FontDataCacheKeyTraits : WTF::GenericHashTraits<FontPlatformData> {
+    STATIC_ONLY(FontDataCacheKeyTraits);
     static const bool emptyValueIsZero = true;
     static const FontPlatformData& emptyValue()
     {
@@ -72,7 +74,11 @@ struct FontDataCacheKeyTraits : WTF::GenericHashTraits<FontPlatformData> {
 };
 
 class FontDataCache {
+    USING_FAST_MALLOC(FontDataCache);
+    WTF_MAKE_NONCOPYABLE(FontDataCache);
 public:
+    FontDataCache() { }
+
     PassRefPtr<SimpleFontData> get(const FontPlatformData*, ShouldRetain = Retain);
     bool contains(const FontPlatformData*) const;
     void release(const SimpleFontData*);

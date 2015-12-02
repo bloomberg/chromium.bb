@@ -35,6 +35,7 @@
 #include "platform/geometry/FloatRect.h"
 #include "platform/text/TextRun.h"
 #include "wtf/HashSet.h"
+#include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/Vector.h"
 
@@ -47,6 +48,7 @@ class HarfBuzzShaper;
 struct GlyphData;
 
 class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
+    WTF_MAKE_NONCOPYABLE(ShapeResult);
 public:
     static PassRefPtr<ShapeResult> create(const Font* font,
         unsigned numCharacters, TextDirection direction)
@@ -75,6 +77,9 @@ public:
 
 protected:
     struct RunInfo;
+#if COMPILER(MSVC)
+    friend struct ::WTF::OwnedPtrDeleter<RunInfo>;
+#endif
 
     ShapeResult(const Font*, unsigned numCharacters, TextDirection);
 

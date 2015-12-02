@@ -43,6 +43,7 @@ class GlyphBuffer;
 class SimpleFontData;
 
 struct ShapeCacheEntry {
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     ShapeCacheEntry()
     {
         m_shapeResult = nullptr;
@@ -51,10 +52,12 @@ struct ShapeCacheEntry {
 };
 
 class ShapeCache {
+    USING_FAST_MALLOC(ShapeCache);
     WTF_MAKE_NONCOPYABLE(ShapeCache);
 private:
     // Used to optimize small strings as hash table keys. Avoids malloc'ing an out-of-line StringImpl.
     class SmallStringKey {
+        DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     public:
         static unsigned capacity() { return s_capacity; }
 
@@ -114,12 +117,14 @@ private:
     };
 
     struct SmallStringKeyHash {
+        STATIC_ONLY(SmallStringKeyHash);
         static unsigned hash(const SmallStringKey& key) { return key.hash(); }
         static bool equal(const SmallStringKey& a, const SmallStringKey& b) { return a == b; }
         static const bool safeToCompareToEmptyOrDeleted = true; // Empty and deleted values have lengths that are not equal to any valid length.
     };
 
     struct SmallStringKeyHashTraits : WTF::SimpleClassHashTraits<SmallStringKey> {
+        STATIC_ONLY(SmallStringKeyHashTraits);
         static const bool hasIsEmptyValueFunction = true;
         static bool isEmptyValue(const SmallStringKey& key) { return key.isHashTableEmptyValue(); }
         static const unsigned minimumTableSize = 16;

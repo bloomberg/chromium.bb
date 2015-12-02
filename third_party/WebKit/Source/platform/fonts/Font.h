@@ -34,6 +34,7 @@
 #include "platform/text/TabSize.h"
 #include "platform/text/TextDirection.h"
 #include "platform/text/TextPath.h"
+#include "wtf/Allocator.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
 #include "wtf/MathExtras.h"
@@ -59,6 +60,7 @@ struct TextRunPaintInfo;
 struct GlyphData;
 
 class PLATFORM_EXPORT Font {
+    DISALLOW_NEW();
 public:
     Font();
     Font(const FontDescription&);

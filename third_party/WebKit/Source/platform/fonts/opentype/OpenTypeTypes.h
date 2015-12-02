@@ -32,24 +32,28 @@ namespace blink {
 namespace OpenType {
 
 struct Int16 {
+    DISALLOW_NEW();
     Int16(int16_t u) : v(htons(static_cast<uint16_t>(u))) { }
     operator int16_t() const { return static_cast<int16_t>(ntohs(v)); }
     uint16_t v; // in BigEndian
 };
 
 struct UInt16 {
+    DISALLOW_NEW();
     UInt16(uint16_t u) : v(htons(u)) { }
     operator uint16_t() const { return ntohs(v); }
     uint16_t v; // in BigEndian
 };
 
 struct Int32 {
+    DISALLOW_NEW();
     Int32(int32_t u) : v(htonl(static_cast<uint32_t>(u))) { }
     operator int32_t() const { return static_cast<int32_t>(ntohl(v)); }
     uint32_t v; // in BigEndian
 };
 
 struct UInt32 {
+    DISALLOW_NEW();
     UInt32(uint32_t u) : v(htonl(u)) { }
     operator uint32_t() const { return ntohl(v); }
     uint32_t v; // in BigEndian
@@ -73,6 +77,7 @@ template <typename T> static const T* validateTable(const RefPtr<SharedBuffer>& 
 }
 
 struct TableBase {
+    DISALLOW_NEW();
 protected:
     static bool isValidEnd(const SharedBuffer& buffer, const void* position)
     {

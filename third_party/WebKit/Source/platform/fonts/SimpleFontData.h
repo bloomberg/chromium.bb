@@ -163,6 +163,9 @@ private:
     GlyphData m_missingGlyphData;
 
     struct DerivedFontData {
+        USING_FAST_MALLOC(DerivedFontData);
+        WTF_MAKE_NONCOPYABLE(DerivedFontData);
+    public:
         static PassOwnPtr<DerivedFontData> create(bool forCustomFont);
         ~DerivedFontData();
 
@@ -179,6 +182,9 @@ private:
         }
     };
 
+#if COMPILER(MSVC)
+    friend struct ::WTF::OwnedPtrDeleter<DerivedFontData>;
+#endif
     mutable OwnPtr<DerivedFontData> m_derivedFontData;
 
     RefPtr<CustomFontData> m_customFontData;

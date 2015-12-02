@@ -28,6 +28,7 @@
 
 #include "platform/fonts/FontData.h"
 #include "platform/fonts/SimpleFontData.h"
+#include "wtf/Allocator.h"
 #include "wtf/text/CharacterNames.h"
 
 namespace blink {
@@ -35,7 +36,7 @@ namespace blink {
 class SimpleFontData;
 
 struct FontDataRange {
-
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     explicit FontDataRange(PassRefPtr<SimpleFontData> fontData)
         : m_from(0)
         , m_to(kMaxCodepoint)

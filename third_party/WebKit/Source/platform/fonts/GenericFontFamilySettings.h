@@ -32,6 +32,7 @@
 #define GenericFontFamilySettings_h
 
 #include "platform/PlatformExport.h"
+#include "wtf/Allocator.h"
 #include "wtf/HashMap.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/AtomicStringHash.h"
@@ -41,7 +42,7 @@
 namespace blink {
 
 class PLATFORM_EXPORT GenericFontFamilySettings {
-    USING_FAST_MALLOC(GenericFontFamilySettings);
+    DISALLOW_NEW();
 
 public:
     GenericFontFamilySettings()
@@ -80,6 +81,7 @@ private:
     // UScriptCode uses -1 and 0 for UScriptInvalidCode and UScriptCommon.
     // We need to use -2 and -3 for empty value and deleted value.
     struct UScriptCodeHashTraits : WTF::GenericHashTraits<int> {
+        STATIC_ONLY(UScriptCodeHashTraits);
         static const bool emptyValueIsZero = false;
         static int emptyValue() { return -2; }
         static void constructDeletedValue(int& slot, bool) { slot = -3; }

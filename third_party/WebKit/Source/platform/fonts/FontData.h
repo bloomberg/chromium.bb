@@ -39,7 +39,7 @@ namespace blink {
 class SimpleFontData;
 
 class PLATFORM_EXPORT FontData : public RefCounted<FontData> {
-    WTF_MAKE_NONCOPYABLE(FontData); USING_FAST_MALLOC(FontData);
+    WTF_MAKE_NONCOPYABLE(FontData);
 public:
     FontData()
         : m_maxGlyphPageTreeLevel(0)
