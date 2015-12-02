@@ -10,6 +10,7 @@
 #include "base/time/time.h"
 #include "base/tracked_objects.h"
 #include "chrome/common/chrome_content_client.h"
+#include "components/nacl/common/nacl_process_type.h"
 #include "content/public/common/process_type.h"
 #include "url/gurl.h"
 
@@ -73,6 +74,42 @@ void TaskSnapshotToValue(const TaskSnapshot& snapshot,
   dictionary->SetString("death_thread", snapshot.death_thread_name);
 }
 
+int AsChromeProcessType(
+    metrics::ProfilerEventProto::TrackedObject::ProcessType process_type) {
+  switch (process_type) {
+    case metrics::ProfilerEventProto::TrackedObject::UNKNOWN:
+      return content::PROCESS_TYPE_UNKNOWN;
+    case metrics::ProfilerEventProto::TrackedObject::BROWSER:
+      return content::PROCESS_TYPE_BROWSER;
+    case metrics::ProfilerEventProto::TrackedObject::RENDERER:
+      return content::PROCESS_TYPE_RENDERER;
+    case metrics::ProfilerEventProto::TrackedObject::PLUGIN:
+      return content::PROCESS_TYPE_PLUGIN;
+    case metrics::ProfilerEventProto::TrackedObject::WORKER:
+      return content::PROCESS_TYPE_WORKER_DEPRECATED;
+    case metrics::ProfilerEventProto::TrackedObject::NACL_LOADER:
+      return PROCESS_TYPE_NACL_LOADER;
+    case metrics::ProfilerEventProto::TrackedObject::UTILITY:
+      return content::PROCESS_TYPE_UTILITY;
+    case metrics::ProfilerEventProto::TrackedObject::PROFILE_IMPORT:
+      return content::PROCESS_TYPE_UNKNOWN;
+    case metrics::ProfilerEventProto::TrackedObject::ZYGOTE:
+      return content::PROCESS_TYPE_ZYGOTE;
+    case metrics::ProfilerEventProto::TrackedObject::SANDBOX_HELPER:
+      return content::PROCESS_TYPE_SANDBOX_HELPER;
+    case metrics::ProfilerEventProto::TrackedObject::NACL_BROKER:
+      return PROCESS_TYPE_NACL_BROKER;
+    case metrics::ProfilerEventProto::TrackedObject::GPU:
+      return content::PROCESS_TYPE_GPU;
+    case metrics::ProfilerEventProto::TrackedObject::PPAPI_PLUGIN:
+      return content::PROCESS_TYPE_PPAPI_PLUGIN;
+    case metrics::ProfilerEventProto::TrackedObject::PPAPI_BROKER:
+      return content::PROCESS_TYPE_PPAPI_BROKER;
+  }
+  NOTREACHED();
+  return content::PROCESS_TYPE_UNKNOWN;
+}
+
 }  // anonymous namespace
 
 namespace task_profiler {
@@ -81,7 +118,7 @@ namespace task_profiler {
 void TaskProfilerDataSerializer::ToValue(
     const ProcessDataPhaseSnapshot& process_data_phase,
     base::ProcessId process_id,
-    int process_type,
+    metrics::ProfilerEventProto::TrackedObject::ProcessType process_type,
     base::DictionaryValue* dictionary) {
   scoped_ptr<base::ListValue> tasks_list(new base::ListValue);
   for (const auto& task : process_data_phase.tasks) {
@@ -92,8 +129,8 @@ void TaskProfilerDataSerializer::ToValue(
   dictionary->Set("list", tasks_list.release());
 
   dictionary->SetInteger("process_id", process_id);
-  dictionary->SetString("process_type",
-                        content::GetProcessTypeNameInEnglish(process_type));
+  dictionary->SetString("process_type", content::GetProcessTypeNameInEnglish(
+                                            AsChromeProcessType(process_type)));
 }
 
 }  // namespace task_profiler

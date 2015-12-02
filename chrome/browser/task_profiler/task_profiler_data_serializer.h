@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/process/process_handle.h"
+#include "components/metrics/proto/profiler_event.pb.h"
 
 namespace base {
 class DictionaryValue;
@@ -30,7 +31,7 @@ class TaskProfilerDataSerializer {
   static void ToValue(
       const tracked_objects::ProcessDataPhaseSnapshot& process_data_phase,
       base::ProcessId process_id,
-      int process_type,
+      metrics::ProfilerEventProto::TrackedObject::ProcessType process_type,
       base::DictionaryValue* dictionary);
 
  private:
