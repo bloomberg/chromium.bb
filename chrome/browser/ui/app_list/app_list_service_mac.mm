@@ -79,7 +79,7 @@ class ImageSkia;
 namespace {
 
 // Version of the app list shortcut version installed.
-const int kShortcutVersion = 2;
+const int kShortcutVersion = 4;
 
 // Duration of show and hide animations.
 const NSTimeInterval kAnimationDuration = 0.2;

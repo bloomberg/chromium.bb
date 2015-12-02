@@ -25,7 +25,7 @@ __ZdlPvS_
 ___asan_default_options
 
 # Entry point from the app mode loader.
-_ChromeAppModeStart
+_ChromeAppModeStart_v4
 
 # _ChromeMain must be listed last.  That's the whole point of this file.
 _ChromeMain

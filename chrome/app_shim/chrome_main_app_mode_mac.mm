@@ -565,13 +565,19 @@ void AppShimController::SendSetAppHidden(bool hidden) {
 extern "C" {
 
 // |ChromeAppModeStart()| is the point of entry into the framework from the app
-// mode loader.
+// mode loader. There are cases where the Chromium framework may have changed in
+// a way that is incompatible with an older shim (e.g. change to libc++ library
+// linking). The function name is versioned to provide a way to force shim
+// upgrades if they are launched before an updated version of Chromium can
+// upgrade them; the old shim will not be able to dyload the new
+// ChromeAppModeStart, so it will fall back to the upgrade path. See
+// https://crbug.com/561205.
 __attribute__((visibility("default")))
-int ChromeAppModeStart(const app_mode::ChromeAppModeInfo* info);
+int ChromeAppModeStart_v4(const app_mode::ChromeAppModeInfo* info);
 
 }  // extern "C"
 
-int ChromeAppModeStart(const app_mode::ChromeAppModeInfo* info) {
+int ChromeAppModeStart_v4(const app_mode::ChromeAppModeInfo* info) {
   base::CommandLine::Init(info->argc, info->argv);
 
   base::mac::ScopedNSAutoreleasePool scoped_pool;

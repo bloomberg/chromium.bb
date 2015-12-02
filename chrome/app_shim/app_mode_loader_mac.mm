@@ -31,6 +31,12 @@ namespace {
 
 typedef int (*StartFun)(const app_mode::ChromeAppModeInfo*);
 
+// The name of the entry point in the Framework. This name is dynamically
+// queried at shim launch to allow the shim to connect and run.
+// The function is versioned in case we need to obsolete and rebuild the shim
+// before it loads, e.g. see https://crbug.com/561205.
+const char kStartFunName[] = "ChromeAppModeStart_v4";
+
 int LoadFrameworkAndStart(app_mode::ChromeAppModeInfo* info) {
   using base::SysNSStringToUTF8;
   using base::SysNSStringToUTF16;
@@ -138,7 +144,7 @@ int LoadFrameworkAndStart(app_mode::ChromeAppModeInfo* info) {
   void* cr_dylib = dlopen(framework_shlib_path.value().c_str(), RTLD_LAZY);
   if (cr_dylib) {
     // Find the entry point.
-    ChromeAppModeStart = (StartFun)dlsym(cr_dylib, "ChromeAppModeStart");
+    ChromeAppModeStart = (StartFun)dlsym(cr_dylib, kStartFunName);
     if (!ChromeAppModeStart)
       LOG(ERROR) << "Couldn't get entry point: " << dlerror();
   } else {
