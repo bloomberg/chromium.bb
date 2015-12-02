@@ -464,15 +464,15 @@ void BoxPainter::paintFillLayerExtended(const LayoutBoxModelObject& obj, const P
             // if op != SkXfermode::kSrcOver_Mode, a mask is being painted.
             SkXfermode::Mode compositeOp = op == SkXfermode::kSrcOver_Mode ? bgOp : op;
             const LayoutObject* clientForBackgroundImage = backgroundObject ? backgroundObject : &obj;
-            RefPtr<Image> image = bgImage->image(clientForBackgroundImage, geometry.imageContainerSize(), obj.style()->effectiveZoom());
+            RefPtr<Image> image = bgImage->image(clientForBackgroundImage, flooredIntSize(geometry.imageContainerSize()), obj.style()->effectiveZoom());
             InterpolationQuality interpolationQuality = chooseInterpolationQuality(*clientForBackgroundImage, context, image.get(), &bgLayer, LayoutSize(geometry.tileSize()));
             if (bgLayer.maskSourceType() == MaskLuminance)
                 context->setColorFilter(ColorFilterLuminanceToAlpha);
             InterpolationQuality previousInterpolationQuality = context->imageInterpolationQuality();
             context->setImageInterpolationQuality(interpolationQuality);
             TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage", "data", InspectorPaintImageEvent::data(obj, *bgImage));
-            context->drawTiledImage(image.get(), geometry.destRect(), geometry.phase(), geometry.tileSize(),
-                compositeOp, geometry.spaceSize());
+            context->drawTiledImage(image.get(), FloatRect(geometry.destRect()), FloatPoint(geometry.phase()), FloatSize(geometry.tileSize()),
+                compositeOp, FloatSize(geometry.spaceSize()));
             context->setImageInterpolationQuality(previousInterpolationQuality);
         }
     }

@@ -233,7 +233,7 @@ PassRefPtr<SkImage> SVGImage::imageForCurrentFrame()
 void SVGImage::drawPatternForContainer(GraphicsContext* context, const FloatSize containerSize,
     float zoom, const FloatRect& srcRect, const FloatSize& tileScale, const FloatPoint& phase,
     SkXfermode::Mode compositeOp, const FloatRect& dstRect,
-    const IntSize& repeatSpacing, const KURL& url)
+    const FloatSize& repeatSpacing, const KURL& url)
 {
     // Tile adjusted for scaling/stretch.
     FloatRect tile(srcRect);

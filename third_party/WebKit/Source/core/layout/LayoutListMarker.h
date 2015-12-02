@@ -58,7 +58,7 @@ public:
     bool isImage() const override;
     const StyleImage* image() const { return m_image.get(); }
     const LayoutListItem* listItem() const { return m_listItem; }
-    IntSize imageBulletSize() const;
+    LayoutSize imageBulletSize() const;
 
     void listItemStyleDidChange();
 

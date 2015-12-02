@@ -96,7 +96,7 @@ bool Image::setData(PassRefPtr<SharedBuffer> data, bool allDataReceived)
     return dataChanged(allDataReceived);
 }
 
-void Image::drawTiled(GraphicsContext* ctxt, const FloatRect& destRect, const FloatPoint& srcPoint, const FloatSize& scaledTileSize, SkXfermode::Mode op, const IntSize& repeatSpacing)
+void Image::drawTiled(GraphicsContext* ctxt, const FloatRect& destRect, const FloatPoint& srcPoint, const FloatSize& scaledTileSize, SkXfermode::Mode op, const FloatSize& repeatSpacing)
 {
     FloatSize intrinsicTileSize = FloatSize(size());
     if (hasRelativeWidth())
@@ -210,7 +210,7 @@ PassRefPtr<SkShader> createPatternShader(const SkImage* image, const SkMatrix& s
 } // anonymous namespace
 
 void Image::drawPattern(GraphicsContext* context, const FloatRect& floatSrcRect, const FloatSize& scale,
-    const FloatPoint& phase, SkXfermode::Mode compositeOp, const FloatRect& destRect, const IntSize& repeatSpacing)
+    const FloatPoint& phase, SkXfermode::Mode compositeOp, const FloatRect& destRect, const FloatSize& repeatSpacing)
 {
     TRACE_EVENT0("skia", "Image::drawPattern");
 

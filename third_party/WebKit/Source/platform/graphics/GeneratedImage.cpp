@@ -46,7 +46,7 @@ void GeneratedImage::computeIntrinsicDimensions(Length& intrinsicWidth, Length& 
 
 void GeneratedImage::drawPattern(GraphicsContext* destContext, const FloatRect& srcRect, const FloatSize& scale,
     const FloatPoint& phase, SkXfermode::Mode compositeOp, const FloatRect& destRect,
-    const IntSize& repeatSpacing)
+    const FloatSize& repeatSpacing)
 {
     FloatRect tileRect = srcRect;
     tileRect.expand(FloatSize(repeatSpacing));

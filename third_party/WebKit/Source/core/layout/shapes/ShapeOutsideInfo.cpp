@@ -122,11 +122,12 @@ static bool isValidRasterShapeRect(const LayoutRect& rect)
 
 PassOwnPtr<Shape> ShapeOutsideInfo::createShapeForImage(StyleImage* styleImage, float shapeImageThreshold, WritingMode writingMode, float margin) const
 {
-    const IntSize& imageSize = m_layoutBox.calculateImageIntrinsicDimensions(styleImage, roundedIntSize(m_referenceBoxLogicalSize), LayoutImage::ScaleByEffectiveZoom);
+    const LayoutSize& imageSize = m_layoutBox.calculateImageIntrinsicDimensions(styleImage, m_referenceBoxLogicalSize, LayoutImage::ScaleByEffectiveZoom);
+
     const LayoutRect& marginRect = getShapeImageMarginRect(m_layoutBox, m_referenceBoxLogicalSize);
     const LayoutRect& imageRect = (m_layoutBox.isLayoutImage())
         ? toLayoutImage(m_layoutBox).replacedContentRect()
-        : LayoutRect(LayoutPoint(), LayoutSize(imageSize));
+        : LayoutRect(LayoutPoint(), imageSize);
 
     if (!isValidRasterShapeRect(marginRect) || !isValidRasterShapeRect(imageRect)) {
         m_layoutBox.document().addConsoleMessage(ConsoleMessage::create(RenderingMessageSource, ErrorMessageLevel, "The shape-outside image is too large."));
@@ -134,7 +135,7 @@ PassOwnPtr<Shape> ShapeOutsideInfo::createShapeForImage(StyleImage* styleImage, 
     }
 
     ASSERT(!styleImage->isPendingImage());
-    RefPtr<Image> image = styleImage->image(const_cast<LayoutBox*>(&m_layoutBox), imageSize, m_layoutBox.style()->effectiveZoom());
+    RefPtr<Image> image = styleImage->image(const_cast<LayoutBox*>(&m_layoutBox), flooredIntSize(imageSize), m_layoutBox.style()->effectiveZoom());
 
     return Shape::createRasterShape(image.get(), shapeImageThreshold, imageRect, marginRect, writingMode, margin);
 }

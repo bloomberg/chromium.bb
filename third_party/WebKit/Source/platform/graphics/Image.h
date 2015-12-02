@@ -146,7 +146,7 @@ public:
 
     virtual void drawPattern(GraphicsContext*, const FloatRect&,
         const FloatSize&, const FloatPoint& phase, SkXfermode::Mode,
-        const FloatRect&, const IntSize& repeatSpacing = IntSize());
+        const FloatRect&, const FloatSize& repeatSpacing = FloatSize());
 
     enum ImageClampingMode {
         ClampImageToSourceRect,
@@ -159,7 +159,7 @@ protected:
     Image(ImageObserver* = 0);
 
     void drawTiled(GraphicsContext*, const FloatRect& dstRect, const FloatPoint& srcPoint, const FloatSize& tileSize,
-        SkXfermode::Mode, const IntSize& repeatSpacing);
+        SkXfermode::Mode, const FloatSize& repeatSpacing);
     void drawTiled(GraphicsContext*, const FloatRect& dstRect, const FloatRect& srcRect, const FloatSize& tileScaleFactor, TileRule hRule, TileRule vRule, SkXfermode::Mode);
 
 private:

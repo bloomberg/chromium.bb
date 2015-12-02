@@ -4,12 +4,15 @@
         <style>
             div
             {
-                width: 800px;
+                width: 802px;
                 height: 400px;
-                padding: 50px;
+                /* The padding and width values differ here from the test case
+                due to sub-pixel rounding differences in the way the background
+                image phases are calculated in the repeat vs round cases. */
+                padding: 50px 49px;
                 border: 50px solid transparent;
                 background-image: url(resources/circle.png);
-                background-size: 73px 40px;
+                background-size: 72px 40px;
                 background-repeat: repeat;
                 background-origin: content-box;
                 background-clip: content-box;

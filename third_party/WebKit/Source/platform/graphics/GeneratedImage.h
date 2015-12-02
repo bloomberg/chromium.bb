@@ -52,7 +52,7 @@ public:
 protected:
     void drawPattern(GraphicsContext*, const FloatRect&,
         const FloatSize&, const FloatPoint&, SkXfermode::Mode,
-        const FloatRect&, const IntSize& repeatSpacing) final;
+        const FloatRect&, const FloatSize& repeatSpacing) final;
 
     // FIXME: Implement this to be less conservative.
     bool currentFrameKnownToBeOpaque(MetadataMode = UseCurrentMetadata) override { return false; }

@@ -48,14 +48,14 @@ bool NinePieceImagePainter::paint(GraphicsContext* graphicsContext, const Layout
     // doesn't have any understanding of the zoom that is in effect on the tile.
     LayoutRect rectWithOutsets = rect;
     rectWithOutsets.expand(style.imageOutsets(ninePieceImage));
-    IntRect borderImageRect = pixelSnappedIntRect(rectWithOutsets);
+    LayoutRect borderImageRect = rectWithOutsets;
 
-    IntSize imageSize = m_layoutObject.calculateImageIntrinsicDimensions(styleImage, borderImageRect.size(),
-        LayoutBoxModelObject::DoNotScaleByEffectiveZoom);
+    IntSize imageSize = roundedIntSize(m_layoutObject.calculateImageIntrinsicDimensions(styleImage, borderImageRect.size(),
+        LayoutBoxModelObject::DoNotScaleByEffectiveZoom));
 
     IntRectOutsets borderWidths(style.borderTopWidth(), style.borderRightWidth(),
         style.borderBottomWidth(), style.borderLeftWidth());
-    NinePieceImageGrid grid(ninePieceImage, imageSize, borderImageRect, borderWidths);
+    NinePieceImageGrid grid(ninePieceImage, imageSize, pixelSnappedIntRect(borderImageRect), borderWidths);
 
     RefPtr<Image> image = styleImage->image(&m_layoutObject, imageSize, style.effectiveZoom());
 

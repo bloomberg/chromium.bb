@@ -6,9 +6,9 @@
 #define BackgroundImageGeometry_h
 
 #include "core/paint/PaintPhase.h"
-#include "platform/geometry/IntPoint.h"
-#include "platform/geometry/IntRect.h"
-#include "platform/geometry/IntSize.h"
+#include "platform/geometry/LayoutPoint.h"
+#include "platform/geometry/LayoutRect.h"
+#include "platform/geometry/LayoutSize.h"
 #include "wtf/Allocator.h"
 
 namespace blink {
@@ -28,36 +28,38 @@ public:
     void calculate(const LayoutBoxModelObject&, const LayoutBoxModelObject* paintContainer,
         const GlobalPaintFlags, const FillLayer&, const LayoutRect& paintRect);
 
-    IntRect destRect() const { return m_destRect; }
-    IntSize tileSize() const { return m_tileSize; }
-    IntSize imageContainerSize() const { return m_imageContainerSize; }
-    IntPoint phase() const { return m_phase; }
+    LayoutRect destRect() const { return m_destRect; }
+    LayoutSize tileSize() const { return m_tileSize; }
+    LayoutSize imageContainerSize() const { return m_imageContainerSize; }
+    LayoutPoint phase() const { return m_phase; }
     // Space-size represents extra width and height that may be added to
     // the image if used as a pattern with background-repeat: space.
-    IntSize spaceSize() const { return m_repeatSpacing; }
+    LayoutSize spaceSize() const { return m_repeatSpacing; }
     // Has background-attachment: fixed. Implies that we can't always cheaply compute destRect.
     bool hasNonLocalGeometry() const { return m_hasNonLocalGeometry; }
 
 private:
-    void setDestRect(const IntRect& destRect) { m_destRect = destRect; }
-    void setPhase(const IntPoint& phase) { m_phase = phase; }
-    void setImageContainerSize(const IntSize& imageContainerSize) { m_imageContainerSize = imageContainerSize; }
-    void setTileSize(const IntSize& tileSize) { m_tileSize = tileSize; }
-    void setSpaceSize(const IntSize& repeatSpacing) { m_repeatSpacing = repeatSpacing; }
-    void setPhaseX(int x) { m_phase.setX(x); }
-    void setPhaseY(int y) { m_phase.setY(y); }
-    void setNoRepeatX(int xOffset);
-    void setNoRepeatY(int yOffset);
+    void setDestRect(const LayoutRect& destRect) { m_destRect = destRect; }
+    void setPhase(const LayoutPoint& phase) { m_phase = phase; }
+    void setImageContainerSize(const LayoutSize& imageContainerSize) { m_imageContainerSize = imageContainerSize; }
+    void setTileSize(const LayoutSize& tileSize) { m_tileSize = tileSize; }
+    void setSpaceSize(const LayoutSize& repeatSpacing) { m_repeatSpacing = repeatSpacing; }
+    void setPhaseX(LayoutUnit x) { m_phase.setX(x); }
+    void setPhaseY(LayoutUnit y) { m_phase.setY(y); }
+    void setNoRepeatX(LayoutUnit xOffset);
+    void setNoRepeatY(LayoutUnit yOffset);
 
-    void useFixedAttachment(const IntPoint& attachmentPoint);
-    void clip(const IntRect&);
+    void pixelSnapGeometry();
+
+    void useFixedAttachment(const LayoutPoint& attachmentPoint);
+    void clip(const LayoutRect&);
     void setHasNonLocalGeometry() { m_hasNonLocalGeometry = true; }
 
-    IntRect m_destRect;
-    IntPoint m_phase;
-    IntSize m_imageContainerSize;
-    IntSize m_tileSize;
-    IntSize m_repeatSpacing;
+    LayoutRect m_destRect;
+    LayoutPoint m_phase;
+    LayoutSize m_imageContainerSize;
+    LayoutSize m_tileSize;
+    LayoutSize m_repeatSpacing;
     bool m_hasNonLocalGeometry;
 };
 
