@@ -7,14 +7,13 @@ import("//mojo/public/mojo_application.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//tools/grit/repack.gni")
 
-mojo_native_application("main") {
-  output_name = "example_main"
-  testonly = true
+mojo_native_application("shell") {
+  output_name = "mash_shell"
 
   sources = [
     "main.cc",
-    "main_application_delegate.cc",
-    "main_application_delegate.h",
+    "shell_application_delegate.cc",
+    "shell_application_delegate.h",
   ]
 
   deps = [
@@ -25,8 +24,7 @@ mojo_native_application("main") {
   ]
 
   data_deps = [
-    "//mash/shell",
-    "//mash/example/views_examples",
-    "//mash/example/window_type_launcher",
+    "//mash/system_ui",
+    "//mash/wm",
   ]
 }

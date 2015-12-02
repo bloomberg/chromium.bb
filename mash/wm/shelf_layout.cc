@@ -18,9 +18,9 @@ ShelfLayout::ShelfLayout(mus::Window* owner) : LayoutManager(owner) {
 }
 ShelfLayout::~ShelfLayout() {}
 
-void ShelfLayout::WindowAdded(mus::Window* window) {
-  DCHECK_EQ(owner()->children().size(), 1U);
-}
+// We explicitly don't make assertions about the number of children in this
+// layout as the number of children can vary when the application providing the
+// shelf restarts.
 
 void ShelfLayout::LayoutWindow(mus::Window* window) {
   gfx::Size preferred_size = GetWindowPreferredSize(window);

@@ -22,7 +22,7 @@ class WindowManagerAppTest : public mojo::test::ApplicationTestBase,
 
  protected:
   void ConnectToWindowManager(mus::mojom::WindowManagerPtr* window_manager) {
-    application_impl()->ConnectToService("mojo:mash_wm", window_manager);
+    application_impl()->ConnectToService("mojo:desktop_wm", window_manager);
   }
 
   mus::Window* OpenWindow(mus::mojom::WindowManager* window_manager) {

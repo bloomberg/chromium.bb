@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mash/example/mock_sysui/mock_sysui.h"
+#include "mash/system_ui/system_ui.h"
 
 #include "components/mus/public/cpp/property_type_converters.h"
 #include "mash/wm/public/interfaces/container.mojom.h"
@@ -13,6 +13,9 @@
 #include "ui/views/mus/native_widget_mus.h"
 #include "ui/views/mus/window_manager_connection.h"
 #include "ui/views/widget/widget_delegate.h"
+
+namespace mash {
+namespace system_ui {
 
 namespace {
 
@@ -89,12 +92,12 @@ class Shelf : public views::WidgetDelegateView {
 
 }  // namespace
 
-MockSysUI::MockSysUI() {}
+SystemUI::SystemUI() {}
 
-MockSysUI::~MockSysUI() {
+SystemUI::~SystemUI() {
 }
 
-void MockSysUI::Initialize(mojo::ApplicationImpl* app) {
+void SystemUI::Initialize(mojo::ApplicationImpl* app) {
   tracing_.Initialize(app);
 
   aura_init_.reset(new views::AuraInit(app, "views_mus_resources.pak"));
@@ -104,7 +107,10 @@ void MockSysUI::Initialize(mojo::ApplicationImpl* app) {
   Shelf::Create(app->shell());
 }
 
-bool MockSysUI::ConfigureIncomingConnection(
+bool SystemUI::ConfigureIncomingConnection(
     mojo::ApplicationConnection* connection) {
-  return false;
+  return true;
 }
+
+}  // namespace system_ui
+}  // namespace mash

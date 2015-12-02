@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MASH_EXAMPLE_MOCK_SYSUI_MOCK_SYSUI_H_
-#define MASH_EXAMPLE_MOCK_SYSUI_MOCK_SYSUI_H_
+#ifndef MASH_SYSTEM_UI_SYSTEM_UI_H_
+#define MASH_SYSTEM_UI_SYSTEM_UI_H_
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -14,10 +14,13 @@ namespace views {
 class AuraInit;
 }
 
-class MockSysUI : public mojo::ApplicationDelegate {
+namespace mash {
+namespace system_ui {
+
+class SystemUI : public mojo::ApplicationDelegate {
  public:
-  MockSysUI();
-  ~MockSysUI() override;
+  SystemUI();
+  ~SystemUI() override;
 
  private:
   // mojo::ApplicationDelegate:
@@ -29,7 +32,10 @@ class MockSysUI : public mojo::ApplicationDelegate {
 
   scoped_ptr<views::AuraInit> aura_init_;
 
-  DISALLOW_COPY_AND_ASSIGN(MockSysUI);
+  DISALLOW_COPY_AND_ASSIGN(SystemUI);
 };
 
-#endif  // MASH_EXAMPLE_MOCK_SYSUI_MOCK_SYSUI_H_
+}  // namespace system_ui
+}  // namespace mash
+
+#endif  // MASH_SYSTEM_UI_SYSTEM_UI_H_

@@ -78,7 +78,7 @@ source_set("lib") {
 }
 
 mojo_native_application("wm") {
-  output_name = "mash_wm"
+  output_name = "desktop_wm"
 
   sources = [
     "main.cc",

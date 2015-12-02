@@ -6,11 +6,11 @@ import("//build/config/ui.gni")
 import("//mojo/public/mojo_application.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 
-mojo_native_application("mock_sysui") {
+mojo_native_application("system_ui") {
   sources = [
     "main.cc",
-    "mock_sysui.cc",
-    "mock_sysui.h",
+    "system_ui.cc",
+    "system_ui.h",
   ]
 
   deps = [

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mash/example/mock_sysui/mock_sysui.h"
+#include "mash/shell/shell_application_delegate.h"
 #include "mojo/application/public/cpp/application_runner.h"
 #include "mojo/public/c/system/main.h"
 
 MojoResult MojoMain(MojoHandle shell_handle) {
-  mojo::ApplicationRunner runner(new MockSysUI);
+  mojo::ApplicationRunner runner(new mash::shell::ShellApplicationDelegate);
   return runner.Run(shell_handle);
 }

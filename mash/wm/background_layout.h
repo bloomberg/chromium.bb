@@ -19,7 +19,6 @@ class BackgroundLayout : public LayoutManager {
 
  private:
   // Overridden from LayoutManager:
-  void WindowAdded(mus::Window* window) override;
   void LayoutWindow(mus::Window* window) override;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundLayout);

@@ -9,7 +9,6 @@ group("example") {
 
   deps = [
     "//mash/example/main",
-    "//mash/example/mock_sysui",
     "//mash/example/views_examples",
     "//mash/example/window_type_launcher",
     "//mash/wm",
