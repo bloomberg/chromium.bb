@@ -61,7 +61,6 @@ TEST_F(SequencedTaskRunnerHandleTest, FromSequencedWorkerPool) {
       base::Bind(&SequencedTaskRunnerHandleTest::GetTaskRunner,
                  base::Bind(&WaitableEvent::Signal, base::Unretained(&event))));
   event.Wait();
-  owner.pool()->Shutdown();
 }
 
 class ThreadRunner : public DelegateSimpleThread::Delegate {

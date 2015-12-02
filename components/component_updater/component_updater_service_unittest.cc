@@ -174,7 +174,6 @@ ComponentUpdaterTest::ComponentUpdaterTest()
 
 ComponentUpdaterTest::~ComponentUpdaterTest() {
   EXPECT_CALL(update_client(), RemoveObserver(_)).Times(1);
-  worker_pool_->pool()->Shutdown();
   component_updater_.reset();
 }
 

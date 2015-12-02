@@ -13,9 +13,9 @@
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/sequenced_worker_pool_owner.h"
 #include "base/test/test_timeouts.h"
 #include "base/thread_task_runner_handle.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -714,11 +714,10 @@ TEST_F(FileStreamTest, WriteClose) {
 }
 
 TEST_F(FileStreamTest, OpenAndDelete) {
-  scoped_refptr<base::SequencedWorkerPool> pool(
-      new base::SequencedWorkerPool(1, "StreamTest"));
+  base::SequencedWorkerPoolOwner pool_owner(1, "StreamTest");
 
   bool prev = base::ThreadRestrictions::SetIOAllowed(false);
-  scoped_ptr<FileStream> stream(new FileStream(pool.get()));
+  scoped_ptr<FileStream> stream(new FileStream(pool_owner.pool()));
   int flags = base::File::FLAG_OPEN | base::File::FLAG_WRITE |
               base::File::FLAG_ASYNC;
   TestCompletionCallback open_callback;
@@ -730,13 +729,11 @@ TEST_F(FileStreamTest, OpenAndDelete) {
   stream.reset();
 
   // Force an operation through the pool.
-  scoped_ptr<FileStream> stream2(new FileStream(pool.get()));
+  scoped_ptr<FileStream> stream2(new FileStream(pool_owner.pool()));
   TestCompletionCallback open_callback2;
   rv = stream2->Open(temp_file_path(), flags, open_callback2.callback());
   EXPECT_EQ(OK, open_callback2.GetResult(rv));
   stream2.reset();
-
-  pool->Shutdown();
 
   // open_callback won't be called.
   base::RunLoop().RunUntilIdle();

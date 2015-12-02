@@ -137,7 +137,6 @@ class UpdateClientTest : public testing::Test {
 
  protected:
   void RunThreads();
-  void StopWorkerPool();
 
   // Returns the full path to a test file.
   static base::FilePath TestFilePath(const char* file);
@@ -176,10 +175,6 @@ UpdateClientTest::~UpdateClientTest() {
 
 void UpdateClientTest::RunThreads() {
   runloop_.Run();
-}
-
-void UpdateClientTest::StopWorkerPool() {
-  worker_pool_->pool()->Shutdown();
 }
 
 base::FilePath UpdateClientTest::TestFilePath(const char* file) {
@@ -287,8 +282,6 @@ TEST_F(UpdateClientTest, OneCrxNoUpdate) {
   RunThreads();
 
   update_client->RemoveObserver(&observer);
-
-  StopWorkerPool();
 }
 
 // Tests the scenario where two CRXs are checked for updates. On CRX has
@@ -470,8 +463,6 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoUpdate) {
   RunThreads();
 
   update_client->RemoveObserver(&observer);
-
-  StopWorkerPool();
 }
 
 // Tests the update check for two CRXs scenario. Both CRXs have updates.
@@ -708,8 +699,6 @@ TEST_F(UpdateClientTest, TwoCrxUpdate) {
   RunThreads();
 
   update_client->RemoveObserver(&observer);
-
-  StopWorkerPool();
 }
 
 // Tests the scenario where there is a download timeout for the first
@@ -946,8 +935,6 @@ TEST_F(UpdateClientTest, TwoCrxUpdateDownloadTimeout) {
   RunThreads();
 
   update_client->RemoveObserver(&observer);
-
-  StopWorkerPool();
 }
 
 // Tests the differential update scenario for one CRX.
@@ -1212,8 +1199,6 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
   }
 
   update_client->RemoveObserver(&observer);
-
-  StopWorkerPool();
 }
 
 // Tests the update scenario for one CRX where the CRX installer returns
@@ -1406,8 +1391,6 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
   RunThreads();
 
   update_client->RemoveObserver(&observer);
-
-  StopWorkerPool();
 }
 
 // Tests the fallback from differential to full update scenario for one CRX.
@@ -1691,8 +1674,6 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
   }
 
   update_client->RemoveObserver(&observer);
-
-  StopWorkerPool();
 }
 
 // Tests the queuing of update checks. In this scenario, two update checks are
@@ -1797,8 +1778,6 @@ TEST_F(UpdateClientTest, OneCrxNoUpdateQueuedCall) {
   RunThreads();
 
   update_client->RemoveObserver(&observer);
-
-  StopWorkerPool();
 }
 
 // Tests the install of one CRX.
@@ -1970,8 +1949,6 @@ TEST_F(UpdateClientTest, OneCrxInstall) {
   RunThreads();
 
   update_client->RemoveObserver(&observer);
-
-  StopWorkerPool();
 }
 
 // Tests that overlapping installs of the same CRX result in an error.
@@ -2084,8 +2061,6 @@ TEST_F(UpdateClientTest, ConcurrentInstallSameCRX) {
   RunThreads();
 
   update_client->RemoveObserver(&observer);
-
-  StopWorkerPool();
 }
 
 // Make sure that we don't get any crashes when trying to update an empty list
@@ -2144,8 +2119,6 @@ TEST_F(UpdateClientTest, EmptyIdList) {
       empty_id_list, base::Bind(&DataCallbackFake::Callback),
       base::Bind(&CompletionCallbackFake::Callback, runloop.QuitClosure()));
   runloop.Run();
-
-  StopWorkerPool();
 }
 
 }  // namespace update_client

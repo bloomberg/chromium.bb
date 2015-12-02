@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "base/run_loop.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/sequenced_worker_pool.h"
 
@@ -25,6 +26,9 @@ class MessageLoop;
 // strange races with other tests that touch global stuff (like histograms and
 // logging).  However, this requires that nothing else on this thread holds a
 // ref to the pool when the SequencedWorkerPoolOwner is destroyed.
+//
+// This class calls Shutdown on the owned SequencedWorkerPool in the destructor.
+// Tests may themselves call Shutdown earlier to test shutdown behavior.
 class SequencedWorkerPoolOwner : public SequencedWorkerPool::TestingObserver {
  public:
   SequencedWorkerPoolOwner(size_t max_threads,
@@ -46,7 +50,11 @@ class SequencedWorkerPoolOwner : public SequencedWorkerPool::TestingObserver {
   void WillWaitForShutdown() override;
   void OnDestruct() override;
 
+  // Used to run the current thread's message loop until the
+  // SequencedWorkerPool's destruction has been verified.
+  base::RunLoop exit_loop_;
   MessageLoop* const constructor_message_loop_;
+
   scoped_refptr<SequencedWorkerPool> pool_;
   Closure will_wait_for_shutdown_callback_;
 
