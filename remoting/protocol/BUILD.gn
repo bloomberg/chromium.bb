@@ -112,6 +112,7 @@ source_set("unit_tests") {
     "ppapi_module_stub.cc",
     "pseudotcp_adapter_unittest.cc",
     "quic_channel_factory_unittest.cc",
+    "session_config_unittest.cc",
     "ssl_hmac_channel_authenticator_unittest.cc",
     "third_party_authenticator_unittest.cc",
     "v2_authenticator_unittest.cc",

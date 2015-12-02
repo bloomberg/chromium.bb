@@ -47,7 +47,8 @@ class ContentDescription {
   buzz::XmlElement* ToXml() const;
 
   static scoped_ptr<ContentDescription> ParseXml(
-      const buzz::XmlElement* element);
+      const buzz::XmlElement* element,
+      bool webrtc_transport);
 
  private:
   scoped_ptr<const CandidateSessionConfig> candidate_config_;

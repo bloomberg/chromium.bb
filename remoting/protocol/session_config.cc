@@ -73,17 +73,20 @@ bool ChannelConfig::operator==(const ChannelConfig& b) const {
 scoped_ptr<SessionConfig> SessionConfig::SelectCommon(
     const CandidateSessionConfig* client_config,
     const CandidateSessionConfig* host_config) {
-  scoped_ptr<SessionConfig> result(new SessionConfig());
+
+  // Use WebRTC if both host and client support it.
+  if (client_config->webrtc_supported() && host_config->webrtc_supported())
+    return make_scoped_ptr(new SessionConfig(Protocol::WEBRTC));
+
+  // Reject connection if ICE is not supported by either of the peers.
+  if (!host_config->ice_supported() || !client_config->ice_supported())
+    return nullptr;
+
+  scoped_ptr<SessionConfig> result(new SessionConfig(Protocol::ICE));
   ChannelConfig control_config;
   ChannelConfig event_config;
   ChannelConfig video_config;
   ChannelConfig audio_config;
-
-  DCHECK(host_config->standard_ice());
-
-  // Reject connection if the peer doesn't support ICE.
-  if (!client_config->standard_ice())
-    return nullptr;
 
   // If neither host nor the client have VP9 experiment enabled then remove it
   // from the list of host video configs.
@@ -116,6 +119,17 @@ scoped_ptr<SessionConfig> SessionConfig::SelectCommon(
 // static
 scoped_ptr<SessionConfig> SessionConfig::GetFinalConfig(
     const CandidateSessionConfig* candidate_config) {
+  if (candidate_config->webrtc_supported()) {
+    if (candidate_config->ice_supported()) {
+      LOG(ERROR) << "Received candidate config is ambiguous.";
+      return nullptr;
+    }
+    return make_scoped_ptr(new SessionConfig(Protocol::WEBRTC));
+  }
+
+  if (!candidate_config->ice_supported())
+    return nullptr;
+
   if (candidate_config->control_configs().size() != 1 ||
       candidate_config->event_configs().size() != 1 ||
       candidate_config->video_configs().size() != 1 ||
@@ -123,19 +137,18 @@ scoped_ptr<SessionConfig> SessionConfig::GetFinalConfig(
     return nullptr;
   }
 
-  scoped_ptr<SessionConfig> result(new SessionConfig());
-  result->standard_ice_ = candidate_config->standard_ice();
+  scoped_ptr<SessionConfig> result(new SessionConfig(Protocol::ICE));
   result->control_config_ = candidate_config->control_configs().front();
   result->event_config_ = candidate_config->event_configs().front();
   result->video_config_ = candidate_config->video_configs().front();
   result->audio_config_ = candidate_config->audio_configs().front();
 
-  return result.Pass();
+  return result;
 }
 
 // static
 scoped_ptr<SessionConfig> SessionConfig::ForTest() {
-  scoped_ptr<SessionConfig> result(new SessionConfig());
+  scoped_ptr<SessionConfig> result(new SessionConfig(Protocol::ICE));
   result->control_config_ = ChannelConfig(ChannelConfig::TRANSPORT_QUIC_STREAM,
                                           kControlStreamVersion,
                                           ChannelConfig::CODEC_UNDEFINED);
@@ -159,7 +172,36 @@ scoped_ptr<SessionConfig> SessionConfig::ForTestWithVerbatimVideo() {
   return result.Pass();
 }
 
-SessionConfig::SessionConfig() {}
+scoped_ptr<SessionConfig> SessionConfig::ForTestWithWebrtc() {
+  return make_scoped_ptr(new SessionConfig(Protocol::WEBRTC));
+}
+
+const ChannelConfig& SessionConfig::control_config() const {
+  DCHECK(protocol_ == Protocol::ICE);
+  return control_config_;
+}
+const ChannelConfig& SessionConfig::event_config() const {
+  DCHECK(protocol_ == Protocol::ICE);
+  return event_config_;
+}
+const ChannelConfig& SessionConfig::video_config() const {
+  DCHECK(protocol_ == Protocol::ICE);
+  return video_config_;
+}
+const ChannelConfig& SessionConfig::audio_config() const {
+  DCHECK(protocol_ == Protocol::ICE);
+  return audio_config_;
+}
+
+bool SessionConfig::is_using_quic() const {
+  DCHECK(protocol_ == Protocol::ICE);
+  return control_config_.transport == ChannelConfig::TRANSPORT_QUIC_STREAM ||
+         event_config_.transport == ChannelConfig::TRANSPORT_QUIC_STREAM ||
+         video_config_.transport == ChannelConfig::TRANSPORT_QUIC_STREAM ||
+         audio_config_.transport == ChannelConfig::TRANSPORT_QUIC_STREAM;
+}
+
+SessionConfig::SessionConfig(Protocol protocol) : protocol_(protocol) {}
 
 CandidateSessionConfig::CandidateSessionConfig() {}
 CandidateSessionConfig::CandidateSessionConfig(
@@ -167,11 +209,21 @@ CandidateSessionConfig::CandidateSessionConfig(
 CandidateSessionConfig::~CandidateSessionConfig() {}
 
 bool CandidateSessionConfig::IsSupported(const SessionConfig& config) const {
-  return config.standard_ice() &&
-         IsChannelConfigSupported(control_configs_, config.control_config()) &&
-         IsChannelConfigSupported(event_configs_, config.event_config()) &&
-         IsChannelConfigSupported(video_configs_, config.video_config()) &&
-         IsChannelConfigSupported(audio_configs_, config.audio_config());
+  switch (config.protocol()) {
+    case SessionConfig::Protocol::ICE:
+      return ice_supported() &&
+             IsChannelConfigSupported(control_configs_,
+                                      config.control_config()) &&
+             IsChannelConfigSupported(event_configs_, config.event_config()) &&
+             IsChannelConfigSupported(video_configs_, config.video_config()) &&
+             IsChannelConfigSupported(audio_configs_, config.audio_config());
+
+    case SessionConfig::Protocol::WEBRTC:
+      return webrtc_supported();
+  }
+
+  NOTREACHED();
+  return false;
 }
 
 scoped_ptr<CandidateSessionConfig> CandidateSessionConfig::Clone() const {
@@ -187,17 +239,31 @@ scoped_ptr<CandidateSessionConfig> CandidateSessionConfig::CreateEmpty() {
 scoped_ptr<CandidateSessionConfig> CandidateSessionConfig::CreateFrom(
     const SessionConfig& config) {
   scoped_ptr<CandidateSessionConfig> result = CreateEmpty();
-  result->set_standard_ice(config.standard_ice());
-  result->mutable_control_configs()->push_back(config.control_config());
-  result->mutable_event_configs()->push_back(config.event_config());
-  result->mutable_video_configs()->push_back(config.video_config());
-  result->mutable_audio_configs()->push_back(config.audio_config());
+
+  switch (config.protocol()) {
+    case SessionConfig::Protocol::WEBRTC:
+      result->set_webrtc_supported(true);
+      result->set_ice_supported(false);
+      break;
+
+    case SessionConfig::Protocol::ICE:
+      result->set_webrtc_supported(false);
+      result->set_ice_supported(true);
+      result->mutable_control_configs()->push_back(config.control_config());
+      result->mutable_event_configs()->push_back(config.event_config());
+      result->mutable_video_configs()->push_back(config.video_config());
+      result->mutable_audio_configs()->push_back(config.audio_config());
+      break;
+  }
+
   return result.Pass();
 }
 
 // static
 scoped_ptr<CandidateSessionConfig> CandidateSessionConfig::CreateDefault() {
   scoped_ptr<CandidateSessionConfig> result = CreateEmpty();
+
+  result->set_ice_supported(true);
 
   // Control channel.
   result->mutable_control_configs()->push_back(

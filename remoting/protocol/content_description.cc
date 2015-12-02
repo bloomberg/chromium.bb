@@ -32,14 +32,11 @@ const char kEventTag[] = "event";
 const char kVideoTag[] = "video";
 const char kAudioTag[] = "audio";
 const char kVp9ExperimentTag[] = "vp9-experiment";
-const char kDeprecatedResolutionTag[] = "initial-resolution";
 const char kQuicConfigTag[] = "quic-config";
 
 const char kTransportAttr[] = "transport";
 const char kVersionAttr[] = "version";
 const char kCodecAttr[] = "codec";
-const char kDeprecatedWidthAttr[] = "width";
-const char kDeprecatedHeightAttr[] = "height";
 
 const NameMapElement<ChannelConfig::TransportType> kTransports[] = {
   { ChannelConfig::TRANSPORT_STREAM, "stream" },
@@ -145,33 +142,26 @@ XmlElement* ContentDescription::ToXml() const {
   XmlElement* root = new XmlElement(
       QName(kChromotingXmlNamespace, kDescriptionTag), true);
 
-  if (config()->standard_ice()) {
+  if (config()->ice_supported()) {
     root->AddElement(
         new buzz::XmlElement(QName(kChromotingXmlNamespace, kStandardIceTag)));
-  }
 
-  for (const ChannelConfig& channel_config : config()->control_configs()) {
-    root->AddElement(FormatChannelConfig(channel_config, kControlTag));
-  }
+    for (const auto& channel_config : config()->control_configs()) {
+      root->AddElement(FormatChannelConfig(channel_config, kControlTag));
+    }
 
-  for (const ChannelConfig& channel_config : config()->event_configs()) {
-    root->AddElement(FormatChannelConfig(channel_config, kEventTag));
-  }
+    for (const auto& channel_config : config()->event_configs()) {
+      root->AddElement(FormatChannelConfig(channel_config, kEventTag));
+    }
 
-  for (const ChannelConfig& channel_config : config()->video_configs()) {
-    root->AddElement(FormatChannelConfig(channel_config, kVideoTag));
-  }
+    for (const auto& channel_config : config()->video_configs()) {
+      root->AddElement(FormatChannelConfig(channel_config, kVideoTag));
+    }
 
-  for (const ChannelConfig& channel_config : config()->audio_configs()) {
-    root->AddElement(FormatChannelConfig(channel_config, kAudioTag));
+    for (const auto& channel_config : config()->audio_configs()) {
+      root->AddElement(FormatChannelConfig(channel_config, kAudioTag));
+    }
   }
-
-  // Older endpoints require an initial-resolution tag, but otherwise ignore it.
-  XmlElement* resolution_tag = new XmlElement(
-      QName(kChromotingXmlNamespace, kDeprecatedResolutionTag));
-  resolution_tag->AddAttr(QName(kDefaultNs, kDeprecatedWidthAttr), "640");
-  resolution_tag->AddAttr(QName(kDefaultNs, kDeprecatedHeightAttr), "480");
-  root->AddElement(resolution_tag);
 
   if (authenticator_message_) {
     DCHECK(Authenticator::IsAuthenticatorMessage(authenticator_message_.get()));
@@ -222,7 +212,8 @@ bool ContentDescription::ParseChannelConfigs(
 
 // static
 scoped_ptr<ContentDescription> ContentDescription::ParseXml(
-    const XmlElement* element) {
+    const XmlElement* element,
+    bool webrtc_transport) {
   if (element->Name() != QName(kChromotingXmlNamespace, kDescriptionTag)) {
     LOG(ERROR) << "Invalid description: " << element->Str();
     return nullptr;
@@ -230,19 +221,21 @@ scoped_ptr<ContentDescription> ContentDescription::ParseXml(
   scoped_ptr<CandidateSessionConfig> config(
       CandidateSessionConfig::CreateEmpty());
 
-  config->set_standard_ice(
-      element->FirstNamed(QName(kChromotingXmlNamespace, kStandardIceTag)) !=
-      nullptr);
+  config->set_webrtc_supported(webrtc_transport);
 
-  if (!ParseChannelConfigs(element, kControlTag, false, false,
-                           config->mutable_control_configs()) ||
-      !ParseChannelConfigs(element, kEventTag, false, false,
-                           config->mutable_event_configs()) ||
-      !ParseChannelConfigs(element, kVideoTag, true, false,
-                           config->mutable_video_configs()) ||
-      !ParseChannelConfigs(element, kAudioTag, true, true,
-                           config->mutable_audio_configs())) {
-    return nullptr;
+  if (element->FirstNamed(QName(kChromotingXmlNamespace, kStandardIceTag)) !=
+      nullptr) {
+    config->set_ice_supported(true);
+    if (!ParseChannelConfigs(element, kControlTag, false, false,
+                             config->mutable_control_configs()) ||
+        !ParseChannelConfigs(element, kEventTag, false, false,
+                             config->mutable_event_configs()) ||
+        !ParseChannelConfigs(element, kVideoTag, true, false,
+                             config->mutable_video_configs()) ||
+        !ParseChannelConfigs(element, kAudioTag, true, true,
+                             config->mutable_audio_configs())) {
+      return nullptr;
+    }
   }
 
   // Check if VP9 experiment is enabled.

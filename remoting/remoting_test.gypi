@@ -328,6 +328,7 @@
         'protocol/ppapi_module_stub.cc',
         'protocol/pseudotcp_adapter_unittest.cc',
         'protocol/quic_channel_factory_unittest.cc',
+        'protocol/session_config_unittest.cc',
         'protocol/ssl_hmac_channel_authenticator_unittest.cc',
         'protocol/third_party_authenticator_unittest.cc',
         'protocol/v2_authenticator_unittest.cc',

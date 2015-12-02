@@ -249,6 +249,12 @@ bool JingleMessage::ParseXml(const buzz::XmlElement* stanza,
     return false;
   }
 
+  const XmlElement* webrtc_transport_tag = content_tag->FirstNamed(
+      QName("google:remoting:webrtc", "transport"));
+  if (webrtc_transport_tag) {
+    transport_info.reset(new buzz::XmlElement(*webrtc_transport_tag));
+  }
+
   description.reset(nullptr);
   if (action == SESSION_INITIATE || action == SESSION_ACCEPT) {
     const XmlElement* description_tag = content_tag->FirstNamed(
@@ -258,17 +264,20 @@ bool JingleMessage::ParseXml(const buzz::XmlElement* stanza,
       return false;
     }
 
-    description = ContentDescription::ParseXml(description_tag);
+    description = ContentDescription::ParseXml(description_tag,
+                                               webrtc_transport_tag != nullptr);
     if (!description.get()) {
       *error = "Failed to parse content description";
       return false;
     }
   }
 
-  const XmlElement* ice_transport_tag = content_tag->FirstNamed(
-      QName(kIceTransportNamespace, "transport"));
-  if (ice_transport_tag) {
-    transport_info.reset(new buzz::XmlElement(*ice_transport_tag));
+  if (!webrtc_transport_tag) {
+    const XmlElement* ice_transport_tag = content_tag->FirstNamed(
+        QName(kIceTransportNamespace, "transport"));
+    if (ice_transport_tag) {
+      transport_info.reset(new buzz::XmlElement(*ice_transport_tag));
+    }
   }
 
   return true;

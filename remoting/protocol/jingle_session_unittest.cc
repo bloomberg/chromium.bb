@@ -429,7 +429,7 @@ TEST_F(JingleSessionTest, TestLegacyIceConnection) {
 
   scoped_ptr<CandidateSessionConfig> config =
       CandidateSessionConfig::CreateDefault();
-  config->set_standard_ice(false);
+  config->set_ice_supported(false);
   client_server_->set_protocol_config(config.Pass());
   client_session_ = client_server_->Connect(kHostJid, authenticator.Pass());
   client_session_->SetEventHandler(&client_session_event_handler_);
