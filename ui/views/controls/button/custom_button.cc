@@ -118,6 +118,7 @@ bool CustomButton::IsHotTracked() const {
 // CustomButton, View overrides:
 
 void CustomButton::Layout() {
+  Button::Layout();
   if (ink_drop_delegate_)
     ink_drop_delegate_->OnLayout();
 }
@@ -389,6 +390,7 @@ void CustomButton::SetInkDropDelegate(
 // CustomButton, View overrides (protected):
 
 void CustomButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  Button::OnBoundsChanged(previous_bounds);
   if (ink_drop_delegate_)
     ink_drop_delegate_->OnLayout();
 }
