@@ -18,10 +18,9 @@ PromiseRejectionEvent::PromiseRejectionEvent(ScriptState* state, const AtomicStr
     : Event(type, initializer)
     , m_scriptState(state)
 {
-    if (initializer.hasPromise()) {
-        m_promise.set(initializer.promise().isolate(), initializer.promise().v8Value());
-        m_promise.setWeak(this, &PromiseRejectionEvent::didCollectPromise);
-    }
+    ASSERT(initializer.hasPromise());
+    m_promise.set(initializer.promise().isolate(), initializer.promise().v8Value());
+    m_promise.setWeak(this, &PromiseRejectionEvent::didCollectPromise);
     if (initializer.hasReason()) {
         m_reason.set(initializer.reason().isolate(), initializer.reason().v8Value());
         m_reason.setWeak(this, &PromiseRejectionEvent::didCollectReason);
