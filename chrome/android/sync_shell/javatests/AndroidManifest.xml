@@ -15,16 +15,7 @@
 
     <application
         android:label="ChromeSyncShellTest">
-
         <uses-library android:name="android.test.runner" />
-
-        <activity android:name="org.chromium.sync.test.util.MockGrantCredentialsPermissionActivity"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity>
     </application>
     <instrumentation android:name="org.chromium.chrome.test.ChromeInstrumentationTestRunner"
         android:targetPackage="{{manifest_package}}"

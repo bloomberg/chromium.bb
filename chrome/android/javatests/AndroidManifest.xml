@@ -30,14 +30,6 @@
             android:authorities="org.chromium.chrome.test.partnercustomizations.TestPartnerBrowserCustomizationsDelayedProvider"
             android:exported="true" />
 
-        <activity android:name="org.chromium.sync.test.util.MockGrantCredentialsPermissionActivity"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity>
-
         <activity android:name="org.chromium.chrome.browser.customtabs.CustomTabExternalNavigationTest$DummyActivityForSpecialScheme"
             android:exported="true" >
             <intent-filter>

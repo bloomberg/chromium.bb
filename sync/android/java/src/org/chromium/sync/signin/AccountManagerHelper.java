@@ -7,25 +7,18 @@ package org.chromium.sync.signin;
 
 import android.Manifest;
 import android.accounts.Account;
-import android.accounts.AccountManager;
-import android.accounts.AccountManagerFuture;
 import android.accounts.AuthenticatorDescription;
-import android.accounts.AuthenticatorException;
-import android.accounts.OperationCanceledException;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Build;
-import android.os.Bundle;
 import android.os.Process;
-import android.util.Log;
 
 import org.chromium.base.Callback;
-import org.chromium.base.ThreadUtils;
+import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.net.NetworkChangeNotifier;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -357,48 +350,21 @@ public class AccountManagerHelper {
                 Process.myPid(), Process.myUid()) == PackageManager.PERMISSION_GRANTED;
     }
 
-    // Gets the auth token synchronously
-    private String getAuthTokenInner(AccountManagerFuture<Bundle> future,
-            AtomicBoolean isTransientError) {
-        try {
-            Bundle result = future.getResult();
-            if (result != null) {
-                return result.getString(AccountManager.KEY_AUTHTOKEN);
-            } else {
-                Log.w(TAG, "Auth token - getAuthToken returned null");
-            }
-        } catch (OperationCanceledException e) {
-            Log.w(TAG, "Auth token - operation cancelled", e);
-        } catch (AuthenticatorException e) {
-            Log.w(TAG, "Auth token - authenticator exception", e);
-        } catch (IOException e) {
-            Log.w(TAG, "Auth token - IO exception", e);
-            isTransientError.set(true);
-        }
-        return null;
-    }
-
     private void getAuthTokenAsynchronously(final Account account, final String authTokenType,
             final GetAuthTokenCallback callback, final AtomicInteger numTries,
             final AtomicBoolean isTransientError, final ConnectionRetry retry) {
-        // Return null token for no USE_CREDENTIALS permission.
-        if (!hasUseCredentialsPermission()) {
-            ThreadUtils.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    callback.tokenUnavailable(false);
-                }
-            });
-            return;
-        }
-        final AccountManagerFuture<Bundle> future = mAccountManager.getAuthToken(
-                account, authTokenType, true, null, null);
         isTransientError.set(false);
-
         new AsyncTask<Void, Void, String>() {
             @Override
             public String doInBackground(Void... params) {
-                return getAuthTokenInner(future, isTransientError);
+                try {
+                    return mAccountManager.getAuthToken(account, authTokenType);
+                } catch (AuthException ex) {
+                    // TODO(547048): Handle the recovery intent if it is present.
+                    isTransientError.set(ex.isTransientError());
+                    Log.e(TAG, "Failed to getAuthToken", ex);
+                }
+                return null;
             }
             @Override
             public void onPostExecute(String authToken) {

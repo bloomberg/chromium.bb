@@ -18,6 +18,7 @@
             'sync_jni_headers',
             '../base/base.gyp:base_java',
             '../net/net.gyp:net_java',
+            '../third_party/android_tools/android_tools.gyp:google_play_services_javalib',
             '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_javalib',
             '../third_party/jsr-305/jsr-305.gyp:jsr_305_javalib',
           ],
