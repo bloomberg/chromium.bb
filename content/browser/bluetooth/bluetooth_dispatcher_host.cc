@@ -751,6 +751,7 @@ void BluetoothDispatcherHost::OnGetPrimaryService(
 
   // 1. & 2.
   if (!services.empty()) {
+    VLOG(1) << "Service found in device.";
     const BluetoothGattService& service = *services[0];
     DCHECK(service.IsPrimary());
     AddToServicesMapAndSendGetPrimaryServiceSuccess(service, thread_id,
@@ -760,13 +761,14 @@ void BluetoothDispatcherHost::OnGetPrimaryService(
 
   // 3.
   if (IsServicesDiscoveryCompleteForDevice(device_id)) {
-    VLOG(1) << "No service found";
+    VLOG(1) << "Service not found in device.";
     RecordGetPrimaryServiceOutcome(UMAGetPrimaryServiceOutcome::NOT_FOUND);
     Send(new BluetoothMsg_GetPrimaryServiceError(
         thread_id, request_id, WebBluetoothError::ServiceNotFound));
     return;
   }
 
+  VLOG(1) << "Adding service request to pending requests.";
   // 4.
   AddToPendingPrimaryServicesRequest(
       device_id,
