@@ -130,10 +130,6 @@ class ManagePasswordsUIController
   // content::WebContentsObserver:
   void WebContentsDestroyed() override;
 
-  // Shows infobar which allows user to choose credentials. Placing this
-  // code to separate method allows mocking.
-  virtual void UpdateAndroidAccountChooserInfoBarVisibility();
-
   // The wrapper around current state and data.
   ManagePasswordsState passwords_data_;
 

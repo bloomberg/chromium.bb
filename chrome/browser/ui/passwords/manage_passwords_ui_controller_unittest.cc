@@ -79,7 +79,6 @@ class TestManagePasswordsUIController : public ManagePasswordsUIController {
 
  private:
   void UpdateBubbleAndIconVisibility() override;
-  void UpdateAndroidAccountChooserInfoBarVisibility() override;
   void SavePasswordInternal() override {}
   void UpdatePasswordInternal(
       const autofill::PasswordForm& password_form) override {}
@@ -112,11 +111,6 @@ void TestManagePasswordsUIController::UpdateBubbleAndIconVisibility() {
   ManagePasswordsUIController::UpdateBubbleAndIconVisibility();
   if (opened_bubble_)
     OnBubbleShown();
-}
-
-void TestManagePasswordsUIController::
-    UpdateAndroidAccountChooserInfoBarVisibility() {
-  OnBubbleShown();
 }
 
 void TestManagePasswordsUIController::NeverSavePasswordInternal() {

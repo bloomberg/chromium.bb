@@ -59,6 +59,7 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/tab_android.h"
+#include "chrome/browser/password_manager/account_chooser_dialog_android.h"
 #include "chrome/browser/password_manager/generated_password_saved_infobar_delegate_android.h"
 #include "chrome/browser/ui/android/snackbars/auto_signin_prompt_controller.h"
 #endif
@@ -248,9 +249,19 @@ bool ChromePasswordManagerClient::PromptUserToChooseCredentials(
     ScopedVector<autofill::PasswordForm> federated_forms,
     const GURL& origin,
     base::Callback<void(const password_manager::CredentialInfo&)> callback) {
+#if defined(OS_ANDROID)
+  // Deletes itself on the event from Java counterpart, when user interacts with
+  // dialog.
+  AccountChooserDialogAndroid* acccount_chooser_dialog =
+      new AccountChooserDialogAndroid(web_contents(), local_forms.Pass(),
+                                      federated_forms.Pass(), origin, callback);
+  acccount_chooser_dialog->ShowDialog();
+  return true;
+#else
   return PasswordsClientUIDelegateFromWebContents(web_contents())
       ->OnChooseCredentials(local_forms.Pass(), federated_forms.Pass(), origin,
                             callback);
+#endif
 }
 
 void ChromePasswordManagerClient::ForceSavePassword() {

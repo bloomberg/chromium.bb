@@ -7,18 +7,29 @@
 
 #include <vector>
 
-#include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
+#include "base/android/jni_android.h"
+#include "base/memory/scoped_vector.h"
+#include "chrome/browser/ui/passwords/manage_passwords_state.h"
 
 namespace content {
 class WebContents;
+}
+
+namespace password_manager {
+struct CredentialInfo;
 }
 
 // Native counterpart for the android dialog which allows users to select
 // credentials which will be passed to the web site in order to log in the user.
 class AccountChooserDialogAndroid {
  public:
-  AccountChooserDialogAndroid(content::WebContents* web_contents,
-                              ManagePasswordsUIController* ui_controller);
+  AccountChooserDialogAndroid(
+      content::WebContents* web_contents,
+      ScopedVector<autofill::PasswordForm> local_credentials,
+      ScopedVector<autofill::PasswordForm> federated_credentials,
+      const GURL& origin,
+      const ManagePasswordsState::CredentialsCallback& callback);
+
   ~AccountChooserDialogAndroid();
   void Destroy(JNIEnv* env, jobject obj);
 
@@ -38,19 +49,15 @@ class AccountChooserDialogAndroid {
 
  private:
   const std::vector<const autofill::PasswordForm*>& local_credentials_forms()
-      const {
-    return ui_controller_->GetCurrentForms();
-  }
+      const;
 
   const std::vector<const autofill::PasswordForm*>&
-  federated_credentials_forms() const {
-    return ui_controller_->GetFederatedForms();
-  }
+  federated_credentials_forms() const;
 
   void ChooseCredential(size_t index, password_manager::CredentialType type);
 
   content::WebContents* web_contents_;
-  ManagePasswordsUIController* ui_controller_;
+  ManagePasswordsState passwords_data_;
 
   DISALLOW_COPY_AND_ASSIGN(AccountChooserDialogAndroid);
 };

@@ -7,6 +7,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
+#include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/password_manager/credential_android.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -101,8 +102,17 @@ void FetchAvatars(
 
 AccountChooserDialogAndroid::AccountChooserDialogAndroid(
     content::WebContents* web_contents,
-    ManagePasswordsUIController* ui_controller)
-    : web_contents_(web_contents), ui_controller_(ui_controller) {}
+    ScopedVector<autofill::PasswordForm> local_credentials,
+    ScopedVector<autofill::PasswordForm> federated_credentials,
+    const GURL& origin,
+    const ManagePasswordsState::CredentialsCallback& callback)
+    : web_contents_(web_contents) {
+  passwords_data_.set_client(
+      ChromePasswordManagerClient::FromWebContents(web_contents_));
+  passwords_data_.OnRequestCredentials(local_credentials.Pass(),
+                                       federated_credentials.Pass(), origin);
+  passwords_data_.set_credentials_callback(callback);
+}
 
 AccountChooserDialogAndroid::~AccountChooserDialogAndroid() {}
 
@@ -168,22 +178,32 @@ void AccountChooserDialogAndroid::OnLinkClicked(JNIEnv* env, jobject obj) {
       false /* is_renderer_initiated */));
 }
 
+const std::vector<const autofill::PasswordForm*>&
+AccountChooserDialogAndroid::local_credentials_forms() const {
+  return passwords_data_.GetCurrentForms();
+}
+
+const std::vector<const autofill::PasswordForm*>&
+AccountChooserDialogAndroid::federated_credentials_forms() const {
+  return passwords_data_.federated_credentials_forms();
+}
+
 void AccountChooserDialogAndroid::ChooseCredential(
     size_t index,
     password_manager::CredentialType type) {
   using namespace password_manager;
   if (type == CredentialType::CREDENTIAL_TYPE_EMPTY) {
-    ui_controller_->ChooseCredential(autofill::PasswordForm(), type);
+    passwords_data_.ChooseCredential(autofill::PasswordForm(), type);
     return;
   }
   DCHECK(type == CredentialType::CREDENTIAL_TYPE_PASSWORD ||
          type == CredentialType::CREDENTIAL_TYPE_FEDERATED);
   const auto& credentials_forms =
       (type == CredentialType::CREDENTIAL_TYPE_PASSWORD)
-          ? ui_controller_->GetCurrentForms()
-          : ui_controller_->GetFederatedForms();
+          ? local_credentials_forms()
+          : federated_credentials_forms();
   if (index < credentials_forms.size()) {
-    ui_controller_->ChooseCredential(*credentials_forms[index], type);
+    passwords_data_.ChooseCredential(*credentials_forms[index], type);
   }
 }
 

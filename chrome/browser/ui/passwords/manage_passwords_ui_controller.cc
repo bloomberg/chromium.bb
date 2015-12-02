@@ -29,8 +29,6 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/chrome_application.h"
-#include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/browser/password_manager/account_chooser_dialog_android.h"
 #else
 #include "chrome/browser/ui/passwords/manage_passwords_icon_view.h"
 #endif
@@ -102,11 +100,7 @@ bool ManagePasswordsUIController::OnChooseCredentials(
                                        federated_credentials.Pass(),
                                        origin);
   base::AutoReset<bool> resetter(&should_pop_up_bubble_, true);
-#if defined(OS_ANDROID)
-  UpdateAndroidAccountChooserInfoBarVisibility();
-#else
   UpdateBubbleAndIconVisibility();
-#endif
   if (!should_pop_up_bubble_) {
     passwords_data_.set_credentials_callback(callback);
     return true;
@@ -403,16 +397,4 @@ void ManagePasswordsUIController::WebContentsDestroyed() {
       GetPasswordStore(web_contents());
   if (password_store)
     password_store->RemoveObserver(this);
-}
-
-void ManagePasswordsUIController::
-    UpdateAndroidAccountChooserInfoBarVisibility() {
-#if defined(OS_ANDROID)
-  // Deletes itself on the event from Java counterpart, when user interacts with
-  // dialog.
-  AccountChooserDialogAndroid* acccount_chooser_dialog =
-      new AccountChooserDialogAndroid(web_contents(), this);
-  acccount_chooser_dialog->ShowDialog();
-  should_pop_up_bubble_ = false;
-#endif
 }
