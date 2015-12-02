@@ -21,10 +21,7 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
       : error_(QUIC_NO_ERROR) {
   }
 
-  ~SimpleFramerVisitor() override {
-    STLDeleteElements(&stream_frames_);
-    STLDeleteElements(&stream_data_);
-  }
+  ~SimpleFramerVisitor() override { STLDeleteElements(&stream_data_); }
 
   void OnError(QuicFramer* framer) override { error_ = framer->error(); }
 
@@ -62,9 +59,10 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
     string* string_data = new string();
     frame.data.AppendToString(string_data);
     stream_data_.push_back(string_data);
-    // TODO(ianswett): A pointer isn't necessary with emplace_back.
-    stream_frames_.push_back(new QuicStreamFrame(
-        frame.stream_id, frame.fin, frame.offset, StringPiece(*string_data)));
+    QuicStreamFrame stream_frame(frame);
+    // Make sure that the stream frame points to this data.
+    stream_frame.data = StringPiece(*string_data);
+    stream_frames_.push_back(stream_frame);
     return true;
   }
 
@@ -125,7 +123,7 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
   const vector<QuicRstStreamFrame>& rst_stream_frames() const {
     return rst_stream_frames_;
   }
-  const vector<QuicStreamFrame*>& stream_frames() const {
+  const vector<QuicStreamFrame>& stream_frames() const {
     return stream_frames_;
   }
   const vector<QuicStopWaitingFrame>& stop_waiting_frames() const {
@@ -149,7 +147,7 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
   vector<QuicAckFrame> ack_frames_;
   vector<QuicStopWaitingFrame> stop_waiting_frames_;
   vector<QuicPingFrame> ping_frames_;
-  vector<QuicStreamFrame*> stream_frames_;
+  vector<QuicStreamFrame> stream_frames_;
   vector<QuicRstStreamFrame> rst_stream_frames_;
   vector<QuicGoAwayFrame> goaway_frames_;
   vector<QuicConnectionCloseFrame> connection_close_frames_;
@@ -223,7 +221,7 @@ const vector<QuicPingFrame>& SimpleQuicFramer::ping_frames() const {
   return visitor_->ping_frames();
 }
 
-const vector<QuicStreamFrame*>& SimpleQuicFramer::stream_frames() const {
+const vector<QuicStreamFrame>& SimpleQuicFramer::stream_frames() const {
   return visitor_->stream_frames();
 }
 

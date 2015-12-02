@@ -43,7 +43,7 @@ class SimpleQuicFramer {
   const std::vector<QuicPingFrame>& ping_frames() const;
   const std::vector<QuicGoAwayFrame>& goaway_frames() const;
   const std::vector<QuicRstStreamFrame>& rst_stream_frames() const;
-  const std::vector<QuicStreamFrame*>& stream_frames() const;
+  const std::vector<QuicStreamFrame>& stream_frames() const;
   base::StringPiece fec_data() const;
   const QuicVersionNegotiationPacket* version_negotiation_packet() const;
 

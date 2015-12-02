@@ -333,7 +333,7 @@ class TestPacketWriter : public QuicPacketWriter {
     return framer_.rst_stream_frames();
   }
 
-  const vector<QuicStreamFrame*>& stream_frames() const {
+  const vector<QuicStreamFrame>& stream_frames() const {
     return framer_.stream_frames();
   }
 
@@ -2237,8 +2237,8 @@ TEST_P(QuicConnectionTest, FramePacking) {
   EXPECT_FALSE(writer_->stop_waiting_frames().empty());
   EXPECT_FALSE(writer_->ack_frames().empty());
   ASSERT_EQ(2u, writer_->stream_frames().size());
-  EXPECT_EQ(kClientDataStreamId1, writer_->stream_frames()[0]->stream_id);
-  EXPECT_EQ(kClientDataStreamId2, writer_->stream_frames()[1]->stream_id);
+  EXPECT_EQ(kClientDataStreamId1, writer_->stream_frames()[0].stream_id);
+  EXPECT_EQ(kClientDataStreamId2, writer_->stream_frames()[1].stream_id);
 }
 
 TEST_P(QuicConnectionTest, FramePackingNonCryptoThenCrypto) {
@@ -2262,7 +2262,7 @@ TEST_P(QuicConnectionTest, FramePackingNonCryptoThenCrypto) {
   // Parse the last packet and ensure it's the crypto stream frame.
   EXPECT_EQ(1u, writer_->frame_count());
   ASSERT_EQ(1u, writer_->stream_frames().size());
-  EXPECT_EQ(kCryptoStreamId, writer_->stream_frames()[0]->stream_id);
+  EXPECT_EQ(kCryptoStreamId, writer_->stream_frames()[0].stream_id);
 }
 
 TEST_P(QuicConnectionTest, FramePackingCryptoThenNonCrypto) {
@@ -2286,7 +2286,7 @@ TEST_P(QuicConnectionTest, FramePackingCryptoThenNonCrypto) {
   // Parse the last packet and ensure it's the stream frame from stream 3.
   EXPECT_EQ(1u, writer_->frame_count());
   ASSERT_EQ(1u, writer_->stream_frames().size());
-  EXPECT_EQ(kClientDataStreamId1, writer_->stream_frames()[0]->stream_id);
+  EXPECT_EQ(kClientDataStreamId1, writer_->stream_frames()[0].stream_id);
 }
 
 TEST_P(QuicConnectionTest, FramePackingFEC) {
@@ -2344,8 +2344,8 @@ TEST_P(QuicConnectionTest, FramePackingAckResponse) {
   EXPECT_FALSE(writer_->stop_waiting_frames().empty());
   EXPECT_FALSE(writer_->ack_frames().empty());
   ASSERT_EQ(2u, writer_->stream_frames().size());
-  EXPECT_EQ(kClientDataStreamId1, writer_->stream_frames()[0]->stream_id);
-  EXPECT_EQ(kClientDataStreamId2, writer_->stream_frames()[1]->stream_id);
+  EXPECT_EQ(kClientDataStreamId1, writer_->stream_frames()[0].stream_id);
+  EXPECT_EQ(kClientDataStreamId2, writer_->stream_frames()[1].stream_id);
 }
 
 TEST_P(QuicConnectionTest, FramePackingSendv) {
@@ -2369,9 +2369,9 @@ TEST_P(QuicConnectionTest, FramePackingSendv) {
   // been packed into a single stream frame from one stream.
   EXPECT_EQ(1u, writer_->frame_count());
   EXPECT_EQ(1u, writer_->stream_frames().size());
-  QuicStreamFrame* frame = writer_->stream_frames()[0];
-  EXPECT_EQ(1u, frame->stream_id);
-  EXPECT_EQ("ABCD", frame->data);
+  QuicStreamFrame frame = writer_->stream_frames()[0];
+  EXPECT_EQ(1u, frame.stream_id);
+  EXPECT_EQ("ABCD", frame.data);
 }
 
 TEST_P(QuicConnectionTest, FramePackingSendvQueued) {
@@ -2399,7 +2399,7 @@ TEST_P(QuicConnectionTest, FramePackingSendvQueued) {
   // Parse the last packet and ensure it's one stream frame from one stream.
   EXPECT_EQ(1u, writer_->frame_count());
   EXPECT_EQ(1u, writer_->stream_frames().size());
-  EXPECT_EQ(1u, writer_->stream_frames()[0]->stream_id);
+  EXPECT_EQ(1u, writer_->stream_frames()[0].stream_id);
 }
 
 TEST_P(QuicConnectionTest, SendingZeroBytes) {
@@ -2414,8 +2414,8 @@ TEST_P(QuicConnectionTest, SendingZeroBytes) {
   // Parse the last packet and ensure it's one stream frame from one stream.
   EXPECT_EQ(1u, writer_->frame_count());
   EXPECT_EQ(1u, writer_->stream_frames().size());
-  EXPECT_EQ(1u, writer_->stream_frames()[0]->stream_id);
-  EXPECT_TRUE(writer_->stream_frames()[0]->fin);
+  EXPECT_EQ(1u, writer_->stream_frames()[0].stream_id);
+  EXPECT_TRUE(writer_->stream_frames()[0].fin);
 }
 
 TEST_P(QuicConnectionTest, OnCanWrite) {
@@ -2436,8 +2436,8 @@ TEST_P(QuicConnectionTest, OnCanWrite) {
   // two different streams.
   EXPECT_EQ(2u, writer_->frame_count());
   EXPECT_EQ(2u, writer_->stream_frames().size());
-  EXPECT_EQ(kClientDataStreamId1, writer_->stream_frames()[0]->stream_id);
-  EXPECT_EQ(kClientDataStreamId2, writer_->stream_frames()[1]->stream_id);
+  EXPECT_EQ(kClientDataStreamId1, writer_->stream_frames()[0].stream_id);
+  EXPECT_EQ(kClientDataStreamId2, writer_->stream_frames()[1].stream_id);
 }
 
 TEST_P(QuicConnectionTest, RetransmitOnNack) {

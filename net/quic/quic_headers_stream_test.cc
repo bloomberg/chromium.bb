@@ -391,8 +391,7 @@ TEST_P(QuicHeadersStreamTest, NonEmptyHeaderHOLBlockedTime) {
         headers_frame.set_fin(fin);
         frames[stream_num].reset(framer_.SerializeFrame(headers_frame));
       }
-      stream_frames[stream_num].stream_id = stream_frame_.stream_id;
-      stream_frames[stream_num].offset = stream_frame_.offset;
+      stream_frames[stream_num] = stream_frame_;
       stream_frames[stream_num].data =
           StringPiece(frames[stream_num]->data(), frames[stream_num]->size());
       DVLOG(1) << "make frame for stream " << stream_num << " offset "

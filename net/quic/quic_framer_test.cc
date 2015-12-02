@@ -265,8 +265,10 @@ class TestQuicVisitor : public QuicFramerVisitorInterface {
     string* string_data = new string();
     frame.data.AppendToString(string_data);
     stream_data_.push_back(string_data);
-    stream_frames_.push_back(new QuicStreamFrame(
-        frame.stream_id, frame.fin, frame.offset, StringPiece(*string_data)));
+    QuicStreamFrame* stream_frame = new QuicStreamFrame(frame);
+    // Make sure that the stream frame points to this data.
+    stream_frame->data = StringPiece(*string_data);
+    stream_frames_.push_back(stream_frame);
     return true;
   }
 

@@ -39,7 +39,8 @@ class QuicPacketCreatorPeer {
                                   size_t iov_offset,
                                   QuicStreamOffset offset,
                                   bool fin,
-                                  QuicFrame* frame);
+                                  QuicFrame* frame,
+                                  UniqueStreamBuffer* buffer);
   static bool IsFecProtected(QuicPacketCreator* creator);
   static bool IsFecEnabled(QuicPacketCreator* creator);
   static void StartFecProtectingPackets(QuicPacketCreator* creator);
