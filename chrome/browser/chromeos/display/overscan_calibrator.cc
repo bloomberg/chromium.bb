@@ -25,10 +25,10 @@ namespace {
 const float kArrowOpacity = 0.8;
 
 // The height in pixel for the arrows to show the overscan calibration.
-const int kCalibrationArrowHeight = 50;
+const int kCalibrationArrowHeight = 70;
 
 // The gap between the boundary and calibration arrows.
-const int kArrowGapWidth = 20;
+const int kArrowGapWidth = 0;
 
 // Draw the arrow for the overscan calibration to |canvas|.
 void DrawTriangle(int x_offset,
@@ -44,9 +44,11 @@ void DrawTriangle(int x_offset,
   border_paint.setColor(SkColorSetA(SK_ColorWHITE, kuint8max * kArrowOpacity));
 
   SkPath base_path;
-  base_path.moveTo(0, SkIntToScalar(-kCalibrationArrowHeight));
-  base_path.lineTo(SkIntToScalar(-kCalibrationArrowHeight), 0);
-  base_path.lineTo(SkIntToScalar(kCalibrationArrowHeight), 0);
+  base_path.moveTo(0, 0);
+  base_path.lineTo(SkIntToScalar(-kCalibrationArrowHeight),
+                   SkIntToScalar(-kCalibrationArrowHeight));
+  base_path.lineTo(SkIntToScalar(kCalibrationArrowHeight),
+                   SkIntToScalar(-kCalibrationArrowHeight));
   base_path.close();
 
   SkPath path;
