@@ -1348,10 +1348,8 @@ crbug.com/545551 [ Win Mac ] svg/custom/repaint-shadow.svg [ Failure Pass ]
 crbug.com/546215 [ Android ] fast/inline-block/overflow-clip.html [ Failure ]
 
 crbug.com/548765 http/tests/inspector/console-fetch-logging.html [ Failure Pass Slow ]
-crbug.com/562311 [ Mac ] fast/forms/color/color-suggestion-picker-appearance-zoom125.html [ Pass Timeout ]
-crbug.com/562311 [ Mac ] fast/forms/color/color-suggestion-picker-appearance-zoom200.html [ Pass Timeout ]
-crbug.com/562311 [ Mac10.6 Mac10.7 Mac10.8 Mac10.9 ] fast/forms/suggestion-picker/date-suggestion-picker-appearance-zoom125.html [ Failure Pass Timeout ]
-crbug.com/562311 [ Mac10.6 Mac10.7 Mac10.8 Mac10.9 ] fast/forms/suggestion-picker/date-suggestion-picker-appearance-zoom200.html [ Failure Pass Timeout ]
+crbug.com/562311 [ Mac ] fast/forms/suggestion-picker/date-suggestion-picker-appearance-zoom125.html [ NeedsRebaseline ]
+crbug.com/562311 [ Mac ] fast/forms/suggestion-picker/date-suggestion-picker-appearance-zoom200.html [ NeedsRebaseline ]
 crbug.com/549314 [ XP ] inspector-protocol/layout-fonts/unicode-range-combining-chars-fallback.html [ Failure ]
 
 crbug.com/563694 [ Linux Mac Debug ] svg/hixie/perf/005.xml [ Failure ]
