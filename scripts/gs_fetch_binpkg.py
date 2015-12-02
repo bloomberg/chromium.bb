@@ -27,8 +27,10 @@ def GetParser():
   """Creates the argparse parser."""
   parser = commandline.ArgumentParser(description=__doc__)
   parser.add_argument('--boto', type='path', help='Path to boto auth file.')
-  parser.add_argument('uri', help='Google Storage URI to download')
-  parser.add_argument('filename', help='Location to store the file.')
+  parser.add_argument('uri', type='gs_path',
+                      help='Google Storage URI to download')
+  parser.add_argument('filename', type='path',
+                      help='Location to store the file.')
   return parser
 
 
