@@ -127,7 +127,7 @@ class PwsClient {
                 if (responseCode > 0) {
                     httpErr = ", HTTP " + responseCode;
                 }
-                Log.e(TAG, "Error making request to PWS%s", httpErr, e);
+                Log.e(TAG, "Error making request to PWS%s", httpErr);
                 resolveScanCallback.onPwsResults(new ArrayList<PwsResult>());
             }
         };
@@ -171,7 +171,7 @@ class PwsClient {
                 if (responseCode > 0) {
                     httpErr = ", HTTP " + responseCode;
                 }
-                Log.e(TAG, "Error requesting icon%s", httpErr, e);
+                Log.e(TAG, "Error requesting icon%s", httpErr);
             }
         };
 
