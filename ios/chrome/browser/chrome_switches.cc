@@ -19,6 +19,10 @@ const char kDisableContextualSearch[] = "disable-contextual-search";
 const char kDisableIOSFastWebScrollViewInsets[] =
     "disable-fast-web-scroll-view-insets";
 
+// Lists separated by commas the name of features to disable.
+// See base::FeatureList::InitializeFromCommandLine for details.
+const char kDisableIOSFeatures[] = "disable-features";
+
 // Disable password generation for iOS.
 const char kDisableIOSPasswordGeneration[] = "disable-ios-password-generation";
 
@@ -57,6 +61,10 @@ const char kEnableCredentialManagerAPI[] = "enable-credential-manager-api";
 // Enables a workaround for fast inset updates for UIWebView.scrollView.
 const char kEnableIOSFastWebScrollViewInsets[] =
     "enable-fast-web-scroll-view-insets";
+
+// Lists separated by commas the name of features to disable.
+// See base::FeatureList::InitializeFromCommandLine for details.
+const char kEnableIOSFeatures[] = "enable-features";
 
 // Enables support for Handoff from Chrome on iOS to the default browser of
 // other Apple devices.

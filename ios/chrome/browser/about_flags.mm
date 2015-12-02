@@ -36,12 +36,6 @@
 #endif
 
 namespace {
-// FlagsState::ConvertFlagsToSwitches() required valid enable_features_flag_name
-// and disable_features_flag_name, even though the flags are never used on iOS.
-// The dummy values are used to work around this.
-const char kDisableFeatures[] = "disable-features";
-const char kEnableFeatures[] = "enable-features";
-
 // To add a new entry, add to the end of kFeatureEntries. There are two
 // distinct types of entries:
 // . SINGLE_VALUE: entry is either on or off. Use the SINGLE_VALUE_TYPE
@@ -283,8 +277,8 @@ class FlagsStateSingleton {
 void ConvertFlagsToSwitches(flags_ui::FlagsStorage* flags_storage,
                             base::CommandLine* command_line) {
   FlagsStateSingleton::GetFlagsState()->ConvertFlagsToSwitches(
-      flags_storage, command_line, flags_ui::kAddSentinels, kEnableFeatures,
-      kDisableFeatures);
+      flags_storage, command_line, flags_ui::kAddSentinels,
+      switches::kEnableIOSFeatures, switches::kDisableIOSFeatures);
   AppendSwitchesFromExperimentalSettings(command_line);
 }
 
