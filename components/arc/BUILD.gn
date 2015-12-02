@@ -13,7 +13,6 @@ static_library("arc") {
 
   deps = [
     "//base",
-    "//base:prefs",
     "//chromeos",
     "//ipc",
   ]

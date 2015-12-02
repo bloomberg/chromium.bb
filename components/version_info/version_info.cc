@@ -9,7 +9,7 @@
 #include "grit/components_strings.h"
 
 #if defined(USE_UNOFFICIAL_VERSION_NUMBER)
-#include "ui/base/l10n/l10n_util.h"  // nogncheck
+#include "ui/base/l10n/l10n_util.h"
 #endif  // USE_UNOFFICIAL_VERSION_NUMBER
 
 namespace version_info {
