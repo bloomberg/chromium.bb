@@ -28,11 +28,11 @@
 
     // https://w3c.github.io/uievents/#idl-interface-UIEvent-initializers
     // TODO(philipj): None of the initUIEvent() arguments should be optional.
-    [Measure, LegacyInterfaceTypeChecking] void initUIEvent([Default=Undefined] optional DOMString type,
-                                                            [Default=Undefined] optional boolean bubbles,
-                                                            [Default=Undefined] optional boolean cancelable,
-                                                            [Default=Undefined] optional Window? view,
-                                                            [Default=Undefined] optional long detail);
+    [Measure] void initUIEvent([Default=Undefined] optional DOMString type,
+                               [Default=Undefined] optional boolean bubbles,
+                               [Default=Undefined] optional boolean cancelable,
+                               [Default=Undefined] optional Window? view,
+                               [Default=Undefined] optional long detail);
 
     // FIXME: this belongs on the KeyboardEvent interface
     [MeasureAs=UIEventWhich] readonly attribute long which;

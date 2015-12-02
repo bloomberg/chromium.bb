@@ -34,10 +34,10 @@ interface TextEvent : UIEvent {
 
     [Measure] readonly attribute DOMString data;
 
-    [Measure, LegacyInterfaceTypeChecking] void initTextEvent([Default=Undefined] optional DOMString typeArg,
-                                                              [Default=Undefined] optional boolean canBubbleArg,
-                                                              [Default=Undefined] optional boolean cancelableArg,
-                                                              [Default=Undefined] optional Window? viewArg,
-                                                              [Default=Undefined] optional DOMString dataArg);
+    [Measure] void initTextEvent([Default=Undefined] optional DOMString type,
+                                 [Default=Undefined] optional boolean bubbles,
+                                 [Default=Undefined] optional boolean cancelable,
+                                 [Default=Undefined] optional Window? view,
+                                 [Default=Undefined] optional DOMString data);
 
 };

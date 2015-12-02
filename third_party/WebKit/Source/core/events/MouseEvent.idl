@@ -38,21 +38,21 @@
 
     // https://w3c.github.io/uievents/#idl-interface-MouseEvent-initializers
     // TODO(philipj): None of the initMouseEvent() arguments should be optional.
-    [CallWith=ScriptState, Measure, LegacyInterfaceTypeChecking] void initMouseEvent([Default=Undefined] optional DOMString type,
-                                                                                     [Default=Undefined] optional boolean bubbles,
-                                                                                     [Default=Undefined] optional boolean cancelable,
-                                                                                     [Default=Undefined] optional Window? view,
-                                                                                     [Default=Undefined] optional long detail,
-                                                                                     [Default=Undefined] optional long screenX,
-                                                                                     [Default=Undefined] optional long screenY,
-                                                                                     [Default=Undefined] optional long clientX,
-                                                                                     [Default=Undefined] optional long clientY,
-                                                                                     [Default=Undefined] optional boolean ctrlKey,
-                                                                                     [Default=Undefined] optional boolean altKey,
-                                                                                     [Default=Undefined] optional boolean shiftKey,
-                                                                                     [Default=Undefined] optional boolean metaKey,
-                                                                                     [Default=Undefined] optional unsigned short button,
-                                                                                     [Default=Undefined] optional EventTarget? relatedTarget);
+    [CallWith=ScriptState, Measure] void initMouseEvent([Default=Undefined] optional DOMString type,
+                                                        [Default=Undefined] optional boolean bubbles,
+                                                        [Default=Undefined] optional boolean cancelable,
+                                                        [Default=Undefined] optional Window? view,
+                                                        [Default=Undefined] optional long detail,
+                                                        [Default=Undefined] optional long screenX,
+                                                        [Default=Undefined] optional long screenY,
+                                                        [Default=Undefined] optional long clientX,
+                                                        [Default=Undefined] optional long clientY,
+                                                        [Default=Undefined] optional boolean ctrlKey,
+                                                        [Default=Undefined] optional boolean altKey,
+                                                        [Default=Undefined] optional boolean shiftKey,
+                                                        [Default=Undefined] optional boolean metaKey,
+                                                        [Default=Undefined] optional unsigned short button,
+                                                        [Default=Undefined] optional EventTarget? relatedTarget);
 
     // CSSOM View Module
     // http://dev.w3.org/csswg/cssom-view/#extensions-to-the-mouseevent-interface

@@ -31,12 +31,12 @@ interface MutationEvent : Event {
     readonly attribute DOMString      attrName;
     readonly attribute unsigned short attrChange;
     // TODO(philipj): None of the initMutationEvent() arguments should be optional.
-    [Measure, LegacyInterfaceTypeChecking] void initMutationEvent([Default=Undefined] optional DOMString type,
-                                                                  [Default=Undefined] optional boolean bubbles,
-                                                                  [Default=Undefined] optional boolean cancelable,
-                                                                  [Default=Undefined] optional Node? relatedNode,
-                                                                  [Default=Undefined] optional DOMString prevValue,
-                                                                  [Default=Undefined] optional DOMString newValue,
-                                                                  [Default=Undefined] optional DOMString attrName,
-                                                                  [Default=Undefined] optional unsigned short attrChange);
+    [Measure] void initMutationEvent([Default=Undefined] optional DOMString type,
+                                     [Default=Undefined] optional boolean bubbles,
+                                     [Default=Undefined] optional boolean cancelable,
+                                     [Default=Undefined] optional Node? relatedNode,
+                                     [Default=Undefined] optional DOMString prevValue,
+                                     [Default=Undefined] optional DOMString newValue,
+                                     [Default=Undefined] optional DOMString attrName,
+                                     [Default=Undefined] optional unsigned short attrChange);
 };
