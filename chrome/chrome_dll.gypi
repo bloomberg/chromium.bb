@@ -405,6 +405,11 @@
                 '<(DEPTH)/components/components.gyp:policy',
               ],
             }],
+            ['configuration_policy==1', {
+              'dependencies': [
+                'policy_path_parser',
+              ],
+            }],
             ['enable_plugins==1', {
               'dependencies': [
                 '../pdf/pdf.gyp:pdf',

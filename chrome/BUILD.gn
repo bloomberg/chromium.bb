@@ -423,7 +423,6 @@ if (is_mac || is_win) {
         ":chrome_dll_version",
         "//base/allocator",
         "//build/config/sanitizers:deps",
-        "//chrome/browser/policy:path_parser",
         "//components/browser_watcher:browser_watcher_client",
         "//components/crash/content/app",
         "//content/public/app:child",
@@ -453,6 +452,11 @@ if (is_mac || is_win) {
         #   },
         # }],
       }
+
+      if (enable_configuration_policy) {
+        deps += [ "//chrome/browser/policy:path_parser" ]
+      }
+
       if (enable_plugins && enable_pdf) {
         deps += [ "//pdf" ]
       }
