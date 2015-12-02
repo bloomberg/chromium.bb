@@ -12,11 +12,3 @@ def CheckChangeOnUpload(input_api, output_api):
   results = []
   results += input_api.canned_checks.CheckPatchFormatted(input_api, output_api)
   return results
-
-# Add Blink tests to the default CQ try bots.
-def GetPreferredTryMasters(project, change):
-  return {
-    'tryserver.blink': {
-      'linux_blink_rel': set(['defaulttests']),
-    },
-  }
