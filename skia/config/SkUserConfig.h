@@ -214,6 +214,10 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #   define SK_SUPPORT_LEGACY_GETDEVICE
 #endif
 
+#ifndef    SK_SUPPORT_LEGACY_LAYER_BITMAP_IMAGEFILTERS
+#   define SK_SUPPORT_LEGACY_LAYER_BITMAP_IMAGEFILTERS
+#endif
+
 #ifndef    SK_IGNORE_ETC1_SUPPORT
 #   define SK_IGNORE_ETC1_SUPPORT
 #endif
