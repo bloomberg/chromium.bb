@@ -175,13 +175,19 @@ std::string Escape(const std::string& url) {
   return escaped_str;
 }
 
-std::string RemoveConsecutiveChars(const std::string& str, const char c) {
-  std::string output(str);
-  std::string string_to_find;
-  std::string::size_type loc = 0;
-  string_to_find.append(2, c);
-  while ((loc = output.find(string_to_find, loc)) != std::string::npos) {
-    output.erase(loc, 1);
+std::string RemoveConsecutiveChars(base::StringPiece str, const char c) {
+  std::string output;
+  // Output is at most the length of the original string.
+  output.reserve(str.size());
+
+  size_t i = 0;
+  while (i < str.size()) {
+    output.append(1, str[i++]);
+    if (str[i - 1] == c) {
+      while (i < str.size() && str[i] == c) {
+        i++;
+      }
+    }
   }
 
   return output;
