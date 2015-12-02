@@ -561,11 +561,9 @@ void HTMLCanvasElement::toBlob(FileCallback* callback, const String& mimeType, c
     RefPtr<DOMUint8ClampedArray> imageDataRef(imageData->data());
 
     RefPtr<CanvasAsyncBlobCreator> asyncCreatorRef = CanvasAsyncBlobCreator::create(imageDataRef.release(), encodingMimeType, imageData->size(), callback);
-    if (Platform::current()->isThreadedCompositingEnabled() && (encodingMimeType == DefaultMimeType)) {
-        asyncCreatorRef->scheduleAsyncBlobCreation(true);
-    } else {
-        asyncCreatorRef->scheduleAsyncBlobCreation(false, quality);
-    }
+
+    // TODO(xlai): Remove idle-periods version of implementation completely, http://crbug.com/564218
+    asyncCreatorRef->scheduleAsyncBlobCreation(false, quality);
 }
 
 SecurityOrigin* HTMLCanvasElement::securityOrigin() const
