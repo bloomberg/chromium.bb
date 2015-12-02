@@ -330,6 +330,35 @@ TEST_F(ServiceWorkerDispatcherTest, OnSetControllerServiceWorker) {
             ipc_sink()->GetMessageAt(1)->type());
 }
 
+// Test that clearing the controller by sending a kInvalidServiceWorkerHandle
+// results in the provider context having a null controller.
+TEST_F(ServiceWorkerDispatcherTest, OnSetControllerServiceWorker_Null) {
+  const int kProviderId = 10;
+  bool should_notify_controllerchange = true;
+
+  ServiceWorkerRegistrationObjectInfo info;
+  ServiceWorkerVersionAttributes attrs;
+  CreateObjectInfoAndVersionAttributes(&info, &attrs);
+
+  scoped_ptr<MockWebServiceWorkerProviderClientImpl> provider_client(
+      new MockWebServiceWorkerProviderClientImpl(kProviderId, dispatcher()));
+  scoped_refptr<ServiceWorkerProviderContext> provider_context(
+      new ServiceWorkerProviderContext(kProviderId,
+                                       SERVICE_WORKER_PROVIDER_FOR_WINDOW,
+                                       thread_safe_sender()));
+
+  OnAssociateRegistration(kDocumentMainThreadId, kProviderId, info, attrs);
+
+  // Set the controller to kInvalidServiceWorkerHandle.
+  OnSetControllerServiceWorker(kDocumentMainThreadId, kProviderId,
+                               ServiceWorkerObjectInfo(),
+                               should_notify_controllerchange);
+
+  // Check that it became null.
+  EXPECT_EQ(nullptr, provider_context->controller());
+  EXPECT_TRUE(provider_client->is_set_controlled_called());
+}
+
 TEST_F(ServiceWorkerDispatcherTest, OnPostMessage) {
   const int kProviderId = 10;
 

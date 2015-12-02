@@ -57,6 +57,8 @@ class ServiceWorkerProviderContext::ControlleeDelegate
   void SetController(
       scoped_ptr<ServiceWorkerHandleReference> controller) override {
     DCHECK(registration_);
+    DCHECK(!controller ||
+           controller->handle_id() != kInvalidServiceWorkerHandleId);
     controller_ = controller.Pass();
   }
 

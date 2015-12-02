@@ -19,12 +19,14 @@ class ThreadSafeSender;
 // or decrement the reference count to the browser process.
 class CONTENT_EXPORT ServiceWorkerHandleReference {
  public:
-  // Creates a new ServiceWorkerHandleReference and increments ref-count.
+  // Creates a new ServiceWorkerHandleReference and increments ref-count. If
+  // the handle id is kInvalidServiceWorkerHandleId, returns null instead.
   static scoped_ptr<ServiceWorkerHandleReference> Create(
       const ServiceWorkerObjectInfo& info,
       ThreadSafeSender* sender);
 
-  // Creates a new ServiceWorkerHandleReference by adopting a ref-count.
+  // Creates a new ServiceWorkerHandleReference by adopting a ref-count. If
+  // the handle id is kInvalidServiceWorkerHandleId, returns null instead.
   static scoped_ptr<ServiceWorkerHandleReference> Adopt(
       const ServiceWorkerObjectInfo& info,
       ThreadSafeSender* sender);

@@ -264,7 +264,7 @@ void ServiceWorkerDispatcher::WillStopCurrentWorkerThread() {
 scoped_refptr<WebServiceWorkerImpl>
 ServiceWorkerDispatcher::GetOrCreateServiceWorker(
     scoped_ptr<ServiceWorkerHandleReference> handle_ref) {
-  if (handle_ref->handle_id() == kInvalidServiceWorkerHandleId)
+  if (!handle_ref)
     return nullptr;
 
   WorkerObjectMap::iterator found =

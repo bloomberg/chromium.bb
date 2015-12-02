@@ -14,6 +14,8 @@ ServiceWorkerHandleReference::Create(
     const ServiceWorkerObjectInfo& info,
     ThreadSafeSender* sender) {
   DCHECK(sender);
+  if (info.handle_id == kInvalidServiceWorkerHandleId)
+    return nullptr;
   return make_scoped_ptr(new ServiceWorkerHandleReference(info, sender, true));
 }
 
@@ -21,6 +23,8 @@ scoped_ptr<ServiceWorkerHandleReference> ServiceWorkerHandleReference::Adopt(
     const ServiceWorkerObjectInfo& info,
     ThreadSafeSender* sender) {
   DCHECK(sender);
+  if (info.handle_id == kInvalidServiceWorkerHandleId)
+    return nullptr;
   return make_scoped_ptr(new ServiceWorkerHandleReference(info, sender, false));
 }
 
@@ -30,8 +34,8 @@ ServiceWorkerHandleReference::ServiceWorkerHandleReference(
     bool increment_ref_in_ctor)
     : info_(info),
       sender_(sender) {
-  if (increment_ref_in_ctor &&
-      info_.handle_id != kInvalidServiceWorkerHandleId) {
+  DCHECK_NE(info.handle_id, kInvalidServiceWorkerHandleId);
+  if (increment_ref_in_ctor) {
     sender_->Send(
         new ServiceWorkerHostMsg_IncrementServiceWorkerRefCount(
             info_.handle_id));
@@ -39,11 +43,9 @@ ServiceWorkerHandleReference::ServiceWorkerHandleReference(
 }
 
 ServiceWorkerHandleReference::~ServiceWorkerHandleReference() {
-  if (info_.handle_id != kInvalidServiceWorkerHandleId) {
-    sender_->Send(
-        new ServiceWorkerHostMsg_DecrementServiceWorkerRefCount(
-            info_.handle_id));
-  }
+  DCHECK_NE(info_.handle_id, kInvalidServiceWorkerHandleId);
+  sender_->Send(
+      new ServiceWorkerHostMsg_DecrementServiceWorkerRefCount(info_.handle_id));
 }
 
 }  // namespace content
