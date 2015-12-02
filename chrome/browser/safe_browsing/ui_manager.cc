@@ -69,8 +69,7 @@ SafeBrowsingUIManager::UnsafeResource::UnsafeResource()
       threat_type(SB_THREAT_TYPE_SAFE),
       render_process_host_id(-1),
       render_view_id(-1),
-      threat_source(safe_browsing::ThreatSource::UNKNOWN) {
-}
+      threat_source(safe_browsing::ThreatSource::UNKNOWN) {}
 
 SafeBrowsingUIManager::UnsafeResource::~UnsafeResource() { }
 
@@ -96,18 +95,16 @@ void SafeBrowsingUIManager::LogPauseDelay(base::TimeDelta time) {
 void SafeBrowsingUIManager::OnBlockingPageDone(
     const std::vector<UnsafeResource>& resources,
     bool proceed) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  for (std::vector<UnsafeResource>::const_iterator iter = resources.begin();
-       iter != resources.end(); ++iter) {
-    const UnsafeResource& resource = *iter;
-    if (!resource.callback.is_null())
-      resource.callback.Run(proceed);
-
-    if (proceed) {
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
-          base::Bind(&SafeBrowsingUIManager::AddToWhitelist, this, resource));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  for (const auto& resource : resources) {
+    if (!resource.callback.is_null()) {
+      DCHECK(resource.callback_thread);
+      resource.callback_thread->PostTask(
+          FROM_HERE, base::Bind(resource.callback, proceed));
     }
+
+    if (proceed)
+      AddToWhitelist(resource);
   }
 }
 
@@ -127,9 +124,11 @@ void SafeBrowsingUIManager::DisplayBlockingPage(
          proto.ParseFromString(resource.threat_metadata) &&
          proto.pattern_type() == MalwarePatternType::LANDING)) {
       if (!resource.callback.is_null()) {
-        BrowserThread::PostTask(
-            BrowserThread::IO, FROM_HERE, base::Bind(resource.callback, true));
+        DCHECK(resource.callback_thread);
+        resource.callback_thread->PostTask(FROM_HERE,
+                                           base::Bind(resource.callback, true));
       }
+
       return;
     }
   }
@@ -148,10 +147,7 @@ void SafeBrowsingUIManager::DisplayBlockingPage(
   if (!web_contents) {
     std::vector<UnsafeResource> resources;
     resources.push_back(resource);
-    BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&SafeBrowsingUIManager::OnBlockingPageDone,
-                 this, resources, false));
+    OnBlockingPageDone(resources, false);
     return;
   }
 
@@ -159,8 +155,9 @@ void SafeBrowsingUIManager::DisplayBlockingPage(
   // and top-level domain.
   if (IsWhitelisted(resource)) {
     if (!resource.callback.is_null()) {
-      BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                              base::Bind(resource.callback, true));
+      DCHECK(resource.callback_thread);
+      resource.callback_thread->PostTask(FROM_HERE,
+                                         base::Bind(resource.callback, true));
     }
     return;
   }

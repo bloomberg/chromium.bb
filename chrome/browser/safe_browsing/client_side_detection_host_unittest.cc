@@ -358,6 +358,8 @@ class ClientSideDetectionHostTest : public ChromeRenderViewHostTestHarness {
     resource.is_subresource = true;
     resource.threat_type = SB_THREAT_TYPE_URL_MALWARE;
     resource.callback = base::Bind(&EmptyUrlCheckCallback);
+    resource.callback_thread =
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
     resource.render_process_host_id = web_contents()->GetRenderProcessHost()->
         GetID();
     resource.render_view_id =
@@ -391,6 +393,8 @@ class ClientSideDetectionHostTest : public ChromeRenderViewHostTestHarness {
     resource.is_subresource = false;
     resource.threat_type = SB_THREAT_TYPE_URL_MALWARE;
     resource.callback = base::Bind(&EmptyUrlCheckCallback);
+    resource.callback_thread =
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
     resource.render_process_host_id = pending_rvh()->GetProcess()->GetID();
     resource.render_view_id = pending_rvh()->GetRoutingID();
     csd_host_->OnSafeBrowsingMatch(resource);
@@ -569,8 +573,7 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneShowInterstitial) {
 
   // Make sure the client object will be deleted.
   BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
+      BrowserThread::IO, FROM_HERE,
       base::Bind(&MockSafeBrowsingUIManager::InvokeOnBlockingPageComplete,
                  ui_manager_, resource.callback));
 }
@@ -658,8 +661,7 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneMultiplePings) {
 
   // Make sure the client object will be deleted.
   BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
+      BrowserThread::IO, FROM_HERE,
       base::Bind(&MockSafeBrowsingUIManager::InvokeOnBlockingPageComplete,
                  ui_manager_, resource.callback));
 }
@@ -811,8 +813,7 @@ TEST_F(ClientSideDetectionHostTest,
 
   // Make sure the client object will be deleted.
   BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
+      BrowserThread::IO, FROM_HERE,
       base::Bind(&MockSafeBrowsingUIManager::InvokeOnBlockingPageComplete,
                  ui_manager_, resource.callback));
 }

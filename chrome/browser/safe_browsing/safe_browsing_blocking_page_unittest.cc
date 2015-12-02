@@ -225,6 +225,9 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
     resource->callback =
         base::Bind(&SafeBrowsingBlockingPageTest::OnBlockingPageComplete,
                    base::Unretained(this));
+    resource->callback_thread =
+        content::BrowserThread::GetMessageLoopProxyForThread(
+            content::BrowserThread::IO);
     resource->url = url;
     resource->is_subresource = is_subresource;
     resource->threat_type = SB_THREAT_TYPE_URL_MALWARE;

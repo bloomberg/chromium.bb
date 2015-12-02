@@ -134,12 +134,6 @@ class SafeBrowsingBlockingPage : public SecurityInterstitialPage {
   // interstitial at a time.
   static UnsafeResourceMap* GetUnsafeResourcesMap();
 
-  // Notifies the SafeBrowsingUIManager on the IO thread whether to proceed
-  // or not for the |resources|.
-  static void NotifySafeBrowsingUIManager(
-      SafeBrowsingUIManager* ui_manager,
-      const UnsafeResourceList& resources, bool proceed);
-
   // Returns true if the passed |unsafe_resources| is blocking the load of
   // the main page.
   static bool IsMainPageLoadBlocked(

@@ -364,7 +364,7 @@ void SafeBrowsingBlockingPage::OnProceed() {
   FinishThreatDetails(malware_details_proceed_delay_ms_, true, /* did_proceed */
                       metrics_helper()->NumVisits());
 
-  NotifySafeBrowsingUIManager(ui_manager_, unsafe_resources_, true);
+  ui_manager_->OnBlockingPageDone(unsafe_resources_, true);
 
   // Check to see if some new notifications of unsafe resources have been
   // received while we were showing the interstitial.
@@ -410,14 +410,14 @@ void SafeBrowsingBlockingPage::OnDontProceed() {
   FinishThreatDetails(0, false /* did_proceed */,
                       metrics_helper()->NumVisits());  // No delay
 
-  NotifySafeBrowsingUIManager(ui_manager_, unsafe_resources_, false);
+  ui_manager_->OnBlockingPageDone(unsafe_resources_, false);
 
   // The user does not want to proceed, clear the queued unsafe resources
   // notifications we received while the interstitial was showing.
   UnsafeResourceMap* unsafe_resource_map = GetUnsafeResourcesMap();
   UnsafeResourceMap::iterator iter = unsafe_resource_map->find(web_contents());
   if (iter != unsafe_resource_map->end() && !iter->second.empty()) {
-    NotifySafeBrowsingUIManager(ui_manager_, iter->second, false);
+    ui_manager_->OnBlockingPageDone(iter->second, false);
     unsafe_resource_map->erase(iter);
   }
 
@@ -457,17 +457,6 @@ void SafeBrowsingBlockingPage::FinishThreatDetails(int64 delay_ms,
       base::Bind(&ThreatDetails::FinishCollection, threat_details_.get(),
                  did_proceed, num_visits),
       base::TimeDelta::FromMilliseconds(delay_ms));
-}
-
-// static
-void SafeBrowsingBlockingPage::NotifySafeBrowsingUIManager(
-    SafeBrowsingUIManager* ui_manager,
-    const UnsafeResourceList& unsafe_resources,
-    bool proceed) {
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&SafeBrowsingUIManager::OnBlockingPageDone,
-                 ui_manager, unsafe_resources, proceed));
 }
 
 // static

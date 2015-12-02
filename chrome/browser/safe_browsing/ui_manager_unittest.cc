@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_ptr.h"
+#include "base/run_loop.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
@@ -16,11 +17,46 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+using content::BrowserThread;
+
 static const char* kGoodURL = "https://www.good.com";
 static const char* kBadURL = "https://www.malware.com";
 static const char* kBadURLWithPath = "https://www.malware.com/index.html";
 
 namespace safe_browsing {
+
+class SafeBrowsingCallbackWaiter {
+  public:
+   SafeBrowsingCallbackWaiter() {}
+
+   bool callback_called() const { return callback_called_; }
+   bool proceed() const { return proceed_; }
+
+   void OnBlockingPageDone(bool proceed) {
+     DCHECK_CURRENTLY_ON(BrowserThread::UI);
+     callback_called_ = true;
+     proceed_ = proceed;
+     loop_.Quit();
+   }
+
+   void OnBlockingPageDoneOnIO(bool proceed) {
+     DCHECK_CURRENTLY_ON(BrowserThread::IO);
+     BrowserThread::PostTask(
+         BrowserThread::UI, FROM_HERE,
+         base::Bind(&SafeBrowsingCallbackWaiter::OnBlockingPageDone,
+                    base::Unretained(this), proceed));
+   }
+
+   void WaitForCallback() {
+     DCHECK_CURRENTLY_ON(BrowserThread::UI);
+     loop_.Run();
+   }
+
+  private:
+   bool callback_called_ = false;
+   bool proceed_ = false;
+   base::RunLoop loop_;
+};
 
 class SafeBrowsingUIManagerTest : public ChromeRenderViewHostTestHarness {
  public:
@@ -28,7 +64,10 @@ class SafeBrowsingUIManagerTest : public ChromeRenderViewHostTestHarness {
 
   ~SafeBrowsingUIManagerTest() override{};
 
-  void SetUp() override { ChromeRenderViewHostTestHarness::SetUp(); }
+  void SetUp() override {
+    SetThreadBundleOptions(content::TestBrowserThreadBundle::REAL_IO_THREAD);
+    ChromeRenderViewHostTestHarness::SetUp();
+  }
 
   void TearDown() override { ChromeRenderViewHostTestHarness::TearDown(); }
 
@@ -60,6 +99,12 @@ class SafeBrowsingUIManagerTest : public ChromeRenderViewHostTestHarness {
     EXPECT_FALSE(IsWhitelisted(resource));
     NavigateAndCommit(GURL(url));
     return resource;
+  }
+
+  void SimulateBlockingPageDone(
+      const std::vector<SafeBrowsingUIManager::UnsafeResource>& resources,
+      bool proceed) {
+    ui_manager_->OnBlockingPageDone(resources, proceed);
   }
 
  private:
@@ -100,6 +145,78 @@ TEST_F(SafeBrowsingUIManagerTest, WhitelistIgnoresThreatType) {
       MakeUnsafeResource(kBadURL);
   resource_phishing.threat_type = SB_THREAT_TYPE_URL_PHISHING;
   EXPECT_TRUE(IsWhitelisted(resource_phishing));
+}
+
+TEST_F(SafeBrowsingUIManagerTest, UICallbackProceed) {
+  SafeBrowsingUIManager::UnsafeResource resource =
+      MakeUnsafeResourceAndNavigate(kBadURL);
+  SafeBrowsingCallbackWaiter waiter;
+  resource.callback =
+      base::Bind(&SafeBrowsingCallbackWaiter::OnBlockingPageDone,
+                 base::Unretained(&waiter));
+  resource.callback_thread =
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI);
+  std::vector<SafeBrowsingUIManager::UnsafeResource> resources;
+  resources.push_back(resource);
+  SimulateBlockingPageDone(resources, true);
+  EXPECT_TRUE(IsWhitelisted(resource));
+  waiter.WaitForCallback();
+  EXPECT_TRUE(waiter.callback_called());
+  EXPECT_TRUE(waiter.proceed());
+}
+
+TEST_F(SafeBrowsingUIManagerTest, UICallbackDontProceed) {
+  SafeBrowsingUIManager::UnsafeResource resource =
+      MakeUnsafeResourceAndNavigate(kBadURL);
+  SafeBrowsingCallbackWaiter waiter;
+  resource.callback =
+      base::Bind(&SafeBrowsingCallbackWaiter::OnBlockingPageDone,
+                 base::Unretained(&waiter));
+  resource.callback_thread =
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI);
+  std::vector<SafeBrowsingUIManager::UnsafeResource> resources;
+  resources.push_back(resource);
+  SimulateBlockingPageDone(resources, false);
+  EXPECT_FALSE(IsWhitelisted(resource));
+  waiter.WaitForCallback();
+  EXPECT_TRUE(waiter.callback_called());
+  EXPECT_FALSE(waiter.proceed());
+}
+
+TEST_F(SafeBrowsingUIManagerTest, IOCallbackProceed) {
+  SafeBrowsingUIManager::UnsafeResource resource =
+      MakeUnsafeResourceAndNavigate(kBadURL);
+  SafeBrowsingCallbackWaiter waiter;
+  resource.callback =
+      base::Bind(&SafeBrowsingCallbackWaiter::OnBlockingPageDoneOnIO,
+                 base::Unretained(&waiter));
+  resource.callback_thread =
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
+  std::vector<SafeBrowsingUIManager::UnsafeResource> resources;
+  resources.push_back(resource);
+  SimulateBlockingPageDone(resources, true);
+  EXPECT_TRUE(IsWhitelisted(resource));
+  waiter.WaitForCallback();
+  EXPECT_TRUE(waiter.callback_called());
+  EXPECT_TRUE(waiter.proceed());
+}
+
+TEST_F(SafeBrowsingUIManagerTest, IOCallbackDontProceed) {
+  SafeBrowsingUIManager::UnsafeResource resource =
+      MakeUnsafeResourceAndNavigate(kBadURL);
+  SafeBrowsingCallbackWaiter waiter;
+  resource.callback =
+      base::Bind(&SafeBrowsingCallbackWaiter::OnBlockingPageDoneOnIO,
+                 base::Unretained(&waiter));
+  resource.callback_thread =
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
+  std::vector<SafeBrowsingUIManager::UnsafeResource> resources;
+  resources.push_back(resource);
+  SimulateBlockingPageDone(resources, false);
+  EXPECT_FALSE(IsWhitelisted(resource));
+  waiter.WaitForCallback();
+  EXPECT_TRUE(waiter.callback_called());
+  EXPECT_FALSE(waiter.proceed());
 }
 
 }  // namespace safe_browsing

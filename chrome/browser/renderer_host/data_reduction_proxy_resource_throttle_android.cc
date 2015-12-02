@@ -95,6 +95,9 @@ void DataReductionProxyResourceThrottle::WillRedirectRequest(
   unsafe_resource.threat_type = threat_type;
   unsafe_resource.callback = base::Bind(
       &DataReductionProxyResourceThrottle::OnBlockingPageComplete, AsWeakPtr());
+  unsafe_resource.callback_thread =
+      content::BrowserThread::GetMessageLoopProxyForThread(
+          content::BrowserThread::IO);
   unsafe_resource.render_process_host_id = info->GetChildID();
   unsafe_resource.render_view_id = info->GetRouteID();
   unsafe_resource.threat_source = safe_browsing::ThreatSource::DATA_SAVER;

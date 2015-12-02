@@ -18,6 +18,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/safe_browsing/hit_report.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
+#include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -53,7 +54,8 @@ class SafeBrowsingUIManager
     bool is_subframe;
     SBThreatType threat_type;
     std::string threat_metadata;
-    UrlCheckCallback callback;  // This is called back on the IO thread.
+    UrlCheckCallback callback;  // This is called back on |callback_thread|.
+    scoped_refptr<base::SingleThreadTaskRunner> callback_thread;
     int render_process_host_id;
     int render_view_id;
     safe_browsing::ThreatSource threat_source;

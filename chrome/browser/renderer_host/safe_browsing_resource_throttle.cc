@@ -254,6 +254,9 @@ void SafeBrowsingResourceThrottle::OnCheckBrowseUrlResult(
   resource.threat_metadata = metadata;
   resource.callback = base::Bind(
       &SafeBrowsingResourceThrottle::OnBlockingPageComplete, AsWeakPtr());
+  resource.callback_thread =
+      content::BrowserThread::GetMessageLoopProxyForThread(
+          content::BrowserThread::IO);
   resource.render_process_host_id = info->GetChildID();
   resource.render_view_id = info->GetRouteID();
   resource.threat_source = database_manager_->GetThreatSource();

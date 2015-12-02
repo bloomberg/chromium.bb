@@ -528,12 +528,12 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
       const SafeBrowsingUIManager::UnsafeResource& resource) {
     std::vector<SafeBrowsingUIManager::UnsafeResource> resources;
     resources.push_back(resource);
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&SafeBrowsingUIManager::OnBlockingPageDone,
-                   g_browser_process->safe_browsing_service()->ui_manager(),
-                   resources, true));
-    WaitForIOThread();
+    g_browser_process->safe_browsing_service()
+        ->ui_manager()
+        ->OnBlockingPageDone(resources, true);
+    if (!resource.callback.is_null()) {
+      WaitForThread(resource.callback_thread);
+    }
   }
 
  protected:
@@ -545,6 +545,14 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
   // ImportantFileWriter may still be modifying it after the Profile object has
   // been destroyed.
   base::ScopedTempDir temp_profile_dir_;
+
+  // Waits for pending tasks on the thread |browser_thread| to complete.
+  void WaitForThread(
+      scoped_refptr<base::SingleThreadTaskRunner> browser_thread) {
+    scoped_refptr<base::ThreadTestHelper> thread_helper(
+        new base::ThreadTestHelper(browser_thread));
+    ASSERT_TRUE(thread_helper->Run());
+  }
 
   // Waits for pending tasks on the IO thread to complete. This is useful
   // to wait for the SafeBrowsingService to finish loading/stopping.
