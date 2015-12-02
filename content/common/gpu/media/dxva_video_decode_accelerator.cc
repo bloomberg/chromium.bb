@@ -795,11 +795,11 @@ bool DXVAVideoDecodeAccelerator::CreateDX11DevManager() {
       "Failed to query DX11 device context from ANGLE device",
       false);
 
-  // Enable multithreaded mode on the context. This ensures that accesses to
+  // Enable multithreaded mode on the device. This ensures that accesses to
   // context are synchronized across threads. We have multiple threads
   // accessing the context, the media foundation decoder threads and the
   // decoder thread via the video format conversion transform.
-  hr = multi_threaded_.QueryFrom(d3d11_device_context_.get());
+  hr = multi_threaded_.QueryFrom(angle_device.get());
   RETURN_ON_HR_FAILURE(hr, "Failed to query ID3D10Multithread", false);
   multi_threaded_->SetMultithreadProtected(TRUE);
 
