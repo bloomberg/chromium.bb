@@ -153,18 +153,11 @@ function testStartWithTimeSlice() {
       .then(function() {
         return waitFor('Making sure the recording has data',
             function() {
-              return videoSize > 0;
+              return videoSize > 0 && timeStamps.length > 10;
             });
       })
       .then(function() {
-        // Gather more data for 1000 milliseconds, in order to make
-        // calculation of time stamps.
-        return waitDuration(1000);
-      })
-      .then(function() {
         var timeDeltas = getTimeStampDeltas(timeStamps);
-        assertTrue(timeDeltas.length > 0, 'Could not compute time deltas ' +
-          'because media recorder did not provide data');
         timeDeltas.forEach(function(timeDelta) {
           assertTrue(timeDelta >= DEFAULT_TIME_SLICE, 'A time slice was ' +
               timeDelta + ' ms which is shorter than the expected minimum '
