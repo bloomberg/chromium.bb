@@ -53,7 +53,7 @@ declare_args() {
   # TODO(GYP): We should be using 64-bit gold for linking on both 64-bit Linux
   # and 32-bit linux; 32-bit Gold runs out of address-space on 32-bit builds.
   # However, something isn't quite working right on the 32-bit builds.
-  use_gold = is_linux && current_cpu == "x64"
+  use_gold = is_linux && (current_cpu == "x64" || current_cpu == "arm")
 
   # When we are going to use gold we need to find it.
   # This is initialized below, after use_gold might have been overridden.
@@ -553,6 +553,7 @@ config("compiler_cpu_abi") {
           "-arch",
           "arm-nonsfi",
           "--pnacl-bias=arm-nonsfi",
+          "--target=arm-unknown-nacl",
         ]
         ldflags += [
           "-arch",

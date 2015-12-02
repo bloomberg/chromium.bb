@@ -4,13 +4,7 @@
 
 ## Recipe1: Building for an ARM CrOS device
 
-This recipe uses `ninja` (instead of `make`) so its startup time is much lower
-(sub-1s, instead of tens of seconds), is integrated with goma (for
-google-internal users) for very high parallelism, and uses `sshfs` instead of
-`scp` to significantly speed up the compile-run cycle. It has moved to
 https://sites.google.com/a/chromium.org/dev/developers/how-tos/-quickly-building-for-cros-arm-x64
-(mostly b/c of the ease of attaching files to sites).
-
 
 ## Recipe2: Explicit Cross compiling
 
@@ -40,13 +34,14 @@ To install the sysroot manually you can run:
 ### Building
 
 To build for ARM, using the clang binary in the chrome tree, use the following
-settings:
+gn args:
 
-    export GYP_CROSSCOMPILE=1
-    export GYP_DEFINES="target_arch=arm"
+    target_cpu = "arm"
 
-There variables need to be set at gyp-time (when you run `gyp_chromium`),
-but are not needed at build-time (when you run make/ninja).
+Or the following gyp settings:
+
+    GYP_CROSSCOMPILE=1
+    GYP_DEFINES="target_arch=arm"
 
 ## Testing
 
