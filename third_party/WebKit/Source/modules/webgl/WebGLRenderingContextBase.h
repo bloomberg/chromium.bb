@@ -276,7 +276,7 @@ public:
 
     void lineWidth(GLfloat);
     void linkProgram(WebGLProgram*);
-    void pixelStorei(GLenum pname, GLint param);
+    virtual void pixelStorei(GLenum pname, GLint param);
     void polygonOffset(GLfloat factor, GLfloat units);
     virtual void readPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, DOMArrayBufferView* pixels);
     void renderbufferStorage(GLenum target, GLenum internalformat, GLsizei width, GLsizei height);
@@ -486,6 +486,11 @@ protected:
     // Adds a compressed texture format.
     void addCompressedTextureFormat(GLenum);
     void removeAllCompressedTextureFormats();
+
+    // Set UNPACK_ALIGNMENT to 1, all other parameters to 0.
+    virtual void resetUnpackParameters();
+    // Restore the client unpack parameters.
+    virtual void restoreUnpackParameters();
 
     PassRefPtr<Image> drawImageIntoBuffer(PassRefPtr<Image>, int width, int height, const char* functionName);
 

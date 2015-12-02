@@ -112,6 +112,14 @@ void ContextState::Initialize() {
   stencil_path_mask = 0xFFFFFFFFU;
   pack_alignment = 4;
   unpack_alignment = 4;
+  pack_row_length = 0;
+  pack_skip_pixels = 0;
+  pack_skip_rows = 0;
+  unpack_row_length = 0;
+  unpack_image_height = 0;
+  unpack_skip_pixels = 0;
+  unpack_skip_rows = 0;
+  unpack_skip_images = 0;
   polygon_offset_factor = 0.0f;
   polygon_offset_units = 0.0f;
   sample_coverage_value = 1.0f;
@@ -314,6 +322,46 @@ void ContextState::InitState(const ContextState* prev_state) const {
     if (prev_state->unpack_alignment != unpack_alignment) {
       glPixelStorei(GL_UNPACK_ALIGNMENT, unpack_alignment);
     }
+    if (feature_info_->IsES3Capable()) {
+      if (prev_state->pack_row_length != pack_row_length) {
+        glPixelStorei(GL_PACK_ROW_LENGTH, pack_row_length);
+      }
+    }
+    if (feature_info_->IsES3Capable()) {
+      if (prev_state->pack_skip_pixels != pack_skip_pixels) {
+        glPixelStorei(GL_PACK_SKIP_PIXELS, pack_skip_pixels);
+      }
+    }
+    if (feature_info_->IsES3Capable()) {
+      if (prev_state->pack_skip_rows != pack_skip_rows) {
+        glPixelStorei(GL_PACK_SKIP_ROWS, pack_skip_rows);
+      }
+    }
+    if (feature_info_->IsES3Capable()) {
+      if (prev_state->unpack_row_length != unpack_row_length) {
+        glPixelStorei(GL_UNPACK_ROW_LENGTH, unpack_row_length);
+      }
+    }
+    if (feature_info_->IsES3Capable()) {
+      if (prev_state->unpack_image_height != unpack_image_height) {
+        glPixelStorei(GL_UNPACK_IMAGE_HEIGHT, unpack_image_height);
+      }
+    }
+    if (feature_info_->IsES3Capable()) {
+      if (prev_state->unpack_skip_pixels != unpack_skip_pixels) {
+        glPixelStorei(GL_UNPACK_SKIP_PIXELS, unpack_skip_pixels);
+      }
+    }
+    if (feature_info_->IsES3Capable()) {
+      if (prev_state->unpack_skip_rows != unpack_skip_rows) {
+        glPixelStorei(GL_UNPACK_SKIP_ROWS, unpack_skip_rows);
+      }
+    }
+    if (feature_info_->IsES3Capable()) {
+      if (prev_state->unpack_skip_images != unpack_skip_images) {
+        glPixelStorei(GL_UNPACK_SKIP_IMAGES, unpack_skip_images);
+      }
+    }
     if ((polygon_offset_factor != prev_state->polygon_offset_factor) ||
         (polygon_offset_units != prev_state->polygon_offset_units))
       glPolygonOffset(polygon_offset_factor, polygon_offset_units);
@@ -392,6 +440,30 @@ void ContextState::InitState(const ContextState* prev_state) const {
                           stencil_path_mask);
     glPixelStorei(GL_PACK_ALIGNMENT, pack_alignment);
     glPixelStorei(GL_UNPACK_ALIGNMENT, unpack_alignment);
+    if (feature_info_->IsES3Capable()) {
+      glPixelStorei(GL_PACK_ROW_LENGTH, pack_row_length);
+    }
+    if (feature_info_->IsES3Capable()) {
+      glPixelStorei(GL_PACK_SKIP_PIXELS, pack_skip_pixels);
+    }
+    if (feature_info_->IsES3Capable()) {
+      glPixelStorei(GL_PACK_SKIP_ROWS, pack_skip_rows);
+    }
+    if (feature_info_->IsES3Capable()) {
+      glPixelStorei(GL_UNPACK_ROW_LENGTH, unpack_row_length);
+    }
+    if (feature_info_->IsES3Capable()) {
+      glPixelStorei(GL_UNPACK_IMAGE_HEIGHT, unpack_image_height);
+    }
+    if (feature_info_->IsES3Capable()) {
+      glPixelStorei(GL_UNPACK_SKIP_PIXELS, unpack_skip_pixels);
+    }
+    if (feature_info_->IsES3Capable()) {
+      glPixelStorei(GL_UNPACK_SKIP_ROWS, unpack_skip_rows);
+    }
+    if (feature_info_->IsES3Capable()) {
+      glPixelStorei(GL_UNPACK_SKIP_IMAGES, unpack_skip_images);
+    }
     glPolygonOffset(polygon_offset_factor, polygon_offset_units);
     glSampleCoverage(sample_coverage_value, sample_coverage_invert);
     glScissor(scissor_x, scissor_y, scissor_width, scissor_height);
@@ -614,6 +686,54 @@ bool ContextState::GetStateAsGLint(GLenum pname,
       *num_written = 1;
       if (params) {
         params[0] = static_cast<GLint>(unpack_alignment);
+      }
+      return true;
+    case GL_PACK_ROW_LENGTH:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLint>(pack_row_length);
+      }
+      return true;
+    case GL_PACK_SKIP_PIXELS:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLint>(pack_skip_pixels);
+      }
+      return true;
+    case GL_PACK_SKIP_ROWS:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLint>(pack_skip_rows);
+      }
+      return true;
+    case GL_UNPACK_ROW_LENGTH:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLint>(unpack_row_length);
+      }
+      return true;
+    case GL_UNPACK_IMAGE_HEIGHT:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLint>(unpack_image_height);
+      }
+      return true;
+    case GL_UNPACK_SKIP_PIXELS:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLint>(unpack_skip_pixels);
+      }
+      return true;
+    case GL_UNPACK_SKIP_ROWS:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLint>(unpack_skip_rows);
+      }
+      return true;
+    case GL_UNPACK_SKIP_IMAGES:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLint>(unpack_skip_images);
       }
       return true;
     case GL_POLYGON_OFFSET_FACTOR:
@@ -994,6 +1114,54 @@ bool ContextState::GetStateAsGLfloat(GLenum pname,
       *num_written = 1;
       if (params) {
         params[0] = static_cast<GLfloat>(unpack_alignment);
+      }
+      return true;
+    case GL_PACK_ROW_LENGTH:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLfloat>(pack_row_length);
+      }
+      return true;
+    case GL_PACK_SKIP_PIXELS:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLfloat>(pack_skip_pixels);
+      }
+      return true;
+    case GL_PACK_SKIP_ROWS:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLfloat>(pack_skip_rows);
+      }
+      return true;
+    case GL_UNPACK_ROW_LENGTH:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLfloat>(unpack_row_length);
+      }
+      return true;
+    case GL_UNPACK_IMAGE_HEIGHT:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLfloat>(unpack_image_height);
+      }
+      return true;
+    case GL_UNPACK_SKIP_PIXELS:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLfloat>(unpack_skip_pixels);
+      }
+      return true;
+    case GL_UNPACK_SKIP_ROWS:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLfloat>(unpack_skip_rows);
+      }
+      return true;
+    case GL_UNPACK_SKIP_IMAGES:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLfloat>(unpack_skip_images);
       }
       return true;
     case GL_POLYGON_OFFSET_FACTOR:

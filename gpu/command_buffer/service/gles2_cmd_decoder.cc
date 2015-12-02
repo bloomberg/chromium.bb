@@ -183,6 +183,11 @@ GLuint GetClientId(const MANAGER_TYPE* manager, const OBJECT_TYPE* object) {
   return client_id;
 }
 
+template <typename OBJECT_TYPE>
+GLuint GetServiceId(const OBJECT_TYPE* object) {
+  return object ? object->service_id() : 0;
+}
+
 struct Vec4f {
   explicit Vec4f(const Vec4& data) {
     data.GetValues(v);
@@ -8809,10 +8814,9 @@ void GLES2DecoderImpl::FinishReadPixels(
       return;
     }
     memcpy(pixels, data, pixels_size);
-    // GL_PIXEL_PACK_BUFFER_ARB is currently unused, so we don't
-    // have to restore the state.
     glUnmapBuffer(GL_PIXEL_PACK_BUFFER_ARB);
-    glBindBuffer(GL_PIXEL_PACK_BUFFER_ARB, 0);
+    glBindBuffer(GL_PIXEL_PACK_BUFFER_ARB,
+                 GetServiceId(state_.bound_pixel_pack_buffer.get()));
     glDeleteBuffersARB(1, &buffer);
   }
 
@@ -8892,6 +8896,13 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32 immediate_data_size,
   }
   typedef cmds::ReadPixels::Result Result;
   uint32 pixels_size;
+  if (state_.bound_pixel_pack_buffer.get()) {
+    // TODO(zmo): Need to handle the case of reading into a PIXEL_PACK_BUFFER
+    // in ES3, including more pack parameters. For now, generate a GL error.
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glReadPixels",
+                       "ReadPixels to a pixel pack buffer isn't implemented");
+    return error::kNoError;
+  }
   if (!GLES2Util::ComputeImageDataSizes(
       width, height, 1, format, type, state_.pack_alignment, &pixels_size,
       NULL, NULL)) {
@@ -9079,7 +9090,12 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32 immediate_data_size,
       dst += padded_row_size;
     }
   } else {
-    if (async && features().use_async_readpixels) {
+    if (async && features().use_async_readpixels &&
+        !state_.bound_pixel_pack_buffer.get()) {
+      // To simply the state tracking, we don't go down the async path if
+      // a PIXEL_PACK_BUFFER is bound (in which case the client can
+      // implement something similar on their own - all necessary functions
+      // should be exposed).
       GLuint buffer = 0;
       glGenBuffersARB(1, &buffer);
       glBindBuffer(GL_PIXEL_PACK_BUFFER_ARB, buffer);
@@ -9089,6 +9105,9 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32 immediate_data_size,
       glBufferData(GL_PIXEL_PACK_BUFFER_ARB, pixels_size, NULL, usage_hint);
       GLenum error = glGetError();
       if (error == GL_NO_ERROR) {
+        // No need to worry about ES3 pxiel pack parameters, because no
+        // PIXEL_PACK_BUFFER is bound, and all these settings haven't been
+        // sent to GL.
         glReadPixels(x, y, width, height, format, type, 0);
         pending_readpixel_fences_.push(linked_ptr<FenceCallback>(
             new FenceCallback()));
@@ -9120,7 +9139,7 @@ error::Error GLES2DecoderImpl::HandlePixelStorei(uint32 immediate_data_size,
   const gles2::cmds::PixelStorei& c =
       *static_cast<const gles2::cmds::PixelStorei*>(cmd_data);
   GLenum pname = c.pname;
-  GLenum param = c.param;
+  GLint param = c.param;
   if (!validators_->pixel_store.IsValid(pname)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glPixelStorei", pname, "pname");
     return error::kNoError;
@@ -9128,30 +9147,88 @@ error::Error GLES2DecoderImpl::HandlePixelStorei(uint32 immediate_data_size,
   switch (pname) {
     case GL_PACK_ALIGNMENT:
     case GL_UNPACK_ALIGNMENT:
-        if (!validators_->pixel_store_alignment.IsValid(param)) {
-            LOCAL_SET_GL_ERROR(
-                GL_INVALID_VALUE, "glPixelStorei", "param GL_INVALID_VALUE");
-            return error::kNoError;
-        }
-        break;
+      if (!validators_->pixel_store_alignment.IsValid(param)) {
+        LOCAL_SET_GL_ERROR(
+            GL_INVALID_VALUE, "glPixelStorei", "invalid param");
+        return error::kNoError;
+      }
+      break;
+    case GL_PACK_ROW_LENGTH:
+    case GL_PACK_SKIP_PIXELS:
+    case GL_PACK_SKIP_ROWS:
+    case GL_UNPACK_ROW_LENGTH:
+    case GL_UNPACK_IMAGE_HEIGHT:
+    case GL_UNPACK_SKIP_PIXELS:
+    case GL_UNPACK_SKIP_ROWS:
+    case GL_UNPACK_SKIP_IMAGES:
+      if (param < 0) {
+        LOCAL_SET_GL_ERROR(
+            GL_INVALID_VALUE, "glPixelStorei", "invalid param");
+        return error::kNoError;
+      }
     default:
-        break;
+      break;
   }
-  glPixelStorei(pname, param);
+  // For pack and unpack parameters (except for alignment), we don't apply them
+  // if no buffer is bound at PIXEL_PACK or PIXEL_UNPACK. We will handle pack
+  // and unpack according to the user specified parameters on the client side.
+  switch (pname) {
+    case GL_PACK_ROW_LENGTH:
+    case GL_PACK_SKIP_PIXELS:
+    case GL_PACK_SKIP_ROWS:
+      if (state_.bound_pixel_pack_buffer.get())
+        glPixelStorei(pname, param);
+      break;
+    case GL_UNPACK_ROW_LENGTH:
+    case GL_UNPACK_IMAGE_HEIGHT:
+    case GL_UNPACK_SKIP_PIXELS:
+    case GL_UNPACK_SKIP_ROWS:
+    case GL_UNPACK_SKIP_IMAGES:
+      if (state_.bound_pixel_unpack_buffer.get())
+        glPixelStorei(pname, param);
+      break;
+    default:
+      glPixelStorei(pname, param);
+      break;
+  }
   switch (pname) {
     case GL_PACK_ALIGNMENT:
-        state_.pack_alignment = param;
-        break;
+      state_.pack_alignment = param;
+      break;
     case GL_PACK_REVERSE_ROW_ORDER_ANGLE:
-        state_.pack_reverse_row_order = (param != 0);
-        break;
+      state_.pack_reverse_row_order = (param != 0);
+      break;
+    case GL_PACK_ROW_LENGTH:
+      state_.pack_row_length = param;
+      break;
+    case GL_PACK_SKIP_PIXELS:
+      state_.pack_skip_pixels = param;
+      break;
+    case GL_PACK_SKIP_ROWS:
+      state_.pack_skip_rows = param;
+      break;
     case GL_UNPACK_ALIGNMENT:
-        state_.unpack_alignment = param;
-        break;
+      state_.unpack_alignment = param;
+      break;
+    case GL_UNPACK_ROW_LENGTH:
+      state_.unpack_row_length = param;
+      break;
+    case GL_UNPACK_IMAGE_HEIGHT:
+      state_.unpack_image_height = param;
+      break;
+    case GL_UNPACK_SKIP_PIXELS:
+      state_.unpack_skip_pixels = param;
+      break;
+    case GL_UNPACK_SKIP_ROWS:
+      state_.unpack_skip_rows = param;
+      break;
+    case GL_UNPACK_SKIP_IMAGES:
+      state_.unpack_skip_images = param;
+      break;
     default:
-        // Validation should have prevented us from getting here.
-        NOTREACHED();
-        break;
+      // Validation should have prevented us from getting here.
+      NOTREACHED();
+      break;
   }
   return error::kNoError;
 }

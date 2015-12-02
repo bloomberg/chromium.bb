@@ -48,6 +48,34 @@ using ::testing::StrictMock;
 namespace gpu {
 namespace gles2 {
 
+namespace {
+
+void SetupUpdateES3UnpackParametersExpectations(
+    ::gfx::MockGLInterface* gl,
+    GLint row_length,
+    GLint image_height,
+    GLint skip_pixels,
+    GLint skip_rows,
+    GLint skip_images) {
+  EXPECT_CALL(*gl, PixelStorei(GL_UNPACK_ROW_LENGTH, row_length))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl, PixelStorei(GL_UNPACK_IMAGE_HEIGHT, image_height))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl, PixelStorei(GL_UNPACK_SKIP_ROWS, skip_rows))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl, PixelStorei(GL_UNPACK_SKIP_PIXELS, skip_pixels))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl, PixelStorei(GL_UNPACK_SKIP_IMAGES, skip_images))
+      .Times(1)
+      .RetiresOnSaturation();
+}
+
+}  // namespace anonymous
+
 using namespace cmds;
 
 class GLES2DecoderRestoreStateTest : public GLES2DecoderManualInitTest {
@@ -394,6 +422,42 @@ TEST_P(GLES2DecoderManualInitTest, ContextStateCapabilityCaching) {
       EnableDisableTest(test[i].gl_enum, enable_state, test[i].expect_set);
     }
   }
+}
+
+TEST_P(GLES3DecoderTest, ES3PixelStoreiWithPixelUnpackBuffer) {
+  // Without PIXEL_UNPACK_BUFFER bound, PixelStorei with unpack parameters
+  // is cached and not passed down to GL.
+  EXPECT_CALL(*gl_, PixelStorei(_, _)).Times(0);
+  cmds::PixelStorei cmd;
+  cmd.Init(GL_UNPACK_SKIP_ROWS, 2);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+
+  // When a PIXEL_UNPACK_BUFFER is bound, all cached unpack parameters are
+  // applied to GL.
+  SetupUpdateES3UnpackParametersExpectations(gl_.get(), 0, 0, 0, 2, 0);
+  DoBindBuffer(GL_PIXEL_UNPACK_BUFFER, client_buffer_id_, kServiceBufferId);
+
+  // Now with a bound PIXEL_UNPACK_BUFFER, all PixelStorei calls with unpack
+  // parameters are applied to GL.
+  EXPECT_CALL(*gl_, PixelStorei(GL_UNPACK_ROW_LENGTH, 16))
+      .Times(1)
+      .RetiresOnSaturation();
+  cmd.Init(GL_UNPACK_ROW_LENGTH, 16);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+
+  // Now unbind PIXEL_UNPACK_BUFFER, all ES3 unpack parameters are set back to
+  // 0.
+  SetupUpdateES3UnpackParametersExpectations(gl_.get(), 0, 0, 0, 0, 0);
+  DoBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0, 0);
+
+  // Again, PixelStorei calls with unpack parameters are cached.
+  EXPECT_CALL(*gl_, PixelStorei(_, _)).Times(0);
+  cmd.Init(GL_UNPACK_SKIP_ROWS, 3);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+
+  // Bind a PIXEL_UNPACK_BUFFER again.
+  SetupUpdateES3UnpackParametersExpectations(gl_.get(), 16, 0, 0, 3, 0);
+  DoBindBuffer(GL_PIXEL_UNPACK_BUFFER, client_buffer_id_, kServiceBufferId);
 }
 
 // TODO(vmiura): Tests for VAO restore.
