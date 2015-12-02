@@ -101,6 +101,11 @@
             'trace_event/process_memory_maps_dump_provider_unittest.cc',
           ],
       }],
+      ['OS == "android"', {
+        'trace_event_test_sources' : [
+          'trace_event/trace_event_android_unittest.cc',
+        ],
+      }],
     ],
   },
 }

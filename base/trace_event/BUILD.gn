@@ -135,6 +135,10 @@ source_set("trace_event_unittests") {
     sources += [ "process_memory_maps_dump_provider_unittest.cc" ]
   }
 
+  if (is_android) {
+    sources += [ "trace_event_android_unittest.cc" ]
+  }
+
   deps = [
     "//base/test:test_support",
     "//testing/gmock",

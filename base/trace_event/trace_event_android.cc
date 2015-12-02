@@ -25,7 +25,7 @@ void WriteToATrace(int fd, const char* buffer, size_t size) {
   size_t total_written = 0;
   while (total_written < size) {
     ssize_t written = HANDLE_EINTR(write(
-        fd, buffer + size, size - total_written));
+        fd, buffer + total_written, size - total_written));
     if (written <= 0)
       break;
     total_written += written;
