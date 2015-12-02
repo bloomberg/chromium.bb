@@ -75,7 +75,7 @@ class CSSSelectorList;
 // in case of selectors like [attr="value"].
 //
 class CORE_EXPORT CSSSelector {
-    USING_FAST_MALLOC(CSSSelector);
+    USING_FAST_MALLOC_WITH_TYPE_NAME(blink::CSSSelector);
 public:
     CSSSelector();
     CSSSelector(const CSSSelector&);

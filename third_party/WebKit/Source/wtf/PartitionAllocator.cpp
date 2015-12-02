@@ -51,4 +51,16 @@ void PartitionAllocator::freeHashTableBacking(void* address)
     Partitions::bufferFree(address);
 }
 
+template <>
+char* PartitionAllocator::allocateVectorBacking<char>(size_t size)
+{
+  return reinterpret_cast<char*>(allocateBacking(size, "char"));
+}
+
+template <>
+char* PartitionAllocator::allocateExpandedVectorBacking<char>(size_t size)
+{
+  return reinterpret_cast<char*>(allocateBacking(size, "char"));
+}
+
 } // namespace WTF

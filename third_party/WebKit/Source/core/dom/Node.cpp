@@ -110,7 +110,7 @@ static_assert(sizeof(Node) <= sizeof(SameSizeAsNode), "Node should stay small");
 void* Node::operator new(size_t size)
 {
     ASSERT(isMainThread());
-    return partitionAlloc(WTF::Partitions::nodePartition(), size, WTF_HEAP_PROFILER_TYPE_NAME(Node));
+    return partitionAlloc(WTF::Partitions::nodePartition(), size, "blink::Node");
 }
 
 void Node::operator delete(void* ptr)

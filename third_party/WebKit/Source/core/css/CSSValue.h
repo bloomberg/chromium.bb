@@ -32,8 +32,8 @@
 namespace blink {
 
 class CORE_EXPORT CSSValue : public RefCountedWillBeGarbageCollectedFinalized<CSSValue> {
-public:
 #if ENABLE(OILPAN)
+public:
     // Override operator new to allocate CSSValue subtype objects onto
     // a dedicated heap.
     GC_PLUGIN_IGNORE("crbug.com/443854")
@@ -47,6 +47,8 @@ public:
         return Heap::allocateOnHeapIndex(state, size, isEager ? BlinkGC::EagerSweepHeapIndex : BlinkGC::CSSValueHeapIndex, GCInfoTrait<CSSValue>::index());
     }
 #else
+    USING_FAST_MALLOC_WITH_TYPE_NAME(blink::CSSValue);
+public:
     // Override RefCounted's deref() to ensure operator delete is called on
     // the appropriate subclass type.
     void deref()

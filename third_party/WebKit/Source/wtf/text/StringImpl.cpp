@@ -261,7 +261,7 @@ void StringStats::printStats()
 void* StringImpl::operator new(size_t size)
 {
     ASSERT(size == sizeof(StringImpl));
-    return Partitions::bufferMalloc(size, WTF_HEAP_PROFILER_TYPE_NAME(StringImpl));
+    return Partitions::bufferMalloc(size, "WTF::StringImpl");
 }
 
 void StringImpl::operator delete(void* ptr)
@@ -295,7 +295,7 @@ PassRefPtr<StringImpl> StringImpl::createUninitialized(unsigned length, LChar*& 
     // Allocate a single buffer large enough to contain the StringImpl
     // struct as well as the data which it contains. This removes one
     // heap allocation from this call.
-    StringImpl* string = static_cast<StringImpl*>(Partitions::bufferMalloc(allocationSize<LChar>(length), WTF_HEAP_PROFILER_TYPE_NAME(StringImpl)));
+    StringImpl* string = static_cast<StringImpl*>(Partitions::bufferMalloc(allocationSize<LChar>(length), "WTF::StringImpl"));
 
     data = reinterpret_cast<LChar*>(string + 1);
     return adoptRef(new (string) StringImpl(length, Force8BitConstructor));
@@ -311,7 +311,7 @@ PassRefPtr<StringImpl> StringImpl::createUninitialized(unsigned length, UChar*& 
     // Allocate a single buffer large enough to contain the StringImpl
     // struct as well as the data which it contains. This removes one
     // heap allocation from this call.
-    StringImpl* string = static_cast<StringImpl*>(Partitions::bufferMalloc(allocationSize<UChar>(length), WTF_HEAP_PROFILER_TYPE_NAME(StringImpl)));
+    StringImpl* string = static_cast<StringImpl*>(Partitions::bufferMalloc(allocationSize<UChar>(length), "WTF::StringImpl"));
 
     data = reinterpret_cast<UChar*>(string + 1);
     return adoptRef(new (string) StringImpl(length));
@@ -362,7 +362,7 @@ StringImpl* StringImpl::createStatic(const char* string, unsigned length, unsign
     size_t size = sizeof(StringImpl) + length * sizeof(LChar);
 
     WTF_ANNOTATE_SCOPED_MEMORY_LEAK;
-    StringImpl* impl = static_cast<StringImpl*>(Partitions::bufferMalloc(size, WTF_HEAP_PROFILER_TYPE_NAME(StringImpl)));
+    StringImpl* impl = static_cast<StringImpl*>(Partitions::bufferMalloc(size, "WTF::StringImpl"));
 
     LChar* data = reinterpret_cast<LChar*>(impl + 1);
     impl = new (impl) StringImpl(length, hash, StaticString);

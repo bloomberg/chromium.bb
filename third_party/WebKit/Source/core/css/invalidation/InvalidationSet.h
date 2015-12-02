@@ -32,6 +32,7 @@
 #define InvalidationSet_h
 
 #include "core/CoreExport.h"
+#include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
 #include "wtf/Forward.h"
 #include "wtf/HashSet.h"
@@ -55,6 +56,7 @@ enum InvalidationType {
 // siblings and their descendants, need to have style recalculated.
 class CORE_EXPORT InvalidationSet : public RefCounted<InvalidationSet> {
     WTF_MAKE_NONCOPYABLE(InvalidationSet);
+    USING_FAST_MALLOC_WITH_TYPE_NAME(blink::InvalidationSet);
 public:
     virtual ~InvalidationSet() {}
 

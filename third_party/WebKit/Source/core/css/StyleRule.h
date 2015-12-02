@@ -35,7 +35,7 @@ class CSSRule;
 class CSSStyleSheet;
 
 class CORE_EXPORT StyleRuleBase : public RefCountedWillBeGarbageCollectedFinalized<StyleRuleBase> {
-    USING_FAST_MALLOC_WILL_BE_REMOVED(StyleRuleBase);
+    USING_FAST_MALLOC_WITH_TYPE_NAME_WILL_BE_REMOVED(blink::StyleRuleBase);
 public:
     enum Type {
         Charset,
@@ -102,7 +102,7 @@ private:
 };
 
 class CORE_EXPORT StyleRule : public StyleRuleBase {
-    USING_FAST_MALLOC_WILL_BE_REMOVED(StyleRule);
+    USING_FAST_MALLOC_WITH_TYPE_NAME_WILL_BE_REMOVED(blink::StyleRule);
 public:
     // Adopts the selector list
     static PassRefPtrWillBeRawPtr<StyleRule> create(CSSSelectorList& selectorList, PassRefPtrWillBeRawPtr<StylePropertySet> properties)

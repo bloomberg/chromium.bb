@@ -1061,6 +1061,7 @@ template<typename T> T* adoptPtrWillBeNoop(T* ptr)
 }
 
 #define USING_FAST_MALLOC_WILL_BE_REMOVED(type) // do nothing when oilpan is enabled.
+#define USING_FAST_MALLOC_WITH_TYPE_NAME_WILL_BE_REMOVED(type)
 #define DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(type) // do nothing
 #define DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(type) // do nothing
 #define DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(type) // do nothing
@@ -1134,6 +1135,7 @@ template<typename T> PassRefPtrWillBeRawPtr<T> adoptRefWillBeNoop(T* ptr) { retu
 template<typename T> PassOwnPtrWillBeRawPtr<T> adoptPtrWillBeNoop(T* ptr) { return adoptPtr(ptr); }
 
 #define USING_FAST_MALLOC_WILL_BE_REMOVED(type) USING_FAST_MALLOC(type)
+#define USING_FAST_MALLOC_WITH_TYPE_NAME_WILL_BE_REMOVED(type) USING_FAST_MALLOC_WITH_TYPE_NAME(type)
 #define DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(type) \
     public:                                            \
         ~type();                                       \

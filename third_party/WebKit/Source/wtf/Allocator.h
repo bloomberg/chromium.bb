@@ -94,14 +94,14 @@ namespace WTF {
 //    };
 //
 
-#define USING_FAST_MALLOC(type) \
+#define USING_FAST_MALLOC_INTERNAL(type, typeName) \
 public: \
     void* operator new(size_t, void* p) { return p; } \
     void* operator new[](size_t, void* p) { return p; } \
     \
     void* operator new(size_t size) \
     { \
-        return ::WTF::Partitions::fastMalloc(size, WTF_HEAP_PROFILER_TYPE_NAME(type)); \
+        return ::WTF::Partitions::fastMalloc(size, typeName); \
     } \
     \
     void operator delete(void* p) \
@@ -111,7 +111,7 @@ public: \
     \
     void* operator new[](size_t size) \
     { \
-        return ::WTF::Partitions::fastMalloc(size, WTF_HEAP_PROFILER_TYPE_NAME(type)); \
+        return ::WTF::Partitions::fastMalloc(size, typeName); \
     } \
     \
     void operator delete[](void* p) \
@@ -129,6 +129,15 @@ public: \
     } \
 private: \
 typedef int __thisIsHereToForceASemicolonAfterThisMacro
+
+// Both of these macros enable fast malloc and provide type info to the heap
+// profiler. The regular macro does not provide type info in official builds,
+// to avoid bloating the binary with type name strings. The |WITH_TYPE_NAME|
+// variant provides type info unconditionally, so it should be used sparingly.
+// Furthermore, the |WITH_TYPE_NAME| variant does not work if |type| is a
+// template argument; |USING_FAST_MALLOC| does.
+#define USING_FAST_MALLOC(type) USING_FAST_MALLOC_INTERNAL(type, WTF_HEAP_PROFILER_TYPE_NAME(type))
+#define USING_FAST_MALLOC_WITH_TYPE_NAME(type) USING_FAST_MALLOC_INTERNAL(type, #type)
 
 } // namespace WTF
 
