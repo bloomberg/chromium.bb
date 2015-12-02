@@ -35,7 +35,7 @@ interface HTMLInputElement : HTMLElement {
     [ImplementedAs=formOwner] readonly attribute HTMLFormElement? form;
     // The 'files' attribute is intentionally not readonly.
     // https://www.w3.org/Bugs/Public/show_bug.cgi?id=22682
-    [LegacyInterfaceTypeChecking] attribute FileList? files;
+    attribute FileList? files;
     attribute DOMString formAction;
     [CustomElementCallbacks] attribute DOMString formEnctype;
     [CustomElementCallbacks] attribute DOMString formMethod;
