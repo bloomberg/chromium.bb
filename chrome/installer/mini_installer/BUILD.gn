@@ -115,6 +115,16 @@ action("archive") {
     #'--verbose',
   ]
 
+  deps = [
+    "//chrome",
+    "//chrome:main_dll",
+    "//chrome/browser/extensions/default_extensions",
+    "//chrome/installer/setup",
+    "//third_party/icu:icudata",
+
+    #"../chrome.gyp:chrome_nacl_win64",  TODO(GYP) bug 512869.
+  ]
+
   if (enable_hidpi) {
     args += [ "--enable_hidpi=1" ]
   }
@@ -145,22 +155,13 @@ action("archive") {
       "$root_out_dir/natives_blob.bin",
       "$root_out_dir/snapshot_blob.bin",
     ]
+    deps += [ "//v8" ]
   }
 
   depfile = "$target_gen_dir/archive.d"
   args += [
     "--depfile",
     rebase_path(depfile, root_build_dir),
-  ]
-
-  deps = [
-    "//chrome",
-    "//chrome:main_dll",
-    "//chrome/browser/extensions/default_extensions",
-    "//chrome/installer/setup",
-    "//third_party/icu:icudata",
-
-    #"../chrome.gyp:chrome_nacl_win64",  TODO(GYP) bug 512869.
   ]
 
   if (enable_nacl) {
