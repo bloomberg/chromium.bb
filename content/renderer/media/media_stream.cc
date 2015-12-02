@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
 
 namespace content {
 
@@ -16,33 +15,11 @@ MediaStream* MediaStream::GetMediaStream(
   return static_cast<MediaStream*>(stream.extraData());
 }
 
-// static
-webrtc::MediaStreamInterface* MediaStream::GetAdapter(
-     const blink::WebMediaStream& stream) {
-  MediaStream* native_stream = GetMediaStream(stream);
-  DCHECK(native_stream);
-  return native_stream->GetWebRtcAdapter(stream);
-}
-
-MediaStream::MediaStream(const blink::WebMediaStream& stream)
-    : is_local_(true),
-      webrtc_media_stream_(NULL) {
-}
-
-MediaStream::MediaStream(webrtc::MediaStreamInterface* webrtc_stream)
-    : is_local_(false),
-      webrtc_media_stream_(webrtc_stream) {
+MediaStream::MediaStream() {
 }
 
 MediaStream::~MediaStream() {
   DCHECK(observers_.empty());
-}
-
-webrtc::MediaStreamInterface* MediaStream::GetWebRtcAdapter(
-    const blink::WebMediaStream& stream) {
-  DCHECK(webrtc_media_stream_.get());
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return webrtc_media_stream_.get();
 }
 
 void MediaStream::AddObserver(MediaStreamObserver* observer) {

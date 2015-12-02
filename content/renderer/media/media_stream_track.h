@@ -5,9 +5,7 @@
 #ifndef CONTENT_RENDERER_MEDIA_MEDIA_STREAM_TRACK_H_
 #define CONTENT_RENDERER_MEDIA_MEDIA_STREAM_TRACK_H_
 
-#include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"

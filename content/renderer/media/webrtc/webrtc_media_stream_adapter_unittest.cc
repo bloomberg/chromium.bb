@@ -87,7 +87,7 @@ class WebRtcMediaStreamAdapterTest : public ::testing::Test {
     stream_desc.initialize("media stream",
                            audio_track_vector,
                            video_track_vector);
-    stream_desc.setExtraData(new MediaStream(stream_desc));
+    stream_desc.setExtraData(new MediaStream());
     return stream_desc;
   }
 
@@ -141,8 +141,7 @@ TEST_F(WebRtcMediaStreamAdapterTest,
 
   blink::WebMediaStream blink_stream;
   blink_stream.initialize("new stream", audio_tracks, video_tracks);
-  blink_stream.setExtraData(
-      new content::MediaStream(blink_stream));
+  blink_stream.setExtraData(new content::MediaStream());
   CreateWebRtcMediaStream(blink_stream, 0, 0);
 }
 

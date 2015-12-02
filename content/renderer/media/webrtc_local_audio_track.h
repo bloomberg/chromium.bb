@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "content/renderer/media/media_stream_track.h"

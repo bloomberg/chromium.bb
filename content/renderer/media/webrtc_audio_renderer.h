@@ -5,7 +5,9 @@
 #ifndef CONTENT_RENDERER_MEDIA_WEBRTC_AUDIO_RENDERER_H_
 #define CONTENT_RENDERER_MEDIA_WEBRTC_AUDIO_RENDERER_H_
 
+#include <map>
 #include <string>
+#include <vector>
 
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
@@ -18,6 +20,7 @@
 #include "media/base/audio_renderer_sink.h"
 #include "media/base/channel_layout.h"
 #include "media/base/output_device.h"
+#include "third_party/WebKit/public/platform/WebMediaStream.h"
 
 namespace media {
 class AudioOutputDevice;
@@ -25,7 +28,6 @@ class AudioOutputDevice;
 
 namespace webrtc {
 class AudioSourceInterface;
-class MediaStreamInterface;
 }  // namespace webrtc
 
 namespace content {
@@ -79,7 +81,7 @@ class CONTENT_EXPORT WebRtcAudioRenderer
 
   WebRtcAudioRenderer(
       const scoped_refptr<base::SingleThreadTaskRunner>& signaling_thread,
-      const scoped_refptr<webrtc::MediaStreamInterface>& media_stream,
+      const blink::WebMediaStream& media_stream,
       int source_render_frame_id,
       int session_id,
       const std::string& device_id,
@@ -99,7 +101,7 @@ class CONTENT_EXPORT WebRtcAudioRenderer
   // will ensure that Pause() is called followed by a call to Stop(), which
   // is the usage pattern that WebRtcAudioRenderer requires.
   scoped_refptr<MediaStreamAudioRenderer> CreateSharedAudioRendererProxy(
-      const scoped_refptr<webrtc::MediaStreamInterface>& media_stream);
+      const blink::WebMediaStream& media_stream);
 
   // Used to DCHECK on the expected state.
   bool IsStarted() const;
@@ -193,9 +195,8 @@ class CONTENT_EXPORT WebRtcAudioRenderer
   // Here we update the shared Play state and apply volume scaling to all audio
   // sources associated with the |media_stream| based on the collective volume
   // of playing renderers.
-  void OnPlayStateChanged(
-      const scoped_refptr<webrtc::MediaStreamInterface>& media_stream,
-      PlayingState* state);
+  void OnPlayStateChanged(const blink::WebMediaStream& media_stream,
+                          PlayingState* state);
 
   // Updates |sink_params_|, |audio_fifo_| and |fifo_delay_milliseconds_| based
   // on |sink_|, and initializes |sink_|.
@@ -211,7 +212,7 @@ class CONTENT_EXPORT WebRtcAudioRenderer
   scoped_refptr<media::AudioOutputDevice> sink_;
 
   // The media stream that holds the audio tracks that this renderer renders.
-  const scoped_refptr<webrtc::MediaStreamInterface> media_stream_;
+  const blink::WebMediaStream media_stream_;
 
   // Audio data source from the browser process.
   WebRtcAudioRendererSource* source_;

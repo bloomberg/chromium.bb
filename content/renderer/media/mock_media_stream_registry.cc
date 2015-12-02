@@ -31,7 +31,7 @@ void MockMediaStreamRegistry::Init(const std::string& stream_url) {
   const blink::WebVector<blink::WebMediaStreamTrack> webkit_video_tracks;
   const blink::WebString label(kTestStreamLabel);
   test_stream_.initialize(label, webkit_audio_tracks, webkit_video_tracks);
-  test_stream_.setExtraData(new MediaStream(test_stream_));
+  test_stream_.setExtraData(new MediaStream());
 }
 
 void MockMediaStreamRegistry::AddVideoTrack(const std::string& track_id) {

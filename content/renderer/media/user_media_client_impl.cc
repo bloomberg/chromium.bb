@@ -371,9 +371,7 @@ void UserMediaClientImpl::OnStreamGenerated(
 
   web_stream->initialize(webkit_id, audio_track_vector,
                          video_track_vector);
-  web_stream->setExtraData(
-      new MediaStream(
-          *web_stream));
+  web_stream->setExtraData(new MediaStream());
 
   // Wait for the tracks to be started successfully or to fail.
   request_info->CallbackOnTracksStarted(

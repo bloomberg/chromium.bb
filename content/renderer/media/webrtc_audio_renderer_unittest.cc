@@ -19,6 +19,9 @@
 #include "media/base/mock_audio_renderer_sink.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/WebMediaStream.h"
+#include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
+#include "third_party/WebKit/public/web/WebHeap.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
 
 using testing::Return;
@@ -124,14 +127,17 @@ class WebRtcAudioRendererTest : public testing::Test,
   WebRtcAudioRendererTest()
       : message_loop_(new base::MessageLoopForIO),
         mock_ipc_(nullptr),
-        source_(new MockAudioRendererSource()),
-        stream_(new rtc::RefCountedObject<MockMediaStream>("label")) {}
+        source_(new MockAudioRendererSource()) {
+    blink::WebVector<blink::WebMediaStreamTrack> dummy_tracks;
+    stream_.initialize("new stream", dummy_tracks, dummy_tracks);
+  }
 
   void SetupRenderer(const std::string& device_id) {
     renderer_ = new WebRtcAudioRenderer(message_loop_->task_runner(), stream_,
                                         1, 1, device_id, url::Origin());
     EXPECT_CALL(*this, MockCreateOutputDevice(1, _, device_id, _));
     EXPECT_TRUE(renderer_->Initialize(source_.get()));
+
     renderer_proxy_ = renderer_->CreateSharedAudioRendererProxy(stream_);
   }
 
@@ -161,13 +167,22 @@ class WebRtcAudioRendererTest : public testing::Test,
     return fake_device;
   }
 
+  void TearDown() override {
+    renderer_proxy_ = nullptr;
+    renderer_ = nullptr;
+    stream_.reset();
+    source_.reset();
+    mock_output_device_ = nullptr;
+    blink::WebHeap::collectAllGarbageForTesting();
+  }
+
   // Used to construct |mock_output_device_|.
   scoped_ptr<base::MessageLoopForIO> message_loop_;
   MockAudioOutputIPC* mock_ipc_;  // Owned by AudioOuputDevice.
 
   scoped_refptr<FakeAudioOutputDevice> mock_output_device_;
   scoped_ptr<MockAudioRendererSource> source_;
-  scoped_refptr<webrtc::MediaStreamInterface> stream_;
+  blink::WebMediaStream stream_;
   scoped_refptr<WebRtcAudioRenderer> renderer_;
   scoped_refptr<MediaStreamAudioRenderer> renderer_proxy_;
 };

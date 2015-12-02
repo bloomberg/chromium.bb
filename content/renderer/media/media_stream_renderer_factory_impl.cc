@@ -46,15 +46,14 @@ bool GetSessionIdForAudioRenderer(int* session_id) {
 }
 
 scoped_refptr<WebRtcAudioRenderer> CreateRemoteAudioRenderer(
-    webrtc::MediaStreamInterface* stream,
+    const blink::WebMediaStream& stream,
     int render_frame_id,
     const std::string& device_id,
     const url::Origin& security_origin) {
-  if (stream->GetAudioTracks().empty())
-    return NULL;
-
-  DVLOG(1) << "MediaStreamRendererFactoryImpl::CreateRemoteAudioRenderer label:"
-           << stream->label();
+  DVLOG(1) << "MediaStreamRendererFactoryImpl::CreateRemoteAudioRenderer id:"
+           << stream.id().utf8();
+  // |stream| will always contain at least one audio track.
+  // See MediaStreamRendererFactoryImpl::GetAudioRenderer.
 
   // TODO(tommi): Change the default value of session_id to be
   // StreamDeviceInfo::kNoId.  Also update AudioOutputDevice etc.
@@ -127,40 +126,27 @@ MediaStreamRendererFactoryImpl::GetAudioRenderer(
   blink::WebMediaStream web_stream =
       blink::WebMediaStreamRegistry::lookupMediaStreamDescriptor(url);
 
-  if (web_stream.isNull() || !web_stream.extraData())
-    return NULL;  // This is not a valid stream.
+  blink::WebVector<blink::WebMediaStreamTrack> audio_tracks;
+  web_stream.audioTracks(audio_tracks);
+  if (audio_tracks.isEmpty())
+    return NULL;
 
   DVLOG(1) << "MediaStreamRendererFactoryImpl::GetAudioRenderer stream:"
            << base::UTF16ToUTF8(base::StringPiece16(web_stream.id()));
 
-  MediaStream* native_stream = MediaStream::GetMediaStream(web_stream);
-
-  // TODO(tommi): MediaStreams do not have a 'local or not' concept.
-  // Tracks _might_, but even so, we need to fix the data flow so that
+  // TODO(tommi): We need to fix the data flow so that
   // it works the same way for all track implementations, local, remote or what
   // have you.
   // In this function, we should simply create a renderer object that receives
   // and mixes audio from all the tracks that belong to the media stream.
-  // We need to remove the |is_local| property from MediaStreamExtraData since
-  // this concept is peerconnection specific (is a previously recorded stream
-  // local or remote?).
-  if (native_stream->is_local()) {
-    // Create the local audio renderer if the stream contains audio tracks.
-    blink::WebVector<blink::WebMediaStreamTrack> audio_tracks;
-    web_stream.audioTracks(audio_tracks);
-    if (audio_tracks.isEmpty())
-      return NULL;
-
+  // For now, we have separate renderers depending on if the first audio track
+  // in the stream is local or remote.
+  if (MediaStreamTrack::GetTrack(audio_tracks[0])->is_local_track()) {
     // TODO(xians): Add support for the case where the media stream contains
     // multiple audio tracks.
     return CreateLocalAudioRenderer(audio_tracks[0], render_frame_id, device_id,
                                     security_origin);
   }
-
-  webrtc::MediaStreamInterface* stream =
-      MediaStream::GetAdapter(web_stream);
-  if (stream->GetAudioTracks().empty())
-    return NULL;
 
   // This is a remote WebRTC media stream.
   WebRtcAudioDeviceImpl* audio_device =
@@ -169,15 +155,15 @@ MediaStreamRendererFactoryImpl::GetAudioRenderer(
   // Share the existing renderer if any, otherwise create a new one.
   scoped_refptr<WebRtcAudioRenderer> renderer(audio_device->renderer());
   if (!renderer.get()) {
-    renderer = CreateRemoteAudioRenderer(stream, render_frame_id, device_id,
-                                         security_origin);
+    renderer = CreateRemoteAudioRenderer(web_stream, render_frame_id,
+                                         device_id, security_origin);
 
     if (renderer.get() && !audio_device->SetAudioRenderer(renderer.get()))
       renderer = NULL;
   }
 
-  return renderer.get() ?
-      renderer->CreateSharedAudioRendererProxy(stream) : NULL;
+  return renderer.get() ? renderer->CreateSharedAudioRendererProxy(web_stream)
+                        : NULL;
 }
 
 }  // namespace content

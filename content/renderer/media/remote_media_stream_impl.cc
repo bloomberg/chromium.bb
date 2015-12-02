@@ -5,6 +5,7 @@
 #include "content/renderer/media/remote_media_stream_impl.h"
 
 #include <string>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -14,6 +15,7 @@
 #include "content/renderer/media/media_stream.h"
 #include "content/renderer/media/media_stream_track.h"
 #include "content/renderer/media/media_stream_video_track.h"
+#include "content/renderer/media/webrtc/media_stream_remote_audio_track.h"
 #include "content/renderer/media/webrtc/media_stream_remote_video_source.h"
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc/track_observer.h"
@@ -42,36 +44,6 @@ bool IsTrackInVector(const VectorType& v, const std::string& id) {
   return false;
 }
 }  // namespace
-
-// TODO(tommi): Move this class to a separate set of files.
-class RemoteMediaStreamAudioTrack : public MediaStreamTrack {
- public:
-  RemoteMediaStreamAudioTrack(
-      const scoped_refptr<webrtc::AudioTrackInterface>& track,
-      const scoped_refptr<base::SingleThreadTaskRunner>& signaling_thread)
-      : MediaStreamTrack(false), track_(track),
-        signaling_thread_(signaling_thread) {
-  }
-
-  ~RemoteMediaStreamAudioTrack() override {}
-
- private:
-  void SetEnabled(bool enabled) override {
-    track_->set_enabled(enabled);
-  }
-
-  void Stop() override {
-    // Stop means that a track should be stopped permanently. But
-    // since there is no proper way of doing that on a remote track, we can
-    // at least disable the track. Blink will not call down to the content layer
-    // after a track has been stopped.
-    SetEnabled(false);
-  }
-
- private:
-  const scoped_refptr<webrtc::AudioTrackInterface> track_;
-  const scoped_refptr<base::SingleThreadTaskRunner> signaling_thread_;
-};
 
 // Base class used for mapping between webrtc and blink MediaStream tracks.
 // An instance of a RemoteMediaStreamTrackAdapter is stored in
@@ -206,8 +178,7 @@ class RemoteAudioTrackAdapter
   ~RemoteAudioTrackAdapter() override;
 
  private:
-  void InitializeWebkitAudioTrack(
-      scoped_ptr<RemoteMediaStreamAudioTrack> media_stream_track);
+  void InitializeWebkitAudioTrack();
 
   // webrtc::ObserverInterface implementation.
   void OnChanged() override;
@@ -235,13 +206,10 @@ RemoteAudioTrackAdapter::RemoteAudioTrackAdapter(
       state_(observed_track()->state()) {
   // TODO(tommi): Use TrackObserver instead.
   observed_track()->RegisterObserver(this);
-  scoped_ptr<RemoteMediaStreamAudioTrack> media_stream_track(
-      new RemoteMediaStreamAudioTrack(observed_track().get(),
-          base::ThreadTaskRunnerHandle::Get()));
   // Here, we use base::Unretained() to avoid a circular reference.
-  webkit_initialize_ = base::Bind(
-          &RemoteAudioTrackAdapter::InitializeWebkitAudioTrack,
-          base::Unretained(this), base::Passed(&media_stream_track));
+  webkit_initialize_ =
+      base::Bind(&RemoteAudioTrackAdapter::InitializeWebkitAudioTrack,
+                 base::Unretained(this));
 }
 
 RemoteAudioTrackAdapter::~RemoteAudioTrackAdapter() {
@@ -258,8 +226,9 @@ void RemoteAudioTrackAdapter::Unregister() {
   observed_track()->UnregisterObserver(this);
 }
 
-void RemoteAudioTrackAdapter::InitializeWebkitAudioTrack(
-    scoped_ptr<RemoteMediaStreamAudioTrack> media_stream_track) {
+void RemoteAudioTrackAdapter::InitializeWebkitAudioTrack() {
+  scoped_ptr<MediaStreamRemoteAudioTrack> media_stream_track(
+      new MediaStreamRemoteAudioTrack(observed_track().get()));
   InitializeWebkitTrack(blink::WebMediaStreamSource::TypeAudio);
   webkit_track()->setExtraData(media_stream_track.release());
 }
@@ -392,7 +361,7 @@ void RemoteMediaStreamImpl::InitializeOnMainThread(const std::string& label) {
 
   webkit_stream_.initialize(base::UTF8ToUTF16(label),
                             webkit_audio_tracks, webkit_video_tracks);
-  webkit_stream_.setExtraData(new MediaStream(observer_->stream().get()));
+  webkit_stream_.setExtraData(new MediaStream());
 }
 
 void RemoteMediaStreamImpl::OnChanged(

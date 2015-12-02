@@ -10,15 +10,16 @@
 #include "base/strings/stringprintf.h"
 #include "content/renderer/media/audio_device_factory.h"
 #include "content/renderer/media/media_stream_dispatcher.h"
+#include "content/renderer/media/media_stream_track.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
 #include "content/renderer/media/webrtc_logging.h"
 #include "content/renderer/render_frame_impl.h"
 #include "media/audio/audio_output_device.h"
 #include "media/audio/audio_parameters.h"
 #include "media/audio/sample_rates.h"
+#include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
 #include "third_party/libjingle/source/talk/media/base/audiorenderer.h"
-
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
@@ -43,18 +44,19 @@ class SharedAudioRenderer : public MediaStreamAudioRenderer {
  public:
   // Callback definition for a callback that is called when when Play(), Pause()
   // or SetVolume are called (whenever the internal |playing_state_| changes).
-  typedef base::Callback<
-      void(const scoped_refptr<webrtc::MediaStreamInterface>&,
-           WebRtcAudioRenderer::PlayingState*)> OnPlayStateChanged;
+  typedef base::Callback<void(const blink::WebMediaStream&,
+                              WebRtcAudioRenderer::PlayingState*)>
+      OnPlayStateChanged;
 
-  SharedAudioRenderer(
-      const scoped_refptr<MediaStreamAudioRenderer>& delegate,
-      const scoped_refptr<webrtc::MediaStreamInterface>& media_stream,
-      const OnPlayStateChanged& on_play_state_changed)
-      : delegate_(delegate), media_stream_(media_stream), started_(false),
+  SharedAudioRenderer(const scoped_refptr<MediaStreamAudioRenderer>& delegate,
+                      const blink::WebMediaStream& media_stream,
+                      const OnPlayStateChanged& on_play_state_changed)
+      : delegate_(delegate),
+        media_stream_(media_stream),
+        started_(false),
         on_play_state_changed_(on_play_state_changed) {
     DCHECK(!on_play_state_changed_.is_null());
-    DCHECK(media_stream_.get());
+    DCHECK(!media_stream_.isNull());
   }
 
  protected:
@@ -124,7 +126,7 @@ class SharedAudioRenderer : public MediaStreamAudioRenderer {
  private:
   base::ThreadChecker thread_checker_;
   const scoped_refptr<MediaStreamAudioRenderer> delegate_;
-  const scoped_refptr<webrtc::MediaStreamInterface> media_stream_;
+  const blink::WebMediaStream media_stream_;
   bool started_;
   WebRtcAudioRenderer::PlayingState playing_state_;
   OnPlayStateChanged on_play_state_changed_;
@@ -167,7 +169,7 @@ int WebRtcAudioRenderer::GetOptimalBufferSize(int sample_rate,
 
 WebRtcAudioRenderer::WebRtcAudioRenderer(
     const scoped_refptr<base::SingleThreadTaskRunner>& signaling_thread,
-    const scoped_refptr<webrtc::MediaStreamInterface>& media_stream,
+    const blink::WebMediaStream& media_stream,
     int source_render_frame_id,
     int session_id,
     const std::string& device_id,
@@ -236,7 +238,7 @@ bool WebRtcAudioRenderer::Initialize(WebRtcAudioRendererSource* source) {
 
 scoped_refptr<MediaStreamAudioRenderer>
 WebRtcAudioRenderer::CreateSharedAudioRendererProxy(
-    const scoped_refptr<webrtc::MediaStreamInterface>& media_stream) {
+    const blink::WebMediaStream& media_stream) {
   content::SharedAudioRenderer::OnPlayStateChanged on_play_state_changed =
       base::Bind(&WebRtcAudioRenderer::OnPlayStateChanged, this);
   return new SharedAudioRenderer(this, media_stream, on_play_state_changed);
@@ -545,13 +547,21 @@ bool WebRtcAudioRenderer::RemovePlayingState(
 }
 
 void WebRtcAudioRenderer::OnPlayStateChanged(
-    const scoped_refptr<webrtc::MediaStreamInterface>& media_stream,
+    const blink::WebMediaStream& media_stream,
     PlayingState* state) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  webrtc::AudioTrackVector tracks(media_stream->GetAudioTracks());
-  for (webrtc::AudioTrackVector::iterator it = tracks.begin();
-       it != tracks.end(); ++it) {
-    webrtc::AudioSourceInterface* source = (*it)->GetSource();
+  blink::WebVector<blink::WebMediaStreamTrack> web_tracks;
+  media_stream.audioTracks(web_tracks);
+
+  for (const blink::WebMediaStreamTrack& web_track : web_tracks) {
+    MediaStreamTrack* track = MediaStreamTrack::GetTrack(web_track);
+    // WebRtcAudioRenderer can only render audio tracks received from a remote
+    // peer. Since the actual MediaStream is mutable from JavaScript, we need
+    // to make sure |web_track| is actually a remote track.
+    if (track->is_local_track())
+      continue;
+    webrtc::AudioSourceInterface* source =
+        track->GetAudioAdapter()->GetSource();
     DCHECK(source);
     if (!state->playing()) {
       if (RemovePlayingState(source, state))
