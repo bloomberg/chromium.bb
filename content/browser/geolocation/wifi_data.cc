@@ -4,17 +4,19 @@
 
 #include "content/browser/geolocation/wifi_data.h"
 
+#include <stdint.h>
+
 #include <algorithm>
+#include <limits>
 
 #include "base/logging.h"
 
 namespace content {
 
 AccessPointData::AccessPointData()
-    : radio_signal_strength(kint32min),
-      channel(kint32min),
-      signal_to_noise(kint32min) {
-}
+    : radio_signal_strength(std::numeric_limits<int32_t>::min()),
+      channel(std::numeric_limits<int32_t>::min()),
+      signal_to_noise(std::numeric_limits<int32_t>::min()) {}
 
 AccessPointData::~AccessPointData() {}
 

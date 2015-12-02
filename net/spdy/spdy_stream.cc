@@ -4,6 +4,8 @@
 
 #include "net/spdy/spdy_stream.h"
 
+#include <limits>
+
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
@@ -36,8 +38,8 @@ scoped_ptr<base::Value> NetLogSpdyStreamErrorCallback(
 
 scoped_ptr<base::Value> NetLogSpdyStreamWindowUpdateCallback(
     SpdyStreamId stream_id,
-    int32 delta,
-    int32 window_size,
+    int32_t delta,
+    int32_t window_size,
     NetLogCaptureMode /* capture_mode */) {
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetInteger("stream_id", stream_id);
@@ -87,8 +89,8 @@ SpdyStream::SpdyStream(SpdyStreamType type,
                        const base::WeakPtr<SpdySession>& session,
                        const GURL& url,
                        RequestPriority priority,
-                       int32 initial_send_window_size,
-                       int32 max_recv_window_size,
+                       int32_t initial_send_window_size,
+                       int32_t max_recv_window_size,
                        const BoundNetLog& net_log)
     : type_(type),
       stream_id_(0),
@@ -220,7 +222,7 @@ void SpdyStream::DetachDelegate() {
   Cancel();
 }
 
-void SpdyStream::AdjustSendWindowSize(int32 delta_window_size) {
+void SpdyStream::AdjustSendWindowSize(int32_t delta_window_size) {
   DCHECK_GE(session_->flow_control_state(), SpdySession::FLOW_CONTROL_STREAM);
 
   if (IsClosed())
@@ -228,10 +230,12 @@ void SpdyStream::AdjustSendWindowSize(int32 delta_window_size) {
 
   // Check for wraparound.
   if (send_window_size_ > 0) {
-    DCHECK_LE(delta_window_size, kint32max - send_window_size_);
+    DCHECK_LE(delta_window_size,
+              std::numeric_limits<int32_t>::max() - send_window_size_);
   }
   if (send_window_size_ < 0) {
-    DCHECK_GE(delta_window_size, kint32min - send_window_size_);
+    DCHECK_GE(delta_window_size,
+              std::numeric_limits<int32_t>::min() - send_window_size_);
   }
   send_window_size_ += delta_window_size;
   PossiblyResumeIfSendStalled();
@@ -249,13 +253,13 @@ void SpdyStream::OnWriteBufferConsumed(
     // error and we'll be tearing down the stream soon.)
     size_t remaining_payload_bytes = std::min(consume_size, frame_payload_size);
     DCHECK_GT(remaining_payload_bytes, 0u);
-    IncreaseSendWindowSize(static_cast<int32>(remaining_payload_bytes));
+    IncreaseSendWindowSize(static_cast<int32_t>(remaining_payload_bytes));
   }
   // For consumed bytes, the send window is increased when we receive
   // a WINDOW_UPDATE frame.
 }
 
-void SpdyStream::IncreaseSendWindowSize(int32 delta_window_size) {
+void SpdyStream::IncreaseSendWindowSize(int32_t delta_window_size) {
   DCHECK_GE(session_->flow_control_state(), SpdySession::FLOW_CONTROL_STREAM);
   DCHECK_GE(delta_window_size, 1);
 
@@ -265,7 +269,8 @@ void SpdyStream::IncreaseSendWindowSize(int32 delta_window_size) {
 
   if (send_window_size_ > 0) {
     // Check for overflow.
-    int32 max_delta_window_size = kint32max - send_window_size_;
+    int32_t max_delta_window_size =
+        std::numeric_limits<int32_t>::max() - send_window_size_;
     if (delta_window_size > max_delta_window_size) {
       std::string desc = base::StringPrintf(
           "Received WINDOW_UPDATE [delta: %d] for stream %d overflows "
@@ -286,7 +291,7 @@ void SpdyStream::IncreaseSendWindowSize(int32 delta_window_size) {
   PossiblyResumeIfSendStalled();
 }
 
-void SpdyStream::DecreaseSendWindowSize(int32 delta_window_size) {
+void SpdyStream::DecreaseSendWindowSize(int32_t delta_window_size) {
   DCHECK_GE(session_->flow_control_state(), SpdySession::FLOW_CONTROL_STREAM);
 
   if (IsClosed())
@@ -314,11 +319,12 @@ void SpdyStream::OnReadBufferConsumed(
     SpdyBuffer::ConsumeSource consume_source) {
   DCHECK_GE(session_->flow_control_state(), SpdySession::FLOW_CONTROL_STREAM);
   DCHECK_GE(consume_size, 1u);
-  DCHECK_LE(consume_size, static_cast<size_t>(kint32max));
-  IncreaseRecvWindowSize(static_cast<int32>(consume_size));
+  DCHECK_LE(consume_size,
+            static_cast<size_t>(std::numeric_limits<int32_t>::max()));
+  IncreaseRecvWindowSize(static_cast<int32_t>(consume_size));
 }
 
-void SpdyStream::IncreaseRecvWindowSize(int32 delta_window_size) {
+void SpdyStream::IncreaseRecvWindowSize(int32_t delta_window_size) {
   DCHECK_GE(session_->flow_control_state(), SpdySession::FLOW_CONTROL_STREAM);
 
   // By the time a read is processed by the delegate, this stream may
@@ -330,7 +336,8 @@ void SpdyStream::IncreaseRecvWindowSize(int32 delta_window_size) {
   DCHECK_GE(recv_window_size_, unacked_recv_window_bytes_);
   DCHECK_GE(delta_window_size, 1);
   // Check for overflow.
-  DCHECK_LE(delta_window_size, kint32max - recv_window_size_);
+  DCHECK_LE(delta_window_size,
+            std::numeric_limits<int32_t>::max() - recv_window_size_);
 
   recv_window_size_ += delta_window_size;
   net_log_.AddEvent(
@@ -341,12 +348,12 @@ void SpdyStream::IncreaseRecvWindowSize(int32 delta_window_size) {
   unacked_recv_window_bytes_ += delta_window_size;
   if (unacked_recv_window_bytes_ > max_recv_window_size_ / 2) {
     session_->SendStreamWindowUpdate(
-        stream_id_, static_cast<uint32>(unacked_recv_window_bytes_));
+        stream_id_, static_cast<uint32_t>(unacked_recv_window_bytes_));
     unacked_recv_window_bytes_ = 0;
   }
 }
 
-void SpdyStream::DecreaseRecvWindowSize(int32 delta_window_size) {
+void SpdyStream::DecreaseRecvWindowSize(int32_t delta_window_size) {
   DCHECK(session_->IsStreamActive(stream_id_));
   DCHECK_GE(session_->flow_control_state(), SpdySession::FLOW_CONTROL_STREAM);
   DCHECK_GE(delta_window_size, 1);
@@ -530,7 +537,7 @@ void SpdyStream::OnDataReceived(scoped_ptr<SpdyBuffer> buffer) {
   if (session_->flow_control_state() >= SpdySession::FLOW_CONTROL_STREAM) {
     base::WeakPtr<SpdyStream> weak_this = GetWeakPtr();
     // May close the stream.
-    DecreaseRecvWindowSize(static_cast<int32>(length));
+    DecreaseRecvWindowSize(static_cast<int32_t>(length));
     if (!weak_this)
       return;
     buffer->AddConsumeCallback(
@@ -553,10 +560,10 @@ void SpdyStream::OnPaddingConsumed(size_t len) {
     // |recv_window_size_| does not change.
     base::WeakPtr<SpdyStream> weak_this = GetWeakPtr();
     // May close the stream.
-    DecreaseRecvWindowSize(static_cast<int32>(len));
+    DecreaseRecvWindowSize(static_cast<int32_t>(len));
     if (!weak_this)
       return;
-    IncreaseRecvWindowSize(static_cast<int32>(len));
+    IncreaseRecvWindowSize(static_cast<int32_t>(len));
   }
 }
 
@@ -854,7 +861,7 @@ void SpdyStream::QueueNextDataFrame() {
     // Send window size is based on payload size, so nothing to do if this is
     // just a FIN with no payload.
     if (payload_size != 0) {
-      DecreaseSendWindowSize(static_cast<int32>(payload_size));
+      DecreaseSendWindowSize(static_cast<int32_t>(payload_size));
       // This currently isn't strictly needed, since write frames are
       // discarded only if the stream is about to be closed. But have it
       // here anyway just in case this changes.

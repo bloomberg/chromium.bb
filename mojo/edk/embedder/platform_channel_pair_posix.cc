@@ -5,9 +5,12 @@
 #include "mojo/edk/embedder/platform_channel_pair.h"
 
 #include <fcntl.h>
+#include <stdint.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
+
+#include <limits>
 
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -48,7 +51,8 @@ PlatformChannelPair::PlatformChannelPair(bool client_is_blocking) {
   // Store a common id in the SO_PEEK_OFF option (which we don't use since we
   // don't peek) as a way of determining later if two sockets are connected to
   // each other.
-  int identifier = base::RandInt(kint32min, kint32max);
+  int identifier = base::RandInt(std::numeric_limits<int32_t>::min(),
+                                 std::numeric_limits<int32_t>::max());
   setsockopt(fds[0], SOL_SOCKET, SO_PEEK_OFF, &identifier, sizeof(identifier));
   setsockopt(fds[1], SOL_SOCKET, SO_PEEK_OFF, &identifier, sizeof(identifier));
 

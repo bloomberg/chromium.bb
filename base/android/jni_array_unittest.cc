@@ -4,6 +4,10 @@
 
 #include "base/android/jni_array.h"
 
+#include <stdint.h>
+
+#include <limits>
+
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -57,7 +61,8 @@ void CheckIntConversion(
 }
 
 TEST(JniArray, IntConversions) {
-  const int kInts[] = { 0, 1, -1, kint32min, kint32max};
+  const int kInts[] = {0, 1, -1, std::numeric_limits<int32_t>::min(),
+                       std::numeric_limits<int32_t>::max()};
   const size_t kLen = arraysize(kInts);
 
   JNIEnv* env = AttachCurrentThread();
@@ -258,7 +263,8 @@ TEST(JniArray, JavaArrayOfIntArrayToIntVector) {
   ASSERT_TRUE(array.obj());
 
   // Populate int[][] object.
-  const int kInts0[] = {0, 1, -1, kint32min, kint32max};
+  const int kInts0[] = {0, 1, -1, std::numeric_limits<int32_t>::min(),
+                        std::numeric_limits<int32_t>::max()};
   const size_t kLen0 = arraysize(kInts0);
   ScopedJavaLocalRef<jintArray> int_array0 = ToJavaIntArray(env, kInts0, kLen0);
   env->SetObjectArrayElement(array.obj(), 0, int_array0.obj());

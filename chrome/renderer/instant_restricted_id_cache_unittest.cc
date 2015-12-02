@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
+#include <limits>
 #include <string>
 #include <utility>
 #include <vector>
@@ -199,11 +202,12 @@ TEST_F(InstantRestrictedIDCacheTest, CrazyIDGeneration) {
   // Check first addition.
   std::vector<ItemIDPair> input1;
   input1.push_back(std::make_pair(0, TestData("A")));
-  input1.push_back(std::make_pair(kint32max, TestData("B")));
+  input1.push_back(
+      std::make_pair(std::numeric_limits<int32_t>::max(), TestData("B")));
   input1.push_back(std::make_pair(-100, TestData("C")));
   cache.AddItemsWithRestrictedID(input1);
   EXPECT_EQ(3u, cache.cache_.size());
-  EXPECT_EQ(kint32max, cache.last_restricted_id_);
+  EXPECT_EQ(std::numeric_limits<int32_t>::max(), cache.last_restricted_id_);
 
   std::vector<ItemIDPair> output;
   cache.GetCurrentItems(&output);
@@ -215,18 +219,20 @@ TEST_F(InstantRestrictedIDCacheTest, CrazyIDGeneration) {
 
   TestData t;
   EXPECT_FALSE(cache.GetItemWithRestrictedID(1, &t));
-  EXPECT_TRUE(cache.GetItemWithRestrictedID(kint32max, &t));
+  EXPECT_TRUE(
+      cache.GetItemWithRestrictedID(std::numeric_limits<int32_t>::max(), &t));
   EXPECT_EQ(input1[1].second, t);
   EXPECT_TRUE(cache.GetItemWithRestrictedID(-100, &t));
   EXPECT_EQ(input1[2].second, t);
 
   // Add more items, one with same rid, no overflow.
   std::vector<ItemIDPair> input2;
-  input2.push_back(std::make_pair(kint32min, TestData("D")));
+  input2.push_back(
+      std::make_pair(std::numeric_limits<int32_t>::min(), TestData("D")));
   input2.push_back(std::make_pair(7, TestData("E")));
   cache.AddItemsWithRestrictedID(input2);
   EXPECT_EQ(4u, cache.cache_.size());
-  EXPECT_EQ(kint32max, cache.last_restricted_id_);
+  EXPECT_EQ(std::numeric_limits<int32_t>::max(), cache.last_restricted_id_);
 
   output.clear();
   cache.GetCurrentItems(&output);
@@ -237,9 +243,11 @@ TEST_F(InstantRestrictedIDCacheTest, CrazyIDGeneration) {
   }
 
   EXPECT_FALSE(cache.GetItemWithRestrictedID(0, &t));
-  EXPECT_TRUE(cache.GetItemWithRestrictedID(kint32max, &t));
+  EXPECT_TRUE(
+      cache.GetItemWithRestrictedID(std::numeric_limits<int32_t>::max(), &t));
   EXPECT_EQ(input1[1].second, t);
-  EXPECT_TRUE(cache.GetItemWithRestrictedID(kint32min, &t));
+  EXPECT_TRUE(
+      cache.GetItemWithRestrictedID(std::numeric_limits<int32_t>::min(), &t));
   EXPECT_EQ(input2[0].second, t);
   EXPECT_TRUE(cache.GetItemWithRestrictedID(7, &t));
   EXPECT_EQ(input2[1].second, t);
@@ -250,17 +258,18 @@ TEST_F(InstantRestrictedIDCacheTest, CrazyIDGeneration) {
   input3.push_back(TestData("G"));
   cache.AddItems(input3);
   EXPECT_EQ(4u, cache.cache_.size());
-  EXPECT_EQ(kint32min + 1, cache.last_restricted_id_);
+  EXPECT_EQ(std::numeric_limits<int32_t>::min() + 1, cache.last_restricted_id_);
 
   output.clear();
   cache.GetCurrentItems(&output);
   EXPECT_EQ(2u, output.size());
   for (int i = 0; i < 2; ++i) {
-    EXPECT_EQ(kint32min + i, output[i].first);
+    EXPECT_EQ(std::numeric_limits<int32_t>::min() + i, output[i].first);
     EXPECT_EQ(input3[i], output[i].second);
   }
 
-  EXPECT_TRUE(cache.GetItemWithRestrictedID(kint32min, &t));
+  EXPECT_TRUE(
+      cache.GetItemWithRestrictedID(std::numeric_limits<int32_t>::min(), &t));
   EXPECT_EQ(input3[0], t);
 }
 

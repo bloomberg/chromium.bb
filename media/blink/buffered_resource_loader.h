@@ -77,15 +77,14 @@ class MEDIA_BLINK_EXPORT BufferedResourceLoader
   // |strategy| is the initial loading strategy to use.
   // |bitrate| is the bitrate of the media, 0 if unknown.
   // |playback_rate| is the current playback rate of the media.
-  BufferedResourceLoader(
-      const GURL& url,
-      CORSMode cors_mode,
-      int64 first_byte_position,
-      int64 last_byte_position,
-      DeferStrategy strategy,
-      int bitrate,
-      double playback_rate,
-      MediaLog* media_log);
+  BufferedResourceLoader(const GURL& url,
+                         CORSMode cors_mode,
+                         int64_t first_byte_position,
+                         int64_t last_byte_position,
+                         DeferStrategy strategy,
+                         int bitrate,
+                         double playback_rate,
+                         MediaLog* media_log);
   ~BufferedResourceLoader() override;
 
   // Start the resource loading with the specified URL and range.
@@ -94,7 +93,7 @@ class MEDIA_BLINK_EXPORT BufferedResourceLoader
   // |progress_cb| is executed when additional data has arrived.
   typedef base::Callback<void(Status)> StartCB;
   typedef base::Callback<void(LoadingState)> LoadingStateChangedCB;
-  typedef base::Callback<void(int64)> ProgressCB;
+  typedef base::Callback<void(int64_t)> ProgressCB;
   void Start(const StartCB& start_cb,
              const LoadingStateChangedCB& loading_cb,
              const ProgressCB& progress_cb,
@@ -115,17 +114,19 @@ class MEDIA_BLINK_EXPORT BufferedResourceLoader
   // If necessary will temporarily increase forward capacity of buffer to
   // accomodate an unusually large read.
   typedef base::Callback<void(Status, int)> ReadCB;
-  void Read(int64 position, int read_size,
-            uint8* buffer, const ReadCB& read_cb);
+  void Read(int64_t position,
+            int read_size,
+            uint8_t* buffer,
+            const ReadCB& read_cb);
 
   // Gets the content length in bytes of the instance after this loader has been
   // started. If this value is |kPositionNotSpecified|, then content length is
   // unknown.
-  int64 content_length();
+  int64_t content_length();
 
   // Gets the original size of the file requested. If this value is
   // |kPositionNotSpecified|, then the size is unknown.
-  int64 instance_size();
+  int64_t instance_size();
 
   // Returns true if the server supports byte range requests.
   bool range_supported();
@@ -154,10 +155,9 @@ class MEDIA_BLINK_EXPORT BufferedResourceLoader
   void didReceiveCachedMetadata(
       blink::WebURLLoader* loader,
       const char* data, int dataLength) override;
-  void didFinishLoading(
-      blink::WebURLLoader* loader,
-      double finishTime,
-      int64_t total_encoded_data_length) override;
+  void didFinishLoading(blink::WebURLLoader* loader,
+                        double finishTime,
+                        int64_t total_encoded_data_length) override;
   void didFail(
       blink::WebURLLoader* loader,
       const blink::WebURLError&) override;
@@ -185,7 +185,7 @@ class MEDIA_BLINK_EXPORT BufferedResourceLoader
   void SetBitrate(int bitrate);
 
   // Return the |first_byte_position| passed into the ctor.
-  int64 first_byte_position() const;
+  int64_t first_byte_position() const;
 
   // Parse a Content-Range header into its component pieces and return true if
   // each of the expected elements was found & parsed correctly.
@@ -193,9 +193,10 @@ class MEDIA_BLINK_EXPORT BufferedResourceLoader
   // "/*".
   // NOTE: only public for testing!  This is an implementation detail of
   // VerifyPartialResponse (a private method).
-  static bool ParseContentRange(
-      const std::string& content_range_str, int64* first_byte_position,
-      int64* last_byte_position, int64* instance_size);
+  static bool ParseContentRange(const std::string& content_range_str,
+                                int64_t* first_byte_position,
+                                int64_t* last_byte_position,
+                                int64_t* instance_size);
 
   // Cancels and closes any outstanding deferred ActiveLoader instances. Does
   // not report a failed state, so subsequent read calls to cache may still
@@ -285,8 +286,8 @@ class MEDIA_BLINK_EXPORT BufferedResourceLoader
 
   GURL url_;
   CORSMode cors_mode_;
-  const int64 first_byte_position_;
-  const int64 last_byte_position_;
+  const int64_t first_byte_position_;
+  const int64_t last_byte_position_;
   bool single_origin_;
 
   // Executed whenever the state of resource loading has changed.
@@ -298,16 +299,16 @@ class MEDIA_BLINK_EXPORT BufferedResourceLoader
 
   // Members used during request start.
   StartCB start_cb_;
-  int64 offset_;
-  int64 content_length_;
-  int64 instance_size_;
+  int64_t offset_;
+  int64_t content_length_;
+  int64_t instance_size_;
 
   // Members used during a read operation. They should be reset after each
   // read has completed or failed.
   ReadCB read_cb_;
-  int64 read_position_;
+  int64_t read_position_;
   int read_size_;
-  uint8* read_buffer_;
+  uint8_t* read_buffer_;
 
   // Offsets of the requested first byte and last byte in |buffer_|. They are
   // written by Read().

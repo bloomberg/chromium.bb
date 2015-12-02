@@ -7,6 +7,8 @@
 #include <stdint.h>
 #include <unistd.h>
 
+#include <limits>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/strings/string_number_conversions.h"
@@ -34,19 +36,19 @@ double RoundDoubleTowardsZero(const double& x) {
 // Rounds to jlong using Java's type conversion rules.
 jlong RoundDoubleToLong(const double& x) {
   double intermediate = RoundDoubleTowardsZero(x);
-  // The int64 limits can not be converted exactly to double values, so we
+  // The int64_t limits can not be converted exactly to double values, so we
   // compare to custom constants. kint64max is 2^63 - 1, but the spacing
   // between double values in the the range 2^62 to 2^63 is 2^10. The cast is
   // required to silence a spurious gcc warning for integer overflow.
-  const int64 kLimit = (INT64_C(1) << 63) - static_cast<uint64>(1 << 10);
+  const int64_t kLimit = (INT64_C(1) << 63) - static_cast<uint64_t>(1 << 10);
   DCHECK(kLimit > 0);
   const double kLargestDoubleLessThanInt64Max = kLimit;
   const double kSmallestDoubleGreaterThanInt64Min = -kLimit;
   if (intermediate > kLargestDoubleLessThanInt64Max) {
-    return kint64max;
+    return std::numeric_limits<int64_t>::max();
   }
   if (intermediate < kSmallestDoubleGreaterThanInt64Min) {
-    return kint64min;
+    return std::numeric_limits<int64_t>::min();
   }
   return static_cast<jlong>(intermediate);
 }
@@ -54,9 +56,11 @@ jlong RoundDoubleToLong(const double& x) {
 // Rounds to jint using Java's type conversion rules.
 jint RoundDoubleToInt(const double& x) {
   double intermediate = RoundDoubleTowardsZero(x);
-  // The int32 limits cast exactly to double values.
-  intermediate = std::min(intermediate, static_cast<double>(kint32max));
-  intermediate = std::max(intermediate, static_cast<double>(kint32min));
+  // The int32_t limits cast exactly to double values.
+  intermediate = std::min(
+      intermediate, static_cast<double>(std::numeric_limits<int32_t>::max()));
+  intermediate = std::max(
+      intermediate, static_cast<double>(std::numeric_limits<int32_t>::min()));
   return static_cast<jint>(intermediate);
 }
 
@@ -514,13 +518,14 @@ jobject CoerceJavaScriptDictionaryToArray(JNIEnv* env,
   if (length_value->IsType(base::Value::TYPE_INTEGER)) {
     int int_length;
     length_value->GetAsInteger(&int_length);
-    if (int_length >= 0 && int_length <= kint32max) {
+    if (int_length >= 0 && int_length <= std::numeric_limits<int32_t>::max()) {
       length = static_cast<jsize>(int_length);
     }
   } else if (length_value->IsType(base::Value::TYPE_DOUBLE)) {
     double double_length;
     length_value->GetAsDouble(&double_length);
-    if (double_length >= 0.0 && double_length <= kint32max) {
+    if (double_length >= 0.0 &&
+        double_length <= std::numeric_limits<int32_t>::max()) {
       length = static_cast<jsize>(double_length);
     }
   }

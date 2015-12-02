@@ -4,6 +4,9 @@
 
 #include "content/browser/geolocation/network_location_request.h"
 
+#include <stdint.h>
+
+#include <limits>
 #include <set>
 #include <string>
 
@@ -209,11 +212,12 @@ void FormUploadData(const WifiData& wifi_data,
                     const base::Time& timestamp,
                     const base::string16& access_token,
                     std::string* upload_data) {
-  int age = kint32min;  // Invalid so AddInteger() will ignore.
+  int age = std::numeric_limits<int32_t>::min();  // Invalid so AddInteger()
+                                                  // will ignore.
   if (!timestamp.is_null()) {
     // Convert absolute timestamps into a relative age.
-    int64 delta_ms = (base::Time::Now() - timestamp).InMilliseconds();
-    if (delta_ms >= 0 && delta_ms < kint32max)
+    int64_t delta_ms = (base::Time::Now() - timestamp).InMilliseconds();
+    if (delta_ms >= 0 && delta_ms < std::numeric_limits<int32_t>::max())
       age = static_cast<int>(delta_ms);
   }
 
@@ -234,7 +238,7 @@ void AddString(const std::string& property_name, const std::string& value,
 void AddInteger(const std::string& property_name, int value,
                 base::DictionaryValue* dict) {
   DCHECK(dict);
-  if (value != kint32min)
+  if (value != std::numeric_limits<int32_t>::min())
     dict->SetInteger(property_name, value);
 }
 
