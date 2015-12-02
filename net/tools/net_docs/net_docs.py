@@ -113,7 +113,8 @@ def main():
   parser.add_argument('filenames', nargs=argparse.REMAINDER)
   args = parser.parse_args()
 
-  ProcessDocs(args.filenames, args.input_path, args.output_path)
+  extensions = ['markdown.extensions.def_list']
+  ProcessDocs(args.filenames, args.input_path, args.output_path, extensions)
 
   return 0
 
