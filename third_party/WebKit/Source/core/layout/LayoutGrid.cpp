@@ -1732,7 +1732,7 @@ void LayoutGrid::updateAutoMarginsInRowAxisIfNeeded(LayoutBox& child)
 {
     ASSERT(!child.isOutOfFlowPositioned());
 
-    LayoutUnit availableAlignmentSpace = child.overrideContainingBlockContentLogicalWidth() - child.logicalWidth();
+    LayoutUnit availableAlignmentSpace = child.overrideContainingBlockContentLogicalWidth() - child.logicalWidth() - child.marginLogicalWidth();
     if (availableAlignmentSpace <= 0)
         return;
 
@@ -1753,7 +1753,7 @@ void LayoutGrid::updateAutoMarginsInColumnAxisIfNeeded(LayoutBox& child)
 {
     ASSERT(!child.isOutOfFlowPositioned());
 
-    LayoutUnit availableAlignmentSpace = child.overrideContainingBlockContentLogicalHeight() - child.logicalHeight();
+    LayoutUnit availableAlignmentSpace = child.overrideContainingBlockContentLogicalHeight() - child.logicalHeight() - child.marginLogicalHeight();
     if (availableAlignmentSpace <= 0)
         return;
 
