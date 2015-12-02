@@ -93,6 +93,7 @@ void InitMouseEvent(WebInputEvent::Type t,
   e->y = pos.y;
   e->globalX = pos.x;
   e->globalY = pos.y;
+  e->pointerType = blink::WebPointerProperties::PointerType::Mouse;
   e->timeStampSeconds = time_stamp;
   e->clickCount = click_count;
 }

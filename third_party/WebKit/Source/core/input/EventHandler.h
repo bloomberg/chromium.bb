@@ -27,7 +27,7 @@
 #define EventHandler_h
 
 #include "core/CoreExport.h"
-#include "core/events/PointerIdManager.h"
+#include "core/events/PointerEventFactory.h"
 #include "core/events/TextEventInputType.h"
 #include "core/layout/HitTestRequest.h"
 #include "core/page/DragActions.h"
@@ -423,7 +423,7 @@ private:
 
     bool m_touchPressed;
 
-    PointerIdManager m_pointerIdManager;
+    PointerEventFactory m_pointerEventFactory;
 
     // Prevents firing mousedown, mousemove & mouseup in-between a canceled pointerdown and next pointerup/pointercancel.
     // See "PREVENT MOUSE EVENT flag" in the spec:

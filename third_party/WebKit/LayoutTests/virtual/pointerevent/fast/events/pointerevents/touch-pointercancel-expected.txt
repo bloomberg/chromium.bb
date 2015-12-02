@@ -6,131 +6,131 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 --- single drag tests ---
 
 -- preventDefault on none, without uncanceledMoveCausesScroll --
-Received pointerdown, pointerId=0
+Received pointerdown, pointerId=2
 Received touchstart, touchIds=0
-Received pointermove, pointerId=0
+Received pointermove, pointerId=2
 Received touchmove, touchIds=0
-Received pointermove, pointerId=0
+Received pointermove, pointerId=2
 Received touchmove, touchIds=0
-Received pointermove, pointerId=0
+Received pointermove, pointerId=2
 Received touchmove, touchIds=0
-Received pointerup, pointerId=0
+Received pointerup, pointerId=2
 Received touchend, touchIds=0
 
 -- preventDefault on pointermove, without uncanceledMoveCausesScroll --
-Received pointerdown, pointerId=0
+Received pointerdown, pointerId=3
 Received touchstart, touchIds=0
-Received pointermove, pointerId=0, prevented default
-Received pointermove, pointerId=0, prevented default
-Received pointermove, pointerId=0, prevented default
-Received pointerup, pointerId=0
+Received pointermove, pointerId=3, prevented default
+Received pointermove, pointerId=3, prevented default
+Received pointermove, pointerId=3, prevented default
+Received pointerup, pointerId=3
 Received touchend, touchIds=0
 
 -- preventDefault on touchmove, without uncanceledMoveCausesScroll --
-Received pointerdown, pointerId=0
+Received pointerdown, pointerId=4
 Received touchstart, touchIds=0
-Received pointermove, pointerId=0
+Received pointermove, pointerId=4
 Received touchmove, touchIds=0, prevented default
-Received pointermove, pointerId=0
+Received pointermove, pointerId=4
 Received touchmove, touchIds=0, prevented default
-Received pointermove, pointerId=0
+Received pointermove, pointerId=4
 Received touchmove, touchIds=0, prevented default
-Received pointerup, pointerId=0
+Received pointerup, pointerId=4
 Received touchend, touchIds=0
 
 -- preventDefault on none, with uncanceledMoveCausesScroll --
-Received pointerdown, pointerId=0
+Received pointerdown, pointerId=5
 Received touchstart, touchIds=0
-Received pointermove, pointerId=0
+Received pointermove, pointerId=5
 Received touchmove, touchIds=0
-Received pointermove, pointerId=0
+Received pointermove, pointerId=5
 Received touchmove, touchIds=0
-Received pointercancel, pointerId=0
+Received pointercancel, pointerId=5
 Received touchmove, touchIds=0
 Received touchend, touchIds=0
 
 -- preventDefault on pointermove, with uncanceledMoveCausesScroll --
-Received pointerdown, pointerId=0
+Received pointerdown, pointerId=6
 Received touchstart, touchIds=0
-Received pointermove, pointerId=0, prevented default
-Received pointermove, pointerId=0, prevented default
-Received pointercancel, pointerId=0
+Received pointermove, pointerId=6, prevented default
+Received pointermove, pointerId=6, prevented default
+Received pointercancel, pointerId=6
 Received touchmove, touchIds=0
 Received touchend, touchIds=0
 
 -- preventDefault on touchmove, with uncanceledMoveCausesScroll --
-Received pointerdown, pointerId=0
+Received pointerdown, pointerId=7
 Received touchstart, touchIds=0
-Received pointermove, pointerId=0
+Received pointermove, pointerId=7
 Received touchmove, touchIds=0, prevented default
-Received pointermove, pointerId=0
+Received pointermove, pointerId=7
 Received touchmove, touchIds=0, prevented default
-Received pointermove, pointerId=0
+Received pointermove, pointerId=7
 Received touchmove, touchIds=0, prevented default
-Received pointerup, pointerId=0
+Received pointerup, pointerId=7
 Received touchend, touchIds=0
 
 --- multi drag tests ---
 
 -- preventDefault on none, without uncanceledMoveCausesScroll --
-Received pointerdown, pointerId=0
-Received pointerdown, pointerId=1
-Received pointerdown, pointerId=2
+Received pointerdown, pointerId=8
+Received pointerdown, pointerId=9
+Received pointerdown, pointerId=10
 Received touchstart, touchIds=012
-Received pointermove, pointerId=0
-Received pointermove, pointerId=1
-Received pointermove, pointerId=2
+Received pointermove, pointerId=8
+Received pointermove, pointerId=9
+Received pointermove, pointerId=10
 Received touchmove, touchIds=012
-Received pointermove, pointerId=0
-Received pointermove, pointerId=1
-Received pointermove, pointerId=2
+Received pointermove, pointerId=8
+Received pointermove, pointerId=9
+Received pointermove, pointerId=10
 Received touchmove, touchIds=012
-Received pointerdown, pointerId=3
+Received pointerdown, pointerId=11
 Received touchstart, touchIds=3
-Received pointermove, pointerId=0
-Received pointermove, pointerId=1
-Received pointermove, pointerId=2
-Received pointermove, pointerId=3
+Received pointermove, pointerId=8
+Received pointermove, pointerId=9
+Received pointermove, pointerId=10
+Received pointermove, pointerId=11
 Received touchmove, touchIds=0123
-Received pointerup, pointerId=0
-Received pointerup, pointerId=1
-Received pointerup, pointerId=2
-Received pointerup, pointerId=3
+Received pointerup, pointerId=8
+Received pointerup, pointerId=9
+Received pointerup, pointerId=10
+Received pointerup, pointerId=11
 Received touchend, touchIds=0123
 
 -- preventDefault on none, with uncanceledMoveCausesScroll --
-Received pointerdown, pointerId=0
-Received pointerdown, pointerId=1
-Received pointerdown, pointerId=2
+Received pointerdown, pointerId=12
+Received pointerdown, pointerId=13
+Received pointerdown, pointerId=14
 Received touchstart, touchIds=012
-Received pointermove, pointerId=0
-Received pointermove, pointerId=1
-Received pointermove, pointerId=2
+Received pointermove, pointerId=12
+Received pointermove, pointerId=13
+Received pointermove, pointerId=14
 Received touchmove, touchIds=012
-Received pointermove, pointerId=0
-Received pointermove, pointerId=1
-Received pointermove, pointerId=2
+Received pointermove, pointerId=12
+Received pointermove, pointerId=13
+Received pointermove, pointerId=14
 Received touchmove, touchIds=012
-Received pointercancel, pointerId=0
-Received pointercancel, pointerId=1
-Received pointercancel, pointerId=2
+Received pointercancel, pointerId=12
+Received pointercancel, pointerId=13
+Received pointercancel, pointerId=14
 Received touchstart, touchIds=3
 Received touchmove, touchIds=0123
 Received touchend, touchIds=0123
 
 --- multi cancel tests ---
 
-Received pointerdown, pointerId=0
-Received pointerdown, pointerId=1
-Received pointerdown, pointerId=2
+Received pointerdown, pointerId=15
+Received pointerdown, pointerId=16
+Received pointerdown, pointerId=17
 Received touchstart, touchIds=012
-Received pointercancel, pointerId=2
+Received pointercancel, pointerId=17
 Received touchcancel, touchIds=2
-Received pointermove, pointerId=0
-Received pointermove, pointerId=1
+Received pointermove, pointerId=15
+Received pointermove, pointerId=16
 Received touchmove, touchIds=01
-Received pointercancel, pointerId=0
-Received pointercancel, pointerId=1
+Received pointercancel, pointerId=15
+Received pointercancel, pointerId=16
 Received touchcancel, touchIds=01
 
 PASS successfullyParsed is true

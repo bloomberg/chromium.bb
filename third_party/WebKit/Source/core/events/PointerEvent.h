@@ -25,16 +25,6 @@ public:
         return adoptRefWillBeNoop(new PointerEvent(type, initializer));
     }
 
-    static PassRefPtrWillBeRawPtr<PointerEvent> create(const AtomicString& type,
-        const bool isPrimary, const PlatformMouseEvent&, PassRefPtrWillBeRawPtr<Node> relatedTarget,
-        PassRefPtrWillBeRawPtr<AbstractView>);
-
-    static PassRefPtrWillBeRawPtr<PointerEvent> create(const AtomicString& type,
-        const bool isPrimary, const PlatformTouchPoint&,
-        PlatformEvent::Modifiers,
-        const double width, const double height,
-        const double clientX, const double clientY);
-
     long pointerId() const { return m_pointerId; }
     double width() const { return m_width; }
     double height() const { return m_height; }

@@ -374,7 +374,7 @@ void EventHandler::clear()
     m_lastGestureScrollOverWidget = false;
     m_scrollbarHandlingScrollGesture = nullptr;
     m_touchPressed = false;
-    m_pointerIdManager.clear();
+    m_pointerEventFactory.clear();
     m_preventMouseEventForPointerTypeMouse = false;
     m_inPointerCanceledState = false;
     m_mouseDownMayStartDrag = false;
@@ -1618,7 +1618,7 @@ bool EventHandler::dispatchPointerEvent(Node* target, const AtomicString& eventT
     if (!RuntimeEnabledFeatures::pointerEventEnabled())
         return false;
 
-    RefPtrWillBeRawPtr<PointerEvent> pointerEvent = PointerEvent::create(eventType, true,
+    RefPtrWillBeRawPtr<PointerEvent> pointerEvent = m_pointerEventFactory.create(eventType,
         mouseEvent, relatedTarget, m_frame->document()->domWindow());
     target->dispatchEvent(pointerEvent.get());
     return pointerEvent->defaultPrevented() || pointerEvent->defaultHandled();
@@ -3654,22 +3654,17 @@ void EventHandler::dispatchPointerEvents(const PlatformTouchEvent& event,
     for (unsigned i = 0; i < touchInfos.size(); ++i) {
         TouchInfo& touchInfo = touchInfos[i];
         const PlatformTouchPoint& touchPoint = touchInfo.point;
-        const unsigned& pointerId = touchPoint.id();
         const PlatformTouchPoint::State pointState = touchPoint.state();
+
 
         if (pointState == PlatformTouchPoint::TouchStationary || !touchInfo.knownTarget)
             continue;
 
         bool pointerReleasedOrCancelled = pointState == PlatformTouchPoint::TouchReleased
             || pointState == PlatformTouchPoint::TouchCancelled;
-        const WebPointerProperties::PointerType pointerType = touchPoint.pointerProperties().pointerType;
 
-        if (pointState == PlatformTouchPoint::TouchPressed)
-            m_pointerIdManager.add(pointerType, pointerId);
-
-        RefPtrWillBeRawPtr<PointerEvent> pointerEvent = PointerEvent::create(
+        RefPtrWillBeRawPtr<PointerEvent> pointerEvent = m_pointerEventFactory.create(
             pointerEventNameForTouchPointState(pointState),
-            m_pointerIdManager.isPrimary(pointerType, pointerId),
             touchPoint, event.modifiers(),
             touchInfo.adjustedRadius.width(), touchInfo.adjustedRadius.height(),
             touchInfo.adjustedPagePoint.x(), touchInfo.adjustedPagePoint.y());
@@ -3679,7 +3674,7 @@ void EventHandler::dispatchPointerEvents(const PlatformTouchEvent& event,
 
         // Remove the released/cancelled id at the end to correctly determine primary id above.
         if (pointerReleasedOrCancelled)
-            m_pointerIdManager.remove(pointerType, pointerId);
+            m_pointerEventFactory.remove(pointerEvent);
     }
 }
 
@@ -3691,23 +3686,16 @@ void EventHandler::sendPointerCancels(WillBeHeapVector<TouchInfo>& touchInfos)
     for (unsigned i = 0; i < touchInfos.size(); ++i) {
         TouchInfo& touchInfo = touchInfos[i];
         const PlatformTouchPoint& point = touchInfo.point;
-        const unsigned& pointerId = point.id();
         const PlatformTouchPoint::State pointState = point.state();
 
         if (pointState == PlatformTouchPoint::TouchReleased
             || pointState == PlatformTouchPoint::TouchCancelled)
             continue;
 
-        PointerEventInit pointerEventInit;
-        pointerEventInit.setPointerId(pointerId);
-        pointerEventInit.setBubbles(true);
-        pointerEventInit.setCancelable(false);
-
-        RefPtrWillBeRawPtr<PointerEvent> pointerEvent = PointerEvent::create(
-            EventTypeNames::pointercancel, pointerEventInit);
+        RefPtrWillBeRawPtr<PointerEvent> pointerEvent = m_pointerEventFactory.createPointerCancel(point);
         touchInfo.touchTarget->dispatchEvent(pointerEvent.get());
 
-        m_pointerIdManager.remove(WebPointerProperties::PointerType::Touch, pointerId);
+        m_pointerEventFactory.remove(pointerEvent);
     }
 }
 

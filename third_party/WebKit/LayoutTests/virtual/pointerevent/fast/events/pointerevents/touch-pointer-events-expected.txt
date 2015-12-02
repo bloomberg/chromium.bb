@@ -56,28 +56,28 @@ PASS receivedPEsAtTarget.length is 3
 --- test PE isPrimary values ---
 green received pointerdown at phase=target
 PASS receivedPEsAtTarget[0].isPrimary is true
-receivedPEsAtTarget[0].pointerId=0
+receivedPEsAtTarget[0].pointerId=5
 green received pointerdown at phase=target
 PASS receivedPEsAtTarget[1].isPrimary is false
-receivedPEsAtTarget[1].pointerId=1
+receivedPEsAtTarget[1].pointerId=6
 green received pointermove at phase=target
 PASS receivedPEsAtTarget[2].isPrimary is false
-PASS receivedPEsAtTarget[2].pointerId is 1
+PASS receivedPEsAtTarget[2].pointerId is 6
 green received pointerup at phase=target
 PASS receivedPEsAtTarget[3].isPrimary is true
-PASS receivedPEsAtTarget[3].pointerId is 0
+PASS receivedPEsAtTarget[3].pointerId is 5
 green received pointermove at phase=target
 PASS receivedPEsAtTarget[4].isPrimary is false
-PASS receivedPEsAtTarget[4].pointerId is 1
+PASS receivedPEsAtTarget[4].pointerId is 6
 green received pointerdown at phase=target
 PASS receivedPEsAtTarget[5].isPrimary is false
-receivedPEsAtTarget[5].pointerId=2
+receivedPEsAtTarget[5].pointerId=7
 green received pointerup at phase=target
 PASS receivedPEsAtTarget[6].isPrimary is false
-PASS receivedPEsAtTarget[6].pointerId is 1
+PASS receivedPEsAtTarget[6].pointerId is 6
 green received pointerup at phase=target
 PASS receivedPEsAtTarget[7].isPrimary is false
-PASS receivedPEsAtTarget[7].pointerId is 2
+PASS receivedPEsAtTarget[7].pointerId is 7
 green received pointerdown at phase=target
 PASS receivedPEsAtTarget[8].isPrimary is true
 PASS receivedPEsAtTarget.length is 9

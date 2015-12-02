@@ -10,7 +10,7 @@ PASS lastPointerEvent is non-null.
 PASS lastPointerEvent.type is "pointerover"
 PASS lastPointerEvent.bubbles is true
 PASS lastPointerEvent.cancelable is true
-PASS lastPointerEvent.pointerId is 0
+PASS lastPointerEvent.pointerId is 1
 PASS lastPointerEvent.isPrimary is true
 PASS lastPointerEvent.clientX is 23
 PASS lastPointerEvent.clientY is 31
@@ -34,7 +34,7 @@ PASS lastPointerEvent is non-null.
 PASS lastPointerEvent.type is "pointerenter"
 PASS lastPointerEvent.bubbles is false
 PASS lastPointerEvent.cancelable is false
-PASS lastPointerEvent.pointerId is 0
+PASS lastPointerEvent.pointerId is 1
 PASS lastPointerEvent.isPrimary is true
 PASS lastPointerEvent.clientX is 23
 PASS lastPointerEvent.clientY is 31
@@ -58,7 +58,7 @@ PASS lastPointerEvent is non-null.
 PASS lastPointerEvent.type is "pointermove"
 PASS lastPointerEvent.bubbles is true
 PASS lastPointerEvent.cancelable is true
-PASS lastPointerEvent.pointerId is 0
+PASS lastPointerEvent.pointerId is 1
 PASS lastPointerEvent.isPrimary is true
 PASS lastPointerEvent.clientX is 23
 PASS lastPointerEvent.clientY is 31
@@ -84,7 +84,7 @@ PASS lastPointerEvent is non-null.
 PASS lastPointerEvent.type is "pointermove"
 PASS lastPointerEvent.bubbles is true
 PASS lastPointerEvent.cancelable is true
-PASS lastPointerEvent.pointerId is 0
+PASS lastPointerEvent.pointerId is 1
 PASS lastPointerEvent.isPrimary is true
 PASS lastPointerEvent.clientX is 25
 PASS lastPointerEvent.clientY is 41
@@ -108,7 +108,7 @@ PASS lastPointerEvent is non-null.
 PASS lastPointerEvent.type is "pointermove"
 PASS lastPointerEvent.bubbles is true
 PASS lastPointerEvent.cancelable is true
-PASS lastPointerEvent.pointerId is 0
+PASS lastPointerEvent.pointerId is 1
 PASS lastPointerEvent.isPrimary is true
 PASS lastPointerEvent.clientX is 23
 PASS lastPointerEvent.clientY is 31
@@ -134,7 +134,7 @@ PASS lastPointerEvent is non-null.
 PASS lastPointerEvent.type is "pointerdown"
 PASS lastPointerEvent.bubbles is true
 PASS lastPointerEvent.cancelable is true
-PASS lastPointerEvent.pointerId is 0
+PASS lastPointerEvent.pointerId is 1
 PASS lastPointerEvent.isPrimary is true
 PASS lastPointerEvent.clientX is 23
 PASS lastPointerEvent.clientY is 31
@@ -158,7 +158,7 @@ PASS lastPointerEvent is non-null.
 PASS lastPointerEvent.type is "pointerup"
 PASS lastPointerEvent.bubbles is true
 PASS lastPointerEvent.cancelable is true
-PASS lastPointerEvent.pointerId is 0
+PASS lastPointerEvent.pointerId is 1
 PASS lastPointerEvent.isPrimary is true
 PASS lastPointerEvent.clientX is 23
 PASS lastPointerEvent.clientY is 31
@@ -182,7 +182,7 @@ PASS lastPointerEvent is non-null.
 PASS lastPointerEvent.type is "pointerdown"
 PASS lastPointerEvent.bubbles is true
 PASS lastPointerEvent.cancelable is true
-PASS lastPointerEvent.pointerId is 0
+PASS lastPointerEvent.pointerId is 1
 PASS lastPointerEvent.isPrimary is true
 PASS lastPointerEvent.clientX is 23
 PASS lastPointerEvent.clientY is 31
@@ -206,7 +206,7 @@ PASS lastPointerEvent is non-null.
 PASS lastPointerEvent.type is "pointerup"
 PASS lastPointerEvent.bubbles is true
 PASS lastPointerEvent.cancelable is true
-PASS lastPointerEvent.pointerId is 0
+PASS lastPointerEvent.pointerId is 1
 PASS lastPointerEvent.isPrimary is true
 PASS lastPointerEvent.clientX is 23
 PASS lastPointerEvent.clientY is 31
@@ -230,7 +230,7 @@ PASS lastPointerEvent is non-null.
 PASS lastPointerEvent.type is "pointerdown"
 PASS lastPointerEvent.bubbles is true
 PASS lastPointerEvent.cancelable is true
-PASS lastPointerEvent.pointerId is 0
+PASS lastPointerEvent.pointerId is 1
 PASS lastPointerEvent.isPrimary is true
 PASS lastPointerEvent.clientX is 23
 PASS lastPointerEvent.clientY is 31
@@ -254,7 +254,7 @@ PASS lastPointerEvent is non-null.
 PASS lastPointerEvent.type is "pointerup"
 PASS lastPointerEvent.bubbles is true
 PASS lastPointerEvent.cancelable is true
-PASS lastPointerEvent.pointerId is 0
+PASS lastPointerEvent.pointerId is 1
 PASS lastPointerEvent.isPrimary is true
 PASS lastPointerEvent.clientX is 23
 PASS lastPointerEvent.clientY is 31
@@ -612,7 +612,7 @@ PASS lastPointerEvent is non-null.
 PASS lastPointerEvent.type is "pointerout"
 PASS lastPointerEvent.bubbles is true
 PASS lastPointerEvent.cancelable is true
-PASS lastPointerEvent.pointerId is 0
+PASS lastPointerEvent.pointerId is 1
 PASS lastPointerEvent.isPrimary is true
 PASS lastPointerEvent.clientX is 13
 PASS lastPointerEvent.clientY is 21
@@ -636,7 +636,7 @@ PASS lastPointerEvent is non-null.
 PASS lastPointerEvent.type is "pointerleave"
 PASS lastPointerEvent.bubbles is false
 PASS lastPointerEvent.cancelable is false
-PASS lastPointerEvent.pointerId is 0
+PASS lastPointerEvent.pointerId is 1
 PASS lastPointerEvent.isPrimary is true
 PASS lastPointerEvent.clientX is 13
 PASS lastPointerEvent.clientY is 21
