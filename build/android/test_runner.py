@@ -233,6 +233,9 @@ def AddGTestOptions(parser):
                      dest='repeat', type=int, default=0,
                      help='Number of times to repeat the specified set of '
                           'tests.')
+  group.add_argument('--break-on-failure', '--break_on_failure',
+                     dest='break_on_failure', action='store_true',
+                     help='Whether to break on failure.')
 
   filter_group = group.add_mutually_exclusive_group()
   filter_group.add_argument('-f', '--gtest_filter', '--gtest-filter',
@@ -265,6 +268,10 @@ def AddJavaTestOptions(argument_group):
   argument_group.add_argument(
       '--repeat', dest='repeat', type=int, default=0,
       help='Number of times to repeat the specified set of tests.')
+  argument_group.add_argument(
+      '--break-on-failure', '--break_on_failure',
+      dest='break_on_failure', action='store_true',
+      help='Whether to break on failure.')
   argument_group.add_argument(
       '-A', '--annotation', dest='annotation_str',
       help=('Comma-separated list of annotations. Run only tests with any of '
@@ -690,6 +697,15 @@ def _RunInstrumentationTests(args, devices):
   results = []
   repetitions = (xrange(args.repeat + 1) if args.repeat >= 0
                  else itertools.count())
+
+  def _escalate_code(old, new):
+    for x in (constants.INFRA_EXIT_CODE,
+              constants.ERROR_EXIT_CODE,
+              constants.WARNING_EXIT_CODE):
+      if x in (old, new):
+        return x
+    return 0
+
   for _ in repetitions:
     iteration_results = base_test_result.TestRunResults()
     if java_tests:
@@ -698,9 +714,7 @@ def _RunInstrumentationTests(args, devices):
           test_timeout=None, num_retries=args.num_retries)
       iteration_results.AddTestRunResults(test_results)
 
-      # Only allow exit code escalation
-      if test_exit_code and exit_code != constants.ERROR_EXIT_CODE:
-        exit_code = test_exit_code
+      exit_code = _escalate_code(exit_code, test_exit_code)
 
     if py_tests:
       test_results, test_exit_code = test_dispatcher.RunTests(
@@ -708,9 +722,7 @@ def _RunInstrumentationTests(args, devices):
           num_retries=args.num_retries)
       iteration_results.AddTestRunResults(test_results)
 
-      # Only allow exit code escalation
-      if test_exit_code and exit_code != constants.ERROR_EXIT_CODE:
-        exit_code = test_exit_code
+      exit_code = _escalate_code(exit_code, test_exit_code)
 
     results.append(iteration_results)
     report_results.LogFull(
@@ -719,6 +731,10 @@ def _RunInstrumentationTests(args, devices):
         test_package=os.path.basename(args.test_apk),
         annotation=args.annotations,
         flakiness_server=args.flakiness_dashboard_server)
+
+    if args.break_on_failure and exit_code in (constants.ERROR_EXIT_CODE,
+                                               constants.INFRA_EXIT_CODE):
+      break
 
   if args.json_results_file:
     json_results.GenerateJsonResultsFile(results, args.json_results_file)
@@ -937,6 +953,8 @@ def RunTestsInPlatformMode(args, parser):
                 annotation=getattr(args, 'annotations', None),
                 flakiness_server=getattr(args, 'flakiness_dashboard_server',
                                          None))
+            if args.break_on_failure and not iteration_results.DidRunPass():
+              break
 
         if args.json_results_file:
           json_results.GenerateJsonResultsFile(
