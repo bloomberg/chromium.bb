@@ -159,6 +159,8 @@ class BrowserWindowCocoa
   void ShowAvatarBubbleFromAvatarButton(
       AvatarBubbleMode mode,
       const signin::ManageAccountsParams& manage_accounts_params) override;
+  void ShowModalSigninWindow(AvatarBubbleMode mode) override;
+  void CloseModalSigninWindow() override;
   int GetRenderViewHeightInsetWithDetachedBookmarkBar() override;
   void ExecuteExtensionCommand(const extensions::Extension* extension,
                                const extensions::Command& command) override;

@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/frame/web_contents_close_handler.h"
 #include "chrome/browser/ui/views/load_complete_listener.h"
+#include "chrome/browser/ui/views/profiles/signin_view_controller.h"
 #include "components/omnibox/browser/omnibox_popup_model_observer.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -364,6 +365,8 @@ class BrowserView : public BrowserWindow,
   void ShowAvatarBubbleFromAvatarButton(
       AvatarBubbleMode mode,
       const signin::ManageAccountsParams& manage_accounts_params) override;
+  void ShowModalSigninWindow(AvatarBubbleMode mode) override;
+  void CloseModalSigninWindow() override;
   int GetRenderViewHeightInsetWithDetachedBookmarkBar() override;
   void ExecuteExtensionCommand(const extensions::Extension* extension,
                                const extensions::Command& command) override;
@@ -704,6 +707,8 @@ class BrowserView : public BrowserWindow,
   scoped_ptr<ImmersiveModeController> immersive_mode_controller_;
 
   scoped_ptr<WebContentsCloseHandler> web_contents_close_handler_;
+
+  SigninViewController signin_view_controller_;
 
   mutable base::WeakPtrFactory<BrowserView> activate_modal_dialog_factory_;
 

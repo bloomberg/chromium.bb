@@ -124,6 +124,7 @@ class ProfileChooserView : public content::WebContentsDelegate,
   // Shows the bubble with the |view_to_display|.
   void ShowView(profiles::BubbleViewMode view_to_display,
                 AvatarMenu* avatar_menu);
+  void ShowViewFromMode(profiles::BubbleViewMode mode);
 
   // Creates the profile chooser view.
   views::View* CreateProfileChooserView(AvatarMenu* avatar_menu);

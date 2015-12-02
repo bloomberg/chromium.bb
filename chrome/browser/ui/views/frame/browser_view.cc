@@ -2557,18 +2557,36 @@ void BrowserView::ShowAvatarBubbleFromAvatarButton(
   // Do not show avatar bubble if there is no avatar menu button.
   if (!frame_->GetNewAvatarMenuButton())
     return;
+
   profiles::BubbleViewMode bubble_view_mode;
   profiles::TutorialMode tutorial_mode;
   profiles::BubbleViewModeFromAvatarBubbleMode(mode, &bubble_view_mode,
                                                &tutorial_mode);
-  ProfileChooserView::ShowBubble(
-      bubble_view_mode, tutorial_mode, manage_accounts_params,
-      frame_->GetNewAvatarMenuButton(), views::BubbleBorder::TOP_RIGHT,
-      views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE, browser());
-  ProfileMetrics::LogProfileOpenMethod(ProfileMetrics::ICON_AVATAR_BUBBLE);
+
+  if (SigninViewController::ShouldShowModalSigninForMode(bubble_view_mode)) {
+    ShowModalSigninWindow(mode);
+  } else {
+    ProfileChooserView::ShowBubble(
+        bubble_view_mode, tutorial_mode, manage_accounts_params,
+        frame_->GetNewAvatarMenuButton(), views::BubbleBorder::TOP_RIGHT,
+        views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE, browser());
+    ProfileMetrics::LogProfileOpenMethod(ProfileMetrics::ICON_AVATAR_BUBBLE);
+  }
 #else
   NOTREACHED();
 #endif
+}
+
+void BrowserView::ShowModalSigninWindow(AvatarBubbleMode mode) {
+  profiles::BubbleViewMode bubble_view_mode;
+  profiles::TutorialMode tutorial_mode;
+  profiles::BubbleViewModeFromAvatarBubbleMode(mode, &bubble_view_mode,
+                                               &tutorial_mode);
+  signin_view_controller_.ShowModalSignin(bubble_view_mode, browser());
+}
+
+void BrowserView::CloseModalSigninWindow() {
+  signin_view_controller_.CloseModalSignin();
 }
 
 int BrowserView::GetRenderViewHeightInsetWithDetachedBookmarkBar() {

@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "chrome/browser/ui/profile_chooser_constants.h"
 #include "components/signin/core/browser/signin_metrics.h"
 
 class GURL;
@@ -66,6 +67,11 @@ GURL GetNextPageURLForPromoURL(const GURL& url);
 
 // Gets the partition URL for the embedded sign in frame/webview.
 GURL GetSigninPartitionURL();
+
+// Gets the signin URL to be used to display the sign in flow for |mode| in
+// |profile|.
+GURL GetSigninURLFromBubbleViewMode(Profile* profile,
+                                    profiles::BubbleViewMode mode);
 
 // Gets the source from the query portion of the sign in promo URL.
 // The source identifies from where the sign in promo was opened.

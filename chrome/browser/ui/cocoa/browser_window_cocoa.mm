@@ -850,6 +850,13 @@ void BrowserWindowCocoa::ShowAvatarBubbleFromAvatarButton(
                          withServiceType:manage_accounts_params.service_type];
 }
 
+void BrowserWindowCocoa::ShowModalSigninWindow(AvatarBubbleMode mode) {
+  NOTREACHED();
+}
+void BrowserWindowCocoa::CloseModalSigninWindow() {
+  NOTREACHED();
+}
+
 int
 BrowserWindowCocoa::GetRenderViewHeightInsetWithDetachedBookmarkBar() {
   if (browser_->bookmark_bar_state() != BookmarkBar::DETACHED)

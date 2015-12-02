@@ -17,6 +17,7 @@
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
+#include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/webui/options/core_options_handler.h"
 #include "chrome/browser/ui/webui/theme_source.h"
@@ -219,6 +220,33 @@ GURL GetNextPageURLForPromoURL(const GURL& url) {
 
 GURL GetSigninPartitionURL() {
   return GURL("chrome-guest://chrome-signin/?");
+}
+
+GURL GetSigninURLFromBubbleViewMode(Profile* profile,
+                                    profiles::BubbleViewMode mode) {
+  switch (mode) {
+    case profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN:
+      return GetPromoURL(signin_metrics::SOURCE_AVATAR_BUBBLE_SIGN_IN,
+                         false /* auto_close */,
+                         true /* is_constrained */);
+      break;
+    case profiles::BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT:
+      return GetPromoURL(signin_metrics::SOURCE_AVATAR_BUBBLE_ADD_ACCOUNT,
+                         false /* auto_close */,
+                         true /* is_constrained */);
+      break;
+    case profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH: {
+      const SigninErrorController* error_controller =
+          SigninErrorControllerFactory::GetForProfile(profile);
+      CHECK(error_controller);
+      DCHECK(error_controller->HasError());
+      return GetReauthURL(profile, error_controller->error_account_id());
+      break;
+    }
+    default:
+      NOTREACHED() << "Called with invalid mode=" << mode;
+      return GURL();
+  }
 }
 
 signin_metrics::Source GetSourceForPromoURL(const GURL& url) {

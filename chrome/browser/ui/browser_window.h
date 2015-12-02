@@ -387,6 +387,13 @@ class BrowserWindow : public ui::BaseWindow {
   virtual void ShowAvatarBubbleFromAvatarButton(AvatarBubbleMode mode,
       const signin::ManageAccountsParams& manage_accounts_params) = 0;
 
+  // Shows the signin flow for |mode| in a tab-modal dialog.
+  virtual void ShowModalSigninWindow(AvatarBubbleMode mode) = 0;
+
+  // Closes the tab-modal signin flow opened with ShowModalSigninWindow, if it's
+  // open. Does nothing otherwise.
+  virtual void CloseModalSigninWindow() = 0;
+
   // Returns the height inset for RenderView when detached bookmark bar is
   // shown.  Invoked when a new RenderHostView is created for a non-NTP
   // navigation entry and the bookmark bar is detached.
