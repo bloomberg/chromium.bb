@@ -48712,8 +48712,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     enum="TabRendererDetailedExitStatus">
   <owner>wnwen@chromium.org</owner>
   <summary>
-    Breakdown of renderer exit status. An extension of the counts in
-    Tab.RendererExitStatus. Only recorded on Android.
+    Breakdown of renderer exit status for renderers that have strong bindings.
+    An extension of the counts in Tab.RendererExitStatus. Only recorded on
+    Android.
+  </summary>
+</histogram>
+
+<histogram name="Tab.RendererDetailedExitStatusUnbound"
+    enum="TabRendererDetailedExitStatus">
+  <owner>wnwen@chromium.org</owner>
+  <summary>
+    Breakdown of renderer exit status for renderers that do not have strong
+    bindings. An extension of the counts in Tab.RendererExitStatus. Only
+    recorded on Android.
   </summary>
 </histogram>
 

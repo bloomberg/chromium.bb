@@ -66,7 +66,7 @@ class CrashDumpManager : public content::BrowserChildProcessObserver,
   static void ProcessMinidump(const base::FilePath& minidump_path,
                               base::ProcessHandle pid,
                               content::ProcessType process_type,
-                              base::TerminationStatus exit_status,
+                              base::TerminationStatus termination_status,
                               base::android::ApplicationState app_state);
 
   // content::BrowserChildProcessObserver implementation:
@@ -85,7 +85,7 @@ class CrashDumpManager : public content::BrowserChildProcessObserver,
   void OnChildExit(int child_process_id,
                    base::ProcessHandle pid,
                    content::ProcessType process_type,
-                   base::TerminationStatus exit_status,
+                   base::TerminationStatus termination_status,
                    base::android::ApplicationState app_state);
 
   content::NotificationRegistrar notification_registrar_;

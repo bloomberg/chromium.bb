@@ -86,7 +86,7 @@ void CrashDumpManager::ProcessMinidump(
     const base::FilePath& minidump_path,
     base::ProcessHandle pid,
     content::ProcessType process_type,
-    base::TerminationStatus exit_status,
+    base::TerminationStatus termination_status,
     base::android::ApplicationState app_state) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   CHECK(instance_);
@@ -95,14 +95,16 @@ void CrashDumpManager::ProcessMinidump(
   DCHECK(r) << "Failed to retrieve size for minidump "
             << minidump_path.value();
 
+  // TODO(wnwen): If these numbers match up to TabWebContentsObserver's
+  //     TabRendererCrashStatus histogram, then remove that one as this is more
+  //     accurate with more detail.
   if (process_type == content::PROCESS_TYPE_RENDERER &&
-      app_state != base::android::APPLICATION_STATE_UNKNOWN &&
-      exit_status == base::TERMINATION_STATUS_OOM_PROTECTED) {
+      app_state != base::android::APPLICATION_STATE_UNKNOWN) {
+    ExitStatus renderer_exit_status;
     bool is_running =
         (app_state == base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES);
     bool is_paused =
         (app_state == base::android::APPLICATION_STATE_HAS_PAUSED_ACTIVITIES);
-    ExitStatus renderer_exit_status;
     if (file_size == 0) {
       if (is_running) {
         renderer_exit_status = EMPTY_MINIDUMP_WHILE_RUNNING;
@@ -120,9 +122,15 @@ void CrashDumpManager::ProcessMinidump(
         renderer_exit_status = VALID_MINIDUMP_WHILE_BACKGROUND;
       }
     }
-    UMA_HISTOGRAM_ENUMERATION("Tab.RendererDetailedExitStatus",
-                              renderer_exit_status,
-                              ExitStatus::MINIDUMP_STATUS_COUNT);
+    if (termination_status == base::TERMINATION_STATUS_OOM_PROTECTED) {
+      UMA_HISTOGRAM_ENUMERATION("Tab.RendererDetailedExitStatus",
+                                renderer_exit_status,
+                                ExitStatus::MINIDUMP_STATUS_COUNT);
+    } else {
+      UMA_HISTOGRAM_ENUMERATION("Tab.RendererDetailedExitStatusUnbound",
+                                renderer_exit_status,
+                                ExitStatus::MINIDUMP_STATUS_COUNT);
+    }
   }
 
   if (file_size == 0) {
@@ -213,7 +221,7 @@ void CrashDumpManager::Observe(int type,
 void CrashDumpManager::OnChildExit(int child_process_id,
                                    base::ProcessHandle pid,
                                    content::ProcessType process_type,
-                                   base::TerminationStatus exit_status,
+                                   base::TerminationStatus termination_status,
                                    base::android::ApplicationState app_state) {
   base::FilePath minidump_path;
   {
@@ -234,7 +242,7 @@ void CrashDumpManager::OnChildExit(int child_process_id,
                  minidump_path,
                  pid,
                  process_type,
-                 exit_status,
+                 termination_status,
                  app_state));
 }
 
