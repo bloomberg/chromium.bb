@@ -1063,6 +1063,41 @@ static PassRefPtrWillBeRawPtr<CSSValueList> consumeRotation(CSSParserTokenRange&
     return list.release();
 }
 
+static PassRefPtrWillBeRawPtr<CSSValueList> consumeScale(CSSParserTokenRange& range, CSSParserMode cssParserMode)
+{
+    ASSERT(RuntimeEnabledFeatures::cssIndependentTransformPropertiesEnabled());
+
+    RefPtrWillBeRawPtr<CSSValue> scale = consumeNumber(range, ValueRangeAll);
+    if (!scale)
+        return nullptr;
+    RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
+    list->append(scale.release());
+    if ((scale = consumeNumber(range, ValueRangeAll))) {
+        list->append(scale.release());
+        if ((scale = consumeNumber(range, ValueRangeAll)))
+            list->append(scale.release());
+    }
+
+    return list.release();
+}
+
+static PassRefPtrWillBeRawPtr<CSSValueList> consumeTranslate(CSSParserTokenRange& range, CSSParserMode cssParserMode)
+{
+    ASSERT(RuntimeEnabledFeatures::cssIndependentTransformPropertiesEnabled());
+    RefPtrWillBeRawPtr<CSSValue> translate = consumeLengthOrPercent(range, cssParserMode, ValueRangeAll);
+    if (!translate)
+        return nullptr;
+    RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
+    list->append(translate.release());
+    if ((translate = consumeLengthOrPercent(range, cssParserMode, ValueRangeAll))) {
+        list->append(translate.release());
+        if ((translate = consumeLength(range, cssParserMode, ValueRangeAll)))
+            list->append(translate.release());
+    }
+
+    return list.release();
+}
+
 static PassRefPtrWillBeRawPtr<CSSValue> consumeCounter(CSSParserTokenRange& range, CSSParserMode cssParserMode, int defaultValue)
 {
     if (range.peek().id() == CSSValueNone)
@@ -2137,6 +2172,10 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
         return consumeLineHeight(m_range, m_context.mode());
     case CSSPropertyRotate:
         return consumeRotation(m_range, m_context.mode());
+    case CSSPropertyScale:
+        return consumeScale(m_range, m_context.mode());
+    case CSSPropertyTranslate:
+        return consumeTranslate(m_range, m_context.mode());
     case CSSPropertyWebkitBorderHorizontalSpacing:
     case CSSPropertyWebkitBorderVerticalSpacing:
         return consumeLength(m_range, m_context.mode(), ValueRangeNonNegative);

@@ -695,52 +695,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         return true;
     }
 
-    case CSSPropertyTranslate: {
-        // translate : [ <length> | <percentage> ] [[ <length> | <percentage> ] <length>? ]?
-        // defaults to 0 on all axis, note that the last value CANNOT be a percentage
-        ASSERT(RuntimeEnabledFeatures::cssIndependentTransformPropertiesEnabled());
-        RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
-        if (!validUnit(value, FLength | FPercent))
-            return false;
-
-        list->append(createPrimitiveNumericValue(value));
-        value = m_valueList->next();
-
-        if (value) {
-            if (!validUnit(value, FLength | FPercent))
-                return false;
-
-            list->append(createPrimitiveNumericValue(value));
-            value = m_valueList->next();
-
-            if (value) {
-                if (!validUnit(value, FLength))
-                    return false;
-
-                list->append(createPrimitiveNumericValue(value));
-                value = m_valueList->next();
-            }
-        }
-
-        parsedValue = list.release();
-        break;
-    }
-
-    case CSSPropertyScale: { // scale: <number>{1,3}, default scale for all axis is 1
-        ASSERT(RuntimeEnabledFeatures::cssIndependentTransformPropertiesEnabled());
-        RefPtrWillBeRawPtr<CSSValueList> scaleList = CSSValueList::createSpaceSeparated();
-
-        for (unsigned i = 0; value && i < 3; i++) { // up to 3 dimensions of scale
-            if (!validUnit(value, FNumber))
-                return false;
-            scaleList->append(createPrimitiveNumericValue(value));
-            value = m_valueList->next();
-        }
-
-        parsedValue = scaleList.release();
-        break;
-    }
-
     case CSSPropertyWebkitPerspectiveOriginX:
     case CSSPropertyWebkitTransformOriginX:
         parsedValue = parseFillPositionX(m_valueList);
@@ -1108,6 +1062,8 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyR:
     case CSSPropertyRx:
     case CSSPropertyRy:
+    case CSSPropertyScale:
+    case CSSPropertyTranslate:
         validPrimitive = false;
         break;
 
