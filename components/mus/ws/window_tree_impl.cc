@@ -741,11 +741,12 @@ void WindowTreeImpl::SetWindowBounds(uint32_t change_id,
   client_->OnChangeCompleted(change_id, success);
 }
 
-void WindowTreeImpl::SetWindowVisibility(Id transport_window_id,
-                                         bool visible,
-                                         const Callback<void(bool)>& callback) {
-  callback.Run(SetWindowVisibility(WindowIdFromTransportId(transport_window_id),
-                                   visible));
+void WindowTreeImpl::SetWindowVisibility(uint32_t change_id,
+                                         Id transport_window_id,
+                                         bool visible) {
+  client_->OnChangeCompleted(
+      change_id, SetWindowVisibility(
+                     WindowIdFromTransportId(transport_window_id), visible));
 }
 
 void WindowTreeImpl::SetWindowProperty(uint32_t change_id,

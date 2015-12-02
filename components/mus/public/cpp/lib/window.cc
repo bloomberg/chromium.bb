@@ -206,7 +206,7 @@ void Window::SetVisible(bool value) {
     return;
 
   if (connection_)
-    tree_client()->SetVisible(id_, value);
+    tree_client()->SetVisible(this, value);
   LocalSetVisible(value);
 }
 

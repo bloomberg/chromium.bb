@@ -85,4 +85,20 @@ void InFlightPropertyChange::Revert() {
       .LocalSetSharedProperty(property_name_, revert_value_.Pass());
 }
 
+// InFlightVisibleChange -------------------------------------------------------
+
+InFlightVisibleChange::InFlightVisibleChange(Window* window,
+                                             bool revert_value)
+    : InFlightChange(window, ChangeType::VISIBLE),
+      revert_visible_(revert_value) {}
+
+void InFlightVisibleChange::SetRevertValueFrom(const InFlightChange& change) {
+  revert_visible_ =
+      static_cast<const InFlightVisibleChange&>(change).revert_visible_;
+}
+
+void InFlightVisibleChange::Revert() {
+  WindowPrivate(window()).LocalSetVisible(revert_visible_);
+}
+
 }  // namespace mus

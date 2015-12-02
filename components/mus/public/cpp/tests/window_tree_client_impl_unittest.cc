@@ -228,4 +228,52 @@ TEST_F(WindowTreeClientImplTest, SetPropertyFailedWithPendingChange) {
   EXPECT_EQ(value1, root->GetSharedProperty<int32_t>("foo"));
 }
 
+// Verifies visible is reverted if the server replied that the change failed.
+TEST_F(WindowTreeClientImplTest, SetVisibleFailed) {
+  WindowTreeSetup setup;
+  Window* root = setup.window_tree_connection()->GetRoot();
+  ASSERT_TRUE(root);
+  const bool original_visible = root->visible();
+  const bool new_visible = !original_visible;
+  ASSERT_NE(new_visible, root->visible());
+  root->SetVisible(new_visible);
+  uint32_t change_id;
+  ASSERT_TRUE(setup.window_tree()->GetAndClearChangeId(&change_id));
+  setup.window_tree_client()->OnChangeCompleted(change_id, false);
+  EXPECT_EQ(original_visible, root->visible());
+}
+
+// Simulates a visible change, and while the visible change is in flight the
+// server replies with a new visible and the original visible change fails.
+TEST_F(WindowTreeClientImplTest, SetVisibleFailedWithPendingChange) {
+  WindowTreeSetup setup;
+  Window* root = setup.window_tree_connection()->GetRoot();
+  ASSERT_TRUE(root);
+  const bool original_visible = root->visible();
+  const bool new_visible = !original_visible;
+  ASSERT_NE(new_visible, root->visible());
+  root->SetVisible(new_visible);
+  EXPECT_EQ(new_visible, root->visible());
+  uint32_t change_id;
+  ASSERT_TRUE(setup.window_tree()->GetAndClearChangeId(&change_id));
+
+  // Simulate the server responding with a visible change.
+  const bool server_changed_visible = !new_visible;
+  setup.window_tree_client()->OnWindowVisibilityChanged(root->id(),
+                                                        server_changed_visible);
+
+  // This shouldn't trigger visible changing yet.
+  EXPECT_EQ(new_visible, root->visible());
+
+  // Tell the client the change failed, which should trigger failing to the
+  // most recent visible from server.
+  setup.window_tree_client()->OnChangeCompleted(change_id, false);
+  EXPECT_EQ(server_changed_visible, root->visible());
+
+  // Simulate server changing back to original visible. Should take immediately.
+  setup.window_tree_client()->OnWindowVisibilityChanged(root->id(),
+                                                        original_visible);
+  EXPECT_EQ(original_visible, root->visible());
+}
+
 }  // namespace mus

@@ -219,9 +219,9 @@ class WindowTreeImpl : public mojom::WindowTree, public AccessPolicyDelegate {
   void SetWindowBounds(uint32_t change_id,
                        Id window_id,
                        mojo::RectPtr bounds) override;
-  void SetWindowVisibility(Id window_id,
-                           bool visible,
-                           const mojo::Callback<void(bool)>& callback) override;
+  void SetWindowVisibility(uint32_t change_id,
+                           Id window_id,
+                           bool visible) override;
   void SetWindowProperty(uint32_t change_id,
                          Id window_id,
                          const mojo::String& name,

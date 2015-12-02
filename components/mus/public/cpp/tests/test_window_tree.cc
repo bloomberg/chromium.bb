@@ -37,10 +37,12 @@ void TestWindowTree::SetWindowBounds(uint32_t change_id,
 void TestWindowTree::SetClientArea(uint32_t window_id, mojo::InsetsPtr insets) {
 }
 
-void TestWindowTree::SetWindowVisibility(
-    uint32_t window_id,
-    bool visible,
-    const SetWindowVisibilityCallback& callback) {}
+void TestWindowTree::SetWindowVisibility(uint32_t change_id,
+                                         uint32_t window_id,
+                                         bool visible) {
+  got_change_ = true;
+  change_id_ = change_id;
+}
 
 void TestWindowTree::SetWindowProperty(uint32_t change_id,
                                        uint32_t window_id,

@@ -23,7 +23,8 @@ enum class ChangeType {
   DELETE_WINDOW,
   NEW_WINDOW,
   PROPERTY,
-  REMOVE_TRANSIENT_WINDOW_FROM_PARENT
+  REMOVE_TRANSIENT_WINDOW_FROM_PARENT,
+  VISIBLE,
 };
 
 // InFlightChange is used to track function calls to the server and take the
@@ -128,6 +129,21 @@ class InFlightPropertyChange : public InFlightChange {
   mojo::Array<uint8_t> revert_value_;
 
   DISALLOW_COPY_AND_ASSIGN(InFlightPropertyChange);
+};
+
+class InFlightVisibleChange : public InFlightChange {
+ public:
+  InFlightVisibleChange(Window* window, const bool revert_value);
+
+  // InFlightChange:
+  void SetRevertValueFrom(const InFlightChange& change) override;
+  void Revert() override;
+
+ private:
+  Window* window_;
+  bool revert_visible_;
+
+  DISALLOW_COPY_AND_ASSIGN(InFlightVisibleChange);
 };
 
 }  // namespace mus

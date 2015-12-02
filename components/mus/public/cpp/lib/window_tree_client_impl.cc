@@ -222,9 +222,11 @@ void WindowTreeClientImpl::SetCanFocus(Id window_id, bool can_focus) {
   tree_->SetCanFocus(window_id, can_focus);
 }
 
-void WindowTreeClientImpl::SetVisible(Id window_id, bool visible) {
+void WindowTreeClientImpl::SetVisible(Window* window, bool visible) {
   DCHECK(tree_);
-  tree_->SetWindowVisibility(window_id, visible, ActionCompletedCallback());
+  const uint32_t change_id = ScheduleInFlightChange(
+      make_scoped_ptr(new InFlightVisibleChange(window, !visible)));
+  tree_->SetWindowVisibility(change_id, window->id(), visible);
 }
 
 void WindowTreeClientImpl::SetProperty(Window* window,
@@ -535,12 +537,15 @@ void WindowTreeClientImpl::OnWindowDeleted(Id window_id) {
 
 void WindowTreeClientImpl::OnWindowVisibilityChanged(Id window_id,
                                                      bool visible) {
-  // TODO(sky): there is a race condition here. If this client and another
-  // client change the visibility at the same time the wrong value may be set.
-  // Deal with this some how.
   Window* window = GetWindowById(window_id);
-  if (window)
-    WindowPrivate(window).LocalSetVisible(visible);
+  if (!window)
+    return;
+
+  InFlightVisibleChange new_change(window, visible);
+  if (ApplyServerChangeToExistingInFlightChange(new_change))
+    return;
+
+  WindowPrivate(window).LocalSetVisible(visible);
 }
 
 void WindowTreeClientImpl::OnWindowDrawnStateChanged(Id window_id, bool drawn) {

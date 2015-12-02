@@ -32,10 +32,9 @@ class TestWindowTree : public mojom::WindowTree {
                        uint32_t window_id,
                        mojo::RectPtr bounds) override;
   void SetClientArea(uint32_t window_id, mojo::InsetsPtr insets) override;
-  void SetWindowVisibility(
-      uint32_t window_id,
-      bool visible,
-      const SetWindowVisibilityCallback& callback) override;
+  void SetWindowVisibility(uint32_t change_id,
+                           uint32_t window_id,
+                           bool visible) override;
   void SetWindowProperty(uint32_t change_id,
                          uint32_t window_id,
                          const mojo::String& name,

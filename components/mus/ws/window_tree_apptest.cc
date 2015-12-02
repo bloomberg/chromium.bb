@@ -134,15 +134,6 @@ void GetWindowTree(WindowTree* ws,
   run_loop.Run();
 }
 
-bool SetWindowVisibility(WindowTree* ws, Id window_id, bool visible) {
-  base::RunLoop run_loop;
-  bool result = false;
-  ws->SetWindowVisibility(window_id, visible,
-                          base::Bind(&BoolResultCallback, &run_loop, &result));
-  run_loop.Run();
-  return result;
-}
-
 // Utility functions -----------------------------------------------------------
 
 const Id kNullParentId = 0;
@@ -254,6 +245,12 @@ class TestWindowTreeClientImpl : public mojom::WindowTreeClient,
       mojo_data = Array<uint8_t>::From(*data);
     const uint32_t change_id = GetAndAdvanceChangeId();
     tree()->SetWindowProperty(change_id, window_id, name, mojo_data.Pass());
+    return WaitForChangeCompleted(change_id);
+  }
+
+  bool SetWindowVisibility(Id window_id, bool visible) {
+    const uint32_t change_id = GetAndAdvanceChangeId();
+    tree()->SetWindowVisibility(change_id, window_id, visible);
     return WaitForChangeCompleted(change_id);
   }
 
@@ -808,15 +805,15 @@ TEST_F(WindowTreeAppTest, WindowHierarchyChangedWindows) {
   // 1,2->1,11.
   Id window_1_2 = ws_client1()->NewWindow(2);
   ASSERT_TRUE(window_1_2);
-  ASSERT_TRUE(SetWindowVisibility(ws1(), window_1_2, true));
+  ASSERT_TRUE(ws_client1()->SetWindowVisibility(window_1_2, true));
   Id window_1_11 = ws_client1()->NewWindow(11);
   ASSERT_TRUE(window_1_11);
-  ASSERT_TRUE(SetWindowVisibility(ws1(), window_1_11, true));
+  ASSERT_TRUE(ws_client1()->SetWindowVisibility(window_1_11, true));
   ASSERT_TRUE(AddWindow(ws1(), window_1_2, window_1_11));
 
   Id window_1_1 = BuildWindowId(connection_id_1(), 1);
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
-  ASSERT_TRUE(SetWindowVisibility(ws1(), window_1_1, true));
+  ASSERT_TRUE(ws_client1()->SetWindowVisibility(window_1_1, true));
 
   ASSERT_TRUE(ws_client2()->WaitForAllMessages());
   changes2()->clear();
@@ -855,7 +852,7 @@ TEST_F(WindowTreeAppTest, WindowHierarchyChangedWindows) {
   // 1,1->1,2->1,11->1,111.
   Id window_1_111 = ws_client1()->NewWindow(111);
   ASSERT_TRUE(window_1_111);
-  ASSERT_TRUE(SetWindowVisibility(ws1(), window_1_111, true));
+  ASSERT_TRUE(ws_client1()->SetWindowVisibility(window_1_111, true));
   {
     changes2()->clear();
     ASSERT_TRUE(AddWindow(ws1(), window_1_11, window_1_111));
@@ -1361,8 +1358,8 @@ TEST_F(WindowTreeAppTest, SetWindowVisibility) {
   }
 
   // Show all the windows.
-  ASSERT_TRUE(SetWindowVisibility(ws1(), window_1_1, true));
-  ASSERT_TRUE(SetWindowVisibility(ws1(), window_1_2, true));
+  ASSERT_TRUE(ws_client1()->SetWindowVisibility(window_1_1, true));
+  ASSERT_TRUE(ws_client1()->SetWindowVisibility(window_1_2, true));
   {
     std::vector<TestWindow> windows;
     GetWindowTree(ws1(), root_window_id(), &windows);
@@ -1376,7 +1373,7 @@ TEST_F(WindowTreeAppTest, SetWindowVisibility) {
   }
 
   // Hide 1.
-  ASSERT_TRUE(SetWindowVisibility(ws1(), window_1_1, false));
+  ASSERT_TRUE(ws_client1()->SetWindowVisibility(window_1_1, false));
   {
     std::vector<TestWindow> windows;
     GetWindowTree(ws1(), window_1_1, &windows);
@@ -1401,7 +1398,7 @@ TEST_F(WindowTreeAppTest, SetWindowVisibility) {
   }
 
   // Show 1.
-  ASSERT_TRUE(SetWindowVisibility(ws1(), window_1_1, true));
+  ASSERT_TRUE(ws_client1()->SetWindowVisibility(window_1_1, true));
   {
     std::vector<TestWindow> windows;
     GetWindowTree(ws1(), window_1_1, &windows);
@@ -1420,10 +1417,10 @@ TEST_F(WindowTreeAppTest, SetWindowVisibilityNotifications) {
   // Create 1,1 and 1,2. 1,2 is made a child of 1,1 and 1,1 a child of the root.
   Id window_1_1 = ws_client1()->NewWindow(1);
   ASSERT_TRUE(window_1_1);
-  ASSERT_TRUE(SetWindowVisibility(ws1(), window_1_1, true));
+  ASSERT_TRUE(ws_client1()->SetWindowVisibility(window_1_1, true));
   Id window_1_2 = ws_client1()->NewWindow(2);
   ASSERT_TRUE(window_1_2);
-  ASSERT_TRUE(SetWindowVisibility(ws1(), window_1_2, true));
+  ASSERT_TRUE(ws_client1()->SetWindowVisibility(window_1_2, true));
   ASSERT_TRUE(AddWindow(ws1(), root_window_id(), window_1_1));
   ASSERT_TRUE(AddWindow(ws1(), window_1_1, window_1_2));
 
@@ -1433,13 +1430,13 @@ TEST_F(WindowTreeAppTest, SetWindowVisibilityNotifications) {
   // Add 2,3 as a child of 1,2.
   Id window_2_3 = ws_client2()->NewWindow(3);
   ASSERT_TRUE(window_2_3);
-  ASSERT_TRUE(SetWindowVisibility(ws2(), window_2_3, true));
+  ASSERT_TRUE(ws_client2()->SetWindowVisibility(window_2_3, true));
   ASSERT_TRUE(AddWindow(ws2(), window_1_2, window_2_3));
   ASSERT_TRUE(ws_client1()->WaitForAllMessages());
 
   changes2()->clear();
   // Hide 1,2 from connection 1. Connection 2 should see this.
-  ASSERT_TRUE(SetWindowVisibility(ws1(), window_1_2, false));
+  ASSERT_TRUE(ws_client1()->SetWindowVisibility(window_1_2, false));
   {
     ws_client2_->WaitForChangeCount(1);
     EXPECT_EQ(
@@ -1449,7 +1446,7 @@ TEST_F(WindowTreeAppTest, SetWindowVisibilityNotifications) {
 
   changes1()->clear();
   // Show 1,2 from connection 2, connection 1 should be notified.
-  ASSERT_TRUE(SetWindowVisibility(ws2(), window_1_2, true));
+  ASSERT_TRUE(ws_client2()->SetWindowVisibility(window_1_2, true));
   {
     ws_client1_->WaitForChangeCount(1);
     EXPECT_EQ(
@@ -1459,7 +1456,7 @@ TEST_F(WindowTreeAppTest, SetWindowVisibilityNotifications) {
 
   changes2()->clear();
   // Hide 1,1, connection 2 should be told the draw state changed.
-  ASSERT_TRUE(SetWindowVisibility(ws1(), window_1_1, false));
+  ASSERT_TRUE(ws_client1()->SetWindowVisibility(window_1_1, false));
   {
     ws_client2_->WaitForChangeCount(1);
     EXPECT_EQ(
@@ -1469,7 +1466,7 @@ TEST_F(WindowTreeAppTest, SetWindowVisibilityNotifications) {
 
   changes2()->clear();
   // Show 1,1 from connection 1. Connection 2 should see this.
-  ASSERT_TRUE(SetWindowVisibility(ws1(), window_1_1, true));
+  ASSERT_TRUE(ws_client1()->SetWindowVisibility(window_1_1, true));
   {
     ws_client2_->WaitForChangeCount(1);
     EXPECT_EQ(
@@ -1479,7 +1476,7 @@ TEST_F(WindowTreeAppTest, SetWindowVisibilityNotifications) {
 
   // Change visibility of 2,3, connection 1 should see this.
   changes1()->clear();
-  ASSERT_TRUE(SetWindowVisibility(ws2(), window_2_3, false));
+  ASSERT_TRUE(ws_client2()->SetWindowVisibility(window_2_3, false));
   {
     ws_client1_->WaitForChangeCount(1);
     EXPECT_EQ(
