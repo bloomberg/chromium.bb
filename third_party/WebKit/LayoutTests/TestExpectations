@@ -826,7 +826,7 @@ crbug.com/546512 http/tests/security/w3c/cross-origin-objects.html [ NeedsManual
 crbug.com/357427 http/tests/workers/terminate-during-sync-operation-file.html [ Crash Pass Slow Timeout ]
 crbug.com/357427 http/tests/workers/terminate-during-sync-operation-filesystem.html [ Crash Pass Slow Timeout ]
 
-crbug.com/356957 [ Win Mac Debug ] editing/spelling/spellcheck-editable-on-focus.html [ Timeout ]
+crbug.com/356957 [ Win Mac ] editing/spelling/spellcheck-editable-on-focus.html [ Timeout ]
 
 crbug.com/365400 [ Mac ] compositing/images/direct-pdf-image.html [ Failure ]
 
