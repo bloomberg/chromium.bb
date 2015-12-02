@@ -466,16 +466,18 @@ class Port(object):
 
     def check_httpd(self):
         httpd_path = self.path_to_apache()
-        try:
-            server_name = self._filesystem.basename(httpd_path)
-            env = self.setup_environ_for_server(server_name)
-            if self._executive.run_command([httpd_path, "-v"], env=env, return_exit_code=True) != 0:
-                _log.error("httpd seems broken. Cannot run http tests.")
-                return False
-            return True
-        except OSError:
-            _log.error("No httpd found. Cannot run http tests.")
-            return False
+        if httpd_path:
+            try:
+                server_name = self._filesystem.basename(httpd_path)
+                env = self.setup_environ_for_server(server_name)
+                if self._executive.run_command([httpd_path, "-v"], env=env, return_exit_code=True) != 0:
+                    _log.error("httpd seems broken. Cannot run http tests.")
+                    return False
+                return True
+            except OSError:
+                pass
+        _log.error("No httpd found. Cannot run http tests.")
+        return False
 
     def do_text_results_differ(self, expected_text, actual_text):
         return expected_text != actual_text
