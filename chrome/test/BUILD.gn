@@ -153,13 +153,15 @@ source_set("test_support") {
       "//google_apis:test_support",
       "//ipc:test_support",
       "//media:test_support",
-      "//ppapi/shared_impl",
       "//sql:test_support",
       "//third_party/leveldatabase",
       "//ui/base",
       "//ui/events:events_base",
       "//ui/gl",
     ]
+  }
+  if (enable_plugins) {
+    public_deps += [ "//ppapi/shared_impl" ]
   }
 
   if (is_android) {

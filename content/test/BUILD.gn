@@ -56,7 +56,21 @@ source_set("test_support") {
     "//url",
   ]
 
-  if (!is_ios) {
+  if (is_ios) {
+    sources = [
+      "public/test/content_test_suite_base.cc",
+      "public/test/mock_notification_observer.cc",
+      "public/test/mock_resource_context.cc",
+      "public/test/test_browser_thread.cc",
+      "public/test/test_content_client_initializer.cc",
+      "public/test/test_notification_tracker.cc",
+      "public/test/test_utils.cc",
+      "public/test/unittest_test_suite.cc",
+      "test/content_test_suite.cc",
+      "test/test_content_browser_client.cc",
+      "test/test_content_client.cc",
+    ]
+  } else {
     sources =
         rebase_path(content_tests_gypi_values.test_support_content_sources,
                     ".",
@@ -80,106 +94,94 @@ source_set("test_support") {
       "//media",
       "//mojo/application/public/cpp:cpp_for_chromium",
       "//mojo/environment:chromium",
-      "//ppapi/host",
-      "//ppapi/proxy",
-      "//ppapi/proxy:test_support",
-      "//ppapi/shared_impl",
-      "//ppapi/shared_impl:test_support",
       "//storage/browser",
       "//storage/common",
       "//ui/compositor:test_support",
       "//ui/surface",
       "//v8",
     ]
+  }
 
-    if (enable_plugins) {
-      deps += [ "//content/ppapi_plugin" ]
-    }
+  if (enable_plugins) {
+    deps += [
+      "//content/ppapi_plugin",
+      "//ppapi/host",
+      "//ppapi/proxy",
+      "//ppapi/proxy:test_support",
+      "//ppapi/shared_impl",
+      "//ppapi/shared_impl:test_support",
+    ]
+  } else if (!is_ios) {
+    sources -= [ "ppapi_unittest.cc" ]
+  }
 
-    if (enable_webrtc) {
-      sources += [
-        "../renderer/media/mock_data_channel_impl.cc",
-        "../renderer/media/mock_data_channel_impl.h",
-        "../renderer/media/mock_media_stream_dispatcher.cc",
-        "../renderer/media/mock_media_stream_dispatcher.h",
-        "../renderer/media/mock_peer_connection_impl.cc",
-        "../renderer/media/mock_peer_connection_impl.h",
-        "../renderer/media/mock_web_rtc_peer_connection_handler_client.cc",
-        "../renderer/media/mock_web_rtc_peer_connection_handler_client.h",
-        "../renderer/media/webrtc/mock_peer_connection_dependency_factory.cc",
-        "../renderer/media/webrtc/mock_peer_connection_dependency_factory.h",
-      ]
+  if (enable_webrtc) {
+    sources += [
+      "../renderer/media/mock_data_channel_impl.cc",
+      "../renderer/media/mock_data_channel_impl.h",
+      "../renderer/media/mock_media_stream_dispatcher.cc",
+      "../renderer/media/mock_media_stream_dispatcher.h",
+      "../renderer/media/mock_peer_connection_impl.cc",
+      "../renderer/media/mock_peer_connection_impl.h",
+      "../renderer/media/mock_web_rtc_peer_connection_handler_client.cc",
+      "../renderer/media/mock_web_rtc_peer_connection_handler_client.h",
+      "../renderer/media/webrtc/mock_peer_connection_dependency_factory.cc",
+      "../renderer/media/webrtc/mock_peer_connection_dependency_factory.h",
+    ]
 
-      deps += [
-        "//third_party/libjingle:libjingle_webrtc",
-        "//third_party/libjingle:libpeerconnection",
-        "//third_party/webrtc/modules/video_capture",
-      ]
-    }
-    if (!enable_plugins) {
-      sources -= [ "ppapi_unittest.cc" ]
-    }
-
-    if (use_glib) {
-      configs += [ "//build/config/linux:glib" ]
-    }
-
-    if (use_aura) {
-      deps += [
-        "//ui/aura:test_support",
-        "//ui/resources:ui_test_pak",
-        "//ui/wm",
-      ]
-    }
-
-    if (use_aura || is_mac) {
-      deps += [
-        "//third_party/libvpx_new",
-        "//ui/compositor",
-      ]
-
-      sources += [
-        "../browser/compositor/test/no_transport_image_transport_factory.cc",
-        "../browser/compositor/test/no_transport_image_transport_factory.h",
-      ]
-    }
-
-    if (use_ozone) {
-      deps += [ "//ui/ozone" ]
-    }
-
-    if (is_win) {
-      deps += [
-        "//content:sandbox_helper_win",
-        "//third_party/iaccessible2",
-      ]
-    }
-
-    if (is_android && !use_aura) {
-      deps += [
-        "//ui/android",
-        "//ui/shell_dialogs",
-      ]
-    }
-
-    if (is_win) {
-      deps += [ "//sandbox" ]
-    }
-  } else {  # is_ios
-    sources = [
-      "public/test/content_test_suite_base.cc",
-      "public/test/mock_notification_observer.cc",
-      "public/test/mock_resource_context.cc",
-      "public/test/test_browser_thread.cc",
-      "public/test/test_content_client_initializer.cc",
-      "public/test/test_notification_tracker.cc",
-      "public/test/test_utils.cc",
-      "public/test/unittest_test_suite.cc",
-      "test/content_test_suite.cc",
-      "test/test_content_browser_client.cc",
-      "test/test_content_client.cc",
+    deps += [
+      "//third_party/libjingle:libjingle_webrtc",
+      "//third_party/libjingle:libpeerconnection",
+      "//third_party/webrtc/modules/video_capture",
     ]
   }
+
+  if (use_glib) {
+    configs += [ "//build/config/linux:glib" ]
+  }
+
+  if (use_aura) {
+    deps += [
+      "//ui/aura:test_support",
+      "//ui/resources:ui_test_pak",
+      "//ui/wm",
+    ]
+  }
+
+  if (use_aura || is_mac) {
+    deps += [
+      "//third_party/libvpx_new",
+      "//ui/compositor",
+    ]
+
+    sources += [
+      "../browser/compositor/test/no_transport_image_transport_factory.cc",
+      "../browser/compositor/test/no_transport_image_transport_factory.h",
+    ]
+  }
+
+  if (use_ozone) {
+    deps += [ "//ui/ozone" ]
+  }
+
+  if (is_win) {
+    deps += [
+      "//content:sandbox_helper_win",
+      "//third_party/iaccessible2",
+    ]
+  }
+
+  if (is_android && !use_aura) {
+    deps += [
+      "//ui/android",
+      "//ui/shell_dialogs",
+    ]
+  }
+
+  if (is_win) {
+    deps += [ "//sandbox" ]
+  }
+
   if (v8_use_external_startup_data) {
     deps += [ "//gin:gin" ]
   }
@@ -382,10 +384,6 @@ test("content_browsertests") {
     "//mojo/public/js",
     "//mojo/test:test_support",
     "//net:test_support",
-    "//ppapi/host",
-    "//ppapi/proxy",
-    "//ppapi/proxy:ipc",
-    "//ppapi/shared_impl",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/WebKit/public:blink",
@@ -408,9 +406,18 @@ test("content_browsertests") {
   ]
 
   data_deps = [
-    "//ppapi:ppapi_tests",
     "//third_party/mesa:osmesa",
   ]
+
+  if (enable_plugins) {
+    deps += [
+      "//ppapi/host",
+      "//ppapi/proxy",
+      "//ppapi/proxy:ipc",
+      "//ppapi/shared_impl",
+    ]
+    data_deps += [ "//ppapi:ppapi_tests" ]
+  }
 
   if (is_win) {
     sources +=

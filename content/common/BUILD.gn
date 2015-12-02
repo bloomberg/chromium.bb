@@ -149,6 +149,7 @@ source_set("common") {
 
   public_deps = [
     "//gpu/command_buffer/common",
+    "//ipc",
     "//third_party/WebKit/public:blink_headers",
   ]
   deps = [
@@ -270,7 +271,7 @@ source_set("common") {
     libs += [ "android" ]
   }
 
-  if (is_debug && !is_component_build) {
+  if (is_debug && !is_component_build && enable_plugins) {
     # Content depends on the PPAPI message logging stuff; if this isn't here,
     # some unit test binaries won't compile. This only worked in release mode
     # because logging is disabled there.

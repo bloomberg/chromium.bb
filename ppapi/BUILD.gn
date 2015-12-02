@@ -2,6 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+assert(!is_android || enable_plugins,
+       "//ppapi should not be referenced when is_android && !enable_plugins")
+
 copy("copy_test_files") {
   visibility = [ ":*" ]
   sources = [

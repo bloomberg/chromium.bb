@@ -471,7 +471,7 @@ group("browser_dependencies") {
     "//chrome/common",
     "//sync",
   ]
-  if (!is_ios) {
+  if (enable_plugins) {
     public_deps += [ "//ppapi/host" ]
   }
 
