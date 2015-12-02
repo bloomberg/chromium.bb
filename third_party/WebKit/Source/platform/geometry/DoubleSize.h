@@ -7,6 +7,7 @@
 
 #include "platform/geometry/FloatSize.h"
 #include "platform/geometry/IntSize.h"
+#include "wtf/Allocator.h"
 #include "wtf/MathExtras.h"
 
 namespace blink {
@@ -14,6 +15,7 @@ namespace blink {
 class LayoutSize;
 
 class PLATFORM_EXPORT DoubleSize {
+    DISALLOW_NEW();
 public:
     DoubleSize() : m_width(0), m_height(0) { }
     DoubleSize(double width, double height) : m_width(width), m_height(height) { }

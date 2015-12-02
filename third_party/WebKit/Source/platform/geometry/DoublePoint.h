@@ -8,6 +8,7 @@
 #include "platform/geometry/DoubleSize.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/IntPoint.h"
+#include "wtf/Allocator.h"
 #include <algorithm>
 
 namespace blink {
@@ -15,6 +16,7 @@ namespace blink {
 class LayoutPoint;
 
 class PLATFORM_EXPORT DoublePoint {
+    DISALLOW_NEW();
 public:
     DoublePoint()
         : m_x(0)

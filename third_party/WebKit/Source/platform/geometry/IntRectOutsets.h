@@ -31,6 +31,7 @@
 #define IntRectOutsets_h
 
 #include "platform/PlatformExport.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -40,6 +41,7 @@ namespace blink {
 //
 // Negative lengths can be used to express insets.
 class PLATFORM_EXPORT IntRectOutsets {
+    DISALLOW_NEW();
 public:
     IntRectOutsets()
         : m_top(0)

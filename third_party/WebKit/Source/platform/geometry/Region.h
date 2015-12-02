@@ -28,11 +28,13 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/geometry/IntRect.h"
+#include "wtf/Allocator.h"
 #include "wtf/Vector.h"
 
 namespace blink {
 
 class PLATFORM_EXPORT Region {
+    DISALLOW_NEW();
 public:
     Region();
     Region(const IntRect&);
@@ -63,6 +65,7 @@ public:
 
 private:
     struct Span {
+        DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
         Span(int y, size_t segmentIndex)
             : y(y), segmentIndex(segmentIndex)
         {
@@ -73,6 +76,7 @@ private:
     };
 
     class Shape {
+        DISALLOW_NEW();
     public:
         Shape();
         Shape(const IntRect&);

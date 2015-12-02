@@ -34,6 +34,7 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/geometry/LayoutRectOutsets.h"
+#include "wtf/Allocator.h"
 #include "wtf/Vector.h"
 #include <iosfwd>
 
@@ -43,6 +44,7 @@ class FloatRect;
 class DoubleRect;
 
 class PLATFORM_EXPORT LayoutRect {
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     LayoutRect() { }
     LayoutRect(const LayoutPoint& location, const LayoutSize& size)

@@ -21,22 +21,26 @@
 #define IntSizeHash_h
 
 #include "platform/geometry/IntSize.h"
+#include "wtf/Allocator.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
 
 namespace WTF {
 
 template<> struct IntHash<blink::IntSize> {
+    STATIC_ONLY(IntHash);
     static unsigned hash(const blink::IntSize& key) { return pairIntHash(key.width(), key.height()); }
     static bool equal(const blink::IntSize& a, const blink::IntSize& b) { return a == b; }
     static const bool safeToCompareToEmptyOrDeleted = true;
 };
 
 template<> struct DefaultHash<blink::IntSize> {
+    STATIC_ONLY(DefaultHash);
     typedef IntHash<blink::IntSize> Hash;
 };
 
 template<> struct HashTraits<blink::IntSize> : GenericHashTraits<blink::IntSize> {
+    STATIC_ONLY(HashTraits);
     static const bool emptyValueIsZero = true;
     static void constructDeletedValue(blink::IntSize& slot, bool) { new (NotNull, &slot) blink::IntSize(-1, -1); }
     static bool isDeletedValue(const blink::IntSize& value) { return value.width() == -1 && value.height() == -1; }

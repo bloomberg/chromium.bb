@@ -34,6 +34,7 @@
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/GraphicsTypes.h"
+#include "wtf/Allocator.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
@@ -48,6 +49,8 @@ template <class> struct ValueToString;
 #endif
 
 class PLATFORM_EXPORT FloatPolygon {
+    USING_FAST_MALLOC(FloatPolygon);
+    WTF_MAKE_NONCOPYABLE(FloatPolygon);
 public:
     FloatPolygon(PassOwnPtr<Vector<FloatPoint>> vertices, WindRule fillRule);
 
@@ -95,7 +98,8 @@ public:
     bool intersection(const VertexPair&, FloatPoint&) const;
 };
 
-class PLATFORM_EXPORT FloatPolygonEdge : public VertexPair {
+class PLATFORM_EXPORT FloatPolygonEdge final : public VertexPair {
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     friend class FloatPolygon;
 public:
     const FloatPoint& vertex1() const override
@@ -139,10 +143,12 @@ private:
 // These structures are used by PODIntervalTree for debugging.
 #ifndef NDEBUG
 template <> struct ValueToString<float> {
+    STATIC_ONLY(ValueToString);
     static String string(const float value) { return String::number(value); }
 };
 
 template<> struct ValueToString<FloatPolygonEdge*> {
+    STATIC_ONLY(ValueToString);
     static String string(const FloatPolygonEdge* edge) { return String::format("%p (%f,%f %f,%f)", edge, edge->vertex1().x(), edge->vertex1().y(), edge->vertex2().x(), edge->vertex2().y()); }
 };
 #endif

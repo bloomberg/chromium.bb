@@ -7,6 +7,7 @@
 
 #include "platform/geometry/DoublePoint.h"
 #include "platform/geometry/DoubleSize.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -15,6 +16,7 @@ class IntRect;
 class LayoutRect;
 
 class PLATFORM_EXPORT DoubleRect {
+    STACK_ALLOCATED();
 public:
     DoubleRect() { }
     DoubleRect(const DoublePoint& location, const DoubleSize& size)

@@ -33,6 +33,7 @@
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/FloatSize.h"
 #include "third_party/skia/include/core/SkRRect.h"
+#include "wtf/Allocator.h"
 #include <iosfwd>
 
 namespace blink {
@@ -40,8 +41,10 @@ namespace blink {
 class FloatQuad;
 
 class PLATFORM_EXPORT FloatRoundedRect {
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     class PLATFORM_EXPORT Radii {
+        DISALLOW_NEW();
     public:
         Radii() { }
         Radii(const FloatSize& topLeft, const FloatSize& topRight, const FloatSize& bottomLeft, const FloatSize& bottomRight)

@@ -28,6 +28,7 @@
 #define IntPoint_h
 
 #include "platform/geometry/IntSize.h"
+#include "wtf/Allocator.h"
 #include "wtf/MathExtras.h"
 #include "wtf/VectorTraits.h"
 
@@ -42,6 +43,7 @@ typedef struct CGPoint CGPoint;
 namespace blink {
 
 class PLATFORM_EXPORT IntPoint {
+    USING_FAST_MALLOC(IntPoint);
 public:
     IntPoint() : m_x(0), m_y(0) { }
     IntPoint(int x, int y) : m_x(x), m_y(y) { }

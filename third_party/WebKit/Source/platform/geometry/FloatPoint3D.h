@@ -25,10 +25,12 @@
 
 #include "platform/geometry/FloatPoint.h"
 #include "third_party/skia/include/core/SkPoint3.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
 class PLATFORM_EXPORT FloatPoint3D {
+    DISALLOW_NEW();
 public:
     FloatPoint3D()
         : m_x(0)

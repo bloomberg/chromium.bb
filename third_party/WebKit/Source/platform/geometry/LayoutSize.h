@@ -36,6 +36,7 @@
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatSize.h"
 #include "platform/geometry/IntSize.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -45,6 +46,7 @@ enum AspectRatioFit {
 };
 
 class LayoutSize {
+    DISALLOW_NEW();
 public:
     LayoutSize() { }
     explicit LayoutSize(const IntSize& size) : m_width(size.width()), m_height(size.height()) { }

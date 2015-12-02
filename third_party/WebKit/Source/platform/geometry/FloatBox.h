@@ -31,6 +31,7 @@
 #define FloatBox_h
 
 #include "platform/geometry/FloatPoint3D.h"
+#include "wtf/Allocator.h"
 #include <algorithm>
 #include <cmath>
 #include <iosfwd>
@@ -38,6 +39,7 @@
 namespace blink {
 
 class FloatBox {
+    DISALLOW_NEW();
 public:
     FloatBox()
         : m_x(0)

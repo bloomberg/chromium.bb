@@ -32,11 +32,13 @@
 #include "platform/geometry/LayoutSize.h"
 #include "platform/transforms/AffineTransform.h"
 #include "platform/transforms/TransformationMatrix.h"
+#include "wtf/Allocator.h"
 #include "wtf/OwnPtr.h"
 
 namespace blink {
 
 class PLATFORM_EXPORT TransformState {
+    STACK_ALLOCATED();
 public:
     enum TransformDirection { ApplyTransformDirection, UnapplyInverseTransformDirection };
     enum TransformAccumulation { FlattenTransform, AccumulateTransform };

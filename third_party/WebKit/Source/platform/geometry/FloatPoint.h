@@ -30,6 +30,7 @@
 #include "platform/geometry/FloatSize.h"
 #include "platform/geometry/IntPoint.h"
 #include "third_party/skia/include/core/SkPoint.h"
+#include "wtf/Allocator.h"
 #include "wtf/MathExtras.h"
 #include <algorithm>
 #include <iosfwd>
@@ -51,6 +52,7 @@ class LayoutPoint;
 class LayoutSize;
 
 class PLATFORM_EXPORT FloatPoint {
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     FloatPoint() : m_x(0), m_y(0) { }
     FloatPoint(float x, float y) : m_x(x), m_y(y) { }

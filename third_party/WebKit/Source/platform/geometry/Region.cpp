@@ -200,6 +200,7 @@ void Region::Shape::trimCapacities()
 }
 
 struct Region::Shape::CompareContainsOperation {
+    STATIC_ONLY(CompareContainsOperation);
     const static bool defaultResult = true;
     inline static bool aOutsideB(bool& /* result */) { return false; }
     inline static bool bOutsideA(bool& result) { result = false; return true; }
@@ -207,6 +208,7 @@ struct Region::Shape::CompareContainsOperation {
 };
 
 struct Region::Shape::CompareIntersectsOperation {
+    STATIC_ONLY(CompareIntersectsOperation);
     const static bool defaultResult = false;
     inline static bool aOutsideB(bool& /* result */) { return false; }
     inline static bool bOutsideA(bool& /* result */) { return false; }
@@ -487,6 +489,7 @@ Region::Shape Region::Shape::shapeOperation(const Shape& shape1, const Shape& sh
 }
 
 struct Region::Shape::UnionOperation {
+    STATIC_ONLY(UnionOperation);
     static bool trySimpleOperation(const Shape& shape1, const Shape& shape2, Shape& result)
     {
         if (shape1.isEmpty()) {
@@ -511,6 +514,7 @@ Region::Shape Region::Shape::unionShapes(const Shape& shape1, const Shape& shape
 }
 
 struct Region::Shape::IntersectOperation {
+    STATIC_ONLY(IntersectOperation);
     static bool trySimpleOperation(const Shape&, const Shape&, Shape&)
     {
         return false;
@@ -530,6 +534,7 @@ Region::Shape Region::Shape::intersectShapes(const Shape& shape1, const Shape& s
 }
 
 struct Region::Shape::SubtractOperation {
+    STATIC_ONLY(SubtractOperation);
     static bool trySimpleOperation(const Shape&, const Shape&, Region::Shape&)
     {
         return false;

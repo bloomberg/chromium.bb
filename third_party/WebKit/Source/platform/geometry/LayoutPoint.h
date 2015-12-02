@@ -34,12 +34,14 @@
 #include "platform/geometry/DoublePoint.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/LayoutSize.h"
+#include "wtf/Allocator.h"
 #include "wtf/MathExtras.h"
 #include <algorithm>
 
 namespace blink {
 
 class LayoutPoint {
+    DISALLOW_NEW();
 public:
     LayoutPoint() { }
     LayoutPoint(LayoutUnit x, LayoutUnit y) : m_x(x), m_y(y) { }

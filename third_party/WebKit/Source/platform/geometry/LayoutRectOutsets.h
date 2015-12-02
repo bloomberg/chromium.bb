@@ -37,6 +37,7 @@
 #include "platform/geometry/IntRectOutsets.h"
 #include "platform/text/TextDirection.h"
 #include "platform/text/WritingMode.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -46,6 +47,7 @@ namespace blink {
 //
 // Negative lengths can be used to express insets.
 class PLATFORM_EXPORT LayoutRectOutsets {
+    DISALLOW_NEW();
 public:
     LayoutRectOutsets() : m_top(0), m_right(0), m_bottom(0), m_left(0) { }
     LayoutRectOutsets(LayoutUnit top, LayoutUnit right, LayoutUnit bottom, LayoutUnit left)

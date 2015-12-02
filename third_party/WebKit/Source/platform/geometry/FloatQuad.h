@@ -33,6 +33,7 @@
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/LayoutSize.h"
+#include "wtf/Allocator.h"
 #include <iosfwd>
 
 namespace blink {
@@ -41,6 +42,7 @@ namespace blink {
 // mapping a rectangle through transforms. When initialized from a rect, the
 // points are in clockwise order from top left.
 class PLATFORM_EXPORT FloatQuad {
+    USING_FAST_MALLOC(FloatQuad);
 public:
     FloatQuad()
     {
