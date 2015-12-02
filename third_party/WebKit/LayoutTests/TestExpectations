@@ -318,7 +318,6 @@ crbug.com/498539 [ Precise Mac10.7 Win7 Mac10.6 ] inspector/agents-enable-disabl
 crbug.com/498539 [ Precise Win7 Mac10.6 ] inspector/elements/styles-1/edit-inspector-stylesheet.html [ Failure Pass Timeout ]
 crbug.com/498539 [ Mac10.6 ] http/tests/inspector/extensions-network-redirect.html [ Crash Pass ]
 crbug.com/498539 [ Mac10.6 ] inspector-protocol/heap-profiler/heap-objects-tracking.html [ Crash Pass ]
-crbug.com/498539 [ Win7 ] http/tests/inspector/service-workers/service-worker-manager.html [ Crash Pass ]
 crbug.com/498539 [ Win7 Release ] inspector/elements/styles-2/perform-undo-perform-of-mergable-action.html [ Failure Pass ]
 crbug.com/498539 [ Win7 ] inspector/elements/styles-3/selector-list.html [ Failure Pass ]
 crbug.com/498539 [ Win7 Debug ] inspector/elements/styles-3/styles-computed-trace.html [ Crash Pass ]
@@ -827,7 +826,7 @@ crbug.com/357427 http/tests/workers/terminate-during-sync-operation-file.html [ 
 crbug.com/357427 http/tests/workers/terminate-during-sync-operation-filesystem.html [ Crash Pass Slow Timeout ]
 
 crbug.com/356957 [ Win Mac ] editing/spelling/spellcheck-editable-on-focus.html [ Timeout ]
-
+crbug.com/564403 http/tests/inspector/service-workers/service-worker-manager.html [ Failure Pass ]
 crbug.com/365400 [ Mac ] compositing/images/direct-pdf-image.html [ Failure ]
 
 crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas.html [ Skip ]
