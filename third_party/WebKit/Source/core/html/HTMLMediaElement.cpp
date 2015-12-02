@@ -1116,6 +1116,8 @@ void HTMLMediaElement::startDeferredLoad()
         executeDeferredLoad();
         return;
     }
+    if (m_deferredLoadState == ExecuteOnStopDelayingLoadEventTask)
+        return;
     ASSERT(m_deferredLoadState == WaitingForStopDelayingLoadEventTask);
     m_deferredLoadState = ExecuteOnStopDelayingLoadEventTask;
 }

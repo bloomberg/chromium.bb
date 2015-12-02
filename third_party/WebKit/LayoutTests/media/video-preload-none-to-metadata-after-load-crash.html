@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<title>Setting preload=metadata after calling load() w/ preload=none</title>
+<script src="media-file.js"></script>
+<p>PASS if no crash in Debug.</p>
+<script>
+if (window.testRunner)
+  testRunner.dumpAsText();
+
+var video = document.createElement('video');
+video.preload = "none";
+video.src = findMediaFile('video', 'content/test');
+video.load();
+video.preload = "metadata";
+</script>
