@@ -330,7 +330,7 @@ def BuildScript(status, context):
 
   if context['clang']:
     with Step('update_clang', status):
-      Command(context, cmd=['../tools/clang/scripts/update.sh'])
+      Command(context, cmd=[sys.executable, '../tools/clang/scripts/update.py'])
 
   # Just build both bitages of validator and test for --validator mode.
   if context['validator']:
