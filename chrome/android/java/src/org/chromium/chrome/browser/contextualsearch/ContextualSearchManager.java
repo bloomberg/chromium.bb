@@ -312,8 +312,7 @@ public class ContextualSearchManager extends ContextualSearchObservable
      * @return Whether the Search Panel is opened. That is, whether it is EXPANDED or MAXIMIZED.
      */
     public boolean isSearchPanelOpened() {
-        PanelState state = mSearchPanel.getPanelState();
-        return state == PanelState.EXPANDED || state == PanelState.MAXIMIZED;
+        return mSearchPanel.isPanelOpened();
     }
 
     /**

@@ -344,6 +344,13 @@ abstract class ContextualSearchPanelBase implements ContextualSearchPromoHost {
     }
 
     /**
+     * @return Whether the Search Panel is opened. That is, whether it is EXPANDED or MAXIMIZED.
+     */
+    public boolean isPanelOpened() {
+        return mPanelState == PanelState.EXPANDED || mPanelState == PanelState.MAXIMIZED;
+    }
+
+    /**
      * Starts showing the Panel.
      */
     protected void startShowing() {

@@ -414,6 +414,14 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
                 TabModel.TabLaunchType.FROM_LINK, mChromeActivity.getActivityTab());
     }
 
+    /**
+     * @return Whether the Reader Mode panel is opened (state is EXPANDED or MAXIMIZED).
+     */
+    public boolean isPanelOpened() {
+        if (mReaderModePanel == null) return false;
+        return mReaderModePanel.isPanelOpened();
+    }
+
     // Set the callback for updating reader mode status based on whether or not the page should
     // be viewed in reader mode.
     private void setDistillabilityCallback() {
