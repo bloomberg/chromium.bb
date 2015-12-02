@@ -352,7 +352,8 @@ void vpx_idct32x32_1_add_sse2(const tran_low_t *input, uint8_t *dest, int dest_s
 
 void vpx_idct32x32_34_add_c(const tran_low_t *input, uint8_t *dest, int dest_stride);
 void vpx_idct32x32_34_add_sse2(const tran_low_t *input, uint8_t *dest, int dest_stride);
-#define vpx_idct32x32_34_add vpx_idct32x32_34_add_sse2
+void vpx_idct32x32_34_add_ssse3(const tran_low_t *input, uint8_t *dest, int dest_stride);
+RTCD_EXTERN void (*vpx_idct32x32_34_add)(const tran_low_t *input, uint8_t *dest, int dest_stride);
 
 void vpx_idct4x4_16_add_c(const tran_low_t *input, uint8_t *dest, int dest_stride);
 void vpx_idct4x4_16_add_sse2(const tran_low_t *input, uint8_t *dest, int dest_stride);
@@ -861,8 +862,8 @@ void vpx_tm_predictor_32x32_sse2(uint8_t *dst, ptrdiff_t y_stride, const uint8_t
 #define vpx_tm_predictor_32x32 vpx_tm_predictor_32x32_sse2
 
 void vpx_tm_predictor_4x4_c(uint8_t *dst, ptrdiff_t y_stride, const uint8_t *above, const uint8_t *left);
-void vpx_tm_predictor_4x4_sse(uint8_t *dst, ptrdiff_t y_stride, const uint8_t *above, const uint8_t *left);
-#define vpx_tm_predictor_4x4 vpx_tm_predictor_4x4_sse
+void vpx_tm_predictor_4x4_sse2(uint8_t *dst, ptrdiff_t y_stride, const uint8_t *above, const uint8_t *left);
+#define vpx_tm_predictor_4x4 vpx_tm_predictor_4x4_sse2
 
 void vpx_tm_predictor_8x8_c(uint8_t *dst, ptrdiff_t y_stride, const uint8_t *above, const uint8_t *left);
 void vpx_tm_predictor_8x8_sse2(uint8_t *dst, ptrdiff_t y_stride, const uint8_t *above, const uint8_t *left);
@@ -1037,6 +1038,8 @@ static void setup_rtcd_internal(void)
     if (flags & HAS_SSSE3) vpx_h_predictor_4x4 = vpx_h_predictor_4x4_ssse3;
     vpx_h_predictor_8x8 = vpx_h_predictor_8x8_c;
     if (flags & HAS_SSSE3) vpx_h_predictor_8x8 = vpx_h_predictor_8x8_ssse3;
+    vpx_idct32x32_34_add = vpx_idct32x32_34_add_sse2;
+    if (flags & HAS_SSSE3) vpx_idct32x32_34_add = vpx_idct32x32_34_add_ssse3;
     vpx_idct8x8_12_add = vpx_idct8x8_12_add_sse2;
     if (flags & HAS_SSSE3) vpx_idct8x8_12_add = vpx_idct8x8_12_add_ssse3;
     vpx_idct8x8_64_add = vpx_idct8x8_64_add_sse2;

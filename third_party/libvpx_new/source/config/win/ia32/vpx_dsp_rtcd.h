@@ -853,7 +853,7 @@ void vpx_tm_predictor_32x32_c(uint8_t *dst, ptrdiff_t y_stride, const uint8_t *a
 #define vpx_tm_predictor_32x32 vpx_tm_predictor_32x32_c
 
 void vpx_tm_predictor_4x4_c(uint8_t *dst, ptrdiff_t y_stride, const uint8_t *above, const uint8_t *left);
-void vpx_tm_predictor_4x4_sse(uint8_t *dst, ptrdiff_t y_stride, const uint8_t *above, const uint8_t *left);
+void vpx_tm_predictor_4x4_sse2(uint8_t *dst, ptrdiff_t y_stride, const uint8_t *above, const uint8_t *left);
 RTCD_EXTERN void (*vpx_tm_predictor_4x4)(uint8_t *dst, ptrdiff_t y_stride, const uint8_t *above, const uint8_t *left);
 
 void vpx_tm_predictor_8x8_c(uint8_t *dst, ptrdiff_t y_stride, const uint8_t *above, const uint8_t *left);
@@ -1362,7 +1362,7 @@ static void setup_rtcd_internal(void)
     vpx_tm_predictor_16x16 = vpx_tm_predictor_16x16_c;
     if (flags & HAS_SSE2) vpx_tm_predictor_16x16 = vpx_tm_predictor_16x16_sse2;
     vpx_tm_predictor_4x4 = vpx_tm_predictor_4x4_c;
-    if (flags & HAS_SSE) vpx_tm_predictor_4x4 = vpx_tm_predictor_4x4_sse;
+    if (flags & HAS_SSE2) vpx_tm_predictor_4x4 = vpx_tm_predictor_4x4_sse2;
     vpx_tm_predictor_8x8 = vpx_tm_predictor_8x8_c;
     if (flags & HAS_SSE2) vpx_tm_predictor_8x8 = vpx_tm_predictor_8x8_sse2;
     vpx_v_predictor_16x16 = vpx_v_predictor_16x16_c;
