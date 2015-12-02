@@ -488,6 +488,7 @@
     'tryserver.chromium.android': {
       'android_chromium_gn_rel': 'android_gn_release_trybot',
       'android_aura_tester': 'android_aura_gn_debug_bot',
+      'android_aura_compile': 'android_aura_gn_debug_bot',
     },
     'tryserver.chromium.angle': {
       'linux_angle_rel_ng': 'swarming_gpu_tests_gyp_release_trybot',
