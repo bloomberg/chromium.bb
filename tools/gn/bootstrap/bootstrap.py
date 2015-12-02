@@ -248,6 +248,7 @@ def write_ninja(path, options):
       'base/trace_event/heap_profiler_allocation_context.cc',
       'base/trace_event/heap_profiler_allocation_context_tracker.cc',
       'base/trace_event/heap_profiler_stack_frame_deduplicator.cc',
+      'base/trace_event/heap_profiler_type_name_deduplicator.cc',
       'base/trace_event/memory_allocator_dump.cc',
       'base/trace_event/memory_allocator_dump_guid.cc',
       'base/trace_event/memory_dump_manager.cc',
