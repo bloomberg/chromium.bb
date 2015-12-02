@@ -44,6 +44,11 @@ mus::Window* WindowManagerApplication::GetWindowById(mus::Id id) {
   return root_->GetChildById(id);
 }
 
+bool WindowManagerApplication::WindowIsContainer(
+    const mus::Window* window) const {
+  return window && window->parent() == root_;
+}
+
 void WindowManagerApplication::AddAccelerators() {
   window_tree_host_->AddAccelerator(
       kWindowSwitchCmd,

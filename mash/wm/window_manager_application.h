@@ -54,6 +54,7 @@ class WindowManagerApplication
 
   mus::Window* GetWindowForContainer(mojom::Container container);
   mus::Window* GetWindowById(mus::Id id);
+  bool WindowIsContainer(const mus::Window* window) const;
 
   mojo::ApplicationImpl* app() { return app_; }
 

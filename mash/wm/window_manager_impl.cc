@@ -37,21 +37,23 @@ WindowManagerImpl::WindowManagerImpl()
 WindowManagerImpl::~WindowManagerImpl() {
   if (!state_)
     return;
-  mus::Window* parent =
-      state_->GetWindowForContainer(mojom::CONTAINER_USER_WINDOWS);
-  if (!parent)
-    return;
-
-  for (mus::Window* child : parent->children())
-    child->RemoveObserver(this);
+  for (auto container : state_->root()->children()) {
+    container->RemoveObserver(this);
+    for (auto child : container->children())
+      child->RemoveObserver(this);
+  }
 }
 
 void WindowManagerImpl::Initialize(WindowManagerApplication* state) {
   DCHECK(state);
   DCHECK(!state_);
   state_ = state;
-  state_->GetWindowForContainer(mojom::CONTAINER_USER_WINDOWS)
-      ->AddObserver(this);
+  // The children of the root are considered containers.
+  for (auto container : state_->root()->children()) {
+    container->AddObserver(this);
+    for (auto child : container->children())
+      child->AddObserver(this);
+  }
 }
 
 gfx::Rect WindowManagerImpl::CalculateDefaultBounds(mus::Window* window) const {
@@ -79,13 +81,9 @@ gfx::Rect WindowManagerImpl::GetMaximizedWindowBounds() const {
 
 void WindowManagerImpl::OnTreeChanging(const TreeChangeParams& params) {
   DCHECK(state_);
-  mus::Window* user_window_container =
-      state_->GetWindowForContainer(mojom::CONTAINER_USER_WINDOWS);
-  if (params.receiver != user_window_container)
-    return;
-  if (params.old_parent == user_window_container)
+  if (state_->WindowIsContainer(params.old_parent))
     params.target->RemoveObserver(this);
-  else if (params.new_parent == user_window_container)
+  else if (state_->WindowIsContainer(params.new_parent))
     params.target->AddObserver(this);
 }
 
