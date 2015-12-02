@@ -1120,7 +1120,7 @@ bool PepperPluginInstanceImpl::HandleInputEvent(
       // gesture after processing has finished here.
       if (WebUserGestureIndicator::isProcessingUserGesture()) {
         pending_user_gesture_ =
-            ppapi::EventTimeToPPTimeTicks(event.timeStampSeconds);
+            ppapi::TimeTicksToPPTimeTicks(base::TimeTicks::Now());
         pending_user_gesture_token_ =
             WebUserGestureIndicator::currentUserGestureToken();
         pending_user_gesture_token_.setOutOfProcess();
