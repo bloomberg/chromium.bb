@@ -84,6 +84,14 @@ class GitRebaseUpdateTest(git_test_utils.GitRepoReadWriteTestBase):
       f.write('totes the Foobar file')
     self.repo.git_commit('foobar2')
 
+    self.repo.run(self.nb.main, ['--upstream-current', 'int1_foobar'])
+    self.repo.run(self.nb.main, ['--upstream-current', 'int2_foobar'])
+    self.repo.run(self.nb.main, ['--upstream-current', 'sub_foobar'])
+    with self.repo.open('foobar', 'w') as f:
+        f.write('some more foobaring')
+    self.repo.git('add', 'foobar')
+    self.repo.git_commit('foobar3')
+
     self.repo.git('checkout', 'branch_K')
     self.repo.run(self.nb.main, ['--upstream-current', 'sub_K'])
     with self.repo.open('K', 'w') as f:
@@ -103,7 +111,7 @@ class GitRebaseUpdateTest(git_test_utils.GitRepoReadWriteTestBase):
     self.assertSchema("""
     A B H I J K sub_K
             J L
-      B C D E foobar1 foobar2
+      B C D E foobar1 foobar2 foobar3
             E F G
     A old_file
     """)
@@ -131,12 +139,15 @@ class GitRebaseUpdateTest(git_test_utils.GitRepoReadWriteTestBase):
     self.assertIn('Deleted branch branch_G', output)
     self.assertIn('Deleted branch empty_branch', output)
     self.assertIn('Deleted branch empty_branch2', output)
+    self.assertIn('Deleted branch int1_foobar', output)
+    self.assertIn('Deleted branch int2_foobar', output)
     self.assertIn('Reparented branch_K to track origin/master', output)
+    self.assertIn('Reparented sub_foobar to track foobar', output)
 
     self.assertSchema("""
     A B C D E F G M N O H I J K sub_K
                               K L
-                      O foobar1 foobar2
+                      O foobar1 foobar2 foobar3
     A old_file
     """)
 
@@ -167,6 +178,7 @@ class GitRebaseUpdateTest(git_test_utils.GitRepoReadWriteTestBase):
 
     self.assertSchema("""
     A B C D E F G M N O foobar1 foobar2 H I J K L
+                                foobar2 foobar3
                                               K sub_K
     A old_file
     """)
@@ -182,6 +194,7 @@ class GitRebaseUpdateTest(git_test_utils.GitRepoReadWriteTestBase):
 
     self.assertSchema("""
     A B C D E F G M N O foobar1 foobar2 H I J K L
+                                foobar2 foobar3
     A old_file
                                               K sub_K
     """)
@@ -190,14 +203,16 @@ class GitRebaseUpdateTest(git_test_utils.GitRepoReadWriteTestBase):
 
     branches = self.repo.run(set, self.gc.branches())
     self.assertEqual(branches, {'branch_K', 'master', 'sub_K', 'root_A',
-                                'branch_L', 'old_branch', 'foobar'})
+                                'branch_L', 'old_branch', 'foobar',
+                                'sub_foobar'})
 
     self.repo.git('checkout', 'branch_K')
     self.repo.run(self.mv.main, ['special_K'])
 
     branches = self.repo.run(set, self.gc.branches())
     self.assertEqual(branches, {'special_K', 'master', 'sub_K', 'root_A',
-                                'branch_L', 'old_branch', 'foobar'})
+                                'branch_L', 'old_branch', 'foobar',
+                                'sub_foobar'})
 
     self.repo.git('checkout', 'origin/master')
     _, err = self.repo.capture_stdio(self.mv.main, ['special_K', 'cool branch'])
@@ -207,7 +222,8 @@ class GitRebaseUpdateTest(git_test_utils.GitRepoReadWriteTestBase):
     branches = self.repo.run(set, self.gc.branches())
     # This check fails with git 2.4 (see crbug.com/487172)
     self.assertEqual(branches, {'cool_branch', 'master', 'sub_K', 'root_A',
-                                'branch_L', 'old_branch', 'foobar'})
+                                'branch_L', 'old_branch', 'foobar',
+                                'sub_foobar'})
 
     _, branch_tree = self.repo.run(self.gc.get_branch_tree)
     self.assertEqual(branch_tree['sub_K'], 'foobar')

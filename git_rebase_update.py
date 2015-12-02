@@ -87,32 +87,54 @@ def remove_empty_branches(branch_tree):
   tag_set = git.tags()
   ensure_root_checkout = git.once(lambda: git.run('checkout', git.root()))
 
-  deletions = set()
+  deletions = {}
+  reparents = {}
   downstreams = collections.defaultdict(list)
   for branch, parent in git.topo_iter(branch_tree, top_down=False):
     downstreams[parent].append(branch)
 
+    # If branch and parent have the same state, then branch has to be marked
+    # for deletion and its children and grand-children reparented to parent.
     if git.hash_one(branch) == git.hash_one(parent):
       ensure_root_checkout()
 
       logging.debug('branch %s merged to %s', branch, parent)
 
+      # Mark branch for deletion while remembering the ordering, then add all
+      # its children as grand-children of its parent and record reparenting
+      # information if necessary.
+      deletions[branch] = len(deletions)
+
       for down in downstreams[branch]:
         if down in deletions:
           continue
 
-        if parent in tag_set:
-          git.set_branch_config(down, 'remote', '.')
-          git.set_branch_config(down, 'merge', 'refs/tags/%s' % parent)
-          print ('Reparented %s to track %s [tag] (was tracking %s)'
-                 % (down, parent, branch))
+        # Record the new and old parent for down, or update such a record
+        # if it already exists. Keep track of the ordering so that reparenting
+        # happen in topological order.
+        downstreams[parent].append(down)
+        if down not in reparents:
+          reparents[down] = (len(reparents), parent, branch)
         else:
-          git.run('branch', '--set-upstream-to', parent, down)
-          print ('Reparented %s to track %s (was tracking %s)'
-                 % (down, parent, branch))
+          order, _, old_parent = reparents[down]
+          reparents[down] = (order, parent, old_parent)
 
-      deletions.add(branch)
-      print git.run('branch', '-d', branch)
+  # Apply all reparenting recorded, in order.
+  for branch, value in sorted(reparents.iteritems(), key=lambda x:x[1][0]):
+    _, parent, old_parent = value
+    if parent in tag_set:
+      git.set_branch_config(branch, 'remote', '.')
+      git.set_branch_config(branch, 'merge', 'refs/tags/%s' % parent)
+      print ('Reparented %s to track %s [tag] (was tracking %s)'
+             % (branch, parent, old_parent))
+    else:
+      git.run('branch', '--set-upstream-to', parent, branch)
+      print ('Reparented %s to track %s (was tracking %s)'
+             % (branch, parent, old_parent))
+
+  # Apply all deletions recorded, in order.
+  for branch, _ in sorted(deletions.iteritems(), key=lambda x: x[1]):
+    print git.run('branch', '-d', branch)
 
 
 def rebase_branch(branch, parent, start_hash):
