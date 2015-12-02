@@ -217,6 +217,7 @@ void PushMessagingServiceImpl::OnMessage(const std::string& app_id,
   if (AreMessagePayloadsEnabled() && message.decrypted)
     data = message.raw_data;
 
+  // Dispatch the message to the appropriate Service Worker.
   content::BrowserContext::DeliverPushMessage(
       profile_, app_identifier.origin(),
       app_identifier.service_worker_registration_id(), data,
@@ -225,6 +226,13 @@ void PushMessagingServiceImpl::OnMessage(const std::string& app_id,
                  app_identifier.origin(),
                  app_identifier.service_worker_registration_id(), message,
                  message_handled_closure));
+
+  // Inform tests observing message dispatching about the event.
+  if (!message_dispatched_callback_for_testing_.is_null()) {
+    message_dispatched_callback_for_testing_.Run(
+        app_id, app_identifier.origin(),
+        app_identifier.service_worker_registration_id(), data);
+  }
 }
 
 void PushMessagingServiceImpl::DeliverMessageCallback(

@@ -140,6 +140,7 @@ source_set("test_support") {
       "//chrome/utility",
       "//components/autofill/core/browser:test_support",
       "//components/captive_portal:test_support",
+      "//components/gcm_driver/crypto:test_support",
       "//components/guest_view/browser:test_support",
       "//components/infobars/core",
       "//components/sessions:test_support",

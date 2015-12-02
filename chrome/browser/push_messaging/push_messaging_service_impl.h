@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/background/background_trigger.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
@@ -115,6 +116,8 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
       const base::Closure& callback);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(PushMessagingServiceTest, PayloadEncryptionTest);
+
   // A subscription is pending until it has succeeded or failed.
   void IncreasePushSubscriptionCount(int add, bool is_pending);
   void DecreasePushSubscriptionCount(int subtract, bool was_pending);
@@ -195,6 +198,21 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
 
   gcm::GCMDriver* GetGCMDriver() const;
 
+  // Testing methods -----------------------------------------------------------
+
+  // Callback to be invoked when a message has been dispatched. Enables tests to
+  // observe message delivery before it's dispatched to the Service Worker.
+  using MessageDispatchedCallback =
+      base::Callback<void(const std::string& app_id,
+                          const GURL& origin,
+                          int64_t service_worker_registration_id,
+                          const std::string& message_data)>;
+
+  void SetMessageDispatchedCallbackForTesting(
+      const MessageDispatchedCallback& callback) {
+    message_dispatched_callback_for_testing_ = callback;
+  }
+
   Profile* profile_;
 
   int push_subscription_count_;
@@ -210,6 +228,8 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   // A multiset containing one entry for each in-flight push message delivery,
   // keyed by the receiver's app id.
   std::multiset<std::string> in_flight_message_deliveries_;
+
+  MessageDispatchedCallback message_dispatched_callback_for_testing_;
 
   base::WeakPtrFactory<PushMessagingServiceImpl> weak_factory_;
 

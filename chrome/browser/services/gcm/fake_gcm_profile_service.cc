@@ -12,7 +12,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "components/gcm_driver/fake_gcm_client_factory.h"
 #include "components/gcm_driver/fake_gcm_driver.h"
 #include "components/gcm_driver/gcm_driver.h"
@@ -36,11 +35,16 @@ class CustomFakeGCMDriver : public FakeGCMDriver {
                       const std::string& message_id,
                       GCMClient::Result result);
 
+  void OnDispatchMessage(const std::string& app_id,
+                         const IncomingMessage& message);
+
  protected:
   // FakeGCMDriver overrides:
   void RegisterImpl(const std::string& app_id,
                     const std::vector<std::string>& sender_ids) override;
   void UnregisterImpl(const std::string& app_id) override;
+  void UnregisterWithSenderIdImpl(const std::string& app_id,
+                                  const std::string& sender_id) override;
   void SendImpl(const std::string& app_id,
                 const std::string& receiver_id,
                 const OutgoingMessage& message) override;
@@ -73,6 +77,10 @@ void CustomFakeGCMDriver::UnregisterImpl(const std::string& app_id) {
                             base::Unretained(service_), app_id));
 }
 
+void CustomFakeGCMDriver::UnregisterWithSenderIdImpl(
+    const std::string& app_id,
+    const std::string& sender_id) {}
+
 void CustomFakeGCMDriver::SendImpl(const std::string& app_id,
                                    const std::string& receiver_id,
                                    const OutgoingMessage& message) {
@@ -88,14 +96,21 @@ void CustomFakeGCMDriver::OnRegisterFinished(
     GCMClient::Result result) {
   RegisterFinished(app_id, registration_id, result);
 }
+
 void CustomFakeGCMDriver::OnUnregisterFinished(const std::string& app_id,
                                                GCMClient::Result result) {
   UnregisterFinished(app_id, result);
 }
+
 void CustomFakeGCMDriver::OnSendFinished(const std::string& app_id,
                                          const std::string& message_id,
                                          GCMClient::Result result) {
   SendFinished(app_id, message_id, result);
+}
+
+void CustomFakeGCMDriver::OnDispatchMessage(const std::string& app_id,
+                                            const IncomingMessage& message) {
+  DispatchMessage(app_id, message);
 }
 
 }  // namespace
@@ -105,9 +120,7 @@ scoped_ptr<KeyedService> FakeGCMProfileService::Build(
     content::BrowserContext* context) {
   Profile* profile = static_cast<Profile*>(context);
   scoped_ptr<FakeGCMProfileService> service(new FakeGCMProfileService(profile));
-  service->SetDriverForTesting(
-      LoginUIServiceFactory::GetShowLoginPopupCallbackForProfile(profile),
-      new CustomFakeGCMDriver(service.get()));
+  service->SetDriverForTesting(new CustomFakeGCMDriver(service.get()));
   return service.Pass();
 }
 
@@ -176,6 +189,13 @@ void FakeGCMProfileService::AddExpectedUnregisterResponse(
 void FakeGCMProfileService::SetUnregisterCallback(
     const UnregisterCallback& callback) {
   unregister_callback_ = callback;
+}
+
+void FakeGCMProfileService::DispatchMessage(const std::string& app_id,
+                                            const IncomingMessage& message) {
+  CustomFakeGCMDriver* custom_driver =
+      static_cast<CustomFakeGCMDriver*>(driver());
+  custom_driver->OnDispatchMessage(app_id, message);
 }
 
 }  // namespace gcm

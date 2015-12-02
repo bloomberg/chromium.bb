@@ -70,8 +70,7 @@ class GCMProfileService : public KeyedService {
   void Shutdown() override;
 
   // For testing purpose.
-  void SetDriverForTesting(const base::Closure& login_callback,
-                           GCMDriver* driver);
+  void SetDriverForTesting(GCMDriver* driver);
 
   GCMDriver* driver() const { return driver_.get(); }
 

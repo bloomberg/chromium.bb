@@ -12,7 +12,6 @@
 #include "chrome/browser/services/gcm/fake_gcm_profile_service.h"
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/services/gcm/instance_id/instance_id_profile_service_factory.h"
-#include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/gcm_driver/instance_id/fake_gcm_driver_for_instance_id.h"
 #include "components/version_info/version_info.h"
@@ -28,10 +27,7 @@ scoped_ptr<KeyedService> BuildFakeGCMProfileService(
     content::BrowserContext* context) {
   scoped_ptr<gcm::FakeGCMProfileService> service(
       new gcm::FakeGCMProfileService(Profile::FromBrowserContext(context)));
-  service->SetDriverForTesting(
-      LoginUIServiceFactory::GetShowLoginPopupCallbackForProfile(
-          Profile::FromBrowserContext(context)),
-      new instance_id::FakeGCMDriverForInstanceID());
+  service->SetDriverForTesting(new instance_id::FakeGCMDriverForInstanceID());
   return service.Pass();
 }
 

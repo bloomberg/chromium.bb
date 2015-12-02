@@ -43,6 +43,9 @@ class FakeGCMProfileService : public GCMProfileService {
 
   void SetUnregisterCallback(const UnregisterCallback& callback);
 
+  void DispatchMessage(const std::string& app_id,
+                       const IncomingMessage& message);
+
   const OutgoingMessage& last_sent_message() const {
     return last_sent_message_;
   }

@@ -270,6 +270,25 @@
       },
       'includes': [ '../build/protoc.gypi' ],
     },
+    {
+      # GN version: //components/gcm_driver/crypto:test_support
+      'target_name': 'gcm_driver_crypto_test_support',
+      'type': 'static_library',
+      'dependencies': [
+        'gcm_driver_common',
+        'gcm_driver_crypto',
+        '../base/base.gyp:base',
+        '../crypto/crypto.gyp:crypto',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        # Note: file list duplicated in GN build.
+        'gcm_driver/crypto/gcm_crypto_test_helpers.cc',
+        'gcm_driver/crypto/gcm_crypto_test_helpers.h',
+      ],
+    },
   ],
   'conditions': [
     ['OS == "android"', {

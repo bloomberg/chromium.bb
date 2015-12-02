@@ -169,8 +169,7 @@ void GCMProfileService::Shutdown() {
   }
 }
 
-void GCMProfileService::SetDriverForTesting(const base::Closure& login_callback,
-                                            GCMDriver* driver) {
+void GCMProfileService::SetDriverForTesting(GCMDriver* driver) {
   driver_.reset(driver);
 #if !defined(OS_ANDROID)
   if (identity_observer_) {
