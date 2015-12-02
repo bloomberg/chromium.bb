@@ -7,6 +7,7 @@
 
 #include "ios/chrome/browser/experimental_flags.h"
 
+#include <dispatch/dispatch.h>
 #import <Foundation/Foundation.h>
 
 #include <string>
@@ -74,31 +75,64 @@ bool IsLRUSnapshotCacheEnabled() {
                           base::CompareCase::INSENSITIVE_ASCII);
 }
 
+// Helper method that returns true if it is safe to check the finch group for
+// the IOSUseWKWebView experiment.  Some users are ineligible to be in the
+// trial, so for those users, this method returns false.  If this method returns
+// false, do not check for the current finch group, as doing so will incorrectly
+// mark the current user as being in the experiment.
+bool CanCheckWKWebViewExperiment() {
+  // True if this user is eligible for the WKWebView experiment and it is ok to
+  // check the experiment group.
+  static bool ok_to_check_finch = false;
+  static dispatch_once_t once;
+  dispatch_once(&once, ^{
+    // If g_wkwebview_trial_eligibility hasn't been set, default it to
+    // ineligible. This ensures future calls to try to set it will DCHECK.
+    if (g_wkwebview_trial_eligibility == WKWebViewEligibility::UNSET) {
+      g_wkwebview_trial_eligibility = WKWebViewEligibility::INELIGIBLE;
+    }
+
+    // If WKWebView isn't supported, don't activate the experiment at all. This
+    // avoids someone being slotted into the WKWebView bucket (and thus
+    // reporting as WKWebView), but actually running UIWebView.
+    if (!web::IsWKWebViewSupported()) {
+      ok_to_check_finch = false;
+      return;
+    }
+
+    // Check for a flag forcing a specific group.  Even ineligible users can be
+    // opted into WKWebView if an override flag is set.
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+    bool trial_overridden =
+        command_line->HasSwitch(switches::kEnableIOSWKWebView) ||
+        command_line->HasSwitch(switches::kDisableIOSWKWebView);
+
+    // If the user isn't eligible for the trial (i.e., their state is such that
+    // they should not be automatically selected for the group), and there's no
+    // explicit override, don't check the group (again, to avoid having them
+    // report as part of a group at all).
+    if (g_wkwebview_trial_eligibility == WKWebViewEligibility::INELIGIBLE &&
+        !trial_overridden) {
+      ok_to_check_finch = false;
+      return;
+    }
+
+    ok_to_check_finch = true;
+  });
+
+  return ok_to_check_finch;
+}
+
 bool IsWKWebViewEnabled() {
-  // If g_wkwebview_trial_eligibility hasn't been set, default it to
-  // ineligibile. This ensures future calls to try to set it will DCHECK.
-  if (g_wkwebview_trial_eligibility == WKWebViewEligibility::UNSET) {
-    g_wkwebview_trial_eligibility = WKWebViewEligibility::INELIGIBLE;
+  if (!CanCheckWKWebViewExperiment()) {
+    return false;
   }
 
-  // If WKWebView isn't supported, don't activate the experiment at all. This
-  // avoids someone being slotted into the WKWebView bucket (and thus reporting
-  // as WKWebView), but actually running UIWebView.
-  if (!web::IsWKWebViewSupported())
-    return false;
-
-  // Check for a flag forcing a specific group.
+  // Check if the experimental flag is turned on.
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  bool force_enable = command_line->HasSwitch(switches::kEnableIOSWKWebView);
-  bool force_disable = command_line->HasSwitch(switches::kDisableIOSWKWebView);
-  bool trial_overridden = force_enable || force_disable;
-
-  // If the user isn't eligible for the trial (i.e., their state is such that
-  // they should not be automatically selected for the group), and there's no
-  // explicit override, don't check the group (again, to avoid having them
-  // report as part of a group at all).
-  if (g_wkwebview_trial_eligibility == WKWebViewEligibility::INELIGIBLE &&
-      !trial_overridden)
+  if (command_line->HasSwitch(switches::kEnableIOSWKWebView))
+    return true;
+  else if (command_line->HasSwitch(switches::kDisableIOSWKWebView))
     return false;
 
   // Now that it's been established that user is a candidate, set up the trial
@@ -106,15 +140,17 @@ bool IsWKWebViewEnabled() {
   std::string group_name =
       base::FieldTrialList::FindFullName("IOSUseWKWebView");
 
-  // Check if the experimental flag is turned on.
-  if (force_enable)
-    return true;
-  else if (force_disable)
-    return false;
-
   // Check if the finch experiment is turned on.
   return base::StartsWith(group_name, "Enabled",
                           base::CompareCase::INSENSITIVE_ASCII);
+}
+
+std::string GetWKWebViewSearchParams() {
+  if (!CanCheckWKWebViewExperiment()) {
+    return std::string();
+  }
+
+  return variations::GetVariationParamValue("IOSUseWKWebView", "esrch");
 }
 
 bool AreKeyboardCommandsEnabled() {

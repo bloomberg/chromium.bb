@@ -76,6 +76,10 @@ std::string SearchTermsData::NTPIsThemedParam() const {
   return std::string();
 }
 
+std::string SearchTermsData::IOSWebViewTypeParam() const {
+  return std::string();
+}
+
 std::string SearchTermsData::GoogleImageSearchSource() const {
   return std::string();
 }

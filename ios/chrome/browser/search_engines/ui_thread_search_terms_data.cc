@@ -12,10 +12,12 @@
 #include "components/search/search.h"
 #include "components/version_info/version_info.h"
 #include "ios/chrome/browser/application_context.h"
+#include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/google/google_brand.h"
 #include "ios/chrome/browser/google/google_url_tracker_factory.h"
 #include "ios/chrome/common/channel_info.h"
 #include "ios/web/public/web_thread.h"
+#include "net/base/escape.h"
 #include "url/gurl.h"
 
 #if defined(ENABLE_RLZ)
@@ -117,6 +119,16 @@ std::string UIThreadSearchTermsData::NTPIsThemedParam() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   // iOS does not supports themed NTP.
   return std::string();
+}
+
+std::string UIThreadSearchTermsData::IOSWebViewTypeParam() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  std::string param = experimental_flags::GetWKWebViewSearchParams();
+  if (param.empty()) {
+    return std::string();
+  }
+
+  return "&esrch=" + net::EscapeQueryParamValue(param, true);
 }
 
 std::string UIThreadSearchTermsData::GoogleImageSearchSource() const {

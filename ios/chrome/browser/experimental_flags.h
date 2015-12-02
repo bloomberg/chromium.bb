@@ -5,6 +5,8 @@
 #ifndef IOS_CHROME_BROWSER_EXPERIMENTAL_FLAGS_H_
 #define IOS_CHROME_BROWSER_EXPERIMENTAL_FLAGS_H_
 
+#include <string>
+
 // This file can be empty. Its purpose is to contain the relatively short lived
 // declarations required for experimental flags.
 
@@ -29,6 +31,10 @@ bool IsLRUSnapshotCacheEnabled();
 // Whether the app uses WKWebView instead of UIWebView.
 // The returned value will not change within a given session.
 bool IsWKWebViewEnabled();
+
+// Returns a string containing extra params that should be sent along with
+// omnibox search requests.  The returned value contains a leading "&".
+std::string GetWKWebViewSearchParams();
 
 // Whether keyboard commands are supported.
 bool AreKeyboardCommandsEnabled();
