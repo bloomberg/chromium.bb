@@ -96,9 +96,23 @@ static void findMisspellings(TextCheckerClient& client, const UChar* text, int s
     }
 }
 
+// TODO(yosin): We should move |expandRangeToSentenceBoundary()| to
+// "SpellChcker.cpp" as static function, since there is only one call site in
+// |SpellChecker::chunkAndMarkAllMisspellingsAndBadGrammar()|.
 EphemeralRange expandRangeToSentenceBoundary(const EphemeralRange& range)
 {
-    return EphemeralRange(startOfSentence(createVisiblePosition(range.startPosition())).deepEquivalent(), endOfSentence(createVisiblePosition(range.endPosition())).deepEquivalent());
+    ASSERT(range.isNotNull());
+    const VisiblePosition& visibleStart = createVisiblePosition(range.startPosition());
+    ASSERT(visibleStart.isNotNull());
+    const Position& sentenceStart = startOfSentence(visibleStart).deepEquivalent();
+    if (sentenceStart.isNull())
+        return EphemeralRange();
+    const VisiblePosition& visibleEnd = createVisiblePosition(range.endPosition());
+    ASSERT(visibleEnd.isNotNull());
+    const Position& sentenceEnd = endOfSentence(visibleEnd).deepEquivalent();
+    if (sentenceEnd.isNull())
+        return EphemeralRange();
+    return EphemeralRange(sentenceStart, sentenceEnd);
 }
 
 static EphemeralRange expandToParagraphBoundary(const EphemeralRange& range)
