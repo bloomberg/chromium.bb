@@ -170,6 +170,7 @@ FirstLetterPseudoElement::FirstLetterPseudoElement(Element* parent)
 
 FirstLetterPseudoElement::~FirstLetterPseudoElement()
 {
+    ASSERT(!m_remainingTextLayoutObject);
 }
 
 void FirstLetterPseudoElement::updateTextFragments()
