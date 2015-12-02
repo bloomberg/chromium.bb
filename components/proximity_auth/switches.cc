@@ -7,10 +7,6 @@
 namespace proximity_auth {
 namespace switches {
 
-// Overrides the default URL for Google APIs (https://www.googleapis.com) used
-// by CryptAuth.
-const char kCryptAuthHTTPHost[] = "cryptauth-http-host";
-
 // Enables discovery of the phone over Bluetooth Low Energy.
 const char kEnableBluetoothLowEnergyDiscovery[] =
     "enable-proximity-auth-bluetooth-low-energy-discovery";

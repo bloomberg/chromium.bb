@@ -29,26 +29,19 @@ source_set("cryptauth") {
     "pref_names.h",
     "secure_message_delegate.cc",
     "secure_message_delegate.h",
+    "switches.cc",
+    "switches.h",
     "sync_scheduler.cc",
     "sync_scheduler.h",
     "sync_scheduler_impl.cc",
     "sync_scheduler_impl.h",
   ]
 
-  # TODO(https://crbug.com/562683): This target is including a header from the
-  # test support target. To prevent "gn check" from complaining, whitelist it
-  # here, but this should be factored so that test headers aren't included.
-  sources += [ "fake_secure_message_delegate.h" ]
-
   deps = [
     "//base",
     "//base:prefs",
     "//components/gcm_driver",
     "//components/gcm_driver/common",
-
-    # TODO bug 562683: This component has a circular dependency with the root
-    # proximity auth target. It is whitelisted in that target for includes.
-    #"//components/proximity_auth",
     "//components/proximity_auth/logging",
     "//crypto",
     "//google_apis",

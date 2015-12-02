@@ -9,7 +9,7 @@
 #include "components/proximity_auth/cryptauth/cryptauth_access_token_fetcher.h"
 #include "components/proximity_auth/cryptauth/cryptauth_api_call_flow.h"
 #include "components/proximity_auth/cryptauth/proto/cryptauth_api.pb.h"
-#include "components/proximity_auth/switches.h"
+#include "components/proximity_auth/cryptauth/switches.h"
 #include "google_apis/gaia/fake_oauth2_token_service.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"

@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "components/proximity_auth/cryptauth/cryptauth_access_token_fetcher_impl.h"
-#include "components/proximity_auth/switches.h"
+#include "components/proximity_auth/cryptauth/switches.h"
 
 namespace proximity_auth {
 

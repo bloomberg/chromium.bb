@@ -196,6 +196,8 @@
         "proximity_auth/cryptauth/pref_names.h",
         "proximity_auth/cryptauth/secure_message_delegate.cc",
         "proximity_auth/cryptauth/secure_message_delegate.h",
+        "proximity_auth/cryptauth/switches.cc",
+        "proximity_auth/cryptauth/switches.h",
         "proximity_auth/cryptauth/sync_scheduler.cc",
         "proximity_auth/cryptauth/sync_scheduler.h",
         "proximity_auth/cryptauth/sync_scheduler_impl.cc",
