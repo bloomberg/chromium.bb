@@ -1178,7 +1178,7 @@ void Element::attributeChanged(const QualifiedName& name, const AtomicString& ol
             parentElementShadow->setNeedsDistributionRecalc();
     }
 
-    parseAttribute(name, newValue);
+    parseAttribute(name, oldValue, newValue);
 
     document().incDOMTreeVersion();
 
@@ -2212,7 +2212,7 @@ PassRefPtrWillBeRawPtr<Attr> Element::removeAttributeNode(Attr* attr, ExceptionS
     return guard.release();
 }
 
-void Element::parseAttribute(const QualifiedName& name, const AtomicString& value)
+void Element::parseAttribute(const QualifiedName& name, const AtomicString&, const AtomicString& value)
 {
     if (name == tabindexAttr) {
         int tabindex = 0;

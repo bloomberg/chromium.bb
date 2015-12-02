@@ -103,7 +103,7 @@ void SVGStyleElement::setTitle(const AtomicString& title)
     setAttribute(SVGNames::titleAttr, title);
 }
 
-void SVGStyleElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
+void SVGStyleElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)
 {
     if (name == SVGNames::titleAttr) {
         if (m_sheet)
@@ -112,7 +112,7 @@ void SVGStyleElement::parseAttribute(const QualifiedName& name, const AtomicStri
         return;
     }
 
-    SVGElement::parseAttribute(name, value);
+    SVGElement::parseAttribute(name, oldValue, value);
 }
 
 void SVGStyleElement::finishParsingChildren()

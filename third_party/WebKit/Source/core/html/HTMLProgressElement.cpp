@@ -75,14 +75,14 @@ LayoutProgress* HTMLProgressElement::layoutProgress() const
     return toLayoutProgress(layoutObject);
 }
 
-void HTMLProgressElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
+void HTMLProgressElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)
 {
     if (name == valueAttr)
         didElementStateChange();
     else if (name == maxAttr)
         didElementStateChange();
     else
-        LabelableElement::parseAttribute(name, value);
+        LabelableElement::parseAttribute(name, oldValue, value);
 }
 
 void HTMLProgressElement::attach(const AttachContext& context)

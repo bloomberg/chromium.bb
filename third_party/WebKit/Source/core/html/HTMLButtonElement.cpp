@@ -93,7 +93,7 @@ bool HTMLButtonElement::isPresentationAttribute(const QualifiedName& name) const
     return HTMLFormControlElement::isPresentationAttribute(name);
 }
 
-void HTMLButtonElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
+void HTMLButtonElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)
 {
     if (name == typeAttr) {
         if (equalIgnoringCase(value, "reset"))
@@ -104,7 +104,7 @@ void HTMLButtonElement::parseAttribute(const QualifiedName& name, const AtomicSt
             m_type = SUBMIT;
         setNeedsWillValidateCheck();
     } else {
-        HTMLFormControlElement::parseAttribute(name, value);
+        HTMLFormControlElement::parseAttribute(name, oldValue, value);
     }
 }
 

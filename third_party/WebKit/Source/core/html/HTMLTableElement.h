@@ -76,7 +76,7 @@ private:
     explicit HTMLTableElement(Document&);
     ~HTMLTableElement();
 
-    void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    void parseAttribute(const QualifiedName&, const AtomicString&, const AtomicString&) override;
     bool isPresentationAttribute(const QualifiedName&) const override;
     void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
     bool isURLAttribute(const Attribute&) const override;

@@ -337,7 +337,7 @@ bool HTMLSelectElement::isPresentationAttribute(const QualifiedName& name) const
     return HTMLFormControlElementWithState::isPresentationAttribute(name);
 }
 
-void HTMLSelectElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
+void HTMLSelectElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)
 {
     if (name == sizeAttr) {
         unsigned oldSize = m_size;
@@ -368,12 +368,12 @@ void HTMLSelectElement::parseAttribute(const QualifiedName& name, const AtomicSt
         // FIXME: ignore for the moment.
         //
     } else if (name == disabledAttr) {
-        HTMLFormControlElementWithState::parseAttribute(name, value);
+        HTMLFormControlElementWithState::parseAttribute(name, oldValue, value);
         if (popupIsVisible())
             hidePopup();
 
     } else {
-        HTMLFormControlElementWithState::parseAttribute(name, value);
+        HTMLFormControlElementWithState::parseAttribute(name, oldValue, value);
     }
 }
 

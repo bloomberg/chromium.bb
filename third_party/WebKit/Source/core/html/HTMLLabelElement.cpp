@@ -280,13 +280,13 @@ DEFINE_TRACE(HTMLLabelElement)
     FormAssociatedElement::trace(visitor);
 }
 
-void HTMLLabelElement::parseAttribute(const QualifiedName& attributeName, const AtomicString& attributeValue)
+void HTMLLabelElement::parseAttribute(const QualifiedName& attributeName, const AtomicString& oldValue, const AtomicString& attributeValue)
 {
     if (attributeName == formAttr) {
         formAttributeChanged();
         UseCounter::count(document(), UseCounter::HTMLLabelElementFormContentAttribute);
     } else {
-        HTMLElement::parseAttribute(attributeName, attributeValue);
+        HTMLElement::parseAttribute(attributeName, oldValue, attributeValue);
     }
 }
 

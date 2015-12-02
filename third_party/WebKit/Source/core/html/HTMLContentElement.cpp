@@ -75,7 +75,7 @@ void HTMLContentElement::parseSelect()
     }
 }
 
-void HTMLContentElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
+void HTMLContentElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)
 {
     if (name == selectAttr) {
         if (ShadowRoot* root = containingShadowRoot())
@@ -83,7 +83,7 @@ void HTMLContentElement::parseAttribute(const QualifiedName& name, const AtomicS
         m_shouldParseSelect = true;
         m_select = value;
     } else {
-        InsertionPoint::parseAttribute(name, value);
+        InsertionPoint::parseAttribute(name, oldValue, value);
     }
 }
 

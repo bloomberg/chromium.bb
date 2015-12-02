@@ -113,7 +113,7 @@ void HTMLTableCellElement::collectStyleForPresentationAttribute(const QualifiedN
     }
 }
 
-void HTMLTableCellElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
+void HTMLTableCellElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)
 {
     if (name == rowspanAttr) {
         if (layoutObject() && layoutObject()->isTableCell())
@@ -122,7 +122,7 @@ void HTMLTableCellElement::parseAttribute(const QualifiedName& name, const Atomi
         if (layoutObject() && layoutObject()->isTableCell())
             toLayoutTableCell(layoutObject())->colSpanOrRowSpanChanged();
     } else {
-        HTMLTablePartElement::parseAttribute(name, value);
+        HTMLTablePartElement::parseAttribute(name, oldValue, value);
     }
 }
 

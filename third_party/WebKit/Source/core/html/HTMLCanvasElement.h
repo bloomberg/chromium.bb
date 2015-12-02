@@ -182,7 +182,7 @@ private:
     static ContextFactoryVector& renderingContextFactories();
     static CanvasRenderingContextFactory* getRenderingContextFactory(int);
 
-    void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    void parseAttribute(const QualifiedName&, const AtomicString&, const AtomicString&) override;
     LayoutObject* createLayoutObject(const ComputedStyle&) override;
     void didRecalcStyle(StyleRecalcChange) override;
     bool areAuthorShadowsAllowed() const override { return false; }

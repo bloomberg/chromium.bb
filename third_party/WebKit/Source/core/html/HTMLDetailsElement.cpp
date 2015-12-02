@@ -136,7 +136,7 @@ Element* HTMLDetailsElement::findMainSummary() const
     return toElement(content->firstChild());
 }
 
-void HTMLDetailsElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
+void HTMLDetailsElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)
 {
     if (name == openAttr) {
         bool oldValue = m_isOpen;
@@ -166,7 +166,7 @@ void HTMLDetailsElement::parseAttribute(const QualifiedName& name, const AtomicS
 
         return;
     }
-    HTMLElement::parseAttribute(name, value);
+    HTMLElement::parseAttribute(name, oldValue, value);
 }
 
 void HTMLDetailsElement::toggleOpen()

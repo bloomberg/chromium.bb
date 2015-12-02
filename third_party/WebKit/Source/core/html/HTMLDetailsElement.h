@@ -43,7 +43,7 @@ private:
     explicit HTMLDetailsElement(Document&);
 
     LayoutObject* createLayoutObject(const ComputedStyle&) override;
-    void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    void parseAttribute(const QualifiedName&, const AtomicString&, const AtomicString&) override;
     void didAddUserAgentShadowRoot(ShadowRoot&) override;
     bool isInteractiveContent() const override;
 

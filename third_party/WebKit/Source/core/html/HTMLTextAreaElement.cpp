@@ -154,7 +154,7 @@ void HTMLTextAreaElement::collectStyleForPresentationAttribute(const QualifiedNa
     }
 }
 
-void HTMLTextAreaElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
+void HTMLTextAreaElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)
 {
     if (name == rowsAttr) {
         unsigned rows = 0;
@@ -196,7 +196,7 @@ void HTMLTextAreaElement::parseAttribute(const QualifiedName& name, const Atomic
     } else if (name == minlengthAttr) {
         setNeedsValidityCheck();
     } else {
-        HTMLTextFormControlElement::parseAttribute(name, value);
+        HTMLTextFormControlElement::parseAttribute(name, oldValue, value);
     }
 }
 

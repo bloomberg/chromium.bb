@@ -41,12 +41,12 @@ DEFINE_TRACE(SVGViewElement)
     SVGFitToViewBox::trace(visitor);
 }
 
-void SVGViewElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
+void SVGViewElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)
 {
     if (SVGZoomAndPan::parseAttribute(name, value))
         return;
 
-    SVGElement::parseAttribute(name, value);
+    SVGElement::parseAttribute(name, oldValue, value);
 }
 
 } // namespace blink

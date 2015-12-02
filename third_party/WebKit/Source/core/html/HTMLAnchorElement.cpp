@@ -193,7 +193,7 @@ void HTMLAnchorElement::attributeChanged(const QualifiedName& name, const Atomic
     HTMLElement::attributeChanged(name, oldValue, newValue, reason);
 }
 
-void HTMLAnchorElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
+void HTMLAnchorElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)
 {
     if (name == hrefAttr) {
         bool wasLink = isLink();
@@ -221,7 +221,7 @@ void HTMLAnchorElement::parseAttribute(const QualifiedName& name, const AtomicSt
     } else if (name == relAttr) {
         setRel(value);
     } else {
-        HTMLElement::parseAttribute(name, value);
+        HTMLElement::parseAttribute(name, oldValue, value);
     }
 }
 

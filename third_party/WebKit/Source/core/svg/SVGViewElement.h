@@ -51,7 +51,7 @@ public:
 private:
     explicit SVGViewElement(Document&);
 
-    void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    void parseAttribute(const QualifiedName&, const AtomicString&, const AtomicString&) override;
 
     bool layoutObjectIsNeeded(const ComputedStyle&) override { return false; }
 

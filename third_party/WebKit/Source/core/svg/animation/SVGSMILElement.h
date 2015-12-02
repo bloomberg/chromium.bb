@@ -50,7 +50,7 @@ public:
     SVGSMILElement(const QualifiedName&, Document&);
     ~SVGSMILElement() override;
 
-    void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    void parseAttribute(const QualifiedName&, const AtomicString&, const AtomicString&) override;
     void svgAttributeChanged(const QualifiedName&) override;
     InsertionNotificationRequest insertedInto(ContainerNode*) override;
     void removedFrom(ContainerNode*) override;

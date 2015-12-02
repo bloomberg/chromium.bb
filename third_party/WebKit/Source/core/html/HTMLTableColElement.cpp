@@ -58,7 +58,7 @@ void HTMLTableColElement::collectStyleForPresentationAttribute(const QualifiedNa
         HTMLTablePartElement::collectStyleForPresentationAttribute(name, value, style);
 }
 
-void HTMLTableColElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
+void HTMLTableColElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)
 {
     if (name == spanAttr) {
         unsigned newSpan = 0;
@@ -80,7 +80,7 @@ void HTMLTableColElement::parseAttribute(const QualifiedName& name, const Atomic
             }
         }
     } else {
-        HTMLTablePartElement::parseAttribute(name, value);
+        HTMLTablePartElement::parseAttribute(name, oldValue, value);
     }
 }
 

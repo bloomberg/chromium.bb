@@ -345,7 +345,7 @@ bool HTMLTableElement::isPresentationAttribute(const QualifiedName& name) const
     return HTMLElement::isPresentationAttribute(name);
 }
 
-void HTMLTableElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
+void HTMLTableElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)
 {
     CellBorders bordersBefore = cellBorders();
     unsigned short oldPadding = m_padding;
@@ -382,7 +382,7 @@ void HTMLTableElement::parseAttribute(const QualifiedName& name, const AtomicStr
     } else if (name == colsAttr) {
         // ###
     } else {
-        HTMLElement::parseAttribute(name, value);
+        HTMLElement::parseAttribute(name, oldValue, value);
     }
 
     if (bordersBefore != cellBorders() || oldPadding != m_padding) {

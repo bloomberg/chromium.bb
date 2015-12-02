@@ -55,7 +55,7 @@ HTMLAreaElement::~HTMLAreaElement()
 
 DEFINE_NODE_FACTORY(HTMLAreaElement)
 
-void HTMLAreaElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
+void HTMLAreaElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)
 {
     if (name == shapeAttr) {
         if (equalIgnoringCase(value, "default"))
@@ -73,7 +73,7 @@ void HTMLAreaElement::parseAttribute(const QualifiedName& name, const AtomicStri
     } else if (name == altAttr || name == accesskeyAttr) {
         // Do nothing.
     } else {
-        HTMLAnchorElement::parseAttribute(name, value);
+        HTMLAnchorElement::parseAttribute(name, oldValue, value);
     }
 }
 

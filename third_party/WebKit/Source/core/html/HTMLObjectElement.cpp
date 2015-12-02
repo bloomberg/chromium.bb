@@ -95,7 +95,7 @@ void HTMLObjectElement::collectStyleForPresentationAttribute(const QualifiedName
         HTMLPlugInElement::collectStyleForPresentationAttribute(name, value, style);
 }
 
-void HTMLObjectElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
+void HTMLObjectElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)
 {
     if (name == formAttr) {
         formAttributeChanged();
@@ -123,7 +123,7 @@ void HTMLObjectElement::parseAttribute(const QualifiedName& name, const AtomicSt
         m_classId = value;
         reloadPluginOnAttributeChange(name);
     } else {
-        HTMLPlugInElement::parseAttribute(name, value);
+        HTMLPlugInElement::parseAttribute(name, oldValue, value);
     }
 }
 

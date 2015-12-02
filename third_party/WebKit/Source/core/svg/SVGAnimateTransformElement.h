@@ -40,7 +40,7 @@ private:
 
     bool hasValidAttributeType() override;
 
-    void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    void parseAttribute(const QualifiedName&, const AtomicString&, const AtomicString&) override;
 
     SVGTransformType m_type;
 };

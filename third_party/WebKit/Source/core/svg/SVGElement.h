@@ -194,7 +194,7 @@ public:
 protected:
     SVGElement(const QualifiedName&, Document&, ConstructionType = CreateSVGElement);
 
-    void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    void parseAttribute(const QualifiedName&, const AtomicString&, const AtomicString&) override;
 
     void attributeChanged(const QualifiedName&, const AtomicString&, const AtomicString&, AttributeModificationReason = ModifiedDirectly) override;
 

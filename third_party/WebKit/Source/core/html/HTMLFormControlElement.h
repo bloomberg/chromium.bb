@@ -123,7 +123,7 @@ public:
 protected:
     HTMLFormControlElement(const QualifiedName& tagName, Document&, HTMLFormElement*);
 
-    void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    void parseAttribute(const QualifiedName&, const AtomicString&, const AtomicString&) override;
     virtual void requiredAttributeChanged();
     virtual void disabledAttributeChanged();
     void attach(const AttachContext& = AttachContext()) override;

@@ -162,7 +162,7 @@ HTMLLinkElement::~HTMLLinkElement()
     linkLoadEventSender().cancelEvent(this);
 }
 
-void HTMLLinkElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
+void HTMLLinkElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)
 {
     if (name == relAttr) {
         m_relAttribute = LinkRelAttribute(value);
@@ -190,7 +190,7 @@ void HTMLLinkElement::parseAttribute(const QualifiedName& name, const AtomicStri
                 link->setSheetTitle(value);
         }
 
-        HTMLElement::parseAttribute(name, value);
+        HTMLElement::parseAttribute(name, oldValue, value);
     }
 }
 

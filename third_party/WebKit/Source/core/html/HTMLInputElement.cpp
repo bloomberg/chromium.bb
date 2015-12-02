@@ -683,7 +683,7 @@ void HTMLInputElement::attributeChanged(const QualifiedName& name, const AtomicS
     HTMLTextFormControlElement::attributeChanged(name, oldValue, newValue, reason);
 }
 
-void HTMLInputElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
+void HTMLInputElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)
 {
     ASSERT(m_inputType);
     ASSERT(m_inputTypeView);
@@ -692,7 +692,7 @@ void HTMLInputElement::parseAttribute(const QualifiedName& name, const AtomicStr
         removeFromRadioButtonGroup();
         m_name = value;
         addToRadioButtonGroup();
-        HTMLTextFormControlElement::parseAttribute(name, value);
+        HTMLTextFormControlElement::parseAttribute(name, oldValue, value);
     } else if (name == autocompleteAttr) {
         if (equalIgnoringCase(value, "off")) {
             m_autocomplete = Off;
@@ -776,10 +776,10 @@ void HTMLInputElement::parseAttribute(const QualifiedName& name, const AtomicStr
         setNeedsValidityCheck();
         UseCounter::count(document(), UseCounter::PatternAttribute);
     } else if (name == disabledAttr) {
-        HTMLTextFormControlElement::parseAttribute(name, value);
+        HTMLTextFormControlElement::parseAttribute(name, oldValue, value);
         m_inputTypeView->disabledAttributeChanged();
     } else if (name == readonlyAttr) {
-        HTMLTextFormControlElement::parseAttribute(name, value);
+        HTMLTextFormControlElement::parseAttribute(name, oldValue, value);
         m_inputTypeView->readonlyAttributeChanged();
     } else if (name == listAttr) {
         m_hasNonEmptyList = !value.isEmpty();
@@ -789,10 +789,10 @@ void HTMLInputElement::parseAttribute(const QualifiedName& name, const AtomicStr
         }
         UseCounter::count(document(), UseCounter::ListAttribute);
     } else if (name == webkitdirectoryAttr) {
-        HTMLTextFormControlElement::parseAttribute(name, value);
+        HTMLTextFormControlElement::parseAttribute(name, oldValue, value);
         UseCounter::count(document(), UseCounter::PrefixedDirectoryAttribute);
     } else {
-        HTMLTextFormControlElement::parseAttribute(name, value);
+        HTMLTextFormControlElement::parseAttribute(name, oldValue, value);
     }
     m_inputTypeView->attributeChanged();
 }

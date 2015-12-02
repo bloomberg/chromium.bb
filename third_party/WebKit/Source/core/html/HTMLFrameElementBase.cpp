@@ -107,7 +107,7 @@ void HTMLFrameElementBase::frameOwnerPropertiesChanged()
         document().frame()->loader().client()->didChangeFrameOwnerProperties(this);
 }
 
-void HTMLFrameElementBase::parseAttribute(const QualifiedName& name, const AtomicString& value)
+void HTMLFrameElementBase::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)
 {
     if (name == srcdocAttr) {
         if (!value.isNull()) {
@@ -121,7 +121,7 @@ void HTMLFrameElementBase::parseAttribute(const QualifiedName& name, const Atomi
         setLocation(stripLeadingAndTrailingHTMLSpaces(value));
     } else if (name == idAttr) {
         // Important to call through to base for the id attribute so the hasID bit gets set.
-        HTMLFrameOwnerElement::parseAttribute(name, value);
+        HTMLFrameOwnerElement::parseAttribute(name, oldValue, value);
         m_frameName = value;
     } else if (name == nameAttr) {
         m_frameName = value;
@@ -145,7 +145,7 @@ void HTMLFrameElementBase::parseAttribute(const QualifiedName& name, const Atomi
         // FIXME: should <frame> elements have beforeunload handlers?
         setAttributeEventListener(EventTypeNames::beforeunload, createAttributeEventListener(this, name, value, eventParameterName()));
     } else {
-        HTMLFrameOwnerElement::parseAttribute(name, value);
+        HTMLFrameOwnerElement::parseAttribute(name, oldValue, value);
     }
 }
 

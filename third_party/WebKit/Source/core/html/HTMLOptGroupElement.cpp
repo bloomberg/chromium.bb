@@ -64,9 +64,9 @@ void HTMLOptGroupElement::childrenChanged(const ChildrenChange& change)
     HTMLElement::childrenChanged(change);
 }
 
-void HTMLOptGroupElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
+void HTMLOptGroupElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)
 {
-    HTMLElement::parseAttribute(name, value);
+    HTMLElement::parseAttribute(name, oldValue, value);
     recalcSelectOptions();
 
     if (name == disabledAttr) {

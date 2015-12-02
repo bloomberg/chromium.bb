@@ -61,7 +61,7 @@ private:
     explicit HTMLTrackElement(Document&);
     ~HTMLTrackElement() override;
 
-    void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    void parseAttribute(const QualifiedName&, const AtomicString&, const AtomicString&) override;
 
     InsertionNotificationRequest insertedInto(ContainerNode*) override;
 

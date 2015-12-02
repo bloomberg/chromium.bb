@@ -63,7 +63,7 @@ PassRefPtrWillBeRawPtr<HTMLStyleElement> HTMLStyleElement::create(Document& docu
     return adoptRefWillBeNoop(new HTMLStyleElement(document, createdByParser));
 }
 
-void HTMLStyleElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
+void HTMLStyleElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)
 {
     if (name == titleAttr && m_sheet) {
         m_sheet->setTitle(value);
@@ -71,7 +71,7 @@ void HTMLStyleElement::parseAttribute(const QualifiedName& name, const AtomicStr
         m_sheet->setMediaQueries(MediaQuerySet::create(value));
         document().modifiedStyleSheet(m_sheet.get());
     } else {
-        HTMLElement::parseAttribute(name, value);
+        HTMLElement::parseAttribute(name, oldValue, value);
     }
 }
 

@@ -133,11 +133,11 @@ HTMLCanvasElement::~HTMLCanvasElement()
 #endif
 }
 
-void HTMLCanvasElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
+void HTMLCanvasElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)
 {
     if (name == widthAttr || name == heightAttr)
         reset();
-    HTMLElement::parseAttribute(name, value);
+    HTMLElement::parseAttribute(name, oldValue, value);
 }
 
 LayoutObject* HTMLCanvasElement::createLayoutObject(const ComputedStyle& style)

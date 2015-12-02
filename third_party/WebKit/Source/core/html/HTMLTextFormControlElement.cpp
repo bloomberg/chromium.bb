@@ -600,7 +600,7 @@ void HTMLTextFormControlElement::scheduleSelectEvent()
     document().enqueueUniqueAnimationFrameEvent(event.release());
 }
 
-void HTMLTextFormControlElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
+void HTMLTextFormControlElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)
 {
     if (name == autocapitalizeAttr)
         UseCounter::count(document(), UseCounter::AutocapitalizeAttribute);
@@ -610,7 +610,7 @@ void HTMLTextFormControlElement::parseAttribute(const QualifiedName& name, const
         updatePlaceholderVisibility();
         UseCounter::count(document(), UseCounter::PlaceholderAttribute);
     } else {
-        HTMLFormControlElementWithState::parseAttribute(name, value);
+        HTMLFormControlElementWithState::parseAttribute(name, oldValue, value);
     }
 }
 

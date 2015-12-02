@@ -157,7 +157,7 @@ void HTMLFormControlElement::reset()
     resetImpl();
 }
 
-void HTMLFormControlElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
+void HTMLFormControlElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)
 {
     if (name == formAttr) {
         formAttributeChanged();
@@ -184,10 +184,10 @@ void HTMLFormControlElement::parseAttribute(const QualifiedName& name, const Ato
             requiredAttributeChanged();
         UseCounter::count(document(), UseCounter::RequiredAttribute);
     } else if (name == autofocusAttr) {
-        HTMLElement::parseAttribute(name, value);
+        HTMLElement::parseAttribute(name, oldValue, value);
         UseCounter::count(document(), UseCounter::AutoFocusAttribute);
     } else {
-        HTMLElement::parseAttribute(name, value);
+        HTMLElement::parseAttribute(name, oldValue, value);
     }
 }
 

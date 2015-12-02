@@ -59,7 +59,7 @@ public:
 private:
     HTMLOutputElement(Document&, HTMLFormElement*);
 
-    void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    void parseAttribute(const QualifiedName&, const AtomicString&, const AtomicString&) override;
     const AtomicString& formControlType() const override;
     bool isEnumeratable() const override { return true; }
     bool supportLabels() const override { return true; }

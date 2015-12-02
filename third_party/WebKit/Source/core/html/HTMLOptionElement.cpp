@@ -198,7 +198,7 @@ int HTMLOptionElement::listIndex() const
     return -1;
 }
 
-void HTMLOptionElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
+void HTMLOptionElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)
 {
     if (name == valueAttr) {
         if (HTMLDataListElement* dataList = ownerDataListElement())
@@ -218,7 +218,7 @@ void HTMLOptionElement::parseAttribute(const QualifiedName& name, const AtomicSt
     } else if (name == labelAttr) {
         updateLabel();
     } else {
-        HTMLElement::parseAttribute(name, value);
+        HTMLElement::parseAttribute(name, oldValue, value);
     }
 }
 

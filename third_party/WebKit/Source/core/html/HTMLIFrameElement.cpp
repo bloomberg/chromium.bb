@@ -109,7 +109,7 @@ void HTMLIFrameElement::attributeChanged(const QualifiedName& name, const Atomic
     HTMLFrameElementBase::attributeChanged(name, oldValue, newValue, reason);
 }
 
-void HTMLIFrameElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
+void HTMLIFrameElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)
 {
     if (name == nameAttr) {
         if (inDocument() && document().isHTMLDocument() && !isInShadowTree()) {
@@ -126,7 +126,7 @@ void HTMLIFrameElement::parseAttribute(const QualifiedName& name, const AtomicSt
         if (!value.isNull())
             SecurityPolicy::referrerPolicyFromString(value, &m_referrerPolicy);
     } else {
-        HTMLFrameElementBase::parseAttribute(name, value);
+        HTMLFrameElementBase::parseAttribute(name, oldValue, value);
     }
 }
 

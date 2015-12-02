@@ -76,7 +76,7 @@ private:
     bool supportLabels() const override { return true; }
 
     LayoutObject* createLayoutObject(const ComputedStyle&) override;
-    void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    void parseAttribute(const QualifiedName&, const AtomicString&, const AtomicString&) override;
 
     void didElementStateChange();
     void didAddUserAgentShadowRoot(ShadowRoot&) override;

@@ -87,7 +87,7 @@ void HTMLTrackElement::removedFrom(ContainerNode* insertionPoint)
     HTMLElement::removedFrom(insertionPoint);
 }
 
-void HTMLTrackElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
+void HTMLTrackElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)
 {
     if (name == srcAttr) {
         if (!value.isEmpty())
@@ -107,7 +107,7 @@ void HTMLTrackElement::parseAttribute(const QualifiedName& name, const AtomicStr
         track()->setId(value);
     }
 
-    HTMLElement::parseAttribute(name, value);
+    HTMLElement::parseAttribute(name, oldValue, value);
 }
 
 const AtomicString& HTMLTrackElement::kind()

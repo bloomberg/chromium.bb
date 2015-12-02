@@ -509,7 +509,7 @@ void HTMLFormElement::finishRequestAutocomplete(AutocompleteResult result)
     m_pendingAutocompleteEventsQueue->enqueueEvent(event.release());
 }
 
-void HTMLFormElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
+void HTMLFormElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)
 {
     if (name == actionAttr) {
         m_attributes.parseAction(value);
@@ -531,7 +531,7 @@ void HTMLFormElement::parseAttribute(const QualifiedName& name, const AtomicStri
     } else if (name == onautocompleteerrorAttr) {
         setAttributeEventListener(EventTypeNames::autocompleteerror, createAttributeEventListener(this, name, value, eventParameterName()));
     } else {
-        HTMLElement::parseAttribute(name, value);
+        HTMLElement::parseAttribute(name, oldValue, value);
     }
 }
 

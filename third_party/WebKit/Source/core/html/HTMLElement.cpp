@@ -357,10 +357,10 @@ const AtomicString& HTMLElement::eventNameForAttributeName(const QualifiedName& 
     return attributeNameToEventNameMap.get(attrName.localName());
 }
 
-void HTMLElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
+void HTMLElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)
 {
     if (name == tabindexAttr)
-        return Element::parseAttribute(name, value);
+        return Element::parseAttribute(name, oldValue, value);
 
     if (name == dirAttr) {
         dirAttributeChanged(value);

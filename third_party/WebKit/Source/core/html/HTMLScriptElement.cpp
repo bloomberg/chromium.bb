@@ -78,14 +78,14 @@ void HTMLScriptElement::didMoveToNewDocument(Document& oldDocument)
     HTMLElement::didMoveToNewDocument(oldDocument);
 }
 
-void HTMLScriptElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
+void HTMLScriptElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)
 {
     if (name == srcAttr)
         m_loader->handleSourceAttribute(value);
     else if (name == asyncAttr)
         m_loader->handleAsyncAttribute();
     else
-        HTMLElement::parseAttribute(name, value);
+        HTMLElement::parseAttribute(name, oldValue, value);
 }
 
 void HTMLScriptElement::attributeChanged(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& newValue, AttributeModificationReason reason)

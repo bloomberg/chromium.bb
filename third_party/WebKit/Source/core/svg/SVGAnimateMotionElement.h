@@ -40,7 +40,7 @@ private:
     bool hasValidAttributeType() override;
     bool hasValidAttributeName() override;
 
-    void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    void parseAttribute(const QualifiedName&, const AtomicString&, const AtomicString&) override;
 
     void resetAnimatedType() override;
     void clearAnimatedType() override;

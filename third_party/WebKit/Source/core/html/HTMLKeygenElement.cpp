@@ -88,13 +88,13 @@ void HTMLKeygenElement::didAddUserAgentShadowRoot(ShadowRoot& root)
     root.appendChild(select);
 }
 
-void HTMLKeygenElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
+void HTMLKeygenElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)
 {
     // Reflect disabled attribute on the shadow select element
     if (name == disabledAttr)
         shadowSelect()->setAttribute(name, value);
 
-    HTMLFormControlElement::parseAttribute(name, value);
+    HTMLFormControlElement::parseAttribute(name, oldValue, value);
 }
 
 void HTMLKeygenElement::appendToFormData(FormData& formData)

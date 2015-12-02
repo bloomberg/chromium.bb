@@ -268,7 +268,7 @@ protected:
     void dispose();
 #endif
 
-    void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    void parseAttribute(const QualifiedName&, const AtomicString&, const AtomicString&) override;
     void finishParsingChildren() final;
     bool isURLAttribute(const Attribute&) const override;
     void attach(const AttachContext& = AttachContext()) override;

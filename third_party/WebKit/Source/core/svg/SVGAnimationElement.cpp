@@ -160,7 +160,7 @@ static bool parseKeySplines(const String& string, Vector<UnitBezier>& result)
     return true;
 }
 
-void SVGAnimationElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
+void SVGAnimationElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)
 {
     if (name == SVGNames::valuesAttr) {
         if (!parseValues(value, m_values)) {
@@ -208,7 +208,7 @@ void SVGAnimationElement::parseAttribute(const QualifiedName& name, const Atomic
         return;
     }
 
-    SVGSMILElement::parseAttribute(name, value);
+    SVGSMILElement::parseAttribute(name, oldValue, value);
 }
 
 void SVGAnimationElement::svgAttributeChanged(const QualifiedName& attrName)

@@ -427,7 +427,7 @@ void HTMLMetaElement::processViewportContentAttribute(const String& content, Vie
 }
 
 
-void HTMLMetaElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
+void HTMLMetaElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)
 {
     if (name == http_equivAttr || name == contentAttr) {
         process();
@@ -435,7 +435,7 @@ void HTMLMetaElement::parseAttribute(const QualifiedName& name, const AtomicStri
     }
 
     if (name != nameAttr)
-        HTMLElement::parseAttribute(name, value);
+        HTMLElement::parseAttribute(name, oldValue, value);
 }
 
 Node::InsertionNotificationRequest HTMLMetaElement::insertedInto(ContainerNode* insertionPoint)

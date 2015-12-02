@@ -603,7 +603,7 @@ bool SVGElement::inUseShadowTree() const
     return correspondingUseElement();
 }
 
-void SVGElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
+void SVGElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)
 {
     RefPtrWillBeRawPtr<SVGAnimatedPropertyBase> property = propertyFromAttribute(name);
     if (property) {
@@ -623,14 +623,14 @@ void SVGElement::parseAttribute(const QualifiedName& name, const AtomicString& v
         m_className->setBaseValueAsString(value, parseError);
         reportAttributeParsingError(parseError, name, value);
     } else if (name == tabindexAttr) {
-        Element::parseAttribute(name, value);
+        Element::parseAttribute(name, oldValue, value);
     } else {
         // standard events
         const AtomicString& eventName = HTMLElement::eventNameForAttributeName(name);
         if (!eventName.isNull())
             setAttributeEventListener(eventName, createAttributeEventListener(this, name, value, eventParameterName()));
         else
-            Element::parseAttribute(name, value);
+            Element::parseAttribute(name, oldValue, value);
     }
 }
 

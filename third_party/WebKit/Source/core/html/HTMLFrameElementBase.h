@@ -42,7 +42,7 @@ protected:
 
     bool isURLAllowed() const;
 
-    void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    void parseAttribute(const QualifiedName&, const AtomicString&, const AtomicString&) override;
     InsertionNotificationRequest insertedInto(ContainerNode*) override;
     void didNotifySubtreeInsertionsToDocument() final;
     void attach(const AttachContext& = AttachContext()) override;

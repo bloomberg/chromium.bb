@@ -68,7 +68,7 @@ void HTMLFrameElement::attach(const AttachContext& context)
     }
 }
 
-void HTMLFrameElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
+void HTMLFrameElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)
 {
     if (name == frameborderAttr) {
         m_frameBorder = value.toInt();
@@ -78,7 +78,7 @@ void HTMLFrameElement::parseAttribute(const QualifiedName& name, const AtomicStr
         if (layoutObject())
             layoutObject()->updateFromElement();
     } else {
-        HTMLFrameElementBase::parseAttribute(name, value);
+        HTMLFrameElementBase::parseAttribute(name, oldValue, value);
     }
 }
 

@@ -61,7 +61,7 @@ private:
     LayoutObject* createLayoutObject(const ComputedStyle&) override;
     LayoutProgress* layoutProgress() const;
 
-    void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    void parseAttribute(const QualifiedName&, const AtomicString&, const AtomicString&) override;
 
     void attach(const AttachContext& = AttachContext()) override;
 

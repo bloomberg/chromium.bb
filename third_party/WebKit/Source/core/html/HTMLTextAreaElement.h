@@ -116,7 +116,7 @@ private:
     bool isTextFormControl() const override { return true; }
 
     void childrenChanged(const ChildrenChange&) override;
-    void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    void parseAttribute(const QualifiedName&, const AtomicString&, const AtomicString&) override;
     bool isPresentationAttribute(const QualifiedName&) const override;
     void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
     LayoutObject* createLayoutObject(const ComputedStyle&) override;

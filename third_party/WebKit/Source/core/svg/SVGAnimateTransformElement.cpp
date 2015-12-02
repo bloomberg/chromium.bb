@@ -49,7 +49,7 @@ bool SVGAnimateTransformElement::hasValidAttributeType()
     return animatedPropertyType() == AnimatedTransformList;
 }
 
-void SVGAnimateTransformElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
+void SVGAnimateTransformElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)
 {
     if (name == SVGNames::typeAttr) {
         m_type = parseTransformType(value);
@@ -58,7 +58,7 @@ void SVGAnimateTransformElement::parseAttribute(const QualifiedName& name, const
         return;
     }
 
-    SVGAnimateElement::parseAttribute(name, value);
+    SVGAnimateElement::parseAttribute(name, oldValue, value);
 }
 
 }

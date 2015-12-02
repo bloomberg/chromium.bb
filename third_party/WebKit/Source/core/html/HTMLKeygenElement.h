@@ -46,7 +46,7 @@ private:
 
     bool canStartSelection() const override { return false; }
 
-    void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    void parseAttribute(const QualifiedName&, const AtomicString&, const AtomicString&) override;
 
     void appendToFormData(FormData&) override;
     const AtomicString& formControlType() const override;
