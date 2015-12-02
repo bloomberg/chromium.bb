@@ -19,7 +19,6 @@
 #include "components/crash/content/browser/crash_dump_manager_android.h"
 #include "components/enhanced_bookmarks/persistent_image_store.h"
 #include "components/signin/core/browser/signin_manager.h"
-#include "content/public/browser/android/compositor.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/main_function_params.h"
 #include "media/base/android/media_client_android.h"
@@ -27,6 +26,10 @@
 #include "net/base/network_change_notifier.h"
 #include "ui/base/resource/resource_bundle_android.h"
 #include "ui/base/ui_base_paths.h"
+
+#if !defined(USE_AURA)
+#include "content/public/browser/android/compositor.h"
+#endif
 
 namespace {
 
@@ -100,7 +103,9 @@ void ChromeBrowserMainPartsAndroid::PreEarlyInitialization() {
   net::NetworkChangeNotifier::SetFactory(
       new net::NetworkChangeNotifierFactoryAndroid());
 
+#if !defined(USE_AURA)
   content::Compositor::Initialize();
+#endif
 
   // Chrome on Android does not use default MessageLoop. It has its own
   // Android specific MessageLoop.
