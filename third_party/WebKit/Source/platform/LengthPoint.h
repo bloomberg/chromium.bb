@@ -31,10 +31,12 @@
 #define LengthPoint_h
 
 #include "platform/Length.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
 struct LengthPoint {
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     LengthPoint()
     {

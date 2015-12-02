@@ -33,6 +33,7 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/weborigin/KURL.h"
+#include "wtf/Allocator.h"
 #include "wtf/MathExtras.h"
 #include "wtf/text/WTFString.h"
 #include <time.h>
@@ -43,6 +44,7 @@ inline double invalidFileTime() { return std::numeric_limits<double>::quiet_NaN(
 inline bool isValidFileTime(double time) { return std::isfinite(time); }
 
 class FileMetadata {
+    DISALLOW_NEW();
 public:
     FileMetadata()
         : modificationTime(invalidFileTime())

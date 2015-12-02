@@ -32,6 +32,7 @@
 #define JSONValues_h
 
 #include "platform/PlatformExport.h"
+#include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/RefCounted.h"
@@ -63,6 +64,7 @@ class StringBuilder;
 //
 // (InspectorTypeBuilder.h is the only piece of code that relies on this specialization.)
 template<typename From> class IsPointerConvertible<From, blink::JSONValue> {
+    STATIC_ONLY(IsPointerConvertible);
 public:
     enum {
         Value = true

@@ -26,10 +26,12 @@
 #include "platform/PlatformExport.h"
 #include "platform/text/TextDirection.h"
 #include "platform/text/WritingMode.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
 class PLATFORM_EXPORT LengthBox {
+    DISALLOW_NEW();
 public:
     LengthBox()
     {

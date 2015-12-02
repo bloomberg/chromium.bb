@@ -32,10 +32,12 @@
 #define LayoutTestSupport_h
 
 #include "platform/PlatformExport.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
 class LayoutTestSupport {
+    STATIC_ONLY(LayoutTestSupport);
 public:
     PLATFORM_EXPORT static bool isRunningLayoutTest();
     PLATFORM_EXPORT static void setIsRunningLayoutTest(bool);

@@ -51,6 +51,7 @@ enum ValueRange {
 };
 
 struct PixelsAndPercent {
+    DISALLOW_NEW();
     PixelsAndPercent(float pixels, float percent)
         : pixels(pixels)
         , percent(percent)
@@ -63,7 +64,7 @@ struct PixelsAndPercent {
 class CalculationValue;
 
 class PLATFORM_EXPORT Length {
-    USING_FAST_MALLOC(Length);
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     Length()
         :  m_intValue(0), m_quirk(false), m_type(Auto), m_isFloat(false)

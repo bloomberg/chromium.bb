@@ -33,6 +33,7 @@
 #include "platform/FileMetadata.h"
 #include "platform/PlatformExport.h"
 #include "platform/weborigin/KURL.h"
+#include "wtf/Allocator.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
@@ -42,6 +43,7 @@ namespace blink {
 class FileChooser;
 
 struct FileChooserFileInfo {
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     FileChooserFileInfo(const String& path, const String& displayName = String())
         : path(path)
         , displayName(displayName)
@@ -62,6 +64,7 @@ struct FileChooserFileInfo {
 };
 
 struct FileChooserSettings {
+    DISALLOW_NEW();
     bool allowsMultipleFiles;
     bool allowsDirectoryUpload;
     Vector<String> acceptMIMETypes;

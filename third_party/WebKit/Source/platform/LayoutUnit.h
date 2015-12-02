@@ -31,6 +31,7 @@
 #ifndef LayoutUnit_h
 #define LayoutUnit_h
 
+#include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
 #include "wtf/MathExtras.h"
 #include "wtf/SaturatedArithmetic.h"
@@ -61,6 +62,7 @@ const int intMaxForLayoutUnit = INT_MAX / kFixedPointDenominator;
 const int intMinForLayoutUnit = INT_MIN / kFixedPointDenominator;
 
 class LayoutUnit {
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     LayoutUnit() : m_value(0) { }
     LayoutUnit(int value) { setValue(value); }
