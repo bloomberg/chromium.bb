@@ -34,7 +34,7 @@ void GLES2DecoderTestBase::SetupInitCapabilitiesExpectations(bool es3_capable) {
   }
 }
 
-void GLES2DecoderTestBase::SetupInitStateExpectations(bool es3_capable) {
+void GLES2DecoderTestBase::SetupInitStateExpectations() {
   EXPECT_CALL(*gl_, BlendColor(0.0f, 0.0f, 0.0f, 0.0f))
       .Times(1)
       .RetiresOnSaturation();
@@ -88,46 +88,6 @@ void GLES2DecoderTestBase::SetupInitStateExpectations(bool es3_capable) {
   EXPECT_CALL(*gl_, PixelStorei(GL_UNPACK_ALIGNMENT, 4))
       .Times(1)
       .RetiresOnSaturation();
-  if (es3_capable) {
-    EXPECT_CALL(*gl_, PixelStorei(GL_PACK_ROW_LENGTH, 0))
-        .Times(1)
-        .RetiresOnSaturation();
-  }
-  if (es3_capable) {
-    EXPECT_CALL(*gl_, PixelStorei(GL_PACK_SKIP_PIXELS, 0))
-        .Times(1)
-        .RetiresOnSaturation();
-  }
-  if (es3_capable) {
-    EXPECT_CALL(*gl_, PixelStorei(GL_PACK_SKIP_ROWS, 0))
-        .Times(1)
-        .RetiresOnSaturation();
-  }
-  if (es3_capable) {
-    EXPECT_CALL(*gl_, PixelStorei(GL_UNPACK_ROW_LENGTH, 0))
-        .Times(1)
-        .RetiresOnSaturation();
-  }
-  if (es3_capable) {
-    EXPECT_CALL(*gl_, PixelStorei(GL_UNPACK_IMAGE_HEIGHT, 0))
-        .Times(1)
-        .RetiresOnSaturation();
-  }
-  if (es3_capable) {
-    EXPECT_CALL(*gl_, PixelStorei(GL_UNPACK_SKIP_PIXELS, 0))
-        .Times(1)
-        .RetiresOnSaturation();
-  }
-  if (es3_capable) {
-    EXPECT_CALL(*gl_, PixelStorei(GL_UNPACK_SKIP_ROWS, 0))
-        .Times(1)
-        .RetiresOnSaturation();
-  }
-  if (es3_capable) {
-    EXPECT_CALL(*gl_, PixelStorei(GL_UNPACK_SKIP_IMAGES, 0))
-        .Times(1)
-        .RetiresOnSaturation();
-  }
   EXPECT_CALL(*gl_, PolygonOffset(0.0f, 0.0f)).Times(1).RetiresOnSaturation();
   EXPECT_CALL(*gl_, SampleCoverage(1.0f, false)).Times(1).RetiresOnSaturation();
   EXPECT_CALL(*gl_,

@@ -4179,9 +4179,11 @@ void WebGLRenderingContextBase::texImage2DImpl(GLenum target, GLint level, GLenu
         }
     }
 
-    resetUnpackParameters();
+    if (m_unpackAlignment != 1)
+        webContext()->pixelStorei(GL_UNPACK_ALIGNMENT, 1);
     texImage2DBase(target, level, internalformat, imageExtractor.imageWidth(), imageExtractor.imageHeight(), 0, format, type, needConversion ? data.data() : imagePixelData);
-    restoreUnpackParameters();
+    if (m_unpackAlignment != 1)
+        webContext()->pixelStorei(GL_UNPACK_ALIGNMENT, m_unpackAlignment);
 }
 
 bool WebGLRenderingContextBase::validateTexFunc(const char* functionName, TexImageFunctionType functionType, TexFuncValidationSourceType sourceType, GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, GLint xoffset, GLint yoffset)
@@ -4300,10 +4302,10 @@ void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLenum in
         changeUnpackAlignment = true;
     }
     if (changeUnpackAlignment)
-        resetUnpackParameters();
+        webContext()->pixelStorei(GL_UNPACK_ALIGNMENT, 1);
     texImage2DBase(target, level, internalformat, width, height, border, format, type, data);
     if (changeUnpackAlignment)
-        restoreUnpackParameters();
+        webContext()->pixelStorei(GL_UNPACK_ALIGNMENT, m_unpackAlignment);
 }
 
 void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLenum internalformat,
@@ -4331,9 +4333,11 @@ void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLenum in
             return;
         }
     }
-    resetUnpackParameters();
+    if (m_unpackAlignment != 1)
+        webContext()->pixelStorei(GL_UNPACK_ALIGNMENT, 1);
     texImage2DBase(target, level, internalformat, pixels->width(), pixels->height(), 0, format, type, needConversion ? data.data() : pixels->data()->data());
-    restoreUnpackParameters();
+    if (m_unpackAlignment != 1)
+        webContext()->pixelStorei(GL_UNPACK_ALIGNMENT, m_unpackAlignment);
 }
 
 void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLenum internalformat,
@@ -4598,9 +4602,11 @@ void WebGLRenderingContextBase::texSubImage2DImpl(GLenum target, GLint level, GL
         }
     }
 
-    resetUnpackParameters();
+    if (m_unpackAlignment != 1)
+        webContext()->pixelStorei(GL_UNPACK_ALIGNMENT, 1);
     webContext()->texSubImage2D(target, level, xoffset, yoffset, imageExtractor.imageWidth(), imageExtractor.imageHeight(), format, type,  needConversion ? data.data() : imagePixelData);
-    restoreUnpackParameters();
+    if (m_unpackAlignment != 1)
+        webContext()->pixelStorei(GL_UNPACK_ALIGNMENT, m_unpackAlignment);
 }
 
 void WebGLRenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
@@ -4621,10 +4627,10 @@ void WebGLRenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint 
         changeUnpackAlignment = true;
     }
     if (changeUnpackAlignment)
-        resetUnpackParameters();
+        webContext()->pixelStorei(GL_UNPACK_ALIGNMENT, 1);
     webContext()->texSubImage2D(target, level, xoffset, yoffset, width, height, format, type, data);
     if (changeUnpackAlignment)
-        restoreUnpackParameters();
+        webContext()->pixelStorei(GL_UNPACK_ALIGNMENT, m_unpackAlignment);
 }
 
 void WebGLRenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
@@ -4652,9 +4658,11 @@ void WebGLRenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint 
             return;
         }
     }
-    resetUnpackParameters();
+    if (m_unpackAlignment != 1)
+        webContext()->pixelStorei(GL_UNPACK_ALIGNMENT, 1);
     webContext()->texSubImage2D(target, level, xoffset, yoffset, pixels->width(), pixels->height(), format, type, needConversion ? data.data() : pixels->data()->data());
-    restoreUnpackParameters();
+    if (m_unpackAlignment != 1)
+        webContext()->pixelStorei(GL_UNPACK_ALIGNMENT, m_unpackAlignment);
 }
 
 void WebGLRenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
@@ -6948,18 +6956,6 @@ int WebGLRenderingContextBase::externallyAllocatedBytesPerPixel()
 DrawingBuffer* WebGLRenderingContextBase::drawingBuffer() const
 {
     return m_drawingBuffer.get();
-}
-
-void WebGLRenderingContextBase::resetUnpackParameters()
-{
-    if (m_unpackAlignment != 1)
-        webContext()->pixelStorei(GL_UNPACK_ALIGNMENT, 1);
-}
-
-void WebGLRenderingContextBase::restoreUnpackParameters()
-{
-    if (m_unpackAlignment != 1)
-        webContext()->pixelStorei(GL_UNPACK_ALIGNMENT, m_unpackAlignment);
 }
 
 } // namespace blink

@@ -692,15 +692,6 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   // pack alignment as last set by glPixelStorei
   GLint pack_alignment_;
 
-  // pack row length as last set by glPixelStorei
-  GLint pack_row_length_;
-
-  // pack skip pixels as last set by glPixelStorei
-  GLint pack_skip_pixels_;
-
-  // pack skip rows as last set by glPixelStorei
-  GLint pack_skip_rows_;
-
   // unpack alignment as last set by glPixelStorei
   GLint unpack_alignment_;
 

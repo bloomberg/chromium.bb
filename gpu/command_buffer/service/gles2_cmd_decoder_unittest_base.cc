@@ -358,7 +358,7 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
       .RetiresOnSaturation();
 
   SetupInitCapabilitiesExpectations(group_->feature_info()->IsES3Capable());
-  SetupInitStateExpectations(group_->feature_info()->IsES3Capable());
+  SetupInitStateExpectations();
 
   EXPECT_CALL(*gl_, ActiveTexture(GL_TEXTURE0))
       .Times(1)

@@ -418,62 +418,6 @@ _STATES = {
         'type': 'GLint',
         'enum': 'GL_UNPACK_ALIGNMENT',
         'default': '4'
-      },
-      {
-        'name': 'pack_row_length',
-        'type': 'GLint',
-        'enum': 'GL_PACK_ROW_LENGTH',
-        'default': '0',
-        'es3': True
-      },
-      {
-        'name': 'pack_skip_pixels',
-        'type': 'GLint',
-        'enum': 'GL_PACK_SKIP_PIXELS',
-        'default': '0',
-        'es3': True
-      },
-      {
-        'name': 'pack_skip_rows',
-        'type': 'GLint',
-        'enum': 'GL_PACK_SKIP_ROWS',
-        'default': '0',
-        'es3': True
-      },
-      {
-        'name': 'unpack_row_length',
-        'type': 'GLint',
-        'enum': 'GL_UNPACK_ROW_LENGTH',
-        'default': '0',
-        'es3': True
-      },
-      {
-        'name': 'unpack_image_height',
-        'type': 'GLint',
-        'enum': 'GL_UNPACK_IMAGE_HEIGHT',
-        'default': '0',
-        'es3': True
-      },
-      {
-        'name': 'unpack_skip_pixels',
-        'type': 'GLint',
-        'enum': 'GL_UNPACK_SKIP_PIXELS',
-        'default': '0',
-        'es3': True
-      },
-      {
-        'name': 'unpack_skip_rows',
-        'type': 'GLint',
-        'enum': 'GL_UNPACK_SKIP_ROWS',
-        'default': '0',
-        'es3': True
-      },
-      {
-        'name': 'unpack_skip_images',
-        'type': 'GLint',
-        'enum': 'GL_UNPACK_SKIP_IMAGES',
-        'default': '0',
-        'es3': True
       }
     ],
   },
@@ -10242,9 +10186,6 @@ void ContextState::InitState(const ContextState *prev_state) const {
             for item in state['states']:
               item_name = CachedStateName(item)
 
-              if 'es3' in item:
-                assert item['es3']
-                f.write("  if (feature_info_->IsES3Capable()) {\n");
               if 'extension_flag' in item:
                 f.write("  if (feature_info_->feature_flags().%s) {\n  " %
                            item['extension_flag'])
@@ -10270,7 +10211,7 @@ void ContextState::InitState(const ContextState *prev_state) const {
                           (item['enum_set']
                              if 'enum_set' in item else item['enum']),
                           item['name']))
-              if 'gl_version_flag' in item or 'es3' in item:
+              if 'gl_version_flag' in item:
                 f.write("  }\n")
               if test_prev:
                 if 'extension_flag' in item:
@@ -10479,7 +10420,7 @@ bool GLES2DecoderImpl::SetCapabilityState(GLenum cap, bool enabled) {
       f.write("""  }
 }
 
-void GLES2DecoderTestBase::SetupInitStateExpectations(bool es3_capable) {
+void GLES2DecoderTestBase::SetupInitStateExpectations() {
 """)
       # We need to sort the keys so the expectations match
       for state_name in sorted(_STATES.keys()):
@@ -10504,10 +10445,6 @@ void GLES2DecoderTestBase::SetupInitStateExpectations(bool es3_capable) {
               f.write("  if (group_->feature_info()->feature_flags().%s) {\n" %
                          item['extension_flag'])
               f.write("  ")
-            if 'es3' in item:
-              assert item['es3']
-              f.write("  if (es3_capable) {\n")
-              f.write("  ")
             expect_value = item['default']
             if isinstance(expect_value, list):
               # TODO: Currently we do not check array values.
@@ -10521,7 +10458,7 @@ void GLES2DecoderTestBase::SetupInitStateExpectations(bool es3_capable) {
                  expect_value))
             f.write("      .Times(1)\n")
             f.write("      .RetiresOnSaturation();\n")
-            if 'extension_flag' in item or 'es3' in item:
+            if 'extension_flag' in item:
               f.write("  }\n")
         else:
           if 'extension_flag' in state:
@@ -10856,9 +10793,7 @@ const size_t GLES2Util::enum_to_string_table_len_ =
                      enum)
           valid_list = _NAMED_TYPE_INFO[enum]['valid']
           if 'valid_es3' in _NAMED_TYPE_INFO[enum]:
-            for es3_enum in _NAMED_TYPE_INFO[enum]['valid_es3']:
-              if not es3_enum in valid_list:
-                valid_list.append(es3_enum)
+            valid_list = valid_list + _NAMED_TYPE_INFO[enum]['valid_es3']
           assert len(valid_list) == len(set(valid_list))
           if len(valid_list) > 0:
             f.write("  static const EnumToString string_table[] = {\n")
@@ -11099,7 +11034,6 @@ def main(argv):
 
   # Add in states and capabilites to GLState
   gl_state_valid = _NAMED_TYPE_INFO['GLState']['valid']
-  gl_state_valid_es3 = _NAMED_TYPE_INFO['GLState']['valid_es3']
   for state_name in sorted(_STATES.keys()):
     state = _STATES[state_name]
     if 'extension_flag' in state:
@@ -11111,13 +11045,8 @@ def main(argv):
       for item in state['states']:
         if 'extension_flag' in item:
           continue
-        if 'es3' in item:
-          assert item['es3']
-          if not item['enum'] in gl_state_valid_es3:
-            gl_state_valid_es3.append(item['enum'])
-        else:
-          if not item['enum'] in gl_state_valid:
-            gl_state_valid.append(item['enum'])
+        if not item['enum'] in gl_state_valid:
+          gl_state_valid.append(item['enum'])
   for capability in _CAPABILITY_FLAGS:
     if 'extension_flag' in capability:
       continue

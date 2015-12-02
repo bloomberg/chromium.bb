@@ -175,7 +175,6 @@ public:
     ScriptValue getParameter(ScriptState*, GLenum pname) override;
     ScriptValue getTexParameter(ScriptState*, GLenum target, GLenum pname) override;
     ScriptValue getFramebufferAttachmentParameter(ScriptState*, GLenum target, GLenum attachment, GLenum pname) override;
-    void pixelStorei(GLenum pname, GLint param) override;
     void readPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, DOMArrayBufferView* pixels) override;
     void restoreCurrentFramebuffer() override;
 
@@ -238,9 +237,6 @@ protected:
 
     void removeBoundBuffer(WebGLBuffer*) override;
 
-    void resetUnpackParameters() override;
-    void restoreUnpackParameters() override;
-
     PersistentWillBeMember<WebGLFramebuffer> m_readFramebufferBinding;
     PersistentWillBeMember<WebGLTransformFeedback> m_transformFeedbackBinding;
     GLint m_maxArrayTextureLayers;
@@ -262,15 +258,6 @@ protected:
     PersistentWillBeMember<WebGLQuery> m_currentBooleanOcclusionQuery;
     PersistentWillBeMember<WebGLQuery> m_currentTransformFeedbackPrimitivesWrittenQuery;
     PersistentHeapVectorWillBeHeapVector<Member<WebGLSampler>> m_samplerUnits;
-
-    GLint m_packRowLength;
-    GLint m_packSkipPixels;
-    GLint m_packSkipRows;
-    GLint m_unpackRowLength;
-    GLint m_unpackImageHeight;
-    GLint m_unpackSkipPixels;
-    GLint m_unpackSkipRows;
-    GLint m_unpackSkipImages;
 };
 
 DEFINE_TYPE_CASTS(WebGL2RenderingContextBase, CanvasRenderingContext, context,

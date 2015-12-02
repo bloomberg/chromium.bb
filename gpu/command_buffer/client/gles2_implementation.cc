@@ -85,9 +85,6 @@ GLES2Implementation::GLES2Implementation(
       angle_pack_reverse_row_order_status_(kUnknownExtensionStatus),
       chromium_framebuffer_multisample_(kUnknownExtensionStatus),
       pack_alignment_(4),
-      pack_row_length_(0),
-      pack_skip_pixels_(0),
-      pack_skip_rows_(0),
       unpack_alignment_(4),
       unpack_row_length_(0),
       unpack_image_height_(0),
@@ -1720,41 +1717,32 @@ void GLES2Implementation::PixelStorei(GLenum pname, GLint param) {
       << param << ")");
   switch (pname) {
     case GL_PACK_ALIGNMENT:
-      pack_alignment_ = param;
-      break;
-    case GL_PACK_ROW_LENGTH:
-      pack_row_length_ = param;
-      break;
-    case GL_PACK_SKIP_PIXELS:
-      pack_skip_pixels_ = param;
-      break;
-    case GL_PACK_SKIP_ROWS:
-      pack_skip_rows_ = param;
-      break;
+        pack_alignment_ = param;
+        break;
     case GL_UNPACK_ALIGNMENT:
-      unpack_alignment_ = param;
-      break;
+        unpack_alignment_ = param;
+        break;
     case GL_UNPACK_ROW_LENGTH_EXT:
-      unpack_row_length_ = param;
-      return;
+        unpack_row_length_ = param;
+        return;
     case GL_UNPACK_IMAGE_HEIGHT:
-      unpack_image_height_ = param;
-      return;
+        unpack_image_height_ = param;
+        return;
     case GL_UNPACK_SKIP_ROWS_EXT:
-      unpack_skip_rows_ = param;
-      return;
+        unpack_skip_rows_ = param;
+        return;
     case GL_UNPACK_SKIP_PIXELS_EXT:
-      unpack_skip_pixels_ = param;
-      return;
+        unpack_skip_pixels_ = param;
+        return;
     case GL_UNPACK_SKIP_IMAGES:
-      unpack_skip_images_ = param;
-      return;
+        unpack_skip_images_ = param;
+        return;
     case GL_PACK_REVERSE_ROW_ORDER_ANGLE:
-      pack_reverse_row_order_ =
-          IsAnglePackReverseRowOrderAvailable() ? (param != 0) : false;
-      break;
+        pack_reverse_row_order_ =
+            IsAnglePackReverseRowOrderAvailable() ? (param != 0) : false;
+        break;
     default:
-      break;
+        break;
   }
   helper_->PixelStorei(pname, param);
   CheckGLError();
@@ -3484,14 +3472,6 @@ void GLES2Implementation::ReadPixels(
     return;
   }
 
-  if (bound_pixel_pack_buffer_) {
-    // TODO(zmo): Need to handle the case of reading into a PIXEL_PACK_BUFFER
-    // in ES3. For now, generate a GL error.
-    SetGLError(GL_INVALID_OPERATION, "glReadPixels",
-               "ReadPixels to a pixel pack buffer isn't implemented");
-    return;
-  }
-
   if (bound_pixel_pack_transfer_buffer_id_) {
     GLuint offset = ToGLuint(pixels);
     BufferTracker::Buffer* buffer = GetBoundPixelUnpackTransferBufferIfValid(
@@ -3509,27 +3489,6 @@ void GLES2Implementation::ReadPixels(
   if (!pixels) {
     SetGLError(GL_INVALID_OPERATION, "glReadPixels", "pixels = NULL");
     return;
-  }
-
-  // compute the advance bytes per row for the dst pixels
-  uint32 dst_padded_row_size;
-  if (pack_row_length_ > 0) {
-    if (!GLES2Util::ComputeImagePaddedRowSize(
-        pack_row_length_, format, type, pack_alignment_,
-        &dst_padded_row_size)) {
-      SetGLError(
-          GL_INVALID_VALUE, "glReadPixels", "pack row length too large");
-      return;
-    }
-  } else {
-    dst_padded_row_size = padded_row_size;
-  }
-
-  // Advance pixels pointer past the skip rows and skip pixels
-  dest += pack_skip_rows_ * dst_padded_row_size;
-  if (pack_skip_pixels_) {
-    uint32 group_size = GLES2Util::ComputeImageGroupSize(format, type);
-    dest += pack_skip_pixels_ * group_size;
   }
 
   // Transfer by rows.
@@ -3562,7 +3521,7 @@ void GLES2Implementation::ReadPixels(
       // chunk.
       int8* rows_dst;
       if (pack_reverse_row_order_) {
-          rows_dst = dest + (height - num_rows) * dst_padded_row_size;
+          rows_dst = dest + (height - num_rows) * padded_row_size;
       } else {
           rows_dst = dest;
       }
@@ -3570,7 +3529,7 @@ void GLES2Implementation::ReadPixels(
       const int8* src = static_cast<const int8*>(buffer.address());
       for (GLint yy = 0; yy < num_rows; ++yy) {
         memcpy(rows_dst, src, unpadded_row_size);
-        rows_dst += dst_padded_row_size;
+        rows_dst += padded_row_size;
         src += padded_row_size;
       }
       if (!pack_reverse_row_order_) {

@@ -270,10 +270,8 @@ void ContextState::RestoreBufferBindings() const {
                  GetBufferId(bound_copy_write_buffer.get()));
     glBindBuffer(GL_PIXEL_PACK_BUFFER,
                  GetBufferId(bound_pixel_pack_buffer.get()));
-    UpdatePackParameters();
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER,
                  GetBufferId(bound_pixel_unpack_buffer.get()));
-    UpdateUnpackParameters();
     glBindBuffer(GL_TRANSFORM_FEEDBACK_BUFFER,
                  GetBufferId(bound_transform_feedback_buffer.get()));
     glBindBuffer(GL_UNIFORM_BUFFER, GetBufferId(bound_uniform_buffer.get()));
@@ -444,38 +442,6 @@ void ContextState::EnableDisable(GLenum pname, bool enable) const {
   }
 }
 
-void ContextState::UpdatePackParameters() const {
-  if (!feature_info_->IsES3Capable())
-    return;
-  if (bound_pixel_pack_buffer.get()) {
-    glPixelStorei(GL_PACK_ROW_LENGTH, pack_row_length);
-    glPixelStorei(GL_PACK_SKIP_PIXELS, pack_skip_pixels);
-    glPixelStorei(GL_PACK_SKIP_ROWS, pack_skip_rows);
-  } else {
-    glPixelStorei(GL_PACK_ROW_LENGTH, 0);
-    glPixelStorei(GL_PACK_SKIP_PIXELS, 0);
-    glPixelStorei(GL_PACK_SKIP_ROWS, 0);
-  }
-}
-
-void ContextState::UpdateUnpackParameters() const {
-  if (!feature_info_->IsES3Capable())
-    return;
-  if (bound_pixel_unpack_buffer.get()) {
-    glPixelStorei(GL_UNPACK_ROW_LENGTH, unpack_row_length);
-    glPixelStorei(GL_UNPACK_IMAGE_HEIGHT, unpack_image_height);
-    glPixelStorei(GL_UNPACK_SKIP_PIXELS, unpack_skip_pixels);
-    glPixelStorei(GL_UNPACK_SKIP_ROWS, unpack_skip_rows);
-    glPixelStorei(GL_UNPACK_SKIP_IMAGES, unpack_skip_images);
-  } else {
-    glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
-    glPixelStorei(GL_UNPACK_IMAGE_HEIGHT, 0);
-    glPixelStorei(GL_UNPACK_SKIP_PIXELS, 0);
-    glPixelStorei(GL_UNPACK_SKIP_ROWS, 0);
-    glPixelStorei(GL_UNPACK_SKIP_IMAGES, 0);
-  }
-}
-
 void ContextState::SetBoundBuffer(GLenum target, Buffer* buffer) {
   switch (target) {
     case GL_ARRAY_BUFFER:
@@ -492,11 +458,9 @@ void ContextState::SetBoundBuffer(GLenum target, Buffer* buffer) {
       break;
     case GL_PIXEL_PACK_BUFFER:
       bound_pixel_pack_buffer = buffer;
-      UpdatePackParameters();
       break;
     case GL_PIXEL_UNPACK_BUFFER:
       bound_pixel_unpack_buffer = buffer;
-      UpdateUnpackParameters();
       break;
     case GL_TRANSFORM_FEEDBACK_BUFFER:
       bound_transform_feedback_buffer = buffer;
@@ -524,11 +488,9 @@ void ContextState::RemoveBoundBuffer(Buffer* buffer) {
   }
   if (bound_pixel_pack_buffer.get() == buffer) {
     bound_pixel_pack_buffer = nullptr;
-    UpdatePackParameters();
   }
   if (bound_pixel_unpack_buffer.get() == buffer) {
     bound_pixel_unpack_buffer = nullptr;
-    UpdateUnpackParameters();
   }
   if (bound_transform_feedback_buffer.get() == buffer) {
     bound_transform_feedback_buffer = nullptr;

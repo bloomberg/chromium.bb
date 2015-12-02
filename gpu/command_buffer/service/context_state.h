@@ -266,13 +266,6 @@ struct GPU_EXPORT ContextState {
  private:
   void EnableDisable(GLenum pname, bool enable) const;
 
-  // If a buffer object is bound to PIXEL_PACK_BUFFER, set all pack parameters
-  // user values; otherwise, set them to 0.
-  void UpdatePackParameters() const;
-  // If a buffer object is bound to PIXEL_UNPACK_BUFFER, set all unpack
-  // parameters user values; otherwise, set them to 0.
-  void UpdateUnpackParameters() const;
-
   FeatureInfo* feature_info_;
   scoped_ptr<ErrorState> error_state_;
 };
