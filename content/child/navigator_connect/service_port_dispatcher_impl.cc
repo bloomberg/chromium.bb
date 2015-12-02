@@ -22,10 +22,10 @@ class WebConnectCallbacksImpl
 
   ~WebConnectCallbacksImpl() override {}
 
-  void onSuccess(blink::WebServicePort* port) override {
+  void onSuccess(const blink::WebServicePort& port) override {
     callback_.Run(SERVICE_PORT_CONNECT_RESULT_ACCEPT,
-                  mojo::String::From<base::string16>(port->name),
-                  mojo::String::From<base::string16>(port->data));
+                  mojo::String::From<base::string16>(port.name),
+                  mojo::String::From<base::string16>(port.data));
   }
 
   void onError() override {

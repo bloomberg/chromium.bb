@@ -34,14 +34,13 @@ public:
 
     ~ConnectCallbacks() override { }
 
-    void onSuccess(WebServicePortID* portIdRaw) override
+    void onSuccess(WebServicePortID portId) override
     {
-        OwnPtr<WebServicePortID> webPortId = adoptPtr(portIdRaw);
         if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped()) {
             return;
         }
         WebServicePort webPort;
-        webPort.id = *webPortId;
+        webPort.id = portId;
         webPort.targetUrl = m_targetUrl;
         webPort.name = m_portName;
         webPort.data = m_serializedPortData;

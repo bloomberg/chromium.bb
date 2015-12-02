@@ -141,7 +141,7 @@ void AcceptConnectionObserver::responseWasResolved(const ScriptValue& value)
     ServicePort* port = ServicePort::create(m_collection, webPort);
     m_collection->addPort(port);
     m_resolver->resolve(port);
-    m_callbacks->onSuccess(&webPort);
+    m_callbacks->onSuccess(webPort);
     m_state = Done;
 }
 

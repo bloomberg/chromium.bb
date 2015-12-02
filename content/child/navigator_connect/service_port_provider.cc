@@ -108,7 +108,7 @@ void ServicePortProvider::OnConnectResult(
     ServicePortConnectResult result,
     int32_t port_id) {
   if (result == SERVICE_PORT_CONNECT_RESULT_ACCEPT) {
-    callbacks->onSuccess(new blink::WebServicePortID(port_id));
+    callbacks->onSuccess(port_id);
   } else {
     callbacks->onError();
   }
