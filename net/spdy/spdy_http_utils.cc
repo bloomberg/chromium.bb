@@ -171,7 +171,11 @@ void CreateSpdyHeadersFromHttpResponse(
   if (protocol_version < HTTP2) {
     (*headers)[version_key] = std::string(status_line.begin(), after_version);
   }
-  (*headers)[status_key] = std::string(after_version + 1, status_line.end());
+
+  // Get status code only.
+  std::string::const_iterator after_status =
+      std::find(after_version + 1, status_line.end(), ' ');
+  (*headers)[status_key] = std::string(after_version + 1, after_status);
 
   void* iter = NULL;
   std::string raw_name, value;

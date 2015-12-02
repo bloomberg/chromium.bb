@@ -83,7 +83,7 @@ TEST_F(QuicInMemoryCacheTest, ReadsCacheDir) {
                                                     "/index.html");
   ASSERT_TRUE(response);
   ASSERT_TRUE(ContainsKey(response->headers(), ":status"));
-  EXPECT_EQ("200 OK", response->headers().find(":status")->second);
+  EXPECT_EQ("200", response->headers().find(":status")->second);
   ASSERT_TRUE(ContainsKey(response->headers(), "connection"));
   EXPECT_EQ("close", response->headers().find("connection")->second);
   EXPECT_LT(0U, response->body().length());
@@ -96,7 +96,7 @@ TEST_F(QuicInMemoryCacheTest, UsesOriginalUrl) {
                                                     "/index.html");
   ASSERT_TRUE(response);
   ASSERT_TRUE(ContainsKey(response->headers(), ":status"));
-  EXPECT_EQ("200 OK", response->headers().find(":status")->second);
+  EXPECT_EQ("200", response->headers().find(":status")->second);
   ASSERT_TRUE(ContainsKey(response->headers(), "connection"));
   EXPECT_EQ("close", response->headers().find("connection")->second);
   EXPECT_LT(0U, response->body().length());
