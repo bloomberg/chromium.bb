@@ -709,12 +709,15 @@ var Should = (function () {
 
         var mismatches = {};
         var maxDiff = 0.0;
+        var maxDiffIndex = 0;
         for (var i = 0; i < array.length; i++) {
             var diff = Math.abs(this.target[i] - array[i]);
             if (diff > maxAllowedError)
                 mismatches[i] = diff;
-            if (diff > maxDiff)
+            if (diff > maxDiff) {
                 maxDiff = diff;
+                maxDiffIndex = i;
+            }
         }
 
         var numberOfmismatches = Object.keys(mismatches).length;
@@ -728,11 +731,14 @@ var Should = (function () {
             var counter = 0;
             var failureMessage = 'does not equal [' + arrStr +
                 '] with an element-wise tolerance of ' + maxAllowedError;
+            failureMessage += '\nIndex\t    Diff\t\t    Actual\t\t    Expected';
             for (var index in mismatches) {
-                failureMessage += '\n[' + index + '] : ' + mismatches[index];
+                failureMessage += '\n[' + index + '] :\t' + mismatches[index] +
+                    '\t' + this.target[index] + '\t' + array[index];
                 if (++counter >= this.NUM_ERRORS_LOG || counter === numberOfmismatches) {
                     failureMessage += '\nand ' + (numberOfmismatches - counter) +
-                    ' more differences with the maximum error of ' + maxDiff;
+                        ' more differences with the maximum error of ' + maxDiff +
+                        ' at index ' + maxDiffIndex;
                     break;
                 }
             }
