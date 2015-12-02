@@ -12,6 +12,7 @@
       # GN version: //content/browser/tracing:generate_tracing_grd
       'target_name': 'generate_tracing_grd',
       'type': 'none',
+      'hard_dependency': 1,
       'dependencies': [
         '<(trace_viewer_src_dir)/trace_viewer.gyp:generate_about_tracing',
       ],
@@ -41,6 +42,7 @@
       # GN version: //content/browser/tracing:resources
       'target_name': 'tracing_resources',
       'type': 'none',
+      'hard_dependency': 1,
       'dependencies': [
         '<(trace_viewer_src_dir)/trace_viewer.gyp:generate_about_tracing',
         'generate_tracing_grd',
@@ -76,6 +78,7 @@
           },
           'inputs': [
             '<(grit_grd_file)',
+            '<(DEPTH)/tools/gritsettings/resource_ids',
             '<!@pymod_do_main(grit_info --inputs)',
           ],
           'outputs': [
