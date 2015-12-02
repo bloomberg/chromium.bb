@@ -63,13 +63,9 @@ crbug.com/538697 [ Win7 Debug ] printing/webgl-oversized-printing.html [ Crash ]
 crbug.com/404597 fast/text/international/inline-plaintext-is-isolated.html [ Failure ]
 crbug.com/404597 fast/text/international/bdi-dir-default-to-auto.html [ Failure ]
 
-crbug.com/539226 [ Win7 ] http/tests/xmlhttprequest/open-in-body-onload-sync-to-invalid-cross-origin-response-handling.html [ Timeout ]
-crbug.com/539226 [ Win7 ] http/tests/xmlhttprequest/open-in-body-onload-sync-to-invalid-redirect-response-handling.html [ Timeout ]
-crbug.com/539226 [ Win7 ] http/tests/xmlhttprequest/open-in-body-onload-sync-to-invalid-preflight-handling.html [ Timeout ]
-
-crbug.com/539247 [ Win10 ] http/tests/xmlhttprequest/open-in-body-onload-sync-to-invalid-cross-origin-response-handling.html [ Timeout Pass ]
-crbug.com/539247 [ Win10 ] http/tests/xmlhttprequest/open-in-body-onload-sync-to-invalid-redirect-response-handling.html [ Timeout Pass ]
-crbug.com/539247 [ Win10 ] http/tests/xmlhttprequest/open-in-body-onload-sync-to-invalid-preflight-handling.html [ Timeout Pass ]
+crbug.com/539226 http/tests/xmlhttprequest/open-in-body-onload-sync-to-invalid-cross-origin-response-handling.html [ Timeout Pass ]
+crbug.com/539226 [ Win ] http/tests/xmlhttprequest/open-in-body-onload-sync-to-invalid-redirect-response-handling.html [ Timeout Pass ]
+crbug.com/539226 [ Win ] http/tests/xmlhttprequest/open-in-body-onload-sync-to-invalid-preflight-handling.html [ Timeout Pass ]
 
 crbug.com/417782 [ Linux Win ] virtual/rootlayerscrolls/fast/scrolling/fractional-scroll-offset-fixed-position-non-composited.html [ Failure ]
 crbug.com/492664 [ Linux XP ] imported/csswg-test/css-writing-modes-3/box-offsets-rel-pos-vlr-005.xht [ Failure ]
