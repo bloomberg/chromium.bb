@@ -85,7 +85,29 @@ def _SplitAssetPath(path):
   return src_path, dest_path
 
 
-def _AddAssets(apk, paths, disable_compression=False):
+def _ExpandPaths(paths):
+  """Converts src:dst into tuples and enumerates files within directories.
+
+  Args:
+    paths: Paths in the form "src_path:dest_path"
+
+  Returns:
+    A list of (src_path, dest_path) tuples sorted by dest_path (for stable
+    ordering within output .apk).
+  """
+  ret = []
+  for path in paths:
+    src_path, dest_path = _SplitAssetPath(path)
+    if os.path.isdir(src_path):
+      for f in build_utils.FindInDirectory(src_path, '*'):
+        ret.append((f, os.path.join(dest_path, f[len(src_path) + 1:])))
+    else:
+      ret.append((src_path, dest_path))
+  ret.sort(key=lambda t:t[1])
+  return ret
+
+
+def _AddAssets(apk, path_tuples, disable_compression=False):
   """Adds the given paths to the apk.
 
   Args:
@@ -96,8 +118,7 @@ def _AddAssets(apk, paths, disable_compression=False):
   # Group all uncompressed assets together in the hope that it will increase
   # locality of mmap'ed files.
   for target_compress in (False, True):
-    for path in paths:
-      src_path, dest_path = _SplitAssetPath(path)
+    for src_path, dest_path in path_tuples:
 
       compress = not disable_compression and (
           os.path.splitext(src_path)[1] not in _NO_COMPRESS_EXTENSIONS)
@@ -113,9 +134,10 @@ def _AddAssets(apk, paths, disable_compression=False):
                                        compress=compress)
 
 
-def _CreateAssetsList(paths):
+def _CreateAssetsList(path_tuples):
   """Returns a newline-separated list of asset paths for the given paths."""
-  return '\n'.join(_SplitAssetPath(p)[1] for p in sorted(paths)) + '\n'
+  dests = sorted(t[1] for t in path_tuples)
+  return '\n'.join(dests) + '\n'
 
 
 def main(args):
@@ -133,8 +155,10 @@ def main(args):
 
   input_strings = [options.android_abi, options.native_lib_placeholders]
 
-  for path in itertools.chain(options.assets, options.uncompressed_assets):
-    src_path, dest_path = _SplitAssetPath(path)
+  _assets = _ExpandPaths(options.assets)
+  _uncompressed_assets = _ExpandPaths(options.uncompressed_assets)
+
+  for src_path, dest_path in itertools.chain(_assets, _uncompressed_assets):
     input_paths.append(src_path)
     input_strings.append(dest_path)
 
@@ -163,12 +187,11 @@ def main(args):
         # 2. Assets
         if options.write_asset_list:
           data = _CreateAssetsList(
-              itertools.chain(options.assets, options.uncompressed_assets))
+              itertools.chain(_assets, _uncompressed_assets))
           build_utils.AddToZipHermetic(out_apk, 'assets/assets_list', data=data)
 
-        _AddAssets(out_apk, options.assets, disable_compression=False)
-        _AddAssets(out_apk, options.uncompressed_assets,
-                   disable_compression=True)
+        _AddAssets(out_apk, _assets, disable_compression=False)
+        _AddAssets(out_apk, _uncompressed_assets, disable_compression=True)
 
         # 3. Resources
         for info in resource_infos[1:]:

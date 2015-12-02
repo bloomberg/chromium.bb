@@ -4,6 +4,10 @@
 
 import("//build/toolchain/toolchain.gni")
 
+if (is_android) {
+  import("//build/config/android/rules.gni")
+}
+
 # Generate a binary Mojo application in a self-named directory.
 # Application resources are copied to a "resources" directory alongside the app.
 # The parameters of this template are those of a shared library.
@@ -119,17 +123,14 @@ template("mojo_native_application") {
       if (defined(invoker.testonly)) {
         testonly = invoker.testonly
       }
-
-      visibility = [ ":${final_target_name}" ]
     }
 
     copy(final_target_name) {
-      if (defined(invoker.testonly)) {
-        testonly = invoker.testonly
-      }
-      if (defined(invoker.visibility)) {
-        visibility = invoker.visibility
-      }
+      forward_variables_from(invoker,
+                             [
+                               "testonly",
+                               "visibility",
+                             ])
       deps = [
         ":${library_target_name}",
       ]
@@ -140,6 +141,26 @@ template("mojo_native_application") {
       outputs = [
         "${root_out_dir}/${base_target_name}/${output}",
       ]
+    }
+
+    if (is_android) {
+      android_assets("${final_target_name}_assets") {
+        forward_variables_from(invoker, [ "testonly" ])
+        deps = [
+          ":${library_target_name}",
+        ]
+        if (defined(invoker.deps)) {
+          deps += invoker.deps
+        }
+        renaming_sources = [ "${root_shlib_dir}/${library_name}" ]
+        renaming_destinations = [ "${base_target_name}/${output}" ]
+        if (defined(invoker.resources)) {
+          renaming_sources += invoker.resources
+          renaming_destinations += process_file_template(
+                  invoker.resources,
+                  [ "$base_target_name/resources/{{source_file_part}}" ])
+        }
+      }
     }
   } else {
     nexe_target_name = base_target_name + "_nexe"
@@ -276,13 +297,13 @@ if (is_android) {
     assert(defined(invoker.input_so))
     assert(defined(invoker.input_dex_jar))
 
+    base_target_name = target_name
+    if (defined(invoker.output_name)) {
+      base_target_name = invoker.output_name
+    }
+
     mojo_deps = []
     if (defined(invoker.resources)) {
-      base_target_name = target_name
-      if (defined(invoker.output_name)) {
-        base_target_name = invoker.output_name
-      }
-
       copy_step_name = "${base_target_name}__copy_resources"
       copy(copy_step_name) {
         sources = invoker.resources
@@ -334,26 +355,23 @@ if (is_android) {
       }
     }
 
+    _mojo_output =
+        "${root_out_dir}/${base_target_name}/${base_target_name}.mojo"
+
     action(target_name) {
       script = "//mojo/public/tools/prepend.py"
-
-      base_target_name = target_name
-      if (defined(invoker.output_name)) {
-        base_target_name = invoker.output_name
-      }
 
       input = zip_action_output
       inputs = [
         input,
       ]
 
-      output = "${root_out_dir}/${base_target_name}/${base_target_name}.mojo"
       outputs = [
-        output,
+        _mojo_output,
       ]
 
       rebase_input = rebase_path(input, root_build_dir)
-      rebase_output = rebase_path(output, root_build_dir)
+      rebase_output = rebase_path(_mojo_output, root_build_dir)
       args = [
         "--input=$rebase_input",
         "--output=$rebase_output",
@@ -365,6 +383,21 @@ if (is_android) {
       public_deps = [
         ":$zip_action_name",
       ]
+    }
+
+    android_assets("${target_name}_assets") {
+      forward_variables_from(invoker, [ "testonly" ])
+      deps = [
+        ":$prepend_action_name",
+      ]
+      renaming_sources = [ _mojo_output ]
+      renaming_destinations = [ "${base_target_name}/${base_target_name}.mojo" ]
+      if (defined(invoker.resources)) {
+        renaming_sources += invoker.resources
+        renaming_destinations += process_file_template(
+                invoker.resources,
+                [ "$base_target_name/resources/{{source_file_part}}" ])
+      }
     }
   }
 }

@@ -268,54 +268,26 @@ if (is_android) {
     custom_package = "org.chromium.mojo.shell"
   }
 
-  mojo_runner_test_assets_dir = "$root_build_dir/mojo_runner_test_assets"
-  mojo_runner_apptests_assets_dir =
-      "$root_build_dir/mojo_runner_apptests_assets"
-
-  copy_ex("copy_mojo_runner_apptests_assets") {
+  android_assets("mojo_runner_apptests_assets") {
     testonly = true
-    clear_dir = true
-    dest = mojo_runner_apptests_assets_dir
 
     deps = [
       ":bootstrap",
       ":bootstrap_java",
-      "//components/clipboard:apptests",
-      "//components/mus/ws:apptests",
-      "//components/resource_provider:apptests",
-      "//mojo/services/network:apptests",
-      "//third_party/icu:icudata",
+      "//components/clipboard:apptests_assets",
+      "//components/clipboard:clipboard_assets",
+      "//components/mus/ws:apptests_assets",
+      "//components/resource_provider:apptests_assets",
+      "//components/resource_provider:resource_provider_assets",
+      "//mojo/services/network:apptests_assets",
+      "//mojo/services/network:network_assets",
+      "//third_party/icu:icu_assets",
     ]
 
     sources = [
       "$root_out_dir/obj/mojo/runner/bootstrap_java.dex.jar",
       "$root_shlib_dir/${shlib_prefix}bootstrap$shlib_extension",
     ]
-
-    apptest_outputs = [
-      "clipboard",
-      "clipboard_apptests",
-      "icudtl.dat",
-      "mus_apptests",
-      "resource_provider",
-      "resource_provider_apptests",
-      "network_service",
-      "network_service_apptests",
-    ]
-
-    args = []
-    foreach(path, apptest_outputs) {
-      args +=
-          [ "--files=" + rebase_path("$root_out_dir/$path", root_build_dir) ]
-    }
-  }
-
-  generate_mojo_shell_assets_list("build_mojo_runner_apptests_assets") {
-    testonly = true
-    deps = [
-      ":copy_mojo_runner_apptests_assets",
-    ]
-    dir = mojo_runner_apptests_assets_dir
   }
 
   copy("copy_mojo_runner") {
@@ -330,48 +302,21 @@ if (is_android) {
     ]
   }
 
-  copy_ex("copy_mojo_runner_test_assets") {
-    testonly = true
-    clear_dir = true
-    dest = mojo_runner_test_assets_dir
-    deps = [
-      "//mojo/services/test_service:test_app",
-      "//mojo/services/test_service:test_request_tracker_app",
-      "//third_party/icu:icudata",
-    ]
-
-    # Directories can't be specified as sources so pass manually to the script.
-    args = [
-      "--files=" + rebase_path("$root_out_dir/icudtl.dat", root_build_dir),
-      "--files=" + rebase_path("$root_out_dir/test_app", root_build_dir),
-      "--files=" +
-          rebase_path("$root_out_dir/test_request_tracker_app", root_build_dir),
-    ]
-  }
-
   android_apk("mojo_runner_apptests_apk") {
     testonly = true
     apk_name = "MojoRunnerApptests"
     android_manifest = "android/apk/AndroidManifest.xml"
     native_libs = [ "${shlib_prefix}mojo_runner$shlib_extension" ]
-    asset_location = mojo_runner_apptests_assets_dir
+    write_asset_list = true
 
     deps = [
-      ":build_mojo_runner_apptests_assets",
       ":copy_mojo_runner",
       ":java",
+      ":mojo_runner_apptests_assets",
       ":resources",
       "//base:base_java",
       "//ui/platform_window/android:platform_window_java",
       google_play_services_resources,
     ]
-  }
-
-  generate_mojo_shell_assets_list("build_mojo_runner_test_assets") {
-    testonly = true
-    deps = [
-      ":copy_mojo_runner_test_assets",
-    ]
-    dir = mojo_runner_test_assets_dir
   }
 }
