@@ -85,6 +85,7 @@ source_set("unit_tests") {
     "//ui/gfx",
     "//ui/keyboard",
     "//ui/message_center",
+    "//ui/ozone",
     "//ui/views",
   ]
 }

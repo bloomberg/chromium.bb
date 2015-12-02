@@ -35,6 +35,8 @@ source_set("unit_tests") {
 
   deps = [
     ":wayland",
+    "//base",
+    "//components/exo",
     "//testing/gtest",
     "//third_party/wayland:wayland_client",
   ]
