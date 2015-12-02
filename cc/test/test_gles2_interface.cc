@@ -379,7 +379,8 @@ GLuint TestGLES2Interface::CreateAndConsumeTextureCHROMIUM(
 
 void TestGLES2Interface::ResizeCHROMIUM(GLuint width,
                                         GLuint height,
-                                        float device_scale) {
+                                        float device_scale,
+                                        GLboolean has_alpha) {
   test_context_->reshapeWithScaleFactor(width, height, device_scale);
 }
 

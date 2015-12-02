@@ -223,7 +223,11 @@ bool WebGraphicsContext3DImpl::insertSyncPoint(WGC3Dbyte* sync_token) {
   return true;
 }
 
-DELEGATE_TO_GL_3(reshapeWithScaleFactor, ResizeCHROMIUM, int, int, float)
+void WebGraphicsContext3DImpl::reshapeWithScaleFactor(int width,
+                                                      int height,
+                                                      float scale) {
+  gl_->ResizeCHROMIUM(width, height, scale, true);
+}
 
 DELEGATE_TO_GL_4R(mapBufferSubDataCHROMIUM, MapBufferSubDataCHROMIUM, WGC3Denum,
                   WGC3Dintptr, WGC3Dsizeiptr, WGC3Denum, void*)

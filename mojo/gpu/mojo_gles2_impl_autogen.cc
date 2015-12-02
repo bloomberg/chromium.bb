@@ -1410,9 +1410,10 @@ void MojoGLES2Impl::UnmapTexSubImage2DCHROMIUM(const void* mem) {
 }
 void MojoGLES2Impl::ResizeCHROMIUM(GLuint width,
                                    GLuint height,
-                                   GLfloat scale_factor) {
+                                   GLfloat scale_factor,
+                                   GLboolean alpha) {
   MojoGLES2MakeCurrent(context_);
-  glResizeCHROMIUM(width, height, scale_factor);
+  glResizeCHROMIUM(width, height, scale_factor, alpha);
 }
 const GLchar* MojoGLES2Impl::GetRequestableExtensionsCHROMIUM() {
   MojoGLES2MakeCurrent(context_);

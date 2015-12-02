@@ -649,7 +649,8 @@ class MojoGLES2Impl : public gpu::gles2::GLES2Interface {
   void UnmapTexSubImage2DCHROMIUM(const void* mem) override;
   void ResizeCHROMIUM(GLuint width,
                       GLuint height,
-                      GLfloat scale_factor) override;
+                      GLfloat scale_factor,
+                      GLboolean alpha) override;
   const GLchar* GetRequestableExtensionsCHROMIUM() override;
   void RequestExtensionCHROMIUM(const char* extension) override;
   void GetProgramInfoCHROMIUM(GLuint program,

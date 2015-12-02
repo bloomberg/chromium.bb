@@ -11899,15 +11899,23 @@ struct ResizeCHROMIUM {
 
   void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(GLuint _width, GLuint _height, GLfloat _scale_factor) {
+  void Init(GLuint _width,
+            GLuint _height,
+            GLfloat _scale_factor,
+            GLboolean _alpha) {
     SetHeader();
     width = _width;
     height = _height;
     scale_factor = _scale_factor;
+    alpha = _alpha;
   }
 
-  void* Set(void* cmd, GLuint _width, GLuint _height, GLfloat _scale_factor) {
-    static_cast<ValueType*>(cmd)->Init(_width, _height, _scale_factor);
+  void* Set(void* cmd,
+            GLuint _width,
+            GLuint _height,
+            GLfloat _scale_factor,
+            GLboolean _alpha) {
+    static_cast<ValueType*>(cmd)->Init(_width, _height, _scale_factor, _alpha);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -11915,10 +11923,11 @@ struct ResizeCHROMIUM {
   uint32_t width;
   uint32_t height;
   float scale_factor;
+  uint32_t alpha;
 };
 
-static_assert(sizeof(ResizeCHROMIUM) == 16,
-              "size of ResizeCHROMIUM should be 16");
+static_assert(sizeof(ResizeCHROMIUM) == 20,
+              "size of ResizeCHROMIUM should be 20");
 static_assert(offsetof(ResizeCHROMIUM, header) == 0,
               "offset of ResizeCHROMIUM header should be 0");
 static_assert(offsetof(ResizeCHROMIUM, width) == 4,
@@ -11927,6 +11936,8 @@ static_assert(offsetof(ResizeCHROMIUM, height) == 8,
               "offset of ResizeCHROMIUM height should be 8");
 static_assert(offsetof(ResizeCHROMIUM, scale_factor) == 12,
               "offset of ResizeCHROMIUM scale_factor should be 12");
+static_assert(offsetof(ResizeCHROMIUM, alpha) == 16,
+              "offset of ResizeCHROMIUM alpha should be 16");
 
 struct GetRequestableExtensionsCHROMIUM {
   typedef GetRequestableExtensionsCHROMIUM ValueType;

@@ -870,7 +870,10 @@ void* MapTexSubImage2DCHROMIUM(GLenum target,
 
 void UnmapTexSubImage2DCHROMIUM(const void* mem) override;
 
-void ResizeCHROMIUM(GLuint width, GLuint height, GLfloat scale_factor) override;
+void ResizeCHROMIUM(GLuint width,
+                    GLuint height,
+                    GLfloat scale_factor,
+                    GLboolean alpha) override;
 
 const GLchar* GetRequestableExtensionsCHROMIUM() override;
 

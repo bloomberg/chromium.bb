@@ -257,8 +257,8 @@ void OutputSurface::Reshape(const gfx::Size& size, float scale_factor) {
   surface_size_ = size;
   device_scale_factor_ = scale_factor;
   if (context_provider_.get()) {
-    context_provider_->ContextGL()->ResizeCHROMIUM(
-        size.width(), size.height(), scale_factor);
+    context_provider_->ContextGL()->ResizeCHROMIUM(size.width(), size.height(),
+                                                   scale_factor, GL_TRUE);
   }
   if (software_device_)
     software_device_->Resize(size, scale_factor);

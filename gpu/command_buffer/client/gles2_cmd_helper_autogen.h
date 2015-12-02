@@ -2410,10 +2410,13 @@ void UnmapBuffer(GLenum target) {
   }
 }
 
-void ResizeCHROMIUM(GLuint width, GLuint height, GLfloat scale_factor) {
+void ResizeCHROMIUM(GLuint width,
+                    GLuint height,
+                    GLfloat scale_factor,
+                    GLboolean alpha) {
   gles2::cmds::ResizeCHROMIUM* c = GetCmdSpace<gles2::cmds::ResizeCHROMIUM>();
   if (c) {
-    c->Init(width, height, scale_factor);
+    c->Init(width, height, scale_factor, alpha);
   }
 }
 

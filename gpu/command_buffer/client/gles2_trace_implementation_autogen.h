@@ -623,7 +623,10 @@ void* MapTexSubImage2DCHROMIUM(GLenum target,
                                GLenum type,
                                GLenum access) override;
 void UnmapTexSubImage2DCHROMIUM(const void* mem) override;
-void ResizeCHROMIUM(GLuint width, GLuint height, GLfloat scale_factor) override;
+void ResizeCHROMIUM(GLuint width,
+                    GLuint height,
+                    GLfloat scale_factor,
+                    GLboolean alpha) override;
 const GLchar* GetRequestableExtensionsCHROMIUM() override;
 void RequestExtensionCHROMIUM(const char* extension) override;
 void GetProgramInfoCHROMIUM(GLuint program,

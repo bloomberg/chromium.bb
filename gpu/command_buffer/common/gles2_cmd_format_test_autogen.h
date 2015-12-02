@@ -4007,14 +4007,16 @@ TEST_F(GLES2FormatTest, UnmapBuffer) {
 
 TEST_F(GLES2FormatTest, ResizeCHROMIUM) {
   cmds::ResizeCHROMIUM& cmd = *GetBufferAs<cmds::ResizeCHROMIUM>();
-  void* next_cmd = cmd.Set(&cmd, static_cast<GLuint>(11),
-                           static_cast<GLuint>(12), static_cast<GLfloat>(13));
+  void* next_cmd =
+      cmd.Set(&cmd, static_cast<GLuint>(11), static_cast<GLuint>(12),
+              static_cast<GLfloat>(13), static_cast<GLboolean>(14));
   EXPECT_EQ(static_cast<uint32_t>(cmds::ResizeCHROMIUM::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
   EXPECT_EQ(static_cast<GLuint>(11), cmd.width);
   EXPECT_EQ(static_cast<GLuint>(12), cmd.height);
   EXPECT_EQ(static_cast<GLfloat>(13), cmd.scale_factor);
+  EXPECT_EQ(static_cast<GLboolean>(14), cmd.alpha);
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 

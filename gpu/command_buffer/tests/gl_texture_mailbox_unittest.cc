@@ -341,7 +341,7 @@ TEST_F(GLTextureMailboxTest, ProduceFrontBuffer) {
   EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
 
   gl2_.MakeCurrent();
-  glResizeCHROMIUM(10, 10, 1);
+  glResizeCHROMIUM(10, 10, 1, true);
   glClearColor(1, 0, 0, 1);
   glClear(GL_COLOR_BUFFER_BIT);
   ::gles2::GetGLContext()->SwapBuffers();
@@ -430,7 +430,7 @@ TEST_F(GLTextureMailboxTest, ProduceFrontBufferMultipleContexts) {
 
   for (size_t i = 0; i < 2; ++i) {
     other_gl[i].MakeCurrent();
-    glResizeCHROMIUM(10, 10, 1);
+    glResizeCHROMIUM(10, 10, 1, true);
     glClearColor(1-i%2, i%2, 0, 1);
     glClear(GL_COLOR_BUFFER_BIT);
     ::gles2::GetGLContext()->SwapBuffers();

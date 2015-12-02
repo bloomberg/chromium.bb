@@ -4692,12 +4692,14 @@ void GLES2Implementation::UnmapTexSubImage2DCHROMIUM(const void* mem) {
   CheckGLError();
 }
 
-void GLES2Implementation::ResizeCHROMIUM(GLuint width, GLuint height,
-                                         float scale_factor) {
+void GLES2Implementation::ResizeCHROMIUM(GLuint width,
+                                         GLuint height,
+                                         float scale_factor,
+                                         GLboolean alpha) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glResizeCHROMIUM("
-                 << width << ", " << height << ", " << scale_factor << ")");
-  helper_->ResizeCHROMIUM(width, height, scale_factor);
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glResizeCHROMIUM(" << width << ", "
+                     << height << ", " << scale_factor << ", " << alpha << ")");
+  helper_->ResizeCHROMIUM(width, height, scale_factor, alpha);
   CheckGLError();
 }
 

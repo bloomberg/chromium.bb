@@ -1260,8 +1260,9 @@ void GL_APIENTRY GLES2UnmapTexSubImage2DCHROMIUM(const void* mem) {
 }
 void GL_APIENTRY GLES2ResizeCHROMIUM(GLuint width,
                                      GLuint height,
-                                     GLfloat scale_factor) {
-  gles2::GetGLContext()->ResizeCHROMIUM(width, height, scale_factor);
+                                     GLfloat scale_factor,
+                                     GLboolean alpha) {
+  gles2::GetGLContext()->ResizeCHROMIUM(width, height, scale_factor, alpha);
 }
 const GLchar* GL_APIENTRY GLES2GetRequestableExtensionsCHROMIUM() {
   return gles2::GetGLContext()->GetRequestableExtensionsCHROMIUM();

@@ -157,7 +157,10 @@ class TestGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
   GLuint CreateAndConsumeTextureCHROMIUM(GLenum target,
                                          const GLbyte* mailbox) override;
 
-  void ResizeCHROMIUM(GLuint width, GLuint height, float device_scale) override;
+  void ResizeCHROMIUM(GLuint width,
+                      GLuint height,
+                      float device_scale,
+                      GLboolean has_alpha) override;
   void LoseContextCHROMIUM(GLenum current, GLenum other) override;
   GLenum GetGraphicsResetStatusKHR() override;
 

@@ -140,10 +140,11 @@ VISIT_GL_CALL(
      GLenum access),
     (target, level, xoffset, yoffset, width, height, format, type, access))
 VISIT_GL_CALL(UnmapTexSubImage2DCHROMIUM, void, (const void* mem), (mem))
-VISIT_GL_CALL(ResizeCHROMIUM,
-              void,
-              (GLuint width, GLuint height, GLfloat scale_factor),
-              (width, height, scale_factor))
+VISIT_GL_CALL(
+    ResizeCHROMIUM,
+    void,
+    (GLuint width, GLuint height, GLfloat scale_factor, GLboolean alpha),
+    (width, height, scale_factor, alpha))
 VISIT_GL_CALL(GetRequestableExtensionsCHROMIUM, const GLchar*, (), ())
 VISIT_GL_CALL(RequestExtensionCHROMIUM,
               void,

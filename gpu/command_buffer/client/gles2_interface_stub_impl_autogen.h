@@ -860,7 +860,8 @@ void* GLES2InterfaceStub::MapTexSubImage2DCHROMIUM(GLenum /* target */,
 void GLES2InterfaceStub::UnmapTexSubImage2DCHROMIUM(const void* /* mem */) {}
 void GLES2InterfaceStub::ResizeCHROMIUM(GLuint /* width */,
                                         GLuint /* height */,
-                                        GLfloat /* scale_factor */) {}
+                                        GLfloat /* scale_factor */,
+                                        GLboolean /* alpha */) {}
 const GLchar* GLES2InterfaceStub::GetRequestableExtensionsCHROMIUM() {
   return 0;
 }
