@@ -13,6 +13,7 @@
 #include "components/password_manager/core/browser/password_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/resource_dispatcher_host_login_delegate.h"
+#include "content/public/browser/resource_request_info.h"
 
 class GURL;
 class LoginInterstitialDelegate;
@@ -186,8 +187,7 @@ class LoginHandler : public content::ResourceDispatcherHostLoginDelegate,
   password_manager::PasswordManager* password_manager_;
 
   // Cached from the net::URLRequest, in case it goes NULL on us.
-  int render_process_host_id_;
-  int render_frame_id_;
+  content::ResourceRequestInfo::WebContentsGetter web_contents_getter_;
 
   // If not null, points to a model we need to notify of our own destruction
   // so it doesn't try and access this when its too late.

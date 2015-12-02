@@ -203,10 +203,10 @@ LoginHandler::LoginHandler(net::AuthChallengeInfo* auth_info,
       BrowserThread::UI, FROM_HERE,
       base::Bind(&LoginHandler::AddObservers, this));
 
-  if (!ResourceRequestInfo::ForRequest(request_)->GetAssociatedRenderFrame(
-          &render_process_host_id_,  &render_frame_id_)) {
-    NOTREACHED();
-  }
+  const content::ResourceRequestInfo* info =
+      ResourceRequestInfo::ForRequest(request);
+  DCHECK(info);
+  web_contents_getter_ = info->GetWebContentsGetterForRequest();
 }
 
 void LoginHandler::OnRequestCancelled() {
@@ -239,10 +239,7 @@ void LoginHandler::BuildViewWithoutPasswordManager(
 
 WebContents* LoginHandler::GetWebContentsForLogin() const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  content::RenderFrameHost* rfh = content::RenderFrameHost::FromID(
-      render_process_host_id_, render_frame_id_);
-  return WebContents::FromRenderFrameHost(rfh);
+  return web_contents_getter_.Run();
 }
 
 password_manager::PasswordManager* LoginHandler::GetPasswordManagerForLogin() {
