@@ -256,7 +256,7 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
     * Clear pending sign in when system accounts in AccountTrackerService were refreshed.
     */
     @Override
-    public void onSystemAccountsForceRefreshed() {
+    public void onSystemAccountsChanged() {
         if (mHasPendingSignin) {
             mHasPendingSignin = false;
             cancelSignIn();
@@ -294,7 +294,7 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
 
         notifySignInAllowedChanged();
 
-        if (!AccountTrackerService.get(mContext).isSystemAccountsSeeded()) {
+        if (!AccountTrackerService.get(mContext).checkAndSeedSystemAccounts()) {
             mHasPendingSignin = true;
             return;
         }
@@ -439,7 +439,7 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
             onSignOutDone();
         }
 
-        AccountTrackerService.get(mContext).forceRefresh();
+        AccountTrackerService.get(mContext).invalidateAccountSeedStatus(true);
     }
 
     /**

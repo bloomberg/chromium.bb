@@ -68,7 +68,7 @@ public final class SigninTestUtil {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                AccountTrackerService.get(mContext).forceRefresh();
+                AccountTrackerService.get(mContext).invalidateAccountSeedStatus(true);
             }
         });
         return account;
@@ -83,7 +83,7 @@ public final class SigninTestUtil {
             @Override
             public void run() {
                 ChromeSigninController.get(mContext).setSignedInAccountName(DEFAULT_ACCOUNT);
-                AccountTrackerService.get(mContext).forceRefresh();
+                AccountTrackerService.get(mContext).invalidateAccountSeedStatus(true);
             }
         });
         return account;

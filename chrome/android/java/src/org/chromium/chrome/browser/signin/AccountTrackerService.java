@@ -25,9 +25,9 @@ import org.chromium.sync.signin.AccountManagerHelper;
 public class AccountTrackerService {
     private static final String TAG = "AccountService";
     private static AccountTrackerService sAccountTrackerService;
-    private SystemAccountsSeedingStatus mSystemAccountsSeedingStatus =
-            SystemAccountsSeedingStatus.SEEDING_NOT_STARTED;
-    private boolean mForceRefresh;
+
+    private SystemAccountsSeedingStatus mSystemAccountsSeedingStatus;
+    private boolean mSystemAccountsChanged;
     private boolean mSyncForceRefreshedForTest;
 
     private final Context mContext;
@@ -45,8 +45,8 @@ public class AccountTrackerService {
     public interface OnSystemAccountsSeededListener {
         // Called at the end of seedSystemAccounts().
         void onSystemAccountsSeedingComplete();
-        // Called at the beginning of system accounts being force refreshed.
-        void onSystemAccountsForceRefreshed();
+        // Called in invalidateAccountSeedStatus() indicating that accounts have changed.
+        void onSystemAccountsChanged();
     }
 
     private final ObserverList<OnSystemAccountsSeededListener> mSystemAccountsSeedingObservers =
@@ -62,17 +62,22 @@ public class AccountTrackerService {
 
     private AccountTrackerService(Context context) {
         mContext = context;
+        mSystemAccountsSeedingStatus = SystemAccountsSeedingStatus.SEEDING_NOT_STARTED;
+        mSystemAccountsChanged = false;
     }
 
     /**
-    * Check whether system accounts have been seeded into AccountTrackerService in C++ layer.
+    * Checks whether the account id <-> email mapping has been seeded into C++ layer.
+    * If not, it automatically starts fetching the mapping and seeds it.
+    * @return Whether the accounts have been seeded already.
     */
-    public boolean isSystemAccountsSeeded() {
+    public boolean checkAndSeedSystemAccounts() {
         ThreadUtils.assertOnUiThread();
-        if (mSystemAccountsSeedingStatus == SystemAccountsSeedingStatus.SEEDING_DONE) {
+        if (mSystemAccountsSeedingStatus == SystemAccountsSeedingStatus.SEEDING_DONE
+                && !mSystemAccountsChanged) {
             return true;
         }
-        if (mSystemAccountsSeedingStatus == SystemAccountsSeedingStatus.SEEDING_NOT_STARTED) {
+        if (mSystemAccountsSeedingStatus != SystemAccountsSeedingStatus.SEEDING_IN_PROGRESS) {
             seedSystemAccounts();
         }
         return false;
@@ -91,14 +96,13 @@ public class AccountTrackerService {
 
     private void seedSystemAccounts() {
         ThreadUtils.assertOnUiThread();
-        mForceRefresh = false;
+        mSystemAccountsChanged = false;
         mSyncForceRefreshedForTest = false;
         final AccountIdProvider accountIdProvider = AccountIdProvider.getInstance();
         if (accountIdProvider.canBeUsed(mContext, null)) {
             mSystemAccountsSeedingStatus = SystemAccountsSeedingStatus.SEEDING_IN_PROGRESS;
         } else {
             mSystemAccountsSeedingStatus = SystemAccountsSeedingStatus.SEEDING_NOT_STARTED;
-            notifyObserversOnForceRefreshed();
             return;
         }
         AccountManagerHelper.get(mContext).getGoogleAccounts(new Callback<Account[]>() {
@@ -119,7 +123,7 @@ public class AccountTrackerService {
                     @Override
                     public void onPostExecute(String[][] accountIdNameMap) {
                         if (mSyncForceRefreshedForTest) return;
-                        if (mForceRefresh) {
+                        if (mSystemAccountsChanged) {
                             seedSystemAccounts();
                             return;
                         }
@@ -157,27 +161,25 @@ public class AccountTrackerService {
     public void syncForceRefreshForTest(String[] accountIds, String[] accountNames) {
         ThreadUtils.assertOnUiThread();
         mSystemAccountsSeedingStatus = SystemAccountsSeedingStatus.SEEDING_IN_PROGRESS;
-        mForceRefresh = false;
         mSyncForceRefreshedForTest = true;
         nativeSeedAccountsInfo(accountIds, accountNames);
         mSystemAccountsSeedingStatus = SystemAccountsSeedingStatus.SEEDING_DONE;
     }
 
     /**
-    * Force AccountTrackerService refresh/update systems accounts.
+    * Notifies the AccountTrackerService about changed system accounts. without actually triggering
+    * @param reSeedAccounts Whether to also start seeding the new account information immediately.
     */
-    public void forceRefresh() {
+    public void invalidateAccountSeedStatus(boolean reSeedAccounts) {
         ThreadUtils.assertOnUiThread();
-        mForceRefresh = true;
-        notifyObserversOnForceRefreshed();
-        if (mSystemAccountsSeedingStatus != SystemAccountsSeedingStatus.SEEDING_IN_PROGRESS) {
-            seedSystemAccounts();
-        }
+        mSystemAccountsChanged = true;
+        notifyObserversOnAccountsChange();
+        if (reSeedAccounts) checkAndSeedSystemAccounts();
     }
 
-    private void notifyObserversOnForceRefreshed() {
+    private void notifyObserversOnAccountsChange() {
         for (OnSystemAccountsSeededListener observer : mSystemAccountsSeedingObservers) {
-            observer.onSystemAccountsForceRefreshed();
+            observer.onSystemAccountsChanged();
         }
     }
 
