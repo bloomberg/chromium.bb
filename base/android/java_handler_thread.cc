@@ -55,7 +55,8 @@ void JavaHandlerThread::Stop() {
   shutdown_event.Wait();
 }
 
-void JavaHandlerThread::InitializeThread(JNIEnv* env, jobject obj,
+void JavaHandlerThread::InitializeThread(JNIEnv* env,
+                                         const JavaParamRef<jobject>& obj,
                                          jlong event) {
   // TYPE_JAVA to get the Android java style message loop.
   message_loop_.reset(new base::MessageLoop(base::MessageLoop::TYPE_JAVA));
@@ -63,7 +64,9 @@ void JavaHandlerThread::InitializeThread(JNIEnv* env, jobject obj,
   reinterpret_cast<base::WaitableEvent*>(event)->Signal();
 }
 
-void JavaHandlerThread::StopThread(JNIEnv* env, jobject obj, jlong event) {
+void JavaHandlerThread::StopThread(JNIEnv* env,
+                                   const JavaParamRef<jobject>& obj,
+                                   jlong event) {
   static_cast<MessageLoopForUI*>(message_loop_.get())->QuitWhenIdle();
   reinterpret_cast<base::WaitableEvent*>(event)->Signal();
 }
