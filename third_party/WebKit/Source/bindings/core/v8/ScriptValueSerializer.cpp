@@ -1189,11 +1189,11 @@ bool SerializedScriptValueReader::readWithTag(SerializationTag tag, v8::Local<v8
         *value = v8Boolean(false, isolate());
         break;
     case TrueObjectTag:
-        *value = v8::BooleanObject::New(true);
+        *value = v8::BooleanObject::New(isolate(), true);
         creator.pushObjectReference(*value);
         break;
     case FalseObjectTag:
-        *value = v8::BooleanObject::New(false);
+        *value = v8::BooleanObject::New(isolate(), false);
         creator.pushObjectReference(*value);
         break;
     case StringTag:
