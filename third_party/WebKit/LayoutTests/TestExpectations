@@ -44,6 +44,7 @@ crbug.com/527242 virtual/spv2/paint/invalidation/spv2/cached-change-tbody-border
 crbug.com/536138 virtual/spv2/paint/invalidation/repaint-subsequence-on-ancestor-clip-change.html [ Failure ]
 
 crbug.com/537172 [ Mac10.6 XP Win10 ] virtual/spv2/paint/invalidation/spv2/background-image-paint-invalidation.html [ Failure ]
+crbug.com/564443 [ Mac10.7 Mac10.8 Mac10.9 Mac10.10 Win7 Linux ] virtual/spv2/paint/invalidation/spv2/background-image-paint-invalidation.html [ Failure Pass ]
 
 crbug.com/504613 crbug.com/524248 paint/images/image-backgrounds-not-antialiased.html [ Skip ]
 crbug.com/504613 crbug.com/524248 virtual/spv2/paint/images/image-backgrounds-not-antialiased.html [ Skip ]
