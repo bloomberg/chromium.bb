@@ -17,6 +17,7 @@
 #include "base/metrics/histogram.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task_runner_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/blink/web_layer_impl.h"
@@ -1119,16 +1120,34 @@ void WebMediaPlayerImpl::NotifyPlaybackPaused() {
 void WebMediaPlayerImpl::ReportMemoryUsage() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
+  // About base::Unretained() usage below: We destroy |demuxer_| on the main
+  // thread.  Before that, however, ~WebMediaPlayerImpl() posts a task to the
+  // media thread and waits for it to finish.  Hence, the GetMemoryUsage() task
+  // posted here must finish earlier.
+
+  if (demuxer_) {
+    base::PostTaskAndReplyWithResult(
+        media_task_runner_.get(), FROM_HERE,
+        base::Bind(&Demuxer::GetMemoryUsage, base::Unretained(demuxer_.get())),
+        base::Bind(&WebMediaPlayerImpl::FinishMemoryUsageReport, AsWeakPtr()));
+  } else {
+    FinishMemoryUsageReport(0);
+  }
+}
+
+void WebMediaPlayerImpl::FinishMemoryUsageReport(int64_t demuxer_memory_usage) {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+
   const PipelineStatistics stats = pipeline_.GetStatistics();
   const int64_t current_memory_usage =
       stats.audio_memory_usage + stats.video_memory_usage +
       (data_source_ ? data_source_->GetMemoryUsage() : 0) +
-      (demuxer_ ? demuxer_->GetMemoryUsage() : 0);
+      demuxer_memory_usage;
 
   DVLOG(2) << "Memory Usage -- Audio: " << stats.audio_memory_usage
            << ", Video: " << stats.video_memory_usage << ", DataSource: "
            << (data_source_ ? data_source_->GetMemoryUsage() : 0)
-           << ", Demuxer: " << (demuxer_ ? demuxer_->GetMemoryUsage() : 0);
+           << ", Demuxer: " << demuxer_memory_usage;
 
   const int64_t delta = current_memory_usage - last_reported_memory_usage_;
   last_reported_memory_usage_ = current_memory_usage;

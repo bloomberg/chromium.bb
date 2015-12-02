@@ -238,7 +238,10 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
 
   // Called at low frequency to tell external observers how much memory we're
   // using for video playback.  Called by |memory_usage_reporting_timer_|.
+  // Memory usage reporting is done in two steps, because |demuxer_| must be
+  // accessed on the media thread.
   void ReportMemoryUsage();
+  void FinishMemoryUsageReport(int64_t demuxer_memory_usage);
 
   blink::WebLocalFrame* frame_;
 
