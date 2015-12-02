@@ -841,14 +841,8 @@ void WebGL2RenderingContextBase::texStorage3D(GLenum target, GLsizei levels, GLe
 
 bool WebGL2RenderingContextBase::validateTexImage3D(const char* functionName, GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLenum format, GLenum type)
 {
-    switch (target) {
-    case GL_TEXTURE_3D:
-    case GL_TEXTURE_2D_ARRAY:
-        break;
-    default:
-        synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid target");
+    if (!validateTexFunc3DTarget(functionName, target))
         return false;
-    }
 
     if (!validateTexFuncLevel(functionName, target, level))
         return false;
@@ -889,14 +883,8 @@ void WebGL2RenderingContextBase::texImage3D(GLenum target, GLint level, GLint in
 bool WebGL2RenderingContextBase::validateTexSubImage3D(const char* functionName, GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset,
     GLenum format, GLenum type, GLsizei width, GLsizei height, GLsizei depth)
 {
-    switch (target) {
-    case GL_TEXTURE_3D:
-    case GL_TEXTURE_2D_ARRAY:
-        break;
-    default:
-        synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid target");
+    if (!validateTexFunc3DTarget(functionName, target))
         return false;
-    }
 
     WebGLTexture* tex = validateTextureBinding(functionName, target, false);
     if (!tex)
@@ -1075,6 +1063,8 @@ void WebGL2RenderingContextBase::compressedTexImage3D(GLenum target, GLint level
 {
     if (isContextLost())
         return;
+    if (!validateTexFunc3DTarget("compressedTexImage3D", target))
+        return;
 
     WebGLTexture* tex = validateTextureBinding("compressedTexImage3D", target, true);
     if (!tex)
@@ -1095,6 +1085,8 @@ void WebGL2RenderingContextBase::compressedTexImage3D(GLenum target, GLint level
 void WebGL2RenderingContextBase::compressedTexSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, DOMArrayBufferView* data)
 {
     if (isContextLost())
+        return;
+    if (!validateTexFunc3DTarget("compressedTexSubImage3D", target))
         return;
 
     WebGLTexture* tex = validateTextureBinding("compressedTexSubImage3D", target, true);
@@ -2902,6 +2894,18 @@ bool WebGL2RenderingContextBase::validateReadPixelsFormatAndType(GLenum format, 
     }
 
     return true;
+}
+
+bool WebGL2RenderingContextBase::validateTexFunc3DTarget(const char* functionName, GLenum target)
+{
+    switch (target) {
+    case GL_TEXTURE_3D:
+    case GL_TEXTURE_2D_ARRAY:
+        return true;
+    default:
+        synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid 3D target");
+        return false;
+    }
 }
 
 DOMArrayBufferView::ViewType WebGL2RenderingContextBase::readPixelsExpectedArrayBufferViewType(GLenum type)

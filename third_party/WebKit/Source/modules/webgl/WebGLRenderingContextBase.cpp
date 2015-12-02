@@ -1867,6 +1867,10 @@ void WebGLRenderingContextBase::compressedTexImage2D(GLenum target, GLint level,
 {
     if (isContextLost())
         return;
+    WebGLTexture* tex = validateTextureBinding("compressedTexImage2D", target, true);
+    if (!tex)
+        return;
+
     if (!validateTexFuncLevel("compressedTexImage2D", target, level))
         return;
 
@@ -1881,10 +1885,6 @@ void WebGLRenderingContextBase::compressedTexImage2D(GLenum target, GLint level,
     if (!validateCompressedTexDimensions("compressedTexImage2D", NotTexSubImage2D, target, level, width, height, internalformat))
         return;
     if (!validateCompressedTexFuncData("compressedTexImage2D", width, height, internalformat, data))
-        return;
-
-    WebGLTexture* tex = validateTextureBinding("compressedTexImage2D", target, true);
-    if (!tex)
         return;
 
     if (tex->isImmutable()) {
@@ -1904,6 +1904,10 @@ void WebGLRenderingContextBase::compressedTexSubImage2D(GLenum target, GLint lev
 {
     if (isContextLost())
         return;
+    WebGLTexture* tex = validateTextureBinding("compressedTexSubImage2D", target, true);
+    if (!tex)
+        return;
+
     if (!validateTexFuncLevel("compressedTexSubImage2D", target, level))
         return;
     if (!validateCompressedTexFormat(format)) {
@@ -1911,10 +1915,6 @@ void WebGLRenderingContextBase::compressedTexSubImage2D(GLenum target, GLint lev
         return;
     }
     if (!validateCompressedTexFuncData("compressedTexSubImage2D", width, height, format, data))
-        return;
-
-    WebGLTexture* tex = validateTextureBinding("compressedTexSubImage2D", target, true);
-    if (!tex)
         return;
 
     if (!isWebGL2OrHigher() && format != tex->getInternalFormat(target, level)) {

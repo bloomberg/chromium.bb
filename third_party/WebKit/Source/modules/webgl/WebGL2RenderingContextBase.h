@@ -230,6 +230,9 @@ protected:
     void renderbufferStorageImpl(GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height, const char* functionName) override;
     GLenum boundFramebufferColorFormat() override;
 
+    // Helper function to validate the target for compressedTex{Sub}Image3D.
+    bool validateTexFunc3DTarget(const char* functionName, GLenum target);
+
     WebGLBuffer* validateBufferDataTarget(const char* functionName, GLenum target) override;
     bool validateBufferDataUsage(const char* functionName, GLenum usage) override;
 
