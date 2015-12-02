@@ -536,15 +536,16 @@ TEST_F(TextfieldModelTest, Clipboard) {
   EXPECT_STR_EQ("HELLO ", model.text());
   EXPECT_EQ(6U, model.GetCursorPosition());
 
-  // Test that paste works regardless of the obscured bit.
+  // Test that paste works regardless of the obscured bit. Please note that
+  // trailing spaces and tabs in clipboard strings will be stripped.
   model.MoveCursor(gfx::LINE_BREAK, gfx::CURSOR_RIGHT, false);
   EXPECT_TRUE(model.Paste());
-  EXPECT_STR_EQ("HELLO HELLO ", model.text());
-  EXPECT_EQ(12U, model.GetCursorPosition());
+  EXPECT_STR_EQ("HELLO HELLO", model.text());
+  EXPECT_EQ(11U, model.GetCursorPosition());
   model.render_text()->SetObscured(true);
   EXPECT_TRUE(model.Paste());
-  EXPECT_STR_EQ("HELLO HELLO HELLO ", model.text());
-  EXPECT_EQ(18U, model.GetCursorPosition());
+  EXPECT_STR_EQ("HELLO HELLOHELLO", model.text());
+  EXPECT_EQ(16U, model.GetCursorPosition());
 }
 
 static void SelectWordTestVerifier(
@@ -1477,6 +1478,110 @@ TEST_F(TextfieldModelTest, UndoRedo_CompositionText) {
   EXPECT_FALSE(model.Redo());
 
   // TODO(oshima): Test the behavior with an IME.
+}
+
+// Tests that clipboard text with leading, trailing and interspersed tabs
+// spaces etc is pasted correctly. Leading and trailing tabs should be
+// stripped. Text separated by multiple tabs/spaces should be collapsed into
+// one space. Text with just tabs and spaces should be pasted as one space.
+TEST_F(TextfieldModelTest, Clipboard_WhiteSpaceStringTest) {
+  // Test 1
+  // Clipboard text with a leading tab should be pasted with the tab stripped.
+  ui::ScopedClipboardWriter(ui::CLIPBOARD_TYPE_COPY_PASTE)
+      .WriteText(base::ASCIIToUTF16("\tB"));
+
+  TextfieldModel model(NULL);
+  model.Append(base::ASCIIToUTF16("HELLO WORLD"));
+  EXPECT_STR_EQ("HELLO WORLD", model.text());
+  model.MoveCursor(gfx::LINE_BREAK, gfx::CURSOR_RIGHT, false);
+  EXPECT_EQ(11U, model.GetCursorPosition());
+
+  EXPECT_TRUE(model.Paste());
+  EXPECT_STR_EQ("HELLO WORLDB", model.text());
+
+  model.SelectAll(false);
+  model.DeleteSelection();
+  EXPECT_STR_EQ("", model.text());
+
+  // Test 2
+  // Clipboard text with multiple leading tabs and spaces should be pasted with
+  // all tabs and spaces stripped.
+  ui::ScopedClipboardWriter(ui::CLIPBOARD_TYPE_COPY_PASTE)
+      .WriteText(base::ASCIIToUTF16("\t\t\t B"));
+
+  model.Append(base::ASCIIToUTF16("HELLO WORLD"));
+  EXPECT_STR_EQ("HELLO WORLD", model.text());
+  model.MoveCursor(gfx::LINE_BREAK, gfx::CURSOR_RIGHT, false);
+  EXPECT_EQ(11U, model.GetCursorPosition());
+  EXPECT_TRUE(model.Paste());
+  EXPECT_STR_EQ("HELLO WORLDB", model.text());
+
+  model.SelectAll(false);
+  model.DeleteSelection();
+  EXPECT_STR_EQ("", model.text());
+
+  // Test 3
+  // Clipboard text with multiple tabs separating the words should be pasted
+  // with one space replacing all tabs.
+  ui::ScopedClipboardWriter(ui::CLIPBOARD_TYPE_COPY_PASTE)
+      .WriteText(base::ASCIIToUTF16("FOO \t\t BAR"));
+
+  model.Append(base::ASCIIToUTF16("HELLO WORLD"));
+  EXPECT_STR_EQ("HELLO WORLD", model.text());
+  model.MoveCursor(gfx::LINE_BREAK, gfx::CURSOR_RIGHT, false);
+  EXPECT_EQ(11U, model.GetCursorPosition());
+  EXPECT_TRUE(model.Paste());
+  EXPECT_STR_EQ("HELLO WORLDFOO BAR", model.text());
+
+  model.SelectAll(false);
+  model.DeleteSelection();
+  EXPECT_STR_EQ("", model.text());
+
+  // Test 4
+  // Clipboard text with multiple leading tabs and multiple tabs separating
+  // the words should be pasted with the leading tabs stripped and one space
+  // replacing the intermediate tabs.
+  ui::ScopedClipboardWriter(ui::CLIPBOARD_TYPE_COPY_PASTE)
+      .WriteText(base::ASCIIToUTF16("\t\tFOO \t\t BAR"));
+
+  EXPECT_TRUE(model.Paste());
+  EXPECT_STR_EQ("FOO BAR", model.text());
+
+  model.SelectAll(false);
+  model.DeleteSelection();
+  EXPECT_STR_EQ("", model.text());
+
+  // Test 5
+  // Clipboard text with multiple trailing tabs should be pasted with all
+  // trailing tabs stripped.
+  ui::ScopedClipboardWriter(ui::CLIPBOARD_TYPE_COPY_PASTE)
+      .WriteText(base::ASCIIToUTF16("FOO BAR\t\t\t"));
+  EXPECT_TRUE(model.Paste());
+  EXPECT_STR_EQ("FOO BAR", model.text());
+
+  model.SelectAll(false);
+  model.DeleteSelection();
+  EXPECT_STR_EQ("", model.text());
+
+  // Test 6
+  // Clipboard text with only spaces and tabs should be pasted as a single
+  // space.
+  ui::ScopedClipboardWriter(ui::CLIPBOARD_TYPE_COPY_PASTE)
+      .WriteText(base::ASCIIToUTF16("     \t\t"));
+  EXPECT_TRUE(model.Paste());
+  EXPECT_STR_EQ(" ", model.text());
+
+  model.SelectAll(false);
+  model.DeleteSelection();
+  EXPECT_STR_EQ("", model.text());
+
+  // Test 7
+  // Clipboard text with lots of spaces between words should have all spaces
+  // replaced with a single space.
+  ui::ScopedClipboardWriter(ui::CLIPBOARD_TYPE_COPY_PASTE)
+      .WriteText(base::ASCIIToUTF16("FOO      BAR"));
+  EXPECT_TRUE(model.Paste());
+  EXPECT_STR_EQ("FOO BAR", model.text());
 }
 
 }  // namespace views

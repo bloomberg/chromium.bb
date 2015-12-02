@@ -8,6 +8,8 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/gfx/range/range.h"
@@ -509,13 +511,18 @@ bool TextfieldModel::Copy() {
 }
 
 bool TextfieldModel::Paste() {
-  base::string16 result;
+  base::string16 text;
   ui::Clipboard::GetForCurrentThread()->ReadText(ui::CLIPBOARD_TYPE_COPY_PASTE,
-                                                 &result);
-  if (result.empty())
+                                                 &text);
+  if (text.empty())
     return false;
 
-  InsertTextInternal(result, false);
+  base::string16 actual_text = base::CollapseWhitespace(text, false);
+  // If the clipboard contains all whitespaces then paste a single space.
+  if (actual_text.empty())
+    actual_text = base::ASCIIToUTF16(" ");
+
+  InsertTextInternal(actual_text, false);
   return true;
 }
 
