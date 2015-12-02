@@ -89,16 +89,7 @@ PassRefPtr<SecurityOrigin> createSecurityOriginFromDatabaseIdentifier(const Stri
 
 String createDatabaseIdentifierFromSecurityOrigin(const SecurityOrigin* securityOrigin)
 {
-    // Historically, we've used the following (somewhat non-sensical) string
-    // for the databaseIdentifier of local files. We used to compute this
-    // string because of a bug in how we handled the scheme for file URLs.
-    // Now that we've fixed that bug, we still need to produce this string
-    // to avoid breaking existing persistent state.
-    if (securityOrigin->needsDatabaseIdentifierQuirkForFiles())
-        return "file__0";
-
     String separatorString(&separatorCharacter, 1);
-
     return securityOrigin->protocol() + separatorString + securityOrigin->host() + separatorString + String::number(securityOrigin->port());
 }
 

@@ -127,7 +127,6 @@ SecurityOrigin::SecurityOrigin(const KURL& url)
     , m_universalAccess(false)
     , m_domainWasSetInDOM(false)
     , m_blockLocalAccessFromLocalOrigin(false)
-    , m_needsDatabaseIdentifierQuirkForFiles(false)
 {
     // Suborigins are serialized into the host, so extract it if necessary.
     String suboriginName;
@@ -156,7 +155,6 @@ SecurityOrigin::SecurityOrigin()
     , m_domainWasSetInDOM(false)
     , m_canLoadLocalResources(false)
     , m_blockLocalAccessFromLocalOrigin(false)
-    , m_needsDatabaseIdentifierQuirkForFiles(false)
 {
 }
 
@@ -172,7 +170,6 @@ SecurityOrigin::SecurityOrigin(const SecurityOrigin* other)
     , m_domainWasSetInDOM(other->m_domainWasSetInDOM)
     , m_canLoadLocalResources(other->m_canLoadLocalResources)
     , m_blockLocalAccessFromLocalOrigin(other->m_blockLocalAccessFromLocalOrigin)
-    , m_needsDatabaseIdentifierQuirkForFiles(other->m_needsDatabaseIdentifierQuirkForFiles)
 {
 }
 
@@ -183,15 +180,6 @@ PassRefPtr<SecurityOrigin> SecurityOrigin::create(const KURL& url)
 
     if (shouldTreatAsUniqueOrigin(url)) {
         RefPtr<SecurityOrigin> origin = adoptRef(new SecurityOrigin());
-
-        if (url.protocolIs("file")) {
-            // Unfortunately, we can't represent all unique origins exactly
-            // the same way because we need to produce a quirky database
-            // identifier for file URLs due to persistent storage in some
-            // embedders of WebKit.
-            origin->m_needsDatabaseIdentifierQuirkForFiles = true;
-        }
-
         return origin.release();
     }
 

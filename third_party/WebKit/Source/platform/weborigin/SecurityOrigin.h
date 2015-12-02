@@ -218,8 +218,6 @@ public:
     bool isSameSchemeHostPort(const SecurityOrigin*) const;
     bool isSameSchemeHostPortAndSuborigin(const SecurityOrigin*) const;
 
-    bool needsDatabaseIdentifierQuirkForFiles() const { return m_needsDatabaseIdentifierQuirkForFiles; }
-
     static const KURL& urlWithUniqueSecurityOrigin();
 
     // Transfer origin privileges from another security origin.
@@ -263,7 +261,6 @@ private:
     bool m_domainWasSetInDOM;
     bool m_canLoadLocalResources;
     bool m_blockLocalAccessFromLocalOrigin;
-    bool m_needsDatabaseIdentifierQuirkForFiles;
 };
 
 } // namespace blink
