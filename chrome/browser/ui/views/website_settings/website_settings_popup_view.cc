@@ -38,6 +38,7 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/image/image.h"
 #include "ui/resources/grit/ui_resources.h"
+#include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
@@ -159,6 +160,8 @@ class InternalPageInfoPopupView : public views::BubbleDelegateView {
   ~InternalPageInfoPopupView() override;
 
   // views::BubbleDelegateView:
+  views::NonClientFrameView* CreateNonClientFrameView(
+      views::Widget* widget) override;
   void OnWidgetDestroying(views::Widget* widget) override;
 
  private:
@@ -292,12 +295,13 @@ InternalPageInfoPopupView::InternalPageInfoPopupView(
   set_anchor_view_insets(gfx::Insets(kLocationIconVerticalMargin, 0,
                                      kLocationIconVerticalMargin, 0));
 
-  const int kSpacing = 4;
+  const int kSpacing = 16;
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal, kSpacing,
                                         kSpacing, kSpacing));
+  set_margins(gfx::Insets());
   views::ImageView* icon_view = new views::ImageView();
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  icon_view->SetImage(rb.GetImageSkiaNamed(IDR_PRODUCT_LOGO_26));
+  icon_view->SetImage(rb.GetImageSkiaNamed(IDR_PRODUCT_LOGO_16));
   AddChildView(icon_view);
 
   views::Label* label =
@@ -311,6 +315,16 @@ InternalPageInfoPopupView::InternalPageInfoPopupView(
 }
 
 InternalPageInfoPopupView::~InternalPageInfoPopupView() {
+}
+
+views::NonClientFrameView* InternalPageInfoPopupView::CreateNonClientFrameView(
+    views::Widget* widget) {
+  views::BubbleFrameView* frame = static_cast<views::BubbleFrameView*>(
+      BubbleDelegateView::CreateNonClientFrameView(widget));
+  // 16px padding + half of icon width comes out to 24px.
+  frame->bubble_border()->set_arrow_offset(
+      24 + frame->bubble_border()->GetBorderThickness());
+  return frame;
 }
 
 void InternalPageInfoPopupView::OnWidgetDestroying(views::Widget* widget) {

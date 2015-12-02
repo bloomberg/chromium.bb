@@ -92,7 +92,7 @@ class WebsiteSettingsPopupView : public content::WebContentsObserver,
                               const gfx::Range& range,
                               int event_flags) override;
 
-  // views::TabbedPaneListener implementations.
+  // views::TabbedPaneListener implementation.
   void TabSelectedAt(int index) override;
 
   // views::View implementation.
