@@ -191,14 +191,14 @@ if [[ -n ${LLVM_FORCE_HEAD_REVISION:-''} ]]; then
   if [[ "${OS}" == "Linux" || "${OS}" == "Darwin" ]]; then
     if [[ $(cmake --version | grep -Eo '[0-9.]+') < "3.0" ]]; then
       # We need a newer CMake version.
-      if [[ ! -e "${LLVM_BUILD_TOOLS_DIR}/cmake310" ]]; then
-        echo "Downloading pre-built CMake 3.10..."
+      if [[ ! -e "${LLVM_BUILD_TOOLS_DIR}/cmake322" ]]; then
+        echo "Downloading pre-built CMake 3.2.2..."
         mkdir -p "${LLVM_BUILD_TOOLS_DIR}"
-        curl --fail -L "${CDS_URL}/tools/cmake310_${OS}.tgz" | \
+        curl --fail -L "${CDS_URL}/tools/cmake322_${OS}.tgz" | \
           tar zxf - -C "${LLVM_BUILD_TOOLS_DIR}"
         echo Done
       fi
-      export PATH="${LLVM_BUILD_TOOLS_DIR}/cmake310/bin:${PATH}"
+      export PATH="${LLVM_BUILD_TOOLS_DIR}/cmake322/bin:${PATH}"
     fi
   fi
 
