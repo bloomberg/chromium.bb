@@ -22,6 +22,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
+#include "extensions/common/switches.h"
 #include "extensions/test/result_catcher.h"
 #include "net/base/escape.h"
 #include "net/base/filename_util.h"
@@ -35,7 +36,7 @@ namespace {
 const char kTestCustomArg[] = "customArg";
 const char kTestDataDirectory[] = "testDataDirectory";
 const char kTestWebSocketPort[] = "testWebSocketPort";
-const char kSitePerProcess[] = "sitePerProcess";
+const char kIsolateExtensions[] = "isolateExtensions";
 const char kFtpServerPort[] = "ftpServer.port";
 const char kEmbeddedTestServerPort[] = "testServer.port";
 
@@ -152,9 +153,11 @@ void ExtensionApiTest::SetUpInProcessBrowserTestFixture() {
   test_config_->SetString(kTestDataDirectory,
                           net::FilePathToFileURL(test_data_dir_).spec());
   test_config_->SetInteger(kTestWebSocketPort, 0);
-  test_config_->SetBoolean(kSitePerProcess,
-                           base::CommandLine::ForCurrentProcess()->HasSwitch(
-                               switches::kSitePerProcess));
+  bool isolate_extensions = base::CommandLine::ForCurrentProcess()->HasSwitch(
+                                switches::kSitePerProcess) ||
+                            base::CommandLine::ForCurrentProcess()->HasSwitch(
+                                extensions::switches::kIsolateExtensions);
+  test_config_->SetBoolean(kIsolateExtensions, isolate_extensions);
   extensions::TestGetConfigFunction::set_test_config_state(
       test_config_.get());
 }

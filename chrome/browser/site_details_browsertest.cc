@@ -16,7 +16,6 @@
 #include "chrome/browser/metrics/metrics_memory_details.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_process_policy.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -28,6 +27,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/common/switches.h"
 #include "extensions/common/value_builder.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -1024,7 +1024,7 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, VerifyFieldTrialGroup) {
     group = "SitePerProcessFlag";
   } else if (extensions::IsIsolateExtensionsEnabled()) {
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kIsolateExtensions)) {
+            extensions::switches::kIsolateExtensions)) {
       group = "IsolateExtensionsFlag";
     } else {
       group = "FieldTrial";

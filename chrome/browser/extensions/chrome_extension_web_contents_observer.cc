@@ -9,7 +9,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/window_controller.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/chrome_extension_messages.h"
 #include "chrome/common/extensions/extension_process_policy.h"
 #include "chrome/common/url_constants.h"
@@ -24,6 +23,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/extension_urls.h"
+#include "extensions/common/switches.h"
 
 using content::BrowserContext;
 
@@ -190,7 +190,7 @@ void ChromeExtensionWebContentsObserver::SetExtensionIsolationTrial(
   // OOPIF.
   if (parent_is_extension != frame_is_extension) {
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kSitePerProcess)) {
+            ::switches::kSitePerProcess)) {
       ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
           "SiteIsolationExtensionsActive", "SitePerProcessFlag");
     } else if (extensions::IsIsolateExtensionsEnabled()) {

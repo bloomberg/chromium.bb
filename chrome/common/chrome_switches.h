@@ -182,7 +182,6 @@ extern const char kInstallSupervisedUserWhitelists[];
 extern const char kInstantProcess[];
 extern const char kInterestsURL[];
 extern const char kIpcDumpDirectory[];
-extern const char kIsolateExtensions[];
 extern const char kJavaScriptHarmony[];
 extern const char kKeepAliveForTest[];
 extern const char kKioskMode[];

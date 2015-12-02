@@ -9,7 +9,7 @@ chrome.test.getConfig(function(config) {
   'use strict';
 
   let success = true;
-  let isSitePerProcess = config.sitePerProcess;
+  let areExtensionsIsolated = config.isolateExtensions;
 
   // chrome.storage should exist, since the extension has the permission, and
   // the storage api is allowed in content scripts.
@@ -19,23 +19,23 @@ chrome.test.getConfig(function(config) {
   }
 
   let checkPrivilegedApi = function(api, name) {
-    if (api && !isSitePerProcess) {
+    if (api && !areExtensionsIsolated) {
       console.log("Error: " + name +
-                  " exists, but shouldn't without site-per-process.");
+                  " exists, but shouldn't without isolated extensions.");
       return false;
     }
-    if (!api && isSitePerProcess) {
+    if (!api && areExtensionsIsolated) {
       console.log("Error: " + name +
-                  " doesn't exist, but should with site-per-process.");
+                  " doesn't exist, but should with isolated extensions.");
       return false;
     }
     return true;
   };
 
   // For other permissions, they should only be available if this is a trusted
-  // extension process - which is the case only with site-per-process.
-  // The whole of chrome.bookmarks (arbitrary unprivileged) is unavailable
-  // without site-per-process.
+  // extension process - which is the case only when site isolation is enabled
+  // for extensions. The whole of chrome.bookmarks (arbitrary unprivileged) is
+  // unavailable without site isolation.
   success = success && checkPrivilegedApi(chrome.bookmarks, 'chrome.bookmarks');
   // We test chrome.tabs as a special case, because it's a dependency of the
   // partially unprivileged chrome.extension.

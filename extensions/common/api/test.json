@@ -59,9 +59,9 @@
                     "minimum": 0,
                     "maximum": 65535
                   },
-                  "sitePerProcess": {
+                  "isolateExtensions": {
                     "type": "boolean",
-                    "description": "Whether or not the site-per-process flag is enabled."
+                    "description": "Whether or not extensions are running in site isolation mode."
                   }
                 }
               }

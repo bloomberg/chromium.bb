@@ -24,6 +24,7 @@
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_paths.h"
+#include "extensions/common/switches.h"
 #include "extensions/shell/browser/shell_content_browser_client.h"
 #include "extensions/shell/browser/shell_extension_system.h"
 #include "extensions/shell/test/shell_test.h"
@@ -46,7 +47,7 @@ const char kUserAgentRedirectResponsePath[] = "/detect-user-agent";
 const char kTestDataDirectory[] = "testDataDirectory";
 const char kTestServerPort[] = "testServer.port";
 const char kTestWebSocketPort[] = "testWebSocketPort";
-const char kSitePerProcess[] = "sitePerProcess";
+const char kIsolateExtensions[] = "isolateExtensions";
 
 // Handles |request| by serving a redirect response if the |User-Agent| is
 // foobar.
@@ -180,7 +181,7 @@ void WebViewAPITest::RunTestOnMainThreadLoop() {
 
 void WebViewAPITest::SetUpCommandLine(base::CommandLine* command_line) {
   AppShellTest::SetUpCommandLine(command_line);
-  command_line->AppendSwitchASCII(switches::kJavaScriptFlags, "--expose-gc");
+  command_line->AppendSwitchASCII(::switches::kJavaScriptFlags, "--expose-gc");
 }
 
 void WebViewAPITest::SetUpOnMainThread() {
@@ -189,9 +190,11 @@ void WebViewAPITest::SetUpOnMainThread() {
   TestGetConfigFunction::set_test_config_state(&test_config_);
   base::FilePath test_data_dir;
   test_config_.SetInteger(kTestWebSocketPort, 0);
-  test_config_.SetBoolean(kSitePerProcess,
-                          base::CommandLine::ForCurrentProcess()->HasSwitch(
-                              switches::kSitePerProcess));
+  bool isolate_extensions = base::CommandLine::ForCurrentProcess()->HasSwitch(
+                                ::switches::kSitePerProcess) ||
+                            base::CommandLine::ForCurrentProcess()->HasSwitch(
+                                extensions::switches::kIsolateExtensions);
+  test_config_.SetBoolean(kIsolateExtensions, isolate_extensions);
 }
 
 void WebViewAPITest::StartTestServer() {
@@ -278,7 +281,7 @@ void WebViewAPITest::SendMessageToGuestAndWait(
 
 void WebViewDPIAPITest::SetUp() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  command_line->AppendSwitchASCII(switches::kForceDeviceScaleFactor,
+  command_line->AppendSwitchASCII(::switches::kForceDeviceScaleFactor,
                                   base::StringPrintf("%f", scale()));
   WebViewAPITest::SetUp();
 }
