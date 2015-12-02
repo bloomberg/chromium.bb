@@ -4,6 +4,7 @@
 # Use of this source code is governed under the Apache License, Version 2.0 that
 # can be found in the LICENSE file.
 
+import getpass
 import logging
 import os
 import tempfile
@@ -356,6 +357,41 @@ class FilePathTest(auto_stub.TestCase):
       actual = file_path.get_native_path_case(
           os.path.join(BASE_DIR, 'trace_inputs', 'files2'))
       self.assertEqual('files2', os.path.basename(actual))
+
+  else:
+    def test_undeleteable_chmod(self):
+      # Create a file and a directory with an empty ACL. Then try to delete it.
+      dirpath = os.path.join(self.tempdir, 'd')
+      filepath = os.path.join(dirpath, 'f')
+      os.mkdir(dirpath)
+      with open(filepath, 'w') as f:
+        f.write('hi')
+      os.chmod(filepath, 0)
+      os.chmod(dirpath, 0)
+      file_path.rmtree(dirpath)
+
+    def test_undeleteable_owner(self):
+      # Create a file and a directory with an empty ACL. Then try to delete it.
+      dirpath = os.path.join(self.tempdir, 'd')
+      filepath = os.path.join(dirpath, 'f')
+      os.mkdir(dirpath)
+      with open(filepath, 'w') as f:
+        f.write('hi')
+      import win32security
+      user, _domain, _type = win32security.LookupAccountName(
+          '', getpass.getuser())
+      sd = win32security.SECURITY_DESCRIPTOR()
+      sd.Initialize()
+      sd.SetSecurityDescriptorOwner(user, False)
+      # Create an empty DACL, which removes all rights.
+      dacl = win32security.ACL()
+      dacl.Initialize()
+      sd.SetSecurityDescriptorDacl(1, dacl, 0)
+      win32security.SetFileSecurity(
+          fs.extend(filepath), win32security.DACL_SECURITY_INFORMATION, sd)
+      win32security.SetFileSecurity(
+          fs.extend(dirpath), win32security.DACL_SECURITY_INFORMATION, sd)
+      file_path.rmtree(dirpath)
 
 
 if __name__ == '__main__':
