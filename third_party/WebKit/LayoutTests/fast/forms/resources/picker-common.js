@@ -6,7 +6,9 @@ var popupOpenCallback = null;
 
 function popupOpenCallbackWrapper() {
     popupWindow.removeEventListener("didOpenPicker", popupOpenCallbackWrapper);
-    setTimeout(popupOpenCallback, 0);
+    // We need some delay.  Without it, testRunner.notifyDone() freezes.
+    // See crbug.com/562311.
+    setTimeout(popupOpenCallback, 20);
 }
 
 function waitUntilClosing(callback) {
