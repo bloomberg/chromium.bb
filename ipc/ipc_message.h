@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/pickle.h"
 #include "base/trace_event/trace_event.h"
+#include "ipc/attachment_broker.h"
 #include "ipc/brokerable_attachment.h"
 #include "ipc/ipc_export.h"
 
@@ -268,7 +269,7 @@ class IPC_EXPORT Message : public base::Pickle {
     int32_t routing;  // ID of the view that this message is destined for
     uint32_t type;    // specifies the user-defined message type
     uint32_t flags;   // specifies control flags for the message
-#if defined(OS_MACOSX)
+#if USE_ATTACHMENT_BROKER
     // The number of brokered attachments included with this message. The
     // ids of the brokered attachment ids are sent immediately after the pickled
     // message, before the next pickled message is sent.
