@@ -1836,7 +1836,7 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     ld_host = '$cc_host'
     ldxx_host = '$cxx_host'
 
-  ar_host = 'ar'
+  ar_host = ar
   cc_host = None
   cxx_host = None
   cc_host_global_setting = None

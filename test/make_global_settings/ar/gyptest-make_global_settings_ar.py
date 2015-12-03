@@ -56,7 +56,10 @@ def verify_ar_host(test, ar=None, rel_path=False):
     ar_expected = ar
   # Resolve default values
   if ar_expected is None:
-    ar_expected = 'ar'
+    if sys.platform == 'win32':
+      ar_expected = 'lib.exe'
+    else:
+      ar_expected = 'ar'
   if test.format == 'make':
     test.must_contain('Makefile', 'AR.host ?= %s' % ar_expected)
   elif test.format in ['ninja', 'xcode-ninja']:
