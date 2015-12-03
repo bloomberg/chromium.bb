@@ -100,8 +100,8 @@ public:
     void setCustomValidity(const String&) final;
     void findCustomValidationMessageTextDirection(const String& message, TextDirection &messageDir, String& subMessage, TextDirection& subMessageDir);
 
-    bool isReadOnly() const { return m_isReadOnly; }
-    bool isDisabledOrReadOnly() const { return isDisabledFormControl() || m_isReadOnly; }
+    bool isReadOnly() const;
+    bool isDisabledOrReadOnly() const;
 
     bool isAutofocusable() const;
 
@@ -174,17 +174,13 @@ private:
     // Requests validity recalc for all ancestor fieldsets, if exist.
     void fieldSetAncestorsSetNeedsValidityCheck(Node*);
 
-    bool m_disabled : 1;
-    bool m_isAutofilled : 1;
-    bool m_isReadOnly : 1;
-    bool m_isRequired : 1;
-    bool m_hasValidationMessage : 1;
-
     enum AncestorDisabledState { AncestorDisabledStateUnknown, AncestorDisabledStateEnabled, AncestorDisabledStateDisabled };
     mutable AncestorDisabledState m_ancestorDisabledState;
     enum DataListAncestorState { Unknown, InsideDataList, NotInsideDataList };
     mutable enum DataListAncestorState m_dataListAncestorState;
 
+    bool m_isAutofilled : 1;
+    bool m_hasValidationMessage : 1;
     // The initial value of m_willValidate depends on the derived class. We can't
     // initialize it with a virtual function in the constructor. m_willValidate
     // is not deterministic as long as m_willValidateInitialized is false.
