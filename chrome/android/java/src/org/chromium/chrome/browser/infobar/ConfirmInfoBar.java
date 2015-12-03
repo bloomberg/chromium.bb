@@ -110,18 +110,18 @@ public class ConfirmInfoBar extends InfoBar {
                 contentSettingsType = mContentSettingsToPermissionsMap.keyAt(i);
             }
         }
-        switch (contentSettingsType) {
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION:
-                return R.string.infobar_missing_location_permission_text;
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
-                return R.string.infobar_missing_microphone_permission_text;
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
-                return R.string.infobar_missing_camera_permission_text;
-            default:
-                assert false;
-                return R.string.infobar_missing_multiple_permissions_text;
 
+        if (contentSettingsType == ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION) {
+            return R.string.infobar_missing_location_permission_text;
         }
+        if (contentSettingsType == ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC) {
+            return R.string.infobar_missing_microphone_permission_text;
+        }
+        if (contentSettingsType == ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA) {
+            return R.string.infobar_missing_camera_permission_text;
+        }
+        assert false : "Unexpected content setting type received: " + contentSettingsType;
+        return R.string.infobar_missing_multiple_permissions_text;
     }
 
     @Override
