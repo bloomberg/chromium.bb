@@ -63,7 +63,7 @@ public:
 
     private:
         void removeRedundantKeyframes();
-        bool addSyntheticKeyframeIfRequired(PassRefPtr<TimingFunction> neutralKeyframeEasing);
+        bool addSyntheticKeyframeIfRequired(PassRefPtr<TimingFunction> zeroOffsetEasing);
 
         PropertySpecificKeyframeVector m_keyframes;
 
@@ -118,11 +118,11 @@ public:
     bool isTransformRelatedEffect() const override;
 
 protected:
-    KeyframeEffectModelBase(PassRefPtr<TimingFunction> neutralKeyframeEasing)
+    KeyframeEffectModelBase(PassRefPtr<TimingFunction> defaultKeyframeEasing)
         : m_lastIteration(0)
         , m_lastFraction(std::numeric_limits<double>::quiet_NaN())
         , m_lastIterationDuration(0)
-        , m_neutralKeyframeEasing(neutralKeyframeEasing)
+        , m_defaultKeyframeEasing(defaultKeyframeEasing)
         , m_hasSyntheticKeyframes(false)
     {
     }
@@ -143,7 +143,7 @@ protected:
     mutable int m_lastIteration;
     mutable double m_lastFraction;
     mutable double m_lastIterationDuration;
-    RefPtr<TimingFunction> m_neutralKeyframeEasing;
+    RefPtr<TimingFunction> m_defaultKeyframeEasing;
 
     mutable bool m_hasSyntheticKeyframes;
 
@@ -154,14 +154,14 @@ template <class Keyframe>
 class KeyframeEffectModel final : public KeyframeEffectModelBase {
 public:
     using KeyframeVector = Vector<RefPtr<Keyframe>>;
-    static KeyframeEffectModel<Keyframe>* create(const KeyframeVector& keyframes, PassRefPtr<TimingFunction> neutralKeyframeEasing = nullptr)
+    static KeyframeEffectModel<Keyframe>* create(const KeyframeVector& keyframes, PassRefPtr<TimingFunction> defaultKeyframeEasing = nullptr)
     {
-        return new KeyframeEffectModel(keyframes, neutralKeyframeEasing);
+        return new KeyframeEffectModel(keyframes, defaultKeyframeEasing);
     }
 
 private:
-    KeyframeEffectModel(const KeyframeVector& keyframes, PassRefPtr<TimingFunction> neutralKeyframeEasing)
-        : KeyframeEffectModelBase(neutralKeyframeEasing)
+    KeyframeEffectModel(const KeyframeVector& keyframes, PassRefPtr<TimingFunction> defaultKeyframeEasing)
+        : KeyframeEffectModelBase(defaultKeyframeEasing)
     {
         m_keyframes.appendVector(keyframes);
     }
