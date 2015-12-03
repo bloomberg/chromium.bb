@@ -16,6 +16,26 @@
 
 namespace {
 
+enum DepsCategory {
+  DEPS_CATEGORY_LOCAL,
+  DEPS_CATEGORY_RELATIVE,
+  DEPS_CATEGORY_ABSOLUTE,
+  DEPS_CATEGORY_OTHER,
+};
+
+DepsCategory GetDepsCategory(base::StringPiece deps) {
+  if (deps.length() < 2 || deps[0] != '"' || deps[deps.size() - 1] != '"')
+    return DEPS_CATEGORY_OTHER;
+
+  if (deps[1] == ':')
+    return DEPS_CATEGORY_LOCAL;
+
+  if (deps[1] == '/')
+    return DEPS_CATEGORY_ABSOLUTE;
+
+  return DEPS_CATEGORY_RELATIVE;
+}
+
 std::tuple<base::StringPiece, base::StringPiece> SplitAtFirst(
     base::StringPiece str,
     char c) {
@@ -590,7 +610,8 @@ void ListNode::SortAsDepsList() {
   SortList([](const ParseNode* a, const ParseNode* b) {
     base::StringPiece astr = GetStringRepresentation(a);
     base::StringPiece bstr = GetStringRepresentation(b);
-    return SplitAtFirst(astr, ':') < SplitAtFirst(bstr, ':');
+    return std::make_pair(GetDepsCategory(astr), SplitAtFirst(astr, ':')) <
+           std::make_pair(GetDepsCategory(bstr), SplitAtFirst(bstr, ':'));
   });
 }
 
