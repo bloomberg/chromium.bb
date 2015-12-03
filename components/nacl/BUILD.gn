@@ -38,6 +38,7 @@ if (enable_nacl) {
       "//ppapi/c",
       "//ppapi/proxy:ipc",
       "//ppapi/shared_impl",
+      "//sandbox",
       "//third_party/mojo/src/mojo/edk/system",
     ]
 
