@@ -32,6 +32,14 @@ bool IsLRUSnapshotCacheEnabled();
 // The returned value will not change within a given session.
 bool IsWKWebViewEnabled();
 
+// Whether the user would be put into a control group for the WKWebView
+// experiment assuming they were eligible. Calling this will *not* activate a
+// trial, so is safe to call without checking eligibility.
+bool IsTargetedToWKWebViewExperimentControlGroup();
+
+// Whether the user is part of a control group for the WKWebView experiment.
+bool IsInWKWebViewExperimentControlGroup();
+
 // Returns a string containing extra params that should be sent along with
 // omnibox search requests.  The returned value contains a leading "&".
 std::string GetWKWebViewSearchParams();

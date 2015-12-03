@@ -27,6 +27,7 @@ NSString* const kEnableAlertOnBackgroundUpload =
 NSString* const kEnableViewCopyPasswords = @"EnableViewCopyPasswords";
 NSString* const kHeuristicsForPasswordGeneration =
     @"HeuristicsForPasswordGeneration";
+const char* const kWKWebViewTrialName = "IOSUseWKWebView";
 
 enum class WKWebViewEligibility {
   // UNSET indicates that no explicit call to set eligibility has been made,
@@ -128,6 +129,11 @@ bool IsWKWebViewEnabled() {
     return false;
   }
 
+  // Now that it's been established that user is a candidate, set up the trial
+  // by checking the group.
+  std::string group_name =
+      base::FieldTrialList::FindFullName(kWKWebViewTrialName);
+
   // Check if the experimental flag is turned on.
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kEnableIOSWKWebView))
@@ -135,13 +141,27 @@ bool IsWKWebViewEnabled() {
   else if (command_line->HasSwitch(switches::kDisableIOSWKWebView))
     return false;
 
-  // Now that it's been established that user is a candidate, set up the trial
-  // by checking the group.
-  std::string group_name =
-      base::FieldTrialList::FindFullName("IOSUseWKWebView");
-
   // Check if the finch experiment is turned on.
   return base::StartsWith(group_name, "Enabled",
+                          base::CompareCase::INSENSITIVE_ASCII);
+}
+
+bool IsTargetedToWKWebViewExperimentControlGroup() {
+  base::FieldTrial* trial = base::FieldTrialList::Find(kWKWebViewTrialName);
+  if (!trial)
+    return false;
+  std::string group_name = trial->GetGroupNameWithoutActivation();
+  return base::StartsWith(group_name, "Control",
+                          base::CompareCase::INSENSITIVE_ASCII);
+}
+
+bool IsInWKWebViewExperimentControlGroup() {
+  if (!CanCheckWKWebViewExperiment()) {
+    return false;
+  }
+  std::string group_name =
+      base::FieldTrialList::FindFullName(kWKWebViewTrialName);
+  return base::StartsWith(group_name, "Control",
                           base::CompareCase::INSENSITIVE_ASCII);
 }
 
@@ -150,7 +170,7 @@ std::string GetWKWebViewSearchParams() {
     return std::string();
   }
 
-  return variations::GetVariationParamValue("IOSUseWKWebView", "esrch");
+  return variations::GetVariationParamValue(kWKWebViewTrialName, "esrch");
 }
 
 bool AreKeyboardCommandsEnabled() {

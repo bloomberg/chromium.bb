@@ -94,6 +94,8 @@ void ApplicationContextImpl::RegisterPrefs(PrefRegistrySimple* registry) {
                                 false);
   registry->RegisterBooleanPref(prefs::kLastSessionExitedCleanly, true);
   registry->RegisterBooleanPref(prefs::kMetricsReportingWifiOnly, true);
+  registry->RegisterBooleanPref(prefs::kLastSessionUsedWKWebViewControlGroup,
+                                false);
 }
 
 void ApplicationContextImpl::PreCreateThreads() {

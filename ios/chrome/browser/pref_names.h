@@ -36,6 +36,7 @@ extern const char kBrowsingDataMigrationHasBeenPossible[];
 extern const char kOTRStashStatePathSystemBackupExcluded[];
 extern const char kIosHandoffToOtherDevices[];
 extern const char kLastSessionExitedCleanly[];
+extern const char kLastSessionUsedWKWebViewControlGroup[];
 extern const char kMetricsReportingWifiOnly[];
 
 // TODO(stkhapugin): Consider migrating from these two bools to an integer.
