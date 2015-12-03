@@ -24,7 +24,10 @@ enum ImporterType {
   TYPE_SAFARI          = 3,
 #endif
   // Value 4 was the (now deleted) Google Toolbar importer.
-  TYPE_BOOKMARKS_FILE  = 5  // Identifies a 'bookmarks.html' file.
+  TYPE_BOOKMARKS_FILE  = 5, // Identifies a 'bookmarks.html' file.
+#if defined(OS_WIN)
+  TYPE_EDGE            = 6,
+#endif
 };
 
 }  // namespace importer

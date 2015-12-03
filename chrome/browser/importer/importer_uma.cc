@@ -22,6 +22,9 @@ enum ImporterTypeMetrics {
 #endif
   IMPORTER_METRICS_GOOGLE_TOOLBAR5 = 5,  // obsolete
   IMPORTER_METRICS_BOOKMARKS_FILE  = 6,
+#if defined(OS_WIN)
+  IMPORTER_METRICS_EDGE            = 7,
+#endif
 
   // Insert new values here. Never remove any existing values, as this enum is
   // used to bucket a UMA histogram, and removing values breaks that.
@@ -40,6 +43,9 @@ void LogImporterUseToMetrics(const std::string& metric_postfix,
 #if defined(OS_WIN)
     case TYPE_IE:
       metrics_type = IMPORTER_METRICS_IE;
+      break;
+    case TYPE_EDGE:
+      metrics_type = IMPORTER_METRICS_EDGE;
       break;
 #endif
     case TYPE_FIREFOX:

@@ -10,15 +10,15 @@
 namespace importer {
 
 // Returns the key to be used in HKCU to look for IE's favorites order blob.
-// Overridable by tests via IEImporterTestRegistryOverrider.
+// Overridable by tests via ImporterTestRegistryOverrider.
 base::string16 GetIEFavoritesOrderKey();
 
 // Returns the key to be used in HKCU to look for IE7 passwords.
-// Overridable by tests via IEImporterTestRegistryOverrider.
+// Overridable by tests via ImporterTestRegistryOverrider.
 base::string16 GetIE7PasswordsKey();
 
 // Returns the key to be used in HKCU to look for IE settings.
-// Overridable by tests via IEImporterTestRegistryOverrider.
+// Overridable by tests via ImporterTestRegistryOverrider.
 base::string16 GetIESettingsKey();
 
 }  // namespace importer

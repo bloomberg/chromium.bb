@@ -32,11 +32,11 @@
 #include "chrome/browser/importer/importer_unittest_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/importer/ie_importer_test_registry_overrider_win.h"
 #include "chrome/common/importer/ie_importer_utils_win.h"
 #include "chrome/common/importer/imported_bookmark_entry.h"
 #include "chrome/common/importer/importer_bridge.h"
 #include "chrome/common/importer/importer_data_types.h"
+#include "chrome/common/importer/importer_test_registry_overrider_win.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/core/common/password_form.h"
@@ -436,7 +436,7 @@ class IEImporterBrowserTest : public InProcessBrowserTest {
 
   // Overrides the default registry key for IE registry keys like favorites,
   // settings, password store, etc.
-  IEImporterTestRegistryOverrider test_registry_overrider_;
+  ImporterTestRegistryOverrider test_registry_overrider_;
 };
 
 IN_PROC_BROWSER_TEST_F(IEImporterBrowserTest, IEImporter) {

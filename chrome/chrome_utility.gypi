@@ -44,6 +44,10 @@
       'utility/importer/bookmark_html_reader.h',
       'utility/importer/bookmarks_file_importer.cc',
       'utility/importer/bookmarks_file_importer.h',
+      'utility/importer/edge_database_reader_win.cc',
+      'utility/importer/edge_database_reader_win.h',
+      'utility/importer/edge_importer_win.cc',
+      'utility/importer/edge_importer_win.h',
       'utility/importer/external_process_importer_bridge.cc',
       'utility/importer/external_process_importer_bridge.h',
       'utility/importer/favicon_reencode.cc',
@@ -145,7 +149,11 @@
                   # Prevent wininet from loading in the renderer.
                   # http://crbug.com/460679
                   'wininet.dll',
+                  'esent.dll',
                 ],
+                'AdditionalDependencies': [
+                  'esent.lib',
+                ]
               },
             },
           },

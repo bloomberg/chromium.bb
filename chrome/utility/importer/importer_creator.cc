@@ -9,6 +9,8 @@
 #include "chrome/utility/importer/firefox_importer.h"
 
 #if defined(OS_WIN)
+#include "chrome/common/importer/edge_importer_utils_win.h"
+#include "chrome/utility/importer/edge_importer_win.h"
 #include "chrome/utility/importer/ie_importer_win.h"
 #endif
 
@@ -26,6 +28,11 @@ Importer* CreateImporterByType(ImporterType type) {
 #if defined(OS_WIN)
     case TYPE_IE:
       return new IEImporter();
+    case TYPE_EDGE:
+      // If legacy mode we pass back an IE importer.
+      if (IsEdgeFavoritesLegacyMode())
+        return new IEImporter();
+      return new EdgeImporter();
 #endif
     case TYPE_BOOKMARKS_FILE:
       return new BookmarksFileImporter();

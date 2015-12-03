@@ -4,7 +4,7 @@
 
 #include "chrome/common/importer/ie_importer_utils_win.h"
 
-#include "chrome/common/importer/ie_importer_test_registry_overrider_win.h"
+#include "chrome/common/importer/importer_test_registry_overrider_win.h"
 
 namespace {
 
@@ -21,7 +21,7 @@ const base::char16 kIESettingsMainKey[] =
 base::string16 GetPotentiallyOverridenIEKey(
     const base::string16& desired_key_path) {
   base::string16 test_reg_override(
-      IEImporterTestRegistryOverrider::GetTestRegistryOverride());
+      ImporterTestRegistryOverrider::GetTestRegistryOverride());
   return test_reg_override.empty() ? desired_key_path : test_reg_override;
 }
 

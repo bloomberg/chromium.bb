@@ -65887,6 +65887,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="6" label="IMPORTER_METRICS_BOOKMARKS_FILE">
     A bookmarks.html file
   </int>
+  <int value="7" label="IMPORTER_METRICS_EDGE">Edge (Windows-only)</int>
 </enum>
 
 <enum name="IncidentType" type="int">

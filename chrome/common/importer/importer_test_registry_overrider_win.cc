@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/importer/ie_importer_test_registry_overrider_win.h"
+#include "chrome/common/importer/importer_test_registry_overrider_win.h"
 
 #include <windows.h>
 
@@ -37,9 +37,9 @@ bool GetTestKeyFromEnvironment(base::string16* key) {
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
-// IEImporterTestRegistryOverrider, public:
+// ImporterTestRegistryOverrider, public:
 
-IEImporterTestRegistryOverrider::IEImporterTestRegistryOverrider()
+ImporterTestRegistryOverrider::ImporterTestRegistryOverrider()
     : temporary_key_(kTestHKCUOverrideKeyPrefix +
                      base::UTF8ToUTF16(base::GenerateGUID())) {
   DCHECK(!GetTestKeyFromEnvironment(NULL));
@@ -50,7 +50,7 @@ IEImporterTestRegistryOverrider::IEImporterTestRegistryOverrider()
   DCHECK(success);
 }
 
-IEImporterTestRegistryOverrider::~IEImporterTestRegistryOverrider() {
+ImporterTestRegistryOverrider::~ImporterTestRegistryOverrider() {
   base::win::RegKey reg_key(HKEY_CURRENT_USER, temporary_key_.c_str(),
                             KEY_ALL_ACCESS);
   DCHECK(reg_key.Valid());
@@ -62,7 +62,7 @@ IEImporterTestRegistryOverrider::~IEImporterTestRegistryOverrider() {
 }
 
 // static
-base::string16 IEImporterTestRegistryOverrider::GetTestRegistryOverride() {
+base::string16 ImporterTestRegistryOverrider::GetTestRegistryOverride() {
   base::string16 key;
   if (!GetTestKeyFromEnvironment(&key))
     return base::string16();

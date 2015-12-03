@@ -76,8 +76,11 @@ class IEImporter : public Importer {
   // Determines which version of IE is in use.
   int CurrentIEVersion() const;
 
+  // Set to true when importing favorites from old Edge on Windows 10.
+  bool edge_import_mode_;
+
   // IE does not have source path. It's used in unit tests only for providing a
-  // fake source.
+  // fake source and it's used if importing old Edge favorites on Windows 10.
   base::FilePath source_path_;
 
   DISALLOW_COPY_AND_ASSIGN(IEImporter);

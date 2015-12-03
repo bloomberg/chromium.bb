@@ -25,9 +25,15 @@
 #include "content/public/common/common_param_traits.h"
 #include "ipc/ipc_message_macros.h"
 
+#if defined(OS_WIN)
+IPC_ENUM_TRAITS_MIN_MAX_VALUE(importer::ImporterType,
+                              importer::TYPE_UNKNOWN,
+                              importer::TYPE_EDGE)
+#else
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(importer::ImporterType,
                               importer::TYPE_UNKNOWN,
                               importer::TYPE_BOOKMARKS_FILE)
+#endif
 
 IPC_STRUCT_TRAITS_BEGIN(importer::SourceProfile)
   IPC_STRUCT_TRAITS_MEMBER(importer_name)

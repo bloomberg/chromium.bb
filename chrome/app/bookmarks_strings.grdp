@@ -16,6 +16,9 @@
       <message name="IDS_BOOKMARK_GROUP_FROM_IE" desc="The group name of bookmarks from Internet Explorer">
         Imported From IE
       </message>
+      <message name="IDS_BOOKMARK_GROUP_FROM_EDGE" desc="The group name of bookmarks from Edge">
+        Imported From Edge
+      </message>
     </if>
     <message name="IDS_BOOKMARK_GROUP_FROM_FIREFOX" desc="The group name of bookmarks from Firefox">
       Imported From Firefox

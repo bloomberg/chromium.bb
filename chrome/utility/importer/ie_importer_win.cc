@@ -29,6 +29,7 @@
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_propvariant.h"
 #include "base/win/windows_version.h"
+#include "chrome/common/importer/edge_importer_utils_win.h"
 #include "chrome/common/importer/ie_importer_utils_win.h"
 #include "chrome/common/importer/imported_bookmark_entry.h"
 #include "chrome/common/importer/importer_bridge.h"
@@ -420,13 +421,20 @@ const GUID IEImporter::kUnittestGUID = {
     { 0xb8, 0x7, 0x3d, 0x46, 0xab, 0x15, 0x45, 0xdf }
 };
 
-IEImporter::IEImporter() {
-}
+IEImporter::IEImporter() : edge_import_mode_(false) {}
 
 void IEImporter::StartImport(const importer::SourceProfile& source_profile,
                              uint16 items,
                              ImporterBridge* bridge) {
+  edge_import_mode_ = source_profile.importer_type == importer::TYPE_EDGE;
   bridge_ = bridge;
+
+  if (edge_import_mode_) {
+    // When using for Edge imports we only support Favorites.
+    DCHECK_EQ(items, importer::FAVORITES);
+    // As coming from untrusted source ensure items is correct.
+    items = importer::FAVORITES;
+  }
   source_path_ = source_profile.source_path;
 
   bridge_->NotifyStarted();
@@ -478,7 +486,10 @@ void IEImporter::ImportFavorites() {
 
   if (!bookmarks.empty() && !cancelled()) {
     const base::string16& first_folder_name =
-        l10n_util::GetStringUTF16(IDS_BOOKMARK_GROUP_FROM_IE);
+        edge_import_mode_
+            ? l10n_util::GetStringUTF16(IDS_BOOKMARK_GROUP_FROM_EDGE)
+            : l10n_util::GetStringUTF16(IDS_BOOKMARK_GROUP_FROM_IE);
+
     bridge_->AddBookmarks(bookmarks, first_folder_name);
   }
   if (!favicons.empty() && !cancelled())
@@ -782,7 +793,7 @@ void IEImporter::ImportHomepage() {
 
 bool IEImporter::GetFavoritesInfo(IEImporter::FavoritesInfo* info) {
   if (!source_path_.empty()) {
-    // Source path exists during testing.
+    // Source path exists during testing as well as when importing from Edge.
     info->path = source_path_;
     info->path = info->path.AppendASCII("Favorites");
     info->links_folder = L"Links";
@@ -888,8 +899,10 @@ void IEImporter::ParseFavoritesFolder(
     bookmarks->push_back(entry);
   }
 
-  // Reflect the menu order in IE.
-  SortBookmarksInIEOrder(this, bookmarks);
+  if (!edge_import_mode_) {
+    // Reflect the menu order in IE.
+    SortBookmarksInIEOrder(this, bookmarks);
+  }
 
   // Record favicon data.
   for (FaviconMap::iterator iter = favicon_map.begin();

@@ -1607,6 +1607,7 @@
       'test/base/browser_with_test_window_test.h',
       'utility/importer/bookmark_html_reader_unittest.cc',
       'utility/importer/bookmarks_file_importer_unittest.cc',
+      'utility/importer/edge_database_reader_unittest_win.cc',
       'utility/importer/firefox_importer_unittest.cc',
       'utility/importer/firefox_importer_unittest_messages_internal.h',
       'utility/importer/firefox_importer_unittest_utils.h',

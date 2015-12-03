@@ -20,6 +20,10 @@
 #include "chrome/common/importer/safari_importer_utils.h"
 #endif
 
+#if defined(OS_WIN)
+#include "chrome/common/importer/edge_importer_utils_win.h"
+#endif
+
 using content::BrowserThread;
 
 namespace {
@@ -37,6 +41,24 @@ void DetectIEProfiles(std::vector<importer::SourceProfile*>* profiles) {
       importer::COOKIES | importer::PASSWORDS | importer::SEARCH_ENGINES;
   profiles->push_back(ie);
 }
+
+void DetectEdgeProfiles(std::vector<importer::SourceProfile*>* profiles) {
+  importer::SourceProfile* edge = new importer::SourceProfile;
+  edge->importer_name = l10n_util::GetStringUTF16(IDS_IMPORT_FROM_EDGE);
+  edge->importer_type = importer::TYPE_EDGE;
+  edge->services_supported = importer::FAVORITES;
+  edge->source_path = importer::GetEdgeDataFilePath();
+  profiles->push_back(edge);
+}
+
+void DetectBuiltinWindowsProfiles(
+    std::vector<importer::SourceProfile*>* profiles) {
+  // Make the assumption on Windows 10 that Edge exists and is probably default.
+  if (importer::EdgeImporterCanImport())
+    DetectEdgeProfiles(profiles);
+  DetectIEProfiles(profiles);
+}
+
 #endif  // defined(OS_WIN)
 
 #if defined(OS_MACOSX)
@@ -111,9 +133,9 @@ std::vector<importer::SourceProfile*> DetectSourceProfilesWorker(
 #if defined(OS_WIN)
   if (ShellIntegration::IsFirefoxDefaultBrowser()) {
     DetectFirefoxProfiles(locale, &profiles);
-    DetectIEProfiles(&profiles);
+    DetectBuiltinWindowsProfiles(&profiles);
   } else {
-    DetectIEProfiles(&profiles);
+    DetectBuiltinWindowsProfiles(&profiles);
     DetectFirefoxProfiles(locale, &profiles);
   }
 #elif defined(OS_MACOSX)

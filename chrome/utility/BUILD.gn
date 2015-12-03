@@ -66,6 +66,10 @@ static_library("utility") {
     # Prevent wininet from loading in the renderer. http://crbug.com/460679
     if (is_win) {
       ldflags = [ "/DELAYLOAD:wininet.dll" ]
+
+      # Add ESE library for Edge Import support.
+      libs = [ "esent.lib" ]
+      ldflags += [ "/DELAYLOAD:esent.dll" ]
     }
 
     if (is_win || is_mac) {
