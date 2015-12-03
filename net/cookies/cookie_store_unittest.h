@@ -509,7 +509,7 @@ TYPED_TEST_P(CookieStoreTest, TestIpAddress) {
 
 // Test host cookies, and setting of cookies on TLD.
 TYPED_TEST_P(CookieStoreTest, TestNonDottedAndTLD) {
-  {
+  if (TypeParam::supports_non_dotted_domains) {
     scoped_refptr<CookieStore> cs(this->GetCookieStore());
     GURL url("http://com/");
     // Allow setting on "com", (but only as a host cookie).
@@ -522,10 +522,8 @@ TYPED_TEST_P(CookieStoreTest, TestNonDottedAndTLD) {
     this->MatchCookieLines(
         std::string(),
         this->GetCookies(cs.get(), GURL("http://hopefully-no-cookies.com/")));
-    if (TypeParam::supports_non_dotted_domains) {
-      this->MatchCookieLines(std::string(),
-                             this->GetCookies(cs.get(), GURL("http://.com/")));
-    }
+    this->MatchCookieLines(std::string(),
+                           this->GetCookies(cs.get(), GURL("http://.com/")));
   }
 
   if (TypeParam::supports_non_dotted_domains) {
