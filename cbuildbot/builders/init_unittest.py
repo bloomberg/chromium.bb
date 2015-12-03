@@ -27,7 +27,7 @@ class ModuleTest(cros_test_lib.MockTempDirTestCase):
     self.assertRaises(ValueError, builders.GetBuilderClass, 'Foalksdjo')
     self.assertRaises(ImportError, builders.GetBuilderClass, 'foo.Foalksdjo')
     self.assertRaises(AttributeError, builders.GetBuilderClass,
-                      'misc_builders.Foalksdjo')
+                      'release_builders.Foalksdjo')
 
   def testGetBuilderClassConfig(self):
     """Check behavior when requesting config builders.

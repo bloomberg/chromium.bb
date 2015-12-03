@@ -581,7 +581,6 @@ _waterfall_config_map = {
 
         # Utility
         'chromiumos-sdk',
-        'refresh-packages',
 
         # LLVM
         'toolchain-llvm',
@@ -1321,15 +1320,6 @@ def GetConfig():
       boards=['beaglebone'],
       trybot_list=True,
       description='Incremental Beaglebone Builder',
-  )
-
-  site_config.AddConfigWithoutTemplate(
-      'refresh-packages',
-      no_vmtest_builder,
-      no_hwtest_builder,
-      boards=['x86-generic', 'arm-generic'],
-      builder_class_name='misc_builders.RefreshPackagesBuilder',
-      description='Check upstream Gentoo for package updates',
   )
 
   site_config.AddConfig(
