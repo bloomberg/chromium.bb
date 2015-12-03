@@ -23,6 +23,7 @@
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/events/scoped_target_handler.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/transform.h"
@@ -32,7 +33,6 @@
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/focus/view_storage.h"
-#include "ui/views/scoped_target_handler.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/native_widget.h"
@@ -4327,7 +4327,7 @@ TEST_F(ViewTest, ScopedTargetHandlerReceivesEvents) {
   v->Reset();
   {
     TestEventHandler handler(v);
-    ScopedTargetHandler scoped_target_handler(v, &handler);
+    ui::ScopedTargetHandler scoped_target_handler(v, &handler);
     // View's target EventHandler should be set to the |scoped_target_handler|.
     EXPECT_EQ(&scoped_target_handler,
               v->SetTargetHandler(&scoped_target_handler));

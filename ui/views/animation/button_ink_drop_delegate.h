@@ -11,11 +11,14 @@
 #include "ui/views/animation/ink_drop_delegate.h"
 #include "ui/views/views_export.h"
 
+namespace ui {
+class ScopedTargetHandler;
+}
+
 namespace views {
 
 class InkDropAnimationController;
 class InkDropHost;
-class ScopedTargetHandler;
 class View;
 
 // An InkDropDelegate that handles animations for toolbar buttons.
@@ -37,8 +40,8 @@ class VIEWS_EXPORT ButtonInkDropDelegate : public InkDropDelegate,
   void OnGestureEvent(ui::GestureEvent* event) override;
 
  private:
-  // An instance of ScopedTargetHandler allowing |this| to handling events.
-  scoped_ptr<views::ScopedTargetHandler> target_handler_;
+  // An instance of ScopedTargetHandler allowing |this| to handle events.
+  scoped_ptr<ui::ScopedTargetHandler> target_handler_;
 
   // Parent InkDropHost (typically a View) that hosts the ink ripple animations.
   InkDropHost* ink_drop_host_;

@@ -146,6 +146,8 @@
         'linux/text_edit_key_bindings_delegate_auralinux.h',
         'null_event_targeter.cc',
         'null_event_targeter.h',
+        'scoped_target_handler.cc',
+        'scoped_target_handler.h',
         'ozone/events_ozone.cc',
         'win/events_win.cc',
         'win/system_event_state_lookup.cc',

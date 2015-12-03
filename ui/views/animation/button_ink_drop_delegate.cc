@@ -5,18 +5,18 @@
 #include "ui/views/animation/button_ink_drop_delegate.h"
 
 #include "ui/events/event.h"
+#include "ui/events/scoped_target_handler.h"
 #include "ui/views/animation/ink_drop_animation_controller.h"
 #include "ui/views/animation/ink_drop_animation_controller_factory.h"
 #include "ui/views/animation/ink_drop_host.h"
 #include "ui/views/animation/ink_drop_state.h"
-#include "ui/views/scoped_target_handler.h"
 #include "ui/views/view.h"
 
 namespace views {
 
 ButtonInkDropDelegate::ButtonInkDropDelegate(InkDropHost* ink_drop_host,
                                              View* view)
-    : target_handler_(new views::ScopedTargetHandler(view, this)),
+    : target_handler_(new ui::ScopedTargetHandler(view, this)),
       ink_drop_host_(ink_drop_host),
       ink_drop_animation_controller_(
           InkDropAnimationControllerFactory::CreateInkDropAnimationController(
