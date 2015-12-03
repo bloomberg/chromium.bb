@@ -8,6 +8,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "url/origin.h"
 
 #if defined(ENABLE_EXTENSIONS)
 #include "extensions/browser/extension_registry.h"
@@ -65,18 +66,15 @@ void CollectForScenario(std::map<RenderFrameHost*, GURL>* frame_urls,
                         RenderFrameHost* frame) {
   BrowserContext* context = primary->GetBrowserContext();
 
-  GURL url = frame->GetLastCommittedURL();
+  // Determine the site from the frame's origin, with a fallback to the
+  // frame's URL.  In cases like <iframe sandbox>, we can wind up with an http
+  // URL but a unique origin.  The origin of the resource will still determine
+  // process placement.
+  url::Origin origin = frame->GetLastCommittedOrigin();
+  GURL site = SiteInstance::GetSiteForURL(
+      context, origin.unique() ? frame->GetLastCommittedURL()
+                               : GURL(origin.Serialize()));
 
-  // Treat about:blank url specially: use the URL on the SiteInstance if it is
-  // assigned. The rest of this computation must not depend on the
-  // SiteInstance's URL, since its value reflects the current process model, and
-  // this computation is simulating other process models.
-  if (url == GURL(url::kAboutBlankURL) &&
-      !frame->GetSiteInstance()->GetSiteURL().is_empty()) {
-    url = frame->GetSiteInstance()->GetSiteURL();
-  }
-
-  GURL site = SiteInstance::GetSiteForURL(context, url);
   bool should_isolate = ShouldIsolate(context, scenario, site);
 
   // Treat a subframe as part of its parent site if neither needs isolation.
