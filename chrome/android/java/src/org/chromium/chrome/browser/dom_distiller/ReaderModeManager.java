@@ -93,7 +93,6 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
                 ? ApiCompatibilityUtils.getColor(
                         activity.getResources(), R.color.reader_mode_header_bg)
                 : 0;
-        DomDistillerUIUtils.setReaderModeManagerDelegate(this);
     }
 
     /**
@@ -128,6 +127,9 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
                 && mTabStatusMap.get(shownTabId).isDismissed()) {
             return;
         }
+
+        // Set this manager as the active one for the UI utils.
+        DomDistillerUIUtils.setReaderModeManagerDelegate(this);
 
         // Remove the infobar observer from the previous tab and attach it to the current one.
         if (previousTab != null && previousTab.getInfoBarContainer() != null) {

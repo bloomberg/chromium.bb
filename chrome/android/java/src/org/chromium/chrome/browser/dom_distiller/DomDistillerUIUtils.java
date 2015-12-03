@@ -106,7 +106,6 @@ public final class DomDistillerUIUtils {
      * Clear static references to objects.
      */
     public static void destroy() {
-        sFeedbackReporter = null;
         sManagerDelegate = null;
     }
 
