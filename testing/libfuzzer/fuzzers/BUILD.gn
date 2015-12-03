@@ -227,3 +227,18 @@ test("zlib_uncompress_fuzzer") {
     "//third_party/zlib",
   ]
 }
+
+test("pdfium_fuzzer") {
+  sources = [
+    "pdfium_fuzzer.cc",
+  ]
+  deps = [
+    "//testing/libfuzzer:libfuzzer_main",
+    "//third_party/pdfium",
+    "//third_party/pdfium:test_support",
+    "//v8",
+    "//v8:v8_libplatform",
+  ]
+  configs += [ "//third_party/pdfium:pdfium_config" ]
+  configs += [ "//v8:external_config" ]
+}
