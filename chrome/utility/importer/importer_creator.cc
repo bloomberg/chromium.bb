@@ -23,7 +23,7 @@
 
 namespace importer {
 
-Importer* CreateImporterByType(ImporterType type) {
+scoped_refptr<Importer> CreateImporterByType(ImporterType type) {
   switch (type) {
 #if defined(OS_WIN)
     case TYPE_IE:
@@ -44,7 +44,7 @@ Importer* CreateImporterByType(ImporterType type) {
 #endif
     default:
       NOTREACHED();
-      return NULL;
+      return nullptr;
   }
 }
 

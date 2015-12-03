@@ -29,30 +29,29 @@ using content::BrowserThread;
 namespace {
 
 #if defined(OS_WIN)
-void DetectIEProfiles(std::vector<importer::SourceProfile*>* profiles) {
+void DetectIEProfiles(std::vector<importer::SourceProfile>* profiles) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   // IE always exists and doesn't have multiple profiles.
-  importer::SourceProfile* ie = new importer::SourceProfile;
-  ie->importer_name = l10n_util::GetStringUTF16(IDS_IMPORT_FROM_IE);
-  ie->importer_type = importer::TYPE_IE;
-  ie->source_path.clear();
-  ie->app_path.clear();
-  ie->services_supported = importer::HISTORY | importer::FAVORITES |
-      importer::COOKIES | importer::PASSWORDS | importer::SEARCH_ENGINES;
+  importer::SourceProfile ie;
+  ie.importer_name = l10n_util::GetStringUTF16(IDS_IMPORT_FROM_IE);
+  ie.importer_type = importer::TYPE_IE;
+  ie.services_supported = importer::HISTORY | importer::FAVORITES |
+                          importer::COOKIES | importer::PASSWORDS |
+                          importer::SEARCH_ENGINES;
   profiles->push_back(ie);
 }
 
-void DetectEdgeProfiles(std::vector<importer::SourceProfile*>* profiles) {
-  importer::SourceProfile* edge = new importer::SourceProfile;
-  edge->importer_name = l10n_util::GetStringUTF16(IDS_IMPORT_FROM_EDGE);
-  edge->importer_type = importer::TYPE_EDGE;
-  edge->services_supported = importer::FAVORITES;
-  edge->source_path = importer::GetEdgeDataFilePath();
+void DetectEdgeProfiles(std::vector<importer::SourceProfile>* profiles) {
+  importer::SourceProfile edge;
+  edge.importer_name = l10n_util::GetStringUTF16(IDS_IMPORT_FROM_EDGE);
+  edge.importer_type = importer::TYPE_EDGE;
+  edge.services_supported = importer::FAVORITES;
+  edge.source_path = importer::GetEdgeDataFilePath();
   profiles->push_back(edge);
 }
 
 void DetectBuiltinWindowsProfiles(
-    std::vector<importer::SourceProfile*>* profiles) {
+    std::vector<importer::SourceProfile>* profiles) {
   // Make the assumption on Windows 10 that Edge exists and is probably default.
   if (importer::EdgeImporterCanImport())
     DetectEdgeProfiles(profiles);
@@ -62,18 +61,16 @@ void DetectBuiltinWindowsProfiles(
 #endif  // defined(OS_WIN)
 
 #if defined(OS_MACOSX)
-void DetectSafariProfiles(std::vector<importer::SourceProfile*>* profiles) {
+void DetectSafariProfiles(std::vector<importer::SourceProfile>* profiles) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   uint16 items = importer::NONE;
   if (!SafariImporterCanImport(base::mac::GetUserLibraryPath(), &items))
     return;
 
-  importer::SourceProfile* safari = new importer::SourceProfile;
-  safari->importer_name = l10n_util::GetStringUTF16(IDS_IMPORT_FROM_SAFARI);
-  safari->importer_type = importer::TYPE_SAFARI;
-  safari->source_path.clear();
-  safari->app_path.clear();
-  safari->services_supported = items;
+  importer::SourceProfile safari;
+  safari.importer_name = l10n_util::GetStringUTF16(IDS_IMPORT_FROM_SAFARI);
+  safari.importer_type = importer::TYPE_SAFARI;
+  safari.services_supported = items;
   profiles->push_back(safari);
 }
 #endif  // defined(OS_MACOSX)
@@ -82,7 +79,7 @@ void DetectSafariProfiles(std::vector<importer::SourceProfile*>* profiles) {
 // locale-specific search engines feature (see firefox_importer.cc for
 // details).
 void DetectFirefoxProfiles(const std::string locale,
-                           std::vector<importer::SourceProfile*>* profiles) {
+                           std::vector<importer::SourceProfile>* profiles) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   base::FilePath profile_path = GetFirefoxProfilePath();
   if (profile_path.empty())
@@ -105,28 +102,28 @@ void DetectFirefoxProfiles(const std::string locale,
     return;
   }
 
-  importer::SourceProfile* firefox = new importer::SourceProfile;
-  firefox->importer_name = GetFirefoxImporterName(app_path);
-  firefox->importer_type = firefox_type;
-  firefox->source_path = profile_path;
+  importer::SourceProfile firefox;
+  firefox.importer_name = GetFirefoxImporterName(app_path);
+  firefox.importer_type = firefox_type;
+  firefox.source_path = profile_path;
 #if defined(OS_WIN)
-  firefox->app_path = GetFirefoxInstallPathFromRegistry();
+  firefox.app_path = GetFirefoxInstallPathFromRegistry();
 #endif
-  if (firefox->app_path.empty())
-    firefox->app_path = app_path;
-  firefox->services_supported = importer::HISTORY | importer::FAVORITES |
-                                importer::PASSWORDS | importer::SEARCH_ENGINES |
-                                importer::AUTOFILL_FORM_DATA;
-  firefox->locale = locale;
+  if (firefox.app_path.empty())
+    firefox.app_path = app_path;
+  firefox.services_supported = importer::HISTORY | importer::FAVORITES |
+                               importer::PASSWORDS | importer::SEARCH_ENGINES |
+                               importer::AUTOFILL_FORM_DATA;
+  firefox.locale = locale;
   profiles->push_back(firefox);
 }
 
-std::vector<importer::SourceProfile*> DetectSourceProfilesWorker(
+std::vector<importer::SourceProfile> DetectSourceProfilesWorker(
     const std::string& locale,
     bool include_interactive_profiles) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
-  std::vector<importer::SourceProfile*> profiles;
+  std::vector<importer::SourceProfile> profiles;
 
   // The first run import will automatically take settings from the first
   // profile detected, which should be the user's current default.
@@ -150,11 +147,11 @@ std::vector<importer::SourceProfile*> DetectSourceProfilesWorker(
   DetectFirefoxProfiles(locale, &profiles);
 #endif
   if (include_interactive_profiles) {
-    importer::SourceProfile* bookmarks_profile = new importer::SourceProfile;
-    bookmarks_profile->importer_name =
+    importer::SourceProfile bookmarks_profile;
+    bookmarks_profile.importer_name =
         l10n_util::GetStringUTF16(IDS_IMPORT_FROM_BOOKMARKS_HTML_FILE);
-    bookmarks_profile->importer_type = importer::TYPE_BOOKMARKS_FILE;
-    bookmarks_profile->services_supported = importer::FAVORITES;
+    bookmarks_profile.importer_type = importer::TYPE_BOOKMARKS_FILE;
+    bookmarks_profile.services_supported = importer::FAVORITES;
     profiles.push_back(bookmarks_profile);
   }
 
@@ -191,12 +188,12 @@ void ImporterList::DetectSourceProfiles(
 const importer::SourceProfile& ImporterList::GetSourceProfileAt(
     size_t index) const {
   DCHECK_LT(index, count());
-  return *source_profiles_[index];
+  return source_profiles_[index];
 }
 
 void ImporterList::SourceProfilesLoaded(
     const base::Closure& profiles_loaded_callback,
-    const std::vector<importer::SourceProfile*>& profiles) {
+    const std::vector<importer::SourceProfile>& profiles) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   source_profiles_.assign(profiles.begin(), profiles.end());
