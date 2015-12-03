@@ -634,7 +634,7 @@ static bool executeJustifyRight(LocalFrame& frame, Event*, EditorCommandSource s
 static bool executeMakeTextWritingDirectionLeftToRight(LocalFrame& frame, Event*, EditorCommandSource, const String&)
 {
     RefPtrWillBeRawPtr<MutableStylePropertySet> style = MutableStylePropertySet::create(HTMLQuirksMode);
-    style->setProperty(CSSPropertyUnicodeBidi, CSSValueEmbed);
+    style->setProperty(CSSPropertyUnicodeBidi, CSSValueIsolate);
     style->setProperty(CSSPropertyDirection, CSSValueLtr);
     frame.editor().applyStyle(style.get(), EditActionSetWritingDirection);
     return true;
@@ -651,7 +651,7 @@ static bool executeMakeTextWritingDirectionNatural(LocalFrame& frame, Event*, Ed
 static bool executeMakeTextWritingDirectionRightToLeft(LocalFrame& frame, Event*, EditorCommandSource, const String&)
 {
     RefPtrWillBeRawPtr<MutableStylePropertySet> style = MutableStylePropertySet::create(HTMLQuirksMode);
-    style->setProperty(CSSPropertyUnicodeBidi, CSSValueEmbed);
+    style->setProperty(CSSPropertyUnicodeBidi, CSSValueIsolate);
     style->setProperty(CSSPropertyDirection, CSSValueRtl);
     frame.editor().applyStyle(style.get(), EditActionSetWritingDirection);
     return true;

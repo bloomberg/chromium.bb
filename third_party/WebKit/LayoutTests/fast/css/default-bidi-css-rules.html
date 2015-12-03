@@ -21,16 +21,16 @@ function styleOf(name, attributes) {
 
 var tests = [
     ['div', {}, 'ltr', '-webkit-isolate'],
-    ['div', {'dir': 'ltr'}, 'ltr', 'embed'],
-    ['div', {'dir': 'rtl'}, 'rtl', 'embed'],
+    ['div', {'dir': 'ltr'}, 'ltr', 'isolate'],
+    ['div', {'dir': 'rtl'}, 'rtl', 'isolate'],
     ['div', {'dir': 'auto'}, 'ltr', 'isolate'],
-    ['div', {'dir': ''}, 'ltr', 'embed'],
+    ['div', {'dir': ''}, 'ltr', 'isolate'],
 
     ['span', {}, 'ltr', 'normal'],
-    ['span', {'dir': 'ltr'}, 'ltr', 'embed'],
-    ['span', {'dir': 'rtl'}, 'rtl', 'embed'],
+    ['span', {'dir': 'ltr'}, 'ltr', 'isolate'],
+    ['span', {'dir': 'rtl'}, 'rtl', 'isolate'],
     ['span', {'dir': 'auto'}, 'ltr', 'isolate'],
-    ['span', {'dir': ''}, 'ltr', 'embed'],
+    ['span', {'dir': ''}, 'ltr', 'isolate'],
 
     ['bdi', {}, 'ltr', 'isolate'],
     ['bdi', {'dir': 'ltr'}, 'ltr', 'isolate'],
@@ -51,16 +51,16 @@ var tests = [
     ['bdo', {'dir': ''}, 'ltr', 'bidi-override'],
 
     ['textarea', {}, 'ltr', 'normal'],
-    ['textarea', {'dir': 'ltr'}, 'ltr', 'embed'],
-    ['textarea', {'dir': 'rtl'}, 'rtl', 'embed'],
+    ['textarea', {'dir': 'ltr'}, 'ltr', 'isolate'],
+    ['textarea', {'dir': 'rtl'}, 'rtl', 'isolate'],
     ['textarea', {'dir': 'auto'}, 'ltr', 'plaintext'],
-    ['textarea', {'dir': ''}, 'ltr', 'embed'],
+    ['textarea', {'dir': ''}, 'ltr', 'isolate'],
 
     ['pre', {}, 'ltr', 'normal'],
-    ['pre', {'dir': 'ltr'}, 'ltr', 'embed'],
-    ['pre', {'dir': 'rtl'}, 'rtl', 'embed'],
+    ['pre', {'dir': 'ltr'}, 'ltr', 'isolate'],
+    ['pre', {'dir': 'rtl'}, 'rtl', 'isolate'],
     ['pre', {'dir': 'auto'}, 'ltr', 'plaintext'],
-    ['pre', {'dir': ''}, 'ltr', 'embed'],
+    ['pre', {'dir': ''}, 'ltr', 'isolate'],
 ].forEach(function (test) {
     shouldBe('styleOf("' + test[0] + '", ' + JSON.stringify(test[1]) + ').direction', '"' + test[2] + '"');
     container.innerHTML = '';

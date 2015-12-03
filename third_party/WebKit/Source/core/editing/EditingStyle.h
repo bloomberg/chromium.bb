@@ -141,6 +141,10 @@ public:
 
     static PassRefPtrWillBeRawPtr<EditingStyle> styleAtSelectionStart(const VisibleSelection&, bool shouldUseBackgroundColorInEffect = false);
     static WritingDirection textDirectionForSelection(const VisibleSelection&, EditingStyle* typingStyle, bool& hasNestedOrMultipleEmbeddings);
+    static bool isEmbedOrIsolate(CSSValueID unicodeBidi)
+    {
+        return unicodeBidi == CSSValueIsolate || unicodeBidi == CSSValueWebkitIsolate || unicodeBidi == CSSValueEmbed;
+    }
 
     DECLARE_TRACE();
 

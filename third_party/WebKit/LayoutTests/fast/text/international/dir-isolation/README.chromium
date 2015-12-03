@@ -1,0 +1,6 @@
+This directory contains a copy of a test suite created by W3C I18N WG.
+
+A pull request to web-platform-tests is being worked on:
+https://github.com/w3c/web-platform-tests/pull/2357
+
+This directory should be removed when the pull request is merged and imported.

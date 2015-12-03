@@ -557,7 +557,7 @@ bool EditingStyle::textDirection(WritingDirection& writingDirection) const
         return false;
 
     CSSValueID unicodeBidiValue = toCSSPrimitiveValue(unicodeBidi.get())->getValueID();
-    if (unicodeBidiValue == CSSValueEmbed) {
+    if (isEmbedOrIsolate(unicodeBidiValue)) {
         RefPtrWillBeRawPtr<CSSValue> direction = m_mutableStyle->getPropertyCSSValue(CSSPropertyDirection);
         if (!direction || !direction->isPrimitiveValue())
             return false;
@@ -649,7 +649,7 @@ PassRefPtrWillBeRawPtr<EditingStyle> EditingStyle::extractAndRemoveTextDirection
 {
     RefPtrWillBeRawPtr<EditingStyle> textDirection = EditingStyle::create();
     textDirection->m_mutableStyle = MutableStylePropertySet::create(HTMLQuirksMode);
-    textDirection->m_mutableStyle->setProperty(CSSPropertyUnicodeBidi, CSSValueEmbed, m_mutableStyle->propertyIsImportant(CSSPropertyUnicodeBidi));
+    textDirection->m_mutableStyle->setProperty(CSSPropertyUnicodeBidi, CSSValueIsolate, m_mutableStyle->propertyIsImportant(CSSPropertyUnicodeBidi));
     textDirection->m_mutableStyle->setProperty(CSSPropertyDirection, m_mutableStyle->getPropertyValue(CSSPropertyDirection),
         m_mutableStyle->propertyIsImportant(CSSPropertyDirection));
 
@@ -1346,6 +1346,13 @@ PassRefPtrWillBeRawPtr<EditingStyle> EditingStyle::styleAtSelectionStart(const V
     return style;
 }
 
+static bool isUnicodeBidiNestedOrMultipleEmbeddings(CSSValueID valueID)
+{
+    return valueID == CSSValueEmbed || valueID == CSSValueBidiOverride
+        || valueID == CSSValueWebkitIsolate || valueID == CSSValueWebkitIsolateOverride || valueID == CSSValueWebkitPlaintext
+        || valueID == CSSValueIsolate || valueID == CSSValueIsolateOverride || valueID == CSSValuePlaintext;
+}
+
 WritingDirection EditingStyle::textDirectionForSelection(const VisibleSelection& selection, EditingStyle* typingStyle, bool& hasNestedOrMultipleEmbeddings)
 {
     hasNestedOrMultipleEmbeddings = true;
@@ -1375,7 +1382,7 @@ WritingDirection EditingStyle::textDirectionForSelection(const VisibleSelection&
                 continue;
 
             CSSValueID unicodeBidiValue = toCSSPrimitiveValue(unicodeBidi.get())->getValueID();
-            if (unicodeBidiValue == CSSValueEmbed || unicodeBidiValue == CSSValueBidiOverride)
+            if (isUnicodeBidiNestedOrMultipleEmbeddings(unicodeBidiValue))
                 return NaturalWritingDirection;
         }
     }
@@ -1411,7 +1418,7 @@ WritingDirection EditingStyle::textDirectionForSelection(const VisibleSelection&
         if (unicodeBidiValue == CSSValueBidiOverride)
             return NaturalWritingDirection;
 
-        ASSERT(unicodeBidiValue == CSSValueEmbed);
+        ASSERT(isEmbedOrIsolate(unicodeBidiValue));
         RefPtrWillBeRawPtr<CSSValue> direction = style->getPropertyCSSValue(CSSPropertyDirection);
         if (!direction || !direction->isPrimitiveValue())
             continue;

@@ -234,7 +234,7 @@ void HTMLElement::collectStyleForPresentationAttribute(const QualifiedName& name
             else
                 addPropertyToPresentationAttributeStyle(style, CSSPropertyDirection, "ltr");
             if (!hasTagName(bdiTag) && !hasTagName(bdoTag) && !hasTagName(outputTag))
-                addPropertyToPresentationAttributeStyle(style, CSSPropertyUnicodeBidi, CSSValueEmbed);
+                addPropertyToPresentationAttributeStyle(style, CSSPropertyUnicodeBidi, CSSValueIsolate);
         }
     } else if (name.matches(XMLNames::langAttr)) {
         mapLanguageAttributeToLocale(value, style);

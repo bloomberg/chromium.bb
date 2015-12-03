@@ -550,8 +550,10 @@ void ApplyStyleCommand::removeEmbeddingUpToEnclosingBlock(Node* node, HTMLElemen
 static HTMLElement* highestEmbeddingAncestor(Node* startNode, Node* enclosingNode)
 {
     for (Node* n = startNode; n && n != enclosingNode; n = n->parentNode()) {
-        if (n->isHTMLElement() && getIdentifierValue(CSSComputedStyleDeclaration::create(n).get(), CSSPropertyUnicodeBidi) == CSSValueEmbed)
+        if (n->isHTMLElement()
+            && EditingStyle::isEmbedOrIsolate(getIdentifierValue(CSSComputedStyleDeclaration::create(n).get(), CSSPropertyUnicodeBidi))) {
             return toHTMLElement(n);
+        }
     }
 
     return 0;

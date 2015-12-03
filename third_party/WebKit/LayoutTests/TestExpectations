@@ -537,6 +537,15 @@ crbug.com/542660 imported/web-platform-tests/html/semantics/text-level-semantics
 crbug.com/542660 imported/web-platform-tests/html/semantics/text-level-semantics/the-bdi-element/bdi-paragraph-level-container.html [ Failure ]
 crbug.com/542660 imported/web-platform-tests/html/semantics/text-level-semantics/the-bdo-element/bdo-override.html [ Failure ]
 
+# Ref tests that pass but causes 1px diff on images.
+crbug.com/391260 [ Win ] fast/text/international/dir-isolation/dir-isolation-002c.html [ Failure ]
+crbug.com/391260 [ Mac ] fast/text/international/dir-isolation/dir-isolation-006a.html [ Failure ]
+crbug.com/391260 [ Mac ] fast/text/international/dir-isolation/dir-isolation-006b.html [ Failure ]
+crbug.com/391260 [ Mac Win ] fast/text/international/dir-isolation/dir-isolation-006c.html [ Failure ]
+crbug.com/391260 [ Mac ] fast/text/international/dir-isolation/dir-isolation-009a.html [ Failure ]
+crbug.com/391260 [ Mac ] fast/text/international/dir-isolation/dir-isolation-009b.html [ Failure ]
+crbug.com/391260 [ Mac ] fast/text/international/dir-isolation/dir-isolation-009c.html [ Failure ]
+
 # Ref tests that needs investigation.
 crbug.com/404597 [ Mac ] fast/css3-text/css3-text-justify/text-justify-crash.html [ Failure ]
 crbug.com/404597 fast/forms/long-text-in-input.html [ Failure ]

@@ -68,49 +68,49 @@ function selectThirdWord(container) {
 
 // left to right language
 modifyWritingDirection('hello world', selectFirstWord, 'Natural', 'hello world');
-modifyWritingDirection('hello world', selectFirstWord, 'LeftToRight', '<span style="unicode-bidi: embed;">hello </span>world');
-modifyWritingDirection('hello world', selectFirstWord, 'RightToLeft', '<span style="unicode-bidi: embed; direction: rtl;">hello </span>world');
+modifyWritingDirection('hello world', selectFirstWord, 'LeftToRight', '<span style="unicode-bidi: isolate;">hello </span>world');
+modifyWritingDirection('hello world', selectFirstWord, 'RightToLeft', '<span style="unicode-bidi: isolate; direction: rtl;">hello </span>world');
 modifyWritingDirection('<b>hello world</b> webkit', selectSecondAndThirdWords, 'Natural', '<b>hello world</b> webkit');
-modifyWritingDirection('<b>hello world</b> webkit', selectSecondAndThirdWords, 'LeftToRight', '<b>hello <span style="unicode-bidi: embed;">world</span></b><span style="unicode-bidi: embed;"> webkit</span>');
-modifyWritingDirection('<b>hello world</b> webkit', selectSecondAndThirdWords, 'RightToLeft', '<b>hello <span style="unicode-bidi: embed; direction: rtl;">world</span></b><span style="unicode-bidi: embed; direction: rtl;"> webkit</span>');
+modifyWritingDirection('<b>hello world</b> webkit', selectSecondAndThirdWords, 'LeftToRight', '<b>hello <span style="unicode-bidi: isolate;">world</span></b><span style="unicode-bidi: isolate;"> webkit</span>');
+modifyWritingDirection('<b>hello world</b> webkit', selectSecondAndThirdWords, 'RightToLeft', '<b>hello <span style="unicode-bidi: isolate; direction: rtl;">world</span></b><span style="unicode-bidi: isolate; direction: rtl;"> webkit</span>');
 modifyWritingDirection('<span dir="rtl">hello <span dir="ltr">world webkit rocks</span></span>', selectThirdWord, 'Natural',
                        '<span dir="rtl">hello <span dir="ltr">world </span></span>webkit <span dir="rtl"><span dir="ltr">rocks</span></span>');
 modifyWritingDirection('<span dir="rtl">hello <span dir="ltr">world webkit rocks</span></span>', selectThirdWord, 'LeftToRight',
-                       '<span dir="rtl">hello <span dir="ltr">world </span></span><span style="unicode-bidi: embed;">webkit </span><span dir="rtl"><span dir="ltr">rocks</span></span>');
+                       '<span dir="rtl">hello <span dir="ltr">world </span></span><span style="unicode-bidi: isolate;">webkit </span><span dir="rtl"><span dir="ltr">rocks</span></span>');
 modifyWritingDirection('<span dir="rtl">hello <span dir="ltr">world webkit rocks</span></span>', selectThirdWord, 'RightToLeft',
                        '<span dir="rtl">hello <span dir="ltr">world </span>webkit <span dir="ltr">rocks</span></span>');
 
 // right to left language
 modifyWritingDirection('هنا يكتب النص العربي', selectFirstWord, 'Natural', 'هنا يكتب النص العربي');
-modifyWritingDirection('هنا يكتب النص العربي', selectFirstWord, 'LeftToRight', '<span style="unicode-bidi: embed;">هنا </span>يكتب النص العربي');
-modifyWritingDirection('هنا يكتب النص العربي', selectFirstWord, 'RightToLeft', '<span style="unicode-bidi: embed; direction: rtl;">هنا </span>يكتب النص العربي');
+modifyWritingDirection('هنا يكتب النص العربي', selectFirstWord, 'LeftToRight', '<span style="unicode-bidi: isolate;">هنا </span>يكتب النص العربي');
+modifyWritingDirection('هنا يكتب النص العربي', selectFirstWord, 'RightToLeft', '<span style="unicode-bidi: isolate; direction: rtl;">هنا </span>يكتب النص العربي');
 
 modifyWritingDirection('<b>هنا يكتب</b> النص العربي', selectSecondAndThirdWords, 'Natural', '<b>هنا يكتب</b> النص العربي');
-modifyWritingDirection('<b>هنا يكتب</b> النص العربي', selectSecondAndThirdWords, 'LeftToRight', '<b>هنا <span style="unicode-bidi: embed;">يكتب</span></b><span style="unicode-bidi: embed;"> النص </span>العربي');
-modifyWritingDirection('<b>هنا يكتب</b> النص العربي', selectSecondAndThirdWords, 'RightToLeft', '<b>هنا <span style="unicode-bidi: embed; direction: rtl;">يكتب</span></b><span style="unicode-bidi: embed; direction: rtl;"> النص </span>العربي');
+modifyWritingDirection('<b>هنا يكتب</b> النص العربي', selectSecondAndThirdWords, 'LeftToRight', '<b>هنا <span style="unicode-bidi: isolate;">يكتب</span></b><span style="unicode-bidi: isolate;"> النص </span>العربي');
+modifyWritingDirection('<b>هنا يكتب</b> النص العربي', selectSecondAndThirdWords, 'RightToLeft', '<b>هنا <span style="unicode-bidi: isolate; direction: rtl;">يكتب</span></b><span style="unicode-bidi: isolate; direction: rtl;"> النص </span>العربي');
 
 modifyWritingDirection('<div dir="rtl">هنا يكتب النص العربي</div>', selectFirstWord, 'Natural', '<div dir="rtl">هنا يكتب النص العربي</div>');
-modifyWritingDirection('<div dir="rtl">هنا يكتب النص العربي</div>', selectFirstWord, 'LeftToRight', '<div dir="rtl"><span style="unicode-bidi: embed; direction: ltr;">هنا </span>يكتب النص العربي</div>');
-modifyWritingDirection('<div dir="rtl">هنا يكتب النص العربي</div>', selectFirstWord, 'RightToLeft', '<div dir="rtl"><span style="unicode-bidi: embed;">هنا </span>يكتب النص العربي</div>');
+modifyWritingDirection('<div dir="rtl">هنا يكتب النص العربي</div>', selectFirstWord, 'LeftToRight', '<div dir="rtl"><span style="unicode-bidi: isolate; direction: ltr;">هنا </span>يكتب النص العربي</div>');
+modifyWritingDirection('<div dir="rtl">هنا يكتب النص العربي</div>', selectFirstWord, 'RightToLeft', '<div dir="rtl"><span style="unicode-bidi: isolate;">هنا </span>يكتب النص العربي</div>');
 
 modifyWritingDirection('<div dir="rtl"><b>هنا يكتب</b> النص العربي</div>', selectSecondAndThirdWords, 'Natural', '<div dir="rtl"><b>هنا يكتب</b> النص العربي</div>');
-modifyWritingDirection('<div dir="rtl"><b>هنا يكتب</b> النص العربي</div>', selectSecondAndThirdWords, 'LeftToRight', '<div dir="rtl"><b>هنا <span style="unicode-bidi: embed; direction: ltr;">يكتب</span></b><span style="unicode-bidi: embed; direction: ltr;"> النص </span>العربي</div>');
-modifyWritingDirection('<div dir="rtl"><b>هنا يكتب</b> النص العربي</div>', selectSecondAndThirdWords, 'RightToLeft', '<div dir="rtl"><b>هنا <span style="unicode-bidi: embed;">يكتب</span></b><span style="unicode-bidi: embed;"> النص </span>العربي</div>');
+modifyWritingDirection('<div dir="rtl"><b>هنا يكتب</b> النص العربي</div>', selectSecondAndThirdWords, 'LeftToRight', '<div dir="rtl"><b>هنا <span style="unicode-bidi: isolate; direction: ltr;">يكتب</span></b><span style="unicode-bidi: isolate; direction: ltr;"> النص </span>العربي</div>');
+modifyWritingDirection('<div dir="rtl"><b>هنا يكتب</b> النص العربي</div>', selectSecondAndThirdWords, 'RightToLeft', '<div dir="rtl"><b>هنا <span style="unicode-bidi: isolate;">يكتب</span></b><span style="unicode-bidi: isolate;"> النص </span>العربي</div>');
 modifyWritingDirection('<div dir="rtl">هنا <span dir="ltr">يكتب النص العربي</span></div>', selectThirdWord, 'Natural',
                        '<div dir="rtl">هنا <span dir="ltr">يكتب </span>النص <span dir="ltr">العربي</span></div>');
 modifyWritingDirection('<div dir="rtl">هنا <span dir="ltr">يكتب النص العربي</span></div>', selectThirdWord, 'LeftToRight',
-                       '<div dir="rtl"><span style="unicode-bidi: embed; direction: ltr;">هنا يكتب النص العربي</span></div>');
+                       '<div dir="rtl"><span style="unicode-bidi: isolate; direction: ltr;">هنا يكتب النص العربي</span></div>');
 modifyWritingDirection('<div dir="rtl">هنا <span dir="ltr">يكتب النص العربي</span></div>', selectThirdWord, 'RightToLeft',
-                       '<div dir="rtl">هنا <span dir="ltr">يكتب </span><span style="unicode-bidi: embed;">النص </span><span dir="ltr">العربي</span></div>');
+                       '<div dir="rtl">هنا <span dir="ltr">يكتب </span><span style="unicode-bidi: isolate;">النص </span><span dir="ltr">العربي</span></div>');
 
 // bidirectional langauge
 modifyWritingDirection('写中文', selectFirstWord, 'Natural', '写中文');
-modifyWritingDirection('写中文', selectFirstWord, 'LeftToRight', '<span style="unicode-bidi: embed;">写</span>中文');
-modifyWritingDirection('写中文', selectFirstWord, 'RightToLeft', '<span style="unicode-bidi: embed; direction: rtl;">写</span>中文');
+modifyWritingDirection('写中文', selectFirstWord, 'LeftToRight', '<span style="unicode-bidi: isolate;">写</span>中文');
+modifyWritingDirection('写中文', selectFirstWord, 'RightToLeft', '<span style="unicode-bidi: isolate; direction: rtl;">写</span>中文');
 
 modifyWritingDirection('<div dir="rtl">写中文</div>', selectFirstWord, 'Natural', '<div dir="rtl">写中文</div>');
-modifyWritingDirection('<div dir="rtl">写中文</div>', selectFirstWord, 'LeftToRight', '<div dir="rtl"><span style="unicode-bidi: embed; direction: ltr;">写</span>中文</div>');
-modifyWritingDirection('<div dir="rtl">写中文</div>', selectFirstWord, 'RightToLeft', '<div dir="rtl"><span style="unicode-bidi: embed;">写</span>中文</div>');
+modifyWritingDirection('<div dir="rtl">写中文</div>', selectFirstWord, 'LeftToRight', '<div dir="rtl"><span style="unicode-bidi: isolate; direction: ltr;">写</span>中文</div>');
+modifyWritingDirection('<div dir="rtl">写中文</div>', selectFirstWord, 'RightToLeft', '<div dir="rtl"><span style="unicode-bidi: isolate;">写</span>中文</div>');
 
 document.body.removeChild(testContainer);
 
