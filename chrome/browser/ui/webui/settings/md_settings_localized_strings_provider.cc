@@ -272,7 +272,7 @@ void AddResetStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString(
       "powerwashDialogTitle", IDS_OPTIONS_FACTORY_RESET_HEADING);
   html_source->AddLocalizedString(
-      "powerwashDialogBody", IDS_OPTIONS_FACTORY_RESET_WARNING);
+      "powerwashDialogExplanation", IDS_OPTIONS_FACTORY_RESET_WARNING);
   html_source->AddLocalizedString(
       "powerwashDialogButton", IDS_RELAUNCH_BUTTON);
   html_source->AddLocalizedString(

@@ -5,18 +5,26 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-dialog/paper-dialog.html">
 
 <dom-module id="settings-powerwash-dialog">
+  <link rel="import" type="css" href="reset_page_dialog.css">
   <template>
     <paper-dialog modal id="dialog">
-      <h2 i18n-content="powerwashDialogTitle"></h2>
-      <div i18n-content="powerwashDialogBody"></div>
-      <div class="layout center horizontal" id="buttonContainer">
-        <paper-button i18n-content="learnMore"
-            on-tap="onLearnMoreTap_" id="learnMore"></paper-button>
-        <div class="layout center buttons flex-1">
-          <paper-button on-tap="onCancelTap_" id="cancel"
-              i18n-content="cancel"></paper-button>
-          <paper-button on-tap="onRestartTap_" id="powerwash"
-              i18n-content="powerwashDialogButton"></paper-button>
+      <div id="dialog-content">
+        <div class="dialog-title"
+            i18n-content="powerwashDialogTitle"></div>
+        <div class="dialog-body">
+          <div class="explanation"
+              i18n-content="powerwashDialogExplanation"></div>
+          <div class="button-container">
+            <paper-button i18n-content="learnMore"
+                on-tap="onLearnMoreTap_" id="learnMore"></paper-button>
+            <div class="action-buttons">
+              <paper-button class="cancel-button" on-tap="onCancelTap_"
+                  id="cancel" i18n-content="cancel"></paper-button>
+              <paper-button class="action-button" id="powerwash"
+                  on-tap="onRestartTap_" i18n-content="powerwashDialogButton">
+              </paper-button>
+            </div>
+          </div>
         </div>
       </div>
     </paper-dialog>

@@ -1,0 +1,57 @@
+/* Copyright 2015 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+#dialog-content {
+  -webkit-padding-end: 0;
+  -webkit-padding-start: 0;
+  margin-top: 0;
+}
+
+.dialog-title {
+  border-bottom: 1px solid gainsboro;
+  font-size: 1.13em;
+  padding-bottom: 14px;
+  padding-top: 14px;
+}
+
+.dialog-body {
+  font-size: 1em;
+  margin: 20px 0;
+}
+
+.dialog-title,
+.dialog-body {
+  -webkit-padding-end: 24px;
+  -webkit-padding-start: 24px;
+}
+
+.button-container {
+  display: flex;
+}
+
+.action-button {
+  -webkit-margin-start: 10px;
+  background-color: rgb(66, 133, 244);
+  color: white;
+  font-weight: 500;
+}
+
+.cancel-button {
+  color: rgb(66, 133, 244);
+  font-weight: 500;
+}
+
+paper-button {
+  margin: 0;
+}
+
+.explanation {
+  margin-bottom: 35px;
+}
+
+.action-buttons {
+  display: flex;
+  flex: 1;
+  justify-content: flex-end;
+}

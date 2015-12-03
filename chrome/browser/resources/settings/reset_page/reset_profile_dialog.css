@@ -7,25 +7,9 @@
   width: 500px;
 }
 
-#reset {
-  -webkit-margin-start: 10px;
-  -webkit-padding-end: 15px;
-  -webkit-padding-start: 15px;
-  background-color: rgb(120, 120, 120);
-  color: white;
-}
-
-#learnMore,
-#cancel {
+#learnMore {
   color: rgb(94, 94, 94);
-}
-
-#explanation {
-  margin: 10px 0;
-}
-
-#buttonContainer {
-  margin: 15px 0;
+  font-weight: 500;
 }
 
 #feedbackBar {

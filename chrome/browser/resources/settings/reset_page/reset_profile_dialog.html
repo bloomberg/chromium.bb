@@ -6,21 +6,25 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner.html">
 
 <dom-module id="settings-reset-profile-dialog">
+  <link rel="import" type="css" href="reset_page_dialog.css">
   <link rel="import" type="css" href="reset_profile_dialog.css">
   <template>
     <paper-dialog modal id="dialog">
-      <div>
-        <h2 i18n-content="resetPageTitle"></h2>
-        <div i18n-content="resetPageExplanation" id="explanation"></div>
-        <div class="layout center horizontal" id="buttonContainer">
-          <paper-button on-tap="onLearnMoreTap_" id="learnMore"
-              i18n-content="learnMore"></paper-button>
-          <div class="layout center buttons flex-1">
-            <paper-spinner id="resetSpinner"></paper-spinner>
-            <paper-button on-tap="onCancelTap_" id="cancel"
-                i18n-content="cancel"></paper-button>
-            <paper-button i18n-content="resetPageCommit" on-tap="onResetTap_"
-                id="reset"></paper-button>
+      <div id="dialog-content">
+        <div class="dialog-title"
+            i18n-content="resetPageTitle"></div>
+        <div class="dialog-body">
+          <div class="explanation" i18n-content="resetPageExplanation"></div>
+          <div class="button-container">
+            <paper-button on-tap="onLearnMoreTap_" id="learnMore"
+                i18n-content="learnMore"></paper-button>
+            <div class="action-buttons">
+              <paper-spinner id="resetSpinner"></paper-spinner>
+              <paper-button class="cancel-button" on-tap="onCancelTap_"
+                  id="cancel" i18n-content="cancel"></paper-button>
+              <paper-button class="action-button" i18n-content="resetPageCommit"
+                  on-tap="onResetTap_" id="reset"></paper-button>
+            </div>
           </div>
         </div>
       </div>
