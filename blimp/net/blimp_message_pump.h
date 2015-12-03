@@ -26,13 +26,12 @@ class PacketReader;
 // message, the BlimpMessagePump reads the next packet.
 class BLIMP_NET_EXPORT BlimpMessagePump {
  public:
-  // Caller ensures |reader| outlive this object.
+  // Caller ensures that |reader| outlives this object.
   explicit BlimpMessagePump(PacketReader* reader);
 
   ~BlimpMessagePump();
 
-  // Sets the processor which will take blimp messages.
-  // Can be set multiple times, but previously set processors are discarded.
+  // Sets the processor which will take BlimpMessages. Can only be set once.
   // Caller retains the ownership of |processor|.
   void SetMessageProcessor(BlimpMessageProcessor* processor);
 
@@ -47,15 +46,21 @@ class BLIMP_NET_EXPORT BlimpMessagePump {
   // Callback when next packet is ready in |buffer_|.
   void OnReadPacketComplete(int result);
 
-  // Callback when |processor_| finishes processing a blimp message.
+  // Callback when |processor_| finishes processing a BlimpMessage.
   void OnProcessMessageComplete(int result);
 
   PacketReader* reader_;
   ConnectionErrorObserver* error_observer_;
   BlimpMessageProcessor* processor_;
   scoped_refptr<net::GrowableIOBuffer> buffer_;
-  net::CancelableCompletionCallback read_packet_callback_;
+
+  // Cancelled in the event that the connection is destroyed (along with
+  // |this|) while a inflight callback is held by |processor_|.
   net::CancelableCompletionCallback process_msg_callback_;
+
+  // Cancelled to guard against |this| being called back from a completed read
+  // operation.
+  net::CancelableCompletionCallback read_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(BlimpMessagePump);
 };

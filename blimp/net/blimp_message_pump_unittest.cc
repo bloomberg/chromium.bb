@@ -50,60 +50,34 @@ class BlimpMessagePumpTest : public testing::Test {
   scoped_ptr<BlimpMessagePump> message_pump_;
 };
 
-// Reader completes reading one packet synchronously.
-TEST_F(BlimpMessagePumpTest, SyncPacketRead) {
-  EXPECT_CALL(receiver_, MockableProcessMessage(EqualsProto(*message1_), _));
-  EXPECT_CALL(reader_, ReadPacket(NotNull(), _))
-      .WillOnce(DoAll(FillBufferFromMessage<0>(message1_.get()),
-                      Return(message1_->ByteSize())));
-  message_pump_->SetMessageProcessor(&receiver_);
-}
-
-// Reader completes reading two packets synchronously.
-TEST_F(BlimpMessagePumpTest, SyncTwoPacketsRead) {
-  EXPECT_CALL(reader_, ReadPacket(NotNull(), _))
-      .WillOnce(DoAll(FillBufferFromMessage<0>(message1_.get()),
-                      Return(message1_->ByteSize())))
-      .WillOnce(DoAll(FillBufferFromMessage<0>(message2_.get()),
-                      Return(message2_->ByteSize())));
-  net::CompletionCallback process_msg_cb;
-  {
-    InSequence s;
-    EXPECT_CALL(receiver_, MockableProcessMessage(EqualsProto(*message1_), _))
-        .WillOnce(SaveArg<1>(&process_msg_cb))
-        .RetiresOnSaturation();
-    EXPECT_CALL(receiver_, MockableProcessMessage(EqualsProto(*message2_), _));
-  }
-  message_pump_->SetMessageProcessor(&receiver_);
-
-  // Trigger next packet read
-  process_msg_cb.Run(net::OK);
-}
-
 // Reader completes reading one packet asynchronously.
-TEST_F(BlimpMessagePumpTest, AsyncPacketRead) {
+TEST_F(BlimpMessagePumpTest, ReadPacket) {
   net::CompletionCallback read_packet_cb;
+  EXPECT_CALL(reader_, ReadPacket(NotNull(), _));
   EXPECT_CALL(reader_, ReadPacket(NotNull(), _))
       .WillOnce(DoAll(FillBufferFromMessage<0>(message1_.get()),
-                      SaveArg<1>(&read_packet_cb), Return(net::ERR_IO_PENDING)))
-      .WillOnce(Return(net::ERR_IO_PENDING));
+                      SetBufferOffset<0>(message1_->ByteSize()),
+                      SaveArg<1>(&read_packet_cb)))
+      .RetiresOnSaturation();
   net::CompletionCallback process_msg_cb;
   EXPECT_CALL(receiver_, MockableProcessMessage(EqualsProto(*message1_), _))
       .WillOnce(SaveArg<1>(&process_msg_cb));
   message_pump_->SetMessageProcessor(&receiver_);
-  read_packet_cb.Run(message1_->ByteSize());
+  ASSERT_FALSE(read_packet_cb.is_null());
+  base::ResetAndReturn(&read_packet_cb).Run(net::OK);
   process_msg_cb.Run(net::OK);
 }
 
 // Reader completes reading two packets asynchronously.
-TEST_F(BlimpMessagePumpTest, AsyncTwoPacketsRead) {
+TEST_F(BlimpMessagePumpTest, ReadTwoPackets) {
   net::CompletionCallback read_packet_cb;
   EXPECT_CALL(reader_, ReadPacket(NotNull(), _))
       .WillOnce(DoAll(FillBufferFromMessage<0>(message1_.get()),
-                      SaveArg<1>(&read_packet_cb), Return(net::ERR_IO_PENDING)))
+                      SetBufferOffset<0>(message1_->ByteSize()),
+                      SaveArg<1>(&read_packet_cb)))
       .WillOnce(DoAll(FillBufferFromMessage<0>(message2_.get()),
-                      SaveArg<1>(&read_packet_cb),
-                      Return(net::ERR_IO_PENDING)));
+                      SetBufferOffset<0>(message2_->ByteSize()),
+                      SaveArg<1>(&read_packet_cb)));
   net::CompletionCallback process_msg_cb;
   {
     InSequence s;
@@ -113,77 +87,54 @@ TEST_F(BlimpMessagePumpTest, AsyncTwoPacketsRead) {
     EXPECT_CALL(receiver_, MockableProcessMessage(EqualsProto(*message2_), _));
   }
   message_pump_->SetMessageProcessor(&receiver_);
-  read_packet_cb.Run(message1_->ByteSize());
+  ASSERT_FALSE(read_packet_cb.is_null());
+  base::ResetAndReturn(&read_packet_cb).Run(net::OK);
 
   // Trigger next packet read
   process_msg_cb.Run(net::OK);
-  read_packet_cb.Run(message2_->ByteSize());
+  ASSERT_FALSE(read_packet_cb.is_null());
+  base::ResetAndReturn(&read_packet_cb).Run(net::OK);
 }
 
 // Reader completes reading two packets asynchronously.
 // The first read succeeds, and the second fails.
-TEST_F(BlimpMessagePumpTest, AsyncTwoPacketsReadWithError) {
+TEST_F(BlimpMessagePumpTest, ReadTwoPacketsWithError) {
+  net::CompletionCallback process_msg_cb;
   net::CompletionCallback read_packet_cb;
   EXPECT_CALL(reader_, ReadPacket(NotNull(), _))
       .WillOnce(DoAll(FillBufferFromMessage<0>(message1_.get()),
-                      SaveArg<1>(&read_packet_cb), Return(net::ERR_IO_PENDING)))
+                      SetBufferOffset<0>(message1_->ByteSize()),
+                      SaveArg<1>(&read_packet_cb)))
       .WillOnce(DoAll(FillBufferFromMessage<0>(message2_.get()),
-                      SaveArg<1>(&read_packet_cb),
-                      Return(net::ERR_IO_PENDING)));
-  net::CompletionCallback process_msg_cb;
-  {
-    InSequence s;
-    EXPECT_CALL(receiver_, MockableProcessMessage(EqualsProto(*message1_), _))
-        .WillOnce(SaveArg<1>(&process_msg_cb));
-    EXPECT_CALL(error_observer_, OnConnectionError(net::ERR_FAILED));
-  }
+                      SetBufferOffset<0>(message2_->ByteSize()),
+                      SaveArg<1>(&read_packet_cb)));
+  EXPECT_CALL(receiver_, MockableProcessMessage(EqualsProto(*message1_), _))
+      .WillOnce(SaveArg<1>(&process_msg_cb));
+  EXPECT_CALL(error_observer_, OnConnectionError(net::ERR_FAILED));
+
   message_pump_->SetMessageProcessor(&receiver_);
-  read_packet_cb.Run(message1_->ByteSize());
+  ASSERT_FALSE(read_packet_cb.is_null());
+  base::ResetAndReturn(&read_packet_cb).Run(net::OK);
 
   // Trigger next packet read
   process_msg_cb.Run(net::OK);
-  read_packet_cb.Run(net::ERR_FAILED);
+  ASSERT_FALSE(read_packet_cb.is_null());
+  base::ResetAndReturn(&read_packet_cb).Run(net::ERR_FAILED);
 }
 
 // Reader completes reading one packet synchronously, but packet is invalid
 TEST_F(BlimpMessagePumpTest, InvalidPacket) {
+  net::CompletionCallback read_packet_cb;
   std::string test_msg("msg");
   EXPECT_CALL(reader_, ReadPacket(NotNull(), _))
-      .WillOnce(DoAll(FillBufferFromString<0>(test_msg), Return(1)));
+      .WillOnce(DoAll(FillBufferFromString<0>(test_msg),
+                      SetBufferOffset<0>(test_msg.size()),
+                      SaveArg<1>(&read_packet_cb)));
   EXPECT_CALL(error_observer_, OnConnectionError(net::ERR_FAILED));
-  message_pump_->SetMessageProcessor(&receiver_);
-}
-
-TEST_F(BlimpMessagePumpTest, ClearMessageProcessorAfterRead) {
-  net::CompletionCallback read_packet_cb;
-  EXPECT_CALL(reader_, ReadPacket(NotNull(), _))
-      .WillOnce(DoAll(FillBufferFromMessage<0>(message1_.get()),
-                      SaveArg<1>(&read_packet_cb),
-                      Return(net::ERR_IO_PENDING)));
-  net::CompletionCallback process_msg_cb;
-  EXPECT_CALL(receiver_, MockableProcessMessage(EqualsProto(*message1_), _))
-      .WillOnce(SaveArg<1>(&process_msg_cb));
 
   message_pump_->SetMessageProcessor(&receiver_);
-  base::ResetAndReturn(&read_packet_cb).Run(message1_->ByteSize());
-
-  message_pump_->SetMessageProcessor(nullptr);
-
-  // Completing message processing will not trigger next packet read.
-  base::ResetAndReturn(&process_msg_cb).Run(net::OK);
-}
-
-TEST_F(BlimpMessagePumpTest, ClearMessageProcessorDuringRead) {
-  net::CompletionCallback read_packet_cb;
-  EXPECT_CALL(reader_, ReadPacket(NotNull(), _))
-      .WillOnce(DoAll(FillBufferFromMessage<0>(message1_.get()),
-                      SaveArg<1>(&read_packet_cb),
-                      Return(net::ERR_IO_PENDING)));
-
-  // Receiver will not get any message.
-  message_pump_->SetMessageProcessor(&receiver_);
-  message_pump_->SetMessageProcessor(nullptr);
-  base::ResetAndReturn(&read_packet_cb).Run(message1_->ByteSize());
+  ASSERT_FALSE(read_packet_cb.is_null());
+  base::ResetAndReturn(&read_packet_cb).Run(net::OK);
 }
 
 }  // namespace

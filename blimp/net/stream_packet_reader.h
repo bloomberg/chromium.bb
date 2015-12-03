@@ -33,8 +33,8 @@ class BLIMP_NET_EXPORT StreamPacketReader : public PacketReader {
   ~StreamPacketReader() override;
 
   // PacketReader implementation.
-  int ReadPacket(const scoped_refptr<net::GrowableIOBuffer>& buf,
-                 const net::CompletionCallback& cb) override;
+  void ReadPacket(const scoped_refptr<net::GrowableIOBuffer>& buf,
+                  const net::CompletionCallback& cb) override;
 
  private:
   enum class ReadState {

@@ -35,7 +35,6 @@ MATCHER_P(BufferEquals, expected, "") {
 }
 
 // Checks if two proto messages are the same.
-// TODO(kmarshall): promote to a shared testing library.
 MATCHER_P(EqualsProto, message, "") {
   std::string expected_serialized;
   std::string actual_serialized;
@@ -49,7 +48,7 @@ MATCHER_P(EqualsProto, message, "") {
 // message (type: BlimpMessage) The message to compare with |arg|.
 MATCHER_P(BufferEqualsProto, message, "") {
   BlimpMessage actual_message;
-  actual_message.ParseFromArray(arg->data(), arg->BytesRemaining());
+  actual_message.ParseFromArray(arg->data(), message.ByteSize());
   std::string expected_serialized;
   std::string actual_serialized;
   message.SerializeToString(&expected_serialized);
@@ -71,7 +70,8 @@ ACTION_TEMPLATE(FillBufferFromString,
 // Behavior is undefined if len(buf) < len(str).
 bool BufferStartsWith(net::GrowableIOBuffer* buf, const std::string& str);
 
-// GMock action that writes data from a blimp message to an IOBuffer .
+// GMock action that writes data from a BlimpMessage to a GrowableIOBuffer.
+// Advances the buffer's |offset| to the end of the message.
 //
 //   buf_idx (template parameter 0): 0-based index of the IOBuffer arg.
 //   message: the blimp message containing data to be written to the IOBuffer
@@ -80,6 +80,14 @@ ACTION_TEMPLATE(FillBufferFromMessage,
                 AND_1_VALUE_PARAMS(message)) {
   message->SerializeToArray(testing::get<buf_idx>(args)->data(),
                             message->ByteSize());
+  testing::get<buf_idx>(args)->set_offset(message->ByteSize());
+}
+
+// Calls |set_offset()| for a GrowableIOBuffer.
+ACTION_TEMPLATE(SetBufferOffset,
+                HAS_1_TEMPLATE_PARAMS(int, buf_idx),
+                AND_1_VALUE_PARAMS(offset)) {
+  testing::get<buf_idx>(args)->set_offset(offset);
 }
 
 // Formats a string-based representation of a BlimpMessage header.
@@ -143,8 +151,8 @@ class MockPacketReader : public PacketReader {
   ~MockPacketReader() override;
 
   MOCK_METHOD2(ReadPacket,
-               int(const scoped_refptr<net::GrowableIOBuffer>&,
-                   const net::CompletionCallback&));
+               void(const scoped_refptr<net::GrowableIOBuffer>&,
+                    const net::CompletionCallback&));
 };
 
 class MockPacketWriter : public PacketWriter {
@@ -153,8 +161,8 @@ class MockPacketWriter : public PacketWriter {
   ~MockPacketWriter() override;
 
   MOCK_METHOD2(WritePacket,
-               int(scoped_refptr<net::DrainableIOBuffer>,
-                   const net::CompletionCallback&));
+               void(scoped_refptr<net::DrainableIOBuffer>,
+                    const net::CompletionCallback&));
 };
 
 class MockConnectionErrorObserver : public ConnectionErrorObserver {

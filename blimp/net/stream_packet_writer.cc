@@ -47,15 +47,11 @@ StreamPacketWriter::StreamPacketWriter(net::StreamSocket* socket)
 
 StreamPacketWriter::~StreamPacketWriter() {}
 
-int StreamPacketWriter::WritePacket(scoped_refptr<net::DrainableIOBuffer> data,
-                                    const net::CompletionCallback& callback) {
+void StreamPacketWriter::WritePacket(scoped_refptr<net::DrainableIOBuffer> data,
+                                     const net::CompletionCallback& callback) {
   DCHECK_EQ(WriteState::IDLE, write_state_);
   DCHECK(data);
-  if (data->BytesRemaining() == 0) {
-    // The packet is empty; your argument is invalid.
-    DLOG(ERROR) << "Attempted to write zero-length packet.";
-    return net::ERR_INVALID_ARGUMENT;
-  }
+  CHECK(data->BytesRemaining());
 
   write_state_ = WriteState::HEADER;
   header_buffer_->SetOffset(0);
@@ -63,18 +59,18 @@ int StreamPacketWriter::WritePacket(scoped_refptr<net::DrainableIOBuffer> data,
       base::HostToNet32(data->BytesRemaining());
   payload_buffer_ = data;
 
-  int result = DoWriteLoop(false);
-  if (result == net::ERR_IO_PENDING) {
-    // Store the completion callback to invoke when DoWriteLoop completes
-    // asynchronously.
-    callback_ = callback;
-  } else {
+  int result = DoWriteLoop(net::OK);
+  if (result != net::ERR_IO_PENDING) {
     // Release the payload buffer, since the write operation has completed
     // synchronously.
     payload_buffer_ = nullptr;
-  }
 
-  return result;
+    // Adapt synchronous completion to an asynchronous style.
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+                                           base::Bind(callback, result));
+  } else {
+    callback_ = callback;
+  }
 }
 
 int StreamPacketWriter::DoWriteLoop(int result) {

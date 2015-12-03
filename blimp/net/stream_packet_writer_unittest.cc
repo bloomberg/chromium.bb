@@ -35,15 +35,13 @@ class StreamPacketWriterTest : public testing::Test {
                                        test_data_str_.size())),
         message_writer_(&socket_) {}
 
-  ~StreamPacketWriterTest() override {}
-
  protected:
   const std::string test_data_str_ = "U WOT M8";
   scoped_refptr<net::DrainableIOBuffer> test_data_;
 
+  base::MessageLoop message_loop_;
   MockStreamSocket socket_;
   StreamPacketWriter message_writer_;
-  base::MessageLoop message_loop_;
   testing::InSequence mock_sequence_;
 
  private:
@@ -56,20 +54,14 @@ TEST_F(StreamPacketWriterTest, TestWriteAsync) {
   net::CompletionCallback header_cb;
   net::CompletionCallback payload_cb;
 
-  // Write header.
   EXPECT_CALL(socket_, Write(BufferEquals(EncodeHeader(test_data_str_.size())),
                              kPacketHeaderSizeBytes, _))
       .WillOnce(DoAll(SaveArg<2>(&header_cb), Return(net::ERR_IO_PENDING)));
-  EXPECT_EQ(net::ERR_IO_PENDING,
-            message_writer_.WritePacket(test_data_, writer_cb.callback()));
-  Mock::VerifyAndClearExpectations(&socket_);
-
-  // Write payload.
+  message_writer_.WritePacket(test_data_, writer_cb.callback());
   EXPECT_CALL(socket_,
               Write(BufferEquals(test_data_str_), test_data_str_.size(), _))
       .WillOnce(DoAll(SaveArg<2>(&payload_cb), Return(net::ERR_IO_PENDING)));
   header_cb.Run(kPacketHeaderSizeBytes);
-  Mock::VerifyAndClearExpectations(&socket_);
 
   payload_cb.Run(test_data_str_.size());
   EXPECT_EQ(net::OK, writer_cb.WaitForResult());
@@ -100,8 +92,7 @@ TEST_F(StreamPacketWriterTest, TestPartialWriteAsync) {
       .WillOnce(DoAll(SaveArg<2>(&payload_cb), Return(net::ERR_IO_PENDING)))
       .RetiresOnSaturation();
 
-  EXPECT_EQ(net::ERR_IO_PENDING,
-            message_writer_.WritePacket(test_data_, writer_cb.callback()));
+  message_writer_.WritePacket(test_data_, writer_cb.callback());
 
   // Header is written - first one byte, then the remainder.
   header_cb.Run(1);
@@ -127,8 +118,7 @@ TEST_F(StreamPacketWriterTest, TestWriteErrorAsync) {
               Write(BufferEquals(test_data_str_), test_data_str_.size(), _))
       .WillOnce(DoAll(SaveArg<2>(&payload_cb), Return(net::ERR_IO_PENDING)));
 
-  EXPECT_EQ(net::ERR_IO_PENDING,
-            message_writer_.WritePacket(test_data_, writer_cb.callback()));
+  message_writer_.WritePacket(test_data_, writer_cb.callback());
   header_cb.Run(kPacketHeaderSizeBytes);
   payload_cb.Run(net::ERR_CONNECTION_RESET);
 
@@ -138,15 +128,16 @@ TEST_F(StreamPacketWriterTest, TestWriteErrorAsync) {
 // Successful write with 1 sync header write and 1 sync payload write.
 TEST_F(StreamPacketWriterTest, TestWriteSync) {
   net::TestCompletionCallback writer_cb;
+
   EXPECT_CALL(socket_, Write(BufferEquals(EncodeHeader(test_data_str_.size())),
                              kPacketHeaderSizeBytes, _))
       .WillOnce(Return(kPacketHeaderSizeBytes));
   EXPECT_CALL(socket_,
               Write(BufferEquals(test_data_str_), test_data_str_.size(), _))
       .WillOnce(Return(test_data_str_.size()));
-  EXPECT_EQ(net::OK,
-            message_writer_.WritePacket(test_data_, writer_cb.callback()));
-  EXPECT_FALSE(writer_cb.have_result());
+
+  message_writer_.WritePacket(test_data_, writer_cb.callback());
+  EXPECT_EQ(net::OK, writer_cb.WaitForResult());
 }
 
 // Successful write with 2 sync header writes and 2 sync payload writes.
@@ -167,21 +158,8 @@ TEST_F(StreamPacketWriterTest, TestPartialWriteSync) {
                              payload.size() - 1, _))
       .WillOnce(Return(payload.size() - 1));
 
-  EXPECT_EQ(net::OK,
-            message_writer_.WritePacket(test_data_, writer_cb.callback()));
-  EXPECT_FALSE(writer_cb.have_result());
-}
-
-// Verify that zero-length packets are rejected.
-TEST_F(StreamPacketWriterTest, TestZeroLengthPacketsRejected) {
-  net::TestCompletionCallback writer_cb;
-
-  EXPECT_EQ(net::ERR_INVALID_ARGUMENT,
-            message_writer_.WritePacket(
-                new net::DrainableIOBuffer(new net::IOBuffer(0), 0),
-                writer_cb.callback()));
-
-  EXPECT_FALSE(writer_cb.have_result());
+  message_writer_.WritePacket(test_data_, writer_cb.callback());
+  EXPECT_EQ(net::OK, writer_cb.WaitForResult());
 }
 
 // Sync socket error while writing header data.
@@ -192,9 +170,8 @@ TEST_F(StreamPacketWriterTest, TestWriteHeaderErrorSync) {
                              kPacketHeaderSizeBytes, _))
       .WillOnce(Return(net::ERR_FAILED));
 
-  EXPECT_EQ(net::ERR_FAILED,
-            message_writer_.WritePacket(test_data_, writer_cb.callback()));
-
+  message_writer_.WritePacket(test_data_, writer_cb.callback());
+  EXPECT_EQ(net::ERR_FAILED, writer_cb.WaitForResult());
   EXPECT_EQ(net::ERR_EMPTY_RESPONSE,
             writer_cb.GetResult(net::ERR_EMPTY_RESPONSE));
   EXPECT_FALSE(writer_cb.have_result());
@@ -211,9 +188,8 @@ TEST_F(StreamPacketWriterTest, TestWritePayloadErrorSync) {
               Write(BufferEquals(test_data_str_), test_data_str_.size(), _))
       .WillOnce(Return(net::ERR_FAILED));
 
-  EXPECT_EQ(net::ERR_FAILED,
-            message_writer_.WritePacket(test_data_, writer_cb.callback()));
-  EXPECT_FALSE(writer_cb.have_result());
+  message_writer_.WritePacket(test_data_, writer_cb.callback());
+  EXPECT_EQ(net::ERR_FAILED, writer_cb.WaitForResult());
 }
 
 // Verify that asynchronous header write completions don't cause a
@@ -228,8 +204,7 @@ TEST_F(StreamPacketWriterTest, DeletedDuringHeaderWrite) {
   EXPECT_CALL(socket_, Write(BufferEquals(EncodeHeader(test_data_str_.size())),
                              kPacketHeaderSizeBytes, _))
       .WillOnce(DoAll(SaveArg<2>(&header_cb), Return(net::ERR_IO_PENDING)));
-  EXPECT_EQ(net::ERR_IO_PENDING,
-            writer->WritePacket(test_data_, writer_cb.callback()));
+  writer->WritePacket(test_data_, writer_cb.callback());
   Mock::VerifyAndClearExpectations(&socket_);
 
   // Header write completion callback is invoked after the writer died.
@@ -252,8 +227,7 @@ TEST_F(StreamPacketWriterTest, DeletedDuringPayloadWrite) {
               Write(BufferEquals(test_data_str_), test_data_str_.size(), _))
       .WillOnce(DoAll(SaveArg<2>(&payload_cb), Return(net::ERR_IO_PENDING)));
 
-  EXPECT_EQ(net::ERR_IO_PENDING,
-            writer->WritePacket(test_data_, writer_cb.callback()));
+  writer->WritePacket(test_data_, writer_cb.callback());
 
   // Header write completes successfully.
   header_cb.Run(kPacketHeaderSizeBytes);

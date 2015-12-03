@@ -40,7 +40,6 @@ class BlimpMessageSender : public BlimpMessageProcessor {
   PacketWriter* writer_;
   ConnectionErrorObserver* error_observer_;
   scoped_refptr<net::DrainableIOBuffer> buffer_;
-  net::CancelableCompletionCallback write_packet_callback_;
   net::CompletionCallback pending_process_msg_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(BlimpMessageSender);
@@ -72,19 +71,14 @@ void BlimpMessageSender::ProcessMessage(
     return;
   }
 
-  write_packet_callback_.Reset(base::Bind(
-      &BlimpMessageSender::OnWritePacketComplete, base::Unretained(this)));
   pending_process_msg_callback_ = callback;
-  int result = writer_->WritePacket(buffer_, write_packet_callback_.callback());
-  if (result != net::ERR_IO_PENDING) {
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE, base::Bind(write_packet_callback_.callback(), result));
-  }
+  writer_->WritePacket(buffer_,
+                       base::Bind(&BlimpMessageSender::OnWritePacketComplete,
+                                  base::Unretained(this)));
 }
 
 void BlimpMessageSender::OnWritePacketComplete(int result) {
   DCHECK_NE(net::ERR_IO_PENDING, result);
-  write_packet_callback_.Cancel();
   base::ResetAndReturn(&pending_process_msg_callback_).Run(result);
   if (result != net::OK) {
     error_observer_->OnConnectionError(result);

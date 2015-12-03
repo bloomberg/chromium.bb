@@ -18,14 +18,13 @@ class BLIMP_NET_EXPORT PacketReader {
   virtual ~PacketReader() {}
 
   // Reads a packet from the connection.
-  // Returns the size of the packet, in bytes, if the read operation executed
-  // successfully.
-  // Returns ERR_IO_PENDING if the operation will be executed asynchronously.
-  //     |cb| is later invoked with the packet size or an error code.
-  // All other return values indicate errors and caller should stop using this
-  // reader.
-  virtual int ReadPacket(const scoped_refptr<net::GrowableIOBuffer>& buf,
-                         const net::CompletionCallback& cb) = 0;
+  // Passes net::OK to |cb| if the read operation executed successfully.
+  // Sets |buf.offset()| to the received message's size, and invokes |cb| with
+  // net::OK result on success.
+  // All other values indicate errors.
+  // |callback| will not be invoked if |this| is deleted.
+  virtual void ReadPacket(const scoped_refptr<net::GrowableIOBuffer>& buf,
+                          const net::CompletionCallback& cb) = 0;
 };
 
 }  // namespace blimp
