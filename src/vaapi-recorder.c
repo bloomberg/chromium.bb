@@ -200,7 +200,7 @@ bitstream_put_ue(struct bitstream *bs, unsigned int val)
 		size_in_bits++;
 	}
 
-	bitstream_put_ui(bs, 0, size_in_bits - 1); // leading zero
+	bitstream_put_ui(bs, 0, size_in_bits - 1); /* leading zero */
 	bitstream_put_ui(bs, val, size_in_bits);
 }
 

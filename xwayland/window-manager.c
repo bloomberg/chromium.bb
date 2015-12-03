@@ -1715,8 +1715,6 @@ weston_wm_destroy_cursors(struct weston_wm *wm)
 static int
 get_cursor_for_location(enum theme_location location)
 {
-	// int location = theme_get_location(t, x, y, width, height, 0);
-
 	switch (location) {
 		case THEME_LOCATION_RESIZING_TOP:
 			return XWM_CURSOR_TOP;

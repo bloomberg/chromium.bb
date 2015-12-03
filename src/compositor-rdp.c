@@ -717,7 +717,6 @@ struct rdp_to_xkb_keyboard_layout rdp_keyboards[] = {
 	{KBD_NORWEGIAN, "no", 0},
 	{KBD_POLISH_PROGRAMMERS, "pl", 0},
 	{KBD_POLISH_214, "pl", "qwertz"},
-	// {KBD_PORTUGUESE_BRAZILIAN_ABN0416, 0},
 	{KBD_ROMANIAN, "ro", 0},
 	{KBD_RUSSIAN, "ru", 0},
 	{KBD_RUSSIAN_TYPEWRITER, "ru", "typewriter"},

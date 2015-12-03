@@ -390,7 +390,7 @@ test_screenshot_frame_notify(struct wl_listener *listener, void *data)
 		return;
 	}
 
-	// FIXME: Needs to handle output transformations
+	/* FIXME: Needs to handle output transformations */
 
 	compositor->renderer->read_pixels(output,
 					  compositor->read_format,
