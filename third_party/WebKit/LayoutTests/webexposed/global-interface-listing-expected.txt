@@ -3124,6 +3124,9 @@ interface KeyboardEvent : UIEvent
     method initKeyboardEvent
 interface KeyframeEffect : AnimationEffectReadOnly
     method constructor
+interface KeywordValue : StyleValue
+    getter keywordValue
+    method constructor
 interface Location
     method constructor
 interface MIDIAccess : EventTarget
@@ -5159,6 +5162,10 @@ interface StyleSheetList
     getter length
     method constructor
     method item
+interface StyleValue
+    static method parse
+    getter cssString
+    method constructor
 interface SubtleCrypto
     method constructor
     method decrypt

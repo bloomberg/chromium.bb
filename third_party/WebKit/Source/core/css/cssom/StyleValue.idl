@@ -1,0 +1,7 @@
+[
+    RuntimeEnabled=CSSTypedOM
+] interface StyleValue {
+    readonly attribute DOMString cssString;
+    // static (StyleValue or sequence<StyleValue>)? parse(DOMString property, DOMString cssText);
+    [CallWith=ScriptState] static object? parse(DOMString property, DOMString cssText);
+};

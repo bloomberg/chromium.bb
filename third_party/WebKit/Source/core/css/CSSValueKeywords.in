@@ -964,6 +964,7 @@ scroll-position
 // all
 // initial
 // inherit
+revert
 unset
 
 // background-image, etc.
