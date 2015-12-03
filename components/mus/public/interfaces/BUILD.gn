@@ -6,6 +6,7 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("interfaces") {
   sources = [
+    "accelerator_registrar.mojom",
     "command_buffer.mojom",
     "compositor_frame.mojom",
     "gpu.mojom",

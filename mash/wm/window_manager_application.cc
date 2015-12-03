@@ -10,6 +10,7 @@
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_tree_connection.h"
 #include "components/mus/public/cpp/window_tree_host_factory.h"
+#include "mash/wm/accelerator_registrar_impl.h"
 #include "mash/wm/background_layout.h"
 #include "mash/wm/shelf_layout.h"
 #include "mash/wm/window_layout.h"
@@ -63,6 +64,11 @@ void WindowManagerApplication::AddAccelerators() {
       base::Bind(&AssertTrue));
 }
 
+void WindowManagerApplication::OnAcceleratorRegistrarDestroyed(
+    AcceleratorRegistrarImpl* registrar) {
+  accelerator_registrars_.erase(registrar);
+}
+
 void WindowManagerApplication::Initialize(mojo::ApplicationImpl* app) {
   app_ = app;
   tracing_.Initialize(app);
@@ -80,7 +86,8 @@ void WindowManagerApplication::Initialize(mojo::ApplicationImpl* app) {
 
 bool WindowManagerApplication::ConfigureIncomingConnection(
     mojo::ApplicationConnection* connection) {
-  connection->AddService(this);
+  connection->AddService<mus::mojom::AcceleratorRegistrar>(this);
+  connection->AddService<mus::mojom::WindowManager>(this);
   return true;
 }
 
@@ -91,7 +98,12 @@ void WindowManagerApplication::OnAccelerator(uint32_t id,
       window_tree_host_->ActivateNextWindow();
       break;
     default:
-      NOTREACHED() << "Unknown accelerator command: " << id;
+      for (auto* registrar : accelerator_registrars_) {
+        if (registrar->OwnsAccelerator(id)) {
+          registrar->ProcessAccelerator(id, event.Pass());
+          break;
+        }
+      }
   }
 }
 
@@ -124,6 +136,24 @@ void WindowManagerApplication::OnConnectionLost(
     mus::WindowTreeConnection* connection) {
   // TODO(sky): shutdown.
   NOTIMPLEMENTED();
+}
+
+void WindowManagerApplication::Create(
+    mojo::ApplicationConnection* connection,
+    mojo::InterfaceRequest<mus::mojom::AcceleratorRegistrar> request) {
+  static int accelerator_registrar_count = 0;
+  if (accelerator_registrar_count == std::numeric_limits<int>::max()) {
+    // Restart from zero if we have reached the limit. It is technically
+    // possible to end up with multiple active registrars with the same
+    // namespace, but it is highly unlikely. In the event that multiple
+    // registrars have the same namespace, this new registrar will be unable to
+    // install accelerators.
+    accelerator_registrar_count = 0;
+  }
+  accelerator_registrars_.insert(new AcceleratorRegistrarImpl(
+      window_tree_host_.get(), ++accelerator_registrar_count, request.Pass(),
+      base::Bind(&WindowManagerApplication::OnAcceleratorRegistrarDestroyed,
+                 base::Unretained(this))));
 }
 
 void WindowManagerApplication::Create(

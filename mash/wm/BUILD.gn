@@ -16,6 +16,8 @@ group("tests") {
 
 source_set("lib") {
   sources = [
+    "accelerator_registrar_impl.cc",
+    "accelerator_registrar_impl.h",
     "background_layout.cc",
     "background_layout.h",
     "frame/caption_buttons/caption_button_types.h",

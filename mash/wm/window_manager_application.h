@@ -5,12 +5,15 @@
 #ifndef MASH_WM_WINDOW_MANAGER_APPLICATION_H_
 #define MASH_WM_WINDOW_MANAGER_APPLICATION_H_
 
+#include <set>
+
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "components/mus/common/types.h"
 #include "components/mus/public/cpp/window_observer.h"
 #include "components/mus/public/cpp/window_tree_delegate.h"
+#include "components/mus/public/interfaces/accelerator_registrar.mojom.h"
 #include "components/mus/public/interfaces/window_manager.mojom.h"
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"
 #include "mash/wm/public/interfaces/container.mojom.h"
@@ -32,6 +35,7 @@ class AuraInit;
 namespace mash {
 namespace wm {
 
+class AcceleratorRegistrarImpl;
 class BackgroundLayout;
 class ShelfLayout;
 class WindowLayout;
@@ -42,7 +46,8 @@ class WindowManagerApplication
       public mus::WindowObserver,
       public mus::mojom::WindowTreeHostClient,
       public mus::WindowTreeDelegate,
-      public mojo::InterfaceFactory<mus::mojom::WindowManager> {
+      public mojo::InterfaceFactory<mus::mojom::WindowManager>,
+      public mojo::InterfaceFactory<mus::mojom::AcceleratorRegistrar> {
  public:
   WindowManagerApplication();
   ~WindowManagerApplication() override;
@@ -64,6 +69,7 @@ class WindowManagerApplication
 
  private:
   void AddAccelerators();
+  void OnAcceleratorRegistrarDestroyed(AcceleratorRegistrarImpl* registrar);
 
   // ApplicationDelegate:
   void Initialize(mojo::ApplicationImpl* app) override;
@@ -76,6 +82,11 @@ class WindowManagerApplication
   // WindowTreeDelegate:
   void OnEmbed(mus::Window* root) override;
   void OnConnectionLost(mus::WindowTreeConnection* connection) override;
+
+  // InterfaceFactory<mus::mojom::AcceleratorRegistrar>:
+  void Create(mojo::ApplicationConnection* connection,
+              mojo::InterfaceRequest<mus::mojom::AcceleratorRegistrar> request)
+      override;
 
   // InterfaceFactory<mus::mojom::WindowManager>:
   void Create(
@@ -111,6 +122,8 @@ class WindowManagerApplication
   scoped_ptr<BackgroundLayout> background_layout_;
   scoped_ptr<ShelfLayout> shelf_layout_;
   scoped_ptr<WindowLayout> window_layout_;
+
+  std::set<AcceleratorRegistrarImpl*> accelerator_registrars_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowManagerApplication);
 };
