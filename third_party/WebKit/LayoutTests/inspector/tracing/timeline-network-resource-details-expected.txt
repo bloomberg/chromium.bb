@@ -4,10 +4,12 @@ Script resource loaded
 URL: timeline-network-resource.js
 Duration: string
 Request Method: GET
+Priority: Low
 Mime Type: string
 URL: anImage.png
 Duration: string
 Request Method: GET
+Priority: Lowest
 Mime Type: string
 Preview: 
 

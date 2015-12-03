@@ -407,6 +407,17 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorSendRequestEvent::data
     value->setString("frame", toHexString(frame));
     value->setString("url", request.url().string());
     value->setString("requestMethod", request.httpMethod());
+    const char* priority = 0;
+    switch (request.priority()) {
+    case ResourceLoadPriorityVeryLow: priority = "VeryLow"; break;
+    case ResourceLoadPriorityLow: priority = "Low"; break;
+    case ResourceLoadPriorityMedium: priority = "Medium"; break;
+    case ResourceLoadPriorityHigh: priority = "High"; break;
+    case ResourceLoadPriorityVeryHigh: priority = "VeryHigh"; break;
+    case ResourceLoadPriorityUnresolved: break;
+    }
+    if (priority)
+        value->setString("priority", priority);
     setCallStack(value.get());
     return value.release();
 }

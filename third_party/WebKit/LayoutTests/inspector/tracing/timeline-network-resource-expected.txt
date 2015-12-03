@@ -6,6 +6,7 @@ ResourceSendRequest Properties:
 {
     data : {
         frame : <string>
+        priority : "Low"
         requestId : <string>
         requestMethod : "GET"
         stackTrace : <object>
