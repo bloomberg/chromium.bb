@@ -33,9 +33,21 @@ using policy::URLBlacklist;
 using url_matcher::URLMatcher;
 using url_matcher::URLMatcherConditionSet;
 
+using HostnameHash = SupervisedUserSiteList::HostnameHash;
+
+namespace {
+
+struct HashHostnameHash {
+  size_t operator()(const HostnameHash& value) const {
+    return value.hash();
+  }
+};
+
+}  // namespace
+
 struct SupervisedUserURLFilter::Contents {
   URLMatcher url_matcher;
-  base::hash_set<std::string> hostname_hashes;
+  base::hash_set<HostnameHash, HashHostnameHash> hostname_hashes;
   // TODO(treib,bauerb): Add infrastructure to track from which whitelist each
   // pattern/hash came. crbug.com/557651
 };
@@ -53,11 +65,6 @@ const char* kFilteredSchemes[] = {
   "wss"
 };
 
-std::string GetHostnameHash(const GURL& url) {
-  const std::string hash = base::SHA1HashString(url.host());
-  return base::HexEncode(hash.data(), hash.length());
-}
-
 // This class encapsulates all the state that is required during construction of
 // a new SupervisedUserURLFilter::Contents.
 class FilterBuilder {
@@ -69,7 +76,7 @@ class FilterBuilder {
   bool AddPattern(const std::string& pattern);
 
   // Adds a single hostname SHA1 hash.
-  void AddHostnameHash(const std::string& hash);
+  void AddHostnameHash(const HostnameHash& hash);
 
   // Adds all the sites in |site_list|, with URL patterns and hostname hashes.
   void AddSiteList(const scoped_refptr<SupervisedUserSiteList>& site_list);
@@ -116,8 +123,8 @@ bool FilterBuilder::AddPattern(const std::string& pattern) {
   return true;
 }
 
-void FilterBuilder::AddHostnameHash(const std::string& hash) {
-  contents_->hostname_hashes.insert(base::ToUpperASCII(hash));
+void FilterBuilder::AddHostnameHash(const HostnameHash& hash) {
+  contents_->hostname_hashes.insert(hash);
 }
 
 void FilterBuilder::AddSiteList(
@@ -125,7 +132,7 @@ void FilterBuilder::AddSiteList(
   for (const std::string& pattern : site_list->patterns())
     AddPattern(pattern);
 
-  for (const std::string& hash : site_list->hostname_hashes())
+  for (const HostnameHash& hash : site_list->hostname_hashes())
     AddHostnameHash(hash);
 }
 
@@ -316,7 +323,7 @@ SupervisedUserURLFilter::GetFilteringBehaviorForURL(
     return ALLOW;
 
   // Check the list of hostname hashes.
-  if (contents_->hostname_hashes.count(GetHostnameHash(url)))
+  if (contents_->hostname_hashes.count(HostnameHash(url.host())))
     return ALLOW;
 
   // Check the static blacklist, unless the default is to block anyway.

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_SUPERVISED_USER_SUPERVISED_USER_SITE_LIST_H_
 #define CHROME_BROWSER_SUPERVISED_USER_SUPERVISED_USER_SITE_LIST_H_
 
+#include <array>
 #include <string>
 #include <vector>
 
@@ -12,6 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/sha1.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "url/gurl.h"
@@ -34,6 +36,22 @@ class Value;
 class SupervisedUserSiteList
     : public base::RefCountedThreadSafe<SupervisedUserSiteList> {
  public:
+  class HostnameHash {
+   public:
+    explicit HostnameHash(const std::string& hostname);
+    // |bytes| must have a size of at least |base::kSHA1Length|.
+    explicit HostnameHash(const std::vector<uint8>& bytes);
+
+    bool operator==(const HostnameHash& rhs) const;
+
+    // Returns a hash code suitable for putting this into hash maps.
+    size_t hash() const;
+
+   private:
+    std::array<uint8, base::kSHA1Length> bytes_;
+    // Copy and assign are allowed.
+  };
+
   using LoadedCallback =
       base::Callback<void(const scoped_refptr<SupervisedUserSiteList>&)>;
 
@@ -46,7 +64,7 @@ class SupervisedUserSiteList
   const base::string16& title() const { return title_; }
   const GURL& entry_point() const { return entry_point_; }
   const std::vector<std::string>& patterns() const { return patterns_; }
-  const std::vector<std::string>& hostname_hashes() const {
+  const std::vector<HostnameHash>& hostname_hashes() const {
     return hostname_hashes_;
   }
 
@@ -73,8 +91,8 @@ class SupervisedUserSiteList
   // A list of URL patterns that should be whitelisted.
   std::vector<std::string> patterns_;
 
-  // A list of hex-encoded SHA1 hashes of hostnames that should be whitelisted.
-  std::vector<std::string> hostname_hashes_;
+  // A list of SHA1 hashes of hostnames that should be whitelisted.
+  std::vector<HostnameHash> hostname_hashes_;
 
   DISALLOW_COPY_AND_ASSIGN(SupervisedUserSiteList);
 };

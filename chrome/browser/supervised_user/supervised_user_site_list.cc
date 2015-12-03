@@ -4,11 +4,13 @@
 
 #include "chrome/browser/supervised_user/supervised_user_site_list.h"
 
+#include <algorithm>
+
 #include "base/files/file_util.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/sha1.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/task_runner_util.h"
 #include "base/values.h"
 #include "content/public/browser/browser_thread.h"
@@ -38,6 +40,28 @@ scoped_ptr<base::Value> ReadFileOnBlockingThread(const base::FilePath& path) {
 }
 
 }  // namespace
+
+SupervisedUserSiteList::HostnameHash::HostnameHash(
+    const std::string& hostname) {
+  base::SHA1HashBytes(reinterpret_cast<const unsigned char*>(hostname.c_str()),
+                      hostname.size(), bytes_.data());
+}
+
+SupervisedUserSiteList::HostnameHash::HostnameHash(
+    const std::vector<uint8>& bytes) {
+  CHECK_GE(bytes.size(), base::kSHA1Length);
+  std::copy(bytes.begin(), bytes.end(), bytes_.begin());
+}
+
+bool SupervisedUserSiteList::HostnameHash::operator==(
+    const HostnameHash& rhs) const {
+  return bytes_ == rhs.bytes_;
+}
+
+size_t SupervisedUserSiteList::HostnameHash::hash() const {
+  // This just returns the first sizeof(size_t) bytes of |bytes_|.
+  return *reinterpret_cast<const size_t*>(bytes_.data());
+}
 
 void SupervisedUserSiteList::Load(const base::string16& title,
                                   const base::FilePath& path,
@@ -72,15 +96,17 @@ SupervisedUserSiteList::SupervisedUserSiteList(
 
   if (hostname_hashes) {
     for (const base::Value* entry : *hostname_hashes) {
-      // |hash| should be a hex-encoded SHA1 hash.
-      std::string hash;
-      if (!entry->GetAsString(&hash) || hash.size() != 2 * base::kSHA1Length) {
+      // |hash_str| should be a hex-encoded SHA1 hash string.
+      std::string hash_str;
+      std::vector<uint8> hash_bytes;
+      if (!entry->GetAsString(&hash_str) ||
+          hash_str.size() != 2 * base::kSHA1Length ||
+          !base::HexStringToBytes(hash_str, &hash_bytes)) {
         LOG(ERROR) << "Invalid hostname_hashes entry";
         continue;
       }
-      // TODO(treib): Check that |hash| has only characters from [0-9a-fA-F].
-      // Or just store the raw bytes (from base::HexStringToBytes).
-      hostname_hashes_.push_back(hash);
+      DCHECK_EQ(base::kSHA1Length, hash_bytes.size());
+      hostname_hashes_.push_back(HostnameHash(hash_bytes));
     }
   }
 
