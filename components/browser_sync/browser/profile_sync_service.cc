@@ -898,6 +898,7 @@ void ProfileSyncService::ShutdownImpl(syncer::ShutdownReason reason) {
   encrypted_types_ = syncer::SyncEncryptionHandler::SensitiveTypes();
   passphrase_required_reason_ = syncer::REASON_PASSPHRASE_NOT_REQUIRED;
   catch_up_configure_in_progress_ = false;
+  access_token_.clear();
   request_access_token_retry_timer_.Stop();
   // Revert to "no auth error".
   if (last_auth_error_.state() != GoogleServiceAuthError::NONE)

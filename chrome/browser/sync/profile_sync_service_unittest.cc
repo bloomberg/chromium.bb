@@ -685,6 +685,30 @@ TEST_F(ProfileSyncServiceTest, RevokeAccessTokenFromTokenService) {
   EXPECT_TRUE(service()->GetAccessTokenForTest().empty());
 }
 
+// CrOS does not support signout.
+#if !defined(OS_CHROMEOS)
+TEST_F(ProfileSyncServiceTest, SignOutRevokeAccessToken) {
+  CreateService(browser_sync::AUTO_START);
+  IssueTestTokens();
+  ExpectDataTypeManagerCreation(1, GetDefaultConfigureCalledCallback());
+  ExpectSyncBackendHostCreation(1);
+  InitializeForNthSync();
+  EXPECT_TRUE(service()->IsSyncActive());
+
+  std::string primary_account_id =
+      SigninManagerFactory::GetForProfile(profile())
+          ->GetAuthenticatedAccountId();
+  ProfileOAuth2TokenServiceFactory::GetForProfile(profile())
+      ->LoadCredentials(primary_account_id);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(service()->GetAccessTokenForTest().empty());
+
+  SigninManagerFactory::GetForProfile(profile())
+      ->SignOut(signin_metrics::SIGNOUT_TEST);
+  EXPECT_TRUE(service()->GetAccessTokenForTest().empty());
+}
+#endif
+
 #if BUILDFLAG(ENABLE_PRE_SYNC_BACKUP)
 TEST_F(ProfileSyncServiceTest, DontStartBackupOnBrowserStart) {
   CreateServiceWithoutSignIn();
