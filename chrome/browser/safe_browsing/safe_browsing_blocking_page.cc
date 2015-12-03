@@ -514,15 +514,10 @@ void SafeBrowsingBlockingPage::ShowBlockingPage(
 // static
 bool SafeBrowsingBlockingPage::IsMainPageLoadBlocked(
     const UnsafeResourceList& unsafe_resources) {
-  // Client-side phishing detection interstitials never block the main frame
-  // load, since they happen after the page is finished loading.
-  if (unsafe_resources[0].threat_type ==
-      SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL) {
-    return false;
-  }
-
-  // Otherwise, check the threat type.
-  return unsafe_resources.size() == 1 && !unsafe_resources[0].is_subresource;
+  // If there is more than one unsafe resource, the main page load must not be
+  // blocked. Otherwise, check if the one resource is.
+  return unsafe_resources.size() == 1 &&
+         unsafe_resources[0].IsMainPageLoadBlocked();
 }
 
 std::string SafeBrowsingBlockingPage::GetMetricPrefix() const {

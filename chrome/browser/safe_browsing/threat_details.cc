@@ -227,10 +227,14 @@ void ThreatDetails::StartCollection() {
   if (nav_entry && !referrer_url.is_empty())
     AddUrl(referrer_url, GURL(), std::string(), NULL);
 
-  // Get URLs of frames, scripts etc from the DOM.
-  // OnReceivedThreatDOMDetails will be called when the renderer replies.
-  content::RenderViewHost* view = web_contents()->GetRenderViewHost();
-  view->Send(new SafeBrowsingMsg_GetThreatDOMDetails(view->GetRoutingID()));
+  if (!resource_.IsMainPageLoadBlocked()) {
+    // Get URLs of frames, scripts etc from the DOM.
+    // OnReceivedThreatDOMDetails will be called when the renderer replies.
+    // TODO(mattm): In theory, if the user proceeds through the warning DOM
+    // detail collection could be started once the page loads.
+    content::RenderViewHost* view = web_contents()->GetRenderViewHost();
+    view->Send(new SafeBrowsingMsg_GetThreatDOMDetails(view->GetRoutingID()));
+  }
 }
 
 // When the renderer is done, this is called.

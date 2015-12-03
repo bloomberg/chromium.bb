@@ -73,6 +73,21 @@ SafeBrowsingUIManager::UnsafeResource::UnsafeResource()
 
 SafeBrowsingUIManager::UnsafeResource::~UnsafeResource() { }
 
+bool SafeBrowsingUIManager::UnsafeResource::IsMainPageLoadBlocked() const {
+  // Subresource hits cannot happen until after main page load is committed.
+  if (is_subresource)
+    return false;
+
+  // Client-side phishing detection interstitials never block the main frame
+  // load, since they happen after the page is finished loading.
+  if (threat_type == SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL ||
+      threat_type == SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL) {
+    return false;
+  }
+
+  return true;
+}
+
 // SafeBrowsingUIManager -------------------------------------------------------
 
 SafeBrowsingUIManager::SafeBrowsingUIManager(

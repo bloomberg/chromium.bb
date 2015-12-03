@@ -47,6 +47,8 @@ class SafeBrowsingUIManager
     UnsafeResource();
     ~UnsafeResource();
 
+    bool IsMainPageLoadBlocked() const;
+
     GURL url;
     GURL original_url;
     std::vector<GURL> redirect_urls;

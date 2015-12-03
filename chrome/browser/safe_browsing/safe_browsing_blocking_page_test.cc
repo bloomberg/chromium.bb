@@ -6,6 +6,8 @@
 // threat urls.  It then uses a real browser to go to these urls, and sends
 // "goback" or "proceed" commands and verifies they work.
 
+#include <algorithm>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
@@ -59,6 +61,7 @@ namespace {
 
 const char kEmptyPage[] = "empty.html";
 const char kMalwarePage[] = "safe_browsing/malware.html";
+const char kMalwarePage2[] = "safe_browsing/malware2.html";
 const char kMalwareIframe[] = "safe_browsing/malware_iframe.html";
 const char kUnrelatedUrl[] = "https://www.google.com";
 
@@ -420,7 +423,7 @@ class SafeBrowsingBlockingPageBrowserTest
   // navigates to a page with an iframe containing the threat site, and returns
   // the url of the parent page.
   GURL SetupThreatIframeWarningAndNavigate() {
-    GURL url = net::URLRequestMockHTTPJob::GetMockUrl(kMalwarePage);
+    GURL url = net::URLRequestMockHTTPJob::GetMockUrl(kMalwarePage2);
     GURL iframe_url = net::URLRequestMockHTTPJob::GetMockUrl(kMalwareIframe);
     SetURLThreatType(iframe_url, GetParam());
 
@@ -446,24 +449,6 @@ class SafeBrowsingBlockingPageBrowserTest
     ASSERT_EQ(SafeBrowsingBlockingPage::kTypeForTesting,
               interstitial_page->GetTypeForTesting());
     interstitial_page->CommandReceived(base::IntToString(command));
-  }
-
-  void DontProceedThroughInterstitial() {
-    WebContents* contents =
-        browser()->tab_strip_model()->GetActiveWebContents();
-    InterstitialPage* interstitial_page = InterstitialPage::GetInterstitialPage(
-        contents);
-    ASSERT_TRUE(interstitial_page);
-    interstitial_page->DontProceed();
-  }
-
-  void ProceedThroughInterstitial() {
-    WebContents* contents =
-        browser()->tab_strip_model()->GetActiveWebContents();
-    InterstitialPage* interstitial_page = InterstitialPage::GetInterstitialPage(
-        contents);
-    ASSERT_TRUE(interstitial_page);
-    interstitial_page->Proceed();
   }
 
   void AssertNoInterstitial(bool wait_for_delete) {
@@ -756,6 +741,120 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
     ASSERT_TRUE(report.ParseFromString(serialized));
     // Verify the report is complete.
     EXPECT_TRUE(report.complete());
+    // Do some basic verification of report contents.
+    EXPECT_EQ(url.spec(), report.page_url());
+    EXPECT_EQ(net::URLRequestMockHTTPJob::GetMockUrl(kMalwareIframe).spec(),
+              report.url());
+    std::vector<std::string> report_urls;
+    for (int i = 0; i < report.resources_size(); ++i)
+      report_urls.push_back(report.resources(i).url());
+    ASSERT_EQ(3U, report_urls.size());
+    std::sort(report_urls.begin(), report_urls.end());
+    EXPECT_EQ("http://example.com/cross_site_iframe.html", report_urls[0]);
+    EXPECT_EQ(url.spec(), report_urls[1]);
+    EXPECT_EQ(net::URLRequestMockHTTPJob::GetMockUrl(kMalwareIframe).spec(),
+              report_urls[2]);
+  }
+}
+
+IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
+                       MainFrameBlockedShouldHaveNoDOMDetailsWhenDontProceed) {
+  const bool expect_threat_details =
+      SafeBrowsingBlockingPage::ShouldReportThreatDetails(GetParam());
+
+  scoped_refptr<content::MessageLoopRunner> threat_report_sent_runner(
+      new content::MessageLoopRunner);
+  if (expect_threat_details)
+    SetReportSentCallback(threat_report_sent_runner->QuitClosure());
+
+  // Navigate to a safe page which contains multiple potential DOM details.
+  // (Despite the name, kMalwarePage is not the page flagged as malware in this
+  // test.)
+  GURL safe_url(net::URLRequestMockHTTPJob::GetMockUrl(kMalwarePage));
+  ui_test_utils::NavigateToURL(browser(), safe_url);
+
+  EXPECT_EQ(nullptr, details_factory_.get_details());
+
+  // Start navigation to bad page (kEmptyPage), which will be blocked before it
+  // is committed.
+  GURL url = SetupWarningAndNavigate();
+
+  FakeThreatDetails* fake_threat_details = details_factory_.get_details();
+  EXPECT_EQ(expect_threat_details, fake_threat_details != nullptr);
+
+  // Go back.
+  EXPECT_EQ(VISIBLE, GetVisibility("extended-reporting-opt-in"));
+  EXPECT_TRUE(Click("opt-in-checkbox"));
+  EXPECT_TRUE(ClickAndWaitForDetach("primary-button"));
+  AssertNoInterstitial(true);  // Assert the interstitial is gone
+
+  EXPECT_TRUE(browser()->profile()->GetPrefs()->GetBoolean(
+              prefs::kSafeBrowsingExtendedReportingEnabled));
+  EXPECT_EQ(safe_url,
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
+
+  if (expect_threat_details) {
+    threat_report_sent_runner->Run();
+    std::string serialized = GetReportSent();
+    ClientSafeBrowsingReportRequest report;
+    ASSERT_TRUE(report.ParseFromString(serialized));
+    // Verify the report is complete.
+    EXPECT_TRUE(report.complete());
+    EXPECT_EQ(url.spec(), report.page_url());
+    EXPECT_EQ(url.spec(), report.url());
+    ASSERT_EQ(1, report.resources_size());
+    EXPECT_EQ(url.spec(), report.resources(0).url());
+  }
+}
+
+IN_PROC_BROWSER_TEST_P(
+    SafeBrowsingBlockingPageBrowserTest,
+    MainFrameBlockedShouldHaveNoDOMDetailsWhenProceeding) {
+  const bool expect_threat_details =
+      SafeBrowsingBlockingPage::ShouldReportThreatDetails(GetParam());
+
+  scoped_refptr<content::MessageLoopRunner> threat_report_sent_runner(
+      new content::MessageLoopRunner);
+  if (expect_threat_details)
+    SetReportSentCallback(threat_report_sent_runner->QuitClosure());
+
+  // Navigate to a safe page which contains multiple potential DOM details.
+  // (Despite the name, kMalwarePage is not the page flagged as malware in this
+  // test.)
+  ui_test_utils::NavigateToURL(
+      browser(), net::URLRequestMockHTTPJob::GetMockUrl(kMalwarePage));
+
+  EXPECT_EQ(nullptr, details_factory_.get_details());
+
+  // Start navigation to bad page (kEmptyPage), which will be blocked before it
+  // is committed.
+  GURL url = SetupWarningAndNavigate();
+
+  FakeThreatDetails* fake_threat_details = details_factory_.get_details();
+  EXPECT_EQ(expect_threat_details, fake_threat_details != nullptr);
+
+  // Proceed through the warning.
+  EXPECT_EQ(VISIBLE, GetVisibility("extended-reporting-opt-in"));
+  EXPECT_TRUE(Click("opt-in-checkbox"));
+  EXPECT_TRUE(ClickAndWaitForDetach("proceed-link"));
+  AssertNoInterstitial(true);  // Assert the interstitial is gone
+
+  EXPECT_TRUE(browser()->profile()->GetPrefs()->GetBoolean(
+              prefs::kSafeBrowsingExtendedReportingEnabled));
+  EXPECT_EQ(url,
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
+
+  if (expect_threat_details) {
+    threat_report_sent_runner->Run();
+    std::string serialized = GetReportSent();
+    ClientSafeBrowsingReportRequest report;
+    ASSERT_TRUE(report.ParseFromString(serialized));
+    // Verify the report is complete.
+    EXPECT_TRUE(report.complete());
+    EXPECT_EQ(url.spec(), report.page_url());
+    EXPECT_EQ(url.spec(), report.url());
+    ASSERT_EQ(1, report.resources_size());
+    EXPECT_EQ(url.spec(), report.resources(0).url());
   }
 }
 
