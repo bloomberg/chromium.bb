@@ -437,7 +437,7 @@ SubDirectoryItem.prototype.updateSharedStatusIcon = function() {
   this.parentTree_.metadataModel.notifyEntriesChanged([this.dirEntry_]);
   this.parentTree_.metadataModel.get([this.dirEntry_], ['shared']).then(
       function(metadata) {
-        icon.classList.toggle('shared', metadata[0] && metadata[0].shared);
+        icon.classList.toggle('shared', !!(metadata[0] && metadata[0].shared));
       });
 };
 

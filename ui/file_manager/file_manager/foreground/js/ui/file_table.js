@@ -1155,7 +1155,7 @@ filelist.updateListItemExternalProps = function(li, externalProps) {
     iconDiv.style.backgroundImage = '';  // Back to the default image.
 
   if (li.classList.contains('directory'))
-    iconDiv.classList.toggle('shared', externalProps.shared);
+    iconDiv.classList.toggle('shared', !!externalProps.shared);
 };
 
 /**

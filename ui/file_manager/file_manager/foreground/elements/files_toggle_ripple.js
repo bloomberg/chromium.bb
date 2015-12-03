@@ -42,7 +42,7 @@ var FilesToggleRipple = Polymer({
         this.performDeactivateAnimation_();
     }
 
-    this.$.ripple.classList.toggle('activated', newValue);
+    this.$.ripple.classList.toggle('activated', !!newValue);
   },
 
   /**
