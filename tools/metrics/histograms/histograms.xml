@@ -10591,6 +10591,23 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Event.Latency.HitTest" units="microseconds">
+  <owner>dtapuska@chromium.org</owner>
+  <summary>
+    Duration of a non-resurive hitTest operation. The hit test is non-recursive
+    when the AllowChildFrameContent flag is clear. See also
+    Event.Latency.HitTestRecusrive.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.HitTestRecursive" units="microseconds">
+  <owner>dtapuska@chromium.org</owner>
+  <summary>
+    Duration of a recursive hitTest operation. The hit test is recursive when
+    the AllowChildFrameContent flag is set. See also Event.Latency.HitTest.
+  </summary>
+</histogram>
+
 <histogram name="Event.Latency.Renderer" units="microseconds">
   <owner>rbyers@chromium.org</owner>
   <summary>

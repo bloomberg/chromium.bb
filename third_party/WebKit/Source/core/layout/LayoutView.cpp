@@ -48,9 +48,33 @@
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/TransformState.h"
 #include "platform/graphics/paint/PaintController.h"
+#include "public/platform/Platform.h"
 #include <inttypes.h>
 
 namespace blink {
+
+namespace {
+
+class HitTestLatencyRecorder {
+public:
+    HitTestLatencyRecorder(bool allowsChildFrameContent)
+        : m_start(WTF::monotonicallyIncreasingTime())
+        , m_allowsChildFrameContent(allowsChildFrameContent)
+    {
+    }
+
+    ~HitTestLatencyRecorder()
+    {
+        int duration = static_cast<int>((WTF::monotonicallyIncreasingTime() - m_start) * 1000000);
+        Platform::current()->histogramCustomCounts(m_allowsChildFrameContent ? "Event.Latency.HitTestRecursive" : "Event.Latency.HitTest", duration, 0, 10000000, 100);
+    }
+
+private:
+    double m_start;
+    bool m_allowsChildFrameContent;
+};
+
+} // namespace
 
 LayoutView::LayoutView(Document* document)
     : LayoutBlockFlow(document)
@@ -91,6 +115,7 @@ bool LayoutView::hitTest(HitTestResult& result)
     // Note that Document::updateLayout calls its parent's updateLayout.
     DocumentLifecycle::PreventThrottlingScope preventThrottling(document().lifecycle());
     frameView()->updateLifecycleToCompositingCleanPlusScrolling();
+    HitTestLatencyRecorder hitTestLatencyRecorder(result.hitTestRequest().allowsChildFrameContent());
     return hitTestNoLifecycleUpdate(result);
 }
 
