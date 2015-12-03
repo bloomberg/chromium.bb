@@ -24,14 +24,4 @@ class PolicyUI : public content::WebUIController {
   DISALLOW_COPY_AND_ASSIGN(PolicyUI);
 };
 
-// The Web UI controller for the chrome://md-policy page.
-class PolicyMaterialDesignUI : public content::WebUIController {
- public:
-  explicit PolicyMaterialDesignUI(content::WebUI* web_ui);
-  ~PolicyMaterialDesignUI() override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PolicyMaterialDesignUI);
-};
-
 #endif  // CHROME_BROWSER_UI_WEBUI_POLICY_UI_H_

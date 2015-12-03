@@ -54,6 +54,14 @@
           'includes': [ '../build/grit_action.gypi' ],
         },
         {
+          # GN version: //chrome/browser/resources:policy_resources
+          'action_name': 'generate_policy_resources',
+          'variables': {
+            'grit_grd_file': 'browser/resources/md_policy/policy_resources.grd',
+          },
+          'includes': [ '../build/grit_action.gypi' ],
+        },
+        {
           # GN version: //chrome/browser/resources:signin_internals_resources
           'action_name': 'generate_signin_internals_resources',
           'variables': {

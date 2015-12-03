@@ -274,7 +274,6 @@
         <include name="IDR_POLICY_CSS" file="resources\policy.css" type="BINDATA"/>
       </if>
       <include name="IDR_POLICY_HTML" file="resources\policy.html" flattenhtml="true" allowexternalscript="true" type="BINDATA"/>
-      <include name="IDR_MD_POLICY_HTML" file="resources\md_policy\md_policy.html" flattenhtml="true" allowexternalscript="true" type="BINDATA"/>
       <include name="IDR_POLICY_JS" file="resources\policy.js" type="BINDATA"/>
       <if expr="enable_print_preview">
         <include name="IDR_PRINT_PREVIEW_HTML" file="resources\print_preview\print_preview.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />

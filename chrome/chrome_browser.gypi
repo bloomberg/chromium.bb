@@ -3318,6 +3318,7 @@
             '<(SHARED_INTERMEDIATE_DIR)/components/grit/components_scaled_resources_map.cc',
             '<(SHARED_INTERMEDIATE_DIR)/ui/resources/grit/ui_resources_map.cc',
             '<(grit_out_dir)/grit/component_extension_resources_map.cc',
+            '<(grit_out_dir)/grit/policy_resources_map.cc',
             '<(grit_out_dir)/grit/settings_resources_map.cc',
             '<(grit_out_dir)/grit/theme_resources_map.cc',
           ],

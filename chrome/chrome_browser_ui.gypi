@@ -2741,8 +2741,12 @@
       'browser/ui/webui/plugins_ui.h',
     ],
     'chrome_browser_ui_policy_sources': [
+      'browser/ui/webui/policy_material_design_ui.cc',
+      'browser/ui/webui/policy_material_design_ui.h',
       'browser/ui/webui/policy_ui.cc',
       'browser/ui/webui/policy_ui.h',
+      'browser/ui/webui/policy_ui_handler.cc',
+      'browser/ui/webui/policy_ui_handler.h',
     ],
     'chrome_browser_ui_print_preview_sources': [
       'browser/ui/webui/print_preview/extension_printer_handler.cc',

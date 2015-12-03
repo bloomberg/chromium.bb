@@ -585,6 +585,7 @@ group("extra_resources") {
     "//chrome/browser/resources:memory_internals_resources",
     "//chrome/browser/resources:net_internals_resources",
     "//chrome/browser/resources:password_manager_internals_resources",
+    "//chrome/browser/resources:policy_resources",
     "//chrome/browser/resources:signin_internals_resources",
     "//chrome/browser/resources:translate_internals_resources",
   ]
@@ -662,6 +663,7 @@ repack("packed_extra_resources") {
     "$root_gen_dir/chrome/memory_internals_resources.pak",
     "$root_gen_dir/chrome/net_internals_resources.pak",
     "$root_gen_dir/chrome/password_manager_internals_resources.pak",
+    "$root_gen_dir/chrome/policy_resources.pak",
     "$root_gen_dir/chrome/signin_internals_resources.pak",
     "$root_gen_dir/chrome/translate_internals_resources.pak",
     "$root_gen_dir/components/components_resources.pak",
@@ -675,6 +677,7 @@ repack("packed_extra_resources") {
     "//chrome/browser/resources:memory_internals_resources",
     "//chrome/browser/resources:net_internals_resources",
     "//chrome/browser/resources:password_manager_internals_resources",
+    "//chrome/browser/resources:policy_resources",
     "//chrome/browser/resources:signin_internals_resources",
     "//chrome/browser/resources:translate_internals_resources",
     "//chrome/common:resources",

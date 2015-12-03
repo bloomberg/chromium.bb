@@ -334,4 +334,25 @@
   <message name="IDS_POLICY_SOURCE_PUBLIC_SESSION_OVERRIDE" desc="Indicates that the policy is set programmatically because of an active public session (for Chrome OS only). It could have overridden other sources that set this policy.">
     Public session override
   </message>
+  <message name="IDS_POLICY_RISK_TAG_FULL_ADMIN_ACCESS" desc="Title of a group/tag whose policies potentially allow the administrator to access all of a user's data.">
+    Full Admin Access
+  </message>
+  <message name="IDS_POLICY_RISK_TAG_SYSTEM_SECURITY" desc="Title of a group/tag whose policies might influence the system's security.">
+    System Security
+  </message>
+  <message name="IDS_POLICY_RISK_TAG_WEBSITE_SHARING" desc="Title of a group/tag whose policies might lead to information sharing with other websites.">
+    Sharing with Websites
+  </message>
+  <message name="IDS_POLICY_RISK_TAG_ADMIN_SHARING" desc="Title of a group/tag whose policies potentially allow sending information about the user (like activity times) to an administrator.">
+    Sharing with Administrator
+  </message>
+  <message name="IDS_POLICY_RISK_TAG_FILTERING" desc="Title of a group/tag whose policies might restrict web contents which would be visible otherwise (e.g. forced SafeSearch).">
+    Filtering
+  </message>
+  <message name="IDS_POLICY_RISK_TAG_LOCAL_DATA_ACCESS" desc="Title of a group/tag whose policies might allow storage of user data to local drives where others might access them.">
+    Local Data Access
+  </message>
+  <message name="IDS_POLICY_RISK_TAG_GOOGLE_SHARING" desc="Title of a group/tag whose policies enable functionality that might share user data with trusted Google services.">
+    Sharing with Google
+  </message>
 </grit-part>

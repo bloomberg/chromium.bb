@@ -45,6 +45,17 @@ grit("password_manager_internals_resources") {
   output_dir = "$root_gen_dir/chrome"
 }
 
+grit("policy_resources") {
+  source = "md_policy/policy_resources.grd"
+  outputs = [
+    "grit/policy_resources.h",
+    "grit/policy_resources_map.cc",
+    "grit/policy_resources_map.h",
+    "policy_resources.pak",
+  ]
+  output_dir = "$root_gen_dir/chrome"
+}
+
 grit("signin_internals_resources") {
   source = "signin_internals_resources.grd"
   defines = chrome_grit_defines

@@ -84,6 +84,7 @@
 #endif
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
+#include "chrome/browser/ui/webui/policy_material_design_ui.h"
 #include "chrome/browser/ui/webui/policy_ui.h"
 #endif
 
