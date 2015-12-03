@@ -19,6 +19,7 @@ source_set("wayland") {
     "//components/exo",
     "//skia",
     "//third_party/wayland:wayland_server",
+    "//third_party/wayland-protocols:xdg_shell_protocol",
   ]
 
   if (use_ozone) {

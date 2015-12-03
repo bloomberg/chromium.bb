@@ -57,6 +57,7 @@
              '../base/base.gyp:base',
             '../skia/skia.gyp:skia',
             '../third_party/wayland/wayland.gyp:wayland_server',
+            '../third_party/wayland-protocols/wayland-protocols.gyp:xdg_shell_protocol',
             'exo',
           ],
           'sources': [

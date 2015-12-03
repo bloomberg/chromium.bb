@@ -6,6 +6,7 @@
 
 #include <wayland-server-core.h>
 #include <wayland-server-protocol-core.h>
+#include <xdg-shell-unstable-v5-server-protocol.h>
 
 #include <algorithm>
 
@@ -639,7 +640,7 @@ void shell_surface_set_title(wl_client* client,
                              wl_resource* resource,
                              const char* title) {
   GetUserDataAs<ShellSurface>(resource)
-      ->SetTitle(base::string16(base::ASCIIToUTF16(title)));
+      ->SetTitle(base::string16(base::UTF8ToUTF16(title)));
 }
 
 void shell_surface_set_class(wl_client* client,
@@ -695,6 +696,190 @@ void bind_shell(wl_client* client, void* data, uint32_t version, uint32_t id) {
                                  nullptr);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// xdg_surface_interface:
+
+void xdg_surface_destroy(wl_client* client, wl_resource* resource) {
+  wl_resource_destroy(resource);
+}
+
+void xdg_surface_set_parent(wl_client* client,
+                            wl_resource* resource,
+                            wl_resource* parent) {
+  NOTIMPLEMENTED();
+}
+
+void xdg_surface_set_title(wl_client* client,
+                           wl_resource* resource,
+                           const char* title) {
+  GetUserDataAs<ShellSurface>(resource)
+      ->SetTitle(base::string16(base::UTF8ToUTF16(title)));
+}
+
+void xdg_surface_set_add_id(wl_client* client,
+                            wl_resource* resource,
+                            const char* app_id) {
+  GetUserDataAs<ShellSurface>(resource)->SetApplicationId(app_id);
+}
+
+void xdg_surface_show_window_menu(wl_client* client,
+                                  wl_resource* resource,
+                                  wl_resource* seat,
+                                  uint32_t serial,
+                                  int32_t x,
+                                  int32_t y) {
+  NOTIMPLEMENTED();
+}
+
+void xdg_surface_move(wl_client* client,
+                      wl_resource* resource,
+                      wl_resource* seat,
+                      uint32_t serial) {
+  GetUserDataAs<ShellSurface>(resource)->Move();
+}
+
+void xdg_surface_resize(wl_client* client,
+                        wl_resource* resource,
+                        wl_resource* seat,
+                        uint32_t serial,
+                        uint32_t edges) {
+  NOTIMPLEMENTED();
+}
+
+void xdg_surface_ack_configure(wl_client* client,
+                               wl_resource* resource,
+                               uint32_t serial) {
+  NOTIMPLEMENTED();
+}
+
+void xdg_surface_set_window_geometry(wl_client* client,
+                                     wl_resource* resource,
+                                     int32_t x,
+                                     int32_t y,
+                                     int32_t width,
+                                     int32_t height) {
+  NOTIMPLEMENTED();
+}
+
+void xdg_surface_set_maximized(wl_client* client, wl_resource* resource) {
+  NOTIMPLEMENTED();
+}
+
+void xdg_surface_unset_maximized(wl_client* client, wl_resource* resource) {
+  NOTIMPLEMENTED();
+}
+
+void xdg_surface_set_fullscreen(wl_client* client,
+                                wl_resource* resource,
+                                wl_resource* output) {
+  NOTIMPLEMENTED();
+}
+
+void xdg_surface_unset_fullscreen(wl_client* client, wl_resource* resource) {
+  NOTIMPLEMENTED();
+}
+
+void xdg_surface_set_minimized(wl_client* client, wl_resource* resource) {
+  NOTIMPLEMENTED();
+}
+
+const struct xdg_surface_interface xdg_surface_implementation = {
+    xdg_surface_destroy,
+    xdg_surface_set_parent,
+    xdg_surface_set_title,
+    xdg_surface_set_add_id,
+    xdg_surface_show_window_menu,
+    xdg_surface_move,
+    xdg_surface_resize,
+    xdg_surface_ack_configure,
+    xdg_surface_set_window_geometry,
+    xdg_surface_set_maximized,
+    xdg_surface_unset_maximized,
+    xdg_surface_set_fullscreen,
+    xdg_surface_unset_fullscreen,
+    xdg_surface_set_minimized};
+
+////////////////////////////////////////////////////////////////////////////////
+// xdg_shell_interface:
+
+void xdg_shell_destroy(wl_client* client, wl_resource* resource) {
+  // Nothing to do here.
+}
+
+// Currently implemented version of the unstable xdg-shell interface.
+#define XDG_SHELL_VERSION 5
+static_assert(XDG_SHELL_VERSION == XDG_SHELL_VERSION_CURRENT,
+              "Interface version doesn't match implementation version");
+
+void xdg_shell_use_unstable_version(wl_client* client,
+                                    wl_resource* resource,
+                                    int32_t version) {
+  if (version > XDG_SHELL_VERSION) {
+    wl_resource_post_error(resource, 1,
+                           "xdg-shell version not implemented yet.");
+  }
+}
+
+void xdg_shell_get_xdg_surface(wl_client* client,
+                               wl_resource* resource,
+                               uint32_t id,
+                               wl_resource* surface) {
+  scoped_ptr<ShellSurface> shell_surface =
+      GetUserDataAs<Display>(resource)
+          ->CreateShellSurface(GetUserDataAs<Surface>(surface));
+  if (!shell_surface) {
+    wl_resource_post_no_memory(resource);
+    return;
+  }
+
+  wl_resource* xdg_surface_resource =
+      wl_resource_create(client, &xdg_surface_interface, 1, id);
+  if (!xdg_surface_resource) {
+    wl_resource_post_no_memory(resource);
+    return;
+  }
+
+  // An XdgSurface is a toplevel shell surface.
+  shell_surface->SetToplevel();
+
+  SetImplementation(xdg_surface_resource, &xdg_surface_implementation,
+                    shell_surface.Pass());
+}
+
+void xdg_shell_get_xdg_popup(wl_client* client,
+                             wl_resource* resource,
+                             uint32_t id,
+                             wl_resource* surface,
+                             wl_resource* parent,
+                             wl_resource* seat,
+                             uint32_t serial,
+                             int32_t x,
+                             int32_t y) {
+  NOTIMPLEMENTED();
+}
+
+void xdg_shell_pong(wl_client* client, wl_resource* resource, uint32_t serial) {
+  NOTIMPLEMENTED();
+}
+
+const struct xdg_shell_interface xdg_shell_implementation = {
+    xdg_shell_destroy, xdg_shell_use_unstable_version,
+    xdg_shell_get_xdg_surface, xdg_shell_get_xdg_popup, xdg_shell_pong};
+
+void bind_xdg_shell(wl_client* client,
+                    void* data,
+                    uint32_t version,
+                    uint32_t id) {
+  wl_resource* resource =
+      wl_resource_create(client, &xdg_shell_interface, 1, id);
+  if (!resource) {
+    wl_client_post_no_memory(client);
+    return;
+  }
+  wl_resource_set_implementation(resource, &xdg_shell_implementation, data,
+                                 nullptr);
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -713,6 +898,8 @@ Server::Server(Display* display)
                    bind_subcompositor);
   wl_global_create(wl_display_.get(), &wl_shell_interface, 1, display_,
                    bind_shell);
+  wl_global_create(wl_display_.get(), &xdg_shell_interface, 1, display_,
+                   bind_xdg_shell);
 }
 
 Server::~Server() {}
