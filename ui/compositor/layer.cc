@@ -755,18 +755,16 @@ gfx::Rect Layer::PaintableRegion() {
 }
 
 scoped_refptr<cc::DisplayItemList> Layer::PaintContentsToDisplayList(
-    const gfx::Rect& clip,
     ContentLayerClient::PaintingControlSetting painting_control) {
   TRACE_EVENT1("ui", "Layer::PaintContentsToDisplayList", "name", name_);
   gfx::Rect local_bounds(bounds().size());
   gfx::Rect invalidation(
       gfx::IntersectRects(damaged_region_.bounds(), local_bounds));
-  DCHECK(clip.Contains(invalidation));
   ClearDamagedRects();
   cc::DisplayItemListSettings settings;
   settings.use_cached_picture = false;
   scoped_refptr<cc::DisplayItemList> display_list =
-      cc::DisplayItemList::Create(clip, settings);
+      cc::DisplayItemList::Create(PaintableRegion(), settings);
   if (delegate_) {
     delegate_->OnPaintLayer(
         PaintContext(display_list.get(), device_scale_factor_, invalidation));

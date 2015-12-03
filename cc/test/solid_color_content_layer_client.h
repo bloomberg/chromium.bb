@@ -20,7 +20,6 @@ class SolidColorContentLayerClient : public ContentLayerClient {
 
   // ContentLayerClient implementation.
   scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
-      const gfx::Rect& clip,
       PaintingControlSetting painting_control) override;
   bool FillsBoundsCompletely() const override;
   size_t GetApproximateUnsharedMemoryUsage() const override;

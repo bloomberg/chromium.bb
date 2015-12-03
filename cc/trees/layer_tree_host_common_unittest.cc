@@ -63,7 +63,6 @@ class MockContentLayerClient : public ContentLayerClient {
   ~MockContentLayerClient() override {}
   gfx::Rect PaintableRegion() override { return gfx::Rect(); }
   scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
-      const gfx::Rect& clip,
       PaintingControlSetting picture_control) override {
     NOTIMPLEMENTED();
     return nullptr;

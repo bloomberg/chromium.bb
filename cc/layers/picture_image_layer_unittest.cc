@@ -40,7 +40,7 @@ TEST(PictureImageLayerTest, PaintContentsToDisplayList) {
 
   scoped_refptr<DisplayItemList> display_list =
       layer->PaintContentsToDisplayList(
-          layer_rect, ContentLayerClient::PAINTING_BEHAVIOR_NORMAL);
+          ContentLayerClient::PAINTING_BEHAVIOR_NORMAL);
   unsigned char actual_pixels[4 * 200 * 200] = {0};
   DrawDisplayList(actual_pixels, layer_rect, display_list);
 

@@ -21,9 +21,9 @@ gfx::Rect SolidColorContentLayerClient::PaintableRegion() {
 
 scoped_refptr<DisplayItemList>
 SolidColorContentLayerClient::PaintContentsToDisplayList(
-    const gfx::Rect& clip,
     PaintingControlSetting painting_control) {
   SkPictureRecorder recorder;
+  gfx::Rect clip(PaintableRegion());
   skia::RefPtr<SkCanvas> canvas =
       skia::SharePtr(recorder.beginRecording(gfx::RectToSkRect(clip)));
 

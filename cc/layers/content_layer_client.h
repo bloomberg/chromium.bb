@@ -30,7 +30,6 @@ class CC_EXPORT ContentLayerClient {
   virtual gfx::Rect PaintableRegion() = 0;
 
   virtual scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
-      const gfx::Rect& clip,
       PaintingControlSetting painting_status) = 0;
 
   // If true the layer may skip clearing the background before rasterizing,

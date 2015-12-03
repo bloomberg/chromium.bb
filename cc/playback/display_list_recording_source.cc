@@ -114,8 +114,7 @@ bool DisplayListRecordingSource::UpdateAndExpandInvalidation(
 
   // TODO(vmpstr): Add a slow_down_recording_scale_factor_for_debug_ to be able
   // to slow down recording.
-  display_list_ =
-      painter->PaintContentsToDisplayList(recorded_viewport_, painting_control);
+  display_list_ = painter->PaintContentsToDisplayList(painting_control);
   painter_reported_memory_usage_ = painter->GetApproximateUnsharedMemoryUsage();
 
   DetermineIfSolidColor();

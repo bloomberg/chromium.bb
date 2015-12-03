@@ -27,9 +27,8 @@ class MockContentLayerClient : public ContentLayerClient {
  public:
   gfx::Rect PaintableRegion() override { return gfx::Rect(); }
   scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
-      const gfx::Rect& clip,
       PaintingControlSetting picture_control) override {
-    return DisplayItemList::Create(clip, DisplayItemListSettings());
+    return DisplayItemList::Create(gfx::Rect(), DisplayItemListSettings());
   }
   bool FillsBoundsCompletely() const override { return false; };
   size_t GetApproximateUnsharedMemoryUsage() const override { return 0; }

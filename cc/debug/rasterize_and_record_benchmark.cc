@@ -157,8 +157,7 @@ void RasterizeAndRecordBenchmark::RunOnDisplayListLayer(
                      kTimeCheckInterval);
 
       do {
-        display_list = painter->PaintContentsToDisplayList(visible_layer_rect,
-                                                           painting_control);
+        display_list = painter->PaintContentsToDisplayList(painting_control);
         if (display_list->ShouldBeAnalyzedForSolidColor()) {
           gfx::Size layer_size = layer->paint_properties().bounds;
           skia::AnalysisCanvas canvas(layer_size.width(), layer_size.height());

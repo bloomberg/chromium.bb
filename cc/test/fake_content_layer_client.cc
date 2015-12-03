@@ -43,19 +43,16 @@ gfx::Rect FakeContentLayerClient::PaintableRegion() {
 
 scoped_refptr<DisplayItemList>
 FakeContentLayerClient::PaintContentsToDisplayList(
-    const gfx::Rect& clip,
     PaintingControlSetting painting_control) {
   // Cached picture is used because unit tests expect to be able to
   // use GatherPixelRefs.
   DisplayItemListSettings settings;
   settings.use_cached_picture = true;
   scoped_refptr<DisplayItemList> display_list =
-      DisplayItemList::Create(clip, settings);
+      DisplayItemList::Create(PaintableRegion(), settings);
   SkPictureRecorder recorder;
   skia::RefPtr<SkCanvas> canvas;
   skia::RefPtr<SkPicture> picture;
-  auto* item = display_list->CreateAndAppendItem<ClipDisplayItem>(clip);
-  item->SetNew(clip, std::vector<SkRRect>());
 
   for (RectPaintVector::const_iterator it = draw_rects_.begin();
        it != draw_rects_.end(); ++it) {
@@ -73,8 +70,8 @@ FakeContentLayerClient::PaintContentsToDisplayList(
   for (ImageVector::const_iterator it = draw_images_.begin();
        it != draw_images_.end(); ++it) {
     if (!it->transform.IsIdentity()) {
-      auto* item =
-          display_list->CreateAndAppendItem<TransformDisplayItem>(clip);
+      auto* item = display_list->CreateAndAppendItem<TransformDisplayItem>(
+          PaintableRegion());
       item->SetNew(it->transform);
     }
     canvas = skia::SharePtr(
@@ -82,15 +79,17 @@ FakeContentLayerClient::PaintContentsToDisplayList(
     canvas->drawImage(it->image.get(), it->point.x(), it->point.y(),
                       &it->paint);
     picture = skia::AdoptRef(recorder.endRecordingAsPicture());
-    auto* item = display_list->CreateAndAppendItem<DrawingDisplayItem>(clip);
+    auto* item = display_list->CreateAndAppendItem<DrawingDisplayItem>(
+        PaintableRegion());
     item->SetNew(std::move(picture));
     if (!it->transform.IsIdentity()) {
-      display_list->CreateAndAppendItem<EndTransformDisplayItem>(clip);
+      display_list->CreateAndAppendItem<EndTransformDisplayItem>(
+          PaintableRegion());
     }
   }
 
   if (fill_with_nonsolid_color_) {
-    gfx::Rect draw_rect = clip;
+    gfx::Rect draw_rect = PaintableRegion();
     bool red = true;
     while (!draw_rect.IsEmpty()) {
       SkPaint paint;
@@ -106,7 +105,6 @@ FakeContentLayerClient::PaintContentsToDisplayList(
     }
   }
 
-  display_list->CreateAndAppendItem<EndClipDisplayItem>(clip);
 
   display_list->Finalize();
   return display_list;

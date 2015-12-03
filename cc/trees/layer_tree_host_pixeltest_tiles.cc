@@ -107,12 +107,11 @@ class BlueYellowClient : public ContentLayerClient {
 
   gfx::Rect PaintableRegion() override { return gfx::Rect(size_); }
   scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
-      const gfx::Rect& clip,
       PaintingControlSetting painting_status) override {
     DisplayItemListSettings settings;
     settings.use_cached_picture = false;
     scoped_refptr<DisplayItemList> display_list =
-        DisplayItemList::Create(clip, settings);
+        DisplayItemList::Create(PaintableRegion(), settings);
 
     SkPictureRecorder recorder;
     skia::RefPtr<SkCanvas> canvas = skia::SharePtr(
@@ -134,7 +133,8 @@ class BlueYellowClient : public ContentLayerClient {
     skia::RefPtr<SkPicture> picture =
         skia::AdoptRef(recorder.endRecordingAsPicture());
 
-    auto* item = display_list->CreateAndAppendItem<DrawingDisplayItem>(clip);
+    auto* item = display_list->CreateAndAppendItem<DrawingDisplayItem>(
+        PaintableRegion());
     item->SetNew(std::move(picture));
 
     display_list->Finalize();

@@ -64,13 +64,12 @@ gfx::Rect WebContentLayerImpl::PaintableRegion() {
 
 scoped_refptr<cc::DisplayItemList>
 WebContentLayerImpl::PaintContentsToDisplayList(
-    const gfx::Rect& clip,
     cc::ContentLayerClient::PaintingControlSetting painting_control) {
   cc::DisplayItemListSettings settings;
   settings.use_cached_picture = UseCachedPictureRaster();
 
   scoped_refptr<cc::DisplayItemList> display_list =
-      cc::DisplayItemList::Create(clip, settings);
+      cc::DisplayItemList::Create(PaintableRegion(), settings);
   if (client_) {
     WebDisplayItemListImpl list(display_list.get());
     client_->paintContents(&list, PaintingControlToWeb(painting_control));

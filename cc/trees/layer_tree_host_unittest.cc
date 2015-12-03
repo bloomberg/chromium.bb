@@ -1571,7 +1571,6 @@ class TestOpacityChangeLayerDelegate : public ContentLayerClient {
     return gfx::Rect(test_layer_->bounds());
   }
   scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
-      const gfx::Rect& clip,
       PaintingControlSetting picture_control) override {
     // Set layer opacity to 0.
     if (test_layer_)
@@ -1579,7 +1578,7 @@ class TestOpacityChangeLayerDelegate : public ContentLayerClient {
 
     // Return a dummy display list.
     scoped_refptr<DisplayItemList> display_list =
-        DisplayItemList::Create(clip, DisplayItemListSettings());
+        DisplayItemList::Create(PaintableRegion(), DisplayItemListSettings());
     return display_list;
   }
   bool FillsBoundsCompletely() const override { return false; }
@@ -2179,13 +2178,12 @@ class LayerTreeHostTestChangeLayerPropertiesInPaintContents
     gfx::Rect PaintableRegion() override { return gfx::Rect(layer_->bounds()); }
 
     scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
-        const gfx::Rect& clip,
         PaintingControlSetting picture_control) override {
       layer_->SetBounds(gfx::Size(2, 2));
 
       // Return a dummy display list.
       scoped_refptr<DisplayItemList> display_list =
-          DisplayItemList::Create(clip, DisplayItemListSettings());
+          DisplayItemList::Create(PaintableRegion(), DisplayItemListSettings());
       return display_list;
     }
 

@@ -28,7 +28,6 @@ class CC_EXPORT PictureImageLayer : public PictureLayer, ContentLayerClient {
 
   // ContentLayerClient implementation.
   scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
-      const gfx::Rect& clip,
       ContentLayerClient::PaintingControlSetting painting_control) override;
   bool FillsBoundsCompletely() const override;
   size_t GetApproximateUnsharedMemoryUsage() const override;
