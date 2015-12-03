@@ -330,7 +330,9 @@ html element body
     property onpagehide
     property onpageshow
     property onpopstate
+    property onrejectionhandled
     property onstorage
+    property onunhandledrejection
     property onunload
     property text
     property vLink
@@ -471,7 +473,9 @@ html element frameset
     property onpagehide
     property onpageshow
     property onpopstate
+    property onrejectionhandled
     property onstorage
+    property onunhandledrejection
     property onunload
     property rows
 html element h1

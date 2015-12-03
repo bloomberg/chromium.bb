@@ -135,7 +135,7 @@ PrefixedEncryptedMedia status=test
 PrefixedVideoFullscreen status=stable
 Presentation status=stable
 PresentationReceiver status=test
-PromiseRejectionEvent status=experimental
+PromiseRejectionEvent status=stable
 PushMessaging status=stable
 // Push messaging payloads are blocked on the Push API supporting encryption.
 PushMessagingData status=test
