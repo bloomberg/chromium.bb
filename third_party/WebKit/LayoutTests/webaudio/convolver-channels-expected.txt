@@ -1,0 +1,42 @@
+Test Supported Number of Channels for ConvolverNode
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS ConvolverNode with buffer of 1 channels did not throw an exception.
+PASS ConvolverNode with buffer of 2 channels did not throw an exception.
+PASS ConvolverNode with buffer of 3 channels threw NotSupportedError: Failed to set the 'buffer' property on 'ConvolverNode': The buffer must have 1, 2, or 4 channels, not 3.
+PASS ConvolverNode with buffer of 4 channels did not throw an exception.
+PASS ConvolverNode with buffer of 5 channels threw NotSupportedError: Failed to set the 'buffer' property on 'ConvolverNode': The buffer must have 1, 2, or 4 channels, not 5.
+PASS ConvolverNode with buffer of 6 channels threw NotSupportedError: Failed to set the 'buffer' property on 'ConvolverNode': The buffer must have 1, 2, or 4 channels, not 6.
+PASS ConvolverNode with buffer of 7 channels threw NotSupportedError: Failed to set the 'buffer' property on 'ConvolverNode': The buffer must have 1, 2, or 4 channels, not 7.
+PASS ConvolverNode with buffer of 8 channels threw NotSupportedError: Failed to set the 'buffer' property on 'ConvolverNode': The buffer must have 1, 2, or 4 channels, not 8.
+PASS ConvolverNode with buffer of 9 channels threw NotSupportedError: Failed to set the 'buffer' property on 'ConvolverNode': The buffer must have 1, 2, or 4 channels, not 9.
+PASS ConvolverNode with buffer of 10 channels threw NotSupportedError: Failed to set the 'buffer' property on 'ConvolverNode': The buffer must have 1, 2, or 4 channels, not 10.
+PASS ConvolverNode with buffer of 11 channels threw NotSupportedError: Failed to set the 'buffer' property on 'ConvolverNode': The buffer must have 1, 2, or 4 channels, not 11.
+PASS ConvolverNode with buffer of 12 channels threw NotSupportedError: Failed to set the 'buffer' property on 'ConvolverNode': The buffer must have 1, 2, or 4 channels, not 12.
+PASS ConvolverNode with buffer of 13 channels threw NotSupportedError: Failed to set the 'buffer' property on 'ConvolverNode': The buffer must have 1, 2, or 4 channels, not 13.
+PASS ConvolverNode with buffer of 14 channels threw NotSupportedError: Failed to set the 'buffer' property on 'ConvolverNode': The buffer must have 1, 2, or 4 channels, not 14.
+PASS ConvolverNode with buffer of 15 channels threw NotSupportedError: Failed to set the 'buffer' property on 'ConvolverNode': The buffer must have 1, 2, or 4 channels, not 15.
+PASS ConvolverNode with buffer of 16 channels threw NotSupportedError: Failed to set the 'buffer' property on 'ConvolverNode': The buffer must have 1, 2, or 4 channels, not 16.
+PASS ConvolverNode with buffer of 17 channels threw NotSupportedError: Failed to set the 'buffer' property on 'ConvolverNode': The buffer must have 1, 2, or 4 channels, not 17.
+PASS ConvolverNode with buffer of 18 channels threw NotSupportedError: Failed to set the 'buffer' property on 'ConvolverNode': The buffer must have 1, 2, or 4 channels, not 18.
+PASS ConvolverNode with buffer of 19 channels threw NotSupportedError: Failed to set the 'buffer' property on 'ConvolverNode': The buffer must have 1, 2, or 4 channels, not 19.
+PASS ConvolverNode with buffer of 20 channels threw NotSupportedError: Failed to set the 'buffer' property on 'ConvolverNode': The buffer must have 1, 2, or 4 channels, not 20.
+PASS ConvolverNode with buffer of 21 channels threw NotSupportedError: Failed to set the 'buffer' property on 'ConvolverNode': The buffer must have 1, 2, or 4 channels, not 21.
+PASS ConvolverNode with buffer of 22 channels threw NotSupportedError: Failed to set the 'buffer' property on 'ConvolverNode': The buffer must have 1, 2, or 4 channels, not 22.
+PASS ConvolverNode with buffer of 23 channels threw NotSupportedError: Failed to set the 'buffer' property on 'ConvolverNode': The buffer must have 1, 2, or 4 channels, not 23.
+PASS ConvolverNode with buffer of 24 channels threw NotSupportedError: Failed to set the 'buffer' property on 'ConvolverNode': The buffer must have 1, 2, or 4 channels, not 24.
+PASS ConvolverNode with buffer of 25 channels threw NotSupportedError: Failed to set the 'buffer' property on 'ConvolverNode': The buffer must have 1, 2, or 4 channels, not 25.
+PASS ConvolverNode with buffer of 26 channels threw NotSupportedError: Failed to set the 'buffer' property on 'ConvolverNode': The buffer must have 1, 2, or 4 channels, not 26.
+PASS ConvolverNode with buffer of 27 channels threw NotSupportedError: Failed to set the 'buffer' property on 'ConvolverNode': The buffer must have 1, 2, or 4 channels, not 27.
+PASS ConvolverNode with buffer of 28 channels threw NotSupportedError: Failed to set the 'buffer' property on 'ConvolverNode': The buffer must have 1, 2, or 4 channels, not 28.
+PASS ConvolverNode with buffer of 29 channels threw NotSupportedError: Failed to set the 'buffer' property on 'ConvolverNode': The buffer must have 1, 2, or 4 channels, not 29.
+PASS ConvolverNode with buffer of 30 channels threw NotSupportedError: Failed to set the 'buffer' property on 'ConvolverNode': The buffer must have 1, 2, or 4 channels, not 30.
+PASS ConvolverNode with buffer of 31 channels threw NotSupportedError: Failed to set the 'buffer' property on 'ConvolverNode': The buffer must have 1, 2, or 4 channels, not 31.
+PASS ConvolverNode with buffer of 32 channels threw NotSupportedError: Failed to set the 'buffer' property on 'ConvolverNode': The buffer must have 1, 2, or 4 channels, not 32.
+PASS Multiple channels for the convolver correctly handled.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
