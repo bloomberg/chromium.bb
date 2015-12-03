@@ -135,14 +135,8 @@ void AppendKeyEvent(const WebInputEvent& event,
   InputEventData result = GetEventWithCommonFieldsAndType(event);
   result.event_modifiers = key_event.modifiers;
   result.key_code = key_event.windowsKeyCode;
-#if defined(OS_MACOSX)
-  // Workaround for |domCode| not being set on OS X. crbug.com/493833
-  result.code = ui::KeycodeConverter::DomCodeToCodeString(
-      ui::KeycodeConverter::NativeKeycodeToDomCode(key_event.nativeKeyCode));
-#else
   result.code = ui::KeycodeConverter::DomCodeToCodeString(
       static_cast<ui::DomCode>(key_event.domCode));
-#endif
   result_events->push_back(result);
 }
 

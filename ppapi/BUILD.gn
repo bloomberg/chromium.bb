@@ -70,6 +70,18 @@ shared_library("power_saver_test_plugin") {
   ]
 }
 
+shared_library("blink_test_plugin") {
+  sources = [
+    "tests/blink_test_plugin.cc",
+  ]
+
+  deps = [
+    "//build/config/sanitizers:deps",
+    "//ppapi/cpp",
+    "//ppapi/shared_impl",
+  ]
+}
+
 test("ppapi_unittests") {
   sources = [
     "host/resource_message_filter_unittest.cc",

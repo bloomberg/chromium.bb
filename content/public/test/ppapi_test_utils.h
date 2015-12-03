@@ -32,6 +32,10 @@ bool RegisterTestPluginWithExtraParameters(
 bool RegisterPowerSaverTestPlugin(base::CommandLine* command_line)
     WARN_UNUSED_RESULT;
 
+// Registers the Blink test plugin to application/x-blink-test-plugin.
+bool RegisterBlinkTestPlugin(base::CommandLine* command_line)
+    WARN_UNUSED_RESULT;
+
 }  // namespace ppapi
 
 #endif  // CONTENT_PUBLIC_TEST_PPAPI_TEST_UTILS_H_

@@ -1,8 +1,10 @@
 <html>
     <head>
         <script>
-            if (window.testRunner)
+            if (window.testRunner) {
                 testRunner.dumpAsText();
+                testRunner.waitUntilDone();
+            }
 
             function debug(str) {
                 document.getElementById('console').innerHTML += str + "<br>";
@@ -12,17 +14,15 @@
     <body>
         <object>
             <p>This test verifies that an &lt;embed&gt; tag is rendered along with other fallback content when an &lt;object&gt; fails to load.  On success, you should see this text, followed by 'PASS'.</p>
-            <embed name="plugin" type="application/x-webkit-test-netscape">
+            <embed name="plugin" type="application/x-blink-test-plugin">
         </object>
         <div id="console"></div>
         <script>
-            if (window.internals)
-                internals.updateLayoutIgnorePendingStylesheetsAndRunPostLayoutTasks();
-            var plugin = document.plugin;
-            if (plugin && plugin.getURL)
-                debug("PASS");
-            else
-                debug("FAIL");
+            document.querySelector("embed").addEventListener("message", function (message) {
+              debug("PASS");
+              if (window.testRunner)
+                  testRunner.notifyDone();
+            });
         </script>
     </body>
 </html>

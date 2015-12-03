@@ -237,7 +237,10 @@ static_library("content_shell_lib") {
     #'copy_test_netscape_plugin',  TODO(GYP)
   ]
   if (enable_plugins) {
-    deps += [ "//content/ppapi_plugin" ]
+    deps += [
+      "//content/ppapi_plugin",
+      "//ppapi:blink_test_plugin",
+    ]
   }
 
   if (is_win) {

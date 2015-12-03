@@ -1105,7 +1105,6 @@ class Port(object):
             clean_env['DISPLAY'] = self._value_or_default_from_environ('DISPLAY', ':1')
         if self.host.platform.is_mac():
             clean_env['DYLD_LIBRARY_PATH'] = self._build_path()
-            clean_env['DYLD_FRAMEWORK_PATH'] = self._build_path()
             variables_to_copy += [
                 'HOME',
             ]

@@ -101,6 +101,25 @@
       ],
     },
     {
+      # GN version: //ppapi:blink_test_plugin
+      'target_name': 'blink_test_plugin',
+      'type': 'loadable_module',
+      'sources': [
+        'tests/blink_test_plugin.cc',
+      ],
+      'dependencies': [
+        'ppapi.gyp:ppapi_cpp',
+        'ppapi_internal.gyp:ppapi_shared',
+      ],
+      'conditions': [
+        ['OS=="mac"', {
+          'mac_bundle': 1,
+          'product_name': 'blink_test_plugin',
+          'product_extension': 'plugin',
+        }],
+      ],
+    },
+    {
       # GN version: //ppapi/proxy:test_support
       #             //ppapi/shared_impl:test_support
       'target_name': 'ppapi_unittest_shared',

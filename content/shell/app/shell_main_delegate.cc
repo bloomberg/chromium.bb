@@ -20,6 +20,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/layouttest_support.h"
+#include "content/public/test/ppapi_test_utils.h"
 #include "content/shell/app/shell_crash_reporter_client.h"
 #include "content/shell/browser/layout_test/layout_test_browser_main.h"
 #include "content/shell/browser/layout_test/layout_test_content_browser_client.h"
@@ -120,6 +121,9 @@ ShellMainDelegate::~ShellMainDelegate() {
 
 bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
   base::CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
+  int dummy;
+  if (!exit_code)
+    exit_code = &dummy;
 
 #if defined(OS_WIN)
   // Enable trace control and transport through event tracing for Windows.
@@ -141,8 +145,7 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
     // continue and try to load the fonts in BlinkTestPlatformInitialize
     // below, and then try to bring up the rest of the content module.
     if (!test_runner::CheckLayoutSystemDeps()) {
-      if (exit_code)
-        *exit_code = 1;
+      *exit_code = 1;
       return true;
     }
   }
@@ -150,6 +153,12 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
   if (command_line.HasSwitch(switches::kRunLayoutTest)) {
     EnableBrowserLayoutTestMode();
 
+#if defined(ENABLE_PLUGINS)
+    if (!ppapi::RegisterBlinkTestPlugin(&command_line)) {
+      *exit_code = 1;
+      return true;
+    }
+#endif
     command_line.AppendSwitch(switches::kProcessPerTab);
     command_line.AppendSwitch(switches::kEnableLogging);
     command_line.AppendSwitch(switches::kAllowFileAccessFromFiles);
@@ -198,8 +207,7 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
 #endif
 
     if (!test_runner::BlinkTestPlatformInitialize()) {
-      if (exit_code)
-        *exit_code = 1;
+      *exit_code = 1;
       return true;
     }
   }

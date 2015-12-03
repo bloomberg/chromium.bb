@@ -62,6 +62,7 @@
         '../media/media.gyp:media',
         '../net/net.gyp:net',
         '../net/net.gyp:net_resources',
+        '../ppapi/ppapi_internal.gyp:blink_test_plugin',
         '../skia/skia.gyp:skia',
         '../storage/storage_browser.gyp:storage',
         '../third_party/WebKit/public/blink.gyp:blink',
@@ -734,6 +735,14 @@
             },
           ],
           'copies': [
+            {
+              # PPAPI test plugins are loaded relative to DIR_MODULE. On OS X,
+              # that corresponds to Content Shell Framework.framework.
+              'destination': '<(PRODUCT_DIR)/$(CONTENTS_FOLDER_PATH)',
+              'files': [
+                '<(PRODUCT_DIR)/blink_test_plugin.plugin',
+              ],
+            },
             {
               'destination': '<(PRODUCT_DIR)/$(CONTENTS_FOLDER_PATH)/Resources',
               'files': [
