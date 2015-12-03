@@ -13,7 +13,6 @@ import android.widget.ListView;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.bookmark.BookmarksBridge.BookmarkModelObserver;
-import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkManager.UIState;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.components.bookmarks.BookmarkId;
@@ -54,11 +53,11 @@ class EnhancedBookmarkDrawerListView extends ListView implements EnhancedBookmar
                     int currentState = mDelegate.getCurrentState();
                     boolean isConnected = OfflinePageUtils.isConnected(context);
                     if (item.mType == EnhancedBookmarkDrawerListViewAdapter.TYPE_FILTER
-                            && currentState != UIState.STATE_FILTER) {
+                            && currentState != EnhancedBookmarkUIState.STATE_FILTER) {
                         RecordHistogram.recordBooleanHistogram(
                                 "OfflinePages.Filter.OnlineWhenEntering", isConnected);
                     } else if (item.mType != EnhancedBookmarkDrawerListViewAdapter.TYPE_FILTER
-                            && currentState == UIState.STATE_FILTER) {
+                            && currentState == EnhancedBookmarkUIState.STATE_FILTER) {
                         RecordHistogram.recordBooleanHistogram(
                                 "OfflinePages.Filter.OnlineWhenLeaving", isConnected);
                     }
@@ -106,21 +105,22 @@ class EnhancedBookmarkDrawerListView extends ListView implements EnhancedBookmar
     @Override
     public void onAllBookmarksStateSet() {
         mAdapter.updateList();
-        setItemChecked(mAdapter.getItemPosition(UIState.STATE_ALL_BOOKMARKS, null),
+        setItemChecked(mAdapter.getItemPosition(EnhancedBookmarkUIState.STATE_ALL_BOOKMARKS, null),
                 true);
     }
 
     @Override
     public void onFolderStateSet(BookmarkId folder) {
         mAdapter.updateList();
-        setItemChecked(mAdapter.getItemPosition(UIState.STATE_FOLDER, folder),
+        setItemChecked(mAdapter.getItemPosition(EnhancedBookmarkUIState.STATE_FOLDER, folder),
                 true);
     }
 
     @Override
     public void onFilterStateSet(EnhancedBookmarkFilter filter) {
         mAdapter.updateList();
-        setItemChecked(mAdapter.getItemPosition(UIState.STATE_FILTER, filter), true);
+        setItemChecked(mAdapter.getItemPosition(EnhancedBookmarkUIState.STATE_FILTER, filter),
+                true);
     }
 
     @Override

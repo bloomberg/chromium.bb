@@ -207,6 +207,29 @@ public class BookmarksBridge {
     }
 
     /**
+     * Schedules a runnable to run after the bookmark model is loaded. If the
+     * model is already loaded, executes the runnable immediately.
+     * @return Whether the given runnable is executed synchronously.
+     */
+    public boolean runAfterBookmarkModelLoaded(final Runnable runnable) {
+        if (isBookmarkModelLoaded()) {
+            runnable.run();
+            return true;
+        }
+        addObserver(new BookmarkModelObserver() {
+            @Override
+            public void bookmarkModelLoaded() {
+                removeObserver(this);
+                runnable.run();
+            }
+            @Override
+            public void bookmarkModelChanged() {
+            }
+        });
+        return false;
+    }
+
+    /**
      * @return A BookmarkItem instance for the given BookmarkId.
      *         <code>null</code> if it doesn't exist.
      */

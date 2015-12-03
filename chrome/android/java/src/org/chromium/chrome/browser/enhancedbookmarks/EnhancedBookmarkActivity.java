@@ -6,9 +6,11 @@ package org.chromium.chrome.browser.enhancedbookmarks;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.WindowManager;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarManageable;
@@ -35,6 +37,10 @@ public class EnhancedBookmarkActivity extends EnhancedBookmarkActivityBase imple
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
         mSnackbarManager = new SnackbarManager(this);
         mBookmarkManager = new EnhancedBookmarkManager(this);
+        String url = getIntent().getDataString();
+        if (TextUtils.isEmpty(url)) url = UrlConstants.BOOKMARKS_URL;
+        mBookmarkManager.updateForUrl(url);
+
         setContentView(mBookmarkManager.getView());
         EnhancedBookmarkUtils.setTaskDescriptionInDocumentMode(this, getString(
                 OfflinePageBridge.isEnabled() ? R.string.offline_pages_saved_pages

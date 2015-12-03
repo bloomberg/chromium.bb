@@ -166,4 +166,9 @@ public class EnhancedBookmarkRecyclerView extends RecyclerView implements
             }
         }
     }
+
+    @VisibleForTesting
+    public EnhancedBookmarkDelegate getDelegateForTesting() {
+        return mDelegate;
+    }
 }

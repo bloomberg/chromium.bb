@@ -17,7 +17,6 @@ import android.widget.TextView;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.bookmark.BookmarksBridge.BookmarkItem;
-import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkManager.UIState;
 import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
@@ -60,16 +59,16 @@ public class EnhancedBookmarkBookmarkRow extends EnhancedBookmarkRow implements 
     public void onClick() {
         int launchLocation = -1;
         switch (mDelegate.getCurrentState()) {
-            case UIState.STATE_ALL_BOOKMARKS:
+            case EnhancedBookmarkUIState.STATE_ALL_BOOKMARKS:
                 launchLocation = LaunchLocation.ALL_ITEMS;
                 break;
-            case UIState.STATE_FOLDER:
+            case EnhancedBookmarkUIState.STATE_FOLDER:
                 launchLocation = LaunchLocation.FOLDER;
                 break;
-            case UIState.STATE_FILTER:
+            case EnhancedBookmarkUIState.STATE_FILTER:
                 launchLocation = LaunchLocation.FILTER;
                 break;
-            case UIState.STATE_LOADING:
+            case EnhancedBookmarkUIState.STATE_LOADING:
                 assert false :
                         "The main content shouldn't be inflated if it's still loading";
                 break;
@@ -94,7 +93,7 @@ public class EnhancedBookmarkBookmarkRow extends EnhancedBookmarkRow implements 
     private void updateOfflinePageSize(BookmarkId bookmarkId) {
         OfflinePageItem offlinePage = null;
         OfflinePageBridge bridge = mDelegate.getModel().getOfflinePageBridge();
-        if (mDelegate.getCurrentState() == UIState.STATE_FILTER && bridge != null) {
+        if (mDelegate.getCurrentState() == EnhancedBookmarkUIState.STATE_FILTER && bridge != null) {
             offlinePage = bridge.getPageByBookmarkId(bookmarkId);
         }
         TextView textView = (TextView) findViewById(R.id.offline_page_size);

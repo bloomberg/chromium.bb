@@ -131,7 +131,7 @@ interface EnhancedBookmarkDelegate {
 
     /**
      * @return Current UIState of Enhanced Bookmark main UI. If no mode is stored,
-     *         {@link UIState#STATE_LOADING} is returned.
+     *         {@link EnhancedBookmarkUIState#STATE_LOADING} is returned.
      */
     int getCurrentState();
 

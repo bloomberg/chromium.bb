@@ -29,6 +29,7 @@ public class EnhancedBookmarkPage implements NativePage, EnhancedBookmarkStateCh
     private final int mBackgroundColor;
     private final int mThemeColor;
     private EnhancedBookmarkManager mManager;
+    private String mCurrentUrl;
 
     /**
      * Create a new instance of an enhanced bookmark page.
@@ -97,6 +98,7 @@ public class EnhancedBookmarkPage implements NativePage, EnhancedBookmarkStateCh
 
     @Override
     public void updateForUrl(String url) {
+        mCurrentUrl = url;
         mManager.updateForUrl(url);
     }
 
@@ -108,6 +110,7 @@ public class EnhancedBookmarkPage implements NativePage, EnhancedBookmarkStateCh
 
     @Override
     public void onBookmarkUIStateChange(String url) {
+        if (url.equals(mCurrentUrl)) return;
         mTab.loadUrl(new LoadUrlParams(url));
     }
 }

@@ -16,7 +16,6 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.bookmark.BookmarksBridge.BookmarkItem;
 import org.chromium.chrome.browser.bookmark.BookmarksBridge.BookmarkModelObserver;
-import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkManager.UIState;
 import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkPromoHeader.PromoHeaderShowingChangeListener;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.OfflinePageModelObserver;
@@ -256,8 +255,8 @@ class EnhancedBookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
 
     @Override
     public void onPromoHeaderShowingChanged(boolean isShowing) {
-        if (mDelegate.getCurrentState() != UIState.STATE_ALL_BOOKMARKS
-                && mDelegate.getCurrentState() != UIState.STATE_FOLDER) {
+        if (mDelegate.getCurrentState() != EnhancedBookmarkUIState.STATE_ALL_BOOKMARKS
+                && mDelegate.getCurrentState() != EnhancedBookmarkUIState.STATE_FOLDER) {
             return;
         }
 
@@ -284,7 +283,7 @@ class EnhancedBookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
 
                 @Override
                 public void offlinePageDeleted(BookmarkId bookmarkId) {
-                    if (mDelegate.getCurrentState() == UIState.STATE_FILTER) {
+                    if (mDelegate.getCurrentState() == EnhancedBookmarkUIState.STATE_FILTER) {
                         int deletedPosition = getPositionForBookmark(bookmarkId);
                         if (deletedPosition >= 0) {
                             removeItem(deletedPosition);
@@ -360,17 +359,18 @@ class EnhancedBookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
 
     private void updateHeader() {
         int currentUIState = mDelegate.getCurrentState();
-        if (currentUIState == UIState.STATE_LOADING) return;
+        if (currentUIState == EnhancedBookmarkUIState.STATE_LOADING) return;
 
         mPromoHeaderSection.clear();
         mOfflineStorageSection.clear();
-        if (currentUIState == UIState.STATE_FILTER) {
+        if (currentUIState == EnhancedBookmarkUIState.STATE_FILTER) {
             if (mOfflineStorageHeader != null && mOfflineStorageHeader.shouldShow()) {
                 mOfflineStorageSection.add(null);
             }
         } else {
-            assert currentUIState == UIState.STATE_ALL_BOOKMARKS
-                    || currentUIState == UIState.STATE_FOLDER : "Unexpected UI state";
+            assert currentUIState == EnhancedBookmarkUIState.STATE_ALL_BOOKMARKS
+                    || currentUIState == EnhancedBookmarkUIState.STATE_FOLDER
+                    : "Unexpected UI state";
             if (mPromoHeaderManager.shouldShow()) {
                 mPromoHeaderSection.add(null);
             }
@@ -378,7 +378,7 @@ class EnhancedBookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
     }
 
     private void refreshOfflinePagesFilterView() {
-        if (mDelegate.getCurrentState() != UIState.STATE_FILTER) return;
+        if (mDelegate.getCurrentState() != EnhancedBookmarkUIState.STATE_FILTER) return;
         setBookmarks(null,
                 mDelegate.getModel().getBookmarkIDsByFilter(EnhancedBookmarkFilter.OFFLINE_PAGES));
     }

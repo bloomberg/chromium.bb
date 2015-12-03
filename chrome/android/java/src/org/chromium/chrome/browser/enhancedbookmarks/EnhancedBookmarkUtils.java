@@ -10,11 +10,12 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.provider.Browser;
 import android.text.TextUtils;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
@@ -22,7 +23,6 @@ import org.chromium.chrome.browser.ChromeBrowserProviderClient;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.bookmark.BookmarksBridge;
-import org.chromium.chrome.browser.bookmark.BookmarksBridge.BookmarkItem;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarksModel.AddBookmarkCallback;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
@@ -38,7 +38,6 @@ import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.FeatureUtilities;
-import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkType;
 import org.chromium.content_public.browser.WebContents;
@@ -48,18 +47,7 @@ import org.chromium.ui.base.DeviceFormFactor;
  * A class holding static util functions for enhanced bookmark.
  */
 public class EnhancedBookmarkUtils {
-
-    private static final String BOOKMARK_SAVE_NAME = "SaveBookmark";
-    private static final int[] DEFAULT_BACKGROUND_COLORS = {
-            0xFFE64A19,
-            0xFFF09300,
-            0xFFAFB42B,
-            0xFF689F38,
-            0xFF0B8043,
-            0xFF0097A7,
-            0xFF7B1FA2,
-            0xFFC2185B
-    };
+    private static final String PREF_LAST_USED_URL = "enhanced_bookmark_last_used_url";
 
     /**
      * @return True if enhanced bookmark feature is enabled.
@@ -258,6 +246,19 @@ public class EnhancedBookmarkUtils {
     }
 
     /**
+     * Gets whether bookmark manager should load offline page initially.
+     */
+    private static boolean shouldShowOfflinePageAtFirst(EnhancedBookmarksModel model,
+            Context context) {
+        OfflinePageBridge bridge = model.getOfflinePageBridge();
+        if (bridge == null || bridge.getAllPages().isEmpty()
+                || OfflinePageUtils.isConnected(context)) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
      * Shows enhanced bookmark main UI, if it is turned on. Does nothing if it is turned off.
      * @return True if enhanced bookmark is on, false otherwise.
      */
@@ -265,12 +266,54 @@ public class EnhancedBookmarkUtils {
         if (!isEnhancedBookmarkEnabled()) {
             return false;
         }
+
+        String url = getFirstUrlToLoad(activity);
+
         if (DeviceFormFactor.isTablet(activity)) {
-            openUrl(activity, UrlConstants.BOOKMARKS_URL);
+            openUrl(activity, url);
         } else {
-            activity.startActivity(new Intent(activity, EnhancedBookmarkActivity.class));
+            Intent intent = new Intent(activity, EnhancedBookmarkActivity.class);
+            intent.setData(Uri.parse(url));
+            activity.startActivity(intent);
         }
         return true;
+    }
+
+    /**
+     * The initial url the bookmark manager shows depends on offline page status and some
+     * experiments we run.
+     */
+    private static String getFirstUrlToLoad(Activity activity) {
+        EnhancedBookmarksModel model = new EnhancedBookmarksModel();
+        try {
+            if (shouldShowOfflinePageAtFirst(model, activity)) {
+                return EnhancedBookmarkUIState.createFilterUrl(EnhancedBookmarkFilter.OFFLINE_PAGES,
+                        false).toString();
+            }
+            String lastUsedUrl = getLastUsedUrl(activity);
+            if (!TextUtils.isEmpty(lastUsedUrl)) return lastUsedUrl;
+            return UrlConstants.BOOKMARKS_URL;
+        } finally {
+            model.destroy();
+        }
+    }
+
+    /**
+     * Saves the last used url to preference. The saved url will be later queried by
+     * {@link #getLastUsedUrl(Context)}
+     */
+    static void setLastUsedUrl(Context context, String url) {
+        PreferenceManager.getDefaultSharedPreferences(context).edit()
+                .putString(PREF_LAST_USED_URL, url).apply();
+    }
+
+    /**
+     * Fetches url representing the user's state last time they close the bookmark manager.
+     */
+    @VisibleForTesting
+    static String getLastUsedUrl(Context context) {
+        return PreferenceManager.getDefaultSharedPreferences(context).getString(
+                PREF_LAST_USED_URL, UrlConstants.BOOKMARKS_URL);
     }
 
     /**
@@ -289,37 +332,6 @@ public class EnhancedBookmarkUtils {
         } else {
             context.startActivity(intent);
         }
-    }
-
-    /**
-     * Generate color based on bookmarked url's hash code. Same color will
-     * always be returned given same bookmark item.
-     *
-     * @param item bookmark the color represents for
-     * @return int for the generated color
-     */
-    public static int generateBackgroundColor(BookmarkItem item) {
-        int normalizedIndex = MathUtils.positiveModulo(item.getUrl().hashCode(),
-                DEFAULT_BACKGROUND_COLORS.length);
-        return DEFAULT_BACKGROUND_COLORS[normalizedIndex];
-    }
-
-    /**
-     * Save the bookmark in bundle to save state of a fragment/activity.
-     * @param bundle Argument holder or savedInstanceState of the fragment/activity.
-     * @param bookmark The bookmark to save.
-     */
-    public static void saveBookmarkIdToBundle(Bundle bundle, BookmarkId bookmark) {
-        bundle.putString(BOOKMARK_SAVE_NAME, bookmark.toString());
-    }
-
-    /**
-     * Retrieve the bookmark previously saved in the arguments bundle.
-     * @param bundle Argument holder or savedInstanceState of the fragment/activity.
-     * @return The ID of the bookmark to retrieve.
-     */
-    public static BookmarkId getBookmarkIdFromBundle(Bundle bundle) {
-        return BookmarkId.getBookmarkIdFromString(bundle.getString(BOOKMARK_SAVE_NAME));
     }
 
     /**
