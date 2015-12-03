@@ -29,6 +29,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLHeadElement.h"
+#include "core/html/parser/HTMLParserIdioms.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/HttpEquiv.h"
@@ -490,6 +491,14 @@ void HTMLMetaElement::process()
         return;
 
     HttpEquiv::process(document(), httpEquivValue, contentValue, inDocumentHead(this));
+}
+
+WTF::TextEncoding HTMLMetaElement::computeEncoding() const
+{
+    HTMLAttributeList attributeList;
+    for (const Attribute& attr : attributes())
+        attributeList.append(std::make_pair(attr.name().localName(), attr.value().string()));
+    return encodingFromMetaAttributes(attributeList);
 }
 
 const AtomicString& HTMLMetaElement::content() const

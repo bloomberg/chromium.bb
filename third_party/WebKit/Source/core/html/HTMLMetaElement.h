@@ -26,6 +26,7 @@
 #include "core/CoreExport.h"
 #include "core/dom/ViewportDescription.h"
 #include "core/html/HTMLElement.h"
+#include "wtf/text/TextEncoding.h"
 
 namespace blink {
 
@@ -43,6 +44,10 @@ public:
     DECLARE_NODE_FACTORY(HTMLMetaElement);
 
     static void getViewportDescriptionFromContentAttribute(const String& content, ViewportDescription&, Document*, bool viewportMetaZeroValuesQuirk);
+
+    // Encoding computed from processing the http-equiv, charset and content
+    // attributes.
+    WTF::TextEncoding computeEncoding() const;
 
     const AtomicString& content() const;
     const AtomicString& httpEquiv() const;

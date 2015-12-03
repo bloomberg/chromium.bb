@@ -176,6 +176,7 @@
       'WebMIDIPermissionRequest.cpp',
       'WebMediaDevicesRequest.cpp',
       'WebMediaStreamRegistry.cpp',
+      'WebMetaElement.cpp',
       'WebNetworkStateNotifier.cpp',
       'WebNode.cpp',
       'WebOptionElement.cpp',

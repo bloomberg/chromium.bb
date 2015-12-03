@@ -31,6 +31,7 @@
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebElementCollection.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
+#include "third_party/WebKit/public/web/WebMetaElement.h"
 #include "third_party/WebKit/public/web/WebNode.h"
 #include "third_party/WebKit/public/web/WebPageSerializer.h"
 #include "third_party/WebKit/public/web/WebPageSerializerClient.h"
@@ -40,6 +41,7 @@ using blink::WebCString;
 using blink::WebData;
 using blink::WebDocument;
 using blink::WebElement;
+using blink::WebMetaElement;
 using blink::WebElementCollection;
 using blink::WebFrame;
 using blink::WebLocalFrame;
@@ -55,59 +57,6 @@ namespace content {
 
 bool HasDocType(const WebDocument& doc) {
   return doc.firstChild().isDocumentTypeNode();
-}
-
-// Helper function for checking whether input node is META tag. Return true
-// means it is META element, otherwise return false. The parameter charset_info
-// return actual charset info if the META tag has charset declaration.
-bool IsMetaElement(const WebNode& node, std::string& charset_info) {
-  if (!node.isElementNode())
-    return false;
-  const WebElement meta = node.toConst<WebElement>();
-  if (!meta.hasHTMLTagName("meta"))
-    return false;
-  charset_info.erase(0, charset_info.length());
-  // Check the META charset declaration.
-  WebString httpEquiv = meta.getAttribute("http-equiv");
-  if (base::LowerCaseEqualsASCII(base::StringPiece16(httpEquiv),
-                                 "content-type")) {
-    std::string content = meta.getAttribute("content").utf8();
-    int pos = content.find("charset", 0);
-    if (pos > -1) {
-      // Add a dummy charset declaration to charset_info, which indicates this
-      // META tag has charset declaration although we do not get correct value
-      // yet.
-      charset_info.append("has-charset-declaration");
-      int remaining_length = content.length() - pos - 7;
-      if (!remaining_length)
-        return true;
-      int start_pos = pos + 7;
-      // Find "=" symbol.
-      while (remaining_length--)
-        if (content[start_pos++] == L'=')
-          break;
-      // Skip beginning space.
-      while (remaining_length) {
-        if (content[start_pos] > 0x0020)
-          break;
-        ++start_pos;
-        --remaining_length;
-      }
-      if (!remaining_length)
-        return true;
-      int end_pos = start_pos;
-      // Now we find out the start point of charset info. Search the end point.
-      while (remaining_length--) {
-        if (content[end_pos] <= 0x0020 || content[end_pos] == L';')
-          break;
-        ++end_pos;
-      }
-      // Get actual charset info.
-      charset_info = content.substr(start_pos, end_pos - start_pos);
-      return true;
-    }
-  }
-  return true;
 }
 
 class LoadObserver : public RenderViewObserver {
@@ -300,11 +249,11 @@ class DomSerializerTests : public ContentBrowserTest,
     WebElement head_element = doc.head();
     ASSERT_TRUE(!head_element.isNull());
     // Go through all children of HEAD element.
-    for (WebNode child = head_element.firstChild(); !child.isNull();
-         child = child.nextSibling()) {
-      std::string charset_info;
-      if (IsMetaElement(child, charset_info))
-        ASSERT_TRUE(charset_info.empty());
+    WebElementCollection meta_elements = head_element.
+        getElementsByHTMLTagName("meta");
+    for (WebElement element = meta_elements.firstItem(); !element.isNull();
+       element = meta_elements.nextItem()) {
+      ASSERT_TRUE(element.to<WebMetaElement>().computeEncoding().isEmpty());
     }
     // Do serialization.
     SerializeDomForURL(file_url);
@@ -321,21 +270,19 @@ class DomSerializerTests : public ContentBrowserTest,
     ASSERT_TRUE(doc.isHTMLDocument());
     head_element = doc.head();
     ASSERT_TRUE(!head_element.isNull());
-    WebNode meta_node = head_element.firstChild();
-    ASSERT_TRUE(!meta_node.isNull());
-    // Get meta charset info.
-    std::string charset_info2;
-    ASSERT_TRUE(IsMetaElement(meta_node, charset_info2));
-    ASSERT_TRUE(!charset_info2.empty());
-    ASSERT_EQ(charset_info2,
-              std::string(web_frame->document().encoding().utf8()));
+    ASSERT_TRUE(!head_element.firstChild().isNull());
+    ASSERT_TRUE(head_element.firstChild().isElementNode());
+    WebMetaElement meta_element = head_element.firstChild().
+        to<WebMetaElement>();
+    ASSERT_EQ(meta_element.computeEncoding(), web_frame->document().encoding());
 
     // Make sure no more additional META tags which have charset declaration.
-    for (WebNode child = meta_node.nextSibling(); !child.isNull();
-         child = child.nextSibling()) {
-      std::string charset_info;
-      if (IsMetaElement(child, charset_info))
-        ASSERT_TRUE(charset_info.empty());
+    meta_elements = head_element.getElementsByHTMLTagName("meta");
+    for (WebElement element = meta_elements.firstItem(); !element.isNull();
+       element = meta_elements.nextItem()) {
+      if (element == meta_element)
+        continue;
+      ASSERT_TRUE(element.to<WebMetaElement>().computeEncoding().isEmpty());
     }
   }
 
@@ -347,15 +294,16 @@ class DomSerializerTests : public ContentBrowserTest,
     ASSERT_TRUE(web_frame != NULL);
     WebDocument doc = web_frame->document();
     ASSERT_TRUE(doc.isHTMLDocument());
-    WebElement head_ele = doc.head();
-    ASSERT_TRUE(!head_ele.isNull());
+    WebElement head_element = doc.head();
+    ASSERT_TRUE(!head_element.isNull());
     // Go through all children of HEAD element.
     int charset_declaration_count = 0;
-    for (WebNode child = head_ele.firstChild(); !child.isNull();
-         child = child.nextSibling()) {
-      std::string charset_info;
-      if (IsMetaElement(child, charset_info) && !charset_info.empty())
-        charset_declaration_count++;
+    WebElementCollection meta_elements = head_element.
+        getElementsByHTMLTagName("meta");
+    for (WebElement element = meta_elements.firstItem(); !element.isNull();
+       element = meta_elements.nextItem()) {
+      if (!element.to<WebMetaElement>().computeEncoding().isEmpty())
+        ++charset_declaration_count;
     }
     // The original doc has more than META tags which have charset declaration.
     ASSERT_TRUE(charset_declaration_count > 1);
@@ -373,23 +321,21 @@ class DomSerializerTests : public ContentBrowserTest,
     ASSERT_TRUE(web_frame != NULL);
     doc = web_frame->document();
     ASSERT_TRUE(doc.isHTMLDocument());
-    head_ele = doc.head();
-    ASSERT_TRUE(!head_ele.isNull());
-    WebNode meta_node = head_ele.firstChild();
-    ASSERT_TRUE(!meta_node.isNull());
-    // Get meta charset info.
-    std::string charset_info2;
-    ASSERT_TRUE(IsMetaElement(meta_node, charset_info2));
-    ASSERT_TRUE(!charset_info2.empty());
-    ASSERT_EQ(charset_info2,
-              std::string(web_frame->document().encoding().utf8()));
+    head_element = doc.head();
+    ASSERT_TRUE(!head_element.isNull());
+    ASSERT_TRUE(!head_element.firstChild().isNull());
+    ASSERT_TRUE(head_element.firstChild().isElementNode());
+    WebMetaElement meta_element = head_element.firstChild().
+        to<WebMetaElement>();
+    ASSERT_EQ(meta_element.computeEncoding(), web_frame->document().encoding());
 
     // Make sure no more additional META tags which have charset declaration.
-    for (WebNode child = meta_node.nextSibling(); !child.isNull();
-         child = child.nextSibling()) {
-      std::string charset_info;
-      if (IsMetaElement(child, charset_info))
-        ASSERT_TRUE(charset_info.empty());
+    meta_elements = head_element.getElementsByHTMLTagName("meta");
+    for (WebElement element = meta_elements.firstItem(); !element.isNull();
+       element = meta_elements.nextItem()) {
+      if (element == meta_element)
+        continue;
+      ASSERT_TRUE(element.to<WebMetaElement>().computeEncoding().isEmpty());
     }
   }
 
@@ -637,15 +583,12 @@ class DomSerializerTests : public ContentBrowserTest,
     ASSERT_TRUE(doc.isHTMLDocument());
     head_element = doc.head();
     ASSERT_TRUE(!head_element.isNull());
-    WebNode meta_node = head_element.firstChild();
-    ASSERT_TRUE(!meta_node.isNull());
-    ASSERT_TRUE(meta_node.nextSibling().isNull());
-    // Get meta charset info.
-    std::string charset_info;
-    ASSERT_TRUE(IsMetaElement(meta_node, charset_info));
-    ASSERT_TRUE(!charset_info.empty());
-    ASSERT_EQ(charset_info,
-              std::string(web_frame->document().encoding().utf8()));
+    ASSERT_TRUE(!head_element.firstChild().isNull());
+    ASSERT_TRUE(head_element.firstChild().isElementNode());
+    ASSERT_TRUE(head_element.firstChild().nextSibling().isNull());
+    WebMetaElement meta_element = head_element.firstChild().
+        to<WebMetaElement>();
+    ASSERT_EQ(meta_element.computeEncoding(), web_frame->document().encoding());
 
     // Check the body's first node is text node and its contents are
     // "hello world"
@@ -653,8 +596,7 @@ class DomSerializerTests : public ContentBrowserTest,
     ASSERT_TRUE(!body_element.isNull());
     WebNode text_node = body_element.firstChild();
     ASSERT_TRUE(text_node.isTextNode());
-    WebString text_node_contents = text_node.nodeValue();
-    ASSERT_TRUE(std::string(text_node_contents.utf8()) == "hello world");
+    ASSERT_EQ("hello world", text_node.nodeValue());
   }
 
   void SubResourceForElementsInNonHTMLNamespaceOnRenderer(

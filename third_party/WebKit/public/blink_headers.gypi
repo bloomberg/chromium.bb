@@ -418,6 +418,7 @@
       "web/WebMediaPlayerAction.h",
       "web/WebMediaStreamRegistry.h",
       "web/WebMenuItemInfo.h",
+      "web/WebMetaElement.h",
       "web/WebNavigationPolicy.h",
       "web/WebNavigationType.h",
       "web/WebNavigatorContentUtilsClient.h",

@@ -118,10 +118,6 @@ private:
     OwnPtr<Delegate> m_delegate;
 };
 
-// TODO(lukasza): Stop exposing this implementation detail once the serializers
-// are merged.
-CORE_EXPORT bool isCharsetSpecifyingNode(const Node&);
-
 } // namespace blink
 
 #endif // PageSerializer_h

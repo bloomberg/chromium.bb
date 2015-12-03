@@ -131,7 +131,7 @@ String WebPageSerializerImpl::preActionBeforeSerializeOpenTag(
         // have overrided the META which have correct charset declaration after
         // serializing open tag of HEAD element.
         ASSERT(element);
-        if (isCharsetSpecifyingNode(*element)) {
+        if (isHTMLMetaElement(element) && toHTMLMetaElement(element)->computeEncoding().isValid()) {
             // Found META tag declared charset, we need to skip it when
             // serializing DOM.
             param->skipMetaElement = element;

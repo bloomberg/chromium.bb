@@ -58,7 +58,6 @@
 #include "core/html/HTMLMetaElement.h"
 #include "core/html/HTMLStyleElement.h"
 #include "core/html/ImageDocument.h"
-#include "core/html/parser/HTMLParserIdioms.h"
 #include "core/page/Page.h"
 #include "core/style/StyleFetchedImage.h"
 #include "core/style/StyleImage.h"
@@ -72,25 +71,13 @@
 
 namespace blink {
 
-bool isCharsetSpecifyingNode(const Node& node)
-{
-    if (!isHTMLMetaElement(node))
-        return false;
-
-    const HTMLMetaElement& element = toHTMLMetaElement(node);
-    HTMLAttributeList attributeList;
-    AttributeCollection attributes = element.attributes();
-    for (const Attribute& attr: attributes) {
-        // FIXME: We should deal appropriately with the attribute if they have a namespace.
-        attributeList.append(std::make_pair(attr.name().localName(), attr.value().string()));
-    }
-    WTF::TextEncoding textEncoding = encodingFromMetaAttributes(attributeList);
-    return textEncoding.isValid();
-}
-
 static bool shouldIgnoreElement(const Element& element)
 {
-    return isHTMLScriptElement(element) || isHTMLNoScriptElement(element) || isCharsetSpecifyingNode(element);
+    if (isHTMLScriptElement(element))
+        return true;
+    if (isHTMLNoScriptElement(element))
+        return true;
+    return isHTMLMetaElement(element) && toHTMLMetaElement(element).computeEncoding().isValid();
 }
 
 static const QualifiedName& frameOwnerURLAttributeName(const HTMLFrameOwnerElement& frameOwner)
