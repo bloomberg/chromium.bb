@@ -2269,58 +2269,6 @@ However, you aren’t invisible. Going incognito doesn’t hide your browsing fr
         Close tab
       </message>
 
-      <!-- Help and Feedback
-           These constants should be in sync with the context names on go/mobilehelprecs.
-           If the context ID cannot be found, the default help page will be shown to the user.-->
-      <message name="IDS_HELP_CONTEXT_NEW_TAB" translateable="false">
-        mobile_new_tab
-      </message>
-      <message name="IDS_HELP_CONTEXT_SEARCH_RESULTS" translateable="false">
-        mobile_search_results
-      </message>
-      <message name="IDS_HELP_CONTEXT_WEBPAGE" translateable="false">
-        mobile_webpage
-      </message>
-      <message name="IDS_HELP_CONTEXT_SETTINGS" translateable="false">
-        mobile_settings
-      </message>
-      <message name="IDS_HELP_CONTEXT_INCOGNITO" translateable="false">
-        mobile_incognito
-      </message>
-      <message name="IDS_HELP_CONTEXT_BOOKMARKS" translateable="false">
-        mobile_bookmarks
-      </message>
-      <message name="IDS_HELP_CONTEXT_HISTORY" translateable="false">
-        mobile_history
-      </message>
-      <message name="IDS_HELP_CONTEXT_ERROR" translateable="false">
-        mobile_error
-      </message>
-      <message name="IDS_HELP_CONTEXT_PRIVACY" translateable="false">
-        mobile_privacy
-      </message>
-      <message name="IDS_HELP_CONTEXT_TRANSLATE" translateable="false">
-        mobile_translate
-      </message>
-      <message name="IDS_HELP_CONTEXT_GENERAL" translateable="false">
-        mobile_general
-      </message>
-      <message name="IDS_HELP_CONTEXT_PROTECTED_CONTENT" translateable="false">
-        protected_content
-      </message>
-      <message name="IDS_HELP_CONTEXT_DATA_REDUCTION" translateable="false">
-        reduce_data_usage
-      </message>
-      <message name="IDS_HELP_CONTEXT_INCOGNITO_LEARN_MORE" translateable="false">
-        chrome_incognito
-      </message>
-      <message name="IDS_HELP_CONTEXT_USAGE_REPORTS" translateable="false">
-        send_crash_report
-      </message>
-      <message name="IDS_HELP_CONTEXT_SAD_TAB" translateable="false">
-        mobile_awsnap
-      </message>
-
       <!-- Client certificate selection failure strings. -->
       <message name="IDS_CLIENT_CERT_UNSUPPORTED_TITLE" desc="Title of a dialog box for when the operating system does not support client SSL certificate selection">
         Unable to select certificate.
