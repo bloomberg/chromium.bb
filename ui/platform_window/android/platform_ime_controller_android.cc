@@ -28,12 +28,14 @@ void PlatformImeControllerAndroid::Init(JNIEnv* env, jobject jobj) {
 
 void PlatformImeControllerAndroid::UpdateTextInputState(
     const TextInputState& state) {
-  if (java_platform_ime_controller_android_.is_empty())
-    return;
   JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> scoped_obj =
+      java_platform_ime_controller_android_.get(env);
+  if (scoped_obj.is_null())
+    return;
   Java_PlatformImeControllerAndroid_updateTextInputState(
       env,
-      java_platform_ime_controller_android_.get(env).obj(),
+      scoped_obj.obj(),
       state.type,
       state.flags,
       base::android::ConvertUTF8ToJavaString(env, state.text).obj(),
@@ -44,13 +46,13 @@ void PlatformImeControllerAndroid::UpdateTextInputState(
 }
 
 void PlatformImeControllerAndroid::SetImeVisibility(bool visible) {
-  if (java_platform_ime_controller_android_.is_empty())
-    return;
   JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> scoped_obj =
+      java_platform_ime_controller_android_.get(env);
+  if (scoped_obj.is_null())
+    return;
   Java_PlatformImeControllerAndroid_setImeVisibility(
-      env,
-      java_platform_ime_controller_android_.get(env).obj(),
-      visible);
+      env, scoped_obj.obj(), visible);
 }
 
 }  // namespace ui

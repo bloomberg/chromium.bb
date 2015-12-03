@@ -62,10 +62,11 @@ PlatformWindowAndroid::PlatformWindowAndroid(PlatformWindowDelegate* delegate)
 PlatformWindowAndroid::~PlatformWindowAndroid() {
   if (window_)
     ReleaseWindow();
-  if (!java_platform_window_android_.is_empty()) {
-    JNIEnv* env = base::android::AttachCurrentThread();
-    Java_PlatformWindowAndroid_detach(
-        env, java_platform_window_android_.get(env).obj());
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> scoped_obj =
+      java_platform_window_android_.get(env);
+  if (!scoped_obj.is_null()) {
+    Java_PlatformWindowAndroid_detach(env, scoped_obj.obj());
   }
 }
 
