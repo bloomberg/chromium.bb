@@ -1914,13 +1914,12 @@ void WebGLRenderingContextBase::compressedTexSubImage2D(GLenum target, GLint lev
         synthesizeGLError(GL_INVALID_ENUM, "compressedTexSubImage2D", "invalid format");
         return;
     }
-    if (!validateCompressedTexFuncData("compressedTexSubImage2D", width, height, format, data))
-        return;
-
-    if (!isWebGL2OrHigher() && format != tex->getInternalFormat(target, level)) {
+    if (format != tex->getInternalFormat(target, level)) {
         synthesizeGLError(GL_INVALID_OPERATION, "compressedTexSubImage2D", "format does not match texture format");
         return;
     }
+    if (!validateCompressedTexFuncData("compressedTexSubImage2D", width, height, format, data))
+        return;
 
     if (!validateCompressedTexSubDimensions("compressedTexSubImage2D", target, level, xoffset, yoffset, width, height, format, tex))
         return;
