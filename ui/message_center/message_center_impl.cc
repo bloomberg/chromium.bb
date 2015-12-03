@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
+#include "base/stl_util.h"
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/message_center_switches.h"
 #include "ui/message_center/message_center_types.h"
@@ -381,10 +382,9 @@ void MessageCenterImpl::RemoveObserver(MessageCenterObserver* observer) {
 }
 
 void MessageCenterImpl::AddNotificationBlocker(NotificationBlocker* blocker) {
-  if (std::find(blockers_.begin(), blockers_.end(), blocker) !=
-      blockers_.end()) {
+  if (ContainsValue(blockers_, blocker))
     return;
-  }
+
   blocker->AddObserver(this);
   blockers_.push_back(blocker);
 }

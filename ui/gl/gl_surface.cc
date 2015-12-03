@@ -4,12 +4,12 @@
 
 #include "ui/gl/gl_surface.h"
 
-#include <algorithm>
 #include <vector>
 
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/threading/thread_local.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/gfx/swap_result.h"
@@ -50,9 +50,7 @@ bool GLSurface::InitializeOneOff() {
       impl = kGLImplementationEGLGLES2;
     } else {
       impl = GetNamedGLImplementation(requested_implementation_name);
-      if (std::find(allowed_impls.begin(),
-                    allowed_impls.end(),
-                    impl) == allowed_impls.end()) {
+      if (!ContainsValue(allowed_impls, impl)) {
         LOG(ERROR) << "Requested GL implementation is not available.";
         return false;
       }

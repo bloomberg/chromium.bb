@@ -4,10 +4,10 @@
 
 #include "ui/gl/gl_gl_api_implementation.h"
 
-#include <algorithm>
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "ui/gl/gl_context.h"
@@ -491,10 +491,8 @@ void RealGLApi::InitializeFilteredExtensions() {
         const char* gl_extension = reinterpret_cast<const char*>(
             GLApiBase::glGetStringiFn(GL_EXTENSIONS, i));
         DCHECK(gl_extension != NULL);
-        if (std::find(disabled_exts_.begin(), disabled_exts_.end(),
-                      gl_extension) == disabled_exts_.end()) {
+        if (!ContainsValue(disabled_exts_, gl_extension))
           filtered_exts_.push_back(gl_extension);
-        }
       }
       filtered_exts_str_ = base::JoinString(filtered_exts_, " ");
     }

@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/memory/singleton.h"
+#include "base/stl_util.h"
 #include "ui/accessibility/ax_enums.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/platform/ax_platform_node_auralinux.h"
@@ -44,7 +45,7 @@ class AuraLinuxApplication
       return;
 
     widget = widget->GetTopLevelWidget();
-    if (std::find(widgets_.begin(), widgets_.end(), widget) != widgets_.end())
+    if (ContainsValue(widgets_, widget))
       return;
 
     widgets_.push_back(widget);

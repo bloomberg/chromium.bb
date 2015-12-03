@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/singleton.h"
+#include "base/stl_util.h"
 #include "ui/gfx/win/dpi.h"
 #include "ui/gfx/win/hwnd_util.h"
 
@@ -109,7 +110,7 @@ HWNDSubclass* HWNDSubclass::GetHwndSubclassForTarget(HWND target) {
 
 void HWNDSubclass::AddFilter(HWNDMessageFilter* filter) {
   DCHECK(filter);
-  if (std::find(filters_.begin(), filters_.end(), filter) == filters_.end())
+  if (!ContainsValue(filters_, filter))
     filters_.push_back(filter);
 }
 

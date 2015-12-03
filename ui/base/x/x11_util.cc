@@ -27,6 +27,7 @@
 #include "base/memory/singleton.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -558,10 +559,8 @@ bool IsWindowVisible(XID window) {
   std::vector<XAtom> wm_states;
   if (GetAtomArrayProperty(window, "_NET_WM_STATE", &wm_states)) {
     XAtom hidden_atom = GetAtom("_NET_WM_STATE_HIDDEN");
-    if (std::find(wm_states.begin(), wm_states.end(), hidden_atom) !=
-            wm_states.end()) {
+    if (ContainsValue(wm_states, hidden_atom))
       return false;
-    }
   }
 
   // Some compositing window managers (notably kwin) do not actually unmap

@@ -95,11 +95,8 @@ class HidingWindowAnimationObserverBase : public aura::WindowObserver {
       DCHECK(iter != window_->parent()->children().end());
       aura::Window* topmost_transient_child = NULL;
       for (++iter; iter != window_->parent()->children().end(); ++iter) {
-        if (std::find(transient_children.begin(),
-                      transient_children.end(),
-                      *iter) != transient_children.end()) {
+        if (ContainsValue(transient_children, *iter))
           topmost_transient_child = *iter;
-        }
       }
       if (topmost_transient_child) {
         window_->parent()->layer()->StackAbove(

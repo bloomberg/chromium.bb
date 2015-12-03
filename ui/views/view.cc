@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
@@ -1098,10 +1099,9 @@ void View::AddAccelerator(const ui::Accelerator& accelerator) {
   if (!accelerators_.get())
     accelerators_.reset(new std::vector<ui::Accelerator>());
 
-  if (std::find(accelerators_->begin(), accelerators_->end(), accelerator) ==
-      accelerators_->end()) {
+  if (!ContainsValue(*accelerators_.get(), accelerator))
     accelerators_->push_back(accelerator);
-  }
+
   RegisterPendingAccelerators();
 }
 
