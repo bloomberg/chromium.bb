@@ -48,7 +48,6 @@ def uniform_fuzz(input_string, nbytes_max):
   return ''.join(input_string[subrange[0] + 1 : subrange[1]] +
                  chr(random.randint(0, 255))
                  for subrange in keepsies)[:-1]
-#enddef
 
 
 def simple_fuzz(nexe_elf):
@@ -62,14 +61,12 @@ def simple_fuzz(nexe_elf):
                             :end_offset],
                        max_bytes_to_fuzz) +
           orig[end_offset:])
-#enddef
 
 
 def genius_fuzz(nexe_elf):
   print >>sys.stderr, 'Genius fuzzer not implemented yet.'
   # parse as phdr and use a distribution that concentrates on certain fields
   sys.exit(1 + hash(nexe_elf))  # ARGSUSED
-#enddef
 
 
 available_fuzzers = {
@@ -107,7 +104,6 @@ Usage: elf_fuzzer.py [-d destination_dir]
  -S: Seed_string_for_rng is used to seed the random module's random number
      generator; any string will do -- it is hashed.
 """ % (', '.join(available_fuzzers.keys()), default_progress_period)
-#enddef
 
 
 def choose_progress_char(num_saved):
@@ -135,7 +131,6 @@ def main(argv):
     print >>sys.stderr, e
     usage(sys.stderr)
     return 1
-  #endtry
 
   for (opt, val) in opt_list:
     if opt == '-d':
@@ -149,7 +144,6 @@ def main(argv):
         print >>sys.stderr, 'No fuzzer:', val
         usage(sys.stderr)
         return 1
-      #endif
     elif opt == '-i':
       iterations = long(val)
     elif opt == '-m':
@@ -167,27 +161,21 @@ def main(argv):
     else:
       print >>sys.stderr, 'Option', opt, 'not understood.'
       return -1
-    #endif
-  #endfor
 
   if progress_period <= 0:
     print >>sys.stderr, 'verbose progress indication period must be positive.'
     return 1
-  #endif
 
   if not nexe_path:
     print >>sys.stderr, 'No nexe specified.'
     return 2
-  #endif
   if sel_ldr_path is None:
     print >>sys.stderr, 'No sel_ldr specified.'
     return 3
-  #endif
 
   if verbosity > 0:
     print 'sel_ldr is at', sel_ldr_path
     print 'nexe prototype(s) are at', nexe_path
-  #endif
 
   nfa = re.compile(r'LOG_FATAL abort exit$')
 
@@ -227,13 +215,11 @@ def main(argv):
           print err_data
         elif verbosity > 0:
           os.write(1, '*')
-        #endif
 
         if (os.WTERMSIG(-p.returncode) != signal.SIGABRT or
             nfa.search(err_data) == None):
           with os.fdopen(tempfile.mkstemp(dir=dest_dir)[0], 'w') as f:
             f.write(fuzzed_bytes)
-          #endwith
 
           # this is a one-liner alternative, relying on the dtor of
           # file-like object to handle the flush/close.  assumption
@@ -248,31 +234,22 @@ def main(argv):
           if dest_fatal_dir is not None:
             with os.fdopen(tempfile.mkstemp(dir=dest_fatal_dir)[0], 'w') as f:
               f.write(fuzzed_bytes)
-            #endwith
             num_saved = num_saved + 1
             progress_char = choose_progress_char(num_saved)
           elif verbosity > 1:
             print 'LOG_FATAL exit, not saving'
-          #endif
-        #endif
-      #endif
     finally:
       os.unlink(path)
-    #endtry
 
     if iterations > 0:
       iterations = iterations - 1
-    #endif
     if verbosity > 0 and which_nexe % progress_period == 0:
       os.write(1, progress_char)
-    #endif
 
     which_nexe = which_nexe + 1
-  #endwhile
 
   print 'A total of', num_saved, 'nexes caused sel_ldr to exit with a signal.'
-#enddef
+
 
 if __name__ == '__main__':
   sys.exit(main(sys.argv))
-#endif

@@ -40,12 +40,11 @@ SAFE_DIR_SUFFIX = apply(os.path.join, SAFE_DIR_COMPONENTS)
 def SanityCheckDirectory():
   if os.getcwd().endswith(SAFE_DIR_SUFFIX):
     return
-  # endif
   logging.error('httpd.py should only be run from the %s', SAFE_DIR_SUFFIX)
   logging.error('directory for testing purposes.')
   logging.error('We are currently in %s', os.getcwd())
   sys.exit(1)
-# enddef
+
 
 # the sole purpose of this class is to make the BaseHTTPServer threaded
 class ThreadedServer(SocketServer.ThreadingMixIn,
@@ -59,7 +58,6 @@ def Run(server_address,
   httpd = server_class(server_address, handler_class)
   logging.info('started server on port %d', httpd.server_address[1])
   httpd.serve_forever()
-# enddef
 
 
 if __name__ == '__main__':
@@ -68,5 +66,3 @@ if __name__ == '__main__':
     Run((SERVER_HOST, int(sys.argv[1])))
   else:
     Run((SERVER_HOST, SERVER_PORT))
-  # endif
-# endif

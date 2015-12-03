@@ -69,10 +69,8 @@ def ProcessStream(instr, outstr):
 def ProcessDir(srcdir, dstdir):
   if not os.path.isdir(srcdir):
     return
-  # endif
   if not os.path.isdir(dstdir):
     os.makedirs(dstdir)
-  # endif
   for fn in os.listdir(srcdir):
     srcpath = os.path.join(srcdir, fn)
     dstpath = os.path.join(dstdir, fn)
@@ -81,20 +79,16 @@ def ProcessDir(srcdir, dstdir):
                     open(dstpath, 'w'))
     elif os.path.isdir(srcpath):
       ProcessDir(srcpath, dstpath)
-    # endif
-  # endfor
-# enddef
+
 
 def main(argv):
   if len(argv) != 3:
     print >>sys.stderr, ('Usage: ./export_header source/include/path'
                          ' dest/include/path')
     return 1
-  # endif
   ProcessDir(argv[1], argv[2])
   return 0
-# enddef
+
 
 if __name__ == '__main__':
   sys.exit(main(sys.argv))
-# endif

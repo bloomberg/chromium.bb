@@ -18,20 +18,15 @@ class Analyzer(object):
 
   def __init__(self):
     self._data = []  # list of (time, test-name) tuples
-  # enddef
 
   def AddData(self, execution_time, test_name, mode):
     self._data.append((execution_time, test_name, mode))
-  # enddef
 
   def Sort(self):
     self._data.sort(None, lambda x: x[0], True)
-  # enddef
 
   def Top(self, n):
     return self._data[:n]
-  # enddef
-# endclass
 
 
 def TrimTestName(name):
@@ -39,14 +34,11 @@ def TrimTestName(name):
   ix = name.find(s)
   if ix < 0:
     return name[ix + len(s):]
-  # endif
   return name
-# enddef
 
 
 def Usage():
   print >>sys.stderr, 'Usage: test_timing [-n top-n-to-print]'
-# enddef
 
 
 def main(argv):
@@ -58,7 +50,6 @@ def main(argv):
     print >>sys.stderr, str(e)
     Usage()
     return 1
-  # endtry
 
   for opt, val in optlist:
     if opt == '-n':
@@ -68,9 +59,6 @@ def main(argv):
         print >>sys.stderr, 'test_timing: -n arg should be an integer'
         Usage()
         return 1
-      # endtry
-    # endif
-  # endfor
 
   mode = 'Unknown'
   mode_nfa = re.compile(r'^running.*scons-out/((opt|dbg)-linux)')
@@ -82,23 +70,17 @@ def main(argv):
     if mobj is not None:
       mode = mobj.group(1)
       continue
-    # endif
     mobj = nfa.match(line)
     if mobj is not None:
       analyzer.AddData(float(mobj.group(2)), mobj.group(1), mode)
-    # endif
-  # endfor
   analyzer.Sort()
 
   print '%-12s %-9s %s' % ('Time', 'Mode', 'Test Name')
   print '%-12s %-9s %s' % (12*'-', 9*'-', '---------')
   for time, name, mode in analyzer.Top(top_n):
     print '%12.8f %-9s %s' % (time, mode, TrimTestName(name))
-  # endfor
   return 0
-# enddef
 
 
 if __name__ == '__main__':
   sys.exit(main(sys.argv))
-# endif

@@ -34,20 +34,15 @@ def main(argv):
           as_exe = as64
         else:
           raise getopt.error('Unknown target architecture ' + val)
-        # endif
       elif opt == '-p':
         nacl_path = (val)
-      # endif
-    # endfor
 
     if nacl_build_subarch == 0:
       raise getopt.error( 'You must specify a build architecture: '
                           + 'either -a Win32 or -a x64' )
-    # endif
 
     if output_filename is None:
       raise getopt.error( 'No output file specified' )
-    # endif
 
     for filename in args:
       # normalize the filename to avoid any DOS-type funkiness
@@ -125,17 +120,12 @@ def main(argv):
         print >>sys.stderr, 'FAILED: %s\n' % ' '.join(as_command)
         return as_status
 
-    # endfor
-
   except getopt.error, e:
     print >>sys.stderr, str(e)
     print >>sys.stderr, ['Usage: ',
       argv[0],
       '-a {Win32|x64} -o output_file [-p native_client_path] input_file']
-  # endtry
 
-# enddef
 
 if __name__ == '__main__':
   sys.exit(main(sys.argv))
-# endif
