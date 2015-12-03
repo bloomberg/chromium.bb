@@ -230,22 +230,21 @@ void CanonicalizeUrl(const GURL& url,
                         &parsed);
 
   // 3. In hostname, remove all leading and trailing dots.
-  const std::string host =
-      (parsed.host.len > 0)
-          ? url_unescaped_str.substr(parsed.host.begin, parsed.host.len)
-          : std::string();
-  std::string host_without_end_dots;
-  base::TrimString(host, ".", &host_without_end_dots);
+  base::StringPiece host;
+  if (parsed.host.len > 0)
+    host.set(url_unescaped_str.data() + parsed.host.begin, parsed.host.len);
+
+  base::StringPiece host_without_end_dots =
+      base::TrimString(host, ".", base::TrimPositions::TRIM_ALL);
 
   // 4. In hostname, replace consecutive dots with a single dot.
   std::string host_without_consecutive_dots(RemoveConsecutiveChars(
       host_without_end_dots, '.'));
 
   // 5. In path, replace runs of consecutive slashes with a single slash.
-  std::string path =
-      (parsed.path.len > 0)
-          ? url_unescaped_str.substr(parsed.path.begin, parsed.path.len)
-          : std::string();
+  base::StringPiece path;
+  if (parsed.path.len > 0)
+    path.set(url_unescaped_str.data() + parsed.path.begin, parsed.path.len);
   std::string path_without_consecutive_slash(RemoveConsecutiveChars(path, '/'));
 
   url::Replacements<char> hp_replacements;
