@@ -333,6 +333,15 @@ class HistoryURLProvider : public HistoryProvider {
   // keep this member is so we can set the cancel bit on it.
   HistoryURLProviderParams* params_;
 
+  // Whether to query the history URL database to match.  Even if false, we
+  // still use the URL database to decide if the URL-what-you-typed was visited
+  // before or not.  If false, the only possible result that HistoryURL provider
+  // can return is URL-what-you-typed.  This variable is not part of params_
+  // because it never changes after the HistoryURLProvider is initialized.
+  // It's used to aid the possible transition to get all URLs from history to
+  // be scored in the HistoryQuick provider only.
+  bool search_url_database_;
+
   // Params controlling experimental behavior of this provider.
   HUPScoringParams scoring_params_;
 

@@ -461,7 +461,8 @@ HistoryURLProvider::HistoryURLProvider(AutocompleteProviderClient* client,
                                        AutocompleteProviderListener* listener)
     : HistoryProvider(AutocompleteProvider::TYPE_HISTORY_URL, client),
       listener_(listener),
-      params_(NULL) {
+      params_(NULL),
+      search_url_database_(OmniboxFieldTrial::HUPSearchDatabase()) {
   // Initialize the default HUP scoring params.
   OmniboxFieldTrial::GetDefaultHUPScoringParams(&scoring_params_);
   // Initialize HUP scoring params based on the current experiment.
@@ -557,7 +558,7 @@ void HistoryURLProvider::Start(const AutocompleteInput& input,
 
   // Pass 2: Ask the history service to call us back on the history thread,
   // where we can read the full on-disk DB.
-  if (input.want_asynchronous_matches()) {
+  if (search_url_database_ && input.want_asynchronous_matches()) {
     done_ = false;
     params_ = params.release();  // This object will be destroyed in
                                  // QueryComplete() once we're done with it.
@@ -712,35 +713,38 @@ void HistoryURLProvider::DoAutocomplete(history::HistoryBackend* backend,
   // Get the matching URLs from the DB.
   params->matches.clear();
   history::URLRows url_matches;
-  const URLPrefixes& prefixes = URLPrefix::GetURLPrefixes();
-  for (URLPrefixes::const_iterator i(prefixes.begin()); i != prefixes.end();
-       ++i) {
-    if (params->cancel_flag.IsSet())
-      return;  // Canceled in the middle of a query, give up.
 
-    // We only need kMaxMatches results in the end, but before we get there we
-    // need to promote lower-quality matches that are prefixes of higher-quality
-    // matches, and remove lower-quality redirects.  So we ask for more results
-    // than we need, of every prefix type, in hopes this will give us far more
-    // than enough to work with.  CullRedirects() will then reduce the list to
-    // the best kMaxMatches results.
-    db->AutocompleteForPrefix(
-        base::UTF16ToUTF8(i->prefix + params->input.text()), kMaxMatches * 2,
-        !backend, &url_matches);
-    for (history::URLRows::const_iterator j(url_matches.begin());
-          j != url_matches.end(); ++j) {
-      const URLPrefix* best_prefix = URLPrefix::BestURLPrefix(
-          base::UTF8ToUTF16(j->url().spec()), base::string16());
-      DCHECK(best_prefix);
-      params->matches.push_back(history::HistoryMatch(
-          *j, i->prefix.length(), !i->num_components,
-          i->num_components >= best_prefix->num_components));
+  if (search_url_database_) {
+    const URLPrefixes& prefixes = URLPrefix::GetURLPrefixes();
+    for (URLPrefixes::const_iterator i(prefixes.begin()); i != prefixes.end();
+         ++i) {
+      if (params->cancel_flag.IsSet())
+        return;  // Canceled in the middle of a query, give up.
+
+      // We only need kMaxMatches results in the end, but before we get there we
+      // need to promote lower-quality matches that are prefixes of higher-
+      // quality matches, and remove lower-quality redirects.  So we ask for
+      // more results than we need, of every prefix type, in hopes this will
+      // give us far more than enough to work with.  CullRedirects() will then
+      // reduce the list to the best kMaxMatches results.
+      db->AutocompleteForPrefix(
+          base::UTF16ToUTF8(i->prefix + params->input.text()), kMaxMatches * 2,
+          !backend, &url_matches);
+      for (history::URLRows::const_iterator j(url_matches.begin());
+           j != url_matches.end(); ++j) {
+        const URLPrefix* best_prefix = URLPrefix::BestURLPrefix(
+            base::UTF8ToUTF16(j->url().spec()), base::string16());
+        DCHECK(best_prefix);
+        params->matches.push_back(history::HistoryMatch(
+            *j, i->prefix.length(), !i->num_components,
+            i->num_components >= best_prefix->num_components));
+      }
     }
-  }
 
-  // Create sorted list of suggestions.
-  CullPoorMatches(params);
-  SortAndDedupMatches(&params->matches);
+    // Create sorted list of suggestions.
+    CullPoorMatches(params);
+    SortAndDedupMatches(&params->matches);
+  }
 
   // Try to create a shorter suggestion from the best match.
   // We consider the what you typed match eligible for display when it's

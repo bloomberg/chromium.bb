@@ -303,14 +303,20 @@ class OmniboxFieldTrial {
   static size_t HQPNumTitleWordsToAllow();
 
   // ---------------------------------------------------------
-  // For the HQPAlsoDoHUPLikeScoring experiment that's part of the
-  // bundled omnibox field trial.
+  // For the replace HUP experiment that's part of the bundled omnibox field
+  // trial.
 
   // Returns whether HistoryQuick provider (HQP) should attempt to score
   // suggestions also with a HistoryURL-provider-like (HUP-like) mode, and
   // assign suggestions the max of this score and the normal score.
   // Returns false if the experiment isn't active.
   static bool HQPAlsoDoHUPLikeScoring();
+
+  // Returns whether HistoryURL provider (HUP) should search its database for
+  // URLs and suggest them.  If false, HistoryURL provider merely creates the
+  // URL-what-you-typed match when appropriate.  Return true if the experiment
+  // isn't active.
+  static bool HUPSearchDatabase();
 
   // ---------------------------------------------------------
   // For the PreventUWYTDefaultForNonURLInputs experiment that's part of the
@@ -367,6 +373,7 @@ class OmniboxFieldTrial {
   static const char kHQPFixFewVisitsBugRule[];
   static const char kHQPNumTitleWordsRule[];
   static const char kHQPAlsoDoHUPLikeScoringRule[];
+  static const char kHUPSearchDatabaseRule[];
   static const char kPreventUWYTDefaultForNonURLInputsRule[];
   static const char kKeywordRequiresRegistryRule[];
   static const char kKeywordRequiresPrefixMatchRule[];

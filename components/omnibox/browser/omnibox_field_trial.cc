@@ -440,6 +440,13 @@ bool OmniboxFieldTrial::HQPAlsoDoHUPLikeScoring() {
       kHQPAlsoDoHUPLikeScoringRule) == "true";
 }
 
+bool OmniboxFieldTrial::HUPSearchDatabase() {
+  const std::string& value = variations::GetVariationParamValue(
+      kBundledExperimentFieldTrialName,
+      kHUPSearchDatabaseRule);
+  return value.empty() || (value == "true");
+}
+
 bool OmniboxFieldTrial::PreventUWYTDefaultForNonURLInputs() {
   return variations::GetVariationParamValue(
       kBundledExperimentFieldTrialName,
@@ -503,6 +510,8 @@ const char OmniboxFieldTrial::kHQPFixFewVisitsBugRule[] = "HQPFixFewVisitsBug";
 const char OmniboxFieldTrial::kHQPNumTitleWordsRule[] = "HQPNumTitleWords";
 const char OmniboxFieldTrial::kHQPAlsoDoHUPLikeScoringRule[] =
     "HQPAlsoDoHUPLikeScoring";
+const char OmniboxFieldTrial::kHUPSearchDatabaseRule[] =
+    "HUPSearchDatabase";
 const char OmniboxFieldTrial::kPreventUWYTDefaultForNonURLInputsRule[] =
     "PreventUWYTDefaultForNonURLInputs";
 const char OmniboxFieldTrial::kKeywordRequiresRegistryRule[] =
