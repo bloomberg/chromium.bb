@@ -105,11 +105,32 @@ void CollectForScenario(std::map<RenderFrameHost*, GURL>* frame_urls,
   (*frame_urls)[frame] = site;
 }
 
+content::SiteInstance* DeterminePrimarySiteInstance(
+    content::SiteInstance* instance,
+    SiteData* site_data) {
+  // Find the BrowsingInstance this WebContents belongs to by iterating over
+  // the "primary" SiteInstances of each BrowsingInstance we've seen so far.
+  for (auto& existing_site_instance : site_data->instances) {
+    if (instance->IsRelatedSiteInstance(existing_site_instance.first)) {
+      existing_site_instance.second.insert(instance);
+      return existing_site_instance.first;
+    }
+  }
+
+  // Add |instance| as the "primary" SiteInstance of a new BrowsingInstance.
+  site_data->instances[instance].clear();
+  site_data->instances[instance].insert(instance);
+
+  return instance;
+}
+
 void CollectCurrentSnapshot(SiteData* site_data, RenderFrameHost* frame) {
   if (frame->GetParent()) {
     if (frame->GetSiteInstance() != frame->GetParent()->GetSiteInstance())
       site_data->out_of_process_frames++;
   }
+
+  DeterminePrimarySiteInstance(frame->GetSiteInstance(), site_data);
 }
 
 }  // namespace
@@ -132,21 +153,8 @@ SiteDetails::~SiteDetails() {}
 void SiteDetails::CollectSiteInfo(WebContents* contents,
                                   SiteData* site_data) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // Find the BrowsingInstance this WebContents belongs to by iterating over
-  // the "primary" SiteInstances of each BrowsingInstance we've seen so far.
-  SiteInstance* instance = contents->GetSiteInstance();
-  SiteInstance* primary = NULL;
-  for (SiteInstance* already_collected_instance : site_data->instances) {
-    if (instance->IsRelatedSiteInstance(already_collected_instance)) {
-      primary = already_collected_instance;
-      break;
-    }
-  }
-  if (!primary) {
-    // Remember this as the "primary" SiteInstance of a new BrowsingInstance.
-    primary = instance;
-    site_data->instances.push_back(instance);
-  }
+  SiteInstance* primary =
+      DeterminePrimarySiteInstance(contents->GetSiteInstance(), site_data);
 
   // Now keep track of how many sites we have in this BrowsingInstance (and
   // overall), including sites in iframes.
@@ -185,6 +193,10 @@ void SiteDetails::UpdateHistograms(
     }
     num_browsing_instances += i->second.scenarios[ISOLATE_ALL_SITES]
                                   .browsing_instance_site_map.size();
+    for (const auto& site_instance : i->second.instances) {
+      UMA_HISTOGRAM_COUNTS_100("SiteIsolation.SiteInstancesPerBrowsingInstance",
+                               site_instance.second.size());
+    }
     num_oopifs += i->second.out_of_process_frames;
   }
 

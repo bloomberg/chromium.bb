@@ -1035,3 +1035,163 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, VerifyFieldTrialGroup) {
 
   EXPECT_TRUE(IsInTrialGroup("SiteIsolationExtensionsActive", group));
 }
+
+// Verifies that the UMA counter for SiteInstances in a BrowsingInstance is
+// correct when using tabs with web pages.
+IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest,
+                       VerifySiteInstanceCountInBrowsingInstance) {
+  // Page with 14 nested oopifs across 9 sites (a.com through i.com).
+  GURL abcdefghi_url = embedded_test_server()->GetURL(
+      "a.com",
+      "/cross_site_iframe_factory.html?a(b(a(b,c,d,e,f,g,h)),c,d,e,i(f))");
+  ui_test_utils::NavigateToURL(browser(), abcdefghi_url);
+
+  // Get the metrics.
+  scoped_refptr<TestMemoryDetails> details = new TestMemoryDetails();
+  details->StartFetchAndWait();
+  if (content::AreAllSitesIsolatedForTesting()) {
+    EXPECT_THAT(details->uma()->GetAllSamples(
+                    "SiteIsolation.SiteInstancesPerBrowsingInstance"),
+                ElementsAre(Bucket(9, 1)));
+  } else {
+    // Since there are no extensions involved, the results in the default case
+    // and extensions::IsIsolateExtensionsEnabled() are the same.
+    EXPECT_THAT(details->uma()->GetAllSamples(
+                    "SiteIsolation.SiteInstancesPerBrowsingInstance"),
+                ElementsAre(Bucket(1, 1)));
+  }
+
+  // Open another tab through window.open(), which will be in the same
+  // BrowsingInstance.
+  GURL dcbae_url = embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?d(c(b(j(k))))");
+  ui_test_utils::UrlLoadObserver load_complete(
+      dcbae_url, content::NotificationService::AllSources());
+  ASSERT_EQ(1, browser()->tab_strip_model()->count());
+  ASSERT_TRUE(content::ExecuteScript(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      "window.open('" + dcbae_url.spec() + "');"));
+  ASSERT_EQ(2, browser()->tab_strip_model()->count());
+  load_complete.Wait();
+
+  details = new TestMemoryDetails();
+  details->StartFetchAndWait();
+  if (content::AreAllSitesIsolatedForTesting()) {
+    EXPECT_THAT(details->uma()->GetAllSamples(
+                    "SiteIsolation.SiteInstancesPerBrowsingInstance"),
+                ElementsAre(Bucket(11, 1)));
+  } else {
+    EXPECT_THAT(details->uma()->GetAllSamples(
+                    "SiteIsolation.SiteInstancesPerBrowsingInstance"),
+                ElementsAre(Bucket(1, 1)));
+  }
+
+  // Open a tab, which will be in a different BrowsingInstance.
+  GURL abcd_url = embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b(c(d())))");
+  AddTabAtIndex(1, abcd_url, ui::PAGE_TRANSITION_TYPED);
+
+  details = new TestMemoryDetails();
+  details->StartFetchAndWait();
+  if (content::AreAllSitesIsolatedForTesting()) {
+    EXPECT_THAT(details->uma()->GetAllSamples(
+                    "SiteIsolation.SiteInstancesPerBrowsingInstance"),
+                ElementsAre(Bucket(4, 1), Bucket(11, 1)));
+  } else {
+    EXPECT_THAT(details->uma()->GetAllSamples(
+                    "SiteIsolation.SiteInstancesPerBrowsingInstance"),
+                ElementsAre(Bucket(1, 2)));
+  }
+}
+
+// Verifies that the UMA counter for SiteInstances in a BrowsingInstance is
+// correct when extensions and web pages are mixed together.
+IN_PROC_BROWSER_TEST_F(
+    SiteDetailsBrowserTest,
+    VerifySiteInstanceCountInBrowsingInstanceWithExtensions) {
+  // Open two a.com tabs (with cross site http iframes). IsolateExtensions mode
+  // should have no effect so far, since there are no frames straddling the
+  // extension/web boundary.
+  GURL tab_url = embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b,c,d(e))");
+  ui_test_utils::NavigateToURL(browser(), tab_url);
+  WebContents* tab = browser()->tab_strip_model()->GetWebContentsAt(0);
+  scoped_refptr<TestMemoryDetails> details = new TestMemoryDetails();
+  details->StartFetchAndWait();
+  if (content::AreAllSitesIsolatedForTesting()) {
+    EXPECT_THAT(details->uma()->GetAllSamples(
+                    "SiteIsolation.SiteInstancesPerBrowsingInstance"),
+                ElementsAre(Bucket(5, 1)));
+  } else {
+    // Since there are no extensions loaded yet, the results in the default case
+    // and extensions::IsIsolateExtensionsEnabled() are the same.
+    EXPECT_THAT(details->uma()->GetAllSamples(
+                    "SiteIsolation.SiteInstancesPerBrowsingInstance"),
+                ElementsAre(Bucket(1, 1)));
+  }
+
+  // Load an extension without a background page, which will avoid creating a
+  // BrowsingInstance for it.
+  const Extension* extension1 = CreateExtension("Extension One", false);
+
+  // Navigate the tab's first iframe to a resource of the extension. The
+  // extension iframe will be put in a separate BrowsingInstance (see
+  // https://crbug.com/522302) unless in the default process model.
+  content::NavigateIframeToURL(
+      tab, "child-0", extension1->GetResourceURL("/blank_iframe.html"));
+  details = new TestMemoryDetails();
+  details->StartFetchAndWait();
+  if (content::AreAllSitesIsolatedForTesting()) {
+    EXPECT_THAT(details->uma()->GetAllSamples(
+                    "SiteIsolation.SiteInstancesPerBrowsingInstance"),
+                ElementsAre(Bucket(1, 1), Bucket(4, 1)));
+  } else if (extensions::IsIsolateExtensionsEnabled()) {
+    EXPECT_THAT(details->uma()->GetAllSamples(
+                    "SiteIsolation.SiteInstancesPerBrowsingInstance"),
+                ElementsAre(Bucket(1, 2)));
+  } else {
+    EXPECT_THAT(details->uma()->GetAllSamples(
+                    "SiteIsolation.SiteInstancesPerBrowsingInstance"),
+                ElementsAre(Bucket(1, 1)));
+  }
+
+  // Now load an extension with a background page. This will result in a
+  // BrowsingInstance for the background page.
+  const Extension* extension2 = CreateExtension("Extension One", true);
+  details = new TestMemoryDetails();
+  details->StartFetchAndWait();
+  if (content::AreAllSitesIsolatedForTesting()) {
+    EXPECT_THAT(details->uma()->GetAllSamples(
+                    "SiteIsolation.SiteInstancesPerBrowsingInstance"),
+                ElementsAre(Bucket(1, 2), Bucket(4, 1)));
+  } else if (extensions::IsIsolateExtensionsEnabled()) {
+    EXPECT_THAT(details->uma()->GetAllSamples(
+                    "SiteIsolation.SiteInstancesPerBrowsingInstance"),
+                ElementsAre(Bucket(1, 3)));
+  } else {
+    EXPECT_THAT(details->uma()->GetAllSamples(
+                    "SiteIsolation.SiteInstancesPerBrowsingInstance"),
+                ElementsAre(Bucket(1, 2)));
+  }
+
+  // Navigate the second iframe of the tab to the second extension. This will
+  // create a new BrowsingInstance again due to https://crbug.com/522302 for
+  // --site-per-process and --isolate-extensions.
+  content::NavigateIframeToURL(
+      tab, "child-1", extension2->GetResourceURL("/blank_iframe.html"));
+  details = new TestMemoryDetails();
+  details->StartFetchAndWait();
+  if (content::AreAllSitesIsolatedForTesting()) {
+    EXPECT_THAT(details->uma()->GetAllSamples(
+                    "SiteIsolation.SiteInstancesPerBrowsingInstance"),
+                ElementsAre(Bucket(1, 3), Bucket(3, 1)));
+  } else if (extensions::IsIsolateExtensionsEnabled()) {
+    EXPECT_THAT(details->uma()->GetAllSamples(
+                    "SiteIsolation.SiteInstancesPerBrowsingInstance"),
+                ElementsAre(Bucket(1, 4)));
+  } else {
+    EXPECT_THAT(details->uma()->GetAllSamples(
+                    "SiteIsolation.SiteInstancesPerBrowsingInstance"),
+                ElementsAre(Bucket(1, 2)));
+  }
+}

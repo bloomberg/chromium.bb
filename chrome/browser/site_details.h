@@ -11,7 +11,12 @@
 #include "content/public/browser/web_contents.h"
 
 // Maps an ID representing each BrowsingInstance to a set of site URLs.
-typedef base::hash_map<int32, std::set<GURL>> BrowsingInstanceSiteMap;
+using BrowsingInstanceSiteMap = base::hash_map<int32, std::set<GURL>>;
+
+// Maps a SiteInstance to a set of all SiteInstances in the same
+// BrowsingInstance.
+using SiteInstanceMap =
+    base::hash_map<content::SiteInstance*, std::set<content::SiteInstance*>>;
 
 // This enum represents various alternative process model policies that we want
 // to evaluate. We'll estimate the process cost of each scenario.
@@ -44,7 +49,9 @@ struct SiteData {
   IsolationScenario scenarios[ISOLATION_SCENARIO_LAST + 1];
 
   // Global list of all SiteInstances, used for de-duping related instances.
-  std::vector<content::SiteInstance*> instances;
+  // It also keeps a set of all SiteInstances in the BrowsingInstance identified
+  // by the SiteInstance used as the key.
+  SiteInstanceMap instances;
 
   // A count of all RenderFrameHosts, which are in a different SiteInstance from
   // their parents.
