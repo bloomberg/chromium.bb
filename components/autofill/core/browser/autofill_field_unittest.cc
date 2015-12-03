@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/common/autofill_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::ASCIIToUTF16;
@@ -129,9 +130,43 @@ TEST(AutofillFieldTest, IsFieldFillable) {
   field.set_server_type(NAME_LAST);
   EXPECT_TRUE(field.IsFieldFillable());
 
-  // Field has autocomplete="off" set. Chrome ignores the attribute.
+  // Field has autocomplete="off" set. Since autofill was able to make a
+  // prediction, it is still considered a fillable field.
   field.should_autocomplete = false;
   EXPECT_TRUE(field.IsFieldFillable());
+}
+
+// Verify that non credit card related fields with the autocomplete attribute
+// set to off don't get filled on desktop.
+TEST(AutofillFieldTest, FillFormField_AutocompleteOff_AddressField) {
+  AutofillField field;
+  field.should_autocomplete = false;
+
+  // Non credit card related field.
+  AutofillField::FillFormField(field, ASCIIToUTF16("Test"), "en-US", "en-US",
+                               &field);
+
+  // Verifiy that the field is filled on mobile but not on desktop.
+  if (IsDesktopPlatform()) {
+    EXPECT_EQ(base::string16(), field.value);
+  } else {
+    EXPECT_EQ(ASCIIToUTF16("Test"), field.value);
+  }
+}
+
+// Verify that credit card related fields with the autocomplete attribute
+// set to off get filled.
+TEST(AutofillFieldTest, FillFormField_AutocompleteOff_CreditCardField) {
+  AutofillField field;
+  field.should_autocomplete = false;
+
+  // Credit card related field.
+  field.set_heuristic_type(CREDIT_CARD_NUMBER);
+  AutofillField::FillFormField(field, ASCIIToUTF16("4111111111111111"), "en-US",
+                               "en-US", &field);
+
+  // Verify that the field is filled.
+  EXPECT_EQ(ASCIIToUTF16("4111111111111111"), field.value);
 }
 
 TEST(AutofillFieldTest, FillPhoneNumber) {

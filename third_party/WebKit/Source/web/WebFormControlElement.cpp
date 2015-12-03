@@ -83,6 +83,8 @@ bool WebFormControlElement::autoComplete() const
         return constUnwrap<HTMLInputElement>()->shouldAutocomplete();
     if (isHTMLTextAreaElement(*m_private))
         return constUnwrap<HTMLTextAreaElement>()->shouldAutocomplete();
+    if (isHTMLSelectElement(*m_private))
+        return constUnwrap<HTMLSelectElement>()->shouldAutocomplete();
     return false;
 }
 

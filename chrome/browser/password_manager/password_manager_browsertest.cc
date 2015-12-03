@@ -1433,7 +1433,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
-                       AutofillSuggetionsForPasswordFormWithoutUsernameField) {
+                       AutofillSuggestionsForPasswordFormWithoutUsernameField) {
   std::string submit =
       "document.getElementById('password').value = 'mypassword';"
       "document.getElementById('submit-button').click();";
@@ -1795,7 +1795,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
 // Tests that if a site embeds the login and signup forms into one <form>, the
 // login form still gets autofilled.
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
-                       AutofillSuggetionsForLoginSignupForm) {
+                       AutofillSuggestionsForLoginSignupForm) {
   std::string submit =
       "document.getElementById('username').value = 'myusername';"
       "document.getElementById('password').value = 'mypassword';"
@@ -2261,7 +2261,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
 // ambiguity in id attribute gets autofilled correctly.
 IN_PROC_BROWSER_TEST_F(
     PasswordManagerBrowserTestBase,
-    AutofillSuggetionsForPasswordFormWithAmbiguousIdAttribute) {
+    AutofillSuggestionsForPasswordFormWithAmbiguousIdAttribute) {
   // At first let us save credentials to the PasswordManager.
   scoped_refptr<password_manager::PasswordStore> password_store =
       PasswordStoreFactory::GetForProfile(browser()->profile(),
@@ -2309,7 +2309,7 @@ IN_PROC_BROWSER_TEST_F(
 // name and id attribute gets autofilled correctly.
 IN_PROC_BROWSER_TEST_F(
     PasswordManagerBrowserTestBase,
-    AutofillSuggetionsForPasswordFormWithoutNameOrIdAttribute) {
+    AutofillSuggestionsForPasswordFormWithoutNameOrIdAttribute) {
   // At first let us save credentials to the PasswordManager.
   scoped_refptr<password_manager::PasswordStore> password_store =
       PasswordStoreFactory::GetForProfile(browser()->profile(),
@@ -2356,7 +2356,7 @@ IN_PROC_BROWSER_TEST_F(
 // Test whether the change password form having username and password fields
 // without name and id attribute gets autofilled correctly.
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
-                       AutofillSuggetionsForChangePwdWithEmptyNames) {
+                       AutofillSuggestionsForChangePwdWithEmptyNames) {
   // At first let us save credentials to the PasswordManager.
   scoped_refptr<password_manager::PasswordStore> password_store =
       PasswordStoreFactory::GetForProfile(browser()->profile(),
@@ -2416,7 +2416,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
 // correctly.
 IN_PROC_BROWSER_TEST_F(
     PasswordManagerBrowserTestBase,
-    AutofillSuggetionsForChangePwdWithEmptyNamesAndAutocomplete) {
+    AutofillSuggestionsForChangePwdWithEmptyNamesAndAutocomplete) {
   // At first let us save credentials to the PasswordManager.
   scoped_refptr<password_manager::PasswordStore> password_store =
       PasswordStoreFactory::GetForProfile(browser()->profile(),
@@ -2473,7 +2473,7 @@ IN_PROC_BROWSER_TEST_F(
 // |autocomplete='new-password'| atrribute do not get autofilled.
 IN_PROC_BROWSER_TEST_F(
     PasswordManagerBrowserTestBase,
-    AutofillSuggetionsForChangePwdWithEmptyNamesButOnlyNewPwdField) {
+    AutofillSuggestionsForChangePwdWithEmptyNamesButOnlyNewPwdField) {
   // At first let us save credentials to the PasswordManager.
   scoped_refptr<password_manager::PasswordStore> password_store =
       PasswordStoreFactory::GetForProfile(browser()->profile(),
@@ -2588,10 +2588,10 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
 // Test whether the password form which is loaded as hidden is autofilled
 // correctly. This happens very often in situations when in order to sign-in the
 // user clicks a sign-in button and a hidden passsword form becomes visible.
-// This test differs from AutofillSuggetionsForProblematicPasswordForm in that
+// This test differs from AutofillSuggestionsForProblematicPasswordForm in that
 // the form is hidden and in that test only some fields are hidden.
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
-                       AutofillSuggetionsHiddenPasswordForm) {
+                       AutofillSuggestionsHiddenPasswordForm) {
   // At first let us save credentials to the PasswordManager.
   scoped_refptr<password_manager::PasswordStore> password_store =
       PasswordStoreFactory::GetForProfile(browser()->profile(),
@@ -2638,7 +2638,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
 // Test whether the password form with the problematic invisible password field
 // gets autofilled correctly.
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
-                       AutofillSuggetionsForProblematicPasswordForm) {
+                       AutofillSuggestionsForProblematicPasswordForm) {
   // At first let us save credentials to the PasswordManager.
   scoped_refptr<password_manager::PasswordStore> password_store =
       PasswordStoreFactory::GetForProfile(browser()->profile(),
@@ -2685,7 +2685,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
 // Test whether the password form with the problematic invisible password field
 // in ambiguous password form gets autofilled correctly.
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
-                       AutofillSuggetionsForProblematicAmbiguousPasswordForm) {
+                       AutofillSuggestionsForProblematicAmbiguousPasswordForm) {
   // At first let us save credentials to the PasswordManager.
   scoped_refptr<password_manager::PasswordStore> password_store =
       PasswordStoreFactory::GetForProfile(browser()->profile(),
@@ -2870,5 +2870,36 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
                              base::ASCIIToUTF16("new_pw"));
 }
 #endif
+
+// Tests that the prompt to save the password is still shown if the fields have
+// the "autocomplete" attribute set off.
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
+                       PromptForSubmitWithAutocompleteOff) {
+  NavigateToFile("/password/password_autocomplete_off_test.html");
+
+  NavigationObserver observer(WebContents());
+  scoped_ptr<PromptObserver> prompt_observer(
+      PromptObserver::Create(WebContents()));
+  std::string fill_and_submit =
+      "document.getElementById('username').value = 'temp';"
+      "document.getElementById('password').value = 'random';"
+      "document.getElementById('submit').click()";
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  observer.Wait();
+  EXPECT_TRUE(prompt_observer->IsShowingPrompt());
+}
+
+// Tests that password suggestions still work if the fields have the
+// "autocomplete" attribute set to off.
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
+                       AutofillSuggestionsForPasswordFormWithAutocompleteOff) {
+  std::string submit =
+      "document.getElementById('username').value = 'temp';"
+      "document.getElementById('password').value = 'mypassword';"
+      "document.getElementById('submit').click();";
+  VerifyPasswordIsSavedAndFilled(
+      "/password/password_autocomplete_off_test.html", submit, "password",
+      "mypassword");
+}
 
 }  // namespace password_manager

@@ -20,6 +20,7 @@
 #include "components/autofill/core/browser/state_names.h"
 #include "components/autofill/core/common/autofill_l10n_util.h"
 #include "components/autofill/core/common/autofill_switches.h"
+#include "components/autofill/core/common/autofill_util.h"
 #include "grit/components_strings.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_data.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_formatter.h"
@@ -499,6 +500,13 @@ bool AutofillField::FillFormField(const AutofillField& field,
                                   const std::string& app_locale,
                                   FormFieldData* field_data) {
   AutofillType type = field.Type();
+
+  // Don't fill if autocomplete=off is set on |field| on desktop for non credit
+  // card related fields.
+  if (!field.should_autocomplete && IsDesktopPlatform() &&
+      (type.group() != CREDIT_CARD)) {
+    return false;
+  }
 
   if (type.GetStorableType() == PHONE_HOME_NUMBER) {
     FillPhoneNumberField(field, value, field_data);

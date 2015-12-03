@@ -2068,6 +2068,67 @@ TEST_F(FormAutofillTest, WebFormElementToFormDataTooManyFields) {
                                         &field));
 }
 
+// Tests that the |should_autocomplete| is set to false for all the fields when
+// an autocomplete='off' attribute is set for the form in HTML.
+TEST_F(FormAutofillTest, WebFormElementToFormData_AutocompleteOff_OnForm) {
+  LoadHTML(
+      "<FORM name='TestForm' id='form' action='http://cnn.com' method='post' "
+      "autocomplete='off'>"
+      "  <LABEL for='firstname'>First name:</LABEL>"
+      "    <INPUT type='text' id='firstname' value='John'/>"
+      "  <LABEL for='lastname'>Last name:</LABEL>"
+      "    <INPUT type='text' id='lastname' value='Smith'/>"
+      "  <LABEL for='street-address'>Address:</LABEL>"
+      "    <INPUT type='text' id='addressline1' value='123 Test st.'/>"
+      "</FORM>");
+
+  WebFrame* frame = GetMainFrame();
+  ASSERT_NE(nullptr, frame);
+
+  WebFormElement web_form =
+      frame->document().getElementById("form").to<WebFormElement>();
+  ASSERT_FALSE(web_form.isNull());
+
+  FormData form;
+  EXPECT_TRUE(WebFormElementToFormData(web_form, WebFormControlElement(),
+                                       EXTRACT_NONE, &form, nullptr));
+
+  for (const FormFieldData& field : form.fields) {
+    EXPECT_FALSE(field.should_autocomplete);
+  }
+}
+
+// Tests that the |should_autocomplete| is set to false only for the field
+// which has an autocomplete='off' attribute set for it in HTML.
+TEST_F(FormAutofillTest, WebFormElementToFormData_AutocompleteOff_OnField) {
+  LoadHTML(
+      "<FORM name='TestForm' id='form' action='http://cnn.com' method='post'>"
+      "  <LABEL for='firstname'>First name:</LABEL>"
+      "    <INPUT type='text' id='firstname' value='John' autocomplete='off'/>"
+      "  <LABEL for='lastname'>Last name:</LABEL>"
+      "    <INPUT type='text' id='lastname' value='Smith'/>"
+      "  <LABEL for='street-address'>Address:</LABEL>"
+      "    <INPUT type='text' id='addressline1' value='123 Test st.'/>"
+      "</FORM>");
+
+  WebFrame* frame = GetMainFrame();
+  ASSERT_NE(nullptr, frame);
+
+  WebFormElement web_form =
+      frame->document().getElementById("form").to<WebFormElement>();
+  ASSERT_FALSE(web_form.isNull());
+
+  FormData form;
+  EXPECT_TRUE(WebFormElementToFormData(web_form, WebFormControlElement(),
+                                       EXTRACT_NONE, &form, nullptr));
+
+  ASSERT_EQ(3U, form.fields.size());
+
+  EXPECT_FALSE(form.fields[0].should_autocomplete);
+  EXPECT_TRUE(form.fields[1].should_autocomplete);
+  EXPECT_TRUE(form.fields[2].should_autocomplete);
+}
+
 TEST_F(FormAutofillTest, ExtractForms) {
   ExpectJohnSmithLabels(
       "<FORM name='TestForm' action='http://cnn.com' method='post'>"

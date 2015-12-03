@@ -96,4 +96,12 @@ size_t GetTextSelectionStart(const base::string16& suggestion,
   return base::string16::npos;
 }
 
+bool IsDesktopPlatform() {
+#if defined(OS_ANDROID) || defined(OS_IOS)
+  return false;
+#else
+  return true;
+#endif
+}
+
 }  // namespace autofill

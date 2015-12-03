@@ -36,6 +36,10 @@ size_t GetTextSelectionStart(const base::string16& suggestion,
                              const base::string16& field_contents,
                              bool case_sensitive);
 
+// Returns true if running on a desktop platform. Any platform that is not
+// Android or iOS is considered desktop.
+bool IsDesktopPlatform();
+
 }  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_CORE_COMMON_AUTOFILL_UTIL_H_
