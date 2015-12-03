@@ -1,0 +1,22 @@
+<!doctype html>
+<title>Verifies there are no spurious repaints audio in an invisible video tag.</title>
+<script src="../fast/repaint/resources/text-based-repaint.js"></script>
+<video></video>
+<script>
+window.enablePixelTesting = false;
+window.testIsAsync = true;
+var video = document.querySelector('video');
+
+function repaintTest() {
+  video.play();
+}
+
+video.addEventListener('loadedmetadata', function() {
+    video.addEventListener('ended', function(e) {
+        finishRepaintTest();
+    }, false);
+    runRepaintTest();
+}, false);
+
+video.src = 'content/silence.wav';
+</script>

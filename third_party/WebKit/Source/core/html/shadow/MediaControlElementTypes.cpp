@@ -97,6 +97,8 @@ void MediaControlElement::setDoesFit(bool fits)
 
 void MediaControlElement::setIsWanted(bool wanted)
 {
+    if (m_isWanted == wanted)
+        return;
     m_isWanted = wanted;
     updateShownState();
 }
