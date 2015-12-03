@@ -92,7 +92,6 @@ class NET_EXPORT URLRequestContextBuilder {
     int quic_max_number_of_lossy_connections;
     float quic_packet_loss_threshold;
     QuicTagVector quic_connection_options;
-    std::string ssl_session_cache_shard;
   };
 
   URLRequestContextBuilder();
@@ -195,11 +194,6 @@ class NET_EXPORT URLRequestContextBuilder {
       const QuicTagVector& quic_connection_options) {
     http_network_session_params_.quic_connection_options =
         quic_connection_options;
-  }
-
-  void set_ssl_session_cache_shard(const std::string& ssl_session_cache_shard) {
-    http_network_session_params_.ssl_session_cache_shard =
-        ssl_session_cache_shard;
   }
 
   void set_quic_store_server_configs_in_properties(

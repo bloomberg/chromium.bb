@@ -428,7 +428,6 @@ void CrNetEnvironment::InitializeOnNetworkThread() {
   params.channel_id_service = main_context_->channel_id_service();
   params.transport_security_state = main_context_->transport_security_state();
   params.proxy_service = main_context_->proxy_service();
-  params.ssl_session_cache_shard = "";
   params.ssl_config_service = main_context_->ssl_config_service();
   params.http_auth_handler_factory = main_context_->http_auth_handler_factory();
   params.network_delegate = main_context_->network_delegate();

@@ -403,8 +403,6 @@ scoped_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
       http_network_session_params_.quic_packet_loss_threshold;
   network_session_params.quic_connection_options =
       http_network_session_params_.quic_connection_options;
-  network_session_params.ssl_session_cache_shard =
-      http_network_session_params_.ssl_session_cache_shard;
 
   storage->set_http_network_session(
       make_scoped_ptr(new HttpNetworkSession(network_session_params)));

@@ -8364,7 +8364,6 @@ TEST_F(HTTPSRequestTest, SSLSessionCacheShardTest) {
       default_context_.http_auth_handler_factory();
   params.network_delegate = &default_network_delegate_;
   params.http_server_properties = default_context_.http_server_properties();
-  params.ssl_session_cache_shard = "alternate";
 
   HttpNetworkSession network_session(params);
   scoped_ptr<HttpCache> cache(new HttpCache(

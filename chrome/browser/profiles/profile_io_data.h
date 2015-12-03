@@ -329,8 +329,6 @@ class ProfileIOData {
 
   explicit ProfileIOData(Profile::ProfileType profile_type);
 
-  static std::string GetSSLSessionCacheShard();
-
   void InitializeOnUIThread(Profile* profile);
   void ApplyProfileParamsToContext(net::URLRequestContext* context) const;
 

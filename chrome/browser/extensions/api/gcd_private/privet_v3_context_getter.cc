@@ -4,9 +4,7 @@
 
 #include "chrome/browser/extensions/api/gcd_private/privet_v3_context_getter.h"
 
-#include "base/atomicops.h"
 #include "base/command_line.h"
-#include "base/strings/string_number_conversions.h"
 #include "chrome/common/chrome_content_client.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_verifier.h"
@@ -16,11 +14,6 @@
 #include "net/url_request/url_request_context_builder.h"
 
 namespace extensions {
-
-namespace {
-// TODO(vitalybuka): crbug.com/458365 Move into URLRequestContextBuilder
-base::subtle::Atomic32 g_ssl_shard_counter = 0;
-}
 
 // Class verifies certificate by its fingerprint received using different
 // channel. It's the only know information about device with self-signed
@@ -109,10 +102,7 @@ void PrivetV3ContextGetter::InitOnNetThread() {
   DCHECK(net_task_runner_->BelongsToCurrentThread());
   if (!context_) {
     net::URLRequestContextBuilder builder;
-    std::string shard_name = "privet_v3_context_getter/";
-    shard_name += base::IntToString(
-        base::subtle::Barrier_AtomicIncrement(&g_ssl_shard_counter, 1));
-    builder.set_ssl_session_cache_shard(shard_name);
+
     builder.set_proxy_service(net::ProxyService::CreateDirect());
     builder.SetSpdyAndQuicEnabled(false, false);
     builder.DisableHttpCache();

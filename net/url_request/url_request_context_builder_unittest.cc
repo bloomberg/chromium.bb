@@ -111,14 +111,6 @@ TEST_F(URLRequestContextBuilderTest, ExtraHttpAuthHandlerFactory) {
                 "Bogus", HttpAuth::AUTH_SERVER, gurl, BoundNetLog(), &handler));
 }
 
-TEST_F(URLRequestContextBuilderTest, set_ssl_session_cache_shard) {
-  const char kTestShard[] = "test_shard";
-  builder_.set_ssl_session_cache_shard(kTestShard);
-  scoped_ptr<URLRequestContext> context(builder_.Build());
-  EXPECT_EQ(kTestShard,
-            context->GetNetworkSessionParams()->ssl_session_cache_shard);
-}
-
 }  // namespace
 
 }  // namespace net

@@ -6,11 +6,13 @@
 
 #include <utility>
 
+#include "base/atomic_sequence_num.h"
 #include "base/compiler_specific.h"
 #include "base/debug/stack_trace.h"
 #include "base/logging.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "net/http/http_auth_handler_factory.h"
@@ -34,9 +36,12 @@ namespace net {
 
 namespace {
 
+base::StaticAtomicSequenceNumber g_next_shard_id;
+
 ClientSocketPoolManager* CreateSocketPoolManager(
     HttpNetworkSession::SocketPoolType pool_type,
-    const HttpNetworkSession::Params& params) {
+    const HttpNetworkSession::Params& params,
+    const std::string& ssl_session_cache_shard) {
   // TODO(yutak): Differentiate WebSocket pool manager and allow more
   // simultaneous connections for WebSockets.
   return new ClientSocketPoolManagerImpl(
@@ -45,7 +50,7 @@ ClientSocketPoolManager* CreateSocketPoolManager(
                                    : ClientSocketFactory::GetDefaultFactory(),
       params.host_resolver, params.cert_verifier, params.channel_id_service,
       params.transport_security_state, params.cert_transparency_verifier,
-      params.cert_policy_enforcer, params.ssl_session_cache_shard,
+      params.cert_policy_enforcer, ssl_session_cache_shard,
       params.ssl_config_service, pool_type);
 }
 
@@ -134,10 +139,6 @@ HttpNetworkSession::HttpNetworkSession(const Params& params)
       http_auth_handler_factory_(params.http_auth_handler_factory),
       proxy_service_(params.proxy_service),
       ssl_config_service_(params.ssl_config_service),
-      normal_socket_pool_manager_(
-          CreateSocketPoolManager(NORMAL_SOCKET_POOL, params)),
-      websocket_socket_pool_manager_(
-          CreateSocketPoolManager(WEBSOCKET_SOCKET_POOL, params)),
       quic_stream_factory_(
           params.host_resolver,
           params.client_socket_factory
@@ -193,6 +194,13 @@ HttpNetworkSession::HttpNetworkSession(const Params& params)
   DCHECK(proxy_service_);
   DCHECK(ssl_config_service_.get());
   CHECK(http_server_properties_);
+
+  const std::string ssl_session_cache_shard =
+      "http_network_session/" + base::IntToString(g_next_shard_id.GetNext());
+  normal_socket_pool_manager_.reset(CreateSocketPoolManager(
+      NORMAL_SOCKET_POOL, params, ssl_session_cache_shard));
+  websocket_socket_pool_manager_.reset(CreateSocketPoolManager(
+      WEBSOCKET_SOCKET_POOL, params, ssl_session_cache_shard));
 
   for (int i = ALTERNATE_PROTOCOL_MINIMUM_VALID_VERSION;
        i <= ALTERNATE_PROTOCOL_MAXIMUM_VALID_VERSION; ++i) {

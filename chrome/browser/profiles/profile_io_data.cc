@@ -993,17 +993,6 @@ ProfileIOData::ResourceContext::GetMediaDeviceIDSalt() {
   return io_data_->GetMediaDeviceIDSalt();
 }
 
-// static
-std::string ProfileIOData::GetSSLSessionCacheShard() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  // The SSL session cache is partitioned by setting a string. This returns a
-  // unique string to partition the SSL session cache. Each time we create a
-  // new profile, we'll get a fresh SSL session cache which is separate from
-  // the other profiles.
-  static unsigned ssl_session_cache_instance = 0;
-  return base::StringPrintf("profile/%u", ssl_session_cache_instance++);
-}
-
 void ProfileIOData::Init(
     content::ProtocolHandlerMap* protocol_handlers,
     content::URLRequestInterceptorScopedVector request_interceptors) const {
@@ -1304,8 +1293,6 @@ scoped_ptr<net::HttpNetworkSession> ProfileIOData::CreateHttpNetworkSession(
   io_thread->InitializeNetworkSessionParams(&params);
   net::URLRequestContextBuilder::SetHttpNetworkSessionComponents(context,
                                                                  &params);
-
-  params.ssl_session_cache_shard = GetSSLSessionCacheShard();
   if (!IsOffTheRecord()) {
     params.socket_performance_watcher_factory =
         io_thread->globals()->network_quality_estimator.get();
