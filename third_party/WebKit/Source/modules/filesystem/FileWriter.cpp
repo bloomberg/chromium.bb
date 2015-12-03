@@ -95,14 +95,11 @@ bool FileWriter::hasPendingActivity() const
 
 void FileWriter::write(Blob* data, ExceptionState& exceptionState)
 {
+    ASSERT(data);
     ASSERT(writer());
     ASSERT(m_truncateLength == -1);
     if (m_readyState == WRITING) {
         setError(FileError::INVALID_STATE_ERR, exceptionState);
-        return;
-    }
-    if (!data) {
-        setError(FileError::TYPE_MISMATCH_ERR, exceptionState);
         return;
     }
     if (m_recursionDepth > kMaxRecursionDepth) {

@@ -33,7 +33,7 @@
     GarbageCollected,
 ] interface FileWriterSync {
     // synchronous write/modify methods
-    [RaisesException, LegacyInterfaceTypeChecking] void write(Blob data);
+    [RaisesException] void write(Blob data);
     [RaisesException] void seek(long long position);
     [RaisesException] void truncate(long long size);
 

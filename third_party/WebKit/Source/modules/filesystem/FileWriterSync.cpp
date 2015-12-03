@@ -42,12 +42,9 @@ namespace blink {
 
 void FileWriterSync::write(Blob* data, ExceptionState& exceptionState)
 {
+    ASSERT(data);
     ASSERT(writer());
     ASSERT(m_complete);
-    if (!data) {
-        exceptionState.throwDOMException(TypeMismatchError, FileError::typeMismatchErrorMessage);
-        return;
-    }
 
     prepareForWrite();
     writer()->write(position(), data->uuid());
