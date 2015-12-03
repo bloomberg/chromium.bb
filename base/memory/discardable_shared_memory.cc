@@ -122,15 +122,8 @@ bool DiscardableSharedMemory::CreateAndMap(size_t size) {
   if (!checked_size.IsValid())
     return false;
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  // DiscardableSharedMemory does not yet support a Mach-implementation, so
-  // force the underlying primitive to be a POSIX fd. https://crbug.com/547239.
-  if (!shared_memory_.CreateAndMapAnonymousPosix(checked_size.ValueOrDie()))
-    return false;
-#else
   if (!shared_memory_.CreateAndMapAnonymous(checked_size.ValueOrDie()))
     return false;
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
   mapped_size_ =
       shared_memory_.mapped_size() - AlignToPageSize(sizeof(SharedState));
