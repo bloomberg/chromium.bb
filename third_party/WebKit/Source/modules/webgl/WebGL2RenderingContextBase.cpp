@@ -1654,6 +1654,9 @@ WebGLQuery* WebGL2RenderingContextBase::createQuery()
 
 void WebGL2RenderingContextBase::deleteQuery(WebGLQuery* query)
 {
+    if (isContextLost() || !query)
+        return;
+
     if (m_currentBooleanOcclusionQuery == query) {
         webContext()->endQueryEXT(m_currentBooleanOcclusionQuery->getTarget());
         m_currentBooleanOcclusionQuery = nullptr;
@@ -1678,6 +1681,11 @@ GLboolean WebGL2RenderingContextBase::isQuery(WebGLQuery* query)
 void WebGL2RenderingContextBase::beginQuery(GLenum target, WebGLQuery* query)
 {
     bool deleted;
+    if (!query) {
+        synthesizeGLError(GL_INVALID_OPERATION, "beginQuery", "query object is null");
+        return;
+    }
+
     if (!checkObjectToBeBound("beginQuery", query, deleted))
         return;
     if (deleted) {
