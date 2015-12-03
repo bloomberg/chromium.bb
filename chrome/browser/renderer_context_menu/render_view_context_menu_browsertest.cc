@@ -476,8 +476,8 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenLinkInProfile) {
   ui_test_utils::WindowedTabAddedNotificationObserver tab_observer(
       content::NotificationService::AllSources());
 
-  ASSERT_TRUE(test_server()->Start());
-  GURL url(test_server()->GetURL(std::string()));
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL("/"));
 
   scoped_ptr<TestRenderViewContextMenu> menu(
       CreateContextMenuMediaTypeNone(url, url));

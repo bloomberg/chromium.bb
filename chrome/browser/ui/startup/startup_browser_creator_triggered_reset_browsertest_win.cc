@@ -220,10 +220,10 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTriggeredResetTest,
   profile_manager->RegisterTestingProfile(other_profile, true, false);
 
   // Use a couple same-site HTTP URLs.
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
   std::vector<GURL> urls;
-  urls.push_back(test_server()->GetURL("files/title1.html"));
-  urls.push_back(test_server()->GetURL("files/title2.html"));
+  urls.push_back(embedded_test_server()->GetURL("/title1.html"));
+  urls.push_back(embedded_test_server()->GetURL("/title2.html"));
 
   // Set the startup preference to open these URLs.
   SessionStartupPref other_prefs(SessionStartupPref::URLS);

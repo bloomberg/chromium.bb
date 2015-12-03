@@ -690,7 +690,9 @@ class SSLClientSocketTest : public PlatformTest {
   const AddressList& addr() const { return addr_; }
 
   // The SpawnedTestServer object, after calling StartTestServer().
-  const SpawnedTestServer* test_server() const { return test_server_.get(); }
+  const SpawnedTestServer* spawned_test_server() const {
+    return spawned_test_server_.get();
+  }
 
   void SetCTVerifier(CTVerifier* ct_verifier) {
     context_.cert_transparency_verifier = ct_verifier;
@@ -699,14 +701,14 @@ class SSLClientSocketTest : public PlatformTest {
   // Starts the test server with SSL configuration |ssl_options|. Returns true
   // on success.
   bool StartTestServer(const SpawnedTestServer::SSLOptions& ssl_options) {
-    test_server_.reset(new SpawnedTestServer(
+    spawned_test_server_.reset(new SpawnedTestServer(
         SpawnedTestServer::TYPE_HTTPS, ssl_options, base::FilePath()));
-    if (!test_server_->Start()) {
+    if (!spawned_test_server_->Start()) {
       LOG(ERROR) << "Could not start SpawnedTestServer";
       return false;
     }
 
-    if (!test_server_->GetAddressList(&addr_)) {
+    if (!spawned_test_server_->GetAddressList(&addr_)) {
       LOG(ERROR) << "Could not get SpawnedTestServer address list";
       return false;
     }
@@ -741,8 +743,8 @@ class SSLClientSocketTest : public PlatformTest {
       return false;
     }
 
-    sock_ = CreateSSLClientSocket(transport.Pass(),
-                                  test_server_->host_port_pair(), ssl_config);
+    sock_ = CreateSSLClientSocket(
+        transport.Pass(), spawned_test_server_->host_port_pair(), ssl_config);
     EXPECT_FALSE(sock_->IsConnected());
 
     *result = callback_.GetResult(sock_->Connect(callback_.callback()));
@@ -757,7 +759,7 @@ class SSLClientSocketTest : public PlatformTest {
   TestNetLog log_;
 
  private:
-  scoped_ptr<SpawnedTestServer> test_server_;
+  scoped_ptr<SpawnedTestServer> spawned_test_server_;
   TestCompletionCallback callback_;
   AddressList addr_;
 };
@@ -769,13 +771,13 @@ class SSLClientSocketCertRequestInfoTest : public SSLClientSocketTest {
   // the SSLCertRequestInfo reported by the socket.
   scoped_refptr<SSLCertRequestInfo> GetCertRequest(
       SpawnedTestServer::SSLOptions ssl_options) {
-    SpawnedTestServer test_server(
-        SpawnedTestServer::TYPE_HTTPS, ssl_options, base::FilePath());
-    if (!test_server.Start())
+    SpawnedTestServer spawned_test_server(SpawnedTestServer::TYPE_HTTPS,
+                                          ssl_options, base::FilePath());
+    if (!spawned_test_server.Start())
       return NULL;
 
     AddressList addr;
-    if (!test_server.GetAddressList(&addr))
+    if (!spawned_test_server.GetAddressList(&addr))
       return NULL;
 
     TestCompletionCallback callback;
@@ -786,7 +788,7 @@ class SSLClientSocketCertRequestInfoTest : public SSLClientSocketTest {
     EXPECT_EQ(OK, rv);
 
     scoped_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
-        transport.Pass(), test_server.host_port_pair(), SSLConfig()));
+        transport.Pass(), spawned_test_server.host_port_pair(), SSLConfig()));
     EXPECT_FALSE(sock->IsConnected());
 
     rv = callback.GetResult(sock->Connect(callback.callback()));
@@ -796,8 +798,8 @@ class SSLClientSocketCertRequestInfoTest : public SSLClientSocketTest {
     sock->GetSSLCertRequestInfo(request_info.get());
     sock->Disconnect();
     EXPECT_FALSE(sock->IsConnected());
-    EXPECT_TRUE(
-        test_server.host_port_pair().Equals(request_info->host_and_port));
+    EXPECT_TRUE(spawned_test_server.host_port_pair().Equals(
+        request_info->host_and_port));
 
     return request_info;
   }
@@ -823,7 +825,7 @@ class SSLClientSocketFalseStartTest : public SSLClientSocketTest {
       TestCompletionCallback* callback,
       FakeBlockingStreamSocket** out_raw_transport,
       scoped_ptr<SSLClientSocket>* out_sock) {
-    CHECK(test_server());
+    CHECK(spawned_test_server());
 
     scoped_ptr<StreamSocket> real_transport(
         new TCPClientSocket(addr(), NULL, NetLog::Source()));
@@ -834,7 +836,8 @@ class SSLClientSocketFalseStartTest : public SSLClientSocketTest {
 
     FakeBlockingStreamSocket* raw_transport = transport.get();
     scoped_ptr<SSLClientSocket> sock = CreateSSLClientSocket(
-        transport.Pass(), test_server()->host_port_pair(), client_config);
+        transport.Pass(), spawned_test_server()->host_port_pair(),
+        client_config);
 
     // Connect. Stop before the client processes the first server leg
     // (ServerHello, etc.)
@@ -949,7 +952,7 @@ TEST_F(SSLClientSocketTest, Connect) {
   EXPECT_EQ(OK, rv);
 
   scoped_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
-      transport.Pass(), test_server()->host_port_pair(), SSLConfig()));
+      transport.Pass(), spawned_test_server()->host_port_pair(), SSLConfig()));
 
   EXPECT_FALSE(sock->IsConnected());
 
@@ -1096,7 +1099,7 @@ TEST_F(SSLClientSocketTest, Read) {
   EXPECT_EQ(OK, rv);
 
   scoped_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
-      transport.Pass(), test_server()->host_port_pair(), SSLConfig()));
+      transport.Pass(), spawned_test_server()->host_port_pair(), SSLConfig()));
   EXPECT_EQ(0, sock->GetTotalReceivedBytes());
 
   rv = callback.GetResult(sock->Connect(callback.callback()));
@@ -1157,7 +1160,7 @@ TEST_F(SSLClientSocketTest, Connect_WithSynchronousError) {
 
   SynchronousErrorStreamSocket* raw_transport = transport.get();
   scoped_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
-      transport.Pass(), test_server()->host_port_pair(), ssl_config));
+      transport.Pass(), spawned_test_server()->host_port_pair(), ssl_config));
 
   raw_transport->SetNextWriteError(ERR_CONNECTION_RESET);
 
@@ -1187,7 +1190,7 @@ TEST_F(SSLClientSocketTest, Read_WithSynchronousError) {
 
   SynchronousErrorStreamSocket* raw_transport = transport.get();
   scoped_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
-      transport.Pass(), test_server()->host_port_pair(), ssl_config));
+      transport.Pass(), spawned_test_server()->host_port_pair(), ssl_config));
 
   rv = callback.GetResult(sock->Connect(callback.callback()));
   EXPECT_EQ(OK, rv);
@@ -1241,7 +1244,7 @@ TEST_F(SSLClientSocketTest, Write_WithSynchronousError) {
   ssl_config.false_start_enabled = false;
 
   scoped_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
-      transport.Pass(), test_server()->host_port_pair(), ssl_config));
+      transport.Pass(), spawned_test_server()->host_port_pair(), ssl_config));
 
   rv = callback.GetResult(sock->Connect(callback.callback()));
   EXPECT_EQ(OK, rv);
@@ -1307,7 +1310,8 @@ TEST_F(SSLClientSocketTest, Write_WithSynchronousErrorNoRead) {
   ssl_config.false_start_enabled = false;
 
   scoped_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
-      counting_socket.Pass(), test_server()->host_port_pair(), ssl_config));
+      counting_socket.Pass(), spawned_test_server()->host_port_pair(),
+      ssl_config));
 
   rv = callback.GetResult(sock->Connect(callback.callback()));
   ASSERT_EQ(OK, rv);
@@ -1407,7 +1411,7 @@ TEST_F(SSLClientSocketTest, Read_DeleteWhilePendingFullDuplex) {
   ssl_config.false_start_enabled = false;
 
   scoped_ptr<SSLClientSocket> sock = CreateSSLClientSocket(
-      transport.Pass(), test_server()->host_port_pair(), ssl_config);
+      transport.Pass(), spawned_test_server()->host_port_pair(), ssl_config);
 
   rv = callback.GetResult(sock->Connect(callback.callback()));
   EXPECT_EQ(OK, rv);
@@ -1515,7 +1519,7 @@ TEST_F(SSLClientSocketTest, Read_WithWriteError) {
   ssl_config.false_start_enabled = false;
 
   scoped_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
-      transport.Pass(), test_server()->host_port_pair(), ssl_config));
+      transport.Pass(), spawned_test_server()->host_port_pair(), ssl_config));
 
   rv = callback.GetResult(sock->Connect(callback.callback()));
   EXPECT_EQ(OK, rv);
@@ -1601,7 +1605,7 @@ TEST_F(SSLClientSocketTest, Connect_WithZeroReturn) {
 
   SynchronousErrorStreamSocket* raw_transport = transport.get();
   scoped_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
-      transport.Pass(), test_server()->host_port_pair(), SSLConfig()));
+      transport.Pass(), spawned_test_server()->host_port_pair(), SSLConfig()));
 
   raw_transport->SetNextReadError(0);
 
@@ -1630,7 +1634,7 @@ TEST_F(SSLClientSocketTest, Read_WithZeroReturn) {
 
   SynchronousErrorStreamSocket* raw_transport = transport.get();
   scoped_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
-      transport.Pass(), test_server()->host_port_pair(), ssl_config));
+      transport.Pass(), spawned_test_server()->host_port_pair(), ssl_config));
 
   rv = callback.GetResult(sock->Connect(callback.callback()));
   EXPECT_EQ(OK, rv);
@@ -1665,7 +1669,7 @@ TEST_F(SSLClientSocketTest, Read_WithAsyncZeroReturn) {
   ssl_config.false_start_enabled = false;
 
   scoped_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
-      transport.Pass(), test_server()->host_port_pair(), ssl_config));
+      transport.Pass(), spawned_test_server()->host_port_pair(), ssl_config));
 
   rv = callback.GetResult(sock->Connect(callback.callback()));
   EXPECT_EQ(OK, rv);
@@ -1738,7 +1742,7 @@ TEST_F(SSLClientSocketTest, Read_ManySmallRecords) {
   ASSERT_EQ(OK, rv);
 
   scoped_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
-      transport.Pass(), test_server()->host_port_pair(), SSLConfig()));
+      transport.Pass(), spawned_test_server()->host_port_pair(), SSLConfig()));
 
   rv = callback.GetResult(sock->Connect(callback.callback()));
   ASSERT_EQ(OK, rv);
@@ -1805,7 +1809,7 @@ TEST_F(SSLClientSocketTest, Read_FullLogging) {
   EXPECT_EQ(OK, rv);
 
   scoped_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
-      transport.Pass(), test_server()->host_port_pair(), SSLConfig()));
+      transport.Pass(), spawned_test_server()->host_port_pair(), SSLConfig()));
 
   rv = callback.GetResult(sock->Connect(callback.callback()));
   EXPECT_EQ(OK, rv);
@@ -1873,7 +1877,7 @@ TEST_F(SSLClientSocketTest, PrematureApplicationData) {
   EXPECT_EQ(OK, rv);
 
   scoped_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
-      transport.Pass(), test_server()->host_port_pair(), SSLConfig()));
+      transport.Pass(), spawned_test_server()->host_port_pair(), SSLConfig()));
 
   rv = callback.GetResult(sock->Connect(callback.callback()));
   EXPECT_EQ(ERR_SSL_PROTOCOL_ERROR, rv);
@@ -1920,8 +1924,8 @@ TEST_F(SSLClientSocketTest, ClientSocketHandleNotFromPool) {
   socket_handle->SetSocket(transport.Pass());
 
   scoped_ptr<SSLClientSocket> sock(socket_factory_->CreateSSLClientSocket(
-      socket_handle.Pass(), test_server()->host_port_pair(), SSLConfig(),
-      context_));
+      socket_handle.Pass(), spawned_test_server()->host_port_pair(),
+      SSLConfig(), context_));
 
   EXPECT_FALSE(sock->IsConnected());
   rv = callback.GetResult(sock->Connect(callback.callback()));
@@ -2356,7 +2360,7 @@ TEST_F(SSLClientSocketTest, ReusableAfterWrite) {
   ASSERT_EQ(OK, callback.GetResult(transport->Connect(callback.callback())));
 
   scoped_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
-      transport.Pass(), test_server()->host_port_pair(), SSLConfig()));
+      transport.Pass(), spawned_test_server()->host_port_pair(), SSLConfig()));
   ASSERT_EQ(OK, callback.GetResult(sock->Connect(callback.callback())));
 
   // Block any application data from reaching the network.

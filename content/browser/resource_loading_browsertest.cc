@@ -16,12 +16,12 @@ class ResourceLoadingBrowserTest : public ContentBrowserTest  {
 };
 
 const char kResourceLoadingNonMobilePage[] =
-    "files/resource_loading/resource_loading_non_mobile.html";
+    "/resource_loading/resource_loading_non_mobile.html";
 
 IN_PROC_BROWSER_TEST_F(ResourceLoadingBrowserTest,
   ResourceLoadingAvoidDoubleDownloads) {
-  ASSERT_TRUE(test_server()->Start());
-  GURL url = test_server()->GetURL(kResourceLoadingNonMobilePage);
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url = embedded_test_server()->GetURL(kResourceLoadingNonMobilePage);
   NavigateToURL(shell(), url);
   int data = -1;
   EXPECT_TRUE(ExecuteScriptAndExtractInt(shell()->web_contents(),
@@ -30,4 +30,3 @@ IN_PROC_BROWSER_TEST_F(ResourceLoadingBrowserTest,
 }
 
 } // namespace content
-

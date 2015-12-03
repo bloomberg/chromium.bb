@@ -1433,10 +1433,10 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
   https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_EXPIRED);
   ASSERT_TRUE(https_server.Start());
 
-  const char* kTestPage = "files/login/load_iframe_from_b.html";
+  const char* kTestPage = "/login/load_iframe_from_b.html";
 
   host_resolver()->AddRule("www.b.com", "127.0.0.1");
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -1446,7 +1446,7 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
 
   // Load a page that has a cross-domain iframe authentication. This should
   // trigger a login prompt but no login interstitial.
-  GURL test_page = test_server()->GetURL(kTestPage);
+  GURL test_page = embedded_test_server()->GetURL(kTestPage);
   GURL broken_ssl_page = https_server.GetURL("/");
   ASSERT_EQ("127.0.0.1", test_page.host());
   WindowedAuthNeededObserver auth_needed_waiter(controller);

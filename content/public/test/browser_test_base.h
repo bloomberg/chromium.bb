@@ -81,13 +81,6 @@ class BrowserTestBase : public testing::Test {
   // Sets expected browser exit code, in case it's different than 0 (success).
   void set_expected_exit_code(int code) { expected_exit_code_ = code; }
 
-  // Returns the testing server. Guaranteed to be non-NULL.
-  // TODO(phajdan.jr): Remove test_server accessor (http://crbug.com/96594).
-  const net::SpawnedTestServer* test_server() const {
-    return spawned_test_server_.get();
-  }
-  net::SpawnedTestServer* test_server() { return spawned_test_server_.get(); }
-
   const net::SpawnedTestServer* spawned_test_server() const {
     return spawned_test_server_.get();
   }
