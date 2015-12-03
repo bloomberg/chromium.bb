@@ -24,6 +24,11 @@ class TestablePictureImageLayerImpl : public PictureImageLayerImpl {
  public:
   TestablePictureImageLayerImpl(LayerTreeImpl* tree_impl, int id)
       : PictureImageLayerImpl(tree_impl, id, false) {}
+
+  scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override {
+    return make_scoped_ptr(new TestablePictureImageLayerImpl(tree_impl, id()));
+  }
+
   using PictureLayerImpl::UpdateIdealScales;
   using PictureLayerImpl::MaximumTilingContentsScale;
 
