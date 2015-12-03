@@ -9,7 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/test/sequenced_worker_pool_owner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/app_list/search/dictionary_data_store.h"
 #include "ui/app_list/search/history_data.h"
@@ -41,12 +41,10 @@ std::string GetDataContent(const HistoryData::Data& data) {
 
 class HistoryDataStoreTest : public testing::Test {
  public:
-  HistoryDataStoreTest() {}
-  ~HistoryDataStoreTest() override {}
+  HistoryDataStoreTest() : worker_pool_owner_(1, "AppLanucherTest") {}
 
   // testing::Test overrides:
   void SetUp() override {
-    worker_pool_ = new base::SequencedWorkerPool(1, "AppLauncherTest");
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   }
   void TearDown() override {
@@ -57,7 +55,7 @@ class HistoryDataStoreTest : public testing::Test {
   void OpenStore(const std::string& file_name) {
     data_file_ = temp_dir_.path().AppendASCII(file_name);
     store_ = new HistoryDataStore(scoped_refptr<DictionaryDataStore>(
-        new DictionaryDataStore(data_file_, worker_pool_.get())));
+        new DictionaryDataStore(data_file_, worker_pool_owner_.pool().get())));
     Load();
   }
 
@@ -95,7 +93,7 @@ class HistoryDataStoreTest : public testing::Test {
   base::ScopedTempDir temp_dir_;
   base::FilePath data_file_;
   scoped_ptr<base::RunLoop> run_loop_;
-  scoped_refptr<base::SequencedWorkerPool> worker_pool_;
+  base::SequencedWorkerPoolOwner worker_pool_owner_;
 
   scoped_refptr<HistoryDataStore> store_;
   HistoryData::Associations associations_;

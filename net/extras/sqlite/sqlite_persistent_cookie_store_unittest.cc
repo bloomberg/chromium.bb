@@ -196,7 +196,6 @@ class SQLitePersistentCookieStoreTest : public testing::Test {
 
   void TearDown() override {
     DestroyStore();
-    pool_owner_->pool()->Shutdown();
   }
 
  protected:

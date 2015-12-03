@@ -234,8 +234,6 @@ class SequencedWorkerPoolTest : public testing::Test {
     ResetPool();
   }
 
-  void TearDown() override { pool()->Shutdown(); }
-
   const scoped_refptr<SequencedWorkerPool>& pool() {
     return pool_owner_->pool();
   }
@@ -351,7 +349,6 @@ TEST_F(SequencedWorkerPoolTest, DelayedTaskDuringShutdown) {
   ASSERT_EQ(1u, completion_sequence.size());
   ASSERT_EQ(1, completion_sequence[0]);
 
-  pool()->Shutdown();
   // Shutdown is asynchronous, so use ResetPool() to block until the pool is
   // fully destroyed (and thus shut down).
   ResetPool();
@@ -430,9 +427,6 @@ TEST_F(SequencedWorkerPoolTest, LotsOfTasksTwoPools) {
   std::vector<int> result =
       tracker()->WaitUntilTasksComplete(2*kNumTasks);
   EXPECT_EQ(2 * kNumTasks, result.size());
-
-  pool2.pool()->Shutdown();
-  pool1.pool()->Shutdown();
 }
 
 // Test that tasks with the same sequence token are executed in order but don't
@@ -799,33 +793,30 @@ TEST_F(SequencedWorkerPoolTest, IsRunningOnCurrentThread) {
   SequencedWorkerPool::SequenceToken token2 = pool()->GetSequenceToken();
   SequencedWorkerPool::SequenceToken unsequenced_token;
 
-  scoped_refptr<SequencedWorkerPool> unused_pool =
-      new SequencedWorkerPool(2, "unused_pool");
+  SequencedWorkerPoolOwner unused_pool_owner(2, "unused_pool");
 
   EXPECT_FALSE(pool()->RunsTasksOnCurrentThread());
   EXPECT_FALSE(pool()->IsRunningSequenceOnCurrentThread(token1));
   EXPECT_FALSE(pool()->IsRunningSequenceOnCurrentThread(token2));
   EXPECT_FALSE(pool()->IsRunningSequenceOnCurrentThread(unsequenced_token));
-  EXPECT_FALSE(unused_pool->RunsTasksOnCurrentThread());
-  EXPECT_FALSE(unused_pool->IsRunningSequenceOnCurrentThread(token1));
-  EXPECT_FALSE(unused_pool->IsRunningSequenceOnCurrentThread(token2));
+  EXPECT_FALSE(unused_pool_owner.pool()->RunsTasksOnCurrentThread());
   EXPECT_FALSE(
-      unused_pool->IsRunningSequenceOnCurrentThread(unsequenced_token));
+      unused_pool_owner.pool()->IsRunningSequenceOnCurrentThread(token1));
+  EXPECT_FALSE(
+      unused_pool_owner.pool()->IsRunningSequenceOnCurrentThread(token2));
+  EXPECT_FALSE(unused_pool_owner.pool()->IsRunningSequenceOnCurrentThread(
+      unsequenced_token));
 
   pool()->PostSequencedWorkerTask(
-      token1, FROM_HERE,
-      base::Bind(&IsRunningOnCurrentThreadTask,
-                 token1, token2, pool(), unused_pool));
+      token1, FROM_HERE, base::Bind(&IsRunningOnCurrentThreadTask, token1,
+                                    token2, pool(), unused_pool_owner.pool()));
   pool()->PostSequencedWorkerTask(
       token2, FROM_HERE,
-      base::Bind(&IsRunningOnCurrentThreadTask,
-                 token2, unsequenced_token, pool(), unused_pool));
+      base::Bind(&IsRunningOnCurrentThreadTask, token2, unsequenced_token,
+                 pool(), unused_pool_owner.pool()));
   pool()->PostWorkerTask(
-      FROM_HERE,
-      base::Bind(&IsRunningOnCurrentThreadTask,
-                 unsequenced_token, token1, pool(), unused_pool));
-  pool()->Shutdown();
-  unused_pool->Shutdown();
+      FROM_HERE, base::Bind(&IsRunningOnCurrentThreadTask, unsequenced_token,
+                            token1, pool(), unused_pool_owner.pool()));
 }
 
 // Checks that tasks are destroyed in the right context during shutdown. If a
@@ -947,16 +938,14 @@ TEST_F(SequencedWorkerPoolTest, GetWorkerPoolAndSequenceTokenForCurrentThread) {
   pool()->FlushForTesting();
 }
 
-TEST(SequencedWorkerPoolRefPtrTest, ShutsDownCleanWithContinueOnShutdown) {
-  MessageLoop loop;
-  scoped_refptr<SequencedWorkerPool> pool(new SequencedWorkerPool(3, "Pool"));
+TEST_F(SequencedWorkerPoolTest, ShutsDownCleanWithContinueOnShutdown) {
   scoped_refptr<SequencedTaskRunner> task_runner =
-      pool->GetSequencedTaskRunnerWithShutdownBehavior(
-          pool->GetSequenceToken(),
+      pool()->GetSequencedTaskRunnerWithShutdownBehavior(
+          pool()->GetSequenceToken(),
           base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
 
   // Upon test exit, should shut down without hanging.
-  pool->Shutdown();
+  pool()->Shutdown();
 }
 
 class SequencedWorkerPoolTaskRunnerTestDelegate {

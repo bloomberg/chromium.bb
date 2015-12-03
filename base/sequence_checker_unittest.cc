@@ -66,7 +66,6 @@ class SequenceCheckerTest : public testing::Test {
 
   void TearDown() override {
     other_thread_.Stop();
-    pool()->Shutdown();
   }
 
  protected:
@@ -309,7 +308,6 @@ void SequenceCheckerTest::TwoDifferentWorkerPoolsDeathTest() {
       base::Bind(&SequenceCheckedObject::DoStuff,
                  base::Unretained(sequence_checked_object.get())));
   second_pool_owner.pool()->FlushForTesting();
-  second_pool_owner.pool()->Shutdown();
 }
 
 #if ENABLE_SEQUENCE_CHECKER

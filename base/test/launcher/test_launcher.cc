@@ -468,10 +468,7 @@ TestLauncher::TestLauncher(TestLauncherDelegate* launcher_delegate,
       parallel_jobs_(parallel_jobs) {
 }
 
-TestLauncher::~TestLauncher() {
-  if (worker_pool_owner_)
-    worker_pool_owner_->pool()->Shutdown();
-}
+TestLauncher::~TestLauncher() {}
 
 bool TestLauncher::Run() {
   if (!Init())

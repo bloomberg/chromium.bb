@@ -48,11 +48,6 @@ class LocalExtensionCacheTest : public testing::Test {
         pool_owner_->pool()->GetNamedSequenceToken("background"));
   }
 
-  void TearDown() override {
-    pool_owner_->pool()->Shutdown();
-    base::RunLoop().RunUntilIdle();
-  }
-
   base::FilePath CreateCacheDir(bool initialized) {
     EXPECT_TRUE(cache_dir_.CreateUniqueTempDir());
     if (initialized)

@@ -14,9 +14,7 @@ TestAutofillDriver::TestAutofillDriver()
           new base::SequencedWorkerPoolOwner(4, "TestAutofillDriver")),
       url_request_context_(NULL) {}
 
-TestAutofillDriver::~TestAutofillDriver() {
-  blocking_pool_owner_->pool()->Shutdown();
-}
+TestAutofillDriver::~TestAutofillDriver() {}
 
 bool TestAutofillDriver::IsOffTheRecord() const {
   return false;
