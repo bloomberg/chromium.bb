@@ -57,7 +57,7 @@ void SendRenderWidgetMessage(BlimpMessageProcessor* processor,
   RenderWidgetMessage* details = message->mutable_render_widget();
   details->set_type(RenderWidgetMessage::INITIALIZE);
   details->set_render_widget_id(rw_id);
-  processor->ProcessMessage(message.Pass(),
+  processor->ProcessMessage(std::move(message),
                             net::CompletionCallback());
 }
 
@@ -70,7 +70,7 @@ void SendCompositorMessage(BlimpMessageProcessor* processor,
 
   CompositorMessage* details = message->mutable_compositor();
   details->set_render_widget_id(rw_id);
-  processor->ProcessMessage(message.Pass(),
+  processor->ProcessMessage(std::move(message),
                             net::CompletionCallback());
 }
 

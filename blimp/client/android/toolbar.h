@@ -7,6 +7,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/macros.h"
+#include "blimp/client/navigation_message_processor.h"
 
 class GURL;
 class SkBitmap;
@@ -16,7 +17,7 @@ namespace blimp {
 // The native component of org.chromium.blimp.toolbar.Toolbar.  This handles
 // marshalling calls between Java and native.  Specifically, this passes calls
 // between Toolbar.java <=> content_lite's NavigationController layer.
-class Toolbar {
+class Toolbar : public NavigationMessageProcessor::NavigationMessageDelegate {
  public:
   static bool RegisterJni(JNIEnv* env);
 
@@ -26,17 +27,19 @@ class Toolbar {
   void Destroy(JNIEnv* env, jobject jobj);
   void OnUrlTextEntered(JNIEnv* env, jobject jobj, jstring text);
   void OnReloadPressed(JNIEnv* env, jobject jobj);
+  void OnForwardPressed(JNIEnv* env, jobject jobj);
   jboolean OnBackPressed(JNIEnv* env, jobject jobj);
 
-  // TODO(dtrainor): To be called by a the content lite NavigationController.
-  // Should probably be an overridden delegate method so the network code can be
-  // multi platform.
-  void OnNavigationStateChanged(const GURL* url,
-                                const SkBitmap* favicon,
-                                const std::string* title);
+  // NavigationMessageDelegate implementation.
+  void OnUrlChanged(int tab_id, const GURL& url) override;
+  void OnFaviconChanged(int tab_id, const SkBitmap& favicon) override;
+  void OnTitleChanged(int tab_id, const std::string& title) override;
+  void OnLoadingChanged(int tab_id, bool loading) override;
 
  private:
   virtual ~Toolbar();
+
+  NavigationMessageProcessor navigation_message_processor_;
 
   // Reference to the Java object which owns this class.
   base::android::ScopedJavaGlobalRef<jobject> java_obj_;

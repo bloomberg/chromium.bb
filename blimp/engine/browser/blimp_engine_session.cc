@@ -5,6 +5,7 @@
 #include "blimp/engine/browser/blimp_engine_session.h"
 
 #include "base/lazy_instance.h"
+#include "base/strings/utf_string_conversions.h"
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/common/proto/control.pb.h"
 #include "blimp/engine/browser/blimp_browser_context.h"
@@ -128,6 +129,8 @@ void BlimpEngineSession::LoadUrl(const int target_tab_id, const GURL& url) {
   if (url.is_empty() || !web_contents_)
     return;
 
+  // TODO(dtrainor, haibinlu): Fix up the URL with url_fixer.h.  If that doesn't
+  // produce a valid spec() then try to build a search query?
   content::NavigationController::LoadURLParams params(url);
   params.transition_type = ui::PageTransitionFromInt(
       ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
@@ -288,6 +291,41 @@ void BlimpEngineSession::ActivateContents(content::WebContents* contents) {
 void BlimpEngineSession::ForwardCompositorProto(
     const std::vector<uint8_t>& proto) {
   render_widget_processor_.SendCompositorMessage(kDummyTabId, proto);
+}
+
+void BlimpEngineSession::NavigationStateChanged(
+    content::WebContents* source,
+    content::InvalidateTypes changed_flags) {
+  if (source != web_contents_.get() || !changed_flags)
+    return;
+
+  scoped_ptr<BlimpMessage> message(new BlimpMessage);
+  message->set_type(BlimpMessage::NAVIGATION);
+  message->set_target_tab_id(kDummyTabId);
+
+  NavigationMessage* navigation_message = message->mutable_navigation();
+  navigation_message->set_type(NavigationMessage::NAVIGATION_STATE_CHANGED);
+  NavigationStateChangeMessage* details =
+      navigation_message->mutable_navigation_state_change();
+
+  if (changed_flags & content::InvalidateTypes::INVALIDATE_TYPE_URL)
+    details->set_url(source->GetURL().spec());
+
+  if (changed_flags & content::InvalidateTypes::INVALIDATE_TYPE_TAB) {
+    // TODO(dtrainor): Serialize the favicon?
+    NOTIMPLEMENTED();
+  }
+
+  if (changed_flags & content::InvalidateTypes::INVALIDATE_TYPE_TITLE)
+    details->set_title(base::UTF16ToUTF8(source->GetTitle()));
+
+  if (changed_flags & content::InvalidateTypes::INVALIDATE_TYPE_LOAD)
+    details->set_loading(source->IsLoading());
+
+  // TODO(dtrainor, haibinlu): Send to the right BlimpMessageProcessor.
+  g_blimp_message_processor.Pointer()->ProcessMessage(
+      std::move(message),
+      net::CompletionCallback());
 }
 
 void BlimpEngineSession::RenderViewHostChanged(

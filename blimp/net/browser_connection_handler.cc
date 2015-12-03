@@ -40,7 +40,7 @@ void BrowserConnectionHandler::HandleConnection(
   // Since there is only a single Client, assume a newer connection should
   // replace an existing one.
   DropCurrentConnection();
-  connection_ = connection.Pass();
+  connection_ = std::move(connection);
 
   // Connect the incoming & outgoing message streams.
   connection_->SetIncomingMessageProcessor(demultiplexer_.get());

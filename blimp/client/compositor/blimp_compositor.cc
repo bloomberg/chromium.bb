@@ -153,7 +153,8 @@ void BlimpCompositor::RequestNewOutputSurface() {
   HandlePendingOutputSurfaceRequest();
 }
 
-void BlimpCompositor::DidInitializeOutputSurface() {}
+void BlimpCompositor::DidInitializeOutputSurface() {
+}
 
 void BlimpCompositor::DidFailToInitializeOutputSurface() {}
 

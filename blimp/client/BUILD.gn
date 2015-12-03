@@ -22,6 +22,8 @@ component("blimp_client") {
     "compositor/render_widget_message_processor.h",
     "compositor/test/dummy_layer_driver.cc",
     "compositor/test/dummy_layer_driver.h",
+    "navigation_message_processor.cc",
+    "navigation_message_processor.h",
   ]
 
   defines = [ "BLIMP_CLIENT_IMPLEMENTATION=1" ]
@@ -47,6 +49,7 @@ source_set("unit_tests") {
 
   sources = [
     "compositor/render_widget_message_processor_unittest.cc",
+    "navigation_message_processor_unittest.cc",
   ]
 
   deps = [
@@ -58,6 +61,7 @@ source_set("unit_tests") {
     "//blimp/net:blimp_net",
     "//blimp/net:test_support",
     "//cc/proto",
+    "//skia",
     "//testing/gmock",
     "//testing/gtest",
   ]
@@ -197,6 +201,7 @@ if (is_android) {
       ":blimp_client",
       ":jni_headers",
       "//base",
+      "//blimp/net:blimp_net",
       "//skia",
       "//ui/gfx/geometry",
       "//ui/gl",

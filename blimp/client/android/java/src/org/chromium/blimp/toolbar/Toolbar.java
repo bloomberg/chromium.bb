@@ -85,6 +85,14 @@ public class Toolbar extends LinearLayout implements UrlBar.UrlBarObserver,
         return nativeOnBackPressed(mNativeToolbarPtr);
     }
 
+    /**
+     * To be called when the user triggers a forward navigation action.
+     */
+    public void onForwardPressed() {
+        if (mNativeToolbarPtr == 0) return;
+        nativeOnForwardPressed(mNativeToolbarPtr);
+    }
+
     // View overrides.
     @Override
     protected void onFinishInflate() {
@@ -124,14 +132,29 @@ public class Toolbar extends LinearLayout implements UrlBar.UrlBarObserver,
 
     // Methods that are called by native via JNI.
     @CalledByNative
-    private void onNavigationStateChanged(String url, Bitmap favicon, String title) {
+    private void onEngineSentUrl(String url) {
         if (url != null) mUrlBar.setText(url);
-        // TODO(dtrainor): Add a UI for favicon and title data and tie it in here.
+    }
+
+    @CalledByNative
+    private void onEngineSentFavicon(Bitmap favicon) {
+        // TODO(dtrainor): Add a UI for the favicon.
+    }
+
+    @CalledByNative
+    private void onEngineSentTitle(String title) {
+        // TODO(dtrainor): Add a UI for the title.
+    }
+
+    @CalledByNative
+    private void onEngineSentLoading(boolean loading) {
+        // TODO(dtrainor): Add a UI for the loading state.
     }
 
     private native long nativeInit();
     private native void nativeDestroy(long nativeToolbar);
     private native void nativeOnUrlTextEntered(long nativeToolbar, String text);
     private native void nativeOnReloadPressed(long nativeToolbar);
+    private native void nativeOnForwardPressed(long nativeToolbar);
     private native boolean nativeOnBackPressed(long nativeToolbar);
 }

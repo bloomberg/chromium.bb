@@ -83,7 +83,7 @@ void SendInputMessage(BlimpMessageProcessor* processor,
   message->set_target_tab_id(tab_id);
   message->mutable_input()->set_render_widget_id(rw_id);
 
-  processor->ProcessMessage(message.Pass(),
+  processor->ProcessMessage(std::move(message),
                             net::CompletionCallback());
 }
 
@@ -98,7 +98,7 @@ void SendCompositorMessage(BlimpMessageProcessor* processor,
   CompositorMessage* details = message->mutable_compositor();
   details->set_render_widget_id(rw_id);
   details->set_payload(payload.data(), base::checked_cast<int>(payload.size()));
-  processor->ProcessMessage(message.Pass(),
+  processor->ProcessMessage(std::move(message),
                             net::CompletionCallback());
 }
 

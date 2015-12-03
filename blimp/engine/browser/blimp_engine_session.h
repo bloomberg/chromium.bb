@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "blimp/engine/browser/engine_render_widget_message_processor.h"
 #include "blimp/net/blimp_message_processor.h"
+#include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "net/base/completion_callback.h"
@@ -104,6 +105,8 @@ class BlimpEngineSession
   void CloseContents(content::WebContents* source) override;
   void ActivateContents(content::WebContents* contents) override;
   void ForwardCompositorProto(const std::vector<uint8_t>& proto) override;
+  void NavigationStateChanged(content::WebContents* source,
+                              content::InvalidateTypes changed_flags) override;
 
   // content::WebContentsObserver implementation.
   void RenderViewHostChanged(content::RenderViewHost* old_host,
