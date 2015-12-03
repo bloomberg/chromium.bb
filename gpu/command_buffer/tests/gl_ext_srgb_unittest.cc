@@ -25,7 +25,14 @@ class GLEXTSRGBTest : public testing::Test {
 // Test to ensure that GL_SRGB_ALPHA as glTex(Sub)Image2D parameter works. This
 // is tricky because GL_SRGB_ALPHA is valid in OpenGL ES 2.0 but not valid in
 // OpenGL.
-TEST_F(GLEXTSRGBTest, TexImageSRGBALPHAFormat) {
+#if defined(OS_ANDROID)
+// Test is failing for Lollipop 64 bit Tester.
+// See crbug/550292.
+#define MAYBE_TexImageSRGBALPHAFormat DISABLED_TexImageSRGBALPHAFormat
+#else
+#define MAYBE_TexImageSRGBALPHAFormat TexImageSRGBALPHAFormat
+#endif
+TEST_F(GLEXTSRGBTest, MAYBE_TexImageSRGBALPHAFormat) {
   if (!IsApplicable())
     return;
   static const int kWidth = 10;
