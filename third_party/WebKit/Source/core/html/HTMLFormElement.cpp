@@ -508,6 +508,7 @@ void HTMLFormElement::parseAttribute(const QualifiedName& name, const AtomicStri
         KURL actionURL = document().completeURL(m_attributes.action().isEmpty() ? document().url().string() : m_attributes.action());
         if (MixedContentChecker::isMixedFormAction(document().frame(), actionURL))
             UseCounter::count(document().frame(), UseCounter::MixedContentFormPresent);
+        logEventIfIsolatedWorldAndInDocument("blinkSetAttribute", "form", actionAttr.toString(), oldValue, value);
     } else if (name == targetAttr) {
         m_attributes.setTarget(value);
     } else if (name == methodAttr) {
@@ -523,13 +524,6 @@ void HTMLFormElement::parseAttribute(const QualifiedName& name, const AtomicStri
     } else {
         HTMLElement::parseAttribute(name, oldValue, value);
     }
-}
-
-void HTMLFormElement::attributeChanged(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& newValue, AttributeModificationReason reason)
-{
-    if (name == actionAttr)
-        logEventIfIsolatedWorldAndInDocument("blinkSetAttribute", "form", actionAttr.toString(), oldValue, newValue);
-    HTMLElement::attributeChanged(name, oldValue, newValue, reason);
 }
 
 void HTMLFormElement::associate(FormAssociatedElement& e)

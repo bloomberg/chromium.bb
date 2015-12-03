@@ -92,13 +92,6 @@ void HTMLIFrameElement::collectStyleForPresentationAttribute(const QualifiedName
     }
 }
 
-void HTMLIFrameElement::attributeChanged(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& newValue, AttributeModificationReason reason)
-{
-    if (name == srcAttr)
-        logEventIfIsolatedWorldAndInDocument("blinkSetAttribute", "iframe", srcAttr.toString(), oldValue, newValue);
-    HTMLFrameElementBase::attributeChanged(name, oldValue, newValue, reason);
-}
-
 void HTMLIFrameElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)
 {
     if (name == nameAttr) {
@@ -116,6 +109,8 @@ void HTMLIFrameElement::parseAttribute(const QualifiedName& name, const AtomicSt
         if (!value.isNull())
             SecurityPolicy::referrerPolicyFromString(value, &m_referrerPolicy);
     } else {
+        if (name == srcAttr)
+            logEventIfIsolatedWorldAndInDocument("blinkSetAttribute", "iframe", srcAttr.toString(), oldValue, value);
         HTMLFrameElementBase::parseAttribute(name, oldValue, value);
     }
 }

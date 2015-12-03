@@ -666,13 +666,6 @@ void HTMLInputElement::collectStyleForPresentationAttribute(const QualifiedName&
     }
 }
 
-void HTMLInputElement::attributeChanged(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& newValue, AttributeModificationReason reason)
-{
-    if (name == formactionAttr)
-        logEventIfIsolatedWorldAndInDocument("blinkSetAttribute", "input", formactionAttr.toString(), oldValue, newValue);
-    HTMLTextFormControlElement::attributeChanged(name, oldValue, newValue, reason);
-}
-
 void HTMLInputElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)
 {
     ASSERT(m_inputType);
@@ -782,6 +775,8 @@ void HTMLInputElement::parseAttribute(const QualifiedName& name, const AtomicStr
         HTMLTextFormControlElement::parseAttribute(name, oldValue, value);
         UseCounter::count(document(), UseCounter::PrefixedDirectoryAttribute);
     } else {
+        if (name == formactionAttr)
+            logEventIfIsolatedWorldAndInDocument("blinkSetAttribute", "input", formactionAttr.toString(), oldValue, value);
         HTMLTextFormControlElement::parseAttribute(name, oldValue, value);
     }
     m_inputTypeView->attributeChanged();

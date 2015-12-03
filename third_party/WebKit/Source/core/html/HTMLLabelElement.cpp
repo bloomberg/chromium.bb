@@ -235,16 +235,6 @@ void HTMLLabelElement::updateLabel(TreeScope& scope, const AtomicString& oldForA
         scope.addLabel(newForAttributeValue, this);
 }
 
-void HTMLLabelElement::attributeChanged(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& newValue, AttributeModificationReason reason)
-{
-    if (name == HTMLNames::forAttr) {
-        TreeScope& scope = treeScope();
-        if (scope.shouldCacheLabelsByForAttribute())
-            updateLabel(scope, oldValue, newValue);
-    }
-    HTMLElement::attributeChanged(name, oldValue, newValue, reason);
-}
-
 Node::InsertionNotificationRequest HTMLLabelElement::insertedInto(ContainerNode* insertionPoint)
 {
     InsertionNotificationRequest result = HTMLElement::insertedInto(insertionPoint);
@@ -286,6 +276,11 @@ void HTMLLabelElement::parseAttribute(const QualifiedName& attributeName, const 
         formAttributeChanged();
         UseCounter::count(document(), UseCounter::HTMLLabelElementFormContentAttribute);
     } else {
+        if (attributeName == forAttr) {
+            TreeScope& scope = treeScope();
+            if (scope.shouldCacheLabelsByForAttribute())
+                updateLabel(scope, oldValue, attributeValue);
+        }
         HTMLElement::parseAttribute(attributeName, oldValue, attributeValue);
     }
 }

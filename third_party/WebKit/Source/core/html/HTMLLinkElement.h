@@ -184,9 +184,6 @@ public:
 private:
     HTMLLinkElement(Document&, bool createdByParser);
 
-    void attributeChanged(const QualifiedName&, const AtomicString& oldValue, const AtomicString& newValue, AttributeModificationReason) override;
-    void parseAttribute(const QualifiedName&, const AtomicString&, const AtomicString&) override;
-
     LinkStyle* linkStyle() const;
     LinkImport* linkImport() const;
     LinkResource* linkResourceToProcess();
@@ -195,6 +192,7 @@ private:
     static void processCallback(Node*);
 
     // From Node and subclassses
+    void parseAttribute(const QualifiedName&, const AtomicString&, const AtomicString&) override;
     InsertionNotificationRequest insertedInto(ContainerNode*) override;
     void removedFrom(ContainerNode*) override;
     bool isURLAttribute(const Attribute&) const override;

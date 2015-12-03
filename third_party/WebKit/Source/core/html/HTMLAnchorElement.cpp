@@ -176,13 +176,6 @@ void HTMLAnchorElement::setActive(bool down)
     ContainerNode::setActive(down);
 }
 
-void HTMLAnchorElement::attributeChanged(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& newValue, AttributeModificationReason reason)
-{
-    if (name == hrefAttr)
-        logEventIfIsolatedWorldAndInDocument("blinkSetAttribute", "a", hrefAttr.toString(), oldValue, newValue);
-    HTMLElement::attributeChanged(name, oldValue, newValue, reason);
-}
-
 void HTMLAnchorElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)
 {
     if (name == hrefAttr) {
@@ -206,6 +199,7 @@ void HTMLAnchorElement::parseAttribute(const QualifiedName& name, const AtomicSt
             }
         }
         invalidateCachedVisitedLinkHash();
+        logEventIfIsolatedWorldAndInDocument("blinkSetAttribute", "a", hrefAttr.toString(), oldValue, value);
     } else if (name == nameAttr || name == titleAttr) {
         // Do nothing.
     } else if (name == relAttr) {

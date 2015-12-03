@@ -103,6 +103,8 @@ void HTMLButtonElement::parseAttribute(const QualifiedName& name, const AtomicSt
             m_type = SUBMIT;
         setNeedsWillValidateCheck();
     } else {
+        if (name == formactionAttr)
+            logEventIfIsolatedWorldAndInDocument("blinkSetAttribute", "button", formactionAttr.toString(), oldValue, value);
         HTMLFormControlElement::parseAttribute(name, oldValue, value);
     }
 }
@@ -216,13 +218,6 @@ Node::InsertionNotificationRequest HTMLButtonElement::insertedInto(ContainerNode
     InsertionNotificationRequest request = HTMLFormControlElement::insertedInto(insertionPoint);
     logEventIfIsolatedWorldAndInDocument("blinkAddElement", "button", fastGetAttribute(typeAttr), fastGetAttribute(formmethodAttr), fastGetAttribute(formactionAttr));
     return request;
-}
-
-void HTMLButtonElement::attributeChanged(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& newValue, AttributeModificationReason reason)
-{
-    if (name == formactionAttr)
-        logEventIfIsolatedWorldAndInDocument("blinkSetAttribute", "button", formactionAttr.toString(), oldValue, newValue);
-    HTMLFormControlElement::attributeChanged(name, oldValue, newValue, reason);
 }
 
 } // namespace

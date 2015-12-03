@@ -79,19 +79,14 @@ void HTMLScriptElement::didMoveToNewDocument(Document& oldDocument)
 
 void HTMLScriptElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)
 {
-    if (name == srcAttr)
+    if (name == srcAttr) {
         m_loader->handleSourceAttribute(value);
-    else if (name == asyncAttr)
+        logEventIfIsolatedWorldAndInDocument("blinkSetAttribute", "script", srcAttr.toString(), oldValue, value);
+    } else if (name == asyncAttr) {
         m_loader->handleAsyncAttribute();
-    else
+    } else {
         HTMLElement::parseAttribute(name, oldValue, value);
-}
-
-void HTMLScriptElement::attributeChanged(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& newValue, AttributeModificationReason reason)
-{
-    if (name == srcAttr)
-        logEventIfIsolatedWorldAndInDocument("blinkSetAttribute", "script", srcAttr.toString(), oldValue, newValue);
-    HTMLElement::attributeChanged(name, oldValue, newValue, reason);
+    }
 }
 
 Node::InsertionNotificationRequest HTMLScriptElement::insertedInto(ContainerNode* insertionPoint)

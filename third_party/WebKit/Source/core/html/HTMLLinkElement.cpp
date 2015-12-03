@@ -167,6 +167,8 @@ void HTMLLinkElement::parseAttribute(const QualifiedName& name, const AtomicStri
         m_relAttribute = LinkRelAttribute(value);
         process();
     } else if (name == hrefAttr) {
+        // Log href attribute before logging resource fetching in process().
+        logEventIfIsolatedWorldAndInDocument("blinkSetAttribute", "link", hrefAttr.toString(), oldValue, value);
         process();
     } else if (name == typeAttr) {
         m_type = value;
@@ -452,13 +454,6 @@ DEFINE_TRACE(HTMLLinkElement)
     visitor->trace(m_linkLoader);
     HTMLElement::trace(visitor);
     DOMSettableTokenListObserver::trace(visitor);
-}
-
-void HTMLLinkElement::attributeChanged(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& newValue, AttributeModificationReason reason)
-{
-    if (name == hrefAttr)
-        logEventIfIsolatedWorldAndInDocument("blinkSetAttribute", "link", hrefAttr.toString(), oldValue, newValue);
-    HTMLElement::attributeChanged(name, oldValue, newValue, reason);
 }
 
 PassOwnPtrWillBeRawPtr<LinkStyle> LinkStyle::create(HTMLLinkElement* owner)
