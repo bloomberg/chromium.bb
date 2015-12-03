@@ -51,8 +51,8 @@ typedef enum {
   SIGN_IN_SOURCE_CHROME_TO_DEVICE_INFOBAR,
   // Sign in operation was started from the recent tabs panel.
   SIGN_IN_SOURCE_RECENT_TABS,
-  // Sign in operation was started from the stars promo panel.
-  SIGN_IN_SOURCE_STARS_PROMO,
+  // Sign in operation was started from the bookmarks promo panel.
+  SIGN_IN_SOURCE_BOOKMARKS_PROMO,
   // NOTE: Add new sign in sources only immediately above this line. Also, make
   // sure the enum list for histogram |Signin.IOSSignInSource| in
   // tools/histogram/histograms.xml is updated with any change in here.
