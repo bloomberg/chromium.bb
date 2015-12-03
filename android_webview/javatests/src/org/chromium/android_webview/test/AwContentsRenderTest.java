@@ -120,10 +120,27 @@ public class AwContentsRenderTest extends AwTestBase {
         final int width = mAwContents.getContentWidthCss();
         final int height = mAwContents.getContentHeightCss();
         visibleBitmap = GraphicsTestUtils.drawAwContentsOnUiThread(mAwContents, width, height);
+
+        // Things that affect DOM page visibility:
+        // 1. isPaused
+        // 2. window's visibility, if the webview is attached to a window.
+        // Note android.view.View's visibility does not affect DOM page visibility.
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
                 mContainerView.setVisibility(View.INVISIBLE);
+                assertTrue(mAwContents.isPageVisible());
+
+                mAwContents.onPause();
+                assertFalse(mAwContents.isPageVisible());
+
+                mAwContents.onResume();
+                assertTrue(mAwContents.isPageVisible());
+
+                // Simulate a window visiblity change. WebView test app can't
+                // manipulate the window visibility directly.
+                mAwContents.onWindowVisibilityChanged(View.INVISIBLE);
+                assertFalse(mAwContents.isPageVisible());
             }
         });
 

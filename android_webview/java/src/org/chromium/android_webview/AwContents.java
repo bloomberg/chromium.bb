@@ -2408,6 +2408,18 @@ public class AwContents implements SmartClipProvider,
     }
 
     /**
+     * Returns true if the page is visible according to DOM page visibility API.
+     * See http://www.w3.org/TR/page-visibility/
+     * This method is only called by tests and will return the supposed CVC
+     * visibility without waiting a pending mUpdateVisibilityRunnable to run.
+     */
+    @VisibleForTesting
+    public boolean isPageVisible() {
+        if (isDestroyed(NO_WARN)) return mIsContentViewCoreVisible;
+        return nativeIsVisible(mNativeAwContents);
+    }
+
+    /**
      * Key for opaque state in bundle. Note this is only public for tests.
      */
     public static final String SAVE_RESTORE_STATE_KEY = "WEBVIEW_CHROMIUM_STATE";
