@@ -8107,6 +8107,35 @@ should be able to be added at any place in this file.
   <description>User opened the app menu.</description>
 </action>
 
+<action name="MobileNTP.Snippets.Click">
+  <owner>knn@chromium.org</owner>
+  <description>
+    Android: User clicked on a snippet card into the host website.
+  </description>
+</action>
+
+<action name="MobileNTP.Snippets.Scrolled">
+  <owner>knn@chromium.org</owner>
+  <description>
+    Android: User scrolled through the snippet cards. Recorded at the beginning
+    of the scroll event.
+  </description>
+</action>
+
+<action name="MobileNTP.Snippets.ShowLess">
+  <owner>knn@chromium.org</owner>
+  <description>
+    Android: User clicked on a snippet card to hide the bigger summary.
+  </description>
+</action>
+
+<action name="MobileNTP.Snippets.ShowMore">
+  <owner>knn@chromium.org</owner>
+  <description>
+    Android: User clicked on a snippet card to reveal a bigger summary.
+  </description>
+</action>
+
 <action name="MobileNTPBookmark">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

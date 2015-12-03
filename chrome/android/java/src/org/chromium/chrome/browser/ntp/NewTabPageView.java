@@ -36,6 +36,8 @@ import android.widget.TextView;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
@@ -322,8 +324,24 @@ public class NewTabPageView extends FrameLayout
         if (CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_NTP_SNIPPETS)) {
             mSnippetsView = (RecyclerView) findViewById(R.id.snippets_card_list);
             mSnippetsView.setVisibility(View.VISIBLE);
+            RecordHistogram.recordEnumeratedHistogram(SnippetsManager.SNIPPETS_STATE_HISTOGRAM,
+                    SnippetsManager.SNIPPETS_SHOWN, SnippetsManager.NUM_SNIPPETS_ACTIONS);
             mSnippetsView.setLayoutManager(new LinearLayoutManager(getContext()));
             mSnippetsManager = new SnippetsManager(mManager, mSnippetsView);
+            mSnippetsView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+                private boolean mScrolledOnce = false;
+                @Override
+                public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                    if (newState != RecyclerView.SCROLL_STATE_DRAGGING) return;
+                    RecordUserAction.record("MobileNTP.Snippets.Scrolled");
+                    if (mScrolledOnce) return;
+                    mScrolledOnce = true;
+                    RecordHistogram.recordEnumeratedHistogram(
+                            SnippetsManager.SNIPPETS_STATE_HISTOGRAM,
+                            SnippetsManager.SNIPPETS_SCROLLED,
+                            SnippetsManager.NUM_SNIPPETS_ACTIONS);
+                }
+            });
         }
     }
 

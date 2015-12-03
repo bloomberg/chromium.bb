@@ -29638,6 +29638,55 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="NewTabPage.Snippets.CardClicked">
+  <owner>knn@chromium.org</owner>
+  <summary>
+    Android: The position of the snippets card on the NTP, that is clicked
+    through to the host website of the content.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.Snippets.CardExpanded">
+  <owner>knn@chromium.org</owner>
+  <summary>
+    Android: The position of the snippets card on the NTP, that is expanded to
+    reveal more content.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.Snippets.CardHidden">
+  <owner>knn@chromium.org</owner>
+  <summary>
+    Android: The position of the snippets card on the NTP, for which the
+    expanded content was minimized/hidden.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.Snippets.CardShown">
+  <owner>knn@chromium.org</owner>
+  <summary>
+    Android: The position of the snippets card that is shown on the NTP.
+    Depending on the device screen size only some of the cards will be shown
+    unless the users scrolls through.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.Snippets.Interactions" enum="SnippetsInteractions">
+  <owner>knn@chromium.org</owner>
+  <summary>
+    Android: A histogram giving an overall summary of important events like
+    impressions, scroll events, clicks etc.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.Snippets.NumArticles">
+  <owner>knn@chromium.org</owner>
+  <summary>
+    Android: The number of snippet articles available to show on the NTP logged
+    once per NTP load.
+  </summary>
+</histogram>
+
 <histogram name="NewTabPage.SuggestedSite">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
@@ -75325,6 +75374,12 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="2" label="JSON"/>
   <int value="3" label="Plain"/>
   <int value="4" label="Others"/>
+</enum>
+
+<enum name="SnippetsInteractions" type="int">
+  <int value="0" label="Snippets were shown to the user"/>
+  <int value="1" label="User scrolled through the snippets"/>
+  <int value="2" label="User clicked on a snippet into the host website"/>
 </enum>
 
 <enum name="SocketStreamConnectionType" type="int">

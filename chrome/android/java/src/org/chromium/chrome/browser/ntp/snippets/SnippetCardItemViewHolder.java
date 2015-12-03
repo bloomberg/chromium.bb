@@ -11,6 +11,8 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsManager.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsManager.SnippetListItem;
@@ -25,6 +27,7 @@ class SnippetCardItemViewHolder extends SnippetListItemViewHolder implements Vie
     public TextView mReadMoreLinkTextView;
     public ImageView mThumbnailView;
     public String mUrl;
+    public int mPosition;
 
     /**
      * Creates the CardView object to display snippets information
@@ -56,7 +59,22 @@ class SnippetCardItemViewHolder extends SnippetListItemViewHolder implements Vie
             @Override
             public void onClick(View v) {
                 loadUrl(mUrl);
+                RecordUserAction.record("MobileNTP.Snippets.Click");
+                RecordHistogram.recordSparseSlowlyHistogram(
+                        "NewTabPage.Snippets.CardClicked", mPosition);
+                RecordHistogram.recordEnumeratedHistogram(SnippetsManager.SNIPPETS_STATE_HISTOGRAM,
+                        SnippetsManager.SNIPPETS_CLICKED, SnippetsManager.NUM_SNIPPETS_ACTIONS);
             }
+        });
+        cardView.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
+            @Override
+            public void onViewAttachedToWindow(View v) {
+                RecordHistogram.recordSparseSlowlyHistogram(
+                        "NewTabPage.Snippets.CardShown", mPosition);
+            }
+
+            @Override
+            public void onViewDetachedFromWindow(View v) {}
         });
     }
 
@@ -65,9 +83,15 @@ class SnippetCardItemViewHolder extends SnippetListItemViewHolder implements Vie
         // Toggle visibility of snippet text
         int visibility =
                 (mArticleSnippetTextView.getVisibility() == View.GONE) ? View.VISIBLE : View.GONE;
-
         mArticleSnippetTextView.setVisibility(visibility);
         mReadMoreLinkTextView.setVisibility(visibility);
+
+        String action = visibility == View.VISIBLE ? "MobileNTP.Snippets.ShowMore"
+                                                   : "MobileNTP.Snippets.ShowLess";
+        String histogram = visibility == View.VISIBLE ? "NewTabPage.Snippets.CardExpanded"
+                                                      : "NewTabPage.Snippets.CardHidden";
+        RecordUserAction.record(action);
+        RecordHistogram.recordSparseSlowlyHistogram(histogram, mPosition);
     }
 
     @Override
@@ -78,6 +102,7 @@ class SnippetCardItemViewHolder extends SnippetListItemViewHolder implements Vie
         mPublisherTextView.setText(item.mPublisher);
         mArticleSnippetTextView.setText(item.mSnippet);
         mUrl = item.mUrl;
+        mPosition = item.mPosition;
 
         item.setThumbnailOnView(mThumbnailView);
     }

@@ -13,6 +13,7 @@ import android.widget.ImageView;
 
 import org.chromium.base.Log;
 import org.chromium.base.StreamUtil;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 
 import java.io.File;
@@ -37,6 +38,16 @@ public class SnippetsManager {
      * Describes a single card snippet
      */
     public static final int SNIPPET_ITEM_TYPE_SNIPPET = 2;
+
+    /**
+     * Enum values for recording {@code SNIPPETS_STATE_HISTOGRAM} histogram.
+     * Stored here as it is recorded in multiple places.
+     */
+    public static final int SNIPPETS_SHOWN = 0;
+    public static final int SNIPPETS_SCROLLED = 1;
+    public static final int SNIPPETS_CLICKED = 2;
+    public static final int NUM_SNIPPETS_ACTIONS = 3;
+    public static final String SNIPPETS_STATE_HISTOGRAM = "NewTabPage.Snippets.Interactions";
 
     private NewTabPageManager mNewTabPageManager;
     private SnippetsAdapter mDataAdapter;
@@ -78,6 +89,7 @@ public class SnippetsManager {
         public final String mSnippet;
         public final String mUrl;
         public final String mThumbnailPath;
+        public final int mPosition;
 
         private ThumbnailRenderingTask mThumbnailRenderingTask;
 
@@ -104,13 +116,14 @@ public class SnippetsManager {
             }
         }
 
-        public SnippetArticle(
-                String title, String publisher, String snippet, String url, String thumbnailPath) {
+        public SnippetArticle(String title, String publisher, String snippet, String url,
+                String thumbnailPath, int position) {
             mTitle = title;
             mPublisher = publisher;
             mSnippet = snippet;
             mUrl = url;
             mThumbnailPath = thumbnailPath;
+            mPosition = position;
         }
 
         @Override
@@ -134,6 +147,8 @@ public class SnippetsManager {
     }
 
     private class ReadFileTask extends AsyncTask<Void, Void, List<SnippetListItem>> {
+        private int mNumArticles;
+
         @Override
         protected List<SnippetListItem> doInBackground(Void... params) {
             FileInputStream fis = null;
@@ -170,11 +185,14 @@ public class SnippetsManager {
         private List<SnippetListItem> readRecommendationsArray(JsonReader reader)
                 throws IOException {
             List<SnippetListItem> listSnippetItems = new ArrayList<SnippetListItem>();
+            mNumArticles = 0;
             reader.beginArray();
             while (reader.hasNext()) {
                 readSnippetGroup(listSnippetItems, reader);
             }
             reader.endArray();
+            RecordHistogram.recordSparseSlowlyHistogram(
+                    "NewTabPage.Snippets.NumArticles", mNumArticles);
             return listSnippetItems;
         }
 
@@ -227,7 +245,7 @@ public class SnippetsManager {
             }
             reader.endObject();
             return new SnippetsManager.SnippetArticle(
-                    headline, publisher, snippets, url, thumbnail);
+                    headline, publisher, snippets, url, thumbnail, mNumArticles++);
         }
     }
 
