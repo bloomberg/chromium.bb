@@ -72,6 +72,7 @@ SPECIAL_TESTS = {
     'cli/cros/lint_unittest': INSIDE,
     'cli/deploy_unittest': INSIDE,
     'lib/alerts_unittest': INSIDE,
+    'lib/androidbuild_unittest': INSIDE,
     'lib/chroot_util_unittest': INSIDE,
     'lib/filetype_unittest': INSIDE,
     'lib/paygen/paygen_payload_lib_unittest': INSIDE,
