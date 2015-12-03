@@ -78,8 +78,6 @@ public:
     bool destructionPending() const { return m_destructionPending; }
     v8::Isolate* isolate() { return m_isolateHolder->isolate(); }
 
-    v8::Local<v8::FunctionTemplate> toStringTemplate();
-
     StringCache* stringCache() { return m_stringCache.get(); }
 
     v8::Persistent<v8::Value>& ensureLiveRoot();
@@ -140,7 +138,6 @@ private:
     OwnPtr<gin::IsolateHolder> m_isolateHolder;
     DOMTemplateMap m_domTemplateMapForMainWorld;
     DOMTemplateMap m_domTemplateMapForNonMainWorld;
-    ScopedPersistent<v8::FunctionTemplate> m_toStringTemplate;
     OwnPtr<StringCache> m_stringCache;
     OwnPtr<V8HiddenValue> m_hiddenValue;
     ScopedPersistent<v8::Value> m_liveRoot;

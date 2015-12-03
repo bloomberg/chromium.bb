@@ -2518,9 +2518,6 @@ void V8TestInterface::installV8TestInterfaceTemplate(v8::Local<v8::FunctionTempl
         V8DOMConfiguration::installMethod(isolate, instanceTemplate, prototypeTemplate, functionTemplate, defaultSignature, shortMethodWithShortArgumentImplementedInPrivateScriptMethodConfiguration);
     }
 #endif // ENABLE(PARTIAL_CONDITION)
-
-    // Custom toString template
-    functionTemplate->Set(v8AtomicString(isolate, "toString"), V8PerIsolateData::from(isolate)->toStringTemplate());
 }
 
 v8::Local<v8::FunctionTemplate> V8TestInterface::domTemplate(v8::Isolate* isolate)

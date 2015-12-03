@@ -165,7 +165,6 @@ void V8PerIsolateData::destroy(v8::Isolate* isolate)
     data->m_hiddenValue.clear();
     data->m_stringCache->dispose();
     data->m_stringCache.clear();
-    data->m_toStringTemplate.clear();
     data->m_domTemplateMapForNonMainWorld.clear();
     data->m_domTemplateMapForMainWorld.clear();
     if (isMainThread())
@@ -257,34 +256,6 @@ v8::Local<v8::Object> V8PerIsolateData::findInstanceInPrototypeChain(const Wrapp
         return v8::Local<v8::Object>();
     v8::Local<v8::FunctionTemplate> templ = result->value.Get(isolate());
     return v8::Local<v8::Object>::Cast(value)->FindInstanceInPrototypeChain(templ);
-}
-
-static void constructorOfToString(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    // The DOM constructors' toString functions grab the current toString
-    // for Functions by taking the toString function of itself and then
-    // calling it with the constructor as its receiver. This means that
-    // changes to the Function prototype chain or toString function are
-    // reflected when printing DOM constructors. The only wart is that
-    // changes to a DOM constructor's toString's toString will cause the
-    // toString of the DOM constructor itself to change. This is extremely
-    // obscure and unlikely to be a problem.
-    v8::Isolate* isolate = info.GetIsolate();
-    v8::Local<v8::Value> value;
-    if (!info.Callee()->Get(isolate->GetCurrentContext(), v8AtomicString(isolate, "toString")).ToLocal(&value) || !value->IsFunction()) {
-        v8SetReturnValue(info, v8::String::Empty(isolate));
-        return;
-    }
-    v8::Local<v8::Value> result;
-    if (V8ScriptRunner::callInternalFunction(v8::Local<v8::Function>::Cast(value), info.This(), 0, 0, isolate).ToLocal(&result))
-        v8SetReturnValue(info, result);
-}
-
-v8::Local<v8::FunctionTemplate> V8PerIsolateData::toStringTemplate()
-{
-    if (m_toStringTemplate.isEmpty())
-        m_toStringTemplate.set(isolate(), v8::FunctionTemplate::New(isolate(), constructorOfToString));
-    return m_toStringTemplate.newLocal(isolate());
 }
 
 void V8PerIsolateData::addEndOfScopeTask(PassOwnPtr<EndOfScopeTask> task)

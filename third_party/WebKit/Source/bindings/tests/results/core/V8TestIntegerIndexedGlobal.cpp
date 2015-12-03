@@ -182,9 +182,6 @@ static void installV8TestIntegerIndexedGlobalTemplate(v8::Local<v8::FunctionTemp
     v8::IndexedPropertyHandlerConfiguration indexedPropertyHandlerConfig(TestIntegerIndexedGlobalV8Internal::indexedPropertyGetterCallback, TestIntegerIndexedGlobalV8Internal::indexedPropertySetterCallback, 0, TestIntegerIndexedGlobalV8Internal::indexedPropertyDeleterCallback, indexedPropertyEnumerator<TestIntegerIndexedGlobal>, v8::Local<v8::Value>(), v8::PropertyHandlerFlags::kNone);
     instanceTemplate->SetHandler(indexedPropertyHandlerConfig);
     functionTemplate->SetHiddenPrototype(true);
-
-    // Custom toString template
-    functionTemplate->Set(v8AtomicString(isolate, "toString"), V8PerIsolateData::from(isolate)->toStringTemplate());
 }
 
 v8::Local<v8::FunctionTemplate> V8TestIntegerIndexedGlobal::domTemplate(v8::Isolate* isolate)

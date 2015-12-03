@@ -436,9 +436,6 @@ static void install{{v8_class}}Template(v8::Local<v8::FunctionTemplate> function
     {% if is_global or interface_name == 'HTMLDocument' %}
     functionTemplate->SetHiddenPrototype(true);
     {% endif %}
-
-    // Custom toString template
-    functionTemplate->Set(v8AtomicString(isolate, "toString"), V8PerIsolateData::from(isolate)->toStringTemplate());
     {% endif %}
 }
 
