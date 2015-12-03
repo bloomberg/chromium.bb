@@ -10,7 +10,7 @@
           '../../skia/resources/',
           '../../skia/out/Debug/dm',
           '../content/test/ct/run_ct_dm.py',
-          '../content/test/ct/slave<(SLAVE_NUM)/skps/',
+          '../../skps/slave<(SLAVE_NUM)/',
         ],
         'command': [
           'python',

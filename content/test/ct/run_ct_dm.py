@@ -13,8 +13,10 @@ import sys
 
 PARENT_DIR = os.path.dirname(os.path.realpath(__file__))
 
-SKIA_SRC_DIR = os.path.normpath(os.path.join(
-    PARENT_DIR, os.pardir, os.pardir, os.pardir, os.pardir, 'skia'))
+REPOS_BASE_DIR = os.path.normpath(os.path.join(
+    PARENT_DIR, os.pardir, os.pardir, os.pardir, os.pardir))
+
+SKIA_SRC_DIR = os.path.join(REPOS_BASE_DIR, 'skia')
 
 
 def main():
@@ -24,7 +26,7 @@ def main():
   args = parser.parse_args()
 
   dm_path = os.path.join(SKIA_SRC_DIR, 'out', 'Debug', 'dm')
-  skps_dir = os.path.join(PARENT_DIR, 'slave%d' % args.slave_num, 'skps')
+  skps_dir = os.path.join(REPOS_BASE_DIR, 'skps', 'slave%d' % args.slave_num)
   resource_path = os.path.join(SKIA_SRC_DIR, 'resources')
 
   # TODO(rmistry): Double check the below DM configuration with mtklein@. We
