@@ -146,11 +146,6 @@ const WillBeHeapVector<RefPtrWillBeMember<StyleSheet>>& StyleEngine::styleSheets
     return ensureStyleSheetCollectionFor(treeScope)->styleSheetsForStyleSheetList();
 }
 
-const WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet>>& StyleEngine::activeAuthorStyleSheets() const
-{
-    return documentStyleSheetCollection()->activeAuthorStyleSheets();
-}
-
 void StyleEngine::combineCSSFeatureFlags(const RuleFeatureSet& features)
 {
     // Delay resetting the flags until after next style recalc since unapplying the style may not work without these set (this is true at least with before/after).
