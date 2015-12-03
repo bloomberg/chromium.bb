@@ -81,7 +81,7 @@ bool HandleTable::AddDispatcherVector(const DispatcherVector& dispatchers,
   size_t max_handle_table_size = GetConfiguration().max_handle_table_size;
 
   DCHECK_LE(dispatchers.size(), max_message_num_handles);
-  DCHECK(handles);
+  CHECK(handles);
   DCHECK_LT(
       static_cast<uint64_t>(max_handle_table_size) + max_message_num_handles,
       std::numeric_limits<size_t>::max())
@@ -107,7 +107,7 @@ MojoResult HandleTable::MarkBusyAndStartTransport(
     uint32_t num_handles,
     std::vector<DispatcherTransport>* transports) {
   DCHECK_NE(disallowed_handle, MOJO_HANDLE_INVALID);
-  DCHECK(handles);
+  CHECK(handles);
   DCHECK_LE(num_handles, GetConfiguration().max_message_num_handles);
   DCHECK(transports);
   DCHECK_EQ(transports->size(), num_handles);

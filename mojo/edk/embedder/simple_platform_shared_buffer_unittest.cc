@@ -134,7 +134,8 @@ TEST(SimplePlatformSharedBufferTest, TooBig) {
   // If |size_t| is 32-bit, it's quite possible/likely that |Create()| succeeds
   // (since it only involves creating a 4 GB file).
   size_t max_size = std::numeric_limits<size_t>::max();
-  if (max_size > static_cast<size_t>(base::SysInfo::AmountOfVirtualMemory()))
+  if (base::SysInfo::AmountOfVirtualMemory() &&
+      max_size > static_cast<size_t>(base::SysInfo::AmountOfVirtualMemory()))
     max_size = static_cast<size_t>(base::SysInfo::AmountOfVirtualMemory());
   scoped_refptr<SimplePlatformSharedBuffer> buffer(
       SimplePlatformSharedBuffer::Create(max_size));
