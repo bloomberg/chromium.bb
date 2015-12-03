@@ -12,6 +12,9 @@
 #include "components/exo/buffer.h"
 #include "components/exo/surface_delegate.h"
 #include "components/exo/surface_observer.h"
+#include "ui/aura/window_delegate.h"
+#include "ui/base/cursor/cursor.h"
+#include "ui/base/hit_test.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/gpu_memory_buffer.h"
@@ -35,21 +38,59 @@ bool ListContainsEntry(T& list, U key) {
   return FindListEntry(list, key) != list.end();
 }
 
+// A window delegate which does nothing. Used to create a window that
+// is an event target, but do nothing.
+class EmptyWindowDelegate : public aura::WindowDelegate {
+ public:
+  EmptyWindowDelegate() {}
+  ~EmptyWindowDelegate() override {}
+
+  // Overridden from aura::WindowDelegate:
+  gfx::Size GetMinimumSize() const override { return gfx::Size(); }
+  gfx::Size GetMaximumSize() const override { return gfx::Size(); }
+  void OnBoundsChanged(const gfx::Rect& old_bounds,
+                       const gfx::Rect& new_bounds) override {}
+  gfx::NativeCursor GetCursor(const gfx::Point& point) override {
+    return gfx::kNullCursor;
+  }
+  int GetNonClientComponent(const gfx::Point& point) const override {
+    return HTNOWHERE;
+  }
+  bool ShouldDescendIntoChildForEventHandling(
+      aura::Window* child,
+      const gfx::Point& location) override {
+    return false;
+  }
+  bool CanFocus() override { return true; }
+  void OnCaptureLost() override {}
+  void OnPaint(const ui::PaintContext& context) override {}
+  void OnDeviceScaleFactorChanged(float device_scale_factor) override {}
+  void OnWindowDestroying(aura::Window* window) override {}
+  void OnWindowDestroyed(aura::Window* window) override { delete this; }
+  void OnWindowTargetVisibilityChanged(bool visible) override {}
+  bool HasHitTestMask() const override { return false; }
+  void GetHitTestMask(gfx::Path* mask) const override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(EmptyWindowDelegate);
+};
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // Surface, public:
 
 Surface::Surface()
-    : has_pending_contents_(false),
+    : aura::Window(new EmptyWindowDelegate),
+      has_pending_contents_(false),
       needs_commit_surface_hierarchy_(false),
       update_contents_after_successful_compositing_(false),
       compositor_(nullptr),
       delegate_(nullptr) {
-  SetLayer(new ui::Layer(ui::LAYER_SOLID_COLOR));
-  set_owned_by_client();
-  SetVisible(false);
-  SetEnabled(false);
+  SetType(ui::wm::WINDOW_TYPE_CONTROL);
+  Init(ui::LAYER_SOLID_COLOR);
+  set_owned_by_parent(false);
+  SetName("ExoSurface");
 }
 
 Surface::~Surface() {
@@ -74,7 +115,6 @@ void Surface::Attach(Buffer* buffer) {
 
   has_pending_contents_ = true;
   pending_buffer_ = buffer ? buffer->AsWeakPtr() : base::WeakPtr<Buffer>();
-  PreferredSizeChanged();
 }
 
 void Surface::Damage(const gfx::Rect& damage) {
@@ -101,10 +141,9 @@ void Surface::AddSubSurface(Surface* sub_surface) {
                sub_surface->AsTracedValue());
 
   DCHECK(!sub_surface->parent());
-  DCHECK(!sub_surface->visible());
-  DCHECK(!sub_surface->enabled());
+  DCHECK(!sub_surface->IsVisible());
   DCHECK(sub_surface->bounds().origin() == gfx::Point());
-  AddChildView(sub_surface);
+  AddChild(sub_surface);
 
   DCHECK(!ListContainsEntry(pending_sub_surfaces_, sub_surface));
   pending_sub_surfaces_.push_back(std::make_pair(sub_surface, gfx::Point()));
@@ -114,7 +153,7 @@ void Surface::RemoveSubSurface(Surface* sub_surface) {
   TRACE_EVENT1("exo", "Surface::AddSubSurface", "sub_surface",
                sub_surface->AsTracedValue());
 
-  RemoveChildView(sub_surface);
+  RemoveChild(sub_surface);
 
   DCHECK(ListContainsEntry(pending_sub_surfaces_, sub_surface));
   pending_sub_surfaces_.erase(
@@ -247,10 +286,10 @@ void Surface::CommitSurfaceHierarchy() {
     frame_callbacks_.splice(frame_callbacks_.end(), pending_frame_callbacks_);
   }
 
-  // Synchronize view hierarchy. This will position and update the stacking
+  // Synchronize window hierarchy. This will position and update the stacking
   // order of all sub-surfaces after committing all pending state of sub-surface
   // descendants.
-  int index = 0;
+  aura::Window* stacking_target = nullptr;
   for (auto& sub_surface_entry : pending_sub_surfaces_) {
     Surface* sub_surface = sub_surface_entry.first;
 
@@ -260,18 +299,26 @@ void Surface::CommitSurfaceHierarchy() {
       sub_surface->CommitSurfaceHierarchy();
 
     // Enable/disable sub-surface based on if it has contents.
-    sub_surface->SetVisible(sub_surface->has_contents());
-    sub_surface->SetEnabled(sub_surface->has_contents());
+    if (sub_surface->has_contents())
+      sub_surface->Show();
+    else
+      sub_surface->Hide();
 
     // Move sub-surface to its new position in the stack.
-    DCHECK_LT(index, child_count());
-    ReorderChildView(sub_surface, index);
+    if (stacking_target)
+      StackChildAbove(sub_surface, stacking_target);
+
+    // Stack next sub-surface above this sub-surface.
+    stacking_target = sub_surface;
 
     // Update sub-surface position relative to surface origin.
-    sub_surface->SetPosition(sub_surface_entry.second);
-
-    ++index;
+    sub_surface->SetBounds(
+        gfx::Rect(sub_surface_entry.second, sub_surface->layer()->size()));
   }
+}
+
+gfx::Size Surface::GetPreferredSize() const {
+  return pending_buffer_ ? pending_buffer_->GetSize() : layer()->size();
 }
 
 bool Surface::IsSynchronized() const {
@@ -304,13 +351,6 @@ scoped_refptr<base::trace_event::TracedValue> Surface::AsTracedValue() const {
       new base::trace_event::TracedValue;
   value->SetString("name", layer()->name());
   return value;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// views::Views overrides:
-
-gfx::Size Surface::GetPreferredSize() const {
-  return pending_buffer_ ? pending_buffer_->GetSize() : layer()->size();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

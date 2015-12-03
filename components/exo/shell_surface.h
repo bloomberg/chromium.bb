@@ -28,7 +28,8 @@ class Surface;
 // metadata like title and class, etc.
 class ShellSurface : public SurfaceDelegate,
                      public SurfaceObserver,
-                     public views::WidgetDelegate {
+                     public views::WidgetDelegate,
+                     public views::View {
  public:
   explicit ShellSurface(Surface* surface);
   ~ShellSurface() override;
@@ -65,6 +66,9 @@ class ShellSurface : public SurfaceDelegate,
   views::View* GetContentsView() override;
   views::NonClientFrameView* CreateNonClientFrameView(
       views::Widget* widget) override;
+
+  // Overridden from views::View:
+  gfx::Size GetPreferredSize() const override;
 
  private:
   scoped_ptr<views::Widget> widget_;

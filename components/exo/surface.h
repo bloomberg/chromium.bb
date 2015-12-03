@@ -13,9 +13,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "third_party/skia/include/core/SkRegion.h"
+#include "ui/aura/window.h"
 #include "ui/compositor/compositor_observer.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/views/view.h"
 
 namespace base {
 namespace trace_event {
@@ -30,7 +30,7 @@ class SurfaceObserver;
 
 // This class represents a rectangular area that is displayed on the screen.
 // It has a location, size and pixel contents.
-class Surface : public views::View, public ui::CompositorObserver {
+class Surface : public aura::Window, public ui::CompositorObserver {
  public:
   Surface();
   ~Surface() override;
@@ -74,6 +74,9 @@ class Surface : public views::View, public ui::CompositorObserver {
   // Returns true if surface is in synchronized mode.
   bool IsSynchronized() const;
 
+  // Returns the preferred size of surface.
+  gfx::Size GetPreferredSize() const;
+
   // Set the surface delegate.
   void SetSurfaceDelegate(SurfaceDelegate* delegate);
 
@@ -90,9 +93,6 @@ class Surface : public views::View, public ui::CompositorObserver {
   scoped_refptr<base::trace_event::TracedValue> AsTracedValue() const;
 
   bool HasPendingDamageForTesting() const { return !pending_damage_.IsEmpty(); }
-
-  // Overridden from views::View:
-  gfx::Size GetPreferredSize() const override;
 
   // Overridden from ui::CompositorObserver:
   void OnCompositingDidCommit(ui::Compositor* compositor) override;

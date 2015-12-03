@@ -67,8 +67,8 @@ views::Widget::InitParams CreateWidgetInitParams(
 ShellSurface::ShellSurface(Surface* surface) : surface_(surface) {
   surface_->SetSurfaceDelegate(this);
   surface_->AddSurfaceObserver(this);
-  surface_->SetVisible(true);
-  surface_->SetEnabled(true);
+  surface_->Show();
+  set_owned_by_client();
 }
 
 ShellSurface::~ShellSurface() {
@@ -93,6 +93,8 @@ void ShellSurface::SetToplevel() {
   widget_.reset(new views::Widget);
   widget_->Init(params);
   widget_->GetNativeWindow()->set_owned_by_parent(false);
+  widget_->GetNativeWindow()->SetName("ExoShellSurface");
+  widget_->GetNativeWindow()->AddChild(surface_);
 
   // The position of a standard top level shell surface is managed by Ash.
   ash::wm::GetWindowState(widget_->GetNativeWindow())
@@ -112,6 +114,8 @@ void ShellSurface::SetMaximized() {
   widget_.reset(new views::Widget);
   widget_->Init(params);
   widget_->GetNativeWindow()->set_owned_by_parent(false);
+  widget_->GetNativeWindow()->SetName("ExoShellSurface");
+  widget_->GetNativeWindow()->AddChild(surface_);
 }
 
 void ShellSurface::SetFullscreen() {
@@ -127,6 +131,8 @@ void ShellSurface::SetFullscreen() {
   widget_.reset(new views::Widget);
   widget_->Init(params);
   widget_->GetNativeWindow()->set_owned_by_parent(false);
+  widget_->GetNativeWindow()->SetName("ExoShellSurface");
+  widget_->GetNativeWindow()->AddChild(surface_);
 }
 
 void ShellSurface::SetTitle(const base::string16& title) {
@@ -161,10 +167,14 @@ scoped_refptr<base::trace_event::TracedValue> ShellSurface::AsTracedValue()
 void ShellSurface::OnSurfaceCommit() {
   surface_->CommitSurfaceHierarchy();
   if (widget_) {
+    // Update surface bounds and widget size.
+    gfx::Point origin;
+    views::View::ConvertPointToWidget(this, &origin);
+    surface_->SetBounds(gfx::Rect(origin, surface_->layer()->size()));
     widget_->SetSize(widget_->non_client_view()->GetPreferredSize());
 
     // Show widget if not already visible.
-    if (!widget_->GetNativeWindow()->TargetVisibility())
+    if (!widget_->IsClosed() && !widget_->IsVisible())
       widget_->Show();
   }
 }
@@ -198,12 +208,19 @@ const views::Widget* ShellSurface::GetWidget() const {
 }
 
 views::View* ShellSurface::GetContentsView() {
-  return surface_;
+  return this;
 }
 
 views::NonClientFrameView* ShellSurface::CreateNonClientFrameView(
     views::Widget* widget) {
   return new CustomFrameView(widget);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// views::Views overrides:
+
+gfx::Size ShellSurface::GetPreferredSize() const {
+  return surface_ ? surface_->GetPreferredSize() : gfx::Size();
 }
 
 }  // namespace exo

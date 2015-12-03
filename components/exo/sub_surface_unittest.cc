@@ -44,9 +44,9 @@ TEST_F(SubSurfaceTest, PlaceAbove) {
   scoped_ptr<SubSurface> sub_surface2(
       new SubSurface(surface2.get(), parent.get()));
 
-  ASSERT_EQ(2, parent->child_count());
-  EXPECT_EQ(surface1.get(), parent->child_at(0));
-  EXPECT_EQ(surface2.get(), parent->child_at(1));
+  ASSERT_EQ(2u, parent->children().size());
+  EXPECT_EQ(surface1.get(), parent->children()[0]);
+  EXPECT_EQ(surface2.get(), parent->children()[1]);
 
   sub_surface2->PlaceAbove(parent.get());
   sub_surface1->PlaceAbove(non_sibling_surface.get());  // Invalid
@@ -55,14 +55,14 @@ TEST_F(SubSurfaceTest, PlaceAbove) {
 
   // Nothing should have changed as Commit() is required for new stacking
   // order to take effect.
-  EXPECT_EQ(surface1.get(), parent->child_at(0));
-  EXPECT_EQ(surface2.get(), parent->child_at(1));
+  EXPECT_EQ(surface1.get(), parent->children()[0]);
+  EXPECT_EQ(surface2.get(), parent->children()[1]);
 
   parent->Commit();
 
   // surface1 should now be stacked above surface2.
-  EXPECT_EQ(surface2.get(), parent->child_at(0));
-  EXPECT_EQ(surface1.get(), parent->child_at(1));
+  EXPECT_EQ(surface2.get(), parent->children()[0]);
+  EXPECT_EQ(surface1.get(), parent->children()[1]);
 }
 
 TEST_F(SubSurfaceTest, PlaceBelow) {
@@ -75,9 +75,9 @@ TEST_F(SubSurfaceTest, PlaceBelow) {
   scoped_ptr<SubSurface> sub_surface2(
       new SubSurface(surface2.get(), parent.get()));
 
-  ASSERT_EQ(2, parent->child_count());
-  EXPECT_EQ(surface1.get(), parent->child_at(0));
-  EXPECT_EQ(surface2.get(), parent->child_at(1));
+  ASSERT_EQ(2u, parent->children().size());
+  EXPECT_EQ(surface1.get(), parent->children()[0]);
+  EXPECT_EQ(surface2.get(), parent->children()[1]);
 
   sub_surface2->PlaceBelow(parent.get());               // Invalid
   sub_surface2->PlaceBelow(non_sibling_surface.get());  // Invalid
@@ -86,14 +86,14 @@ TEST_F(SubSurfaceTest, PlaceBelow) {
 
   // Nothing should have changed as Commit() is required for new stacking
   // order to take effect.
-  EXPECT_EQ(surface1.get(), parent->child_at(0));
-  EXPECT_EQ(surface2.get(), parent->child_at(1));
+  EXPECT_EQ(surface1.get(), parent->children()[0]);
+  EXPECT_EQ(surface2.get(), parent->children()[1]);
 
   parent->Commit();
 
   // surface1 should now be stacked above surface2.
-  EXPECT_EQ(surface2.get(), parent->child_at(0));
-  EXPECT_EQ(surface1.get(), parent->child_at(1));
+  EXPECT_EQ(surface2.get(), parent->children()[0]);
+  EXPECT_EQ(surface1.get(), parent->children()[1]);
 }
 
 TEST_F(SubSurfaceTest, SetCommitBehavior) {
