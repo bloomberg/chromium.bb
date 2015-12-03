@@ -41,9 +41,6 @@ WebLayerTreeViewImpl::WebLayerTreeViewImpl(
   // to keep content always crisp when possible.
   settings.layer_transforms_should_scale_layer_contents = true;
 
-  // Use new animation system (cc::AnimationHost).
-  settings.use_compositor_animation_timelines = true;
-
   // TODO(rjkroege): Not having a shared tile transport breaks
   // software compositing. Add bitmap transport support.
   cc::SharedBitmapManager* shared_bitmap_manager = nullptr;
