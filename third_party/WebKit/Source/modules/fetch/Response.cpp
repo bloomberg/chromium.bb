@@ -13,6 +13,7 @@
 #include "core/html/FormData.h"
 #include "modules/fetch/BodyStreamBuffer.h"
 #include "modules/fetch/FetchBlobDataConsumerHandle.h"
+#include "modules/fetch/FetchFormDataConsumerHandle.h"
 #include "modules/fetch/ResponseInit.h"
 #include "platform/network/EncodedFormData.h"
 #include "platform/network/HTTPHeaderMap.h"
@@ -96,90 +97,53 @@ bool isValidReasonPhrase(const String& statusText)
 
 Response* Response::create(ExecutionContext* context, ExceptionState& exceptionState)
 {
-    return create(context, nullptr, ResponseInit(), exceptionState);
+    return create(context, nullptr, String(), ResponseInit(), exceptionState);
 }
 
-Response* Response::create(ExecutionContext* context, const BodyInit& body, const Dictionary& responseInit, ExceptionState& exceptionState)
+Response* Response::create(ExecutionContext* context, const BodyInit& body, const Dictionary& init, ExceptionState& exceptionState)
 {
     ASSERT(!body.isNull());
-    if (body.isBlob())
-        return create(context, body.getAsBlob(), ResponseInit(responseInit, exceptionState), exceptionState);
-    if (body.isUSVString()) {
-        OwnPtr<BlobData> blobData = BlobData::create();
-        blobData->appendText(body.getAsUSVString(), false);
-        // "Set |Content-Type| to `text/plain;charset=UTF-8`."
-        blobData->setContentType("text/plain;charset=UTF-8");
-        const long long length = blobData->length();
-        Blob* blob = Blob::create(BlobDataHandle::create(blobData.release(), length));
-        return create(context, blob, ResponseInit(responseInit, exceptionState), exceptionState);
+    OwnPtr<FetchDataConsumerHandle> bodyHandle;
+    String contentType;
+    if (body.isBlob()) {
+        bodyHandle = FetchBlobDataConsumerHandle::create(context, body.getAsBlob()->blobDataHandle());
+        contentType = body.getAsBlob()->type();
+    } else if (body.isUSVString()) {
+        bodyHandle = FetchFormDataConsumerHandle::create(body.getAsUSVString());
+        contentType = "text/plain;charset=UTF-8";
+    } else if (body.isArrayBuffer()) {
+        bodyHandle = FetchFormDataConsumerHandle::create(body.getAsArrayBuffer());
+    } else if (body.isArrayBufferView()) {
+        bodyHandle = FetchFormDataConsumerHandle::create(body.getAsArrayBufferView());
+    } else if (body.isFormData()) {
+        RefPtr<EncodedFormData> formData = body.getAsFormData()->encodeMultiPartFormData();
+        // Here we handle formData->boundary() as a C-style string. See
+        // FormDataEncoder::generateUniqueBoundaryString.
+        contentType = AtomicString("multipart/form-data; boundary=", AtomicString::ConstructFromLiteral) + formData->boundary().data();
+        bodyHandle = FetchFormDataConsumerHandle::create(context, formData.release());
+    } else {
+        ASSERT_NOT_REACHED();
+        return nullptr;
     }
-    if (body.isArrayBuffer()) {
-        RefPtr<DOMArrayBuffer> arrayBuffer = body.getAsArrayBuffer();
-        OwnPtr<BlobData> blobData = BlobData::create();
-        blobData->appendBytes(arrayBuffer->data(), arrayBuffer->byteLength());
-        const long long length = blobData->length();
-        Blob* blob = Blob::create(BlobDataHandle::create(blobData.release(), length));
-        return create(context, blob, ResponseInit(responseInit, exceptionState), exceptionState);
-    }
-    if (body.isArrayBufferView()) {
-        RefPtr<DOMArrayBufferView> arrayBufferView = body.getAsArrayBufferView();
-        OwnPtr<BlobData> blobData = BlobData::create();
-        blobData->appendBytes(arrayBufferView->baseAddress(), arrayBufferView->byteLength());
-        const long long length = blobData->length();
-        Blob* blob = Blob::create(BlobDataHandle::create(blobData.release(), length));
-        return create(context, blob, ResponseInit(responseInit, exceptionState), exceptionState);
-    }
-    if (body.isFormData()) {
-        FormData* domFormData = body.getAsFormData();
-        OwnPtr<BlobData> blobData = BlobData::create();
-        // FIXME: the same code exist in RequestInit::RequestInit().
-        RefPtr<EncodedFormData> httpBody = domFormData->encodeMultiPartFormData();
-        for (size_t i = 0; i < httpBody->elements().size(); ++i) {
-            const FormDataElement& element = httpBody->elements()[i];
-            switch (element.m_type) {
-            case FormDataElement::data: {
-                blobData->appendBytes(element.m_data.data(), element.m_data.size());
-                break;
-            }
-            case FormDataElement::encodedFile:
-                blobData->appendFile(element.m_filename, element.m_fileStart, element.m_fileLength, element.m_expectedFileModificationTime);
-                break;
-            case FormDataElement::encodedBlob:
-                if (element.m_optionalBlobDataHandle)
-                    blobData->appendBlob(element.m_optionalBlobDataHandle, 0, element.m_optionalBlobDataHandle->size());
-                break;
-            case FormDataElement::encodedFileSystemURL:
-                blobData->appendFileSystemURL(element.m_fileSystemURL, element.m_fileStart, element.m_fileLength, element.m_expectedFileModificationTime);
-                break;
-            default:
-                ASSERT_NOT_REACHED();
-            }
-        }
-        blobData->setContentType(AtomicString("multipart/form-data; boundary=", AtomicString::ConstructFromLiteral) + httpBody->boundary().data());
-        const long long length = blobData->length();
-        Blob* blob = Blob::create(BlobDataHandle::create(blobData.release(), length));
-        return create(context, blob, ResponseInit(responseInit, exceptionState), exceptionState);
-    }
-    ASSERT_NOT_REACHED();
-    return nullptr;
+    return create(context, bodyHandle.release(), contentType, ResponseInit(init, exceptionState), exceptionState);
 }
 
-Response* Response::create(ExecutionContext* context, Blob* body, const ResponseInit& responseInit, ExceptionState& exceptionState)
+Response* Response::create(ExecutionContext* context, PassOwnPtr<FetchDataConsumerHandle> bodyHandle, const String& contentType, const ResponseInit& init, ExceptionState& exceptionState)
 {
-    unsigned short status = responseInit.status;
+    unsigned short status = init.status;
 
     // "1. If |init|'s status member is not in the range 200 to 599, inclusive, throw a
     // RangeError."
     if (status < 200 || 599 < status) {
         exceptionState.throwRangeError(ExceptionMessages::indexOutsideRange<unsigned>("status", status, 200, ExceptionMessages::InclusiveBound, 599, ExceptionMessages::InclusiveBound));
-        return 0;
+        return nullptr;
     }
 
     // "2. If |init|'s statusText member does not match the Reason-Phrase
     // token production, throw a TypeError."
-    if (!isValidReasonPhrase(responseInit.statusText)) {
+    if (!isValidReasonPhrase(init.statusText)) {
         exceptionState.throwTypeError("Invalid statusText");
-        return 0;
+        return nullptr;
     }
 
     // "3. Let |r| be a new Response object, associated with a new response,
@@ -187,33 +151,35 @@ Response* Response::create(ExecutionContext* context, Blob* body, const Response
     Response* r = new Response(context);
 
     // "4. Set |r|'s response's status to |init|'s status member."
-    r->m_response->setStatus(responseInit.status);
+    r->m_response->setStatus(init.status);
 
     // "5. Set |r|'s response's status message to |init|'s statusText member."
-    r->m_response->setStatusMessage(AtomicString(responseInit.statusText));
+    r->m_response->setStatusMessage(AtomicString(init.statusText));
 
     // "6. If |init|'s headers member is present, run these substeps:"
-    if (responseInit.headers) {
+    if (init.headers) {
         // "1. Empty |r|'s response's header list."
         r->m_response->headerList()->clearList();
         // "2. Fill |r|'s Headers object with |init|'s headers member. Rethrow
         // any exceptions."
-        r->m_headers->fillWith(responseInit.headers.get(), exceptionState);
+        r->m_headers->fillWith(init.headers.get(), exceptionState);
         if (exceptionState.hadException())
-            return 0;
-    } else if (!responseInit.headersDictionary.isUndefinedOrNull()) {
+            return nullptr;
+    } else if (!init.headersDictionary.isUndefinedOrNull()) {
         // "1. Empty |r|'s response's header list."
         r->m_response->headerList()->clearList();
         // "2. Fill |r|'s Headers object with |init|'s headers member. Rethrow
         // any exceptions."
-        r->m_headers->fillWith(responseInit.headersDictionary, exceptionState);
+        r->m_headers->fillWith(init.headersDictionary, exceptionState);
         if (exceptionState.hadException())
-            return 0;
+            return nullptr;
     }
     // "7. If body is given, run these substeps:"
-    if (body) {
-        // "1. If |init|'s status member is a null body status, throw a TypeError."
-        // "2. Let |stream| and |Content-Type| be the result of extracting body."
+    if (bodyHandle) {
+        // "1. If |init|'s status member is a null body status, throw a
+        //     TypeError."
+        // "2. Let |stream| and |Content-Type| be the result of extracting
+        //     body."
         // "3. Set |r|'s response's body to |stream|."
         // "4. If |Content-Type| is non-null and |r|'s response's header list
         // contains no header named `Content-Type`, append `Content-Type`/
@@ -224,11 +190,11 @@ Response* Response::create(ExecutionContext* context, Blob* body, const Response
         // Content-Type to its value."
         if (isNullBodyStatus(status)) {
             exceptionState.throwTypeError("Response with null body status cannot have body");
-            return 0;
+            return nullptr;
         }
-        r->m_response->replaceBodyStreamBuffer(new BodyStreamBuffer(FetchBlobDataConsumerHandle::create(context, body->blobDataHandle())));
-        if (!body->type().isEmpty() && !r->m_response->headerList()->has("Content-Type"))
-            r->m_response->headerList()->append("Content-Type", body->type());
+        r->m_response->replaceBodyStreamBuffer(new BodyStreamBuffer(bodyHandle));
+        if (!contentType.isEmpty() && !r->m_response->headerList()->has("Content-Type"))
+            r->m_response->headerList()->append("Content-Type", contentType);
     }
 
     // "8. Set |r|'s MIME type to the result of extracting a MIME type

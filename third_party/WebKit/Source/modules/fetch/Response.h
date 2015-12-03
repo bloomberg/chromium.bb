@@ -15,12 +15,14 @@
 #include "modules/fetch/Headers.h"
 #include "platform/blob/BlobData.h"
 #include "platform/heap/Handle.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
 class Blob;
 class DOMArrayBuffer;
 class ExceptionState;
+class FetchDataConsumerHandle;
 class ResponseInit;
 class WebServiceWorkerResponse;
 
@@ -36,7 +38,7 @@ public:
     static Response* create(ExecutionContext*, ExceptionState&);
     static Response* create(ExecutionContext*, const BodyInit&, const Dictionary&, ExceptionState&);
 
-    static Response* create(ExecutionContext*, Blob*, const ResponseInit&, ExceptionState&);
+    static Response* create(ExecutionContext*, PassOwnPtr<FetchDataConsumerHandle> bodyHandle, const String& contentType, const ResponseInit&, ExceptionState&);
     static Response* create(ExecutionContext*, FetchResponseData*);
     static Response* create(ExecutionContext*, const WebServiceWorkerResponse&);
 
