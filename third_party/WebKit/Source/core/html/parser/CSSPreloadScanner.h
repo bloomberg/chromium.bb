@@ -44,8 +44,8 @@ public:
 
     void reset();
 
-    void scan(const HTMLToken::DataVector&, const SegmentedString&, PreloadRequestStream&);
-    void scan(const String&, const SegmentedString&, PreloadRequestStream&);
+    void scan(const HTMLToken::DataVector&, const SegmentedString&, PreloadRequestStream&, const KURL&);
+    void scan(const String&, const SegmentedString&, PreloadRequestStream&, const KURL&);
 
     void setReferrerPolicy(const ReferrerPolicy);
 
@@ -64,19 +64,20 @@ private:
     };
 
     template<typename Char>
-    void scanCommon(const Char* begin, const Char* end, const SegmentedString&, PreloadRequestStream&);
+    void scanCommon(const Char* begin, const Char* end, const SegmentedString&, PreloadRequestStream&, const KURL&);
 
     inline void tokenize(UChar, const SegmentedString&);
     void emitRule(const SegmentedString&);
 
-    State m_state;
+    State m_state = Initial;
     StringBuilder m_rule;
     StringBuilder m_ruleValue;
 
-    // Only non-zero during scan()
-    PreloadRequestStream* m_requests;
+    ReferrerPolicy m_referrerPolicy = ReferrerPolicyDefault;
 
-    ReferrerPolicy m_referrerPolicy;
+    // Below members only non-null during scan()
+    PreloadRequestStream* m_requests = nullptr;
+    const KURL* m_predictedBaseElementURL = nullptr;
 };
 
 }

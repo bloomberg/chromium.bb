@@ -532,7 +532,7 @@ void TokenPreloadScanner::scanCommon(const Token& token, const SegmentedString& 
     case HTMLToken::Character: {
         if (!m_inStyle)
             return;
-        m_cssScanner.scan(token.data(), source, requests);
+        m_cssScanner.scan(token.data(), source, requests, m_predictedBaseElementURL);
         return;
     }
     case HTMLToken::EndTag: {

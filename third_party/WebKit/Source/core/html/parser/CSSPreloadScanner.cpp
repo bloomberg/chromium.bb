@@ -35,9 +35,6 @@
 namespace blink {
 
 CSSPreloadScanner::CSSPreloadScanner()
-    : m_state(Initial)
-    , m_requests(0)
-    , m_referrerPolicy(ReferrerPolicyDefault)
 {
 }
 
@@ -53,28 +50,32 @@ void CSSPreloadScanner::reset()
 }
 
 template<typename Char>
-void CSSPreloadScanner::scanCommon(const Char* begin, const Char* end, const SegmentedString& source, PreloadRequestStream& requests)
+void CSSPreloadScanner::scanCommon(const Char* begin, const Char* end, const SegmentedString& source, PreloadRequestStream& requests, const KURL& predictedBaseElementURL)
 {
     m_requests = &requests;
+    m_predictedBaseElementURL = &predictedBaseElementURL;
+
     for (const Char* it = begin; it != end && m_state != DoneParsingImportRules; ++it)
         tokenize(*it, source);
-    m_requests = 0;
+
+    m_requests = nullptr;
+    m_predictedBaseElementURL = nullptr;
 }
 
-void CSSPreloadScanner::scan(const HTMLToken::DataVector& data, const SegmentedString& source, PreloadRequestStream& requests)
+void CSSPreloadScanner::scan(const HTMLToken::DataVector& data, const SegmentedString& source, PreloadRequestStream& requests, const KURL& predictedBaseElementURL)
 {
-    scanCommon(data.data(), data.data() + data.size(), source, requests);
+    scanCommon(data.data(), data.data() + data.size(), source, requests, predictedBaseElementURL);
 }
 
-void CSSPreloadScanner::scan(const String& tagName,  const SegmentedString& source, PreloadRequestStream& requests)
+void CSSPreloadScanner::scan(const String& tagName, const SegmentedString& source, PreloadRequestStream& requests, const KURL& predictedBaseElementURL)
 {
     if (tagName.is8Bit()) {
         const LChar* begin = tagName.characters8();
-        scanCommon(begin, begin + tagName.length(), source, requests);
+        scanCommon(begin, begin + tagName.length(), source, requests, predictedBaseElementURL);
         return;
     }
     const UChar* begin = tagName.characters16();
-    scanCommon(begin, begin + tagName.length(), source, requests);
+    scanCommon(begin, begin + tagName.length(), source, requests, predictedBaseElementURL);
 }
 
 void CSSPreloadScanner::setReferrerPolicy(const ReferrerPolicy policy)
@@ -219,9 +220,8 @@ void CSSPreloadScanner::emitRule(const SegmentedString& source)
     if (equalIgnoringCase(m_rule, "import")) {
         String url = parseCSSStringOrURL(m_ruleValue.toString());
         if (!url.isEmpty()) {
-            KURL baseElementURL; // FIXME: This should be passed in from the HTMLPreloadScaner via scan()!
             TextPosition position = TextPosition(source.currentLine(), source.currentColumn());
-            OwnPtr<PreloadRequest> request = PreloadRequest::create(FetchInitiatorTypeNames::css, position, url, baseElementURL, Resource::CSSStyleSheet, m_referrerPolicy);
+            OwnPtr<PreloadRequest> request = PreloadRequest::create(FetchInitiatorTypeNames::css, position, url, *m_predictedBaseElementURL, Resource::CSSStyleSheet, m_referrerPolicy);
             // FIXME: Should this be including the charset in the preload request?
             m_requests->append(request.release());
         }
