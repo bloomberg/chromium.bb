@@ -45,8 +45,13 @@ const char kCpuOnlinePathSuffixFormat[] = "/cpu%d/online";
 
 // Format of the suffix of the path to the file which contains freq state
 // information of a CPU.
-const char kCpuFreqTimeInStatePathSuffixFormat[] =
+const char kCpuFreqTimeInStatePathSuffixOldFormat[] =
     "/cpu%d/cpufreq/stats/time_in_state";
+
+// The path to the file which contains cpu freq state informatino of a CPU
+// in newer kernel.
+const char kCpuFreqTimeInStateNewPath[] =
+    "/sys/devices/system/cpu/cpufreq/all_time_in_state";
 
 // Format of the suffix of the path to the directory which contains information
 // about an idle state of a CPU on the system.
@@ -62,8 +67,7 @@ const char kCpuIdleStateTimePathSuffixFormat[] = "/cpu%d/cpuidle/state%d/time";
 
 // Returns the index at which |str| is in |vector|. If |str| is not present in
 // |vector|, then it is added to it before its index is returned.
-size_t IndexInVector(const std::string& str,
-                  std::vector<std::string>* vector) {
+size_t IndexInVector(const std::string& str, std::vector<std::string>* vector) {
   for (size_t i = 0; i < vector->size(); ++i) {
     if (str == (*vector)[i])
       return i;
@@ -188,6 +192,51 @@ void SampleCpuIdleData(
   }
 }
 
+bool ReadCpuFreqFromOldFile(
+    const std::string& path,
+    std::vector<std::string>* cpu_freq_state_names,
+    CpuDataCollector::StateOccupancySample* freq_sample) {
+  std::string time_in_state_string;
+  // Note time as close to reading the file as possible. This is
+  // not possible for idle state samples as the information for
+  // each state there is recorded in different files.
+  if (!base::ReadFileToString(base::FilePath(path), &time_in_state_string)) {
+    LOG(ERROR) << "Error reading " << path << ". "
+               << "Dropping sample.";
+    return false;
+  }
+
+  std::vector<base::StringPiece> lines = base::SplitStringPiece(
+      time_in_state_string, "\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  // The last line could end with '\n'. Ignore the last empty string in
+  // such cases.
+  size_t state_count = lines.size();
+  if (state_count > 0 && lines.back().empty())
+    state_count -= 1;
+  for (size_t state = 0; state < state_count; ++state) {
+    int freq_in_khz;
+    int64 occupancy_time_centisecond;
+
+    // Occupancy of each state is in the format "<state> <time>"
+    std::vector<base::StringPiece> pair = base::SplitStringPiece(
+        lines[state], " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+    if (pair.size() == 2 && base::StringToInt(pair[0], &freq_in_khz) &&
+        base::StringToInt64(pair[1], &occupancy_time_centisecond)) {
+      const std::string state_name = base::IntToString(freq_in_khz / 1000);
+      size_t index = IndexInVector(state_name, cpu_freq_state_names);
+      if (index >= freq_sample->time_in_state.size())
+        freq_sample->time_in_state.resize(index + 1);
+      // The occupancy time is in units of centiseconds.
+      freq_sample->time_in_state[index] = occupancy_time_centisecond * 10;
+    } else {
+      LOG(ERROR) << "Bad format in " << path << ". "
+                 << "Dropping sample.";
+      return false;
+    }
+  }
+  return true;
+}
+
 // Samples the CPU freq state information from sysfs. |cpu_count| is the number
 // of possible CPUs on the system. Sample at index i in |freq_samples|
 // corresponds to the freq state information of the i-th CPU.
@@ -200,17 +249,27 @@ void SampleCpuFreqData(
     CpuDataCollector::StateOccupancySample freq_sample;
     freq_sample.time_in_state.reserve(cpu_freq_state_names->size());
 
+    freq_sample.time = base::Time::Now();
     if (!CpuIsOnline(cpu)) {
-      freq_sample.time = base::Time::Now();
       freq_sample.cpu_online = false;
     } else {
       freq_sample.cpu_online = true;
 
-      const std::string time_in_state_path_format = base::StringPrintf(
-          "%s%s", kCpuDataPathBase, kCpuFreqTimeInStatePathSuffixFormat);
-      const std::string time_in_state_path = base::StringPrintf(
-          time_in_state_path_format.c_str(), cpu);
-      if (!base::PathExists(base::FilePath(time_in_state_path))) {
+      const std::string time_in_state_path_old_format = base::StringPrintf(
+          "%s%s", kCpuDataPathBase, kCpuFreqTimeInStatePathSuffixOldFormat);
+      const std::string time_in_state_path =
+          base::StringPrintf(time_in_state_path_old_format.c_str(), cpu);
+      if (base::PathExists(base::FilePath(time_in_state_path))) {
+        if (!ReadCpuFreqFromOldFile(time_in_state_path, cpu_freq_state_names,
+                                    &freq_sample)) {
+          freq_samples->clear();
+          return;
+        }
+      } else if (base::PathExists(base::FilePath(kCpuFreqTimeInStateNewPath))) {
+        // TODO(oshima): Parse the new file. crbug.com/548510.
+        freq_samples->clear();
+        return;
+      } else {
         // If the path to the 'time_in_state' for a single CPU is missing,
         // then 'time_in_state' for all CPUs is missing. This could happen
         // on a VM where the 'cpufreq_stats' kernel module is not loaded.
@@ -218,53 +277,6 @@ void SampleCpuFreqData(
             << "CPU freq stats not available in sysfs.";
         freq_samples->clear();
         return;
-      }
-
-      std::string time_in_state_string;
-      // Note time as close to reading the file as possible. This is not
-      // possible for idle state samples as the information for each state there
-      // is recorded in different files.
-      base::Time now = base::Time::Now();
-      if (!base::ReadFileToString(base::FilePath(time_in_state_path),
-                                  &time_in_state_string)) {
-        LOG(ERROR) << "Error reading " << time_in_state_path << ". "
-                   << "Dropping sample.";
-        freq_samples->clear();
-        return;
-      }
-
-      freq_sample.time = now;
-
-      std::vector<base::StringPiece> lines =
-          base::SplitStringPiece(time_in_state_string, "\n",
-                                 base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-      // The last line could end with '\n'. Ignore the last empty string in
-      // such cases.
-      size_t state_count = lines.size();
-      if (state_count > 0 && lines.back().empty())
-        state_count -= 1;
-      for (size_t state = 0; state < state_count; ++state) {
-        int freq_in_khz;
-        int64 occupancy_time_centisecond;
-
-        // Occupancy of each state is in the format "<state> <time>"
-        std::vector<base::StringPiece> pair = base::SplitStringPiece(
-            lines[state], " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-        if (pair.size() == 2 &&
-            base::StringToInt(pair[0], &freq_in_khz) &&
-            base::StringToInt64(pair[1], &occupancy_time_centisecond)) {
-          const std::string state_name = base::IntToString(freq_in_khz / 1000);
-          size_t index = IndexInVector(state_name, cpu_freq_state_names);
-          if (index >= freq_sample.time_in_state.size())
-            freq_sample.time_in_state.resize(index + 1);
-          // The occupancy time is in units of centiseconds.
-          freq_sample.time_in_state[index] = occupancy_time_centisecond * 10;
-        } else {
-          LOG(ERROR) << "Bad format in " << time_in_state_path << ". "
-                     << "Dropping sample.";
-          freq_samples->clear();
-          return;
-        }
       }
     }
 
