@@ -33,6 +33,7 @@
 #include "platform/graphics/FrameData.h"
 #include "platform/graphics/ImageFrameGenerator.h"
 #include "platform/image-decoders/ImageDecoder.h"
+#include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/Vector.h"
@@ -44,8 +45,9 @@ namespace blink {
 class ImageFrameGenerator;
 class SharedBuffer;
 
-class PLATFORM_EXPORT DeferredImageDecoder {
+class PLATFORM_EXPORT DeferredImageDecoder final {
     WTF_MAKE_NONCOPYABLE(DeferredImageDecoder);
+    USING_FAST_MALLOC(DeferredImageDecoder);
 public:
     ~DeferredImageDecoder();
     static PassOwnPtr<DeferredImageDecoder> create(const SharedBuffer& data, ImageDecoder::AlphaOption, ImageDecoder::GammaAndColorProfileOption);

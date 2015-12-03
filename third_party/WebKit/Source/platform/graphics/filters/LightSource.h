@@ -26,6 +26,7 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/geometry/FloatPoint3D.h"
+#include "wtf/Noncopyable.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
@@ -40,6 +41,7 @@ enum LightType {
 class TextStream;
 
 class PLATFORM_EXPORT LightSource : public RefCounted<LightSource> {
+    WTF_MAKE_NONCOPYABLE(LightSource);
 public:
     LightSource(LightType type)
         : m_type(type)

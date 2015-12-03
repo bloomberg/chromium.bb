@@ -35,6 +35,7 @@
 #include "platform/graphics/ImageOrientation.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "wtf/Assertions.h"
+#include "wtf/Noncopyable.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
@@ -61,6 +62,7 @@ class PLATFORM_EXPORT Image : public RefCounted<Image> {
     friend class CrossfadeGeneratedImage;
     friend class GradientGeneratedImage;
     friend class GraphicsContext;
+    WTF_MAKE_NONCOPYABLE(Image);
 
 public:
     virtual ~Image();

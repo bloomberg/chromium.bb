@@ -20,7 +20,7 @@ inline DisplayItemClient toDisplayItemClient(const void* object) { return static
 // core/layout module etc. to platform/paint module.
 // The instance must not out-live the object. Long-time reference to a client must
 // use DisplayItemClient.
-class PLATFORM_EXPORT DisplayItemClientWrapper {
+class PLATFORM_EXPORT DisplayItemClientWrapper final {
     DISALLOW_NEW(); // Allow allocated in stack or in another object only.
 public:
     template <typename T>

@@ -31,6 +31,7 @@
 #include "platform/graphics/Color.h"
 #include "platform/graphics/filters/Filter.h"
 #include "platform/heap/Handle.h"
+#include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
@@ -41,6 +42,7 @@ namespace blink {
 // CSS Filters
 
 class PLATFORM_EXPORT FilterOperation : public RefCountedWillBeGarbageCollectedFinalized<FilterOperation> {
+    WTF_MAKE_NONCOPYABLE(FilterOperation);
 public:
     enum OperationType {
         REFERENCE, // url(#somefilter)

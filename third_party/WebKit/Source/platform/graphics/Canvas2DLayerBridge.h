@@ -35,6 +35,7 @@
 #include "public/platform/WebThread.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/skia/include/core/SkImage.h"
+#include "wtf/Allocator.h"
 #include "wtf/Deque.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
@@ -127,6 +128,7 @@ private:
     friend class Canvas2DLayerBridgeTest;
 
     struct MailboxInfo {
+        DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
         WebExternalTextureMailbox m_mailbox;
         RefPtr<SkImage> m_image;
         RefPtr<Canvas2DLayerBridge> m_parentLayerBridge;

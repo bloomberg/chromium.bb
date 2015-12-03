@@ -27,7 +27,9 @@
 #define GraphicsLayerFactory_h
 
 #include "platform/PlatformExport.h"
+#include "wtf/Allocator.h"
 #include "wtf/Forward.h"
+#include "wtf/Noncopyable.h"
 
 namespace blink {
 
@@ -35,7 +37,10 @@ class GraphicsLayer;
 class GraphicsLayerClient;
 
 class PLATFORM_EXPORT GraphicsLayerFactory {
+    USING_FAST_MALLOC(GraphicsLayerFactory);
+    WTF_MAKE_NONCOPYABLE(GraphicsLayerFactory);
 public:
+    GraphicsLayerFactory() { }
     virtual ~GraphicsLayerFactory() { }
 
     virtual PassOwnPtr<GraphicsLayer> createGraphicsLayer(GraphicsLayerClient*) = 0;

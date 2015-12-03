@@ -8,7 +8,8 @@
 #include "platform/graphics/paint/ClipPaintPropertyNode.h"
 #include "platform/graphics/paint/EffectPaintPropertyNode.h"
 #include "platform/graphics/paint/TransformPaintPropertyNode.h"
-
+#include "wtf/Allocator.h"
+#include "wtf/Noncopyable.h"
 #include <iosfwd>
 
 namespace blink {
@@ -23,6 +24,7 @@ namespace blink {
 // This differs from |ObjectPaintProperties| because it only stores one property
 // for each type (e.g., either transform or perspective, but not both).
 struct PaintChunkProperties {
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     // TODO(pdr): Add clip and scroll properties.
     RefPtr<TransformPaintPropertyNode> transform;
     RefPtr<ClipPaintPropertyNode> clip;

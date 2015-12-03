@@ -6,6 +6,7 @@
 #define CompositingReasons_h
 
 #include "platform/PlatformExport.h"
+#include "wtf/Allocator.h"
 #include "wtf/MathExtras.h"
 #include <stdint.h>
 
@@ -192,6 +193,7 @@ inline bool requiresSquashing(CompositingReasons reasons)
 }
 
 struct CompositingReasonStringMap {
+    STACK_ALLOCATED();
     CompositingReasons reason;
     const char* shortName;
     const char* description;

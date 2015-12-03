@@ -53,7 +53,9 @@ static bool compatibleInfo(const SkImageInfo& src, const SkImageInfo& dst)
 
 // Creates a SkPixelRef such that the memory for pixels is given by an external body.
 // This is used to write directly to the memory given by Skia during decoding.
-class ImageFrameGenerator::ExternalMemoryAllocator : public SkBitmap::Allocator {
+class ImageFrameGenerator::ExternalMemoryAllocator final : public SkBitmap::Allocator {
+    USING_FAST_MALLOC(ExternalMemoryAllocator);
+    WTF_MAKE_NONCOPYABLE(ExternalMemoryAllocator);
 public:
     ExternalMemoryAllocator(const SkImageInfo& info, void* pixels, size_t rowBytes)
         : m_info(info)

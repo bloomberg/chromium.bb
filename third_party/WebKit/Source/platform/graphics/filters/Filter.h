@@ -26,6 +26,7 @@
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/heap/Handle.h"
+#include "wtf/Noncopyable.h"
 #include "wtf/RefCounted.h"
 
 namespace blink {
@@ -34,6 +35,7 @@ class SourceGraphic;
 class FilterEffect;
 
 class PLATFORM_EXPORT Filter final : public RefCountedWillBeGarbageCollectedFinalized<Filter> {
+    WTF_MAKE_NONCOPYABLE(Filter);
 public:
     enum UnitScaling {
         UserSpace,

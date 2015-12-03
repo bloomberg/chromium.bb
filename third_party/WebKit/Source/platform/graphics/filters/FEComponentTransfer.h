@@ -38,6 +38,7 @@ enum ComponentTransferType {
 };
 
 struct ComponentTransferFunction {
+    DISALLOW_NEW();
     ComponentTransferFunction()
         : type(FECOMPONENTTRANSFER_TYPE_UNKNOWN)
         , slope(0)
@@ -59,7 +60,7 @@ struct ComponentTransferFunction {
     Vector<float> tableValues;
 };
 
-class PLATFORM_EXPORT FEComponentTransfer : public FilterEffect {
+class PLATFORM_EXPORT FEComponentTransfer final : public FilterEffect {
 public:
     static PassRefPtrWillBeRawPtr<FEComponentTransfer> create(Filter*, const ComponentTransferFunction& redFunc, const ComponentTransferFunction& greenFunc,
         const ComponentTransferFunction& blueFunc, const ComponentTransferFunction& alphaFunc);

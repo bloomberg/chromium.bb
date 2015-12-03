@@ -8,6 +8,8 @@
 #include "platform/PlatformExport.h"
 #include "platform/graphics/paint/PaintChunk.h"
 #include "platform/graphics/paint/PaintChunkProperties.h"
+#include "wtf/Allocator.h"
+#include "wtf/Noncopyable.h"
 #include "wtf/Vector.h"
 
 namespace blink {
@@ -15,7 +17,9 @@ namespace blink {
 // Accepts information about changes to |PaintChunkProperties| as drawings are
 // accumulated, and produces a series of paint chunks: contiguous ranges of the
 // display list with identical |PaintChunkProperties|.
-class PLATFORM_EXPORT PaintChunker {
+class PLATFORM_EXPORT PaintChunker final {
+    DISALLOW_NEW();
+    WTF_MAKE_NONCOPYABLE(PaintChunker);
 public:
     PaintChunker();
     ~PaintChunker();

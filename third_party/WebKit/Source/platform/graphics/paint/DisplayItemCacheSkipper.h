@@ -7,10 +7,14 @@
 
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/PaintController.h"
+#include "wtf/Allocator.h"
+#include "wtf/Noncopyable.h"
 
 namespace blink {
 
-class DisplayItemCacheSkipper {
+class DisplayItemCacheSkipper final {
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+    WTF_MAKE_NONCOPYABLE(DisplayItemCacheSkipper);
 public:
     DisplayItemCacheSkipper(GraphicsContext& context)
         : m_context(context)

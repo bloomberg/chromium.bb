@@ -8,13 +8,16 @@
 #include "SkRegion.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/paint/DisplayItem.h"
+#include "wtf/Allocator.h"
+#include "wtf/Noncopyable.h"
 
 namespace blink {
 
 class GraphicsContext;
 
 class PLATFORM_EXPORT ClipRecorder {
-    USING_FAST_MALLOC(ClipRecorder);
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+    WTF_MAKE_NONCOPYABLE(ClipRecorder);
 public:
     ClipRecorder(GraphicsContext&, const DisplayItemClientWrapper&, DisplayItem::Type, const LayoutRect& clipRect);
     ~ClipRecorder();

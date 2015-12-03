@@ -149,6 +149,7 @@ private:
 };
 
 struct ImageDataBuffer {
+    STACK_ALLOCATED();
     ImageDataBuffer(const IntSize& size, const unsigned char* data) : m_data(data), m_size(size) { }
     String PLATFORM_EXPORT toDataURL(const String& mimeType, const double& quality) const;
     bool PLATFORM_EXPORT encodeImage(const String& mimeType, const double& quality, Vector<unsigned char>* encodedImage) const;

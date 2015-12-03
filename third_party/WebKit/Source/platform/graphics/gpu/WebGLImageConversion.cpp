@@ -1429,6 +1429,7 @@ bool HasColor(int format)
 
 template<int Format>
 struct IsInt8Format {
+    STATIC_ONLY(IsInt8Format);
     static const bool Value =
         Format == WebGLImageConversion::DataFormatRGBA8_S
         || Format == WebGLImageConversion::DataFormatRGB8_S
@@ -1438,6 +1439,7 @@ struct IsInt8Format {
 
 template<int Format>
 struct IsInt16Format {
+    STATIC_ONLY(IsInt16Format);
     static const bool Value =
         Format == WebGLImageConversion::DataFormatRGBA16_S
         || Format == WebGLImageConversion::DataFormatRGB16_S
@@ -1447,6 +1449,7 @@ struct IsInt16Format {
 
 template<int Format>
 struct IsInt32Format {
+    STATIC_ONLY(IsInt32Format);
     static const bool Value =
         Format == WebGLImageConversion::DataFormatRGBA32_S
         || Format == WebGLImageConversion::DataFormatRGB32_S
@@ -1456,6 +1459,7 @@ struct IsInt32Format {
 
 template<int Format>
 struct IsUInt8Format {
+    STATIC_ONLY(IsUInt8Format);
     static const bool Value =
         Format == WebGLImageConversion::DataFormatRGBA8
         || Format == WebGLImageConversion::DataFormatRGB8
@@ -1472,6 +1476,7 @@ struct IsUInt8Format {
 
 template<int Format>
 struct IsUInt16Format {
+    STATIC_ONLY(IsUInt16Format);
     static const bool Value =
         Format == WebGLImageConversion::DataFormatRGBA16
         || Format == WebGLImageConversion::DataFormatRGB16
@@ -1481,6 +1486,7 @@ struct IsUInt16Format {
 
 template<int Format>
 struct IsUInt32Format {
+    STATIC_ONLY(IsUInt32Format);
     static const bool Value =
         Format == WebGLImageConversion::DataFormatRGBA32
         || Format == WebGLImageConversion::DataFormatRGB32
@@ -1490,6 +1496,7 @@ struct IsUInt32Format {
 
 template<int Format>
 struct IsFloatFormat {
+    STATIC_ONLY(IsFloatFormat);
     static const bool Value =
         Format == WebGLImageConversion::DataFormatRGBA32F
         || Format == WebGLImageConversion::DataFormatRGB32F
@@ -1501,6 +1508,7 @@ struct IsFloatFormat {
 
 template<int Format>
 struct IsHalfFloatFormat {
+    STATIC_ONLY(IsHalfFloatFormat);
     static const bool Value =
         Format == WebGLImageConversion::DataFormatRGBA16F
         || Format == WebGLImageConversion::DataFormatRGB16F
@@ -1512,6 +1520,7 @@ struct IsHalfFloatFormat {
 
 template<int Format>
 struct Is32bppFormat {
+    STATIC_ONLY(Is32bppFormat);
     static const bool Value =
         Format == WebGLImageConversion::DataFormatRGBA2_10_10_10
         || Format == WebGLImageConversion::DataFormatRGB5999
@@ -1520,6 +1529,7 @@ struct Is32bppFormat {
 
 template<int Format>
 struct Is16bppFormat {
+    STATIC_ONLY(Is16bppFormat);
     static const bool Value =
         Format == WebGLImageConversion::DataFormatRGBA5551
         || Format == WebGLImageConversion::DataFormatRGBA4444
@@ -1538,61 +1548,73 @@ template<int Format,
     bool Is16bpp = Is16bppFormat<Format>::Value,
     bool Is32bpp = Is32bppFormat<Format>::Value>
 struct DataTypeForFormat {
+    STATIC_ONLY(DataTypeForFormat);
     typedef double Type; // Use a type that's not used in unpack/pack.
 };
 
 template<int Format>
 struct DataTypeForFormat<Format, true, false, false, false, false, false, false, false, false, false> {
+    STATIC_ONLY(DataTypeForFormat);
     typedef int8_t Type;
 };
 
 template<int Format>
 struct DataTypeForFormat<Format, false, true, false, false, false, false, false, false, false, false> {
+    STATIC_ONLY(DataTypeForFormat);
     typedef uint8_t Type;
 };
 
 template<int Format>
 struct DataTypeForFormat<Format, false, false, true, false, false, false, false, false, false, false> {
+    STATIC_ONLY(DataTypeForFormat);
     typedef int16_t Type;
 };
 
 template<int Format>
 struct DataTypeForFormat<Format, false, false, false, true, false, false, false, false, false, false> {
+    STATIC_ONLY(DataTypeForFormat);
     typedef uint16_t Type;
 };
 
 template<int Format>
 struct DataTypeForFormat<Format, false, false, false, false, true, false, false, false, false, false> {
+    STATIC_ONLY(DataTypeForFormat);
     typedef int32_t Type;
 };
 
 template<int Format>
 struct DataTypeForFormat<Format, false, false, false, false, false, true, false, false, false, false> {
+    STATIC_ONLY(DataTypeForFormat);
     typedef uint32_t Type;
 };
 
 template<int Format>
 struct DataTypeForFormat<Format, false, false, false, false, false, false, true, false, false, false> {
+    STATIC_ONLY(DataTypeForFormat);
     typedef float Type;
 };
 
 template<int Format>
 struct DataTypeForFormat<Format, false, false, false, false, false, false, false, true, false, false> {
+    STATIC_ONLY(DataTypeForFormat);
     typedef uint16_t Type;
 };
 
 template<int Format>
 struct DataTypeForFormat<Format, false, false, false, false, false, false, false, false, true, false> {
+    STATIC_ONLY(DataTypeForFormat);
     typedef uint16_t Type;
 };
 
 template<int Format>
 struct DataTypeForFormat<Format, false, false, false, false, false, false, false, false, false, true> {
+    STATIC_ONLY(DataTypeForFormat);
     typedef uint32_t Type;
 };
 
 template<int Format>
 struct UsesFloatIntermediateFormat {
+    STATIC_ONLY(UsesFloatIntermediateFormat);
     static const bool Value =
         IsFloatFormat<Format>::Value
         || IsHalfFloatFormat<Format>::Value
@@ -1603,6 +1625,7 @@ struct UsesFloatIntermediateFormat {
 
 template<int Format>
 struct IntermediateFormat {
+    STATIC_ONLY(IntermediateFormat);
     static const int Value =
         UsesFloatIntermediateFormat<Format>::Value ? WebGLImageConversion::DataFormatRGBA32F
         : IsInt32Format<Format>::Value ? WebGLImageConversion::DataFormatRGBA32_S
@@ -1684,6 +1707,7 @@ unsigned TexelBytesForFormat(WebGLImageConversion::DataFormat format)
 /* END CODE SHARED WITH MOZILLA FIREFOX */
 
 class FormatConverter {
+    STACK_ALLOCATED();
 public:
     FormatConverter(unsigned width, unsigned height,
         const void* srcStart, void* dstStart, int srcStride, int dstStride)
@@ -1801,6 +1825,7 @@ void FormatConverter::convert(WebGLImageConversion::AlphaOp alphaOp)
 
 template<int Format>
 struct SupportsConversionFromDomElements {
+    STATIC_ONLY(SupportsConversionFromDomElements);
     static const bool Value =
         Format == WebGLImageConversion::DataFormatRGBA8
         || Format == WebGLImageConversion::DataFormatRGB8

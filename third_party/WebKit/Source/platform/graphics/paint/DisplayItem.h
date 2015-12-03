@@ -8,7 +8,9 @@
 #include "platform/PlatformExport.h"
 #include "platform/graphics/ContiguousContainer.h"
 #include "platform/graphics/paint/DisplayItemClient.h"
+#include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
+#include "wtf/Noncopyable.h"
 #include "wtf/PassOwnPtr.h"
 
 #ifndef NDEBUG
@@ -24,6 +26,7 @@ class IntRect;
 class WebDisplayItemList;
 
 class PLATFORM_EXPORT DisplayItem {
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     enum {
         // Must be kept in sync with core/paint/PaintPhase.h.
@@ -209,6 +212,7 @@ public:
 
     // Ids are for matching new DisplayItems with existing DisplayItems.
     struct Id {
+        STACK_ALLOCATED();
         Id(const DisplayItemClient client, const Type type, const unsigned scope)
             : client(client)
             , type(type)

@@ -27,6 +27,7 @@
 #define ImageOrientation_h
 
 #include "platform/PlatformExport.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -55,7 +56,8 @@ enum RespectImageOrientationEnum {
     RespectImageOrientation = 1
 };
 
-class PLATFORM_EXPORT ImageOrientation {
+class PLATFORM_EXPORT ImageOrientation final {
+    DISALLOW_NEW();
 public:
     ImageOrientation(ImageOrientationEnum orientation = DefaultImageOrientation)
         : m_orientation(orientation)

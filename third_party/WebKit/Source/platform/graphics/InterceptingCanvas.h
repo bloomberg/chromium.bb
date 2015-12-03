@@ -33,6 +33,7 @@
 
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPicture.h"
+#include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
 #include "wtf/Noncopyable.h"
 
@@ -42,6 +43,7 @@ class InterceptingCanvasBase : public SkCanvas {
     WTF_MAKE_NONCOPYABLE(InterceptingCanvasBase);
 public:
     template<typename DerivedCanvas> class CanvasInterceptorBase {
+        STACK_ALLOCATED();
         WTF_MAKE_NONCOPYABLE(CanvasInterceptorBase);
     protected:
         CanvasInterceptorBase(InterceptingCanvasBase* canvas)

@@ -31,6 +31,8 @@
 #include "SkTypes.h"
 #include "platform/PlatformExport.h"
 #include "platform/graphics/ThreadSafeDataTransport.h"
+#include "wtf/Allocator.h"
+#include "wtf/Noncopyable.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -45,6 +47,7 @@ class ImageDecoder;
 class SharedBuffer;
 
 class PLATFORM_EXPORT ImageDecoderFactory {
+    USING_FAST_MALLOC(ImageDecoderFactory);
     WTF_MAKE_NONCOPYABLE(ImageDecoderFactory);
 public:
     ImageDecoderFactory() {}
@@ -52,7 +55,7 @@ public:
     virtual PassOwnPtr<ImageDecoder> create() = 0;
 };
 
-class PLATFORM_EXPORT ImageFrameGenerator : public ThreadSafeRefCounted<ImageFrameGenerator> {
+class PLATFORM_EXPORT ImageFrameGenerator final : public ThreadSafeRefCounted<ImageFrameGenerator> {
     WTF_MAKE_NONCOPYABLE(ImageFrameGenerator);
 public:
     static PassRefPtr<ImageFrameGenerator> create(const SkISize& fullSize, PassRefPtr<SharedBuffer> data, bool allDataReceived, bool isMultiFrame = false)
@@ -120,6 +123,10 @@ private:
 
     // Protect concurrent access to m_hasAlpha.
     Mutex m_alphaMutex;
+
+#if COMPILER(MSVC)
+    friend struct ::WTF::OwnedPtrDeleter<ExternalMemoryAllocator>;
+#endif
 };
 
 } // namespace blink

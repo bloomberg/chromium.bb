@@ -35,6 +35,8 @@
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/CompositingReasons.h"
 #include "platform/graphics/PaintInvalidationReason.h"
+#include "wtf/Allocator.h"
+#include "wtf/Noncopyable.h"
 #include "wtf/Vector.h"
 
 namespace base {
@@ -45,7 +47,9 @@ class TracedValue;
 
 namespace blink {
 
-class GraphicsLayerDebugInfo {
+class GraphicsLayerDebugInfo final {
+    DISALLOW_NEW();
+    WTF_MAKE_NONCOPYABLE(GraphicsLayerDebugInfo);
 public:
     GraphicsLayerDebugInfo();
     ~GraphicsLayerDebugInfo();
@@ -65,6 +69,7 @@ private:
     void appendOwnerNodeId(base::trace_event::TracedValue*) const;
 
     struct AnnotatedInvalidationRect {
+        DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
         FloatRect rect;
         PaintInvalidationReason reason;
     };

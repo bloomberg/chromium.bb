@@ -93,6 +93,7 @@ public:
     // state-less method on Path.
     class PLATFORM_EXPORT PositionCalculator {
         WTF_MAKE_NONCOPYABLE(PositionCalculator);
+        USING_FAST_MALLOC(PositionCalculator);
     public:
         explicit PositionCalculator(const Path&);
 

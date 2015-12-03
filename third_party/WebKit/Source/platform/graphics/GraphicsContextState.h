@@ -37,6 +37,8 @@
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/core/SkPaint.h"
+#include "wtf/Allocator.h"
+#include "wtf/Noncopyable.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
 
@@ -45,6 +47,7 @@ namespace blink {
 // Encapsulates the state information we store for each pushed graphics state.
 // Only GraphicsContext can use this class.
 class PLATFORM_EXPORT GraphicsContextState final {
+    USING_FAST_MALLOC(GraphicsContextState);
 public:
     static PassOwnPtr<GraphicsContextState> create()
     {

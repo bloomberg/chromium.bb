@@ -42,7 +42,8 @@ class IntPoint;
 class IntSize;
 class SharedBuffer;
 
-class PLATFORM_EXPORT ImageSource {
+class PLATFORM_EXPORT ImageSource final {
+    USING_FAST_MALLOC(ImageSource);
     WTF_MAKE_NONCOPYABLE(ImageSource);
 public:
     ImageSource();

@@ -39,7 +39,7 @@ enum CompositeOperationType {
     FECOMPOSITE_OPERATOR_LIGHTER    = 7
 };
 
-class PLATFORM_EXPORT FEComposite : public FilterEffect {
+class PLATFORM_EXPORT FEComposite final : public FilterEffect {
 public:
     static PassRefPtrWillBeRawPtr<FEComposite> create(Filter*, const CompositeOperationType&, float, float, float, float);
 

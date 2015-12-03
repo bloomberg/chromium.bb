@@ -215,6 +215,7 @@ void PaintController::addItemToIndexIfNeeded(const DisplayItem& displayItem, siz
 }
 
 struct PaintController::OutOfOrderIndexContext {
+    STACK_ALLOCATED();
     OutOfOrderIndexContext(DisplayItemList::iterator begin) : nextItemToIndex(begin) { }
 
     DisplayItemList::iterator nextItemToIndex;

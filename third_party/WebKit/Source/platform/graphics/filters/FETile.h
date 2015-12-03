@@ -27,7 +27,7 @@
 
 namespace blink {
 
-class PLATFORM_EXPORT FETile : public FilterEffect {
+class PLATFORM_EXPORT FETile final : public FilterEffect {
 public:
     static PassRefPtrWillBeRawPtr<FETile> create(Filter*);
 

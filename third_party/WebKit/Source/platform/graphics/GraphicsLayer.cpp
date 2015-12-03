@@ -72,6 +72,7 @@ static bool s_drawDebugRedFill = true;
 
 // TODO(wangxianzhu): Remove this when we no longer invalidate rects.
 struct PaintInvalidationTrackingInfo {
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     Vector<FloatRect> invalidationRects;
     Vector<String> invalidationObjects;
 };

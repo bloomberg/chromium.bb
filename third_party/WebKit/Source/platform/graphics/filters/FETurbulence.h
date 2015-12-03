@@ -37,7 +37,7 @@ enum TurbulenceType {
     FETURBULENCE_TYPE_TURBULENCE = 2
 };
 
-class PLATFORM_EXPORT FETurbulence : public FilterEffect {
+class PLATFORM_EXPORT FETurbulence final : public FilterEffect {
 public:
     static PassRefPtrWillBeRawPtr<FETurbulence> create(Filter*, TurbulenceType, float, float, int, float, bool);
 

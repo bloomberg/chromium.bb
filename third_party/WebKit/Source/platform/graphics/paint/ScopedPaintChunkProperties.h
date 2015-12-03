@@ -7,11 +7,13 @@
 
 #include "platform/graphics/paint/PaintChunkProperties.h"
 #include "platform/graphics/paint/PaintController.h"
+#include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 
 namespace blink {
 
 class ScopedPaintChunkProperties {
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     WTF_MAKE_NONCOPYABLE(ScopedPaintChunkProperties);
 public:
     ScopedPaintChunkProperties(PaintController& paintController, const PaintChunkProperties& properties)

@@ -8,6 +8,8 @@
 #include "platform/PlatformExport.h"
 #include "platform/graphics/paint/DisplayItemList.h"
 #include "platform/graphics/paint/PaintChunk.h"
+#include "wtf/Allocator.h"
+#include "wtf/Noncopyable.h"
 #include "wtf/Vector.h"
 
 namespace blink {
@@ -21,7 +23,9 @@ class WebDisplayItemList;
 //
 // It represents a particular state of the world, and should be immutable
 // (const) to most of its users.
-class PLATFORM_EXPORT PaintArtifact {
+class PLATFORM_EXPORT PaintArtifact final {
+    DISALLOW_NEW();
+    WTF_MAKE_NONCOPYABLE(PaintArtifact);
 public:
     PaintArtifact();
     ~PaintArtifact();

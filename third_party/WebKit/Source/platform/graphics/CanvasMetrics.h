@@ -6,10 +6,12 @@
 #define CanvasMetrics_h
 
 #include "platform/PlatformExport.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
 class PLATFORM_EXPORT CanvasMetrics {
+    STATIC_ONLY(CanvasMetrics);
 public:
     enum CanvasContextUsage {
         CanvasCreated = 0,

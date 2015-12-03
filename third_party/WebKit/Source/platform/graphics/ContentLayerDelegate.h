@@ -28,6 +28,7 @@
 #include "platform/PlatformExport.h"
 #include "platform/geometry/IntSize.h"
 #include "public/platform/WebContentLayerClient.h"
+#include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassOwnPtr.h"
 
@@ -55,7 +56,7 @@ protected:
 
 class PLATFORM_EXPORT ContentLayerDelegate : public WebContentLayerClient {
     WTF_MAKE_NONCOPYABLE(ContentLayerDelegate);
-
+    USING_FAST_MALLOC(ContentLayerDelegate);
 public:
     explicit ContentLayerDelegate(GraphicsContextPainter*);
     ~ContentLayerDelegate() override;

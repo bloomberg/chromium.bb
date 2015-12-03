@@ -39,7 +39,7 @@ enum EdgeModeType {
     EDGEMODE_NONE      = 3
 };
 
-class PLATFORM_EXPORT FEConvolveMatrix : public FilterEffect {
+class PLATFORM_EXPORT FEConvolveMatrix final : public FilterEffect {
 public:
     static PassRefPtrWillBeRawPtr<FEConvolveMatrix> create(Filter*, const IntSize&,
         float, float, const IntPoint&, EdgeModeType, bool, const Vector<float>&);

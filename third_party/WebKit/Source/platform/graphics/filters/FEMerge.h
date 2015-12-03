@@ -27,7 +27,7 @@
 
 namespace blink {
 
-class PLATFORM_EXPORT FEMerge : public FilterEffect {
+class PLATFORM_EXPORT FEMerge final : public FilterEffect {
 public:
     static PassRefPtrWillBeRawPtr<FEMerge> create(Filter*);
 

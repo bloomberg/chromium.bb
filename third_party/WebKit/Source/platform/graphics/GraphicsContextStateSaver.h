@@ -31,11 +31,14 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/graphics/GraphicsContext.h"
+#include "wtf/Allocator.h"
+#include "wtf/Noncopyable.h"
 
 namespace blink {
 
-class PLATFORM_EXPORT GraphicsContextStateSaver {
+class PLATFORM_EXPORT GraphicsContextStateSaver final {
     USING_FAST_MALLOC(GraphicsContextStateSaver);
+    WTF_MAKE_NONCOPYABLE(GraphicsContextStateSaver);
 public:
     GraphicsContextStateSaver(GraphicsContext& context, bool saveAndRestore = true)
         : m_context(context)

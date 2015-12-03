@@ -6,7 +6,9 @@
 #define SharedContextRateLimiter_h
 
 #include "public/platform/WebGraphicsContext3D.h"
+#include "wtf/Allocator.h"
 #include "wtf/Deque.h"
+#include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
 
 namespace blink {
@@ -33,7 +35,9 @@ class WebGraphicsContext3DProvider;
 //   and later restored, the existing rate limiter must be destroyed and
 //   a new one created.
 
-class SharedContextRateLimiter {
+class SharedContextRateLimiter final {
+    USING_FAST_MALLOC(SharedContextRateLimiter);
+    WTF_MAKE_NONCOPYABLE(SharedContextRateLimiter);
 public:
     static PassOwnPtr<SharedContextRateLimiter> create(unsigned maxPendingTicks);
     void tick();

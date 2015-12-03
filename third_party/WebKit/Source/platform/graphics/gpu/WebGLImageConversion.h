@@ -12,6 +12,7 @@
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/khronos/GLES3/gl3.h"
+#include "wtf/Allocator.h"
 #include "wtf/Optional.h"
 #include "wtf/RefPtr.h"
 
@@ -20,7 +21,8 @@ class Image;
 class IntSize;
 
 // Helper functions for texture uploading and pixel readback.
-class PLATFORM_EXPORT WebGLImageConversion {
+class PLATFORM_EXPORT WebGLImageConversion final {
+    STATIC_ONLY(WebGLImageConversion);
 public:
     // Attempt to enumerate all possible native image formats to
     // reduce the amount of temporary allocations during texture
@@ -113,7 +115,7 @@ public:
         HtmlDomNone = 3
     };
 
-    class PLATFORM_EXPORT ImageExtractor {
+    class PLATFORM_EXPORT ImageExtractor final {
         STACK_ALLOCATED();
     public:
         ImageExtractor(Image*, ImageHtmlDomSource, bool premultiplyAlpha, bool ignoreGammaAndColorProfile);

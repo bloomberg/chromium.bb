@@ -24,6 +24,7 @@ class LayoutUnit;
 class PaintInvalidationState;
 
 class PLATFORM_EXPORT CullRect {
+    DISALLOW_NEW();
 public:
     explicit CullRect(const IntRect& rect) : m_rect(rect) { }
     CullRect(const CullRect&, const IntPoint& offset);

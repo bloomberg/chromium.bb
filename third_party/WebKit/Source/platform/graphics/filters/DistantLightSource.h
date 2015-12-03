@@ -27,7 +27,7 @@
 
 namespace blink {
 
-class PLATFORM_EXPORT DistantLightSource : public LightSource {
+class PLATFORM_EXPORT DistantLightSource final : public LightSource {
 public:
     static PassRefPtr<DistantLightSource> create(float azimuth, float elevation)
     {

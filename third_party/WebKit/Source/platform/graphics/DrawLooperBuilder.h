@@ -33,6 +33,7 @@
 
 #include "platform/PlatformExport.h"
 #include "third_party/skia/include/effects/SkLayerDrawLooper.h"
+#include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
@@ -48,6 +49,7 @@ class PLATFORM_EXPORT DrawLooperBuilder final {
     // Implementing the copy constructor properly would require writing code to
     // copy the underlying SkLayerDrawLooper::Builder.
     WTF_MAKE_NONCOPYABLE(DrawLooperBuilder);
+    USING_FAST_MALLOC(DrawLooperBuilder);
 
 public:
     enum ShadowTransformMode {

@@ -35,7 +35,7 @@ enum ChannelSelectorType {
     CHANNEL_A = 4
 };
 
-class PLATFORM_EXPORT FEDisplacementMap : public FilterEffect {
+class PLATFORM_EXPORT FEDisplacementMap final : public FilterEffect {
 public:
     static PassRefPtrWillBeRawPtr<FEDisplacementMap> create(Filter*, ChannelSelectorType xChannelSelector, ChannelSelectorType yChannelSelector, float);
 

@@ -33,6 +33,7 @@
 #include "platform/graphics/Image.h"
 #include "platform/transforms/AffineTransform.h"
 
+#include "wtf/Noncopyable.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
@@ -43,6 +44,7 @@ class SkPicture;
 namespace blink {
 
 class PLATFORM_EXPORT Pattern : public RefCounted<Pattern> {
+    WTF_MAKE_NONCOPYABLE(Pattern);
 public:
     enum RepeatMode {
         RepeatModeX    = 1 << 0,

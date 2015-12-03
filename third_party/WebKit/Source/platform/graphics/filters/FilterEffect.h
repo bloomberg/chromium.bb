@@ -30,6 +30,7 @@
 #include "platform/graphics/ColorSpace.h"
 #include "platform/heap/Handle.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
+#include "wtf/Noncopyable.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
@@ -61,6 +62,7 @@ enum DetermineSubregionFlag {
 typedef int DetermineSubregionFlags;
 
 class PLATFORM_EXPORT FilterEffect : public RefCountedWillBeGarbageCollectedFinalized<FilterEffect> {
+    WTF_MAKE_NONCOPYABLE(FilterEffect);
 public:
     virtual ~FilterEffect();
     DECLARE_VIRTUAL_TRACE();

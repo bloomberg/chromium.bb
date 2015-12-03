@@ -36,7 +36,7 @@ enum ColorMatrixType {
     FECOLORMATRIX_TYPE_LUMINANCETOALPHA = 4
 };
 
-class PLATFORM_EXPORT FEColorMatrix : public FilterEffect {
+class PLATFORM_EXPORT FEColorMatrix final : public FilterEffect {
 public:
     static PassRefPtrWillBeRawPtr<FEColorMatrix> create(Filter*, ColorMatrixType, const Vector<float>&);
 

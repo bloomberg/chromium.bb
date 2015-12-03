@@ -7,6 +7,7 @@
 
 #include "platform/PlatformExport.h"
 #include "wtf/Alignment.h"
+#include "wtf/Allocator.h"
 #include "wtf/Compiler.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
@@ -37,6 +38,7 @@ namespace blink {
 // artifact of the implementation.
 
 class PLATFORM_EXPORT ContiguousContainerBase {
+    DISALLOW_NEW();
     WTF_MAKE_NONCOPYABLE(ContiguousContainerBase);
 protected:
     explicit ContiguousContainerBase(size_t maxObjectSize, const char* typeName);
@@ -83,6 +85,7 @@ private:
     // things. The whole random access iterator interface is a bit much.
     template <typename BaseIterator, typename ValueType>
     class IteratorWrapper : public std::iterator<std::forward_iterator_tag, ValueType> {
+        DISALLOW_NEW();
     public:
         IteratorWrapper() {}
         bool operator==(const IteratorWrapper& other) const { return m_it == other.m_it; }

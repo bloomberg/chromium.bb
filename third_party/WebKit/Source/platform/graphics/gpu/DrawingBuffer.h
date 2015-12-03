@@ -67,6 +67,7 @@ class PLATFORM_EXPORT DrawingBuffer : public RefCounted<DrawingBuffer>, public W
     // If we used CHROMIUM_image as the backing storage for our buffers,
     // we need to know the mapping from texture id to image.
     struct TextureInfo {
+        DISALLOW_NEW();
         Platform3DObject textureId;
         WGC3Duint imageId;
 
@@ -78,6 +79,10 @@ class PLATFORM_EXPORT DrawingBuffer : public RefCounted<DrawingBuffer>, public W
     };
 
     struct MailboxInfo : public RefCounted<MailboxInfo> {
+        WTF_MAKE_NONCOPYABLE(MailboxInfo);
+    public:
+        MailboxInfo() { }
+
         WebExternalTextureMailbox mailbox;
         TextureInfo textureInfo;
         IntSize size;
@@ -86,6 +91,7 @@ class PLATFORM_EXPORT DrawingBuffer : public RefCounted<DrawingBuffer>, public W
         // cleared when the compositor returns the mailbox. See mailboxReleased().
         RefPtr<DrawingBuffer> m_parentDrawingBuffer;
     };
+    WTF_MAKE_NONCOPYABLE(DrawingBuffer);
 public:
     enum PreserveDrawingBuffer {
         Preserve,

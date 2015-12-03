@@ -34,6 +34,7 @@
 #include "platform/graphics/Color.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/transforms/AffineTransform.h"
+#include "wtf/Noncopyable.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
@@ -45,6 +46,7 @@ class SkShader;
 namespace blink {
 
 class PLATFORM_EXPORT Gradient : public RefCounted<Gradient> {
+    WTF_MAKE_NONCOPYABLE(Gradient);
 public:
     static PassRefPtr<Gradient> create(const FloatPoint& p0, const FloatPoint& p1)
     {
@@ -57,6 +59,7 @@ public:
     ~Gradient();
 
     struct ColorStop {
+        DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
         float stop;
         Color color;
 

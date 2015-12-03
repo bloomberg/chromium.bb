@@ -34,7 +34,7 @@
 
 namespace blink {
 
-class PLATFORM_EXPORT CrossfadeGeneratedImage : public GeneratedImage {
+class PLATFORM_EXPORT CrossfadeGeneratedImage final : public GeneratedImage {
 public:
     static PassRefPtr<CrossfadeGeneratedImage> create(Image* fromImage, Image* toImage, float percentage, IntSize crossfadeSize, const IntSize& size)
     {

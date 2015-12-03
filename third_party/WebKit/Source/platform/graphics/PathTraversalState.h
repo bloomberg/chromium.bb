@@ -28,10 +28,13 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/geometry/FloatPoint.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
-class PLATFORM_EXPORT PathTraversalState {
+class PLATFORM_EXPORT PathTraversalState final {
+    STACK_ALLOCATED();
+    WTF_MAKE_NONCOPYABLE(PathTraversalState);
 public:
     enum PathTraversalAction {
         TraversalTotalLength,

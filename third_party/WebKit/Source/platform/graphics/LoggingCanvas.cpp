@@ -51,6 +51,7 @@ namespace blink {
 namespace {
 
 struct VerbParams {
+    STACK_ALLOCATED();
     String name;
     unsigned pointCount;
     unsigned pointOffset;

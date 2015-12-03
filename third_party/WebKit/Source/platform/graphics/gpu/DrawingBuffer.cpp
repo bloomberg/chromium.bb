@@ -63,6 +63,8 @@ WTF::RefCountedLeakCounter& drawingBufferCounter()
 #endif
 
 class ScopedTextureUnit0BindingRestorer {
+    STACK_ALLOCATED();
+    WTF_MAKE_NONCOPYABLE(ScopedTextureUnit0BindingRestorer);
 public:
     ScopedTextureUnit0BindingRestorer(WebGraphicsContext3D* context, GLenum activeTextureUnit, Platform3DObject textureUnitZeroId)
         : m_context(context)

@@ -30,6 +30,7 @@
 
 #include "platform/graphics/ImageOrientation.h"
 #include "third_party/skia/include/core/SkImage.h"
+#include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/RefPtr.h"
 #include "wtf/VectorTraits.h"
@@ -37,6 +38,7 @@
 namespace blink {
 
 struct FrameData {
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     WTF_MAKE_NONCOPYABLE(FrameData);
 public:
     FrameData();
@@ -59,6 +61,7 @@ public:
 
 namespace WTF {
 template<> struct VectorTraits<blink::FrameData> : public SimpleClassVectorTraits<blink::FrameData> {
+    STATIC_ONLY(VectorTraits);
     static const bool canInitializeWithMemset = false; // Not all FrameData members initialize to 0.
 };
 }

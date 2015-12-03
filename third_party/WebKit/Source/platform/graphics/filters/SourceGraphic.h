@@ -29,7 +29,7 @@ class SkPicture;
 
 namespace blink {
 
-class PLATFORM_EXPORT SourceGraphic : public FilterEffect {
+class PLATFORM_EXPORT SourceGraphic final : public FilterEffect {
 public:
     static PassRefPtrWillBeRawPtr<SourceGraphic> create(Filter*);
     ~SourceGraphic() override;

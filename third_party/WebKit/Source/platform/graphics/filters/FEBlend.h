@@ -28,7 +28,7 @@
 
 namespace blink {
 
-class PLATFORM_EXPORT FEBlend : public FilterEffect {
+class PLATFORM_EXPORT FEBlend final : public FilterEffect {
 public:
     static PassRefPtrWillBeRawPtr<FEBlend> create(Filter*, WebBlendMode);
 

@@ -9,6 +9,8 @@
 
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/paint/DrawingDisplayItem.h"
+#include "wtf/Allocator.h"
+#include "wtf/Noncopyable.h"
 
 #ifndef NDEBUG
 #include "wtf/text/WTFString.h"
@@ -18,7 +20,9 @@ namespace blink {
 
 class GraphicsContext;
 
-class PLATFORM_EXPORT DrawingRecorder {
+class PLATFORM_EXPORT DrawingRecorder final {
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+    WTF_MAKE_NONCOPYABLE(DrawingRecorder);
 public:
     static bool useCachedDrawingIfPossible(GraphicsContext&, const DisplayItemClientWrapper&, DisplayItem::Type);
 

@@ -9,6 +9,8 @@
 #include "platform/graphics/ImageBufferSurface.h"
 #include "public/platform/WebThread.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "wtf/Allocator.h"
+#include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/RefPtr.h"
 
@@ -21,9 +23,13 @@ class ImageBuffer;
 class RecordingImageBufferSurfaceTest;
 
 class RecordingImageBufferFallbackSurfaceFactory {
+    USING_FAST_MALLOC(RecordingImageBufferFallbackSurfaceFactory);
+    WTF_MAKE_NONCOPYABLE(RecordingImageBufferFallbackSurfaceFactory);
 public:
     virtual PassOwnPtr<ImageBufferSurface> createSurface(const IntSize&, OpacityMode) = 0;
     virtual ~RecordingImageBufferFallbackSurfaceFactory() { }
+protected:
+    RecordingImageBufferFallbackSurfaceFactory() { }
 };
 
 class PLATFORM_EXPORT RecordingImageBufferSurface : public ImageBufferSurface {

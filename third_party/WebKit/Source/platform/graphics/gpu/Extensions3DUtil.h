@@ -9,7 +9,9 @@
 #include "platform/graphics/GraphicsTypes3D.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
+#include "wtf/Allocator.h"
 #include "wtf/HashSet.h"
+#include "wtf/Noncopyable.h"
 #include "wtf/text/StringHash.h"
 #include "wtf/text/WTFString.h"
 
@@ -17,7 +19,9 @@ namespace blink {
 
 class WebGraphicsContext3D;
 
-class PLATFORM_EXPORT Extensions3DUtil {
+class PLATFORM_EXPORT Extensions3DUtil final {
+    USING_FAST_MALLOC(Extensions3DUtil);
+    WTF_MAKE_NONCOPYABLE(Extensions3DUtil);
 public:
     // Creates a new Extensions3DUtil. If the passed WebGraphicsContext3D has been spontaneously lost, returns null.
     static PassOwnPtr<Extensions3DUtil> create(WebGraphicsContext3D*);

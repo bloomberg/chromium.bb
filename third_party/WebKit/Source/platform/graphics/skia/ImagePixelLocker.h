@@ -8,6 +8,8 @@
 #include "platform/heap/Heap.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/core/SkPixmap.h"
+#include "wtf/Allocator.h"
+#include "wtf/Noncopyable.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 
@@ -15,7 +17,9 @@ class SkImage;
 
 namespace blink {
 
-class ImagePixelLocker {
+class ImagePixelLocker final {
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+    WTF_MAKE_NONCOPYABLE(ImagePixelLocker);
 public:
     ImagePixelLocker(PassRefPtr<const SkImage>, SkAlphaType);
 

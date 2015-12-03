@@ -6,6 +6,7 @@
 #define PaintChunk_h
 
 #include "platform/graphics/paint/PaintChunkProperties.h"
+#include "wtf/Allocator.h"
 #include <iosfwd>
 
 namespace blink {
@@ -17,6 +18,7 @@ namespace blink {
 //
 // This is a Slimming Paint v2 class.
 struct PaintChunk {
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     PaintChunk() : beginIndex(0), endIndex(0) { }
     PaintChunk(unsigned begin, unsigned end, const PaintChunkProperties& props)
         : beginIndex(begin), endIndex(end), properties(props) { }

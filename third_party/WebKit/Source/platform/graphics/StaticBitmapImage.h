@@ -9,7 +9,7 @@
 
 namespace blink {
 
-class PLATFORM_EXPORT StaticBitmapImage : public Image {
+class PLATFORM_EXPORT StaticBitmapImage final : public Image {
 public:
     ~StaticBitmapImage() override;
 
