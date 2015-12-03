@@ -22,6 +22,10 @@
 #include "components/search_engines/search_engines_pref_names.h"
 #include "components/search_engines/template_url_service.h"
 
+#if defined(OS_WIN)
+#include "components/search_engines/desktop_search_win.h"
+#endif  // defined(OS_WIN)
+
 #if defined(ENABLE_RLZ)
 #include "components/rlz/rlz_tracker.h"
 #endif
@@ -79,6 +83,9 @@ void TemplateURLServiceFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   DefaultSearchManager::RegisterProfilePrefs(registry);
   TemplateURLService::RegisterProfilePrefs(registry);
+#if defined(OS_WIN)
+  RegisterWindowsDesktopSearchRedirectionPref(registry);
+#endif
 }
 
 content::BrowserContext* TemplateURLServiceFactory::GetBrowserContextToUse(

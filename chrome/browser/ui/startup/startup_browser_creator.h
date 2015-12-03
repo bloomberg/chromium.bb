@@ -132,6 +132,8 @@ class StartupBrowserCreator {
                            ReadingWasRestartedAfterRestart);
   FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorTest, UpdateWithTwoProfiles);
   FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorTest, LastUsedProfileActivated);
+  FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorWinTest,
+                           GetURLsFromCommandLineWithDesktopSearchURL);
 
   // Returns the list of URLs to open from the command line. The returned
   // vector is empty if the user didn't specify any URLs on the command line.

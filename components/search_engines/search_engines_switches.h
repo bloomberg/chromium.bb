@@ -11,10 +11,6 @@ namespace switches {
 
 extern const char kExtraSearchQueryParams[];
 
-#if defined(OS_WIN)
-extern const char kUseDefaultSearchProviderForDesktopSearch[];
-#endif  // defined(OS_WIN)
-
 }  // namespace switches
 
 #endif  // COMPONENTS_SEARCH_ENGINES_SEARCH_ENGINES_SWITCHES_H_

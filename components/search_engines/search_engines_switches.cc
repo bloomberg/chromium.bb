@@ -10,10 +10,4 @@ namespace switches {
 // testing.
 const char kExtraSearchQueryParams[] = "extra-search-query-params";
 
-#if defined(OS_WIN)
-// Use the default search provider for desktop search.
-const char kUseDefaultSearchProviderForDesktopSearch[] =
-    "use-default-search-provider-for-desktop-search";
-#endif  // defined(OS_WIN)
-
 }  // namespace switches

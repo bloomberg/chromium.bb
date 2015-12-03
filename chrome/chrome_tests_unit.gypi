@@ -468,6 +468,7 @@
       'browser/ui/webui/browsing_history_handler_unittest.cc',
       'browser/ui/webui/fileicon_source_unittest.cc',
       'browser/ui/webui/log_web_ui_url_unittest.cc',
+      'browser/ui/startup/startup_browser_creator_win_unittest.cc',
       'browser/update_client/chrome_update_query_params_delegate_unittest.cc',
       'common/chrome_content_client_unittest.cc',
       'common/chrome_paths_unittest.cc',

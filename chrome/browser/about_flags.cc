@@ -67,14 +67,14 @@
 #include "ui/message_center/message_center_switches.h"
 #endif
 
-#if defined(USE_ASH)
-#include "ash/ash_switches.h"
-#endif
-
 #if defined(OS_CHROMEOS)
 #include "chromeos/chromeos_switches.h"
 #include "third_party/cros_system_api/switches/chrome_switches.h"
 #endif
+
+#if defined(OS_WIN)
+#include "components/search_engines/desktop_search_win.h"
+#endif  // defined(OS_WIN)
 
 #if defined(ENABLE_APP_LIST)
 #include "ui/app_list/app_list_switches.h"
@@ -86,6 +86,10 @@
 
 #if defined(ENABLE_PRINT_PREVIEW)
 #include "chrome/browser/ui/webui/print_preview/print_preview_distiller.h"
+#endif
+
+#if defined(USE_ASH)
+#include "ash/ash_switches.h"
 #endif
 
 #if defined(USE_OZONE)
@@ -2078,6 +2082,13 @@ const FeatureEntry kFeatureEntries[] = {
       IDS_FLAGS_ENABLE_MATERIAL_DESIGN_HISTORY_DESCRIPTION,
       kOsDesktop | kOsAndroid,
       SINGLE_VALUE_TYPE(switches::kEnableMaterialDesignHistory)},
+#if defined(OS_WIN)
+    {"enable-windows-desktop-search-redirection",
+     IDS_FLAGS_WINDOWS_DESKTOP_SEARCH_REDIRECTION_NAME,
+     IDS_FLAGS_WINDOWS_DESKTOP_SEARCH_REDIRECTION_DESCRIPTION,
+     kOsWin,
+     FEATURE_VALUE_TYPE(kWindowsDesktopSearchRedirectionFeature)},
+#endif  // defined(OS_WIN)
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.
