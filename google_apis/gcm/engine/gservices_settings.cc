@@ -178,11 +178,6 @@ const base::TimeDelta GServicesSettings::MinimumCheckinInterval() {
 }
 
 // static
-const GURL GServicesSettings::DefaultCheckinURL() {
-  return GURL(kDefaultCheckinURL);
-}
-
-// static
 std::string GServicesSettings::CalculateDigest(const SettingsMap& settings) {
   unsigned char hash[base::kSHA1Length];
   std::string data;
@@ -283,6 +278,10 @@ base::TimeDelta GServicesSettings::GetCheckinInterval() const {
 }
 
 GURL GServicesSettings::GetCheckinURL() const {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kGCMCheckinURL))
+    return GURL(command_line->GetSwitchValueASCII(switches::kGCMCheckinURL));
+
   SettingsMap::const_iterator iter = settings_.find(kCheckinURLKey);
   if (iter == settings_.end() || iter->second.empty())
     return GURL(kDefaultCheckinURL);
@@ -290,6 +289,10 @@ GURL GServicesSettings::GetCheckinURL() const {
 }
 
 GURL GServicesSettings::GetMCSMainEndpoint() const {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kGCMMCSEndpoint))
+    return GURL(command_line->GetSwitchValueASCII(switches::kGCMMCSEndpoint));
+
   // Get alternative hostname or use default.
   std::string mcs_hostname;
   SettingsMap::const_iterator iter = settings_.find(kMCSHostnameKey);
@@ -316,6 +319,10 @@ GURL GServicesSettings::GetMCSMainEndpoint() const {
 }
 
 GURL GServicesSettings::GetMCSFallbackEndpoint() const {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kGCMMCSEndpoint))
+    return GURL();  // No fallback endpoint when using command line override.
+
   // Get alternative hostname or use default.
   std::string mcs_hostname;
   SettingsMap::const_iterator iter = settings_.find(kMCSHostnameKey);
@@ -335,15 +342,15 @@ GURL GServicesSettings::GetMCSFallbackEndpoint() const {
 }
 
 GURL GServicesSettings::GetRegistrationURL() const {
-  SettingsMap::const_iterator iter = settings_.find(kRegistrationURLKey);
-  if (iter == settings_.end() || iter->second.empty()) {
-    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-    if (!command_line->HasSwitch(switches::kGCMRegistrationURL))
-      return GURL(kDefaultRegistrationURL);
-
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kGCMRegistrationURL)) {
     return GURL(
         command_line->GetSwitchValueASCII(switches::kGCMRegistrationURL));
   }
+
+  SettingsMap::const_iterator iter = settings_.find(kRegistrationURLKey);
+  if (iter == settings_.end() || iter->second.empty())
+    return GURL(kDefaultRegistrationURL);
   return GURL(iter->second);
 }
 

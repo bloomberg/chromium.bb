@@ -7,6 +7,8 @@
 
 namespace switches {
 
+extern const char kGCMCheckinURL[];
+extern const char kGCMMCSEndpoint[];
 extern const char kGCMRegistrationURL[];
 
 }  // namespace switches

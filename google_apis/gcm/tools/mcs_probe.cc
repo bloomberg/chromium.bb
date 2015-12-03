@@ -449,7 +449,7 @@ void MCSProbe::CheckIn() {
                                            chrome_build_proto);
 
   checkin_request_.reset(new CheckinRequest(
-      GServicesSettings::DefaultCheckinURL(),
+      GServicesSettings().GetCheckinURL(),
       request_info,
       kDefaultBackoffPolicy,
       base::Bind(&MCSProbe::OnCheckInCompleted, base::Unretained(this)),

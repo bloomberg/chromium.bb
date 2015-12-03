@@ -478,7 +478,9 @@ void GCMClientImpl::StartGCM() {
 void GCMClientImpl::InitializeMCSClient() {
   std::vector<GURL> endpoints;
   endpoints.push_back(gservices_settings_.GetMCSMainEndpoint());
-  endpoints.push_back(gservices_settings_.GetMCSFallbackEndpoint());
+  GURL fallback_endpoint = gservices_settings_.GetMCSFallbackEndpoint();
+  if (fallback_endpoint.is_valid())
+    endpoints.push_back(fallback_endpoint);
   connection_factory_ = internals_builder_->BuildConnectionFactory(
       endpoints,
       GetGCMBackoffPolicy(),

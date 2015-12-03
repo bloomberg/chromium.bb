@@ -26,9 +26,6 @@ class GCM_EXPORT GServicesSettings {
   // Minimum periodic checkin interval in seconds.
   static const base::TimeDelta MinimumCheckinInterval();
 
-  // Default checkin URL.
-  static const GURL DefaultCheckinURL();
-
   // Calculates digest of provided settings.
   static std::string CalculateDigest(const SettingsMap& settings);
 
@@ -56,7 +53,7 @@ class GCM_EXPORT GServicesSettings {
   // Gets address of main MCS endpoint.
   GURL GetMCSMainEndpoint() const;
 
-  // Gets address of fallback MCS endpoint.
+  // Gets address of fallback MCS endpoint. Will be empty if there isn't one.
   GURL GetMCSFallbackEndpoint() const;
 
   // Gets the URL to use when registering or unregistering the apps.
