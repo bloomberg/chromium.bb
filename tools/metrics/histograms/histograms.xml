@@ -50551,6 +50551,33 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="UpdateEngine.CertificateCheck.Download"
+    enum="UpdateEngineCertificateCheckStatus">
+  <owner>deymo@chromium.org</owner>
+  <summary>
+    The status of the certificate check done when downloading a payload over
+    HTTPS. Note that most downloads are done over HTTP.
+
+    This is reported on every HTTPS connection to the payload download server.
+    Connection drops on the same payload may report different values.
+
+    This metric is specific to ChromeOS.
+  </summary>
+</histogram>
+
+<histogram name="UpdateEngine.CertificateCheck.UpdateCheck"
+    enum="UpdateEngineCertificateCheckStatus">
+  <owner>deymo@chromium.org</owner>
+  <summary>
+    The status of the certificate check done when querying Omaha for a new
+    version.
+
+    This is reported on every update check.
+
+    This metric is specific to ChromeOS.
+  </summary>
+</histogram>
+
 <histogram name="UpdateEngine.Check.DownloadErrorCode"
     enum="UpdateEngineDownloadErrorCode">
   <owner>zeuthen@chromium.org</owner>
@@ -77639,6 +77666,20 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="8" label="Verification Failed"/>
   <int value="9" label="Post-install Failed"/>
   <int value="10" label="Abnormal Termination"/>
+</enum>
+
+<enum name="UpdateEngineCertificateCheckStatus" type="int">
+  <int value="0" label="Valid certificate">
+    The certificate is valid and the same as seen before or the first time we
+    see a certificate.
+  </int>
+  <int value="1" label="Changed certificate">
+    The certificate is valid, but is different than a previously seen
+    certificate for the selected server.
+  </int>
+  <int value="2" label="Certificate check failed">
+    The certificate validation failed.
+  </int>
 </enum>
 
 <enum name="UpdateEngineCheckReaction" type="int">
