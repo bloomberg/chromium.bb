@@ -25,15 +25,7 @@ class TimeTicks;
 // specific client id.
 class DevToolsNetworkInterceptor {
  public:
-  class Throttable {
-   public:
-    virtual ~Throttable() {}
-    virtual void Fail() = 0;
-    virtual int64_t ThrottledByteCount() = 0;
-    virtual void Throttled(int64_t count) = 0;
-    virtual void ThrottleFinished() = 0;
-    virtual void GetSendEndTiming(base::TimeTicks* send_end) = 0;
-  };
+  using ThrottleCallback = base::Callback<void(int, int64_t)>;
 
   DevToolsNetworkInterceptor();
   virtual ~DevToolsNetworkInterceptor();
@@ -43,16 +35,14 @@ class DevToolsNetworkInterceptor {
   // Applies network emulation configuration.
   void UpdateConditions(scoped_ptr<DevToolsNetworkConditions> conditions);
 
-  void AddThrottable(Throttable* throttable);
-  void RemoveThrottable(Throttable* throttable);
+  int StartThrottle(int result,
+                    int64_t bytes,
+                    base::TimeTicks send_end,
+                    bool start,
+                    const ThrottleCallback& callback);
+  void StopThrottle(const ThrottleCallback& callback);
 
-  bool ShouldFail();
-  bool ShouldThrottle();
-  void Throttle(Throttable* throttable, bool start);
-
-  const DevToolsNetworkConditions* conditions() const {
-    return conditions_.get();
-  }
+  bool IsOffline();
 
  private:
   scoped_ptr<DevToolsNetworkConditions> conditions_;
@@ -62,17 +52,24 @@ class DevToolsNetworkInterceptor {
   void ArmTimer(base::TimeTicks now);
   void OnTimer();
 
-  void FireThrottledCallback(Throttable* throttable);
+  struct ThrottleRecord {
+   public:
+    ThrottleRecord();
+    ~ThrottleRecord();
+    int result;
+    int64_t bytes;
+    int64_t send_end;
+    ThrottleCallback callback;
+  };
+  using ThrottleRecords = std::vector<ThrottleRecord>;
 
-  typedef std::set<Throttable*> Throttables;
-  Throttables throttables_;
+  void RemoveRecord(ThrottleRecords* records, const ThrottleCallback& callback);
 
   // Throttables suspended for a "latency" period.
-  typedef std::vector<std::pair<Throttable*, int64_t>> Suspended;
-  Suspended suspended_;
+  ThrottleRecords suspended_;
 
   // Throttable waiting certain amount of transfer to be "accounted".
-  std::vector<Throttable*> throttled_;
+  ThrottleRecords throttled_;
 
   base::OneShotTimer timer_;
   base::TimeTicks offset_;

@@ -42,8 +42,7 @@ class DevToolsNetworkControllerHelper;
 // used to simulate network outage. It runs saved callback (if any) with
 // net::ERR_INTERNET_DISCONNECTED result value.
 class DevToolsNetworkTransaction
-    : public net::HttpTransaction,
-      public DevToolsNetworkInterceptor::Throttable {
+    : public net::HttpTransaction {
  public:
   static const char kDevToolsEmulateNetworkConditionsClientId[];
 
@@ -52,13 +51,6 @@ class DevToolsNetworkTransaction
       scoped_ptr<net::HttpTransaction> network_transaction);
 
   ~DevToolsNetworkTransaction() override;
-
-  // DevToolsNetworkInterceptor::Throttable implementation.
-  void Fail() override;
-  int64_t ThrottledByteCount() override;
-  void Throttled(int64_t count) override;
-  void ThrottleFinished() override;
-  void GetSendEndTiming(base::TimeTicks* send_end) override;
 
   // HttpTransaction methods:
   int Start(const net::HttpRequestInfo* request,
@@ -101,13 +93,21 @@ class DevToolsNetworkTransaction
   friend class test::DevToolsNetworkControllerHelper;
 
  private:
-  // Checks whether request contains
-  // "X-DevTools-Emulate-Network-Conditions-Client-Id" header.
-  // If it does, header is removed from request, and it's value is returned.
-  void ProcessRequest(std::string* client_id);
+  void Fail();
+  bool CheckFailed();
 
-  // Proxy callback handler. Runs saved callback.
-  void OnCallback(int result);
+  void IOCallback(const net::CompletionCallback& callback,
+                  bool start,
+                  int result);
+  int Throttle(const net::CompletionCallback& callback,
+               bool start,
+               int result);
+  void ThrottleCallback(const net::CompletionCallback& callback,
+                        int result,
+                        int64_t bytes);
+
+  DevToolsNetworkInterceptor::ThrottleCallback throttle_callback_;
+  int64_t throttled_byte_count_;
 
   DevToolsNetworkController* controller_;
   base::WeakPtr<DevToolsNetworkInterceptor> interceptor_;
@@ -122,31 +122,6 @@ class DevToolsNetworkTransaction
 
   // True if Fail was already invoked.
   bool failed_;
-
-  // Value of  request header.
-  std::string client_id_;
-
-  enum CallbackType {
-      NONE,
-      READ,
-      RESTART_IGNORING_LAST_ERROR,
-      RESTART_WITH_AUTH,
-      RESTART_WITH_CERTIFICATE,
-      START
-  };
-
-  int SetupCallback(
-      net::CompletionCallback callback,
-      int result,
-      CallbackType callback_type);
-
-  void Throttle(int result);
-
-  int throttled_result_;
-  int64_t throttled_byte_count_;
-  CallbackType callback_type_;
-  net::CompletionCallback proxy_callback_;
-  net::CompletionCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsNetworkTransaction);
 };

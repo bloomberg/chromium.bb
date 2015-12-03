@@ -9,25 +9,23 @@
 #include "net/http/http_request_info.h"
 
 DevToolsNetworkController::DevToolsNetworkController()
-    : default_interceptor_(new DevToolsNetworkInterceptor()),
-      appcache_interceptor_(new DevToolsNetworkInterceptor()) {}
+    : appcache_interceptor_(new DevToolsNetworkInterceptor()) {}
 
 DevToolsNetworkController::~DevToolsNetworkController() {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
-base::WeakPtr<DevToolsNetworkInterceptor>
-DevToolsNetworkController::GetInterceptor(
+DevToolsNetworkInterceptor* DevToolsNetworkController::GetInterceptor(
     const std::string& client_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!interceptors_.size() || client_id.empty())
-    return default_interceptor_->GetWeakPtr();
+    return nullptr;
 
   DevToolsNetworkInterceptor* interceptor = interceptors_.get(client_id);
   if (!interceptor)
-    return default_interceptor_->GetWeakPtr();
+    return nullptr;
 
-  return interceptor->GetWeakPtr();
+  return interceptor;
 }
 
 void DevToolsNetworkController::SetNetworkState(
@@ -58,13 +56,13 @@ void DevToolsNetworkController::SetNetworkState(
   bool has_offline_interceptors = false;
   InterceptorMap::iterator it = interceptors_.begin();
   for (; it != interceptors_.end(); ++it) {
-    if (it->second->conditions()->offline()) {
+    if (it->second->IsOffline()) {
       has_offline_interceptors = true;
       break;
     }
   }
 
-  bool is_appcache_offline = appcache_interceptor_->conditions()->offline();
+  bool is_appcache_offline = appcache_interceptor_->IsOffline();
   if (is_appcache_offline != has_offline_interceptors) {
     scoped_ptr<DevToolsNetworkConditions> appcache_conditions(
         new DevToolsNetworkConditions(has_offline_interceptors));

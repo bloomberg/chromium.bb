@@ -10,7 +10,6 @@
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 
 class DevToolsNetworkConditions;
@@ -28,7 +27,7 @@ class DevToolsNetworkController {
       const std::string& client_id,
       scoped_ptr<DevToolsNetworkConditions> conditions);
 
-  base::WeakPtr<DevToolsNetworkInterceptor> GetInterceptor(
+  DevToolsNetworkInterceptor* GetInterceptor(
       const std::string& client_id);
 
  private:
@@ -36,7 +35,6 @@ class DevToolsNetworkController {
       base::ScopedPtrHashMap<std::string,
                              scoped_ptr<DevToolsNetworkInterceptor>>;
 
-  scoped_ptr<DevToolsNetworkInterceptor> default_interceptor_;
   scoped_ptr<DevToolsNetworkInterceptor> appcache_interceptor_;
   InterceptorMap interceptors_;
   base::ThreadChecker thread_checker_;

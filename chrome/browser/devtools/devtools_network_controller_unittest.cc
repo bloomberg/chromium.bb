@@ -85,11 +85,11 @@ class DevToolsNetworkControllerHelper {
 
   bool ShouldFail() {
     if (transaction_->interceptor_)
-      return transaction_->interceptor_->ShouldFail();
-    base::WeakPtr<DevToolsNetworkInterceptor> interceptor =
+      return transaction_->interceptor_->IsOffline();
+    DevToolsNetworkInterceptor* interceptor =
         controller_.GetInterceptor(kClientId);
     EXPECT_TRUE(!!interceptor);
-    return interceptor->ShouldFail();
+    return interceptor->IsOffline();
   }
 
   bool HasStarted() {
@@ -100,12 +100,15 @@ class DevToolsNetworkControllerHelper {
     return transaction_->failed_;
   }
 
+  void CancelTransaction() {
+    transaction_.reset();
+  }
+
   ~DevToolsNetworkControllerHelper() {
     RemoveMockTransaction(&mock_transaction_);
   }
 
   TestCallback* callback() { return &callback_; }
-  MockTransaction* mock_transaction() { return &mock_transaction_; }
   DevToolsNetworkController* controller() { return &controller_; }
   DevToolsNetworkTransaction* transaction() { return transaction_.get(); }
 
@@ -176,16 +179,15 @@ TEST(DevToolsNetworkControllerTest, FailRunningTransaction) {
   EXPECT_EQ(callback->run_count(), 0);
 
   helper.SetNetworkState(kClientId, true);
+  EXPECT_EQ(callback->run_count(), 0);
+
+  // Wait until HttpTrancation completes reading and invokes callback.
+  // DevToolsNetworkTransaction should report error instead.
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(callback->run_count(), 1);
   EXPECT_EQ(callback->value(), net::ERR_INTERNET_DISCONNECTED);
 
-  // Wait until HttpTrancation completes reading and invokes callback.
-  // DevToolsNetworkTransaction should ignore callback, because it has
-  // reported network error already.
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(callback->run_count(), 1);
-
-  // Check that transaction in not failed second time.
+  // Check that transaction is not failed second time.
   helper.SetNetworkState(kClientId, false);
   helper.SetNetworkState(kClientId, true);
   EXPECT_EQ(callback->run_count(), 1);
@@ -200,15 +202,47 @@ TEST(DevToolsNetworkControllerTest, ReadAfterFail) {
   EXPECT_TRUE(helper.HasStarted());
 
   helper.SetNetworkState(kClientId, true);
-  EXPECT_TRUE(helper.HasFailed());
+  // Not failed yet, as no IO was initiated.
+  EXPECT_FALSE(helper.HasFailed());
 
   scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(64));
   rv = helper.Read();
+  // Fails on first IO.
   EXPECT_EQ(rv, net::ERR_INTERNET_DISCONNECTED);
 
   // Check that callback is never invoked.
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(helper.callback()->run_count(), 0);
+}
+
+TEST(DevToolsNetworkControllerTest, CancelTransaction) {
+  DevToolsNetworkControllerHelper helper;
+  helper.SetNetworkState(kClientId, false);
+
+  int rv = helper.Start();
+  EXPECT_EQ(rv, net::OK);
+  EXPECT_TRUE(helper.HasStarted());
+  helper.CancelTransaction();
+
+  // Should not crash.
+  helper.SetNetworkState(kClientId, true);
+  helper.SetNetworkState(kClientId, false);
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST(DevToolsNetworkControllerTest, CancelFailedTransaction) {
+  DevToolsNetworkControllerHelper helper;
+  helper.SetNetworkState(kClientId, true);
+
+  int rv = helper.Start();
+  EXPECT_EQ(rv, net::ERR_INTERNET_DISCONNECTED);
+  EXPECT_TRUE(helper.HasStarted());
+  helper.CancelTransaction();
+
+  // Should not crash.
+  helper.SetNetworkState(kClientId, true);
+  helper.SetNetworkState(kClientId, false);
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace test
