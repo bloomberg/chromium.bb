@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://dev.w3.org/html5/webstorage/#the-storage-event
+// https://html.spec.whatwg.org/multipage/webstorage.html#the-storageevent-interface
 
 [
     Constructor(DOMString type, optional StorageEventInit eventInitDict),
@@ -34,6 +34,7 @@
     readonly attribute DOMString url;
     readonly attribute Storage? storageArea;
 
+    // Non-standard API
     [Measure, LegacyInterfaceTypeChecking] void initStorageEvent([Default=Undefined] optional DOMString typeArg,
                                                                  [Default=Undefined] optional boolean canBubbleArg,
                                                                  [Default=Undefined] optional boolean cancelableArg,
@@ -42,7 +43,4 @@
                                                                  [Default=Undefined] optional DOMString? newValueArg,
                                                                  [Default=Undefined] optional DOMString urlArg,
                                                                  [Default=Undefined] optional Storage storageAreaArg);
-
-    // Needed once we support init<blank>EventNS
-    // void initStorageEventNS(DOMString namespaceURI, DOMString typeArg, boolean canBubbleArg, boolean cancelableArg, DOMString keyArg, DOMString oldValueArg, DOMString newValueArg, DOMString urlArg, Storage storageAreaArg);
 };

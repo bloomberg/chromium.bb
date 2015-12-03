@@ -23,21 +23,26 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// https://html.spec.whatwg.org/multipage/webstorage.html#the-storage-interface
+
 [
     GarbageCollected
 ] interface Storage {
-    [NotEnumerable, RaisesException] getter DOMString (unsigned long index);
-    [RaisesException] setter DOMString (unsigned long index, DOMString value);
-    [RaisesException] deleter boolean (unsigned long index);
+    // TODO(philipj): [NotEnumerable] should not be used anywhere in this interface.
+    [NotEnumerable, RaisesException=Getter] readonly attribute unsigned long length;
+    [NotEnumerable, RaisesException] DOMString? key(unsigned long index);
+    [LogActivity, NotEnumerable, RaisesException] DOMString? getItem(DOMString key);
+    [LogActivity, NotEnumerable, RaisesException] void setItem(DOMString key, DOMString value);
+    [LogActivity, NotEnumerable, RaisesException] void removeItem(DOMString key);
+    [LogActivity, NotEnumerable, RaisesException] void clear();
 
+    // TODO(philipj): Merge these into getItem/setItem/removeItem.
     [RaisesException] getter DOMString (DOMString name);
     [RaisesException] setter DOMString (DOMString name, DOMString value);
     [RaisesException] deleter boolean (DOMString name);
 
-    [NotEnumerable, RaisesException=Getter] readonly attribute unsigned long length;
-    [NotEnumerable, RaisesException] DOMString? key(unsigned long index);
-    [LogActivity, NotEnumerable, RaisesException] DOMString? getItem(DOMString key);
-    [LogActivity, NotEnumerable, RaisesException] void setItem(DOMString key, DOMString data);
-    [LogActivity, NotEnumerable, RaisesException] void removeItem(DOMString key);
-    [LogActivity, NotEnumerable, RaisesException] void clear();
+    // Non-standard APIs
+    [NotEnumerable, RaisesException] getter DOMString (unsigned long index);
+    [RaisesException] setter DOMString (unsigned long index, DOMString value);
+    [RaisesException] deleter boolean (unsigned long index);
 };
