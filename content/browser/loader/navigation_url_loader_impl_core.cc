@@ -47,8 +47,11 @@ void NavigationURLLoaderImplCore::Start(
       base::Bind(&NavigationURLLoaderImpl::NotifyRequestStarted, loader_,
                  base::TimeTicks::Now()));
 
-  ResourceDispatcherHostImpl::Get()->BeginNavigationRequest(
-      resource_context, *request_info, this, service_worker_handle_core);
+  // The ResourceDispatcherHostImpl can be null in unit tests.
+  if (ResourceDispatcherHostImpl::Get()) {
+    ResourceDispatcherHostImpl::Get()->BeginNavigationRequest(
+        resource_context, *request_info, this, service_worker_handle_core);
+  }
 }
 
 void NavigationURLLoaderImplCore::FollowRedirect() {
