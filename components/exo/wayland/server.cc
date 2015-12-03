@@ -645,7 +645,7 @@ void shell_surface_set_title(wl_client* client,
 void shell_surface_set_class(wl_client* client,
                              wl_resource* resource,
                              const char* clazz) {
-  NOTIMPLEMENTED();
+  GetUserDataAs<ShellSurface>(resource)->SetApplicationId(clazz);
 }
 
 const struct wl_shell_surface_interface shell_surface_implementation = {

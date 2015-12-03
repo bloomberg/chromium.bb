@@ -13,8 +13,11 @@
 #include "base/trace_event/trace_event_argument.h"
 #include "components/exo/surface.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_property.h"
 #include "ui/base/hit_test.h"
 #include "ui/views/widget/widget.h"
+
+DECLARE_WINDOW_PROPERTY_TYPE(std::string*)
 
 namespace exo {
 namespace {
@@ -64,6 +67,8 @@ views::Widget::InitParams CreateWidgetInitParams(
 ////////////////////////////////////////////////////////////////////////////////
 // ShellSurface, public:
 
+DEFINE_LOCAL_WINDOW_PROPERTY_KEY(std::string*, kApplicationIdKey, nullptr)
+
 ShellSurface::ShellSurface(Surface* surface) : surface_(surface) {
   surface_->SetSurfaceDelegate(this);
   surface_->AddSurfaceObserver(this);
@@ -95,6 +100,7 @@ void ShellSurface::SetToplevel() {
   widget_->GetNativeWindow()->set_owned_by_parent(false);
   widget_->GetNativeWindow()->SetName("ExoShellSurface");
   widget_->GetNativeWindow()->AddChild(surface_);
+  SetApplicationId(widget_->GetNativeWindow(), &application_id_);
 
   // The position of a standard top level shell surface is managed by Ash.
   ash::wm::GetWindowState(widget_->GetNativeWindow())
@@ -116,6 +122,7 @@ void ShellSurface::SetMaximized() {
   widget_->GetNativeWindow()->set_owned_by_parent(false);
   widget_->GetNativeWindow()->SetName("ExoShellSurface");
   widget_->GetNativeWindow()->AddChild(surface_);
+  SetApplicationId(widget_->GetNativeWindow(), &application_id_);
 }
 
 void ShellSurface::SetFullscreen() {
@@ -133,6 +140,7 @@ void ShellSurface::SetFullscreen() {
   widget_->GetNativeWindow()->set_owned_by_parent(false);
   widget_->GetNativeWindow()->SetName("ExoShellSurface");
   widget_->GetNativeWindow()->AddChild(surface_);
+  SetApplicationId(widget_->GetNativeWindow(), &application_id_);
 }
 
 void ShellSurface::SetTitle(const base::string16& title) {
@@ -142,6 +150,25 @@ void ShellSurface::SetTitle(const base::string16& title) {
   title_ = title;
   if (widget_)
     widget_->UpdateWindowTitle();
+}
+
+// static
+void ShellSurface::SetApplicationId(aura::Window* window,
+                                    std::string* application_id) {
+  window->SetProperty(kApplicationIdKey, application_id);
+}
+
+// static
+const std::string ShellSurface::GetApplicationId(aura::Window* window) {
+  std::string* string_ptr = window->GetProperty(kApplicationIdKey);
+  return string_ptr ? *string_ptr : std::string();
+}
+
+void ShellSurface::SetApplicationId(const std::string& application_id) {
+  TRACE_EVENT1("exo", "ShellSurface::SetApplicationId", "application_id",
+               application_id);
+
+  application_id_ = application_id;
 }
 
 void ShellSurface::Move() {
@@ -158,6 +185,7 @@ scoped_refptr<base::trace_event::TracedValue> ShellSurface::AsTracedValue()
   scoped_refptr<base::trace_event::TracedValue> value =
       new base::trace_event::TracedValue;
   value->SetString("title", base::UTF16ToUTF8(title_));
+  value->SetString("application_id", application_id_);
   return value;
 }
 

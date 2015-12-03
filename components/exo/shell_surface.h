@@ -46,6 +46,15 @@ class ShellSurface : public SurfaceDelegate,
   // Set title for surface.
   void SetTitle(const base::string16& title);
 
+  // Sets the application ID for the window. The application ID identifies the
+  // general class of applications to which the window belongs.
+  static void SetApplicationId(aura::Window* window,
+                               std::string* application_id);
+  static const std::string GetApplicationId(aura::Window* window);
+
+  // Set application id for surface.
+  void SetApplicationId(const std::string& application_id);
+
   // Start an interactive move of surface.
   void Move();
 
@@ -74,6 +83,7 @@ class ShellSurface : public SurfaceDelegate,
   scoped_ptr<views::Widget> widget_;
   Surface* surface_;
   base::string16 title_;
+  std::string application_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellSurface);
 };

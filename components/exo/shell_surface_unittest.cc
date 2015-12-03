@@ -83,6 +83,19 @@ TEST_F(ShellSurfaceTest, SetTitle) {
   surface->Commit();
 }
 
+TEST_F(ShellSurfaceTest, SetApplicationId) {
+  scoped_ptr<Surface> surface(new Surface);
+  scoped_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
+
+  shell_surface->SetToplevel();
+  surface->Commit();
+  EXPECT_EQ("", ShellSurface::GetApplicationId(
+                    shell_surface->GetWidget()->GetNativeWindow()));
+  shell_surface->SetApplicationId("test");
+  EXPECT_EQ("test", ShellSurface::GetApplicationId(
+                        shell_surface->GetWidget()->GetNativeWindow()));
+}
+
 void DestroyShellSurface(scoped_ptr<ShellSurface>* shell_surface) {
   shell_surface->reset();
 }
