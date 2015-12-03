@@ -61,7 +61,7 @@ void CSSVariableResolver::resolveVariableTokensRecursive(CSSParserTokenRange ran
             // relies on. Ensure it will live beyond us overwriting the RefPtr in StyleVariableData.
             ASSERT(variableData->refCount() > 1);
 
-            m_styleVariableData->setVariable(variableName, CSSVariableData::createResolved(tokens));
+            m_styleVariableData->setVariable(variableName, CSSVariableData::createResolved(tokens, variableData));
             if (!context.cycleStartPoints.isEmpty()) {
                 if (context.cycleStartPoints.contains(variableName))
                     context.cycleStartPoints.remove(variableName);
@@ -143,7 +143,7 @@ void CSSVariableResolver::resolveVariableDefinitions(StyleVariableData* variable
         ResolutionState context;
         resolver.resolveVariableReferencesFromTokens(variable.value->tokens(), resolvedTokens, context);
 
-        variable.value = CSSVariableData::createResolved(resolvedTokens);
+        variable.value = CSSVariableData::createResolved(resolvedTokens, variable.value);
     }
 }
 
