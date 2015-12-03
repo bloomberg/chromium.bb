@@ -214,13 +214,14 @@ double ProcessMetrics::GetCPUUsage() {
     // First call, just set the last values.
     last_cpu_time_ = time;
     last_cpu_ = GetProcessCPU(process_);
-    return 0;
+    return 0.0;
   }
 
-  int64 time_delta = (time - last_cpu_time_).InMicroseconds();
-  DCHECK_NE(time_delta, 0);
-  if (time_delta == 0)
-    return 0;
+  TimeDelta time_delta = time - last_cpu_time_;
+  if (time_delta.is_zero()) {
+    NOTREACHED();
+    return 0.0;
+  }
 
   int cpu = GetProcessCPU(process_);
 
@@ -229,8 +230,18 @@ double ProcessMetrics::GetCPUUsage() {
   // are together adding to more than one CPU's worth.
   TimeDelta cpu_time = internal::ClockTicksToTimeDelta(cpu);
   TimeDelta last_cpu_time = internal::ClockTicksToTimeDelta(last_cpu_);
-  double percentage = 100.0 * (cpu_time - last_cpu_time).InSecondsF() /
-      TimeDelta::FromMicroseconds(time_delta).InSecondsF();
+
+  // If the number of threads running in the process has decreased since the
+  // last time this function was called, |last_cpu_time| will be greater than
+  // |cpu_time| which will result in a negative value in the below percentage
+  // calculation. We prevent this by clamping to 0. crbug.com/546565.
+  // This computation is known to be shaky when threads are destroyed between
+  // "last" and "now", but for our current purposes, it's all right.
+  double percentage = 0.0;
+  if (last_cpu_time < cpu_time) {
+    percentage = 100.0 * (cpu_time - last_cpu_time).InSecondsF() /
+        time_delta.InSecondsF();
+  }
 
   last_cpu_time_ = time;
   last_cpu_ = cpu;
