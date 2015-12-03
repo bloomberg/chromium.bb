@@ -99,6 +99,7 @@ class SearchHistoryTest : public testing::Test {
   }
   void TearDown() override {
     Flush();
+    worker_pool_owner_->pool()->Shutdown();
   }
 
   void CreateHistory() {

@@ -6,7 +6,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/sequenced_worker_pool_owner.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/worker_pool.h"
 #include "net/base/request_priority.h"
 #include "net/url_request/url_request_job.h"
@@ -114,12 +114,11 @@ class SimpleJobProtocolHandler :
 class URLRequestSimpleJobTest : public ::testing::Test {
  public:
   URLRequestSimpleJobTest()
-      : worker_pool_owner_(1, "URLRequestSimpleJobTest"),
-        task_runner_(worker_pool_owner_.pool()
-                         ->GetSequencedTaskRunnerWithShutdownBehavior(
-                             worker_pool_owner_.pool()
-                                 ->GetSequenceToken(),
-                             base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)),
+      : worker_pool_(
+            new base::SequencedWorkerPool(1, "URLRequestSimpleJobTest")),
+        task_runner_(worker_pool_->GetSequencedTaskRunnerWithShutdownBehavior(
+            worker_pool_->GetSequenceToken(),
+            base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)),
         context_(true) {
     job_factory_.SetProtocolHandler(
         "data", make_scoped_ptr(new SimpleJobProtocolHandler(task_runner_)));
@@ -129,6 +128,8 @@ class URLRequestSimpleJobTest : public ::testing::Test {
     request_ =
         context_.CreateRequest(GURL("data:test"), DEFAULT_PRIORITY, &delegate_);
   }
+
+  ~URLRequestSimpleJobTest() override { worker_pool_->Shutdown(); }
 
   void StartRequest(const HttpRequestHeaders* headers) {
     if (headers)
@@ -140,8 +141,10 @@ class URLRequestSimpleJobTest : public ::testing::Test {
     EXPECT_FALSE(request_->is_pending());
   }
 
+  void TearDown() override { worker_pool_->Shutdown(); }
+
  protected:
-  base::SequencedWorkerPoolOwner worker_pool_owner_;
+  scoped_refptr<base::SequencedWorkerPool> worker_pool_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   TestURLRequestContext context_;
   URLRequestJobFactoryImpl job_factory_;

@@ -8,8 +8,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/sequenced_worker_pool_owner.h"
 #include "base/thread_task_runner_handle.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
 #include "components/rlz/rlz_tracker_delegate.h"
 #include "net/url_request/url_request_test_util.h"
@@ -30,9 +30,11 @@ namespace {
 class TestRLZTrackerDelegate : public RLZTrackerDelegate {
  public:
   TestRLZTrackerDelegate()
-      : worker_pool_owner_(1, "TestRLZTracker"),
+      : worker_pool_(new base::SequencedWorkerPool(1, "TestRLZTracker")),
         request_context_getter_(new net::TestURLRequestContextGetter(
             base::ThreadTaskRunnerHandle::Get())) {}
+
+  ~TestRLZTrackerDelegate() override { worker_pool_->Shutdown(); }
 
   void set_brand(const char* brand) { brand_override_ = brand; }
 
@@ -66,7 +68,7 @@ class TestRLZTrackerDelegate : public RLZTrackerDelegate {
   bool IsOnUIThread() override { return true; }
 
   base::SequencedWorkerPool* GetBlockingPool() override {
-    return worker_pool_owner_.pool().get();
+    return worker_pool_.get();
   }
 
   net::URLRequestContextGetter* GetRequestContext() override {
@@ -106,7 +108,7 @@ class TestRLZTrackerDelegate : public RLZTrackerDelegate {
   }
 
  private:
-  base::SequencedWorkerPoolOwner worker_pool_owner_;
+  scoped_refptr<base::SequencedWorkerPool> worker_pool_;
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
 
   std::string brand_override_;

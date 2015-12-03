@@ -7,7 +7,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/test/sequenced_worker_pool_owner.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/sync_file_system/drive_backend/callback_helper.h"
 #include "chrome/browser/sync_file_system/drive_backend/fake_sync_worker.h"
@@ -29,7 +28,7 @@ class SyncEngineTest : public testing::Test,
  public:
   typedef RemoteFileSyncService::OriginStatusMap RemoteOriginStatusMap;
 
-  SyncEngineTest() : worker_pool_owner_(1, "Worker") {}
+  SyncEngineTest() {}
   ~SyncEngineTest() override {}
 
   void SetUp() override {
@@ -38,25 +37,28 @@ class SyncEngineTest : public testing::Test,
     scoped_ptr<drive::DriveServiceInterface>
         fake_drive_service(new drive::FakeDriveService);
 
+    worker_pool_ = new base::SequencedWorkerPool(1, "Worker");
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner =
         base::ThreadTaskRunnerHandle::Get();
     worker_task_runner_ =
-        worker_pool_owner_.pool()->GetSequencedTaskRunnerWithShutdownBehavior(
-            worker_pool_owner_.pool()->GetSequenceToken(),
+        worker_pool_->GetSequencedTaskRunnerWithShutdownBehavior(
+            worker_pool_->GetSequenceToken(),
             base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
 
     sync_engine_.reset(new drive_backend::SyncEngine(
-        ui_task_runner.get(), worker_task_runner_.get(),
-        nullptr,  // drive_task_runner
-        worker_pool_owner_.pool().get(), profile_dir_.path(),
-        nullptr,    // task_logger
-        nullptr,    // notification_manager
-        nullptr,    // extension_service
-        nullptr,    // signin_manager
-        nullptr,    // token_service
-        nullptr,    // request_context
-        nullptr,    // drive_service_factory
-        nullptr));  // in_memory_env
+        ui_task_runner.get(),
+        worker_task_runner_.get(),
+        nullptr /* drive_task_runner */,
+        worker_pool_.get(),
+        profile_dir_.path(),
+        nullptr /* task_logger */,
+        nullptr /* notification_manager */,
+        nullptr /* extension_service */,
+        nullptr /* signin_manager */,
+        nullptr /* token_service */,
+        nullptr /* request_context */,
+        nullptr /* drive_service_factory */,
+        nullptr /* in_memory_env */));
 
     sync_engine_->InitializeForTesting(
         fake_drive_service.Pass(),
@@ -71,8 +73,12 @@ class SyncEngineTest : public testing::Test,
   void TearDown() override {
     sync_engine_.reset();
     WaitForWorkerTaskRunner();
+    worker_pool_->Shutdown();
 
     worker_task_runner_ = nullptr;
+    worker_pool_ = nullptr;
+
+    base::RunLoop().RunUntilIdle();
   }
 
   bool FindOriginStatus(const GURL& origin, std::string* status) {
@@ -125,7 +131,7 @@ class SyncEngineTest : public testing::Test,
   base::ScopedTempDir profile_dir_;
   scoped_ptr<drive_backend::SyncEngine> sync_engine_;
 
-  base::SequencedWorkerPoolOwner worker_pool_owner_;
+  scoped_refptr<base::SequencedWorkerPool> worker_pool_;
   scoped_refptr<base::SequencedTaskRunner> worker_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncEngineTest);

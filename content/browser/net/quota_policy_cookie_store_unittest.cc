@@ -109,6 +109,7 @@ class QuotaPolicyCookieStoreTest : public testing::Test {
     // tasks that block pool shutdown (e.g. |store_|'s cleanup) have run before
     // yielding control.
     pool_owner_->pool()->FlushForTesting();
+    pool_owner_->pool()->Shutdown();
     pool_owner_.reset(new base::SequencedWorkerPoolOwner(3, "Background Pool"));
   }
 
@@ -118,6 +119,7 @@ class QuotaPolicyCookieStoreTest : public testing::Test {
 
   void TearDown() override {
     DestroyStore();
+    pool_owner_->pool()->Shutdown();
   }
 
   TestBrowserThreadBundle bundle_;

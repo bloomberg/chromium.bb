@@ -18,11 +18,8 @@ SequencedWorkerPoolOwner::SequencedWorkerPoolOwner(
       has_work_call_count_(0) {}
 
 SequencedWorkerPoolOwner::~SequencedWorkerPoolOwner() {
-  pool_->Shutdown();
   pool_ = NULL;
-
-  // Spin the current message loop until SWP destruction verified in OnDestruct.
-  exit_loop_.Run();
+  MessageLoop::current()->Run();
 }
 
 const scoped_refptr<SequencedWorkerPool>& SequencedWorkerPoolOwner::pool() {
@@ -54,7 +51,8 @@ void SequencedWorkerPoolOwner::WillWaitForShutdown() {
 }
 
 void SequencedWorkerPoolOwner::OnDestruct() {
-  constructor_message_loop_->PostTask(FROM_HERE, exit_loop_.QuitClosure());
+  constructor_message_loop_->task_runner()->PostTask(
+      FROM_HERE, constructor_message_loop_->QuitWhenIdleClosure());
 }
 
 }  // namespace base

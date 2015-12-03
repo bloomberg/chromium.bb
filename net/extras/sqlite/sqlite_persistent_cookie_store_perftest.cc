@@ -99,6 +99,7 @@ class SQLitePersistentCookieStorePerfTest : public testing::Test {
 
   void TearDown() override {
     store_ = NULL;
+    pool_owner_->pool()->Shutdown();
   }
 
  protected:

@@ -70,6 +70,11 @@ class ExternalCacheTest : public testing::Test,
         pool_owner_->pool()->GetNamedSequenceToken("background"));
   }
 
+  void TearDown() override {
+    pool_owner_->pool()->Shutdown();
+    base::RunLoop().RunUntilIdle();
+  }
+
   // ExternalCache::Delegate:
   void OnExtensionListsUpdated(const base::DictionaryValue* prefs) override {
     prefs_.reset(prefs->DeepCopy());
