@@ -64,6 +64,7 @@ class ArcBridgeService {
     STOPPING,
   };
 
+  // Notifies life cycle events of ArcBridgeService.
   class Observer {
    public:
     // Called whenever the state of the bridge has changed.
@@ -77,6 +78,22 @@ class ArcBridgeService {
 
    protected:
     virtual ~Observer() {}
+  };
+
+  // Notifies ARC apps related events.
+  class AppObserver {
+   public:
+    // Called whenever ARC sends information about available apps.
+    virtual void OnAppListRefreshed(const std::vector<AppInfo>& apps) {}
+
+    // Called whenever ARC sends app icon data for specific scale factor.
+    virtual void OnAppIcon(const std::string& package,
+                           const std::string& activity,
+                           ScaleFactor scale_factor,
+                           const std::vector<uint8_t>& icon_png_data) {}
+
+   protected:
+    virtual ~AppObserver() {}
   };
 
   virtual ~ArcBridgeService();
@@ -113,6 +130,11 @@ class ArcBridgeService {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
+  // Adds or removes ARC app observers. This can only be called on the thread
+  // that this class was created on.
+  void AddAppObserver(AppObserver* observer);
+  void RemoveAppObserver(AppObserver* observer);
+
   // Gets the current state of the bridge service.
   State state() const { return state_; }
 
@@ -129,6 +151,18 @@ class ArcBridgeService {
                                    const std::string& device_type,
                                    base::ScopedFD fd) = 0;
 
+  // Requests to refresh an app list.
+  virtual bool RefreshAppList() = 0;
+
+  // Requests to launch an app.
+  virtual bool LaunchApp(const std::string& package,
+                         const std::string& activity) = 0;
+
+  // Requests to load an icon of specific scale_factor.
+  virtual bool RequestAppIcon(const std::string& package,
+                              const std::string& activity,
+                              ScaleFactor scale_factor) = 0;
+
  protected:
   ArcBridgeService();
 
@@ -144,10 +178,16 @@ class ArcBridgeService {
 
   base::ObserverList<Observer>& observer_list() { return observer_list_; }
 
+  base::ObserverList<AppObserver>& app_observer_list() {
+    return app_observer_list_;
+  }
+
  private:
   scoped_refptr<base::SequencedTaskRunner> origin_task_runner_;
 
   base::ObserverList<Observer> observer_list_;
+
+  base::ObserverList<AppObserver> app_observer_list_;
 
   // If the ARC instance service is available.
   bool available_;

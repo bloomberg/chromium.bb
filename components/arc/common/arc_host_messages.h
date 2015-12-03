@@ -5,6 +5,9 @@
 // Messages sent from the ARC instance to the host.
 // Multiply-included message file, hence no include guard.
 
+#include <string>
+#include <vector>
+
 #include "ipc/ipc_message_macros.h"
 
 #include "components/arc/common/arc_message_types.h"
@@ -15,3 +18,21 @@ IPC_ENUM_TRAITS_MAX_VALUE(arc::InstanceBootPhase, arc::InstanceBootPhase::LAST)
 
 IPC_MESSAGE_CONTROL1(ArcInstanceHostMsg_InstanceBootPhase,
                      arc::InstanceBootPhase)
+
+// Sends a list of available ARC apps to Chrome. Members of AppInfo must contain
+// non-empty string. This message is sent in response to
+// ArcInstanceMsg_RefreshApps message from Chrome to ARC and when ARC receives
+// boot completed notification.
+IPC_MESSAGE_CONTROL1(ArcInstanceHostMsg_AppListRefreshed,
+                     std::vector<arc::AppInfo> /* apps */)
+
+// Sends an icon of required |scale_factor| for specific ARC app. The app is
+// defined by |package| and |activity|. The icon content cannot be empty and
+// must match to |scale_factor| assuming 48x48 for SCALE_FACTOR_100P.
+// |scale_factor| is an enum defined at ui/base/layout.h. This message is sent
+// in response to ArcInstanceMsg_RequestIcon from Chrome to ARC.
+IPC_MESSAGE_CONTROL4(ArcInstanceHostMsg_AppIcon,
+                     std::string, /* package */
+                     std::string, /* activity */
+                     arc::ScaleFactor, /* scale_factor */
+                     std::vector<uint8_t> /* icon_png_data */)

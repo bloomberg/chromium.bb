@@ -57,6 +57,16 @@ void ArcBridgeService::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
+void ArcBridgeService::AddAppObserver(AppObserver* observer) {
+  DCHECK(origin_task_runner()->RunsTasksOnCurrentThread());
+  app_observer_list_.AddObserver(observer);
+}
+
+void ArcBridgeService::RemoveAppObserver(AppObserver* observer) {
+  DCHECK(origin_task_runner()->RunsTasksOnCurrentThread());
+  app_observer_list_.RemoveObserver(observer);
+}
+
 void ArcBridgeService::SetState(State state) {
   DCHECK(origin_task_runner()->RunsTasksOnCurrentThread());
   // DCHECK on enum classes not supported.

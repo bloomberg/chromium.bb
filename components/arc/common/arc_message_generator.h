@@ -7,3 +7,4 @@
 // Not using the full path since this is also expected to be compiled in ARC.
 #include "arc_host_messages.h"
 #include "arc_instance_messages.h"
+#include "arc_message_traits.h"

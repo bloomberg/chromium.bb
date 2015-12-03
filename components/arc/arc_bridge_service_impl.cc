@@ -108,6 +108,38 @@ bool ArcBridgeServiceImpl::RegisterInputDevice(const std::string& name,
       name, device_type, base::FileDescriptor(fd.Pass())));
 }
 
+bool ArcBridgeServiceImpl::RefreshAppList() {
+  DCHECK(origin_task_runner()->RunsTasksOnCurrentThread());
+  if (state() != State::READY) {
+    LOG(ERROR) << "Called RefreshAppList when the service is not ready";
+    return false;
+  }
+  return ipc_channel_->Send(new ArcInstanceMsg_RefreshApps());
+}
+
+bool ArcBridgeServiceImpl::LaunchApp(const std::string& package,
+                                     const std::string& activity) {
+  DCHECK(origin_task_runner()->RunsTasksOnCurrentThread());
+  if (state() != State::READY) {
+    LOG(ERROR) << "Called LaunchApp when the service is not ready";
+    return false;
+  }
+  return ipc_channel_->Send(new ArcInstanceMsg_LaunchApp(package, activity));
+}
+
+bool ArcBridgeServiceImpl::RequestAppIcon(const std::string& package,
+                                          const std::string& activity,
+                                          ScaleFactor scale_factor) {
+  DCHECK(origin_task_runner()->RunsTasksOnCurrentThread());
+  if (state() != State::READY) {
+    LOG(ERROR) << "Called RequestAppIcon when the service is not ready";
+    return false;
+  }
+  return ipc_channel_->Send(new ArcInstanceMsg_RequestAppIcon(package,
+                                                              activity,
+                                                              scale_factor));
+}
+
 void ArcBridgeServiceImpl::SocketConnect(const base::FilePath& socket_path) {
   DCHECK(origin_task_runner()->RunsTasksOnCurrentThread());
   if (state() != State::STOPPED) {
@@ -226,12 +258,31 @@ bool ArcBridgeServiceImpl::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(ArcBridgeServiceImpl, message)
     IPC_MESSAGE_HANDLER(ArcInstanceHostMsg_InstanceBootPhase,
                         OnInstanceBootPhase)
+    IPC_MESSAGE_HANDLER(ArcInstanceHostMsg_AppListRefreshed, OnAppListRefreshed)
+    IPC_MESSAGE_HANDLER(ArcInstanceHostMsg_AppIcon, OnAppIcon)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
   if (!handled)
     LOG(ERROR) << "Invalid message with type = " << message.type();
   return handled;
+}
+
+void ArcBridgeServiceImpl::OnAppListRefreshed(
+    const std::vector<arc::AppInfo>& apps) {
+  DCHECK(origin_task_runner()->RunsTasksOnCurrentThread());
+  FOR_EACH_OBSERVER(AppObserver, app_observer_list(), OnAppListRefreshed(apps));
+}
+
+void ArcBridgeServiceImpl::OnAppIcon(
+    const std::string& package,
+    const std::string& activity,
+    ScaleFactor scale_factor,
+    const std::vector<uint8_t>& icon_png_data) {
+  DCHECK(origin_task_runner()->RunsTasksOnCurrentThread());
+  FOR_EACH_OBSERVER(AppObserver,
+                    app_observer_list(),
+                    OnAppIcon(package, activity, scale_factor, icon_png_data));
 }
 
 void ArcBridgeServiceImpl::OnArcAvailable(bool arc_available) {

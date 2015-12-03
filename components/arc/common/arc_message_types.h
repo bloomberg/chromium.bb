@@ -5,7 +5,10 @@
 #ifndef COMPONENTS_ARC_COMMON_MESSAGE_TYPES
 #define COMPONENTS_ARC_COMMON_MESSAGE_TYPES
 
+#include <string>
+
 namespace arc {
+
 // Describing the boot phase of the ARC instance, as defined by AOSP in
 // com.android.server.SystemService
 enum class InstanceBootPhase {
@@ -35,6 +38,30 @@ enum class InstanceBootPhase {
   // Last enum entry for IPC_ENUM_TRAITS
   LAST = BOOT_COMPLETED
 };
-}
+
+// Duplicates ui::ScaleFactor enum in order to be accessible on Android side.
+enum ScaleFactor : int {
+  SCALE_FACTOR_NONE = 0,
+  SCALE_FACTOR_100P,
+  SCALE_FACTOR_125P,
+  SCALE_FACTOR_133P,
+  SCALE_FACTOR_140P,
+  SCALE_FACTOR_150P,
+  SCALE_FACTOR_180P,
+  SCALE_FACTOR_200P,
+  SCALE_FACTOR_250P,
+  SCALE_FACTOR_300P,
+
+  NUM_SCALE_FACTORS
+};
+
+// Describes ARC app.
+struct AppInfo {
+  std::string name;
+  std::string package;
+  std::string activity;
+};
+
+}  // namespace arc
 
 #endif  // COMPONENTS_ARC_COMMON_MESSAGE_TYPES

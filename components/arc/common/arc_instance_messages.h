@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include <string>
+
 #include "base/file_descriptor_posix.h"
 #include "ipc/ipc_message_macros.h"
 
@@ -24,3 +26,23 @@ IPC_MESSAGE_CONTROL3(ArcInstanceMsg_RegisterInputDevice,
                      std::string, /* name */
                      std::string, /* device_type */
                      base::FileDescriptor /* fd */)
+
+// Sends a request to ARC to refresh a list of ARC apps.
+// ArcInstanceMsg_RefreshApps is expected in response to this message. However,
+// response may not be sent if ARC is not ready yet (boot completed event is
+// not received).
+IPC_MESSAGE_CONTROL0(ArcInstanceMsg_RefreshApps)
+
+// Sends a request to ARC to launch an ARC app defined by |package| and
+// |activity|, which cannot be empty.
+IPC_MESSAGE_CONTROL2(ArcInstanceMsg_LaunchApp,
+                     std::string, /* package */
+                     std::string /* activity */)
+
+// Sends a request to ARC for the ARC app icon of a required scale factor.
+// Scale factor is an enum defined at ui/base/layout.h. App is defined by
+// package and activity, which cannot be empty.
+IPC_MESSAGE_CONTROL3(ArcInstanceMsg_RequestAppIcon,
+                     std::string, /* package */
+                     std::string, /* activity */
+                     arc::ScaleFactor /* scale factor */)

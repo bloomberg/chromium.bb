@@ -25,6 +25,8 @@
         'arc/common/arc_instance_messages.h',
         'arc/common/arc_message_generator.cc',
         'arc/common/arc_message_generator.h',
+        'arc/common/arc_message_traits.h',
+        'arc/common/arc_message_types.h',
       ],
     },
   ],
