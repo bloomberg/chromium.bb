@@ -7,7 +7,8 @@
 # details.
 
 # Each entry consists of a line containing the name of the pin followed either
-# by a hash in the format "sha256/" + base64(hash), or a PEM encoded certificate.
+# by a hash in the format "sha256/" + base64(hash), a PEM encoded certificate,
+# or a PEM encoded public key.
 
 TestSPKI
 sha256/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
