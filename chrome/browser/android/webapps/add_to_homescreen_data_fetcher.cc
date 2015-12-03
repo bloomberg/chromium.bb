@@ -8,6 +8,7 @@
 #include "base/location.h"
 #include "base/strings/string16.h"
 #include "base/task/cancelable_task_tracker.h"
+#include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/android/shortcut_helper.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/manifest/manifest_icon_downloader.h"
@@ -18,6 +19,9 @@
 #include "chrome/common/web_application_info.h"
 #include "components/dom_distiller/core/url_utils.h"
 #include "components/favicon/core/favicon_service.h"
+#include "components/offline_pages/offline_page_feature.h"
+#include "components/offline_pages/offline_page_item.h"
+#include "components/offline_pages/offline_page_model.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
@@ -45,8 +49,7 @@ AddToHomescreenDataFetcher::AddToHomescreenDataFetcher(
       is_icon_saved_(false),
       is_ready_(false),
       icon_timeout_timer_(false, false),
-      shortcut_info_(dom_distiller::url_utils::GetOriginalUrlFromDistillerUrl(
-                     web_contents->GetURL())),
+      shortcut_info_(GetShortcutUrl(web_contents->GetURL())),
       ideal_icon_size_in_dp_(ideal_icon_size_in_dp),
       minimum_icon_size_in_dp_(minimum_icon_size_in_dp),
       ideal_splash_image_size_in_dp_(ideal_splash_image_size_in_dp),
@@ -270,4 +273,24 @@ void AddToHomescreenDataFetcher::NotifyObserver(const SkBitmap& bitmap,
   shortcut_info_.is_icon_generated = is_generated;
   is_ready_ = true;
   weak_observer_->OnDataAvailable(shortcut_info_, shortcut_icon_);
+}
+
+GURL AddToHomescreenDataFetcher::GetShortcutUrl(const GURL& actual_url) {
+  GURL shortcut_url =
+      dom_distiller::url_utils::GetOriginalUrlFromDistillerUrl(actual_url);
+
+  if (!offline_pages::IsOfflinePagesEnabled())
+    return shortcut_url;
+
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+
+  offline_pages::OfflinePageModel* offline_page_model =
+      offline_pages::OfflinePageModelFactory::GetForBrowserContext(profile);
+  const offline_pages::OfflinePageItem* offline_page =
+      offline_page_model->GetPageByOfflineURL(shortcut_url);
+  if (!offline_page)
+    return shortcut_url;
+
+  return offline_page->url;
 }

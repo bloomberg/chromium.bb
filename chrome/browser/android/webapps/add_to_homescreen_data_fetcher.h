@@ -100,6 +100,11 @@ class AddToHomescreenDataFetcher
   // Notifies the observer that the shortcut data is all available.
   void NotifyObserver(const SkBitmap& icon, bool is_generated);
 
+  // Looks up the original, online URL of the site requested.  The URL from the
+  // WebContents may be an offline page or a distilled article which is not
+  // appropriate for a home screen shortcut.
+  GURL GetShortcutUrl(const GURL& original_url);
+
   Observer* weak_observer_;
 
   bool is_waiting_for_web_application_info_;
