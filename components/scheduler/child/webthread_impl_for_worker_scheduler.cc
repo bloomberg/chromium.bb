@@ -20,8 +20,13 @@ namespace scheduler {
 
 WebThreadImplForWorkerScheduler::WebThreadImplForWorkerScheduler(
     const char* name)
-    : thread_(new base::Thread(name)) {
-  thread_->Start();
+    : WebThreadImplForWorkerScheduler(name, base::Thread::Options()) {}
+
+WebThreadImplForWorkerScheduler::WebThreadImplForWorkerScheduler(
+    const char* name,
+    base::Thread::Options options)
+    : thread_(new base::Thread(name ? name : std::string())) {
+  thread_->StartWithOptions(options);
   thread_task_runner_ = thread_->task_runner();
 
   base::WaitableEvent completion(false, false);

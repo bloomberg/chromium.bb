@@ -20,6 +20,12 @@ public:
 
     WorkerObjectProxy& workerObjectProxy() const { return m_workerObjectProxy; }
 
+    // Returns the shared backing thread for all CompositorWorkers.
+    static WebThreadSupportingGC* sharedBackingThread();
+
+    static bool hasThreadForTest();
+    static bool hasIsolateForTest();
+
 protected:
     CompositorWorkerThread(PassRefPtr<WorkerLoaderProxy>, WorkerObjectProxy&, double timeOrigin);
 

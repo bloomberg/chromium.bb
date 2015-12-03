@@ -104,7 +104,6 @@ crbug.com/521858 [ Win7 ] http/tests/security/media-element-audio-source-node-sa
 crbug.com/521855 transitions/cancel-and-start-new.html [ Failure Pass ]
 crbug.com/521853 [ Win ] http/tests/inspector/search/sources-search-scope.html [ Failure Pass ]
 crbug.com/521084 animations/additive-transform-animations.html [ Pass Timeout ]
-crbug.com/521085 fast/compositorworker/compositor-proxy-disconnect-worker-terminate.html [ Crash Pass ]
 crbug.com/521086 fast/cookies/cookies-disabled-in-data-url.html [ Crash Pass Timeout ]
 crbug.com/521089 [ Precise ] fast/preloader/image.html [ Failure Pass ]
 crbug.com/521090 [ Mac Win ] http/tests/history/post-replace-state-reload.html [ Crash Failure Pass ]

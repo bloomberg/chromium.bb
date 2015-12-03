@@ -112,6 +112,11 @@ WebCompositorSupport* TestingPlatformSupport::compositorSupport()
     return m_config.compositorSupport;
 }
 
+WebUnitTestSupport* TestingPlatformSupport::unitTestSupport()
+{
+    return m_oldPlatform ? m_oldPlatform->unitTestSupport() : nullptr;
+}
+
 WebThread* TestingPlatformSupport::currentThread()
 {
     return m_oldPlatform ? m_oldPlatform->currentThread() : nullptr;

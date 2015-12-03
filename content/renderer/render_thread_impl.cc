@@ -39,7 +39,9 @@
 #include "cc/blink/web_layer_impl.h"
 #include "cc/layers/layer_settings.h"
 #include "cc/raster/task_graph_runner.h"
+#include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_settings.h"
+#include "components/scheduler/child/webthread_base.h"
 #include "components/scheduler/renderer/renderer_scheduler.h"
 #include "content/child/appcache/appcache_dispatcher.h"
 #include "content/child/appcache/appcache_frontend_impl.h"
@@ -846,6 +848,8 @@ void RenderThreadImpl::Shutdown() {
 
   media_thread_.reset();
 
+  blink_platform_impl_->set_compositor_thread(nullptr);
+
   compositor_thread_.reset();
 
   // AudioMessageFilter may be accessed on |media_thread_|, so shutdown after.
@@ -1052,6 +1056,60 @@ void RenderThreadImpl::SetResourceDispatchTaskQueue(
   resource_dispatcher()->SetMainThreadTaskRunner(resource_task_queue);
 }
 
+void RenderThreadImpl::InitializeCompositorThread() {
+#if defined(OS_ANDROID)
+  SynchronousCompositorFactory* sync_compositor_factory =
+      SynchronousCompositorFactory::GetInstance();
+  bool using_ipc_sync_compositing =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kIPCSyncCompositing);
+  DCHECK(!sync_compositor_factory || !using_ipc_sync_compositing);
+
+  if (sync_compositor_factory) {
+    compositor_task_runner_ =
+        sync_compositor_factory->GetCompositorTaskRunner();
+  }
+#endif
+  if (!compositor_task_runner_.get()) {
+    base::Thread::Options options;
+#if defined(OS_ANDROID)
+    options.priority = base::ThreadPriority::DISPLAY;
+#endif
+    compositor_thread_ =
+        blink_platform_impl_->createThreadWithOptions("Compositor", options);
+    compositor_task_runner_ = compositor_thread_->TaskRunner();
+    compositor_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(base::IgnoreResult(&ThreadRestrictions::SetIOAllowed),
+                   false));
+    blink_platform_impl_->set_compositor_thread(compositor_thread_.get());
+  }
+
+  InputHandlerManagerClient* input_handler_manager_client = NULL;
+#if defined(OS_ANDROID)
+  if (using_ipc_sync_compositing) {
+    sync_compositor_message_filter_ =
+        new SynchronousCompositorFilter(compositor_task_runner_);
+    AddFilter(sync_compositor_message_filter_.get());
+    input_handler_manager_client = sync_compositor_message_filter_.get();
+  } else if (sync_compositor_factory) {
+    input_handler_manager_client =
+        sync_compositor_factory->GetInputHandlerManagerClient();
+  }
+#endif
+  if (!input_handler_manager_client) {
+    scoped_refptr<InputEventFilter> compositor_input_event_filter(
+        new InputEventFilter(main_input_callback_.callback(),
+                             main_thread_compositor_task_runner_,
+                             compositor_task_runner_));
+    input_handler_manager_client = compositor_input_event_filter.get();
+    input_event_filter_ = compositor_input_event_filter;
+  }
+  input_handler_manager_.reset(new InputHandlerManager(
+      compositor_task_runner_, input_handler_manager_client,
+      renderer_scheduler_.get()));
+}
+
 void RenderThreadImpl::EnsureWebKitInitialized() {
   if (blink_platform_impl_)
     return;
@@ -1082,60 +1140,8 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
                  base::Unretained(this)));
 
   SetResourceDispatchTaskQueue(renderer_scheduler_->LoadingTaskRunner());
-
-  bool enable = !command_line.HasSwitch(switches::kDisableThreadedCompositing);
-  if (enable) {
-#if defined(OS_ANDROID)
-    SynchronousCompositorFactory* sync_compositor_factory =
-        SynchronousCompositorFactory::GetInstance();
-    bool using_ipc_sync_compositing =
-        base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kIPCSyncCompositing);
-    DCHECK(!sync_compositor_factory || !using_ipc_sync_compositing);
-
-    if (sync_compositor_factory) {
-      compositor_task_runner_ =
-          sync_compositor_factory->GetCompositorTaskRunner();
-    }
-#endif
-    if (!compositor_task_runner_) {
-      compositor_thread_.reset(new base::Thread("Compositor"));
-      base::Thread::Options compositor_thread_options;
-#if defined(OS_ANDROID)
-      compositor_thread_options.priority = base::ThreadPriority::DISPLAY;
-#endif
-      compositor_thread_->StartWithOptions(compositor_thread_options);
-      compositor_task_runner_ = compositor_thread_->task_runner();
-      compositor_task_runner_->PostTask(
-          FROM_HERE,
-          base::Bind(base::IgnoreResult(&ThreadRestrictions::SetIOAllowed),
-                     false));
-    }
-
-    InputHandlerManagerClient* input_handler_manager_client = NULL;
-#if defined(OS_ANDROID)
-    if (using_ipc_sync_compositing) {
-      sync_compositor_message_filter_ =
-          new SynchronousCompositorFilter(compositor_task_runner_);
-      AddFilter(sync_compositor_message_filter_.get());
-      input_handler_manager_client = sync_compositor_message_filter_.get();
-    } else if (sync_compositor_factory) {
-      input_handler_manager_client =
-          sync_compositor_factory->GetInputHandlerManagerClient();
-    }
-#endif
-    if (!input_handler_manager_client) {
-      scoped_refptr<InputEventFilter> compositor_input_event_filter(
-          new InputEventFilter(main_input_callback_.callback(),
-                               main_thread_compositor_task_runner_,
-                               compositor_task_runner_));
-      input_handler_manager_client = compositor_input_event_filter.get();
-      input_event_filter_ = compositor_input_event_filter;
-    }
-    input_handler_manager_.reset(new InputHandlerManager(
-        compositor_task_runner_, input_handler_manager_client,
-        renderer_scheduler_.get()));
-  }
+  if (!command_line.HasSwitch(switches::kDisableThreadedCompositing))
+    InitializeCompositorThread();
 
   if (!input_event_filter_.get()) {
     // Always provide an input event filter implementation to ensure consistent
@@ -1148,7 +1154,7 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
   AddFilter(input_event_filter_.get());
 
   scoped_refptr<base::SingleThreadTaskRunner> compositor_impl_side_task_runner;
-  if (enable)
+  if (compositor_task_runner_)
     compositor_impl_side_task_runner = compositor_task_runner_;
   else
     compositor_impl_side_task_runner = base::ThreadTaskRunnerHandle::Get();
