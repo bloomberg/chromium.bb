@@ -59,5 +59,6 @@ target_link_libraries(vttdemux LINK_PUBLIC webm)
 
 # webm2pes section.
 add_executable(webm2pes
-               "${LIBWEBM_SRC_DIR}/webm2pes.cc")
+               "${LIBWEBM_SRC_DIR}/webm2pes.cc"
+               "${LIBWEBM_SRC_DIR}/webm2pes.h")
 target_link_libraries(webm2pes LINK_PUBLIC webm)
