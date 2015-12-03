@@ -4,6 +4,8 @@
 
 #include "ipc/ipc_platform_file_attachment_posix.h"
 
+#include <utility>
+
 namespace IPC {
 namespace internal {
 
@@ -12,8 +14,7 @@ PlatformFileAttachment::PlatformFileAttachment(base::PlatformFile file)
 }
 
 PlatformFileAttachment::PlatformFileAttachment(base::ScopedFD file)
-    : file_(file.get()), owning_(file.Pass()) {
-}
+    : file_(file.get()), owning_(std::move(file)) {}
 
 PlatformFileAttachment::~PlatformFileAttachment() {
 }

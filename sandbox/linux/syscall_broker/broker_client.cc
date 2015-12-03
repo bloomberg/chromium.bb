@@ -9,6 +9,7 @@
 #include <sys/stat.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <utility>
 
 #include "build/build_config.h"
 #include "base/logging.h"
@@ -123,10 +124,9 @@ BrokerClient::BrokerClient(const BrokerPolicy& broker_policy,
                            bool fast_check_in_client,
                            bool quiet_failures_for_tests)
     : broker_policy_(broker_policy),
-      ipc_channel_(ipc_channel.Pass()),
+      ipc_channel_(std::move(ipc_channel)),
       fast_check_in_client_(fast_check_in_client),
-      quiet_failures_for_tests_(quiet_failures_for_tests) {
-}
+      quiet_failures_for_tests_(quiet_failures_for_tests) {}
 
 BrokerClient::~BrokerClient() {
 }

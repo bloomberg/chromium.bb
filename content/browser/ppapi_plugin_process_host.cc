@@ -5,6 +5,7 @@
 #include "content/browser/ppapi_plugin_process_host.h"
 
 #include <string>
+#include <utility>
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
@@ -98,7 +99,7 @@ class PpapiPluginSandboxedProcessLauncherDelegate
         .GetSwitchValueNative(switches::kPpapiPluginLauncher);
     return !is_broker_ && plugin_launcher.empty();
   }
-  base::ScopedFD TakeIpcFd() override { return ipc_fd_.Pass(); }
+  base::ScopedFD TakeIpcFd() override { return std::move(ipc_fd_); }
 #endif  // OS_WIN
 
   SandboxType GetSandboxType() override {

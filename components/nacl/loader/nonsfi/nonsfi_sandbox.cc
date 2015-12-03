@@ -332,7 +332,7 @@ bool InitializeBPFSandbox(base::ScopedFD proc_fd) {
   bool sandbox_is_initialized = content::InitializeSandbox(
       scoped_ptr<sandbox::bpf_dsl::Policy>(
           new nacl::nonsfi::NaClNonSfiBPFSandboxPolicy()),
-      proc_fd.Pass());
+      std::move(proc_fd));
   if (!sandbox_is_initialized)
     return false;
   RunSandboxSanityChecks();

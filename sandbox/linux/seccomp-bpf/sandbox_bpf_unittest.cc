@@ -8,6 +8,7 @@
 #include <unistd.h>
 
 #include <iostream>
+#include <utility>
 
 #include "base/files/scoped_file.h"
 #include "base/posix/eintr_wrapper.h"
@@ -71,7 +72,7 @@ TEST(SandboxBPF, ProcTaskFdDescriptorGetsClosed) {
 
   {
     SandboxBPF sandbox(nullptr);
-    sandbox.SetProcFd(write_end.Pass());
+    sandbox.SetProcFd(std::move(write_end));
   }
 
   ASSERT_EQ(0, fcntl(read_end.get(), F_SETFL, O_NONBLOCK));

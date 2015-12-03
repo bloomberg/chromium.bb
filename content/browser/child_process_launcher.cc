@@ -4,6 +4,8 @@
 
 #include "content/browser/child_process_launcher.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
@@ -139,7 +141,7 @@ void LaunchOnLauncherThread(const NotifyCallback& callback,
 #if defined(OS_ANDROID)
   files_to_register->Share(kPrimaryIPCChannel, ipcfd.get());
 #else
-  files_to_register->Transfer(kPrimaryIPCChannel, ipcfd.Pass());
+  files_to_register->Transfer(kPrimaryIPCChannel, std::move(ipcfd));
 #endif
 #endif
 
@@ -188,7 +190,7 @@ void LaunchOnLauncherThread(const NotifyCallback& callback,
   CHECK(!cmd_line->HasSwitch(switches::kSingleProcess));
 
   StartChildProcess(
-      cmd_line->argv(), child_process_id, files_to_register.Pass(), regions,
+      cmd_line->argv(), child_process_id, std::move(files_to_register), regions,
       base::Bind(&OnChildProcessStartedAndroid, callback, client_thread_id,
                  begin_launch_time, base::Passed(&ipcfd)));
 
@@ -199,7 +201,7 @@ void LaunchOnLauncherThread(const NotifyCallback& callback,
 #if !defined(OS_MACOSX)
   if (use_zygote) {
     base::ProcessHandle handle = ZygoteHostImpl::GetInstance()->ForkRequest(
-        cmd_line->argv(), files_to_register.Pass(), process_type);
+        cmd_line->argv(), std::move(files_to_register), process_type);
     process = base::Process(handle);
   } else
   // Fall through to the normal posix case below when we're not zygoting.
@@ -305,7 +307,7 @@ void TerminateOnLauncherThread(bool zygote, base::Process process) {
     ZygoteHostImpl::GetInstance()->EnsureProcessTerminated(process.Handle());
   } else
 #endif  // !OS_MACOSX
-  base::EnsureProcessTerminated(process.Pass());
+    base::EnsureProcessTerminated(std::move(process));
 #endif  // OS_POSIX
 #endif  // defined(OS_ANDROID)
 }
@@ -447,9 +449,9 @@ void ChildProcessLauncher::DidLaunch(
   if (instance.get()) {
     instance->Notify(zygote,
 #if defined(OS_ANDROID)
-                     ipcfd.Pass(),
+                     std::move(ipcfd),
 #endif
-                     process.Pass());
+                     std::move(process));
   } else {
     if (process.IsValid() && terminate_on_shutdown) {
       // On Posix, EnsureProcessTerminated can lead to 2 seconds of sleep!  So
@@ -469,7 +471,7 @@ void ChildProcessLauncher::Notify(
     base::Process process) {
   DCHECK(CalledOnValidThread());
   starting_ = false;
-  process_ = process.Pass();
+  process_ = std::move(process);
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
   zygote_ = zygote;

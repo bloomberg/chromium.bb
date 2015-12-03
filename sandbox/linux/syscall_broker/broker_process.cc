@@ -14,6 +14,7 @@
 
 #include <algorithm>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/callback.h"
@@ -75,7 +76,7 @@ bool BrokerProcess::Init(
     // We are the parent and we have just forked our broker process.
     ipc_reader.reset();
     broker_pid_ = child_pid;
-    broker_client_.reset(new BrokerClient(policy_, ipc_writer.Pass(),
+    broker_client_.reset(new BrokerClient(policy_, std::move(ipc_writer),
                                           fast_check_in_client_,
                                           quiet_failures_for_tests_));
     initialized_ = true;
@@ -85,7 +86,7 @@ bool BrokerProcess::Init(
     // we get notified if the client disappears.
     ipc_writer.reset();
     CHECK(broker_process_init_callback.Run());
-    BrokerHost broker_host(policy_, ipc_reader.Pass());
+    BrokerHost broker_host(policy_, std::move(ipc_reader));
     for (;;) {
       switch (broker_host.HandleRequest()) {
         case BrokerHost::RequestStatus::LOST_CLIENT:

@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <utility>
 #include <vector>
 
 #include "base/base_switches.h"
@@ -394,7 +395,7 @@ class RendererSandboxedProcessLauncherDelegate
         browser_command_line.GetSwitchValueNative(switches::kRendererCmdPrefix);
     return renderer_prefix.empty();
   }
-  base::ScopedFD TakeIpcFd() override { return ipc_fd_.Pass(); }
+  base::ScopedFD TakeIpcFd() override { return std::move(ipc_fd_); }
 #endif  // OS_WIN
 
   SandboxType GetSandboxType() override { return SANDBOX_TYPE_RENDERER; }

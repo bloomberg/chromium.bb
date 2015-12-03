@@ -180,7 +180,7 @@ class NaClSandboxedProcessLauncherDelegate
   }
 #elif defined(OS_POSIX)
   bool ShouldUseZygote() override { return true; }
-  base::ScopedFD TakeIpcFd() override { return ipc_fd_.Pass(); }
+  base::ScopedFD TakeIpcFd() override { return std::move(ipc_fd_); }
 #endif  // OS_WIN
 
  private:

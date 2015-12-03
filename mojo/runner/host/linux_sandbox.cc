@@ -6,6 +6,7 @@
 
 #include <fcntl.h>
 #include <sys/syscall.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/debug/leak_annotations.h"
@@ -139,7 +140,7 @@ void LinuxSandbox::EngageSeccompSandbox() {
   base::ScopedFD proc_fd(HANDLE_EINTR(
       openat(proc_fd_.get(), ".", O_RDONLY | O_DIRECTORY | O_CLOEXEC)));
   CHECK(proc_fd.is_valid());
-  sandbox.SetProcFd(proc_fd.Pass());
+  sandbox.SetProcFd(std::move(proc_fd));
   CHECK(
       sandbox.StartSandbox(sandbox::SandboxBPF::SeccompLevel::SINGLE_THREADED))
       << "Starting the process with a sandbox failed. Missing kernel support.";

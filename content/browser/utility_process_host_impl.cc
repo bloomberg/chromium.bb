@@ -4,6 +4,8 @@
 
 #include "content/browser/utility_process_host_impl.h"
 
+#include <utility>
+
 #include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -88,7 +90,7 @@ class UtilitySandboxedProcessLauncherDelegate
     return !no_sandbox_ && exposed_dir_.empty();
   }
   base::EnvironmentMap GetEnvironment() override { return env_; }
-  base::ScopedFD TakeIpcFd() override { return ipc_fd_.Pass(); }
+  base::ScopedFD TakeIpcFd() override { return std::move(ipc_fd_); }
 #endif  // OS_WIN
 
   SandboxType GetSandboxType() override {

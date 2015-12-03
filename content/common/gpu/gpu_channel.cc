@@ -613,7 +613,7 @@ IPC::ChannelHandle GpuChannel::Init(base::WaitableEvent* shutdown_event) {
   // that it gets closed after it has been sent.
   base::ScopedFD renderer_fd = channel_->TakeClientFileDescriptor();
   DCHECK(renderer_fd.is_valid());
-  channel_handle.socket = base::FileDescriptor(renderer_fd.Pass());
+  channel_handle.socket = base::FileDescriptor(std::move(renderer_fd));
 #endif
 
   channel_->AddFilter(filter_.get());

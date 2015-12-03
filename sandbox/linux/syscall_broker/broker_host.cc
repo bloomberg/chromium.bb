@@ -13,6 +13,7 @@
 #include <unistd.h>
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/files/scoped_file.h"
@@ -163,8 +164,7 @@ bool HandleRemoteCommand(const BrokerPolicy& policy,
 
 BrokerHost::BrokerHost(const BrokerPolicy& broker_policy,
                        BrokerChannel::EndPoint ipc_channel)
-    : broker_policy_(broker_policy), ipc_channel_(ipc_channel.Pass()) {
-}
+    : broker_policy_(broker_policy), ipc_channel_(std::move(ipc_channel)) {}
 
 BrokerHost::~BrokerHost() {
 }
@@ -193,7 +193,7 @@ BrokerHost::RequestStatus BrokerHost::HandleRequest() const {
     return RequestStatus::FAILURE;
   }
 
-  base::ScopedFD temporary_ipc(fds[0]->Pass());
+  base::ScopedFD temporary_ipc(std::move(*fds[0]));
 
   base::Pickle pickle(buf, msg_len);
   base::PickleIterator iter(pickle);

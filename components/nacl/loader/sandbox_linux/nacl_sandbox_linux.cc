@@ -187,7 +187,7 @@ void NaClSandbox::InitializeLayerTwoSandbox(bool uses_nonsfi_mode) {
   // will prevent its usage.
 #if defined(OS_NACL_NONSFI)
   CHECK(uses_nonsfi_mode);
-  layer_two_enabled_ = nacl::nonsfi::InitializeBPFSandbox(proc_fd_.Pass());
+  layer_two_enabled_ = nacl::nonsfi::InitializeBPFSandbox(std::move(proc_fd_));
   layer_two_is_nonsfi_ = true;
 #else
   CHECK(!uses_nonsfi_mode);

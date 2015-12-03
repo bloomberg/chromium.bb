@@ -6,6 +6,7 @@
 
 #include <fcntl.h>
 #include <unistd.h>
+#include <utility>
 
 #include "base/basictypes.h"
 #include "base/posix/eintr_wrapper.h"
@@ -43,7 +44,7 @@ TEST_F(FileDescriptorInfoTest, Transfer) {
   base::ScopedFD fd(GetSafeFd());
 
   int raw_fd = fd.get();
-  target->Transfer(testingId, fd.Pass());
+  target->Transfer(testingId, std::move(fd));
   ASSERT_EQ(1U, target->GetMappingSize());
   ASSERT_EQ(target->GetFDAt(0), raw_fd);
   ASSERT_EQ(target->GetIDAt(0), testingId);

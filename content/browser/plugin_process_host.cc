@@ -6,10 +6,9 @@
 
 #if defined(OS_WIN)
 #include <windows.h>
-#elif defined(OS_POSIX)
-#include <utility>  // for pair<>
 #endif
 
+#include <utility>
 #include <vector>
 
 #include "base/base_switches.h"
@@ -112,7 +111,7 @@ class PluginSandboxedProcessLauncherDelegate
   }
 
 #elif defined(OS_POSIX)
-  base::ScopedFD TakeIpcFd() override { return ipc_fd_.Pass(); }
+  base::ScopedFD TakeIpcFd() override { return std::move(ipc_fd_); }
 #endif  // OS_WIN
 
  private:

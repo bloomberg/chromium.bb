@@ -4,6 +4,8 @@
 
 #include "content/browser/gpu/gpu_process_host.h"
 
+#include <utility>
+
 #include "base/base64.h"
 #include "base/base_switches.h"
 #include "base/basictypes.h"
@@ -270,7 +272,7 @@ class GpuSandboxedProcessLauncherDelegate
   }
 #elif defined(OS_POSIX)
 
-  base::ScopedFD TakeIpcFd() override { return ipc_fd_.Pass(); }
+  base::ScopedFD TakeIpcFd() override { return std::move(ipc_fd_); }
 #endif  // OS_WIN
 
   SandboxType GetSandboxType() override {

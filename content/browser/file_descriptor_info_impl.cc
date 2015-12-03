@@ -4,6 +4,8 @@
 
 #include "content/browser/file_descriptor_info_impl.h"
 
+#include <utility>
+
 namespace content {
 
 // static
@@ -23,7 +25,7 @@ void FileDescriptorInfoImpl::Share(int id, base::PlatformFile fd) {
 
 void FileDescriptorInfoImpl::Transfer(int id, base::ScopedFD fd) {
   AddToMapping(id, fd.get());
-  owned_descriptors_.push_back(new base::ScopedFD(fd.Pass()));
+  owned_descriptors_.push_back(new base::ScopedFD(std::move(fd)));
 }
 
 base::PlatformFile FileDescriptorInfoImpl::GetFDAt(size_t i) const {
@@ -65,7 +67,7 @@ base::ScopedFD FileDescriptorInfoImpl::ReleaseFD(base::PlatformFile file) {
   (*found)->swap(fd);
   owned_descriptors_.erase(found);
 
-  return fd.Pass();
+  return fd;
 }
 
 void FileDescriptorInfoImpl::AddToMapping(int id, base::PlatformFile fd) {

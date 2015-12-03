@@ -70,7 +70,7 @@ void StartSandboxWithPolicy(sandbox::bpf_dsl::Policy* policy,
   // doing so does not stop the sandbox.
   SandboxBPF sandbox(policy);
 
-  sandbox.SetProcFd(proc_fd.Pass());
+  sandbox.SetProcFd(std::move(proc_fd));
   CHECK(sandbox.StartSandbox(SandboxBPF::SeccompLevel::SINGLE_THREADED));
 }
 
@@ -201,7 +201,7 @@ bool StartBPFSandbox(const base::CommandLine& command_line,
   }
 
   CHECK(policy->PreSandboxHook());
-  StartSandboxWithPolicy(policy.release(), proc_fd.Pass());
+  StartSandboxWithPolicy(policy.release(), std::move(proc_fd));
 
   RunSandboxSanityChecks(process_type);
   return true;
@@ -279,7 +279,7 @@ bool SandboxSeccompBPF::StartSandbox(const std::string& process_type,
     // If the kernel supports the sandbox, and if the command line says we
     // should enable it, enable it or die.
     bool started_sandbox =
-        StartBPFSandbox(command_line, process_type, proc_fd.Pass());
+        StartBPFSandbox(command_line, process_type, std::move(proc_fd));
     CHECK(started_sandbox);
     return true;
   }
@@ -294,7 +294,7 @@ bool SandboxSeccompBPF::StartSandboxWithExternalPolicy(
 #if defined(USE_SECCOMP_BPF)
   if (IsSeccompBPFDesired() && SupportsSandbox()) {
     CHECK(policy);
-    StartSandboxWithPolicy(policy.release(), proc_fd.Pass());
+    StartSandboxWithPolicy(policy.release(), std::move(proc_fd));
     return true;
   }
 #endif  // defined(USE_SECCOMP_BPF)

@@ -33,7 +33,7 @@ base::ScopedFD OpenDirectory(const char* path) {
   base::ScopedFD directory_fd(
       HANDLE_EINTR(open(path, O_RDONLY | O_DIRECTORY | O_CLOEXEC)));
   PCHECK(directory_fd.is_valid());
-  return directory_fd.Pass();
+  return directory_fd;
 }
 
 }  // namespace

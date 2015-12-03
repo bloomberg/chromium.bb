@@ -13,6 +13,7 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/files/file_util.h"
@@ -589,7 +590,7 @@ base::ProcessId Zygote::ReadArgsAndFork(base::PickleIterator iter,
   // First FD is the PID oracle socket.
   if (fds.size() < 1)
     return -1;
-  base::ScopedFD pid_oracle(fds[0]->Pass());
+  base::ScopedFD pid_oracle(std::move(*fds[0]));
 
   // Remaining FDs are for the global descriptor mapping.
   for (int i = 1; i < numfds; ++i) {
@@ -603,13 +604,9 @@ base::ProcessId Zygote::ReadArgsAndFork(base::PickleIterator iter,
       static_cast<uint32_t>(kSandboxIPCChannel), GetSandboxFD()));
 
   // Returns twice, once per process.
-  base::ProcessId child_pid = ForkWithRealPid(process_type,
-                                              mapping,
-                                              channel_id,
-                                              pid_oracle.Pass(),
-                                              uma_name,
-                                              uma_sample,
-                                              uma_boundary_value);
+  base::ProcessId child_pid =
+      ForkWithRealPid(process_type, mapping, channel_id, std::move(pid_oracle),
+                      uma_name, uma_sample, uma_boundary_value);
   if (!child_pid) {
     // This is the child process.
 

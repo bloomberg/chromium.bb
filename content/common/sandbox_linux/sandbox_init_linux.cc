@@ -4,6 +4,8 @@
 
 #include "content/public/common/sandbox_init.h"
 
+#include <utility>
+
 #include "base/files/scoped_file.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/sandbox_linux/sandbox_seccomp_bpf_linux.h"
@@ -14,7 +16,7 @@ namespace content {
 bool InitializeSandbox(scoped_ptr<sandbox::bpf_dsl::Policy> policy,
                        base::ScopedFD proc_fd) {
   return SandboxSeccompBPF::StartSandboxWithExternalPolicy(policy.Pass(),
-                                                           proc_fd.Pass());
+                                                           std::move(proc_fd));
 }
 
 #if !defined(OS_NACL_NONSFI)
