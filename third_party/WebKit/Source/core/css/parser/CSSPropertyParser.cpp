@@ -2213,7 +2213,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::consumeCursor(CSSParserToken
         else if (id == CSSValueWebkitZoomOut)
             m_context.useCounter()->count(UseCounter::PrefixedCursorZoomOut);
     }
-    RefPtrWillBeRawPtr<CSSValue> cursorType;
+    RefPtrWillBeRawPtr<CSSValue> cursorType = nullptr;
     if (id == CSSValueHand) {
         if (inQuirksMode()) // Non-standard behavior
             cursorType = cssValuePool().createIdentifierValue(CSSValuePointer);
