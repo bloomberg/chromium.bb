@@ -4339,6 +4339,10 @@ void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLenum in
         synthesizeGLError(GL_INVALID_VALUE, "texImage2D", "no image data");
         return;
     }
+    if (pixels->data()->bufferBase()->isNeutered()) {
+        synthesizeGLError(GL_INVALID_VALUE, "texImage2D", "The source data has been neutered.");
+        return;
+    }
     if (isContextLost() || !validateTexFunc("texImage2D", NotTexSubImage2D, SourceImageData, target, level, internalformat, pixels->width(), pixels->height(), 0, format, type, 0, 0))
         return;
     if (type == GL_UNSIGNED_INT_10F_11F_11F_REV) {
@@ -4658,6 +4662,10 @@ void WebGLRenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint 
 {
     if (!pixels) {
         synthesizeGLError(GL_INVALID_VALUE, "texSubImage2D", "no image data");
+        return;
+    }
+    if (pixels->data()->bufferBase()->isNeutered()) {
+        synthesizeGLError(GL_INVALID_VALUE, "texSubImage2D", "The source data has been neutered.");
         return;
     }
     if (isContextLost() || !validateTexFunc("texSubImage2D", TexSubImage2D, SourceImageData, target, level, 0,  pixels->width(), pixels->height(), 0, format, type, xoffset, yoffset))
