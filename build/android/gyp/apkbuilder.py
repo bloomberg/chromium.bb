@@ -213,10 +213,10 @@ def main(args):
           build_utils.AddToZipHermetic(out_apk, apk_path, src_path=path)
 
         for name in sorted(options.native_lib_placeholders):
-          # Make it non-empty so that its checksum is non-zero and is not
-          # ignored by md5_check.
-          apk_path = 'lib/%s/%s.so' % (options.android_abi, name)
-          build_utils.AddToZipHermetic(out_apk, apk_path, data=':)')
+          # Empty libs files are ignored by md5check, but rezip requires them
+          # to be empty in order to identify them as placeholders.
+          apk_path = 'lib/%s/%s' % (options.android_abi, name)
+          build_utils.AddToZipHermetic(out_apk, apk_path, data='')
 
         # 6. Java resources. Used only when coverage is enabled, so order
         # doesn't matter).
