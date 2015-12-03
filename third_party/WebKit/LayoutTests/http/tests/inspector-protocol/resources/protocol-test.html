@@ -287,7 +287,7 @@ InspectorTest.importScript = function(scriptName)
     var xhr = new XMLHttpRequest();
     xhr.open("GET", scriptName, false);
     xhr.send(null);
-    window.eval(xhr.responseText + "\n//@ sourceURL=" + scriptName);
+    window.eval(xhr.responseText + "\n//# sourceURL=" + scriptName);
 }
 
 InspectorTest.safeWrap = function(func, onexception)

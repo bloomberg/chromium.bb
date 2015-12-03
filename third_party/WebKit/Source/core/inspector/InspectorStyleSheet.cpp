@@ -1408,10 +1408,8 @@ String InspectorStyleSheet::sourceURL()
     String styleSheetText;
     bool success = getText(&styleSheetText);
     if (success) {
-        bool deprecated;
-        String commentValue = ContentSearchUtils::findSourceURL(styleSheetText, ContentSearchUtils::CSSMagicComment, &deprecated);
+        String commentValue = ContentSearchUtils::findSourceURL(styleSheetText, ContentSearchUtils::CSSMagicComment);
         if (!commentValue.isEmpty()) {
-            // FIXME: add deprecated console message here.
             m_sourceURL = commentValue;
             return commentValue;
         }
@@ -1461,12 +1459,9 @@ String InspectorStyleSheet::sourceMapURL()
     String styleSheetText;
     bool success = getText(&styleSheetText);
     if (success) {
-        bool deprecated;
-        String commentValue = ContentSearchUtils::findSourceMapURL(styleSheetText, ContentSearchUtils::CSSMagicComment, &deprecated);
-        if (!commentValue.isEmpty()) {
-            // FIXME: add deprecated console message here.
+        String commentValue = ContentSearchUtils::findSourceMapURL(styleSheetText, ContentSearchUtils::CSSMagicComment);
+        if (!commentValue.isEmpty())
             return commentValue;
-        }
     }
     return m_pageStyleSheet->contents()->sourceMapURL();
 }

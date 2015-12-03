@@ -107,11 +107,9 @@ PassRefPtr<TypeBuilder::Array<TypeBuilder::Debugger::SearchMatch>> searchInTextB
     return result;
 }
 
-static String findMagicComment(const String& content, const String& name, MagicCommentType commentType, bool* deprecated = 0)
+static String findMagicComment(const String& content, const String& name, MagicCommentType commentType)
 {
     ASSERT(name.find("=") == kNotFound);
-    if (deprecated)
-        *deprecated = false;
 
     unsigned length = content.length();
     unsigned nameLength = name.length();
@@ -133,7 +131,7 @@ static String findMagicComment(const String& content, const String& name, MagicC
         if ((content[pos + 1] != '/' || commentType != JavaScriptMagicComment)
             && (content[pos + 1] != '*' || commentType != CSSMagicComment))
             continue;
-        if (content[pos + 2] != '#' && content[pos + 2] != '@')
+        if (content[pos + 2] != '#')
             continue;
         if (content[pos + 3] != ' ' && content[pos + 3] != '\t')
             continue;
@@ -148,9 +146,6 @@ static String findMagicComment(const String& content, const String& name, MagicC
 
         break;
     }
-
-    if (deprecated && content[pos + 2] == '@')
-        *deprecated = true;
 
     ASSERT(equalSignPos);
     ASSERT(commentType != CSSMagicComment || closingCommentPos);
@@ -173,14 +168,14 @@ static String findMagicComment(const String& content, const String& name, MagicC
     return match;
 }
 
-String findSourceURL(const String& content, MagicCommentType commentType, bool* deprecated)
+String findSourceURL(const String& content, MagicCommentType commentType)
 {
-    return findMagicComment(content, "sourceURL", commentType, deprecated);
+    return findMagicComment(content, "sourceURL", commentType);
 }
 
-String findSourceMapURL(const String& content, MagicCommentType commentType, bool* deprecated)
+String findSourceMapURL(const String& content, MagicCommentType commentType)
 {
-    return findMagicComment(content, "sourceMappingURL", commentType, deprecated);
+    return findMagicComment(content, "sourceMappingURL", commentType);
 }
 
 } // namespace ContentSearchUtils

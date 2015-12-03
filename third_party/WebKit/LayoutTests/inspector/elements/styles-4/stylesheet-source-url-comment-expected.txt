@@ -6,9 +6,6 @@ Running: testSourceURLCommentInInlineScript
 Running: testSourceURLComment
 body { color: black; }
 
-Running: testDeprecatedSourceURLComment
-body { color: black; }
-
 Running: testNonRelativeURL
 body { color: red; }
 

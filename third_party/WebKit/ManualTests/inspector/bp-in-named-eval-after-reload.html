@@ -42,14 +42,14 @@ eval([
     "   doNothing();",
     "   console.log(new Date() + ':  f1() called');",
     "}",
-    "//@sourceURL=f1.js"
+    "//# sourceURL=f1.js"
 ].join("\n"));
 
 f2 = Function([
     "",
     "   doNothing();",
     "   console.log(new Date() + ':  f2() called');",
-    "//@sourceURL=f2.js"
+    "//# sourceURL=f2.js"
 ].join("\n"));
 
 var button = document.getElementById("button");

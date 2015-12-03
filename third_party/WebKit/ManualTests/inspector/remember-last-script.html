@@ -23,14 +23,14 @@ should be the selected script:
     <ul>
     <li>open Web Inspector, switch to the <b>Scripts</b> panel, then close Web Inspector
     </ul>
-</ul>    
+</ul>
 
 <script>
 
 f1 = Function([
     "",
     "   doNothing();",
-    "//@sourceURL=f1.js"
+    "//# sourceURL=f1.js"
 ].join("\n"));
 
 function doNothing() { /* allows multi-line functions, easier to debug */ };
