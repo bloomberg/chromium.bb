@@ -10,6 +10,7 @@
 #include "base/json/json_value_converter.h"
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
+#include "base/time/time.h"
 
 namespace net {
 class CertVerifier;
@@ -39,6 +40,27 @@ struct URLRequestContextConfig {
 
    private:
     DISALLOW_COPY_AND_ASSIGN(QuicHint);
+  };
+
+  // Public-Key-Pinning configuration structure.
+  struct Pkp {
+    Pkp();
+    ~Pkp();
+
+    // Register |converter| for use in converter.Convert().
+    static void RegisterJSONConverter(base::JSONValueConverter<Pkp>* converter);
+
+    // Host name.
+    std::string host;
+    // Pin hashes (currently SHA256 only).
+    ScopedVector<std::string> pin_hashes;
+    // Indicates whether the pinning should apply to the pinned host subdomains.
+    bool include_subdomains;
+    // Expiration date for the pins.
+    base::Time expiration_date;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Pkp);
   };
 
   URLRequestContextConfig();
@@ -87,6 +109,8 @@ struct URLRequestContextConfig {
   std::string data_reduction_primary_proxy;
   std::string data_reduction_fallback_proxy;
   std::string data_reduction_secure_proxy_check_url;
+  // The list of public key pins.
+  ScopedVector<Pkp> pkp_list;
 
   // Certificate verifier for testing.
   scoped_ptr<net::CertVerifier> mock_cert_verifier;

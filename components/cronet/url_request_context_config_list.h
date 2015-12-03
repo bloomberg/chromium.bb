@@ -7,7 +7,8 @@
 #ifndef DEFINE_CONTEXT_CONFIG
 #error "DEFINE_CONTEXT_CONFIG should be defined before including this file"
 #endif
-// See HttpUrlRequestFactoryConfig.java for description of these parameters.
+// See CronetEngine.Builder class in CronetEngine.java for description of these
+// parameters.
 DEFINE_CONTEXT_CONFIG(USER_AGENT)
 DEFINE_CONTEXT_CONFIG(STORAGE_PATH)
 DEFINE_CONTEXT_CONFIG(ENABLE_LEGACY_MODE)
@@ -33,6 +34,23 @@ DEFINE_CONTEXT_CONFIG(QUIC_HINT_PORT)
 DEFINE_CONTEXT_CONFIG(QUIC_HINT_ALT_PORT)
 
 DEFINE_CONTEXT_CONFIG(EXPERIMENTAL_OPTIONS)
+
+// The list of PKP info for multiple hosts. Each member of the list pins a
+// single host and contains the following nested JSON elements: PKP_HOST,
+// PKP_PIN_HASHES, PKP_INCLUDE_SUBDOMAINS and PKP_EXPIRATION_DATE.
+DEFINE_CONTEXT_CONFIG(PKP_LIST)
+// Name of the host to which public keys should be pinned. See PKP_LIST.
+DEFINE_CONTEXT_CONFIG(PKP_HOST)
+// The list of PKP pins. Each pin is BASE64 encoded SHA-256 cryptographic
+// hash of DER-encoded ASN.1 representation of Subject Public Key Info (SPKI)
+// of the host X.509 certificate. The pins are prepended with "sha256/" prefix.
+// See PKP_LIST.
+DEFINE_CONTEXT_CONFIG(PKP_PIN_HASHES)
+// Indicates whether the pinning policy should be applied to subdomains of
+// PKP_HOST. See PKP_LIST.
+DEFINE_CONTEXT_CONFIG(PKP_INCLUDE_SUBDOMAINS)
+// Specifies the expiration date for the pins. See PKP_LIST.
+DEFINE_CONTEXT_CONFIG(PKP_EXPIRATION_DATE)
 
 // For Testing.
 DEFINE_CONTEXT_CONFIG(MOCK_CERT_VERIFIER)

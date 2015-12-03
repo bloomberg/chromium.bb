@@ -292,8 +292,10 @@ class NET_EXPORT TransportSecurityState
                const base::Time& expiry,
                bool include_subdomains);
 
-  // Adds explicitly-specified data as if it was processed from an
-  // HPKP header (used for net-internals and unit tests).
+  // Adds explicitly-specified data as if it was processed from an HPKP header.
+  // Note: This method will persist the HPKP if a Delegate is present. Make sure
+  //       that the delegate is nullptr if the persistence is not desired.
+  //       See |SetDelegate| method for more details.
   void AddHPKP(const std::string& host,
                const base::Time& expiry,
                bool include_subdomains,

@@ -6,6 +6,8 @@ java.io
 java.lang
 java.net
 java.nio
+java.security
+java.security.cert
 java.util
 java.util.concurrent
 javax.net.ssl

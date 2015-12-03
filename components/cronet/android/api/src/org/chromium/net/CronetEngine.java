@@ -6,6 +6,7 @@ package org.chromium.net;
 
 import android.content.Context;
 import android.support.annotation.IntDef;
+import android.util.Base64;
 import android.util.Log;
 
 import org.json.JSONArray;
@@ -16,13 +17,18 @@ import java.io.File;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Constructor;
+import java.net.IDN;
 import java.net.Proxy;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandlerFactory;
+import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Executor;
+import java.util.regex.Pattern;
 
 /**
  * An engine to process {@link UrlRequest}s, which uses the best HTTP stack
@@ -35,6 +41,8 @@ public abstract class CronetEngine {
      * then {@link #build} is called to create the {@code CronetEngine}.
      */
     public static class Builder {
+        private static final Pattern INVALID_PKP_HOST_NAME = Pattern.compile("^[0-9\\.]*$");
+
         private final JSONObject mConfig;
         private final Context mContext;
 
@@ -300,6 +308,135 @@ public abstract class CronetEngine {
                 // Intentionally do nothing.
             }
             return this;
+        }
+
+        /**
+         * <p>
+         * Pins a set of public keys for a given host. By pinning a set of public keys,
+         * {@code pinsSha256}, communication with {@code hostName} is required to
+         * authenticate with a certificate with a public key from the set of pinned ones.
+         * An app can pin the public key of the root certificate, any of the intermediate
+         * certificates or the end-entry certificate. Authentication will fail and secure
+         * communication will not be established if none of the public keys is present in the
+         * host's certificate chain, even if the host attempts to authenticate with a
+         * certificate allowed by the device's trusted store of certificates.
+         * </p>
+         * <p>
+         * Calling this method multiple times with the same host name overrides the previously
+         * set pins for the host.
+         * </p>
+         * <p>
+         * More information about the public key pinning can be found in
+         * <a href="https://tools.ietf.org/html/rfc7469">RFC 7469</a>.
+         * </p>
+         *
+         * @param hostName name of the host to which the public keys should be pinned. A host that
+         *                 consists only of digits and the dot character is treated as invalid.
+         * @param pinsSha256 a set of pins. Each pin is the SHA-256 cryptographic
+         *                   hash of the DER-encoded ASN.1 representation of the Subject Public
+         *                   Key Info (SPKI) of the host's X.509 certificate. Use
+         *                   {@link java.security.cert.Certificate#getPublicKey()
+         *                   Certificate.getPublicKey()} and
+         *                   {@link java.security.Key#getEncoded() Key.getEncoded()}
+         *                   to obtain DER-encoded ASN.1 representation of the SPKI.
+         *                   Although, the method does not mandate the presence of the backup pin
+         *                   that can be used if the control of the primary private key has been
+         *                   lost, it is highly recommended to supply one.
+         * @param includeSubdomains indicates whether the pinning policy should be applied to
+         *                          subdomains of {@code hostName}.
+         * @param expirationDate specifies the expiration date for the pins.
+         * @return the builder to facilitate chaining.
+         * @throws NullPointerException if any of the input parameters are {@code null}.
+         * @throws IllegalArgumentException if the given host name is invalid or {@code pinsSha256}
+         *                                  contains a byte array that does not represent a valid
+         *                                  SHA-256 hash.
+         */
+        public Builder addPublicKeyPins(String hostName, Set<byte[]> pinsSha256,
+                boolean includeSubdomains, Date expirationDate) {
+            if (hostName == null) {
+                throw new NullPointerException("The hostname cannot be null");
+            }
+            if (pinsSha256 == null) {
+                throw new NullPointerException("The set of SHA256 pins cannot be null");
+            }
+            if (expirationDate == null) {
+                throw new NullPointerException("The pin expiration date cannot be null");
+            }
+            String idnHostName = validateHostNameForPinningAndConvert(hostName);
+            try {
+                // Add PKP_LIST JSON array element if it is not present.
+                JSONArray pkpList = mConfig.optJSONArray(CronetEngineBuilderList.PKP_LIST);
+                if (pkpList == null) {
+                    pkpList = new JSONArray();
+                    mConfig.put(CronetEngineBuilderList.PKP_LIST, pkpList);
+                }
+
+                // Convert the pin to BASE64 encoding. The hash set will eliminate duplications.
+                Set<String> hashes = new HashSet<>(pinsSha256.size());
+                for (byte[] pinSha256 : pinsSha256) {
+                    hashes.add(convertSha256ToBase64WithPrefix(pinSha256));
+                }
+
+                // Add new element to PKP_LIST JSON array.
+                JSONObject pkp = new JSONObject();
+                pkp.put(CronetEngineBuilderList.PKP_HOST, idnHostName);
+                pkp.put(CronetEngineBuilderList.PKP_PIN_HASHES, new JSONArray(hashes));
+                pkp.put(CronetEngineBuilderList.PKP_INCLUDE_SUBDOMAINS, includeSubdomains);
+                // The expiration time is passed as a double, in seconds since January 1, 1970.
+                pkp.put(CronetEngineBuilderList.PKP_EXPIRATION_DATE,
+                        (double) expirationDate.getTime() / 1000);
+                pkpList.put(pkp);
+            } catch (JSONException e) {
+                // This exception should never happen.
+                throw new RuntimeException(
+                        "Failed to add pubic key pins with the given arguments", e);
+            }
+            return this;
+        }
+
+        /**
+         * Converts a given SHA256 array of bytes to BASE64 encoded string and prepends
+         * {@code sha256/} prefix to it. The format corresponds to the format that is expected by
+         * {@code net::HashValue} class.
+         *
+         * @param sha256 SHA256 bytes to convert to BASE64.
+         * @return the BASE64 encoded SHA256 with the prefix.
+         * @throws IllegalArgumentException if the provided pin is invalid.
+         */
+        private static String convertSha256ToBase64WithPrefix(byte[] sha256) {
+            if (sha256 == null || sha256.length != 32) {
+                throw new IllegalArgumentException("Public key pin is invalid");
+            }
+            return "sha256/" + Base64.encodeToString(sha256, Base64.NO_WRAP);
+        }
+
+        /**
+         * Checks whether a given string represents a valid host name for PKP and converts it
+         * to ASCII Compatible Encoding representation according to RFC 1122, RFC 1123 and
+         * RFC 3490. This method is more restrictive than required by RFC 7469. Thus, a host
+         * that contains digits and the dot character only is considered invalid.
+         *
+         * Note: Currently Cronet doesn't have native implementation of host name validation that
+         *       can be used. There is code that parses a provided URL but doesn't ensure its
+         *       correctness. The implementation relies on {@code getaddrinfo} function.
+         *
+         * @param hostName host name to check and convert.
+         * @return true if the string is a valid host name.
+         * @throws IllegalArgumentException if the the given string does not represent a valid
+         *                                  hostname.
+         */
+        private static String validateHostNameForPinningAndConvert(String hostName)
+                throws IllegalArgumentException {
+            if (INVALID_PKP_HOST_NAME.matcher(hostName).matches()) {
+                throw new IllegalArgumentException("Hostname " + hostName + " is illegal."
+                        + " A hostname should not consist of digits and/or dots only.");
+            }
+            try {
+                return IDN.toASCII(hostName, IDN.USE_STD3_ASCII_RULES);
+            } catch (IllegalArgumentException ex) {
+                throw new IllegalArgumentException("Hostname " + hostName + " is illegal."
+                        + " The name of the host does not comply with RFC 1122 and RFC 1123.");
+            }
         }
 
         /**

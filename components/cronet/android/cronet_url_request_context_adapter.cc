@@ -10,6 +10,7 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
+#include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
@@ -316,6 +317,11 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
         http_server_properties_manager.Pass());
   }
 
+  // Explicitly disable the persister for Cronet to avoid persistence of dynamic
+  // HPKP. This is a safety measure ensuring that nobody enables the persistence
+  // of HPKP by specifying transport_security_persister_path in the future.
+  context_builder.set_transport_security_persister_path(base::FilePath());
+
   context_ = context_builder.Build().Pass();
 
   default_load_flags_ = net::LOAD_DO_NOT_SAVE_COOKIES |
@@ -374,6 +380,27 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
           quic_hint_host_port_pair, alternative_service, 1.0f,
           base::Time::Max());
     }
+  }
+
+  // Iterate through PKP configuration for every host.
+  for (const auto& pkp : config->pkp_list) {
+    // Convert the vector of hash strings from the config to
+    // a vector of HashValue objects.
+    net::HashValueVector hash_value_vector;
+    for (const auto& hash : pkp->pin_hashes) {
+      net::HashValue hash_value;
+      bool good_hash = hash_value.FromString(*hash);
+      if (good_hash) {
+        hash_value_vector.push_back(hash_value);
+      } else {
+        LOG(WARNING) << "Unable to add hash value " << *hash;
+      }
+    }
+
+    // Add the host pinning.
+    context_->transport_security_state()->AddHPKP(
+        pkp->host, pkp->expiration_date, pkp->include_subdomains,
+        hash_value_vector, GURL::EmptyGURL());
   }
 
   JNIEnv* env = base::android::AttachCurrentThread();

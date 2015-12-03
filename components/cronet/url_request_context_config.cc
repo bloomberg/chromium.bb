@@ -103,17 +103,24 @@ void ParseAndSetExperimentalOptions(
   }
 }
 
+bool GetTimeFromDouble(const base::Value* json_value, base::Time* time) {
+  double time_double;
+  bool success = json_value->GetAsDouble(&time_double);
+  if (success) {
+    *time = base::Time::FromDoubleT(time_double);
+  }
+  return success;
+}
+
 }  // namespace
 
 #define DEFINE_CONTEXT_CONFIG(x) const char REQUEST_CONTEXT_CONFIG_##x[] = #x;
 #include "components/cronet/url_request_context_config_list.h"
 #undef DEFINE_CONTEXT_CONFIG
 
-URLRequestContextConfig::QuicHint::QuicHint() {
-}
+URLRequestContextConfig::QuicHint::QuicHint() {}
 
-URLRequestContextConfig::QuicHint::~QuicHint() {
-}
+URLRequestContextConfig::QuicHint::~QuicHint() {}
 
 // static
 void URLRequestContextConfig::QuicHint::RegisterJSONConverter(
@@ -126,6 +133,25 @@ void URLRequestContextConfig::QuicHint::RegisterJSONConverter(
   converter->RegisterIntField(
       REQUEST_CONTEXT_CONFIG_QUIC_HINT_ALT_PORT,
       &URLRequestContextConfig::QuicHint::alternate_port);
+}
+
+URLRequestContextConfig::Pkp::Pkp() {}
+
+URLRequestContextConfig::Pkp::~Pkp() {}
+
+// static
+void URLRequestContextConfig::Pkp::RegisterJSONConverter(
+    base::JSONValueConverter<URLRequestContextConfig::Pkp>* converter) {
+  converter->RegisterStringField(REQUEST_CONTEXT_CONFIG_PKP_HOST,
+                                 &URLRequestContextConfig::Pkp::host);
+  converter->RegisterRepeatedString(REQUEST_CONTEXT_CONFIG_PKP_PIN_HASHES,
+                                    &URLRequestContextConfig::Pkp::pin_hashes);
+  converter->RegisterBoolField(
+      REQUEST_CONTEXT_CONFIG_PKP_INCLUDE_SUBDOMAINS,
+      &URLRequestContextConfig::Pkp::include_subdomains);
+  converter->RegisterCustomValueField<base::Time>(
+      REQUEST_CONTEXT_CONFIG_PKP_EXPIRATION_DATE,
+      &URLRequestContextConfig::Pkp::expiration_date, &GetTimeFromDouble);
 }
 
 URLRequestContextConfig::URLRequestContextConfig() {}
@@ -212,6 +238,8 @@ void URLRequestContextConfig::RegisterJSONConverter(
   converter->RegisterStringField(
       REQUEST_CONTEXT_CONFIG_DATA_REDUCTION_PROXY_KEY,
       &URLRequestContextConfig::data_reduction_proxy_key);
+  converter->RegisterRepeatedMessage(REQUEST_CONTEXT_CONFIG_PKP_LIST,
+                                     &URLRequestContextConfig::pkp_list);
 
   // For Testing.
   converter->RegisterCustomField<scoped_ptr<net::CertVerifier>>(

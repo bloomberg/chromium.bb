@@ -9,16 +9,45 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
-#include "base/android/scoped_java_ref.h"
+#include "crypto/sha2.h"
 #include "jni/MockCertVerifier_jni.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_data_directory.h"
+#include "net/cert/asn1_util.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/test/cert_test_util.h"
 
 namespace cronet {
+
+namespace {
+
+// Populates |out_hash_value| with the SHA256 hash of the |cert| public key.
+// Returns true on success.
+static bool CalculatePublicKeySha256(const net::X509Certificate& cert,
+                                     net::HashValue* out_hash_value) {
+  // Convert the cert to DER encoded bytes.
+  std::string der_cert_bytes;
+  net::X509Certificate::OSCertHandle cert_handle = cert.os_cert_handle();
+  if (!net::X509Certificate::GetDEREncoded(cert_handle, &der_cert_bytes)) {
+    LOG(INFO) << "Unable to convert the given cert to DER encoding";
+    return false;
+  }
+  // Extract the public key from the cert.
+  base::StringPiece spki_bytes;
+  if (!net::asn1::ExtractSPKIFromDERCert(der_cert_bytes, &spki_bytes)) {
+    LOG(INFO) << "Unable to retrieve the public key from the DER cert";
+    return false;
+  }
+  // Calculate SHA256 hash of public key bytes.
+  out_hash_value->tag = net::HASH_VALUE_SHA256;
+  crypto::SHA256HashString(spki_bytes, out_hash_value->data(),
+                           crypto::kSHA256Length);
+  return true;
+}
+
+}  // namespace
 
 static jlong CreateMockCertVerifier(JNIEnv* env,
                                     const JavaParamRef<jclass>& jcaller,
@@ -30,6 +59,17 @@ static jlong CreateMockCertVerifier(JNIEnv* env,
     net::CertVerifyResult verify_result;
     verify_result.verified_cert =
         net::ImportCertFromFile(net::GetTestCertsDirectory(), cert);
+
+    // Let the cert be treated as a known root cert.
+    // This will enable HPKP verification.
+    verify_result.is_issued_by_known_root = true;
+
+    // Calculate the public key hash and add it to the verify_result.
+    net::HashValue hashValue;
+    CHECK(CalculatePublicKeySha256(*verify_result.verified_cert.get(),
+                                   &hashValue));
+    verify_result.public_key_hashes.push_back(hashValue);
+
     mock_cert_verifier->AddResultForCert(verify_result.verified_cert.get(),
                                          verify_result, net::OK);
   }
