@@ -307,7 +307,7 @@ def UpdateClang(args):
       'buildtype=Official' in os.environ.get('GYP_DEFINES', '') and
       'branding=Chrome' in os.environ.get('GYP_DEFINES', ''))
 
-  if ReadStampFile() == PACKAGE_VERSION:
+  if ReadStampFile() == PACKAGE_VERSION and not args.force_local_build:
     print 'Clang is already up to date.'
     if not need_gold_plugin or os.path.exists(
         os.path.join(LLVM_BUILD_DIR, "lib/LLVMgold.so")):
