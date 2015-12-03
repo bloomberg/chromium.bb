@@ -41,8 +41,8 @@
     // TODO(philipj): This should be in a partial interface definition:
     // File API
     // https://w3c.github.io/FileAPI/#creating-revoking
-    // TODO(philipj): Neither the return value nor the argument should be nullable.
-    [RaisesException, CallWith=ExecutionContext, LegacyInterfaceTypeChecking] static DOMString? createObjectURL(Blob? blob);
+    // TODO(philipj): The return type should not be nullable.
+    [RaisesException, CallWith=ExecutionContext] static DOMString? createObjectURL(Blob blob);
     [CallWith=ExecutionContext] static void revokeObjectURL(DOMString url);
 };
 

@@ -7,10 +7,12 @@
     <div id="description"></div>
     <div id="console"></div>
 <script>
-description("Test URL methods with null arguments.");
+description("Test URL methods with null and undefined arguments.");
 
-shouldBe("URL.createObjectURL(null)", "null");
-evalAndLog("URL.revokeObjectURL(null)");
+shouldThrow("URL.createObjectURL(null)");
+shouldThrow("URL.createObjectURL(undefined)");
+shouldNotThrow("URL.revokeObjectURL(null)");
+shouldNotThrow("URL.revokeObjectURL(undefined)");
 var successfullyParsed = true;
 
 </script>

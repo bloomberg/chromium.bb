@@ -64,7 +64,8 @@ void DOMURL::setInput(const String& value)
 
 String DOMURL::createObjectURL(ExecutionContext* executionContext, Blob* blob, ExceptionState& exceptionState)
 {
-    if (!executionContext || !blob)
+    ASSERT(blob);
+    if (!executionContext)
         return String();
     if (blob->hasBeenClosed()) {
         exceptionState.throwDOMException(InvalidStateError, String(blob->isFile() ? "File" : "Blob") + " has been closed.");
