@@ -41,7 +41,7 @@ class LayerTreeHostCopyRequestTestMultipleRequests
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
-  void DidCommitAndDrawFrame() override { WaitForCallback(); }
+  void DidCommit() override { WaitForCallback(); }
 
   void WaitForCallback() {
     base::MessageLoop::current()->PostTask(
@@ -61,6 +61,9 @@ class LayerTreeHostCopyRequestTestMultipleRequests
         EXPECT_EQ(0u, callbacks_.size());
         break;
       case 2:
+        // This commit is triggered by the copy request having been completed.
+        break;
+      case 3:
         if (callbacks_.size() < 1u) {
           WaitForCallback();
           return;
@@ -82,7 +85,10 @@ class LayerTreeHostCopyRequestTestMultipleRequests
                        base::Unretained(this), 3)));
         EXPECT_EQ(1u, callbacks_.size());
         break;
-      case 3:
+      case 4:
+        // This commit is triggered by the copy request having been completed.
+        break;
+      case 5:
         if (callbacks_.size() < 4u) {
           WaitForCallback();
           return;
@@ -174,6 +180,66 @@ TEST_F(LayerTreeHostCopyRequestTestMultipleRequests,
   use_gl_renderer_ = false;
   RunTest(true, false);
 }
+
+// TODO(crbug.com/564832): Remove this test when the workaround it tests is no
+// longer needed.
+class LayerTreeHostCopyRequestCompletionCausesCommit
+    : public LayerTreeHostCopyRequestTest {
+ protected:
+  void SetupTree() override {
+    root_ = FakePictureLayer::Create(layer_settings(), &client_);
+    root_->SetBounds(gfx::Size(20, 20));
+
+    layer_ = FakePictureLayer::Create(layer_settings(), &client_);
+    layer_->SetBounds(gfx::Size(15, 15));
+    root_->AddChild(layer_);
+
+    layer_tree_host()->SetRootLayer(root_);
+    LayerTreeHostCopyRequestTest::SetupTree();
+    client_.set_bounds(root_->bounds());
+  }
+
+  void BeginTest() override {
+    callback_count_ = 0;
+    PostSetNeedsCommitToMainThread();
+  }
+
+  void DidCommit() override {
+    int frame = layer_tree_host()->source_frame_number();
+    switch (frame) {
+      case 1:
+        layer_->RequestCopyOfOutput(CopyOutputRequest::CreateBitmapRequest(
+            base::Bind(&LayerTreeHostCopyRequestCompletionCausesCommit::
+                           CopyOutputCallback,
+                       base::Unretained(this))));
+        EXPECT_EQ(0, callback_count_);
+        break;
+      case 2:
+        // This commit was triggered by the copy request.
+        break;
+      case 3:
+        // This commit was triggered by the completion of the copy request.
+        EXPECT_EQ(1, callback_count_);
+        EndTest();
+        break;
+    }
+  }
+
+  void CopyOutputCallback(scoped_ptr<CopyOutputResult> result) {
+    EXPECT_FALSE(result->IsEmpty());
+    ++callback_count_;
+  }
+
+  void AfterTest() override {}
+
+  int callback_count_;
+  FakeContentLayerClient client_;
+  scoped_refptr<FakePictureLayer> root_;
+  scoped_refptr<FakePictureLayer> layer_;
+};
+
+SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(
+    LayerTreeHostCopyRequestCompletionCausesCommit);
 
 class LayerTreeHostCopyRequestTestLayerDestroyed
     : public LayerTreeHostCopyRequestTest {
@@ -427,8 +493,14 @@ class LayerTreeHostTestHiddenSurfaceNotAllocatedForSubtreeCopyRequest
 
     // |copy_layer| should have been rendered to a texture since it was needed
     // for a copy request.
-    EXPECT_TRUE(renderer->HasAllocatedResourcesForTesting(
-        copy_layer->render_surface()->GetRenderPassId()));
+    if (did_draw_) {
+      // TODO(crbug.com/564832): Ignore the extra frame that occurs due to copy
+      // completion. This can be removed when the extra commit is removed.
+      EXPECT_FALSE(copy_layer->render_surface());
+    } else {
+      EXPECT_TRUE(renderer->HasAllocatedResourcesForTesting(
+          copy_layer->render_surface()->GetRenderPassId()));
+    }
 
     did_draw_ = true;
   }
@@ -795,7 +867,7 @@ class LayerTreeHostCopyRequestTestCountTextures
 
   virtual void RequestCopy(Layer* layer) = 0;
 
-  void DidCommitAndDrawFrame() override {
+  void DidCommit() override {
     switch (layer_tree_host()->source_frame_number()) {
       case 1:
         // The layers have been pushed to the impl side. The layer textures have
@@ -1100,7 +1172,7 @@ class LayerTreeHostCopyRequestTestMultipleDrawsHiddenCopyRequest
     PostSetNeedsCommitToMainThread();
   }
 
-  void DidCommitAndDrawFrame() override {
+  void DidCommit() override {
     // Send a copy request after the first commit.
     if (layer_tree_host()->source_frame_number() == 1) {
       child_->RequestCopyOfOutput(

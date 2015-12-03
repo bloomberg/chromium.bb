@@ -1070,6 +1070,14 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
   // trigger this DCHECK.
   DCHECK(!have_copy_request || draw_result == DRAW_SUCCESS);
 
+  // TODO(crbug.com/564832): This workaround to prevent creating unnecessarily
+  // persistent render passes. When a copy request is made, it may force a
+  // separate render pass for the layer, which will persist until a new commit
+  // removes it. Force a commit after copy requests, to remove extra render
+  // passes.
+  if (have_copy_request)
+    client_->SetNeedsCommitOnImplThread();
+
   return draw_result;
 }
 
