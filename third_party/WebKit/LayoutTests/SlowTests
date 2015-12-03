@@ -9,7 +9,7 @@
 
 crbug.com/24182 [ Debug ] storage/indexeddb/objectstore-cursor.html [ Slow ]
 crbug.com/24182 storage/indexeddb/mozilla/test_objectStore_openKeyCursor.html [ Slow ]
-crbug.com/24182 [ Linux Win Debug ] editing/selection/move-by-word-visually-mac.html [ Slow ]
+crbug.com/24182 editing/selection/move-by-word-visually-mac.html [ Slow ]
 crbug.com/24182 editing/selection/move-by-word-visually-multi-line.html [ Slow ]
 crbug.com/24182 [ Win ] virtual/gpu/fast/canvas/webgl/canvas-test.html [ Slow ]
 crbug.com/24182 [ Win ] virtual/gpu/fast/canvas/webgl/framebuffer-object-attachment.html [ Slow ]
