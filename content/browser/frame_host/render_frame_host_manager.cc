@@ -1572,6 +1572,14 @@ bool RenderFrameHostManager::IsRendererTransferNeededForNavigation(
   if (rfh->GetSiteInstance()->GetSiteURL().SchemeIs(kGuestScheme))
     return false;
 
+  // Don't swap processes for extensions embedded in DevTools. See
+  // https://crbug.com/564216.
+  if (rfh->GetSiteInstance()->GetSiteURL().SchemeIs(kChromeDevToolsScheme)) {
+    CHECK(!dest_url.SchemeIs(url::kHttpScheme) &&
+          !dest_url.SchemeIs(url::kHttpsScheme));
+    return false;
+  }
+
   BrowserContext* context = rfh->GetSiteInstance()->GetBrowserContext();
   GURL effective_url = SiteInstanceImpl::GetEffectiveURL(context, dest_url);
 
