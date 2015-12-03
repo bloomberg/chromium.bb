@@ -867,6 +867,31 @@ body.dialog #dialog #dialog-popup {
   -webkit-transform: translateY(0);
 }
 
+#dialog #dialog-close-button {
+  background: -webkit-image-set(
+      url(../images/dialog_button_close.png) 1x,
+      url(../images/2x/dialog_button_close.png) 2x) no-repeat;
+  outline: none;
+  height: 14px;
+  position: absolute;
+  right: 7px;
+  top: 7px;
+  width: 14px;
+}
+
+html[dir='rtl'] #dialog #dialog-close-button {
+  left: 7px;
+  right: auto;
+}
+
+#dialog #dialog-close-button:hover {
+  background-position: 0 -14px;
+}
+
+#dialog #dialog-close-button:active {
+  background-position: 0 -28px;
+}
+
 #dialog #dialog-msg {
   -webkit-user-select: initial;  /* Allow copying the message. */
   cursor: text;
