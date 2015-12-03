@@ -1,7 +1,5 @@
+fukino@chromium.org
 hirono@chromium.org
 kinaba@chromium.org
 mtomasz@chromium.org
 yoshiki@chromium.org
-
-per-file file_manager_browsertest.cc=fukino@chromium.org
-per-file *_jstest.cc=fukino@chromium.org
