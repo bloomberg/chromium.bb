@@ -338,6 +338,7 @@ crbug.com/498539 [ Win7 Release ] inspector/elements/styles-2/perform-undo-perfo
 crbug.com/498539 [ Win7 ] inspector/elements/styles-3/selector-list.html [ Failure Pass ]
 crbug.com/498539 [ Win7 Debug ] inspector/elements/styles-3/styles-computed-trace.html [ Crash Pass ]
 crbug.com/498539 [ Win7 ] inspector/elements/styles-4/styles-update-from-js.html [ Crash Pass ]
+crbug.com/565059 [ Debug ] inspector/console/console-uncaught-promise.html [ Crash Pass ]
 
 crbug.com/248938 [ Win Debug ] virtual/threaded/animations/transition-and-animation-2.html [ Timeout ]
 
