@@ -44,6 +44,10 @@ class SecurityInterstitialPage : public content::InterstitialPageDelegate {
   virtual void PopulateInterstitialStrings(
       base::DictionaryValue* load_time_data) = 0;
 
+  // Gives an opportunity for child classes to react to Show() having run. The
+  // interstitial_page_ will now have a value.
+  virtual void AfterShow() = 0;
+
   // InterstitialPageDelegate method:
   std::string GetHTMLContents() override;
 

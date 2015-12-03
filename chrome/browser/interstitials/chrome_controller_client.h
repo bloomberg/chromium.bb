@@ -9,6 +9,7 @@
 #include "components/security_interstitials/core/controller_client.h"
 
 namespace content {
+class InterstitialPage;
 class WebContents;
 }
 
@@ -17,6 +18,13 @@ class ChromeControllerClient : public security_interstitials::ControllerClient {
  public:
   explicit ChromeControllerClient(content::WebContents* web_contents);
   ~ChromeControllerClient() override;
+
+  void set_interstitial_page(content::InterstitialPage* interstitial_page);
+
+  // security_interstitials::ControllerClient overrides
+  bool CanLaunchDateAndTimeSettings() override;
+  void LaunchDateAndTimeSettings() override;
+  void GoBack() override;
 
  protected:
   // security_interstitials::ControllerClient overrides
@@ -27,6 +35,7 @@ class ChromeControllerClient : public security_interstitials::ControllerClient {
 
  private:
   content::WebContents* web_contents_;
+  content::InterstitialPage* interstitial_page_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeControllerClient);
 };

@@ -17,8 +17,8 @@
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/grit/components_resources.h"
+#include "components/security_interstitials/core/common_string_util.h"
 #include "components/security_interstitials/core/metrics_helper.h"
-#include "components/url_formatter/url_formatter.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/web_contents.h"
@@ -65,6 +65,9 @@ void SecurityInterstitialPage::Show() {
   if (!create_view_)
     interstitial_page_->DontCreateViewForTesting();
   interstitial_page_->Show();
+
+  controller_->set_interstitial_page(interstitial_page_);
+  AfterShow();
 }
 
 bool SecurityInterstitialPage::IsPrefEnabled(const char* pref) {
@@ -79,11 +82,8 @@ base::string16 SecurityInterstitialPage::GetFormattedHostName() const {
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   if (profile)
     languages = profile->GetPrefs()->GetString(prefs::kAcceptLanguages);
-  base::string16 host =
-      url_formatter::IDNToUnicode(request_url_.host(), languages);
-  if (base::i18n::IsRTL())
-    base::i18n::WrapStringWithLTRFormatting(&host);
-  return host;
+  return security_interstitials::common_string_util::GetFormattedHostName(
+      request_url_, languages);
 }
 
 std::string SecurityInterstitialPage::GetHTMLContents() {

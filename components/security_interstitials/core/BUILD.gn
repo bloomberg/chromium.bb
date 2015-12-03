@@ -5,6 +5,10 @@
 # GYP version: components/security_interstitials.gyp:security_interstitials_core
 static_library("core") {
   sources = [
+    "bad_clock_ui.cc",
+    "bad_clock_ui.h",
+    "common_string_util.cc",
+    "common_string_util.h",
     "controller_client.cc",
     "controller_client.h",
     "metrics_helper.cc",
@@ -13,12 +17,15 @@ static_library("core") {
 
   deps = [
     "//base",
+    "//base:i18n",
     "//base:prefs",
     "//components/google/core/browser",
     "//components/history/core/browser",
     "//components/metrics",
     "//components/rappor",
+    "//components/ssl_errors",
     "//components/strings",
+    "//components/url_formatter",
     "//net",
     "//ui/base",
   ]

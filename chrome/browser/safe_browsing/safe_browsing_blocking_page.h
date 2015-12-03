@@ -107,6 +107,7 @@ class SafeBrowsingBlockingPage : public SecurityInterstitialPage {
   bool ShouldCreateNewNavigation() const override;
   void PopulateInterstitialStrings(
       base::DictionaryValue* load_time_data) override;
+  void AfterShow() override {}
 
   // After a safe browsing interstitial where the user opted-in to the
   // report but clicked "proceed anyway", we delay the call to

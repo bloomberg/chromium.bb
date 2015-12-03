@@ -16,17 +16,22 @@
 class CertReportHelper;
 class GURL;
 
-// This class is responsible for showing/hiding the interstitial page that is
-// shown when a certificate error happens. This error is not overridable.
-// It deletes itself when the interstitial page is closed.
+namespace security_interstitials {
+class BadClockUI;
+}
+
+// This class is responsible for showing/hiding the interstitial page that
+// occurs when an SSL error is triggered by a clock misconfiguration. It
+// creates the UI using security_interstitials::BadClockUI and then
+// displays it. It deletes itself when the interstitial page is closed.
 class BadClockBlockingPage : public SecurityInterstitialPage {
  public:
   // Interstitial type, used in tests.
   static InterstitialPageDelegate::TypeID kTypeForTesting;
 
-  // Creates a bad clock interstitial. If the blocking page isn't shown, the
-  // caller is responsible for cleaning up the blocking page, otherwise the
-  // interstitial takes ownership when shown.
+  // If the blocking page isn't shown, the caller is responsible for cleaning
+  // up the blocking page. Otherwise, the interstitial takes ownership when
+  // shown.
   BadClockBlockingPage(content::WebContents* web_contents,
                        int cert_error,
                        const net::SSLInfo& ssl_info,
@@ -44,7 +49,7 @@ class BadClockBlockingPage : public SecurityInterstitialPage {
       scoped_ptr<SSLCertReporter> ssl_cert_reporter);
 
  protected:
-  // InterstitialPageDelegate implementation.
+  // InterstitialPageDelegate implementation:
   void CommandReceived(const std::string& command) override;
   void OverrideEntry(content::NavigationEntry* entry) override;
   void OverrideRendererPrefs(content::RendererPreferences* prefs) override;
@@ -54,6 +59,7 @@ class BadClockBlockingPage : public SecurityInterstitialPage {
   bool ShouldCreateNewNavigation() const override;
   void PopulateInterstitialStrings(
       base::DictionaryValue* load_time_data) override;
+  void AfterShow() override;
 
  private:
   void NotifyDenyCertificate();
@@ -61,11 +67,10 @@ class BadClockBlockingPage : public SecurityInterstitialPage {
   base::Callback<void(bool)> callback_;
   const int cert_error_;
   const net::SSLInfo ssl_info_;
-
-  // The time at which the interstitial was triggered. The interstitial
-  // calculates all times relative to this.
   const base::Time time_triggered_;
+  scoped_ptr<ChromeControllerClient> controller_;
 
+  scoped_ptr<security_interstitials::BadClockUI> bad_clock_ui_;
   scoped_ptr<CertReportHelper> cert_report_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(BadClockBlockingPage);

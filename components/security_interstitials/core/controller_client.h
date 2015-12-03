@@ -51,7 +51,8 @@ enum SecurityInterstitialCommands {
 };
 
 // Provides methods for handling commands from the user, which requires some
-// embedder-specific abstraction.
+// embedder-specific abstraction. This class should handle all commands sent
+// by the JavaScript error page.
 class ControllerClient {
  public:
   ControllerClient();
@@ -60,6 +61,13 @@ class ControllerClient {
   // Handle the user's reporting preferences.
   void SetReportingPreference(bool report);
   void OpenExtendedReportingPrivacyPolicy();
+
+  // If available, open the operating system's date/time settings.
+  virtual bool CanLaunchDateAndTimeSettings() = 0;
+  virtual void LaunchDateAndTimeSettings() = 0;
+
+  // Close the error and go back to the previous page.
+  virtual void GoBack() = 0;
 
   MetricsHelper* metrics_helper() const;
   void set_metrics_helper(scoped_ptr<MetricsHelper> metrics_helper);
