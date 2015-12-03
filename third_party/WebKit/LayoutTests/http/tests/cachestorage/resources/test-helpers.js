@@ -146,14 +146,6 @@ var vary_entries = [
     request: new Request('http://example.com/c'),
     response: new Response('',
                            {headers: {'Vary': 'Cookies'}})
-  },
-
-  {
-    name: 'vary_wildcard',
-    request: new Request('http://example.com/c',
-                         {headers: {'Cookies': 'x', 'X-Key': '1'}}),
-    response: new Response('',
-                           {headers: {'Vary': '*'}})
   }
 ];
 

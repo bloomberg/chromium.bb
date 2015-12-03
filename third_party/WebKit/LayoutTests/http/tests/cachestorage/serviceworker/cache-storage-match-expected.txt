@@ -1,0 +1,10 @@
+This is a testharness.js-based test.
+PASS CacheStorage.match 
+PASS CacheStorageMatch with no cache name provided 
+PASS CacheStorageMatch from one of many caches 
+PASS CacheStorageMatch from one of many caches by name 
+PASS CacheStorageMatch a string request 
+PASS CacheStorageMatch with no cached entry 
+FAIL CacheStorageMatch with no caches available but name provided assert_equals: The match should reject with NotFoundError. expected "NotFoundError" but got "Error"
+Harness: the test ran to completion.
+

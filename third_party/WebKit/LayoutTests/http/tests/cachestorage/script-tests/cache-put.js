@@ -302,4 +302,22 @@ cache_test(function(cache) {
       });
   }, 'getReader() after Cache.put');
 
+cache_test(function(cache) {
+    return assert_promise_rejects(
+      cache.put(new Request(test_url),
+                new Response(test_body, { headers: { VARY: '*' }})),
+      new TypeError(),
+      'Cache.put should reject VARY:* Responses with a TypeError.');
+  }, 'Cache.put with a VARY:* Response');
+
+cache_test(function(cache) {
+    return assert_promise_rejects(
+      cache.put(new Request(test_url),
+                new Response(test_body,
+                             { headers: { VARY: 'Accept-Language,*' }})),
+      new TypeError(),
+      'Cache.put should reject Responses with an embedded VARY:* with a ' +
+      'TypeError.');
+  }, 'Cache.put with an embedded VARY:* Response');
+
 done();

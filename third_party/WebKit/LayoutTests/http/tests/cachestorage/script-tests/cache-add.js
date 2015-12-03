@@ -56,6 +56,22 @@ cache_test(function(cache) {
 
 cache_test(function(cache) {
     var request = new Request('../resources/simple.txt');
+    return cache.add(request)
+      .then(function(result) {
+          assert_equals(result, undefined,
+                        'Cache.add should resolve with undefined on success.');
+        })
+      .then(function() {
+          return cache.add(request);
+        })
+      .then(function(result) {
+          assert_equals(result, undefined,
+                        'Cache.add should resolve with undefined on success.');
+        });
+  }, 'Cache.add called twice with the same Request object');
+
+cache_test(function(cache) {
+    var request = new Request('../resources/simple.txt');
     return request.text()
       .then(function() {
           assert_false(request.bodyUsed);
@@ -154,7 +170,9 @@ cache_test(function(cache) {
     var urls = ['../resources/simple.txt',
                 self.location.href,
                 '../resources/blank.html'];
-    var requests = urls.map(function(url) { return new Request(url); });
+    var requests = urls.map(function(url) {
+        return new Request(url);
+      });
     return cache.addAll(requests)
       .then(function(result) {
           assert_equals(result, undefined,
@@ -192,7 +210,9 @@ cache_test(function(cache) {
     var urls = ['../resources/simple.txt',
                 'this-resource-should-not-exist',
                 '../resources/blank.html'];
-    var requests = urls.map(function(url) { return new Request(url); });
+    var requests = urls.map(function(url) {
+        return new Request(url);
+      });
     return cache.addAll(requests)
       .then(function(result) {
           assert_equals(result, undefined,
@@ -226,5 +246,14 @@ cache_test(function(cache) {
             'Cache.add should retrieve the correct body.');
         });
   }, 'Cache.addAll with a mix of succeeding and failing requests');
+
+cache_test(function(cache) {
+    var request = new Request('../resources/simple.txt');
+    return assert_promise_rejects(
+      cache.addAll([request, request]),
+      'InvalidStateError',
+      'Cache.addAll should throw InvalidStateError if the same request is added ' +
+      'twice.');
+  }, 'Cache.addAll called with the same Request object specified twice');
 
 done();

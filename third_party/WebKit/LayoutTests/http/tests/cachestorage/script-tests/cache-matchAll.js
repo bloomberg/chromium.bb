@@ -16,24 +16,26 @@ prepopulated_cache_test(simple_entries, function(cache, entries) {
 prepopulated_cache_test(simple_entries, function(cache, entries) {
     return cache.matchAll(entries.a.request.url)
       .then(function(result) {
-          assert_response_array_equivalent(result, [entries.a.response],
-                                  'Cache.matchAll should match by URL.');
+          assert_response_array_equals(result, [entries.a.response],
+                                       'Cache.matchAll should match by URL.');
         });
   }, 'Cache.matchAll with URL');
 
 prepopulated_cache_test(simple_entries, function(cache, entries) {
     return cache.matchAll(entries.a.request)
       .then(function(result) {
-          assert_response_array_equivalent(result, [entries.a.response],
-                                  'Cache.matchAll should match by Request.');
+          assert_response_array_equals(
+            result, [entries.a.response],
+            'Cache.matchAll should match by Request.');
         });
   }, 'Cache.matchAll with Request');
 
 prepopulated_cache_test(simple_entries, function(cache, entries) {
     return cache.matchAll(new Request(entries.a.request.url))
       .then(function(result) {
-          assert_response_array_equivalent(result, [entries.a.response],
-                                  'Cache.matchAll should match by Request.');
+          assert_response_array_equals(
+            result, [entries.a.response],
+            'Cache.matchAll should match by Request.');
         });
   }, 'Cache.matchAll with new Request');
 
@@ -107,7 +109,6 @@ prepopulated_cache_test(vary_entries, function(cache, entries) {
           assert_response_array_equivalent(
             result,
             [
-              entries.vary_wildcard.response,
               entries.vary_cookie_absent.response
             ],
             'Cache.matchAll should exclude matches if a vary header is ' +
@@ -124,7 +125,6 @@ prepopulated_cache_test(vary_entries, function(cache, entries) {
           assert_response_array_equivalent(
             result,
             [
-              entries.vary_wildcard.response
             ],
             'Cache.matchAll should exclude matches if a vary header is ' +
             'missing in the cached request, but is present in the query ' +
@@ -154,8 +154,7 @@ prepopulated_cache_test(vary_entries, function(cache, entries) {
             [
               entries.vary_cookie_is_cookie.response,
               entries.vary_cookie_is_good.response,
-              entries.vary_cookie_absent.response,
-              entries.vary_wildcard.response
+              entries.vary_cookie_absent.response
             ],
             'Cache.matchAll should honor "ignoreVary" parameter.');
         });

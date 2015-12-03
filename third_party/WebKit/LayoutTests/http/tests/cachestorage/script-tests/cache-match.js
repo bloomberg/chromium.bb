@@ -16,7 +16,7 @@ prepopulated_cache_test(simple_entries, function(cache, entries) {
     return cache.match(entries.a.request.url)
       .then(function(result) {
           assert_response_equals(result, entries.a.response,
-                                     'Cache.match should match by URL.');
+                                 'Cache.match should match by URL.');
         });
   }, 'Cache.match with URL');
 
@@ -24,7 +24,7 @@ prepopulated_cache_test(simple_entries, function(cache, entries) {
     return cache.match(entries.a.request)
       .then(function(result) {
           assert_response_equals(result, entries.a.response,
-                                     'Cache.match should match by Request.');
+                                 'Cache.match should match by Request.');
         });
   }, 'Cache.match with Request');
 
@@ -32,7 +32,7 @@ prepopulated_cache_test(simple_entries, function(cache, entries) {
     return cache.match(new Request(entries.a.request.url))
       .then(function(result) {
           assert_response_equals(result, entries.a.response,
-                                     'Cache.match should match by Request.');
+                                 'Cache.match should match by Request.');
         });
   }, 'Cache.match with new Request');
 
@@ -73,7 +73,7 @@ prepopulated_cache_test(simple_entries, function(cache, entries) {
     return cache.match(entries.cat.request.url + '#mouse')
       .then(function(result) {
           assert_response_equals(result, entries.cat.response,
-                                     'Cache.match should ignore URL fragment.');
+                                 'Cache.match should ignore URL fragment.');
         });
   }, 'Cache.match with URL containing fragment');
 
@@ -102,7 +102,6 @@ prepopulated_cache_test(vary_entries, function(cache, entries) {
           assert_response_in_array(
             result,
             [
-              entries.vary_wildcard.response,
               entries.vary_cookie_absent.response
             ],
             'Cache.match should honor "Vary" header.');
@@ -175,7 +174,7 @@ prepopulated_cache_test(simple_entries, function(cache, entries) {
       .then(function(result) {
           assert_equals(result, undefined,
                         'Cache.match should not find a match');
-      });
+        });
   }, 'Cache.match with POST Request');
 
 prepopulated_cache_test(simple_entries, function(cache, entries) {

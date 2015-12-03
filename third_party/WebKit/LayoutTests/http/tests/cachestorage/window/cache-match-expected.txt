@@ -10,7 +10,7 @@ PASS Cache.match with ignoreSearch option (request with search parameter)
 PASS Cache.match with URL containing fragment 
 PASS Cache.match with string fragment "http" as query 
 PASS Cache.match with URL containing credentials 
-FAIL Cache.match with responses containing "Vary" header assert_true: Cache.match should honor "Vary" header. expected true got false
+PASS Cache.match with responses containing "Vary" header 
 PASS Cache.match with Request and Response objects with different URLs 
 PASS Cache.match invoked multiple times for the same Request/Response 
 FAIL Cache.match with POST Request assert_equals: Cache.match should not find a match expected (undefined) undefined but got (object) object "[object Response]"
