@@ -26,6 +26,7 @@
 #include "core/css/CSSColorValue.h"
 #include "core/css/CSSGradientValue.h"
 #include "core/css/CSSGridTemplateAreasValue.h"
+#include "core/css/CSSImageValue.h"
 #include "core/css/CSSPropertySourceData.h"
 #include "core/css/parser/CSSParserTokenRange.h"
 #include "platform/Length.h"
@@ -154,6 +155,8 @@ private:
 
     bool consumeColumns(bool important);
 
+    PassRefPtrWillBeRawPtr<CSSValue> consumeCursor(CSSParserTokenRange&);
+
     PassRefPtrWillBeRawPtr<CSSValue> parseGridPosition();
     bool parseIntegerOrCustomIdentFromGridPosition(RefPtrWillBeRawPtr<CSSPrimitiveValue>& numericValue, RefPtrWillBeRawPtr<CSSCustomIdentValue>& gridLineName);
     bool parseGridItemPositionShorthand(CSSPropertyID, bool important);
@@ -227,6 +230,7 @@ private:
     bool parseCrossfade(CSSParserValueList*, RefPtrWillBeRawPtr<CSSValue>&);
 
     PassRefPtrWillBeRawPtr<CSSValue> parseImageSet(CSSParserValueList*);
+    PassRefPtrWillBeRawPtr<CSSValue> consumeImageSet(CSSParserTokenRange&);
 
     PassRefPtrWillBeRawPtr<CSSValueList> parseFilter();
     PassRefPtrWillBeRawPtr<CSSFunctionValue> parseBuiltinFilterArguments(CSSParserValueList*, CSSValueID);
@@ -241,7 +245,13 @@ private:
     PassRefPtrWillBeRawPtr<CSSStringValue> createPrimitiveStringValue(CSSParserValue*);
     PassRefPtrWillBeRawPtr<CSSCustomIdentValue> createPrimitiveCustomIdentValue(CSSParserValue*);
 
-    PassRefPtrWillBeRawPtr<CSSValue> createCSSImageValueWithReferrer(const AtomicString& rawValue, const KURL&);
+    // TODO(rwlbuis): move to CSSPropertyParser.cpp once CSSParserToken conversion is done.
+    inline PassRefPtrWillBeRawPtr<CSSValue> createCSSImageValueWithReferrer(const AtomicString& rawValue, const KURL& url)
+    {
+        RefPtrWillBeRawPtr<CSSValue> imageValue = CSSImageValue::create(rawValue, url);
+        toCSSImageValue(imageValue.get())->setReferrer(m_context.referrer());
+        return imageValue;
+    }
 
     PassRefPtrWillBeRawPtr<CSSBasicShapeInsetValue> parseInsetRoundedCorners(PassRefPtrWillBeRawPtr<CSSBasicShapeInsetValue>, CSSParserValueList*);
 

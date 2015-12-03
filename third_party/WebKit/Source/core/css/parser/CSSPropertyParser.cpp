@@ -7,10 +7,12 @@
 
 #include "core/StylePropertyShorthand.h"
 #include "core/css/CSSCalculationValue.h"
+#include "core/css/CSSCursorImageValue.h"
 #include "core/css/CSSCustomIdentValue.h"
 #include "core/css/CSSFontFaceSrcValue.h"
 #include "core/css/CSSFontFeatureValue.h"
 #include "core/css/CSSFunctionValue.h"
+#include "core/css/CSSImageSetValue.h"
 #include "core/css/CSSPathValue.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/CSSQuadValue.h"
@@ -2139,6 +2141,94 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeBaselineShift(CSSParserT
     return consumeLengthOrPercent(range, SVGAttributeMode, ValueRangeAll, UnitlessQuirk::Forbid);
 }
 
+PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::consumeImageSet(CSSParserTokenRange& range)
+{
+    CSSParserTokenRange rangeCopy = range;
+    CSSParserTokenRange args = consumeFunction(rangeCopy);
+    RefPtrWillBeRawPtr<CSSImageSetValue> imageSet = CSSImageSetValue::create();
+    do {
+        AtomicString urlValue(consumeUrl(args));
+        if (urlValue.isNull())
+            return nullptr;
+
+        RefPtrWillBeRawPtr<CSSValue> image = createCSSImageValueWithReferrer(urlValue, completeURL(urlValue));
+        imageSet->append(image);
+
+        const CSSParserToken& token = args.consumeIncludingWhitespace();
+        if (token.type() != DimensionToken)
+            return nullptr;
+        if (String(token.value()) != "x")
+            return nullptr;
+        ASSERT(token.unitType() == CSSPrimitiveValue::UnitType::Unknown);
+        double imageScaleFactor = token.numericValue();
+        if (imageScaleFactor <= 0)
+            return nullptr;
+        imageSet->append(cssValuePool().createValue(imageScaleFactor, CSSPrimitiveValue::UnitType::Number));
+    } while (consumeCommaIncludingWhitespace(args));
+    if (!args.atEnd())
+        return nullptr;
+    range = rangeCopy;
+    return imageSet.release();
+}
+
+PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::consumeCursor(CSSParserTokenRange& range)
+{
+    RefPtrWillBeRawPtr<CSSValueList> list = nullptr;
+    while (!range.atEnd()) {
+        RefPtrWillBeRawPtr<CSSValue> image = nullptr;
+        AtomicString uri(consumeUrl(range));
+        if (!uri.isNull()) {
+            image = createCSSImageValueWithReferrer(uri, completeURL(uri));
+        } else if (range.peek().type() == FunctionToken && range.peek().functionId() == CSSValueWebkitImageSet) {
+            image = consumeImageSet(range);
+            if (!image)
+                return nullptr;
+        } else {
+            break;
+        }
+
+        double num;
+        IntPoint hotSpot(-1, -1);
+        bool hotSpotSpecified = false;
+        if (consumeNumberRaw(range, num)) {
+            hotSpot.setX(int(num));
+            if (!consumeNumberRaw(range, num))
+                return nullptr;
+            hotSpot.setY(int(num));
+            hotSpotSpecified = true;
+        }
+
+        if (!list)
+            list = CSSValueList::createCommaSeparated();
+
+        list->append(CSSCursorImageValue::create(image, hotSpotSpecified, hotSpot));
+        if (!consumeCommaIncludingWhitespace(range))
+            return nullptr;
+    }
+
+    CSSValueID id = range.peek().id();
+    if (!range.atEnd() && m_context.useCounter()) {
+        if (id == CSSValueWebkitZoomIn)
+            m_context.useCounter()->count(UseCounter::PrefixedCursorZoomIn);
+        else if (id == CSSValueWebkitZoomOut)
+            m_context.useCounter()->count(UseCounter::PrefixedCursorZoomOut);
+    }
+    RefPtrWillBeRawPtr<CSSValue> cursorType;
+    if (id == CSSValueHand) {
+        if (inQuirksMode()) // Non-standard behavior
+            cursorType = cssValuePool().createIdentifierValue(CSSValuePointer);
+        range.consumeIncludingWhitespace();
+    } else if ((id >= CSSValueAuto && id <= CSSValueWebkitZoomOut) || id == CSSValueCopy || id == CSSValueNone) {
+        cursorType = consumeIdent(range);
+    }
+
+    if (!list)
+        return cursorType.release();
+    if (cursorType)
+        list->append(cursorType.release());
+    return list.release();
+}
+
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSPropertyID unresolvedProperty)
 {
     CSSPropertyID property = resolveCSSPropertyID(unresolvedProperty);
@@ -2353,6 +2443,8 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
     case CSSPropertyRx:
     case CSSPropertyRy:
         return consumeLengthOrPercent(m_range, SVGAttributeMode, ValueRangeAll, UnitlessQuirk::Forbid);
+    case CSSPropertyCursor:
+        return consumeCursor(m_range);
     default:
         return nullptr;
     }
