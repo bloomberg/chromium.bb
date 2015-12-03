@@ -310,6 +310,65 @@ TEST_P(GLCompressedCopyTextureCHROMIUMTest, InternalFormatNotSupported) {
   EXPECT_TRUE(GL_INVALID_OPERATION == glGetError());
 }
 
+TEST_P(GLCompressedCopyTextureCHROMIUMTest, InvalidTextureIds) {
+  if (!GLTestHelper::HasExtension("GL_EXT_texture_compression_dxt1")) {
+    LOG(INFO)
+        << "GL_EXT_texture_compression_dxt1 not supported. Skipping test...";
+    return;
+  }
+
+  CopyType copy_type = GetParam();
+
+  glBindTexture(GL_TEXTURE_2D, textures_[0]);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glCompressedTexImage2D(GL_TEXTURE_2D, 0, GL_COMPRESSED_RGB_S3TC_DXT1_EXT, 4,
+                         4, 0, sizeof(kCompressedImageDXT1),
+                         kCompressedImageDXT1);
+  EXPECT_TRUE(glGetError() == GL_NO_ERROR);
+
+  glBindTexture(GL_TEXTURE_2D, textures_[1]);
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  if (copy_type == TexImage) {
+    glCompressedCopyTextureCHROMIUM(GL_TEXTURE_2D, textures_[0], 99993);
+    EXPECT_TRUE(glGetError() == GL_INVALID_VALUE);
+
+    glCompressedCopyTextureCHROMIUM(GL_TEXTURE_2D, 99994, textures_[1]);
+    EXPECT_TRUE(glGetError() == GL_INVALID_VALUE);
+
+    glCompressedCopyTextureCHROMIUM(GL_TEXTURE_2D, 99995, 99996);
+    EXPECT_TRUE(glGetError() == GL_INVALID_VALUE);
+
+    glCompressedCopyTextureCHROMIUM(GL_TEXTURE_2D, textures_[0], textures_[1]);
+    EXPECT_TRUE(glGetError() == GL_NO_ERROR);
+  } else {
+    glCompressedTexImage2D(GL_TEXTURE_2D, 0, GL_COMPRESSED_RGB_S3TC_DXT1_EXT, 4,
+                           4, 0, sizeof(kInvalidCompressedImage),
+                           kInvalidCompressedImage);
+
+    glCompressedCopySubTextureCHROMIUM(GL_TEXTURE_2D, textures_[0], 99993, 0, 0,
+                                       0, 0, 4, 4);
+    EXPECT_TRUE(glGetError() == GL_INVALID_VALUE);
+
+    glCompressedCopySubTextureCHROMIUM(GL_TEXTURE_2D, 99994, textures_[1], 0, 0,
+                                       0, 0, 4, 4);
+    EXPECT_TRUE(glGetError() == GL_INVALID_VALUE);
+
+    glCompressedCopySubTextureCHROMIUM(GL_TEXTURE_2D, 99995, 99996, 0, 0, 0, 0,
+                                       4, 4);
+    EXPECT_TRUE(glGetError() == GL_INVALID_VALUE);
+
+    glCompressedCopySubTextureCHROMIUM(GL_TEXTURE_2D, textures_[0],
+                                       textures_[1], 0, 0, 0, 0, 4, 4);
+    EXPECT_TRUE(glGetError() == GL_NO_ERROR);
+  }
+}
+
 // Validate that some basic GL state is not touched upon execution of
 // the extension.
 TEST_P(GLCompressedCopyTextureCHROMIUMTest, BasicStatePreservation) {
