@@ -357,19 +357,19 @@ public class SingleWebsitePreferences extends PreferenceFragment
     }
 
     private boolean showWarningFor(int type) {
-        switch (type) {
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION:
-                if (mSite.getGeolocationPermission() == null) return false;
-                break;
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
-                if (mSite.getCameraPermission() == null) return false;
-                break;
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
-                if (mSite.getMicrophonePermission() == null) return false;
-                break;
-            default:
-                return false;
+        ContentSetting setting = null;
+        if (type == ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION) {
+            setting = mSite.getGeolocationPermission();
+        } else if (type == ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA) {
+            setting = mSite.getCameraPermission();
+        } else if (type == ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC) {
+            setting = mSite.getMicrophonePermission();
         }
+
+        if (setting == null) {
+            return false;
+        }
+
         SiteSettingsCategory category = SiteSettingsCategory.fromContentSettingsType(type);
         return category.showPermissionBlockedMessage(getActivity());
     }
