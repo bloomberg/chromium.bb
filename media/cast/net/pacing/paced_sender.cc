@@ -31,10 +31,12 @@ static const size_t kRidiculousNumberOfPackets =
 DedupInfo::DedupInfo() : last_byte_acked_for_audio(0) {}
 
 // static
-PacketKey PacedPacketSender::MakePacketKey(const base::TimeTicks& ticks,
+PacketKey PacedPacketSender::MakePacketKey(PacketKey::PacketType packet_type,
+                                           uint32 frame_id,
                                            uint32 ssrc,
                                            uint16 packet_id) {
-  return std::make_pair(ticks, std::make_pair(ssrc, packet_id));
+  PacketKey key{packet_type, frame_id, ssrc, packet_id};
+  return key;
 }
 
 PacedSender::PacketSendRecord::PacketSendRecord()
@@ -125,7 +127,7 @@ bool PacedSender::ShouldResend(const PacketKey& packet_key,
   // packet Y sent just before X. Reject retransmission of X if ACK for
   // Y has not been received.
   // Only do this for video packets.
-  if (packet_key.second.first == video_ssrc_) {
+  if (packet_key.ssrc == video_ssrc_) {
     if (dedup_info.last_byte_acked_for_audio &&
         it->second.last_byte_sent_for_audio &&
         dedup_info.last_byte_acked_for_audio <
@@ -169,9 +171,9 @@ bool PacedSender::ResendPackets(const SendPacketVector& packets,
 
 bool PacedSender::SendRtcpPacket(uint32 ssrc, PacketRef packet) {
   if (state_ == State_TransportBlocked) {
-    priority_packet_list_[
-        PacedPacketSender::MakePacketKey(base::TimeTicks(), ssrc, 0)] =
-        make_pair(PacketType_RTCP, packet);
+    PacketKey key =
+        PacedPacketSender::MakePacketKey(PacketKey::RTCP, 0, ssrc, 0);
+    priority_packet_list_[key] = make_pair(PacketType_RTCP, packet);
   } else {
     // We pass the RTCP packets straight through.
     if (!transport_->SendPacket(
@@ -204,7 +206,7 @@ PacketRef PacedSender::PopNextPacket(PacketType* packet_type,
 
 bool PacedSender::IsHighPriority(const PacketKey& packet_key) const {
   return std::find(priority_ssrcs_.begin(), priority_ssrcs_.end(),
-                   packet_key.second.first) != priority_ssrcs_.end();
+                   packet_key.ssrc) != priority_ssrcs_.end();
 }
 
 bool PacedSender::empty() const {
@@ -298,7 +300,7 @@ void PacedSender::SendStoredPackets() {
     send_record.last_byte_sent_for_audio = GetLastByteSentForSsrc(audio_ssrc_);
     send_history_[packet_key] = send_record;
     send_history_buffer_[packet_key] = send_record;
-    last_byte_sent_[packet_key.second.first] = send_record.last_byte_sent;
+    last_byte_sent_[packet_key.ssrc] = send_record.last_byte_sent;
 
     if (socket_blocked) {
       state_ = State_TransportBlocked;

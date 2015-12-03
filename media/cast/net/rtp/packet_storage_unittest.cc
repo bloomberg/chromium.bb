@@ -24,7 +24,6 @@ static const size_t kStoredFrames = 10;
 static void StoreFrames(size_t number_of_frames,
                         uint32 first_frame_id,
                         PacketStorage* storage) {
-  const base::TimeTicks kTicks;
   const int kSsrc = 1;
   for (size_t i = 0; i < number_of_frames; ++i) {
     SendPacketVector packets;
@@ -32,10 +31,10 @@ static void StoreFrames(size_t number_of_frames,
     const size_t kNumberOfPackets = i + 1;
     for (size_t j = 0; j < kNumberOfPackets; ++j) {
       Packet test_packet(1, 0);
-      packets.push_back(
-          std::make_pair(PacedPacketSender::MakePacketKey(
-                             kTicks, kSsrc, base::checked_cast<uint16>(j)),
-                         new base::RefCountedData<Packet>(test_packet)));
+      packets.push_back(std::make_pair(
+          PacedPacketSender::MakePacketKey(PacketKey::RTP, i, kSsrc,
+                                           base::checked_cast<uint16>(j)),
+          new base::RefCountedData<Packet>(test_packet)));
     }
     storage->StoreFrame(first_frame_id, packets);
     ++first_frame_id;

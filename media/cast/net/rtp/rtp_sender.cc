@@ -77,7 +77,7 @@ void RtpSender::ResendPackets(
     for (SendPacketVector::const_iterator it = stored_packets->begin();
          it != stored_packets->end(); ++it) {
       const PacketKey& packet_key = it->first;
-      const uint16 packet_id = packet_key.second.second;
+      const uint16 packet_id = packet_key.packet_id;
 
       // Should we resend the packet?
       bool resend = resend_all;

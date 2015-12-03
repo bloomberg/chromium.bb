@@ -6,6 +6,7 @@
 #define MEDIA_CAST_NET_PACING_PACED_SENDER_H_
 
 #include <map>
+#include <tuple>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -26,15 +27,26 @@ namespace cast {
 static const size_t kTargetBurstSize = 10;
 static const size_t kMaxBurstSize = 20;
 
-// Use std::pair for free comparison operators.
-// { capture_time, ssrc, packet_id }
 // The PacketKey is designed to meet two criteria:
 // 1. When we re-send the same packet again, we can use the packet key
 //    to identify it so that we can de-duplicate packets in the queue.
 // 2. The sort order of the PacketKey determines the order that packets
-//    are sent out. Using the capture_time as the first member basically
-//    means that older packets are sent first.
-typedef std::pair<base::TimeTicks, std::pair<uint32, uint16> > PacketKey;
+//    are sent out.
+// 3. The PacketKey is unique for each RTP (frame) packet.
+struct PacketKey {
+  enum PacketType { RTCP = 0, RTP = 1 };
+
+  PacketType packet_type;
+  uint32 frame_id;
+  uint32 ssrc;
+  uint16 packet_id;
+
+  bool operator<(const PacketKey& key) const {
+    return std::tie(packet_type, frame_id, ssrc, packet_id) <
+           std::tie(key.packet_type, key.frame_id, key.ssrc, key.packet_id);
+  }
+};
+
 typedef std::vector<std::pair<PacketKey, PacketRef> > SendPacketVector;
 
 // Information used to deduplicate retransmission packets.
@@ -68,7 +80,8 @@ class PacedPacketSender {
 
   virtual ~PacedPacketSender() {}
 
-  static PacketKey MakePacketKey(const base::TimeTicks& ticks,
+  static PacketKey MakePacketKey(PacketKey::PacketType,
+                                 uint32 frame_id,
                                  uint32 ssrc,
                                  uint16 packet_id);
 };

@@ -57,7 +57,7 @@ class TestPacketSender : public PacketSender {
 
 class PacedSenderTest : public ::testing::Test {
  protected:
-  PacedSenderTest() {
+  PacedSenderTest() : frame_id_(0) {
     testing_clock_.Advance(
         base::TimeDelta::FromMilliseconds(kStartMillisecond));
     task_runner_ = new test::FakeSingleThreadTaskRunner(&testing_clock_);
@@ -77,14 +77,10 @@ class PacedSenderTest : public ::testing::Test {
                                           bool audio) {
     DCHECK_GE(packet_size, 12u);
     SendPacketVector packets;
-    base::TimeTicks frame_tick = testing_clock_.NowTicks();
-    // Advance the clock so that we don't get the same frame_tick
-    // next time this function is called.
-    testing_clock_.Advance(base::TimeDelta::FromMilliseconds(1));
     for (int i = 0; i < num_of_packets_in_frame; ++i) {
       PacketKey key = PacedPacketSender::MakePacketKey(
-          frame_tick,
-          audio ? kAudioSsrc : kVideoSsrc, // ssrc
+          PacketKey::RTP, frame_id_,
+          audio ? kAudioSsrc : kVideoSsrc,  // ssrc
           i);
 
       PacketRef packet(new base::RefCountedData<Packet>);
@@ -102,6 +98,9 @@ class PacedSenderTest : public ::testing::Test {
       CHECK(success);
       packets.push_back(std::make_pair(key, packet));
     }
+    // Increase |frame_id_| so that we don't get the same key next time this
+    // function is called.
+    ++frame_id_;
     return packets;
   }
 
@@ -124,6 +123,7 @@ class PacedSenderTest : public ::testing::Test {
   TestPacketSender mock_transport_;
   scoped_refptr<test::FakeSingleThreadTaskRunner> task_runner_;
   scoped_ptr<PacedSender> paced_sender_;
+  uint32 frame_id_;
 
   DISALLOW_COPY_AND_ASSIGN(PacedSenderTest);
 };

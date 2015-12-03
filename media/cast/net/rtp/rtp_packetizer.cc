@@ -107,10 +107,8 @@ void RtpPacketizer::SendFrameAsPackets(const EncodedFrame& frame) {
                         data_iter + payload_length);
     data_iter += payload_length;
 
-    const PacketKey key =
-        PacedPacketSender::MakePacketKey(frame.reference_time,
-                                         config_.ssrc,
-                                         packet_id_++);
+    const PacketKey key = PacedPacketSender::MakePacketKey(
+        PacketKey::RTP, frame.frame_id, config_.ssrc, packet_id_++);
     packets.push_back(make_pair(key, packet));
 
     // Update stats.
