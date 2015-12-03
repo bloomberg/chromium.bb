@@ -52,6 +52,7 @@ class NET_EXPORT_PRIVATE NetworkChangeNotifierAndroid
   void GetCurrentMaxBandwidthAndConnectionType(
       double* max_bandwidth_mbps,
       ConnectionType* connection_type) const override;
+  bool AreNetworkHandlesCurrentlySupported() const override;
   void GetCurrentConnectedNetworks(NetworkList* network_list) const override;
   ConnectionType GetCurrentNetworkConnectionType(
       NetworkHandle network) const override;
@@ -78,6 +79,9 @@ class NET_EXPORT_PRIVATE NetworkChangeNotifierAndroid
 
   class DnsConfigServiceThread;
 
+  // Enable NetworkHandles support for tests.
+  void ForceNetworkHandlesSupportedForTesting();
+
   NetworkChangeNotifierAndroid(NetworkChangeNotifierDelegateAndroid* delegate,
                                const DnsConfig* dns_config_for_testing);
 
@@ -85,6 +89,7 @@ class NET_EXPORT_PRIVATE NetworkChangeNotifierAndroid
 
   NetworkChangeNotifierDelegateAndroid* const delegate_;
   scoped_ptr<DnsConfigServiceThread> dns_config_service_thread_;
+  bool force_network_handles_supported_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkChangeNotifierAndroid);
 };

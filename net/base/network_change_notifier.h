@@ -291,16 +291,24 @@ class NET_EXPORT NetworkChangeNotifier {
   // TODO(jkarlin): Rename to GetMaxBandwidthMbpsForConnectionSubtype.
   static double GetMaxBandwidthForConnectionSubtype(ConnectionSubtype subtype);
 
+  // Returns true if the platform supports use of APIs based on NetworkHandles.
+  // Public methods that use NetworkHandles are GetNetworkConnectionType(),
+  // GetNetworkConnectionType(), GetDefaultNetwork(), AddNetworkObserver(),
+  // RemoveNetworkObserver(), and all public NetworkObserver methods.
+  static bool AreNetworkHandlesSupported();
+
   // Sets |network_list| to a list of all networks that are currently connected.
   // Only implemented for Android (Lollipop and newer), leaves |network_list|
-  // empty when unimplemented.
+  // empty when unimplemented. Requires NetworkHandles support, see
+  // AreNetworkHandlesSupported().
   static void GetConnectedNetworks(NetworkList* network_list);
 
   // Returns the type of connection |network| uses. Note that this may vary
   // slightly over time (e.g. CONNECTION_2G to CONNECTION_3G). If |network|
   // is no longer connected, it will return CONNECTION_UNKNOWN.
   // Only implemented for Android (Lollipop and newer), returns
-  // CONNECTION_UNKNOWN when unimplemented.
+  // CONNECTION_UNKNOWN when unimplemented. Requires NetworkHandles support,
+  // see AreNetworkHandlesSupported().
   static ConnectionType GetNetworkConnectionType(NetworkHandle network);
 
   // Returns the device's current default network connection. This is the
@@ -310,6 +318,7 @@ class NET_EXPORT NetworkChangeNotifier {
   // there is no default connected network.
   // Only implemented for Android (Lollipop and newer), returns
   // |kInvalidNetworkHandle| when unimplemented.
+  // Requires NetworkHandles support, see AreNetworkHandlesSupported().
   static NetworkHandle GetDefaultNetwork();
 
   // Retrieve the last read DnsConfig. This could be expensive if the system has
@@ -481,6 +490,7 @@ class NET_EXPORT NetworkChangeNotifier {
   virtual void GetCurrentMaxBandwidthAndConnectionType(
       double* max_bandwidth_mbps,
       ConnectionType* connection_type) const;
+  virtual bool AreNetworkHandlesCurrentlySupported() const;
   virtual void GetCurrentConnectedNetworks(NetworkList* network_list) const;
   virtual ConnectionType GetCurrentNetworkConnectionType(
       NetworkHandle network) const;

@@ -317,6 +317,10 @@ class NetworkChangeNotifierAndroidTest
         &other_connection_type_observer_);
   }
 
+  void ForceNetworkHandlesSupportedForTesting() {
+    notifier_->ForceNetworkHandlesSupportedForTesting();
+  }
+
   NetworkChangeNotifierObserver connection_type_observer_;
   NetworkChangeNotifierObserver other_connection_type_observer_;
   NetworkChangeNotifier::DisableForTest disable_for_test_;
@@ -387,6 +391,8 @@ TEST_F(NetworkChangeNotifierAndroidTest, InitialSignal) {
 }
 
 TEST_F(NetworkChangeNotifierAndroidTest, NetworkCallbacks) {
+  ForceNetworkHandlesSupportedForTesting();
+
   TestNetworkObserver network_observer;
   NetworkChangeNotifier::AddNetworkObserver(&network_observer);
 

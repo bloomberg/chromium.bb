@@ -59,6 +59,7 @@
 
 #include "net/android/network_change_notifier_android.h"
 
+#include "base/android/build_info.h"
 #include "base/threading/thread.h"
 #include "net/base/address_tracker_linux.h"
 #include "net/dns/dns_config_service_posix.h"
@@ -162,6 +163,18 @@ void NetworkChangeNotifierAndroid::GetCurrentMaxBandwidthAndConnectionType(
                                                      connection_type);
 }
 
+void NetworkChangeNotifierAndroid::ForceNetworkHandlesSupportedForTesting() {
+  force_network_handles_supported_for_testing_ = true;
+}
+
+bool NetworkChangeNotifierAndroid::AreNetworkHandlesCurrentlySupported() const {
+  // Notifications for API using NetworkHandles and querying using
+  // NetworkHandles only implemented for Android versions >= L.
+  return force_network_handles_supported_for_testing_ ||
+         (base::android::BuildInfo::GetInstance()->sdk_int() >=
+          base::android::SDK_VERSION_LOLLIPOP);
+}
+
 void NetworkChangeNotifierAndroid::GetCurrentConnectedNetworks(
     NetworkChangeNotifier::NetworkList* networks) const {
   delegate_->GetCurrentlyConnectedNetworks(networks);
@@ -222,7 +235,8 @@ NetworkChangeNotifierAndroid::NetworkChangeNotifierAndroid(
     : NetworkChangeNotifier(NetworkChangeCalculatorParamsAndroid()),
       delegate_(delegate),
       dns_config_service_thread_(
-          new DnsConfigServiceThread(dns_config_for_testing)) {
+          new DnsConfigServiceThread(dns_config_for_testing)),
+      force_network_handles_supported_for_testing_(false) {
   CHECK_EQ(NetId::INVALID, NetworkChangeNotifier::kInvalidNetworkHandle)
       << "kInvalidNetworkHandle doesn't match NetId::INVALID";
   delegate_->AddObserver(this);

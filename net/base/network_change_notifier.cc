@@ -634,7 +634,16 @@ double NetworkChangeNotifier::GetMaxBandwidthForConnectionSubtype(
 }
 
 // static
+bool NetworkChangeNotifier::AreNetworkHandlesSupported() {
+  if (g_network_change_notifier) {
+    return g_network_change_notifier->AreNetworkHandlesCurrentlySupported();
+  }
+  return false;
+}
+
+// static
 void NetworkChangeNotifier::GetConnectedNetworks(NetworkList* network_list) {
+  DCHECK(AreNetworkHandlesSupported());
   if (g_network_change_notifier) {
     g_network_change_notifier->GetCurrentConnectedNetworks(network_list);
   } else {
@@ -645,6 +654,7 @@ void NetworkChangeNotifier::GetConnectedNetworks(NetworkList* network_list) {
 // static
 NetworkChangeNotifier::ConnectionType
 NetworkChangeNotifier::GetNetworkConnectionType(NetworkHandle network) {
+  DCHECK(AreNetworkHandlesSupported());
   return g_network_change_notifier
              ? g_network_change_notifier->GetCurrentNetworkConnectionType(
                    network)
@@ -654,6 +664,7 @@ NetworkChangeNotifier::GetNetworkConnectionType(NetworkHandle network) {
 // static
 NetworkChangeNotifier::NetworkHandle
 NetworkChangeNotifier::GetDefaultNetwork() {
+  DCHECK(AreNetworkHandlesSupported());
   return g_network_change_notifier
              ? g_network_change_notifier->GetCurrentDefaultNetwork()
              : kInvalidNetworkHandle;
@@ -838,6 +849,7 @@ void NetworkChangeNotifier::AddMaxBandwidthObserver(
 }
 
 void NetworkChangeNotifier::AddNetworkObserver(NetworkObserver* observer) {
+  DCHECK(AreNetworkHandlesSupported());
   if (g_network_change_notifier) {
     g_network_change_notifier->network_observer_list_->AddObserver(observer);
   }
@@ -883,6 +895,7 @@ void NetworkChangeNotifier::RemoveMaxBandwidthObserver(
 }
 
 void NetworkChangeNotifier::RemoveNetworkObserver(NetworkObserver* observer) {
+  DCHECK(AreNetworkHandlesSupported());
   if (g_network_change_notifier) {
     g_network_change_notifier->network_observer_list_->RemoveObserver(observer);
   }
@@ -976,6 +989,10 @@ void NetworkChangeNotifier::GetCurrentMaxBandwidthAndConnectionType(
       *connection_type == CONNECTION_NONE
           ? GetMaxBandwidthForConnectionSubtype(SUBTYPE_NONE)
           : GetMaxBandwidthForConnectionSubtype(SUBTYPE_UNKNOWN);
+}
+
+bool NetworkChangeNotifier::AreNetworkHandlesCurrentlySupported() const {
+  return false;
 }
 
 void NetworkChangeNotifier::GetCurrentConnectedNetworks(
