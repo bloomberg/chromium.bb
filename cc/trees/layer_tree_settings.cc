@@ -58,7 +58,6 @@ LayerTreeSettings::LayerTreeSettings()
       ignore_root_layer_flings(false),
       scheduled_raster_task_limit(32),
       use_occlusion_for_tile_prioritization(false),
-      record_full_layer(false),
       verify_property_trees(false),
       use_property_trees(false),
       image_decode_tasks_enabled(false),

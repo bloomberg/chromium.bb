@@ -3320,12 +3320,6 @@ void RenderViewImpl::DidCompletePageScaleAnimation() {
   FocusChangeComplete();
 }
 
-#if defined(OS_ANDROID)
-bool RenderViewImpl::DoesRecordFullLayer() const {
-  return webkit_preferences_.record_whole_document;
-}
-#endif
-
 void RenderViewImpl::SetScreenMetricsEmulationParameters(
     bool enabled,
     const blink::WebDeviceEmulationParams& params) {

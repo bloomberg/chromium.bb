@@ -493,9 +493,6 @@ class CONTENT_EXPORT RenderViewImpl
   bool CanComposeInline() override;
   void DidCommitCompositorFrame() override;
   void DidCompletePageScaleAnimation() override;
-#if defined(OS_ANDROID)
-  bool DoesRecordFullLayer() const override;
-#endif
 
  protected:
   RenderViewImpl(CompositorDependencies* compositor_deps,

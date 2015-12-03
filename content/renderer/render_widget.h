@@ -338,10 +338,6 @@ class CONTENT_EXPORT RenderWidget
   // handle composition range and composition character bounds.
   void UpdateCompositionInfo(bool should_update_range);
 
-#if defined(OS_ANDROID)
-  virtual bool DoesRecordFullLayer() const;
-#endif
-
   bool host_closing() const { return host_closing_; }
 
  protected:

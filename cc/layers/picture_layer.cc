@@ -139,13 +139,6 @@ bool PictureLayer::Update() {
   pending_invalidation_.Swap(&recording_invalidation_);
   pending_invalidation_.Clear();
 
-  // TODO(chrishtr): implement this for synchronized paint.
-  if (layer_tree_host()->settings().record_full_layer) {
-    // Workaround for http://crbug.com/235910 - to retain backwards compat
-    // the full page content must always be provided in the picture layer.
-    update_rect = gfx::Rect(layer_size);
-  }
-
   // UpdateAndExpandInvalidation will give us an invalidation that covers
   // anything not explicitly recorded in this frame. We give this region
   // to the impl side so that it drops tiles that may not have a recording

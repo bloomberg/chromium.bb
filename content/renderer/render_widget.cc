@@ -2167,12 +2167,6 @@ bool RenderWidget::ShouldUpdateCompositionInfo(
   return false;
 }
 
-#if defined(OS_ANDROID)
-bool RenderWidget::DoesRecordFullLayer() const {
-  return false;
-}
-#endif
-
 bool RenderWidget::CanComposeInline() {
   return true;
 }

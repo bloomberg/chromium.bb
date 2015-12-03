@@ -58,7 +58,6 @@ void PopulateCommonLayerTreeSettings(cc::LayerTreeSettings* settings) {
   if (base::SysInfo::IsLowEndDevice())
     settings->gpu_rasterization_enabled = false;
   settings->using_synchronous_renderer_compositor = false;
-  settings->record_full_layer = false;
   settings->scrollbar_animator = cc::LayerTreeSettings::LINEAR_FADE;
   settings->scrollbar_fade_delay_ms = 300;
   settings->scrollbar_fade_resize_delay_ms = 2000;

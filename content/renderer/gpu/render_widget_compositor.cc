@@ -389,7 +389,6 @@ void RenderWidgetCompositor::Initialize() {
   if (base::SysInfo::IsLowEndDevice())
     settings.gpu_rasterization_enabled = false;
   settings.using_synchronous_renderer_compositor = using_synchronous_compositor;
-  settings.record_full_layer = widget_->DoesRecordFullLayer();
   if (using_synchronous_compositor) {
     // Android WebView uses system scrollbars, so make ours invisible.
     settings.scrollbar_animator = cc::LayerTreeSettings::NO_ANIMATOR;
