@@ -11,6 +11,7 @@ import glob
 import logging
 import os
 import posixpath
+import shutil
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir))
@@ -109,7 +110,9 @@ def Install(device, apk, split_globs=None, native_libs=None, dex_files=None,
       with build_utils.TempDir() as temp_dir:
         device_lib_dir = posixpath.join(device_incremental_dir, 'lib')
         for path in native_libs:
-          os.symlink(path, os.path.join(temp_dir, os.path.basename(path)))
+          # Note: Can't use symlinks as they don't work when
+          # "adb push parent_dir" is used (like we do here).
+          shutil.copy(path, os.path.join(temp_dir, os.path.basename(path)))
         device.PushChangedFiles([(temp_dir, device_lib_dir)],
                                 delete_device_stale=True)
       push_native_timer.Stop(log=False)
@@ -123,7 +126,7 @@ def Install(device, apk, split_globs=None, native_libs=None, dex_files=None,
         # Ensure no two files have the same name.
         transformed_names = _TransformDexPaths(dex_files)
         for src_path, dest_name in zip(dex_files, transformed_names):
-          os.symlink(src_path, os.path.join(temp_dir, dest_name))
+          shutil.copy(src_path, os.path.join(temp_dir, dest_name))
         device.PushChangedFiles([(temp_dir, device_dex_dir)],
                                 delete_device_stale=True)
       push_dex_timer.Stop(log=False)
