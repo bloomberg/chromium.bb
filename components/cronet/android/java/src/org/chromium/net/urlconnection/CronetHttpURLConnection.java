@@ -282,6 +282,9 @@ public class CronetHttpURLConnection extends HttpURLConnection {
         if (!getUseCaches()) {
             requestBuilder.disableCache();
         }
+        // Set HTTP method.
+        requestBuilder.setHttpMethod(method);
+
         connected = true;
         mRequest = requestBuilder.build();
         // Start the request.
