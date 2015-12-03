@@ -202,7 +202,8 @@ void RenderWidgetHostViewMus::CopyFromCompositingSurface(
     const gfx::Size& /* dst_size */,
     const ReadbackRequestCallback& callback,
     const SkColorType /* preferred_color_type */) {
-  NOTREACHED();
+  // TODO(fsamuel): Implement read back.
+  NOTIMPLEMENTED();
   callback.Run(SkBitmap(), READBACK_FAILED);
 }
 
