@@ -6,7 +6,7 @@
 import sys
 
 from core import path_util
-sys.path.append(path_util.GetTelemetryDir())
+sys.path.insert(1, path_util.GetTelemetryDir())
 
 from telemetry import benchmark_runner
 
