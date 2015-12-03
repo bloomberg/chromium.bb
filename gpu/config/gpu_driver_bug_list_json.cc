@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "8.35",
+  "version": "8.36",
   "entries": [
     {
       "id": 1,
@@ -1637,6 +1637,27 @@ LONG_STRING_CONST(
       },
       "features": [
         "disable_gl_path_rendering"
+      ]
+    },
+    {
+      "id": 139,
+      "description": "Mesa drivers wrongly report supporting GL_EXT_texture_rg with GLES 2.0 prior version 11.1",
+      "cr_bugs": [545904],
+      "os": {
+        "type": "linux"
+      },
+      "driver_vendor": "Mesa",
+      "driver_version": {
+        "op": "<",
+        "value": "11.1"
+      },
+      "gl_type": "gles",
+      "gl_version": {
+        "op": "<",
+        "value": "3.0"
+      },
+      "disabled_extensions": [
+        "GL_EXT_texture_rg"
       ]
     }
   ]
