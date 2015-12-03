@@ -551,4 +551,4 @@ imported/web-platform-tests/html/rendering/non-replaced-elements/lists/ul-type-u
 
 # crbug.com/561421: Update meta refresh parsing to match the new spec
 imported/web-platform-tests/html/semantics/document-metadata/the-meta-element/pragma-directives/attr-meta-http-equiv-refresh/parsing.html [ Skip ]
-imported/web-platform-tests/html/semantics/document-metadata/the-meta-element/pragma-directives/attr-meta-http-equiv-refresh/support/refresh.sub.html [ Skip ]
+imported/web-platform-tests/html/semantics/document-metadata/the-meta-element/pragma-directives/attr-meta-http-equiv-refresh/support [ Skip ]
