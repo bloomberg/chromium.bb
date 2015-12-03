@@ -5,7 +5,7 @@
 #ifndef UI_AURA_WINDOW_TRACKER_H_
 #define UI_AURA_WINDOW_TRACKER_H_
 
-#include <set>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -15,16 +15,19 @@
 namespace aura {
 
 // This class keeps track of a set of windows. A Window is removed either
-// explicitly by Remove(), or implicitly when the window is destroyed.
+// explicitly by Remove() or Pop(), or implicitly when the window is destroyed.
 class AURA_EXPORT WindowTracker : public WindowObserver {
  public:
-  typedef std::set<Window*> Windows;
+  using WindowList = std::vector<Window*>;
 
   WindowTracker();
+  explicit WindowTracker(const WindowList& windows);
   ~WindowTracker() override;
 
+  bool has_windows() const { return !windows_.empty(); }
+
   // Returns the set of windows being observed.
-  const std::set<Window*>& windows() const { return windows_; }
+  const std::vector<Window*>& windows() const { return windows_; }
 
   // Adds |window| to the set of Windows being tracked.
   void Add(Window* window);
@@ -36,11 +39,14 @@ class AURA_EXPORT WindowTracker : public WindowObserver {
   // deleted.
   bool Contains(Window* window);
 
+  // Removes and returns the window object from the tracking windows.
+  aura::Window* Pop();
+
   // WindowObserver overrides:
   void OnWindowDestroying(Window* window) override;
 
  private:
-  Windows windows_;
+  WindowList windows_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTracker);
 };

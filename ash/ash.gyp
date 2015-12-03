@@ -908,6 +908,7 @@
       'wm/panels/panel_layout_manager_unittest.cc',
       'wm/panels/panel_window_resizer_unittest.cc',
       'wm/resize_shadow_and_cursor_unittest.cc',
+      'wm/root_window_layout_manager_unittest.cc',
       'wm/screen_dimmer_unittest.cc',
       'wm/session_state_animator_impl_unittest.cc',
       'wm/stacking_controller_unittest.cc',

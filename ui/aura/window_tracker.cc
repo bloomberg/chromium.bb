@@ -11,32 +11,46 @@ namespace aura {
 WindowTracker::WindowTracker() {
 }
 
+WindowTracker::WindowTracker(const WindowList& windows) {
+  // |windows| may contain dups, so call Add() instead of insert().
+  for (auto iter = windows.begin(); iter != windows.end(); iter++)
+    Add(*iter);
+}
+
 WindowTracker::~WindowTracker() {
-  for (Windows::iterator i = windows_.begin(); i != windows_.end(); ++i)
-    (*i)->RemoveObserver(this);
+  while (has_windows())
+    Pop()->RemoveObserver(this);
 }
 
 void WindowTracker::Add(Window* window) {
-  if (windows_.count(window))
+  if (Contains(window))
     return;
 
   window->AddObserver(this);
-  windows_.insert(window);
+  windows_.push_back(window);
 }
 
 void WindowTracker::Remove(Window* window) {
-  if (windows_.count(window)) {
-    windows_.erase(window);
+  auto iter = std::find(windows_.begin(), windows_.end(), window);
+  if (iter != windows_.end()) {
+    windows_.erase(iter);
     window->RemoveObserver(this);
   }
 }
 
 bool WindowTracker::Contains(Window* window) {
-  return windows_.count(window) > 0;
+  return std::find(windows_.begin(), windows_.end(), window) != windows_.end();
+}
+
+aura::Window* WindowTracker::Pop() {
+  DCHECK(!windows_.empty());
+  aura::Window* window = *windows_.begin();
+  Remove(window);
+  return window;
 }
 
 void WindowTracker::OnWindowDestroying(Window* window) {
-  DCHECK_GT(windows_.count(window), 0u);
+  DCHECK(Contains(window));
   Remove(window);
 }
 

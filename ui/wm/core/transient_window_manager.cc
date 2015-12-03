@@ -165,15 +165,9 @@ void TransientWindowManager::OnWindowVisibilityChanged(Window* window,
   // visiblity as well.
   // WindowTracker is used because child window
   // could be deleted inside UpdateTransientChildVisibility call.
-  aura::WindowTracker tracker;
-  for (Window* child : transient_children_)
-    tracker.Add(child);
-
-  while (!tracker.windows().empty()) {
-    Window* window = *(tracker.windows().begin());
-    Get(window)->UpdateTransientChildVisibility(visible);
-    tracker.Remove(window);
-  }
+  aura::WindowTracker tracker(transient_children_);
+  while (tracker.has_windows())
+    Get(tracker.Pop())->UpdateTransientChildVisibility(visible);
 
   // Remember the show request in |show_on_parent_visible_| and hide it again
   // if the following conditions are met

@@ -7,6 +7,7 @@
 #include "ash/desktop_background/desktop_background_widget_controller.h"
 #include "ash/root_window_controller.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/window_tracker.h"
 #include "ui/compositor/layer.h"
 #include "ui/views/widget/widget.h"
 
@@ -32,12 +33,13 @@ void RootWindowLayoutManager::OnWindowResized() {
 
   // Resize both our immediate children (the containers-of-containers animated
   // by PowerButtonController) and their children (the actual containers).
-  aura::Window::Windows::const_iterator i;
-  for (i = owner_->children().begin(); i != owner_->children().end(); ++i) {
-    (*i)->SetBounds(fullscreen_bounds);
-    aura::Window::Windows::const_iterator j;
-    for (j = (*i)->children().begin(); j != (*i)->children().end(); ++j)
-      (*j)->SetBounds(fullscreen_bounds);
+  aura::WindowTracker children_tracker(owner_->children());
+  while (children_tracker.has_windows()) {
+    aura::Window* child = children_tracker.Pop();
+    child->SetBounds(fullscreen_bounds);
+    aura::WindowTracker grandchildren_tracker(child->children());
+    while (grandchildren_tracker.has_windows())
+      grandchildren_tracker.Pop()->SetBounds(fullscreen_bounds);
   }
   RootWindowController* root_window_controller =
       GetRootWindowController(owner_);

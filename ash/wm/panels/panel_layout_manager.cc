@@ -545,9 +545,9 @@ void PanelLayoutManager::WillChangeVisibilityState(
     if (restore_windows_on_shelf_visible_) {
       scoped_ptr<aura::WindowTracker> restore_windows(
           restore_windows_on_shelf_visible_.Pass());
-      for (aura::WindowTracker::Windows::const_iterator iter =
-           restore_windows->windows().begin(); iter !=
-           restore_windows->windows().end(); ++iter) {
+      for (aura::Window::Windows::const_iterator iter =
+               restore_windows->windows().begin();
+           iter != restore_windows->windows().end(); ++iter) {
         RestorePanel(*iter);
       }
     }
