@@ -897,6 +897,7 @@ static struct qcms_modular_transform* qcms_modular_transform_create(qcms_profile
 {
 	struct qcms_modular_transform *first_transform = NULL;
 	struct qcms_modular_transform **next_transform = &first_transform;
+	qcms_bool transform_to_pcs_xyz_only = (out == NULL);
 
 	if (in->color_space == RGB_SIGNATURE) {
 		struct qcms_modular_transform* rgb_to_pcs;
@@ -909,7 +910,7 @@ static struct qcms_modular_transform* qcms_modular_transform_create(qcms_profile
 		goto fail;
 	}
 
-	if (in->pcs == LAB_SIGNATURE && out->pcs == XYZ_SIGNATURE) {
+	if (in->pcs == LAB_SIGNATURE && (transform_to_pcs_xyz_only || out->pcs == XYZ_SIGNATURE)) {
 		struct qcms_modular_transform* lab_to_pcs;
 		lab_to_pcs = qcms_modular_transform_alloc();
 		if (!lab_to_pcs) 
@@ -917,6 +918,9 @@ static struct qcms_modular_transform* qcms_modular_transform_create(qcms_profile
 		append_transform(lab_to_pcs, &next_transform);
 		lab_to_pcs->transform_module_fn = qcms_transform_module_LAB_to_XYZ;
 	}
+
+	if (transform_to_pcs_xyz_only)
+		return first_transform;
 
 	// This does not improve accuracy in practice, something is wrong here.
 	//if (in->chromaticAdaption.invalid == false) {
@@ -991,4 +995,32 @@ float* qcms_chain_transform(qcms_profile *in, qcms_profile *out, float *src, flo
 		return lut;
 	}
 	return NULL;
+}
+
+qcms_bool qcms_profile_white_transform(qcms_profile *profile, float XYZ[3])
+{
+	const float inverse_internal_scale = 1.999969482421875f;
+
+	// Set the output profile to NULL to request a color transform to PCS XYZ only.
+	struct qcms_modular_transform *transform_list = qcms_modular_transform_create(profile, NULL);
+
+	// Now calculate how the profile transforms white input color to PCS XYZ space.
+	if (transform_list != NULL) {
+		XYZ[0] = XYZ[1] = XYZ[2] = 1.0f; // white input
+		qcms_modular_transform_data(transform_list, XYZ, XYZ, 1);
+		// qcms_modular_transform_create internally scales input by 1/1.999969482421875f
+		// but no qcms changelog describes why / how that number was choosen. junov@ "it
+		// might be related to the epsilon of the fixed-point type 2*(1-1/(2^16)), but
+		// there is no explanation, which is disconcerting." Meanwhile, undo the internal
+		// scaling so we return a normalized CIEXYZ value viz., where Y is scaled to 1.0.
+		// A properly created color profile should produce Y=~1.0 in PCS XYZ with white
+		// input (the D50 test). If it does not, then the profile is likely bogus.
+		XYZ[0] *= inverse_internal_scale;
+		XYZ[1] *= inverse_internal_scale;
+		XYZ[2] *= inverse_internal_scale;
+		qcms_modular_transform_release(transform_list);
+		return true;
+	}
+
+	return false;
 }
