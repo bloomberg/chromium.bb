@@ -1043,6 +1043,8 @@
       'browser/navigator_connect/service_port_service_impl.h',
       'browser/net/browser_online_state_observer.cc',
       'browser/net/browser_online_state_observer.h',
+      'browser/net/network_errors_listing_ui.cc',
+      'browser/net/network_errors_listing_ui.h',
       'browser/net/quota_policy_cookie_store.cc',
       'browser/net/quota_policy_cookie_store.h',
       'browser/net/view_blob_internals_job_factory.cc',

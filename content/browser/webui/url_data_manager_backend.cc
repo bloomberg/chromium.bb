@@ -18,6 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
@@ -38,10 +39,13 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
+#include "net/log/net_log_util.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_error_job.h"
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_job_factory.h"
+
 #include "url/url_util.h"
 
 namespace content {
@@ -52,7 +56,7 @@ const char kChromeURLContentSecurityPolicyHeaderBase[] =
     "Content-Security-Policy: script-src chrome://resources 'self'";
 
 const char kChromeURLXFrameOptionsHeader[] = "X-Frame-Options: DENY";
-
+static const char kNetworkErrorKey[] = "netError";
 const int kNoRenderProcessId = -1;
 
 bool SchemeIsInSchemes(const std::string& scheme,
@@ -453,6 +457,30 @@ void GetMimeTypeOnUI(URLDataSourceImpl* source,
 
 namespace {
 
+bool IsValidNetworkErrorCode(int error_code) {
+  scoped_ptr<base::DictionaryValue> error_codes = net::GetNetConstants();
+  const base::DictionaryValue* net_error_codes_dict = nullptr;
+
+  for (base::DictionaryValue::Iterator itr(*error_codes); !itr.IsAtEnd();
+           itr.Advance()) {
+    if (itr.key() == kNetworkErrorKey) {
+      itr.value().GetAsDictionary(&net_error_codes_dict);
+      break;
+    }
+  }
+
+  if (net_error_codes_dict != nullptr) {
+    for (base::DictionaryValue::Iterator itr(*net_error_codes_dict);
+             !itr.IsAtEnd(); itr.Advance()) {
+      int net_error_code;
+      itr.value().GetAsInteger(&net_error_code);
+      if (error_code == net_error_code)
+        return true;
+    }
+  }
+  return false;
+}
+
 class ChromeProtocolHandler
     : public net::URLRequestJobFactory::ProtocolHandler {
  public:
@@ -487,6 +515,24 @@ class ChromeProtocolHandler
     if (request->url().SchemeIs(kChromeUIScheme) &&
         request->url().host() == kChromeUIHistogramHost) {
       return new HistogramInternalsRequestJob(request, network_delegate);
+    }
+
+    // Check for chrome://network-error/, which uses its own job type.
+    if (request->url().SchemeIs(kChromeUIScheme) &&
+        request->url().host() == kChromeUINetworkErrorHost) {
+      // Get the error code passed in via the request URL path.
+      std::basic_string<char> error_code_string =
+          request->url().path().substr(1);
+
+      int error_code;
+      if (base::StringToInt(error_code_string, &error_code)) {
+        // Check for a valid error code.
+        if (IsValidNetworkErrorCode(error_code) &&
+            error_code != net::Error::ERR_IO_PENDING) {
+          return new net::URLRequestErrorJob(request, network_delegate,
+                                             error_code);
+        }
+      }
     }
 
     // Fall back to using a custom handler

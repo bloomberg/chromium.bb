@@ -627,6 +627,8 @@ const char* const kChromeHostURLs[] = {
   content::kChromeUIHistogramHost,
   content::kChromeUIIndexedDBInternalsHost,
   content::kChromeUIMediaInternalsHost,
+  content::kChromeUINetworkErrorHost,
+  content::kChromeUINetworkErrorsListingHost,
   content::kChromeUINetworkViewCacheHost,
   content::kChromeUIServiceWorkerInternalsHost,
   content::kChromeUITracingHost,

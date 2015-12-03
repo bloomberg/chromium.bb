@@ -9,6 +9,7 @@
 #include "content/browser/gpu/gpu_internals_ui.h"
 #include "content/browser/indexed_db/indexed_db_internals_ui.h"
 #include "content/browser/media/media_internals_ui.h"
+#include "content/browser/net/network_errors_listing_ui.h"
 #include "content/browser/service_worker/service_worker_internals_ui.h"
 #include "content/browser/tracing/tracing_ui.h"
 #include "content/public/browser/storage_partition.h"
@@ -36,7 +37,8 @@ WebUI::TypeID ContentWebUIControllerFactory::GetWebUIType(
       url.host() == kChromeUIMediaInternalsHost ||
       url.host() == kChromeUIServiceWorkerInternalsHost ||
       url.host() == kChromeUIAccessibilityHost ||
-      url.host() == kChromeUIAppCacheInternalsHost) {
+      url.host() == kChromeUIAppCacheInternalsHost ||
+      url.host() == kChromeUINetworkErrorsListingHost) {
     return const_cast<ContentWebUIControllerFactory*>(this);
   }
   return WebUI::kNoWebUI;
@@ -69,6 +71,8 @@ WebUIController* ContentWebUIControllerFactory::CreateWebUIControllerForURL(
     return new AccessibilityUI(web_ui);
   if (url.host() == kChromeUIServiceWorkerInternalsHost)
     return new ServiceWorkerInternalsUI(web_ui);
+  if (url.host() == kChromeUINetworkErrorsListingHost)
+    return new NetworkErrorsListingUI(web_ui);
 #if !defined(OS_ANDROID)
   if (url.host() == kChromeUITracingHost)
     return new TracingUI(web_ui);

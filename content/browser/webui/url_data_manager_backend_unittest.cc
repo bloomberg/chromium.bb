@@ -107,4 +107,26 @@ TEST_F(UrlDataManagerBackendTest, CancelAfterFirstReadStarted) {
   EXPECT_EQ("", cancel_delegate.data_received());
 }
 
+// Check for a network error page request via chrome://network-error/.
+TEST_F(UrlDataManagerBackendTest, ChromeNetworkErrorPageRequest) {
+  scoped_ptr<net::URLRequest> error_request =
+        url_request_context_.CreateRequest(
+        GURL("chrome://network-error/-105"), net::HIGHEST, &delegate_);
+  error_request->Start();
+  base::RunLoop().Run();
+  EXPECT_EQ(net::URLRequestStatus::FAILED, error_request->status().status());
+  EXPECT_EQ(net::ERR_NAME_NOT_RESOLVED, error_request->status().error());
+}
+
+// Check for an invalid network error page request via chrome://network-error/.
+TEST_F(UrlDataManagerBackendTest, ChromeNetworkErrorPageRequestFailed) {
+  scoped_ptr<net::URLRequest> error_request =
+        url_request_context_.CreateRequest(
+        GURL("chrome://network-error/-123456789"), net::HIGHEST, &delegate_);
+  error_request->Start();
+  base::RunLoop().Run();
+  EXPECT_EQ(net::URLRequestStatus::FAILED, error_request->status().status());
+  EXPECT_EQ(net::ERR_INVALID_URL, error_request->status().error());
+}
+
 }  // namespace content
