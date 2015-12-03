@@ -27,6 +27,8 @@ public:
     virtual const String& cssString() const = 0;
     virtual PassRefPtrWillBeRawPtr<CSSValue> toCSSValue() = 0;
 
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
+
 protected:
     StyleValue() {}
 };
