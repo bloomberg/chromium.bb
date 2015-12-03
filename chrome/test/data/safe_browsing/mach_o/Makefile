@@ -72,6 +72,12 @@ test-bundle.app: signedexecutablefat libsigned64.dylib executable32
 .PHONY: modified-bundle.app
 modified-bundle.app: test-bundle.app lib32.dylib executable64
 	ditto $< $@
+	echo "<xml/>" > $@/Contents/Resources/Base.lproj/InfoPlist.strings
+	security unlock-keychain -p $(KEYCHAIN_PASSWORD) \
+		$(PWD)/codesign.keychain
+	codesign -f -s $(KEYCHAIN_IDENTITY) --keychain $(PWD)/codesign.keychain \
+		$@ --all-architectures --resource-rules ResourceRules
+	echo "BAD" > $@/Contents/Resources/Base.lproj/InfoPlist.strings
 	touch $@/Contents/Resources/codesign.cfg
 	ditto $(word 2,$^) $@/Contents/Frameworks/libsigned64.dylib
 	ditto $(word 3,$^) $@/Contents/Resources/executable32
@@ -101,3 +107,13 @@ modified-main-exec64.app: test-bundle.app
 	ditto $< $@
 	printf '\x31' | dd bs=1 seek=24448 count=1 conv=notrunc \
 	of=$@/Contents/MacOS/test-bundle
+
+.PHONY: modified-localization.app
+modified-localization.app: test-bundle.app
+	ditto $< $@
+	echo "<xml/>" > $@/Contents/Resources/Base.lproj/InfoPlist.strings
+	security unlock-keychain -p $(KEYCHAIN_PASSWORD) \
+		$(PWD)/codesign.keychain
+	codesign -f -s $(KEYCHAIN_IDENTITY) --keychain $(PWD)/codesign.keychain \
+		$@ --all-architectures --resource-rules ResourceRules
+	echo "CORRUPT" > $@/Contents/Resources/Base.lproj/InfoPlist.strings

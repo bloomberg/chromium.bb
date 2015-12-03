@@ -13,6 +13,7 @@
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/common/safe_browsing/binary_feature_extractor.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
@@ -33,6 +34,9 @@ const char* const xattrs[] = {
       "com.apple.cs.CodeApplication",
       "com.apple.cs.CodeEntitlements",
 };
+
+// The name of the localization strings file.
+const char kStringsFile[] = ".lproj/InfoPlist.strings";
 
 // Convenience function to get the appropriate path from a variety of NSObject
 // types. For resources, code signing seems to give back an NSURL in which
@@ -104,6 +108,12 @@ void ReportAlteredFiles(
     if (!MacSignatureEvaluator::GetRelativePathComponent(bundle_path, path,
                                                          &relative_path)) {
       relative_path = path.BaseName().value();
+    }
+
+    // Filter out certain noise reports on the client side.
+    if (base::EndsWith(relative_path, kStringsFile,
+                       base::CompareCase::INSENSITIVE_ASCII)) {
+      return;
     }
 
     ClientIncidentReport_IncidentData_BinaryIntegrityIncident_ContainedFile*
@@ -200,6 +210,7 @@ bool MacSignatureEvaluator::PerformEvaluation(
   // We heuristically detect if we are in a bundle or not by checking if
   // the main executable is different from the path_.
   base::ScopedCFTypeRef<CFDictionaryRef> info_dict;
+  base::FilePath exec_path;
   if (SecCodeCopySigningInformation(code_, kSecCSDefaultFlags,
                                     info_dict.InitializeInto()) ==
       errSecSuccess) {
@@ -208,7 +219,7 @@ bool MacSignatureEvaluator::PerformEvaluation(
     if (!exec_url)
       return false;
 
-    base::FilePath exec_path(
+    exec_path = base::FilePath(
         [[base::mac::CFToNSCast(exec_url) path] fileSystemRepresentation]);
     if (exec_path != path_) {
       ReportAlteredFiles(base::mac::CFToNSCast(exec_url), path_, incident);
@@ -229,6 +240,18 @@ bool MacSignatureEvaluator::PerformEvaluation(
         ReportAlteredFiles(detail, path_, incident);
     }
   }
+
+  // Some resource violations (localizations) are skipped, so if the error is
+  // that a sealed resource is missing or invalid, and there are no contained
+  // files aside from the main executable, do not send the report.
+  if (err == errSecCSBadResource && incident->contained_file_size() == 1) {
+    if (base::EndsWith(exec_path.value(),
+                       incident->contained_file(0).relative_path(),
+                       base::CompareCase::INSENSITIVE_ASCII)) {
+      return true;
+    }
+  }
+
   return false;
 }
 

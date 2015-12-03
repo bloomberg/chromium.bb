@@ -203,6 +203,19 @@ TEST_F(MacSignatureEvaluatorTest, ModifiedMainExecTest64) {
   EXPECT_TRUE(contained_file.has_image_headers());
 }
 
+TEST_F(MacSignatureEvaluatorTest, ModifiedLocalizationTest) {
+  // We want to ignore modifications made to InfoPlist.strings files.
+  base::FilePath path = testdata_path_.AppendASCII("modified-localization.app");
+
+  std::string requirement(
+      "certificate leaf[subject.CN]=\"untrusted@goat.local\"");
+  MacSignatureEvaluator evaluator(path, requirement);
+  ASSERT_TRUE(evaluator.Initialize());
+
+  ClientIncidentReport_IncidentData_BinaryIntegrityIncident incident;
+  EXPECT_TRUE(evaluator.PerformEvaluation(&incident));
+}
+
 TEST_F(MacSignatureEvaluatorTest, ModifiedBundleAndExecTest) {
   // Now test a modified, signed bundle with resources added and the main
   // executable modified.
