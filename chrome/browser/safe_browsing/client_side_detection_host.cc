@@ -45,8 +45,6 @@ namespace safe_browsing {
 const size_t ClientSideDetectionHost::kMaxUrlsPerIP = 20;
 const size_t ClientSideDetectionHost::kMaxIPsPerBrowse = 200;
 
-const char kSafeBrowsingMatchKey[] = "safe_browsing_match";
-
 typedef base::Callback<void(bool)> ShouldClassifyUrlCallback;
 
 // This class is instantiated each time a new toplevel URL loads, and
@@ -433,45 +431,11 @@ void ClientSideDetectionHost::OnSafeBrowsingHit(
 }
 
 void ClientSideDetectionHost::OnSafeBrowsingMatch(
-    const SafeBrowsingUIManager::UnsafeResource& resource) {
-  if (!web_contents() || !web_contents()->GetController().GetActiveEntry())
-    return;
-
-  // Check that this notification is really for us.
-  content::RenderViewHost* hit_rvh = content::RenderViewHost::FromID(
-      resource.render_process_host_id, resource.render_view_id);
-  if (!hit_rvh ||
-      web_contents() != content::WebContents::FromRenderViewHost(hit_rvh))
-    return;
-
-  web_contents()->GetController().GetActiveEntry()->SetExtraData(
-      kSafeBrowsingMatchKey, base::ASCIIToUTF16("1"));
-}
+    const SafeBrowsingUIManager::UnsafeResource& resource) {}
 
 scoped_refptr<SafeBrowsingDatabaseManager>
 ClientSideDetectionHost::database_manager() {
   return database_manager_;
-}
-
-bool ClientSideDetectionHost::DidPageReceiveSafeBrowsingMatch() const {
-  if (!web_contents() || !web_contents()->GetController().GetVisibleEntry())
-    return false;
-
-  // If an interstitial page is showing, GetVisibleEntry will return the
-  // transient NavigationEntry for the interstitial. The transient entry
-  // will not have the flag set, so use the pending entry instead if there
-  // is one.
-  NavigationEntry* entry = web_contents()->GetController().GetPendingEntry();
-  if (!entry) {
-    entry = web_contents()->GetController().GetVisibleEntry();
-    if (entry->GetPageType() == content::PAGE_TYPE_INTERSTITIAL)
-      entry = web_contents()->GetController().GetLastCommittedEntry();
-    if (!entry)
-      return false;
-  }
-
-  base::string16 value;
-  return entry->GetExtraData(kSafeBrowsingMatchKey, &value);
 }
 
 void ClientSideDetectionHost::WebContentsDestroyed() {

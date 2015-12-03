@@ -59,10 +59,6 @@ class ClientSideDetectionHost : public content::WebContentsObserver,
 
   virtual scoped_refptr<SafeBrowsingDatabaseManager> database_manager();
 
-  // Returns whether the current page contains a malware or phishing safe
-  // browsing match.
-  bool DidPageReceiveSafeBrowsingMatch() const;
-
  protected:
   explicit ClientSideDetectionHost(content::WebContents* tab);
 

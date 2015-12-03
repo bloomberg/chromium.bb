@@ -81,13 +81,4 @@ void SafeBrowsingTabObserver::UpdateSafebrowsingDetectionHost() {
 #endif
 }
 
-bool SafeBrowsingTabObserver::DidPageReceiveSafeBrowsingMatch() const {
-#if defined(SAFE_BROWSING_CSD)
-  return safebrowsing_detection_host_ &&
-      safebrowsing_detection_host_->DidPageReceiveSafeBrowsingMatch();
-#else
-  return false;
-#endif
-}
-
 }  // namespace safe_browsing

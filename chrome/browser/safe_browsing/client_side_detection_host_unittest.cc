@@ -364,11 +364,8 @@ class ClientSideDetectionHostTest : public ChromeRenderViewHostTestHarness {
         GetID();
     resource.render_view_id =
         web_contents()->GetRenderViewHost()->GetRoutingID();
-    ASSERT_FALSE(csd_host_->DidPageReceiveSafeBrowsingMatch());
     csd_host_->OnSafeBrowsingMatch(resource);
-    ASSERT_TRUE(csd_host_->DidPageReceiveSafeBrowsingMatch());
     csd_host_->OnSafeBrowsingHit(resource);
-    ASSERT_TRUE(csd_host_->DidPageReceiveSafeBrowsingMatch());
     resource.callback.Reset();
     ASSERT_TRUE(csd_host_->DidShowSBInterstitial());
     TestUnsafeResourceCopied(resource);
@@ -401,13 +398,10 @@ class ClientSideDetectionHostTest : public ChromeRenderViewHostTestHarness {
     csd_host_->OnSafeBrowsingHit(resource);
     resource.callback.Reset();
 
-    ASSERT_TRUE(csd_host_->DidPageReceiveSafeBrowsingMatch());
-
     // LoadURL created a navigation entry, now simulate the RenderView sending
     // a notification that it actually navigated.
     content::WebContentsTester::For(web_contents())->CommitPendingNavigation();
 
-    ASSERT_TRUE(csd_host_->DidPageReceiveSafeBrowsingMatch());
     ASSERT_TRUE(csd_host_->DidShowSBInterstitial());
     TestUnsafeResourceCopied(resource);
   }
@@ -423,11 +417,9 @@ class ClientSideDetectionHostTest : public ChromeRenderViewHostTestHarness {
       EXPECT_NE(web_contents()->GetRenderViewHost()->GetRoutingID(),
                 pending_rvh()->GetRoutingID());
     }
-    ASSERT_FALSE(csd_host_->DidPageReceiveSafeBrowsingMatch());
     ASSERT_FALSE(csd_host_->DidShowSBInterstitial());
 
     content::WebContentsTester::For(web_contents())->CommitPendingNavigation();
-    ASSERT_FALSE(csd_host_->DidPageReceiveSafeBrowsingMatch());
     ASSERT_FALSE(csd_host_->DidShowSBInterstitial());
   }
 

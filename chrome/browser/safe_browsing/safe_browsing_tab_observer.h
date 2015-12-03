@@ -23,9 +23,6 @@ class SafeBrowsingTabObserver
  public:
   ~SafeBrowsingTabObserver() override;
 
-  // Forward to detection host, if safe-browsing is enabled.
-  bool DidPageReceiveSafeBrowsingMatch() const;
-
  private:
   explicit SafeBrowsingTabObserver(content::WebContents* web_contents);
   friend class content::WebContentsUserData<SafeBrowsingTabObserver>;
