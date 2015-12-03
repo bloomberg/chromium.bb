@@ -1295,11 +1295,9 @@ interface HTMLBodyElement : HTMLElement
     getter onpagehide
     getter onpageshow
     getter onpopstate
-    getter onrejectionhandled
     getter onresize
     getter onscroll
     getter onstorage
-    getter onunhandledrejection
     getter onunload
     getter text
     getter vLink
@@ -1321,11 +1319,9 @@ interface HTMLBodyElement : HTMLElement
     setter onpagehide
     setter onpageshow
     setter onpopstate
-    setter onrejectionhandled
     setter onresize
     setter onscroll
     setter onstorage
-    setter onunhandledrejection
     setter onunload
     setter text
     setter vLink
@@ -1690,11 +1686,9 @@ interface HTMLFrameSetElement : HTMLElement
     getter onpagehide
     getter onpageshow
     getter onpopstate
-    getter onrejectionhandled
     getter onresize
     getter onscroll
     getter onstorage
-    getter onunhandledrejection
     getter onunload
     getter rows
     method constructor
@@ -1712,11 +1706,9 @@ interface HTMLFrameSetElement : HTMLElement
     setter onpagehide
     setter onpageshow
     setter onpopstate
-    setter onrejectionhandled
     setter onresize
     setter onscroll
     setter onstorage
-    setter onunhandledrejection
     setter onunload
     setter rows
 interface HTMLHRElement : HTMLElement
@@ -3307,10 +3299,6 @@ interface ProgressEvent : Event
     getter lengthComputable
     getter loaded
     getter total
-    method constructor
-interface PromiseRejectionEvent : Event
-    getter promise
-    getter reason
     method constructor
 interface PushManager
     method constructor
@@ -5868,7 +5856,6 @@ interface webkitURL
     attribute onpopstate
     attribute onprogress
     attribute onratechange
-    attribute onrejectionhandled
     attribute onreset
     attribute onresize
     attribute onscroll
@@ -5888,7 +5875,6 @@ interface webkitURL
     attribute ontouchmove
     attribute ontouchstart
     attribute ontransitionend
-    attribute onunhandledrejection
     attribute onunload
     attribute onvolumechange
     attribute onwaiting
