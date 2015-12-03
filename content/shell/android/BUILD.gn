@@ -111,16 +111,13 @@ android_apk("content_shell_apk") {
     "//content/public/android:content_java",
     "//media/base/android:media_java",
     "//net/android:net_java",
-
-    #"//third_party/mesa:osmesa_in_lib_dir",
+    "//third_party/mesa:osmesa",
     "//ui/android:ui_java",
   ]
   apk_name = "ContentShell"
   android_manifest = content_shell_manifest
   native_libs = [ "libcontent_shell_content_view.so" ]
-
-  # TODO(GYP)
-  #'extra_native_libs': ['<(SHARED_LIB_DIR)/libosmesa.so'],
+  loadable_modules = [ "$root_out_dir/libosmesa.so" ]
 }
 
 android_library("content_shell_test_java") {

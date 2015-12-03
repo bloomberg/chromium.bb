@@ -676,68 +676,59 @@ static_library("mesa") {
   ]
 }
 
-if (!is_android) {  # TODO(GYP) enable for Android.
-  # Building this target will hide the native OpenGL shared library and
-  # replace it with a slow software renderer.
-  #
-  # Note: on x64 Windows this target gives warnings to the effect of:
-  #   osmesa.osmesa.obj : warning LNK4197: export 'OSMesaGetIntegerv' specified
-  #   multiple times; using first specification
-  # This also happens with the GYP build.
-  loadable_module("osmesa") {
-    sources = [
-      "src/src/mesa/drivers/common/driverfuncs.c",
-      "src/src/mesa/drivers/common/driverfuncs.h",
-      "src/src/mesa/drivers/common/meta.c",
-      "src/src/mesa/drivers/common/meta.h",
-      "src/src/mesa/drivers/osmesa/osmesa.c",
-    ]
+# Building this target will hide the native OpenGL shared library and
+# replace it with a slow software renderer.
+#
+# Note: on x64 Windows this target gives warnings to the effect of:
+#   osmesa.osmesa.obj : warning LNK4197: export 'OSMesaGetIntegerv' specified
+#   multiple times; using first specification
+# This also happens with the GYP build.
+loadable_module("osmesa") {
+  sources = [
+    "src/src/mesa/drivers/common/driverfuncs.c",
+    "src/src/mesa/drivers/common/driverfuncs.h",
+    "src/src/mesa/drivers/common/meta.c",
+    "src/src/mesa/drivers/common/meta.h",
+    "src/src/mesa/drivers/osmesa/osmesa.c",
+  ]
 
-    configs -= [ "//build/config/compiler:chromium_code" ]
-    configs += [
-      ":mesa_headers_config",
-      "//build/config/compiler:no_chromium_code",
-    ]
-    previous_configs = configs
-    configs = []
-    configs = [ ":mesa_internal_config" ] + previous_configs +
-              [ ":mesa_internal_warnings" ]
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [
+    ":mesa_headers_config",
+    "//build/config/compiler:no_chromium_code",
+  ]
+  previous_configs = configs
+  configs = []
+  configs = [ ":mesa_internal_config" ] + previous_configs +
+            [ ":mesa_internal_warnings" ]
 
-    include_dirs = [ "src/src/mesa/drivers" ]
+  include_dirs = [ "src/src/mesa/drivers" ]
 
-    if (is_clang) {
-      # Mesa triggers some of these Clang warnings.
-      configs -= [ "//build/config/clang:extra_warnings" ]
-    }
-
-    if (is_win) {
-      ldflags =
-          [ "/DEF:" + rebase_path("src/src/mesa/drivers/osmesa/osmesa.def",
-                                  root_build_dir) ]
-    }
-
-    deps = [
-      ":mesa",
-      ":mesa_headers",
-      ":mesa_libglslcommon",
-      "//build/config/sanitizers:deps",
-    ]
-
-    if (is_win) {
-      defines = [
-        "BUILD_GL32",
-        "KEYWORD1=GLAPI",
-        "KEYWORD2=GLAPIENTRY",
-      ]
-    }
+  if (is_clang) {
+    # Mesa triggers some of these Clang warnings.
+    configs -= [ "//build/config/clang:extra_warnings" ]
   }
-} else {
-  #  Placeholder to allow targets to unconditionally depend on this.
-  group("osmesa") {
-  }
-}  # !is_android
 
-# TODO(GYP) Android osmesa_in_lib_dir target.
+  if (is_win) {
+    ldflags = [ "/DEF:" + rebase_path("src/src/mesa/drivers/osmesa/osmesa.def",
+                                      root_build_dir) ]
+  }
+
+  deps = [
+    ":mesa",
+    ":mesa_headers",
+    ":mesa_libglslcommon",
+    "//build/config/sanitizers:deps",
+  ]
+
+  if (is_win) {
+    defines = [
+      "BUILD_GL32",
+      "KEYWORD1=GLAPI",
+      "KEYWORD2=GLAPIENTRY",
+    ]
+  }
+}
 
 if (is_linux) {
   config("wayland_drm_protocol_config") {

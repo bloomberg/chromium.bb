@@ -49,6 +49,10 @@ template("android_gcc_toolchain") {
     nm = tool_prefix + "nm"
     strip = "${tool_prefix}strip"
 
+    # Don't use .cr.so for loadable_modules since they are always loaded via
+    # absolute path.
+    loadable_module_extension = ".so"
+
     toolchain_os = "android"
     toolchain_cpu = invoker.toolchain_cpu
   }

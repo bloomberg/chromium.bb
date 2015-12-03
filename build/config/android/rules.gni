@@ -1191,9 +1191,19 @@ template("android_java_prebuilt") {
 #   apk_name: Name for final apk.
 #   final_apk_path: Path to final built apk. Default is
 #     $root_out_dir/apks/$apk_name.apk. Setting this will override apk_name.
+#   loadable_modules: List of paths to native libraries to include. Different
+#     from |native_libs| in that:
+#       * dependencies of this .so are not automatically included
+#       * ".cr.so" is never added
+#       * they are not side-loaded for _incremental targets.
+#       * load_library_from_apk, use_chromium_linker,
+#         and enable_relocation_packing do not apply
+#     Use this instead of native_libs when you are going to load the library
+#     conditionally, and only when native_libs doesn't work for you.
 #   native_libs: List paths of native libraries to include in this apk. If these
 #     libraries depend on other shared_library targets, those dependencies will
-#     also be included in the apk.
+#     also be included in the apk. When building with is_component_build,
+#     The extension is automatically changed to ".cr.so".
 #   native_lib_placeholders: List of placeholder filenames to add to the apk
 #     (optional).
 #   apk_under_test: For an instrumentation test apk, this is the target of the
@@ -1627,10 +1637,10 @@ template("android_apk") {
 
   _extra_native_libs = []
   _extra_native_libs_deps = []
+  _extra_native_libs_even_when_incremental = []
+  _extra_native_libs_even_when_incremental_deps = []
+  assert(_extra_native_libs_even_when_incremental_deps == [])  # Mark as used.
   if (_native_libs != []) {
-    _extra_native_libs_even_when_incremental = []
-    _extra_native_libs_even_when_incremental_deps = []
-
     if (is_debug) {
       _extra_native_libs_even_when_incremental = [ android_gdbserver ]
     }
@@ -1641,6 +1651,9 @@ template("android_apk") {
       _extra_native_libs_deps +=
           [ "//base/android/linker:chromium_android_linker" ]
     }
+  }
+  if (defined(invoker.loadable_modules) && invoker.loadable_modules != []) {
+    _extra_native_libs_even_when_incremental += invoker.loadable_modules
   }
 
   _final_deps += [ ":${_template_name}__create" ]
@@ -1692,7 +1705,7 @@ template("android_apk") {
               ":$final_dex_target_name",
             ]
 
-    if (_native_libs != [] && !_create_abi_split) {
+    if ((_native_libs != [] || _extra_native_libs_even_when_incremental != []) && !_create_abi_split) {
       deps += _native_libs_deps + _extra_native_libs_deps +
               _extra_native_libs_even_when_incremental_deps +
               [ _native_libs_file_arg_dep ]
@@ -1707,7 +1720,8 @@ template("android_apk") {
     }
   }
 
-  if (_native_libs != [] && _create_abi_split) {
+  if ((_native_libs != [] || _extra_native_libs_even_when_incremental != []) &&
+      _create_abi_split) {
     _manifest_rule = "${_template_name}__split_manifest_abi_${android_app_abi}"
     generate_split_manifest(_manifest_rule) {
       main_manifest = _android_manifest

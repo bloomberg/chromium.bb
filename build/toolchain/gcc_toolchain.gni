@@ -322,7 +322,11 @@ template("gcc_toolchain") {
       # Use this for {{output_extension}} expansions unless a target manually
       # overrides it (in which case {{output_extension}} will be what the target
       # specifies).
-      default_output_extension = default_shlib_extension
+      if (defined(invoker.loadable_module_extension)) {
+        default_output_extension = invoker.loadable_module_extension
+      } else {
+        default_output_extension = default_shlib_extension
+      }
 
       output_prefix = "lib"
 
