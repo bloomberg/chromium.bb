@@ -33,6 +33,7 @@
 #include "core/svg/SVGAnimatedLength.h"
 
 #include "core/svg/SVGElement.h"
+#include "core/svg/SVGLength.h"
 
 namespace blink {
 
@@ -50,7 +51,7 @@ void SVGAnimatedLength::setBaseValueAsString(const String& value, SVGParsingErro
     if (es.hadException()) {
         parseError = ParsingAttributeFailedError;
         baseValue()->newValueSpecifiedUnits(CSSPrimitiveValue::UnitType::UserUnits, 0);
-    } else if (m_negativeValuesMode == ForbidNegativeLengths && baseValue()->valueInSpecifiedUnits() < 0) {
+    } else if (SVGLength::negativeValuesForbiddenForAnimatedLengthAttribute(attributeName()) && baseValue()->valueInSpecifiedUnits() < 0) {
         parseError = NegativeValueForbiddenError;
     }
 }

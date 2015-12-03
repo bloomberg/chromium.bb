@@ -17,7 +17,6 @@ public:
     struct NonInterpolableType {
         DISALLOW_NEW();
         SVGLengthMode unitMode;
-        SVGLengthNegativeValuesMode negativeValuesMode;
     };
 
     static bool canCreateFrom(SVGLength*, SVGLength*)
@@ -31,7 +30,7 @@ public:
 
     static PassOwnPtr<InterpolableValue> toInterpolableValue(SVGLength*, const SVGAnimatedPropertyBase*, NonInterpolableType*);
 
-    static PassRefPtrWillBeRawPtr<SVGLength> fromInterpolableValue(const InterpolableValue&, const NonInterpolableType&, const SVGElement*);
+    static PassRefPtrWillBeRawPtr<SVGLength> fromInterpolableValue(const InterpolableValue&, const NonInterpolableType&, const SVGElement*, const QualifiedName&);
 
     PassRefPtrWillBeRawPtr<SVGPropertyBase> interpolatedValue(SVGElement&) const final;
 

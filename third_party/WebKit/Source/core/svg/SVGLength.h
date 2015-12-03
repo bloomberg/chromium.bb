@@ -31,11 +31,6 @@ namespace blink {
 class ExceptionState;
 class QualifiedName;
 
-enum SVGLengthNegativeValuesMode {
-    AllowNegativeLengths,
-    ForbidNegativeLengths
-};
-
 class SVGLengthTearOff;
 
 class SVGLength final : public SVGPropertyBase {
@@ -102,6 +97,7 @@ public:
     }
 
     static SVGLengthMode lengthModeForAnimatedLengthAttribute(const QualifiedName&);
+    static bool negativeValuesForbiddenForAnimatedLengthAttribute(const QualifiedName&);
 
     void add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*) override;
     void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> from, PassRefPtrWillBeRawPtr<SVGPropertyBase> to, PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement) override;

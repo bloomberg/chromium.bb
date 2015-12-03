@@ -57,7 +57,7 @@ private:
         const InterpolableList& listValue = toInterpolableList(value);
         RefPtrWillBeRawPtr<ListType> result = InterpolationType::createList(*attribute);
         for (size_t i = 0; i < listValue.length(); i++)
-            result->append(InterpolationType::fromInterpolableValue(*listValue.get(i), m_nonInterpolableData.at(i), element));
+            result->append(InterpolationType::fromInterpolableValue(*listValue.get(i), m_nonInterpolableData.at(i), element, attribute->attributeName()));
         return result.release();
     }
 

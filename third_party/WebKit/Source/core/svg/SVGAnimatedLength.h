@@ -39,25 +39,19 @@ namespace blink {
 class SVGAnimatedLength : public SVGAnimatedProperty<SVGLength> {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<SVGAnimatedLength> create(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtrWillBeRawPtr<SVGLength> initialValue, SVGLengthNegativeValuesMode negativeValuesMode)
+    static PassRefPtrWillBeRawPtr<SVGAnimatedLength> create(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtrWillBeRawPtr<SVGLength> initialValue)
     {
-        return adoptRefWillBeNoop(new SVGAnimatedLength(contextElement, attributeName, initialValue, negativeValuesMode));
+        return adoptRefWillBeNoop(new SVGAnimatedLength(contextElement, attributeName, initialValue));
     }
 
     void setDefaultValueAsString(const String&);
     void setBaseValueAsString(const String&, SVGParsingError&) override;
 
-    SVGLengthNegativeValuesMode negativeValuesMode() const { return m_negativeValuesMode; }
-
 protected:
-    SVGAnimatedLength(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtrWillBeRawPtr<SVGLength> initialValue, SVGLengthNegativeValuesMode negativeValuesMode)
+    SVGAnimatedLength(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtrWillBeRawPtr<SVGLength> initialValue)
         : SVGAnimatedProperty<SVGLength>(contextElement, attributeName, initialValue)
-        , m_negativeValuesMode(negativeValuesMode)
     {
     }
-
-private:
-    SVGLengthNegativeValuesMode m_negativeValuesMode;
 };
 
 } // namespace blink

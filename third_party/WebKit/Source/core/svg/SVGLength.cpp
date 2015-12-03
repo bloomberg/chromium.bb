@@ -197,6 +197,7 @@ SVGLengthMode SVGLength::lengthModeForAnimatedLengthAttribute(const QualifiedNam
         s_lengthModeMap.set(SVGNames::cyAttr, SVGLengthMode::Height);
         s_lengthModeMap.set(SVGNames::dxAttr, SVGLengthMode::Width);
         s_lengthModeMap.set(SVGNames::dyAttr, SVGLengthMode::Height);
+        s_lengthModeMap.set(SVGNames::frAttr, SVGLengthMode::Other);
         s_lengthModeMap.set(SVGNames::fxAttr, SVGLengthMode::Width);
         s_lengthModeMap.set(SVGNames::fyAttr, SVGLengthMode::Height);
         s_lengthModeMap.set(SVGNames::rAttr, SVGLengthMode::Other);
@@ -220,6 +221,25 @@ SVGLengthMode SVGLength::lengthModeForAnimatedLengthAttribute(const QualifiedNam
         return s_lengthModeMap.get(attrName);
 
     return SVGLengthMode::Other;
+}
+
+bool SVGLength::negativeValuesForbiddenForAnimatedLengthAttribute(const QualifiedName& attrName)
+{
+    DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, s_noNegativeValuesSet, ());
+
+    if (s_noNegativeValuesSet.isEmpty()) {
+        s_noNegativeValuesSet.add(SVGNames::frAttr);
+        s_noNegativeValuesSet.add(SVGNames::rAttr);
+        s_noNegativeValuesSet.add(SVGNames::rxAttr);
+        s_noNegativeValuesSet.add(SVGNames::ryAttr);
+        s_noNegativeValuesSet.add(SVGNames::widthAttr);
+        s_noNegativeValuesSet.add(SVGNames::heightAttr);
+        s_noNegativeValuesSet.add(SVGNames::markerWidthAttr);
+        s_noNegativeValuesSet.add(SVGNames::markerHeightAttr);
+        s_noNegativeValuesSet.add(SVGNames::textLengthAttr);
+    }
+
+    return s_noNegativeValuesSet.contains(attrName);
 }
 
 void SVGLength::add(PassRefPtrWillBeRawPtr<SVGPropertyBase> other, SVGElement* contextElement)

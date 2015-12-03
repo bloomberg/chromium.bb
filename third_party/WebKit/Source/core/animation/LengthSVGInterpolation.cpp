@@ -37,13 +37,11 @@ void populateModeData(const SVGAnimatedPropertyBase* attribute, LengthSVGInterpo
     case AnimatedLength: {
         const SVGAnimatedLength& animatedLength = static_cast<const SVGAnimatedLength&>(*attribute);
         ptrModeData->unitMode = animatedLength.currentValue()->unitMode();
-        ptrModeData->negativeValuesMode = animatedLength.negativeValuesMode();
         break;
     }
     case AnimatedLengthList: {
         const SVGAnimatedLengthList& animatedLengthList = static_cast<const SVGAnimatedLengthList&>(*attribute);
         ptrModeData->unitMode = animatedLengthList.currentValue()->unitMode();
-        ptrModeData->negativeValuesMode = AllowNegativeLengths;
         break;
     }
     default:
@@ -129,7 +127,7 @@ PassOwnPtr<InterpolableValue> LengthSVGInterpolation::toInterpolableValue(SVGLen
     return listOfValues.release();
 }
 
-PassRefPtrWillBeRawPtr<SVGLength> LengthSVGInterpolation::fromInterpolableValue(const InterpolableValue& interpolableValue, const NonInterpolableType& modeData, const SVGElement* element)
+PassRefPtrWillBeRawPtr<SVGLength> LengthSVGInterpolation::fromInterpolableValue(const InterpolableValue& interpolableValue, const NonInterpolableType& modeData, const SVGElement* element, const QualifiedName& attributeName)
 {
     const InterpolableList& listOfValues = toInterpolableList(interpolableValue);
     ASSERT(element);
@@ -163,7 +161,7 @@ PassRefPtrWillBeRawPtr<SVGLength> LengthSVGInterpolation::fromInterpolableValue(
         }
     }
 
-    if (modeData.negativeValuesMode == ForbidNegativeLengths && value < 0)
+    if (SVGLength::negativeValuesForbiddenForAnimatedLengthAttribute(attributeName) && value < 0)
         value = 0;
 
     RefPtrWillBeRawPtr<SVGLength> result = SVGLength::create(modeData.unitMode); // defaults to the length 0
@@ -173,7 +171,7 @@ PassRefPtrWillBeRawPtr<SVGLength> LengthSVGInterpolation::fromInterpolableValue(
 
 PassRefPtrWillBeRawPtr<SVGPropertyBase> LengthSVGInterpolation::interpolatedValue(SVGElement& targetElement) const
 {
-    return fromInterpolableValue(*m_cachedValue, m_modeData, &targetElement);
+    return fromInterpolableValue(*m_cachedValue, m_modeData, &targetElement, attributeName());
 }
 
 }
