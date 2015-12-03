@@ -1847,11 +1847,12 @@ void NavigationControllerImpl::FindFramesToNavigate(
     return;
 
   // Schedule a load in this frame if the new item isn't for the same item
-  // sequence number in the same SiteInstance.
-  // TODO(creis): Handle null SiteInstances during session restore.
+  // sequence number in the same SiteInstance. Newly restored items may not have
+  // a SiteInstance yet, in which case it will be assigned on first commit.
   if (!old_item ||
       new_item->item_sequence_number() != old_item->item_sequence_number() ||
-      new_item->site_instance() != old_item->site_instance()) {
+      (new_item->site_instance() != nullptr &&
+       new_item->site_instance() != old_item->site_instance())) {
     if (old_item &&
         new_item->document_sequence_number() ==
             old_item->document_sequence_number()) {

@@ -89,7 +89,7 @@ class CONTENT_EXPORT NavigationEntryImpl
   void SetTitle(const base::string16& title) override;
   const base::string16& GetTitle() const override;
   void SetPageState(const PageState& state) override;
-  const PageState& GetPageState() const override;
+  PageState GetPageState() const override;
   void SetPageID(int page_id) override;
   int32 GetPageID() const override;
   const base::string16& GetTitleForDisplay(

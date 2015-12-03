@@ -2320,7 +2320,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   ASSERT_EQ(1U, entry1->root_node()->children.size());
   EXPECT_EQ(data_url, entry1->root_node()->children[0]->frame_entry->url());
 
-  // 2. Navigate the iframe cross-site to a page with a nested iframe.
+  // 2. Navigate the iframe cross-site.
   GURL frame_url_b(embedded_test_server()->GetURL(
       "b.com", "/navigation_controller/simple_page_1.html"));
   {
@@ -2376,6 +2376,144 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   ASSERT_EQ(2U, entry2->root_node()->children.size());
   EXPECT_EQ(frame_url_b, entry2->root_node()->children[0]->frame_entry->url());
   EXPECT_EQ(data_url, entry2->root_node()->children[1]->frame_entry->url());
+}
+
+// Verify that subframes can be restored in a new NavigationController using the
+// PageState of an existing NavigationEntry.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       FrameNavigationEntry_RestoreViaPageState) {
+  // 1. Start on a page with a data URL iframe.
+  GURL main_url_a(embedded_test_server()->GetURL(
+      "a.com", "/navigation_controller/page_with_data_iframe.html"));
+  GURL data_url("data:text/html,Subframe");
+  NavigateToURL(shell(), main_url_a);
+  const NavigationControllerImpl& controller =
+      static_cast<const NavigationControllerImpl&>(
+          shell()->web_contents()->GetController());
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  ASSERT_EQ(1U, root->child_count());
+  ASSERT_EQ(0U, root->child_at(0)->child_count());
+  EXPECT_EQ(main_url_a, root->current_url());
+  EXPECT_EQ(data_url, root->child_at(0)->current_url());
+
+  EXPECT_EQ(1, controller.GetEntryCount());
+  EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
+  NavigationEntryImpl* entry1 = controller.GetLastCommittedEntry();
+
+  // Verify subframe entries if they're enabled (e.g. in --site-per-process).
+  if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
+    // The entry should have a FrameNavigationEntry for the data subframe.
+    ASSERT_EQ(1U, entry1->root_node()->children.size());
+    EXPECT_EQ(data_url, entry1->root_node()->children[0]->frame_entry->url());
+  } else {
+    // There are no subframe FrameNavigationEntries by default.
+    EXPECT_EQ(0U, entry1->root_node()->children.size());
+  }
+
+  // 2. Navigate the iframe cross-site.
+  GURL frame_url_b(embedded_test_server()->GetURL(
+      "b.com", "/navigation_controller/simple_page_1.html"));
+  {
+    FrameNavigateParamsCapturer capturer(root->child_at(0));
+    NavigateFrameToURL(root->child_at(0), frame_url_b);
+    capturer.Wait();
+  }
+  ASSERT_EQ(1U, root->child_count());
+  EXPECT_EQ(main_url_a, root->current_url());
+  EXPECT_EQ(frame_url_b, root->child_at(0)->current_url());
+
+  EXPECT_EQ(2, controller.GetEntryCount());
+  EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
+  NavigationEntryImpl* entry2 = controller.GetLastCommittedEntry();
+
+  // Verify subframe entries if they're enabled (e.g. in --site-per-process).
+  if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
+    // The entry should have a FrameNavigationEntry for the b.com subframe.
+    ASSERT_EQ(1U, entry2->root_node()->children.size());
+    EXPECT_EQ(frame_url_b,
+              entry2->root_node()->children[0]->frame_entry->url());
+  } else {
+    // There are no subframe FrameNavigationEntries by default.
+    EXPECT_EQ(0U, entry2->root_node()->children.size());
+  }
+
+  // 3. Navigate main frame cross-site, destroying the frames.
+  GURL main_url_c(embedded_test_server()->GetURL(
+      "c.com", "/navigation_controller/simple_page_2.html"));
+  NavigateToURL(shell(), main_url_c);
+  ASSERT_EQ(0U, root->child_count());
+  EXPECT_EQ(main_url_c, root->current_url());
+
+  EXPECT_EQ(3, controller.GetEntryCount());
+  EXPECT_EQ(2, controller.GetLastCommittedEntryIndex());
+  NavigationEntryImpl* entry3 = controller.GetLastCommittedEntry();
+  EXPECT_EQ(0U, entry3->root_node()->children.size());
+
+  // 4. Create a NavigationEntry with the same PageState as |entry2| and verify
+  // it has the same FrameNavigationEntry structure.
+  scoped_ptr<NavigationEntryImpl> restored_entry =
+      NavigationEntryImpl::FromNavigationEntry(
+          NavigationControllerImpl::CreateNavigationEntry(
+              main_url_a, Referrer(), ui::PAGE_TRANSITION_RELOAD, false,
+              std::string(), controller.GetBrowserContext()));
+  restored_entry->SetPageID(0);
+  EXPECT_EQ(0U, restored_entry->root_node()->children.size());
+  restored_entry->SetPageState(entry2->GetPageState());
+
+  // Verify subframe entries if they're enabled (e.g. in --site-per-process).
+  if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
+    // The entry should have a FrameNavigationEntry for the b.com subframe.
+    EXPECT_EQ(main_url_a, restored_entry->root_node()->frame_entry->url());
+    ASSERT_EQ(1U, restored_entry->root_node()->children.size());
+    EXPECT_EQ(frame_url_b,
+              restored_entry->root_node()->children[0]->frame_entry->url());
+  } else {
+    // There are no subframe FrameNavigationEntries by default.
+    EXPECT_EQ(0U, restored_entry->root_node()->children.size());
+  }
+
+  // 5. Restore the new entry in a new tab and verify the correct URLs load.
+  std::vector<scoped_ptr<NavigationEntry>> entries;
+  entries.push_back(restored_entry.Pass());
+  Shell* new_shell = Shell::CreateNewWindow(
+      controller.GetBrowserContext(), GURL::EmptyGURL(), nullptr, gfx::Size());
+  FrameTreeNode* new_root =
+      static_cast<WebContentsImpl*>(new_shell->web_contents())
+          ->GetFrameTree()
+          ->root();
+  NavigationControllerImpl& new_controller =
+      static_cast<NavigationControllerImpl&>(
+          new_shell->web_contents()->GetController());
+  new_controller.Restore(
+      entries.size() - 1,
+      NavigationController::RESTORE_LAST_SESSION_EXITED_CLEANLY, &entries);
+  ASSERT_EQ(0u, entries.size());
+  {
+    TestNavigationObserver restore_observer(new_shell->web_contents());
+    new_controller.LoadIfNecessary();
+    restore_observer.Wait();
+  }
+  ASSERT_EQ(1U, new_root->child_count());
+  EXPECT_EQ(main_url_a, new_root->current_url());
+  EXPECT_EQ(frame_url_b, new_root->child_at(0)->current_url());
+
+  EXPECT_EQ(1, new_controller.GetEntryCount());
+  EXPECT_EQ(0, new_controller.GetLastCommittedEntryIndex());
+  NavigationEntryImpl* new_entry = new_controller.GetLastCommittedEntry();
+
+  // Verify subframe entries if they're enabled (e.g. in --site-per-process).
+  if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
+    // The entry should have a FrameNavigationEntry for the b.com subframe.
+    EXPECT_EQ(main_url_a, new_entry->root_node()->frame_entry->url());
+    ASSERT_EQ(1U, new_entry->root_node()->children.size());
+    EXPECT_EQ(frame_url_b,
+              new_entry->root_node()->children[0]->frame_entry->url());
+  } else {
+    // There are no subframe FrameNavigationEntries by default.
+    EXPECT_EQ(0U, new_entry->root_node()->children.size());
+  }
 }
 
 // Verifies that the |frame_unique_name| is set to the correct frame, so that we

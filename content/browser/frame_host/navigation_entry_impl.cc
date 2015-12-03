@@ -17,14 +17,72 @@
 #include "content/public/common/url_constants.h"
 #include "ui/gfx/text_elider.h"
 
+using base::UTF16ToUTF8;
+
+namespace content {
+
+namespace {
+
 // Use this to get a new unique ID for a NavigationEntry during construction.
 // The returned ID is guaranteed to be nonzero (which is the "no ID" indicator).
-static int GetUniqueIDInConstructor() {
+int GetUniqueIDInConstructor() {
   static int unique_id_counter = 0;
   return ++unique_id_counter;
 }
 
-namespace content {
+void RecursivelyGenerateFrameEntries(const ExplodedFrameState& state,
+                                     NavigationEntryImpl::TreeNode* node) {
+  node->frame_entry = new FrameNavigationEntry(
+      -1, UTF16ToUTF8(state.target.string()), state.item_sequence_number,
+      state.document_sequence_number, nullptr, GURL(state.url_string.string()),
+      Referrer(GURL(state.referrer.string()), state.referrer_policy));
+
+  // Set a single-frame PageState on the entry.
+  ExplodedPageState page_state;
+  page_state.top = state;
+  std::string data;
+  if (EncodePageState(page_state, &data))
+    node->frame_entry->set_page_state(PageState::CreateFromEncodedData(data));
+
+  for (const ExplodedFrameState& child_state : state.children) {
+    NavigationEntryImpl::TreeNode* child_node =
+        new NavigationEntryImpl::TreeNode(nullptr);
+    node->children.push_back(child_node);
+    RecursivelyGenerateFrameEntries(child_state, child_node);
+  }
+}
+
+void RecursivelyGenerateFrameState(
+    NavigationEntryImpl::TreeNode* node,
+    ExplodedFrameState* state,
+    std::vector<base::NullableString16>* referenced_files) {
+  // The FrameNavigationEntry's PageState contains just the ExplodedFrameState
+  // for that particular frame.
+  ExplodedPageState exploded_page_state;
+  if (!DecodePageState(node->frame_entry->page_state().ToEncodedData(),
+                       &exploded_page_state)) {
+    NOTREACHED();
+    return;
+  }
+  ExplodedFrameState frame_state = exploded_page_state.top;
+
+  // Copy the FrameNavigationEntry's frame state into the destination state.
+  *state = frame_state;
+
+  // Copy the frame's files into the PageState's |referenced_files|.
+  referenced_files->reserve(referenced_files->size() +
+                            exploded_page_state.referenced_files.size());
+  for (auto& file : exploded_page_state.referenced_files)
+    referenced_files->push_back(file);
+
+  state->children.resize(node->children.size());
+  for (size_t i = 0; i < node->children.size(); ++i) {
+    RecursivelyGenerateFrameState(node->children[i], &state->children[i],
+                                  referenced_files);
+  }
+}
+
+}  // namespace
 
 int NavigationEntryImpl::kInvalidBindings = -1;
 
@@ -180,22 +238,47 @@ const base::string16& NavigationEntryImpl::GetTitle() const {
 }
 
 void NavigationEntryImpl::SetPageState(const PageState& state) {
-  frame_tree_->frame_entry->set_page_state(state);
-
-  if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
-    // Also get the root ISN and DSN out of the PageState.
-    ExplodedPageState exploded_state;
-    if (!DecodePageState(state.ToEncodedData(), &exploded_state))
-      return;
-    frame_tree_->frame_entry->set_item_sequence_number(
-        exploded_state.top.item_sequence_number);
-    frame_tree_->frame_entry->set_document_sequence_number(
-        exploded_state.top.document_sequence_number);
+  if (!SiteIsolationPolicy::UseSubframeNavigationEntries()) {
+    frame_tree_->frame_entry->set_page_state(state);
+    return;
   }
+
+  // This should only be called when restoring a NavigationEntry, so there
+  // should be no subframe FrameNavigationEntries yet.
+  DCHECK_EQ(0U, frame_tree_->children.size());
+
+  // If the PageState can't be parsed or has no children, just store it on the
+  // main frame's FrameNavigationEntry without recursively creating subframe
+  // entries.
+  ExplodedPageState exploded_state;
+  if (!DecodePageState(state.ToEncodedData(), &exploded_state) ||
+      exploded_state.top.children.size() == 0U) {
+    frame_tree_->frame_entry->set_page_state(state);
+    return;
+  }
+
+  RecursivelyGenerateFrameEntries(exploded_state.top, frame_tree_.get());
 }
 
-const PageState& NavigationEntryImpl::GetPageState() const {
-  return frame_tree_->frame_entry->page_state();
+PageState NavigationEntryImpl::GetPageState() const {
+  // Just return the main frame's PageState in default Chrome, or if there are
+  // no subframe FrameNavigationEntries.
+  if (!SiteIsolationPolicy::UseSubframeNavigationEntries() ||
+      frame_tree_->children.size() == 0U)
+    return frame_tree_->frame_entry->page_state();
+
+  // When we're using subframe entries, each FrameNavigationEntry has a
+  // frame-specific PageState.  We combine these into an ExplodedPageState tree
+  // and generate a full PageState from it.
+  ExplodedPageState exploded_state;
+  RecursivelyGenerateFrameState(frame_tree_.get(), &exploded_state.top,
+                                &exploded_state.referenced_files);
+
+  std::string encoded_data;
+  if (!EncodePageState(exploded_state, &encoded_data))
+    return frame_tree_->frame_entry->page_state();
+
+  return PageState::CreateFromEncodedData(encoded_data);
 }
 
 void NavigationEntryImpl::SetPageID(int page_id) {

@@ -85,7 +85,7 @@ class NavigationEntry {
   // the format is modified in the future, we should still be able to deal with
   // older versions.
   virtual void SetPageState(const PageState& state) = 0;
-  virtual const PageState& GetPageState() const = 0;
+  virtual PageState GetPageState() const = 0;
 
   // Describes the current page that the tab represents. This is the ID that the
   // renderer generated for the page and is how we can tell new versus
