@@ -86,11 +86,6 @@ class WindowTreeClientImpl : public WindowTreeConnection,
                      mojo::InterfaceRequest<mojom::Surface> surface,
                      mojom::SurfaceClientPtr client);
 
-  void set_change_acked_callback(const mojo::Callback<void(void)>& callback) {
-    change_acked_callback_ = callback;
-  }
-  void ClearChangeAckedCallback() { change_acked_callback_.reset(); }
-
   // Start/stop tracking windows. While tracked, they can be retrieved via
   // WindowTreeConnection::GetWindowById.
   void AddWindow(Window* window);
@@ -183,8 +178,6 @@ class WindowTreeClientImpl : public WindowTreeConnection,
                      const mojo::String& name,
                      mojo::Array<uint8_t> transit_data) override;
 
-  void OnActionCompleted(bool success);
-
   mojo::Callback<void(bool)> ActionCompletedCallback();
 
   // This is set once and only once when we get OnEmbed(). It gives the unique
@@ -197,8 +190,6 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   // Id used for the next change id supplied to the server.
   uint32_t next_change_id_;
   InFlightMap in_flight_map_;
-
-  mojo::Callback<void(void)> change_acked_callback_;
 
   WindowTreeDelegate* delegate_;
 

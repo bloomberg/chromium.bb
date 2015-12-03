@@ -660,13 +660,8 @@ void WindowTreeClientImpl::WmSetProperty(uint32_t change_id,
 ////////////////////////////////////////////////////////////////////////////////
 // WindowTreeClientImpl, private:
 
-void WindowTreeClientImpl::OnActionCompleted(bool success) {
-  if (!change_acked_callback_.is_null())
-    change_acked_callback_.Run();
-}
-
 mojo::Callback<void(bool)> WindowTreeClientImpl::ActionCompletedCallback() {
-  return [this](bool success) { OnActionCompleted(success); };
+  return [this](bool success) {};
 }
 
 }  // namespace mus
