@@ -52,6 +52,8 @@ static_library("util") {
       "product.cc",
       "product.h",
       "product_operations.h",
+      "registry_entry.cc",
+      "registry_entry.h",
       "self_cleaning_temp_dir.cc",
       "self_cleaning_temp_dir.h",
       "shell_util.cc",
