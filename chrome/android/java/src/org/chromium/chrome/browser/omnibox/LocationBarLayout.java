@@ -205,7 +205,6 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
     private boolean mSuggestionsShown;
     private boolean mUrlHasFocus;
     private boolean mUrlFocusedFromFakebox;
-    private boolean mHasRecordedUrlFocusSource;
 
     // Set to true when the user has started typing new input in the omnibox, set to false
     // when the omnibox loses focus or becomes empty.
@@ -276,7 +275,6 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
             if (mIgnoreURLBarModification) return;
 
             if (!mHasStartedNewOmniboxEditSession && mNativeInitialized) {
-                RecordUserAction.record("MobileFirstEditInOmnibox");
                 mAutocomplete.resetSession();
                 mHasStartedNewOmniboxEditSession = true;
                 mNewOmniboxEditSessionTimestamp = SystemClock.elapsedRealtime();
@@ -951,12 +949,13 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
     public void onUrlFocusChange(boolean hasFocus) {
         mUrlHasFocus = hasFocus;
         mUrlContainer.onUrlFocusChanged(hasFocus);
-        updateFocusSource(hasFocus);
         updateDeleteButtonVisibility();
         Tab currentTab = getCurrentTab();
         if (hasFocus) {
+            RecordUserAction.record("FocusLocation");
             mUrlBar.deEmphasizeUrl();
         } else {
+            mUrlFocusedFromFakebox = false;
             hideSuggestions();
 
             // Focus change caused by a close-tab may result in an invalid current tab.
@@ -2374,37 +2373,6 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
                     topResultQuery);
         }
         loadUrl(url, PageTransition.TYPED);
-    }
-
-    /**
-     * Tracks how the URL bar was focused (i.e. from the omnibox or the fakebox) and records a UMA
-     * stat for this. Should be called whenever the URL bar gains or loses focus.
-     * @param hasFocus Whether the URL bar now has focus.
-     */
-    private void updateFocusSource(boolean hasFocus) {
-        if (!hasFocus) {
-            mUrlFocusedFromFakebox = false;
-            mHasRecordedUrlFocusSource = false;
-            return;
-        }
-
-        // Record UMA event for how the URL bar was focused.
-        if (mHasRecordedUrlFocusSource) return;
-
-        Tab currentTab = getCurrentTab();
-        if (currentTab == null) return;
-
-        String url = currentTab.getUrl();
-        if (mUrlFocusedFromFakebox) {
-            RecordUserAction.record("MobileFocusedFakeboxOnNtp");
-        } else {
-            if (currentTab.isNativePage() && NewTabPage.isNTPUrl(url)) {
-                RecordUserAction.record("MobileFocusedOmniboxOnNtp");
-            } else {
-                RecordUserAction.record("MobileFocusedOmniboxNotOnNtp");
-            }
-        }
-        mHasRecordedUrlFocusSource = true;
     }
 
     @Override
