@@ -205,7 +205,9 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
   DrawingFrame frame;
   frame.render_passes_in_draw_order = render_passes_in_draw_order;
   frame.root_render_pass = root_render_pass;
-  frame.root_damage_rect = root_render_pass->damage_rect;
+  frame.root_damage_rect = Capabilities().using_partial_swap
+                               ? root_render_pass->damage_rect
+                               : root_render_pass->output_rect;
   frame.root_damage_rect.Union(overlay_processor_->GetAndResetOverlayDamage());
   frame.root_damage_rect.Intersect(gfx::Rect(device_viewport_rect.size()));
   frame.device_viewport_rect = device_viewport_rect;
@@ -224,7 +226,8 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
 
   if (output_surface_->IsDisplayedAsOverlayPlane()) {
     // Create the overlay candidate for the output surface, and mark it as
-    // always handled.
+    // always
+    // handled.
     OverlayCandidate output_surface_plane;
     output_surface_plane.display_rect =
         gfx::RectF(root_render_pass->output_rect);
@@ -251,18 +254,9 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
         &frame.ca_layer_overlay_list, &frame.root_damage_rect);
   }
 
-  // The damage rect might be empty now, but if empty swap isn't allowed we
-  // still have to draw.
-  bool should_draw = has_copy_requests || !frame.root_damage_rect.IsEmpty() ||
-                     !Capabilities().allow_empty_swap;
-  // If we have to draw but don't support partial swap the whole output should
-  // be considered damaged.
-  if (should_draw && !Capabilities().using_partial_swap)
-    frame.root_damage_rect = root_render_pass->output_rect;
-
   // If all damage is being drawn with overlays or CALayers then skip drawing
   // the render passes.
-  if (!should_draw) {
+  if (frame.root_damage_rect.IsEmpty() && !has_copy_requests) {
     BindFramebufferToOutputSurface(&frame);
   } else {
     for (const auto& pass : *render_passes_in_draw_order) {
