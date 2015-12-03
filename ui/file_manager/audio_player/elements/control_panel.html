@@ -7,7 +7,6 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/font-roboto/roboto.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-slider/paper-slider.html">
-<link rel="import" href="volume_controller.html">
 <link rel="import" href="chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/foreground/elements/files_icon_button.html">
 
 <dom-module id="control-panel">
@@ -50,24 +49,6 @@
             on-click="nextClick">
         </files-icon-button>
 
-        <div id="volumeContainer"
-             class="default-hidden"
-             anchor-point="bottom center">
-          <volume-controller id="volumeSlider" value="{{volume}}"
-                             width="32" height="85" value="50">
-          </volume-controller>
-
-          <polymer-anchor-point id="anchorHelper"></polymer-anchor-point>
-        </div>
-
-        <!-- Volume button in the bottom line. -->
-        <files-icon-button toggles
-            id="volumeButton"
-            class="volume media-button toggle"
-            anchor-point="bottom center"
-            active="{{volumeSliderShown}}">
-        </files-icon-button>
-
         <!-- Playlist button in the bottom line. -->
         <files-icon-button toggles
             id="playList"
@@ -75,12 +56,21 @@
             active="{{expanded}}">
         </files-icon-button>
       </div>
-      <div class="lower-controls time-controls">
+      <div class="lower-controls time-volume-controls">
+        <!-- Play/pause button and seek slider in the bottom line. -->
         <div class="time-container">
           <div class="time-spacer">[[computeTimeString_(duration, duration)]]</div>
           <div class="time">[[computeTimeString_(time, duration)]]</div>
         </div>
         <paper-slider id="timeSlider" max="[[duration]]" value="{{time::change}}"></paper-slider>
+
+        <!-- Volume button and slider in the bottom line. -->
+        <files-icon-button
+            id="volumeButton"
+            class="volume media-button"
+            on-click="volumeClick">
+        </files-icon-button>
+        <paper-slider id="volumeSlider"></paper-slider>
       </div>
     </div>
   </template>

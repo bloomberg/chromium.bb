@@ -34,6 +34,7 @@
 .media-button {
   background-color: transparent;
   border: 0;
+  flex: none;
   height: 32px;
   outline: none;  /* TODO(yoshiki): Show outline only on keyboard focus. */
   padding: 0;
@@ -59,13 +60,9 @@
   top: 0;
 }
 
-/* Custom sliders for progress and volume. */
+/* Time and volume controls. */
 
-/* Customize the standard input[type='range']. */
-
-/* Time controls: a slider and a text time display. */
-
-.time-controls {
+.time-volume-controls {
   align-items: center;
   display: flex;
   flex-direction: row;
@@ -73,7 +70,7 @@
   justify-content: center;
 }
 
-.time-controls > .time-container {
+.time-volume-controls > .time-container {
   color: rgb(51, 51, 51);
   cursor: default;
   flex: none;
@@ -96,10 +93,20 @@
   opacity: 0; /* This class is intended to be used as invisible spacer. */
 }
 
-.time-controls > paper-slider {
+.time-volume-controls > paper-slider {
   --paper-slider-active-color: rgb(66, 133, 244);
   --paper-slider-knob-color: rgb(64, 138, 241);
   flex: auto;
+}
+
+#timeSlider {
+  flex: 3 1 auto;
+  width: 118px;
+}
+
+#volumeSlider {
+  flex: 1 1 auto;
+  width: 82px;
 }
 
 .media-button.disabled,
@@ -176,20 +183,24 @@ paper-slider.disabled {
   margin-right: 8px;
 }
 
-.media-button.volume {
-  background-image: -webkit-image-set(
-      url(../assets/100/player_button_volume.png) 1x,
-      url(../assets/200/player_button_volume.png) 2x);
-  margin-left: 0;
-  margin-right: 8px;
-  pointer-events: auto;
-}
-
 .media-button.playlist {
   background-image: -webkit-image-set(
       url(../assets/100/player_button_playlist.png) 1x,
       url(../assets/200/player_button_playlist.png) 2x);
   pointer-events: auto;
+}
+
+.media-button.volume {
+  background-image: -webkit-image-set(
+      url(../assets/100/player_button_volume.png) 1x,
+      url(../assets/200/player_button_volume.png) 2x);
+  pointer-events: auto;
+}
+
+:host([volume='0']) .media-button.volume {
+  background-image: -webkit-image-set(
+      url(../assets/100/player_button_volume_muted.png) 1x,
+      url(../assets/200/player_button_volume_muted.png) 2x);
 }
 
 /* Invisible div used to compute the width required for the elapsed time. */
@@ -201,19 +212,4 @@ paper-slider.disabled {
   justify-content: flex-end;
   position: absolute;
   top: -1px;
-}
-
-/* Volume controls: sound button and volume slider */
-
-#volumeContainer {
-  border: 1px solid #ddd;
-  border-radius: 2px;
-  box-shadow: 0 2px 4px #777;
-  height: 110px;
-  position: fixed;
-  width: 32px;
-}
-
-#volumeContainer.default-hidden {
-  visibility: hidden;
 }

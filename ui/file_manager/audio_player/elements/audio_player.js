@@ -439,22 +439,6 @@ Polymer({
    */
   onKeyDown_: function(event) {
     switch (event.keyIdentifier) {
-      case 'Up':
-        if (this.$.audioController.volumeSliderShown && this.model.volume < 100)
-          this.model.volume += 1;
-        break;
-      case 'Down':
-        if (this.$.audioController.volumeSliderShown && this.model.volume > 0)
-          this.model.volume -= 1;
-        break;
-      case 'PageUp':
-        if (this.$.audioController.volumeSliderShown && this.model.volume < 91)
-          this.model.volume += 10;
-        break;
-      case 'PageDown':
-        if (this.$.audioController.volumeSliderShown && this.model.volume > 9)
-          this.model.volume -= 10;
-        break;
       case 'MediaNextTrack':
         this.onControllerNextClicked();
         break;

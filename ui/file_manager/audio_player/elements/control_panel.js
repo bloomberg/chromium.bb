@@ -81,7 +81,9 @@
        */
       volume: {
         type: Number,
-        notify: true
+        notify: true,
+        reflectToAttribute: true,
+        observer: 'volumeChanged_'
       },
 
       /**
@@ -90,16 +92,6 @@
       expanded: {
         type: Boolean,
         value: false,
-        notify: true
-      },
-
-      /**
-       * Whether the volume slider is expanded or not.
-       */
-      volumeSliderShown: {
-        type: Boolean,
-        value: false,
-        observer: 'volumeSliderShownChanged',
         notify: true
       },
 
@@ -126,18 +118,25 @@
      * element is ready.
      */
     ready: function() {
-      var onFocusoutBound = this.onVolumeControllerFocusout_.bind(this);
-
-      this.$.volumeSlider.addEventListener('focusout', onFocusoutBound);
-      this.$.volumeButton.addEventListener('focusout', onFocusoutBound);
-
-      this.$.timeSlider.addEventListener('value-change', function() {
+      var timeSlider = /** @type {PaperSliderElement} */ (this.$.timeSlider);
+      timeSlider.addEventListener('change', function() {
         if (this.dragging)
           this.dragging = false;
       }.bind(this));
-      this.$.timeSlider.addEventListener('immediate-value-change', function() {
+      timeSlider.addEventListener('immediate-value-change', function() {
         if (!this.dragging)
           this.dragging = true;
+      }.bind(this));
+
+      // Update volume on user inputs for volume slider.
+      // During a drag operation, the volume should be updated immediately.
+      var volumeSlider =
+          /** @type {PaperSliderElement} */ (this.$.volumeSlider);
+      volumeSlider.addEventListener('change', function() {
+        this.volume = volumeSlider.value;
+      }.bind(this));
+      volumeSlider.addEventListener('immediate-value-change', function() {
+        this.volume = volumeSlider.immediateValue;
       }.bind(this));
     },
 
@@ -163,40 +162,14 @@
     },
 
     /**
-     * Invoked when the property 'volumeSliderShown' changes.
-     * @param {boolean} shown
+     * Invoked when the volume button is clicked.
      */
-    volumeSliderShownChanged: function(shown) {
-      this.showVolumeController_(shown);
-    },
-
-    /**
-     * Invoked when the focus goes out of the volume elements.
-     * @param {!UIEvent} event The focusout event.
-     * @private
-     */
-    onVolumeControllerFocusout_: function(event) {
-      if (this.volumeSliderShown) {
-        // If the focus goes out of the volume, hide the volume control.
-        if (!event.relatedTarget ||
-            (!this.$.volumeButton.contains(event.relatedTarget) &&
-             !this.$.volumeSlider.contains(event.relatedTarget))) {
-          this.volumeSliderShown = false;
-        }
-      }
-    },
-
-    /**
-     * Shows/hides the volume controller.
-     * @param {boolean} show True to show the controller, false to hide.
-     * @private
-     */
-    showVolumeController_: function(show) {
-      if (show) {
-        matchBottomLine(this.$.volumeContainer, this.$.volumeButton);
-        this.$.volumeContainer.style.visibility = 'visible';
+    volumeClick: function() {
+      if (this.volume !== 0) {
+        this.savedVolume_ = this.volume;
+        this.volume = 0;
       } else {
-        this.$.volumeContainer.style.visibility = 'hidden';
+        this.volume = this.savedVolume_ || 50;
       }
     },
 
@@ -232,6 +205,21 @@
     },
 
     /**
+     * Invoked when the volume property is changed.
+     * @param {number} volume
+     * @private
+     */
+    volumeChanged_: function(volume) {
+      if (!this.$.volumeSlider.dragging)
+        this.$.volumeSlider.value = volume;
+
+      if (this.ariaLabels) {
+        this.$.volumeButton.setAttribute('aria-label',
+            volume !== 0 ? this.ariaLabels.mute : this.ariaLabels.unmute);
+      }
+    },
+
+    /**
      * Invoked when the ariaLabels property is changed.
      * @param {Object} ariaLabels
      * @private
@@ -249,6 +237,9 @@
       this.$.volumeButton.setAttribute('aria-label', ariaLabels.volume);
       this.$.playList.setAttribute('aria-label', ariaLabels.playList);
       this.$.timeSlider.setAttribute('aria-label', ariaLabels.seekSlider);
+      this.$.volumeButton.setAttribute('aria-label',
+          this.volume !== 0 ? ariaLabels.mute : ariaLabels.unmute);
+      this.$.volumeSlider.setAttribute('aria-label', ariaLabels.volumeSlider);
     }
   });
 })();  // Anonymous closure

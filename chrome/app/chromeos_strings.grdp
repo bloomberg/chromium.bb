@@ -1056,9 +1056,6 @@ Press any key to continue exploring.
   <message name="IDS_AUDIO_PLAYER_REPEAT_BUTTON_LABEL" desc="Label for the Repeat button of audio player">
     Repeat
   </message>
-  <message name="IDS_AUDIO_PLAYER_OPEN_VOLUME_SLIDER_BUTTON_LABEL" desc="Label for a button which is used to open volume slider in audio player.">
-    Open volume slider
-  </message>
   <message name="IDS_AUDIO_PLAYER_OPEN_PLAY_LIST_BUTTON_LABEL" desc="Label for a button which is used to open play list in audio player.">
     Open play list
   </message>
