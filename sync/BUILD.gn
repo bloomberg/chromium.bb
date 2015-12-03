@@ -554,12 +554,14 @@ static_library("test_support_sync_core") {
 static_library("test_support_sync_internal_api") {
   testonly = true
   sources = [
+    "internal_api/public/test/fake_model_type_service.h",
     "internal_api/public/test/fake_sync_manager.h",
     "internal_api/public/test/null_sync_context_proxy.h",
     "internal_api/public/test/sync_manager_factory_for_profile_sync_test.h",
     "internal_api/public/test/test_entry_factory.h",
     "internal_api/public/test/test_internal_components_factory.h",
     "internal_api/public/test/test_user_share.h",
+    "internal_api/test/fake_model_type_service.cc",
     "internal_api/test/fake_sync_manager.cc",
     "internal_api/test/null_sync_context_proxy.cc",
     "internal_api/test/sync_manager_factory_for_profile_sync_test.cc",

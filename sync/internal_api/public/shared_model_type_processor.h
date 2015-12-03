@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "sync/api/model_type_change_processor.h"
+#include "sync/api/model_type_service.h"
 #include "sync/api/sync_error.h"
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
@@ -23,7 +24,6 @@ namespace syncer_v2 {
 struct ActivationContext;
 class CommitQueue;
 class ModelTypeEntity;
-class ModelTypeStore;
 
 // A sync component embedded on the synced type's thread that helps to handle
 // communication between sync and model type threads.
@@ -32,8 +32,7 @@ class SYNC_EXPORT_PRIVATE SharedModelTypeProcessor
       public ModelTypeChangeProcessor,
       base::NonThreadSafe {
  public:
-  SharedModelTypeProcessor(syncer::ModelType type,
-                           base::WeakPtr<ModelTypeStore> store);
+  SharedModelTypeProcessor(syncer::ModelType type, ModelTypeService* service);
   ~SharedModelTypeProcessor() override;
 
   typedef base::Callback<void(syncer::SyncError, scoped_ptr<ActivationContext>)>
@@ -134,10 +133,10 @@ class SYNC_EXPORT_PRIVATE SharedModelTypeProcessor
   // them across restarts, and keep them in sync with our progress markers.
   UpdateMap pending_updates_map_;
 
-  // Store is supplied by model type implementation. SharedModelTypeProcessor
-  // uses store for persisting sync related data (entity state and data type
-  // state).
-  base::WeakPtr<ModelTypeStore> store_;
+  // ModelTypeService linked to this processor.
+  // The service owns this processor instance so the pointer should never
+  // become invalid.
+  ModelTypeService* const service_;
 
   // We use two different WeakPtrFactories because we want the pointers they
   // issue to have different lifetimes.  When asked to disconnect from the sync

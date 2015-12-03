@@ -11,6 +11,7 @@
 #include "sync/internal_api/public/activation_context.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/non_blocking_sync_common.h"
+#include "sync/internal_api/public/test/fake_model_type_service.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/syncable/syncable_util.h"
 #include "sync/test/engine/mock_commit_queue.h"
@@ -41,7 +42,8 @@ static const syncer::ModelType kModelType = syncer::PREFERENCES;
 // - Writes to permanent storage. (TODO)
 // - Callbacks into the model. (TODO)
 // - Requests to the sync thread.  Tested with MockCommitQueue.
-class SharedModelTypeProcessorTest : public ::testing::Test {
+class SharedModelTypeProcessorTest : public ::testing::Test,
+                                     public FakeModelTypeService {
  public:
   SharedModelTypeProcessorTest();
   ~SharedModelTypeProcessorTest() override;
@@ -129,6 +131,9 @@ class SharedModelTypeProcessorTest : public ::testing::Test {
   void StartDone(syncer::SyncError error,
                  scoped_ptr<ActivationContext> context);
 
+  // FakeModelTypeService overrides.
+  std::string GetClientTag(const EntityData& entity_data) override;
+
   // This sets ThreadTaskRunnerHandle on the current thread, which the type
   // processor will pick up as the sync task runner.
   base::MessageLoop sync_loop_;
@@ -145,9 +150,7 @@ class SharedModelTypeProcessorTest : public ::testing::Test {
 SharedModelTypeProcessorTest::SharedModelTypeProcessorTest()
     : mock_queue_(new MockCommitQueue()),
       mock_queue_ptr_(mock_queue_),
-      type_processor_(
-          new SharedModelTypeProcessor(kModelType,
-                                       base::WeakPtr<ModelTypeStore>())) {}
+      type_processor_(new SharedModelTypeProcessor(kModelType, this)) {}
 
 SharedModelTypeProcessorTest::~SharedModelTypeProcessorTest() {}
 
@@ -336,6 +339,12 @@ SharedModelTypeProcessorTest::GenerateEncryptedSpecifics(
   specifics.mutable_encrypted()->set_key_name(key_name);
   specifics.mutable_encrypted()->set_blob("BLOB" + key_name);
   return specifics;
+}
+
+std::string SharedModelTypeProcessorTest::GetClientTag(
+    const EntityData& entity_data) {
+  // The tag is the preference name - see GenerateSpecifics.
+  return entity_data.specifics.preference().name();
 }
 
 size_t SharedModelTypeProcessorTest::GetNumCommitRequestLists() {

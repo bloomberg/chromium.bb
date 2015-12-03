@@ -13,11 +13,8 @@
 #include "sync/api/entity_change.h"
 #include "sync/api/entity_data.h"
 #include "sync/api/model_type_change_processor.h"
+#include "sync/api/sync_error.h"
 #include "sync/base/sync_export.h"
-
-namespace syncer {
-class SyncError;
-}  // namespace syncer
 
 namespace syncer_v2 {
 

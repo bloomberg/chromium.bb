@@ -69,15 +69,16 @@ void ModelTypeProcessorProxy::OnUpdateReceived(
 
 }  // namespace
 
-SharedModelTypeProcessor::SharedModelTypeProcessor(
-    syncer::ModelType type,
-    base::WeakPtr<ModelTypeStore> store)
+SharedModelTypeProcessor::SharedModelTypeProcessor(syncer::ModelType type,
+                                                   ModelTypeService* service)
     : type_(type),
       is_enabled_(false),
       is_connected_(false),
-      store_(store),
+      service_(service),
       weak_ptr_factory_for_ui_(this),
-      weak_ptr_factory_for_sync_(this) {}
+      weak_ptr_factory_for_sync_(this) {
+  DCHECK(service);
+}
 
 SharedModelTypeProcessor::~SharedModelTypeProcessor() {}
 
@@ -272,8 +273,8 @@ void SharedModelTypeProcessor::OnUpdateReceived(
     ModelTypeEntity* entity = nullptr;
     EntityMap::const_iterator it = entities_.find(client_tag_hash);
     if (it == entities_.end()) {
-      // TODO(stanisc): crbug/561821: Get client_tag from the service.
-      std::string client_tag = client_tag_hash;
+      // Let the service define |client_tag| based on the entity data.
+      std::string client_tag = service_->GetClientTag(data);
 
       scoped_ptr<ModelTypeEntity> scoped_entity = ModelTypeEntity::CreateNew(
           client_tag, client_tag_hash, data.id, data.creation_time);

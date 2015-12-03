@@ -9,6 +9,7 @@
 #include "sync/internal_api/public/activation_context.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/shared_model_type_processor.h"
+#include "sync/internal_api/public/test/fake_model_type_service.h"
 #include "sync/sessions/model_type_registry.h"
 #include "sync/test/engine/fake_model_worker.h"
 #include "sync/test/engine/mock_nudge_handler.h"
@@ -17,17 +18,8 @@
 
 namespace syncer {
 
-namespace {
-
-scoped_ptr<syncer_v2::SharedModelTypeProcessor> MakeModelTypeProcessor(
-    ModelType type) {
-  return make_scoped_ptr(new syncer_v2::SharedModelTypeProcessor(
-      type, base::WeakPtr<syncer_v2::ModelTypeStore>()));
-}
-
-}  // namespace
-
-class ModelTypeRegistryTest : public ::testing::Test {
+class ModelTypeRegistryTest : public ::testing::Test,
+                              syncer_v2::FakeModelTypeService {
  public:
   ModelTypeRegistryTest();
   void SetUp() override;
@@ -52,6 +44,12 @@ class ModelTypeRegistryTest : public ::testing::Test {
     context->saved_pending_updates = saved_pending_updates;
     context->type_processor = type_processor.Pass();
     return context.Pass();
+  }
+
+ protected:
+  scoped_ptr<syncer_v2::SharedModelTypeProcessor> MakeModelTypeProcessor(
+      ModelType type) {
+    return make_scoped_ptr(new syncer_v2::SharedModelTypeProcessor(type, this));
   }
 
  private:

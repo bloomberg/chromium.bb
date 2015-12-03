@@ -11,6 +11,7 @@
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/shared_model_type_processor.h"
 #include "sync/internal_api/public/sync_context.h"
+#include "sync/internal_api/public/test/fake_model_type_service.h"
 #include "sync/internal_api/sync_context_proxy_impl.h"
 #include "sync/sessions/model_type_registry.h"
 #include "sync/test/engine/mock_nudge_handler.h"
@@ -19,7 +20,7 @@
 
 namespace syncer_v2 {
 
-class SyncContextProxyImplTest : public ::testing::Test {
+class SyncContextProxyImplTest : public ::testing::Test, FakeModelTypeService {
  public:
   SyncContextProxyImplTest()
       : sync_task_runner_(base::ThreadTaskRunnerHandle::Get()),
@@ -54,8 +55,7 @@ class SyncContextProxyImplTest : public ::testing::Test {
   }
 
   scoped_ptr<SharedModelTypeProcessor> CreateModelTypeProcessor() {
-    return make_scoped_ptr(new SharedModelTypeProcessor(
-        syncer::THEMES, base::WeakPtr<ModelTypeStore>()));
+    return make_scoped_ptr(new SharedModelTypeProcessor(syncer::THEMES, this));
   }
 
  private:

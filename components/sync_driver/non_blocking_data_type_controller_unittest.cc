@@ -19,6 +19,7 @@
 #include "sync/engine/commit_queue.h"
 #include "sync/internal_api/public/activation_context.h"
 #include "sync/internal_api/public/shared_model_type_processor.h"
+#include "sync/internal_api/public/test/fake_model_type_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace sync_driver_v2 {
@@ -187,9 +188,9 @@ class NonBlockingDataTypeControllerTest : public testing::Test,
 
  protected:
   void CreateTypeProcessor() {
-    // TODO(pavely): stop passing ModelTypeStore.
-    type_processor_.reset(new syncer_v2::SharedModelTypeProcessor(
-        syncer::DICTIONARY, base::WeakPtr<syncer_v2::ModelTypeStore>()));
+    // TODO(stanisc): Controller should discover the service via SyncClient.
+    type_processor_.reset(
+        new syncer_v2::SharedModelTypeProcessor(syncer::DICTIONARY, &service_));
     type_processor_for_ui_ = type_processor_->AsWeakPtrForUI();
   }
 
@@ -330,6 +331,7 @@ class NonBlockingDataTypeControllerTest : public testing::Test,
   scoped_refptr<base::TestSimpleTaskRunner> sync_thread_runner_;
   MockSyncBackend backend_;
   MockBackendDataTypeConfigurer configurer_;
+  syncer_v2::FakeModelTypeService service_;
 };
 
 TEST_F(NonBlockingDataTypeControllerTest, InitialState) {
