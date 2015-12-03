@@ -18,6 +18,7 @@
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
+#include "ui/gl/gl_version_info.h"
 
 namespace {
 
@@ -102,8 +103,24 @@ CollectInfoResult CollectGraphicsInfoGL(GPUInfo* gpu_info) {
   gpu_info->gl_extensions = gfx::GetGLExtensionsFromCurrentContext();
   gpu_info->gl_version = GetGLString(GL_VERSION);
   std::string glsl_version_string = GetGLString(GL_SHADING_LANGUAGE_VERSION);
+
+  gfx::GLVersionInfo gl_info(gpu_info->gl_version.c_str(),
+                             gpu_info->gl_renderer.c_str(),
+                             gpu_info->gl_extensions.c_str());
   GLint max_samples = 0;
-  glGetIntegerv(GL_MAX_SAMPLES, &max_samples);
+  if (gl_info.IsAtLeastGL(3, 0) || gl_info.IsAtLeastGLES(3, 0) ||
+      gpu_info->gl_extensions.find("GL_ANGLE_framebuffer_multisample") !=
+          std::string::npos ||
+      gpu_info->gl_extensions.find("GL_APPLE_framebuffer_multisample") !=
+          std::string::npos ||
+      gpu_info->gl_extensions.find("GL_EXT_framebuffer_multisample") !=
+          std::string::npos ||
+      gpu_info->gl_extensions.find("GL_EXT_multisampled_render_to_texture") !=
+          std::string::npos ||
+      gpu_info->gl_extensions.find("GL_NV_framebuffer_multisample") !=
+          std::string::npos) {
+    glGetIntegerv(GL_MAX_SAMPLES, &max_samples);
+  }
   gpu_info->max_msaa_samples = base::IntToString(max_samples);
   UMA_HISTOGRAM_SPARSE_SLOWLY("GPU.MaxMSAASampleCount", max_samples);
 
