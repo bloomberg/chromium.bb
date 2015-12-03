@@ -867,49 +867,6 @@ Signing in anyway will merge Chromium information like bookmarks, history, and o
         Copied to Chromium
       </message>
 
-      <!-- Network Error Pages -->
-      <message name="IDS_ERRORPAGES_SUGGESTION_FIREWALL_CONFIG_HEADER" desc="When a webpage fails to load, in some cases we suggest reconfiguring the firewall.  This is a header above some details.">
-        Allow Chromium to access the network in your firewall or antivirus
-        settings.
-      </message>
-      <if expr="is_macosx">
-        <message name="IDS_ERRORPAGES_SUGGESTION_PROXY_DISABLE_PLATFORM" desc="Mac OSX instructions for disabling use of a proxy server.">
-          Go to
-          Applications &gt; System Preferences &gt; Network &gt; Advanced &gt; Proxies
-          and deselect any proxies that have been selected.
-        </message>
-      </if>
-      <if expr="is_android or is_ios">
-        <message name="IDS_ERRORPAGES_SUGGESTION_PROXY_DISABLE_PLATFORM" desc="Instructions for disabling use of a proxy server (leave empty for Android and iOS).">
-        </message>
-      </if>
-      <if expr="not chromeos and is_posix and not is_macosx and not is_android and not is_ios">
-        <message name="IDS_ERRORPAGES_SUGGESTION_PROXY_DISABLE_PLATFORM" desc="Linux instructions for disabling use of a proxy server.">
-          Go to
-          the Chromium menu &gt;
-          <ph name="SETTINGS_TITLE">&lt;span jscontent="settingsTitle"&gt;&lt;/span&gt;<ex>Settings</ex></ph>
-          &gt;
-          <ph name="ADVANCED_TITLE">&lt;span jscontent="advancedTitle"&gt;&lt;/span&gt;<ex>Under the Hood</ex></ph>
-          &gt;
-          <ph name="PROXIES_TITLE">&lt;span jscontent="proxyTitle"&gt;&lt;/span&gt;<ex>Change proxy settings...</ex></ph>
-          and make sure your configuration is set to &quot;no proxy&quot; or &quot;direct.&quot;
-        </message>
-      </if>
-      <if expr="is_win">
-        <message name="IDS_ERRORPAGES_SUGGESTION_PROXY_DISABLE_PLATFORM" desc="Windows instructions for disabling use of a proxy server.">
-          Go to
-          the Chromium menu &gt;
-          <ph name="SETTINGS_TITLE">&lt;span jscontent="settingsTitle"&gt;&lt;/span&gt;<ex>Settings</ex></ph>
-          &gt;
-          <ph name="ADVANCED_TITLE">&lt;span jscontent="advancedTitle"&gt;&lt;/span&gt;<ex>Under the Hood</ex></ph>
-          &gt;
-          <ph name="PROXIES_TITLE">&lt;span jscontent="proxyTitle"&gt;&lt;/span&gt;<ex>Change proxy settings...</ex></ph>
-          &gt;
-          LAN Settings
-          and deselect the &quot;Use a proxy server for your LAN&quot; checkbox.
-        </message>
-      </if>
-
       <!-- Chrome OS keyboard overlay-->
       <if expr="chromeos">
         <message name="IDS_KEYBOARD_OVERLAY_SHOW_WRENCH_MENU" desc="The text in the keyboard overlay to explain the shortcut that opens the main Chrome menu.">
@@ -1192,13 +1149,6 @@ and incorrect credentials. This may happen when an attacker is trying to pretend
       <message name="IDS_SSL_NONOVERRIDABLE_INVALID" desc="A sentence to explain why the user can't proceed.">
       You cannot visit <ph name="SITE">$1<ex>google.com</ex></ph> right now because the website sent scrambled credentials that Chromium cannot process. Network errors and attacks are usually temporary, so this page will probably work later.
       </message>
-
-      <!-- Offline interstitial  -->
-      <if expr="not is_android and not is_ios">
-        <message name="IDS_ERRORPAGES_SUMMARY_INTERNET_DISCONNECTED" desc="Summary of the error page when the network connection failed. May be followed by platform dependent instructions.">
-        Chromium can't display the webpage because your computer isn't connected to the Internet.
-        </message>
-      </if>
 
       <!-- Runtime permission strings -->
       <if expr="is_android">

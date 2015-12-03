@@ -109,6 +109,7 @@
 #include "components/search_engines/template_url_service.h"
 #include "components/security_interstitials/core/controller_client.h"
 #include "components/ssl_config/ssl_config_prefs.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/translate/core/browser/language_state.h"
 #include "components/translate/core/browser/translate_infobar_delegate.h"
 #include "components/variations/service/variations_service.h"

@@ -177,113 +177,113 @@
     "includes": [23650],
   },
   "content/content_resources.grd": {
-    "includes": [24650],
+    "includes": [24150],
   },
   "content/shell/shell_resources.grd": {
-    "includes": [25150],
+    "includes": [24650],
   },
   # This file is generated during the build.
   "<(SHARED_INTERMEDIATE_DIR)/content/browser/tracing/tracing_resources.grd": {
-    "includes": [25400],
+    "includes": [24900],
   },
   # iOS resources overlap with android_webview, ash, chromeos and extensions_api,
   # as these are not used on iOS.
   "ios/chrome/app/strings/ios_locale_settings.grd": {
-    "messages": [25650],
+    "messages": [25150],
   },
   "ios/chrome/app/strings/ios_strings.grd": {
-    "messages": [25655],
+    "messages": [25155],
   },
   # Chromium strings and Google Chrome strings must start at the same id.
   # We only use one file depending on whether we're building Chromium or
   # Google Chrome.
   "ios/chrome/app/strings/ios_chromium_strings.grd": {
-    "messages": [26555],
+    "messages": [26055],
   },
   "ios/chrome/app/strings/ios_google_chrome_strings.grd": {
-    "messages": [26555],
+    "messages": [26055],
   },
   "ios/chrome/app/theme/ios_theme_resources.grd": {
-    "structures": [26655],
+    "structures": [26155],
   },
   "ios/chrome/today_extension/strings/ios_today_extension_strings.grd": {
-    "messages": [27135],
+    "messages": [26635],
   },
   "ash/ash_strings.grd": {
-    "messages": [25650],
+    "messages": [25150],
   },
   "android_webview/ui/aw_resources.grd": {
-    "includes": [25650],
+    "includes": [25150],
   },
   "android_webview/ui/aw_strings.grd": {
-    "messages": [25750],
+    "messages": [25250],
   },
   "ui/chromeos/resources/ui_chromeos_resources.grd": {
-    "structures": [25850],
+    "structures": [25350],
   },
   "ui/chromeos/ui_chromeos_strings.grd": {
-    "messages": [25950],
+    "messages": [25450],
   },
   "chrome/common/extensions_api_resources.grd": {
-    "includes": [26050],
+    "includes": [25550],
   },
   "extensions/extensions_resources.grd": {
-    "includes": [26250],
+    "includes": [25750],
   },
   "extensions/browser/resources/extensions_browser_resources.grd": {
-    "structures": [26450],
+    "structures": [25950],
   },
   "extensions/renderer/resources/extensions_renderer_resources.grd": {
-    "includes": [26500],
-    "structures": [26600],
+    "includes": [26000],
+    "structures": [26100],
   },
   "extensions/extensions_strings.grd": {
-    "messages": [26650],
+    "messages": [26150],
   },
   "extensions/shell/app_shell_resources.grd": {
-    "includes": [27050],
+    "includes": [26550],
   },
   "chrome/browser/resources/memory_internals_resources.grd": {
-    "includes": [27150],
+    "includes": [26650],
   },
   "chrome/browser/resources/password_manager_internals_resources.grd": {
-    "includes": [27350],
+    "includes": [26850],
   },
   "device/bluetooth/bluetooth_strings.grd": {
-    "messages": [27650],
+    "messages": [27150],
   },
   "ui/file_manager/file_manager_resources.grd": {
-    "includes": [27760],
+    "includes": [27260],
   },
   "components/chrome_apps/chrome_apps_resources.grd": {
-    "includes": [27940],
+    "includes": [27440],
   },
   "ui/login/login_resources.grd": {
-    "includes": [27960],
+    "includes": [27460],
   },
   "chrome/browser/resources/translate_internals_resources.grd": {
-    "includes": [28160],
+    "includes": [27660],
   },
   "chrome/browser/resources/sync_file_system_internals_resources.grd": {
-    "includes": [28660],
+    "includes": [28160],
   },
   "chrome/app/address_input_strings.grd": {
-    "messages": [28760],
+    "messages": [28260],
   },
   "remoting/resources/remoting_strings.grd": {
-    "messages": [29210],
+    "messages": [28710],
   },
   "components/components_strings.grd": {
-    "messages": [29660],
+    "messages": [29160],
   },
   # Chromium strings and Google Chrome strings must start at the same id.
   # We only use one file depending on whether we're building Chromium or
   # Google Chrome.
   "components/components_chromium_strings.grd": {
-    "messages": [30160],
+    "messages": [30150],
   },
   "components/components_google_chrome_strings.grd": {
-    "messages": [30160],
+    "messages": [30150],
   },
   "components/resources/components_resources.grd": {
     "includes": [30175],

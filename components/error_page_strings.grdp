@@ -1,6 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
 <grit-part>
 
+  <message name="IDS_ERRORPAGE_NET_BUTTON_DETAILS" desc="Label for the button that expands the details on a net error page">
+    Details
+  </message>
+  <message name="IDS_ERRORPAGE_NET_BUTTON_HIDE_DETAILS" desc="Label for the button that hides the details on a net error page">
+    Hide details
+  </message>
+  <message name="IDS_ERRORPAGES_BUTTON_MORE" desc="Label for the button that expands the details on an error page">
+    More
+  </message>
+  <message name="IDS_ERRORPAGES_BUTTON_LESS" desc="Label for the button that hides the details on an error page">
+    Less
+  </message>
+  <message name="IDS_ERRORPAGES_BUTTON_RELOAD" desc="Label for the button on an error page to reload the page">
+    Reload
+  </message>
+  <message name="IDS_ERRORPAGES_BUTTON_SHOW_SAVED_COPY" desc="Label for the button on an error page to show a saved entry from the cache">
+    Show saved copy
+  </message>
+  <if expr="not is_android">
+    <message name="IDS_ERRORPAGES_BUTTON_SHOW_SAVED_COPY_HELP" desc="Explanation for the BUTTON_SHOW_SAVED button">
+      Show a saved (i.e. known to be out of date) copy of this page.
+    </message>
+  </if>
+  <if expr="is_android">
+    <message name="IDS_ERRORPAGES_BUTTON_SHOW_SAVED_COPY_HELP" desc="Mobile: Explanation for the BUTTON_SHOW_SAVED button">
+      Show saved copy
+    </message>
+  </if>
+  <if expr="is_android">
+    <message name="IDS_ERRORPAGES_BUTTON_SHOW_OFFLINE_PAGES" desc="Label for the button on an error page to show pages that have been saved offline">
+      Show all saved pages
+    </message>
+    <message name="IDS_ERRORPAGES_BUTTON_SHOW_OFFLINE_COPY" desc="Label for the button on an error page to show the copy of this page that has been saved offline">
+      Show saved copy
+    </message>
+  </if>
+  <message name="IDS_ERRORPAGE_FUN_DISABLED" desc="Explanation for when easter egg has been disabled by administrator">
+    The owner of this device turned off the dinosaur game.
+  </message>
+  <message name="IDS_ERRORPAGES_BUTTON_DIAGNOSE" desc="Label for the button that invokes the connection diagnostic tool on the error page">
+    Diagnose errors...
+  </message>
+  <if expr="is_android">
+    <message name="IDS_ERRORPAGES_BUTTON_SETTINGS" desc="Mobile: Label for the button on an error page to launch system settings menu">
+      Settings
+    </message>
+  </if>
+
   <message name="IDS_ERRORPAGES_SUGGESTION_VISIT_GOOGLE_CACHE" desc="When a page fails to load, sometimes we viewing a version of the page cached on Google's servers.">
     Access a <ph name="BEGIN_LINK">&lt;a jsvalues="href:urlCorrection;.jstdata:$this" onmousedown="linkClicked(this.jstdata)"&gt;</ph>cached copy<ph name="END_LINK">&lt;/a&gt;</ph> of <ph name="URL">&lt;span jscontent="originalUrlForDisplay"&gt;&lt;/span&gt;<ex>www.hats-for-goats.com/shiny</ex></ph>
   </message>
@@ -10,5 +58,602 @@
   <message name="IDS_ERRORPAGES_SUGGESTION_ALTERNATE_URL" desc="When a page fails to load, sometimes we suggest different URL (maybe a different page on the same site, or a site with similar content, for example).">
     Go to <ph name="LINK">&lt;a jsvalues="href:urlCorrection;.jstdata:$this" onmousedown="linkClicked(this.jstdata)" jscontent="urlCorrectionForDisplay"&gt;&lt;/a&gt;<ex>www.somewhere.com</ex></ph>
   </message>
+  <message name="IDS_ERRORPAGES_SUGGESTION_RELOAD_REPOST_HEADER" desc="When a page fails to load, sometimes we suggest reloading a page.  In the case that reloading the page requires resubmitting data to a website, we use this as a header above a short set of instructions.">
+    Reload this webpage
+  </message>
+  <message name="IDS_ERRORPAGES_SUGGESTION_RELOAD_REPOST_BODY" desc="When a page fails to load, sometimes we suggest reloading a page.  In the case that reloading the page requires resubmitting data to a website, this is displayed below a short header.">
+    Press the reload button to resubmit the data needed to load the page.
+  </message>
+  <message name="IDS_ERRORPAGES_SUGGESTION_DISABLE_EXTENSION_HEADER" desc="When a page fails to load, we provide a suggestion that the user try disabling an extension that's blocking it.">
+    Disable your extensions and then reload this webpage
+  </message>
+  <message name="IDS_ERRORPAGES_SUGGESTION_CHECK_CONNECTION_HEADER" desc="When a page fails to load, sometimes we suggest checking the network connections.  This is a header above some details.">
+    Check your Internet connection
+  </message>
+  <message name="IDS_ERRORPAGES_SUGGESTION_CHECK_CONNECTION_BODY" desc="When a page fails to load, sometimes we suggest checking the network connections.  This contains details below the suggestion.">
+    Check any cables and reboot any routers, modems, or other network
+    devices you may be using.
+  </message>
+  <message name="IDS_ERRORPAGES_SUGGESTION_DNS_CONFIG_HEADER" desc="When a page fails to load, sometimes we suggest checking the DNS configuration.  This is a header above above some details.">
+    Check your DNS settings
+  </message>
+  <message name="IDS_ERRORPAGES_SUGGESTION_DNS_CONFIG_BODY" desc="When a page fails to load, sometimes we suggest checking the DNS configuration.  This contains details below the suggestion.">
+    Contact your network administrator if you're not sure what this means.
+  </message>
+  <message name="IDS_ERRORPAGES_SUGGESTION_NETWORK_PREDICTION_HEADER" desc="When a page fails to load, sometimes we suggest disabling predicting network actions.  This is a header above some details.">
+    Try disabling network prediction
+  </message>
+  <message name="IDS_ERRORPAGES_SUGGESTION_FIREWALL_CONFIG_BODY" desc="When a webpage fails to load, in some cases we suggest reconfiguring the firewall.  This contains details below the suggestion.">
+    If it is already listed as a program allowed to access the network, try
+    removing it from the list and adding it again.
+  </message>
+  <message name="IDS_ERRORPAGES_SUGGESTION_PROXY_CONFIG_HEADER" desc="When a webpage fails to load, in some cases we suggest checking the proxy server configuration, or disabling the proxy server.  This is a header above some details.">
+    If you use a proxy server...
+  </message>
+  <if expr="is_android or is_ios">
+    <message name="IDS_ERRORPAGES_SUGGESTION_PROXY_CONFIG_BODY" desc="When a webpage fails to load, in some cases we suggest checking the proxy server configuration, or disabling the proxy server.  These are instructions below a header.">
+      Check your proxy settings or contact your network administrator to
+      make sure the proxy server is working.
+      <ph name="PLATFORM_TEXT">$1<ex>Goto the wrench menu and choose Fix It.</ex></ph>
+    </message>
+  </if>
+  <if expr="not is_android and not is_ios">
+    <message name="IDS_ERRORPAGES_SUGGESTION_PROXY_CONFIG_BODY" desc="When a webpage fails to load, in some cases we suggest checking the proxy server configuration, or disabling the proxy server.  These are instructions below a header.">
+      Check your proxy settings or contact your network administrator to
+      make sure the proxy server is working. If you don't believe you should
+      be using a proxy server:
+      <ph name="PLATFORM_TEXT">$1<ex>Goto the wrench menu and choose Fix It.</ex></ph>
+    </message>
+  </if>
+  <if expr="chromeos">
+    <message name="IDS_ERRORPAGES_SUGGESTION_PROXY_DISABLE_PLATFORM" desc="Chrome OS instructions for disabling use of a proxy server.">
+      You can disable any proxies configured for a connection from the settings page.
+    </message>
+  </if>
+  <message name="IDS_ERRORPAGES_SUGGESTION_LEARNMORE_BODY" desc="When a webpage fails to load, we provide a link to the help center to learn more about the failure.">
+    <ph name="BEGIN_LINK">&lt;a jsvalues="href:learnMoreUrl"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph> about this problem.
+  </message>
+  <message name="IDS_ERRORPAGES_SUGGESTION_VIEW_POLICIES_HEADER" desc="When a webpage fails to load, sometimes we suggest to the user to view the current policies.  This is a header above some instructions.">
+    Check your administrator's policies
+  </message>
+  <message name="IDS_ERRORPAGES_SUGGESTION_VIEW_POLICIES_BODY" desc="When a webpage fails to load, sometimes we suggest to the user to view the current policies.  These are instructions below a header.">
+    Visit &lt;strong&gt;chrome://policy&lt;/strong&gt; to see the list of blacklisted URLs and other policies enforced by your system administrator.
+  </message>
+  <message name="IDS_ERRORPAGES_SUGGESTION_CONTACT_ADMINISTRATOR_BODY" desc="When a webpage fails to load, sometimes we suggest to the user to contact his system administrator.">
+    Contact your system administrator for more information.
+  </message>
+  <message name="IDS_ERRORPAGES_SUGGESTION_GOOGLE_SEARCH" desc="When a page fails to load, sometimes we suggest a specific Google search.  This appears just above a text input control.">
+    Search on Google
+  </message>
+  <message name="IDS_ERRORPAGES_TITLE_NOT_AVAILABLE" desc="Title of the error page when we can't connect to a site.">
+    <ph name="SITE">$1<ex>google.com</ex></ph> is not available
+  </message>
+  <message name="IDS_ERRORPAGES_TITLE_ACCESS_DENIED" desc="Title in the error page when a server returns a 403.  Also suitable for similar error codes.">
+    Access to <ph name="URL">$1<ex>http://www.google.com/foo/bar</ex></ph> denied.
+  </message>
+  <message name="IDS_ERRORPAGES_TITLE_NOT_FOUND" desc="Title of the error page when the server returns a 404 or 410.">
+    <ph name="URL">$1<ex>http://www.google.com/foo/bar</ex></ph> is not found
+  </message>
+  <message name="IDS_ERRORPAGES_TITLE_LOAD_FAILED" desc="Title of the error page when we can't load a page.">
+    <ph name="URL">$1<ex>http://some-unreliable-site.com/</ex></ph> failed to load
+  </message>
+  <message name="IDS_ERRORPAGES_TITLE_BLOCKED" desc="Title in the error page when a request is blocked (e.g. by an extension).">
+    <ph name="URL">$1<ex>http://www.google.com/foo/bar</ex></ph> was blocked
+  </message>
+  <message name="IDS_ERRORPAGES_HEADING_NOT_AVAILABLE" desc="Heading in the error page when we can't connect to a site.">
+    This webpage is not available
+  </message>
+  <message name="IDS_ERRORPAGES_HEADING_NETWORK_ACCESS_DENIED" desc="Heading of the error page when we're not being allowed to access the network.">
+    Unable to access the network
+  </message>
+  <message name="IDS_ERRORPAGES_HEADING_PROXY_CONNECTION_FAILED" desc="Heading in the error page when the proxy server connection failed.">
+    Unable to connect to the proxy server
+  </message>
+  <if expr="not is_android">
+    <message name="IDS_ERRORPAGES_HEADING_INTERNET_DISCONNECTED" desc="Heading of the error page when the network connection failed.">
+      Unable to connect to the Internet
+    </message>
+  </if>
+  <if expr="is_android">
+    <message name="IDS_ERRORPAGES_HEADING_INTERNET_DISCONNECTED" desc="Mobile: Heading of the error page when the network connection failed.">
+      You are offline.
+    </message>
+  </if>
+  <message name="IDS_ERRORPAGES_HEADING_CACHE_MISS" desc="Heading in the error page when we couldn't find a resource in the cache, and cannot fall back to the network.">
+    Cache miss
+  </message>
+  <message name="IDS_ERRORPAGES_HEADING_CACHE_READ_FAILURE" desc="Heading in the error page when we encountered an error reading from the cache.  Generally this happens when the disk cache is corrupted from improper shutdown.">
+    Cache read error
+  </message>
+  <message name="IDS_ERRORPAGES_HEADING_NETWORK_IO_SUSPENDED" desc="Heading in the error page when a page load failed due to the computer entering sleep/suspend mode.">
+    Network access suspended
+  </message>
+  <message name="IDS_ERRORPAGES_HEADING_NOT_FOUND" desc="Heading in the error page when the server returns a 404 or 410.">
+    This webpage is not found
+  </message>
+  <message name="IDS_ERRORPAGES_HEADING_TOO_MANY_REDIRECTS" desc="Heading in the error page when there are too many URL redirects.">
+    This webpage has a redirect loop
+  </message>
+  <message name="IDS_ERRORPAGES_HEADING_EMPTY_RESPONSE" desc="Heading in the error page when no data is received.">
+    No data received
+  </message>
+  <message name="IDS_ERRORPAGES_HEADING_DUPLICATE_HEADERS" desc="Heading in the error page when a response from the server contains duplicate headers.">
+    Duplicate headers received from server
+  </message>
+  <message name="IDS_ERRORPAGES_HEADING_WEAK_SERVER_EPHEMERAL_DH_KEY" desc="Heading of the error page when the server has a weak Diffie-Hellman public key. Diffie-Hellman is a technical term and the conjuction of two names so may be best left untranslated. 'key' here is used as the technical name for a large number with certain mathematical properties that allow it to be used to encrypt and decrypt data. 'weak' here means that the number is too small to resist an exhaustive attempt to find certain mathematical structures in it, the secrecy of which is critical.">
+    Server has a weak ephemeral Diffie-Hellman public key
+  </message>
+  <message name="IDS_ERRORPAGES_HEADING_BLOCKED" desc="Heading of the error page when a request is blocked by an extension.">
+    This webpage was blocked by an extension
+  </message>
+  <message name="IDS_ERRORPAGES_HEADING_BLOCKED_BY_ADMINISTRATOR" desc="Heading of the error page when a request is blocked by the administrator policy.">
+    Webpage Blocked
+  </message>
+  <message name="IDS_ERRORPAGES_SUMMARY_NOT_AVAILABLE" desc="Summary in the error page when we can't connect to a site.">
+    The webpage at <ph name="URL">&lt;strong jscontent="failedUrl"&gt;&lt;/strong&gt;</ph> might be temporarily down or it may have moved permanently to a new web address.
+  </message>
+  <message name="IDS_ERRORPAGES_SUMMARY_TIMED_OUT" desc="Summary in the error page when a page takes too long to load.">
+    <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
+    could not load the webpage because
+    <ph name="HOST_NAME">&lt;strong jscontent="hostName"&gt;&lt;/strong&gt;<ex>www.whatever.com</ex></ph>
+    took too long to respond.  The website may be down, or you may be
+    experiencing issues with your Internet connection.
+  </message>
+  <message name="IDS_ERRORPAGES_SUMMARY_CONNECTION_RESET" desc="Summary in the error page when the connection was reset.">
+    The connection to
+    <ph name="HOST_NAME">&lt;strong jscontent="hostName"&gt;&lt;/strong&gt;<ex>www.whatever.com</ex></ph>
+    was interrupted.
+  </message>
+  <message name="IDS_ERRORPAGES_SUMMARY_NETWORK_CHANGED" desc="Summary in the error page when the connection failed because the network has changed.">
+    The connection to
+    <ph name="HOST_NAME">&lt;strong jscontent="hostName"&gt;&lt;/strong&gt;<ex>www.whatever.com</ex></ph>
+    was interrupted by a change in the network connection.
+  </message>
+  <message name="IDS_ERRORPAGES_SUMMARY_CONNECTION_REFUSED" desc="Summary in the error page when we try and connect to a server, but the server doesn't let us.">
+    <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>'s
+    connection attempt to
+    <ph name="HOST_NAME">&lt;strong jscontent="hostName"&gt;&lt;/strong&gt;<ex>www.whatever.com</ex></ph>
+    was rejected.  The website may be down, or your network may not be
+    properly configured.
+  </message>
+  <message name="IDS_ERRORPAGES_SUMMARY_NAME_NOT_RESOLVED" desc="Summary in the error page when a dns look up fails.">
+    The server at
+    <ph name="HOST_NAME">&lt;strong jscontent="hostName"&gt;&lt;/strong&gt;<ex>www.whatever.com</ex></ph>
+    can't be found, because the DNS lookup failed.  DNS is the network
+    service that translates a website's name to its Internet address.  This
+    error is most often caused by having no connection to the Internet or a
+    misconfigured network.  It can also be caused by an unresponsive DNS
+    server or a firewall preventing
+    <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
+    from accessing the network.
+  </message>
+  <message name="IDS_ERRORPAGES_SUMMARY_ICANN_NAME_COLLISION" desc="Summary in the error page when a dns look up fails due to having contained 127.0.53.53.">
+    This site is using a
+    <ph name="BEGIN_LINK">&lt;a href="https://support.google.com/chrome/?p=top_level_domain&amp;hl=[GRITLANGCODE]"&gt;</ph>new generic top-level domain<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+    (gTLD). If you have used
+    <ph name="HOST_NAME">&lt;strong jscontent="hostName"&gt;&lt;/strong&gt;<ex>www.whatever.com</ex></ph>
+    to access an internal site in the past, contact your network
+    administrator.
+  </message>
+  <message name="IDS_ERRORPAGES_SUMMARY_ADDRESS_UNREACHABLE" desc="Summary in the error page when we can't reach a site.  This is slightly more specific than just being unable to connect, as it means we can't find a route to the server.">
+    <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
+    cannot reach the website.  This is typically caused by network issues,
+    but can also be the result of a misconfigured firewall or proxy server.
+  </message>
+  <message name="IDS_ERRORPAGES_SUMMARY_FILE_ACCESS_DENIED" desc="Summary in the error page when we can't open a file.">
+    The file at <ph name="URL">&lt;strong jscontent="failedUrl"&gt;&lt;/strong&gt;<ex>http://www.google.com/</ex></ph> is not readable.  It may have been removed, moved, or file permissions may be preventing access.
+  </message>
+  <if expr="is_android or is_ios">
+    <message name="IDS_ERRORPAGES_SUMMARY_NETWORK_ACCESS_DENIED" desc="Mobile: Summary in the error page when we're not being allowed to access the network.">
+      <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
+      is having trouble accessing the network.
+      <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;<ex>&lt;br /&gt;&lt;br /&gt;</ex></ph>
+      This may be because your firewall or antivirus software wrongly thinks
+      <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
+      is an intruder on your device and is blocking it from connecting to the Internet.
+    </message>
+    <message name="IDS_ERRORPAGES_SUMMARY_PROXY_CONNECTION_FAILED" desc="Mobile: Summary in the error page when the proxy server connection failed.">
+      A proxy server is a server that acts as an intermediary between your device and other servers.  Right now, your system is configured to use a proxy, but
+      <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
+      can't connect to it.
+    </message>
+
+    <message name="IDS_ERRORPAGES_SUMMARY_INTERNET_DISCONNECTED" desc="Mobile: Summary of the error page when the network connection failed.  May be followed by platform dependent instructions.">
+      Wi-Fi and mobile data are unavailable. The page can be loaded once the device connects to a network.
+    </message>
+  </if>
+  <if expr="not is_android and not is_ios">
+    <message name="IDS_ERRORPAGES_SUMMARY_NETWORK_ACCESS_DENIED" desc="Summary in the error page when we're not being allowed to access the network.">
+      <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
+      is having trouble accessing the network.
+      <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;<ex>&lt;br /&gt;&lt;br /&gt;</ex></ph>
+      This may be because your firewall or antivirus software wrongly thinks
+      <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
+      is an intruder on your computer and is blocking it from connecting to the Internet.
+    </message>
+    <message name="IDS_ERRORPAGES_SUMMARY_PROXY_CONNECTION_FAILED" desc="Summary in the error page when the proxy server connection failed.">
+      A proxy server is a server that acts as an intermediary between your computer and other servers.  Right now, your system is configured to use a proxy, but
+      <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
+      can't connect to it.
+    </message>
+    <message name="IDS_ERRORPAGES_SUMMARY_INTERNET_DISCONNECTED_INSTRUCTIONS_TEMPLATE" desc="Template for the summary of the error page when the network connection failed, on platforms with instructions.">
+      You can try to diagnose the problem by taking the following steps:
+      <ph name="LINE_BREAK">&lt;br /&gt;<ex>&lt;br /&gt;</ex></ph>
+      <ph name="PLATFORM_TEXT">
+        $1<ex>Goto the wrench menu and choose Fix It.</ex>
+      </ph>
+    </message>
+  </if>
+
+  <if expr="is_macosx">
+    <message name="IDS_ERRORPAGES_SUMMARY_INTERNET_DISCONNECTED_PLATFORM" desc="Summary (platform dependent section) in the error page when the network connection failed.  Describes how to get to the network Diagnostics screen under Mac OSX.">
+      Go to
+      <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>
+      Applications &gt; System Preferences &gt; Network &gt; Assist me
+      <ph name="END_BOLD">&lt;/strong&gt;</ph>
+      to test your connection.
+    </message>
+  </if>
+  <if expr="is_win">
+    <message name="IDS_ERRORPAGES_SUMMARY_INTERNET_DISCONNECTED_PLATFORM" desc="Summary (platform dependent section) in the error page when the network connection failed.  Describes how to get to the network Diagnostics screen under Windows 7 and later.">
+      Go to
+      <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>
+      Start &gt; Control Panel &gt; Network and Internet &gt; Network and Sharing Center &gt; Troubleshoot Problems (at the bottom) &gt; Internet Connections.
+      <ph name="END_BOLD">&lt;/strong&gt;</ph>
+    </message>
+    <message name="IDS_ERRORPAGES_SUMMARY_INTERNET_DISCONNECTED_PLATFORM_VISTA" desc="Summary (platform dependent section) in the error page when the network connection failed.  Describes how to get to the network Diagnostics screen under Windows Vista.">
+      Go to
+      <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>
+      Start &gt; Control Panel &gt; Network Connections &gt; New Connection Wizard
+      <ph name="END_BOLD">&lt;/strong&gt;</ph>
+      to test your connection.
+    </message>
+    <message name="IDS_ERRORPAGES_SUMMARY_INTERNET_DISCONNECTED_PLATFORM_XP" desc="Summary (platform dependent section) in the error page when the network connection failed.  Describes how to get to the network Diagnostics screen under Windows XP.">
+      Click
+      <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>Start<ph name="END_BOLD">&lt;/strong&gt;</ph>,
+      click
+      <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>Run<ph name="END_BOLD">&lt;/strong&gt;</ph>,
+      type
+      <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>%windir%\network diagnostic\xpnetdiag.exe<ph name="END_BOLD">&lt;/strong&gt;</ph>,
+      and then click
+      <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>OK<ph name="END_BOLD">&lt;/strong&gt;</ph>.
+    </message>
+  </if>
+
+  <message name="IDS_ERRORPAGES_SUMMARY_CACHE_MISS" desc="Summary in the error page when we couldn't find a resource in the cache, and cannot fall back to the network.">
+    The webpage was not found in the cache.  Certain resources
+    can only be safely loaded from the cache, such as pages generated
+    from submitted data.
+    <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;<ex>&lt;br /&gt;&lt;br /&gt;</ex></ph>
+    This error can also be caused by cache corruption due to
+    an improper shutdown.
+    <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;<ex>&lt;br /&gt;&lt;br /&gt;</ex></ph>
+    If the problem persists, try clearing the cache.
+  </message>
+  <message name="IDS_ERRORPAGES_SUMMARY_CACHE_READ_FAILURE" desc="Summary in the error page when we encountered an error reading from the cache.  Generally this happens when the disk cache is corrupted from improper shutdown.">
+    To speed up webpages,
+    <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
+    temporarily saves downloaded files to disk. When
+    <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
+    is not shut down properly, these files can become corrupted, resulting
+    in this error.  Reloading the page should resolve this issue, and
+    shutting down properly should prevent it from happening in the future.
+    <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;<ex>&lt;br /&gt;&lt;br /&gt;</ex></ph>
+    If the problem persists, try clearing the cache.  In some cases, this
+    can also be a symptom of hardware starting to fail.
+  </message>
+  <if expr="is_android or is_ios">
+    <message name="IDS_ERRORPAGES_SUMMARY_NETWORK_IO_SUSPENDED" desc="Mobile: Summary in the error page when a page load failed due to the device entering sleep/suspend mode.">
+      Unable to load the webpage because your device entered sleep or
+      hibernate mode.  When this happens, network connections are shut
+      down and new network requests fail.  Reloading the page should
+      resolve this.
+    </message>
+  </if>
+  <if expr="not is_android and not is_ios">
+    <message name="IDS_ERRORPAGES_SUMMARY_NETWORK_IO_SUSPENDED" desc="Summary in the error page when a page load failed due to the computer entering sleep/suspend mode.">
+      Unable to load the webpage because your computer entered sleep or
+      hibernate mode.  When this happens, network connections are shut
+      down and new network requests fail.  Reloading the page should
+      resolve this.
+    </message>
+  </if>
+  <message name="IDS_ERRORPAGES_SUMMARY_NOT_FOUND" desc="Summary in the error page when the server returns a 404.">
+    No webpage was found for the web address: <ph name="URL">&lt;strong jscontent="failedUrl"&gt;&lt;/strong&gt;</ph>
+  </message>
+  <if expr="is_android or is_ios">
+    <message name="IDS_ERRORPAGES_SUMMARY_TOO_MANY_REDIRECTS" desc="Mobile: Summary in the error page when there are too many URL redirects.">
+      The webpage at <ph name="URL">&lt;strong jscontent="failedUrl"&gt;&lt;/strong&gt;</ph> has resulted in
+      too many redirects.  Clearing your cookies for this site or allowing third-party cookies may fix the problem.  If
+      not, it is possibly a server configuration issue and not a problem with your
+      device.
+    </message>
+  </if>
+  <if expr="not is_android and not is_ios">
+    <message name="IDS_ERRORPAGES_SUMMARY_TOO_MANY_REDIRECTS" desc="Summary in the error page when there are too many URL redirects.">
+      The webpage at <ph name="URL">&lt;strong jscontent="failedUrl"&gt;&lt;/strong&gt;</ph> has resulted in
+      too many redirects.  Clearing your cookies for this site or allowing third-party cookies may fix the problem.  If
+      not, it is possibly a server configuration issue and not a problem with your
+      computer.
+    </message>
+  </if>
+  <message name="IDS_ERRORPAGES_SUMMARY_EMPTY_RESPONSE" desc="Summary in the error page when no data is received.">
+    Unable to load the webpage because the server sent no data.
+  </message>
+  <message name="IDS_ERRORPAGES_SUMMARY_DUPLICATE_HEADERS" desc="Summary in the error page when a response from the server contains duplicate headers.">
+    The response from the server contained duplicate headers.  This problem
+    is generally the result of a misconfigured website or proxy.  Only the
+    website or proxy administrator can fix this issue.
+  </message>
+  <message name="IDS_ERRORPAGES_SUMMARY_WEAK_SERVER_EPHEMERAL_DH_KEY" desc="Summary in the error page when the server has a weak Diffie-Hellman public key">
+    This error can occur when connecting to a secure (HTTPS) server. It
+    means that the server is trying to set up a secure connection but, due to
+    a disastrous misconfiguration, the connection wouldn't be secure at all!
+    <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;<ex>&lt;br /&gt;&lt;br /&gt;</ex></ph> In this case the
+    server needs to be fixed.
+    <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
+    won't use insecure connections in order to protect your privacy.
+  </message>
+  <message name="IDS_ERRORPAGES_SUMMARY_DNS_PROBE_RUNNING" desc="Summary in the error page when DNS resolution failed and we are running a probe to figure out why.">
+    Unable to look up
+    <ph name="HOST_NAME">&lt;strong jscontent="hostName"&gt;&lt;/strong&gt;<ex>www.whatever.com</ex></ph>.
+    Trying to diagnose the problem...
+  </message>
+
+  <message name="IDS_ERRORPAGES_DETAILS_TIMED_OUT" desc="The error message displayed when a page takes too long to load.">
+    The operation timed out.
+  </message>
+  <message name="IDS_ERRORPAGES_DETAILS_CONNECTION_CLOSED" desc="The error message displayed when the server unexpectedly closes a connection.">
+    The server unexpectedly closed the connection.
+  </message>
+  <message name="IDS_ERRORPAGES_DETAILS_CONNECTION_RESET" desc="The error message displayed when a connection was reset.">
+    The connection was reset.
+  </message>
+  <message name="IDS_ERRORPAGES_DETAILS_CONNECTION_REFUSED" desc="The error message displayed when we try and connect to a server, but the server doesn't let us.">
+    The server refused the connection.
+  </message>
+  <message name="IDS_ERRORPAGES_DETAILS_CONNECTION_FAILED" desc="The error message displayed when we can not reach the website.">
+    The attempt to connect to the server failed.
+  </message>
+  <message name="IDS_ERRORPAGES_DETAILS_NETWORK_CHANGED" desc="The error message displayed when a connection is interrupted because the network changed.">
+    A network change was detected.
+  </message>
+  <message name="IDS_ERRORPAGES_DETAILS_NAME_NOT_RESOLVED" desc="The error message displayed when a dns look up fails.">
+    Unable to resolve the server's DNS address.
+  </message>
+  <message name="IDS_ERRORPAGES_DETAILS_ICANN_NAME_COLLISION" desc="The error message displayed when a dns look up fails due to containing 127.0.53.53.">
+    This site is using a new generic top-level domain.
+  </message>
+  <message name="IDS_ERRORPAGES_DETAILS_ADDRESS_UNREACHABLE" desc="The error message displayed when we can't reach a server.">
+    Unable to reach the server.
+  </message>
+  <message name="IDS_ERRORPAGES_DETAILS_NETWORK_ACCESS_DENIED" desc="The error message displayed when we're not being allowed to access the network.">
+    Unable to access the network.
+  </message>
+  <message name="IDS_ERRORPAGES_DETAILS_FILE_ACCESS_DENIED" desc="The error message displayed when we're not being allowed to access a file.">
+    Unable to access the file.
+  </message>
+  <message name="IDS_ERRORPAGES_DETAILS_PROXY_CONNECTION_FAILED" desc="The error message displayed when the proxy server connection failed.">
+    Proxy server connection failed.
+  </message>
+  <message name="IDS_ERRORPAGES_DETAILS_INTERNET_DISCONNECTED" desc="The error message displayed when we have no Internet access.">
+    The Internet connection has been lost.
+  </message>
+  <message name="IDS_ERRORPAGES_DETAILS_CACHE_READ_FAILURE" desc="The error message displayed when we encountered an error reading from the cache.  Generally this happens when the disk cache is corrupted from improper shutdown.">
+    Error reading data from cache.
+  </message>
+  <message name="IDS_ERRORPAGES_DETAILS_CACHE_MISS" desc="The error message displayed when we couldn't find a resource in the cache, and cannot fall back to the network.">
+    The requested entry was not found in the cache.
+  </message>
+  <message name="IDS_ERRORPAGES_DETAILS_NETWORK_IO_SUSPENDED" desc="The error message displayed when a page load failed due to the computer entering sleep/suspend mode.">
+    Network IO suspended.
+  </message>
+  <message name="IDS_ERRORPAGES_DETAILS_FILE_NOT_FOUND" desc="The error message displayed when a local file can not be found.">
+    The file or directory could not be found.
+  </message>
+  <message name="IDS_ERRORPAGES_DETAILS_TOO_MANY_REDIRECTS" desc="The error message displayed when there are too many redirects.">
+    There were too many redirects.
+  </message>
+  <message name="IDS_ERRORPAGES_DETAILS_EMPTY_RESPONSE" desc="The error message displayed when no data is received.">
+    The server closed the connection without sending any data.
+  </message>
+  <message name="IDS_ERRORPAGES_DETAILS_RESPONSE_HEADERS_MULTIPLE_CONTENT_LENGTH" desc="The error message displayed when we received multiple 'Content-Length' header fields in an http response.">
+    Multiple distinct Content-Length headers received.  This is disallowed
+    to protect against HTTP response splitting attacks.
+  </message>
+  <message name="IDS_ERRORPAGES_DETAILS_RESPONSE_HEADERS_MULTIPLE_CONTENT_DISPOSITION" desc="The error message displayed when we received multiple 'Content-Disposition' header fields in an http response.">
+    Multiple distinct Content-Disposition headers received.  This is disallowed to
+    protect against HTTP response splitting attacks.
+  </message>
+  <message name="IDS_ERRORPAGES_DETAILS_RESPONSE_HEADERS_MULTIPLE_LOCATION" desc="The error message displayed when we received multiple 'Location' header fields in an http response.">
+    Multiple distinct Location headers received.  This is disallowed to protect
+    against HTTP response splitting attacks.
+  </message>
+  <message name="IDS_ERRORPAGES_DETAILS_DNS_PROBE_RUNNING" desc="The error message displayed when we are waiting to see whether we will run a DNS probe.">
+    Waiting for DNS probe.
+  </message>
+  <message name="IDS_ERRORPAGES_DETAILS_UNKNOWN" desc="The default error message displayed if we don't have a more specific error message.">
+    Unknown error.
+  </message>
+
+  <message name="IDS_ERRORPAGES_HEADING_ACCESS_DENIED" desc="Heading in the error page when a server returns a 403.  Also suitable for similar error codes.">
+    Access to the webpage was denied
+  </message>
+  <message name="IDS_ERRORPAGES_HEADING_FILE_ACCESS_DENIED" desc="Heading in the error page when a file is denied access.">
+    Access to the file was denied
+  </message>
+  <message name="IDS_ERRORPAGES_SUMMARY_FORBIDDEN" desc="Summary in the error page when a server returns a 403.">
+    You are not authorized to access the webpage at <ph name="URL">&lt;strong jscontent="failedUrl"&gt;&lt;/strong&gt;</ph>.  You may need to sign in.
+  </message>
+  <message name="IDS_ERRORPAGES_DETAILS_FORBIDDEN" desc="Details in the error page when a server returns a 403.">
+    The server refused to fulfill the request.
+  </message>
+
+  <message name="IDS_ERRORPAGES_SUMMARY_GONE" desc="Summary of the error page when the server returns a 410.">
+    The webpage at <ph name="URL">&lt;strong jscontent="failedUrl"&gt;&lt;/strong&gt;</ph> no longer exists.
+  </message>
+  <message name="IDS_ERRORPAGES_DETAILS_GONE" desc="Details in the error page when a server returns a 410.">
+    The requested resource no longer exists, and there is no forwarding address.  This is expected to be a permanent condition.
+  </message>
+
+  <message name="IDS_ERRORPAGES_HEADING_HTTP_SERVER_ERROR" desc="Heading in the error page for HTTP 5xx errors, which are considered to be server side errors.">
+    Server error
+  </message>
+
+  <message name="IDS_ERRORPAGES_SUMMARY_INTERNAL_SERVER_ERROR" desc="Summary in the error page when the server returns a 500.">
+    The website encountered an error while retrieving <ph name="URL">&lt;strong jscontent="failedUrl"&gt;&lt;/strong&gt;</ph>.
+    It may be down for maintenance or configured incorrectly.
+  </message>
+  <message name="IDS_ERRORPAGES_DETAILS_INTERNAL_SERVER_ERROR" desc="The error message displayed when the server returns a 500.">
+    An unexpected condition was encountered while the server was attempting to fulfill the request.
+  </message>
+
+  <message name="IDS_ERRORPAGES_SUMMARY_WEBSITE_CANNOT_HANDLE" desc="Summary in the error page when the server returns a 501 or 505.">
+    The website is unable to handle the request for <ph name="URL">&lt;strong jscontent="failedUrl"&gt;&lt;/strong&gt;</ph>.
+  </message>
+  <message name="IDS_ERRORPAGES_DETAILS_NOT_IMPLEMENTED" desc="The error message displayed when the server returns a 501.">
+    The server does not support the functionality required to fulfill the request.
+  </message>
+  <message name="IDS_ERRORPAGES_DETAILS_HTTP_VERSION_NOT_SUPPORTED" desc="The error message displayed when the server returns a 505.">
+    The server does not support the HTTP version used in the request.
+  </message>
+
+  <message name="IDS_ERRORPAGES_SUMMARY_BAD_GATEWAY" desc="Summary in the error page when the server returns a 502.">
+    An invalid response was received while attempting to load <ph name="URL">&lt;strong jscontent="failedUrl"&gt;&lt;/strong&gt;</ph>.
+    The server may be down for maintenance or configured incorrectly.
+  </message>
+  <message name="IDS_ERRORPAGES_DETAILS_BAD_GATEWAY" desc="The error message displayed when the server returns a 502.">
+    The gateway or proxy server received an invalid response from an upstream server.
+  </message>
+
+  <message name="IDS_ERRORPAGES_SUMMARY_SERVICE_UNAVAILABLE" desc="Summary in the error page when the server returns a 503.">
+    The webpage at <ph name="URL">&lt;strong jscontent="failedUrl"&gt;&lt;/strong&gt;</ph> is currently unavailable.  It may be overloaded or down for maintenance.
+  </message>
+  <message name="IDS_ERRORPAGES_DETAILS_SERVICE_UNAVAILABLE" desc="The error message displayed when the server returns a 503.">
+    The server is currently unable to handle the request.  This code indicates this is a temporary condition, and the server will be up again after a delay.
+  </message>
+
+  <message name="IDS_ERRORPAGES_SUMMARY_GATEWAY_TIMEOUT" desc="Summary in the error page when the server returns a 504.">
+    The server for <ph name="URL">&lt;strong jscontent="failedUrl"&gt;&lt;/strong&gt;</ph> took too long to respond.  It may be overloaded.
+  </message>
+  <message name="IDS_ERRORPAGES_DETAILS_GATEWAY_TIMEOUT" desc="The error message displayed when the server returns a 504.">
+    The gateway or proxy server timed out while waiting for a response from an upstream server.
+  </message>
+
+  <message name="IDS_ERRORPAGES_HEADING_SSL_PROTOCOL_ERROR" desc="Heading in the error page for SSL protocol errors.">
+    SSL connection error
+  </message>
+  <message name="IDS_ERRORPAGES_SUMMARY_SSL_PROTOCOL_ERROR" desc="Summary in the error page for SSL protocol errors.">
+    Unable to make a secure connection to the server. This may be a problem with the server, or it may be requiring a client authentication certificate that you don't have.
+  </message>
+  <message name="IDS_ERRORPAGES_DETAILS_SSL_PROTOCOL_ERROR" desc="The error message displayed for SSL protocol errors.">
+    SSL protocol error.
+  </message>
+
+  <message name="IDS_ERRORPAGES_HEADING_SSL_FALLBACK_BEYOND_MINIMUM_VERSION" desc="Heading in the error page for SSL fallback errors.">
+    SSL server probably obsolete.
+  </message>
+  <message name="IDS_ERRORPAGES_SUMMARY_SSL_FALLBACK_BEYOND_MINIMUM_VERSION" desc="Summary in the error page for SSL fallback errors.">
+    Unable to connect securely to the server. This website may have worked previously, but there is a problem with the server. Connecting to such sites weakens security for all users and thus has been disabled.
+  </message>
+  <message name="IDS_ERRORPAGES_DETAILS_SSL_FALLBACK_BEYOND_MINIMUM_VERSION" desc="The error message displayed for SSL fallback errors.">
+    A TLS 1.0 fallback was able to handshake with the server, but we no longer accept TLS 1.0 fallbacks. The server needs to be updated to correctly implement version negotiation and preferably support TLS 1.2.
+  </message>
+
+  <message name="IDS_ERRORPAGES_HEADING_SSL_VERSION_OR_CIPHER_MISMATCH" desc="Heading in the error page for SSL cipher and version errors.">
+    This webpage is not available
+  </message>
+  <message name="IDS_ERRORPAGES_SUMMARY_SSL_VERSION_OR_CIPHER_MISMATCH" desc="Summary in the error page for SSL cipher and version errors.">
+    A secure connection cannot be established because this site uses an unsupported protocol or cipher suite. This is likely to be caused when the server needs RC4, which is no longer considered secure.
+  </message>
+  <message name="IDS_ERRORPAGES_DETAILS_SSL_VERSION_OR_CIPHER_MISMATCH" desc="The error message displayed for SSL cipher and version errors.">
+    The client and server don't support a common SSL protocol version or cipher suite. This is likely to be caused when the server needs RC4, which is no longer considered secure.
+  </message>
+
+  <message name="IDS_ERRORPAGES_HEADING_PINNING_FAILURE" desc="Title of the error page for a certificate which doesn't match the built-in pins for that name">
+    Incorrect certificate for host.
+  </message>
+
+  <message name="IDS_ERRORPAGES_HEADING_BAD_SSL_CLIENT_AUTH_CERT" desc="Heading in the error page for SSL client certificate authentication failure.">
+    Certificate-based authentication failed
+  </message>
+  <message name="IDS_ERRORPAGES_SUMMARY_BAD_SSL_CLIENT_AUTH_CERT" desc="Summary in the error page for SSL client certificate authentication failure.">
+    This server requires a certificate for authentication, and didn't accept the one sent by the
+    browser. Your certificate may have expired, or the server may not trust its issuer.
+    You can try again with a different certificate, if you have one, or you may have to
+    obtain a valid certificate from elsewhere.
+  </message>
+  <message name="IDS_ERRORPAGES_DETAILS_BAD_SSL_CLIENT_AUTH_CERT" desc="The error message for SSL client certificate authentication failure.">
+    Bad SSL client authentication certificate.
+  </message>
+
+  <message name="IDS_ERRORPAGES_SUMMARY_TEMPORARILY_THROTTLED" desc="Summary in the error page when we temporarily stop sending requests to a server in order to avoid DDoS.">
+    It is likely that the server hosting the webpage has been overloaded or encountered an error.
+    In order to avoid letting extensions cause too much traffic and making the situation worse,
+    <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
+    has temporarily stopped allowing requests by extensions to this URL.
+    <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;<ex>&lt;br /&gt;&lt;br /&gt;</ex></ph>
+    If you think this behavior is undesirable, for example, you are debugging your own website, please
+    visit <ph name="URL_FOR_MORE_INFO">&lt;strong&gt;http://dev.chromium.org/throttling&lt;/strong&gt;<ex>http://dev.chromium.org/throttling</ex></ph>,
+    where you can find more information including how to disable the feature.
+  </message>
+  <message name="IDS_ERRORPAGES_DETAILS_TEMPORARILY_THROTTLED" desc="The error message displayed when we temporarily stop sending requests to a server in order to avoid DDoS.">
+    Extension requests to this URL have been temporarily throttled.
+  </message>
+
+  <message name="IDS_ERRORPAGES_SUMMARY_TEMPORARY_BACKOFF" desc="Summary in the error page when we temporarily stop sending requests to a server because of a Backoff header received earlier.">
+    The server hosting the webpage might be overloaded or under maintainance.
+    In order to avoid generating too much traffic and making the situation worse,
+    requests to this URL has been temporarily disallowed.
+  </message>
+  <message name="IDS_ERRORPAGES_DETAILS_TEMPORARY_BACKOFF" desc="The error message displayed when we temporarily stop sending requests to a server in order to avoid overloading it.">
+    Requests to this URL have been temporarily throttled.
+  </message>
+
+  <message name="IDS_ERRORPAGES_SUMMARY_BLOCKED" desc="Summary in the error page when an extension blocks a request.">
+    A third-party extension has blocked access to this webpage.
+  </message>
+  <message name="IDS_ERRORPAGES_SUMMARY_BLOCKED_BY_ADMINISTRATOR" desc="Summary in the error page when an administrator policy blocks a request.">
+    Your &lt;strong&gt;system administrator&lt;/strong&gt; has blocked access to this webpage.
+  </message>
+   <message name="IDS_ERRORPAGES_SUMMARY_BLOCKED_ENROLLMENT_CHECK_PENDING" desc="Summary in the error page when the user tries to browse before the forced enrollment check has finished.">
+    This device has not finished its first run steps.
+  </message>
+  <message name="IDS_ERRORPAGES_DETAILS_BLOCKED" desc="The error message displayed when an extension blocks a request.">
+    Requests to the server have been blocked by an extension.
+  </message>
+  <message name="IDS_ERRORPAGES_DETAILS_BLOCKED_BY_ADMINISTRATOR" desc="The error message displayed when a policy blocks a request.">
+    Requests to the server have been blocked by a policy.
+  </message>
+  <message name="IDS_ERRORPAGES_DETAILS_BLOCKED_ENROLLMENT_CHECK_PENDING" desc="The error message displayed when the user tries to browse before the forced enrollment check has finished.">
+    Browsing the Internet is disabled until the enterprise enrollment verification check has finished.
+    You can still use the diagnostic tool presented here to troubleshoot issues with your connectivity.
+  </message>
+
+  <message name="IDS_ERRORPAGES_HTTP_POST_WARNING" desc="The error message displayed when the user navigates back or forward to a page which would resubmit post data. They can hit reload to send POST data again and load the page.">
+    This webpage requires data that you entered earlier in order to be properly displayed. You can send this data again, but by doing so you will repeat any action this page previously performed.
+  </message>
+
+  <!-- iOS specific error page messages -->
+  <if expr="is_ios">
+    <message name="IDS_ERRORPAGES_HEADING_DOWNLOAD_FILE_TYPE_ERROR" desc="A one-line title for error message to tell user that the requested type of file cannot be downloaded. [Length: 20em]">
+      Download Failed
+    </message>
+    <message name="IDS_ERRORPAGES_SUMMARY_DOWNLOAD_FILE_TYPE_ERROR" desc="A short error message to tell user that the requested type of file cannot be downloaded. [Length: 40em]">
+      Chrome cannot download this file.
+    </message>
+    <message name="IDS_ERRORPAGES_DETAILS_DOWNLOAD_FILE_TYPE_ERROR" desc="A short message to tell user that the file type is unknown. [Length: 20em]">
+      Unknown File Type.
+    </message>
+    <message name="IDS_ERRORPAGES_HEADING_UNSUPPORTED_SCHEME_ERROR" desc="Header error message to tell user that the requested URI Scheme is not supported [Length: 20em]">
+      Chrome cannot open this URL.
+    </message>
+    <message name="IDS_ERRORPAGES_SUMMARY_UNSUPPORTED_SCHEME_ERROR" desc="Summary error message to tell user that the requested URI Scheme is not supported [Length: 40em]">
+      The requested URI Scheme is not supported.
+    </message>
+    <message name="IDS_ERRORPAGES_DETAILS_UNSUPPORTED_SCHEME_ERROR" desc="Details error message to tell user that the requested URI Scheme is not supported [Length: 20em]">
+      Unsupported URL.
+    </message>
+  </if>
 
 </grit-part>
