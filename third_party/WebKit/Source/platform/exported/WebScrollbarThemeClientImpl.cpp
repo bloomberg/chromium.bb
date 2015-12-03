@@ -128,11 +128,11 @@ bool WebScrollbarThemeClientImpl::isScrollableAreaActive() const
     return m_scrollbar->isScrollableAreaActive();
 }
 
-IntPoint WebScrollbarThemeClientImpl::convertFromContainingWindow(const IntPoint& windowPoint) const
+IntPoint WebScrollbarThemeClientImpl::convertFromRootFrame(const IntPoint& pointInRootFrame) const
 {
     // Unused by Chromium scrollbar themes.
     ASSERT_NOT_REACHED();
-    return windowPoint;
+    return pointInRootFrame;
 }
 
 bool WebScrollbarThemeClientImpl::isCustomScrollbar() const

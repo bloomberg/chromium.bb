@@ -153,24 +153,24 @@ public:
     void setScrollCornerNeedsPaintInvalidation();
     virtual void getTickmarks(Vector<IntRect>&) const { }
 
-    // Convert points and rects between the scrollbar and its containing view.
+    // Convert points and rects between the scrollbar and its containing Widget.
     // The client needs to implement these in order to be aware of layout effects
     // like CSS transforms.
-    virtual IntRect convertFromScrollbarToContainingView(const Scrollbar* scrollbar, const IntRect& scrollbarRect) const
+    virtual IntRect convertFromScrollbarToContainingWidget(const Scrollbar* scrollbar, const IntRect& scrollbarRect) const
     {
-        return scrollbar->Widget::convertToContainingView(scrollbarRect);
+        return scrollbar->Widget::convertToContainingWidget(scrollbarRect);
     }
-    virtual IntRect convertFromContainingViewToScrollbar(const Scrollbar* scrollbar, const IntRect& parentRect) const
+    virtual IntRect convertFromContainingWidgetToScrollbar(const Scrollbar* scrollbar, const IntRect& parentRect) const
     {
-        return scrollbar->Widget::convertFromContainingView(parentRect);
+        return scrollbar->Widget::convertFromContainingWidget(parentRect);
     }
-    virtual IntPoint convertFromScrollbarToContainingView(const Scrollbar* scrollbar, const IntPoint& scrollbarPoint) const
+    virtual IntPoint convertFromScrollbarToContainingWidget(const Scrollbar* scrollbar, const IntPoint& scrollbarPoint) const
     {
-        return scrollbar->Widget::convertToContainingView(scrollbarPoint);
+        return scrollbar->Widget::convertToContainingWidget(scrollbarPoint);
     }
-    virtual IntPoint convertFromContainingViewToScrollbar(const Scrollbar* scrollbar, const IntPoint& parentPoint) const
+    virtual IntPoint convertFromContainingWidgetToScrollbar(const Scrollbar* scrollbar, const IntPoint& parentPoint) const
     {
-        return scrollbar->Widget::convertFromContainingView(parentPoint);
+        return scrollbar->Widget::convertFromContainingWidget(parentPoint);
     }
 
     virtual Scrollbar* horizontalScrollbar() const { return 0; }

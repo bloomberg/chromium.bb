@@ -244,7 +244,10 @@ void PrintContext::outputLinkedDestinations(SkCanvas* canvas, const IntRect& pag
         if (!layoutObject || !layoutObject->frameView())
             continue;
         IntRect boundingBox = layoutObject->absoluteBoundingBoxRect();
-        boundingBox = layoutObject->frameView()->convertToContainingWindow(boundingBox);
+        // TODO(bokan): boundingBox looks to be in content coordinates but
+        // convertToRootFrame doesn't apply scroll offsets when converting up to
+        // the root frame.
+        boundingBox = layoutObject->frameView()->convertToRootFrame(boundingBox);
         if (!pageRect.intersects(boundingBox))
             continue;
         IntPoint point = boundingBox.minXMinYCorner();

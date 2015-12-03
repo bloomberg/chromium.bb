@@ -89,8 +89,13 @@ public:
 protected:
     WebPointerProperties m_pointerProperties;
 
+    // In local root frame coordinates. (Except possibly if the Widget under
+    // the mouse is a popup, see FIXME in PlatformMouseEventBuilder).
     IntPoint m_position;
+
+    // In screen coordinates.
     IntPoint m_globalPosition;
+
     IntPoint m_movementDelta;
     MouseButton m_button;
     int m_clickCount;

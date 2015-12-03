@@ -162,7 +162,7 @@ public:
     String selectedTextForClipboard() const;
 
     PositionWithAffinityTemplate<EditingAlgorithm<NodeTraversal>> positionForPoint(const IntPoint& framePoint);
-    Document* documentAtPoint(const IntPoint& windowPoint);
+    Document* documentAtPoint(const IntPoint&);
     EphemeralRangeTemplate<EditingAlgorithm<NodeTraversal>> rangeForPoint(const IntPoint& framePoint);
 
     bool isURLAllowed(const KURL&) const;

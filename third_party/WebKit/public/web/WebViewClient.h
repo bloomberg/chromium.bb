@@ -152,14 +152,12 @@ public:
     // Show a notification popup for the specified form validation messages
     // besides the anchor rectangle. An implementation of this function should
     // not hide the popup until hideValidationMessage call.
-    // FIXME: Clarify anchor coordinates in variable name on Chromium-side.
     virtual void showValidationMessage(const WebRect& anchorInViewport, const WebString& mainText, WebTextDirection mainTextDir, const WebString& supplementalText, WebTextDirection supplementalTextDir) { }
 
     // Hide notifation popup for form validation messages.
     virtual void hideValidationMessage() { }
 
     // Move the existing notifation popup to the new anchor position.
-    // FIXME: Clarify anchor coordinates in variable name on Chromium-side.
     virtual void moveValidationMessage(const WebRect& anchorInViewport) { }
 
 

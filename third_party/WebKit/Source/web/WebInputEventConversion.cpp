@@ -66,7 +66,12 @@ static FloatSize scaleSizeToWindow(const Widget* widget, FloatSize size)
     return FloatSize(scaleDeltaToWindow(widget, size.width()), scaleDeltaToWindow(widget, size.height()));
 }
 
-static FloatPoint convertHitPointToWindow(const Widget* widget, FloatPoint point)
+// This method converts from the renderer's coordinate space into Blink's root frame coordinate space.
+// It's somewhat unique in that it takes into account DevTools emulation, which applies a scale and offset
+// in the root layer (see updateRootLayerTransform in WebViewImpl) as well as the overscroll effect on OSX.
+// This is in addition to the visual viewport "pinch-zoom" transformation and is one of the few cases where
+// the visual viewport is not equal to the renderer's coordinate-space.
+static FloatPoint convertHitPointToRootFrame(const Widget* widget, FloatPoint pointInRendererViewport)
 {
     float scale = 1;
     IntSize offset;
@@ -82,8 +87,8 @@ static FloatPoint convertHitPointToWindow(const Widget* widget, FloatPoint point
         }
     }
     return FloatPoint(
-        (point.x() - offset.width()) / scale + visualViewport.x() + overscrollOffset.width(),
-        (point.y() - offset.height()) / scale + visualViewport.y() + overscrollOffset.height());
+        (pointInRendererViewport.x() - offset.width()) / scale + visualViewport.x() + overscrollOffset.width(),
+        (pointInRendererViewport.y() - offset.height()) / scale + visualViewport.y() + overscrollOffset.height());
 }
 
 static unsigned toPlatformModifierFrom(WebMouseEvent::Button button)
@@ -107,7 +112,7 @@ PlatformMouseEventBuilder::PlatformMouseEventBuilder(Widget* widget, const WebMo
 {
     // FIXME: Widget is always toplevel, unless it's a popup. We may be able
     // to get rid of this once we abstract popups into a WebKit API.
-    m_position = widget->convertFromContainingWindow(flooredIntPoint(convertHitPointToWindow(widget, IntPoint(e.x, e.y))));
+    m_position = widget->convertFromRootFrame(flooredIntPoint(convertHitPointToRootFrame(widget, IntPoint(e.x, e.y))));
     m_globalPosition = IntPoint(e.globalX, e.globalY);
     m_movementDelta = IntPoint(scaleDeltaToWindow(widget, e.movementX), scaleDeltaToWindow(widget, e.movementY));
     m_button = static_cast<MouseButton>(e.button);
@@ -147,7 +152,7 @@ PlatformMouseEventBuilder::PlatformMouseEventBuilder(Widget* widget, const WebMo
 
 PlatformWheelEventBuilder::PlatformWheelEventBuilder(Widget* widget, const WebMouseWheelEvent& e)
 {
-    m_position = widget->convertFromContainingWindow(flooredIntPoint(convertHitPointToWindow(widget, FloatPoint(e.x, e.y))));
+    m_position = widget->convertFromRootFrame(flooredIntPoint(convertHitPointToRootFrame(widget, FloatPoint(e.x, e.y))));
     m_globalPosition = IntPoint(e.globalX, e.globalY);
     m_deltaX = e.deltaX;
     m_deltaY = e.deltaY;
@@ -253,7 +258,7 @@ PlatformGestureEventBuilder::PlatformGestureEventBuilder(Widget* widget, const W
     default:
         ASSERT_NOT_REACHED();
     }
-    m_position = widget->convertFromContainingWindow(flooredIntPoint(convertHitPointToWindow(widget, FloatPoint(e.x, e.y))));
+    m_position = widget->convertFromRootFrame(flooredIntPoint(convertHitPointToRootFrame(widget, FloatPoint(e.x, e.y))));
     m_globalPosition = IntPoint(e.globalX, e.globalY);
     m_timestamp = e.timeStampSeconds;
     m_modifiers = e.modifiers;
@@ -391,10 +396,10 @@ PlatformTouchPointBuilder::PlatformTouchPointBuilder(Widget* widget, const WebTo
     m_pointerProperties = point;
     m_state = toPlatformTouchPointState(point.state);
 
-    // This assumes convertFromContainingWindow does only translations, not scales.
-    FloatPoint floatPos = convertHitPointToWindow(widget, point.position);
+    // This assumes convertFromRootFrame does only translations, not scales.
+    FloatPoint floatPos = convertHitPointToRootFrame(widget, point.position);
     IntPoint flooredPoint = flooredIntPoint(floatPos);
-    m_pos = widget->convertFromContainingWindow(flooredPoint) + (floatPos - flooredPoint);
+    m_pos = widget->convertFromRootFrame(flooredPoint) + (floatPos - flooredPoint);
 
     m_screenPos = FloatPoint(point.screenPosition.x, point.screenPosition.y);
     m_radius = scaleSizeToWindow(widget, FloatSize(point.radiusX, point.radiusY));
@@ -432,7 +437,7 @@ static void updateWebMouseEventFromCoreMouseEvent(const MouseRelatedEvent& event
     webEvent.modifiers = event.modifiers();
 
     FrameView* view = widget ? toFrameView(widget->parent()) : 0;
-    // FIXME: If view == nullptr, pointInRootFrame will really be pointInRootContent.
+    // TODO(bokan): If view == nullptr, pointInRootFrame will really be pointInRootContent.
     IntPoint pointInRootFrame = IntPoint(event.absoluteLocation().x(), event.absoluteLocation().y());
     if (view)
         pointInRootFrame = view->contentsToRootFrame(pointInRootFrame);

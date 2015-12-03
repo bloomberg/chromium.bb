@@ -101,10 +101,10 @@ public:
     }
 };
 
-void ConvertInspectorPoint(blink::LocalFrame* frame, const blink::IntPoint& point, blink::IntPoint* convertedPoint, blink::IntPoint* globalPoint)
+void ConvertInspectorPoint(blink::LocalFrame* frame, const blink::IntPoint& pointInFrame, blink::IntPoint* convertedPoint, blink::IntPoint* globalPoint)
 {
-    *convertedPoint = frame->view()->convertToContainingWindow(point);
-    *globalPoint = frame->page()->chromeClient().viewportToScreen(blink::IntRect(point, blink::IntSize(0, 0))).location();
+    *convertedPoint = frame->view()->convertToRootFrame(pointInFrame);
+    *globalPoint = frame->page()->chromeClient().viewportToScreen(blink::IntRect(pointInFrame, blink::IntSize(0, 0))).location();
 }
 
 } // namespace

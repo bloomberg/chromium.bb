@@ -253,7 +253,7 @@ static NSSize abs(NSSize size)
 
     ASSERT(scrollerImp == scrollbarPainterForScrollbar(scrollbar));
 
-    return scrollbar->convertFromContainingView(blink::IntPoint(pointInContentArea));
+    return scrollbar->convertFromContainingWidget(blink::IntPoint(pointInContentArea));
 }
 
 - (void)scrollerImpPair:(id)scrollerImpPair setContentAreaNeedsDisplayInRect:(NSRect)rect
@@ -521,7 +521,7 @@ private:
 
     ASSERT_UNUSED(scrollerImp, scrollerImp == scrollbarPainterForScrollbar(_scrollbar));
 
-    return _scrollbar->convertFromContainingView(_scrollbar->scrollableArea()->lastKnownMousePosition());
+    return _scrollbar->convertFromContainingWidget(_scrollbar->scrollableArea()->lastKnownMousePosition());
 }
 
 - (void)setUpAlphaAnimation:(RetainPtr<WebScrollbarPartAnimation>&)scrollbarPartAnimation scrollerPainter:(ScrollbarPainter)scrollerPainter part:(blink::ScrollbarPart)part animateAlphaTo:(CGFloat)newAlpha duration:(NSTimeInterval)duration
@@ -1182,7 +1182,7 @@ void ScrollAnimatorMac::setVisibleScrollerThumbRect(const IntRect& scrollerThumb
 {
     IntRect rectInViewCoordinates = scrollerThumb;
     if (Scrollbar* verticalScrollbar = m_scrollableArea->verticalScrollbar())
-        rectInViewCoordinates = verticalScrollbar->convertToContainingView(scrollerThumb);
+        rectInViewCoordinates = verticalScrollbar->convertToContainingWidget(scrollerThumb);
 
     if (rectInViewCoordinates == m_visibleScrollerThumbRect)
         return;

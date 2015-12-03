@@ -2706,7 +2706,7 @@ IntPoint FrameView::convertToLayoutObject(const LayoutObject& layoutObject, cons
     return roundedIntPoint(layoutObject.absoluteToLocal(point, UseTransforms));
 }
 
-IntRect FrameView::convertToContainingView(const IntRect& localRect) const
+IntRect FrameView::convertToContainingWidget(const IntRect& localRect) const
 {
     if (const FrameView* parentView = toFrameView(parent())) {
         // Get our layoutObject in the parent view
@@ -2724,7 +2724,7 @@ IntRect FrameView::convertToContainingView(const IntRect& localRect) const
     return localRect;
 }
 
-IntRect FrameView::convertFromContainingView(const IntRect& parentRect) const
+IntRect FrameView::convertFromContainingWidget(const IntRect& parentRect) const
 {
     if (const FrameView* parentView = toFrameView(parent())) {
         // Get our layoutObject in the parent view
@@ -2742,7 +2742,7 @@ IntRect FrameView::convertFromContainingView(const IntRect& parentRect) const
     return parentRect;
 }
 
-IntPoint FrameView::convertToContainingView(const IntPoint& localPoint) const
+IntPoint FrameView::convertToContainingWidget(const IntPoint& localPoint) const
 {
     if (const FrameView* parentView = toFrameView(parent())) {
         // Get our layoutObject in the parent view
@@ -2761,7 +2761,7 @@ IntPoint FrameView::convertToContainingView(const IntPoint& localPoint) const
     return localPoint;
 }
 
-IntPoint FrameView::convertFromContainingView(const IntPoint& parentPoint) const
+IntPoint FrameView::convertFromContainingWidget(const IntPoint& parentPoint) const
 {
     if (const FrameView* parentView = toFrameView(parent())) {
         // Get our layoutObject in the parent view
@@ -3236,7 +3236,7 @@ IntRect FrameView::adjustScrollbarRectForResizer(const IntRect& rect, Scrollbar*
     IntRect adjustedRect(rect);
     bool overlapsResizer = false;
     if (!rect.isEmpty() && !windowResizerRect().isEmpty()) {
-        IntRect resizerRect = convertFromContainingWindow(windowResizerRect());
+        IntRect resizerRect = convertFromRootFrame(windowResizerRect());
         if (rect.intersects(resizerRect)) {
             if (scrollbar->orientation() == HorizontalScrollbar) {
                 int overlap = rect.maxX() - resizerRect.x();
@@ -3367,7 +3367,7 @@ void FrameView::setScrollOffsetFromUpdateScrollbars(const DoubleSize& offset)
 
 IntRect FrameView::rectToCopyOnScroll() const
 {
-    IntRect scrollViewRect = convertToContainingWindow(IntRect((shouldPlaceVerticalScrollbarOnLeft() && verticalScrollbar()) ? verticalScrollbar()->width() : 0, 0, visibleWidth(), visibleHeight()));
+    IntRect scrollViewRect = convertToRootFrame(IntRect((shouldPlaceVerticalScrollbarOnLeft() && verticalScrollbar()) ? verticalScrollbar()->width() : 0, 0, visibleWidth(), visibleHeight()));
     if (hasOverlayScrollbars()) {
         int verticalScrollbarWidth = (verticalScrollbar() && !hasLayerForVerticalScrollbar()) ? verticalScrollbar()->width() : 0;
         int horizontalScrollbarHeight = (horizontalScrollbar() && !hasLayerForHorizontalScrollbar()) ? horizontalScrollbar()->height() : 0;
@@ -3434,7 +3434,7 @@ IntRect FrameView::frameToContents(const IntRect& rectInFrame) const
 
 IntPoint FrameView::rootFrameToContents(const IntPoint& rootFramePoint) const
 {
-    IntPoint framePoint = convertFromContainingWindow(rootFramePoint);
+    IntPoint framePoint = convertFromRootFrame(rootFramePoint);
     return frameToContents(framePoint);
 }
 
@@ -3446,46 +3446,46 @@ IntRect FrameView::rootFrameToContents(const IntRect& rootFrameRect) const
 IntPoint FrameView::contentsToRootFrame(const IntPoint& contentsPoint) const
 {
     IntPoint framePoint = contentsToFrame(contentsPoint);
-    return convertToContainingWindow(framePoint);
+    return convertToRootFrame(framePoint);
 }
 
 IntRect FrameView::contentsToRootFrame(const IntRect& contentsRect) const
 {
     IntRect rectInFrame = contentsToFrame(contentsRect);
-    return convertToContainingWindow(rectInFrame);
+    return convertToRootFrame(rectInFrame);
 }
 
-FloatPoint FrameView::rootFrameToContents(const FloatPoint& windowPoint) const
+FloatPoint FrameView::rootFrameToContents(const FloatPoint& pointInRootFrame) const
 {
-    FloatPoint framePoint = convertFromContainingWindow(windowPoint);
+    FloatPoint framePoint = convertFromRootFrame(pointInRootFrame);
     return frameToContents(framePoint);
 }
 
 IntRect FrameView::viewportToContents(const IntRect& rectInViewport) const
 {
     IntRect rectInRootFrame = m_frame->host()->visualViewport().viewportToRootFrame(rectInViewport);
-    IntRect frameRect = convertFromContainingWindow(rectInRootFrame);
+    IntRect frameRect = convertFromRootFrame(rectInRootFrame);
     return frameToContents(frameRect);
 }
 
 IntPoint FrameView::viewportToContents(const IntPoint& pointInViewport) const
 {
     IntPoint pointInRootFrame = m_frame->host()->visualViewport().viewportToRootFrame(pointInViewport);
-    IntPoint pointInFrame = convertFromContainingWindow(pointInRootFrame);
+    IntPoint pointInFrame = convertFromRootFrame(pointInRootFrame);
     return frameToContents(pointInFrame);
 }
 
 IntRect FrameView::contentsToViewport(const IntRect& rectInContents) const
 {
     IntRect rectInFrame = contentsToFrame(rectInContents);
-    IntRect rectInRootFrame = convertToContainingWindow(rectInFrame);
+    IntRect rectInRootFrame = convertToRootFrame(rectInFrame);
     return m_frame->host()->visualViewport().rootFrameToViewport(rectInRootFrame);
 }
 
 IntPoint FrameView::contentsToViewport(const IntPoint& pointInContents) const
 {
     IntPoint pointInFrame = contentsToFrame(pointInContents);
-    IntPoint pointInRootFrame = convertToContainingWindow(pointInFrame);
+    IntPoint pointInRootFrame = convertToRootFrame(pointInFrame);
     return m_frame->host()->visualViewport().rootFrameToViewport(pointInRootFrame);
 }
 
@@ -3500,14 +3500,14 @@ IntRect FrameView::contentsToScreen(const IntRect& rect) const
 IntRect FrameView::soonToBeRemovedContentsToUnscaledViewport(const IntRect& rectInContents) const
 {
     IntRect rectInFrame = contentsToFrame(rectInContents);
-    IntRect rectInRootFrame = convertToContainingWindow(rectInFrame);
+    IntRect rectInRootFrame = convertToRootFrame(rectInFrame);
     return enclosingIntRect(m_frame->host()->visualViewport().mainViewToViewportCSSPixels(rectInRootFrame));
 }
 
 IntPoint FrameView::soonToBeRemovedUnscaledViewportToContents(const IntPoint& pointInViewport) const
 {
     IntPoint pointInRootFrame = flooredIntPoint(m_frame->host()->visualViewport().viewportCSSPixelsToRootFrame(pointInViewport));
-    IntPoint pointInThisFrame = convertFromContainingWindow(pointInRootFrame);
+    IntPoint pointInThisFrame = convertFromRootFrame(pointInRootFrame);
     return frameToContents(pointInThisFrame);
 }
 
@@ -3534,7 +3534,7 @@ void FrameView::adjustScrollbarsAvoidingResizerCount(int overlapDelta)
 
 Scrollbar* FrameView::scrollbarAtRootFramePoint(const IntPoint& pointInRootFrame)
 {
-    IntPoint pointInFrame = convertFromContainingWindow(pointInRootFrame);
+    IntPoint pointInFrame = convertFromRootFrame(pointInRootFrame);
     return scrollbarAtFramePoint(pointInFrame);
 }
 
@@ -3681,12 +3681,12 @@ void FrameView::paintContents(GraphicsContext* context, const GlobalPaintFlags g
     FramePainter(*this).paintContents(context, globalPaintFlags, damageRect);
 }
 
-bool FrameView::isPointInScrollbarCorner(const IntPoint& windowPoint)
+bool FrameView::isPointInScrollbarCorner(const IntPoint& pointInRootFrame)
 {
     if (!scrollbarCornerPresent())
         return false;
 
-    IntPoint framePoint = convertFromContainingWindow(windowPoint);
+    IntPoint framePoint = convertFromRootFrame(pointInRootFrame);
 
     if (m_horizontalScrollbar) {
         int horizontalScrollbarYMin = m_horizontalScrollbar->frameRect().y();
@@ -3709,7 +3709,7 @@ bool FrameView::scrollbarCornerPresent() const
         || (m_verticalScrollbar && height() - m_verticalScrollbar->height() > 0);
 }
 
-IntRect FrameView::convertFromScrollbarToContainingView(const Scrollbar* scrollbar, const IntRect& localRect) const
+IntRect FrameView::convertFromScrollbarToContainingWidget(const Scrollbar* scrollbar, const IntRect& localRect) const
 {
     // Scrollbars won't be transformed within us
     IntRect newRect = localRect;
@@ -3717,7 +3717,7 @@ IntRect FrameView::convertFromScrollbarToContainingView(const Scrollbar* scrollb
     return newRect;
 }
 
-IntRect FrameView::convertFromContainingViewToScrollbar(const Scrollbar* scrollbar, const IntRect& parentRect) const
+IntRect FrameView::convertFromContainingWidgetToScrollbar(const Scrollbar* scrollbar, const IntRect& parentRect) const
 {
     IntRect newRect = parentRect;
     // Scrollbars won't be transformed within us
@@ -3726,7 +3726,7 @@ IntRect FrameView::convertFromContainingViewToScrollbar(const Scrollbar* scrollb
 }
 
 // FIXME: test these on windows
-IntPoint FrameView::convertFromScrollbarToContainingView(const Scrollbar* scrollbar, const IntPoint& localPoint) const
+IntPoint FrameView::convertFromScrollbarToContainingWidget(const Scrollbar* scrollbar, const IntPoint& localPoint) const
 {
     // Scrollbars won't be transformed within us
     IntPoint newPoint = localPoint;
@@ -3734,7 +3734,7 @@ IntPoint FrameView::convertFromScrollbarToContainingView(const Scrollbar* scroll
     return newPoint;
 }
 
-IntPoint FrameView::convertFromContainingViewToScrollbar(const Scrollbar* scrollbar, const IntPoint& parentPoint) const
+IntPoint FrameView::convertFromContainingWidgetToScrollbar(const Scrollbar* scrollbar, const IntPoint& parentPoint) const
 {
     IntPoint newPoint = parentPoint;
     // Scrollbars won't be transformed within us

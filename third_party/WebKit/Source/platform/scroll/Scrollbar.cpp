@@ -336,7 +336,7 @@ bool Scrollbar::gestureEvent(const PlatformGestureEvent& evt)
     switch (evt.type()) {
     case PlatformEvent::GestureTapDown:
         setPressedPart(theme()->hitTest(this, evt.position()));
-        m_pressedPos = orientation() == HorizontalScrollbar ? convertFromContainingWindow(evt.position()).x() : convertFromContainingWindow(evt.position()).y();
+        m_pressedPos = orientation() == HorizontalScrollbar ? convertFromRootFrame(evt.position()).x() : convertFromRootFrame(evt.position()).y();
         return true;
     case PlatformEvent::GestureTapDownCancel:
     case PlatformEvent::GestureScrollBegin:
@@ -381,15 +381,15 @@ void Scrollbar::mouseMoved(const PlatformMouseEvent& evt)
                 m_scrollableArea->setScrollPositionSingleAxis(m_orientation, m_dragOrigin + m_scrollableArea->minimumScrollPosition(m_orientation), UserScroll);
             }
         } else {
-            moveThumb(m_orientation == HorizontalScrollbar ?
-                      convertFromContainingWindow(evt.position()).x() :
-                      convertFromContainingWindow(evt.position()).y(), theme()->shouldDragDocumentInsteadOfThumb(this, evt));
+            moveThumb(m_orientation == HorizontalScrollbar
+                ? convertFromRootFrame(evt.position()).x()
+                : convertFromRootFrame(evt.position()).y(), theme()->shouldDragDocumentInsteadOfThumb(this, evt));
         }
         return;
     }
 
     if (m_pressedPart != NoPart)
-        m_pressedPos = orientation() == HorizontalScrollbar ? convertFromContainingWindow(evt.position()).x() : convertFromContainingWindow(evt.position()).y();
+        m_pressedPos = orientation() == HorizontalScrollbar ? convertFromRootFrame(evt.position()).x() : convertFromRootFrame(evt.position()).y();
 
     ScrollbarPart part = theme()->hitTest(this, evt.position());
     if (part != m_hoveredPart) {
@@ -449,7 +449,7 @@ void Scrollbar::mouseDown(const PlatformMouseEvent& evt)
         return;
 
     setPressedPart(theme()->hitTest(this, evt.position()));
-    int pressedPos = orientation() == HorizontalScrollbar ? convertFromContainingWindow(evt.position()).x() : convertFromContainingWindow(evt.position()).y();
+    int pressedPos = orientation() == HorizontalScrollbar ? convertFromRootFrame(evt.position()).x() : convertFromRootFrame(evt.position()).y();
 
     if ((m_pressedPart == BackTrackPart || m_pressedPart == ForwardTrackPart) && theme()->shouldCenterOnThumb(this, evt)) {
         setHoveredPart(ThumbPart);
@@ -518,36 +518,36 @@ bool Scrollbar::isWindowActive() const
     return m_scrollableArea && m_scrollableArea->isActive();
 }
 
-IntRect Scrollbar::convertToContainingView(const IntRect& localRect) const
+IntRect Scrollbar::convertToContainingWidget(const IntRect& localRect) const
 {
     if (m_scrollableArea)
-        return m_scrollableArea->convertFromScrollbarToContainingView(this, localRect);
+        return m_scrollableArea->convertFromScrollbarToContainingWidget(this, localRect);
 
-    return Widget::convertToContainingView(localRect);
+    return Widget::convertToContainingWidget(localRect);
 }
 
-IntRect Scrollbar::convertFromContainingView(const IntRect& parentRect) const
+IntRect Scrollbar::convertFromContainingWidget(const IntRect& parentRect) const
 {
     if (m_scrollableArea)
-        return m_scrollableArea->convertFromContainingViewToScrollbar(this, parentRect);
+        return m_scrollableArea->convertFromContainingWidgetToScrollbar(this, parentRect);
 
-    return Widget::convertFromContainingView(parentRect);
+    return Widget::convertFromContainingWidget(parentRect);
 }
 
-IntPoint Scrollbar::convertToContainingView(const IntPoint& localPoint) const
+IntPoint Scrollbar::convertToContainingWidget(const IntPoint& localPoint) const
 {
     if (m_scrollableArea)
-        return m_scrollableArea->convertFromScrollbarToContainingView(this, localPoint);
+        return m_scrollableArea->convertFromScrollbarToContainingWidget(this, localPoint);
 
-    return Widget::convertToContainingView(localPoint);
+    return Widget::convertToContainingWidget(localPoint);
 }
 
-IntPoint Scrollbar::convertFromContainingView(const IntPoint& parentPoint) const
+IntPoint Scrollbar::convertFromContainingWidget(const IntPoint& parentPoint) const
 {
     if (m_scrollableArea)
-        return m_scrollableArea->convertFromContainingViewToScrollbar(this, parentPoint);
+        return m_scrollableArea->convertFromContainingWidgetToScrollbar(this, parentPoint);
 
-    return Widget::convertFromContainingView(parentPoint);
+    return Widget::convertFromContainingWidget(parentPoint);
 }
 
 float Scrollbar::scrollableAreaCurrentPos() const

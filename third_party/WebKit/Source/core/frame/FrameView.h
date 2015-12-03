@@ -524,10 +524,10 @@ public:
     bool scrollbarCornerPresent() const;
     IntRect scrollCornerRect() const override;
 
-    IntRect convertFromScrollbarToContainingView(const Scrollbar*, const IntRect&) const override;
-    IntRect convertFromContainingViewToScrollbar(const Scrollbar*, const IntRect&) const override;
-    IntPoint convertFromScrollbarToContainingView(const Scrollbar*, const IntPoint&) const override;
-    IntPoint convertFromContainingViewToScrollbar(const Scrollbar*, const IntPoint&) const override;
+    IntRect convertFromScrollbarToContainingWidget(const Scrollbar*, const IntRect&) const override;
+    IntRect convertFromContainingWidgetToScrollbar(const Scrollbar*, const IntRect&) const override;
+    IntPoint convertFromScrollbarToContainingWidget(const Scrollbar*, const IntPoint&) const override;
+    IntPoint convertFromContainingWidgetToScrollbar(const Scrollbar*, const IntPoint&) const override;
 
     bool isFrameView() const override { return true; }
 
@@ -665,10 +665,10 @@ private:
 
     // Override Widget methods to do point conversion via layoutObjects, in order to
     // take transforms into account.
-    IntRect convertToContainingView(const IntRect&) const override;
-    IntRect convertFromContainingView(const IntRect&) const override;
-    IntPoint convertToContainingView(const IntPoint&) const override;
-    IntPoint convertFromContainingView(const IntPoint&) const override;
+    IntRect convertToContainingWidget(const IntRect&) const override;
+    IntRect convertFromContainingWidget(const IntRect&) const override;
+    IntPoint convertToContainingWidget(const IntPoint&) const override;
+    IntPoint convertFromContainingWidget(const IntPoint&) const override;
 
     void updateWidgetPositionsIfNeeded();
 

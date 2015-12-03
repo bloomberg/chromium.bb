@@ -127,7 +127,7 @@ void ValidationMessageClientImpl::checkAnchorStatus(Timer<ValidationMessageClien
     // FIXME: This intersection eliminates the part of the rect outside the root view.
     // If this is meant as a visiblity test, intersecting it against the viewport rect
     // likely makes more sense.
-    newAnchorRectInViewport = intersection(currentView()->convertToContainingWindow(currentView()->boundsRect()), newAnchorRectInViewport);
+    newAnchorRectInViewport = intersection(currentView()->convertToRootFrame(currentView()->boundsRect()), newAnchorRectInViewport);
     if (newAnchorRectInViewport.isEmpty()) {
         hideValidationMessage(*m_currentAnchor);
         return;

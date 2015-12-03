@@ -69,7 +69,7 @@ public:
     void getTickmarks(Vector<IntRect>&) const override;
     bool isScrollableAreaActive() const override;
 
-    IntPoint convertFromContainingWindow(const IntPoint& windowPoint) const override { return Widget::convertFromContainingWindow(windowPoint); }
+    IntPoint convertFromRootFrame(const IntPoint& pointInRootFrame) const override { return Widget::convertFromRootFrame(pointInRootFrame); }
 
     bool isCustomScrollbar() const override { return false; }
     ScrollbarOrientation orientation() const override { return m_orientation; }
@@ -127,11 +127,11 @@ public:
 
     ScrollbarTheme* theme() const { return m_theme; }
 
-    IntRect convertToContainingView(const IntRect&) const override;
-    IntRect convertFromContainingView(const IntRect&) const override;
+    IntRect convertToContainingWidget(const IntRect&) const override;
+    IntRect convertFromContainingWidget(const IntRect&) const override;
 
-    IntPoint convertToContainingView(const IntPoint&) const override;
-    IntPoint convertFromContainingView(const IntPoint&) const override;
+    IntPoint convertToContainingWidget(const IntPoint&) const override;
+    IntPoint convertFromContainingWidget(const IntPoint&) const override;
 
     void moveThumb(int pos, bool draggingDocument = false);
 

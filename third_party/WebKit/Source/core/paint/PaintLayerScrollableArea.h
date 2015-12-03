@@ -193,10 +193,10 @@ public:
     bool isActive() const override;
     bool isScrollCornerVisible() const override;
     IntRect scrollCornerRect() const override;
-    IntRect convertFromScrollbarToContainingView(const Scrollbar*, const IntRect&) const override;
-    IntRect convertFromContainingViewToScrollbar(const Scrollbar*, const IntRect&) const override;
-    IntPoint convertFromScrollbarToContainingView(const Scrollbar*, const IntPoint&) const override;
-    IntPoint convertFromContainingViewToScrollbar(const Scrollbar*, const IntPoint&) const override;
+    IntRect convertFromScrollbarToContainingWidget(const Scrollbar*, const IntRect&) const override;
+    IntRect convertFromContainingWidgetToScrollbar(const Scrollbar*, const IntRect&) const override;
+    IntPoint convertFromScrollbarToContainingWidget(const Scrollbar*, const IntPoint&) const override;
+    IntPoint convertFromContainingWidgetToScrollbar(const Scrollbar*, const IntPoint&) const override;
     int scrollSize(ScrollbarOrientation) const override;
     IntPoint scrollPosition() const override;
     DoublePoint scrollPositionDouble() const override;

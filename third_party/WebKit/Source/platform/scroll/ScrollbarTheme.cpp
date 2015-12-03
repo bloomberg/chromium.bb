@@ -130,13 +130,13 @@ bool ScrollbarTheme::paint(const ScrollbarThemeClient* scrollbar, GraphicsContex
     return true;
 }
 
-ScrollbarPart ScrollbarTheme::hitTest(const ScrollbarThemeClient* scrollbar, const IntPoint& position)
+ScrollbarPart ScrollbarTheme::hitTest(const ScrollbarThemeClient* scrollbar, const IntPoint& positionInRootFrame)
 {
     ScrollbarPart result = NoPart;
     if (!scrollbar->enabled())
         return result;
 
-    IntPoint testPosition = scrollbar->convertFromContainingWindow(position);
+    IntPoint testPosition = scrollbar->convertFromRootFrame(positionInRootFrame);
     testPosition.move(scrollbar->x(), scrollbar->y());
 
     if (!scrollbar->frameRect().contains(testPosition))
@@ -193,7 +193,7 @@ bool ScrollbarTheme::shouldCenterOnThumb(const ScrollbarThemeClient* scrollbar, 
 
 bool ScrollbarTheme::shouldSnapBackToDragOrigin(const ScrollbarThemeClient* scrollbar, const PlatformMouseEvent& evt)
 {
-    IntPoint mousePosition = scrollbar->convertFromContainingWindow(evt.position());
+    IntPoint mousePosition = scrollbar->convertFromRootFrame(evt.position());
     mousePosition.move(scrollbar->x(), scrollbar->y());
     return Platform::current()->scrollbarBehavior()->shouldSnapBackToDragOrigin(mousePosition, trackRect(scrollbar), scrollbar->orientation() == HorizontalScrollbar);
 }

@@ -321,7 +321,9 @@ public:
 
 class WebMouseEvent : public WebInputEvent, public WebPointerProperties {
 public:
-    // Window coordinate
+    // Renderer coordinates. Similar to viewport coordinates but without
+    // DevTools emulation transform or overscroll applied. i.e. the coordinates
+    // in Chromium's RenderView bounds.
     int x;
     int y;
 

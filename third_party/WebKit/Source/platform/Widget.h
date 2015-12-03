@@ -94,26 +94,25 @@ public:
     virtual void handleEvent(Event*) { }
 
     // It is important for cross-platform code to realize that Mac has flipped coordinates. Therefore any code
-    // that tries to convert the location of a rect using the point-based convertFromContainingWindow will end
-    // up with an inaccurate rect. Always make sure to use the rect-based convertFromContainingWindow method
+    // that tries to convert the location of a rect using the point-based convertFromRootFrame will end
+    // up with an inaccurate rect. Always make sure to use the rect-based convertFromRootFrame method
     // when converting window rects.
-    IntRect convertToContainingWindow(const IntRect&) const;
-    IntRect convertFromContainingWindow(const IntRect&) const;
+    IntRect convertToRootFrame(const IntRect&) const;
+    IntRect convertFromRootFrame(const IntRect&) const;
 
-    IntPoint convertToContainingWindow(const IntPoint&) const;
-    IntPoint convertFromContainingWindow(const IntPoint&) const;
-    FloatPoint convertFromContainingWindow(const FloatPoint&) const;
+    IntPoint convertToRootFrame(const IntPoint&) const;
+    IntPoint convertFromRootFrame(const IntPoint&) const;
+    FloatPoint convertFromRootFrame(const FloatPoint&) const;
 
     virtual void frameRectsChanged() { }
 
     // Notifies this widget that other widgets on the page have been repositioned.
     virtual void widgetPositionsUpdated() { }
 
-    // Virtual methods to convert points to/from the containing Widget
-    virtual IntRect convertToContainingView(const IntRect&) const;
-    virtual IntRect convertFromContainingView(const IntRect&) const;
-    virtual IntPoint convertToContainingView(const IntPoint&) const;
-    virtual IntPoint convertFromContainingView(const IntPoint&) const;
+    virtual IntRect convertToContainingWidget(const IntRect&) const;
+    virtual IntRect convertFromContainingWidget(const IntRect&) const;
+    virtual IntPoint convertToContainingWidget(const IntPoint&) const;
+    virtual IntPoint convertFromContainingWidget(const IntPoint&) const;
 
     // Virtual methods to convert points to/from child widgets
     virtual IntPoint convertChildToSelf(const Widget*, const IntPoint&) const;

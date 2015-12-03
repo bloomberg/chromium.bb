@@ -1800,7 +1800,7 @@ void RenderViewImpl::SetValidationMessageDirection(
 }
 
 void RenderViewImpl::showValidationMessage(
-    const blink::WebRect& anchor_in_root_view,
+    const blink::WebRect& anchor_in_viewport,
     const blink::WebString& main_text,
     blink::WebTextDirection main_text_hint,
     const blink::WebString& sub_text,
@@ -1812,7 +1812,7 @@ void RenderViewImpl::showValidationMessage(
       &wrapped_main_text, main_text_hint, &wrapped_sub_text, sub_text_hint);
 
   Send(new ViewHostMsg_ShowValidationMessage(
-      routing_id(), AdjustValidationMessageAnchor(anchor_in_root_view),
+      routing_id(), AdjustValidationMessageAnchor(anchor_in_viewport),
       wrapped_main_text, wrapped_sub_text));
 }
 
@@ -1821,9 +1821,9 @@ void RenderViewImpl::hideValidationMessage() {
 }
 
 void RenderViewImpl::moveValidationMessage(
-    const blink::WebRect& anchor_in_root_view) {
+    const blink::WebRect& anchor_in_viewport) {
   Send(new ViewHostMsg_MoveValidationMessage(
-      routing_id(), AdjustValidationMessageAnchor(anchor_in_root_view)));
+      routing_id(), AdjustValidationMessageAnchor(anchor_in_viewport)));
 }
 
 void RenderViewImpl::setStatusText(const WebString& text) {

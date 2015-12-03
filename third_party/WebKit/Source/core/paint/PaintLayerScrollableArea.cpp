@@ -270,7 +270,7 @@ IntRect PaintLayerScrollableArea::scrollCornerRect() const
     return IntRect();
 }
 
-IntRect PaintLayerScrollableArea::convertFromScrollbarToContainingView(const Scrollbar* scrollbar, const IntRect& scrollbarRect) const
+IntRect PaintLayerScrollableArea::convertFromScrollbarToContainingWidget(const Scrollbar* scrollbar, const IntRect& scrollbarRect) const
 {
     LayoutView* view = box().view();
     if (!view)
@@ -282,7 +282,7 @@ IntRect PaintLayerScrollableArea::convertFromScrollbarToContainingView(const Scr
     return view->frameView()->convertFromLayoutObject(box(), rect);
 }
 
-IntRect PaintLayerScrollableArea::convertFromContainingViewToScrollbar(const Scrollbar* scrollbar, const IntRect& parentRect) const
+IntRect PaintLayerScrollableArea::convertFromContainingWidgetToScrollbar(const Scrollbar* scrollbar, const IntRect& parentRect) const
 {
     LayoutView* view = box().view();
     if (!view)
@@ -293,7 +293,7 @@ IntRect PaintLayerScrollableArea::convertFromContainingViewToScrollbar(const Scr
     return rect;
 }
 
-IntPoint PaintLayerScrollableArea::convertFromScrollbarToContainingView(const Scrollbar* scrollbar, const IntPoint& scrollbarPoint) const
+IntPoint PaintLayerScrollableArea::convertFromScrollbarToContainingWidget(const Scrollbar* scrollbar, const IntPoint& scrollbarPoint) const
 {
     LayoutView* view = box().view();
     if (!view)
@@ -304,7 +304,7 @@ IntPoint PaintLayerScrollableArea::convertFromScrollbarToContainingView(const Sc
     return view->frameView()->convertFromLayoutObject(box(), point);
 }
 
-IntPoint PaintLayerScrollableArea::convertFromContainingViewToScrollbar(const Scrollbar* scrollbar, const IntPoint& parentPoint) const
+IntPoint PaintLayerScrollableArea::convertFromContainingWidgetToScrollbar(const Scrollbar* scrollbar, const IntPoint& parentPoint) const
 {
     LayoutView* view = box().view();
     if (!view)

@@ -61,7 +61,7 @@ public:
     virtual void getTickmarks(Vector<IntRect>&) const = 0;
     virtual bool isScrollableAreaActive() const = 0;
 
-    virtual IntPoint convertFromContainingWindow(const IntPoint& windowPoint) const = 0;
+    virtual IntPoint convertFromRootFrame(const IntPoint& pointInRootFrame) const = 0;
 
     virtual bool isCustomScrollbar() const = 0;
     virtual ScrollbarOrientation orientation() const = 0;
