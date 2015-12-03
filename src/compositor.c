@@ -921,6 +921,24 @@ weston_surface_to_buffer_float(struct weston_surface *surface,
 				 *bx, *by, bx, by);
 }
 
+/** Transform a rectangle from surface coordinates to buffer coordinates
+ *
+ * \param surface The surface to fetch wl_viewport and buffer transformation
+ * from.
+ * \param rect The rectangle to transform.
+ * \return The transformed rectangle.
+ *
+ * Viewport and buffer transformations can only do translation, scaling,
+ * and rotations in 90-degree steps. Therefore the only loss in the
+ * conversion is coordinate rounding.
+ *
+ * However, some coordinate rounding takes place as an intermediate
+ * step before the buffer scale factor is applied, so the rectangle
+ * boundary may not be exactly as expected.
+ *
+ * This is OK for damage tracking since a little extra coverage is
+ * not a problem.
+ */
 WL_EXPORT pixman_box32_t
 weston_surface_to_buffer_rect(struct weston_surface *surface,
 			      pixman_box32_t rect)
@@ -954,7 +972,8 @@ weston_surface_to_buffer_rect(struct weston_surface *surface,
  *
  * Viewport and buffer transformations can only do translation, scaling,
  * and rotations in 90-degree steps. Therefore the only loss in the
- * conversion is coordinate flooring (rounding).
+ * conversion is from the coordinate rounding that takes place in
+ * \ref weston_surface_to_buffer_rect.
  */
 WL_EXPORT void
 weston_surface_to_buffer_region(struct weston_surface *surface,
