@@ -258,11 +258,11 @@ extern const char kWebRtcMaxCaptureFramerate[];
 #endif
 
 #if defined(OS_ANDROID)
+CONTENT_EXPORT extern const char kDisableAndroidCompositorAnimationTimelines[];
 CONTENT_EXPORT extern const char kDisableOverscrollEdgeEffect[];
 CONTENT_EXPORT extern const char kDisablePullToRefreshEffect[];
 CONTENT_EXPORT extern const char kDisableScreenOrientationLock[];
 CONTENT_EXPORT extern const char kEnableAdaptiveSelectionHandleOrientation[];
-CONTENT_EXPORT extern const char kEnableAndroidCompositorAnimationTimelines[];
 CONTENT_EXPORT extern const char kEnableLongpressDragSelection[];
 CONTENT_EXPORT extern const char kIPCSyncCompositing[];
 CONTENT_EXPORT extern const char kHideScrollbars[];

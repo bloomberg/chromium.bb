@@ -449,9 +449,8 @@ void CompositorImpl::CreateLayerTreeHost() {
   // TODO(enne): Update this this compositor to use the scheduler.
   settings.single_thread_proxy_scheduler = false;
 
-  if (command_line->HasSwitch(
-          switches::kEnableAndroidCompositorAnimationTimelines))
-    settings.use_compositor_animation_timelines = true;
+  settings.use_compositor_animation_timelines = !command_line->HasSwitch(
+      switches::kDisableAndroidCompositorAnimationTimelines);
 
   cc::LayerTreeHost::InitParams params;
   params.client = this;

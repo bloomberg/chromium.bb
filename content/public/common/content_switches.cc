@@ -882,6 +882,11 @@ const char kWebRtcMaxCaptureFramerate[]     = "max-gum-fps";
 #endif
 
 #if defined(OS_ANDROID)
+// Disable external animation system for Android compositor.
+// See also kDisableCompositorAnimationTimelines for renderer compositors.
+const char kDisableAndroidCompositorAnimationTimelines[] =
+    "disable-android-compositor-animation-timelines";
+
 // Disable overscroll edge effects like those found in Android views.
 const char kDisableOverscrollEdgeEffect[]   = "disable-overscroll-edge-effect";
 
@@ -895,11 +900,6 @@ const char kDisableScreenOrientationLock[]  = "disable-screen-orientation-lock";
 // viewport boundaries.
 const char kEnableAdaptiveSelectionHandleOrientation[] =
     "enable-adaptive-selection-handle-orientation";
-
-// Enable external animation system for Android compositor.
-// See also kEnableCompositorAnimationTimelines for renderer compositors.
-const char kEnableAndroidCompositorAnimationTimelines[] =
-    "enable-android-compositor-animation-timelines";
 
 // Enable drag manipulation of longpress-triggered text selections.
 const char kEnableLongpressDragSelection[]  = "enable-longpress-drag-selection";
