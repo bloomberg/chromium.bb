@@ -118,13 +118,13 @@ class MockPrintingContextWin : public PrintingContextSytemDialogWin {
     memcpy(reinterpret_cast<uint8*>(dev_names_ptr) + dev_names->wDriverOffset,
            info_2.get()->pDriverName,
            driver_size);
-    dev_names->wDeviceOffset =
-        dev_names->wDriverOffset + driver_size / sizeof(wchar_t);
+    dev_names->wDeviceOffset = base::checked_cast<WORD>(
+        dev_names->wDriverOffset + driver_size / sizeof(wchar_t));
     memcpy(reinterpret_cast<uint8*>(dev_names_ptr) + dev_names->wDeviceOffset,
            info_2.get()->pPrinterName,
            printer_size);
-    dev_names->wOutputOffset =
-        dev_names->wDeviceOffset + printer_size / sizeof(wchar_t);
+    dev_names->wOutputOffset = base::checked_cast<WORD>(
+        dev_names->wDeviceOffset + printer_size / sizeof(wchar_t));
     memcpy(reinterpret_cast<uint8*>(dev_names_ptr) + dev_names->wOutputOffset,
            info_2.get()->pPortName,
            port_size);

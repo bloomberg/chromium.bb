@@ -282,6 +282,13 @@ if (!is_android) {
     deps = [
       ":leveldb_testutil",
     ]
+
+    if (is_win) {
+      # db\log_test.cc(486) triggers two warnings:
+      # util\testharness.h(91): warning C4018: '<=': signed/unsigned mismatch
+      # util\testharness.h(89): warning C4018: '>=': signed/unsigned mismatch
+      cflags = [ "/wd4018" ]  # Signed/unsigned mismatch in comparison.
+    }
   }
 
   test("leveldb_skiplist_test") {

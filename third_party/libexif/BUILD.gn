@@ -57,11 +57,16 @@ if (!is_linux || is_chromeos) {
     # TODO(GYP): Additional options for non-Windows platforms.
 
     if (is_win) {
-      defines = [
-        # This seems like a hack, but this is what WebKit Win does.
-        "snprintf=_snprintf",
-        "inline=__inline",
-      ]
+      import("//build/config/win/visual_studio_version.gni")
+
+      if (visual_studio_version == "2013" || visual_studio_version == "2013e") {
+        defines = [
+          # This seems like a hack, but this is what WebKit Win does.
+          # VS 2015 supports these natively so they cannot be #defines.
+          "snprintf=_snprintf",
+          "inline=__inline",
+        ]
+      }
 
       ldflags = [ "/DEF:" + rebase_path("libexif.def") ]
 

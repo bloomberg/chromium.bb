@@ -31,12 +31,12 @@ TEST(MCSUtilTest, BuildLoginRequest) {
 
 // Test building a protobuf and extracting the tag from a protobuf.
 TEST(MCSUtilTest, ProtobufToTag) {
-  for (size_t i = 0; i < kNumProtoTypes; ++i) {
+  for (uint8 i = 0; i < kNumProtoTypes; ++i) {
     scoped_ptr<google::protobuf::MessageLite> protobuf =
         BuildProtobufFromTag(i);
     if (!protobuf.get())  // Not all tags have protobuf definitions.
       continue;
-    ASSERT_EQ((int)i, GetMCSProtoTag(*protobuf)) << "Type " << i;
+    ASSERT_EQ(i, GetMCSProtoTag(*protobuf)) << "Type " << i;
   }
 }
 

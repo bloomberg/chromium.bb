@@ -67,7 +67,7 @@ bool QuerySyncManager::Alloc(QuerySyncManager::QueryInfo* info) {
     buckets_.push_back(bucket);
   }
 
-  unsigned short index_in_bucket = 0;
+  size_t index_in_bucket = 0;
   for (size_t i = 0; i < kSyncsPerBucket; i++) {
     if (!bucket->in_use_queries[i]) {
       index_in_bucket = i;
