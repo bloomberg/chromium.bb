@@ -31,6 +31,15 @@ bool SHA256HashValue::Equals(const SHA256HashValue& other) const {
   return memcmp(data, other.data, sizeof(data)) == 0;
 }
 
+HashValue::HashValue(const SHA1HashValue& hash) : HashValue(HASH_VALUE_SHA1) {
+  fingerprint.sha1 = hash;
+}
+
+HashValue::HashValue(const SHA256HashValue& hash)
+    : HashValue(HASH_VALUE_SHA256) {
+  fingerprint.sha256 = hash;
+}
+
 bool HashValue::Equals(const HashValue& other) const {
   if (tag != other.tag)
     return false;

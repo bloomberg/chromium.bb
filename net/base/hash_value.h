@@ -36,6 +36,8 @@ enum HashValueTag {
 
 class NET_EXPORT HashValue {
  public:
+  explicit HashValue(const SHA1HashValue& hash);
+  explicit HashValue(const SHA256HashValue& hash);
   explicit HashValue(HashValueTag tag) : tag(tag) {}
   HashValue() : tag(HASH_VALUE_SHA1) {}
 
