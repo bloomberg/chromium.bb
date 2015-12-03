@@ -128,8 +128,19 @@ NaClErrorCode NaClMakeDynamicTextShared(struct NaClApp *nap) {
 
   text_sysaddr = NaClUserToSys(nap, shm_vaddr_base);
 
-  /* Existing memory is anonymous paging file backed. */
-  NaClPageFree((void *) text_sysaddr, dynamic_text_size);
+  /*
+   * On Windows, we must unmap this range before the OS will let us remap
+   * it.  This involves opening up an address space hole, which is risky
+   * because another thread might call mmap() and receive an allocation
+   * inside that hole.  We don't need to take that risk on Unix, where
+   * MAP_FIXED overwrites mappings atomically.
+   *
+   * We use NaClPageFree() here because the existing memory was mapped
+   * using VirtualAlloc().
+   */
+  if (NACL_WINDOWS) {
+    NaClPageFree((void *) text_sysaddr, dynamic_text_size);
+  }
 
   /*
    * Unix allows us to map pages with PROT_NONE initially and later
