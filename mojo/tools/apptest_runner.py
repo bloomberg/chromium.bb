@@ -85,11 +85,11 @@ def main():
       if gtest_filter and not ran and not fail:
         print '[ NO TESTS ] ' + (test_name if args.verbose else '')
         continue
-      result = (not ran) or (ran and not fail)
-      # Use the apptest name if the whole suite failed.
-      fail = [test_name] if (not result and fail == [test]) else fail
+      # Use the apptest name if the whole suite failed or no fixtures were run.
+      fail = [test_name] if (not ran and (not fail or fail == [test])) else fail
       tests.extend(ran)
       failed.extend(fail)
+      result = ran and not fail
       print '[  PASSED  ]' if result else '[  FAILED  ]',
       print test_name if args.verbose or not result else ''
       # Abort when 3 apptest suites, or a tenth of all, have failed.
