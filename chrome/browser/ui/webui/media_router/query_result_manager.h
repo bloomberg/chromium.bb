@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
-#include "base/memory/linked_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/media/router/media_routes_observer.h"
@@ -123,8 +123,7 @@ class QueryResultManager {
   // MediaSinksObservers that listens for compatible MediaSink updates.
   // Each observer is associated with a MediaCastMode. Results received by
   // observers are propagated back to this class.
-  // TODO(mfoltz): Remove linked_ptr when there is a ScopedPtrMap available.
-  std::map<MediaCastMode, linked_ptr<MediaSinksObserver>> sinks_observers_;
+  std::map<MediaCastMode, scoped_ptr<MediaSinksObserver>> sinks_observers_;
 
   // Holds registrations of MediaSources for cast modes.
   std::map<MediaCastMode, MediaSource> cast_mode_sources_;

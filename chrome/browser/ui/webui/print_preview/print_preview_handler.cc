@@ -17,8 +17,8 @@
 #include "base/i18n/number_formatting.h"
 #include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
@@ -584,7 +584,7 @@ class PrintPreviewHandler::AccessTokenService
   void OnServiceResponce(const OAuth2TokenService::Request* request,
                          const std::string& access_token) {
     for (Requests::iterator i = requests_.begin(); i != requests_.end(); ++i) {
-      if (i->second == request) {
+      if (i->second.get() == request) {
         handler_->SendAccessToken(i->first, access_token);
         requests_.erase(i);
         return;
@@ -593,8 +593,8 @@ class PrintPreviewHandler::AccessTokenService
     NOTREACHED();
   }
 
-  typedef std::map<std::string,
-                   linked_ptr<OAuth2TokenService::Request> > Requests;
+  using Requests =
+      std::map<std::string, scoped_ptr<OAuth2TokenService::Request>>;
   Requests requests_;
   PrintPreviewHandler* handler_;
 
