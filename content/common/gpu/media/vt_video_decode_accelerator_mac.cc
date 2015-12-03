@@ -17,7 +17,7 @@
 #include "base/sys_info.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/version.h"
-#include "content/common/gpu/media/vt_video_decode_accelerator.h"
+#include "content/common/gpu/media/vt_video_decode_accelerator_mac.h"
 #include "content/public/common/content_switches.h"
 #include "media/base/limits.h"
 #include "ui/gl/gl_context.h"

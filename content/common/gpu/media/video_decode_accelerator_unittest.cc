@@ -57,7 +57,7 @@
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
-#include "content/common/gpu/media/dxva_video_decode_accelerator.h"
+#include "content/common/gpu/media/dxva_video_decode_accelerator_win.h"
 #elif defined(OS_CHROMEOS)
 #if defined(USE_V4L2_CODEC)
 #include "content/common/gpu/media/v4l2_device.h"

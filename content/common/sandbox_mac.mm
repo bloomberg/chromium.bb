@@ -33,7 +33,7 @@ extern "C" {
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
-#include "content/common/gpu/media/vt_video_decode_accelerator.h"
+#include "content/common/gpu/media/vt_video_decode_accelerator_mac.h"
 #include "content/grit/content_resources.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"

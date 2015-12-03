@@ -676,9 +676,9 @@
         'common/gpu/client/gpu_memory_buffer_impl_io_surface.h',
         'common/gpu/gpu_memory_buffer_factory_io_surface.cc',
         'common/gpu/gpu_memory_buffer_factory_io_surface.h',
-        'common/gpu/media/vt.h',
-        'common/gpu/media/vt_video_decode_accelerator.cc',
-        'common/gpu/media/vt_video_decode_accelerator.h',
+        'common/gpu/media/vt_mac.h',
+        'common/gpu/media/vt_video_decode_accelerator_mac.cc',
+        'common/gpu/media/vt_video_decode_accelerator_mac.h',
       ],
       'sources!': [
         'common/plugin_list_posix.cc',
@@ -1039,8 +1039,8 @@
         },
       },
       'sources': [
-        'common/gpu/media/dxva_video_decode_accelerator.cc',
-        'common/gpu/media/dxva_video_decode_accelerator.h',
+        'common/gpu/media/dxva_video_decode_accelerator_win.cc',
+        'common/gpu/media/dxva_video_decode_accelerator_win.h',
       ],
       'include_dirs': [
         '<(DEPTH)/third_party/khronos',

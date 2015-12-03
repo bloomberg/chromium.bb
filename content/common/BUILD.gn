@@ -231,9 +231,9 @@ source_set("common") {
                  "gpu/client/gpu_memory_buffer_impl_io_surface.h",
                  "gpu/gpu_memory_buffer_factory_io_surface.cc",
                  "gpu/gpu_memory_buffer_factory_io_surface.h",
-                 "gpu/media/vt.h",
-                 "gpu/media/vt_video_decode_accelerator.cc",
-                 "gpu/media/vt_video_decode_accelerator.h",
+                 "gpu/media/vt_mac.h",
+                 "gpu/media/vt_video_decode_accelerator_mac.cc",
+                 "gpu/media/vt_video_decode_accelerator_mac.h",
                ] + get_target_outputs(":libvt_generate_stubs")
 
     sources -= [ "plugin_list_posix.cc" ]
@@ -469,8 +469,8 @@ source_set("common") {
 
   if (is_win) {
     sources += [
-      "gpu/media/dxva_video_decode_accelerator.cc",
-      "gpu/media/dxva_video_decode_accelerator.h",
+      "gpu/media/dxva_video_decode_accelerator_win.cc",
+      "gpu/media/dxva_video_decode_accelerator_win.h",
     ]
     configs += [ "//third_party/khronos:khronos_headers" ]
     deps += [ "//ui/gl" ]
