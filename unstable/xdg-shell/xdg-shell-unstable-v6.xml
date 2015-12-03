@@ -126,14 +126,12 @@
       them, and associate metadata like title and app id.
 
       The client must call wl_surface.commit on the corresponding wl_surface
-      for the xdg_surface state to take effect. Prior to committing the new
-      state, it can set up initial configuration, such as maximizing or setting
-      a window geometry.
+      for the xdg_surface state to take effect.
 
-      Even without attaching a buffer the compositor must respond to initial
-      committed configuration, for instance sending a configure event with
-      expected window geometry if the client maximized its surface during
-      initialization.
+      Creating an xdg_surface from a wl_surface which has a buffer attached or
+      committed is a client error, and any attempts by a client to attach or
+      manipulate a buffer prior to the first xdg_surface.configure call must
+      also be treated as errors.
 
       For a surface to be mapped by the compositor the client must have
       committed both an xdg_surface state and a buffer.
