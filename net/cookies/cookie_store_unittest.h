@@ -528,7 +528,7 @@ TYPED_TEST_P(CookieStoreTest, TestNonDottedAndTLD) {
     }
   }
 
-  {
+  if (TypeParam::supports_non_dotted_domains) {
     // Exact matches between the domain attribute and the host are treated as
     // host cookies, not domain cookies.
     scoped_refptr<CookieStore> cs(this->GetCookieStore());
@@ -541,10 +541,8 @@ TYPED_TEST_P(CookieStoreTest, TestNonDottedAndTLD) {
     this->MatchCookieLines(
         std::string(),
         this->GetCookies(cs.get(), GURL("http://hopefully-no-cookies.com/")));
-    if (TypeParam::supports_non_dotted_domains) {
-      this->MatchCookieLines(std::string(),
-                             this->GetCookies(cs.get(), GURL("http://.com/")));
-    }
+    this->MatchCookieLines(std::string(),
+                           this->GetCookies(cs.get(), GURL("http://.com/")));
   }
 
   {
@@ -597,7 +595,7 @@ TYPED_TEST_P(CookieStoreTest, TestNonDottedAndTLD) {
     this->MatchCookieLines("a=1", this->GetCookies(cs.get(), url));
   }
 
-  {
+  if (TypeParam::supports_non_dotted_domains) {
     // Exact matches between the domain attribute and an intranet host are
     // treated as host cookies, not domain cookies.
     scoped_refptr<CookieStore> cs(this->GetCookieStore());
@@ -610,10 +608,8 @@ TYPED_TEST_P(CookieStoreTest, TestNonDottedAndTLD) {
     this->MatchCookieLines(
         std::string(),
         this->GetCookies(cs.get(), GURL("http://hopefully-no-cookies.b/")));
-    if (TypeParam::supports_non_dotted_domains) {
-      this->MatchCookieLines(std::string(),
-                             this->GetCookies(cs.get(), GURL("http://.b/")));
-    }
+    this->MatchCookieLines(std::string(),
+                           this->GetCookies(cs.get(), GURL("http://.b/")));
   }
 }
 
