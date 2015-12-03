@@ -1546,7 +1546,7 @@ bool PaintLayer::hitTest(HitTestResult& result)
     return insideLayer;
 }
 
-Node* PaintLayer::enclosingElement() const
+Node* PaintLayer::enclosingNode() const
 {
     for (LayoutObject* r = layoutObject(); r; r = r->parent()) {
         if (Node* e = r->node())
@@ -1912,7 +1912,7 @@ bool PaintLayer::hitTestContents(HitTestResult& result, const LayoutRect& layerB
             return false;
         }
 
-        Node* e = enclosingElement();
+        Node* e = enclosingNode();
         // FIXME: should be a call to result.setNodeAndPosition. What we would really want to do here is to
         // return and look for the nearest non-anonymous ancestor, and ignore aunts and uncles on
         // our way. It's bad to look for it manually like we do here, and give up on setting a local
@@ -2555,7 +2555,7 @@ bool PaintLayer::scrollsOverflow() const
 
 namespace {
 
-FilterOperations computeFilterOperationsHandleReferenceFilters(const FilterOperations& filters, float effectiveZoom, Node* enclosingElement)
+FilterOperations computeFilterOperationsHandleReferenceFilters(const FilterOperations& filters, float effectiveZoom, Node* enclosingNode)
 {
     if (filters.hasReferenceFilter()) {
         for (size_t i = 0; i < filters.size(); ++i) {
@@ -2564,7 +2564,7 @@ FilterOperations computeFilterOperationsHandleReferenceFilters(const FilterOpera
                 continue;
             ReferenceFilterOperation& referenceOperation = toReferenceFilterOperation(*filterOperation);
             // FIXME: Cache the Filter if it didn't change.
-            RefPtrWillBeRawPtr<Filter> referenceFilter = ReferenceFilterBuilder::build(effectiveZoom, toElement(enclosingElement), nullptr, referenceOperation);
+            RefPtrWillBeRawPtr<Filter> referenceFilter = ReferenceFilterBuilder::build(effectiveZoom, toElement(enclosingNode), nullptr, referenceOperation);
             referenceOperation.setFilter(referenceFilter.release());
         }
     }
@@ -2576,12 +2576,12 @@ FilterOperations computeFilterOperationsHandleReferenceFilters(const FilterOpera
 
 FilterOperations PaintLayer::computeFilterOperations(const ComputedStyle& style) const
 {
-    return computeFilterOperationsHandleReferenceFilters(style.filter(), style.effectiveZoom(), enclosingElement());
+    return computeFilterOperationsHandleReferenceFilters(style.filter(), style.effectiveZoom(), enclosingNode());
 }
 
 FilterOperations PaintLayer::computeBackdropFilterOperations(const ComputedStyle& style) const
 {
-    return computeFilterOperationsHandleReferenceFilters(style.backdropFilter(), style.effectiveZoom(), enclosingElement());
+    return computeFilterOperationsHandleReferenceFilters(style.backdropFilter(), style.effectiveZoom(), enclosingNode());
 }
 
 void PaintLayer::updateOrRemoveFilterClients()
@@ -2615,7 +2615,7 @@ FilterEffectBuilder* PaintLayer::updateFilterEffectBuilder() const
     filterInfo->setBuilder(FilterEffectBuilder::create());
 
     float zoom = layoutObject()->style() ? layoutObject()->style()->effectiveZoom() : 1.0f;
-    if (!filterInfo->builder()->build(toElement(enclosingElement()), computeFilterOperations(layoutObject()->styleRef()), zoom))
+    if (!filterInfo->builder()->build(toElement(enclosingNode()), computeFilterOperations(layoutObject()->styleRef()), zoom))
         filterInfo->setBuilder(nullptr);
 
     return filterInfo->builder();

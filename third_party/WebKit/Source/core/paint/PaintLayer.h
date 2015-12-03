@@ -440,7 +440,7 @@ public:
 
     void updateFilters(const ComputedStyle* oldStyle, const ComputedStyle& newStyle);
 
-    Node* enclosingElement() const;
+    Node* enclosingNode() const;
 
     bool isInTopLayer() const;
 
