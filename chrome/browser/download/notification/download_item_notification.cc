@@ -369,13 +369,12 @@ void DownloadItemNotification::UpdateNotificationData(
       case content::DownloadItem::IN_PROGRESS: {
         int percent_complete = item_->PercentComplete();
         if (percent_complete >= 0) {
-          notification_->set_type(message_center::NOTIFICATION_TYPE_PROGRESS);
           notification_->set_progress(percent_complete);
         } else {
-          notification_->set_type(
-              message_center::NOTIFICATION_TYPE_BASE_FORMAT);
-          notification_->set_progress(0);
+          // Negative progress value shows an indeterminate progress bar.
+          notification_->set_progress(-1);
         }
+        notification_->set_type(message_center::NOTIFICATION_TYPE_PROGRESS);
         break;
       }
       case content::DownloadItem::COMPLETE:
