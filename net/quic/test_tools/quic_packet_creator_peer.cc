@@ -67,10 +67,8 @@ size_t QuicPacketCreatorPeer::CreateStreamFrame(QuicPacketCreator* creator,
                                                 size_t iov_offset,
                                                 QuicStreamOffset offset,
                                                 bool fin,
-                                                QuicFrame* frame,
-                                                UniqueStreamBuffer* buffer) {
-  return creator->CreateStreamFrame(id, iov, iov_offset, offset, fin, frame,
-                                    buffer);
+                                                QuicFrame* frame) {
+  return creator->CreateStreamFrame(id, iov, iov_offset, offset, fin, frame);
 }
 
 // static

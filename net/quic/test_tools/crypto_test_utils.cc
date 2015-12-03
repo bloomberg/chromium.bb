@@ -600,8 +600,8 @@ void CryptoTestUtils::MovePackets(PacketSavingConnection* source_conn,
       break;
     }
 
-    for (const QuicStreamFrame& stream_frame : framer.stream_frames()) {
-      ASSERT_TRUE(crypto_framer.ProcessInput(stream_frame.data));
+    for (const QuicStreamFrame* stream_frame : framer.stream_frames()) {
+      ASSERT_TRUE(crypto_framer.ProcessInput(stream_frame->data));
       ASSERT_FALSE(crypto_visitor.error());
     }
   }

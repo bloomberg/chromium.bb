@@ -106,19 +106,25 @@ UniqueStreamBuffer NewStreamBuffer(size_t size) {
 QuicStreamFrame::QuicStreamFrame() : stream_id(0), fin(false), offset(0) {
 }
 
-QuicStreamFrame::QuicStreamFrame(const QuicStreamFrame& frame)
-    : stream_id(frame.stream_id),
-      fin(frame.fin),
-      offset(frame.offset),
-      data(frame.data) {
-}
-
 QuicStreamFrame::QuicStreamFrame(QuicStreamId stream_id,
                                  bool fin,
                                  QuicStreamOffset offset,
                                  StringPiece data)
     : stream_id(stream_id), fin(fin), offset(offset), data(data) {
 }
+
+QuicStreamFrame::QuicStreamFrame(QuicStreamId stream_id,
+                                 bool fin,
+                                 QuicStreamOffset offset,
+                                 StringPiece data,
+                                 UniqueStreamBuffer buffer)
+    : stream_id(stream_id),
+      fin(fin),
+      offset(offset),
+      data(data),
+      buffer(buffer.release()) {}
+
+QuicStreamFrame::~QuicStreamFrame() {}
 
 uint32 MakeQuicTag(char a, char b, char c, char d) {
   return static_cast<uint32>(a) |
@@ -730,28 +736,15 @@ RetransmittableFrames::~RetransmittableFrames() {
         DCHECK(false) << "Cannot delete type: " << frame.type;
     }
   }
-  // TODO(rtenneti): Delete the for loop once chrome has c++11 library support
-  // for "std::vector<UniqueStreamBuffer> stream_data_;".
-  for (const char* buffer : stream_data_) {
-    delete[] buffer;
-  }
 }
 
 const QuicFrame& RetransmittableFrames::AddFrame(const QuicFrame& frame) {
-  return AddFrame(frame, nullptr);
-}
-
-const QuicFrame& RetransmittableFrames::AddFrame(const QuicFrame& frame,
-                                                 UniqueStreamBuffer buffer) {
   if (frame.type == STREAM_FRAME &&
       frame.stream_frame->stream_id == kCryptoStreamId) {
     has_crypto_handshake_ = IS_HANDSHAKE;
   }
-  if (buffer != nullptr) {
-    stream_data_.push_back(buffer.release());
-  }
   frames_.push_back(frame);
-  return frames_.back();
+  return frame;
 }
 
 void RetransmittableFrames::RemoveFramesForStream(QuicStreamId stream_id) {

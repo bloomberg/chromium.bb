@@ -715,11 +715,16 @@ UniqueStreamBuffer NewStreamBuffer(size_t size);
 
 struct NET_EXPORT_PRIVATE QuicStreamFrame {
   QuicStreamFrame();
-  QuicStreamFrame(const QuicStreamFrame& frame);
   QuicStreamFrame(QuicStreamId stream_id,
                   bool fin,
                   QuicStreamOffset offset,
                   base::StringPiece data);
+  QuicStreamFrame(QuicStreamId stream_id,
+                  bool fin,
+                  QuicStreamOffset offset,
+                  base::StringPiece data,
+                  UniqueStreamBuffer buffer);
+  ~QuicStreamFrame();
 
   NET_EXPORT_PRIVATE friend std::ostream& operator<<(
       std::ostream& os, const QuicStreamFrame& s);
@@ -728,8 +733,14 @@ struct NET_EXPORT_PRIVATE QuicStreamFrame {
   bool fin;
   QuicStreamOffset offset;  // Location of this data in the stream.
   base::StringPiece data;
-};
+  // nullptr when the QuicStreamFrame is received, and non-null when sent.
+  UniqueStreamBuffer buffer;
 
+ private:
+  DISALLOW_COPY_AND_ASSIGN(QuicStreamFrame);
+};
+static_assert(sizeof(QuicStreamFrame) <= 64,
+              "Keep the QuicStreamFrame size to a cacheline.");
 // TODO(ianswett): Re-evaluate the trade-offs of hash_set vs set when framing
 // is finalized.
 typedef std::set<QuicPacketNumber> PacketNumberSet;
@@ -1129,8 +1140,6 @@ class NET_EXPORT_PRIVATE RetransmittableFrames {
 
   // Takes ownership of the frame inside |frame|.
   const QuicFrame& AddFrame(const QuicFrame& frame);
-  // Takes ownership of the frame inside |frame| and |buffer|.
-  const QuicFrame& AddFrame(const QuicFrame& frame, UniqueStreamBuffer buffer);
   // Removes all stream frames associated with |stream_id|.
   void RemoveFramesForStream(QuicStreamId stream_id);
 
@@ -1153,12 +1162,6 @@ class NET_EXPORT_PRIVATE RetransmittableFrames {
   const EncryptionLevel encryption_level_;
   IsHandshake has_crypto_handshake_;
   bool needs_padding_;
-  // Data referenced by the StringPiece of a QuicStreamFrame.
-  //
-  // TODO(rtenneti): Change const char* to UniqueStreamBuffer once chrome has
-  // c++11 library support.
-  // std::vector<UniqueStreamBuffer> stream_data_;
-  std::vector<const char*> stream_data_;
 
   DISALLOW_COPY_AND_ASSIGN(RetransmittableFrames);
 };

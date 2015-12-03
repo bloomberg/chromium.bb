@@ -151,20 +151,13 @@ class NET_EXPORT_PRIVATE QuicPacketCreator {
   // in BytesFree.
   size_t PacketSize() const;
 
-  // TODO(jri): AddSavedFrame calls AddFrame, which only saves the frame
-  // if it is a stream frame, not other types of frames. Fix this API;
-  // add a AddNonSavedFrame method.
-  // Tries to add |frame| to the packet creator's std::list of frames to be
+  // Tries to add |frame| to the packet creator's list of frames to be
   // serialized. If the frame does not fit into the current packet, flushes the
   // packet and returns false.
   bool AddSavedFrame(const QuicFrame& frame);
 
-  // Identical to AddSavedFrame, but takes ownership of the buffer.
-  bool AddSavedFrame(const QuicFrame& frame, UniqueStreamBuffer buffer);
-
-  // Identical to AddSavedFrame, but takes ownership of the buffer, and allows
-  // to cause the packet to be padded.
-  bool AddPaddedSavedFrame(const QuicFrame& frame, UniqueStreamBuffer buffer);
+  // Identical to AddSavedFrame, but allows the frame to be padded.
+  bool AddPaddedSavedFrame(const QuicFrame& frame);
 
   // Creates a version negotiation packet which supports |supported_versions|.
   // Caller owns the created  packet. Also, sets the entropy hash of the
@@ -252,14 +245,13 @@ class NET_EXPORT_PRIVATE QuicPacketCreator {
   // Returns the number of bytes consumed from data.
   // If data is empty and fin is true, the expected behavior is to consume the
   // fin but return 0.  If any data is consumed, it will be copied into a
-  // new buffer that |frame| will point to and will be stored in |buffer|.
+  // new buffer that |frame| will point to and own.
   size_t CreateStreamFrame(QuicStreamId id,
                            QuicIOVector iov,
                            size_t iov_offset,
                            QuicStreamOffset offset,
                            bool fin,
-                           QuicFrame* frame,
-                           UniqueStreamBuffer* buffer);
+                           QuicFrame* frame);
 
   // Copies |length| bytes from iov starting at offset |iov_offset| into buffer.
   // |iov| must be at least iov_offset+length total length and buffer must be
@@ -288,8 +280,7 @@ class NET_EXPORT_PRIVATE QuicPacketCreator {
   // flushes all pending frames.
   bool AddFrame(const QuicFrame& frame,
                 bool save_retransmittable_frames,
-                bool needs_padding,
-                UniqueStreamBuffer buffer);
+                bool needs_padding);
 
   // Adds a padding frame to the current packet only if the current packet
   // contains a handshake message, and there is sufficient room to fit a

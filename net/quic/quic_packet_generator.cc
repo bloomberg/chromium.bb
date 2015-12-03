@@ -201,7 +201,7 @@ void QuicPacketGenerator::GenerateMtuDiscoveryPacket(
 
   // Send the probe packet with the new length.
   SetMaxPacketLength(target_mtu, /*force=*/true);
-  const bool success = AddFrame(frame, nullptr, /*needs_padding=*/true);
+  const bool success = AddFrame(frame, /*needs_padding=*/true);
   if (listener != nullptr) {
     ack_listeners_.push_back(AckListenerWrapper(listener, 0));
   }
@@ -285,7 +285,7 @@ bool QuicPacketGenerator::AddNextPendingFrame() {
     delegate_->PopulateAckFrame(&pending_ack_frame_);
     ack_queued_ = true;
     // If we can't this add the frame now, then we still need to do so later.
-    should_send_ack_ = !AddFrame(QuicFrame(&pending_ack_frame_), nullptr,
+    should_send_ack_ = !AddFrame(QuicFrame(&pending_ack_frame_),
                                  /*needs_padding=*/false);
     // Return success if we have cleared out this flag (i.e., added the frame).
     // If we still need to send, then the frame is full, and we have failed.
@@ -297,7 +297,7 @@ bool QuicPacketGenerator::AddNextPendingFrame() {
     stop_waiting_queued_ = true;
     // If we can't this add the frame now, then we still need to do so later.
     should_send_stop_waiting_ =
-        !AddFrame(QuicFrame(&pending_stop_waiting_frame_), nullptr,
+        !AddFrame(QuicFrame(&pending_stop_waiting_frame_),
                   /*needs_padding=*/false);
     // Return success if we have cleared out this flag (i.e., added the frame).
     // If we still need to send, then the frame is full, and we have failed.
@@ -306,8 +306,7 @@ bool QuicPacketGenerator::AddNextPendingFrame() {
 
   LOG_IF(DFATAL, queued_control_frames_.empty())
       << "AddNextPendingFrame called with no queued control frames.";
-  if (!AddFrame(queued_control_frames_.back(), nullptr,
-                /*needs_padding=*/false)) {
+  if (!AddFrame(queued_control_frames_.back(), /*needs_padding=*/false)) {
     // Packet was full.
     return false;
   }
@@ -316,11 +315,9 @@ bool QuicPacketGenerator::AddNextPendingFrame() {
 }
 
 bool QuicPacketGenerator::AddFrame(const QuicFrame& frame,
-                                   UniqueStreamBuffer buffer,
                                    bool needs_padding) {
-  bool success = needs_padding
-                     ? packet_creator_.AddPaddedSavedFrame(frame, buffer.Pass())
-                     : packet_creator_.AddSavedFrame(frame, buffer.Pass());
+  bool success = needs_padding ? packet_creator_.AddPaddedSavedFrame(frame)
+                               : packet_creator_.AddSavedFrame(frame);
   if (success && debug_delegate_) {
     debug_delegate_->OnFrameAddedToPacket(frame);
   }
