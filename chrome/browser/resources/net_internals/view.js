@@ -193,7 +193,8 @@ var WindowView = (function() {
     },
 
     resetGeometry: function() {
-      this.setGeometry(0, 0, window.innerWidth, window.innerHeight);
+      this.setGeometry(0, 0, document.documentElement.clientWidth,
+                       document.documentElement.clientHeight);
     }
   };
 
