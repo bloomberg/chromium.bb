@@ -221,7 +221,6 @@ void RawChannel::LazyInitialize() {
   if (initialized_)
     return;
   initialized_ = true;
-  internal::ChannelStarted();
   base::MessageLoop::current()->AddDestructionObserver(this);
 
   OnInit();
@@ -288,7 +287,6 @@ void RawChannel::Shutdown() {
     }
 
     if (initialized_) {
-      internal::ChannelShutdown();
       base::MessageLoop::current()->RemoveDestructionObserver(this);
     }
     delete this;

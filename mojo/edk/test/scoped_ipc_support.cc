@@ -21,7 +21,7 @@ ScopedIPCSupportHelper::~ScopedIPCSupportHelper() {
       base::MessageLoop::current()->task_runner() == io_thread_task_runner_) {
     ShutdownIPCSupportOnIOThread();
   } else {
-    ShutdownIPCSupportAndWaitForNoChannels();
+    ShutdownIPCSupport();
     run_loop_.Run();
   }
 }

@@ -28,25 +28,10 @@
 namespace mojo {
 namespace edk {
 
-// TODO(jam): move into annonymous namespace. Keep outside for debugging in VS
-// temporarily.
-int g_channel_count = 0;
-bool g_wait_for_no_more_channels = false;
-base::TaskRunner* g_delegate_task_runner = nullptr;  // Used at shutdown.
-
 namespace {
 
 // Note: Called on the I/O thread.
-void ShutdownIPCSupportHelper(bool wait_for_no_more_channels) {
-  if (wait_for_no_more_channels && g_channel_count) {
-    g_wait_for_no_more_channels = true;
-    return;
-  }
-
-  g_delegate_task_runner->PostTask(
-      FROM_HERE, base::Bind(&ProcessDelegate::OnShutdownComplete,
-                            base::Unretained(internal::g_process_delegate)));
-  g_delegate_task_runner = nullptr;
+void ShutdownIPCSupportHelper() {
 }
 
 }  // namespace
@@ -63,23 +48,6 @@ base::TaskRunner* g_io_thread_task_runner = nullptr;
 
 Core* GetCore() {
   return g_core;
-}
-
-void ChannelStarted() {
-  DCHECK(g_io_thread_task_runner->RunsTasksOnCurrentThread());
-  g_channel_count++;
-}
-
-void ChannelShutdown() {
-  DCHECK(g_io_thread_task_runner->RunsTasksOnCurrentThread());
-  DCHECK_GT(g_channel_count, 0);
-  g_channel_count--;
-  if (!g_channel_count && g_wait_for_no_more_channels) {
-    // Reset g_wait_for_no_more_channels for unit tests which initialize and
-    // tear down multiple times in a process.
-    g_wait_for_no_more_channels = false;
-    ShutdownIPCSupportHelper(false);
-  }
 }
 
 }  // namespace internal
@@ -188,15 +156,11 @@ void ShutdownIPCSupportOnIOThread() {
 }
 
 void ShutdownIPCSupport() {
-  g_delegate_task_runner = base::MessageLoop::current()->task_runner().get();
-  internal::g_io_thread_task_runner->PostTask(
-      FROM_HERE, base::Bind(&ShutdownIPCSupportHelper, false));
-}
-
-void ShutdownIPCSupportAndWaitForNoChannels() {
-  g_delegate_task_runner = base::MessageLoop::current()->task_runner().get();
-  internal::g_io_thread_task_runner->PostTask(
-      FROM_HERE, base::Bind(&ShutdownIPCSupportHelper, true));
+  internal::g_io_thread_task_runner->PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(&ShutdownIPCSupportHelper),
+      base::Bind(&ProcessDelegate::OnShutdownComplete,
+                 base::Unretained(internal::g_process_delegate)));
 }
 
 ScopedMessagePipeHandle CreateMessagePipe(

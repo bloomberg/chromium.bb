@@ -26,9 +26,10 @@ int main(int argc, char** argv) {
     mojo::edk::PreInitializeChildProcess();
   }
 
-  mojo::edk::Init();
   // TODO(use_chrome_edk): temporary to force new EDK.
   base::CommandLine::ForCurrentProcess()->AppendSwitch("--use-new-edk");
+
+  mojo::edk::Init();
 
   return base::LaunchUnitTests(
       argc, argv,

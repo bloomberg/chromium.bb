@@ -115,11 +115,6 @@ MOJO_SYSTEM_IMPL_EXPORT void ShutdownIPCSupportOnIOThread();
 // |OnShutdownComplete()|.
 MOJO_SYSTEM_IMPL_EXPORT void ShutdownIPCSupport();
 
-// Like above, but doesn't call |OnShutdownComplete| until all channels are
-// gone.
-// TODO(jam): this should be the default behavior.
-MOJO_SYSTEM_IMPL_EXPORT void ShutdownIPCSupportAndWaitForNoChannels();
-
 // Creates a message pipe from a platform handle. Safe to call from any thread.
 MOJO_SYSTEM_IMPL_EXPORT ScopedMessagePipeHandle
 CreateMessagePipe(ScopedPlatformHandle platform_handle);

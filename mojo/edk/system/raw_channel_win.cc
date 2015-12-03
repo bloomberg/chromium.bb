@@ -124,6 +124,7 @@ class RawChannelWin final : public RawChannel {
     RawChannelIOHandler(RawChannelWin* owner,
                         ScopedPlatformHandle handle)
         : handle_(handle.Pass()),
+          io_task_runner_(internal::g_io_thread_task_runner),
           owner_(owner),
           suppress_self_destruct_(false),
           pending_read_(false),
@@ -465,7 +466,7 @@ class RawChannelWin final : public RawChannel {
       // that that is always a pointer to a valid RawChannelIOHandler.
       RawChannelIOHandler* that = static_cast<RawChannelIOHandler*>(param);
       that->read_event_signalled_ = true;
-      internal::g_io_thread_task_runner->PostTask(
+      that->io_task_runner_->PostTask(
           FROM_HERE,
           base::Bind(&RawChannelIOHandler::OnObjectSignaled,
                      that->this_weakptr_, that->read_event_.Get()));
@@ -477,13 +478,17 @@ class RawChannelWin final : public RawChannel {
       // that that is always a pointer to a valid RawChannelIOHandler.
       RawChannelIOHandler* that = static_cast<RawChannelIOHandler*>(param);
       that->write_event_signalled_ = true;
-      internal::g_io_thread_task_runner->PostTask(
+      that->io_task_runner_->PostTask(
           FROM_HERE,
           base::Bind(&RawChannelIOHandler::OnObjectSignaled,
                      that->this_weakptr_, that->write_event_.Get()));
     }
 
     ScopedPlatformHandle handle_;
+
+    // We cache this because ReadCompleted and WriteCompleted might get fired
+    // after ShutdownIPCSupport is called.
+    scoped_refptr<base::TaskRunner> io_task_runner_;
 
     // |owner_| is reset on the I/O thread under |owner_->write_lock()|.
     // Therefore, it may be used on any thread under lock; or on the I/O thread

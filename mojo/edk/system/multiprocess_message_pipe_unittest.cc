@@ -166,12 +166,6 @@ TEST_F(MultiprocessMessagePipeTest, MAYBE_QueueMessages) {
                              nullptr, 0u, MOJO_WRITE_MESSAGE_FLAG_NONE));
   }
 
-  const std::string quitquitquit("quitquitquit");
-  ASSERT_EQ(MOJO_RESULT_OK,
-            MojoWriteMessage(mp.get().value(), quitquitquit.data(),
-                             static_cast<uint32_t>(quitquitquit.size()),
-                             nullptr, 0u, MOJO_WRITE_MESSAGE_FLAG_NONE));
-
   for (size_t i = 0; i < kNumMessages; i++) {
     HandleSignalsState hss;
     ASSERT_EQ(MOJO_RESULT_OK,
@@ -193,6 +187,12 @@ TEST_F(MultiprocessMessagePipeTest, MAYBE_QueueMessages) {
 
     ASSERT_EQ(std::string(i * 2, 'A' + (i % 26)), read_buffer);
   }
+
+  const std::string quitquitquit("quitquitquit");
+  ASSERT_EQ(MOJO_RESULT_OK,
+            MojoWriteMessage(mp.get().value(), quitquitquit.data(),
+                             static_cast<uint32_t>(quitquitquit.size()),
+                             nullptr, 0u, MOJO_WRITE_MESSAGE_FLAG_NONE));
 
   // Wait for it to become readable, which should fail (since we sent
   // "quitquitquit").
