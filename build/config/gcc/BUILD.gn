@@ -29,7 +29,7 @@ config("executable_ldconfig") {
     ]
   } else {
     # Note: Android doesn't support rpath.
-    rpath_link = ""
+    rpath_link = "."
     if (shlib_subdir != ".") {
       rpath_link = "${shlib_subdir}/"
     }

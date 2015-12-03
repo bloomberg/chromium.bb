@@ -303,6 +303,10 @@ config("compiler") {
     #    "-Wl,--detect-odr-violations",
     #  ]
     #}
+  } else if (linux_use_bundled_binutils) {
+    # Gold is the default linker for the bundled binutils so we explicitly
+    # enable the bfd linker when use_gold is not set.
+    ldflags += [ "-fuse-ld=bfd" ]
   }
 
   if (linux_use_bundled_binutils) {
