@@ -12,7 +12,7 @@
 
 namespace syncer {
 
-const int64 FakeInvalidationStateTracker::kMinVersion = kint64min;
+const int64_t FakeInvalidationStateTracker::kMinVersion = INT64_MIN;
 
 FakeInvalidationStateTracker::FakeInvalidationStateTracker() {}
 

@@ -6,8 +6,10 @@
 
 #include <ctype.h>
 #include <math.h>
+#include <stdint.h>
 
 #include <algorithm>
+#include <limits>
 #include <string>
 
 #include "base/format_macros.h"
@@ -231,12 +233,14 @@ static std::string RemoveJs(const std::string& text) {
 class MinMaxAverage {
  public:
   MinMaxAverage()
-    : sum_(0), square_sum_(0), count_(0),
-      minimum_(kint64max), maximum_(kint64min) {
-  }
+      : sum_(0),
+        square_sum_(0),
+        count_(0),
+        minimum_(std::numeric_limits<int64_t>::max()),
+        maximum_(std::numeric_limits<int64_t>::min()) {}
 
   // Return values for use in printf formatted as "%d"
-  int sample(int64 value) {
+  int sample(int64_t value) {
     sum_ += value;
     square_sum_ += value * value;
     count_++;
@@ -257,11 +261,11 @@ class MinMaxAverage {
   }
 
  private:
-  int64 sum_;
-  int64 square_sum_;
+  int64_t sum_;
+  int64_t square_sum_;
   int count_;
-  int64 minimum_;
-  int64 maximum_;
+  int64_t minimum_;
+  int64_t maximum_;
 
   // DISALLOW_COPY_AND_ASSIGN(MinMaxAverage);
 };

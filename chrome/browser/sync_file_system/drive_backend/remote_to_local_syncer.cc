@@ -4,6 +4,10 @@
 
 #include "chrome/browser/sync_file_system/drive_backend/remote_to_local_syncer.h"
 
+#include <stdint.h>
+
+#include <limits>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_util.h"
@@ -353,8 +357,8 @@ void RemoteToLocalSyncer::ContinueAsBackgroundTask(
     return;
   }
 
-  int64 current_change_id = kint64min;
-  int64 latest_change_id = kint64min;
+  int64_t current_change_id = std::numeric_limits<int64_t>::min();
+  int64_t latest_change_id = std::numeric_limits<int64_t>::min();
   if (dirty_tracker_->has_synced_details())
     current_change_id = dirty_tracker_->synced_details().change_id();
   if (latest_dirty_tracker.has_synced_details())
@@ -372,8 +376,8 @@ void RemoteToLocalSyncer::ContinueAsBackgroundTask(
       return;
     }
 
-    int64 change_id = remote_metadata_->details().change_id();
-    int64 latest_change_id = latest_file_metadata.details().change_id();
+    int64_t change_id = remote_metadata_->details().change_id();
+    int64_t latest_change_id = latest_file_metadata.details().change_id();
     if (change_id != latest_change_id) {
       SyncCompleted(token.Pass(), SYNC_STATUS_RETRY);
       return;

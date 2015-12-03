@@ -89,7 +89,8 @@ void CheckLongConversion(JNIEnv* env,
 }
 
 TEST(JniArray, LongConversions) {
-  const int64_t kLongs[] = {0, 1, -1, kint64min, kint64max};
+  const int64_t kLongs[] = {0, 1, -1, std::numeric_limits<int64_t>::min(),
+                            std::numeric_limits<int64_t>::max()};
   const size_t kLen = arraysize(kLongs);
 
   JNIEnv* env = AttachCurrentThread();

@@ -56,25 +56,25 @@ base::TimeDelta ConvertFromNtpDiff(uint32_t ntp_delay) {
 // and event type.
 // A receiver packet event is identified by all of the above plus packet id.
 // The key format is as follows:
-// First uint64:
+// First uint64_t:
 //   bits 0-11: zeroes (unused).
 //   bits 12-15: event type ID.
 //   bits 16-31: packet ID if packet event, 0 otherwise.
 //   bits 32-63: RTP timestamp.
-// Second uint64:
+// Second uint64_t:
 //   bits 0-63: event TimeTicks internal value.
-std::pair<uint64, uint64> GetReceiverEventKey(
-    uint32 frame_rtp_timestamp,
+std::pair<uint64_t, uint64_t> GetReceiverEventKey(
+    uint32_t frame_rtp_timestamp,
     const base::TimeTicks& event_timestamp,
-    uint8 event_type,
-    uint16 packet_id_or_zero) {
-  uint64 value1 = event_type;
+    uint8_t event_type,
+    uint16_t packet_id_or_zero) {
+  uint64_t value1 = event_type;
   value1 <<= 16;
   value1 |= packet_id_or_zero;
   value1 <<= 32;
   value1 |= frame_rtp_timestamp;
   return std::make_pair(
-      value1, static_cast<uint64>(event_timestamp.ToInternalValue()));
+      value1, static_cast<uint64_t>(event_timestamp.ToInternalValue()));
 }
 
 }  // namespace
@@ -84,8 +84,8 @@ Rtcp::Rtcp(const RtcpCastMessageCallback& cast_callback,
            const RtcpLogMessageCallback& log_callback,
            base::TickClock* clock,
            PacedPacketSender* packet_sender,
-           uint32 local_ssrc,
-           uint32 remote_ssrc)
+           uint32_t local_ssrc,
+           uint32_t remote_ssrc)
     : cast_callback_(cast_callback),
       rtt_callback_(rtt_callback),
       log_callback_(log_callback),
@@ -104,20 +104,20 @@ Rtcp::Rtcp(const RtcpCastMessageCallback& cast_callback,
 
 Rtcp::~Rtcp() {}
 
-bool Rtcp::IsRtcpPacket(const uint8* packet, size_t length) {
+bool Rtcp::IsRtcpPacket(const uint8_t* packet, size_t length) {
   if (length < kMinLengthOfRtcp) {
     LOG(ERROR) << "Invalid RTCP packet received.";
     return false;
   }
 
-  uint8 packet_type = packet[1];
+  uint8_t packet_type = packet[1];
   return packet_type >= kPacketTypeLow && packet_type <= kPacketTypeHigh;
 }
 
-uint32 Rtcp::GetSsrcOfSender(const uint8* rtcp_buffer, size_t length) {
+uint32_t Rtcp::GetSsrcOfSender(const uint8_t* rtcp_buffer, size_t length) {
   if (length < kMinLengthOfRtcp)
     return 0;
-  uint32 ssrc_of_sender;
+  uint32_t ssrc_of_sender;
   base::BigEndianReader big_endian_reader(
       reinterpret_cast<const char*>(rtcp_buffer), length);
   big_endian_reader.Skip(4);  // Skip header.
@@ -125,7 +125,7 @@ uint32 Rtcp::GetSsrcOfSender(const uint8* rtcp_buffer, size_t length) {
   return ssrc_of_sender;
 }
 
-bool Rtcp::IncomingRtcpPacket(const uint8* data, size_t length) {
+bool Rtcp::IncomingRtcpPacket(const uint8_t* data, size_t length) {
   // Check if this is a valid RTCP packet.
   if (!IsRtcpPacket(data, length)) {
     VLOG(1) << "Rtcp@" << this << "::IncomingRtcpPacket() -- "
@@ -134,7 +134,7 @@ bool Rtcp::IncomingRtcpPacket(const uint8* data, size_t length) {
   }
 
   // Check if this packet is to us.
-  uint32 ssrc_of_sender = GetSsrcOfSender(data, length);
+  uint32_t ssrc_of_sender = GetSsrcOfSender(data, length);
   if (ssrc_of_sender != remote_ssrc_) {
     return false;
   }
@@ -251,8 +251,8 @@ void Rtcp::SendRtcpFromRtpReceiver(
     report_block.jitter = rtp_receiver_statistics->jitter;
     report_block.last_sr = last_report_truncated_ntp_;
     if (!time_last_report_received_.is_null()) {
-      uint32 delay_seconds = 0;
-      uint32 delay_fraction = 0;
+      uint32_t delay_seconds = 0;
+      uint32_t delay_fraction = 0;
       base::TimeDelta delta = time_data.timestamp - time_last_report_received_;
       ConvertTimeToFractions(delta.InMicroseconds(), &delay_seconds,
                              &delay_fraction);
@@ -274,11 +274,11 @@ void Rtcp::SendRtcpFromRtpReceiver(
 }
 
 void Rtcp::SendRtcpFromRtpSender(base::TimeTicks current_time,
-                                 uint32 current_time_as_rtp_timestamp,
-                                 uint32 send_packet_count,
+                                 uint32_t current_time_as_rtp_timestamp,
+                                 uint32_t send_packet_count,
                                  size_t send_octet_count) {
-  uint32 current_ntp_seconds = 0;
-  uint32 current_ntp_fractions = 0;
+  uint32_t current_ntp_seconds = 0;
+  uint32_t current_ntp_fractions = 0;
   ConvertTimeTicksToNtp(current_time, &current_ntp_seconds,
                         &current_ntp_fractions);
   SaveLastSentNtpTime(current_time, current_ntp_seconds,
@@ -296,7 +296,7 @@ void Rtcp::SendRtcpFromRtpSender(base::TimeTicks current_time,
       rtcp_builder_.BuildRtcpFromSender(sender_info));
 }
 
-void Rtcp::OnReceivedNtp(uint32 ntp_seconds, uint32 ntp_fraction) {
+void Rtcp::OnReceivedNtp(uint32_t ntp_seconds, uint32_t ntp_fraction) {
   last_report_truncated_ntp_ = ConvertToNtpDiff(ntp_seconds, ntp_fraction);
 
   const base::TimeTicks now = clock_->NowTicks();
@@ -323,25 +323,27 @@ void Rtcp::OnReceivedNtp(uint32 ntp_seconds, uint32 ntp_fraction) {
           << " usec.";
 }
 
-void Rtcp::OnReceivedLipSyncInfo(uint32 rtp_timestamp, uint32 ntp_seconds,
-                                 uint32 ntp_fraction) {
+void Rtcp::OnReceivedLipSyncInfo(uint32_t rtp_timestamp,
+                                 uint32_t ntp_seconds,
+                                 uint32_t ntp_fraction) {
   if (ntp_seconds == 0) {
     NOTREACHED();
     return;
   }
   lip_sync_rtp_timestamp_ = rtp_timestamp;
   lip_sync_ntp_timestamp_ =
-      (static_cast<uint64>(ntp_seconds) << 32) | ntp_fraction;
+      (static_cast<uint64_t>(ntp_seconds) << 32) | ntp_fraction;
 }
 
-bool Rtcp::GetLatestLipSyncTimes(uint32* rtp_timestamp,
+bool Rtcp::GetLatestLipSyncTimes(uint32_t* rtp_timestamp,
                                  base::TimeTicks* reference_time) const {
   if (!lip_sync_ntp_timestamp_)
     return false;
 
   const base::TimeTicks local_reference_time =
-      ConvertNtpToTimeTicks(static_cast<uint32>(lip_sync_ntp_timestamp_ >> 32),
-                            static_cast<uint32>(lip_sync_ntp_timestamp_)) +
+      ConvertNtpToTimeTicks(
+          static_cast<uint32_t>(lip_sync_ntp_timestamp_ >> 32),
+          static_cast<uint32_t>(lip_sync_ntp_timestamp_)) +
       local_clock_ahead_by_.Current();
 
   // Sanity-check: Getting regular lip sync updates?
@@ -353,8 +355,8 @@ bool Rtcp::GetLatestLipSyncTimes(uint32* rtp_timestamp,
   return true;
 }
 
-void Rtcp::OnReceivedDelaySinceLastReport(uint32 last_report,
-                                          uint32 delay_since_last_report) {
+void Rtcp::OnReceivedDelaySinceLastReport(uint32_t last_report,
+                                          uint32_t delay_since_last_report) {
   RtcpSendTimeMap::iterator it = last_reports_sent_map_.find(last_report);
   if (it == last_reports_sent_map_.end()) {
     return;  // Feedback on another report.
@@ -383,15 +385,15 @@ void Rtcp::OnReceivedCastFeedback(const RtcpCastMessage& cast_message) {
 }
 
 void Rtcp::SaveLastSentNtpTime(const base::TimeTicks& now,
-                               uint32 last_ntp_seconds,
-                               uint32 last_ntp_fraction) {
+                               uint32_t last_ntp_seconds,
+                               uint32_t last_ntp_fraction) {
   // Make sure |now| is always greater than the last element in
   // |last_reports_sent_queue_|.
   if (!last_reports_sent_queue_.empty()) {
     DCHECK(now >= last_reports_sent_queue_.back().second);
   }
 
-  uint32 last_report = ConvertToNtpDiff(last_ntp_seconds, last_ntp_fraction);
+  uint32_t last_report = ConvertToNtpDiff(last_ntp_seconds, last_ntp_fraction);
   last_reports_sent_map_[last_report] = now;
   last_reports_sent_queue_.push(std::make_pair(last_report, now));
 

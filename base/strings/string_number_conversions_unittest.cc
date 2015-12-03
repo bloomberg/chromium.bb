@@ -36,15 +36,15 @@ TEST(StringNumberConversionsTest, IntToString) {
       { std::numeric_limits<int>::max(), "2147483647", "2147483647" },
       { std::numeric_limits<int>::min(), "-2147483648", "2147483648" },
   };
-  static const IntToStringTest<int64> int64_tests[] = {
-      { 0, "0", "0" },
-      { -1, "-1", "18446744073709551615" },
-      { std::numeric_limits<int64>::max(),
-        "9223372036854775807",
-        "9223372036854775807", },
-      { std::numeric_limits<int64>::min(),
-        "-9223372036854775808",
-        "9223372036854775808" },
+  static const IntToStringTest<int64_t> int64_tests[] = {
+      {0, "0", "0"},
+      {-1, "-1", "18446744073709551615"},
+      {
+          std::numeric_limits<int64_t>::max(), "9223372036854775807",
+          "9223372036854775807",
+      },
+      {std::numeric_limits<int64_t>::min(), "-9223372036854775808",
+       "9223372036854775808"},
   };
 
   for (size_t i = 0; i < arraysize(int_tests); ++i) {
@@ -55,7 +55,7 @@ TEST(StringNumberConversionsTest, IntToString) {
     EXPECT_EQ(UintToString16(test->num), UTF8ToUTF16(test->uexpected));
   }
   for (size_t i = 0; i < arraysize(int64_tests); ++i) {
-    const IntToStringTest<int64>* test = &int64_tests[i];
+    const IntToStringTest<int64_t>* test = &int64_tests[i];
     EXPECT_EQ(Int64ToString(test->num), test->sexpected);
     EXPECT_EQ(Int64ToString16(test->num), UTF8ToUTF16(test->sexpected));
     EXPECT_EQ(Uint64ToString(test->num), test->uexpected);
@@ -68,10 +68,10 @@ TEST(StringNumberConversionsTest, Uint64ToString) {
     uint64 input;
     std::string output;
   } cases[] = {
-    {0, "0"},
-    {42, "42"},
-    {INT_MAX, "2147483647"},
-    {kuint64max, "18446744073709551615"},
+      {0, "0"},
+      {42, "42"},
+      {INT_MAX, "2147483647"},
+      {std::numeric_limits<uint64_t>::max(), "18446744073709551615"},
   };
 
   for (size_t i = 0; i < arraysize(cases); ++i)
@@ -231,44 +231,44 @@ TEST(StringNumberConversionsTest, StringToUint) {
 TEST(StringNumberConversionsTest, StringToInt64) {
   static const struct {
     std::string input;
-    int64 output;
+    int64_t output;
     bool success;
   } cases[] = {
-    {"0", 0, true},
-    {"42", 42, true},
-    {"-2147483648", INT_MIN, true},
-    {"2147483647", INT_MAX, true},
-    {"-2147483649", INT64_C(-2147483649), true},
-    {"-99999999999", INT64_C(-99999999999), true},
-    {"2147483648", INT64_C(2147483648), true},
-    {"99999999999", INT64_C(99999999999), true},
-    {"9223372036854775807", kint64max, true},
-    {"-9223372036854775808", kint64min, true},
-    {"09", 9, true},
-    {"-09", -9, true},
-    {"", 0, false},
-    {" 42", 42, false},
-    {"42 ", 42, false},
-    {"0x42", 0, false},
-    {"\t\n\v\f\r 42", 42, false},
-    {"blah42", 0, false},
-    {"42blah", 42, false},
-    {"blah42blah", 0, false},
-    {"-273.15", -273, false},
-    {"+98.6", 98, false},
-    {"--123", 0, false},
-    {"++123", 0, false},
-    {"-+123", 0, false},
-    {"+-123", 0, false},
-    {"-", 0, false},
-    {"-9223372036854775809", kint64min, false},
-    {"-99999999999999999999", kint64min, false},
-    {"9223372036854775808", kint64max, false},
-    {"99999999999999999999", kint64max, false},
+      {"0", 0, true},
+      {"42", 42, true},
+      {"-2147483648", INT_MIN, true},
+      {"2147483647", INT_MAX, true},
+      {"-2147483649", INT64_C(-2147483649), true},
+      {"-99999999999", INT64_C(-99999999999), true},
+      {"2147483648", INT64_C(2147483648), true},
+      {"99999999999", INT64_C(99999999999), true},
+      {"9223372036854775807", std::numeric_limits<int64_t>::max(), true},
+      {"-9223372036854775808", std::numeric_limits<int64_t>::min(), true},
+      {"09", 9, true},
+      {"-09", -9, true},
+      {"", 0, false},
+      {" 42", 42, false},
+      {"42 ", 42, false},
+      {"0x42", 0, false},
+      {"\t\n\v\f\r 42", 42, false},
+      {"blah42", 0, false},
+      {"42blah", 42, false},
+      {"blah42blah", 0, false},
+      {"-273.15", -273, false},
+      {"+98.6", 98, false},
+      {"--123", 0, false},
+      {"++123", 0, false},
+      {"-+123", 0, false},
+      {"+-123", 0, false},
+      {"-", 0, false},
+      {"-9223372036854775809", std::numeric_limits<int64_t>::min(), false},
+      {"-99999999999999999999", std::numeric_limits<int64_t>::min(), false},
+      {"9223372036854775808", std::numeric_limits<int64_t>::max(), false},
+      {"99999999999999999999", std::numeric_limits<int64_t>::max(), false},
   };
 
   for (size_t i = 0; i < arraysize(cases); ++i) {
-    int64 output = 0;
+    int64_t output = 0;
     EXPECT_EQ(cases[i].success, StringToInt64(cases[i].input, &output));
     EXPECT_EQ(cases[i].output, output);
 
@@ -283,7 +283,7 @@ TEST(StringNumberConversionsTest, StringToInt64) {
   // interpreted as junk after the number.
   const char input[] = "6\06";
   std::string input_string(input, arraysize(input) - 1);
-  int64 output;
+  int64_t output;
   EXPECT_FALSE(StringToInt64(input_string, &output));
   EXPECT_EQ(6, output);
 
@@ -299,39 +299,39 @@ TEST(StringNumberConversionsTest, StringToUint64) {
     uint64 output;
     bool success;
   } cases[] = {
-    {"0", 0, true},
-    {"42", 42, true},
-    {"-2147483648", 0, false},
-    {"2147483647", INT_MAX, true},
-    {"-2147483649", 0, false},
-    {"-99999999999", 0, false},
-    {"2147483648", UINT64_C(2147483648), true},
-    {"99999999999", UINT64_C(99999999999), true},
-    {"9223372036854775807", kint64max, true},
-    {"-9223372036854775808", 0, false},
-    {"09", 9, true},
-    {"-09", 0, false},
-    {"", 0, false},
-    {" 42", 42, false},
-    {"42 ", 42, false},
-    {"0x42", 0, false},
-    {"\t\n\v\f\r 42", 42, false},
-    {"blah42", 0, false},
-    {"42blah", 42, false},
-    {"blah42blah", 0, false},
-    {"-273.15", 0, false},
-    {"+98.6", 98, false},
-    {"--123", 0, false},
-    {"++123", 0, false},
-    {"-+123", 0, false},
-    {"+-123", 0, false},
-    {"-", 0, false},
-    {"-9223372036854775809", 0, false},
-    {"-99999999999999999999", 0, false},
-    {"9223372036854775808", UINT64_C(9223372036854775808), true},
-    {"99999999999999999999", kuint64max, false},
-    {"18446744073709551615", kuint64max, true},
-    {"18446744073709551616", kuint64max, false},
+      {"0", 0, true},
+      {"42", 42, true},
+      {"-2147483648", 0, false},
+      {"2147483647", INT_MAX, true},
+      {"-2147483649", 0, false},
+      {"-99999999999", 0, false},
+      {"2147483648", UINT64_C(2147483648), true},
+      {"99999999999", UINT64_C(99999999999), true},
+      {"9223372036854775807", std::numeric_limits<int64_t>::max(), true},
+      {"-9223372036854775808", 0, false},
+      {"09", 9, true},
+      {"-09", 0, false},
+      {"", 0, false},
+      {" 42", 42, false},
+      {"42 ", 42, false},
+      {"0x42", 0, false},
+      {"\t\n\v\f\r 42", 42, false},
+      {"blah42", 0, false},
+      {"42blah", 42, false},
+      {"blah42blah", 0, false},
+      {"-273.15", 0, false},
+      {"+98.6", 98, false},
+      {"--123", 0, false},
+      {"++123", 0, false},
+      {"-+123", 0, false},
+      {"+-123", 0, false},
+      {"-", 0, false},
+      {"-9223372036854775809", 0, false},
+      {"-99999999999999999999", 0, false},
+      {"9223372036854775808", UINT64_C(9223372036854775808), true},
+      {"99999999999999999999", std::numeric_limits<uint64_t>::max(), false},
+      {"18446744073709551615", std::numeric_limits<uint64_t>::max(), true},
+      {"18446744073709551616", std::numeric_limits<uint64_t>::max(), false},
   };
 
   for (size_t i = 0; i < arraysize(cases); ++i) {
@@ -432,7 +432,7 @@ TEST(StringNumberConversionsTest, StringToSizeT) {
 TEST(StringNumberConversionsTest, HexStringToInt) {
   static const struct {
     std::string input;
-    int64 output;
+    int64_t output;
     bool success;
   } cases[] = {
     {"0", 0, true},
@@ -484,50 +484,55 @@ TEST(StringNumberConversionsTest, HexStringToInt) {
 TEST(StringNumberConversionsTest, HexStringToUInt) {
   static const struct {
     std::string input;
-    uint32 output;
+    uint32_t output;
     bool success;
   } cases[] = {
-    {"0", 0, true},
-    {"42", 0x42, true},
-    {"-42", 0, false},
-    {"+42", 0x42, true},
-    {"7fffffff", INT_MAX, true},
-    {"-80000000", 0, false},
-    {"ffffffff", 0xffffffff, true},
-    {"DeadBeef", 0xdeadbeef, true},
-    {"0x42", 0x42, true},
-    {"-0x42", 0, false},
-    {"+0x42", 0x42, true},
-    {"0x7fffffff", INT_MAX, true},
-    {"-0x80000000", 0, false},
-    {"0xffffffff", kuint32max, true},
-    {"0XDeadBeef", 0xdeadbeef, true},
-    {"0x7fffffffffffffff", kuint32max, false},  // Overflow test.
-    {"-0x8000000000000000", 0, false},
-    {"0x8000000000000000", kuint32max, false},  // Overflow test.
-    {"-0x8000000000000001", 0, false},
-    {"0xFFFFFFFFFFFFFFFF", kuint32max, false},  // Overflow test.
-    {"FFFFFFFFFFFFFFFF", kuint32max, false},  // Overflow test.
-    {"0x0000000000000000", 0, true},
-    {"0000000000000000", 0, true},
-    {"1FFFFFFFFFFFFFFFF", kuint32max, false}, // Overflow test.
-    {"0x0f", 0x0f, true},
-    {"0f", 0x0f, true},
-    {" 45", 0x45, false},
-    {"\t\n\v\f\r 0x45", 0x45, false},
-    {" 45", 0x45, false},
-    {"45 ", 0x45, false},
-    {"45:", 0x45, false},
-    {"efgh", 0xef, false},
-    {"0xefgh", 0xef, false},
-    {"hgfe", 0, false},
-    {"-", 0, false},
-    {"", 0, false},
-    {"0x", 0, false},
+      {"0", 0, true},
+      {"42", 0x42, true},
+      {"-42", 0, false},
+      {"+42", 0x42, true},
+      {"7fffffff", INT_MAX, true},
+      {"-80000000", 0, false},
+      {"ffffffff", 0xffffffff, true},
+      {"DeadBeef", 0xdeadbeef, true},
+      {"0x42", 0x42, true},
+      {"-0x42", 0, false},
+      {"+0x42", 0x42, true},
+      {"0x7fffffff", INT_MAX, true},
+      {"-0x80000000", 0, false},
+      {"0xffffffff", std::numeric_limits<uint32_t>::max(), true},
+      {"0XDeadBeef", 0xdeadbeef, true},
+      {"0x7fffffffffffffff", std::numeric_limits<uint32_t>::max(),
+       false},  // Overflow test.
+      {"-0x8000000000000000", 0, false},
+      {"0x8000000000000000", std::numeric_limits<uint32_t>::max(),
+       false},  // Overflow test.
+      {"-0x8000000000000001", 0, false},
+      {"0xFFFFFFFFFFFFFFFF", std::numeric_limits<uint32_t>::max(),
+       false},  // Overflow test.
+      {"FFFFFFFFFFFFFFFF", std::numeric_limits<uint32_t>::max(),
+       false},  // Overflow test.
+      {"0x0000000000000000", 0, true},
+      {"0000000000000000", 0, true},
+      {"1FFFFFFFFFFFFFFFF", std::numeric_limits<uint32_t>::max(),
+       false},  // Overflow test.
+      {"0x0f", 0x0f, true},
+      {"0f", 0x0f, true},
+      {" 45", 0x45, false},
+      {"\t\n\v\f\r 0x45", 0x45, false},
+      {" 45", 0x45, false},
+      {"45 ", 0x45, false},
+      {"45:", 0x45, false},
+      {"efgh", 0xef, false},
+      {"0xefgh", 0xef, false},
+      {"hgfe", 0, false},
+      {"-", 0, false},
+      {"", 0, false},
+      {"0x", 0, false},
   };
 
   for (size_t i = 0; i < arraysize(cases); ++i) {
-    uint32 output = 0;
+    uint32_t output = 0;
     EXPECT_EQ(cases[i].success, HexStringToUInt(cases[i].input, &output));
     EXPECT_EQ(cases[i].output, output);
   }
@@ -536,7 +541,7 @@ TEST(StringNumberConversionsTest, HexStringToUInt) {
   // interpreted as junk after the number.
   const char input[] = "0xc0ffee\0" "9";
   std::string input_string(input, arraysize(input) - 1);
-  uint32 output;
+  uint32_t output;
   EXPECT_FALSE(HexStringToUInt(input_string, &output));
   EXPECT_EQ(0xc0ffeeU, output);
 }
@@ -544,47 +549,49 @@ TEST(StringNumberConversionsTest, HexStringToUInt) {
 TEST(StringNumberConversionsTest, HexStringToInt64) {
   static const struct {
     std::string input;
-    int64 output;
+    int64_t output;
     bool success;
   } cases[] = {
-    {"0", 0, true},
-    {"42", 66, true},
-    {"-42", -66, true},
-    {"+42", 66, true},
-    {"40acd88557b", INT64_C(4444444448123), true},
-    {"7fffffff", INT_MAX, true},
-    {"-80000000", INT_MIN, true},
-    {"ffffffff", 0xffffffff, true},
-    {"DeadBeef", 0xdeadbeef, true},
-    {"0x42", 66, true},
-    {"-0x42", -66, true},
-    {"+0x42", 66, true},
-    {"0x40acd88557b", INT64_C(4444444448123), true},
-    {"0x7fffffff", INT_MAX, true},
-    {"-0x80000000", INT_MIN, true},
-    {"0xffffffff", 0xffffffff, true},
-    {"0XDeadBeef", 0xdeadbeef, true},
-    {"0x7fffffffffffffff", kint64max, true},
-    {"-0x8000000000000000", kint64min, true},
-    {"0x8000000000000000", kint64max, false},  // Overflow test.
-    {"-0x8000000000000001", kint64min, false},  // Underflow test.
-    {"0x0f", 15, true},
-    {"0f", 15, true},
-    {" 45", 0x45, false},
-    {"\t\n\v\f\r 0x45", 0x45, false},
-    {" 45", 0x45, false},
-    {"45 ", 0x45, false},
-    {"45:", 0x45, false},
-    {"efgh", 0xef, false},
-    {"0xefgh", 0xef, false},
-    {"hgfe", 0, false},
-    {"-", 0, false},
-    {"", 0, false},
-    {"0x", 0, false},
+      {"0", 0, true},
+      {"42", 66, true},
+      {"-42", -66, true},
+      {"+42", 66, true},
+      {"40acd88557b", INT64_C(4444444448123), true},
+      {"7fffffff", INT_MAX, true},
+      {"-80000000", INT_MIN, true},
+      {"ffffffff", 0xffffffff, true},
+      {"DeadBeef", 0xdeadbeef, true},
+      {"0x42", 66, true},
+      {"-0x42", -66, true},
+      {"+0x42", 66, true},
+      {"0x40acd88557b", INT64_C(4444444448123), true},
+      {"0x7fffffff", INT_MAX, true},
+      {"-0x80000000", INT_MIN, true},
+      {"0xffffffff", 0xffffffff, true},
+      {"0XDeadBeef", 0xdeadbeef, true},
+      {"0x7fffffffffffffff", std::numeric_limits<int64_t>::max(), true},
+      {"-0x8000000000000000", std::numeric_limits<int64_t>::min(), true},
+      {"0x8000000000000000", std::numeric_limits<int64_t>::max(),
+       false},  // Overflow test.
+      {"-0x8000000000000001", std::numeric_limits<int64_t>::min(),
+       false},  // Underflow test.
+      {"0x0f", 15, true},
+      {"0f", 15, true},
+      {" 45", 0x45, false},
+      {"\t\n\v\f\r 0x45", 0x45, false},
+      {" 45", 0x45, false},
+      {"45 ", 0x45, false},
+      {"45:", 0x45, false},
+      {"efgh", 0xef, false},
+      {"0xefgh", 0xef, false},
+      {"hgfe", 0, false},
+      {"-", 0, false},
+      {"", 0, false},
+      {"0x", 0, false},
   };
 
   for (size_t i = 0; i < arraysize(cases); ++i) {
-    int64 output = 0;
+    int64_t output = 0;
     EXPECT_EQ(cases[i].success, HexStringToInt64(cases[i].input, &output));
     EXPECT_EQ(cases[i].output, output);
   }
@@ -593,7 +600,7 @@ TEST(StringNumberConversionsTest, HexStringToInt64) {
   // interpreted as junk after the number.
   const char input[] = "0xc0ffee\0" "9";
   std::string input_string(input, arraysize(input) - 1);
-  int64 output;
+  int64_t output;
   EXPECT_FALSE(HexStringToInt64(input_string, &output));
   EXPECT_EQ(0xc0ffee, output);
 }
@@ -604,45 +611,46 @@ TEST(StringNumberConversionsTest, HexStringToUInt64) {
     uint64 output;
     bool success;
   } cases[] = {
-    {"0", 0, true},
-    {"42", 66, true},
-    {"-42", 0, false},
-    {"+42", 66, true},
-    {"40acd88557b", INT64_C(4444444448123), true},
-    {"7fffffff", INT_MAX, true},
-    {"-80000000", 0, false},
-    {"ffffffff", 0xffffffff, true},
-    {"DeadBeef", 0xdeadbeef, true},
-    {"0x42", 66, true},
-    {"-0x42", 0, false},
-    {"+0x42", 66, true},
-    {"0x40acd88557b", INT64_C(4444444448123), true},
-    {"0x7fffffff", INT_MAX, true},
-    {"-0x80000000", 0, false},
-    {"0xffffffff", 0xffffffff, true},
-    {"0XDeadBeef", 0xdeadbeef, true},
-    {"0x7fffffffffffffff", kint64max, true},
-    {"-0x8000000000000000", 0, false},
-    {"0x8000000000000000", UINT64_C(0x8000000000000000), true},
-    {"-0x8000000000000001", 0, false},
-    {"0xFFFFFFFFFFFFFFFF", kuint64max, true},
-    {"FFFFFFFFFFFFFFFF", kuint64max, true},
-    {"0x0000000000000000", 0, true},
-    {"0000000000000000", 0, true},
-    {"1FFFFFFFFFFFFFFFF", kuint64max, false}, // Overflow test.
-    {"0x0f", 15, true},
-    {"0f", 15, true},
-    {" 45", 0x45, false},
-    {"\t\n\v\f\r 0x45", 0x45, false},
-    {" 45", 0x45, false},
-    {"45 ", 0x45, false},
-    {"45:", 0x45, false},
-    {"efgh", 0xef, false},
-    {"0xefgh", 0xef, false},
-    {"hgfe", 0, false},
-    {"-", 0, false},
-    {"", 0, false},
-    {"0x", 0, false},
+      {"0", 0, true},
+      {"42", 66, true},
+      {"-42", 0, false},
+      {"+42", 66, true},
+      {"40acd88557b", INT64_C(4444444448123), true},
+      {"7fffffff", INT_MAX, true},
+      {"-80000000", 0, false},
+      {"ffffffff", 0xffffffff, true},
+      {"DeadBeef", 0xdeadbeef, true},
+      {"0x42", 66, true},
+      {"-0x42", 0, false},
+      {"+0x42", 66, true},
+      {"0x40acd88557b", INT64_C(4444444448123), true},
+      {"0x7fffffff", INT_MAX, true},
+      {"-0x80000000", 0, false},
+      {"0xffffffff", 0xffffffff, true},
+      {"0XDeadBeef", 0xdeadbeef, true},
+      {"0x7fffffffffffffff", std::numeric_limits<int64_t>::max(), true},
+      {"-0x8000000000000000", 0, false},
+      {"0x8000000000000000", UINT64_C(0x8000000000000000), true},
+      {"-0x8000000000000001", 0, false},
+      {"0xFFFFFFFFFFFFFFFF", std::numeric_limits<uint64_t>::max(), true},
+      {"FFFFFFFFFFFFFFFF", std::numeric_limits<uint64_t>::max(), true},
+      {"0x0000000000000000", 0, true},
+      {"0000000000000000", 0, true},
+      {"1FFFFFFFFFFFFFFFF", std::numeric_limits<uint64_t>::max(),
+       false},  // Overflow test.
+      {"0x0f", 15, true},
+      {"0f", 15, true},
+      {" 45", 0x45, false},
+      {"\t\n\v\f\r 0x45", 0x45, false},
+      {" 45", 0x45, false},
+      {"45 ", 0x45, false},
+      {"45:", 0x45, false},
+      {"efgh", 0xef, false},
+      {"0xefgh", 0xef, false},
+      {"hgfe", 0, false},
+      {"-", 0, false},
+      {"", 0, false},
+      {"0x", 0, false},
   };
 
   for (size_t i = 0; i < arraysize(cases); ++i) {
@@ -688,12 +696,12 @@ TEST(StringNumberConversionsTest, HexStringToBytes) {
 
 
   for (size_t i = 0; i < arraysize(cases); ++i) {
-    std::vector<uint8> output;
-    std::vector<uint8> compare;
+    std::vector<uint8_t> output;
+    std::vector<uint8_t> compare;
     EXPECT_EQ(cases[i].success, HexStringToBytes(cases[i].input, &output)) <<
         i << ": " << cases[i].input;
     for (size_t j = 0; j < cases[i].output_len; ++j)
-      compare.push_back(static_cast<uint8>(cases[i].output[j]));
+      compare.push_back(static_cast<uint8_t>(cases[i].output[j]));
     ASSERT_EQ(output.size(), compare.size()) << i << ": " << cases[i].input;
     EXPECT_TRUE(std::equal(output.begin(), output.end(), compare.begin())) <<
         i << ": " << cases[i].input;

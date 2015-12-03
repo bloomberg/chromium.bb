@@ -4,6 +4,8 @@
 
 #include "sync/internal_api/public/base/unique_position.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 #include <string>
 
@@ -398,7 +400,7 @@ class SuffixGenerator {
 
  private:
   const std::string cache_guid_;
-  int64 next_id_;
+  int64_t next_id_;
 };
 
 // Cache guids generated in the same style as real clients.
@@ -501,7 +503,7 @@ class PositionFromIntTest : public UniquePositionTest {
   }
 
  protected:
-  static const int64 kTestValues[];
+  static const int64_t kTestValues[];
   static const size_t kNumTestValues;
 
   std::string NextSuffix() {
@@ -512,31 +514,47 @@ class PositionFromIntTest : public UniquePositionTest {
   SuffixGenerator generator_;
 };
 
-const int64 PositionFromIntTest::kTestValues[] = {
-  0LL,
-  1LL, -1LL,
-  2LL, -2LL,
-  3LL, -3LL,
-  0x79LL, -0x79LL,
-  0x80LL, -0x80LL,
-  0x81LL, -0x81LL,
-  0xFELL, -0xFELL,
-  0xFFLL, -0xFFLL,
-  0x100LL, -0x100LL,
-  0x101LL, -0x101LL,
-  0xFA1AFELL, -0xFA1AFELL,
-  0xFFFFFFFELL, -0xFFFFFFFELL,
-  0xFFFFFFFFLL, -0xFFFFFFFFLL,
-  0x100000000LL, -0x100000000LL,
-  0x100000001LL, -0x100000001LL,
-  0xFFFFFFFFFFLL, -0xFFFFFFFFFFLL,
-  0x112358132134LL, -0x112358132134LL,
-  0xFEFFBEEFABC1234LL, -0xFEFFBEEFABC1234LL,
-  kint64max,
-  kint64min,
-  kint64min + 1,
-  kint64max - 1
-};
+const int64_t PositionFromIntTest::kTestValues[] = {0LL,
+                                                    1LL,
+                                                    -1LL,
+                                                    2LL,
+                                                    -2LL,
+                                                    3LL,
+                                                    -3LL,
+                                                    0x79LL,
+                                                    -0x79LL,
+                                                    0x80LL,
+                                                    -0x80LL,
+                                                    0x81LL,
+                                                    -0x81LL,
+                                                    0xFELL,
+                                                    -0xFELL,
+                                                    0xFFLL,
+                                                    -0xFFLL,
+                                                    0x100LL,
+                                                    -0x100LL,
+                                                    0x101LL,
+                                                    -0x101LL,
+                                                    0xFA1AFELL,
+                                                    -0xFA1AFELL,
+                                                    0xFFFFFFFELL,
+                                                    -0xFFFFFFFELL,
+                                                    0xFFFFFFFFLL,
+                                                    -0xFFFFFFFFLL,
+                                                    0x100000000LL,
+                                                    -0x100000000LL,
+                                                    0x100000001LL,
+                                                    -0x100000001LL,
+                                                    0xFFFFFFFFFFLL,
+                                                    -0xFFFFFFFFFFLL,
+                                                    0x112358132134LL,
+                                                    -0x112358132134LL,
+                                                    0xFEFFBEEFABC1234LL,
+                                                    -0xFEFFBEEFABC1234LL,
+                                                    INT64_MAX,
+                                                    INT64_MIN,
+                                                    INT64_MIN + 1,
+                                                    INT64_MAX - 1};
 
 const size_t PositionFromIntTest::kNumTestValues =
 arraysize(PositionFromIntTest::kTestValues);
@@ -551,10 +569,10 @@ TEST_F(PositionFromIntTest, IsValid) {
 
 TEST_F(PositionFromIntTest, RoundTripConversion) {
   for (size_t i = 0; i < kNumTestValues; ++i) {
-    const int64 expected_value = kTestValues[i];
+    const int64_t expected_value = kTestValues[i];
     const UniquePosition pos =
         UniquePosition::FromInt64(kTestValues[i], NextSuffix());
-    const int64 value = pos.ToInt64();
+    const int64_t value = pos.ToInt64();
     EXPECT_EQ(expected_value, value) << "i = " << i;
   }
 }
@@ -585,7 +603,7 @@ TEST_F(PositionFromIntTest, ConsistentOrdering) {
   }
 
   std::sort(int64_ordering.begin(), int64_ordering.end(),
-            IndexedLessThan<int64>(kTestValues));
+            IndexedLessThan<int64_t>(kTestValues));
   std::sort(position_ordering.begin(), position_ordering.end(),
             IndexedLessThan<UniquePosition, PositionLessThan>(positions));
   EXPECT_NE(original_ordering, int64_ordering);

@@ -2,42 +2,61 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/basictypes.h"
 #include "sync/internal_api/public/base/node_ordinal.h"
-#include "testing/gtest/include/gtest/gtest.h"
+
+#include <stdint.h>
 
 #include <algorithm>
 #include <cstddef>
+#include <limits>
+
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
 
 namespace {
 
-const int64 kTestValues[] = {
-  0LL,
-  1LL, -1LL,
-  2LL, -2LL,
-  3LL, -3LL,
-  0x79LL, -0x79LL,
-  0x80LL, -0x80LL,
-  0x81LL, -0x81LL,
-  0xFELL, -0xFELL,
-  0xFFLL, -0xFFLL,
-  0x100LL, -0x100LL,
-  0x101LL, -0x101LL,
-  0xFA1AFELL, -0xFA1AFELL,
-  0xFFFFFFFELL, -0xFFFFFFFELL,
-  0xFFFFFFFFLL, -0xFFFFFFFFLL,
-  0x100000000LL, -0x100000000LL,
-  0x100000001LL, -0x100000001LL,
-  0xFFFFFFFFFFLL, -0xFFFFFFFFFFLL,
-  0x112358132134LL, -0x112358132134LL,
-  0xFEFFBEEFABC1234LL, -0xFEFFBEEFABC1234LL,
-  kint64max,
-  kint64min,
-  kint64min + 1,
-  kint64max - 1
-};
+const int64_t kTestValues[] = {0LL,
+                               1LL,
+                               -1LL,
+                               2LL,
+                               -2LL,
+                               3LL,
+                               -3LL,
+                               0x79LL,
+                               -0x79LL,
+                               0x80LL,
+                               -0x80LL,
+                               0x81LL,
+                               -0x81LL,
+                               0xFELL,
+                               -0xFELL,
+                               0xFFLL,
+                               -0xFFLL,
+                               0x100LL,
+                               -0x100LL,
+                               0x101LL,
+                               -0x101LL,
+                               0xFA1AFELL,
+                               -0xFA1AFELL,
+                               0xFFFFFFFELL,
+                               -0xFFFFFFFELL,
+                               0xFFFFFFFFLL,
+                               -0xFFFFFFFFLL,
+                               0x100000000LL,
+                               -0x100000000LL,
+                               0x100000001LL,
+                               -0x100000001LL,
+                               0xFFFFFFFFFFLL,
+                               -0xFFFFFFFFFFLL,
+                               0x112358132134LL,
+                               -0x112358132134LL,
+                               0xFEFFBEEFABC1234LL,
+                               -0xFEFFBEEFABC1234LL,
+                               INT64_MAX,
+                               INT64_MIN,
+                               INT64_MIN + 1,
+                               INT64_MAX - 1};
 
 const size_t kNumTestValues = arraysize(kTestValues);
 
@@ -54,10 +73,12 @@ TEST(NodeOrdinalTest, IsValid) {
 // 8-byte strings, except for kint64min, which should have a 9-byte
 // string.
 TEST(NodeOrdinalTest, Size) {
-  EXPECT_EQ(9U, Int64ToNodeOrdinal(kint64min).ToInternalValue().size());
+  EXPECT_EQ(9U, Int64ToNodeOrdinal(std::numeric_limits<int64_t>::min())
+                    .ToInternalValue()
+                    .size());
 
   for (size_t i = 0; i < kNumTestValues; ++i) {
-    if (kTestValues[i] == kint64min) {
+    if (kTestValues[i] == std::numeric_limits<int64_t>::min()) {
       continue;
     }
     const NodeOrdinal ordinal = Int64ToNodeOrdinal(kTestValues[i]);
@@ -69,9 +90,9 @@ TEST(NodeOrdinalTest, Size) {
 // value should be equal to the original value.
 TEST(NodeOrdinalTest, PositionToOrdinalToPosition) {
   for (size_t i = 0; i < kNumTestValues; ++i) {
-    const int64 expected_value = kTestValues[i];
+    const int64_t expected_value = kTestValues[i];
     const NodeOrdinal ordinal = Int64ToNodeOrdinal(expected_value);
-    const int64 value = NodeOrdinalToInt64(ordinal);
+    const int64_t value = NodeOrdinalToInt64(ordinal);
     EXPECT_EQ(expected_value, value) << "i = " << i;
   }
 }
@@ -90,7 +111,7 @@ class IndexedLessThan {
   LessThan less_than_;
 };
 
-// Sort kTestValues by int64 value and then sort it by NodeOrdinal
+// Sort kTestValues by int64_t value and then sort it by NodeOrdinal
 // value.  kTestValues should not already be sorted (by either
 // comparator) and the two orderings should be the same.
 TEST(NodeOrdinalTest, ConsistentOrdering) {
@@ -104,7 +125,7 @@ TEST(NodeOrdinalTest, ConsistentOrdering) {
   }
 
   std::sort(int64_ordering.begin(), int64_ordering.end(),
-            IndexedLessThan<int64>(kTestValues));
+            IndexedLessThan<int64_t>(kTestValues));
   std::sort(ordinal_ordering.begin(), ordinal_ordering.end(),
             IndexedLessThan<NodeOrdinal, NodeOrdinal::LessThanFn>(ordinals));
   EXPECT_NE(original_ordering, int64_ordering);

@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <iomanip>
+#include <limits>
 
 #include "media/formats/mp4/rcheck.h"
 #include "media/formats/mp4/sample_to_group_iterator.h"
@@ -18,24 +19,24 @@ struct SampleInfo {
   int duration;
   int cts_offset;
   bool is_keyframe;
-  uint32 cenc_group_description_index;
+  uint32_t cenc_group_description_index;
 };
 
 struct TrackRunInfo {
-  uint32 track_id;
+  uint32_t track_id;
   std::vector<SampleInfo> samples;
-  int64 timescale;
-  int64 start_dts;
-  int64 sample_start_offset;
+  int64_t timescale;
+  int64_t start_dts;
+  int64_t sample_start_offset;
 
   bool is_audio;
   const AudioSampleEntry* audio_description;
   const VideoSampleEntry* video_description;
   const SampleGroupDescription* track_sample_encryption_group;
 
-  int64 aux_info_start_offset;  // Only valid if aux_info_total_size > 0.
+  int64_t aux_info_start_offset;  // Only valid if aux_info_total_size > 0.
   int aux_info_default_size;
-  std::vector<uint8> aux_info_sizes;  // Populated if default_size == 0.
+  std::vector<uint8_t> aux_info_sizes;  // Populated if default_size == 0.
   int aux_info_total_size;
 
   std::vector<CencSampleEncryptionInfoEntry> fragment_sample_encryption_info;
@@ -56,26 +57,30 @@ TrackRunInfo::TrackRunInfo()
 }
 TrackRunInfo::~TrackRunInfo() {}
 
-base::TimeDelta TimeDeltaFromRational(int64 numer, int64 denom) {
+base::TimeDelta TimeDeltaFromRational(int64_t numer, int64_t denom) {
   // To avoid overflow, split the following calculation:
   // (numer * base::Time::kMicrosecondsPerSecond) / denom
   // into:
   //  (numer / denom) * base::Time::kMicrosecondsPerSecond +
   // ((numer % denom) * base::Time::kMicrosecondsPerSecond) / denom
-  int64 a = numer / denom;
-  DCHECK_LE((a > 0 ? a : -a), kint64max / base::Time::kMicrosecondsPerSecond);
-  int64 timea_in_us = a * base::Time::kMicrosecondsPerSecond;
+  int64_t a = numer / denom;
+  DCHECK_LE((a > 0 ? a : -a), std::numeric_limits<int64_t>::max() /
+                                  base::Time::kMicrosecondsPerSecond);
+  int64_t timea_in_us = a * base::Time::kMicrosecondsPerSecond;
 
-  int64 b = numer % denom;
-  DCHECK_LE((b > 0 ? b : -b), kint64max / base::Time::kMicrosecondsPerSecond);
-  int64 timeb_in_us = (b * base::Time::kMicrosecondsPerSecond) / denom;
+  int64_t b = numer % denom;
+  DCHECK_LE((b > 0 ? b : -b), std::numeric_limits<int64_t>::max() /
+                                  base::Time::kMicrosecondsPerSecond);
+  int64_t timeb_in_us = (b * base::Time::kMicrosecondsPerSecond) / denom;
 
-  DCHECK((timeb_in_us < 0) || (timea_in_us <= kint64max - timeb_in_us));
-  DCHECK((timeb_in_us > 0) || (timea_in_us >= kint64min - timeb_in_us));
+  DCHECK((timeb_in_us < 0) ||
+         (timea_in_us <= std::numeric_limits<int64_t>::max() - timeb_in_us));
+  DCHECK((timeb_in_us > 0) ||
+         (timea_in_us >= std::numeric_limits<int64_t>::min() - timeb_in_us));
   return base::TimeDelta::FromMicroseconds(timea_in_us + timeb_in_us);
 }
 
-DecodeTimestamp DecodeTimestampFromRational(int64 numer, int64 denom) {
+DecodeTimestamp DecodeTimestampFromRational(int64_t numer, int64_t denom) {
   return DecodeTimestamp::FromPresentationTime(
       TimeDeltaFromRational(numer, denom));
 }
@@ -88,7 +93,7 @@ TrackRunIterator::TrackRunIterator(const Movie* moov,
 
 TrackRunIterator::~TrackRunIterator() {}
 
-static std::string HexFlags(uint32 flags) {
+static std::string HexFlags(uint32_t flags) {
   std::stringstream stream;
   stream << std::setfill('0') << std::setw(sizeof(flags)*2) << std::hex
          << flags;
@@ -98,8 +103,8 @@ static std::string HexFlags(uint32 flags) {
 static bool PopulateSampleInfo(const TrackExtends& trex,
                                const TrackFragmentHeader& tfhd,
                                const TrackFragmentRun& trun,
-                               const int64 edit_list_offset,
-                               const uint32 i,
+                               const int64_t edit_list_offset,
+                               const uint32_t i,
                                SampleInfo* sample_info,
                                const SampleDependsOn sdtp_sample_depends_on,
                                bool is_audio,
@@ -127,7 +132,7 @@ static bool PopulateSampleInfo(const TrackExtends& trex,
   }
   sample_info->cts_offset += edit_list_offset;
 
-  uint32 flags;
+  uint32_t flags;
   if (i < trun.sample_flags.size()) {
     flags = trun.sample_flags[i];
     DVLOG(4) << __FUNCTION__ << " trun sample flags "  << HexFlags(flags);
@@ -176,7 +181,7 @@ static bool PopulateSampleInfo(const TrackExtends& trex,
 
 static const CencSampleEncryptionInfoEntry* GetSampleEncryptionInfoEntry(
     const TrackRunInfo& run_info,
-    uint32 group_description_index) {
+    uint32_t group_description_index) {
   const std::vector<CencSampleEncryptionInfoEntry>* entries = nullptr;
 
   // ISO-14496-12 Section 8.9.2.3 and 8.9.4 : group description index
@@ -220,13 +225,15 @@ static const CencSampleEncryptionInfoEntry* GetSampleEncryptionInfoEntry(
 class CompareMinTrackRunDataOffset {
  public:
   bool operator()(const TrackRunInfo& a, const TrackRunInfo& b) {
-    int64 a_aux = a.aux_info_total_size ? a.aux_info_start_offset : kint64max;
-    int64 b_aux = b.aux_info_total_size ? b.aux_info_start_offset : kint64max;
+    int64_t a_aux = a.aux_info_total_size ? a.aux_info_start_offset
+                                          : std::numeric_limits<int64_t>::max();
+    int64_t b_aux = b.aux_info_total_size ? b.aux_info_start_offset
+                                          : std::numeric_limits<int64_t>::max();
 
-    int64 a_lesser = std::min(a_aux, a.sample_start_offset);
-    int64 a_greater = std::max(a_aux, a.sample_start_offset);
-    int64 b_lesser = std::min(b_aux, b.sample_start_offset);
-    int64 b_greater = std::max(b_aux, b.sample_start_offset);
+    int64_t a_lesser = std::min(a_aux, a.sample_start_offset);
+    int64_t a_greater = std::max(a_aux, a.sample_start_offset);
+    int64_t b_lesser = std::min(b_aux, b.sample_start_offset);
+    int64_t b_greater = std::max(b_aux, b.sample_start_offset);
 
     if (a_lesser == b_lesser) return a_greater < b_greater;
     return a_lesser < b_lesser;
@@ -268,7 +275,7 @@ bool TrackRunIterator::Init(const MovieFragment& moof) {
     // B-frames (those that contain a single edit with a nonnegative media
     // time). Other uses of edit lists are not supported, as they are
     // both uncommon and better served by higher-level protocols.
-    int64 edit_list_offset = 0;
+    int64_t edit_list_offset = 0;
     const std::vector<EditListEntry>& edits = trak->edit.list.edits;
     if (!edits.empty()) {
       if (edits.size() > 1)
@@ -284,7 +291,7 @@ bool TrackRunIterator::Init(const MovieFragment& moof) {
     SampleToGroupIterator sample_to_group_itr(traf.sample_to_group);
     bool is_sample_to_group_valid = sample_to_group_itr.IsValid();
 
-    int64 run_start_dts = traf.decode_time.decode_time;
+    int64_t run_start_dts = traf.decode_time.decode_time;
     int sample_count_sum = 0;
     for (size_t j = 0; j < traf.runs.size(); j++) {
       const TrackFragmentRun& trun = traf.runs[j];
@@ -323,7 +330,7 @@ bool TrackRunIterator::Init(const MovieFragment& moof) {
         tri.aux_info_default_size =
             traf.auxiliary_size.default_sample_info_size;
         if (tri.aux_info_default_size == 0) {
-          const std::vector<uint8>& sizes =
+          const std::vector<uint8_t>& sizes =
               traf.auxiliary_size.sample_info_sizes;
           tri.aux_info_sizes.insert(tri.aux_info_sizes.begin(),
               sizes.begin() + sample_count_sum,
@@ -364,7 +371,7 @@ bool TrackRunIterator::Init(const MovieFragment& moof) {
           continue;
         }
 
-        uint32 index = sample_to_group_itr.group_description_index();
+        uint32_t index = sample_to_group_itr.group_description_index();
         tri.samples[k].cenc_group_description_index = index;
         if (index != 0)
           RCHECK(GetSampleEncryptionInfoEntry(tri, index));
@@ -412,11 +419,11 @@ bool TrackRunIterator::AuxInfoNeedsToBeCached() {
 }
 
 // This implementation currently only caches CENC auxiliary info.
-bool TrackRunIterator::CacheAuxInfo(const uint8* buf, int buf_size) {
+bool TrackRunIterator::CacheAuxInfo(const uint8_t* buf, int buf_size) {
   RCHECK(AuxInfoNeedsToBeCached() && buf_size >= aux_info_size());
 
   cenc_info_.resize(run_itr_->samples.size());
-  int64 pos = 0;
+  int64_t pos = 0;
   for (size_t i = 0; i < run_itr_->samples.size(); i++) {
     int info_size = run_itr_->aux_info_default_size;
     if (!info_size)
@@ -446,8 +453,8 @@ bool TrackRunIterator::IsSampleValid() const {
 // (The stronger condition - that no data is required before the minimum data
 // offset of this track alone - is not guaranteed, because the BMFF spec does
 // not have any inter-run ordering restrictions.)
-int64 TrackRunIterator::GetMaxClearOffset() {
-  int64 offset = kint64max;
+int64_t TrackRunIterator::GetMaxClearOffset() {
+  int64_t offset = std::numeric_limits<int64_t>::max();
 
   if (IsSampleValid()) {
     offset = std::min(offset, sample_offset_);
@@ -462,11 +469,12 @@ int64 TrackRunIterator::GetMaxClearOffset() {
         offset = std::min(offset, next_run->aux_info_start_offset);
     }
   }
-  if (offset == kint64max) return 0;
+  if (offset == std::numeric_limits<int64_t>::max())
+    return 0;
   return offset;
 }
 
-uint32 TrackRunIterator::track_id() const {
+uint32_t TrackRunIterator::track_id() const {
   DCHECK(IsRunValid());
   return run_itr_->track_id;
 }
@@ -476,7 +484,7 @@ bool TrackRunIterator::is_encrypted() const {
   return IsSampleEncrypted(sample_itr_ - run_itr_->samples.begin());
 }
 
-int64 TrackRunIterator::aux_info_offset() const {
+int64_t TrackRunIterator::aux_info_offset() const {
   return run_itr_->aux_info_start_offset;
 }
 
@@ -501,7 +509,7 @@ const VideoSampleEntry& TrackRunIterator::video_description() const {
   return *run_itr_->video_description;
 }
 
-int64 TrackRunIterator::sample_offset() const {
+int64_t TrackRunIterator::sample_offset() const {
   DCHECK(IsSampleValid());
   return sample_offset_;
 }
@@ -559,7 +567,7 @@ scoped_ptr<DecryptConfig> TrackRunIterator::GetDecryptConfig() {
     return scoped_ptr<DecryptConfig>();
   }
 
-  const std::vector<uint8>& kid = GetKeyId(sample_idx);
+  const std::vector<uint8_t>& kid = GetKeyId(sample_idx);
   return scoped_ptr<DecryptConfig>(new DecryptConfig(
       std::string(reinterpret_cast<const char*>(&kid[0]), kid.size()),
       std::string(reinterpret_cast<const char*>(cenc_info.iv),
@@ -567,28 +575,29 @@ scoped_ptr<DecryptConfig> TrackRunIterator::GetDecryptConfig() {
       cenc_info.subsamples));
 }
 
-uint32 TrackRunIterator::GetGroupDescriptionIndex(uint32 sample_index) const {
+uint32_t TrackRunIterator::GetGroupDescriptionIndex(
+    uint32_t sample_index) const {
   DCHECK(IsRunValid());
   DCHECK_LT(sample_index, run_itr_->samples.size());
   return run_itr_->samples[sample_index].cenc_group_description_index;
 }
 
 bool TrackRunIterator::IsSampleEncrypted(size_t sample_index) const {
-  uint32 index = GetGroupDescriptionIndex(sample_index);
+  uint32_t index = GetGroupDescriptionIndex(sample_index);
   return (index == 0)
              ? track_encryption().is_encrypted
              : GetSampleEncryptionInfoEntry(*run_itr_, index)->is_encrypted;
 }
 
-const std::vector<uint8>& TrackRunIterator::GetKeyId(
+const std::vector<uint8_t>& TrackRunIterator::GetKeyId(
     size_t sample_index) const {
-  uint32 index = GetGroupDescriptionIndex(sample_index);
+  uint32_t index = GetGroupDescriptionIndex(sample_index);
   return (index == 0) ? track_encryption().default_kid
                       : GetSampleEncryptionInfoEntry(*run_itr_, index)->key_id;
 }
 
-uint8 TrackRunIterator::GetIvSize(size_t sample_index) const {
-  uint32 index = GetGroupDescriptionIndex(sample_index);
+uint8_t TrackRunIterator::GetIvSize(size_t sample_index) const {
+  uint32_t index = GetGroupDescriptionIndex(sample_index);
   return (index == 0) ? track_encryption().default_iv_size
                       : GetSampleEncryptionInfoEntry(*run_itr_, index)->iv_size;
 }

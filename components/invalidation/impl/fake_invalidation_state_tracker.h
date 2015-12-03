@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_INVALIDATION_IMPL_FAKE_INVALIDATION_STATE_TRACKER_H_
 #define COMPONENTS_INVALIDATION_IMPL_FAKE_INVALIDATION_STATE_TRACKER_H_
 
+#include <stdint.h>
+
 #include "base/memory/weak_ptr.h"
 #include "components/invalidation/impl/invalidation_state_tracker.h"
 
@@ -28,7 +30,7 @@ class FakeInvalidationStateTracker
   UnackedInvalidationsMap GetSavedInvalidations() const override;
   void Clear() override;
 
-  static const int64 kMinVersion;
+  static const int64_t kMinVersion;
 
  private:
   std::string invalidator_client_id_;

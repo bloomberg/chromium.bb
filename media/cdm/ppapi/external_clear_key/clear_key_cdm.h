@@ -5,6 +5,8 @@
 #ifndef MEDIA_CDM_PPAPI_EXTERNAL_CLEAR_KEY_CLEAR_KEY_CDM_H_
 #define MEDIA_CDM_PPAPI_EXTERNAL_CLEAR_KEY_CLEAR_KEY_CDM_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -39,27 +41,27 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
   // ContentDecryptionModule implementation.
   void Initialize(bool allow_distinctive_identifier,
                   bool allow_persistent_state) override;
-  void CreateSessionAndGenerateRequest(uint32 promise_id,
+  void CreateSessionAndGenerateRequest(uint32_t promise_id,
                                        cdm::SessionType session_type,
                                        cdm::InitDataType init_data_type,
-                                       const uint8* init_data,
-                                       uint32 init_data_size) override;
-  void LoadSession(uint32 promise_id,
+                                       const uint8_t* init_data,
+                                       uint32_t init_data_size) override;
+  void LoadSession(uint32_t promise_id,
                    cdm::SessionType session_type,
                    const char* session_id,
                    uint32_t session_id_length) override;
-  void UpdateSession(uint32 promise_id,
+  void UpdateSession(uint32_t promise_id,
                      const char* session_id,
                      uint32_t session_id_length,
-                     const uint8* response,
-                     uint32 response_size) override;
-  void CloseSession(uint32 promise_id,
+                     const uint8_t* response,
+                     uint32_t response_size) override;
+  void CloseSession(uint32_t promise_id,
                     const char* session_id,
                     uint32_t session_id_length) override;
-  void RemoveSession(uint32 promise_id,
+  void RemoveSession(uint32_t promise_id,
                      const char* session_id,
                      uint32_t session_id_length) override;
-  void SetServerCertificate(uint32 promise_id,
+  void SetServerCertificate(uint32_t promise_id,
                             const uint8_t* server_certificate_data,
                             uint32_t server_certificate_data_size) override;
   void TimerExpired(void* context) override;
@@ -91,7 +93,7 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
   // ContentDecryptionModule callbacks.
   void OnSessionMessage(const std::string& session_id,
                         MediaKeys::MessageType message_type,
-                        const std::vector<uint8>& message,
+                        const std::vector<uint8_t>& message,
                         const GURL& legacy_destination_url);
   void OnSessionKeysChange(const std::string& session_id,
                            bool has_additional_usable_key,
@@ -100,12 +102,12 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
 
   // Handle the success/failure of a promise. These methods are responsible for
   // calling |host_| to resolve or reject the promise.
-  void OnSessionCreated(uint32 promise_id, const std::string& session_id);
-  void OnSessionLoaded(uint32 promise_id, const std::string& session_id);
-  void OnPromiseResolved(uint32 promise_id);
-  void OnPromiseFailed(uint32 promise_id,
+  void OnSessionCreated(uint32_t promise_id, const std::string& session_id);
+  void OnSessionLoaded(uint32_t promise_id, const std::string& session_id);
+  void OnPromiseResolved(uint32_t promise_id);
+  void OnPromiseFailed(uint32_t promise_id,
                        MediaKeys::Exception exception_code,
-                       uint32 system_code,
+                       uint32_t system_code,
                        const std::string& error_message);
 
   // Prepares next renewal message and sets a timer for it.
@@ -124,16 +126,16 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
       scoped_refptr<DecoderBuffer>* decrypted_buffer);
 
 #if defined(CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER)
-  int64 CurrentTimeStampInMicroseconds() const;
+  int64_t CurrentTimeStampInMicroseconds() const;
 
   // Generates fake video frames with |duration_in_microseconds|.
   // Returns the number of samples generated in the |audio_frames|.
-  int GenerateFakeAudioFramesFromDuration(int64 duration_in_microseconds,
+  int GenerateFakeAudioFramesFromDuration(int64_t duration_in_microseconds,
                                           cdm::AudioFrames* audio_frames) const;
 
   // Generates fake video frames given |input_timestamp|.
   // Returns cdm::kSuccess if any audio frame is successfully generated.
-  cdm::Status GenerateFakeAudioFrames(int64 timestamp_in_microseconds,
+  cdm::Status GenerateFakeAudioFrames(int64_t timestamp_in_microseconds,
                                       cdm::AudioFrames* audio_frames);
 #endif  // CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER
 
@@ -184,7 +186,7 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
   CdmKeysInfo keys_info_for_emulated_loadsession_;
 
   // Timer delay in milliseconds for the next host_->SetTimer() call.
-  int64 timer_delay_ms_;
+  int64_t timer_delay_ms_;
 
   // Indicates whether a renewal timer has been set to prevent multiple timers
   // from running.
@@ -194,7 +196,7 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
   int channel_count_;
   int bits_per_channel_;
   int samples_per_second_;
-  int64 output_timestamp_base_in_microseconds_;
+  int64_t output_timestamp_base_in_microseconds_;
   int total_samples_generated_;
 #endif  // CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER
 

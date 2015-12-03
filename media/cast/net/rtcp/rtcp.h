@@ -8,11 +8,13 @@
 #ifndef MEDIA_CAST_RTCP_RTCP_H_
 #define MEDIA_CAST_RTCP_RTCP_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <queue>
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/tick_clock.h"
@@ -32,8 +34,8 @@ class PacedPacketSender;
 class RtcpReceiver;
 class RtcpBuilder;
 
-typedef std::pair<uint32, base::TimeTicks> RtcpSendTimePair;
-typedef std::map<uint32, base::TimeTicks> RtcpSendTimeMap;
+typedef std::pair<uint32_t, base::TimeTicks> RtcpSendTimePair;
+typedef std::map<uint32_t, base::TimeTicks> RtcpSendTimeMap;
 typedef std::queue<RtcpSendTimePair> RtcpSendTimeQueue;
 
 // TODO(hclam): This should be renamed to RtcpSession.
@@ -42,10 +44,10 @@ class Rtcp {
   Rtcp(const RtcpCastMessageCallback& cast_callback,
        const RtcpRttCallback& rtt_callback,
        const RtcpLogMessageCallback& log_callback,
-       base::TickClock* clock,  // Not owned.
+       base::TickClock* clock,            // Not owned.
        PacedPacketSender* packet_sender,  // Not owned.
-       uint32 local_ssrc,
-       uint32 remote_ssrc);
+       uint32_t local_ssrc,
+       uint32_t remote_ssrc);
 
   virtual ~Rtcp();
 
@@ -54,11 +56,10 @@ class Rtcp {
   // |current_time_as_rtp_timestamp| is the corresponding RTP timestamp.
   // |send_packet_count| is the number of packets sent.
   // |send_octet_count| is the number of octets sent.
-  void SendRtcpFromRtpSender(
-      base::TimeTicks current_time,
-      uint32 current_time_as_rtp_timestamp,
-      uint32 send_packet_count,
-      size_t send_octet_count);
+  void SendRtcpFromRtpSender(base::TimeTicks current_time,
+                             uint32_t current_time_as_rtp_timestamp,
+                             uint32_t send_packet_count,
+                             size_t send_octet_count);
 
   // This function is meant to be used in conjunction with
   // SendRtcpFromRtpReceiver.
@@ -91,7 +92,7 @@ class Rtcp {
   // provides reference NTP times relative to its own wall clock, the
   // |reference_time| returned here has been translated to the local
   // CastEnvironment clock.
-  bool GetLatestLipSyncTimes(uint32* rtp_timestamp,
+  bool GetLatestLipSyncTimes(uint32_t* rtp_timestamp,
                              base::TimeTicks* reference_time) const;
 
   void OnReceivedReceiverLog(const RtcpReceiverLogMessage& receiver_log);
@@ -102,26 +103,26 @@ class Rtcp {
   }
 
   static bool IsRtcpPacket(const uint8* packet, size_t length);
-  static uint32 GetSsrcOfSender(const uint8* rtcp_buffer, size_t length);
+  static uint32_t GetSsrcOfSender(const uint8* rtcp_buffer, size_t length);
 
-  uint32 GetLocalSsrc() const { return local_ssrc_; }
-  uint32 GetRemoteSsrc() const { return remote_ssrc_; }
+  uint32_t GetLocalSsrc() const { return local_ssrc_; }
+  uint32_t GetRemoteSsrc() const { return remote_ssrc_; }
 
  protected:
-  void OnReceivedNtp(uint32 ntp_seconds, uint32 ntp_fraction);
-  void OnReceivedLipSyncInfo(uint32 rtp_timestamp,
-                             uint32 ntp_seconds,
-                             uint32 ntp_fraction);
+  void OnReceivedNtp(uint32_t ntp_seconds, uint32_t ntp_fraction);
+  void OnReceivedLipSyncInfo(uint32_t rtp_timestamp,
+                             uint32_t ntp_seconds,
+                             uint32_t ntp_fraction);
 
  private:
-  void OnReceivedDelaySinceLastReport(uint32 last_report,
-                                      uint32 delay_since_last_report);
+  void OnReceivedDelaySinceLastReport(uint32_t last_report,
+                                      uint32_t delay_since_last_report);
 
   void OnReceivedCastFeedback(const RtcpCastMessage& cast_message);
 
   void SaveLastSentNtpTime(const base::TimeTicks& now,
-                           uint32 last_ntp_seconds,
-                           uint32 last_ntp_fraction);
+                           uint32_t last_ntp_seconds,
+                           uint32_t last_ntp_fraction);
 
   // Remove duplicate events in |receiver_log|.
   // Returns true if any events remain.
@@ -133,8 +134,8 @@ class Rtcp {
   base::TickClock* const clock_;  // Not owned by this class.
   RtcpBuilder rtcp_builder_;
   PacedPacketSender* packet_sender_;  // Not owned.
-  const uint32 local_ssrc_;
-  const uint32 remote_ssrc_;
+  const uint32_t local_ssrc_;
+  const uint32_t remote_ssrc_;
 
   RtcpSendTimeMap last_reports_sent_map_;
   RtcpSendTimeQueue last_reports_sent_queue_;
@@ -143,7 +144,7 @@ class Rtcp {
   // from the remote peer, along with the local time at which the report was
   // received.  These values are used for ping-pong'ing NTP timestamps between
   // the peers so that they can estimate the network's round-trip time.
-  uint32 last_report_truncated_ntp_;
+  uint32_t last_report_truncated_ntp_;
   base::TimeTicks time_last_report_received_;
 
   // Maintains a smoothed offset between the local clock and the remote clock.
@@ -156,8 +157,8 @@ class Rtcp {
   // NTP timestamp sampled from a clock common to all media streams.  It is
   // expected that the sender will update this data regularly and in a timely
   // manner (e.g., about once per second).
-  uint32 lip_sync_rtp_timestamp_;
-  uint64 lip_sync_ntp_timestamp_;
+  uint32_t lip_sync_rtp_timestamp_;
+  uint64_t lip_sync_ntp_timestamp_;
 
   // The last measured network round trip time.  This is updated with each
   // sender report --> receiver report round trip.  If this is zero, then the
@@ -170,7 +171,7 @@ class Rtcp {
   FrameIdWrapHelper ack_frame_id_wrap_helper_;
 
   // Maintains a history of receiver events.
-  typedef std::pair<uint64, uint64> ReceiverEventKey;
+  typedef std::pair<uint64_t, uint64_t> ReceiverEventKey;
   base::hash_set<ReceiverEventKey> receiver_event_key_set_;
   std::queue<ReceiverEventKey> receiver_event_key_queue_;
 

@@ -5,6 +5,10 @@
 #ifndef MEDIA_BASE_TIMESTAMP_CONSTANTS_H_
 #define MEDIA_BASE_TIMESTAMP_CONSTANTS_H_
 
+#include <stdint.h>
+
+#include <limits>
+
 #include "base/time/time.h"
 #include "media/base/media_export.h"
 
@@ -12,7 +16,7 @@ namespace media {
 
 // Indicates an invalid or missing timestamp.
 MEDIA_EXPORT inline base::TimeDelta kNoTimestamp() {
-  return base::TimeDelta::FromMicroseconds(kint64min);
+  return base::TimeDelta::FromMicroseconds(std::numeric_limits<int64_t>::min());
 }
 
 // Represents an infinite stream duration.

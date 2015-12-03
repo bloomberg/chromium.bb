@@ -23,8 +23,7 @@
 #include "url/gurl.h"
 
 #if defined(CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER)
-#include "base/basictypes.h"
-const int64 kNoTimestamp = kint64min;
+const int64_t kNoTimestamp = INT64_MIN;
 #endif  // CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER
 
 #if defined(CLEAR_KEY_CDM_USE_FFMPEG_DECODER)
@@ -69,15 +68,15 @@ const char kExternalClearKeyCrashKeySystem[] =
 // These constants need to be in sync with
 // chrome/test/data/media/encrypted_media_utils.js
 const char kLoadableSessionId[] = "LoadableSession";
-const uint8 kLoadableSessionKeyId[] = "0123456789012345";
-const uint8 kLoadableSessionKey[] =
-    {0xeb, 0xdd, 0x62, 0xf1, 0x68, 0x14, 0xd2, 0x7b,
-     0x68, 0xef, 0x12, 0x2a, 0xfc, 0xe4, 0xae, 0x3c};
+const uint8_t kLoadableSessionKeyId[] = "0123456789012345";
+const uint8_t kLoadableSessionKey[] = {0xeb, 0xdd, 0x62, 0xf1, 0x68, 0x14,
+                                       0xd2, 0x7b, 0x68, 0xef, 0x12, 0x2a,
+                                       0xfc, 0xe4, 0xae, 0x3c};
 
-const int64 kSecondsPerMinute = 60;
-const int64 kMsPerSecond = 1000;
-const int64 kInitialTimerDelayMs = 200;
-const int64 kMaxTimerDelayMs = 1 * kSecondsPerMinute * kMsPerSecond;
+const int64_t kSecondsPerMinute = 60;
+const int64_t kMsPerSecond = 1000;
+const int64_t kInitialTimerDelayMs = 200;
+const int64_t kMaxTimerDelayMs = 1 * kSecondsPerMinute * kMsPerSecond;
 // Renewal message header. For prefixed EME, if a key message starts with
 // |kRenewalHeader|, it's a renewal message. Otherwise, it's a key request.
 // FIXME(jrummell): Remove this once prefixed EME goes away.
@@ -288,11 +287,11 @@ void ClearKeyCdm::Initialize(bool /* allow_distinctive_identifier */,
 }
 
 void ClearKeyCdm::CreateSessionAndGenerateRequest(
-    uint32 promise_id,
+    uint32_t promise_id,
     cdm::SessionType session_type,
     cdm::InitDataType init_data_type,
-    const uint8* init_data,
-    uint32 init_data_size) {
+    const uint8_t* init_data,
+    uint32_t init_data_size) {
   DVLOG(1) << __FUNCTION__;
 
   scoped_ptr<media::NewSessionCdmPromise> promise(
@@ -315,7 +314,7 @@ void ClearKeyCdm::CreateSessionAndGenerateRequest(
 // Loads a emulated stored session. Currently only |kLoadableSessionId|
 // (containing a |kLoadableSessionKey| for |kLoadableSessionKeyId|) is
 // supported.
-void ClearKeyCdm::LoadSession(uint32 promise_id,
+void ClearKeyCdm::LoadSession(uint32_t promise_id,
                               cdm::SessionType session_type,
                               const char* session_id,
                               uint32_t session_id_length) {
@@ -344,11 +343,11 @@ void ClearKeyCdm::LoadSession(uint32 promise_id,
       std::vector<uint8_t>(), promise.Pass());
 }
 
-void ClearKeyCdm::UpdateSession(uint32 promise_id,
+void ClearKeyCdm::UpdateSession(uint32_t promise_id,
                                 const char* session_id,
                                 uint32_t session_id_length,
-                                const uint8* response,
-                                uint32 response_size) {
+                                const uint8_t* response,
+                                uint32_t response_size) {
   DVLOG(1) << __FUNCTION__;
   std::string web_session_str(session_id, session_id_length);
 
@@ -371,7 +370,7 @@ void ClearKeyCdm::UpdateSession(uint32 promise_id,
   }
 }
 
-void ClearKeyCdm::CloseSession(uint32 promise_id,
+void ClearKeyCdm::CloseSession(uint32_t promise_id,
                                const char* session_id,
                                uint32_t session_id_length) {
   DVLOG(1) << __FUNCTION__;
@@ -389,7 +388,7 @@ void ClearKeyCdm::CloseSession(uint32 promise_id,
   decryptor_->CloseSession(web_session_str, promise.Pass());
 }
 
-void ClearKeyCdm::RemoveSession(uint32 promise_id,
+void ClearKeyCdm::RemoveSession(uint32_t promise_id,
                                 const char* session_id,
                                 uint32_t session_id_length) {
   DVLOG(1) << __FUNCTION__;
@@ -418,7 +417,7 @@ void ClearKeyCdm::RemoveSession(uint32 promise_id,
   decryptor_->RemoveSession(web_session_str, promise.Pass());
 }
 
-void ClearKeyCdm::SetServerCertificate(uint32 promise_id,
+void ClearKeyCdm::SetServerCertificate(uint32_t promise_id,
                                        const uint8_t* server_certificate_data,
                                        uint32_t server_certificate_data_size) {
   // ClearKey doesn't use a server certificate.
@@ -616,7 +615,7 @@ cdm::Status ClearKeyCdm::DecryptAndDecodeSamples(
 
   return audio_decoder_->DecodeBuffer(data, size, timestamp, audio_frames);
 #elif defined(CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER)
-  int64 timestamp_in_microseconds = kNoTimestamp;
+  int64_t timestamp_in_microseconds = kNoTimestamp;
   if (!buffer->end_of_stream()) {
     timestamp_in_microseconds = buffer->GetTimestamp().InMicroseconds();
     DCHECK(timestamp_in_microseconds != kNoTimestamp);
@@ -705,7 +704,7 @@ void ClearKeyCdm::LoadLoadableSession() {
 
 void ClearKeyCdm::OnSessionMessage(const std::string& session_id,
                                    MediaKeys::MessageType message_type,
-                                   const std::vector<uint8>& message,
+                                   const std::vector<uint8_t>& message,
                                    const GURL& legacy_destination_url) {
   DVLOG(1) << "OnSessionMessage: " << message.size();
 
@@ -757,7 +756,7 @@ void ClearKeyCdm::OnSessionClosed(const std::string& session_id) {
   host_->OnSessionClosed(new_session_id.data(), new_session_id.length());
 }
 
-void ClearKeyCdm::OnSessionCreated(uint32 promise_id,
+void ClearKeyCdm::OnSessionCreated(uint32_t promise_id,
                                    const std::string& session_id) {
   // Save the latest session ID for renewal and file IO test messages.
   last_session_id_ = session_id;
@@ -766,7 +765,7 @@ void ClearKeyCdm::OnSessionCreated(uint32 promise_id,
                                     session_id.length());
 }
 
-void ClearKeyCdm::OnSessionLoaded(uint32 promise_id,
+void ClearKeyCdm::OnSessionLoaded(uint32_t promise_id,
                                   const std::string& session_id) {
   // Save the latest session ID for renewal and file IO test messages.
   last_session_id_ = session_id;
@@ -778,7 +777,7 @@ void ClearKeyCdm::OnSessionLoaded(uint32 promise_id,
 
   // Delay LoadLoadableSession() to test the case where Decrypt*() calls are
   // made before the session is fully loaded.
-  const int64 kDelayToLoadSessionMs = 500;
+  const int64_t kDelayToLoadSessionMs = 500;
 
   // Defer resolving the promise until the session is loaded.
   promise_id_for_emulated_loadsession_ = promise_id;
@@ -817,13 +816,13 @@ void ClearKeyCdm::OnLoadSessionUpdated() {
   }
 }
 
-void ClearKeyCdm::OnPromiseResolved(uint32 promise_id) {
+void ClearKeyCdm::OnPromiseResolved(uint32_t promise_id) {
   host_->OnResolvePromise(promise_id);
 }
 
-void ClearKeyCdm::OnPromiseFailed(uint32 promise_id,
+void ClearKeyCdm::OnPromiseFailed(uint32_t promise_id,
                                   MediaKeys::Exception exception_code,
-                                  uint32 system_code,
+                                  uint32_t system_code,
                                   const std::string& error_message) {
   host_->OnRejectPromise(promise_id,
                          ConvertException(exception_code),
@@ -833,25 +832,27 @@ void ClearKeyCdm::OnPromiseFailed(uint32 promise_id,
 }
 
 #if defined(CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER)
-int64 ClearKeyCdm::CurrentTimeStampInMicroseconds() const {
+int64_t ClearKeyCdm::CurrentTimeStampInMicroseconds() const {
   return output_timestamp_base_in_microseconds_ +
          base::Time::kMicrosecondsPerSecond *
          total_samples_generated_  / samples_per_second_;
 }
 
 int ClearKeyCdm::GenerateFakeAudioFramesFromDuration(
-    int64 duration_in_microseconds,
+    int64_t duration_in_microseconds,
     cdm::AudioFrames* audio_frames) const {
-  int64 samples_to_generate = static_cast<double>(samples_per_second_) *
-      duration_in_microseconds / base::Time::kMicrosecondsPerSecond + 0.5;
+  int64_t samples_to_generate = static_cast<double>(samples_per_second_) *
+                                    duration_in_microseconds /
+                                    base::Time::kMicrosecondsPerSecond +
+                                0.5;
   if (samples_to_generate <= 0)
     return 0;
 
-  int64 bytes_per_sample = channel_count_ * bits_per_channel_ / 8;
+  int64_t bytes_per_sample = channel_count_ * bits_per_channel_ / 8;
   // |frame_size| must be a multiple of |bytes_per_sample|.
-  int64 frame_size = bytes_per_sample * samples_to_generate;
+  int64_t frame_size = bytes_per_sample * samples_to_generate;
 
-  int64 timestamp = CurrentTimeStampInMicroseconds();
+  int64_t timestamp = CurrentTimeStampInMicroseconds();
 
   const int kHeaderSize = sizeof(timestamp) + sizeof(frame_size);
   audio_frames->SetFrameBuffer(host_->Allocate(kHeaderSize + frame_size));
@@ -871,7 +872,7 @@ int ClearKeyCdm::GenerateFakeAudioFramesFromDuration(
 }
 
 cdm::Status ClearKeyCdm::GenerateFakeAudioFrames(
-    int64 timestamp_in_microseconds,
+    int64_t timestamp_in_microseconds,
     cdm::AudioFrames* audio_frames) {
   if (timestamp_in_microseconds == kNoTimestamp)
     return cdm::kNeedMoreData;
