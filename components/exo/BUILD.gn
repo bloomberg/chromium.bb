@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/ui.gni")
 import("//testing/test.gni")
 
 source_set("exo") {
@@ -87,6 +88,10 @@ source_set("unit_tests") {
     "//ui/message_center",
     "//ui/views",
   ]
+
+  if (use_ozone) {
+    deps += [ "//ui/ozone" ]
+  }
 }
 
 test("exo_unittests") {
