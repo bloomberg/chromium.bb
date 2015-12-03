@@ -5,6 +5,8 @@
 #ifndef MEDIA_CDM_PPAPI_CDM_FILE_IO_TEST_H_
 #define MEDIA_CDM_PPAPI_CDM_FILE_IO_TEST_H_
 
+#include <stdint.h>
+
 #include <list>
 #include <stack>
 #include <string>
@@ -66,8 +68,10 @@ class FileIOTest : public cdm::FileIOClient {
 
   // Adds a test step in this test. |this| object doesn't take the ownership of
   // |data|, which should be valid throughout the lifetime of |this| object.
-  void AddTestStep(
-      StepType type, Status status, const uint8* data, uint32 data_size);
+  void AddTestStep(StepType type,
+                   Status status,
+                   const uint8_t* data,
+                   uint32_t data_size);
 
   // Runs this test case and returns the test result through |completion_cb|.
   void Run(const CompletionCB& completion_cb);
@@ -76,7 +80,10 @@ class FileIOTest : public cdm::FileIOClient {
   struct TestStep {
     // |this| object doesn't take the ownership of |data|, which should be valid
     // throughout the lifetime of |this| object.
-    TestStep(StepType type, Status status, const uint8* data, uint32 data_size)
+    TestStep(StepType type,
+             Status status,
+             const uint8_t* data,
+             uint32_t data_size)
         : type(type), status(status), data(data), data_size(data_size) {}
 
     StepType type;
@@ -85,8 +92,8 @@ class FileIOTest : public cdm::FileIOClient {
     Status status;
 
     // Data to write in ACTION_WRITE, or read data in RESULT_READ.
-    const uint8* data;
-    uint32 data_size;
+    const uint8_t* data;
+    uint32_t data_size;
   };
 
   // Returns whether |test_step| is a RESULT_* step.
@@ -145,7 +152,7 @@ class FileIOTestRunner {
   CreateFileIOCB create_file_io_cb_;
   CompletionCB completion_cb_;
   std::list<FileIOTest> remaining_tests_;
-  std::vector<uint8> large_data_;
+  std::vector<uint8_t> large_data_;
   size_t total_num_tests_;  // Total number of tests.
   size_t num_passed_tests_;  // Number of passed tests.
 

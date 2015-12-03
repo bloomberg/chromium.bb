@@ -4,7 +4,10 @@
 
 #include "net/spdy/spdy_http_utils.h"
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
+#include <limits>
+
 #include "net/http/http_request_info.h"
 #include "net/spdy/spdy_framer.h"
 #include "net/spdy/spdy_test_utils.h"
@@ -34,7 +37,7 @@ TEST(SpdyHttpUtilsTest, ConvertSpdy3PriorityToRequestPriority) {
   EXPECT_EQ(IDLE, ConvertSpdyPriorityToRequestPriority(4, SPDY3));
   // These are invalid values, but we should still handle them
   // gracefully.
-  for (int i = 5; i < kuint8max; ++i) {
+  for (int i = 5; i < std::numeric_limits<uint8_t>::max(); ++i) {
     EXPECT_EQ(IDLE, ConvertSpdyPriorityToRequestPriority(i, SPDY3));
   }
 }

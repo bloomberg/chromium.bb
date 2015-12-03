@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/basictypes.h"
 #include "sync/internal_api/public/base/ordinal.h"
-#include "testing/gtest/include/gtest/gtest.h"
+
+#include <stdint.h>
 
 #include <algorithm>
 #include <cctype>
@@ -12,25 +12,27 @@
 #include <string>
 #include <vector>
 
+#include "testing/gtest/include/gtest/gtest.h"
+
 namespace syncer {
 
 namespace {
 
 struct TestOrdinalTraits {
-  static const uint8 kZeroDigit = '0';
-  static const uint8 kMaxDigit = '3';
+  static const uint8_t kZeroDigit = '0';
+  static const uint8_t kMaxDigit = '3';
   static const size_t kMinLength = 1;
 };
 
 struct LongOrdinalTraits {
-  static const uint8 kZeroDigit = '0';
-  static const uint8 kMaxDigit = '9';
+  static const uint8_t kZeroDigit = '0';
+  static const uint8_t kMaxDigit = '9';
   static const size_t kMinLength = 5;
 };
 
 struct LargeOrdinalTraits {
-  static const uint8 kZeroDigit = 0;
-  static const uint8 kMaxDigit = kuint8max;
+  static const uint8_t kZeroDigit = 0;
+  static const uint8_t kMaxDigit = UINT8_MAX;
   static const size_t kMinLength = 1;
 };
 

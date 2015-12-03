@@ -4,7 +4,8 @@
 
 #include "sync/internal_api/public/base/unique_position.h"
 
-#include "base/basictypes.h"
+#include <limits>
+
 #include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
@@ -84,13 +85,12 @@ UniquePosition UniquePosition::FromProto(const sync_pb::UniquePosition& proto) {
 }
 
 // static.
-UniquePosition UniquePosition::FromInt64(
-    int64 x, const std::string& suffix) {
-  uint64 y = static_cast<uint64>(x);
+UniquePosition UniquePosition::FromInt64(int64_t x, const std::string& suffix) {
+  uint64_t y = static_cast<uint64_t>(x);
   y ^= 0x8000000000000000ULL; // Make it non-negative.
   std::string bytes(8, 0);
   for (int i = 7; i >= 0; --i) {
-    bytes[i] = static_cast<uint8>(y);
+    bytes[i] = static_cast<uint8_t>(y);
     y >>= 8;
   }
   return UniquePosition(bytes + suffix, suffix);
@@ -176,22 +176,22 @@ void UniquePosition::SerializeToString(std::string* blob) const {
   proto.SerializeToString(blob);
 }
 
-int64 UniquePosition::ToInt64() const {
-  uint64 y = 0;
+int64_t UniquePosition::ToInt64() const {
+  uint64_t y = 0;
   const std::string& s = Uncompress(compressed_);
-  size_t l = sizeof(int64);
+  size_t l = sizeof(int64_t);
   if (s.length() < l) {
     NOTREACHED();
     l = s.length();
   }
   for (size_t i = 0; i < l; ++i) {
-    const uint8 byte = s[l - i - 1];
-    y |= static_cast<uint64>(byte) << (i * 8);
+    const uint8_t byte = s[l - i - 1];
+    y |= static_cast<uint64_t>(byte) << (i * 8);
   }
   y ^= 0x8000000000000000ULL;
   // This is technically implementation-defined if y > INT64_MAX, so
   // we're assuming that we're on a twos-complement machine.
-  return static_cast<int64>(y);
+  return static_cast<int64_t>(y);
 }
 
 bool UniquePosition::IsValid() const {
@@ -247,7 +247,7 @@ std::string UniquePosition::FindSmallerWithSuffix(
   } else {
     // Prepend zeroes to match those in the |reference|, then something smaller
     // than the first non-zero digit in |reference|.
-    char lt_digit = static_cast<uint8>(reference[ref_zeroes])/2;
+    char lt_digit = static_cast<uint8_t>(reference[ref_zeroes]) / 2;
     return std::string(ref_zeroes, '\0') + lt_digit;
   }
 }
@@ -256,8 +256,10 @@ std::string UniquePosition::FindSmallerWithSuffix(
 std::string UniquePosition::FindGreaterWithSuffix(
     const std::string& reference,
     const std::string& suffix) {
-  size_t ref_FFs = reference.find_first_not_of(kuint8max);
-  size_t suffix_FFs = suffix.find_first_not_of(kuint8max);
+  size_t ref_FFs =
+      reference.find_first_not_of(std::numeric_limits<uint8_t>::max());
+  size_t suffix_FFs =
+      suffix.find_first_not_of(std::numeric_limits<uint8_t>::max());
 
   if (ref_FFs == std::string::npos) {
     ref_FFs = reference.length();
@@ -273,18 +275,22 @@ std::string UniquePosition::FindGreaterWithSuffix(
 
   if (suffix.substr(suffix_FFs) > reference.substr(ref_FFs)) {
     // Prepend FF digits to match those in |reference|.
-    return std::string(ref_FFs - suffix_FFs, kuint8max);
+    return std::string(ref_FFs - suffix_FFs,
+                       std::numeric_limits<uint8_t>::max());
   } else if (suffix_FFs > 1) {
     // Prepend enough leading FF digits so result has one more of them than
     // |reference| does.  We could also take the "else" branch below, but this
     // gives us a smaller result.
-    return std::string(ref_FFs - suffix_FFs + 1, kuint8max);
+    return std::string(ref_FFs - suffix_FFs + 1,
+                       std::numeric_limits<uint8_t>::max());
   } else {
     // Prepend FF digits to match those in |reference|, then something larger
     // than the first non-FF digit in |reference|.
-    char gt_digit = static_cast<uint8>(reference[ref_FFs]) +
-        (kuint8max - static_cast<uint8>(reference[ref_FFs]) + 1) / 2;
-    return std::string(ref_FFs, kuint8max) + gt_digit;
+    char gt_digit = static_cast<uint8_t>(reference[ref_FFs]) +
+                    (std::numeric_limits<uint8_t>::max() -
+                     static_cast<uint8_t>(reference[ref_FFs]) + 1) /
+                        2;
+    return std::string(ref_FFs, std::numeric_limits<uint8_t>::max()) + gt_digit;
   }
 }
 
@@ -306,8 +312,8 @@ std::string UniquePosition::FindBetweenWithSuffix(
 
   size_t i = 0;
   for ( ; i < std::min(before.length(), after.length()); ++i) {
-    uint8 a_digit = before[i];
-    uint8 b_digit = after[i];
+    uint8_t a_digit = before[i];
+    uint8_t b_digit = after[i];
 
     if (b_digit - a_digit >= 2) {
       mid.push_back(a_digit + (b_digit - a_digit)/2);
@@ -464,14 +470,14 @@ UniquePosition::UniquePosition(
 namespace {
 
 // Appends an encoded run length to |output_str|.
-static void WriteEncodedRunLength(uint32 length,
+static void WriteEncodedRunLength(uint32_t length,
                                   bool high_encoding,
                                   std::string* output_str) {
   CHECK_GE(length, 4U);
   CHECK_LT(length, 0x80000000);
 
   // Step 1: Invert the count, if necessary, to account for the following digit.
-  uint32 encoded_length;
+  uint32_t encoded_length;
   if (high_encoding) {
     encoded_length = 0xffffffff - length;
   } else {
@@ -486,18 +492,16 @@ static void WriteEncodedRunLength(uint32 length,
 }
 
 // Reads an encoded run length for |str| at position |i|.
-static uint32 ReadEncodedRunLength(const std::string& str, size_t i) {
+static uint32_t ReadEncodedRunLength(const std::string& str, size_t i) {
   DCHECK_LE(i + 4, str.length());
 
   // Step 1: Extract the big-endian count.
-  uint32 encoded_length =
-      ((uint8)(str[i+3]) << 0)  |
-      ((uint8)(str[i+2]) << 8)  |
-      ((uint8)(str[i+1]) << 16) |
-      ((uint8)(str[i+0]) << 24);
+  uint32_t encoded_length =
+      ((uint8_t)(str[i + 3]) << 0) | ((uint8_t)(str[i + 2]) << 8) |
+      ((uint8_t)(str[i + 1]) << 16) | ((uint8_t)(str[i + 0]) << 24);
 
   // Step 2: If this was an inverted count, un-invert it.
-  uint32 length;
+  uint32_t length;
   if (encoded_length & 0x80000000) {
     length = 0xffffffff - encoded_length;
   } else {
@@ -559,10 +563,11 @@ std::string UniquePosition::CompressImpl(const std::string& str) {
         encode_high = false;
       } else {
         run_length = runs_until - i;
-        encode_high = static_cast<uint8>(str[runs_until]) >
-            static_cast<uint8>(rep_digit);
+        encode_high = static_cast<uint8_t>(str[runs_until]) >
+                      static_cast<uint8_t>(rep_digit);
       }
-      DCHECK_LT(run_length, static_cast<size_t>(kint32max))
+      DCHECK_LT(run_length,
+                static_cast<size_t>(std::numeric_limits<int32_t>::max()))
           << "This implementation can't encode run-lengths greater than 2^31.";
 
       WriteEncodedRunLength(run_length, encode_high, &output);
@@ -588,7 +593,7 @@ std::string UniquePosition::Uncompress(const std::string& str) {
     if (IsRepeatedCharPrefix(str, i)) {
       // Found a repeated character block.  Expand it.
       const char rep_digit = str[i];
-      uint32 length = ReadEncodedRunLength(str, i+4);
+      uint32_t length = ReadEncodedRunLength(str, i + 4);
       output.append(length, rep_digit);
     } else {
       // Found a regular block.  Copy it.
@@ -603,7 +608,7 @@ std::string UniquePosition::Uncompress(const std::string& str) {
 bool UniquePosition::IsValidCompressed(const std::string& str) {
   for (size_t i = 0; i + 8 <= str.length(); i += 8) {
     if (IsRepeatedCharPrefix(str, i)) {
-      uint32 count = ReadEncodedRunLength(str, i+4);
+      uint32_t count = ReadEncodedRunLength(str, i + 4);
       if (count < 4) {
         // A repeated character block should at least represent the four
         // characters that started it.

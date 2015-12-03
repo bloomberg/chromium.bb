@@ -4,6 +4,10 @@
 
 #include "chrome/browser/chromeos/display/overscan_calibrator.h"
 
+#include <stdint.h>
+
+#include <limits>
+
 #include "ash/display/display_info.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/window_tree_host_manager.h"
@@ -38,10 +42,12 @@ void DrawTriangle(int x_offset,
   // Draw triangular arrows.
   SkPaint content_paint;
   content_paint.setStyle(SkPaint::kFill_Style);
-  content_paint.setColor(SkColorSetA(SK_ColorBLACK, kuint8max * kArrowOpacity));
+  content_paint.setColor(SkColorSetA(
+      SK_ColorBLACK, std::numeric_limits<uint8_t>::max() * kArrowOpacity));
   SkPaint border_paint;
   border_paint.setStyle(SkPaint::kStroke_Style);
-  border_paint.setColor(SkColorSetA(SK_ColorWHITE, kuint8max * kArrowOpacity));
+  border_paint.setColor(SkColorSetA(
+      SK_ColorWHITE, std::numeric_limits<uint8_t>::max() * kArrowOpacity));
 
   SkPath base_path;
   base_path.moveTo(0, 0);

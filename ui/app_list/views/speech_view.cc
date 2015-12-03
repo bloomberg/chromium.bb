@@ -4,6 +4,10 @@
 
 #include "ui/app_list/views/speech_view.h"
 
+#include <stdint.h>
+
+#include <limits>
+
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/app_list/app_list_constants.h"
@@ -163,10 +167,10 @@ void SpeechView::Reset() {
   OnSpeechRecognitionStateChanged(delegate_->GetSpeechUI()->state());
 }
 
-int SpeechView::GetIndicatorRadius(uint8 level) {
+int SpeechView::GetIndicatorRadius(uint8_t level) {
   int radius_min = mic_button_->width() / 2 + kIndicatorRadiusMinOffset;
   int range = kIndicatorRadiusMax - radius_min;
-  return level * range / kuint8max + radius_min;
+  return level * range / std::numeric_limits<uint8_t>::max() + radius_min;
 }
 
 void SpeechView::Layout() {
@@ -200,7 +204,7 @@ void SpeechView::ButtonPressed(views::Button* sender, const ui::Event& event) {
   delegate_->StopSpeechRecognition();
 }
 
-void SpeechView::OnSpeechSoundLevelChanged(uint8 level) {
+void SpeechView::OnSpeechSoundLevelChanged(uint8_t level) {
   if (!visible() ||
       delegate_->GetSpeechUI()->state() == SPEECH_RECOGNITION_NETWORK_ERROR)
     return;

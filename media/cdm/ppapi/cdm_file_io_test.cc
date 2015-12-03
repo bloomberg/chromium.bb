@@ -4,6 +4,8 @@
 
 #include "media/cdm/ppapi/cdm_file_io_test.h"
 
+#include <limits>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
@@ -12,19 +14,18 @@ namespace media {
 
 #define FILE_IO_DVLOG(level) DVLOG(level) << "File IO Test: "
 
-const uint8 kData[] = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
-                        0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f };
-const uint32 kDataSize = arraysize(kData);
+const uint8_t kData[] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+                         0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f};
+const uint32_t kDataSize = arraysize(kData);
 
-const uint8 kBigData[] = { 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77,
-                           0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff,
-                           0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77,
-                           0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff,
-                           0x00 };
-const uint32 kBigDataSize = arraysize(kBigData);
+const uint8_t kBigData[] = {
+    0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa,
+    0xbb, 0xcc, 0xdd, 0xee, 0xff, 0x00, 0x11, 0x22, 0x33, 0x44, 0x55,
+    0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff, 0x00};
+const uint32_t kBigDataSize = arraysize(kBigData);
 
 // Must be > kReadSize in cdm_file_io_impl.cc.
-const uint32 kLargeDataSize = 20 * 1024 + 7;
+const uint32_t kLargeDataSize = 20 * 1024 + 7;
 
 // Macros to help add test cases/steps.
 
@@ -76,7 +77,7 @@ FileIOTestRunner::FileIOTestRunner(const CreateFileIOCB& create_file_io_cb)
   // Generate |large_data_|.
   large_data_.resize(kLargeDataSize);
   for (size_t i = 0; i < kLargeDataSize; ++i)
-    large_data_[i] = i % kuint8max;
+    large_data_[i] = i % std::numeric_limits<uint8_t>::max();
 
   AddTests();
 }
@@ -472,8 +473,10 @@ FileIOTest::FileIOTest(const CreateFileIOCB& create_file_io_cb,
 
 FileIOTest::~FileIOTest() {}
 
-void FileIOTest::AddTestStep(
-    StepType type, Status status, const uint8* data, uint32 data_size) {
+void FileIOTest::AddTestStep(StepType type,
+                             Status status,
+                             const uint8_t* data,
+                             uint32_t data_size) {
   test_steps_.push_back(TestStep(type, status, data, data_size));
 }
 

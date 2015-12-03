@@ -26,7 +26,6 @@ typedef uint64_t uint64;
 // DEPRECATED: Use std::numeric_limits (from <limits>) or
 // (U)INT{8,16,32,64}_{MIN,MAX} in case of globals (and include <stdint.h>).
 // http://crbug.com/138542
-const uint8  kuint8max  =  0xFF;
 const uint32 kuint32max =  0xFFFFFFFF;
 const uint64 kuint64max =  0xFFFFFFFFFFFFFFFFULL;
 const  int32 kint32max  =  0x7FFFFFFF;

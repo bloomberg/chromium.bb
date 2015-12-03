@@ -5,7 +5,8 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_BASE_NODE_ORDINAL_H_
 #define SYNC_INTERNAL_API_PUBLIC_BASE_NODE_ORDINAL_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/ordinal.h"
 
@@ -13,12 +14,12 @@ namespace syncer {
 
 // A NodeOrdinal is an Ordinal whose internal value comes from the
 // ordinal_in_parent field of SyncEntity (see sync.proto).  It uses
-// the entire uint8 range for backwards compatibility with the old
+// the entire uint8_t range for backwards compatibility with the old
 // int64-based positioning.
 
 struct NodeOrdinalTraits {
-  static const uint8 kZeroDigit = 0;
-  static const uint8 kMaxDigit = kuint8max;
+  static const uint8_t kZeroDigit = 0;
+  static const uint8_t kMaxDigit = UINT8_MAX;
   static const size_t kMinLength = 8;
 };
 
@@ -43,7 +44,7 @@ static_assert(NodeOrdinal::kRadix == 256,
 // field of SyncEntity) to a NodeOrdinal.  This transformation
 // preserves the ordering relation: a < b under integer ordering if
 // and only if Int64ToNodeOrdinal(a) < Int64ToNodeOrdinal(b).
-SYNC_EXPORT_PRIVATE NodeOrdinal Int64ToNodeOrdinal(int64 x);
+SYNC_EXPORT_PRIVATE NodeOrdinal Int64ToNodeOrdinal(int64_t x);
 
 // The inverse of Int64ToNodeOrdinal.  This conversion is, in general,
 // lossy: NodeOrdinals can have arbitrary fidelity, while numeric
