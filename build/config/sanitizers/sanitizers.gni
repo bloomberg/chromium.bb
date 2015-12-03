@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/chrome_build.gni")
-
 declare_args() {
   # Compile for Address Sanitizer to find memory bugs.
   is_asan = false
@@ -39,6 +37,10 @@ declare_args() {
   # https://code.google.com/p/sawbuck/wiki/SyzyASanHowTo
   is_syzyasan = false
 
+  # Compile with Control Flow Integrity to protect virtual calls and casts.
+  # See http://clang.llvm.org/docs/ControlFlowIntegrity.html
+  is_cfi = false
+
   # By default, Control Flow Integrity will crash the program if it detects a
   # violation. Set this to true to print detailed diagnostics instead.
   use_cfi_diag = false
@@ -52,11 +54,6 @@ declare_args() {
 # declare_args block. User overrides are only applied at the end of a
 # declare_args block.
 declare_args() {
-  # Compile with Control Flow Integrity to protect virtual calls and casts.
-  # See http://clang.llvm.org/docs/ControlFlowIntegrity.html
-  is_cfi = is_linux && !is_chromeos && target_cpu == "x64" &&
-           is_chrome_branded && is_official_build
-
   # Use libc++ (buildtools/third_party/libc++ and
   # buildtools/third_party/libc++abi) instead of stdlibc++ as standard library.
   # This is intended to be used for instrumented builds.

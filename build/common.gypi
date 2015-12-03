@@ -847,13 +847,6 @@
           'enable_prod_wallet_service%': 1,
         }],
 
-        # Enable Control Flow Integrity for the official Linux Chrome.
-        # This triggers an LTO build that requires LLVM Gold plugin to be
-        # downloaded. See src/tools/clang/scripts/update.sh
-        ['OS=="linux" and target_arch=="x64" and buildtype=="Official" and branding=="Chrome" and chromeos==0', {
-          'cfi_vptr%': 1,
-        }],
-
         # Enable hotwording on Chrome-branded ChromeOS builds.
         ['branding=="Chrome" and chromeos==1', {
           'enable_hotwording%': 1,
