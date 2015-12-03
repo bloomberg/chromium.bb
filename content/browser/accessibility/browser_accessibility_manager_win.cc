@@ -84,7 +84,7 @@ void BrowserAccessibilityManagerWin::MaybeCallNotifyWinEvent(
     // This line and other LOG(WARNING) lines are temporary, to debug
     // flaky failures in DumpAccessibilityEvent* tests.
     // http://crbug.com/440579
-    LOG(WARNING) << "Not firing AX event because of no delegate";
+    DLOG(WARNING) << "Not firing AX event because of no delegate";
     return;
   }
 
@@ -93,7 +93,7 @@ void BrowserAccessibilityManagerWin::MaybeCallNotifyWinEvent(
 
   HWND hwnd = delegate->AccessibilityGetAcceleratedWidget();
   if (!hwnd) {
-    LOG(WARNING) << "Not firing AX event because of no hwnd";
+    DLOG(WARNING) << "Not firing AX event because of no hwnd";
     return;
   }
 
@@ -175,7 +175,7 @@ void BrowserAccessibilityManagerWin::NotifyAccessibilityEvent(
     BrowserAccessibility* node) {
   BrowserAccessibilityDelegate* root_delegate = GetDelegateFromRootManager();
   if (!root_delegate || !root_delegate->AccessibilityGetAcceleratedWidget()) {
-    LOG(WARNING) << "Not firing AX event because of no root_delegate or hwnd";
+    DLOG(WARNING) << "Not firing AX event because of no root_delegate or hwnd";
     return;
   }
 
@@ -255,9 +255,15 @@ void BrowserAccessibilityManagerWin::NotifyAccessibilityEvent(
     case ui::AX_EVENT_SELECTED_CHILDREN_CHANGED:
       event_id = EVENT_OBJECT_SELECTIONWITHIN;
       break;
-    case ui::AX_EVENT_TEXT_SELECTION_CHANGED:
+    case ui::AX_EVENT_DOCUMENT_SELECTION_CHANGED: {
+      // Fire the event on the object where the focus of the selection is.
+      int32 focus_id = GetTreeData().sel_focus_object_id;
+      BrowserAccessibility* focus_object = GetFromID(focus_id);
+      if (focus_object)
+        node = focus_object;
       event_id = IA2_EVENT_TEXT_CARET_MOVED;
       break;
+    }
     default:
       // Not all WebKit accessibility events result in a Windows
       // accessibility notification.
