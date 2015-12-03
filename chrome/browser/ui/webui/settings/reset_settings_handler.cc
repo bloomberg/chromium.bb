@@ -43,22 +43,30 @@
 namespace settings {
 
 ResetSettingsHandler::ResetSettingsHandler(
-    content::WebUIDataSource* html_source, content::WebUI* web_ui) {
-  google_brand::GetBrand(&brandcode_);
-  Profile* profile = Profile::FromWebUI(web_ui);
-  resetter_.reset(new ProfileResetter(profile));
-
+    Profile* profile, bool allow_powerwash) : profile_(profile) {
 #if defined(OS_CHROMEOS)
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  allow_powerwash_ = !connector->IsEnterpriseManaged() &&
-      !user_manager::UserManager::Get()->IsLoggedInAsGuest() &&
-      !user_manager::UserManager::Get()->IsLoggedInAsSupervisedUser();
-  html_source->AddBoolean("allowPowerwash", allow_powerwash_);
+  allow_powerwash_ = allow_powerwash;
 #endif  // defined(OS_CHROMEOS)
+  google_brand::GetBrand(&brandcode_);
 }
 
 ResetSettingsHandler::~ResetSettingsHandler() {}
+
+ResetSettingsHandler* ResetSettingsHandler::Create(
+    content::WebUIDataSource* html_source, Profile* profile) {
+  bool allow_powerwash = false;
+#if defined(OS_CHROMEOS)
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  allow_powerwash = !connector->IsEnterpriseManaged() &&
+      !user_manager::UserManager::Get()->IsLoggedInAsGuest() &&
+      !user_manager::UserManager::Get()->IsLoggedInAsSupervisedUser();
+  html_source->AddBoolean("allowPowerwash", allow_powerwash);
+#endif  // defined(OS_CHROMEOS)
+
+  // Inject |allow_powerwash| for testing.
+  return new ResetSettingsHandler(profile, allow_powerwash);
+}
 
 void ResetSettingsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("performResetProfileSettings",
@@ -104,14 +112,13 @@ void ResetSettingsHandler::OnResetProfileSettingsDone(
     bool send_feedback) {
   web_ui()->CallJavascriptFunction("SettingsResetPage.doneResetting");
   if (send_feedback && setting_snapshot_) {
-    Profile* profile = Profile::FromWebUI(web_ui());
-    ResettableSettingsSnapshot current_snapshot(profile);
+    ResettableSettingsSnapshot current_snapshot(profile_);
     int difference = setting_snapshot_->FindDifferentFields(current_snapshot);
     if (difference) {
       setting_snapshot_->Subtract(current_snapshot);
       std::string report = SerializeSettingsReport(*setting_snapshot_,
                                                    difference);
-      SendSettingsFeedback(report, profile);
+      SendSettingsFeedback(report, profile_);
     }
   }
   setting_snapshot_.reset();
@@ -119,9 +126,8 @@ void ResetSettingsHandler::OnResetProfileSettingsDone(
 
 void ResetSettingsHandler::OnShowResetProfileDialog(
     const base::ListValue* value) {
-  if (!resetter_->IsActive()) {
-    setting_snapshot_.reset(
-        new ResettableSettingsSnapshot(Profile::FromWebUI(web_ui())));
+  if (!GetResetter()->IsActive()) {
+    setting_snapshot_.reset(new ResettableSettingsSnapshot(profile_));
     setting_snapshot_->RequestShortcuts(base::Bind(
         &ResetSettingsHandler::UpdateFeedbackUI, AsWeakPtr()));
     UpdateFeedbackUI();
@@ -138,7 +144,7 @@ void ResetSettingsHandler::OnShowResetProfileDialog(
 
 void ResetSettingsHandler::OnHideResetProfileDialog(
     const base::ListValue* value) {
-  if (!resetter_->IsActive())
+  if (!GetResetter()->IsActive())
     setting_snapshot_.reset();
 }
 
@@ -149,8 +155,7 @@ void ResetSettingsHandler::OnSettingsFetched() {
 }
 
 void ResetSettingsHandler::ResetProfile(bool send_settings) {
-  DCHECK(resetter_);
-  DCHECK(!resetter_->IsActive());
+  DCHECK(!GetResetter()->IsActive());
 
   scoped_ptr<BrandcodedDefaultSettings> default_settings;
   if (config_fetcher_) {
@@ -165,7 +170,8 @@ void ResetSettingsHandler::ResetProfile(bool send_settings) {
   // installation, use default settings.
   if (!default_settings)
     default_settings.reset(new BrandcodedDefaultSettings);
-  resetter_->Reset(
+
+  GetResetter()->Reset(
       ProfileResetter::ALL,
       default_settings.Pass(),
       base::Bind(&ResetSettingsHandler::OnResetProfileSettingsDone,
@@ -179,12 +185,17 @@ void ResetSettingsHandler::UpdateFeedbackUI() {
   if (!setting_snapshot_)
     return;
   scoped_ptr<base::ListValue> list = GetReadableFeedbackForSnapshot(
-      Profile::FromWebUI(web_ui()),
-      *setting_snapshot_);
+      profile_, *setting_snapshot_);
   base::DictionaryValue feedback_info;
   feedback_info.Set("feedbackInfo", list.release());
   web_ui()->CallJavascriptFunction(
       "SettingsResetPage.setFeedbackInfo", feedback_info);
+}
+
+ProfileResetter* ResetSettingsHandler::GetResetter() {
+  if (!resetter_)
+    resetter_.reset(new ProfileResetter(profile_));
+  return resetter_.get();
 }
 
 #if defined(OS_CHROMEOS)

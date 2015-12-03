@@ -1591,6 +1591,7 @@
       'browser/ui/webui/options/language_options_handler_unittest.cc',
       'browser/ui/webui/options/pepper_flash_content_settings_utils_unittest.cc',
       'browser/ui/webui/options/sync_setup_handler_unittest.cc',
+      'browser/ui/webui/settings/reset_settings_handler_unittest.cc',
       'browser/ui/webui/settings/sync_handler_unittest.cc',
       'browser/ui/webui/signin/login_ui_service_unittest.cc',
       'browser/ui/webui/sync_internals_message_handler_unittest.cc',

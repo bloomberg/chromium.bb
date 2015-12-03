@@ -23,6 +23,7 @@ class WebUIDataSource;
 }
 
 class BrandcodeConfigFetcher;
+class Profile;
 class ProfileResetter;
 class ResettableSettingsSnapshot;
 
@@ -35,17 +36,24 @@ class ResetSettingsHandler
     : public SettingsPageUIHandler,
       public base::SupportsWeakPtr<ResetSettingsHandler> {
  public:
-  explicit ResetSettingsHandler(
-      content::WebUIDataSource* html_source, content::WebUI* web_ui);
   ~ResetSettingsHandler() override;
+
+  static ResetSettingsHandler* Create(
+      content::WebUIDataSource* html_source, Profile* profile);
 
   // WebUIMessageHandler implementation.
   void RegisterMessages() override;
 
- private:
+ protected:
+  ResetSettingsHandler(Profile* profile, bool allow_powerwash);
+
+  // Overriden in tests to substitute with a test version of ProfileResetter.
+  virtual ProfileResetter* GetResetter();
+
   // Javascript callback to start clearing data.
   void HandleResetProfileSettings(const base::ListValue* value);
 
+ private:
   // Closes the dialog once all requested settings has been reset.
   void OnResetProfileSettingsDone(bool send_feedback);
 
@@ -76,6 +84,8 @@ class ResetSettingsHandler
   // Whether factory reset can be performed.
   bool allow_powerwash_ = false;
 #endif  // defined(OS_CHROMEOS)
+
+  Profile* const profile_;
 
   scoped_ptr<ProfileResetter> resetter_;
 
