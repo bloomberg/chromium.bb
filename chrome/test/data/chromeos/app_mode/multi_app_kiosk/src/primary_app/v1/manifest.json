@@ -15,8 +15,8 @@
   "kiosk_enabled": true,
   "offline_enabled": true,
   "kiosk_secondary_apps": [
-    {"id": "ihplaomghjbeafnpnjkhppmfpnmdihgd"},
-    {"id": "fiehokkcgaojmbhfhlpiheggjhaedjoc"}
+    {"id": "emnbflhfbllbehnpjmjddklbkeeoaaeg"},
+    {"id": "blmjgfbajihimkjmepbhgmjbopjchlda"}
   ],
   "permissions": [
     "power"

@@ -117,19 +117,50 @@ const char kTestLocalFsKioskApp[] = "bmbpicmpniaclbbpdkfglgipkkebnbjf";
 // An app to test local access to file systems via the
 // chrome.fileSystem.requestFileSystem API.
 // Webstore data json is in
-//   chrome/test/data/chromeos/app_mode/webstore/inlineinstall/
-//       detail/aaedpojejpghjkedenggihopfhfijcko
+//     chrome/test/data/chromeos/app_mode/webstore/inlineinstall/
+//         detail/aaedpojejpghjkedenggihopfhfijcko
 const char kTestGetVolumeListKioskApp[] = "aaedpojejpghjkedenggihopfhfijcko";
 
-// Testing apps for testing kiosk multi-app feature.
-const char kTestPrimaryKioskApp[] = "ceobkcclegcliomogfoeoheahogoecgl";
-const char kTestSecondaryApp1[] = "ihplaomghjbeafnpnjkhppmfpnmdihgd";
-const char kTestSecondaryApp2[] = "fiehokkcgaojmbhfhlpiheggjhaedjoc";
-const char kTestSecondaryApp3[] = "aabnpdpieclcikafhdkkpldcaodmfoai";
-const char kTestSecondaryExtension[] = "imlgadjgphbjkaceoiapiephhgeofhic";
+// Testing apps for testing kiosk multi-app feature. All the crx files are in
+//    chrome/test/data/chromeos/app_mode/webstore/downloads.
+
+// Source files are in
+//     chrome/test/data/chromeos/app_mode/multi_app_kiosk/src/primary_app
+const char kTestPrimaryKioskApp[] = "dpejijbnadgcgmabkmcoajkgongfgnii";
+
+// Source files are in
+//     chrome/test/data/chromeos/app_mode/multi_app_kiosk/src/secondary_app_1
+const char kTestSecondaryApp1[] = "emnbflhfbllbehnpjmjddklbkeeoaaeg";
+
+// Source files are in
+//     chrome/test/data/chromeos/app_mode/multi_app_kiosk/src/secondary_app_2
+const char kTestSecondaryApp2[] = "blmjgfbajihimkjmepbhgmjbopjchlda";
+
+// Source files are in
+//     chrome/test/data/chromeos/app_mode/multi_app_kiosk/src/secondary_app_3
+const char kTestSecondaryApp3[] = "jkofhenkpndpdflehcjpcekgecjkpggg";
+
+// Source files are in
+//     chrome/test/data/chromeos/app_mode/multi_app_kiosk/src/
+//         secondary_extensions_1
+const char kTestSecondaryExtension[] = "gdmgkkoghcihimdfoabkefdkccllcfea";
+
+// Source files are in
+//     chrome/test/data/chromeos/app_mode/multi_app_kiosk/src/
+//         shared_module_primary_app
 const char kTestSharedModulePrimaryApp[] = "ofmeihgcmabfalhhgooajcijiaoekhkg";
+
+// Source files are in
+//     chrome/test/data/chromeos/app_mode/multi_app_kiosk/src/secondary_app
 const char kTestSecondaryApp[] = "bbmaiojbgkkmfaglfhaplfomobgojhke";
+
+// Source files are in
+//     chrome/test/data/chromeos/app_mode/multi_app_kiosk/src/shared_module
 const char kTestSharedModuleId[] = "biebhpdepndljbnkadldcbjkiedldnmn";
+
+// Source files are in
+//     chrome/test/data/chromeos/app_mode/multi_app_kiosk/src/
+//         secondary_extension
 const char kTestSecondaryExt[] = "kcoobopfcjmbfeppibolpaolbgbmkcjd";
 
 // Fake usb stick mount path.
@@ -203,14 +234,14 @@ void LockAndUnlock(scoped_ptr<base::Lock> lock) {
   lock->Release();
 }
 
-bool IsAppInstalled(const std::string& app_id) {
+bool IsAppInstalled(const std::string& app_id, const std::string& version) {
   Profile* app_profile = ProfileManager::GetPrimaryUserProfile();
   DCHECK(app_profile);
   const extensions::Extension* app =
       extensions::ExtensionSystem::Get(app_profile)
           ->extension_service()
           ->GetInstalledExtension(app_id);
-  return app != nullptr;
+  return app != nullptr && version == app->version()->GetString();
 }
 
 extensions::Manifest::Type GetAppType(const std::string& app_id) {
@@ -484,6 +515,9 @@ class KioskTest : public OobeBaseTest {
     settings_helper_.ReplaceProvider(kAccountsPrefDeviceLocalAccounts);
     owner_settings_service_ = settings_helper_.CreateOwnerSettingsService(
         ProfileManager::GetPrimaryUserProfile());
+
+    // Set up local cache for app update check.
+    CreateAndInitializeLocalCache();
   }
 
   void TearDownOnMainThread() override {
@@ -496,6 +530,19 @@ class KioskTest : public OobeBaseTest {
     // Clean up while main thread still runs.
     // See http://crbug.com/176659.
     KioskAppManager::Get()->CleanUp();
+  }
+
+  // The local cache is supposed to be initialized on chromeos device, and a
+  // ready flag file will be pre-created to mark the ready state, before chrome
+  // starts. In order for the tests to run without being on real chromeos
+  // device, we need to manually create this file.
+  void CreateAndInitializeLocalCache() {
+    base::FilePath extension_cache_dir;
+    CHECK(PathService::Get(chromeos::DIR_DEVICE_EXTENSION_LOCAL_CACHE,
+                           &extension_cache_dir));
+    base::FilePath cache_init_file = extension_cache_dir.Append(
+        extensions::LocalExtensionCache::kCacheReadyFlagFileName);
+    EXPECT_EQ(base::WriteFile(cache_init_file, "", 0), 0);
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -1328,8 +1375,6 @@ class KioskUpdateTest : public KioskTest {
     // next startup) and copy the list to our stub settings provider as well.
     settings_helper_.CopyStoredValue(kAccountsPrefDeviceLocalAccounts);
 
-    CreateAndInitializeLocalCache();
-
     KioskTest::SetUpOnMainThread();
   }
 
@@ -1425,9 +1470,9 @@ class KioskUpdateTest : public KioskTest {
     WaitForAppLaunchWithOptions(false, true);
 
     // Verify the primary app and the secondary apps are all installed.
-    EXPECT_EQ(primary_app.version, GetInstalledAppVersion().GetString());
+    EXPECT_TRUE(IsAppInstalled(primary_app.id, primary_app.version));
     for (const auto& app : secondary_apps) {
-      EXPECT_TRUE(IsAppInstalled(app.id));
+      EXPECT_TRUE(IsAppInstalled(app.id, app.version));
       EXPECT_EQ(GetAppType(app.id), app.type);
     }
   }
@@ -1484,7 +1529,24 @@ class KioskUpdateTest : public KioskTest {
     secondary_apps.push_back(shared_module);
 
     LaunchKioskWithSecondaryApps(primary_app, secondary_apps);
-    EXPECT_TRUE(IsAppInstalled(kTestSharedModuleId));
+    EXPECT_TRUE(IsAppInstalled(shared_module.id, shared_module.version));
+  }
+
+  void LaunchAppWithSharedModule() {
+    TestAppInfo primary_app(
+        kTestSharedModulePrimaryApp, "2.0.0",
+        std::string(kTestSharedModulePrimaryApp) + "-2.0.0.crx",
+        extensions::Manifest::TYPE_PLATFORM_APP);
+
+    std::vector<TestAppInfo> secondary_apps;
+    // Setting up FakeCWS for shared module is the same for shared module as
+    // for kiosk secondary apps.
+    TestAppInfo shared_module(kTestSharedModuleId, "1.0.0",
+                              std::string(kTestSharedModuleId) + "-1.0.0.crx",
+                              extensions::Manifest::TYPE_SHARED_MODULE);
+    secondary_apps.push_back(shared_module);
+
+    LaunchKioskWithSecondaryApps(primary_app, secondary_apps);
   }
 
  private:
@@ -1538,19 +1600,6 @@ class KioskUpdateTest : public KioskTest {
 
     DISALLOW_COPY_AND_ASSIGN(KioskAppExternalUpdateWaiter);
   };
-
-  // The local cache is supposed to be initialized on chromeos device, and a
-  // ready flag file will be pre-created to mark the ready state, before chrome
-  // starts. In order for the tests to run without being on real chromeos
-  // device, we need to manually create this file.
-  void CreateAndInitializeLocalCache() {
-    base::FilePath extension_cache_dir;
-    CHECK(PathService::Get(chromeos::DIR_DEVICE_EXTENSION_LOCAL_CACHE,
-                           &extension_cache_dir));
-    base::FilePath cache_init_file = extension_cache_dir.Append(
-        extensions::LocalExtensionCache::kCacheReadyFlagFileName);
-    EXPECT_EQ(base::WriteFile(cache_init_file, "", 0), 0);
-  }
 
   // Owned by DiskMountManager.
   KioskFakeDiskMountManager* fake_disk_mount_manager_;
@@ -1886,9 +1935,9 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PRE_UpdateMultiAppKioskRemoveOneApp) {
 // from its manifest.
 IN_PROC_BROWSER_TEST_F(KioskUpdateTest, UpdateMultiAppKioskRemoveOneApp) {
   set_test_app_id(kTestPrimaryKioskApp);
-  fake_cws()->SetUpdateCrx(
-      kTestPrimaryKioskApp,
-      std::string(kTestPrimaryKioskApp) + "-2.0.0-1app.crx", "2.0.0");
+  fake_cws()->SetUpdateCrx(kTestPrimaryKioskApp,
+                           std::string(kTestPrimaryKioskApp) + "-2.0.0.crx",
+                           "2.0.0");
   fake_cws()->SetNoUpdate(kTestSecondaryApp1);
   fake_cws()->SetNoUpdate(kTestSecondaryApp2);
 
@@ -1899,8 +1948,8 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, UpdateMultiAppKioskRemoveOneApp) {
 
   // Verify the secondary app kTestSecondaryApp1 is removed.
   EXPECT_EQ("2.0.0", GetInstalledAppVersion().GetString());
-  EXPECT_FALSE(IsAppInstalled(kTestSecondaryApp1));
-  EXPECT_TRUE(IsAppInstalled(kTestSecondaryApp2));
+  EXPECT_FALSE(IsAppInstalled(kTestSecondaryApp1, "1.0.0"));
+  EXPECT_TRUE(IsAppInstalled(kTestSecondaryApp2, "1.0.0"));
 }
 
 IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PRE_UpdateMultiAppKioskAddOneApp) {
@@ -1911,9 +1960,9 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PRE_UpdateMultiAppKioskAddOneApp) {
 // manifest.
 IN_PROC_BROWSER_TEST_F(KioskUpdateTest, UpdateMultiAppKioskAddOneApp) {
   set_test_app_id(kTestPrimaryKioskApp);
-  fake_cws()->SetUpdateCrx(
-      kTestPrimaryKioskApp,
-      std::string(kTestPrimaryKioskApp) + "-3.0.0-3app.crx", "3.0.0");
+  fake_cws()->SetUpdateCrx(kTestPrimaryKioskApp,
+                           std::string(kTestPrimaryKioskApp) + "-3.0.0.crx",
+                           "3.0.0");
   fake_cws()->SetNoUpdate(kTestSecondaryApp1);
   fake_cws()->SetNoUpdate(kTestSecondaryApp2);
   fake_cws()->SetUpdateCrx(kTestSecondaryApp3,
@@ -1927,9 +1976,9 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, UpdateMultiAppKioskAddOneApp) {
 
   // Verify the secondary app kTestSecondaryApp3 is installed.
   EXPECT_EQ("3.0.0", GetInstalledAppVersion().GetString());
-  EXPECT_TRUE(IsAppInstalled(kTestSecondaryApp1));
-  EXPECT_TRUE(IsAppInstalled(kTestSecondaryApp2));
-  EXPECT_TRUE(IsAppInstalled(kTestSecondaryApp3));
+  EXPECT_TRUE(IsAppInstalled(kTestSecondaryApp1, "1.0.0"));
+  EXPECT_TRUE(IsAppInstalled(kTestSecondaryApp2, "1.0.0"));
+  EXPECT_TRUE(IsAppInstalled(kTestSecondaryApp3, "1.0.0"));
 }
 
 IN_PROC_BROWSER_TEST_F(KioskUpdateTest, LaunchKioskAppWithSecondaryExtension) {
@@ -1961,27 +2010,41 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest,
   WaitForAppLaunchWithOptions(false, true);
 
   // Verify the secondary app is removed.
-  EXPECT_TRUE(IsAppInstalled(kTestSharedModuleId));
-  EXPECT_FALSE(IsAppInstalled(kTestSecondaryApp1));
+  EXPECT_TRUE(IsAppInstalled(kTestSharedModuleId, "1.0.0"));
+  EXPECT_FALSE(IsAppInstalled(kTestSecondaryApp1, "1.0.0"));
 }
 
 // This simulates the stand-alone ARC kiosk app case. The primary app has a
 // shared ARC runtime but no secondary apps.
 IN_PROC_BROWSER_TEST_F(KioskUpdateTest, LaunchAppWithSharedModuleNoSecondary) {
-  TestAppInfo primary_app(
-      kTestSharedModulePrimaryApp, "2.0.0",
-      std::string(kTestSharedModulePrimaryApp) + "-2.0.0.crx",
-      extensions::Manifest::TYPE_PLATFORM_APP);
+  LaunchAppWithSharedModule();
+}
 
-  std::vector<TestAppInfo> secondary_apps;
-  // Setting up FakeCWS for shared module is the same for shared module as
-  // for kiosk secondary apps.
-  TestAppInfo shared_module(kTestSharedModuleId, "1.0.0",
-                            std::string(kTestSharedModuleId) + "-1.0.0.crx",
-                            extensions::Manifest::TYPE_SHARED_MODULE);
-  secondary_apps.push_back(shared_module);
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PRE_LaunchAppWithUpdatedModule) {
+  LaunchAppWithSharedModule();
+  // Verify the shared module is installed with version 1.0.0.
+  EXPECT_TRUE(IsAppInstalled(kTestSharedModuleId, "1.0.0"));
+}
 
-  LaunchKioskWithSecondaryApps(primary_app, secondary_apps);
+// This simulates the case the shared module is updated to a newer version.
+// See crbug.com/555083.
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest, LaunchAppWithUpdatedModule) {
+  // No update for primary app, while the shared module is set up to a new
+  // version on cws.
+  set_test_app_id(kTestSharedModulePrimaryApp);
+  fake_cws()->SetNoUpdate(kTestSharedModulePrimaryApp);
+  fake_cws()->SetUpdateCrx(kTestSharedModuleId,
+                           std::string(kTestSharedModuleId) + "-2.0.0.crx",
+                           "2.0.0");
+
+  StartUIForAppLaunch();
+  SimulateNetworkOnline();
+  LaunchApp(test_app_id(), false);
+  WaitForAppLaunchWithOptions(false, true);
+
+  // Verify the shared module is updated to the new version after primary app
+  // is launched.
+  EXPECT_TRUE(IsAppInstalled(kTestSharedModuleId, "2.0.0"));
 }
 
 IN_PROC_BROWSER_TEST_F(KioskUpdateTest,
