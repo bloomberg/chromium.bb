@@ -66,6 +66,25 @@ cr.define('settings_checkbox', function() {
         assertFalse(testElement.checked);
         assertFalse(testElement.$.checkbox.checked);
       });
+
+      test('numerical pref', function() {
+        var prefNum = {
+          key: 'test',
+          type: chrome.settingsPrivate.PrefType.NUMBER,
+          value: 1
+        };
+
+        testElement.set('pref', prefNum);
+        assertTrue(testElement.checked);
+
+        testElement.removeAttribute('checked');
+        assertFalse(testElement.checked);
+        assertEquals(0, prefNum.value);
+
+        testElement.setAttribute('checked', '');
+        assertTrue(testElement.checked);
+        assertEquals(1, prefNum.value);
+      });
     });
   }
 

@@ -87,7 +87,16 @@ Polymer({
    * @private
    */
   checkedChanged_: function() {
-    this.set('pref.value', this.getNewValue_(this.checked));
+    if (!this.pref)
+      return;
+    /** @type {boolean} */ var newValue = this.getNewValue_(this.checked);
+    // Ensure that newValue is the correct type for the pref type, either
+    // a boolean or a number.
+    if (this.pref.type == chrome.settingsPrivate.PrefType.NUMBER) {
+      this.set('pref.value', newValue ? 1 : 0);
+      return;
+    }
+    this.set('pref.value', newValue);
   },
 
   /**
