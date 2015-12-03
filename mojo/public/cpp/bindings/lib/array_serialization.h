@@ -7,6 +7,7 @@
 
 #include <string.h>  // For |memcpy()|.
 
+#include <utility>
 #include <vector>
 
 #include "mojo/public/c/system/macros.h"
@@ -326,7 +327,7 @@ inline void SerializeArray_(
         internal::Array_Data<F>::New(input.size(), buf);
     if (result) {
       internal::ArraySerializer<E, F>::SerializeElements(
-          internal::Forward(input), buf, result, validate_params);
+          std::move(input), buf, result, validate_params);
     }
     *output = result;
   } else {

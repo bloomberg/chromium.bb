@@ -47,19 +47,18 @@
 {%-     if kind|is_array_kind %}
   const mojo::internal::ArrayValidateParams {{name}}_validate_params(
       {{kind|get_array_validate_params_ctor_args|indent(10)}});
-  mojo::SerializeArray_(mojo::internal::Forward({{input_field}}), {{buffer}},
+  mojo::SerializeArray_(std::move({{input_field}}), {{buffer}},
       &{{output}}->{{name}}.ptr, &{{name}}_validate_params);
 {%-     elif kind|is_map_kind %}
   const mojo::internal::ArrayValidateParams {{name}}_validate_params(
       {{kind.value_kind|get_map_validate_params_ctor_args|indent(10)}});
-  mojo::SerializeMap_(
-      mojo::internal::Forward({{input_field}}), {{buffer}}, &{{output}}->{{name}}.ptr,
-      &{{name}}_validate_params);
+  mojo::SerializeMap_(std::move({{input_field}}), {{buffer}},
+      &{{output}}->{{name}}.ptr, &{{name}}_validate_params);
 {%-     elif kind|is_union_kind %}
   internal::{{kind.name}}_Data* {{name}}_ptr = &{{output}}->{{name}};
-  SerializeUnion_(mojo::internal::Forward({{input_field}}), {{buffer}}, &{{name}}_ptr, true);
+  SerializeUnion_(std::move({{input_field}}), {{buffer}}, &{{name}}_ptr, true);
 {%-     else %}
-  Serialize_(mojo::internal::Forward({{input_field}}), {{buffer}}, &{{output}}->{{name}}.ptr);
+  Serialize_(std::move({{input_field}}), {{buffer}}, &{{output}}->{{name}}.ptr);
 {%-     endif %}
 {%-     if not kind|is_nullable_kind %}
   MOJO_INTERNAL_DLOG_SERIALIZATION_WARNING(

@@ -5,6 +5,8 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_CALLBACK_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_CALLBACK_H_
 
+#include <utility>
+
 #include "mojo/public/cpp/bindings/lib/callback_internal.h"
 #include "mojo/public/cpp/bindings/lib/shared_ptr.h"
 #include "mojo/public/cpp/bindings/lib/template_util.h"
@@ -24,7 +26,11 @@ class Callback<void(Args...)> {
   struct Runnable {
     virtual ~Runnable() {}
     virtual void Run(
-        // ForwardType ensures String is passed as a const reference.
+        // ForwardType ensures String is passed as a const reference. Can't use
+        // universal refs (Args&&) here since this method itself isn't templated
+        // because it is a virtual interface. So we have to take the arguments
+        // all by value (except String which we take as a const reference due to
+        // ForwardType).
         typename internal::Callback_ParamTraits<Args>::ForwardType...)
         const = 0;
   };
@@ -52,11 +58,13 @@ class Callback<void(Args...)> {
       typename internal::Callback_ParamTraits<Args>::ForwardType...))
       : sink_(new FunctionPtrAdapter(function_ptr)) {}
 
-  // Executes the callback function, invoking Pass() on move-only types.
+  // Executes the callback function.
   void Run(typename internal::Callback_ParamTraits<Args>::ForwardType... args)
       const {
     if (sink_.get())
-      sink_->Run(internal::Forward(args)...);
+      sink_->Run(std::forward<
+                 typename internal::Callback_ParamTraits<Args>::ForwardType>(
+          args)...);
   }
 
   bool is_null() const { return !sink_.get(); }
@@ -73,7 +81,9 @@ class Callback<void(Args...)> {
     virtual void Run(
         typename internal::Callback_ParamTraits<Args>::ForwardType... args)
         const override {
-      sink.Run(internal::Forward(args)...);
+      sink.Run(std::forward<
+               typename internal::Callback_ParamTraits<Args>::ForwardType>(
+          args)...);
     }
     Sink sink;
   };
@@ -85,23 +95,32 @@ class Callback<void(Args...)> {
     virtual void Run(
         typename internal::Callback_ParamTraits<Args>::ForwardType... args)
         const override {
-      sink.operator()(internal::Forward(args)...);
+      sink.operator()(
+          std::forward<
+              typename internal::Callback_ParamTraits<Args>::ForwardType>(
+              args)...);
     }
     Sink sink;
   };
 
   // Adapts a function pointer.
   struct FunctionPtrAdapter : public Runnable {
-    explicit FunctionPtrAdapter(void (*function_ptr)(
-        typename internal::Callback_ParamTraits<Args>::ForwardType...))
+   private:
+    using FunctionPtr =
+        void (*)(typename internal::Callback_ParamTraits<Args>::ForwardType...);
+
+   public:
+    explicit FunctionPtrAdapter(FunctionPtr function_ptr)
         : function_ptr(function_ptr) {}
     virtual void Run(
         typename internal::Callback_ParamTraits<Args>::ForwardType... args)
         const override {
-      (*function_ptr)(internal::Forward(args)...);
+      (*function_ptr)(
+          std::forward<
+              typename internal::Callback_ParamTraits<Args>::ForwardType>(
+              args)...);
     }
-    void (*function_ptr)(
-        typename internal::Callback_ParamTraits<Args>::ForwardType...);
+    FunctionPtr function_ptr;
   };
 
   internal::SharedPtr<Runnable> sink_;

@@ -60,18 +60,6 @@ struct IsMoveOnlyType {
       sizeof(Test<T>(0)) == sizeof(YesType) && !IsConst<T>::value;
 };
 
-// Returns a reference to |t| when T is not a move-only type.
-template <typename T>
-typename EnableIf<!IsMoveOnlyType<T>::value, T>::type& Forward(T& t) {
-  return t;
-}
-
-// Returns the result of t.Pass() when T is a move-only type.
-template <typename T>
-typename EnableIf<IsMoveOnlyType<T>::value, T>::type Forward(T& t) {
-  return t.Pass();
-}
-
 // This goop is a trick used to implement a template that can be used to
 // determine if a given class is the base class of another given class.
 template <typename, typename>
