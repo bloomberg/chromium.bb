@@ -119,6 +119,7 @@ source_set("shared") {
 
   deps = [
     "//base",
+    "//components/keyed_service/core",
     "//components/variations",
     "//skia",
     "//sync",

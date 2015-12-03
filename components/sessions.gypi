@@ -90,6 +90,7 @@
             '../ui/gfx/gfx.gyp:gfx_geometry',
             '../url/url.gyp:url_lib',
             'keyed_service_core',
+            'variations',
           ],
           'include_dirs': [
             '..',
@@ -138,6 +139,7 @@
             '../ui/gfx/gfx.gyp:gfx_geometry',
             '../url/url.gyp:url_lib',
             'keyed_service_core',
+            'variations',
           ],
           'include_dirs': [
             '..',
