@@ -35,16 +35,6 @@
       desktop environments.
     </description>
 
-    <enum name="version">
-      <description summary="latest protocol version">
-	The 'current' member of this enum gives the version of the
-	protocol.  Implementations can compare this to the version
-	they implement using static_assert to ensure the protocol and
-	implementation versions match.
-      </description>
-      <entry name="current" value="5" summary="Always the latest version"/>
-    </enum>
-
     <enum name="error">
       <entry name="role" value="0" summary="given wl_surface has another role"/>
       <entry name="defunct_surfaces" value="1" summary="xdg_shell was destroyed before children"/>
@@ -60,17 +50,6 @@
 	still alive created by this xdg_shell object instance is illegal
 	and will result in a protocol error.
       </description>
-    </request>
-
-    <request name="use_unstable_version">
-      <description summary="enable use of this unstable version">
-	Negotiate the unstable version of the interface.  This
-	mechanism is in place to ensure client and server agree on the
-	unstable versions of the protocol that they speak or exit
-	cleanly if they don't agree.  This request will go away once
-	the xdg-shell protocol is stable.
-      </description>
-      <arg name="version" type="int"/>
     </request>
 
     <request name="get_xdg_surface">
