@@ -20,6 +20,9 @@ if (is_chromeos) {
 if (enable_webrtc) {
   sources += gypi_values.webrtc_schema_files
 }
+if (!is_android) {
+  sources += gypi_values.non_android_schema_files
+}
 
 uncompiled_sources = gypi_values.main_non_compiled_schema_files
 

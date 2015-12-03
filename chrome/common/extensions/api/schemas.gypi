@@ -44,7 +44,6 @@
       'feedback_private.idl',
       'file_system.idl',
       'font_settings.json',
-      'gcd_private.idl',
       'gcm.json',
       'hangouts_private.idl',
       'history.json',
@@ -56,10 +55,8 @@
       'inline_install_private.idl',
       'instance_id.json',
       'language_settings_private.idl',
-      'launcher_page.idl',
       'location.idl',
       'manifest_types.json',
-      'mdns.idl',
       'media_galleries.idl',
       'metrics_private.json',
       'notification_provider.idl',
@@ -136,6 +133,13 @@
       'media_player_private.json',
     ],
 
+    # Non Android schemas.
+    'non_android_schema_files': [
+      'gcd_private.idl',
+      'launcher_page.idl',
+      'mdns.idl',
+    ],
+
     'webrtc_schema_files': [
       'cast_streaming_receiver_session.idl',
       'cast_streaming_rtp_stream.idl',
@@ -171,6 +175,11 @@
       ['enable_webrtc==1', {
         'schema_files': [
           '<@(webrtc_schema_files)',
+        ],
+      }],
+      ['OS!="android"', {
+        'schema_files': [
+          '<@(non_android_schema_files)',
         ],
       }],
     ],

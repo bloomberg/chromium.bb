@@ -111,6 +111,13 @@ source_set("extensions") {
     }
   }
 
+  if (!is_android) {
+    sources +=
+        rebase_path(gypi_values.chrome_browser_extensions_non_android_sources,
+                    ".",
+                    "//chrome")
+  }
+
   if (use_ash) {
     sources += [
       "api/tabs/ash_panel_contents.cc",
