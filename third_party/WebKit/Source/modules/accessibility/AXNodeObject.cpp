@@ -1625,11 +1625,8 @@ bool AXNodeObject::nameFromLabelElement() const
         return false;
 
     // Step 2A from: http://www.w3.org/TR/accname-aam-1.1
-    if (layoutObject()
-        && layoutObject()->style()->visibility() != VISIBLE
-        && !equalIgnoringCase(getAttribute(aria_hiddenAttr), "false")) {
+    if (isHiddenForTextAlternativeCalculation())
         return false;
-    }
 
     // Step 2B from: http://www.w3.org/TR/accname-aam-1.1
     WillBeHeapVector<RawPtrWillBeMember<Element>> elements;
@@ -2464,7 +2461,8 @@ String AXNodeObject::description(AXNameFrom nameFrom, AXDescriptionFrom& descrip
         for (size_t i = 0; i < relatedObjects.size(); i++)
             descriptionObjects->append(relatedObjects[i]->object);
     }
-    return result;
+
+    return collapseWhitespace(result);
 }
 
 // Based on http://rawgit.com/w3c/aria/master/html-aam/html-aam.html#accessible-name-and-description-calculation

@@ -204,7 +204,7 @@ IN_PROC_BROWSER_TEST_F(AndroidGranularityMovementBrowserTest,
   BrowserAccessibility* pre = root->PlatformGetChild(0);
   ASSERT_EQ(0U, pre->PlatformChildCount());
 
-  ASSERT_EQ(base::ASCIIToUTF16("'One, ', 'two, ', 'three!'"),
+  ASSERT_EQ(base::ASCIIToUTF16("'One,', 'two,', 'three!'"),
             TraverseNodeAtGranularity(pre, GRANULARITY_LINE));
 }
 

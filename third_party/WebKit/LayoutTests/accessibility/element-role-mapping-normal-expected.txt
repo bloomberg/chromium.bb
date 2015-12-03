@@ -130,7 +130,9 @@ AXRole: AXWebArea
             AXRole: AXStaticText "Text that appears under aside"
                 AXRole: AXInlineTextBox "Text that appears under aside"
     AXRole: AXPre
-        AXRole: AXStaticText "Text in a    pre element "
+        AXRole: AXStaticText "Text in a    pre
+element
+"
             AXRole: AXInlineTextBox "Text in a    pre"
             AXRole: AXInlineTextBox "
 "

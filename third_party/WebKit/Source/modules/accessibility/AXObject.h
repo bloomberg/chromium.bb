@@ -929,7 +929,9 @@ protected:
     LayoutRect m_explicitElementRect;
 
     // Used only inside textAlternative():
+    static String collapseWhitespace(const String&);
     static String recursiveTextAlternative(const AXObject&, bool inAriaLabelledByTraversal, AXObjectSet& visited);
+    bool isHiddenForTextAlternativeCalculation() const;
     String ariaTextAlternative(bool recursive, bool inAriaLabelledByTraversal, AXObjectSet& visited, AXNameFrom&, AXRelatedObjectVector*, NameSources*, bool* foundTextAlternative) const;
     String textFromElements(bool inAriaLabelledByTraversal, AXObjectSet& visited, WillBeHeapVector<RawPtrWillBeMember<Element>>& elements, AXRelatedObjectVector* relatedObjects) const;
     void tokenVectorFromAttribute(Vector<String>&, const QualifiedName&) const;

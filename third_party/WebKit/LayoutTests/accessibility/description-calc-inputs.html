@@ -108,6 +108,25 @@ test(function(t) {
 }, "placeholder overrides title as the accessible description.");
 </script>
 
+<div class="container">
+    <input id="text8" type="text" aria-describedby="describedby8">
+    <p id="describedby8">
+        Described
+        <br>
+        By
+    </p>
+</div>
+
+<script>
+test(function(t) {
+    var axTextInput8 = accessibilityController.accessibleElementById("text8");
+    assert_equals(axTextInput8.name, "");
+    assert_equals(axTextInput8.nameFrom, "");
+    assert_equals(axTextInput8.description, "Described By");
+    assert_equals(axTextInput8.descriptionFrom, "relatedElement");
+}, "aria-describedby does not include newlines.");
+</script>
+
 <script>
 if (window.testRunner)
     document.body.className = "hideAllContainers";

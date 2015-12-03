@@ -676,6 +676,19 @@ bool AXObject::isPresentationalChild() const
     return m_cachedIsPresentationalChild;
 }
 
+// Simplify whitespace, but preserve a single leading and trailing whitespace character if it's present.
+// static
+String AXObject::collapseWhitespace(const String& str)
+{
+    StringBuilder result;
+    if (!str.isEmpty() && isHTMLSpace<UChar>(str[0]))
+        result.append(' ');
+    result.append(str.simplifyWhiteSpace(isHTMLSpace<UChar>));
+    if (!str.isEmpty() && isHTMLSpace<UChar>(str[str.length() - 1]))
+        result.append(' ');
+    return result.toString();
+}
+
 String AXObject::computedName() const
 {
     AXNameFrom nameFrom;
@@ -689,8 +702,9 @@ String AXObject::name(AXNameFrom& nameFrom, AXObject::AXObjectVector* nameObject
     AXRelatedObjectVector relatedObjects;
     String text = textAlternative(false, false, visited, nameFrom, &relatedObjects, nullptr);
 
-    if (!node() || !isHTMLBRElement(node()))
-        text = text.simplifyWhiteSpace(isHTMLSpace<UChar>, WTF::DoNotStripWhiteSpace);
+    AccessibilityRole role = roleValue();
+    if (!node() || (!isHTMLBRElement(node()) && role != StaticTextRole && role != InlineTextBoxRole))
+        text = collapseWhitespace(text);
 
     if (nameObjects) {
         nameObjects->clear();
@@ -716,6 +730,28 @@ String AXObject::recursiveTextAlternative(const AXObject& axObj, bool inAriaLabe
     return axObj.textAlternative(true, inAriaLabelledByTraversal, visited, tmpNameFrom, nullptr, nullptr);
 }
 
+bool AXObject::isHiddenForTextAlternativeCalculation() const
+{
+    if (equalIgnoringCase(getAttribute(aria_hiddenAttr), "false"))
+        return false;
+
+    if (layoutObject())
+        return layoutObject()->style()->visibility() != VISIBLE;
+
+    // This is an obscure corner case: if a node has no LayoutObject, that means it's not rendered,
+    // but we still may be exploring it as part of a text alternative calculation, for example if it
+    // was explicitly referenced by aria-labelledby. So we need to explicitly call the style resolver
+    // to check whether it's invisible or display:none, rather than relying on the style cached in the
+    // LayoutObject.
+    Document* doc = document();
+    if (doc && doc->frame() && node() && node()->isElementNode()) {
+        RefPtr<ComputedStyle> style = doc->ensureStyleResolver().styleForElement(toElement(node()));
+        return style->display() == NONE || style->visibility() != VISIBLE;
+    }
+
+    return false;
+}
+
 String AXObject::ariaTextAlternative(bool recursive, bool inAriaLabelledByTraversal, AXObjectSet& visited, AXNameFrom& nameFrom, AXRelatedObjectVector* relatedObjects, NameSources* nameSources, bool* foundTextAlternative) const
 {
     String textAlternative;
@@ -724,9 +760,8 @@ String AXObject::ariaTextAlternative(bool recursive, bool inAriaLabelledByTraver
 
     // Step 2A from: http://www.w3.org/TR/accname-aam-1.1
     // If you change this logic, update AXNodeObject::nameFromLabelElement, too.
-    if (!recursive && layoutObject()
-        && layoutObject()->style()->visibility() != VISIBLE
-        && !equalIgnoringCase(getAttribute(aria_hiddenAttr), "false")) {
+    if (!inAriaLabelledByTraversal && isHiddenForTextAlternativeCalculation()) {
+        *foundTextAlternative = true;
         return String();
     }
 
