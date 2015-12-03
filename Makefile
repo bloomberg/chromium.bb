@@ -70,6 +70,7 @@ SRC_RESOURCES= \
 	src/images/2x/camera_button_video.png \
 	src/images/2x/gallery_button_back.png \
 	src/images/2x/gallery_button_delete.png \
+        src/images/2x/dialog_button_close.png \
 	src/images/browser_button_export.png \
 	src/images/browser_button_print.png \
 	src/images/camera_app_icons_128.png \
@@ -89,6 +90,7 @@ SRC_RESOURCES= \
 	src/images/camera_button_video.png \
 	src/images/gallery_button_back.png \
 	src/images/gallery_button_delete.png \
+        src/images/dialog_button_close.png \
 	src/images/no_camera.svg \
 	src/images/spinner.svg \
 	src/js/background.js \

@@ -41,6 +41,13 @@ camera.views.Dialog = function(context, router) {
       document.querySelector('#dialog #dialog-negative-button');
 
   /**
+   * @type {HTMLButtonElement}
+   * @private
+   */
+  this.closeButton_ =
+      document.querySelector('#dialog #dialog-close-button');
+
+  /**
    * @type {HTMLElement}
    * @private
    */
@@ -55,6 +62,8 @@ camera.views.Dialog = function(context, router) {
       'click', this.onPositiveButtonClicked_.bind(this));
   this.negativeButton_.addEventListener(
       'click', this.onNegativeButtonClicked_.bind(this));
+  this.closeButton_.addEventListener(
+      'click', this.onCloseButtonClicked_.bind(this));
 };
 
 /**
@@ -116,6 +125,15 @@ camera.views.Dialog.prototype.onPositiveButtonClicked_ = function(event) {
  * @private
  */
 camera.views.Dialog.prototype.onNegativeButtonClicked_ = function(event) {
+  this.router.back({isPositive: false});
+};
+
+/**
+ * Handles clicking on the close button.
+ * @param {Event} event Click event.
+ * @private
+ */
+camera.views.Dialog.prototype.onCloseButtonClicked_ = function(event) {
   this.router.back({isPositive: false});
 };
 
