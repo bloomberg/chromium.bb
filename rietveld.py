@@ -431,18 +431,23 @@ class Rietveld(object):
         except urllib2.URLError, e:
           if retry >= (self._maxtries - 1):
             raise
-          if (not 'Name or service not known' in e.reason and
-              not 'EOF occurred in violation of protocol' in e.reason and
-              not 'timed out' in e.reason and
-              not 'The handshake operation timed out' in e.reason and
-              # On windows we hit weird bug http://crbug.com/537417
-              # with message '[Errno 10060] A connection attempt failed...'
-              not (sys.platform.startswith('win') and
-                   isinstance(e.reason, socket.error) and
-                   e.reason.errno == errno.ETIMEDOUT
-                )
-              ):
-            # Usually internal GAE flakiness.
+
+          def is_transient():
+            # The idea here is to retry if the error isn't permanent.
+            # Unfortunately, there are so many different possible errors,
+            # that we end up enumerating those that are known to us to be
+            # transient.
+            # The reason can be a string or another exception, e.g.,
+            # socket.error or whatever else.
+            reason_as_str = str(e.reason)
+            for retry_anyway in [
+                'Name or service not known',
+                'EOF occurred in violation of protocol',
+                'timed out']:
+              if retry_anyway in reason_as_str:
+                return True
+            return False  # Assume permanent otherwise.
+          if not is_transient():
             raise
         except socket.error, e:
           if retry >= (self._maxtries - 1):
