@@ -1455,7 +1455,7 @@ bool FrameLoader::shouldTreatURLAsSameAsCurrent(const KURL& url) const
 
 bool FrameLoader::shouldTreatURLAsSrcdocDocument(const KURL& url) const
 {
-    if (!equalIgnoringCase(url.string(), "about:srcdoc"))
+    if (!url.isAboutSrcdocURL())
         return false;
     HTMLFrameOwnerElement* ownerElement = m_frame->deprecatedLocalOwner();
     if (!isHTMLIFrameElement(ownerElement))

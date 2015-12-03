@@ -138,6 +138,7 @@ public:
     bool protocolIsInHTTPFamily() const;
     bool isLocalFile() const;
     bool isAboutBlankURL() const; // Is exactly about:blank.
+    bool isAboutSrcdocURL() const; // Is exactly about:srcdoc.
 
     bool setProtocol(const String&);
     void setHost(const String&);
@@ -212,6 +213,7 @@ PLATFORM_EXPORT bool operator!=(const String&, const KURL&);
 PLATFORM_EXPORT bool equalIgnoringFragmentIdentifier(const KURL&, const KURL&);
 
 PLATFORM_EXPORT const KURL& blankURL();
+PLATFORM_EXPORT const KURL& srcdocURL();
 
 // Functions to do URL operations on strings.
 // These are operations that aren't faster on a parsed URL.

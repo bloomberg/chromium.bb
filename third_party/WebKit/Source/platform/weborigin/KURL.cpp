@@ -186,6 +186,17 @@ bool KURL::isAboutBlankURL() const
     return *this == blankURL();
 }
 
+const KURL& srcdocURL()
+{
+    DEFINE_STATIC_LOCAL(KURL, staticSrcdocURL, (ParsedURLString, "about:srcdoc"));
+    return staticSrcdocURL;
+}
+
+bool KURL::isAboutSrcdocURL() const
+{
+    return *this == srcdocURL();
+}
+
 String KURL::elidedString() const
 {
     if (string().length() <= 1024)

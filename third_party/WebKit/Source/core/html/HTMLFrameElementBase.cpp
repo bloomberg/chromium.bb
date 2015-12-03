@@ -111,7 +111,7 @@ void HTMLFrameElementBase::parseAttribute(const QualifiedName& name, const Atomi
 {
     if (name == srcdocAttr) {
         if (!value.isNull()) {
-            setLocation("about:srcdoc");
+            setLocation(srcdocURL().string());
         } else {
             const AtomicString& srcValue = fastGetAttribute(srcAttr);
             if (!srcValue.isNull())
