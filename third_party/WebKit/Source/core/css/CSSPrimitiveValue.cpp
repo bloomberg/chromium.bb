@@ -300,17 +300,11 @@ void CSSPrimitiveValue::init(PassRefPtrWillBeRawPtr<CSSCalcValue> c)
 
 CSSPrimitiveValue::~CSSPrimitiveValue()
 {
-    cleanup();
-}
-
-void CSSPrimitiveValue::cleanup()
-{
+#if !ENABLE(OILPAN)
     switch (type()) {
     case UnitType::Calc:
         // We must not call deref() when oilpan is enabled because m_value.calc is traced.
-#if !ENABLE(OILPAN)
         m_value.calc->deref();
-#endif
         break;
     case UnitType::CalcPercentageWithNumber:
     case UnitType::CalcPercentageWithLength:
@@ -355,6 +349,7 @@ void CSSPrimitiveValue::cleanup()
         cssTextCache().remove(this);
         m_hasCachedCSSText = false;
     }
+#endif
 }
 
 double CSSPrimitiveValue::computeSeconds() const

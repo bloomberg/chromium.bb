@@ -204,8 +204,6 @@ public:
 
     ~CSSPrimitiveValue();
 
-    void cleanup();
-
     UnitType typeWithCalcResolved() const;
 
     double computeDegrees() const;
