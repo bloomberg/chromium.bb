@@ -24,6 +24,7 @@ include_rules = [
   "+mojo/application",
   "+mojo/cc",
   "+mojo/common",
+  "+mojo/converters/blink",
   "+mojo/converters/geometry",
   "+mojo/converters/input_events",
   "+mojo/converters/network",

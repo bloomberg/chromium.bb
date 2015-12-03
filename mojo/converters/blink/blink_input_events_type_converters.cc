@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/html_viewer/blink_input_events_type_converters.h"
+#include "mojo/converters/blink/blink_input_events_type_converters.h"
 
 #include "base/logging.h"
 #include "base/time/time.h"
@@ -117,8 +117,9 @@ scoped_ptr<blink::WebInputEvent> BuildWebKeyboardEvent(
 
   switch (event->action) {
     case mus::mojom::EVENT_TYPE_KEY_PRESSED:
-      web_event->type = event->key_data->is_char ? blink::WebInputEvent::Char :
-          blink::WebInputEvent::RawKeyDown;
+      web_event->type = event->key_data->is_char
+                            ? blink::WebInputEvent::Char
+                            : blink::WebInputEvent::RawKeyDown;
       break;
     case mus::mojom::EVENT_TYPE_KEY_RELEASED:
       web_event->type = blink::WebInputEvent::KeyUp;
@@ -204,7 +205,8 @@ TypeConverter<scoped_ptr<blink::WebInputEvent>, mus::mojom::EventPtr>::Convert(
       if (event->pointer_data &&
           event->pointer_data->kind == mus::mojom::POINTER_KIND_MOUSE) {
         return BuildWebMouseEventFrom(event);
-    }
+      }
+      return nullptr;
     case mus::mojom::EVENT_TYPE_WHEEL:
       return BuildWebMouseWheelEventFrom(event);
     case mus::mojom::EVENT_TYPE_KEY_PRESSED:

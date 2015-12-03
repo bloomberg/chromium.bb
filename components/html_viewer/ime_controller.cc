@@ -4,9 +4,9 @@
 
 #include "components/html_viewer/ime_controller.h"
 
-#include "components/html_viewer/blink_input_events_type_converters.h"
 #include "components/html_viewer/blink_text_input_type_converters.h"
 #include "components/mus/public/cpp/window.h"
+#include "mojo/converters/blink/blink_input_events_type_converters.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "third_party/WebKit/public/web/WebWidget.h"
 

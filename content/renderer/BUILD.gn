@@ -78,11 +78,15 @@ source_set("renderer") {
 
   if (use_aura) {
     sources += [
+      "compositor_mus_connection.cc",
+      "compositor_mus_connection.h",
       "render_widget_mus_connection.cc",
       "render_widget_mus_connection.h",
       "render_widget_window_tree_client_factory.cc",
       "render_widget_window_tree_client_factory.h",
     ]
+
+    deps += [ "//mojo/converters/blink" ]
   }
 
   if (is_mac) {

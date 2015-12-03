@@ -1,0 +1,24 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+component("blink") {
+  output_name = "mojo_blink_lib"
+
+  sources = [
+    "blink_input_events_type_converters.cc",
+    "blink_input_events_type_converters.h",
+    "mojo_blink_export.h",
+  ]
+
+  defines = [ "MOJO_CONVERTERS_BLINK_IMPLEMENTATION" ]
+
+  deps = [
+    "//base",
+    "//components/mus/public/interfaces",
+    "//mojo/environment:chromium",
+    "//mojo/public/c/system:for_component",
+    "//third_party/WebKit/public:blink",
+    "//ui/events",
+  ]
+}
