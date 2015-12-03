@@ -147,6 +147,20 @@
       ],
     },
     {
+      'target_name': 'cma_decoder',
+      'type': '<(component)',
+      'dependencies': [
+        'cma_base',
+        '../../base/base.gyp:base',
+        '../../media/media.gyp:media',
+      ],
+      'sources': [
+        'cma/decoder/cast_audio_decoder.h',
+        'cma/decoder/cast_audio_decoder_android.cc',
+        'cma/decoder/cast_audio_decoder_linux.cc',
+      ],
+    },
+    {
       'target_name': 'cma_ipc',
       'type': '<(component)',
       'dependencies': [
