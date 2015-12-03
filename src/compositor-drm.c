@@ -1094,6 +1094,7 @@ drm_output_prepare_cursor_view(struct drm_output *output,
 	struct drm_backend *b =
 		(struct drm_backend *)output->base.compositor->backend;
 	struct weston_buffer_viewport *viewport = &ev->surface->buffer_viewport;
+	struct wl_shm_buffer *shmbuf;
 
 	if (ev->transform.enabled &&
 	    (ev->transform.matrix.type > WESTON_MATRIX_TRANSFORM_TRANSLATE))
@@ -1112,9 +1113,14 @@ drm_output_prepare_cursor_view(struct drm_output *output,
 		return NULL;
 	if (ev->geometry.scissor_enabled)
 		return NULL;
-	if (ev->surface->buffer_ref.buffer == NULL ||
-	    !wl_shm_buffer_get(ev->surface->buffer_ref.buffer->resource) ||
-	    ev->surface->width > b->cursor_width ||
+	if (ev->surface->buffer_ref.buffer == NULL)
+		return NULL;
+	shmbuf = wl_shm_buffer_get(ev->surface->buffer_ref.buffer->resource);
+	if (!shmbuf)
+		return NULL;
+	if (wl_shm_buffer_get_format(shmbuf) != WL_SHM_FORMAT_ARGB8888)
+		return NULL;
+	if (ev->surface->width > b->cursor_width ||
 	    ev->surface->height > b->cursor_height)
 		return NULL;
 
