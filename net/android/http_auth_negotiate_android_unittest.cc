@@ -8,6 +8,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "net/http/http_auth_challenge_tokenizer.h"
+#include "net/http/mock_allow_http_auth_preferences.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -23,7 +24,10 @@ TEST(HttpAuthNegotiateAndroidTest, GenerateAuthToken) {
   authenticator.ExpectSecurityContext("Negotiate", GSS_S_COMPLETE, 0,
                                       mockContext, "", "DummyToken");
 
-  HttpAuthNegotiateAndroid auth("org.chromium.test.DummySpnegoAuthenticator");
+  MockAllowHttpAuthPreferences prefs;
+  prefs.set_auth_android_negotiate_account_type(
+      "org.chromium.test.DummySpnegoAuthenticator");
+  HttpAuthNegotiateAndroid auth(&prefs);
   EXPECT_TRUE(auth.Init());
 
   TestCompletionCallback callback;
@@ -37,7 +41,10 @@ TEST(HttpAuthNegotiateAndroidTest, GenerateAuthToken) {
 
 TEST(HttpAuthNegotiateAndroidTest, ParseChallenge_FirstRound) {
   // The first round should just consist of an unadorned "Negotiate" header.
-  HttpAuthNegotiateAndroid auth("org.chromium.test.DummySpnegoAuthenticator");
+  MockAllowHttpAuthPreferences prefs;
+  prefs.set_auth_android_negotiate_account_type(
+      "org.chromium.test.DummySpnegoAuthenticator");
+  HttpAuthNegotiateAndroid auth(&prefs);
   std::string challenge_text = "Negotiate";
   HttpAuthChallengeTokenizer challenge(challenge_text.begin(),
                                        challenge_text.end());
@@ -48,7 +55,10 @@ TEST(HttpAuthNegotiateAndroidTest, ParseChallenge_FirstRound) {
 TEST(HttpAuthNegotiateAndroidTest, ParseChallenge_UnexpectedTokenFirstRound) {
   // If the first round challenge has an additional authentication token, it
   // should be treated as an invalid challenge from the server.
-  HttpAuthNegotiateAndroid auth("org.chromium.test.DummySpnegoAuthenticator");
+  MockAllowHttpAuthPreferences prefs;
+  prefs.set_auth_android_negotiate_account_type(
+      "org.chromium.test.DummySpnegoAuthenticator");
+  HttpAuthNegotiateAndroid auth(&prefs);
   std::string challenge_text = "Negotiate Zm9vYmFy";
   HttpAuthChallengeTokenizer challenge(challenge_text.begin(),
                                        challenge_text.end());
@@ -59,7 +69,10 @@ TEST(HttpAuthNegotiateAndroidTest, ParseChallenge_UnexpectedTokenFirstRound) {
 TEST(HttpAuthNegotiateAndroidTest, ParseChallenge_TwoRounds) {
   // The first round should just have "Negotiate", and the second round should
   // have a valid base64 token associated with it.
-  HttpAuthNegotiateAndroid auth("org.chromium.test.DummySpnegoAuthenticator");
+  MockAllowHttpAuthPreferences prefs;
+  prefs.set_auth_android_negotiate_account_type(
+      "org.chromium.test.DummySpnegoAuthenticator");
+  HttpAuthNegotiateAndroid auth(&prefs);
   std::string first_challenge_text = "Negotiate";
   HttpAuthChallengeTokenizer first_challenge(first_challenge_text.begin(),
                                              first_challenge_text.end());
@@ -76,7 +89,10 @@ TEST(HttpAuthNegotiateAndroidTest, ParseChallenge_TwoRounds) {
 TEST(HttpAuthNegotiateAndroidTest, ParseChallenge_MissingTokenSecondRound) {
   // If a later-round challenge is simply "Negotiate", it should be treated as
   // an authentication challenge rejection from the server or proxy.
-  HttpAuthNegotiateAndroid auth("org.chromium.test.DummySpnegoAuthenticator");
+  MockAllowHttpAuthPreferences prefs;
+  prefs.set_auth_android_negotiate_account_type(
+      "org.chromium.test.DummySpnegoAuthenticator");
+  HttpAuthNegotiateAndroid auth(&prefs);
   std::string first_challenge_text = "Negotiate";
   HttpAuthChallengeTokenizer first_challenge(first_challenge_text.begin(),
                                              first_challenge_text.end());

@@ -31,7 +31,7 @@
 
 namespace net {
 
-class URLSecurityManager;
+class HttpAuthPreferences;
 
 // Code for handling HTTP NTLM authentication.
 class NET_EXPORT_PRIVATE HttpAuthHandlerNTLM : public HttpAuthHandler {
@@ -98,8 +98,9 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerNTLM : public HttpAuthHandler {
   HttpAuthHandlerNTLM();
 #endif
 #if defined(NTLM_SSPI)
-  HttpAuthHandlerNTLM(SSPILibrary* sspi_library, ULONG max_token_length,
-                      URLSecurityManager* url_security_manager);
+  HttpAuthHandlerNTLM(SSPILibrary* sspi_library,
+                      ULONG max_token_length,
+                      const HttpAuthPreferences* http_auth_preferences);
 #endif
 
   bool NeedsIdentity() override;
@@ -162,7 +163,7 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerNTLM : public HttpAuthHandler {
   std::string auth_data_;
 
 #if defined(NTLM_SSPI)
-  URLSecurityManager* url_security_manager_;
+  const HttpAuthPreferences* http_auth_preferences_;
 #endif
 };
 

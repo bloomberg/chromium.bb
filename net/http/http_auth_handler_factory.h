@@ -19,6 +19,7 @@ class GURL;
 namespace net {
 
 class BoundNetLog;
+class HttpAuthPreferences;
 class HostResolver;
 class HttpAuthChallengeTokenizer;
 class HttpAuthHandler;
@@ -34,18 +35,21 @@ class NET_EXPORT HttpAuthHandlerFactory {
     CREATE_PREEMPTIVE,    // Create a handler preemptively.
   };
 
-  HttpAuthHandlerFactory() : url_security_manager_(NULL) {}
+  HttpAuthHandlerFactory() : http_auth_preferences_(NULL) {}
   virtual ~HttpAuthHandlerFactory() {}
 
-  // Sets an URL security manager.  HttpAuthHandlerFactory doesn't own the URL
-  // security manager, and the URL security manager should outlive this object.
-  void set_url_security_manager(URLSecurityManager* url_security_manager) {
-    url_security_manager_ = url_security_manager;
+  // Sets the source of the HTTP authentication preferences.
+  // HttpAuthHandlerFactory doesn't own the preferences, and the
+  // HttpAuthPreferences object should outlive the factory and any handlers it
+  // creates.
+  void set_http_auth_preferences(
+      const HttpAuthPreferences* http_auth_preferences) {
+    http_auth_preferences_ = http_auth_preferences;
   }
 
   // Retrieves the associated URL security manager.
-  URLSecurityManager* url_security_manager() {
-    return url_security_manager_;
+  const HttpAuthPreferences* http_auth_preferences() {
+    return http_auth_preferences_;
   }
 
   // Creates an HttpAuthHandler object based on the authentication
@@ -119,8 +123,8 @@ class NET_EXPORT HttpAuthHandlerFactory {
       HostResolver* resolver);
 
  private:
-  // The URL security manager
-  URLSecurityManager* url_security_manager_;
+  // The preferences for HTTP authentication.
+  const HttpAuthPreferences* http_auth_preferences_;
 
   DISALLOW_COPY_AND_ASSIGN(HttpAuthHandlerFactory);
 };
@@ -133,9 +137,9 @@ class NET_EXPORT HttpAuthHandlerRegistryFactory
   HttpAuthHandlerRegistryFactory();
   ~HttpAuthHandlerRegistryFactory() override;
 
-  // Sets an URL security manager into the factory associated with |scheme|.
-  void SetURLSecurityManager(const std::string& scheme,
-                             URLSecurityManager* url_security_manager);
+  // Sets the preferences into the factory associated with |scheme|.
+  void SetHttpAuthPreferences(const std::string& scheme,
+                              const HttpAuthPreferences* prefs);
 
   // Registers a |factory| that will be used for a particular HTTP
   // authentication scheme such as Basic, Digest, or Negotiate.
@@ -157,37 +161,17 @@ class NET_EXPORT HttpAuthHandlerRegistryFactory
 
   // Creates an HttpAuthHandlerRegistryFactory.
   //
-  // |supported_schemes| is a list of authentication schemes. Valid values
-  // include "basic", "digest", "ntlm", and "negotiate", where case matters.
-  //
-  // |security_manager| is used by the NTLM and Negotiate authenticators
-  // to determine which servers Integrated Authentication can be used with. If
-  // NULL, Integrated Authentication will not be used with any server.
+  // |prefs| is a pointer to the (single) authentication preferences object.
+  // That object tracks preference, and hence policy, updates relevant to HTTP
+  // authentication, and provides the current values of the preferences.
   //
   // |host_resolver| is used by the Negotiate authentication handler to perform
   // CNAME lookups to generate a Kerberos SPN for the server. If the "negotiate"
   // scheme is used and |negotiate_disable_cname_lookup| is false,
   // |host_resolver| must not be NULL.
-  //
-  // |gssapi_library_name| specifies the name of the GSSAPI library that will
-  // be loaded on Posix platforms other than Android. |gssapi_library_name| is
-  // ignored on Android and Windows.
-  //
-  // |auth_android_negotiate_account_type| is an Android account type, used to
-  // find the appropriate authenticator service on Android. It is ignored on
-  // non-Android platforms.
-  //
-  // |negotiate_disable_cname_lookup| and |negotiate_enable_port| both control
-  // how Negotiate does SPN generation, by default these should be false.
-  static HttpAuthHandlerRegistryFactory* Create(
-      const std::vector<std::string>& supported_schemes,
-      URLSecurityManager* security_manager,
-      HostResolver* host_resolver,
-      const std::string& gssapi_library_name,
-      const std::string& auth_android_negotiate_account_type,
-      bool negotiate_disable_cname_lookup,
-      bool negotiate_enable_port);
-
+  static scoped_ptr<HttpAuthHandlerRegistryFactory> Create(
+      const HttpAuthPreferences* prefs,
+      HostResolver* host_resolver);
   // Creates an auth handler by dispatching out to the registered factories
   // based on the first token in |challenge|.
   int CreateAuthHandler(HttpAuthChallengeTokenizer* challenge,

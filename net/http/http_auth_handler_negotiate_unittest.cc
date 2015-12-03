@@ -12,7 +12,7 @@
 #include "net/base/test_completion_callback.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_request_info.h"
-#include "net/http/mock_allow_url_security_manager.h"
+#include "net/http/mock_allow_http_auth_preferences.h"
 #if defined(OS_ANDROID)
 #include "net/android/dummy_spnego_authenticator.h"
 #elif defined(OS_WIN)
@@ -41,17 +41,16 @@ class HttpAuthHandlerNegotiateTest : public PlatformTest {
     resolver_->rules()->AddIPLiteralRule("alias", "10.0.0.2",
                                            "canonical.example.com");
 
-    url_security_manager_.reset(new MockAllowURLSecurityManager());
+    http_auth_preferences_.reset(new MockAllowHttpAuthPreferences());
     factory_.reset(new HttpAuthHandlerNegotiate::Factory());
-    factory_->set_url_security_manager(url_security_manager_.get());
+    factory_->set_http_auth_preferences(http_auth_preferences_.get());
 #if defined(OS_ANDROID)
-    std::string* authenticator =
-        new std::string("org.chromium.test.DummySpnegoAuthenticator");
-    factory_->set_library(authenticator);
+    http_auth_preferences_->set_auth_android_negotiate_account_type(
+        "org.chromium.test.DummySpnegoAuthenticator");
     MockAuthLibrary::EnsureTestAccountExists();
 #endif
 #if defined(OS_WIN) || (defined(OS_POSIX) && !defined(OS_ANDROID))
-    factory_->set_library(auth_library_);
+    factory_->set_library(make_scoped_ptr(auth_library_));
 #endif
     factory_->set_host_resolver(resolver_.get());
   }
@@ -194,8 +193,9 @@ class HttpAuthHandlerNegotiateTest : public PlatformTest {
                      bool synchronous_resolve_mode,
                      const std::string& url_string,
                      scoped_ptr<HttpAuthHandlerNegotiate>* handler) {
-    factory_->set_disable_cname_lookup(disable_cname_lookup);
-    factory_->set_use_port(use_port);
+    http_auth_preferences_->set_negotiate_disable_cname_lookup(
+        disable_cname_lookup);
+    http_auth_preferences_->set_negotiate_enable_port(use_port);
     resolver_->set_synchronous_mode(synchronous_resolve_mode);
     GURL gurl(url_string);
 
@@ -224,10 +224,12 @@ class HttpAuthHandlerNegotiateTest : public PlatformTest {
 #if defined(OS_WIN)
   scoped_ptr<SecPkgInfoW> security_package_;
 #endif
-  // |auth_library_| is passed to |factory_|, which assumes ownership of it.
+  // |auth_library_| is passed to |factory_|, which assumes ownership of it, but
+  // can't be a scoped pointer to it since the tests need access when they set
+  // up the mocks after passing ownership.
   MockAuthLibrary* auth_library_;
   scoped_ptr<MockHostResolver> resolver_;
-  scoped_ptr<URLSecurityManager> url_security_manager_;
+  scoped_ptr<MockAllowHttpAuthPreferences> http_auth_preferences_;
   scoped_ptr<HttpAuthHandlerNegotiate::Factory> factory_;
 };
 
@@ -360,13 +362,13 @@ TEST_F(HttpAuthHandlerNegotiateTest, NoKerberosCredentials) {
 #if defined(DLOPEN_KERBEROS)
 TEST_F(HttpAuthHandlerNegotiateTest, MissingGSSAPI) {
   scoped_ptr<HostResolver> host_resolver(new MockHostResolver());
-  MockAllowURLSecurityManager url_security_manager;
+  MockAllowHttpAuthPreferences http_auth_preferences;
   scoped_ptr<HttpAuthHandlerNegotiate::Factory> negotiate_factory(
       new HttpAuthHandlerNegotiate::Factory());
-  negotiate_factory->set_host_resolver(host_resolver.get());
-  negotiate_factory->set_url_security_manager(&url_security_manager);
+  negotiate_factory->set_host_resolver(host_resolver);
+  negotiate_factory->set_http_auth_preferences(&http_auth_preferences);
   negotiate_factory->set_library(
-      new GSSAPISharedLibrary("/this/library/does/not/exist"));
+      make_scoped_ptr(new GSSAPISharedLibrary("/this/library/does/not/exist")));
 
   GURL gurl("http://www.example.com");
   scoped_ptr<HttpAuthHandler> generic_handler;

@@ -34,9 +34,9 @@
 #include "net/dns/mapped_host_resolver.h"
 #include "net/http/http_auth_filter.h"
 #include "net/http/http_auth_handler_factory.h"
+#include "net/http/http_auth_preferences.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_stream_factory.h"
-#include "net/http/url_security_manager.h"
 #include "net/log/net_log.h"
 #include "net/proxy/proxy_service.h"
 #include "net/socket/next_proto.h"
@@ -276,27 +276,14 @@ scoped_ptr<net::HttpAuthHandlerFactory>
 AwURLRequestContextGetter::CreateNegotiateAuthHandlerFactory(
     net::HostResolver* resolver) {
   DCHECK(resolver);
-
-  net::HttpAuthFilterWhitelist* auth_filter_default_credentials = nullptr;
-  if (!auth_server_whitelist_.empty()) {
-    auth_filter_default_credentials =
-        new net::HttpAuthFilterWhitelist(auth_server_whitelist_);
-  }
-
-  url_security_manager_.reset(net::URLSecurityManager::Create(
-      auth_filter_default_credentials, nullptr /*auth_filter_delegate*/));
-
   std::vector<std::string> supported_schemes = {"negotiate"};
+  http_auth_preferences_.reset(new net::HttpAuthPreferences(supported_schemes));
+  http_auth_preferences_->set_server_whitelist(auth_server_whitelist_);
+  http_auth_preferences_->set_auth_android_negotiate_account_type(
+      auth_android_negotiate_account_type_);
   scoped_ptr<net::HttpAuthHandlerFactory> negotiate_factory(
-      net::HttpAuthHandlerRegistryFactory::Create(
-          supported_schemes,
-          url_security_manager_.get(),
-          resolver,
-          std::string() /* gssapi_library_name - not used on android */,
-          auth_android_negotiate_account_type_ ,
-          false /* negotiate_disable_cname_lookup - unsupported policy */,
-          false /* negotiate_enable_port - unsupported policy */));
-
+      net::HttpAuthHandlerRegistryFactory::Create(http_auth_preferences_.get(),
+                                                  resolver));
   return negotiate_factory;
 }
 

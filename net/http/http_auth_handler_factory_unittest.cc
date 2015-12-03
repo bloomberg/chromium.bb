@@ -7,7 +7,8 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_auth_handler.h"
 #include "net/http/http_auth_handler_factory.h"
-#include "net/http/mock_allow_url_security_manager.h"
+#include "net/http/http_auth_scheme.h"
+#include "net/http/mock_allow_http_auth_preferences.h"
 #include "net/http/url_security_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -98,11 +99,11 @@ TEST(HttpAuthHandlerFactoryTest, RegistryFactory) {
 
 TEST(HttpAuthHandlerFactoryTest, DefaultFactory) {
   scoped_ptr<HostResolver> host_resolver(new MockHostResolver());
-  MockAllowURLSecurityManager url_security_manager;
+  MockAllowHttpAuthPreferences http_auth_preferences;
   scoped_ptr<HttpAuthHandlerRegistryFactory> http_auth_handler_factory(
       HttpAuthHandlerFactory::CreateDefault(host_resolver.get()));
-  http_auth_handler_factory->SetURLSecurityManager(
-      "negotiate", &url_security_manager);
+  http_auth_handler_factory->SetHttpAuthPreferences(kNegotiateAuthScheme,
+                                                    &http_auth_preferences);
   GURL server_origin("http://www.example.com");
   GURL proxy_origin("http://cache.example.com:3128");
   {

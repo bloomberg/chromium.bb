@@ -13,6 +13,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/http/http_auth_challenge_tokenizer.h"
+#include "net/http/http_auth_scheme.h"
 
 namespace net {
 
@@ -112,7 +113,7 @@ HttpAuth::AuthorizationResult HttpAuthHandlerNTLM::ParseChallenge(
   auth_data_.clear();
 
   // Verify the challenge's auth-scheme.
-  if (!base::LowerCaseEqualsASCII(tok->scheme(), "ntlm"))
+  if (!base::LowerCaseEqualsASCII(tok->scheme(), kNtlmAuthScheme))
     return HttpAuth::AUTHORIZATION_RESULT_INVALID;
 
   std::string base64_param = tok->base64_param();

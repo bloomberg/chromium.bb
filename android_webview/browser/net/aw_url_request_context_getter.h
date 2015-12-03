@@ -19,12 +19,12 @@ namespace net {
 class CookieStore;
 class HostResolver;
 class HttpAuthHandlerFactory;
+class HttpAuthPreferences;
 class HttpUserAgentSettings;
 class NetLog;
 class ProxyConfigService;
 class URLRequestContext;
 class URLRequestJobFactory;
-class URLSecurityManager;
 }
 
 namespace android_webview {
@@ -80,11 +80,10 @@ class AwURLRequestContextGetter : public net::URLRequestContextGetter {
   scoped_refptr<net::CookieStore> cookie_store_;
   scoped_ptr<net::URLRequestJobFactory> job_factory_;
   scoped_ptr<net::HttpUserAgentSettings> http_user_agent_settings_;
+  // http_auth_preferences_ holds the preferences for the negotiate
+  // authenticator.
+  scoped_ptr<net::HttpAuthPreferences> http_auth_preferences_;
   scoped_ptr<net::URLRequestContext> url_request_context_;
-
-  // URLSecurityManager associated with the negotiate auth handler. It is
-  // configured to follow the auth_server_whitelist_
-  scoped_ptr<net::URLSecurityManager> url_security_manager_;
 
   // Store HTTP Auth-related policies in this thread.
   std::string auth_android_negotiate_account_type_;

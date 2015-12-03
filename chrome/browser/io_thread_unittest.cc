@@ -4,10 +4,22 @@
 
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
+#include "base/prefs/pref_registry_simple.h"
+#include "base/prefs/pref_service.h"
+#include "base/prefs/testing_pref_service.h"
+#include "base/run_loop.h"
 #include "base/test/mock_entropy_provider.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
+#include "components/policy/core/common/mock_policy_service.h"
+#include "components/proxy_config/pref_proxy_config_tracker_impl.h"
+#include "components/proxy_config/proxy_config_pref_names.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
+#include "net/http/http_auth_preferences.h"
+#include "net/http/http_auth_scheme.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties_impl.h"
 #include "net/quic/quic_protocol.h"
@@ -15,10 +27,21 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/browser/extensions/event_router_forwarder.h"
+#endif
+
+#if defined(OS_CHROMEOS)
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/network/network_handler.h"
+#endif
+
 namespace test {
 
 using ::testing::ElementsAre;
+using ::testing::ReturnRef;
 
+// Class used for accessing IOThread methods (friend of IOThread).
 class IOThreadPeer {
  public:
   static void ConfigureQuicGlobals(
@@ -50,6 +73,14 @@ class IOThreadPeer {
       const IOThread::Globals& globals,
       net::HttpNetworkSession::Params* params) {
     IOThread::InitializeNetworkSessionParamsFromGlobals(globals, params);
+  }
+
+  static void InitIOThread(IOThread* io_thread) { io_thread->Init(); }
+
+  static void CleanUpIOThread(IOThread* io_thread) { io_thread->CleanUp(); }
+
+  static net::HttpAuthPreferences* GetAuthPreferences(IOThread* io_thread) {
+    return io_thread->globals()->http_auth_preferences.get();
   }
 };
 
@@ -534,5 +565,176 @@ TEST_F(IOThreadTest, QuicDisallowedByPolicy) {
   InitializeNetworkSessionParams(&params);
   EXPECT_FALSE(params.enable_quic);
 }
+
+class IOThreadTestWithIOThreadObject : public testing::Test {
+ public:
+  // These functions need to be public, since it is difficult to bind to
+  // protected functions in a test (the code would need to explicitly contain
+  // the name of the actual test class).
+  void CheckCnameLookup(bool expected) {
+    auto http_auth_preferences =
+        IOThreadPeer::GetAuthPreferences(io_thread_.get());
+    ASSERT_NE(nullptr, http_auth_preferences);
+    EXPECT_EQ(expected, http_auth_preferences->NegotiateDisableCnameLookup());
+  }
+
+  void CheckNegotiateEnablePort(bool expected) {
+    auto http_auth_preferences =
+        IOThreadPeer::GetAuthPreferences(io_thread_.get());
+    ASSERT_NE(nullptr, http_auth_preferences);
+    EXPECT_EQ(expected, http_auth_preferences->NegotiateEnablePort());
+  }
+
+#if defined(OS_ANDROID)
+  void CheckAuthAndroidNegoitateAccountType(std::string expected) {
+    auto http_auth_preferences =
+        IOThreadPeer::GetAuthPreferences(io_thread_.get());
+    ASSERT_NE(nullptr, http_auth_preferences);
+    EXPECT_EQ(expected,
+              http_auth_preferences->AuthAndroidNegotiateAccountType());
+  }
+#endif
+
+  void CheckCanUseDefaultCredentials(bool expected, const GURL& url) {
+    auto http_auth_preferences =
+        IOThreadPeer::GetAuthPreferences(io_thread_.get());
+    EXPECT_EQ(expected, http_auth_preferences->CanUseDefaultCredentials(url));
+  }
+
+  void CheckCanDelegate(bool expected, const GURL& url) {
+    auto http_auth_preferences =
+        IOThreadPeer::GetAuthPreferences(io_thread_.get());
+    EXPECT_EQ(expected, http_auth_preferences->CanDelegate(url));
+  }
+
+ protected:
+  IOThreadTestWithIOThreadObject()
+      : thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD) {
+#if defined(ENABLE_EXTENSIONS)
+    event_router_forwarder_ = new extensions::EventRouterForwarder;
+#endif
+    PrefRegistrySimple* pref_registry = pref_service_.registry();
+    IOThread::RegisterPrefs(pref_registry);
+    PrefProxyConfigTrackerImpl::RegisterPrefs(pref_registry);
+    ssl_config::SSLConfigServiceManager::RegisterPrefs(pref_registry);
+
+    // Set up default function behaviour.
+    EXPECT_CALL(policy_service_,
+                GetPolicies(policy::PolicyNamespace(
+                    policy::POLICY_DOMAIN_CHROME, std::string())))
+        .WillRepeatedly(ReturnRef(policy_map_));
+
+#if defined(OS_CHROMEOS)
+    // Needed by IOThread constructor.
+    chromeos::DBusThreadManager::Initialize();
+    chromeos::NetworkHandler::Initialize();
+#endif
+    io_thread_.reset(new IOThread(&pref_service_, &policy_service_, nullptr,
+#if defined(ENABLE_EXTENSIONS)
+                                  event_router_forwarder_.get()
+#else
+                                  nullptr
+#endif
+                                      ));
+    // Init must be run on the IO thread.
+    RunOnIOThreadBlocking(
+        base::Bind(&IOThreadPeer::InitIOThread, io_thread_.get()));
+  }
+
+  ~IOThreadTestWithIOThreadObject() override {
+    RunOnIOThreadBlocking(
+        base::Bind(&IOThreadPeer::CleanUpIOThread, io_thread_.get()));
+#if defined(OS_CHROMEOS)
+    chromeos::NetworkHandler::Shutdown();
+    chromeos::DBusThreadManager::Shutdown();
+#endif
+  }
+  TestingPrefServiceSimple* pref_service() { return &pref_service_; }
+
+  void RunOnIOThreadBlocking(const base::Closure& task) {
+    base::RunLoop run_loop;
+    content::BrowserThread::PostTaskAndReply(
+        content::BrowserThread::IO, FROM_HERE, task, run_loop.QuitClosure());
+    run_loop.Run();
+  }
+
+ private:
+  content::TestBrowserThreadBundle thread_bundle_;
+  TestingPrefServiceSimple pref_service_;
+#if defined(ENABLE_EXTENSIONS)
+  scoped_refptr<extensions::EventRouterForwarder> event_router_forwarder_;
+#endif
+  policy::PolicyMap policy_map_;
+  policy::MockPolicyService policy_service_;
+  scoped_ptr<IOThread> io_thread_;
+};
+
+TEST_F(IOThreadTestWithIOThreadObject, UpdateNegotiateDisableCnameLookup) {
+  // This test uses the kDisableAuthNegotiateCnameLookup to check that
+  // the HttpAuthPreferences are correctly initialized and running on the
+  // IO thread. The other preferences are tested by the HttpAuthPreferences
+  // unit tests.
+  pref_service()->SetBoolean(prefs::kDisableAuthNegotiateCnameLookup, false);
+  RunOnIOThreadBlocking(
+      base::Bind(&IOThreadTestWithIOThreadObject::CheckCnameLookup,
+                 base::Unretained(this), false));
+  pref_service()->SetBoolean(prefs::kDisableAuthNegotiateCnameLookup, true);
+  RunOnIOThreadBlocking(
+      base::Bind(&IOThreadTestWithIOThreadObject::CheckCnameLookup,
+                 base::Unretained(this), true));
+}
+
+TEST_F(IOThreadTestWithIOThreadObject, UpdateEnableAuthNegotiatePort) {
+  pref_service()->SetBoolean(prefs::kEnableAuthNegotiatePort, false);
+  RunOnIOThreadBlocking(
+      base::Bind(&IOThreadTestWithIOThreadObject::CheckNegotiateEnablePort,
+                 base::Unretained(this), false));
+  pref_service()->SetBoolean(prefs::kEnableAuthNegotiatePort, true);
+  RunOnIOThreadBlocking(
+      base::Bind(&IOThreadTestWithIOThreadObject::CheckNegotiateEnablePort,
+                 base::Unretained(this), true));
+}
+
+TEST_F(IOThreadTestWithIOThreadObject, UpdateServerWhitelist) {
+  GURL url("http://test.example.com");
+
+  pref_service()->SetString(prefs::kAuthServerWhitelist, "xxx");
+  RunOnIOThreadBlocking(
+      base::Bind(&IOThreadTestWithIOThreadObject::CheckCanUseDefaultCredentials,
+                 base::Unretained(this), false, url));
+
+  pref_service()->SetString(prefs::kAuthServerWhitelist, "*");
+  RunOnIOThreadBlocking(
+      base::Bind(&IOThreadTestWithIOThreadObject::CheckCanUseDefaultCredentials,
+                 base::Unretained(this), true, url));
+}
+
+TEST_F(IOThreadTestWithIOThreadObject, UpdateDelegateWhitelist) {
+  GURL url("http://test.example.com");
+
+  pref_service()->SetString(prefs::kAuthNegotiateDelegateWhitelist, "");
+  RunOnIOThreadBlocking(
+      base::Bind(&IOThreadTestWithIOThreadObject::CheckCanDelegate,
+                 base::Unretained(this), false, url));
+
+  pref_service()->SetString(prefs::kAuthNegotiateDelegateWhitelist, "*");
+  RunOnIOThreadBlocking(
+      base::Bind(&IOThreadTestWithIOThreadObject::CheckCanDelegate,
+                 base::Unretained(this), true, url));
+}
+
+#if defined(OS_ANDROID)
+// AuthAndroidNegotiateAccountType is only used on Android.
+TEST_F(IOThreadTestWithIOThreadObject, UpdateAuthAndroidNegotiateAccountType) {
+  pref_service()->SetString(prefs::kAuthAndroidNegotiateAccountType, "acc1");
+  RunOnIOThreadBlocking(base::Bind(
+      &IOThreadTestWithIOThreadObject::CheckAuthAndroidNegoitateAccountType,
+      base::Unretained(this), "acc1"));
+  pref_service()->SetString(prefs::kAuthAndroidNegotiateAccountType, "acc2");
+  RunOnIOThreadBlocking(base::Bind(
+      &IOThreadTestWithIOThreadObject::CheckAuthAndroidNegoitateAccountType,
+      base::Unretained(this), "acc2"));
+}
+#endif
 
 }  // namespace test

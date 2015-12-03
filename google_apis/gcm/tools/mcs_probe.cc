@@ -38,6 +38,8 @@
 #include "net/cert/cert_verifier.h"
 #include "net/dns/host_resolver.h"
 #include "net/http/http_auth_handler_factory.h"
+#include "net/http/http_auth_preferences.h"
+#include "net/http/http_auth_scheme.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties_impl.h"
 #include "net/http/transport_security_state.h"
@@ -183,6 +185,27 @@ class MyTestCertVerifier : public net::CertVerifier {
   }
 };
 
+class MCSProbeAuthPreferences : public net::HttpAuthPreferences {
+ public:
+  MCSProbeAuthPreferences()
+      : HttpAuthPreferences(std::vector<std::string>()
+#if defined(OS_POSIX) && !defined(OS_ANDROID)
+                                ,
+                            std::string()
+#endif
+                                ) {
+  }
+  bool IsSupportedScheme(const std::string& scheme) const override {
+    return scheme == std::string(net::kBasicAuthScheme);
+  }
+  bool NegotiateDisableCnameLookup() const override { return false; }
+  bool NegotiateEnablePort() const override { return false; }
+  bool CanUseDefaultCredentials(const GURL& auth_origin) const override {
+    return false;
+  }
+  bool CanDelegate(const GURL& auth_origin) const override { return false; }
+};
+
 class MCSProbe {
  public:
   MCSProbe(
@@ -225,7 +248,7 @@ class MCSProbe {
   scoped_ptr<net::CertVerifier> cert_verifier_;
   scoped_ptr<net::ChannelIDService> system_channel_id_service_;
   scoped_ptr<net::TransportSecurityState> transport_security_state_;
-  scoped_ptr<net::URLSecurityManager> url_security_manager_;
+  MCSProbeAuthPreferences http_auth_preferences_;
   scoped_ptr<net::HttpAuthHandlerFactory> http_auth_handler_factory_;
   scoped_ptr<net::HttpServerPropertiesImpl> http_server_properties_;
   scoped_ptr<net::HostMappingRules> host_mapping_rules_;
@@ -376,10 +399,10 @@ void MCSProbe::InitializeNetworkState() {
           base::WorkerPool::GetTaskRunner(true)));
 
   transport_security_state_.reset(new net::TransportSecurityState());
-  url_security_manager_.reset(net::URLSecurityManager::Create(NULL, NULL));
-  http_auth_handler_factory_.reset(net::HttpAuthHandlerRegistryFactory::Create(
-      std::vector<std::string>(1, "basic"), url_security_manager_.get(),
-      host_resolver_.get(), std::string(), std::string(), false, false));
+  http_auth_handler_factory_ =
+      net::HttpAuthHandlerRegistryFactory::Create(&http_auth_preferences_,
+                                                  host_resolver_.get())
+          .Pass();
   http_server_properties_.reset(new net::HttpServerPropertiesImpl());
   host_mapping_rules_.reset(new net::HostMappingRules());
   proxy_service_ = net::ProxyService::CreateDirectWithNetLog(&net_log_);

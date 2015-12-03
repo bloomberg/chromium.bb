@@ -21,6 +21,7 @@
 #include "net/base/test_data_directory.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_file_element_reader.h"
+#include "net/http/http_auth_scheme.h"
 #include "net/http/http_network_session_peer.h"
 #include "net/http/http_network_transaction.h"
 #include "net/http/http_server_properties.h"
@@ -4988,7 +4989,7 @@ TEST_P(SpdyNetworkTransactionTest, SpdyBasicAuth) {
   AuthChallengeInfo* auth_challenge = response_start->auth_challenge.get();
   ASSERT_TRUE(auth_challenge != NULL);
   EXPECT_FALSE(auth_challenge->is_proxy);
-  EXPECT_EQ("basic", auth_challenge->scheme);
+  EXPECT_EQ(kBasicAuthScheme, auth_challenge->scheme);
   EXPECT_EQ("MyRealm", auth_challenge->realm);
 
   // Restart with a username/password.

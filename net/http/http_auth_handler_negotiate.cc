@@ -13,14 +13,12 @@
 #include "net/dns/host_resolver.h"
 #include "net/dns/single_request_host_resolver.h"
 #include "net/http/http_auth_filter.h"
-#include "net/http/url_security_manager.h"
+#include "net/http/http_auth_preferences.h"
 
 namespace net {
 
 HttpAuthHandlerNegotiate::Factory::Factory()
-    : disable_cname_lookup_(false),
-      use_port_(false),
-      resolver_(NULL),
+    : resolver_(NULL),
 #if defined(OS_WIN)
       max_token_length_(0),
 #endif
@@ -58,16 +56,16 @@ int HttpAuthHandlerNegotiate::Factory::CreateAuthHandler(
   //                 method and only constructing when valid.
   scoped_ptr<HttpAuthHandler> tmp_handler(
       new HttpAuthHandlerNegotiate(auth_library_.get(), max_token_length_,
-                                   url_security_manager(), resolver_,
-                                   disable_cname_lookup_, use_port_));
+                                   http_auth_preferences(), resolver_));
 #elif defined(OS_ANDROID)
-  if (is_unsupported_ || auth_library_->empty() || reason == CREATE_PREEMPTIVE)
+  if (is_unsupported_ || !http_auth_preferences() ||
+      http_auth_preferences()->AuthAndroidNegotiateAccountType().empty() ||
+      reason == CREATE_PREEMPTIVE)
     return ERR_UNSUPPORTED_AUTH_SCHEME;
   // TODO(cbentzel): Move towards model of parsing in the factory
   //                 method and only constructing when valid.
-  scoped_ptr<HttpAuthHandler> tmp_handler(new HttpAuthHandlerNegotiate(
-      auth_library_.get(), url_security_manager(), resolver_,
-      disable_cname_lookup_, use_port_));
+  scoped_ptr<HttpAuthHandler> tmp_handler(
+      new HttpAuthHandlerNegotiate(http_auth_preferences(), resolver_));
 #elif defined(OS_POSIX)
   if (is_unsupported_)
     return ERR_UNSUPPORTED_AUTH_SCHEME;
@@ -77,10 +75,8 @@ int HttpAuthHandlerNegotiate::Factory::CreateAuthHandler(
   }
   // TODO(ahendrickson): Move towards model of parsing in the factory
   //                     method and only constructing when valid.
-  scoped_ptr<HttpAuthHandler> tmp_handler(
-      new HttpAuthHandlerNegotiate(auth_library_.get(), url_security_manager(),
-                                   resolver_, disable_cname_lookup_,
-                                   use_port_));
+  scoped_ptr<HttpAuthHandler> tmp_handler(new HttpAuthHandlerNegotiate(
+      auth_library_.get(), http_auth_preferences(), resolver_));
 #endif
   if (!tmp_handler->InitFromChallenge(challenge, target, origin, net_log))
     return ERR_INVALID_RESPONSE;
@@ -89,36 +85,34 @@ int HttpAuthHandlerNegotiate::Factory::CreateAuthHandler(
 }
 
 HttpAuthHandlerNegotiate::HttpAuthHandlerNegotiate(
+#if !defined(OS_ANDROID)
     AuthLibrary* auth_library,
+#endif
 #if defined(OS_WIN)
     ULONG max_token_length,
 #endif
-    URLSecurityManager* url_security_manager,
-    HostResolver* resolver,
-    bool disable_cname_lookup,
-    bool use_port)
+    const HttpAuthPreferences* prefs,
+    HostResolver* resolver)
 #if defined(OS_ANDROID)
-    : auth_system_(*auth_library),
+    : auth_system_(prefs),
 #elif defined(OS_WIN)
     : auth_system_(auth_library, "Negotiate", NEGOSSP_NAME, max_token_length),
 #elif defined(OS_POSIX)
     : auth_system_(auth_library, "Negotiate", CHROME_GSS_SPNEGO_MECH_OID_DESC),
 #endif
-      disable_cname_lookup_(disable_cname_lookup),
-      use_port_(use_port),
       resolver_(resolver),
       already_called_(false),
       has_credentials_(false),
       auth_token_(NULL),
       next_state_(STATE_NONE),
-      url_security_manager_(url_security_manager) {
+      http_auth_preferences_(prefs) {
 }
 
 HttpAuthHandlerNegotiate::~HttpAuthHandlerNegotiate() {
 }
 
-std::string HttpAuthHandlerNegotiate::CreateSPN(
-    const AddressList& address_list, const GURL& origin) {
+std::string HttpAuthHandlerNegotiate::CreateSPN(const AddressList& address_list,
+                                                const GURL& origin) {
   // Kerberos Web Server SPNs are in the form HTTP/<host>:<port> through SSPI,
   // and in the form HTTP@<host>:<port> through GSSAPI
   //   http://msdn.microsoft.com/en-us/library/ms677601%28VS.85%29.aspx
@@ -157,7 +151,9 @@ std::string HttpAuthHandlerNegotiate::CreateSPN(
 #elif defined(OS_POSIX)
   static const char kSpnSeparator = '@';
 #endif
-  if (port != 80 && port != 443 && use_port_) {
+  if (port != 80 && port != 443 &&
+      (http_auth_preferences_ &&
+       http_auth_preferences_->NegotiateEnablePort())) {
     return base::StringPrintf("HTTP%c%s:%d", kSpnSeparator, server.c_str(),
                               port);
   } else {
@@ -178,9 +174,9 @@ bool HttpAuthHandlerNegotiate::NeedsIdentity() {
 bool HttpAuthHandlerNegotiate::AllowsDefaultCredentials() {
   if (target_ == HttpAuth::AUTH_PROXY)
     return true;
-  if (!url_security_manager_)
+  if (!http_auth_preferences_)
     return false;
-  return url_security_manager_->CanUseDefaultCredentials(origin_);
+  return http_auth_preferences_->CanUseDefaultCredentials(origin_);
 }
 
 bool HttpAuthHandlerNegotiate::AllowsExplicitCredentials() {
@@ -284,7 +280,9 @@ int HttpAuthHandlerNegotiate::DoLoop(int result) {
 
 int HttpAuthHandlerNegotiate::DoResolveCanonicalName() {
   next_state_ = STATE_RESOLVE_CANONICAL_NAME_COMPLETE;
-  if (disable_cname_lookup_ || !resolver_)
+  if ((http_auth_preferences_ &&
+       http_auth_preferences_->NegotiateDisableCnameLookup()) ||
+      !resolver_)
     return OK;
 
   // TODO(cbentzel): Add reverse DNS lookup for numeric addresses.
@@ -336,9 +334,9 @@ bool HttpAuthHandlerNegotiate::CanDelegate() const {
   // TODO(cbentzel): Should delegation be allowed on proxies?
   if (target_ == HttpAuth::AUTH_PROXY)
     return false;
-  if (!url_security_manager_)
+  if (!http_auth_preferences_)
     return false;
-  return url_security_manager_->CanDelegate(origin_);
+  return http_auth_preferences_->CanDelegate(origin_);
 }
 
 }  // namespace net

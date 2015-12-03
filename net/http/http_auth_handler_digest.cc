@@ -17,6 +17,7 @@
 #include "net/base/net_util.h"
 #include "net/http/http_auth.h"
 #include "net/http/http_auth_challenge_tokenizer.h"
+#include "net/http/http_auth_scheme.h"
 #include "net/http/http_request_info.h"
 #include "net/http/http_util.h"
 #include "url/gurl.h"
@@ -113,7 +114,7 @@ HttpAuth::AuthorizationResult HttpAuthHandlerDigest::HandleAnotherChallenge(
   // to differentiate between stale and rejected responses.
   // Note that the state of the current handler is not mutated - this way if
   // there is a rejection the realm hasn't changed.
-  if (!base::LowerCaseEqualsASCII(challenge->scheme(), "digest"))
+  if (!base::LowerCaseEqualsASCII(challenge->scheme(), kDigestAuthScheme))
     return HttpAuth::AUTHORIZATION_RESULT_INVALID;
 
   HttpUtil::NameValuePairsIterator parameters = challenge->param_pairs();
@@ -199,7 +200,7 @@ bool HttpAuthHandlerDigest::ParseChallenge(
   realm_ = original_realm_ = nonce_ = domain_ = opaque_ = std::string();
 
   // FAIL -- Couldn't match auth-scheme.
-  if (!base::LowerCaseEqualsASCII(challenge->scheme(), "digest"))
+  if (!base::LowerCaseEqualsASCII(challenge->scheme(), kDigestAuthScheme))
     return false;
 
   HttpUtil::NameValuePairsIterator parameters = challenge->param_pairs();

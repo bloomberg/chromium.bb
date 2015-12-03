@@ -12,19 +12,19 @@
 #include "base/strings/string_util.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
+#include "net/http/http_auth_preferences.h"
 #include "net/http/http_auth_sspi_win.h"
-#include "net/http/url_security_manager.h"
 
 #pragma comment(lib, "secur32.lib")
 
 namespace net {
 
 HttpAuthHandlerNTLM::HttpAuthHandlerNTLM(
-    SSPILibrary* sspi_library, ULONG max_token_length,
-    URLSecurityManager* url_security_manager)
+    SSPILibrary* sspi_library,
+    ULONG max_token_length,
+    const HttpAuthPreferences* http_auth_preferences)
     : auth_sspi_(sspi_library, "NTLM", NTLMSP_NAME, max_token_length),
-      url_security_manager_(url_security_manager) {
-}
+      http_auth_preferences_(http_auth_preferences) {}
 
 HttpAuthHandlerNTLM::~HttpAuthHandlerNTLM() {
 }
@@ -37,9 +37,9 @@ bool HttpAuthHandlerNTLM::NeedsIdentity() {
 bool HttpAuthHandlerNTLM::AllowsDefaultCredentials() {
   if (target_ == HttpAuth::AUTH_PROXY)
     return true;
-  if (!url_security_manager_)
+  if (!http_auth_preferences_)
     return false;
-  return url_security_manager_->CanUseDefaultCredentials(origin_);
+  return http_auth_preferences_->CanUseDefaultCredentials(origin_);
 }
 
 HttpAuthHandlerNTLM::Factory::Factory()
@@ -70,9 +70,8 @@ int HttpAuthHandlerNTLM::Factory::CreateAuthHandler(
   }
   // TODO(cbentzel): Move towards model of parsing in the factory
   //                 method and only constructing when valid.
-  scoped_ptr<HttpAuthHandler> tmp_handler(
-      new HttpAuthHandlerNTLM(sspi_library_.get(), max_token_length_,
-                              url_security_manager()));
+  scoped_ptr<HttpAuthHandler> tmp_handler(new HttpAuthHandlerNTLM(
+      sspi_library_.get(), max_token_length_, http_auth_preferences()));
   if (!tmp_handler->InitFromChallenge(challenge, target, origin, net_log))
     return ERR_INVALID_RESPONSE;
   handler->swap(tmp_handler);

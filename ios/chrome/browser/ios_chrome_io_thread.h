@@ -40,6 +40,7 @@ class CookieStore;
 class CTVerifier;
 class HostResolver;
 class HttpAuthHandlerFactory;
+class HttpAuthPreferences;
 class HttpNetworkSession;
 class HttpServerProperties;
 class HttpTransactionFactory;
@@ -54,7 +55,6 @@ class URLRequestBackoffManager;
 class URLRequestContext;
 class URLRequestContextGetter;
 class URLRequestJobFactory;
-class URLSecurityManager;
 }  // namespace net
 
 namespace net_log {
@@ -115,10 +115,10 @@ class IOSChromeIOThread : public web::WebThreadDelegate {
     scoped_ptr<net::CTVerifier> cert_transparency_verifier;
     scoped_ptr<net::CertPolicyEnforcer> cert_policy_enforcer;
     scoped_refptr<net::SSLConfigService> ssl_config_service;
+    scoped_ptr<net::HttpAuthPreferences> http_auth_preferences;
     scoped_ptr<net::HttpAuthHandlerFactory> http_auth_handler_factory;
     scoped_ptr<net::HttpServerProperties> http_server_properties;
     scoped_ptr<net::URLRequestBackoffManager> url_request_backoff_manager;
-    scoped_ptr<net::URLSecurityManager> url_security_manager;
     scoped_ptr<net::ProxyService> system_proxy_service;
     scoped_ptr<net::HttpNetworkSession> system_http_network_session;
     scoped_ptr<net::HttpTransactionFactory> system_http_transaction_factory;
@@ -242,8 +242,7 @@ class IOSChromeIOThread : public web::WebThreadDelegate {
   // SystemRequestContext state has been initialized on the UI thread.
   void InitSystemRequestContextOnIOThread();
 
-  net::HttpAuthHandlerFactory* CreateDefaultAuthHandlerFactory(
-      net::HostResolver* resolver);
+  void CreateDefaultAuthHandlerFactory();
 
   // Returns an SSLConfigService instance.
   net::SSLConfigService* GetSSLConfigService();

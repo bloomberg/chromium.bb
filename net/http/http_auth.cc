@@ -13,6 +13,7 @@
 #include "net/http/http_auth_challenge_tokenizer.h"
 #include "net/http/http_auth_handler.h"
 #include "net/http/http_auth_handler_factory.h"
+#include "net/http/http_auth_scheme.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
@@ -131,13 +132,8 @@ std::string HttpAuth::GetAuthTargetString(Target target) {
 // static
 const char* HttpAuth::SchemeToString(Scheme scheme) {
   static const char* const kSchemeNames[] = {
-    "basic",
-    "digest",
-    "ntlm",
-    "negotiate",
-    "spdyproxy",
-    "mock",
-  };
+      kBasicAuthScheme,     kDigestAuthScheme,    kNtlmAuthScheme,
+      kNegotiateAuthScheme, kSpdyProxyAuthScheme, kMockAuthScheme};
   static_assert(arraysize(kSchemeNames) == AUTH_SCHEME_MAX,
                 "http auth scheme names incorrect size");
   if (scheme < AUTH_SCHEME_BASIC || scheme >= AUTH_SCHEME_MAX) {

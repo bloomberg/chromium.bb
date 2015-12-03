@@ -35,6 +35,7 @@
 #include "net/base/auth.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_util.h"
+#include "net/http/http_auth_scheme.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
@@ -70,9 +71,10 @@ void ResetLoginHandlerForRequest(net::URLRequest* request) {
 PasswordForm MakeInputForPasswordManager(const GURL& request_url,
                                          net::AuthChallengeInfo* auth_info) {
   PasswordForm dialog_form;
-  if (base::LowerCaseEqualsASCII(auth_info->scheme, "basic")) {
+  if (base::LowerCaseEqualsASCII(auth_info->scheme, net::kBasicAuthScheme)) {
     dialog_form.scheme = PasswordForm::SCHEME_BASIC;
-  } else if (base::LowerCaseEqualsASCII(auth_info->scheme, "digest")) {
+  } else if (base::LowerCaseEqualsASCII(auth_info->scheme,
+                                        net::kDigestAuthScheme)) {
     dialog_form.scheme = PasswordForm::SCHEME_DIGEST;
   } else {
     dialog_form.scheme = PasswordForm::SCHEME_OTHER;

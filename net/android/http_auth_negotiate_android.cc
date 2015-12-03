@@ -15,6 +15,7 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_auth_challenge_tokenizer.h"
 #include "net/http/http_auth_multi_round_parse.h"
+#include "net/http/http_auth_preferences.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF8ToJavaString;
@@ -54,16 +55,17 @@ void JavaNegotiateResultWrapper::SetResult(JNIEnv* env,
 }
 
 HttpAuthNegotiateAndroid::HttpAuthNegotiateAndroid(
-    const std::string& account_type)
-    : account_type_(account_type),
+    const HttpAuthPreferences* prefs)
+    : prefs_(prefs),
       can_delegate_(false),
       first_challenge_(true),
       auth_token_(nullptr),
       weak_factory_(this) {
-  DCHECK(!account_type.empty());
   JNIEnv* env = AttachCurrentThread();
   java_authenticator_.Reset(Java_HttpNegotiateAuthenticator_create(
-      env, ConvertUTF8ToJavaString(env, account_type).obj()));
+      env,
+      ConvertUTF8ToJavaString(env, prefs->AuthAndroidNegotiateAccountType())
+          .obj()));
 }
 
 HttpAuthNegotiateAndroid::~HttpAuthNegotiateAndroid() {
@@ -101,6 +103,11 @@ int HttpAuthNegotiateAndroid::GenerateAuthToken(
     const std::string& spn,
     std::string* auth_token,
     const net::CompletionCallback& callback) {
+  if (prefs_->AuthAndroidNegotiateAccountType().empty()) {
+    // This can happen if there is a policy change, removing the account type,
+    // in the middle of a negotiation.
+    return ERR_UNSUPPORTED_AUTH_SCHEME;
+  }
   DCHECK(auth_token);
   DCHECK(completion_callback_.is_null());
   DCHECK(!callback.is_null());
@@ -117,7 +124,7 @@ int HttpAuthNegotiateAndroid::GenerateAuthToken(
       ConvertUTF8ToJavaString(env, server_auth_token_);
   ScopedJavaLocalRef<jstring> java_spn = ConvertUTF8ToJavaString(env, spn);
   ScopedJavaLocalRef<jstring> java_account_type =
-      ConvertUTF8ToJavaString(env, account_type_);
+      ConvertUTF8ToJavaString(env, prefs_->AuthAndroidNegotiateAccountType());
 
   // It is intentional that callback_wrapper is not owned or deleted by the
   // HttpAuthNegotiateAndroid object. The Java code will call the callback

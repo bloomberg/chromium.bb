@@ -19,6 +19,7 @@
 namespace net {
 
 class HttpAuthChallengeTokenizer;
+class HttpAuthPreferences;
 
 namespace android {
 
@@ -58,9 +59,10 @@ class NET_EXPORT_PRIVATE JavaNegotiateResultWrapper {
 // for the full details.
 class NET_EXPORT_PRIVATE HttpAuthNegotiateAndroid {
  public:
-  // Creates an object for one negotiation session. |account_type| is the
-  // Android account type, used by Android to find the correct authenticator.
-  explicit HttpAuthNegotiateAndroid(const std::string& account_type);
+  // Creates an object for one negotiation session. |prefs| are the
+  // authentication preferences. In particular they include the Android account
+  // type, which is used to connect to the correct Android Authenticator.
+  explicit HttpAuthNegotiateAndroid(const HttpAuthPreferences* prefs);
   ~HttpAuthNegotiateAndroid();
 
   // Register the JNI for this class.
@@ -116,7 +118,7 @@ class NET_EXPORT_PRIVATE HttpAuthNegotiateAndroid {
  private:
   void SetResultInternal(int result, const std::string& token);
 
-  std::string account_type_;
+  const HttpAuthPreferences* prefs_;
   bool can_delegate_;
   bool first_challenge_;
   std::string server_auth_token_;

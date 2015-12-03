@@ -13,6 +13,7 @@
 #include "net/base/net_string_util.h"
 #include "net/http/http_auth.h"
 #include "net/http/http_auth_challenge_tokenizer.h"
+#include "net/http/http_auth_scheme.h"
 
 namespace net {
 
@@ -62,7 +63,7 @@ bool HttpAuthHandlerBasic::Init(HttpAuthChallengeTokenizer* challenge) {
 bool HttpAuthHandlerBasic::ParseChallenge(
     HttpAuthChallengeTokenizer* challenge) {
   // Verify the challenge's auth-scheme.
-  if (!base::LowerCaseEqualsASCII(challenge->scheme(), "basic"))
+  if (!base::LowerCaseEqualsASCII(challenge->scheme(), kBasicAuthScheme))
     return false;
 
   std::string realm;

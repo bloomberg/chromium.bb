@@ -59,6 +59,7 @@
 #include "net/dns/mapped_host_resolver.h"
 #include "net/http/http_auth_filter.h"
 #include "net/http/http_auth_handler_factory.h"
+#include "net/http/http_auth_preferences.h"
 #include "net/http/http_network_layer.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties_impl.h"
@@ -408,8 +409,7 @@ void IOSChromeIOThread::Init() {
 
   globals_->ssl_config_service = GetSSLConfigService();
 
-  globals_->http_auth_handler_factory.reset(
-      CreateDefaultAuthHandlerFactory(globals_->host_resolver.get()));
+  CreateDefaultAuthHandlerFactory();
   globals_->http_server_properties.reset(new net::HttpServerPropertiesImpl());
   // In-memory cookie store.
   globals_->system_cookie_store = new net::CookieMonster(nullptr, nullptr);
@@ -563,21 +563,16 @@ void IOSChromeIOThread::ConfigureNPNGlobals(
   }
 }
 
-net::HttpAuthHandlerFactory* IOSChromeIOThread::CreateDefaultAuthHandlerFactory(
-    net::HostResolver* resolver) {
-  globals_->url_security_manager.reset(net::URLSecurityManager::Create(
-      nullptr /* whitelist_default */, nullptr /* whitelist_delegate */));
-  std::vector<std::string> supported_schemes = base::SplitString(
-      kSupportedAuthSchemes, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-
-  scoped_ptr<net::HttpAuthHandlerRegistryFactory> registry_factory(
+void IOSChromeIOThread::CreateDefaultAuthHandlerFactory() {
+  std::vector<std::string> supported_schemes =
+      base::SplitString(kSupportedAuthSchemes, ",", base::TRIM_WHITESPACE,
+                        base::SPLIT_WANT_NONEMPTY);
+  globals_->http_auth_preferences.reset(
+      new net::HttpAuthPreferences(supported_schemes, std::string()));
+  globals_->http_auth_handler_factory =
       net::HttpAuthHandlerRegistryFactory::Create(
-          supported_schemes, globals_->url_security_manager.get(), resolver,
-          std::string() /* gssapi_library_name */,
-          std::string() /* auth_android_negotiate_account_type */,
-          false /* negotiate_disable_cname_lookup */,
-          false /* negotiate_enable_port */));
-  return registry_factory.release();
+          globals_->http_auth_preferences.get(), globals_->host_resolver.get())
+          .Pass();
 }
 
 void IOSChromeIOThread::ClearHostCache() {

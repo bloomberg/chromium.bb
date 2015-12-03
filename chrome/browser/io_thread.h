@@ -64,7 +64,8 @@ class CTLogVerifier;
 class FtpTransactionFactory;
 class HostMappingRules;
 class HostResolver;
-class HttpAuthHandlerFactory;
+class HttpAuthHandlerRegistryFactory;
+class HttpAuthPreferences;
 class HttpNetworkSession;
 class HttpServerProperties;
 class HttpTransactionFactory;
@@ -79,7 +80,6 @@ class URLRequestBackoffManager;
 class URLRequestContext;
 class URLRequestContextGetter;
 class URLRequestJobFactory;
-class URLSecurityManager;
 }  // namespace net
 
 namespace net_log {
@@ -169,7 +169,7 @@ class IOThread : public content::BrowserThreadDelegate {
     scoped_ptr<net::URLRequestJobFactory>
         proxy_script_fetcher_url_request_job_factory;
     scoped_ptr<net::URLRequestBackoffManager> url_request_backoff_manager;
-    scoped_ptr<net::URLSecurityManager> url_security_manager;
+    scoped_ptr<net::HttpAuthPreferences> http_auth_preferences;
     // TODO(willchan): Remove proxy script fetcher context since it's not
     // necessary now that I got rid of refcounting URLRequestContexts.
     //
@@ -325,8 +325,7 @@ class IOThread : public content::BrowserThreadDelegate {
   // SystemRequestContext state has been initialized on the UI thread.
   void InitSystemRequestContextOnIOThread();
 
-  net::HttpAuthHandlerFactory* CreateDefaultAuthHandlerFactory(
-      net::HostResolver* resolver);
+  void CreateDefaultAuthHandlerFactory();
 
   // Returns an SSLConfigService instance.
   net::SSLConfigService* GetSSLConfigService();
@@ -334,6 +333,11 @@ class IOThread : public content::BrowserThreadDelegate {
   void ChangedToOnTheRecordOnIOThread();
 
   void UpdateDnsClientEnabled();
+  void UpdateServerWhitelist();
+  void UpdateDelegateWhitelist();
+  void UpdateAndroidAuthNegotiateAccountType();
+  void UpdateNegotiateDisableCnameLookup();
+  void UpdateNegotiateEnablePort();
 
   // Configures QUIC options based on the flags in |command_line| as
   // well as the QUIC field trial group.
@@ -516,13 +520,23 @@ class IOThread : public content::BrowserThreadDelegate {
   BooleanPrefMember quick_check_enabled_;
 
   // Store HTTP Auth-related policies in this thread.
+  // TODO(aberent) Make the list of auth schemes a PrefMember, so that the
+  // policy can change after startup (https://crbug/549273).
   std::string auth_schemes_;
-  bool negotiate_disable_cname_lookup_;
-  bool negotiate_enable_port_;
-  std::string auth_server_whitelist_;
-  std::string auth_delegate_whitelist_;
+  BooleanPrefMember negotiate_disable_cname_lookup_;
+  BooleanPrefMember negotiate_enable_port_;
+  StringPrefMember auth_server_whitelist_;
+  StringPrefMember auth_delegate_whitelist_;
+
+#if defined(OS_ANDROID)
+  StringPrefMember auth_android_negotiate_account_type_;
+#endif
+#if defined(OS_POSIX) && !defined(OS_ANDROID)
+  // No PrefMember for the GSSAPI library name, since changing it after startup
+  // requires unloading the existing GSSAPI library, which could cause all sorts
+  // of problems for, for example, active Negotiate transactions.
   std::string gssapi_library_name_;
-  std::string auth_android_negotiate_account_type_;
+#endif
 
   // This is an instance of the default SSLConfigServiceManager for the current
   // platform and it gets SSL preferences from local_state object.

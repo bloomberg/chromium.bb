@@ -77,6 +77,7 @@
 #include "net/ftp/ftp_network_layer.h"
 #include "net/http/http_auth_filter.h"
 #include "net/http/http_auth_handler_factory.h"
+#include "net/http/http_auth_preferences.h"
 #include "net/http/http_network_layer.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties_impl.h"
@@ -472,17 +473,36 @@ IOThread::IOThread(
       is_quic_allowed_by_policy_(true),
       creation_time_(base::TimeTicks::Now()),
       weak_factory_(this) {
+  scoped_refptr<base::SingleThreadTaskRunner> io_thread_proxy =
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
   auth_schemes_ = local_state->GetString(prefs::kAuthSchemes);
-  negotiate_disable_cname_lookup_ = local_state->GetBoolean(
-      prefs::kDisableAuthNegotiateCnameLookup);
-  negotiate_enable_port_ = local_state->GetBoolean(
-      prefs::kEnableAuthNegotiatePort);
-  auth_server_whitelist_ = local_state->GetString(prefs::kAuthServerWhitelist);
-  auth_delegate_whitelist_ = local_state->GetString(
-      prefs::kAuthNegotiateDelegateWhitelist);
+  negotiate_disable_cname_lookup_.Init(
+      prefs::kDisableAuthNegotiateCnameLookup, local_state,
+      base::Bind(&IOThread::UpdateNegotiateDisableCnameLookup,
+                 base::Unretained(this)));
+  negotiate_disable_cname_lookup_.MoveToThread(io_thread_proxy);
+  negotiate_enable_port_.Init(
+      prefs::kEnableAuthNegotiatePort, local_state,
+      base::Bind(&IOThread::UpdateNegotiateEnablePort, base::Unretained(this)));
+  negotiate_enable_port_.MoveToThread(io_thread_proxy);
+  auth_server_whitelist_.Init(
+      prefs::kAuthServerWhitelist, local_state,
+      base::Bind(&IOThread::UpdateServerWhitelist, base::Unretained(this)));
+  auth_server_whitelist_.MoveToThread(io_thread_proxy);
+  auth_delegate_whitelist_.Init(
+      prefs::kAuthNegotiateDelegateWhitelist, local_state,
+      base::Bind(&IOThread::UpdateDelegateWhitelist, base::Unretained(this)));
+  auth_delegate_whitelist_.MoveToThread(io_thread_proxy);
+#if defined(OS_ANDROID)
+  auth_android_negotiate_account_type_.Init(
+      prefs::kAuthAndroidNegotiateAccountType, local_state,
+      base::Bind(&IOThread::UpdateAndroidAuthNegotiateAccountType,
+                 base::Unretained(this)));
+  auth_android_negotiate_account_type_.MoveToThread(io_thread_proxy);
+#endif
+#if defined(OS_POSIX) && !defined(OS_ANDROID)
   gssapi_library_name_ = local_state->GetString(prefs::kGSSAPILibraryName);
-  auth_android_negotiate_account_type_ =
-      local_state->GetString(prefs::kAuthAndroidNegotiateAccountType);
+#endif
   pref_proxy_config_tracker_.reset(
       ProxyServiceFactory::CreatePrefProxyConfigTrackerOfLocalState(
           local_state));
@@ -508,13 +528,11 @@ IOThread::IOThread(
                            local_state,
                            base::Bind(&IOThread::UpdateDnsClientEnabled,
                                       base::Unretained(this)));
-  dns_client_enabled_.MoveToThread(
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
+  dns_client_enabled_.MoveToThread(io_thread_proxy);
 
   quick_check_enabled_.Init(prefs::kQuickCheckEnabled,
                             local_state);
-  quick_check_enabled_.MoveToThread(
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
+  quick_check_enabled_.MoveToThread(io_thread_proxy);
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
   is_spdy_disabled_by_policy_ = policy_service->GetPolicies(
@@ -751,8 +769,7 @@ void IOThread::Init() {
 
   globals_->ssl_config_service = GetSSLConfigService();
 
-  globals_->http_auth_handler_factory.reset(CreateDefaultAuthHandlerFactory(
-      globals_->host_resolver.get()));
+  CreateDefaultAuthHandlerFactory();
   globals_->http_server_properties.reset(new net::HttpServerPropertiesImpl());
   // For the ProxyScriptFetcher, we use a direct ProxyService.
   globals_->proxy_script_fetcher_proxy_service =
@@ -890,7 +907,6 @@ void IOThread::CleanUp() {
   network_change_observer_.reset();
 
   system_proxy_config_service_.reset();
-
   delete globals_;
   globals_ = NULL;
 
@@ -1026,30 +1042,54 @@ void IOThread::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kQuickCheckEnabled, true);
 }
 
-net::HttpAuthHandlerFactory* IOThread::CreateDefaultAuthHandlerFactory(
-    net::HostResolver* resolver) {
-  net::HttpAuthFilterWhitelist* auth_filter_default_credentials = NULL;
-  if (!auth_server_whitelist_.empty()) {
-    auth_filter_default_credentials =
-        new net::HttpAuthFilterWhitelist(auth_server_whitelist_);
-  }
-  net::HttpAuthFilterWhitelist* auth_filter_delegate = NULL;
-  if (!auth_delegate_whitelist_.empty()) {
-    auth_filter_delegate =
-        new net::HttpAuthFilterWhitelist(auth_delegate_whitelist_);
-  }
-  globals_->url_security_manager.reset(
-      net::URLSecurityManager::Create(auth_filter_default_credentials,
-                                      auth_filter_delegate));
-  std::vector<std::string> supported_schemes = base::SplitString(
-      auth_schemes_, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+void IOThread::UpdateServerWhitelist() {
+  globals_->http_auth_preferences->set_server_whitelist(
+      auth_server_whitelist_.GetValue());
+}
 
-  scoped_ptr<net::HttpAuthHandlerRegistryFactory> registry_factory(
+void IOThread::UpdateDelegateWhitelist() {
+  globals_->http_auth_preferences->set_delegate_whitelist(
+      auth_delegate_whitelist_.GetValue());
+}
+
+#if defined(OS_ANDROID)
+void IOThread::UpdateAndroidAuthNegotiateAccountType() {
+  globals_->http_auth_preferences->set_auth_android_negotiate_account_type(
+      auth_android_negotiate_account_type_.GetValue());
+}
+#endif
+
+void IOThread::UpdateNegotiateDisableCnameLookup() {
+  globals_->http_auth_preferences->set_negotiate_disable_cname_lookup(
+      negotiate_disable_cname_lookup_.GetValue());
+}
+
+void IOThread::UpdateNegotiateEnablePort() {
+  globals_->http_auth_preferences->set_negotiate_enable_port(
+      negotiate_enable_port_.GetValue());
+}
+
+void IOThread::CreateDefaultAuthHandlerFactory() {
+  std::vector<std::string> supported_schemes = base::SplitString(
+      auth_schemes_, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  globals_->http_auth_preferences.reset(new net::HttpAuthPreferences(
+      supported_schemes
+#if defined(OS_POSIX) && !defined(OS_ANDROID)
+      ,
+      gssapi_library_name_
+#endif
+      ));
+  UpdateServerWhitelist();
+  UpdateDelegateWhitelist();
+  UpdateNegotiateDisableCnameLookup();
+  UpdateNegotiateEnablePort();
+#if defined(OS_ANDROID)
+  UpdateAndroidAuthNegotiateAccountType();
+#endif
+  globals_->http_auth_handler_factory =
       net::HttpAuthHandlerRegistryFactory::Create(
-          supported_schemes, globals_->url_security_manager.get(), resolver,
-          gssapi_library_name_, auth_android_negotiate_account_type_,
-          negotiate_disable_cname_lookup_, negotiate_enable_port_));
-  return registry_factory.release();
+          globals_->http_auth_preferences.get(), globals_->host_resolver.get())
+          .Pass();
 }
 
 void IOThread::ClearHostCache() {

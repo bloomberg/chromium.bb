@@ -43,6 +43,7 @@
 #include "net/http/http_auth_handler_digest.h"
 #include "net/http/http_auth_handler_mock.h"
 #include "net/http/http_auth_handler_ntlm.h"
+#include "net/http/http_auth_scheme.h"
 #include "net/http/http_basic_state.h"
 #include "net/http/http_basic_stream.h"
 #include "net/http/http_network_session.h"
@@ -667,7 +668,7 @@ bool CheckBasicServerAuth(const AuthChallengeInfo* auth_challenge) {
   EXPECT_FALSE(auth_challenge->is_proxy);
   EXPECT_EQ("www.example.org:80", auth_challenge->challenger.ToString());
   EXPECT_EQ("MyRealm1", auth_challenge->realm);
-  EXPECT_EQ("basic", auth_challenge->scheme);
+  EXPECT_EQ(kBasicAuthScheme, auth_challenge->scheme);
   return true;
 }
 
@@ -677,7 +678,7 @@ bool CheckBasicProxyAuth(const AuthChallengeInfo* auth_challenge) {
   EXPECT_TRUE(auth_challenge->is_proxy);
   EXPECT_EQ("myproxy:70", auth_challenge->challenger.ToString());
   EXPECT_EQ("MyRealm1", auth_challenge->realm);
-  EXPECT_EQ("basic", auth_challenge->scheme);
+  EXPECT_EQ(kBasicAuthScheme, auth_challenge->scheme);
   return true;
 }
 
@@ -687,7 +688,7 @@ bool CheckDigestServerAuth(const AuthChallengeInfo* auth_challenge) {
   EXPECT_FALSE(auth_challenge->is_proxy);
   EXPECT_EQ("www.example.org:80", auth_challenge->challenger.ToString());
   EXPECT_EQ("digestive", auth_challenge->realm);
-  EXPECT_EQ("digest", auth_challenge->scheme);
+  EXPECT_EQ(kDigestAuthScheme, auth_challenge->scheme);
   return true;
 }
 
@@ -698,7 +699,7 @@ bool CheckNTLMServerAuth(const AuthChallengeInfo* auth_challenge) {
   EXPECT_FALSE(auth_challenge->is_proxy);
   EXPECT_EQ("172.22.68.17:80", auth_challenge->challenger.ToString());
   EXPECT_EQ(std::string(), auth_challenge->realm);
-  EXPECT_EQ("ntlm", auth_challenge->scheme);
+  EXPECT_EQ(kNtlmAuthScheme, auth_challenge->scheme);
   return true;
 }
 #endif  // defined(NTLM_PORTABLE)
@@ -6529,7 +6530,7 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthCacheAndPreauth) {
     EXPECT_EQ("www.example.org:80",
               response->auth_challenge->challenger.ToString());
     EXPECT_EQ("MyRealm2", response->auth_challenge->realm);
-    EXPECT_EQ("basic", response->auth_challenge->scheme);
+    EXPECT_EQ(kBasicAuthScheme, response->auth_challenge->scheme);
 
     TestCompletionCallback callback2;
 
@@ -9359,7 +9360,7 @@ TEST_P(HttpNetworkTransactionTest, ChangeAuthRealms) {
   EXPECT_FALSE(challenge->is_proxy);
   EXPECT_EQ("www.example.org:80", challenge->challenger.ToString());
   EXPECT_EQ("first_realm", challenge->realm);
-  EXPECT_EQ("basic", challenge->scheme);
+  EXPECT_EQ(kBasicAuthScheme, challenge->scheme);
 
   // Issue the second request with an incorrect password. There should be a
   // password prompt for second_realm waiting to be filled in after the
@@ -9377,7 +9378,7 @@ TEST_P(HttpNetworkTransactionTest, ChangeAuthRealms) {
   EXPECT_FALSE(challenge->is_proxy);
   EXPECT_EQ("www.example.org:80", challenge->challenger.ToString());
   EXPECT_EQ("second_realm", challenge->realm);
-  EXPECT_EQ("basic", challenge->scheme);
+  EXPECT_EQ(kBasicAuthScheme, challenge->scheme);
 
   // Issue the third request with another incorrect password. There should be
   // a password prompt for first_realm waiting to be filled in. If the password
@@ -9396,7 +9397,7 @@ TEST_P(HttpNetworkTransactionTest, ChangeAuthRealms) {
   EXPECT_FALSE(challenge->is_proxy);
   EXPECT_EQ("www.example.org:80", challenge->challenger.ToString());
   EXPECT_EQ("first_realm", challenge->realm);
-  EXPECT_EQ("basic", challenge->scheme);
+  EXPECT_EQ(kBasicAuthScheme, challenge->scheme);
 
   // Issue the fourth request with the correct password and username.
   TestCompletionCallback callback4;

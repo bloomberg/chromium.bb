@@ -9,10 +9,8 @@
 namespace net {
 
 // static
-URLSecurityManager* URLSecurityManager::Create(
-    const HttpAuthFilter* whitelist_default,
-    const HttpAuthFilter* whitelist_delegate) {
-  return new URLSecurityManagerWhitelist(whitelist_default, whitelist_delegate);
+URLSecurityManager* URLSecurityManager::Create() {
+  return new URLSecurityManagerWhitelist;
 }
 
 }  //  namespace net

@@ -16,9 +16,10 @@
 #include "net/http/http_auth_handler.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_auth_handler_mock.h"
+#include "net/http/http_auth_scheme.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
-#include "net/http/mock_allow_url_security_manager.h"
+#include "net/http/mock_allow_http_auth_preferences.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -121,12 +122,12 @@ TEST(HttpAuthTest, ChooseBestChallenge) {
       }};
   GURL origin("http://www.example.com");
   std::set<HttpAuth::Scheme> disabled_schemes;
-  MockAllowURLSecurityManager url_security_manager;
+  MockAllowHttpAuthPreferences http_auth_preferences;
   scoped_ptr<HostResolver> host_resolver(new MockHostResolver());
   scoped_ptr<HttpAuthHandlerRegistryFactory> http_auth_handler_factory(
       HttpAuthHandlerFactory::CreateDefault(host_resolver.get()));
-  http_auth_handler_factory->SetURLSecurityManager(
-      "negotiate", &url_security_manager);
+  http_auth_handler_factory->SetHttpAuthPreferences(kNegotiateAuthScheme,
+                                                    &http_auth_preferences);
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
     // Make a HttpResponseHeaders object.
