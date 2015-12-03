@@ -174,10 +174,6 @@ void AwMainDelegate::PreSandboxStartup() {
   crash_reporter::EnableMicrodumpCrashReporter();
 }
 
-void AwMainDelegate::SandboxInitialized(const std::string& process_type) {
-  // TODO(torne): Adjust linux OOM score here.
-}
-
 int AwMainDelegate::RunProcess(
     const std::string& process_type,
     const content::MainFunctionParams& main_function_params) {
