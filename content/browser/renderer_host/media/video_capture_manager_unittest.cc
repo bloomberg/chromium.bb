@@ -465,8 +465,8 @@ TEST_F(VideoCaptureManagerTest, OpenNotExisting) {
   InSequence s;
   EXPECT_CALL(*listener_, DevicesEnumerated(MEDIA_DEVICE_VIDEO_CAPTURE, _))
       .WillOnce(SaveArg<1>(&devices));
-  EXPECT_CALL(*listener_, Opened(MEDIA_DEVICE_VIDEO_CAPTURE, _));
   EXPECT_CALL(*frame_observer_, OnError(_));
+  EXPECT_CALL(*listener_, Opened(MEDIA_DEVICE_VIDEO_CAPTURE, _));
   EXPECT_CALL(*listener_, Closed(MEDIA_DEVICE_VIDEO_CAPTURE, _));
 
   vcm_->EnumerateDevices(MEDIA_DEVICE_VIDEO_CAPTURE);

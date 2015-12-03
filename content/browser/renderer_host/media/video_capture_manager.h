@@ -208,10 +208,18 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
   // VideoCaptureDevice is returned to the IO-thread and stored in
   // a DeviceEntry in |devices_|. Ownership of |client| passes to
   // the device.
-  scoped_ptr<media::VideoCaptureDevice> DoStartDeviceOnDeviceThread(
-      media::VideoCaptureSessionId session_id,
+  scoped_ptr<media::VideoCaptureDevice> DoStartDeviceCaptureOnDeviceThread(
+      const media::VideoCaptureDevice::Name& name,
+      const media::VideoCaptureParams& params,
+      scoped_ptr<media::VideoCaptureDevice::Client> client);
+
+  scoped_ptr<media::VideoCaptureDevice> DoStartTabCaptureOnDeviceThread(
       const std::string& device_id,
-      MediaStreamType stream_type,
+      const media::VideoCaptureParams& params,
+      scoped_ptr<media::VideoCaptureDevice::Client> client);
+
+  scoped_ptr<media::VideoCaptureDevice> DoStartDesktopCaptureOnDeviceThread(
+      const std::string& device_id,
       const media::VideoCaptureParams& params,
       scoped_ptr<media::VideoCaptureDevice::Client> client);
 
