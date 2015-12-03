@@ -10,6 +10,15 @@
     android:minHeight="@dimen/snackbar_min_height"
     android:orientation="horizontal" >
 
+    <ImageView android:id="@+id/snackbar_profile_image"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_gravity="center_vertical"
+        android:layout_marginStart="12dp"
+        android:scaleType="fitCenter"
+        android:visibility="visible"
+        android:contentDescription="@null"/>
+
     <org.chromium.chrome.browser.snackbar.TemplatePreservingTextView
         android:id="@+id/snackbar_message"
         android:layout_width="0dp"

@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.snackbar;
 
+import android.graphics.Bitmap;
+
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
 
 /**
@@ -26,6 +28,7 @@ public class Snackbar {
     private int mBackgroundColor;
     private boolean mSingleLine = true;
     private int mDurationMs;
+    private Bitmap mProfileImage;
 
     // Prevent instantiation.
     private Snackbar() {}
@@ -61,6 +64,16 @@ public class Snackbar {
     public Snackbar setAction(String actionText, Object actionData) {
         mActionText = actionText;
         mActionData = actionData;
+        return this;
+    }
+
+    /**
+     * Sets the identity profileImage (profile image) which should be displayed in the snackbar.
+     * If null, snackbar will have no profileImage. Ability to have an icon is specific to the
+     * identity snackbars and should be used only there.
+     */
+    public Snackbar setProfileImage(Bitmap profileImage) {
+        mProfileImage = profileImage;
         return this;
     }
 
@@ -122,5 +135,12 @@ public class Snackbar {
      */
     int getBackgroundColor() {
         return mBackgroundColor;
+    }
+
+    /**
+     * If method returns null, then no profileImage will be shown in snackbar.
+     */
+    Bitmap getProfileImage() {
+        return mProfileImage;
     }
 }
