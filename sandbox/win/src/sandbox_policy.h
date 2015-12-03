@@ -80,7 +80,7 @@ class TargetPolicy {
   //   not compatible with AppContainer, see SetAppContainer.
   // lockdown: the security level for the token that comes into force after the
   //   process calls TargetServices::LowerToken() or the process calls
-  //   ReverToSelf(). See the explanation of each level in the TokenLevel
+  //   RevertToSelf(). See the explanation of each level in the TokenLevel
   //   definition.
   // Return value: SBOX_ALL_OK if the setting succeeds and false otherwise.
   //   Returns false if the lockdown value is more permissive than the initial
