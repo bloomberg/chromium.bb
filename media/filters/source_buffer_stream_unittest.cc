@@ -3061,6 +3061,54 @@ TEST_F(SourceBufferStreamTest, GarbageCollection_Performance) {
   }
 }
 
+TEST_F(SourceBufferStreamTest, GarbageCollection_MediaTimeAfterLastAppendTime) {
+  // Set memory limit to 10 buffers.
+  SetMemoryLimit(10);
+
+  // Append 12 buffers. The duration of the last buffer is 30
+  NewSegmentAppend("0K 30 60 90 120K 150 180 210K 240 270 300K 330D30");
+  CheckExpectedRangesByTimestamp("{ [0,360) }");
+
+  // Do a garbage collection with the media time higher than the timestamp of
+  // the last appended buffer (330), but still within buffered ranges, taking
+  // into account the duration of the last frame (timestamp of the last frame is
+  // 330, duration is 30, so the latest valid buffered position is 330+30=360).
+  EXPECT_TRUE(stream_->GarbageCollectIfNeeded(
+      DecodeTimestamp::FromMilliseconds(360), 0));
+
+  // GC should collect one GOP from the front to bring us back under memory
+  // limit of 10 buffers.
+  CheckExpectedRangesByTimestamp("{ [120,360) }");
+}
+
+TEST_F(SourceBufferStreamTest,
+       GarbageCollection_MediaTimeOutsideOfStreamBufferedRange) {
+  // Set memory limit to 10 buffers.
+  SetMemoryLimit(10);
+
+  // Append 12 buffers.
+  NewSegmentAppend("0K 30 60 90 120K 150 180 210K 240 270 300K 330");
+  CheckExpectedRangesByTimestamp("{ [0,360) }");
+
+  // Seek in order to set the stream read position to 330 an ensure that the
+  // stream selects the buffered range.
+  SeekToTimestampMs(330);
+
+  // Do a garbage collection with the media time outside the buffered ranges
+  // (this might happen when there's both audio and video streams, audio stream
+  // buffered range is longer than the video stream buffered range, since
+  // media::Pipeline uses audio stream as a time source in that case, it might
+  // return a media_time that is slightly outside of video buffered range). In
+  // those cases the GC algorithm should clamp the media_time value to the
+  // buffered ranges to work correctly (see crbug.com/563292).
+  EXPECT_TRUE(stream_->GarbageCollectIfNeeded(
+      DecodeTimestamp::FromMilliseconds(361), 0));
+
+  // GC should collect one GOP from the front to bring us back under memory
+  // limit of 10 buffers.
+  CheckExpectedRangesByTimestamp("{ [120,360) }");
+}
+
 TEST_F(SourceBufferStreamTest, GetRemovalRange_BytesToFree) {
   // Append 2 GOPs starting at 300ms, 30ms apart.
   NewSegmentAppend("300K 330 360 390K 420 450");
