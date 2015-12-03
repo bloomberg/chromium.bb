@@ -431,7 +431,9 @@ void AddExtensionWithMenuOpen(ToolbarController* toolbarController,
 
 // Test adding an extension while the app menu is open. Regression test for
 // crbug.com/561237.
-IN_PROC_BROWSER_TEST_F(BrowserActionButtonUiTest, AddExtensionWithMenuOpen) {
+// Flaky: http://crbug.com/564623
+IN_PROC_BROWSER_TEST_F(BrowserActionButtonUiTest,
+                       DISABLED_AddExtensionWithMenuOpen) {
   // Add an extension to ensure the overflow menu is present.
   scoped_refptr<const extensions::Extension> extension =
       extensions::extension_action_test_util::CreateActionExtension(
