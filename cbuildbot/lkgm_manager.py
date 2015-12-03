@@ -10,6 +10,7 @@ import codecs
 import os
 import re
 from xml.dom import minidom
+from xml.parsers import expat
 
 from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import constants
@@ -17,6 +18,7 @@ from chromite.cbuildbot import manifest_version
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import git
+from chromite.lib import osutils
 
 
 site_config = config_lib.GetConfig()
@@ -177,7 +179,13 @@ class LKGMManager(manifest_version.BuildSpecsManager):
       return
 
     # Write the last known good version string to the manifest.
-    manifest_dom = minidom.parse(manifest)
+    try:
+      manifest_dom = minidom.parse(manifest)
+    except expat.ExpatError:
+      logging.error('Got parsing error for: %s', manifest)
+      logging.error('Bad XML:\n%s', osutils.ReadFile(manifest))
+      raise
+
     lkgm_element = manifest_dom.createElement(LKGM_ELEMENT)
     lkgm_element.setAttribute(LKGM_VERSION_ATTR, lkgm_version)
     manifest_dom.documentElement.appendChild(lkgm_element)
