@@ -21,17 +21,32 @@
 
 namespace blink {
 
-bool CSSVariableResolver::resolveVariableTokensRecursive(CSSParserTokenRange range,
-    Vector<CSSParserToken>& result)
+void CSSVariableResolver::resolveFallback(CSSParserTokenRange range,
+    Vector<CSSParserToken>& result, CSSVariableResolver::ResolutionState& context)
 {
+    if (!range.atEnd()) {
+        range.consume();
+        resolveVariableReferencesFromTokens(range, result, context);
+    } else {
+        context.success = false;
+    }
+}
+
+void CSSVariableResolver::resolveVariableTokensRecursive(CSSParserTokenRange range,
+    Vector<CSSParserToken>& result, CSSVariableResolver::ResolutionState& context)
+{
+    Vector<CSSParserToken> trash;
     range.consumeWhitespace();
     ASSERT(range.peek().type() == IdentToken);
     AtomicString variableName = range.consumeIncludingWhitespace().value();
     ASSERT(range.atEnd() || (range.peek().type() == CommaToken));
 
+    // Cycle detection.
     if (m_variablesSeen.contains(variableName)) {
-        m_cycleDetected = true;
-        return false;
+        context.success = false;
+        context.cycleStartPoints.add(variableName);
+        resolveFallback(range, trash, context);
+        return;
     }
 
     CSSVariableData* variableData = m_styleVariableData ? m_styleVariableData->getVariable(variableName) : nullptr;
@@ -39,7 +54,7 @@ bool CSSVariableResolver::resolveVariableTokensRecursive(CSSParserTokenRange ran
         Vector<CSSParserToken> tokens;
         if (variableData->needsVariableResolution()) {
             m_variablesSeen.add(variableName);
-            resolveVariableReferencesFromTokens(variableData->tokens(), tokens);
+            resolveVariableReferencesFromTokens(variableData->tokens(), result, context);
             m_variablesSeen.remove(variableName);
 
             // The old variable data holds onto the backing string the new resolved CSSVariableData
@@ -47,37 +62,49 @@ bool CSSVariableResolver::resolveVariableTokensRecursive(CSSParserTokenRange ran
             ASSERT(variableData->refCount() > 1);
 
             m_styleVariableData->setVariable(variableName, CSSVariableData::createResolved(tokens));
+            if (!context.cycleStartPoints.isEmpty()) {
+                if (context.cycleStartPoints.contains(variableName))
+                    context.cycleStartPoints.remove(variableName);
+
+                if (!context.cycleStartPoints.isEmpty()) {
+                    resolveFallback(range, trash, context);
+                    return;
+                }
+            }
         } else {
             tokens = variableData->tokens();
         }
+
         if (!tokens.isEmpty()) {
-            result.appendVector(tokens);
-            return true;
+            // Check that loops are not induced by the fallback.
+            resolveFallback(range, trash, context);
+            if (context.cycleStartPoints.isEmpty()) {
+                // It's OK if the fallback fails to resolve - we're not actually taking it.
+                context.success = true;
+                result.appendVector(tokens);
+            }
+            return;
         }
     }
 
-    if (range.atEnd())
-        return false;
-
-    // Comma Token, as asserted above.
-    range.consume();
-
-    resolveVariableReferencesFromTokens(range, result);
-    return true;
+    // We're legitimately falling back, so reset success flag.
+    context.success = true;
+    resolveFallback(range, result, context);
 }
 
-bool CSSVariableResolver::resolveVariableReferencesFromTokens(CSSParserTokenRange range,
-    Vector<CSSParserToken>& result)
+void CSSVariableResolver::resolveVariableReferencesFromTokens(CSSParserTokenRange range,
+    Vector<CSSParserToken>& result, CSSVariableResolver::ResolutionState& context)
 {
     while (!range.atEnd()) {
         if (range.peek().functionId() != CSSValueVar) {
             result.append(range.consume());
-        } else if (!resolveVariableTokensRecursive(range.consumeBlock(), result) || m_cycleDetected) {
-            result.clear();
-            return false;
+        } else {
+            resolveVariableTokensRecursive(range.consumeBlock(), result, context);
         }
     }
-    return true;
+    if (!context.success)
+        result.clear();
+    return;
 }
 
 void CSSVariableResolver::resolveAndApplyVariableReferences(StyleResolverState& state, CSSPropertyID id, const CSSVariableReferenceValue& value)
@@ -86,7 +113,9 @@ void CSSVariableResolver::resolveAndApplyVariableReferences(StyleResolverState& 
     CSSVariableResolver resolver(state.style()->variables());
 
     Vector<CSSParserToken> tokens;
-    if (!resolver.resolveVariableReferencesFromTokens(value.variableDataValue()->tokens(), tokens))
+    ResolutionState resolutionContext;
+    resolver.resolveVariableReferencesFromTokens(value.variableDataValue()->tokens(), tokens, resolutionContext);
+    if (!resolutionContext.success)
         return;
 
     CSSParserContext context(HTMLStandardMode, 0);
@@ -111,7 +140,8 @@ void CSSVariableResolver::resolveVariableDefinitions(StyleVariableData* variable
         Vector<CSSParserToken> resolvedTokens;
 
         CSSVariableResolver resolver(variables, variable.key);
-        resolver.resolveVariableReferencesFromTokens(variable.value->tokens(), resolvedTokens);
+        ResolutionState context;
+        resolver.resolveVariableReferencesFromTokens(variable.value->tokens(), resolvedTokens, context);
 
         variable.value = CSSVariableData::createResolved(resolvedTokens);
     }
@@ -119,13 +149,11 @@ void CSSVariableResolver::resolveVariableDefinitions(StyleVariableData* variable
 
 CSSVariableResolver::CSSVariableResolver(StyleVariableData* styleVariableData)
     : m_styleVariableData(styleVariableData)
-    , m_cycleDetected(false)
 {
 }
 
 CSSVariableResolver::CSSVariableResolver(StyleVariableData* styleVariableData, AtomicString& variable)
     : m_styleVariableData(styleVariableData)
-    , m_cycleDetected(false)
 {
     m_variablesSeen.add(variable);
 }

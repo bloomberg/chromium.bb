@@ -27,12 +27,25 @@ private:
     CSSVariableResolver(StyleVariableData*);
     CSSVariableResolver(StyleVariableData*, AtomicString& variable);
 
-    bool resolveVariableTokensRecursive(CSSParserTokenRange, Vector<CSSParserToken>& result);
-    bool resolveVariableReferencesFromTokens(CSSParserTokenRange tokens, Vector<CSSParserToken>& result);
+    struct ResolutionState {
+        bool success;
+        // Resolution doesn't finish when a cycle is detected. Fallbacks still
+        // need to be tracked for additional cycles, and invalidation only
+        // applies back to cycle starts. This context member tracks all
+        // detected cycle start points.
+        HashSet<AtomicString> cycleStartPoints;
+
+        ResolutionState()
+            : success(true)
+        { };
+    };
+
+    void resolveFallback(CSSParserTokenRange, Vector<CSSParserToken>& result, ResolutionState& context);
+    void resolveVariableTokensRecursive(CSSParserTokenRange, Vector<CSSParserToken>& result, ResolutionState& context);
+    void resolveVariableReferencesFromTokens(CSSParserTokenRange tokens, Vector<CSSParserToken>& result, ResolutionState& context);
 
     StyleVariableData* m_styleVariableData;
     HashSet<AtomicString> m_variablesSeen;
-    bool m_cycleDetected;
 };
 
 } // namespace blink
