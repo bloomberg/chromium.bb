@@ -41,6 +41,7 @@
 #include "public/platform/WebDisplayMode.h"
 #include "public/platform/WebFloatSize.h"
 #include "public/platform/WebGestureCurveTarget.h"
+#include "public/platform/WebInputEventResult.h"
 #include "public/platform/WebLayer.h"
 #include "public/platform/WebPoint.h"
 #include "public/platform/WebRect.h"
@@ -117,7 +118,7 @@ public:
     void layoutAndPaintAsync(WebLayoutAndPaintAsyncCallback*) override;
     void compositeAndReadbackAsync(WebCompositeAndReadbackAsyncCallback*) override;
     void themeChanged() override;
-    bool handleInputEvent(const WebInputEvent&) override;
+    WebInputEventResult handleInputEvent(const WebInputEvent&) override;
     void setCursorVisibilityState(bool isVisible) override;
     bool hasTouchEventHandlersAt(const WebPoint&) override;
 
@@ -360,7 +361,7 @@ public:
     // wParam, LPARAM lParam) in webkit\webkit\win\WebView.cpp. The only
     // significant change in this function is the code to convert from a
     // Keyboard event to the Right Mouse button down event.
-    bool sendContextMenuEvent(const WebKeyboardEvent&);
+    WebInputEventResult sendContextMenuEvent(const WebKeyboardEvent&);
 
     void showContextMenuAtPoint(float x, float y, PassRefPtrWillBeRawPtr<ContextMenuProvider>);
 
@@ -595,12 +596,12 @@ private:
     void handleMouseLeave(LocalFrame&, const WebMouseEvent&) override;
     void handleMouseDown(LocalFrame&, const WebMouseEvent&) override;
     void handleMouseUp(LocalFrame&, const WebMouseEvent&) override;
-    bool handleMouseWheel(LocalFrame&, const WebMouseWheelEvent&) override;
-    bool handleGestureEvent(const WebGestureEvent&) override;
-    bool handleKeyEvent(const WebKeyboardEvent&) override;
-    bool handleCharEvent(const WebKeyboardEvent&) override;
+    WebInputEventResult handleMouseWheel(LocalFrame&, const WebMouseWheelEvent&) override;
+    WebInputEventResult handleGestureEvent(const WebGestureEvent&) override;
+    WebInputEventResult handleKeyEvent(const WebKeyboardEvent&) override;
+    WebInputEventResult handleCharEvent(const WebKeyboardEvent&) override;
 
-    bool handleSyntheticWheelFromTouchpadPinchEvent(const WebGestureEvent&);
+    WebInputEventResult handleSyntheticWheelFromTouchpadPinchEvent(const WebGestureEvent&);
 
     WebPlugin* focusedPluginIfInputMethodSupported(LocalFrame*);
 

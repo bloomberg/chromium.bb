@@ -60,7 +60,7 @@ class WebPagePopupImpl final
 public:
     ~WebPagePopupImpl() override;
     bool initialize(WebViewImpl*, PagePopupClient*);
-    bool handleKeyEvent(const PlatformKeyboardEvent&);
+    WebInputEventResult handleKeyEvent(const PlatformKeyboardEvent&);
     void closePopup();
     WebWidgetClient* widgetClient() const { return m_widgetClient; }
     bool hasSamePopupClient(WebPagePopupImpl* other) { return other && m_popupClient == other->m_popupClient; }
@@ -79,17 +79,17 @@ private:
     void paint(WebCanvas*, const WebRect&) override;
     void resize(const WebSize&) override;
     void close() override;
-    bool handleInputEvent(const WebInputEvent&) override;
+    WebInputEventResult handleInputEvent(const WebInputEvent&) override;
     void setFocus(bool) override;
     bool isPagePopup() const override { return true; }
     bool isAcceleratedCompositingActive() const override { return m_isAcceleratedCompositingActive; }
 
     // PageWidgetEventHandler functions
-    bool handleKeyEvent(const WebKeyboardEvent&) override;
-    bool handleCharEvent(const WebKeyboardEvent&) override;
-    bool handleGestureEvent(const WebGestureEvent&) override;
+    WebInputEventResult handleKeyEvent(const WebKeyboardEvent&) override;
+    WebInputEventResult handleCharEvent(const WebKeyboardEvent&) override;
+    WebInputEventResult handleGestureEvent(const WebGestureEvent&) override;
     void handleMouseDown(LocalFrame& mainFrame, const WebMouseEvent&) override;
-    bool handleMouseWheel(LocalFrame& mainFrame, const WebMouseWheelEvent&) override;
+    WebInputEventResult handleMouseWheel(LocalFrame& mainFrame, const WebMouseWheelEvent&) override;
 
     bool isMouseEventInWindow(const WebMouseEvent&);
     bool isGestureEventInWindow(const WebGestureEvent&);

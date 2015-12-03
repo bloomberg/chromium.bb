@@ -2007,11 +2007,6 @@ bool Node::dispatchDOMActivateEvent(int detail, PassRefPtrWillBeRawPtr<Event> un
     return event->defaultHandled();
 }
 
-bool Node::dispatchKeyEvent(const PlatformKeyboardEvent& nativeEvent)
-{
-    return dispatchEvent(KeyboardEvent::create(nativeEvent, document().domWindow()));
-}
-
 bool Node::dispatchMouseEvent(const PlatformMouseEvent& nativeEvent, const AtomicString& eventType,
     int detail, Node* relatedTarget)
 {
@@ -2019,22 +2014,9 @@ bool Node::dispatchMouseEvent(const PlatformMouseEvent& nativeEvent, const Atomi
     return dispatchEvent(event);
 }
 
-bool Node::dispatchGestureEvent(const PlatformGestureEvent& event)
-{
-    RefPtrWillBeRawPtr<GestureEvent> gestureEvent = GestureEvent::create(document().domWindow(), event);
-    if (!gestureEvent.get())
-        return false;
-    return dispatchEvent(gestureEvent);
-}
-
 void Node::dispatchSimulatedClick(Event* underlyingEvent, SimulatedClickMouseEventOptions eventOptions, SimulatedClickCreationScope scope)
 {
     EventDispatcher::dispatchSimulatedClick(*this, underlyingEvent, eventOptions, scope);
-}
-
-bool Node::dispatchWheelEvent(const PlatformWheelEvent& event)
-{
-    return dispatchEvent(WheelEvent::create(event, document().domWindow()));
 }
 
 void Node::dispatchInputEvent()

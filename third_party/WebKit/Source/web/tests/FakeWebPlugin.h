@@ -58,7 +58,7 @@ public:
     void updateFocus(bool, WebFocusType) override { }
     void updateVisibility(bool) override { }
     bool acceptsInputEvents() override { return true; }
-    bool handleInputEvent(const WebInputEvent&, WebCursorInfo&) override { return false; }
+    WebInputEventResult handleInputEvent(const WebInputEvent&, WebCursorInfo&) override { return WebInputEventResult::NotHandled; }
     bool handleDragStatusUpdate(WebDragStatus, const WebDragData&, WebDragOperationsMask, const WebPoint& position, const WebPoint& screenPosition) override { return false; }
     void didReceiveResponse(const WebURLResponse&) override { }
     void didReceiveData(const char* data, int dataLength) override { }

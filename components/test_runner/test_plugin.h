@@ -73,8 +73,9 @@ class TestPlugin : public blink::WebPlugin, public cc::TextureLayerClient {
   void updateFocus(bool focus, blink::WebFocusType focus_type) override {}
   void updateVisibility(bool visibility) override {}
   bool acceptsInputEvents() override;
-  bool handleInputEvent(const blink::WebInputEvent& event,
-                        blink::WebCursorInfo& info) override;
+  blink::WebInputEventResult handleInputEvent(
+      const blink::WebInputEvent& event,
+      blink::WebCursorInfo& info) override;
   bool handleDragStatusUpdate(blink::WebDragStatus drag_status,
                               const blink::WebDragData& data,
                               blink::WebDragOperationsMask mask,

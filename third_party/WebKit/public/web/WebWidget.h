@@ -36,6 +36,7 @@
 #include "../platform/WebCommon.h"
 #include "../platform/WebFloatSize.h"
 #include "../platform/WebFrameTimingEvent.h"
+#include "../platform/WebInputEventResult.h"
 #include "../platform/WebPoint.h"
 #include "../platform/WebRect.h"
 #include "../platform/WebSize.h"
@@ -121,9 +122,8 @@ public:
     // on receiving this message
     virtual void themeChanged() { }
 
-    // Called to inform the WebWidget of an input event. Returns true if
-    // the event has been processed, false otherwise.
-    virtual bool handleInputEvent(const WebInputEvent&) { return false; }
+    // Called to inform the WebWidget of an input event.
+    virtual WebInputEventResult handleInputEvent(const WebInputEvent&) { return WebInputEventResult::NotHandled; }
 
     // Called to inform the WebWidget of the mouse cursor's visibility.
     virtual void setCursorVisibilityState(bool isVisible) { }

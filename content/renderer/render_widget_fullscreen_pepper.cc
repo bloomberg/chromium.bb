@@ -31,6 +31,7 @@ using blink::WebCompositionUnderline;
 using blink::WebCursorInfo;
 using blink::WebGestureEvent;
 using blink::WebInputEvent;
+using blink::WebInputEventResult;
 using blink::WebMouseEvent;
 using blink::WebMouseWheelEvent;
 using blink::WebPoint;
@@ -158,9 +159,9 @@ class PepperWidget : public WebWidget {
 
   void themeChanged() override { NOTIMPLEMENTED(); }
 
-  bool handleInputEvent(const WebInputEvent& event) override {
+  WebInputEventResult handleInputEvent(const WebInputEvent& event) override {
     if (!widget_->plugin())
-      return false;
+      return WebInputEventResult::NotHandled;
 
     // This cursor info is ignored, we always set the cursor directly from
     // RenderWidgetFullscreenPepper::DidChangeCursor.
@@ -208,7 +209,8 @@ class PepperWidget : public WebWidget {
           break;
         }
       }
-      return result;
+      return result ? WebInputEventResult::HandledApplication
+                    : WebInputEventResult::NotHandled;
     }
 
     bool result = widget_->plugin()->HandleInputEvent(event, &cursor);
@@ -243,7 +245,8 @@ class PepperWidget : public WebWidget {
         widget_->plugin()->HandleInputEvent(context_menu_event, &cursor);
       }
     }
-    return result;
+    return result ? WebInputEventResult::HandledApplication
+                  : WebInputEventResult::NotHandled;
   }
 
  private:

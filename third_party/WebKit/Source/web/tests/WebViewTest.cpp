@@ -1588,7 +1588,7 @@ TEST_F(WebViewTest, ClientTapHandlingNullWebViewClient)
     event.sourceDevice = WebGestureDeviceTouchscreen;
     event.x = 3;
     event.y = 8;
-    EXPECT_FALSE(webView->handleInputEvent(event));
+    EXPECT_EQ(WebInputEventResult::NotHandled, webView->handleInputEvent(event));
     webView->close();
     // Explicitly close as the frame as no frame client to do so on frameDetached().
     localFrame->close();

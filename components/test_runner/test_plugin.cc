@@ -594,8 +594,9 @@ unsigned TestPlugin::LoadProgram(const std::string& vertex_source,
   return program;
 }
 
-bool TestPlugin::handleInputEvent(const blink::WebInputEvent& event,
-                                  blink::WebCursorInfo& info) {
+blink::WebInputEventResult TestPlugin::handleInputEvent(
+    const blink::WebInputEvent& event,
+    blink::WebCursorInfo& info) {
   const char* event_name = 0;
   switch (event.type) {
     case blink::WebInputEvent::Undefined:
@@ -720,7 +721,7 @@ bool TestPlugin::handleInputEvent(const blink::WebInputEvent& event,
         "handling user gesture\n");
   if (is_persistent_)
     delegate_->PrintMessage(std::string("TestPlugin: isPersistent\n"));
-  return false;
+  return blink::WebInputEventResult::NotHandled;
 }
 
 bool TestPlugin::handleDragStatusUpdate(

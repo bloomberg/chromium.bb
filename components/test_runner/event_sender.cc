@@ -33,6 +33,7 @@ using blink::WebFloatPoint;
 using blink::WebFrame;
 using blink::WebGestureEvent;
 using blink::WebInputEvent;
+using blink::WebInputEventResult;
 using blink::WebKeyboardEvent;
 using blink::WebMenuItemInfo;
 using blink::WebMouseEvent;
@@ -2294,7 +2295,7 @@ void EventSender::GestureEvent(WebInputEvent::Type type,
   if (force_layout_on_events_)
     view_->updateAllLifecyclePhases();
 
-  bool result = HandleInputEventOnViewOrPopup(event);
+  WebInputEventResult result = HandleInputEventOnViewOrPopup(event);
 
   // Long press might start a drag drop session. Complete it if so.
   if (type == WebInputEvent::GestureLongPress && !current_drag_data_.isNull()) {
@@ -2309,7 +2310,7 @@ void EventSender::GestureEvent(WebInputEvent::Type type,
 
     FinishDragAndDrop(mouse_event, blink::WebDragOperationNone);
   }
-  args->Return(result);
+  args->Return(result != WebInputEventResult::NotHandled);
 }
 
 void EventSender::UpdateClickCountForButton(
@@ -2550,7 +2551,8 @@ void EventSender::ReplaySavedEvents() {
   replaying_saved_events_ = false;
 }
 
-bool EventSender::HandleInputEventOnViewOrPopup(const WebInputEvent& event) {
+WebInputEventResult EventSender::HandleInputEventOnViewOrPopup(
+    const WebInputEvent& event) {
   last_event_timestamp_ = event.timeStampSeconds;
 
   if (WebPagePopup* popup = view_->pagePopup()) {

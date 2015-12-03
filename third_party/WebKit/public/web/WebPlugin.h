@@ -109,7 +109,7 @@ public:
     virtual void updateVisibility(bool) = 0;
 
     virtual bool acceptsInputEvents() = 0;
-    virtual bool handleInputEvent(const WebInputEvent&, WebCursorInfo&) = 0;
+    virtual WebInputEventResult handleInputEvent(const WebInputEvent&, WebCursorInfo&) = 0;
 
     virtual bool handleDragStatusUpdate(WebDragStatus, const WebDragData&, WebDragOperationsMask, const WebPoint& position, const WebPoint& screenPosition) { return false; }
 

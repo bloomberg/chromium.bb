@@ -119,6 +119,7 @@
       "platform/WebImageLayer.h",
       "platform/WebInbandTextTrack.h",
       "platform/WebInbandTextTrackClient.h",
+      "platform/WebInputEventResult.h",
       "platform/WebLayer.h",
       "platform/WebLayerPositionConstraint.h",
       "platform/WebLayerScrollClient.h",

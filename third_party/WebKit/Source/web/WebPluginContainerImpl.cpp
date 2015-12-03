@@ -791,7 +791,7 @@ void WebPluginContainerImpl::handleMouseEvent(MouseEvent* event)
         focusPlugin();
 
     WebCursorInfo cursorInfo;
-    if (m_webPlugin->handleInputEvent(webEvent, cursorInfo))
+    if (m_webPlugin->handleInputEvent(webEvent, cursorInfo) != WebInputEventResult::NotHandled)
         event->setDefaultHandled();
 
     // A windowless plugin can change the cursor in response to a mouse move
@@ -836,7 +836,7 @@ void WebPluginContainerImpl::handleWheelEvent(WheelEvent* event)
         return;
 
     WebCursorInfo cursorInfo;
-    if (m_webPlugin->handleInputEvent(webEvent, cursorInfo))
+    if (m_webPlugin->handleInputEvent(webEvent, cursorInfo) != WebInputEventResult::NotHandled)
         event->setDefaultHandled();
 }
 
@@ -879,7 +879,7 @@ void WebPluginContainerImpl::handleKeyboardEvent(KeyboardEvent* event)
         view->client()->handleCurrentKeyboardEvent();
 
     WebCursorInfo cursorInfo;
-    if (m_webPlugin->handleInputEvent(webEvent, cursorInfo))
+    if (m_webPlugin->handleInputEvent(webEvent, cursorInfo) != WebInputEventResult::NotHandled)
         event->setDefaultHandled();
 }
 
@@ -897,7 +897,7 @@ void WebPluginContainerImpl::handleTouchEvent(TouchEvent* event)
             focusPlugin();
 
         WebCursorInfo cursorInfo;
-        if (m_webPlugin->handleInputEvent(webEvent, cursorInfo))
+        if (m_webPlugin->handleInputEvent(webEvent, cursorInfo) != WebInputEventResult::NotHandled)
             event->setDefaultHandled();
         // FIXME: Can a plugin change the cursor from a touch-event callback?
         return;
@@ -916,7 +916,7 @@ void WebPluginContainerImpl::handleGestureEvent(GestureEvent* event)
     if (event->type() == EventTypeNames::gesturetapdown)
         focusPlugin();
     WebCursorInfo cursorInfo;
-    if (m_webPlugin->handleInputEvent(webEvent, cursorInfo)) {
+    if (m_webPlugin->handleInputEvent(webEvent, cursorInfo) != WebInputEventResult::NotHandled) {
         event->setDefaultHandled();
         return;
     }
@@ -931,7 +931,7 @@ void WebPluginContainerImpl::synthesizeMouseEventIfPossible(TouchEvent* event)
         return;
 
     WebCursorInfo cursorInfo;
-    if (m_webPlugin->handleInputEvent(webEvent, cursorInfo))
+    if (m_webPlugin->handleInputEvent(webEvent, cursorInfo) != WebInputEventResult::NotHandled)
         event->setDefaultHandled();
 }
 

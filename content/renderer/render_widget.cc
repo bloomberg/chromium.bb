@@ -106,6 +106,7 @@ using blink::WebCursorInfo;
 using blink::WebDeviceEmulationParams;
 using blink::WebGestureEvent;
 using blink::WebInputEvent;
+using blink::WebInputEventResult;
 using blink::WebKeyboardEvent;
 using blink::WebMouseEvent;
 using blink::WebMouseWheelEvent;
@@ -1194,7 +1195,8 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
   if (input_event->type != WebInputEvent::Char || !suppress_next_char_events_) {
     suppress_next_char_events_ = false;
     if (!processed && webwidget_)
-      processed = webwidget_->handleInputEvent(*input_event);
+      processed = webwidget_->handleInputEvent(*input_event) !=
+                  WebInputEventResult::NotHandled;
   }
 
   // If this RawKeyDown event corresponds to a browser keyboard shortcut and

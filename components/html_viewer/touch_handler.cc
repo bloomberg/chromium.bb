@@ -184,7 +184,8 @@ void TouchHandler::SendMotionEventToGestureProvider() {
   blink::WebTouchEvent web_event = ui::CreateWebTouchEventFromMotionEvent(
       *current_motion_event_, result.did_generate_scroll);
   gesture_provider_.OnTouchEventAck(web_event.uniqueTouchEventId,
-                                    web_widget_->handleInputEvent(web_event));
+                                    web_widget_->handleInputEvent(web_event) !=
+                                        blink::WebInputEventResult::NotHandled);
 }
 
 void TouchHandler::PostProcessMotionEvent(const mus::mojom::Event& event) {

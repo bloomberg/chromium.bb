@@ -315,10 +315,10 @@ public:
     {
     }
 
-    bool handleInputEvent(const WebInputEvent& event, WebCursorInfo&) override
+    WebInputEventResult handleInputEvent(const WebInputEvent& event, WebCursorInfo&) override
     {
         m_lastEventType = event.type;
-        return true;
+        return WebInputEventResult::HandledSystem;
     }
     WebInputEvent::Type getLastInputEventType() {return m_lastEventType; }
 

@@ -72,6 +72,7 @@ using blink::WebFrame;
 using blink::WebHTTPBody;
 using blink::WebHTTPHeaderVisitor;
 using blink::WebInputEvent;
+using blink::WebInputEventResult;
 using blink::WebKeyboardEvent;
 using blink::WebMouseEvent;
 using blink::WebPluginContainer;
@@ -418,11 +419,12 @@ bool WebPluginImpl::acceptsInputEvents() {
   return accepts_input_events_;
 }
 
-bool WebPluginImpl::handleInputEvent(
-    const WebInputEvent& event, WebCursorInfo& cursor_info) {
+WebInputEventResult WebPluginImpl::handleInputEvent(
+    const WebInputEvent& event,
+    WebCursorInfo& cursor_info) {
   // Swallow context menu events in order to suppress the default context menu.
   if (event.type == WebInputEvent::ContextMenu)
-    return true;
+    return WebInputEventResult::HandledSuppressed;
 
   WebCursor::CursorInfo web_cursor_info;
   bool ret = delegate_->HandleInputEvent(event, &web_cursor_info);
@@ -433,7 +435,8 @@ bool WebPluginImpl::handleInputEvent(
 #if defined(OS_WIN)
   cursor_info.externalHandle = web_cursor_info.external_handle;
 #endif
-  return ret;
+  return ret ? WebInputEventResult::HandledApplication
+             : WebInputEventResult::NotHandled;
 }
 
 void WebPluginImpl::didReceiveResponse(const WebURLResponse& response) {

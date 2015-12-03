@@ -200,17 +200,18 @@ void WebViewPlugin::updateFocus(bool focused, blink::WebFocusType focus_type) {
 
 bool WebViewPlugin::acceptsInputEvents() { return true; }
 
-bool WebViewPlugin::handleInputEvent(const WebInputEvent& event,
-                                     WebCursorInfo& cursor) {
+blink::WebInputEventResult WebViewPlugin::handleInputEvent(
+    const WebInputEvent& event,
+    WebCursorInfo& cursor) {
   // For tap events, don't handle them. They will be converted to
   // mouse events later and passed to here.
   if (event.type == WebInputEvent::GestureTap)
-    return false;
+    return blink::WebInputEventResult::NotHandled;
 
   // For LongPress events we return false, since otherwise the context menu will
   // be suppressed. https://crbug.com/482842
   if (event.type == WebInputEvent::GestureLongPress)
-    return false;
+    return blink::WebInputEventResult::NotHandled;
 
   if (event.type == WebInputEvent::ContextMenu) {
     if (delegate_) {
@@ -218,10 +219,10 @@ bool WebViewPlugin::handleInputEvent(const WebInputEvent& event,
           reinterpret_cast<const WebMouseEvent&>(event);
       delegate_->ShowContextMenu(mouse_event);
     }
-    return true;
+    return blink::WebInputEventResult::HandledSuppressed;
   }
   current_cursor_ = cursor;
-  bool handled = web_view_->handleInputEvent(event);
+  blink::WebInputEventResult handled = web_view_->handleInputEvent(event);
   cursor = current_cursor_;
 
   return handled;

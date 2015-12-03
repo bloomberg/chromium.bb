@@ -483,25 +483,26 @@ bool BrowserPlugin::acceptsInputEvents() {
   return true;
 }
 
-bool BrowserPlugin::handleInputEvent(const blink::WebInputEvent& event,
-                                     blink::WebCursorInfo& cursor_info) {
+blink::WebInputEventResult BrowserPlugin::handleInputEvent(
+    const blink::WebInputEvent& event,
+    blink::WebCursorInfo& cursor_info) {
   if (guest_crashed_ || !attached())
-    return false;
+    return blink::WebInputEventResult::NotHandled;
 
   if (event.type == blink::WebInputEvent::MouseWheel) {
     auto wheel_event = static_cast<const blink::WebMouseWheelEvent&>(event);
     if (wheel_event.resendingPluginId == browser_plugin_instance_id_)
-      return false;
+      return blink::WebInputEventResult::NotHandled;
   }
 
   if (blink::WebInputEvent::isGestureEventType(event.type)) {
     auto gesture_event = static_cast<const blink::WebGestureEvent&>(event);
     if (gesture_event.resendingPluginId == browser_plugin_instance_id_)
-      return false;
+      return blink::WebInputEventResult::NotHandled;
   }
 
   if (event.type == blink::WebInputEvent::ContextMenu)
-    return true;
+    return blink::WebInputEventResult::HandledSuppressed;
 
   if (blink::WebInputEvent::isKeyboardEventType(event.type) &&
       !edit_commands_.empty()) {
@@ -521,9 +522,9 @@ bool BrowserPlugin::handleInputEvent(const blink::WebInputEvent& event,
   // Although we forward this event to the guest, we don't report it as consumed
   // since other targets of this event in Blink never get that chance either.
   if (event.type == blink::WebInputEvent::GestureFlingStart)
-    return false;
+    return blink::WebInputEventResult::NotHandled;
 
-  return true;
+  return blink::WebInputEventResult::HandledApplication;
 }
 
 bool BrowserPlugin::handleDragStatusUpdate(blink::WebDragStatus drag_status,

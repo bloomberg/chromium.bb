@@ -266,11 +266,11 @@ bool InspectorOverlay::handleInputEvent(const WebInputEvent& inputEvent)
             return true;
 
         if (mouseEvent.type() == PlatformEvent::MouseMoved)
-            handled = overlayMainFrame()->eventHandler().handleMouseMoveEvent(mouseEvent);
+            handled = overlayMainFrame()->eventHandler().handleMouseMoveEvent(mouseEvent) != WebInputEventResult::NotHandled;
         if (mouseEvent.type() == PlatformEvent::MousePressed)
-            handled = overlayMainFrame()->eventHandler().handleMousePressEvent(mouseEvent);
+            handled = overlayMainFrame()->eventHandler().handleMousePressEvent(mouseEvent) != WebInputEventResult::NotHandled;
         if (mouseEvent.type() == PlatformEvent::MouseReleased)
-            handled = overlayMainFrame()->eventHandler().handleMouseReleaseEvent(mouseEvent);
+            handled = overlayMainFrame()->eventHandler().handleMouseReleaseEvent(mouseEvent) != WebInputEventResult::NotHandled;
     }
 
     if (WebInputEvent::isTouchEventType(inputEvent.type)) {
@@ -287,7 +287,7 @@ bool InspectorOverlay::handleInputEvent(const WebInputEvent& inputEvent)
 
     if (inputEvent.type == WebInputEvent::MouseWheel) {
         PlatformWheelEvent wheelEvent = PlatformWheelEventBuilder(m_webViewImpl->mainFrameImpl()->frameView(), static_cast<const WebMouseWheelEvent&>(inputEvent));
-        handled = overlayMainFrame()->eventHandler().handleWheelEvent(wheelEvent);
+        handled = overlayMainFrame()->eventHandler().handleWheelEvent(wheelEvent) != WebInputEventResult::NotHandled;
     }
 
     return handled;

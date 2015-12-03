@@ -107,7 +107,7 @@ void WebViewFrameWidget::themeChanged()
     return m_webView->themeChanged();
 }
 
-bool WebViewFrameWidget::handleInputEvent(const WebInputEvent& event)
+WebInputEventResult WebViewFrameWidget::handleInputEvent(const WebInputEvent& event)
 {
     return m_webView->handleInputEvent(event);
 }

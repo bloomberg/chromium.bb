@@ -15,6 +15,7 @@
 #include "build/build_config.h"
 #include "components/test_runner/web_task.h"
 #include "third_party/WebKit/public/platform/WebDragData.h"
+#include "third_party/WebKit/public/platform/WebInputEventResult.h"
 #include "third_party/WebKit/public/platform/WebPoint.h"
 #include "third_party/WebKit/public/web/WebDragOperation.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
@@ -182,7 +183,8 @@ class EventSender : public base::SupportsWeakPtr<EventSender> {
   void DoMouseUp(const blink::WebMouseEvent&);
   void DoMouseMove(const blink::WebMouseEvent&);
   void ReplaySavedEvents();
-  bool HandleInputEventOnViewOrPopup(const blink::WebInputEvent&);
+  blink::WebInputEventResult HandleInputEventOnViewOrPopup(
+      const blink::WebInputEvent&);
 
   double last_event_timestamp() { return last_event_timestamp_; }
 

@@ -83,8 +83,9 @@ class WebPluginImpl : public WebPlugin,
   void updateFocus(bool focused, blink::WebFocusType focus_type) override;
   void updateVisibility(bool visible) override;
   bool acceptsInputEvents() override;
-  bool handleInputEvent(const blink::WebInputEvent& event,
-                        blink::WebCursorInfo& cursor_info) override;
+  blink::WebInputEventResult handleInputEvent(
+      const blink::WebInputEvent& event,
+      blink::WebCursorInfo& cursor_info) override;
   void didReceiveResponse(const blink::WebURLResponse& response) override;
   void didReceiveData(const char* data, int data_length) override;
   void didFinishLoading() override;

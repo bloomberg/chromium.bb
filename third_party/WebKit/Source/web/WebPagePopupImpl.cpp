@@ -391,23 +391,23 @@ void WebPagePopupImpl::resize(const WebSize& newSize)
     m_widgetClient->didInvalidateRect(WebRect(0, 0, newSize.width, newSize.height));
 }
 
-bool WebPagePopupImpl::handleKeyEvent(const WebKeyboardEvent& event)
+WebInputEventResult WebPagePopupImpl::handleKeyEvent(const WebKeyboardEvent& event)
 {
     return handleKeyEvent(PlatformKeyboardEventBuilder(event));
 }
 
-bool WebPagePopupImpl::handleCharEvent(const WebKeyboardEvent& event)
+WebInputEventResult WebPagePopupImpl::handleCharEvent(const WebKeyboardEvent& event)
 {
     return handleKeyEvent(PlatformKeyboardEventBuilder(event));
 }
 
-bool WebPagePopupImpl::handleGestureEvent(const WebGestureEvent& event)
+WebInputEventResult WebPagePopupImpl::handleGestureEvent(const WebGestureEvent& event)
 {
     if (m_closing || !m_page || !m_page->mainFrame() || !toLocalFrame(m_page->mainFrame())->view())
-        return false;
+        return WebInputEventResult::NotHandled;
     if (event.type == WebInputEvent::GestureTap && !isGestureEventInWindow(event)) {
         cancel();
-        return false;
+        return WebInputEventResult::NotHandled;
     }
     LocalFrame& frame = *toLocalFrame(m_page->mainFrame());
     return frame.eventHandler().handleGestureEvent(PlatformGestureEventBuilder(frame.view(), event));
@@ -421,12 +421,12 @@ void WebPagePopupImpl::handleMouseDown(LocalFrame& mainFrame, const WebMouseEven
         cancel();
 }
 
-bool WebPagePopupImpl::handleMouseWheel(LocalFrame& mainFrame, const WebMouseWheelEvent& event)
+WebInputEventResult WebPagePopupImpl::handleMouseWheel(LocalFrame& mainFrame, const WebMouseWheelEvent& event)
 {
     if (isMouseEventInWindow(event))
         return PageWidgetEventHandler::handleMouseWheel(mainFrame, event);
     cancel();
-    return false;
+    return WebInputEventResult::NotHandled;
 }
 
 bool WebPagePopupImpl::isMouseEventInWindow(const WebMouseEvent& event)
@@ -439,17 +439,17 @@ bool WebPagePopupImpl::isGestureEventInWindow(const WebGestureEvent& event)
     return IntRect(0, 0, m_windowRectInScreen.width, m_windowRectInScreen.height).contains(IntPoint(event.x, event.y));
 }
 
-bool WebPagePopupImpl::handleInputEvent(const WebInputEvent& event)
+WebInputEventResult WebPagePopupImpl::handleInputEvent(const WebInputEvent& event)
 {
     if (m_closing)
-        return false;
+        return WebInputEventResult::NotHandled;
     return PageWidgetDelegate::handleInputEvent(*this, event, m_page->deprecatedLocalMainFrame());
 }
 
-bool WebPagePopupImpl::handleKeyEvent(const PlatformKeyboardEvent& event)
+WebInputEventResult WebPagePopupImpl::handleKeyEvent(const PlatformKeyboardEvent& event)
 {
     if (m_closing || !m_page->mainFrame() || !toLocalFrame(m_page->mainFrame())->view())
-        return false;
+        return WebInputEventResult::NotHandled;
     return toLocalFrame(m_page->mainFrame())->eventHandler().keyEvent(event);
 }
 

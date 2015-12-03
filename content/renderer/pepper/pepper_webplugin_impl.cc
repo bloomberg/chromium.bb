@@ -219,11 +219,14 @@ void PepperWebPluginImpl::updateVisibility(bool visible) {}
 
 bool PepperWebPluginImpl::acceptsInputEvents() { return true; }
 
-bool PepperWebPluginImpl::handleInputEvent(const blink::WebInputEvent& event,
-                                           blink::WebCursorInfo& cursor_info) {
+blink::WebInputEventResult PepperWebPluginImpl::handleInputEvent(
+    const blink::WebInputEvent& event,
+    blink::WebCursorInfo& cursor_info) {
   if (instance_->FlashIsFullscreenOrPending())
-    return false;
-  return instance_->HandleInputEvent(event, &cursor_info);
+    return blink::WebInputEventResult::NotHandled;
+  return instance_->HandleInputEvent(event, &cursor_info)
+             ? blink::WebInputEventResult::HandledApplication
+             : blink::WebInputEventResult::NotHandled;
 }
 
 void PepperWebPluginImpl::didReceiveResponse(
