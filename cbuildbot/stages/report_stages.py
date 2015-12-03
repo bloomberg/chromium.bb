@@ -710,15 +710,6 @@ class ReportStage(generic_stages.BuilderStage,
                      metadata_url=metadata_url)
 
 
-class RefreshPackageStatusStage(generic_stages.BuilderStage):
-  """Stage for refreshing Portage package status in online spreadsheet."""
-
-  def PerformStage(self):
-    commands.RefreshPackageStatus(buildroot=self._build_root,
-                                  boards=self._boards,
-                                  debug=self._run.options.debug)
-
-
 class DetectIrrelevantChangesStage(generic_stages.BoardSpecificBuilderStage):
   """Stage to detect irrelevant changes for slave per board base.
 

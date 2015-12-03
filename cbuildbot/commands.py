@@ -282,30 +282,6 @@ def RunChrootUpgradeHooks(buildroot, chrome_root=None, extra_env=None):
                  chroot_args=chroot_args, extra_env=extra_env)
 
 
-def RefreshPackageStatus(buildroot, boards, debug):
-  """Wrapper around refresh_package_status"""
-  # First run check_gdata_token to validate or refresh auth token.
-  cmd = ['check_gdata_token']
-  RunBuildScript(buildroot, cmd, chromite_cmd=True)
-
-  # Prepare refresh_package_status command to update the package spreadsheet.
-  cmd = ['refresh_package_status']
-
-  # Skip the host board if present.
-  board = ':'.join([b for b in boards if b != 'amd64-host'])
-  cmd.append('--board=%s' % board)
-
-  # Upload to the test spreadsheet only when in debug mode.
-  if debug:
-    cmd.append('--test-spreadsheet')
-
-  # Actually run prepared refresh_package_status command.
-  RunBuildScript(buildroot, cmd, chromite_cmd=True, enter_chroot=True)
-
-  # Disabling the auto-filing of Tracker issues for now - crbug.com/334260.
-  #SyncPackageStatus(buildroot, debug)
-
-
 def SyncPackageStatus(buildroot, debug):
   """Wrapper around sync_package_status."""
   # Run sync_package_status to create Tracker issues for outdated
