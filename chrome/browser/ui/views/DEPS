@@ -3,5 +3,6 @@ include_rules = [
  "+content/app/resources/grit/content_resources.h",
  "+chrome/browser/ui/views",
  "+components/constrained_window",
+ "+components/mus/public/cpp",
  "+components/user_manager",
 ]

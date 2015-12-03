@@ -25,6 +25,9 @@ class BrowserFrameMus : public NativeBrowserFrame,
                           ui::WindowShowState* show_state) const override;
   int GetMinimizeButtonOffset() const override;
 
+  // Overriden from NativeWidgetMus:
+  void UpdateClientArea() override;
+
   BrowserView* browser_view_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserFrameMus);

@@ -39,6 +39,7 @@ class NonClientFrameViewMash : public views::NonClientFrameView,
   ~NonClientFrameViewMash() override;
 
   static gfx::Insets GetPreferredClientAreaInsets();
+  static int GetMaxTitleBarButtonWidth();
 
   // Sets the active and inactive frame colors. Note the inactive frame color
   // will have some transparency added when the frame is drawn.

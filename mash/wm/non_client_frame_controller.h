@@ -39,6 +39,10 @@ class NonClientFrameController : public views::WidgetDelegateView,
   // Returns the preferred client area insets.
   static gfx::Insets GetPreferredClientAreaInsets();
 
+  // Returns the width needed to display the standard set of buttons on the
+  // title bar.
+  static int GetMaxTitleBarButtonWidth();
+
  private:
   ~NonClientFrameController() override;
 

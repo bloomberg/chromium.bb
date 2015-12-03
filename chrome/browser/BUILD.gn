@@ -584,8 +584,11 @@ source_set("browser") {
     sources += [
       "ui/views/frame/browser_frame_mus.cc",
       "ui/views/frame/browser_frame_mus.h",
+      "ui/views/frame/browser_non_client_frame_view_mus.cc",
+      "ui/views/frame/browser_non_client_frame_view_mus.h",
     ]
     deps += [
+      "//components/mus/public/cpp",
       "//content/public/common",
       "//mojo/runner/child:lib",
       "//ui/aura",

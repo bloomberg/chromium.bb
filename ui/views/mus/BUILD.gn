@@ -23,9 +23,10 @@ component("mus") {
     "surface_binding.h",
     "surface_context_factory.cc",
     "surface_context_factory.h",
-    "window_manager_client_area_insets.h",
     "window_manager_connection.cc",
     "window_manager_connection.h",
+    "window_manager_frame_values.cc",
+    "window_manager_frame_values.h",
     "window_tree_host_mus.cc",
     "window_tree_host_mus.h",
   ]

@@ -176,6 +176,15 @@ gfx::Insets NonClientFrameViewMash::GetPreferredClientAreaInsets() {
   return gfx::Insets(header_height, 0, 0, 0);
 }
 
+// static
+int NonClientFrameViewMash::GetMaxTitleBarButtonWidth() {
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  return rb.GetImageSkiaNamed(IDR_MASH_WM_WINDOW_CONTROL_BACKGROUND_P)
+             ->size()
+             .width() *
+         3;
+}
+
 void NonClientFrameViewMash::SetFrameColors(SkColor active_frame_color,
                                             SkColor inactive_frame_color) {
   header_view_->SetFrameColors(active_frame_color, inactive_frame_color);

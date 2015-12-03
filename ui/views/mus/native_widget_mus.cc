@@ -20,7 +20,7 @@
 #include "ui/native_theme/native_theme_aura.h"
 #include "ui/views/mus/platform_window_mus.h"
 #include "ui/views/mus/surface_context_factory.h"
-#include "ui/views/mus/window_manager_client_area_insets.h"
+#include "ui/views/mus/window_manager_frame_values.h"
 #include "ui/views/mus/window_tree_host_mus.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/window/custom_frame_view.h"
@@ -30,8 +30,6 @@
 
 namespace views {
 namespace {
-
-WindowManagerClientAreaInsets* window_manager_client_area_insets = nullptr;
 
 // TODO: figure out what this should be.
 class FocusRulesImpl : public wm::BaseFocusRules {
@@ -108,10 +106,9 @@ class ClientSideNonClientFrameView : public NonClientFrameView {
  private:
   // Returns the default values of client area insets from the window manager.
   static gfx::Insets GetDefaultWindowManagerInsets(bool is_maximized) {
-    if (!window_manager_client_area_insets)
-      return gfx::Insets();
-    return is_maximized ? window_manager_client_area_insets->maximized_insets
-                        : window_manager_client_area_insets->normal_insets;
+    const WindowManagerFrameValues& values =
+        WindowManagerFrameValues::instance();
+    return is_maximized ? values.maximized_insets : values.normal_insets;
   }
 
   // NonClientFrameView:
@@ -191,15 +188,6 @@ NativeWidgetMus::~NativeWidgetMus() {
     CloseNow();
 }
 
-// static
-void NativeWidgetMus::SetWindowManagerClientAreaInsets(
-    const WindowManagerClientAreaInsets& insets) {
-  delete window_manager_client_area_insets;
-  // This is called early on, so we don't bother trying to relayout existing
-  // NativeWidgetMus. When we support restarting the WM we'll need to do that.
-  window_manager_client_area_insets = new WindowManagerClientAreaInsets(insets);
-}
-
 void NativeWidgetMus::OnPlatformWindowClosed() {
   GetWidget()->Close();
 }
@@ -239,9 +227,15 @@ void NativeWidgetMus::ConfigurePropertiesForNewWindow(
   if (!Widget::RequiresNonClientView(init_params.type))
     return;
 
+  ConfigurePropertiesForNewWindowFromDelegate(init_params.delegate, properties);
+}
+
+void NativeWidgetMus::ConfigurePropertiesForNewWindowFromDelegate(
+    WidgetDelegate* delegate,
+    std::map<std::string, std::vector<uint8_t>>* properties) {
   (*properties)[mus::mojom::WindowManager::kResizeBehavior_Property] =
       mojo::TypeConverter<const std::vector<uint8_t>, int32_t>::Convert(
-          ResizeBehaviorFromDelegate(init_params.delegate));
+          ResizeBehaviorFromDelegate(delegate));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

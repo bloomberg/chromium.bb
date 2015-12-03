@@ -6,6 +6,11 @@
 
 #include "chrome/browser/ui/views/frame/browser_view.h"
 
+#if defined(MOJO_SHELL_CLIENT)
+#include "chrome/browser/ui/views/frame/browser_non_client_frame_view_mus.h"
+#include "content/public/common/mojo_shell_connection.h"
+#endif
+
 #if !defined(OS_CHROMEOS)
 #include "chrome/browser/ui/views/frame/opaque_browser_frame_view.h"
 #endif
@@ -19,6 +24,15 @@ namespace chrome {
 BrowserNonClientFrameView* CreateBrowserNonClientFrameView(
     BrowserFrame* frame,
     BrowserView* browser_view) {
+#if defined(MOJO_SHELL_CLIENT)
+  if (content::MojoShellConnection::Get()) {
+    BrowserNonClientFrameViewMus* frame_view =
+        new BrowserNonClientFrameViewMus(frame, browser_view);
+    frame_view->Init();
+    return frame_view;
+  }
+#endif
+
 #if !defined(OS_CHROMEOS)
   if (browser_view->browser()->host_desktop_type() ==
       chrome::HOST_DESKTOP_TYPE_NATIVE) {

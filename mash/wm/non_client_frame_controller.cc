@@ -174,6 +174,11 @@ gfx::Insets NonClientFrameController::GetPreferredClientAreaInsets() {
   return NonClientFrameViewMash::GetPreferredClientAreaInsets();
 }
 
+// static
+int NonClientFrameController::GetMaxTitleBarButtonWidth() {
+  return NonClientFrameViewMash::GetMaxTitleBarButtonWidth();
+}
+
 NonClientFrameController::~NonClientFrameController() {
   if (window_)
     window_->RemoveObserver(this);

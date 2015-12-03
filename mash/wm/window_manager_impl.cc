@@ -139,6 +139,9 @@ void WindowManagerImpl::GetConfig(const GetConfigCallback& callback) {
 
   config->maximized_client_area_insets = mojo::Insets::From(client_area_insets);
 
+  config->max_title_bar_button_width =
+      NonClientFrameController::GetMaxTitleBarButtonWidth();
+
   callback.Run(config.Pass());
 }
 

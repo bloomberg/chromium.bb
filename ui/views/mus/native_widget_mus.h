@@ -42,6 +42,7 @@ class FocusController;
 
 namespace views {
 class SurfaceContextFactory;
+class WidgetDelegate;
 struct WindowManagerClientAreaInsets;
 class WindowTreeHostMus;
 
@@ -61,15 +62,14 @@ class VIEWS_MUS_EXPORT NativeWidgetMus
                   mus::mojom::SurfaceType surface_type);
   ~NativeWidgetMus() override;
 
-  // Sets the insets for the client area. These values come from the window
-  // manager.
-  static void SetWindowManagerClientAreaInsets(
-      const WindowManagerClientAreaInsets& insets);
-
   // Configures the set of properties supplied to the window manager when
   // creating a new Window for a Widget.
   static void ConfigurePropertiesForNewWindow(
       const Widget::InitParams& init_params,
+      std::map<std::string, std::vector<uint8_t>>* properties);
+
+  static void ConfigurePropertiesForNewWindowFromDelegate(
+      WidgetDelegate* widget_delegate,
       std::map<std::string, std::vector<uint8_t>>* properties);
 
   mus::Window* window() { return window_; }
