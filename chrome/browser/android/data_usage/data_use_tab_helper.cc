@@ -32,6 +32,11 @@ void DataUseTabHelper::DidFinishNavigation(
   if (!navigation_handle->IsInMainFrame())
     return;
 
+  // crbug.com/564871: Calling GetPageTransition() may fail if the navigation
+  // has not committed.
+  if (!navigation_handle->HasCommitted())
+    return;
+
   // Notify the DataUseUITabModel.
   chrome::android::DataUseUITabModel* data_use_ui_tab_model =
       chrome::android::DataUseUITabModelFactory::GetForBrowserContext(
