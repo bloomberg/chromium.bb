@@ -41,10 +41,6 @@ class FullscreenControllerTestWindow : public TestBrowserWindow,
   ~FullscreenControllerTestWindow() override {}
 
   // BrowserWindow Interface:
-  void EnterFullscreen(const GURL& url,
-                       ExclusiveAccessBubbleType type,
-                       bool with_toolbar) override;
-  void ExitFullscreen() override;
   bool ShouldHideUIForFullscreen() const override;
   bool IsFullscreen() const override;
   bool SupportsFullscreenWithToolbar() const override;
@@ -64,6 +60,10 @@ class FullscreenControllerTestWindow : public TestBrowserWindow,
   content::WebContents* GetActiveWebContents() override;
   void HideDownloadShelf() override;
   void UnhideDownloadShelf() override;
+  void EnterFullscreen(const GURL& url,
+                       ExclusiveAccessBubbleType type,
+                       bool with_toolbar) override;
+  void ExitFullscreen() override;
   void UpdateExclusiveAccessExitBubbleContent(
       const GURL& url,
       ExclusiveAccessBubbleType bubble_type) override;
@@ -240,9 +240,7 @@ void FullscreenControllerTestWindow::HideDownloadShelf() {
 
 void FullscreenControllerTestWindow::UpdateExclusiveAccessExitBubbleContent(
     const GURL& url,
-    ExclusiveAccessBubbleType bubble_type) {
-  TestBrowserWindow::UpdateExclusiveAccessExitBubbleContent(url, bubble_type);
-}
+    ExclusiveAccessBubbleType bubble_type) {}
 
 // FullscreenControllerStateUnitTest -------------------------------------------
 
@@ -453,16 +451,16 @@ TEST_F(FullscreenControllerStateUnitTest, DISABLED_DebugLogStateTables) {
 }
 
 // Test that the fullscreen exit bubble is closed by
-// WindowFullscreenStateChanged() if fullscreen is exited via BrowserWindow.
-// This currently occurs when an extension exits fullscreen via changing the
-// browser bounds.
-TEST_F(FullscreenControllerStateUnitTest, ExitFullscreenViaBrowserWindow) {
+// WindowFullscreenStateChanged() if fullscreen is exited via the
+// ExclusiveAccessContext interface.
+TEST_F(FullscreenControllerStateUnitTest,
+       ExitFullscreenViaExclusiveAccessContext) {
   AddTab(browser(), GURL(url::kAboutBlankURL));
   ASSERT_TRUE(InvokeEvent(TOGGLE_FULLSCREEN));
   ASSERT_TRUE(InvokeEvent(WINDOW_CHANGE));
   ASSERT_TRUE(browser()->window()->IsFullscreen());
   // Exit fullscreen without going through fullscreen controller.
-  browser()->window()->ExitFullscreen();
+  window_->ExitFullscreen();
   ChangeWindowFullscreenState();
   EXPECT_EQ(EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE,
             browser()

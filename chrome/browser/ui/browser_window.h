@@ -132,17 +132,6 @@ class BrowserWindow : public ui::BaseWindow {
   // + or - in the wrench menu to change zoom).
   virtual void ZoomChangedForActiveTab(bool can_show_bubble) = 0;
 
-  // Methods that change fullscreen state.
-  // On Mac, the tab strip and toolbar will be shown if |with_toolbar| is true,
-  // |with_toolbar| is ignored on other platforms.
-  virtual void EnterFullscreen(const GURL& url,
-                               ExclusiveAccessBubbleType bubble_type,
-                               bool with_toolbar) = 0;
-  virtual void ExitFullscreen() = 0;
-  virtual void UpdateExclusiveAccessExitBubbleContent(
-      const GURL& url,
-      ExclusiveAccessBubbleType bubble_type) = 0;
-
   // Windows and GTK remove the top controls in fullscreen, but Mac and Ash
   // keep the controls in a slide-down panel.
   virtual bool ShouldHideUIForFullscreen() const = 0;

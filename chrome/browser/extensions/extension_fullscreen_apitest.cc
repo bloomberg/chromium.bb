@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
+#include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
                        ExtensionFullscreenAccessFail) {
@@ -26,7 +28,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_ExtensionFullscreenAccessPass) {
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
                        FocusWindowDoesNotExitFullscreen) {
-  browser()->window()->EnterFullscreen(
+  browser()->exclusive_access_manager()->context()->EnterFullscreen(
       GURL(), EXCLUSIVE_ACCESS_BUBBLE_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION,
       false);
   ASSERT_TRUE(browser()->window()->IsFullscreen());
@@ -43,7 +45,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
 #endif  // defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
                        MAYBE_UpdateWindowSizeExitsFullscreen) {
-  browser()->window()->EnterFullscreen(
+  browser()->exclusive_access_manager()->context()->EnterFullscreen(
       GURL(), EXCLUSIVE_ACCESS_BUBBLE_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION,
       false);
   ASSERT_TRUE(RunExtensionTest("window_update/sizing")) << message_;
