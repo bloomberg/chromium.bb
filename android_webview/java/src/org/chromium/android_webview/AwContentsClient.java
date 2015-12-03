@@ -334,6 +334,8 @@ public abstract class AwContentsClient {
 
     public abstract void onPageCommitVisible(String url);
 
+    public void onFailedLoadForTesting(String url) {}
+
     public final void onReceivedError(AwWebResourceRequest request, AwWebResourceError error) {
         // Only one of these callbacks actually reaches out the client code. The first callback
         // is used on API versions up to and including L, the second on subsequent releases.

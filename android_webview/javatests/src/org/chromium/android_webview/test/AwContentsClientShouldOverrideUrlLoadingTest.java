@@ -9,6 +9,7 @@ import android.util.Pair;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsClient;
+import org.chromium.android_webview.test.TestAwContentsClient.OnFailedLoadHelper;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.JSUtils;
 import org.chromium.android_webview.test.util.JavascriptEventObserver;
@@ -18,6 +19,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper;
+import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageFinishedHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageStartedHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnReceivedErrorHelper;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -37,6 +39,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
     private static final String DATA_URL = "data:text/html,<div/>";
     private static final String REDIRECT_TARGET_PATH = "/redirect_target.html";
     private static final String TITLE = "TITLE";
+    private static final String TAG = "AwContentsClientShouldOverrideUrlLoadingTest";
 
     private TestWebServer mWebServer;
     private TestAwContentsClient mContentsClient;
@@ -1119,5 +1122,81 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
         public boolean getValue() {
             return mValue;
         }
+    }
+
+    /**
+     * This is to test a bug where a JS redirect failing in its provisional state would prevent us
+     * from posting onPageFinished for the original page load.
+     * The original page contains an iframe so that we can commit the original load but then
+     * prevent it from finishing until the JS redirect fails by having the test server defer the
+     * response to the iframe.
+     */
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testOnPageFinishedOnFailedJSRedirect() throws Throwable {
+        final CountDownLatch jsRedirectSignal = new CountDownLatch(1);
+
+        final String redirectTargetPath = "/redirectTargetPath.html";
+        final String redirectTargetUrl = mWebServer.setResponse(
+                redirectTargetPath, CommonResources.makeHtmlPageFrom("", ""), null);
+
+        class DelayingOverrideClient extends TestAwContentsClient {
+            @Override
+            public boolean shouldOverrideUrlLoading(AwWebResourceRequest request) {
+                if (redirectTargetUrl.equals(request.url)) {
+                    try {
+                        // Wait here to make sure the load reaches its provisional state before we
+                        // cancel it. Waiting for a callback to the WebContentsObserver to make sure
+                        // we have reached the provisional state causes a deadlock here.
+                        Thread.sleep(Math.min(WAIT_TIMEOUT_MS / 2, 2000));
+                    } catch (InterruptedException e) {
+                    }
+                    return true;
+                }
+                return false;
+            }
+        }
+        mContentsClient = new DelayingOverrideClient();
+        setupWithProvidedContentsClient(mContentsClient);
+
+        final String redirectJs = "window.location.href='" + redirectTargetUrl + "';";
+
+        final String iframePath = "/iframePath.html";
+        final String iframeUrl = mWebServer.setResponseWithRunnableAction(
+                iframePath, CommonResources.makeHtmlPageFrom("", ""), null, new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            mAwContents.evaluateJavaScriptForTests(redirectJs, null);
+                            jsRedirectSignal.await();
+                        } catch (InterruptedException e) {
+                        }
+                    }
+                });
+        final String iframeJs = "<iframe src='" + iframeUrl + "'></iframe>";
+
+        String startPage = makeHtmlPageFrom("", iframeJs);
+        final String startPath = "/startPath.html";
+        final String startUrl = addPageToTestServer(startPath, startPage);
+
+        enableJavaScriptOnUiThread(mAwContents);
+
+        OnPageFinishedHelper onPageFinishedHelper = mContentsClient.getOnPageFinishedHelper();
+        int onPageFinishedCallCount = onPageFinishedHelper.getCallCount();
+
+        OnFailedLoadHelper onFailedLoadHelper = mContentsClient.getOnFailedLoadHelper();
+        int onFailedLoadCallCount = onFailedLoadHelper.getCallCount();
+
+        // load start url -> iframe -> JS redirect -> fail JS redirect -> finish start URL
+        loadUrlAsync(mAwContents, startUrl);
+
+        onFailedLoadHelper.waitForCallback(onFailedLoadCallCount);
+        assertEquals(redirectTargetUrl, onFailedLoadHelper.getUrl());
+
+        // let iframe finish
+        jsRedirectSignal.countDown();
+
+        onPageFinishedHelper.waitForCallback(onPageFinishedCallCount);
+        assertEquals(startUrl, onPageFinishedHelper.getUrl());
     }
 }

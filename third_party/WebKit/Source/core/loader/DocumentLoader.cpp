@@ -218,7 +218,8 @@ void DocumentLoader::mainReceivedError(const ResourceError& error)
     if (!frameLoader())
         return;
     m_mainDocumentError = error;
-    m_state = MainResourceDone;
+    if (m_state < MainResourceDone)
+        m_state = MainResourceDone;
     frameLoader()->receivedMainResourceError(this, error);
     clearMainResourceHandle();
 }

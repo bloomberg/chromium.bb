@@ -81,6 +81,7 @@ public class AwWebContentsObserver extends WebContentsObserver {
             // AwContents.InterceptNavigationDelegateImpl.shouldIgnoreNavigation instead.
             client.getCallbackHelper().postOnPageFinished(failingUrl);
         }
+        client.onFailedLoadForTesting(failingUrl);
     }
 
     @Override

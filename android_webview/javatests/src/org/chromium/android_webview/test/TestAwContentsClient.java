@@ -29,6 +29,7 @@ public class TestAwContentsClient extends NullContentsClient {
     private boolean mAllowSslError;
     private final OnPageStartedHelper mOnPageStartedHelper;
     private final OnPageFinishedHelper mOnPageFinishedHelper;
+    private final OnFailedLoadHelper mOnFailedLoadHelper;
     private final OnPageCommitVisibleHelper mOnPageCommitVisibleHelper;
     private final OnReceivedErrorHelper mOnReceivedErrorHelper;
     private final OnReceivedError2Helper mOnReceivedError2Helper;
@@ -49,6 +50,7 @@ public class TestAwContentsClient extends NullContentsClient {
         super(ThreadUtils.getUiThreadLooper());
         mOnPageStartedHelper = new OnPageStartedHelper();
         mOnPageFinishedHelper = new OnPageFinishedHelper();
+        mOnFailedLoadHelper = new OnFailedLoadHelper();
         mOnPageCommitVisibleHelper = new OnPageCommitVisibleHelper();
         mOnReceivedErrorHelper = new OnReceivedErrorHelper();
         mOnReceivedError2Helper = new OnReceivedError2Helper();
@@ -77,6 +79,25 @@ public class TestAwContentsClient extends NullContentsClient {
 
     public OnPageFinishedHelper getOnPageFinishedHelper() {
         return mOnPageFinishedHelper;
+    }
+
+    /**
+     * CallbackHelper for OnFailedLoad.
+     */
+    public static class OnFailedLoadHelper extends CallbackHelper {
+        private String mUrl;
+        public void notifyCalled(String url) {
+            mUrl = url;
+            notifyCalled();
+        }
+        public String getUrl() {
+            assert getCallCount() > 0;
+            return mUrl;
+        }
+    }
+
+    public OnFailedLoadHelper getOnFailedLoadHelper() {
+        return mOnFailedLoadHelper;
     }
 
     public OnReceivedErrorHelper getOnReceivedErrorHelper() {
@@ -198,6 +219,11 @@ public class TestAwContentsClient extends NullContentsClient {
     @Override
     public void onPageFinished(String url) {
         mOnPageFinishedHelper.notifyCalled(url);
+    }
+
+    @Override
+    public void onFailedLoadForTesting(String url) {
+        mOnFailedLoadHelper.notifyCalled(url);
     }
 
     @Override

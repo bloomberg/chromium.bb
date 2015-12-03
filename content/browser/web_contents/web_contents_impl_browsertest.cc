@@ -187,60 +187,6 @@ class LoadingStateChangedDelegate : public WebContentsDelegate {
   int loadingStateToDifferentDocumentCount_;
 };
 
-// See: http://crbug.com/298193
-#if defined(OS_WIN) || defined(OS_LINUX)
-#define MAYBE_DidStopLoadingDetails DISABLED_DidStopLoadingDetails
-#else
-#define MAYBE_DidStopLoadingDetails DidStopLoadingDetails
-#endif
-
-// Test that DidStopLoading includes the correct URL in the details.
-IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
-                       MAYBE_DidStopLoadingDetails) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  LoadStopNotificationObserver load_observer(
-      &shell()->web_contents()->GetController());
-  NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html"));
-  load_observer.Wait();
-
-  EXPECT_EQ("/title1.html", load_observer.url_.path());
-  EXPECT_EQ(0, load_observer.session_index_);
-  EXPECT_EQ(&shell()->web_contents()->GetController(),
-            load_observer.controller_);
-}
-
-// See: http://crbug.com/298193
-#if defined(OS_WIN) || defined(OS_LINUX)
-#define MAYBE_DidStopLoadingDetailsWithPending \
-  DISABLED_DidStopLoadingDetailsWithPending
-#else
-#define MAYBE_DidStopLoadingDetailsWithPending DidStopLoadingDetailsWithPending
-#endif
-
-// Test that DidStopLoading includes the correct URL in the details when a
-// pending entry is present.
-IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
-                       MAYBE_DidStopLoadingDetailsWithPending) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-  GURL url("data:text/html,<div>test</div>");
-
-  // Listen for the first load to stop.
-  LoadStopNotificationObserver load_observer(
-      &shell()->web_contents()->GetController());
-  // Start a new pending navigation as soon as the first load commits.
-  // We will hear a DidStopLoading from the first load as the new load
-  // is started.
-  NavigateOnCommitObserver commit_observer(
-      shell(), embedded_test_server()->GetURL("/title2.html"));
-  NavigateToURL(shell(), url);
-  load_observer.Wait();
-
-  EXPECT_EQ(url, load_observer.url_);
-  EXPECT_EQ(0, load_observer.session_index_);
-  EXPECT_EQ(&shell()->web_contents()->GetController(),
-            load_observer.controller_);
-}
 // Test that a renderer-initiated navigation to an invalid URL does not leave
 // around a pending entry that could be used in a URL spoof.  We test this in
 // a browser test because our unit test framework incorrectly calls
