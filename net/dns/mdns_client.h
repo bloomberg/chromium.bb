@@ -9,13 +9,11 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/memory/scoped_ptr.h"
 #include "net/base/ip_endpoint.h"
 #include "net/dns/dns_query.h"
 #include "net/dns/dns_response.h"
 #include "net/dns/record_parsed.h"
-
-template <typename T>
-class ScopedVector;
 
 namespace net {
 
@@ -131,7 +129,8 @@ class NET_EXPORT MDnsListener {
 class NET_EXPORT MDnsSocketFactory {
  public:
   virtual ~MDnsSocketFactory() {}
-  virtual void CreateSockets(ScopedVector<DatagramServerSocket>* sockets) = 0;
+  virtual void CreateSockets(
+      std::vector<scoped_ptr<DatagramServerSocket>>* sockets) = 0;
 
   static scoped_ptr<MDnsSocketFactory> CreateDefault();
 };

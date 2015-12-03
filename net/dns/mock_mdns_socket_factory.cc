@@ -65,14 +65,14 @@ MockMDnsSocketFactory::~MockMDnsSocketFactory() {
 }
 
 void MockMDnsSocketFactory::CreateSockets(
-    ScopedVector<DatagramServerSocket>* sockets) {
+    std::vector<scoped_ptr<DatagramServerSocket>>* sockets) {
   CreateSocket(ADDRESS_FAMILY_IPV4, sockets);
   CreateSocket(ADDRESS_FAMILY_IPV6, sockets);
 }
 
 void MockMDnsSocketFactory::CreateSocket(
     AddressFamily address_family,
-    ScopedVector<DatagramServerSocket>* sockets) {
+    std::vector<scoped_ptr<DatagramServerSocket>>* sockets) {
   scoped_ptr<testing::NiceMock<MockMDnsDatagramServerSocket> > new_socket(
       new testing::NiceMock<MockMDnsDatagramServerSocket>(address_family));
 

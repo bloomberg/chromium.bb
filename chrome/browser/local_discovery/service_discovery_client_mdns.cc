@@ -4,8 +4,10 @@
 
 #include "chrome/browser/local_discovery/service_discovery_client_mdns.h"
 
+#include <vector>
+
 #include "base/location.h"
-#include "base/memory/scoped_vector.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
@@ -115,14 +117,14 @@ class SocketFactory : public net::MDnsSocketFactory {
 
   // net::MDnsSocketFactory implementation:
   void CreateSockets(
-      ScopedVector<net::DatagramServerSocket>* sockets) override {
+      std::vector<scoped_ptr<net::DatagramServerSocket>>* sockets) override {
     for (size_t i = 0; i < interfaces_.size(); ++i) {
       DCHECK(interfaces_[i].second == net::ADDRESS_FAMILY_IPV4 ||
              interfaces_[i].second == net::ADDRESS_FAMILY_IPV6);
       scoped_ptr<net::DatagramServerSocket> socket(
           CreateAndBindMDnsSocket(interfaces_[i].second, interfaces_[i].first));
       if (socket)
-        sockets->push_back(socket.release());
+        sockets->push_back(std::move(socket));
     }
   }
 

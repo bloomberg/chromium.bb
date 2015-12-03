@@ -5,9 +5,11 @@
 #include "chrome/utility/local_discovery/service_discovery_message_handler.h"
 
 #include <algorithm>
+#include <vector>
 
 #include "base/lazy_instance.h"
 #include "base/location.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "chrome/common/local_discovery/local_discovery_messages.h"
 #include "chrome/common/local_discovery/service_discovery_client_impl.h"
@@ -72,12 +74,15 @@ class PreCreatedMDnsSocketFactory : public net::MDnsSocketFactory {
   ~PreCreatedMDnsSocketFactory() override {
     // Not empty if process exits too fast, before starting mDns code. If
     // happened, destructors may crash accessing destroyed global objects.
-    sockets_.weak_clear();
+    // TODO This sounds memory leak, check and do better if possible
+    for (scoped_ptr<net::DatagramServerSocket>& it : sockets_)
+      base::IgnoreResult(it.release());
+    sockets_.clear();
   }
 
   // net::MDnsSocketFactory implementation:
   void CreateSockets(
-      ScopedVector<net::DatagramServerSocket>* sockets) override {
+      std::vector<scoped_ptr<net::DatagramServerSocket>>* sockets) override {
     sockets->swap(sockets_);
     Reset();
   }
@@ -90,7 +95,7 @@ class PreCreatedMDnsSocketFactory : public net::MDnsSocketFactory {
                                      socket_info.interface_index));
     if (socket) {
       socket->DetachFromThread();
-      sockets_.push_back(socket.release());
+      sockets_.push_back(std::move(socket));
     }
   }
 
@@ -99,7 +104,7 @@ class PreCreatedMDnsSocketFactory : public net::MDnsSocketFactory {
   }
 
  private:
-  ScopedVector<net::DatagramServerSocket> sockets_;
+  std::vector<scoped_ptr<net::DatagramServerSocket>> sockets_;
 
   DISALLOW_COPY_AND_ASSIGN(PreCreatedMDnsSocketFactory);
 };

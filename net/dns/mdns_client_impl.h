@@ -13,7 +13,7 @@
 
 #include "base/cancelable_callback.h"
 #include "base/gtest_prod_util.h"
-#include "base/memory/scoped_vector.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
@@ -35,7 +35,8 @@ class MDnsSocketFactoryImpl : public MDnsSocketFactory {
   MDnsSocketFactoryImpl() {}
   ~MDnsSocketFactoryImpl() override{};
 
-  void CreateSockets(ScopedVector<DatagramServerSocket>* sockets) override;
+  void CreateSockets(
+      std::vector<scoped_ptr<DatagramServerSocket>>* sockets) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MDnsSocketFactoryImpl);
@@ -97,7 +98,7 @@ class NET_EXPORT_PRIVATE MDnsConnection {
   void OnError(int rv);
 
   // Only socket handlers which successfully bound and started are kept.
-  ScopedVector<SocketHandler> socket_handlers_;
+  std::vector<scoped_ptr<SocketHandler>> socket_handlers_;
 
   Delegate* delegate_;
 

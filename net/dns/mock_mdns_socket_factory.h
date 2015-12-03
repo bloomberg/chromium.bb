@@ -6,7 +6,9 @@
 #define NET_DNS_MOCK_MDNS_SOCKET_FACTORY_H_
 
 #include <string>
+#include <vector>
 
+#include "base/memory/scoped_ptr.h"
 #include "net/dns/mdns_client_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -76,7 +78,8 @@ class MockMDnsSocketFactory : public MDnsSocketFactory {
   MockMDnsSocketFactory();
   ~MockMDnsSocketFactory() override;
 
-  void CreateSockets(ScopedVector<DatagramServerSocket>* sockets) override;
+  void CreateSockets(
+      std::vector<scoped_ptr<DatagramServerSocket>>* sockets) override;
 
   void SimulateReceive(const uint8* packet, int size);
 
@@ -93,7 +96,7 @@ class MockMDnsSocketFactory : public MDnsSocketFactory {
                        const CompletionCallback& callback);
 
   void CreateSocket(AddressFamily address_family,
-                    ScopedVector<DatagramServerSocket>* sockets);
+                    std::vector<scoped_ptr<DatagramServerSocket>>* sockets);
 
   scoped_refptr<IOBuffer> recv_buffer_;
   int recv_buffer_size_;

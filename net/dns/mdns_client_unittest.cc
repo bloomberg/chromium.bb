@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 
 #include <queue>
+#include <vector>
 
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
@@ -1157,17 +1159,18 @@ TEST_F(MDnsTest, RefreshQuery) {
 // This is a simplifying assumption based on the way the code works now.
 class SimpleMockSocketFactory : public MDnsSocketFactory {
  public:
-  void CreateSockets(ScopedVector<DatagramServerSocket>* sockets) override {
+  void CreateSockets(
+      std::vector<scoped_ptr<DatagramServerSocket>>* sockets) override {
     sockets->clear();
     sockets->swap(sockets_);
   }
 
-  void PushSocket(DatagramServerSocket* socket) {
-    sockets_.push_back(socket);
+  void PushSocket(scoped_ptr<DatagramServerSocket> socket) {
+    sockets_.push_back(std::move(socket));
   }
 
  private:
-  ScopedVector<DatagramServerSocket> sockets_;
+  std::vector<scoped_ptr<DatagramServerSocket>> sockets_;
 };
 
 class MockMDnsConnectionDelegate : public MDnsConnection::Delegate {
@@ -1191,8 +1194,8 @@ class MDnsConnectionTest : public ::testing::Test {
   void SetUp() override {
     socket_ipv4_ = new MockMDnsDatagramServerSocket(ADDRESS_FAMILY_IPV4);
     socket_ipv6_ = new MockMDnsDatagramServerSocket(ADDRESS_FAMILY_IPV6);
-    factory_.PushSocket(socket_ipv6_);
-    factory_.PushSocket(socket_ipv4_);
+    factory_.PushSocket(make_scoped_ptr(socket_ipv6_));
+    factory_.PushSocket(make_scoped_ptr(socket_ipv4_));
     sample_packet_ = MakeString(kSamplePacket1, sizeof(kSamplePacket1));
     sample_buffer_ = new StringIOBuffer(sample_packet_);
   }

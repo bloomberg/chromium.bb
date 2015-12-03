@@ -44,7 +44,7 @@ const double kListenerRefreshRatio2 = 0.95;
 }  // namespace
 
 void MDnsSocketFactoryImpl::CreateSockets(
-    ScopedVector<DatagramServerSocket>* sockets) {
+    std::vector<scoped_ptr<DatagramServerSocket>>* sockets) {
   InterfaceIndexFamilyList interfaces(GetMDnsInterfacesToBind());
   for (size_t i = 0; i < interfaces.size(); ++i) {
     DCHECK(interfaces[i].second == ADDRESS_FAMILY_IPV4 ||
@@ -142,14 +142,13 @@ MDnsConnection::~MDnsConnection() {
 }
 
 bool MDnsConnection::Init(MDnsSocketFactory* socket_factory) {
-  ScopedVector<DatagramServerSocket> sockets;
+  std::vector<scoped_ptr<DatagramServerSocket>> sockets;
   socket_factory->CreateSockets(&sockets);
 
-  for (size_t i = 0; i < sockets.size(); ++i) {
-    socket_handlers_.push_back(
-        new MDnsConnection::SocketHandler(make_scoped_ptr(sockets[i]), this));
+  for (scoped_ptr<DatagramServerSocket>& socket : sockets) {
+    socket_handlers_.push_back(make_scoped_ptr(
+        new MDnsConnection::SocketHandler(std::move(socket), this)));
   }
-  sockets.weak_clear();
 
   // All unbound sockets need to be bound before processing untrusted input.
   // This is done for security reasons, so that an attacker can't get an unbound
@@ -169,14 +168,18 @@ bool MDnsConnection::Init(MDnsSocketFactory* socket_factory) {
 
 void MDnsConnection::Send(const scoped_refptr<IOBuffer>& buffer,
                           unsigned size) {
-  for (size_t i = 0; i < socket_handlers_.size(); ++i)
-    socket_handlers_[i]->Send(buffer, size);
+  for (scoped_ptr<SocketHandler>& handler : socket_handlers_)
+    handler->Send(buffer, size);
 }
 
 void MDnsConnection::PostOnError(SocketHandler* loop, int rv) {
-  VLOG(1) << "Socket error. id="
-          << std::find(socket_handlers_.begin(), socket_handlers_.end(), loop) -
-                 socket_handlers_.begin() << ", error=" << rv;
+  int id = 0;
+  for (const auto& it : socket_handlers_) {
+    if (it.get() == loop)
+      break;
+    id++;
+  }
+  VLOG(1) << "Socket error. id=" << id << ", error=" << rv;
   // Post to allow deletion of this object by delegate.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
