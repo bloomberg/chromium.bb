@@ -1175,7 +1175,7 @@ const struct PublicKeyInfoTestData {
     // need to be renegerated with a larger key. See https://crbug.com/472291.
     {"large_key.pem", 0, X509Certificate::kPublicKeyTypeUnknown},
 #else
-    {"large_key.pem", 4104, X509Certificate::kPublicKeyTypeRSA},
+    {"large_key.pem", 8200, X509Certificate::kPublicKeyTypeRSA},
 #endif
 };
 
