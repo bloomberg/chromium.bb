@@ -969,15 +969,27 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       keys (id, build_id, name, board, status, last_updated, start_time,
       finish_time, final).
     """
-    bs_table_columns = ['id', 'build_id', 'name', 'board', 'status',
-                        'last_updated', 'start_time', 'finish_time', 'final']
-    bs_prepended_columns = ['bs.' + x for x in bs_table_columns]
-    results = self._Execute(
-        'SELECT %s FROM buildStageTable bs '
-        'WHERE bs.build_id = %d' %
-        (', '.join(bs_prepended_columns), build_id)).fetchall()
-    columns = bs_table_columns
-    return [dict(zip(columns, values)) for values in results]
+    return self.GetBuildsStages([build_id])
+
+  @minimum_schema(30)
+  def GetBuildsStages(self, build_ids):
+    """Gets all the stages for all listed build_ids.
+
+    Args:
+      build_ids: list of build ids of the builds to fetch the stages for.
+
+    Returns:
+      A list containing, for each stage of the builds found, a dictionary with
+      keys (id, build_id, name, board, status, last_updated, start_time,
+      finish_time, final).
+    """
+    if not build_ids:
+      return []
+    return self._SelectWhere(
+        'buildStageTable',
+        'build_id IN (%s)' % ','.join(str(int(x)) for x in build_ids),
+        ['id', 'build_id', 'name', 'board', 'status',
+         'last_updated', 'start_time', 'finish_time', 'final'])
 
   @minimum_schema(43)
   def GetSlaveStatuses(self, master_build_id):
@@ -994,7 +1006,8 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     return self._SelectWhere('buildTable',
                              'master_build_id = %d' % master_build_id,
                              ['id', 'build_config', 'start_time',
-                              'finish_time', 'status', 'important'])
+                              'finish_time', 'status', 'important',
+                              'waterfall'])
 
   @minimum_schema(30)
   def GetSlaveStages(self, master_build_id):
