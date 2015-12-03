@@ -217,6 +217,7 @@
             'installer_util',
             'installer_util_strings',
             '../base/base.gyp:base',
+            '../chrome/common_constants.gyp:version_header',
             '../components/components.gyp:crash_component_breakpad_to_be_deleted',
           ],
           'include_dirs': [
