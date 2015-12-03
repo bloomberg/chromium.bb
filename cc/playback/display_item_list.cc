@@ -99,6 +99,10 @@ DisplayItemList::~DisplayItemList() {
 }
 
 void DisplayItemList::ToProtobuf(proto::DisplayItemList* proto) {
+  // The flattened SkPicture approach is going away, and the proto
+  // doesn't currently support serializing that flattened picture.
+  DCHECK(retain_individual_display_items_);
+
   RectToProto(layer_rect_, proto->mutable_layer_rect());
   settings_.ToProtobuf(proto->mutable_settings());
 

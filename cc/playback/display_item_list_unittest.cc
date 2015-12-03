@@ -76,6 +76,8 @@ void AppendSecondSerializationTestPicture(scoped_refptr<DisplayItemList> list,
 
 void ValidateDisplayItemListSerialization(const gfx::Size& layer_size,
                                           scoped_refptr<DisplayItemList> list) {
+  list->Finalize();
+
   // Serialize and deserialize the DisplayItemList.
   proto::DisplayItemList proto;
   list->ToProtobuf(&proto);
@@ -83,7 +85,6 @@ void ValidateDisplayItemListSerialization(const gfx::Size& layer_size,
       DisplayItemList::CreateFromProto(proto);
 
   // Finalize the DisplayItemLists to perform raster.
-  list->Finalize();
   new_list->Finalize();
 
   const int pixel_size = 4 * layer_size.GetArea();
@@ -127,7 +128,6 @@ TEST(DisplayItemListTest, SerializeSingleDrawingItem) {
   gfx::Size layer_size(10, 10);
 
   DisplayItemListSettings settings;
-  settings.use_cached_picture = true;
   scoped_refptr<DisplayItemList> list =
       DisplayItemList::Create(gfx::Rect(layer_size), settings);
 
@@ -141,7 +141,6 @@ TEST(DisplayItemListTest, SerializeClipItem) {
   gfx::Size layer_size(10, 10);
 
   DisplayItemListSettings settings;
-  settings.use_cached_picture = true;
   scoped_refptr<DisplayItemList> list =
       DisplayItemList::Create(gfx::Rect(layer_size), settings);
 
@@ -168,7 +167,6 @@ TEST(DisplayItemListTest, SerializeClipPathItem) {
   gfx::Size layer_size(10, 10);
 
   DisplayItemListSettings settings;
-  settings.use_cached_picture = true;
   scoped_refptr<DisplayItemList> list =
       DisplayItemList::Create(gfx::Rect(layer_size), settings);
 
@@ -194,7 +192,6 @@ TEST(DisplayItemListTest, SerializeCompositingItem) {
   gfx::Size layer_size(10, 10);
 
   DisplayItemListSettings settings;
-  settings.use_cached_picture = true;
   scoped_refptr<DisplayItemList> list =
       DisplayItemList::Create(gfx::Rect(layer_size), settings);
 
@@ -220,7 +217,6 @@ TEST(DisplayItemListTest, SerializeFloatClipItem) {
   gfx::Size layer_size(10, 10);
 
   DisplayItemListSettings settings;
-  settings.use_cached_picture = true;
   scoped_refptr<DisplayItemList> list =
       DisplayItemList::Create(gfx::Rect(layer_size), settings);
 
@@ -245,7 +241,6 @@ TEST(DisplayItemListTest, SerializeTransformItem) {
   gfx::Size layer_size(10, 10);
 
   DisplayItemListSettings settings;
-  settings.use_cached_picture = true;
   scoped_refptr<DisplayItemList> list =
       DisplayItemList::Create(gfx::Rect(layer_size), settings);
 
@@ -279,7 +274,6 @@ TEST(DisplayItemListTest, SingleDrawingItem) {
   red_paint.setColor(SK_ColorRED);
   unsigned char pixels[4 * 100 * 100] = {0};
   DisplayItemListSettings settings;
-  settings.use_cached_picture = true;
   scoped_refptr<DisplayItemList> list =
       DisplayItemList::Create(layer_rect, settings);
 
