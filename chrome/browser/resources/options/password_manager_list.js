@@ -77,6 +77,9 @@ cr.define('options.passwordManager', function() {
       urlLink.href = this.url;
       urlLink.setAttribute('target', '_blank');
       urlLink.textContent = this.shownUrl.split('').reverse().join('');
+      urlLink.addEventListener('focus', function() {
+        this.handleFocus();
+      }.bind(this));
       urlDiv.appendChild(urlLink);
       urlDiv.style.backgroundImage = getFaviconImageSet(
           'origin/' + this.url, 16);
@@ -93,6 +96,9 @@ cr.define('options.passwordManager', function() {
       usernameInput.className = 'inactive-item';
       usernameInput.readOnly = true;
       usernameInput.value = this.username;
+      usernameInput.addEventListener('focus', function() {
+        this.handleFocus();
+      }.bind(this));
       usernameDiv.appendChild(usernameInput);
       this.usernameField = usernameInput;
 
@@ -114,10 +120,9 @@ cr.define('options.passwordManager', function() {
         passwordInput.readOnly = true;
         passwordInput.value = this.showPasswords_ ? this.password : '********';
         passwordInputDiv.appendChild(passwordInput);
-        var deletableItem = this;
         passwordInput.addEventListener('focus', function() {
-          deletableItem.handleFocus();
-        });
+          this.handleFocus();
+        }.bind(this));
         this.passwordField = passwordInput;
         this.setFocusable_(false);
 
@@ -135,8 +140,8 @@ cr.define('options.passwordManager', function() {
             event.stopPropagation();
           }, false);
           button.addEventListener('focus', function() {
-            deletableItem.handleFocus();
-          });
+            this.handleFocus();
+          }.bind(this));
           passwordInputDiv.appendChild(button);
           this.passwordShowButton = button;
         }
@@ -329,11 +334,35 @@ cr.define('options.passwordManager', function() {
       urlLink.href = this.url;
       urlLink.textContent = this.shownUrl.split('').reverse().join('');
       urlLink.setAttribute('target', '_blank');
+      urlLink.addEventListener('focus', function() {
+        this.handleFocus();
+      }.bind(this));
+      this.urlLink = urlLink;
       urlDiv.appendChild(urlLink);
       urlDiv.style.backgroundImage = getFaviconImageSet(
           'origin/' + this.url, 16);
-      urlLink.tabIndex = -1;
       this.contentElement.appendChild(urlDiv);
+    },
+
+    /** @override */
+    selectionChanged: function() {
+      if (this.selected) {
+        this.setFocusable_(true);
+        this.urlLink.focus();
+      } else {
+        this.setFocusable_(false);
+      }
+    },
+
+    /**
+     * Set the focusability of this row.
+     * @param {boolean} focusable
+     * @private
+     */
+    setFocusable_: function(focusable) {
+      var tabIndex = focusable ? 0 : -1;
+      this.urlLink.tabIndex = tabIndex;
+      this.closeButtonElement.tabIndex = tabIndex;
     },
 
     /**
