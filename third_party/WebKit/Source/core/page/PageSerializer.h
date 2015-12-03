@@ -35,20 +35,21 @@
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/KURLHash.h"
-#include "wtf/HashMap.h"
 #include "wtf/ListHashSet.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
+#include "wtf/text/WTFString.h"
 
 namespace blink {
 
 class Attribute;
-class FontResource;
-class ImageResource;
 class CSSRule;
 class CSSStyleSheet;
 class CSSValue;
 class Document;
+class Element;
+class FontResource;
+class ImageResource;
 class LocalFrame;
 class Node;
 class Page;
@@ -66,24 +67,32 @@ class CORE_EXPORT PageSerializer final {
     STACK_ALLOCATED();
 public:
     class Delegate {
-        USING_FAST_MALLOC(Delegate);
     public:
-        virtual ~Delegate() { }
         virtual bool shouldIgnoreAttribute(const Attribute&) = 0;
+
+        // Method allowing the Delegate control which URLs are written into the
+        // generated html document.
+        //
+        // When URL of the element needs to be rewritten, this method should
+        // return true and populate |rewrittenLink| with a desired value of the
+        // html attribute value to be used in place of the original link.
+        // (i.e. in place of img.src or iframe.src or object.data).
+        //
+        // If no link rewriting is desired, this method should return false.
+        virtual bool rewriteLink(const Element&, String& rewrittenLink) = 0;
     };
 
-    PageSerializer(Vector<SerializedResource>*, PassOwnPtr<Delegate>);
+    // Constructs a serializer that will write output to the given vector of
+    // SerializedResources and use the optional Delegate for controlling some
+    // serialization aspects.  Callers need to ensure that the Delegate stays
+    // alive until the PageSerializer gets destroyed.
+    PageSerializer(Vector<SerializedResource>&, Delegate*);
 
     // Initiates the serialization of the frame. All serialized content and
     // retrieved resources are added to the Vector passed to the constructor.
     // The first resource in that vector is the frame's serialized content.
     // Subsequent resources are images, css, etc.
     void serializeFrame(const LocalFrame&);
-
-    void registerRewriteURL(const String& from, const String& to);
-    void setRewriteURLFolder(const String&);
-
-    KURL urlForBlankFrame(const LocalFrame&);
 
     Delegate* delegate();
 
@@ -109,13 +118,7 @@ private:
     Vector<SerializedResource>* m_resources;
     ListHashSet<KURL> m_resourceURLs;
 
-    using BlankFrameURLMap = WillBeHeapHashMap<RawPtrWillBeMember<const LocalFrame>, KURL>;
-    BlankFrameURLMap m_blankFrameURLs;
-    HashMap<String, String> m_rewriteURLs;
-    String m_rewriteFolder;
-    unsigned m_blankFrameCounter;
-
-    OwnPtr<Delegate> m_delegate;
+    Delegate* m_delegate;
 };
 
 } // namespace blink

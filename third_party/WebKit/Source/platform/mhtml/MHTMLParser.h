@@ -33,6 +33,7 @@
 
 #include "platform/SharedBufferChunkReader.h"
 #include "platform/heap/Handle.h"
+#include "platform/weborigin/KURL.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
@@ -59,6 +60,14 @@ public:
 
     size_t subResourceCount() const;
     ArchiveResource* subResourceAt(size_t) const;
+
+    // Translates |contentIDFromMimeHeader| (of the form "<foo@bar.com>")
+    // into a cid-scheme URI (of the form "cid:foo@bar.com").
+    //
+    // Returns KURL() - an invalid URL - if contentID is invalid.
+    //
+    // See rfc2557 - section 8.3 - "Use of the Content-ID header and CID URLs".
+    static KURL convertContentIDToURI(const String& contentID);
 
 private:
     PassRefPtrWillBeRawPtr<MHTMLArchive> parseArchiveWithHeader(MIMEHeader*);

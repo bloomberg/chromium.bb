@@ -151,7 +151,7 @@ protected:
         MHTMLArchive::generateMHTMLHeader(boundary, title, mimeType, *mhtmlData);
         for (const auto& resource : resources) {
             MHTMLArchive::generateMHTMLPart(
-                boundary, encodingPolicy, resource, *mhtmlData);
+                boundary, String(), encodingPolicy, resource, *mhtmlData);
         }
         MHTMLArchive::generateMHTMLFooter(boundary, *mhtmlData);
         return mhtmlData.release();

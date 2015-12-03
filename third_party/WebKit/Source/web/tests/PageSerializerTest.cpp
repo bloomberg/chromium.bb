@@ -56,7 +56,9 @@ using blink::URLTestHelpers::registerMockedURLLoad;
 
 namespace blink {
 
-class PageSerializerTest : public testing::Test {
+class PageSerializerTest
+    : public testing::Test
+    , public PageSerializer::Delegate {
 public:
     PageSerializerTest()
         : m_folder(WebString::fromUTF8("pageserializer/"))
@@ -118,12 +120,7 @@ protected:
     void serialize(const char* url)
     {
         FrameTestHelpers::loadFrame(m_helper.webView()->mainFrame(), KURL(m_baseUrl, url).string().utf8().data());
-        PageSerializer serializer(&m_resources, nullptr);
-
-        serializer.setRewriteURLFolder(m_rewriteFolder);
-        for (const auto& rewriteURL: m_rewriteURLs)
-            serializer.registerRewriteURL(rewriteURL.key, rewriteURL.value);
-
+        PageSerializer serializer(m_resources, this);
         Frame* frame = m_helper.webViewImpl()->mainFrameImpl()->frame();
         for (; frame; frame = frame->tree().traverseNext()) {
             // This is safe, because tests do not do cross-site navigation
@@ -169,6 +166,34 @@ private:
         settings->setImagesEnabled(true);
         settings->setLoadsImagesAutomatically(true);
         settings->setJavaScriptEnabled(true);
+    }
+
+    // PageSerializer::Delegate implementation.
+    bool shouldIgnoreAttribute(const Attribute&) override
+    {
+        return false;
+    }
+
+    // PageSerializer::Delegate implementation.
+    bool rewriteLink(const Element& element, String& rewrittenLink)
+    {
+        String completeURL;
+        for (const auto& attribute : element.attributes()) {
+            if (element.hasLegalLinkAttribute(attribute.name())) {
+                completeURL = element.document().completeURL(attribute.value());
+                break;
+            }
+        }
+
+        if (completeURL.isNull() || !m_rewriteURLs.contains(completeURL))
+            return false;
+
+        StringBuilder uriBuilder;
+        uriBuilder.append(m_rewriteFolder);
+        uriBuilder.appendLiteral("/");
+        uriBuilder.append(m_rewriteURLs.get(completeURL));
+        rewrittenLink = uriBuilder.toString();
+        return true;
     }
 
     FrameTestHelpers::WebViewHelper m_helper;
@@ -266,10 +291,10 @@ TEST_F(PageSerializerTest, IFrames)
 
     serialize("top_frame.html");
 
-    EXPECT_EQ(9U, getResources().size());
+    EXPECT_EQ(10U, getResources().size());
 
     EXPECT_TRUE(isSerialized("top_frame.html", "text/html"));
-    EXPECT_TRUE(isSerialized("simple_iframe.html", "text/html"));
+    EXPECT_TRUE(isSerialized("simple_iframe.html", "text/html")); // Twice.
     EXPECT_TRUE(isSerialized("object_iframe.html", "text/html"));
     EXPECT_TRUE(isSerialized("embed_iframe.html", "text/html"));
     EXPECT_TRUE(isSerialized("encoded_iframe.html", "text/html"));
@@ -303,10 +328,12 @@ TEST_F(PageSerializerTest, BlankFrames)
     EXPECT_TRUE(isSerialized("http://www.test.com/red_background.png", "image/png"));
     EXPECT_TRUE(isSerialized("http://www.test.com/orange_background.png", "image/png"));
     EXPECT_TRUE(isSerialized("http://www.test.com/blue_background.png", "image/png"));
-    // The blank frames should have got a magic URL.
-    EXPECT_TRUE(isSerialized("wyciwyg://frame/0", "text/html"));
-    EXPECT_TRUE(isSerialized("wyciwyg://frame/1", "text/html"));
-    EXPECT_TRUE(isSerialized("wyciwyg://frame/2", "text/html"));
+
+    // The blank frames no longer get magic URL (i.e. wyciwyg://frame/0), so we
+    // can't really assert their presence via URL.  We also can't use content-id
+    // in assertions (since it is not deterministic).  Therefore we need to rely
+    // on getResources().size() assertion above and on browser-level tests
+    // (i.e. SavePageMultiFrameBrowserTest.AboutBlank).
 }
 
 TEST_F(PageSerializerTest, CSS)
@@ -455,27 +482,6 @@ TEST_F(PageSerializerTest, RewriteLinksSimple)
     EXPECT_EQ(3U, getResources().size());
     EXPECT_NE(getSerializedData("rewritelinks_simple.html", "text/html").find("\"folder/a.png\""), kNotFound);
     EXPECT_NE(getSerializedData("rewritelinks_simple.html", "text/html").find("\"folder/b.png\""), kNotFound);
-}
-
-TEST_F(PageSerializerTest, RewriteLinksBase)
-{
-    setBaseFolder("pageserializer/rewritelinks/");
-    setRewriteURLFolder("folder");
-
-    registerURL("rewritelinks_base.html", "text/html");
-    registerURL("images/here/image.png", "image.png", "image/png");
-    registerURL("images/here/or/in/here/image.png", "image.png", "image/png");
-    registerURL("or/absolute.png", "image.png", "image/png");
-    registerRewriteURL("http://www.test.com/images/here/image.png", "a.png");
-    registerRewriteURL("http://www.test.com/images/here/or/in/here/image.png", "b.png");
-    registerRewriteURL("http://www.test.com/or/absolute.png", "c.png");
-
-    serialize("rewritelinks_base.html");
-
-    EXPECT_EQ(4U, getResources().size());
-    EXPECT_NE(getSerializedData("rewritelinks_base.html", "text/html").find("\"folder/a.png\""), kNotFound);
-    EXPECT_NE(getSerializedData("rewritelinks_base.html", "text/html").find("\"folder/b.png\""), kNotFound);
-    EXPECT_NE(getSerializedData("rewritelinks_base.html", "text/html").find("\"folder/c.png\""), kNotFound);
 }
 
 // Test that we don't regress https://bugs.webkit.org/show_bug.cgi?id=99105

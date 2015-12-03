@@ -31,37 +31,11 @@
 
 #include "platform/mhtml/ArchiveResource.h"
 #include "platform/mhtml/MHTMLArchive.h"
+#include "platform/mhtml/MHTMLParser.h"
 #include "platform/weborigin/KURL.h"
-#include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
-
-namespace {
-
-// Converts |contentID| taken from a Content-ID MIME header
-// into URI using "cid" scheme.  Based primarily on an example
-// from rfc2557 in section 9.5, but also based on more
-// normative parts of specs like:
-// - rfc2557 - MHTML - section 8.3 - "Use of the Content-ID header and CID URLs"
-// - rfc1738 - URL - section 4 (reserved scheme names;  includes "cid")
-// - rfc2387 - multipart/related - section 3.4 - "Syntax" (cid := msg-id)
-// - rfc0822 - msg-id = "<" addr-spec ">"; addr-spec = local-part "@" domain
-KURL convertContentIDToURI(const String& contentID)
-{
-    if (contentID.length() <= 2)
-        return KURL();
-
-    if (!contentID.startsWith('<') || !contentID.endsWith('>'))
-        return KURL();
-
-    StringBuilder uriBuilder;
-    uriBuilder.append("cid:");
-    uriBuilder.append(contentID, 1, contentID.length() - 2);
-    return KURL(KURL(), uriBuilder.toString());
-}
-
-}
 
 ArchiveResourceCollection::ArchiveResourceCollection()
 {
@@ -94,7 +68,7 @@ void ArchiveResourceCollection::addAllResources(MHTMLArchive* archive)
             m_subframes.set(archive->mainResource()->url().string(), archive.get());
         }
 
-        KURL cidURI = convertContentIDToURI(archive->mainResource()->contentID());
+        KURL cidURI = MHTMLParser::convertContentIDToURI(archive->mainResource()->contentID());
         if (cidURI.isValid())
             m_subframes.set(cidURI, archive.get());
     }
@@ -107,7 +81,7 @@ void ArchiveResourceCollection::addResource(ArchiveResource& resource)
     const KURL& url = resource.url();
     m_subresources.set(url, &resource);
 
-    KURL cidURI = convertContentIDToURI(resource.contentID());
+    KURL cidURI = MHTMLParser::convertContentIDToURI(resource.contentID());
     if (cidURI.isValid())
         m_subresources.set(cidURI, &resource);
 }

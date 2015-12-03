@@ -51,7 +51,7 @@
 #include "core/fetch/FontResource.h"
 #include "core/fetch/ImageResource.h"
 #include "core/frame/LocalFrame.h"
-#include "core/html/HTMLFrameOwnerElement.h"
+#include "core/html/HTMLFrameElementBase.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLLinkElement.h"
@@ -63,6 +63,8 @@
 #include "core/style/StyleImage.h"
 #include "platform/SerializedResource.h"
 #include "platform/graphics/Image.h"
+#include "platform/heap/Handle.h"
+#include "wtf/HashSet.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/StringBuilder.h"
@@ -80,12 +82,6 @@ static bool shouldIgnoreElement(const Element& element)
     return isHTMLMetaElement(element) && toHTMLMetaElement(element).computeEncoding().isValid();
 }
 
-static const QualifiedName& frameOwnerURLAttributeName(const HTMLFrameOwnerElement& frameOwner)
-{
-    // FIXME: We should support all frame owners including applets.
-    return isHTMLObjectElement(frameOwner) ? HTMLNames::dataAttr : HTMLNames::srcAttr;
-}
-
 class SerializerMarkupAccumulator : public MarkupAccumulator {
     STACK_ALLOCATED();
 public:
@@ -96,13 +92,18 @@ protected:
     void appendText(StringBuilder& out, Text&) override;
     bool shouldIgnoreAttribute(const Attribute&) override;
     void appendElement(StringBuilder& out, Element&, Namespaces*) override;
-    void appendCustomAttributes(StringBuilder& out, const Element&, Namespaces*) override;
+    void appendAttribute(StringBuilder& out, const Element&, const Attribute&, Namespaces*) override;
     void appendStartTag(Node&, Namespaces* = nullptr) override;
     void appendEndTag(const Element&) override;
 
-    const Document& document();
-
 private:
+    void appendAttributeValue(StringBuilder& out, const String& attributeValue);
+    void appendRewrittenAttribute(
+        StringBuilder& out,
+        const Element&,
+        const String& attributeName,
+        const String& attributeValue);
+
     PageSerializer* m_serializer;
     RawPtrWillBeMember<const Document> m_document;
 
@@ -111,6 +112,9 @@ private:
     // of this vector isn't small for large document. It is better to use
     // callback like functionality.
     WillBeHeapVector<RawPtrWillBeMember<Node>>& m_nodes;
+
+    // Elements with links rewritten via appendAttribute method.
+    WillBeHeapHashSet<RawPtrWillBeMember<const Element>> m_elementsWithRewrittenLinks;
 };
 
 SerializerMarkupAccumulator::SerializerMarkupAccumulator(PageSerializer* serializer, const Document& document, WillBeHeapVector<RawPtrWillBeMember<Node>>& nodes)
@@ -149,9 +153,9 @@ void SerializerMarkupAccumulator::appendElement(StringBuilder& result, Element& 
     // TODO(tiger): Refactor MarkupAccumulator so it is easier to append an element like this, without special cases for XHTML
     if (isHTMLHeadElement(element)) {
         result.appendLiteral("<meta http-equiv=\"Content-Type\" content=\"");
-        MarkupFormatter::appendAttributeValue(result, m_document->suggestedMIMEType(), m_document->isHTMLDocument());
+        appendAttributeValue(result, m_document->suggestedMIMEType());
         result.appendLiteral("; charset=");
-        MarkupFormatter::appendAttributeValue(result, m_document->characterSet(), m_document->isHTMLDocument());
+        appendAttributeValue(result, m_document->characterSet());
         if (m_document->isXHTMLDocument())
             result.appendLiteral("\" />");
         else
@@ -161,24 +165,35 @@ void SerializerMarkupAccumulator::appendElement(StringBuilder& result, Element& 
     // FIXME: For object (plugins) tags and video tag we could replace them by an image of their current contents.
 }
 
-void SerializerMarkupAccumulator::appendCustomAttributes(StringBuilder& result, const Element& element, Namespaces* namespaces)
+void SerializerMarkupAccumulator::appendAttribute(
+    StringBuilder& out,
+    const Element& element,
+    const Attribute& attribute,
+    Namespaces* namespaces)
 {
-    if (!element.isFrameOwnerElement())
+    // Check if the delegate wants to rewrite the attribute.
+    PageSerializer::Delegate* delegate = m_serializer->delegate();
+    String newValue;
+    if (!delegate || !delegate->rewriteLink(element, newValue)) {
+        // Fallback to appending the original attribute.
+        MarkupAccumulator::appendAttribute(out, element, attribute, namespaces);
         return;
+    }
 
-    const HTMLFrameOwnerElement& frameOwner = toHTMLFrameOwnerElement(element);
-    Frame* frame = frameOwner.contentFrame();
-    // FIXME: RemoteFrames not currently supported here.
-    if (!frame || !frame->isLocalFrame())
+    if (element.hasLegalLinkAttribute(attribute.name())) {
+        // Rewrite element links.
+        appendRewrittenAttribute(out, element, attribute.name().toString(), newValue);
         return;
+    }
 
-    KURL url = toLocalFrame(frame)->document()->url();
-    if (url.isValid() && !url.protocolIsAbout())
+    if (isHTMLFrameElementBase(&element) && attribute.name() == HTMLNames::srcdocAttr) {
+        // Emit src instead of srcdoc attribute for frame elements - we want the
+        // serialized subframe to use html contents from the link provided by
+        // Delegate::rewriteLink rather than html contents from srcdoc
+        // attribute.
+        appendRewrittenAttribute(out, element, HTMLNames::srcAttr.localName(), newValue);
         return;
-
-    // We need to give a fake location to blank frames so they can be referenced by the serialized frame.
-    url = m_serializer->urlForBlankFrame(*toLocalFrame(frame));
-    appendAttribute(result, element, Attribute(frameOwnerURLAttributeName(frameOwner), AtomicString(url.string())), namespaces);
+    }
 }
 
 void SerializerMarkupAccumulator::appendStartTag(Node& node, Namespaces* namespaces)
@@ -193,9 +208,30 @@ void SerializerMarkupAccumulator::appendEndTag(const Element& element)
         MarkupAccumulator::appendEndTag(element);
 }
 
-const Document& SerializerMarkupAccumulator::document()
+void SerializerMarkupAccumulator::appendAttributeValue(
+    StringBuilder& out,
+    const String& attributeValue)
 {
-    return *m_document;
+    MarkupFormatter::appendAttributeValue(out, attributeValue, m_document->isHTMLDocument());
+}
+
+void SerializerMarkupAccumulator::appendRewrittenAttribute(
+    StringBuilder& out,
+    const Element& element,
+    const String& attributeName,
+    const String& attributeValue)
+{
+    if (m_elementsWithRewrittenLinks.contains(&element))
+        return;
+    m_elementsWithRewrittenLinks.add(&element);
+
+    // Append the rewritten attribute.
+    // TODO(tiger): Refactor MarkupAccumulator so it is easier to append an attribute like this.
+    out.append(' ');
+    out.append(attributeName);
+    out.appendLiteral("=\"");
+    appendAttributeValue(out, attributeValue);
+    out.appendLiteral("\"");
 }
 
 // TODO(tiger): Right now there is no support for rewriting URLs inside CSS
@@ -204,89 +240,11 @@ const Document& SerializerMarkupAccumulator::document()
 // url(...) statements in CSS might not work when rewriting links for the
 // "Webpage, Complete" method of saving a page. It will take some work but it
 // needs to be done if we want to continue to support non-MHTML saved pages.
-//
-// Once that is fixed it would make sense to make link rewriting a bit more
-// general. A new method, String& rewriteURL(String&) or similar, could be added
-// to PageSerializer.Delegate that would allow clients to control this. Some of
-// the change link logic could be moved back to WebPageSerializer.
-//
-// The remaining code in LinkChangeSerializerMarkupAccumulator could probably
-// be merged back into SerializerMarkupAccumulator with additional methods in
-// PageSerializer.Delegate to control MOTW and Base tag rewrite.
-class LinkChangeSerializerMarkupAccumulator final : public SerializerMarkupAccumulator {
-    STACK_ALLOCATED();
-public:
-    LinkChangeSerializerMarkupAccumulator(PageSerializer*, const Document&, WillBeHeapVector<RawPtrWillBeMember<Node>>&, HashMap<String, String>& rewriteURLs, const String& rewriteFolder);
 
-private:
-    void appendElement(StringBuilder&, Element&, Namespaces*) override;
-    void appendAttribute(StringBuilder&, const Element&, const Attribute&, Namespaces*) override;
-
-    // m_rewriteURLs include all pairs of local resource paths and corresponding original links.
-    HashMap<String, String> m_rewriteURLs;
-    String m_rewriteFolder;
-};
-
-LinkChangeSerializerMarkupAccumulator::LinkChangeSerializerMarkupAccumulator(PageSerializer* serializer, const Document& document, WillBeHeapVector<RawPtrWillBeMember<Node>>& nodes, HashMap<String, String>& rewriteURLs, const String& rewriteFolder)
-    : SerializerMarkupAccumulator(serializer, document, nodes)
-    , m_rewriteURLs(rewriteURLs)
-    , m_rewriteFolder(rewriteFolder)
-{
-}
-
-void LinkChangeSerializerMarkupAccumulator::appendElement(StringBuilder& result, Element& element, Namespaces* namespaces)
-{
-    if (element.hasTagName(HTMLNames::htmlTag)) {
-        // Add MOTW (Mark of the Web) declaration before html tag.
-        // See http://msdn2.microsoft.com/en-us/library/ms537628(VS.85).aspx.
-        result.append('\n');
-        MarkupFormatter::appendComment(result, PageSerializer::markOfTheWebDeclaration(document().url()));
-        result.append('\n');
-    }
-
-    if (element.hasTagName(HTMLNames::baseTag)) {
-        // TODO(tiger): Refactor MarkupAccumulator so it is easier to append an element like this, without special cases for XHTML
-        // Append a new base tag declaration.
-        result.appendLiteral("<base href=\".\"");
-        if (!document().baseTarget().isEmpty()) {
-            result.appendLiteral(" target=\"");
-            MarkupFormatter::appendAttributeValue(result, document().baseTarget(), document().isHTMLDocument());
-            result.append('"');
-        }
-        if (document().isXHTMLDocument())
-            result.appendLiteral(" />");
-        else
-            result.appendLiteral(">");
-    } else {
-        SerializerMarkupAccumulator::appendElement(result, element, namespaces);
-    }
-}
-
-void LinkChangeSerializerMarkupAccumulator::appendAttribute(StringBuilder& result, const Element& element, const Attribute& attribute, Namespaces* namespaces)
-{
-    if (!m_rewriteURLs.isEmpty() && element.isURLAttribute(attribute)) {
-
-        String completeURL = document().completeURL(attribute.value());
-
-        if (m_rewriteURLs.contains(completeURL)) {
-            // TODO(tiger): Refactor MarkupAccumulator so it is easier to append an attribute like this.
-            result.append(' ');
-            result.append(attribute.name().toString());
-            result.appendLiteral("=\"");
-            if (!m_rewriteFolder.isEmpty())
-                MarkupFormatter::appendAttributeValue(result, m_rewriteFolder + "/", document().isHTMLDocument());
-            MarkupFormatter::appendAttributeValue(result, m_rewriteURLs.get(completeURL), document().isHTMLDocument());
-            result.appendLiteral("\"");
-            return;
-        }
-    }
-    MarkupAccumulator::appendAttribute(result, element, attribute, namespaces);
-}
-
-
-PageSerializer::PageSerializer(Vector<SerializedResource>* resources, PassOwnPtr<Delegate> delegate)
-    : m_resources(resources)
-    , m_blankFrameCounter(0)
+PageSerializer::PageSerializer(
+    Vector<SerializedResource>& resources,
+    Delegate* delegate)
+    : m_resources(&resources)
     , m_delegate(delegate)
 {
 }
@@ -296,18 +254,6 @@ void PageSerializer::serializeFrame(const LocalFrame& frame)
     ASSERT(frame.document());
     Document& document = *frame.document();
     KURL url = document.url();
-    // FIXME: This probably wants isAboutBlankURL? to exclude other about: urls (like about:srcdoc)?
-    if (!url.isValid() || url.protocolIsAbout()) {
-        // For blank frames we generate a fake URL so they can be referenced by their containing frame.
-        url = urlForBlankFrame(frame);
-    }
-
-    if (m_resourceURLs.contains(url)) {
-        // FIXME: We could have 2 frame with the same URL but which were dynamically changed and have now
-        // different content. So we should serialize both and somehow rename the frame src in the containing
-        // frame. Arg!
-        return;
-    }
 
     // If frame is an image document, add the image and don't continue
     if (document.isImageDocument()) {
@@ -317,14 +263,8 @@ void PageSerializer::serializeFrame(const LocalFrame& frame)
     }
 
     WillBeHeapVector<RawPtrWillBeMember<Node>> serializedNodes;
-    String text;
-    if (!m_rewriteURLs.isEmpty()) {
-        LinkChangeSerializerMarkupAccumulator accumulator(this, document, serializedNodes, m_rewriteURLs, m_rewriteFolder);
-        text = serializeNodes<EditingStrategy>(accumulator, document, IncludeNode);
-    } else {
-        SerializerMarkupAccumulator accumulator(this, document, serializedNodes);
-        text = serializeNodes<EditingStrategy>(accumulator, document, IncludeNode);
-    }
+    SerializerMarkupAccumulator accumulator(this, document, serializedNodes);
+    String text = serializeNodes<EditingStrategy>(accumulator, document, IncludeNode);
 
     CString frameHTML = document.encoding().encode(text, WTF::EntitiesForUnencodables);
     m_resources->append(SerializedResource(url, document.suggestedMIMEType(), SharedBuffer::create(frameHTML.data(), frameHTML.length())));
@@ -526,31 +466,9 @@ void PageSerializer::retrieveResourcesForCSSValue(CSSValue* cssValue, Document& 
     }
 }
 
-void PageSerializer::registerRewriteURL(const String& from, const String& to)
-{
-    m_rewriteURLs.set(from, to);
-}
-
-void PageSerializer::setRewriteURLFolder(const String& rewriteFolder)
-{
-    m_rewriteFolder = rewriteFolder;
-}
-
-KURL PageSerializer::urlForBlankFrame(const LocalFrame& frame)
-{
-    BlankFrameURLMap::iterator iter = m_blankFrameURLs.find(&frame);
-    if (iter != m_blankFrameURLs.end())
-        return iter->value;
-    String url = "wyciwyg://frame/" + String::number(m_blankFrameCounter++);
-    KURL fakeURL(ParsedURLString, url);
-    m_blankFrameURLs.add(&frame, fakeURL);
-
-    return fakeURL;
-}
-
 PageSerializer::Delegate* PageSerializer::delegate()
 {
-    return m_delegate.get();
+    return m_delegate;
 }
 
 // Returns MOTW (Mark of the Web) declaration before html tag which is in

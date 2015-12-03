@@ -91,9 +91,18 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
                 offlinePage.getOfflineUrl().endsWith(".mhtml"));
         assertTrue("Offline page item offline file doesn't have the right name.",
                 offlinePage.getOfflineUrl().contains("About"));
-        // BUG(518758): Depending on the bot the result will be either 626 or 627.
+
+        // We don't care about the exact file size of the mhtml file:
+        // - exact file size is not something that the end user sees or cares about
+        // - exact file size can vary based on external factors (i.e. see crbug.com/518758)
+        // - verification of contents of the resulting mhtml file should be covered by mhtml
+        //   serialization tests (i.e. save_page_browsertest.cc)
+        // - we want to avoid overtesting and artificially requiring specific formatting and/or
+        //   implementation choices in the mhtml serialization code
+        // OTOH, it still seems useful to assert that the file is not empty and that its size is in
+        // the right ballpark.
         long size = offlinePage.getFileSize();
-        assertTrue("Offline page item size is incorrect: " + size, size == 626 || size == 627);
+        assertTrue("Offline page item size is incorrect: " + size, 600 < size && size < 800);
     }
 
     @MediumTest

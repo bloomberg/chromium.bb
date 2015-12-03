@@ -39,6 +39,7 @@
 #include "platform/mhtml/MHTMLParser.h"
 #include "platform/text/QuotedPrintable.h"
 #include "platform/weborigin/SchemeRegistry.h"
+#include "wtf/Assertions.h"
 #include "wtf/CryptographicallyRandomNumber.h"
 #include "wtf/DateMath.h"
 #include "wtf/text/Base64.h"
@@ -127,6 +128,9 @@ void MHTMLArchive::generateMHTMLHeader(
     const String& boundary, const String& title, const String& mimeType,
     SharedBuffer& outputBuffer)
 {
+    ASSERT(!boundary.isEmpty());
+    ASSERT(!mimeType.isEmpty());
+
     DateComponents now;
     now.setMillisecondsSinceEpochForDateTime(currentTimeMS());
     // TODO(lukasza): Passing individual date/time components seems fragile.
@@ -160,14 +164,26 @@ void MHTMLArchive::generateMHTMLHeader(
 
 void MHTMLArchive::generateMHTMLPart(
     const String& boundary,
+    const String& contentID,
     EncodingPolicy encodingPolicy,
     const SerializedResource& resource,
     SharedBuffer& outputBuffer)
 {
+    ASSERT(!boundary.isEmpty());
+    ASSERT(contentID.isEmpty() || contentID[0] == '<');
+
     StringBuilder stringBuilder;
     stringBuilder.append("--" + boundary + "\r\n");
+
     stringBuilder.appendLiteral("Content-Type: ");
     stringBuilder.append(resource.mimeType);
+    stringBuilder.appendLiteral("\r\n");
+
+    if (!contentID.isEmpty()) {
+        stringBuilder.appendLiteral("Content-ID: ");
+        stringBuilder.append(contentID);
+        stringBuilder.appendLiteral("\r\n");
+    }
 
     const char* contentEncoding = 0;
     if (encodingPolicy == UseBinaryEncoding)
@@ -177,11 +193,17 @@ void MHTMLArchive::generateMHTMLPart(
     else
         contentEncoding = base64;
 
-    stringBuilder.appendLiteral("\r\nContent-Transfer-Encoding: ");
+    stringBuilder.appendLiteral("Content-Transfer-Encoding: ");
     stringBuilder.append(contentEncoding);
-    stringBuilder.appendLiteral("\r\nContent-Location: ");
-    stringBuilder.append(resource.url);
-    stringBuilder.appendLiteral("\r\n\r\n");
+    stringBuilder.appendLiteral("\r\n");
+
+    if (!resource.url.protocolIsAbout()) {
+        stringBuilder.appendLiteral("Content-Location: ");
+        stringBuilder.append(resource.url);
+        stringBuilder.appendLiteral("\r\n");
+    }
+
+    stringBuilder.appendLiteral("\r\n");
 
     CString asciiString = stringBuilder.toString().utf8();
     outputBuffer.append(asciiString.data(), asciiString.length());
@@ -223,6 +245,7 @@ void MHTMLArchive::generateMHTMLFooter(
     const String& boundary,
     SharedBuffer& outputBuffer)
 {
+    ASSERT(!boundary.isEmpty());
     CString asciiString = String("--" + boundary + "--\r\n").utf8();
     outputBuffer.append(asciiString.data(), asciiString.length());
 }

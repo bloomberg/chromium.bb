@@ -45,6 +45,7 @@
 #include "core/page/PageSerializer.h"
 #include "platform/SerializedResource.h"
 #include "platform/mhtml/MHTMLArchive.h"
+#include "platform/mhtml/MHTMLParser.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/WebCString.h"
 #include "public/platform/WebString.h"
@@ -56,6 +57,9 @@
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebPageSerializerImpl.h"
 #include "web/WebViewImpl.h"
+#include "wtf/Assertions.h"
+#include "wtf/HashMap.h"
+#include "wtf/Noncopyable.h"
 #include "wtf/Vector.h"
 #include "wtf/text/StringConcatenate.h"
 
@@ -63,14 +67,28 @@ namespace blink {
 
 namespace {
 
-class MHTMLPageSerializerDelegate final : public PageSerializer::Delegate {
+using ContentIDMap = WillBeHeapHashMap<RawPtrWillBeMember<Frame>, String>;
+
+class MHTMLPageSerializerDelegate final :
+    public NoBaseWillBeGarbageCollected<MHTMLPageSerializerDelegate>,
+    public PageSerializer::Delegate {
+    WTF_MAKE_NONCOPYABLE(MHTMLPageSerializerDelegate);
 public:
-    ~MHTMLPageSerializerDelegate() override;
+    MHTMLPageSerializerDelegate(const ContentIDMap& frameToContentID);
     bool shouldIgnoreAttribute(const Attribute&) override;
+    bool rewriteLink(const Element&, String& rewrittenLink) override;
+
+#if ENABLE(OILPAN)
+    void trace(Visitor* visitor) { visitor->trace(m_frameToContentID); }
+#endif
+
+private:
+    const ContentIDMap& m_frameToContentID;
 };
 
-
-MHTMLPageSerializerDelegate::~MHTMLPageSerializerDelegate()
+MHTMLPageSerializerDelegate::MHTMLPageSerializerDelegate(
+    const ContentIDMap& frameToContentID)
+    : m_frameToContentID(frameToContentID)
 {
 }
 
@@ -82,12 +100,62 @@ bool MHTMLPageSerializerDelegate::shouldIgnoreAttribute(const Attribute& attribu
     return attribute.localName() == HTMLNames::srcsetAttr;
 }
 
-} // namespace
+bool MHTMLPageSerializerDelegate::rewriteLink(
+    const Element& element,
+    String& rewrittenLink)
+{
+    if (!element.isFrameOwnerElement())
+        return false;
 
-static PassRefPtr<SharedBuffer> serializePageToMHTML(Page* page, MHTMLArchive::EncodingPolicy encodingPolicy)
+    auto* frameOwnerElement = toHTMLFrameOwnerElement(&element);
+    Frame* frame = frameOwnerElement->contentFrame();
+    if (!frame)
+        return false;
+
+    KURL cidURI = MHTMLParser::convertContentIDToURI(m_frameToContentID.get(frame));
+    ASSERT(cidURI.isValid());
+
+    if (isHTMLFrameElementBase(&element)) {
+        rewrittenLink = cidURI.string();
+        return true;
+    }
+
+    if (isHTMLObjectElement(&element)) {
+        Document* doc = frameOwnerElement->contentDocument();
+        bool isHandledBySerializer = doc->isHTMLDocument()
+            || doc->isXHTMLDocument() || doc->isImageDocument();
+        if (isHandledBySerializer) {
+            rewrittenLink = cidURI.string();
+            return true;
+        }
+    }
+
+    return false;
+}
+
+ContentIDMap generateFrameContentIDs(Page* page)
+{
+    ContentIDMap frameToContentID;
+    int frameID = 0;
+    for (Frame* frame = page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
+        // TODO(lukasza): Move cid generation to the browser + use base/guid.h
+        // (see the draft at crrev.com/1386873003).
+        StringBuilder contentIDBuilder;
+        contentIDBuilder.appendLiteral("<frame");
+        contentIDBuilder.appendNumber(frameID++);
+        contentIDBuilder.appendLiteral("@mhtml.blink>");
+
+        frameToContentID.add(frame, contentIDBuilder.toString());
+    }
+    return frameToContentID;
+}
+
+PassRefPtr<SharedBuffer> serializePageToMHTML(Page* page, MHTMLArchive::EncodingPolicy encodingPolicy)
 {
     Vector<SerializedResource> resources;
-    PageSerializer serializer(&resources, adoptPtr(new MHTMLPageSerializerDelegate));
+    ContentIDMap frameToContentID = generateFrameContentIDs(page);
+    MHTMLPageSerializerDelegate delegate(frameToContentID);
+    PageSerializer serializer(resources, &delegate);
 
     RefPtr<SharedBuffer> output = SharedBuffer::create();
     String boundary = MHTMLArchive::generateMHTMLBoundary();
@@ -105,15 +173,24 @@ static PassRefPtr<SharedBuffer> serializePageToMHTML(Page* page, MHTMLArchive::E
         resources.clear();
         serializer.serializeFrame(*toLocalFrame(frame));
 
-        for (const auto& resource : resources) {
+        bool isFirstResource = true;
+        for (const SerializedResource& resource : resources) {
+            // Frame is the 1st resource (see PageSerializer::serializeFrame doc
+            // comment). Frames need a Content-ID header.
+            String contentID = isFirstResource ? frameToContentID.get(frame) : String();
+
             MHTMLArchive::generateMHTMLPart(
-                boundary, encodingPolicy, resource, *output);
+                boundary, contentID, encodingPolicy, resource, *output);
+
+            isFirstResource = false;
         }
     }
 
     MHTMLArchive::generateMHTMLFooter(boundary, *output);
     return output.release();
 }
+
+} // namespace
 
 WebCString WebPageSerializer::serializeToMHTML(WebView* view)
 {

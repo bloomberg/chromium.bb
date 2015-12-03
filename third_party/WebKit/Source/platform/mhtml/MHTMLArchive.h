@@ -77,8 +77,12 @@ public:
     // Same |boundary| needs to used for all generateMHTMLHeader and
     // generateMHTMLPart and generateMHTMLFooter calls that belong to the same
     // MHTML document (see also generateMHTMLBoundary method).
+    //
+    // If |contentID| is non-empty, then it will be used as a Content-ID header.
+    // See rfc2557 - section 8.3 - "Use of the Content-ID header and CID URLs".
     static void generateMHTMLPart(
-        const String& boundary, EncodingPolicy, const SerializedResource&,
+        const String& boundary, const String& contentID,
+        EncodingPolicy, const SerializedResource&,
         SharedBuffer& outputBuffer);
 
     // Generates an MHTML footer and appends it to |outputBuffer|.
