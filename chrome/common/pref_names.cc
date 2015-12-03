@@ -81,17 +81,9 @@ const char kRestoreOnStartup[] = "session.restore_on_startup";
 // higher.
 const char kRestoreOnStartupMigrated[] = "session.restore_on_startup_migrated";
 
-// Serialized migration time of kURLsToRestoreOnStartup (see
-// base::Time::ToInternalValue for details on serialization format).
-const char kRestoreStartupURLsMigrationTime[] =
-    "session.startup_urls_migration_time";
-
 // The URLs to restore on startup or when the home button is pressed. The URLs
 // are only restored on startup if kRestoreOnStartup is 4.
 const char kURLsToRestoreOnStartup[] = "session.startup_urls";
-
-// Old startup url pref name for kURLsToRestoreOnStartup.
-const char kURLsToRestoreOnStartupOld[] = "session.urls_to_restore_on_startup";
 
 // Stores the email address associated with the google account of the custodian
 // of the supervised user, set when the supervised user is created.

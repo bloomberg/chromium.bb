@@ -249,19 +249,6 @@ void MasterPreferences::EnforceLegacyPreferences() {
     distribution_->SetBoolean(
         installer::master_preferences::kDoNotCreateQuickLaunchShortcut, true);
   }
-
-  // If there is no entry for kURLsToRestoreOnStartup and there is one for
-  // kURLsToRestoreOnStartupOld, copy the old to the new.
-  const base::ListValue* startup_urls_list = NULL;
-  if (master_dictionary_ &&
-      !master_dictionary_->GetList(prefs::kURLsToRestoreOnStartup, NULL) &&
-      master_dictionary_->GetList(prefs::kURLsToRestoreOnStartupOld,
-                                  &startup_urls_list) &&
-      startup_urls_list) {
-    base::ListValue* new_startup_urls_list = startup_urls_list->DeepCopy();
-    master_dictionary_->Set(prefs::kURLsToRestoreOnStartup,
-                            new_startup_urls_list);
-  }
 }
 
 bool MasterPreferences::GetBool(const std::string& name, bool* value) const {

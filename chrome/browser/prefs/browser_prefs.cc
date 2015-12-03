@@ -233,6 +233,15 @@ const char kShownAutoLaunchInfobarDeprecated[] =
     "browser.shown_autolaunch_infobar";
 #endif  // defined(OS_WIN)
 
+// The SessionStartupPref used this pref to store the list of URLs to restore
+// on startup, and then renamed it to "sessions.startup_urls" in M31. Migration
+// code was added and the timestamp of when the migration happened was tracked
+// by "session.startup_urls_migration_time". Both are obsolete now (12/2015) and
+// should be removed once a few releases have happened.
+const char kURLsToRestoreOnStartupOld[] = "session.urls_to_restore_on_startup";
+const char kRestoreStartupURLsMigrationTime[] =
+  "session.startup_urls_migration_time";
+
 }  // namespace
 
 namespace chrome {
@@ -518,6 +527,9 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 #if defined(OS_WIN)
   registry->RegisterIntegerPref(kShownAutoLaunchInfobarDeprecated, 0);
 #endif  // defined(OS_WIN)
+
+  registry->RegisterListPref(kURLsToRestoreOnStartupOld);
+  registry->RegisterInt64Pref(kRestoreStartupURLsMigrationTime, 0);
 }
 
 void RegisterUserProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
@@ -565,6 +577,10 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   // Added 11/2015.
   profile_prefs->ClearPref(kShownAutoLaunchInfobarDeprecated);
 #endif
+
+  // Added 12/1015.
+  profile_prefs->ClearPref(kURLsToRestoreOnStartupOld);
+  profile_prefs->ClearPref(kRestoreStartupURLsMigrationTime);
 }
 
 }  // namespace chrome

@@ -129,15 +129,12 @@ class PrefModelAssociator
   // with ours and append a new UPDATE SyncChange to |sync_changes|. If
   // sync_pref is not set, we append an ADD SyncChange to |sync_changes| with
   // the current preference data.
-  // |migrated_preference_list| points to a vector that may be updated with a
-  // string containing the old name of the preference described by |pref_name|.
   // Note: We do not modify the sync data for preferences that are either
   // controlled by policy (are not user modifiable) or have their default value
   // (are not user controlled).
   void InitPrefAndAssociate(const syncer::SyncData& sync_pref,
                             const std::string& pref_name,
-                            syncer::SyncChangeList* sync_changes,
-                            SyncDataMap* migrated_preference_list);
+                            syncer::SyncChangeList* sync_changes);
 
   static base::Value* MergeListValues(
       const base::Value& from_value, const base::Value& to_value);

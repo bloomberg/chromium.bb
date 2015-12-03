@@ -6,10 +6,8 @@
 
 #include <string>
 
-#include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
-#include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -17,13 +15,6 @@
 #include "components/url_formatter/url_fixer.h"
 
 namespace {
-
-enum StartupURLsMigrationMetrics {
-  STARTUP_URLS_MIGRATION_METRICS_PERFORMED,
-  STARTUP_URLS_MIGRATION_METRICS_NOT_PRESENT,
-  STARTUP_URLS_MIGRATION_METRICS_RESET,
-  STARTUP_URLS_MIGRATION_METRICS_MAX,
-};
 
 // Converts a SessionStartupPref::Type to an integer written to prefs.
 int TypeToPrefValue(SessionStartupPref::Type type) {
@@ -66,9 +57,7 @@ void SessionStartupPref::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterListPref(prefs::kURLsToRestoreOnStartup,
                              user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterListPref(prefs::kURLsToRestoreOnStartupOld);
   registry->RegisterBooleanPref(prefs::kRestoreOnStartupMigrated, false);
-  registry->RegisterInt64Pref(prefs::kRestoreStartupURLsMigrationTime, false);
 }
 
 // static
@@ -138,54 +127,6 @@ SessionStartupPref SessionStartupPref::GetStartupPref(PrefService* prefs) {
 // static
 void SessionStartupPref::MigrateIfNecessary(PrefService* prefs) {
   DCHECK(prefs);
-
-  // Check if we need to migrate the old version of the startup URLs preference
-  // to the new name, and also send metrics about the migration.
-  StartupURLsMigrationMetrics metrics_result =
-      STARTUP_URLS_MIGRATION_METRICS_MAX;
-  const base::ListValue* old_startup_urls =
-      prefs->GetList(prefs::kURLsToRestoreOnStartupOld);
-  if (!prefs->GetUserPrefValue(prefs::kRestoreStartupURLsMigrationTime)) {
-    // Record the absence of the migration timestamp, this will get overwritten
-    // below if migration occurs now.
-    metrics_result = STARTUP_URLS_MIGRATION_METRICS_NOT_PRESENT;
-
-    // Seems like we never migrated, do it if necessary.
-    if (!prefs->GetUserPrefValue(prefs::kURLsToRestoreOnStartup)) {
-      if (old_startup_urls && !old_startup_urls->empty()) {
-        prefs->Set(prefs::kURLsToRestoreOnStartup, *old_startup_urls);
-        prefs->ClearPref(prefs::kURLsToRestoreOnStartupOld);
-      }
-      metrics_result = STARTUP_URLS_MIGRATION_METRICS_PERFORMED;
-    }
-
-    prefs->SetInt64(prefs::kRestoreStartupURLsMigrationTime,
-                    base::Time::Now().ToInternalValue());
-  } else if (old_startup_urls && !old_startup_urls->empty()) {
-    // Migration needs to be reset.
-    prefs->ClearPref(prefs::kURLsToRestoreOnStartupOld);
-    base::Time last_migration_time = base::Time::FromInternalValue(
-        prefs->GetInt64(prefs::kRestoreStartupURLsMigrationTime));
-    base::Time now = base::Time::Now();
-    prefs->SetInt64(prefs::kRestoreStartupURLsMigrationTime,
-                    now.ToInternalValue());
-    if (now < last_migration_time)
-      last_migration_time = now;
-    UMA_HISTOGRAM_CUSTOM_TIMES("Settings.StartupURLsResetTime",
-                               now - last_migration_time,
-                               base::TimeDelta::FromDays(0),
-                               base::TimeDelta::FromDays(7),
-                               50);
-    metrics_result = STARTUP_URLS_MIGRATION_METRICS_RESET;
-  }
-
-  // Record a metric migration event if something interesting happened.
-  if (metrics_result != STARTUP_URLS_MIGRATION_METRICS_MAX) {
-    UMA_HISTOGRAM_ENUMERATION(
-          "Settings.StartupURLsMigration",
-          metrics_result,
-          STARTUP_URLS_MIGRATION_METRICS_MAX);
-  }
 
   if (!prefs->GetBoolean(prefs::kRestoreOnStartupMigrated)) {
     // Read existing values.

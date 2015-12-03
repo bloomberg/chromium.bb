@@ -35,8 +35,7 @@ const char kExampleUrl0[] = "http://example.com/0";
 const char kExampleUrl1[] = "http://example.com/1";
 const char kExampleUrl2[] = "http://example.com/2";
 const char kStringPrefName[] = "string_pref_name";
-const char kListPrefName[] = "new_list_pref_name";
-const char kListOldPrefName[] = "list_pref_name";
+const char kListPrefName[] = "list_pref_name";
 const char kUnsyncedPreferenceName[] = "nonsense_pref_name";
 const char kUnsyncedPreferenceDefaultValue[] = "default";
 const char kDefaultCharsetPrefName[] = "default_charset";
@@ -56,22 +55,6 @@ class TestPrefModelAssociatorClient : public PrefModelAssociatorClient {
   bool IsMergeableDictionaryPreference(
       const std::string& pref_name) const override {
     return false;
-  }
-
-  bool IsMigratedPreference(const std::string& new_pref_name,
-                            std::string* old_pref_name) const override {
-    if (new_pref_name != kListPrefName)
-      return false;
-    old_pref_name->assign(kListOldPrefName);
-    return true;
-  }
-
-  bool IsOldMigratedPreference(const std::string& old_pref_name,
-                               std::string* new_pref_name) const override {
-    if (old_pref_name != kListOldPrefName)
-      return false;
-    new_pref_name->assign(kListPrefName);
-    return true;
   }
 
  private:
@@ -126,7 +109,6 @@ class PrefServiceSyncableTest : public testing::Test {
     prefs_.registry()->RegisterListPref(
         kListPrefName,
         user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-    prefs_.registry()->RegisterListPref(kListOldPrefName);
     prefs_.registry()->RegisterStringPref(
         kDefaultCharsetPrefName,
         kDefaultCharsetValue,
@@ -219,18 +201,6 @@ class PrefServiceSyncableTest : public testing::Test {
 
   bool HasSyncData(const std::string& pref_name) {
     return pref_sync_service_->IsPrefSynced(pref_name);
-  }
-
-  // Returns whether a given preference name is a new name of a migrated
-  // preference. Exposed here for testing.
-  bool IsMigratedPreference(const char* preference_name) {
-    std::string old_pref_name;
-    return client_.IsMigratedPreference(preference_name, &old_pref_name);
-  }
-
-  bool IsOldMigratedPreference(const char* old_preference_name) {
-    std::string new_pref_name;
-    return client_.IsOldMigratedPreference(old_preference_name, &new_pref_name);
   }
 
   PrefService* GetPrefs() { return &prefs_; }
@@ -331,161 +301,6 @@ TEST_F(PrefServiceSyncableTest, ModelAssociationCloudHasData) {
   EXPECT_TRUE(value->Equals(expected_urls.get()));
   EXPECT_TRUE(GetPreferenceValue(kListPrefName).Equals(expected_urls.get()));
   EXPECT_EQ(kNonDefaultCharsetValue, prefs_.GetString(kDefaultCharsetPrefName));
-}
-
-TEST_F(PrefServiceSyncableTest, ModelAssociationMigrateOldData) {
-  ASSERT_TRUE(IsMigratedPreference(kListPrefName));
-  ASSERT_TRUE(IsOldMigratedPreference(kListOldPrefName));
-
-  syncer::SyncDataList in;
-  syncer::SyncChangeList out;
-  base::ListValue urls_to_restore;
-  urls_to_restore.Append(new base::StringValue(kExampleUrl1));
-  urls_to_restore.Append(new base::StringValue(kExampleUrl2));
-  AddToRemoteDataList(kListOldPrefName, urls_to_restore, &in);
-  InitWithSyncDataTakeOutput(in, &out);
-
-  // Expect that the new preference data contains the old pref's values.
-  scoped_ptr<base::ListValue> expected_urls(new base::ListValue);
-  expected_urls->Append(new base::StringValue(kExampleUrl1));
-  expected_urls->Append(new base::StringValue(kExampleUrl2));
-
-  ASSERT_TRUE(HasSyncData(kListPrefName));
-  scoped_ptr<base::Value> value(FindValue(kListPrefName, out));
-  ASSERT_TRUE(value.get());
-  EXPECT_TRUE(value->Equals(expected_urls.get()));
-  EXPECT_TRUE(GetPreferenceValue(kListPrefName).Equals(expected_urls.get()));
-
-  // The old preference value should be the same.
-  expected_urls.reset(new base::ListValue);
-  ASSERT_FALSE(FindValue(kListOldPrefName, out).get());
-  EXPECT_TRUE(GetPreferenceValue(kListOldPrefName).Equals(expected_urls.get()));
-}
-
-TEST_F(PrefServiceSyncableTest, ModelAssociationCloudHasOldMigratedData) {
-  ASSERT_TRUE(IsMigratedPreference(kListPrefName));
-  ASSERT_TRUE(IsOldMigratedPreference(kListOldPrefName));
-  prefs_.SetString(kStringPrefName, kExampleUrl0);
-  {
-    ListPrefUpdate update(GetPrefs(), kListPrefName);
-    base::ListValue* url_list = update.Get();
-    url_list->Append(new base::StringValue(kExampleUrl0));
-    url_list->Append(new base::StringValue(kExampleUrl1));
-  }
-
-  syncer::SyncDataList in;
-  syncer::SyncChangeList out;
-  base::ListValue urls_to_restore;
-  urls_to_restore.Append(new base::StringValue(kExampleUrl1));
-  urls_to_restore.Append(new base::StringValue(kExampleUrl2));
-  AddToRemoteDataList(kListOldPrefName, urls_to_restore, &in);
-  AddToRemoteDataList(kStringPrefName, base::StringValue(kExampleUrl1), &in);
-  InitWithSyncDataTakeOutput(in, &out);
-
-  ASSERT_FALSE(FindValue(kStringPrefName, out).get());
-
-  // Expect that the new preference data contains the merged old prefs values.
-  scoped_ptr<base::ListValue> expected_urls(new base::ListValue);
-  expected_urls->Append(new base::StringValue(kExampleUrl1));
-  expected_urls->Append(new base::StringValue(kExampleUrl2));
-  expected_urls->Append(new base::StringValue(kExampleUrl0));
-
-  ASSERT_TRUE(HasSyncData(kListPrefName));
-  scoped_ptr<base::Value> value(FindValue(kListPrefName, out));
-  ASSERT_TRUE(value.get());
-  EXPECT_TRUE(value->Equals(expected_urls.get()));
-  EXPECT_TRUE(GetPreferenceValue(kListPrefName).Equals(expected_urls.get()));
-
-  expected_urls.reset(new base::ListValue);
-  value = FindValue(kListOldPrefName, out).Pass();
-  ASSERT_TRUE(value.get());
-  EXPECT_TRUE(GetPreferenceValue(kListOldPrefName).Equals(expected_urls.get()));
-}
-
-TEST_F(PrefServiceSyncableTest, ModelAssociationCloudHasNewMigratedData) {
-  ASSERT_TRUE(IsMigratedPreference(kListPrefName));
-  ASSERT_TRUE(IsOldMigratedPreference(kListOldPrefName));
-  prefs_.SetString(kStringPrefName, kExampleUrl0);
-  {
-    ListPrefUpdate update(GetPrefs(), kListOldPrefName);
-    base::ListValue* url_list = update.Get();
-    url_list->Append(new base::StringValue(kExampleUrl0));
-    url_list->Append(new base::StringValue(kExampleUrl1));
-  }
-
-  syncer::SyncDataList in;
-  syncer::SyncChangeList out;
-  base::ListValue urls_to_restore;
-  urls_to_restore.Append(new base::StringValue(kExampleUrl1));
-  urls_to_restore.Append(new base::StringValue(kExampleUrl2));
-  AddToRemoteDataList(kListOldPrefName, urls_to_restore, &in);
-  AddToRemoteDataList(kStringPrefName, base::StringValue(kExampleUrl1), &in);
-  InitWithSyncDataTakeOutput(in, &out);
-
-  scoped_ptr<base::Value> value(FindValue(kStringPrefName, out));
-  ASSERT_FALSE(value.get());
-
-  // Expect that the cloud data under the new migrated preference name sticks.
-  scoped_ptr<base::ListValue> expected_urls(new base::ListValue);
-  expected_urls->Append(new base::StringValue(kExampleUrl1));
-  expected_urls->Append(new base::StringValue(kExampleUrl2));
-
-  ASSERT_TRUE(HasSyncData(kListPrefName));
-  value = FindValue(kListPrefName, out).Pass();
-  ASSERT_TRUE(value.get());
-  EXPECT_TRUE(value->Equals(expected_urls.get()));
-  EXPECT_TRUE(GetPreferenceValue(kListPrefName).Equals(expected_urls.get()));
-
-  // The old preference data should still be here, though not synced.
-  expected_urls.reset(new base::ListValue);
-  expected_urls->Append(new base::StringValue(kExampleUrl0));
-  expected_urls->Append(new base::StringValue(kExampleUrl1));
-
-  value = FindValue(kListOldPrefName, out).Pass();
-  ASSERT_FALSE(value.get());
-  EXPECT_TRUE(GetPreferenceValue(kListOldPrefName).Equals(expected_urls.get()));
-}
-
-TEST_F(PrefServiceSyncableTest,
-       ModelAssociationCloudAddsOldAndNewMigratedData) {
-  ASSERT_TRUE(IsMigratedPreference(kListPrefName));
-  ASSERT_TRUE(IsOldMigratedPreference(kListOldPrefName));
-  prefs_.SetString(kStringPrefName, kExampleUrl0);
-  {
-    ListPrefUpdate update_old(GetPrefs(), kListOldPrefName);
-    base::ListValue* url_list_old = update_old.Get();
-    url_list_old->Append(new base::StringValue(kExampleUrl0));
-    url_list_old->Append(new base::StringValue(kExampleUrl1));
-    ListPrefUpdate update(GetPrefs(), kListPrefName);
-    base::ListValue* url_list = update.Get();
-    url_list->Append(new base::StringValue(kExampleUrl1));
-    url_list->Append(new base::StringValue(kExampleUrl2));
-  }
-
-  syncer::SyncDataList in;
-  syncer::SyncChangeList out;
-  AddToRemoteDataList(kStringPrefName, base::StringValue(kExampleUrl1), &in);
-  InitWithSyncDataTakeOutput(in, &out);
-
-  scoped_ptr<base::Value> value(FindValue(kStringPrefName, out));
-  ASSERT_FALSE(value.get());
-
-  // Expect that the cloud data under the new migrated preference name sticks.
-  scoped_ptr<base::ListValue> expected_urls(new base::ListValue);
-  expected_urls->Append(new base::StringValue(kExampleUrl1));
-  expected_urls->Append(new base::StringValue(kExampleUrl2));
-
-  ASSERT_TRUE(HasSyncData(kListPrefName));
-  value = FindValue(kListPrefName, out).Pass();
-  ASSERT_TRUE(value.get());
-  EXPECT_TRUE(value->Equals(expected_urls.get()));
-  EXPECT_TRUE(GetPreferenceValue(kListPrefName).Equals(expected_urls.get()));
-
-  // Should not have synced in the old startup url values.
-  value = FindValue(kListOldPrefName, out).Pass();
-  ASSERT_FALSE(value.get());
-  EXPECT_FALSE(
-      GetPreferenceValue(kListOldPrefName).Equals(expected_urls.get()));
 }
 
 TEST_F(PrefServiceSyncableTest, FailModelAssociation) {

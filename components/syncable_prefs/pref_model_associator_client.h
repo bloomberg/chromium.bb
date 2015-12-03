@@ -26,16 +26,6 @@ class PrefModelAssociatorClient {
   virtual bool IsMergeableDictionaryPreference(
       const std::string& pref_name) const = 0;
 
-  // Returns true if the preference named |new_pref_name| is the new name for
-  // an old preference. The old name will be returned via |old_pref_name|.
-  virtual bool IsMigratedPreference(const std::string& new_pref_name,
-                                    std::string* old_pref_name) const = 0;
-
-  // Returns true if the preference named |old_pref_name| is the new name for
-  // a new preference. The old name will be returned via |new_pref_name|.
-  virtual bool IsOldMigratedPreference(const std::string& old_pref_name,
-                                       std::string* new_pref_name) const = 0;
-
  protected:
   PrefModelAssociatorClient() {}
   virtual ~PrefModelAssociatorClient() {}

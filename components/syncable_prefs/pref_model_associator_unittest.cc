@@ -36,16 +36,6 @@ class TestPrefModelAssociatorClient : public PrefModelAssociatorClient {
     return pref_name == kDictionaryPrefName;
   }
 
-  bool IsMigratedPreference(const std::string& new_pref_name,
-                            std::string* old_pref_name) const override {
-    return false;
-  }
-
-  bool IsOldMigratedPreference(const std::string& old_pref_name,
-                               std::string* new_pref_name) const override {
-    return false;
-  }
-
  private:
   DISALLOW_COPY_AND_ASSIGN(TestPrefModelAssociatorClient);
 };

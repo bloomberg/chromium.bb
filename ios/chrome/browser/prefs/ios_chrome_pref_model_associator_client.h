@@ -32,10 +32,6 @@ class IOSChromePrefModelAssociatorClient
   bool IsMergeableListPreference(const std::string& pref_name) const override;
   bool IsMergeableDictionaryPreference(
       const std::string& pref_name) const override;
-  bool IsMigratedPreference(const std::string& new_pref_name,
-                            std::string* old_pref_name) const override;
-  bool IsOldMigratedPreference(const std::string& old_pref_name,
-                               std::string* new_pref_name) const override;
 
   DISALLOW_COPY_AND_ASSIGN(IOSChromePrefModelAssociatorClient);
 };

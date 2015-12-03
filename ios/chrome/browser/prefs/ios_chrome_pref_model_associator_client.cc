@@ -33,15 +33,3 @@ bool IOSChromePrefModelAssociatorClient::IsMergeableDictionaryPreference(
   }
   return false;
 }
-
-bool IOSChromePrefModelAssociatorClient::IsMigratedPreference(
-    const std::string& new_pref_name,
-    std::string* old_pref_name) const {
-  return false;
-}
-
-bool IOSChromePrefModelAssociatorClient::IsOldMigratedPreference(
-    const std::string& old_pref_name,
-    std::string* new_pref_name) const {
-  return false;
-}

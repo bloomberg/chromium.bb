@@ -43738,11 +43738,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Settings.StartupURLsMigration" enum="StartupURLsMigration">
+  <obsolete>
+    Deprecated 12/2015.
+  </obsolete>
   <owner>mad@chromium.org</owner>
   <summary>The startup URLs pref migration steps.</summary>
 </histogram>
 
 <histogram name="Settings.StartupURLsResetTime" units="milliseconds">
+  <obsolete>
+    Deprecated 12/2015.
+  </obsolete>
   <owner>mad@chromium.org</owner>
   <summary>
     The time elapsed in milliseconds in between startup URLs pref migration. A
