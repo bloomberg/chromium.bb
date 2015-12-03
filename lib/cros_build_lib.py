@@ -197,12 +197,16 @@ class RunCommandError(Exception):
       error: See comment about individual arguments above.
       output: See comment about individual arguments above.
     """
-    items = ['return code: %s' % (self.result.returncode,)]
+    items = [
+        'return code: %s; command: %s' % (
+            self.result.returncode, self.result.cmdstr),
+    ]
     if error and self.result.error:
       items.append(self.result.error)
     if output and self.result.output:
       items.append(self.result.output)
-    items.append(self.msg)
+    if self.msg:
+      items.append(self.msg)
     return '\n'.join(items)
 
   def __str__(self):
@@ -607,8 +611,9 @@ def RunCommand(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
         logging.log(debug_level, '(stderr):\n%s', cmd_result.error)
 
     if not error_code_ok and proc.returncode:
-      msg = ('Failed command "%s", cwd=%s, extra env=%r'
-             % (CmdToStr(cmd), cwd, extra_env))
+      msg = 'cwd=%s' % cwd
+      if extra_env:
+        msg += ', extra env=%s' % extra_env
       if error_message:
         msg += '\n%s' % error_message
       raise RunCommandError(msg, cmd_result)
