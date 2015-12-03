@@ -82,6 +82,7 @@ check_targets = [
   "//testing/*",
 
   #"//third_party/*",  # May not ever want this.
+  "//third_party/WebKit/Source/*",
   "//tools/*",
 
   #"//ui/*",  # Just a few problems.
