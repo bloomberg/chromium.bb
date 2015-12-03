@@ -206,12 +206,6 @@ def RunSconsTests(status, context):
       SCons(context, parallel=True, mode=irt_mode,
             args=flags_run + ['pnacl_unsandboxed=1'] + tests)
 
-  # Test MinSFI.
-  if not context.Windows() and (arch == 'x86-32' or arch == 'x86-64'):
-    with Step('minsfi_tests ' + arch, status, halt_on_fail=False):
-      SCons(context, parallel=True,
-            args=flags_run + ['minsfi=1', 'minsfi_tests'])
-
 def Main():
   context = BuildContext()
   status = BuildStatus(context)

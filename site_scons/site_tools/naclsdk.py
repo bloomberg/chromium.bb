@@ -187,19 +187,6 @@ def _SetEnvForPnacl(env, root):
   arch_flag = ' -arch %s' % arch
   ld_arch_flag = '' if env.Bit('pnacl_generate_pexe') else arch_flag
 
-  llc_mtriple_flag = ''
-  if env.Bit('minsfi'):
-    llc_cpu = ''
-    if env.Bit('build_x86_32'):
-      llc_cpu = 'i686'
-    elif env.Bit('build_x86_64'):
-      llc_cpu = 'x86_64'
-
-    if env.Bit('host_linux'):
-      llc_mtriple_flag = ' -mtriple=%s-linux-gnu' % llc_cpu
-    elif env.Bit('host_mac'):
-      llc_mtriple_flag = ' -mtriple=%s-apple-darwin' % llc_cpu
-
   translator_root = os.path.join(os.path.dirname(root), 'pnacl_translator')
 
   binroot = os.path.join(root, 'bin')
@@ -228,7 +215,6 @@ def _SetEnvForPnacl(env, root):
   pnacl_finalize = binprefix + 'finalize' + binext
   pnacl_opt = binprefix + 'opt' + binext
   pnacl_strip = binprefix + 'strip' + binext
-  pnacl_llc = binprefix + 'llc' + binext
 
   # NOTE: XXX_flags start with space for easy concatenation
   # The flags generated here get baked into the commands (CC, CXX, LINK)
@@ -238,7 +224,6 @@ def _SetEnvForPnacl(env, root):
   pnacl_cc_flags = ' -std=gnu99'
   pnacl_ld_flags = ' ' + ' '.join(env['PNACL_BCLDFLAGS'])
   pnacl_translate_flags = ''
-  pnacl_llc_flags = ''
   sdk_base = os.path.join(root, 'le32-nacl')
 
   bias_flags = ''
@@ -259,10 +244,6 @@ def _SetEnvForPnacl(env, root):
     #       does more than linking
     pnacl_ld_flags += ' -fPIC'
     pnacl_translate_flags += ' -fPIC'
-
-  if env.Bit('minsfi'):
-    pnacl_llc_flags += ' -relocation-model=pic -filetype=obj'
-    pnacl_ld_flags += ' -nostdlib -Wl,-r -L' + os.path.join(root, 'usr', 'lib')
 
   if env.Bit('use_sandboxed_translator'):
     sb_flags = ' --pnacl-sb'
@@ -306,7 +287,6 @@ def _SetEnvForPnacl(env, root):
               TRANSLATE=pnacl_translate + arch_flag + pnacl_translate_flags,
               PNACLFINALIZE=pnacl_finalize,
               PNACLOPT=pnacl_opt,
-              LLC=pnacl_llc + llc_mtriple_flag + pnacl_llc_flags,
               )
 
   if env.Bit('built_elsewhere'):
