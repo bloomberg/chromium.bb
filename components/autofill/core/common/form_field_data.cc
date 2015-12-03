@@ -4,8 +4,6 @@
 
 #include "components/autofill/core/common/form_field_data.h"
 
-#include <tuple>
-
 #include "base/pickle.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -118,16 +116,35 @@ bool FormFieldData::SameFieldAs(const FormFieldData& field) const {
 }
 
 bool FormFieldData::operator<(const FormFieldData& field) const {
+  // This does not use std::tie() as that generates more implicit variables
+  // than the max-vartrack-size for var-tracking-assignments when compiling
+  // for Android, producing build warnings. (See https://crbug.com/555171 for
+  // context.)
+
   // Like operator==, this ignores the value.
+  if (label < field.label) return true;
+  if (label > field.label) return false;
+  if (name < field.name) return true;
+  if (name > field.name) return false;
+  if (form_control_type < field.form_control_type) return true;
+  if (form_control_type > field.form_control_type) return false;
+  if (autocomplete_attribute < field.autocomplete_attribute) return true;
+  if (autocomplete_attribute > field.autocomplete_attribute) return false;
+  if (max_length < field.max_length) return true;
+  if (max_length > field.max_length) return false;
   // Skip |is_checked| and |is_autofilled| as in SameFieldAs.
+  if (is_checkable < field.is_checkable) return true;
+  if (is_checkable > field.is_checkable) return false;
+  if (is_focusable < field.is_focusable) return true;
+  if (is_focusable > field.is_focusable) return false;
+  if (should_autocomplete < field.should_autocomplete) return true;
+  if (should_autocomplete > field.should_autocomplete) return false;
+  if (role < field.role) return true;
+  if (role > field.role) return false;
+  if (text_direction < field.text_direction) return true;
+  if (text_direction > field.text_direction) return false;
   // See operator== above for why we don't check option_values/contents.
-  return std::tie(label, name, form_control_type, autocomplete_attribute,
-                  max_length, is_checkable, is_focusable, should_autocomplete,
-                  role, text_direction) <
-         std::tie(field.label, field.name, field.form_control_type,
-                  field.autocomplete_attribute, field.max_length,
-                  field.is_checkable, field.is_focusable,
-                  field.should_autocomplete, field.role, field.text_direction);
+  return false;
 }
 
 void SerializeFormFieldData(const FormFieldData& field_data,
