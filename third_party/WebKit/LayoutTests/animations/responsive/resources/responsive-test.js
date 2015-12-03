@@ -135,7 +135,7 @@ function createTargets(bindings, n, container) {
 function setState(bindings, targets, property, state) {
   if (state.inherited) {
     var parent = targets[0].parentElement;
-    console.assert(targets.every(function(target) { return target.parentElement === parent; }));
+    console.assert(targets.every(target => target.parentElement === parent));
     bindings.setValue(parent, property, state.inherited);
   }
   if (state.underlying) {
@@ -170,22 +170,22 @@ function createKeyframes(prefixedProperty, from, to) {
   return keyframes;
 }
 
-function startPausedAnimations(targets, keyframes, fractions) {
+function createPausedAnimations(targets, keyframes, fractions) {
   console.assert(targets.length == fractions.length);
-  for (var i = 0; i < targets.length; i++) {
-    var target = targets[i];
+  return targets.map((target, i) => {
     var fraction = fractions[i];
     console.assert(fraction >= 0 && fraction < 1);
     var animation = target.animate(keyframes, 1);
-    animation.currentTime = fraction;
     animation.pause();
-  }
+    animation.currentTime = fraction;
+    return animation;
+  });
 }
 
 function runPendingResponsiveTests() {
-  return new Promise(function(resolve) {
+  return new Promise(resolve => {
     var stateTransitionTests = [];
-    pendingResponsiveTests.forEach(function(responsiveTest) {
+    pendingResponsiveTests.forEach(responsiveTest => {
       var options = responsiveTest.options;
       var bindings = responsiveTest.bindings;
       var property = options.property;
@@ -197,7 +197,7 @@ function runPendingResponsiveTests() {
       var keyframes = createKeyframes(prefixedProperty, from, to);
 
       var stateTransitions = createStateTransitions(options.configurations);
-      stateTransitions.forEach(function(stateTransition) {
+      stateTransitions.forEach(stateTransition => {
         var before = stateTransition.before;
         var after = stateTransition.after;
         var container = bindings.createTargetContainer(document.body);
@@ -205,8 +205,21 @@ function runPendingResponsiveTests() {
         var expectationTargets = createTargets(bindings, after.expect.length, container);
 
         setState(bindings, targets, property, before.state);
-        startPausedAnimations(targets, keyframes, after.expect.map(function(expectation) { return expectation.at; }));
+        var animations = createPausedAnimations(targets, keyframes, after.expect.map(expectation => expectation.at));
         stateTransitionTests.push({
+          // TODO(alancutter): Make SVG animations responsive when their interpolation fractions haven't changed.
+          wiggleFractionHack() {
+            return new Promise(resolve => {
+              animations.forEach(animation => {
+                var currentTime = animation.currentTime;
+                animation.currentTime = 1;
+                requestAnimationFrame(() => {
+                  animation.currentTime = currentTime;
+                });
+              });
+              requestAnimationFrame(resolve);
+            });
+          },
           applyStateTransition() {
             setState(bindings, targets, property, after.state);
           },
@@ -217,7 +230,7 @@ function runPendingResponsiveTests() {
               var expectationTarget = expectationTargets[i];
               bindings.setValue(expectationTarget, property, expectation.is);
               var actual = bindings.getAnimatedValue(target, property);
-              test(function() {
+              test(() => {
                 assert_equals(actual, bindings.getAnimatedValue(expectationTarget, property));
               }, `Animation on property <${prefixedProperty}> from ${keyframeText(from)} to ${keyframeText(to)} with ${JSON.stringify(before.state)} changed to ${JSON.stringify(after.state)} at (${expectation.at}) is [${expectation.is}]`);
             }
@@ -226,21 +239,25 @@ function runPendingResponsiveTests() {
       });
     });
 
-    for (var stateTransitionTest of stateTransitionTests) {
-      stateTransitionTest.applyStateTransition();
-    }
-
-    requestAnimationFrame(function() {
+    requestAnimationFrame(() => {
       for (var stateTransitionTest of stateTransitionTests) {
-        stateTransitionTest.assert();
+        stateTransitionTest.applyStateTransition();
       }
-      resolve();
+
+      Promise.all(stateTransitionTests.map(stateTransitionTest => stateTransitionTest.wiggleFractionHack())).then(() => {
+        requestAnimationFrame(() => {
+          for (var stateTransitionTest of stateTransitionTests) {
+            stateTransitionTest.assert();
+          }
+          resolve();
+        });
+      })
     });
   });
 }
 
 function loadScript(url) {
-  return new Promise(function(resolve) {
+  return new Promise(resolve => {
     var script = document.createElement('script');
     script.src = url;
     script.onload = resolve;
@@ -248,11 +265,11 @@ function loadScript(url) {
   });
 }
 
-loadScript('../../resources/testharness.js').then(function() {
+loadScript('../../resources/testharness.js').then(() => {
   return loadScript('../../resources/testharnessreport.js');
-}).then(function() {
+}).then(() => {
   var asyncHandle = async_test('This test uses responsive-test.js.')
-  runPendingResponsiveTests().then(function() {
+  runPendingResponsiveTests().then(() => {
     asyncHandle.done();
   });
 });
