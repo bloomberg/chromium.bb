@@ -42,6 +42,15 @@ template<typename T> class JavaRef;
 template<>
 class BASE_EXPORT JavaRef<jobject> {
  public:
+  // Allow nullptr to be converted to JavaRef. This avoids having to declare an
+  // empty ScopedJavaLocalRef just to pass null to a function with a JavaRef
+  // parameter, and makes C++ "nullptr" and Java "null" equivalent.
+  JavaRef(std::nullptr_t) : JavaRef() {}
+
+  // Public to allow destruction of temporary JavaRef objects created by the
+  // nullptr conversion. Don't add anything else here; it's inlined.
+  ~JavaRef() {}
+
   jobject obj() const { return obj_; }
 
   bool is_null() const { return obj_ == NULL; }
@@ -59,9 +68,6 @@ class BASE_EXPORT JavaRef<jobject> {
   // Don't add anything else here; it's inlined.
   JavaRef(JNIEnv* env, jobject obj) : obj_(obj) {}
 #endif
-
-  // Don't add anything else here; it's inlined.
-  ~JavaRef() {}
 
   // The following are implementation detail convenience methods, for
   // use by the sub-classes.
@@ -83,11 +89,13 @@ class BASE_EXPORT JavaRef<jobject> {
 template<typename T>
 class JavaRef : public JavaRef<jobject> {
  public:
+  JavaRef(std::nullptr_t) : JavaRef<jobject>(nullptr) {}
+  ~JavaRef() {}
+
   T obj() const { return static_cast<T>(JavaRef<jobject>::obj()); }
 
  protected:
   JavaRef() {}
-  ~JavaRef() {}
 
   JavaRef(JNIEnv* env, T obj) : JavaRef<jobject>(env, obj) {}
 
@@ -110,7 +118,7 @@ class JavaParamRef : public JavaRef<T> {
   // methods directly from C++ and pass null for objects which are not actually
   // used by the implementation (e.g. the caller object); allow this to keep
   // working.
-  JavaParamRef(std::nullptr_t) : JavaRef<T>() {}
+  JavaParamRef(std::nullptr_t) : JavaRef<T>(nullptr) {}
 
   ~JavaParamRef() {}
 
