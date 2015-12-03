@@ -358,6 +358,13 @@ source_set("browser") {
     if (toolkit_views) {
       deps += [ "//ui/views" ]
     }
+
+    if (is_android && use_aura) {
+      sources -= [
+        # Aura Android uses platform_util_aura implementation.
+        "platform_util_android.cc",
+      ]
+    }
   } else {  # iOS
     sources +=
         rebase_path(gypi_values.chrome_browser_ios_sources, ".", "//chrome")

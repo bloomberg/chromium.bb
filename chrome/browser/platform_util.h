@@ -98,7 +98,7 @@ bool IsVisible(gfx::NativeView view);
 bool IsSwipeTrackingFromScrollEventsEnabled();
 #endif
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) && !defined(USE_AURA)
 bool RegisterPlatformUtil(JNIEnv* env);
 #endif
 }  // namespace platform_util
