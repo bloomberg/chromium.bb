@@ -377,7 +377,7 @@ void LayoutGrid::layoutBlock(bool relayoutChildren)
         // The above call might have changed the grid's logical height depending on min|max height restrictions.
         // Update the sizes of the rows whose size depends on the logical height (also on definite|indefinite sizes).
         if (logicalHeightWasIndefinite)
-            computeTrackSizesForDirection(ForRows, sizingData, logicalHeight());
+            computeTrackSizesForDirection(ForRows, sizingData, contentLogicalHeight());
 
         // Grid container should have the minimum height of a line if it's editable. That doesn't affect track sizing though.
         if (hasLineIfEmpty())
