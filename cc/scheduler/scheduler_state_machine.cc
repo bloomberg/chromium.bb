@@ -26,12 +26,10 @@ SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
       forced_redraw_state_(FORCED_REDRAW_STATE_IDLE),
       commit_count_(0),
       current_frame_number_(0),
-      last_frame_number_animate_performed_(-1),
       last_frame_number_swap_performed_(-1),
       last_frame_number_draw_performed_(-1),
       last_frame_number_begin_main_frame_sent_(-1),
       last_frame_number_invalidate_output_surface_performed_(-1),
-      animate_funnel_(false),
       draw_funnel_(false),
       send_begin_main_frame_funnel_(true),
       invalidate_output_surface_funnel_(false),
@@ -40,7 +38,6 @@ SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
       pending_swaps_(0),
       swaps_with_current_output_surface_(0),
       needs_redraw_(false),
-      needs_animate_(false),
       needs_prepare_tiles_(false),
       needs_begin_main_frame_(false),
       needs_one_begin_impl_frame_(false),
@@ -168,8 +165,6 @@ const char* SchedulerStateMachine::ActionToString(Action action) {
   switch (action) {
     case ACTION_NONE:
       return "ACTION_NONE";
-    case ACTION_ANIMATE:
-      return "ACTION_ANIMATE";
     case ACTION_SEND_BEGIN_MAIN_FRAME:
       return "ACTION_SEND_BEGIN_MAIN_FRAME";
     case ACTION_COMMIT:
@@ -218,15 +213,12 @@ void SchedulerStateMachine::AsValueInto(
   state->BeginDictionary("minor_state");
   state->SetInteger("commit_count", commit_count_);
   state->SetInteger("current_frame_number", current_frame_number_);
-  state->SetInteger("last_frame_number_animate_performed",
-                    last_frame_number_animate_performed_);
   state->SetInteger("last_frame_number_swap_performed",
                     last_frame_number_swap_performed_);
   state->SetInteger("last_frame_number_draw_performed",
                     last_frame_number_draw_performed_);
   state->SetInteger("last_frame_number_begin_main_frame_sent",
                     last_frame_number_begin_main_frame_sent_);
-  state->SetBoolean("funnel: animate_funnel", animate_funnel_);
   state->SetBoolean("funnel: draw_funnel", draw_funnel_);
   state->SetBoolean("funnel: send_begin_main_frame_funnel",
                     send_begin_main_frame_funnel_);
@@ -239,7 +231,6 @@ void SchedulerStateMachine::AsValueInto(
   state->SetInteger("swaps_with_current_output_surface",
                     swaps_with_current_output_surface_);
   state->SetBoolean("needs_redraw", needs_redraw_);
-  state->SetBoolean("needs_animate_", needs_animate_);
   state->SetBoolean("needs_prepare_tiles", needs_prepare_tiles_);
   state->SetBoolean("needs_begin_main_frame", needs_begin_main_frame_);
   state->SetBoolean("needs_one_begin_impl_frame", needs_one_begin_impl_frame_);
@@ -388,22 +379,6 @@ bool SchedulerStateMachine::ShouldActivatePendingTree() const {
 
   // At this point, only activate if we are ready to activate.
   return pending_tree_is_ready_for_activation_;
-}
-
-bool SchedulerStateMachine::ShouldAnimate() const {
-  // Do not animate too many times in a single frame.
-  if (animate_funnel_)
-    return false;
-
-  // Don't animate if we are waiting on the first commit after a surface.
-  if (output_surface_state_ != OUTPUT_SURFACE_ACTIVE)
-    return false;
-
-  if (begin_impl_frame_state_ != BEGIN_IMPL_FRAME_STATE_BEGIN_FRAME_STARTING &&
-      begin_impl_frame_state_ != BEGIN_IMPL_FRAME_STATE_INSIDE_DEADLINE)
-    return false;
-
-  return needs_redraw_ || needs_animate_;
 }
 
 bool SchedulerStateMachine::CouldSendBeginMainFrame() const {
@@ -557,8 +532,6 @@ SchedulerStateMachine::Action SchedulerStateMachine::NextAction() const {
     return ACTION_ACTIVATE_SYNC_TREE;
   if (ShouldCommit())
     return ACTION_COMMIT;
-  if (ShouldAnimate())
-    return ACTION_ANIMATE;
   if (ShouldDraw()) {
     if (PendingDrawsShouldBeAborted())
       return ACTION_DRAW_AND_SWAP_ABORT;
@@ -578,13 +551,6 @@ SchedulerStateMachine::Action SchedulerStateMachine::NextAction() const {
   return ACTION_NONE;
 }
 
-void SchedulerStateMachine::WillAnimate() {
-  DCHECK(!animate_funnel_);
-  last_frame_number_animate_performed_ = current_frame_number_;
-  animate_funnel_ = true;
-  needs_animate_ = false;
-}
-
 void SchedulerStateMachine::WillSendBeginMainFrame() {
   DCHECK(!has_pending_tree_ || settings_.main_frame_before_activation_enabled);
   DCHECK(visible_);
@@ -597,10 +563,6 @@ void SchedulerStateMachine::WillSendBeginMainFrame() {
 
 void SchedulerStateMachine::WillCommit(bool commit_has_no_updates) {
   commit_count_++;
-
-  // Animate after commit even if we've already animated.
-  if (!commit_has_no_updates)
-    animate_funnel_ = false;
 
   if (commit_has_no_updates || settings_.main_frame_before_activation_enabled) {
     begin_main_frame_state_ = BEGIN_MAIN_FRAME_STATE_IDLE;
@@ -817,7 +779,7 @@ bool SchedulerStateMachine::BeginFrameRequiredForAction() const {
   if (forced_redraw_state_ == FORCED_REDRAW_STATE_WAITING_FOR_DRAW)
     return true;
 
-  return needs_animate_ || needs_redraw_ || needs_one_begin_impl_frame_ ||
+  return needs_redraw_ || needs_one_begin_impl_frame_ ||
          (needs_begin_main_frame_ && !defer_commits_);
 }
 
@@ -877,7 +839,6 @@ void SchedulerStateMachine::OnBeginImplFrame() {
   needs_one_begin_impl_frame_ = false;
 
   // Clear funnels for any actions we perform during the frame.
-  animate_funnel_ = false;
   send_begin_main_frame_funnel_ = false;
   invalidate_output_surface_funnel_ = false;
 
@@ -1008,13 +969,8 @@ void SchedulerStateMachine::SetCanDraw(bool can_draw) { can_draw_ = can_draw; }
 
 void SchedulerStateMachine::SetNeedsRedraw() { needs_redraw_ = true; }
 
-void SchedulerStateMachine::SetNeedsAnimate() {
-  needs_animate_ = true;
-}
-
 bool SchedulerStateMachine::OnlyImplSideUpdatesExpected() const {
-  bool has_impl_updates =
-      needs_redraw_ || needs_animate_ || needs_one_begin_impl_frame_;
+  bool has_impl_updates = needs_redraw_ || needs_one_begin_impl_frame_;
   bool main_updates_expected =
       needs_begin_main_frame_ ||
       begin_main_frame_state_ != BEGIN_MAIN_FRAME_STATE_IDLE ||

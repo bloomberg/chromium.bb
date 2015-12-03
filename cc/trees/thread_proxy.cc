@@ -436,10 +436,10 @@ void ThreadProxy::SetNeedsRedrawOnImplThread() {
   impl().scheduler->SetNeedsRedraw();
 }
 
-void ThreadProxy::SetNeedsAnimateOnImplThread() {
-  TRACE_EVENT0("cc", "ThreadProxy::SetNeedsAnimateOnImplThread");
+void ThreadProxy::SetNeedsOneBeginImplFrameOnImplThread() {
+  TRACE_EVENT0("cc", "ThreadProxy::SetNeedsOneBeginImplFrameOnImplThread");
   DCHECK(task_runner_provider_->IsImplThread());
-  impl().scheduler->SetNeedsAnimate();
+  impl().scheduler->SetNeedsOneBeginImplFrame();
 }
 
 void ThreadProxy::SetNeedsPrepareTilesOnImplThread() {
@@ -764,13 +764,6 @@ void ThreadProxy::BeginMainFrameAbortedOnImpl(
   impl().layer_tree_host_impl->BeginMainFrameAborted(reason);
   impl().scheduler->NotifyBeginMainFrameStarted(main_thread_start_time);
   impl().scheduler->BeginMainFrameAborted(reason);
-}
-
-void ThreadProxy::ScheduledActionAnimate() {
-  TRACE_EVENT0("cc", "ThreadProxy::ScheduledActionAnimate");
-  DCHECK(task_runner_provider_->IsImplThread());
-
-  impl().layer_tree_host_impl->Animate();
 }
 
 void ThreadProxy::ScheduledActionCommit() {

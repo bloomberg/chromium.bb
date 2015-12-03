@@ -147,11 +147,6 @@ class ThreadProxyForTest : public ThreadProxy {
     return result;
   }
 
-  void ScheduledActionAnimate() override {
-    ThreadProxy::ScheduledActionAnimate();
-    test_hooks_->ScheduledActionAnimate();
-  }
-
   void ScheduledActionCommit() override {
     ThreadProxy::ScheduledActionCommit();
     test_hooks_->ScheduledActionCommit();
@@ -345,7 +340,7 @@ class ThreadProxyForTest : public ThreadProxy {
         test_hooks_(test_hooks) {}
 };
 
-// Adapts ThreadProxy for test. Injects test hooks for testing.
+// Adapts SingleThreadProxy for test. Injects test hooks for testing.
 class SingleThreadProxyForTest : public SingleThreadProxy {
  public:
   static scoped_ptr<Proxy> Create(
@@ -375,11 +370,6 @@ class SingleThreadProxyForTest : public SingleThreadProxy {
         SingleThreadProxy::ScheduledActionDrawAndSwapIfPossible();
     test_hooks_->ScheduledActionDrawAndSwapIfPossible();
     return result;
-  }
-
-  void ScheduledActionAnimate() override {
-    SingleThreadProxy::ScheduledActionAnimate();
-    test_hooks_->ScheduledActionAnimate();
   }
 
   void ScheduledActionCommit() override {

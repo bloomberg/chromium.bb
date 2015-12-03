@@ -26,7 +26,7 @@ class MockScrollElasticityHelper : public cc::ScrollElasticityHelper {
   MockScrollElasticityHelper()
       : is_user_scrollable_(true),
         set_stretch_amount_count_(0),
-        request_animate_count_(0) {}
+        request_begin_frame_count_(0) {}
   ~MockScrollElasticityHelper() override {}
 
   // cc::ScrollElasticityHelper implementation:
@@ -43,10 +43,10 @@ class MockScrollElasticityHelper : public cc::ScrollElasticityHelper {
   void ScrollBy(const gfx::Vector2dF& delta) override {
     scroll_offset_ += gfx::ScrollOffset(delta);
   }
-  void RequestAnimate() override { request_animate_count_ += 1; }
+  void RequestOneBeginFrame() override { request_begin_frame_count_ += 1; }
 
   // Counters for number of times functions were called.
-  int request_animate_count() const { return request_animate_count_; }
+  int request_begin_frame_count() const { return request_begin_frame_count_; }
   int set_stretch_amount_count() const { return set_stretch_amount_count_; }
 
   void SetScrollOffsetAndMaxScrollOffset(
@@ -63,7 +63,7 @@ class MockScrollElasticityHelper : public cc::ScrollElasticityHelper {
   bool is_user_scrollable_;
   gfx::Vector2dF stretch_amount_;
   int set_stretch_amount_count_;
-  int request_animate_count_;
+  int request_begin_frame_count_;
 
   gfx::ScrollOffset scroll_offset_;
   gfx::ScrollOffset max_scroll_offset_;
@@ -131,7 +131,7 @@ TEST_F(ScrollElasticityControllerTest, Axis) {
   helper_.SetStretchAmount(gfx::Vector2dF());
   EXPECT_EQ(2, helper_.set_stretch_amount_count());
   SendMouseWheelEvent(PhaseEnded, PhaseNone);
-  EXPECT_EQ(0, helper_.request_animate_count());
+  EXPECT_EQ(0, helper_.request_begin_frame_count());
 
   // If we push more in the X direction than the Y direction, we should see a
   // stretch only in the X direction. This decision should be based on the
@@ -145,7 +145,7 @@ TEST_F(ScrollElasticityControllerTest, Axis) {
   helper_.SetStretchAmount(gfx::Vector2dF());
   EXPECT_EQ(4, helper_.set_stretch_amount_count());
   SendMouseWheelEvent(PhaseEnded, PhaseNone);
-  EXPECT_EQ(0, helper_.request_animate_count());
+  EXPECT_EQ(0, helper_.request_begin_frame_count());
 }
 
 // Verify that we need a total overscroll delta of at least 10 in a pinned
@@ -196,9 +196,9 @@ TEST_F(ScrollElasticityControllerTest, MinimumDeltaBeforeStretch) {
 
   // End the gesture. Because there is a non-zero stretch, we should be in the
   // animated state, and should have had a frame requested.
-  EXPECT_EQ(0, helper_.request_animate_count());
+  EXPECT_EQ(0, helper_.request_begin_frame_count());
   SendMouseWheelEvent(PhaseEnded, PhaseNone);
-  EXPECT_EQ(1, helper_.request_animate_count());
+  EXPECT_EQ(1, helper_.request_begin_frame_count());
 }
 
 // Verify that an stretch caused by a momentum scroll will switch to the
@@ -233,14 +233,14 @@ TEST_F(ScrollElasticityControllerTest, MomentumAnimate) {
   SendMouseWheelEvent(PhaseNone, PhaseChanged, gfx::Vector2dF(0, -80),
                       gfx::Vector2dF(0, -8));
   EXPECT_EQ(0, helper_.set_stretch_amount_count());
-  EXPECT_EQ(0, helper_.request_animate_count());
+  EXPECT_EQ(0, helper_.request_begin_frame_count());
 
   // Take another step, this time going over the threshold. This should update
   // the stretch amount, and then switch to the animating mode.
   SendMouseWheelEvent(PhaseNone, PhaseChanged, gfx::Vector2dF(0, -80),
                       gfx::Vector2dF(0, -80));
   EXPECT_EQ(1, helper_.set_stretch_amount_count());
-  EXPECT_EQ(1, helper_.request_animate_count());
+  EXPECT_EQ(1, helper_.request_begin_frame_count());
   EXPECT_GT(-1.f, helper_.StretchAmount().y());
 
   // Subsequent momentum events should do nothing.
@@ -251,50 +251,50 @@ TEST_F(ScrollElasticityControllerTest, MomentumAnimate) {
   SendMouseWheelEvent(PhaseNone, PhaseEnded, gfx::Vector2dF(0, -80),
                       gfx::Vector2dF(0, -80));
   EXPECT_EQ(1, helper_.set_stretch_amount_count());
-  EXPECT_EQ(1, helper_.request_animate_count());
+  EXPECT_EQ(1, helper_.request_begin_frame_count());
 
   // Subsequent animate events should update the stretch amount and request
   // another frame.
   TickCurrentTimeAndAnimate();
   EXPECT_EQ(2, helper_.set_stretch_amount_count());
-  EXPECT_EQ(2, helper_.request_animate_count());
+  EXPECT_EQ(2, helper_.request_begin_frame_count());
   EXPECT_GT(-1.f, helper_.StretchAmount().y());
 
   // Touching the trackpad (a PhaseMayBegin event) should disable animation.
   SendMouseWheelEvent(PhaseMayBegin, PhaseNone);
   TickCurrentTimeAndAnimate();
   EXPECT_EQ(2, helper_.set_stretch_amount_count());
-  EXPECT_EQ(2, helper_.request_animate_count());
+  EXPECT_EQ(2, helper_.request_begin_frame_count());
 
   // Releasing the trackpad should re-enable animation.
   SendMouseWheelEvent(PhaseCancelled, PhaseNone);
   EXPECT_EQ(2, helper_.set_stretch_amount_count());
-  EXPECT_EQ(3, helper_.request_animate_count());
+  EXPECT_EQ(3, helper_.request_begin_frame_count());
   TickCurrentTimeAndAnimate();
   EXPECT_EQ(3, helper_.set_stretch_amount_count());
-  EXPECT_EQ(4, helper_.request_animate_count());
+  EXPECT_EQ(4, helper_.request_begin_frame_count());
 
   // Keep animating frames until the stretch returns to rest.
   int stretch_count = 3;
-  int animate_count = 4;
+  int begin_frame_count = 4;
   while (1) {
     TickCurrentTimeAndAnimate();
     if (helper_.StretchAmount().IsZero()) {
       stretch_count += 1;
       EXPECT_EQ(stretch_count, helper_.set_stretch_amount_count());
-      EXPECT_EQ(animate_count, helper_.request_animate_count());
+      EXPECT_EQ(begin_frame_count, helper_.request_begin_frame_count());
       break;
     }
     stretch_count += 1;
-    animate_count += 1;
+    begin_frame_count += 1;
     EXPECT_EQ(stretch_count, helper_.set_stretch_amount_count());
-    EXPECT_EQ(animate_count, helper_.request_animate_count());
+    EXPECT_EQ(begin_frame_count, helper_.request_begin_frame_count());
   }
 
   // After coming to rest, no subsequent animate calls change anything.
   TickCurrentTimeAndAnimate();
   EXPECT_EQ(stretch_count, helper_.set_stretch_amount_count());
-  EXPECT_EQ(animate_count, helper_.request_animate_count());
+  EXPECT_EQ(begin_frame_count, helper_.request_begin_frame_count());
 }
 
 // Verify that an stretch opposing a scroll is correctly resolved.

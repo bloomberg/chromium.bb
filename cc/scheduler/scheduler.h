@@ -40,7 +40,6 @@ class SchedulerClient {
       const BeginFrameArgs& args) = 0;
   virtual DrawResult ScheduledActionDrawAndSwapIfPossible() = 0;
   virtual DrawResult ScheduledActionDrawAndSwapForced() = 0;
-  virtual void ScheduledActionAnimate() = 0;
   virtual void ScheduledActionCommit() = 0;
   virtual void ScheduledActionActivateSyncTree() = 0;
   virtual void ScheduledActionBeginOutputSurfaceCreation() = 0;
@@ -91,8 +90,6 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
   void SetNeedsOneBeginImplFrame();
 
   void SetNeedsRedraw();
-
-  void SetNeedsAnimate();
 
   void SetNeedsPrepareTiles();
 

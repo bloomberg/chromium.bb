@@ -88,7 +88,7 @@ class LayerTreeHostImplTest : public testing::Test,
         did_notify_ready_to_activate_(false),
         did_request_commit_(false),
         did_request_redraw_(false),
-        did_request_animate_(false),
+        did_request_next_frame_(false),
         did_request_prepare_tiles_(false),
         did_complete_page_scale_animation_(false),
         reduce_memory_result_(true) {
@@ -130,7 +130,9 @@ class LayerTreeHostImplTest : public testing::Test,
   void SetNeedsRedrawRectOnImplThread(const gfx::Rect& damage_rect) override {
     did_request_redraw_ = true;
   }
-  void SetNeedsAnimateOnImplThread() override { did_request_animate_ = true; }
+  void SetNeedsOneBeginImplFrameOnImplThread() override {
+    did_request_next_frame_ = true;
+  }
   void SetNeedsPrepareTilesOnImplThread() override {
     did_request_prepare_tiles_ = true;
   }
@@ -163,8 +165,16 @@ class LayerTreeHostImplTest : public testing::Test,
 
   virtual bool CreateHostImpl(const LayerTreeSettings& settings,
                               scoped_ptr<OutputSurface> output_surface) {
+    return CreateHostImplWithTaskRunnerProvider(
+        settings, std::move(output_surface), &task_runner_provider_);
+  }
+
+  virtual bool CreateHostImplWithTaskRunnerProvider(
+      const LayerTreeSettings& settings,
+      scoped_ptr<OutputSurface> output_surface,
+      TaskRunnerProvider* task_runner_provider) {
     host_impl_ = LayerTreeHostImpl::Create(
-        settings, this, &task_runner_provider_, &stats_instrumentation_,
+        settings, this, task_runner_provider, &stats_instrumentation_,
         &shared_bitmap_manager_, &gpu_memory_buffer_manager_,
         &task_graph_runner_, 0);
     output_surface_ = std::move(output_surface);
@@ -440,7 +450,7 @@ class LayerTreeHostImplTest : public testing::Test,
   bool did_notify_ready_to_activate_;
   bool did_request_commit_;
   bool did_request_redraw_;
-  bool did_request_animate_;
+  bool did_request_next_frame_;
   bool did_request_prepare_tiles_;
   bool did_complete_page_scale_animation_;
   bool reduce_memory_result_;
@@ -1090,6 +1100,8 @@ TEST_F(LayerTreeHostImplTest, ScrollWithUserUnscrollableLayers) {
 }
 
 TEST_F(LayerTreeHostImplTest, AnimationSchedulingPendingTree) {
+  EXPECT_FALSE(host_impl_->CommitToActiveTree());
+
   host_impl_->SetViewportSize(gfx::Size(50, 50));
 
   host_impl_->CreatePendingTree();
@@ -1106,7 +1118,7 @@ TEST_F(LayerTreeHostImplTest, AnimationSchedulingPendingTree) {
   child->SetDrawsContent(true);
   AddAnimatedTransformToLayer(child, 10.0, 3, 0);
 
-  EXPECT_FALSE(did_request_animate_);
+  EXPECT_FALSE(did_request_next_frame_);
   EXPECT_FALSE(did_request_redraw_);
   EXPECT_FALSE(did_request_commit_);
 
@@ -1118,12 +1130,12 @@ TEST_F(LayerTreeHostImplTest, AnimationSchedulingPendingTree) {
   // be continuously ticked on the pending tree, so it should not request
   // another animation frame here. But we currently do so blindly if any
   // animation exists.
-  EXPECT_TRUE(did_request_animate_);
+  EXPECT_TRUE(did_request_next_frame_);
   // The pending tree with an animation does not need to draw after animating.
   EXPECT_FALSE(did_request_redraw_);
   EXPECT_FALSE(did_request_commit_);
 
-  did_request_animate_ = false;
+  did_request_next_frame_ = false;
   did_request_redraw_ = false;
   did_request_commit_ = false;
 
@@ -1131,7 +1143,7 @@ TEST_F(LayerTreeHostImplTest, AnimationSchedulingPendingTree) {
 
   // When the animation activates, we should request another animation frame
   // to keep the animation moving.
-  EXPECT_TRUE(did_request_animate_);
+  EXPECT_TRUE(did_request_next_frame_);
   // On activation we don't need to request a redraw for the animation,
   // activating will draw on its own when it's ready.
   EXPECT_FALSE(did_request_redraw_);
@@ -1139,6 +1151,8 @@ TEST_F(LayerTreeHostImplTest, AnimationSchedulingPendingTree) {
 }
 
 TEST_F(LayerTreeHostImplTest, AnimationSchedulingActiveTree) {
+  EXPECT_FALSE(host_impl_->CommitToActiveTree());
+
   host_impl_->SetViewportSize(gfx::Size(50, 50));
 
   host_impl_->active_tree()->SetRootLayer(
@@ -1164,23 +1178,80 @@ TEST_F(LayerTreeHostImplTest, AnimationSchedulingActiveTree) {
   host_impl_->WillBeginImplFrame(
       CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, now));
 
-  EXPECT_FALSE(did_request_animate_);
-  EXPECT_FALSE(did_request_redraw_);
+  // TODO(crbug.com/551134): We always request a new frame and a draw for
+  // animations that are on the pending tree, but we don't need to do that
+  // unless they are waiting for some future time to start.
+  EXPECT_TRUE(did_request_next_frame_);
+  EXPECT_TRUE(did_request_redraw_);
   EXPECT_FALSE(did_request_commit_);
-
-  host_impl_->ActivateAnimations();
-  did_request_animate_ = false;
+  did_request_next_frame_ = false;
   did_request_redraw_ = false;
   did_request_commit_ = false;
 
+  host_impl_->ActivateAnimations();
+
+  // On activating an animation, we should request another frame so that we'll
+  // continue ticking the animation.
+  EXPECT_TRUE(did_request_next_frame_);
+  EXPECT_FALSE(did_request_redraw_);
+  EXPECT_FALSE(did_request_commit_);
+  did_request_next_frame_ = false;
+  did_request_redraw_ = false;
+  did_request_commit_ = false;
+
+  // The next frame after activating, we'll tick the animation again.
   host_impl_->Animate();
 
   // An animation exists on the active layer. Doing Animate() requests another
   // frame after the current one.
-  EXPECT_TRUE(did_request_animate_);
+  EXPECT_TRUE(did_request_next_frame_);
   // The animation should cause us to draw at the frame's deadline.
   EXPECT_TRUE(did_request_redraw_);
   EXPECT_FALSE(did_request_commit_);
+}
+
+TEST_F(LayerTreeHostImplTest, AnimationSchedulingCommitToActiveTree) {
+  FakeImplTaskRunnerProvider provider(nullptr);
+  CreateHostImplWithTaskRunnerProvider(DefaultSettings(), CreateOutputSurface(),
+                                       &provider);
+  EXPECT_TRUE(host_impl_->CommitToActiveTree());
+
+  host_impl_->SetViewportSize(gfx::Size(50, 50));
+
+  host_impl_->active_tree()->SetRootLayer(
+      LayerImpl::Create(host_impl_->active_tree(), 1));
+  LayerImpl* root = host_impl_->active_tree()->root_layer();
+  root->SetBounds(gfx::Size(50, 50));
+  root->SetHasRenderSurface(true);
+
+  root->AddChild(LayerImpl::Create(host_impl_->active_tree(), 2));
+  LayerImpl* child = root->children()[0].get();
+  child->SetBounds(gfx::Size(10, 10));
+  child->draw_properties().visible_layer_rect = gfx::Rect(10, 10);
+  child->SetDrawsContent(true);
+  AddAnimatedTransformToLayer(child, 10.0, 3, 0);
+
+  // Set up the property trees so that UpdateDrawProperties will work in
+  // CommitComplete below.
+  LayerImplList list;
+  LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
+      root, gfx::Size(50, 50), &list, 0);
+  LayerTreeHostCommon::CalculateDrawProperties(&inputs);
+
+  EXPECT_FALSE(did_request_next_frame_);
+  EXPECT_FALSE(did_request_redraw_);
+  EXPECT_FALSE(did_request_commit_);
+
+  host_impl_->CommitComplete();
+
+  // Animations on the active tree should be started and ticked, and a new frame
+  // should be requested to continue ticking them.
+  EXPECT_TRUE(did_request_next_frame_);
+  EXPECT_TRUE(did_request_redraw_);
+  EXPECT_FALSE(did_request_commit_);
+
+  // Delete the LayerTreeHostImpl before the TaskRunnerProvider goes away.
+  host_impl_ = nullptr;
 }
 
 class MissingTilesLayer : public LayerImpl {
@@ -1201,7 +1272,7 @@ class MissingTilesLayer : public LayerImpl {
   bool has_missing_tiles_;
 };
 
-TEST_F(LayerTreeHostImplTest, AnimationSchedulingMarksLayerNotReady) {
+TEST_F(LayerTreeHostImplTest, AnimationMarksLayerNotReady) {
   host_impl_->SetViewportSize(gfx::Size(50, 50));
 
   host_impl_->active_tree()->SetRootLayer(
@@ -1310,7 +1381,7 @@ TEST_F(LayerTreeHostImplTest, ImplPinchZoom) {
     host_impl_->PinchGestureUpdate(page_scale_delta, gfx::Point(50, 50));
     host_impl_->PinchGestureEnd();
     host_impl_->ScrollEnd();
-    EXPECT_FALSE(did_request_animate_);
+    EXPECT_FALSE(did_request_next_frame_);
     EXPECT_TRUE(did_request_redraw_);
     EXPECT_TRUE(did_request_commit_);
     EXPECT_EQ(gfx::Size(50, 50), container_layer->bounds());
@@ -1789,7 +1860,7 @@ TEST_F(LayerTreeHostImplTest, PinchGesture) {
     host_impl_->PinchGestureUpdate(page_scale_delta, gfx::Point(50, 50));
     host_impl_->PinchGestureEnd();
     host_impl_->ScrollEnd();
-    EXPECT_FALSE(did_request_animate_);
+    EXPECT_FALSE(did_request_next_frame_);
     EXPECT_TRUE(did_request_redraw_);
     EXPECT_TRUE(did_request_commit_);
 
@@ -1938,7 +2009,7 @@ TEST_F(LayerTreeHostImplTest, PageScaleAnimation) {
     scroll_layer->PushScrollOffsetFromMainThread(gfx::ScrollOffset(50, 50));
 
     did_request_redraw_ = false;
-    did_request_animate_ = false;
+    did_request_next_frame_ = false;
     host_impl_->active_tree()->SetPendingPageScaleAnimation(
         scoped_ptr<PendingPageScaleAnimation>(new PendingPageScaleAnimation(
             gfx::Vector2d(),
@@ -1947,34 +2018,34 @@ TEST_F(LayerTreeHostImplTest, PageScaleAnimation) {
             duration)));
     host_impl_->ActivateSyncTree();
     EXPECT_FALSE(did_request_redraw_);
-    EXPECT_TRUE(did_request_animate_);
+    EXPECT_TRUE(did_request_next_frame_);
 
     did_request_redraw_ = false;
-    did_request_animate_ = false;
+    did_request_next_frame_ = false;
     begin_frame_args.frame_time = start_time;
     host_impl_->WillBeginImplFrame(begin_frame_args);
     host_impl_->Animate();
     EXPECT_TRUE(did_request_redraw_);
-    EXPECT_TRUE(did_request_animate_);
+    EXPECT_TRUE(did_request_next_frame_);
     host_impl_->DidFinishImplFrame();
 
     did_request_redraw_ = false;
-    did_request_animate_ = false;
+    did_request_next_frame_ = false;
     begin_frame_args.frame_time = halfway_through_animation;
     host_impl_->WillBeginImplFrame(begin_frame_args);
     host_impl_->Animate();
     EXPECT_TRUE(did_request_redraw_);
-    EXPECT_TRUE(did_request_animate_);
+    EXPECT_TRUE(did_request_next_frame_);
     host_impl_->DidFinishImplFrame();
 
     did_request_redraw_ = false;
-    did_request_animate_ = false;
+    did_request_next_frame_ = false;
     did_request_commit_ = false;
     begin_frame_args.frame_time = end_time;
     host_impl_->WillBeginImplFrame(begin_frame_args);
     host_impl_->Animate();
     EXPECT_TRUE(did_request_commit_);
-    EXPECT_FALSE(did_request_animate_);
+    EXPECT_FALSE(did_request_next_frame_);
     host_impl_->DidFinishImplFrame();
 
     scoped_ptr<ScrollAndScaleSet> scroll_info =
@@ -1995,7 +2066,7 @@ TEST_F(LayerTreeHostImplTest, PageScaleAnimation) {
     scroll_layer->PushScrollOffsetFromMainThread(gfx::ScrollOffset(50, 50));
 
     did_request_redraw_ = false;
-    did_request_animate_ = false;
+    did_request_next_frame_ = false;
     host_impl_->active_tree()->SetPendingPageScaleAnimation(
         scoped_ptr<PendingPageScaleAnimation> (new PendingPageScaleAnimation(
             gfx::Vector2d(25, 25),
@@ -2004,25 +2075,25 @@ TEST_F(LayerTreeHostImplTest, PageScaleAnimation) {
             duration)));
     host_impl_->ActivateSyncTree();
     EXPECT_FALSE(did_request_redraw_);
-    EXPECT_TRUE(did_request_animate_);
+    EXPECT_TRUE(did_request_next_frame_);
 
     did_request_redraw_ = false;
-    did_request_animate_ = false;
+    did_request_next_frame_ = false;
     begin_frame_args.frame_time = start_time;
     host_impl_->WillBeginImplFrame(begin_frame_args);
     host_impl_->Animate();
     EXPECT_TRUE(did_request_redraw_);
-    EXPECT_TRUE(did_request_animate_);
+    EXPECT_TRUE(did_request_next_frame_);
     host_impl_->DidFinishImplFrame();
 
     did_request_redraw_ = false;
     did_request_commit_ = false;
-    did_request_animate_ = false;
+    did_request_next_frame_ = false;
     begin_frame_args.frame_time = end_time;
     host_impl_->WillBeginImplFrame(begin_frame_args);
     host_impl_->Animate();
     EXPECT_TRUE(did_request_redraw_);
-    EXPECT_FALSE(did_request_animate_);
+    EXPECT_FALSE(did_request_next_frame_);
     EXPECT_TRUE(did_request_commit_);
     host_impl_->DidFinishImplFrame();
 
@@ -2139,7 +2210,7 @@ TEST_F(LayerTreeHostImplTest, PageScaleAnimationTransferedOnSyncTreeActivate) {
   // Recreate the PSA. Nothing should happen here since the tree containing the
   // PSA hasn't been activated yet.
   did_request_redraw_ = false;
-  did_request_animate_ = false;
+  did_request_next_frame_ = false;
   host_impl_->sync_tree()->SetPendingPageScaleAnimation(
       scoped_ptr<PendingPageScaleAnimation>(new PendingPageScaleAnimation(
           gfx::Vector2d(),
@@ -2149,7 +2220,7 @@ TEST_F(LayerTreeHostImplTest, PageScaleAnimationTransferedOnSyncTreeActivate) {
   begin_frame_args.frame_time = halfway_through_animation;
   host_impl_->WillBeginImplFrame(begin_frame_args);
   host_impl_->Animate();
-  EXPECT_FALSE(did_request_animate_);
+  EXPECT_FALSE(did_request_next_frame_);
   EXPECT_FALSE(did_request_redraw_);
   host_impl_->DidFinishImplFrame();
 
@@ -2159,7 +2230,7 @@ TEST_F(LayerTreeHostImplTest, PageScaleAnimationTransferedOnSyncTreeActivate) {
   EXPECT_EQ(nullptr,
       host_impl_->sync_tree()->TakePendingPageScaleAnimation().get());
   EXPECT_FALSE(did_request_redraw_);
-  EXPECT_TRUE(did_request_animate_);
+  EXPECT_TRUE(did_request_next_frame_);
 
   start_time += base::TimeDelta::FromSeconds(10);
   third_through_animation += base::TimeDelta::FromSeconds(10);
@@ -2168,43 +2239,43 @@ TEST_F(LayerTreeHostImplTest, PageScaleAnimationTransferedOnSyncTreeActivate) {
 
   // From here on, make sure the animation runs as normal.
   did_request_redraw_ = false;
-  did_request_animate_ = false;
+  did_request_next_frame_ = false;
   begin_frame_args.frame_time = start_time;
   host_impl_->WillBeginImplFrame(begin_frame_args);
   host_impl_->Animate();
   EXPECT_TRUE(did_request_redraw_);
-  EXPECT_TRUE(did_request_animate_);
+  EXPECT_TRUE(did_request_next_frame_);
   host_impl_->DidFinishImplFrame();
 
   did_request_redraw_ = false;
-  did_request_animate_ = false;
+  did_request_next_frame_ = false;
   begin_frame_args.frame_time = third_through_animation;
   host_impl_->WillBeginImplFrame(begin_frame_args);
   host_impl_->Animate();
   EXPECT_TRUE(did_request_redraw_);
-  EXPECT_TRUE(did_request_animate_);
+  EXPECT_TRUE(did_request_next_frame_);
   host_impl_->DidFinishImplFrame();
 
   // Another activation shouldn't have any effect on the animation.
   host_impl_->ActivateSyncTree();
 
   did_request_redraw_ = false;
-  did_request_animate_ = false;
+  did_request_next_frame_ = false;
   begin_frame_args.frame_time = halfway_through_animation;
   host_impl_->WillBeginImplFrame(begin_frame_args);
   host_impl_->Animate();
   EXPECT_TRUE(did_request_redraw_);
-  EXPECT_TRUE(did_request_animate_);
+  EXPECT_TRUE(did_request_next_frame_);
   host_impl_->DidFinishImplFrame();
 
   did_request_redraw_ = false;
-  did_request_animate_ = false;
+  did_request_next_frame_ = false;
   did_request_commit_ = false;
   begin_frame_args.frame_time = end_time;
   host_impl_->WillBeginImplFrame(begin_frame_args);
   host_impl_->Animate();
   EXPECT_TRUE(did_request_commit_);
-  EXPECT_FALSE(did_request_animate_);
+  EXPECT_FALSE(did_request_next_frame_);
   host_impl_->DidFinishImplFrame();
 
   scoped_ptr<ScrollAndScaleSet> scroll_info =
@@ -2333,7 +2404,7 @@ class LayerTreeHostImplTestScrollbarAnimation : public LayerTreeHostImplTest {
     base::TimeTicks fake_now = base::TimeTicks::Now();
 
     // A task will be posted to fade the initial scrollbar.
-    EXPECT_FALSE(did_request_animate_);
+    EXPECT_FALSE(did_request_next_frame_);
     EXPECT_FALSE(did_request_redraw_);
     EXPECT_FALSE(animation_task_.Equals(base::Closure()));
     requested_animation_delay_ = base::TimeDelta();
@@ -2342,43 +2413,68 @@ class LayerTreeHostImplTestScrollbarAnimation : public LayerTreeHostImplTest {
     // If no scroll happened during a scroll gesture, it should have no effect.
     host_impl_->ScrollBegin(gfx::Point(), InputHandler::WHEEL);
     host_impl_->ScrollEnd();
-    EXPECT_FALSE(did_request_animate_);
+    EXPECT_FALSE(did_request_next_frame_);
     EXPECT_FALSE(did_request_redraw_);
     EXPECT_EQ(base::TimeDelta(), requested_animation_delay_);
     EXPECT_TRUE(animation_task_.Equals(base::Closure()));
+
+    // Before the scrollbar animation exists, we should not get redraws.
+    BeginFrameArgs begin_frame_args =
+        CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, fake_now);
+    host_impl_->WillBeginImplFrame(begin_frame_args);
+    host_impl_->Animate();
+    EXPECT_FALSE(did_request_next_frame_);
+    did_request_next_frame_ = false;
+    EXPECT_FALSE(did_request_redraw_);
+    did_request_redraw_ = false;
+    EXPECT_EQ(base::TimeDelta(), requested_animation_delay_);
+    EXPECT_TRUE(animation_task_.Equals(base::Closure()));
+    host_impl_->DidFinishImplFrame();
 
     // After a scroll, a scrollbar animation should be scheduled about 20ms from
     // now.
     host_impl_->ScrollBegin(gfx::Point(), InputHandler::WHEEL);
     host_impl_->ScrollBy(gfx::Point(), gfx::Vector2dF(0, 5));
-    EXPECT_FALSE(did_request_animate_);
+    EXPECT_FALSE(did_request_next_frame_);
     EXPECT_TRUE(did_request_redraw_);
     did_request_redraw_ = false;
     EXPECT_EQ(base::TimeDelta(), requested_animation_delay_);
     EXPECT_TRUE(animation_task_.Equals(base::Closure()));
 
     host_impl_->ScrollEnd();
-    EXPECT_FALSE(did_request_animate_);
+    EXPECT_FALSE(did_request_next_frame_);
     EXPECT_FALSE(did_request_redraw_);
     EXPECT_EQ(base::TimeDelta::FromMilliseconds(20),
               requested_animation_delay_);
     EXPECT_FALSE(animation_task_.Equals(base::Closure()));
 
+    // Before the scrollbar animation begins, we should not get redraws.
+    begin_frame_args =
+        CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, fake_now);
+    host_impl_->WillBeginImplFrame(begin_frame_args);
+    host_impl_->Animate();
+    EXPECT_FALSE(did_request_next_frame_);
+    did_request_next_frame_ = false;
+    EXPECT_FALSE(did_request_redraw_);
+    did_request_redraw_ = false;
+    host_impl_->DidFinishImplFrame();
+
+    // Start the scrollbar animation.
     fake_now += requested_animation_delay_;
     requested_animation_delay_ = base::TimeDelta();
     animation_task_.Run();
     animation_task_ = base::Closure();
-    EXPECT_TRUE(did_request_animate_);
-    did_request_animate_ = false;
+    EXPECT_TRUE(did_request_next_frame_);
+    did_request_next_frame_ = false;
     EXPECT_FALSE(did_request_redraw_);
 
     // After the scrollbar animation begins, we should start getting redraws.
-    BeginFrameArgs begin_frame_args =
+    begin_frame_args =
         CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, fake_now);
     host_impl_->WillBeginImplFrame(begin_frame_args);
     host_impl_->Animate();
-    EXPECT_TRUE(did_request_animate_);
-    did_request_animate_ = false;
+    EXPECT_TRUE(did_request_next_frame_);
+    did_request_next_frame_ = false;
     EXPECT_TRUE(did_request_redraw_);
     did_request_redraw_ = false;
     EXPECT_EQ(base::TimeDelta(), requested_animation_delay_);
@@ -2389,7 +2485,7 @@ class LayerTreeHostImplTestScrollbarAnimation : public LayerTreeHostImplTest {
     // scrollbar to appear and to schedule a scrollbar animation.
     host_impl_->InnerViewportScrollLayer()->PushScrollOffsetFromMainThread(
         gfx::ScrollOffset(5, 5));
-    EXPECT_FALSE(did_request_animate_);
+    EXPECT_FALSE(did_request_next_frame_);
     EXPECT_FALSE(did_request_redraw_);
     EXPECT_EQ(base::TimeDelta::FromMilliseconds(20),
               requested_animation_delay_);
@@ -2397,17 +2493,29 @@ class LayerTreeHostImplTestScrollbarAnimation : public LayerTreeHostImplTest {
     requested_animation_delay_ = base::TimeDelta();
     animation_task_ = base::Closure();
 
+    // Scrolling should have stopped the animation, so we should not be getting
+    // redraws.
+    begin_frame_args =
+        CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, fake_now);
+    host_impl_->WillBeginImplFrame(begin_frame_args);
+    host_impl_->Animate();
+    EXPECT_FALSE(did_request_next_frame_);
+    did_request_next_frame_ = false;
+    EXPECT_FALSE(did_request_redraw_);
+    did_request_redraw_ = false;
+    host_impl_->DidFinishImplFrame();
+
     // Scrollbar animation is not triggered unnecessarily.
     host_impl_->ScrollBegin(gfx::Point(), InputHandler::WHEEL);
     host_impl_->ScrollBy(gfx::Point(), gfx::Vector2dF(5, 0));
-    EXPECT_FALSE(did_request_animate_);
+    EXPECT_FALSE(did_request_next_frame_);
     EXPECT_TRUE(did_request_redraw_);
     did_request_redraw_ = false;
     EXPECT_EQ(base::TimeDelta(), requested_animation_delay_);
     EXPECT_TRUE(animation_task_.Equals(base::Closure()));
 
     host_impl_->ScrollEnd();
-    EXPECT_FALSE(did_request_animate_);
+    EXPECT_FALSE(did_request_next_frame_);
     EXPECT_FALSE(did_request_redraw_);
     EXPECT_EQ(base::TimeDelta(), requested_animation_delay_);
     EXPECT_TRUE(animation_task_.Equals(base::Closure()));
@@ -2415,7 +2523,7 @@ class LayerTreeHostImplTestScrollbarAnimation : public LayerTreeHostImplTest {
     // Changing page scale triggers scrollbar animation.
     host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, 1.f, 4.f);
     host_impl_->active_tree()->SetPageScaleOnActiveTree(1.1f);
-    EXPECT_FALSE(did_request_animate_);
+    EXPECT_FALSE(did_request_next_frame_);
     EXPECT_FALSE(did_request_redraw_);
     EXPECT_EQ(base::TimeDelta::FromMilliseconds(20),
               requested_animation_delay_);
@@ -7618,7 +7726,7 @@ TEST_F(LayerTreeHostImplWithTopControlsTest, TopControlsAnimationScheduling) {
   SetupScrollAndContentsLayers(gfx::Size(100, 100))
       ->PushScrollOffsetFromMainThread(gfx::ScrollOffset(0, 10));
   host_impl_->DidChangeTopControlsPosition();
-  EXPECT_TRUE(did_request_animate_);
+  EXPECT_TRUE(did_request_next_frame_);
   EXPECT_TRUE(did_request_redraw_);
 }
 
@@ -7743,13 +7851,13 @@ TEST_F(LayerTreeHostImplWithTopControlsTest, TopControlsAnimationAtOrigin) {
             scroll_layer->CurrentScrollOffset().ToString());
 
   did_request_redraw_ = false;
-  did_request_animate_ = false;
+  did_request_next_frame_ = false;
   did_request_commit_ = false;
 
   // End the scroll while the controls are still offset from their limit.
   host_impl_->ScrollEnd();
   ASSERT_TRUE(host_impl_->top_controls_manager()->animation());
-  EXPECT_TRUE(did_request_animate_);
+  EXPECT_TRUE(did_request_next_frame_);
   EXPECT_TRUE(did_request_redraw_);
   EXPECT_FALSE(did_request_commit_);
 
@@ -7757,9 +7865,9 @@ TEST_F(LayerTreeHostImplWithTopControlsTest, TopControlsAnimationAtOrigin) {
   // offset being at the origin.
   BeginFrameArgs begin_frame_args = CreateBeginFrameArgsForTesting(
       BEGINFRAME_FROM_HERE, base::TimeTicks::Now());
-  while (did_request_animate_) {
+  while (did_request_next_frame_) {
     did_request_redraw_ = false;
-    did_request_animate_ = false;
+    did_request_next_frame_ = false;
     did_request_commit_ = false;
 
     float old_offset =
@@ -7783,7 +7891,7 @@ TEST_F(LayerTreeHostImplWithTopControlsTest, TopControlsAnimationAtOrigin) {
 
     if (new_offset != 0) {
       EXPECT_TRUE(host_impl_->top_controls_manager()->animation());
-      EXPECT_TRUE(did_request_animate_);
+      EXPECT_TRUE(did_request_next_frame_);
     }
     host_impl_->DidFinishImplFrame();
   }
@@ -7817,22 +7925,22 @@ TEST_F(LayerTreeHostImplWithTopControlsTest, TopControlsAnimationAfterScroll) {
             scroll_layer->CurrentScrollOffset().ToString());
 
   did_request_redraw_ = false;
-  did_request_animate_ = false;
+  did_request_next_frame_ = false;
   did_request_commit_ = false;
 
   // End the scroll while the controls are still offset from the limit.
   host_impl_->ScrollEnd();
   ASSERT_TRUE(host_impl_->top_controls_manager()->animation());
-  EXPECT_TRUE(did_request_animate_);
+  EXPECT_TRUE(did_request_next_frame_);
   EXPECT_TRUE(did_request_redraw_);
   EXPECT_FALSE(did_request_commit_);
 
   // Animate the top controls to the limit.
   BeginFrameArgs begin_frame_args = CreateBeginFrameArgsForTesting(
       BEGINFRAME_FROM_HERE, base::TimeTicks::Now());
-  while (did_request_animate_) {
+  while (did_request_next_frame_) {
     did_request_redraw_ = false;
-    did_request_animate_ = false;
+    did_request_next_frame_ = false;
     did_request_commit_ = false;
 
     float old_offset =
@@ -7884,22 +7992,22 @@ TEST_F(LayerTreeHostImplWithTopControlsTest,
             scroll_layer->CurrentScrollOffset().ToString());
 
   did_request_redraw_ = false;
-  did_request_animate_ = false;
+  did_request_next_frame_ = false;
   did_request_commit_ = false;
 
   // End the fling while the controls are still offset from the limit.
   host_impl_->MainThreadHasStoppedFlinging();
   ASSERT_TRUE(host_impl_->top_controls_manager()->animation());
-  EXPECT_TRUE(did_request_animate_);
+  EXPECT_TRUE(did_request_next_frame_);
   EXPECT_TRUE(did_request_redraw_);
   EXPECT_FALSE(did_request_commit_);
 
   // Animate the top controls to the limit.
   BeginFrameArgs begin_frame_args = CreateBeginFrameArgsForTesting(
       BEGINFRAME_FROM_HERE, base::TimeTicks::Now());
-  while (did_request_animate_) {
+  while (did_request_next_frame_) {
     did_request_redraw_ = false;
-    did_request_animate_ = false;
+    did_request_next_frame_ = false;
     did_request_commit_ = false;
 
     float old_offset = host_impl_->top_controls_manager()->ControlsTopOffset();

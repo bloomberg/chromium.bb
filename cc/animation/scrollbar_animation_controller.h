@@ -36,7 +36,7 @@ class CC_EXPORT ScrollbarAnimationController {
  public:
   virtual ~ScrollbarAnimationController();
 
-  void Animate(base::TimeTicks now);
+  bool Animate(base::TimeTicks now);
 
   virtual void DidScrollBegin();
   virtual void DidScrollUpdate(bool on_resize);

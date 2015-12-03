@@ -117,7 +117,6 @@ class CC_EXPORT SchedulerStateMachine {
 
   enum Action {
     ACTION_NONE,
-    ACTION_ANIMATE,
     ACTION_SEND_BEGIN_MAIN_FRAME,
     ACTION_COMMIT,
     ACTION_ACTIVATE_SYNC_TREE,
@@ -134,7 +133,6 @@ class CC_EXPORT SchedulerStateMachine {
   void AsValueInto(base::trace_event::TracedValue* dict) const;
 
   Action NextAction() const;
-  void WillAnimate();
   void WillSendBeginMainFrame();
   void WillCommit(bool commit_had_no_updates);
   void WillActivate();
@@ -180,9 +178,6 @@ class CC_EXPORT SchedulerStateMachine {
   // or the screen being damaged and simply needing redisplay.
   void SetNeedsRedraw();
   bool needs_redraw() const { return needs_redraw_; }
-
-  void SetNeedsAnimate();
-  bool needs_animate() const { return needs_animate_; }
 
   bool OnlyImplSideUpdatesExpected() const;
 
@@ -295,7 +290,6 @@ class CC_EXPORT SchedulerStateMachine {
   // TODO(brianderson): Remove this once NPAPI support is removed.
   bool SendingBeginMainFrameMightCauseDeadlock() const;
 
-  bool ShouldAnimate() const;
   bool ShouldBeginOutputSurfaceCreation() const;
   bool ShouldDraw() const;
   bool ShouldActivatePendingTree() const;
@@ -317,7 +311,6 @@ class CC_EXPORT SchedulerStateMachine {
   // These are used for tracing only.
   int commit_count_;
   int current_frame_number_;
-  int last_frame_number_animate_performed_;
   int last_frame_number_swap_performed_;
   int last_frame_number_draw_performed_;
   int last_frame_number_begin_main_frame_sent_;
@@ -325,7 +318,6 @@ class CC_EXPORT SchedulerStateMachine {
 
   // These are used to ensure that an action only happens once per frame,
   // deadline, etc.
-  bool animate_funnel_;
   bool draw_funnel_;
   bool send_begin_main_frame_funnel_;
   bool invalidate_output_surface_funnel_;
@@ -340,7 +332,6 @@ class CC_EXPORT SchedulerStateMachine {
   int pending_swaps_;
   int swaps_with_current_output_surface_;
   bool needs_redraw_;
-  bool needs_animate_;
   bool needs_prepare_tiles_;
   bool needs_begin_main_frame_;
   bool needs_one_begin_impl_frame_;

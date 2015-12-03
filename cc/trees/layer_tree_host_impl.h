@@ -103,10 +103,10 @@ class LayerTreeHostImplClient {
   virtual void NotifyReadyToDraw() = 0;
   // Please call these 3 functions through
   // LayerTreeHostImpl's SetNeedsRedraw(), SetNeedsRedrawRect() and
-  // SetNeedsAnimate().
+  // SetNeedsOneBeginImplFrame().
   virtual void SetNeedsRedrawOnImplThread() = 0;
   virtual void SetNeedsRedrawRectOnImplThread(const gfx::Rect& damage_rect) = 0;
-  virtual void SetNeedsAnimateOnImplThread() = 0;
+  virtual void SetNeedsOneBeginImplFrameOnImplThread() = 0;
   virtual void SetNeedsCommitOnImplThread() = 0;
   virtual void SetNeedsPrepareTilesOnImplThread() = 0;
   virtual void SetVideoNeedsBeginFrames(bool needs_begin_frames) = 0;
@@ -445,7 +445,7 @@ class CC_EXPORT LayerTreeHostImpl
   bool visible() const { return visible_; }
 
   void SetNeedsCommit() { client_->SetNeedsCommitOnImplThread(); }
-  void SetNeedsAnimate();
+  void SetNeedsOneBeginImplFrame();
   void SetNeedsRedraw();
 
   ManagedMemoryPolicy ActualManagedMemoryPolicy() const;

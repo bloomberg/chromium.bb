@@ -195,10 +195,10 @@ class CC_EXPORT ThreadProxy : public Proxy,
   void NotifyReadyToDraw() override;
   // Please call these 3 functions through
   // LayerTreeHostImpl's SetNeedsRedraw(), SetNeedsRedrawRect() and
-  // SetNeedsAnimate().
+  // SetNeedsOneBeginImplFrame().
   void SetNeedsRedrawOnImplThread() override;
   void SetNeedsRedrawRectOnImplThread(const gfx::Rect& dirty_rect) override;
-  void SetNeedsAnimateOnImplThread() override;
+  void SetNeedsOneBeginImplFrameOnImplThread() override;
   void SetNeedsPrepareTilesOnImplThread() override;
   void SetNeedsCommitOnImplThread() override;
   void SetVideoNeedsBeginFrames(bool needs_begin_frames) override;
@@ -225,7 +225,6 @@ class CC_EXPORT ThreadProxy : public Proxy,
   void ScheduledActionSendBeginMainFrame(const BeginFrameArgs& args) override;
   DrawResult ScheduledActionDrawAndSwapIfPossible() override;
   DrawResult ScheduledActionDrawAndSwapForced() override;
-  void ScheduledActionAnimate() override;
   void ScheduledActionCommit() override;
   void ScheduledActionActivateSyncTree() override;
   void ScheduledActionBeginOutputSurfaceCreation() override;

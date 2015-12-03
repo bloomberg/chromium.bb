@@ -217,6 +217,10 @@ class LayerTreeHostTimelinesTestAddAnimationWithTimingFunction
 
   void AnimateLayers(LayerTreeHostImpl* host_impl,
                      base::TimeTicks monotonic_time) override {
+    // Wait for the commit with the animation to happen.
+    if (host_impl->sync_tree()->source_frame_number() != 0)
+      return;
+
     scoped_refptr<AnimationTimeline> timeline_impl =
         host_impl->animation_host()->GetTimelineById(timeline_id_);
     scoped_refptr<AnimationPlayer> player_child_impl =
@@ -224,12 +228,7 @@ class LayerTreeHostTimelinesTestAddAnimationWithTimingFunction
 
     LayerAnimationController* controller_impl =
         player_child_impl->element_animations()->layer_animation_controller();
-    if (!controller_impl)
-      return;
-
     Animation* animation = controller_impl->GetAnimation(Animation::OPACITY);
-    if (!animation)
-      return;
 
     const FloatAnimationCurve* curve =
         animation->curve()->ToFloatAnimationCurve();

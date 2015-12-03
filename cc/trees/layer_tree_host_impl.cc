@@ -335,7 +335,10 @@ void LayerTreeHostImpl::CommitComplete() {
   // change the results. When doing commit to the active tree, this must happen
   // after ActivateAnimations() in order for this ticking to be propogated to
   // layers on the active tree.
-  AnimatePendingTreeAfterCommit();
+  if (CommitToActiveTree())
+    Animate();
+  else
+    AnimatePendingTreeAfterCommit();
 
   // LayerTreeHost may have changed the GPU rasterization flags state, which
   // may require an update of the tree resources.
@@ -508,7 +511,7 @@ void LayerTreeHostImpl::StartPageScaleAnimation(
                                   duration.InSecondsF());
   }
 
-  SetNeedsAnimate();
+  SetNeedsOneBeginImplFrame();
   client_->SetNeedsCommitOnImplThread();
   client_->RenewTreePriority();
 }
@@ -516,7 +519,7 @@ void LayerTreeHostImpl::StartPageScaleAnimation(
 void LayerTreeHostImpl::SetNeedsAnimateInput() {
   DCHECK(!IsCurrentlyScrollingInnerViewport() ||
          !settings_.ignore_root_layer_flings);
-  SetNeedsAnimate();
+  SetNeedsOneBeginImplFrame();
 }
 
 bool LayerTreeHostImpl::IsCurrentlyScrollingInnerViewport() const {
@@ -1848,6 +1851,8 @@ void LayerTreeHostImpl::WillBeginImplFrame(const BeginFrameArgs& args) {
     SetNeedsRedraw();
   }
 
+  Animate();
+
   for (auto& it : video_frame_controllers_)
     it->OnBeginFrame(args);
 }
@@ -2061,9 +2066,12 @@ void LayerTreeHostImpl::SetVisible(bool visible) {
   renderer_->SetVisible(visible);
 }
 
-void LayerTreeHostImpl::SetNeedsAnimate() {
+void LayerTreeHostImpl::SetNeedsOneBeginImplFrame() {
+  // TODO(miletus): This is just the compositor-thread-side call to the
+  // SwapPromiseMonitor to say something happened that may cause a swap in the
+  // future. The name should not refer to SetNeedsRedraw but it does for now.
   NotifySwapPromiseMonitorsOfSetNeedsRedraw();
-  client_->SetNeedsAnimateOnImplThread();
+  client_->SetNeedsOneBeginImplFrameOnImplThread();
 }
 
 void LayerTreeHostImpl::SetNeedsRedraw() {
@@ -2387,7 +2395,7 @@ const gfx::Transform& LayerTreeHostImpl::DrawTransform() const {
 void LayerTreeHostImpl::DidChangeTopControlsPosition() {
   UpdateViewportContainerSizes();
   SetNeedsRedraw();
-  SetNeedsAnimate();
+  SetNeedsOneBeginImplFrame();
   active_tree_->set_needs_update_draw_properties();
   SetFullRootLayerDamage();
 }
@@ -2592,7 +2600,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
 
       ScrollAnimationCreate(layer_impl, target_offset, current_offset);
 
-      SetNeedsAnimate();
+      SetNeedsOneBeginImplFrame();
       return SCROLL_STARTED;
     }
   }
@@ -3105,7 +3113,7 @@ bool LayerTreeHostImpl::AnimatePageScale(base::TimeTicks monotonic_time) {
     client_->RenewTreePriority();
     client_->DidCompletePageScaleAnimationOnImplThread();
   } else {
-    SetNeedsAnimate();
+    SetNeedsOneBeginImplFrame();
   }
   return true;
 }
@@ -3117,7 +3125,7 @@ bool LayerTreeHostImpl::AnimateTopControls(base::TimeTicks time) {
   gfx::Vector2dF scroll = top_controls_manager_->Animate(time);
 
   if (top_controls_manager_->animation())
-    SetNeedsAnimate();
+    SetNeedsOneBeginImplFrame();
 
   if (active_tree_->TotalScrollOffset().y() == 0.f)
     return false;
@@ -3133,9 +3141,10 @@ bool LayerTreeHostImpl::AnimateTopControls(base::TimeTicks time) {
 }
 
 bool LayerTreeHostImpl::AnimateScrollbars(base::TimeTicks monotonic_time) {
-  for (auto& it : scrollbar_animation_controllers_)
-    it.second->Animate(monotonic_time);
-  return !scrollbar_animation_controllers_.empty();
+  bool animated = false;
+  for (auto& pair : scrollbar_animation_controllers_)
+    animated |= pair.second->Animate(monotonic_time);
+  return animated;
 }
 
 bool LayerTreeHostImpl::AnimateLayers(base::TimeTicks monotonic_time) {
@@ -3151,16 +3160,17 @@ bool LayerTreeHostImpl::AnimateLayers(base::TimeTicks monotonic_time) {
       animated = true;
   }
 
-  // TODO(ajuma): Only do this if the animations are on the active tree, or if
-  // they are on the pending tree waiting for some future time to start.
-  // TODO(ajuma): We currently have a single signal from the animation
-  // host/registrar, so on the last frame of an animation we will still request
-  // an extra SetNeedsAnimate here.
+  // TODO(crbug.com/551134): Only do this if the animations are on the active
+  // tree, or if they are on the pending tree waiting for some future time to
+  // start.
+  // TODO(crbug.com/551138): We currently have a single signal from the
+  // animation host/registrar, so on the last frame of an animation we will
+  // still request an extra SetNeedsAnimate here.
   if (animated)
-    SetNeedsAnimate();
-  // TODO(danakj): We could return true only if the animations are on the active
-  // tree. There's no need to cause a draw to take place from animations
-  // starting/ticking on the pending tree.
+    SetNeedsOneBeginImplFrame();
+  // TODO(crbug.com/551138): We could return true only if the animations are on
+  // the active tree. There's no need to cause a draw to take place from
+  // animations starting/ticking on the pending tree.
   return animated;
 }
 
@@ -3185,7 +3195,7 @@ void LayerTreeHostImpl::UpdateAnimationState(bool start_ready_animations) {
     client_->PostAnimationEventsToMainThreadOnImplThread(std::move(events));
 
   if (has_active_animations)
-    SetNeedsAnimate();
+    SetNeedsOneBeginImplFrame();
 }
 
 void LayerTreeHostImpl::ActivateAnimations() {
@@ -3202,12 +3212,12 @@ void LayerTreeHostImpl::ActivateAnimations() {
   }
 
   if (activated) {
-    SetNeedsAnimate();
     // Activating an animation changes layer draw properties, such as
-    // screen_space_transform_is_animating, or changes transforms etc. So when
-    // we see a new animation get activated, we need to update the draw
-    // properties on the active tree.
+    // screen_space_transform_is_animating. So when we see a new animation get
+    // activated, we need to update the draw properties on the active tree.
     active_tree()->set_needs_update_draw_properties();
+    // Request another frame to run the next tick of the animation.
+    SetNeedsOneBeginImplFrame();
   }
 }
 
@@ -3255,11 +3265,15 @@ void LayerTreeHostImpl::PostDelayedScrollbarAnimationTask(
   client_->PostDelayedAnimationTaskOnImplThread(task, delay);
 }
 
+// TODO(danakj): Make this a return value from the Animate() call instead of an
+// interface on LTHI. (Also, crbug.com/551138.)
 void LayerTreeHostImpl::SetNeedsAnimateForScrollbarAnimation() {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::SetNeedsAnimateForScrollbarAnimation");
-  SetNeedsAnimate();
+  SetNeedsOneBeginImplFrame();
 }
 
+// TODO(danakj): Make this a return value from the Animate() call instead of an
+// interface on LTHI. (Also, crbug.com/551138.)
 void LayerTreeHostImpl::SetNeedsRedrawForScrollbarAnimation() {
   SetNeedsRedraw();
 }

@@ -77,8 +77,6 @@ cc::DrawResult SurfacesScheduler::ScheduledActionDrawAndSwapForced() {
   return cc::DRAW_SUCCESS;
 }
 
-void SurfacesScheduler::ScheduledActionAnimate() {}
-
 void SurfacesScheduler::ScheduledActionCommit() {
   scheduler_->NotifyReadyToActivate();
 }

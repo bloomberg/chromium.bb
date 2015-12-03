@@ -116,7 +116,6 @@ class TestHooks : public AnimationDelegate {
   virtual void ScheduledActionWillSendBeginMainFrame() {}
   virtual void ScheduledActionSendBeginMainFrame() {}
   virtual void ScheduledActionDrawAndSwapIfPossible() {}
-  virtual void ScheduledActionAnimate() {}
   virtual void ScheduledActionCommit() {}
   virtual void ScheduledActionBeginOutputSurfaceCreation() {}
   virtual void ScheduledActionPrepareTiles() {}

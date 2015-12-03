@@ -265,7 +265,11 @@ void InputScrollElasticityController::EnterStateMomentumAnimated(
   if (!CanScrollVertically())
     momentum_animation_initial_velocity_.set_y(0);
 
-  helper_->RequestAnimate();
+  // TODO(crbug.com/394562): This can go away once input is batched to the front
+  // of the frame? Then Animate() would always happen after this, so it would
+  // have a chance to tick the animation there and would return if any
+  // animations were active.
+  helper_->RequestOneBeginFrame();
 }
 
 void InputScrollElasticityController::Animate(base::TimeTicks time) {
@@ -320,7 +324,9 @@ void InputScrollElasticityController::Animate(base::TimeTicks time) {
   stretch_scroll_force_ =
       StretchScrollForceForStretchAmount(new_stretch_amount);
   helper_->SetStretchAmount(new_stretch_amount);
-  helper_->RequestAnimate();
+  // TODO(danakj): Make this a return value back to the compositor to have it
+  // schedule another frame and/or a draw. (Also, crbug.com/551138.)
+  helper_->RequestOneBeginFrame();
 }
 
 bool InputScrollElasticityController::PinnedHorizontally(

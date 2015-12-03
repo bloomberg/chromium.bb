@@ -182,11 +182,6 @@ void Scheduler::SetNeedsRedraw() {
   ProcessScheduledActions();
 }
 
-void Scheduler::SetNeedsAnimate() {
-  state_machine_.SetNeedsAnimate();
-  ProcessScheduledActions();
-}
-
 void Scheduler::SetNeedsPrepareTiles() {
   DCHECK(!IsInsideAction(SchedulerStateMachine::ACTION_PREPARE_TILES));
   state_machine_.SetNeedsPrepareTiles();
@@ -707,10 +702,6 @@ void Scheduler::ProcessScheduledActions() {
         mark_inside_action(&inside_action_, action);
     switch (action) {
       case SchedulerStateMachine::ACTION_NONE:
-        break;
-      case SchedulerStateMachine::ACTION_ANIMATE:
-        state_machine_.WillAnimate();
-        client_->ScheduledActionAnimate();
         break;
       case SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME:
         compositor_timing_history_->WillBeginMainFrame(

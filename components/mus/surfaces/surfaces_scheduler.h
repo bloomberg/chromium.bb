@@ -37,7 +37,6 @@ class SurfacesScheduler : public cc::SchedulerClient {
       const cc::BeginFrameArgs& args) override;
   cc::DrawResult ScheduledActionDrawAndSwapIfPossible() override;
   cc::DrawResult ScheduledActionDrawAndSwapForced() override;
-  void ScheduledActionAnimate() override;
   void ScheduledActionCommit() override;
   void ScheduledActionActivateSyncTree() override;
   void ScheduledActionBeginOutputSurfaceCreation() override;

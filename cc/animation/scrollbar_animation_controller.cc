@@ -29,9 +29,9 @@ ScrollbarAnimationController::ScrollbarAnimationController(
 
 ScrollbarAnimationController::~ScrollbarAnimationController() {}
 
-void ScrollbarAnimationController::Animate(base::TimeTicks now) {
+bool ScrollbarAnimationController::Animate(base::TimeTicks now) {
   if (!is_animating_)
-    return;
+    return false;
 
   if (last_awaken_time_.is_null())
     last_awaken_time_ = now;
@@ -41,6 +41,7 @@ void ScrollbarAnimationController::Animate(base::TimeTicks now) {
 
   if (is_animating_)
     client_->SetNeedsAnimateForScrollbarAnimation();
+  return true;
 }
 
 float ScrollbarAnimationController::AnimationProgressAtTime(

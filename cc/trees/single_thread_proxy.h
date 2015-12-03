@@ -71,7 +71,6 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   DrawResult ScheduledActionDrawAndSwapIfPossible() override;
   DrawResult ScheduledActionDrawAndSwapForced() override;
   void ScheduledActionCommit() override;
-  void ScheduledActionAnimate() override;
   void ScheduledActionActivateSyncTree() override;
   void ScheduledActionBeginOutputSurfaceCreation() override;
   void ScheduledActionPrepareTiles() override;
@@ -93,7 +92,7 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   void NotifyReadyToDraw() override;
   void SetNeedsRedrawOnImplThread() override;
   void SetNeedsRedrawRectOnImplThread(const gfx::Rect& dirty_rect) override;
-  void SetNeedsAnimateOnImplThread() override;
+  void SetNeedsOneBeginImplFrameOnImplThread() override;
   void SetNeedsPrepareTilesOnImplThread() override;
   void SetNeedsCommitOnImplThread() override;
   void SetVideoNeedsBeginFrames(bool needs_begin_frames) override;

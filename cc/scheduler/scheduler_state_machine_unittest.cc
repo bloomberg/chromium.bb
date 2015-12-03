@@ -14,7 +14,7 @@
 //   Value of: actual()      Actual: 7
 //   Expected: expected()  Which is: 0
 // With:
-//   Value of: actual()      Actual: "ACTION_ANIMATE"
+//   Value of: actual()      Actual: "ACTION_DRAW_AND_SWAP"
 //   Expected: expected()  Which is: "ACTION_NONE"
 #define EXPECT_ENUM_EQ(enum_tostring, expected, actual)        \
   EXPECT_STREQ(SchedulerStateMachine::enum_tostring(expected), \
@@ -117,8 +117,8 @@ class StateMachine : public SchedulerStateMachine {
 
   bool NeedsCommit() const { return needs_begin_main_frame_; }
 
-  void SetNeedsAnimateForTest(bool needs_animate) {
-    needs_animate_ = needs_animate;
+  void SetNeedsOneBeginImplFrame(bool needs_frame) {
+    needs_one_begin_impl_frame_ = needs_frame;
   }
 
   void SetNeedsRedraw(bool needs_redraw) { needs_redraw_ = needs_redraw; }
@@ -166,10 +166,6 @@ void PerformAction(StateMachine* sm, SchedulerStateMachine::Action action) {
 
     case SchedulerStateMachine::ACTION_ACTIVATE_SYNC_TREE:
       sm->WillActivate();
-      return;
-
-    case SchedulerStateMachine::ACTION_ANIMATE:
-      sm->WillAnimate();
       return;
 
     case SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME:
@@ -221,25 +217,30 @@ TEST(SchedulerStateMachineTest, BeginFrameNeeded) {
 
   // Don't request BeginFrames if we are idle.
   state.SetNeedsRedraw(false);
-  state.SetNeedsAnimateForTest(false);
+  state.SetNeedsOneBeginImplFrame(false);
   EXPECT_FALSE(state.BeginFrameNeeded());
+
+  // Request BeginFrames if we one is needed.
+  state.SetNeedsRedraw(false);
+  state.SetNeedsOneBeginImplFrame(true);
+  EXPECT_TRUE(state.BeginFrameNeeded());
 
   // Request BeginFrames if we are ready to draw.
   state.SetVisible(true);
   state.SetNeedsRedraw(true);
-  state.SetNeedsAnimateForTest(false);
+  state.SetNeedsOneBeginImplFrame(false);
   EXPECT_TRUE(state.BeginFrameNeeded());
 
   // Don't background tick for needs_redraw.
   state.SetVisible(false);
   state.SetNeedsRedraw(true);
-  state.SetNeedsAnimateForTest(false);
+  state.SetNeedsOneBeginImplFrame(false);
   EXPECT_FALSE(state.BeginFrameNeeded());
 
   // Proactively request BeginFrames when commit is pending.
   state.SetVisible(true);
   state.SetNeedsRedraw(false);
-  state.SetNeedsAnimateForTest(false);
+  state.SetNeedsOneBeginImplFrame(false);
   state.SetNeedsBeginMainFrameForTest(true);
   EXPECT_TRUE(state.BeginFrameNeeded());
 
@@ -247,7 +248,7 @@ TEST(SchedulerStateMachineTest, BeginFrameNeeded) {
   // we are currently deferring commits.
   state.SetVisible(true);
   state.SetNeedsRedraw(false);
-  state.SetNeedsAnimateForTest(false);
+  state.SetNeedsOneBeginImplFrame(false);
   state.SetNeedsBeginMainFrameForTest(true);
   state.SetDeferCommits(true);
   EXPECT_FALSE(state.BeginFrameNeeded());
@@ -403,7 +404,6 @@ TEST(SchedulerStateMachineTest, MainFrameBeforeActivationEnabled) {
 
   EXPECT_TRUE(state.ShouldTriggerBeginImplFrameDeadlineImmediately());
   state.OnBeginImplFrameDeadline();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE);
   state.DidSwapBuffers();
@@ -423,7 +423,6 @@ TEST(SchedulerStateMachineTest,
 
   // Start a frame.
   state.OnBeginImplFrame();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   state.OnBeginImplFrameDeadlinePending();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
@@ -445,7 +444,6 @@ TEST(SchedulerStateMachineTest,
   EXPECT_TRUE(state.CommitPending());
   EXPECT_TRUE(state.RedrawPending());
   state.OnBeginImplFrame();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   state.OnBeginImplFrameDeadlinePending();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
@@ -468,7 +466,6 @@ TEST(SchedulerStateMachineTest, FailedDrawForMissingHighResNeedsCommit) {
 
   // Start a frame.
   state.OnBeginImplFrame();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   state.OnBeginImplFrameDeadlinePending();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
@@ -510,7 +507,6 @@ TEST(SchedulerStateMachineTest, FailedDrawForMissingHighResNeedsCommit) {
 
   // Verify we draw with the new frame.
   state.OnBeginImplFrame();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   state.OnBeginImplFrameDeadlinePending();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
@@ -543,7 +539,6 @@ TEST(SchedulerStateMachineTest,
   // Then initiate a draw that fails.
   state.SetNeedsRedraw(true);
   state.OnBeginImplFrameDeadline();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
   state.SetDrawResultForTest(DRAW_ABORTED_CHECKERBOARD_ANIMATIONS);
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE);
@@ -568,7 +563,6 @@ TEST(SchedulerStateMachineTest,
 
   // The redraw should be forced at the end of the next BeginImplFrame.
   state.OnBeginImplFrame();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
@@ -602,7 +596,6 @@ TEST(SchedulerStateMachineTest, TestFailedDrawsDoNotRestartForcedDraw) {
   // Then initiate a draw.
   state.SetNeedsRedraw(true);
   state.OnBeginImplFrameDeadline();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE);
 
@@ -610,7 +603,6 @@ TEST(SchedulerStateMachineTest, TestFailedDrawsDoNotRestartForcedDraw) {
   for (int i = 0; i < draw_limit; ++i) {
     state.SetNeedsRedraw(true);
     state.OnBeginImplFrame();
-    EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
     EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
     state.OnBeginImplFrameDeadlinePending();
     EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
@@ -646,7 +638,6 @@ TEST(SchedulerStateMachineTest, TestFailedDrawsDoNotRestartForcedDraw) {
   for (int i = 0; i < draw_limit; ++i) {
     state.SetNeedsRedraw(true);
     state.OnBeginImplFrame();
-    EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
     EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
     state.OnBeginImplFrameDeadlinePending();
     EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
@@ -672,7 +663,6 @@ TEST(SchedulerStateMachineTest, TestFailedDrawIsRetriedInNextBeginImplFrame) {
   state.SetNeedsRedraw(true);
   EXPECT_TRUE(state.BeginFrameNeeded());
   state.OnBeginImplFrame();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   state.OnBeginImplFrameDeadline();
   EXPECT_TRUE(state.RedrawPending());
@@ -689,7 +679,6 @@ TEST(SchedulerStateMachineTest, TestFailedDrawIsRetriedInNextBeginImplFrame) {
   // We should not be trying to draw again now, but we have a commit pending.
   EXPECT_TRUE(state.BeginFrameNeeded());
   state.OnBeginImplFrame();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 
   // We should try to draw again at the end of the next BeginImplFrame on
@@ -712,7 +701,6 @@ TEST(SchedulerStateMachineTest, TestDoestDrawTwiceInSameFrame) {
   // Draw the first frame.
   EXPECT_TRUE(state.BeginFrameNeeded());
   state.OnBeginImplFrame();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 
   state.OnBeginImplFrameDeadline();
@@ -730,10 +718,7 @@ TEST(SchedulerStateMachineTest, TestDoestDrawTwiceInSameFrame) {
   // Move to another frame. This should now draw.
   EXPECT_TRUE(state.BeginFrameNeeded());
   state.OnBeginImplFrame();
-
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-
   state.OnBeginImplFrameDeadline();
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE);
@@ -805,7 +790,6 @@ TEST(SchedulerStateMachineTest, TestNextActionDrawsOnBeginImplFrame) {
       expected_action = SchedulerStateMachine::ACTION_COMMIT;
     } else {
       expected_action = SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE;
-      EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
     }
 
     // Case 1: needs_begin_main_frame=false.
@@ -896,7 +880,6 @@ TEST(SchedulerStateMachineTest,
   state.SetNeedsRedraw(true);
   state.SetCanDraw(false);
   state.OnBeginImplFrame();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_DRAW_AND_SWAP_ABORT);
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
@@ -907,7 +890,6 @@ TEST(SchedulerStateMachineTest,
   state.NotifyReadyToActivate();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ACTIVATE_SYNC_TREE);
   state.OnBeginImplFrameDeadline();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_DRAW_AND_SWAP_ABORT);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 }
@@ -965,7 +947,6 @@ TEST(SchedulerStateMachineTest, TestSetNeedsBeginMainFrameIsNotLost) {
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_COMMIT);
   state.NotifyReadyToActivate();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ACTIVATE_SYNC_TREE);
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
@@ -1016,7 +997,6 @@ TEST(SchedulerStateMachineTest, TestFullCycle) {
 
   // At BeginImplFrame deadline, draw.
   state.OnBeginImplFrameDeadline();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE);
   state.DidSwapBuffers();
@@ -1051,7 +1031,6 @@ TEST(SchedulerStateMachineTest, CommitWithoutDrawWithPendingTree) {
   // begin frame and commit it.
   state.SetNeedsBeginMainFrame();
   state.OnBeginImplFrame();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
   state.NotifyBeginMainFrameStarted();
@@ -1082,7 +1061,6 @@ TEST(SchedulerStateMachineTest, DontCommitWithoutDrawWithoutPendingTree) {
   // active tree, we will not do so.
   state.SetNeedsBeginMainFrame();
   state.OnBeginImplFrame();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 }
 
@@ -1121,7 +1099,6 @@ TEST(SchedulerStateMachineTest, TestFullCycleWithCommitToActive) {
   state.SetNeedsRedraw(true);
   state.SetNeedsBeginMainFrame();
   state.OnBeginImplFrameDeadline();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
@@ -1144,13 +1121,11 @@ TEST(SchedulerStateMachineTest, TestFullCycleWithCommitToActive) {
   // Swap throttled. Do not draw.
   state.DidSwapBuffers();
   state.OnBeginImplFrameDeadline();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   state.DidSwapBuffersComplete();
 
   // Haven't draw since last commit, do not begin new main frame.
   state.OnBeginImplFrame();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 
   // At BeginImplFrame deadline, draw. This draws unblocks BeginMainFrame.
@@ -1205,7 +1180,6 @@ TEST(SchedulerStateMachineTest, TestFullCycleWithCommitRequestInbetween) {
 
   // At BeginImplFrame deadline, draw.
   state.OnBeginImplFrameDeadline();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE);
   state.DidSwapBuffers();
@@ -1452,7 +1426,7 @@ TEST(SchedulerStateMachineTest,
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   EXPECT_MAIN_FRAME_STATE(SchedulerStateMachine::BEGIN_MAIN_FRAME_STATE_SENT);
 
-  // Until that commit finishes, we shouldn't be drawing or animate.
+  // Until that commit finishes, we shouldn't be drawing.
   state.OnBeginImplFrameDeadline();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 
@@ -1472,7 +1446,6 @@ TEST(SchedulerStateMachineTest,
   // automatically cause a redraw.
   EXPECT_TRUE(state.RedrawPending());
   state.OnBeginImplFrame();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   state.OnBeginImplFrameDeadline();
   EXPECT_ACTION_UPDATE_STATE(
@@ -1490,7 +1463,6 @@ TEST(SchedulerStateMachineTest,
   // SetCanDraw if waiting on first draw after activate.
   state.SetNeedsRedraw(true);
   state.OnBeginImplFrame();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   state.OnBeginImplFrameDeadline();
   EXPECT_ACTION(SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE);
@@ -1506,7 +1478,6 @@ TEST(SchedulerStateMachineTest,
   state.SetNeedsRedraw(true);
   state.SetNeedsBeginMainFrame();
   state.OnBeginImplFrame();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
@@ -1521,7 +1492,6 @@ TEST(SchedulerStateMachineTest,
   EXPECT_TRUE(state.needs_redraw());
 
   state.OnBeginImplFrameDeadline();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
   EXPECT_ACTION(SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE);
   state.SetCanDraw(false);
   EXPECT_ACTION(SchedulerStateMachine::ACTION_DRAW_AND_SWAP_ABORT);
@@ -1540,7 +1510,6 @@ TEST(SchedulerStateMachineTest, TestContextLostWhileCommitInProgress) {
   // Set damage and expect a draw.
   state.SetNeedsRedraw(true);
   state.OnBeginImplFrame();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
@@ -1603,7 +1572,6 @@ TEST(SchedulerStateMachineTest,
   // Set damage and expect a draw.
   state.SetNeedsRedraw(true);
   state.OnBeginImplFrame();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
@@ -1670,7 +1638,6 @@ TEST(SchedulerStateMachineTest,
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ACTIVATE_SYNC_TREE);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   state.OnBeginImplFrameDeadline();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE);
   state.DidSwapBuffers();
@@ -1885,7 +1852,6 @@ TEST(SchedulerStateMachineTest,
   state.SetNeedsBeginMainFrame();
 
   // We should start the commit normally.
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
@@ -1914,7 +1880,6 @@ void FinishPreviousCommitAndDrawWithoutExitingDeadline(
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 
   state.OnBeginImplFrame();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 
   EXPECT_TRUE(state.ShouldTriggerBeginImplFrameDeadlineImmediately());
@@ -1934,7 +1899,6 @@ TEST(SchedulerStateMachineTest, TestImplLatencyTakesPriority) {
   state.SetNeedsRedraw(true);
   state.SetNeedsBeginMainFrame();
   state.OnBeginImplFrame();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
@@ -2015,120 +1979,6 @@ TEST(SchedulerStateMachineTest, TestTriggerDeadlineImmediatelyWhenInvisible) {
   state.SetVisible(false);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   EXPECT_TRUE(state.ShouldTriggerBeginImplFrameDeadlineImmediately());
-}
-
-TEST(SchedulerStateMachineTest, TestSetNeedsAnimateWithDraw) {
-  SchedulerSettings default_scheduler_settings;
-  StateMachine state(default_scheduler_settings);
-  SET_UP_STATE(state)
-
-  // Test requesting an animation that, when run, causes us to draw.
-  state.SetNeedsAnimate();
-  EXPECT_TRUE(state.BeginFrameNeeded());
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-
-  state.OnBeginImplFrame();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
-
-  // The animation will request draw if it ticks anything.
-  state.SetNeedsRedraw(true);
-
-  state.OnBeginImplFrameDeadlinePending();
-  state.OnBeginImplFrameDeadline();
-  EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE);
-}
-
-TEST(SchedulerStateMachineTest, TestSetNeedsAnimateWithoutDraw) {
-  SchedulerSettings default_scheduler_settings;
-  StateMachine state(default_scheduler_settings);
-  SET_UP_STATE(state)
-
-  // Test requesting an animation but not changing anything won't draw.
-  state.SetNeedsAnimate();
-  EXPECT_TRUE(state.BeginFrameNeeded());
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-
-  state.OnBeginImplFrame();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
-
-  // The animation does not do anything, so no draw is rquested.
-
-  state.OnBeginImplFrameDeadlinePending();
-  state.OnBeginImplFrameDeadline();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-}
-
-TEST(SchedulerStateMachineTest, TestAnimateBeforeCommit) {
-  SchedulerSettings default_scheduler_settings;
-  StateMachine state(default_scheduler_settings);
-  SET_UP_STATE(state)
-
-  // Check that animations are updated before we start a commit.
-  state.SetNeedsAnimate();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  state.SetNeedsBeginMainFrame();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  EXPECT_TRUE(state.BeginFrameNeeded());
-
-  state.OnBeginImplFrame();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
-  EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
-}
-
-TEST(SchedulerStateMachineTest, TestAnimateAfterCommitBeforeDraw) {
-  SchedulerSettings default_scheduler_settings;
-  StateMachine state(default_scheduler_settings);
-  SET_UP_STATE(state)
-
-  // Check that animations are updated before we start a commit.
-  state.SetNeedsAnimate();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  state.SetNeedsBeginMainFrame();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  EXPECT_TRUE(state.BeginFrameNeeded());
-
-  state.OnBeginImplFrame();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
-  EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
-
-  state.NotifyBeginMainFrameStarted();
-  state.NotifyReadyToCommit();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_COMMIT);
-
-  // Set the redraw bit before the animate step so we can verify ordering,
-  // which mimics a redraw caused by something other than the animation itself.
-  state.SetNeedsRedraw(true);
-
-  state.OnBeginImplFrameDeadlinePending();
-  state.OnBeginImplFrameDeadline();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
-  EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE);
-}
-
-TEST(SchedulerStateMachineTest, TestSetNeedsAnimateAfterAnimate) {
-  SchedulerSettings default_scheduler_settings;
-  StateMachine state(default_scheduler_settings);
-  SET_UP_STATE(state)
-
-  // Test requesting an animation after we have already animated during this
-  // frame.
-  state.SetNeedsRedraw(true);
-  EXPECT_TRUE(state.BeginFrameNeeded());
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-
-  state.OnBeginImplFrame();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
-
-  state.SetNeedsAnimate();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-
-  state.OnBeginImplFrameDeadline();
-  EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE);
 }
 
 TEST(SchedulerStateMachineTest, TestForwardBeginFramesToChildren) {

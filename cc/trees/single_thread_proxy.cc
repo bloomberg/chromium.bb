@@ -387,10 +387,12 @@ void SingleThreadProxy::SetNeedsRedrawOnImplThread() {
     scheduler_on_impl_thread_->SetNeedsRedraw();
 }
 
-void SingleThreadProxy::SetNeedsAnimateOnImplThread() {
+void SingleThreadProxy::SetNeedsOneBeginImplFrameOnImplThread() {
+  TRACE_EVENT0("cc",
+               "SingleThreadProxy::SetNeedsOneBeginImplFrameOnImplThread");
   client_->ScheduleComposite();
   if (scheduler_on_impl_thread_)
-    scheduler_on_impl_thread_->SetNeedsAnimate();
+    scheduler_on_impl_thread_->SetNeedsOneBeginImplFrame();
 }
 
 void SingleThreadProxy::SetNeedsPrepareTilesOnImplThread() {
@@ -713,6 +715,7 @@ void SingleThreadProxy::SetAuthoritativeVSyncInterval(
 }
 
 void SingleThreadProxy::WillBeginImplFrame(const BeginFrameArgs& args) {
+  DebugScopedSetImplThread impl(task_runner_provider_);
 #if DCHECK_IS_ON()
   DCHECK(!inside_impl_frame_)
       << "WillBeginImplFrame called while already inside an impl frame!";
@@ -832,12 +835,6 @@ DrawResult SingleThreadProxy::ScheduledActionDrawAndSwapForced() {
 void SingleThreadProxy::ScheduledActionCommit() {
   DebugScopedSetMainThread main(task_runner_provider_);
   DoCommit();
-}
-
-void SingleThreadProxy::ScheduledActionAnimate() {
-  TRACE_EVENT0("cc", "ScheduledActionAnimate");
-  DebugScopedSetImplThread impl(task_runner_provider_);
-  layer_tree_host_impl_->Animate();
 }
 
 void SingleThreadProxy::ScheduledActionActivateSyncTree() {
