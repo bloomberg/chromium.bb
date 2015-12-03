@@ -2144,7 +2144,7 @@ bool RenderProcessHost::ShouldTryToUseExistingProcessHost(
   // logic into IsSuitableHost, and check |url| against the URL the process is
   // dedicated to. This will allow pages from the same site to share, and will
   // also allow non-isolated sites to share processes. https://crbug.com/513036
-  if (SiteIsolationPolicy::AreCrossProcessFramesPossible())
+  if (SiteIsolationPolicy::UseDedicatedProcessesForAllSites())
     return false;
 
   // NOTE: Sometimes it's necessary to create more render processes than
