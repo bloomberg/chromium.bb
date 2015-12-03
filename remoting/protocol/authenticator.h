@@ -114,8 +114,6 @@ class Authenticator {
 
   // Creates new authenticator for a channel. Can be called only in
   // the ACCEPTED state.
-  //
-  // TODO(sergeyu): Remove this method once migration to QUIC is finished.
   virtual scoped_ptr<ChannelAuthenticator>
       CreateChannelAuthenticator() const = 0;
 };

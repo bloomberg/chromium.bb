@@ -15,7 +15,7 @@ var remoting = remoting || {};
 (function() {
 
 var kExperimentsStorageName = 'remoting-experiments';
-var ACTIVE_FIELD_TRIALS = {'ChromotingQUIC': 'quic', 'ChromotingVP9': 'vp9'};
+var ACTIVE_FIELD_TRIALS = {'ChromotingVP9': 'vp9'};
 
 /**
  * @param {Array.<string>} list

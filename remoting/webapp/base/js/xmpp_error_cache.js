@@ -100,7 +100,6 @@ function stripPII(node, outNode) {
     'audio',
     'initial-resolution',
     'authentication',
-    'quic-config',
     'service-unavailable'
   ]);
 

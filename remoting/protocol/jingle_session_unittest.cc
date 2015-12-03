@@ -525,55 +525,16 @@ TEST_F(JingleSessionTest, TestMuxStreamChannel) {
   tester.CheckResults();
 }
 
-// Verify that data can be sent over a QUIC channel.
-TEST_F(JingleSessionTest, TestQuicStreamChannel) {
-  CreateSessionManagers(1, FakeAuthenticator::ACCEPT);
-
-  scoped_ptr<CandidateSessionConfig> config =
-      CandidateSessionConfig::CreateDefault();
-  config->PreferTransport(ChannelConfig::TRANSPORT_QUIC_STREAM);
-  client_server_->set_protocol_config(config.Pass());
-
-  ExpectRouteChange(kQuicChannelName);
-
-  ASSERT_NO_FATAL_FAILURE(
-      InitiateConnection(1, FakeAuthenticator::ACCEPT, false));
-
-  int counter = 2;
-  EXPECT_CALL(client_channel_callback_, OnDone(_))
-      .WillOnce(QuitThreadOnCounter(&counter));
-  EXPECT_CALL(host_channel_callback_, OnDone(_))
-      .WillOnce(QuitThreadOnCounter(&counter));
-
-  client_session_->GetQuicChannelFactory()->CreateChannel(
-      kChannelName, base::Bind(&JingleSessionTest::OnClientChannelCreated,
-                               base::Unretained(this)));
-  host_session_->GetQuicChannelFactory()->CreateChannel(
-      kChannelName, base::Bind(&JingleSessionTest::OnHostChannelCreated,
-                               base::Unretained(this)));
-
-  message_loop_->Run();
-
-  EXPECT_TRUE(client_socket_.get());
-  EXPECT_TRUE(host_socket_.get());
-
-  StreamConnectionTester tester(host_socket_.get(), client_socket_.get(),
-                                kMessageSize, kMessages);
-  tester.Start();
-  message_loop_->Run();
-  tester.CheckResults();
-}
-
 // Verify that channels are never marked connected if transport is broken.
 TEST_F(JingleSessionTest, TestBrokenTransport) {
   // Allow only incoming connections on both ends, which effectively renders P2P
-  // transport unusable as.
+  // transport unusable.
   network_settings_ = NetworkSettings(NetworkSettings::NAT_TRAVERSAL_DISABLED);
   CreateSessionManagers(1, FakeAuthenticator::ACCEPT);
 
   scoped_ptr<CandidateSessionConfig> config =
       CandidateSessionConfig::CreateDefault();
-  config->PreferTransport(ChannelConfig::TRANSPORT_QUIC_STREAM);
+  config->PreferTransport(ChannelConfig::TRANSPORT_MUX_STREAM);
   client_server_->set_protocol_config(config.Pass());
 
   ASSERT_NO_FATAL_FAILURE(
@@ -582,10 +543,12 @@ TEST_F(JingleSessionTest, TestBrokenTransport) {
   EXPECT_CALL(client_channel_callback_, OnDone(_)).Times(0);
   EXPECT_CALL(host_channel_callback_, OnDone(_)).Times(0);
 
-  client_session_->GetQuicChannelFactory()->CreateChannel(
-      kChannelName, base::Bind(&JingleSessionTest::OnClientChannelCreated,
-                               base::Unretained(this)));
-  host_session_->GetQuicChannelFactory()->CreateChannel(
+  client_session_->GetTransport()
+      ->GetMultiplexedChannelFactory()
+      ->CreateChannel(kChannelName,
+                      base::Bind(&JingleSessionTest::OnClientChannelCreated,
+                                 base::Unretained(this)));
+  host_session_->GetTransport()->GetMultiplexedChannelFactory()->CreateChannel(
       kChannelName, base::Bind(&JingleSessionTest::OnHostChannelCreated,
                                base::Unretained(this)));
 
@@ -595,8 +558,12 @@ TEST_F(JingleSessionTest, TestBrokenTransport) {
   EXPECT_FALSE(client_socket_);
   EXPECT_FALSE(host_socket_);
 
-  client_session_->GetQuicChannelFactory()->CancelChannelCreation(kChannelName);
-  host_session_->GetQuicChannelFactory()->CancelChannelCreation(kChannelName);
+  client_session_->GetTransport()
+      ->GetMultiplexedChannelFactory()
+      ->CancelChannelCreation(kChannelName);
+  host_session_->GetTransport()
+      ->GetMultiplexedChannelFactory()
+      ->CancelChannelCreation(kChannelName);
 }
 
 // Verify that we can connect channels with multistep auth.

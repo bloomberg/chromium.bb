@@ -217,12 +217,6 @@ bool WebrtcTransport::ProcessTransportInfo(XmlElement* transport_info) {
   return true;
 }
 
-DatagramChannelFactory* WebrtcTransport::GetDatagramChannelFactory() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  NOTIMPLEMENTED();
-  return nullptr;
-}
-
 StreamChannelFactory* WebrtcTransport::GetStreamChannelFactory() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return &data_stream_adapter_;

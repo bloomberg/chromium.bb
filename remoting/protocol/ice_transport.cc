@@ -83,10 +83,6 @@ bool IceTransport::ProcessTransportInfo(buzz::XmlElement* transport_info_xml) {
   return true;
 }
 
-DatagramChannelFactory* IceTransport::GetDatagramChannelFactory() {
-  return this;
-}
-
 StreamChannelFactory* IceTransport::GetStreamChannelFactory() {
   return secure_channel_factory_.get();
 }

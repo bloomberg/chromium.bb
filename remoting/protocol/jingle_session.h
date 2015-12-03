@@ -26,7 +26,6 @@ namespace remoting {
 namespace protocol {
 
 class JingleSessionManager;
-class QuicChannelFactory;
 
 // JingleSessionManager and JingleSession implement the subset of the
 // Jingle protocol used in Chromoting. Instances of this class are
@@ -43,7 +42,6 @@ class JingleSession : public base::NonThreadSafe,
   const std::string& jid() override;
   const SessionConfig& config() override;
   Transport* GetTransport() override;
-  StreamChannelFactory* GetQuicChannelFactory() override;
   void Close(protocol::ErrorCode error) override;
 
  private:
@@ -139,8 +137,6 @@ class JingleSession : public base::NonThreadSafe,
 
   // Pending transport-info requests.
   std::list<IqRequest*> transport_info_requests_;
-
-  scoped_ptr<QuicChannelFactory> quic_channel_factory_;
 
   base::WeakPtrFactory<JingleSession> weak_factory_;
 

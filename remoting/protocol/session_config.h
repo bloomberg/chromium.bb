@@ -23,7 +23,6 @@ struct ChannelConfig {
   enum TransportType {
     TRANSPORT_STREAM,
     TRANSPORT_MUX_STREAM,
-    TRANSPORT_QUIC_STREAM,
     TRANSPORT_DATAGRAM,
     TRANSPORT_NONE,
   };
@@ -105,9 +104,6 @@ class SessionConfig {
   bool is_audio_enabled() const {
     return audio_config_.transport != ChannelConfig::TRANSPORT_NONE;
   }
-
-  // Returns true if any of the channels is using QUIC.
-  bool is_using_quic() const;
 
  private:
   SessionConfig(Protocol protocol);

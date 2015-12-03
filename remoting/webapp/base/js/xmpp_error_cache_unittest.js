@@ -34,19 +34,12 @@ QUnit.test('should strip PII from session-initiate.', function(assert) {
             '<description xmlns="google:remoting">' +
               '<standard-ice/>' +
                 '<control transport="mux-stream" version="3"/>' +
-                '<control transport="quic-stream" version="3"/>' +
                 '<event transport="mux-stream" version="2"/>' +
-                '<event transport="quic-stream" version="2"/>' +
                 '<video transport="stream" version="2" codec="vp9"/>' +
                 '<video transport="stream" version="2" codec="vp8"/>' +
-                '<video transport="quic-stream" version="2" codec="vp9"/>' +
-                '<video transport="quic-stream" version="2" codec="vp8"/>' +
                 '<audio transport="mux-stream" version="2" codec="opus"/>' +
-                '<audio transport="quic-stream" version="2" codec="opus"/>' +
                 '<audio transport="none"/>' +
-                '<initial-resolution width="640" height="480"/>' +
                 '<authentication supported-methods="spake2_plain"/>' +
-                '<quic-config>AAADwAAAAYAA=</quic-config>' +
               '</description>' +
               '<unknown-field-that-contains-pii unknown-attribute="pii">' +
                 'This is PII' +
@@ -66,19 +59,12 @@ QUnit.test('should strip PII from session-initiate.', function(assert) {
             '<description xmlns="google:remoting">' +
               '<standard-ice/>' +
                 '<control transport="mux-stream" version="3"/>' +
-                '<control transport="quic-stream" version="3"/>' +
                 '<event transport="mux-stream" version="2"/>' +
-                '<event transport="quic-stream" version="2"/>' +
                 '<video transport="stream" version="2" codec="vp9"/>' +
                 '<video transport="stream" version="2" codec="vp8"/>' +
-                '<video transport="quic-stream" version="2" codec="vp9"/>' +
-                '<video transport="quic-stream" version="2" codec="vp8"/>' +
                 '<audio transport="mux-stream" version="2" codec="opus"/>' +
-                '<audio transport="quic-stream" version="2" codec="opus"/>' +
                 '<audio transport="none"/>' +
-                '<initial-resolution width="640" height="480"/>' +
                 '<authentication supported-methods="spake2_plain"/>' +
-                '<quic-config>AAADwAAAAYAA=</quic-config>' +
               '</description>' +
               '<unknown-field-that-contains-pii unknown-attribute="REDACTED">'+
                 'REDACTED' +

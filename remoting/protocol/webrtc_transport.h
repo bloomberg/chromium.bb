@@ -38,7 +38,6 @@ class WebrtcTransport : public Transport,
   void Start(EventHandler* event_handler,
              Authenticator* authenticator) override;
   bool ProcessTransportInfo(buzz::XmlElement* transport_info) override;
-  DatagramChannelFactory* GetDatagramChannelFactory() override;
   StreamChannelFactory* GetStreamChannelFactory() override;
   StreamChannelFactory* GetMultiplexedChannelFactory() override;
 

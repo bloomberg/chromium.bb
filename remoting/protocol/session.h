@@ -88,10 +88,6 @@ class Session {
   // Returns Transport that can be used to create transport channels.
   virtual Transport* GetTransport() = 0;
 
-  // Channel factory for QUIC-based channels. Returns nullptr when QUIC is
-  // disabled for the session.
-  virtual StreamChannelFactory* GetQuicChannelFactory() = 0;
-
   // Closes connection. Callbacks are guaranteed not to be called after this
   // method returns. |error| specifies the error code in case when the session
   // is being closed due to an error.

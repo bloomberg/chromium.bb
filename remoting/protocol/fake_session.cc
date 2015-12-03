@@ -23,11 +23,6 @@ bool FakeTransport::ProcessTransportInfo(
   return true;
 }
 
-DatagramChannelFactory* FakeTransport::GetDatagramChannelFactory() {
-  NOTIMPLEMENTED();
-  return nullptr;
-}
-
 FakeStreamChannelFactory* FakeTransport::GetStreamChannelFactory() {
   return &channel_factory_;
 }
@@ -63,10 +58,6 @@ const SessionConfig& FakeSession::config() {
 
 FakeTransport* FakeSession::GetTransport() {
   return &transport_;
-}
-
-FakeStreamChannelFactory* FakeSession::GetQuicChannelFactory() {
-  return transport_.GetStreamChannelFactory();
 }
 
 void FakeSession::Close(ErrorCode error) {

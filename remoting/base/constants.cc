@@ -11,7 +11,6 @@ const char kChromotingXmlNamespace[] = "google:remoting";
 const char kAudioChannelName[] = "audio";
 const char kControlChannelName[] = "control";
 const char kEventChannelName[] = "event";
-const char kQuicChannelName[] = "quic";
 const char kVideoChannelName[] = "video";
 
 const char kMimeTypeTextUtf8[] = "text/plain; charset=UTF-8";

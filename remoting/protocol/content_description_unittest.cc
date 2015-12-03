@@ -19,8 +19,7 @@ TEST(ContentDescriptionTest, FormatAndParse) {
   scoped_ptr<CandidateSessionConfig> config =
       CandidateSessionConfig::CreateDefault();
   ContentDescription description(
-      config.Pass(), Authenticator::CreateEmptyAuthenticatorMessage(),
-      "TestQuicConfigMessage");
+      config.Pass(), Authenticator::CreateEmptyAuthenticatorMessage());
   scoped_ptr<buzz::XmlElement> xml(description.ToXml());
   LOG(ERROR) << xml->Str();
   scoped_ptr<ContentDescription> parsed(
@@ -34,8 +33,6 @@ TEST(ContentDescriptionTest, FormatAndParse) {
               parsed->config()->event_configs());
   EXPECT_TRUE(description.config()->audio_configs() ==
               parsed->config()->audio_configs());
-  EXPECT_TRUE(description.quic_config_message() ==
-              parsed->quic_config_message());
 }
 
 // Verify that we can still parse configs with transports that we don't

@@ -85,9 +85,6 @@ class Transport {
   // |transport_info| is in invalid format.
   virtual bool ProcessTransportInfo(buzz::XmlElement* transport_info) = 0;
 
-  // Channel factory for the session that creates raw ICE channels.
-  virtual DatagramChannelFactory* GetDatagramChannelFactory() = 0;
-
   // Channel factory for the session that creates stream channels.
   virtual StreamChannelFactory* GetStreamChannelFactory() = 0;
 

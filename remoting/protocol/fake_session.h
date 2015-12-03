@@ -28,7 +28,6 @@ class FakeTransport : public Transport {
   void Start(EventHandler* event_handler,
              Authenticator* authenticator) override;
   bool ProcessTransportInfo(buzz::XmlElement* transport_info) override;
-  DatagramChannelFactory* GetDatagramChannelFactory() override;
   FakeStreamChannelFactory* GetStreamChannelFactory() override;
   FakeStreamChannelFactory* GetMultiplexedChannelFactory() override;
 
@@ -55,7 +54,6 @@ class FakeSession : public Session {
   const std::string& jid() override;
   const SessionConfig& config() override;
   FakeTransport* GetTransport() override;
-  FakeStreamChannelFactory* GetQuicChannelFactory() override;
   void Close(ErrorCode error) override;
 
  public:

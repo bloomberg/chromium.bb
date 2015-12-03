@@ -149,13 +149,13 @@ scoped_ptr<SessionConfig> SessionConfig::GetFinalConfig(
 // static
 scoped_ptr<SessionConfig> SessionConfig::ForTest() {
   scoped_ptr<SessionConfig> result(new SessionConfig(Protocol::ICE));
-  result->control_config_ = ChannelConfig(ChannelConfig::TRANSPORT_QUIC_STREAM,
+  result->control_config_ = ChannelConfig(ChannelConfig::TRANSPORT_MUX_STREAM,
                                           kControlStreamVersion,
                                           ChannelConfig::CODEC_UNDEFINED);
-  result->event_config_ = ChannelConfig(ChannelConfig::TRANSPORT_QUIC_STREAM,
+  result->event_config_ = ChannelConfig(ChannelConfig::TRANSPORT_MUX_STREAM,
                                         kDefaultStreamVersion,
                                         ChannelConfig::CODEC_UNDEFINED);
-  result->video_config_ = ChannelConfig(ChannelConfig::TRANSPORT_QUIC_STREAM,
+  result->video_config_ = ChannelConfig(ChannelConfig::TRANSPORT_STREAM,
                                         kDefaultStreamVersion,
                                         ChannelConfig::CODEC_VP8);
   result->audio_config_ = ChannelConfig(ChannelConfig::TRANSPORT_NONE,
@@ -166,7 +166,7 @@ scoped_ptr<SessionConfig> SessionConfig::ForTest() {
 
 scoped_ptr<SessionConfig> SessionConfig::ForTestWithVerbatimVideo() {
   scoped_ptr<SessionConfig> result = ForTest();
-  result->video_config_ = ChannelConfig(ChannelConfig::TRANSPORT_QUIC_STREAM,
+  result->video_config_ = ChannelConfig(ChannelConfig::TRANSPORT_STREAM,
                                         kDefaultStreamVersion,
                                         ChannelConfig::CODEC_VERBATIM);
   return result.Pass();
@@ -191,14 +191,6 @@ const ChannelConfig& SessionConfig::video_config() const {
 const ChannelConfig& SessionConfig::audio_config() const {
   DCHECK(protocol_ == Protocol::ICE);
   return audio_config_;
-}
-
-bool SessionConfig::is_using_quic() const {
-  DCHECK(protocol_ == Protocol::ICE);
-  return control_config_.transport == ChannelConfig::TRANSPORT_QUIC_STREAM ||
-         event_config_.transport == ChannelConfig::TRANSPORT_QUIC_STREAM ||
-         video_config_.transport == ChannelConfig::TRANSPORT_QUIC_STREAM ||
-         audio_config_.transport == ChannelConfig::TRANSPORT_QUIC_STREAM;
 }
 
 SessionConfig::SessionConfig(Protocol protocol) : protocol_(protocol) {}
@@ -270,18 +262,10 @@ scoped_ptr<CandidateSessionConfig> CandidateSessionConfig::CreateDefault() {
       ChannelConfig(ChannelConfig::TRANSPORT_MUX_STREAM,
                     kControlStreamVersion,
                     ChannelConfig::CODEC_UNDEFINED));
-  result->mutable_control_configs()->push_back(
-      ChannelConfig(ChannelConfig::TRANSPORT_QUIC_STREAM,
-                    kControlStreamVersion,
-                    ChannelConfig::CODEC_UNDEFINED));
 
   // Event channel.
   result->mutable_event_configs()->push_back(
       ChannelConfig(ChannelConfig::TRANSPORT_MUX_STREAM,
-                    kDefaultStreamVersion,
-                    ChannelConfig::CODEC_UNDEFINED));
-  result->mutable_event_configs()->push_back(
-      ChannelConfig(ChannelConfig::TRANSPORT_QUIC_STREAM,
                     kDefaultStreamVersion,
                     ChannelConfig::CODEC_UNDEFINED));
 
@@ -294,22 +278,10 @@ scoped_ptr<CandidateSessionConfig> CandidateSessionConfig::CreateDefault() {
       ChannelConfig(ChannelConfig::TRANSPORT_STREAM,
                     kDefaultStreamVersion,
                     ChannelConfig::CODEC_VP8));
-  result->mutable_video_configs()->push_back(
-      ChannelConfig(ChannelConfig::TRANSPORT_QUIC_STREAM,
-                    kDefaultStreamVersion,
-                    ChannelConfig::CODEC_VP9));
-  result->mutable_video_configs()->push_back(
-      ChannelConfig(ChannelConfig::TRANSPORT_QUIC_STREAM,
-                    kDefaultStreamVersion,
-                    ChannelConfig::CODEC_VP8));
 
   // Audio channel.
   result->mutable_audio_configs()->push_back(
       ChannelConfig(ChannelConfig::TRANSPORT_MUX_STREAM,
-                    kDefaultStreamVersion,
-                    ChannelConfig::CODEC_OPUS));
-  result->mutable_audio_configs()->push_back(
-      ChannelConfig(ChannelConfig::TRANSPORT_QUIC_STREAM,
                     kDefaultStreamVersion,
                     ChannelConfig::CODEC_OPUS));
   result->mutable_audio_configs()->push_back(ChannelConfig::None());

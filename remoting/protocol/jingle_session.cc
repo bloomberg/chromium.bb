@@ -16,7 +16,6 @@
 #include "remoting/protocol/content_description.h"
 #include "remoting/protocol/jingle_messages.h"
 #include "remoting/protocol/jingle_session_manager.h"
-#include "remoting/protocol/quic_channel_factory.h"
 #include "remoting/protocol/session_config.h"
 #include "remoting/signaling/iq_sender.h"
 #include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
@@ -65,7 +64,6 @@ JingleSession::JingleSession(JingleSessionManager* session_manager)
 }
 
 JingleSession::~JingleSession() {
-  quic_channel_factory_.reset();
   transport_.reset();
 
   STLDeleteContainerPointers(pending_requests_.begin(),
@@ -103,7 +101,6 @@ void JingleSession::StartConnection(const std::string& peer_jid,
   session_id_ = base::Uint64ToString(base::RandGenerator(kuint64max));
 
   transport_ = session_manager_->transport_factory_->CreateTransport();
-  quic_channel_factory_.reset(new QuicChannelFactory(session_id_, false));
 
   // Send session-initiate message.
   JingleMessage message(peer_jid_, JingleMessage::SESSION_INITIATE,
@@ -111,8 +108,7 @@ void JingleSession::StartConnection(const std::string& peer_jid,
   message.initiator = session_manager_->signal_strategy_->GetLocalJid();
   message.description.reset(new ContentDescription(
       session_manager_->protocol_config_->Clone(),
-      authenticator_->GetNextMessage(),
-      quic_channel_factory_->CreateSessionInitiateConfigMessage()));
+      authenticator_->GetNextMessage()));
   SendMessage(message);
 
   SetState(CONNECTING);
@@ -140,14 +136,6 @@ void JingleSession::InitializeIncomingConnection(
                  << " because no compatible configuration has been found.";
     Close(INCOMPATIBLE_PROTOCOL);
     return;
-  }
-
-  if (config_->is_using_quic()) {
-    quic_channel_factory_.reset(new QuicChannelFactory(session_id_, true));
-    if (!quic_channel_factory_->ProcessSessionInitiateConfigMessage(
-            initiate_message.description->quic_config_message())) {
-      Close(INCOMPATIBLE_PROTOCOL);
-    }
   }
 
   transport_ = session_manager_->transport_factory_->CreateTransport();
@@ -188,12 +176,8 @@ void JingleSession::ContinueAcceptIncomingConnection() {
   if (authenticator_->state() == Authenticator::MESSAGE_READY)
     auth_message = authenticator_->GetNextMessage();
 
-  std::string quic_config;
-  if (config_->is_using_quic())
-    quic_config = quic_channel_factory_->CreateSessionAcceptConfigMessage();
-  message.description.reset(
-      new ContentDescription(CandidateSessionConfig::CreateFrom(*config_),
-                             auth_message.Pass(), quic_config));
+  message.description.reset(new ContentDescription(
+      CandidateSessionConfig::CreateFrom(*config_), auth_message.Pass()));
   SendMessage(message);
 
   // Update state.
@@ -222,11 +206,6 @@ const SessionConfig& JingleSession::config() {
 Transport* JingleSession::GetTransport() {
   DCHECK(CalledOnValidThread());
   return transport_.get();
-}
-
-StreamChannelFactory* JingleSession::GetQuicChannelFactory() {
-  DCHECK(CalledOnValidThread());
-  return quic_channel_factory_.get();
 }
 
 void JingleSession::Close(protocol::ErrorCode error) {
@@ -463,16 +442,6 @@ void JingleSession::OnAccept(const JingleMessage& message,
     return;
   }
 
-  if (config_->is_using_quic()) {
-    if (!quic_channel_factory_->ProcessSessionAcceptConfigMessage(
-            message.description->quic_config_message())) {
-      Close(INCOMPATIBLE_PROTOCOL);
-      return;
-    }
-  } else {
-    quic_channel_factory_.reset();
-  }
-
   SetState(ACCEPTED);
 
   DCHECK(authenticator_->state() == Authenticator::WAITING_MESSAGE);
@@ -610,11 +579,6 @@ void JingleSession::ContinueAuthenticationStep() {
 
 void JingleSession::OnAuthenticated() {
   transport_->Start(this, authenticator_.get());
-
-  if (quic_channel_factory_) {
-    quic_channel_factory_->Start(transport_->GetDatagramChannelFactory(),
-                                 authenticator_->GetAuthKey());
-  }
 
   SetState(AUTHENTICATED);
 }
