@@ -19,7 +19,7 @@ bool JniClient::RegisterJni(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-void JniClient::Destroy(JNIEnv* env, jobject caller) {
+void JniClient::Destroy(JNIEnv* env, const JavaParamRef<jobject>& caller) {
   delete this;
 }
 

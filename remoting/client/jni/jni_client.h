@@ -7,6 +7,7 @@
 
 #include <jni.h>
 
+#include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 
 namespace remoting {
@@ -19,7 +20,7 @@ class JniClient {
   // Register C++ methods exposed to Java using JNI.
   static bool RegisterJni(JNIEnv* env);
 
-  void Destroy(JNIEnv* env, jobject caller);
+  void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& caller);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(JniClient);
