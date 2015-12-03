@@ -48,6 +48,18 @@ if (current_toolchain == default_toolchain && target_sysroot != "") {
     # Any other builds don't use a sysroot.
     sysroot = ""
   }
+
+  if (sysroot != "") {
+    _script_arch = current_cpu
+    if (_script_arch == "x86") {
+      _script_arch = "i386"
+    } else if (_script_arch == "x64") {
+      _script_arch = "amd64"
+    }
+    assert(
+        exec_script("//build/dir_exists.py", [ sysroot ], "string") == "True",
+        "Missing sysroot ($sysroot). To fix, run: build/linux/sysroot_scripts/install-sysroot.py --arch=$_script_arch")
+  }
 } else if (is_mac) {
   import("//build/config/mac/mac_sdk.gni")
   sysroot = mac_sdk_path
