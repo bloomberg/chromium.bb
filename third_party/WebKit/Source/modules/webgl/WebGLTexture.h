@@ -31,6 +31,20 @@
 
 namespace blink {
 
+struct WebGLSamplerState {
+    WebGLSamplerState();
+
+    GLenum compreFunc;
+    GLenum compreMode;
+    GLenum magFilter;
+    GLenum minFilter;
+    GLenum wrapR;
+    GLenum wrapS;
+    GLenum wrapT;
+    GLfloat maxLod;
+    GLfloat minLod;
+};
+
 class WebGLTexture final : public WebGLSharedPlatform3DObject {
     DEFINE_WRAPPERTYPEINFO();
 public:
@@ -49,7 +63,7 @@ public:
 
     GLenum getTarget() const { return m_target; }
 
-    int getMinFilter() const { return m_minFilter; }
+    int getMinFilter() const { return m_samplerState.minFilter; }
 
     void setLevelInfo(GLenum target, GLint level, GLenum internalFormat, GLsizei width, GLsizei height, GLsizei depth, GLenum type);
     void setTexStorageInfo(GLenum target, GLint levels, GLenum internalFormat, GLsizei width, GLsizei height, GLsizei depth);
@@ -75,12 +89,14 @@ public:
 
     bool isNPOT() const;
     // Determine if texture sampling should always return [0, 0, 0, 1] (OpenGL ES 2.0 Sec 3.8.2).
-    bool needToUseBlackTexture(TextureExtensionFlag) const;
+    bool needToUseBlackTexture(TextureExtensionFlag, const WebGLSamplerState*) const;
 
     bool hasEverBeenBound() const { return object() && m_target; }
 
     static GLint computeLevelCount(GLsizei width, GLsizei height, GLsizei depth);
     static GLenum getValidTypeForInternalFormat(GLenum);
+
+    const WebGLSamplerState* getSamplerState() const { return &m_samplerState; }
 
 private:
     explicit WebGLTexture(WebGLRenderingContextBase*);
@@ -127,11 +143,7 @@ private:
 
     GLenum m_target;
 
-    GLenum m_minFilter;
-    GLenum m_magFilter;
-    GLenum m_wrapR;
-    GLenum m_wrapS;
-    GLenum m_wrapT;
+    WebGLSamplerState m_samplerState;
 
     Vector<Vector<LevelInfo>> m_info;
 

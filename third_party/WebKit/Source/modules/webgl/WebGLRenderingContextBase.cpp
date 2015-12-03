@@ -2046,6 +2046,33 @@ WebGLRenderbuffer* WebGLRenderingContextBase::ensureEmulatedStencilBuffer(GLenum
     return renderbuffer->emulatedStencilBuffer();
 }
 
+const WebGLSamplerState* WebGLRenderingContextBase::getTextureUnitSamplerState(GLenum target, GLuint unit) const
+{
+    ASSERT(unit < m_textureUnits.size());
+
+    WebGLTexture* texture = nullptr;
+
+    switch (target) {
+    case GL_TEXTURE_2D:
+        texture = m_textureUnits[unit].m_texture2DBinding;
+        break;
+    case GL_TEXTURE_CUBE_MAP:
+        texture = m_textureUnits[unit].m_textureCubeMapBinding;
+        break;
+    case GL_TEXTURE_2D_ARRAY:
+        texture = m_textureUnits[unit].m_texture2DArrayBinding;
+        break;
+    case GL_TEXTURE_3D:
+        texture = m_textureUnits[unit].m_texture3DBinding;
+        break;
+    }
+
+    if (texture)
+        return texture->getSamplerState();
+
+    return nullptr;
+}
+
 void WebGLRenderingContextBase::setBoundVertexArrayObject(ScriptState* scriptState, WebGLVertexArrayObjectBase* arrayObject)
 {
     if (arrayObject)
@@ -5392,8 +5419,10 @@ void WebGLRenderingContextBase::handleTextureCompleteness(const char* functionNa
     WebGLTexture::TextureExtensionFlag flag = static_cast<WebGLTexture::TextureExtensionFlag>((extensionEnabled(OESTextureFloatLinearName) ? WebGLTexture::TextureFloatLinearExtensionEnabled : 0)
         | ((extensionEnabled(OESTextureHalfFloatLinearName) || isWebGL2OrHigher()) ? WebGLTexture::TextureHalfFloatLinearExtensionEnabled : 0));
     for (unsigned ii = 0; ii < m_onePlusMaxNonDefaultTextureUnit; ++ii) {
-        if ((m_textureUnits[ii].m_texture2DBinding.get() && m_textureUnits[ii].m_texture2DBinding->needToUseBlackTexture(flag))
-            || (m_textureUnits[ii].m_textureCubeMapBinding.get() && m_textureUnits[ii].m_textureCubeMapBinding->needToUseBlackTexture(flag))) {
+        const WebGLSamplerState* samplerState2D = getTextureUnitSamplerState(GL_TEXTURE_2D, ii);
+        const WebGLSamplerState* samplerStateCubeMap = getTextureUnitSamplerState(GL_TEXTURE_CUBE_MAP, ii);
+        if ((m_textureUnits[ii].m_texture2DBinding.get() && m_textureUnits[ii].m_texture2DBinding->needToUseBlackTexture(flag, samplerState2D))
+            || (m_textureUnits[ii].m_textureCubeMapBinding.get() && m_textureUnits[ii].m_textureCubeMapBinding->needToUseBlackTexture(flag, samplerStateCubeMap))) {
             if (ii != m_activeTextureUnit) {
                 webContext()->activeTexture(GL_TEXTURE0 + ii);
                 resetActiveUnit = true;
@@ -5414,9 +5443,9 @@ void WebGLRenderingContextBase::handleTextureCompleteness(const char* functionNa
                 tex2D = m_textureUnits[ii].m_texture2DBinding.get();
                 texCubeMap = m_textureUnits[ii].m_textureCubeMapBinding.get();
             }
-            if (m_textureUnits[ii].m_texture2DBinding && m_textureUnits[ii].m_texture2DBinding->needToUseBlackTexture(flag))
+            if (m_textureUnits[ii].m_texture2DBinding && m_textureUnits[ii].m_texture2DBinding->needToUseBlackTexture(flag, samplerState2D))
                 webContext()->bindTexture(GL_TEXTURE_2D, objectOrZero(tex2D));
-            if (m_textureUnits[ii].m_textureCubeMapBinding && m_textureUnits[ii].m_textureCubeMapBinding->needToUseBlackTexture(flag))
+            if (m_textureUnits[ii].m_textureCubeMapBinding && m_textureUnits[ii].m_textureCubeMapBinding->needToUseBlackTexture(flag, samplerStateCubeMap))
                 webContext()->bindTexture(GL_TEXTURE_CUBE_MAP, objectOrZero(texCubeMap));
         }
     }

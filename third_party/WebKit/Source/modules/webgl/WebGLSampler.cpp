@@ -10,6 +10,19 @@
 
 namespace blink {
 
+WebGLSamplerState::WebGLSamplerState()
+    : compreFunc(GL_LEQUAL)
+    , compreMode(GL_NONE)
+    , magFilter(GL_LINEAR)
+    , minFilter(GL_NEAREST_MIPMAP_LINEAR)
+    , wrapR(GL_REPEAT)
+    , wrapS(GL_REPEAT)
+    , wrapT(GL_REPEAT)
+    , maxLod(1000.0f)
+    , minLod(-1000.0f)
+{
+}
+
 WebGLSampler* WebGLSampler::create(WebGL2RenderingContextBase* ctx)
 {
     return new WebGLSampler(ctx);
@@ -23,15 +36,6 @@ WebGLSampler::~WebGLSampler()
 
 WebGLSampler::WebGLSampler(WebGL2RenderingContextBase* ctx)
     : WebGLSharedPlatform3DObject(ctx)
-    , m_compreFunc(GL_LEQUAL)
-    , m_compreMode(GL_NONE)
-    , m_magFilter(GL_LINEAR)
-    , m_minFilter(GL_NEAREST_MIPMAP_LINEAR)
-    , m_wrapR(GL_REPEAT)
-    , m_wrapS(GL_REPEAT)
-    , m_wrapT(GL_REPEAT)
-    , m_maxLod(1000.0f)
-    , m_minLod(-1000.0f)
 {
     setObject(ctx->webContext()->createSampler());
 }
@@ -55,25 +59,25 @@ void WebGLSampler::setParameteri(GLenum pname, GLint param)
             return;
         }
     case GL_TEXTURE_COMPARE_FUNC:
-        m_compreFunc = param;
+        m_state.compreFunc = param;
         break;
     case GL_TEXTURE_COMPARE_MODE:
-        m_compreMode = param;
+        m_state.compreMode = param;
         break;
     case GL_TEXTURE_MAG_FILTER:
-        m_magFilter = param;
+        m_state.magFilter = param;
         break;
     case GL_TEXTURE_MIN_FILTER:
-        m_minFilter = param;
+        m_state.minFilter = param;
         break;
     case GL_TEXTURE_WRAP_R:
-        m_wrapR = param;
+        m_state.wrapR = param;
         break;
     case GL_TEXTURE_WRAP_S:
-        m_wrapS = param;
+        m_state.wrapS = param;
         break;
     case GL_TEXTURE_WRAP_T:
-        m_wrapT = param;
+        m_state.wrapT = param;
         break;
     default:
         ASSERT_NOT_REACHED();
@@ -99,10 +103,10 @@ void WebGLSampler::setParameterf(GLenum pname, GLfloat param)
             return;
         }
     case GL_TEXTURE_MAX_LOD:
-        m_maxLod = param;
+        m_state.maxLod = param;
         break;
     case GL_TEXTURE_MIN_LOD:
-        m_minLod = param;
+        m_state.minLod = param;
         break;
     default:
         ASSERT_NOT_REACHED();

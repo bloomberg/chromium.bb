@@ -498,6 +498,8 @@ protected:
 
     WebGLRenderbuffer* ensureEmulatedStencilBuffer(GLenum target, WebGLRenderbuffer*);
 
+    virtual const WebGLSamplerState* getTextureUnitSamplerState(GLenum target, GLuint unit) const;
+
     // Structure for rendering to a DrawingBuffer, instead of directly
     // to the back-buffer of m_context.
     RefPtr<DrawingBuffer> m_drawingBuffer;

@@ -3298,4 +3298,16 @@ GLenum WebGL2RenderingContextBase::boundFramebufferColorFormat()
     return GL_RGB;
 }
 
+const WebGLSamplerState* WebGL2RenderingContextBase::getTextureUnitSamplerState(GLenum target, GLuint unit) const
+{
+    ASSERT(unit < m_samplerUnits.size());
+
+    WebGLSampler* sampler = m_samplerUnits[unit];
+
+    if (sampler)
+        return sampler->getSamplerState();
+
+    return WebGLRenderingContextBase::getTextureUnitSamplerState(target, unit);
+}
+
 } // namespace blink

@@ -6,6 +6,7 @@
 #define WebGLSampler_h
 
 #include "modules/webgl/WebGLSharedPlatform3DObject.h"
+#include "modules/webgl/WebGLTexture.h"
 
 namespace blink {
 
@@ -20,15 +21,17 @@ public:
 
     void setParameteri(GLenum pname, GLint param);
     void setParameterf(GLenum pname, GLfloat param);
-    GLenum getCompareFunc() const { return m_compreFunc; }
-    GLenum getCompareMode() const { return m_compreMode; }
-    GLenum getMagFilter() const { return m_magFilter; }
-    GLenum getMinFilter() const { return m_minFilter; }
-    GLenum getWrapR() const { return m_wrapR; }
-    GLenum getWrapS() const { return m_wrapS; }
-    GLenum getWrapT() const { return m_wrapT; }
-    GLfloat getMaxLod() const { return m_maxLod; }
-    GLfloat getMinLod() const { return m_minLod; }
+    GLenum getCompareFunc() const { return m_state.compreFunc; }
+    GLenum getCompareMode() const { return m_state.compreMode; }
+    GLenum getMagFilter() const { return m_state.magFilter; }
+    GLenum getMinFilter() const { return m_state.minFilter; }
+    GLenum getWrapR() const { return m_state.wrapR; }
+    GLenum getWrapS() const { return m_state.wrapS; }
+    GLenum getWrapT() const { return m_state.wrapT; }
+    GLfloat getMaxLod() const { return m_state.maxLod; }
+    GLfloat getMinLod() const { return m_state.minLod; }
+
+    const WebGLSamplerState* getSamplerState() const { return &m_state; }
 
 protected:
     explicit WebGLSampler(WebGL2RenderingContextBase*);
@@ -38,15 +41,7 @@ protected:
 private:
     bool isSampler() const override { return true; }
 
-    GLenum m_compreFunc;
-    GLenum m_compreMode;
-    GLenum m_magFilter;
-    GLenum m_minFilter;
-    GLenum m_wrapR;
-    GLenum m_wrapS;
-    GLenum m_wrapT;
-    GLfloat m_maxLod;
-    GLfloat m_minLod;
+    WebGLSamplerState m_state;
 };
 
 } // namespace blink
