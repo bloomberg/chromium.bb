@@ -134,9 +134,6 @@ static SVGSVGElement* svgRootElement(Page* page)
 
 void SVGImage::setContainerSize(const IntSize& size)
 {
-    if (!usesContainerSize())
-        return;
-
     SVGSVGElement* rootElement = svgRootElement(m_page.get());
     if (!rootElement)
         return;
