@@ -8,14 +8,13 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/mock_download_item.h"
 #include "content/public/test/mock_download_manager.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_web_ui.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -93,8 +92,7 @@ class TestDownloadsListTracker : public DownloadsListTracker {
 // A fixture to test DownloadsListTracker.
 class DownloadsListTrackerTest : public testing::Test {
  public:
-  DownloadsListTrackerTest()
-      : ui_thread_(content::BrowserThread::UI, &message_loop_) {}
+  DownloadsListTrackerTest() {}
   ~DownloadsListTrackerTest() override {
     for (auto* mock_item : mock_items_)
       testing::Mock::VerifyAndClear(mock_item);
@@ -138,8 +136,7 @@ class DownloadsListTrackerTest : public testing::Test {
   }
 
   // NOTE: The initialization order of these members matters.
-  base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
 
   testing::NiceMock<content::MockDownloadManager> manager_;
