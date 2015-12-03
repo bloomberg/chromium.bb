@@ -221,6 +221,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/renderbuffers/framebuffer-object-attachment.html',
         ['mac'], bug=564020)
 
+    self.Fail('conformance2/textures/misc/compressed-tex-image.html',
+        ['mac'], bug=565438)
+
     # Mac 10.9 only.
     self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
         ['mavericks'], bug=483282)
