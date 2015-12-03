@@ -153,19 +153,90 @@ class RasterTaskImpl : public RasterTask {
   DISALLOW_COPY_AND_ASSIGN(RasterTaskImpl);
 };
 
-const char* TaskSetName(TaskSet task_set) {
-  switch (task_set) {
-    case TileManager::ALL:
-      return "ALL";
-    case TileManager::REQUIRED_FOR_ACTIVATION:
-      return "REQUIRED_FOR_ACTIVATION";
-    case TileManager::REQUIRED_FOR_DRAW:
-      return "REQUIRED_FOR_DRAW";
+// Task priorities that make sure that the task set done tasks run before any
+// other remaining tasks.
+const size_t kRequiredForActivationDoneTaskPriority = 1u;
+const size_t kRequiredForDrawDoneTaskPriority = 2u;
+const size_t kAllDoneTaskPriority = 3u;
+
+// For correctness, |kTileTaskPriorityBase| must be greater than
+// all task set done task priorities.
+size_t kTileTaskPriorityBase = 10u;
+
+void InsertNodeForTask(TaskGraph* graph,
+                       TileTask* task,
+                       size_t priority,
+                       size_t dependencies) {
+  DCHECK(std::find_if(graph->nodes.begin(), graph->nodes.end(),
+                      [task](const TaskGraph::Node& node) {
+                        return node.task == task;
+                      }) == graph->nodes.end());
+  graph->nodes.push_back(TaskGraph::Node(task, priority, dependencies));
+}
+
+void InsertNodesForRasterTask(TaskGraph* graph,
+                              RasterTask* raster_task,
+                              const ImageDecodeTask::Vector& decode_tasks,
+                              size_t priority) {
+  size_t dependencies = 0u;
+
+  // Insert image decode tasks.
+  for (ImageDecodeTask::Vector::const_iterator it = decode_tasks.begin();
+       it != decode_tasks.end(); ++it) {
+    ImageDecodeTask* decode_task = it->get();
+
+    // Skip if already decoded.
+    if (decode_task->HasCompleted())
+      continue;
+
+    dependencies++;
+
+    // Add decode task if it doesn't already exists in graph.
+    TaskGraph::Node::Vector::iterator decode_it =
+        std::find_if(graph->nodes.begin(), graph->nodes.end(),
+                     [decode_task](const TaskGraph::Node& node) {
+                       return node.task == decode_task;
+                     });
+    if (decode_it == graph->nodes.end())
+      InsertNodeForTask(graph, decode_task, priority, 0u);
+
+    graph->edges.push_back(TaskGraph::Edge(decode_task, raster_task));
   }
 
-  NOTREACHED();
-  return "Invalid TaskSet";
+  InsertNodeForTask(graph, raster_task, priority, dependencies);
 }
+
+class TaskSetFinishedTaskImpl : public TileTask {
+ public:
+  explicit TaskSetFinishedTaskImpl(
+      base::SequencedTaskRunner* task_runner,
+      const base::Closure& on_task_set_finished_callback)
+      : task_runner_(task_runner),
+        on_task_set_finished_callback_(on_task_set_finished_callback) {}
+
+  // Overridden from Task:
+  void RunOnWorkerThread() override {
+    TRACE_EVENT0("cc", "TaskSetFinishedTaskImpl::RunOnWorkerThread");
+    TaskSetFinished();
+  }
+
+  // Overridden from TileTask:
+  void ScheduleOnOriginThread(TileTaskClient* client) override {}
+  void CompleteOnOriginThread(TileTaskClient* client) override {}
+
+ protected:
+  ~TaskSetFinishedTaskImpl() override {}
+
+  void TaskSetFinished() {
+    task_runner_->PostTask(FROM_HERE, on_task_set_finished_callback_);
+  }
+
+ private:
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  const base::Closure on_task_set_finished_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(TaskSetFinishedTaskImpl);
+};
 
 }  // namespace
 
@@ -216,7 +287,8 @@ TileManager::TileManager(
                                          base::Unretained(this))),
       has_scheduled_tile_tasks_(false),
       prepare_tiles_count_(0u),
-      next_tile_id_(0u) {}
+      next_tile_id_(0u),
+      task_set_finished_weak_ptr_factory_(this) {}
 
 TileManager::~TileManager() {
   FinishTasksAndCleanUp();
@@ -228,13 +300,14 @@ void TileManager::FinishTasksAndCleanUp() {
 
   global_state_ = GlobalStateThatImpactsTilePriority();
 
-  TileTaskQueue empty;
-  tile_task_runner_->ScheduleTasks(&empty);
-  orphan_raster_tasks_.clear();
-
-  // This should finish all pending tasks and release any uninitialized
-  // resources.
+  // This cancels tasks if possible, finishes pending tasks, and release any
+  // uninitialized resources.
   tile_task_runner_->Shutdown();
+
+  // Now that all tasks have been finished, we can clear any
+  // |orphan_tasks_|.
+  orphan_tasks_.clear();
+
   tile_task_runner_->CheckForCompletedTasks();
 
   FreeResourcesForReleasedTiles();
@@ -244,6 +317,7 @@ void TileManager::FinishTasksAndCleanUp() {
   resource_pool_ = nullptr;
   more_tiles_need_prepare_check_notifier_.Cancel();
   signals_check_notifier_.Cancel();
+  task_set_finished_weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
 void TileManager::SetResources(ResourcePool* resource_pool,
@@ -255,7 +329,6 @@ void TileManager::SetResources(ResourcePool* resource_pool,
   scheduled_raster_task_limit_ = scheduled_raster_task_limit;
   resource_pool_ = resource_pool;
   tile_task_runner_ = tile_task_runner;
-  tile_task_runner_->SetClient(this);
 }
 
 void TileManager::Release(Tile* tile) {
@@ -285,44 +358,45 @@ void TileManager::CleanUpReleasedTiles() {
   released_tiles_.swap(tiles_to_retain);
 }
 
-void TileManager::DidFinishRunningTileTasks(TaskSet task_set) {
-  TRACE_EVENT1("cc", "TileManager::DidFinishRunningTileTasks", "task_set",
-               TaskSetName(task_set));
+void TileManager::DidFinishRunningTileTasksRequiredForActivation() {
+  TRACE_EVENT0("cc",
+               "TileManager::DidFinishRunningTileTasksRequiredForActivation");
+  TRACE_EVENT_ASYNC_STEP_INTO1("cc", "ScheduledTasks", this, "running", "state",
+                               ScheduledTasksStateAsValue());
+  signals_.ready_to_activate = true;
+  signals_check_notifier_.Schedule();
+}
+
+void TileManager::DidFinishRunningTileTasksRequiredForDraw() {
+  TRACE_EVENT0("cc", "TileManager::DidFinishRunningTileTasksRequiredForDraw");
+  TRACE_EVENT_ASYNC_STEP_INTO1("cc", "ScheduledTasks", this, "running", "state",
+                               ScheduledTasksStateAsValue());
+  signals_.ready_to_draw = true;
+  signals_check_notifier_.Schedule();
+}
+
+void TileManager::DidFinishRunningAllTileTasks() {
+  TRACE_EVENT0("cc", "TileManager::DidFinishRunningAllTileTasks");
+  TRACE_EVENT_ASYNC_END0("cc", "ScheduledTasks", this);
   DCHECK(resource_pool_);
   DCHECK(tile_task_runner_);
 
-  switch (task_set) {
-    case ALL: {
-      has_scheduled_tile_tasks_ = false;
+  has_scheduled_tile_tasks_ = false;
 
-      bool memory_usage_above_limit = resource_pool_->memory_usage_bytes() >
-                                      global_state_.soft_memory_limit_in_bytes;
+  bool memory_usage_above_limit = resource_pool_->memory_usage_bytes() >
+                                  global_state_.soft_memory_limit_in_bytes;
 
-      if (all_tiles_that_need_to_be_rasterized_are_scheduled_ &&
-          !memory_usage_above_limit) {
-        // TODO(ericrk): We should find a better way to safely handle re-entrant
-        // notifications than always having to schedule a new task.
-        // http://crbug.com/498439
-        signals_.all_tile_tasks_completed = true;
-        signals_check_notifier_.Schedule();
-        return;
-      }
-
-      more_tiles_need_prepare_check_notifier_.Schedule();
-      return;
-    }
-    case REQUIRED_FOR_ACTIVATION:
-      signals_.ready_to_activate = true;
-      signals_check_notifier_.Schedule();
-      return;
-
-    case REQUIRED_FOR_DRAW:
-      signals_.ready_to_draw = true;
-      signals_check_notifier_.Schedule();
-      return;
+  if (all_tiles_that_need_to_be_rasterized_are_scheduled_ &&
+      !memory_usage_above_limit) {
+    // TODO(ericrk): We should find a better way to safely handle re-entrant
+    // notifications than always having to schedule a new task.
+    // http://crbug.com/498439
+    signals_.all_tile_tasks_completed = true;
+    signals_check_notifier_.Schedule();
+    return;
   }
 
-  NOTREACHED();
+  more_tiles_need_prepare_check_notifier_.Schedule();
 }
 
 bool TileManager::PrepareTiles(
@@ -605,19 +679,40 @@ void TileManager::FreeResourcesForTileAndNotifyClientIfTileWasReadyToDraw(
 
 void TileManager::ScheduleTasks(
     const PrioritizedTileVector& tiles_that_need_to_be_rasterized) {
-  TRACE_EVENT1("cc",
-               "TileManager::ScheduleTasks",
-               "count",
+  TRACE_EVENT1("cc", "TileManager::ScheduleTasks", "count",
                tiles_that_need_to_be_rasterized.size());
 
   DCHECK(did_check_for_completed_tasks_since_last_schedule_tasks_);
 
-  raster_queue_.Reset();
+  if (!has_scheduled_tile_tasks_) {
+    TRACE_EVENT_ASYNC_BEGIN0("cc", "ScheduledTasks", this);
+  }
+
+  // Cancel existing OnTaskSetFinished callbacks.
+  task_set_finished_weak_ptr_factory_.InvalidateWeakPtrs();
 
   // Even when scheduling an empty set of tiles, the TTWP does some work, and
   // will always trigger a DidFinishRunningTileTasks notification. Because of
   // this we unconditionally set |has_scheduled_tile_tasks_| to true.
   has_scheduled_tile_tasks_ = true;
+
+  // Track the number of dependents for each *_done task.
+  size_t required_for_activate_count = 0;
+  size_t required_for_draw_count = 0;
+  size_t all_count = 0;
+
+  size_t priority = kTileTaskPriorityBase;
+
+  graph_.Reset();
+
+  scoped_refptr<TileTask> required_for_activation_done_task =
+      CreateTaskSetFinishedTask(
+          &TileManager::DidFinishRunningTileTasksRequiredForActivation);
+  scoped_refptr<TileTask> required_for_draw_done_task =
+      CreateTaskSetFinishedTask(
+          &TileManager::DidFinishRunningTileTasksRequiredForDraw);
+  scoped_refptr<TileTask> all_done_task =
+      CreateTaskSetFinishedTask(&TileManager::DidFinishRunningAllTileTasks);
 
   // Build a new task queue containing all task currently needed. Tasks
   // are added in order of priority, highest priority task first.
@@ -627,18 +722,39 @@ void TileManager::ScheduleTasks(
     DCHECK(tile->draw_info().requires_resource());
     DCHECK(!tile->draw_info().resource_);
 
+    if (!tile->raster_task_) {
+      tile->raster_task_ = CreateRasterTask(prioritized_tile);
+    }
+
+    RasterTask* task = tile->raster_task_.get();
+    DCHECK(!task->HasCompleted());
+
     if (!tile->raster_task_.get())
       tile->raster_task_ = CreateRasterTask(prioritized_tile);
 
-    TaskSetCollection task_sets;
-    if (tile->required_for_activation())
-      task_sets.set(REQUIRED_FOR_ACTIVATION);
-    if (tile->required_for_draw())
-      task_sets.set(REQUIRED_FOR_DRAW);
-    task_sets.set(ALL);
-    raster_queue_.items.push_back(
-        TileTaskQueue::Item(tile->raster_task_.get(), task_sets));
+    if (tile->required_for_activation()) {
+      required_for_activate_count++;
+      graph_.edges.push_back(
+          TaskGraph::Edge(task, required_for_activation_done_task.get()));
+    }
+    if (tile->required_for_draw()) {
+      required_for_draw_count++;
+      graph_.edges.push_back(
+          TaskGraph::Edge(task, required_for_draw_done_task.get()));
+    }
+    all_count++;
+    graph_.edges.push_back(TaskGraph::Edge(task, all_done_task.get()));
+
+    InsertNodesForRasterTask(&graph_, task, task->dependencies(), priority++);
   }
+
+  InsertNodeForTask(&graph_, required_for_activation_done_task.get(),
+                    kRequiredForActivationDoneTaskPriority,
+                    required_for_activate_count);
+  InsertNodeForTask(&graph_, required_for_draw_done_task.get(),
+                    kRequiredForDrawDoneTaskPriority, required_for_draw_count);
+  InsertNodeForTask(&graph_, all_done_task.get(), kAllDoneTaskPriority,
+                    all_count);
 
   // We must reduce the amount of unused resoruces before calling
   // ScheduleTasks to prevent usage from rising above limits.
@@ -647,14 +763,23 @@ void TileManager::ScheduleTasks(
   // Schedule running of |raster_queue_|. This replaces any previously
   // scheduled tasks and effectively cancels all tasks not present
   // in |raster_queue_|.
-  tile_task_runner_->ScheduleTasks(&raster_queue_);
+  tile_task_runner_->ScheduleTasks(&graph_);
 
   // It's now safe to clean up orphan tasks as raster worker pool is not
   // allowed to keep around unreferenced raster tasks after ScheduleTasks() has
   // been called.
-  orphan_raster_tasks_.clear();
+  orphan_tasks_.clear();
+
+  // It's also now safe to replace our *_done_task_ tasks.
+  required_for_activation_done_task_ =
+      std::move(required_for_activation_done_task);
+  required_for_draw_done_task_ = std::move(required_for_draw_done_task);
+  all_done_task_ = std::move(all_done_task);
 
   did_check_for_completed_tasks_since_last_schedule_tasks_ = false;
+
+  TRACE_EVENT_ASYNC_STEP_INTO1("cc", "ScheduledTasks", this, "running", "state",
+                               ScheduledTasksStateAsValue());
 }
 
 scoped_refptr<RasterTask> TileManager::CreateRasterTask(
@@ -709,7 +834,7 @@ void TileManager::OnRasterTaskCompleted(
 
   Tile* tile = tiles_[tile_id];
   DCHECK(tile->raster_task_.get());
-  orphan_raster_tasks_.push_back(tile->raster_task_);
+  orphan_tasks_.push_back(tile->raster_task_);
   tile->raster_task_ = nullptr;
 
   if (was_canceled) {
@@ -773,7 +898,6 @@ ScopedTilePtr TileManager::CreateTile(const Tile::CreateInfo& info,
 void TileManager::SetTileTaskRunnerForTesting(
     TileTaskRunner* tile_task_runner) {
   tile_task_runner_ = tile_task_runner;
-  tile_task_runner_->SetClient(this);
 }
 
 bool TileManager::AreRequiredTilesReadyToDraw(
@@ -947,8 +1071,31 @@ bool TileManager::DetermineResourceRequiresSwizzle(const Tile* tile) const {
   return tile_task_runner_->GetResourceRequiresSwizzle(!tile->is_opaque());
 }
 
-TileManager::MemoryUsage::MemoryUsage() : memory_bytes_(0), resource_count_(0) {
+scoped_refptr<base::trace_event::ConvertableToTraceFormat>
+TileManager::ScheduledTasksStateAsValue() const {
+  scoped_refptr<base::trace_event::TracedValue> state =
+      new base::trace_event::TracedValue();
+
+  state->BeginDictionary("tasks_pending");
+  state->SetBoolean("ready_to_activate", signals_.ready_to_activate);
+  state->SetBoolean("ready_to_draw", signals_.ready_to_draw);
+  state->SetBoolean("all_tile_tasks_completed",
+                    signals_.all_tile_tasks_completed);
+  state->EndDictionary();
+  return state;
 }
+
+// Utility function that can be used to create a "Task set finished" task that
+// posts |callback| to |task_runner| when run.
+scoped_refptr<TileTask> TileManager::CreateTaskSetFinishedTask(
+    void (TileManager::*callback)()) {
+  return make_scoped_refptr(new TaskSetFinishedTaskImpl(
+      task_runner_.get(),
+      base::Bind(callback, task_set_finished_weak_ptr_factory_.GetWeakPtr())));
+}
+
+TileManager::MemoryUsage::MemoryUsage()
+    : memory_bytes_(0), resource_count_(0) {}
 
 TileManager::MemoryUsage::MemoryUsage(size_t memory_bytes,
                                       size_t resource_count)

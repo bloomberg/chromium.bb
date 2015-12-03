@@ -214,8 +214,7 @@ OneCopyTileTaskWorkerPool::OneCopyTileTaskWorkerPool(
       staging_buffer_expiration_delay_(
           base::TimeDelta::FromMilliseconds(kStagingBufferExpirationDelayMs)),
       reduce_memory_usage_pending_(false),
-      weak_ptr_factory_(this),
-      task_set_finished_weak_ptr_factory_(this) {
+      weak_ptr_factory_(this) {
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this, "OneCopyTileTaskWorkerPool", base::ThreadTaskRunnerHandle::Get());
   reduce_memory_usage_callback_ =
@@ -230,10 +229,6 @@ OneCopyTileTaskWorkerPool::~OneCopyTileTaskWorkerPool() {
 
 TileTaskRunner* OneCopyTileTaskWorkerPool::AsTileTaskRunner() {
   return this;
-}
-
-void OneCopyTileTaskWorkerPool::SetClient(TileTaskRunnerClient* client) {
-  client_ = client;
 }
 
 void OneCopyTileTaskWorkerPool::Shutdown() {
@@ -253,59 +248,10 @@ void OneCopyTileTaskWorkerPool::Shutdown() {
   DCHECK_EQ(free_staging_buffer_usage_in_bytes_, 0);
 }
 
-void OneCopyTileTaskWorkerPool::ScheduleTasks(TileTaskQueue* queue) {
+void OneCopyTileTaskWorkerPool::ScheduleTasks(TaskGraph* graph) {
   TRACE_EVENT0("cc", "OneCopyTileTaskWorkerPool::ScheduleTasks");
 
-  if (tasks_pending_.none())
-    TRACE_EVENT_ASYNC_BEGIN0("cc", "ScheduledTasks", this);
-
-  // Mark all task sets as pending.
-  tasks_pending_.set();
-
-  size_t priority = kTileTaskPriorityBase;
-
-  graph_.Reset();
-
-  // Cancel existing OnTaskSetFinished callbacks.
-  task_set_finished_weak_ptr_factory_.InvalidateWeakPtrs();
-
-  scoped_refptr<TileTask> new_task_set_finished_tasks[kNumberOfTaskSets];
-
-  size_t task_count[kNumberOfTaskSets] = {0};
-
-  for (TaskSet task_set = 0; task_set < kNumberOfTaskSets; ++task_set) {
-    new_task_set_finished_tasks[task_set] = CreateTaskSetFinishedTask(
-        task_runner_.get(),
-        base::Bind(&OneCopyTileTaskWorkerPool::OnTaskSetFinished,
-                   task_set_finished_weak_ptr_factory_.GetWeakPtr(), task_set));
-  }
-
-  for (TileTaskQueue::Item::Vector::const_iterator it = queue->items.begin();
-       it != queue->items.end(); ++it) {
-    const TileTaskQueue::Item& item = *it;
-    RasterTask* task = item.task;
-    DCHECK(!task->HasCompleted());
-
-    for (TaskSet task_set = 0; task_set < kNumberOfTaskSets; ++task_set) {
-      if (!item.task_sets[task_set])
-        continue;
-
-      ++task_count[task_set];
-
-      graph_.edges.push_back(
-          TaskGraph::Edge(task, new_task_set_finished_tasks[task_set].get()));
-    }
-
-    InsertNodesForRasterTask(&graph_, task, task->dependencies(), priority++);
-  }
-
-  for (TaskSet task_set = 0; task_set < kNumberOfTaskSets; ++task_set) {
-    InsertNodeForTask(&graph_, new_task_set_finished_tasks[task_set].get(),
-                      kTaskSetFinishedTaskPriorityBase + task_set,
-                      task_count[task_set]);
-  }
-
-  ScheduleTasksOnOriginThread(this, &graph_);
+  ScheduleTasksOnOriginThread(this, graph);
 
   // Barrier to sync any new resources to the worker context.
   resource_provider_->output_surface()
@@ -313,14 +259,7 @@ void OneCopyTileTaskWorkerPool::ScheduleTasks(TileTaskQueue* queue) {
       ->ContextGL()
       ->OrderingBarrierCHROMIUM();
 
-  task_graph_runner_->ScheduleTasks(namespace_token_, &graph_);
-
-  std::copy(new_task_set_finished_tasks,
-            new_task_set_finished_tasks + kNumberOfTaskSets,
-            task_set_finished_tasks_);
-
-  TRACE_EVENT_ASYNC_STEP_INTO1("cc", "ScheduledTasks", this, "running", "state",
-                               StateAsValue());
+  task_graph_runner_->ScheduleTasks(namespace_token_, graph);
 }
 
 void OneCopyTileTaskWorkerPool::CheckForCompletedTasks() {
@@ -784,49 +723,6 @@ void OneCopyTileTaskWorkerPool::ReleaseBuffersNotUsedSince(
       busy_buffers_.pop_front();
     }
   }
-}
-
-void OneCopyTileTaskWorkerPool::OnTaskSetFinished(TaskSet task_set) {
-  TRACE_EVENT1("cc", "OneCopyTileTaskWorkerPool::OnTaskSetFinished", "task_set",
-               task_set);
-
-  DCHECK(tasks_pending_[task_set]);
-  tasks_pending_[task_set] = false;
-  if (tasks_pending_.any()) {
-    TRACE_EVENT_ASYNC_STEP_INTO1("cc", "ScheduledTasks", this, "running",
-                                 "state", StateAsValue());
-  } else {
-    TRACE_EVENT_ASYNC_END0("cc", "ScheduledTasks", this);
-  }
-  client_->DidFinishRunningTileTasks(task_set);
-}
-
-scoped_refptr<base::trace_event::ConvertableToTraceFormat>
-OneCopyTileTaskWorkerPool::StateAsValue() const {
-  scoped_refptr<base::trace_event::TracedValue> state =
-      new base::trace_event::TracedValue();
-
-  state->BeginArray("tasks_pending");
-  for (TaskSet task_set = 0; task_set < kNumberOfTaskSets; ++task_set)
-    state->AppendBoolean(tasks_pending_[task_set]);
-  state->EndArray();
-  state->BeginDictionary("staging_state");
-  StagingStateAsValueInto(state.get());
-  state->EndDictionary();
-
-  return state;
-}
-
-void OneCopyTileTaskWorkerPool::StagingStateAsValueInto(
-    base::trace_event::TracedValue* staging_state) const {
-  base::AutoLock lock(lock_);
-
-  staging_state->SetInteger("staging_buffer_count",
-                            static_cast<int>(buffers_.size()));
-  staging_state->SetInteger("busy_count",
-                            static_cast<int>(busy_buffers_.size()));
-  staging_state->SetInteger("free_count",
-                            static_cast<int>(free_buffers_.size()));
 }
 
 }  // namespace cc

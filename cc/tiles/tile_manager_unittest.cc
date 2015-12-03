@@ -1698,7 +1698,6 @@ class FakeTileTaskRunner : public TileTaskRunner, public TileTaskClient {
   ~FakeTileTaskRunner() override {}
 
   // TileTaskRunner methods.
-  void SetClient(TileTaskRunnerClient* client) override {}
   void Shutdown() override {}
   void CheckForCompletedTasks() override {}
   ResourceFormat GetResourceFormat(bool must_support_alpha) const override {
@@ -1708,7 +1707,7 @@ class FakeTileTaskRunner : public TileTaskRunner, public TileTaskClient {
     return false;
   }
 
-  void ScheduleTasks(TileTaskQueue* queue) override {}
+  void ScheduleTasks(TaskGraph* graph) override {}
 
   // TileTaskClient methods.
   scoped_ptr<RasterBuffer> AcquireBufferForRaster(
@@ -1727,11 +1726,11 @@ class CancellingTileTaskRunner : public FakeTileTaskRunner {
   CancellingTileTaskRunner() {}
   ~CancellingTileTaskRunner() override {}
 
-  void ScheduleTasks(TileTaskQueue* queue) override {
+  void ScheduleTasks(TaskGraph* graph) override {
     // Just call CompleteOnOriginThread on each item in the queue. As none of
     // these items have run yet, they will be treated as cancelled tasks.
-    for (const auto& task : queue->items) {
-      task.task->CompleteOnOriginThread(this);
+    for (const auto& node : graph->nodes) {
+      static_cast<RasterTask*>(node.task)->CompleteOnOriginThread(this);
     }
   }
 };
@@ -1804,12 +1803,13 @@ class VerifyResourceContentIdTileTaskRunner : public FakeTileTaskRunner {
       : expected_resource_id_(expected_resource_id) {}
   ~VerifyResourceContentIdTileTaskRunner() override {}
 
-  void ScheduleTasks(TileTaskQueue* queue) override {
-    for (const auto& task : queue->items) {
+  void ScheduleTasks(TaskGraph* graph) override {
+    for (const auto& node : graph->nodes) {
+      RasterTask* task = static_cast<RasterTask*>(node.task);
       // Triggers a call to AcquireBufferForRaster.
-      task.task->ScheduleOnOriginThread(this);
+      task->ScheduleOnOriginThread(this);
       // Calls TileManager as though task was cancelled.
-      task.task->CompleteOnOriginThread(this);
+      task->CompleteOnOriginThread(this);
     }
   }
 

@@ -19,12 +19,10 @@ namespace {
 class FakeTileTaskRunnerImpl : public TileTaskRunner, public TileTaskClient {
  public:
   // Overridden from TileTaskRunner:
-  void SetClient(TileTaskRunnerClient* client) override {}
   void Shutdown() override {}
-  void ScheduleTasks(TileTaskQueue* queue) override {
-    for (TileTaskQueue::Item::Vector::const_iterator it = queue->items.begin();
-         it != queue->items.end(); ++it) {
-      RasterTask* task = it->task;
+  void ScheduleTasks(TaskGraph* graph) override {
+    for (const auto& node : graph->nodes) {
+      RasterTask* task = static_cast<RasterTask*>(node.task);
 
       task->WillSchedule();
       task->ScheduleOnOriginThread(this);

@@ -56,9 +56,8 @@ class CC_EXPORT OneCopyTileTaskWorkerPool
   TileTaskRunner* AsTileTaskRunner() override;
 
   // Overridden from TileTaskRunner:
-  void SetClient(TileTaskRunnerClient* client) override;
   void Shutdown() override;
-  void ScheduleTasks(TileTaskQueue* queue) override;
+  void ScheduleTasks(TaskGraph* graph) override;
   void CheckForCompletedTasks() override;
   ResourceFormat GetResourceFormat(bool must_support_alpha) const override;
   bool GetResourceRequiresSwizzle(bool must_support_alpha) const override;
@@ -127,7 +126,6 @@ class CC_EXPORT OneCopyTileTaskWorkerPool
   void ReduceMemoryUsage();
   void ReleaseBuffersNotUsedSince(base::TimeTicks time);
 
-  void OnTaskSetFinished(TaskSet task_set);
   scoped_refptr<base::trace_event::ConvertableToTraceFormat> StateAsValue()
       const;
   void StagingStateAsValueInto(
@@ -136,16 +134,10 @@ class CC_EXPORT OneCopyTileTaskWorkerPool
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   TaskGraphRunner* task_graph_runner_;
   const NamespaceToken namespace_token_;
-  TileTaskRunnerClient* client_;
   ResourceProvider* const resource_provider_;
   const int max_bytes_per_copy_operation_;
   const bool use_partial_raster_;
-  TaskSetCollection tasks_pending_;
-  scoped_refptr<TileTask> task_set_finished_tasks_[kNumberOfTaskSets];
 
-  // Task graph used when scheduling tasks and vector used to gather
-  // completed tasks.
-  TaskGraph graph_;
   Task::Vector completed_tasks_;
 
   mutable base::Lock lock_;
@@ -165,10 +157,6 @@ class CC_EXPORT OneCopyTileTaskWorkerPool
   base::Closure reduce_memory_usage_callback_;
 
   base::WeakPtrFactory<OneCopyTileTaskWorkerPool> weak_ptr_factory_;
-  // "raster finished" tasks need their own factory as they need to be
-  // canceled when ScheduleTasks() is called.
-  base::WeakPtrFactory<OneCopyTileTaskWorkerPool>
-      task_set_finished_weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(OneCopyTileTaskWorkerPool);
 };

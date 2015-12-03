@@ -4,6 +4,7 @@
 
 #include "cc/raster/tile_task_worker_pool.h"
 
+#include <algorithm>
 #include <limits>
 #include <vector>
 
@@ -17,6 +18,7 @@
 #include "cc/raster/gpu_tile_task_worker_pool.h"
 #include "cc/raster/one_copy_tile_task_worker_pool.h"
 #include "cc/raster/raster_buffer.h"
+#include "cc/raster/synchronous_task_graph_runner.h"
 #include "cc/raster/tile_task_runner.h"
 #include "cc/raster/zero_copy_tile_task_worker_pool.h"
 #include "cc/resources/resource_pool.h"
@@ -28,7 +30,6 @@
 #include "cc/test/fake_resource_provider.h"
 #include "cc/test/test_gpu_memory_buffer_manager.h"
 #include "cc/test/test_shared_bitmap_manager.h"
-#include "cc/test/test_task_graph_runner.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -116,8 +117,7 @@ class BlockingTestRasterTaskImpl : public TestRasterTaskImpl {
 };
 
 class TileTaskWorkerPoolTest
-    : public testing::TestWithParam<TileTaskWorkerPoolType>,
-      public TileTaskRunnerClient {
+    : public testing::TestWithParam<TileTaskWorkerPoolType> {
  public:
   struct RasterTaskResult {
     unsigned id;
@@ -170,7 +170,6 @@ class TileTaskWorkerPoolTest
     }
 
     DCHECK(tile_task_worker_pool_);
-    tile_task_worker_pool_->AsTileTaskRunner()->SetClient(this);
   }
 
   void TearDown() override {
@@ -183,46 +182,22 @@ class TileTaskWorkerPoolTest
     base::MessageLoop::current()->QuitWhenIdle();
   }
 
-  // Overriden from TileTaskWorkerPoolClient:
-  void DidFinishRunningTileTasks(TaskSet task_set) override {
-    EXPECT_FALSE(completed_task_sets_[task_set]);
-    completed_task_sets_[task_set] = true;
-    if (task_set == ALL) {
-      EXPECT_TRUE((~completed_task_sets_).none());
-      all_tile_tasks_finished_.Schedule();
-    }
-  }
-
   void RunMessageLoopUntilAllTasksHaveCompleted() {
-    if (timeout_seconds_) {
-      timeout_.Reset(base::Bind(&TileTaskWorkerPoolTest::OnTimeout,
-                                base::Unretained(this)));
-      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-          FROM_HERE, timeout_.callback(),
-          base::TimeDelta::FromSeconds(timeout_seconds_));
-    }
-
-    base::MessageLoop::current()->Run();
-
-    timeout_.Cancel();
-
-    ASSERT_FALSE(timed_out_) << "Test timed out";
+    task_graph_runner_.RunUntilIdle();
+    tile_task_worker_pool_->AsTileTaskRunner()->CheckForCompletedTasks();
   }
 
   void ScheduleTasks() {
-    TileTaskQueue queue;
+    graph_.Reset();
+
+    size_t priority = 0;
 
     for (RasterTaskVector::const_iterator it = tasks_.begin();
          it != tasks_.end(); ++it) {
-      TaskSetCollection task_sets;
-      task_sets[REQUIRED_FOR_ACTIVATION] = true;
-      task_sets[REQUIRED_FOR_DRAW] = true;
-      task_sets[ALL] = true;
-      queue.items.push_back(TileTaskQueue::Item(it->get(), task_sets));
+      graph_.nodes.emplace_back(it->get(), priority++, 0 /* dependencies */);
     }
 
-    completed_task_sets_.reset();
-    tile_task_worker_pool_->AsTileTaskRunner()->ScheduleTasks(&queue);
+    tile_task_worker_pool_->AsTileTaskRunner()->ScheduleTasks(&graph_);
   }
 
   void AppendTask(unsigned id, const gfx::Size& size) {
@@ -315,14 +290,14 @@ class TileTaskWorkerPoolTest
   scoped_ptr<TileTaskWorkerPool> tile_task_worker_pool_;
   TestGpuMemoryBufferManager gpu_memory_buffer_manager_;
   TestSharedBitmapManager shared_bitmap_manager_;
-  TestTaskGraphRunner task_graph_runner_;
+  SynchronousTaskGraphRunner task_graph_runner_;
   base::CancelableClosure timeout_;
   UniqueNotifier all_tile_tasks_finished_;
   int timeout_seconds_;
   bool timed_out_;
   RasterTaskVector tasks_;
   std::vector<RasterTaskResult> completed_tasks_;
-  TaskSetCollection completed_task_sets_;
+  TaskGraph graph_;
 };
 
 TEST_P(TileTaskWorkerPoolTest, Basic) {
@@ -389,21 +364,6 @@ TEST_P(TileTaskWorkerPoolTest, LostContext) {
   ASSERT_EQ(2u, completed_tasks().size());
   EXPECT_FALSE(completed_tasks()[0].canceled);
   EXPECT_FALSE(completed_tasks()[1].canceled);
-}
-
-TEST_P(TileTaskWorkerPoolTest, ScheduleEmptyStillTriggersCallback) {
-  // Don't append any tasks, just call ScheduleTasks.
-  ScheduleTasks();
-
-  EXPECT_FALSE(completed_task_sets_[REQUIRED_FOR_ACTIVATION]);
-  EXPECT_FALSE(completed_task_sets_[REQUIRED_FOR_DRAW]);
-  EXPECT_FALSE(completed_task_sets_[ALL]);
-
-  RunMessageLoopUntilAllTasksHaveCompleted();
-
-  EXPECT_TRUE(completed_task_sets_[REQUIRED_FOR_ACTIVATION]);
-  EXPECT_TRUE(completed_task_sets_[REQUIRED_FOR_DRAW]);
-  EXPECT_TRUE(completed_task_sets_[ALL]);
 }
 
 INSTANTIATE_TEST_CASE_P(TileTaskWorkerPoolTests,

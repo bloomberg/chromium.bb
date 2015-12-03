@@ -4,8 +4,6 @@
 
 #include "cc/raster/tile_task_runner.h"
 
-#include <algorithm>
-
 namespace cc {
 
 TileTask::TileTask() : did_schedule_(false), did_complete_(false) {
@@ -55,28 +53,6 @@ RasterTask::RasterTask(ImageDecodeTask::Vector* dependencies) {
 }
 
 RasterTask::~RasterTask() {
-}
-
-TileTaskQueue::Item::Item(RasterTask* task, const TaskSetCollection& task_sets)
-    : task(task), task_sets(task_sets) {
-  DCHECK(task_sets.any());
-}
-
-TileTaskQueue::Item::~Item() {
-}
-
-TileTaskQueue::TileTaskQueue() {
-}
-
-TileTaskQueue::~TileTaskQueue() {
-}
-
-void TileTaskQueue::Swap(TileTaskQueue* other) {
-  items.swap(other->items);
-}
-
-void TileTaskQueue::Reset() {
-  items.clear();
 }
 
 }  // namespace cc

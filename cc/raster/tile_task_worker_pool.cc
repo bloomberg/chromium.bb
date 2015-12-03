@@ -4,8 +4,6 @@
 
 #include "cc/raster/tile_task_worker_pool.h"
 
-#include <algorithm>
-
 #include "base/trace_event/trace_event.h"
 #include "cc/playback/display_list_raster_source.h"
 #include "skia/ext/refptr.h"
@@ -14,64 +12,10 @@
 #include "third_party/skia/include/core/SkSurface.h"
 
 namespace cc {
-namespace {
-
-class TaskSetFinishedTaskImpl : public TileTask {
- public:
-  explicit TaskSetFinishedTaskImpl(
-      base::SequencedTaskRunner* task_runner,
-      const base::Closure& on_task_set_finished_callback)
-      : task_runner_(task_runner),
-        on_task_set_finished_callback_(on_task_set_finished_callback) {}
-
-  // Overridden from Task:
-  void RunOnWorkerThread() override {
-    TRACE_EVENT0("cc", "TaskSetFinishedTaskImpl::RunOnWorkerThread");
-    TaskSetFinished();
-  }
-
-  // Overridden from TileTask:
-  void ScheduleOnOriginThread(TileTaskClient* client) override {}
-  void CompleteOnOriginThread(TileTaskClient* client) override {}
-
- protected:
-  ~TaskSetFinishedTaskImpl() override {}
-
-  void TaskSetFinished() {
-    task_runner_->PostTask(FROM_HERE, on_task_set_finished_callback_);
-  }
-
- private:
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  const base::Closure on_task_set_finished_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(TaskSetFinishedTaskImpl);
-};
-
-}  // namespace
-
-// This allows a micro benchmark system to run tasks with highest priority,
-// since it should finish as quickly as possible.
-size_t TileTaskWorkerPool::kBenchmarkTaskPriority = 0u;
-// Task priorities that make sure task set finished tasks run before any
-// other remaining tasks. This is combined with the task set type to ensure
-// proper prioritization ordering between task set types.
-size_t TileTaskWorkerPool::kTaskSetFinishedTaskPriorityBase = 1u;
-// For correctness, |kTileTaskPriorityBase| must be greater than
-// |kTaskSetFinishedTaskPriorityBase + kNumberOfTaskSets|.
-size_t TileTaskWorkerPool::kTileTaskPriorityBase = 10u;
 
 TileTaskWorkerPool::TileTaskWorkerPool() {}
 
 TileTaskWorkerPool::~TileTaskWorkerPool() {}
-
-// static
-scoped_refptr<TileTask> TileTaskWorkerPool::CreateTaskSetFinishedTask(
-    base::SequencedTaskRunner* task_runner,
-    const base::Closure& on_task_set_finished_callback) {
-  return make_scoped_refptr(
-      new TaskSetFinishedTaskImpl(task_runner, on_task_set_finished_callback));
-}
 
 // static
 void TileTaskWorkerPool::ScheduleTasksOnOriginThread(TileTaskClient* client,
@@ -89,52 +33,6 @@ void TileTaskWorkerPool::ScheduleTasksOnOriginThread(TileTaskClient* client,
       task->DidSchedule();
     }
   }
-}
-
-// static
-void TileTaskWorkerPool::InsertNodeForTask(TaskGraph* graph,
-                                           TileTask* task,
-                                           size_t priority,
-                                           size_t dependencies) {
-  DCHECK(std::find_if(graph->nodes.begin(), graph->nodes.end(),
-                      [task](const TaskGraph::Node& node) {
-                        return node.task == task;
-                      }) == graph->nodes.end());
-  graph->nodes.push_back(TaskGraph::Node(task, priority, dependencies));
-}
-
-// static
-void TileTaskWorkerPool::InsertNodesForRasterTask(
-    TaskGraph* graph,
-    RasterTask* raster_task,
-    const ImageDecodeTask::Vector& decode_tasks,
-    size_t priority) {
-  size_t dependencies = 0u;
-
-  // Insert image decode tasks.
-  for (ImageDecodeTask::Vector::const_iterator it = decode_tasks.begin();
-       it != decode_tasks.end(); ++it) {
-    ImageDecodeTask* decode_task = it->get();
-
-    // Skip if already decoded.
-    if (decode_task->HasCompleted())
-      continue;
-
-    dependencies++;
-
-    // Add decode task if it doesn't already exists in graph.
-    TaskGraph::Node::Vector::iterator decode_it =
-        std::find_if(graph->nodes.begin(), graph->nodes.end(),
-                     [decode_task](const TaskGraph::Node& node) {
-                       return node.task == decode_task;
-                     });
-    if (decode_it == graph->nodes.end())
-      InsertNodeForTask(graph, decode_task, priority, 0u);
-
-    graph->edges.push_back(TaskGraph::Edge(decode_task, raster_task));
-  }
-
-  InsertNodeForTask(graph, raster_task, priority, dependencies);
 }
 
 static bool IsSupportedPlaybackToMemoryFormat(ResourceFormat format) {
