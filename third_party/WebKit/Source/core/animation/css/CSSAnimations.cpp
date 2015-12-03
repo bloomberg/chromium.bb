@@ -365,15 +365,6 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
     // https://code.google.com/p/chromium/issues/detail?id=339847
     DisableCompositingQueryAsserts disabler;
 
-    const Vector<size_t>& cancelledIndices = m_pendingUpdate.cancelledAnimationIndices();
-    for (size_t i = cancelledIndices.size(); i-- > 0;) {
-        ASSERT(i == cancelledIndices.size() - 1 || cancelledIndices[i] < cancelledIndices[i + 1]);
-        Animation& animation = *m_runningAnimations[cancelledIndices[i]]->animation;
-        animation.cancel();
-        animation.update(TimingUpdateOnDemand);
-        m_runningAnimations.remove(cancelledIndices[i]);
-    }
-
     for (size_t pausedIndex : m_pendingUpdate.animationIndicesWithPauseToggled()) {
         Animation& animation = *m_runningAnimations[pausedIndex]->animation;
         if (animation.paused())
@@ -394,6 +385,15 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
         effect->updateSpecifiedTiming(entry.effect->specifiedTiming());
 
         m_runningAnimations[entry.index]->update(entry);
+    }
+
+    const Vector<size_t>& cancelledIndices = m_pendingUpdate.cancelledAnimationIndices();
+    for (size_t i = cancelledIndices.size(); i-- > 0;) {
+        ASSERT(i == cancelledIndices.size() - 1 || cancelledIndices[i] < cancelledIndices[i + 1]);
+        Animation& animation = *m_runningAnimations[cancelledIndices[i]]->animation;
+        animation.cancel();
+        animation.update(TimingUpdateOnDemand);
+        m_runningAnimations.remove(cancelledIndices[i]);
     }
 
     for (const auto& entry : m_pendingUpdate.newAnimations()) {
