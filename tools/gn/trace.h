@@ -7,13 +7,16 @@
 
 #include <string>
 
-#include "base/command_line.h"
-#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 
 class Label;
+
+namespace base {
+class CommandLine;
+class FilePath;
+}
 
 class TraceItem {
  public:

@@ -9,6 +9,8 @@
 #include <sstream>
 #include <vector>
 
+#include "base/command_line.h"
+#include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/json/string_escape.h"
 #include "base/logging.h"
