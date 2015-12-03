@@ -1730,7 +1730,7 @@ class CancellingTileTaskRunner : public FakeTileTaskRunner {
     // Just call CompleteOnOriginThread on each item in the queue. As none of
     // these items have run yet, they will be treated as cancelled tasks.
     for (const auto& node : graph->nodes) {
-      static_cast<RasterTask*>(node.task)->CompleteOnOriginThread(this);
+      static_cast<TileTask*>(node.task)->CompleteOnOriginThread(this);
     }
   }
 };
@@ -1805,7 +1805,7 @@ class VerifyResourceContentIdTileTaskRunner : public FakeTileTaskRunner {
 
   void ScheduleTasks(TaskGraph* graph) override {
     for (const auto& node : graph->nodes) {
-      RasterTask* task = static_cast<RasterTask*>(node.task);
+      TileTask* task = static_cast<TileTask*>(node.task);
       // Triggers a call to AcquireBufferForRaster.
       task->ScheduleOnOriginThread(this);
       // Calls TileManager as though task was cancelled.
