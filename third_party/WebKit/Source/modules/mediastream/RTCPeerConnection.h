@@ -68,14 +68,14 @@ public:
     static RTCPeerConnection* create(ExecutionContext*, const Dictionary&, const Dictionary&, ExceptionState&);
     ~RTCPeerConnection() override;
 
-    void createOffer(RTCSessionDescriptionCallback*, RTCErrorCallback*, const Dictionary&, ExceptionState&);
+    void createOffer(ExecutionContext*, RTCSessionDescriptionCallback*, RTCErrorCallback*, const Dictionary&, ExceptionState&);
 
-    void createAnswer(RTCSessionDescriptionCallback*, RTCErrorCallback*, const Dictionary&, ExceptionState&);
+    void createAnswer(ExecutionContext*, RTCSessionDescriptionCallback*, RTCErrorCallback*, const Dictionary&, ExceptionState&);
 
-    void setLocalDescription(RTCSessionDescription*, VoidCallback*, RTCErrorCallback*, ExceptionState&);
+    void setLocalDescription(ExecutionContext*, RTCSessionDescription*, VoidCallback*, RTCErrorCallback*, ExceptionState&);
     RTCSessionDescription* localDescription();
 
-    void setRemoteDescription(RTCSessionDescription*, VoidCallback*, RTCErrorCallback*, ExceptionState&);
+    void setRemoteDescription(ExecutionContext*, RTCSessionDescription*, VoidCallback*, RTCErrorCallback*, ExceptionState&);
     RTCSessionDescription* remoteDescription();
 
     String signalingState() const;
@@ -105,7 +105,7 @@ public:
 
     void removeStream(MediaStream*, ExceptionState&);
 
-    void getStats(RTCStatsCallback* successCallback, MediaStreamTrack* selector);
+    void getStats(ExecutionContext*, RTCStatsCallback* successCallback, MediaStreamTrack* selector);
 
     RTCDataChannel* createDataChannel(String label, const Dictionary& dataChannelDict, ExceptionState&);
 

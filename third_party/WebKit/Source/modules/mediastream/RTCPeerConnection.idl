@@ -99,20 +99,20 @@ enum RTCIceConnectionState {
 
     // https://w3c.github.io/webrtc-pc/#legacy-interface-extensions
     // TODO(guidou): The failureCallback argument should be non-optional.
-    [RaisesException] void createOffer(RTCSessionDescriptionCallback successCallback, [Default=Undefined] optional RTCErrorCallback failureCallback, optional Dictionary rtcOfferOptions);
+    [CallWith=ExecutionContext, RaisesException] void createOffer(RTCSessionDescriptionCallback successCallback, [Default=Undefined] optional RTCErrorCallback failureCallback, optional Dictionary rtcOfferOptions);
     // TODO(guidou): None of the arguments should be optional.
-    [RaisesException] void setLocalDescription(RTCSessionDescription description, [Default=Undefined] optional VoidCallback successCallback, [Default=Undefined] optional RTCErrorCallback failureCallback);
+    [CallWith=ExecutionContext, RaisesException] void setLocalDescription(RTCSessionDescription description, [Default=Undefined] optional VoidCallback successCallback, [Default=Undefined] optional RTCErrorCallback failureCallback);
     // TODO(guidou): The failureCallback argument should be non-optional, and
     // there should be no mediaConstraints argument.
-    [RaisesException] void createAnswer(RTCSessionDescriptionCallback successCallback, [Default=Undefined] optional RTCErrorCallback failureCallback, optional Dictionary mediaConstraints);
+    [CallWith=ExecutionContext, RaisesException] void createAnswer(RTCSessionDescriptionCallback successCallback, [Default=Undefined] optional RTCErrorCallback failureCallback, optional Dictionary mediaConstraints);
     // TODO(guidou): The successCallback and failureCallback arguments should be
     // non-optional.
-    [RaisesException] void setRemoteDescription(RTCSessionDescription description, [Default=Undefined] optional VoidCallback successCallback, [Default=Undefined] optional RTCErrorCallback failureCallback);
+    [CallWith=ExecutionContext, RaisesException] void setRemoteDescription(RTCSessionDescription description, [Default=Undefined] optional VoidCallback successCallback, [Default=Undefined] optional RTCErrorCallback failureCallback);
     [RaisesException] void addIceCandidate(RTCIceCandidate candidate, VoidCallback successCallback, RTCErrorCallback failureCallback);
     // TODO(guidou): The selector argument should the first (nullable,
     // non-optional) argument, and there should be a third failureCallback
     // argument.
-    [LegacyInterfaceTypeChecking] void getStats(RTCStatsCallback successCallback, [Default=Undefined] optional MediaStreamTrack selector);
+    [CallWith=ExecutionContext, LegacyInterfaceTypeChecking] void getStats(RTCStatsCallback successCallback, [Default=Undefined] optional MediaStreamTrack selector);
 
     // https://w3c.github.io/webrtc-pc/#peer-to-peer-data-api
     // TODO(guidou): The label argument should have [TreatNullAs=EmptyString]

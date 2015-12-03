@@ -63709,6 +63709,32 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1038" label="PresentationConnectionClose"/>
   <int value="1039" label="SVG1DOMShape"/>
   <int value="1040" label="SVG1DOMText"/>
+  <int value="1041" label="RTCPeerConnectionConstructorConstraints"/>
+  <int value="1042" label="RTCPeerConnectionConstructorCompliant"/>
+  <int value="1043"
+      label="RTCPeerConnectionCreateOfferLegacyNoFailureCallback"/>
+  <int value="1044" label="RTCPeerConnectionCreateOfferLegacyFailureCallback"/>
+  <int value="1045" label="RTCPeerConnectionCreateOfferLegacyConstraints"/>
+  <int value="1046" label="RTCPeerConnectionCreateOfferLegacyOfferOptions"/>
+  <int value="1047" label="RTCPeerConnectionCreateOfferLegacyCompliant"/>
+  <int value="1048"
+      label="RTCPeerConnectionCreateAnswerLegacyNoFailureCallback"/>
+  <int value="1049" label="RTCPeerConnectionCreateAnswerLegacyFailureCallback"/>
+  <int value="1050" label="RTCPeerConnectionCreateAnswerLegacyConstraints"/>
+  <int value="1051" label="RTCPeerConnectionCreateAnswerLegacyCompliant"/>
+  <int value="1052"
+      label="RTCPeerConnectionSetLocalDescriptionLegacyNoSuccessCallback"/>
+  <int value="1053"
+      label="RTCPeerConnectionSetLocalDescriptionLegacyNoFailureCallback"/>
+  <int value="1054"
+      label="RTCPeerConnectionSetLocalDescriptionLegacyCompliant"/>
+  <int value="1055"
+      label="RTCPeerConnectionSetRemoteDescriptionLegacyNoSuccessCallback"/>
+  <int value="1056"
+      label="RTCPeerConnectionSetRemoteDescriptionLegacyNoFailureCallback"/>
+  <int value="1057"
+      label="RTCPeerConnectionSetRemoteDescriptionLegacyCompliant"/>
+  <int value="1058" label="RTCPeerConnectionGetStatsLegacyNonCompliant"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

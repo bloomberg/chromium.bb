@@ -9,11 +9,11 @@
 #include "components/test_runner/mock_webrtc_dtmf_sender_handler.h"
 #include "components/test_runner/test_interfaces.h"
 #include "components/test_runner/web_test_delegate.h"
-#include "third_party/WebKit/public/platform/WebMediaConstraints.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/WebKit/public/platform/WebRTCDataChannelInit.h"
+#include "third_party/WebKit/public/platform/WebRTCOfferOptions.h"
 #include "third_party/WebKit/public/platform/WebRTCPeerConnectionHandlerClient.h"
 #include "third_party/WebKit/public/platform/WebRTCStatsResponse.h"
 #include "third_party/WebKit/public/platform/WebRTCVoidRequest.h"
@@ -178,24 +178,24 @@ bool MockWebRTCPeerConnectionHandler::initialize(
 void MockWebRTCPeerConnectionHandler::createOffer(
     const WebRTCSessionDescriptionRequest& request,
     const WebMediaConstraints& constraints) {
-  WebString should_succeed;
-  if (constraints.getMandatoryConstraintValue("succeed", should_succeed) &&
-      should_succeed == "true") {
-    WebRTCSessionDescription session_description;
-    session_description.initialize("offer", "local");
-    interfaces_->GetDelegate()->PostTask(
-        new RTCSessionDescriptionRequestSuccededTask(
-            this, request, session_description));
-  } else
-    interfaces_->GetDelegate()->PostTask(
-        new RTCSessionDescriptionRequestFailedTask(this, request));
+  interfaces_->GetDelegate()->PostTask(
+      new RTCSessionDescriptionRequestFailedTask(this, request));
 }
 
 void MockWebRTCPeerConnectionHandler::createOffer(
     const WebRTCSessionDescriptionRequest& request,
     const blink::WebRTCOfferOptions& options) {
-  interfaces_->GetDelegate()->PostTask(
-      new RTCSessionDescriptionRequestFailedTask(this, request));
+  WebString should_succeed;
+  if (options.iceRestart() && options.voiceActivityDetection()) {
+    WebRTCSessionDescription session_description;
+    session_description.initialize("offer", "local");
+    interfaces_->GetDelegate()->PostTask(
+        new RTCSessionDescriptionRequestSuccededTask(
+            this, request, session_description));
+  } else {
+    interfaces_->GetDelegate()->PostTask(
+        new RTCSessionDescriptionRequestFailedTask(this, request));
+  }
 }
 
 void MockWebRTCPeerConnectionHandler::createAnswer(

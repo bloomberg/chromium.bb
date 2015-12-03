@@ -42,6 +42,7 @@ public:
     static PassRefPtr<WebMediaConstraintsPrivate> create();
     static PassRefPtr<WebMediaConstraintsPrivate> create(const WebVector<WebMediaConstraint>& optional, const WebVector<WebMediaConstraint>& mandatory);
 
+    bool isEmpty() const;
     void getOptionalConstraints(WebVector<WebMediaConstraint>&);
     void getMandatoryConstraints(WebVector<WebMediaConstraint>&);
     bool getMandatoryConstraintValue(const WebString& name, WebString& value);
@@ -70,6 +71,11 @@ WebMediaConstraintsPrivate::WebMediaConstraintsPrivate(const WebVector<WebMediaC
     : m_optional(optional)
     , m_mandatory(mandatory)
 {
+}
+
+bool WebMediaConstraintsPrivate::isEmpty() const
+{
+    return m_optional.isEmpty() && m_mandatory.isEmpty();
 }
 
 void WebMediaConstraintsPrivate::getOptionalConstraints(WebVector<WebMediaConstraint>& constraints)
@@ -114,6 +120,11 @@ void WebMediaConstraints::assign(const WebMediaConstraints& other)
 void WebMediaConstraints::reset()
 {
     m_private.reset();
+}
+
+bool WebMediaConstraints::isEmpty() const
+{
+    return m_private.isNull() || m_private->isEmpty();
 }
 
 void WebMediaConstraints::getMandatoryConstraints(WebVector<WebMediaConstraint>& constraints) const
