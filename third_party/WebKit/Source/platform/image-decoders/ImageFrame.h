@@ -30,6 +30,7 @@
 #include "platform/PlatformExport.h"
 #include "platform/geometry/IntRect.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
 #include "wtf/PassRefPtr.h"
 
@@ -37,7 +38,8 @@ namespace blink {
 
 // ImageFrame represents the decoded image data.  This buffer is what all
 // decoders write a single frame into.
-class PLATFORM_EXPORT ImageFrame {
+class PLATFORM_EXPORT ImageFrame final {
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     enum Status { FrameEmpty, FramePartial, FrameComplete };
     enum DisposalMethod {

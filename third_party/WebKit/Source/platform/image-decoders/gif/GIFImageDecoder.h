@@ -37,7 +37,7 @@ typedef Vector<unsigned char> GIFRow;
 namespace blink {
 
 // This class decodes the GIF image format.
-class PLATFORM_EXPORT GIFImageDecoder : public ImageDecoder {
+class PLATFORM_EXPORT GIFImageDecoder final : public ImageDecoder {
     WTF_MAKE_NONCOPYABLE(GIFImageDecoder);
 public:
     GIFImageDecoder(AlphaOption, GammaAndColorProfileOption, size_t maxDecodedBytes);

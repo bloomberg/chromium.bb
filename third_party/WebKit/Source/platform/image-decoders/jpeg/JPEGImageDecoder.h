@@ -32,7 +32,7 @@ namespace blink {
 
 class JPEGImageReader;
 
-class PLATFORM_EXPORT JPEGImageDecoder : public ImageDecoder {
+class PLATFORM_EXPORT JPEGImageDecoder final : public ImageDecoder {
     WTF_MAKE_NONCOPYABLE(JPEGImageDecoder);
 public:
     JPEGImageDecoder(AlphaOption, GammaAndColorProfileOption, size_t maxDecodedBytes);

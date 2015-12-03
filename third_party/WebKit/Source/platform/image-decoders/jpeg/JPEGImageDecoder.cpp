@@ -82,12 +82,14 @@ const unsigned scaleDenominator = 8;
 namespace blink {
 
 struct decoder_error_mgr {
+    DISALLOW_NEW();
     struct jpeg_error_mgr pub; // "public" fields for IJG library
     int num_corrupt_warnings;  // Counts corrupt warning messages
     jmp_buf setjmp_buffer;     // For handling catastropic errors
 };
 
 struct decoder_source_mgr {
+    DISALLOW_NEW();
     struct jpeg_source_mgr pub; // "public" fields for IJG library
     JPEGImageReader* reader;
 };
@@ -289,8 +291,9 @@ static yuv_subsampling yuvSubsampling(const jpeg_decompress_struct& info)
     return YUV_UNKNOWN;
 }
 
-class JPEGImageReader {
+class JPEGImageReader final {
     USING_FAST_MALLOC(JPEGImageReader);
+    WTF_MAKE_NONCOPYABLE(JPEGImageReader);
 public:
     JPEGImageReader(JPEGImageDecoder* decoder)
         : m_decoder(decoder)

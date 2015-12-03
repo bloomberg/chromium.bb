@@ -50,7 +50,9 @@ typedef Vector<char> ColorProfile;
 namespace blink {
 
 // ImagePlanes can be used to decode color components into provided buffers instead of using an ImageFrame.
-class PLATFORM_EXPORT ImagePlanes {
+class PLATFORM_EXPORT ImagePlanes final {
+    USING_FAST_MALLOC(ImagePlanes);
+    WTF_MAKE_NONCOPYABLE(ImagePlanes);
 public:
     ImagePlanes();
     ImagePlanes(void* planes[3], size_t rowBytes[3]);
@@ -212,7 +214,9 @@ public:
         return !memcmp(&profileData[12], "mntr", 4) || !memcmp(&profileData[12], "scnr", 4);
     }
 
-    class OutputDeviceProfile {
+    class OutputDeviceProfile final {
+        USING_FAST_MALLOC(OutputDeviceProfile);
+        WTF_MAKE_NONCOPYABLE(OutputDeviceProfile);
     public:
         OutputDeviceProfile()
             : m_outputDeviceProfile(0)

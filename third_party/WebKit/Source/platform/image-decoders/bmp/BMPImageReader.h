@@ -33,15 +33,18 @@
 
 #include "platform/image-decoders/FastSharedBufferReader.h"
 #include "platform/image-decoders/ImageDecoder.h"
+#include "wtf/Allocator.h"
 #include "wtf/CPU.h"
+#include "wtf/Noncopyable.h"
 #include <stdint.h>
 
 namespace blink {
 
 // This class decodes a BMP image.  It is used in the BMP and ICO decoders,
 // which wrap it in the appropriate code to read file headers, etc.
-class PLATFORM_EXPORT BMPImageReader {
+class PLATFORM_EXPORT BMPImageReader final {
     USING_FAST_MALLOC(BMPImageReader);
+    WTF_MAKE_NONCOPYABLE(BMPImageReader);
 public:
     // Read a value from |buffer|, converting to an int assuming little
     // endianness
@@ -106,6 +109,7 @@ private:
     // These are based on the Windows BITMAPINFOHEADER and RGBTRIPLE
     // structs, but with unnecessary entries removed.
     struct BitmapInfoHeader {
+        DISALLOW_NEW();
         uint32_t biSize;
         int32_t biWidth;
         int32_t biHeight;
@@ -114,6 +118,7 @@ private:
         uint32_t biClrUsed;
     };
     struct RGBTriple {
+        DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
         uint8_t rgbBlue;
         uint8_t rgbGreen;
         uint8_t rgbRed;

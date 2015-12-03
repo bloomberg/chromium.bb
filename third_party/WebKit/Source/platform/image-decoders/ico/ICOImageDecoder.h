@@ -39,7 +39,7 @@ namespace blink {
 class PNGImageDecoder;
 
 // This class decodes the ICO and CUR image formats.
-class PLATFORM_EXPORT ICOImageDecoder : public ImageDecoder {
+class PLATFORM_EXPORT ICOImageDecoder final : public ImageDecoder {
 public:
     ICOImageDecoder(AlphaOption, GammaAndColorProfileOption, size_t maxDecodedBytes);
     ~ICOImageDecoder() override;
@@ -69,6 +69,7 @@ private:
     };
 
     struct IconDirectoryEntry {
+        DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
         IntSize m_size;
         uint16_t m_bitCount;
         IntPoint m_hotSpot;
