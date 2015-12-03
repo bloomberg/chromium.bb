@@ -122,7 +122,7 @@ template("buildflag_header") {
       "--rulename",
       get_label_info(":$target_name", "label_no_toolchain"),
       "--gen-dir",
-      rebase_path(root_gen_dir, root_out_dir),
+      rebase_path(root_gen_dir, root_build_dir),
       "--definitions",
       "{{response_file_name}}",
     ]

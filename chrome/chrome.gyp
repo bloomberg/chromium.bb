@@ -420,6 +420,7 @@
           ],
         },
         {
+          # GN version: //chrome/tools/crash_service
           'target_name': 'crash_service',
           'type': 'executable',
           'dependencies': [
@@ -488,6 +489,7 @@
           },
         },
         {
+          # GN version: //chrome/tools/crash_service:crash_service_win64
           'target_name': 'crash_service_win64',
           'type': 'executable',
           'product_name': 'crash_service64',

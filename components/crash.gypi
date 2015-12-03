@@ -345,6 +345,7 @@
               },
             },
             {
+              # GN version: //components/crash/content/tools:crash_service
               'target_name': 'breakpad_crash_service_win64',
               'type': 'static_library',
               'dependencies': [

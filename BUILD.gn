@@ -560,7 +560,6 @@ group("both_gn_and_gyp") {
       "//chrome_elf:dll_hash_main",
       "//cloud_print:cloud_print_unittests",
       "//cloud_print/service/win:cloud_print_service",
-      "//components/crash/content/tools:crash_service",
       "//components/wifi:wifi_test",
       "//net:quic_client",
       "//net:quic_server",
@@ -785,7 +784,7 @@ if (!is_ios) {
     if (is_win) {
       deps += [
         "//components/test_runner:layout_test_helper",
-        "//content/shell:crash_service",
+        "//content/shell:content_shell_crash_service",
       ]
     }
 
@@ -844,14 +843,12 @@ group("chromium_builder_perf") {
 
     if (is_win) {
       deps += [
-        "//content/shell:crash_service",
+        "//chrome/tools/crash_service",
         # "//gpu:angle_perftests", TODO(GYP): crbug.com/537008
       ]
 
       if (target_cpu == "x86") {
-        deps += [
-          # "//content/shell:crash_service_win64", TODO(GYP): crbug.com/537009
-        ]
+        deps += [ "//chrome/tools/crash_service:crash_service_win64" ]
       }
     } else {
       deps += [ "//breakpad:minidump_stackwalk($host_toolchain)" ]

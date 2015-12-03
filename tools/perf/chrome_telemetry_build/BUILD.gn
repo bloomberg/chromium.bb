@@ -21,7 +21,7 @@ group("telemetry_chrome_test") {
   ]
 
   if (is_win) {
-    data_deps += [ "//content/shell:crash_service" ]
+    data_deps += [ "//chrome/tools/crash_service" ]
     data += [ "//components/crash/content/tools/generate_breakpad_symbols.py" ]
   }
 
