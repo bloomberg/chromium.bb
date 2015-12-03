@@ -9,6 +9,8 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "cc/blink/web_layer_impl.h"
+#include "cc/layers/layer_settings.h"
 #include "components/html_viewer/blink_platform_impl.h"
 #include "components/html_viewer/blink_settings_impl.h"
 #include "components/html_viewer/media_factory.h"
@@ -127,6 +129,12 @@ void GlobalState::InitIfNecessary(const gfx::Size& screen_size_in_pixels,
   app_->ConnectToService("mojo:mus", &gpu_service_);
   gpu_service_->GetGpuInfo(base::Bind(&GlobalState::GetGpuInfoCallback,
                                       base::Unretained(this)));
+
+  // Use new animation system (cc::AnimationHost).
+  cc::LayerSettings layer_settings;
+  layer_settings.use_compositor_animation_timelines = true;
+  cc_blink::WebLayerImpl::SetLayerSettings(layer_settings);
+  blink::WebRuntimeFeatures::enableCompositorAnimationTimelines(true);
 
   renderer_scheduler_ = scheduler::RendererScheduler::Create();
   blink_platform_.reset(
