@@ -4186,6 +4186,8 @@
 
       Exceptions can be defined in the URL whitelist policy. These policies are limited to 1000 entries; subsequent entries will be ignored.
 
+      Note that it is not recommended to block internal 'chrome://*' URLs since this may lead to unexpected errors.
+
       If this policy is not set no URL will be blacklisted in the browser.''',
     },
     {
