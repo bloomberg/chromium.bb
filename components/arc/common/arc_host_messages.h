@@ -10,7 +10,9 @@
 
 #include "ipc/ipc_message_macros.h"
 
-#include "components/arc/common/arc_message_types.h"
+// Using relative paths since this file is shared between chromium and android.
+#include "arc_message_types.h"
+#include "arc_notification_types.h"
 
 #define IPC_MESSAGE_START ArcInstanceHostMsgStart
 
@@ -36,3 +38,14 @@ IPC_MESSAGE_CONTROL4(ArcInstanceHostMsg_AppIcon,
                      std::string, /* activity */
                      arc::ScaleFactor, /* scale_factor */
                      std::vector<uint8_t> /* icon_png_data */)
+
+// Tells the Chrome that a notification is posted (created or updated) on
+// Android.
+// |notification_data| is the data of notification (id, texts, icon and ...).
+IPC_MESSAGE_CONTROL1(ArcInstanceHostMsg_NotificationPosted,
+                     arc::ArcNotificationData /* notification_data */);
+
+// Notifies that a notification is removed on Android.
+// |key| is the identifier of the notification.
+IPC_MESSAGE_CONTROL1(ArcInstanceHostMsg_NotificationRemoved,
+                     std::string /* key */);

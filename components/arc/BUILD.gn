@@ -9,6 +9,7 @@ static_library("arc") {
     "arc_bridge_service_impl.cc",
     "arc_bridge_service_impl.h",
     "common/arc_message_generator.cc",
+    "common/arc_notification_types.cc",
   ]
 
   deps = [

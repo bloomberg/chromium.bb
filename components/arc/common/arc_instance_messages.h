@@ -12,7 +12,9 @@
 #include "base/file_descriptor_posix.h"
 #include "ipc/ipc_message_macros.h"
 
-#include "components/arc/common/arc_message_types.h"
+// Using relative paths since this file is shared between chromium and android.
+#include "arc_message_types.h"
+#include "arc_notification_types.h"
 
 #define IPC_MESSAGE_START ArcInstanceMsgStart
 
@@ -46,3 +48,9 @@ IPC_MESSAGE_CONTROL3(ArcInstanceMsg_RequestAppIcon,
                      std::string, /* package */
                      std::string, /* activity */
                      arc::ScaleFactor /* scale factor */)
+
+// Sends an event from Chrome notification UI to Android.
+// |event| is a type of occured event.
+IPC_MESSAGE_CONTROL2(ArcInstanceMsg_SendNotificationEventToAndroid,
+                     std::string /* key */,
+                     arc::ArcNotificationEvent /* event */);

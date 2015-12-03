@@ -108,6 +108,22 @@ bool ArcBridgeServiceImpl::RegisterInputDevice(const std::string& name,
       name, device_type, base::FileDescriptor(fd.Pass())));
 }
 
+bool ArcBridgeServiceImpl::SendNotificationEventToAndroid(
+    const std::string& key, ArcNotificationEvent event) {
+  DCHECK(ipc_task_runner_->RunsTasksOnCurrentThread());
+  if (key.empty()) {
+    LOG(ERROR) << "SendNotificationToAndroid failed: Wrong parameter";
+    return false;
+  }
+  if (state() != State::READY) {
+    LOG(ERROR) << "Called SendNotificationEventToAndroid when the service is"
+      << "not ready";
+    return false;
+  }
+  return ipc_channel_->Send(
+      new ArcInstanceMsg_SendNotificationEventToAndroid(key, event));
+}
+
 bool ArcBridgeServiceImpl::RefreshAppList() {
   DCHECK(origin_task_runner()->RunsTasksOnCurrentThread());
   if (state() != State::READY) {
@@ -251,6 +267,20 @@ void ArcBridgeServiceImpl::OnInstanceBootPhase(InstanceBootPhase phase) {
   FOR_EACH_OBSERVER(Observer, observer_list(), OnInstanceBootPhase(phase));
 }
 
+void ArcBridgeServiceImpl::OnNotificationPostedFromAndroid(
+    const arc::ArcNotificationData& data) {
+  DCHECK(origin_task_runner()->RunsTasksOnCurrentThread());
+  FOR_EACH_OBSERVER(NotificationObserver, notification_observer_list(),
+                    OnNotificationPostedFromAndroid(data));
+}
+
+void ArcBridgeServiceImpl::OnNotificationRemovedFromAndroid(
+    const std::string& key) {
+  DCHECK(origin_task_runner()->RunsTasksOnCurrentThread());
+  FOR_EACH_OBSERVER(NotificationObserver, notification_observer_list(),
+                    OnNotificationRemovedFromAndroid(key));
+}
+
 bool ArcBridgeServiceImpl::OnMessageReceived(const IPC::Message& message) {
   DCHECK(origin_task_runner()->RunsTasksOnCurrentThread());
   bool handled = true;
@@ -260,6 +290,10 @@ bool ArcBridgeServiceImpl::OnMessageReceived(const IPC::Message& message) {
                         OnInstanceBootPhase)
     IPC_MESSAGE_HANDLER(ArcInstanceHostMsg_AppListRefreshed, OnAppListRefreshed)
     IPC_MESSAGE_HANDLER(ArcInstanceHostMsg_AppIcon, OnAppIcon)
+    IPC_MESSAGE_HANDLER(ArcInstanceHostMsg_NotificationPosted,
+                        OnNotificationPostedFromAndroid)
+    IPC_MESSAGE_HANDLER(ArcInstanceHostMsg_NotificationRemoved,
+                        OnNotificationRemovedFromAndroid)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 

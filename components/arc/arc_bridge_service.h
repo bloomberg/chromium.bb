@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "components/arc/common/arc_message_types.h"
+#include "components/arc/common/arc_notification_types.h"
 
 namespace base {
 class CommandLine;
@@ -80,6 +81,19 @@ class ArcBridgeService {
     virtual ~Observer() {}
   };
 
+  class NotificationObserver {
+   public:
+    // Called whenever a notification has been posted on Android side. This
+    // event is used for both creation and update.
+    virtual void OnNotificationPostedFromAndroid(
+        const ArcNotificationData& data) {}
+    // Called whenever a notification has been removed on Android side.
+    virtual void OnNotificationRemovedFromAndroid(const std::string& key) {}
+
+   protected:
+    virtual ~NotificationObserver() {}
+  };
+
   // Notifies ARC apps related events.
   class AppObserver {
    public:
@@ -129,6 +143,8 @@ class ArcBridgeService {
   // class was created on.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
+  void AddNotificationObserver(NotificationObserver* observer);
+  void RemoveNotificationObserver(NotificationObserver* observer);
 
   // Adds or removes ARC app observers. This can only be called on the thread
   // that this class was created on.
@@ -150,6 +166,10 @@ class ArcBridgeService {
   virtual bool RegisterInputDevice(const std::string& name,
                                    const std::string& device_type,
                                    base::ScopedFD fd) = 0;
+
+  // Sends a notification event to Android side.
+  virtual bool SendNotificationEventToAndroid(const std::string& key,
+                                              ArcNotificationEvent event) = 0;
 
   // Requests to refresh an app list.
   virtual bool RefreshAppList() = 0;
@@ -177,6 +197,9 @@ class ArcBridgeService {
   }
 
   base::ObserverList<Observer>& observer_list() { return observer_list_; }
+  base::ObserverList<NotificationObserver>& notification_observer_list() {
+    return notification_observer_list_;
+  }
 
   base::ObserverList<AppObserver>& app_observer_list() {
     return app_observer_list_;
@@ -186,6 +209,7 @@ class ArcBridgeService {
   scoped_refptr<base::SequencedTaskRunner> origin_task_runner_;
 
   base::ObserverList<Observer> observer_list_;
+  base::ObserverList<NotificationObserver> notification_observer_list_;
 
   base::ObserverList<AppObserver> app_observer_list_;
 

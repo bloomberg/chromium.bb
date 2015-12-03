@@ -38,6 +38,9 @@ class ArcBridgeServiceImpl : public ArcBridgeService,
                            const std::string& device_type,
                            base::ScopedFD fd) override;
 
+  bool SendNotificationEventToAndroid(const std::string& key,
+                                      ArcNotificationEvent event) override;
+
   // Requests to refresh an app list.
   bool RefreshAppList() override;
 
@@ -81,6 +84,10 @@ class ArcBridgeServiceImpl : public ArcBridgeService,
 
   // Called when the instance has reached a boot phase
   void OnInstanceBootPhase(InstanceBootPhase phase);
+  // Handler for ArcInstanceHostMsg_NotificationPosted message.
+  void OnNotificationPostedFromAndroid(const ArcNotificationData& data);
+  // Handler for ArcInstanceHostMsg_NotificationRemoved message.
+  void OnNotificationRemovedFromAndroid(const std::string& key);
 
   // Called whenever ARC sends information about available apps.
   void OnAppListRefreshed(const std::vector<arc::AppInfo>& apps);
