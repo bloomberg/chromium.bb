@@ -35,6 +35,7 @@
 extern "C" {
 #include "png.h"
 }
+#include "wtf/Allocator.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 
@@ -42,7 +43,9 @@ namespace blink {
 
 struct ImageDataBuffer;
 
-class PLATFORM_EXPORT PNGImageEncoderState {
+class PLATFORM_EXPORT PNGImageEncoderState final {
+    USING_FAST_MALLOC(PNGImageEncoderState);
+    WTF_MAKE_NONCOPYABLE(PNGImageEncoderState);
 public:
     static PassOwnPtr<PNGImageEncoderState> create(const IntSize& imageSize, Vector<unsigned char>* output);
     ~PNGImageEncoderState();
@@ -56,6 +59,7 @@ private:
 
 
 class PLATFORM_EXPORT PNGImageEncoder {
+    STATIC_ONLY(PNGImageEncoder);
 public:
     // Encode the input data with default compression quality. See also https://crbug.com/179289
     static bool encode(const ImageDataBuffer&, Vector<unsigned char>* output);

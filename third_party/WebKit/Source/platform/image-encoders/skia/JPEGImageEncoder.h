@@ -31,6 +31,7 @@
 #ifndef JPEGImageEncoder_h
 #define JPEGImageEncoder_h
 
+#include "wtf/Allocator.h"
 #include "wtf/Vector.h"
 
 namespace blink {
@@ -38,6 +39,7 @@ namespace blink {
 struct ImageDataBuffer;
 
 class JPEGImageEncoder {
+    STATIC_ONLY(JPEGImageEncoder);
 public:
     // Encode the image data with a compression quality in [0-100].
     static bool encode(const ImageDataBuffer&, int quality, Vector<unsigned char>*);

@@ -31,6 +31,7 @@
 #ifndef WEBPImageEncoder_h
 #define WEBPImageEncoder_h
 
+#include "wtf/Allocator.h"
 #include "wtf/Vector.h"
 
 namespace blink {
@@ -38,6 +39,7 @@ namespace blink {
 struct ImageDataBuffer;
 
 class WEBPImageEncoder {
+    STATIC_ONLY(WEBPImageEncoder);
 public:
     // Encode the input data with a compression quality in [0-100].
     static bool encode(const ImageDataBuffer&, int quality, Vector<unsigned char>*);

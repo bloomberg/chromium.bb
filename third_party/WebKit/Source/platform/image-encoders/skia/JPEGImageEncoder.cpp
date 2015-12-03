@@ -44,6 +44,7 @@ extern "C" {
 namespace blink {
 
 struct JPEGOutputBuffer : public jpeg_destination_mgr {
+    DISALLOW_NEW();
     Vector<unsigned char>* output;
     Vector<unsigned char> buffer;
 };
