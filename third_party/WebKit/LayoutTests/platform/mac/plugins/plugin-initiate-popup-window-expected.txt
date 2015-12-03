@@ -1,6 +1,6 @@
 CONSOLE MESSAGE: line 67: PLUGIN: getFocusEvent
 CONSOLE MESSAGE: line 17: window count: 1
-CONSOLE MESSAGE: line 21: PLUGIN: getFocusEvent
+CONSOLE MESSAGE: line 20: PLUGIN: getFocusEvent
 CONSOLE MESSAGE: line 21: PLUGIN: getFocusEvent
 CONSOLE MESSAGE: line 21: PLUGIN: mouseDown at (12, 12)
 CONSOLE MESSAGE: line 30: window count: 2
