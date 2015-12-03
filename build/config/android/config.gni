@@ -45,6 +45,12 @@ if (is_android) {
     android_sdk_version = default_android_sdk_version
     android_sdk_build_tools_version = default_android_sdk_build_tools_version
 
+    # Android versionCode for android_apk()s that don't expclitly set one.
+    android_default_version_code = "1"
+
+    # Android versionName for android_apk()s that don't expclitly set one.
+    android_default_version_name = "Developer Build"
+
     # The path to the keystore to use for signing builds.
     android_keystore_path = default_android_keystore_path
 

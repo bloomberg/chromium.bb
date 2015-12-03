@@ -1279,12 +1279,12 @@ template("android_apk") {
 
   _native_libs = []
 
-  _version_code = "1"
+  _version_code = android_default_version_code
   if (defined(invoker.version_code)) {
     _version_code = invoker.version_code
   }
 
-  _version_name = "Developer Build"
+  _version_name = android_default_version_name
   if (defined(invoker.version_name)) {
     _version_name = invoker.version_name
   }
