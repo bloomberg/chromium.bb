@@ -557,11 +557,12 @@ config("compiler_cpu_abi") {
           "-arch",
           "arm-nonsfi",
           "--pnacl-bias=arm-nonsfi",
-          "--target=arm-unknown-nacl",
+          "--target=armv7-unknown-nacl-gnueabihf",
         ]
         ldflags += [
           "-arch",
           "arm-nonsfi",
+          "--target=armv7-unknown-nacl-gnueabihf",
         ]
       }
     }
