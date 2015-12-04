@@ -161,6 +161,8 @@ struct PesHeader {
 // https://en.wikipedia.org/wiki/MPEG_transport_stream
 class Webm2Pes {
  public:
+  enum VideoCodec { VP8, VP9 };
+
   Webm2Pes(const std::string& input_file, const std::string& output_file)
       : input_file_name_(input_file), output_file_name_(output_file) {}
 
@@ -195,6 +197,9 @@ class Webm2Pes {
 
   // Video track num in the WebM file.
   int video_track_num_ = 0;
+
+  // Video codec reported by CodecName from Video TrackEntry.
+  VideoCodec codec_;
 
   // Input timecode scale.
   std::int64_t timecode_scale_ = 1000000;
