@@ -100,8 +100,8 @@ void BookmarkChangeProcessor::EncodeFavicon(
   const gfx::Image& favicon = model->GetFavicon(src);
 
   // Check for empty images.  This can happen if the favicon is
-  // still being loaded.
-  if (favicon.IsEmpty())
+  // still being loaded.  Also avoid syncing touch icons.
+  if (favicon.IsEmpty() || model->GetFaviconType(src) != favicon_base::FAVICON)
     return;
 
   // Re-encode the BookmarkNode's favicon as a PNG, and pass the data to the
