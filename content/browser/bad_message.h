@@ -123,6 +123,7 @@ enum BadMessageReason {
   RFH_OWNER_PROPERTY = 99,
   BDH_EMPTY_OR_INVALID_FILTERS = 100,
   WC_CONTENT_WITH_CERT_ERRORS_BAD_SECURITY_INFO = 101,
+  RFMF_RENDERER_FAKED_ITS_OWN_DEATH = 102,
 
   // Please add new elements here. The naming convention is abbreviated class
   // name (e.g. RenderFrameHost becomes RFH) plus a unique description of the

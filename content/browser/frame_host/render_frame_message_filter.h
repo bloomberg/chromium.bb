@@ -99,6 +99,8 @@ class RenderFrameMessageFilter : public BrowserMessageFilter {
                           ThreeDAPIType context_type,
                           int arb_robustness_status_code);
 
+  void OnRenderProcessGone();
+
 #if defined(ENABLE_PLUGINS)
   void OnGetPlugins(bool refresh, IPC::Message* reply_msg);
   void GetPluginsCallback(IPC::Message* reply_msg,

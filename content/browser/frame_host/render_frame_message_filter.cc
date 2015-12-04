@@ -299,6 +299,8 @@ bool RenderFrameMessageFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_CookiesEnabled, OnCookiesEnabled)
     IPC_MESSAGE_HANDLER(FrameHostMsg_Are3DAPIsBlocked, OnAre3DAPIsBlocked)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidLose3DContext, OnDidLose3DContext)
+    IPC_MESSAGE_HANDLER_GENERIC(FrameHostMsg_RenderProcessGone,
+                                OnRenderProcessGone())
 #if defined(ENABLE_PLUGINS)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(FrameHostMsg_GetPlugins, OnGetPlugins)
     IPC_MESSAGE_HANDLER(FrameHostMsg_GetPluginInfo, OnGetPluginInfo)
@@ -468,6 +470,14 @@ void RenderFrameMessageFilter::OnDidLose3DContext(
       top_origin_url, guilt);
 }
 
+void RenderFrameMessageFilter::OnRenderProcessGone() {
+  // FrameHostMessage_RenderProcessGone is a synthetic IPC message used by
+  // RenderProcessHostImpl to clean things up after a crash (it's injected
+  // downstream of this filter). Allowing it to proceed would enable a renderer
+  // to fake its own death; instead, actually kill the renderer.
+  bad_message::ReceivedBadMessage(
+      this, bad_message::RFMF_RENDERER_FAKED_ITS_OWN_DEATH);
+}
 
 #if defined(ENABLE_PLUGINS)
 

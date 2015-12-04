@@ -56053,6 +56053,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="98" label="BDH_CHARACTERISTIC_ALREADY_SUBSCRIBED"/>
   <int value="99" label="RFH_OWNER_PROPERTY"/>
   <int value="100" label="BDH_EMPTY_OR_INVALID_FILTERS"/>
+  <int value="101" label="WC_CONTENT_WITH_CERT_ERRORS_BAD_SECURITY_INFO"/>
+  <int value="102" label="RFMF_RENDERER_FAKED_ITS_OWN_DEATH"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions" type="int">
