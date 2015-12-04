@@ -16,10 +16,12 @@ def CommonChecks(input_api, output_api, tests_to_black_list):
   results = []
   results.extend(input_api.canned_checks.CheckOwners(input_api, output_api))
   black_list = list(input_api.DEFAULT_BLACK_LIST) + [
+      r'^\.recipe_deps[\/\\].*',
       r'^cpplint\.py$',
       r'^cpplint_chromium\.py$',
       r'^external_bin[\/\\].+',
       r'^python[0-9]*_bin[\/\\].+',
+      r'^recipes\.py$',
       r'^site-packages-py[0-9]\.[0-9][\/\\].+',
       r'^svn_bin[\/\\].+',
       r'^testing_support[\/\\]_rietveld[\/\\].+']
