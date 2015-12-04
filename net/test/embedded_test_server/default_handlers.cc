@@ -623,7 +623,6 @@ void RegisterDefaultHandlers(EmbeddedTestServer* server) {
   // TODO(svaldez): HandleDownload
   // TODO(svaldez): HandleDownloadFinish
   // TODO(svaldez): HandleZipFile
-  // TODO(svaldez): HandleRangeReset
   // TODO(svaldez): HandleSSLManySmallRecords
   // TODO(svaldez): HandleChunkedServer
   // TODO(svaldez): HandleGetSSLSessionCache

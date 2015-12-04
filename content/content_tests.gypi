@@ -75,6 +75,8 @@
       'public/test/test_browser_thread_bundle.h',
       'public/test/test_content_client_initializer.cc',
       'public/test/test_content_client_initializer.h',
+      'public/test/test_download_request_handler.cc',
+      'public/test/test_download_request_handler.h',
       'public/test/test_file_error_injector.cc',
       'public/test/test_file_error_injector.h',
       'public/test/test_file_system_backend.cc',
