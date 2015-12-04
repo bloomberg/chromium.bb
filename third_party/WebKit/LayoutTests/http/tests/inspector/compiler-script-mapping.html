@@ -87,7 +87,7 @@ function test()
                 "mappings":"AAASA,QAAAA,IAAG,CAACC,CAAD,CAAaC,CAAb,CACZ,CACI,MAAOD,EAAP,CAAoBC,CADxB,CAIA,IAAIC,OAAS;A",
                 "sources":["example.js"]
             };
-            var mapping = new WebInspector.SourceMap("source-map.json", mappingPayload);
+            var mapping = new WebInspector.SourceMap("compiled.js", "source-map.json", mappingPayload);
 
             checkMapping(0, 9, "example.js", 0, 9, mapping);
             checkMapping(0, 13, "example.js", 0, 13, mapping);
@@ -112,7 +112,7 @@ function test()
                 "mappings":"AAAA,C,CAAE;",
                 "sources":["example.js"]
             };
-            var mapping = new WebInspector.SourceMap("source-map.json", mappingPayload);
+            var mapping = new WebInspector.SourceMap("compiled.js", "source-map.json", mappingPayload);
             checkMapping(0, 0, "example.js", 0, 0, mapping);
             var entry = mapping.findEntry(0, 1);
             InspectorTest.assertTrue(!entry.sourceURL);
@@ -126,7 +126,7 @@ function test()
                 "mappings":"AAAA;;;CACA",
                 "sources":["example.js"]
             };
-            var mapping = new WebInspector.SourceMap("source-map.json", mappingPayload);
+            var mapping = new WebInspector.SourceMap("compiled.js", "source-map.json", mappingPayload);
             checkMapping(0, 0, "example.js", 0, 0, mapping);
             checkReverseMapping(3, 1, "example.js", 1, mapping);
             next();
@@ -149,7 +149,7 @@ function test()
                     }
                 }
             ]};
-            var mapping = new WebInspector.SourceMap("source-map.json", mappingPayload);
+            var mapping = new WebInspector.SourceMap("compiled.js", "source-map.json", mappingPayload);
             InspectorTest.assertEquals(2, mapping.sources().length);
             checkMapping(0, 0, "source1.js", 0, 0, mapping);
             checkMapping(0, 1, "source1.js", 2, 1, mapping);
@@ -458,11 +458,24 @@ function test()
                 "sources":["example.js"],
                 "sourceRoot":"/"
             };
-            var mapping = new WebInspector.SourceMap("source-map.json", mappingPayload);
+            var mapping = new WebInspector.SourceMap("compiled.js", "source-map.json", mappingPayload);
             checkMapping(0, 9, "/example.js", 0, 9, mapping);
             checkReverseMapping(0, 0, "/example.js", 0, mapping);
             next();
         },
+
+        function testNameClash(next)
+        {
+            var mappingPayload = {
+                "mappings":"AAASA,QAAAA,IAAG,CAACC,CAAD,CAAaC,CAAb,CACZ,CACI,MAAOD,EAAP,CAAoBC,CADxB,CAIA,IAAIC,OAAS;",
+                "sources":["example.js"],
+                "sourcesContent":["var i = 0;"]
+            };
+            var mapping = new WebInspector.SourceMap("example.js", "source-map.json",mappingPayload);
+            checkMapping(0, 9, "example.js", 0, 9, mapping);
+            checkReverseMapping(0, 0, "example.js", 0, mapping);
+            next();
+        }
     ]);
 };
 
