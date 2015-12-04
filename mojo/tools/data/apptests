@@ -46,7 +46,6 @@ tests = [
   #  'test': 'mojo:runner_apptests',
   #  'type': 'gtest_isolated',
   #},
-  mus_apptests,
 ]
 
 # TODO(msw): Get these tests passing on Android too. http://crbug.com/486220
@@ -90,6 +89,8 @@ if config.target_os != config.OS_ANDROID:
       'test': 'mojo:media_apptests',
       'type': 'gtest_isolated',
     },
+    # TODO(crbug.com/560626): Fix and enable mus_apptests on Android.
+    mus_apptests,
     {
       'test': 'mojo:sql_apptests',
       'type': 'gtest_isolated',
