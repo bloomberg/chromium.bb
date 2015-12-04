@@ -387,6 +387,14 @@ class GitRebaseUpdateTest(git_test_utils.GitRepoReadWriteTestBase):
                   M H I J K L
     """)
 
+  def testReparentBranchWithoutUpstream(self):
+    self.repo.git('branch', 'nerp')
+    self.repo.git('checkout', 'nerp')
+
+    _, err = self.repo.capture_stdio(self.rp.main, ['branch_K'])
+
+    self.assertIn('Unable to determine nerp@{upstream}', err)
+
 
 if __name__ == '__main__':
   sys.exit(coverage_utils.covered_main((

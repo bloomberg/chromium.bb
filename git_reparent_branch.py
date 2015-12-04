@@ -31,6 +31,7 @@ def main(args):
   # TODO(iannucci): Allow specification of the branch-to-reparent
 
   branch = current_branch()
+
   if opts.root:
     new_parent = root_ref
   elif opts.lkgr:
@@ -45,6 +46,16 @@ def main(args):
     parser.error('Must be on the branch you want to reparent')
   if new_parent == cur_parent:
     parser.error('Cannot reparent a branch to its existing parent')
+
+  if not cur_parent:
+    msg = (
+      "Unable to determine %s@{upstream}.\n\nThis can happen if you didn't use "
+      "`git new-branch` to create the branch and haven't used "
+      "`git branch --set-upstream-to` to assign it one.\n\nPlease assign an "
+      "upstream branch and then run this command again."
+    )
+    print >> sys.stderr, msg % branch
+    return 1
 
   mbase = get_or_create_merge_base(branch, cur_parent)
 
