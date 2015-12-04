@@ -23,8 +23,9 @@ namespace {
 struct TestData {
   const char* raw_headers;
   const char* expected_headers;
-  int expected_response_code;
   HttpVersion expected_version;
+  int expected_response_code;
+  const char* expected_status_text;
 };
 
 class HttpResponseHeadersTest : public testing::Test {
@@ -110,14 +111,13 @@ TEST_P(CommonHttpResponseHeadersTest, TestCommon) {
 
   EXPECT_EQ(expected_headers, headers);
 
-  EXPECT_EQ(test.expected_response_code, parsed->response_code());
-
   EXPECT_TRUE(test.expected_version == parsed->GetHttpVersion());
+  EXPECT_EQ(test.expected_response_code, parsed->response_code());
+  EXPECT_EQ(test.expected_status_text, parsed->GetStatusText());
 }
 
 TestData response_headers_tests[] = {
-    {// Normalise whitespace.
-
+    {// Normalize whitespace.
      "HTTP/1.1    202   Accepted  \n"
      "Content-TYPE  : text/html; charset=utf-8  \n"
      "Set-Cookie: a \n"
@@ -127,10 +127,8 @@ TestData response_headers_tests[] = {
      "Content-TYPE: text/html; charset=utf-8\n"
      "Set-Cookie: a, b\n",
 
-     202,
-     HttpVersion(1, 1)},
+     HttpVersion(1, 1), 202, "Accepted"},
     {// Normalize leading whitespace.
-
      "HTTP/1.1    202   Accepted  \n"
      // Starts with space -- will be skipped as invalid.
      "  Content-TYPE  : text/html; charset=utf-8  \n"
@@ -140,10 +138,14 @@ TestData response_headers_tests[] = {
      "HTTP/1.1 202 Accepted\n"
      "Set-Cookie: a, b\n",
 
-     202,
-     HttpVersion(1, 1)},
-    {// Normalize blank headers.
+     HttpVersion(1, 1), 202, "Accepted"},
+    {// Keep whitespace within status text.
+     "HTTP/1.0 404 Not   found  \n",
 
+     "HTTP/1.0 404 Not   found\n",
+
+     HttpVersion(1, 0), 404, "Not   found"},
+    {// Normalize blank headers.
      "HTTP/1.1 200 OK\n"
      "Header1 :          \n"
      "Header2: \n"
@@ -157,66 +159,58 @@ TestData response_headers_tests[] = {
      "Header3: \n"
      "Header5: \n",
 
-     200,
-     HttpVersion(1, 1)},
+     HttpVersion(1, 1), 200, "OK"},
     {// Don't believe the http/0.9 version if there are headers!
-
      "hTtP/0.9 201\n"
      "Content-TYPE: text/html; charset=utf-8\n",
 
      "HTTP/1.0 201\n"
      "Content-TYPE: text/html; charset=utf-8\n",
 
-     201,
-     HttpVersion(1, 0)},
+     HttpVersion(1, 0), 201, ""},
     {// Accept the HTTP/0.9 version number if there are no headers.
      // This is how HTTP/0.9 responses get constructed from
      // HttpNetworkTransaction.
-
      "hTtP/0.9 200 OK\n",
 
      "HTTP/0.9 200 OK\n",
 
-     200,
-     HttpVersion(0, 9)},
+     HttpVersion(0, 9), 200, "OK"},
     {// Do not add missing status text.
-
      "HTTP/1.1 201\n"
      "Content-TYPE: text/html; charset=utf-8\n",
 
      "HTTP/1.1 201\n"
      "Content-TYPE: text/html; charset=utf-8\n",
 
-     201,
-     HttpVersion(1, 1)},
+     HttpVersion(1, 1), 201, ""},
     {// Normalize bad status line.
-
      "SCREWED_UP_STATUS_LINE\n"
      "Content-TYPE: text/html; charset=utf-8\n",
 
      "HTTP/1.0 200 OK\n"
      "Content-TYPE: text/html; charset=utf-8\n",
 
-     200,
-     HttpVersion(1, 0)},
-    {// Normalize invalid status code.
+     HttpVersion(1, 0), 200, "OK"},
+    {// Normalize bad status line.
+     "Foo bar.",
 
+     "HTTP/1.0 200\n",
+
+     HttpVersion(1, 0), 200, ""},
+    {// Normalize invalid status code.
      "HTTP/1.1 -1  Unknown\n",
 
      "HTTP/1.1 200\n",
 
-     200,
-     HttpVersion(1, 1)},
+     HttpVersion(1, 1), 200, ""},
     {// Normalize empty header.
-
      "",
 
      "HTTP/1.0 200 OK\n",
 
-     200,
-     HttpVersion(1, 0)},
+     HttpVersion(1, 0), 200, "OK"},
     {// Normalize headers that start with a colon.
-
      "HTTP/1.1    202   Accepted  \n"
      "foo: bar\n"
      ": a \n"
@@ -227,10 +221,8 @@ TestData response_headers_tests[] = {
      "foo: bar\n"
      "baz: blat\n",
 
-     202,
-     HttpVersion(1, 1)},
+     HttpVersion(1, 1), 202, "Accepted"},
     {// Normalize headers that end with a colon.
-
      "HTTP/1.1    202   Accepted  \n"
      "foo:   \n"
      "bar:\n"
@@ -243,18 +235,14 @@ TestData response_headers_tests[] = {
      "baz: blat\n"
      "zip: \n",
 
-     202,
-     HttpVersion(1, 1)},
+     HttpVersion(1, 1), 202, "Accepted"},
     {// Normalize whitespace headers.
-
      "\n   \n",
 
      "HTTP/1.0 200 OK\n",
 
-     200,
-     HttpVersion(1, 0)},
+     HttpVersion(1, 0), 200, "OK"},
     {// Consolidate Set-Cookie headers.
-
      "HTTP/1.1 200 OK\n"
      "Set-Cookie: x=1\n"
      "Set-Cookie: y=2\n",
@@ -262,26 +250,21 @@ TestData response_headers_tests[] = {
      "HTTP/1.1 200 OK\n"
      "Set-Cookie: x=1, y=2\n",
 
-     200,
-     HttpVersion(1, 1)},
+     HttpVersion(1, 1), 200, "OK"},
+    {// Consolidate cache-control headers.
+     "HTTP/1.1 200 OK\n"
+     "Cache-control: private\n"
+     "cache-Control: no-store\n",
+
+     "HTTP/1.1 200 OK\n"
+     "Cache-control: private, no-store\n",
+
+     HttpVersion(1, 1), 200, "OK"},
 };
 
 INSTANTIATE_TEST_CASE_P(HttpResponseHeaders,
                         CommonHttpResponseHeadersTest,
                         testing::ValuesIn(response_headers_tests));
-
-TEST(HttpResponseHeadersTest, GetNormalizedHeader) {
-  std::string headers =
-      "HTTP/1.1 200 OK\n"
-      "Cache-control: private\n"
-      "cache-Control: no-store\n";
-  HeadersToRaw(&headers);
-  scoped_refptr<HttpResponseHeaders> parsed(new HttpResponseHeaders(headers));
-
-  std::string value;
-  EXPECT_TRUE(parsed->GetNormalizedHeader("cache-control", &value));
-  EXPECT_EQ("private, no-store", value);
-}
 
 struct PersistData {
   HttpResponseHeaders::PersistOptions options;
@@ -1650,37 +1633,6 @@ const HasStrongValidatorsTestData strong_validators_tests[] = {
 INSTANTIATE_TEST_CASE_P(HttpResponseHeaders,
                         HasStrongValidatorsTest,
                         testing::ValuesIn(strong_validators_tests));
-
-TEST(HttpResponseHeadersTest, GetStatusText) {
-  std::string headers("HTTP/1.1 404 Not Found");
-  HeadersToRaw(&headers);
-  scoped_refptr<HttpResponseHeaders> parsed(new HttpResponseHeaders(headers));
-  EXPECT_EQ(std::string("Not Found"), parsed->GetStatusText());
-}
-
-TEST(HttpResponseHeadersTest, GetStatusTextMissing) {
-  std::string headers("HTTP/1.1 404");
-  HeadersToRaw(&headers);
-  scoped_refptr<HttpResponseHeaders> parsed(new HttpResponseHeaders(headers));
-  EXPECT_EQ(std::string("HTTP/1.1 404"), parsed->GetStatusLine());
-  EXPECT_TRUE(parsed->GetStatusText().empty());
-}
-
-TEST(HttpResponseHeadersTest, GetStatusTextMultiSpace) {
-  std::string headers("HTTP/1.0     404     Not   Found");
-  HeadersToRaw(&headers);
-  scoped_refptr<HttpResponseHeaders> parsed(new HttpResponseHeaders(headers));
-  EXPECT_EQ(std::string("Not   Found"), parsed->GetStatusText());
-}
-
-TEST(HttpResponseHeadersTest, GetStatusBadStatusLine) {
-  std::string headers("Foo bar.");
-  HeadersToRaw(&headers);
-  scoped_refptr<HttpResponseHeaders> parsed(new HttpResponseHeaders(headers));
-  // The bad status line should be rewritten.
-  EXPECT_EQ(std::string("HTTP/1.0 200"), parsed->GetStatusLine());
-  EXPECT_TRUE(parsed->GetStatusText().empty());
-}
 
 struct AddHeaderTestData {
   const char* orig_headers;
