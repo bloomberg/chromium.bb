@@ -247,19 +247,7 @@
     <dimen name="document_toolbar_menu_offset">5dp</dimen>
 
     <!-- NTP dimensions -->
-    <dimen name="most_visited_spacing">16dp</dimen>
-    <dimen name="most_visited_tile_width">156dp</dimen>
-    <dimen name="most_visited_thumbnail_width">148dp</dimen>
-    <dimen name="most_visited_thumbnail_height">94dp</dimen>
     <dimen name="most_visited_bg_corner_radius">2dp</dimen>
-    <!-- 250dp was chosen because it's smaller than the smallest dimension on the smallest device,
-         so we'll always have at least two columns of tiles (except in multiwindow with a narrow
-         window). -->
-    <dimen name="most_visited_two_column_min_width">250dp</dimen>
-    <!-- 450dp was chosen because it's greater than the width of the largest phone in portrait yet
-         less than the width of the smallest phone in landscape. So, we'll always have two columns
-         in portrait and three in landscape (except in atypical situations, like multiwindow). -->
-    <dimen name="most_visited_three_column_min_width">450dp</dimen>
     <dimen name="icon_most_visited_layout_max_width">504dp</dimen>
     <dimen name="icon_most_visited_layout_padding_top">16dp</dimen>
     <dimen name="icon_most_visited_layout_no_logo_padding_top">28dp</dimen>

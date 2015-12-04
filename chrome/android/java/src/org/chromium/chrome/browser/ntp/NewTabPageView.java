@@ -236,21 +236,18 @@ public class NewTabPageView extends FrameLayout
      *                with the page.
      * @param isSingleUrlBarMode Whether the NTP is in single URL bar mode.
      * @param searchProviderHasLogo Whether the search provider has a logo.
-     * @param isIconMode Whether to show the icon-based design, as opposed to the thumbnail design.
      */
     public void initialize(NewTabPageManager manager, boolean isSingleUrlBarMode,
-            boolean searchProviderHasLogo, boolean isIconMode) {
+            boolean searchProviderHasLogo) {
         mManager = manager;
 
         mScrollView = (NewTabScrollView) findViewById(R.id.ntp_scrollview);
         mScrollView.enableBottomShadow(SHADOW_COLOR);
         mContentView = (ViewGroup) findViewById(R.id.ntp_content);
 
-        mMostVisitedDesign = isIconMode
-                ? new IconMostVisitedDesign(getContext())
-                : new ThumbnailMostVisitedDesign(getContext());
+        mMostVisitedDesign = new MostVisitedDesign(getContext());
         ViewStub mostVisitedLayoutStub = (ViewStub) findViewById(R.id.most_visited_layout_stub);
-        mostVisitedLayoutStub.setLayoutResource(mMostVisitedDesign.getMostVisitedLayoutId());
+        mostVisitedLayoutStub.setLayoutResource(R.layout.icon_most_visited_layout);
         mMostVisitedLayout = (ViewGroup) mostVisitedLayoutStub.inflate();
         mMostVisitedDesign.initMostVisitedLayout(mMostVisitedLayout, searchProviderHasLogo);
 
@@ -783,7 +780,7 @@ public class NewTabPageView extends FrameLayout
             if (item == null) {
                 String displayTitle = getTitleForDisplay(title, url);
                 item = new MostVisitedItem(mManager, title, url, i);
-                View view = mMostVisitedDesign.createMostVisitedItemView(inflater, url, title,
+                View view = mMostVisitedDesign.createMostVisitedItemView(inflater, url,
                         displayTitle, item, isInitialLoad);
                 item.initView(view);
             }
@@ -810,8 +807,7 @@ public class NewTabPageView extends FrameLayout
             String[] urls, String[] faviconUrls, String[] largeIconUrls) {
         for (int i = 0; i < urls.length; i++) {
             final String url = urls[i];
-            boolean useLargeIcon =
-                    mMostVisitedDesign.preferLargeIcons() && !largeIconUrls[i].isEmpty();
+            boolean useLargeIcon = !largeIconUrls[i].isEmpty();
             // Only fetch one of favicon or large icon based on what is required on the NTP.
             // The other will be fetched on visiting the site.
             String iconUrl = useLargeIcon ? largeIconUrls[i] : faviconUrls[i];
@@ -858,144 +854,9 @@ public class NewTabPageView extends FrameLayout
     }
 
     /**
-     * Interface for creating the most visited layout and tiles.
-     * TODO(newt): delete this once a single design has been chosen.
-     */
-    private interface MostVisitedDesign {
-        int getNumberOfTiles(boolean searchProviderHasLogo);
-        int getMostVisitedLayoutId();
-        int getMostVisitedLayoutBleed();
-        void initMostVisitedLayout(ViewGroup mostVisitedLayout, boolean searchProviderHasLogo);
-        void setSearchProviderHasLogo(View mostVisitedLayout, boolean hasLogo);
-        View createMostVisitedItemView(LayoutInflater inflater, String url, String title,
-                String displayTitle, MostVisitedItem item, boolean isInitialLoad);
-        void onIconUpdated(String url);
-        boolean preferLargeIcons();
-    }
-
-    /**
-     * The old most visited design, where each tile shows a thumbnail of the page, a small favicon,
-     * and the title.
-     */
-    private class ThumbnailMostVisitedDesign implements MostVisitedDesign {
-
-        private static final int NUM_TILES = 6;
-        private static final int FAVICON_CORNER_RADIUS_DP = 2;
-        private static final int FAVICON_TEXT_SIZE_DP = 10;
-        private static final int FAVICON_BACKGROUND_COLOR = 0xff969696;
-
-        private int mDesiredFaviconSize;
-        private RoundedIconGenerator mFaviconGenerator;
-
-        ThumbnailMostVisitedDesign(Context context) {
-            Resources res = context.getResources();
-            mDesiredFaviconSize = res.getDimensionPixelSize(R.dimen.default_favicon_size);
-            int desiredFaviconSizeDp = Math.round(
-                    mDesiredFaviconSize / res.getDisplayMetrics().density);
-            mFaviconGenerator = new RoundedIconGenerator(
-                    context, desiredFaviconSizeDp, desiredFaviconSizeDp, FAVICON_CORNER_RADIUS_DP,
-                    FAVICON_BACKGROUND_COLOR, FAVICON_TEXT_SIZE_DP);
-        }
-
-        @Override
-        public int getNumberOfTiles(boolean searchProviderHasLogo) {
-            return NUM_TILES;
-        }
-
-        @Override
-        public int getMostVisitedLayoutId() {
-            return R.layout.most_visited_layout;
-        }
-
-        @Override
-        public int getMostVisitedLayoutBleed() {
-            return 0;
-        }
-
-        @Override
-        public void initMostVisitedLayout(ViewGroup mostVisitedLayout,
-                boolean searchProviderHasLogo) {
-        }
-
-        @Override
-        public void setSearchProviderHasLogo(View mostVisitedLayout, boolean hasLogo) {}
-
-        @Override
-        public View createMostVisitedItemView(LayoutInflater inflater, final String url,
-                String title, String displayTitle, final MostVisitedItem item,
-                final boolean isInitialLoad) {
-            final MostVisitedItemView view = (MostVisitedItemView) inflater.inflate(
-                    R.layout.most_visited_item, mMostVisitedLayout, false);
-            view.init(displayTitle);
-
-            ThumbnailCallback thumbnailCallback = new ThumbnailCallback() {
-                @Override
-                public void onMostVisitedURLsThumbnailAvailable(Bitmap thumbnail,
-                        boolean isLocalThumbnail) {
-                    view.setThumbnail(thumbnail);
-                    if (thumbnail == null) {
-                        item.setTileType(MostVisitedTileType.THUMBNAIL_DEFAULT);
-                    } else if (isLocalThumbnail) {
-                        item.setTileType(MostVisitedTileType.THUMBNAIL_LOCAL);
-                    } else {
-                        item.setTileType(MostVisitedTileType.THUMBNAIL_SERVER);
-                    }
-                    mSnapshotMostVisitedChanged = true;
-                    if (isInitialLoad) loadTaskCompleted();
-                }
-            };
-            if (isInitialLoad) mPendingLoadTasks++;
-            mManager.getURLThumbnail(url, thumbnailCallback);
-
-            FaviconImageCallback faviconCallback = new FaviconImageCallback() {
-                @Override
-                public void onFaviconAvailable(Bitmap image, String iconUrl) {
-                    if (image == null) {
-                        image = mFaviconGenerator.generateIconForUrl(url);
-                    }
-                    view.setFavicon(image);
-                    mSnapshotMostVisitedChanged = true;
-                    if (isInitialLoad) loadTaskCompleted();
-                }
-            };
-            if (isInitialLoad) mPendingLoadTasks++;
-            mManager.getLocalFaviconImageForURL(url, mDesiredFaviconSize, faviconCallback);
-
-            return view;
-        }
-
-        @Override
-        public void onIconUpdated(final String url) {
-            // Find a matching most visited item.
-            for (MostVisitedItem item : mMostVisitedItems) {
-                if (!item.getUrl().equals(url)) continue;
-
-                final MostVisitedItemView view = (MostVisitedItemView) item.getView();
-                FaviconImageCallback faviconCallback = new FaviconImageCallback() {
-                    @Override
-                    public void onFaviconAvailable(Bitmap image, String iconUrl) {
-                        if (image == null) {
-                            image = mFaviconGenerator.generateIconForUrl(url);
-                        }
-                        view.setFavicon(image);
-                        mSnapshotMostVisitedChanged = true;
-                    }
-                };
-                mManager.getLocalFaviconImageForURL(url, mDesiredFaviconSize, faviconCallback);
-                break;
-            }
-        }
-
-        @Override
-        public boolean preferLargeIcons() {
-            return false;
-        }
-    }
-
-    /**
      * The new-fangled design for most visited tiles, where each tile shows a large icon and title.
      */
-    private class IconMostVisitedDesign implements MostVisitedDesign {
+    private class MostVisitedDesign {
 
         private static final int NUM_TILES = 8;
         private static final int NUM_TILES_NO_LOGO = 12;
@@ -1012,7 +873,7 @@ public class NewTabPageView extends FrameLayout
         private int mDesiredIconSize;
         private RoundedIconGenerator mIconGenerator;
 
-        IconMostVisitedDesign(Context context) {
+        MostVisitedDesign(Context context) {
             Resources res = context.getResources();
             mMostVisitedLayoutBleed = res.getDimensionPixelSize(
                     R.dimen.icon_most_visited_layout_bleed);
@@ -1026,29 +887,20 @@ public class NewTabPageView extends FrameLayout
                     ICON_BACKGROUND_COLOR, ICON_TEXT_SIZE_DP);
         }
 
-        @Override
         public int getNumberOfTiles(boolean searchProviderHasLogo) {
             return searchProviderHasLogo ? NUM_TILES : NUM_TILES_NO_LOGO;
         }
 
-        @Override
-        public int getMostVisitedLayoutId() {
-            return R.layout.icon_most_visited_layout;
-        }
-
-        @Override
         public int getMostVisitedLayoutBleed() {
             return mMostVisitedLayoutBleed;
         }
 
-        @Override
         public void initMostVisitedLayout(ViewGroup mostVisitedLayout,
                 boolean searchProviderHasLogo) {
             ((IconMostVisitedLayout) mostVisitedLayout).setMaxRows(
                     searchProviderHasLogo ? MAX_ROWS : MAX_ROWS_NO_LOGO);
         }
 
-        @Override
         public void setSearchProviderHasLogo(View mostVisitedLayout, boolean hasLogo) {
             int paddingTop = getResources().getDimensionPixelSize(hasLogo
                     ? R.dimen.icon_most_visited_layout_padding_top
@@ -1091,9 +943,8 @@ public class NewTabPageView extends FrameLayout
             }
         }
 
-        @Override
         public View createMostVisitedItemView(LayoutInflater inflater, final String url,
-                String title, String displayTitle, MostVisitedItem item,
+                String displayTitle, MostVisitedItem item,
                 final boolean isInitialLoad) {
             final IconMostVisitedItemView view = (IconMostVisitedItemView) inflater.inflate(
                     R.layout.icon_most_visited_item, mMostVisitedLayout, false);
@@ -1106,7 +957,6 @@ public class NewTabPageView extends FrameLayout
             return view;
         }
 
-        @Override
         public void onIconUpdated(final String url) {
             // Find a matching most visited item.
             for (MostVisitedItem item : mMostVisitedItems) {
@@ -1116,11 +966,6 @@ public class NewTabPageView extends FrameLayout
                     break;
                 }
             }
-        }
-
-        @Override
-        public boolean preferLargeIcons() {
-            return true;
         }
     }
 }

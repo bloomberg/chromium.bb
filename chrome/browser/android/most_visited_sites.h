@@ -54,8 +54,7 @@ class MostVisitedSites : public sync_driver::SyncServiceObserver,
   void RecordTileTypeMetrics(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jintArray>& jtile_types,
-      jboolean is_icon_mode);
+      const base::android::JavaParamRef<jintArray>& jtile_types);
   void RecordOpenedMostVisitedItem(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,

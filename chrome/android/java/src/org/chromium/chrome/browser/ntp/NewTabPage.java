@@ -96,7 +96,6 @@ public class NewTabPage
     private LargeIconBridge mLargeIconBridge;
     private LogoBridge mLogoBridge;
     private boolean mSearchProviderHasLogo;
-    private boolean mIsIconMode;
     private final boolean mOptOutPromoShown;
     private String mOnLogoClickUrl;
     private String mAnimatedLogoUrl;
@@ -421,7 +420,7 @@ public class NewTabPage
             for (int i = 0; i < items.length; i++) {
                 tileTypes[i] = items[i].getTileType();
             }
-            mMostVisitedSites.recordTileTypeMetrics(tileTypes, mIsIconMode);
+            mMostVisitedSites.recordTileTypeMetrics(tileTypes);
         }
     };
 
@@ -471,10 +470,8 @@ public class NewTabPage
 
         LayoutInflater inflater = LayoutInflater.from(activity);
         mNewTabPageView = (NewTabPageView) inflater.inflate(R.layout.new_tab_page, null);
-        // TODO(newt): delete thumbnail mode once we're sure that icon mode has stuck for good.
-        mIsIconMode = true;
         mNewTabPageView.initialize(mNewTabPageManager, isInSingleUrlBarMode(activity),
-                mSearchProviderHasLogo, mIsIconMode);
+                mSearchProviderHasLogo);
 
         RecordHistogram.recordBooleanHistogram(
                 "NewTabPage.MobileIsUserOnline", NetworkChangeNotifier.isOnline());

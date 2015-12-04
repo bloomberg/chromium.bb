@@ -43,7 +43,6 @@
     <dimen name="widget_column_width">130dp</dimen>
 
     <!-- NTP dimensions -->
-    <dimen name="most_visited_spacing">16dp</dimen>
     <dimen name="ntp_logo_height">180dp</dimen>
     <dimen name="snippets_thumbnail_size">120dp</dimen>
 

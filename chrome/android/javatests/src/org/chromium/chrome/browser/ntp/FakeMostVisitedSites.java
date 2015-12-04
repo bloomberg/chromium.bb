@@ -67,7 +67,7 @@ public class FakeMostVisitedSites extends MostVisitedSites {
     }
 
     @Override
-    public void recordTileTypeMetrics(int[] tileTypes, boolean isIconMode) {
+    public void recordTileTypeMetrics(int[] tileTypes) {
         // Metrics are stubbed out.
     }
 

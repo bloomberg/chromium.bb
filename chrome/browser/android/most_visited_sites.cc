@@ -82,12 +82,6 @@ enum MostVisitedTileType {
     ICON_COLOR,
     // The item displays a default gray box in place of an icon.
     ICON_DEFAULT,
-    // The item displays a locally-captured thumbnail of the site content.
-    THUMBNAIL_LOCAL,
-    // The item displays a server-provided thumbnail of the site content.
-    THUMBNAIL_SERVER,
-    // The item displays a default graphic in place of a thumbnail.
-    THUMBNAIL_DEFAULT,
     NUM_TILE_TYPES,
 };
 
@@ -379,8 +373,7 @@ void MostVisitedSites::BlacklistUrl(JNIEnv* env,
 void MostVisitedSites::RecordTileTypeMetrics(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jintArray>& jtile_types,
-    jboolean is_icon_mode) {
+    const JavaParamRef<jintArray>& jtile_types) {
   std::vector<int> tile_types;
   base::android::JavaIntArrayToIntVector(env, jtile_types, &tile_types);
   DCHECK_EQ(current_suggestions_.size(), tile_types.size());
@@ -395,21 +388,12 @@ void MostVisitedSites::RecordTileTypeMetrics(
     LogHistogramEvent(histogram, tile_type, NUM_TILE_TYPES);
   }
 
-  if (is_icon_mode) {
-    UMA_HISTOGRAM_SPARSE_SLOWLY("NewTabPage.IconsReal",
-                                counts_per_type[ICON_REAL]);
-    UMA_HISTOGRAM_SPARSE_SLOWLY("NewTabPage.IconsColor",
-                                counts_per_type[ICON_COLOR]);
-    UMA_HISTOGRAM_SPARSE_SLOWLY("NewTabPage.IconsGray",
-                                counts_per_type[ICON_DEFAULT]);
-  } else {
-    UMA_HISTOGRAM_SPARSE_SLOWLY("NewTabPage.NumberOfThumbnailTiles",
-                                counts_per_type[THUMBNAIL_LOCAL]);
-    UMA_HISTOGRAM_SPARSE_SLOWLY("NewTabPage.NumberOfExternalTiles",
-                                counts_per_type[THUMBNAIL_SERVER]);
-    UMA_HISTOGRAM_SPARSE_SLOWLY("NewTabPage.NumberOfGrayTiles",
-                                counts_per_type[THUMBNAIL_DEFAULT]);
-  }
+  UMA_HISTOGRAM_SPARSE_SLOWLY("NewTabPage.IconsReal",
+                              counts_per_type[ICON_REAL]);
+  UMA_HISTOGRAM_SPARSE_SLOWLY("NewTabPage.IconsColor",
+                              counts_per_type[ICON_COLOR]);
+  UMA_HISTOGRAM_SPARSE_SLOWLY("NewTabPage.IconsGray",
+                              counts_per_type[ICON_DEFAULT]);
 }
 
 void MostVisitedSites::RecordOpenedMostVisitedItem(
