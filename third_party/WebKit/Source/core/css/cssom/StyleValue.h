@@ -24,7 +24,7 @@ public:
     static PassRefPtrWillBeRawPtr<StyleValue> create(const CSSValue&);
     static ScriptValue parse(ScriptState*, const String& property, const String& cssText);
 
-    virtual const String& cssString() const = 0;
+    virtual String cssString() const = 0;
     virtual PassRefPtrWillBeRawPtr<CSSValue> toCSSValue() = 0;
 
     DEFINE_INLINE_VIRTUAL_TRACE() { }

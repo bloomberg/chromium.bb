@@ -49,7 +49,7 @@ const String& KeywordValue::keywordValue() const
     }
 }
 
-const String& KeywordValue::cssString() const
+String KeywordValue::cssString() const
 {
     return keywordValue();
 }

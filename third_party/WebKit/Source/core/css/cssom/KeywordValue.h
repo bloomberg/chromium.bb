@@ -23,7 +23,7 @@ public:
 
     virtual const String& keywordValue() const;
 
-    const String& cssString() const override;
+    String cssString() const override;
     PassRefPtrWillBeRawPtr<CSSValue> toCSSValue() override;
 
 protected:

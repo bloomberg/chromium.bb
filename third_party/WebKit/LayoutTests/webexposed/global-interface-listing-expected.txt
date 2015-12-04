@@ -3606,6 +3606,10 @@ interface Notification : EventTarget
     setter onclose
     setter onerror
     setter onshow
+interface NumberValue : StyleValue
+    getter value
+    method constructor
+    setter value
 interface OfflineAudioCompletionEvent : Event
     getter renderedBuffer
     method constructor
