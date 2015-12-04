@@ -1083,7 +1083,7 @@ void ContainerNode::focusStateChanged()
         if (computedStyle()->affectedByFocus() && computedStyle()->hasPseudoStyle(FIRST_LETTER))
             setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Focus));
         else if (isElementNode() && toElement(this)->childrenOrSiblingsAffectedByFocus())
-            document().styleEngine().pseudoStateChangedForElement(CSSSelector::PseudoFocus, *toElement(this));
+            toElement(this)->pseudoStateChanged(CSSSelector::PseudoFocus);
         else if (computedStyle()->affectedByFocus())
             setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Focus));
     }
@@ -1119,8 +1119,8 @@ void ContainerNode::setFocus(bool received)
         return;
 
     // If :focus sets display: none, we lose focus but still need to recalc our style.
-    if (isElementNode() && toElement(this)->childrenOrSiblingsAffectedByFocus() && styleChangeType() < SubtreeStyleChange)
-        document().styleEngine().pseudoStateChangedForElement(CSSSelector::PseudoFocus, *toElement(this));
+    if (isElementNode() && toElement(this)->childrenOrSiblingsAffectedByFocus())
+        toElement(this)->pseudoStateChanged(CSSSelector::PseudoFocus);
     else
         setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Focus));
 }
@@ -1138,7 +1138,7 @@ void ContainerNode::setActive(bool down)
             if (computedStyle()->affectedByActive() && computedStyle()->hasPseudoStyle(FIRST_LETTER))
                 setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Active));
             else if (isElementNode() && toElement(this)->childrenOrSiblingsAffectedByActive())
-                document().styleEngine().pseudoStateChangedForElement(CSSSelector::PseudoActive, *toElement(this));
+                toElement(this)->pseudoStateChanged(CSSSelector::PseudoActive);
             else if (computedStyle()->affectedByActive())
                 setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Active));
         }
@@ -1158,8 +1158,8 @@ void ContainerNode::setHovered(bool over)
     if (!layoutObject()) {
         if (over)
             return;
-        if (isElementNode() && toElement(this)->childrenOrSiblingsAffectedByHover() && styleChangeType() < SubtreeStyleChange)
-            document().styleEngine().pseudoStateChangedForElement(CSSSelector::PseudoHover, *toElement(this));
+        if (isElementNode() && toElement(this)->childrenOrSiblingsAffectedByHover())
+            toElement(this)->pseudoStateChanged(CSSSelector::PseudoHover);
         else
             setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Hover));
         return;
@@ -1169,7 +1169,7 @@ void ContainerNode::setHovered(bool over)
         if (computedStyle()->affectedByHover() && computedStyle()->hasPseudoStyle(FIRST_LETTER))
             setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Hover));
         else if (isElementNode() && toElement(this)->childrenOrSiblingsAffectedByHover())
-            document().styleEngine().pseudoStateChangedForElement(CSSSelector::PseudoHover, *toElement(this));
+            toElement(this)->pseudoStateChanged(CSSSelector::PseudoHover);
         else if (computedStyle()->affectedByHover())
             setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Hover));
     }

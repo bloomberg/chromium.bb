@@ -2067,7 +2067,7 @@ void Element::checkForEmptyStyleChange()
         return;
 
     if (!style || (styleAffectedByEmpty() && (!style->emptyState() || hasChildren())))
-        document().styleEngine().pseudoStateChangedForElement(CSSSelector::PseudoEmpty, *this);
+        pseudoStateChanged(CSSSelector::PseudoEmpty);
 }
 
 void Element::childrenChanged(const ChildrenChange& change)
