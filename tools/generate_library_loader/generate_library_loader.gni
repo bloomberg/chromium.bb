@@ -63,7 +63,7 @@ template("generate_library_loader") {
       output_cc,
       output_h,
     ]
-    deps = [
+    public_deps = [
       ":${target_name}_loader",
     ]
   }

@@ -116,10 +116,11 @@ component("bluetooth") {
   deps = [
     "//base",
     "//crypto",
+    "//device/bluetooth/strings",
+    "//device/bluetooth/uribeacon",
+    "//ipc",
     "//net",
     "//ui/base",
-    "strings",
-    "uribeacon",
   ]
 
   if (is_android) {

@@ -49,6 +49,7 @@ static_library("serial") {
   ]
   deps = [
     "//mojo/public/cpp/system",
+    "//net",
     "//third_party/re2",
   ]
 
@@ -56,7 +57,10 @@ static_library("serial") {
     deps += [ "//device/udev_linux" ]
   }
   if (is_chromeos) {
-    deps += [ "//chromeos" ]
+    deps += [
+      "//chromeos",
+      "//dbus",
+    ]
   }
 }
 

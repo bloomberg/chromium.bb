@@ -100,7 +100,7 @@ generate_library_loader("udev1_loader") {
 }
 
 group("udev") {
-  deps = [
+  public_deps = [
     ":udev0_loader",
     ":udev1_loader",
   ]

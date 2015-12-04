@@ -62,6 +62,7 @@ test("device_unittests") {
     "//device/bluetooth",
     "//device/bluetooth:mocks",
     "//device/nfc",
+    "//mojo/common",
     "//mojo/environment:chromium",
     "//mojo/public/cpp/bindings",
     "//net",
@@ -134,6 +135,7 @@ test("device_unittests") {
   # UsbContext is a libusb-specific object.
   if (!is_android && !is_ios) {
     sources += [ "usb/usb_context_unittest.cc" ]
+    deps += [ "//third_party/libusb" ]
   }
 
   if (is_android) {

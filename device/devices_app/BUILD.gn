@@ -20,6 +20,7 @@ source_set("lib") {
     "//device/core",
     "//device/devices_app/usb/public/interfaces",
     "//device/usb",
+    "//mojo/common",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/bindings:callback",
     "//net",
