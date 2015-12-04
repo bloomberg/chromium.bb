@@ -61,16 +61,23 @@
             log("PASS: Cross frame access by enumerating the Location object revealed no properties.");
 
             var b_winLocationKeys = Object.keys(b_win_location);
-            if (b_winLocationKeys.length != 0) {
-                log("FAIL: Cross frame access by getting the keys of the Location object was allowed.");
-                return;
+            var keys_failure = false;
+            for (var i = 0; i < b_winLocationKeys.length; i++) {
+                var k = b_winLocationKeys[i];
+                // See also cross-frame-access-location-get.html for the list of accessible keys.
+                if (k !== "assign" && k !== "replace") {
+                    log("FAIL: Cross frame access by getting the keys of the Location object returned non-whitelisted key: " + k);
+                    keys_failure = true;
+                }
             }
-            log("PASS: Cross frame access by getting the keys of the Location object revealed no keys.");
+            if (!keys_failure) {
+                log("PASS: Cross frame access by getting the keys of the Location object revealed only whitelisted keys.");
+            }
 
             var b_winLocationPropertyNames = Object.getOwnPropertyNames(b_win_location);
             if (b_winLocationPropertyNames.indexOf("customLocationProperty") != -1) {
                 log("FAIL: Cross frame access by getting the property names of the Location object was allowed.");
-                 return;
+                return;
             }
             log("PASS: Cross frame access by getting the property names of the Location object revealed no custom properties.");
         }
