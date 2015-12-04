@@ -61,10 +61,40 @@ TEST(SourceDir, ResolveRelativeFile) {
           Value(nullptr, "../../foo"), &err, source_root) ==
       SourceFile("/C:/source/foo"));
   EXPECT_FALSE(err.has_error());
+
+  EXPECT_TRUE(base.ResolveRelativeFile(
+          Value(nullptr, "//../foo"), &err, source_root) ==
+      SourceFile("/C:/source/foo"));
+  EXPECT_FALSE(err.has_error());
+
+  EXPECT_TRUE(base.ResolveRelativeFile(
+          Value(nullptr, "//../root/foo"), &err, source_root) ==
+      SourceFile("/C:/source/root/foo"));
+  EXPECT_FALSE(err.has_error());
+
+  EXPECT_TRUE(base.ResolveRelativeFile(
+          Value(nullptr, "//../../../foo/bar"), &err, source_root) ==
+      SourceFile("/foo/bar"));
+  EXPECT_FALSE(err.has_error());
 #else
   EXPECT_TRUE(base.ResolveRelativeFile(
           Value(nullptr, "../../foo"), &err, source_root) ==
       SourceFile("/source/foo"));
+  EXPECT_FALSE(err.has_error());
+
+  EXPECT_TRUE(base.ResolveRelativeFile(
+          Value(nullptr, "//../foo"), &err, source_root) ==
+      SourceFile("/source/foo"));
+  EXPECT_FALSE(err.has_error());
+
+  EXPECT_TRUE(base.ResolveRelativeFile(
+          Value(nullptr, "//../root/foo"), &err, source_root) ==
+      SourceFile("/source/root/foo"));
+  EXPECT_FALSE(err.has_error());
+
+  EXPECT_TRUE(base.ResolveRelativeFile(
+          Value(nullptr, "//../../../foo/bar"), &err, source_root) ==
+      SourceFile("/foo/bar"));
   EXPECT_FALSE(err.has_error());
 #endif
 
@@ -120,10 +150,26 @@ TEST(SourceDir, ResolveRelativeDir) {
           Value(nullptr, "../../foo"), &err, source_root) ==
       SourceDir("/C:/source/foo/"));
   EXPECT_FALSE(err.has_error());
+  EXPECT_TRUE(base.ResolveRelativeDir(
+          Value(nullptr, "//../foo"), &err, source_root) ==
+      SourceDir("/C:/source/foo/"));
+  EXPECT_FALSE(err.has_error());
+  EXPECT_TRUE(base.ResolveRelativeDir(
+          Value(nullptr, "//.."), &err, source_root) ==
+      SourceDir("/C:/source/"));
+  EXPECT_FALSE(err.has_error());
 #else
   EXPECT_TRUE(base.ResolveRelativeDir(
           Value(nullptr, "../../foo"), &err, source_root) ==
       SourceDir("/source/foo/"));
+  EXPECT_FALSE(err.has_error());
+  EXPECT_TRUE(base.ResolveRelativeDir(
+          Value(nullptr, "//../foo"), &err, source_root) ==
+      SourceDir("/source/foo/"));
+  EXPECT_FALSE(err.has_error());
+  EXPECT_TRUE(base.ResolveRelativeDir(
+          Value(nullptr, "//.."), &err, source_root) ==
+      SourceDir("/source/"));
   EXPECT_FALSE(err.has_error());
 #endif
 

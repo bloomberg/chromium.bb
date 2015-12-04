@@ -71,7 +71,7 @@ SourceFile SourceDir::ResolveRelativeFile(
   if (str.size() >= 2 && str[0] == '/' && str[1] == '/') {
     // Source-relative.
     ret.value_.assign(str.data(), str.size());
-    NormalizePath(&ret.value_);
+    NormalizePath(&ret.value_, source_root);
     return ret;
   } else if (IsPathAbsolute(str)) {
     if (source_root.empty() ||
@@ -145,7 +145,7 @@ SourceDir SourceDir::ResolveRelativeDir(
     ret.value_.assign(str.data(), str.size());
     if (!EndsWithSlash(ret.value_))
       ret.value_.push_back('/');
-    NormalizePath(&ret.value_);
+    NormalizePath(&ret.value_, source_root);
     return ret;
   } else if (IsPathAbsolute(str)) {
     if (source_root.empty() ||

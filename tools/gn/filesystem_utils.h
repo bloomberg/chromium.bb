@@ -111,8 +111,15 @@ bool MakeAbsolutePathRelativeIfPossible(const base::StringPiece& source_root,
                                         const base::StringPiece& path,
                                         std::string* dest);
 
-// Collapses "." and sequential "/"s and evaluates "..".
-void NormalizePath(std::string* path);
+// Collapses "." and sequential "/"s and evaluates "..". |path| may be
+// system-absolute, source-absolute, or relative. If |path| is source-absolute
+// and |source_root| is non-empty, |path| may be system absolute after this
+// function returns, if |path| references the filesystem outside of
+// |source_root| (ex. path = "//.."). In this case on Windows, |path| will have
+// a leading slash. Otherwise, |path| will retain its relativity. |source_root|
+// must not end with a slash.
+void NormalizePath(std::string* path,
+                   const base::StringPiece& source_root = base::StringPiece());
 
 // Converts slashes to backslashes for Windows. Keeps the string unchanged
 // for other systems.

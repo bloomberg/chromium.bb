@@ -377,7 +377,7 @@ bool MakeAbsolutePathRelativeIfPossible(const base::StringPiece& source_root,
 #endif
 }
 
-void NormalizePath(std::string* path) {
+void NormalizePath(std::string* path, const base::StringPiece& source_root) {
   char* pathbuf = path->empty() ? nullptr : &(*path)[0];
 
   // top_index is the first character we can modify in the path. Anything
@@ -433,9 +433,48 @@ void NormalizePath(std::string* path) {
                 // up more levels.  Otherwise "../.." would collapse to
                 // nothing.
                 top_index = dest_i;
+              } else if (top_index == 2 && !source_root.empty()) {
+                // |path| was passed in as a source-absolute path. Prepend
+                // |source_root| to make |path| absolute. |source_root| must not
+                // end with a slash unless we are at root.
+                DCHECK(source_root.size() == 1u ||
+                       !IsSlash(source_root[source_root.size() - 1u]));
+                size_t source_root_len = source_root.size();
+
+#if defined(OS_WIN)
+                // On Windows, if the source_root does not start with a slash,
+                // append one here for consistency.
+                if (!IsSlash(source_root[0])) {
+                  path->insert(0, "/" + source_root.as_string());
+                  source_root_len++;
+                } else {
+                  path->insert(0, source_root.data(), source_root_len);
+                }
+
+                // Normalize slashes in source root portion.
+                for (size_t i = 0; i < source_root_len; ++i) {
+                  if ((*path)[i] == '\\')
+                    (*path)[i] = '/';
+                }
+#else
+                path->insert(0, source_root.data(), source_root_len);
+#endif
+
+                // |path| is now absolute, so |top_index| is 1. |dest_i| and
+                // |src_i| should be incremented to keep the same relative
+                // position. Comsume the leading "//" by decrementing |dest_i|.
+                top_index = 1;
+                pathbuf = &(*path)[0];
+                dest_i += source_root_len - 2;
+                src_i += source_root_len;
+
+                // Just find the previous slash or the beginning of input.
+                while (dest_i > 0 && !IsSlash(pathbuf[dest_i - 1]))
+                  dest_i--;
               }
-              // Otherwise we're at the beginning of an absolute path. Don't
-              // allow ".." to go up another level and just eat it.
+              // Otherwise we're at the beginning of a system-absolute path, or
+              // a source-absolute path for which we don't know the absolute
+              // path. Don't allow ".." to go up another level, and just eat it.
             } else {
               // Just find the previous slash or the beginning of input.
               while (dest_i > 0 && !IsSlash(pathbuf[dest_i - 1]))

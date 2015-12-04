@@ -43,7 +43,7 @@ TEST(RebasePath, Strings) {
   EXPECT_EQ("../..", RebaseOne(scope, "../..", "//out/Debug", "."));
   EXPECT_EQ("../../", RebaseOne(scope, "../../", "//out/Debug", "."));
 
-  // We don't allow going above the root source dir.
+  // Without a source root defined, we cannot move out of the source tree.
   EXPECT_EQ("../..", RebaseOne(scope, "../../..", "//out/Debug", "."));
 
   // Source-absolute input paths.
@@ -62,19 +62,36 @@ TEST(RebasePath, Strings) {
 
   // Test system path output.
 #if defined(OS_WIN)
-  setup.build_settings()->SetRootPath(base::FilePath(L"C:/source"));
-  EXPECT_EQ("C:/source", RebaseOne(scope, ".", "", "//"));
-  EXPECT_EQ("C:/source/", RebaseOne(scope, "//", "", "//"));
-  EXPECT_EQ("C:/source/foo", RebaseOne(scope, "foo", "", "//"));
-  EXPECT_EQ("C:/source/foo/", RebaseOne(scope, "foo/", "", "//"));
-  EXPECT_EQ("C:/source/tools/gn/foo", RebaseOne(scope, "foo", "", "."));
+  setup.build_settings()->SetRootPath(base::FilePath(L"C:/path/to/src"));
+  EXPECT_EQ("C:/path/to/src", RebaseOne(scope, ".", "", "//"));
+  EXPECT_EQ("C:/path/to/src/", RebaseOne(scope, "//", "", "//"));
+  EXPECT_EQ("C:/path/to/src/foo", RebaseOne(scope, "foo", "", "//"));
+  EXPECT_EQ("C:/path/to/src/foo/", RebaseOne(scope, "foo/", "", "//"));
+  EXPECT_EQ("C:/path/to/src/tools/gn/foo", RebaseOne(scope, "foo", "", "."));
+  EXPECT_EQ("C:/path/to/other/tools",
+            RebaseOne(scope, "//../other/tools", "", "//"));
+  EXPECT_EQ("C:/path/to/src/foo/bar",
+            RebaseOne(scope, "//../src/foo/bar", "", "//"));
+  EXPECT_EQ("C:/path/to", RebaseOne(scope, "//..", "", "//"));
+  EXPECT_EQ("C:/path", RebaseOne(scope, "../../../..", "", "."));
+  EXPECT_EQ("C:/path/to/external/dir/",
+            RebaseOne(scope, "//../external/dir/", "", "//"));
+
 #else
-  setup.build_settings()->SetRootPath(base::FilePath("/source"));
-  EXPECT_EQ("/source", RebaseOne(scope, ".", "", "//"));
-  EXPECT_EQ("/source/", RebaseOne(scope, "//", "", "//"));
-  EXPECT_EQ("/source/foo", RebaseOne(scope, "foo", "", "//"));
-  EXPECT_EQ("/source/foo/", RebaseOne(scope, "foo/", "", "//"));
-  EXPECT_EQ("/source/tools/gn/foo", RebaseOne(scope, "foo", "", "."));
+  setup.build_settings()->SetRootPath(base::FilePath("/path/to/src"));
+  EXPECT_EQ("/path/to/src", RebaseOne(scope, ".", "", "//"));
+  EXPECT_EQ("/path/to/src/", RebaseOne(scope, "//", "", "//"));
+  EXPECT_EQ("/path/to/src/foo", RebaseOne(scope, "foo", "", "//"));
+  EXPECT_EQ("/path/to/src/foo/", RebaseOne(scope, "foo/", "", "//"));
+  EXPECT_EQ("/path/to/src/tools/gn/foo", RebaseOne(scope, "foo", "", "."));
+  EXPECT_EQ("/path/to/other/tools",
+            RebaseOne(scope, "//../other/tools", "", "//"));
+  EXPECT_EQ("/path/to/src/foo/bar",
+            RebaseOne(scope, "//../src/foo/bar", "", "//"));
+  EXPECT_EQ("/path/to", RebaseOne(scope, "//..", "", "//"));
+  EXPECT_EQ("/path", RebaseOne(scope, "../../../..", "", "."));
+  EXPECT_EQ("/path/to/external/dir/",
+            RebaseOne(scope, "//../external/dir/", "", "//"));
 #endif
 }
 
