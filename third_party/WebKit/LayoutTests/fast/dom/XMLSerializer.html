@@ -44,6 +44,10 @@ test(function() {
 test(function() {
     var attr = child2.getAttributeNode('attr');
     assert_equals(serializer.serializeToString(attr), 'an attribute');
+
+    var element = doc.createElement('foo');
+    element.setAttribute('attr1', ' abc\ndef\tghi\r');
+    assert_equals(serializer.serializeToString(element), '<foo attr1=" abc&#10;def&#9;ghi&#13;"/>');
 }, 'Check Attr serializiation.');
 </script>
 </body>
