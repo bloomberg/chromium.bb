@@ -11,6 +11,7 @@
           '../prefs/compiled_resources.gyp:prefs',
           '../../../../../ui/webui/resources/js/compiled_resources.gyp:assert',
           '../../../../../ui/webui/resources/js/compiled_resources.gyp:cr',
+          'languages_types.js',
         ],
         'externs': [
           '<(EXTERNS_DIR)/chrome_send.js',
@@ -27,6 +28,7 @@
           '../../../../../ui/webui/resources/js/chromeos/compiled_resources.gyp:ui_account_tweaks',
           '../../../../../ui/webui/resources/js/compiled_resources.gyp:load_time_data',
           '../prefs/compiled_resources.gyp:prefs',
+          'languages_types.js',
           'languages.js',
         ],
         'externs': [
@@ -45,6 +47,7 @@
           '../settings_page/settings_animated_pages.js',
           '../prefs/prefs_types.js',
           '../prefs/compiled_resources.gyp:prefs',
+          'languages_types.js',
           'languages.js',
         ],
         'externs': [
@@ -59,10 +62,11 @@
         'depends': [
           '../../../../../ui/webui/resources/js/compiled_resources.gyp:assert',
           '../prefs/compiled_resources.gyp:prefs',
+          'languages_types.js',
           'languages.js',
         ],
         'externs': [
-          '../../../../../third_party/closure_compiler/externs/language_settings_private.js',
+          '<(EXTERNS_DIR)/language_settings_private.js',
         ],
       },
       'includes': ['../../../../../third_party/closure_compiler/compile_js.gypi'],

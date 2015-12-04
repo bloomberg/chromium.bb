@@ -35,6 +35,9 @@ Polymer({
     detail: Object,
   },
 
+  /** @private {!LanguageHelper} */
+  languageHelper_: LanguageHelperImpl.getInstance(),
+
   ready: function() {
     // In a CrOS multi-user session, the primary user controls the UI language.
     if (this.isSecondaryUser_()) {
@@ -51,15 +54,19 @@ Polymer({
     }
   },
 
+<if expr="chromeos or is_win">
   /**
+   * Checks whether the prospective UI language (the pref that indicates what
+   * language to use in Chrome) matches the current language. This pref is only
+   * on Chrome OS and Windows; we don't control the UI language elsewhere.
    * @param {string} languageCode The language code identifying a language.
-   * @param {string} prospectiveUILanguage The chosen UI language.
-   * @return {boolean} True if the given language matches the chosen UI language
-   *     (which may be different from the actual UI language).
+   * @param {string} prospectiveUILanguage The prospective UI language.
+   * @return {boolean} True if the given language matches the prospective UI
+   *     pref (which may be different from the actual UI language).
    * @private
    */
   isProspectiveUILanguage_: function(languageCode, prospectiveUILanguage) {
-    return languageCode == this.$.languages.getProspectiveUILanguage();
+    return languageCode == this.languageHelper_.getProspectiveUILanguage();
   },
 
   /**
@@ -73,6 +80,7 @@ Polymer({
     return languageCode == prospectiveUILanguage &&
            languageCode == navigator.language;
   },
+</if>
 
    /**
    * @param {string} languageCode The language code identifying a language.
@@ -81,7 +89,7 @@ Polymer({
    * @private
    */
   isTranslateDisabled_: function(languageCode, targetLanguageCode) {
-    return this.$.languages.convertLanguageCodeForTranslate(languageCode) ==
+    return this.languageHelper_.convertLanguageCodeForTranslate(languageCode) ==
         targetLanguageCode;
   },
 
@@ -140,9 +148,9 @@ Polymer({
    */
   onTranslateEnabledChange_: function(e) {
     if (e.target.checked)
-      this.$.languages.enableTranslateLanguage(this.detail.language.code);
+      this.languageHelper_.enableTranslateLanguage(this.detail.language.code);
     else
-      this.$.languages.disableTranslateLanguage(this.detail.language.code);
+      this.languageHelper_.disableTranslateLanguage(this.detail.language.code);
   },
 
   /**
@@ -152,10 +160,10 @@ Polymer({
    */
   onUILanguageChange_: function(e) {
     if (e.target.checked) {
-      this.$.languages.setUILanguage(this.detail.language.code);
+      this.languageHelper_.setUILanguage(this.detail.language.code);
     } else {
       // Reset the chosen UI language to the actual UI language.
-      this.$.languages.resetUILanguage();
+      this.languageHelper_.resetUILanguage();
     }
   },
 

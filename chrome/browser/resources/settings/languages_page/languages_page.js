@@ -43,19 +43,26 @@ Polymer({
     },
   },
 
+  /** @private {!LanguageHelper} */
+  languageHelper_: LanguageHelperImpl.getInstance(),
+
   /**
    * Handler for clicking a language on the main page, which selects the
    * language as the prospective UI language on Chrome OS and Windows.
    * @param {!{model: !{item: !LanguageInfo}}} e
    */
   onLanguageTap_: function(e) {
+    // Only change the UI language on platforms that allow it.
+    if (!cr.isChromeOS && !cr.isWindows)
+      return;
+
     // Taps on the paper-icon-button are handled in onShowLanguageDetailTap_.
     if (e.target.tagName == 'PAPER-ICON-BUTTON')
       return;
 
     // Set the prospective UI language. This won't take effect until a restart.
     if (e.model.item.language.supportsUI)
-      this.$.languages.setUILanguage(e.model.item.language.code);
+      this.languageHelper_.setUILanguage(e.model.item.language.code);
   },
 
   /**
@@ -63,8 +70,8 @@ Polymer({
    * @param {!{target: Element, model: !{item: !LanguageInfo}}} e
    */
   onSpellCheckChange_: function(e) {
-    this.$.languages.toggleSpellCheck(e.model.item.language.code,
-                                      e.target.checked);
+    this.languageHelper_.toggleSpellCheck(e.model.item.language.code,
+                                          e.target.checked);
   },
 
   /** @private */
@@ -102,16 +109,21 @@ Polymer({
   },
 </if>
 
+<if expr="chromeos or is_win">
   /**
+   * Checks whether the prospective UI language (the pref that indicates what
+   * language to use in Chrome) matches the current language. This pref is only
+   * on Chrome OS and Windows; we don't control the UI language elsewhere.
    * @param {string} languageCode The language code identifying a language.
    * @param {string} prospectiveUILanguage The prospective UI language.
    * @return {boolean} True if the given language matches the prospective UI
    *     pref (which may be different from the actual UI language).
    * @private
    */
-  isUILanguage_: function(languageCode, prospectiveUILanguage) {
-    return languageCode == this.$.languages.getProspectiveUILanguage();
+  isProspectiveUILanguage_: function(languageCode, prospectiveUILanguage) {
+    return languageCode == this.languageHelper_.getProspectiveUILanguage();
   },
+</if>
 
   /**
    * @param {string} id The input method ID.

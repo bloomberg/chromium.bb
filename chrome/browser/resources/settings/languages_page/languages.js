@@ -9,9 +9,9 @@
  * Instances of this element have a 'languages' property, which reflects the
  * current language settings. The 'languages' property is read-only, meaning
  * hosts using this element cannot change it directly. Instead, changes to
- * language settings should be made using this element's public functions.
+ * language settings should be made using the LanguageHelperImpl singleton.
  *
- * Use two-way binding syntax to propagate changes from child to host, so that
+ * Use upward binding syntax to propagate changes from child to host, so that
  * changes made internally to 'languages' propagate to your host element:
  *
  *     <template>
@@ -24,26 +24,7 @@
  * @element settings-languages
  */
 
-/** @typedef {{spellCheckEnabled: boolean, translateEnabled: boolean}} */
-var LanguageState;
-
-/**
- * @typedef {{language: !chrome.languageSettingsPrivate.Language,
- *            state: !LanguageState}}
- */
-var LanguageInfo;
-
-/**
- * supportedLanguages: an array of languages, ordered alphabetically.
- * enabledLanguages: an array of enabled language info and state, ordered by
- *     preference.
- * @typedef {{
- *      supportedLanguages: !Array<!chrome.languageSettingsPrivate.Language>,
- *      enabledLanguages: !Array<!LanguageInfo>,
- *      translateTarget: string
- *  }}
- */
-var LanguagesModel;
+var SettingsLanguagesSingletonElement;
 
 (function() {
 'use strict';
@@ -66,130 +47,17 @@ var kTranslateLanguageSynonyms = {
   'jv': 'jw',
 };
 
-/**
- * This element has a reference to the singleton, exposing the singleton's
- * language model to the host of this element as the 'languages' property.
- */
-Polymer({
-  is: 'settings-languages',
-
-  properties: {
-    /**
-     * Singleton element created at startup which provides the languages model.
-     * @type {!Element}
-     */
-    singleton_: {
-      type: Object,
-      value: document.createElement('settings-languages-singleton'),
-    },
-
-    /**
-     * A reference to the languages model from the singleton, exposed as a
-     * read-only property so hosts can bind to it, but not change it.
-     * @type {LanguagesModel|undefined}
-     */
-    languages: {
-      type: Object,
-      notify: true,
-      readOnly: true,
-    },
-  },
-
-  ready: function() {
-    // Set the 'languages' property to reference the singleton's model.
-    this._setLanguages(this.singleton_.languages);
-    // Listen for changes to the singleton's languages property, so we know
-    // when to notify hosts of changes to (our reference to) the property.
-    this.listen(
-        this.singleton_, 'languages-changed', 'singletonLanguagesChanged_');
-  },
-
-  /**
-   * Takes changes reported by the singleton and forwards them to the host,
-   * manually sending a change notification for our 'languages' property (since
-   * it's the same object as the singleton's property, but isn't bound by
-   * Polymer).
-   * @private
-   */
-  singletonLanguagesChanged_: function(e) {
-    // Forward the change notification to the host.
-    this.fire(e.type, e.detail, {bubbles: false});
-  },
-
-  // Forward public methods to the singleton.
-
-  /** @param {string} languageCode */
-  setUILanguage: function(languageCode) {
-    if (cr.isWindows || cr.isChromeOS)
-      this.singleton_.setUILanguage(languageCode);
-  },
-
-  resetUILanguage: function() {
-    if (cr.isWindows || cr.isChromeOS)
-      this.singleton_.resetUILanguage();
-  },
-
-  /** @return {string} */
-  getProspectiveUILanguage: function() {
-    return this.singleton_.getProspectiveUILanguage();
-  },
-
-  /** @param {string} languageCode */
-  enableLanguage: function(languageCode) {
-    this.singleton_.enableLanguage(languageCode);
-  },
-
-  /** @param {string} languageCode */
-  disableLanguage: function(languageCode) {
-    this.singleton_.disableLanguage(languageCode);
-  },
-
-  /** @param {string} languageCode */
-  enableTranslateLanguage: function(languageCode) {
-    this.singleton_.enableTranslateLanguage(languageCode);
-  },
-
-  /** @param {string} languageCode */
-  disableTranslateLanguage: function(languageCode) {
-    this.singleton_.disableTranslateLanguage(languageCode);
-  },
-
-  /**
-   * @param {string} languageCode
-   * @return {boolean}
-   */
-  isEnabled: function(languageCode) {
-    return this.singleton_.isEnabled(languageCode);
-  },
-
-  /**
-   * @param {string} languageCode
-   * @param {boolean} enable
-   */
-  toggleSpellCheck: function(languageCode, enable) {
-    this.singleton_.toggleSpellCheck(languageCode, enable);
-  },
-
-  /**
-   * @param {string} languageCode
-   * @return {string}
-   */
-  convertLanguageCodeForTranslate: function(languageCode) {
-    return this.singleton_.convertLanguageCodeForTranslate(languageCode);
-  },
-});
-
 var preferredLanguagesPrefName = cr.isChromeOS ?
     'settings.language.preferred_languages' : 'intl.accept_languages';
 
 /**
- * Singleton element created when settings-languages is registered.
- * Generates the languages model on start-up, and updates it whenever Chrome's
- * pref store and other settings change. These updates propagate to each
- * <settings-language> instance so that their 'languages' property updates
- * like any other Polymer property.
+ * Singleton element that generates the languages model on start-up and
+ * updates it whenever Chrome's pref store and other settings change. These
+ * updates propagate to each <settings-language> instance so that their
+ * 'languages' property updates like any other Polymer property.
+ * @implements {LanguageHelper}
  */
-Polymer({
+SettingsLanguagesSingletonElement = Polymer({
   is: 'settings-languages-singleton',
 
   behaviors: [PrefsBehavior],
@@ -267,11 +135,68 @@ Polymer({
   },
 
   /**
+   * Updates the list of enabled languages from the preferred languages pref.
+   * @private
+   */
+  preferredLanguagesPrefChanged_: function() {
+    if (!this.initialized_)
+      return;
+
+    var enabledLanguages =
+        this.getEnabledLanguages_(this.languages.translateTarget);
+
+    // Reset the enabled language map before updating
+    // languages.enabledLanguages.
+    this.enabledLanguageMap_ = {};
+    for (var i = 0; i < enabledLanguages.length; i++) {
+      var languageInfo = enabledLanguages[i];
+      this.enabledLanguageMap_[languageInfo.language.code] = languageInfo;
+    }
+    this.set('languages.enabledLanguages', enabledLanguages);
+  },
+
+  /**
+   * Updates the spellCheckEnabled state of each enabled language.
+   * @private
+   */
+  spellCheckDictionariesPrefChanged_: function() {
+    if (!this.initialized_)
+      return;
+
+    var spellCheckMap = this.makeMapFromArray_(/** @type {!Array<string>} */(
+        this.getPref('spellcheck.dictionaries').value));
+    for (var i = 0; i < this.languages.enabledLanguages.length; i++) {
+      var languageCode = this.languages.enabledLanguages[i].language.code;
+      this.set('languages.enabledLanguages.' + i + '.state.spellCheckEnabled',
+               !!spellCheckMap[languageCode]);
+    }
+  },
+
+  /** @private */
+  translateLanguagesPrefChanged_: function() {
+    if (!this.initialized_)
+      return;
+
+    var translateBlockedPref = this.getPref('translate_blocked_languages');
+    var translateBlockedMap = this.makeMapFromArray_(
+        /** @type {!Array<string>} */(translateBlockedPref.value));
+
+    for (var i = 0; i < this.languages.enabledLanguages.length; i++) {
+      var translateCode = this.convertLanguageCodeForTranslate(
+          this.languages.enabledLanguages[i].language.code);
+      this.set(
+          'languages.enabledLanguages.' + i + '.state.translateEnabled',
+          !translateBlockedMap[translateCode]);
+    }
+  },
+
+  /**
    * Constructs the languages model.
    * @param {!Array<!chrome.languageSettingsPrivate.Language>}
    *     supportedLanguages
    * @param {string} translateTarget Language code of the default translate
    *     target language.
+   * @private
    */
   createModel_: function(supportedLanguages, translateTarget) {
     // Populate the hash map of supported languages.
@@ -325,17 +250,19 @@ Polymer({
     for (var i = 0; i < enabledLanguageCodes.length; i++) {
       var code = enabledLanguageCodes[i];
       var language = this.supportedLanguageMap_[code];
+      // Skip unsupported languages.
       if (!language)
         continue;
-      var state = {};
+      var state = /** @type {LanguageState} */({});
       state.spellCheckEnabled = !!spellCheckMap[code];
       // Translate is considered disabled if this language maps to any translate
       // language that is blocked.
       var translateCode = this.convertLanguageCodeForTranslate(code);
-      state.translateEnabled = language.supportsTranslate &&
+      state.translateEnabled = !!language.supportsTranslate &&
           !translateBlockedMap[translateCode] &&
           translateCode != translateTarget;
-      enabledLanguages.push({language: language, state: state});
+      enabledLanguages.push(/** @type {LanguageInfo} */(
+          {language: language, state: state}));
     }
     return enabledLanguages;
   },
@@ -344,6 +271,7 @@ Polymer({
    * Creates an object whose keys are the elements of the list.
    * @param {!Array<string>} list
    * @return {!Object<boolean>}
+   * @private
    */
   makeMapFromArray_: function(list) {
     var map = {};
@@ -352,84 +280,21 @@ Polymer({
     return map;
   },
 
+  // LanguageHelper implementation.
+  // TODO(michaelpg): replace duplicate docs with @override once b/24294625
+  // is fixed.
+
+<if expr="chromeos or is_win">
   /**
-   * Updates the list of enabled languages from the preferred languages pref.
-   * @private
-   * */
-  preferredLanguagesPrefChanged_: function() {
-    if (!this.initialized_)
-      return;
-
-    var enabledLanguages =
-        this.getEnabledLanguages_(this.languages.translateTarget);
-    // Reset the enabled language map. Do this before notifying of the change
-    // via languages.enabledLanguages.
-    this.enabledLanguageMap_ = {};
-    for (var i = 0; i < enabledLanguages.length; i++) {
-      var languageInfo = enabledLanguages[i];
-      this.enabledLanguageMap_[languageInfo.language.code] = languageInfo;
-    }
-    this.set('languages.enabledLanguages', enabledLanguages);
-  },
-
-  /**
-   * Updates the spellCheckEnabled state of each enabled language.
-   * @private
-   */
-  spellCheckDictionariesPrefChanged_: function() {
-    if (!this.initialized_)
-      return;
-
-    var spellCheckMap = this.makeMapFromArray_(/** @type {!Array<string>} */(
-        this.getPref('spellcheck.dictionaries').value));
-    for (var i = 0; i < this.languages.enabledLanguages.length; i++) {
-      var languageCode = this.languages.enabledLanguages[i].language.code;
-      this.set('languages.enabledLanguages.' + i + '.state.spellCheckEnabled',
-               !!spellCheckMap[languageCode]);
-    }
-  },
-
-  translateLanguagesPrefChanged_: function() {
-    if (!this.initialized_)
-      return;
-
-    var translateBlockedPref = this.getPref('translate_blocked_languages');
-    var translateBlockedMap = this.makeMapFromArray_(
-        /** @type {!Array<string>} */(translateBlockedPref.value));
-
-    for (var i = 0; i < this.languages.enabledLanguages.length; i++) {
-      var translateCode = this.convertLanguageCodeForTranslate(
-          this.languages.enabledLanguages[i].language.code);
-      this.set(
-          'languages.enabledLanguages.' + i + '.state.translateEnabled',
-          !translateBlockedMap[translateCode]);
-    }
-  },
-
-  /**
-   * Deletes the given item from the pref at the given key if the item is found.
-   * Asserts if the pref itself is not found or is not an Array type.
-   * @param {string} key
-   * @param {*} item
-   */
-  deletePrefItem_: function(key, item) {
-    assert(this.getPref(key).type == chrome.settingsPrivate.PrefType.LIST);
-    this.arrayDelete('prefs.' + key + '.value', item);
-  },
-
-  /**
-   * Windows and Chrome OS only: Sets the prospective UI language to the chosen
-   * language. This dosen't affect the actual UI language until a restart.
+   * Sets the prospective UI language to the chosen language. This won't affect
+   * the actual UI language until a restart.
    * @param {string} languageCode
    */
   setUILanguage: function(languageCode) {
     chrome.send('setUILanguage', [languageCode]);
   },
 
-  /**
-   * Windows and Chrome OS only: Resets the prospective UI language back to the
-   * actual UI language.
-   */
+  /** Resets the prospective UI language back to the actual UI language. */
   resetUILanguage: function() {
     chrome.send('setUILanguage', [navigator.language]);
   },
@@ -439,11 +304,19 @@ Polymer({
    * restart. If the pref is not set, the current UI language is also the
    * "prospective" language.
    * @return {string} Language code of the prospective UI language.
-   * @private
    */
   getProspectiveUILanguage: function() {
     return /** @type {string} */(this.getPref('intl.app_locale').value) ||
         navigator.language;
+  },
+</if>
+
+  /**
+   * @param {string} languageCode
+   * @return {boolean} True if the language is enabled.
+   */
+  isLanguageEnabled: function(languageCode) {
+    return !!this.enabledLanguageMap_[languageCode];
   },
 
   /**
@@ -471,17 +344,14 @@ Polymer({
     if (!CrSettingsPrefs.isInitialized)
       return;
 
-    // Cannot disable the UI language.
-    assert(languageCode != this.getProspectiveUILanguage());
-
-    // Cannot disable the only enabled language.
-    var languageCodes =
-        this.getPref(preferredLanguagesPrefName).value.split(',');
-    assert(languageCodes.length > 1);
+    assert(this.canDisableLanguage(languageCode));
 
     // Remove the language from spell check.
-    this.deletePrefItem_('spellcheck.dictionaries', languageCode);
+    this.arrayDelete('prefs.spellcheck.dictionaries.value', languageCode);
 
+    // Remove the language from preferred languages.
+    var languageCodes =
+        this.getPref(preferredLanguagesPrefName).value.split(',');
     var languageIndex = languageCodes.indexOf(languageCode);
     if (languageIndex == -1)
       return;
@@ -491,11 +361,21 @@ Polymer({
   },
 
   /**
-   * @param {string} languageCode
-   * @return {boolean} True if the language is enabled.
+   * @param {string} languageCode Language code for an enabled language.
+   * @return {boolean}
    */
-  isEnabled: function(languageCode) {
-    return !!this.enabledLanguageMap_[languageCode];
+  canDisableLanguage: function(languageCode) {
+    // Cannot disable the prospective UI language.
+    if ((cr.isChromeOS || cr.isWindows) &&
+        languageCode == this.getProspectiveUILanguage()) {
+      return false;
+    }
+
+    // Cannot disable the only enabled language.
+    if (this.languages.enabledLanguages.length == 1)
+      return false;
+
+    return true;
   },
 
   /**
@@ -545,7 +425,6 @@ Polymer({
    * Accept-Language.
    * @param {string} languageCode
    * @return {string} The converted language code.
-   * @private
    */
   convertLanguageCodeForTranslate: function(languageCode) {
     if (languageCode in kLanguageCodeToTranslateCode)
@@ -562,5 +441,72 @@ Polymer({
 
     return main;
   },
+
+  /**
+   * @param {string} languageCode
+   * @return {!chrome.languageSettingsPrivate.Language|undefined}
+   */
+  getLanguage: function(languageCode) {
+    return this.supportedLanguageMap_[languageCode];
+  },
 });
 })();
+
+/**
+ * A reference to the singleton under the guise of a LanguageHelper
+ * implementation. This provides a limited API but implies the singleton
+ * should not be used directly for data binding.
+ */
+var LanguageHelperImpl = SettingsLanguagesSingletonElement;
+cr.addSingletonGetter(LanguageHelperImpl);
+
+/**
+ * This element has a reference to the singleton, exposing the singleton's
+ * |languages| model to the host of this element.
+ */
+Polymer({
+  is: 'settings-languages',
+
+  properties: {
+    /**
+     * Singleton element created at startup which provides the languages model.
+     * @type {!SettingsLanguagesSingletonElement}
+     */
+    singleton_: {
+      type: Object,
+      value: LanguageHelperImpl.getInstance(),
+    },
+
+    /**
+     * A reference to the languages model from the singleton, exposed as a
+     * read-only property so hosts can bind to it, but not change it.
+     * @type {LanguagesModel|undefined}
+     */
+    languages: {
+      type: Object,
+      notify: true,
+      readOnly: true,
+    },
+  },
+
+  ready: function() {
+    // Set the 'languages' property to reference the singleton's model.
+    this._setLanguages(this.singleton_.languages);
+    // Listen for changes to the singleton's languages property, so we know
+    // when to notify hosts of changes to (our reference to) the property.
+    this.listen(
+        this.singleton_, 'languages-changed', 'singletonLanguagesChanged_');
+  },
+
+  /**
+   * Takes changes reported by the singleton and forwards them to the host,
+   * manually sending a change notification for our 'languages' property (since
+   * it's the same object as the singleton's property, but isn't bound by
+   * Polymer).
+   * @private
+   */
+  singletonLanguagesChanged_: function(e) {
+    // Forward the change notification to the host.
+    this.fire(e.type, e.detail, {bubbles: false});
+  },
+});

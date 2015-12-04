@@ -256,7 +256,9 @@
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_LANGUAGES_JS"
                  file="languages_page/languages.js"
-                 type="chrome_html" />
+                 type="chrome_html"
+                 flattenhtml="true"
+                 allowexternalscript="true" />
       <structure name="IDR_SETTINGS_LANGUAGES_PAGE_CSS"
                  file="languages_page/languages_page.css"
                  type="chrome_html" />
@@ -289,7 +291,9 @@
                  allowexternalscript="true" />
       <structure name="IDR_SETTINGS_LANGUAGES_LANGUAGE_DETAIL_PAGE_JS"
                  file="languages_page/language_detail_page.js"
-                 type="chrome_html" />
+                 type="chrome_html"
+                 flattenhtml="true"
+                 allowexternalscript="true" />
       <if expr="not is_macosx">
         <structure name="IDR_SETTINGS_LANGUAGES_EDIT_DICTIONARY_PAGE_CSS"
                    file="languages_page/edit_dictionary_page.css"

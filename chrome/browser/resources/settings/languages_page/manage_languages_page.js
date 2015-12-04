@@ -37,6 +37,9 @@ Polymer({
     availableLanguages_: Array,
   },
 
+  /** @private {!LanguageHelper} */
+  languageHelper_: LanguageHelperImpl.getInstance(),
+
   observers: [
     'enabledLanguagesChanged_(languages.enabledLanguages.*)',
   ],
@@ -47,7 +50,7 @@ Polymer({
    * @private
    */
   onRemoveLanguageTap_: function(e) {
-    this.$.languages.disableLanguage(e.model.item.language.code);
+    this.languageHelper_.disableLanguage(e.model.item.language.code);
   },
 
   /**
@@ -56,19 +59,19 @@ Polymer({
    * @private
    */
   onAddLanguageTap_: function(e) {
-    this.$.languages.enableLanguage(e.model.item.code);
+    this.languageHelper_.enableLanguage(e.model.item.code);
   },
 
   /**
    * True if a language is not the current or prospective UI language.
    * @param {string} languageCode
-   * @param {!Array<!LanguageInfo>} prospectiveUILanguage
+   * @param {string} prospectiveUILanguageCode
    * @return {boolean}
    * @private
    */
-  canRemoveLanguage_: function(languageCode, prospectiveUILanguage) {
+  canRemoveLanguage_: function(languageCode, prospectiveUILanguageCode) {
     if (languageCode == navigator.language ||
-        languageCode == prospectiveUILanguage) {
+        languageCode == prospectiveUILanguageCode) {
       return false;
     }
     assert(this.languages.enabledLanguages.length > 1);
@@ -88,7 +91,7 @@ Polymer({
           code: language.code,
           displayName: language.displayName,
           nativeDisplayName: language.nativeDisplayName,
-          enabled: this.$.languages.isEnabled(language.code)
+          enabled: this.languageHelper_.isLanguageEnabled(language.code),
         });
       }
       // Set the Polymer property after building the full array.
@@ -97,7 +100,8 @@ Polymer({
       // Update the available languages in place.
       for (var i = 0; i < this.availableLanguages_.length; i++) {
         this.set('availableLanguages_.' + i + '.enabled',
-                 this.$.languages.isEnabled(this.availableLanguages_[i].code));
+                 this.languageHelper_.isLanguageEnabled(
+                      this.availableLanguages_[i].code));
       }
     }
   },

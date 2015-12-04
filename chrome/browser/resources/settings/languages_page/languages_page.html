@@ -23,8 +23,7 @@
       href="chrome://md-settings/settings_page/settings_page.css">
   <link rel="import" type="css" href="languages_page.css">
   <template>
-    <settings-languages id="languages" languages="{{languages}}">
-    </settings-languages>
+    <settings-languages languages="{{languages}}"></settings-languages>
     <settings-animated-pages id="pages" current-route="{{currentRoute}}"
         section="languages">
       <neon-animatable id="main">
@@ -37,9 +36,11 @@
               <paper-item class="split" on-tap="onLanguageTap_">
                 <div class="flex" title="[[item.language.nativeDisplayName]]"
                     >[[item.language.displayName]]</div>
+<if expr="chromeos or is_win">
                 <iron-icon icon="done"
-                    hidden$="[[!isUILanguage_(item.language.code, prefs.intl.app_locale.value)]]">
+                    hidden$="[[!isProspectiveUILanguage_(item.language.code, prefs.intl.app_locale.value)]]">
                 </iron-icon>
+</if>
                 <paper-icon-button icon="settings"
                     on-tap="onShowLanguageDetailTap_"></paper-icon-button>
               </paper-item>

@@ -14,8 +14,7 @@
   <link rel="import" type="css" href="chrome://md-settings/settings_page/settings_page.css">
   <link rel="import" type="css" href="language_detail_page.css">
   <template>
-    <settings-languages id="languages" languages="{{languages}}">
-    </settings-languages>
+    <settings-languages languages="{{languages}}"></settings-languages>
 <if expr="chromeos or is_win">
     <div id="languageSettings">
       <label hidden$="[[!detail.language.supportsUI]]">
