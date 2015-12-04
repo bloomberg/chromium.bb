@@ -116,10 +116,8 @@
 #include "chrome/browser/signin/easy_unlock_service.h"
 #include "chrome/browser/ui/webui/extensions/extension_settings_handler.h"
 #include "extensions/browser/extension_prefs.h"
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
 #include "chrome/browser/extensions/api/copresence/copresence_api.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
-#endif
 #endif  // defined(ENABLE_EXTENSIONS)
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
@@ -299,10 +297,18 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   TaskManager::RegisterPrefs(registry);
 #endif  // defined(ENABLE_TASK_MANAGER)
 
-#if !defined(OS_ANDROID)
+#if defined(ENABLE_BACKGROUND)
   BackgroundModeManager::RegisterPrefs(registry);
-  ChromeTracingDelegate::RegisterPrefs(registry);
+#endif
+
+  // TODO(bshe): Use !defined(ANDROID_JAVA_UI) once
+  // codereview.chromium.org/1459793002 landed.
+#if !defined(OS_ANDROID) || defined(USE_AURA)
   RegisterBrowserPrefs(registry);
+#endif
+
+#if !defined(OS_ANDROID)
+  ChromeTracingDelegate::RegisterPrefs(registry);
   StartupBrowserCreator::RegisterLocalStatePrefs(registry);
   // The native GCM is used on Android instead.
   gcm::GCMChannelStatusSyncer::RegisterPrefs(registry);
@@ -423,10 +429,8 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   extensions::launch_util::RegisterProfilePrefs(registry);
   ExtensionWebUI::RegisterProfilePrefs(registry);
   extensions::ExtensionPrefs::RegisterProfilePrefs(registry);
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
   ToolbarActionsBar::RegisterProfilePrefs(registry);
   extensions::CopresenceService::RegisterProfilePrefs(registry);
-#endif
   RegisterAnimationPolicyPrefs(registry);
 #endif  // defined(ENABLE_EXTENSIONS)
 
@@ -485,7 +489,9 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   signin::RegisterProfilePrefs(registry);
 #endif
 
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+  // TODO(bshe): Revisit this once it is more clear on what should we do with
+  // default apps on Aura Android. See crbug.com/564738
+#if (!defined(OS_ANDROID) || defined(USE_AURA)) && !defined(OS_CHROMEOS)
   default_apps::RegisterProfilePrefs(registry);
 #endif
 
