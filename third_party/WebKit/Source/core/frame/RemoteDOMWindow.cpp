@@ -344,4 +344,9 @@ RemoteDOMWindow::RemoteDOMWindow(RemoteFrame& frame)
 {
 }
 
+void RemoteDOMWindow::frameDetached()
+{
+    m_frame = nullptr;
+}
+
 } // namespace blink

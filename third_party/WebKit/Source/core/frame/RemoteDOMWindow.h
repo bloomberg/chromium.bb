@@ -80,6 +80,8 @@ public:
     int requestIdleCallback(IdleRequestCallback*, const IdleRequestOptions&) override;
     void cancelIdleCallback(int id) override;
 
+    void frameDetached();
+
 private:
     explicit RemoteDOMWindow(RemoteFrame&);
 
