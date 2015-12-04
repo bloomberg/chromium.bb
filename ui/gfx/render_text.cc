@@ -93,16 +93,18 @@ SkTypeface::Style ConvertFontStyleToSkiaTypefaceStyle(int font_style) {
   return static_cast<SkTypeface::Style>(skia_style);
 }
 
+int round(float value) {
+  return static_cast<int>(floor(value + 0.5f));
+}
+
 // Given |font| and |display_width|, returns the width of the fade gradient.
 int CalculateFadeGradientWidth(const FontList& font_list, int display_width) {
-  // Fade in/out about 2.5 characters of the beginning/end of the string.
-  // The .5 here is helpful if one of the characters is a space.
-  // Use a quarter of the display width if the display width is very short.
-  const int average_character_width = font_list.GetExpectedTextWidth(1);
-  const double gradient_width = std::min(average_character_width * 2.5,
-                                         display_width / 4.0);
-  DCHECK_GE(gradient_width, 0.0);
-  return static_cast<int>(floor(gradient_width + 0.5));
+  // Fade in/out about 3 characters of the beginning/end of the string.
+  // Use a 1/3 of the display width if the display width is very short.
+  const int narrow_width = font_list.GetExpectedTextWidth(3);
+  const int gradient_width = std::min(narrow_width, round(display_width / 3.f));
+  DCHECK_GE(gradient_width, 0);
+  return gradient_width;
 }
 
 // Appends to |positions| and |colors| values corresponding to the fade over
@@ -130,12 +132,22 @@ void AddFadeEffect(const Rect& text_rect,
 
 // Creates a SkShader to fade the text, with |left_part| specifying the left
 // fade effect, if any, and |right_part| specifying the right fade effect.
-skia::RefPtr<SkShader> CreateFadeShader(const Rect& text_rect,
+skia::RefPtr<SkShader> CreateFadeShader(const FontList& font_list,
+                                        const Rect& text_rect,
                                         const Rect& left_part,
                                         const Rect& right_part,
                                         SkColor color) {
-  // Fade alpha of 51/255 corresponds to a fade of 0.2 of the original color.
-  const SkColor fade_color = SkColorSetA(color, 51);
+  // In general, fade down to 0 alpha.  But when the available width is less
+  // than four characters, linearly ramp up the fade target alpha to as high as
+  // 20% at zero width.  This allows the user to see the last faded characters a
+  // little better when there are only a few characters shown.
+  const float width_fraction =
+      text_rect.width() / static_cast<float>(font_list.GetExpectedTextWidth(4));
+  const SkAlpha kAlphaAtZeroWidth = 51;
+  const SkAlpha alpha = (width_fraction < 1) ?
+      static_cast<SkAlpha>(round((1 - width_fraction) * kAlphaAtZeroWidth)) : 0;
+  const SkColor fade_color = SkColorSetA(color, alpha);
+
   std::vector<SkScalar> positions;
   std::vector<SkColor> colors;
 
@@ -1209,8 +1221,9 @@ void RenderText::ApplyFadeEffects(internal::SkiaTextRenderer* renderer) {
   text_rect.Inset(GetAlignmentOffset(0).x(), 0, 0, 0);
 
   // TODO(msw): Use the actual text colors corresponding to each faded part.
-  skia::RefPtr<SkShader> shader = CreateFadeShader(
-      text_rect, left_part, right_part, colors_.breaks().front().second);
+  skia::RefPtr<SkShader> shader =
+      CreateFadeShader(font_list(), text_rect, left_part, right_part,
+                       colors_.breaks().front().second);
   if (shader)
     renderer->SetShader(shader.get());
 }
