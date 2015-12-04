@@ -66685,6 +66685,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="12" label="ERROR_SOURCE_NOT_FOUND">
     Broker didn't have a channel of communication with the source process.
   </int>
+  <int value="13" label="ERROR_COULD_NOT_OPEN_SOURCE_OR_DEST">
+    Broker could not open the source or destination process with extra
+    privileges.
+  </int>
+  <int value="14" label="ERROR_INVALID_PERMISSIONS">
+    Broker was asked to transfer a HANDLE with invalid permissions.
+  </int>
 </enum>
 
 <enum name="IPCAttachmentBrokerUnprivilegedBrokerAttachmentError" type="int">

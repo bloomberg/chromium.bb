@@ -102,35 +102,41 @@ AttachmentBrokerPrivilegedWin::HandleWireFormat
 AttachmentBrokerPrivilegedWin::DuplicateWinHandle(
     const HandleWireFormat& wire_format,
     base::ProcessId source_pid) {
+  // If the source process is the destination process, then no additional work
+  // is required.
+  if (source_pid == wire_format.destination_process)
+    return wire_format;
+
   base::Process source_process =
       base::Process::OpenWithExtraPrivileges(source_pid);
   base::Process dest_process =
       base::Process::OpenWithExtraPrivileges(wire_format.destination_process);
-  int new_wire_format_handle = 0;
-  if (source_process.Handle() && dest_process.Handle()) {
-    DWORD desired_access = 0;
-    DWORD options = 0;
-    switch (wire_format.permissions) {
-      case HandleWin::INVALID:
-        LOG(ERROR) << "Received invalid permissions for duplication.";
-        return CopyWireFormat(wire_format, 0);
-      case HandleWin::DUPLICATE:
-        options = DUPLICATE_SAME_ACCESS;
-        break;
-      case HandleWin::FILE_READ_WRITE:
-        desired_access = FILE_GENERIC_READ | FILE_GENERIC_WRITE;
-        break;
-    }
-
-    HANDLE new_handle;
-    HANDLE original_handle = LongToHandle(wire_format.handle);
-    DWORD result = ::DuplicateHandle(source_process.Handle(), original_handle,
-                                     dest_process.Handle(), &new_handle,
-                                     desired_access, FALSE, options);
-
-    new_wire_format_handle = (result != 0) ? HandleToLong(new_handle) : 0;
+  if (!source_process.Handle() || !dest_process.Handle()) {
+    LogError(ERROR_COULD_NOT_OPEN_SOURCE_OR_DEST);
+    return wire_format;
   }
 
+  DWORD desired_access = 0;
+  DWORD options = DUPLICATE_CLOSE_SOURCE;
+  switch (wire_format.permissions) {
+    case HandleWin::INVALID:
+      LogError(ERROR_INVALID_PERMISSIONS);
+      return CopyWireFormat(wire_format, 0);
+    case HandleWin::DUPLICATE:
+      options |= DUPLICATE_SAME_ACCESS;
+      break;
+    case HandleWin::FILE_READ_WRITE:
+      desired_access = FILE_GENERIC_READ | FILE_GENERIC_WRITE;
+      break;
+  }
+
+  HANDLE new_handle;
+  HANDLE original_handle = LongToHandle(wire_format.handle);
+  DWORD result = ::DuplicateHandle(source_process.Handle(), original_handle,
+                                   dest_process.Handle(), &new_handle,
+                                   desired_access, FALSE, options);
+
+  int new_wire_format_handle = (result != 0) ? HandleToLong(new_handle) : 0;
   return CopyWireFormat(wire_format, new_wire_format_handle);
 }
 

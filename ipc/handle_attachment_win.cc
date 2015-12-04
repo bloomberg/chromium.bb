@@ -11,20 +11,22 @@ namespace internal {
 
 HandleAttachmentWin::HandleAttachmentWin(const HANDLE& handle,
                                          HandleWin::Permissions permissions)
-    : handle_(handle), permissions_(permissions) {}
+    : handle_(handle), permissions_(permissions), owns_handle_(true) {}
 
 HandleAttachmentWin::HandleAttachmentWin(const WireFormat& wire_format)
     : BrokerableAttachment(wire_format.attachment_id),
       handle_(LongToHandle(wire_format.handle)),
-      permissions_(wire_format.permissions) {}
+      permissions_(wire_format.permissions), owns_handle_(false) {}
 
 HandleAttachmentWin::HandleAttachmentWin(
     const BrokerableAttachment::AttachmentId& id)
     : BrokerableAttachment(id),
       handle_(INVALID_HANDLE_VALUE),
-      permissions_(HandleWin::INVALID) {}
+      permissions_(HandleWin::INVALID), owns_handle_(false) {}
 
 HandleAttachmentWin::~HandleAttachmentWin() {
+  if (handle_ != INVALID_HANDLE_VALUE && owns_handle_)
+    ::CloseHandle(handle_);
 }
 
 HandleAttachmentWin::BrokerableType HandleAttachmentWin::GetBrokerableType()

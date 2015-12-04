@@ -85,6 +85,11 @@ class IPC_EXPORT AttachmentBrokerPrivileged : public IPC::AttachmentBroker {
     // The broker did not have a channel of communication with the source
     // process.
     ERROR_SOURCE_NOT_FOUND = 12,
+    // The broker could not open the source or destination process with extra
+    // privileges.
+    ERROR_COULD_NOT_OPEN_SOURCE_OR_DEST = 13,
+    // The broker was asked to transfer a HANDLE with invalid permissions.
+    ERROR_INVALID_PERMISSIONS = 14,
     ERROR_MAX
   };
 

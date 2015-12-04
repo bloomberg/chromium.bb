@@ -21,12 +21,15 @@ bool AttachmentBrokerUnprivilegedWin::SendAttachmentToProcess(
     base::ProcessId destination_process) {
   switch (attachment->GetBrokerableType()) {
     case BrokerableAttachment::WIN_HANDLE: {
-      const internal::HandleAttachmentWin* handle_attachment =
-          static_cast<const internal::HandleAttachmentWin*>(attachment.get());
+      internal::HandleAttachmentWin* handle_attachment =
+          static_cast<internal::HandleAttachmentWin*>(attachment.get());
       internal::HandleAttachmentWin::WireFormat format =
           handle_attachment->GetWireFormat(destination_process);
-      return get_sender()->Send(
+      bool success = get_sender()->Send(
           new AttachmentBrokerMsg_DuplicateWinHandle(format));
+      if (success)
+        handle_attachment->reset_handle_ownership();
+      return success;
     }
     case BrokerableAttachment::MACH_PORT:
     case BrokerableAttachment::PLACEHOLDER:
