@@ -542,7 +542,7 @@ void TableView::OnPaint(gfx::Canvas* canvas) {
                                                   GetRowBounds(i),
                                                   canvas);
     }
-    if (selection_model_.active() == i && HasFocus())
+    if (selection_model_.active() == model_index && HasFocus())
       canvas->DrawFocusRect(GetRowBounds(i));
     for (int j = region.min_column; j < region.max_column; ++j) {
       const gfx::Rect cell_bounds(GetCellBounds(i, j));
