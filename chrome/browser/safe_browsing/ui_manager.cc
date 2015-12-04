@@ -148,12 +148,6 @@ void SafeBrowsingUIManager::DisplayBlockingPage(
     }
   }
 
-  // Indicate to interested observers that the resource in question matched the
-  // SB filters.
-  if (resource.threat_type != SB_THREAT_TYPE_SAFE) {
-    FOR_EACH_OBSERVER(Observer, observer_list_, OnSafeBrowsingMatch(resource));
-  }
-
   // The tab might have been closed. If it was closed, just act as if "Don't
   // Proceed" had been chosen.
   WebContents* web_contents =

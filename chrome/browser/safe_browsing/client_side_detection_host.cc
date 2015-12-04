@@ -430,9 +430,6 @@ void ClientSideDetectionHost::OnSafeBrowsingHit(
   unsafe_resource_->callback.Reset();  // Don't do anything stupid.
 }
 
-void ClientSideDetectionHost::OnSafeBrowsingMatch(
-    const SafeBrowsingUIManager::UnsafeResource& resource) {}
-
 scoped_refptr<SafeBrowsingDatabaseManager>
 ClientSideDetectionHost::database_manager() {
   return database_manager_;

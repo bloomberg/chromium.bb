@@ -52,11 +52,6 @@ class ClientSideDetectionHost : public content::WebContentsObserver,
   void OnSafeBrowsingHit(
       const SafeBrowsingUIManager::UnsafeResource& resource) override;
 
-  // Called when the SafeBrowsingService finds a match on the SB lists.
-  // Called on the UI thread. Called even if the resource is whitelisted.
-  void OnSafeBrowsingMatch(
-      const SafeBrowsingUIManager::UnsafeResource& resource) override;
-
   virtual scoped_refptr<SafeBrowsingDatabaseManager> database_manager();
 
  protected:

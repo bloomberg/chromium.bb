@@ -364,7 +364,6 @@ class ClientSideDetectionHostTest : public ChromeRenderViewHostTestHarness {
         GetID();
     resource.render_view_id =
         web_contents()->GetRenderViewHost()->GetRoutingID();
-    csd_host_->OnSafeBrowsingMatch(resource);
     csd_host_->OnSafeBrowsingHit(resource);
     resource.callback.Reset();
     ASSERT_TRUE(csd_host_->DidShowSBInterstitial());
@@ -394,7 +393,6 @@ class ClientSideDetectionHostTest : public ChromeRenderViewHostTestHarness {
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
     resource.render_process_host_id = pending_rvh()->GetProcess()->GetID();
     resource.render_view_id = pending_rvh()->GetRoutingID();
-    csd_host_->OnSafeBrowsingMatch(resource);
     csd_host_->OnSafeBrowsingHit(resource);
     resource.callback.Reset();
 
