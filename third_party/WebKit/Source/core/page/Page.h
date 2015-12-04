@@ -64,6 +64,7 @@ class Settings;
 class SpellCheckerClient;
 class UndoStack;
 class ValidationMessageClient;
+class WebLayerTreeView;
 
 typedef uint64_t LinkHash;
 
@@ -205,7 +206,9 @@ public:
 
     DECLARE_TRACE();
 
-    void willCloseLayerTreeView();
+    void layerTreeViewInitialized(WebLayerTreeView&);
+    void willCloseLayerTreeView(WebLayerTreeView&);
+
     void willBeDestroyed();
 
 private:

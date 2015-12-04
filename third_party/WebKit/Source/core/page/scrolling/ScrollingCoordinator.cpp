@@ -59,6 +59,7 @@
 #include "public/platform/WebCompositorAnimationTimeline.h"
 #include "public/platform/WebCompositorSupport.h"
 #include "public/platform/WebLayerPositionConstraint.h"
+#include "public/platform/WebLayerTreeView.h"
 #include "public/platform/WebScrollbarLayer.h"
 #include "public/platform/WebScrollbarThemeGeometry.h"
 #include "public/platform/WebScrollbarThemePainter.h"
@@ -94,7 +95,6 @@ ScrollingCoordinator::ScrollingCoordinator(Page* page)
     , m_wasFrameScrollable(false)
     , m_lastMainThreadScrollingReasons(0)
 {
-    createProgrammaticScrollAnimatorTimeline();
 }
 
 ScrollingCoordinator::~ScrollingCoordinator()
@@ -720,16 +720,26 @@ void ScrollingCoordinator::setShouldUpdateScrollLayerPositionOnMainThread(MainTh
     }
 }
 
-void ScrollingCoordinator::willCloseLayerTreeView()
+void ScrollingCoordinator::layerTreeViewInitialized(WebLayerTreeView& layerTreeView)
 {
-    destroyProgrammaticScrollAnimatorTimeline();
+    if (RuntimeEnabledFeatures::compositorAnimationTimelinesEnabled() && Platform::current()->isThreadedAnimationEnabled()) {
+        ASSERT(Platform::current()->compositorSupport());
+        m_programmaticScrollAnimatorTimeline = adoptPtr(Platform::current()->compositorSupport()->createAnimationTimeline());
+        layerTreeView.attachCompositorAnimationTimeline(m_programmaticScrollAnimatorTimeline.get());
+    }
+}
+
+void ScrollingCoordinator::willCloseLayerTreeView(WebLayerTreeView& layerTreeView)
+{
+    if (m_programmaticScrollAnimatorTimeline) {
+        layerTreeView.detachCompositorAnimationTimeline(m_programmaticScrollAnimatorTimeline.get());
+        m_programmaticScrollAnimatorTimeline.clear();
+    }
 }
 
 void ScrollingCoordinator::willBeDestroyed()
 {
     ASSERT(m_page);
-
-    destroyProgrammaticScrollAnimatorTimeline();
 
     m_page = nullptr;
     for (const auto& scrollbar : m_horizontalScrollbars)
@@ -1073,28 +1083,6 @@ bool ScrollingCoordinator::frameViewIsDirty() const
     if (WebLayer* scrollLayer = frameView ? toWebLayer(frameView->layerForScrolling()) : nullptr)
         return WebSize(frameView->contentsSize()) != scrollLayer->bounds();
     return false;
-}
-
-void ScrollingCoordinator::createProgrammaticScrollAnimatorTimeline()
-{
-    if (RuntimeEnabledFeatures::compositorAnimationTimelinesEnabled() && Platform::current()->isThreadedAnimationEnabled()) {
-        ASSERT(m_page);
-        if (m_page->mainFrame()->isLocalFrame()) {
-            ASSERT(Platform::current()->compositorSupport());
-            m_programmaticScrollAnimatorTimeline = adoptPtr(Platform::current()->compositorSupport()->createAnimationTimeline());
-            m_page->chromeClient().attachCompositorAnimationTimeline(m_programmaticScrollAnimatorTimeline.get(), toLocalFrame(m_page->mainFrame()));
-        }
-    }
-}
-
-void ScrollingCoordinator::destroyProgrammaticScrollAnimatorTimeline()
-{
-    if (m_programmaticScrollAnimatorTimeline) {
-        ASSERT(m_page);
-        ASSERT(m_page->mainFrame()->isLocalFrame());
-        m_page->chromeClient().detachCompositorAnimationTimeline(m_programmaticScrollAnimatorTimeline.get(), toLocalFrame(m_page->mainFrame()));
-        m_programmaticScrollAnimatorTimeline.clear();
-    }
 }
 
 } // namespace blink

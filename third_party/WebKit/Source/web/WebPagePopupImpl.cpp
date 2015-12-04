@@ -344,6 +344,7 @@ void WebPagePopupImpl::setIsAcceleratedCompositingActive(bool enter)
             m_layerTreeView->setVisible(true);
             m_isAcceleratedCompositingActive = true;
             m_layerTreeView->setDeviceScaleFactor(m_webView->deviceScaleFactor());
+            m_page->layerTreeViewInitialized(*m_layerTreeView);
         } else {
             m_isAcceleratedCompositingActive = false;
         }
@@ -361,6 +362,9 @@ void WebPagePopupImpl::beginFrame(double lastFrameTimeMonotonic)
 
 void WebPagePopupImpl::willCloseLayerTreeView()
 {
+    if (m_page && m_layerTreeView)
+        m_page->willCloseLayerTreeView(*m_layerTreeView);
+
     setIsAcceleratedCompositingActive(false);
     m_layerTreeView = 0;
 }

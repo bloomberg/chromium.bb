@@ -2690,8 +2690,8 @@ void WebViewImpl::willCloseLayerTreeView()
         m_linkHighlightsTimeline.clear();
     }
 
-    if (page())
-        page()->willCloseLayerTreeView();
+    if (m_layerTreeView)
+        page()->willCloseLayerTreeView(*m_layerTreeView);
 
     setRootGraphicsLayer(nullptr);
     m_layerTreeView = nullptr;
@@ -4242,6 +4242,8 @@ void WebViewImpl::initializeLayerTreeView()
         devTools->layerTreeViewChanged(m_layerTreeView);
 
     m_page->settings().setAcceleratedCompositingEnabled(m_layerTreeView);
+    if (m_layerTreeView)
+        m_page->layerTreeViewInitialized(*m_layerTreeView);
 
     // FIXME: only unittests, click to play, Android printing, and printing (for headers and footers)
     // make this assert necessary. We should make them not hit this code and then delete allowsBrokenNullLayerTreeView.

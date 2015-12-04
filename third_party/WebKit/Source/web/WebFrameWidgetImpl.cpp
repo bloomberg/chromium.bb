@@ -604,6 +604,9 @@ bool WebFrameWidgetImpl::isAcceleratedCompositingActive() const
 
 void WebFrameWidgetImpl::willCloseLayerTreeView()
 {
+    if (m_layerTreeView)
+        page()->willCloseLayerTreeView(*m_layerTreeView);
+
     setIsAcceleratedCompositingActive(false);
     m_layerTreeView = nullptr;
     m_layerTreeViewClosed = true;
@@ -985,6 +988,8 @@ void WebFrameWidgetImpl::initializeLayerTreeView()
         devTools->layerTreeViewChanged(m_layerTreeView);
 
     page()->settings().setAcceleratedCompositingEnabled(m_layerTreeView);
+    if (m_layerTreeView)
+        page()->layerTreeViewInitialized(*m_layerTreeView);
 
     // FIXME: only unittests, click to play, Android priting, and printing (for headers and footers)
     // make this assert necessary. We should make them not hit this code and then delete allowsBrokenNullLayerTreeView.

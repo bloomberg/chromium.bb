@@ -546,10 +546,16 @@ DEFINE_TRACE(Page)
     MemoryPurgeClient::trace(visitor);
 }
 
-void Page::willCloseLayerTreeView()
+void Page::layerTreeViewInitialized(WebLayerTreeView& layerTreeView)
+{
+    if (scrollingCoordinator())
+        scrollingCoordinator()->layerTreeViewInitialized(layerTreeView);
+}
+
+void Page::willCloseLayerTreeView(WebLayerTreeView& layerTreeView)
 {
     if (m_scrollingCoordinator)
-        m_scrollingCoordinator->willCloseLayerTreeView();
+        m_scrollingCoordinator->willCloseLayerTreeView(layerTreeView);
 }
 
 void Page::willBeDestroyed()
