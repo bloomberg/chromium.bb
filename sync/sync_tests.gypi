@@ -312,6 +312,7 @@
         'internal_api/public/base/ordinal_unittest.cc',
         'internal_api/public/base/unique_position_unittest.cc',
         'internal_api/public/change_record_unittest.cc',
+        'internal_api/public/data_batch_impl_unittest.cc',
         'internal_api/public/engine/model_safe_worker_unittest.cc',
         'internal_api/public/sessions/sync_session_snapshot_unittest.cc',
         'internal_api/public/util/immutable_unittest.cc',
