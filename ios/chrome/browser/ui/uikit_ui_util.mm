@@ -150,11 +150,14 @@ void AddRoundedBorderShadow(UIView* view, CGFloat radius, UIColor* color) {
   CGPathRelease(path);
 }
 
-UIImage* CaptureView(UIView* view, CGFloat scale) {
+UIImage* CaptureViewWithOption(UIView* view,
+                               CGFloat scale,
+                               BOOL afterScreenUpdate) {
   UIGraphicsBeginImageContextWithOptions(view.bounds.size, YES /* opaque */,
                                          scale);
-  if (experimental_flags::IsWKWebViewEnabled()) {
-    [view drawViewHierarchyInRect:view.bounds afterScreenUpdates:NO];
+  if (base::ios::IsRunningOnIOS9OrLater()) {
+    [view drawViewHierarchyInRect:view.bounds
+               afterScreenUpdates:afterScreenUpdate];
   } else {
     CGContext* context = UIGraphicsGetCurrentContext();
     [view.layer renderInContext:context];
@@ -162,6 +165,10 @@ UIImage* CaptureView(UIView* view, CGFloat scale) {
   UIImage* image = UIGraphicsGetImageFromCurrentImageContext();
   UIGraphicsEndImageContext();
   return image;
+}
+
+UIImage* CaptureView(UIView* view, CGFloat scale) {
+  return CaptureViewWithOption(view, scale, NO /* afterScreenUpdate */);
 }
 
 UIImage* GreyImage(UIImage* image) {
