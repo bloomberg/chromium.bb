@@ -358,7 +358,6 @@ class SigninScreenHandler
                             bool diagnostic_mode);
   void HandleGetPublicSessionKeyboardLayouts(const AccountId& account_id,
                                              const std::string& locale);
-  void HandleCancelConsumerManagementEnrollment();
   void HandleGetTouchViewState();
   void HandleLogRemoveUserWarningShown();
   void HandleFirstIncorrectPasswordAttempt(const AccountId& account_id);
@@ -471,9 +470,6 @@ class SigninScreenHandler
 
   // Maximized mode controller delegate.
   scoped_ptr<TouchViewControllerDelegate> max_mode_delegate_;
-
-  // Whether consumer management enrollment is in progress.
-  bool is_enrolling_consumer_management_ = false;
 
   // Input Method Engine state used at signin screen.
   scoped_refptr<input_method::InputMethodManager::State> ime_state_;

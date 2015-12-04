@@ -43,8 +43,6 @@
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/policy/consumer_management_service.h"
-#include "chrome/browser/chromeos/policy/consumer_management_stage.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -270,13 +268,6 @@ SigninScreenHandler::SigninScreenHandler(
 
   max_mode_delegate_.reset(new TouchViewControllerDelegate());
   max_mode_delegate_->AddObserver(this);
-
-  policy::ConsumerManagementService* consumer_management =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos()->
-          GetConsumerManagementService();
-  is_enrolling_consumer_management_ =
-      consumer_management &&
-      consumer_management->GetStage().IsEnrollmentRequested();
 }
 
 SigninScreenHandler::~SigninScreenHandler() {
@@ -495,8 +486,6 @@ void SigninScreenHandler::RegisterMessages() {
   AddCallback("focusPod", &SigninScreenHandler::HandleFocusPod);
   AddCallback("getPublicSessionKeyboardLayouts",
               &SigninScreenHandler::HandleGetPublicSessionKeyboardLayouts);
-  AddCallback("cancelConsumerManagementEnrollment",
-              &SigninScreenHandler::HandleCancelConsumerManagementEnrollment);
   AddCallback("getTouchViewState",
               &SigninScreenHandler::HandleGetTouchViewState);
   AddCallback("logRemoveUserWarningShown",
@@ -518,14 +507,7 @@ void SigninScreenHandler::Show(const LoginScreenContext& context) {
   oobe_ui_ = context.oobe_ui();
 
   std::string email;
-  if (is_enrolling_consumer_management_) {
-    // We don't check if the value of the owner e-mail is trusted because it is
-    // only used to pre-fill the e-mail field in Gaia sign-in page and a cached
-    // value is sufficient.
-    CrosSettings::Get()->GetString(kDeviceOwner, &email);
-  } else {
-    email = context.email();
-  }
+  email = context.email();
   gaia_screen_handler_->set_populated_email(email);
   ShowImpl();
   histogram_helper_->OnScreenShow();
@@ -579,7 +561,7 @@ void SigninScreenHandler::ShowImpl() {
     GetOobeUI()->AddObserver(this);
   }
 
-  if (oobe_ui_ || is_enrolling_consumer_management_) {
+  if (oobe_ui_) {
     // Shows new user sign-in for OOBE.
     OnShowAddUser();
   } else {
@@ -1285,17 +1267,6 @@ void SigninScreenHandler::HandleLaunchKioskApp(const AccountId& app_account_id,
     delegate_->Login(context, specifics);
 }
 
-void SigninScreenHandler::HandleCancelConsumerManagementEnrollment() {
-  policy::ConsumerManagementService* consumer_management =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos()->
-          GetConsumerManagementService();
-  CHECK(consumer_management);
-  consumer_management->SetStage(
-      policy::ConsumerManagementStage::EnrollmentCanceled());
-  is_enrolling_consumer_management_ = false;
-  ShowImpl();
-}
-
 void SigninScreenHandler::HandleGetTouchViewState() {
   if (max_mode_delegate_) {
     CallJS("login.AccountPickerScreen.setTouchViewState",
@@ -1404,7 +1375,7 @@ bool SigninScreenHandler::IsOfflineLoginAllowed() const {
 
 void SigninScreenHandler::OnShowAddUser() {
   is_account_picker_showing_first_time_ = false;
-  gaia_screen_handler_->ShowGaiaAsync(is_enrolling_consumer_management_);
+  gaia_screen_handler_->ShowGaiaAsync();
 }
 
 net::Error SigninScreenHandler::FrameError() const {

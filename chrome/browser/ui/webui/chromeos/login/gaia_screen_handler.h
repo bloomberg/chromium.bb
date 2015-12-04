@@ -19,10 +19,6 @@
 
 class AccountId;
 
-namespace policy {
-class ConsumerManagementService;
-}
-
 namespace chromeos {
 
 class SigninScreenHandler;
@@ -41,8 +37,7 @@ class GaiaScreenHandler : public BaseScreenHandler,
 
   GaiaScreenHandler(
       CoreOobeActor* core_oobe_actor,
-      const scoped_refptr<NetworkStateInformer>& network_state_informer,
-      policy::ConsumerManagementService* consumer_management);
+      const scoped_refptr<NetworkStateInformer>& network_state_informer);
   ~GaiaScreenHandler() override;
 
   // Decides whether an auth extension should be pre-loaded. If it should,
@@ -112,13 +107,6 @@ class GaiaScreenHandler : public BaseScreenHandler,
 
   void HandleIdentifierEntered(const std::string& account_identifier);
 
-  // This is called when ConsumerManagementService::SetOwner() returns.
-  void OnSetOwnerDone(const std::string& gaia_id,
-                      const std::string& typed_email,
-                      const std::string& password,
-                      bool using_saml,
-                      bool success);
-
   // Really handles the complete login message.
   void DoCompleteLogin(const std::string& gaia_id,
                        const std::string& typed_email,
@@ -153,7 +141,7 @@ class GaiaScreenHandler : public BaseScreenHandler,
   // cleans DNS cache and cookies. In the latter case, the request to show the
   // screen can be canceled by calling CancelShowGaiaAsync() while the clean-up
   // is in progress.
-  void ShowGaiaAsync(bool is_enrolling_consumer_management);
+  void ShowGaiaAsync();
 
   // Cancels the request to show the sign-in screen while the asynchronous
   // clean-up process that precedes the screen showing is in progress.
@@ -211,9 +199,6 @@ class GaiaScreenHandler : public BaseScreenHandler,
   // Network state informer used to keep signin screen up.
   scoped_refptr<NetworkStateInformer> network_state_informer_;
 
-  // Consumer management service for checking if enrollment is in progress.
-  policy::ConsumerManagementService* consumer_management_ = nullptr;
-
   CoreOobeActor* core_oobe_actor_ = nullptr;
 
   // Email to pre-populate with.
@@ -241,9 +226,6 @@ class GaiaScreenHandler : public BaseScreenHandler,
   // If the user authenticated via SAML, this indicates whether the principals
   // API was used.
   bool using_saml_api_ = false;
-
-  // Whether consumer management enrollment is in progress.
-  bool is_enrolling_consumer_management_ = false;
 
   // Test credentials.
   std::string test_user_;

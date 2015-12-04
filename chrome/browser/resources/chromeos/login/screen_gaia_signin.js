@@ -57,13 +57,6 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     email: '',
 
     /**
-     * Whether consumer management enrollment is in progress.
-     * @type {boolean}
-     * @private
-     */
-    isEnrollingConsumerManagement_: false,
-
-    /**
      * Timer id of pending load.
      * @type {number}
      * @private
@@ -438,10 +431,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     onBeforeShow: function(data) {
       chrome.send('loginUIStateChanged', ['gaia-signin', true]);
       $('progress-dots').hidden = true;
-      $('login-header-bar').signinUIState =
-          this.isEnrollingConsumerManagement_ ?
-              SIGNIN_UI_STATE.CONSUMER_MANAGEMENT_ENROLLMENT :
-              SIGNIN_UI_STATE.GAIA_SIGNIN;
+      $('login-header-bar').signinUIState = SIGNIN_UI_STATE.GAIA_SIGNIN;
 
       // Ensure that GAIA signin (or loading UI) is actually visible.
       window.requestAnimationFrame(function() {
@@ -544,8 +534,6 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
 
       this.isShowUsers_ = data.isShowUsers;
       this.updateControlsState();
-
-      this.isEnrollingConsumerManagement_ = data.isEnrollingConsumerManagement;
 
       this.classList.toggle('full-width', false);
       if (Oobe.getInstance().currentScreen === this)
