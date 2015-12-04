@@ -17,10 +17,10 @@ scoped_ptr<WindowSurface> WindowSurface::Create(
   mojo::InterfaceRequest<mojom::SurfaceClient> surface_client_request =
       GetProxy(&surface_client);
 
-  surface_binding->reset(
-      new WindowSurfaceBinding(GetProxy(&surface), surface_client.Pass()));
+  surface_binding->reset(new WindowSurfaceBinding(
+      GetProxy(&surface), surface_client.PassInterface()));
   return make_scoped_ptr(new WindowSurface(surface.PassInterface(),
-                                           surface_client_request.Pass()));
+                                           std::move(surface_client_request)));
 }
 
 WindowSurface::~WindowSurface() {}
@@ -28,9 +28,9 @@ WindowSurface::~WindowSurface() {}
 void WindowSurface::BindToThread() {
   DCHECK(!thread_checker_);
   thread_checker_.reset(new base::ThreadChecker());
-  surface_.Bind(surface_info_.Pass());
-  client_binding_.reset(
-      new mojo::Binding<mojom::SurfaceClient>(this, client_request_.Pass()));
+  surface_.Bind(std::move(surface_info_));
+  client_binding_.reset(new mojo::Binding<mojom::SurfaceClient>(
+      this, std::move(client_request_)));
 }
 
 void WindowSurface::SubmitCompositorFrame(mojom::CompositorFramePtr frame,
@@ -39,15 +39,15 @@ void WindowSurface::SubmitCompositorFrame(mojom::CompositorFramePtr frame,
   DCHECK(thread_checker_->CalledOnValidThread());
   if (!surface_)
     return;
-  surface_->SubmitCompositorFrame(frame.Pass(), callback);
+  surface_->SubmitCompositorFrame(std::move(frame), callback);
 }
 
 WindowSurface::WindowSurface(
     mojo::InterfacePtrInfo<mojom::Surface> surface_info,
     mojo::InterfaceRequest<mojom::SurfaceClient> client_request)
     : client_(nullptr),
-      surface_info_(surface_info.Pass()),
-      client_request_(client_request.Pass()) {}
+      surface_info_(std::move(surface_info)),
+      client_request_(std::move(client_request)) {}
 
 void WindowSurface::ReturnResources(
     mojo::Array<mojom::ReturnedResourcePtr> resources) {
@@ -55,15 +55,15 @@ void WindowSurface::ReturnResources(
   DCHECK(thread_checker_->CalledOnValidThread());
   if (!client_)
     return;
-  client_->OnResourcesReturned(this, resources.Pass());
+  client_->OnResourcesReturned(this, std::move(resources));
 }
 
 WindowSurfaceBinding::~WindowSurfaceBinding() {}
 
 WindowSurfaceBinding::WindowSurfaceBinding(
     mojo::InterfaceRequest<mojom::Surface> surface_request,
-    mojom::SurfaceClientPtr surface_client)
-    : surface_request_(surface_request.Pass()),
-      surface_client_(surface_client.Pass()) {}
+    mojo::InterfacePtrInfo<mojom::SurfaceClient> surface_client)
+    : surface_request_(std::move(surface_request)),
+      surface_client_(std::move(surface_client)) {}
 
 }  // namespace mus

@@ -221,15 +221,15 @@ bool Window::IsDrawn() const {
 scoped_ptr<WindowSurface> Window::RequestSurface(mojom::SurfaceType type) {
   scoped_ptr<WindowSurfaceBinding> surface_binding;
   scoped_ptr<WindowSurface> surface = WindowSurface::Create(&surface_binding);
-  AttachSurface(type, surface_binding.Pass());
+  AttachSurface(type, std::move(surface_binding));
   return surface;
 }
 
 void Window::AttachSurface(mojom::SurfaceType type,
                            scoped_ptr<WindowSurfaceBinding> surface_binding) {
-  tree_client()->AttachSurface(id_, type,
-                               surface_binding->surface_request_.Pass(),
-                               surface_binding->surface_client_.Pass());
+  tree_client()->AttachSurface(
+      id_, type, std::move(surface_binding->surface_request_),
+      mojo::MakeProxy(std::move(surface_binding->surface_client_)));
 }
 
 void Window::ClearSharedProperty(const std::string& name) {

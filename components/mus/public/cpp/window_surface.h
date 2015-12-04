@@ -69,11 +69,12 @@ class WindowSurfaceBinding {
   friend class WindowSurface;
   friend class Window;
 
-  WindowSurfaceBinding(mojo::InterfaceRequest<mojom::Surface> surface_request,
-                       mojom::SurfaceClientPtr surface_client);
+  WindowSurfaceBinding(
+      mojo::InterfaceRequest<mojom::Surface> surface_request,
+      mojo::InterfacePtrInfo<mojom::SurfaceClient> surface_client);
 
   mojo::InterfaceRequest<mojom::Surface> surface_request_;
-  mojom::SurfaceClientPtr surface_client_;
+  mojo::InterfacePtrInfo<mojom::SurfaceClient> surface_client_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowSurfaceBinding);
 };
