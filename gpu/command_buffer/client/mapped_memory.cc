@@ -56,9 +56,7 @@ MappedMemoryManager::~MappedMemoryManager() {
       this);
 
   CommandBuffer* cmd_buf = helper_->command_buffer();
-  for (MemoryChunkVector::iterator iter = chunks_.begin();
-       iter != chunks_.end(); ++iter) {
-    MemoryChunk* chunk = *iter;
+  for (auto& chunk : chunks_) {
     cmd_buf->DestroyTransferBuffer(chunk->shm_id());
   }
 }
@@ -70,8 +68,7 @@ void* MappedMemoryManager::Alloc(
   if (size <= allocated_memory_) {
     size_t total_bytes_in_use = 0;
     // See if any of the chunks can satisfy this request.
-    for (size_t ii = 0; ii < chunks_.size(); ++ii) {
-      MemoryChunk* chunk = chunks_[ii];
+    for (auto& chunk : chunks_) {
       chunk->FreeUnused();
       total_bytes_in_use += chunk->bytes_in_use();
       if (chunk->GetLargestFreeSizeWithoutWaiting() >= size) {
@@ -89,8 +86,7 @@ void* MappedMemoryManager::Alloc(
     if (max_free_bytes_ != kNoLimit &&
         (allocated_memory_ - total_bytes_in_use) >= max_free_bytes_) {
       TRACE_EVENT0("gpu", "MappedMemoryManager::Alloc::wait");
-      for (size_t ii = 0; ii < chunks_.size(); ++ii) {
-        MemoryChunk* chunk = chunks_[ii];
+      for (auto& chunk : chunks_) {
         if (chunk->GetLargestFreeSizeWithWaiting() >= size) {
           void* mem = chunk->Alloc(size);
           DCHECK(mem);
@@ -120,7 +116,7 @@ void* MappedMemoryManager::Alloc(
   DCHECK(shm.get());
   MemoryChunk* mc = new MemoryChunk(id, shm, helper_);
   allocated_memory_ += mc->GetSize();
-  chunks_.push_back(mc);
+  chunks_.push_back(make_scoped_ptr(mc));
   void* mem = mc->Alloc(size);
   DCHECK(mem);
   *shm_id = mc->shm_id();
@@ -129,8 +125,7 @@ void* MappedMemoryManager::Alloc(
 }
 
 void MappedMemoryManager::Free(void* pointer) {
-  for (size_t ii = 0; ii < chunks_.size(); ++ii) {
-    MemoryChunk* chunk = chunks_[ii];
+  for (auto& chunk : chunks_) {
     if (chunk->IsInChunk(pointer)) {
       chunk->Free(pointer);
       return;
@@ -140,8 +135,7 @@ void MappedMemoryManager::Free(void* pointer) {
 }
 
 void MappedMemoryManager::FreePendingToken(void* pointer, int32 token) {
-  for (size_t ii = 0; ii < chunks_.size(); ++ii) {
-    MemoryChunk* chunk = chunks_[ii];
+  for (auto& chunk : chunks_) {
     if (chunk->IsInChunk(pointer)) {
       chunk->FreePendingToken(pointer, token);
       return;
@@ -154,7 +148,7 @@ void MappedMemoryManager::FreeUnused() {
   CommandBuffer* cmd_buf = helper_->command_buffer();
   MemoryChunkVector::iterator iter = chunks_.begin();
   while (iter != chunks_.end()) {
-    MemoryChunk* chunk = *iter;
+    MemoryChunk* chunk = (*iter).get();
     chunk->FreeUnused();
     if (!chunk->InUse()) {
       cmd_buf->DestroyTransferBuffer(chunk->shm_id());
