@@ -68,7 +68,8 @@ IN_PROC_BROWSER_TEST_F(InspectUITest, SharedWorker) {
       new base::StringValue(kSharedWorkerTestPage)));
 }
 
-IN_PROC_BROWSER_TEST_F(InspectUITest, AndroidTargets) {
+// Flaky due to failure to bind a hardcoded port. crbug.com/566057
+IN_PROC_BROWSER_TEST_F(InspectUITest, DISABLED_AndroidTargets) {
   DevToolsAndroidBridge* android_bridge =
       DevToolsAndroidBridge::Factory::GetForProfile(browser()->profile());
   AndroidDeviceManager::DeviceProviders providers;
