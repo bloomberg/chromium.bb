@@ -19,7 +19,7 @@ void WriteOpusHeader(const media::AudioParameters& params, uint8* header) {
   // See https://wiki.xiph.org/OggOpus#ID_Header.
   // Set magic signature.
   std::string label = "OpusHead";
-  memcpy(header + OPUS_EXTRADATA_LABEL_OFFSET, &label, label.size());
+  memcpy(header + OPUS_EXTRADATA_LABEL_OFFSET, label.c_str(), label.size());
   // Set Opus version.
   header[OPUS_EXTRADATA_VERSION_OFFSET] = 1;
   // Set channel count.
