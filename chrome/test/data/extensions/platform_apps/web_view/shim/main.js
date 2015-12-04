@@ -1298,6 +1298,55 @@ function testExecuteScriptIsAbortedWhenWebViewSourceIsChanged() {
   document.body.appendChild(webview);
 }
 
+// This test verifies that, in the case where the WebView is set up with a
+// 'loadabort' handler that calls executeScript() with a script that sets
+// the WebView's 'src' to an invalid URL, and the caller then calls
+// executeScript() on that WebView with that same script (that sets 'src'
+// to an invalid URL), that loadabort will get called in both cases (and
+// that the browser does not crash during the second call to executeScript()).
+function testExecuteScriptIsAbortedWhenWebViewSourceIsInvalid() {
+  var webview = document.createElement('webview');
+  var abortCount = 0;
+
+  webview.addEventListener('loadstop', loadDone);
+  webview.addEventListener('loadabort', loadAbort);
+  webview.addEventListener('exit', function(e) {
+    // We should not crash.
+    embedder.test.fail();
+  });
+
+  function loadDone() {
+    window.console.log(
+        '2. WebView loaded \'about:blank\'.  Now call \'executeScript()\'');
+    webview.executeScript( {code: '/* no op */'}, webviewStop);
+  }
+
+  function webviewStop() {
+    window.console.log(
+        '3. Executing the script.  Set webview.src to ' +
+        '\'http:\' (which is invalid and should cause an abort)');
+    webview.src = 'http:';
+  }
+
+  function loadAbort() {
+    abortCount++;
+    if (abortCount == 1) {
+      window.console.log(
+          '4. In \'loadabort\' handler.  Execute the script again, ' +
+          'which should cause the \'loadabort\' handler to be called again ' +
+          '(the browser should NOT crash)');
+      webview.executeScript( {code: '/* no op */'}, webviewStop);
+    } else {
+      window.console.log('5. In \'loadabort\' handler for 2nd time. Success!!');
+      embedder.test.succeed();
+    }
+  }
+
+  window.console.log('1. Set webview.src to \'about:blank\'');
+  webview.src = 'about:blank';
+  document.body.appendChild(webview);
+}
+
 // This test calls terminate() on guest after it has already been
 // terminated. This makes sure we ignore the call gracefully.
 function testTerminateAfterExit() {
@@ -2951,6 +3000,8 @@ embedder.test.testList = {
   'testExecuteScript': testExecuteScript,
   'testExecuteScriptIsAbortedWhenWebViewSourceIsChanged':
       testExecuteScriptIsAbortedWhenWebViewSourceIsChanged,
+  'testExecuteScriptIsAbortedWhenWebViewSourceIsInvalid':
+      testExecuteScriptIsAbortedWhenWebViewSourceIsInvalid,
   'testTerminateAfterExit': testTerminateAfterExit,
   'testAssignSrcAfterCrash': testAssignSrcAfterCrash,
   'testNavOnConsecutiveSrcAttributeChanges':

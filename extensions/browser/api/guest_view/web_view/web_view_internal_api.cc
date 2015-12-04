@@ -287,9 +287,11 @@ bool WebViewInternalExecuteCodeFunction::Init() {
   if (!args_->GetString(1, &src))
     return false;
 
+  // Set |guest_src_| here, but do not return false if it is invalid.
+  // Instead, let it continue with the normal page load sequence,
+  // which will result in the usual LOAD_ABORT event in the case where
+  // the URL is invalid.
   guest_src_ = GURL(src);
-  if (!guest_src_.is_valid())
-    return false;
 
   base::DictionaryValue* details_value = NULL;
   if (!args_->GetDictionary(2, &details_value))

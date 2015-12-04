@@ -1076,6 +1076,14 @@ IN_PROC_BROWSER_TEST_F(
              NO_TEST_SERVER);
 }
 
+IN_PROC_BROWSER_TEST_F(
+    WebViewTest,
+    Shim_TestExecuteScriptIsAbortedWhenWebViewSourceIsInvalid) {
+  TestHelper("testExecuteScriptIsAbortedWhenWebViewSourceIsInvalid",
+             "web_view/shim",
+             NO_TEST_SERVER);
+}
+
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestTerminateAfterExit) {
   TestHelper("testTerminateAfterExit", "web_view/shim", NO_TEST_SERVER);
 }
