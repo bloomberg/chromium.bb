@@ -5,12 +5,13 @@
 # This script computs the number of concurrent links we want to run in the build
 # as a function of machine spec. It's based on GetDefaultConcurrentLinks in GYP.
 
+import optparse
 import os
 import re
 import subprocess
 import sys
 
-def GetDefaultConcurrentLinks():
+def _GetDefaultConcurrentLinks(is_lto):
   # Inherit the legacy environment variable for people that have set it in GYP.
   pool_size = int(os.getenv('GYP_LINK_CONCURRENCY', 0))
   if pool_size:
@@ -49,7 +50,11 @@ def GetDefaultConcurrentLinks():
           if not match:
             continue
           # Allow 8Gb per link on Linux because Gold is quite memory hungry
-          return max(1, int(match.group(1)) / (8 * (2 ** 20)))
+          # For LTO builds the RAM requirements are even higher
+          # Note: it's 15 GB for LTO build to make sure we get 4 link jobs
+          # for 64 GB, even if the system reports a couple of GBs less.
+          ram_per_link_gb = 15 if is_lto else 8
+          return max(1, int(match.group(1)) / (ram_per_link_gb * (2 ** 20)))
     return 1
   elif sys.platform == 'darwin':
     try:
@@ -63,4 +68,15 @@ def GetDefaultConcurrentLinks():
     # TODO(scottmg): Implement this for other platforms.
     return 1
 
-print GetDefaultConcurrentLinks()
+def main():
+  parser = optparse.OptionParser()
+  parser.add_option('--lto', action="store_true", default=False,
+                    help='This is an LTO build with higher memory requirements')
+  parser.disable_interspersed_args()
+  options, args = parser.parse_args()
+
+  print _GetDefaultConcurrentLinks(is_lto=options.lto)
+  return 0
+
+if __name__ == '__main__':
+  sys.exit(main())
