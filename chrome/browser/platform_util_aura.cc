@@ -13,25 +13,6 @@
 
 namespace platform_util {
 
-#if defined(OS_ANDROID)
-// TODO(bshe): We might want to use platform_util_android.cc for Aura Android.
-// See crbug.com/561664
-void ShowItemInFolder(Profile* profile, const base::FilePath& full_path) {
-  NOTIMPLEMENTED();
-}
-
-void OpenItem(Profile* profile,
-              const base::FilePath& full_path,
-              OpenItemType item_type,
-              const OpenOperationCallback& callback) {
-  NOTIMPLEMENTED();
-}
-
-void OpenExternal(Profile* profile, const GURL& url) {
-  NOTIMPLEMENTED();
-}
-#endif
-
 gfx::NativeWindow GetTopLevel(gfx::NativeView view) {
   return view->GetToplevelWindow();
 }
