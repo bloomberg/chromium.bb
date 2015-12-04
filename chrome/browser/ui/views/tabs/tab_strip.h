@@ -136,6 +136,10 @@ class TabStrip : public views::View,
     return tabs_.ideal_bounds(tab_data_index);
   }
 
+  // Max x-coordinate the tabstrip draws at, which is the right edge of the new
+  // tab button.
+  int max_x() const { return newtab_button_bounds_.right(); }
+
   // Returns the Tab at |index|.
   Tab* tab_at(int index) const { return tabs_.view_at(index); }
 

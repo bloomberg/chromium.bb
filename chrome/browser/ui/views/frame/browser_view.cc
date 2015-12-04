@@ -2164,6 +2164,8 @@ void BrowserView::InitViews() {
 #endif
 
   GetLocationBar()->GetOmniboxView()->model()->popup_model()->AddObserver(this);
+
+  frame_->OnBrowserViewInitViewsComplete();
 }
 
 void BrowserView::LoadingAnimationCallback() {

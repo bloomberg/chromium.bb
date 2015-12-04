@@ -66,8 +66,10 @@ class ClientAreaChangeObserver : public WindowObserver {
 
  private:
   // Overridden from WindowObserver:
-  void OnWindowClientAreaChanged(Window* window,
-                                 const gfx::Insets& old_client_area) override {
+  void OnWindowClientAreaChanged(
+      Window* window,
+      const gfx::Insets& old_client_area,
+      const std::vector<gfx::Rect>& old_additional_client_areas) override {
     DCHECK_EQ(window, window_);
     EXPECT_TRUE(WindowServerTestBase::QuitRunLoop());
   }

@@ -95,10 +95,11 @@ class WindowTreeImpl : public mojom::WindowTree, public AccessPolicyDelegate {
                                   const gfx::Rect& old_bounds,
                                   const gfx::Rect& new_bounds,
                                   bool originated_change);
-  void ProcessClientAreaChanged(const ServerWindow* window,
-                                const gfx::Insets& old_client_area,
-                                const gfx::Insets& new_client_area,
-                                bool originated_change);
+  void ProcessClientAreaChanged(
+      const ServerWindow* window,
+      const gfx::Insets& new_client_area,
+      const std::vector<gfx::Rect>& new_additional_client_areas,
+      bool originated_change);
   void ProcessViewportMetricsChanged(const mojom::ViewportMetrics& old_metrics,
                                      const mojom::ViewportMetrics& new_metrics,
                                      bool originated_change);
@@ -238,7 +239,10 @@ class WindowTreeImpl : public mojom::WindowTree, public AccessPolicyDelegate {
                         bool visible,
                         mojo::TextInputStatePtr state) override;
   void OnWindowInputEventAck(uint32_t event_id) override;
-  void SetClientArea(Id transport_window_id, mojo::InsetsPtr insets) override;
+  void SetClientArea(
+      Id transport_window_id,
+      mojo::InsetsPtr insets,
+      mojo::Array<mojo::RectPtr> transport_additional_client_areas) override;
   void WmResponse(uint32 change_id, bool response) override;
 
   // AccessPolicyDelegate:

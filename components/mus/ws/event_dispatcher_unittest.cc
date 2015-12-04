@@ -344,7 +344,7 @@ TEST(EventDispatcherTest, ClientAreaGoesToOwner) {
   root.SetBounds(gfx::Rect(0, 0, 100, 100));
   child.SetBounds(gfx::Rect(10, 10, 20, 20));
 
-  child.SetClientArea(gfx::Insets(5, 5, 5, 5));
+  child.SetClientArea(gfx::Insets(5, 5, 5, 5), std::vector<gfx::Rect>());
 
   TestEventDispatcherDelegate event_dispatcher_delegate(&root);
   EventDispatcher dispatcher(&event_dispatcher_delegate);
@@ -389,6 +389,40 @@ TEST(EventDispatcherTest, ClientAreaGoesToOwner) {
       base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
   dispatcher.OnEvent(
       mojom::Event::From(static_cast<const ui::Event&>(press_event2)));
+  ASSERT_EQ(&child, event_dispatcher_delegate.last_target());
+  EXPECT_FALSE(event_dispatcher_delegate.GetAndClearLastInNonclientArea());
+}
+
+TEST(EventDispatcherTest, AdditionalClientArea) {
+  TestServerWindowDelegate window_delegate;
+  ServerWindow root(&window_delegate, WindowId(1, 2));
+  window_delegate.set_root_window(&root);
+  root.SetVisible(true);
+
+  ServerWindow child(&window_delegate, WindowId(1, 3));
+  root.Add(&child);
+  child.SetVisible(true);
+  EnableHitTest(&child);
+
+  root.SetBounds(gfx::Rect(0, 0, 100, 100));
+  child.SetBounds(gfx::Rect(10, 10, 20, 20));
+
+  std::vector<gfx::Rect> additional_client_areas;
+  additional_client_areas.push_back(gfx::Rect(18, 0, 2, 2));
+  child.SetClientArea(gfx::Insets(5, 5, 5, 5), additional_client_areas);
+
+  TestEventDispatcherDelegate event_dispatcher_delegate(&root);
+  EventDispatcher dispatcher(&event_dispatcher_delegate);
+  dispatcher.set_root(&root);
+
+  // Press in the additional client area, it should go to the child.
+  const ui::MouseEvent press_event(
+      ui::ET_MOUSE_PRESSED, gfx::Point(28, 11), gfx::Point(28, 11),
+      base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
+  dispatcher.OnEvent(
+      mojom::Event::From(static_cast<const ui::Event&>(press_event)));
+
+  // Events should target child and be in the client area.
   ASSERT_EQ(&child, event_dispatcher_delegate.last_target());
   EXPECT_FALSE(event_dispatcher_delegate.GetAndClearLastInNonclientArea());
 }

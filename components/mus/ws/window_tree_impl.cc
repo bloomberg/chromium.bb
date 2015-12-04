@@ -221,14 +221,14 @@ void WindowTreeImpl::ProcessWindowBoundsChanged(const ServerWindow* window,
 
 void WindowTreeImpl::ProcessClientAreaChanged(
     const ServerWindow* window,
-    const gfx::Insets& old_client_area,
     const gfx::Insets& new_client_area,
+    const std::vector<gfx::Rect>& new_additional_client_areas,
     bool originated_change) {
   if (originated_change || !IsWindowKnown(window))
     return;
-  client()->OnClientAreaChanged(WindowIdToTransportId(window->id()),
-                                mojo::Insets::From(old_client_area),
-                                mojo::Insets::From(new_client_area));
+  client()->OnClientAreaChanged(
+      WindowIdToTransportId(window->id()), mojo::Insets::From(new_client_area),
+      mojo::Array<mojo::RectPtr>::From(new_additional_client_areas));
 }
 
 void WindowTreeImpl::ProcessViewportMetricsChanged(
@@ -817,14 +817,18 @@ void WindowTreeImpl::OnWindowInputEventAck(uint32_t event_id) {
   GetHost()->OnEventAck(this);
 }
 
-void WindowTreeImpl::SetClientArea(Id transport_window_id,
-                                   mojo::InsetsPtr insets) {
+void WindowTreeImpl::SetClientArea(
+    Id transport_window_id,
+    mojo::InsetsPtr insets,
+    mojo::Array<mojo::RectPtr> transport_additional_client_areas) {
   ServerWindow* window =
       GetWindow(WindowIdFromTransportId(transport_window_id));
   if (!window || !access_policy_->CanSetClientArea(window))
     return;
 
-  window->SetClientArea(insets.To<gfx::Insets>());
+  std::vector<gfx::Rect> additional_client_areas =
+      transport_additional_client_areas.To<std::vector<gfx::Rect>>();
+  window->SetClientArea(insets.To<gfx::Insets>(), additional_client_areas);
 }
 
 void WindowTreeImpl::Embed(Id transport_window_id,

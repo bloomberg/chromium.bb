@@ -153,6 +153,10 @@ void BrowserFrame::GetWindowPlacement(gfx::Rect* bounds,
   return native_browser_frame_->GetWindowPlacement(bounds, show_state);
 }
 
+void BrowserFrame::OnBrowserViewInitViewsComplete() {
+  browser_frame_view_->OnBrowserViewInitViewsComplete();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserFrame, views::Widget overrides:
 

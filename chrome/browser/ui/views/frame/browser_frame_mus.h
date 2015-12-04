@@ -15,6 +15,8 @@ class BrowserFrameMus : public NativeBrowserFrame,
   BrowserFrameMus(BrowserFrame* browser_frame, BrowserView* browser_view);
   ~BrowserFrameMus() override;
 
+  mus::Window* mus_window();
+
  private:
   // Overridden from NativeBrowserFrame:
   views::Widget::InitParams GetWidgetParams() override;

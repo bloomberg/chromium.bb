@@ -64,7 +64,9 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   void SetBounds(Window* window,
                  const gfx::Rect& old_bounds,
                  const gfx::Rect& bounds);
-  void SetClientArea(Id window_id, const gfx::Insets& client_area);
+  void SetClientArea(Id window_id,
+                     const gfx::Insets& client_area,
+                     const std::vector<gfx::Rect>& additional_client_areas);
   void SetFocus(Id window_id);
   void SetCanFocus(Id window_id, bool can_focus);
   void SetVisible(Window* window, bool visible);
@@ -143,9 +145,10 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   void OnWindowBoundsChanged(Id window_id,
                              mojo::RectPtr old_bounds,
                              mojo::RectPtr new_bounds) override;
-  void OnClientAreaChanged(uint32_t window_id,
-                           mojo::InsetsPtr old_client_area,
-                           mojo::InsetsPtr new_client_area) override;
+  void OnClientAreaChanged(
+      uint32_t window_id,
+      mojo::InsetsPtr new_client_area,
+      mojo::Array<mojo::RectPtr> new_additional_client_areas) override;
   void OnTransientWindowAdded(uint32_t window_id,
                               uint32_t transient_window_id) override;
   void OnTransientWindowRemoved(uint32_t window_id,

@@ -159,14 +159,19 @@ void ServerWindow::SetBounds(const gfx::Rect& bounds) {
                     OnWindowBoundsChanged(this, old_bounds, bounds));
 }
 
-void ServerWindow::SetClientArea(const gfx::Insets& insets) {
-  if (client_area_ == insets)
+void ServerWindow::SetClientArea(
+    const gfx::Insets& insets,
+    const std::vector<gfx::Rect>& additional_client_areas) {
+  if (client_area_ == insets &&
+      additional_client_areas == additional_client_areas_) {
     return;
+  }
 
-  const gfx::Insets old_client_area = client_area_;
+  additional_client_areas_ = additional_client_areas;
   client_area_ = insets;
-  FOR_EACH_OBSERVER(ServerWindowObserver, observers_,
-                    OnWindowClientAreaChanged(this, old_client_area, insets));
+  FOR_EACH_OBSERVER(
+      ServerWindowObserver, observers_,
+      OnWindowClientAreaChanged(this, insets, additional_client_areas));
 }
 
 const ServerWindow* ServerWindow::GetRoot() const {

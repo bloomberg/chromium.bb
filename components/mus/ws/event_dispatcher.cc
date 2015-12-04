@@ -39,7 +39,15 @@ bool IsLocationInNonclientArea(const ServerWindow* target,
 
   gfx::Rect client_area(target->bounds().size());
   client_area.Inset(target->client_area());
-  return !client_area.Contains(location);
+  if (client_area.Contains(location))
+    return false;
+
+  for (const auto& rect : target->additional_client_areas()) {
+    if (rect.Contains(location))
+      return false;
+  }
+
+  return true;
 }
 
 gfx::Point EventLocationToPoint(const mojom::Event& event) {

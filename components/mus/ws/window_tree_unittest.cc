@@ -77,9 +77,10 @@ class TestWindowTreeClient : public mus::mojom::WindowTreeClient {
     tracker_.OnWindowBoundsChanged(window, old_bounds.Pass(),
                                    new_bounds.Pass());
   }
-  void OnClientAreaChanged(uint32_t window_id,
-                           mojo::InsetsPtr old_client_area,
-                           mojo::InsetsPtr new_client_area) override {}
+  void OnClientAreaChanged(
+      uint32_t window_id,
+      mojo::InsetsPtr new_client_area,
+      mojo::Array<mojo::RectPtr> new_additional_client_areas) override {}
   void OnTransientWindowAdded(uint32_t window_id,
                               uint32_t transient_window_id) override {}
   void OnTransientWindowRemoved(uint32_t window_id,

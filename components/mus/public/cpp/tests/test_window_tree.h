@@ -31,7 +31,10 @@ class TestWindowTree : public mojom::WindowTree {
   void SetWindowBounds(uint32_t change_id,
                        uint32_t window_id,
                        mojo::RectPtr bounds) override;
-  void SetClientArea(uint32_t window_id, mojo::InsetsPtr insets) override;
+  void SetClientArea(
+      uint32_t window_id,
+      mojo::InsetsPtr insets,
+      mojo::Array<mojo::RectPtr> additional_client_areas) override;
   void SetWindowVisibility(uint32_t change_id,
                            uint32_t window_id,
                            bool visible) override;

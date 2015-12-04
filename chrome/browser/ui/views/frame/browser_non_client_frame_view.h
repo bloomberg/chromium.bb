@@ -41,6 +41,9 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   void OnThemeChanged() override;
 #endif
 
+  // Called when BrowserView creates all it's child views.
+  virtual void OnBrowserViewInitViewsComplete();
+
   // Retrieves the bounds, in non-client view coordinates within which the
   // TabStrip should be laid out.
   virtual gfx::Rect GetBoundsForTabStrip(views::View* tabstrip) const = 0;

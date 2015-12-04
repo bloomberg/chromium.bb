@@ -37,6 +37,9 @@ class CHROME_VIEWS_EXPORT TabStripObserver {
   // be dropped.
   virtual void TabStripDeleted(TabStrip* tab_strip);
 
+  // tab_strip->max_x() has changed.
+  virtual void TabStripMaxXChanged(TabStrip* tab_strip);
+
  protected:
   virtual ~TabStripObserver() {}
 };

@@ -54,8 +54,10 @@ class WindowObserver {
   virtual void OnWindowBoundsChanged(Window* window,
                                      const gfx::Rect& old_bounds,
                                      const gfx::Rect& new_bounds) {}
-  virtual void OnWindowClientAreaChanged(Window* window,
-                                         const gfx::Insets& old_client_area) {}
+  virtual void OnWindowClientAreaChanged(
+      Window* window,
+      const gfx::Insets& old_client_area,
+      const std::vector<gfx::Rect>& old_additional_client_areas) {}
 
   virtual void OnWindowViewportMetricsChanged(
       Window* window,

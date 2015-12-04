@@ -209,10 +209,14 @@ void WindowTreeClientImpl::SetBounds(Window* window,
   tree_->SetWindowBounds(change_id, window->id(), mojo::Rect::From(bounds));
 }
 
-void WindowTreeClientImpl::SetClientArea(Id window_id,
-                                         const gfx::Insets& client_area) {
+void WindowTreeClientImpl::SetClientArea(
+    Id window_id,
+    const gfx::Insets& client_area,
+    const std::vector<gfx::Rect>& additional_client_areas) {
   DCHECK(tree_);
-  tree_->SetClientArea(window_id, mojo::Insets::From(client_area));
+  tree_->SetClientArea(
+      window_id, mojo::Insets::From(client_area),
+      mojo::Array<mojo::RectPtr>::From(additional_client_areas));
 }
 
 void WindowTreeClientImpl::SetFocus(Id window_id) {
@@ -450,11 +454,14 @@ void WindowTreeClientImpl::OnWindowBoundsChanged(Id window_id,
 
 void WindowTreeClientImpl::OnClientAreaChanged(
     uint32_t window_id,
-    mojo::InsetsPtr old_client_area,
-    mojo::InsetsPtr new_client_area) {
+    mojo::InsetsPtr new_client_area,
+    mojo::Array<mojo::RectPtr> new_additional_client_areas) {
   Window* window = GetWindowById(window_id);
-  if (window)
-    WindowPrivate(window).LocalSetClientArea(new_client_area.To<gfx::Insets>());
+  if (window) {
+    WindowPrivate(window).LocalSetClientArea(
+        new_client_area.To<gfx::Insets>(),
+        new_additional_client_areas.To<std::vector<gfx::Rect>>());
+  }
 }
 
 void WindowTreeClientImpl::OnTransientWindowAdded(

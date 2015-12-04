@@ -2314,7 +2314,10 @@ void TabStrip::GenerateIdealBounds() {
 
   const int new_tab_x = tabs_.ideal_bounds(tabs_.view_size() - 1).right() -
                         GetLayoutConstant(TABSTRIP_NEW_TAB_BUTTON_OVERLAP);
+  const int old_max_x = newtab_button_bounds_.right();
   newtab_button_bounds_.set_origin(gfx::Point(new_tab_x, 0));
+  if (newtab_button_bounds_.right() != old_max_x)
+    FOR_EACH_OBSERVER(TabStripObserver, observers_, TabStripMaxXChanged(this));
 }
 
 int TabStrip::GenerateIdealBoundsForPinnedTabs(int* first_non_pinned_index) {

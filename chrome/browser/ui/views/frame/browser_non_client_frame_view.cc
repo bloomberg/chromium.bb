@@ -61,6 +61,8 @@ BrowserNonClientFrameView::~BrowserNonClientFrameView() {
   }
 }
 
+void BrowserNonClientFrameView::OnBrowserViewInitViewsComplete() {}
+
 void BrowserNonClientFrameView::UpdateToolbar() {
 }
 

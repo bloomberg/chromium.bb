@@ -9,10 +9,15 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/tab_icon_view_model.h"
+#include "chrome/browser/ui/views/tabs/tab_strip_observer.h"
 #include "ui/views/controls/button/button.h"
 
 class TabIconView;
 class WebAppLeftHeaderView;
+
+namespace mus {
+class Window;
+}
 
 namespace views {
 class ImageButton;
@@ -21,7 +26,8 @@ class ToggleImageButton;
 
 class BrowserNonClientFrameViewMus : public BrowserNonClientFrameView,
                                      public TabIconViewModel,
-                                     public views::ButtonListener {
+                                     public views::ButtonListener,
+                                     public TabStripObserver {
  public:
   static const char kViewClassName[];
 
@@ -31,6 +37,7 @@ class BrowserNonClientFrameViewMus : public BrowserNonClientFrameView,
   void Init();
 
   // BrowserNonClientFrameView:
+  void OnBrowserViewInitViewsComplete() override;
   gfx::Rect GetBoundsForTabStrip(views::View* tabstrip) const override;
   int GetTopInset(bool restored) const override;
   int GetThemeBackgroundXInset() const override;
@@ -69,6 +76,15 @@ class BrowserNonClientFrameViewMus : public BrowserNonClientFrameView,
   void UpdateNewAvatarButtonImpl() override;
 
  private:
+  mus::Window* mus_window();
+
+  // Resets the client area on the mus::Window.
+  void UpdateClientArea();
+
+  // TabStripObserver:
+  void TabStripMaxXChanged(TabStrip* tab_strip) override;
+  void TabStripDeleted(TabStrip* tab_strip) override;
+
   // views::NonClientFrameView:
   bool DoesIntersectRect(const views::View* target,
                          const gfx::Rect& rect) const override;
@@ -121,6 +137,8 @@ class BrowserNonClientFrameViewMus : public BrowserNonClientFrameView,
 
   // For popups, the window icon.
   TabIconView* window_icon_;
+
+  TabStrip* tab_strip_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserNonClientFrameViewMus);
 };

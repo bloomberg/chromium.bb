@@ -100,8 +100,13 @@ interface WindowTree {
   // Sets the specified bounds of the specified window.
   SetWindowBounds(uint32 change_id, uint32 window_id, mojo.Rect bounds);
 
-  // Sets the insets of the client area of the specified window.
-  SetClientArea(uint32 window_id, mojo.Insets insets);
+  // Sets the client area of the specified window. The client area is specified
+  // by way of insets. Everything outside of the insets, and not in
+  // |additional_client_areas| is considered non-client area.
+  // TODO(sky): convert additional_client_areas to a path.
+  SetClientArea(uint32 window_id,
+                mojo.Insets insets,
+                array<mojo.Rect>? additional_client_areas);
 
   // Sets the visibility of the specified window to |visible|. Connections are
   // allowed to change the visibility of any window they have created, as well
@@ -255,8 +260,8 @@ interface WindowTreeClient {
                         mojo.Rect new_bounds);
 
   OnClientAreaChanged(uint32 window_id,
-                      mojo.Insets old_client_area,
-                      mojo.Insets new_client_area);
+                      mojo.Insets new_client_area,
+                      array<mojo.Rect> new_additional_client_areas);
 
   OnTransientWindowAdded(uint32 window_id,
                          uint32 transient_window_id);

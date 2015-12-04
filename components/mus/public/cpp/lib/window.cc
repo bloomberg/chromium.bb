@@ -192,13 +192,15 @@ void Window::SetBounds(const gfx::Rect& bounds) {
   LocalSetBounds(bounds_, bounds);
 }
 
-void Window::SetClientArea(const gfx::Insets& client_area) {
+void Window::SetClientArea(
+    const gfx::Insets& client_area,
+    const std::vector<gfx::Rect>& additional_client_areas) {
   if (!OwnsWindowOrIsRoot(this))
     return;
 
   if (connection_)
-    tree_client()->SetClientArea(id_, client_area);
-  LocalSetClientArea(client_area);
+    tree_client()->SetClientArea(id_, client_area, additional_client_areas);
+  LocalSetClientArea(client_area, additional_client_areas);
 }
 
 void Window::SetVisible(bool value) {
@@ -562,11 +564,17 @@ void Window::LocalSetBounds(const gfx::Rect& old_bounds,
   bounds_ = new_bounds;
 }
 
-void Window::LocalSetClientArea(const gfx::Insets& new_client_area) {
+void Window::LocalSetClientArea(
+    const gfx::Insets& new_client_area,
+    const std::vector<gfx::Rect>& additional_client_areas) {
+  const std::vector<gfx::Rect> old_additional_client_areas =
+      additional_client_areas_;
   const gfx::Insets old_client_area = client_area_;
   client_area_ = new_client_area;
+  additional_client_areas_ = additional_client_areas;
   FOR_EACH_OBSERVER(WindowObserver, observers_,
-                    OnWindowClientAreaChanged(this, old_client_area));
+                    OnWindowClientAreaChanged(this, old_client_area,
+                                              old_additional_client_areas));
 }
 
 void Window::LocalSetViewportMetrics(

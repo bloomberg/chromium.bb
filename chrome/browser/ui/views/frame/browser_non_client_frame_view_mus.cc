@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
+#include "chrome/browser/ui/views/frame/browser_frame_mus.h"
 #include "chrome/browser/ui/views/frame/browser_header_painter_ash.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
@@ -23,6 +24,7 @@
 #include "chrome/browser/ui/views/tab_icon_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "components/mus/public/cpp/window.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_registry.h"
@@ -100,9 +102,15 @@ BrowserNonClientFrameViewMus::BrowserNonClientFrameViewMus(
     BrowserView* browser_view)
     : BrowserNonClientFrameView(frame, browser_view),
       web_app_left_header_view_(nullptr),
-      window_icon_(nullptr) {}
+      window_icon_(nullptr),
+      tab_strip_(nullptr) {}
 
-BrowserNonClientFrameViewMus::~BrowserNonClientFrameViewMus() {}
+BrowserNonClientFrameViewMus::~BrowserNonClientFrameViewMus() {
+  if (tab_strip_) {
+    tab_strip_->RemoveObserver(this);
+    tab_strip_ = nullptr;
+  }
+}
 
 void BrowserNonClientFrameViewMus::Init() {
   // Initializing the TabIconView is expensive, so only do it if we need to.
@@ -118,6 +126,13 @@ void BrowserNonClientFrameViewMus::Init() {
 
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserNonClientFrameView:
+
+void BrowserNonClientFrameViewMus::OnBrowserViewInitViewsComplete() {
+  DCHECK(browser_view()->tabstrip());
+  DCHECK(!tab_strip_);
+  tab_strip_ = browser_view()->tabstrip();
+  tab_strip_->AddObserver(this);
+}
 
 gfx::Rect BrowserNonClientFrameViewMus::GetBoundsForTabStrip(
     views::View* tabstrip) const {
@@ -283,6 +298,8 @@ void BrowserNonClientFrameViewMus::Layout() {
 #endif
 
   BrowserNonClientFrameView::Layout();
+
+  UpdateClientArea();
 }
 
 const char* BrowserNonClientFrameViewMus::GetClassName() const {
@@ -377,7 +394,33 @@ void BrowserNonClientFrameViewMus::UpdateNewAvatarButtonImpl() {
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserNonClientFrameViewMus, private:
 
-// views::NonClientFrameView:
+mus::Window* BrowserNonClientFrameViewMus::mus_window() {
+  return static_cast<BrowserFrameMus*>(frame()->native_widget())->window();
+}
+
+void BrowserNonClientFrameViewMus::UpdateClientArea() {
+  std::vector<gfx::Rect> additional_client_area;
+  if (tab_strip_) {
+    gfx::Rect tab_strip_bounds(GetBoundsForTabStrip(tab_strip_));
+    if (!tab_strip_bounds.IsEmpty() && tab_strip_->max_x()) {
+      tab_strip_bounds.set_width(tab_strip_->max_x());
+      additional_client_area.push_back(tab_strip_bounds);
+    }
+  }
+  mus_window()->SetClientArea(
+      views::WindowManagerFrameValues::instance().normal_insets,
+      additional_client_area);
+}
+
+void BrowserNonClientFrameViewMus::TabStripMaxXChanged(TabStrip* tab_strip) {
+  UpdateClientArea();
+}
+
+void BrowserNonClientFrameViewMus::TabStripDeleted(TabStrip* tab_strip) {
+  tab_strip_->RemoveObserver(this);
+  tab_strip_ = nullptr;
+}
+
 bool BrowserNonClientFrameViewMus::DoesIntersectRect(
     const views::View* target,
     const gfx::Rect& rect) const {

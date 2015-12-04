@@ -64,6 +64,6 @@ int BrowserFrameMus::GetMinimizeButtonOffset() const {
 }
 
 void BrowserFrameMus::UpdateClientArea() {
-  window()->SetClientArea(
-      views::WindowManagerFrameValues::instance().normal_insets);
+  // BrowserNonClientFrameViewMus::OnBoundsChanged() takes care of updating
+  // the insets.
 }

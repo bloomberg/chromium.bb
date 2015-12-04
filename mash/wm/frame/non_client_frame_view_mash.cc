@@ -292,7 +292,12 @@ void NonClientFrameViewMash::PaintChildren(const ui::PaintContext& context) {
 
 void NonClientFrameViewMash::OnWindowClientAreaChanged(
     mus::Window* window,
-    const gfx::Insets& old_client_area) {
+    const gfx::Insets& old_client_area,
+    const std::vector<gfx::Rect>& old_additional_client_area) {
+  // Only the insets effect the rendering.
+  if (old_client_area == window->client_area())
+    return;
+
   Layout();
   // NonClientView (our parent) positions the client view based on bounds from
   // us. We need to layout from parent to trigger a layout of the client view.

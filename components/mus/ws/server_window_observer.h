@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_MUS_WS_SERVER_WINDOW_OBSERVER_H_
 #define COMPONENTS_MUS_WS_SERVER_WINDOW_OBSERVER_H_
 
+#include <vector>
+
 #include "components/mus/public/interfaces/mus_constants.mojom.h"
 
 namespace gfx {
@@ -45,9 +47,10 @@ class ServerWindowObserver {
                                      const gfx::Rect& old_bounds,
                                      const gfx::Rect& new_bounds) {}
 
-  virtual void OnWindowClientAreaChanged(ServerWindow* window,
-                                         const gfx::Insets& old_client_area,
-                                         const gfx::Insets& new_client_area) {}
+  virtual void OnWindowClientAreaChanged(
+      ServerWindow* window,
+      const gfx::Insets& new_client_area,
+      const std::vector<gfx::Rect>& new_additional_client_areas) {}
 
   virtual void OnWindowReordered(ServerWindow* window,
                                  ServerWindow* relative,

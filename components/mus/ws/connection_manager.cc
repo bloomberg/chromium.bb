@@ -286,11 +286,11 @@ void ConnectionManager::ProcessWindowBoundsChanged(
 
 void ConnectionManager::ProcessClientAreaChanged(
     const ServerWindow* window,
-    const gfx::Insets& old_client_area,
-    const gfx::Insets& new_client_area) {
+    const gfx::Insets& new_client_area,
+    const std::vector<gfx::Rect>& new_additional_client_areas) {
   for (auto& pair : connection_map_) {
     pair.second->service()->ProcessClientAreaChanged(
-        window, old_client_area, new_client_area,
+        window, new_client_area, new_additional_client_areas,
         IsOperationSource(pair.first));
   }
 }
@@ -434,12 +434,13 @@ void ConnectionManager::OnWindowBoundsChanged(ServerWindow* window,
 
 void ConnectionManager::OnWindowClientAreaChanged(
     ServerWindow* window,
-    const gfx::Insets& old_client_area,
-    const gfx::Insets& new_client_area) {
+    const gfx::Insets& new_client_area,
+    const std::vector<gfx::Rect>& new_additional_client_areas) {
   if (in_destructor_)
     return;
 
-  ProcessClientAreaChanged(window, old_client_area, new_client_area);
+  ProcessClientAreaChanged(window, new_client_area,
+                           new_additional_client_areas);
 }
 
 void ConnectionManager::OnWindowReordered(ServerWindow* window,

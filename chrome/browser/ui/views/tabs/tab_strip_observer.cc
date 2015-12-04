@@ -17,3 +17,5 @@ void TabStripObserver::TabStripRemovedTabAt(TabStrip* tab_strip, int index) {
 
 void TabStripObserver::TabStripDeleted(TabStrip* tab_strip) {
 }
+
+void TabStripObserver::TabStripMaxXChanged(TabStrip* tab_strip) {}

@@ -72,7 +72,14 @@ class Window {
   void SetBounds(const gfx::Rect& bounds);
 
   const gfx::Insets& client_area() const { return client_area_; }
-  void SetClientArea(const gfx::Insets& new_client_area);
+  const std::vector<gfx::Rect>& additional_client_areas() {
+    return additional_client_areas_;
+  }
+  void SetClientArea(const gfx::Insets& new_client_area) {
+    SetClientArea(new_client_area, std::vector<gfx::Rect>());
+  }
+  void SetClientArea(const gfx::Insets& new_client_area,
+                     const std::vector<gfx::Rect>& additional_client_areas);
 
   // Visibility (also see IsDrawn()). When created windows are hidden.
   bool visible() const { return visible_; }
@@ -219,7 +226,9 @@ class Window {
   // Returns true if the order actually changed.
   bool LocalReorder(Window* relative, mojom::OrderDirection direction);
   void LocalSetBounds(const gfx::Rect& old_bounds, const gfx::Rect& new_bounds);
-  void LocalSetClientArea(const gfx::Insets& new_client_area);
+  void LocalSetClientArea(
+      const gfx::Insets& new_client_area,
+      const std::vector<gfx::Rect>& additional_client_areas);
   void LocalSetViewportMetrics(const mojom::ViewportMetrics& old_metrics,
                                const mojom::ViewportMetrics& new_metrics);
   void LocalSetDrawn(bool drawn);
@@ -271,6 +280,7 @@ class Window {
 
   gfx::Rect bounds_;
   gfx::Insets client_area_;
+  std::vector<gfx::Rect> additional_client_areas_;
 
   mojom::ViewportMetricsPtr viewport_metrics_;
 

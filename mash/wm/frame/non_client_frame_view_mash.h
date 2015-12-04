@@ -66,8 +66,10 @@ class NonClientFrameViewMash : public views::NonClientFrameView,
   void PaintChildren(const ui::PaintContext& context) override;
 
   // mus::WindowObserver:
-  void OnWindowClientAreaChanged(mus::Window* window,
-                                 const gfx::Insets& old_client_area) override;
+  void OnWindowClientAreaChanged(
+      mus::Window* window,
+      const gfx::Insets& old_client_area,
+      const std::vector<gfx::Rect>& old_additional_client_area) override;
   void OnWindowDestroyed(mus::Window* window) override;
 
   // Get the view of the header.

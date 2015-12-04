@@ -34,8 +34,10 @@ void TestWindowTree::SetWindowBounds(uint32_t change_id,
   change_id_ = change_id;
 }
 
-void TestWindowTree::SetClientArea(uint32_t window_id, mojo::InsetsPtr insets) {
-}
+void TestWindowTree::SetClientArea(
+    uint32_t window_id,
+    mojo::InsetsPtr insets,
+    mojo::Array<mojo::RectPtr> additional_client_areas) {}
 
 void TestWindowTree::SetWindowVisibility(uint32_t change_id,
                                          uint32_t window_id,
