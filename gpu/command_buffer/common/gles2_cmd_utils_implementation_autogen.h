@@ -643,6 +643,9 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x78FB, "GL_RGB_YCBCR_422_CHROMIUM",
     },
     {
+        0x78FC, "GL_RGB_YCBCR_420V_CHROMIUM",
+    },
+    {
         0x80000000, "GL_MULTISAMPLE_BUFFER_BIT7_QCOM",
     },
     {
@@ -1279,6 +1282,9 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x8576, "GL_CONSTANT_CHROMIUM",
     },
     {
+        0x8589, "GL_SRC1_ALPHA_EXT",
+    },
+    {
         0x85B5, "GL_VERTEX_ARRAY_BINDING_OES",
     },
     {
@@ -1553,6 +1559,18 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
     },
     {
         0x88F0, "GL_DEPTH24_STENCIL8_OES",
+    },
+    {
+        0x88F9, "GL_SRC1_COLOR_EXT",
+    },
+    {
+        0x88FA, "GL_ONE_MINUS_SRC1_COLOR_EXT",
+    },
+    {
+        0x88FB, "GL_ONE_MINUS_SRC1_ALPHA_EXT",
+    },
+    {
+        0x88FC, "GL_MAX_DUAL_SOURCE_DRAW_BUFFERS_EXT",
     },
     {
         0x88FD, "GL_VERTEX_ATTRIB_ARRAY_INTEGER",
@@ -3956,6 +3974,7 @@ std::string GLES2Util::GetStringImageInternalFormat(uint32_t value) {
       {GL_RGB, "GL_RGB"},
       {GL_RGB_YUV_420_CHROMIUM, "GL_RGB_YUV_420_CHROMIUM"},
       {GL_RGB_YCBCR_422_CHROMIUM, "GL_RGB_YCBCR_422_CHROMIUM"},
+      {GL_RGB_YCBCR_420V_CHROMIUM, "GL_RGB_YCBCR_420V_CHROMIUM"},
       {GL_RGBA, "GL_RGBA"},
   };
   return GLES2Util::GetQualifiedEnumString(string_table,

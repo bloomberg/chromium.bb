@@ -401,6 +401,8 @@ typedef void(GL_BINDING_CALL* glGetFenceivNVProc)(GLuint fence,
                                                   GLenum pname,
                                                   GLint* params);
 typedef void(GL_BINDING_CALL* glGetFloatvProc)(GLenum pname, GLfloat* params);
+typedef GLint(GL_BINDING_CALL* glGetFragDataIndexProc)(GLuint program,
+                                                       const char* name);
 typedef GLint(GL_BINDING_CALL* glGetFragDataLocationProc)(GLuint program,
                                                           const char* name);
 typedef void(GL_BINDING_CALL* glGetFramebufferAttachmentParameterivEXTProc)(
@@ -1031,6 +1033,7 @@ struct ExtensionsGL {
   bool b_GL_ANGLE_translated_shader_source;
   bool b_GL_APPLE_fence;
   bool b_GL_APPLE_vertex_array_object;
+  bool b_GL_ARB_blend_func_extended;
   bool b_GL_ARB_draw_buffers;
   bool b_GL_ARB_draw_instanced;
   bool b_GL_ARB_get_program_binary;
@@ -1045,6 +1048,7 @@ struct ExtensionsGL {
   bool b_GL_ARB_vertex_array_object;
   bool b_GL_CHROMIUM_gles_depth_binding_hack;
   bool b_GL_CHROMIUM_glgetstringi_hack;
+  bool b_GL_EXT_blend_func_extended;
   bool b_GL_EXT_debug_marker;
   bool b_GL_EXT_direct_state_access;
   bool b_GL_EXT_discard_framebuffer;
@@ -1053,6 +1057,7 @@ struct ExtensionsGL {
   bool b_GL_EXT_framebuffer_blit;
   bool b_GL_EXT_framebuffer_multisample;
   bool b_GL_EXT_framebuffer_object;
+  bool b_GL_EXT_gpu_shader4;
   bool b_GL_EXT_map_buffer_range;
   bool b_GL_EXT_multisampled_render_to_texture;
   bool b_GL_EXT_occlusion_query_boolean;
@@ -1204,6 +1209,7 @@ struct ProcsGL {
   glGetErrorProc glGetErrorFn;
   glGetFenceivNVProc glGetFenceivNVFn;
   glGetFloatvProc glGetFloatvFn;
+  glGetFragDataIndexProc glGetFragDataIndexFn;
   glGetFragDataLocationProc glGetFragDataLocationFn;
   glGetFramebufferAttachmentParameterivEXTProc
       glGetFramebufferAttachmentParameterivEXTFn;
@@ -1740,6 +1746,7 @@ class GL_EXPORT GLApi {
   virtual GLenum glGetErrorFn(void) = 0;
   virtual void glGetFenceivNVFn(GLuint fence, GLenum pname, GLint* params) = 0;
   virtual void glGetFloatvFn(GLenum pname, GLfloat* params) = 0;
+  virtual GLint glGetFragDataIndexFn(GLuint program, const char* name) = 0;
   virtual GLint glGetFragDataLocationFn(GLuint program, const char* name) = 0;
   virtual void glGetFramebufferAttachmentParameterivEXTFn(GLenum target,
                                                           GLenum attachment,
@@ -2459,6 +2466,7 @@ class GL_EXPORT GLApi {
 #define glGetError ::gfx::g_current_gl_context->glGetErrorFn
 #define glGetFenceivNV ::gfx::g_current_gl_context->glGetFenceivNVFn
 #define glGetFloatv ::gfx::g_current_gl_context->glGetFloatvFn
+#define glGetFragDataIndex ::gfx::g_current_gl_context->glGetFragDataIndexFn
 #define glGetFragDataLocation \
   ::gfx::g_current_gl_context->glGetFragDataLocationFn
 #define glGetFramebufferAttachmentParameterivEXT \

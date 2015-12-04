@@ -859,4 +859,12 @@ void ProgramPathFragmentInputGenCHROMIUM(GLuint program,
 GLenum GetGraphicsResetStatusKHR() override;
 void BlendBarrierKHR() override;
 void ApplyScreenSpaceAntialiasingCHROMIUM() override;
+void BindFragDataLocationIndexedEXT(GLuint program,
+                                    GLuint colorNumber,
+                                    GLuint index,
+                                    const char* name) override;
+void BindFragDataLocationEXT(GLuint program,
+                             GLuint colorNumber,
+                             const char* name) override;
+GLint GetFragDataIndexEXT(GLuint program, const char* name) override;
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_INTERFACE_STUB_AUTOGEN_H_

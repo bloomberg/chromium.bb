@@ -87,6 +87,7 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     bool emulate_primitive_restart_fixed_index;
     bool ext_render_buffer_format_bgra8888;
     bool ext_multisample_compatibility;
+    bool ext_blend_func_extended;
   };
 
   struct Workarounds {

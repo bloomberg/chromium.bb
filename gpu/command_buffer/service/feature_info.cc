@@ -176,7 +176,8 @@ FeatureInfo::FeatureFlags::FeatureFlags()
       enable_subscribe_uniform(false),
       emulate_primitive_restart_fixed_index(false),
       ext_render_buffer_format_bgra8888(false),
-      ext_multisample_compatibility(false) {}
+      ext_multisample_compatibility(false),
+      ext_blend_func_extended(false) {}
 
 FeatureInfo::Workarounds::Workarounds() :
 #define GPU_OP(type, name) name(false),
@@ -226,7 +227,8 @@ void FeatureInfo::InitializeBasicState(const base::CommandLine* command_line) {
 
   // The shader translator is needed to translate from WebGL-conformant GLES SL
   // to normal GLES SL, enforce WebGL conformance, translate from GLES SL 1.0 to
-  // target context GLSL, etc.
+  // target context GLSL, implement emulation of OpenGL ES features on OpenGL,
+  // etc.
   // The flag here is for testing only.
   disable_shader_translator_ =
       command_line->HasSwitch(switches::kDisableGLSLTranslator);
@@ -1185,6 +1187,36 @@ void FeatureInfo::InitializeFeatures() {
     validators_.render_buffer_format.AddValue(GL_RG8_EXT);
   }
   UMA_HISTOGRAM_BOOLEAN("GPU.TextureRG", feature_flags_.ext_texture_rg);
+
+  bool has_opengl_dual_source_blending =
+      gl_version_info_->IsAtLeastGL(3, 3) ||
+      (gl_version_info_->IsAtLeastGL(3, 2) &&
+       extensions.Contains("GL_ARB_blend_func_extended"));
+  if (!disable_shader_translator_ &&
+      ((gl_version_info_->IsAtLeastGL(3, 2) &&
+        has_opengl_dual_source_blending) ||
+       (gl_version_info_->IsAtLeastGLES(3, 0) &&
+        extensions.Contains("GL_EXT_blend_func_extended")))) {
+    // Note: to simplify the code, we do not expose EXT_blend_func_extended
+    // unless the service context supports ES 3.0. This means the theoretical ES
+    // 2.0 implementation with EXT_blend_func_extended is not sufficient.
+    feature_flags_.ext_blend_func_extended = true;
+    AddExtensionString("GL_EXT_blend_func_extended");
+
+    // NOTE: SRC_ALPHA_SATURATE is valid for ES2 src blend factor.
+    // SRC_ALPHA_SATURATE is valid for ES3 src and dst blend factor.
+    validators_.dst_blend_factor.AddValue(GL_SRC_ALPHA_SATURATE_EXT);
+
+    validators_.src_blend_factor.AddValue(GL_SRC1_ALPHA_EXT);
+    validators_.dst_blend_factor.AddValue(GL_SRC1_ALPHA_EXT);
+    validators_.src_blend_factor.AddValue(GL_SRC1_COLOR_EXT);
+    validators_.dst_blend_factor.AddValue(GL_SRC1_COLOR_EXT);
+    validators_.src_blend_factor.AddValue(GL_ONE_MINUS_SRC1_COLOR_EXT);
+    validators_.dst_blend_factor.AddValue(GL_ONE_MINUS_SRC1_COLOR_EXT);
+    validators_.src_blend_factor.AddValue(GL_ONE_MINUS_SRC1_ALPHA_EXT);
+    validators_.dst_blend_factor.AddValue(GL_ONE_MINUS_SRC1_ALPHA_EXT);
+    validators_.g_l_state.AddValue(GL_MAX_DUAL_SOURCE_DRAW_BUFFERS_EXT);
+  }
 
 #if !defined(OS_MACOSX)
   if (workarounds_.ignore_egl_sync_failures) {

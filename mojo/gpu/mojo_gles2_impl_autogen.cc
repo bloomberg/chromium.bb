@@ -1909,5 +1909,22 @@ void MojoGLES2Impl::ApplyScreenSpaceAntialiasingCHROMIUM() {
   MojoGLES2MakeCurrent(context_);
   glApplyScreenSpaceAntialiasingCHROMIUM();
 }
+void MojoGLES2Impl::BindFragDataLocationIndexedEXT(GLuint program,
+                                                   GLuint colorNumber,
+                                                   GLuint index,
+                                                   const char* name) {
+  MojoGLES2MakeCurrent(context_);
+  glBindFragDataLocationIndexedEXT(program, colorNumber, index, name);
+}
+void MojoGLES2Impl::BindFragDataLocationEXT(GLuint program,
+                                            GLuint colorNumber,
+                                            const char* name) {
+  MojoGLES2MakeCurrent(context_);
+  glBindFragDataLocationEXT(program, colorNumber, name);
+}
+GLint MojoGLES2Impl::GetFragDataIndexEXT(GLuint program, const char* name) {
+  MojoGLES2MakeCurrent(context_);
+  return glGetFragDataIndexEXT(program, name);
+}
 
 }  // namespace mojo

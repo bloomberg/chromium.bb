@@ -331,7 +331,10 @@
   OP(BindFragmentInputLocationCHROMIUMBucket)     /* 572 */ \
   OP(ProgramPathFragmentInputGenCHROMIUM)         /* 573 */ \
   OP(BlendBarrierKHR)                             /* 574 */ \
-  OP(ApplyScreenSpaceAntialiasingCHROMIUM)        /* 575 */
+  OP(ApplyScreenSpaceAntialiasingCHROMIUM)        /* 575 */ \
+  OP(BindFragDataLocationIndexedEXTBucket)        /* 576 */ \
+  OP(BindFragDataLocationEXTBucket)               /* 577 */ \
+  OP(GetFragDataIndexEXT)                         /* 578 */
 
 enum CommandId {
   kStartPoint = cmd::kLastCommonId,  // All GLES2 commands start after this.

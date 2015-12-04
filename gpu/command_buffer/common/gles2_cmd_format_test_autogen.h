@@ -5298,4 +5298,50 @@ TEST_F(GLES2FormatTest, ApplyScreenSpaceAntialiasingCHROMIUM) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
+TEST_F(GLES2FormatTest, BindFragDataLocationIndexedEXTBucket) {
+  cmds::BindFragDataLocationIndexedEXTBucket& cmd =
+      *GetBufferAs<cmds::BindFragDataLocationIndexedEXTBucket>();
+  void* next_cmd =
+      cmd.Set(&cmd, static_cast<GLuint>(11), static_cast<GLuint>(12),
+              static_cast<GLuint>(13), static_cast<uint32_t>(14));
+  EXPECT_EQ(
+      static_cast<uint32_t>(cmds::BindFragDataLocationIndexedEXTBucket::kCmdId),
+      cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLuint>(11), cmd.program);
+  EXPECT_EQ(static_cast<GLuint>(12), cmd.colorNumber);
+  EXPECT_EQ(static_cast<GLuint>(13), cmd.index);
+  EXPECT_EQ(static_cast<uint32_t>(14), cmd.name_bucket_id);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
+TEST_F(GLES2FormatTest, BindFragDataLocationEXTBucket) {
+  cmds::BindFragDataLocationEXTBucket& cmd =
+      *GetBufferAs<cmds::BindFragDataLocationEXTBucket>();
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLuint>(11),
+                           static_cast<GLuint>(12), static_cast<uint32_t>(13));
+  EXPECT_EQ(static_cast<uint32_t>(cmds::BindFragDataLocationEXTBucket::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLuint>(11), cmd.program);
+  EXPECT_EQ(static_cast<GLuint>(12), cmd.colorNumber);
+  EXPECT_EQ(static_cast<uint32_t>(13), cmd.name_bucket_id);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
+TEST_F(GLES2FormatTest, GetFragDataIndexEXT) {
+  cmds::GetFragDataIndexEXT& cmd = *GetBufferAs<cmds::GetFragDataIndexEXT>();
+  void* next_cmd =
+      cmd.Set(&cmd, static_cast<GLuint>(11), static_cast<uint32_t>(12),
+              static_cast<uint32_t>(13), static_cast<uint32_t>(14));
+  EXPECT_EQ(static_cast<uint32_t>(cmds::GetFragDataIndexEXT::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLuint>(11), cmd.program);
+  EXPECT_EQ(static_cast<uint32_t>(12), cmd.name_bucket_id);
+  EXPECT_EQ(static_cast<uint32_t>(13), cmd.index_shm_id);
+  EXPECT_EQ(static_cast<uint32_t>(14), cmd.index_shm_offset);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_TEST_AUTOGEN_H_

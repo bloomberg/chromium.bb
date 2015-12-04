@@ -1704,6 +1704,21 @@ void GL_APIENTRY GLES2BlendBarrierKHR() {
 void GL_APIENTRY GLES2ApplyScreenSpaceAntialiasingCHROMIUM() {
   gles2::GetGLContext()->ApplyScreenSpaceAntialiasingCHROMIUM();
 }
+void GL_APIENTRY GLES2BindFragDataLocationIndexedEXT(GLuint program,
+                                                     GLuint colorNumber,
+                                                     GLuint index,
+                                                     const char* name) {
+  gles2::GetGLContext()->BindFragDataLocationIndexedEXT(program, colorNumber,
+                                                        index, name);
+}
+void GL_APIENTRY GLES2BindFragDataLocationEXT(GLuint program,
+                                              GLuint colorNumber,
+                                              const char* name) {
+  gles2::GetGLContext()->BindFragDataLocationEXT(program, colorNumber, name);
+}
+GLint GL_APIENTRY GLES2GetFragDataIndexEXT(GLuint program, const char* name) {
+  return gles2::GetGLContext()->GetFragDataIndexEXT(program, name);
+}
 
 namespace gles2 {
 
@@ -2992,6 +3007,19 @@ extern const NameToFunc g_gles2_function_table[] = {
         "glApplyScreenSpaceAntialiasingCHROMIUM",
         reinterpret_cast<GLES2FunctionPointer>(
             glApplyScreenSpaceAntialiasingCHROMIUM),
+    },
+    {
+        "glBindFragDataLocationIndexedEXT",
+        reinterpret_cast<GLES2FunctionPointer>(
+            glBindFragDataLocationIndexedEXT),
+    },
+    {
+        "glBindFragDataLocationEXT",
+        reinterpret_cast<GLES2FunctionPointer>(glBindFragDataLocationEXT),
+    },
+    {
+        "glGetFragDataIndexEXT",
+        reinterpret_cast<GLES2FunctionPointer>(glGetFragDataIndexEXT),
     },
     {
         NULL, NULL,

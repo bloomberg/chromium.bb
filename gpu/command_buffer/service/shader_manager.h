@@ -88,6 +88,8 @@ class GPU_EXPORT Shader : public base::RefCounted<Shader> {
   const sh::Varying* GetVaryingInfo(const std::string& name) const;
   const sh::InterfaceBlock* GetInterfaceBlockInfo(
       const std::string& name) const;
+  const sh::OutputVariable* GetOutputVariableInfo(
+      const std::string& name) const;
 
   // If the original_name is not found, return NULL.
   const std::string* GetAttribMappedName(
@@ -103,6 +105,10 @@ class GPU_EXPORT Shader : public base::RefCounted<Shader> {
 
   // If the original_name is not found, return NULL.
   const std::string* GetInterfaceBlockMappedName(
+      const std::string& original_name) const;
+
+  // If the original_name is not found, return NULL.
+  const std::string* GetOutputVariableMappedName(
       const std::string& original_name) const;
 
   // If the hashed_name is not found, return NULL.
@@ -144,6 +150,10 @@ class GPU_EXPORT Shader : public base::RefCounted<Shader> {
     return varying_map_;
   }
 
+  const OutputVariableList& output_variable_list() const {
+    return output_variable_list_;
+  }
+
   // Used by program cache.
   const InterfaceBlockMap& interface_block_map() const {
     return interface_block_map_;
@@ -175,6 +185,12 @@ class GPU_EXPORT Shader : public base::RefCounted<Shader> {
 
   void AddUniformToUniformMap(sh::Uniform uniform) {
     uniform_map_[uniform.mappedName] = uniform;
+  }
+
+  void set_output_variable_list(
+      const OutputVariableList& output_variable_list) {
+    // copied because cache might be cleared
+    output_variable_list_ = output_variable_list;
   }
 
  private:
@@ -237,6 +253,7 @@ class GPU_EXPORT Shader : public base::RefCounted<Shader> {
   UniformMap uniform_map_;
   VaryingMap varying_map_;
   InterfaceBlockMap interface_block_map_;
+  OutputVariableList output_variable_list_;
 
   // The name hashing info when the shader was last compiled.
   NameMap name_map_;

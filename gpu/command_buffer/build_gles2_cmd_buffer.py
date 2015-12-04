@@ -2864,6 +2864,16 @@ _FUNCTION_INFO = {
     'result': ['GLint'],
     'error_return': -1,
   },
+  'GetFragDataIndexEXT': {
+    'type': 'Custom',
+    'data_transfer_methods': ['shm'],
+    'cmd_args':
+        'GLidProgram program, uint32_t name_bucket_id, GLint* index',
+    'result': ['GLint'],
+    'error_return': -1,
+    'extension': 'EXT_blend_func_extended',
+    'extension_flag': 'ext_blend_func_extended',
+  },
   'GetFragDataLocation': {
     'type': 'Custom',
     'data_transfer_methods': ['shm'],
@@ -4016,6 +4026,22 @@ _FUNCTION_INFO = {
     'cmd_args': 'void* sync_data',
     'extension': True,
     'chromium': True,
+  },
+  'BindFragDataLocationEXT': {
+    'type': 'GLchar',
+    'data_transfer_methods': ['bucket'],
+    'needs_size': True,
+    'gl_test_func': 'DoBindFragDataLocationEXT',
+    'extension': 'EXT_blend_func_extended',
+    'extension_flag': 'ext_blend_func_extended',
+  },
+  'BindFragDataLocationIndexedEXT': {
+    'type': 'GLchar',
+    'data_transfer_methods': ['bucket'],
+    'needs_size': True,
+    'gl_test_func': 'DoBindFragDataLocationIndexedEXT',
+    'extension': 'EXT_blend_func_extended',
+    'extension_flag': 'ext_blend_func_extended',
   },
   'BindUniformLocationCHROMIUM': {
     'type': 'GLchar',

@@ -584,6 +584,13 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
   static const GLint kInvalidUniformLocation = 30;
   static const GLint kBadUniformIndex = 1000;
 
+  static const GLint kOutputVariable1Size = 0;
+  static const GLenum kOutputVariable1Type = GL_FLOAT_VEC4;
+  static const GLuint kOutputVariable1ColorName = 7;
+  static const GLuint kOutputVariable1Index = 0;
+  static const char* kOutputVariable1Name;
+  static const char* kOutputVariable1NameESSL3;
+
   // Use StrictMock to make 100% sure we know how GL will be called.
   scoped_ptr< ::testing::StrictMock< ::gfx::MockGLInterface> > gl_;
   scoped_refptr<gfx::GLSurfaceStub> surface_;
@@ -641,6 +648,8 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
   };
 
   EnableFlags enable_flags_;
+
+  int shader_language_version_;
 
  private:
   class MockCommandBufferEngine : public CommandBufferEngine {

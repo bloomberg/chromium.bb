@@ -28,6 +28,7 @@
 #include "gpu/command_buffer/service/program_cache.h"
 #include "gpu/command_buffer/service/shader_manager.h"
 #include "third_party/re2/re2/re2.h"
+#include "ui/gl/gl_version_info.h"
 
 using base::TimeDelta;
 using base::TimeTicks;
@@ -249,10 +250,9 @@ Program::UniformInfo::UniformInfo(const std::string& client_name,
 }
 Program::UniformInfo::~UniformInfo() {}
 
-bool ProgramManager::IsInvalidPrefix(const char* name, size_t length) {
-  static const char kInvalidPrefix[] = { 'g', 'l', '_' };
-  return (length >= sizeof(kInvalidPrefix) &&
-      memcmp(name, kInvalidPrefix, sizeof(kInvalidPrefix)) == 0);
+bool ProgramManager::HasBuiltInPrefix(const std::string& name) {
+  return name.length() >= 3 && name[0] == 'g' && name[1] == 'l' &&
+         name[2] == '_';
 }
 
 Program::Program(ProgramManager* manager, GLuint service_id)
@@ -279,6 +279,7 @@ void Program::Reset() {
   uniform_locations_.clear();
   fragment_input_infos_.clear();
   fragment_input_locations_.clear();
+  program_output_infos_.clear();
   sampler_indices_.clear();
   attrib_location_to_index_map_.clear();
 }
@@ -519,6 +520,7 @@ void Program::Update() {
 #endif
 
   UpdateFragmentInputs();
+  UpdateProgramOutputs();
 
   valid_ = true;
 }
@@ -563,8 +565,7 @@ void Program::UpdateUniforms() {
 
     GLint service_location = -1;
     // Force builtin uniforms (gl_DepthRange) to have invalid location.
-    if (!ProgramManager::IsInvalidPrefix(service_name.c_str(),
-                                         service_name.size())) {
+    if (!ProgramManager::HasBuiltInPrefix(service_name)) {
       service_location =
           glGetUniformLocation(service_id_, service_name.c_str());
     }
@@ -701,9 +702,9 @@ void Program::UpdateFragmentInputs() {
     // A fragment shader can have gl_FragCoord, gl_FrontFacing or gl_PointCoord
     // built-ins as its input, as well as custom varyings. We are interested in
     // custom varyings, client is allowed to bind only them.
-    if (ProgramManager::IsInvalidPrefix(name_buffer.get(), name_length))
-      continue;
     std::string service_name(name_buffer.get(), name_length);
+    if (ProgramManager::HasBuiltInPrefix(service_name))
+      continue;
     // Unlike when binding uniforms, we expect the driver to give correct
     // names: "name" for simple variable, "name[0]" for an array.
     GLsizei query_length = 0;
@@ -788,6 +789,55 @@ void Program::UpdateFragmentInputs() {
   }
 }
 
+void Program::UpdateProgramOutputs() {
+  if (!feature_info().gl_version_info().IsES3Capable() ||
+      feature_info().disable_shader_translator())
+    return;
+
+  Shader* fragment_shader =
+      attached_shaders_[ShaderTypeToIndex(GL_FRAGMENT_SHADER)].get();
+
+  for (auto const& output_var : fragment_shader->output_variable_list()) {
+    const std::string& service_name = output_var.mappedName;
+    // A fragment shader can have gl_FragColor, gl_SecondaryFragColor, etc
+    // built-ins as its output, as well as custom varyings. We are interested
+    // only in custom varyings, client is allowed to bind only them.
+    if (ProgramManager::HasBuiltInPrefix(service_name))
+      continue;
+
+    std::string client_name = output_var.name;
+    if (output_var.arraySize == 0) {
+      GLint color_name =
+          glGetFragDataLocation(service_id_, service_name.c_str());
+      if (color_name < 0)
+        continue;
+      GLint index = 0;
+      if (feature_info().feature_flags().ext_blend_func_extended)
+        index = glGetFragDataIndex(service_id_, service_name.c_str());
+      if (index < 0)
+        continue;
+      program_output_infos_.push_back(
+          ProgramOutputInfo(color_name, index, client_name));
+    } else {
+      for (size_t ii = 0; ii < output_var.arraySize; ++ii) {
+        std::string array_spec(std::string("[") + base::IntToString(ii) + "]");
+        std::string service_element_name(service_name + array_spec);
+        GLint color_name =
+            glGetFragDataLocation(service_id_, service_element_name.c_str());
+        if (color_name < 0)
+          continue;
+        GLint index = 0;
+        if (feature_info().feature_flags().ext_blend_func_extended)
+          index = glGetFragDataIndex(service_id_, service_element_name.c_str());
+        if (index < 0)
+          continue;
+        program_output_infos_.push_back(
+            ProgramOutputInfo(color_name, index, client_name + array_spec));
+      }
+    }
+  }
+}
+
 void Program::ExecuteBindAttribLocationCalls() {
   for (const auto& key_value : bind_attrib_location_map_) {
     const std::string* mapped_name = GetAttribMappedName(key_value.first);
@@ -825,6 +875,96 @@ bool Program::ExecuteTransformFeedbackVaryingsCall() {
   }
 
   return true;
+}
+
+void Program::ExecuteProgramOutputBindCalls() {
+  if (feature_info().disable_shader_translator()) {
+    return;
+  }
+
+  Shader* fragment_shader =
+      attached_shaders_[ShaderTypeToIndex(GL_FRAGMENT_SHADER)].get();
+  DCHECK(fragment_shader && fragment_shader->valid());
+
+  if (fragment_shader->shader_version() != 100) {
+    // ES SL 1.00 does not have mechanism for introducing variables that could
+    // be bound. This means that ES SL 1.00 binding calls would be to
+    // non-existing variable names.  Binding calls are only executed with ES SL
+    // 3.00 and higher.
+    for (auto const& output_var : fragment_shader->output_variable_list()) {
+      size_t count = std::max(output_var.arraySize, 1u);
+      bool is_array = output_var.arraySize > 0;
+
+      for (size_t jj = 0; jj < count; ++jj) {
+        std::string name = output_var.name;
+        std::string array_spec;
+        if (is_array) {
+          array_spec = std::string("[") + base::IntToString(jj) + "]";
+          name += array_spec;
+        }
+        auto it = bind_program_output_location_index_map_.find(name);
+        if (it == bind_program_output_location_index_map_.end())
+          continue;
+
+        std::string mapped_name = output_var.mappedName;
+        if (is_array) {
+          mapped_name += array_spec;
+        }
+        const auto& binding = it->second;
+        if (binding.second == 0) {
+          // Handles the cases where client called glBindFragDataLocation as
+          // well as glBindFragDataLocationIndexed with index == 0.
+          glBindFragDataLocation(service_id_, binding.first,
+                                 mapped_name.c_str());
+        } else {
+          DCHECK(feature_info().feature_flags().ext_blend_func_extended);
+          glBindFragDataLocationIndexed(service_id_, binding.first,
+                                        binding.second, mapped_name.c_str());
+        }
+      }
+    }
+    return;
+  }
+
+  // Support for EXT_blend_func_extended when used with ES SL 1.00 client
+  // shader.
+
+  if (feature_info().gl_version_info().is_es ||
+      !feature_info().feature_flags().ext_blend_func_extended)
+    return;
+
+  // The underlying context does not support EXT_blend_func_extended
+  // natively, need to emulate it.
+
+  // ES SL 1.00 is the only language which contains GLSL built-ins
+  // that need to be bound to color indices. If clients use other
+  // languages, they also bind the output variables themselves.
+  // Map gl_SecondaryFragColorEXT / gl_SecondaryFragDataEXT of
+  // EXT_blend_func_extended to real color indexes.
+  for (auto const& output_var : fragment_shader->output_variable_list()) {
+    const std::string& name = output_var.mappedName;
+    if (name == "gl_FragColor") {
+      DCHECK_EQ(-1, output_var.location);
+      DCHECK_EQ(0u, output_var.arraySize);
+      // We leave these unbound by not giving a binding name. The driver will
+      // bind this.
+    } else if (name == "gl_FragData") {
+      DCHECK_EQ(-1, output_var.location);
+      DCHECK_NE(0u, output_var.arraySize);
+      // We leave these unbound by not giving a binding name. The driver will
+      // bind this.
+    } else if (name == "gl_SecondaryFragColorEXT") {
+      DCHECK_EQ(-1, output_var.location);
+      DCHECK_EQ(0u, output_var.arraySize);
+      glBindFragDataLocationIndexed(service_id_, 0, 1,
+                                    "angle_SecondaryFragColor");
+    } else if (name == "gl_SecondaryFragDataEXT") {
+      DCHECK_EQ(-1, output_var.location);
+      DCHECK_NE(0u, output_var.arraySize);
+      glBindFragDataLocationIndexed(service_id_, 0, 1,
+                                    "angle_SecondaryFragData");
+    }
+  }
 }
 
 bool Program::Link(ShaderManager* manager,
@@ -905,6 +1045,10 @@ bool Program::Link(ShaderManager* manager,
       set_log_info("glBindFragmentInputLocationCHROMIUM() conflicts");
       return false;
     }
+    if (DetectProgramOutputLocationBindingConflicts()) {
+      set_log_info("glBindFragDataLocation() conflicts");
+      return false;
+    }
     if (DetectBuiltInInvariantConflicts()) {
       set_log_info("Invariant settings for certain built-in varyings "
                    "have to match");
@@ -925,6 +1069,9 @@ bool Program::Link(ShaderManager* manager,
     if (!ExecuteTransformFeedbackVaryingsCall()) {
       return false;
     }
+
+    ExecuteProgramOutputBindCalls();
+
     before_time = TimeTicks::Now();
     if (cache && gfx::g_driver_gl.ext.b_GL_ARB_get_program_binary) {
       glProgramParameteri(service_id(),
@@ -1146,6 +1293,20 @@ void Program::SetFragmentInputLocationBinding(const std::string& name,
   // either, both still work correctly.
   bind_fragment_input_location_map_[name] = location;
   bind_fragment_input_location_map_[name + "[0]"] = location;
+}
+
+void Program::SetProgramOutputLocationBinding(const std::string& name,
+                                              GLuint color_name) {
+  SetProgramOutputLocationIndexedBinding(name, color_name, 0);
+}
+
+void Program::SetProgramOutputLocationIndexedBinding(const std::string& name,
+                                                     GLuint color_name,
+                                                     GLuint index) {
+  bind_program_output_location_index_map_[name] =
+      std::make_pair(color_name, index);
+  bind_program_output_location_index_map_[name + "[0]"] =
+      std::make_pair(color_name, index);
 }
 
 void Program::GetVertexAttribData(
@@ -1534,6 +1695,42 @@ bool Program::DetectFragmentInputLocationBindingConflicts() const {
     const sh::Varying* fragment_input = shader->GetVaryingInfo(*mapped_name);
     if (fragment_input && fragment_input->staticUse) {
       auto result = location_binding_used.insert(it.second);
+      if (!result.second)
+        return true;
+    }
+  }
+  return false;
+}
+
+bool Program::DetectProgramOutputLocationBindingConflicts() const {
+  if (feature_info().disable_shader_translator()) {
+    return false;
+  }
+
+  Shader* shader =
+      attached_shaders_[ShaderTypeToIndex(GL_FRAGMENT_SHADER)].get();
+  DCHECK(shader && shader->valid());
+
+  if (shader->shader_version() == 100)
+    return false;
+
+  std::set<LocationIndexMap::mapped_type> location_binding_used;
+  for (auto const& output_var : shader->output_variable_list()) {
+    if (!output_var.staticUse)
+      continue;
+
+    size_t count = std::max(output_var.arraySize, 1u);
+    bool is_array = output_var.arraySize > 0;
+
+    for (size_t jj = 0; jj < count; ++jj) {
+      std::string name = output_var.name;
+      if (is_array)
+        name += std::string("[") + base::IntToString(jj) + "]";
+
+      auto it = bind_program_output_location_index_map_.find(name);
+      if (it == bind_program_output_location_index_map_.end())
+        continue;
+      auto result = location_binding_used.insert(it->second);
       if (!result.second)
         return true;
     }
@@ -2019,6 +2216,36 @@ bool Program::GetUniformsES3(CommonDecoder::Bucket* bucket) const {
   return true;
 }
 
+const Program::ProgramOutputInfo* Program::GetProgramOutputInfo(
+    const std::string& name) const {
+  for (const auto& info : program_output_infos_) {
+    if (info.name == name) {
+      return &info;
+    }
+  }
+  return nullptr;
+}
+
+GLint Program::GetFragDataLocation(const std::string& original_name) const {
+  DCHECK(IsValid());
+  const ProgramOutputInfo* info = GetProgramOutputInfo(original_name);
+  if (!info)
+    info = GetProgramOutputInfo(original_name + "[0]");
+  if (!info)
+    return -1;
+  return info->color_name;
+}
+
+GLint Program::GetFragDataIndex(const std::string& original_name) const {
+  DCHECK(IsValid());
+  const ProgramOutputInfo* info = GetProgramOutputInfo(original_name);
+  if (!info)
+    info = GetProgramOutputInfo(original_name + "[0]");
+  if (!info)
+    return -1;
+  return info->index;
+}
+
 void Program::TransformFeedbackVaryings(GLsizei count,
                                         const char* const* varyings,
                                         GLenum buffer_mode) {
@@ -2041,11 +2268,13 @@ Program::~Program() {
 
 ProgramManager::ProgramManager(ProgramCache* program_cache,
                                uint32 max_varying_vectors,
+                               uint32 max_dual_source_draw_buffers,
                                FeatureInfo* feature_info)
     : program_count_(0),
       have_context_(true),
       program_cache_(program_cache),
       max_varying_vectors_(max_varying_vectors),
+      max_dual_source_draw_buffers_(max_dual_source_draw_buffers),
       feature_info_(feature_info) {}
 
 ProgramManager::~ProgramManager() {

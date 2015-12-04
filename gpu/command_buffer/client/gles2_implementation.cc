@@ -1396,6 +1396,33 @@ void GLES2Implementation::BindAttribLocation(
   CheckGLError();
 }
 
+void GLES2Implementation::BindFragDataLocationEXT(GLuint program,
+                                                  GLuint colorName,
+                                                  const char* name) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glBindFragDataLocationEXT("
+                     << program << ", " << colorName << ", " << name << ")");
+  SetBucketAsString(kResultBucketId, name);
+  helper_->BindFragDataLocationEXTBucket(program, colorName, kResultBucketId);
+  helper_->SetBucketSize(kResultBucketId, 0);
+  CheckGLError();
+}
+
+void GLES2Implementation::BindFragDataLocationIndexedEXT(GLuint program,
+                                                         GLuint colorName,
+                                                         GLuint index,
+                                                         const char* name) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glBindFragDataLocationEXT("
+                     << program << ", " << colorName << ", " << index << ", "
+                     << name << ")");
+  SetBucketAsString(kResultBucketId, name);
+  helper_->BindFragDataLocationIndexedEXTBucket(program, colorName, index,
+                                                kResultBucketId);
+  helper_->SetBucketSize(kResultBucketId, 0);
+  CheckGLError();
+}
+
 void GLES2Implementation::BindUniformLocationCHROMIUM(
   GLuint program, GLint location, const char* name) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
@@ -1605,6 +1632,35 @@ bool GLES2Implementation::GetProgramivHelper(
     }
   });
   return got_value;
+}
+
+GLint GLES2Implementation::GetFragDataIndexEXTHelper(GLuint program,
+                                                     const char* name) {
+  typedef cmds::GetFragDataIndexEXT::Result Result;
+  Result* result = GetResultAs<Result*>();
+  if (!result) {
+    return -1;
+  }
+  *result = -1;
+  SetBucketAsCString(kResultBucketId, name);
+  helper_->GetFragDataIndexEXT(program, kResultBucketId, GetResultShmId(),
+                               GetResultShmOffset());
+  WaitForCmd();
+  helper_->SetBucketSize(kResultBucketId, 0);
+  return *result;
+}
+
+GLint GLES2Implementation::GetFragDataIndexEXT(GLuint program,
+                                               const char* name) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glGetFragDataIndexEXT(" << program
+                     << ", " << name << ")");
+  TRACE_EVENT0("gpu", "GLES2::GetFragDataIndexEXT");
+  GLint loc = share_group_->program_info_manager()->GetFragDataIndex(
+      this, program, name);
+  GPU_CLIENT_LOG("returned " << loc);
+  CheckGLError();
+  return loc;
 }
 
 GLint GLES2Implementation::GetFragDataLocationHelper(

@@ -334,6 +334,16 @@
 #define GL_FRAGMENT_INPUT_NV 0x936D
 #endif
 
+#ifndef GL_EXT_blend_func_extended
+#define GL_EXT_blend_func_extended 1
+#define GL_SRC_ALPHA_SATURATE_EXT 0x0308
+#define GL_SRC1_ALPHA_EXT 0x8589  // OpenGL 1.5 token value
+#define GL_SRC1_COLOR_EXT 0x88F9
+#define GL_ONE_MINUS_SRC1_COLOR_EXT 0x88FA
+#define GL_ONE_MINUS_SRC1_ALPHA_EXT 0x88FB
+#define GL_MAX_DUAL_SOURCE_DRAW_BUFFERS_EXT 0x88FC
+#endif /* GL_EXT_blend_func_extended */
+
 #define GL_GLEXT_PROTOTYPES 1
 
 #if defined(OS_WIN)

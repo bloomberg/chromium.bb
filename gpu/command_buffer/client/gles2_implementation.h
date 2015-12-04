@@ -215,6 +215,7 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   void GetProgramInfoCHROMIUMHelper(GLuint program, std::vector<int8>* result);
   GLint GetAttribLocationHelper(GLuint program, const char* name);
   GLint GetUniformLocationHelper(GLuint program, const char* name);
+  GLint GetFragDataIndexEXTHelper(GLuint program, const char* name);
   GLint GetFragDataLocationHelper(GLuint program, const char* name);
   bool GetActiveAttribHelper(
       GLuint program, GLuint index, GLsizei bufsize, GLsizei* length,

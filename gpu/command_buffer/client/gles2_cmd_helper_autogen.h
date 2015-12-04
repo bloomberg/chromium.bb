@@ -3166,4 +3166,36 @@ void ApplyScreenSpaceAntialiasingCHROMIUM() {
   }
 }
 
+void BindFragDataLocationIndexedEXTBucket(GLuint program,
+                                          GLuint colorNumber,
+                                          GLuint index,
+                                          uint32_t name_bucket_id) {
+  gles2::cmds::BindFragDataLocationIndexedEXTBucket* c =
+      GetCmdSpace<gles2::cmds::BindFragDataLocationIndexedEXTBucket>();
+  if (c) {
+    c->Init(program, colorNumber, index, name_bucket_id);
+  }
+}
+
+void BindFragDataLocationEXTBucket(GLuint program,
+                                   GLuint colorNumber,
+                                   uint32_t name_bucket_id) {
+  gles2::cmds::BindFragDataLocationEXTBucket* c =
+      GetCmdSpace<gles2::cmds::BindFragDataLocationEXTBucket>();
+  if (c) {
+    c->Init(program, colorNumber, name_bucket_id);
+  }
+}
+
+void GetFragDataIndexEXT(GLuint program,
+                         uint32_t name_bucket_id,
+                         uint32_t index_shm_id,
+                         uint32_t index_shm_offset) {
+  gles2::cmds::GetFragDataIndexEXT* c =
+      GetCmdSpace<gles2::cmds::GetFragDataIndexEXT>();
+  if (c) {
+    c->Init(program, name_bucket_id, index_shm_id, index_shm_offset);
+  }
+}
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_CMD_HELPER_AUTOGEN_H_

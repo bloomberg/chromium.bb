@@ -1169,11 +1169,46 @@ typedef void(GL_APIENTRYP PFNGLPROGRAMPATHFRAGMENTINPUTGENCHROMIUMPROC)(
 
 #endif /* GL_CHROMIUM_path_rendering */
 
+
 #ifndef GL_EXT_multisample_compatibility
 #define GL_EXT_multisample_compatibility 1
 #define GL_MULTISAMPLE_EXT 0x809D
 #define GL_SAMPLE_ALPHA_TO_ONE_EXT 0x809F
 #endif /* GL_EXT_multisample_compatiblity */
+
+#ifndef GL_EXT_blend_func_extended
+#define GL_EXT_blend_func_extended 1
+
+#ifdef GL_GLEXT_PROTOTYPES
+GL_APICALL void GL_APIENTRY glBindFragDataLocationIndexedEXT(GLuint program,
+                                                             GLuint colorNumber,
+                                                             GLuint index,
+                                                             const char* name);
+GL_APICALL void GL_APIENTRY glBindFragDataLocationEXT(GLuint program,
+                                                      GLuint colorNumber,
+                                                      const char* name);
+GL_APICALL GLint GL_APIENTRY glGetFragDataIndexEXT(GLuint program,
+                                                   const char* name);
+#endif
+
+typedef void(GL_APIENTRYP PFNGLBINDFRAGDATALOCATIONINDEXEDEXT)(
+    GLuint program,
+    GLuint colorNumber,
+    GLuint index,
+    const char* name);
+typedef void(GL_APIENTRYP PFNGLBINDFRAGDATALOCATIONEXT)(GLuint program,
+                                                        GLuint colorNumber,
+                                                        const char* name);
+typedef GLint(GL_APIENTRYP PFNGLGETFRAGDATAINDEXEXT)(GLuint program,
+                                                     const GLchar* name);
+
+#define GL_SRC_ALPHA_SATURATE_EXT 0x0308
+#define GL_SRC1_ALPHA_EXT 0x8589  // OpenGL 1.5 token value
+#define GL_SRC1_COLOR_EXT 0x88F9
+#define GL_ONE_MINUS_SRC1_COLOR_EXT 0x88FA
+#define GL_ONE_MINUS_SRC1_ALPHA_EXT 0x88FB
+#define GL_MAX_DUAL_SOURCE_DRAW_BUFFERS_EXT 0x88FC
+#endif /* GL_EXT_blend_func_extended */
 
 #ifdef __cplusplus
 }

@@ -120,7 +120,8 @@ GLES2DecoderTestBase::GLES2DecoderTestBase()
       cached_color_mask_alpha_(true),
       cached_depth_mask_(true),
       cached_stencil_front_mask_(static_cast<GLuint>(-1)),
-      cached_stencil_back_mask_(static_cast<GLuint>(-1)) {
+      cached_stencil_back_mask_(static_cast<GLuint>(-1)),
+      shader_language_version_(100) {
   memset(immediate_buffer_, 0xEE, sizeof(immediate_buffer_));
 }
 
@@ -1498,7 +1499,10 @@ const GLenum GLES2DecoderTestBase::kUniform7Type;
 const GLenum GLES2DecoderTestBase::kUniformCubemapType;
 const GLint GLES2DecoderTestBase::kInvalidUniformLocation;
 const GLint GLES2DecoderTestBase::kBadUniformIndex;
-
+const GLint GLES2DecoderTestBase::kOutputVariable1Size;
+const GLenum GLES2DecoderTestBase::kOutputVariable1Type;
+const GLuint GLES2DecoderTestBase::kOutputVariable1ColorName;
+const GLuint GLES2DecoderTestBase::kOutputVariable1Index;
 #endif
 
 const char* GLES2DecoderTestBase::kAttrib1Name = "attrib1";
@@ -1511,6 +1515,9 @@ const char* GLES2DecoderTestBase::kUniform4Name = "uniform4";
 const char* GLES2DecoderTestBase::kUniform5Name = "uniform5";
 const char* GLES2DecoderTestBase::kUniform6Name = "uniform6";
 const char* GLES2DecoderTestBase::kUniform7Name = "uniform7";
+
+const char* GLES2DecoderTestBase::kOutputVariable1Name = "gl_FragColor";
+const char* GLES2DecoderTestBase::kOutputVariable1NameESSL3 = "color";
 
 void GLES2DecoderTestBase::SetupDefaultProgram() {
   {
@@ -1660,6 +1667,19 @@ void GLES2DecoderTestBase::SetupShader(
     GLuint program_client_id, GLuint program_service_id,
     GLuint vertex_shader_client_id, GLuint vertex_shader_service_id,
     GLuint fragment_shader_client_id, GLuint fragment_shader_service_id) {
+  static TestHelper::ProgramOutputInfo kProgramOutputsESSL1[] = {{
+      kOutputVariable1Name, kOutputVariable1Size, kOutputVariable1Type,
+      kOutputVariable1ColorName, kOutputVariable1Index,
+  }};
+  static TestHelper::ProgramOutputInfo kProgramOutputsESSL3[] = {{
+      kOutputVariable1NameESSL3, kOutputVariable1Size, kOutputVariable1Type,
+      kOutputVariable1ColorName, kOutputVariable1Index,
+  }};
+  TestHelper::ProgramOutputInfo* program_outputs =
+      shader_language_version_ == 100 ? kProgramOutputsESSL1
+                                      : kProgramOutputsESSL3;
+  const size_t kNumProgramOutputs = 1;
+
   {
     InSequence s;
 
@@ -1671,9 +1691,11 @@ void GLES2DecoderTestBase::SetupShader(
                 AttachShader(program_service_id, fragment_shader_service_id))
         .Times(1)
         .RetiresOnSaturation();
-    TestHelper::SetupShaderExpectations(gl_.get(), group_->feature_info(),
-                                        attribs, num_attribs, uniforms,
-                                        num_uniforms, program_service_id);
+
+    TestHelper::SetupShaderExpectationsWithVaryings(
+        gl_.get(), group_->feature_info(), attribs, num_attribs, uniforms,
+        num_uniforms, nullptr, 0, program_outputs, kNumProgramOutputs,
+        program_service_id);
   }
 
   DoCreateShader(
@@ -1682,10 +1704,20 @@ void GLES2DecoderTestBase::SetupShader(
       GL_FRAGMENT_SHADER, fragment_shader_client_id,
       fragment_shader_service_id);
 
-  TestHelper::SetShaderStates(
-      gl_.get(), GetShader(vertex_shader_client_id), true);
-  TestHelper::SetShaderStates(
-      gl_.get(), GetShader(fragment_shader_client_id), true);
+  TestHelper::SetShaderStates(gl_.get(), GetShader(vertex_shader_client_id),
+                              true, nullptr, nullptr, &shader_language_version_,
+                              nullptr, nullptr, nullptr, nullptr, nullptr,
+                              nullptr);
+
+  OutputVariableList frag_output_variable_list;
+  frag_output_variable_list.push_back(TestHelper::ConstructOutputVariable(
+      program_outputs[0].type, program_outputs[0].size, GL_MEDIUM_FLOAT, true,
+      program_outputs[0].name));
+
+  TestHelper::SetShaderStates(gl_.get(), GetShader(fragment_shader_client_id),
+                              true, nullptr, nullptr, &shader_language_version_,
+                              nullptr, nullptr, nullptr, nullptr,
+                              &frag_output_variable_list, nullptr);
 
   cmds::AttachShader attach_cmd;
   attach_cmd.Init(program_client_id, vertex_shader_client_id);

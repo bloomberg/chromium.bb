@@ -101,11 +101,28 @@ MockGLInterface::Mock_glBindFragDataLocation(GLuint program,
 }
 
 void GL_BINDING_CALL
+MockGLInterface::Mock_glBindFragDataLocationEXT(GLuint program,
+                                                GLuint colorNumber,
+                                                const char* name) {
+  MakeFunctionUnique("glBindFragDataLocationEXT");
+  interface_->BindFragDataLocation(program, colorNumber, name);
+}
+
+void GL_BINDING_CALL
 MockGLInterface::Mock_glBindFragDataLocationIndexed(GLuint program,
                                                     GLuint colorNumber,
                                                     GLuint index,
                                                     const char* name) {
   MakeFunctionUnique("glBindFragDataLocationIndexed");
+  interface_->BindFragDataLocationIndexed(program, colorNumber, index, name);
+}
+
+void GL_BINDING_CALL
+MockGLInterface::Mock_glBindFragDataLocationIndexedEXT(GLuint program,
+                                                       GLuint colorNumber,
+                                                       GLuint index,
+                                                       const char* name) {
+  MakeFunctionUnique("glBindFragDataLocationIndexedEXT");
   interface_->BindFragDataLocationIndexed(program, colorNumber, index, name);
 }
 
@@ -1185,6 +1202,18 @@ void GL_BINDING_CALL MockGLInterface::Mock_glGetFloatv(GLenum pname,
                                                        GLfloat* params) {
   MakeFunctionUnique("glGetFloatv");
   interface_->GetFloatv(pname, params);
+}
+
+GLint GL_BINDING_CALL
+MockGLInterface::Mock_glGetFragDataIndex(GLuint program, const char* name) {
+  MakeFunctionUnique("glGetFragDataIndex");
+  return interface_->GetFragDataIndex(program, name);
+}
+
+GLint GL_BINDING_CALL
+MockGLInterface::Mock_glGetFragDataIndexEXT(GLuint program, const char* name) {
+  MakeFunctionUnique("glGetFragDataIndexEXT");
+  return interface_->GetFragDataIndex(program, name);
 }
 
 GLint GL_BINDING_CALL
@@ -2857,8 +2886,12 @@ void* GL_BINDING_CALL MockGLInterface::GetGLProcAddress(const char* name) {
     return reinterpret_cast<void*>(Mock_glBindBufferRange);
   if (strcmp(name, "glBindFragDataLocation") == 0)
     return reinterpret_cast<void*>(Mock_glBindFragDataLocation);
+  if (strcmp(name, "glBindFragDataLocationEXT") == 0)
+    return reinterpret_cast<void*>(Mock_glBindFragDataLocationEXT);
   if (strcmp(name, "glBindFragDataLocationIndexed") == 0)
     return reinterpret_cast<void*>(Mock_glBindFragDataLocationIndexed);
+  if (strcmp(name, "glBindFragDataLocationIndexedEXT") == 0)
+    return reinterpret_cast<void*>(Mock_glBindFragDataLocationIndexedEXT);
   if (strcmp(name, "glBindFramebuffer") == 0)
     return reinterpret_cast<void*>(Mock_glBindFramebuffer);
   if (strcmp(name, "glBindFramebufferEXT") == 0)
@@ -3149,6 +3182,10 @@ void* GL_BINDING_CALL MockGLInterface::GetGLProcAddress(const char* name) {
     return reinterpret_cast<void*>(Mock_glGetFenceivNV);
   if (strcmp(name, "glGetFloatv") == 0)
     return reinterpret_cast<void*>(Mock_glGetFloatv);
+  if (strcmp(name, "glGetFragDataIndex") == 0)
+    return reinterpret_cast<void*>(Mock_glGetFragDataIndex);
+  if (strcmp(name, "glGetFragDataIndexEXT") == 0)
+    return reinterpret_cast<void*>(Mock_glGetFragDataIndexEXT);
   if (strcmp(name, "glGetFragDataLocation") == 0)
     return reinterpret_cast<void*>(Mock_glGetFragDataLocation);
   if (strcmp(name, "glGetFramebufferAttachmentParameteriv") == 0)

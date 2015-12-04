@@ -98,16 +98,13 @@ TEST_F(ShaderTranslatorTest, ValidVertexShader) {
   UniformMap uniform_map;
   VaryingMap varying_map;
   InterfaceBlockMap interface_block_map;
+  OutputVariableList output_variable_list;
   NameMap name_map;
-  EXPECT_TRUE(vertex_translator_->Translate(shader,
-                                            &info_log,
-                                            &translated_source,
-                                            &shader_version,
-                                            &attrib_map,
-                                            &uniform_map,
-                                            &varying_map,
-                                            &interface_block_map,
-                                            &name_map));
+  EXPECT_TRUE(vertex_translator_->Translate(
+      shader, &info_log, &translated_source, &shader_version, &attrib_map,
+      &uniform_map, &varying_map, &interface_block_map, &output_variable_list,
+      &name_map));
+
   // Info log must be NULL.
   EXPECT_TRUE(info_log.empty());
   // Translated shader must be valid and non-empty.
@@ -118,6 +115,7 @@ TEST_F(ShaderTranslatorTest, ValidVertexShader) {
   EXPECT_TRUE(uniform_map.empty());
   EXPECT_TRUE(interface_block_map.empty());
   EXPECT_EQ(1u, varying_map.size());
+  EXPECT_TRUE(output_variable_list.empty());
   // There should be no name mapping.
   EXPECT_TRUE(name_map.empty());
 }
@@ -136,16 +134,12 @@ TEST_F(ShaderTranslatorTest, InvalidVertexShader) {
   UniformMap uniform_map;
   VaryingMap varying_map;
   InterfaceBlockMap interface_block_map;
+  OutputVariableList output_variable_list;
   NameMap name_map;
-  EXPECT_FALSE(vertex_translator_->Translate(bad_shader,
-                                             &info_log,
-                                             &translated_source,
-                                             &shader_version,
-                                             &attrib_map,
-                                             &uniform_map,
-                                             &varying_map,
-                                             &interface_block_map,
-                                             &name_map));
+  EXPECT_FALSE(vertex_translator_->Translate(
+      bad_shader, &info_log, &translated_source, &shader_version, &attrib_map,
+      &uniform_map, &varying_map, &interface_block_map, &output_variable_list,
+      &name_map));
   // Info log must be valid and non-empty.
   ASSERT_FALSE(info_log.empty());
   // Translated shader must be NULL.
@@ -156,19 +150,15 @@ TEST_F(ShaderTranslatorTest, InvalidVertexShader) {
   EXPECT_TRUE(uniform_map.empty());
   EXPECT_TRUE(varying_map.empty());
   EXPECT_TRUE(interface_block_map.empty());
+  EXPECT_TRUE(output_variable_list.empty());
   EXPECT_TRUE(name_map.empty());
 
   // Try a good shader after bad.
   info_log.clear();
-  EXPECT_TRUE(vertex_translator_->Translate(good_shader,
-                                            &info_log,
-                                            &translated_source,
-                                            &shader_version,
-                                            &attrib_map,
-                                            &uniform_map,
-                                            &varying_map,
-                                            &interface_block_map,
-                                            &name_map));
+  EXPECT_TRUE(vertex_translator_->Translate(
+      good_shader, &info_log, &translated_source, &shader_version, &attrib_map,
+      &uniform_map, &varying_map, &interface_block_map, &output_variable_list,
+      &name_map));
   EXPECT_TRUE(info_log.empty());
   EXPECT_FALSE(translated_source.empty());
   EXPECT_TRUE(interface_block_map.empty());
@@ -187,16 +177,12 @@ TEST_F(ShaderTranslatorTest, ValidFragmentShader) {
   UniformMap uniform_map;
   VaryingMap varying_map;
   InterfaceBlockMap interface_block_map;
+  OutputVariableList output_variable_list;
   NameMap name_map;
-  EXPECT_TRUE(fragment_translator_->Translate(shader,
-                                              &info_log,
-                                              &translated_source,
-                                              &shader_version,
-                                              &attrib_map,
-                                              &uniform_map,
-                                              &varying_map,
-                                              &interface_block_map,
-                                              &name_map));
+  EXPECT_TRUE(fragment_translator_->Translate(
+      shader, &info_log, &translated_source, &shader_version, &attrib_map,
+      &uniform_map, &varying_map, &interface_block_map, &output_variable_list,
+      &name_map));
   // Info log must be NULL.
   EXPECT_TRUE(info_log.empty());
   // Translated shader must be valid and non-empty.
@@ -208,6 +194,8 @@ TEST_F(ShaderTranslatorTest, ValidFragmentShader) {
   EXPECT_TRUE(varying_map.empty());
   EXPECT_TRUE(interface_block_map.empty());
   EXPECT_TRUE(name_map.empty());
+  // gl_FragColor.
+  EXPECT_EQ(1u, output_variable_list.size());
 }
 
 TEST_F(ShaderTranslatorTest, InvalidFragmentShader) {
@@ -219,17 +207,13 @@ TEST_F(ShaderTranslatorTest, InvalidFragmentShader) {
   UniformMap uniform_map;
   VaryingMap varying_map;
   InterfaceBlockMap interface_block_map;
+  OutputVariableList output_variable_list;
   NameMap name_map;
   // An invalid shader should fail.
-  EXPECT_FALSE(fragment_translator_->Translate(shader,
-                                               &info_log,
-                                               &translated_source,
-                                               &shader_version,
-                                               &attrib_map,
-                                               &uniform_map,
-                                               &varying_map,
-                                               &interface_block_map,
-                                               &name_map));
+  EXPECT_FALSE(fragment_translator_->Translate(
+      shader, &info_log, &translated_source, &shader_version, &attrib_map,
+      &uniform_map, &varying_map, &interface_block_map, &output_variable_list,
+      &name_map));
   // Info log must be valid and non-empty.
   EXPECT_FALSE(info_log.empty());
   // Translated shader must be NULL.
@@ -239,6 +223,7 @@ TEST_F(ShaderTranslatorTest, InvalidFragmentShader) {
   EXPECT_TRUE(attrib_map.empty());
   EXPECT_TRUE(uniform_map.empty());
   EXPECT_TRUE(varying_map.empty());
+  EXPECT_TRUE(output_variable_list.empty());
   EXPECT_TRUE(name_map.empty());
 }
 
@@ -255,16 +240,12 @@ TEST_F(ShaderTranslatorTest, GetAttributes) {
   UniformMap uniform_map;
   VaryingMap varying_map;
   InterfaceBlockMap interface_block_map;
+  OutputVariableList output_variable_list;
   NameMap name_map;
-  EXPECT_TRUE(vertex_translator_->Translate(shader,
-                                            &info_log,
-                                            &translated_source,
-                                            &shader_version,
-                                            &attrib_map,
-                                            &uniform_map,
-                                            &varying_map,
-                                            &interface_block_map,
-                                            &name_map));
+  EXPECT_TRUE(vertex_translator_->Translate(
+      shader, &info_log, &translated_source, &shader_version, &attrib_map,
+      &uniform_map, &varying_map, &interface_block_map, &output_variable_list,
+      &name_map));
   // Info log must be NULL.
   EXPECT_TRUE(info_log.empty());
   // Translated shader must be valid and non-empty.
@@ -303,16 +284,12 @@ TEST_F(ShaderTranslatorTest, GetUniforms) {
   UniformMap uniform_map;
   VaryingMap varying_map;
   InterfaceBlockMap interface_block_map;
+  OutputVariableList output_variable_list;
   NameMap name_map;
-  EXPECT_TRUE(fragment_translator_->Translate(shader,
-                                              &info_log,
-                                              &translated_source,
-                                              &shader_version,
-                                              &attrib_map,
-                                              &uniform_map,
-                                              &varying_map,
-                                              &interface_block_map,
-                                              &name_map));
+  EXPECT_TRUE(fragment_translator_->Translate(
+      shader, &info_log, &translated_source, &shader_version, &attrib_map,
+      &uniform_map, &varying_map, &interface_block_map, &output_variable_list,
+      &name_map));
   // Info log must be NULL.
   EXPECT_TRUE(info_log.empty());
   // Translated shader must be valid and non-empty.
@@ -344,6 +321,9 @@ TEST_F(ShaderTranslatorTest, GetUniforms) {
   EXPECT_EQ(1u, info->arraySize);
   EXPECT_STREQ("color", info->name.c_str());
   EXPECT_STREQ("bar[1].foo.color[0]", original_name.c_str());
+  EXPECT_EQ(1u, output_variable_list.size());
+  ASSERT_TRUE(output_variable_list.size() > 0);
+  EXPECT_EQ(output_variable_list[0].mappedName, "gl_FragColor");
 }
 
 
@@ -372,16 +352,12 @@ TEST_F(ES3ShaderTranslatorTest, InvalidInterfaceBlocks) {
   UniformMap uniform_map;
   VaryingMap varying_map;
   InterfaceBlockMap interface_block_map;
+  OutputVariableList output_variable_list;
   NameMap name_map;
-  EXPECT_FALSE(fragment_translator_->Translate(shader,
-                                               &info_log,
-                                               &translated_source,
-                                               &shader_version,
-                                               &attrib_map,
-                                               &uniform_map,
-                                               &varying_map,
-                                               &interface_block_map,
-                                               &name_map));
+  EXPECT_FALSE(fragment_translator_->Translate(
+      shader, &info_log, &translated_source, &shader_version, &attrib_map,
+      &uniform_map, &varying_map, &interface_block_map, &output_variable_list,
+      &name_map));
   // Info log must be valid and non-empty.
   ASSERT_FALSE(info_log.empty());
   // Translated shader must be NULL.
@@ -415,16 +391,12 @@ TEST_F(ES3ShaderTranslatorTest, GetInterfaceBlocks) {
   UniformMap uniform_map;
   VaryingMap varying_map;
   InterfaceBlockMap interface_block_map;
+  OutputVariableList output_variable_list;
   NameMap name_map;
-  EXPECT_TRUE(fragment_translator_->Translate(shader,
-                                              &info_log,
-                                              &translated_source,
-                                              &shader_version,
-                                              &attrib_map,
-                                              &uniform_map,
-                                              &varying_map,
-                                              &interface_block_map,
-                                              &name_map));
+  EXPECT_TRUE(fragment_translator_->Translate(
+      shader, &info_log, &translated_source, &shader_version, &attrib_map,
+      &uniform_map, &varying_map, &interface_block_map, &output_variable_list,
+      &name_map));
   // Info log must be NULL.
   EXPECT_TRUE(info_log.empty());
   // Translated shader must be valid and non-empty.
@@ -509,7 +481,7 @@ TEST_P(ShaderTranslatorOutputVersionTest, HasCorrectOutputGLSLVersion) {
   int shader_version;
   EXPECT_TRUE(translator->Translate(kShader, nullptr, &translated_source,
                                     &shader_version, nullptr, nullptr, nullptr,
-                                    nullptr, nullptr));
+                                    nullptr, nullptr, nullptr));
 
   std::string expected_version_directive = testing::get<1>(GetParam());
   if (expected_version_directive.empty()) {

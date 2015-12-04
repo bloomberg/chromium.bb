@@ -40,12 +40,6 @@ namespace gles2 {
 
 namespace {
 
-enum ShaderMapType {
-  ATTRIB_MAP = 0,
-  UNIFORM_MAP,
-  VARYING_MAP
-};
-
 void FillShaderVariableProto(
     ShaderVariableProto* proto, const sh::ShaderVariable& variable) {
   proto->set_type(variable.type);
@@ -79,6 +73,12 @@ void FillShaderVaryingProto(
   proto->set_is_invariant(varying.isInvariant);
 }
 
+void FillShaderOutputVariableProto(ShaderOutputVariableProto* proto,
+                                   const sh::OutputVariable& attrib) {
+  FillShaderVariableProto(proto->mutable_basic(), attrib);
+  proto->set_location(attrib.location);
+}
+
 void FillShaderProto(ShaderProto* proto, const char* sha,
                      const Shader* shader) {
   proto->set_sha(sha, gpu::gles2::ProgramCache::kHashLength);
@@ -96,6 +96,11 @@ void FillShaderProto(ShaderProto* proto, const char* sha,
        iter != shader->varying_map().end(); ++iter) {
     ShaderVaryingProto* info = proto->add_varyings();
     FillShaderVaryingProto(info, iter->second);
+  }
+  for (auto iter = shader->output_variable_list().begin();
+       iter != shader->output_variable_list().end(); ++iter) {
+    ShaderOutputVariableProto* info = proto->add_output_variables();
+    FillShaderOutputVariableProto(info, *iter);
   }
 }
 
@@ -136,6 +141,14 @@ void RetrieveShaderVaryingInfo(
       proto.interpolation());
   varying.isInvariant = proto.is_invariant();
   (*map)[proto.basic().mapped_name()] = varying;
+}
+
+void RetrieveShaderOutputVariableInfo(const ShaderOutputVariableProto& proto,
+                                      OutputVariableList* list) {
+  sh::OutputVariable output_variable;
+  RetrieveShaderVariableInfo(proto.basic(), &output_variable);
+  output_variable.location = proto.location();
+  list->push_back(output_variable);
 }
 
 void RunShaderCallback(const ShaderCacheCallback& callback,
@@ -213,9 +226,11 @@ ProgramCache::ProgramLoadResult MemoryProgramCache::LoadLinkedProgram(
   shader_a->set_attrib_map(value->attrib_map_0());
   shader_a->set_uniform_map(value->uniform_map_0());
   shader_a->set_varying_map(value->varying_map_0());
+  shader_a->set_output_variable_list(value->output_variable_list_0());
   shader_b->set_attrib_map(value->attrib_map_1());
   shader_b->set_uniform_map(value->uniform_map_1());
   shader_b->set_varying_map(value->varying_map_1());
+  shader_b->set_output_variable_list(value->output_variable_list_1());
 
   if (!shader_callback.is_null() &&
       !base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -302,20 +317,14 @@ void MemoryProgramCache::SaveLinkedProgram(
     RunShaderCallback(shader_callback, proto.get(), sha_string);
   }
 
-  store_.Put(sha_string,
-             new ProgramCacheValue(length,
-                                   format,
-                                   binary.release(),
-                                   sha_string,
-                                   a_sha,
-                                   shader_a->attrib_map(),
-                                   shader_a->uniform_map(),
-                                   shader_a->varying_map(),
-                                   b_sha,
-                                   shader_b->attrib_map(),
-                                   shader_b->uniform_map(),
-                                   shader_b->varying_map(),
-                                   this));
+  store_.Put(
+      sha_string,
+      new ProgramCacheValue(
+          length, format, binary.release(), sha_string, a_sha,
+          shader_a->attrib_map(), shader_a->uniform_map(),
+          shader_a->varying_map(), shader_a->output_variable_list(), b_sha,
+          shader_b->attrib_map(), shader_b->uniform_map(),
+          shader_b->varying_map(), shader_b->output_variable_list(), this));
 
   UMA_HISTOGRAM_COUNTS("GPU.ProgramCache.MemorySizeAfterKb",
                        curr_size_bytes_ / 1024);
@@ -327,6 +336,7 @@ void MemoryProgramCache::LoadProgram(const std::string& program) {
     AttributeMap vertex_attribs;
     UniformMap vertex_uniforms;
     VaryingMap vertex_varyings;
+    OutputVariableList vertex_output_variables;
     for (int i = 0; i < proto->vertex_shader().attribs_size(); i++) {
       RetrieveShaderAttributeInfo(proto->vertex_shader().attribs(i),
                                   &vertex_attribs);
@@ -339,10 +349,15 @@ void MemoryProgramCache::LoadProgram(const std::string& program) {
       RetrieveShaderVaryingInfo(proto->vertex_shader().varyings(i),
                                 &vertex_varyings);
     }
+    for (int i = 0; i < proto->vertex_shader().output_variables_size(); i++) {
+      RetrieveShaderOutputVariableInfo(
+          proto->vertex_shader().output_variables(i), &vertex_output_variables);
+    }
 
     AttributeMap fragment_attribs;
     UniformMap fragment_uniforms;
     VaryingMap fragment_varyings;
+    OutputVariableList fragment_output_variables;
     for (int i = 0; i < proto->fragment_shader().attribs_size(); i++) {
       RetrieveShaderAttributeInfo(proto->fragment_shader().attribs(i),
                                   &fragment_attribs);
@@ -355,24 +370,24 @@ void MemoryProgramCache::LoadProgram(const std::string& program) {
       RetrieveShaderVaryingInfo(proto->fragment_shader().varyings(i),
                                 &fragment_varyings);
     }
+    for (int i = 0; i < proto->fragment_shader().output_variables_size(); i++) {
+      RetrieveShaderOutputVariableInfo(
+          proto->fragment_shader().output_variables(i),
+          &fragment_output_variables);
+    }
 
     scoped_ptr<char[]> binary(new char[proto->program().length()]);
     memcpy(binary.get(), proto->program().c_str(), proto->program().length());
 
-    store_.Put(proto->sha(),
-               new ProgramCacheValue(proto->program().length(),
-                                     proto->format(),
-                                     binary.release(),
-                                     proto->sha(),
-                                     proto->vertex_shader().sha().c_str(),
-                                     vertex_attribs,
-                                     vertex_uniforms,
-                                     vertex_varyings,
-                                     proto->fragment_shader().sha().c_str(),
-                                     fragment_attribs,
-                                     fragment_uniforms,
-                                     fragment_varyings,
-                                     this));
+    store_.Put(
+        proto->sha(),
+        new ProgramCacheValue(
+            proto->program().length(), proto->format(), binary.release(),
+            proto->sha(), proto->vertex_shader().sha().c_str(), vertex_attribs,
+            vertex_uniforms, vertex_varyings, vertex_output_variables,
+            proto->fragment_shader().sha().c_str(), fragment_attribs,
+            fragment_uniforms, fragment_varyings, fragment_output_variables,
+            this));
 
     UMA_HISTOGRAM_COUNTS("GPU.ProgramCache.MemorySizeAfterKb",
                          curr_size_bytes_ / 1024);
@@ -390,10 +405,12 @@ MemoryProgramCache::ProgramCacheValue::ProgramCacheValue(
     const AttributeMap& attrib_map_0,
     const UniformMap& uniform_map_0,
     const VaryingMap& varying_map_0,
+    const OutputVariableList& output_variable_list_0,
     const char* shader_1_hash,
     const AttributeMap& attrib_map_1,
     const UniformMap& uniform_map_1,
     const VaryingMap& varying_map_1,
+    const OutputVariableList& output_variable_list_1,
     MemoryProgramCache* program_cache)
     : length_(length),
       format_(format),
@@ -403,10 +420,12 @@ MemoryProgramCache::ProgramCacheValue::ProgramCacheValue(
       attrib_map_0_(attrib_map_0),
       uniform_map_0_(uniform_map_0),
       varying_map_0_(varying_map_0),
+      output_variable_list_0_(output_variable_list_0),
       shader_1_hash_(shader_1_hash, kHashLength),
       attrib_map_1_(attrib_map_1),
       uniform_map_1_(uniform_map_1),
       varying_map_1_(varying_map_1),
+      output_variable_list_1_(output_variable_list_1),
       program_cache_(program_cache) {
   program_cache_->curr_size_bytes_ += length_;
   program_cache_->LinkedProgramCacheSuccess(program_hash);

@@ -27,11 +27,17 @@ message ShaderVaryingProto {
   optional bool is_invariant = 3;
 }
 
+message ShaderOutputVariableProto {
+  optional ShaderVariableProto basic = 1;
+  optional int32 location = 2;
+}
+
 message ShaderProto {
   optional bytes sha = 1;
   repeated ShaderAttributeProto attribs = 2;
   repeated ShaderUniformProto uniforms = 3;
   repeated ShaderVaryingProto varyings = 4;
+  repeated ShaderOutputVariableProto output_variables = 5;
 }
 
 message GpuProgramProto {

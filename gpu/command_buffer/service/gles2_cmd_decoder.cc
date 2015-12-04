@@ -294,13 +294,10 @@ static bool CharacterIsValidForGLES(unsigned char c) {
   return false;
 }
 
-static bool StringIsValidForGLES(const char* str) {
-  for (; *str; ++str) {
-    if (!CharacterIsValidForGLES(*str)) {
-      return false;
-    }
-  }
-  return true;
+static bool StringIsValidForGLES(const std::string& str) {
+  return str.length() == 0 ||
+         std::find_if_not(str.begin(), str.end(), CharacterIsValidForGLES) ==
+             str.end();
 }
 
 // This class prevents any GL errors that occur when it is in scope from
@@ -1200,9 +1197,22 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
         client_id, service_id, group_->max_vertex_attribs(), client_visible);
   }
 
-  void DoBindAttribLocation(GLuint client_id, GLuint index, const char* name);
-  void DoBindUniformLocationCHROMIUM(
-      GLuint client_id, GLint location, const char* name);
+  void DoBindAttribLocation(GLuint client_id,
+                            GLuint index,
+                            const std::string& name);
+
+  error::Error DoBindFragDataLocation(GLuint program_id,
+                                      GLuint colorName,
+                                      const std::string& name);
+
+  error::Error DoBindFragDataLocationIndexed(GLuint program_id,
+                                             GLuint colorName,
+                                             GLuint index,
+                                             const std::string& name);
+
+  void DoBindUniformLocationCHROMIUM(GLuint client_id,
+                                     GLint location,
+                                     const std::string& name);
 
   error::Error GetAttribLocationHelper(
       GLuint client_id, uint32 location_shm_id, uint32 location_shm_offset,
@@ -1215,6 +1225,11 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   error::Error GetFragDataLocationHelper(
       GLuint client_id, uint32 location_shm_id, uint32 location_shm_offset,
       const std::string& name_str);
+
+  error::Error GetFragDataIndexHelper(GLuint program_id,
+                                      uint32 index_shm_id,
+                                      uint32 index_shm_offset,
+                                      const std::string& name_str);
 
   // Wrapper for glShaderSource.
   void DoShaderSource(
@@ -1859,7 +1874,8 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
 
   void DoBindFragmentInputLocationCHROMIUM(GLuint program_id,
                                            GLint location,
-                                           const char* name);
+                                           const std::string& name);
+
   // Generate a member function prototype for each command in an automated and
   // typesafe way.
 #define GLES2_CMD_OP(name) \
@@ -3178,6 +3194,7 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
   resources.MaxDrawBuffers = group_->max_draw_buffers();
   resources.MaxExpressionComplexity = 256;
   resources.MaxCallStackDepth = 256;
+  resources.MaxDualSourceDrawBuffers = group_->max_dual_source_draw_buffers();
 
   GLint range[2] = { 0, 0 };
   GLint precision = 0;
@@ -3210,6 +3227,8 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
         features().ext_shader_texture_lod ? 1 : 0;
     resources.NV_draw_buffers =
         features().nv_draw_buffers ? 1 : 0;
+    resources.EXT_blend_func_extended =
+        features().ext_blend_func_extended ? 1 : 0;
   }
 
   ShShaderSpec shader_spec;
@@ -5485,6 +5504,12 @@ bool GLES2DecoderImpl::GetHelper(
         params[0] = group_->bind_generates_resource() ? 1 : 0;
       }
       return true;
+    case GL_MAX_DUAL_SOURCE_DRAW_BUFFERS_EXT:
+      *num_written = 1;
+      if (params) {
+        params[0] = group_->max_dual_source_draw_buffers();
+      }
+      return true;
     default:
       if (pname >= GL_DRAW_BUFFER0_ARB &&
           pname < GL_DRAW_BUFFER0_ARB + group_->max_draw_buffers()) {
@@ -5614,14 +5639,15 @@ void GLES2DecoderImpl::DoGetBufferParameteriv(
       &state_, target, pname, params);
 }
 
-void GLES2DecoderImpl::DoBindAttribLocation(
-    GLuint program_id, GLuint index, const char* name) {
+void GLES2DecoderImpl::DoBindAttribLocation(GLuint program_id,
+                                            GLuint index,
+                                            const std::string& name) {
   if (!StringIsValidForGLES(name)) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_VALUE, "glBindAttribLocation", "Invalid character");
     return;
   }
-  if (ProgramManager::IsInvalidPrefix(name, strlen(name))) {
+  if (ProgramManager::HasBuiltInPrefix(name)) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION, "glBindAttribLocation", "reserved prefix");
     return;
@@ -5643,7 +5669,7 @@ void GLES2DecoderImpl::DoBindAttribLocation(
   // Program::ExecuteBindAttribLocationCalls() right before link.
   program->SetAttribLocationBinding(name, static_cast<GLint>(index));
   // TODO(zmo): Get rid of the following glBindAttribLocation call.
-  glBindAttribLocation(program->service_id(), index, name);
+  glBindAttribLocation(program->service_id(), index, name.c_str());
 }
 
 error::Error GLES2DecoderImpl::HandleBindAttribLocationBucket(
@@ -5661,19 +5687,121 @@ error::Error GLES2DecoderImpl::HandleBindAttribLocationBucket(
   if (!bucket->GetAsString(&name_str)) {
     return error::kInvalidArguments;
   }
-  DoBindAttribLocation(program, index, name_str.c_str());
+  DoBindAttribLocation(program, index, name_str);
   return error::kNoError;
 }
 
-void GLES2DecoderImpl::DoBindUniformLocationCHROMIUM(
-    GLuint program_id, GLint location, const char* name) {
+error::Error GLES2DecoderImpl::DoBindFragDataLocation(GLuint program_id,
+                                                      GLuint colorName,
+                                                      const std::string& name) {
+  const char kFunctionName[] = "glBindFragDataLocationEXT";
+  if (!StringIsValidForGLES(name)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, kFunctionName, "invalid character");
+    return error::kNoError;
+  }
+  if (ProgramManager::HasBuiltInPrefix(name)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, kFunctionName, "reserved prefix");
+    return error::kNoError;
+  }
+  if (colorName >= group_->max_draw_buffers()) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, kFunctionName,
+                       "colorName out of range");
+    return error::kNoError;
+  }
+  Program* program = GetProgramInfoNotShader(program_id, kFunctionName);
+  if (!program) {
+    return error::kNoError;
+  }
+  program->SetProgramOutputLocationBinding(name, colorName);
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleBindFragDataLocationEXTBucket(
+    uint32 immediate_data_size,
+    const void* cmd_data) {
+  if (!features().ext_blend_func_extended) {
+    return error::kUnknownCommand;
+  }
+  const gles2::cmds::BindFragDataLocationEXTBucket& c =
+      *static_cast<const gles2::cmds::BindFragDataLocationEXTBucket*>(cmd_data);
+  GLuint program = static_cast<GLuint>(c.program);
+  GLuint colorNumber = static_cast<GLuint>(c.colorNumber);
+  Bucket* bucket = GetBucket(c.name_bucket_id);
+  if (!bucket || bucket->size() == 0) {
+    return error::kInvalidArguments;
+  }
+  std::string name_str;
+  if (!bucket->GetAsString(&name_str)) {
+    return error::kInvalidArguments;
+  }
+  return DoBindFragDataLocation(program, colorNumber, name_str);
+}
+
+error::Error GLES2DecoderImpl::DoBindFragDataLocationIndexed(
+    GLuint program_id,
+    GLuint colorName,
+    GLuint index,
+    const std::string& name) {
+  const char kFunctionName[] = "glBindFragDataLocationIndexEXT";
+  if (!StringIsValidForGLES(name)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, kFunctionName, "invalid character");
+    return error::kNoError;
+  }
+  if (ProgramManager::HasBuiltInPrefix(name)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, kFunctionName, "reserved prefix");
+    return error::kNoError;
+  }
+  if (index != 0 && index != 1) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, kFunctionName, "index out of range");
+    return error::kNoError;
+  }
+  if ((index == 0 && colorName >= group_->max_draw_buffers()) ||
+      (index == 1 && colorName >= group_->max_dual_source_draw_buffers())) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, kFunctionName,
+                       "colorName out of range for the color index");
+    return error::kNoError;
+  }
+  Program* program = GetProgramInfoNotShader(program_id, kFunctionName);
+  if (!program) {
+    return error::kNoError;
+  }
+  program->SetProgramOutputLocationIndexedBinding(name, colorName, index);
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleBindFragDataLocationIndexedEXTBucket(
+    uint32 immediate_data_size,
+    const void* cmd_data) {
+  if (!features().ext_blend_func_extended) {
+    return error::kUnknownCommand;
+  }
+  const gles2::cmds::BindFragDataLocationIndexedEXTBucket& c =
+      *static_cast<const gles2::cmds::BindFragDataLocationIndexedEXTBucket*>(
+          cmd_data);
+  GLuint program = static_cast<GLuint>(c.program);
+  GLuint colorNumber = static_cast<GLuint>(c.colorNumber);
+  GLuint index = static_cast<GLuint>(c.index);
+  Bucket* bucket = GetBucket(c.name_bucket_id);
+  if (!bucket || bucket->size() == 0) {
+    return error::kInvalidArguments;
+  }
+  std::string name_str;
+  if (!bucket->GetAsString(&name_str)) {
+    return error::kInvalidArguments;
+  }
+  return DoBindFragDataLocationIndexed(program, colorNumber, index, name_str);
+}
+
+void GLES2DecoderImpl::DoBindUniformLocationCHROMIUM(GLuint program_id,
+                                                     GLint location,
+                                                     const std::string& name) {
   if (!StringIsValidForGLES(name)) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_VALUE,
         "glBindUniformLocationCHROMIUM", "Invalid character");
     return;
   }
-  if (ProgramManager::IsInvalidPrefix(name, strlen(name))) {
+  if (ProgramManager::HasBuiltInPrefix(name)) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION,
         "glBindUniformLocationCHROMIUM", "reserved prefix");
@@ -5715,7 +5843,7 @@ error::Error GLES2DecoderImpl::HandleBindUniformLocationCHROMIUMBucket(
   if (!bucket->GetAsString(&name_str)) {
     return error::kInvalidArguments;
   }
-  DoBindUniformLocationCHROMIUM(program, location, name_str.c_str());
+  DoBindUniformLocationCHROMIUM(program, location, name_str);
   return error::kNoError;
 }
 
@@ -9360,7 +9488,7 @@ error::Error GLES2DecoderImpl::HandleScheduleCALayerCHROMIUM(
 error::Error GLES2DecoderImpl::GetAttribLocationHelper(
     GLuint client_id, uint32 location_shm_id, uint32 location_shm_offset,
     const std::string& name_str) {
-  if (!StringIsValidForGLES(name_str.c_str())) {
+  if (!StringIsValidForGLES(name_str)) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_VALUE, "glGetAttribLocation", "Invalid character");
     return error::kNoError;
@@ -9408,7 +9536,7 @@ error::Error GLES2DecoderImpl::HandleGetAttribLocation(
 error::Error GLES2DecoderImpl::GetUniformLocationHelper(
     GLuint client_id, uint32 location_shm_id, uint32 location_shm_offset,
     const std::string& name_str) {
-  if (!StringIsValidForGLES(name_str.c_str())) {
+  if (!StringIsValidForGLES(name_str)) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_VALUE, "glGetUniformLocation", "Invalid character");
     return error::kNoError;
@@ -9508,6 +9636,7 @@ error::Error GLES2DecoderImpl::HandleGetUniformIndices(
 error::Error GLES2DecoderImpl::GetFragDataLocationHelper(
     GLuint client_id, uint32 location_shm_id, uint32 location_shm_offset,
     const std::string& name_str) {
+  const char kFunctionName[] = "glGetFragDataLocation";
   GLint* location = GetSharedMemoryAs<GLint*>(
       location_shm_id, location_shm_offset, sizeof(GLint));
   if (!location) {
@@ -9517,12 +9646,17 @@ error::Error GLES2DecoderImpl::GetFragDataLocationHelper(
   if (*location != -1) {
     return error::kInvalidArguments;
   }
-  Program* program = GetProgramInfoNotShader(
-      client_id, "glGetFragDataLocation");
+  Program* program = GetProgramInfoNotShader(client_id, kFunctionName);
   if (!program) {
     return error::kNoError;
   }
-  *location = glGetFragDataLocation(program->service_id(), name_str.c_str());
+  if (!program->IsValid()) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, kFunctionName,
+                       "program not linked");
+    return error::kNoError;
+  }
+
+  *location = program->GetFragDataLocation(name_str);
   return error::kNoError;
 }
 
@@ -9543,6 +9677,55 @@ error::Error GLES2DecoderImpl::HandleGetFragDataLocation(
   }
   return GetFragDataLocationHelper(
       c.program, c.location_shm_id, c.location_shm_offset, name_str);
+}
+
+error::Error GLES2DecoderImpl::GetFragDataIndexHelper(
+    GLuint program_id,
+    uint32 index_shm_id,
+    uint32 index_shm_offset,
+    const std::string& name_str) {
+  const char kFunctionName[] = "glGetFragDataIndexEXT";
+  GLint* index =
+      GetSharedMemoryAs<GLint*>(index_shm_id, index_shm_offset, sizeof(GLint));
+  if (!index) {
+    return error::kOutOfBounds;
+  }
+  // Check that the client initialized the result.
+  if (*index != -1) {
+    return error::kInvalidArguments;
+  }
+  Program* program = GetProgramInfoNotShader(program_id, kFunctionName);
+  if (!program) {
+    return error::kNoError;
+  }
+  if (!program->IsValid()) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, kFunctionName,
+                       "program not linked");
+    return error::kNoError;
+  }
+
+  *index = program->GetFragDataIndex(name_str);
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleGetFragDataIndexEXT(
+    uint32 immediate_data_size,
+    const void* cmd_data) {
+  if (!features().ext_blend_func_extended) {
+    return error::kUnknownCommand;
+  }
+  const gles2::cmds::GetFragDataIndexEXT& c =
+      *static_cast<const gles2::cmds::GetFragDataIndexEXT*>(cmd_data);
+  Bucket* bucket = GetBucket(c.name_bucket_id);
+  if (!bucket) {
+    return error::kInvalidArguments;
+  }
+  std::string name_str;
+  if (!bucket->GetAsString(&name_str)) {
+    return error::kInvalidArguments;
+  }
+  return GetFragDataIndexHelper(c.program, c.index_shm_id, c.index_shm_offset,
+                                name_str);
 }
 
 error::Error GLES2DecoderImpl::HandleGetUniformBlockIndex(
@@ -15288,21 +15471,22 @@ GLES2DecoderImpl::HandleStencilThenCoverStrokePathInstancedCHROMIUM(
   return error::kNoError;
 }
 
-void GLES2DecoderImpl::DoBindFragmentInputLocationCHROMIUM(GLuint program_id,
-                                                           GLint location,
-                                                           const char* name) {
+void GLES2DecoderImpl::DoBindFragmentInputLocationCHROMIUM(
+    GLuint program_id,
+    GLint location,
+    const std::string& name) {
   static const char kFunctionName[] = "glBindFragmentInputLocationCHROMIUM";
-  Program* program = GetProgram(program_id);
-  if (!program || program->IsDeleted()) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, kFunctionName, "invalid program");
-    return;
-  }
   if (!StringIsValidForGLES(name)) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, kFunctionName, "invalid character");
     return;
   }
-  if (ProgramManager::IsInvalidPrefix(name, strlen(name))) {
+  if (ProgramManager::HasBuiltInPrefix(name)) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, kFunctionName, "reserved prefix");
+    return;
+  }
+  Program* program = GetProgram(program_id);
+  if (!program || program->IsDeleted()) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, kFunctionName, "invalid program");
     return;
   }
   if (location < 0 ||
@@ -15335,7 +15519,7 @@ error::Error GLES2DecoderImpl::HandleBindFragmentInputLocationCHROMIUMBucket(
   if (!bucket->GetAsString(&name_str)) {
     return error::kInvalidArguments;
   }
-  DoBindFragmentInputLocationCHROMIUM(program, location, name_str.c_str());
+  DoBindFragmentInputLocationCHROMIUM(program, location, name_str);
   return error::kNoError;
 }
 

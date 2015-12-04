@@ -100,9 +100,11 @@ class MemoryProgramCacheTest : public GpuServiceTest {
     AttributeMap vertex_attrib_map;
     UniformMap vertex_uniform_map;
     VaryingMap vertex_varying_map;
+    OutputVariableList vertex_output_variable_list;
     AttributeMap fragment_attrib_map;
     UniformMap fragment_uniform_map;
     VaryingMap fragment_varying_map;
+    OutputVariableList fragment_output_variable_list;
 
     vertex_attrib_map["a"] = TestHelper::ConstructAttribute(
         GL_FLOAT_VEC2, 34, GL_LOW_FLOAT, false, "a");
@@ -112,24 +114,28 @@ class MemoryProgramCacheTest : public GpuServiceTest {
         GL_FLOAT_VEC3, 3114, GL_HIGH_FLOAT, true, "b");
     vertex_varying_map["c"] = TestHelper::ConstructVarying(
         GL_FLOAT_VEC4, 2, GL_HIGH_FLOAT, true, "c");
+    vertex_output_variable_list.push_back(TestHelper::ConstructOutputVariable(
+        GL_FLOAT, 0, GL_HIGH_FLOAT, true, "d"));
     fragment_attrib_map["jjjbb"] = TestHelper::ConstructAttribute(
         GL_FLOAT_MAT4, 1114, GL_MEDIUM_FLOAT, false, "jjjbb");
     fragment_uniform_map["k"] = TestHelper::ConstructUniform(
         GL_FLOAT_MAT2, 34413, GL_MEDIUM_FLOAT, true, "k");
     fragment_varying_map["c"] = TestHelper::ConstructVarying(
         GL_FLOAT_VEC4, 2, GL_HIGH_FLOAT, true, "c");
+    fragment_output_variable_list.push_back(TestHelper::ConstructOutputVariable(
+        GL_FLOAT, 0, GL_HIGH_FLOAT, true, "d"));
 
     vertex_shader_->set_source("bbbalsldkdkdkd");
     fragment_shader_->set_source("bbbal   sldkdkdkas 134 ad");
 
+    TestHelper::SetShaderStates(gl_.get(), vertex_shader_, true, nullptr,
+                                nullptr, nullptr, &vertex_attrib_map,
+                                &vertex_uniform_map, &vertex_varying_map,
+                                nullptr, &vertex_output_variable_list, nullptr);
     TestHelper::SetShaderStates(
-        gl_.get(), vertex_shader_, true, NULL, NULL, NULL,
-        &vertex_attrib_map, &vertex_uniform_map, &vertex_varying_map,
-        NULL, NULL);
-    TestHelper::SetShaderStates(
-        gl_.get(), fragment_shader_, true, NULL, NULL, NULL,
+        gl_.get(), fragment_shader_, true, nullptr, nullptr, nullptr,
         &fragment_attrib_map, &fragment_uniform_map, &fragment_varying_map,
-        NULL, NULL);
+        nullptr, &fragment_output_variable_list, nullptr);
   }
 
   void SetExpectationsForSaveLinkedProgram(
@@ -254,17 +260,22 @@ TEST_F(MemoryProgramCacheTest, CacheLoadMatchesSave) {
   AttributeMap vertex_attrib_map = vertex_shader_->attrib_map();
   UniformMap vertex_uniform_map = vertex_shader_->uniform_map();
   VaryingMap vertex_varying_map = vertex_shader_->varying_map();
+  OutputVariableList vertex_output_variable_list =
+      vertex_shader_->output_variable_list();
   AttributeMap fragment_attrib_map = fragment_shader_->attrib_map();
   UniformMap fragment_uniform_map = fragment_shader_->uniform_map();
   VaryingMap fragment_varying_map = fragment_shader_->varying_map();
+  OutputVariableList fragment_output_variable_list =
+      fragment_shader_->output_variable_list();
 
   vertex_shader_->set_attrib_map(AttributeMap());
   vertex_shader_->set_uniform_map(UniformMap());
   vertex_shader_->set_varying_map(VaryingMap());
+  vertex_shader_->set_output_variable_list(OutputVariableList());
   fragment_shader_->set_attrib_map(AttributeMap());
   fragment_shader_->set_uniform_map(UniformMap());
   fragment_shader_->set_varying_map(VaryingMap());
-
+  fragment_shader_->set_output_variable_list(OutputVariableList());
   SetExpectationsForLoadLinkedProgram(kProgramId, &emulator);
 
   EXPECT_EQ(ProgramCache::PROGRAM_LOAD_SUCCESS, cache_->LoadLinkedProgram(
@@ -283,9 +294,13 @@ TEST_F(MemoryProgramCacheTest, CacheLoadMatchesSave) {
   EXPECT_EQ(vertex_attrib_map, vertex_shader_->attrib_map());
   EXPECT_EQ(vertex_uniform_map, vertex_shader_->uniform_map());
   EXPECT_EQ(vertex_varying_map, vertex_shader_->varying_map());
+  EXPECT_EQ(vertex_output_variable_list,
+            vertex_shader_->output_variable_list());
   EXPECT_EQ(fragment_attrib_map, fragment_shader_->attrib_map());
   EXPECT_EQ(fragment_uniform_map, fragment_shader_->uniform_map());
   EXPECT_EQ(fragment_varying_map, fragment_shader_->varying_map());
+  EXPECT_EQ(fragment_output_variable_list,
+            fragment_shader_->output_variable_list());
 #endif
 }
 
@@ -309,16 +324,22 @@ TEST_F(MemoryProgramCacheTest, LoadProgramMatchesSave) {
   AttributeMap vertex_attrib_map = vertex_shader_->attrib_map();
   UniformMap vertex_uniform_map = vertex_shader_->uniform_map();
   VaryingMap vertex_varying_map = vertex_shader_->varying_map();
+  OutputVariableList vertex_output_variable_list =
+      vertex_shader_->output_variable_list();
   AttributeMap fragment_attrib_map = fragment_shader_->attrib_map();
   UniformMap fragment_uniform_map = fragment_shader_->uniform_map();
   VaryingMap fragment_varying_map = fragment_shader_->varying_map();
+  OutputVariableList fragment_output_variable_list =
+      fragment_shader_->output_variable_list();
 
   vertex_shader_->set_attrib_map(AttributeMap());
   vertex_shader_->set_uniform_map(UniformMap());
   vertex_shader_->set_varying_map(VaryingMap());
+  vertex_shader_->set_output_variable_list(OutputVariableList());
   fragment_shader_->set_attrib_map(AttributeMap());
   fragment_shader_->set_uniform_map(UniformMap());
   fragment_shader_->set_varying_map(VaryingMap());
+  fragment_shader_->set_output_variable_list(OutputVariableList());
 
   SetExpectationsForLoadLinkedProgram(kProgramId, &emulator);
 
@@ -341,9 +362,13 @@ TEST_F(MemoryProgramCacheTest, LoadProgramMatchesSave) {
   EXPECT_EQ(vertex_attrib_map, vertex_shader_->attrib_map());
   EXPECT_EQ(vertex_uniform_map, vertex_shader_->uniform_map());
   EXPECT_EQ(vertex_varying_map, vertex_shader_->varying_map());
+  EXPECT_EQ(vertex_output_variable_list,
+            vertex_shader_->output_variable_list());
   EXPECT_EQ(fragment_attrib_map, fragment_shader_->attrib_map());
   EXPECT_EQ(fragment_uniform_map, fragment_shader_->uniform_map());
   EXPECT_EQ(fragment_varying_map, fragment_shader_->varying_map());
+  EXPECT_EQ(fragment_output_variable_list,
+            fragment_shader_->output_variable_list());
 #endif
 }
 

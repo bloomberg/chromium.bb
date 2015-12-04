@@ -123,6 +123,10 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
     return max_draw_buffers_;
   }
 
+  uint32 max_dual_source_draw_buffers() const {
+    return max_dual_source_draw_buffers_;
+  }
+
   FeatureInfo* feature_info() {
     return feature_info_.get();
   }
@@ -271,6 +275,7 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
   uint32 max_vertex_uniform_vectors_;
   uint32 max_color_attachments_;
   uint32 max_draw_buffers_;
+  uint32 max_dual_source_draw_buffers_;
 
   ProgramCache* program_cache_;
 

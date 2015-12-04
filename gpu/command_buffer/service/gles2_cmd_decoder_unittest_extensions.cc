@@ -520,6 +520,26 @@ INSTANTIATE_TEST_CASE_P(Service,
                         GLES2DecoderTestWithEXTMultisampleCompatibility,
                         ::testing::Bool());
 
+class GLES2DecoderTestWithBlendFuncExtended : public GLES2DecoderTest {
+ public:
+  GLES2DecoderTestWithBlendFuncExtended() {}
+  void SetUp() override {
+    InitState init;
+    init.gl_version = "opengl es 3.0";
+    init.has_alpha = true;
+    init.has_depth = true;
+    init.request_alpha = true;
+    init.request_depth = true;
+    init.bind_generates_resource = true;
+    init.extensions = "GL_EXT_blend_func_extended";
+    InitDecoder(init);
+  }
+};
+INSTANTIATE_TEST_CASE_P(Service,
+                        GLES2DecoderTestWithBlendFuncExtended,
+                        ::testing::Bool());
+
+
 TEST_P(GLES2DecoderTestWithCHROMIUMPathRendering, GenDeletePaths) {
   static GLuint kFirstClientID = client_path_id_ + 88;
   static GLsizei kPathCount = 58;

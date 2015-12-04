@@ -2475,4 +2475,27 @@ void GLES2TraceImplementation::ApplyScreenSpaceAntialiasingCHROMIUM() {
   gl_->ApplyScreenSpaceAntialiasingCHROMIUM();
 }
 
+void GLES2TraceImplementation::BindFragDataLocationIndexedEXT(
+    GLuint program,
+    GLuint colorNumber,
+    GLuint index,
+    const char* name) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
+                                "GLES2Trace::BindFragDataLocationIndexedEXT");
+  gl_->BindFragDataLocationIndexedEXT(program, colorNumber, index, name);
+}
+
+void GLES2TraceImplementation::BindFragDataLocationEXT(GLuint program,
+                                                       GLuint colorNumber,
+                                                       const char* name) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::BindFragDataLocationEXT");
+  gl_->BindFragDataLocationEXT(program, colorNumber, name);
+}
+
+GLint GLES2TraceImplementation::GetFragDataIndexEXT(GLuint program,
+                                                    const char* name) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::GetFragDataIndexEXT");
+  return gl_->GetFragDataIndexEXT(program, name);
+}
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_TRACE_IMPLEMENTATION_IMPL_AUTOGEN_H_

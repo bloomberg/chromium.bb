@@ -69,15 +69,10 @@ void Shader::DoCompile() {
   const char* source_for_driver = last_compiled_source_.c_str();
   ShaderTranslatorInterface* translator = translator_.get();
   if (translator) {
-    bool success = translator->Translate(last_compiled_source_,
-                                         &log_info_,
-                                         &translated_source_,
-                                         &shader_version_,
-                                         &attrib_map_,
-                                         &uniform_map_,
-                                         &varying_map_,
-                                         &interface_block_map_,
-                                         &name_map_);
+    bool success = translator->Translate(
+        last_compiled_source_, &log_info_, &translated_source_,
+        &shader_version_, &attrib_map_, &uniform_map_, &varying_map_,
+        &interface_block_map_, &output_variable_list_, &name_map_);
     if (!success) {
       return;
     }
@@ -215,6 +210,15 @@ const std::string* Shader::GetInterfaceBlockMappedName(
   return NULL;
 }
 
+const std::string* Shader::GetOutputVariableMappedName(
+    const std::string& original_name) const {
+  for (const auto& value : output_variable_list_) {
+    if (value.name == original_name)
+      return &value.mappedName;
+  }
+  return nullptr;
+}
+
 const std::string* Shader::GetOriginalNameFromHashedName(
     const std::string& hashed_name) const {
   NameMap::const_iterator it = name_map_.find(hashed_name);
@@ -247,6 +251,18 @@ const sh::InterfaceBlock* Shader::GetInterfaceBlockInfo(
   InterfaceBlockMap::const_iterator it =
       interface_block_map_.find(GetTopVariableName(name));
   return it != interface_block_map_.end() ? &it->second : NULL;
+}
+
+const sh::OutputVariable* Shader::GetOutputVariableInfo(
+    const std::string& name) const {
+  std::string mapped_name = GetTopVariableName(name);
+  // Number of output variables is expected to be so low that
+  // a linear search of a list should be faster than using a map.
+  for (const auto& value : output_variable_list_) {
+    if (value.mappedName == mapped_name)
+      return &value;
+  }
+  return nullptr;
 }
 
 ShaderManager::ShaderManager() {}

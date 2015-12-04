@@ -67,6 +67,7 @@ ContextGroup::ContextGroup(
       max_vertex_uniform_vectors_(0u),
       max_color_attachments_(1u),
       max_draw_buffers_(1u),
+      max_dual_source_draw_buffers_(0u),
       program_cache_(NULL),
       feature_info_(feature_info) {
   {
@@ -138,6 +139,11 @@ bool ContextGroup::Initialize(GLES2Decoder* decoder,
     GetIntegerv(GL_MAX_DRAW_BUFFERS_ARB, &max_draw_buffers_);
     if (max_draw_buffers_ < 1)
       max_draw_buffers_ = 1;
+  }
+  if (feature_info_->feature_flags().ext_blend_func_extended) {
+    GetIntegerv(GL_MAX_DUAL_SOURCE_DRAW_BUFFERS_EXT,
+                &max_dual_source_draw_buffers_);
+    DCHECK(max_dual_source_draw_buffers_ >= 1);
   }
 
   buffer_manager_.reset(
@@ -285,8 +291,9 @@ bool ContextGroup::Initialize(GLES2Decoder* decoder,
 
   path_manager_.reset(new PathManager());
 
-  program_manager_.reset(new ProgramManager(
-      program_cache_, max_varying_vectors_, feature_info_.get()));
+  program_manager_.reset(
+      new ProgramManager(program_cache_, max_varying_vectors_,
+                         max_dual_source_draw_buffers_, feature_info_.get()));
 
   if (!texture_manager_->Initialize()) {
     LOG(ERROR) << "Context::Group::Initialize failed because texture manager "

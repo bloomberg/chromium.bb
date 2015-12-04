@@ -82,6 +82,12 @@ class GLES3DecoderTest : public GLES2DecoderTest {
   void SetUp() override;
 };
 
+class GLES3DecoderWithESSL3ShaderTest : public GLES2DecoderWithShaderTestBase {
+ public:
+  GLES3DecoderWithESSL3ShaderTest() { shader_language_version_ = 300; }
+  void SetUp() override;
+};
+
 }  // namespace gles2
 }  // namespace gpu
 

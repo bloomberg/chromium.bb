@@ -38,6 +38,10 @@ class GLES2_IMPL_EXPORT ProgramInfoManager {
   GLint GetUniformLocation(
       GLES2Implementation* gl, GLuint program, const char* name);
 
+  GLint GetFragDataIndex(GLES2Implementation* gl,
+                         GLuint program,
+                         const char* name);
+
   GLint GetFragDataLocation(
       GLES2Implementation* gl, GLuint program, const char* name);
 
@@ -166,6 +170,9 @@ class GLES2_IMPL_EXPORT ProgramInfoManager {
     bool GetUniformsiv(
         GLsizei count, const GLuint* indices, GLenum pname, GLint* params);
 
+    GLint GetFragDataIndex(const std::string& name) const;
+    void CacheFragDataIndex(const std::string& name, GLint index);
+
     GLint GetFragDataLocation(const std::string& name) const;
     void CacheFragDataLocation(const std::string& name, GLint loc);
 
@@ -232,6 +239,7 @@ class GLES2_IMPL_EXPORT ProgramInfoManager {
     std::vector<UniformES3> uniforms_es3_;
 
     base::hash_map<std::string, GLint> frag_data_locations_;
+    base::hash_map<std::string, GLint> frag_data_indices_;
   };
 
   Program* GetProgramInfo(

@@ -888,6 +888,14 @@ class MojoGLES2Impl : public gpu::gles2::GLES2Interface {
   GLenum GetGraphicsResetStatusKHR() override;
   void BlendBarrierKHR() override;
   void ApplyScreenSpaceAntialiasingCHROMIUM() override;
+  void BindFragDataLocationIndexedEXT(GLuint program,
+                                      GLuint colorNumber,
+                                      GLuint index,
+                                      const char* name) override;
+  void BindFragDataLocationEXT(GLuint program,
+                               GLuint colorNumber,
+                               const char* name) override;
+  GLint GetFragDataIndexEXT(GLuint program, const char* name) override;
 
  private:
   MojoGLES2Context context_;

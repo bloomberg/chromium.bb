@@ -352,3 +352,9 @@ GL_APICALL void GL_APIENTRY glBlendBarrierKHR (void);
 
 // Extension GL_CHROMIUM_screen_space_antialiasing
 GL_APICALL void GL_APIENTRY glApplyScreenSpaceAntialiasingCHROMIUM (void);
+
+// Extension EXT_blend_func_extended
+GL_APICALL void         GL_APIENTRY glBindFragDataLocationIndexedEXT (GLidProgram program, GLuint colorNumber, GLuint index, const char* name);
+GL_APICALL void         GL_APIENTRY glBindFragDataLocationEXT (GLidProgram program, GLuint colorNumber, const char* name);
+GL_APICALL GLint        GL_APIENTRY glGetFragDataIndexEXT (GLidProgram program, const char* name);
+

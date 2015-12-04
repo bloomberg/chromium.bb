@@ -15434,4 +15434,164 @@ static_assert(
     offsetof(ApplyScreenSpaceAntialiasingCHROMIUM, header) == 0,
     "offset of ApplyScreenSpaceAntialiasingCHROMIUM header should be 0");
 
+struct BindFragDataLocationIndexedEXTBucket {
+  typedef BindFragDataLocationIndexedEXTBucket ValueType;
+  static const CommandId kCmdId = kBindFragDataLocationIndexedEXTBucket;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLuint _program,
+            GLuint _colorNumber,
+            GLuint _index,
+            uint32_t _name_bucket_id) {
+    SetHeader();
+    program = _program;
+    colorNumber = _colorNumber;
+    index = _index;
+    name_bucket_id = _name_bucket_id;
+  }
+
+  void* Set(void* cmd,
+            GLuint _program,
+            GLuint _colorNumber,
+            GLuint _index,
+            uint32_t _name_bucket_id) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_program, _colorNumber, _index, _name_bucket_id);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t program;
+  uint32_t colorNumber;
+  uint32_t index;
+  uint32_t name_bucket_id;
+};
+
+static_assert(sizeof(BindFragDataLocationIndexedEXTBucket) == 20,
+              "size of BindFragDataLocationIndexedEXTBucket should be 20");
+static_assert(
+    offsetof(BindFragDataLocationIndexedEXTBucket, header) == 0,
+    "offset of BindFragDataLocationIndexedEXTBucket header should be 0");
+static_assert(
+    offsetof(BindFragDataLocationIndexedEXTBucket, program) == 4,
+    "offset of BindFragDataLocationIndexedEXTBucket program should be 4");
+static_assert(
+    offsetof(BindFragDataLocationIndexedEXTBucket, colorNumber) == 8,
+    "offset of BindFragDataLocationIndexedEXTBucket colorNumber should be 8");
+static_assert(
+    offsetof(BindFragDataLocationIndexedEXTBucket, index) == 12,
+    "offset of BindFragDataLocationIndexedEXTBucket index should be 12");
+static_assert(offsetof(BindFragDataLocationIndexedEXTBucket, name_bucket_id) ==
+                  16,
+              "offset of BindFragDataLocationIndexedEXTBucket name_bucket_id "
+              "should be 16");
+
+struct BindFragDataLocationEXTBucket {
+  typedef BindFragDataLocationEXTBucket ValueType;
+  static const CommandId kCmdId = kBindFragDataLocationEXTBucket;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLuint _program, GLuint _colorNumber, uint32_t _name_bucket_id) {
+    SetHeader();
+    program = _program;
+    colorNumber = _colorNumber;
+    name_bucket_id = _name_bucket_id;
+  }
+
+  void* Set(void* cmd,
+            GLuint _program,
+            GLuint _colorNumber,
+            uint32_t _name_bucket_id) {
+    static_cast<ValueType*>(cmd)->Init(_program, _colorNumber, _name_bucket_id);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t program;
+  uint32_t colorNumber;
+  uint32_t name_bucket_id;
+};
+
+static_assert(sizeof(BindFragDataLocationEXTBucket) == 16,
+              "size of BindFragDataLocationEXTBucket should be 16");
+static_assert(offsetof(BindFragDataLocationEXTBucket, header) == 0,
+              "offset of BindFragDataLocationEXTBucket header should be 0");
+static_assert(offsetof(BindFragDataLocationEXTBucket, program) == 4,
+              "offset of BindFragDataLocationEXTBucket program should be 4");
+static_assert(
+    offsetof(BindFragDataLocationEXTBucket, colorNumber) == 8,
+    "offset of BindFragDataLocationEXTBucket colorNumber should be 8");
+static_assert(
+    offsetof(BindFragDataLocationEXTBucket, name_bucket_id) == 12,
+    "offset of BindFragDataLocationEXTBucket name_bucket_id should be 12");
+
+struct GetFragDataIndexEXT {
+  typedef GetFragDataIndexEXT ValueType;
+  static const CommandId kCmdId = kGetFragDataIndexEXT;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  typedef GLint Result;
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLuint _program,
+            uint32_t _name_bucket_id,
+            uint32_t _index_shm_id,
+            uint32_t _index_shm_offset) {
+    SetHeader();
+    program = _program;
+    name_bucket_id = _name_bucket_id;
+    index_shm_id = _index_shm_id;
+    index_shm_offset = _index_shm_offset;
+  }
+
+  void* Set(void* cmd,
+            GLuint _program,
+            uint32_t _name_bucket_id,
+            uint32_t _index_shm_id,
+            uint32_t _index_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_program, _name_bucket_id, _index_shm_id, _index_shm_offset);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t program;
+  uint32_t name_bucket_id;
+  uint32_t index_shm_id;
+  uint32_t index_shm_offset;
+};
+
+static_assert(sizeof(GetFragDataIndexEXT) == 20,
+              "size of GetFragDataIndexEXT should be 20");
+static_assert(offsetof(GetFragDataIndexEXT, header) == 0,
+              "offset of GetFragDataIndexEXT header should be 0");
+static_assert(offsetof(GetFragDataIndexEXT, program) == 4,
+              "offset of GetFragDataIndexEXT program should be 4");
+static_assert(offsetof(GetFragDataIndexEXT, name_bucket_id) == 8,
+              "offset of GetFragDataIndexEXT name_bucket_id should be 8");
+static_assert(offsetof(GetFragDataIndexEXT, index_shm_id) == 12,
+              "offset of GetFragDataIndexEXT index_shm_id should be 12");
+static_assert(offsetof(GetFragDataIndexEXT, index_shm_offset) == 16,
+              "offset of GetFragDataIndexEXT index_shm_offset should be 16");
+
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_AUTOGEN_H_

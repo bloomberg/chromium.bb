@@ -21,6 +21,7 @@
 #include "gpu/command_buffer/service/test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_mock.h"
+#include "ui/gl/gl_version_info.h"
 
 using ::testing::_;
 using ::testing::DoAll;
@@ -38,6 +39,8 @@ namespace gles2 {
 
 namespace {
 const uint32 kMaxVaryingVectors = 8;
+const uint32 kMaxDrawBuffers = 8;
+const uint32 kMaxDualSourceDrawBuffers = 8;
 
 void ShaderCacheCb(const std::string& key, const std::string& shader) {}
 
@@ -51,8 +54,9 @@ uint32 ComputeOffset(const void* start, const void* position) {
 class ProgramManagerTestBase : public GpuServiceTest {
  protected:
   virtual void SetupProgramManager() {
-    manager_.reset(
-        new ProgramManager(NULL, kMaxVaryingVectors, feature_info_.get()));
+    manager_.reset(new ProgramManager(nullptr, kMaxVaryingVectors,
+                                      kMaxDualSourceDrawBuffers,
+                                      feature_info_.get()));
   }
   void SetUpBase(const char* gl_version,
                  const char* gl_extensions,
@@ -215,6 +219,13 @@ class ProgramManagerWithShaderTest : public ProgramManagerTestBase {
   static const GLint kInvalidUniformLocation = 30;
   static const GLint kBadUniformIndex = 1000;
 
+  static const char* kOutputVariable1Name;
+  static const GLint kOutputVariable1Size = 1;
+  static const GLenum kOutputVariable1Precision = GL_MEDIUM_FLOAT;
+  static const bool kOutputVariable1StaticUse = true;
+  static const GLint kOutputVariable1Location = -1;
+  static const GLenum kOutputVariable1Type = GL_FLOAT_VEC4;
+
   static const size_t kNumAttribs;
   static const size_t kNumUniforms;
 
@@ -225,7 +236,8 @@ class ProgramManagerWithShaderTest : public ProgramManagerTestBase {
   typedef enum {
     kVarUniform,
     kVarVarying,
-    kVarAttribute
+    kVarAttribute,
+    kVarOutput,
   } VarCategory;
 
   typedef struct {
@@ -299,14 +311,16 @@ class ProgramManagerWithShaderTest : public ProgramManagerTestBase {
     return (static_cast<bool>(link_status) == expected_link_status);
   }
 
-  Program* SetupShaderVariableTest(const VarInfo* vertex_variables,
-                                   size_t vertex_variable_size,
-                                   const VarInfo* fragment_variables,
-                                   size_t fragment_variable_size) {
+  Program* SetupProgramForVariables(const VarInfo* vertex_variables,
+                                    size_t vertex_variable_size,
+                                    const VarInfo* fragment_variables,
+                                    size_t fragment_variable_size,
+                                    const int* const shader_version = nullptr) {
     // Set up shader
     AttributeMap vertex_attrib_map;
     UniformMap vertex_uniform_map;
     VaryingMap vertex_varying_map;
+    OutputVariableList vertex_output_variable_list;
     for (size_t ii = 0; ii < vertex_variable_size; ++ii) {
       switch (vertex_variables[ii].category) {
         case kVarAttribute:
@@ -336,6 +350,13 @@ class ProgramManagerWithShaderTest : public ProgramManagerTestBase {
                   vertex_variables[ii].static_use,
                   vertex_variables[ii].name);
           break;
+        case kVarOutput:
+          vertex_output_variable_list.push_back(
+              TestHelper::ConstructOutputVariable(
+                  vertex_variables[ii].type, vertex_variables[ii].size,
+                  vertex_variables[ii].precision,
+                  vertex_variables[ii].static_use, vertex_variables[ii].name));
+          break;
         default:
           NOTREACHED();
       }
@@ -344,6 +365,7 @@ class ProgramManagerWithShaderTest : public ProgramManagerTestBase {
     AttributeMap frag_attrib_map;
     UniformMap frag_uniform_map;
     VaryingMap frag_varying_map;
+    OutputVariableList frag_output_variable_list;
     for (size_t ii = 0; ii < fragment_variable_size; ++ii) {
       switch (fragment_variables[ii].category) {
         case kVarAttribute:
@@ -373,6 +395,14 @@ class ProgramManagerWithShaderTest : public ProgramManagerTestBase {
                   fragment_variables[ii].static_use,
                   fragment_variables[ii].name);
           break;
+        case kVarOutput:
+          frag_output_variable_list.push_back(
+              TestHelper::ConstructOutputVariable(
+                  fragment_variables[ii].type, fragment_variables[ii].size,
+                  fragment_variables[ii].precision,
+                  fragment_variables[ii].static_use,
+                  fragment_variables[ii].name));
+          break;
         default:
           NOTREACHED();
       }
@@ -386,12 +416,14 @@ class ProgramManagerWithShaderTest : public ProgramManagerTestBase {
     // Check shader got created.
     EXPECT_TRUE(vshader != NULL && fshader != NULL);
     // Set Status
-    TestHelper::SetShaderStates(
-        gl_.get(), vshader, true, NULL, NULL, NULL, &vertex_attrib_map,
-        &vertex_uniform_map, &vertex_varying_map, NULL, NULL);
-    TestHelper::SetShaderStates(
-        gl_.get(), fshader, true, NULL, NULL, NULL,
-        &frag_attrib_map, &frag_uniform_map, &frag_varying_map, NULL, NULL);
+    TestHelper::SetShaderStates(gl_.get(), vshader, true, nullptr, nullptr,
+                                shader_version, &vertex_attrib_map,
+                                &vertex_uniform_map, &vertex_varying_map,
+                                nullptr, &vertex_output_variable_list, nullptr);
+    TestHelper::SetShaderStates(gl_.get(), fshader, true, nullptr, nullptr,
+                                shader_version, &frag_attrib_map,
+                                &frag_uniform_map, &frag_varying_map, nullptr,
+                                &frag_output_variable_list, nullptr);
 
     // Set up program
     Program* program =
@@ -502,6 +534,7 @@ const char* ProgramManagerWithShaderTest::kUniform2NameWithArrayIndex =
 const char* ProgramManagerWithShaderTest::kUniform3Name = "uniform3";
 const char* ProgramManagerWithShaderTest::kUniform3NameWithArrayIndex =
     "uniform3[0]";
+const char* ProgramManagerWithShaderTest::kOutputVariable1Name = "outputVar1";
 
 TEST_F(ProgramManagerWithShaderTest, GetAttribInfos) {
   const Program* program = SetupDefaultProgram();
@@ -805,6 +838,7 @@ TEST_F(ProgramManagerWithShaderTest, GLDriverReturnsWrongTypeInfo) {
   AttributeMap attrib_map;
   UniformMap uniform_map;
   VaryingMap varying_map;
+  OutputVariableList output_variable_list;
   attrib_map[kAttrib1Name] = TestHelper::ConstructAttribute(
       kAttrib1Type, kAttrib1Size, kAttrib1Precision,
       kAttribStaticUse, kAttrib1Name);
@@ -823,18 +857,22 @@ TEST_F(ProgramManagerWithShaderTest, GLDriverReturnsWrongTypeInfo) {
   uniform_map[kUniform3Name] = TestHelper::ConstructUniform(
       kUniform3Type, kUniform3Size, kUniform3Precision,
       kUniform3StaticUse, kUniform3Name);
+  output_variable_list.push_back(TestHelper::ConstructOutputVariable(
+      kOutputVariable1Type, kOutputVariable1Size, kOutputVariable1Precision,
+      kOutputVariable1StaticUse, kOutputVariable1Name));
+
   Shader* vshader = shader_manager_.CreateShader(
       kVertexShaderClientId, kVertexShaderServiceId, GL_VERTEX_SHADER);
   ASSERT_TRUE(vshader != NULL);
-  TestHelper::SetShaderStates(
-      gl_.get(), vshader, true, NULL, NULL, NULL,
-      &attrib_map, &uniform_map, &varying_map, NULL, NULL);
+  TestHelper::SetShaderStates(gl_.get(), vshader, true, nullptr, nullptr,
+                              nullptr, &attrib_map, &uniform_map, &varying_map,
+                              nullptr, &output_variable_list, nullptr);
   Shader* fshader = shader_manager_.CreateShader(
       kFragmentShaderClientId, kFragmentShaderServiceId, GL_FRAGMENT_SHADER);
   ASSERT_TRUE(fshader != NULL);
-  TestHelper::SetShaderStates(
-      gl_.get(), fshader, true, NULL, NULL, NULL,
-      &attrib_map, &uniform_map, &varying_map, NULL, NULL);
+  TestHelper::SetShaderStates(gl_.get(), fshader, true, nullptr, nullptr,
+                              nullptr, &attrib_map, &uniform_map, &varying_map,
+                              nullptr, &output_variable_list, nullptr);
   static ProgramManagerWithShaderTest::AttribInfo kAttribs[] = {
     { kAttrib1Name, kAttrib1Size, kAttrib1Type, kAttrib1Location, },
     { kAttrib2Name, kAttrib2Size, kAttrib2BadType, kAttrib2Location, },
@@ -1497,9 +1535,9 @@ TEST_F(ProgramManagerWithShaderTest, BindAttribLocationConflicts) {
   // Check shader got created.
   ASSERT_TRUE(vshader != NULL && fshader != NULL);
   // Set Status
-  TestHelper::SetShaderStates(
-      gl_.get(), vshader, true, NULL, NULL, NULL, &attrib_map, NULL, NULL,
-      NULL, NULL);
+  TestHelper::SetShaderStates(gl_.get(), vshader, true, nullptr, nullptr,
+                              nullptr, &attrib_map, nullptr, nullptr, nullptr,
+                              nullptr, nullptr);
   // Check attrib infos got copied.
   for (AttributeMap::const_iterator it = attrib_map.begin();
        it != attrib_map.end(); ++it) {
@@ -1512,10 +1550,9 @@ TEST_F(ProgramManagerWithShaderTest, BindAttribLocationConflicts) {
     EXPECT_EQ(it->second.staticUse, variable_info->staticUse);
     EXPECT_EQ(it->second.name, variable_info->name);
   }
-  TestHelper::SetShaderStates(
-      gl_.get(), fshader, true, NULL, NULL, NULL, &attrib_map, NULL, NULL,
-      NULL, NULL);
-
+  TestHelper::SetShaderStates(gl_.get(), fshader, true, nullptr, nullptr,
+                              nullptr, &attrib_map, nullptr, nullptr, nullptr,
+                              nullptr, nullptr);
   // Set up program
   Program* program =
       manager_->CreateProgram(kClientProgramId, kServiceProgramId);
@@ -1581,13 +1618,12 @@ TEST_F(ProgramManagerWithShaderTest, UniformsPrecisionMismatch) {
   // Check shader got created.
   ASSERT_TRUE(vshader != NULL && fshader != NULL);
   // Set Status
-  TestHelper::SetShaderStates(
-      gl_.get(), vshader, true, NULL, NULL, NULL, NULL,
-      &vertex_uniform_map, NULL, NULL, NULL);
-  TestHelper::SetShaderStates(
-      gl_.get(), fshader, true, NULL, NULL, NULL, NULL,
-      &frag_uniform_map, NULL, NULL, NULL);
-
+  TestHelper::SetShaderStates(gl_.get(), vshader, true, nullptr, nullptr,
+                              nullptr, nullptr, &vertex_uniform_map, nullptr,
+                              nullptr, nullptr, nullptr);
+  TestHelper::SetShaderStates(gl_.get(), fshader, true, nullptr, nullptr,
+                              nullptr, nullptr, &frag_uniform_map, nullptr,
+                              nullptr, nullptr, nullptr);
   // Set up program
   Program* program =
       manager_->CreateProgram(kClientProgramId, kServiceProgramId);
@@ -1609,8 +1645,8 @@ TEST_F(ProgramManagerWithShaderTest, VaryingTypeMismatch) {
       { GL_FLOAT_VEC3, 1, GL_MEDIUM_FLOAT, true, "a", kVarVarying };
   const VarInfo kFragmentVarying =
       { GL_FLOAT_VEC4, 1, GL_MEDIUM_FLOAT, true, "a", kVarVarying };
-  Program* program = SetupShaderVariableTest(
-      &kVertexVarying, 1, &kFragmentVarying, 1);
+  Program* program =
+      SetupProgramForVariables(&kVertexVarying, 1, &kFragmentVarying, 1);
 
   std::string conflicting_name;
 
@@ -1626,8 +1662,8 @@ TEST_F(ProgramManagerWithShaderTest, VaryingArraySizeMismatch) {
       { GL_FLOAT, 2, GL_MEDIUM_FLOAT, true, "a", kVarVarying };
   const VarInfo kFragmentVarying =
       { GL_FLOAT, 3, GL_MEDIUM_FLOAT, true, "a", kVarVarying };
-  Program* program = SetupShaderVariableTest(
-      &kVertexVarying, 1, &kFragmentVarying, 1);
+  Program* program =
+      SetupProgramForVariables(&kVertexVarying, 1, &kFragmentVarying, 1);
 
   std::string conflicting_name;
 
@@ -1643,8 +1679,8 @@ TEST_F(ProgramManagerWithShaderTest, VaryingPrecisionMismatch) {
       { GL_FLOAT, 2, GL_HIGH_FLOAT, true, "a", kVarVarying };
   const VarInfo kFragmentVarying =
       { GL_FLOAT, 2, GL_MEDIUM_FLOAT, true, "a", kVarVarying };
-  Program* program = SetupShaderVariableTest(
-      &kVertexVarying, 1, &kFragmentVarying, 1);
+  Program* program =
+      SetupProgramForVariables(&kVertexVarying, 1, &kFragmentVarying, 1);
 
   std::string conflicting_name;
 
@@ -1658,8 +1694,7 @@ TEST_F(ProgramManagerWithShaderTest, VaryingPrecisionMismatch) {
 TEST_F(ProgramManagerWithShaderTest, VaryingMissing) {
   const VarInfo kFragmentVarying =
       { GL_FLOAT, 3, GL_MEDIUM_FLOAT, true, "a", kVarVarying };
-  Program* program = SetupShaderVariableTest(
-      NULL, 0, &kFragmentVarying, 1);
+  Program* program = SetupProgramForVariables(nullptr, 0, &kFragmentVarying, 1);
 
   std::string conflicting_name;
 
@@ -1674,8 +1709,7 @@ TEST_F(ProgramManagerWithShaderTest, VaryingMissing) {
 TEST_F(ProgramManagerWithShaderTest, InactiveVarying) {
   const VarInfo kFragmentVarying =
       { GL_FLOAT, 3, GL_MEDIUM_FLOAT, false, "a", kVarVarying };
-  Program* program = SetupShaderVariableTest(
-      NULL, 0, &kFragmentVarying, 1);
+  Program* program = SetupProgramForVariables(nullptr, 0, &kFragmentVarying, 1);
 
   std::string conflicting_name;
 
@@ -1692,8 +1726,8 @@ TEST_F(ProgramManagerWithShaderTest, AttribUniformNameConflict) {
       { GL_FLOAT_VEC4, 1, GL_MEDIUM_FLOAT, true, "a", kVarAttribute };
   const VarInfo kFragmentUniform =
       { GL_FLOAT_VEC4, 1, GL_MEDIUM_FLOAT, true, "a", kVarUniform };
-  Program* program = SetupShaderVariableTest(
-      &kVertexAttribute, 1, &kFragmentUniform, 1);
+  Program* program =
+      SetupProgramForVariables(&kVertexAttribute, 1, &kFragmentUniform, 1);
 
   std::string conflicting_name;
 
@@ -1712,8 +1746,8 @@ TEST_F(ProgramManagerWithShaderTest, TooManyVaryings) {
       { GL_FLOAT_VEC4, 4, GL_MEDIUM_FLOAT, true, "a", kVarVarying },
       { GL_FLOAT_VEC4, 5, GL_MEDIUM_FLOAT, true, "b", kVarVarying }
   };
-  Program* program = SetupShaderVariableTest(
-      kVertexVaryings, 2, kFragmentVaryings, 2);
+  Program* program =
+      SetupProgramForVariables(kVertexVaryings, 2, kFragmentVaryings, 2);
 
   EXPECT_FALSE(
       program->CheckVaryingsPacking(Program::kCountOnlyStaticallyUsed));
@@ -1730,8 +1764,8 @@ TEST_F(ProgramManagerWithShaderTest, TooManyInactiveVaryings) {
       { GL_FLOAT_VEC4, 4, GL_MEDIUM_FLOAT, false, "a", kVarVarying },
       { GL_FLOAT_VEC4, 5, GL_MEDIUM_FLOAT, true, "b", kVarVarying }
   };
-  Program* program = SetupShaderVariableTest(
-      kVertexVaryings, 2, kFragmentVaryings, 2);
+  Program* program =
+      SetupProgramForVariables(kVertexVaryings, 2, kFragmentVaryings, 2);
 
   EXPECT_TRUE(
       program->CheckVaryingsPacking(Program::kCountOnlyStaticallyUsed));
@@ -1749,8 +1783,8 @@ TEST_F(ProgramManagerWithShaderTest, CountAllVaryingsInPacking) {
       { GL_FLOAT_VEC4, 4, GL_MEDIUM_FLOAT, false, "a", kVarVarying },
       { GL_FLOAT_VEC4, 5, GL_MEDIUM_FLOAT, true, "b", kVarVarying }
   };
-  Program* program = SetupShaderVariableTest(
-      kVertexVaryings, 2, kFragmentVaryings, 2);
+  Program* program =
+      SetupProgramForVariables(kVertexVaryings, 2, kFragmentVaryings, 2);
 
   EXPECT_FALSE(program->CheckVaryingsPacking(Program::kCountAll));
 }
@@ -1910,6 +1944,7 @@ class ProgramManagerWithCacheTest : public ProgramManagerTestBase {
  protected:
   void SetupProgramManager() override {
     manager_.reset(new ProgramManager(cache_.get(), kMaxVaryingVectors,
+                                      kMaxDualSourceDrawBuffers,
                                       feature_info_.get()));
   }
 
@@ -1931,10 +1966,12 @@ class ProgramManagerWithCacheTest : public ProgramManagerTestBase {
     program_->AttachShader(&shader_manager_, vertex_shader_);
     program_->AttachShader(&shader_manager_, fragment_shader_);
   }
+
   void TearDown() override {
     shader_manager_.Destroy(false);
     ProgramManagerTestBase::TearDown();
   }
+
   void SetShadersCompiled() {
     TestHelper::SetShaderStates(gl_.get(), vertex_shader_, true);
     TestHelper::SetShaderStates(gl_.get(), fragment_shader_, true);
@@ -2019,9 +2056,9 @@ class ProgramManagerWithCacheTest : public ProgramManagerTestBase {
   }
 
   void SetExpectationsForProgramLoadSuccess(GLuint service_program_id) {
-    TestHelper::SetupProgramSuccessExpectations(gl_.get(), feature_info_.get(),
-                                                nullptr, 0, nullptr, 0, nullptr,
-                                                0, service_program_id);
+    TestHelper::SetupProgramSuccessExpectations(
+        gl_.get(), feature_info_.get(), nullptr, 0, nullptr, 0, nullptr, 0,
+        nullptr, 0, service_program_id);
   }
 
   void SetExpectationsForProgramLink() {
@@ -2177,7 +2214,6 @@ const char* ProgramManagerWithPathRenderingTest::kFragmentInput1Name = "color1";
 const char* ProgramManagerWithPathRenderingTest::kFragmentInput2Name = "color2";
 const char* ProgramManagerWithPathRenderingTest::kFragmentInput2GLName =
     "color2[0]";
-
 const char* ProgramManagerWithPathRenderingTest::kFragmentInput3Name = "color3";
 const char* ProgramManagerWithPathRenderingTest::kFragmentInput3GLName =
     "color3[0]";
@@ -2205,10 +2241,10 @@ TEST_P(ProgramManagerWithPathRenderingTest, BindFragmentInputLocation) {
       kFragmentInput3StaticUse, kFragmentInput3Name);
   TestHelper::SetShaderStates(gl_.get(), vshader, true, nullptr, nullptr,
                               nullptr, nullptr, nullptr, &varying_map, nullptr,
-                              nullptr);
+                              nullptr, nullptr);
   TestHelper::SetShaderStates(gl_.get(), fshader, true, nullptr, nullptr,
                               nullptr, nullptr, nullptr, &varying_map, nullptr,
-                              nullptr);
+                              nullptr, nullptr);
   Program* program =
       manager_->CreateProgram(kClientProgramId, kServiceProgramId);
   ASSERT_TRUE(program != NULL);
@@ -2238,7 +2274,7 @@ TEST_P(ProgramManagerWithPathRenderingTest, BindFragmentInputLocation) {
   TestHelper::SetupShaderExpectationsWithVaryings(
       gl_.get(), feature_info_.get(), nullptr, 0, nullptr, 0,
       kFragmentInputExpectationInfos, arraysize(kFragmentInputExpectationInfos),
-      kServiceProgramId);
+      nullptr, 0, kServiceProgramId);
   program->Link(NULL, Program::kCountOnlyStaticallyUsed,
                 base::Bind(&ShaderCacheCb));
   const Program::FragmentInputInfo* info1 =
@@ -2272,6 +2308,91 @@ INSTANTIATE_TEST_CASE_P(
                           "GL_EXT_direct_state_access GL_NV_path_rendering"),
         make_gl_ext_tuple("4.5", "GL_NV_path_rendering"),
         make_gl_ext_tuple("opengl es 3.1", "GL_NV_path_rendering")));
+
+class ProgramManagerDualSourceBlendingTest
+    : public ProgramManagerWithShaderTest,
+      public testing::WithParamInterface<
+          testing::tuple<const char*, const char*>> {
+ public:
+  ProgramManagerDualSourceBlendingTest() {}
+
+ protected:
+  void SetUpWithFeatureInfo(FeatureInfo* feature_info) {
+    const char* gl_version = testing::get<0>(GetParam());
+    const char* gl_extensions = testing::get<1>(GetParam());
+    SetUpBase(gl_version, gl_extensions, feature_info);
+  }
+
+  void SetUp() override { SetUpWithFeatureInfo(nullptr); }
+};
+
+class ProgramManagerDualSourceBlendingES2Test
+    : public ProgramManagerDualSourceBlendingTest {};
+
+TEST_P(ProgramManagerDualSourceBlendingES2Test, UseSecondaryFragCoord) {
+  DCHECK(feature_info_->feature_flags().ext_blend_func_extended);
+
+  const VarInfo kFragmentVaryings[] = {
+      {GL_FLOAT_VEC4, 0, GL_MEDIUM_FLOAT, true, "gl_SecondaryFragColorEXT",
+       kVarOutput},
+      {GL_FLOAT_VEC4, 0, GL_MEDIUM_FLOAT, true, "gl_FragColor", kVarOutput},
+  };
+
+  int shader_version = 100;
+  Program* program =
+      SetupProgramForVariables(nullptr, 0, kFragmentVaryings,
+                               arraysize(kFragmentVaryings), &shader_version);
+
+  const gfx::GLVersionInfo& gl_version = feature_info_->gl_version_info();
+  if (!gl_version.is_es) {
+    // The call is expected only for OpenGL. OpenGL ES expects to
+    // output GLES SL 1.00, which does not bind.
+    EXPECT_CALL(*(gl_.get()),
+                BindFragDataLocationIndexed(kServiceProgramId, 0, 1,
+                                            StrEq("angle_SecondaryFragColor")))
+        .Times(1)
+        .RetiresOnSaturation();
+  }
+
+  EXPECT_TRUE(LinkAsExpected(program, true));
+}
+
+TEST_P(ProgramManagerDualSourceBlendingES2Test, UseSecondaryFragData) {
+  const VarInfo kFragmentVaryings[] = {
+      {GL_FLOAT_VEC4, kMaxDualSourceDrawBuffers, GL_MEDIUM_FLOAT, true,
+       "gl_SecondaryFragDataEXT", kVarOutput},
+      {GL_FLOAT_VEC4, kMaxDrawBuffers, GL_MEDIUM_FLOAT, true, "gl_FragData",
+       kVarOutput},
+  };
+
+  int shader_version = 100;
+  Program* program =
+      SetupProgramForVariables(nullptr, 0, kFragmentVaryings,
+                               arraysize(kFragmentVaryings), &shader_version);
+
+  const gfx::GLVersionInfo& gl_version = feature_info_->gl_version_info();
+  if (!gl_version.is_es) {
+    // The call is expected only for OpenGL. OpenGL ES expects to
+    // output GLES SL 1.00, which does not bind.
+    EXPECT_CALL(*(gl_.get()),
+                BindFragDataLocationIndexed(kServiceProgramId, 0, 1,
+                                            StrEq("angle_SecondaryFragData")))
+        .Times(1)
+        .RetiresOnSaturation();
+  }
+
+  EXPECT_TRUE(LinkAsExpected(program, true));
+}
+
+INSTANTIATE_TEST_CASE_P(
+    SupportedContexts,
+    ProgramManagerDualSourceBlendingES2Test,
+    testing::Values(
+        make_gl_ext_tuple("3.2",
+                          "GL_ARB_draw_buffers GL_ARB_blend_func_extended "
+                          "GL_ARB_program_interface_query"),
+        make_gl_ext_tuple("opengl es 3.1",
+                          "GL_EXT_draw_buffers GL_EXT_blend_func_extended")));
 
 }  // namespace gles2
 }  // namespace gpu

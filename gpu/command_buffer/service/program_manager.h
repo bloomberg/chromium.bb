@@ -20,6 +20,7 @@
 namespace gpu {
 namespace gles2 {
 
+class FeatureInfo;
 class ProgramCache;
 class ProgramManager;
 class Shader;
@@ -68,6 +69,16 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
     FragmentInputInfo() : type(GL_NONE), location(0) {}
     GLenum type;
     GLuint location;
+  };
+  struct ProgramOutputInfo {
+    ProgramOutputInfo(GLuint _color_name,
+                      GLuint _index,
+                      const std::string& _name)
+        : color_name(_color_name), index(_index), name(_name) {}
+    ProgramOutputInfo() : color_name(0), index(0) {}
+    GLuint color_name;
+    GLuint index;
+    std::string name;
   };
 
   struct UniformInfo {
@@ -144,8 +155,10 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
   typedef std::vector<FragmentInputInfo> FragmentInputInfoVector;
   typedef std::vector<ShaderVariableLocationEntry<FragmentInputInfo>>
       FragmentInputLocationVector;
+  typedef std::vector<ProgramOutputInfo> ProgramOutputInfoVector;
   typedef std::vector<int> SamplerIndices;
   typedef std::map<std::string, GLint> LocationMap;
+  typedef std::map<std::string, std::pair<GLuint, GLuint>> LocationIndexMap;
   typedef std::vector<std::string> StringVector;
 
   Program(ProgramManager* manager, GLuint service_id);
@@ -209,6 +222,10 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
   // -1 for bound, non-existing uniform.
   bool IsInactiveUniformLocationByFakeLocation(GLint fake_location) const;
 
+  // Gets the ProgramOutputInfo of a fragment output by name.
+  const ProgramOutputInfo* GetProgramOutputInfo(
+      const std::string& original_name) const;
+
   // Gets all the program info.
   void GetProgramInfo(
       ProgramManager* manager, CommonDecoder::Bucket* bucket) const;
@@ -225,6 +242,14 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
   // name_length, which we gather through glGetActiveUniform in
   // glGetProgramInfoCHROMIUM.
   bool GetUniformsES3(CommonDecoder::Bucket* bucket) const;
+
+  // Returns the fragment shader output variable color name binding.
+  // Returns -1 if |original_name| is not an out variable or error.
+  GLint GetFragDataLocation(const std::string& original_name) const;
+
+  // Returns the fragment shader output variable color index binding.
+  // Returns -1 if |original_name| is not an out variable or error.
+  GLint GetFragDataIndex(const std::string& original_name) const;
 
   // Sets the sampler values for a uniform.
   // This is safe to call for any location. If the location is not
@@ -285,6 +310,15 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
   // glBindFragmentInputLocationCHROMIUM() call.
   void SetFragmentInputLocationBinding(const std::string& name, GLint location);
 
+  // Sets program output variable location. Also sets color index to zero.
+  void SetProgramOutputLocationBinding(const std::string& name,
+                                       GLuint colorName);
+
+  // Sets program output variable location and color index.
+  void SetProgramOutputLocationIndexedBinding(const std::string& name,
+                                              GLuint colorName,
+                                              GLuint index);
+
   // Detects if there are attribute location conflicts from
   // glBindAttribLocation() calls.
   // We only consider the declared attributes in the program.
@@ -309,6 +343,11 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
   // glBindFragmentInputLocationCHROMIUM() calls.
   // We only consider the statically used fragment inputs in the program.
   bool DetectFragmentInputLocationBindingConflicts() const;
+
+  // Detects if there are program output location conflicts from
+  // glBindFragDataLocation and ..LocationIndexedEXT calls.
+  // We only consider the statically used program outputs in the program.
+  bool DetectProgramOutputLocationBindingConflicts() const;
 
   // Return true if any built-in invariant matching rules are broken as in
   // GLSL ES spec 1.00.17, section 4.6.4, Invariance and Linkage.
@@ -372,6 +411,7 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
   void Update();
   void UpdateUniforms();
   void UpdateFragmentInputs();
+  void UpdateProgramOutputs();
 
   // Process the program log, replacing the hashed names with original names.
   std::string ProcessLogInfo(const std::string& log);
@@ -404,6 +444,8 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
   // like bound attributes' locations, just before the link call.
   // Returns false upon failure.
   bool ExecuteTransformFeedbackVaryingsCall();
+
+  void ExecuteProgramOutputBindCalls();
 
   // Query VertexAttrib data returned by ANGLE translator by the mapped name.
   void GetVertexAttribData(
@@ -447,6 +489,8 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
   FragmentInputInfoVector fragment_input_infos_;
   FragmentInputLocationVector fragment_input_locations_;
 
+  ProgramOutputInfoVector program_output_infos_;
+
   // The program this Program is tracking.
   GLuint service_id_;
 
@@ -482,6 +526,10 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
   // Fragment input-location binding map from
   // glBindFragmentInputLocationCHROMIUM() calls.
   LocationMap bind_fragment_input_location_map_;
+
+  // output variable - (location,index) binding map from
+  // glBindFragDataLocation() and ..IndexedEXT() calls.
+  LocationIndexMap bind_program_output_location_index_map_;
 };
 
 // Tracks the Programs.
@@ -492,6 +540,7 @@ class GPU_EXPORT ProgramManager {
  public:
   explicit ProgramManager(ProgramCache* program_cache,
                           uint32 max_varying_vectors,
+                          uint32 max_dual_source_draw_buffers,
                           FeatureInfo* feature_info);
   ~ProgramManager();
 
@@ -522,8 +571,9 @@ class GPU_EXPORT ProgramManager {
   // Clears the uniforms for this program.
   void ClearUniforms(Program* program);
 
-  // Returns true if prefix is invalid for gl.
-  static bool IsInvalidPrefix(const char* name, size_t length);
+  // Returns true if |name| has a prefix that is intended for GL built-in shader
+  // variables.
+  static bool HasBuiltInPrefix(const std::string& name);
 
   // Check if a Program is owned by this ProgramManager.
   bool IsOwned(Program* program) const;
@@ -532,6 +582,10 @@ class GPU_EXPORT ProgramManager {
 
   uint32 max_varying_vectors() const {
     return max_varying_vectors_;
+  }
+
+  uint32 max_dual_source_draw_buffers() const {
+    return max_dual_source_draw_buffers_;
   }
 
  private:
@@ -560,6 +614,7 @@ class GPU_EXPORT ProgramManager {
   ProgramCache* program_cache_;
 
   uint32 max_varying_vectors_;
+  uint32 max_dual_source_draw_buffers_;
 
   scoped_refptr<FeatureInfo> feature_info_;
 

@@ -339,6 +339,16 @@ void TestHelper::SetupContextGroupInitExpectations(
         .WillOnce(SetArgumentPointee<1>(kMaxSamples))
         .RetiresOnSaturation();
   }
+
+  if (gl_info.IsAtLeastGL(3, 3) ||
+      (gl_info.IsAtLeastGL(3, 2) &&
+       strstr(extensions, "GL_ARB_blend_func_extended")) ||
+      (gl_info.is_es && strstr(extensions, "GL_EXT_blend_func_extended"))) {
+    EXPECT_CALL(*gl, GetIntegerv(GL_MAX_DUAL_SOURCE_DRAW_BUFFERS_EXT, _))
+        .WillOnce(SetArgumentPointee<1>(8))
+        .RetiresOnSaturation();
+  }
+
   EXPECT_CALL(*gl, GetIntegerv(GL_MAX_VERTEX_ATTRIBS, _))
       .WillOnce(SetArgumentPointee<1>(kNumVertexAttribs))
       .RetiresOnSaturation();
@@ -689,6 +699,8 @@ void TestHelper::SetupProgramSuccessExpectations(
     size_t num_uniforms,
     VaryingInfo* varyings,
     size_t num_varyings,
+    ProgramOutputInfo* program_outputs,
+    size_t num_program_outputs,
     GLuint service_id) {
   EXPECT_CALL(*gl,
       GetProgramiv(service_id, GL_LINK_STATUS, _))
@@ -724,7 +736,7 @@ void TestHelper::SetupProgramSuccessExpectations(
             SetArrayArgument<6>(info.name,
                                 info.name + strlen(info.name) + 1)))
         .RetiresOnSaturation();
-    if (!ProgramManager::IsInvalidPrefix(info.name, strlen(info.name))) {
+    if (!ProgramManager::HasBuiltInPrefix(info.name)) {
       EXPECT_CALL(*gl, GetAttribLocation(service_id, StrEq(info.name)))
           .WillOnce(Return(info.location))
           .RetiresOnSaturation();
@@ -799,7 +811,9 @@ void TestHelper::SetupProgramSuccessExpectations(
                           SetArrayArgument<5>(
                               info.name, info.name + strlen(info.name) + 1)))
           .RetiresOnSaturation();
-      if (!ProgramManager::IsInvalidPrefix(info.name, strlen(info.name))) {
+      if (ProgramManager::HasBuiltInPrefix(info.name))
+        continue;
+
         static const GLenum kPropsArray[] = {GL_LOCATION, GL_TYPE,
                                              GL_ARRAY_SIZE};
         static const size_t kPropsSize = arraysize(kPropsArray);
@@ -818,6 +832,26 @@ void TestHelper::SetupProgramSuccessExpectations(
             }))
             .RetiresOnSaturation();
       }
+  }
+  if (feature_info->gl_version_info().IsES3Capable() &&
+      !feature_info->disable_shader_translator()) {
+    for (size_t ii = 0; ii < num_program_outputs; ++ii) {
+      ProgramOutputInfo& info = program_outputs[ii];
+      if (ProgramManager::HasBuiltInPrefix(info.name))
+        continue;
+
+      EXPECT_CALL(*gl, GetFragDataLocation(service_id, StrEq(info.name)))
+          .WillOnce(Return(info.color_name))
+          .RetiresOnSaturation();
+      if (feature_info->feature_flags().ext_blend_func_extended) {
+        EXPECT_CALL(*gl, GetFragDataIndex(service_id, StrEq(info.name)))
+            .WillOnce(Return(info.index))
+            .RetiresOnSaturation();
+      } else {
+        // Test case must not use indices, or the context of the testcase has to
+        // support the dual source blending.
+        DCHECK(info.index == 0);
+      }
     }
   }
 }
@@ -834,8 +868,8 @@ void TestHelper::SetupShaderExpectations(::gfx::MockGLInterface* gl,
   EXPECT_CALL(*gl, LinkProgram(service_id)).Times(1).RetiresOnSaturation();
 
   SetupProgramSuccessExpectations(gl, feature_info, attribs, num_attribs,
-                                  uniforms, num_uniforms, nullptr, 0,
-                                  service_id);
+                                  uniforms, num_uniforms, nullptr, 0, nullptr,
+                                  0, service_id);
 }
 
 void TestHelper::SetupShaderExpectationsWithVaryings(
@@ -847,6 +881,8 @@ void TestHelper::SetupShaderExpectationsWithVaryings(
     size_t num_uniforms,
     VaryingInfo* varyings,
     size_t num_varyings,
+    ProgramOutputInfo* program_outputs,
+    size_t num_program_outputs,
     GLuint service_id) {
   InSequence s;
 
@@ -855,9 +891,9 @@ void TestHelper::SetupShaderExpectationsWithVaryings(
       .Times(1)
       .RetiresOnSaturation();
 
-  SetupProgramSuccessExpectations(gl, feature_info, attribs, num_attribs,
-                                  uniforms, num_uniforms, varyings,
-                                  num_varyings, service_id);
+  SetupProgramSuccessExpectations(
+      gl, feature_info, attribs, num_attribs, uniforms, num_uniforms, varyings,
+      num_varyings, program_outputs, num_program_outputs, service_id);
 }
 
 void TestHelper::DoBufferData(
@@ -905,16 +941,18 @@ void TestHelper::SetTexParameteriWithExpectations(
 
 // static
 void TestHelper::SetShaderStates(
-      ::gfx::MockGLInterface* gl, Shader* shader,
-      bool expected_valid,
-      const std::string* const expected_log_info,
-      const std::string* const expected_translated_source,
-      const int* const expected_shader_version,
-      const AttributeMap* const expected_attrib_map,
-      const UniformMap* const expected_uniform_map,
-      const VaryingMap* const expected_varying_map,
-      const InterfaceBlockMap* const expected_interface_block_map,
-      const NameMap* const expected_name_map) {
+    ::gfx::MockGLInterface* gl,
+    Shader* shader,
+    bool expected_valid,
+    const std::string* const expected_log_info,
+    const std::string* const expected_translated_source,
+    const int* const expected_shader_version,
+    const AttributeMap* const expected_attrib_map,
+    const UniformMap* const expected_uniform_map,
+    const VaryingMap* const expected_varying_map,
+    const InterfaceBlockMap* const expected_interface_block_map,
+    const OutputVariableList* const expected_output_variable_list,
+    const NameMap* const expected_name_map) {
   const std::string empty_log_info;
   const std::string* log_info = (expected_log_info && !expected_valid) ?
       expected_log_info : &empty_log_info;
@@ -938,6 +976,11 @@ void TestHelper::SetShaderStates(
   const InterfaceBlockMap* interface_block_map =
       (expected_interface_block_map && expected_valid) ?
       expected_interface_block_map : &empty_interface_block_map;
+  const OutputVariableList empty_output_variable_list;
+  const OutputVariableList* output_variable_list =
+      (expected_output_variable_list && expected_valid)
+          ? expected_output_variable_list
+          : &empty_output_variable_list;
   const NameMap empty_name_map;
   const NameMap* name_map = (expected_name_map && expected_valid) ?
       expected_name_map : &empty_name_map;
@@ -945,13 +988,14 @@ void TestHelper::SetShaderStates(
   MockShaderTranslator* mock_translator = new MockShaderTranslator;
   scoped_refptr<ShaderTranslatorInterface> translator(mock_translator);
   EXPECT_CALL(*mock_translator, Translate(_,
-                                          NotNull(),  // log_info
-                                          NotNull(),  // translated_source
-                                          NotNull(),  // shader_version
-                                          NotNull(),  // attrib_map
-                                          NotNull(),  // uniform_map
-                                          NotNull(),  // varying_map
-                                          NotNull(),  // interface_block_map
+                                          NotNull(),   // log_info
+                                          NotNull(),   // translated_source
+                                          NotNull(),   // shader_version
+                                          NotNull(),   // attrib_map
+                                          NotNull(),   // uniform_map
+                                          NotNull(),   // varying_map
+                                          NotNull(),   // interface_block_map
+                                          NotNull(),   // output_variable_list
                                           NotNull()))  // name_map
       .WillOnce(DoAll(SetArgumentPointee<1>(*log_info),
                       SetArgumentPointee<2>(*translated_source),
@@ -960,8 +1004,8 @@ void TestHelper::SetShaderStates(
                       SetArgumentPointee<5>(*uniform_map),
                       SetArgumentPointee<6>(*varying_map),
                       SetArgumentPointee<7>(*interface_block_map),
-                      SetArgumentPointee<8>(*name_map),
-                      Return(expected_valid)))
+                      SetArgumentPointee<8>(*output_variable_list),
+                      SetArgumentPointee<9>(*name_map), Return(expected_valid)))
       .RetiresOnSaturation();
   if (expected_valid) {
     EXPECT_CALL(*gl, ShaderSource(shader->service_id(), 1, _, NULL))
@@ -983,8 +1027,8 @@ void TestHelper::SetShaderStates(
 // static
 void TestHelper::SetShaderStates(
       ::gfx::MockGLInterface* gl, Shader* shader, bool valid) {
-  SetShaderStates(
-      gl, shader, valid, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+  SetShaderStates(gl, shader, valid, nullptr, nullptr, nullptr, nullptr,
+                  nullptr, nullptr, nullptr, nullptr, nullptr);
 }
 
 // static
@@ -1008,6 +1052,16 @@ sh::Varying TestHelper::ConstructVarying(
     GLenum type, GLint array_size, GLenum precision,
     bool static_use, const std::string& name) {
   return ConstructShaderVariable<sh::Varying>(
+      type, array_size, precision, static_use, name);
+}
+
+sh::OutputVariable TestHelper::ConstructOutputVariable(
+    GLenum type,
+    GLint array_size,
+    GLenum precision,
+    bool static_use,
+    const std::string& name) {
+  return ConstructShaderVariable<sh::OutputVariable>(
       type, array_size, precision, static_use, name);
 }
 

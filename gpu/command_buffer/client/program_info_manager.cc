@@ -160,6 +160,19 @@ GLuint ProgramInfoManager::Program::GetUniformIndex(
   return GL_INVALID_INDEX;
 }
 
+GLint ProgramInfoManager::Program::GetFragDataIndex(
+    const std::string& name) const {
+  auto iter = frag_data_indices_.find(name);
+  if (iter == frag_data_indices_.end())
+    return -1;
+  return iter->second;
+}
+
+void ProgramInfoManager::Program::CacheFragDataIndex(const std::string& name,
+                                                     GLint index) {
+  frag_data_indices_[name] = index;
+}
+
 GLint ProgramInfoManager::Program::GetFragDataLocation(
     const std::string& name) const {
   base::hash_map<std::string, GLint>::const_iterator iter =
@@ -723,6 +736,31 @@ GLint ProgramInfoManager::GetUniformLocation(
     }
   }
   return gl->GetUniformLocationHelper(program, name);
+}
+
+GLint ProgramInfoManager::GetFragDataIndex(GLES2Implementation* gl,
+                                           GLuint program,
+                                           const char* name) {
+  // TODO(zmo): make FragData indexes part of the ProgramInfo that are
+  // fetched from the service side.  See crbug.com/452104.
+  {
+    base::AutoLock auto_lock(lock_);
+    Program* info = GetProgramInfo(gl, program, kNone);
+    if (info) {
+      GLint possible_index = info->GetFragDataIndex(name);
+      if (possible_index != -1)
+        return possible_index;
+    }
+  }
+  GLint index = gl->GetFragDataIndexEXTHelper(program, name);
+  if (index != -1) {
+    base::AutoLock auto_lock(lock_);
+    Program* info = GetProgramInfo(gl, program, kNone);
+    if (info) {
+      info->CacheFragDataIndex(name, index);
+    }
+  }
+  return index;
 }
 
 GLint ProgramInfoManager::GetFragDataLocation(

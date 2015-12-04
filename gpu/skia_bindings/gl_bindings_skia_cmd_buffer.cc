@@ -143,6 +143,8 @@ void InitCommandBufferSkiaGLBinding(GrGLInterface* interface) {
     glRenderbufferStorageMultisampleCHROMIUM;
   functions->fRenderbufferStorageMultisampleES2EXT =
     glRenderbufferStorageMultisampleEXT;
+  functions->fBindFragDataLocation = glBindFragDataLocationEXT;
+  functions->fBindFragDataLocationIndexed = glBindFragDataLocationIndexedEXT;
   functions->fBindUniformLocation = glBindUniformLocationCHROMIUM;
   functions->fBlitFramebuffer = glBlitFramebufferCHROMIUM;
   functions->fGenerateMipmap = glGenerateMipmap;

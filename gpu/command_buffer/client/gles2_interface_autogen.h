@@ -885,4 +885,12 @@ virtual void ProgramPathFragmentInputGenCHROMIUM(GLuint program,
 virtual GLenum GetGraphicsResetStatusKHR() = 0;
 virtual void BlendBarrierKHR() = 0;
 virtual void ApplyScreenSpaceAntialiasingCHROMIUM() = 0;
+virtual void BindFragDataLocationIndexedEXT(GLuint program,
+                                            GLuint colorNumber,
+                                            GLuint index,
+                                            const char* name) = 0;
+virtual void BindFragDataLocationEXT(GLuint program,
+                                     GLuint colorNumber,
+                                     const char* name) = 0;
+virtual GLint GetFragDataIndexEXT(GLuint program, const char* name) = 0;
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_INTERFACE_AUTOGEN_H_

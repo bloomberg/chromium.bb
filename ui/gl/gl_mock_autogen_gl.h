@@ -340,6 +340,7 @@ MOCK_METHOD3(GetBufferParameteriv,
 MOCK_METHOD0(GetError, GLenum());
 MOCK_METHOD3(GetFenceivNV, void(GLuint fence, GLenum pname, GLint* params));
 MOCK_METHOD2(GetFloatv, void(GLenum pname, GLfloat* params));
+MOCK_METHOD2(GetFragDataIndex, GLint(GLuint program, const char* name));
 MOCK_METHOD2(GetFragDataLocation, GLint(GLuint program, const char* name));
 MOCK_METHOD4(
     GetFramebufferAttachmentParameterivEXT,

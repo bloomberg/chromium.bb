@@ -71,6 +71,11 @@ void GetVaryings(ShHandle compiler, VaryingMap* var_map) {
       (*var_map)[(*varyings)[ii].mappedName] = (*varyings)[ii];
   }
 }
+void GetOutputVariables(ShHandle compiler, OutputVariableList* var_list) {
+  if (!var_list)
+    return;
+  *var_list = *ShGetOutputVariables(compiler);
+}
 
 void GetInterfaceBlocks(ShHandle compiler, InterfaceBlockMap* var_map) {
   if (!var_map)
@@ -206,6 +211,7 @@ bool ShaderTranslator::Translate(const std::string& shader_source,
                                  UniformMap* uniform_map,
                                  VaryingMap* varying_map,
                                  InterfaceBlockMap* interface_block_map,
+                                 OutputVariableList* output_variable_list,
                                  NameMap* name_map) const {
   // Make sure this instance is initialized.
   DCHECK(compiler_ != NULL);
@@ -224,11 +230,12 @@ bool ShaderTranslator::Translate(const std::string& shader_source,
     }
     // Get shader version.
     *shader_version = ShGetShaderVersion(compiler_);
-    // Get info for attribs, uniforms, and varyings.
+    // Get info for attribs, uniforms, varyings and output variables.
     GetAttributes(compiler_, attrib_map);
     GetUniforms(compiler_, uniform_map);
     GetVaryings(compiler_, varying_map);
     GetInterfaceBlocks(compiler_, interface_block_map);
+    GetOutputVariables(compiler_, output_variable_list);
     // Get info for name hashing.
     GetNameHashingInfo(compiler_, name_map);
   }

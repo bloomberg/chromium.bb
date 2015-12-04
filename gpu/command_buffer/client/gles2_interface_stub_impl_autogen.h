@@ -1159,4 +1159,16 @@ GLenum GLES2InterfaceStub::GetGraphicsResetStatusKHR() {
 }
 void GLES2InterfaceStub::BlendBarrierKHR() {}
 void GLES2InterfaceStub::ApplyScreenSpaceAntialiasingCHROMIUM() {}
+void GLES2InterfaceStub::BindFragDataLocationIndexedEXT(
+    GLuint /* program */,
+    GLuint /* colorNumber */,
+    GLuint /* index */,
+    const char* /* name */) {}
+void GLES2InterfaceStub::BindFragDataLocationEXT(GLuint /* program */,
+                                                 GLuint /* colorNumber */,
+                                                 const char* /* name */) {}
+GLint GLES2InterfaceStub::GetFragDataIndexEXT(GLuint /* program */,
+                                              const char* /* name */) {
+  return 0;
+}
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_INTERFACE_STUB_IMPL_AUTOGEN_H_

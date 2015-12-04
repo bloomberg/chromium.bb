@@ -344,6 +344,7 @@ void glGetBufferParameterivFn(GLenum target,
 GLenum glGetErrorFn(void) override;
 void glGetFenceivNVFn(GLuint fence, GLenum pname, GLint* params) override;
 void glGetFloatvFn(GLenum pname, GLfloat* params) override;
+GLint glGetFragDataIndexFn(GLuint program, const char* name) override;
 GLint glGetFragDataLocationFn(GLuint program, const char* name) override;
 void glGetFramebufferAttachmentParameterivEXTFn(GLenum target,
                                                 GLenum attachment,

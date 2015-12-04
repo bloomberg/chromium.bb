@@ -202,6 +202,7 @@ void DriverGL::InitializeStaticBindings() {
   fn.glGetFenceivNVFn = 0;
   fn.glGetFloatvFn =
       reinterpret_cast<glGetFloatvProc>(GetGLProcAddress("glGetFloatv"));
+  fn.glGetFragDataIndexFn = 0;
   fn.glGetFragDataLocationFn = 0;
   fn.glGetFramebufferAttachmentParameterivEXTFn = 0;
   fn.glGetGraphicsResetStatusARBFn = 0;
@@ -481,6 +482,8 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
       extensions.find("GL_APPLE_fence ") != std::string::npos;
   ext.b_GL_APPLE_vertex_array_object =
       extensions.find("GL_APPLE_vertex_array_object ") != std::string::npos;
+  ext.b_GL_ARB_blend_func_extended =
+      extensions.find("GL_ARB_blend_func_extended ") != std::string::npos;
   ext.b_GL_ARB_draw_buffers =
       extensions.find("GL_ARB_draw_buffers ") != std::string::npos;
   ext.b_GL_ARB_draw_instanced =
@@ -509,6 +512,8 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
       std::string::npos;
   ext.b_GL_CHROMIUM_glgetstringi_hack =
       extensions.find("GL_CHROMIUM_glgetstringi_hack ") != std::string::npos;
+  ext.b_GL_EXT_blend_func_extended =
+      extensions.find("GL_EXT_blend_func_extended ") != std::string::npos;
   ext.b_GL_EXT_debug_marker =
       extensions.find("GL_EXT_debug_marker ") != std::string::npos;
   ext.b_GL_EXT_direct_state_access =
@@ -525,6 +530,8 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
       extensions.find("GL_EXT_framebuffer_multisample ") != std::string::npos;
   ext.b_GL_EXT_framebuffer_object =
       extensions.find("GL_EXT_framebuffer_object ") != std::string::npos;
+  ext.b_GL_EXT_gpu_shader4 =
+      extensions.find("GL_EXT_gpu_shader4 ") != std::string::npos;
   ext.b_GL_EXT_map_buffer_range =
       extensions.find("GL_EXT_map_buffer_range ") != std::string::npos;
   ext.b_GL_EXT_multisampled_render_to_texture =
@@ -601,16 +608,23 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
   }
 
   debug_fn.glBindFragDataLocationFn = 0;
-  if (ver->IsAtLeastGL(3u, 0u)) {
+  if (ver->IsAtLeastGL(3u, 0u) || ext.b_GL_ARB_blend_func_extended) {
     fn.glBindFragDataLocationFn = reinterpret_cast<glBindFragDataLocationProc>(
         GetGLProcAddress("glBindFragDataLocation"));
+  } else if (ext.b_GL_EXT_gpu_shader4 || ext.b_GL_EXT_blend_func_extended) {
+    fn.glBindFragDataLocationFn = reinterpret_cast<glBindFragDataLocationProc>(
+        GetGLProcAddress("glBindFragDataLocationEXT"));
   }
 
   debug_fn.glBindFragDataLocationIndexedFn = 0;
-  if (ver->IsAtLeastGL(3u, 3u)) {
+  if (ver->IsAtLeastGL(3u, 3u) || ext.b_GL_ARB_blend_func_extended) {
     fn.glBindFragDataLocationIndexedFn =
         reinterpret_cast<glBindFragDataLocationIndexedProc>(
             GetGLProcAddress("glBindFragDataLocationIndexed"));
+  } else if (ext.b_GL_EXT_blend_func_extended) {
+    fn.glBindFragDataLocationIndexedFn =
+        reinterpret_cast<glBindFragDataLocationIndexedProc>(
+            GetGLProcAddress("glBindFragDataLocationIndexedEXT"));
   }
 
   debug_fn.glBindFramebufferEXTFn = 0;
@@ -1155,6 +1169,15 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
   if (ext.b_GL_NV_fence) {
     fn.glGetFenceivNVFn = reinterpret_cast<glGetFenceivNVProc>(
         GetGLProcAddress("glGetFenceivNV"));
+  }
+
+  debug_fn.glGetFragDataIndexFn = 0;
+  if (ver->IsAtLeastGL(3u, 3u) || ext.b_GL_ARB_blend_func_extended) {
+    fn.glGetFragDataIndexFn = reinterpret_cast<glGetFragDataIndexProc>(
+        GetGLProcAddress("glGetFragDataIndex"));
+  } else if (ext.b_GL_EXT_blend_func_extended) {
+    fn.glGetFragDataIndexFn = reinterpret_cast<glGetFragDataIndexProc>(
+        GetGLProcAddress("glGetFragDataIndexEXT"));
   }
 
   debug_fn.glGetFragDataLocationFn = 0;
@@ -3186,6 +3209,15 @@ static void GL_BINDING_CALL Debug_glGetFloatv(GLenum pname, GLfloat* params) {
                  << "(" << GLEnums::GetStringEnum(pname) << ", "
                  << static_cast<const void*>(params) << ")");
   g_driver_gl.debug_fn.glGetFloatvFn(pname, params);
+}
+
+static GLint GL_BINDING_CALL Debug_glGetFragDataIndex(GLuint program,
+                                                      const char* name) {
+  GL_SERVICE_LOG("glGetFragDataIndex"
+                 << "(" << program << ", " << name << ")");
+  GLint result = g_driver_gl.debug_fn.glGetFragDataIndexFn(program, name);
+  GL_SERVICE_LOG("GL_RESULT: " << result);
+  return result;
 }
 
 static GLint GL_BINDING_CALL Debug_glGetFragDataLocation(GLuint program,
@@ -5591,6 +5623,10 @@ void DriverGL::InitializeDebugBindings() {
     debug_fn.glGetFloatvFn = fn.glGetFloatvFn;
     fn.glGetFloatvFn = Debug_glGetFloatv;
   }
+  if (!debug_fn.glGetFragDataIndexFn) {
+    debug_fn.glGetFragDataIndexFn = fn.glGetFragDataIndexFn;
+    fn.glGetFragDataIndexFn = Debug_glGetFragDataIndex;
+  }
   if (!debug_fn.glGetFragDataLocationFn) {
     debug_fn.glGetFragDataLocationFn = fn.glGetFragDataLocationFn;
     fn.glGetFragDataLocationFn = Debug_glGetFragDataLocation;
@@ -7101,6 +7137,10 @@ void GLApiBase::glGetFenceivNVFn(GLuint fence, GLenum pname, GLint* params) {
 
 void GLApiBase::glGetFloatvFn(GLenum pname, GLfloat* params) {
   driver_->fn.glGetFloatvFn(pname, params);
+}
+
+GLint GLApiBase::glGetFragDataIndexFn(GLuint program, const char* name) {
+  return driver_->fn.glGetFragDataIndexFn(program, name);
 }
 
 GLint GLApiBase::glGetFragDataLocationFn(GLuint program, const char* name) {
@@ -9102,6 +9142,11 @@ void TraceGLApi::glGetFenceivNVFn(GLuint fence, GLenum pname, GLint* params) {
 void TraceGLApi::glGetFloatvFn(GLenum pname, GLfloat* params) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glGetFloatv")
   gl_api_->glGetFloatvFn(pname, params);
+}
+
+GLint TraceGLApi::glGetFragDataIndexFn(GLuint program, const char* name) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glGetFragDataIndex")
+  return gl_api_->glGetFragDataIndexFn(program, name);
 }
 
 GLint TraceGLApi::glGetFragDataLocationFn(GLuint program, const char* name) {
@@ -11413,6 +11458,14 @@ void NoContextGLApi::glGetFenceivNVFn(GLuint fence,
 void NoContextGLApi::glGetFloatvFn(GLenum pname, GLfloat* params) {
   NOTREACHED() << "Trying to call glGetFloatv() without current GL context";
   LOG(ERROR) << "Trying to call glGetFloatv() without current GL context";
+}
+
+GLint NoContextGLApi::glGetFragDataIndexFn(GLuint program, const char* name) {
+  NOTREACHED()
+      << "Trying to call glGetFragDataIndex() without current GL context";
+  LOG(ERROR)
+      << "Trying to call glGetFragDataIndex() without current GL context";
+  return 0;
 }
 
 GLint NoContextGLApi::glGetFragDataLocationFn(GLuint program,

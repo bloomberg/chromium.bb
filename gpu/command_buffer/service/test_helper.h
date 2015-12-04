@@ -82,6 +82,13 @@ class TestHelper {
     GLint real_location;
     GLint desired_location;
   };
+  struct ProgramOutputInfo {
+    const char* name;
+    GLint size;
+    GLenum type;
+    GLint color_name;
+    GLuint index;
+  };
 
   static void SetupContextGroupInitExpectations(
       ::gfx::MockGLInterface* gl,
@@ -126,17 +133,22 @@ class TestHelper {
       size_t num_uniforms,
       VaryingInfo* varyings,
       size_t num_varyings,
+      ProgramOutputInfo* program_outputs,
+      size_t num_program_outputs,
       GLuint service_id);
 
-  static void SetupProgramSuccessExpectations(::gfx::MockGLInterface* gl,
-                                              const FeatureInfo* feature_info,
-                                              AttribInfo* attribs,
-                                              size_t num_attribs,
-                                              UniformInfo* uniforms,
-                                              size_t num_uniforms,
-                                              VaryingInfo* varyings,
-                                              size_t num_varyings,
-                                              GLuint service_id);
+  static void SetupProgramSuccessExpectations(
+      ::gfx::MockGLInterface* gl,
+      const FeatureInfo* feature_info,
+      AttribInfo* attribs,
+      size_t num_attribs,
+      UniformInfo* uniforms,
+      size_t num_uniforms,
+      VaryingInfo* varyings,
+      size_t num_varyings,
+      ProgramOutputInfo* program_outputs,
+      size_t num_program_outputs,
+      GLuint service_id);
 
   static void DoBufferData(
       ::gfx::MockGLInterface* gl, MockErrorState* error_state,
@@ -149,7 +161,8 @@ class TestHelper {
       GLenum pname, GLint value, GLenum error);
 
   static void SetShaderStates(
-      ::gfx::MockGLInterface* gl, Shader* shader,
+      ::gfx::MockGLInterface* gl,
+      Shader* shader,
       bool expected_valid,
       const std::string* const expected_log_info,
       const std::string* const expected_translated_source,
@@ -158,6 +171,7 @@ class TestHelper {
       const UniformMap* const expected_uniform_map,
       const VaryingMap* const expected_varying_map,
       const InterfaceBlockMap* const expected_interface_block_map,
+      const OutputVariableList* const expected_output_variable_list,
       const NameMap* const expected_name_map);
 
   static void SetShaderStates(
@@ -172,6 +186,11 @@ class TestHelper {
   static sh::Varying ConstructVarying(
       GLenum type, GLint array_size, GLenum precision,
       bool static_use, const std::string& name);
+  static sh::OutputVariable ConstructOutputVariable(GLenum type,
+                                                    GLint array_size,
+                                                    GLenum precision,
+                                                    bool static_use,
+                                                    const std::string& name);
 
  private:
   static void SetupTextureInitializationExpectations(::gfx::MockGLInterface* gl,

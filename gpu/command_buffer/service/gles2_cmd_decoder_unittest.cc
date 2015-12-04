@@ -1533,6 +1533,17 @@ TEST_P(GLES2DecoderDoCommandsTest, DoCommandsBadArgSize) {
   EXPECT_EQ(entries_per_cmd_ + cmds_[1].header.size, num_processed);
 }
 
+void GLES3DecoderWithESSL3ShaderTest::SetUp() {
+  base::CommandLine command_line(0, nullptr);
+  command_line.AppendSwitch(switches::kEnableUnsafeES3APIs);
+  InitState init;
+  init.gl_version = "OpenGL ES 3.0";
+  init.bind_generates_resource = true;
+  init.context_type = CONTEXT_TYPE_OPENGLES3;
+  InitDecoderWithCommandLine(init, &command_line);
+  SetupDefaultProgram();
+}
+
 INSTANTIATE_TEST_CASE_P(Service, GLES2DecoderTest, ::testing::Bool());
 
 INSTANTIATE_TEST_CASE_P(Service, GLES2DecoderWithShaderTest, ::testing::Bool());
@@ -1546,6 +1557,10 @@ INSTANTIATE_TEST_CASE_P(Service,
 INSTANTIATE_TEST_CASE_P(Service, GLES2DecoderDoCommandsTest, ::testing::Bool());
 
 INSTANTIATE_TEST_CASE_P(Service, GLES3DecoderTest, ::testing::Bool());
+
+INSTANTIATE_TEST_CASE_P(Service,
+                        GLES3DecoderWithESSL3ShaderTest,
+                        ::testing::Bool());
 
 }  // namespace gles2
 }  // namespace gpu

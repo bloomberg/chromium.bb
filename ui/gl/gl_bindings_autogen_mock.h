@@ -30,11 +30,19 @@ static void GL_BINDING_CALL Mock_glBindBufferRange(GLenum target,
 static void GL_BINDING_CALL Mock_glBindFragDataLocation(GLuint program,
                                                         GLuint colorNumber,
                                                         const char* name);
+static void GL_BINDING_CALL Mock_glBindFragDataLocationEXT(GLuint program,
+                                                           GLuint colorNumber,
+                                                           const char* name);
 static void GL_BINDING_CALL
 Mock_glBindFragDataLocationIndexed(GLuint program,
                                    GLuint colorNumber,
                                    GLuint index,
                                    const char* name);
+static void GL_BINDING_CALL
+Mock_glBindFragDataLocationIndexedEXT(GLuint program,
+                                      GLuint colorNumber,
+                                      GLuint index,
+                                      const char* name);
 static void GL_BINDING_CALL Mock_glBindFramebuffer(GLenum target,
                                                    GLuint framebuffer);
 static void GL_BINDING_CALL Mock_glBindFramebufferEXT(GLenum target,
@@ -447,6 +455,10 @@ static void GL_BINDING_CALL Mock_glGetFenceivNV(GLuint fence,
                                                 GLenum pname,
                                                 GLint* params);
 static void GL_BINDING_CALL Mock_glGetFloatv(GLenum pname, GLfloat* params);
+static GLint GL_BINDING_CALL Mock_glGetFragDataIndex(GLuint program,
+                                                     const char* name);
+static GLint GL_BINDING_CALL Mock_glGetFragDataIndexEXT(GLuint program,
+                                                        const char* name);
 static GLint GL_BINDING_CALL Mock_glGetFragDataLocation(GLuint program,
                                                         const char* name);
 static void GL_BINDING_CALL

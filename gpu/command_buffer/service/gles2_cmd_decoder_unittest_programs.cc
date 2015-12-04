@@ -2016,27 +2016,22 @@ TEST_P(GLES2DecoderWithShaderTest, GetAttribLocationInvalidArgs) {
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
 }
 
-TEST_P(GLES2DecoderWithShaderTest, GetFragDataLocation) {
+TEST_P(GLES3DecoderWithESSL3ShaderTest, GetFragDataLocation) {
   const uint32 kBucketId = 123;
-  const GLint kLocation = 10;
-  const char* kName = "color";
   typedef GetFragDataLocation::Result Result;
   Result* result = GetSharedMemoryAs<Result*>();
-  SetBucketAsCString(kBucketId, kName);
+  SetBucketAsCString(kBucketId, kOutputVariable1NameESSL3);
   *result = -1;
   GetFragDataLocation cmd;
   cmd.Init(client_program_id_, kBucketId, kSharedMemoryId, kSharedMemoryOffset);
-  EXPECT_CALL(*gl_, GetFragDataLocation(kServiceProgramId, StrEq(kName)))
-      .WillOnce(Return(kLocation))
-      .RetiresOnSaturation();
   decoder_->set_unsafe_es3_apis_enabled(true);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(kLocation, *result);
+  EXPECT_EQ(static_cast<GLint>(kOutputVariable1ColorName), *result);
   decoder_->set_unsafe_es3_apis_enabled(false);
   EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
 }
 
-TEST_P(GLES2DecoderWithShaderTest, GetFragDataLocationInvalidArgs) {
+TEST_P(GLES3DecoderWithESSL3ShaderTest, GetFragDataLocationInvalidArgs) {
   const uint32 kBucketId = 123;
   typedef GetFragDataLocation::Result Result;
   Result* result = GetSharedMemoryAs<Result*>();
