@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.metrics;
 import android.content.ComponentCallbacks;
 import android.content.Context;
 import android.content.res.Configuration;
+import android.preference.PreferenceManager;
 import android.text.TextUtils;
 
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
@@ -26,6 +27,8 @@ import org.chromium.net.NetworkChangeNotifier;
  * and the framework's MetricService.
  */
 public class UmaSessionStats implements NetworkChangeNotifier.ConnectionTypeObserver {
+    public static final String LAST_USED_TIME_PREF = "umasessionstats.lastusedtime";
+
     private static final String SAMSUNG_MULTWINDOW_PACKAGE = "com.sec.feature.multiwindow";
 
     private static long sNativeUmaSessionStats = 0;
@@ -141,6 +144,10 @@ public class UmaSessionStats implements NetworkChangeNotifier.ConnectionTypeObse
 
         nativeUmaEndSession(sNativeUmaSessionStats);
         NetworkChangeNotifier.removeConnectionTypeObserver(this);
+        PreferenceManager.getDefaultSharedPreferences(mContext)
+                .edit()
+                .putLong(LAST_USED_TIME_PREF, System.currentTimeMillis())
+                .apply();
     }
 
     public static void logRendererCrash() {

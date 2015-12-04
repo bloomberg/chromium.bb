@@ -20381,6 +20381,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="MobileStartup.TimeSinceLastUse" units="minutes">
+  <owner>knn@chromium.org</owner>
+  <summary>
+    Android: The time since last use until Chrome is launched from the home
+    screen. This is measured from the time the last tab is closed until a Main
+    intent is received. Has a minute level precision for first 10 minutes
+    increasing exponentially till 30 days.
+  </summary>
+</histogram>
+
 <histogram name="MobileStartup.ToolbarFirstDrawTime" units="milliseconds">
   <owner>yusufo@chromium.org</owner>
   <summary>
