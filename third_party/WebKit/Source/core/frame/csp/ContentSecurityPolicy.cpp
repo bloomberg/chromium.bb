@@ -724,8 +724,9 @@ static void gatherSecurityPolicyViolationEventData(SecurityPolicyViolationEventI
     }
 }
 
-void ContentSecurityPolicy::reportViolation(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL, const Vector<String>& reportEndpoints, const String& header, LocalFrame* contextFrame)
+void ContentSecurityPolicy::reportViolation(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL, const Vector<String>& reportEndpoints, const String& header, ViolationType violationType, LocalFrame* contextFrame)
 {
+    ASSERT(violationType == URLViolation || blockedURL.isEmpty());
     ASSERT((m_executionContext && !contextFrame) || (equalIgnoringCase(effectiveDirective, ContentSecurityPolicy::FrameAncestors) && contextFrame));
 
     // FIXME: Support sending reports from worker.
@@ -768,7 +769,17 @@ void ContentSecurityPolicy::reportViolation(const String& directiveText, const S
     cspReport->setString("violated-directive", violationData.violatedDirective());
     cspReport->setString("effective-directive", violationData.effectiveDirective());
     cspReport->setString("original-policy", violationData.originalPolicy());
-    cspReport->setString("blocked-uri", violationData.blockedURI());
+    switch (violationType) {
+    case InlineViolation:
+        cspReport->setString("blocked-uri", "inline");
+        break;
+    case EvalViolation:
+        cspReport->setString("blocked-uri", "eval");
+        break;
+    case URLViolation:
+        cspReport->setString("blocked-uri", violationData.blockedURI());
+        break;
+    }
     if (!violationData.sourceFile().isEmpty() && violationData.lineNumber()) {
         cspReport->setString("source-file", violationData.sourceFile());
         cspReport->setNumber("line-number", violationData.lineNumber());

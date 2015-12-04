@@ -123,6 +123,16 @@ public:
         WillNotThrowException
     };
 
+    // This covers the possible values of a violation's 'resource', as defined in
+    // https://w3c.github.io/webappsec-csp/#violation-resource. By the time we
+    // generate a report, we're guaranteed that the value isn't 'null', so we don't
+    // need that state in this enum.
+    enum ViolationType {
+        InlineViolation,
+        EvalViolation,
+        URLViolation
+    };
+
     static PassRefPtrWillBeRawPtr<ContentSecurityPolicy> create()
     {
         return adoptRefWillBeNoop(new ContentSecurityPolicy());
@@ -226,7 +236,7 @@ public:
     // If a frame is passed in, the report will be sent using it as a context. If no frame is
     // passed in, the report will be sent via this object's |m_executionContext| (or dropped
     // on the floor if no such context is available).
-    void reportViolation(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL, const Vector<String>& reportEndpoints, const String& header, LocalFrame* = nullptr);
+    void reportViolation(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL, const Vector<String>& reportEndpoints, const String& header, ViolationType, LocalFrame* = nullptr);
 
     void reportBlockedScriptExecutionToInspector(const String& directiveText) const;
 
