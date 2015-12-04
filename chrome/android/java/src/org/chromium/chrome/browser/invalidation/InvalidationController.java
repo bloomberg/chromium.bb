@@ -237,6 +237,13 @@ public class InvalidationController implements ApplicationStatus.ApplicationStat
     }
 
     /**
+     * Returns whether the invalidation client has been started.
+     */
+    public boolean isStarted() {
+        return mStarted;
+    }
+
+    /**
      * Called when a RecentTabsPage is opened.
      */
     public void onRecentTabsPageOpened() {

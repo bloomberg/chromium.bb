@@ -25,7 +25,6 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.notifications.GoogleServicesNotificationController;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
-import org.chromium.chrome.browser.sync.SyncController;
 import org.chromium.sync.AndroidSyncSettings;
 import org.chromium.sync.signin.ChromeSigninController;
 
@@ -503,7 +502,7 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
                 if (profileSyncService != null) {
                     profileSyncService.setSetupInProgress(
                             signInSync == SIGNIN_SYNC_SETUP_IN_PROGRESS);
-                    SyncController.get(mContext).start();
+                    profileSyncService.requestStart();
                 }
 
                 if (observer != null) observer.onSigninComplete();

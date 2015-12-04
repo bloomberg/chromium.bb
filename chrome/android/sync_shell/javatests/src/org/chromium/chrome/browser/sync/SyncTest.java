@@ -66,7 +66,7 @@ public class SyncTest extends SyncTestBase {
 
     @LargeTest
     @Feature({"Sync"})
-    public void testDisableAndEnableSyncThroughAndroid() throws InterruptedException {
+    public void testStopAndStartSyncThroughAndroid() throws InterruptedException {
         Account account = setUpTestAccountAndSignInToSync();
         SyncTestUtil.waitForSyncActive();
 
@@ -77,6 +77,27 @@ public class SyncTest extends SyncTestBase {
         SyncTestUtil.verifySyncIsDisabled(mContext, account);
 
         // Enabling Android sync should turn Chrome sync engine on.
+        mSyncContentResolver.setSyncAutomatically(account, authority, true);
+        SyncTestUtil.verifySyncIsActiveForAccount(mContext, account);
+
+        // Disabling Android's master sync should turn Chrome sync engine off.
+        mSyncContentResolver.setMasterSyncAutomatically(false);
+        SyncTestUtil.verifySyncIsDisabled(mContext, account);
+
+        // Enabling Android's master sync should turn Chrome sync engine on.
+        mSyncContentResolver.setMasterSyncAutomatically(true);
+        SyncTestUtil.verifySyncIsActiveForAccount(mContext, account);
+
+        // Disabling both should definitely turn sync off.
+        mSyncContentResolver.setSyncAutomatically(account, authority, false);
+        mSyncContentResolver.setMasterSyncAutomatically(false);
+        SyncTestUtil.verifySyncIsDisabled(mContext, account);
+
+        // Re-enabling master sync should not turn sync back on.
+        mSyncContentResolver.setMasterSyncAutomatically(true);
+        SyncTestUtil.verifySyncIsDisabled(mContext, account);
+
+        // But then re-enabling Chrome sync should.
         mSyncContentResolver.setSyncAutomatically(account, authority, true);
         SyncTestUtil.verifySyncIsActiveForAccount(mContext, account);
     }

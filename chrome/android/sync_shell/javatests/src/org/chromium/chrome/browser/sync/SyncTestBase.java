@@ -13,6 +13,7 @@ import org.chromium.chrome.browser.identity.UniqueIdentificationGenerator;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory;
 import org.chromium.chrome.browser.identity.UuidBasedUniqueIdentificationGenerator;
 import org.chromium.chrome.browser.signin.SigninManager;
+import org.chromium.chrome.browser.signin.SigninManager.SignInFlowObserver;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
@@ -47,7 +48,6 @@ public class SyncTestBase extends ChromeActivityTestCaseBase<ChromeActivity> {
             }));
 
     protected Context mContext;
-    protected SyncController mSyncController;
     protected FakeServerHelper mFakeServerHelper;
     protected ProfileSyncService mProfileSyncService;
     protected MockSyncContentResolverDelegate mSyncContentResolver;
@@ -76,9 +76,8 @@ public class SyncTestBase extends ChromeActivityTestCaseBase<ChromeActivity> {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mSyncController = SyncController.get(mContext);
                 // Ensure SyncController is registered with the new AndroidSyncSettings.
-                AndroidSyncSettings.registerObserver(mContext, mSyncController);
+                AndroidSyncSettings.registerObserver(mContext, SyncController.get(mContext));
                 mFakeServerHelper = FakeServerHelper.get();
             }
         });
@@ -105,7 +104,7 @@ public class SyncTestBase extends ChromeActivityTestCaseBase<ChromeActivity> {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mSyncController.stop();
+                mProfileSyncService.requestStop();
                 FakeServerHelper.deleteFakeServer();
             }
         });
@@ -136,7 +135,7 @@ public class SyncTestBase extends ChromeActivityTestCaseBase<ChromeActivity> {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                SyncController.get(mContext).start();
+                mProfileSyncService.requestStart();
             }
         });
         SyncTestUtil.waitForSyncActive();
@@ -146,7 +145,7 @@ public class SyncTestBase extends ChromeActivityTestCaseBase<ChromeActivity> {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                SyncController.get(mContext).stop();
+                mProfileSyncService.requestStop();
             }
         });
         getInstrumentation().waitForIdleSync();
@@ -156,7 +155,17 @@ public class SyncTestBase extends ChromeActivityTestCaseBase<ChromeActivity> {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mSyncController.signIn(getActivity(), account.name);
+                SigninManager signinManager = SigninManager.get(mContext);
+                signinManager.startSignIn(null, account, false, new SignInFlowObserver() {
+                    @Override
+                    public void onSigninComplete() {
+                        mProfileSyncService.requestStart();
+                    }
+
+                    @Override
+                    public void onSigninCancelled() {
+                    }
+                });
             }
         });
         SyncTestUtil.verifySyncIsActiveForAccount(mContext, account);

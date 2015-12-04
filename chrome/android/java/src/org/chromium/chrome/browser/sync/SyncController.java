@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.sync;
 
-import android.accounts.Account;
 import android.app.Activity;
 import android.content.Context;
 
@@ -19,13 +18,10 @@ import org.chromium.chrome.browser.identity.UniqueIdentificationGenerator;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory;
 import org.chromium.chrome.browser.invalidation.InvalidationController;
 import org.chromium.chrome.browser.signin.AccountManagementFragment;
-import org.chromium.chrome.browser.signin.SigninManager;
-import org.chromium.chrome.browser.signin.SigninManager.SignInFlowObserver;
 import org.chromium.chrome.browser.sync.ui.PassphraseActivity;
 import org.chromium.sync.AndroidSyncSettings;
 import org.chromium.sync.ModelType;
 import org.chromium.sync.PassphraseType;
-import org.chromium.sync.signin.AccountManagerHelper;
 import org.chromium.sync.signin.ChromeSigninController;
 
 import javax.annotation.Nullable;
@@ -121,79 +117,15 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
     }
 
     /**
-     * Trigger Chromium sign in of the given account.
-     *
-     * This also ensure that sync setup is not in progress anymore, so sync will start after
-     * sync initialization has happened.
-     *
-     * @param activity the current activity.
-     * @param accountName the full account name.
-     */
-    @VisibleForTesting
-    public void signIn(Activity activity, String accountName) {
-        final Account account = AccountManagerHelper.createAccountFromName(accountName);
-
-        // The SigninManager handles most of the sign-in flow, and doFinishSignIn handles the
-        // ChromeShell specific details.
-        SigninManager signinManager = SigninManager.get(mContext);
-        signinManager.onFirstRunCheckDone();
-        final boolean passive = false;
-        signinManager.startSignIn(activity, account, passive, new SignInFlowObserver() {
-            @Override
-            public void onSigninComplete() {
-                SigninManager.get(mContext).logInSignedInUser();
-                mProfileSyncService.setSetupInProgress(false);
-                start();
-            }
-
-            @Override
-            public void onSigninCancelled() {
-                stop();
-            }
-        });
-    }
-
-    /**
      * Updates sync to reflect the state of the Android sync settings.
      */
-    public void updateSyncStateFromAndroid() {
-        if (AndroidSyncSettings.isSyncEnabled(mContext)) {
-            start();
-        } else {
-            stop();
-        }
-    }
-
-    /**
-     * Starts sync if the master sync flag is enabled.
-     *
-     * Affects native sync, the invalidation controller, and the Android sync settings.
-     */
-    public void start() {
-        ThreadUtils.assertOnUiThread();
-        if (AndroidSyncSettings.isMasterSyncEnabled(mContext)) {
-            Log.d(TAG, "Enabling sync");
-            InvalidationController.get(mContext).ensureStartedAndUpdateRegisteredTypes();
+    private void updateSyncStateFromAndroid() {
+        boolean isSyncEnabled = AndroidSyncSettings.isSyncEnabled(mContext);
+        if (isSyncEnabled == mProfileSyncService.isSyncRequested()) return;
+        if (isSyncEnabled) {
             mProfileSyncService.requestStart();
-            AndroidSyncSettings.enableChromeSync(mContext);
-        }
-    }
-
-    /**
-     * Stops Sync if a user is currently signed in.
-     *
-     * Affects native sync, the invalidation controller, and the Android sync settings.
-     */
-    public void stop() {
-        ThreadUtils.assertOnUiThread();
-        Log.d(TAG, "Disabling sync");
-        InvalidationController.get(mContext).stop();
-        mProfileSyncService.requestStop();
-        if (AndroidSyncSettings.isMasterSyncEnabled(mContext)) {
-            // Only disable Android's Chrome sync setting if we weren't disabled
-            // by the master sync setting. This way, when master sync is enabled
-            // they will both be on and sync will start again.
-            AndroidSyncSettings.disableChromeSync(mContext);
+        } else {
+            mProfileSyncService.requestStop();
         }
     }
 
@@ -206,12 +138,24 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
     @Override
     public void syncStateChanged() {
         ThreadUtils.assertOnUiThread();
-        // Make the Java state match the native state.
+        InvalidationController invalidationController = InvalidationController.get(mContext);
         if (mProfileSyncService.isSyncRequested()) {
-            AndroidSyncSettings.enableChromeSync(mContext);
+            if (!invalidationController.isStarted()) {
+                invalidationController.ensureStartedAndUpdateRegisteredTypes();
+            }
+            if (!AndroidSyncSettings.isSyncEnabled(mContext)) {
+                assert AndroidSyncSettings.isMasterSyncEnabled(mContext);
+                AndroidSyncSettings.enableChromeSync(mContext);
+            }
         } else {
-            if (AndroidSyncSettings.isMasterSyncEnabled(mContext)) {
-                // See comment in stop().
+            if (invalidationController.isStarted()) {
+                invalidationController.stop();
+            }
+            if (AndroidSyncSettings.isSyncEnabled(mContext)) {
+                // Both Android's master and Chrome sync setting are enabled, so we want to disable
+                // the Chrome sync setting to match isSyncRequested. We have to be careful not to
+                // disable it when isSyncRequested becomes false due to master sync being disabled
+                // so that sync will turn back on if master sync is re-enabled.
                 AndroidSyncSettings.disableChromeSync(mContext);
             }
         }

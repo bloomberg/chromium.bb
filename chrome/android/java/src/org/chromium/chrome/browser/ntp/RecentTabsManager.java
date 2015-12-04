@@ -24,7 +24,7 @@ import org.chromium.chrome.browser.ntp.RecentlyClosedBridge.RecentlyClosedTab;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
-import org.chromium.chrome.browser.sync.SyncController;
+import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.sync.AndroidSyncSettings;
@@ -442,9 +442,9 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
 
     @Override
     public void enableSync() {
-        SyncController syncController = SyncController.get(mContext);
-        if (syncController != null) {
-            syncController.start();
+        ProfileSyncService syncService = ProfileSyncService.get();
+        if (syncService != null) {
+            syncService.requestStart();
         }
     }
 

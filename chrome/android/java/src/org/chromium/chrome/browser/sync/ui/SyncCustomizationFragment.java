@@ -31,7 +31,6 @@ import org.chromium.chrome.browser.childaccounts.ChildAccountService;
 import org.chromium.chrome.browser.invalidation.InvalidationController;
 import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
-import org.chromium.chrome.browser.sync.SyncController;
 import org.chromium.sync.AndroidSyncSettings;
 import org.chromium.sync.ModelType;
 import org.chromium.sync.PassphraseType;
@@ -151,11 +150,10 @@ public class SyncCustomizationFragment extends PreferenceFragment
             @Override
             public boolean onPreferenceChange(Preference preference, Object newValue) {
                 assert canDisableSync();
-                SyncController syncController = SyncController.get(getActivity());
                 if ((boolean) newValue) {
-                    syncController.start();
+                    mProfileSyncService.requestStart();
                 } else {
-                    syncController.stop();
+                    mProfileSyncService.requestStop();
                 }
                 // Must be done asynchronously because the switch state isn't updated
                 // until after this function exits.
@@ -562,7 +560,7 @@ public class SyncCustomizationFragment extends PreferenceFragment
                 || !canDisableSync()) {
             return false;
         }
-        SyncController.get(getActivity()).stop();
+        mProfileSyncService.requestStop();
         mSyncSwitchPreference.setChecked(false);
         // setChecked doesn't trigger the callback, so update manually.
         updateSyncStateFromSwitch();
