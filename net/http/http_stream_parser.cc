@@ -1078,7 +1078,7 @@ bool HttpStreamParser::CanReuseConnection() const {
     return false;
   if (!response_->headers || !response_->headers->IsKeepAlive())
     return false;
-  return connection_->socket() && connection_->socket()->IsConnectedAndIdle();
+  return connection_->socket() && connection_->socket()->IsConnected();
 }
 
 void HttpStreamParser::GetSSLInfo(SSLInfo* ssl_info) {

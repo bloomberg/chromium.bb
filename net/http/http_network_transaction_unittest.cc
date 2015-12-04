@@ -5882,12 +5882,8 @@ TEST_P(HttpNetworkTransactionTest, RecycleDeadSSLSocket) {
   };
 
   MockRead data_reads[] = {
-    MockRead("HTTP/1.1 200 OK\r\n"),
-    MockRead("Content-Length: 11\r\n\r\n"),
-    MockRead(SYNCHRONOUS, ERR_TEST_PEER_CLOSE_AFTER_NEXT_MOCK_READ),
-    MockRead("hello world"),
-    MockRead(ASYNC, 0, 0)   // EOF
-  };
+      MockRead("HTTP/1.1 200 OK\r\n"), MockRead("Content-Length: 11\r\n\r\n"),
+      MockRead("hello world"), MockRead(ASYNC, ERR_CONNECTION_CLOSED)};
 
   SSLSocketDataProvider ssl(ASYNC, OK);
   SSLSocketDataProvider ssl2(ASYNC, OK);

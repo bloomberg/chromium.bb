@@ -79,7 +79,8 @@ class NET_EXPORT_PRIVATE HttpStreamParser {
   // The connection can be reused if:
   // * It's still connected.
   // * The response headers indicate the connection can be kept alive.
-  // * The end of the response can be found.
+  // * The end of the response can be found, though it may not have yet been
+  //     received.
   //
   // Note that if response headers have yet to be received, this will return
   // false.
