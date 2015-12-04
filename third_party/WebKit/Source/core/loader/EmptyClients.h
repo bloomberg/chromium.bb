@@ -273,7 +273,6 @@ class CORE_EXPORT EmptyTextCheckerClient : public TextCheckerClient {
 public:
     ~EmptyTextCheckerClient() { }
 
-    bool shouldEraseMarkersAfterChangeSelection(TextCheckingType) const override { return true; }
     void checkSpellingOfString(const String&, int*, int*) override {}
     void checkGrammarOfString(const String&, Vector<GrammarDetail>&, int*, int*) override {}
     void requestCheckingOfString(PassRefPtrWillBeRawPtr<TextCheckingRequest>) override;

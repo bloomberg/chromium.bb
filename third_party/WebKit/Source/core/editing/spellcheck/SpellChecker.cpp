@@ -636,9 +636,6 @@ void SpellChecker::markMisspellingsAndBadGrammar(const VisibleSelection& spellin
 
 void SpellChecker::updateMarkersForWordsAffectedByEditing(bool doNotRemoveIfSelectionAtWordBoundary)
 {
-    if (textChecker().shouldEraseMarkersAfterChangeSelection(TextCheckingTypeSpelling))
-        return;
-
     TRACE_EVENT0("blink", "SpellChecker::updateMarkersForWordsAffectedByEditing");
 
     // We want to remove the markers from a word if an editing command will change the word. This can happen in one of
@@ -777,14 +774,6 @@ void SpellChecker::respondToChangedSelection(const VisibleSelection& oldSelectio
             && oldSelection.start().inDocument()) {
             spellCheckOldSelection(oldSelection, newAdjacentWords);
         }
-
-        // FIXME(http://crbug.com/382809):
-        // shouldEraseMarkersAfterChangeSelection is true, we cause synchronous
-        // layout.
-        if (textChecker().shouldEraseMarkersAfterChangeSelection(TextCheckingTypeSpelling))
-            removeMarkers(newAdjacentWords, DocumentMarker::Spelling);
-        if (textChecker().shouldEraseMarkersAfterChangeSelection(TextCheckingTypeGrammar))
-            removeMarkers(newSelectedSentence, DocumentMarker::Grammar);
     }
 
     // When continuous spell checking is off, existing markers disappear after the selection changes.

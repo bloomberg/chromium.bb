@@ -47,23 +47,16 @@ private:
     RefPtrWillBePersistent<HTMLInputElement> m_input;
 };
 
-class DummyTextCheckerClient : public EmptyTextCheckerClient {
-public:
-    ~DummyTextCheckerClient() { }
-
-    bool shouldEraseMarkersAfterChangeSelection(TextCheckingType) const override { return false; }
-};
-
 class DummySpellCheckerClient : public EmptySpellCheckerClient {
 public:
     virtual ~DummySpellCheckerClient() { }
 
     bool isContinuousSpellCheckingEnabled() override { return true; }
 
-    TextCheckerClient& textChecker() override { return m_dummyTextCheckerClient; }
+    TextCheckerClient& textChecker() override { return m_emptyTextCheckerClient; }
 
 private:
-    DummyTextCheckerClient m_dummyTextCheckerClient;
+    EmptyTextCheckerClient m_emptyTextCheckerClient;
 };
 
 void HTMLTextFormControlElementTest::SetUp()

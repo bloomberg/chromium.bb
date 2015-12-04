@@ -47,7 +47,6 @@ public:
 
     bool isContinuousSpellCheckingEnabled() override;
     void toggleContinuousSpellChecking() override;
-    bool shouldEraseMarkersAfterChangeSelection(TextCheckingType) const override;
     void checkSpellingOfString(const String&, int* misspellingLocation, int* misspellingLength) override;
     void checkGrammarOfString(const String&, Vector<GrammarDetail>&,
         int* badGrammarLocation, int* badGrammarLength) override;
