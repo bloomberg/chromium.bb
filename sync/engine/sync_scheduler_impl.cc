@@ -51,6 +51,7 @@ bool ShouldRequestEarlyExit(const SyncProtocolError& error) {
     case MIGRATION_DONE:
     case THROTTLED:
     case TRANSIENT_ERROR:
+    case PARTIAL_FAILURE:
       return false;
     case NOT_MY_BIRTHDAY:
     case CLIENT_DATA_OBSOLETE:
@@ -67,12 +68,13 @@ bool ShouldRequestEarlyExit(const SyncProtocolError& error) {
       // The notification for this is handled by PostAndProcessHeaders|.
       // Server does no have to send any action for this.
       return true;
-    // Make the default a NOTREACHED. So if a new error is introduced we
-    // think about its expected functionality.
-    default:
+    // Make UNKNOWN_ERROR a NOTREACHED. All the other error should be explicitly
+    // handled.
+    case UNKNOWN_ERROR:
       NOTREACHED();
       return false;
   }
+  return false;
 }
 
 bool IsActionableError(
