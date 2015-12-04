@@ -495,6 +495,7 @@ TEST_F(RenderViewImplTest, OnNavStateChanged) {
     EXPECT_TRUE(render_thread_->sink().GetUniqueMessageMatching(
         ViewHostMsg_UpdateState::ID));
   }
+  ProcessPendingMessages();
 }
 
 TEST_F(RenderViewImplTest, OnNavigationHttpPost) {
@@ -1088,6 +1089,7 @@ TEST_F(RenderViewImplTest, OnImeTypeChanged) {
       // message to activate IMEs.
       view()->UpdateTextInputState(
           RenderWidget::NO_SHOW_IME, RenderWidget::FROM_NON_IME);
+      ProcessPendingMessages();
       const IPC::Message* msg = render_thread_->sink().GetMessageAt(0);
       EXPECT_TRUE(msg != NULL);
       EXPECT_EQ(ViewHostMsg_TextInputStateChanged::ID, msg->type());
