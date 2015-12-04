@@ -34,6 +34,10 @@ class ExclusiveAccessBubble : public gfx::AnimationDelegate {
                                  ExclusiveAccessBubbleType bubble_type);
   ~ExclusiveAccessBubble() override;
 
+  // Informs the ExclusiveAccessBubble of some user input, which may update
+  // internal timers and/or re-display the bubble.
+  void OnUserInput();
+
  protected:
   static const int kPaddingPx;        // Amount of padding around the link
   static const int kInitialDelayMs;   // Initial time bubble remains onscreen
@@ -113,7 +117,7 @@ class ExclusiveAccessBubble : public gfx::AnimationDelegate {
   // the user moving the mouse to the top of the screen and holding it there).
   base::OneShotTimer hide_timeout_;
 
-  // Timer to see how long the mouse has been idle.
+  // Timer to see how long the user has been idle (from all input sources).
   base::OneShotTimer idle_timeout_;
 
   // When this timer has elapsed, on the next mouse input, we will notify the
