@@ -363,6 +363,15 @@ Standard library header &lt;type_traits&gt;</a></td>
 <td>Note that not all type traits are available on all platforms (eg std::underlying_type doesn't work in libstdc++4.6). Use judiciously. <a href='https://groups.google.com/a/chromium.org/forum/#!topic/cxx/vCxo4tZNd_M'>Discussion thread</a></td>
 </tr>
 
+<tr>
+<td>Move Iterator Adaptor</td>
+<td><code>std::make_move_iterator()</code></td>
+<td>Wraps an iterator so that it moves objects instead of copying them.</td>
+<td><a href="http://en.cppreference.com/w/cpp/iterator/make_move_iterator">
+std::make_move_iterator</a></td>
+<td>Useful to move objects between containers that contain move-only types like <code>scoped_ptr</code>. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/cxx/lccnUljOHQU">Discussion thread</a></td>
+</tr>
+
 </tbody>
 </table>
 
