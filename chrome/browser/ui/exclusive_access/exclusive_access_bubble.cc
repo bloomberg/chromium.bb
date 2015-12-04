@@ -31,6 +31,7 @@ const int ExclusiveAccessBubble::kSlideInRegionHeightPx = 4;
 const int ExclusiveAccessBubble::kSlideInDurationMs = 350;
 const int ExclusiveAccessBubble::kSlideOutDurationMs = 700;
 const int ExclusiveAccessBubble::kPopupTopPx = 45;
+const int ExclusiveAccessBubble::kSimplifiedPopupTopPx = 16;
 
 ExclusiveAccessBubble::ExclusiveAccessBubble(
     ExclusiveAccessManager* manager,

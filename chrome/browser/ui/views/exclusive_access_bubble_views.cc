@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/exclusive_access_bubble_views.h"
 
-#include "base/i18n/case_conversion.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
@@ -45,9 +44,12 @@ namespace {
 // Space between the site info label and the buttons / link.
 const int kMiddlePaddingPx = 30;
 
-// Opacity of the background (out of 255). Only used with
+const int kOuterPaddingHorizPx = 24;
+const int kOuterPaddingVertPx = 8;
+
+// Partially-transparent background color. Only used with
 // IsSimplifiedFullscreenUIEnabled.
-const unsigned char kBackgroundOpacity = 180;
+const SkColor kBackgroundColor = SkColorSetARGB(0xcc, 0x28, 0x2c, 0x32);
 
 class ButtonView : public views::View {
  public:
@@ -113,9 +115,9 @@ InstructionView::InstructionView(const base::string16& text,
 
   // Spacing around the escape key name.
   const int kKeyNameMarginHorizPx = 7;
-  const int kKeyNameBorderPx = 2;
+  const int kKeyNameBorderPx = 1;
   const int kKeyNameCornerRadius = 2;
-  const int kKeyNamePaddingPx = 7;
+  const int kKeyNamePaddingPx = 5;
 
   // The |between_child_spacing| is the horizontal margin of the key name.
   views::BoxLayout* layout = new views::BoxLayout(views::BoxLayout::kHorizontal,
@@ -130,8 +132,7 @@ InstructionView::InstructionView(const base::string16& text,
   if (segments.size() < 3)
     return;
 
-  base::string16 key = base::i18n::ToUpper(segments[1]);
-  views::Label* key_name_label = new views::Label(key, font_list);
+  views::Label* key_name_label = new views::Label(segments[1], font_list);
   key_name_label->SetEnabledColor(foreground_color);
   key_name_label->SetBackgroundColor(background_color);
 
@@ -217,7 +218,7 @@ ExclusiveAccessBubbleViews::ExclusiveAccessView::ExclusiveAccessView(
   ui::NativeTheme* theme = ui::NativeTheme::GetInstanceForWeb();
   SkColor background_color =
       ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled()
-          ? SkColorSetA(SK_ColorBLACK, kBackgroundOpacity)
+          ? kBackgroundColor
           : theme->GetSystemColor(ui::NativeTheme::kColorId_BubbleBackground);
   SkColor foreground_color =
       ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled()
@@ -231,17 +232,20 @@ ExclusiveAccessBubbleViews::ExclusiveAccessView::ExclusiveAccessView(
   SetFocusable(false);
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  const gfx::FontList& medium_font_list =
-      rb.GetFontList(ui::ResourceBundle::MediumFont);
+  ui::ResourceBundle::FontStyle font_style =
+      ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled()
+          ? ui::ResourceBundle::SmallFont
+          : ui::ResourceBundle::MediumFont;
+  const gfx::FontList& font_list = rb.GetFontList(font_style);
 
   if (!ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled()) {
-    message_label_ = new views::Label(base::string16(), medium_font_list);
+    message_label_ = new views::Label(base::string16(), font_list);
     message_label_->SetEnabledColor(foreground_color);
     message_label_->SetBackgroundColor(background_color);
   }
 
   exit_instruction_ =
-      new InstructionView(bubble_->GetInstructionText(), medium_font_list,
+      new InstructionView(bubble_->GetInstructionText(), font_list,
                           foreground_color, background_color);
 
   link_ = new views::Link();
@@ -251,7 +255,7 @@ ExclusiveAccessBubbleViews::ExclusiveAccessView::ExclusiveAccessView(
   link_->SetText(l10n_util::GetStringUTF16(IDS_EXIT_FULLSCREEN_MODE));
 #endif
   link_->set_listener(this);
-  link_->SetFontList(medium_font_list);
+  link_->SetFontList(font_list);
   link_->SetPressedColor(foreground_color);
   link_->SetEnabledColor(foreground_color);
   link_->SetBackgroundColor(background_color);
@@ -259,16 +263,22 @@ ExclusiveAccessBubbleViews::ExclusiveAccessView::ExclusiveAccessView(
 
   button_view_ = new ButtonView(this, kPaddingPx);
 
+  int outer_padding_horiz = kOuterPaddingHorizPx;
+  int outer_padding_vert = kOuterPaddingVertPx;
   if (!ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled()) {
     DCHECK(message_label_);
     AddChildView(message_label_);
+
+    outer_padding_horiz = kPaddingPx;
+    outer_padding_vert = kPaddingPx;
   }
   AddChildView(button_view_);
   AddChildView(exit_instruction_);
   AddChildView(link_);
 
-  views::BoxLayout* layout = new views::BoxLayout(
-      views::BoxLayout::kHorizontal, kPaddingPx, kPaddingPx, kMiddlePaddingPx);
+  views::BoxLayout* layout =
+      new views::BoxLayout(views::BoxLayout::kHorizontal, outer_padding_horiz,
+                           outer_padding_vert, kMiddlePaddingPx);
   SetLayoutManager(layout);
 
   UpdateContent(url, bubble_type);
@@ -562,7 +572,10 @@ gfx::Rect ExclusiveAccessBubbleViews::GetPopupRect(
         bubble_view_context_->GetTopContainerBoundsInScreen().bottom();
   }
   // |desired_top| is the top of the bubble area including the shadow.
-  int desired_top = kPopupTopPx - view_->border()->GetInsets().top();
+  int popup_top = ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled()
+                      ? kSimplifiedPopupTopPx
+                      : kPopupTopPx;
+  int desired_top = popup_top - view_->border()->GetInsets().top();
   int y = top_container_bottom + desired_top;
 
   if (!ignore_animation_state &&

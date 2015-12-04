@@ -50,6 +50,8 @@ class ExclusiveAccessBubble : public gfx::AnimationDelegate {
   static const int kSlideOutDurationMs;  // Duration of slide-out animation
   // Space between the popup and the top of the screen (excluding shadow).
   static const int kPopupTopPx;
+  // Space between top of screen and popup, in simplified UI.
+  static const int kSimplifiedPopupTopPx;
 
   // Returns the current desirable rect for the popup window.  If
   // |ignore_animation_state| is true this returns the rect assuming the popup
