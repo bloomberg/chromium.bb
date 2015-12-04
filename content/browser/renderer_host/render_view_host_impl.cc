@@ -74,7 +74,6 @@
 #include "content/public/common/url_utils.h"
 #include "net/base/filename_util.h"
 #include "net/base/net_util.h"
-#include "net/base/network_change_notifier.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "storage/browser/fileapi/isolated_context.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -505,11 +504,6 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
     prefs.loads_images_automatically = true;
     prefs.javascript_enabled = true;
   }
-
-  net::NetworkChangeNotifier::GetMaxBandwidthAndConnectionType(
-      &prefs.net_info_max_bandwidth_mbps, &prefs.net_info_connection_type);
-  prefs.is_online = prefs.net_info_connection_type !=
-                    net::NetworkChangeNotifier::CONNECTION_NONE;
 
   prefs.number_of_cpu_cores = base::SysInfo::NumberOfProcessors();
 

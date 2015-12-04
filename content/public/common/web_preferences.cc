@@ -96,11 +96,6 @@ WebPreferences::WebPreferences()
       tabs_to_links(true),
       caret_browsing_enabled(false),
       hyperlink_auditing_enabled(true),
-      is_online(true),
-      net_info_connection_type(net::NetworkChangeNotifier::CONNECTION_NONE),
-      net_info_max_bandwidth_mbps(
-          net::NetworkChangeNotifier::GetMaxBandwidthForConnectionSubtype(
-              net::NetworkChangeNotifier::SUBTYPE_NONE)),
       allow_universal_access_from_file_urls(false),
       allow_file_access_from_file_urls(false),
       webaudio_enabled(false),

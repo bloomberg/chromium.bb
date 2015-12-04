@@ -11,7 +11,6 @@
 
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
-#include "net/base/network_change_notifier.h"
 #include "ui/base/touch/touch_device.h"
 #include "url/gurl.h"
 
@@ -102,9 +101,6 @@ struct CONTENT_EXPORT WebPreferences {
   bool tabs_to_links;
   bool caret_browsing_enabled;
   bool hyperlink_auditing_enabled;
-  bool is_online;
-  net::NetworkChangeNotifier::ConnectionType net_info_connection_type;
-  double net_info_max_bandwidth_mbps;
   bool allow_universal_access_from_file_urls;
   bool allow_file_access_from_file_urls;
   bool webaudio_enabled;

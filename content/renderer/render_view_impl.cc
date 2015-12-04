@@ -88,7 +88,6 @@
 #include "content/renderer/mhtml_generator.h"
 #include "content/renderer/mojo_bindings_controller.h"
 #include "content/renderer/navigation_state_impl.h"
-#include "content/renderer/net_info_helper.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_process.h"
@@ -149,7 +148,6 @@
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebMediaPlayerAction.h"
 #include "third_party/WebKit/public/web/WebNavigationPolicy.h"
-#include "third_party/WebKit/public/web/WebNetworkStateNotifier.h"
 #include "third_party/WebKit/public/web/WebPageImportanceSignals.h"
 #include "third_party/WebKit/public/web/WebPlugin.h"
 #include "third_party/WebKit/public/web/WebPluginAction.h"
@@ -274,7 +272,6 @@ using blink::WebVector;
 using blink::WebView;
 using blink::WebWidget;
 using blink::WebWindowFeatures;
-using blink::WebNetworkStateNotifier;
 using blink::WebRuntimeFeatures;
 using base::Time;
 using base::TimeDelta;
@@ -1109,11 +1106,6 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   settings->setViewportMetaEnabled(prefs.viewport_meta_enabled);
   settings->setMainFrameResizesAreOrientationChanges(
       prefs.main_frame_resizes_are_orientation_changes);
-
-  WebNetworkStateNotifier::setOnLine(prefs.is_online);
-  WebNetworkStateNotifier::setWebConnection(
-      NetConnectionTypeToWebConnectionType(prefs.net_info_connection_type),
-      prefs.net_info_max_bandwidth_mbps);
 
   settings->setPinchOverlayScrollbarThickness(
       prefs.pinch_overlay_scrollbar_thickness);

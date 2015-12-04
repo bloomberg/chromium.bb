@@ -76,6 +76,18 @@ class NetInfoBrowserTest : public content::ContentBrowserTest {
   }
 };
 
+// Make sure the type is correct when the page is first opened.
+IN_PROC_BROWSER_TEST_F(NetInfoBrowserTest, VerifyNetworkStateInitialized) {
+  SetConnectionType(net::NetworkChangeNotifier::CONNECTION_ETHERNET,
+                    net::NetworkChangeNotifier::SUBTYPE_GIGABIT_ETHERNET);
+  NavigateToURL(shell(), content::GetTestUrl("", "net_info.html"));
+  EXPECT_TRUE(RunScriptExtractBool("getOnLine()"));
+  EXPECT_EQ("ethernet", RunScriptExtractString("getType()"));
+  EXPECT_EQ(net::NetworkChangeNotifier::GetMaxBandwidthForConnectionSubtype(
+                net::NetworkChangeNotifier::SUBTYPE_GIGABIT_ETHERNET),
+            RunScriptExtractDouble("getDownlinkMax()"));
+}
+
 // Make sure that type changes in the browser make their way to
 // navigator.connection.type.
 IN_PROC_BROWSER_TEST_F(NetInfoBrowserTest, NetworkChangePlumbsToNavigator) {
@@ -108,6 +120,27 @@ IN_PROC_BROWSER_TEST_F(NetInfoBrowserTest, IsOnline) {
   SetConnectionType(net::NetworkChangeNotifier::CONNECTION_WIFI,
                     net::NetworkChangeNotifier::SUBTYPE_WIFI_N);
   EXPECT_TRUE(RunScriptExtractBool("getOnLine()"));
+}
+
+// Creating a new render view shouldn't reinitialize Blink's
+// NetworkStateNotifier. See https://crbug.com/535081.
+IN_PROC_BROWSER_TEST_F(NetInfoBrowserTest, TwoRenderViewsInOneProcess) {
+  SetConnectionType(net::NetworkChangeNotifier::CONNECTION_ETHERNET,
+                    net::NetworkChangeNotifier::SUBTYPE_GIGABIT_ETHERNET);
+  NavigateToURL(shell(), content::GetTestUrl("", "net_info.html"));
+  EXPECT_TRUE(RunScriptExtractBool("getOnLine()"));
+
+  SetConnectionType(net::NetworkChangeNotifier::CONNECTION_NONE,
+                    net::NetworkChangeNotifier::SUBTYPE_NONE);
+  EXPECT_FALSE(RunScriptExtractBool("getOnLine()"));
+
+  // Open the same page in a new window on the same process.
+  EXPECT_TRUE(
+      ExecuteScript(shell()->web_contents(), "window.open(\"net_info.html\")"));
+
+  // The network state should not have reinitialized to what it was when opening
+  // the first window (online).
+  EXPECT_FALSE(RunScriptExtractBool("getOnLine()"));
 }
 
 }  // namespace content

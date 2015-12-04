@@ -128,6 +128,8 @@ void NetworkStateNotifier::setWebConnectionImpl(WebConnectionType type, double m
     ASSERT(isMainThread());
 
     MutexLocker locker(m_mutex);
+    m_initialized = true;
+
     if (m_type == type && m_maxBandwidthMbps == maxBandwidthMbps)
         return;
     m_type = type;
