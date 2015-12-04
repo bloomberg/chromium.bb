@@ -754,7 +754,7 @@ bool PushMessagingServiceImpl::IsPermissionSet(const GURL& origin) {
 
 bool PushMessagingServiceImpl::AreMessagePayloadsEnabled() const {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnablePushMessagePayload);
+      switches::kEnableExperimentalWebPlatformFeatures);
 }
 
 gcm::GCMDriver* PushMessagingServiceImpl::GetGCMDriver() const {

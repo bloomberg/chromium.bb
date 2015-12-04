@@ -405,9 +405,6 @@ const char kEnablePluginPlaceholderTesting[] =
 // also applys to workers.
 const char kEnablePreciseMemoryInfo[] = "enable-precise-memory-info";
 
-// Enables payloads for received push messages when using the W3C Push API.
-const char kEnablePushMessagePayload[] = "enable-push-message-payload";
-
 // Enables RGBA_4444 textures.
 const char kEnableRGBA4444Textures[] = "enable-rgba-4444-textures";
 

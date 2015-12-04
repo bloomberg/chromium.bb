@@ -1385,7 +1385,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnablePreciseMemoryInfo,
     switches::kEnablePreferCompositingToLCDText,
     switches::kEnablePrefixedEncryptedMedia,
-    switches::kEnablePushMessagePayload,
     switches::kEnableRGBA4444Textures,
     switches::kEnableRendererMojoChannel,
     switches::kEnableSkiaBenchmarking,

@@ -95,7 +95,7 @@ class PushMessagingServiceTest : public ::testing::Test {
 
     // Force-enable encrypted payloads for incoming push messages.
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnablePushMessagePayload);
+        switches::kEnableExperimentalWebPlatformFeatures);
   }
 
   ~PushMessagingServiceTest() override {}

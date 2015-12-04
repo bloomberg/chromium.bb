@@ -171,7 +171,8 @@ class ServiceWorkerPushMessagingTest : public ServiceWorkerTest {
 
   // ExtensionApiTest overrides.
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(switches::kEnablePushMessagePayload);
+    command_line->AppendSwitch(
+        switches::kEnableExperimentalWebPlatformFeatures);
     ServiceWorkerTest::SetUpCommandLine(command_line);
   }
   void SetUpOnMainThread() override {
