@@ -25,10 +25,10 @@ class PaintContext;
 class COMPOSITOR_EXPORT CompositingRecorder {
  public:
   // |alpha| is a value between 0 and 255, where 0 is transparent and 255 is
-  // opaque. |size_in_layer| is the size in layer space dimensions surrounding
+  // opaque. |size_in_context| is the size in the |context|'s space surrounding
   // everything that's visible.
   CompositingRecorder(const PaintContext& context,
-                      const gfx::Size& size_in_layer,
+                      const gfx::Size& size_in_context,
                       uint8_t alpha);
   ~CompositingRecorder();
 

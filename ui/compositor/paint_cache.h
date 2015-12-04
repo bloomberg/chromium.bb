@@ -24,7 +24,7 @@ class COMPOSITOR_EXPORT PaintCache {
   // painting output into the PaintContext. If it returns false, the caller
   // needs to do the work of painting, which can be stored into the PaintCache
   // to be used next time.
-  bool UseCache(const PaintContext& context, const gfx::Size& size_in_layer);
+  bool UseCache(const PaintContext& context, const gfx::Size& size_in_context);
 
  private:
   // Only PaintRecorder can modify these.

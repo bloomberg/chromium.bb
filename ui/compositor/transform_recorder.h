@@ -25,20 +25,20 @@ class PaintContext;
 // A class to provide scoped transforms of painting to a DisplayItemList. The
 // transform provided will be applied to any DisplayItems added to the
 // DisplayItemList while this object is alive. In other words, any nested
-// PaintRecorders or other TransformRecorders will be transformed.
+// recorders will be transformed.
 class COMPOSITOR_EXPORT TransformRecorder {
  public:
-  // |size_in_layer| is the size in layer space dimensions surrounding
-  // everything that's visible.
-  TransformRecorder(const PaintContext& context,
-                    const gfx::Size& size_in_layer);
+  explicit TransformRecorder(const PaintContext& context);
   ~TransformRecorder();
 
-  void Transform(const gfx::Transform& transform);
+  // |size_in_context| is the size in the paint context's space surrounding
+  // everything that's visible.
+  void Transform(const gfx::Transform& transform,
+                 const gfx::Size& size_in_context);
 
  private:
   const PaintContext& context_;
-  const gfx::Rect bounds_in_layer_;
+  gfx::Rect bounds_in_layer_;
   bool transformed_;
 
   DISALLOW_COPY_AND_ASSIGN(TransformRecorder);

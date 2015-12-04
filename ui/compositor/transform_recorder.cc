@@ -10,11 +10,8 @@
 
 namespace ui {
 
-TransformRecorder::TransformRecorder(const PaintContext& context,
-                                     const gfx::Size& size_in_layer)
-    : context_(context),
-      bounds_in_layer_(context.ToLayerSpaceBounds(size_in_layer)),
-      transformed_(false) {}
+TransformRecorder::TransformRecorder(const PaintContext& context)
+    : context_(context), transformed_(false) {}
 
 TransformRecorder::~TransformRecorder() {
   if (transformed_)
@@ -22,8 +19,10 @@ TransformRecorder::~TransformRecorder() {
         bounds_in_layer_);
 }
 
-void TransformRecorder::Transform(const gfx::Transform& transform) {
+void TransformRecorder::Transform(const gfx::Transform& transform,
+                                  const gfx::Size& size_in_context) {
   DCHECK(!transformed_);
+  bounds_in_layer_ = context_.ToLayerSpaceBounds(size_in_context);
   auto* item = context_.list_->CreateAndAppendItem<cc::TransformDisplayItem>(
       bounds_in_layer_);
   item->SetNew(transform);

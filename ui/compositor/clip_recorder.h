@@ -24,13 +24,11 @@ class PaintContext;
 
 // A class to provide scoped clips of painting to a DisplayItemList. The clip
 // provided will be applied to any DisplayItems added to the DisplayItemList
-// while this object is alive. In other words, any nested PaintRecorders or
-// other ClipRecorders will be clipped.
+// while this object is alive. In other words, any nested recorders will be
+// clipped.
 class COMPOSITOR_EXPORT ClipRecorder {
  public:
-  // |size_in_layer| is the size in layer space dimensions surrounding
-  // everything that's visible.
-  ClipRecorder(const PaintContext& context, const gfx::Size& size_in_layer);
+  explicit ClipRecorder(const PaintContext& context);
   ~ClipRecorder();
 
   void ClipRect(const gfx::Rect& clip_rect);
@@ -42,12 +40,16 @@ class COMPOSITOR_EXPORT ClipRecorder {
     CLIP_RECT,
     CLIP_PATH,
   };
+
+  void RecordCloser(const gfx::Rect& bounds_in_layer, Closer);
+
   const PaintContext& context_;
-  const gfx::Rect bounds_in_layer_;
   // If someone needs to do more than this many operations with a single
-  // ClipRecorder then increase the size of the closers_ array.
-  Closer closers_[4];
-  size_t num_closers_;
+  // ClipRecorder then we'll increase this.
+  enum : int { kMaxOpCount = 4 };
+  Closer closers_[kMaxOpCount];
+  gfx::Rect bounds_in_layer_[kMaxOpCount];
+  int num_closers_;
 
   DISALLOW_COPY_AND_ASSIGN(ClipRecorder);
 };

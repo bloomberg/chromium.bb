@@ -791,10 +791,9 @@ void View::Paint(const ui::PaintContext& parent_context) {
   // rather than relative to its parent.
   bool paint_relative_to_parent = !layer();
 
-  // TODO(wkorman): Rework clip and transform recorders to pass the size in the
-  // individual clip methods rather than in the constructor.
-  ui::ClipRecorder clip_recorder(parent_context,
-                                 parent() ? parent()->size() : size());
+  // TODO(danakj): Rework clip and transform recorder usage here to use
+  // std::optional once we can do so.
+  ui::ClipRecorder clip_recorder(parent_context);
   if (paint_relative_to_parent) {
     // Set the clip rect to the bounds of this View. Note that the X (or left)
     // position we pass to ClipRect takes into consideration whether or not the
@@ -808,7 +807,7 @@ void View::Paint(const ui::PaintContext& parent_context) {
     clip_recorder.ClipRect(clip_rect_in_parent);
   }
 
-  ui::TransformRecorder transform_recorder(context, size());
+  ui::TransformRecorder transform_recorder(context);
   if (paint_relative_to_parent) {
     // Translate the graphics such that 0,0 corresponds to where
     // this View is located relative to its parent.
@@ -817,7 +816,7 @@ void View::Paint(const ui::PaintContext& parent_context) {
     transform_from_parent.Translate(offset_from_parent.x(),
                                     offset_from_parent.y());
     transform_from_parent.PreconcatTransform(GetTransform());
-    transform_recorder.Transform(transform_from_parent);
+    transform_recorder.Transform(transform_from_parent, size());
   }
 
   // Note that the cache is not aware of the offset of the view

@@ -327,7 +327,7 @@ class EditableProfilePhoto : public views::LabelButton {
 
   void PaintChildren(const ui::PaintContext& context) override {
     // Display any children (the "change photo" overlay) as a circle.
-    ui::ClipRecorder clip_recorder(context, size());
+    ui::ClipRecorder clip_recorder(context);
     clip_recorder.ClipPathWithAntiAliasing(circular_mask_);
     View::PaintChildren(context);
   }

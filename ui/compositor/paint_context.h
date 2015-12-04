@@ -82,7 +82,7 @@ class COMPOSITOR_EXPORT PaintContext {
 
   // Returns a rect with the given size in the space of the context's
   // containing layer.
-  gfx::Rect ToLayerSpaceBounds(const gfx::Size& size_in_layer) const;
+  gfx::Rect ToLayerSpaceBounds(const gfx::Size& size_in_context) const;
 
   // Returns the given rect translated by the layer space offset.
   gfx::Rect ToLayerSpaceRect(const gfx::Rect& rect) const;

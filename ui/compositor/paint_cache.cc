@@ -16,11 +16,11 @@ PaintCache::~PaintCache() {
 }
 
 bool PaintCache::UseCache(const PaintContext& context,
-                          const gfx::Size& size_in_layer) {
+                          const gfx::Size& size_in_context) {
   if (!has_cache_)
     return false;
   DCHECK(context.list_);
-  gfx::Rect bounds_in_layer = context.ToLayerSpaceBounds(size_in_layer);
+  gfx::Rect bounds_in_layer = context.ToLayerSpaceBounds(size_in_context);
   auto* item = context.list_->CreateAndAppendItem<cc::DrawingDisplayItem>(
       bounds_in_layer);
   display_item_.CloneTo(item);

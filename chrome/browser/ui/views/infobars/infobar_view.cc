@@ -276,7 +276,7 @@ void InfoBarView::PaintChildren(const ui::PaintContext& context) {
   // canvas->sk_canvas()->clipPath(fill_path_);
   DCHECK_EQ(total_height(), height())
       << "Infobar piecewise heights do not match overall height";
-  ui::ClipRecorder clip_recorder(context, size());
+  ui::ClipRecorder clip_recorder(context);
   clip_recorder.ClipRect(gfx::Rect(0, arrow_height(), width(), bar_height()));
   views::View::PaintChildren(context);
 }

@@ -12,10 +12,10 @@
 namespace ui {
 
 CompositingRecorder::CompositingRecorder(const PaintContext& context,
-                                         const gfx::Size& size_in_layer,
+                                         const gfx::Size& size_in_context,
                                          uint8_t alpha)
     : context_(context),
-      bounds_in_layer_(context.ToLayerSpaceBounds(size_in_layer)),
+      bounds_in_layer_(context.ToLayerSpaceBounds(size_in_context)),
       saved_(alpha < 255) {
   if (!saved_)
     return;
