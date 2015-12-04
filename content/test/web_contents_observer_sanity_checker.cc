@@ -54,6 +54,12 @@ void WebContentsObserverSanityChecker::RenderFrameCreated(
       static_cast<RenderFrameHostImpl*>(render_frame_host)->IsRenderFrameLive())
       << "RenderFrameCreated called on for a RenderFrameHost that thinks it is "
          "not alive.";
+
+  // Any child frame must be in the same BrowsingInstance as its parent.
+  if (render_frame_host->GetParent()) {
+    CHECK(render_frame_host->GetSiteInstance()->IsRelatedSiteInstance(
+        render_frame_host->GetParent()->GetSiteInstance()));
+  }
 }
 
 void WebContentsObserverSanityChecker::RenderFrameDeleted(

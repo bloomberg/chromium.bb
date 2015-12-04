@@ -1135,8 +1135,8 @@ IN_PROC_BROWSER_TEST_F(
   const Extension* extension1 = CreateExtension("Extension One", false);
 
   // Navigate the tab's first iframe to a resource of the extension. The
-  // extension iframe will be put in a separate BrowsingInstance (see
-  // https://crbug.com/522302) unless in the default process model.
+  // extension iframe will be put in the same BrowsingInstance as it is part
+  // of the frame tree.
   content::NavigateIframeToURL(
       tab, "child-0", extension1->GetResourceURL("/blank_iframe.html"));
   details = new TestMemoryDetails();
@@ -1144,7 +1144,7 @@ IN_PROC_BROWSER_TEST_F(
   if (content::AreAllSitesIsolatedForTesting()) {
     EXPECT_THAT(details->uma()->GetAllSamples(
                     "SiteIsolation.SiteInstancesPerBrowsingInstance"),
-                ElementsAre(Bucket(1, 1), Bucket(4, 1)));
+                ElementsAre(Bucket(5, 1)));
   } else if (extensions::IsIsolateExtensionsEnabled()) {
     EXPECT_THAT(details->uma()->GetAllSamples(
                     "SiteIsolation.SiteInstancesPerBrowsingInstance"),
@@ -1163,7 +1163,7 @@ IN_PROC_BROWSER_TEST_F(
   if (content::AreAllSitesIsolatedForTesting()) {
     EXPECT_THAT(details->uma()->GetAllSamples(
                     "SiteIsolation.SiteInstancesPerBrowsingInstance"),
-                ElementsAre(Bucket(1, 2), Bucket(4, 1)));
+                ElementsAre(Bucket(1, 1), Bucket(5, 1)));
   } else if (extensions::IsIsolateExtensionsEnabled()) {
     EXPECT_THAT(details->uma()->GetAllSamples(
                     "SiteIsolation.SiteInstancesPerBrowsingInstance"),
@@ -1174,9 +1174,8 @@ IN_PROC_BROWSER_TEST_F(
                 ElementsAre(Bucket(1, 2)));
   }
 
-  // Navigate the second iframe of the tab to the second extension. This will
-  // create a new BrowsingInstance again due to https://crbug.com/522302 for
-  // --site-per-process and --isolate-extensions.
+  // Navigate the second iframe of the tab to the second extension. It should
+  // stay in the same BrowsingInstance as the page.
   content::NavigateIframeToURL(
       tab, "child-1", extension2->GetResourceURL("/blank_iframe.html"));
   details = new TestMemoryDetails();
@@ -1184,7 +1183,7 @@ IN_PROC_BROWSER_TEST_F(
   if (content::AreAllSitesIsolatedForTesting()) {
     EXPECT_THAT(details->uma()->GetAllSamples(
                     "SiteIsolation.SiteInstancesPerBrowsingInstance"),
-                ElementsAre(Bucket(1, 3), Bucket(3, 1)));
+                ElementsAre(Bucket(1, 1), Bucket(5, 1)));
   } else if (extensions::IsIsolateExtensionsEnabled()) {
     EXPECT_THAT(details->uma()->GetAllSamples(
                     "SiteIsolation.SiteInstancesPerBrowsingInstance"),
