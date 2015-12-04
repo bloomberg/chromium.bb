@@ -76,22 +76,6 @@ void StartSandboxWithPolicy(sandbox::bpf_dsl::Policy* policy,
 
 #if !defined(OS_NACL_NONSFI)
 
-inline bool IsChromeOS() {
-#if defined(OS_CHROMEOS)
-  return true;
-#else
-  return false;
-#endif
-}
-
-inline bool IsArchitectureArm() {
-#if defined(__arm__)
-  return true;
-#else
-  return false;
-#endif
-}
-
 class BlacklistDebugAndNumaPolicy : public SandboxBPFBasePolicy {
  public:
   BlacklistDebugAndNumaPolicy() {}
@@ -128,6 +112,25 @@ ResultExpr AllowAllPolicy::EvaluateSyscall(int sysno) const {
   return Allow();
 }
 
+// nacl_helper needs to be tiny and includes only part of content/
+// in its dependencies. Make sure to not link things that are not needed.
+#if !defined(IN_NACL_HELPER)
+inline bool IsChromeOS() {
+#if defined(OS_CHROMEOS)
+  return true;
+#else
+  return false;
+#endif
+}
+
+inline bool IsArchitectureArm() {
+#if defined(__arm__)
+  return true;
+#else
+  return false;
+#endif
+}
+
 // If a BPF policy is engaged for |process_type|, run a few sanity checks.
 void RunSandboxSanityChecks(const std::string& process_type) {
   if (process_type == switches::kRendererProcess ||
@@ -157,9 +160,6 @@ void RunSandboxSanityChecks(const std::string& process_type) {
   }
 }
 
-// nacl_helper needs to be tiny and includes only part of content/
-// in its dependencies. Make sure to not link things that are not needed.
-#if !defined(IN_NACL_HELPER)
 scoped_ptr<SandboxBPFBasePolicy> GetGpuProcessSandbox() {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
@@ -210,10 +210,6 @@ bool StartBPFSandbox(const base::CommandLine& command_line,
 bool StartBPFSandbox(const base::CommandLine& command_line,
                      const std::string& process_type) {
   NOTREACHED();
-  // Avoid -Wunused-function with no-op code.
-  ignore_result(IsChromeOS);
-  ignore_result(IsArchitectureArm);
-  ignore_result(RunSandboxSanityChecks);
   return false;
 }
 #endif  // !defined(IN_NACL_HELPER)
