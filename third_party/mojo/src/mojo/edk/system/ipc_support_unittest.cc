@@ -319,11 +319,11 @@ class TestSlaveSetup {
   }
 
   scoped_refptr<MessagePipeDispatcher> PassMasterMessagePipe() {
-    return master_mp_.Pass();
+    return std::move(master_mp_);
   }
 
   scoped_refptr<MessagePipeDispatcher> PassSlaveMessagePipe() {
-    return slave_mp_.Pass();
+    return std::move(slave_mp_);
   }
 
   void Shutdown() {
@@ -652,7 +652,8 @@ TEST_F(IPCSupportTest, MAYBE_MultiprocessMasterSlaveInternal) {
   embedder::ScopedPlatformHandle second_platform_handle =
       master_ipc_support().ConnectToSlaveInternal(
           connection_id, nullptr,
-          multiprocess_test_helper.server_platform_handle.Pass(), &slave_id);
+          std::move(multiprocess_test_helper.server_platform_handle),
+          &slave_id);
   ASSERT_TRUE(second_platform_handle.is_valid());
   EXPECT_NE(slave_id, kInvalidProcessIdentifier);
   EXPECT_NE(slave_id, kMasterProcessIdentifier);
@@ -682,7 +683,7 @@ TEST_F(IPCSupportTest, MAYBE_MultiprocessMasterSlaveInternal) {
 
 MOJO_MULTIPROCESS_TEST_CHILD_TEST(MultiprocessMasterSlaveInternal) {
   embedder::ScopedPlatformHandle client_platform_handle =
-      mojo::test::MultiprocessTestHelper::client_platform_handle.Pass();
+      std::move(mojo::test::MultiprocessTestHelper::client_platform_handle);
   ASSERT_TRUE(client_platform_handle.is_valid());
 
   embedder::SimplePlatformSupport platform_support;
@@ -692,7 +693,7 @@ MOJO_MULTIPROCESS_TEST_CHILD_TEST(MultiprocessMasterSlaveInternal) {
   // Note: Run process delegate methods on the I/O thread.
   IPCSupport ipc_support(&platform_support, embedder::ProcessType::SLAVE,
                          &slave_process_delegate, test_io_thread.task_runner(),
-                         client_platform_handle.Pass());
+                         std::move(client_platform_handle));
 
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();

@@ -648,7 +648,7 @@ TypeConverter<scoped_refptr<media::VideoFrame>,
   memcpy(frame->data(media::VideoFrame::kVPlane),
          input->v_data.storage().data(), input->v_data.storage().size());
 
-  return frame.Pass();
+  return frame;
 }
 
 }  // namespace mojo

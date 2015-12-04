@@ -16,7 +16,7 @@
 {%- macro pass_params(parameters) %}
 {%-   for param in parameters %}
 {%-     if param.kind|is_move_only_kind -%}
-p_{{param.name}}.Pass()
+std::move(p_{{param.name}})
 {%-     else -%}
 p_{{param.name}}
 {%-     endif -%}
@@ -56,7 +56,7 @@ class {{class_name}}_{{method.name}}_ForwardToCallback
   {{class_name}}_{{method.name}}_ForwardToCallback(
       const {{class_name}}::{{method.name}}Callback& callback,
       scoped_refptr<mojo::internal::MultiplexRouter> router)
-      : callback_(callback), serialization_context_(router.Pass()) {
+      : callback_(callback), serialization_context_(std::move(router)) {
   }
   bool Accept(mojo::Message* message) override;
  private:

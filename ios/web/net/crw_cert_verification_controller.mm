@@ -426,8 +426,8 @@ decideLoadPolicyForAcceptedTrustResult:(SecTrustResultType)trustResult
       return;
     }
 
-    web::CertVerifierBlockAdapter::Params params(
-        blockCert.Pass(), base::SysNSStringToUTF8(host));
+    web::CertVerifierBlockAdapter::Params params(std::move(blockCert),
+                                                 base::SysNSStringToUTF8(host));
     params.flags = self.certVerifyFlags;
     // OCSP response is not provided by iOS API.
     // CRLSets are not used, as the OS is used to make load/no-load

@@ -63,9 +63,4 @@
                                                                 \
  private:
 
-#define TYPE_WITH_MOVE_CONSTRUCTOR_FOR_CPP_03(type) \
- public: \
-  type&& Pass() WARN_UNUSED_RESULT { return std::move(*this); } \
- private:
-
 #endif  // BASE_MOVE_H_

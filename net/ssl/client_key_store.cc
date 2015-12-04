@@ -5,6 +5,7 @@
 #include "net/ssl/client_key_store.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_private_key.h"
@@ -45,7 +46,7 @@ scoped_refptr<SSLPrivateKey> ClientKeyStore::FetchClientCertPrivateKey(
   for (const auto& provider : providers_) {
     scoped_refptr<SSLPrivateKey> key;
     if (provider->GetCertificateKey(certificate, &key))
-      return key.Pass();
+      return key;
   }
   return nullptr;
 }

@@ -362,7 +362,7 @@ void SetBluetoothAdapter(int render_process_id,
       render_process_host_impl->GetBluetoothDispatcherHost();
 
   if (dispatcher_host != NULL)
-    dispatcher_host->SetBluetoothAdapterForTesting(adapter.Pass());
+    dispatcher_host->SetBluetoothAdapterForTesting(std::move(adapter));
 }
 
 void SetGeofencingMockProvider(bool service_available) {

@@ -4,6 +4,8 @@
 
 #include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
 
+#include <utility>
+
 #include "base/atomicops.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -283,7 +285,7 @@ ScopedMessagePipeHandle ConnectToSlave(
   scoped_refptr<system::MessagePipeDispatcher> dispatcher =
       internal::g_ipc_support->ConnectToSlave(
           connection_id, slave_info, platform_handle.Pass(),
-          did_connect_to_slave_callback, did_connect_to_slave_runner.Pass(),
+          did_connect_to_slave_callback, std::move(did_connect_to_slave_runner),
           &channel_id);
   *channel_info = new ChannelInfo(channel_id);
 
@@ -312,7 +314,7 @@ ScopedMessagePipeHandle ConnectToMaster(
   scoped_refptr<system::MessagePipeDispatcher> dispatcher =
       internal::g_ipc_support->ConnectToMaster(
           connection_id, did_connect_to_master_callback,
-          did_connect_to_master_runner.Pass(), &channel_id);
+          std::move(did_connect_to_master_runner), &channel_id);
   *channel_info = new ChannelInfo(channel_id);
 
   ScopedMessagePipeHandle rv(

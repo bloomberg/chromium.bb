@@ -216,7 +216,7 @@ LayoutTestBluetoothAdapterProvider::GetBaseAdapter() {
   // matching the address provided if the device was added to the mock.
   ON_CALL(*adapter, GetDevice(_)).WillByDefault(GetMockDevice(adapter.get()));
 
-  return adapter.Pass();
+  return adapter;
 }
 
 // static
@@ -225,7 +225,7 @@ LayoutTestBluetoothAdapterProvider::GetPresentAdapter() {
   scoped_refptr<NiceMockBluetoothAdapter> adapter(GetBaseAdapter());
   ON_CALL(*adapter, IsPresent()).WillByDefault(Return(true));
 
-  return adapter.Pass();
+  return adapter;
 }
 
 // static
@@ -234,7 +234,7 @@ LayoutTestBluetoothAdapterProvider::GetNotPresentAdapter() {
   scoped_refptr<NiceMockBluetoothAdapter> adapter(GetBaseAdapter());
   ON_CALL(*adapter, IsPresent()).WillByDefault(Return(false));
 
-  return adapter.Pass();
+  return adapter;
 }
 
 // static
@@ -243,7 +243,7 @@ LayoutTestBluetoothAdapterProvider::GetPoweredAdapter() {
   scoped_refptr<NiceMockBluetoothAdapter> adapter(GetPresentAdapter());
   ON_CALL(*adapter, IsPowered()).WillByDefault(Return(true));
 
-  return adapter.Pass();
+  return adapter;
 }
 
 // static
@@ -252,7 +252,7 @@ LayoutTestBluetoothAdapterProvider::GetNotPoweredAdapter() {
   scoped_refptr<NiceMockBluetoothAdapter> adapter(GetPresentAdapter());
   ON_CALL(*adapter, IsPowered()).WillByDefault(Return(false));
 
-  return adapter.Pass();
+  return adapter;
 }
 
 // static
@@ -279,7 +279,7 @@ LayoutTestBluetoothAdapterProvider::GetScanFilterCheckingAdapter() {
   // We need to add a device otherwise requestDevice would reject.
   adapter->AddMockDevice(GetBatteryDevice(adapter.get()));
 
-  return adapter.Pass();
+  return adapter;
 }
 
 // static
@@ -290,7 +290,7 @@ LayoutTestBluetoothAdapterProvider::GetFailStartDiscoveryAdapter() {
   ON_CALL(*adapter, StartDiscoverySessionWithFilterRaw(_, _, _))
       .WillByDefault(RunCallback<2 /* error_callback */>());
 
-  return adapter.Pass();
+  return adapter;
 }
 
 // static
@@ -302,7 +302,7 @@ LayoutTestBluetoothAdapterProvider::GetEmptyAdapter() {
       .WillByDefault(RunCallbackWithResult<1 /* success_callback */>(
           []() { return GetDiscoverySession(); }));
 
-  return adapter.Pass();
+  return adapter;
 }
 
 // static
@@ -342,7 +342,7 @@ LayoutTestBluetoothAdapterProvider::GetGlucoseHeartRateAdapter() {
   adapter->AddMockDevice(GetHeartRateDevice(adapter.get()));
   adapter->AddMockDevice(GetGlucoseDevice(adapter.get()));
 
-  return adapter.Pass();
+  return adapter;
 }
 
 // static
@@ -352,7 +352,7 @@ LayoutTestBluetoothAdapterProvider::GetUnicodeDeviceAdapter() {
 
   adapter->AddMockDevice(GetBaseDevice(adapter.get(), "❤❤❤❤❤❤❤❤❤"));
 
-  return adapter.Pass();
+  return adapter;
 }
 
 // Adds a device to |adapter| and notifies all observers about that new device.
@@ -396,7 +396,7 @@ LayoutTestBluetoothAdapterProvider::GetMissingServiceHeartRateAdapter() {
 
   adapter->AddMockDevice(GetHeartRateDevice(adapter.get()));
 
-  return adapter.Pass();
+  return adapter;
 }
 
 // static
@@ -417,7 +417,7 @@ LayoutTestBluetoothAdapterProvider::GetMissingCharacteristicHeartRateAdapter() {
   device->AddMockService(heart_rate.Pass());
   adapter->AddMockDevice(device.Pass());
 
-  return adapter.Pass();
+  return adapter;
 }
 
 // static
@@ -462,7 +462,7 @@ LayoutTestBluetoothAdapterProvider::GetDelayedServicesDiscoveryAdapter() {
 
   adapter->AddMockDevice(device.Pass());
 
-  return adapter.Pass();
+  return adapter;
 }
 
 // static
@@ -492,7 +492,7 @@ LayoutTestBluetoothAdapterProvider::GetFailingConnectionsAdapter() {
         adapter.get(), static_cast<BluetoothDevice::ConnectErrorCode>(error)));
   }
 
-  return adapter.Pass();
+  return adapter;
 }
 
 // static
@@ -521,7 +521,7 @@ LayoutTestBluetoothAdapterProvider::GetFailingGATTOperationsAdapter() {
   device->AddMockService(service.Pass());
   adapter->AddMockDevice(device.Pass());
 
-  return adapter.Pass();
+  return adapter;
 }
 
 // Discovery Sessions
@@ -535,7 +535,7 @@ LayoutTestBluetoothAdapterProvider::GetDiscoverySession() {
   ON_CALL(*discovery_session, Stop(_, _))
       .WillByDefault(RunCallback<0 /* success_callback */>());
 
-  return discovery_session.Pass();
+  return discovery_session;
 }
 
 // Devices
@@ -573,7 +573,7 @@ LayoutTestBluetoothAdapterProvider::GetBaseDevice(
   ON_CALL(*device, GetProductID()).WillByDefault(Return(1));
   ON_CALL(*device, GetDeviceID()).WillByDefault(Return(2));
 
-  return device.Pass();
+  return device;
 }
 
 // static
@@ -619,7 +619,7 @@ LayoutTestBluetoothAdapterProvider::GetConnectableDevice(
                 adapter, device_ptr->GetAddress()));
           }));
 
-  return device.Pass();
+  return device;
 }
 
 // static
@@ -637,7 +637,7 @@ LayoutTestBluetoothAdapterProvider::GetUnconnectableDevice(
   ON_CALL(*device, CreateGattConnection(_, _))
       .WillByDefault(RunCallback<1 /* error_callback */>(error_code));
 
-  return device.Pass();
+  return device;
 }
 
 // static
@@ -670,7 +670,7 @@ LayoutTestBluetoothAdapterProvider::GetBaseGATTService(
       .WillByDefault(Invoke(service.get(),
                             &MockBluetoothGattService::GetMockCharacteristic));
 
-  return service.Pass();
+  return service;
 }
 
 // static
@@ -731,7 +731,7 @@ LayoutTestBluetoothAdapterProvider::GetHeartRateService(
             notify_session->StartTestNotifications(adapter, measurement_ptr,
                                                    rate);
 
-            return notify_session.Pass();
+            return notify_session;
           }));
 
   // Body Sensor Location Characteristic
@@ -800,7 +800,7 @@ LayoutTestBluetoothAdapterProvider::GetErrorCharacteristic(
   ON_CALL(*characteristic, StartNotifySession(_, _))
       .WillByDefault(RunCallback<1 /* error_callback */>(error_code));
 
-  return characteristic.Pass();
+  return characteristic;
 }
 
 // Notify sessions
@@ -819,7 +819,7 @@ LayoutTestBluetoothAdapterProvider::GetBaseGATTNotifySession(
               &MockBluetoothGattNotifySession::StopTestNotifications),
           RunCallback<0>()));
 
-  return session.Pass();
+  return session;
 }
 
 // Helper functions

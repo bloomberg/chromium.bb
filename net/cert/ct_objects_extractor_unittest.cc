@@ -32,7 +32,7 @@ class CTObjectsExtractorTest : public ::testing::Test {
                                                   der_test_cert.length());
 
     log_ = CTLogVerifier::Create(ct::GetTestPublicKey(), "testlog",
-                                 "https://ct.example.com").Pass();
+                                 "https://ct.example.com");
     ASSERT_TRUE(log_);
   }
 

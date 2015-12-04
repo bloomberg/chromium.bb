@@ -53,8 +53,6 @@ struct DefaultProtoValuePtrTraits {
 // value.
 template <typename T, typename Traits = DefaultProtoValuePtrTraits<T>>
 class ProtoValuePtr {
-  TYPE_WITH_MOVE_CONSTRUCTOR_FOR_CPP_03(ProtoValuePtr)
-
  private:
   // Immutable shareable ref-counted wrapper that embeds the value.
   class Wrapper : public base::RefCountedThreadSafe<Wrapper> {

@@ -29,7 +29,7 @@ SchedulerTqmDelegateForTest::~SchedulerTqmDelegateForTest() {}
 
 void SchedulerTqmDelegateForTest::SetDefaultTaskRunner(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  default_task_runner_ = task_runner.Pass();
+  default_task_runner_ = std::move(task_runner);
 }
 
 void SchedulerTqmDelegateForTest::RestoreDefaultTaskRunner() {

@@ -5,6 +5,7 @@
 #include "mojo/edk/system/shared_buffer_dispatcher.h"
 
 #include <limits>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -76,7 +77,7 @@ MojoResult SharedBufferDispatcher::Create(
   if (!shared_buffer)
     return MOJO_RESULT_RESOURCE_EXHAUSTED;
 
-  *result = CreateInternal(shared_buffer.Pass());
+  *result = CreateInternal(std::move(shared_buffer));
   return MOJO_RESULT_OK;
 }
 
@@ -129,7 +130,7 @@ scoped_refptr<SharedBufferDispatcher> SharedBufferDispatcher::Deserialize(
     return nullptr;
   }
 
-  return CreateInternal(shared_buffer.Pass());
+  return CreateInternal(std::move(shared_buffer));
 }
 
 SharedBufferDispatcher::SharedBufferDispatcher(
@@ -183,7 +184,7 @@ scoped_refptr<Dispatcher>
 SharedBufferDispatcher::CreateEquivalentDispatcherAndCloseImplNoLock() {
   lock().AssertAcquired();
   DCHECK(shared_buffer_);
-  return CreateInternal(shared_buffer_.Pass());
+  return CreateInternal(std::move(shared_buffer_));
 }
 
 MojoResult SharedBufferDispatcher::DuplicateBufferHandleImplNoLock(

@@ -247,14 +247,12 @@ TEST_F(PrinterDetectorAppSearchEnabledTest,
 
 TEST_F(PrinterDetectorAppSearchEnabledTest,
        PrinterProvider_UsbPrinters_NotFound) {
-  scoped_refptr<extensions::Extension> extension =
-      CreateTestExtension(
-          ListBuilder().Append("usb").Append("printerProvider").Pass(),
-          DictionaryBuilder().Set(
-              "filters", ListBuilder().Append(DictionaryBuilder()
-                                                  .Set("vendorId", 123)
-                                                  .Set("productId", 001))))
-          .Pass();
+  scoped_refptr<extensions::Extension> extension = CreateTestExtension(
+      ListBuilder().Append("usb").Append("printerProvider").Pass(),
+      DictionaryBuilder().Set(
+          "filters",
+          ListBuilder().Append(
+              DictionaryBuilder().Set("vendorId", 123).Set("productId", 001))));
   ASSERT_TRUE(extensions::ExtensionRegistry::Get(profile_.get())
                   ->AddEnabled(extension));
 
@@ -271,14 +269,12 @@ TEST_F(PrinterDetectorAppSearchEnabledTest,
 
 TEST_F(PrinterDetectorAppSearchEnabledTest,
        PrinterProvider_UsbPrinters_WithProductId) {
-  scoped_refptr<extensions::Extension> extension =
-      CreateTestExtension(
-          ListBuilder().Append("usb").Append("printerProvider").Pass(),
-          DictionaryBuilder().Set(
-              "filters", ListBuilder().Append(DictionaryBuilder()
-                                                  .Set("vendorId", 123)
-                                                  .Set("productId", 456))))
-          .Pass();
+  scoped_refptr<extensions::Extension> extension = CreateTestExtension(
+      ListBuilder().Append("usb").Append("printerProvider").Pass(),
+      DictionaryBuilder().Set(
+          "filters",
+          ListBuilder().Append(
+              DictionaryBuilder().Set("vendorId", 123).Set("productId", 456))));
   ASSERT_TRUE(extensions::ExtensionRegistry::Get(profile_.get())
                   ->AddEnabled(extension));
 
@@ -295,15 +291,13 @@ TEST_F(PrinterDetectorAppSearchEnabledTest,
 
 TEST_F(PrinterDetectorAppSearchEnabledTest,
        PrinterProvider_UsbPrinters_WithInterfaceClass) {
-  scoped_refptr<extensions::Extension> extension =
-      CreateTestExtension(
-          ListBuilder().Append("usb").Append("printerProvider").Pass(),
-          DictionaryBuilder().Set(
-              "filters",
-              ListBuilder().Append(
-                  DictionaryBuilder()
-                      .Set("vendorId", 123)
-                      .Set("interfaceClass", kPrinterInterfaceClass)))).Pass();
+  scoped_refptr<extensions::Extension> extension = CreateTestExtension(
+      ListBuilder().Append("usb").Append("printerProvider").Pass(),
+      DictionaryBuilder().Set(
+          "filters", ListBuilder().Append(
+                         DictionaryBuilder()
+                             .Set("vendorId", 123)
+                             .Set("interfaceClass", kPrinterInterfaceClass))));
   ASSERT_TRUE(extensions::ExtensionRegistry::Get(profile_.get())
                   ->AddEnabled(extension));
 
@@ -319,15 +313,13 @@ TEST_F(PrinterDetectorAppSearchEnabledTest,
 }
 
 TEST_F(PrinterDetectorAppSearchEnabledTest, IgnoreNonPrinters) {
-  scoped_refptr<extensions::Extension> extension =
-      CreateTestExtension(
-          ListBuilder().Append("usb").Append("printerProvider").Pass(),
-          DictionaryBuilder().Set(
-              "filters",
-              ListBuilder().Append(
-                  DictionaryBuilder()
-                      .Set("vendorId", 123)
-                      .Set("interfaceClass", kPrinterInterfaceClass)))).Pass();
+  scoped_refptr<extensions::Extension> extension = CreateTestExtension(
+      ListBuilder().Append("usb").Append("printerProvider").Pass(),
+      DictionaryBuilder().Set(
+          "filters", ListBuilder().Append(
+                         DictionaryBuilder()
+                             .Set("vendorId", 123)
+                             .Set("interfaceClass", kPrinterInterfaceClass))));
   ASSERT_TRUE(extensions::ExtensionRegistry::Get(profile_.get())
                   ->AddEnabled(extension));
 

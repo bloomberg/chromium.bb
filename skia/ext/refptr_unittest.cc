@@ -180,11 +180,11 @@ TEST(RefPtrTest, AssignmentFromTemporary) {
 TEST(RefPtrTest, PassIntoArguments) {
   // No ref count changes when passing an argument with Pass().
   RefPtr<RefCountCounter> object = skia::AdoptRef(new RefCountCounter);
-  RefPtr<RefCountCounter> object2 = object.Pass();
+  RefPtr<RefCountCounter> object2 = std::move(object);
   auto lambda = [](RefPtr<RefCountCounter> arg) {
     EXPECT_EQ(0, arg->ref_count_changes());
   };
-  lambda(object2.Pass());
+  lambda(std::move(object2));
 }
 
 class DestructionNotifier : public SkRefCnt {
@@ -195,15 +195,6 @@ class DestructionNotifier : public SkRefCnt {
  private:
   bool* flag_;
 };
-
-TEST(RefPtrTest, PassIntoSelf) {
-  bool is_destroyed = false;
-  RefPtr<DestructionNotifier> object =
-      skia::AdoptRef(new DestructionNotifier(&is_destroyed));
-  object = object.Pass();
-  ASSERT_FALSE(is_destroyed);
-  EXPECT_TRUE(object->unique());
-}
 
 TEST(RefPtrTest, Nullptr) {
   RefPtr<SkRefCnt> null(nullptr);

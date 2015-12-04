@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/move.h"
 #include "mojo/public/cpp/bindings/lib/interface_id.h"
 
 namespace mojo {

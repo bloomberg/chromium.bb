@@ -4,6 +4,8 @@
 
 #include "mojo/edk/test/scoped_ipc_support.h"
 
+#include <utility>
+
 #include "base/message_loop/message_loop.h"
 #include "mojo/edk/embedder/embedder.h"
 
@@ -41,7 +43,7 @@ void ScopedIPCSupportHelper::OnShutdownCompleteImpl() {
 
 ScopedIPCSupport::ScopedIPCSupport(
     scoped_refptr<base::TaskRunner> io_thread_task_runner) {
-  helper_.Init(this, io_thread_task_runner.Pass());
+  helper_.Init(this, std::move(io_thread_task_runner));
 }
 
 ScopedIPCSupport::~ScopedIPCSupport() {

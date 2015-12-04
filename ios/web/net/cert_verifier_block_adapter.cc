@@ -23,7 +23,7 @@ struct VerificationContext
   VerificationContext(scoped_refptr<net::X509Certificate> cert,
                       net::NetLog* net_log)
       : request(nullptr),
-        cert(cert.Pass()),
+        cert(std::move(cert)),
         net_log(net::BoundNetLog::Make(
             net_log,
             net::NetLog::SOURCE_IOS_WEB_VIEW_CERT_VERIFIER)) {}

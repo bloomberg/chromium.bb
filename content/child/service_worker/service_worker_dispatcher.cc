@@ -300,7 +300,7 @@ ServiceWorkerDispatcher::GetOrCreateRegistration(
   registration->SetActive(
       GetOrCreateServiceWorker(ServiceWorkerHandleReference::Create(
           attrs.active, thread_safe_sender_.get())));
-  return registration.Pass();
+  return registration;
 }
 
 scoped_refptr<WebServiceWorkerRegistrationImpl>
@@ -325,7 +325,7 @@ ServiceWorkerDispatcher::GetOrAdoptRegistration(
   registration->SetInstalling(GetOrCreateServiceWorker(installing_ref.Pass()));
   registration->SetWaiting(GetOrCreateServiceWorker(waiting_ref.Pass()));
   registration->SetActive(GetOrCreateServiceWorker(active_ref.Pass()));
-  return registration.Pass();
+  return registration;
 }
 
 void ServiceWorkerDispatcher::OnAssociateRegistration(

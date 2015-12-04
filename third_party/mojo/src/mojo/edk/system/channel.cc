@@ -5,6 +5,7 @@
 #include "third_party/mojo/src/mojo/edk/system/channel.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -126,7 +127,7 @@ void Channel::WillShutdownSoon() {
 void Channel::SetBootstrapEndpoint(scoped_refptr<ChannelEndpoint> endpoint) {
   // Used for both local and remote IDs.
   ChannelEndpointId bootstrap_id = ChannelEndpointId::GetBootstrap();
-  SetBootstrapEndpointWithIds(endpoint.Pass(), bootstrap_id, bootstrap_id);
+  SetBootstrapEndpointWithIds(std::move(endpoint), bootstrap_id, bootstrap_id);
 }
 
 void Channel::SetBootstrapEndpointWithIds(

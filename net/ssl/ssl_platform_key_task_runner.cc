@@ -25,7 +25,7 @@ base::LazyInstance<SSLPlatformKeyTaskRunner>::Leaky g_platform_key_task_runner =
     LAZY_INSTANCE_INITIALIZER;
 
 scoped_refptr<base::SequencedTaskRunner> GetSSLPlatformKeyTaskRunner() {
-  return g_platform_key_task_runner.Get().task_runner().Pass();
+  return g_platform_key_task_runner.Get().task_runner();
 }
 
 }  // namespace net

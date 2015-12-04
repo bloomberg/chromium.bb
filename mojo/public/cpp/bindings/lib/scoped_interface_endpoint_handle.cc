@@ -17,7 +17,7 @@ ScopedInterfaceEndpointHandle::ScopedInterfaceEndpointHandle(
     InterfaceId id,
     bool is_local,
     scoped_refptr<MultiplexRouter> router)
-    : id_(id), is_local_(is_local), router_(router.Pass()) {
+    : id_(id), is_local_(is_local), router_(std::move(router)) {
   DCHECK(!IsValidInterfaceId(id) || router_);
 }
 

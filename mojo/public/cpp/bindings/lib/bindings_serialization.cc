@@ -90,7 +90,7 @@ SerializationContext::SerializationContext() {}
 
 SerializationContext::SerializationContext(
     scoped_refptr<MultiplexRouter> in_router)
-    : router(in_router.Pass()) {}
+    : router(std::move(in_router)) {}
 
 SerializationContext::~SerializationContext() {}
 

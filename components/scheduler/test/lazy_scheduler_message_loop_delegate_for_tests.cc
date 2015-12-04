@@ -4,6 +4,8 @@
 
 #include "components/scheduler/test/lazy_scheduler_message_loop_delegate_for_tests.h"
 
+#include <utility>
+
 #include "base/time/default_tick_clock.h"
 
 namespace scheduler {
@@ -37,17 +39,17 @@ base::MessageLoop* LazySchedulerMessageLoopDelegateForTests::EnsureMessageLoop()
   DCHECK(message_loop_);
   original_task_runner_ = message_loop_->task_runner();
   if (pending_task_runner_)
-    message_loop_->SetTaskRunner(pending_task_runner_.Pass());
+    message_loop_->SetTaskRunner(std::move(pending_task_runner_));
   return message_loop_;
 }
 
 void LazySchedulerMessageLoopDelegateForTests::SetDefaultTaskRunner(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   if (!HasMessageLoop()) {
-    pending_task_runner_ = task_runner.Pass();
+    pending_task_runner_ = std::move(task_runner);
     return;
   }
-  message_loop_->SetTaskRunner(task_runner.Pass());
+  message_loop_->SetTaskRunner(std::move(task_runner));
 }
 
 void LazySchedulerMessageLoopDelegateForTests::RestoreDefaultTaskRunner() {

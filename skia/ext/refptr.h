@@ -6,8 +6,8 @@
 #define SKIA_EXT_REFPTR_H_
 
 #include <algorithm>
+#include <cstddef>
 
-#include "base/move.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 namespace skia {
@@ -52,23 +52,29 @@ namespace skia {
 // for you.
 template<typename T>
 class RefPtr {
-  TYPE_WITH_MOVE_CONSTRUCTOR_FOR_CPP_03(RefPtr)
  public:
   RefPtr() : ptr_(nullptr) {}
 
-  RefPtr(decltype(nullptr)) : ptr_(nullptr) {}
+  RefPtr(std::nullptr_t) : ptr_(nullptr) {}
 
+  // Copy constructor.
   RefPtr(const RefPtr& other)
       : ptr_(other.get()) {
     SkSafeRef(ptr_);
   }
 
+  // Copy conversion constructor.
   template<typename U>
   RefPtr(const RefPtr<U>& other)
       : ptr_(other.get()) {
     SkSafeRef(ptr_);
   }
 
+  // Move constructor. This is required in addition to the conversion
+  // constructor below in order for clang to warn about pessimizing moves.
+  RefPtr(RefPtr&& other) : ptr_(other.get()) { other.ptr_ = nullptr; }
+
+  // Move conversion constructor.
   template <typename U>
   RefPtr(RefPtr<U>&& other)
       : ptr_(other.get()) {
@@ -79,7 +85,7 @@ class RefPtr {
     clear();
   }
 
-  RefPtr& operator=(decltype(nullptr)) {
+  RefPtr& operator=(std::nullptr_t) {
     clear();
     return *this;
   }
@@ -97,7 +103,7 @@ class RefPtr {
 
   template <typename U>
   RefPtr& operator=(RefPtr<U>&& other) {
-    RefPtr<T> temp(other.Pass());
+    RefPtr<T> temp(std::move(other));
     std::swap(ptr_, temp.ptr_);
     return *this;
   }

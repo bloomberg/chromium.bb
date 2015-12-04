@@ -4,6 +4,8 @@
 
 #include "mojo/public/cpp/bindings/lib/multiplex_router.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
@@ -49,7 +51,7 @@ class MultiplexRouter::InterfaceEndpoint
   void set_task_runner(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
     router_lock_->AssertAcquired();
-    task_runner_ = task_runner.Pass();
+    task_runner_ = std::move(task_runner);
   }
 
   InterfaceEndpointClient* client() const { return client_; }

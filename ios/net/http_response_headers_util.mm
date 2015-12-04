@@ -40,7 +40,7 @@ scoped_refptr<HttpResponseHeaders> CreateHeadersFromNSHTTPURLResponse(
             [NSString stringWithFormat:kHeaderLineFormat, header_name, value];
         http_headers->AddHeader(base::SysNSStringToUTF8(header_line));
       }];
-  return http_headers.Pass();
+  return http_headers;
 }
 
 }  // namespae net

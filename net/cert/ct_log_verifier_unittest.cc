@@ -20,7 +20,7 @@ class CTLogVerifierTest : public ::testing::Test {
 
   void SetUp() override {
     log_ = CTLogVerifier::Create(ct::GetTestPublicKey(), "testlog",
-                                 "https://ct.example.com").Pass();
+                                 "https://ct.example.com");
 
     ASSERT_TRUE(log_);
     ASSERT_EQ(log_->key_id(), ct::GetTestPublicKeyId());

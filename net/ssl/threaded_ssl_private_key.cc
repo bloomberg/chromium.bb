@@ -5,6 +5,7 @@
 #include "net/ssl/threaded_ssl_private_key.h"
 
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -50,10 +51,9 @@ class ThreadedSSLPrivateKey::Core
 ThreadedSSLPrivateKey::ThreadedSSLPrivateKey(
     scoped_ptr<ThreadedSSLPrivateKey::Delegate> delegate,
     scoped_refptr<base::TaskRunner> task_runner)
-    : core_(new Core(delegate.Pass())),
-      task_runner_(task_runner.Pass()),
-      weak_factory_(this) {
-}
+    : core_(new Core(std::move(delegate))),
+      task_runner_(std::move(task_runner)),
+      weak_factory_(this) {}
 
 SSLPrivateKey::Type ThreadedSSLPrivateKey::GetType() {
   return core_->delegate()->GetType();

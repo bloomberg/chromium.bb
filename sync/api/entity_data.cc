@@ -28,7 +28,7 @@ void EntityData::Swap(EntityData* other) {
 EntityDataPtr EntityData::Pass() {
   EntityDataPtr target;
   target.swap_value(this);
-  return target.Pass();
+  return target;
 }
 
 void EntityDataTraits::SwapValue(EntityData* dest, EntityData* src) {

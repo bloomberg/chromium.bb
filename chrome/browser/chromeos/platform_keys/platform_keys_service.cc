@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -424,7 +426,7 @@ class PlatformKeysService::SelectTask : public Task {
         }
       }
 
-      matches_.push_back(certificate.Pass());
+      matches_.push_back(std::move(certificate));
     }
     DoStep();
   }

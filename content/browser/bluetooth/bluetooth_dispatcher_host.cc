@@ -11,6 +11,8 @@
 
 #include "content/browser/bluetooth/bluetooth_dispatcher_host.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
@@ -297,7 +299,7 @@ void BluetoothDispatcherHost::SetBluetoothAdapterForTesting(
     devices_with_discovered_services_.clear();
   }
 
-  set_adapter(mock_adapter.Pass());
+  set_adapter(std::move(mock_adapter));
 }
 
 BluetoothDispatcherHost::~BluetoothDispatcherHost() {

@@ -5,6 +5,7 @@
 #include "net/proxy/multi_threaded_proxy_resolver.h"
 
 #include <deque>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -576,8 +577,8 @@ class MultiThreadedProxyResolverFactory::Job
     int error = OK;
     if (executor->resolver()) {
       resolver_out_->reset(new MultiThreadedProxyResolver(
-          resolver_factory_.Pass(), max_num_threads_, script_data_.Pass(),
-          executor_));
+          std::move(resolver_factory_), max_num_threads_,
+          std::move(script_data_), executor_));
     } else {
       error = ERR_PAC_SCRIPT_FAILED;
       executor_->Destroy();

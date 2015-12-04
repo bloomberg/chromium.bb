@@ -4,6 +4,8 @@
 
 #include "third_party/mojo/src/mojo/edk/system/ipc_support.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "third_party/mojo/src/mojo/edk/embedder/master_process_delegate.h"
 #include "third_party/mojo/src/mojo/edk/embedder/slave_process_delegate.h"
@@ -15,15 +17,14 @@
 namespace mojo {
 namespace system {
 
-IPCSupport::IPCSupport(
-    embedder::PlatformSupport* platform_support,
-    embedder::ProcessType process_type,
-    embedder::ProcessDelegate* process_delegate,
-    scoped_refptr<base::TaskRunner> io_thread_task_runner,
-    embedder::ScopedPlatformHandle platform_handle)
+IPCSupport::IPCSupport(embedder::PlatformSupport* platform_support,
+                       embedder::ProcessType process_type,
+                       embedder::ProcessDelegate* process_delegate,
+                       scoped_refptr<base::TaskRunner> io_thread_task_runner,
+                       embedder::ScopedPlatformHandle platform_handle)
     : process_type_(process_type),
       process_delegate_(process_delegate),
-      io_thread_task_runner_(io_thread_task_runner.Pass()) {
+      io_thread_task_runner_(std::move(io_thread_task_runner)) {
   DCHECK(io_thread_task_runner_);
 
   switch (process_type_) {
