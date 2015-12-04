@@ -98,8 +98,6 @@ bool WebPluginDelegateStub::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(PluginMsg_DidReceiveData, OnDidReceiveData)
     IPC_MESSAGE_HANDLER(PluginMsg_DidFinishLoading, OnDidFinishLoading)
     IPC_MESSAGE_HANDLER(PluginMsg_DidFail, OnDidFail)
-    IPC_MESSAGE_HANDLER(PluginMsg_DidFinishLoadWithReason,
-                        OnDidFinishLoadWithReason)
     IPC_MESSAGE_HANDLER(PluginMsg_SetFocus, OnSetFocus)
     IPC_MESSAGE_HANDLER(PluginMsg_HandleInputEvent, OnHandleInputEvent)
     IPC_MESSAGE_HANDLER(PluginMsg_Paint, OnPaint)
@@ -109,8 +107,6 @@ bool WebPluginDelegateStub::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(PluginMsg_GetFormValue, OnGetFormValue)
     IPC_MESSAGE_HANDLER(PluginMsg_UpdateGeometry, OnUpdateGeometry)
     IPC_MESSAGE_HANDLER(PluginMsg_UpdateGeometrySync, OnUpdateGeometry)
-    IPC_MESSAGE_HANDLER(PluginMsg_SendJavaScriptStream,
-                        OnSendJavaScriptStream)
     IPC_MESSAGE_HANDLER(PluginMsg_SetContentAreaFocus, OnSetContentAreaFocus)
 #if defined(OS_WIN) && !defined(USE_AURA)
     IPC_MESSAGE_HANDLER(PluginMsg_ImeCompositionUpdated,
@@ -126,17 +122,6 @@ bool WebPluginDelegateStub::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(PluginMsg_ImeCompositionCompleted,
                         OnImeCompositionCompleted)
 #endif
-    IPC_MESSAGE_HANDLER(PluginMsg_DidReceiveManualResponse,
-                        OnDidReceiveManualResponse)
-    IPC_MESSAGE_HANDLER(PluginMsg_DidReceiveManualData, OnDidReceiveManualData)
-    IPC_MESSAGE_HANDLER(PluginMsg_DidFinishManualLoading,
-                        OnDidFinishManualLoading)
-    IPC_MESSAGE_HANDLER(PluginMsg_DidManualLoadFail, OnDidManualLoadFail)
-    IPC_MESSAGE_HANDLER(PluginMsg_HandleURLRequestReply,
-                        OnHandleURLRequestReply)
-    IPC_MESSAGE_HANDLER(PluginMsg_HTTPRangeRequestReply,
-                        OnHTTPRangeRequestReply)
-    IPC_MESSAGE_HANDLER(PluginMsg_FetchURL, OnFetchURL)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -246,11 +231,6 @@ void WebPluginDelegateStub::OnDidFail(int id) {
   client->DidFail(id);
 }
 
-void WebPluginDelegateStub::OnDidFinishLoadWithReason(
-    const GURL& url, int reason, int notify_id) {
-  delegate_->DidFinishLoadWithReason(url, reason, notify_id);
-}
-
 void WebPluginDelegateStub::OnSetFocus(bool focused) {
   delegate_->SetFocus(focused);
 #if defined(OS_WIN) && !defined(USE_AURA)
@@ -312,13 +292,6 @@ void WebPluginDelegateStub::OnGetFormValue(base::string16* value,
   *success = delegate_->GetFormValue(value);
 }
 
-void WebPluginDelegateStub::OnSendJavaScriptStream(const GURL& url,
-                                                   const std::string& result,
-                                                   bool success,
-                                                   int notify_id) {
-  delegate_->SendJavaScriptStream(url, result, success, notify_id);
-}
-
 void WebPluginDelegateStub::OnSetContentAreaFocus(bool has_focus) {
   if (delegate_)
     delegate_->SetContentAreaHasFocus(has_focus);
@@ -375,62 +348,5 @@ void WebPluginDelegateStub::OnImeCompositionCompleted(
     delegate_->ImeCompositionCompleted(text);
 }
 #endif  // OS_MACOSX
-
-void WebPluginDelegateStub::OnDidReceiveManualResponse(
-    const GURL& url,
-    const PluginMsg_DidReceiveResponseParams& params) {
-  delegate_->DidReceiveManualResponse(url, params.mime_type, params.headers,
-                                      params.expected_length,
-                                      params.last_modified);
-}
-
-void WebPluginDelegateStub::OnDidReceiveManualData(
-    const std::vector<char>& buffer) {
-  delegate_->DidReceiveManualData(&buffer.front(),
-                                  static_cast<int>(buffer.size()));
-}
-
-void WebPluginDelegateStub::OnDidFinishManualLoading() {
-  delegate_->DidFinishManualLoading();
-}
-
-void WebPluginDelegateStub::OnDidManualLoadFail() {
-  delegate_->DidManualLoadFail();
-}
-
-void WebPluginDelegateStub::OnHandleURLRequestReply(
-    unsigned long resource_id, const GURL& url, int notify_id) {
-  WebPluginResourceClient* resource_client =
-      delegate_->CreateResourceClient(resource_id, url, notify_id);
-  webplugin_->OnResourceCreated(resource_id, resource_client);
-}
-
-void WebPluginDelegateStub::OnHTTPRangeRequestReply(
-    unsigned long resource_id, int range_request_id) {
-  WebPluginResourceClient* resource_client =
-      delegate_->CreateSeekableResourceClient(resource_id, range_request_id);
-  webplugin_->OnResourceCreated(resource_id, resource_client);
-}
-
-void WebPluginDelegateStub::OnFetchURL(
-    const PluginMsg_FetchURL_Params& params) {
-  const char* data = NULL;
-  if (params.post_data.size())
-    data = &params.post_data[0];
-
-  delegate_->FetchURL(params.resource_id,
-                      params.notify_id,
-                      params.url,
-                      params.first_party_for_cookies,
-                      params.method,
-                      data,
-                      static_cast<unsigned int>(params.post_data.size()),
-                      Referrer(params.referrer, params.referrer_policy),
-                      params.notify_redirect,
-                      params.is_plugin_src_load,
-                      channel_->renderer_id(),
-                      params.render_frame_id,
-                      webplugin_->host_render_view_routing_id());
-}
 
 }  // namespace content

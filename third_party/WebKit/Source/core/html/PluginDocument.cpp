@@ -135,14 +135,7 @@ void PluginDocumentParser::appendBytes(const char* data, size_t length)
 
 void PluginDocumentParser::finish()
 {
-    if (PluginView* view = pluginView()) {
-        const ResourceError& error = document()->loader()->mainDocumentError();
-        if (error.isNull())
-            view->didFinishLoading();
-        else
-            view->didFailLoading(error);
-        m_embedElement = nullptr;
-    }
+    m_embedElement = nullptr;
     RawDataDocumentParser::finish();
 }
 

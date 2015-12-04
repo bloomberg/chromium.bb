@@ -118,12 +118,6 @@ public:
     virtual void didFinishLoading() = 0;
     virtual void didFailLoading(const WebURLError&) = 0;
 
-    // Called in response to WebPluginContainer::loadFrameRequest
-    virtual void didFinishLoadingFrameRequest(
-        const WebURL&, void* notifyData) = 0;
-    virtual void didFailLoadingFrameRequest(
-        const WebURL&, void* notifyData, const WebURLError&) = 0;
-
     // Printing interface.
     // Whether the plugin supports its own paginated print. The other print
     // interface methods are called only if this method returns true.

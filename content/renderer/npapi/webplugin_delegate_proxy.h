@@ -67,9 +67,6 @@ class WebPluginDelegateProxy
   NPObject* GetPluginScriptableObject() override;
   struct _NPP* GetPluginNPP() override;
   bool GetFormValue(base::string16* value) override;
-  void DidFinishLoadWithReason(const GURL& url,
-                               NPReason reason,
-                               int notify_id) override;
   void SetFocus(bool focused) override;
   bool HandleInputEvent(const blink::WebInputEvent& event,
                         WebCursor::CursorInfo* cursor) override;
@@ -110,39 +107,6 @@ class WebPluginDelegateProxy
 
   // IPC::Sender implementation:
   bool Send(IPC::Message* msg) override;
-
-  void SendJavaScriptStream(const GURL& url,
-                            const std::string& result,
-                            bool success,
-                            int notify_id) override;
-
-  void DidReceiveManualResponse(const GURL& url,
-                                const std::string& mime_type,
-                                const std::string& headers,
-                                uint32 expected_length,
-                                uint32 last_modified) override;
-  void DidReceiveManualData(const char* buffer, int length) override;
-  void DidFinishManualLoading() override;
-  void DidManualLoadFail() override;
-  WebPluginResourceClient* CreateResourceClient(unsigned long resource_id,
-                                                const GURL& url,
-                                                int notify_id) override;
-  WebPluginResourceClient* CreateSeekableResourceClient(
-      unsigned long resource_id,
-      int range_request_id) override;
-  void FetchURL(unsigned long resource_id,
-                int notify_id,
-                const GURL& url,
-                const GURL& first_party_for_cookies,
-                const std::string& method,
-                const char* buf,
-                unsigned int len,
-                const Referrer& referrer,
-                bool notify_redirects,
-                bool is_plugin_src_load,
-                int origin_pid,
-                int render_frame_id,
-                int render_view_id) override;
 
   gfx::PluginWindowHandle GetPluginWindowHandle();
 

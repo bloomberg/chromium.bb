@@ -145,7 +145,6 @@ fast/canvas/canvas-lost-gpu-context.html [ WontFix ]
 
 # Chrome Linux doesn't support NPAPI plugins anymore.
 [ Linux ] http/tests/plugins/interrupted-get-url.html [ WontFix ]
-[ Linux ] http/tests/plugins/third-party-cookie-accept-policy.html [ WontFix ]
 [ Linux ] plugins/mouse-click-plugin-clears-selection.html [ WontFix ]
 
 # Missing Chrome Mac support, will start working when we move to harfbuzz on mac.

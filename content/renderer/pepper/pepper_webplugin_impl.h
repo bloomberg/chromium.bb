@@ -62,11 +62,6 @@ class PepperWebPluginImpl : public blink::WebPlugin {
   void didReceiveData(const char* data, int data_length) override;
   void didFinishLoading() override;
   void didFailLoading(const blink::WebURLError&) override;
-  void didFinishLoadingFrameRequest(const blink::WebURL& url,
-                                    void* notify_data) override;
-  void didFailLoadingFrameRequest(const blink::WebURL& url,
-                                  void* notify_data,
-                                  const blink::WebURLError& error) override;
   bool hasSelection() const override;
   blink::WebString selectionAsText() const override;
   blink::WebString selectionAsMarkup() const override;

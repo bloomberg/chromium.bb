@@ -217,7 +217,6 @@ void DocumentLoader::mainReceivedError(const ResourceError& error)
         m_applicationCacheHost->failedLoadingMainResource();
     if (!frameLoader())
         return;
-    m_mainDocumentError = error;
     if (m_state < MainResourceDone)
         m_state = MainResourceDone;
     frameLoader()->receivedMainResourceError(this, error);
@@ -723,7 +722,6 @@ bool DocumentLoader::maybeLoadEmpty()
 void DocumentLoader::startLoadingMainResource()
 {
     RefPtrWillBeRawPtr<DocumentLoader> protect(this);
-    m_mainDocumentError = ResourceError();
     timing().markNavigationStart();
     ASSERT(!m_mainResource);
     ASSERT(m_state == NotStarted);

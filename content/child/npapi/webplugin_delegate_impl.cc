@@ -14,8 +14,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/child/npapi/plugin_instance.h"
 #include "content/child/npapi/plugin_lib.h"
-#include "content/child/npapi/plugin_stream_url.h"
-#include "content/child/npapi/plugin_url_fetcher.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
 using blink::WebCursorInfo;
@@ -102,12 +100,6 @@ bool WebPluginDelegateImpl::Initialize(
 
 void WebPluginDelegateImpl::DestroyInstance() {
   if (instance_.get() && (instance_->npp()->ndata != NULL)) {
-    // Shutdown all streams before destroying so that
-    // no streams are left "in progress".  Need to do
-    // this before calling set_web_plugin(NULL) because the
-    // instance uses the helper to do the download.
-    instance_->CloseStreams();
-
     window_.window = NULL;
     if (creation_succeeded_ &&
         !(quirks_ & PLUGIN_QUIRK_DONT_SET_NULL_WINDOW_HANDLE_ON_DESTROY)) {
@@ -193,54 +185,9 @@ bool WebPluginDelegateImpl::GetFormValue(base::string16* value) {
   return instance_->GetFormValue(value);
 }
 
-void WebPluginDelegateImpl::DidFinishLoadWithReason(const GURL& url,
-                                                    NPReason reason,
-                                                    int notify_id) {
-  if (quirks_ & PLUGIN_QUIRK_ALWAYS_NOTIFY_SUCCESS &&
-      reason == NPRES_NETWORK_ERR) {
-    // Flash needs this or otherwise it unloads the launching swf object.
-    reason = NPRES_DONE;
-  }
-
-  instance()->DidFinishLoadWithReason(url, reason, notify_id);
-}
-
 int WebPluginDelegateImpl::GetProcessId() {
   // We are in process, so the plugin pid is this current process pid.
   return base::GetCurrentProcId();
-}
-
-void WebPluginDelegateImpl::SendJavaScriptStream(const GURL& url,
-                                                 const std::string& result,
-                                                 bool success,
-                                                 int notify_id) {
-  instance()->SendJavaScriptStream(url, result, success, notify_id);
-}
-
-void WebPluginDelegateImpl::DidReceiveManualResponse(
-    const GURL& url, const std::string& mime_type,
-    const std::string& headers, uint32 expected_length, uint32 last_modified) {
-  if (!windowless_) {
-    // Calling NPP_WriteReady before NPP_SetWindow causes movies to not load in
-    // Flash.  See http://b/issue?id=892174.
-    DCHECK(windowed_did_set_window_);
-  }
-
-  instance()->DidReceiveManualResponse(url, mime_type, headers,
-                                       expected_length, last_modified);
-}
-
-void WebPluginDelegateImpl::DidReceiveManualData(const char* buffer,
-                                                 int length) {
-  instance()->DidReceiveManualData(buffer, length);
-}
-
-void WebPluginDelegateImpl::DidFinishManualLoading() {
-  instance()->DidFinishManualLoading();
-}
-
-void WebPluginDelegateImpl::DidManualLoadFail() {
-  instance()->DidManualLoadFail();
 }
 
 base::FilePath WebPluginDelegateImpl::GetPluginPath() {
@@ -287,46 +234,6 @@ bool WebPluginDelegateImpl::IsUserGesture(const WebInputEvent& event) {
     default:
       return false;
   }
-}
-
-WebPluginResourceClient* WebPluginDelegateImpl::CreateResourceClient(
-    unsigned long resource_id, const GURL& url, int notify_id) {
-  return instance()->CreateStream(
-      resource_id, url, std::string(), notify_id);
-}
-
-WebPluginResourceClient* WebPluginDelegateImpl::CreateSeekableResourceClient(
-    unsigned long resource_id, int range_request_id) {
-  WebPluginResourceClient* resource_client = instance()->GetRangeRequest(
-      range_request_id);
-  if (resource_client)
-    resource_client->AddRangeRequestResourceId(resource_id);
-  return resource_client;
-}
-
-void WebPluginDelegateImpl::FetchURL(unsigned long resource_id,
-                                     int notify_id,
-                                     const GURL& url,
-                                     const GURL& first_party_for_cookies,
-                                     const std::string& method,
-                                     const char* buf,
-                                     unsigned int len,
-                                     const Referrer& referrer,
-                                     bool notify_redirects,
-                                     bool is_plugin_src_load,
-                                     int origin_pid,
-                                     int render_frame_id,
-                                     int render_view_id) {
-  // TODO(jam): once we switch over to resource loading always happening in this
-  // code path, remove WebPluginResourceClient abstraction.
-  PluginStreamUrl* plugin_stream = instance()->CreateStream(
-      resource_id, url, std::string(), notify_id);
-
-  bool copy_stream_data = !!(quirks_ & PLUGIN_QUIRK_COPY_STREAM_DATA);
-  plugin_stream->SetPluginURLFetcher(new PluginURLFetcher(
-      plugin_stream, url, first_party_for_cookies, method, buf, len,
-      referrer, std::string(), notify_redirects, is_plugin_src_load, origin_pid,
-      render_frame_id, render_view_id, resource_id, copy_stream_data));
 }
 
 }  // namespace content

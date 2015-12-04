@@ -996,11 +996,6 @@ void FrameLoader::stopAllLoaders()
     m_frame->navigationScheduler().cancel();
 
     m_inStopAllLoaders = false;
-
-    // LocalFrame::detach() can be called multiple times which
-    // means we may no longer have a FrameLoaderClient to talk to.
-    if (client())
-        client()->didStopAllLoaders();
 }
 
 void FrameLoader::didAccessInitialDocument()

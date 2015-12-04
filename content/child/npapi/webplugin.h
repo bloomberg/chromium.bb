@@ -70,25 +70,8 @@ class WebPlugin {
   virtual std::string GetCookies(const GURL& url,
                                  const GURL& first_party_for_cookies) = 0;
 
-  // Handles GetURL/GetURLNotify/PostURL/PostURLNotify requests initiated
-  // by plugins.  If the plugin wants notification of the result, notify_id will
-  // be non-zero.
-  virtual void HandleURLRequest(const char* url,
-                                const char* method,
-                                const char* target,
-                                const char* buf,
-                                unsigned int len,
-                                int notify_id,
-                                bool popups_allowed,
-                                bool notify_redirects) = 0;
-
   // Cancels document load.
   virtual void CancelDocumentLoad() = 0;
-
-  // Initiates a HTTP range request for an existing stream.
-  virtual void InitiateHTTPRangeRequest(const char* url,
-                                        const char* range_info,
-                                        int range_request_id) = 0;
 
   virtual void DidStartLoading() = 0;
   virtual void DidStopLoading() = 0;

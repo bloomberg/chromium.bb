@@ -85,11 +85,6 @@ class TestPlugin : public blink::WebPlugin, public cc::TextureLayerClient {
   void didReceiveData(const char* data, int data_length) override {}
   void didFinishLoading() override {}
   void didFailLoading(const blink::WebURLError& error) override {}
-  void didFinishLoadingFrameRequest(const blink::WebURL& url,
-                                    void* notify_data) override {}
-  void didFailLoadingFrameRequest(const blink::WebURL& url,
-                                  void* notify_data,
-                                  const blink::WebURLError& error) override {}
   bool isPlaceholder() override;
 
   // cc::TextureLayerClient methods:

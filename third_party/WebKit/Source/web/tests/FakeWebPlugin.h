@@ -64,8 +64,6 @@ public:
     void didReceiveData(const char* data, int dataLength) override { }
     void didFinishLoading() override { }
     void didFailLoading(const WebURLError&) override { }
-    void didFinishLoadingFrameRequest(const WebURL&, void* notifyData) override { }
-    void didFailLoadingFrameRequest(const WebURL&, void* notifyData, const WebURLError&) override { }
     bool isPlaceholder() override { return false; }
 
 protected:

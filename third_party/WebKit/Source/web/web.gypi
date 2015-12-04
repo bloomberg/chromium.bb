@@ -190,8 +190,6 @@
       'WebPluginContainerImpl.cpp',
       'WebPluginContainerImpl.h',
       'WebPluginDocument.cpp',
-      'WebPluginLoadObserver.cpp',
-      'WebPluginLoadObserver.h',
       'WebPluginScriptForbiddenScope.cpp',
       'WebRange.cpp',
       'WebRemoteFrameImpl.cpp',

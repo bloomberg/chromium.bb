@@ -3116,7 +3116,7 @@ int32_t PepperPluginInstanceImpl::Navigate(
 
   WebString target_str = WebString::fromUTF8(target);
   blink::WebScopedUserGesture user_gesture(CurrentUserGestureToken());
-  container_->loadFrameRequest(web_request, target_str, false, NULL);
+  container_->loadFrameRequest(web_request, target_str);
   return PP_OK;
 }
 

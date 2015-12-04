@@ -531,7 +531,6 @@ class CONTENT_EXPORT RenderFrameImpl
       const blink::WebURL& main_resource_url,
       const blink::WebCString& main_resource_security_info) override;
   void didChangePerformanceTiming() override;
-  void didAbortLoading(blink::WebLocalFrame* frame) override;
   void didCreateScriptContext(blink::WebLocalFrame* frame,
                               v8::Local<v8::Context> context,
                               int extension_group,

@@ -135,16 +135,6 @@ NPError PluginTest::NPP_SetValue(NPNVariable, void* value) {
 
 // NPN functions.
 
-NPError PluginTest::NPN_GetURL(const char* url, const char* target) {
-  return browser->geturl(m_npp, url, target);
-}
-
-NPError PluginTest::NPN_GetURLNotify(const char* url,
-                                     const char* target,
-                                     void* notifyData) {
-  return browser->geturlnotify(m_npp, url, target, notifyData);
-}
-
 NPError PluginTest::NPN_GetValue(NPNVariable variable, void* value) {
   return browser->getvalue(m_npp, variable, value);
 }

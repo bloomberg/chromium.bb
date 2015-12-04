@@ -110,13 +110,6 @@ class WebViewPlugin : public blink::WebPlugin,
   void didFinishLoading() override;
   void didFailLoading(const blink::WebURLError& error) override;
 
-  // Called in response to WebPluginContainer::loadFrameRequest
-  void didFinishLoadingFrameRequest(const blink::WebURL& url,
-                                    void* notifyData) override {}
-  void didFailLoadingFrameRequest(const blink::WebURL& url,
-                                  void* notify_data,
-                                  const blink::WebURLError& error) override {}
-
   // WebViewClient methods:
   bool acceptsLoadDrops() override;
 

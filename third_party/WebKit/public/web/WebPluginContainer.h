@@ -106,7 +106,7 @@ public:
     // called if the load failed.  The given notifyData is passed along to
     // the callback.
     virtual void loadFrameRequest(
-        const WebURLRequest&, const WebString& target, bool notifyNeeded, void* notifyData) = 0;
+        const WebURLRequest&, const WebString& target) = 0;
 
     // Determines whether the given rectangle in this plugin is above all other
     // content. The rectangle is in the plugin's coordinate system.

@@ -493,22 +493,11 @@ WebString WebPluginContainerImpl::executeScriptURL(const WebURL& url, bool popup
     return toCoreString(v8::Local<v8::String>::Cast(result));
 }
 
-void WebPluginContainerImpl::loadFrameRequest(const WebURLRequest& request, const WebString& target, bool notifyNeeded, void* notifyData)
+void WebPluginContainerImpl::loadFrameRequest(const WebURLRequest& request, const WebString& target)
 {
     LocalFrame* frame = m_element->document().frame();
     if (!frame || !frame->loader().documentLoader())
         return;  // FIXME: send a notification in this case?
-
-    if (notifyNeeded) {
-        // FIXME: This is a bit of hack to allow us to observe completion of
-        // our frame request.  It would be better to evolve FrameLoader to
-        // support a completion callback instead.
-        OwnPtrWillBeRawPtr<WebPluginLoadObserver> observer = WebPluginLoadObserver::create(this, request.url(), notifyData);
-#if !ENABLE(OILPAN)
-        m_pluginLoadObservers.append(observer.get());
-#endif
-        WebDataSourceImpl::setNextPluginLoadObserver(observer.release());
-    }
 
     FrameLoadRequest frameRequest(frame->document(), request.toResourceRequest(), target);
     frame->loader().load(frameRequest);
@@ -686,16 +675,6 @@ bool WebPluginContainerImpl::wantsWheelEvents()
     return m_wantsWheelEvents;
 }
 
-#if !ENABLE(OILPAN)
-void WebPluginContainerImpl::willDestroyPluginLoadObserver(WebPluginLoadObserver* observer)
-{
-    size_t pos = m_pluginLoadObservers.find(observer);
-    if (pos == kNotFound)
-        return;
-    m_pluginLoadObservers.remove(pos);
-}
-#endif
-
 // Private methods -------------------------------------------------------------
 
 WebPluginContainerImpl::WebPluginContainerImpl(HTMLPlugInElement* element, WebPlugin* webPlugin)
@@ -731,11 +710,6 @@ void WebPluginContainerImpl::dispose()
     if (m_element && m_touchEventRequestType != TouchEventRequestTypeNone && m_element->document().frameHost())
         m_element->document().frameHost()->eventHandlerRegistry().didRemoveEventHandler(*m_element, EventHandlerRegistry::TouchEvent);
 
-#if !ENABLE(OILPAN)
-    for (const auto& observer : m_pluginLoadObservers)
-        observer->clearPluginContainer();
-#endif
-
     if (m_webPlugin) {
         RELEASE_ASSERT(!m_webPlugin->container() || m_webPlugin->container() == this);
         m_webPlugin->destroy();
@@ -747,9 +721,6 @@ void WebPluginContainerImpl::dispose()
         m_webLayer = nullptr;
     }
 
-#if !ENABLE(OILPAN)
-    m_pluginLoadObservers.clear();
-#endif
     m_element = nullptr;
 }
 

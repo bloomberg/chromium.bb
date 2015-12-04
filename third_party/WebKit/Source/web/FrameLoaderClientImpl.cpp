@@ -99,7 +99,6 @@
 #include "web/WebDevToolsFrontendImpl.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebPluginContainerImpl.h"
-#include "web/WebPluginLoadObserver.h"
 #include "web/WebViewImpl.h"
 #include "wtf/StringExtras.h"
 #include "wtf/text/CString.h"
@@ -494,37 +493,17 @@ void FrameLoaderClientImpl::dispatchDidCommitLoad(HistoryItem* item, HistoryComm
 void FrameLoaderClientImpl::dispatchDidFailProvisionalLoad(
     const ResourceError& error, HistoryCommitType commitType)
 {
-    OwnPtrWillBeRawPtr<WebPluginLoadObserver> observer = pluginLoadObserver(m_webFrame->frame()->loader().provisionalDocumentLoader());
     m_webFrame->didFail(error, true, commitType);
-    if (observer)
-        observer->didFailLoading(error);
 }
 
 void FrameLoaderClientImpl::dispatchDidFailLoad(const ResourceError& error, HistoryCommitType commitType)
 {
-    OwnPtrWillBeRawPtr<WebPluginLoadObserver> observer = pluginLoadObserver(m_webFrame->frame()->loader().documentLoader());
     m_webFrame->didFail(error, false, commitType);
-    if (observer)
-        observer->didFailLoading(error);
-
-    // Don't clear the redirect chain, this will happen in the middle of client
-    // redirects, and we need the context. The chain will be cleared when the
-    // provisional load succeeds or fails, not the "real" one.
 }
 
 void FrameLoaderClientImpl::dispatchDidFinishLoad()
 {
-    OwnPtrWillBeRawPtr<WebPluginLoadObserver> observer = pluginLoadObserver(m_webFrame->frame()->loader().documentLoader());
-
-    if (m_webFrame->client())
-        m_webFrame->client()->didFinishLoad(m_webFrame);
-
-    if (observer)
-        observer->didFinishLoading();
-
-    // Don't clear the redirect chain, this will happen in the middle of client
-    // redirects, and we need the context. The chain will be cleared when the
-    // provisional load succeeds or fails, not the "real" one.
+    m_webFrame->didFinish();
 }
 
 void FrameLoaderClientImpl::dispatchDidChangeThemeColor()
@@ -883,11 +862,6 @@ ObjectContentType FrameLoaderClientImpl::objectContentType(
     return ObjectContentNone;
 }
 
-PassOwnPtrWillBeRawPtr<WebPluginLoadObserver> FrameLoaderClientImpl::pluginLoadObserver(DocumentLoader* loader)
-{
-    return WebDataSourceImpl::fromDocumentLoader(loader)->releasePluginLoadObserver();
-}
-
 WebCookieJar* FrameLoaderClientImpl::cookieJar() const
 {
     if (!m_webFrame->client())
@@ -999,12 +973,6 @@ PassOwnPtr<WebApplicationCacheHost> FrameLoaderClientImpl::createApplicationCach
     if (!m_webFrame->client())
         return nullptr;
     return adoptPtr(m_webFrame->client()->createApplicationCacheHost(m_webFrame, client));
-}
-
-void FrameLoaderClientImpl::didStopAllLoaders()
-{
-    if (m_webFrame->client())
-        m_webFrame->client()->didAbortLoading(m_webFrame);
 }
 
 void FrameLoaderClientImpl::dispatchDidChangeManifest()

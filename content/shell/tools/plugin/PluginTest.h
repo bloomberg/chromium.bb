@@ -98,10 +98,6 @@ class PluginTest {
   virtual NPError NPP_SetValue(NPNVariable, void* value);
 
   // NPN functions.
-  NPError NPN_GetURL(const char* url, const char* target);
-  NPError NPN_GetURLNotify(const char* url,
-                           const char* target,
-                           void* notifyData);
   NPError NPN_GetValue(NPNVariable, void* value);
   void NPN_InvalidateRect(NPRect* invalidRect);
   bool NPN_Invoke(NPObject*,

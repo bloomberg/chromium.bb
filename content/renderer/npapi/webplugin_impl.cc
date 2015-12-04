@@ -362,23 +362,6 @@ void WebPluginImpl::updateGeometry(const WebRect& window_rect,
     delegate_->UpdateGeometry(new_geometry.window_rect, new_geometry.clip_rect);
   }
 
-  // Initiate a download on the plugin url. This should be done for the
-  // first update geometry sequence. We need to ensure that the plugin
-  // receives the geometry update before it starts receiving data.
-  if (first_geometry_update_) {
-    // An empty url corresponds to an EMBED tag with no src attribute.
-    if (!load_manually_ && plugin_url_.is_valid()) {
-      // The Flash plugin hangs for a while if it receives data before
-      // receiving valid plugin geometry. By valid geometry we mean the
-      // geometry received by a call to setFrameRect in the Webkit
-      // layout code path. To workaround this issue we download the
-      // plugin source url on a timer.
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(&WebPluginImpl::OnDownloadPluginSrcUrl,
-                                weak_factory_.GetWeakPtr()));
-    }
-  }
-
 #if defined(OS_WIN)
   // Don't cache the geometry during the first geometry update. The first
   // geometry update sequence is received when Widget::setParent is called.
@@ -437,58 +420,6 @@ WebInputEventResult WebPluginImpl::handleInputEvent(
 #endif
   return ret ? WebInputEventResult::HandledApplication
              : WebInputEventResult::NotHandled;
-}
-
-void WebPluginImpl::didReceiveResponse(const WebURLResponse& response) {
-  ignore_response_error_ = false;
-
-  ResponseInfo response_info;
-  GetResponseInfo(response, &response_info);
-
-  delegate_->DidReceiveManualResponse(
-      response_info.url,
-      response_info.mime_type,
-      GetAllHeaders(response),
-      response_info.expected_length,
-      response_info.last_modified);
-}
-
-void WebPluginImpl::didReceiveData(const char* data, int data_length) {
-  delegate_->DidReceiveManualData(data, data_length);
-}
-
-void WebPluginImpl::didFinishLoading() {
-  delegate_->DidFinishManualLoading();
-}
-
-void WebPluginImpl::didFailLoading(const WebURLError& error) {
-  if (!ignore_response_error_)
-    delegate_->DidManualLoadFail();
-}
-
-void WebPluginImpl::didFinishLoadingFrameRequest(
-    const WebURL& url, void* notify_data) {
-  if (delegate_) {
-    // We're converting a void* into an arbitrary int id.  Though
-    // these types are the same size on all the platforms we support,
-    // the compiler may complain as though they are different, so to
-    // make the casting gods happy go through an intptr_t (the union
-    // of void* and int) rather than converting straight across.
-    delegate_->DidFinishLoadWithReason(
-        url, NPRES_DONE, reinterpret_cast<intptr_t>(notify_data));
-  }
-}
-
-void WebPluginImpl::didFailLoadingFrameRequest(
-    const WebURL& url, void* notify_data, const WebURLError& error) {
-  if (!delegate_)
-    return;
-
-  NPReason reason =
-      error.reason == net::ERR_ABORTED ? NPRES_USER_BREAK : NPRES_NETWORK_ERR;
-  // See comment in didFinishLoadingFrameRequest about the cast here.
-  delegate_->DidFinishLoadWithReason(
-      url, reason, reinterpret_cast<intptr_t>(notify_data));
 }
 
 bool WebPluginImpl::isPlaceholder() {
@@ -564,8 +495,7 @@ WebPluginImpl::WebPluginImpl(
       file_path_(file_path),
       mime_type_(base::ToLowerASCII(base::UTF16ToASCII(
           base::StringPiece16(params.mimeType)))),
-      loader_client_(this),
-      weak_factory_(this) {
+      loader_client_(this) {
   DCHECK_EQ(params.attributeNames.size(), params.attributeValues.size());
 
   for (size_t i = 0; i < params.attributeNames.size(); ++i) {
@@ -700,7 +630,6 @@ WebPluginImpl::RoutingStatus WebPluginImpl::RouteToFrame(
     const char* target,
     const char* buf,
     unsigned int len,
-    int notify_id,
     ReferrerValue referrer_flag) {
   // If there is no target, there is nothing to do
   if (!target)
@@ -764,8 +693,7 @@ WebPluginImpl::RoutingStatus WebPluginImpl::RouteToFrame(
     }
   }
 
-  container_->loadFrameRequest(
-      request, target_str, notify_id != 0, reinterpret_cast<void*>(notify_id));
+  container_->loadFrameRequest(request, target_str);
   return ROUTED;
 }
 
@@ -903,12 +831,6 @@ void WebPluginImpl::InvalidateRect(const gfx::Rect& rect) {
     container_->invalidateRect(rect);
 }
 
-void WebPluginImpl::OnDownloadPluginSrcUrl() {
-  HandleURLRequestInternal(
-      plugin_url_.spec().c_str(), "GET", NULL, NULL, 0, 0, false, DOCUMENT_URL,
-      false, true);
-}
-
 WebPluginResourceClient* WebPluginImpl::GetClientFromLoader(
     WebURLLoader* loader) {
   ClientInfo* client_info = GetClientInfoFromLoader(loader);
@@ -981,8 +903,6 @@ void WebPluginImpl::didReceiveResponse(WebURLLoader* loader,
                                        const WebURLResponse& response) {
   // TODO(jam): THIS LOGIC IS COPIED IN PluginURLFetcher::OnReceivedResponse
   // until kDirectNPAPIRequests is the default and we can remove this old path.
-  static const int kHttpPartialResponseStatusCode = 206;
-  static const int kHttpResponseSuccessStatusCode = 200;
 
   WebPluginResourceClient* client = GetClientFromLoader(loader);
   if (!client)
@@ -993,64 +913,6 @@ void WebPluginImpl::didReceiveResponse(WebURLLoader* loader,
   ClientInfo* client_info = GetClientInfoFromLoader(loader);
   if (!client_info)
     return;
-
-  bool request_is_seekable = true;
-  if (client->IsMultiByteResponseExpected()) {
-    if (response.httpStatusCode() == kHttpPartialResponseStatusCode) {
-      ClientInfo* client_info = GetClientInfoFromLoader(loader);
-      if (!client_info)
-        return;
-      if (HandleHttpMultipartResponse(response, client)) {
-        // Multiple ranges requested, data will be delivered by
-        // MultipartResponseDelegate.
-        client_info->data_offset = 0;
-        return;
-      }
-      int64 upper_bound = 0, instance_size = 0;
-      // Single range requested - go through original processing for
-      // non-multipart requests, but update data offset.
-      MultipartResponseDelegate::ReadContentRanges(response,
-                                                   &client_info->data_offset,
-                                                   &upper_bound,
-                                                   &instance_size);
-    } else if (response.httpStatusCode() == kHttpResponseSuccessStatusCode) {
-      RenderThreadImpl::current()->RecordAction(
-          base::UserMetricsAction("Plugin_200ForByteRange"));
-      // If the client issued a byte range request and the server responds with
-      // HTTP 200 OK, it indicates that the server does not support byte range
-      // requests.
-      // We need to emulate Firefox behavior by doing the following:-
-      // 1. Destroy the plugin instance in the plugin process. Ensure that
-      //    existing resource requests initiated for the plugin instance
-      //    continue to remain valid.
-      // 2. Create a new plugin instance and notify it about the response
-      //    received here.
-      if (!ReinitializePluginForResponse(loader)) {
-        NOTREACHED();
-        return;
-      }
-
-      // The server does not support byte range requests. No point in creating
-      // seekable streams.
-      request_is_seekable = false;
-
-      delete client;
-      client = NULL;
-
-      // Create a new resource client for this request.
-      for (size_t i = 0; i < clients_.size(); ++i) {
-        if (clients_[i].loader.get() == loader) {
-          WebPluginResourceClient* resource_client =
-              delegate_->CreateResourceClient(clients_[i].id, plugin_url_, 0);
-          clients_[i].client = resource_client;
-          client = resource_client;
-          break;
-        }
-      }
-
-      DCHECK(client != NULL);
-    }
-  }
 
   // Calling into a plugin could result in reentrancy if the plugin yields
   // control to the OS like entering a modal loop etc. Prevent this by
@@ -1063,7 +925,7 @@ void WebPluginImpl::didReceiveResponse(WebURLLoader* loader,
       GetAllHeaders(response),
       response_info.expected_length,
       response_info.last_modified,
-      request_is_seekable);
+      true);
 
   // Bug http://b/issue?id=925559. The flash plugin would not handle the HTTP
   // error codes in the stream header and as a result, was unaware of the
@@ -1161,121 +1023,6 @@ void WebPluginImpl::SetContainer(WebPluginContainer* container) {
     container_->allowScriptObjects();
 }
 
-void WebPluginImpl::HandleURLRequest(const char* url,
-                                     const char* method,
-                                     const char* target,
-                                     const char* buf,
-                                     unsigned int len,
-                                     int notify_id,
-                                     bool popups_allowed,
-                                     bool notify_redirects) {
-  // GetURL/PostURL requests initiated explicitly by plugins should specify the
-  // plugin SRC url as the referrer if it is available.
-  HandleURLRequestInternal(
-      url, method, target, buf, len, notify_id, popups_allowed, PLUGIN_SRC,
-      notify_redirects, false);
-}
-
-void WebPluginImpl::HandleURLRequestInternal(const char* url,
-                                             const char* method,
-                                             const char* target,
-                                             const char* buf,
-                                             unsigned int len,
-                                             int notify_id,
-                                             bool popups_allowed,
-                                             ReferrerValue referrer_flag,
-                                             bool notify_redirects,
-                                             bool is_plugin_src_load) {
-  // For this request, we either route the output to a frame
-  // because a target has been specified, or we handle the request
-  // here, i.e. by executing the script if it is a javascript url
-  // or by initiating a download on the URL, etc. There is one special
-  // case in that the request is a javascript url and the target is "_self",
-  // in which case we route the output to the plugin rather than routing it
-  // to the plugin's frame.
-  bool is_javascript_url =
-      url::FindAndCompareScheme(url, strlen(url), url::kJavaScriptScheme, NULL);
-  RoutingStatus routing_status = RouteToFrame(
-      url, is_javascript_url, popups_allowed, method, target, buf, len,
-      notify_id, referrer_flag);
-  if (routing_status == ROUTED)
-    return;
-
-  if (is_javascript_url) {
-    GURL gurl(url);
-    WebString result = container_->executeScriptURL(gurl, popups_allowed);
-
-    // delegate_ could be NULL because executeScript caused the container to
-    // be deleted.
-    if (delegate_) {
-      delegate_->SendJavaScriptStream(
-          gurl, result.utf8(), !result.isNull(), notify_id);
-    }
-
-    return;
-  }
-
-  unsigned long resource_id = GetNextResourceId();
-  if (!resource_id)
-    return;
-
-  GURL complete_url = CompleteURL(url);
-  // Remove when flash bug is fixed. http://crbug.com/40016.
-  if (!WebPluginImpl::IsValidUrl(complete_url, referrer_flag))
-    return;
-
-  // If the RouteToFrame call returned a failure then inform the result
-  // back to the plugin asynchronously.
-  if ((routing_status == INVALID_URL) ||
-      (routing_status == GENERAL_FAILURE)) {
-    WebPluginResourceClient* resource_client = delegate_->CreateResourceClient(
-        resource_id, complete_url, notify_id);
-    if (resource_client)
-      resource_client->DidFail(resource_id);
-    return;
-  }
-
-  // CreateResourceClient() sends a synchronous IPC message so it's possible
-  // that TearDownPluginInstance() may have been called in the nested
-  // message loop.  If so, don't start the request.
-  if (!delegate_)
-    return;
-
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableDirectNPAPIRequests)) {
-    // We got here either because the plugin called GetURL/PostURL, or because
-    // we're fetching the data for an embed tag. If we're in multi-process mode,
-    // we want to fetch the data in the plugin process as the renderer won't be
-    // able to request any origin when site isolation is in place. So bounce
-    // this request back to the plugin process which will use ResourceDispatcher
-    // to fetch the url.
-
-    // TODO(jam): any better way of getting this? Can't find a way to get
-    // frame()->loader()->outgoingReferrer() which
-    // WebFrameImpl::setReferrerForRequest does.
-    WebURLRequest request(complete_url);
-    SetReferrer(&request, referrer_flag);
-    Referrer referrer(
-        GURL(request.httpHeaderField(WebString::fromUTF8("Referer"))),
-        request.referrerPolicy());
-
-    GURL first_party_for_cookies = webframe_->document().firstPartyForCookies();
-    delegate_->FetchURL(resource_id, notify_id, complete_url,
-                        first_party_for_cookies, method, buf, len, referrer,
-                        notify_redirects, is_plugin_src_load, 0,
-                        render_frame_->GetRoutingID(),
-                        render_view_->GetRoutingID());
-  } else {
-    WebPluginResourceClient* resource_client = delegate_->CreateResourceClient(
-        resource_id, complete_url, notify_id);
-    if (!resource_client)
-      return;
-    InitiateHTTPRequest(resource_id, resource_client, complete_url, method, buf,
-                        len, NULL, referrer_flag, notify_redirects,
-                        is_plugin_src_load);
-  }
-}
-
 unsigned long WebPluginImpl::GetNextResourceId() {
   if (!webframe_)
     return 0;
@@ -1285,91 +1032,11 @@ unsigned long WebPluginImpl::GetNextResourceId() {
   return view->createUniqueIdentifierForRequest();
 }
 
-bool WebPluginImpl::InitiateHTTPRequest(unsigned long resource_id,
-                                        WebPluginResourceClient* client,
-                                        const GURL& url,
-                                        const char* method,
-                                        const char* buf,
-                                        int buf_len,
-                                        const char* range_info,
-                                        ReferrerValue referrer_flag,
-                                        bool notify_redirects,
-                                        bool is_plugin_src_load) {
-  if (!client) {
-    NOTREACHED();
-    return false;
-  }
-
-  ClientInfo info;
-  info.id = resource_id;
-  info.client = client;
-  info.request.initialize();
-  info.request.setURL(url);
-  info.request.setFirstPartyForCookies(
-      webframe_->document().firstPartyForCookies());
-  info.request.setRequestorProcessID(delegate_->GetProcessId());
-  // TODO(mkwst): Is this a request for a plugin object itself
-  // (RequestContextObject), or a request that the plugin makes
-  // (RequestContextPlugin)?
-  info.request.setRequestContext(WebURLRequest::RequestContextPlugin);
-  info.request.setHTTPMethod(WebString::fromUTF8(method));
-  // ServiceWorker is disabled for NPAPI.
-  info.request.setSkipServiceWorker(true);
-  info.pending_failure_notification = false;
-  info.notify_redirects = notify_redirects;
-  info.is_plugin_src_load = is_plugin_src_load;
-  info.data_offset = 0;
-
-  if (range_info) {
-    info.request.addHTTPHeaderField(WebString::fromUTF8("Range"),
-                                    WebString::fromUTF8(range_info));
-  }
-
-  if (strcmp(method, "POST") == 0) {
-    // Adds headers or form data to a request.  This must be called before
-    // we initiate the actual request.
-    SetPostData(&info.request, buf, buf_len);
-  }
-
-  SetReferrer(&info.request, referrer_flag);
-
-  WebURLLoaderOptions options;
-  options.allowCredentials = true;
-  options.crossOriginRequestPolicy =
-      WebURLLoaderOptions::CrossOriginRequestPolicyAllow;
-  info.loader.reset(webframe_->createAssociatedURLLoader(options));
-  if (!info.loader.get())
-    return false;
-  info.loader->loadAsynchronously(info.request, &loader_client_);
-
-  clients_.push_back(info);
-  return true;
-}
-
 void WebPluginImpl::CancelDocumentLoad() {
   if (webframe_) {
     ignore_response_error_ = true;
     webframe_->stopLoading();
   }
-}
-
-void WebPluginImpl::InitiateHTTPRangeRequest(
-    const char* url, const char* range_info, int range_request_id) {
-  unsigned long resource_id = GetNextResourceId();
-  if (!resource_id)
-    return;
-
-  GURL complete_url = CompleteURL(url);
-  // Remove when flash bug is fixed. http://crbug.com/40016.
-  if (!WebPluginImpl::IsValidUrl(complete_url,
-                                 load_manually_ ? NO_REFERRER : PLUGIN_SRC))
-    return;
-
-  WebPluginResourceClient* resource_client =
-      delegate_->CreateSeekableResourceClient(resource_id, range_request_id);
-  InitiateHTTPRequest(
-      resource_id, resource_client, complete_url, "GET", NULL, 0, range_info,
-      load_manually_ ? NO_REFERRER : PLUGIN_SRC, false, false);
 }
 
 void WebPluginImpl::DidStartLoading() {
@@ -1539,7 +1206,6 @@ void WebPluginImpl::TearDownPluginInstance(
   // This needs to be called now and not in the destructor since the
   // webframe_ might not be valid anymore.
   webframe_ = NULL;
-  weak_factory_.InvalidateWeakPtrs();
 }
 
 void WebPluginImpl::SetReferrer(blink::WebURLRequest* request,

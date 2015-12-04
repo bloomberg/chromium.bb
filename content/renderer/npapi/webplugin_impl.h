@@ -86,15 +86,10 @@ class WebPluginImpl : public WebPlugin,
   blink::WebInputEventResult handleInputEvent(
       const blink::WebInputEvent& event,
       blink::WebCursorInfo& cursor_info) override;
-  void didReceiveResponse(const blink::WebURLResponse& response) override;
-  void didReceiveData(const char* data, int data_length) override;
-  void didFinishLoading() override;
-  void didFailLoading(const blink::WebURLError& error) override;
-  void didFinishLoadingFrameRequest(const blink::WebURL& url,
-                                    void* notify_data) override;
-  void didFailLoadingFrameRequest(const blink::WebURL& url,
-                                  void* notify_data,
-                                  const blink::WebURLError& error) override;
+  void didReceiveResponse(const blink::WebURLResponse& response) override {}
+  void didReceiveData(const char* data, int data_length) override {}
+  void didFinishLoading() override {}
+  void didFailLoading(const blink::WebURLError& error) override {}
   bool isPlaceholder() override;
 
   // WebPlugin implementation:
@@ -112,18 +107,7 @@ class WebPluginImpl : public WebPlugin,
                  const std::string& cookie) override;
   std::string GetCookies(const GURL& url,
                          const GURL& first_party_for_cookies) override;
-  void HandleURLRequest(const char* url,
-                        const char* method,
-                        const char* target,
-                        const char* buf,
-                        unsigned int len,
-                        int notify_id,
-                        bool popups_allowed,
-                        bool notify_redirects) override;
   void CancelDocumentLoad() override;
-  void InitiateHTTPRangeRequest(const char* url,
-                                const char* range_info,
-                                int pending_request_id) override;
   void DidStartLoading() override;
   void DidStopLoading() override;
   bool IsOffTheRecord() override;
@@ -175,25 +159,11 @@ class WebPluginImpl : public WebPlugin,
                              const char* target,
                              const char* buf,
                              unsigned int len,
-                             int notify_id,
                              ReferrerValue referrer_flag);
 
   // Returns the next avaiable resource id. Returns 0 if the operation fails.
   // It may fail if the page has already been closed.
   unsigned long GetNextResourceId();
-
-  // Initiates HTTP GET/POST requests.
-  // Returns true on success.
-  bool InitiateHTTPRequest(unsigned long resource_id,
-                           WebPluginResourceClient* client,
-                           const GURL& url,
-                           const char* method,
-                           const char* buf,
-                           int len,
-                           const char* range_info,
-                           ReferrerValue referrer_flag,
-                           bool notify_redirects,
-                           bool check_mixed_scripting);
 
   gfx::Rect GetWindowClipRect(const gfx::Rect& rect);
 
@@ -239,23 +209,9 @@ class WebPluginImpl : public WebPlugin,
   bool HandleHttpMultipartResponse(const blink::WebURLResponse& response,
                                    WebPluginResourceClient* client);
 
-  void HandleURLRequestInternal(const char* url,
-                                const char* method,
-                                const char* target,
-                                const char* buf,
-                                unsigned int len,
-                                int notify_id,
-                                bool popups_allowed,
-                                ReferrerValue referrer_flag,
-                                bool notify_redirects,
-                                bool check_mixed_scripting);
-
   // Tears down the existing plugin instance and creates a new plugin instance
   // to handle the response identified by the loader parameter.
   bool ReinitializePluginForResponse(blink::WebURLLoader* loader);
-
-  // Delayed task for downloading the plugin source URL.
-  void OnDownloadPluginSrcUrl();
 
   struct ClientInfo;
 
@@ -358,8 +314,6 @@ class WebPluginImpl : public WebPlugin,
   };
 
   LoaderClient loader_client_;
-
-  base::WeakPtrFactory<WebPluginImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebPluginImpl);
 };

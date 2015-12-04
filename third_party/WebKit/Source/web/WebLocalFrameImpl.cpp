@@ -1975,6 +1975,17 @@ void WebLocalFrameImpl::didFail(const ResourceError& error, bool wasProvisional,
         client()->didFailProvisionalLoad(this, webError, webCommitType);
     else
         client()->didFailLoad(this, webError, webCommitType);
+    if (WebPluginContainerImpl* plugin = pluginContainerFromFrame(frame()))
+        plugin->didFailLoading(error);
+}
+
+void WebLocalFrameImpl::didFinish()
+{
+    if (!client())
+        return;
+    client()->didFinishLoad(this);
+    if (WebPluginContainerImpl* plugin = pluginContainerFromFrame(frame()))
+        plugin->didFinishLoading();
 }
 
 void WebLocalFrameImpl::setCanHaveScrollbars(bool canHaveScrollbars)

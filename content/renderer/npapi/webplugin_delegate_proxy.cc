@@ -96,25 +96,10 @@ ScopedLogLevel::~ScopedLogLevel() {
 class ResourceClientProxy : public WebPluginResourceClient {
  public:
   ResourceClientProxy(PluginChannelHost* channel, int instance_id)
-    : channel_(channel), instance_id_(instance_id), resource_id_(0),
-      multibyte_response_expected_(false) {
+    : channel_(channel), instance_id_(instance_id), resource_id_(0) {
   }
 
   ~ResourceClientProxy() override {}
-
-  void Initialize(unsigned long resource_id, const GURL& url, int notify_id) {
-    resource_id_ = resource_id;
-    channel_->Send(new PluginMsg_HandleURLRequestReply(
-        instance_id_, resource_id, url, notify_id));
-  }
-
-  void InitializeForSeekableStream(unsigned long resource_id,
-                                   int range_request_id) {
-    resource_id_ = resource_id;
-    multibyte_response_expected_ = true;
-    channel_->Send(new PluginMsg_HTTPRangeRequestReply(
-        instance_id_, resource_id, range_request_id));
-  }
 
   // PluginResourceClient implementation:
   void WillSendRequest(const GURL& url, int http_status_code) override {
@@ -173,19 +158,12 @@ class ResourceClientProxy : public WebPluginResourceClient {
     base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
   }
 
-  bool IsMultiByteResponseExpected() override {
-    return multibyte_response_expected_;
-  }
-
   int ResourceId() override { return resource_id_; }
 
  private:
   scoped_refptr<PluginChannelHost> channel_;
   int instance_id_;
   unsigned long resource_id_;
-  // Set to true if the response expected is a multibyte response.
-  // For e.g. response for a HTTP byte range request.
-  bool multibyte_response_expected_;
 };
 
 }  // namespace
@@ -386,44 +364,6 @@ bool WebPluginDelegateProxy::Send(IPC::Message* msg) {
   return channel_host_->Send(msg);
 }
 
-void WebPluginDelegateProxy::SendJavaScriptStream(const GURL& url,
-                                                  const std::string& result,
-                                                  bool success,
-                                                  int notify_id) {
-  Send(new PluginMsg_SendJavaScriptStream(
-      instance_id_, url, result, success, notify_id));
-}
-
-void WebPluginDelegateProxy::DidReceiveManualResponse(
-    const GURL& url, const std::string& mime_type,
-    const std::string& headers, uint32 expected_length,
-    uint32 last_modified) {
-  PluginMsg_DidReceiveResponseParams params;
-  params.id = 0;
-  params.mime_type = mime_type;
-  params.headers = headers;
-  params.expected_length = expected_length;
-  params.last_modified = last_modified;
-  Send(new PluginMsg_DidReceiveManualResponse(instance_id_, url, params));
-}
-
-void WebPluginDelegateProxy::DidReceiveManualData(const char* buffer,
-                                                  int length) {
-  DCHECK_GT(length, 0);
-  std::vector<char> data;
-  data.resize(static_cast<size_t>(length));
-  memcpy(&data.front(), buffer, length);
-  Send(new PluginMsg_DidReceiveManualData(instance_id_, data));
-}
-
-void WebPluginDelegateProxy::DidFinishManualLoading() {
-  Send(new PluginMsg_DidFinishManualLoading(instance_id_));
-}
-
-void WebPluginDelegateProxy::DidManualLoadFail() {
-  Send(new PluginMsg_DidManualLoadFail(instance_id_));
-}
-
 bool WebPluginDelegateProxy::OnMessageReceived(const IPC::Message& msg) {
   GetContentClient()->SetActiveURL(page_url_);
 
@@ -438,10 +378,7 @@ bool WebPluginDelegateProxy::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(PluginHostMsg_ResolveProxy, OnResolveProxy)
     IPC_MESSAGE_HANDLER(PluginHostMsg_SetCookie, OnSetCookie)
     IPC_MESSAGE_HANDLER(PluginHostMsg_GetCookies, OnGetCookies)
-    IPC_MESSAGE_HANDLER(PluginHostMsg_URLRequest, OnHandleURLRequest)
     IPC_MESSAGE_HANDLER(PluginHostMsg_CancelDocumentLoad, OnCancelDocumentLoad)
-    IPC_MESSAGE_HANDLER(PluginHostMsg_InitiateHTTPRangeRequest,
-                        OnInitiateHTTPRangeRequest)
     IPC_MESSAGE_HANDLER(PluginHostMsg_DidStartLoading, OnDidStartLoading)
     IPC_MESSAGE_HANDLER(PluginHostMsg_DidStopLoading, OnDidStopLoading)
     IPC_MESSAGE_HANDLER(PluginHostMsg_DeferResourceLoading,
@@ -740,12 +677,6 @@ bool WebPluginDelegateProxy::GetFormValue(base::string16* value) {
   bool success = false;
   Send(new PluginMsg_GetFormValue(instance_id_, value, &success));
   return success;
-}
-
-void WebPluginDelegateProxy::DidFinishLoadWithReason(
-    const GURL& url, NPReason reason, int notify_id) {
-  Send(new PluginMsg_DidFinishLoadWithReason(
-      instance_id_, url, reason, notify_id));
 }
 
 void WebPluginDelegateProxy::SetFocus(bool focused) {
@@ -1066,75 +997,6 @@ void WebPluginDelegateProxy::UpdateFrontBuffer(
   transport_store_painted_.Union(rect);
 }
 
-void WebPluginDelegateProxy::OnHandleURLRequest(
-    const PluginHostMsg_URLRequest_Params& params) {
-  const char* data = NULL;
-  if (params.buffer.size())
-    data = &params.buffer[0];
-
-  const char* target = NULL;
-  if (params.target.length())
-    target = params.target.c_str();
-
-  plugin_->HandleURLRequest(
-      params.url.c_str(), params.method.c_str(), target, data,
-      static_cast<unsigned int>(params.buffer.size()), params.notify_id,
-      params.popups_allowed, params.notify_redirects);
-}
-
-WebPluginResourceClient* WebPluginDelegateProxy::CreateResourceClient(
-    unsigned long resource_id, const GURL& url, int notify_id) {
-  if (!channel_host_.get())
-    return NULL;
-
-  ResourceClientProxy* proxy =
-      new ResourceClientProxy(channel_host_.get(), instance_id_);
-  proxy->Initialize(resource_id, url, notify_id);
-  return proxy;
-}
-
-WebPluginResourceClient* WebPluginDelegateProxy::CreateSeekableResourceClient(
-    unsigned long resource_id, int range_request_id) {
-  if (!channel_host_.get())
-    return NULL;
-
-  ResourceClientProxy* proxy =
-      new ResourceClientProxy(channel_host_.get(), instance_id_);
-  proxy->InitializeForSeekableStream(resource_id, range_request_id);
-  return proxy;
-}
-
-void WebPluginDelegateProxy::FetchURL(unsigned long resource_id,
-                                      int notify_id,
-                                      const GURL& url,
-                                      const GURL& first_party_for_cookies,
-                                      const std::string& method,
-                                      const char* buf,
-                                      unsigned int len,
-                                      const Referrer& referrer,
-                                      bool notify_redirects,
-                                      bool is_plugin_src_load,
-                                      int origin_pid,
-                                      int render_frame_id,
-                                      int render_view_id) {
-  PluginMsg_FetchURL_Params params;
-  params.resource_id = resource_id;
-  params.notify_id = notify_id;
-  params.url = url;
-  params.first_party_for_cookies = first_party_for_cookies;
-  params.method = method;
-  if (len) {
-    params.post_data.resize(len);
-    memcpy(&params.post_data.front(), buf, len);
-  }
-  params.referrer = referrer.url;
-  params.referrer_policy = referrer.policy;
-  params.notify_redirect = notify_redirects;
-  params.is_plugin_src_load = is_plugin_src_load;
-  params.render_frame_id = render_frame_id;
-  Send(new PluginMsg_FetchURL(instance_id_, params));
-}
-
 #if defined(OS_MACOSX)
 void WebPluginDelegateProxy::OnFocusChanged(bool focused) {
   if (render_view_)
@@ -1153,14 +1015,6 @@ gfx::PluginWindowHandle WebPluginDelegateProxy::GetPluginWindowHandle() {
 
 void WebPluginDelegateProxy::OnCancelDocumentLoad() {
   plugin_->CancelDocumentLoad();
-}
-
-void WebPluginDelegateProxy::OnInitiateHTTPRangeRequest(
-    const std::string& url,
-    const std::string& range_info,
-    int range_request_id) {
-  plugin_->InitiateHTTPRangeRequest(
-      url.c_str(), range_info.c_str(), range_request_id);
 }
 
 void WebPluginDelegateProxy::OnDidStartLoading() {

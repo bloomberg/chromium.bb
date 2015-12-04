@@ -32,7 +32,6 @@ class WebPluginResourceClient {
   // is cleared. This applies for seekable streams.
   virtual void DidFinishLoading(unsigned long resource_id) = 0;
   virtual void DidFail(unsigned long resource_id) = 0;
-  virtual bool IsMultiByteResponseExpected() = 0;
   virtual int ResourceId() = 0;
   // Tells this object that it will get responses from multiple resources.
   // This is necessary since the plugin process uses a single instance of

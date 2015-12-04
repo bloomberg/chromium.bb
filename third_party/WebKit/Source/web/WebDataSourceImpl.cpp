@@ -38,12 +38,6 @@
 
 namespace blink {
 
-static OwnPtrWillBePersistent<WebPluginLoadObserver>& nextPluginLoadObserver()
-{
-    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<WebPluginLoadObserver>, nextPluginLoadObserver, ());
-    return nextPluginLoadObserver;
-}
-
 PassRefPtrWillBeRawPtr<WebDataSourceImpl> WebDataSourceImpl::create(LocalFrame* frame, const ResourceRequest& request, const SubstituteData& data)
 {
     return adoptRefWillBeNoop(new WebDataSourceImpl(frame, request, data));
@@ -137,25 +131,9 @@ WebNavigationType WebDataSourceImpl::toWebNavigationType(NavigationType type)
     }
 }
 
-void WebDataSourceImpl::setNextPluginLoadObserver(PassOwnPtrWillBeRawPtr<WebPluginLoadObserver> observer)
-{
-    nextPluginLoadObserver() = observer;
-}
-
 WebDataSourceImpl::WebDataSourceImpl(LocalFrame* frame, const ResourceRequest& request, const SubstituteData& data)
     : DocumentLoader(frame, request, data)
 {
-    if (!nextPluginLoadObserver())
-        return;
-    // When a new frame is created, it initially gets a data source for an
-    // empty document. Then it is navigated to the source URL of the
-    // frame, which results in a second data source being created. We want
-    // to wait to attach the WebPluginLoadObserver to that data source.
-    if (request.url().isEmpty())
-        return;
-
-    ASSERT(nextPluginLoadObserver()->url() == WebURL(request.url()));
-    m_pluginLoadObserver = nextPluginLoadObserver().release();
 }
 
 WebDataSourceImpl::~WebDataSourceImpl()
@@ -170,12 +148,10 @@ void WebDataSourceImpl::detachFromFrame()
 
     DocumentLoader::detachFromFrame();
     m_extraData.clear();
-    m_pluginLoadObserver.clear();
 }
 
 DEFINE_TRACE(WebDataSourceImpl)
 {
-    visitor->trace(m_pluginLoadObserver);
     DocumentLoader::trace(visitor);
 }
 

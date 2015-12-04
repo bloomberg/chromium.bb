@@ -98,7 +98,6 @@ public:
     void stopLoading();
     bool isLoading() const;
     const ResourceResponse& response() const { return m_response; }
-    const ResourceError& mainDocumentError() const { return m_mainDocumentError; }
     bool isClientRedirect() const { return m_isClientRedirect; }
     void setIsClientRedirect(bool isClientRedirect) { m_isClientRedirect = isClientRedirect; }
     bool replacesCurrentHistoryItem() const { return m_replacesCurrentHistoryItem; }
@@ -212,8 +211,6 @@ private:
     ResourceRequest m_request;
 
     ResourceResponse m_response;
-
-    ResourceError m_mainDocumentError;
 
     bool m_isClientRedirect;
     bool m_replacesCurrentHistoryItem;

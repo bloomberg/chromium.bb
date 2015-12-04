@@ -72,15 +72,6 @@ source_set("child") {
       "npapi/plugin_instance.h",
       "npapi/plugin_lib.cc",
       "npapi/plugin_lib.h",
-      "npapi/plugin_stream.cc",
-      "npapi/plugin_stream.h",
-      "npapi/plugin_stream_posix.cc",
-      "npapi/plugin_stream_url.cc",
-      "npapi/plugin_stream_url.h",
-      "npapi/plugin_string_stream.cc",
-      "npapi/plugin_string_stream.h",
-      "npapi/plugin_url_fetcher.cc",
-      "npapi/plugin_url_fetcher.h",
       "npapi/webplugin.h",
       "npapi/webplugin_delegate.h",
       "npapi/webplugin_delegate_impl.cc",
@@ -98,7 +89,6 @@ source_set("child") {
       ]
     } else if (is_win) {
       sources -= [
-        "npapi/plugin_stream_win.cc",
         "npapi/webplugin_delegate_impl_win.cc",
         "npapi/webplugin_ime_win.cc",
         "npapi/webplugin_ime_win.h",

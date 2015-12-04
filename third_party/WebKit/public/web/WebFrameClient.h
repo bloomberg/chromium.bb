@@ -460,9 +460,6 @@ public:
     // A performance timing event (e.g. first paint) occurred
     virtual void didChangePerformanceTiming() { }
 
-    // The loaders in this frame have been stopped.
-    virtual void didAbortLoading(WebLocalFrame*) { }
-
 
     // Script notifications ------------------------------------------------
 

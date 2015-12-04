@@ -31,8 +31,6 @@ namespace content {
 
 class PluginLib;
 class PluginHost;
-class PluginStream;
-class PluginStreamUrl;
 class WebPlugin;
 class WebPluginResourceClient;
 
@@ -121,30 +119,6 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
   }
 #endif
 
-  // Creates a stream for sending an URL.  If notify_id is non-zero, it will
-  // send a notification to the plugin when the stream is complete; otherwise it
-  // will not.  Set object_url to true if the load is for the object tag's url,
-  // or false if it's for a url that the plugin fetched through
-  // NPN_GetUrl[Notify].
-  PluginStreamUrl* CreateStream(unsigned long resource_id,
-                                const GURL& url,
-                                const std::string& mime_type,
-                                int notify_id);
-
-  // For each instance, we track all streams.  When the
-  // instance closes, all remaining streams are also
-  // closed.  All streams associated with this instance
-  // should call AddStream so that they can be cleaned
-  // up when the instance shuts down.
-  void AddStream(PluginStream* stream);
-
-  // This is called when a stream is closed. We remove the stream from the
-  // list, which releases the reference maintained to the stream.
-  void RemoveStream(PluginStream* stream);
-
-  // Closes all open streams on this instance.
-  void CloseStreams();
-
   // Returns the WebPluginResourceClient object for a stream that has become
   // seekable.
   WebPluginResourceClient* GetRangeRequest(int id);
@@ -154,10 +128,6 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
 
   // Returns the form value of this instance.
   bool GetFormValue(base::string16* value);
-
-  // WebViewDelegate methods that we implement. This is for handling
-  // callbacks during getURLNotify.
-  void DidFinishLoadWithReason(const GURL& url, NPReason reason, int notify_id);
 
   // If true, send the Mozilla user agent instead of Chrome's to the plugin.
   bool use_mozilla_user_agent() { return use_mozilla_user_agent_; }
@@ -205,17 +175,7 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
 
   void SendJavaScriptStream(const GURL& url,
                             const std::string& result,
-                            bool success,
-                            int notify_id);
-
-  void DidReceiveManualResponse(const GURL& url,
-                                const std::string& mime_type,
-                                const std::string& headers,
-                                uint32 expected_length,
-                                uint32 last_modified);
-  void DidReceiveManualData(const char* buffer, int length);
-  void DidFinishManualLoading();
-  void DidManualLoadFail();
+                            bool success);
 
   void PushPopupsEnabledState(bool enabled);
   void PopPopupsEnabledState();
@@ -223,25 +183,6 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
   bool popups_allowed() const {
     return popups_enabled_stack_.empty() ? false : popups_enabled_stack_.top();
   }
-
-  // Initiates byte range reads for plugins.
-  void RequestRead(NPStream* stream, NPByteRange* range_list);
-
-  // Handles GetURL/GetURLNotify/PostURL/PostURLNotify requests initiated
-  // by plugins.
-  void RequestURL(const char* url,
-                  const char* method,
-                  const char* target,
-                  const char* buf,
-                  unsigned int len,
-                  bool notify,
-                  void* notify_data);
-
-  // Handles NPN_URLRedirectResponse calls issued by plugins in response to
-  // HTTP URL redirect notifications.
-  void URLRedirectResponse(bool allow, void* notify_data);
-
-  bool handles_url_redirects() const { return handles_url_redirects_; }
 
  private:
   friend class base::RefCountedThreadSafe<PluginInstance>;
@@ -261,8 +202,6 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
   void OnPluginThreadAsyncCall(void (*func)(void *), void* userData);
   void OnTimerCall(void (*func)(NPP id, uint32 timer_id),
                    NPP id, uint32 timer_id);
-  bool IsValidStream(const NPStream* stream);
-  void GetNotifyData(int notify_id, bool* notify, void** notify_data);
 
   // This is a hack to get the real player plugin to work with chrome
   // The real player plugin dll(nppl3260) when loaded by firefox is loaded via
@@ -289,14 +228,11 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
   NPP                                      npp_;
   scoped_refptr<PluginHost>                host_;
   NPPluginFuncs*                           npp_functions_;
-  std::vector<scoped_refptr<PluginStream> > open_streams_;
   gfx::PluginWindowHandle                  window_handle_;
   bool                                     windowless_;
   bool                                     transparent_;
   WebPlugin*                               webplugin_;
   std::string                              mime_type_;
-  GURL                                     get_url_;
-  intptr_t                                 get_notify_data_;
   bool                                     use_mozilla_user_agent_;
 #if defined(OS_MACOSX)
   NPDrawingModel                           drawing_model_;
@@ -306,7 +242,6 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
   NPCocoaEvent*                            currently_handled_event_;  // weak
 #endif
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  scoped_refptr<PluginStreamUrl>           plugin_data_stream_;
 
   // This flag if true indicates that the plugin data would be passed from
   // webkit. if false indicates that the plugin should download the data.
@@ -315,9 +250,6 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
   // Stack indicating if popups are to be enabled for the outgoing
   // NPN_GetURL/NPN_GetURLNotify calls.
   std::stack<bool>                         popups_enabled_stack_;
-
-  // True if in CloseStreams().
-  bool in_close_streams_;
 
   // List of files created for the current plugin instance. File names are
   // added to the list every time the NPP_StreamAsFile function is called.
@@ -333,21 +265,6 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
   };
   typedef std::map<uint32, TimerInfo> TimerMap;
   TimerMap timers_;
-
-  // Tracks pending GET/POST requests so that the plugin-given data doesn't
-  // cross process boundaries to an untrusted process.
-  typedef std::map<int, void*> PendingRequestMap;
-  PendingRequestMap pending_requests_;
-  int next_notify_id_;
-
-  // Used to track pending range requests so that when WebPlugin replies to us
-  // we can match the reply to the stream.
-  typedef std::map<int, scoped_refptr<PluginStream> > PendingRangeRequestMap;
-  PendingRangeRequestMap pending_range_requests_;
-  int next_range_request_id_;
-  // The plugin handles the NPAPI URL redirect notification API.
-  // See here https://wiki.mozilla.org/NPAPI:HTTPRedirectHandling
-  bool handles_url_redirects_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginInstance);
 };

@@ -561,16 +561,6 @@ void BrowserPlugin::didFinishLoading() {
 void BrowserPlugin::didFailLoading(const blink::WebURLError& error) {
 }
 
-void BrowserPlugin::didFinishLoadingFrameRequest(const blink::WebURL& url,
-                                                 void* notify_data) {
-}
-
-void BrowserPlugin::didFailLoadingFrameRequest(
-    const blink::WebURL& url,
-    void* notify_data,
-    const blink::WebURLError& error) {
-}
-
 bool BrowserPlugin::executeEditCommand(const blink::WebString& name) {
   BrowserPluginManager::Get()->Send(new BrowserPluginHostMsg_ExecuteEditCommand(
       browser_plugin_instance_id_,

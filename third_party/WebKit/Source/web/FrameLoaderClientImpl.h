@@ -41,7 +41,6 @@
 namespace blink {
 
 class WebLocalFrameImpl;
-class WebPluginLoadObserver;
 
 class FrameLoaderClientImpl final : public FrameLoaderClient {
 public:
@@ -171,8 +170,6 @@ public:
 
     PassOwnPtr<WebApplicationCacheHost> createApplicationCacheHost(WebApplicationCacheHostClient*) override;
 
-    void didStopAllLoaders() override;
-
     void dispatchDidChangeManifest() override;
 
     unsigned backForwardLength() override;
@@ -183,8 +180,6 @@ private:
     explicit FrameLoaderClientImpl(WebLocalFrameImpl*);
 
     bool isFrameLoaderClientImpl() const override { return true; }
-
-    PassOwnPtrWillBeRawPtr<WebPluginLoadObserver> pluginLoadObserver(DocumentLoader*);
 
     // The WebFrame that owns this object and manages its lifetime. Therefore,
     // the web frame object is guaranteed to exist.

@@ -16,7 +16,6 @@
 #include "build/build_config.h"
 #include "content/child/npapi/plugin_instance.h"
 #include "content/child/npapi/plugin_lib.h"
-#include "content/child/npapi/plugin_stream_url.h"
 #include "content/child/npapi/webplugin_delegate.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
@@ -339,174 +338,28 @@ void NPN_ReloadPlugins(NPBool reload_pages) {
 
 // Requests a range of bytes for a seekable stream.
 NPError NPN_RequestRead(NPStream* stream, NPByteRange* range_list) {
-  if (!stream || !range_list)
-    return NPERR_GENERIC_ERROR;
-
-  scoped_refptr<PluginInstance> plugin(
-      reinterpret_cast<PluginInstance*>(stream->ndata));
-  if (!plugin.get())
-    return NPERR_GENERIC_ERROR;
-
-  plugin->RequestRead(stream, range_list);
-  return NPERR_NO_ERROR;
+  return NPERR_GENERIC_ERROR;
 }
 
-// Generic form of GetURL for common code between GetURL and GetURLNotify.
-static NPError GetURLNotify(NPP id,
-                            const char* url,
-                            const char* target,
-                            bool notify,
-                            void* notify_data) {
-  if (!url)
-    return NPERR_INVALID_URL;
-
-  scoped_refptr<PluginInstance> plugin(FindInstance(id));
-  if (!plugin.get()) {
-    return NPERR_GENERIC_ERROR;
-  }
-
-  plugin->RequestURL(url, "GET", target, NULL, 0, notify, notify_data);
-  return NPERR_NO_ERROR;
-}
-
-// Requests creation of a new stream with the contents of the
-// specified URL; gets notification of the result.
 NPError NPN_GetURLNotify(NPP id,
                          const char* url,
                          const char* target,
                          void* notify_data) {
-  // This is identical to NPN_GetURL, but after finishing, the
-  // browser will call NPP_URLNotify to inform the plugin that
-  // it has completed.
-
-  // According to the NPAPI documentation, if target == _self
-  // or a parent to _self, the browser should return NPERR_INVALID_PARAM,
-  // because it can't notify the plugin once deleted.  This is
-  // absolutely false; firefox doesn't do this, and Flash relies on
-  // being able to use this.
-
-  // Also according to the NPAPI documentation, we should return
-  // NPERR_INVALID_URL if the url requested is not valid.  However,
-  // this would require that we synchronously start fetching the
-  // URL.  That just isn't practical.  As such, there really is
-  // no way to return this error.  From looking at the Firefox
-  // implementation, it doesn't look like Firefox does this either.
-
-  return GetURLNotify(id, url, target, true, notify_data);
+  return NPERR_GENERIC_ERROR;
 }
 
 NPError NPN_GetURL(NPP id, const char* url, const char* target) {
-  // Notes:
-  //    Request from the Plugin to fetch content either for the plugin
-  //    or to be placed into a browser window.
-  //
-  // If target == null, the browser fetches content and streams to plugin.
-  //    otherwise, the browser loads content into an existing browser frame.
-  // If the target is the window/frame containing the plugin, the plugin
-  //    may be destroyed.
-  // If the target is _blank, a mailto: or news: url open content in a new
-  //    browser window
-  // If the target is _self, no other instance of the plugin is created.  The
-  //    plugin continues to operate in its own window
-
-  return GetURLNotify(id, url, target, false, 0);
-}
-
-// Generic form of PostURL for common code between PostURL and PostURLNotify.
-static NPError PostURLNotify(NPP id,
-                             const char* url,
-                             const char* target,
-                             uint32_t len,
-                             const char* buf,
-                             NPBool file,
-                             bool notify,
-                             void* notify_data) {
-  if (!url)
-    return NPERR_INVALID_URL;
-
-  scoped_refptr<PluginInstance> plugin(FindInstance(id));
-  if (!plugin.get()) {
-    NOTREACHED();
-    return NPERR_GENERIC_ERROR;
-  }
-
-  std::string post_file_contents;
-
-  if (file) {
-    // Post data to be uploaded from a file. This can be handled in two
-    // ways.
-    // 1. Read entire file and send the contents as if it was a post data
-    //    specified in the argument
-    // 2. Send just the file details and read them in the browser at the
-    //    time of sending the request.
-    // Approach 2 is more efficient but complicated. Approach 1 has a major
-    // drawback of sending potentially large data over two IPC hops.  In a way
-    // 'large data over IPC' problem exists as it is in case of plugin giving
-    // the data directly instead of in a file.
-    // Currently we are going with the approach 1 to get the feature working.
-    // We can optimize this later with approach 2.
-
-    // TODO(joshia): Design a scheme to send a file descriptor instead of
-    // entire file contents across.
-
-    // Security alert:
-    // ---------------
-    // Here we are blindly uploading whatever file requested by a plugin.
-    // This is risky as someone could exploit a plugin to send private
-    // data in arbitrary locations.
-    // A malicious (non-sandboxed) plugin has unfeterred access to OS
-    // resources and can do this anyway without using browser's HTTP stack.
-    // FWIW, Firefox and Safari don't perform any security checks.
-
-    if (!buf)
-      return NPERR_FILE_NOT_FOUND;
-
-    std::string file_path_ascii(buf);
-    base::FilePath file_path;
-    static const char kFileUrlPrefix[] = "file:";
-    if (base::StartsWith(file_path_ascii, kFileUrlPrefix,
-                         base::CompareCase::INSENSITIVE_ASCII)) {
-      GURL file_url(file_path_ascii);
-      DCHECK(file_url.SchemeIsFile());
-      net::FileURLToFilePath(file_url, &file_path);
-    } else {
-      file_path = base::FilePath::FromUTF8Unsafe(file_path_ascii);
-    }
-
-    base::File::Info post_file_info;
-    if (!base::GetFileInfo(file_path, &post_file_info) ||
-        post_file_info.is_directory)
-      return NPERR_FILE_NOT_FOUND;
-
-    if (!base::ReadFileToString(file_path, &post_file_contents))
-      return NPERR_FILE_NOT_FOUND;
-
-    buf = post_file_contents.c_str();
-    len = post_file_contents.size();
-  }
-
-  // The post data sent by a plugin contains both headers
-  // and post data.  Example:
-  //      Content-type: text/html
-  //      Content-length: 200
-  //
-  //      <200 bytes of content here>
-  //
-  // Unfortunately, our stream needs these broken apart,
-  // so we need to parse the data and set headers and data
-  // separately.
-  plugin->RequestURL(url, "POST", target, buf, len, notify, notify_data);
-  return NPERR_NO_ERROR;
+  return NPERR_GENERIC_ERROR;
 }
 
 NPError NPN_PostURLNotify(NPP id,
-                          const char* url,
-                          const char* target,
-                          uint32_t len,
-                          const char* buf,
-                          NPBool file,
-                          void* notify_data) {
-  return PostURLNotify(id, url, target, len, buf, file, true, notify_data);
+                    const char* url,
+                    const char* target,
+                    uint32_t len,
+                    const char* buf,
+                    NPBool file,
+                    void* notify_data) {
+  return NPERR_GENERIC_ERROR;
 }
 
 NPError NPN_PostURL(NPP id,
@@ -515,28 +368,7 @@ NPError NPN_PostURL(NPP id,
                     uint32_t len,
                     const char* buf,
                     NPBool file) {
-  // POSTs data to an URL, either from a temp file or a buffer.
-  // If file is true, buf contains a temp file (which host will delete after
-  //   completing), and len contains the length of the filename.
-  // If file is false, buf contains the data to send, and len contains the
-  //   length of the buffer
-  //
-  // If target is null,
-  //   server response is returned to the plugin
-  // If target is _current, _self, or _top,
-  //   server response is written to the plugin window and plugin is unloaded.
-  // If target is _new or _blank,
-  //   server response is written to a new browser window
-  // If target is an existing frame,
-  //   server response goes to that frame.
-  //
-  // For protocols other than FTP
-  //   file uploads must be line-end converted from \r\n to \n
-  //
-  // Note:  you cannot specify headers (even a blank line) in a memory buffer,
-  //        use NPN_PostURLNotify
-
-  return PostURLNotify(id, url, target, len, buf, file, false, 0);
+  return NPERR_GENERIC_ERROR;
 }
 
 NPError NPN_NewStream(NPP id,
@@ -1098,10 +930,6 @@ NPBool NPN_UnfocusInstance(NPP id, NPFocusDirection direction) {
 }
 
 void NPN_URLRedirectResponse(NPP instance, void* notify_data, NPBool allow) {
-  scoped_refptr<PluginInstance> plugin(FindInstance(instance));
-  if (plugin.get()) {
-    plugin->URLRedirectResponse(!!allow, notify_data);
-  }
 }
 
 }  // extern "C"

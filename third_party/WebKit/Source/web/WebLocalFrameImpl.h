@@ -317,6 +317,7 @@ public:
     void setFindEndstateFocusAndSelection();
 
     void didFail(const ResourceError&, bool wasProvisional, HistoryCommitType);
+    void didFinish();
 
     // Sets whether the WebLocalFrameImpl allows its document to be scrolled.
     // If the parameter is true, allow the document to be scrolled.

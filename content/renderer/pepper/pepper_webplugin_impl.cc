@@ -254,14 +254,6 @@ void PepperWebPluginImpl::didFailLoading(const blink::WebURLError& error) {
     document_loader->didFail(NULL, error);
 }
 
-void PepperWebPluginImpl::didFinishLoadingFrameRequest(const blink::WebURL& url,
-                                                       void* notify_data) {}
-
-void PepperWebPluginImpl::didFailLoadingFrameRequest(
-    const blink::WebURL& url,
-    void* notify_data,
-    const blink::WebURLError& error) {}
-
 bool PepperWebPluginImpl::hasSelection() const {
   return !selectionAsText().isEmpty();
 }

@@ -66,23 +66,12 @@ class WebPluginProxy : public WebPlugin,
                  const std::string& cookie) override;
   std::string GetCookies(const GURL& url,
                          const GURL& first_party_for_cookies) override;
-  void HandleURLRequest(const char* url,
-                        const char* method,
-                        const char* target,
-                        const char* buf,
-                        unsigned int len,
-                        int notify_id,
-                        bool popups_allowed,
-                        bool notify_redirects) override;
   void UpdateGeometry(const gfx::Rect& window_rect,
                       const gfx::Rect& clip_rect,
                       const TransportDIB::Handle& windowless_buffer0,
                       const TransportDIB::Handle& windowless_buffer1,
                       int windowless_buffer_index);
   void CancelDocumentLoad() override;
-  void InitiateHTTPRangeRequest(const char* url,
-                                const char* range_info,
-                                int range_request_id) override;
   void DidStartLoading() override;
   void DidStopLoading() override;
   void SetDeferResourceLoading(unsigned long resource_id, bool defer) override;

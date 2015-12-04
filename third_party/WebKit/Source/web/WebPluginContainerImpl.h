@@ -55,7 +55,6 @@ class ResourceError;
 class ResourceResponse;
 class TouchEvent;
 class WebPlugin;
-class WebPluginLoadObserver;
 class WheelEvent;
 class Widget;
 struct WebPrintParams;
@@ -108,7 +107,7 @@ public:
     NPObject* scriptableObjectForElement() override;
     v8::Local<v8::Object> v8ObjectForElement() override;
     WebString executeScriptURL(const WebURL&, bool popupsAllowed) override;
-    void loadFrameRequest(const WebURLRequest&, const WebString& target, bool notifyNeeded, void* notifyData) override;
+    void loadFrameRequest(const WebURLRequest&, const WebString& target) override;
     bool isRectTopmost(const WebRect&) override;
     void requestTouchEventType(TouchEventRequestType) override;
     void setWantsWheelEvents(bool) override;
@@ -153,12 +152,8 @@ public:
     // Resource load events for the plugin's source data:
     void didReceiveResponse(const ResourceResponse&) override;
     void didReceiveData(const char *data, int dataLength) override;
-    void didFinishLoading() override;
-    void didFailLoading(const ResourceError&) override;
-
-#if !ENABLE(OILPAN)
-    void willDestroyPluginLoadObserver(WebPluginLoadObserver*);
-#endif
+    void didFinishLoading();
+    void didFailLoading(const ResourceError&);
 
     DECLARE_VIRTUAL_TRACE();
     void dispose() override;
@@ -202,9 +197,6 @@ private:
 
     RawPtrWillBeMember<HTMLPlugInElement> m_element;
     WebPlugin* m_webPlugin;
-#if !ENABLE(OILPAN)
-    Vector<WebPluginLoadObserver*> m_pluginLoadObservers;
-#endif
 
     WebLayer* m_webLayer;
 

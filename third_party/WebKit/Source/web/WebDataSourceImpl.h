@@ -37,7 +37,6 @@
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "public/web/WebDataSource.h"
-#include "web/WebPluginLoadObserver.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
@@ -70,9 +69,6 @@ public:
 
     static WebNavigationType toWebNavigationType(NavigationType);
 
-    PassOwnPtrWillBeRawPtr<WebPluginLoadObserver> releasePluginLoadObserver() { return m_pluginLoadObserver.release(); }
-    static void setNextPluginLoadObserver(PassOwnPtrWillBeRawPtr<WebPluginLoadObserver>);
-
     DECLARE_VIRTUAL_TRACE();
 
 private:
@@ -88,7 +84,6 @@ private:
     mutable WrappedResourceResponse m_responseWrapper;
 
     OwnPtr<ExtraData> m_extraData;
-    OwnPtrWillBeMember<WebPluginLoadObserver> m_pluginLoadObserver;
 };
 
 } // namespace blink

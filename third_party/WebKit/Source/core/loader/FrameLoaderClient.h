@@ -231,8 +231,6 @@ public:
 
     virtual PassOwnPtr<WebApplicationCacheHost> createApplicationCacheHost(WebApplicationCacheHostClient*) = 0;
 
-    virtual void didStopAllLoaders() { }
-
     virtual void dispatchDidChangeManifest() { }
 
     virtual unsigned backForwardLength() { return 0; }

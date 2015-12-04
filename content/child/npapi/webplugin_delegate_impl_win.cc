@@ -23,7 +23,6 @@
 #include "base/win/windows_version.h"
 #include "content/child/npapi/plugin_instance.h"
 #include "content/child/npapi/plugin_lib.h"
-#include "content/child/npapi/plugin_stream_url.h"
 #include "content/child/npapi/webplugin.h"
 #include "content/child/npapi/webplugin_ime_win.h"
 #include "content/common/cursors/webcursor.h"

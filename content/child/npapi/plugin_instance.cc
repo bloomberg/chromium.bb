@@ -15,8 +15,6 @@
 #include "build/build_config.h"
 #include "content/child/npapi/plugin_host.h"
 #include "content/child/npapi/plugin_lib.h"
-#include "content/child/npapi/plugin_stream_url.h"
-#include "content/child/npapi/plugin_string_stream.h"
 #include "content/child/npapi/webplugin.h"
 #include "content/child/npapi/webplugin_delegate.h"
 #include "content/child/npapi/webplugin_resource_client.h"
@@ -40,7 +38,6 @@ PluginInstance::PluginInstance(PluginLib* plugin, const std::string& mime_type)
       transparent_(true),
       webplugin_(0),
       mime_type_(mime_type),
-      get_notify_data_(0),
       use_mozilla_user_agent_(false),
 #if defined (OS_MACOSX)
 #ifdef NP_NO_QUICKDRAW
@@ -57,11 +54,7 @@ PluginInstance::PluginInstance(PluginLib* plugin, const std::string& mime_type)
 #endif
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       load_manually_(false),
-      in_close_streams_(false),
-      next_timer_id_(1),
-      next_notify_id_(0),
-      next_range_request_id_(0),
-      handles_url_redirects_(false) {
+      next_timer_id_(1) {
   npp_ = new NPP_t();
   npp_->ndata = 0;
   npp_->pdata = 0;
@@ -73,8 +66,6 @@ PluginInstance::PluginInstance(PluginLib* plugin, const std::string& mime_type)
 }
 
 PluginInstance::~PluginInstance() {
-  CloseStreams();
-
   if (npp_ != 0) {
     delete npp_;
     npp_ = 0;
@@ -82,73 +73,6 @@ PluginInstance::~PluginInstance() {
 
   if (plugin_.get())
     plugin_->CloseInstance();
-}
-
-PluginStreamUrl* PluginInstance::CreateStream(unsigned long resource_id,
-                                              const GURL& url,
-                                              const std::string& mime_type,
-                                              int notify_id) {
-
-  bool notify;
-  void* notify_data;
-  GetNotifyData(notify_id, &notify, &notify_data);
-  PluginStreamUrl* stream = new PluginStreamUrl(
-      resource_id, url, this, notify, notify_data);
-
-  AddStream(stream);
-  return stream;
-}
-
-void PluginInstance::AddStream(PluginStream* stream) {
-  open_streams_.push_back(make_scoped_refptr(stream));
-}
-
-void PluginInstance::RemoveStream(PluginStream* stream) {
-  if (in_close_streams_)
-    return;
-
-  std::vector<scoped_refptr<PluginStream> >::iterator stream_index;
-  for (stream_index = open_streams_.begin();
-       stream_index != open_streams_.end(); ++stream_index) {
-    if (stream_index->get() == stream) {
-      open_streams_.erase(stream_index);
-      break;
-    }
-  }
-}
-
-bool PluginInstance::IsValidStream(const NPStream* stream) {
-  std::vector<scoped_refptr<PluginStream> >::iterator stream_index;
-  for (stream_index = open_streams_.begin();
-          stream_index != open_streams_.end(); ++stream_index) {
-    if ((*stream_index)->stream() == stream)
-      return true;
-  }
-
-  return false;
-}
-
-void PluginInstance::CloseStreams() {
-  in_close_streams_ = true;
-  for (unsigned int index = 0; index < open_streams_.size(); ++index) {
-    // Close all streams on the way down.
-    open_streams_[index]->Close(NPRES_USER_BREAK);
-  }
-  open_streams_.clear();
-  in_close_streams_ = false;
-}
-
-WebPluginResourceClient* PluginInstance::GetRangeRequest(
-    int id) {
-  PendingRangeRequestMap::iterator iter = pending_range_requests_.find(id);
-  if (iter == pending_range_requests_.end()) {
-    NOTREACHED();
-    return NULL;
-  }
-
-  WebPluginResourceClient* rv = iter->second->AsResourceClient();
-  pending_range_requests_.erase(iter);
-  return rv;
 }
 
 bool PluginInstance::Start(const GURL& url,
@@ -162,12 +86,6 @@ bool PluginInstance::Start(const GURL& url,
 
   NPError err = NPP_New(mode, param_count,
       const_cast<char **>(param_names), const_cast<char **>(param_values));
-
-  if (err == NPERR_NO_ERROR) {
-    handles_url_redirects_ =
-        ((npp_functions_->version >= NPVERS_HAS_URL_REDIRECT_HANDLING) &&
-         (npp_functions_->urlredirectnotify));
-  }
   return err == NPERR_NO_ERROR;
 }
 
@@ -190,21 +108,6 @@ bool PluginInstance::GetFormValue(base::string16* value) {
   *value = base::UTF8ToUTF16(plugin_value);
   host_->host_functions()->memfree(plugin_value);
   return true;
-}
-
-// WebPluginLoadDelegate methods
-void PluginInstance::DidFinishLoadWithReason(const GURL& url,
-                                             NPReason reason,
-                                             int notify_id) {
-  bool notify;
-  void* notify_data;
-  GetNotifyData(notify_id, &notify, &notify_data);
-  if (!notify) {
-    NOTREACHED();
-    return;
-  }
-
-  NPP_URLNotify(url.spec().c_str(), reason, notify_data);
 }
 
 unsigned PluginInstance::GetBackingTextureId() {
@@ -280,7 +183,7 @@ NPError PluginInstance::NPP_DestroyStream(NPStream* stream, NPReason reason) {
   DCHECK(npp_functions_ != 0);
   DCHECK(npp_functions_->destroystream != 0);
 
-  if (stream == NULL || !IsValidStream(stream) || (stream->ndata == NULL))
+  if (stream == NULL || (stream->ndata == NULL))
     return NPERR_INVALID_INSTANCE_ERROR;
 
   if (npp_functions_->destroystream != 0) {
@@ -326,16 +229,6 @@ void PluginInstance::NPP_StreamAsFile(NPStream* stream, const char* fname) {
   files_created_.push_back(file_name);
 }
 
-void PluginInstance::NPP_URLNotify(const char* url,
-                                   NPReason reason,
-                                   void* notifyData) {
-  DCHECK(npp_functions_ != 0);
-  DCHECK(npp_functions_->urlnotify != 0);
-  if (npp_functions_->urlnotify != 0) {
-    npp_functions_->urlnotify(npp_, url, reason, notifyData);
-  }
-}
-
 NPError PluginInstance::NPP_GetValue(NPPVariable variable, void* value) {
   DCHECK(npp_functions_ != 0);
   // getvalue is NULL for Shockwave
@@ -371,71 +264,6 @@ bool PluginInstance::NPP_Print(NPPrint* platform_print) {
   return false;
 }
 
-void PluginInstance::NPP_URLRedirectNotify(const char* url, int32_t status,
-                                           void* notify_data) {
-  DCHECK(npp_functions_ != 0);
-  if (npp_functions_->urlredirectnotify != 0) {
-    npp_functions_->urlredirectnotify(npp_, url, status, notify_data);
-  }
-}
-
-void PluginInstance::SendJavaScriptStream(const GURL& url,
-                                          const std::string& result,
-                                          bool success,
-                                          int notify_id) {
-  bool notify;
-  void* notify_data;
-  GetNotifyData(notify_id, &notify, &notify_data);
-
-  if (success) {
-    PluginStringStream *stream =
-        new PluginStringStream(this, url, notify, notify_data);
-    AddStream(stream);
-    stream->SendToPlugin(result, "text/html");
-  } else {
-    // NOTE: Sending an empty stream here will crash MacroMedia
-    // Flash 9.  Just send the URL Notify.
-    if (notify)
-      NPP_URLNotify(url.spec().c_str(), NPRES_DONE, notify_data);
-  }
-}
-
-void PluginInstance::DidReceiveManualResponse(const GURL& url,
-                                              const std::string& mime_type,
-                                              const std::string& headers,
-                                              uint32 expected_length,
-                                              uint32 last_modified) {
-  DCHECK(load_manually_);
-
-  plugin_data_stream_ =
-      CreateStream(static_cast<unsigned long>(-1), url, mime_type, 0);
-  plugin_data_stream_->DidReceiveResponse(mime_type, headers, expected_length,
-                                          last_modified, true);
-}
-
-void PluginInstance::DidReceiveManualData(const char* buffer, int length) {
-  DCHECK(load_manually_);
-  if (plugin_data_stream_.get() != NULL) {
-    plugin_data_stream_->DidReceiveData(buffer, length, 0);
-  }
-}
-
-void PluginInstance::DidFinishManualLoading() {
-  DCHECK(load_manually_);
-  if (plugin_data_stream_.get() != NULL) {
-    plugin_data_stream_->DidFinishLoading(plugin_data_stream_->ResourceId());
-    plugin_data_stream_->Close(NPRES_DONE);
-    plugin_data_stream_ = NULL;
-  }
-}
-
-void PluginInstance::DidManualLoadFail() {
-  DCHECK(load_manually_);
-  if (plugin_data_stream_.get() != NULL) {
-    plugin_data_stream_->DidFail(plugin_data_stream_->ResourceId());
-    plugin_data_stream_ = NULL;
-  }
-}
 
 void PluginInstance::PluginThreadAsyncCall(void (*func)(void*),
                                            void* user_data) {
@@ -526,76 +354,6 @@ void PluginInstance::PopPopupsEnabledState() {
   popups_enabled_stack_.pop();
 }
 
-void PluginInstance::RequestRead(NPStream* stream, NPByteRange* range_list) {
-  std::string range_info = "bytes=";
-
-  while (range_list) {
-    range_info += base::IntToString(range_list->offset);
-    range_info.push_back('-');
-    range_info +=
-        base::UintToString(range_list->offset + range_list->length - 1);
-    range_list = range_list->next;
-    if (range_list)
-      range_info.push_back(',');
-  }
-
-  if (plugin_data_stream_.get()) {
-    if (plugin_data_stream_->stream() == stream) {
-      webplugin_->CancelDocumentLoad();
-      plugin_data_stream_ = NULL;
-    }
-  }
-
-  // The lifetime of a NPStream instance depends on the PluginStream instance
-  // which owns it. When a plugin invokes NPN_RequestRead on a seekable stream,
-  // we don't want to create a new stream when the corresponding response is
-  // received. We send over a cookie which represents the PluginStream
-  // instance which is sent back from the renderer when the response is
-  // received.
-  std::vector<scoped_refptr<PluginStream> >::iterator stream_index;
-  for (stream_index = open_streams_.begin();
-          stream_index != open_streams_.end(); ++stream_index) {
-    PluginStream* plugin_stream = stream_index->get();
-    if (plugin_stream->stream() == stream) {
-      // A stream becomes seekable the first time NPN_RequestRead
-      // is called on it.
-      plugin_stream->set_seekable(true);
-
-      if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kDisableDirectNPAPIRequests)) {
-        pending_range_requests_[++next_range_request_id_] = plugin_stream;
-        webplugin_->InitiateHTTPRangeRequest(
-            stream->url, range_info.c_str(), next_range_request_id_);
-        return;
-      } else {
-        PluginStreamUrl* plugin_stream_url =
-            static_cast<PluginStreamUrl*>(plugin_stream);
-        plugin_stream_url->FetchRange(range_info);
-        return;
-      }
-    }
-  }
-  NOTREACHED();
-}
-
-void PluginInstance::RequestURL(const char* url,
-                                const char* method,
-                                const char* target,
-                                const char* buf,
-                                unsigned int len,
-                                bool notify,
-                                void* notify_data) {
-  int notify_id = 0;
-  if (notify) {
-    notify_id = ++next_notify_id_;
-    pending_requests_[notify_id] = notify_data;
-  }
-
-  webplugin_->HandleURLRequest(
-      url, method, target, buf, len, notify_id, popups_allowed(),
-      notify ? handles_url_redirects_ : false);
-}
-
 bool PluginInstance::ConvertPoint(double source_x, double source_y,
                                   NPCoordinateSpace source_space,
                                   double* dest_x, double* dest_y,
@@ -664,35 +422,6 @@ bool PluginInstance::ConvertPoint(double source_x, double source_y,
   NOTIMPLEMENTED();
   return false;
 #endif
-}
-
-void PluginInstance::GetNotifyData(int notify_id,
-                                   bool* notify,
-                                   void** notify_data) {
-  PendingRequestMap::iterator iter = pending_requests_.find(notify_id);
-  if (iter != pending_requests_.end()) {
-    *notify = true;
-    *notify_data = iter->second;
-    pending_requests_.erase(iter);
-  } else {
-    *notify = false;
-    *notify_data = NULL;
-  }
-}
-
-void PluginInstance::URLRedirectResponse(bool allow, void* notify_data) {
-  // The notify_data passed in allows us to identify the matching stream.
-  std::vector<scoped_refptr<PluginStream> >::iterator stream_index;
-  for (stream_index = open_streams_.begin();
-          stream_index != open_streams_.end(); ++stream_index) {
-    PluginStream* plugin_stream = stream_index->get();
-    if (plugin_stream->notify_data() == notify_data) {
-      PluginStreamUrl* plugin_stream_url =
-          static_cast<PluginStreamUrl*>(plugin_stream);
-      plugin_stream_url->URLRedirectResponse(allow);
-      break;
-    }
-  }
 }
 
 }  // namespace content
