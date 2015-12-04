@@ -1,0 +1,104 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include <stddef.h>
+#include <string>
+
+#include "base/callback_helpers.h"
+#include "base/message_loop/message_loop.h"
+#include "blimp/net/blimp_connection.h"
+#include "blimp/net/blimp_transport.h"
+#include "blimp/net/client_connection_manager.h"
+#include "blimp/net/test_common.h"
+#include "net/base/completion_callback.h"
+#include "net/base/net_errors.h"
+#include "net/base/test_completion_callback.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
+
+using testing::_;
+using testing::Eq;
+using testing::Return;
+using testing::SaveArg;
+
+namespace blimp {
+
+class ClientConnectionManagerTest : public testing::Test {
+ public:
+  ClientConnectionManagerTest()
+      : manager_(new ClientConnectionManager(&connection_handler_)),
+        transport1_(new testing::StrictMock<MockTransport>),
+        transport2_(new testing::StrictMock<MockTransport>),
+        connection_(
+            new BlimpConnection(make_scoped_ptr(new MockPacketReader),
+                                make_scoped_ptr(new MockPacketWriter))) {}
+
+  ~ClientConnectionManagerTest() override {}
+
+ protected:
+  base::MessageLoop message_loop_;
+  testing::StrictMock<MockConnectionHandler> connection_handler_;
+  scoped_ptr<ClientConnectionManager> manager_;
+  scoped_ptr<testing::StrictMock<MockTransport>> transport1_;
+  scoped_ptr<testing::StrictMock<MockTransport>> transport2_;
+  scoped_ptr<BlimpConnection> connection_;
+};
+
+// The 1st transport connects, and the 2nd transport is not used.
+TEST_F(ClientConnectionManagerTest, FirstTransportConnects) {
+  net::CompletionCallback connect_cb_1;
+  EXPECT_CALL(*transport1_, Connect(_)).WillOnce(SaveArg<0>(&connect_cb_1));
+  EXPECT_CALL(connection_handler_, HandleConnectionPtr(Eq(connection_.get())));
+  EXPECT_CALL(*transport1_, TakeConnectionPtr())
+      .WillOnce(Return(connection_.release()));
+
+  ASSERT_TRUE(connect_cb_1.is_null());
+  manager_->AddTransport(std::move(transport1_));
+  manager_->AddTransport(std::move(transport2_));
+  manager_->Connect();
+  ASSERT_FALSE(connect_cb_1.is_null());
+  base::ResetAndReturn(&connect_cb_1).Run(net::OK);
+}
+
+// The 1st transport fails to connect, and the 2nd transport connects.
+TEST_F(ClientConnectionManagerTest, SecondTransportConnects) {
+  net::CompletionCallback connect_cb_1;
+  EXPECT_CALL(*transport1_, Connect(_)).WillOnce(SaveArg<0>(&connect_cb_1));
+  net::CompletionCallback connect_cb_2;
+  EXPECT_CALL(*transport2_, Connect(_)).WillOnce(SaveArg<0>(&connect_cb_2));
+  EXPECT_CALL(connection_handler_, HandleConnectionPtr(Eq(connection_.get())));
+  EXPECT_CALL(*transport2_, TakeConnectionPtr())
+      .WillOnce(Return(connection_.release()));
+
+  ASSERT_TRUE(connect_cb_1.is_null());
+  ASSERT_TRUE(connect_cb_2.is_null());
+  manager_->AddTransport(std::move(transport1_));
+  manager_->AddTransport(std::move(transport2_));
+  manager_->Connect();
+  ASSERT_FALSE(connect_cb_1.is_null());
+  base::ResetAndReturn(&connect_cb_1).Run(net::ERR_FAILED);
+  ASSERT_FALSE(connect_cb_2.is_null());
+  base::ResetAndReturn(&connect_cb_2).Run(net::OK);
+}
+
+// Both transports fail to connect.
+TEST_F(ClientConnectionManagerTest, BothTransportsFailToConnect) {
+  net::CompletionCallback connect_cb_1;
+  EXPECT_CALL(*transport1_, Connect(_)).WillOnce(SaveArg<0>(&connect_cb_1));
+  net::CompletionCallback connect_cb_2;
+  EXPECT_CALL(*transport2_, Connect(_)).WillOnce(SaveArg<0>(&connect_cb_2));
+
+  ASSERT_TRUE(connect_cb_1.is_null());
+  ASSERT_TRUE(connect_cb_2.is_null());
+  manager_->AddTransport(std::move(transport1_));
+  manager_->AddTransport(std::move(transport2_));
+  manager_->Connect();
+  ASSERT_FALSE(connect_cb_1.is_null());
+  ASSERT_TRUE(connect_cb_2.is_null());
+  base::ResetAndReturn(&connect_cb_1).Run(net::ERR_FAILED);
+  ASSERT_FALSE(connect_cb_2.is_null());
+  base::ResetAndReturn(&connect_cb_2).Run(net::ERR_FAILED);
+}
+
+}  // namespace blimp

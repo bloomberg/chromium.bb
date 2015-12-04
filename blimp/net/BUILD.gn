@@ -82,6 +82,7 @@ source_set("unit_tests") {
     "blimp_message_multiplexer_unittest.cc",
     "blimp_message_output_buffer_unittest.cc",
     "blimp_message_pump_unittest.cc",
+    "client_connection_manager_unittest.cc",
     "engine_connection_manager_unittest.cc",
     "input_message_unittest.cc",
     "stream_packet_reader_unittest.cc",

@@ -13,7 +13,9 @@ namespace blimp {
 
 EngineConnectionManager::EngineConnectionManager(
     ConnectionHandler* connection_handler)
-    : connection_handler_(connection_handler) {}
+    : connection_handler_(connection_handler) {
+  DCHECK(connection_handler_);
+}
 
 EngineConnectionManager::~EngineConnectionManager() {}
 

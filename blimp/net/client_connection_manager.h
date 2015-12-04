@@ -5,37 +5,53 @@
 #ifndef BLIMP_NET_CLIENT_CONNECTION_MANAGER_H_
 #define BLIMP_NET_CLIENT_CONNECTION_MANAGER_H_
 
+#include <vector>
+
 #include "base/macros.h"
-#include "blimp/net/blimp_connection.h"
-#include "blimp/net/connection_error_observer.h"
-#include "blimp/net/connection_handler.h"
+#include "base/memory/scoped_ptr.h"
+#include "blimp/net/blimp_net_export.h"
 
 namespace blimp {
 
+class BlimpTransport;
+class ConnectionHandler;
+
 // Coordinates the channel creation and authentication workflows for
 // outgoing (Client) network connections.
-// Attempts to reconnect if an authenticated connection is
-// disconnected.
-class ClientConnectionManager : public ConnectionHandler,
-                                ConnectionErrorObserver {
-  // Caller is responsible for ensuring that |client_browser_session|
+//
+// TODO(haibinlu): cope with network changes that may potentially affect the
+// endpoint that we're trying to connect to.
+class BLIMP_NET_EXPORT ClientConnectionManager {
+ public:
+  // Caller is responsible for ensuring that |connection_handler|
   // outlives |this|.
   explicit ClientConnectionManager(ConnectionHandler* connection_handler);
 
-  ~ClientConnectionManager() override;
+  ~ClientConnectionManager();
 
+  // Adds a transport. All transports are expected to be added before invoking
+  // |Connect|.
+  void AddTransport(scoped_ptr<BlimpTransport> transport);
+
+  // Attempts to create a connection using any of the BlimpTransports in
+  // |transports_|.
+  // This will result in the handler being called back at-most-once.
+  //
+  // This is also a placeholder for automatic reconnection logic for common
+  // cases such as network switches, online/offline changes.
   void Connect();
 
-  // ConnectionHandler implementation.
-  // Handles a new connection and authenticates it before passing it on to
-  // the underlying ConnectionHandler.
-  void HandleConnection(scoped_ptr<BlimpConnection> connection) override;
-
-  // ConnectionErrorObserver implementation.
-  // Used to implement reconnection logic on unexpected disconnections.
-  void OnConnectionError(int error) override;
-
  private:
+  // Tries to connect using the BlimpTransport specified at |transport_index|.
+  void Connect(int transport_index);
+
+  // Callback invoked by transports_[transport_index] to indicate that it has a
+  // connection ready to be authenticated or there is an error.
+  void OnConnectResult(int transport_index, int result);
+
+  ConnectionHandler* connection_handler_;
+  std::vector<scoped_ptr<BlimpTransport>> transports_;
+
   DISALLOW_COPY_AND_ASSIGN(ClientConnectionManager);
 };
 
