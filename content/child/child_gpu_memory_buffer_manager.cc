@@ -45,18 +45,13 @@ ChildGpuMemoryBufferManager::AllocateGpuMemoryBuffer(const gfx::Size& size,
       content::GetNextGenericSharedMemoryId(), size.width(), size.height(),
       format, usage, &handle);
   bool success = sender_->Send(message);
-  if (!success || handle.is_null())
-    return nullptr;
+  CHECK(success);
+  CHECK(!handle.is_null());
 
   scoped_ptr<GpuMemoryBufferImpl> buffer(GpuMemoryBufferImpl::CreateFromHandle(
       handle, size, format, usage,
       base::Bind(&DeletedGpuMemoryBuffer, sender_, handle.id)));
-  if (!buffer) {
-    sender_->Send(new ChildProcessHostMsg_DeletedGpuMemoryBuffer(
-        handle.id, gpu::SyncToken()));
-    return nullptr;
-  }
-
+  CHECK(buffer);
   return buffer.Pass();
 }
 
