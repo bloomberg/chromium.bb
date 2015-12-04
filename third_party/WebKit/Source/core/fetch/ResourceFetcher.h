@@ -144,6 +144,7 @@ public:
 
     void scheduleDocumentResourcesGC();
     bool clientDefersImage(const KURL&) const;
+    static void determineRequestContext(ResourceRequest&, Resource::Type, bool isMainFrame);
     void determineRequestContext(ResourceRequest&, Resource::Type);
 
     WebTaskRunner* loadingTaskRunner();

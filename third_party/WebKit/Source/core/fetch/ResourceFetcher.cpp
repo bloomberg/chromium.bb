@@ -95,7 +95,6 @@ static ResourceLoadPriority typeToPriority(Resource::Type type)
         return ResourceLoadPriorityLow;
     case Resource::Image:
     case Resource::LinkPrefetch:
-    case Resource::LinkPreload:
         return ResourceLoadPriorityVeryLow;
     }
 
@@ -153,10 +152,6 @@ static WebURLRequest::RequestContext requestContextFromType(bool isMainFrame, Re
     case Resource::LinkPrefetch:
         return WebURLRequest::RequestContextPrefetch;
     case Resource::LinkSubresource:
-        return WebURLRequest::RequestContextSubresource;
-    case Resource::LinkPreload:
-        // TODO(yoav): We should give preload its own context:
-        // https://github.com/whatwg/fetch/commit/26e5cca8ab5bb4b68a8f238f41dd7364d8c276b3
         return WebURLRequest::RequestContextSubresource;
     case Resource::TextTrack:
         return WebURLRequest::RequestContextTrack;
@@ -470,10 +465,15 @@ void ResourceFetcher::resourceTimingReportTimerFired(Timer<ResourceFetcher>* tim
         context().addResourceTiming(*timingInfo);
 }
 
+void ResourceFetcher::determineRequestContext(ResourceRequest& request, Resource::Type type, bool isMainFrame)
+{
+    WebURLRequest::RequestContext requestContext = requestContextFromType(isMainFrame, type);
+    request.setRequestContext(requestContext);
+}
+
 void ResourceFetcher::determineRequestContext(ResourceRequest& request, Resource::Type type)
 {
-    WebURLRequest::RequestContext requestContext = requestContextFromType(context().isMainFrame(), type);
-    request.setRequestContext(requestContext);
+    determineRequestContext(request, type, context().isMainFrame());
 }
 
 void ResourceFetcher::initializeResourceRequest(ResourceRequest& request, Resource::Type type)

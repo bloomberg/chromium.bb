@@ -37,6 +37,7 @@
 #include "core/fetch/CSSStyleSheetResource.h"
 #include "core/fetch/FetchInitiatorTypeNames.h"
 #include "core/fetch/FetchRequest.h"
+#include "core/fetch/FontResource.h"
 #include "core/fetch/ImageResource.h"
 #include "core/fetch/MemoryCache.h"
 #include "core/fetch/ResourceFetcher.h"
@@ -161,7 +162,6 @@ const KURL& DocumentLoader::url() const
 
 void DocumentLoader::startPreload(Resource::Type type, FetchRequest& request)
 {
-    ASSERT(type == Resource::Script || type == Resource::CSSStyleSheet || type == Resource::Image || type == Resource::ImportResource);
     ResourcePtr<Resource> resource;
     switch (type) {
     case Resource::Image:
@@ -173,9 +173,23 @@ void DocumentLoader::startPreload(Resource::Type type, FetchRequest& request)
     case Resource::CSSStyleSheet:
         resource = CSSStyleSheetResource::fetch(request, fetcher());
         break;
-    default: // Resource::ImportResource
+    case Resource::Font:
+        resource = FontResource::fetch(request, fetcher());
+        break;
+    case Resource::Media:
+        resource = RawResource::fetchMedia(request, fetcher());
+        break;
+    case Resource::TextTrack:
+        resource = RawResource::fetchTextTrack(request, fetcher());
+        break;
+    case Resource::ImportResource:
         resource = RawResource::fetchImport(request, fetcher());
         break;
+    case Resource::LinkSubresource:
+        resource = RawResource::fetch(request, fetcher());
+        break;
+    default:
+        ASSERT_NOT_REACHED();
     }
 
     if (resource)

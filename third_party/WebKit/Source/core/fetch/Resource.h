@@ -77,7 +77,6 @@ public:
         XSLStyleSheet,
         LinkPrefetch,
         LinkSubresource,
-        LinkPreload,
         TextTrack,
         ImportResource,
         Media // Audio or video file requested by a HTML5 media element

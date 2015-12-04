@@ -80,12 +80,22 @@ TEST(LinkLoaderTest, Preload)
         const char* href;
         const char* as;
         const ResourceLoadPriority priority;
+        const WebURLRequest::RequestContext context;
         const bool shouldLoad;
+        const char* accept;
     } cases[] = {
-        {"data://example.test/cat.jpg", "image", ResourceLoadPriorityVeryLow, true},
-        {"data://example.test/cat.js", "script", ResourceLoadPriorityMedium, true},
-        {"data://example.test/cat.css", "stylesheet", ResourceLoadPriorityHigh, true},
-        {"data://example.test/cat.blob", "blabla", ResourceLoadPriorityUnresolved, false},
+        {"data://example.test/cat.jpg", "image", ResourceLoadPriorityVeryLow, WebURLRequest::RequestContextImage, true, "image/webp,image/*,*/*;q=0.8"},
+        {"data://example.test/cat.js", "script", ResourceLoadPriorityMedium, WebURLRequest::RequestContextScript, true, "*/*"},
+        {"data://example.test/cat.css", "style", ResourceLoadPriorityHigh, WebURLRequest::RequestContextStyle, true, "text/css,*/*;q=0.1"},
+        // TODO(yoav): It doesn't seem like the audio context is ever used. That should probably be fixed (or we can consolidate audio and video).
+        {"data://example.test/cat.wav", "audio", ResourceLoadPriorityLow, WebURLRequest::RequestContextVideo, true, ""},
+        {"data://example.test/cat.mp4", "video", ResourceLoadPriorityLow, WebURLRequest::RequestContextVideo, true, ""},
+        {"data://example.test/cat.vtt", "track", ResourceLoadPriorityLow, WebURLRequest::RequestContextTrack, true, ""},
+        {"data://example.test/cat.woff", "font", ResourceLoadPriorityMedium, WebURLRequest::RequestContextFont, true, ""},
+        // TODO(yoav): subresource should be *very* low priority (rather than low).
+        {"data://example.test/cat.empty", "", ResourceLoadPriorityLow, WebURLRequest::RequestContextSubresource, true, ""},
+        {"data://example.test/cat.blob", "blabla", ResourceLoadPriorityLow, WebURLRequest::RequestContextSubresource, true, ""},
+        {"bla://example.test/cat.gif", "image", ResourceLoadPriorityUnresolved, WebURLRequest::RequestContextImage, false, ""},
     };
 
     // Test the cases with a single header
@@ -111,8 +121,12 @@ TEST(LinkLoaderTest, Preload)
                 ASSERT_EQ((unsigned)0, preloads->size());
             } else {
                 ASSERT_EQ((unsigned)1, preloads->size());
-                if (preloads->size() > 0)
-                    ASSERT_EQ(testCase.priority, preloads->begin().get()->get()->resourceRequest().priority());
+                if (preloads->size() > 0) {
+                    Resource* resource = preloads->begin().get()->get();
+                    ASSERT_EQ(testCase.priority, resource->resourceRequest().priority());
+                    ASSERT_EQ(testCase.context, resource->resourceRequest().requestContext());
+                    ASSERT_STREQ(testCase.accept, resource->accept().string().ascii().data());
+                }
             }
         }
     }

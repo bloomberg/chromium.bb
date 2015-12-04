@@ -1,4 +1,4 @@
-CONSOLE WARNING: line 10: <link rel=preload> must have a valid `as` value
+CONSOLE DEBUG: line 10: Preload triggered for prefetch.wut.com.test/1.gif
 CONSOLE WARNING: line 11: <link rel=preload> has an invalid `href` value
 CONSOLE WARNING: line 12: <link rel=preload> has an invalid `href` value
 CONSOLE WARNING: line 13: <link rel=preload> has an invalid `href` value

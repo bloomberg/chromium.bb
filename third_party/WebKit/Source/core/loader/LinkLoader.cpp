@@ -165,21 +165,23 @@ static void preconnectIfNeeded(const LinkRelAttribute& relAttribute, const KURL&
     }
 }
 
-static bool getTypeFromAsAttribute(const String& as, Resource::Type& type)
+static Resource::Type getTypeFromAsAttribute(const String& as, Document& document)
 {
-    if (as.isEmpty())
-        return false;
-
     if (equalIgnoringCase(as, "image"))
-        type = Resource::Image;
-    else if (equalIgnoringCase(as, "script"))
-        type = Resource::Script;
-    else if (equalIgnoringCase(as, "stylesheet"))
-        type = Resource::CSSStyleSheet;
-    else
-        return false;
-
-    return true;
+        return Resource::Image;
+    if (equalIgnoringCase(as, "script"))
+        return Resource::Script;
+    if (equalIgnoringCase(as, "style"))
+        return Resource::CSSStyleSheet;
+    if (equalIgnoringCase(as, "audio") || equalIgnoringCase(as, "video"))
+        return Resource::Media;
+    if (equalIgnoringCase(as, "font"))
+        return Resource::Font;
+    if (equalIgnoringCase(as, "track"))
+        return Resource::TextTrack;
+    if (!as.isEmpty())
+        document.addConsoleMessage(ConsoleMessage::create(OtherMessageSource, WarningMessageLevel, String("<link rel=preload> must have a valid `as` value")));
+    return Resource::LinkSubresource;
 }
 
 static void preloadIfNeeded(const LinkRelAttribute& relAttribute, const KURL& href, Document& document, const String& as)
@@ -194,13 +196,11 @@ static void preloadIfNeeded(const LinkRelAttribute& relAttribute, const KURL& hr
             document.addConsoleMessage(ConsoleMessage::create(OtherMessageSource, WarningMessageLevel, String("<link rel=preload> has an invalid `href` value")));
             return;
         }
-        // TODO(yoav): Figure out a way that 'as' would be used to set request headers.
-        Resource::Type type;
-        if (!getTypeFromAsAttribute(as, type)) {
-            document.addConsoleMessage(ConsoleMessage::create(OtherMessageSource, WarningMessageLevel, String("<link rel=preload> must have a valid `as` value")));
-            return;
-        }
-        FetchRequest linkRequest(ResourceRequest(document.completeURL(href)), FetchInitiatorTypeNames::link);
+        Resource::Type type = getTypeFromAsAttribute(as, document);
+        ResourceRequest resourceRequest(document.completeURL(href));
+        ResourceFetcher::determineRequestContext(resourceRequest, type, false);
+        FetchRequest linkRequest(resourceRequest, FetchInitiatorTypeNames::link);
+
         linkRequest.setPriority(document.fetcher()->loadPriority(type, linkRequest));
         Settings* settings = document.settings();
         if (settings && settings->logPreload())
