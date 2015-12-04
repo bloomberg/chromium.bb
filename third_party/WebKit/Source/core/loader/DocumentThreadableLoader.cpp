@@ -288,7 +288,13 @@ DocumentThreadableLoader::~DocumentThreadableLoader()
 void DocumentThreadableLoader::overrideTimeout(unsigned long timeoutMilliseconds)
 {
     ASSERT(m_async);
-    ASSERT(m_requestStartedSeconds > 0.0);
+
+    // |m_requestStartedSeconds| == 0.0 indicates loading is already finished
+    // and |m_timeoutTimer| is already stopped, and thus we do nothing for such
+    // cases. See https://crbug.com/551663 for details.
+    if (m_requestStartedSeconds <= 0.0)
+        return;
+
     m_timeoutTimer.stop();
     // At the time of this method's implementation, it is only ever called by
     // XMLHttpRequest, when the timeout attribute is set after sending the
