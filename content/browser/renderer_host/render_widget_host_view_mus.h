@@ -124,7 +124,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMus : public RenderWidgetHostViewBase {
 
   RenderWidgetHostImpl* host_;
   scoped_ptr<mus::ScopedWindowPtr> window_;
-  gfx::Size size_;
   // The platform view for this RenderWidgetHostView.
   // RenderWidgetHostViewMus mostly only cares about stuff related to
   // compositing, the rest are directly forwared to this |platform_view_|.

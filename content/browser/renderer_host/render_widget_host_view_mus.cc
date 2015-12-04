@@ -12,6 +12,7 @@
 #include "content/common/render_widget_window_tree_client_factory.mojom.h"
 #include "content/public/common/mojo_shell_connection.h"
 #include "mojo/application/public/cpp/application_impl.h"
+#include "ui/aura/window.h"
 
 namespace blink {
 struct WebScreenInfo;
@@ -61,18 +62,15 @@ bool RenderWidgetHostViewMus::IsShowing() {
 }
 
 void RenderWidgetHostViewMus::SetSize(const gfx::Size& size) {
-  size_ = size;
-  gfx::Rect bounds = window_->window()->bounds();
-  // TODO(fsamuel): figure out position.
-  bounds.set_x(10);
-  bounds.set_y(150);
-  bounds.set_size(size);
+  platform_view_->SetSize(size);
+  gfx::Rect bounds = platform_view_->GetNativeView()->GetBoundsInRootWindow();
   window_->window()->SetBounds(bounds);
-  host_->WasResized();
 }
 
 void RenderWidgetHostViewMus::SetBounds(const gfx::Rect& rect) {
-  SetSize(rect.size());
+  platform_view_->SetBounds(rect);
+  gfx::Rect bounds = platform_view_->GetNativeView()->GetBoundsInRootWindow();
+  window_->window()->SetBounds(bounds);
 }
 
 void RenderWidgetHostViewMus::Focus() {
@@ -91,7 +89,7 @@ bool RenderWidgetHostViewMus::IsSurfaceAvailableForCopy() const {
 }
 
 gfx::Rect RenderWidgetHostViewMus::GetViewBounds() const {
-  return gfx::Rect(size_);
+  return platform_view_->GetViewBounds();
 }
 
 gfx::Vector2dF RenderWidgetHostViewMus::GetLastScrollOffset() const {
@@ -142,7 +140,7 @@ void RenderWidgetHostViewMus::InitAsFullscreen(
 }
 
 gfx::NativeView RenderWidgetHostViewMus::GetNativeView() const {
-  return gfx::NativeView();
+  return platform_view_->GetNativeView();
 }
 
 gfx::NativeViewId RenderWidgetHostViewMus::GetNativeViewId() const {
@@ -244,7 +242,7 @@ bool RenderWidgetHostViewMus::GetScreenColorProfile(
 }
 
 gfx::Rect RenderWidgetHostViewMus::GetBoundsInRootWindow() {
-  return GetViewBounds();
+  return platform_view_->GetBoundsInRootWindow();
 }
 
 #if defined(OS_MACOSX)
