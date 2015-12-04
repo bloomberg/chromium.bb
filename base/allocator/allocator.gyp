@@ -16,6 +16,10 @@
   'variables': {
     'tcmalloc_dir': '../../third_party/tcmalloc/chromium',
     'use_vtable_verify%': 0,
+    # Provide a way to force disable debugallocation in Debug builds
+    # e.g. for profiling (it's more rare to profile Debug builds,
+    # but people sometimes need to do that).
+    'disable_debugallocation%': 0,
   },
   'targets': [
     # Only executables and not libraries should depend on the
@@ -23,70 +27,82 @@
     # knows what allocator makes sense.
     {
       'target_name': 'allocator',
+      # TODO(primiano): This should be type: none for the noop cases (an empty
+      # static lib can confuse some gyp generators). Fix it once the refactoring
+      # (crbug.com/564618) bring this file to a saner state (fewer conditions).
       'type': 'static_library',
-      'direct_dependent_settings': {
-        'configurations': {
-          'Common_Base': {
-            'msvs_settings': {
-              'VCLinkerTool': {
-                'IgnoreDefaultLibraryNames': ['libcmtd.lib', 'libcmt.lib'],
-                'AdditionalDependencies': [
-                  '<(SHARED_INTERMEDIATE_DIR)/allocator/libcmt.lib'
-                ],
-              },
+      'conditions': [
+        # TODO(primiano): in next CL this should check win_use_allocator_shim.
+        # Right now that would produce a non-zero ninja diff for asan=1.
+        ['OS=="win" and component!="shared_library"', {
+          'msvs_settings': {
+            # TODO(sgk):  merge this with build/common.gypi settings
+            'VCLibrarianTool': {
+              'AdditionalOptions': ['/ignore:4006,4221'],
+            },
+            'VCLinkerTool': {
+              'AdditionalOptions': ['/ignore:4006'],
             },
           },
-        },
-        'conditions': [
-          ['OS=="win"', {
+          'dependencies': [
+            'libcmt',
+
+            # TODO(primiano): remove in next CL, not really needed.
+            '../third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+          ],
+          'include_dirs': [
+            '.',  # TODO(primiano): remove in next CL, not really needed.
+            '../..',
+          ],
+          'sources': [
+            'allocator_shim_win.cc',
+          ],
+          'configurations': {
+            'Debug_Base': {
+              'msvs_settings': {
+                'VCCLCompilerTool': {
+                  'RuntimeLibrary': '0',
+                },
+              },
+              # TODO(primiano): remove this 'conditions' section soon. This is
+              # only for tc-malloc, which is not supported on windows. The only
+              # reason os it is to make the initial refactoring easier and
+              # a zero-diff ninja w.r.t. the current situation.
+              'conditions': [
+                ['disable_debugallocation==0', {
+                  'defines': [ 'TCMALLOC_FOR_DEBUGALLOCATION' ],
+                }],
+              ],
+            },
+          },
+          'direct_dependent_settings': {
+            'configurations': {
+              'Common_Base': {
+                'msvs_settings': {
+                  'VCLinkerTool': {
+                    'IgnoreDefaultLibraryNames': ['libcmtd.lib', 'libcmt.lib'],
+                    'AdditionalDependencies': [
+                      '<(SHARED_INTERMEDIATE_DIR)/allocator/libcmt.lib'
+                    ],
+                  },
+                },
+              },
+            },
             'defines': [
               'PERFTOOLS_DLL_DECL=',
             ],
-          }],
-        ],
-      },
-      'dependencies': [
-        '../third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
-      ],
-      'msvs_settings': {
-        # TODO(sgk):  merge this with build/common.gypi settings
-        'VCLibrarianTool': {
-          'AdditionalOptions': ['/ignore:4006,4221'],
-        },
-        'VCLinkerTool': {
-          'AdditionalOptions': ['/ignore:4006'],
-        },
-      },
-      'configurations': {
-        'Debug_Base': {
-          'msvs_settings': {
-            'VCCLCompilerTool': {
-              'RuntimeLibrary': '0',
-            },
           },
-          'variables': {
-            # Provide a way to force disable debugallocation in Debug builds,
-            # e.g. for profiling (it's more rare to profile Debug builds,
-            # but people sometimes need to do that).
-            'disable_debugallocation%': 0,
-          },
-          'conditions': [
-            ['disable_debugallocation==0', {
-              'defines': [
-                # Use debugallocation for Debug builds to catch problems early
-                # and cleanly, http://crbug.com/30715 .
-                'TCMALLOC_FOR_DEBUGALLOCATION',
-              ],
-            }],
-          ],
-        },
-      },
-      'conditions': [
+        }],  # OS=="win"
         ['use_allocator=="tcmalloc"', {
           # Disable the heap checker in tcmalloc.
           'defines': [
             'NO_HEAP_CHECK',
           ],
+          'dependencies': [
+            '../third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+          ],
+          # The order of this include_dirs matters, as tc-malloc has its own
+          # base/ mini-fork. Do not factor these out of this conditions section.
           'include_dirs': [
             '.',
             '<(tcmalloc_dir)/src/base',
@@ -287,59 +303,66 @@
             # Included by debugallocation_shim.cc.
             '<(tcmalloc_dir)/src/debugallocation.cc',
             '<(tcmalloc_dir)/src/tcmalloc.cc',
-          ]
-        },{
-          'include_dirs': [
-            '.',
-            '../..',
           ],
-        }],
-        ['OS=="win" and component!="shared_library"', {
-          'dependencies': [
-            'libcmt',
+          'conditions': [
+            ['OS=="linux" or OS=="freebsd" or OS=="solaris" or OS=="android"', {
+              'sources!': [
+                '<(tcmalloc_dir)/src/system-alloc.h',
+              ],
+              # We enable all warnings by default, but upstream disables a few.
+              # Keep "-Wno-*" flags in sync with upstream by comparing against:
+              # http://code.google.com/p/google-perftools/source/browse/trunk/Makefile.am
+              'cflags': [
+                '-Wno-sign-compare',
+                '-Wno-unused-result',
+              ],
+              'cflags!': [
+                '-fvisibility=hidden',
+              ],
+              'link_settings': {
+                'ldflags': [
+                  # Don't let linker rip this symbol out, otherwise the heap&cpu
+                  # profilers will not initialize properly on startup.
+                  '-Wl,-uIsHeapProfilerRunning,-uProfilerStart',
+                  # Do the same for heap leak checker.
+                  '-Wl,-u_Z21InitialMallocHook_NewPKvj,-u_Z22InitialMallocHook_MMapPKvS0_jiiix,-u_Z22InitialMallocHook_SbrkPKvi',
+                  '-Wl,-u_Z21InitialMallocHook_NewPKvm,-u_Z22InitialMallocHook_MMapPKvS0_miiil,-u_Z22InitialMallocHook_SbrkPKvl',
+                  '-Wl,-u_ZN15HeapLeakChecker12IgnoreObjectEPKv,-u_ZN15HeapLeakChecker14UnIgnoreObjectEPKv',
+                ],
+              },
+            }],
+            ['profiling!=1', {
+              'sources!': [
+                # cpuprofiler
+                '<(tcmalloc_dir)/src/base/thread_lister.c',
+                '<(tcmalloc_dir)/src/base/thread_lister.h',
+                '<(tcmalloc_dir)/src/profile-handler.cc',
+                '<(tcmalloc_dir)/src/profile-handler.h',
+                '<(tcmalloc_dir)/src/profiledata.cc',
+                '<(tcmalloc_dir)/src/profiledata.h',
+                '<(tcmalloc_dir)/src/profiler.cc',
+              ],
+            }],
           ],
-          'sources': [
-            'allocator_shim_win.cc',
-          ],
-        }],
-        ['profiling!=1', {
-          'sources!': [
-            # cpuprofiler
-            '<(tcmalloc_dir)/src/base/thread_lister.c',
-            '<(tcmalloc_dir)/src/base/thread_lister.h',
-            '<(tcmalloc_dir)/src/profile-handler.cc',
-            '<(tcmalloc_dir)/src/profile-handler.h',
-            '<(tcmalloc_dir)/src/profiledata.cc',
-            '<(tcmalloc_dir)/src/profiledata.h',
-            '<(tcmalloc_dir)/src/profiler.cc',
-          ],
-        }],
-        ['OS=="linux" or OS=="freebsd" or OS=="solaris" or OS=="android"', {
-          'sources!': [
-            '<(tcmalloc_dir)/src/system-alloc.h',
-          ],
-          # We enable all warnings by default, but upstream disables a few.
-          # Keep "-Wno-*" flags in sync with upstream by comparing against:
-          # http://code.google.com/p/google-perftools/source/browse/trunk/Makefile.am
-          'cflags': [
-            '-Wno-sign-compare',
-            '-Wno-unused-result',
-          ],
-          'cflags!': [
-            '-fvisibility=hidden',
-          ],
-          'link_settings': {
-            'ldflags': [
-              # Don't let linker rip this symbol out, otherwise the heap&cpu
-              # profilers will not initialize properly on startup.
-              '-Wl,-uIsHeapProfilerRunning,-uProfilerStart',
-              # Do the same for heap leak checker.
-              '-Wl,-u_Z21InitialMallocHook_NewPKvj,-u_Z22InitialMallocHook_MMapPKvS0_jiiix,-u_Z22InitialMallocHook_SbrkPKvi',
-              '-Wl,-u_Z21InitialMallocHook_NewPKvm,-u_Z22InitialMallocHook_MMapPKvS0_miiil,-u_Z22InitialMallocHook_SbrkPKvl',
-              '-Wl,-u_ZN15HeapLeakChecker12IgnoreObjectEPKv,-u_ZN15HeapLeakChecker14UnIgnoreObjectEPKv',
-          ]},
-        }],
-        [ 'use_vtable_verify==1', {
+          'configurations': {
+            'Debug_Base': {
+              'conditions': [
+                ['disable_debugallocation==0', {
+                  'defines': [
+                    # Use debugallocation for Debug builds to catch problems
+                    # early and cleanly, http://crbug.com/30715 .
+                    'TCMALLOC_FOR_DEBUGALLOCATION',
+                  ],
+                }],
+              ],
+            },
+          },
+        }],  # use_allocator=="tcmalloc
+        # For CrOS builds with vtable verification. According to the author of
+        # crrev.com/10854031 this is used in conjuction with some other CrOS
+        # build flag, to enable verification of any allocator that uses virtual
+        # function calls.
+        ['use_vtable_verify==1', {
           'cflags': [
             '-fvtable-verify=preinit',
           ],
@@ -351,8 +374,8 @@
             }],
           ],
         }],
-      ],
-    },
+      ],  # conditions of 'allocator' target.
+    },  # 'allocator' target.
     {
       # This library is linked in to src/base.gypi:base and allocator_unittests
       # It can't depend on either and nothing else should depend on it - all
