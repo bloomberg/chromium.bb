@@ -175,27 +175,40 @@ function isElementInsideFormOrFieldSet(element) {
 }
 
 /**
- * To avoid overly expensive computation, we impose a minimum number of
- * allowable fields.  The corresponding maximum number of allowable fields
- * is imposed by webFormElementToFormData().
+ * Determines whether the form is interesting enough to send to the browser for
+ * further operations.
  *
  * Unlike the C++ version, this version takes a required field count param,
  * instead of using a hard coded value.
  *
  * It is based on the logic in
- *     bool ShouldIgnoreForm(size_t num_editable_elements,
- *                           size_t num_control_elements);
+ *     bool IsFormInteresting(const FormData& form,
+ *                            size_t num_editable_elements);
  * in chromium/src/components/autofill/content/renderer/form_cache.cc
  *
+ * @param {AutofillFormData} form Form to examine.
  * @param {number} numEditableElements number of editable elements.
- * @param {number} numControlElements number of control elements.
  * @param {number} numFieldsRequired number of fields required.
- * @return {boolean} Whether to ignore the form or not.
+ * @return {boolean} Whether the form is sufficiently interesting.
  */
-function shouldIgnoreForm_(numEditableElements,
-                           numControlElements,
-                           numFieldsRequired) {
-  return numEditableElements < numFieldsRequired && numControlElements > 0;
+function isFormInteresting_(form, numEditableElements, numFieldsRequired) {
+  if (form.fields.length === 0) {
+    return false;
+  }
+
+  // If the form has at least one field with an autocomplete attribute, it is a
+  // candidate for autofill.
+  for (var i = 0; i < form.fields.length; ++i) {
+    if (form.fields['autocomplete_attribute'] != null &&
+        form.fields['autocomplete_attribute'].length > 0) {
+      return true;
+    }
+  }
+
+  // If there are no autocomplete attributes, the form needs to have at least
+  // the required number of editable fields for the prediction routines to be a
+  // candidate for autofill.
+  return numEditableElements >= numFieldsRequired;
 }
 
 /**
@@ -767,9 +780,8 @@ function extractFormsAndFormElements_(frame, minimumRequiredFields, forms) {
     var controlElements =
         __gCrWeb.autofill.extractAutofillableElementsInForm(formElement);
     var numEditableElements = scanFormControlElements_(controlElements);
-    if (shouldIgnoreForm_(numEditableElements,
-                          controlElements.length,
-                          minimumRequiredFields)) {
+
+    if (numEditableElements === 0) {
       continue;
     }
 
@@ -778,12 +790,13 @@ function extractFormsAndFormElements_(frame, minimumRequiredFields, forms) {
         frame, formElement, null, extractMask, form, null /* field */)) {
       continue;
     }
+
     numFieldsSeen += form['fields'].length;
     if (numFieldsSeen > __gCrWeb.autofill.MAX_PARSEABLE_FIELDS) {
       break;
     }
 
-    if (form.fields.length >= minimumRequiredFields) {
+    if (isFormInteresting_(form, numEditableElements, minimumRequiredFields)) {
       forms.push(form);
     }
   }
@@ -794,15 +807,16 @@ function extractFormsAndFormElements_(frame, minimumRequiredFields, forms) {
       getUnownedAutofillableFormFieldElements_(doc.all, fieldsets);
   var numEditableUnownedElements =
       scanFormControlElements_(unownedControlElements);
-  if (!shouldIgnoreForm_(numEditableUnownedElements,
-                         unownedControlElements.length,
-                         minimumRequiredFields)) {
+  if (numEditableUnownedElements > 0) {
     var unownedForm = new __gCrWeb['common'].JSONSafeObject;
-    if (unownedFormElementsAndFieldSetsToFormData_(
-        frame, fieldsets, unownedControlElements, extractMask, unownedForm)) {
+    var hasUnownedForm = unownedFormElementsAndFieldSetsToFormData_(
+        frame, fieldsets, unownedControlElements, extractMask, unownedForm);
+    if (hasUnownedForm) {
       numFieldsSeen += unownedForm['fields'].length;
       if (numFieldsSeen <= __gCrWeb.autofill.MAX_PARSEABLE_FIELDS) {
-        if (unownedForm.fields.length >= minimumRequiredFields) {
+        var interesting = isFormInteresting_(unownedForm,
+            numEditableUnownedElements, minimumRequiredFields);
+        if (interesting) {
           forms.push(unownedForm);
         }
       }
