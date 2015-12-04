@@ -89,6 +89,12 @@ void Page::networkStateChanged(bool online)
     }
 }
 
+void Page::onMemoryPressure()
+{
+    for (auto& page : ordinaryPages())
+        page->memoryPurgeController().purgeMemory();
+}
+
 float deviceScaleFactor(LocalFrame* frame)
 {
     if (!frame)
@@ -361,13 +367,6 @@ void Page::setVisibilityState(PageVisibilityState visibilityState, bool isInitia
         return;
     m_visibilityState = visibilityState;
 
-    if (visibilityState == PageVisibilityStateVisible) {
-        memoryPurgeController().pageBecameActive();
-    } else {
-        if (!isInitialState)
-            memoryPurgeController().pageBecameInactive();
-    }
-
     if (!isInitialState)
         notifyPageVisibilityChanged();
 
@@ -510,16 +509,14 @@ void Page::acceptLanguagesChanged()
         frames[i]->localDOMWindow()->acceptLanguagesChanged();
 }
 
-void Page::purgeMemory(MemoryPurgeMode mode, DeviceKind deviceKind)
+void Page::purgeMemory(DeviceKind deviceKind)
 {
     Frame* frame = mainFrame();
     if (deviceKind != DeviceKind::LowEnd || !frame || !frame->isLocalFrame())
         return;
-    if (mode == MemoryPurgeMode::InactiveTab) {
-        if (Document* document = toLocalFrame(frame)->document())
-            document->fetcher()->garbageCollectDocumentResources();
-        memoryCache()->pruneAll();
-    }
+    if (Document* document = toLocalFrame(frame)->document())
+        document->fetcher()->garbageCollectDocumentResources();
+    memoryCache()->pruneAll();
 }
 
 DEFINE_TRACE(Page)

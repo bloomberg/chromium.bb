@@ -148,6 +148,7 @@
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebImageCache.h"
 #include "third_party/WebKit/public/web/WebKit.h"
+#include "third_party/WebKit/public/web/WebMemoryPressureListener.h"
 #include "third_party/WebKit/public/web/WebNetworkStateNotifier.h"
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 #include "third_party/WebKit/public/web/WebScriptController.h"
@@ -1854,7 +1855,7 @@ void RenderThreadImpl::OnMemoryPressure(
 
   // Do not call into blink if it is not initialized.
   if (blink_platform_impl_) {
-    blink::WebCache::pruneAll();
+    blink::WebMemoryPressureListener::onMemoryPressure();
 
     if (blink::mainThreadIsolate()) {
       // Trigger full v8 garbage collection on memory pressure notifications.

@@ -177,6 +177,7 @@
       'WebMediaDevicesRequest.cpp',
       'WebMediaStreamRegistry.cpp',
       'WebMetaElement.cpp',
+      'WebMemoryPressureListener.cpp',
       'WebNetworkStateNotifier.cpp',
       'WebNode.cpp',
       'WebOptionElement.cpp',

@@ -84,10 +84,6 @@ public:
     // Get usage stats about the resource cache.
     BLINK_EXPORT static void getResourceTypeStats(ResourceTypeStats*);
 
-    // Prunes all resources (as much as possible; some resources may not be
-    // cleared if they are actively referenced). And releases cache memory.
-    BLINK_EXPORT static void pruneAll();
-
 private:
     WebCache();  // Not intended to be instanced.
 };

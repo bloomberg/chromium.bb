@@ -77,6 +77,7 @@ class CORE_EXPORT Page final : public NoBaseWillBeGarbageCollectedFinalized<Page
     friend class Settings;
 public:
     static void platformColorsChanged();
+    static void onMemoryPressure();
 
     // It is up to the platform to ensure that non-null clients are provided where required.
     struct CORE_EXPORT PageClients final {
@@ -202,7 +203,7 @@ public:
 
     MemoryPurgeController& memoryPurgeController();
 
-    void purgeMemory(MemoryPurgeMode, DeviceKind) override;
+    void purgeMemory(DeviceKind) override;
 
     DECLARE_TRACE();
 

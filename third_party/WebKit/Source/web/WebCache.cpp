@@ -93,11 +93,4 @@ void WebCache::getResourceTypeStats(ResourceTypeStats* result)
         memset(result, 0, sizeof(WebCache::ResourceTypeStats));
 }
 
-void WebCache::pruneAll()
-{
-    MemoryCache* cache = memoryCache();
-    if (cache)
-        cache->pruneAll();
-}
-
 }  // namespace blink

@@ -12,12 +12,6 @@
 
 namespace blink {
 
-enum class MemoryPurgeMode {
-    // The tab contains the webview went to background
-    InactiveTab,
-    // TODO(bashi): Add more modes as needed.
-};
-
 enum class DeviceKind {
     NotSpecified,
     LowEnd,
@@ -33,7 +27,7 @@ public:
 
     // MemoryPurgeController invokes this callback when a memory purge event
     // has occurred.
-    virtual void purgeMemory(MemoryPurgeMode, DeviceKind) = 0;
+    virtual void purgeMemory(DeviceKind) = 0;
 
     DECLARE_VIRTUAL_TRACE();
 };
@@ -44,6 +38,8 @@ public:
 // Page.
 class PLATFORM_EXPORT MemoryPurgeController final : public NoBaseWillBeGarbageCollectedFinalized<MemoryPurgeController> {
 public:
+    static void onMemoryPressure();
+
     static PassOwnPtrWillBeRawPtr<MemoryPurgeController> create()
     {
         return adoptPtrWillBeNoop(new MemoryPurgeController);
@@ -66,20 +62,15 @@ public:
         m_clients.remove(client);
     }
 
-    void pageBecameActive();
-    void pageBecameInactive();
-    void pageInactiveTask(Timer<MemoryPurgeController>*);
+    void purgeMemory();
 
     DECLARE_TRACE();
 
 private:
     MemoryPurgeController();
 
-    void purgeMemory(MemoryPurgeMode);
-
     WillBeHeapHashSet<RawPtrWillBeWeakMember<MemoryPurgeClient>> m_clients;
     DeviceKind m_deviceKind;
-    Timer<MemoryPurgeController> m_inactiveTimer;
 };
 
 } // namespace blink
