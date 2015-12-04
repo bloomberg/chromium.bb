@@ -347,7 +347,7 @@ SettingsLanguagesSingletonElement = Polymer({
     assert(this.canDisableLanguage(languageCode));
 
     // Remove the language from spell check.
-    this.arrayDelete('prefs.spellcheck.dictionaries.value', languageCode);
+    this.deletePrefListItem('spellcheck.dictionaries', languageCode);
 
     // Remove the language from preferred languages.
     var languageCodes =
@@ -385,7 +385,7 @@ SettingsLanguagesSingletonElement = Polymer({
    */
   enableTranslateLanguage: function(languageCode) {
     languageCode = this.convertLanguageCodeForTranslate(languageCode);
-    this.arrayDelete('prefs.translate_blocked_languages.value', languageCode);
+    this.deletePrefListItem('translate_blocked_languages', languageCode);
   },
 
   /**
@@ -394,11 +394,8 @@ SettingsLanguagesSingletonElement = Polymer({
    * @param {string} languageCode
    */
   disableTranslateLanguage: function(languageCode) {
-    languageCode = this.convertLanguageCodeForTranslate(languageCode);
-    if (this.getPref('translate_blocked_languages').value
-            .indexOf(languageCode) == -1) {
-      this.push('prefs.translate_blocked_languages.value', languageCode);
-    }
+    this.appendPrefListItem('translate_blocked_languages',
+        this.convertLanguageCodeForTranslate(languageCode));
   },
 
   /**
@@ -412,10 +409,9 @@ SettingsLanguagesSingletonElement = Polymer({
 
     if (enable) {
       var spellCheckPref = this.getPref('spellcheck.dictionaries');
-      if (spellCheckPref.value.indexOf(languageCode) == -1)
-        this.push('prefs.spellcheck.dictionaries.value', languageCode);
+      this.appendPrefListItem('spellcheck.dictionaries', languageCode);
     } else {
-      this.arrayDelete('prefs.spellcheck.dictionaries.value', languageCode);
+      this.deletePrefListItem('spellcheck.dictionaries', languageCode);
     }
   },
 
