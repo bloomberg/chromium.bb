@@ -246,6 +246,50 @@ void LogInputEventLatencyUma(const WebInputEvent& event, base::TimeTicks now,
   }
 }
 
+void LogPassiveLatency(int64 latency) {
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Event.PassiveListeners.Latency", latency, 1,
+                              10000000, 100);
+}
+
+void LogPassiveEventListenersUma(WebInputEventResult result,
+                                 bool passive,
+                                 bool cancelable,
+                                 double event_timestamp,
+                                 const ui::LatencyInfo& latency_info) {
+  enum {
+    PASSIVE_LISTENER_UMA_ENUM_PASSIVE,
+    PASSIVE_LISTENER_UMA_ENUM_UNCANCELABLE,
+    PASSIVE_LISTENER_UMA_ENUM_SUPPRESSED,
+    PASSIVE_LISTENER_UMA_ENUM_CANCELABLE,
+    PASSIVE_LISTENER_UMA_ENUM_CANCELABLE_AND_CANCELED,
+    PASSIVE_LISTENER_UMA_ENUM_COUNT
+  };
+
+  int enum_value;
+  if (passive)
+    enum_value = PASSIVE_LISTENER_UMA_ENUM_PASSIVE;
+  else if (!cancelable)
+    enum_value = PASSIVE_LISTENER_UMA_ENUM_UNCANCELABLE;
+  else if (result == WebInputEventResult::HandledApplication)
+    enum_value = PASSIVE_LISTENER_UMA_ENUM_CANCELABLE_AND_CANCELED;
+  else if (result == WebInputEventResult::HandledSuppressed)
+    enum_value = PASSIVE_LISTENER_UMA_ENUM_SUPPRESSED;
+  else
+    enum_value = PASSIVE_LISTENER_UMA_ENUM_CANCELABLE;
+
+  UMA_HISTOGRAM_ENUMERATION("Event.PassiveListeners", enum_value,
+                            PASSIVE_LISTENER_UMA_ENUM_COUNT);
+
+  if (enum_value == PASSIVE_LISTENER_UMA_ENUM_CANCELABLE &&
+      base::TimeTicks::IsHighResolution()) {
+    base::TimeTicks now = base::TimeTicks::Now();
+    LogPassiveLatency(GetEventLatencyMicros(event_timestamp, now));
+    for (size_t i = 0; i < latency_info.coalesced_events_size(); i++)
+      LogPassiveLatency(GetEventLatencyMicros(
+          latency_info.timestamps_of_coalesced_events()[i], now));
+  }
+}
+
 }  // namespace
 
 namespace content {
@@ -1106,6 +1150,9 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
                                       const ui::LatencyInfo& latency_info) {
   if (!input_event)
     return;
+
+  // TODO(dtapuska): Passive support not implemented yet crbug.com/489802
+  bool passive = false;
   base::AutoReset<bool> handling_input_event_resetter(&handling_input_event_,
                                                       true);
   base::AutoReset<WebInputEvent::Type> handling_event_type_resetter(
@@ -1191,12 +1238,28 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
     prevent_default = prevent_default || WillHandleGestureEvent(gesture_event);
   }
 
-  bool processed = prevent_default;
+  WebInputEventResult processed =
+      prevent_default ? WebInputEventResult::HandledSuppressed
+                      : WebInputEventResult::NotHandled;
   if (input_event->type != WebInputEvent::Char || !suppress_next_char_events_) {
     suppress_next_char_events_ = false;
-    if (!processed && webwidget_)
-      processed = webwidget_->handleInputEvent(*input_event) !=
-                  WebInputEventResult::NotHandled;
+    if (processed == WebInputEventResult::NotHandled && webwidget_)
+      processed = webwidget_->handleInputEvent(*input_event);
+  }
+
+  // TODO(dtapuska): Use the input_event->timeStampSeconds as the start
+  // ideally this should be when the event was sent by the compositor to the
+  // renderer. crbug.com/565348
+  if (input_event->type == WebInputEvent::TouchStart ||
+      input_event->type == WebInputEvent::TouchMove ||
+      input_event->type == WebInputEvent::TouchEnd) {
+    LogPassiveEventListenersUma(
+        processed, passive,
+        static_cast<const WebTouchEvent*>(input_event)->cancelable,
+        input_event->timeStampSeconds, latency_info);
+  } else if (input_event->type == WebInputEvent::MouseWheel) {
+    LogPassiveEventListenersUma(processed, passive, !passive,
+                                input_event->timeStampSeconds, latency_info);
   }
 
   // If this RawKeyDown event corresponds to a browser keyboard shortcut and
@@ -1205,12 +1268,14 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
   bool is_keyboard_shortcut =
       input_event->type == WebInputEvent::RawKeyDown &&
       static_cast<const WebKeyboardEvent*>(input_event)->isBrowserShortcut;
-  if (!processed && is_keyboard_shortcut)
+  if (processed == WebInputEventResult::NotHandled && is_keyboard_shortcut)
     suppress_next_char_events_ = true;
 
-  InputEventAckState ack_result = processed ?
-      INPUT_EVENT_ACK_STATE_CONSUMED : INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
-  if (!processed &&  input_event->type == WebInputEvent::TouchStart) {
+  InputEventAckState ack_result = processed == WebInputEventResult::NotHandled
+                                      ? INPUT_EVENT_ACK_STATE_NOT_CONSUMED
+                                      : INPUT_EVENT_ACK_STATE_CONSUMED;
+  if (processed == WebInputEventResult::NotHandled &&
+      input_event->type == WebInputEvent::TouchStart) {
     const WebTouchEvent& touch_event =
         *static_cast<const WebTouchEvent*>(input_event);
     // Hit-test for all the pressed touch points. If there is a touch-handler
@@ -1234,7 +1299,7 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
         static_cast<const WebMouseWheelEvent&>(*input_event),
         event_overscroll ? event_overscroll->latest_overscroll_delta
                          : gfx::Vector2dF(),
-        processed);
+        processed != WebInputEventResult::NotHandled);
   }
 
   bool frame_pending = compositor_ && compositor_->BeginMainFrameRequested();
@@ -1301,13 +1366,16 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
 #if defined(OS_ANDROID)
   // Allow the IME to be shown when the focus changes as a consequence
   // of a processed touch end event.
-  if (input_event->type == WebInputEvent::TouchEnd && processed)
+  if (input_event->type == WebInputEvent::TouchEnd &&
+      processed != WebInputEventResult::NotHandled) {
     UpdateTextInputState(SHOW_IME_IF_NEEDED, FROM_NON_IME);
+  }
 #elif defined(USE_AURA)
   // Show the virtual keyboard if enabled and a user gesture triggers a focus
   // change.
-  if (processed && (input_event->type == WebInputEvent::TouchEnd ||
-                    input_event->type == WebInputEvent::MouseUp)) {
+  if (processed != WebInputEventResult::NotHandled &&
+      (input_event->type == WebInputEvent::TouchEnd ||
+       input_event->type == WebInputEvent::MouseUp)) {
     UpdateTextInputState(SHOW_IME_IF_NEEDED, FROM_IME);
   }
 #endif
@@ -1321,8 +1389,9 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
 // virtual keyboard.
 #if !defined(OS_ANDROID)
   // Virtual keyboard is not supported, so react to focus change immediately.
-  if (processed && (input_event->type == WebInputEvent::TouchEnd ||
-                    input_event->type == WebInputEvent::MouseUp)) {
+  if (processed != WebInputEventResult::NotHandled &&
+      (input_event->type == WebInputEvent::TouchEnd ||
+       input_event->type == WebInputEvent::MouseUp)) {
     FocusChangeComplete();
   }
 #endif

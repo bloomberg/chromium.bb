@@ -10766,6 +10766,23 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Event.PassiveListeners" enum="EventResultType">
+  <owner>dtapuska@chromium.org</owner>
+  <summary>
+    The result of handling of MouseWheel, TouchStart, TouchMove, TouchEnd events
+    in the renderer.
+  </summary>
+</histogram>
+
+<histogram name="Event.PassiveListeners.Latency" units="microseconds">
+  <owner>dtapuska@chromium.org</owner>
+  <summary>
+    Time between when a cancelable event was generated and the event processed
+    yet no action was executed for the event. This histogram tracks the
+    potential benefit of using passive events listeners.
+  </summary>
+</histogram>
+
 <histogram name="Event.SingleTapType" enum="TapDelayType">
   <owner>rbyers@chromium.org</owner>
   <summary>
@@ -60457,6 +60474,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="32" label="Inner pseudo node matched."/>
   <int value="64" label="Inner node matched."/>
   <int value="128" label="Request type matched."/>
+</enum>
+
+<enum name="EventResultType" type="int">
+  <int value="0" label="Passive"/>
+  <int value="1" label="Uncancelable"/>
+  <int value="2" label="Cancelable and not canceled"/>
+  <int value="3" label="Cancelable and canceled"/>
 </enum>
 
 <enum name="EVWhitelistStatus" type="int">
