@@ -54,6 +54,11 @@ div:focus, a:focus { (force-pseudo-state.html:8 -> force-pseudo-state.html:8:1)
         border-left-color: green;
         border-left-style: solid;
         border-left-width: 1px;
+        border-image-source: initial;
+        border-image-slice: initial;
+        border-image-width: initial;
+        border-image-outset: initial;
+        border-image-repeat: initial;
 
 [expanded] 
 :focus { (user agent stylesheet)

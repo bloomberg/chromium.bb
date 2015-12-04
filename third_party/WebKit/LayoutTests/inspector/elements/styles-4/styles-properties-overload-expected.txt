@@ -39,6 +39,11 @@ div { (styles-properti…verload.html:6 -> styles-properties-overload.html:6:1)
         border-left-color: black;
         border-left-style: solid;
         border-left-width: 1px;
+        border-image-source: initial;
+        border-image-slice: initial;
+        border-image-width: initial;
+        border-image-outset: initial;
+        border-image-repeat: initial;
 
 [expanded] 
 div { (user agent stylesheet)

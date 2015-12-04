@@ -37,6 +37,11 @@ F      border-top-width: 1px
        border-left-color: black
        border-left-style: solid
        border-left-width: 1px
+       border-image-source: initial
+       border-image-slice: initial
+       border-image-width: initial
+       border-image-outset: initial
+       border-image-repeat: initial
    padding:v10px 10px 10px 10px
 F      padding-top: 10px
        padding-right: 10px
