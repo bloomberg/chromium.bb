@@ -94,6 +94,10 @@ void LayerTreeHostCommonTestBase::
       root_layer->layer_tree_host()->inner_viewport_scroll_layer();
   Layer* outer_viewport_scroll_layer =
       root_layer->layer_tree_host()->outer_viewport_scroll_layer();
+  const Layer* overscroll_elasticity_layer =
+      root_layer->layer_tree_host()->overscroll_elasticity_layer();
+  gfx::Vector2dF elastic_overscroll =
+      root_layer->layer_tree_host()->elastic_overscroll();
   float page_scale_factor = 1.f;
   float device_scale_factor = 1.f;
   gfx::Size device_viewport_size =
@@ -101,7 +105,8 @@ void LayerTreeHostCommonTestBase::
                 root_layer->bounds().height() * device_scale_factor);
   BuildPropertyTreesAndComputeVisibleRects(
       root_layer, page_scale_layer, inner_viewport_scroll_layer,
-      outer_viewport_scroll_layer, page_scale_factor, device_scale_factor,
+      outer_viewport_scroll_layer, overscroll_elasticity_layer,
+      elastic_overscroll, page_scale_factor, device_scale_factor,
       gfx::Rect(device_viewport_size), identity_transform,
       can_render_to_separate_surface,
       root_layer->layer_tree_host()->property_trees(), &update_layer_list_);
@@ -119,6 +124,11 @@ void LayerTreeHostCommonTestBase::
       root_layer->layer_tree_impl()->InnerViewportScrollLayer();
   LayerImpl* outer_viewport_scroll_layer =
       root_layer->layer_tree_impl()->OuterViewportScrollLayer();
+  LayerImpl* overscroll_elasticity_layer =
+      root_layer->layer_tree_impl()->OverscrollElasticityLayer();
+  gfx::Vector2dF elastic_overscroll =
+      root_layer->layer_tree_impl()->elastic_overscroll()->Current(
+          root_layer->layer_tree_impl()->IsActiveTree());
   float page_scale_factor = 1.f;
   float device_scale_factor = 1.f;
   gfx::Size device_viewport_size =
@@ -127,7 +137,8 @@ void LayerTreeHostCommonTestBase::
   std::vector<LayerImpl*> update_layer_list;
   BuildPropertyTreesAndComputeVisibleRects(
       root_layer, page_scale_layer, inner_viewport_scroll_layer,
-      outer_viewport_scroll_layer, page_scale_factor, device_scale_factor,
+      outer_viewport_scroll_layer, overscroll_elasticity_layer,
+      elastic_overscroll, page_scale_factor, device_scale_factor,
       gfx::Rect(device_viewport_size), identity_transform,
       can_render_to_separate_surface,
       root_layer->layer_tree_impl()->property_trees(), &update_layer_list);

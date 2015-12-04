@@ -13,6 +13,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "cc/animation/timing_function.h"
 #include "cc/debug/frame_rate_counter.h"
+#include "cc/input/scroll_elasticity_helper.h"
 #include "cc/layers/content_layer_client.h"
 #include "cc/layers/io_surface_layer.h"
 #include "cc/layers/layer_impl.h"
@@ -3845,6 +3846,105 @@ class LayerTreeHostTestUpdateLayerInEmptyViewport : public LayerTreeHostTest {
 };
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestUpdateLayerInEmptyViewport);
+
+class LayerTreeHostTestElasticOverscroll : public LayerTreeHostTest {
+ public:
+  LayerTreeHostTestElasticOverscroll()
+      : scroll_elasticity_helper_(nullptr), num_draws_(0) {}
+
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    settings->enable_elastic_overscroll = true;
+  }
+
+  void SetupTree() override {
+    root_layer_ = Layer::Create(layer_settings());
+    root_layer_->SetBounds(gfx::Size(10, 10));
+
+    scoped_refptr<Layer> inner_viewport_container_layer =
+        Layer::Create(layer_settings());
+    inner_viewport_container_layer->SetBounds(gfx::Size(10, 10));
+    scoped_refptr<Layer> overscroll_elasticity_layer =
+        Layer::Create(layer_settings());
+    scoped_refptr<Layer> page_scale_layer = Layer::Create(layer_settings());
+    scoped_refptr<Layer> inner_viewport_scroll_layer =
+        Layer::Create(layer_settings());
+    inner_viewport_scroll_layer->SetScrollClipLayerId(
+        inner_viewport_container_layer->id());
+    inner_viewport_scroll_layer->SetIsContainerForFixedPositionLayers(true);
+
+    root_layer_->AddChild(inner_viewport_container_layer);
+    inner_viewport_container_layer->AddChild(overscroll_elasticity_layer);
+    overscroll_elasticity_layer->AddChild(page_scale_layer);
+    page_scale_layer->AddChild(inner_viewport_scroll_layer);
+
+    scoped_refptr<Layer> content_layer =
+        FakePictureLayer::Create(layer_settings(), &client_);
+    content_layer->SetBounds(gfx::Size(10, 10));
+    inner_viewport_scroll_layer->AddChild(content_layer);
+
+    layer_tree_host()->SetRootLayer(root_layer_);
+    layer_tree_host()->RegisterViewportLayers(
+        overscroll_elasticity_layer, page_scale_layer,
+        inner_viewport_scroll_layer, nullptr);
+    LayerTreeHostTest::SetupTree();
+    client_.set_bounds(content_layer->bounds());
+  }
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
+    if (host_impl->sync_tree()->source_frame_number() == 0) {
+      scroll_elasticity_helper_ = host_impl->CreateScrollElasticityHelper();
+    }
+  }
+
+  void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
+    num_draws_++;
+    LayerImpl* content_layer_impl = host_impl->active_tree()
+                                        ->InnerViewportScrollLayer()
+                                        ->children()[0]
+                                        .get();
+    gfx::Transform expected_draw_transform;
+    switch (num_draws_) {
+      case 1:
+        // Initially, there's no overscroll.
+        EXPECT_EQ(expected_draw_transform, content_layer_impl->DrawTransform());
+
+        // Begin overscrolling. This should be reflected in the draw transform
+        // the next time we draw.
+        scroll_elasticity_helper_->SetStretchAmount(gfx::Vector2dF(5.f, 6.f));
+        break;
+      case 2:
+        expected_draw_transform.Translate(-5.0, -6.0);
+        EXPECT_EQ(expected_draw_transform, content_layer_impl->DrawTransform());
+
+        scroll_elasticity_helper_->SetStretchAmount(gfx::Vector2dF(3.f, 2.f));
+        break;
+      case 3:
+        expected_draw_transform.Translate(-3.0, -2.0);
+        EXPECT_EQ(expected_draw_transform, content_layer_impl->DrawTransform());
+
+        scroll_elasticity_helper_->SetStretchAmount(gfx::Vector2dF());
+        break;
+      case 4:
+        EXPECT_EQ(expected_draw_transform, content_layer_impl->DrawTransform());
+        EndTest();
+        break;
+      default:
+        NOTREACHED();
+    }
+  }
+
+  void AfterTest() override {}
+
+ private:
+  FakeContentLayerClient client_;
+  scoped_refptr<Layer> root_layer_;
+  ScrollElasticityHelper* scroll_elasticity_helper_;
+  int num_draws_;
+};
+
+MULTI_THREAD_TEST_F(LayerTreeHostTestElasticOverscroll);
 
 class LayerTreeHostTestSetMemoryPolicyOnLostOutputSurface
     : public LayerTreeHostTest {

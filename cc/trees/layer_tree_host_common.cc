@@ -2766,7 +2766,9 @@ void CalculateDrawPropertiesAndVerify(
         BuildPropertyTreesAndComputeVisibleRects(
             inputs->root_layer, inputs->page_scale_layer,
             inputs->inner_viewport_scroll_layer,
-            inputs->outer_viewport_scroll_layer, inputs->page_scale_factor,
+            inputs->outer_viewport_scroll_layer,
+            inputs->elastic_overscroll_application_layer,
+            inputs->elastic_overscroll, inputs->page_scale_factor,
             inputs->device_scale_factor,
             gfx::Rect(inputs->device_viewport_size), inputs->device_transform,
             inputs->can_render_to_separate_surface, inputs->property_trees,
@@ -2791,14 +2793,18 @@ void CalculateDrawPropertiesAndVerify(
         TRACE_EVENT0(
             TRACE_DISABLED_BY_DEFAULT("cc.debug.cdp-perf"),
             "LayerTreeHostCommon::ComputeJustVisibleRectsWithPropertyTrees");
-        // Since page scale is a SyncedProperty, changes to page scale on the
-        // active tree immediately affect the pending tree, so instead of
-        // trying to update property trees whenever page scale changes, we
-        // update their page scale before using them.
+        // Since page scale and elastic overscroll are SyncedProperties, changes
+        // on the active tree immediately affect the pending tree, so instead of
+        // trying to update property trees whenever these values change, we
+        // update property trees before using them.
         UpdatePageScaleFactorInPropertyTrees(
             inputs->property_trees, inputs->page_scale_layer,
             inputs->page_scale_factor, inputs->device_scale_factor,
             inputs->device_transform);
+        UpdateElasticOverscrollInPropertyTrees(
+            inputs->property_trees,
+            inputs->elastic_overscroll_application_layer,
+            inputs->elastic_overscroll);
         // Similarly, the device viewport and device transform are shared
         // by both trees.
         inputs->property_trees->clip_tree.SetViewportClip(
@@ -2866,9 +2872,12 @@ void LayerTreeHostCommon::CalculateDrawProperties(
                        gfx::Transform(), false);
   PropertyTrees* property_trees =
       inputs->root_layer->layer_tree_host()->property_trees();
+  Layer* overscroll_elasticity_layer = nullptr;
+  gfx::Vector2dF elastic_overscroll;
   BuildPropertyTreesAndComputeVisibleRects(
       inputs->root_layer, inputs->page_scale_layer,
       inputs->inner_viewport_scroll_layer, inputs->outer_viewport_scroll_layer,
+      overscroll_elasticity_layer, elastic_overscroll,
       inputs->page_scale_factor, inputs->device_scale_factor,
       gfx::Rect(inputs->device_viewport_size), inputs->device_transform,
       can_render_to_separate_surface, property_trees, &update_layer_list);

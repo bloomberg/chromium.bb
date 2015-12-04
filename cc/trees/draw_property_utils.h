@@ -11,6 +11,7 @@
 namespace gfx {
 class Rect;
 class Transform;
+class Vector2dF;
 }  // namespace gfx
 
 namespace cc {
@@ -46,6 +47,8 @@ void CC_EXPORT BuildPropertyTreesAndComputeVisibleRects(
     const Layer* page_scale_layer,
     const Layer* inner_viewport_scroll_layer,
     const Layer* outer_viewport_scroll_layer,
+    const Layer* overscroll_elasticity_layer,
+    const gfx::Vector2dF& elastic_overscroll,
     float page_scale_factor,
     float device_scale_factor,
     const gfx::Rect& viewport,
@@ -59,6 +62,8 @@ void CC_EXPORT BuildPropertyTreesAndComputeVisibleRects(
     const LayerImpl* page_scale_layer,
     const LayerImpl* inner_viewport_scroll_layer,
     const LayerImpl* outer_viewport_scroll_layer,
+    const LayerImpl* overscroll_elasticity_layer,
+    const gfx::Vector2dF& elastic_overscroll,
     float page_scale_factor,
     float device_scale_factor,
     const gfx::Rect& viewport,
@@ -123,6 +128,17 @@ UpdatePageScaleFactorInPropertyTrees(PropertyTrees* property_trees,
                                      float page_scale_factor,
                                      float device_scale_factor,
                                      const gfx::Transform device_transform);
+
+void CC_EXPORT UpdateElasticOverscrollInPropertyTrees(
+    PropertyTrees* property_trees,
+    const LayerImpl* overscroll_elasticity_layer,
+    const gfx::Vector2dF& elastic_overscroll);
+
+void CC_EXPORT UpdateElasticOverscrollInPropertyTrees(
+    PropertyTrees* property_trees,
+    const Layer* overscroll_elasticity_layer,
+    const gfx::Vector2dF& elastic_overscroll);
+
 }  // namespace cc
 
 #endif  // CC_TREES_DRAW_PROPERTY_UTILS_H_

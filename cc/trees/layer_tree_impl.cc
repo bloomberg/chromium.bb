@@ -789,9 +789,11 @@ void LayerTreeImpl::BuildPropertyTreesForTesting() {
   LayerTreeHostCommon::PreCalculateMetaInformationForTesting(root_layer_.get());
   PropertyTreeBuilder::BuildPropertyTrees(
       root_layer_.get(), PageScaleLayer(), InnerViewportScrollLayer(),
-      OuterViewportScrollLayer(), current_page_scale_factor(),
-      device_scale_factor(), gfx::Rect(DrawViewportSize()),
-      layer_tree_host_impl_->DrawTransform(), &property_trees_);
+      OuterViewportScrollLayer(), OverscrollElasticityLayer(),
+      elastic_overscroll()->Current(IsActiveTree()),
+      current_page_scale_factor(), device_scale_factor(),
+      gfx::Rect(DrawViewportSize()), layer_tree_host_impl_->DrawTransform(),
+      &property_trees_);
 }
 
 void LayerTreeImpl::IncrementRenderSurfaceListIdForTesting() {

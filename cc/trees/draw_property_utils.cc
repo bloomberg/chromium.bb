@@ -634,6 +634,8 @@ void BuildPropertyTreesAndComputeVisibleRects(
     const Layer* page_scale_layer,
     const Layer* inner_viewport_scroll_layer,
     const Layer* outer_viewport_scroll_layer,
+    const Layer* overscroll_elasticity_layer,
+    const gfx::Vector2dF& elastic_overscroll,
     float page_scale_factor,
     float device_scale_factor,
     const gfx::Rect& viewport,
@@ -643,8 +645,9 @@ void BuildPropertyTreesAndComputeVisibleRects(
     LayerList* update_layer_list) {
   PropertyTreeBuilder::BuildPropertyTrees(
       root_layer, page_scale_layer, inner_viewport_scroll_layer,
-      outer_viewport_scroll_layer, page_scale_factor, device_scale_factor,
-      viewport, device_transform, property_trees);
+      outer_viewport_scroll_layer, overscroll_elasticity_layer,
+      elastic_overscroll, page_scale_factor, device_scale_factor, viewport,
+      device_transform, property_trees);
   ComputeVisibleRectsUsingPropertyTrees(root_layer, property_trees,
                                         can_render_to_separate_surface,
                                         update_layer_list);
@@ -655,6 +658,8 @@ void BuildPropertyTreesAndComputeVisibleRects(
     const LayerImpl* page_scale_layer,
     const LayerImpl* inner_viewport_scroll_layer,
     const LayerImpl* outer_viewport_scroll_layer,
+    const LayerImpl* overscroll_elasticity_layer,
+    const gfx::Vector2dF& elastic_overscroll,
     float page_scale_factor,
     float device_scale_factor,
     const gfx::Rect& viewport,
@@ -664,8 +669,9 @@ void BuildPropertyTreesAndComputeVisibleRects(
     LayerImplList* visible_layer_list) {
   PropertyTreeBuilder::BuildPropertyTrees(
       root_layer, page_scale_layer, inner_viewport_scroll_layer,
-      outer_viewport_scroll_layer, page_scale_factor, device_scale_factor,
-      viewport, device_transform, property_trees);
+      outer_viewport_scroll_layer, overscroll_elasticity_layer,
+      elastic_overscroll, page_scale_factor, device_scale_factor, viewport,
+      device_transform, property_trees);
   ComputeVisibleRectsUsingPropertyTrees(root_layer, property_trees,
                                         can_render_to_separate_surface,
                                         visible_layer_list);
@@ -1075,6 +1081,42 @@ void UpdatePageScaleFactorInPropertyTrees(
   UpdatePageScaleFactorInPropertyTreesInternal(
       property_trees, page_scale_layer, page_scale_factor, device_scale_factor,
       device_transform);
+}
+
+template <typename LayerType>
+static void UpdateElasticOverscrollInPropertyTreesInternal(
+    PropertyTrees* property_trees,
+    const LayerType* overscroll_elasticity_layer,
+    const gfx::Vector2dF& elastic_overscroll) {
+  if (!overscroll_elasticity_layer) {
+    DCHECK(elastic_overscroll.IsZero());
+    return;
+  }
+
+  TransformNode* node = property_trees->transform_tree.Node(
+      overscroll_elasticity_layer->transform_tree_index());
+  if (node->data.scroll_offset == gfx::ScrollOffset(elastic_overscroll))
+    return;
+
+  node->data.scroll_offset = gfx::ScrollOffset(elastic_overscroll);
+  node->data.needs_local_transform_update = true;
+  property_trees->transform_tree.set_needs_update(true);
+}
+
+void UpdateElasticOverscrollInPropertyTrees(
+    PropertyTrees* property_trees,
+    const LayerImpl* overscroll_elasticity_layer,
+    const gfx::Vector2dF& elastic_overscroll) {
+  UpdateElasticOverscrollInPropertyTreesInternal(
+      property_trees, overscroll_elasticity_layer, elastic_overscroll);
+}
+
+void UpdateElasticOverscrollInPropertyTrees(
+    PropertyTrees* property_trees,
+    const Layer* overscroll_elasticity_layer,
+    const gfx::Vector2dF& elastic_overscroll) {
+  UpdateElasticOverscrollInPropertyTreesInternal(
+      property_trees, overscroll_elasticity_layer, elastic_overscroll);
 }
 
 }  // namespace cc

@@ -37,6 +37,8 @@ struct DataForRecursion {
   const LayerType* page_scale_layer;
   const LayerType* inner_viewport_scroll_layer;
   const LayerType* outer_viewport_scroll_layer;
+  const LayerType* overscroll_elasticity_layer;
+  gfx::Vector2dF elastic_overscroll;
   float page_scale_factor;
   bool in_subtree_of_page_scale_layer;
   bool affected_by_inner_viewport_bounds_delta;
@@ -213,6 +215,8 @@ bool AddTransformNodeIfNeeded(
     DataForRecursion<LayerType>* data_for_children) {
   const bool is_root = !layer->parent();
   const bool is_page_scale_layer = layer == data_from_ancestor.page_scale_layer;
+  const bool is_overscroll_elasticity_layer =
+      layer == data_from_ancestor.overscroll_elasticity_layer;
   const bool is_scrollable = layer->scrollable();
   const bool is_fixed = layer->position_constraint().is_fixed_position();
 
@@ -233,7 +237,7 @@ bool AddTransformNodeIfNeeded(
 
   bool requires_node = is_root || is_scrollable || has_significant_transform ||
                        has_any_transform_animation || has_surface || is_fixed ||
-                       is_page_scale_layer;
+                       is_page_scale_layer || is_overscroll_elasticity_layer;
 
   LayerType* transform_parent = GetTransformParent(data_from_ancestor, layer);
   DCHECK(is_root || transform_parent);
@@ -365,8 +369,13 @@ bool AddTransformNodeIfNeeded(
                                            layer->transform_origin());
   }
 
-  if (!layer->scroll_parent())
+  if (is_overscroll_elasticity_layer) {
+    DCHECK(!is_scrollable);
+    node->data.scroll_offset =
+        gfx::ScrollOffset(data_from_ancestor.elastic_overscroll);
+  } else if (!layer->scroll_parent()) {
     node->data.scroll_offset = layer->CurrentScrollOffset();
+  }
 
   if (is_fixed) {
     if (data_from_ancestor.affected_by_inner_viewport_bounds_delta) {
@@ -526,6 +535,8 @@ void BuildPropertyTreesTopLevelInternal(
     const LayerType* page_scale_layer,
     const LayerType* inner_viewport_scroll_layer,
     const LayerType* outer_viewport_scroll_layer,
+    const LayerType* overscroll_elasticity_layer,
+    const gfx::Vector2dF& elastic_overscroll,
     float page_scale_factor,
     float device_scale_factor,
     const gfx::Rect& viewport,
@@ -535,6 +546,8 @@ void BuildPropertyTreesTopLevelInternal(
     UpdatePageScaleFactorInPropertyTrees(property_trees, page_scale_layer,
                                          page_scale_factor, device_scale_factor,
                                          device_transform);
+    UpdateElasticOverscrollInPropertyTrees(
+        property_trees, overscroll_elasticity_layer, elastic_overscroll);
     property_trees->clip_tree.SetViewportClip(gfx::RectF(viewport));
     property_trees->transform_tree.SetDeviceTransform(device_transform,
                                                       root_layer->position());
@@ -555,6 +568,8 @@ void BuildPropertyTreesTopLevelInternal(
   data_for_recursion.page_scale_layer = page_scale_layer;
   data_for_recursion.inner_viewport_scroll_layer = inner_viewport_scroll_layer;
   data_for_recursion.outer_viewport_scroll_layer = outer_viewport_scroll_layer;
+  data_for_recursion.overscroll_elasticity_layer = overscroll_elasticity_layer;
+  data_for_recursion.elastic_overscroll = elastic_overscroll;
   data_for_recursion.page_scale_factor = page_scale_factor;
   data_for_recursion.in_subtree_of_page_scale_layer = false;
   data_for_recursion.affected_by_inner_viewport_bounds_delta = false;
@@ -593,6 +608,8 @@ void PropertyTreeBuilder::BuildPropertyTrees(
     const Layer* page_scale_layer,
     const Layer* inner_viewport_scroll_layer,
     const Layer* outer_viewport_scroll_layer,
+    const Layer* overscroll_elasticity_layer,
+    const gfx::Vector2dF& elastic_overscroll,
     float page_scale_factor,
     float device_scale_factor,
     const gfx::Rect& viewport,
@@ -600,8 +617,9 @@ void PropertyTreeBuilder::BuildPropertyTrees(
     PropertyTrees* property_trees) {
   BuildPropertyTreesTopLevelInternal(
       root_layer, page_scale_layer, inner_viewport_scroll_layer,
-      outer_viewport_scroll_layer, page_scale_factor, device_scale_factor,
-      viewport, device_transform, property_trees);
+      outer_viewport_scroll_layer, overscroll_elasticity_layer,
+      elastic_overscroll, page_scale_factor, device_scale_factor, viewport,
+      device_transform, property_trees);
 }
 
 void PropertyTreeBuilder::BuildPropertyTrees(
@@ -609,6 +627,8 @@ void PropertyTreeBuilder::BuildPropertyTrees(
     const LayerImpl* page_scale_layer,
     const LayerImpl* inner_viewport_scroll_layer,
     const LayerImpl* outer_viewport_scroll_layer,
+    const LayerImpl* overscroll_elasticity_layer,
+    const gfx::Vector2dF& elastic_overscroll,
     float page_scale_factor,
     float device_scale_factor,
     const gfx::Rect& viewport,
@@ -616,8 +636,9 @@ void PropertyTreeBuilder::BuildPropertyTrees(
     PropertyTrees* property_trees) {
   BuildPropertyTreesTopLevelInternal(
       root_layer, page_scale_layer, inner_viewport_scroll_layer,
-      outer_viewport_scroll_layer, page_scale_factor, device_scale_factor,
-      viewport, device_transform, property_trees);
+      outer_viewport_scroll_layer, overscroll_elasticity_layer,
+      elastic_overscroll, page_scale_factor, device_scale_factor, viewport,
+      device_transform, property_trees);
 }
 
 }  // namespace cc
