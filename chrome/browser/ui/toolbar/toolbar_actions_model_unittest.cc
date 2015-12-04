@@ -53,7 +53,8 @@ class ToolbarActionsModelTestObserver : public ToolbarActionsModel::Observer {
 
  private:
   // ToolbarActionsModel::Observer:
-  void OnToolbarActionAdded(const std::string& id, int index) override {
+  void OnToolbarActionAdded(const ToolbarActionsModel::ToolbarItem& item,
+                            int index) override {
     ++inserted_count_;
   }
 
@@ -1334,11 +1335,24 @@ TEST_F(ToolbarActionsModelUnitTest,
   EXPECT_EQ(1u, num_toolbar_items());
   EXPECT_EQ(component_action_id(), GetActionIdAtIndex(0u));
 
+  // Just MCA is visible.  Remove MCA.
+  toolbar_model()->RemoveComponentAction(component_action_id());
+  EXPECT_EQ(4u, observer()->removed_count());
+  EXPECT_EQ(0u, num_toolbar_items());
+
+  // Add MCA again.
+  toolbar_model()->AddComponentAction(component_action_id());
+  EXPECT_EQ(1u, num_toolbar_items());
+  EXPECT_EQ(4u, observer()->inserted_count());
+  // Newly added component actions get put at the end of the visible area.
+  EXPECT_EQ(component_action_id(), GetActionIdAtIndex(0u));
+  EXPECT_EQ(1u, toolbar_model()->visible_icon_count());
+  EXPECT_TRUE(toolbar_model()->all_icons_visible());
+
   // Load extension C again.
   ASSERT_TRUE(AddExtension(browser_action_c()));
-  EXPECT_EQ(4u, observer()->inserted_count());
+  EXPECT_EQ(5u, observer()->inserted_count());
   EXPECT_EQ(2u, num_toolbar_items());
-  // Make sure it gets its old spot in the list (at the beginning).
-  EXPECT_EQ(browser_action_c()->id(), GetActionIdAtIndex(0u));
-  EXPECT_EQ(component_action_id(), GetActionIdAtIndex(1u));
+  EXPECT_EQ(component_action_id(), GetActionIdAtIndex(0u));
+  EXPECT_EQ(browser_action_c()->id(), GetActionIdAtIndex(1u));
 }

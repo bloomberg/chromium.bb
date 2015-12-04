@@ -37,7 +37,7 @@ ComponentToolbarActionsFactory* ComponentToolbarActionsFactory::GetInstance() {
   return testing_factory_ ? testing_factory_ : &lazy_factory.Get();
 }
 
-std::set<std::string> ComponentToolbarActionsFactory::GetComponentIds(
+std::set<std::string> ComponentToolbarActionsFactory::GetInitialComponentIds(
     Profile* profile) {
   std::set<std::string> component_ids;
 
@@ -59,7 +59,7 @@ ComponentToolbarActionsFactory::GetComponentToolbarActionForId(
   // This is currently behind the extension-action-redesign flag, as it is
   // designed for the new toolbar.
   DCHECK(extensions::FeatureSwitch::extension_action_redesign()->IsEnabled());
-  DCHECK(GetComponentIds(browser->profile()).count(id));
+  DCHECK(GetInitialComponentIds(browser->profile()).count(id));
 
   // Add component toolbar actions here.
   // This current design means that the ComponentToolbarActionsFactory is aware

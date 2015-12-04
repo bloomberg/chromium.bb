@@ -29,7 +29,7 @@ class ComponentToolbarActionsFactory {
   static ComponentToolbarActionsFactory* GetInstance();
 
   // Returns a vector of IDs of the component actions.
-  virtual std::set<std::string> GetComponentIds(Profile* profile);
+  virtual std::set<std::string> GetInitialComponentIds(Profile* profile);
 
   // Returns a collection of controllers for component actions. Declared
   // virtual for testing.

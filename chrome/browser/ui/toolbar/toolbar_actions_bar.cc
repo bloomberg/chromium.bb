@@ -9,7 +9,6 @@
 #include "base/profiler/scoped_tracker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
-#include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_message_bubble_controller.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -26,7 +25,6 @@
 #include "chrome/common/pref_names.h"
 #include "components/crx_file/id_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/runtime_data.h"
 #include "extensions/common/extension.h"
@@ -597,30 +595,15 @@ void ToolbarActionsBar::MaybeShowExtensionBubble(
   }
 }
 
-void ToolbarActionsBar::OnToolbarActionAdded(const std::string& action_id,
-                                             int index) {
-  DCHECK(GetActionForId(action_id) == nullptr)
-      << "Asked to add a toolbar action view for an extension that already "
+void ToolbarActionsBar::OnToolbarActionAdded(
+    const ToolbarActionsModel::ToolbarItem& item,
+    int index) {
+  DCHECK(GetActionForId(item.id) == nullptr)
+      << "Asked to add a toolbar action view for an action that already "
          "exists";
 
-  // TODO(devlin): This is a minor layering violation and the model should pass
-  // in an action directly.
-  const extensions::Extension* extension =
-      extensions::ExtensionRegistry::Get(browser_->profile())
-          ->enabled_extensions()
-          .GetByID(action_id);
-  // Only extensions should be added after initialization.
-  DCHECK(extension);
-
-  toolbar_actions_.insert(
-      toolbar_actions_.begin() + index,
-      new ExtensionActionViewController(
-          extension,
-          browser_,
-          extensions::ExtensionActionManager::Get(browser_->profile())->
-              GetExtensionAction(*extension),
-          this));
-
+  toolbar_actions_.insert(toolbar_actions_.begin() + index,
+                          model_->CreateActionForItem(browser_, this, item));
   delegate_->AddViewForAction(toolbar_actions_[index], index);
 
   // If we are still initializing the container, don't bother animating.
@@ -628,7 +611,7 @@ void ToolbarActionsBar::OnToolbarActionAdded(const std::string& action_id,
     return;
 
   // We may need to resize (e.g. to show the new icon, or the chevron). We don't
-  // need to check if the extension is upgrading here, because ResizeDelegate()
+  // need to check if an extension is upgrading here, because ResizeDelegate()
   // checks to see if the container is already the proper size, and because
   // if the action is newly incognito enabled, even though it's a reload, it's
   // a new extension to this toolbar.

@@ -60,7 +60,7 @@ class ToolbarActionsModel : public extensions::ExtensionActionAPI::Observer,
     ToolbarItem(const std::string& action_id, ActionType action_type)
         : id(action_id), type(action_type) {}
 
-    bool operator==(const ToolbarItem& other) { return other.id == id; }
+    bool operator==(const ToolbarItem& other) const { return other.id == id; }
 
     std::string id;
     ActionType type;
@@ -76,10 +76,9 @@ class ToolbarActionsModel : public extensions::ExtensionActionAPI::Observer,
   // delegate.
   class Observer {
    public:
-    // Signals that an action with |id| has been added to the toolbar at
-    // |index|. This will *only* be called after the toolbar model has been
-    // initialized.
-    virtual void OnToolbarActionAdded(const std::string& id, int index) = 0;
+    // Signals that |item| has been added to the toolbar at |index|. This will
+    // *only* be called after the toolbar model has been initialized.
+    virtual void OnToolbarActionAdded(const ToolbarItem& item, int index) = 0;
 
     // Signals that the given action with |id| has been removed from the
     // toolbar.
@@ -183,6 +182,11 @@ class ToolbarActionsModel : public extensions::ExtensionActionAPI::Observer,
   // showing new icons as a result.
   bool RedesignIsShowingNewIcons() const;
 
+  // Adds or removes the component action labeled by |action_id| from the
+  // toolbar model.  The caller must not add the same action twice.
+  void AddComponentAction(const std::string& action_id);
+  void RemoveComponentAction(const std::string& action_id);
+
  private:
   // Callback when actions are ready.
   void OnReady();
@@ -207,16 +211,20 @@ class ToolbarActionsModel : public extensions::ExtensionActionAPI::Observer,
                                           bool is_now_visible) override;
 
   // To be called after the extension service is ready; gets loaded extensions
-  // from the ExtensionRegistry and their saved order from the pref service
-  // and constructs |toolbar_items_| from these data. IncognitoPopulate()
-  // takes the shortcut - looking at the regular model's content and modifying
-  // it.
+  // from the ExtensionRegistry, their saved order from the pref service, and
+  // the initial set of component actions from the
+  // ComponentToolbarActionsFactory, and constructs |toolbar_items_| from these
+  // data. IncognitoPopulate() takes the shortcut - looking at the regular
+  // model's content and modifying it.
   void InitializeActionList();
   void Populate();
   void IncognitoPopulate();
 
   // Save the model to prefs.
   void UpdatePrefs();
+
+  // Removes any preference for |item| and saves the model to prefs.
+  void RemovePref(const ToolbarItem& item);
 
   // Finds the last known visible position of the icon for |action|. The value
   // returned is a zero-based index into the vector of visible items.
@@ -228,6 +236,21 @@ class ToolbarActionsModel : public extensions::ExtensionActionAPI::Observer,
   // Adds or removes the given |extension| from the toolbar model.
   void AddExtension(const extensions::Extension* extension);
   void RemoveExtension(const extensions::Extension* extension);
+
+  // Returns true if |item| is in the toolbar model.
+  bool HasItem(const ToolbarItem& item) const;
+
+  // Adds |item| to the toolbar.  If the item has an existing preference for
+  // toolbar position, that will be used to determine its location.  If
+  // |is_component| is true, the item will be given a default postion of 0,
+  // otherwise the default is at the end of the visible items. If the toolbar is
+  // in highlighting mode, the item will not be visible until highlighting mode
+  // is exited.
+  void AddItem(const ToolbarItem& item, bool is_component);
+
+  // Removes |item| from the toolbar.  If the toolbar is in highlighting mode,
+  // the item is also removed from the highlighted list (if present).
+  void RemoveItem(const ToolbarItem& item);
 
   // Looks up and returns the extension with the given |id| in the set of
   // enabled extensions.

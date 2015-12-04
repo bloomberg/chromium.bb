@@ -21,8 +21,8 @@ MockComponentToolbarActionsFactory::~MockComponentToolbarActionsFactory() {
   ComponentToolbarActionsFactory::SetTestingFactory(nullptr);
 }
 
-std::set<std::string> MockComponentToolbarActionsFactory::GetComponentIds(
-    Profile* profile) {
+std::set<std::string>
+MockComponentToolbarActionsFactory::GetInitialComponentIds(Profile* profile) {
   std::set<std::string> ids;
   ids.insert(kActionIdForTesting);
   return ids;

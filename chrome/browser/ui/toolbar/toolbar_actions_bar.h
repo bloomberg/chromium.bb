@@ -244,7 +244,8 @@ class ToolbarActionsBar : public ToolbarActionsModel::Observer {
   using ToolbarActions = ScopedVector<ToolbarActionViewController>;
 
   // ToolbarActionsModel::Observer:
-  void OnToolbarActionAdded(const std::string& action_id, int index) override;
+  void OnToolbarActionAdded(const ToolbarActionsModel::ToolbarItem& item,
+                            int index) override;
   void OnToolbarActionRemoved(const std::string& action_id) override;
   void OnToolbarActionMoved(const std::string& action_id, int index) override;
   void OnToolbarActionUpdated(const std::string& action_id) override;

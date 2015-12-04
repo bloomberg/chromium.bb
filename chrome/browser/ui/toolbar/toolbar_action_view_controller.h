@@ -24,7 +24,7 @@ class ToolbarActionViewDelegate;
 
 // The basic controller class for an action that is shown on the toolbar -
 // an extension action (like browser actions) or a component action (like
-// chromecast).
+// Media Router).
 class ToolbarActionViewController {
  public:
   virtual ~ToolbarActionViewController() {}

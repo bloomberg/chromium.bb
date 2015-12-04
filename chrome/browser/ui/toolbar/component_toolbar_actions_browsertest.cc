@@ -54,7 +54,7 @@ IN_PROC_BROWSER_TEST_F(ComponentToolbarActionsBrowserTest,
 
   // There should only have been one created component action.
   EXPECT_EQ(1u, ComponentToolbarActionsFactory::GetInstance()
-                    ->GetComponentIds(browser()->profile())
+                    ->GetInitialComponentIds(browser()->profile())
                     .size());
 
   const std::vector<ToolbarActionViewController*>& actions =
