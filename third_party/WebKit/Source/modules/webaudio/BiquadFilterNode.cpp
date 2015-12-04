@@ -110,8 +110,7 @@ bool BiquadFilterNode::setType(unsigned type)
 
 void BiquadFilterNode::getFrequencyResponse(const DOMFloat32Array* frequencyHz, DOMFloat32Array* magResponse, DOMFloat32Array* phaseResponse)
 {
-    if (!frequencyHz || !magResponse || !phaseResponse)
-        return;
+    ASSERT(frequencyHz && magResponse && phaseResponse);
 
     int n = std::min(frequencyHz->length(), std::min(magResponse->length(), phaseResponse->length()));
     if (n)

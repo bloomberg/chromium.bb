@@ -43,7 +43,7 @@ enum OscillatorType {
     [RaisesException] void start(optional double when);
     [RaisesException] void stop(optional double when);
 
-    [LegacyInterfaceTypeChecking] void setPeriodicWave(PeriodicWave periodicWave);
+    void setPeriodicWave(PeriodicWave periodicWave);
 
     attribute EventHandler onended;
 };

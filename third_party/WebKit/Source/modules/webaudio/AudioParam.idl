@@ -43,7 +43,7 @@
 
     // Sets an array of arbitrary parameter values starting at time for the given duration.
     // The number of values will be scaled to fit into the desired duration.
-    [RaisesException, MeasureAs=AudioParamSetValueCurveAtTime, LegacyInterfaceTypeChecking] AudioParam setValueCurveAtTime(Float32Array values, double time, double duration);
+    [RaisesException, MeasureAs=AudioParamSetValueCurveAtTime] AudioParam setValueCurveAtTime(Float32Array values, double time, double duration);
 
     // Cancels all scheduled parameter changes with times greater than or equal to startTime.
     [RaisesException, MeasureAs=AudioParamCancelScheduledValues] AudioParam cancelScheduledValues(double startTime);

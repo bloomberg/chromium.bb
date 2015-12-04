@@ -11,7 +11,7 @@
 <div id="console"></div>
 
 <script>
-description("Tests that ConvolverNode impulse response buffer can be set to 0.");
+description("Tests that ConvolverNode impulse response buffer can be set to null.");
 
 function runTest()
 {
@@ -25,8 +25,8 @@ function runTest()
     var context = new AudioContext();
     var conv = context.createConvolver();
 
-    conv.buffer = 0;
-    testPassed("ConvolverNode impulse response buffer was set to 0.");
+    conv.buffer = null;
+    testPassed("ConvolverNode impulse response buffer was set to null.");
 
     finishJSTest();
 }

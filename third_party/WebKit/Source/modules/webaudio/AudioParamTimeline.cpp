@@ -201,6 +201,7 @@ void AudioParamTimeline::setTargetAtTime(float target, double time, double timeC
 void AudioParamTimeline::setValueCurveAtTime(DOMFloat32Array* curve, double time, double duration, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
+    ASSERT(curve);
 
     if (!isNonNegativeAudioParamTime(time, exceptionState)
         || !isPositiveAudioParamTime(duration, exceptionState, "Duration"))

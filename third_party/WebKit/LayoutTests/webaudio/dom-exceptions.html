@@ -95,6 +95,11 @@ function runTest() {
     shouldThrowAndBeUnchanged("node.smoothingTimeConstant", "-0.1");
     shouldThrowAndBeUnchanged("node.smoothingTimeConstant", "1.5");
 
+    shouldThrow("node.getFloatFrequencyData(null)");
+    shouldThrow("node.getByteFrequencyData(null)");
+    shouldThrow("node.getFloatTimeDomainData(null)");
+    shouldThrow("node.getByteTimeDomainData(null)");
+
     // AudioBuffers
     node = context.createBuffer(1,1, context.sampleRate);
     // Invalid channel index: IndexSizeError
@@ -142,6 +147,17 @@ function runTest() {
             testFailed("context.destination.channelCount = 99 should throw IndexSizeError exception on invalid channel count.");
     }
 
+    // AudioParams
+    param = context.createGain().gain;
+    shouldThrow("param.setValueCurveAtTime(null, 0, 0)");
+
+    // BiquadFilterNode
+    node = context.createBiquadFilter();
+    shouldNotThrow("node.getFrequencyResponse(new Float32Array(1), new Float32Array(1), new Float32Array(1))");
+    shouldThrow("node.getFrequencyResponse(null, new Float32Array(1), new Float32Array(1))");
+    shouldThrow("node.getFrequencyResponse(new Float32Array(1), null, new Float32Array(1))");
+    shouldThrow("node.getFrequencyResponse(new Float32Array(1), new Float32Array(1), null)");
+
     // Delay nodes are tested elsewhere, so don't duplicate that work here.
 
     // OfflineAudioContext
@@ -163,6 +179,7 @@ function runTest() {
       testPassed("Invalid oversample value did not change node.oversample");
     else
       testFailed("node.oversample incorrectly changed to invalid value " + node.oversample);
+    shouldThrow("node.curve = {}");
     shouldThrow("node.curve = new Float32Array(1)");
     shouldBeNull("node.curve");
     shouldNotThrow("node.curve = new Float32Array(2)");
@@ -246,6 +263,8 @@ function runTest() {
     shouldNotThrow("osc1.start()");
     shouldNotThrow("osc1.stop()");
 
+    shouldThrow("osc.setPeriodicWave(null)");
+
     // exponentialRampToValue should throw on non-positive target values.
     node = context.createGain();
     node.connect(context.destination);
@@ -266,10 +285,11 @@ function runTest() {
     // HW sample rates.
     shouldNotThrow("oc = new OfflineAudioContext(1, 44100, 44100)");
     shouldNotThrow("conv = oc.createConvolver()");
+    shouldThrow("conv.buffer = {}");
     shouldThrow("conv.buffer = oc.createBuffer(1, 100, 22050)");
     // conv.buffer should be unchanged (null) because the above failed.
     shouldBeNull("conv.buffer");
-    
+
     // PannerNode channel count and mode
     panner = context.createPanner();
     // Channel count can only be set to 1 or 2.

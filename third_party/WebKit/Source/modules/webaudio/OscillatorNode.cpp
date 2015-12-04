@@ -327,6 +327,7 @@ void OscillatorHandler::process(size_t framesToProcess)
 void OscillatorHandler::setPeriodicWave(PeriodicWave* periodicWave)
 {
     ASSERT(isMainThread());
+    ASSERT(periodicWave);
 
     // This synchronizes with process().
     MutexLocker processLocker(m_processLock);

@@ -190,9 +190,7 @@ void RealtimeAnalyser::doFFTAnalysis()
 void RealtimeAnalyser::getFloatFrequencyData(DOMFloat32Array* destinationArray)
 {
     ASSERT(isMainThread());
-
-    if (!destinationArray)
-        return;
+    ASSERT(destinationArray);
 
     doFFTAnalysis();
 
@@ -215,9 +213,7 @@ void RealtimeAnalyser::getFloatFrequencyData(DOMFloat32Array* destinationArray)
 void RealtimeAnalyser::getByteFrequencyData(DOMUint8Array* destinationArray)
 {
     ASSERT(isMainThread());
-
-    if (!destinationArray)
-        return;
+    ASSERT(destinationArray);
 
     doFFTAnalysis();
 
@@ -252,9 +248,7 @@ void RealtimeAnalyser::getByteFrequencyData(DOMUint8Array* destinationArray)
 void RealtimeAnalyser::getFloatTimeDomainData(DOMFloat32Array* destinationArray)
 {
     ASSERT(isMainThread());
-
-    if (!destinationArray)
-        return;
+    ASSERT(destinationArray);
 
     unsigned fftSize = this->fftSize();
     size_t len = std::min(fftSize, destinationArray->length());
@@ -281,9 +275,7 @@ void RealtimeAnalyser::getFloatTimeDomainData(DOMFloat32Array* destinationArray)
 void RealtimeAnalyser::getByteTimeDomainData(DOMUint8Array* destinationArray)
 {
     ASSERT(isMainThread());
-
-    if (!destinationArray)
-        return;
+    ASSERT(destinationArray);
 
     unsigned fftSize = this->fftSize();
     size_t len = std::min(fftSize, destinationArray->length());

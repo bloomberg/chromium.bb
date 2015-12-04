@@ -26,6 +26,6 @@
 [
     Conditional=WEB_AUDIO
 ] interface ConvolverNode : AudioNode {
-    [RaisesException=Setter, LegacyInterfaceTypeChecking] attribute AudioBuffer? buffer;
+    [RaisesException=Setter] attribute AudioBuffer? buffer;
     attribute boolean normalize;
 };
