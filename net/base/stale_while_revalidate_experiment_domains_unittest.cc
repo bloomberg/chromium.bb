@@ -20,7 +20,7 @@ const struct Expectation {
   bool result;
 } kExpectations[] = {
     {"wordpress.com", true},
-    {"issuu.com", true},
+    {"tf1.fr", true},
     {"wordpress.com.", true},
     {"www.wordpress.com", true},
     {"www.wordpress.com.", true},

@@ -1,117 +1,116 @@
 %{
 
-// List of top 98 domains* which are expected to benefit from the implementation
-// of the stale-while-revalidate Cache-Control directive. The list is derived
-// from public information (the HTTPArchive) and ordered by ranking. This list
+// List of top 100 domains which are expected to benefit from the implementation
+// of the stale-while-revalidate Cache-Control directive. This list
 // is only used to generate histograms to measure the effectiveness of the
 // feature. These domains are given no special treatment.
 //
 // This file is temporary for the duration of the evaluation of the
-// stale-while-revalidate feature.
+// stale-while-revalidate feature. crbug.com/564517
 
 // This file is converted to a DAFSA by make_dafsa.py.
-
-// *Two domains appear in effective_tld_names.dat and so were manually removed.
 
 %}
 
 %%
-blogspot.com, 0
-wordpress.com, 0
-blogspot.in, 0
-tumblr.com, 0
-blogspot.com.br, 0
-myshopify.com, 0
-blogspot.gr, 0
-altervista.org, 0
-weebly.com, 0
-blogspot.com.es, 0
-blogspot.it, 0
-uol.com.br, 0
-blogspot.pt, 0
-blogspot.co.uk, 0
-blogspot.mx, 0
-appspot.com, 0
-blogspot.fr, 0
-blogspot.com.tr, 0
-blog.pl, 0
-squarespace.com, 0
-blogspot.com.ar, 0
-jimdo.com, 0
-blogspot.ca, 0
-mybigcommerce.com, 0
-blogspot.sg, 0
-typepad.com, 0
-blogspot.com.au, 0
-esy.es, 0
-sapo.pt, 0
-over-blog.com, 0
-blogspot.ro, 0
-ucoz.ru, 0
-webnode.com, 0
-livejournal.com, 0
-16mb.com, 0
-blogspot.nl, 0
-narod.ru, 0
-sextgem.com, 0
-us.com, 0
-ecwid.com, 0
-ucoz.com, 0
-tripod.com, 0
-n.nu, 0
-ning.com, 0
-free.fr, 0
-webs.com, 0
-sitew.com, 0
-onclickads.net, 0
-diply.com, 0
-adcash.com, 0
+123rf.com, 0
+academia.edu, 0
+avclub.com, 0
+baixaki.com.br, 0
+bgr.com, 0
+britannica.com, 0
+buenastareas.com, 0
+buscape.com.br, 0
+cbslocal.com, 0
+cbssports.com, 0
+ccm.net, 0
+chegg.com, 0
+clarin.com, 0
+commentcamarche.net, 0
+coursehero.com, 0
+crunchbase.com, 0
+deadline.com, 0
+dicionarioinformal.com.br, 0
+digitaltrends.com, 0
 dropbox.com, 0
-directrev.com, 0
-weather.com, 0
-deviantart.com, 0
-terraclicks.com, 0
-taboola.com, 0
-abs-cbnnews.com, 0
-wordpress.org, 0
-w3schools.com, 0
-mediafire.com, 0
-mystart.com, 0
-doublepimp.com, 0
-ndtv.com, 0
-youm7.com, 0
-addthis.com, 0
-popcash.net, 0
-sourceforge.net, 0
-likes.com, 0
-chinatimes.com, 0
-speedtest.net, 0
-kaskus.co.id, 0
-stumbleupon.com, 0
-reimageplus.com, 0
-conservativetribune.com, 0
-hootsuite.com, 0
-slickdeals.net, 0
-samsung.com, 0
-buzzfil.net, 0
-elmogaz.com, 0
-bhaskar.com, 0
-wow.com, 0
-marca.com, 0
-kompas.com, 0
-xda-developers.com, 0
-naukri.com, 0
-flirchi.com, 0
-bookmyshow.com, 0
-independent.co.uk, 0
-urdupoint.com, 0
-exoclick.com, 0
-slack.com, 0
-moneycontrol.com, 0
-pof.com, 0
-onedio.com, 0
-nasa.gov, 0
+encyclopedia.com, 0
+enotes.com, 0
+eonline.com, 0
+express.co.uk, 0
+extradeportes.net, 0
+firstpost.com, 0
+food.com, 0
+foxnews.com, 0
+giphy.com, 0
+gmailblog.blogspot.com, 0
+goodreads.com, 0
+googleapps.com, 0
+googleblog.blogspot.com, 0
+guiamais.com.br, 0
+gumtree.com, 0
+haberler.com, 0
+heavy.com, 0
+history.com, 0
+hollywoodlife.com, 0
+howtogeek.com, 0
+ibtimes.co.in, 0
+ilpost.it, 0
+iltalehti.fi, 0
+iltasanomat.fi, 0
 instructables.com, 0
-savefrom.net, 0
-issuu.com, 0
+journaldesfemmes.com, 0
+kekanto.com.br, 0
+lavanguardia.com, 0
+legacy.com, 0
+liberoquotidiano.it, 0
+linternaute.com, 0
+livescience.com, 0
+lolking.net, 0
+marmiton.org, 0
+meinestadt.de, 0
+merriam-webster.com, 0
+miniclip.com, 0
+mmajunkie.com, 0
+mobile01.com, 0
+moviepilot.de, 0
+mymovies.it, 0
+naszemiasto.pl, 0
+natemat.pl, 0
+ndtv.com, 0
+nesn.com, 0
+paginegialle.it, 0
+parismatch.com, 0
+popsugar.com, 0
+prezi.com, 0
+programme-tv.net, 0
+purepeople.com, 0
+qz.com, 0
+radaronline.com, 0
+shmoop.com, 0
+slate.fr, 0
+sondakika.com, 0
+songtexte.com, 0
+study.com, 0
+superpages.com, 0
+techtimes.com, 0
+tecmundo.com.br, 0
+telegraaf.nl, 0
+tf1.fr, 0
+tv.com, 0
+tvline.com, 0
+variety.com, 0
+venturebeat.com, 0
+vocabulary.com, 0
+wattpad.com, 0
+weather.com, 0
+weebly.com, 0
+whitepages.com, 0
+wordpress.com, 0
+wordpress.org, 0
+xda-developers.com, 0
+yourdictionary.com, 0
+zadane.pl, 0
+zillow.com, 0
+znanija.com, 0
+zoopla.co.uk, 0
 %%
