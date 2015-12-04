@@ -731,9 +731,13 @@ void AutofillAgent::QueryAutofillSuggestions(
                                        data_list_values,
                                        data_list_labels));
 
+  blink::WebRect bounding_box_in_window = element_.boundsInViewport();
+  render_frame()->GetRenderView()->convertViewportToWindow(
+      &bounding_box_in_window);
+
   Send(new AutofillHostMsg_QueryFormFieldAutofill(
       routing_id(), autofill_query_id_, form, field,
-      gfx::RectF(element_.boundsInViewport())));
+      gfx::RectF(bounding_box_in_window)));
 }
 
 void AutofillAgent::FillFieldWithValue(const base::string16& value,

@@ -366,7 +366,7 @@ class DevToolsAgentTest : public RenderViewImplTest {
 
 class RenderViewImplBlinkSettingsTest : public RenderViewImplTest {
  public:
-  void DoSetUp() {
+  virtual void DoSetUp() {
     RenderViewImplTest::SetUp();
   }
 
@@ -382,6 +382,22 @@ class RenderViewImplBlinkSettingsTest : public RenderViewImplTest {
   // before RenderViewImplTest::SetUp is run. Each test must invoke
   // DoSetUp manually once pre-SetUp configuration is complete.
   void SetUp() override {}
+};
+
+class RenderViewImplScaleFactorTest : public RenderViewImplBlinkSettingsTest {
+ public:
+  void DoSetUp() override {
+    RenderViewImplBlinkSettingsTest::DoSetUp();
+
+    ViewMsg_Resize_Params params;
+    params.screen_info.deviceScaleFactor = 2.f;
+    params.new_size = gfx::Size(100, 100);
+    params.physical_backing_size = gfx::Size(200, 200);
+    params.visible_viewport_size = params.new_size;
+    params.needs_resize_ack = false;
+    view()->OnResize(params);
+    ASSERT_EQ(2.f, view()->device_scale_factor_);
+  }
 };
 
 // Ensure that the main RenderFrame is deleted and cleared from the RenderView
@@ -2469,6 +2485,29 @@ TEST_F(RenderViewImplBlinkSettingsTest, Negative) {
   DoSetUp();
   EXPECT_FALSE(settings()->multiTargetTapNotificationEnabled());
   EXPECT_TRUE(settings()->viewportEnabled());
+}
+
+TEST_F(RenderViewImplScaleFactorTest, ConverViewportToWindowWithoutZoomForDSF) {
+  DoSetUp();
+  blink::WebRect rect(20, 10, 200, 100);
+  view()->convertViewportToWindow(&rect);
+  EXPECT_EQ(20, rect.x);
+  EXPECT_EQ(10, rect.y);
+  EXPECT_EQ(200, rect.width);
+  EXPECT_EQ(100, rect.height);
+}
+
+TEST_F(RenderViewImplScaleFactorTest, ConverViewportToWindowWithZoomForDSF) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableUseZoomForDSF);
+  DoSetUp();
+
+  blink::WebRect rect(20, 10, 200, 100);
+  view()->convertViewportToWindow(&rect);
+  EXPECT_EQ(10, rect.x);
+  EXPECT_EQ(5, rect.y);
+  EXPECT_EQ(100, rect.width);
+  EXPECT_EQ(50, rect.height);
 }
 
 TEST_F(DevToolsAgentTest, DevToolsResumeOnClose) {

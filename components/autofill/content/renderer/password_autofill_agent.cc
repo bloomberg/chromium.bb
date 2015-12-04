@@ -1438,9 +1438,13 @@ bool PasswordAutofillAgent::ShowSuggestionPopup(
       username.isNull() ? base::string16()
                         : static_cast<base::string16>(user_input.value()));
 
+  blink::WebRect bounding_box_in_window = selected_element.boundsInViewport();
+  render_frame()->GetRenderView()->convertViewportToWindow(
+      &bounding_box_in_window);
+
   Send(new AutofillHostMsg_ShowPasswordSuggestions(
       routing_id(), key_it->second, field.text_direction, username_string,
-      options, gfx::RectF(selected_element.boundsInViewport())));
+      options, gfx::RectF(bounding_box_in_window)));
   username_query_prefix_ = username_string;
   return CanShowSuggestion(fill_data, username_string, show_all);
 }

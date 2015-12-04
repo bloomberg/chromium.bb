@@ -450,6 +450,8 @@ class CONTENT_EXPORT RenderViewImpl
                               TopControlsState current,
                               bool animate) override;
 #endif
+  void convertViewportToWindow(blink::WebRect* rect) override;
+
   bool uses_temporary_zoom_level() const { return uses_temporary_zoom_level_; }
 
   // Please do not add your stuff randomly to the end here. If there is an
@@ -510,6 +512,7 @@ class CONTENT_EXPORT RenderViewImpl
  private:
   // For unit tests.
   friend class DevToolsAgentTest;
+  friend class RenderViewImplScaleFactorTest;
   friend class RenderViewImplTest;
   friend class RenderViewTest;
   friend class RendererAccessibilityTest;
@@ -559,6 +562,8 @@ class CONTENT_EXPORT RenderViewImpl
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, SendCandidateWindowEvents);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, RenderFrameClearedAfterClose);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, PaintAfterSwapOut);
+  FRIEND_TEST_ALL_PREFIXES(RenderViewImplScaleFactorTest,
+                           ConverViewportToScreenWithZoomForDSF);
 
   typedef std::map<GURL, double> HostZoomLevels;
 

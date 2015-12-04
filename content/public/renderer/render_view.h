@@ -24,6 +24,7 @@ class WebString;
 class WebURLRequest;
 class WebView;
 struct WebContextMenuData;
+struct WebRect;
 }
 
 namespace gfx {
@@ -122,6 +123,13 @@ class CONTENT_EXPORT RenderView : public IPC::Sender {
                                       TopControlsState current,
                                       bool animate) = 0;
 #endif
+
+  // Converts the |rect| from Blink's Viewport coordinates to the
+  // coordinates in the native window used to display the content, in
+  // DIP.  They're identical in tradional world, but will differ when
+  // use-zoom-for-dsf feature is eanbled, and Viewport coordinates
+  // becomes DSF times larger than window coordinates.
+  virtual void convertViewportToWindow(blink::WebRect* rect) = 0;
 
  protected:
   ~RenderView() override {}
