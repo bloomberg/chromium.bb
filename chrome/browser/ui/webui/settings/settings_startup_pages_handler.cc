@@ -18,7 +18,8 @@ StartupPagesHandler::~StartupPagesHandler() {
 }
 
 void StartupPagesHandler::RegisterMessages() {
-  DCHECK(!Profile::FromWebUI(web_ui())->IsOffTheRecord());
+  if (Profile::FromWebUI(web_ui())->IsOffTheRecord())
+    return;
 
   web_ui()->RegisterMessageCallback("setStartupPagesToCurrentPages",
       base::Bind(&StartupPagesHandler::SetStartupPagesToCurrentPages,
