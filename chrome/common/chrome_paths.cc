@@ -207,6 +207,8 @@ bool PathProvider(int key, base::FilePath* result) {
       // directory.  This avoids the problem of having to re-initialize the
       // exception handler after parsing command line options, which may
       // override the location of the app's profile directory.
+      // TODO(scottmg): Consider supporting --user-data-dir. See
+      // https://crbug.com/565446.
       if (!GetDefaultUserDataDirectory(&cur))
         return false;
 #endif

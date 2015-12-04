@@ -2071,6 +2071,7 @@
           ],
           'dependencies': [
             '../components/components.gyp:crash_component',
+            '../third_party/crashpad/crashpad/handler/handler.gyp:crashpad_handler',
             '../win8/win8.gyp:test_registrar_constants',
             '../win8/win8.gyp:test_support_win8',
           ],

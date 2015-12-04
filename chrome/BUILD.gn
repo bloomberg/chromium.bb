@@ -405,8 +405,6 @@ if (is_mac || is_win) {
 
     shared_library("chrome_child") {
       sources = [
-        "app/chrome_crash_reporter_client.cc",
-        "app/chrome_crash_reporter_client.h",
         "app/chrome_main.cc",
         "app/chrome_main_delegate.cc",
         "app/chrome_main_delegate.h",

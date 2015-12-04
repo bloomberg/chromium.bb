@@ -205,6 +205,7 @@
           '<(PRODUCT_DIR)/chrome_elf.dll',
           '<(PRODUCT_DIR)/clearkeycdm.dll',
           '<(PRODUCT_DIR)/clearkeycdmadapter.dll',
+          '<(PRODUCT_DIR)/crashpad_handler.exe',
           '<(PRODUCT_DIR)/plugins/',
           '<(PRODUCT_DIR)/power_saver_test_plugin.dll',
           '<(PRODUCT_DIR)/ppapi_tests.dll',

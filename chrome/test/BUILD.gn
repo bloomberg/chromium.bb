@@ -197,7 +197,11 @@ source_set("test_support") {
     ]
   }
   if (is_win) {
-    public_deps += [ "//third_party/wtl" ]
+    sources += [ "//chrome/app/chrome_crash_reporter_client.cc" ]
+    public_deps += [
+      "//components/crash/content/app",
+      "//third_party/wtl",
+    ]
     if (use_aura) {
       public_deps += [
         "//win8:test_registrar_constants",

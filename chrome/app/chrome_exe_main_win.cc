@@ -13,16 +13,20 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/win/windows_version.h"
+#include "chrome/app/chrome_crash_reporter_client.h"
 #include "chrome/app/main_dll_loader_win.h"
 #include "chrome/browser/chrome_process_finder_win.h"
 #include "chrome/browser/policy/policy_path_parser.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome_elf/chrome_elf_main.h"
+#include "components/crash/content/app/crash_reporter_client.h"
+#include "components/crash/content/app/crashpad.h"
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
@@ -30,6 +34,13 @@
 #include "ui/gfx/win/dpi.h"
 
 namespace {
+
+base::LazyInstance<ChromeCrashReporterClient>::Leaky g_chrome_crash_client =
+    LAZY_INSTANCE_INITIALIZER;
+
+base::LazyInstance<std::vector<crash_reporter::UploadedReport>>::Leaky
+    g_uploaded_reports = LAZY_INSTANCE_INITIALIZER;
+
 // List of switches that it's safe to rendezvous early with. Fast start should
 // not be done if a command line contains a switch not in this set.
 // Note this is currently stored as a list of two because it's probably faster
@@ -125,46 +136,61 @@ void SwitchToLFHeap() {
   }
 }
 
-bool RunAsCrashpadHandler(wchar_t* command_line, int* rc) {
-  const base::CommandLine cmdline = base::CommandLine::FromString(command_line);
-  if (cmdline.GetSwitchValueASCII(switches::kProcessType) ==
-      switches::kCrashpadHandler) {
-    std::vector<base::string16> argv = cmdline.argv();
-    base::string16 process_type =
-        L"--" + base::UTF8ToUTF16(switches::kProcessType) + L"=";
-    argv.erase(std::remove_if(argv.begin(), argv.end(),
-                              [&process_type](const base::string16& str) {
-                                return str.compare(0, process_type.size(),
-                                                   process_type) == 0;
-                              }),
-               argv.end());
+int RunAsCrashpadHandler(const base::CommandLine& command_line) {
+  std::vector<base::string16> argv = command_line.argv();
+  base::string16 process_type =
+      L"--" + base::UTF8ToUTF16(switches::kProcessType) + L"=";
+  argv.erase(std::remove_if(argv.begin(), argv.end(),
+                            [&process_type](const base::string16& str) {
+                              return str.compare(0, process_type.size(),
+                                                 process_type) == 0;
+                            }),
+             argv.end());
 
-    scoped_ptr<char* []> argv_as_utf8(new char*[argv.size() + 1]);
-    std::vector<std::string> storage;
-    storage.reserve(argv.size());
-    for (size_t i = 0; i < argv.size(); ++i) {
-      storage.push_back(base::UTF16ToUTF8(argv[i]));
-      argv_as_utf8[i] = &storage[i][0];
-    }
-    argv_as_utf8[argv.size()] = nullptr;
-    *rc = crashpad::HandlerMain(static_cast<int>(argv.size()),
-                                argv_as_utf8.get());
-    return true;
+  scoped_ptr<char* []> argv_as_utf8(new char*[argv.size() + 1]);
+  std::vector<std::string> storage;
+  storage.reserve(argv.size());
+  for (size_t i = 0; i < argv.size(); ++i) {
+    storage.push_back(base::UTF16ToUTF8(argv[i]));
+    argv_as_utf8[i] = &storage[i][0];
   }
-  return false;
+  argv_as_utf8[argv.size()] = nullptr;
+  return crashpad::HandlerMain(static_cast<int>(argv.size()),
+                               argv_as_utf8.get());
 }
 
 }  // namespace
+
+// This helper is looked up in the browser to retrieve the crash reports. See
+// CrashUploadListCrashpad. Note that we do not pass an std::vector here,
+// because we do not want to allocate/free in different modules. The returned
+// pointer is read-only.
+extern "C" __declspec(dllexport) void GetUploadedReportsImpl(
+    const crash_reporter::UploadedReport** reports,
+    size_t* report_count) {
+  crash_reporter::GetUploadedReports(g_uploaded_reports.Pointer());
+  *reports = g_uploaded_reports.Pointer()->data();
+  *report_count = g_uploaded_reports.Pointer()->size();
+}
 
 #if !defined(WIN_CONSOLE_APP)
 int APIENTRY wWinMain(HINSTANCE instance, HINSTANCE prev, wchar_t*, int) {
 #else
 int main() {
-  HINSTANCE instance = GetModuleHandle(NULL);
+  HINSTANCE instance = GetModuleHandle(nullptr);
 #endif
-  int rc;
-  if (RunAsCrashpadHandler(GetCommandLine(), &rc))
-    return rc;
+  // Initialize the CommandLine singleton from the environment.
+  base::CommandLine::Init(0, nullptr);
+
+  std::string process_type =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kProcessType);
+
+  if (process_type == switches::kCrashpadHandler)
+    return RunAsCrashpadHandler(*base::CommandLine::ForCurrentProcess());
+
+  crash_reporter::SetCrashReporterClient(g_chrome_crash_client.Pointer());
+  crash_reporter::InitializeCrashpad(process_type.empty(), process_type);
 
   SwitchToLFHeap();
 
@@ -173,8 +199,6 @@ int main() {
   // Signal Chrome Elf that Chrome has begun to start.
   SignalChromeElf();
 
-  // Initialize the commandline singleton from the environment.
-  base::CommandLine::Init(0, NULL);
   // The exit manager is in charge of calling the dtors of singletons.
   base::AtExitManager exit_manager;
 
@@ -190,7 +214,7 @@ int main() {
   // Load and launch the chrome dll. *Everything* happens inside.
   VLOG(1) << "About to load main DLL.";
   MainDllLoader* loader = MakeMainDllLoader();
-  rc = loader->Launch(instance);
+  int rc = loader->Launch(instance);
   loader->RelaunchChromeBrowserWithNewCommandLineIfNeeded();
   delete loader;
   return rc;

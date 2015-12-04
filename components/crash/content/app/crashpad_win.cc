@@ -68,8 +68,7 @@ base::FilePath PlatformCrashpadInitialization(bool initial_client,
     // In test binaries, use crashpad_handler directly. Otherwise, we launch
     // chrome.exe with --type=crashpad-handler.
     if (exe_file.BaseName().value() != FILE_PATH_LITERAL("chrome.exe")) {
-      base::FilePath exe_dir;
-      CHECK(PathService::Get(base::DIR_EXE, &exe_dir));
+      base::FilePath exe_dir = exe_file.DirName();
       exe_file = exe_dir.Append(FILE_PATH_LITERAL("crashpad_handler.exe"));
     } else {
       arguments.push_back("--type=crashpad-handler");

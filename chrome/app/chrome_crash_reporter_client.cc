@@ -16,6 +16,7 @@
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/env_vars.h"
+#include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "content/public/common/content_switches.h"
 
@@ -278,6 +279,22 @@ base::FilePath ChromeCrashReporterClient::GetReporterLogFilename() {
 
 bool ChromeCrashReporterClient::GetCrashDumpLocation(
     base::FilePath* crash_dir) {
+#if defined(OS_WIN)
+  // In order to be able to start crash handling very early, we do not rely on
+  // chrome's PathService entries (for DIR_CRASH_DUMPS) being available on
+  // Windows. See https://crbug.com/564398.
+  base::FilePath result;
+  if (!PathService::Get(base::DIR_LOCAL_APP_DATA, &result))
+    return false;
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  result = result.Append(dist->GetInstallSubDir());
+  // TODO(scottmg): Consider supporting --user-data-dir. See
+  // https://crbug.com/565446.
+  result = result.Append(chrome::kUserDataDirname);
+  result = result.Append(FILE_PATH_LITERAL("Crashpad"));
+  *crash_dir = result;
+  return true;
+#else
   // By setting the BREAKPAD_DUMP_LOCATION environment variable, an alternate
   // location to write breakpad crash dumps can be set.
   scoped_ptr<base::Environment> env(base::Environment::Create());
@@ -289,6 +306,7 @@ bool ChromeCrashReporterClient::GetCrashDumpLocation(
   }
 
   return PathService::Get(chrome::DIR_CRASH_DUMPS, crash_dir);
+#endif
 }
 
 size_t ChromeCrashReporterClient::RegisterCrashKeys() {

@@ -17,12 +17,8 @@ class SequencedWorkerPool;
 // Crashpad database.
 class CrashUploadListCrashpad : public CrashUploadList {
  public:
-  // The |upload_log_path| argument is unused. It is only accepted because the
-  // base class constructor requires it, although it is entirely unused with
-  // LoadUploadList() being overridden.
   CrashUploadListCrashpad(
       Delegate* delegate,
-      const base::FilePath& upload_log_path,
       const scoped_refptr<base::SequencedWorkerPool>& worker_pool);
 
  protected:

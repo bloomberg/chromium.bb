@@ -71,10 +71,10 @@
         'app/chrome_watcher_client_win.h',
         'app/chrome_watcher_command_line_win.cc',
         'app/chrome_watcher_command_line_win.h',
-        'app/main_dll_loader_win.cc',
-        'app/main_dll_loader_win.h',
         'app/kasko_client.cc',
         'app/kasko_client.h',
+        'app/main_dll_loader_win.cc',
+        'app/main_dll_loader_win.h',
         'app/signature_validator_win.cc',
         'app/signature_validator_win.h',
       ],
@@ -105,7 +105,12 @@
             'chrome_watcher',
             'chrome_watcher_client',
             '../components/components.gyp:browser_watcher_client',
+            '../components/components.gyp:crash_component',
             '../third_party/crashpad/crashpad/handler/handler.gyp:crashpad_handler_lib',
+          ],
+          'sources': [
+            'app/chrome_crash_reporter_client.cc',
+            'app/chrome_crash_reporter_client.h',
           ],
           'conditions': [
             ['kasko==1', {

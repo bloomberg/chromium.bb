@@ -146,7 +146,7 @@ base::LazyInstance<ChromeContentBrowserClient> g_chrome_content_browser_client =
     LAZY_INSTANCE_INITIALIZER;
 #endif
 
-#if defined(OS_POSIX) || defined(OS_WIN)
+#if defined(OS_POSIX)
 base::LazyInstance<ChromeCrashReporterClient>::Leaky g_chrome_crash_client =
     LAZY_INSTANCE_INITIALIZER;
 #endif
@@ -665,7 +665,7 @@ void ChromeMainDelegate::PreSandboxStartup() {
   std::string process_type =
       command_line.GetSwitchValueASCII(switches::kProcessType);
 
-#if defined(OS_POSIX) || defined(OS_WIN)
+#if defined(OS_POSIX)
   crash_reporter::SetCrashReporterClient(g_chrome_crash_client.Pointer());
 #endif
 
@@ -678,16 +678,6 @@ void ChromeMainDelegate::PreSandboxStartup() {
 
   InitMacCrashReporter(command_line, process_type);
 #endif
-
-#if defined(OS_WIN)
-  // TODO(scottmg): It would be nice to do this earlier to catch early crashes,
-  // perhaps as early as WinMain in chrome.exe. This would require some code
-  // restructuring to have paths and command lines set up, and also to handle
-  // having some of the code live in chrome.exe, while having the database be
-  // accessed by browser code in chrome.dll (to get a list of uploaded crashes
-  // for chrome://crashes).
-  crash_reporter::InitializeCrashpad(process_type.empty(), process_type);
-#endif  // OS_WIN
 
 #if defined(OS_WIN)
   child_process_logging::Init();

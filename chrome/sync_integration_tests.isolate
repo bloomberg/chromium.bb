@@ -76,6 +76,7 @@
       'variables': {
         'files': [
           '<(PRODUCT_DIR)/chrome_elf.dll',
+          '<(PRODUCT_DIR)/crashpad_handler.exe',
         ],
       },
     }],
