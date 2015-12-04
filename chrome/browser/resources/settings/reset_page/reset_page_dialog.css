@@ -8,11 +8,17 @@
   margin-top: 0;
 }
 
-.dialog-title {
+.dialog-top-row {
+  align-items: center;
   border-bottom: 1px solid gainsboro;
+  display: flex;
+  padding-bottom: 5px;
+  padding-top: 5px;
+}
+
+.dialog-title {
+  flex: 1;
   font-size: 1.13em;
-  padding-bottom: 14px;
-  padding-top: 14px;
 }
 
 .dialog-body {

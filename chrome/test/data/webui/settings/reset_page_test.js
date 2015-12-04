@@ -41,9 +41,13 @@ cr.define('settings_reset_page', function() {
         document.body.appendChild(resetPage);
       });
 
-      // Tests that the reset profile dialog opens and closes correctly, and
-      // that chrome.send calls are propagated as expected.
-      test(TestNames.ResetProfileDialogOpenClose, function() {
+
+      /**
+       * @param {string} closeButtonId The ID of the button that closes the
+       *     dialog.
+       * @return {!Promise}
+       */
+      function testOpenCloseResetProfileDialog(closeButtonId) {
         var onShowResetProfileDialogCalled = whenChromeSendCalled(
             'onShowResetProfileDialog');
         var onHideResetProfileDialogCalled = whenChromeSendCalled(
@@ -57,12 +61,23 @@ cr.define('settings_reset_page', function() {
               dialog.addEventListener('iron-overlay-closed', resolve);
             });
 
-        MockInteractions.tap(dialog.$.cancel);
+        MockInteractions.tap(dialog.$[closeButtonId]);
 
         return Promise.all([
           onShowResetProfileDialogCalled,
           onHideResetProfileDialogCalled,
           onDialogClosed
+        ]);
+      }
+
+      // Tests that the reset profile dialog opens and closes correctly and that
+      // chrome.send calls are propagated as expected.
+      test(TestNames.ResetProfileDialogOpenClose, function() {
+        return Promise.all([
+          // Test case where the 'cancel' button is clicked.
+          testOpenCloseResetProfileDialog('cancel'),
+          // Test case where the 'close' button is clicked.
+          testOpenCloseResetProfileDialog('close')
         ]);
       });
 
@@ -78,9 +93,12 @@ cr.define('settings_reset_page', function() {
       });
 
       if (cr.isChromeOS) {
-        // Tests that the powerwash dialog opens and closes correctly, and
-        // that chrome.send calls are propagated as expected.
-        test(TestNames.PowerwashDialogOpenClose, function() {
+        /**
+         * @param {string} closeButtonId The ID of the button that closes the
+         *     dialog.
+         * @return {!Promise}
+         */
+        function testOpenClosePowerwashDialog(closeButtonId) {
           var onPowerwashDialogShowCalled = whenChromeSendCalled(
               'onPowerwashDialogShow');
 
@@ -92,8 +110,19 @@ cr.define('settings_reset_page', function() {
                 dialog.addEventListener('iron-overlay-closed', resolve);
               });
 
-          MockInteractions.tap(dialog.$.cancel);
+          MockInteractions.tap(dialog.$[closeButtonId]);
           return Promise.all([onPowerwashDialogShowCalled, onDialogClosed]);
+        }
+
+        // Tests that the powerwash dialog opens and closes correctly, and
+        // that chrome.send calls are propagated as expected.
+        test(TestNames.PowerwashDialogOpenClose, function() {
+          return Promise.all([
+            // Test case where the 'cancel' button is clicked.
+            testOpenClosePowerwashDialog('cancel'),
+            // Test case where the 'close' button is clicked.
+            testOpenClosePowerwashDialog('close')
+          ]);
         });
 
         // Tests that when powerwash is requested chrome.send calls are
