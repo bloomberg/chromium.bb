@@ -65,13 +65,13 @@ private:
     double tailTime() const override;
     double latencyTime() const override;
 
-    void fireProcessEvent();
+    void fireProcessEvent(unsigned);
 
     // Double buffering
     unsigned doubleBufferIndex() const { return m_doubleBufferIndex; }
     void swapBuffers() { m_doubleBufferIndex = 1 - m_doubleBufferIndex; }
     unsigned m_doubleBufferIndex;
-    unsigned m_doubleBufferIndexForEvent;
+
     // These Persistent don't make reference cycles including the owner
     // ScriptProcessorNode.
     PersistentHeapVector<Member<AudioBuffer>> m_inputBuffers;

@@ -42,7 +42,6 @@ namespace blink {
 ScriptProcessorHandler::ScriptProcessorHandler(AudioNode& node, float sampleRate, size_t bufferSize, unsigned numberOfInputChannels, unsigned numberOfOutputChannels)
     : AudioHandler(NodeTypeJavaScript, node, sampleRate)
     , m_doubleBufferIndex(0)
-    , m_doubleBufferIndexForEvent(0)
     , m_bufferSize(bufferSize)
     , m_bufferReadWriteIndex(0)
     , m_numberOfInputChannels(numberOfInputChannels)
@@ -166,26 +165,26 @@ void ScriptProcessorHandler::process(size_t framesToProcess)
             // The best we can do is clear out the buffer ourself here.
             outputBuffer->zero();
         } else if (context()->executionContext()) {
-            // Fire the event on the main thread, not this one (which is the realtime audio thread).
-            m_doubleBufferIndexForEvent = m_doubleBufferIndex;
-            context()->executionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&ScriptProcessorHandler::fireProcessEvent, PassRefPtr<ScriptProcessorHandler>(this)));
+            // Fire the event on the main thread with the appropriate buffer
+            // index.
+            context()->executionContext()->postTask(BLINK_FROM_HERE,
+                createCrossThreadTask(&ScriptProcessorHandler::fireProcessEvent, this, m_doubleBufferIndex));
         }
 
         swapBuffers();
     }
 }
 
-void ScriptProcessorHandler::fireProcessEvent()
+void ScriptProcessorHandler::fireProcessEvent(unsigned doubleBufferIndex)
 {
     ASSERT(isMainThread());
 
-    bool isIndexGood = m_doubleBufferIndexForEvent < 2;
-    ASSERT(isIndexGood);
-    if (!isIndexGood)
+    ASSERT(doubleBufferIndex < 2);
+    if (doubleBufferIndex > 1)
         return;
 
-    AudioBuffer* inputBuffer = m_inputBuffers[m_doubleBufferIndexForEvent].get();
-    AudioBuffer* outputBuffer = m_outputBuffers[m_doubleBufferIndexForEvent].get();
+    AudioBuffer* inputBuffer = m_inputBuffers[doubleBufferIndex].get();
+    AudioBuffer* outputBuffer = m_outputBuffers[doubleBufferIndex].get();
     ASSERT(outputBuffer);
     if (!outputBuffer)
         return;
