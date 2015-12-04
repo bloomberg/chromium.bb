@@ -9,24 +9,21 @@
 #error Only one SkRefCnt should be used.
 #endif
 
-#include <atomic>
-
 // Alternate implementation of SkRefCnt for Chromium debug builds
 class SK_API SkRefCnt : public SkRefCntBase {
 public:
   SkRefCnt() : flags_(0) {}
-  void ref() const { SkASSERT(flags_.load() != AdoptionRequired_Flag); SkRefCntBase::ref(); }
+  void ref() const { SkASSERT(flags_ != AdoptionRequired_Flag); SkRefCntBase::ref(); }
   void adopted() const { flags_ |= Adopted_Flag; }
   void requireAdoption() const { flags_ |= AdoptionRequired_Flag; }
   void deref() const { SkRefCntBase::unref(); }
 private:
-
   enum {
     Adopted_Flag = 0x1,
     AdoptionRequired_Flag = 0x2,
   };
 
-  mutable std::atomic<int> flags_;
+  mutable int flags_;
 };
 
 // Bootstrap for Blink's WTF::RefPtr
