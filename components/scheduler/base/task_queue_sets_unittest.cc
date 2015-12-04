@@ -18,7 +18,8 @@ class TaskQueueSetsTest : public testing::Test {
   void SetUp() override {
     virtual_time_domain_ = make_scoped_ptr<VirtualTimeDomain>(
         new VirtualTimeDomain(nullptr, base::TimeTicks()));
-    task_queue_sets_.reset(new TaskQueueSets(kNumSets));
+    task_queue_sets_.reset(
+        new TaskQueueSets(TaskQueueSets::TaskType::IMMEDIATE, kNumSets));
   }
 
  protected:
@@ -36,7 +37,8 @@ class TaskQueueSetsTest : public testing::Test {
   }
 
   TaskQueueImpl::Task FakeTaskWithEnqueueOrder(int enqueue_order) {
-    TaskQueueImpl::Task fake_task(FROM_HERE, base::Closure(), 0, true);
+    TaskQueueImpl::Task fake_task(FROM_HERE, base::Closure(), base::TimeTicks(),
+                                  0, true);
     fake_task.set_enqueue_order(enqueue_order);
     return fake_task;
   }
@@ -46,18 +48,10 @@ class TaskQueueSetsTest : public testing::Test {
   scoped_ptr<TaskQueueSets> task_queue_sets_;
 };
 
-TEST_F(TaskQueueSetsTest, AssignQueueToSet) {
-  internal::TaskQueueImpl* queue = NewTaskQueue("queue");
-  size_t set = TaskQueue::NORMAL_PRIORITY;
-  task_queue_sets_->AssignQueueToSet(queue, set);
-
-  EXPECT_EQ(set, queue->get_task_queue_set_index());
-}
-
 TEST_F(TaskQueueSetsTest, GetOldestQueueInSet_QueueEmpty) {
   internal::TaskQueueImpl* queue = NewTaskQueue("queue");
   size_t set = TaskQueue::NORMAL_PRIORITY;
-  task_queue_sets_->AssignQueueToSet(queue, set);
+  queue->set_task_queue_set_index(set);
 
   internal::TaskQueueImpl* selected_queue;
   EXPECT_FALSE(task_queue_sets_->GetOldestQueueInSet(set, &selected_queue));
@@ -66,12 +60,12 @@ TEST_F(TaskQueueSetsTest, GetOldestQueueInSet_QueueEmpty) {
 TEST_F(TaskQueueSetsTest, OnPushQueue) {
   internal::TaskQueueImpl* queue = NewTaskQueue("queue");
   size_t set = TaskQueue::NORMAL_PRIORITY;
-  task_queue_sets_->AssignQueueToSet(queue, set);
+  queue->set_task_queue_set_index(set);
 
   internal::TaskQueueImpl* selected_queue;
   EXPECT_FALSE(task_queue_sets_->GetOldestQueueInSet(set, &selected_queue));
 
-  queue->PushTaskOntoWorkQueueForTest(FakeTaskWithEnqueueOrder(10));
+  queue->PushTaskOntoImmediateWorkQueueForTest(FakeTaskWithEnqueueOrder(10));
   task_queue_sets_->OnPushQueue(queue);
 
   EXPECT_TRUE(task_queue_sets_->GetOldestQueueInSet(set, &selected_queue));
@@ -80,9 +74,10 @@ TEST_F(TaskQueueSetsTest, OnPushQueue) {
 
 TEST_F(TaskQueueSetsTest, GetOldestQueueInSet_SingleTaskInSet) {
   internal::TaskQueueImpl* queue = NewTaskQueue("queue");
-  queue->PushTaskOntoWorkQueueForTest(FakeTaskWithEnqueueOrder(10));
+  queue->PushTaskOntoImmediateWorkQueueForTest(FakeTaskWithEnqueueOrder(10));
   size_t set = 1;
-  task_queue_sets_->AssignQueueToSet(queue, set);
+  queue->set_task_queue_set_index(set);
+  task_queue_sets_->OnPushQueue(queue);
 
   internal::TaskQueueImpl* selected_queue;
   EXPECT_TRUE(task_queue_sets_->GetOldestQueueInSet(set, &selected_queue));
@@ -93,13 +88,16 @@ TEST_F(TaskQueueSetsTest, GetOldestQueueInSet_MultipleAgesInSet) {
   internal::TaskQueueImpl* queue1 = NewTaskQueue("queue1");
   internal::TaskQueueImpl* queue2 = NewTaskQueue("queue2");
   internal::TaskQueueImpl* queue3 = NewTaskQueue("queue2");
-  queue1->PushTaskOntoWorkQueueForTest(FakeTaskWithEnqueueOrder(6));
-  queue2->PushTaskOntoWorkQueueForTest(FakeTaskWithEnqueueOrder(5));
-  queue3->PushTaskOntoWorkQueueForTest(FakeTaskWithEnqueueOrder(4));
   size_t set = 2;
-  task_queue_sets_->AssignQueueToSet(queue1, set);
-  task_queue_sets_->AssignQueueToSet(queue2, set);
-  task_queue_sets_->AssignQueueToSet(queue3, set);
+  queue1->set_task_queue_set_index(set);
+  queue2->set_task_queue_set_index(set);
+  queue3->set_task_queue_set_index(set);
+  queue1->PushTaskOntoImmediateWorkQueueForTest(FakeTaskWithEnqueueOrder(6));
+  queue2->PushTaskOntoImmediateWorkQueueForTest(FakeTaskWithEnqueueOrder(5));
+  queue3->PushTaskOntoImmediateWorkQueueForTest(FakeTaskWithEnqueueOrder(4));
+  task_queue_sets_->OnPushQueue(queue1);
+  task_queue_sets_->OnPushQueue(queue2);
+  task_queue_sets_->OnPushQueue(queue3);
 
   internal::TaskQueueImpl* selected_queue;
   EXPECT_TRUE(task_queue_sets_->GetOldestQueueInSet(set, &selected_queue));
@@ -110,20 +108,23 @@ TEST_F(TaskQueueSetsTest, OnPopQueue) {
   internal::TaskQueueImpl* queue1 = NewTaskQueue("queue1");
   internal::TaskQueueImpl* queue2 = NewTaskQueue("queue2");
   internal::TaskQueueImpl* queue3 = NewTaskQueue("queue3");
-  queue1->PushTaskOntoWorkQueueForTest(FakeTaskWithEnqueueOrder(6));
-  queue2->PushTaskOntoWorkQueueForTest(FakeTaskWithEnqueueOrder(3));
-  queue2->PushTaskOntoWorkQueueForTest(FakeTaskWithEnqueueOrder(1));
-  queue3->PushTaskOntoWorkQueueForTest(FakeTaskWithEnqueueOrder(4));
   size_t set = 3;
-  task_queue_sets_->AssignQueueToSet(queue1, set);
-  task_queue_sets_->AssignQueueToSet(queue2, set);
-  task_queue_sets_->AssignQueueToSet(queue3, set);
+  queue1->set_task_queue_set_index(set);
+  queue2->set_task_queue_set_index(set);
+  queue3->set_task_queue_set_index(set);
+  queue1->PushTaskOntoImmediateWorkQueueForTest(FakeTaskWithEnqueueOrder(6));
+  queue2->PushTaskOntoImmediateWorkQueueForTest(FakeTaskWithEnqueueOrder(3));
+  queue2->PushTaskOntoImmediateWorkQueueForTest(FakeTaskWithEnqueueOrder(1));
+  queue3->PushTaskOntoImmediateWorkQueueForTest(FakeTaskWithEnqueueOrder(4));
+  task_queue_sets_->OnPushQueue(queue1);
+  task_queue_sets_->OnPushQueue(queue2);
+  task_queue_sets_->OnPushQueue(queue3);
 
   internal::TaskQueueImpl* selected_queue;
   EXPECT_TRUE(task_queue_sets_->GetOldestQueueInSet(set, &selected_queue));
   EXPECT_EQ(queue2, selected_queue);
 
-  queue2->PopTaskFromWorkQueueForTest();
+  queue2->PopTaskFromImmediateWorkQueueForTest();
   task_queue_sets_->OnPopQueue(queue2);
 
   EXPECT_TRUE(task_queue_sets_->GetOldestQueueInSet(set, &selected_queue));
@@ -134,19 +135,22 @@ TEST_F(TaskQueueSetsTest, OnPopQueue_QueueBecomesEmpty) {
   internal::TaskQueueImpl* queue1 = NewTaskQueue("queue");
   internal::TaskQueueImpl* queue2 = NewTaskQueue("queue");
   internal::TaskQueueImpl* queue3 = NewTaskQueue("queue");
-  queue1->PushTaskOntoWorkQueueForTest(FakeTaskWithEnqueueOrder(6));
-  queue2->PushTaskOntoWorkQueueForTest(FakeTaskWithEnqueueOrder(5));
-  queue3->PushTaskOntoWorkQueueForTest(FakeTaskWithEnqueueOrder(4));
   size_t set = 4;
-  task_queue_sets_->AssignQueueToSet(queue1, set);
-  task_queue_sets_->AssignQueueToSet(queue2, set);
-  task_queue_sets_->AssignQueueToSet(queue3, set);
+  queue1->set_task_queue_set_index(set);
+  queue2->set_task_queue_set_index(set);
+  queue3->set_task_queue_set_index(set);
+  queue1->PushTaskOntoImmediateWorkQueueForTest(FakeTaskWithEnqueueOrder(6));
+  queue2->PushTaskOntoImmediateWorkQueueForTest(FakeTaskWithEnqueueOrder(5));
+  queue3->PushTaskOntoImmediateWorkQueueForTest(FakeTaskWithEnqueueOrder(4));
+  task_queue_sets_->OnPushQueue(queue1);
+  task_queue_sets_->OnPushQueue(queue2);
+  task_queue_sets_->OnPushQueue(queue3);
 
   internal::TaskQueueImpl* selected_queue;
   EXPECT_TRUE(task_queue_sets_->GetOldestQueueInSet(set, &selected_queue));
   EXPECT_EQ(queue3, selected_queue);
 
-  queue3->PopTaskFromWorkQueueForTest();
+  queue3->PopTaskFromImmediateWorkQueueForTest();
   task_queue_sets_->OnPopQueue(queue3);
 
   EXPECT_TRUE(task_queue_sets_->GetOldestQueueInSet(set, &selected_queue));
@@ -158,13 +162,19 @@ TEST_F(TaskQueueSetsTest,
   internal::TaskQueueImpl* queue1 = NewTaskQueue("queue1");
   internal::TaskQueueImpl* queue2 = NewTaskQueue("queue2");
   internal::TaskQueueImpl* queue3 = NewTaskQueue("queue3");
-  queue1->PushTaskOntoWorkQueueForTest(FakeTaskWithEnqueueOrder(0x7ffffff1));
-  queue2->PushTaskOntoWorkQueueForTest(FakeTaskWithEnqueueOrder(0x7ffffff0));
-  queue3->PushTaskOntoWorkQueueForTest(FakeTaskWithEnqueueOrder(-0x7ffffff1));
   size_t set = 0;
-  task_queue_sets_->AssignQueueToSet(queue1, set);
-  task_queue_sets_->AssignQueueToSet(queue2, set);
-  task_queue_sets_->AssignQueueToSet(queue3, set);
+  queue1->set_task_queue_set_index(set);
+  queue2->set_task_queue_set_index(set);
+  queue3->set_task_queue_set_index(set);
+  queue1->PushTaskOntoImmediateWorkQueueForTest(
+      FakeTaskWithEnqueueOrder(0x7ffffff1));
+  queue2->PushTaskOntoImmediateWorkQueueForTest(
+      FakeTaskWithEnqueueOrder(0x7ffffff0));
+  queue3->PushTaskOntoImmediateWorkQueueForTest(
+      FakeTaskWithEnqueueOrder(-0x7ffffff1));
+  task_queue_sets_->OnPushQueue(queue1);
+  task_queue_sets_->OnPushQueue(queue2);
+  task_queue_sets_->OnPushQueue(queue3);
 
   internal::TaskQueueImpl* selected_queue;
   EXPECT_TRUE(task_queue_sets_->GetOldestQueueInSet(set, &selected_queue));
@@ -175,13 +185,17 @@ TEST_F(TaskQueueSetsTest, GetOldestQueueInSet_MultipleAgesInSet_RemoveQueue) {
   internal::TaskQueueImpl* queue1 = NewTaskQueue("queue1");
   internal::TaskQueueImpl* queue2 = NewTaskQueue("queue2");
   internal::TaskQueueImpl* queue3 = NewTaskQueue("queue3");
-  queue1->PushTaskOntoWorkQueueForTest(FakeTaskWithEnqueueOrder(6));
-  queue2->PushTaskOntoWorkQueueForTest(FakeTaskWithEnqueueOrder(5));
-  queue3->PushTaskOntoWorkQueueForTest(FakeTaskWithEnqueueOrder(4));
   size_t set = 1;
-  task_queue_sets_->AssignQueueToSet(queue1, set);
-  task_queue_sets_->AssignQueueToSet(queue2, set);
-  task_queue_sets_->AssignQueueToSet(queue3, set);
+  queue1->set_task_queue_set_index(set);
+  queue2->set_task_queue_set_index(set);
+  queue3->set_task_queue_set_index(set);
+  queue1->PushTaskOntoImmediateWorkQueueForTest(FakeTaskWithEnqueueOrder(6));
+  queue2->PushTaskOntoImmediateWorkQueueForTest(FakeTaskWithEnqueueOrder(5));
+  queue3->PushTaskOntoImmediateWorkQueueForTest(FakeTaskWithEnqueueOrder(4));
+  task_queue_sets_->OnPushQueue(queue1);
+  task_queue_sets_->OnPushQueue(queue2);
+  task_queue_sets_->OnPushQueue(queue3);
+
   task_queue_sets_->RemoveQueue(queue3);
 
   internal::TaskQueueImpl* selected_queue;
@@ -189,21 +203,25 @@ TEST_F(TaskQueueSetsTest, GetOldestQueueInSet_MultipleAgesInSet_RemoveQueue) {
   EXPECT_EQ(queue2, selected_queue);
 }
 
-TEST_F(TaskQueueSetsTest, AssignQueueToSet_Complex) {
+TEST_F(TaskQueueSetsTest, MoveQueue) {
   internal::TaskQueueImpl* queue1 = NewTaskQueue("queue1");
   internal::TaskQueueImpl* queue2 = NewTaskQueue("queue2");
   internal::TaskQueueImpl* queue3 = NewTaskQueue("queue3");
   internal::TaskQueueImpl* queue4 = NewTaskQueue("queue4");
-  queue1->PushTaskOntoWorkQueueForTest(FakeTaskWithEnqueueOrder(6));
-  queue2->PushTaskOntoWorkQueueForTest(FakeTaskWithEnqueueOrder(5));
-  queue3->PushTaskOntoWorkQueueForTest(FakeTaskWithEnqueueOrder(4));
-  queue4->PushTaskOntoWorkQueueForTest(FakeTaskWithEnqueueOrder(3));
   size_t set1 = 1;
   size_t set2 = 2;
-  task_queue_sets_->AssignQueueToSet(queue1, set1);
-  task_queue_sets_->AssignQueueToSet(queue2, set1);
-  task_queue_sets_->AssignQueueToSet(queue3, set2);
-  task_queue_sets_->AssignQueueToSet(queue4, set2);
+  queue1->set_task_queue_set_index(set1);
+  queue2->set_task_queue_set_index(set1);
+  queue3->set_task_queue_set_index(set2);
+  queue4->set_task_queue_set_index(set2);
+  queue1->PushTaskOntoImmediateWorkQueueForTest(FakeTaskWithEnqueueOrder(6));
+  queue2->PushTaskOntoImmediateWorkQueueForTest(FakeTaskWithEnqueueOrder(5));
+  queue3->PushTaskOntoImmediateWorkQueueForTest(FakeTaskWithEnqueueOrder(4));
+  queue4->PushTaskOntoImmediateWorkQueueForTest(FakeTaskWithEnqueueOrder(3));
+  task_queue_sets_->OnPushQueue(queue1);
+  task_queue_sets_->OnPushQueue(queue2);
+  task_queue_sets_->OnPushQueue(queue3);
+  task_queue_sets_->OnPushQueue(queue4);
 
   internal::TaskQueueImpl* selected_queue;
   EXPECT_TRUE(task_queue_sets_->GetOldestQueueInSet(set1, &selected_queue));
@@ -212,7 +230,7 @@ TEST_F(TaskQueueSetsTest, AssignQueueToSet_Complex) {
   EXPECT_TRUE(task_queue_sets_->GetOldestQueueInSet(set2, &selected_queue));
   EXPECT_EQ(queue4, selected_queue);
 
-  task_queue_sets_->AssignQueueToSet(queue4, set1);
+  task_queue_sets_->MoveQueue(queue4, set2, set1);
 
   EXPECT_TRUE(task_queue_sets_->GetOldestQueueInSet(set1, &selected_queue));
   EXPECT_EQ(queue4, selected_queue);
@@ -226,7 +244,7 @@ TEST_F(TaskQueueSetsTest, IsSetEmpty_NoWork) {
   EXPECT_TRUE(task_queue_sets_->IsSetEmpty(set));
 
   internal::TaskQueueImpl* queue = NewTaskQueue("queue");
-  task_queue_sets_->AssignQueueToSet(queue, set);
+  queue->set_task_queue_set_index(set);
   EXPECT_TRUE(task_queue_sets_->IsSetEmpty(set));
 }
 
@@ -235,11 +253,12 @@ TEST_F(TaskQueueSetsTest, IsSetEmpty_Work) {
   EXPECT_TRUE(task_queue_sets_->IsSetEmpty(set));
 
   internal::TaskQueueImpl* queue = NewTaskQueue("queue");
-  queue->PushTaskOntoWorkQueueForTest(FakeTaskWithEnqueueOrder(1));
-  task_queue_sets_->AssignQueueToSet(queue, set);
+  queue->set_task_queue_set_index(set);
+  queue->PushTaskOntoImmediateWorkQueueForTest(FakeTaskWithEnqueueOrder(1));
+  task_queue_sets_->OnPushQueue(queue);
   EXPECT_FALSE(task_queue_sets_->IsSetEmpty(set));
 
-  queue->PopTaskFromWorkQueueForTest();
+  queue->PopTaskFromImmediateWorkQueueForTest();
   task_queue_sets_->OnPopQueue(queue);
   EXPECT_TRUE(task_queue_sets_->IsSetEmpty(set));
 }

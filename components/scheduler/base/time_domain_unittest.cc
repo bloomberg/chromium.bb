@@ -159,14 +159,14 @@ TEST_F(TimeDomainTest, UpdateWorkQueues) {
       task_queue_manager.NewTaskQueue(TaskQueue::Spec("test_queue"));
 
   // Post a delayed task on |dummy_queue| and advance the queue's clock so that
-  // next time MoveReadyDelayedTasksToIncomingQueue is called, the task will
-  // get moved onto the incomming queue.
+  // next time MoveReadyDelayedTasksToDelayedWorkQueue is called, the task will
+  // get moved onto the Incoming queue.
   base::TimeDelta dummy_delay = base::TimeDelta::FromMilliseconds(10);
   dummy_queue->PostDelayedTask(FROM_HERE, base::Closure(), dummy_delay);
   dummy_time_source.Advance(dummy_delay);
 
   // Now we can test that ScheduleDelayedWork triggers calls to
-  // MoveReadyDelayedTasksToIncomingQueue as expected.
+  // MoveReadyDelayedTasksToDelayedWorkQueue as expected.
   base::TimeDelta delay = base::TimeDelta::FromMilliseconds(50);
   base::TimeTicks delayed_runtime = time_domain_->Now() + delay;
   EXPECT_CALL(*time_domain_.get(), RequestWakeup(_, delay));
@@ -175,11 +175,11 @@ TEST_F(TimeDomainTest, UpdateWorkQueues) {
                                     &lazy_now);
 
   time_domain_->UpdateWorkQueues(false, nullptr);
-  EXPECT_EQ(0UL, dummy_queue->IncomingQueueSizeForTest());
+  EXPECT_EQ(0UL, dummy_queue->DelayedWorkQueueSizeForTest());
 
   time_domain_->SetNow(delayed_runtime);
   time_domain_->UpdateWorkQueues(false, nullptr);
-  EXPECT_EQ(1UL, dummy_queue->IncomingQueueSizeForTest());
+  EXPECT_EQ(1UL, dummy_queue->DelayedWorkQueueSizeForTest());
 }
 
 namespace {

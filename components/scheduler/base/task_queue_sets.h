@@ -19,14 +19,21 @@ class TaskQueueImpl;
 
 class SCHEDULER_EXPORT TaskQueueSets {
  public:
-  explicit TaskQueueSets(size_t num_sets);
+  // TODO(alexclarke): Consider refactoring TaskQueueImpl to have two explicit
+  // WorkQueue objects (supporting PushOntoImmediateIncomingQueueLocked) so we
+  // don't have to pass this enum around.
+  enum class TaskType { DELAYED, IMMEDIATE };
+
+  TaskQueueSets(TaskType task_type, size_t num_sets);
   ~TaskQueueSets();
 
   // O(log num queues)
   void RemoveQueue(internal::TaskQueueImpl* queue);
 
   // O(log num queues)
-  void AssignQueueToSet(internal::TaskQueueImpl* queue, size_t set_index);
+  void MoveQueue(internal::TaskQueueImpl* queue,
+                 size_t old_set_index,
+                 size_t new_set_index);
 
   // O(log num queues)
   void OnPushQueue(internal::TaskQueueImpl* queue);
@@ -41,7 +48,14 @@ class SCHEDULER_EXPORT TaskQueueSets {
   // O(1)
   bool IsSetEmpty(size_t set_index) const;
 
+  TaskType task_type() const { return task_type_; }
+
+  static const char* TaskTypeToString(TaskType task_type);
+
  private:
+  bool GetWorkQueueFrontTaskEnqueueOrder(internal::TaskQueueImpl* queue,
+                                         int* enqueue_order) const;
+
   struct EnqueueOrderComparitor {
     // The enqueueorder numbers are generated in sequence.  These will
     // eventually overflow and roll-over to negative numbers.  We must take care
@@ -65,6 +79,8 @@ class SCHEDULER_EXPORT TaskQueueSets {
   typedef std::map<int, internal::TaskQueueImpl*, EnqueueOrderComparitor>
       EnqueueOrderToQueueMap;
   std::vector<EnqueueOrderToQueueMap> enqueue_order_to_queue_maps_;
+
+  const TaskType task_type_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskQueueSets);
 };

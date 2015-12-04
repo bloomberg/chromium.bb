@@ -74,22 +74,6 @@ class SCHEDULER_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
     FIRST_WAKEUP_POLICY = CAN_WAKE_OTHER_QUEUES,
   };
 
-  enum class QueueState {
-    // A queue in the EMPTY state is empty and has no tasks in either the
-    // work or incoming task queue.
-    EMPTY,
-    // A queue in the NEEDS_PUMPING state has no tasks in the work task queue,
-    // but has tasks in the incoming task queue which can be pumped to make them
-    // runnable.
-    NEEDS_PUMPING,
-    // A queue in the HAS_WORK state has tasks in the work task queue which
-    // are runnable.
-    HAS_WORK,
-    // The work and incomming queues are empty but there is delayed work
-    // scheduled.
-    NO_IMMEDIATE_WORK,
-  };
-
   // Options for constructing a TaskQueue. Once set the |name|,
   // |should_monitor_quiescence| and |wakeup_policy| are immutable. The
   // |pump_policy| can be mutated with |SetPumpPolicy()|.
@@ -141,16 +125,16 @@ class SCHEDULER_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
   // thread this TaskQueue was created by.
   virtual bool IsQueueEnabled() const = 0;
 
-  // Returns true if there no tasks in either the work or incoming task queue.
-  // This method ignores delayed tasks that are scheduled to run in the future.
-  // Note that this function involves taking a lock, so calling it has some
-  // overhead. NOTE this must be called on the thread this TaskQueue was created
-  // by.
-  virtual bool HasPendingImmediateTask() const;
+  // Returns true if the queue is completely empty.
+  virtual bool IsEmpty() const = 0;
 
-  // Returns the QueueState. Note that this function involves taking a lock, so
-  // calling it has some overhead.
-  virtual QueueState GetQueueState() const = 0;
+  // Returns true if the queue has work that's ready to execute now, or if it
+  // would have if the queue was pumped. NOTE this must be called on the thread
+  // this TaskQueue was created by.
+  virtual bool HasPendingImmediateWork() const = 0;
+
+  // Returns true if tasks can't run now but could if the queue was pumped.
+  virtual bool NeedsPumping() const = 0;
 
   // Can be called on any thread.
   virtual const char* GetName() const = 0;

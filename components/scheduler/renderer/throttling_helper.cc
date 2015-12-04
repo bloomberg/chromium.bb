@@ -75,7 +75,7 @@ void ThrottlingHelper::PumpThrottledTasks() {
   time_domain_->AdvanceTo(tick_clock_->NowTicks());
   bool work_to_do = false;
   for (TaskQueue* task_queue : throttled_queues_) {
-    if (task_queue->GetQueueState() == TaskQueue::QueueState::EMPTY)
+    if (task_queue->IsEmpty())
       continue;
 
     work_to_do = true;

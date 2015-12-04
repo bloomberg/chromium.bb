@@ -76,7 +76,7 @@ class SCHEDULER_EXPORT TimeDomain {
   // UpdateWorkQueue on.
   void RegisterAsUpdatableTaskQueue(internal::TaskQueueImpl* queue);
 
-  // Schedules a call to TaskQueueImpl::MoveReadyDelayedTasksToIncomingQueue
+  // Schedules a call to TaskQueueImpl::MoveReadyDelayedTasksToDelayedWorkQueue
   // when this TimeDomain reaches |delayed_run_time|.
   void ScheduleDelayedWork(internal::TaskQueueImpl* queue,
                            base::TimeTicks delayed_run_time,
@@ -109,9 +109,12 @@ class SCHEDULER_EXPORT TimeDomain {
   virtual void AsValueIntoInternal(
       base::trace_event::TracedValue* state) const = 0;
 
-  // Call TaskQueueImpl::MoveReadyDelayedTasksToIncomingQueue for each
-  // queue where the delay has elapsed.
-  void WakeupReadyDelayedQueues(LazyNow* lazy_now);
+  // Call TaskQueueImpl::UpdateDelayedWorkQueue for each queue where the delay
+  // has elapsed.
+  void WakeupReadyDelayedQueues(
+      LazyNow* lazy_now,
+      bool should_trigger_wakeup,
+      const internal::TaskQueueImpl::Task* previous_task);
 
  private:
   void MoveNewlyUpdatableQueuesIntoUpdatableQueueSet();

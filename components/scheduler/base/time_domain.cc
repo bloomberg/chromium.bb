@@ -125,8 +125,8 @@ void TimeDomain::UpdateWorkQueues(
   DCHECK(main_thread_checker_.CalledOnValidThread());
   LazyNow lazy_now(CreateLazyNow());
 
-  // Move any ready delayed tasks into the incomming queues.
-  WakeupReadyDelayedQueues(&lazy_now);
+  // Move any ready delayed tasks into the Incoming queues.
+  WakeupReadyDelayedQueues(&lazy_now, should_trigger_wakeup, previous_task);
 
   MoveNewlyUpdatableQueuesIntoUpdatableQueueSet();
 
@@ -136,8 +136,8 @@ void TimeDomain::UpdateWorkQueues(
     // NOTE Update work queue may erase itself from |updatable_queue_set_|.
     // This is fine, erasing an element won't invalidate any interator, as long
     // as the iterator isn't the element being delated.
-    if (queue->work_queue().empty())
-      queue->UpdateWorkQueue(&lazy_now, should_trigger_wakeup, previous_task);
+    if (queue->ImmediateWorkQueueEmpty())
+      queue->UpdateImmediateWorkQueue(should_trigger_wakeup, previous_task);
   }
 }
 
@@ -150,7 +150,10 @@ void TimeDomain::MoveNewlyUpdatableQueuesIntoUpdatableQueueSet() {
   }
 }
 
-void TimeDomain::WakeupReadyDelayedQueues(LazyNow* lazy_now) {
+void TimeDomain::WakeupReadyDelayedQueues(
+    LazyNow* lazy_now,
+    bool should_trigger_wakeup,
+    const internal::TaskQueueImpl::Task* previous_task) {
   // Wake up any queues with pending delayed work.  Note std::multipmap stores
   // the elements sorted by key, so the begin() iterator points to the earliest
   // queue to wakeup.
@@ -161,12 +164,14 @@ void TimeDomain::WakeupReadyDelayedQueues(LazyNow* lazy_now) {
     if (next_wakeup->first > lazy_now->Now())
       break;
     // A queue could have any number of delayed tasks pending so it's worthwhile
-    // deduping calls to MoveReadyDelayedTasksToIncomingQueue since it takes a
-    // lock.  NOTE the order in which these are called matters since the order
+    // deduping calls to UpdateDelayedWorkQueue since it takes a lock.
+    // NOTE the order in which these are called matters since the order
     // in which EnqueueTaskLocks is called is respected when choosing which
     // queue to execute a task from.
-    if (dedup_set.insert(next_wakeup->second).second)
-      next_wakeup->second->MoveReadyDelayedTasksToIncomingQueue(lazy_now);
+    if (dedup_set.insert(next_wakeup->second).second) {
+      next_wakeup->second->UpdateDelayedWorkQueue(
+          lazy_now, should_trigger_wakeup, previous_task);
+    }
     delayed_wakeup_multimap_.erase(next_wakeup);
   }
 }

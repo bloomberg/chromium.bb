@@ -542,7 +542,7 @@ bool RendererSchedulerImpl::ShouldYieldForHighPriorityWork() {
 
     case UseCase::MAIN_THREAD_GESTURE:
     case UseCase::SYNCHRONIZED_GESTURE:
-      return compositor_task_runner_->HasPendingImmediateTask() ||
+      return compositor_task_runner_->HasPendingImmediateWork() ||
              MainThreadOnly().touchstart_expected_soon;
 
     case UseCase::TOUCHSTART:

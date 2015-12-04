@@ -29,6 +29,12 @@ class MockObserver : public TaskQueueSelector::Observer {
   DISALLOW_COPY_AND_ASSIGN(MockObserver);
 };
 
+class TaskQueueSelectorForTest : public TaskQueueSelector {
+ public:
+  using TaskQueueSelector::ChooseOldestWithPriority;
+  using TaskQueueSelector::SetForceSelectImmediateForTest;
+};
+
 class TaskQueueSelectorTest : public testing::Test {
  public:
   TaskQueueSelectorTest()
@@ -38,7 +44,8 @@ class TaskQueueSelectorTest : public testing::Test {
   std::vector<TaskQueueImpl::Task> GetTasks(int count) {
     std::vector<TaskQueueImpl::Task> tasks;
     for (int i = 0; i < count; i++) {
-      TaskQueueImpl::Task task(FROM_HERE, test_closure_, 0, true);
+      TaskQueueImpl::Task task(FROM_HERE, test_closure_, base::TimeTicks(), 0,
+                               true);
       task.set_enqueue_order(i);
       tasks.push_back(task);
     }
@@ -50,10 +57,11 @@ class TaskQueueSelectorTest : public testing::Test {
     std::set<size_t> changed_queue_set;
     for (size_t i = 0; i < tasks.size(); i++) {
       changed_queue_set.insert(queue_indices[i]);
-      task_queues_[queue_indices[i]]->PushTaskOntoWorkQueueForTest(tasks[i]);
+      task_queues_[queue_indices[i]]->PushTaskOntoImmediateWorkQueueForTest(
+          tasks[i]);
     }
     for (size_t queue_index : changed_queue_set) {
-      selector_.GetTaskQueueSets()->OnPushQueue(
+      selector_.immediate_task_queue_sets()->OnPushQueue(
           task_queues_[queue_index].get());
     }
   }
@@ -61,12 +69,13 @@ class TaskQueueSelectorTest : public testing::Test {
   std::vector<size_t> PopTasks() {
     std::vector<size_t> order;
     TaskQueueImpl* chosen_queue;
-    while (selector_.SelectQueueToService(&chosen_queue)) {
+    internal::TaskQueueSets::TaskType task_type;
+    while (selector_.SelectQueueToService(&chosen_queue, &task_type)) {
       size_t chosen_queue_index =
           queue_to_index_map_.find(chosen_queue)->second;
       order.push_back(chosen_queue_index);
-      chosen_queue->PopTaskFromWorkQueueForTest();
-      selector_.GetTaskQueueSets()->OnPopQueue(chosen_queue);
+      chosen_queue->PopTaskFromImmediateWorkQueueForTest();
+      selector_.immediate_task_queue_sets()->OnPopQueue(chosen_queue);
     }
     return order;
   }
@@ -92,7 +101,7 @@ class TaskQueueSelectorTest : public testing::Test {
 
   const size_t kTaskQueueCount = 5;
   base::Closure test_closure_;
-  TaskQueueSelector selector_;
+  TaskQueueSelectorForTest selector_;
   scoped_ptr<VirtualTimeDomain> virtual_time_domain_;
   std::vector<scoped_refptr<TaskQueueImpl>> task_queues_;
   std::map<TaskQueueImpl*, size_t> queue_to_index_map_;
@@ -178,7 +187,8 @@ TEST_F(TaskQueueSelectorTest, TestDisableEnable) {
 
 TEST_F(TaskQueueSelectorTest, TestEmptyQueues) {
   TaskQueueImpl* chosen_queue = nullptr;
-  EXPECT_FALSE(selector_.SelectQueueToService(&chosen_queue));
+  internal::TaskQueueSets::TaskType task_type;
+  EXPECT_FALSE(selector_.SelectQueueToService(&chosen_queue, &task_type));
 
   // Test only disabled queues.
   std::vector<TaskQueueImpl::Task> tasks = GetTasks(1);
@@ -187,14 +197,15 @@ TEST_F(TaskQueueSelectorTest, TestEmptyQueues) {
   selector_.SetQueuePriority(task_queues_[0].get(),
                              TaskQueue::DISABLED_PRIORITY);
   EXPECT_FALSE(selector_.IsQueueEnabled(task_queues_[0].get()));
-  EXPECT_FALSE(selector_.SelectQueueToService(&chosen_queue));
+  EXPECT_FALSE(selector_.SelectQueueToService(&chosen_queue, &task_type));
 }
 
 TEST_F(TaskQueueSelectorTest, TestAge) {
   std::vector<TaskQueueImpl::Task> tasks;
   int enqueue_order[] = {10, 1, 2, 9, 4};
   for (int i = 0; i < 5; i++) {
-    TaskQueueImpl::Task task(FROM_HERE, test_closure_, 0, true);
+    TaskQueueImpl::Task task(FROM_HERE, test_closure_, base::TimeTicks(), 0,
+                             true);
     task.set_enqueue_order(enqueue_order[i]);
     tasks.push_back(task);
   }
@@ -214,7 +225,8 @@ TEST_F(TaskQueueSelectorTest, TestControlStarvesOthers) {
                              TaskQueue::BEST_EFFORT_PRIORITY);
   for (int i = 0; i < 100; i++) {
     TaskQueueImpl* chosen_queue = nullptr;
-    EXPECT_TRUE(selector_.SelectQueueToService(&chosen_queue));
+    internal::TaskQueueSets::TaskType task_type;
+    EXPECT_TRUE(selector_.SelectQueueToService(&chosen_queue, &task_type));
     EXPECT_EQ(task_queues_[3].get(), chosen_queue);
     // Don't remove task from queue to simulate all queues still being full.
   }
@@ -230,7 +242,8 @@ TEST_F(TaskQueueSelectorTest, TestHighPriorityDoesNotStarveNormal) {
   size_t counts[] = {0, 0, 0};
   for (int i = 0; i < 100; i++) {
     TaskQueueImpl* chosen_queue = nullptr;
-    EXPECT_TRUE(selector_.SelectQueueToService(&chosen_queue));
+    internal::TaskQueueSets::TaskType task_type;
+    EXPECT_TRUE(selector_.SelectQueueToService(&chosen_queue, &task_type));
     size_t chosen_queue_index = queue_to_index_map_.find(chosen_queue)->second;
     counts[chosen_queue_index]++;
     // Don't remove task from queue to simulate all queues still being full.
@@ -248,21 +261,22 @@ TEST_F(TaskQueueSelectorTest, TestBestEffortGetsStarved) {
                              TaskQueue::BEST_EFFORT_PRIORITY);
   selector_.SetQueuePriority(task_queues_[1].get(), TaskQueue::NORMAL_PRIORITY);
   TaskQueueImpl* chosen_queue = nullptr;
+  internal::TaskQueueSets::TaskType task_type;
   for (int i = 0; i < 100; i++) {
-    EXPECT_TRUE(selector_.SelectQueueToService(&chosen_queue));
+    EXPECT_TRUE(selector_.SelectQueueToService(&chosen_queue, &task_type));
     EXPECT_EQ(task_queues_[1].get(), chosen_queue);
     // Don't remove task from queue to simulate all queues still being full.
   }
   selector_.SetQueuePriority(task_queues_[1].get(), TaskQueue::HIGH_PRIORITY);
   for (int i = 0; i < 100; i++) {
-    EXPECT_TRUE(selector_.SelectQueueToService(&chosen_queue));
+    EXPECT_TRUE(selector_.SelectQueueToService(&chosen_queue, &task_type));
     EXPECT_EQ(task_queues_[1].get(), chosen_queue);
     // Don't remove task from queue to simulate all queues still being full.
   }
   selector_.SetQueuePriority(task_queues_[1].get(),
                              TaskQueue::CONTROL_PRIORITY);
   for (int i = 0; i < 100; i++) {
-    EXPECT_TRUE(selector_.SelectQueueToService(&chosen_queue));
+    EXPECT_TRUE(selector_.SelectQueueToService(&chosen_queue, &task_type));
     EXPECT_EQ(task_queues_[1].get(), chosen_queue);
     // Don't remove task from queue to simulate all queues still being full.
   }
@@ -282,6 +296,92 @@ TEST_F(TaskQueueSelectorTest, EnabledWorkQueuesEmpty) {
   PopTasks();
   EXPECT_TRUE(selector_.EnabledWorkQueuesEmpty());
 }
+
+TEST_F(TaskQueueSelectorTest, ChooseOldestWithPriority_Empty) {
+  TaskQueueImpl* selected_queue;
+  TaskQueueSets::TaskType selected_task_type;
+  EXPECT_FALSE(selector_.ChooseOldestWithPriority(
+      TaskQueue::NORMAL_PRIORITY, &selected_queue, &selected_task_type));
+}
+
+TEST_F(TaskQueueSelectorTest, ChooseOldestWithPriority_OnlyDelayed) {
+  TaskQueueImpl::Task task(FROM_HERE, test_closure_, base::TimeTicks(), 0,
+                           true);
+  task.set_enqueue_order(0);
+
+  task_queues_[0]->PushTaskOntoDelayedWorkQueueForTest(task);
+  selector_.delayed_task_queue_sets()->OnPushQueue(task_queues_[0].get());
+
+  TaskQueueImpl* selected_queue;
+  TaskQueueSets::TaskType selected_task_type;
+  EXPECT_TRUE(selector_.ChooseOldestWithPriority(
+      TaskQueue::NORMAL_PRIORITY, &selected_queue, &selected_task_type));
+  EXPECT_EQ(selected_queue, task_queues_[0].get());
+  EXPECT_EQ(selected_task_type, TaskQueueSets::TaskType::DELAYED);
+}
+
+TEST_F(TaskQueueSelectorTest, ChooseOldestWithPriority_OnlyImmediate) {
+  TaskQueueImpl::Task task(FROM_HERE, test_closure_, base::TimeTicks(), 0,
+                           true);
+  task.set_enqueue_order(0);
+
+  task_queues_[0]->PushTaskOntoImmediateWorkQueueForTest(task);
+  selector_.immediate_task_queue_sets()->OnPushQueue(task_queues_[0].get());
+
+  TaskQueueImpl* selected_queue;
+  TaskQueueSets::TaskType selected_task_type;
+  EXPECT_TRUE(selector_.ChooseOldestWithPriority(
+      TaskQueue::NORMAL_PRIORITY, &selected_queue, &selected_task_type));
+  EXPECT_EQ(selected_queue, task_queues_[0].get());
+  EXPECT_EQ(selected_task_type, TaskQueueSets::TaskType::IMMEDIATE);
+}
+
+struct ChooseOldestWithPriorityTestParam {
+  int delayed_task_enqueue_order;
+  int immediate_task_enqueue_order;
+  bool force_select_immediate;
+  TaskQueueSets::TaskType expected_selected_task_type;
+};
+
+static const ChooseOldestWithPriorityTestParam
+    kChooseOldestWithPriorityTestCases[] = {
+        {1, 2, false, TaskQueueSets::TaskType::DELAYED},
+        {1, 2, true, TaskQueueSets::TaskType::IMMEDIATE},
+        {2, 1, false, TaskQueueSets::TaskType::IMMEDIATE},
+        {2, 1, true, TaskQueueSets::TaskType::IMMEDIATE},
+};
+
+class ChooseOldestWithPriorityTest
+    : public TaskQueueSelectorTest,
+      public testing::WithParamInterface<ChooseOldestWithPriorityTestParam> {};
+
+TEST_P(ChooseOldestWithPriorityTest, RoundRobinTest) {
+  TaskQueueImpl::Task immediate_task(
+      FROM_HERE, test_closure_, base::TimeTicks(),
+      GetParam().immediate_task_enqueue_order, true);
+  immediate_task.set_enqueue_order(GetParam().immediate_task_enqueue_order);
+  task_queues_[0]->PushTaskOntoImmediateWorkQueueForTest(immediate_task);
+  selector_.immediate_task_queue_sets()->OnPushQueue(task_queues_[0].get());
+
+  TaskQueueImpl::Task delayed_task(FROM_HERE, test_closure_, base::TimeTicks(),
+                                   GetParam().delayed_task_enqueue_order, true);
+  delayed_task.set_enqueue_order(GetParam().delayed_task_enqueue_order);
+  task_queues_[0]->PushTaskOntoDelayedWorkQueueForTest(delayed_task);
+  selector_.delayed_task_queue_sets()->OnPushQueue(task_queues_[0].get());
+
+  selector_.SetForceSelectImmediateForTest(GetParam().force_select_immediate);
+
+  TaskQueueImpl* selected_queue;
+  TaskQueueSets::TaskType selected_task_type;
+  EXPECT_TRUE(selector_.ChooseOldestWithPriority(
+      TaskQueue::NORMAL_PRIORITY, &selected_queue, &selected_task_type));
+  EXPECT_EQ(selected_queue, task_queues_[0].get());
+  EXPECT_EQ(selected_task_type, GetParam().expected_selected_task_type);
+}
+
+INSTANTIATE_TEST_CASE_P(ChooseOldestWithPriorityTest,
+                        ChooseOldestWithPriorityTest,
+                        testing::ValuesIn(kChooseOldestWithPriorityTestCases));
 
 }  // namespace internal
 }  // namespace scheduler

@@ -93,7 +93,7 @@ IdleHelper::IdlePeriodState IdleHelper::ComputeNewLongIdlePeriodState(
   if (long_idle_period_duration >=
       base::TimeDelta::FromMilliseconds(kMinimumIdlePeriodDurationMillis)) {
     *next_long_idle_period_delay_out = long_idle_period_duration;
-    if (!idle_queue_->HasPendingImmediateTask()) {
+    if (!idle_queue_->HasPendingImmediateWork()) {
       return IdlePeriodState::IN_LONG_IDLE_PERIOD_PAUSED;
     } else if (long_idle_period_duration == max_long_idle_period_duration) {
       return IdlePeriodState::IN_LONG_IDLE_PERIOD_WITH_MAX_DEADLINE;
@@ -224,13 +224,13 @@ void IdleHelper::UpdateLongIdlePeriodStateAfterIdleTask() {
   DCHECK(IsInLongIdlePeriod(state_.idle_period_state()));
   TRACE_EVENT0(disabled_by_default_tracing_category_,
                "UpdateLongIdlePeriodStateAfterIdleTask");
-  TaskQueue::QueueState queue_state = idle_queue_->GetQueueState();
-  if (queue_state == TaskQueue::QueueState::EMPTY) {
+
+  if (!idle_queue_->HasPendingImmediateWork()) {
     // If there are no more idle tasks then pause long idle period ticks until a
     // new idle task is posted.
     state_.UpdateState(IdlePeriodState::IN_LONG_IDLE_PERIOD_PAUSED,
                        state_.idle_period_deadline(), base::TimeTicks());
-  } else if (queue_state == TaskQueue::QueueState::NEEDS_PUMPING) {
+  } else if (idle_queue_->NeedsPumping()) {
     // If there is still idle work to do then just start the next idle period.
     base::TimeDelta next_long_idle_period_delay;
     if (state_.idle_period_state() ==
