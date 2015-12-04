@@ -67,7 +67,11 @@ VerifyStatus GetExperimentStatus() {
     return ENFORCE_STRICT;
   }
 
+#if defined(OS_WIN)
+  VerifyStatus default_status = ENFORCE;
+#else
   VerifyStatus default_status = NONE;
+#endif
 
   if (group == "EnforceStrict")
     return ENFORCE_STRICT;
