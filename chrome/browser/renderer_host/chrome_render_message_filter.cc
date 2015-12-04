@@ -35,10 +35,6 @@
 #include "extensions/common/manifest_handlers/default_locale_handler.h"
 #endif
 
-#if defined(USE_TCMALLOC)
-#include "chrome/browser/browser_about_handler.h"
-#endif
-
 using content::BrowserThread;
 using blink::WebCache;
 
