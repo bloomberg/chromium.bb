@@ -8,6 +8,7 @@
 
 #include "components/scheduler/base/task_queue_impl.h"
 #include "components/scheduler/base/task_queue_manager_delegate.h"
+#include "components/scheduler/base/work_queue.h"
 #include "components/scheduler/scheduler_export.h"
 
 namespace scheduler {
@@ -136,7 +137,7 @@ void TimeDomain::UpdateWorkQueues(
     // NOTE Update work queue may erase itself from |updatable_queue_set_|.
     // This is fine, erasing an element won't invalidate any interator, as long
     // as the iterator isn't the element being delated.
-    if (queue->ImmediateWorkQueueEmpty())
+    if (queue->immediate_work_queue()->Empty())
       queue->UpdateImmediateWorkQueue(should_trigger_wakeup, previous_task);
   }
 }

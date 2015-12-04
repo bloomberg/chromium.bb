@@ -12,7 +12,8 @@
 #include "components/scheduler/base/task_queue_impl.h"
 #include "components/scheduler/base/task_queue_manager_delegate.h"
 #include "components/scheduler/base/task_queue_selector.h"
-#include "components/scheduler/base/task_queue_sets.h"
+#include "components/scheduler/base/work_queue.h"
+#include "components/scheduler/base/work_queue_sets.h"
 
 namespace scheduler {
 
@@ -171,13 +172,12 @@ void TaskQueueManager::DoWork(base::TimeTicks run_time, bool from_main_thread) {
 
   internal::TaskQueueImpl::Task previous_task;
   for (int i = 0; i < work_batch_size_; i++) {
-    internal::TaskQueueImpl* queue;
-    internal::TaskQueueSets::TaskType task_type;
-    if (!SelectQueueToService(&queue, &task_type)) {
+    internal::WorkQueue* work_queue;
+    if (!SelectWorkQueueToService(&work_queue)) {
       break;
     }
 
-    switch (ProcessTaskFromWorkQueue(queue, task_type, &previous_task)) {
+    switch (ProcessTaskFromWorkQueue(work_queue, &previous_task)) {
       case ProcessTaskResult::DEFERRED:
         // If a task was deferred, try again with another task. Note that this
         // means deferred tasks (i.e. non-nestable tasks) will never trigger
@@ -188,7 +188,7 @@ void TaskQueueManager::DoWork(base::TimeTicks run_time, bool from_main_thread) {
       case ProcessTaskResult::TASK_QUEUE_MANAGER_DELETED:
         return;  // The TaskQueueManager got deleted, we must bail out.
     }
-    bool should_trigger_wakeup = queue->wakeup_policy() ==
+    bool should_trigger_wakeup = work_queue->task_queue()->wakeup_policy() ==
                                  TaskQueue::WakeupPolicy::CAN_WAKE_OTHER_QUEUES;
     UpdateWorkQueues(should_trigger_wakeup, &previous_task);
 
@@ -217,13 +217,12 @@ bool TaskQueueManager::TryAdvanceTimeDomains() {
   return can_advance;
 }
 
-bool TaskQueueManager::SelectQueueToService(
-    internal::TaskQueueImpl** out_queue,
-    internal::TaskQueueSets::TaskType* out_task_type) {
-  bool should_run = selector_.SelectQueueToService(out_queue, out_task_type);
+bool TaskQueueManager::SelectWorkQueueToService(
+    internal::WorkQueue** out_work_queue) {
+  bool should_run = selector_.SelectWorkQueueToService(out_work_queue);
   TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(
       disabled_by_default_tracing_category_, "TaskQueueManager", this,
-      AsValueWithSelectorResult(should_run, *out_queue, *out_task_type));
+      AsValueWithSelectorResult(should_run, *out_work_queue));
   return should_run;
 }
 
@@ -233,19 +232,17 @@ void TaskQueueManager::DidQueueTask(
 }
 
 TaskQueueManager::ProcessTaskResult TaskQueueManager::ProcessTaskFromWorkQueue(
-    internal::TaskQueueImpl* queue,
-    internal::TaskQueueSets::TaskType task_type,
+    internal::WorkQueue* work_queue,
     internal::TaskQueueImpl::Task* out_previous_task) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   scoped_refptr<DeletionSentinel> protect(deletion_sentinel_);
-  internal::TaskQueueImpl::Task pending_task =
-      task_type == internal::TaskQueueSets::TaskType::DELAYED
-          ? queue->TakeTaskFromDelayedWorkQueue()
-          : queue->TakeTaskFromImmediateWorkQueue();
+  internal::TaskQueueImpl* queue = work_queue->task_queue();
 
   if (queue->GetQuiescenceMonitored())
     task_was_run_on_quiescence_monitored_queue_ = true;
 
+  internal::TaskQueueImpl::Task pending_task =
+      work_queue->TakeTaskFromWorkQueue();
   if (!pending_task.nestable && delegate_->IsNested()) {
     // Defer non-nestable work to the main task runner.  NOTE these tasks can be
     // arbitrarily delayed so the additional delay should not be a problem.
@@ -326,8 +323,7 @@ LazyNow TaskQueueManager::CreateLazyNow() const {
 scoped_refptr<base::trace_event::ConvertableToTraceFormat>
 TaskQueueManager::AsValueWithSelectorResult(
     bool should_run,
-    internal::TaskQueueImpl* selected_queue,
-    internal::TaskQueueSets::TaskType task_type) const {
+    internal::WorkQueue* selected_work_queue) const {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   scoped_refptr<base::trace_event::TracedValue> state =
       new base::trace_event::TracedValue();
@@ -339,9 +335,9 @@ TaskQueueManager::AsValueWithSelectorResult(
   selector_.AsValueInto(state.get());
   state->EndDictionary();
   if (should_run) {
-    state->SetString("selected_queue", selected_queue->GetName());
-    state->SetString("task_type",
-                     internal::TaskQueueSets::TaskTypeToString(task_type));
+    state->SetString("selected_queue",
+                     selected_work_queue->task_queue()->GetName());
+    state->SetString("work_queue_name", selected_work_queue->name());
   }
 
   state->BeginArray("time_domains");
@@ -354,8 +350,10 @@ TaskQueueManager::AsValueWithSelectorResult(
 void TaskQueueManager::OnTaskQueueEnabled(internal::TaskQueueImpl* queue) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   // Only schedule DoWork if there's something to do.
-  if (!queue->ImmediateWorkQueueEmpty() || !queue->DelayedWorkQueueEmpty())
+  if (!queue->immediate_work_queue()->Empty() ||
+      !queue->delayed_work_queue()->Empty()) {
     MaybeScheduleImmediateWork(FROM_HERE);
+  }
 }
 
 }  // namespace scheduler

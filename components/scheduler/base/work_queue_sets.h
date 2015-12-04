@@ -2,58 +2,46 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SCHEDULER_BASE_TASK_QUEUE_SETS_H_
-#define COMPONENTS_SCHEDULER_BASE_TASK_QUEUE_SETS_H_
+#ifndef COMPONENTS_SCHEDULER_BASE_WORK_QUEUE_SETS_H_
+#define COMPONENTS_SCHEDULER_BASE_WORK_QUEUE_SETS_H_
 
 #include <map>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/trace_event/trace_event_argument.h"
-#include "components/scheduler/base/task_queue.h"
+#include "components/scheduler/base/task_queue_impl.h"
 #include "components/scheduler/scheduler_export.h"
 
 namespace scheduler {
 namespace internal {
 class TaskQueueImpl;
 
-class SCHEDULER_EXPORT TaskQueueSets {
+class SCHEDULER_EXPORT WorkQueueSets {
  public:
-  // TODO(alexclarke): Consider refactoring TaskQueueImpl to have two explicit
-  // WorkQueue objects (supporting PushOntoImmediateIncomingQueueLocked) so we
-  // don't have to pass this enum around.
-  enum class TaskType { DELAYED, IMMEDIATE };
-
-  TaskQueueSets(TaskType task_type, size_t num_sets);
-  ~TaskQueueSets();
+  explicit WorkQueueSets(size_t num_sets);
+  ~WorkQueueSets();
 
   // O(log num queues)
-  void RemoveQueue(internal::TaskQueueImpl* queue);
+  void RemoveQueue(WorkQueue* work_queue);
 
   // O(log num queues)
-  void MoveQueue(internal::TaskQueueImpl* queue,
-                 size_t old_set_index,
-                 size_t new_set_index);
+  void AssignQueueToSet(WorkQueue* queue, size_t set_index);
 
   // O(log num queues)
-  void OnPushQueue(internal::TaskQueueImpl* queue);
+  void OnPushQueue(WorkQueue* work_queue);
 
   // If empty it's O(1) amortized, otherwise it's O(log num queues)
-  void OnPopQueue(internal::TaskQueueImpl* queue);
+  void OnPopQueue(WorkQueue* work_queue);
 
   // O(1)
-  bool GetOldestQueueInSet(size_t set_index,
-                           internal::TaskQueueImpl** out_queue) const;
+  bool GetOldestQueueInSet(size_t set_index, WorkQueue** out_work_queue) const;
 
   // O(1)
   bool IsSetEmpty(size_t set_index) const;
 
-  TaskType task_type() const { return task_type_; }
-
-  static const char* TaskTypeToString(TaskType task_type);
-
  private:
-  bool GetWorkQueueFrontTaskEnqueueOrder(internal::TaskQueueImpl* queue,
+  bool GetWorkQueueFrontTaskEnqueueOrder(WorkQueue* work_queue,
                                          int* enqueue_order) const;
 
   struct EnqueueOrderComparitor {
@@ -76,16 +64,14 @@ class SCHEDULER_EXPORT TaskQueueSets {
     }
   };
 
-  typedef std::map<int, internal::TaskQueueImpl*, EnqueueOrderComparitor>
-      EnqueueOrderToQueueMap;
-  std::vector<EnqueueOrderToQueueMap> enqueue_order_to_queue_maps_;
+  typedef std::map<int, WorkQueue*, EnqueueOrderComparitor>
+      EnqueueOrderToWorkQueueMap;
+  std::vector<EnqueueOrderToWorkQueueMap> enqueue_order_to_work_queue_maps_;
 
-  const TaskType task_type_;
-
-  DISALLOW_COPY_AND_ASSIGN(TaskQueueSets);
+  DISALLOW_COPY_AND_ASSIGN(WorkQueueSets);
 };
 
 }  // namespace internal
 }  // namespace scheduler
 
-#endif  // COMPONENTS_SCHEDULER_BASE_TASK_QUEUE_SETS_H_
+#endif  // COMPONENTS_SCHEDULER_BASE_WORK_QUEUE_SETS_H_

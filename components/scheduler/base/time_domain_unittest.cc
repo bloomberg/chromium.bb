@@ -10,6 +10,7 @@
 #include "components/scheduler/base/task_queue_manager.h"
 #include "components/scheduler/base/task_queue_manager_delegate_for_test.h"
 #include "components/scheduler/base/test_time_source.h"
+#include "components/scheduler/base/work_queue.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using testing::_;
@@ -174,11 +175,11 @@ TEST_F(TimeDomainTest, UpdateWorkQueues) {
                                     &lazy_now);
 
   time_domain_->UpdateWorkQueues(false, nullptr);
-  EXPECT_EQ(0UL, dummy_queue->DelayedWorkQueueSizeForTest());
+  EXPECT_EQ(0UL, dummy_queue->delayed_work_queue()->Size());
 
   time_domain_->SetNow(delayed_runtime);
   time_domain_->UpdateWorkQueues(false, nullptr);
-  EXPECT_EQ(1UL, dummy_queue->DelayedWorkQueueSizeForTest());
+  EXPECT_EQ(1UL, dummy_queue->delayed_work_queue()->Size());
 }
 
 namespace {

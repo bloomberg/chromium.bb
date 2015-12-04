@@ -157,8 +157,7 @@ class SCHEDULER_EXPORT TaskQueueManager
   // Chooses the next work queue to service. Returns true if |out_queue|
   // indicates the queue from which the next task should be run, false to
   // avoid running any tasks.
-  bool SelectQueueToService(internal::TaskQueueImpl** out_queue,
-                            internal::TaskQueueSets::TaskType* out_task_type);
+  bool SelectWorkQueueToService(internal::WorkQueue** out_work_queue);
 
   // Runs a single nestable task from the |queue|. On exit, |out_task| will
   // contain the task which was executed. Non-nestable task are reposted on the
@@ -169,8 +168,7 @@ class SCHEDULER_EXPORT TaskQueueManager
     TASK_QUEUE_MANAGER_DELETED
   };
   ProcessTaskResult ProcessTaskFromWorkQueue(
-      internal::TaskQueueImpl* queue,
-      internal::TaskQueueSets::TaskType task_type,
+      internal::WorkQueue* work_queue,
       internal::TaskQueueImpl::Task* out_previous_task);
 
   bool RunsTasksOnCurrentThread() const;
@@ -184,8 +182,7 @@ class SCHEDULER_EXPORT TaskQueueManager
 
   scoped_refptr<base::trace_event::ConvertableToTraceFormat>
   AsValueWithSelectorResult(bool should_run,
-                            internal::TaskQueueImpl* selected_queue,
-                            internal::TaskQueueSets::TaskType task_type) const;
+                            internal::WorkQueue* selected_work_queue) const;
 
   std::set<TimeDomain*> time_domains_;
   scoped_ptr<RealTimeDomain> real_time_domain_;

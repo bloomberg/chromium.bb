@@ -31,7 +31,7 @@ class SCHEDULER_EXPORT RealTimeDomain : public TimeDomain {
       base::trace_event::TracedValue* state) const override;
 
  private:
-  TaskQueueManager* task_queue_manager_;                   // NOT OWNED
+  TaskQueueManager* task_queue_manager_;  // NOT OWNED
 
   DISALLOW_COPY_AND_ASSIGN(RealTimeDomain);
 };

@@ -14,10 +14,11 @@
 #include "components/scheduler/base/task_queue_impl.h"
 #include "components/scheduler/base/task_queue_manager_delegate_for_test.h"
 #include "components/scheduler/base/task_queue_selector.h"
-#include "components/scheduler/base/task_queue_sets.h"
 #include "components/scheduler/base/test_always_fail_time_source.h"
 #include "components/scheduler/base/test_time_source.h"
 #include "components/scheduler/base/virtual_time_domain.h"
+#include "components/scheduler/base/work_queue.h"
+#include "components/scheduler/base/work_queue_sets.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using testing::ElementsAre;
@@ -525,7 +526,7 @@ TEST_F(TaskQueueManagerTest, ManualPumpingWithNonEmptyWorkQueue) {
   runners_[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 2, &run_order));
   runners_[0]->PumpQueue(true);
 
-  EXPECT_EQ(2u, runners_[0]->ImmediateWorkQueueSizeForTest());
+  EXPECT_EQ(2u, runners_[0]->immediate_work_queue()->Size());
 }
 
 void ReentrantTestTask(scoped_refptr<base::SingleThreadTaskRunner> runner,

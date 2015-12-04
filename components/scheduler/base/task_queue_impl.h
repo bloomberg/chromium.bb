@@ -20,6 +20,9 @@ class TimeDomain;
 class TaskQueueManager;
 
 namespace internal {
+class WorkQueue;
+class WorkQueueSets;
+
 class SCHEDULER_EXPORT TaskQueueImpl final : public TaskQueue {
  public:
   TaskQueueImpl(TaskQueueManager* task_queue_manager,
@@ -96,16 +99,6 @@ class SCHEDULER_EXPORT TaskQueueImpl final : public TaskQueue {
   void UpdateDelayedWorkQueue(LazyNow* lazy_now,
                               bool should_trigger_wakeup,
                               const Task* previous_task);
-  Task TakeTaskFromDelayedWorkQueue();
-  Task TakeTaskFromImmediateWorkQueue();
-
-  bool ImmediateWorkQueueEmpty() const {
-    return main_thread_only().immediate_work_queue.empty();
-  }
-
-  bool DelayedWorkQueueEmpty() const {
-    return main_thread_only().delayed_work_queue.empty();
-  }
 
   WakeupPolicy wakeup_policy() const {
     DCHECK(main_thread_checker_.CalledOnValidThread());
@@ -116,20 +109,6 @@ class SCHEDULER_EXPORT TaskQueueImpl final : public TaskQueue {
 
   void AsValueInto(base::trace_event::TracedValue* state) const;
 
-  size_t get_task_queue_set_index() const {
-    return main_thread_only().set_index;
-  }
-
-  void set_task_queue_set_index(size_t set_index) {
-    main_thread_only().set_index = set_index;
-  }
-
-  // If the work queue isn't empty, |enqueue_order| gets set to the enqueue
-  // order of the front task and the function returns true.  Otherwise the
-  // function returns false.
-  bool GetDelayedWorkQueueFrontTaskEnqueueOrder(int* enqueue_order) const;
-  bool GetImmediateWorkQueueFrontTaskEnqueueOrder(int* enqueue_order) const;
-
   bool GetQuiescenceMonitored() const { return should_monitor_quiescence_; }
   bool GetShouldNotifyObservers() const {
     return should_notify_observers_;
@@ -137,19 +116,6 @@ class SCHEDULER_EXPORT TaskQueueImpl final : public TaskQueue {
 
   void NotifyWillProcessTask(const base::PendingTask& pending_task);
   void NotifyDidProcessTask(const base::PendingTask& pending_task);
-
-  // Test support functions.  These should not be used in production code.
-  void PushTaskOntoImmediateWorkQueueForTest(const Task& task);
-  void PopTaskFromImmediateWorkQueueForTest();
-  void PushTaskOntoDelayedWorkQueueForTest(const Task& task);
-
-  size_t ImmediateWorkQueueSizeForTest() const {
-    return main_thread_only().immediate_work_queue.size();
-  }
-
-  size_t DelayedWorkQueueSizeForTest() const {
-    return main_thread_only().delayed_work_queue.size();
-  }
 
   // Can be called on any thread.
   static const char* PumpPolicyToString(TaskQueue::PumpPolicy pump_policy);
@@ -161,7 +127,25 @@ class SCHEDULER_EXPORT TaskQueueImpl final : public TaskQueue {
   // Can be called on any thread.
   static const char* PriorityToString(TaskQueue::QueuePriority priority);
 
+  WorkQueue* delayed_work_queue() {
+    return main_thread_only().delayed_work_queue.get();
+  }
+
+  const WorkQueue* delayed_work_queue() const {
+    return main_thread_only().delayed_work_queue.get();
+  }
+
+  WorkQueue* immediate_work_queue() {
+    return main_thread_only().immediate_work_queue.get();
+  }
+
+  const WorkQueue* immediate_work_queue() const {
+    return main_thread_only().immediate_work_queue.get();
+  }
+
  private:
+  friend class WorkQueue;
+
   enum class TaskType {
     NORMAL,
     NON_NESTABLE,
@@ -185,15 +169,16 @@ class SCHEDULER_EXPORT TaskQueueImpl final : public TaskQueue {
   };
 
   struct MainThreadOnly {
-    MainThreadOnly(TaskQueueManager* task_queue_manager);
+    MainThreadOnly(TaskQueueManager* task_queue_manager,
+                   TaskQueueImpl* task_queue);
     ~MainThreadOnly();
 
     // Another copy of TaskQueueManager for lock-free access from the main
     // thread. See description inside struct AnyThread for details.
     TaskQueueManager* task_queue_manager;
 
-    std::queue<Task> delayed_work_queue;
-    std::queue<Task> immediate_work_queue;
+    scoped_ptr<WorkQueue> delayed_work_queue;
+    scoped_ptr<WorkQueue> immediate_work_queue;
     base::ObserverList<base::MessageLoop::TaskObserver> task_observers;
     size_t set_index;
   };
