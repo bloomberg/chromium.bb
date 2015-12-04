@@ -13,6 +13,14 @@ void ModelTypeStore::CreateInMemoryStoreForTest(const InitCallback& callback) {
   ModelTypeStoreImpl::CreateInMemoryStoreForTest(callback);
 }
 
+// static
+void ModelTypeStore::CreateStore(
+    const std::string& path,
+    scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
+    const InitCallback& callback) {
+  ModelTypeStoreImpl::CreateStore(path, blocking_task_runner, callback);
+}
+
 ModelTypeStore::~ModelTypeStore() {}
 
 ModelTypeStore::WriteBatch::WriteBatch() {}

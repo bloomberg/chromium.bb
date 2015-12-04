@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/sequenced_task_runner.h"
 #include "base/task_runner_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "sync/internal_api/public/model_type_store_backend.h"
@@ -48,7 +49,7 @@ leveldb::WriteBatch* ModelTypeStoreImpl::GetLeveldbWriteBatch(
 
 ModelTypeStoreImpl::ModelTypeStoreImpl(
     scoped_ptr<ModelTypeStoreBackend> backend,
-    scoped_refptr<base::TaskRunner> backend_task_runner)
+    scoped_refptr<base::SequencedTaskRunner> backend_task_runner)
     : backend_(backend.Pass()),
       backend_task_runner_(backend_task_runner),
       weak_ptr_factory_(this) {
@@ -60,6 +61,28 @@ ModelTypeStoreImpl::~ModelTypeStoreImpl() {
   DCHECK(CalledOnValidThread());
   backend_task_runner_->PostTask(
       FROM_HERE, base::Bind(&NoOpForBackendDtor, base::Passed(&backend_)));
+}
+
+// static
+void ModelTypeStoreImpl::CreateStore(
+    const std::string& path,
+    scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
+    const InitCallback& callback) {
+  DCHECK(!callback.is_null());
+
+  scoped_ptr<ModelTypeStoreBackend> backend(new ModelTypeStoreBackend());
+
+  scoped_ptr<ModelTypeStoreImpl> store(
+      new ModelTypeStoreImpl(backend.Pass(), blocking_task_runner));
+
+  auto task =
+      base::Bind(&ModelTypeStoreBackend::Init,
+                 base::Unretained(store->backend_.get()), path, nullptr);
+  auto reply = base::Bind(&ModelTypeStoreImpl::BackendInitDone, callback,
+                          base::Passed(&store));
+
+  base::PostTaskAndReplyWithResult(blocking_task_runner.get(), FROM_HERE, task,
+                                   reply);
 }
 
 // static
@@ -77,7 +100,7 @@ void ModelTypeStoreImpl::CreateInMemoryStoreForTest(
   backend->TakeEnvOwnership(env.Pass());
 
   // In-memory store backend works on the same thread as test.
-  scoped_refptr<base::TaskRunner> task_runner =
+  scoped_refptr<base::SequencedTaskRunner> task_runner =
       base::ThreadTaskRunnerHandle::Get();
   scoped_ptr<ModelTypeStoreImpl> store(
       new ModelTypeStoreImpl(backend.Pass(), task_runner));

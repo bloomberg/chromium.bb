@@ -10,7 +10,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/task_runner.h"
 #include "base/threading/non_thread_safe.h"
 #include "sync/api/model_type_store.h"
 
@@ -29,6 +28,10 @@ class ModelTypeStoreImpl : public ModelTypeStore, public base::NonThreadSafe {
  public:
   ~ModelTypeStoreImpl() override;
 
+  static void CreateStore(
+      const std::string& path,
+      scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
+      const InitCallback& callback);
   static void CreateInMemoryStoreForTest(const InitCallback& callback);
 
   // ModelTypeStore implementation.
@@ -69,8 +72,9 @@ class ModelTypeStoreImpl : public ModelTypeStore, public base::NonThreadSafe {
 
   static leveldb::WriteBatch* GetLeveldbWriteBatch(WriteBatch* write_batch);
 
-  ModelTypeStoreImpl(scoped_ptr<ModelTypeStoreBackend> backend,
-                     scoped_refptr<base::TaskRunner> backend_task_runner);
+  ModelTypeStoreImpl(
+      scoped_ptr<ModelTypeStoreBackend> backend,
+      scoped_refptr<base::SequencedTaskRunner> backend_task_runner);
 
   // Callbacks for different calls to ModelTypeStoreBackend.
   void ReadDataDone(const ReadDataCallback& callback,
@@ -95,7 +99,7 @@ class ModelTypeStoreImpl : public ModelTypeStore, public base::NonThreadSafe {
   // accomplish this store's dtor posts task to backend thread passing backend
   // ownership to task parameter.
   scoped_ptr<ModelTypeStoreBackend> backend_;
-  scoped_refptr<base::TaskRunner> backend_task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> backend_task_runner_;
 
   base::WeakPtrFactory<ModelTypeStoreImpl> weak_ptr_factory_;
 };

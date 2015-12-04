@@ -12,6 +12,10 @@
 #include "base/macros.h"
 #include "sync/base/sync_export.h"
 
+namespace base {
+class SequencedTaskRunner;
+}  // namespace base
+
 namespace syncer_v2 {
 
 // ModelTypeStore is leveldb backed store for model type's data, metadata and
@@ -85,6 +89,21 @@ class SYNC_EXPORT ModelTypeStore {
                               const std::string& global_metadata)>
       ReadMetadataCallback;
 
+  // CreateStore takes |path| and |blocking_task_runner|. Here is how to get
+  // task runner in production code:
+  //
+  // base::SequencedWorkerPool* worker_pool =
+  //     content::BrowserThread::GetBlockingPool();
+  // scoped_refptr<base::SequencedTaskRunner> blocking_task_runner(
+  //     worker_pool->GetSequencedTaskRunnerWithShutdownBehavior(
+  //         worker_pool->GetSequenceToken(),
+  //         base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
+  //
+  // In test get task runner from MessageLoop::task_runner().
+  static void CreateStore(
+      const std::string& path,
+      scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
+      const InitCallback& callback);
   // Creates store object backed by in-memory leveldb database. It is used in
   // tests.
   static void CreateInMemoryStoreForTest(const InitCallback& callback);
