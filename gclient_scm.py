@@ -1076,6 +1076,14 @@ class GitWrapper(SCMWrapper):
       os.path.isdir(os.path.join(g, "rebase-apply")))
 
   def _CheckClean(self, rev_str):
+    lockfile = os.path.join(self.checkout_path, ".git", "index.lock")
+    if os.path.exists(lockfile):
+      raise gclient_utils.Error(
+        '\n____ %s%s\n'
+        '\tYour repo is locked, possibly due to a concurrent git process.\n'
+        '\tIf no git executable is running, then clean up %r and try again.\n'
+        % (self.relpath, rev_str, lockfile))
+
     # Make sure the tree is clean; see git-rebase.sh for reference
     try:
       scm.GIT.Capture(['update-index', '--ignore-submodules', '--refresh'],
