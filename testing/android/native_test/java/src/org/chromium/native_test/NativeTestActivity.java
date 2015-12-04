@@ -60,8 +60,10 @@ public class NativeTestActivity extends Activity {
     private void parseArgumentsFromIntent(Intent intent) {
         Log.i(TAG, "Extras:");
         Bundle extras = intent.getExtras();
-        for (String s : extras.keySet()) {
-            Log.i(TAG, "  %s", s);
+        if (extras != null) {
+            for (String s : extras.keySet()) {
+                Log.i(TAG, "  %s", s);
+            }
         }
 
         mCommandLineFilePath = intent.getStringExtra(EXTRA_COMMAND_LINE_FILE);
