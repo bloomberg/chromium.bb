@@ -589,7 +589,14 @@ void NativeWidgetMus::SchedulePaintInRect(const gfx::Rect& rect) {
 }
 
 void NativeWidgetMus::SetCursor(gfx::NativeCursor cursor) {
-  // NOTIMPLEMENTED();
+  // TODO(erg): In aura, our incoming cursor is really two
+  // parts. cursor.native_type() is an integer for standard cursors and is all
+  // we support right now. If native_type() == kCursorCustom, than we should
+  // also send an image, but as the cursor code is currently written, the image
+  // is in a platform native format that's already uploaded to the window
+  // server.
+  window_tree_host_->platform_window()->SetCursorById(
+      mus::mojom::Cursor(cursor.native_type()));
 }
 
 bool NativeWidgetMus::IsMouseEventsEnabled() const {

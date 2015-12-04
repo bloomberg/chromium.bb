@@ -113,6 +113,12 @@ bool WindowManagerAccessPolicy::CanSetClientArea(
          delegate_->IsRootForAccessPolicy(window->id());
 }
 
+bool WindowManagerAccessPolicy::CanSetCursorProperties(
+    const ServerWindow* window) const {
+  return window->id().connection_id == connection_id_ ||
+         delegate_->IsRootForAccessPolicy(window->id());
+}
+
 bool WindowManagerAccessPolicy::ShouldNotifyOnHierarchyChange(
     const ServerWindow* window,
     const ServerWindow** new_parent,

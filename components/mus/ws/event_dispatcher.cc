@@ -147,7 +147,10 @@ class EventMatcher {
 ////////////////////////////////////////////////////////////////////////////////
 
 EventDispatcher::EventDispatcher(EventDispatcherDelegate* delegate)
-    : delegate_(delegate), root_(nullptr) {}
+    : delegate_(delegate),
+      root_(nullptr),
+      mouse_button_down_(false),
+      mouse_cursor_source_window_(nullptr) {}
 
 EventDispatcher::~EventDispatcher() {
   std::set<ServerWindow*> pointer_targets;
@@ -211,6 +214,10 @@ void EventDispatcher::ProcessKeyEvent(mojom::EventPtr event) {
 }
 
 void EventDispatcher::ProcessPointerEvent(mojom::EventPtr event) {
+  bool is_mouse_event =
+      event->pointer_data &&
+      event->pointer_data->kind == mojom::PointerKind::POINTER_KIND_MOUSE;
+
   const int32_t pointer_id = event->pointer_data->pointer_id;
   if (event->action == mojom::EVENT_TYPE_WHEEL ||
       (event->action == mojom::EVENT_TYPE_POINTER_MOVE &&
@@ -223,6 +230,8 @@ void EventDispatcher::ProcessPointerEvent(mojom::EventPtr event) {
       pointer_target.window =
           FindDeepestVisibleWindowForEvents(root_, surface_id_, &location);
     }
+    if (is_mouse_event && !mouse_button_down_)
+      mouse_cursor_source_window_ = pointer_target.window;
     DispatchToPointerTarget(pointer_target, event.Pass());
     return;
   }
@@ -237,6 +246,11 @@ void EventDispatcher::ProcessPointerEvent(mojom::EventPtr event) {
     DCHECK(target);
     if (!IsObservingWindow(target))
       target->AddObserver(this);
+
+    if (is_mouse_event) {
+      mouse_button_down_ = true;
+      mouse_cursor_source_window_ = target;
+    }
 
     pointer_targets_[pointer_id].window = target;
     pointer_targets_[pointer_id].in_nonclient_area =
@@ -253,6 +267,18 @@ void EventDispatcher::ProcessPointerEvent(mojom::EventPtr event) {
        event->action == mojom::EVENT_TYPE_POINTER_CANCEL) &&
       (event->pointer_data->kind != mojom::POINTER_KIND_MOUSE ||
        IsOnlyOneMouseButtonDown(event->flags));
+
+  if (should_reset_target && is_mouse_event) {
+    // When we release the mouse button, we want the cursor to be sourced from
+    // the window under the mouse pointer, even though we're sending the button
+    // up event to the window that had implicit capture. We have to set this
+    // before we perform dispatch because the Delegate is going to read this
+    // information from us.
+    mouse_button_down_ = false;
+    gfx::Point location(EventLocationToPoint(*event));
+    mouse_cursor_source_window_ =
+        FindDeepestVisibleWindowForEvents(root_, surface_id_, &location);
+  }
 
   DispatchToPointerTarget(pointer_targets_[pointer_id], event.Pass());
 
@@ -319,6 +345,9 @@ void EventDispatcher::OnWindowVisibilityChanged(ServerWindow* window) {
 
 void EventDispatcher::OnWindowDestroyed(ServerWindow* window) {
   CancelPointerEventsToTarget(window);
+
+  if (mouse_cursor_source_window_ == window)
+    mouse_cursor_source_window_ = nullptr;
 }
 
 }  // namespace ws

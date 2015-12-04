@@ -85,6 +85,10 @@ class Window {
   bool visible() const { return visible_; }
   void SetVisible(bool value);
 
+  // Cursors
+  mojom::Cursor predefined_cursor() const { return cursor_id_; }
+  void SetPredefinedCursor(mus::mojom::Cursor cursor_id);
+
   // A Window is drawn if the Window and all its ancestors are visible and the
   // Window is attached to the root.
   bool IsDrawn() const;
@@ -233,6 +237,7 @@ class Window {
                                const mojom::ViewportMetrics& new_metrics);
   void LocalSetDrawn(bool drawn);
   void LocalSetVisible(bool visible);
+  void LocalSetPredefinedCursor(mojom::Cursor cursor_id);
   void LocalSetSharedProperty(const std::string& name,
                               const std::vector<uint8_t>* data);
 
@@ -285,6 +290,8 @@ class Window {
   mojom::ViewportMetricsPtr viewport_metrics_;
 
   bool visible_;
+
+  mojom::Cursor cursor_id_;
 
   SharedProperties properties_;
 

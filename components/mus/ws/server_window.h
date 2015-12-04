@@ -78,6 +78,8 @@ class ServerWindow {
   void SetClientArea(const gfx::Insets& insets,
                      const std::vector<gfx::Rect>& additional_client_areas);
 
+  int32_t cursor() const { return cursor_id_; }
+
   const ServerWindow* parent() const { return parent_; }
   ServerWindow* parent() { return parent_; }
 
@@ -114,6 +116,8 @@ class ServerWindow {
 
   float opacity() const { return opacity_; }
   void SetOpacity(float value);
+
+  void SetPredefinedCursor(mus::mojom::Cursor cursor_id);
 
   const gfx::Transform& transform() const { return transform_; }
   void SetTransform(const gfx::Transform& transform);
@@ -196,6 +200,7 @@ class ServerWindow {
   gfx::Insets client_area_;
   std::vector<gfx::Rect> additional_client_areas_;
   scoped_ptr<ServerWindowSurfaceManager> surface_manager_;
+  mojom::Cursor cursor_id_;
   float opacity_;
   bool can_focus_;
   gfx::Transform transform_;

@@ -364,6 +364,15 @@ void WindowTreeImpl::ProcessWillChangeWindowVisibility(
   NotifyDrawnStateChanged(window, window_target_drawn_state);
 }
 
+void WindowTreeImpl::ProcessCursorChanged(const ServerWindow* window,
+                                          int32_t cursor_id,
+                                          bool originated_change) {
+  if (originated_change)
+    return;
+  client()->OnWindowPredefinedCursorChanged(WindowIdToTransportId(window->id()),
+                                            mojom::Cursor(cursor_id));
+}
+
 void WindowTreeImpl::ProcessFocusChanged(
     const ServerWindow* old_focused_window,
     const ServerWindow* new_focused_window) {
@@ -857,6 +866,21 @@ void WindowTreeImpl::SetCanFocus(uint32_t window_id, bool can_focus) {
   ServerWindow* window = GetWindow(WindowIdFromTransportId(window_id));
   if (window && ShouldRouteToWindowManager(window))
     window->set_can_focus(can_focus);
+}
+
+void WindowTreeImpl::SetPredefinedCursor(uint32_t change_id,
+                                         uint32_t window_id,
+                                         mus::mojom::Cursor cursor_id) {
+  ServerWindow* window = GetWindow(WindowIdFromTransportId(window_id));
+
+  // Only the owner of the window can change the bounds.
+  bool success = window && access_policy_->CanSetCursorProperties(window);
+  if (success) {
+    Operation op(this, connection_manager_,
+                 OperationType::SET_WINDOW_PREDEFINED_CURSOR);
+    window->SetPredefinedCursor(cursor_id);
+  }
+  client_->OnChangeCompleted(change_id, success);
 }
 
 void WindowTreeImpl::WmResponse(uint32 change_id, bool response) {

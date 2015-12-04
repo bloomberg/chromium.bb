@@ -72,6 +72,9 @@ class WindowPrivate {
   }
   void LocalSetDrawn(bool drawn) { window_->LocalSetDrawn(drawn); }
   void LocalSetVisible(bool visible) { window_->LocalSetVisible(visible); }
+  void LocalSetPredefinedCursor(mojom::Cursor cursor) {
+    window_->LocalSetPredefinedCursor(cursor);
+  }
   void LocalSetSharedProperty(const std::string& name,
                               mojo::Array<uint8_t> new_data);
   void LocalSetSharedProperty(const std::string& name,

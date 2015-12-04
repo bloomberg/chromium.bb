@@ -76,6 +76,7 @@ source_set("lib") {
     "//mojo/converters/surfaces",
     "//mojo/public/cpp/bindings:callback",
     "//mojo/services/tracing/public/cpp",
+    "//ui/base",
     "//ui/events",
     "//ui/events/platform",
     "//ui/gfx",

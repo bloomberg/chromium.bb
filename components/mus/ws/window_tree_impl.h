@@ -122,6 +122,9 @@ class WindowTreeImpl : public mojom::WindowTree, public AccessPolicyDelegate {
   void ProcessWindowDeleted(const WindowId& window, bool originated_change);
   void ProcessWillChangeWindowVisibility(const ServerWindow* window,
                                          bool originated_change);
+  void ProcessCursorChanged(const ServerWindow* window,
+                            int32_t cursor_id,
+                            bool originated_change);
   void ProcessFocusChanged(const ServerWindow* old_focused_window,
                            const ServerWindow* new_focused_window);
   void ProcessTransientWindowAdded(const ServerWindow* window,
@@ -233,6 +236,9 @@ class WindowTreeImpl : public mojom::WindowTree, public AccessPolicyDelegate {
              const EmbedCallback& callback) override;
   void SetFocus(uint32_t window_id) override;
   void SetCanFocus(uint32_t window_id, bool can_focus) override;
+  void SetPredefinedCursor(uint32_t change_id,
+                           uint32_t window_id,
+                           mus::mojom::Cursor cursor_id) override;
   void SetWindowTextInputState(uint32_t window_id,
                                mojo::TextInputStatePtr state) override;
   void SetImeVisibility(Id transport_window_id,

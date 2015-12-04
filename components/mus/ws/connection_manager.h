@@ -159,6 +159,8 @@ class ConnectionManager : public ServerWindowDelegate,
                             const ServerWindow* relative_window,
                             const mojom::OrderDirection direction);
   void ProcessWindowDeleted(const WindowId& window);
+  void ProcessWillChangeWindowPredefinedCursor(ServerWindow* window,
+                                               int32_t cursor_id);
 
  private:
   friend class Operation;
@@ -227,6 +229,8 @@ class ConnectionManager : public ServerWindowDelegate,
       ServerWindow* window,
       const std::string& name,
       const std::vector<uint8_t>* new_data) override;
+  void OnWindowPredefinedCursorChanged(ServerWindow* window,
+                                       int32_t cursor_id) override;
   void OnWindowTextInputStateChanged(ServerWindow* window,
                                      const ui::TextInputState& state) override;
   void OnTransientWindowAdded(ServerWindow* window,

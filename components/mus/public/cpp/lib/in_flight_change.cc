@@ -85,6 +85,26 @@ void InFlightPropertyChange::Revert() {
       .LocalSetSharedProperty(property_name_, revert_value_.Pass());
 }
 
+// InFlightPredefinedCursorChange ---------------------------------------------
+
+InFlightPredefinedCursorChange::InFlightPredefinedCursorChange(
+    Window* window,
+    mojom::Cursor revert_value)
+    : InFlightChange(window, ChangeType::PREDEFINED_CURSOR),
+      revert_cursor_(revert_value) {}
+
+InFlightPredefinedCursorChange::~InFlightPredefinedCursorChange() {}
+
+void InFlightPredefinedCursorChange::SetRevertValueFrom(
+    const InFlightChange& change) {
+  revert_cursor_ =
+      static_cast<const InFlightPredefinedCursorChange&>(change).revert_cursor_;
+}
+
+void InFlightPredefinedCursorChange::Revert() {
+  WindowPrivate(window()).LocalSetPredefinedCursor(revert_cursor_);
+}
+
 // InFlightVisibleChange -------------------------------------------------------
 
 InFlightVisibleChange::InFlightVisibleChange(Window* window,

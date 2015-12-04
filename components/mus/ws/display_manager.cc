@@ -29,6 +29,7 @@
 #include "mojo/converters/surfaces/surfaces_utils.h"
 #include "mojo/converters/transform/transform_type_converters.h"
 #include "third_party/skia/include/core/SkXfermode.h"
+#include "ui/base/cursor/cursor_loader.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/display.h"
@@ -170,6 +171,9 @@ DefaultDisplayManager::DefaultDisplayManager(
       delegate_(nullptr),
       draw_timer_(false, false),
       frame_pending_(false),
+#if !defined(OS_ANDROID)
+      cursor_loader_(ui::CursorLoader::Create()),
+#endif
       weak_factory_(this) {
   metrics_.size_in_pixels = mojo::Size::New();
   metrics_.size_in_pixels->width = 1024;
@@ -224,6 +228,19 @@ void DefaultDisplayManager::SetViewportSize(const gfx::Size& size) {
 
 void DefaultDisplayManager::SetTitle(const base::string16& title) {
   platform_window_->SetTitle(title);
+}
+
+void DefaultDisplayManager::SetCursorById(int32_t cursor_id) {
+#if !defined(OS_ANDROID)
+  // TODO(erg): This still isn't sufficient, and will only use native cursors
+  // that chrome would use, not custom image cursors. For that, we should
+  // delegate to the window manager to load images from resource packs.
+  //
+  // We probably also need to deal with different DPIs.
+  ui::Cursor cursor(cursor_id);
+  cursor_loader_->SetPlatformCursor(&cursor);
+  platform_window_->SetCursor(cursor.platform());
+#endif
 }
 
 const mojom::ViewportMetrics& DefaultDisplayManager::GetViewportMetrics() {

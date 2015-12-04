@@ -59,6 +59,9 @@ class ServerWindowObserver {
   virtual void OnWillChangeWindowVisibility(ServerWindow* window) {}
   virtual void OnWindowVisibilityChanged(ServerWindow* window) {}
 
+  virtual void OnWindowPredefinedCursorChanged(ServerWindow* window,
+                                               int32_t cursor_id) {}
+
   virtual void OnWindowTextInputStateChanged(ServerWindow* window,
                                              const ui::TextInputState& state) {}
 

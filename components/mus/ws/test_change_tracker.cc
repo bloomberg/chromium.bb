@@ -111,6 +111,11 @@ std::string ChangeToDescription1(const Change& change) {
     case CHANGE_TYPE_FOCUSED:
       return base::StringPrintf("Focused id=%s",
                                 WindowIdToString(change.window_id).c_str());
+
+    case CHANGE_TYPE_CURSOR_CHANGED:
+      return base::StringPrintf("CursorChanged id=%s cursor_id=%d",
+                                WindowIdToString(change.window_id).c_str(),
+                                change.cursor_id);
   }
   return std::string();
 }
@@ -324,6 +329,16 @@ void TestChangeTracker::OnWindowFocused(Id window_id) {
   Change change;
   change.type = CHANGE_TYPE_FOCUSED;
   change.window_id = window_id;
+  AddChange(change);
+}
+
+void TestChangeTracker::OnWindowPredefinedCursorChanged(
+    Id window_id,
+    mojom::Cursor cursor_id) {
+  Change change;
+  change.type = CHANGE_TYPE_CURSOR_CHANGED;
+  change.window_id = window_id;
+  change.cursor_id = cursor_id;
   AddChange(change);
 }
 

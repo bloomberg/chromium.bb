@@ -29,6 +29,7 @@ ServerWindow::ServerWindow(ServerWindowDelegate* delegate,
       stacking_target_(nullptr),
       transient_parent_(nullptr),
       visible_(false),
+      cursor_id_(mojom::CURSOR_NULL),
       opacity_(1),
       can_focus_(true),
       properties_(properties),
@@ -264,6 +265,15 @@ void ServerWindow::SetOpacity(float value) {
     return;
   opacity_ = value;
   delegate_->OnScheduleWindowPaint(this);
+}
+
+void ServerWindow::SetPredefinedCursor(mus::mojom::Cursor value) {
+  if (value == cursor_id_)
+    return;
+  cursor_id_ = value;
+  FOR_EACH_OBSERVER(
+      ServerWindowObserver, observers_,
+      OnWindowPredefinedCursorChanged(this, static_cast<int32_t>(value)));
 }
 
 void ServerWindow::SetTransform(const gfx::Transform& transform) {

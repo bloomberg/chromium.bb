@@ -7,6 +7,7 @@
 #include "base/debug/debugger.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/mus/common/types.h"
+#include "components/mus/public/interfaces/input_event_constants.mojom.h"
 #include "components/mus/ws/connection_manager.h"
 #include "components/mus/ws/display_manager.h"
 #include "components/mus/ws/focus_controller.h"
@@ -43,7 +44,8 @@ WindowTreeHostImpl::WindowTreeHostImpl(
       display_manager_(
           DisplayManager::Create(app_impl, gpu_state, surfaces_state)),
       window_manager_(window_manager.Pass()),
-      tree_awaiting_input_ack_(nullptr) {
+      tree_awaiting_input_ack_(nullptr),
+      last_cursor_(0) {
   display_manager_->Init(this);
   if (client_) {
     client_.set_connection_error_handler(base::Bind(
@@ -131,6 +133,11 @@ void WindowTreeHostImpl::SetImeVisibility(ServerWindow* window, bool visible) {
   display_manager_->SetImeVisibility(visible);
 }
 
+void WindowTreeHostImpl::OnCursorUpdated(ServerWindow* window) {
+  if (window == event_dispatcher_.mouse_cursor_source_window())
+    UpdateNativeCursor(window->cursor());
+}
+
 void WindowTreeHostImpl::SetSize(mojo::SizePtr size) {
   display_manager_->SetViewportSize(size.To<gfx::Size>());
 }
@@ -215,6 +222,13 @@ void WindowTreeHostImpl::DispatchNextEventFromQueue() {
   mojom::EventPtr next_event = event_queue_.front().Pass();
   event_queue_.pop();
   event_dispatcher_.OnEvent(next_event.Pass());
+}
+
+void WindowTreeHostImpl::UpdateNativeCursor(int32_t cursor_id) {
+  if (cursor_id != last_cursor_) {
+    display_manager_->SetCursorById(cursor_id);
+    last_cursor_ = cursor_id;
+  }
 }
 
 ServerWindow* WindowTreeHostImpl::GetRootWindow() {
@@ -366,6 +380,14 @@ void WindowTreeHostImpl::DispatchInputEventToWindow(ServerWindow* target,
                                                     bool in_nonclient_area,
                                                     mojom::EventPtr event) {
   DCHECK(!event_ack_timer_.IsRunning());
+
+  if (event->pointer_data &&
+      event->pointer_data->kind == mojom::PointerKind::POINTER_KIND_MOUSE) {
+    DCHECK(event_dispatcher_.mouse_cursor_source_window());
+    UpdateNativeCursor(
+        event_dispatcher_.mouse_cursor_source_window()->cursor());
+  }
+
   // If the event is in the non-client area the event goes to the owner of
   // the window. Otherwise if the window is an embed root, forward to the
   // embedded window.

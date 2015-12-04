@@ -133,6 +133,12 @@ bool DefaultAccessPolicy::CanSetClientArea(const ServerWindow* window) const {
          delegate_->IsRootForAccessPolicy(window->id());
 }
 
+bool DefaultAccessPolicy::CanSetCursorProperties(
+    const ServerWindow* window) const {
+  return WasCreatedByThisConnection(window) ||
+         delegate_->IsRootForAccessPolicy(window->id());
+}
+
 bool DefaultAccessPolicy::ShouldNotifyOnHierarchyChange(
     const ServerWindow* window,
     const ServerWindow** new_parent,

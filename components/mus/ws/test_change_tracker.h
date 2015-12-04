@@ -36,6 +36,7 @@ enum ChangeType {
   CHANGE_TYPE_PROPERTY_CHANGED,
   CHANGE_TYPE_DELEGATE_EMBED,
   CHANGE_TYPE_FOCUSED,
+  CHANGE_TYPE_CURSOR_CHANGED
 };
 
 // TODO(sky): consider nuking and converting directly to WindowData.
@@ -76,6 +77,7 @@ struct Change {
   bool bool_value;
   std::string property_key;
   std::string property_value;
+  int32_t cursor_id;
 };
 
 // Converts Changes to string descriptions.
@@ -146,6 +148,7 @@ class TestChangeTracker {
                                      mojo::String name,
                                      mojo::Array<uint8_t> data);
   void OnWindowFocused(Id window_id);
+  void OnWindowPredefinedCursorChanged(Id window_id, mojom::Cursor cursor_id);
   void DelegateEmbed(const mojo::String& url);
 
  private:

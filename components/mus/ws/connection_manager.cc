@@ -338,6 +338,20 @@ void ConnectionManager::ProcessWindowDeleted(const WindowId& window) {
   }
 }
 
+void ConnectionManager::ProcessWillChangeWindowPredefinedCursor(
+    ServerWindow* window,
+    int32_t cursor_id) {
+  for (auto& pair : connection_map_) {
+    pair.second->service()->ProcessCursorChanged(window, cursor_id,
+                                                 IsOperationSource(pair.first));
+  }
+
+  // Pass the cursor change to the native window.
+  WindowTreeHostImpl* host = GetWindowTreeHostByWindow(window);
+  if (host)
+    host->OnCursorUpdated(window);
+}
+
 void ConnectionManager::ProcessViewportMetricsChanged(
     const mojom::ViewportMetrics& old_metrics,
     const mojom::ViewportMetrics& new_metrics) {
@@ -467,6 +481,14 @@ void ConnectionManager::OnWillChangeWindowVisibility(ServerWindow* window) {
     pair.second->service()->ProcessWillChangeWindowVisibility(
         window, IsOperationSource(pair.first));
   }
+}
+
+void ConnectionManager::OnWindowPredefinedCursorChanged(ServerWindow* window,
+                                                        int32_t cursor_id) {
+  if (in_destructor_)
+    return;
+
+  ProcessWillChangeWindowPredefinedCursor(window, cursor_id);
 }
 
 void ConnectionManager::OnWindowSharedPropertyChanged(

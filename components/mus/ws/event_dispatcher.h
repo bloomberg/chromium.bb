@@ -33,6 +33,11 @@ class EventDispatcher : public ServerWindowObserver {
 
   void set_surface_id(cc::SurfaceId surface_id) { surface_id_ = surface_id; }
 
+  // Retrieves the ServerWindow of the last mouse move.
+  ServerWindow* mouse_cursor_source_window() const {
+    return mouse_cursor_source_window_;
+  }
+
   // Adds an accelerator with the given id and event-matcher. If an accelerator
   // already exists with the same id or the same matcher, then the accelerator
   // is not added. Returns whether adding the accelerator was successful or not.
@@ -94,6 +99,9 @@ class EventDispatcher : public ServerWindowObserver {
 
   EventDispatcherDelegate* delegate_;
   ServerWindow* root_;
+
+  bool mouse_button_down_;
+  ServerWindow* mouse_cursor_source_window_;
 
   cc::SurfaceId surface_id_;
 

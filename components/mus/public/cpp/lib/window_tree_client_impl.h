@@ -70,6 +70,7 @@ class WindowTreeClientImpl : public WindowTreeConnection,
                      const std::vector<gfx::Rect>& additional_client_areas);
   void SetFocus(Id window_id);
   void SetCanFocus(Id window_id, bool can_focus);
+  void SetPredefinedCursor(Id window_id, mus::mojom::Cursor cursor_id);
   void SetVisible(Window* window, bool visible);
   void SetProperty(Window* window,
                    const std::string& name,
@@ -177,6 +178,8 @@ class WindowTreeClientImpl : public WindowTreeConnection,
                           Id window_id,
                           mojom::EventPtr event) override;
   void OnWindowFocused(Id focused_window_id) override;
+  void OnWindowPredefinedCursorChanged(Id window_id,
+                                       mojom::Cursor cursor) override;
   void OnChangeCompleted(uint32_t change_id, bool success) override;
   void WmSetBounds(uint32_t change_id,
                    Id window_id,

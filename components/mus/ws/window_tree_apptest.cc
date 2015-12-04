@@ -231,6 +231,12 @@ class TestWindowTreeClientImpl : public mojom::WindowTreeClient,
     return WaitForChangeCompleted(change_id);
   }
 
+  bool SetPredefinedCursor(Id window_id, mojom::Cursor cursor) {
+    const uint32_t change_id = GetAndAdvanceChangeId();
+    tree()->SetPredefinedCursor(change_id, window_id, cursor);
+    return WaitForChangeCompleted(change_id);
+  }
+
   bool SetWindowVisibility(Id window_id, bool visible) {
     const uint32_t change_id = GetAndAdvanceChangeId();
     tree()->SetWindowVisibility(change_id, window_id, visible);
@@ -334,6 +340,10 @@ class TestWindowTreeClientImpl : public mojom::WindowTreeClient,
   }
   // TODO(sky): add testing coverage.
   void OnWindowFocused(uint32_t focused_window_id) override {}
+  void OnWindowPredefinedCursorChanged(uint32 window_id,
+                                       mojom::Cursor cursor_id) override {
+    tracker_.OnWindowPredefinedCursorChanged(window_id, cursor_id);
+  }
   void OnChangeCompleted(uint32_t change_id, bool success) override {
     if (waiting_change_id_ == change_id && change_completed_run_loop_) {
       on_change_completed_result_ = success;
@@ -1394,6 +1404,21 @@ TEST_F(WindowTreeAppTest, SetWindowVisibility) {
                   " visible=true drawn=true",
               windows[1].ToString2());
   }
+}
+
+// Test that we hear the cursor change in other connections.
+TEST_F(WindowTreeAppTest, SetCursor) {
+  // Get a second connection to listen in.
+  ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
+  Id window_1_1 = BuildWindowId(connection_id_1(), 1);
+  changes2()->clear();
+
+  ASSERT_TRUE(ws_client1()->SetPredefinedCursor(window_1_1,
+                                                mojom::Cursor::CURSOR_IBEAM));
+  ws_client2_->WaitForChangeCount(1u);
+
+  EXPECT_EQ("CursorChanged id=" + IdToString(window_1_1) + " cursor_id=4",
+            SingleChangeToDescription(*changes2()));
 }
 
 // Assertions for SetWindowVisibility sending notifications.

@@ -212,6 +212,15 @@ void Window::SetVisible(bool value) {
   LocalSetVisible(value);
 }
 
+void Window::SetPredefinedCursor(mus::mojom::Cursor cursor_id) {
+  if (cursor_id_ == cursor_id)
+    return;
+
+  if (connection_)
+    tree_client()->SetPredefinedCursor(id_, cursor_id);
+  LocalSetPredefinedCursor(cursor_id);
+}
+
 bool Window::IsDrawn() const {
   if (!visible_)
     return false;
@@ -610,6 +619,15 @@ void Window::LocalSetVisible(bool visible) {
                     OnWindowVisibilityChanging(this));
   visible_ = visible;
   NotifyWindowVisibilityChanged(this);
+}
+
+void Window::LocalSetPredefinedCursor(mojom::Cursor cursor_id) {
+  if (cursor_id_ == cursor_id)
+    return;
+
+  cursor_id_ = cursor_id;
+  FOR_EACH_OBSERVER(WindowObserver, observers_,
+                    OnWindowPredefinedCursorChanged(this, cursor_id));
 }
 
 void Window::LocalSetSharedProperty(const std::string& name,

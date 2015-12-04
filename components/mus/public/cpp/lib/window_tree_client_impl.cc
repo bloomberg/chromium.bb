@@ -232,6 +232,20 @@ void WindowTreeClientImpl::SetCanFocus(Id window_id, bool can_focus) {
   tree_->SetCanFocus(window_id, can_focus);
 }
 
+void WindowTreeClientImpl::SetPredefinedCursor(Id window_id,
+                                               mus::mojom::Cursor cursor_id) {
+  DCHECK(tree_);
+
+  Window* window = GetWindowById(window_id);
+  if (!window)
+    return;
+
+  // We make an inflight change thing here.
+  const uint32_t change_id = ScheduleInFlightChange(make_scoped_ptr(
+      new InFlightPredefinedCursorChange(window, window->predefined_cursor())));
+  tree_->SetPredefinedCursor(change_id, window_id, cursor_id);
+}
+
 void WindowTreeClientImpl::SetVisible(Window* window, bool visible) {
   DCHECK(tree_);
   const uint32_t change_id = ScheduleInFlightChange(
@@ -624,6 +638,20 @@ void WindowTreeClientImpl::OnWindowFocused(Id focused_window_id) {
   }
   FOR_EACH_OBSERVER(WindowTreeConnectionObserver, observers_,
                     OnWindowTreeFocusChanged(focused, blurred));
+}
+
+void WindowTreeClientImpl::OnWindowPredefinedCursorChanged(
+    Id window_id,
+    mojom::Cursor cursor) {
+  Window* window = GetWindowById(window_id);
+  if (!window)
+    return;
+
+  InFlightPredefinedCursorChange new_change(window, cursor);
+  if (ApplyServerChangeToExistingInFlightChange(new_change))
+    return;
+
+  WindowPrivate(window).LocalSetPredefinedCursor(cursor);
 }
 
 void WindowTreeClientImpl::OnChangeCompleted(uint32 change_id, bool success) {

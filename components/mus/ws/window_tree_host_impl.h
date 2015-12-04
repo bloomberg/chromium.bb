@@ -93,6 +93,10 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
                             const ui::TextInputState& state);
   void SetImeVisibility(ServerWindow* window, bool visible);
 
+  // Called when a client updates a cursor. This will update the cursor on the
+  // native display if the cursor is currently under |window|.
+  void OnCursorUpdated(ServerWindow* window);
+
   // WindowTreeHost:
   void SetSize(mojo::SizePtr size) override;
   void SetTitle(const mojo::String& title) override;
@@ -117,6 +121,8 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
   void OnClientClosed();
   void OnEventAckTimeout();
   void DispatchNextEventFromQueue();
+
+  void UpdateNativeCursor(int32_t cursor_id);
 
   // DisplayManagerDelegate:
   ServerWindow* GetRootWindow() override;
@@ -158,6 +164,9 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
   scoped_ptr<FocusController> focus_controller_;
   mojom::WindowManagerPtr window_manager_;
   mojom::WindowTree* tree_awaiting_input_ack_;
+
+  // The last cursor set. Used to track whether we need to change the cursor.
+  int32_t last_cursor_;
 
   std::set<WindowId> activation_parents_;
 

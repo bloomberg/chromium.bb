@@ -65,6 +65,9 @@ class WindowObserver {
 
   virtual void OnWindowFocusChanged(Window* gained_focus, Window* lost_focus) {}
 
+  virtual void OnWindowPredefinedCursorChanged(Window* window,
+                                               mojom::Cursor cursor) {}
+
   virtual void OnWindowInputEvent(Window* window,
                                   const mojom::EventPtr& event) {}
 

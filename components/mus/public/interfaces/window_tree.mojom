@@ -5,6 +5,7 @@
 module mus.mojom;
 
 import "components/mus/public/interfaces/compositor_frame.mojom";
+import "components/mus/public/interfaces/cursor.mojom";
 import "components/mus/public/interfaces/input_events.mojom";
 import "components/mus/public/interfaces/mus_constants.mojom";
 import "components/mus/public/interfaces/surface_id.mojom";
@@ -210,6 +211,13 @@ interface WindowTree {
   SetFocus(uint32 window_id);
   SetCanFocus(uint32 window_id, bool can_focus);
 
+  // Sets the cursor when the pointer is inside |window_id| to a system standard
+  // cursor provided by the window manager.
+  SetPredefinedCursor(uint32 change_id, uint32 window_id, Cursor cursor_id);
+
+  // TODO(erg): Additional cursor methods. Image based cursors, visibility,
+  // and cursor locking.
+
   // Set text input state for the given window.
   SetWindowTextInputState(uint32 window_id, mojo.TextInputState state);
 
@@ -321,6 +329,8 @@ interface WindowTreeClient {
   OnWindowInputEvent(uint32 event_id, uint32 window, Event event);
 
   OnWindowFocused(uint32 focused_window_id);
+
+  OnWindowPredefinedCursorChanged(uint32 window_id, Cursor cursor_id);
 
   // A change initiated from the client has completed. See description of
   // change ids for details.

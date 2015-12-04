@@ -45,6 +45,7 @@ class WindowManagerAccessPolicy : public AccessPolicy {
   bool CanSetWindowTextInputState(const ServerWindow* window) const override;
   bool CanSetFocus(const ServerWindow* window) const override;
   bool CanSetClientArea(const ServerWindow* window) const override;
+  bool CanSetCursorProperties(const ServerWindow* window) const override;
   bool ShouldNotifyOnHierarchyChange(
       const ServerWindow* window,
       const ServerWindow** new_parent,

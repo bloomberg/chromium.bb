@@ -25,6 +25,8 @@ class VIEWS_MUS_EXPORT PlatformWindowMus
 
   void Activate();
 
+  void SetCursorById(mus::mojom::Cursor cursor);
+
   // ui::PlatformWindow:
   void Show() override;
   void Hide() override;
@@ -53,6 +55,8 @@ class VIEWS_MUS_EXPORT PlatformWindowMus
                              const gfx::Rect& new_bounds) override;
   void OnWindowFocusChanged(mus::Window* gained_focus,
                             mus::Window* lost_focus) override;
+  void OnWindowPredefinedCursorChanged(mus::Window* window,
+                                       mus::mojom::Cursor cursor) override;
   void OnWindowInputEvent(mus::Window* view,
                           const mus::mojom::EventPtr& event) override;
   void OnWindowSharedPropertyChanged(
@@ -64,6 +68,7 @@ class VIEWS_MUS_EXPORT PlatformWindowMus
   ui::PlatformWindowDelegate* delegate_;
   mus::Window* mus_window_;
   mus::mojom::ShowState show_state_;
+  mus::mojom::Cursor last_cursor_;
   bool has_capture_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformWindowMus);

@@ -15,6 +15,10 @@
 
 namespace mus {
 
+namespace mojom {
+enum Cursor : int32_t;
+}
+
 class Window;
 
 enum class ChangeType {
@@ -23,6 +27,7 @@ enum class ChangeType {
   BOUNDS,
   DELETE_WINDOW,
   NEW_WINDOW,
+  PREDEFINED_CURSOR,
   PROPERTY,
   REMOVE_CHILD,
   REMOVE_TRANSIENT_WINDOW_FROM_PARENT,
@@ -161,6 +166,21 @@ class InFlightPropertyChange : public InFlightChange {
   mojo::Array<uint8_t> revert_value_;
 
   DISALLOW_COPY_AND_ASSIGN(InFlightPropertyChange);
+};
+
+class InFlightPredefinedCursorChange : public InFlightChange {
+ public:
+  InFlightPredefinedCursorChange(Window* window, mojom::Cursor revert_value);
+  ~InFlightPredefinedCursorChange() override;
+
+  // InFlightChange:
+  void SetRevertValueFrom(const InFlightChange& change) override;
+  void Revert() override;
+
+ private:
+  mojom::Cursor revert_cursor_;
+
+  DISALLOW_COPY_AND_ASSIGN(InFlightPredefinedCursorChange);
 };
 
 class InFlightVisibleChange : public InFlightChange {
