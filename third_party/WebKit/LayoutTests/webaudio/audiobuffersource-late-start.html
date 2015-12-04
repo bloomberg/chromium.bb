@@ -5,7 +5,6 @@
   <script src="../resources/js-test.js"></script>
   <script src="resources/compatibility.js"></script>
   <script src="resources/audio-testing.js"></script>
-  <script src="resources/late-start-testing.js"></script>
 </head>
 
 <body>
@@ -13,22 +12,77 @@
     description('Test the late call of start(0) of BufferSource.');
     window.jsTestIsAsync = true;
 
-    var audit = Audit.createTaskRunner();
+    var renderQuantum = 128;
 
     var sampleRate = 44100;
+    var renderDuration = 0.25;
+    var startTime = 0.5 * renderDuration;
 
-    // The long render length (30 seconds) is to make sure the |onstatechange|
-    // event gets fired to start the source, which can take quite a bit of time.
-    var renderLength = 30;
+    var audit = Audit.createTaskRunner();
 
-    var context = new OfflineAudioContext(1, sampleRate * renderLength, sampleRate);
-    var dcOffsetbuffer = createConstantBuffer(context, 1000, 1.0);
-    var source = context.createBufferSource();
-    source.buffer = dcOffsetbuffer;
+    // Calculate the index for actual start time.
+    function getStartIndex(time) {
+      var startIndex = time * sampleRate;
+      return startIndex -= (startIndex) % renderQuantum;
+    }
 
-    // Test the buffer node is rendered correctly when the start time of start() 
-    // call is in the past in terms of the context time.
-    runLateStartTest(audit, context, source);
+    // Get the index of value change.
+    function getValueChangeIndex(array, targetValue) {
+      return array.findIndex(function (element, index) {
+        if (element === targetValue)
+          return true;
+      });
+    }
+
+    audit.defineTask('test-late-start', function (done) {
+      var context = new OfflineAudioContext(1, renderDuration * sampleRate, sampleRate);
+      var dcOffsetbuffer = createConstantBuffer(context, 1, 1.0);
+      var source = context.createBufferSource();
+      source.buffer = dcOffsetbuffer;
+      source.loop = true;
+      source.connect(context.destination);
+
+      // Schedule source.start(0) at 0.01 second. The specified timing of
+      // start() call is already passed in terms of the context time. So the
+      // argument |0| will be clamped to the current context time.
+      //
+      // With the sample rate of 44100, 0.01 second is 441 samples. Rounding
+      // it down to the render quantum gives 384 samples. This is clearly larger
+      // than a single render quantum.
+      //
+      // See issue: crbug.com/462167
+      context.suspend(startTime).then(function () {
+        source.start(0);
+        context.resume();
+      });
+
+      // Start rendering and verify result: this verifies if 1) the rendered
+      // buffer contains at least one non-zero value and 2) the non-zero value is
+      // found later than the first output sample.
+      context.startRendering().then(function (buffer) {
+
+        var channelData = buffer.getChannelData(0);
+        var startIndex = getStartIndex(startTime);
+        var nonZeroValueIndex = getValueChangeIndex(channelData, 1.0);
+
+        Should('The output', channelData).containValues([0, 1]);
+        Should('The index of value change', nonZeroValueIndex)
+          .beEqualTo(startIndex);
+
+        if (nonZeroValueIndex === 0)
+          testFailed('The first sample was non-zero value. It should be zero.');
+        else
+          testPassed('The rendered buffer contains non-zero values after the first sample.');
+
+      }).then(done);
+    });
+
+    audit.defineTask('finish-test', function (done) {
+      done();
+      finishJSTest();
+    });
+
+    audit.runTasks();
 
     successfullyParsed = true;
   </script>

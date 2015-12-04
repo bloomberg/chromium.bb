@@ -12,27 +12,44 @@
     description('Test disconnect() method on AudioParam destination.');
     window.jsTestIsAsync = true;
 
+    var renderQuantum = 128;
+
+    var sampleRate = 44100;
+    var renderDuration = 0.5;
+    var disconnectTime = 0.5 * renderDuration;
+
     var audit = Audit.createTaskRunner();
 
-    // The long render length (20 seconds) test 1 and 2 is to make sure the 
-    // |onstatechange| event gets fired to start the source, which can take
-    // quite a bit of time.
-    var testDuration = 20;
+    // Calculate the index for disconnection.
+    function getDisconnectIndex(disconnectTime) {
+      var disconnectIndex = disconnectTime * sampleRate;
+      return disconnectIndex -= (disconnectIndex) % renderQuantum;
+    }
+
+    // Get the index of value change.
+    function getValueChangeIndex(array, targetValue) {
+      return array.findIndex(function (element, index) {
+        if (element === targetValue)
+          return true;
+      });
+    }
 
     // Task 1: test disconnect(AudioParam) method.
     audit.defineTask('disconnect(AudioParam)', function (done) {
 
       // Creates a buffer source with value [1] and then connect it to two gain
-      // nodes in series. The output of the buffer source is lowered by half 
+      // nodes in series. The output of the buffer source is lowered by half
       // (* 0.5) and then connected to two |.gain| AudioParams in each gain node.
+      //
       //  (1) bufferSource => gain1 => gain2
       //  (2) bufferSource => half => gain1.gain
       //  (3) half => gain2.gain
+      //
       // This graph should produce the output of 2.25 (= 1 * 1.5 * 1.5). After
       // disconnecting (3), it should produce 1.5.
-      var context = new OfflineAudioContext(1, 44100 * testDuration, 44100);
+      var context = new OfflineAudioContext(1, renderDuration * sampleRate, sampleRate);
       var source = context.createBufferSource();
-      var buffer1ch = createTestingAudioBuffer(context, 1, 128);
+      var buffer1ch = createConstantBuffer(context, 1, 1);
       var half = context.createGain();
       var gain1 = context.createGain();
       var gain2 = context.createGain();
@@ -46,56 +63,51 @@
       gain2.connect(context.destination);
       source.connect(half);
 
-      // Connecting |half| to both |gain1.gain| and |gain2.gain| amplifies the 
+      // Connecting |half| to both |gain1.gain| and |gain2.gain| amplifies the
       // signal by 2.25 (= 1.5 * 1.5) because each gain node amplifies the signal
       // by 1.5 (= 1.0 + 0.5).
-      half.connect(gain1.gain); 
+      half.connect(gain1.gain);
       half.connect(gain2.gain);
-      
+
       source.start();
 
-      // Disconnects after the rendering starts.
-      // 
-      // FIXME: Although this guarantees that the disconnection happens after 
-      // the rendering starts, still the actual disconnection might happen after
-      // oncomplete event fired.
-      // 
-      // The 10ms delay is 1/1000 of the total render length (10,000ms). Because 
-      // OfflineAudioContext runs faster than real time, the disconnection might
-      // happen after the rendering finishes. Then lower the delay and increase 
-      // the render length to avoid the test failure.
-      context.onstatechange = function () {
-        if (context.state === 'running')
-          half.disconnect(gain2.gain);
-      };
+      // Schedule the disconnection at the half of render duration.
+      context.suspend(disconnectTime).then(function () {
+        half.disconnect(gain2.gain);
+        context.resume();
+      });
 
       context.startRendering().then(function (buffer) {
-
-        // Note that this test depends on the disconnection below to happen
-        // sometime during rendering.
+        var channelData = buffer.getChannelData(0);
+        var disconnectIndex = getDisconnectIndex(disconnectTime);
+        var valueChangeIndex = getValueChangeIndex(channelData, 1.5);
 
         // Expected values are: 1 * 1.5 * 1.5 -> 1 * 1.5 = [2.25, 1.5]
-        Should('Channel #0', buffer.getChannelData(0)).containValues([2.25, 1.5]);
-        
+        Should('Channel #0', channelData).containValues([2.25, 1.5]);
+        Should('The index of value change', valueChangeIndex)
+          .beEqualTo(disconnectIndex);
+
       }).then(done);
     });
 
     // Task 2: test disconnect(AudioParam, output) method.
     audit.defineTask('disconnect(AudioParam, output)', function (done) {
 
-      // Create a 2-channel buffer source with [1, 2] in each channel and 
+      // Create a 2-channel buffer source with [1, 2] in each channel and
       // make a serial connection through gain1 and gain 2. The make the buffer
       // source half with a gain node and connect it to a 2-output splitter.
       // Connect each output to 2 gain AudioParams respectively.
+      //
       //    (1) bufferSource => gain1 => gain2
       //    (2) bufferSource => half => splitter(2)
       //    (3) splitter#0 => gain1.gain
       //    (4) splitter#1 => gain2.gain
-      // This graph should produce 3 (= 1 * 1.5 * 2) and 6 (= 2 * 1.5 * 2) for 
+      //
+      // This graph should produce 3 (= 1 * 1.5 * 2) and 6 (= 2 * 1.5 * 2) for
       // each channel. After disconnecting (4), it should output 1.5 and 3.
-      var context = new OfflineAudioContext(2, 44100 * testDuration, 44100);
+      var context = new OfflineAudioContext(2, renderDuration * sampleRate, sampleRate);
       var source = context.createBufferSource();
-      var buffer2ch = createTestingAudioBuffer(context, 2, 128);
+      var buffer2ch = createConstantBuffer(context, 1, [1, 2]);
       var splitter = context.createChannelSplitter(2);
       var half = context.createGain();
       var gain1 = context.createGain();
@@ -109,8 +121,8 @@
       gain1.connect(gain2);
       gain2.connect(context.destination);
 
-      // |source| originally is [1, 2] but it becomes [0.5, 1] after 0.5 gain. 
-      // Each splitter's output will be applied to |gain1.gain| and |gain2.gain| 
+      // |source| originally is [1, 2] but it becomes [0.5, 1] after 0.5 gain.
+      // Each splitter's output will be applied to |gain1.gain| and |gain2.gain|
       // respectively in an additive fashion.
       source.connect(half);
       half.connect(splitter);
@@ -123,20 +135,29 @@
 
       source.start();
 
-      // Disconnect after the rendering starts. See the comment in the previous
-      // test task.
-      context.onstatechange = function () {
-        if (context.state === 'running')
-          splitter.disconnect(gain2.gain, 1);
-      };
+      // Schedule the disconnection at the half of render duration.
+      context.suspend(disconnectTime).then(function () {
+        splitter.disconnect(gain2.gain, 1);
+        context.resume();
+      });
 
       context.startRendering().then(function (buffer) {
+        var channelData0 = buffer.getChannelData(0);
+        var channelData1 = buffer.getChannelData(1);
         
+        var disconnectIndex = getDisconnectIndex(disconnectTime);
+        var valueChangeIndexCh0 = getValueChangeIndex(channelData0, 1.5);
+        var valueChangeIndexCh1 = getValueChangeIndex(channelData1, 3);
+
         // Expected values are: 1 * 1.5 * 2 -> 1 * 1.5 = [3, 1.5]
-        Should('Channel #0', buffer.getChannelData(0)).containValues([3, 1.5]);
+        Should('Channel #0', channelData0).containValues([3, 1.5]);
+        Should('The index of value change in channel #0', valueChangeIndexCh0)
+          .beEqualTo(disconnectIndex);
 
         // Expected values are: 2 * 1.5 * 2 -> 2 * 1.5 = [6, 3]
-        Should('Channel #1', buffer.getChannelData(1)).containValues([6, 3]);
+        Should('Channel #1', channelData1).containValues([6, 3]);
+        Should('The index of value change in channel #1', valueChangeIndexCh1)
+          .beEqualTo(disconnectIndex);
 
       }).then(done);
     });
@@ -149,8 +170,8 @@
       var gain2 = context.createGain();
       var gain3 = context.createGain();
 
-      // Connect a splitter to gain nodes and merger so we can test the possible 
-      // ways of disconnecting the nodes to verify that appropriate exceptions 
+      // Connect a splitter to gain nodes and merger so we can test the possible
+      // ways of disconnecting the nodes to verify that appropriate exceptions
       // are thrown.
       gain1.connect(splitter);
       splitter.connect(gain2.gain, 0);

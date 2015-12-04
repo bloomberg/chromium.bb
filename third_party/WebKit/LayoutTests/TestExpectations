@@ -134,12 +134,10 @@ crbug.com/520611 [ Debug ] fast/filesystem/workers/file-writer-events-shared-wor
 crbug.com/520612 [ Linux ] fullscreen/anonymous-block-merge-crash.html [ Pass Timeout ]
 crbug.com/520613 http/tests/cache/freshness-header.html [ Failure Pass ]
 crbug.com/520614 http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_buffer_size_restriction.html [ Failure Pass ]
-crbug.com/520617 [ Mac ] webaudio/audiochannelmerger-disconnect.html [ Failure Pass ]
 crbug.com/520619 [ Android Mac Linux XP Win7 ] webexposed/global-interface-listing.html [ Pass Timeout ]
 crbug.com/520194 http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-worker-overridesexpires.html [ Failure Pass ]
 crbug.com/520199 [ Mac ] plugins/plugin-initiate-popup-window.html [ Failure Pass ]
 crbug.com/520200 [ XP ] svg/batik/text/smallFonts.svg [ Failure Timeout ]
-crbug.com/520203 webaudio/audiobuffersource-late-start.html [ Failure Pass Timeout ]
 crbug.com/518967 [ Win7 ] http/tests/htmlimports/csp-import-block-but-nonce-nested.html [ Failure Pass Timeout ]
 crbug.com/448461 http/tests/loading/simple-subframe.html [ Failure Pass Timeout ]
 crbug.com/339597 http/tests/navigation/back-to-redirect-with-frame.php [ Pass Timeout ]
@@ -180,7 +178,6 @@ crbug.com/526594 [ Win ] plugins/webview-plugin-lifecycle.html [ Failure ]
 crbug.com/519001 storage/indexeddb/pending-version-change-stuck-works-with-terminate.html [ Pass Timeout ]
 crbug.com/519002 storage/indexeddb/pending-version-change-stuck.html [ Pass Timeout ]
 crbug.com/519003 [ Mac ] svg/batik/text/xmlSpace.svg [ Failure Pass ]
-crbug.com/519005 webaudio/stereopannernode-no-glitch.html [ Pass Timeout ]
 crbug.com/410949 http/tests/security/local-image-from-remote-whitelisted.html [ Failure Pass ]
 crbug.com/356828 fast/dom/gc-dom-tree-lifetime.html [ Pass Timeout ]
 crbug.com/518902 accessibility/AccessibilityScrollbar-leak.html [ Failure Pass ]
@@ -1305,8 +1302,6 @@ crbug.com/532643 [ Mac ] virtual/pointerevent/fast/events/hit-test-cache-scrollb
 
 # The Win10 result for fast/text/emoji-font-fallback-win.html does not match the description
 crbug.com/527044 [ Win10 ] fast/text/emoji-font-fallback-win.html [ Failure ]
-
-crbug.com/525065 webaudio/audionode-disconnect-audioparam.html [ Failure Pass ]
 
 crbug.com/525296 fast/css/font-load-while-styleresolver-missing.html [ Crash Failure Pass ]
 

@@ -12,14 +12,8 @@
     description('Test if StereoPannerNode producing glitches by crossing zero.');
     window.jsTestIsAsync = true;
 
-    var audit = Audit.createTaskRunner();
-
     var sampleRate = 44100;
-
-    // Note that this layout test requires rather large render duration because
-    // we need enough time to do something useful in the |onstatechange| event
-    // before rendering finishes.
-    var renderDuration = 20;
+    var renderDuration = 0.5;
 
     // The threshold for glitch detection. This was experimentally determined.
     var GLITCH_THRESHOLD = 0.0005;
@@ -34,6 +28,7 @@
       numberOfArrayLog: 2
     };
 
+    var audit = Audit.createTaskRunner();
 
     // Extract a transitional region from the AudioBuffer. If no transition
     // found, fail this test.
@@ -63,7 +58,7 @@
       }
       end = index;
 
-      testPassed('Transition found. (length = ' + (end - start) + ')');
+      testPassed('Transition found between sample #' + start + ' and #' + end + '.');
 
       return {
         left: chanL.subarray(start, end),
@@ -121,15 +116,15 @@
       };
     }
 
-
+    // Build audio graph and render. Change the pan parameter in the middle of
+    // rendering.
     function panAndVerify(options, done) {
-      var context = new OfflineAudioContext(2, 44100 * renderDuration, 44100);
+      var context = new OfflineAudioContext(2, renderDuration * sampleRate, sampleRate);
       var source = context.createBufferSource();
       var panner = context.createStereoPanner();
-      var stereoBuffer = createConstantBuffer(context, 128, [1.0, 1.0]);
+      var stereoBuffer = createConstantBuffer(context, renderDuration * sampleRate, [1.0, 1.0]);
 
       source.buffer = stereoBuffer;
-      source.loop = true;
 
       panner.pan.value = options.startPanValue;
 
@@ -137,10 +132,12 @@
       panner.connect(context.destination);
       source.start();
 
-      context.onstatechange = function () {
-        if (context.state === 'running')
-          panner.pan.value = options.endPanValue;
-      };
+      // Schedule the parameter transition by the setter at 1/10 of the render
+      // duration.
+      context.suspend(0.1 * renderDuration).then(function () {
+        panner.pan.value = options.endPanValue;
+        context.resume();
+      });
 
       context.startRendering().then(function (buffer) {
         var actual = extractPanningTransition(buffer);
