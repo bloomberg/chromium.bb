@@ -82,6 +82,7 @@ void AttachmentBrokerPrivilegedWin::RouteDuplicatedHandle(
 
   // Another process is the destination.
   base::ProcessId dest = wire_format.destination_process;
+  base::AutoLock auto_lock(*get_lock());
   Sender* sender = GetSenderWithProcessId(dest);
   if (!sender) {
     // Assuming that this message was not sent from a malicious process, the

@@ -288,7 +288,7 @@ class MockBroker : public IPC::AttachmentBrokerUnprivilegedWin {
 // file HANDLE is sent to the privileged process using the attachment broker.
 // The privileged process dups the HANDLE into its own HANDLE table. This test
 // checks that the file has the same contents in the privileged process.
-TEST_F(IPCAttachmentBrokerPrivilegedWinTest, DISABLED_SendHandle) {
+TEST_F(IPCAttachmentBrokerPrivilegedWinTest, SendHandle) {
   Init("SendHandle");
 
   CommonSetUp();
@@ -310,7 +310,7 @@ TEST_F(IPCAttachmentBrokerPrivilegedWinTest, DISABLED_SendHandle) {
 // Similar to SendHandle, except the file HANDLE attached to the message has
 // neither read nor write permissions.
 TEST_F(IPCAttachmentBrokerPrivilegedWinTest,
-       DISABLED_SendHandleWithoutPermissions) {
+       SendHandleWithoutPermissions) {
   Init("SendHandleWithoutPermissions");
 
   CommonSetUp();
@@ -338,7 +338,7 @@ TEST_F(IPCAttachmentBrokerPrivilegedWinTest,
 // Similar to SendHandle, except the attachment's destination process is this
 // process. This is an unrealistic scenario, but simulates an unprivileged
 // process sending an attachment to another unprivileged process.
-TEST_F(IPCAttachmentBrokerPrivilegedWinTest, DISABLED_SendHandleToSelf) {
+TEST_F(IPCAttachmentBrokerPrivilegedWinTest, SendHandleToSelf) {
   Init("SendHandleToSelf");
 
   set_broker(new MockBroker);
@@ -372,7 +372,7 @@ TEST_F(IPCAttachmentBrokerPrivilegedWinTest, DISABLED_SendHandleToSelf) {
 
 // Similar to SendHandle, but sends a message with two instances of the same
 // handle.
-TEST_F(IPCAttachmentBrokerPrivilegedWinTest, DISABLED_SendTwoHandles) {
+TEST_F(IPCAttachmentBrokerPrivilegedWinTest, SendTwoHandles) {
   Init("SendTwoHandles");
 
   CommonSetUp();
@@ -395,7 +395,7 @@ TEST_F(IPCAttachmentBrokerPrivilegedWinTest, DISABLED_SendTwoHandles) {
 }
 
 // Similar to SendHandle, but sends the same message twice.
-TEST_F(IPCAttachmentBrokerPrivilegedWinTest, DISABLED_SendHandleTwice) {
+TEST_F(IPCAttachmentBrokerPrivilegedWinTest, SendHandleTwice) {
   Init("SendHandleTwice");
 
   CommonSetUp();
