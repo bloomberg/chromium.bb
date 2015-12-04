@@ -108,11 +108,13 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   // Returns the oldest InFlightChange that matches |change|.
   InFlightChange* GetOldestInFlightChangeMatching(const InFlightChange& change);
 
+  // See InFlightChange for details on how InFlightChanges are used.
   uint32_t ScheduleInFlightChange(scoped_ptr<InFlightChange> change);
 
   // Returns true if there is an InFlightChange that matches |change|. If there
   // is an existing change SetRevertValueFrom() is invoked on it. Returns false
   // if there is no InFlightChange matching |change|.
+  // See InFlightChange for details on how InFlightChanges are used.
   bool ApplyServerChangeToExistingInFlightChange(const InFlightChange& change);
 
   // OnEmbed() calls into this. Exposed as a separate function for testing.

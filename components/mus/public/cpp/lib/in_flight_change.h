@@ -52,6 +52,35 @@ enum class ChangeType {
 //   InFlightChange for the same window outstanding, then ChangeFailed() is
 //   invoked followed by Revert(). The expectation is Revert() sets the
 //   appropriate value back on the Window.
+//
+// In general there are two classes of changes:
+// 1. We are the only side allowed to make the change.
+// 2. The change can also be applied by another client. For example, the
+//    window manager may change the bounds as well as the local client.
+//
+// For (1) use CrashInFlightChange. As the name implies this change CHECKs that
+// the change succeeded. Use the following pattern for this. This code goes
+// where the change is sent to the server (in WindowTreeClientImpl):
+//   const uint32_t change_id =
+//   ScheduleInFlightChange(make_scoped_ptr(new CrashInFlightChange(
+//       window, ChangeType::REORDER)));
+//
+// For (2) use the same pattern as (1), but in the on change callback from the
+// server (e.g. OnWindowBoundsChanged()) add the following:
+//   // value_from_server is the value supplied from the server. It corresponds
+//   // to the value of the property at the time the server processed the
+//   // change. If the local change fails, this is the value reverted to.
+//   InFlightBoundsChange new_change(window, value_from_server);
+//   if (ApplyServerChangeToExistingInFlightChange(new_change)) {
+//     // There was an in flight change for the same property. The in flight
+//     // change takes the value to revert from |new_change|.
+//     return;
+//   }
+//
+//   // else case is no flight in change and the new value can be applied
+//   // immediately.
+//   WindowPrivate(window).LocalSetValue(new_value_from_server);
+//
 class InFlightChange {
  public:
   InFlightChange(Window* window, ChangeType type);
