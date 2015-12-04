@@ -158,6 +158,8 @@ public class OverlayPanel extends ContextualSearchPanelAnimation
 
     @Override
     public void closePanel(StateChangeReason reason, boolean animate) {
+        if (!isShowing()) return;
+
         super.closePanel(reason, animate);
 
         // If the close action is animated, the Layout will be hidden when
@@ -173,6 +175,8 @@ public class OverlayPanel extends ContextualSearchPanelAnimation
      * @param reason The reason the panel is being shown.
      */
     public void requestPanelShow(StateChangeReason reason) {
+        if (isShowing()) return;
+
         if (mPanelManager != null) {
             mPanelManager.requestPanelShow(this, reason);
         }

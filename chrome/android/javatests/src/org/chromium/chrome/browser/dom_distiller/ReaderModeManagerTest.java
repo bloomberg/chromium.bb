@@ -55,13 +55,15 @@ public class ReaderModeManagerTest extends InstrumentationTestCase {
         private int mPanelHideCount;
 
         @Override
-        public void requestPanelShow(OverlayPanel p, StateChangeReason r) {
+        public void requestPanelShow(OverlayPanel panel, StateChangeReason reason) {
             mRequestPanelShowCount++;
+            super.requestPanelShow(panel, reason);
         }
 
         @Override
-        public void notifyPanelClosed(OverlayPanel p, StateChangeReason r) {
+        public void notifyPanelClosed(OverlayPanel panel, StateChangeReason reason) {
             mPanelHideCount++;
+            super.notifyPanelClosed(panel, reason);
         }
 
         public int getRequestPanelShowCount() {
@@ -162,12 +164,14 @@ public class ReaderModeManagerTest extends InstrumentationTestCase {
     @SmallTest
     @Feature({"ReaderModeManager"})
     public void testInfoBarEvents() {
+        mPanel.requestPanelShow(StateChangeReason.UNKNOWN);
+
         mReaderManager.onAddInfoBar(null, null, true);
-        assertEquals(0, mPanelManager.getRequestPanelShowCount());
+        assertEquals(1, mPanelManager.getRequestPanelShowCount());
         assertEquals(1, mPanelManager.getPanelHideCount());
 
         mReaderManager.onRemoveInfoBar(null, null, true);
-        assertEquals(1, mPanelManager.getRequestPanelShowCount());
+        assertEquals(2, mPanelManager.getRequestPanelShowCount());
         assertEquals(1, mPanelManager.getPanelHideCount());
     }
 
@@ -177,12 +181,14 @@ public class ReaderModeManagerTest extends InstrumentationTestCase {
     @SmallTest
     @Feature({"ReaderModeManager"})
     public void testFullscreenEvents() {
+        mPanel.requestPanelShow(StateChangeReason.UNKNOWN);
+
         mReaderManager.onToggleFullscreenMode(null, true);
-        assertEquals(0, mPanelManager.getRequestPanelShowCount());
+        assertEquals(1, mPanelManager.getRequestPanelShowCount());
         assertEquals(1, mPanelManager.getPanelHideCount());
 
         mReaderManager.onToggleFullscreenMode(null, false);
-        assertEquals(1, mPanelManager.getRequestPanelShowCount());
+        assertEquals(2, mPanelManager.getRequestPanelShowCount());
         assertEquals(1, mPanelManager.getPanelHideCount());
     }
 

@@ -127,13 +127,23 @@ void StaticTabSceneLayer::SetContentSceneLayer(
     const JavaParamRef<jobject>& jobj,
     const JavaParamRef<jobject>& jcontent_scene_layer) {
   SceneLayer* content_scene_layer = FromJavaObject(env, jcontent_scene_layer);
-  if (content_scene_layer && content_scene_layer->layer()) {
-    content_scene_layer_ = content_scene_layer->layer();
-    if (content_scene_layer_.get())
-      layer_->AddChild(content_scene_layer_);
-  } else if (content_scene_layer_) {
+  scoped_refptr<cc::Layer> layer = content_scene_layer ?
+      content_scene_layer->layer() : nullptr;
+
+  if (content_scene_layer_ && content_scene_layer_ != layer) {
     content_scene_layer_->RemoveFromParent();
     content_scene_layer_ = nullptr;
+  }
+
+  // TODO(pedrosimonetti): Consider being smarter with regards to when to
+  // add the layer to the hierarchy. For now, we need to keep adding the
+  // content_scene_layer on every frame because the content_layer is also
+  // added on every frame. This means that if we only add it once, the
+  // content_layer will be added again on the next frame and will
+  // occlude the content_scene_layer.
+  if (layer) {
+    content_scene_layer_ = layer;
+    layer_->AddChild(layer);
   }
 }
 
