@@ -16,7 +16,7 @@ See
 
 Get clang (happens automatically during `gclient runhooks` on Mac and Linux):
 
-    tools/clang/scripts/update.sh
+    tools/clang/scripts/update.py
 
 (Only needs to be run once per checkout, and clang will be automatically updated
 by `gclient runhooks`.)
@@ -128,6 +128,6 @@ lines set `cc` and `cxx` to your clang binary. If things look good, run `ninja
 
 If your clang revision is very different from the one currently used in chromium
 
-*   Check `tools/clang/scripts/update.sh` to find chromium's clang revision
+*   Check `tools/clang/scripts/update.py` to find chromium's clang revision
 *   You might have to tweak warning flags. Or you could set `werror=` in the
     line above to disable warnings as errors (but this only works on Linux).
