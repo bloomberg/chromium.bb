@@ -447,7 +447,8 @@ class ContextualSearchPolicy {
     }
 
     /**
-     * Determines the best target language.
+     * @return The best target language from the ordered list, or the empty string if
+     *         none is available.
      */
     String bestTargetLanguage(List<String> targetLanguages) {
         // For now, we just return the first language, unless it's English
@@ -456,11 +457,13 @@ class ContextualSearchPolicy {
         // E.g. If this language doesn't match the user's server preferences, they might see a page
         // in one language and the one box translation in another, which might be confusing.
         // Also this logic should only apply on Android, where English setup is over used.
-        if (TextUtils.equals(targetLanguages.get(0), Locale.ENGLISH.getLanguage())
-                && targetLanguages.size() > 1) {
+        if (targetLanguages.size() > 1
+                && TextUtils.equals(targetLanguages.get(0), Locale.ENGLISH.getLanguage())) {
             return targetLanguages.get(1);
-        } else {
+        } else if (targetLanguages.size() > 0) {
             return targetLanguages.get(0);
+        } else {
+            return "";
         }
     }
 

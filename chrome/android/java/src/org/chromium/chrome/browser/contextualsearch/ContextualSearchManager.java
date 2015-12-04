@@ -60,7 +60,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 
 import javax.annotation.Nullable;
 
@@ -125,8 +124,9 @@ public class ContextualSearchManager extends ContextualSearchObservable
     private boolean mIsShowingPromo;
     private boolean mDidLogPromoOutcome;
 
-    // Cached target languages for translation;
-    private List<String> mTargetLanguages;
+    // Cached native language data for translation;
+    private String mTranslateServiceTargetLanguage;
+    private String mAcceptLanguages;
 
     /**
      * Whether contextual search manager is currently promoting a tab. We should be ignoring hide
@@ -485,8 +485,8 @@ public class ContextualSearchManager extends ContextualSearchObservable
             mNetworkCommunicator.startSearchTermResolutionRequest(
                     mSelectionController.getSelectedText());
             didRequestSurroundings = true;
-            // Cache the target languages in case they are needed for translation.
-            if (!mPolicy.disableForceTranslationOnebox()) getReadableLanguages();
+            // Cache the native translate data, so JNI calls won't be made when time-critical.
+            cacheNativeTranslateData();
         } else {
             boolean shouldPrefetch = mPolicy.shouldPrefetchSearchResult(isTap);
             mSearchRequest = new ContextualSearchRequest(mSelectionController.getSelectedText(),
@@ -792,50 +792,50 @@ public class ContextualSearchManager extends ContextualSearchObservable
 
     /**
      * Gets the list of readable languages for the current user, with the first
-     * item in the list being the user's primary language.
+     * item in the list being the user's primary language (according to the Translate Service).
      * We assume that the user can read all languages that they can write.
      * @return The {@link List} of languages the user understands with their primary language first.
      */
     private List<String> getReadableLanguages() {
-        // May be cached.
-        if (mTargetLanguages != null) return mTargetLanguages;
-
         // Using LinkedHashSet keeps the entries both unique and ordered.
-        Set<String> uniqueLanguages = new LinkedHashSet<String>();
+        LinkedHashSet<String> uniqueLanguages = getProficientLanguages();
 
-        // The primary language always comes first.
-        uniqueLanguages.add(
-                trimLocaleToLanguage(nativeGetTargetLanguage(mNativeContextualSearchManagerPtr)));
-
-        // Next add languages the user knows how to write.
-        List<String> writable = getWritableLanguages();
-        for (int i = 0; i < writable.size(); i++) {
-            uniqueLanguages.add(trimLocaleToLanguage(writable.get(i)));
-        }
-
-        // Add the accept languages last, since they are a weaker hint than presence of a keyboard.
+        // Add the accept languages to the end, since they are a weaker hint than
+        // the proficient languages.
         List<String> acceptLanguages = getAcceptLanguages();
         for (int i = 0; i < acceptLanguages.size(); i++) {
             uniqueLanguages.add(trimLocaleToLanguage(acceptLanguages.get(i)));
         }
-        mTargetLanguages = new ArrayList<String>(uniqueLanguages);
-        return mTargetLanguages;
+        return new ArrayList<String>(uniqueLanguages);
     }
 
     /**
-     * Gets the list of writable languages for the current user, based on their IME keyboards.
-     * @return An ordered {@link List} of languages the user reads.
+     * Gets the list of languages that the current user is proficient using.
+     * The list produced is based on the Translation-Service's target language, supplemented
+     * with the user's IME keyboard locales.
+     * @return An ordered {@link List} of languages the user is proficient using.
      */
-    private List<String> getWritableLanguages() {
-        List<String> result = new ArrayList<String>();
+    private ArrayList<String> getProficientLanguageList() {
+        return new ArrayList<String>(getProficientLanguages());
+    }
+
+    /**
+     * Similar to {@link #getProficientLanguageList} except the the result is provided in
+     * a {@link LinkedHashSet} to provide access to a unique ordered list.
+     * @return a {@link LinkedHashSet} of languages the user is proficient using.
+     */
+    private LinkedHashSet<String> getProficientLanguages() {
+        LinkedHashSet<String> uniqueLanguages = new LinkedHashSet<String>();
+        // The primary language, according to the translation-service, always comes first.
+        uniqueLanguages.add(trimLocaleToLanguage(getNativeTranslateServiceTargetLanguage()));
+        // Merge in the IME locales, if possible.
         Context context = mActivity.getApplicationContext();
-        List<String> locales = context != null
-                ? new ArrayList<String>(UiUtils.getIMELocales(context))
-                : new ArrayList<String>();
-        for (int i = 0; i < locales.size(); i++) {
-            result.add(trimLocaleToLanguage(locales.get(i)));
+        if (context != null) {
+            for (String locale : UiUtils.getIMELocales(context)) {
+                uniqueLanguages.add(trimLocaleToLanguage(locale));
+            }
         }
-        return result;
+        return uniqueLanguages;
     }
 
     /**
@@ -843,7 +843,7 @@ public class ContextualSearchManager extends ContextualSearchObservable
      * @return The {@link List} of languages the user understands or does not want translated.
      */
     private List<String> getAcceptLanguages() {
-        String acceptLanguages = nativeGetAcceptLanguages(mNativeContextualSearchManagerPtr);
+        String acceptLanguages = getNativeAcceptLanguages();
         List<String> result = new ArrayList<String>();
         for (String language : acceptLanguages.split(",")) {
             result.add(language);
@@ -875,7 +875,7 @@ public class ContextualSearchManager extends ContextualSearchObservable
                 boolean doForceTranslate = !mPolicy.disableForceTranslationOnebox();
                 if (doForceTranslate && searchRequest != null) {
                     searchRequest.forceTranslation(sourceLanguage,
-                            mPolicy.bestTargetLanguage(getWritableLanguages()));
+                            mPolicy.bestTargetLanguage(getProficientLanguageList()));
                 }
                 // Log that conditions were right for translation, even though it may be disabled
                 // for an experiment so we can compare with the counter factual data.
@@ -897,11 +897,43 @@ public class ContextualSearchManager extends ContextualSearchObservable
             // The translation one-box won't actually show when the source text ends up being
             // the same as the target text, so we err on over-triggering.
             searchRequest.forceAutoDetectTranslation(
-                    mPolicy.bestTargetLanguage(getWritableLanguages()));
+                    mPolicy.bestTargetLanguage(getProficientLanguageList()));
         }
         // Log that conditions were right for translation, even though it may be disabled
         // for an experiment so we can compare with the counter factual data.
         ContextualSearchUma.logTranslateOnebox(shouldAutoDetectTranslate);
+    }
+
+    /**
+     * Caches all the native translate language info, so we can avoid repeated JNI calls.
+     */
+    private void cacheNativeTranslateData() {
+        if (!mPolicy.disableForceTranslationOnebox()) {
+            getNativeTranslateServiceTargetLanguage();
+            getNativeAcceptLanguages();
+        }
+    }
+
+    /**
+     * @return The accept-languages string from the cache or from native code (when not cached).
+     */
+    private String getNativeAcceptLanguages() {
+        if (mAcceptLanguages == null) {
+            mAcceptLanguages = nativeGetAcceptLanguages(mNativeContextualSearchManagerPtr);
+        }
+        return mAcceptLanguages;
+    }
+
+    /**
+     * @return The Translate Service's target language string from the cache or from
+     *         native code (when not cached).
+     */
+    private String getNativeTranslateServiceTargetLanguage() {
+        if (mTranslateServiceTargetLanguage == null) {
+            mTranslateServiceTargetLanguage = nativeGetTargetLanguage(
+                    mNativeContextualSearchManagerPtr);
+        }
+        return mTranslateServiceTargetLanguage;
     }
 
     // ============================================================================================
@@ -1330,6 +1362,7 @@ public class ContextualSearchManager extends ContextualSearchObservable
     private native void nativeGatherSurroundingText(long nativeContextualSearchManager,
             String selection, boolean useResolvedSearchTerm, ContentViewCore baseContentViewCore,
             boolean maySendBasePageUrl);
+    // Don't call these directly, instead call the private methods that cache the results.
     private native String nativeGetTargetLanguage(long nativeContextualSearchManager);
     private native String nativeGetAcceptLanguages(long nativeContextualSearchManager);
 }
