@@ -176,17 +176,6 @@ void MemoryCache::add(Resource* resource)
     WTF_LOG(ResourceLoading, "MemoryCache::add Added '%s', resource %p\n", resource->url().string().latin1().data(), resource);
 }
 
-void MemoryCache::replace(Resource* newResource, Resource* oldResource)
-{
-    ASSERT(newResource->cacheIdentifier() == oldResource->cacheIdentifier());
-    ResourceMap* resources = ensureResourceMap(oldResource->cacheIdentifier());
-    if (MemoryCacheEntry* oldEntry = resources->get(oldResource->url()))
-        evict(oldEntry);
-    add(newResource);
-    if (newResource->decodedSize() && newResource->hasClients())
-        insertInLiveDecodedResourcesList(resources->get(newResource->url()));
-}
-
 void MemoryCache::remove(Resource* resource)
 {
     // The resource may have already been removed by someone other than our caller,

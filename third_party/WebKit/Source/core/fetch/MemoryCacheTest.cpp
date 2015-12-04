@@ -487,22 +487,6 @@ TEST_F(MemoryCacheTest, DecodeCacheOrder_MultipleResourceMaps)
     }
 }
 
-TEST_F(MemoryCacheTest, MultipleReplace)
-{
-    ResourcePtr<FakeResource> resource1 = new FakeResource(ResourceRequest("http://test/resource"), Resource::Raw);
-    memoryCache()->add(resource1.get());
-
-    ResourcePtr<FakeResource> resource2 = new FakeResource(ResourceRequest("http://test/resource"), Resource::Raw);
-    memoryCache()->replace(resource2.get(), resource1.get());
-    EXPECT_TRUE(memoryCache()->contains(resource2.get()));
-    EXPECT_FALSE(memoryCache()->contains(resource1.get()));
-
-    ResourcePtr<FakeResource> resource3 = new FakeResource(ResourceRequest("http://test/resource"), Resource::Raw);
-    memoryCache()->replace(resource3.get(), resource2.get());
-    EXPECT_TRUE(memoryCache()->contains(resource3.get()));
-    EXPECT_FALSE(memoryCache()->contains(resource2.get()));
-}
-
 TEST_F(MemoryCacheTest, RemoveDuringRevalidation)
 {
     ResourcePtr<FakeResource> resource1 = new FakeResource(ResourceRequest("http://test/resource"), Resource::Raw);
@@ -519,11 +503,6 @@ TEST_F(MemoryCacheTest, RemoveDuringRevalidation)
     memoryCache()->add(resource3.get());
     EXPECT_TRUE(memoryCache()->contains(resource3.get()));
     EXPECT_FALSE(memoryCache()->contains(resource2.get()));
-
-    memoryCache()->replace(resource1.get(), resource2.get());
-    EXPECT_TRUE(memoryCache()->contains(resource1.get()));
-    EXPECT_FALSE(memoryCache()->contains(resource2.get()));
-    EXPECT_FALSE(memoryCache()->contains(resource3.get()));
 }
 
 TEST_F(MemoryCacheTest, ResourceMapIsolation)
@@ -550,13 +529,6 @@ TEST_F(MemoryCacheTest, ResourceMapIsolation)
     EXPECT_TRUE(memoryCache()->contains(resource1.get()));
     EXPECT_FALSE(memoryCache()->contains(resource2.get()));
     EXPECT_TRUE(memoryCache()->contains(resource3.get()));
-
-    ResourcePtr<FakeResource> resource4 = new FakeResource(ResourceRequest("http://test/resource"), Resource::Raw);
-    resource4->setCacheIdentifier("foo");
-    memoryCache()->replace(resource4.get(), resource3.get());
-    EXPECT_TRUE(memoryCache()->contains(resource1.get()));
-    EXPECT_FALSE(memoryCache()->contains(resource3.get()));
-    EXPECT_TRUE(memoryCache()->contains(resource4.get()));
 
     WillBeHeapVector<RawPtrWillBeMember<Resource>> resources = memoryCache()->resourcesForURL(url);
     EXPECT_EQ(2u, resources.size());

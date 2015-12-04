@@ -179,7 +179,6 @@ public:
     WillBeHeapVector<RawPtrWillBeMember<Resource>> resourcesForURL(const KURL&);
 
     void add(Resource*);
-    void replace(Resource* newResource, Resource* oldResource);
     void remove(Resource*);
     bool contains(const Resource*) const;
 
