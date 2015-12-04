@@ -11,6 +11,8 @@ AC_INIT([wayland-protocols],
         [wayland-protocols],
         [http://wayland.freedesktop.org/])
 
+AC_CONFIG_MACRO_DIR([m4])
+
 AC_SUBST([WAYLAND_PROTOCOLS_VERSION], [wayland_protocols_version])
 
 AM_INIT_AUTOMAKE([1.11 foreign no-dist-gzip dist-xz])
