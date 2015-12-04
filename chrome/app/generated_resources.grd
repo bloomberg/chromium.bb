@@ -5832,12 +5832,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_GPU_RASTERIZATION_MSAA_SAMPLE_COUNT_SIXTEEN" desc="">
         16
       </message>
-      <message name="IDS_FLAGS_ENABLE_SLIMMING_PAINT_V2_NAME" desc="Title for the flag to enable slimming paint phase 2.">
-        Enable slimming paint phase 2.
-      </message>
-      <message name="IDS_FLAGS_ENABLE_SLIMMING_PAINT_V2_DESCRIPTION" desc="Description for the flag to enable slimming paint phase 2.">
-        Enable slimming paint phase 2 (display list based layerization, sub-tree painting optimization, etc.)
-      </message>
       <message name="IDS_FLAGS_EXPERIMENTAL_SECURITY_FEATURES_NAME" desc="Name for the flag to enable experimental security features.">
         Potentially annoying security features
       </message>
