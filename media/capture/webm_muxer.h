@@ -77,6 +77,12 @@ class MEDIA_EXPORT WebmMuxer : public NON_EXPORTED_BASE(mkvmuxer::IMkvWriter) {
   void ElementStartNotify(mkvmuxer::uint64 element_id,
                           mkvmuxer::int64 position) override;
 
+  // Helper to simplify saving frames.
+  void AddFrame(scoped_ptr<std::string> encoded_data,
+                uint8_t track_index,
+                base::TimeTicks timestamp,
+                bool is_key_frame);
+
   // Used to DCHECK that we are called on the correct thread.
   base::ThreadChecker thread_checker_;
 
@@ -105,6 +111,10 @@ class MEDIA_EXPORT WebmMuxer : public NON_EXPORTED_BASE(mkvmuxer::IMkvWriter) {
 
   // The MkvMuxer active element.
   mkvmuxer::Segment segment_;
+
+  // Save the most recent video keyframe if we're waiting for audio to come in.
+  scoped_ptr<std::string> most_recent_encoded_video_keyframe_;
+  base::TimeTicks saved_keyframe_timestamp_;
 
   DISALLOW_COPY_AND_ASSIGN(WebmMuxer);
 };
