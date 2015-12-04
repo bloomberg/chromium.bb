@@ -494,6 +494,22 @@ public class Decoder {
     }
 
     /**
+     * Deserializes an associated interface at the given offset. Not yet supported.
+     */
+    public AssociatedInterfaceNotSupported readAssociatedServiceInterfaceNotSupported(int offset,
+            boolean nullable) {
+        return null;
+    }
+
+    /**
+     * Deserializes an associated interface request at the given offset. Not yet supported.
+     */
+    public AssociatedInterfaceRequestNotSupported readAssociatedInterfaceRequestNotSupported(
+            int offset, boolean nullable) {
+        return null;
+    }
+
+    /**
      * Deserializes a string at the given offset.
      */
     public String readString(int offset, boolean nullable) {

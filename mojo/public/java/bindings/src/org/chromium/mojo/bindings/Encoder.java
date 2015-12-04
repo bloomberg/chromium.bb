@@ -304,6 +304,18 @@ public class Encoder {
     }
 
     /**
+     * Encode an associated interface. Not yet supported.
+     */
+    public void encode(AssociatedInterfaceNotSupported v, int offset, boolean nullable) {
+    }
+
+    /**
+     * Encode an associated interface request. Not yet supported.
+     */
+    public void encode(AssociatedInterfaceRequestNotSupported v, int offset, boolean nullable) {
+    }
+
+    /**
      * Returns an {@link Encoder} suitable for encoding an array of pointer of the given length.
      */
     public Encoder encodePointerArray(int length, int offset, int expectedLength) {
