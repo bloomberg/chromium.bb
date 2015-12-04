@@ -100,8 +100,12 @@
 - (void)tryRemoveScriptMessageHandlerForName:(NSString*)messageName
                                      webView:(WKWebView*)webView {
   NSMapTable* webViewToHandlerMap = [_handlers objectForKey:messageName];
-  if (![webViewToHandlerMap objectForKey:webView])
+  id handler = [webViewToHandlerMap objectForKey:webView];
+  if (!handler)
     return;
+  // Extend the lifetime of |handler| so removeScriptMessageHandlerForName: can
+  // be called from inside of |handler|.
+  [[handler retain] autorelease];
   if (webViewToHandlerMap.count == 1) {
     [_handlers removeObjectForKey:messageName];
     [_userContentController removeScriptMessageHandlerForName:messageName];

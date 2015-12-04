@@ -237,6 +237,8 @@
         'web_state/js/credential_util.mm',
         'web_state/js/crw_js_early_script_manager.h',
         'web_state/js/crw_js_early_script_manager.mm',
+        'web_state/js/crw_js_post_request_loader.h',
+        'web_state/js/crw_js_post_request_loader.mm',
         'web_state/js/crw_js_injection_manager.mm',
         'web_state/js/crw_js_injection_receiver.mm',
         'web_state/js/crw_js_invoke_parameter_queue.h',
@@ -421,12 +423,14 @@
         'ios_web_js_bundle_wk',
       ],
       'sources': [
+        'web_state/js/resources/post_request.js',  
         'web_state/js/resources/plugin_placeholder.js',
         'web_state/js/resources/window_id.js',
         'webui/resources/web_ui.js',
       ],
       'link_settings': {
         'mac_bundle_resources': [
+          '<(SHARED_INTERMEDIATE_DIR)/post_request.js',
           '<(SHARED_INTERMEDIATE_DIR)/plugin_placeholder.js',
           '<(SHARED_INTERMEDIATE_DIR)/window_id.js',
           '<(SHARED_INTERMEDIATE_DIR)/web_ui.js',

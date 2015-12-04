@@ -10,7 +10,7 @@
 #include "base/ios/ios_util.h"
 #include "base/ios/weak_nsobject.h"
 #include "base/json/json_reader.h"
-#include "base/mac/objc_property_releaser.h"
+#import "base/mac/objc_property_releaser.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
@@ -39,6 +39,7 @@
 #import "ios/web/web_state/crw_pass_kit_downloader.h"
 #import "ios/web/web_state/error_translation_util.h"
 #include "ios/web/web_state/frame_info.h"
+#import "ios/web/web_state/js/crw_js_post_request_loader.h"
 #import "ios/web/web_state/js/crw_js_window_id_manager.h"
 #import "ios/web/web_state/ui/crw_web_controller+protected.h"
 #import "ios/web/web_state/ui/crw_wk_script_message_router.h"
@@ -187,6 +188,9 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   // Handles downloading PassKit data for WKWebView. Lazy initialized.
   base::scoped_nsobject<CRWPassKitDownloader> _passKitDownloader;
 
+  // Object for loading POST requests with body.
+  base::scoped_nsobject<CRWJSPOSTRequestLoader> _POSTRequestLoader;
+
   // Whether the web page is currently performing window.history.pushState or
   // window.history.replaceState
   // Set to YES on window.history.willChangeState message. To NO on
@@ -232,6 +236,15 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 
 // Downloader for PassKit files. Lazy initialized.
 @property(nonatomic, readonly) CRWPassKitDownloader* passKitDownloader;
+
+// Loads POST request with body in |_wkWebView| by constructing an HTML page
+// that executes the request through JavaScript and replaces document with the
+// result.
+// Note that this approach includes multiple body encodings and decodings, plus
+// the data is passed to |_wkWebView| on main thread.
+// This is necessary because WKWebView ignores POST request body.
+// Workaround for https://bugs.webkit.org/show_bug.cgi?id=145410
+- (void)loadPOSTRequest:(NSMutableURLRequest*)request;
 
 // Returns the WKWebViewConfigurationProvider associated with the web
 // controller's BrowserState.
@@ -557,20 +570,42 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 
 - (void)loadRequestForCurrentNavigationItem {
   DCHECK(self.webView && !self.nativeController);
+  DCHECK([self currentSessionEntry]);
+
+  web::WKBackForwardListItemHolder* holder =
+      [self currentBackForwardListItemHolder];
+  BOOL isFormResubmission =
+      (holder->navigation_type() == WKNavigationTypeFormResubmitted ||
+       holder->navigation_type() == WKNavigationTypeFormSubmitted);
+  web::NavigationItemImpl* currentItem =
+      [self currentSessionEntry].navigationItemImpl;
+  NSData* POSTData = currentItem->GetPostData();
+  NSMutableURLRequest* request = [self requestForCurrentNavigationItem];
+
+  // If the request has POST data and is not a form resubmission, configure and
+  // run the POST request.
+  if (POSTData.length && !isFormResubmission) {
+    [request setHTTPMethod:@"POST"];
+    [request setHTTPBody:POSTData];
+    [request setAllHTTPHeaderFields:[self currentHTTPHeaders]];
+    [self registerLoadRequest:[self currentNavigationURL]
+                     referrer:[self currentSessionEntryReferrer]
+                   transition:[self currentTransition]];
+    [self loadPOSTRequest:request];
+    return;
+  }
 
   ProceduralBlock defaultNavigationBlock = ^{
     [self registerLoadRequest:[self currentNavigationURL]
                      referrer:[self currentSessionEntryReferrer]
                    transition:[self currentTransition]];
-    [self loadRequest:[self requestForCurrentNavigationItem]];
+    [self loadRequest:request];
   };
 
   // If there is no corresponding WKBackForwardListItem, or the item is not in
   // the current WKWebView's back-forward list, navigating using WKWebView API
   // is not possible. In this case, fall back to the default navigation
   // mechanism.
-  web::WKBackForwardListItemHolder* holder =
-      [self currentBackForwardListItemHolder];
   if (!holder->back_forward_list_item() ||
       ![self isBackForwardListItemValid:holder->back_forward_list_item()]) {
     defaultNavigationBlock();
@@ -594,10 +629,8 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 
   // If the request is not a form submission or resubmission, or the user
   // doesn't need to confirm the load, then continue right away.
-  web::NavigationItemImpl* currentItem =
-      [self currentSessionEntry].navigationItemImpl;
-  if ((holder->navigation_type() != WKNavigationTypeFormResubmitted &&
-       holder->navigation_type() != WKNavigationTypeFormSubmitted) ||
+
+  if (!isFormResubmission ||
       currentItem->ShouldSkipResubmitDataConfirmation()) {
     webViewNavigationBlock();
     return;
@@ -605,6 +638,7 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 
   // If the request is form submission or resubmission, then prompt the
   // user before proceeding.
+  DCHECK(isFormResubmission);
   [self.delegate webController:self
       onFormResubmissionForRequest:nil
                      continueBlock:webViewNavigationBlock
@@ -713,6 +747,25 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   DCHECK(self.webStateImpl);
   // Request tracker IDs are used as certificate groups.
   return self.webStateImpl->GetRequestTracker()->identifier();
+}
+
+- (void)loadPOSTRequest:(NSMutableURLRequest*)request {
+  if (!_POSTRequestLoader) {
+    _POSTRequestLoader.reset([[CRWJSPOSTRequestLoader alloc] init]);
+  }
+
+  CRWWKScriptMessageRouter* messageRouter =
+      [self webViewConfigurationProvider].GetScriptMessageRouter();
+
+  [_POSTRequestLoader loadPOSTRequest:request
+                            inWebView:_wkWebView
+                        messageRouter:messageRouter
+                    completionHandler:^(NSError* loadError) {
+                      if (loadError)
+                        [self handleLoadError:loadError inMainFrame:YES];
+                      else
+                        self.webStateImpl->SetContentsMimeType("text/html");
+                    }];
 }
 
 - (web::WKWebViewConfigurationProvider&)webViewConfigurationProvider {

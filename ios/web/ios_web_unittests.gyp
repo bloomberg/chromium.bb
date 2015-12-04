@@ -62,6 +62,7 @@
         'web_state/js/crw_js_early_script_manager_unittest.mm',
         'web_state/js/crw_js_injection_manager_unittest.mm',
         'web_state/js/crw_js_invoke_parameter_queue_unittest.mm',
+        'web_state/js/crw_js_post_request_loader_unittest.mm',
         'web_state/js/crw_js_window_id_manager_unittest.mm',
         'web_state/js/page_script_util_unittest.mm',
         'web_state/ui/crw_static_file_web_view_unittest.mm',
