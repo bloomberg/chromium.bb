@@ -88,9 +88,9 @@ Surface::Surface()
       compositor_(nullptr),
       delegate_(nullptr) {
   SetType(ui::wm::WINDOW_TYPE_CONTROL);
+  SetName("ExoSurface");
   Init(ui::LAYER_SOLID_COLOR);
   set_owned_by_parent(false);
-  SetName("ExoSurface");
 }
 
 Surface::~Surface() {
