@@ -1122,7 +1122,8 @@ void ChromeContentRendererClient::GetNavigationErrorStrings(
   }
 
   if (error_description)
-    *error_description = LocalizedError::GetErrorDetails(error, is_post);
+    *error_description = LocalizedError::GetErrorDetails(error.domain.utf8(),
+                                                         error.reason, is_post);
 }
 
 bool ChromeContentRendererClient::RunIdleHandlerWhenWidgetsHidden() {

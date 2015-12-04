@@ -17,10 +17,6 @@ namespace base {
 class DictionaryValue;
 }
 
-namespace blink {
-struct WebURLError;
-}
-
 namespace error_page {
 struct ErrorPageParams;
 }
@@ -42,7 +38,8 @@ class LocalizedError {
                          base::DictionaryValue* strings);
 
   // Returns a description of the encountered error.
-  static base::string16 GetErrorDetails(const blink::WebURLError& error,
+  static base::string16 GetErrorDetails(const std::string& error_domain,
+                                        int error_code,
                                         bool is_post);
 
   // Returns true if an error page exists for the specified parameters.
