@@ -271,6 +271,7 @@ protected:
         unsigned styleType : 6; // PseudoId
         unsigned pseudoBits : 8;
         unsigned explicitInheritance : 1; // Explicitly inherits a non-inherited property
+        unsigned variableReference : 1; // A non-inherited property references a variable.
         unsigned unique : 1; // Style can not be shared.
 
         unsigned emptyState : 1;
@@ -284,7 +285,7 @@ protected:
 
         mutable unsigned hasRemUnits : 1;
         // If you add more style bits here, you will also need to update ComputedStyle::copyNonInheritedFromCached()
-        // 63 bits
+        // 62 bits
     } noninherited_flags;
 
 // !END SYNC!
@@ -326,6 +327,7 @@ protected:
         noninherited_flags.styleType = NOPSEUDO;
         noninherited_flags.pseudoBits = 0;
         noninherited_flags.explicitInheritance = false;
+        noninherited_flags.variableReference = false;
         noninherited_flags.unique = false;
         noninherited_flags.emptyState = false;
         noninherited_flags.hasViewportUnits = false;
@@ -1600,6 +1602,9 @@ public:
 
     void setHasExplicitlyInheritedProperties() { noninherited_flags.explicitInheritance = true; }
     bool hasExplicitlyInheritedProperties() const { return noninherited_flags.explicitInheritance; }
+
+    void setHasVariableReferenceFromNonInheritedProperty() { noninherited_flags.variableReference = true; }
+    bool hasVariableReferenceFromNonInheritedProperty() const { return noninherited_flags.variableReference; }
 
     bool hasChildDependentFlags() const { return emptyState() || hasExplicitlyInheritedProperties(); }
     void copyChildDependentFlagsFrom(const ComputedStyle&);

@@ -113,6 +113,8 @@ void StyleBuilder::applyProperty(CSSPropertyID id, StyleResolverState& state, CS
 {
     if (RuntimeEnabledFeatures::cssVariablesEnabled() && id != CSSPropertyVariable && value->isVariableReferenceValue()) {
         CSSVariableResolver::resolveAndApplyVariableReferences(state, id, *toCSSVariableReferenceValue(value));
+        if (!state.style()->hasVariableReferenceFromNonInheritedProperty() && !CSSPropertyMetadata::isInheritedProperty(id))
+            state.style()->setHasVariableReferenceFromNonInheritedProperty();
         return;
     }
 

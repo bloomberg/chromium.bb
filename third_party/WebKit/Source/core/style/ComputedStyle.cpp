@@ -266,6 +266,10 @@ void ComputedStyle::copyNonInheritedFromCached(const ComputedStyle& other)
     // unique() styles are not cacheable.
     ASSERT(!other.noninherited_flags.unique);
 
+    // styles with non inherited properties that reference variables are not
+    // cacheable.
+    ASSERT(!other.noninherited_flags.variableReference);
+
     // The following flags are set during matching before we decide that we get a
     // match in the MatchedPropertiesCache which in turn calls this method. The
     // reason why we don't copy these flags is that they're already correctly set

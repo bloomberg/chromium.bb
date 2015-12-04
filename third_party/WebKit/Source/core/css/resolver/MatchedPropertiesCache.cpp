@@ -160,6 +160,8 @@ bool MatchedPropertiesCache::isCacheable(const ComputedStyle& style, const Compu
     // The cache assumes static knowledge about which properties are inherited.
     if (parentStyle.hasExplicitlyInheritedProperties())
         return false;
+    if (style.hasVariableReferenceFromNonInheritedProperty())
+        return false;
     return true;
 }
 
