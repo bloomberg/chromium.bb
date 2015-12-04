@@ -16,6 +16,16 @@
   right: auto;
 }
 
+#zoom-buttons {
+  position: relative;
+  right: 48px;
+}
+
+:host-context([dir=rtl]) #zoom-buttons {
+  left: 48px;
+  right: auto;
+}
+
 viewer-zoom-button {
   display: block;
 }

@@ -7,15 +7,13 @@
   <template>
 
     <div id="zoom-buttons">
-      <div id="buttons">
-        <viewer-zoom-button id="fit-button" icons="fullscreen-exit fullscreen"
-            on-fabclick="fitToggle" delay="100">
-        </viewer-zoom-button>
-        <viewer-zoom-button id="zoom-in-button" icons="add"
-            on-fabclick="zoomIn" delay="50"></viewer-zoom-button>
-        <viewer-zoom-button id="zoom-out-button" icons="remove"
-            on-fabclick="zoomOut" delay="0"></viewer-zoom-button>
-      </div>
+      <viewer-zoom-button id="fit-button" icons="fullscreen-exit fullscreen"
+          on-fabclick="fitToggle" delay="100">
+      </viewer-zoom-button>
+      <viewer-zoom-button id="zoom-in-button" icons="add"
+          on-fabclick="zoomIn" delay="50"></viewer-zoom-button>
+      <viewer-zoom-button id="zoom-out-button" icons="remove"
+          on-fabclick="zoomOut" delay="0"></viewer-zoom-button>
     </div>
   </template>
 </dom-module>
