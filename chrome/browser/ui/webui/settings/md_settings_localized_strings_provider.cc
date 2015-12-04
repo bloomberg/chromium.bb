@@ -613,10 +613,8 @@ void AddSyncStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString("syncPageTitle", IDS_SETTINGS_SYNC);
   html_source->AddLocalizedString("syncLoading", IDS_SETTINGS_SYNC_LOADING);
   html_source->AddLocalizedString("syncTimeout", IDS_SETTINGS_SYNC_TIMEOUT);
-  html_source->AddLocalizedString("syncEverythingMenuOption",
-                                  IDS_SETTINGS_SYNC_EVERYTHING_MENU_OPTION);
-  html_source->AddLocalizedString("chooseWhatToSyncMenuOption",
-                                  IDS_SETTINGS_CHOOSE_WHAT_TO_SYNC_MENU_OPTION);
+  html_source->AddLocalizedString("syncEverythingCheckboxLabel",
+                                  IDS_SETTINGS_SYNC_EVERYTHING_CHECKBOX_LABEL);
   html_source->AddLocalizedString("appCheckboxLabel",
                                   IDS_SETTINGS_APPS_CHECKBOX_LABEL);
   html_source->AddLocalizedString("extensionsCheckboxLabel",

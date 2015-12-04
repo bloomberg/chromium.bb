@@ -577,11 +577,8 @@
   <message name="IDS_SETTINGS_SYNC_TIMEOUT" desc="Text explaining what to do if sync times out.">
     Please make sure your network connection is working and if the problem persists, please sign out and sign in again to refresh your credentials.
   </message>
-  <message name="IDS_SETTINGS_SYNC_EVERYTHING_MENU_OPTION" desc="Name of the menu option which, when selected, causes all properties to be synced.">
+  <message name="IDS_SETTINGS_SYNC_EVERYTHING_CHECKBOX_LABEL" desc="Label for the checkbox which causes all properties to be synced.">
     Sync everything
-  </message>
-  <message name="IDS_SETTINGS_CHOOSE_WHAT_TO_SYNC_MENU_OPTION" desc="Name of the menu option which, when selected, allows the user to select a subset of properties to be synced.">
-    Choose what to sync
   </message>
   <message name="IDS_SETTINGS_APPS_CHECKBOX_LABEL" desc="Label for the checkbox which enables or disables syncing apps between multiple browser instances.">
     Apps

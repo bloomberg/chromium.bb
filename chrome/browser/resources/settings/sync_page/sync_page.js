@@ -5,15 +5,6 @@
 (function() {
 
 /**
- * Indices of the options in the sync selector menu.
- * @enum {number}
- */
-var SyncSelectorIndices = {
-  SYNC_EVERYTHING: 0,
-  CHOOSE_WHAT_TO_SYNC: 1,
-};
-
-/**
  * Names of the radio buttons which allow the user to choose his encryption
  * mechanism.
  * @enum {string}
@@ -125,6 +116,26 @@ Polymer({
     this.$.pages.selected = 'main';
   },
 
+  /**
+   * Handler for when the sync all data types checkbox is changed.
+   * @param {Event} event
+   * @private
+   */
+  onSyncAllDataTypesChanged_: function(event) {
+    if (event.target.checked) {
+      this.set('syncPrefs.syncAllDataTypes', true);
+      this.set('syncPrefs.appsSynced', true);
+      this.set('syncPrefs.extensionsSynced', true);
+      this.set('syncPrefs.preferencesSynced', true);
+      this.set('syncPrefs.autofillSynced', true);
+      this.set('syncPrefs.typedUrlsSynced', true);
+      this.set('syncPrefs.themesSynced', true);
+      this.set('syncPrefs.bookmarksSynced', true);
+      this.set('syncPrefs.passwordsSynced', true);
+      this.set('syncPrefs.tabsSynced', true);
+    }
+  },
+
   /** @private */
   onCancelTap_: function() {
     // Event is caught by settings-animated-pages.
@@ -161,23 +172,6 @@ Polymer({
   },
 
   /**
-   * Applies the default settings (i.e., sync everything).
-   * @private
-   */
-  onUseDefaultsTap_: function() {
-    this.set('syncPrefs.syncAllDataTypes', true);
-    this.set('syncPrefs.appsSynced', true);
-    this.set('syncPrefs.extensionsSynced', true);
-    this.set('syncPrefs.preferencesSynced', true);
-    this.set('syncPrefs.autofillSynced', true);
-    this.set('syncPrefs.typedUrlsSynced', true);
-    this.set('syncPrefs.themesSynced', true);
-    this.set('syncPrefs.bookmarksSynced', true);
-    this.set('syncPrefs.passwordsSynced', true);
-    this.set('syncPrefs.tabsSynced', true);
-  },
-
-  /**
    * Callback invoked from calling settings.SyncPrivateApi.setSyncPrefs().
    * @param {!settings.PageStatus} callbackState
    * @private
@@ -200,16 +194,6 @@ Polymer({
   onEncryptionRadioSelectionChanged_: function(event) {
     this.creatingNewPassphrase =
         event.target.selected == RadioButtonNames.ENCRYPT_WITH_PASSPHRASE;
-  },
-
-  /**
-   * Computed binding returning the selected index for the sync dropdown.
-   * @private
-   */
-  selectedSyncSelectorIndex_: function() {
-    return this.syncPrefs.syncAllDataTypes ?
-        SyncSelectorIndices.SYNC_EVERYTHING :
-        SyncSelectorIndices.CHOOSE_WHAT_TO_SYNC;
   },
 
   /**
@@ -239,17 +223,6 @@ Polymer({
       return this.syncPrefs.fullEncryptionBody;
 
     return this.i18n('encryptWithSyncPassphraseLabel');
-  },
-
-  /**
-   * Handler for when the sync selector menu has changed its active option.
-   * @private
-   */
-  onSyncSelectorChanged_: function(event) {
-    if (event.target.selected == SyncSelectorIndices.SYNC_EVERYTHING)
-      this.onUseDefaultsTap_();
-    else
-      this.set('syncPrefs.syncAllDataTypes', false);
   },
 
   /**

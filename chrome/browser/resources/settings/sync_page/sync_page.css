@@ -2,21 +2,18 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
+paper-checkbox {
+  margin-bottom: 10px;
+}
+
 paper-radio-button {
   display: block;
 }
 
-.checkbox-container {
-  display: flex;
-  flex-flow: column;
+#sync-item-list {
+  margin-left: 32px;
 }
 
-.checkbox-container-row {
-  display: flex;
-}
-
-.checkbox-container-row > paper-checkbox {
-  display: flex;
-  flex-basis: 0;
-  flex-grow: 1;
+#sync-item-list paper-checkbox {
+  display: block;
 }
