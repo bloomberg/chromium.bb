@@ -66,7 +66,7 @@ void BlimpMessageOutputBuffer::ProcessMessage(
   DCHECK_GE(max_buffer_size_bytes_, current_buffer_size_bytes_);
 
   write_buffer_.push_back(
-      make_scoped_ptr(new BufferEntry(message.Pass(), callback)));
+      make_scoped_ptr(new BufferEntry(std::move(message), callback)));
 
   // Write the message
   if (write_buffer_.size() == 1 && output_processor_) {
@@ -115,7 +115,7 @@ void BlimpMessageOutputBuffer::OnMessageCheckpoint(int64 message_id) {
 BlimpMessageOutputBuffer::BufferEntry::BufferEntry(
     scoped_ptr<BlimpMessage> message,
     net::CompletionCallback callback)
-    : message(message.Pass()), callback(callback) {}
+    : message(std::move(message)), callback(callback) {}
 
 BlimpMessageOutputBuffer::BufferEntry::~BufferEntry() {}
 
@@ -131,7 +131,7 @@ void BlimpMessageOutputBuffer::WriteNextMessageIfReady() {
           << write_buffer_.front()->message->message_id()
           << ", type=" << message_to_write->type() << ")";
 
-  output_processor_->ProcessMessage(message_to_write.Pass(),
+  output_processor_->ProcessMessage(std::move(message_to_write),
                                     write_complete_cb_.callback());
   VLOG(3) << "Queue size: " << write_buffer_.size();
 }
