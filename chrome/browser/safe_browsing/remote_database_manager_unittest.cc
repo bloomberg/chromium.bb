@@ -35,8 +35,7 @@ class RemoteDatabaseManagerTest : public testing::Test {
   }
 
   // Setup the two field trial params.  These are read in db_'s ctor.
-  void SetFieldTrialParams(const std::string enabled_val,
-                           const std::string types_to_check_val) {
+  void SetFieldTrialParams(const std::string types_to_check_val) {
     // Destroy the existing FieldTrialList before creating a new one to avoid
     // a DCHECK.
     field_trials_.reset();
@@ -50,8 +49,6 @@ class RemoteDatabaseManagerTest : public testing::Test {
         base::FieldTrialList::CreateFieldTrial(experiment_name, group_name));
 
     std::map<std::string, std::string> params;
-    if (!enabled_val.empty())
-      params["enabled"] = enabled_val;
     if (!types_to_check_val.empty())
       params["types_to_check"] = types_to_check_val;
 
@@ -64,11 +61,7 @@ class RemoteDatabaseManagerTest : public testing::Test {
   scoped_refptr<RemoteSafeBrowsingDatabaseManager> db_;
 };
 
-TEST_F(RemoteDatabaseManagerTest, DisabledViaNullOrTrial) {
-  EXPECT_FALSE(db_->IsSupported());
-
-  SetFieldTrialParams("true", "");
-  db_ = new RemoteSafeBrowsingDatabaseManager();
+TEST_F(RemoteDatabaseManagerTest, DisabledViaNull) {
   EXPECT_TRUE(db_->IsSupported());
 
   SafeBrowsingApiHandler::SetInstance(nullptr);
@@ -76,17 +69,25 @@ TEST_F(RemoteDatabaseManagerTest, DisabledViaNullOrTrial) {
 }
 
 TEST_F(RemoteDatabaseManagerTest, TypesToCheckDefault) {
-  EXPECT_TRUE(db_->CanCheckResourceType(content::RESOURCE_TYPE_MAIN_FRAME));
-  EXPECT_TRUE(db_->CanCheckResourceType(content::RESOURCE_TYPE_SUB_FRAME));
-  // The rest are false.
-  for (int t = content::RESOURCE_TYPE_SUB_FRAME + 1;
-       t < content::RESOURCE_TYPE_LAST_TYPE; t++) {
-    EXPECT_FALSE(
-        db_->CanCheckResourceType(static_cast<content::ResourceType>(t)));
+  // Most are true, a few are false.
+  for (int t_int = 0; t_int < content::RESOURCE_TYPE_LAST_TYPE; t_int++) {
+    content::ResourceType t = static_cast<content::ResourceType>(t_int);
+    switch (t) {
+      case content::RESOURCE_TYPE_STYLESHEET:
+      case content::RESOURCE_TYPE_IMAGE:
+      case content::RESOURCE_TYPE_FONT_RESOURCE:
+      case content::RESOURCE_TYPE_FAVICON:
+        EXPECT_FALSE(db_->CanCheckResourceType(t));
+        break;
+      default:
+        EXPECT_TRUE(db_->CanCheckResourceType(t));
+        break;
+    }
   }
 }
+
 TEST_F(RemoteDatabaseManagerTest, TypesToCheckFromTrial) {
-  SetFieldTrialParams("true", "1,2,blah, 9");
+  SetFieldTrialParams("1,2,blah, 9");
   db_ = new RemoteSafeBrowsingDatabaseManager();
   EXPECT_TRUE(db_->CanCheckResourceType(
       content::RESOURCE_TYPE_MAIN_FRAME));  // defaulted

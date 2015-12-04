@@ -18,10 +18,8 @@ using content::BrowserThread;
 
 namespace {
 
-// Android field trial
+// Android field trial for controlling types_to_check.
 const char kAndroidFieldExperiment[] = "SafeBrowsingAndroid";
-const char kAndroidFieldParam[] = "enabled";
-const char kAndroidFieldParamEnabledValue[] = "true";
 const char kAndroidTypesToCheckParam[] = "types_to_check";
 
 }  // namespace
@@ -94,27 +92,41 @@ void RemoteSafeBrowsingDatabaseManager::ClientRequest::OnRequestDone(
 // TODO(nparker): Add more tests for this class
 RemoteSafeBrowsingDatabaseManager::RemoteSafeBrowsingDatabaseManager()
     : enabled_(false) {
-
-  // Check if the field trial is enabled.
-  const std::string enabled_param = variations::GetVariationParamValue(
-      kAndroidFieldExperiment, kAndroidFieldParam);
-  is_android_field_trial_enabled_ =
-      (enabled_param == kAndroidFieldParamEnabledValue);
-
   // Decide which resource types to check. These two are the minimum.
   resource_types_to_check_.insert(content::RESOURCE_TYPE_MAIN_FRAME);
   resource_types_to_check_.insert(content::RESOURCE_TYPE_SUB_FRAME);
 
   // The param is expected to be a comma-separated list of ints
-  // corresponding to the enum types.
+  // corresponding to the enum types.  We're keeping this finch
+  // control around so we can add back types if they later become dangerous.
   const std::string ints_str = variations::GetVariationParamValue(
       kAndroidFieldExperiment, kAndroidTypesToCheckParam);
-  for (const std::string& val_str : base::SplitString(
-           ints_str, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
-    int i;
-    if (base::StringToInt(val_str, &i) && i >= 0 &&
-        i < content::RESOURCE_TYPE_LAST_TYPE) {
-      resource_types_to_check_.insert(static_cast<content::ResourceType>(i));
+  if (ints_str.empty()) {
+    // By default, we check all types except a few.
+    static_assert(content::RESOURCE_TYPE_LAST_TYPE ==
+                      content::RESOURCE_TYPE_SERVICE_WORKER + 1,
+                  "Decide if new resource type should be skipped on mobile.");
+    for (int t_int = 0; t_int < content::RESOURCE_TYPE_LAST_TYPE; t_int++) {
+      content::ResourceType t = static_cast<content::ResourceType>(t_int);
+      switch (t) {
+        case content::RESOURCE_TYPE_STYLESHEET:
+        case content::RESOURCE_TYPE_IMAGE:
+        case content::RESOURCE_TYPE_FONT_RESOURCE:
+        case content::RESOURCE_TYPE_FAVICON:
+          break;
+        default:
+          resource_types_to_check_.insert(t);
+      }
+    }
+  } else {
+    // Use the finch param.
+    for (const std::string& val_str : base::SplitString(
+             ints_str, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
+      int i;
+      if (base::StringToInt(val_str, &i) && i >= 0 &&
+          i < content::RESOURCE_TYPE_LAST_TYPE) {
+        resource_types_to_check_.insert(static_cast<content::ResourceType>(i));
+      }
     }
   }
 }
@@ -124,8 +136,7 @@ RemoteSafeBrowsingDatabaseManager::~RemoteSafeBrowsingDatabaseManager() {
 }
 
 bool RemoteSafeBrowsingDatabaseManager::IsSupported() const {
-  return SafeBrowsingApiHandler::GetInstance() != nullptr &&
-         is_android_field_trial_enabled_;
+  return SafeBrowsingApiHandler::GetInstance() != nullptr;
 }
 
 safe_browsing::ThreatSource RemoteSafeBrowsingDatabaseManager::GetThreatSource()

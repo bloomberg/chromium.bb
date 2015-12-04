@@ -69,7 +69,6 @@ class RemoteSafeBrowsingDatabaseManager : public SafeBrowsingDatabaseManager {
   bool enabled_;
 
   std::set<content::ResourceType> resource_types_to_check_;
-  bool is_android_field_trial_enabled_;
 
   friend class base::RefCountedThreadSafe<RemoteSafeBrowsingDatabaseManager>;
   DISALLOW_COPY_AND_ASSIGN(RemoteSafeBrowsingDatabaseManager);
