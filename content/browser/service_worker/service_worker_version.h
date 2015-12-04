@@ -405,8 +405,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   // The timeout timer interval.
   static const int kTimeoutTimerDelaySeconds;
-  // Timeout for the worker to start.
-  static const int kStartWorkerTimeoutMinutes;
+  // Timeout for an installed worker to start.
+  static const int kStartInstalledWorkerTimeoutSeconds;
+  // Timeout for a new worker to start.
+  static const int kStartNewWorkerTimeoutMinutes;
   // Timeout for a request to be handled.
   static const int kRequestTimeoutMinutes;
   // Timeout for the worker to stop.
@@ -526,6 +528,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void StartTimeoutTimer();
   void StopTimeoutTimer();
   void OnTimeoutTimer();
+  void SetTimeoutTimerInterval(base::TimeDelta interval);
 
   // Called by PingController for ping protocol.
   ServiceWorkerStatusCode PingWorker();

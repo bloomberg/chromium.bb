@@ -421,7 +421,8 @@ struct ServiceWorkerClientInfoSortMRU {
 }  // namespace
 
 const int ServiceWorkerVersion::kTimeoutTimerDelaySeconds = 30;
-const int ServiceWorkerVersion::kStartWorkerTimeoutMinutes = 5;
+const int ServiceWorkerVersion::kStartInstalledWorkerTimeoutSeconds = 10;
+const int ServiceWorkerVersion::kStartNewWorkerTimeoutMinutes = 5;
 const int ServiceWorkerVersion::kRequestTimeoutMinutes = 5;
 const int ServiceWorkerVersion::kStopWorkerTimeoutSeconds = 5;
 
@@ -1145,6 +1146,11 @@ void ServiceWorkerVersion::OnStarted() {
   DCHECK_EQ(RUNNING, running_status());
   RestartTick(&idle_time_);
 
+  // Reset the interval to normal. If may have been shortened so starting an
+  // existing worker can timeout quickly.
+  SetTimeoutTimerInterval(
+      base::TimeDelta::FromSeconds(kTimeoutTimerDelaySeconds));
+
   // Fire all start callbacks.
   scoped_refptr<ServiceWorkerVersion> protect(this);
   RunCallbacks(this, &start_callbacks_, SERVICE_WORKER_OK);
@@ -1158,15 +1164,8 @@ void ServiceWorkerVersion::OnStopping() {
   // Shorten the interval so stalling in stopped can be fixed quickly. Once the
   // worker stops, the timer is disabled. The interval will be reset to normal
   // when the worker starts up again.
-  DCHECK(timeout_timer_.IsRunning());
-  base::TimeDelta delay =
-      base::TimeDelta::FromSeconds(kStopWorkerTimeoutSeconds);
-  if (timeout_timer_.GetCurrentDelay() != delay) {
-    timeout_timer_.Stop();
-    timeout_timer_.Start(FROM_HERE, delay, this,
-                         &ServiceWorkerVersion::OnTimeoutTimer);
-  }
-
+  SetTimeoutTimerInterval(
+      base::TimeDelta::FromSeconds(kStopWorkerTimeoutSeconds));
   FOR_EACH_OBSERVER(Listener, listeners_, OnRunningStateChanged(this));
 }
 
@@ -2030,9 +2029,16 @@ void ServiceWorkerVersion::StartTimeoutTimer() {
   // Ping will be activated in OnScriptLoaded.
   ping_controller_->Deactivate();
 
+  // Make the timer delay shorter for starting an existing
+  // worker so stalled in starting workers can be timed out quickly.
+  // The timer will be reset to normal in OnStarted or the next start
+  // attempt.
+  const int delay_in_seconds = IsInstalled(status_)
+                                   ? kStartInstalledWorkerTimeoutSeconds
+                                   : kTimeoutTimerDelaySeconds;
   timeout_timer_.Start(FROM_HERE,
-                       base::TimeDelta::FromSeconds(kTimeoutTimerDelaySeconds),
-                       this, &ServiceWorkerVersion::OnTimeoutTimer);
+                       base::TimeDelta::FromSeconds(delay_in_seconds), this,
+                       &ServiceWorkerVersion::OnTimeoutTimer);
 }
 
 void ServiceWorkerVersion::StopTimeoutTimer() {
@@ -2044,6 +2050,15 @@ void ServiceWorkerVersion::StopTimeoutTimer() {
     ClearTick(&stale_time_);
     if (!update_timer_.IsRunning())
       ScheduleUpdate();
+  }
+}
+
+void ServiceWorkerVersion::SetTimeoutTimerInterval(base::TimeDelta interval) {
+  DCHECK(timeout_timer_.IsRunning());
+  if (timeout_timer_.GetCurrentDelay() != interval) {
+    timeout_timer_.Stop();
+    timeout_timer_.Start(FROM_HERE, interval, this,
+                         &ServiceWorkerVersion::OnTimeoutTimer);
   }
 }
 
@@ -2087,8 +2102,11 @@ void ServiceWorkerVersion::OnTimeoutTimer() {
   }
 
   // Starting a worker hasn't finished within a certain period.
-  if (GetTickDuration(start_time_) >
-      base::TimeDelta::FromMinutes(kStartWorkerTimeoutMinutes)) {
+  const base::TimeDelta start_limit =
+      IsInstalled(status())
+          ? base::TimeDelta::FromSeconds(kStartInstalledWorkerTimeoutSeconds)
+          : base::TimeDelta::FromMinutes(kStartNewWorkerTimeoutMinutes);
+  if (GetTickDuration(start_time_) > start_limit) {
     DCHECK(running_status() == STARTING || running_status() == STOPPING)
         << running_status();
     scoped_refptr<ServiceWorkerVersion> protect(this);

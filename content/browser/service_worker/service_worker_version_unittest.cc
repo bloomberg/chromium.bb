@@ -713,7 +713,7 @@ TEST_F(ServiceWorkerVersionTest, StaleUpdate_RunningWorker) {
   version_->stale_time_ =
       base::TimeTicks::Now() -
       base::TimeDelta::FromMinutes(
-          ServiceWorkerVersion::kStartWorkerTimeoutMinutes + 1);
+          ServiceWorkerVersion::kStartNewWorkerTimeoutMinutes + 1);
   version_->OnTimeoutTimer();
   EXPECT_TRUE(version_->stale_time_.is_null());
   EXPECT_TRUE(version_->update_timer_.IsRunning());
@@ -728,7 +728,7 @@ TEST_F(ServiceWorkerVersionTest, StaleUpdate_DoNotDeferTimer) {
   base::TimeTicks stale_time =
       base::TimeTicks::Now() -
       base::TimeDelta::FromMinutes(
-          ServiceWorkerVersion::kStartWorkerTimeoutMinutes + 1);
+          ServiceWorkerVersion::kStartNewWorkerTimeoutMinutes + 1);
   version_->stale_time_ = stale_time;
 
   // Stale time is not deferred.
@@ -822,7 +822,7 @@ TEST_F(ServiceWorkerFailToStartTest, Timeout) {
   version_->start_time_ =
       base::TimeTicks::Now() -
       base::TimeDelta::FromMinutes(
-          ServiceWorkerVersion::kStartWorkerTimeoutMinutes + 1);
+          ServiceWorkerVersion::kStartNewWorkerTimeoutMinutes + 1);
   version_->timeout_timer_.user_task().Run();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(SERVICE_WORKER_ERROR_TIMEOUT, status);
