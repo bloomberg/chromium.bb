@@ -744,10 +744,6 @@ private:
     WebPrivateOwnPtr<OpenedFrameTracker> m_openedFrameTracker;
 };
 
-#if BLINK_IMPLEMENTATION
-Frame* toCoreFrame(const WebFrame*);
-#endif
-
 } // namespace blink
 
 #endif

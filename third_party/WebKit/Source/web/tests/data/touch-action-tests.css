@@ -70,6 +70,11 @@ body {
   overflow: scroll;
   height: 50px;
 }
+iframe {
+  height: 50px;
+  display: block;
+  margin: 5px;
+}
 .spacer {
   height: 500px;
 }

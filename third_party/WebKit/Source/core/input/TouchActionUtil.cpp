@@ -6,6 +6,7 @@
 #include "core/input/TouchActionUtil.h"
 
 #include "core/dom/Node.h"
+#include "core/html/HTMLFrameOwnerElement.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutObject.h"
 
@@ -18,7 +19,7 @@ namespace {
 // According to the CSS Box Model Spec (http://dev.w3.org/csswg/css-box/#the-width-and-height-properties)
 // width applies to all elements but non-replaced inline elements, table rows, and row groups and
 // height applies to all elements but non-replaced inline elements, table columns, and column groups.
-static bool supportsTouchAction(const LayoutObject& object)
+bool supportsTouchAction(const LayoutObject& object)
 {
     if (object.isInline() && !object.isReplaced())
         return false;
@@ -28,26 +29,45 @@ static bool supportsTouchAction(const LayoutObject& object)
     return true;
 }
 
+const Node* parentNodeAcrossFrames(const Node* curNode)
+{
+    Node* parentNode = ComposedTreeTraversal::parent(*curNode);
+    if (parentNode)
+        return parentNode;
+
+    if (curNode->isDocumentNode()) {
+        const Document* doc = toDocument(curNode);
+        return doc->ownerElement();
+    }
+
+    return nullptr;
+}
+
 } // namespace
 
 TouchAction computeEffectiveTouchAction(const Node& node)
 {
     // Start by permitting all actions, then walk the elements supporting
-    // touch-action from the target node up to the nearest scrollable ancestor
-    // and exclude any prohibited actions.
+    // touch-action from the target node up to root document, exclude any
+    // prohibited actions at or below the element that supports them.
+    // I.e. pan-related actions are considered up to the nearest scroller,
+    // and zoom related actions are considered up to the root.
     TouchAction effectiveTouchAction = TouchActionAuto;
-    for (const Node* curNode = &node; curNode; curNode = ComposedTreeTraversal::parent(*curNode)) {
+    TouchAction handledTouchActions = TouchActionNone;
+    for (const Node* curNode = &node; curNode; curNode = parentNodeAcrossFrames(curNode)) {
         if (LayoutObject* layoutObject = curNode->layoutObject()) {
             if (supportsTouchAction(*layoutObject)) {
                 TouchAction action = layoutObject->style()->touchAction();
+                action |= handledTouchActions;
                 effectiveTouchAction &= action;
                 if (effectiveTouchAction == TouchActionNone)
                     break;
             }
 
-            // If we've reached an ancestor that supports a touch action, search no further.
-            if (layoutObject->isBox() && toLayoutBox(layoutObject)->scrollsOverflow())
-                break;
+            // If we've reached an ancestor that supports panning, stop allowing panning to be disabled.
+            if ((layoutObject->isBox() && toLayoutBox(layoutObject)->scrollsOverflow())
+                || layoutObject->isLayoutView())
+                handledTouchActions |= TouchActionPan;
         }
     }
     return effectiveTouchAction;

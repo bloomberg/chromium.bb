@@ -20,7 +20,13 @@
 </div>
 
 <div class='ta-none'>
-  <div class='scroll' expected-action='auto'>      
-    Touch-action: none is not propagated into overflow-scroll elements
+  <div class='scroll' expected-action='pan-x-y'>
+    Zoom (but not scroll) related touch-action bits propagate into overflow-scroll elements
+  </div>
+</div>
+
+<div class='ta-manipulation'>
+  <div class='scroll' expected-action='manipulation'>
+      touch-action: manipulation is maintained across overflow-scroll elements
   </div>
 </div>
