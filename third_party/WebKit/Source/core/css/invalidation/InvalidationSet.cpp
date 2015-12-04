@@ -51,8 +51,9 @@ void InvalidationSet::cacheTracingFlag()
     s_tracingEnabled = TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"));
 }
 
-InvalidationSet::InvalidationSet()
-    : m_allDescendantsMightBeInvalid(false)
+InvalidationSet::InvalidationSet(InvalidationType type)
+    : m_type(type)
+    , m_allDescendantsMightBeInvalid(false)
     , m_invalidatesSelf(false)
     , m_customPseudoInvalid(false)
     , m_treeBoundaryCrossing(false)
@@ -99,6 +100,8 @@ bool InvalidationSet::invalidatesElement(Element& element) const
 
 void InvalidationSet::combine(const InvalidationSet& other)
 {
+    ASSERT(m_type == other.m_type);
+
     // No longer bother combining data structures, since the whole subtree is deemed invalid.
     if (wholeSubtreeInvalid())
         return;
@@ -139,6 +142,14 @@ void InvalidationSet::combine(const InvalidationSet& other)
         for (const auto& attribute : *other.m_attributes)
             addAttribute(attribute);
     }
+}
+
+void InvalidationSet::destroy()
+{
+    if (isDescendantInvalidationSet())
+        delete toDescendantInvalidationSet(this);
+    else
+        delete toSiblingInvalidationSet(this);
 }
 
 HashSet<AtomicString>& InvalidationSet::ensureClassSet()
@@ -270,7 +281,8 @@ void InvalidationSet::show() const
 #endif // NDEBUG
 
 SiblingInvalidationSet::SiblingInvalidationSet()
-    : m_maxDirectAdjacentSelectors(1)
+    : InvalidationSet(InvalidateSiblings)
+    , m_maxDirectAdjacentSelectors(1)
     , m_descendantInvalidationSet(DescendantInvalidationSet::create())
 {
 }
