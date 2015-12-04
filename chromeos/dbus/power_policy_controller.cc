@@ -246,6 +246,11 @@ int PowerPolicyController::AddScreenWakeLock(WakeLockReason reason,
   return AddWakeLockInternal(WakeLock::TYPE_SCREEN, reason, description);
 }
 
+int PowerPolicyController::AddDimWakeLock(WakeLockReason reason,
+                                          const std::string& description) {
+  return AddWakeLockInternal(WakeLock::TYPE_DIM, reason, description);
+}
+
 int PowerPolicyController::AddSystemWakeLock(WakeLockReason reason,
                                              const std::string& description) {
   return AddWakeLockInternal(WakeLock::TYPE_SYSTEM, reason, description);
@@ -301,6 +306,7 @@ void PowerPolicyController::SendCurrentPolicy() {
     causes = kPrefsReason;
 
   bool have_screen_wake_locks = false;
+  bool have_dim_wake_locks = false;
   bool have_system_wake_locks = false;
   for (const auto& it : wake_locks_) {
     // Skip audio and video locks that should be ignored due to policy.
@@ -311,6 +317,9 @@ void PowerPolicyController::SendCurrentPolicy() {
     switch (it.second.type) {
       case WakeLock::TYPE_SCREEN:
         have_screen_wake_locks = true;
+        break;
+      case WakeLock::TYPE_DIM:
+        have_dim_wake_locks = true;
         break;
       case WakeLock::TYPE_SYSTEM:
         have_system_wake_locks = true;
@@ -328,7 +337,14 @@ void PowerPolicyController::SendCurrentPolicy() {
     policy.mutable_battery_delays()->set_screen_lock_ms(0);
   }
 
-  if (have_screen_wake_locks || have_system_wake_locks) {
+  if (honor_screen_wake_locks_ && have_dim_wake_locks) {
+    policy.mutable_ac_delays()->set_screen_off_ms(0);
+    policy.mutable_ac_delays()->set_screen_lock_ms(0);
+    policy.mutable_battery_delays()->set_screen_off_ms(0);
+    policy.mutable_battery_delays()->set_screen_lock_ms(0);
+  }
+
+  if (have_screen_wake_locks || have_dim_wake_locks || have_system_wake_locks) {
     if (!policy.has_ac_idle_action() || policy.ac_idle_action() ==
         power_manager::PowerManagementPolicy_Action_SUSPEND) {
       policy.set_ac_idle_action(

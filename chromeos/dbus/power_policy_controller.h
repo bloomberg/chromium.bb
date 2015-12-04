@@ -98,11 +98,13 @@ class CHROMEOS_EXPORT PowerPolicyController
   // and sends an updated policy. |description| is a human-readable description
   // of the reason the lock was created. Returns a unique ID that can be passed
   // to RemoveWakeLock() later.
+  // See the comment above WakeLock::Type for descriptions of the lock types.
   int AddScreenWakeLock(WakeLockReason reason, const std::string& description);
+  int AddDimWakeLock(WakeLockReason reason, const std::string& description);
   int AddSystemWakeLock(WakeLockReason reason, const std::string& description);
 
-  // Unregisters a request previously created via AddScreenWakeLock() or
-  // AddSystemWakeLock() and sends an updated policy.
+  // Unregisters a request previously created via an Add*WakeLock() call
+  // and sends an updated policy.
   void RemoveWakeLock(int id);
 
   // PowerManagerClient::Observer implementation:
@@ -114,11 +116,14 @@ class CHROMEOS_EXPORT PowerPolicyController
 
   friend class PowerPrefsTest;
 
-  // Details about a wake lock added via AddScreenWakeLock() or
-  // AddSystemWakeLock().
+  // Details about a wake lock added via Add*WakeLock().
+  // SCREEN and DIM will keep the screen on and prevent it from locking.
+  // SCREEN will also prevent it from dimming. SYSTEM will prevent idle
+  // suspends, but the screen will turn off and lock normally.
   struct WakeLock {
     enum Type {
       TYPE_SCREEN,
+      TYPE_DIM,
       TYPE_SYSTEM,
     };
 
@@ -153,11 +158,11 @@ class CHROMEOS_EXPORT PowerPolicyController
   // to details about the request.
   WakeLockMap wake_locks_;
 
-  // Should TYPE_SCREEN entries in |wake_locks_| be honored?  If false, screen
-  // wake locks are just treated as TYPE_SYSTEM instead.
+  // Should TYPE_SCREEN or TYPE_DIM entries in |wake_locks_| be honored?
+  // If false, screen wake locks are just treated as TYPE_SYSTEM instead.
   bool honor_screen_wake_locks_;
 
-  // Next ID to be used by AddScreenWakeLock() or AddSystemWakeLock().
+  // Next ID to be used by an Add*WakeLock() request.
   int next_wake_lock_id_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerPolicyController);
