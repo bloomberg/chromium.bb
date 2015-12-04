@@ -62,12 +62,12 @@ bool MediaValuesDynamic::isSafeToSendToAnotherThread() const
     return false;
 }
 
-int MediaValuesDynamic::viewportWidth() const
+double MediaValuesDynamic::viewportWidth() const
 {
     return calculateViewportWidth(m_frame);
 }
 
-int MediaValuesDynamic::viewportHeight() const
+double MediaValuesDynamic::viewportHeight() const
 {
     return calculateViewportHeight(m_frame);
 }

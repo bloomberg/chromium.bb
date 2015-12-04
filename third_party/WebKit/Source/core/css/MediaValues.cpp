@@ -32,18 +32,18 @@ PassRefPtrWillBeRawPtr<MediaValues> MediaValues::createDynamicIfFrameExists(Loca
     return MediaValuesCached::create();
 }
 
-int MediaValues::calculateViewportWidth(LocalFrame* frame) const
+double MediaValues::calculateViewportWidth(LocalFrame* frame) const
 {
     ASSERT(frame && frame->view() && frame->document());
     int viewportWidth = frame->view()->layoutSize(IncludeScrollbars).width();
-    return adjustForAbsoluteZoom(viewportWidth, frame->document()->layoutView());
+    return adjustDoubleForAbsoluteZoom(viewportWidth, *frame->document()->layoutView());
 }
 
-int MediaValues::calculateViewportHeight(LocalFrame* frame) const
+double MediaValues::calculateViewportHeight(LocalFrame* frame) const
 {
     ASSERT(frame && frame->view() && frame->document());
     int viewportHeight = frame->view()->layoutSize(IncludeScrollbars).height();
-    return adjustForAbsoluteZoom(viewportHeight, frame->document()->layoutView());
+    return adjustDoubleForAbsoluteZoom(viewportHeight, *frame->document()->layoutView());
 }
 
 int MediaValues::calculateDeviceWidth(LocalFrame* frame) const
@@ -153,7 +153,7 @@ int MediaValues::calculateAvailableHoverTypes(LocalFrame* frame) const
     return frame->settings()->availableHoverTypes();
 }
 
-bool MediaValues::computeLengthImpl(double value, CSSPrimitiveValue::UnitType type, unsigned defaultFontSize, unsigned viewportWidth, unsigned viewportHeight, double& result)
+bool MediaValues::computeLengthImpl(double value, CSSPrimitiveValue::UnitType type, unsigned defaultFontSize, double viewportWidth, double viewportHeight, double& result)
 {
     // The logic in this function is duplicated from CSSToLengthConversionData::zoomedComputedPixels()
     // because MediaValues::computeLength() needs nearly identical logic, but we haven't found a way to make

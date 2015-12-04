@@ -15,8 +15,8 @@ public:
     struct MediaValuesCachedData {
         DISALLOW_NEW();
         // Members variables must be thread safe, since they're copied to the parser thread
-        int viewportWidth;
-        int viewportHeight;
+        double viewportWidth;
+        double viewportHeight;
         int deviceWidth;
         int deviceHeight;
         float devicePixelRatio;
@@ -61,8 +61,8 @@ public:
     bool computeLength(double value, CSSPrimitiveValue::UnitType, int& result) const override;
     bool computeLength(double value, CSSPrimitiveValue::UnitType, double& result) const override;
 
-    int viewportWidth() const override;
-    int viewportHeight() const override;
+    double viewportWidth() const override;
+    double viewportHeight() const override;
     int deviceWidth() const override;
     int deviceHeight() const override;
     float devicePixelRatio() const override;
@@ -79,8 +79,8 @@ public:
     const String mediaType() const override;
     WebDisplayMode displayMode() const override;
 
-    void setViewportWidth(int);
-    void setViewportHeight(int);
+    void setViewportWidth(double);
+    void setViewportHeight(double);
 
     bool isCached() const override { return true; }
 protected:

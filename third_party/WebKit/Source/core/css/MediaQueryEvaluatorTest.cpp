@@ -92,6 +92,30 @@ TestCase viewportTestCases[] = {
     {0, 0} // Do not remove the terminator line.
 };
 
+TestCase floatViewportTestCases[] = {
+    {"all and (min-width: 600.5px)", 1},
+    {"(min-width: 600px)", 1},
+    {"(min-width: 600.5px)", 1},
+    {"(min-width: 601px)", 0},
+    {"(max-width: 600px)", 0},
+    {"(max-width: 600.5px)", 1},
+    {"(max-width: 601px)", 1},
+    {"(width: 600.5px)", 1},
+    {"(width: 601px)", 0},
+    {"(min-height: 700px)", 1},
+    {"(min-height: 700.125px)", 1},
+    {"(min-height: 701px)", 0},
+    {"(min-height: 700.126px)", 0},
+    {"(max-height: 701px)", 1},
+    {"(max-height: 700.125px)", 1},
+    {"(max-height: 700px)", 0},
+    {"(height: 700.125px)", 1},
+    {"(height: 700.126px)", 0},
+    {"(height: 700.124px)", 0},
+    {"(height: 701px)", 0},
+    {0, 0} // Do not remove the terminator line.
+};
+
 TestCase printTestCases[] = {
     {"print and (min-resolution: 1dppx)", 1},
     {"print and (min-resolution: 118dpcm)", 1},
@@ -157,6 +181,17 @@ TEST(MediaQueryEvaluatorTest, DynamicNoView)
     MediaQueryEvaluator mediaQueryEvaluator(frame.get());
     RefPtrWillBeRawPtr<MediaQuerySet> querySet = MediaQuerySet::create("foobar");
     EXPECT_FALSE(mediaQueryEvaluator.eval(querySet.get()));
+}
+
+TEST(MediaQueryEvaluatorTest, CachedFloatViewport)
+{
+    MediaValuesCached::MediaValuesCachedData data;
+    data.viewportWidth = 600.5;
+    data.viewportHeight = 700.125;
+    RefPtrWillBeRawPtr<MediaValues> mediaValues = MediaValuesCached::create(data);
+
+    MediaQueryEvaluator mediaQueryEvaluator(*mediaValues);
+    testMQEvaluator(floatViewportTestCases, mediaQueryEvaluator);
 }
 
 } // namespace

@@ -28,9 +28,9 @@ public:
     virtual PassRefPtrWillBeRawPtr<MediaValues> copy() const = 0;
     virtual bool isSafeToSendToAnotherThread() const = 0;
 
-    static bool computeLengthImpl(double value, CSSPrimitiveValue::UnitType, unsigned defaultFontSize, unsigned viewportWidth, unsigned viewportHeight, double& result);
+    static bool computeLengthImpl(double value, CSSPrimitiveValue::UnitType, unsigned defaultFontSize, double viewportWidth, double viewportHeight, double& result);
     template<typename T>
-    static bool computeLength(double value, CSSPrimitiveValue::UnitType type, unsigned defaultFontSize, unsigned viewportWidth, unsigned viewportHeight, T& result)
+    static bool computeLength(double value, CSSPrimitiveValue::UnitType type, unsigned defaultFontSize, double viewportWidth, double viewportHeight, T& result)
     {
         double tempResult;
         if (!computeLengthImpl(value, type, defaultFontSize, viewportWidth, viewportHeight, tempResult))
@@ -41,8 +41,8 @@ public:
     virtual bool computeLength(double value, CSSPrimitiveValue::UnitType, int& result) const = 0;
     virtual bool computeLength(double value, CSSPrimitiveValue::UnitType, double& result) const = 0;
 
-    virtual int viewportWidth() const = 0;
-    virtual int viewportHeight() const = 0;
+    virtual double viewportWidth() const = 0;
+    virtual double viewportHeight() const = 0;
     virtual int deviceWidth() const = 0;
     virtual int deviceHeight() const = 0;
     virtual float devicePixelRatio() const = 0;
@@ -62,8 +62,8 @@ public:
     virtual bool isCached() const { return false; }
 
 protected:
-    int calculateViewportWidth(LocalFrame*) const;
-    int calculateViewportHeight(LocalFrame*) const;
+    double calculateViewportWidth(LocalFrame*) const;
+    double calculateViewportHeight(LocalFrame*) const;
     int calculateDeviceWidth(LocalFrame*) const;
     int calculateDeviceHeight(LocalFrame*) const;
     bool calculateStrictMode(LocalFrame*) const;

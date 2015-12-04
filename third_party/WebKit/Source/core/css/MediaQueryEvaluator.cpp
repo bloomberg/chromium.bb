@@ -393,7 +393,7 @@ static bool deviceWidthMediaFeatureEval(const MediaQueryExpValue& value, MediaFe
 
 static bool heightMediaFeatureEval(const MediaQueryExpValue& value, MediaFeaturePrefix op, const MediaValues& mediaValues)
 {
-    int height = mediaValues.viewportHeight();
+    double height = mediaValues.viewportHeight();
     if (value.isValid())
         return computeLengthAndCompare(value, op, mediaValues, height);
 
@@ -402,7 +402,7 @@ static bool heightMediaFeatureEval(const MediaQueryExpValue& value, MediaFeature
 
 static bool widthMediaFeatureEval(const MediaQueryExpValue& value, MediaFeaturePrefix op, const MediaValues& mediaValues)
 {
-    int width = mediaValues.viewportWidth();
+    double width = mediaValues.viewportWidth();
     if (value.isValid())
         return computeLengthAndCompare(value, op, mediaValues, width);
 
