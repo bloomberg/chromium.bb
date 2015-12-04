@@ -6,9 +6,6 @@ assert(is_android)
 
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
-import("//mojo/generate_mojo_shell_assets_list.gni")
-
-mandoline_assets_dir = "$root_build_dir/mandoline_assets"
 
 group("android") {
   deps = [
@@ -54,47 +51,22 @@ copy("copy_mandoline_runner") {
   ]
 }
 
-copy_ex("copy_mandoline_assets") {
-  clear_dir = true
-  dest = mandoline_assets_dir
+android_assets("mandoline_assets") {
   deps = [
-    "//components/devtools_service",
-    "//components/html_viewer",
-    "//components/resource_provider",
-    "//mandoline/services/core_services",
-    "//mojo/runner:bootstrap",
-    "//mojo/runner:bootstrap_java",
-    "//mojo/services/network",
-  ]
-  sources = [
-    "$root_out_dir/obj/mojo/runner/bootstrap_java.dex.jar",
-    "$root_shlib_dir/${shlib_prefix}bootstrap$shlib_extension",
-  ]
-
-  # Directories can't be specified as sources so pass manually to the script.
-  args = [
-    "--files=" + rebase_path("$root_out_dir/core_services", root_build_dir),
-    "--files=" + rebase_path("$root_out_dir/network_service", root_build_dir),
-    "--files=" + rebase_path("$root_out_dir/resource_provider", root_build_dir),
-    "--files=" + rebase_path("$root_out_dir/devtools_service", root_build_dir),
-    "--files=" + rebase_path("$root_out_dir/html_viewer", root_build_dir),
+    "//components/devtools_service:devtools_service_assets",
+    "//components/html_viewer:html_viewer_assets",
+    "//components/resource_provider:resource_provider_assets",
+    "//mandoline/services/core_services:core_services_assets",
+    "//mojo/runner:android_assets",
+    "//mojo/services/network:network_assets",
   ]
 
   if (use_aura) {
-    deps += [ "//mandoline/ui" ]
-
-    args += [
-      "--files=" + rebase_path("$root_out_dir/omnibox", root_build_dir),
-      "--files=" + rebase_path("$root_out_dir/phone_ui", root_build_dir),
+    deps += [
+      "//mandoline/ui/desktop_ui:desktop_ui_assets",
+      "//mandoline/ui/omnibox:omnibox_assets",
     ]
   }
-}
-
-generate_mojo_shell_assets_list("build_mandoline_assets") {
-  deps = [
-    ":copy_mandoline_assets",
-  ]
-  dir = mandoline_assets_dir
 }
 
 android_library("java") {
@@ -122,16 +94,14 @@ android_apk("mandoline_apk") {
   apk_name = "Mandoline"
 
   android_manifest = "apk/AndroidManifest.xml"
-
   native_libs = [ "${shlib_prefix}mandoline_runner$shlib_extension" ]
-
-  asset_location = mandoline_assets_dir
+  write_asset_list = true
 
   deps = [
-    ":build_mandoline_assets",
     ":copy_mandoline_runner",
     ":java",
     ":mandoline_apk_resources",
+    ":mandoline_assets",
     "//base:base_java",
     "//mojo/runner:java",
     "//mojo/runner:resources",

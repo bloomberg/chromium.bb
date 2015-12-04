@@ -10,7 +10,6 @@ import("//tools/grit/repack.gni")
 
 if (is_android) {
   import("//build/config/android/rules.gni")
-  import("//mojo/generate_mojo_shell_assets_list.gni")
 }
 
 grit("html_viewer_resources_grit") {

@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//mojo/generate_mojo_shell_assets_list.gni")
 import("//mojo/public/mojo_application.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/test.gni")
@@ -268,12 +267,21 @@ if (is_android) {
     custom_package = "org.chromium.mojo.shell"
   }
 
-  android_assets("mojo_runner_apptests_assets") {
-    testonly = true
-
+  android_assets("android_assets") {
     deps = [
       ":bootstrap",
       ":bootstrap_java",
+    ]
+    sources = [
+      "$root_out_dir/obj/mojo/runner/bootstrap_java.dex.jar",
+      "$root_shlib_dir/${shlib_prefix}bootstrap$shlib_extension",
+    ]
+  }
+
+  android_assets("mojo_runner_apptests_assets") {
+    testonly = true
+    deps = [
+      ":android_assets",
       "//components/clipboard:apptests_assets",
       "//components/clipboard:clipboard_assets",
       "//components/mus/ws:apptests_assets",
@@ -282,11 +290,6 @@ if (is_android) {
       "//mojo/services/network:apptests_assets",
       "//mojo/services/network:network_assets",
       "//third_party/icu:icu_assets",
-    ]
-
-    sources = [
-      "$root_out_dir/obj/mojo/runner/bootstrap_java.dex.jar",
-      "$root_shlib_dir/${shlib_prefix}bootstrap$shlib_extension",
     ]
   }
 
