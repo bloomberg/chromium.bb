@@ -83,6 +83,13 @@ cr.define('extension_service_tests', function() {
       /** @type {extensions.Manager} */
       var manager;
 
+      var getItemData = function(id) {
+        var elMatches = function(el) { return el.id == id; };
+        return manager.extensions.find(elMatches) ||
+               manager.apps.find(elMatches) ||
+               manager.websites.find(elMatches);
+      };
+
       suiteSetup(function() {
         return PolymerTest.importHtml('chrome://extensions/service.html');
       });
@@ -94,33 +101,39 @@ cr.define('extension_service_tests', function() {
       });
 
       test(assert(TestNames.EnableAndDisable), function(done) {
-        var item = manager.getItem(kExtensionId);
+        var item = getItemData(kExtensionId);
         assertTrue(!!item);
         expectEquals(kExtensionId, item.id);
-        expectEquals('My extension 1', item.data.name);
-        expectEquals(ExtensionState.ENABLED, item.data.state);
+        expectEquals('My extension 1', item.name);
+        expectEquals(ExtensionState.ENABLED, item.state);
 
         var disabledListener =
             new ItemChangedListener(kExtensionId, EventType.UNLOADED);
         service.setItemEnabled(kExtensionId, false);
         disabledListener.onUpdate.then(function() {
-          expectEquals(ExtensionState.DISABLED, item.data.state);
+          // Note: we need to re-get the item since the object in the manager's
+          // collection was replaced, rather than updated.
+          var item = getItemData(kExtensionId);
+          assertTrue(!!item);
+          expectEquals(ExtensionState.DISABLED, item.state);
 
           enabledListener =
               new ItemChangedListener(kExtensionId, EventType.LOADED);
           service.setItemEnabled(kExtensionId, true);
           return enabledListener.onUpdate;
         }).then(function() {
-          expectEquals(ExtensionState.ENABLED, item.data.state);
+          var item = getItemData(kExtensionId);
+          assertTrue(!!item);
+          expectEquals(ExtensionState.ENABLED, item.state);
           done();
         });
       });
 
       test(assert(TestNames.ToggleIncognitoMode), function(done) {
-        var item = manager.getItem(kExtensionId);
+        var item = getItemData(kExtensionId);
         assertTrue(!!item);
-        expectTrue(item.data.incognitoAccess.isEnabled);
-        expectFalse(item.data.incognitoAccess.isActive);
+        expectTrue(item.incognitoAccess.isEnabled);
+        expectFalse(item.incognitoAccess.isActive);
 
         var incognitoListener =
             new ItemChangedListener(kExtensionId, EventType.LOADED);
@@ -128,7 +141,9 @@ cr.define('extension_service_tests', function() {
           service.setItemAllowedIncognito(kExtensionId, true);
         });
         incognitoListener.onUpdate.then(function() {
-          expectTrue(item.data.incognitoAccess.isActive);
+          var item = getItemData(kExtensionId);
+          assertTrue(!!item);
+          expectTrue(item.incognitoAccess.isActive);
 
           var disabledIncognitoListener =
               new ItemChangedListener(kExtensionId, EventType.LOADED);
@@ -137,13 +152,15 @@ cr.define('extension_service_tests', function() {
           });
           return disabledIncognitoListener.onUpdate;
         }).then(function() {
-          expectFalse(item.data.incognitoAccess.isActive);
+          var item = getItemData(kExtensionId);
+          assertTrue(!!item);
+          expectFalse(item.incognitoAccess.isActive);
           done();
         });
       });
 
       test(assert(TestNames.Uninstall), function(done) {
-        var item = manager.getItem(kExtensionId);
+        var item = getItemData(kExtensionId);
         assertTrue(!!item);
         var uninstallListener =
             new ItemChangedListener(kExtensionId, EventType.UNINSTALLED);
@@ -151,27 +168,25 @@ cr.define('extension_service_tests', function() {
           service.deleteItem(kExtensionId);
         });
         uninstallListener.onUpdate.then(function() {
-          expectFalse(!!manager.getItem(kExtensionId));
+          expectFalse(!!getItemData(kExtensionId));
           done();
         });
       });
 
       test(assert(TestNames.ProfileSettings), function(done) {
-        var item = manager.getItem(kExtensionId);
-        assertTrue(!!item);
-        expectFalse(item.inDevMode);
+        expectFalse(manager.inDevMode);
 
         var profileListener = new ProfileChangedListener();
         service.setProfileInDevMode(true);
 
         profileListener.onUpdate.then(function() {
-          expectTrue(item.inDevMode);
+          expectTrue(manager.inDevMode);
 
           var noDevModeProfileListener = new ProfileChangedListener();
           service.setProfileInDevMode(false);
           return noDevModeProfileListener.onUpdate;
         }).then(function() {
-          expectFalse(item.inDevMode);
+          expectFalse(manager.inDevMode);
           done();
         });
       });

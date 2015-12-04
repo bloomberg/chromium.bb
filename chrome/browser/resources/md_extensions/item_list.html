@@ -1,0 +1,21 @@
+<link rel="import" href="chrome://resources/html/cr.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
+<link rel="import" href="chrome://extensions/item.html">
+
+<dom-module id="extensions-item-list">
+  <template>
+    <h2>[[header]]</h2>
+    <iron-list id="list" items="[[items]]" as="item">
+      <template>
+        <div class="wrapper">
+          <extensions-item data="[[item]]" delegate="[[delegate]]"
+              id="[[item.id]]" in-dev-mode="[[inDevMode]]">
+          </extensions-item>
+        </div>
+      </template>
+    </iron-list>
+  </template>
+  <link rel="import" type="css" href="chrome://extensions/item_list.css">
+  <script src="chrome://extensions/item_list.js"></script>
+</dom-module>

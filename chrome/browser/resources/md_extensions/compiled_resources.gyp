@@ -13,6 +13,7 @@
           '../../../../ui/webui/resources/js/cr.js',
           '../../../../ui/webui/resources/js/i18n_behavior.js',
           'item.js',
+          'item_list.js',
           'manager.js',
           'service.js',
           'sidebar.js',

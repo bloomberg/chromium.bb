@@ -1,7 +1,8 @@
 <link rel="import" href="chrome://resources/html/cr.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-header-panel/paper-header-panel.html">
-<link rel="import" href="chrome://extensions/item.html">
+<link rel="import" href="chrome://extensions/item_list.html">
 <link rel="import" href="chrome://extensions/service.html">
 <link rel="import" href="chrome://extensions/sidebar.html">
 <link rel="import" href="chrome://extensions/toolbar.html">
@@ -11,14 +12,20 @@
     <paper-header-panel id="panel">
       <extensions-toolbar class="paper-header" id="toolbar">
       </extensions-toolbar>
-      <extensions-sidebar></extensions-sidebar>
+      <extensions-sidebar in-dev-mode="[[inDevMode]]"></extensions-sidebar>
       <div id="items">
-        <h2 id="extensions-header" i18n-content="sidebarExtensions"></h2>
-        <div id="extensions-list"></div>
-        <h2 id="apps-header" i18n-content="sidebarApps"></h2>
-        <div id="apps-list"></div>
-        <h2 id="websites-header" i18n-content="sidebarWebsites"></h2>
-        <div id="websites-list"></div>
+        <extensions-item-list id="extensions-list" items="[[extensions]]"
+            delegate="[[service]]" header="[[i18n('sidebarExtensions')]]"
+            in-dev-mode="[[inDevMode]]">
+        </extensions-item-list>
+        <extensions-item-list id="apps-list" items="[[apps]]"
+            delegate="[[service]]" header="[[i18n('sidebarApps')]]"
+            in-dev-mode="[[inDevMode]]">
+        </extensions-item-list>
+        <extensions-item-list id="websites-list" items="[[websites]]"
+            delegate="[[service]]" header="[[i18n('sidebarWebsites')]]"
+            in-dev-mode="[[inDevMode]]">
+        </extensions-item-list>
       </div>
     </paper-header-panel>
   </template>

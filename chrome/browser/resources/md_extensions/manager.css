@@ -14,19 +14,12 @@
 
 #items {
   -webkit-margin-start: 30px;
+  height: 100%;
   overflow-y: auto;
   padding-bottom: 30px;
-}
-
-#items h2 {
-  color: #5a5a5a;
-  font-size: 1.1em;
-  font-weight: normal;
-  margin-bottom: 0;
-  margin-top: 30px;
+  width: 100%;
 }
 
 extensions-item {
   display: inline-block;
-  margin-top: 20px;
 }

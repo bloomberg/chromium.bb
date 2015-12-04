@@ -20,82 +20,62 @@ cr.define('extension_manager_tests', function() {
       });
 
       test(assert(TestNames.SplitSections), function() {
-        var testVisible = extension_test_util.testVisible.bind(null, manager);
-        // All sections and headers should be visible.
-        testVisible('#extensions-header', true);
-        testVisible('#extensions-list', true);
-        testVisible('#apps-header', true);
-        testVisible('#apps-list', true);
-        testVisible('#websites-header', true);
-        testVisible('#websites-list', true);
+        var testManagerElementVisible =
+            extension_test_util.testVisible.bind(null, manager);
+        // All sections should be visible.
+        testManagerElementVisible('#extensions-list', true);
+        testManagerElementVisible('#apps-list', true);
+        testManagerElementVisible('#websites-list', true);
 
-        var findItemWithName = function(name) {
-          var result;
-          manager.forEachItem(function(item) {
-            if (item.data.name == name) {
-              expectFalse(!!result,
-                          'Found two items with the same name: ' + name);
-              result = item;
-            }
+        var sectionHasItemWithName = function(section, name) {
+          return !!manager[section].find(function(el) {
+            return el.name == name;
           });
-          expectTrue(!!result);
-          return result;
         };
 
-        // Find each type of extension. Each should be present, visible, and
-        // sorted in the correct section.
-        var extension = findItemWithName('My extension 1');
-        var selector = '#' + extension.data.id;
-        testVisible(selector, true)
-        expectTrue(!!manager.$$('#extensions-list').querySelector(selector));
+        expectEquals(manager.extensions, manager.$['extensions-list'].items);
+        expectEquals(manager.apps, manager.$['apps-list'].items);
+        expectEquals(manager.websites, manager.$['websites-list'].items);
 
-        var platform_app =
-            findItemWithName('Platform App Test: minimal platform app');
-        selector = '#' + platform_app.data.id
-        testVisible(selector, true)
-        expectTrue(!!manager.$$('#apps-list').querySelector(selector));
-
-        var hosted_app = findItemWithName('hosted_app');
-        selector = '#' + hosted_app.data.id;
-        testVisible(selector, true)
-        expectTrue(!!manager.$$('#websites-list').querySelector(selector));
-
-        var packaged_app = findItemWithName('Packaged App Test');
-        selector = '#' + packaged_app.data.id;
-        testVisible(selector, true)
-        expectTrue(!!manager.$$('#websites-list').querySelector(selector));
+        // We really just have to test for existence of the items within the
+        // given subsection of the manager, since they are bound to the iron
+        // list with Polymer (and we kind of have to trust that Polymer works).
+        expectTrue(sectionHasItemWithName('extensions', 'My extension 1'));
+        expectTrue(sectionHasItemWithName(
+            'apps', 'Platform App Test: minimal platform app'));
+        expectTrue(sectionHasItemWithName('websites', 'hosted_app'));
+        expectTrue(sectionHasItemWithName('websites', 'Packaged App Test'));
       });
 
       test(assert(TestNames.ItemOrder), function() {
-        var extensionsSection = manager.$['extensions-list'];
         var service = extensions.Service.getInstance();
-        expectEquals(0, extensionsSection.children.length);
+        expectEquals(0, manager.extensions.length);
 
         var alphaFromStore = extension_test_util.createExtensionInfo(
             {location: 'FROM_STORE', name: 'Alpha', id: 'a'.repeat(32)});
         manager.addItem(alphaFromStore, service);
 
-        expectEquals(1, extensionsSection.children.length);
-        expectEquals(alphaFromStore.id, extensionsSection.children[0].id);
+        expectEquals(1, manager.extensions.length);
+        expectEquals(alphaFromStore.id, manager.extensions[0].id);
 
         // Unpacked extensions come first.
         var betaUnpacked = extension_test_util.createExtensionInfo(
             {location: 'UNPACKED', name: 'Beta', id: 'b'.repeat(32)});
         manager.addItem(betaUnpacked, service);
 
-        expectEquals(2, extensionsSection.children.length);
-        expectEquals(betaUnpacked.id, extensionsSection.children[0].id);
-        expectEquals(alphaFromStore.id, extensionsSection.children[1].id);
+        expectEquals(2, manager.extensions.length);
+        expectEquals(betaUnpacked.id, manager.extensions[0].id);
+        expectEquals(alphaFromStore.id, manager.extensions[1].id);
 
         // Extensions from the same location are sorted by name.
         var gammaUnpacked = extension_test_util.createExtensionInfo(
             {location: 'UNPACKED', name: 'Gamma', id: 'c'.repeat(32)});
         manager.addItem(gammaUnpacked, service);
 
-        expectEquals(3, extensionsSection.children.length);
-        expectEquals(betaUnpacked.id, extensionsSection.children[0].id);
-        expectEquals(gammaUnpacked.id, extensionsSection.children[1].id);
-        expectEquals(alphaFromStore.id, extensionsSection.children[2].id);
+        expectEquals(3, manager.extensions.length);
+        expectEquals(betaUnpacked.id, manager.extensions[0].id);
+        expectEquals(gammaUnpacked.id, manager.extensions[1].id);
+        expectEquals(alphaFromStore.id, manager.extensions[2].id);
 
         // The name-sort should be case-insensitive, and should fall back on
         // id.
@@ -109,13 +89,13 @@ cr.define('extension_manager_tests', function() {
         manager.addItem(AaFromStore, service);
         manager.addItem(aAFromStore, service);
 
-        expectEquals(6, extensionsSection.children.length);
-        expectEquals(betaUnpacked.id, extensionsSection.children[0].id);
-        expectEquals(gammaUnpacked.id, extensionsSection.children[1].id);
-        expectEquals(aaFromStore.id, extensionsSection.children[2].id);
-        expectEquals(AaFromStore.id, extensionsSection.children[3].id);
-        expectEquals(aAFromStore.id, extensionsSection.children[4].id);
-        expectEquals(alphaFromStore.id, extensionsSection.children[5].id);
+        expectEquals(6, manager.extensions.length);
+        expectEquals(betaUnpacked.id, manager.extensions[0].id);
+        expectEquals(gammaUnpacked.id, manager.extensions[1].id);
+        expectEquals(aaFromStore.id, manager.extensions[2].id);
+        expectEquals(AaFromStore.id, manager.extensions[3].id);
+        expectEquals(aAFromStore.id, manager.extensions[4].id);
+        expectEquals(alphaFromStore.id, manager.extensions[5].id);
       });
     });
   }

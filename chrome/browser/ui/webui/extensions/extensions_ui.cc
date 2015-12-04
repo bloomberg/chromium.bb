@@ -77,6 +77,9 @@ content::WebUIDataSource* CreateMdExtensionsSource() {
   source->AddResourcePath("item.css", IDR_MD_EXTENSIONS_ITEM_CSS);
   source->AddResourcePath("item.html", IDR_MD_EXTENSIONS_ITEM_HTML);
   source->AddResourcePath("item.js", IDR_MD_EXTENSIONS_ITEM_JS);
+  source->AddResourcePath("item_list.css", IDR_MD_EXTENSIONS_ITEM_LIST_CSS);
+  source->AddResourcePath("item_list.html", IDR_MD_EXTENSIONS_ITEM_LIST_HTML);
+  source->AddResourcePath("item_list.js", IDR_MD_EXTENSIONS_ITEM_LIST_JS);
   source->AddResourcePath("service.html", IDR_MD_EXTENSIONS_SERVICE_HTML);
   source->AddResourcePath("service.js", IDR_MD_EXTENSIONS_SERVICE_JS);
   source->AddResourcePath("sidebar.css", IDR_MD_EXTENSIONS_SIDEBAR_CSS);

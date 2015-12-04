@@ -33,7 +33,7 @@ cr.define('extensions', function() {
         /** @private {Array<chrome.developerPrivate.ExtensionInfo>} */
         this.extensions_ = extensions;
         for (let extension of extensions)
-          this.manager_.addItem(extension, this);
+          this.manager_.addItem(extension);
       }.bind(this));
       chrome.developerPrivate.getProfileConfiguration(
           this.onProfileStateChanged_.bind(this));
@@ -46,10 +46,7 @@ cr.define('extensions', function() {
     onProfileStateChanged_: function(profileInfo) {
       /** @private {chrome.developerPrivate.ProfileInfo} */
       this.profileInfo_ = profileInfo;
-      this.sidebar_.inDevMode = profileInfo.inDeveloperMode;
-      this.manager_.forEachItem(function(item) {
-        item.inDevMode = profileInfo.inDeveloperMode;
-      });
+      this.manager_.set('inDevMode', profileInfo.inDeveloperMode);
     },
 
     /**
@@ -57,6 +54,10 @@ cr.define('extensions', function() {
      * @private
      */
     onItemStateChanged_: function(eventData) {
+      var currentIndex = this.extensions_.findIndex(function(extension) {
+        return extension.id == eventData.item_id;
+      });
+
       var EventType = chrome.developerPrivate.EventType;
       switch (eventData.event_type) {
         case EventType.VIEW_REGISTERED:
@@ -73,27 +74,17 @@ cr.define('extensions', function() {
           if (!eventData.extensionInfo)
             break;
 
-          var existing = this.manager_.getItem(eventData.extensionInfo.id);
-          if (existing) {
-            existing.data = eventData.extensionInfo;
+          if (currentIndex >= 0) {
+            this.extensions_[currentIndex] = eventData.extensionInfo;
+            this.manager_.updateItem(eventData.extensionInfo);
           } else {
-            // If there's no existing item in the list, there shouldn't be an
-            // extension with the same id in the data.
-            var currentIndex = this.extensions_.findIndex(function(extension) {
-              return extension.id == eventData.extensionInfo.id;
-            });
-            assert(currentIndex == -1);
-
             this.extensions_.push(eventData.extensionInfo);
-            this.manager_.addItem(eventData.extensionInfo, this);
+            this.manager_.addItem(eventData.extensionInfo);
           }
           break;
         case EventType.UNINSTALLED:
-          var currentIndex = this.extensions_.findIndex(function(extension) {
-            return extension.id == eventData.item_id;
-          });
+          this.manager_.removeItem(this.extensions_[currentIndex]);
           this.extensions_.splice(currentIndex, 1);
-          this.manager_.removeItem(eventData.item_id);
           break;
         default:
           assertNotReached();
@@ -128,13 +119,6 @@ cr.define('extensions', function() {
         extensionId: id,
         incognitoAccess: isAllowedIncognito,
       });
-    },
-
-    /** @override */
-    isInDevMode: function() {
-      // It's possible this could be called before the profileInfo is
-      // initialized; that's fine, because we'll update the items when it is.
-      return !!this.profileInfo_ && this.profileInfo_.inDeveloperMode;
     },
 
     /** @override */

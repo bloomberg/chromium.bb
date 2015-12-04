@@ -137,7 +137,9 @@ cr.define('extension_item_tests', function() {
       setup(function() {
         PolymerTest.clearBody();
         mockDelegate = new MockDelegate();
-        item = new extensions.Item(extensionData, mockDelegate);
+        item = new extensions.Item();
+        item.set('data', extensionData);
+        item.set('delegate', mockDelegate);
         document.body.appendChild(item);
       });
 

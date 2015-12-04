@@ -25,9 +25,6 @@ cr.define('extensions', function() {
      */
     setItemAllowedIncognito: assertNotReached,
 
-    /** @return {boolean} */
-    isInDevMode: assertNotReached,
-
     /**
      * @param {string} id,
      * @param {chrome.developerPrivate.ExtensionView} view
@@ -72,17 +69,6 @@ cr.define('extensions', function() {
       'observeIdVisibility_(inDevMode, showingDetails_, data.id)',
     ],
 
-    /**
-     * @param {!chrome.developerPrivate.ExtensionInfo} data
-     * @param {!extensions.ItemDelegate} delegate
-     */
-    factoryImpl: function(data, delegate) {
-      this.data = data;
-      this.id = data.id;
-      this.delegate_ = delegate;
-      this.inDevMode = delegate.isInDevMode();
-    },
-
     /** @private */
     observeIdVisibility_: function(inDevMode, showingDetails, id) {
       Polymer.dom.flush();
@@ -91,6 +77,7 @@ cr.define('extensions', function() {
         assert(this.data);
         idElement.innerHTML = this.i18n('itemId', this.data.id);
       }
+      this.fire('extension-item-size-changed', {item: this.data});
     },
 
     /** @private */
@@ -100,22 +87,22 @@ cr.define('extensions', function() {
 
     /** @private */
     onDeleteTap_: function() {
-      this.delegate_.deleteItem(this.data.id);
+      this.delegate.deleteItem(this.data.id);
     },
 
     /** @private */
     onEnableChange_: function() {
-      this.delegate_.setItemEnabled(this.data.id, this.$.enabled.checked);
+      this.delegate.setItemEnabled(this.data.id, this.$.enabled.checked);
     },
 
     /** @private */
     onDetailsTap_: function() {
-      this.delegate_.showItemDetails(this.data.id);
+      this.delegate.showItemDetails(this.data.id);
     },
 
     /** @private */
     onAllowIncognitoChange_: function() {
-      this.delegate_.setItemAllowedIncognito(
+      this.delegate.setItemAllowedIncognito(
           this.data.id, this.$$('#allow-incognito').checked);
     },
 
@@ -124,7 +111,7 @@ cr.define('extensions', function() {
      * @private
      */
     onInspectTap_: function(e) {
-      this.delegate_.inspectItemView(this.data.id, e.model.item);
+      this.delegate.inspectItemView(this.data.id, e.model.item);
     },
 
     /**

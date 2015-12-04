@@ -1,0 +1,15 @@
+/* Copyright 2015 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+h2 {
+  color: #5a5a5a;
+  font-size: 1.1em;
+  font-weight: normal;
+  margin-bottom: 0;
+  margin-top: 30px;
+}
+
+.wrapper {
+  padding: 10px 0;
+}

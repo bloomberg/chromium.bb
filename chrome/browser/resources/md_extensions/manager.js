@@ -34,39 +34,66 @@ cr.define('extensions', function() {
 
     properties: {
       /** @type {extensions.Sidebar} */
-      sidebar: {
-        type: Object,
-      }
+      sidebar: Object,
+
+      /** @type {extensions.Service} */
+      service: Object,
+
+      inDevMode: {
+        type: Boolean,
+        value: false,
+      },
+
+      /** @type {!Array<!chrome.developerPrivate.ExtensionInfo>} */
+      extensions: {
+        type: Array,
+        value: function() { return []; },
+      },
+
+      /** @type {!Array<!chrome.developerPrivate.ExtensionInfo>} */
+      apps: {
+        type: Array,
+        value: function() { return []; },
+      },
+
+      /** @type {!Array<!chrome.developerPrivate.ExtensionInfo>} */
+      websites: {
+        type: Array,
+        value: function() { return []; },
+      },
     },
+
+    behaviors: [
+      I18nBehavior,
+    ],
 
     ready: function() {
       /** @type {extensions.Sidebar} */
       this.sidebar = this.$$('extensions-sidebar');
-      extensions.Service.getInstance().managerReady(this);
+      this.service = extensions.Service.getInstance();
+      this.service.managerReady(this);
       this.sidebar.setScrollDelegate(new ScrollHelper(this));
     },
 
     /**
-     * Creates and adds a new extensions-item element to the list, inserting it
-     * into its sorted position in the relevant section.
-     * @param {!chrome.developerPrivate.ExtensionInfo} extension The extension
-     *     the item is representing.
-     * @param {!extensions.ItemDelegate} delegate The delegate for the item.
+     * @param {chrome.developerPrivate.ExtensionType} type The type of item.
+     * @return {string} The ID of the list that the item belongs in.
+     * @private
      */
-    addItem: function(extension, delegate) {
+    getListId_: function(type) {
       var listId;
       var ExtensionType = chrome.developerPrivate.ExtensionType;
-      switch (extension.type) {
+      switch (type) {
         case ExtensionType.HOSTED_APP:
         case ExtensionType.LEGACY_PACKAGED_APP:
-          listId = 'websites-list';
+          listId = 'websites';
           break;
         case ExtensionType.PLATFORM_APP:
-          listId = 'apps-list';
+          listId = 'apps';
           break;
         case ExtensionType.EXTENSION:
         case ExtensionType.SHARED_MODULE:
-          listId = 'extensions-list';
+          listId = 'extensions';
           break;
         case ExtensionType.THEME:
           assertNotReached(
@@ -74,41 +101,62 @@ cr.define('extensions', function() {
           break;
       }
       assert(listId);
-      var extensionItem = new extensions.Item(extension, delegate);
-      var itemList = this.$[listId];
+      return listId;
+    },
 
-      var insertBeforeChild = Array.prototype.find.call(itemList.children,
-                                                        function(item) {
-        return compareExtensions(item.data, extension) > 0;
+    /**
+     * @param {string} listId The list to look for the item in.
+     * @param {string} itemId The id of the item to look for.
+     * @return {number} The index of the item in the list, or -1 if not found.
+     * @private
+     */
+    getIndexInList_: function(listId, itemId) {
+      return this[listId].findIndex(function(item) {
+        return item.id == itemId;
       });
-      itemList.insertBefore(extensionItem, insertBeforeChild);
     },
 
     /**
-     * @param {string} id The id of the extension to get the item for.
-     * @return {?extensions.Item}
+     * Creates and adds a new extensions-item element to the list, inserting it
+     * into its sorted position in the relevant section.
+     * @param {!chrome.developerPrivate.ExtensionInfo} item The extension
+     *     the new element is representing.
      */
-    getItem: function(id) {
-      return this.$$('#' + id);
-    },
-
-    /** @param {string} id The id of the item to remove. */
-    removeItem: function(id) {
-      var item = this.getItem(id);
-      if (item)
-        item.parentNode.removeChild(item);
+    addItem: function(item) {
+      var listId = this.getListId_(item.type);
+      // We should never try and add an existing item.
+      assert(this.getIndexInList_(listId, item.id) == -1);
+      var insertBeforeChild = this[listId].findIndex(function(listEl) {
+        return compareExtensions(listEl, item) > 0;
+      });
+      if (insertBeforeChild == -1)
+        insertBeforeChild = this[listId].length;
+      this.splice(listId, insertBeforeChild, 0, item);
     },
 
     /**
-     * Applies a function to each item present in the DOM.
-     * @param {!function(extensions.Item):void} callback The function to apply.
+     * @param {!chrome.developerPrivate.ExtensionInfo} item The data for the
+     *     item to update.
      */
-    forEachItem: function(callback) {
-      Array.prototype.forEach.call(
-          /** @type {Array<extensions.Item>} */(
-              Polymer.dom(this.root).querySelectorAll('extensions-item')),
-          callback);
-     },
+    updateItem: function(item) {
+      var listId = this.getListId_(item.type);
+      var index = this.getIndexInList_(listId, item.id);
+      // We should never try and update a non-existent item.
+      assert(index >= 0);
+      this.set([listId, index], item);
+    },
+
+    /**
+     * @param {!chrome.developerPrivate.ExtensionInfo} item The data for the
+     *     item to remove.
+     */
+    removeItem: function(item) {
+      var listId = this.getListId_(item.type);
+      var index = this.getIndexInList_(listId, item.id);
+      // We should never try and remove a non-existent item.
+      assert(index >= 0);
+      this.splice(listId, index, 1);
+    },
   });
 
   /**

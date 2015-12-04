@@ -153,6 +153,9 @@
         <include name="IDR_MD_EXTENSIONS_ITEM_CSS" file="resources\md_extensions\item.css" type="BINDATA" />
         <include name="IDR_MD_EXTENSIONS_ITEM_HTML" file="resources\md_extensions\item.html" type="BINDATA" />
         <include name="IDR_MD_EXTENSIONS_ITEM_JS" file="resources\md_extensions\item.js" type="BINDATA" />
+        <include name="IDR_MD_EXTENSIONS_ITEM_LIST_CSS" file="resources\md_extensions\item_list.css" type="BINDATA" />
+        <include name="IDR_MD_EXTENSIONS_ITEM_LIST_HTML" file="resources\md_extensions\item_list.html" type="BINDATA" />
+        <include name="IDR_MD_EXTENSIONS_ITEM_LIST_JS" file="resources\md_extensions\item_list.js" type="BINDATA" />
         <include name="IDR_MD_EXTENSIONS_SERVICE_HTML" file="resources\md_extensions\service.html" type="BINDATA" />
         <include name="IDR_MD_EXTENSIONS_SERVICE_JS" file="resources\md_extensions\service.js" type="BINDATA" />
         <include name="IDR_MD_EXTENSIONS_SIDEBAR_CSS" file="resources\md_extensions\sidebar.css" type="BINDATA" />
