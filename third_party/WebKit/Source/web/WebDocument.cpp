@@ -216,7 +216,7 @@ void WebDocument::insertStyleSheet(const WebString& sourceCode)
     ASSERT(document);
     RefPtrWillBeRawPtr<StyleSheetContents> parsedSheet = StyleSheetContents::create(CSSParserContext(*document, 0));
     parsedSheet->parseString(sourceCode);
-    document->styleEngine().addAuthorSheet(parsedSheet);
+    document->styleEngine().injectAuthorSheet(parsedSheet);
 }
 
 void WebDocument::watchCSSSelectors(const WebVector<WebString>& webSelectors)
