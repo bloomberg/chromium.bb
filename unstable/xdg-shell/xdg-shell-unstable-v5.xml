@@ -338,6 +338,7 @@
 
         0x0000 - 0x0FFF: xdg-shell core values, documented below.
         0x1000 - 0x1FFF: GNOME
+        0x2000 - 0x2FFF: EFL
       </description>
       <entry name="maximized" value="1" summary="the surface is maximized">
 	<description summary="the surface is maximized">
