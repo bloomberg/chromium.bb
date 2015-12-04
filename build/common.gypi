@@ -1492,7 +1492,7 @@
     'sas_dll_exists': '<!pymod_do_main(dir_exists "<(sas_dll_path)")',
     'wix_exists': '<!pymod_do_main(dir_exists "<(wix_path)")',
 
-    'windows_sdk_path%': 'C:/Program Files (x86)/Windows Kits/8.1',
+    'windows_sdk_path%': 'C:/Program Files (x86)/Windows Kits/10',
     'directx_sdk_default_path': '<(DEPTH)/third_party/directxsdk/files',
 
     # Whether we are using the rlz library or not.  Platforms like Android send
@@ -2889,9 +2889,9 @@
           '__STD_C',
           '_CRT_SECURE_NO_DEPRECATE',
           '_SCL_SECURE_NO_DEPRECATE',
-          # This define is required to pull in the new Win8 interfaces from
+          # This define is required to pull in the new Win 10 interfaces from
           # system headers like ShObjIdl.h.
-          'NTDDI_VERSION=0x06030000',
+          'NTDDI_VERSION=0x0A000000',
           # This is required for ATL to use XP-safe versions of its functions.
           '_USING_V110_SDK71_',
         ],
@@ -3340,17 +3340,17 @@
             'MinimumRequiredVersion': '5.02',  # Server 2003.
             'TargetMachine': '17', # x86 - 64
             'AdditionalLibraryDirectories!':
-              ['<(windows_sdk_path)/Lib/win8/um/x86'],
+              ['<(windows_sdk_path)/Lib/10.0.10240.0/um/x86'],
             'AdditionalLibraryDirectories':
-              ['<(windows_sdk_path)/Lib/win8/um/x64'],
+              ['<(windows_sdk_path)/Lib/10.0.10240.0/um/x64'],
             # Doesn't exist x64 SDK. Should use oleaut32 in any case.
             'IgnoreDefaultLibraryNames': [ 'olepro32.lib' ],
           },
           'VCLibrarianTool': {
             'AdditionalLibraryDirectories!':
-              ['<(windows_sdk_path)/Lib/win8/um/x86'],
+              ['<(windows_sdk_path)/Lib/10.0.10240.0/um/x86'],
             'AdditionalLibraryDirectories':
-              ['<(windows_sdk_path)/Lib/win8/um/x64'],
+              ['<(windows_sdk_path)/Lib/10.0.10240.0/um/x64'],
             'TargetMachine': '17', # x64
           },
         },
@@ -5532,8 +5532,8 @@
     ['OS=="win"', {
       'target_defaults': {
         'defines': [
-          '_WIN32_WINNT=0x0603',
-          'WINVER=0x0603',
+          '_WIN32_WINNT=0x0A00',
+          'WINVER=0x0A00',
           'WIN32',
           '_WINDOWS',
           'NOMINMAX',
@@ -5643,9 +5643,9 @@
           }],
         ],
         'msvs_system_include_dirs': [
-          '<(windows_sdk_path)/Include/shared',
-          '<(windows_sdk_path)/Include/um',
-          '<(windows_sdk_path)/Include/winrt',
+          '<(windows_sdk_path)/Include/10.0.10240.0/shared',
+          '<(windows_sdk_path)/Include/10.0.10240.0/um',
+          '<(windows_sdk_path)/Include/10.0.10240.0/winrt',
           '$(VSInstallDir)/VC/atlmfc/include',
         ],
         'msvs_cygwin_shell': 0,

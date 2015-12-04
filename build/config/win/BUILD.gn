@@ -101,7 +101,7 @@ config("runtime_library") {
     "_ATL_NO_OPENGL",
     "_WINDOWS",
     "CERT_CHAIN_PARA_HAS_EXTRA_FIELDS",
-    "NTDDI_VERSION=0x06030000",
+    "NTDDI_VERSION=0x0A000000",
     "PSAPI_VERSION=1",
     "WIN32",
     "_SECURE_ATL",
@@ -142,8 +142,8 @@ config("runtime_library") {
 # targets need to manually override it for their compiles.
 config("winver") {
   defines = [
-    "_WIN32_WINNT=0x0603",
-    "WINVER=0x0603",
+    "_WIN32_WINNT=0x0A00",
+    "WINVER=0x0A00",
   ]
 }
 
