@@ -756,7 +756,7 @@
         }],
 
         # Flags to use Wayland server support.
-        ['chromeos==1', {
+        ['chromeos==1 and use_ozone==1', {
           'enable_wayland_server%': 1,
         }, {
           'enable_wayland_server%': 0,
