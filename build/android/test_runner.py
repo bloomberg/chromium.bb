@@ -16,6 +16,8 @@ import sys
 import threading
 import unittest
 
+import devil_chromium
+
 from devil import base_error
 from devil.android import apk_helper
 from devil.android import device_blacklist
@@ -45,6 +47,10 @@ from pylib.perf import test_options as perf_test_options
 from pylib.perf import test_runner as perf_test_runner
 from pylib.results import json_results
 from pylib.results import report_results
+
+
+_DEVIL_STATIC_CONFIG_FILE = os.path.abspath(os.path.join(
+    constants.DIR_SOURCE_ROOT, 'build', 'android', 'devil_config.json'))
 
 
 def AddCommonOptions(parser):
@@ -111,8 +117,19 @@ def ProcessCommonOptions(args):
     constants.SetBuildDirectory(args.build_directory)
   if args.output_directory:
     constants.SetOutputDirectory(args.output_directory)
+
+  devil_custom_deps = None
   if args.adb_path:
-    constants.SetAdbPath(args.adb_path)
+    devil_custom_deps = {
+      'adb': {
+        'android_host': [args.adb_path]
+      }
+    }
+
+  devil_chromium.Initialize(
+      output_directory=constants.GetOutDirectory(),
+      custom_deps=devil_custom_deps)
+
   # Some things such as Forwarder require ADB to be in the environment path.
   adb_dir = os.path.dirname(constants.GetAdbPath())
   if adb_dir and adb_dir not in os.environ['PATH'].split(os.pathsep):

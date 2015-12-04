@@ -11,17 +11,28 @@ install to and what needs to be installed to those devices.
 """
 
 import optparse
+import os
 import sys
 
-from util import build_utils
 from util import build_device
+from util import build_utils
+
+BUILD_ANDROID_DIR = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(BUILD_ANDROID_DIR)
+
+import devil_chromium
 
 
 def main(argv):
   parser = optparse.OptionParser()
   parser.add_option('--stamp', action='store')
   parser.add_option('--output', action='store')
+  parser.add_option('--output-directory', action='store')
   options, _ = parser.parse_args(argv)
+
+  devil_chromium.Initialize(
+      output_directory=os.path.abspath(options.output_directory))
 
   devices = build_device.GetAttachedDevices()
 

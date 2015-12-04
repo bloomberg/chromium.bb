@@ -42,6 +42,7 @@
           'action': [
             'python', 'gyp/get_device_configuration.py',
             '--output=<(build_device_config_path)',
+            '--output-directory=<(PRODUCT_DIR)',
           ],
         }
       ],

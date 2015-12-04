@@ -18,9 +18,11 @@ import sys
 from util import build_device
 from util import build_utils
 
-BUILD_ANDROID_DIR = os.path.join(os.path.dirname(__file__), '..')
+BUILD_ANDROID_DIR = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(BUILD_ANDROID_DIR)
 
+import devil_chromium
 from devil.android import apk_helper
 from pylib import constants
 
@@ -96,12 +98,17 @@ def main(args):
       help='Path to build device configuration.')
   parser.add_option('--configuration-name',
       help='The build CONFIGURATION_NAME')
+  parser.add_option('--output-directory',
+      help='The output directory')
   options, _ = parser.parse_args(args)
 
   required_options = ['apk', 'libraries', 'script_host_path',
       'script_device_path', 'target_dir', 'configuration_name']
   build_utils.CheckOptions(options, parser, required=required_options)
   constants.SetBuildType(options.configuration_name)
+
+  devil_chromium.Initialize(
+      output_directory=os.path.abspath(options.output_directory))
 
   CreateSymlinkScript(options)
   TriggerSymlinkScript(options)

@@ -18,6 +18,8 @@ import subprocess
 import sys
 import optparse
 
+import devil_chromium
+
 from devil.android import device_blacklist
 from devil.android import device_errors
 from devil.android import device_utils
@@ -240,6 +242,8 @@ def main():
   blacklist = (device_blacklist.Blacklist(options.blacklist_file)
                if options.blacklist_file
                else None)
+
+  devil_chromium.Initialize()
 
   if options.device:
     devices = [device_utils.DeviceUtils(options.device)]

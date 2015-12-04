@@ -17,6 +17,7 @@ import devil.android.sdk.keyevent
 from devil.android.sdk import version_codes
 from devil.constants import exit_codes
 
+
 keyevent = devil.android.sdk.keyevent
 
 
@@ -243,42 +244,12 @@ def GetOutDirectory(build_type=None):
       GetBuildType() if build_type is None else build_type))
 
 
-def _Memoize(func):
-  def Wrapper():
-    try:
-      return func._result
-    except AttributeError:
-      func._result = func()
-      return func._result
-  return Wrapper
-
-
-def SetAdbPath(adb_path):
-  os.environ['ADB_PATH'] = adb_path
-
-
+# TODO(jbudorick): Convert existing callers to AdbWrapper.GetAdbPath() and
+# remove this.
 def GetAdbPath():
-  # Check if a custom adb path as been set. If not, try to find adb
-  # on the system.
-  if os.environ.get('ADB_PATH'):
-    return os.environ.get('ADB_PATH')
-  else:
-    return _FindAdbPath()
+  from devil.android.sdk import adb_wrapper
+  return adb_wrapper.AdbWrapper.GetAdbPath()
 
-
-@_Memoize
-def _FindAdbPath():
-  if os.environ.get('ANDROID_SDK_ROOT'):
-    return 'adb'
-  # If envsetup.sh hasn't been sourced and there's no adb in the path,
-  # set it here.
-  try:
-    with file(os.devnull, 'w') as devnull:
-      subprocess.call(['adb', 'version'], stdout=devnull, stderr=devnull)
-    return 'adb'
-  except OSError:
-    logging.debug('No adb found in $PATH, fallback to checked in binary.')
-    return os.path.join(ANDROID_SDK_ROOT, 'platform-tools', 'adb')
 
 # Exit codes
 ERROR_EXIT_CODE = exit_codes.ERROR
