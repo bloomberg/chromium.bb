@@ -13,6 +13,10 @@ namespace prefs {
 // *************** PROFILE PREFS ***************
 // These are attached to the user profile
 
+#if defined(OS_CHROMEOS) && defined(ENABLE_APP_LIST)
+// A preference to keep list of ARC apps and its state.
+const char kArcApps[] = "arc.apps";
+#endif
 
 // A bool pref that keeps whether the child status for this profile was already
 // successfully checked via ChildAccountService.

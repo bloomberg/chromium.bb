@@ -36,6 +36,8 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/genius_app/app_id.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_item.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_model_builder.h"
 #endif
 
 using syncer::SyncChange;
@@ -132,6 +134,10 @@ bool GetAppListItemType(AppListItem* item,
   const char* item_type = item->GetItemType();
   if (item_type == ExtensionAppItem::kItemType) {
     *type = sync_pb::AppListSpecifics::TYPE_APP;
+#if defined(OS_CHROMEOS)
+  } else if (item_type == ArcAppItem::kItemType) {
+    *type = sync_pb::AppListSpecifics::TYPE_APP;
+#endif
   } else if (item_type == AppListFolderItem::kItemType) {
     *type = sync_pb::AppListSpecifics::TYPE_FOLDER;
   } else {
@@ -265,14 +271,23 @@ void AppListSyncableService::BuildModel() {
   if (service)
     controller = service->GetControllerDelegate();
   apps_builder_.reset(new ExtensionAppModelBuilder(controller));
+#if defined(OS_CHROMEOS)
+  arc_apps_builder_.reset(new ArcAppModelBuilder(controller));
+#endif
   DCHECK(profile_);
   if (app_list::switches::IsAppListSyncEnabled()) {
     VLOG(1) << this << ": AppListSyncableService: InitializeWithService.";
     SyncStarted();
     apps_builder_->InitializeWithService(this, model_.get());
+#if defined(OS_CHROMEOS)
+    arc_apps_builder_->InitializeWithService(this, model_.get());
+#endif
   } else {
     VLOG(1) << this << ": AppListSyncableService: InitializeWithProfile.";
     apps_builder_->InitializeWithProfile(profile_, model_.get());
+#if defined(OS_CHROMEOS)
+    arc_apps_builder_->InitializeWithProfile(profile_, model_.get());
+#endif
   }
 
   model_pref_updater_.reset(

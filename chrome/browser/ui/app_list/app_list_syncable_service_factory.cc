@@ -18,6 +18,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs_factory.h"
 #endif
 
 namespace app_list {
@@ -57,6 +58,9 @@ AppListSyncableServiceFactory::AppListSyncableServiceFactory()
   FactorySet dependent_factories;
   dependent_factories.insert(
       extensions::ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
+#if defined(OS_CHROMEOS)
+  dependent_factories.insert(ArcAppListPrefsFactory::GetInstance());
+#endif
   DriveAppProvider::AppendDependsOnFactories(&dependent_factories);
   for (FactorySet::iterator it = dependent_factories.begin();
        it != dependent_factories.end();

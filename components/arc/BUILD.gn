@@ -20,6 +20,19 @@ static_library("arc") {
   ]
 }
 
+static_library("arc_test_support") {
+  testonly = true
+  sources = [
+    "test/fake_arc_bridge_service.cc",
+    "test/fake_arc_bridge_service.h",
+  ]
+
+  deps = [
+    ":arc",
+    "//base",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
   sources = [

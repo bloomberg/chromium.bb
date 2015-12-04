@@ -32,5 +32,21 @@
         'arc/common/arc_notification_types.cc',
       ],
     },
+    {
+      # GN version: //components/arc_test_support
+      'target_name': 'arc_test_support',
+      'type': 'static_library',
+      'include_dirs': [
+        '..',
+      ],
+      'dependencies': [
+        '../base/base.gyp:base',
+        'arc',
+      ],
+      'sources': [
+        'arc/test/fake_arc_bridge_service.cc',
+        'arc/test/fake_arc_bridge_service.h',
+      ],
+    },
   ],
 }

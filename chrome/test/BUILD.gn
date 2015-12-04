@@ -2114,6 +2114,11 @@ test("unit_tests") {
             chrome_tests_unit_gypi_values.chrome_unit_tests_app_list_chromeos_sources,
             ".",
             "//chrome")
+    sources += rebase_path(
+            chrome_tests_unit_gypi_values.chrome_unit_tests_app_list_chromeos_arc_sources,
+            ".",
+            "//chrome")
+    deps += [ "//components/arc:arc_test_support" ]
   }
   if (enable_plugins && !enable_plugin_installation) {
     sources -= [ "../browser/plugins/plugin_installer_unittest.cc" ]

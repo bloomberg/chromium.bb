@@ -720,6 +720,19 @@
       'browser/ui/views/select_file_dialog_extension_factory.cc',
       'browser/ui/views/select_file_dialog_extension_factory.h',
     ],
+    # ARC-only sources.
+    'chrome_browser_ui_chromeos_arc_sources': [
+      'browser/ui/app_list/arc/arc_app_icon.cc',
+      'browser/ui/app_list/arc/arc_app_icon.h',
+      'browser/ui/app_list/arc/arc_app_item.cc',
+      'browser/ui/app_list/arc/arc_app_item.h',
+      'browser/ui/app_list/arc/arc_app_list_prefs_factory.cc',
+      'browser/ui/app_list/arc/arc_app_list_prefs_factory.h',
+      'browser/ui/app_list/arc/arc_app_list_prefs.cc',
+      'browser/ui/app_list/arc/arc_app_list_prefs.h',
+      'browser/ui/app_list/arc/arc_app_model_builder.cc',
+      'browser/ui/app_list/arc/arc_app_model_builder.h',
+    ],
     # ChromeOS sources that should not be included in the official build.
     'chrome_browser_ui_chromeos_non_official_sources': [
       'browser/ui/webui/chromeos/emulator/device_emulator_message_handler.cc',
@@ -2541,6 +2554,8 @@
       'browser/ui/app_list/app_list_controller_delegate_impl.h',
       'browser/ui/app_list/app_list_icon_win.cc',
       'browser/ui/app_list/app_list_icon_win.h',
+      'browser/ui/app_list/app_list_model_builder.cc',
+      'browser/ui/app_list/app_list_model_builder.h',
       'browser/ui/app_list/app_list_positioner.cc',
       'browser/ui/app_list/app_list_positioner.h',
       'browser/ui/app_list/app_list_prefs.cc',
@@ -2956,6 +2971,9 @@
             '../ui/chromeos/ui_chromeos.gyp:ui_chromeos',
             '../ui/chromeos/ui_chromeos.gyp:ui_chromeos_resources',
           ],
+        }],
+        ['enable_app_list==1 and chromeos==1', {
+          'sources': [ '<@(chrome_browser_ui_chromeos_arc_sources)' ],
         }],
         ['use_cups==1', {
           'dependencies': [

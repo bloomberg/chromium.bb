@@ -12,11 +12,9 @@
 #include "chrome/browser/extensions/extension_ui_util.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/install_tracker.h"
-#include "chrome/browser/extensions/install_tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
-#include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/browser/ui/app_list/extension_app_item.h"
 #include "chrome/common/pref_names.h"
 #include "extensions/browser/extension_prefs.h"
@@ -34,47 +32,16 @@ using extensions::Extension;
 
 ExtensionAppModelBuilder::ExtensionAppModelBuilder(
     AppListControllerDelegate* controller)
-    : service_(NULL),
-      profile_(NULL),
-      controller_(controller),
-      model_(NULL),
-      tracker_(NULL),
-      extension_registry_(NULL) {
+    : AppListModelBuilder(controller, ExtensionAppItem::kItemType) {
 }
 
 ExtensionAppModelBuilder::~ExtensionAppModelBuilder() {
   OnShutdown();
   OnShutdown(extension_registry_);
-  if (!service_)
-    model_->top_level_item_list()->RemoveObserver(this);
-}
-
-void ExtensionAppModelBuilder::InitializeWithService(
-    app_list::AppListSyncableService* service,
-    app_list::AppListModel* model) {
-  DCHECK(!service_ && !profile_);
-  model_ = model;
-  service_ = service;
-  profile_ = service->profile();
-  InitializePrefChangeRegistrars();
-
-  BuildModel();
-}
-
-void ExtensionAppModelBuilder::InitializeWithProfile(
-    Profile* profile,
-    app_list::AppListModel* model) {
-  DCHECK(!service_ && !profile_);
-  model_ = model;
-  model_->top_level_item_list()->AddObserver(this);
-  profile_ = profile;
-  InitializePrefChangeRegistrars();
-
-  BuildModel();
 }
 
 void ExtensionAppModelBuilder::InitializePrefChangeRegistrars() {
-  profile_pref_change_registrar_.Init(profile_->GetPrefs());
+  profile_pref_change_registrar_.Init(profile()->GetPrefs());
   profile_pref_change_registrar_.Add(
       prefs::kHideWebStoreIcon,
       base::Bind(&ExtensionAppModelBuilder::OnProfilePreferenceChanged,
@@ -88,7 +55,7 @@ void ExtensionAppModelBuilder::InitializePrefChangeRegistrars() {
   extensions::ExtensionsBrowserClient* client =
       extensions::ExtensionsBrowserClient::Get();
   extension_pref_change_registrar_.Init(
-      client->GetPrefServiceForContext(profile_));
+      client->GetPrefServiceForContext(profile()));
   extension_pref_change_registrar_.Add(
     extensions::pref_names::kExtensions,
     base::Bind(&ExtensionAppModelBuilder::OnExtensionPreferenceChanged,
@@ -97,13 +64,13 @@ void ExtensionAppModelBuilder::InitializePrefChangeRegistrars() {
 
 void ExtensionAppModelBuilder::OnProfilePreferenceChanged() {
   extensions::ExtensionSet extensions;
-  controller_->GetApps(profile_, &extensions);
+  controller()->GetApps(profile(), &extensions);
 
   for (extensions::ExtensionSet::const_iterator app = extensions.begin();
        app != extensions.end(); ++app) {
     bool should_display =
-        extensions::ui_util::ShouldDisplayInAppLauncher(app->get(), profile_);
-    bool does_display = GetExtensionAppItem((*app)->id()) != NULL;
+        extensions::ui_util::ShouldDisplayInAppLauncher(app->get(), profile());
+    bool does_display = GetExtensionAppItem((*app)->id()) != nullptr;
 
     if (should_display == does_display)
       continue;
@@ -114,16 +81,16 @@ void ExtensionAppModelBuilder::OnProfilePreferenceChanged() {
                               gfx::ImageSkia(),
                               (*app)->is_platform_app()));
     } else {
-      if (service_)
-        service_->RemoveItem((*app)->id());
+      if (service())
+        service()->RemoveItem((*app)->id());
       else
-        model_->DeleteItem((*app)->id());
+        model()->DeleteItem((*app)->id());
     }
   }
 }
 
 void ExtensionAppModelBuilder::OnExtensionPreferenceChanged() {
-  model_->NotifyExtensionPreferenceChanged();
+  model()->NotifyExtensionPreferenceChanged();
 }
 
 void ExtensionAppModelBuilder::OnBeginExtensionInstall(
@@ -131,7 +98,7 @@ void ExtensionAppModelBuilder::OnBeginExtensionInstall(
   if (!params.is_app)
     return;
 
-  DVLOG(2) << service_ << ": OnBeginExtensionInstall: "
+  DVLOG(2) << service() << ": OnBeginExtensionInstall: "
            << params.extension_id.substr(0, 8);
   ExtensionAppItem* existing_item = GetExtensionAppItem(params.extension_id);
   if (existing_item) {
@@ -164,22 +131,22 @@ void ExtensionAppModelBuilder::OnDownloadProgress(
 
 void ExtensionAppModelBuilder::OnInstallFailure(
     const std::string& extension_id) {
-  model_->DeleteItem(extension_id);
+  model()->DeleteItem(extension_id);
 }
 
 void ExtensionAppModelBuilder::OnExtensionLoaded(
     content::BrowserContext* browser_context,
     const extensions::Extension* extension) {
-  if (!extensions::ui_util::ShouldDisplayInAppLauncher(extension, profile_))
+  if (!extensions::ui_util::ShouldDisplayInAppLauncher(extension, profile()))
     return;
 
-  DVLOG(2) << service_ << ": OnExtensionLoaded: "
+  DVLOG(2) << service() << ": OnExtensionLoaded: "
            << extension->id().substr(0, 8);
   ExtensionAppItem* existing_item = GetExtensionAppItem(extension->id());
   if (existing_item) {
     existing_item->Reload();
-    if (service_)
-      service_->UpdateItem(existing_item);
+    if (service())
+      service()->UpdateItem(existing_item);
     return;
   }
 
@@ -203,18 +170,18 @@ void ExtensionAppModelBuilder::OnExtensionUninstalled(
     content::BrowserContext* browser_context,
     const extensions::Extension* extension,
     extensions::UninstallReason reason) {
-  if (service_) {
-    DVLOG(2) << service_ << ": OnExtensionUninstalled: "
+  if (service()) {
+    DVLOG(2) << service() << ": OnExtensionUninstalled: "
              << extension->id().substr(0, 8);
-    service_->RemoveUninstalledItem(extension->id());
+    service()->RemoveUninstalledItem(extension->id());
     return;
   }
-  model_->DeleteUninstalledItem(extension->id());
+  model()->DeleteUninstalledItem(extension->id());
 }
 
 void ExtensionAppModelBuilder::OnDisabledExtensionUpdated(
     const Extension* extension) {
-  if (!extensions::ui_util::ShouldDisplayInAppLauncher(extension, profile_))
+  if (!extensions::ui_util::ShouldDisplayInAppLauncher(extension, profile()))
     return;
 
   ExtensionAppItem* existing_item = GetExtensionAppItem(extension->id());
@@ -225,7 +192,7 @@ void ExtensionAppModelBuilder::OnDisabledExtensionUpdated(
 void ExtensionAppModelBuilder::OnShutdown() {
   if (tracker_) {
     tracker_->RemoveObserver(this);
-    tracker_ = NULL;
+    tracker_ = nullptr;
   }
 }
 
@@ -236,7 +203,7 @@ void ExtensionAppModelBuilder::OnShutdown(
 
   DCHECK_EQ(extension_registry_, registry);
   extension_registry_->RemoveObserver(this);
-  extension_registry_ = NULL;
+  extension_registry_ = nullptr;
 }
 
 scoped_ptr<ExtensionAppItem> ExtensionAppModelBuilder::CreateAppItem(
@@ -244,10 +211,8 @@ scoped_ptr<ExtensionAppItem> ExtensionAppModelBuilder::CreateAppItem(
     const std::string& extension_name,
     const gfx::ImageSkia& installing_icon,
     bool is_platform_app) {
-  const app_list::AppListSyncableService::SyncItem* sync_item =
-      service_ ? service_->GetSyncItem(extension_id) : NULL;
-  return make_scoped_ptr(new ExtensionAppItem(profile_,
-                                              sync_item,
+  return make_scoped_ptr(new ExtensionAppItem(profile(),
+                                              GetSyncItem(extension_id),
                                               extension_id,
                                               extension_name,
                                               installing_icon,
@@ -256,8 +221,11 @@ scoped_ptr<ExtensionAppItem> ExtensionAppModelBuilder::CreateAppItem(
 
 void ExtensionAppModelBuilder::BuildModel() {
   DCHECK(!tracker_);
-  tracker_ = controller_->GetInstallTrackerFor(profile_);
-  extension_registry_ = extensions::ExtensionRegistry::Get(profile_);
+
+  InitializePrefChangeRegistrars();
+
+  tracker_ = controller()->GetInstallTrackerFor(profile());
+  extension_registry_ = extensions::ExtensionRegistry::Get(profile());
 
   PopulateApps();
 
@@ -271,11 +239,11 @@ void ExtensionAppModelBuilder::BuildModel() {
 
 void ExtensionAppModelBuilder::PopulateApps() {
   extensions::ExtensionSet extensions;
-  controller_->GetApps(profile_, &extensions);
+  controller()->GetApps(profile(), &extensions);
 
   for (extensions::ExtensionSet::const_iterator app = extensions.begin();
        app != extensions.end(); ++app) {
-    if (!extensions::ui_util::ShouldDisplayInAppLauncher(app->get(), profile_))
+    if (!extensions::ui_util::ShouldDisplayInAppLauncher(app->get(), profile()))
       continue;
     InsertApp(CreateAppItem((*app)->id(),
                             "",
@@ -284,36 +252,23 @@ void ExtensionAppModelBuilder::PopulateApps() {
   }
 }
 
-void ExtensionAppModelBuilder::InsertApp(scoped_ptr<ExtensionAppItem> app) {
-  if (service_) {
-    service_->AddItem(app.Pass());
-    return;
-  }
-  model_->AddItem(app.Pass());
-}
-
 ExtensionAppItem* ExtensionAppModelBuilder::GetExtensionAppItem(
     const std::string& extension_id) {
-  app_list::AppListItem* item = model_->FindItem(extension_id);
-  LOG_IF(ERROR, item &&
-         item->GetItemType() != ExtensionAppItem::kItemType)
-      << "App Item matching id: " << extension_id
-      << " has incorrect type: '" << item->GetItemType() << "'";
-  return static_cast<ExtensionAppItem*>(item);
+  return static_cast<ExtensionAppItem*>(GetAppItem(extension_id));
 }
 
 void ExtensionAppModelBuilder::OnListItemMoved(size_t from_index,
                                                size_t to_index,
                                                app_list::AppListItem* item) {
-  DCHECK(!service_);
+  DCHECK(!service());
 
   // This will get called from AppListItemList::ListItemMoved after
   // set_position is called for the item.
   if (item->GetItemType() != ExtensionAppItem::kItemType)
     return;
 
-  app_list::AppListItemList* item_list = model_->top_level_item_list();
-  ExtensionAppItem* prev = NULL;
+  app_list::AppListItemList* item_list = model()->top_level_item_list();
+  ExtensionAppItem* prev = nullptr;
   for (size_t idx = to_index; idx > 0; --idx) {
     app_list::AppListItem* item = item_list->item_at(idx - 1);
     if (item->GetItemType() == ExtensionAppItem::kItemType) {
@@ -321,7 +276,7 @@ void ExtensionAppModelBuilder::OnListItemMoved(size_t from_index,
       break;
     }
   }
-  ExtensionAppItem* next = NULL;
+  ExtensionAppItem* next = nullptr;
   for (size_t idx = to_index; idx < item_list->item_count() - 1; ++idx) {
     app_list::AppListItem* item = item_list->item_at(idx + 1);
     if (item->GetItemType() == ExtensionAppItem::kItemType) {

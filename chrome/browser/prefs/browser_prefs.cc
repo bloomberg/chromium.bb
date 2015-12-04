@@ -200,6 +200,7 @@
 #endif
 
 #if defined(OS_CHROMEOS) && defined(ENABLE_APP_LIST)
+#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/google_now_extension.h"
 #endif
 
@@ -501,6 +502,10 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   extensions::EnterprisePlatformKeysPrivateChallengeUserKeyFunction::
       RegisterProfilePrefs(registry);
   flags_ui::PrefServiceFlagsStorage::RegisterProfilePrefs(registry);
+#endif
+
+#if defined(OS_CHROMEOS) && defined(ENABLE_APP_LIST)
+  ArcAppListPrefs::RegisterProfilePrefs(registry);
 #endif
 
 #if defined(OS_WIN)

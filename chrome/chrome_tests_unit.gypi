@@ -1648,6 +1648,10 @@
     'chrome_unit_tests_app_list_chromeos_sources': [
       'browser/ui/app_list/search/launcher_search/launcher_search_icon_image_loader_unittest.cc',
     ],
+    # ARC only sources of app_list.
+    'chrome_unit_tests_app_list_chromeos_arc_sources': [
+      'browser/ui/app_list/arc/arc_app_unittest.cc',
+    ],
     # Sources for Offline pages. For now only for Android.
     'chrome_unit_tests_offline_pages_sources': [
       'browser/android/offline_pages/offline_page_mhtml_archiver_unittest.cc',
@@ -2766,6 +2770,12 @@
         }],
         ['enable_app_list==1 and chromeos==1', {
           'sources': [ '<@(chrome_unit_tests_app_list_chromeos_sources)' ],
+        }],
+        ['enable_app_list==1 and chromeos==1', {
+          'sources': [ '<@(chrome_unit_tests_app_list_chromeos_arc_sources)' ],
+          'dependencies': [
+            '../components/components.gyp:arc_test_support',
+          ],
         }],
         ['enable_plugin_installation==0', {
           'sources!': [

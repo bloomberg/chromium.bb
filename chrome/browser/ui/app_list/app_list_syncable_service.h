@@ -18,6 +18,10 @@
 #include "sync/api/syncable_service.h"
 #include "sync/protocol/app_list_specifics.pb.h"
 
+#if defined(OS_CHROMEOS)
+class ArcAppModelBuilder;
+#endif
+
 class DriveAppProvider;
 class ExtensionAppModelBuilder;
 class Profile;
@@ -200,6 +204,9 @@ class AppListSyncableService : public syncer::SyncableService,
   scoped_ptr<ModelObserver> model_observer_;
   scoped_ptr<ModelPrefUpdater> model_pref_updater_;
   scoped_ptr<ExtensionAppModelBuilder> apps_builder_;
+#if defined(OS_CHROMEOS)
+  scoped_ptr<ArcAppModelBuilder> arc_apps_builder_;
+#endif
   scoped_ptr<syncer::SyncChangeProcessor> sync_processor_;
   scoped_ptr<syncer::SyncErrorFactory> sync_error_handler_;
   SyncItemMap sync_items_;
