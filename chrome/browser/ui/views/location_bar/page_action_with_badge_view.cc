@@ -21,8 +21,8 @@ void PageActionWithBadgeView::GetAccessibleState(
 }
 
 gfx::Size PageActionWithBadgeView::GetPreferredSize() const {
-  return gfx::Size(ExtensionAction::kPageActionIconMaxSize,
-                   ExtensionAction::kPageActionIconMaxSize);
+  return gfx::Size(ExtensionAction::ActionIconSize(),
+                   ExtensionAction::ActionIconSize());
 }
 
 void PageActionWithBadgeView::UpdateVisibility(content::WebContents* contents) {

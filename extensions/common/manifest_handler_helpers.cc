@@ -59,6 +59,27 @@ bool LoadIconsFromDictionary(const base::DictionaryValue* icons_value,
   return true;
 }
 
+bool LoadAllIconsFromDictionary(const base::DictionaryValue* icons_value,
+                                ExtensionIconSet* icons,
+                                base::string16* error) {
+  DCHECK(icons);
+  for (base::DictionaryValue::Iterator iterator(*icons_value);
+       !iterator.IsAtEnd(); iterator.Advance()) {
+    int size = 0;
+    std::string icon_path;
+    if (!base::StringToInt(iterator.key(), &size) ||
+        !iterator.value().GetAsString(&icon_path) ||
+        !NormalizeAndValidatePath(&icon_path)) {
+      *error = ErrorUtils::FormatErrorMessageUTF16(errors::kInvalidIconPath,
+                                                   iterator.key());
+      return false;
+    }
+
+    icons->Add(size, icon_path);
+  }
+  return true;
+}
+
 }  // namespace manifest_handler_helpers
 
 }  // namespace extensions

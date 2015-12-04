@@ -75,15 +75,6 @@ const int kExtensionIconSizes[] = {EXTENSION_ICON_GIGANTOR,     // 512
 
 const size_t kNumExtensionIconSizes = arraysize(kExtensionIconSizes);
 
-const IconRepresentationInfo kExtensionActionIconSizes[] = {
-  { EXTENSION_ICON_ACTION, "19", ui::SCALE_FACTOR_100P },
-  { 2 * EXTENSION_ICON_ACTION, "38", ui::SCALE_FACTOR_200P }
-};
-
-static_assert(kNumExtensionActionIconSizes ==
-              arraysize(kExtensionActionIconSizes),
-              "num action icon sizes must be in sync with action icon sizes");
-
 const char kPdfExtensionId[] = "mhjfbmdgcfjbbpaeojofohoefgiehjai";
 const char kQuickOfficeComponentExtensionId[] =
     "bpmcpldpdmajfigpchkicefoigmkfalc";

@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
+#include "extensions/common/constants.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/image/image.h"
 
@@ -47,12 +48,11 @@ class ExtensionAction {
     // the UI.
   };
 
+  static extension_misc::ExtensionIcons ActionIconSize();
+
   // Use this ID to indicate the default state for properties that take a tab_id
   // parameter.
   static const int kDefaultTabId;
-
-  // Max size (both dimensions) for page actions.
-  static const int kPageActionIconMaxSize;
 
   ExtensionAction(const extensions::Extension& extension,
                   extensions::ActionInfo::Type action_type,

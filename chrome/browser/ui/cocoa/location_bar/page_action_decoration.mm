@@ -50,10 +50,9 @@ PageActionDecoration::PageActionDecoration(
 
 PageActionDecoration::~PageActionDecoration() {}
 
-// Always |kPageActionIconMaxSize| wide.  |ImageDecoration| draws the
-// image centered.
+// Always |ActionIconSize| wide. |ImageDecoration| draws the image centered.
 CGFloat PageActionDecoration::GetWidthForSpace(CGFloat width) {
-  return ExtensionAction::kPageActionIconMaxSize;
+  return ExtensionAction::ActionIconSize();
 }
 
 bool PageActionDecoration::AcceptsMousePress() {
@@ -93,8 +92,8 @@ void PageActionDecoration::UpdateVisibility(WebContents* contents) {
     SetToolTip(viewController_->GetTooltip(contents));
 
     // Set the image.
-    gfx::Size size(ExtensionAction::kPageActionIconMaxSize,
-                   ExtensionAction::kPageActionIconMaxSize);
+    gfx::Size size(ExtensionAction::ActionIconSize(),
+                   ExtensionAction::ActionIconSize());
     gfx::Image icon = viewController_->GetIcon(contents, size);
     if (!icon.IsEmpty()) {
       SetImage(icon.ToNSImage());
@@ -120,7 +119,7 @@ NSPoint PageActionDecoration::GetBubblePointInFrame(NSRect frame) {
   // easier (the middle of the centered image is the middle of the
   // frame).
   const CGFloat delta_height =
-      NSHeight(frame) - ExtensionAction::kPageActionIconMaxSize;
+      NSHeight(frame) - ExtensionAction::ActionIconSize();
   const CGFloat bottom_inset = std::ceil(delta_height / 2.0);
 
   // Return a point just below the bottom of the maximal drawing area.

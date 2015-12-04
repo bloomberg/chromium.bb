@@ -91,25 +91,17 @@ scoped_ptr<ActionInfo> ActionInfo::Load(const Extension* extension,
     const base::DictionaryValue* icons_value = NULL;
     std::string default_icon;
     if (dict->GetDictionary(keys::kPageActionDefaultIcon, &icons_value)) {
-      int icon_sizes[extension_misc::kNumExtensionActionIconSizes];
-      for (size_t i = 0u; i < extension_misc::kNumExtensionActionIconSizes; ++i)
-        icon_sizes[i] = extension_misc::kExtensionActionIconSizes[i].size;
-      if (!manifest_handler_helpers::LoadIconsFromDictionary(
-              icons_value,
-              icon_sizes,
-              extension_misc::kNumExtensionActionIconSizes,
-              &result->default_icon,
-              error)) {
+      if (!manifest_handler_helpers::LoadAllIconsFromDictionary(
+              icons_value, &result->default_icon, error)) {
         return scoped_ptr<ActionInfo>();
       }
     } else if (dict->GetString(keys::kPageActionDefaultIcon, &default_icon) &&
                manifest_handler_helpers::NormalizeAndValidatePath(
                    &default_icon)) {
-      // Choose the most optimistic (highest) icon density - e.g. 38 not 19 -
-      // regardless of the actual icon resolution, whatever that happens to be.
-      // Code elsewhere knows how to scale 38 down to 19.
-      result->default_icon.Add(extension_misc::EXTENSION_ICON_ACTION *
-                                   extension_misc::kNumExtensionActionIconSizes,
+      // Choose the most optimistic (highest) icon density regardless of the
+      // actual icon resolution, whatever that happens to be. Code elsewhere
+      // knows how to scale down to 19.
+      result->default_icon.Add(extension_misc::EXTENSION_ICON_GIGANTOR,
                                default_icon);
     } else {
       *error = base::ASCIIToUTF16(errors::kInvalidPageActionIconPath);

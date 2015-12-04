@@ -33,6 +33,11 @@ bool LoadIconsFromDictionary(const base::DictionaryValue* icons_value,
                              ExtensionIconSet* icons,
                              base::string16* error);
 
+// As above, but loads all icons in |icons_value|.
+bool LoadAllIconsFromDictionary(const base::DictionaryValue* icons_value,
+                                ExtensionIconSet* icons,
+                                base::string16* error);
+
 }  // namespace manifest_handler_helpers
 }  // namespace extensions
 

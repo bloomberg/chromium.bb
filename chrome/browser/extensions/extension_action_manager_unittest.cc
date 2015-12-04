@@ -98,9 +98,9 @@ bool ExtensionActionManagerTest::IconsMatch(const Extension& extension,
                                             const ExtensionAction& action,
                                             int action_key) {
   return action.default_icon()->Get(action_key,
-                                    ExtensionIconSet::MATCH_EXACTLY) ==
-      IconsInfo::GetIcons(&extension).Get(extension_key,
-                                          ExtensionIconSet::MATCH_EXACTLY);
+                                    ExtensionIconSet::MATCH_BIGGER) ==
+         IconsInfo::GetIcons(&extension)
+             .Get(extension_key, ExtensionIconSet::MATCH_EXACTLY);
 }
 
 ExtensionAction* ExtensionActionManagerTest::GetAction(
@@ -127,7 +127,7 @@ void ExtensionActionManagerTest::TestPopulateMissingValues(
   ASSERT_TRUE(action);
 
   ASSERT_TRUE(TitlesMatch(*extension.get(), *action));
-  ASSERT_TRUE(IconsMatch(*extension.get(), 128, *action, 38));
+  ASSERT_TRUE(IconsMatch(*extension.get(), 48, *action, 38));
 
   // Test that the action's missing default_icons are not replaced with smaller
   // icons.

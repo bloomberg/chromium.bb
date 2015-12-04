@@ -75,8 +75,7 @@ bool StringToSkBitmap(const std::string& str, SkBitmap* bitmap) {
 }
 
 // Conversion function for reading/writing to storage.
-std::string RepresentationToString(const gfx::ImageSkia& image, float scale) {
-  SkBitmap bitmap = image.GetRepresentation(scale).sk_bitmap();
+std::string BitmapToString(const SkBitmap& bitmap) {
   SkAutoLockPixels lock_image(bitmap);
   std::vector<unsigned char> data;
   bool success = gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, false, &data);
@@ -95,9 +94,6 @@ void SetDefaultsFromValue(const base::DictionaryValue* dict,
                           ExtensionAction* action) {
   const int kDefaultTabId = ExtensionAction::kDefaultTabId;
   std::string str_value;
-  int int_value;
-  SkBitmap bitmap;
-  gfx::ImageSkia icon;
 
   // For each value, don't set it if it has been modified already.
   if (dict->GetString(kPopupUrlStorageKey, &str_value) &&
@@ -121,9 +117,11 @@ void SetDefaultsFromValue(const base::DictionaryValue* dict,
       !action->HasBadgeTextColor(kDefaultTabId)) {
     action->SetBadgeTextColor(kDefaultTabId, RawStringToSkColor(str_value));
   }
-  if (dict->GetInteger(kAppearanceStorageKey, &int_value) &&
+
+  int appearance_storage = 0;
+  if (dict->GetInteger(kAppearanceStorageKey, &appearance_storage) &&
       !action->HasIsVisible(kDefaultTabId)) {
-    switch (int_value) {
+    switch (appearance_storage) {
       case INVISIBLE:
       case OBSOLETE_WANTS_ATTENTION:
         action->SetIsVisible(kDefaultTabId, false);
@@ -137,13 +135,18 @@ void SetDefaultsFromValue(const base::DictionaryValue* dict,
   const base::DictionaryValue* icon_value = NULL;
   if (dict->GetDictionary(kIconStorageKey, &icon_value) &&
       !action->HasIcon(kDefaultTabId)) {
-    for (size_t i = 0; i < extension_misc::kNumExtensionActionIconSizes; i++) {
-      const extension_misc::IconRepresentationInfo& icon_info =
-          extension_misc::kExtensionActionIconSizes[i];
-      if (icon_value->GetString(icon_info.size_string, &str_value) &&
-          StringToSkBitmap(str_value, &bitmap)) {
+    gfx::ImageSkia icon;
+    SkBitmap bitmap;
+    for (base::DictionaryValue::Iterator iter(*icon_value); !iter.IsAtEnd();
+         iter.Advance()) {
+      int icon_size = 0;
+      std::string icon_string;
+      if (base::StringToInt(iter.key(), &icon_size) &&
+          iter.value().GetAsString(&icon_string) &&
+          StringToSkBitmap(icon_string, &bitmap)) {
         CHECK(!bitmap.isNull());
-        float scale = ui::GetScaleForScaleFactor(icon_info.scale);
+        float scale =
+            static_cast<float>(icon_size) / ExtensionAction::ActionIconSize();
         icon.AddRepresentation(gfx::ImageSkiaRep(bitmap, scale));
       }
     }
@@ -173,18 +176,15 @@ scoped_ptr<base::DictionaryValue> DefaultsToValue(ExtensionAction* action) {
       action->GetExplicitlySetIcon(kDefaultTabId).AsImageSkia();
   if (!icon.isNull()) {
     scoped_ptr<base::DictionaryValue> icon_value(new base::DictionaryValue());
-    for (size_t i = 0; i < extension_misc::kNumExtensionActionIconSizes; i++) {
-      const extension_misc::IconRepresentationInfo& icon_info =
-          extension_misc::kExtensionActionIconSizes[i];
-      float scale = ui::GetScaleForScaleFactor(icon_info.scale);
-      if (icon.HasRepresentation(scale)) {
-        icon_value->SetString(icon_info.size_string,
-                              RepresentationToString(icon, scale));
-      }
+    std::vector<gfx::ImageSkiaRep> image_reps = icon.image_reps();
+    for (const gfx::ImageSkiaRep& rep : image_reps) {
+      int size = static_cast<int>(rep.scale() * icon.width());
+      std::string size_string = base::IntToString(size);
+      icon_value->SetString(size_string, BitmapToString(rep.sk_bitmap()));
     }
-    dict->Set(kIconStorageKey, icon_value.release());
+    dict->Set(kIconStorageKey, icon_value.Pass());
   }
-  return dict.Pass();
+  return dict;
 }
 
 }  // namespace
