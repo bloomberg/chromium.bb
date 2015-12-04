@@ -392,6 +392,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void AddMessageToConsole(ConsoleMessageLevel level,
                            const std::string& message) override;
   bool IsUsingLoFi() const override;
+  bool IsPasting() const override;
 
   // blink::WebFrameClient implementation:
   blink::WebPlugin* createPlugin(blink::WebLocalFrame* frame,
@@ -1109,6 +1110,9 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // Whether or not this RenderFrame is using Lo-Fi mode.
   bool is_using_lofi_;
+
+  // Whether or not this RenderFrame is currently pasting.
+  bool is_pasting_;
 
 #if defined(ENABLE_WEBVR)
   // The VR dispatcher attached to the frame, lazily initialized.

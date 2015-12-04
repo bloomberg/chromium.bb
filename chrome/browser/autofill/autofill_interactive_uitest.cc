@@ -52,6 +52,7 @@
 #include "net/url_request/url_request_status.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
 using base::ASCIIToUTF16;
@@ -89,14 +90,26 @@ static const char kTestFormString[] =
     "<label for=\"phone\">Phone number:</label>"
     " <input type=\"text\" id=\"phone\"><br>"
     "</form>";
-
+static const char kTestPasswordFormString[] =
+    "<form>"
+    "<label for=\"user\">User:</label>"
+    " <input id=\"user\" type=\"text\" name=\"name\""
+             "onfocus=\"domAutomationController.send(true)\">"
+    "<br>"
+    "<label for=\"password\">Password:</label>"
+    " <input id=\"password\" type=\"password\" name=\"password\""
+             "onfocus=\"domAutomationController.send(true)\">"
+    "<br>"
+    "<input type=\"submit\" value=\"Submit\">"
+    "</form>";
 
 // AutofillManagerTestDelegateImpl --------------------------------------------
 
 class AutofillManagerTestDelegateImpl
     : public autofill::AutofillManagerTestDelegate {
  public:
-  AutofillManagerTestDelegateImpl() {}
+  AutofillManagerTestDelegateImpl()
+      : waiting_for_text_change_(false) {}
   ~AutofillManagerTestDelegateImpl() override {}
 
   // autofill::AutofillManagerTestDelegate:
@@ -115,6 +128,14 @@ class AutofillManagerTestDelegateImpl
     loop_runner_->Quit();
   }
 
+  void OnTextFieldChanged() override {
+    if (!waiting_for_text_change_)
+      return;
+    waiting_for_text_change_ = false;
+    ASSERT_TRUE(loop_runner_->loop_running());
+    loop_runner_->Quit();
+  }
+
   void Reset() {
     loop_runner_ = new content::MessageLoopRunner();
   }
@@ -123,8 +144,14 @@ class AutofillManagerTestDelegateImpl
     loop_runner_->Run();
   }
 
+  void WaitForTextChange() {
+    waiting_for_text_change_ = true;
+    loop_runner_->Run();
+  }
+
  private:
   scoped_refptr<content::MessageLoopRunner> loop_runner_;
+  bool waiting_for_text_change_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillManagerTestDelegateImpl);
 };
@@ -263,6 +290,18 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
     fetcher->delegate()->OnURLFetchComplete(fetcher);
   }
 
+  void FocusFieldByName(const std::string& name) {
+    bool result = false;
+    ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+        GetRenderViewHost(),
+        "if (document.readyState === 'complete')"
+        "  document.getElementById('" + name + "').focus();"
+        "else"
+        "  domAutomationController.send(false);",
+        &result));
+    ASSERT_TRUE(result);
+  }
+
   void FocusFirstNameField() {
     bool result = false;
     ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
@@ -331,6 +370,16 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
     content::SimulateKeyPress(
         GetWebContents(), key, false, false, false, false);
     test_delegate_.Wait();
+  }
+
+  void PasteStringAndWait(const std::string& pastedata) {
+    {
+      ui::ScopedClipboardWriter writer(ui::CLIPBOARD_TYPE_COPY_PASTE);
+      writer.WriteText(base::ASCIIToUTF16(pastedata));
+    }
+    test_delegate_.Reset();
+    GetWebContents()->Paste();
+    test_delegate_.WaitForTextChange();
   }
 
   bool HandleKeyPressEvent(const content::NativeWebKeyboardEvent& event) {
@@ -1394,6 +1443,17 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
   // Press the down arrow to select the suggestion and attempt to preview the
   // autofilled form.
   SendKeyToPopupAndWait(ui::VKEY_DOWN);
+}
+
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
+                       PastedPasswordIsSaved) {
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(),
+      GURL(std::string(kDataURIPrefix) + kTestPasswordFormString)));
+  ASSERT_TRUE(content::ExecuteScript(
+      GetRenderViewHost(),
+      "document.getElementById('user').value = 'user';"));
+  FocusFieldByName("password");
+  PasteStringAndWait("foobar");
 }
 
 }  // namespace autofill

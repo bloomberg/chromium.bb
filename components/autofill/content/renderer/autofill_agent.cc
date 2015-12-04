@@ -386,10 +386,14 @@ void AutofillAgent::textFieldDidEndEditing(const WebInputElement& element) {
 
 void AutofillAgent::textFieldDidChange(const WebFormControlElement& element) {
   DCHECK(toWebInputElement(&element) || form_util::IsTextAreaElement(element));
+
   if (ignore_text_changes_)
     return;
 
-  if (!IsUserGesture())
+  // Disregard text changes that aren't caused by user gestures or pastes. Note
+  // that pastes aren't necessarily user gestures because Blink's conception of
+  // user gestures is centered around creating new windows/tabs.
+  if (!IsUserGesture() && !render_frame()->IsPasting())
     return;
 
   // We post a task for doing the Autofill as the caret position is not set

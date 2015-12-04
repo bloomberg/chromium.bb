@@ -189,6 +189,9 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
   // Whether or not this frame is using Lo-Fi.
   virtual bool IsUsingLoFi() const = 0;
 
+  // Whether or not this frame is currently pasting.
+  virtual bool IsPasting() const = 0;
+
  protected:
   ~RenderFrame() override {}
 

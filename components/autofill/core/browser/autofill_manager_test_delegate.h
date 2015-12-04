@@ -19,6 +19,9 @@ class AutofillManagerTestDelegate {
 
   // Called when a popup with Autofill suggestions is shown.
   virtual void DidShowSuggestions() = 0;
+
+  // Called when a text field change is detected.
+  virtual void OnTextFieldChanged() = 0;
 };
 
 }  // namespace autofill
