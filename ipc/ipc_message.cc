@@ -180,7 +180,7 @@ void Message::FindNext(const char* range_start,
   bool have_entire_pickle =
       static_cast<size_t>(range_end - range_start) >= pickle_size;
 
-#if USE_ATTACHMENT_BROKER && defined(OS_MACOSX) && !defined(OS_IOS)
+#if USE_ATTACHMENT_BROKER
   // TODO(dskiba): determine message_size when entire pickle is not available
 
   if (!have_entire_pickle)
@@ -252,7 +252,7 @@ bool Message::WriteAttachment(scoped_refptr<MessageAttachment> attachment) {
   // keep the current descriptor as extra decoding state when deserialising.
   WriteInt(static_cast<int>(index));
 
-#if USE_ATTACHMENT_BROKER && defined(OS_MACOSX) && !defined(OS_IOS)
+#if USE_ATTACHMENT_BROKER
   if (brokerable)
     header()->num_brokered_attachments++;
 #endif

@@ -149,7 +149,7 @@ TEST(IPCMessageTest, FindNext) {
   // (but contains the message header)
   IPC::Message::FindNext(data_start, data_end - 1, &next);
   EXPECT_FALSE(next.message_found);
-#if USE_ATTACHMENT_BROKER && defined(OS_MACOSX) && !defined(OS_IOS)
+#if USE_ATTACHMENT_BROKER
   EXPECT_EQ(next.message_size, 0u);
 #else
   EXPECT_EQ(next.message_size, message.size());
@@ -185,7 +185,7 @@ TEST(IPCMessageTest, FindNextOverflow) {
   message.header()->payload_size = static_cast<uint32_t>(-1);
   IPC::Message::FindNext(data_start, data_end, &next);
   EXPECT_FALSE(next.message_found);
-#if USE_ATTACHMENT_BROKER && defined(OS_MACOSX) && !defined(OS_IOS)
+#if USE_ATTACHMENT_BROKER
   EXPECT_EQ(next.message_size, 0u);
 #else
   if (sizeof(size_t) > sizeof(uint32_t)) {
@@ -203,7 +203,7 @@ TEST(IPCMessageTest, FindNextOverflow) {
   message.header()->payload_size = std::numeric_limits<int32_t>::max();
   IPC::Message::FindNext(data_start, data_end, &next);
   EXPECT_FALSE(next.message_found);
-#if USE_ATTACHMENT_BROKER && defined(OS_MACOSX) && !defined(OS_IOS)
+#if USE_ATTACHMENT_BROKER
   EXPECT_EQ(next.message_size, 0u);
 #else
   EXPECT_EQ(next.message_size,

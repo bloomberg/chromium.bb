@@ -16,7 +16,7 @@
 
 // Whether IPC::Message::FindNext() can determine message size for
 // partial messages. The condition is from FindNext() implementation.
-#if USE_ATTACHMENT_BROKER && defined(OS_MACOSX) && !defined(OS_IOS)
+#if USE_ATTACHMENT_BROKER
 #define MESSAGE_FINDNEXT_PARTIAL 0
 #else
 #define MESSAGE_FINDNEXT_PARTIAL 1
