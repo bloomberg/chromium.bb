@@ -16,6 +16,7 @@
 #include "components/crash/content/app/crash_reporter_client.h"
 #include "third_party/crashpad/crashpad/client/crashpad_client.h"
 #include "third_party/crashpad/crashpad/client/crashpad_info.h"
+#include "third_party/crashpad/crashpad/client/simulate_crash_win.h"
 
 namespace crash_reporter {
 namespace internal {
@@ -110,6 +111,60 @@ int __declspec(dllexport) CrashForException(
     EXCEPTION_POINTERS* info) {
   g_crashpad_client.Get().DumpAndCrash(info);
   return EXCEPTION_CONTINUE_SEARCH;
+}
+
+// TODO(scottmg): http://crbug.com/546288 These exported functions are for
+// compatibility with how Breakpad worked, but it seems like there's no need to
+// do the CreateRemoteThread() dance with a minor extension of the Crashpad API
+// (to just pass the pid we want a dump for). We should add that and then modify
+// hang_crash_dump_win.cc to work in a more direct manner.
+
+// Used for dumping a process state when there is no crash.
+extern "C" void __declspec(dllexport) __cdecl DumpProcessWithoutCrash() {
+  CRASHPAD_SIMULATE_CRASH();
+}
+
+namespace {
+
+// We need to prevent ICF from folding DumpForHangDebuggingThread() and
+// DumpProcessWithoutCrashThread() together, since that makes them
+// indistinguishable in crash dumps. We do this by making the function
+// bodies unique, and prevent optimization from shuffling things around.
+MSVC_DISABLE_OPTIMIZE()
+MSVC_PUSH_DISABLE_WARNING(4748)
+
+DWORD WINAPI DumpProcessWithoutCrashThread(void*) {
+  DumpProcessWithoutCrash();
+  return 0;
+}
+
+// The following two functions do exactly the same thing as the two above. But
+// we want the signatures to be different so that we can easily track them in
+// crash reports.
+// TODO(yzshen): Remove when enough information is collected and the hang rate
+// of pepper/renderer processes is reduced.
+DWORD WINAPI DumpForHangDebuggingThread(void*) {
+  DumpProcessWithoutCrash();
+  VLOG(1) << "dumped for hang debugging";
+  return 0;
+}
+
+MSVC_POP_WARNING()
+MSVC_ENABLE_OPTIMIZE()
+
+}  // namespace
+
+// Injects a thread into a remote process to dump state when there is no crash.
+extern "C" HANDLE __declspec(dllexport) __cdecl InjectDumpProcessWithoutCrash(
+    HANDLE process) {
+  return CreateRemoteThread(process, NULL, 0, DumpProcessWithoutCrashThread, 0,
+                            0, NULL);
+}
+
+extern "C" HANDLE __declspec(dllexport) __cdecl InjectDumpForHangDebugging(
+    HANDLE process) {
+  return CreateRemoteThread(process, NULL, 0, DumpForHangDebuggingThread, 0, 0,
+                            NULL);
 }
 
 #if defined(ARCH_CPU_X86_64)
