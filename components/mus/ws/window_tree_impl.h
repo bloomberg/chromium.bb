@@ -197,21 +197,17 @@ class WindowTreeImpl : public mojom::WindowTree, public AccessPolicyDelegate {
                  mojo::Map<mojo::String, mojo::Array<uint8_t>>
                      transport_properties) override;
   void DeleteWindow(uint32_t change_id, Id transport_window_id) override;
-  void AddWindow(Id parent_id,
-                 Id child_id,
-                 const mojo::Callback<void(bool)>& callback) override;
-  void RemoveWindowFromParent(
-      Id window_id,
-      const mojo::Callback<void(bool)>& callback) override;
+  void AddWindow(uint32_t change_id, Id parent_id, Id child_id) override;
+  void RemoveWindowFromParent(uint32_t change_id, Id window_id) override;
   void AddTransientWindow(uint32_t change_id,
                           Id window_id,
                           Id transient_window_id) override;
   void RemoveTransientWindowFromParent(uint32_t change_id,
                                        Id transient_window_id) override;
-  void ReorderWindow(Id window_id,
+  void ReorderWindow(uint32_t change_Id,
+                     Id window_id,
                      Id relative_window_id,
-                     mojom::OrderDirection direction,
-                     const mojo::Callback<void(bool)>& callback) override;
+                     mojom::OrderDirection direction) override;
   void GetWindowTree(
       Id window_id,
       const mojo::Callback<void(mojo::Array<mojom::WindowDataPtr>)>& callback)

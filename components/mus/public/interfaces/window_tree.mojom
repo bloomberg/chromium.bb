@@ -129,7 +129,7 @@ interface WindowTree {
   //
   // This may result in a connection getting OnWindowDeleted(). See
   // RemoveWindowFromParent for details.
-  AddWindow(uint32 parent, uint32 child) => (bool success);
+  AddWindow(uint32 change_id, uint32 parent, uint32 child);
 
   // Removes a window from its current parent. This fails if the window is not
   // valid or the window already has no parent.
@@ -139,7 +139,7 @@ interface WindowTree {
   // a child of 1. Connection B has a root 1. If 2 is removed from 1 then B gets
   // OnWindowDeleted(). This is done as window 2 is effectively no longer
   // visible to connection B.
-  RemoveWindowFromParent(uint32 window_id) => (bool success);
+  RemoveWindowFromParent(uint32 change_id, uint32 window_id);
 
   // Ties the lifetime of |child| to the lifetime of |parent|. This also
   // places |child| always on top of |parent|.
@@ -157,9 +157,10 @@ interface WindowTree {
   // Reorders a window in its parent, relative to |relative_window_id| according
   // to |direction|. Only the connection that created the window's parent can
   // reorder its children.
-  ReorderWindow(uint32 window_id,
+  ReorderWindow(uint32 change_id,
+                uint32 window_id,
                 uint32 relative_window_id,
-                OrderDirection direction) => (bool success);
+                OrderDirection direction);
 
   // Returns the windows comprising the tree starting at |window_id|.
   // |window_id| is the first result in the return value, unless |window_id| is

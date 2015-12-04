@@ -43,21 +43,17 @@ class TestWindowTree : public mojom::WindowTree {
                      mojom::SurfaceType type,
                      mojo::InterfaceRequest<mojom::Surface> surface,
                      mojom::SurfaceClientPtr client) override;
-  void AddWindow(uint32_t parent,
-                 uint32_t child,
-                 const AddWindowCallback& callback) override;
-  void RemoveWindowFromParent(
-      uint32_t window_id,
-      const RemoveWindowFromParentCallback& callback) override;
+  void AddWindow(uint32_t change_id, uint32_t parent, uint32_t child) override;
+  void RemoveWindowFromParent(uint32_t change_id, uint32_t window_id) override;
   void AddTransientWindow(uint32_t change_id,
                           uint32_t window_id,
                           uint32_t transient_window_id) override;
   void RemoveTransientWindowFromParent(uint32_t change_id,
                                        uint32_t window_id) override;
-  void ReorderWindow(uint32_t window_id,
+  void ReorderWindow(uint32_t change_id,
+                     uint32_t window_id,
                      uint32_t relative_window_id,
-                     mojom::OrderDirection direction,
-                     const ReorderWindowCallback& callback) override;
+                     mojom::OrderDirection direction) override;
   void GetWindowTree(uint32_t window_id,
                      const GetWindowTreeCallback& callback) override;
   void Embed(uint32_t window_id,

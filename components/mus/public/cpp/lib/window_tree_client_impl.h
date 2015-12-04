@@ -48,13 +48,13 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   // These methods take TransportIds. For windows owned by the current
   // connection, the connection id high word can be zero. In all cases, the
   // TransportId 0x1 refers to the root window.
-  void AddChild(Id child_id, Id parent_id);
-  void RemoveChild(Id child_id, Id parent_id);
+  void AddChild(Window* parent, Id child_id);
+  void RemoveChild(Window* parent, Id child_id);
 
   void AddTransientWindow(Window* window, Id transient_window_id);
   void RemoveTransientWindowFromParent(Window* window);
 
-  void Reorder(Id window_id,
+  void Reorder(Window* window,
                Id relative_window_id,
                mojom::OrderDirection direction);
 

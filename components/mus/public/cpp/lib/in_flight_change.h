@@ -18,12 +18,15 @@ namespace mus {
 class Window;
 
 enum class ChangeType {
+  ADD_CHILD,
   ADD_TRANSIENT_WINDOW,
   BOUNDS,
   DELETE_WINDOW,
   NEW_WINDOW,
   PROPERTY,
+  REMOVE_CHILD,
   REMOVE_TRANSIENT_WINDOW_FROM_PARENT,
+  REORDER,
   VISIBLE,
 };
 

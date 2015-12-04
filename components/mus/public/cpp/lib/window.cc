@@ -260,7 +260,7 @@ void Window::AddChild(Window* child) {
     CHECK_EQ(child->connection(), connection_);
   LocalAddChild(child);
   if (connection_)
-    tree_client()->AddChild(child->id(), id_);
+    tree_client()->AddChild(this, child->id());
 }
 
 void Window::RemoveChild(Window* child) {
@@ -270,14 +270,14 @@ void Window::RemoveChild(Window* child) {
     CHECK_EQ(child->connection(), connection_);
   LocalRemoveChild(child);
   if (connection_)
-    tree_client()->RemoveChild(child->id(), id_);
+    tree_client()->RemoveChild(this, child->id());
 }
 
 void Window::Reorder(Window* relative, mojom::OrderDirection direction) {
   if (!LocalReorder(relative, direction))
     return;
   if (connection_)
-    tree_client()->Reorder(id_, relative->id(), direction);
+    tree_client()->Reorder(this, relative->id(), direction);
 }
 
 void Window::MoveToFront() {

@@ -58,13 +58,12 @@ void TestWindowTree::AttachSurface(
     mojo::InterfaceRequest<mojom::Surface> surface,
     mojom::SurfaceClientPtr client) {}
 
-void TestWindowTree::AddWindow(uint32_t parent,
-                               uint32_t child,
-                               const AddWindowCallback& callback) {}
+void TestWindowTree::AddWindow(uint32_t change_id,
+                               uint32_t parent,
+                               uint32_t child) {}
 
-void TestWindowTree::RemoveWindowFromParent(
-    uint32_t window_id,
-    const RemoveWindowFromParentCallback& callback) {}
+void TestWindowTree::RemoveWindowFromParent(uint32_t change_id,
+                                            uint32_t window_id) {}
 
 void TestWindowTree::AddTransientWindow(uint32_t change_id,
                                         uint32_t window_id,
@@ -74,10 +73,10 @@ void TestWindowTree::RemoveTransientWindowFromParent(
     uint32_t change_id,
     uint32_t transient_window_id) {}
 
-void TestWindowTree::ReorderWindow(uint32_t window_id,
+void TestWindowTree::ReorderWindow(uint32_t change_id,
+                                   uint32_t window_id,
                                    uint32_t relative_window_id,
-                                   mojom::OrderDirection direction,
-                                   const ReorderWindowCallback& callback) {}
+                                   mojom::OrderDirection direction) {}
 
 void TestWindowTree::GetWindowTree(uint32_t window_id,
                                    const GetWindowTreeCallback& callback) {}

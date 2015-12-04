@@ -157,14 +157,18 @@ void WindowTreeClientImpl::DestroyWindow(Window* window) {
   tree_->DeleteWindow(change_id, window->id());
 }
 
-void WindowTreeClientImpl::AddChild(Id child_id, Id parent_id) {
+void WindowTreeClientImpl::AddChild(Window* parent, Id child_id) {
   DCHECK(tree_);
-  tree_->AddWindow(parent_id, child_id, ActionCompletedCallback());
+  const uint32_t change_id = ScheduleInFlightChange(
+      make_scoped_ptr(new CrashInFlightChange(parent, ChangeType::ADD_CHILD)));
+  tree_->AddWindow(change_id, parent->id(), child_id);
 }
 
-void WindowTreeClientImpl::RemoveChild(Id child_id, Id parent_id) {
+void WindowTreeClientImpl::RemoveChild(Window* parent, Id child_id) {
   DCHECK(tree_);
-  tree_->RemoveWindowFromParent(child_id, ActionCompletedCallback());
+  const uint32_t change_id = ScheduleInFlightChange(make_scoped_ptr(
+      new CrashInFlightChange(parent, ChangeType::REMOVE_CHILD)));
+  tree_->RemoveWindowFromParent(change_id, child_id);
 }
 
 void WindowTreeClientImpl::AddTransientWindow(Window* window,
@@ -183,12 +187,13 @@ void WindowTreeClientImpl::RemoveTransientWindowFromParent(Window* window) {
   tree_->RemoveTransientWindowFromParent(change_id, window->id());
 }
 
-void WindowTreeClientImpl::Reorder(Id window_id,
+void WindowTreeClientImpl::Reorder(Window* window,
                                    Id relative_window_id,
                                    mojom::OrderDirection direction) {
   DCHECK(tree_);
-  tree_->ReorderWindow(window_id, relative_window_id, direction,
-                       ActionCompletedCallback());
+  const uint32_t change_id = ScheduleInFlightChange(
+      make_scoped_ptr(new CrashInFlightChange(window, ChangeType::REORDER)));
+  tree_->ReorderWindow(change_id, window->id(), relative_window_id, direction);
 }
 
 bool WindowTreeClientImpl::OwnsWindow(Id id) const {

@@ -648,16 +648,13 @@ void WindowTreeImpl::DeleteWindow(uint32_t change_id, Id transport_window_id) {
   client_->OnChangeCompleted(change_id, success);
 }
 
-void WindowTreeImpl::AddWindow(Id parent_id,
-                               Id child_id,
-                               const Callback<void(bool)>& callback) {
-  callback.Run(AddWindow(WindowIdFromTransportId(parent_id),
-                         WindowIdFromTransportId(child_id)));
+void WindowTreeImpl::AddWindow(uint32_t change_id, Id parent_id, Id child_id) {
+  client_->OnChangeCompleted(change_id,
+                             AddWindow(WindowIdFromTransportId(parent_id),
+                                       WindowIdFromTransportId(child_id)));
 }
 
-void WindowTreeImpl::RemoveWindowFromParent(
-    Id window_id,
-    const Callback<void(bool)>& callback) {
+void WindowTreeImpl::RemoveWindowFromParent(uint32_t change_id, Id window_id) {
   bool success = false;
   ServerWindow* window = GetWindow(WindowIdFromTransportId(window_id));
   if (window && window->parent() &&
@@ -667,7 +664,7 @@ void WindowTreeImpl::RemoveWindowFromParent(
                  OperationType::REMOVE_WINDOW_FROM_PARENT);
     window->parent()->Remove(window);
   }
-  callback.Run(success);
+  client_->OnChangeCompleted(change_id, success);
 }
 
 void WindowTreeImpl::AddTransientWindow(uint32_t change_id,
@@ -694,10 +691,10 @@ void WindowTreeImpl::RemoveTransientWindowFromParent(uint32_t change_id,
   client_->OnChangeCompleted(change_id, success);
 }
 
-void WindowTreeImpl::ReorderWindow(Id window_id,
+void WindowTreeImpl::ReorderWindow(uint32_t change_id,
+                                   Id window_id,
                                    Id relative_window_id,
-                                   mojom::OrderDirection direction,
-                                   const Callback<void(bool)>& callback) {
+                                   mojom::OrderDirection direction) {
   bool success = false;
   ServerWindow* window = GetWindow(WindowIdFromTransportId(window_id));
   ServerWindow* relative_window =
@@ -709,7 +706,7 @@ void WindowTreeImpl::ReorderWindow(Id window_id,
     connection_manager_->ProcessWindowReorder(window, relative_window,
                                               direction);
   }
-  callback.Run(success);
+  client_->OnChangeCompleted(change_id, success);
 }
 
 void WindowTreeImpl::GetWindowTree(
