@@ -51,11 +51,17 @@ is used by default when clang is used.
 
 If you're working on the plugin, you can build it locally like so:
 
-1.  Run `./tools/clang/scripts/update.sh --force-local-build --without-android`
+1.  Run `./tools/clang/scripts/update.py --force-local-build --without-android`
     to build the plugin.
-1.  Build with clang like described above.
+1.  Run `ninja -C third_party/llvm-build/Release+Asserts/` to build incrementally.
+1.  Build with clang like described above, but, if you use goma, disable it.
 
-TODO: writing_clang_plugins does not exist.
+To test the FindBadConstructs plugin, run:
+
+    (cd tools/clang/plugins/tests && \
+     ./test.sh ../../../../third_party/llvm-build/Release+Asserts/bin/clang \
+               ../../../../third_party/llvm-build/Release+Asserts/lib/libFindBadConstructs.so)
+
 To run [other plugins](writing_clang_plugins.md), add these to your
 `GYP_DEFINES`:
 

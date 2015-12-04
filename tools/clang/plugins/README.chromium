@@ -1,4 +1,4 @@
 Documentation for this code is:
 
-- http://code.google.com/p/chromium/wiki/Clang
-- http://code.google.com/p/chromium/wiki/WritingClangPlugins
+- https://chromium.googlesource.com/chromium/src/+/master/docs/clang.md
+- https://chromium.googlesource.com/chromium/src/+/master/docs/writing_clang_plugins.md
