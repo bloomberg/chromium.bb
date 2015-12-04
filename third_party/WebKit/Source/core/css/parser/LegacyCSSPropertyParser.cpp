@@ -572,18 +572,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyOrder:
         validPrimitive = validUnit(value, FInteger);
         break;
-    case CSSPropertyTransformOrigin: {
-        RefPtrWillBeRawPtr<CSSValueList> list = parseTransformOrigin();
-        if (!list)
-            return false;
-        // These values are added to match gecko serialization.
-        if (list->length() == 1)
-            list->append(cssValuePool().createValue(50, CSSPrimitiveValue::UnitType::Percentage));
-        if (list->length() == 2)
-            list->append(cssValuePool().createValue(0, CSSPrimitiveValue::UnitType::Pixels));
-        addProperty(propId, list.release(), important);
-        return true;
-    }
 
     case CSSPropertyWebkitPerspectiveOriginX:
     case CSSPropertyWebkitTransformOriginX:
@@ -946,6 +934,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyScale:
     case CSSPropertyTranslate:
     case CSSPropertyCursor:
+    case CSSPropertyTransformOrigin:
         validPrimitive = false;
         break;
 
@@ -4992,73 +4981,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseImageSet(CSSParserValue
     }
 
     return imageSet.release();
-}
-
-PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseTransformOrigin()
-{
-    CSSParserValue* value = m_valueList->current();
-    CSSValueID id = value->id;
-    RefPtrWillBeRawPtr<CSSValue> xValue = nullptr;
-    RefPtrWillBeRawPtr<CSSValue> yValue = nullptr;
-    RefPtrWillBeRawPtr<CSSValue> zValue = nullptr;
-    if (id == CSSValueLeft || id == CSSValueRight) {
-        xValue = cssValuePool().createIdentifierValue(id);
-    } else if (id == CSSValueTop || id == CSSValueBottom) {
-        yValue = cssValuePool().createIdentifierValue(id);
-    } else if (id == CSSValueCenter) {
-        // Unresolved as to whether this is X or Y.
-    } else if (validUnit(value, FPercent | FLength)) {
-        xValue = createPrimitiveNumericValue(value);
-    } else {
-        return nullptr;
-    }
-
-    value = m_valueList->next();
-    if (value) {
-        id = value->id;
-        if (!xValue && (id == CSSValueLeft || id == CSSValueRight)) {
-            xValue = cssValuePool().createIdentifierValue(id);
-        } else if (!yValue && (id == CSSValueTop || id == CSSValueBottom)) {
-            yValue = cssValuePool().createIdentifierValue(id);
-        } else if (id == CSSValueCenter) {
-            // Resolved below.
-        } else if (!yValue && validUnit(value, FPercent | FLength)) {
-            yValue = createPrimitiveNumericValue(value);
-        } else {
-            return nullptr;
-        }
-
-        // If X or Y have not been resolved, they must be center.
-        if (!xValue)
-            xValue = cssValuePool().createIdentifierValue(CSSValueCenter);
-        if (!yValue)
-            yValue = cssValuePool().createIdentifierValue(CSSValueCenter);
-
-        value = m_valueList->next();
-        if (value) {
-            if (!validUnit(value, FLength))
-                return nullptr;
-            zValue = createPrimitiveNumericValue(value);
-
-            value = m_valueList->next();
-            if (value)
-                return nullptr;
-        }
-    } else if (!xValue) {
-        if (yValue) {
-            xValue = cssValuePool().createValue(50, CSSPrimitiveValue::UnitType::Percentage);
-        } else {
-            xValue = cssValuePool().createIdentifierValue(CSSValueCenter);
-        }
-    }
-
-    RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
-    list->append(xValue.release());
-    if (yValue)
-        list->append(yValue.release());
-    if (zValue)
-        list->append(zValue.release());
-    return list.release();
 }
 
 bool CSSPropertyParser::parseCalculation(CSSParserValue* value, ValueRange range)

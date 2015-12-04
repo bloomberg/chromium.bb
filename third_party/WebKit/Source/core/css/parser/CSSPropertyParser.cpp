@@ -721,6 +721,36 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumePosition(CSSParserTokenRange& ran
     return nullptr;
 }
 
+static bool consumeTransformOrigin(CSSParserTokenRange& range, CSSParserMode cssParserMode, UnitlessQuirk unitless, RefPtrWillBeRawPtr<CSSValue>& resultX, RefPtrWillBeRawPtr<CSSValue>& resultY)
+{
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> value1 = consumePositionComponent(range, cssParserMode, unitless);
+    if (!value1)
+        return false;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> value2 = consumePositionComponent(range, cssParserMode, unitless);
+    if (!value2) {
+        positionFromOneValue(value1.release(), resultX, resultY);
+        return true;
+    }
+    return positionFromTwoValues(value1.release(), value2.release(), resultX, resultY);
+}
+
+static PassRefPtrWillBeRawPtr<CSSValueList> consumeTransformOrigin(CSSParserTokenRange& range, CSSParserMode cssParserMode, UnitlessQuirk unitless)
+{
+    RefPtrWillBeRawPtr<CSSValue> resultX = nullptr;
+    RefPtrWillBeRawPtr<CSSValue> resultY = nullptr;
+    if (consumeTransformOrigin(range, cssParserMode, unitless, resultX, resultY)) {
+        RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
+        list->append(resultX.release());
+        list->append(resultY.release());
+        RefPtrWillBeRawPtr<CSSValue> resultZ = consumeLength(range, cssParserMode, ValueRangeAll);
+        if (!resultZ)
+            resultZ = cssValuePool().createValue(0, CSSPrimitiveValue::UnitType::Pixels);
+        list->append(resultZ.release());
+        return list.release();
+    }
+    return nullptr;
+}
+
 static inline bool isCSSWideKeyword(const CSSValueID& id)
 {
     return id == CSSValueInitial || id == CSSValueInherit || id == CSSValueUnset || id == CSSValueDefault;
@@ -2454,6 +2484,8 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
         return consumeCursor(m_range);
     case CSSPropertyContain:
         return consumeContain(m_range);
+    case CSSPropertyTransformOrigin:
+        return consumeTransformOrigin(m_range, m_context.mode(), UnitlessQuirk::Forbid);
     default:
         return nullptr;
     }
