@@ -360,8 +360,8 @@ void Window::SetImeVisibility(bool visible, mojo::TextInputStatePtr state) {
 }
 
 void Window::SetFocus() {
-  if (connection_)
-    tree_client()->SetFocus(id_);
+  if (connection_ && IsDrawn())
+    tree_client()->SetFocus(this);
 }
 
 bool Window::HasFocus() const {

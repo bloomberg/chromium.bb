@@ -208,7 +208,7 @@ interface WindowTree {
         WindowTreeClient client,
         uint32 policy_bitmask) => (bool success, uint16 connection_id);
 
-  SetFocus(uint32 window_id);
+  SetFocus(uint32 change_id, uint32 window_id);
   SetCanFocus(uint32 window_id, bool can_focus);
 
   // Sets the cursor when the pointer is inside |window_id| to a system standard

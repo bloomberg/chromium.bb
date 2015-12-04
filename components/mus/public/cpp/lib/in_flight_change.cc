@@ -5,6 +5,7 @@
 #include "components/mus/public/cpp/lib/in_flight_change.h"
 
 #include "components/mus/public/cpp/lib/window_private.h"
+#include "components/mus/public/cpp/lib/window_tree_client_impl.h"
 #include "components/mus/public/cpp/window_tree_connection.h"
 
 namespace mus {
@@ -56,6 +57,41 @@ void CrashInFlightChange::ChangeFailed() {
 
 void CrashInFlightChange::Revert() {
   CHECK(false);
+}
+
+// InFlightFocusChange --------------------------------------------------------
+
+InFlightFocusChange::InFlightFocusChange(WindowTreeClientImpl* connection,
+                                         Window* window)
+    : InFlightChange(nullptr, ChangeType::FOCUS),
+      connection_(connection),
+      revert_window_(nullptr) {
+  SetRevertWindow(window);
+}
+
+InFlightFocusChange::~InFlightFocusChange() {
+  SetRevertWindow(nullptr);
+}
+
+void InFlightFocusChange::SetRevertValueFrom(const InFlightChange& change) {
+  SetRevertWindow(
+      static_cast<const InFlightFocusChange&>(change).revert_window_);
+}
+
+void InFlightFocusChange::Revert() {
+  connection_->LocalSetFocus(revert_window_);
+}
+
+void InFlightFocusChange::SetRevertWindow(Window* window) {
+  if (revert_window_)
+    revert_window_->RemoveObserver(this);
+  revert_window_ = window;
+  if (revert_window_)
+    revert_window_->AddObserver(this);
+}
+
+void InFlightFocusChange::OnWindowDestroying(Window* window) {
+  SetRevertWindow(nullptr);
 }
 
 // InFlightPropertyChange -----------------------------------------------------

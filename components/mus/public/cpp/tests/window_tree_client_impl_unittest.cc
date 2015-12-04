@@ -276,4 +276,97 @@ TEST_F(WindowTreeClientImplTest, SetVisibleFailedWithPendingChange) {
   EXPECT_EQ(original_visible, root->visible());
 }
 
+// Verifies focus is reverted if the server replied that the change failed.
+TEST_F(WindowTreeClientImplTest, SetFocusFailed) {
+  WindowTreeSetup setup;
+  Window* root = setup.window_tree_connection()->GetRoot();
+  ASSERT_TRUE(root);
+  root->SetVisible(true);
+  Window* child = setup.window_tree_connection()->NewWindow();
+  child->SetVisible(true);
+  root->AddChild(child);
+  Window* original_focus = setup.window_tree_connection()->GetFocusedWindow();
+  Window* new_focus = child;
+  ASSERT_NE(new_focus, original_focus);
+  new_focus->SetFocus();
+  ASSERT_TRUE(new_focus->HasFocus());
+  uint32_t change_id;
+  ASSERT_TRUE(setup.window_tree()->GetAndClearChangeId(&change_id));
+  setup.window_tree_client()->OnChangeCompleted(change_id, false);
+  EXPECT_EQ(original_focus, setup.window_tree_connection()->GetFocusedWindow());
+}
+
+// Simulates a focus change, and while the focus change is in flight the server
+// replies with a new focus and the original focus change fails.
+TEST_F(WindowTreeClientImplTest, SetFocusFailedWithPendingChange) {
+  WindowTreeSetup setup;
+  Window* root = setup.window_tree_connection()->GetRoot();
+  ASSERT_TRUE(root);
+  root->SetVisible(true);
+  Window* child1 = setup.window_tree_connection()->NewWindow();
+  child1->SetVisible(true);
+  root->AddChild(child1);
+  Window* child2 = setup.window_tree_connection()->NewWindow();
+  child2->SetVisible(true);
+  root->AddChild(child2);
+  Window* original_focus = setup.window_tree_connection()->GetFocusedWindow();
+  Window* new_focus = child1;
+  ASSERT_NE(new_focus, original_focus);
+  new_focus->SetFocus();
+  ASSERT_TRUE(new_focus->HasFocus());
+  uint32_t change_id;
+  ASSERT_TRUE(setup.window_tree()->GetAndClearChangeId(&change_id));
+
+  // Simulate the server responding with a focus change.
+  setup.window_tree_client()->OnWindowFocused(child2->id());
+
+  // This shouldn't trigger focus changing yet.
+  EXPECT_TRUE(child1->HasFocus());
+
+  // Tell the client the change failed, which should trigger failing to the
+  // most recent focus from server.
+  setup.window_tree_client()->OnChangeCompleted(change_id, false);
+  EXPECT_FALSE(child1->HasFocus());
+  EXPECT_TRUE(child2->HasFocus());
+  EXPECT_EQ(child2, setup.window_tree_connection()->GetFocusedWindow());
+
+  // Simulate server changing focus to child1. Should take immediately.
+  setup.window_tree_client()->OnWindowFocused(child1->id());
+  EXPECT_TRUE(child1->HasFocus());
+}
+
+TEST_F(WindowTreeClientImplTest, FocusOnRemovedWindowWithInFlightFocusChange) {
+  WindowTreeSetup setup;
+  Window* root = setup.window_tree_connection()->GetRoot();
+  ASSERT_TRUE(root);
+  root->SetVisible(true);
+  Window* child1 = setup.window_tree_connection()->NewWindow();
+  child1->SetVisible(true);
+  root->AddChild(child1);
+  Window* child2 = setup.window_tree_connection()->NewWindow();
+  child2->SetVisible(true);
+  root->AddChild(child2);
+
+  child1->SetFocus();
+  uint32_t change_id;
+  ASSERT_TRUE(setup.window_tree()->GetAndClearChangeId(&change_id));
+
+  // Destroy child1, which should set focus to null.
+  child1->Destroy();
+  EXPECT_EQ(nullptr, setup.window_tree_connection()->GetFocusedWindow());
+
+  // Server changes focus to 2.
+  setup.window_tree_client()->OnWindowFocused(child2->id());
+  // Shouldn't take immediately.
+  EXPECT_FALSE(child2->HasFocus());
+
+  // Ack the change, focus should still be null.
+  setup.window_tree_client()->OnChangeCompleted(change_id, true);
+  EXPECT_EQ(nullptr, setup.window_tree_connection()->GetFocusedWindow());
+
+  // Change to 2 again, this time it should take.
+  setup.window_tree_client()->OnWindowFocused(child2->id());
+  EXPECT_TRUE(child2->HasFocus());
+}
+
 }  // namespace mus

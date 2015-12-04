@@ -68,7 +68,7 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   void SetClientArea(Id window_id,
                      const gfx::Insets& client_area,
                      const std::vector<gfx::Rect>& additional_client_areas);
-  void SetFocus(Id window_id);
+  void SetFocus(Window* window);
   void SetCanFocus(Id window_id, bool can_focus);
   void SetPredefinedCursor(Id window_id, mus::mojom::Cursor cursor_id);
   void SetVisible(Window* window, bool visible);
@@ -89,6 +89,9 @@ class WindowTreeClientImpl : public WindowTreeConnection,
                      mojom::SurfaceType type,
                      mojo::InterfaceRequest<mojom::Surface> surface,
                      mojom::SurfaceClientPtr client);
+
+  // Sets focus to |window| without notifying the server.
+  void LocalSetFocus(Window* window);
 
   // Start/stop tracking windows. While tracked, they can be retrieved via
   // WindowTreeConnection::GetWindowById.

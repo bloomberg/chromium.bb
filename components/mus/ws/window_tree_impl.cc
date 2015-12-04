@@ -793,7 +793,7 @@ void WindowTreeImpl::AttachSurface(
   window->CreateSurface(type, surface.Pass(), client.Pass());
 }
 
-void WindowTreeImpl::SetWindowTextInputState(uint32_t window_id,
+void WindowTreeImpl::SetWindowTextInputState(Id window_id,
                                              mojo::TextInputStatePtr state) {
   ServerWindow* window = GetWindow(WindowIdFromTransportId(window_id));
   bool success = window && access_policy_->CanSetWindowTextInputState(window);
@@ -850,26 +850,28 @@ void WindowTreeImpl::Embed(Id transport_window_id,
   callback.Run(result, connection_id);
 }
 
-void WindowTreeImpl::SetFocus(uint32_t window_id) {
+void WindowTreeImpl::SetFocus(uint32_t change_id, Id window_id) {
   ServerWindow* window = GetWindow(WindowIdFromTransportId(window_id));
   // TODO(beng): consider shifting non-policy drawn check logic to VTH's
   //             FocusController.
-  if (window && window->IsDrawn() && access_policy_->CanSetFocus(window)) {
+  WindowTreeHostImpl* host = GetHost();
+  const bool success = window && window->IsDrawn() &&
+                       access_policy_->CanSetFocus(window) && host;
+  if (success) {
     Operation op(this, connection_manager_, OperationType::SET_FOCUS);
-    WindowTreeHostImpl* host = GetHost();
-    if (host)
-      host->SetFocusedWindow(window);
+    host->SetFocusedWindow(window);
   }
+  client_->OnChangeCompleted(change_id, success);
 }
 
-void WindowTreeImpl::SetCanFocus(uint32_t window_id, bool can_focus) {
+void WindowTreeImpl::SetCanFocus(Id window_id, bool can_focus) {
   ServerWindow* window = GetWindow(WindowIdFromTransportId(window_id));
   if (window && ShouldRouteToWindowManager(window))
     window->set_can_focus(can_focus);
 }
 
 void WindowTreeImpl::SetPredefinedCursor(uint32_t change_id,
-                                         uint32_t window_id,
+                                         Id window_id,
                                          mus::mojom::Cursor cursor_id) {
   ServerWindow* window = GetWindow(WindowIdFromTransportId(window_id));
 

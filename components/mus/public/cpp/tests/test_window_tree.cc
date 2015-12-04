@@ -88,7 +88,10 @@ void TestWindowTree::Embed(uint32_t window_id,
                            uint32_t policy_bitmask,
                            const EmbedCallback& callback) {}
 
-void TestWindowTree::SetFocus(uint32_t window_id) {}
+void TestWindowTree::SetFocus(uint32_t change_id, uint32_t window_id) {
+  got_change_ = true;
+  change_id_ = change_id;
+}
 
 void TestWindowTree::SetCanFocus(uint32_t window_id, bool can_focus) {}
 

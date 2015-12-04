@@ -220,11 +220,14 @@ void WindowTreeClientImpl::SetClientArea(
       mojo::Array<mojo::RectPtr>::From(additional_client_areas));
 }
 
-void WindowTreeClientImpl::SetFocus(Id window_id) {
+void WindowTreeClientImpl::SetFocus(Window* window) {
   // In order for us to get here we had to have exposed a window, which implies
   // we got a connection.
   DCHECK(tree_);
-  tree_->SetFocus(window_id);
+  const uint32_t change_id = ScheduleInFlightChange(
+      make_scoped_ptr(new InFlightFocusChange(this, focused_window_)));
+  tree_->SetFocus(change_id, window ? window->id() : 0);
+  LocalSetFocus(window);
 }
 
 void WindowTreeClientImpl::SetCanFocus(Id window_id, bool can_focus) {
@@ -300,14 +303,37 @@ void WindowTreeClientImpl::AttachSurface(
   tree_->AttachSurface(window_id, type, surface.Pass(), client.Pass());
 }
 
+void WindowTreeClientImpl::LocalSetFocus(Window* focused) {
+  Window* blurred = focused_window_;
+  // Update |focused_window_| before calling any of the observers, so that the
+  // observers get the correct result from calling |Window::HasFocus()|,
+  // |WindowTreeConnection::GetFocusedWindow()| etc.
+  focused_window_ = focused;
+  if (blurred) {
+    FOR_EACH_OBSERVER(WindowObserver, *WindowPrivate(blurred).observers(),
+                      OnWindowFocusChanged(focused, blurred));
+  }
+  if (focused) {
+    FOR_EACH_OBSERVER(WindowObserver, *WindowPrivate(focused).observers(),
+                      OnWindowFocusChanged(focused, blurred));
+  }
+  FOR_EACH_OBSERVER(WindowTreeConnectionObserver, observers_,
+                    OnWindowTreeFocusChanged(focused, blurred));
+}
+
 void WindowTreeClientImpl::AddWindow(Window* window) {
   DCHECK(windows_.find(window->id()) == windows_.end());
   windows_[window->id()] = window;
 }
 
 void WindowTreeClientImpl::RemoveWindow(Id window_id) {
-  if (focused_window_ && focused_window_->id() == window_id)
-    OnWindowFocused(0);
+  if (focused_window_ && focused_window_->id() == window_id) {
+    // The focused window is being removed. When this happens the server
+    // advances focus. We don't want to randomly pick a Window to get focus, so
+    // we update local state only, and wait for the next focus change from the
+    // server.
+    LocalSetFocus(nullptr);
+  }
 
   IdToWindowMap::iterator it = windows_.find(window_id);
   if (it != windows_.end())
@@ -316,7 +342,7 @@ void WindowTreeClientImpl::RemoveWindow(Id window_id) {
   // Remove any InFlightChanges associated with the window.
   std::set<uint32_t> in_flight_change_ids;
   for (const auto& pair : in_flight_map_) {
-    if (pair.second->window()->id() == window_id)
+    if (pair.second->window() && pair.second->window()->id() == window_id)
       in_flight_change_ids.insert(pair.first);
   }
   for (auto change_id : in_flight_change_ids)
@@ -622,22 +648,12 @@ void WindowTreeClientImpl::OnWindowInputEvent(uint32_t event_id,
 }
 
 void WindowTreeClientImpl::OnWindowFocused(Id focused_window_id) {
-  Window* focused = GetWindowById(focused_window_id);
-  Window* blurred = focused_window_;
-  // Update |focused_window_| before calling any of the observers, so that the
-  // observers get the correct result from calling |Window::HasFocus()|,
-  // |WindowTreeConnection::GetFocusedWindow()| etc.
-  focused_window_ = focused;
-  if (blurred) {
-    FOR_EACH_OBSERVER(WindowObserver, *WindowPrivate(blurred).observers(),
-                      OnWindowFocusChanged(focused, blurred));
-  }
-  if (focused) {
-    FOR_EACH_OBSERVER(WindowObserver, *WindowPrivate(focused).observers(),
-                      OnWindowFocusChanged(focused, blurred));
-  }
-  FOR_EACH_OBSERVER(WindowTreeConnectionObserver, observers_,
-                    OnWindowTreeFocusChanged(focused, blurred));
+  Window* focused_window = GetWindowById(focused_window_id);
+  InFlightFocusChange new_change(this, focused_window);
+  if (ApplyServerChangeToExistingInFlightChange(new_change))
+    return;
+
+  LocalSetFocus(focused_window);
 }
 
 void WindowTreeClientImpl::OnWindowPredefinedCursorChanged(

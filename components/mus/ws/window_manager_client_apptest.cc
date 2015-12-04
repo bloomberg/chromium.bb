@@ -9,6 +9,7 @@
 #include "components/mus/public/cpp/tests/window_server_test_base.h"
 #include "components/mus/public/cpp/window_observer.h"
 #include "components/mus/public/cpp/window_tree_connection.h"
+#include "components/mus/public/cpp/window_tree_connection_observer.h"
 #include "components/mus/public/cpp/window_tree_delegate.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_impl.h"
@@ -610,10 +611,13 @@ class FocusChangeObserver : public WindowObserver {
   explicit FocusChangeObserver(Window* window)
       : window_(window),
         last_gained_focus_(nullptr),
-        last_lost_focus_(nullptr) {
+        last_lost_focus_(nullptr),
+        quit_on_change_(true) {
     window_->AddObserver(this);
   }
   ~FocusChangeObserver() override { window_->RemoveObserver(this); }
+
+  void set_quit_on_change(bool value) { quit_on_change_ = value; }
 
   Window* last_gained_focus() { return last_gained_focus_; }
 
@@ -626,20 +630,50 @@ class FocusChangeObserver : public WindowObserver {
     EXPECT_FALSE(lost_focus && lost_focus->HasFocus());
     last_gained_focus_ = gained_focus;
     last_lost_focus_ = lost_focus;
-    EXPECT_TRUE(WindowServerTestBase::QuitRunLoop());
+    if (quit_on_change_)
+      EXPECT_TRUE(WindowServerTestBase::QuitRunLoop());
   }
 
   Window* window_;
   Window* last_gained_focus_;
   Window* last_lost_focus_;
+  bool quit_on_change_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(FocusChangeObserver);
+};
+
+class NullFocusChangeObserver : public WindowTreeConnectionObserver {
+ public:
+  explicit NullFocusChangeObserver(WindowTreeConnection* connection)
+      : connection_(connection) {
+    connection_->AddObserver(this);
+  }
+  ~NullFocusChangeObserver() override { connection_->RemoveObserver(this); }
+
+ private:
+  // Overridden from WindowTreeConnectionObserver.
+  void OnWindowTreeFocusChanged(Window* gained_focus,
+                                Window* lost_focus) override {
+    if (!gained_focus)
+      EXPECT_TRUE(WindowServerTestBase::QuitRunLoop());
+  }
+
+  WindowTreeConnection* connection_;
+
+  MOJO_DISALLOW_COPY_AND_ASSIGN(NullFocusChangeObserver);
 };
 
 bool WaitForWindowToHaveFocus(Window* window) {
   if (window->HasFocus())
     return true;
   FocusChangeObserver observer(window);
+  return WindowServerTestBase::DoRunLoopWithTimeout();
+}
+
+bool WaitForNoWindowToHaveFocus(WindowTreeConnection* connection) {
+  if (!connection->GetFocusedWindow())
+    return true;
+  NullFocusChangeObserver observer(connection);
   return WindowServerTestBase::DoRunLoopWithTimeout();
 }
 
@@ -656,31 +690,39 @@ TEST_F(WindowServerTest, Focus) {
   window11->SetVisible(true);
   embedded->GetRoot()->AddChild(window11);
 
-  // TODO(alhaad): Figure out why switching focus between windows from different
-  // connections is causing the tests to crash and add tests for that.
   {
+    // Focus the embed root in |embedded|.
     Window* embedded_root = embedded->GetRoot();
     FocusChangeObserver observer(embedded_root);
+    observer.set_quit_on_change(false);
     embedded_root->SetFocus();
-    ASSERT_TRUE(DoRunLoopWithTimeout());
+    ASSERT_TRUE(embedded_root->HasFocus());
     ASSERT_NE(nullptr, observer.last_gained_focus());
     EXPECT_EQ(embedded_root->id(), observer.last_gained_focus()->id());
+
+    // |embedded_root| is the same as |window1|, make sure |window1| got
+    // focus too.
+    ASSERT_TRUE(WaitForWindowToHaveFocus(window1));
   }
+
+  // Focus a child of embedded->GetRoot().
   {
     FocusChangeObserver observer(window11);
+    observer.set_quit_on_change(false);
     window11->SetFocus();
-    ASSERT_TRUE(DoRunLoopWithTimeout());
+    ASSERT_TRUE(window11->HasFocus());
     ASSERT_NE(nullptr, observer.last_gained_focus());
     ASSERT_NE(nullptr, observer.last_lost_focus());
     EXPECT_EQ(window11->id(), observer.last_gained_focus()->id());
     EXPECT_EQ(embedded->GetRoot()->id(), observer.last_lost_focus()->id());
   }
+
   {
     // Add an observer on the Window that loses focus, and make sure the
     // observer sees the right values.
     FocusChangeObserver observer(window11);
+    observer.set_quit_on_change(false);
     embedded->GetRoot()->SetFocus();
-    ASSERT_TRUE(DoRunLoopWithTimeout());
     ASSERT_NE(nullptr, observer.last_gained_focus());
     ASSERT_NE(nullptr, observer.last_lost_focus());
     EXPECT_EQ(window11->id(), observer.last_lost_focus()->id());
@@ -739,6 +781,7 @@ TEST_F(WindowServerTest, Activation) {
       WaitForWindowToHaveFocus(window_manager()->GetWindowById(child21->id())));
   EXPECT_EQ(child21->id(), window_manager()->GetFocusedWindow()->id());
   EXPECT_EQ(child21->id(), embedded2->GetFocusedWindow()->id());
+  EXPECT_TRUE(WaitForNoWindowToHaveFocus(embedded1));
   EXPECT_EQ(nullptr, embedded1->GetFocusedWindow());
   EXPECT_GT(ValidIndexOf(parent->children(), child2),
             ValidIndexOf(parent->children(), child1));
