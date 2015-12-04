@@ -93,9 +93,9 @@ def remove_empty_branches(branch_tree):
   for branch, parent in git.topo_iter(branch_tree, top_down=False):
     downstreams[parent].append(branch)
 
-    # If branch and parent have the same state, then branch has to be marked
+    # If branch and parent have the same tree, then branch has to be marked
     # for deletion and its children and grand-children reparented to parent.
-    if git.hash_one(branch) == git.hash_one(parent):
+    if git.hash_one(branch+":") == git.hash_one(parent+":"):
       ensure_root_checkout()
 
       logging.debug('branch %s merged to %s', branch, parent)
