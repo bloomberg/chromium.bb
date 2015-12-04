@@ -631,6 +631,9 @@ typedef unrestricted float GLclampf;
     [RaisesException] void texImage2D(
         GLenum target, GLint level, GLenum internalformat,
         GLenum format, GLenum type, HTMLVideoElement video);
+    [RuntimeEnabled=ExperimentalCanvasFeatures] void texImage2D(
+        GLenum target, GLint level, GLenum internalformat,
+        GLenum format, GLenum type, ImageBitmap bitmap);
 
     void texSubImage2D(
         GLenum target, GLint level, GLint xoffset, GLint yoffset,
@@ -648,6 +651,9 @@ typedef unrestricted float GLclampf;
     [RaisesException] void texSubImage2D(
         GLenum target, GLint level, GLint xoffset, GLint yoffset,
         GLenum format, GLenum type, HTMLVideoElement video);
+    [RuntimeEnabled=ExperimentalCanvasFeatures] void texSubImage2D(
+        GLenum target, GLint level, GLint xoffset, GLint yoffset,
+        GLenum format, GLenum type, ImageBitmap bitmap);
 
     void uniform1f(WebGLUniformLocation? location, GLfloat x);
     void uniform1fv(WebGLUniformLocation? location, [FlexibleArrayBufferView] Float32Array v);

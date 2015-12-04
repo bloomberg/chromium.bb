@@ -34,6 +34,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/FlexibleArrayBufferView.h"
 #include "core/fetch/ImageResource.h"
+#include "core/frame/ImageBitmap.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLCanvasElement.h"
@@ -4536,6 +4537,20 @@ void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLenum in
     texImage2DImpl(target, level, internalformat, format, type, image.get(), WebGLImageConversion::HtmlDomVideo, m_unpackFlipY, m_unpackPremultiplyAlpha);
 }
 
+void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLenum internalformat,
+    GLenum format, GLenum type, PassRefPtrWillBeRawPtr<ImageBitmap> bitmap)
+{
+    ASSERT(bitmap->bitmapImage());
+    if (bitmap->isNeutered()) {
+        synthesizeGLError(GL_INVALID_VALUE, "texImage2D", "The source data has been neutered.");
+        return;
+    }
+    if (isContextLost() || !validateTexFunc("texImage2D", NotTexSubImage2D, SourceImageBitmap, target, level, 0, bitmap->width(), bitmap->height(), 0, format, type, 0, 0))
+        return;
+    StaticBitmapImage* imageForRender = bitmap->bitmapImage();
+    texImage2DImpl(target, level, internalformat, format, type, imageForRender, WebGLImageConversion::HtmlDomImage, m_unpackFlipY, m_unpackPremultiplyAlpha);
+}
+
 void WebGLRenderingContextBase::texParameter(GLenum target, GLenum pname, GLfloat paramf, GLint parami, bool isFloat)
 {
     if (isContextLost())
@@ -4746,6 +4761,20 @@ void WebGLRenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint 
     if (!image)
         return;
     texSubImage2DImpl(target, level, xoffset, yoffset, format, type, image.get(), WebGLImageConversion::HtmlDomVideo, m_unpackFlipY, m_unpackPremultiplyAlpha);
+}
+
+void WebGLRenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
+    GLenum format, GLenum type, PassRefPtrWillBeRawPtr<ImageBitmap> bitmap)
+{
+    ASSERT(bitmap->bitmapImage());
+    if (bitmap->isNeutered()) {
+        synthesizeGLError(GL_INVALID_VALUE, "texSubImage2D", "The source data has been neutered.");
+        return;
+    }
+    if (isContextLost() || !validateTexFunc("texSubImage2D", TexSubImage2D, SourceImageBitmap, target, level, 0, bitmap->width(), bitmap->height(), 0, format, type, 0, 0))
+        return;
+    StaticBitmapImage* imageForRender = bitmap->bitmapImage();
+    texSubImage2DImpl(target, level, xoffset, yoffset, format, type, imageForRender, WebGLImageConversion::HtmlDomImage, m_unpackFlipY, m_unpackPremultiplyAlpha);
 }
 
 void WebGLRenderingContextBase::uniform1f(const WebGLUniformLocation* location, GLfloat x)
