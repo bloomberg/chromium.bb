@@ -117,11 +117,15 @@ void FontResource::didAddClient(ResourceClient* c)
     Resource::didAddClient(c);
     if (!isLoading())
         static_cast<FontResourceClient*>(c)->fontLoaded(this);
+    if (m_state == ShortLimitExceeded || m_state == LongLimitExceeded)
+        static_cast<FontResourceClient*>(c)->fontLoadShortLimitExceeded(this);
+    if (m_state == LongLimitExceeded)
+        static_cast<FontResourceClient*>(c)->fontLoadLongLimitExceeded(this);
 }
 
 void FontResource::beginLoadIfNeeded(ResourceFetcher* dl)
 {
-    if (m_state != LoadInitiated) {
+    if (stillNeedsLoad()) {
         m_state = LoadInitiated;
         Resource::load(dl, m_options);
         m_fontLoadShortLimitTimer.startOneShot(fontLoadWaitShortLimitSec, BLINK_FROM_HERE);
@@ -164,6 +168,8 @@ void FontResource::fontLoadShortLimitCallback(Timer<FontResource>*)
 {
     if (!isLoading())
         return;
+    ASSERT(m_state == LoadInitiated);
+    m_state = ShortLimitExceeded;
     ResourceClientWalker<FontResourceClient> walker(m_clients);
     while (FontResourceClient* client = walker.next())
         client->fontLoadShortLimitExceeded(this);
@@ -173,6 +179,8 @@ void FontResource::fontLoadLongLimitCallback(Timer<FontResource>*)
 {
     if (!isLoading())
         return;
+    ASSERT(m_state == ShortLimitExceeded);
+    m_state = LongLimitExceeded;
     ResourceClientWalker<FontResourceClient> walker(m_clients);
     while (FontResourceClient* client = walker.next())
         client->fontLoadLongLimitExceeded(this);
