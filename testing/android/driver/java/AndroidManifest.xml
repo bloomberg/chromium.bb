@@ -11,13 +11,12 @@ found in the LICENSE file.
       android:versionName="1.0">
 
     <uses-sdk android:minSdkVersion="16" android:targetSdkVersion="23" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 
     <application android:label="OnDeviceInstrumentationDriver" />
 
     <instrumentation android:name="org.chromium.test.driver.OnDeviceInstrumentationDriver"
             android:targetPackage="org.chromium.test.driver"
             android:label="OnDeviceInstrumentationDriver"/>
-
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 
 </manifest>
