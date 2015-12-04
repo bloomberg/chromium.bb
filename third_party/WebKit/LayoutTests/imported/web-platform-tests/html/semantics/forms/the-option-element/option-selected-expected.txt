@@ -1,6 +1,6 @@
 This is a testharness.js-based test.
-FAIL not dirty assert_equals: expected false but got true
-FAIL dirty, selected assert_equals: expected false but got true
+PASS not dirty 
+FAIL dirty, selected assert_equals: expected true but got false
 FAIL dirty, not selected assert_equals: expected false but got true
 Harness: the test ran to completion.
 

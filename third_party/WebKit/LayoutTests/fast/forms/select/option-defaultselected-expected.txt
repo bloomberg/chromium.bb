@@ -13,7 +13,7 @@ PASS option1.removeAttribute("selected"); option1.defaultSelected is false
 PASS selectionMap(select1) is "100"
 PASS select1[2].defaultSelected = true; selectionMap(select1) is "001"
 PASS select1[1].defaultSelected = true; selectionMap(select1) is "010"
-PASS select1[1].defaultSelected = false; selectionMap(select1) is "010"
+PASS select1[1].defaultSelected = false; selectionMap(select1) is "100"
 PASS select1[2].selected = true; selectionMap(select1) is "001"
 PASS successfullyParsed is true
 

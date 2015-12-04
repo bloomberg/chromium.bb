@@ -213,8 +213,10 @@ void HTMLOptionElement::parseAttribute(const QualifiedName& name, const AtomicSt
                 LayoutTheme::theme().controlStateChanged(*layoutObject(), EnabledControlState);
         }
     } else if (name == selectedAttr) {
-        if (bool willBeSelected = !value.isNull())
-            setSelected(willBeSelected);
+        // TODO(tkent): Check dirtiness.
+        // https://html.spec.whatwg.org/multipage/forms.html#concept-option-selectedness
+        if (oldValue.isNull() != value.isNull())
+            setSelected(!value.isNull());
     } else if (name == labelAttr) {
         updateLabel();
     } else {
