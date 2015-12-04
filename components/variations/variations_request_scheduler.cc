@@ -50,8 +50,8 @@ base::TimeDelta VariationsRequestScheduler::GetFetchPeriod() const {
   if (base::StringToSizeT(period_min_str, &period_min))
     return base::TimeDelta::FromMinutes(period_min);
 
-  // The default fetch interval is every 5 hours.
-  return base::TimeDelta::FromHours(5);
+  // The default fetch interval is every 30 minutes.
+  return base::TimeDelta::FromMinutes(30);
 }
 
 base::Closure VariationsRequestScheduler::task() const {
