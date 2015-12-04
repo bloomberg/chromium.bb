@@ -30,6 +30,7 @@
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatSize.h"
 #include "platform/geometry/IntRect.h"
+#include "platform/heap/Handle.h"
 #include "platform/scroll/ScrollAnimatorBase.h"
 #include "wtf/RetainPtr.h"
 
@@ -44,10 +45,12 @@ namespace blink {
 class Scrollbar;
 
 class PLATFORM_EXPORT ScrollAnimatorMac : public ScrollAnimatorBase {
-
+    WILL_BE_USING_PRE_FINALIZER(ScrollAnimatorMac, dispose);
 public:
     ScrollAnimatorMac(ScrollableArea*);
     ~ScrollAnimatorMac() override;
+
+    void dispose() override;
 
     void immediateScrollToPointForScrollAnimation(const FloatPoint& newPosition);
     bool haveScrolledSincePageLoad() const { return m_haveScrolledSincePageLoad; }
@@ -63,6 +66,11 @@ public:
     void setVisibleScrollerThumbRect(const IntRect&);
 
     static bool canUseCoordinatedScrollbar();
+
+    DEFINE_INLINE_VIRTUAL_TRACE()
+    {
+        ScrollAnimatorBase::trace(visitor);
+    }
 
 private:
     RetainPtr<id> m_scrollAnimationHelper;

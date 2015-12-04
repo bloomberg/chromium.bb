@@ -95,4 +95,9 @@ float ScrollAnimatorBase::clampScrollPosition(ScrollbarOrientation orientation, 
     return std::max(std::min(pos, maxScrollPos), minScrollPos);
 }
 
+DEFINE_TRACE(ScrollAnimatorBase)
+{
+    visitor->trace(m_scrollableArea);
+}
+
 } // namespace blink

@@ -44,11 +44,13 @@ class FloatPoint;
 class ScrollableArea;
 class Scrollbar;
 
-class PLATFORM_EXPORT ScrollAnimatorBase {
+class PLATFORM_EXPORT ScrollAnimatorBase : public NoBaseWillBeGarbageCollectedFinalized<ScrollAnimatorBase> {
 public:
-    static PassOwnPtr<ScrollAnimatorBase> create(ScrollableArea*);
+    static PassOwnPtrWillBeRawPtr<ScrollAnimatorBase> create(ScrollableArea*);
 
     virtual ~ScrollAnimatorBase();
+
+    virtual void dispose() { }
 
     // Computes a scroll destination for the given parameters.  The returned
     // ScrollResultOneDimensional will have didScroll set to false if already at
@@ -99,13 +101,15 @@ public:
     virtual void notifyContentAreaScrolled(const FloatSize&) { }
 
     virtual bool setScrollbarsVisibleForTesting(bool) { return false; }
+
+    DECLARE_VIRTUAL_TRACE();
+
 protected:
     explicit ScrollAnimatorBase(ScrollableArea*);
 
     virtual void notifyPositionChanged();
 
-    GC_PLUGIN_IGNORE("509911")
-    ScrollableArea* m_scrollableArea;
+    RawPtrWillBeMember<ScrollableArea> m_scrollableArea;
     float m_currentPosX; // We avoid using a FloatPoint in order to reduce
     float m_currentPosY; // subclass code complexity.
 

@@ -679,9 +679,9 @@ private:
 
 namespace blink {
 
-PassOwnPtr<ScrollAnimatorBase> ScrollAnimatorBase::create(ScrollableArea* scrollableArea)
+PassOwnPtrWillBeRawPtr<ScrollAnimatorBase> ScrollAnimatorBase::create(ScrollableArea* scrollableArea)
 {
-    return adoptPtr(new ScrollAnimatorMac(scrollableArea));
+    return adoptPtrWillBeNoop(new ScrollAnimatorMac(scrollableArea));
 }
 
 ScrollAnimatorMac::ScrollAnimatorMac(ScrollableArea* scrollableArea)
@@ -691,6 +691,10 @@ ScrollAnimatorMac::ScrollAnimatorMac(ScrollableArea* scrollableArea)
     , m_haveScrolledSincePageLoad(false)
     , m_needsScrollerStyleUpdate(false)
 {
+#if ENABLE(OILPAN)
+    ThreadState::current()->registerPreFinalizer(this);
+#endif
+
     m_scrollAnimationHelperDelegate.adoptNS([[WebScrollAnimationHelperDelegate alloc] initWithScrollAnimator:this]);
     m_scrollAnimationHelper.adoptNS([[NSClassFromString(@"NSScrollAnimationHelper") alloc] initWithDelegate:m_scrollAnimationHelperDelegate.get()]);
 
@@ -704,6 +708,13 @@ ScrollAnimatorMac::ScrollAnimatorMac(ScrollableArea* scrollableArea)
 
 ScrollAnimatorMac::~ScrollAnimatorMac()
 {
+#if !ENABLE(OILPAN)
+    dispose();
+#endif
+}
+
+void ScrollAnimatorMac::dispose()
+{
     if (ScrollbarThemeMacCommon::isOverlayAPIAvailable()) {
         BEGIN_BLOCK_OBJC_EXCEPTIONS;
         [m_scrollbarPainterControllerDelegate.get() invalidate];
@@ -713,6 +724,8 @@ ScrollAnimatorMac::~ScrollAnimatorMac()
         [m_scrollAnimationHelperDelegate.get() invalidate];
         END_BLOCK_OBJC_EXCEPTIONS;
     }
+    m_initialScrollbarPaintTimer.stop();
+    m_sendContentAreaScrolledTimer.stop();
 }
 
 ScrollResultOneDimensional ScrollAnimatorMac::userScroll(ScrollbarOrientation orientation, ScrollGranularity granularity, float step, float delta)

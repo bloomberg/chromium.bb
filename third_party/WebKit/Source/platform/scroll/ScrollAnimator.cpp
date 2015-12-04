@@ -41,11 +41,11 @@
 
 namespace blink {
 
-PassOwnPtr<ScrollAnimatorBase> ScrollAnimatorBase::create(ScrollableArea* scrollableArea)
+PassOwnPtrWillBeRawPtr<ScrollAnimatorBase> ScrollAnimatorBase::create(ScrollableArea* scrollableArea)
 {
     if (scrollableArea && scrollableArea->scrollAnimatorEnabled())
-        return adoptPtr(new ScrollAnimator(scrollableArea));
-    return adoptPtr(new ScrollAnimatorBase(scrollableArea));
+        return adoptPtrWillBeNoop(new ScrollAnimator(scrollableArea));
+    return adoptPtrWillBeNoop(new ScrollAnimatorBase(scrollableArea));
 }
 
 ScrollAnimator::ScrollAnimator(ScrollableArea* scrollableArea, WTF::TimeFunction timeFunction)
@@ -148,6 +148,11 @@ void ScrollAnimator::animationTimerFired()
 
     TRACE_EVENT0("blink", "ScrollAnimator::notifyPositionChanged");
     notifyPositionChanged();
+}
+
+DEFINE_TRACE(ScrollAnimator)
+{
+    ScrollAnimatorBase::trace(visitor);
 }
 
 } // namespace blink

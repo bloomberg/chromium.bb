@@ -40,7 +40,7 @@ namespace blink {
 
 class ScrollAnimatorTest;
 
-class PLATFORM_EXPORT ScrollAnimator : public ScrollAnimatorBase {
+class PLATFORM_EXPORT ScrollAnimator final : public ScrollAnimatorBase {
 public:
     explicit ScrollAnimator(ScrollableArea*, WTF::TimeFunction = WTF::monotonicallyIncreasingTime);
     ~ScrollAnimator() override;
@@ -51,6 +51,8 @@ public:
     void cancelAnimations() override;
     void serviceScrollAnimations() override;
     bool hasRunningAnimation() const override;
+
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     void animationTimerFired();

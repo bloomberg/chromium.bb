@@ -126,13 +126,10 @@ public:
     ScrollAnimatorBase* scrollAnimator() const;
 
     // This getter will return null if the ScrollAnimatorBase hasn't been created yet.
-    ScrollAnimatorBase* existingScrollAnimator() const { return m_animators ? m_animators->scrollAnimator.get() : 0; }
+    ScrollAnimatorBase* existingScrollAnimator() const { return m_scrollAnimator.get(); }
 
     ProgrammaticScrollAnimator* programmaticScrollAnimator() const;
-    ProgrammaticScrollAnimator* existingProgrammaticScrollAnimator() const
-    {
-        return m_animators ? m_animators->programmaticScrollAnimator.get() : 0;
-    }
+    ProgrammaticScrollAnimator* existingProgrammaticScrollAnimator() const { return m_programmaticScrollAnimator.get(); }
 
     const IntPoint& scrollOrigin() const { return m_scrollOrigin; }
     bool scrollOriginChanged() const { return m_scrollOriginChanged; }
@@ -278,7 +275,7 @@ public:
 
     // Need to promptly let go of owned animator objects.
     EAGERLY_FINALIZE();
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     ScrollableArea();
@@ -325,12 +322,8 @@ private:
     virtual int documentStep(ScrollbarOrientation) const;
     virtual float pixelStep(ScrollbarOrientation) const;
 
-    struct ScrollableAreaAnimators {
-        OwnPtr<ScrollAnimatorBase> scrollAnimator;
-        OwnPtr<ProgrammaticScrollAnimator> programmaticScrollAnimator;
-    };
-
-    mutable OwnPtr<ScrollableAreaAnimators> m_animators;
+    mutable OwnPtrWillBeMember<ScrollAnimatorBase> m_scrollAnimator;
+    mutable OwnPtrWillBeMember<ProgrammaticScrollAnimator> m_programmaticScrollAnimator;
 
     unsigned m_inLiveResize : 1;
 

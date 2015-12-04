@@ -54,7 +54,7 @@ struct SameSizeAsScrollableArea {
 #if ENABLE(ASSERT) && ENABLE(OILPAN)
     VerifyEagerFinalization verifyEager;
 #endif
-    void* pointer;
+    OwnPtrWillBeMember<void*> pointer[2];
     unsigned bitfields : 16;
     IntPoint origin;
 };
@@ -93,29 +93,28 @@ ScrollableArea::~ScrollableArea()
 
 void ScrollableArea::clearScrollAnimators()
 {
-    m_animators.clear();
+#if OS(MACOSX) && ENABLE(OILPAN)
+    if (m_scrollAnimator)
+        m_scrollAnimator->dispose();
+#endif
+    m_scrollAnimator.clear();
+    m_programmaticScrollAnimator.clear();
 }
 
 ScrollAnimatorBase* ScrollableArea::scrollAnimator() const
 {
-    if (!m_animators)
-        m_animators = adoptPtr(new ScrollableAreaAnimators);
+    if (!m_scrollAnimator)
+        m_scrollAnimator = ScrollAnimatorBase::create(const_cast<ScrollableArea*>(this));
 
-    if (!m_animators->scrollAnimator)
-        m_animators->scrollAnimator = ScrollAnimatorBase::create(const_cast<ScrollableArea*>(this));
-
-    return m_animators->scrollAnimator.get();
+    return m_scrollAnimator.get();
 }
 
 ProgrammaticScrollAnimator* ScrollableArea::programmaticScrollAnimator() const
 {
-    if (!m_animators)
-        m_animators = adoptPtr(new ScrollableAreaAnimators);
+    if (!m_programmaticScrollAnimator)
+        m_programmaticScrollAnimator = ProgrammaticScrollAnimator::create(const_cast<ScrollableArea*>(this));
 
-    if (!m_animators->programmaticScrollAnimator)
-        m_animators->programmaticScrollAnimator = ProgrammaticScrollAnimator::create(const_cast<ScrollableArea*>(this));
-
-    return m_animators->programmaticScrollAnimator.get();
+    return m_programmaticScrollAnimator.get();
 }
 
 void ScrollableArea::setScrollOrigin(const IntPoint& origin)
@@ -582,6 +581,12 @@ IntSize ScrollableArea::excludeScrollbars(const IntSize& size) const
     return IntSize(std::max(0, size.width() - verticalScrollbarWidth),
         std::max(0, size.height() - horizontalScrollbarHeight));
 
+}
+
+DEFINE_TRACE(ScrollableArea)
+{
+    visitor->trace(m_scrollAnimator);
+    visitor->trace(m_programmaticScrollAnimator);
 }
 
 } // namespace blink

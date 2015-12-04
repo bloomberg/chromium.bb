@@ -23,13 +23,13 @@ class WebScrollOffsetAnimationCurve;
 
 // Animator for fixed-destination scrolls, such as those triggered by
 // CSSOM View scroll APIs.
-class ProgrammaticScrollAnimator : private WebCompositorAnimationPlayerClient, WebCompositorAnimationDelegate {
+class ProgrammaticScrollAnimator : public NoBaseWillBeGarbageCollectedFinalized<ProgrammaticScrollAnimator>, private WebCompositorAnimationPlayerClient, WebCompositorAnimationDelegate {
     WTF_MAKE_NONCOPYABLE(ProgrammaticScrollAnimator);
-    USING_FAST_MALLOC(ProgrammaticScrollAnimator);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(ProgrammaticScrollAnimator);
 public:
-    static PassOwnPtr<ProgrammaticScrollAnimator> create(ScrollableArea*);
+    static PassOwnPtrWillBeRawPtr<ProgrammaticScrollAnimator> create(ScrollableArea*);
 
-    ~ProgrammaticScrollAnimator();
+    virtual ~ProgrammaticScrollAnimator();
 
     void scrollToOffsetWithoutAnimation(const FloatPoint&);
     void animateToOffset(FloatPoint);
@@ -45,6 +45,8 @@ public:
 
     // WebCompositorAnimationPlayerClient implementation.
     WebCompositorAnimationPlayer* compositorPlayer() const override;
+
+    DECLARE_TRACE();
 
 private:
     explicit ProgrammaticScrollAnimator(ScrollableArea*);
@@ -76,8 +78,7 @@ private:
     OwnPtr<WebCompositorAnimationPlayer> m_compositorPlayer;
     int m_compositorAnimationAttachedToLayerId;
 
-    GC_PLUGIN_IGNORE("509911")
-    ScrollableArea* m_scrollableArea;
+    RawPtrWillBeMember<ScrollableArea> m_scrollableArea;
     OwnPtr<WebScrollOffsetAnimationCurve> m_animationCurve;
     FloatPoint m_targetOffset;
     double m_startTime;

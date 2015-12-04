@@ -18,9 +18,9 @@
 
 namespace blink {
 
-PassOwnPtr<ProgrammaticScrollAnimator> ProgrammaticScrollAnimator::create(ScrollableArea* scrollableArea)
+PassOwnPtrWillBeRawPtr<ProgrammaticScrollAnimator> ProgrammaticScrollAnimator::create(ScrollableArea* scrollableArea)
 {
-    return adoptPtr(new ProgrammaticScrollAnimator(scrollableArea));
+    return adoptPtrWillBeNoop(new ProgrammaticScrollAnimator(scrollableArea));
 }
 
 ProgrammaticScrollAnimator::ProgrammaticScrollAnimator(ScrollableArea* scrollableArea)
@@ -287,6 +287,11 @@ void ProgrammaticScrollAnimator::notifyAnimationFinished(double monotonicTime, i
 WebCompositorAnimationPlayer* ProgrammaticScrollAnimator::compositorPlayer() const
 {
     return m_compositorPlayer.get();
+}
+
+DEFINE_TRACE(ProgrammaticScrollAnimator)
+{
+    visitor->trace(m_scrollableArea);
 }
 
 } // namespace blink
