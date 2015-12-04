@@ -602,21 +602,6 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumePositionComponent(CSSPar
     return consumeLengthOrPercent(range, cssParserMode, ValueRangeAll, unitless);
 }
 
-static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> resolvePositionComponentKeywords(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> value)
-{
-    if (!value->isValueID())
-        return value;
-    CSSValueID id = value->getValueID();
-    int percent = 0;
-    if (id == CSSValueCenter)
-        percent = 50;
-    else if (id == CSSValueBottom || id == CSSValueRight)
-        percent = 100;
-    else
-        ASSERT(id == CSSValueLeft || id == CSSValueTop);
-    return cssValuePool().createValue(percent, CSSPrimitiveValue::UnitType::Percentage);
-}
-
 static bool isHorizontalPositionKeywordOnly(const CSSPrimitiveValue& value)
 {
     return value.isValueID() && (value.getValueID() == CSSValueLeft || value.getValueID() == CSSValueRight);
@@ -630,8 +615,8 @@ static bool isVerticalPositionKeywordOnly(const CSSPrimitiveValue& value)
 static void positionFromOneValue(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> value, RefPtrWillBeRawPtr<CSSValue>& resultX, RefPtrWillBeRawPtr<CSSValue>& resultY)
 {
     bool valueAppliesToYAxisOnly = isVerticalPositionKeywordOnly(*value);
-    resultX = resolvePositionComponentKeywords(value);
-    resultY = cssValuePool().createValue(50, CSSPrimitiveValue::UnitType::Percentage);
+    resultX = value;
+    resultY = cssValuePool().createIdentifierValue(CSSValueCenter);
     if (valueAppliesToYAxisOnly)
         swap(resultX, resultY);
 }
@@ -644,8 +629,8 @@ static bool positionFromTwoValues(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> valu
     bool mustOrderAsYX = isVerticalPositionKeywordOnly(*value1) || isHorizontalPositionKeywordOnly(*value2);
     if (mustOrderAsXY && mustOrderAsYX)
         return false;
-    resultX = resolvePositionComponentKeywords(value1);
-    resultY = resolvePositionComponentKeywords(value2);
+    resultX = value1;
+    resultY = value2;
     if (mustOrderAsYX)
         swap(resultX, resultY);
     return true;
@@ -653,7 +638,7 @@ static bool positionFromTwoValues(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> valu
 
 static bool positionFromThreeOrFourValues(CSSPrimitiveValue** values, RefPtrWillBeRawPtr<CSSValue>& resultX, RefPtrWillBeRawPtr<CSSValue>& resultY)
 {
-    bool seenCenter = false;
+    CSSPrimitiveValue* center = nullptr;
     for (int i = 0; values[i]; i++) {
         CSSPrimitiveValue* currentValue = values[i];
         if (!currentValue->isValueID())
@@ -661,42 +646,39 @@ static bool positionFromThreeOrFourValues(CSSPrimitiveValue** values, RefPtrWill
         CSSValueID id = currentValue->getValueID();
 
         if (id == CSSValueCenter) {
-            if (seenCenter)
+            if (center)
                 return false;
-            seenCenter = true;
+            center = currentValue;
             continue;
         }
 
-        RefPtrWillBeRawPtr<CSSPrimitiveValue> offset = nullptr;
+        RefPtrWillBeRawPtr<CSSValue> result = nullptr;
         if (values[i + 1] && !values[i + 1]->isValueID()) {
-            offset = values[++i];
+            result = CSSValuePair::create(currentValue, values[++i], CSSValuePair::KeepIdenticalValues);
         } else {
-            offset = cssValuePool().createValue(0, CSSPrimitiveValue::UnitType::Percentage);
+            result = currentValue;
         }
-
-        RefPtrWillBeRawPtr<CSSValuePair> pair = CSSValuePair::create(currentValue, offset.release(), CSSValuePair::KeepIdenticalValues);
 
         if (id == CSSValueLeft || id == CSSValueRight) {
             if (resultX)
                 return false;
-            resultX = pair.release();
+            resultX = result.release();
         } else {
             ASSERT(id == CSSValueTop || id == CSSValueBottom);
             if (resultY)
                 return false;
-            resultY = pair.release();
+            resultY = result.release();
         }
     }
 
-    if (seenCenter) {
+    if (center) {
         ASSERT(resultX || resultY);
         if (resultX && resultY)
             return false;
-        RefPtrWillBeRawPtr<CSSPrimitiveValue> offset = cssValuePool().createValue(50, CSSPrimitiveValue::UnitType::Percentage);
         if (!resultX)
-            resultX = CSSValuePair::create(cssValuePool().createIdentifierValue(CSSValueLeft), offset.release(), CSSValuePair::KeepIdenticalValues);
+            resultX = center;
         else
-            resultY = CSSValuePair::create(cssValuePool().createIdentifierValue(CSSValueTop), offset.release(), CSSValuePair::KeepIdenticalValues);
+            resultY = center;
     }
 
     ASSERT(resultX && resultY);

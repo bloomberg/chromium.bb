@@ -639,7 +639,21 @@ static Length convertPositionLength(StyleResolverState& state, const CSSValue& v
         return length.subtractFromOneHundredPercent();
     }
 
-    return StyleBuilderConverter::convertLength(state, value);
+    const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(value);
+    if (primitiveValue.isValueID()) {
+        switch (primitiveValue.getValueID()) {
+        case cssValueFor0:
+            return Length(0, Percent);
+        case cssValueFor100:
+            return Length(100, Percent);
+        case CSSValueCenter:
+            return Length(50, Percent);
+        default:
+            ASSERT_NOT_REACHED();
+        }
+    }
+
+    return StyleBuilderConverter::convertLength(state, primitiveValue);
 }
 
 LengthPoint StyleBuilderConverter::convertPosition(StyleResolverState& state, const CSSValue& value)
