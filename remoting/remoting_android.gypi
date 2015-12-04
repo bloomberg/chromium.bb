@@ -173,8 +173,6 @@
           ],
           'variables': {
             'apk_name': 'Chromoting',
-            'android_app_version_name': '<(version_full)',
-            'android_app_version_code': '<!(python tools/android_version.py <(android_app_version_name))',
             'android_manifest_path': '<(SHARED_INTERMEDIATE_DIR)/remoting/android/AndroidManifest.xml',
             'java_in_dir': '<(remoting_apk_java_in_dir)',
             'native_lib_target': 'libremoting_client_jni',
