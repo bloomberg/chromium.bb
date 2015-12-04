@@ -24,7 +24,6 @@ TaskQueueManager::TaskQueueManager(
     : real_time_domain_(new RealTimeDomain()),
       delegate_(delegate),
       task_was_run_on_quiescence_monitored_queue_(false),
-      pending_dowork_count_(0),
       work_batch_size_(1),
       tracing_category_(tracing_category),
       disabled_by_default_tracing_category_(
@@ -39,10 +38,12 @@ TaskQueueManager::TaskQueueManager(
                                      "TaskQueueManager", this);
   selector_.SetTaskQueueSelectorObserver(this);
 
-  decrement_pending_and_do_work_closure_ =
-      base::Bind(&TaskQueueManager::DoWork, weak_factory_.GetWeakPtr(), true);
-  do_work_closure_ =
-      base::Bind(&TaskQueueManager::DoWork, weak_factory_.GetWeakPtr(), false);
+  from_main_thread_immediate_do_work_closure_ =
+      base::Bind(&TaskQueueManager::DoWork, weak_factory_.GetWeakPtr(),
+                 base::TimeTicks(), true);
+  from_other_thread_immediate_do_work_closure_ =
+      base::Bind(&TaskQueueManager::DoWork, weak_factory_.GetWeakPtr(),
+                 base::TimeTicks(), false);
 
   // TODO(alexclarke): Change this to be a parameter that's passed in.
   RegisterTimeDomain(real_time_domain_.get());
@@ -60,8 +61,7 @@ TaskQueueManager::~TaskQueueManager() {
 
 void TaskQueueManager::RegisterTimeDomain(TimeDomain* time_domain) {
   time_domains_.insert(time_domain);
-  time_domain->OnRegisterWithTaskQueueManager(delegate_.get(),
-                                              do_work_closure_);
+  time_domain->OnRegisterWithTaskQueueManager(this);
 }
 
 void TaskQueueManager::UnregisterTimeDomain(TimeDomain* time_domain) {
@@ -117,27 +117,50 @@ void TaskQueueManager::UpdateWorkQueues(
   }
 }
 
-void TaskQueueManager::MaybePostDoWorkOnMainRunner() {
+void TaskQueueManager::MaybeScheduleImmediateWork(
+    const tracked_objects::Location& from_here) {
   bool on_main_thread = delegate_->BelongsToCurrentThread();
+  // De-duplicate DoWork posts.
   if (on_main_thread) {
-    // We only want one pending DoWork posted from the main thread, or we risk
-    // an explosion of pending DoWorks which could starve out everything else.
-    if (pending_dowork_count_ > 0) {
+    if (!main_thread_pending_wakeups_.insert(base::TimeTicks()).second) {
       return;
     }
-    pending_dowork_count_++;
-    delegate_->PostTask(FROM_HERE, decrement_pending_and_do_work_closure_);
+    delegate_->PostTask(from_here, from_main_thread_immediate_do_work_closure_);
   } else {
-    delegate_->PostTask(FROM_HERE, do_work_closure_);
+    base::AutoLock lock(other_thread_lock_);
+    if (!other_thread_pending_wakeups_.insert(base::TimeTicks()).second)
+      return;
+    delegate_->PostTask(from_here,
+                        from_other_thread_immediate_do_work_closure_);
   }
 }
 
-void TaskQueueManager::DoWork(bool decrement_pending_dowork_count) {
-  if (decrement_pending_dowork_count) {
-    pending_dowork_count_--;
-    DCHECK_GE(pending_dowork_count_, 0);
-  }
+void TaskQueueManager::MaybeScheduleDelayedWork(
+    const tracked_objects::Location& from_here,
+    LazyNow* lazy_now,
+    base::TimeDelta delay) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
+  DCHECK_GE(delay, base::TimeDelta());
+  base::TimeTicks run_time = lazy_now->Now() + delay;
+  // De-duplicate DoWork posts.
+  if (!main_thread_pending_wakeups_.insert(run_time).second)
+    return;
+  delegate_->PostDelayedTask(
+      from_here, base::Bind(&TaskQueueManager::DoWork,
+                            weak_factory_.GetWeakPtr(), run_time, true),
+      delay);
+}
+
+void TaskQueueManager::DoWork(base::TimeTicks run_time, bool from_main_thread) {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
+  TRACE_EVENT1(tracing_category_, "TaskQueueManager::DoWork",
+               "from_main_thread", from_main_thread);
+  if (from_main_thread) {
+    main_thread_pending_wakeups_.erase(run_time);
+  } else {
+    base::AutoLock lock(other_thread_lock_);
+    other_thread_pending_wakeups_.erase(run_time);
+  }
 
   if (!delegate_->IsNested())
     queues_to_delete_.clear();
@@ -179,7 +202,7 @@ void TaskQueueManager::DoWork(bool decrement_pending_dowork_count) {
   // when there's no more work left to be done, rather than posting a
   // continuation task.
   if (!selector_.EnabledWorkQueuesEmpty() || TryAdvanceTimeDomains()) {
-    MaybePostDoWorkOnMainRunner();
+    MaybeScheduleImmediateWork(FROM_HERE);
   } else {
     // Tell the task runner we have no more work.
     delegate_->OnNoMoreImmediateWork();
@@ -296,6 +319,10 @@ int TaskQueueManager::GetNextSequenceNumber() {
   return task_sequence_num_.GetNext();
 }
 
+LazyNow TaskQueueManager::CreateLazyNow() const {
+  return LazyNow(delegate_.get());
+}
+
 scoped_refptr<base::trace_event::ConvertableToTraceFormat>
 TaskQueueManager::AsValueWithSelectorResult(
     bool should_run,
@@ -328,7 +355,7 @@ void TaskQueueManager::OnTaskQueueEnabled(internal::TaskQueueImpl* queue) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   // Only schedule DoWork if there's something to do.
   if (!queue->ImmediateWorkQueueEmpty() || !queue->DelayedWorkQueueEmpty())
-    MaybePostDoWorkOnMainRunner();
+    MaybeScheduleImmediateWork(FROM_HERE);
 }
 
 }  // namespace scheduler

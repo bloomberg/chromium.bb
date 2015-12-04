@@ -201,7 +201,7 @@ void TaskQueueImpl::PushOntoImmediateIncomingQueueLocked(
     any_thread().time_domain->RegisterAsUpdatableTaskQueue(this);
   if (any_thread().pump_policy == PumpPolicy::AUTO &&
       any_thread().immediate_incoming_queue.empty()) {
-    any_thread().task_queue_manager->MaybePostDoWorkOnMainRunner();
+    any_thread().task_queue_manager->MaybeScheduleImmediateWork(FROM_HERE);
   }
   any_thread().task_queue_manager->DidQueueTask(pending_task);
   any_thread().immediate_incoming_queue.push(pending_task);
@@ -413,12 +413,12 @@ void TaskQueueImpl::SetPumpPolicy(PumpPolicy pump_policy) {
   base::AutoLock lock(any_thread_lock_);
   if (pump_policy == PumpPolicy::AUTO &&
       any_thread().pump_policy != PumpPolicy::AUTO) {
-    PumpQueueLocked();
+    PumpQueueLocked(true);
   }
   any_thread().pump_policy = pump_policy;
 }
 
-void TaskQueueImpl::PumpQueueLocked() {
+void TaskQueueImpl::PumpQueueLocked(bool may_post_dowork) {
   TaskQueueManager* task_queue_manager = any_thread().task_queue_manager;
   if (!task_queue_manager)
     return;
@@ -446,12 +446,13 @@ void TaskQueueImpl::PumpQueueLocked() {
     task_queue_manager->selector_.immediate_task_queue_sets()->OnPushQueue(
         this);
   }
-  task_queue_manager->MaybePostDoWorkOnMainRunner();
+  if (may_post_dowork)
+    task_queue_manager->MaybeScheduleImmediateWork(FROM_HERE);
 }
 
-void TaskQueueImpl::PumpQueue() {
+void TaskQueueImpl::PumpQueue(bool may_post_dowork) {
   base::AutoLock lock(any_thread_lock_);
-  PumpQueueLocked();
+  PumpQueueLocked(may_post_dowork);
 }
 
 const char* TaskQueueImpl::GetName() const {

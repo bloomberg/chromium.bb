@@ -41,8 +41,7 @@ class MockTimeDomain : public TimeDomain {
   bool MaybeAdvanceTime() override { return false; }
   const char* GetName() const override { return "Test"; }
   void OnRegisterWithTaskQueueManager(
-      TaskQueueManagerDelegate* task_queue_manager_delegate,
-      base::Closure do_work_closure) override {}
+      TaskQueueManager* task_queue_manager) override {}
 
   MOCK_METHOD2(RequestWakeup, void(LazyNow* lazy_now, base::TimeDelta delay));
 

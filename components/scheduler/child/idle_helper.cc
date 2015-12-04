@@ -175,7 +175,7 @@ void IdleHelper::StartIdlePeriod(IdlePeriodState new_state,
 
   TRACE_EVENT0(disabled_by_default_tracing_category_, "StartIdlePeriod");
   idle_queue_->SetQueuePriority(TaskQueue::BEST_EFFORT_PRIORITY);
-  idle_queue_->PumpQueue();
+  idle_queue_->PumpQueue(true);
 
   state_.UpdateState(new_state, idle_period_deadline, now);
 }

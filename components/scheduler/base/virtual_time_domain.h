@@ -11,7 +11,6 @@
 #include "components/scheduler/scheduler_export.h"
 
 namespace scheduler {
-class TaskQueueManagerDelegate;
 
 class SCHEDULER_EXPORT VirtualTimeDomain : public TimeDomain {
  public:
@@ -25,22 +24,24 @@ class SCHEDULER_EXPORT VirtualTimeDomain : public TimeDomain {
   const char* GetName() const override;
 
   // Advances this time domain to |now|. NOTE |now| is supposed to be
-  // monotonically increasing.
+  // monotonically increasing.  NOTE it's the responsibility of the caller to
+  // call TaskQueueManager::MaybeScheduleImmediateWork if needed.
   void AdvanceTo(base::TimeTicks now);
 
  protected:
   void OnRegisterWithTaskQueueManager(
-      TaskQueueManagerDelegate* task_queue_manager_delegate,
-      base::Closure do_work_closure) override;
+      TaskQueueManager* task_queue_manager) override;
   void RequestWakeup(LazyNow* lazy_now, base::TimeDelta delay) override;
   void AsValueIntoInternal(
       base::trace_event::TracedValue* state) const override;
+
+  void RequestDoWork();
 
  private:
   mutable base::Lock lock_;  // Protects |now_|.
   base::TimeTicks now_;
 
-  TaskQueueManagerDelegate* task_queue_manager_delegate_;  // NOT OWNED
+  TaskQueueManager* task_queue_manager_;  // NOT OWNED
   base::Closure do_work_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(VirtualTimeDomain);

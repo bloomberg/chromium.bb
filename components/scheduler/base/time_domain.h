@@ -98,11 +98,10 @@ class SCHEDULER_EXPORT TimeDomain {
 
   // Called by the TaskQueueManager when the TimeDomain is registered.
   virtual void OnRegisterWithTaskQueueManager(
-      TaskQueueManagerDelegate* task_queue_manager_delegate,
-      base::Closure do_work_closure) = 0;
+      TaskQueueManager* task_queue_manager) = 0;
 
   // The implementaion will secedule task processing to run with |delay| with
-  // respect to the TimeDomain's time source.
+  // respect to the TimeDomain's time source.  Always called on the main thread.
   virtual void RequestWakeup(LazyNow* lazy_now, base::TimeDelta delay) = 0;
 
   // For implementation specific tracing.

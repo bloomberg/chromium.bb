@@ -200,4 +200,30 @@ TEST_F(ThrottlingHelperTest, WakeUpForDelayedTask) {
                           base::TimeDelta::FromMilliseconds(2000.0)));
 }
 
+namespace {
+bool MessageLoopTaskCounter(size_t* count) {
+  *count = *count + 1;
+  return true;
+}
+
+void NopTask() {}
+
+}  // namespace
+
+TEST_F(ThrottlingHelperTest,
+       SingleThrottledTaskPumpedAndRunWithNoExtraneousMessageLoopTasks) {
+  throttling_helper_->Throttle(timer_queue_.get());
+
+  base::TimeDelta delay(base::TimeDelta::FromMilliseconds(10));
+  timer_queue_->PostDelayedTask(FROM_HERE, base::Bind(&NopTask), delay);
+
+  size_t task_count = 0;
+  mock_task_runner_->RunTasksWhile(
+      base::Bind(&MessageLoopTaskCounter, &task_count));
+
+  // NOTE PumpThrottledTasks will always run at least twice because we can only
+  // detect if the queues have become empty before pumping.
+  EXPECT_EQ(2u, task_count);
+}
+
 }  // namespace scheduler

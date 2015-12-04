@@ -38,7 +38,8 @@ class SCHEDULER_EXPORT ThrottlingHelper : public TimeDomain::Observer {
 
  private:
   void PumpThrottledTasks();
-  void MaybeSchedulePumpThrottledTasksLocked();
+  void MaybeSchedulePumpThrottledTasksLocked(
+      const tracked_objects::Location& from_here);
 
   std::set<TaskQueue*> throttled_queues_;
   base::Closure pump_throttled_tasks_closure_;

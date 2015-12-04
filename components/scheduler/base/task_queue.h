@@ -154,7 +154,12 @@ class SCHEDULER_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
   // This function only needs to be called if automatic pumping is disabled.
   // By default automatic pumping is enabled for all queues. NOTE this must be
   // called on the thread this TaskQueue was created by.
-  virtual void PumpQueue() = 0;
+  //
+  // The |may_post_dowork| parameter controls whether or not PumpQueue calls
+  // TaskQueueManager::MaybeScheduleImmediateWork.
+  // TODO(alexclarke): Add a base::RunLoop observer so we can get rid of
+  // |may_post_dowork|.
+  virtual void PumpQueue(bool may_post_dowork) = 0;
 
   // These functions can only be called on the same thread that the task queue
   // manager executes its tasks on.

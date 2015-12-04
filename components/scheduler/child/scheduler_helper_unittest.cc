@@ -176,7 +176,7 @@ TEST_F(SchedulerHelperTest,
 
   EXPECT_CALL(observer, WillProcessTask(_)).Times(0);
   EXPECT_CALL(observer, DidProcessTask(_)).Times(0);
-  scheduler_helper_->ControlAfterWakeUpTaskRunner()->PumpQueue();
+  scheduler_helper_->ControlAfterWakeUpTaskRunner()->PumpQueue(true);
   RunUntilIdle();
 }
 

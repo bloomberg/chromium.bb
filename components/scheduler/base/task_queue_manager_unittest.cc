@@ -379,7 +379,7 @@ TEST_F(TaskQueueManagerTest, ManualPumping) {
   EXPECT_TRUE(runners_[0]->HasPendingImmediateWork());
 
   // After pumping the task runs normally.
-  runners_[0]->PumpQueue();
+  runners_[0]->PumpQueue(true);
   EXPECT_TRUE(test_task_runner_->HasPendingTasks());
   test_task_runner_->RunUntilIdle();
   EXPECT_THAT(run_order, ElementsAre(1));
@@ -461,13 +461,13 @@ TEST_F(TaskQueueManagerTest, ManualPumpingWithDelayedTask) {
                                delay);
 
   // After pumping but before the delay period has expired, task does not run.
-  runners_[0]->PumpQueue();
+  runners_[0]->PumpQueue(true);
   test_task_runner_->RunForPeriod(base::TimeDelta::FromMilliseconds(5));
   EXPECT_TRUE(run_order.empty());
 
   // Once the delay has expired, pumping causes the task to run.
   now_src_->Advance(base::TimeDelta::FromMilliseconds(5));
-  runners_[0]->PumpQueue();
+  runners_[0]->PumpQueue(true);
   EXPECT_TRUE(test_task_runner_->HasPendingTasks());
   test_task_runner_->RunPendingTasks();
   EXPECT_THAT(run_order, ElementsAre(1));
@@ -495,7 +495,7 @@ TEST_F(TaskQueueManagerTest, ManualPumpingWithMultipleDelayedTasks) {
   EXPECT_TRUE(run_order.empty());
 
   // Once the delay has expired, pumping causes the task to run.
-  runners_[0]->PumpQueue();
+  runners_[0]->PumpQueue(true);
   test_task_runner_->RunUntilIdle();
   EXPECT_THAT(run_order, ElementsAre(1, 2));
 }
@@ -521,9 +521,9 @@ TEST_F(TaskQueueManagerTest, ManualPumpingWithNonEmptyWorkQueue) {
   // Posting two tasks and pumping twice should result in two tasks in the work
   // queue.
   runners_[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order));
-  runners_[0]->PumpQueue();
+  runners_[0]->PumpQueue(true);
   runners_[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 2, &run_order));
-  runners_[0]->PumpQueue();
+  runners_[0]->PumpQueue(true);
 
   EXPECT_EQ(2u, runners_[0]->ImmediateWorkQueueSizeForTest());
 }
@@ -595,7 +595,7 @@ TEST_F(TaskQueueManagerTest, DoWorkCantPostItselfMultipleTimes) {
       FROM_HERE, base::Bind(&RePostingTestTask, runners_[0], &run_count));
 
   test_task_runner_->RunPendingTasks();
-  // NOTE without the executing_task_ check in MaybePostDoWorkOnMainRunner there
+  // NOTE without the executing_task_ check in MaybeScheduleDoWork there
   // will be two tasks here.
   EXPECT_EQ(1u, test_task_runner_->NumPendingTasks());
   EXPECT_EQ(1, run_count);
@@ -690,7 +690,7 @@ TEST_F(TaskQueueManagerTest,
   // This still shouldn't wake TQM as manual queue was not pumped.
   EXPECT_TRUE(run_order.empty());
 
-  runners_[1]->PumpQueue();
+  runners_[1]->PumpQueue(true);
   test_task_runner_->RunUntilIdle();
   // Executing a task on an auto pumped queue should wake the TQM.
   EXPECT_THAT(run_order, ElementsAre(2, 1));
@@ -1023,7 +1023,7 @@ TEST_F(TaskQueueManagerTest, HasPendingImmediateWork) {
   EXPECT_FALSE(queue0->HasPendingImmediateWork());
   EXPECT_TRUE(queue1->HasPendingImmediateWork());
 
-  queue1->PumpQueue();
+  queue1->PumpQueue(true);
   EXPECT_FALSE(queue0->HasPendingImmediateWork());
   EXPECT_TRUE(queue1->HasPendingImmediateWork());
 
@@ -1066,7 +1066,7 @@ TEST_F(TaskQueueManagerTest, HasPendingImmediateWorkAndNeedsPumping) {
   EXPECT_TRUE(queue1->HasPendingImmediateWork());
   EXPECT_TRUE(queue1->NeedsPumping());
 
-  queue1->PumpQueue();
+  queue1->PumpQueue(true);
   EXPECT_FALSE(queue0->HasPendingImmediateWork());
   EXPECT_FALSE(queue0->NeedsPumping());
   EXPECT_TRUE(queue1->HasPendingImmediateWork());
@@ -1441,11 +1441,13 @@ TEST_F(TaskQueueManagerTest, TimeDomainsAreIndependant) {
                                base::TimeDelta::FromMilliseconds(30));
 
   domain_b->AdvanceTo(start_time + base::TimeDelta::FromMilliseconds(50));
+  manager_->MaybeScheduleImmediateWork(FROM_HERE);
 
   test_task_runner_->RunUntilIdle();
   EXPECT_THAT(run_order, ElementsAre(4, 5, 6));
 
   domain_a->AdvanceTo(start_time + base::TimeDelta::FromMilliseconds(50));
+  manager_->MaybeScheduleImmediateWork(FROM_HERE);
 
   test_task_runner_->RunUntilIdle();
   EXPECT_THAT(run_order, ElementsAre(4, 5, 6, 1, 2, 3));
@@ -1474,6 +1476,7 @@ TEST_F(TaskQueueManagerTest, TimeDomainMigration) {
                                base::TimeDelta::FromMilliseconds(40));
 
   domain_a->AdvanceTo(start_time + base::TimeDelta::FromMilliseconds(20));
+  manager_->MaybeScheduleImmediateWork(FROM_HERE);
   test_task_runner_->RunUntilIdle();
   EXPECT_THAT(run_order, ElementsAre(1, 2));
 
@@ -1483,6 +1486,7 @@ TEST_F(TaskQueueManagerTest, TimeDomainMigration) {
   runners_[0]->SetTimeDomain(domain_b.get());
 
   domain_b->AdvanceTo(start_time + base::TimeDelta::FromMilliseconds(50));
+  manager_->MaybeScheduleImmediateWork(FROM_HERE);
 
   test_task_runner_->RunUntilIdle();
   EXPECT_THAT(run_order, ElementsAre(1, 2, 3, 4));

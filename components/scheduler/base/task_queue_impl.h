@@ -84,7 +84,7 @@ class SCHEDULER_EXPORT TaskQueueImpl final : public TaskQueue {
   bool HasPendingImmediateWork() const override;
   bool NeedsPumping() const override;
   void SetQueuePriority(QueuePriority priority) override;
-  void PumpQueue() override;
+  void PumpQueue(bool may_post_dowork) override;
   void SetPumpPolicy(PumpPolicy pump_policy) override;
   void AddTaskObserver(base::MessageLoop::TaskObserver* task_observer) override;
   void RemoveTaskObserver(
@@ -218,7 +218,7 @@ class SCHEDULER_EXPORT TaskQueueImpl final : public TaskQueue {
 
   void MoveReadyImmediateTasksToImmediateWorkQueueLocked();
 
-  void PumpQueueLocked();
+  void PumpQueueLocked(bool may_post_dowork);
   bool TaskIsOlderThanQueuedTasks(const Task* task);
   bool ShouldAutoPumpQueueLocked(bool should_trigger_wakeup,
                                  const Task* previous_task);

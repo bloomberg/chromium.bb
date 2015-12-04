@@ -12,7 +12,6 @@
 #include "components/scheduler/scheduler_export.h"
 
 namespace scheduler {
-class TaskQueueManagerDelegate;
 
 class SCHEDULER_EXPORT RealTimeDomain : public TimeDomain {
  public:
@@ -26,20 +25,13 @@ class SCHEDULER_EXPORT RealTimeDomain : public TimeDomain {
 
  protected:
   void OnRegisterWithTaskQueueManager(
-      TaskQueueManagerDelegate* task_queue_manager_delegate,
-      base::Closure do_work_closure) override;
+      TaskQueueManager* task_queue_manager) override;
   void RequestWakeup(LazyNow* lazy_now, base::TimeDelta delay) override;
   void AsValueIntoInternal(
       base::trace_event::TracedValue* state) const override;
 
  private:
-  void PostWrappedDoWork(base::TimeTicks now, base::TimeTicks run_time);
-  void WrappedDoWorkTask(base::TimeTicks run_time);
-
-  TaskQueueManagerDelegate* task_queue_manager_delegate_;  // NOT OWNED
-  std::set<base::TimeTicks> pending_wakeups_;
-  base::Closure do_work_closure_;
-  base::WeakPtrFactory<RealTimeDomain> weak_factory_;
+  TaskQueueManager* task_queue_manager_;                   // NOT OWNED
 
   DISALLOW_COPY_AND_ASSIGN(RealTimeDomain);
 };

@@ -62,6 +62,19 @@ class SCHEDULER_EXPORT TaskQueueManager
                    const char* disabled_by_default_verbose_tracing_category);
   ~TaskQueueManager() override;
 
+  // Requests that a task to process work is posted on the main task runner.
+  // These tasks are de-duplicated in two buckets: main-thread and all other
+  // threads.  This distinction is done to reduce the overehead from locks, we
+  // assume the main-thread path will be hot.
+  void MaybeScheduleImmediateWork(const tracked_objects::Location& from_here);
+
+  // Requests that a delayed task to process work is posted on the main task
+  // runner. These delayed tasks are de-duplicated. Must be called on the thread
+  // this class was created on.
+  void MaybeScheduleDelayedWork(const tracked_objects::Location& from_here,
+                                LazyNow* lazy_now,
+                                base::TimeDelta delay);
+
   // Set the number of tasks executed in a single invocation of the task queue
   // manager. Increasing the batch size can reduce the overhead of yielding
   // back to the main message loop -- at the cost of potentially delaying other
@@ -105,6 +118,8 @@ class SCHEDULER_EXPORT TaskQueueManager
 
   RealTimeDomain* real_time_domain() const { return real_time_domain_.get(); }
 
+  LazyNow CreateLazyNow() const;
+
  private:
   friend class LazyNow;
   friend class internal::TaskQueueImpl;
@@ -128,13 +143,8 @@ class SCHEDULER_EXPORT TaskQueueManager
   // Called by the task queue to register a new pending task.
   void DidQueueTask(const internal::TaskQueueImpl::Task& pending_task);
 
-  // Post a task to call DoWork() on the main task runner.  Only one pending
-  // DoWork is allowed from the main thread, to prevent an explosion of pending
-  // DoWorks.
-  void MaybePostDoWorkOnMainRunner();
-
   // Use the selector to choose a pending task and run it.
-  void DoWork(bool decrement_pending_dowork_count);
+  void DoWork(base::TimeTicks run_time, bool from_main_thread);
 
   // Delayed Tasks with run_times <= Now() are enqueued onto the work queue.
   // Reloads any empty work queues which have automatic pumping enabled and
@@ -194,14 +204,18 @@ class SCHEDULER_EXPORT TaskQueueManager
   scoped_refptr<TaskQueueManagerDelegate> delegate_;
   internal::TaskQueueSelector selector_;
 
-  base::Closure decrement_pending_and_do_work_closure_;
-  base::Closure do_work_closure_;
+  base::Closure from_main_thread_immediate_do_work_closure_;
+  base::Closure from_other_thread_immediate_do_work_closure_;
 
   bool task_was_run_on_quiescence_monitored_queue_;
 
-  // The pending_dowork_count_ is only tracked on the main thread since that's
-  // where re-entrant problems happen.
-  int pending_dowork_count_;
+  // To reduce locking overhead we track pending calls to DoWork seperatly for
+  // the main thread and other threads.
+  std::set<base::TimeTicks> main_thread_pending_wakeups_;
+
+  // Protects |other_thread_pending_wakeups_|.
+  mutable base::Lock other_thread_lock_;
+  std::set<base::TimeTicks> other_thread_pending_wakeups_;
 
   int work_batch_size_;
 

@@ -6,29 +6,28 @@
 
 #include "base/bind.h"
 #include "components/scheduler/base/task_queue_impl.h"
+#include "components/scheduler/base/task_queue_manager.h"
 #include "components/scheduler/base/task_queue_manager_delegate.h"
 
 namespace scheduler {
 
-RealTimeDomain::RealTimeDomain() : TimeDomain(nullptr), weak_factory_(this) {}
+RealTimeDomain::RealTimeDomain()
+    : TimeDomain(nullptr), task_queue_manager_(nullptr) {}
 
 RealTimeDomain::~RealTimeDomain() {}
 
 void RealTimeDomain::OnRegisterWithTaskQueueManager(
-    TaskQueueManagerDelegate* task_queue_manager_delegate,
-    base::Closure do_work_closure) {
-  task_queue_manager_delegate_ = task_queue_manager_delegate;
-  do_work_closure_ = do_work_closure;
-  DCHECK(task_queue_manager_delegate_);
+    TaskQueueManager* task_queue_manager) {
+  task_queue_manager_ = task_queue_manager;
+  DCHECK(task_queue_manager_);
 }
 
 LazyNow RealTimeDomain::CreateLazyNow() {
-  DCHECK(task_queue_manager_delegate_);
-  return LazyNow(task_queue_manager_delegate_);
+  return task_queue_manager_->CreateLazyNow();
 }
 
 void RealTimeDomain::RequestWakeup(LazyNow* lazy_now, base::TimeDelta delay) {
-  PostWrappedDoWork(lazy_now->Now(), lazy_now->Now() + delay);
+  task_queue_manager_->MaybeScheduleDelayedWork(FROM_HERE, lazy_now, delay);
 }
 
 bool RealTimeDomain::MaybeAdvanceTime() {
@@ -36,31 +35,13 @@ bool RealTimeDomain::MaybeAdvanceTime() {
   if (!NextScheduledRunTime(&next_run_time))
     return false;
 
-  DCHECK(task_queue_manager_delegate_);
-  base::TimeTicks now = task_queue_manager_delegate_->NowTicks();
-  if (now >= next_run_time)
+  LazyNow lazy_now = task_queue_manager_->CreateLazyNow();
+  if (lazy_now.Now() >= next_run_time)
     return true;
 
-  PostWrappedDoWork(now, next_run_time);
+  task_queue_manager_->MaybeScheduleDelayedWork(FROM_HERE, &lazy_now,
+                                                next_run_time - lazy_now.Now());
   return false;
-}
-
-void RealTimeDomain::PostWrappedDoWork(base::TimeTicks now,
-                                       base::TimeTicks run_time) {
-  DCHECK_GE(run_time, now);
-  DCHECK(task_queue_manager_delegate_);
-  if (pending_wakeups_.insert(run_time).second) {
-    task_queue_manager_delegate_->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&RealTimeDomain::WrappedDoWorkTask,
-                   weak_factory_.GetWeakPtr(), run_time),
-        run_time - now);
-  }
-}
-
-void RealTimeDomain::WrappedDoWorkTask(base::TimeTicks run_time) {
-  pending_wakeups_.erase(run_time);
-  do_work_closure_.Run();
 }
 
 void RealTimeDomain::AsValueIntoInternal(

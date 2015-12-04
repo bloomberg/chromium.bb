@@ -6,22 +6,21 @@
 
 #include "base/bind.h"
 #include "components/scheduler/base/task_queue_impl.h"
+#include "components/scheduler/base/task_queue_manager.h"
 #include "components/scheduler/base/task_queue_manager_delegate.h"
 
 namespace scheduler {
 
 VirtualTimeDomain::VirtualTimeDomain(TimeDomain::Observer* observer,
                                      base::TimeTicks initial_time)
-    : TimeDomain(observer), now_(initial_time) {}
+    : TimeDomain(observer), now_(initial_time), task_queue_manager_(nullptr) {}
 
 VirtualTimeDomain::~VirtualTimeDomain() {}
 
 void VirtualTimeDomain::OnRegisterWithTaskQueueManager(
-    TaskQueueManagerDelegate* task_queue_manager_delegate,
-    base::Closure do_work_closure) {
-  task_queue_manager_delegate_ = task_queue_manager_delegate;
-  do_work_closure_ = do_work_closure;
-  DCHECK(task_queue_manager_delegate_);
+    TaskQueueManager* task_queue_manager) {
+  task_queue_manager_ = task_queue_manager;
+  DCHECK(task_queue_manager_);
 }
 
 LazyNow VirtualTimeDomain::CreateLazyNow() {
@@ -31,7 +30,9 @@ LazyNow VirtualTimeDomain::CreateLazyNow() {
 
 void VirtualTimeDomain::RequestWakeup(LazyNow* lazy_now,
                                       base::TimeDelta delay) {
-  // We don't need to do anything here because AdvanceTo posts a DoWork.
+  // We don't need to do anything here because the caller of AdvanceTo is
+  // responsible for calling TaskQueueManager::MaybeScheduleImmediateWork if
+  // needed.
 }
 
 bool VirtualTimeDomain::MaybeAdvanceTime() {
@@ -45,9 +46,10 @@ void VirtualTimeDomain::AdvanceTo(base::TimeTicks now) {
   base::AutoLock lock(lock_);
   DCHECK_GE(now, now_);
   now_ = now;
-  DCHECK(task_queue_manager_delegate_);
+}
 
-  task_queue_manager_delegate_->PostTask(FROM_HERE, do_work_closure_);
+void VirtualTimeDomain::RequestDoWork() {
+  task_queue_manager_->MaybeScheduleImmediateWork(FROM_HERE);
 }
 
 const char* VirtualTimeDomain::GetName() const {
