@@ -175,6 +175,7 @@ OverlayCandidate::OverlayCandidate()
       use_output_surface_for_resource(false),
       resource_id(0),
       plane_z_order(0),
+      is_unoccluded(false),
       overlay_handled(false) {}
 
 OverlayCandidate::~OverlayCandidate() {}
@@ -223,6 +224,23 @@ bool OverlayCandidate::IsInvisibleQuad(const DrawQuad* quad) {
     float alpha = (SkColorGetA(color) * (1.0f / 255.0f)) * opacity;
     return quad->ShouldDrawWithBlending() &&
            alpha < std::numeric_limits<float>::epsilon();
+  }
+  return false;
+}
+
+// static
+bool OverlayCandidate::IsOccluded(const OverlayCandidate& candidate,
+                                  QuadList::ConstIterator quad_list_begin,
+                                  QuadList::ConstIterator quad_list_end) {
+  // Check that no visible quad overlaps the candidate.
+  for (auto overlap_iter = quad_list_begin; overlap_iter != quad_list_end;
+       ++overlap_iter) {
+    gfx::RectF overlap_rect = MathUtil::MapClippedRect(
+        overlap_iter->shared_quad_state->quad_to_target_transform,
+        gfx::RectF(overlap_iter->rect));
+    if (candidate.display_rect.Intersects(overlap_rect) &&
+        !OverlayCandidate::IsInvisibleQuad(*overlap_iter))
+      return true;
   }
   return false;
 }

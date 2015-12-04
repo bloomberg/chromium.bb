@@ -1360,7 +1360,8 @@ TEST_F(UnderlayTest, AllowOnTop) {
   EXPECT_EQ(pass_list[0]->quad_list.front()->material, DrawQuad::SOLID_COLOR);
 }
 
-TEST_F(UnderlayTest, DamageRect) {
+// The first time an underlay is scheduled its damage must not be subtracted.
+TEST_F(UnderlayTest, InitialUnderlayDamageNotSubtracted) {
   scoped_ptr<RenderPass> pass = CreateRenderPass();
   CreateFullscreenCandidateQuad(resource_provider_.get(),
                                 pass->shared_quad_state_list.back(),
@@ -1368,30 +1369,114 @@ TEST_F(UnderlayTest, DamageRect) {
 
   damage_rect_ = kOverlayRect;
 
-  // Add something behind it.
-  CreateFullscreenOpaqueQuad(resource_provider_.get(),
-                             pass->shared_quad_state_list.back(), pass.get());
-  CreateFullscreenOpaqueQuad(resource_provider_.get(),
-                             pass->shared_quad_state_list.back(), pass.get());
-
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
 
-  // Check for potential candidates.
   OverlayCandidateList candidate_list;
-
-  // Primary plane.
-  OverlayCandidate output_surface_plane;
-  output_surface_plane.display_rect = gfx::RectF(kOverlayRect);
-  output_surface_plane.quad_rect_in_target_space = kOverlayRect;
-  output_surface_plane.use_output_surface_for_resource = true;
-  output_surface_plane.overlay_handled = true;
-  candidate_list.push_back(output_surface_plane);
-
   overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
                                          &candidate_list, nullptr,
                                          &damage_rect_);
-  DCHECK(!damage_rect_.IsEmpty());
+
+  EXPECT_EQ(kOverlayRect, damage_rect_);
+}
+
+// An identical underlay for two frames in a row means the damage can be
+// subtracted the second time.
+TEST_F(UnderlayTest, DamageSubtractedForConsecutiveIdenticalUnderlays) {
+  for (int i = 0; i < 2; ++i) {
+    scoped_ptr<RenderPass> pass = CreateRenderPass();
+    CreateFullscreenCandidateQuad(resource_provider_.get(),
+                                  pass->shared_quad_state_list.back(),
+                                  pass.get());
+
+    damage_rect_ = kOverlayRect;
+
+    // Add something behind it.
+    CreateFullscreenOpaqueQuad(resource_provider_.get(),
+                               pass->shared_quad_state_list.back(), pass.get());
+
+    RenderPassList pass_list;
+    pass_list.push_back(pass.Pass());
+    OverlayCandidateList candidate_list;
+    overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+                                           &candidate_list, nullptr,
+                                           &damage_rect_);
+  }
+
+  // The second time the same overlay rect is scheduled it will be subtracted
+  // from the damage rect.
+  EXPECT_TRUE(damage_rect_.IsEmpty());
+}
+
+// Underlay damage can only be subtracted if the previous frame's underlay
+// was the same rect.
+TEST_F(UnderlayTest, DamageNotSubtractedForNonIdenticalConsecutiveUnderlays) {
+  gfx::Rect overlay_rects[] = {kOverlayBottomRightRect, kOverlayRect};
+  for (int i = 0; i < 2; ++i) {
+    scoped_ptr<RenderPass> pass = CreateRenderPass();
+
+    CreateCandidateQuadAt(resource_provider_.get(),
+                          pass->shared_quad_state_list.back(), pass.get(),
+                          overlay_rects[i]);
+
+    damage_rect_ = overlay_rects[i];
+
+    RenderPassList pass_list;
+    pass_list.push_back(pass.Pass());
+    OverlayCandidateList candidate_list;
+    overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+                                           &candidate_list, nullptr,
+                                           &damage_rect_);
+
+    EXPECT_EQ(overlay_rects[i], damage_rect_);
+  }
+}
+
+TEST_F(UnderlayTest, DamageNotSubtractedWhenQuadsAboveOverlap) {
+  for (int i = 0; i < 2; ++i) {
+    scoped_ptr<RenderPass> pass = CreateRenderPass();
+    // Add an overlapping quad above the candidate.
+    CreateFullscreenOpaqueQuad(resource_provider_.get(),
+                               pass->shared_quad_state_list.back(), pass.get());
+    CreateFullscreenCandidateQuad(resource_provider_.get(),
+                                  pass->shared_quad_state_list.back(),
+                                  pass.get());
+
+    damage_rect_ = kOverlayRect;
+
+    RenderPassList pass_list;
+    pass_list.push_back(pass.Pass());
+    OverlayCandidateList candidate_list;
+    overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+                                           &candidate_list, nullptr,
+                                           &damage_rect_);
+  }
+
+  EXPECT_EQ(kOverlayRect, damage_rect_);
+}
+
+TEST_F(UnderlayTest, DamageSubtractedWhenQuadsAboveDontOverlap) {
+  for (int i = 0; i < 2; ++i) {
+    scoped_ptr<RenderPass> pass = CreateRenderPass();
+    // Add a non-overlapping quad above the candidate.
+    CreateOpaqueQuadAt(resource_provider_.get(),
+                       pass->shared_quad_state_list.back(), pass.get(),
+                       kOverlayTopLeftRect);
+    CreateCandidateQuadAt(resource_provider_.get(),
+                          pass->shared_quad_state_list.back(), pass.get(),
+                          kOverlayBottomRightRect);
+
+    damage_rect_ = kOverlayBottomRightRect;
+
+    RenderPassList pass_list;
+    pass_list.push_back(pass.Pass());
+    OverlayCandidateList candidate_list;
+    overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+                                           &candidate_list, nullptr,
+                                           &damage_rect_);
+  }
+
+  EXPECT_TRUE(damage_rect_.IsEmpty());
 }
 
 OverlayCandidateList BackbufferOverlayList(const RenderPass* root_render_pass) {

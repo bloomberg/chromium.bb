@@ -40,15 +40,9 @@ bool OverlayStrategySingleOnTop::TryOverlay(
     const OverlayCandidate& candidate,
     QuadList::Iterator candidate_iterator) {
   // Check that no prior quads overlap it.
-  for (auto overlap_iter = quad_list->cbegin();
-       overlap_iter != candidate_iterator; ++overlap_iter) {
-    gfx::RectF overlap_rect = MathUtil::MapClippedRect(
-        overlap_iter->shared_quad_state->quad_to_target_transform,
-        gfx::RectF(overlap_iter->rect));
-    if (candidate.display_rect.Intersects(overlap_rect) &&
-        !OverlayCandidate::IsInvisibleQuad(*overlap_iter))
-      return false;
-  }
+  if (OverlayCandidate::IsOccluded(candidate, quad_list->cbegin(),
+                                   candidate_iterator))
+    return false;
 
   // Add the overlay.
   OverlayCandidateList new_candidate_list = *candidate_list;

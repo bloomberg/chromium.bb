@@ -24,9 +24,7 @@ class CC_EXPORT OverlayProcessor {
     // Returns false if the strategy cannot be made to work with the
     // current set of render passes. Returns true if the strategy was successful
     // and adds any additional passes necessary to represent overlays to
-    // |render_passes|. Strategy can also optimize |damage_rect| as it seems
-    // fit to reduce GL composition, in case |damage_rect| is obscured by
-    // overlays.
+    // |render_passes|.
     virtual bool Attempt(ResourceProvider* resource_provider,
                          RenderPassList* render_passes,
                          OverlayCandidateList* candidates) = 0;
@@ -46,10 +44,14 @@ class CC_EXPORT OverlayProcessor {
                           CALayerOverlayList* ca_layer_overlays,
                           gfx::Rect* damage_rect);
 
+  // Notify the processor that ProcessForOverlays is being skipped this frame.
+  void SkipProcessForOverlays();
+
  protected:
   StrategyList strategies_;
   OutputSurface* surface_;
   gfx::Rect overlay_damage_rect_;
+  gfx::Rect previous_frame_underlay_rect_;
 
  private:
   bool ProcessForCALayers(ResourceProvider* resource_provider,
@@ -57,6 +59,9 @@ class CC_EXPORT OverlayProcessor {
                           OverlayCandidateList* overlay_candidates,
                           CALayerOverlayList* ca_layer_overlays,
                           gfx::Rect* damage_rect);
+  // Update |damage_rect| by removing damage casued by |candidates|.
+  void UpdateDamageRect(OverlayCandidateList* candidates,
+                        gfx::Rect* damage_rect);
 
   DISALLOW_COPY_AND_ASSIGN(OverlayProcessor);
 };

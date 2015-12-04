@@ -245,7 +245,9 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
       break;
     }
   }
-  if (!has_copy_requests) {
+  if (has_copy_requests) {
+    overlay_processor_->SkipProcessForOverlays();
+  } else {
     overlay_processor_->ProcessForOverlays(
         resource_provider_, render_passes_in_draw_order, &frame.overlay_list,
         &frame.ca_layer_overlay_list, &frame.root_damage_rect);
