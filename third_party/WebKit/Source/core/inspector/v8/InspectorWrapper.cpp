@@ -52,8 +52,8 @@ v8::Local<v8::Object> InspectorWrapperBase::createWrapper(v8::Local<v8::Function
 
 void* InspectorWrapperBase::unwrap(v8::Local<v8::Context> context, v8::Local<v8::Object> object, const char* name)
 {
-    ASSERT(context != v8::Debug::GetDebugContext());
     v8::Isolate* isolate = context->GetIsolate();
+    ASSERT(context != v8::Debug::GetDebugContext(isolate));
     v8::Local<v8::Value> value = V8HiddenValue::getHiddenValue(ScriptState::from(context), object, v8InternalizedString(isolate, name));
     if (value.IsEmpty())
         return nullptr;

@@ -65,7 +65,7 @@ public:
         v8::Local<v8::Context> context = isolate->GetCurrentContext();
         if (context.IsEmpty())
             return false;
-        return context != v8::Debug::GetDebugContext();
+        return context != v8::Debug::GetDebugContext(isolate);
     }
 
     static ScriptState* from(v8::Local<v8::Context> context)
