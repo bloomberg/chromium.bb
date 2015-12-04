@@ -612,16 +612,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
             return false;
         }
         break;
-    case CSSPropertyPerspectiveOrigin: {
-        RefPtrWillBeRawPtr<CSSValueList> list = parseTransformOrigin();
-        if (!list || list->length() == 3)
-            return false;
-        // This values are added to match gecko serialization.
-        if (list->length() == 1)
-            list->append(cssValuePool().createValue(50, CSSPrimitiveValue::UnitType::Percentage));
-        addProperty(propId, list.release(), important);
-        return true;
-    }
 
     case CSSPropertyJustifyContent:
         ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
@@ -830,6 +820,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyWebkitLogicalWidth:
     case CSSPropertyWebkitLogicalHeight:
     case CSSPropertyObjectPosition:
+    case CSSPropertyPerspectiveOrigin:
     case CSSPropertyClip:
     case CSSPropertyTouchAction:
     case CSSPropertyWebkitLineClamp:

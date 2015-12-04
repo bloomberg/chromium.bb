@@ -2299,6 +2299,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
     case CSSPropertyTouchAction:
         return consumeTouchAction(m_range);
     case CSSPropertyObjectPosition:
+    case CSSPropertyPerspectiveOrigin:
         return consumePosition(m_range, m_context.mode(), UnitlessQuirk::Forbid);
     case CSSPropertyWebkitLineClamp:
         return consumeLineClamp(m_range);

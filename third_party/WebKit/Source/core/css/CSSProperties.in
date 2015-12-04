@@ -249,7 +249,7 @@ page-break-before type_name=EPageBreak, initial=initialPageBreak
 page-break-inside type_name=EPageBreak, initial=initialPageBreak
 paint-order inherited, svg, converter=convertPaintOrder
 perspective interpolable, converter=convertPerspective
-perspective-origin interpolable, converter=convertPerspectiveOrigin
+perspective-origin interpolable, converter=convertPosition
 pointer-events inherited
 position
 quotes inherited, converter=convertQuotes

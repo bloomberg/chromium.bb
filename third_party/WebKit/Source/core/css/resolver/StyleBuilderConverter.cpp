@@ -698,20 +698,6 @@ static Length convertOriginLength(StyleResolverState& state, const CSSPrimitiveV
     return StyleBuilderConverter::convertLength(state, primitiveValue);
 }
 
-LengthPoint StyleBuilderConverter::convertPerspectiveOrigin(StyleResolverState& state, const CSSValue& value)
-{
-    const CSSValueList& list = toCSSValueList(value);
-    ASSERT(list.length() == 2);
-
-    const CSSPrimitiveValue& primitiveValueX = toCSSPrimitiveValue(*list.item(0));
-    const CSSPrimitiveValue& primitiveValueY = toCSSPrimitiveValue(*list.item(1));
-
-    return LengthPoint(
-        convertOriginLength<CSSValueLeft, CSSValueRight>(state, primitiveValueX),
-        convertOriginLength<CSSValueTop, CSSValueBottom>(state, primitiveValueY)
-    );
-}
-
 EPaintOrder StyleBuilderConverter::convertPaintOrder(StyleResolverState&, const CSSValue& cssPaintOrder)
 {
     if (cssPaintOrder.isValueList()) {

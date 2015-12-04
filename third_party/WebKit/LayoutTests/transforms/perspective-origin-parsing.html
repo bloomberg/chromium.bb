@@ -9,14 +9,14 @@ expect = expect.bind(this, 'perspective-origin', 'perspectiveOrigin');
 expect('initial').parsesAs('initial').isComputedTo('100px 50px');
 expect('inherit').parsesAs('inherit');
 
-expect('left').parsesAs('left 50%').isComputedTo('0px 50px');
-expect('center').parsesAs('center 50%').isComputedTo('100px 50px');
-expect('right').parsesAs('right 50%').isComputedTo('200px 50px');
-expect('top').parsesAs('50% top');
-expect('bottom').parsesAs('50% bottom');
-expect('0').parsesAs('0px 50%');
-expect('10%').parsesAs('10% 50%').isComputedTo('20px 50px');
-expect('10px').parsesAs('10px 50%').isComputedTo('10px 50px');
+expect('left').parsesAs('left center').isComputedTo('0px 50px');
+expect('center').parsesAs('center center').isComputedTo('100px 50px');
+expect('right').parsesAs('right center').isComputedTo('200px 50px');
+expect('top').parsesAs('center top');
+expect('bottom').parsesAs('center bottom');
+expect('0').parsesAs('0px center');
+expect('10%').parsesAs('10% center').isComputedTo('20px 50px');
+expect('10px').parsesAs('10px center').isComputedTo('10px 50px');
 
 expect('left top').parsesAs('left top');
 expect('right bottom').parsesAs('right bottom');
@@ -35,6 +35,14 @@ expect('0px 20px').parsesAs('0px 20px').isComputedTo('0px 20px');
 expect('0px top').parsesAs('0px top').isComputedTo('0px 0px');
 expect('0px bottom').parsesAs('0px bottom').isComputedTo('0px 100px');
 expect('0px center').parsesAs('0px center').isComputedTo('0px 50px');
+
+expect('center right 20%').parsesAs('right 20% center');
+expect('left bottom 30px').parsesAs('left bottom 30px');
+expect('top right 30px').parsesAs('right 30px top');
+
+expect('left 30px bottom 20px').parsesAs('left 30px bottom 20px');
+expect('top 10px left 20px').parsesAs('left 20px top 10px');
+expect('top 40px right 15%').parsesAs('right 15% top 40px');
 
 expect('left right').isInvalid();
 expect('top bottom').isInvalid();
