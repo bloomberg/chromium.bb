@@ -5180,7 +5180,6 @@ TEST_P(ParameterizedWebFrameTest, ReplaceMisspelledRange)
     Document* document = frame->frame()->document();
     Element* element = document->getElementById("data");
 
-    webViewHelper.webView()->settings()->setAsynchronousSpellCheckingEnabled(true);
     webViewHelper.webView()->settings()->setUnifiedTextCheckerEnabled(true);
     webViewHelper.webView()->settings()->setEditingBehavior(WebSettings::EditingBehaviorWin);
 
@@ -5213,7 +5212,6 @@ TEST_P(ParameterizedWebFrameTest, RemoveSpellingMarkers)
     Document* document = frame->frame()->document();
     Element* element = document->getElementById("data");
 
-    webViewHelper.webView()->settings()->setAsynchronousSpellCheckingEnabled(true);
     webViewHelper.webView()->settings()->setUnifiedTextCheckerEnabled(true);
     webViewHelper.webView()->settings()->setEditingBehavior(WebSettings::EditingBehaviorWin);
 
@@ -5244,7 +5242,6 @@ TEST_P(ParameterizedWebFrameTest, RemoveSpellingMarkersUnderWords)
     Document* document = frame->document();
     Element* element = document->getElementById("data");
 
-    webViewHelper.webView()->settings()->setAsynchronousSpellCheckingEnabled(true);
     webViewHelper.webView()->settings()->setUnifiedTextCheckerEnabled(true);
     webViewHelper.webView()->settings()->setEditingBehavior(WebSettings::EditingBehaviorWin);
 
@@ -5280,7 +5277,6 @@ TEST_P(ParameterizedWebFrameTest, MarkerHashIdentifiers)
     Document* document = frame->frame()->document();
     Element* element = document->getElementById("data");
 
-    webViewHelper.webView()->settings()->setAsynchronousSpellCheckingEnabled(true);
     webViewHelper.webView()->settings()->setUnifiedTextCheckerEnabled(true);
     webViewHelper.webView()->settings()->setEditingBehavior(WebSettings::EditingBehaviorWin);
 
@@ -5357,7 +5353,6 @@ TEST_P(ParameterizedWebFrameTest, SlowSpellcheckMarkerPosition)
     Document* document = frame->frame()->document();
     Element* element = document->getElementById("data");
 
-    webViewHelper.webView()->settings()->setAsynchronousSpellCheckingEnabled(true);
     webViewHelper.webView()->settings()->setUnifiedTextCheckerEnabled(true);
     webViewHelper.webView()->settings()->setEditingBehavior(WebSettings::EditingBehaviorWin);
 
@@ -5388,7 +5383,6 @@ TEST_P(ParameterizedWebFrameTest, CancelSpellingRequestCrash)
     Document* document = frame->frame()->document();
     Element* element = document->getElementById("data");
 
-    webViewHelper.webView()->settings()->setAsynchronousSpellCheckingEnabled(true);
     webViewHelper.webView()->settings()->setUnifiedTextCheckerEnabled(true);
     webViewHelper.webView()->settings()->setEditingBehavior(WebSettings::EditingBehaviorWin);
 
@@ -5410,7 +5404,6 @@ TEST_P(ParameterizedWebFrameTest, SpellcheckResultErasesMarkers)
     Document* document = frame->frame()->document();
     Element* element = document->getElementById("data");
 
-    webViewHelper.webView()->settings()->setAsynchronousSpellCheckingEnabled(true);
     webViewHelper.webView()->settings()->setUnifiedTextCheckerEnabled(true);
     webViewHelper.webView()->settings()->setEditingBehavior(WebSettings::EditingBehaviorWin);
 
@@ -5441,7 +5434,6 @@ TEST_P(ParameterizedWebFrameTest, SpellcheckResultsSavedInDocument)
     Document* document = frame->frame()->document();
     Element* element = document->getElementById("data");
 
-    webViewHelper.webView()->settings()->setAsynchronousSpellCheckingEnabled(true);
     webViewHelper.webView()->settings()->setUnifiedTextCheckerEnabled(true);
     webViewHelper.webView()->settings()->setEditingBehavior(WebSettings::EditingBehaviorWin);
 

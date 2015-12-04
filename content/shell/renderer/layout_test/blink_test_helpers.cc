@@ -41,8 +41,6 @@ void ExportLayoutTestSpecificPreferences(
       from.allow_display_of_insecure_content;
   to->allow_running_insecure_content = from.allow_running_of_insecure_content;
   to->should_respect_image_orientation = from.should_respect_image_orientation;
-  to->asynchronous_spell_checking_enabled =
-      from.asynchronous_spell_checking_enabled;
   to->allow_file_access_from_file_urls = from.allow_file_access_from_file_urls;
   to->javascript_can_open_windows_automatically =
       from.java_script_can_open_windows_automatically;
@@ -98,7 +96,6 @@ void ApplyLayoutTestDefaultPreferences(WebPreferences* prefs) {
   prefs->sans_serif_font_family_map[kCommonScript] =
       base::ASCIIToUTF16("Helvetica");
   prefs->minimum_logical_font_size = 9;
-  prefs->asynchronous_spell_checking_enabled = false;
   prefs->accelerated_2d_canvas_enabled =
       command_line.HasSwitch(switches::kEnableAccelerated2DCanvas);
   prefs->mock_scrollbars_enabled = false;

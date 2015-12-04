@@ -117,7 +117,6 @@ struct CONTENT_EXPORT WebPreferences {
   bool privileged_webgl_extensions_enabled;
   bool webgl_errors_to_console_enabled;
   bool mock_scrollbars_enabled;
-  bool asynchronous_spell_checking_enabled;
   bool unified_textchecker_enabled;
   bool accelerated_2d_canvas_enabled;
   int minimum_accelerated_2d_canvas_size;

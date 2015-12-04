@@ -2294,7 +2294,6 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
   web_prefs->password_echo_enabled = browser_defaults::kPasswordEchoEnabled;
 #endif
 
-  web_prefs->asynchronous_spell_checking_enabled = true;
   web_prefs->unified_textchecker_enabled = true;
 
   web_prefs->uses_universal_detector =

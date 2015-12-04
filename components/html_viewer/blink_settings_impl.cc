@@ -244,8 +244,6 @@ void BlinkSettingsImpl::ApplySettings(blink::WebView* web_view,
   settings->setAccelerated2dCanvasMSAASampleCount(
       prefs.accelerated_2d_canvas_msaa_sample_count);
 
-  settings->setAsynchronousSpellCheckingEnabled(
-      prefs.asynchronous_spell_checking_enabled);
   settings->setUnifiedTextCheckerEnabled(prefs.unified_textchecker_enabled);
 
   // Tabs to link is not part of the settings. WebCore calls
