@@ -133,6 +133,7 @@ public:
 
     RootInlineBox* createAndAppendRootInlineBox();
 
+    void removeFloatingObjectsFromDescendants();
     void markAllDescendantsWithFloatsForLayout(LayoutBox* floatToRemove = nullptr, bool inLayout = true);
     void markSiblingsWithFloatsForLayout(LayoutBox* floatToRemove = nullptr);
 

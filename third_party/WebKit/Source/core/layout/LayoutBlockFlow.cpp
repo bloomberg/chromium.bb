@@ -1745,6 +1745,24 @@ void LayoutBlockFlow::deleteLineBoxTree()
     m_lineBoxes.deleteLineBoxTree();
 }
 
+void LayoutBlockFlow::removeFloatingObjectsFromDescendants()
+{
+    if (!containsFloats())
+        return;
+    removeFloatingObjects();
+
+    // If our children are inline, then the only boxes which could contain floats are atomic inlines (e.g. inline-block, float etc.)
+    // and these create formatting contexts, so can't pick up intruding floats from ancestors/siblings - making them safe to skip.
+    if (childrenInline())
+        return;
+    for (LayoutObject* child = firstChild(); child; child = child->nextSibling()) {
+        // We don't skip blocks that create formatting contexts as they may have only recently
+        // changed style and their float lists may still contain floats from siblings and ancestors.
+        if (child->isLayoutBlockFlow())
+            toLayoutBlockFlow(child)->removeFloatingObjectsFromDescendants();
+    }
+}
+
 void LayoutBlockFlow::markAllDescendantsWithFloatsForLayout(LayoutBox* floatToRemove, bool inLayout)
 {
     if (!everHadLayout() && !containsFloats())
@@ -1763,7 +1781,6 @@ void LayoutBlockFlow::markAllDescendantsWithFloatsForLayout(LayoutBox* floatToRe
     // Iterate over our children and mark them as needed. If our children are inline, then the
     // only boxes which could contain floats are atomic inlines (e.g. inline-block, float etc.) and these create formatting
     // contexts, so can't pick up intruding floats from ancestors/siblings - making them safe to skip.
-    // TODO(rhogan): Should this be !createsNewFormattingContext() instead of !childrenInline()?
     if (!childrenInline()) {
         for (LayoutObject* child = firstChild(); child; child = child->nextSibling()) {
             if ((!floatToRemove && child->isFloatingOrOutOfFlowPositioned()) || !child->isLayoutBlock())
