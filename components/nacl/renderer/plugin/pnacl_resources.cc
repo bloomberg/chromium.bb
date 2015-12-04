@@ -6,10 +6,10 @@
 
 #include <vector>
 
+#include "base/logging.h"
 #include "components/nacl/renderer/plugin/plugin.h"
 #include "components/nacl/renderer/plugin/utility.h"
 #include "native_client/src/include/portability_io.h"
-#include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "ppapi/c/pp_errors.h"
 
@@ -42,21 +42,14 @@ PnaclResources::~PnaclResources() {
 
 const std::string& PnaclResources::GetUrl(ResourceType type) const {
   size_t index = static_cast<size_t>(type);
-  if (index < NUM_TYPES) {
-    return resources_[index].tool_name;
-  }
-  // TODO(jvoung): Use NOTREACHED() from base/logging.h once
-  // we are able to use base/logging.h without conflicting
-  // with NaCl macros.
-  DCHECK(false && "Index out of bounds");
-  // Return a dummy tool name.
+  DCHECK(index < NUM_TYPES);
   return resources_[index].tool_name;
 }
 
 PP_NaClFileInfo PnaclResources::TakeFileInfo(ResourceType type) {
   size_t index = static_cast<size_t>(type);
   if (index >= NUM_TYPES) {
-    DCHECK(false && "Index out of bounds");
+    NOTREACHED();
     return kInvalidNaClFileInfo;
   }
   PP_NaClFileInfo to_return = resources_[index].file_info;

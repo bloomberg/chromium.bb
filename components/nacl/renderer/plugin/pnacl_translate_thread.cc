@@ -13,6 +13,7 @@
 #include "components/nacl/renderer/plugin/temporary_file.h"
 #include "components/nacl/renderer/plugin/utility.h"
 #include "native_client/src/shared/platform/nacl_check.h"
+#include "native_client/src/shared/platform/nacl_sync_raii.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "ppapi/cpp/var.h"
 

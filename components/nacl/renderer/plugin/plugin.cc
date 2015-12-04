@@ -9,6 +9,7 @@
 
 #include <string>
 
+#include "base/logging.h"
 #include "components/nacl/renderer/plugin/nacl_subprocess.h"
 #include "components/nacl/renderer/plugin/plugin_error.h"
 #include "components/nacl/renderer/plugin/service_runtime.h"
@@ -19,7 +20,6 @@
 #include "native_client/src/include/nacl_scoped_ptr.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/portability_io.h"
-#include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/cpp/module.h"

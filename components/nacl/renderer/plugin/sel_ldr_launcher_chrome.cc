@@ -3,8 +3,9 @@
 // found in the LICENSE file.
 
 #include "components/nacl/renderer/plugin/sel_ldr_launcher_chrome.h"
+
+#include "base/logging.h"
 #include "native_client/src/include/nacl_macros.h"
-#include "native_client/src/shared/platform/nacl_check.h"
 
 namespace plugin {
 

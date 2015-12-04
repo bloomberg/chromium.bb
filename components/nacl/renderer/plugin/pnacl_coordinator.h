@@ -11,7 +11,6 @@
 #include "components/nacl/renderer/plugin/plugin_error.h"
 #include "components/nacl/renderer/plugin/pnacl_resources.h"
 #include "native_client/src/include/nacl_macros.h"
-#include "native_client/src/shared/platform/nacl_sync_raii.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "ppapi/cpp/completion_callback.h"

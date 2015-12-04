@@ -23,7 +23,6 @@
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/include/portability_string.h"
 #include "native_client/src/public/imc_types.h"
-#include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
 #include "native_client/src/trusted/service_runtime/nacl_error_code.h"

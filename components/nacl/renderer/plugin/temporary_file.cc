@@ -4,10 +4,10 @@
 
 #include "components/nacl/renderer/plugin/temporary_file.h"
 
+#include "base/logging.h"
 #include "components/nacl/renderer/plugin/plugin.h"
 #include "components/nacl/renderer/plugin/utility.h"
 #include "native_client/src/include/portability_io.h"
-#include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/trusted/service_runtime/include/sys/stat.h"
 #include "ppapi/c/private/pp_file_handle.h"
 #include "ppapi/cpp/core.h"
