@@ -24,7 +24,7 @@ class GLImageSharedMemoryTestDelegate {
     DCHECK(rv);
     GLImageTestSupport::SetBufferDataToColor(
         size.width(), size.height(),
-        static_cast<int>(RowSizeForBufferFormat(size.width(), format, 0)),
+        static_cast<int>(RowSizeForBufferFormat(size.width(), format, 0)), 0,
         format, color, reinterpret_cast<uint8_t*>(shared_memory.memory()));
     scoped_refptr<gl::GLImageSharedMemory> image(new gl::GLImageSharedMemory(
         size, gl::GLImageMemory::GetInternalFormatForTesting(format)));
@@ -71,7 +71,7 @@ class GLImageSharedMemoryPoolTestDelegate {
     // Place buffer at a non-zero non-page-aligned offset in shared memory.
     size_t buffer_offset = 3 * base::SysInfo::VMAllocationGranularity() / 2;
     GLImageTestSupport::SetBufferDataToColor(
-        size.width(), size.height(), static_cast<int>(stride),
+        size.width(), size.height(), static_cast<int>(stride), 0,
         gfx::BufferFormat::RGBA_8888, color,
         reinterpret_cast<uint8_t*>(shared_memory.memory()) + buffer_offset);
     scoped_refptr<gl::GLImageSharedMemory> image(

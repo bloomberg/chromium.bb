@@ -171,6 +171,7 @@ FeatureInfo::FeatureFlags::FeatureFlags()
       blend_equation_advanced(false),
       blend_equation_advanced_coherent(false),
       ext_texture_rg(false),
+      chromium_image_ycbcr_420v(false),
       chromium_image_ycbcr_422(false),
       enable_subscribe_uniform(false),
       emulate_primitive_restart_fixed_index(false),
@@ -903,6 +904,8 @@ void FeatureInfo::InitializeFeatures() {
 
 #if defined(OS_MACOSX)
   AddExtensionString("GL_CHROMIUM_iosurface");
+  AddExtensionString("GL_CHROMIUM_ycbcr_420v_image");
+  feature_flags_.chromium_image_ycbcr_420v = true;
 #endif
 
   if (extensions.Contains("GL_APPLE_ycbcr_422")) {

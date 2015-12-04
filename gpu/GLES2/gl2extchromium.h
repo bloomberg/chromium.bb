@@ -123,6 +123,10 @@ typedef void (
 #define GL_RGB_YCBCR_422_CHROMIUM 0x78FB
 #endif
 
+#ifndef GL_RGB_YCBCR_420V_CHROMIUM
+#define GL_RGB_YCBCR_420V_CHROMIUM 0x78FC
+#endif
+
 #ifdef GL_GLEXT_PROTOTYPES
 GL_APICALL GLuint GL_APIENTRY glCreateGpuMemoryBufferImageCHROMIUM(
     GLsizei width,

@@ -73,6 +73,8 @@
         'gl_fence_nv.h',
         'gl_gl_api_implementation.cc',
         'gl_gl_api_implementation.h',
+        'gl_helper.cc',
+        'gl_helper.h',
         'gl_image.h',
         'gl_image_memory.cc',
         'gl_image_memory.h',

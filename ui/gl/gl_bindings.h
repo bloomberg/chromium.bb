@@ -135,6 +135,9 @@
 // GL_CHROMIUM_ycbcr_422_image
 #define GL_RGB_YCBCR_422_CHROMIUM                        0x78FB
 
+// GL_CHROMIUM_ycbcr_420v_image
+#define GL_RGB_YCBCR_420V_CHROMIUM 0x78FC
+
 // GL_CHROMIUM_schedule_overlay_plane
 #define GL_OVERLAY_TRANSFORM_NONE_CHROMIUM               0x9245
 #define GL_OVERLAY_TRANSFORM_FLIP_HORIZONTAL_CHROMIUM    0x9246

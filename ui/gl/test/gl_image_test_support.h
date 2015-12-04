@@ -22,6 +22,7 @@ class GLImageTestSupport {
   static void SetBufferDataToColor(int width,
                                    int height,
                                    int stride,
+                                   int plane,
                                    gfx::BufferFormat format,
                                    const uint8_t color[4],
                                    uint8_t* data);

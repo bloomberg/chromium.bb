@@ -23,7 +23,7 @@ class GLImageRefCountedMemoryTestDelegate {
     scoped_refptr<base::RefCountedBytes> bytes(new base::RefCountedBytes(data));
     GLImageTestSupport::SetBufferDataToColor(
         size.width(), size.height(),
-        static_cast<int>(RowSizeForBufferFormat(size.width(), format, 0)),
+        static_cast<int>(RowSizeForBufferFormat(size.width(), format, 0)), 0,
         format, color, &bytes->data().front());
     scoped_refptr<GLImageRefCountedMemory> image(new GLImageRefCountedMemory(
         size, gl::GLImageMemory::GetInternalFormatForTesting(format)));

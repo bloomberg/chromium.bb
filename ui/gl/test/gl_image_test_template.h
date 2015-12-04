@@ -17,6 +17,7 @@
 #include "ui/gfx/buffer_types.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
+#include "ui/gl/gl_helper.h"
 #include "ui/gl/gl_image.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
@@ -89,7 +90,10 @@ TYPED_TEST_CASE_P(GLImageCopyTest);
 
 TYPED_TEST_P(GLImageCopyTest, CopyTexImage) {
   const gfx::Size image_size(256, 256);
-  const uint8_t image_color[] = {0xff, 0xff, 0, 0xff};
+  // These values are picked so that RGB -> YUV on the CPU converted
+  // back to RGB on the GPU produces the original RGB values without
+  // any error.
+  const uint8_t image_color[] = {0x10, 0x20, 0, 0xff};
   const uint8_t texture_color[] = {0, 0, 0xff, 0xff};
 
   GLuint framebuffer =
@@ -112,7 +116,7 @@ TYPED_TEST_P(GLImageCopyTest, CopyTexImage) {
       image_size.width(), image_size.height(),
       static_cast<int>(RowSizeForBufferFormat(image_size.width(),
                                               gfx::BufferFormat::RGBA_8888, 0)),
-      gfx::BufferFormat::RGBA_8888, texture_color, pixels.get());
+      0, gfx::BufferFormat::RGBA_8888, texture_color, pixels.get());
   // Note: This test assume that |image| can be used with GL_TEXTURE_2D but
   // that might not be the case for some GLImage implementations.
   glBindTexture(GL_TEXTURE_2D, texture);
@@ -146,14 +150,14 @@ TYPED_TEST_P(GLImageCopyTest, CopyTexImage) {
   // clang-format on
 
   GLuint vertex_shader =
-      GLTestHelper::LoadShader(GL_VERTEX_SHADER, kVertexShader);
+      gfx::GLHelper::LoadShader(GL_VERTEX_SHADER, kVertexShader);
   bool is_gles = gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2;
-  GLuint fragment_shader = GLTestHelper::LoadShader(
+  GLuint fragment_shader = gfx::GLHelper::LoadShader(
       GL_FRAGMENT_SHADER,
       base::StringPrintf("%s%s", is_gles ? kShaderFloatPrecision : "",
                          kFragmentShader)
           .c_str());
-  GLuint program = GLTestHelper::SetupProgram(vertex_shader, fragment_shader);
+  GLuint program = gfx::GLHelper::SetupProgram(vertex_shader, fragment_shader);
   EXPECT_NE(program, 0u);
   glUseProgram(program);
 

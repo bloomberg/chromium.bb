@@ -49,6 +49,11 @@
             'glx_api_unittest.cc',
           ],
         }],
+        ['OS == "mac"', {
+          'sources': [
+            'gl_image_io_surface_unittest.cc',
+          ],
+        }],
         ['OS == "win"', {
           'sources': [
             'wgl_api_unittest.cc',

@@ -1949,6 +1949,7 @@ _NAMED_TYPE_INFO = {
       'GL_RGB',
       'GL_RGB_YUV_420_CHROMIUM',
       'GL_RGB_YCBCR_422_CHROMIUM',
+      'GL_RGB_YCBCR_420V_CHROMIUM',
       'GL_RGBA',
     ],
   },
