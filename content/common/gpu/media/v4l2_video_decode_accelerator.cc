@@ -199,16 +199,21 @@ V4L2VideoDecodeAccelerator::~V4L2VideoDecodeAccelerator() {
   DCHECK(output_buffer_map_.empty());
 }
 
-bool V4L2VideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile,
+bool V4L2VideoDecodeAccelerator::Initialize(const Config& config,
                                             Client* client) {
   DVLOG(3) << "Initialize()";
+  if (config.is_encrypted) {
+    NOTREACHED() << "Encrypted streams are not supported for this VDA";
+    return false;
+  }
+
   DCHECK(child_task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(decoder_state_, kUninitialized);
 
   client_ptr_factory_.reset(new base::WeakPtrFactory<Client>(client));
   client_ = client_ptr_factory_->GetWeakPtr();
 
-  switch (profile) {
+  switch (config.profile) {
     case media::H264PROFILE_BASELINE:
       DVLOG(2) << "Initialize(): profile H264PROFILE_BASELINE";
       break;
@@ -225,10 +230,10 @@ bool V4L2VideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile,
       DVLOG(2) << "Initialize(): profile VP9PROFILE_ANY";
       break;
     default:
-      DLOG(ERROR) << "Initialize(): unsupported profile=" << profile;
+      DLOG(ERROR) << "Initialize(): unsupported profile=" << config.profile;
       return false;
   };
-  video_profile_ = profile;
+  video_profile_ = config.profile;
 
   if (egl_display_ == EGL_NO_DISPLAY) {
     LOG(ERROR) << "Initialize(): could not get EGLDisplay";

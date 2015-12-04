@@ -9,6 +9,14 @@
 
 namespace media {
 
+VideoDecodeAccelerator::Config::Config(VideoCodecProfile video_codec_profile)
+    : profile(video_codec_profile) {}
+
+VideoDecodeAccelerator::Config::Config(
+    const VideoDecoderConfig& video_decoder_config)
+    : profile(video_decoder_config.profile()),
+      is_encrypted(video_decoder_config.is_encrypted()) {}
+
 void VideoDecodeAccelerator::Client::NotifyCdmAttached(bool success) {
   NOTREACHED() << "By default CDM is not supported.";
 }

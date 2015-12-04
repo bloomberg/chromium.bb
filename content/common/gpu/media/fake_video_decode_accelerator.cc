@@ -41,13 +41,18 @@ FakeVideoDecodeAccelerator::FakeVideoDecodeAccelerator(
 FakeVideoDecodeAccelerator::~FakeVideoDecodeAccelerator() {
 }
 
-bool FakeVideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile,
+bool FakeVideoDecodeAccelerator::Initialize(const Config& config,
                                             Client* client) {
   DCHECK(child_task_runner_->BelongsToCurrentThread());
-  if (profile == media::VIDEO_CODEC_PROFILE_UNKNOWN) {
+  if (config.profile == media::VIDEO_CODEC_PROFILE_UNKNOWN) {
     LOG(ERROR) << "unknown codec profile";
     return false;
   }
+  if (config.is_encrypted) {
+    NOTREACHED() << "encrypted streams are not supported";
+    return false;
+  }
+
   // V4L2VideoDecodeAccelerator waits until first decode call to ask for buffers
   // This class asks for it on initialization instead.
   client_ = client;

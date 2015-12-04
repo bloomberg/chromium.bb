@@ -35,7 +35,7 @@ class GpuVideoDecodeAcceleratorHost
   bool OnMessageReceived(const IPC::Message& message) override;
 
   // media::VideoDecodeAccelerator implementation.
-  bool Initialize(media::VideoCodecProfile profile, Client* client) override;
+  bool Initialize(const Config& config, Client* client) override;
   void SetCdm(int cdm_id) override;
   void Decode(const media::BitstreamBuffer& bitstream_buffer) override;
   void AssignPictureBuffers(

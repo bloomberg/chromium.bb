@@ -81,6 +81,7 @@ AndroidVideoDecodeAccelerator::AndroidVideoDecodeAccelerator(
     : client_(NULL),
       make_context_current_(make_context_current),
       codec_(media::kCodecH264),
+      is_encrypted_(false),
       state_(NO_ERROR),
       picturebuffers_requested_(false),
       gl_decoder_(decoder),
@@ -91,14 +92,18 @@ AndroidVideoDecodeAccelerator::~AndroidVideoDecodeAccelerator() {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
-bool AndroidVideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile,
+bool AndroidVideoDecodeAccelerator::Initialize(const Config& config,
                                                Client* client) {
   DCHECK(!media_codec_);
   DCHECK(thread_checker_.CalledOnValidThread());
   TRACE_EVENT0("media", "AVDA::Initialize");
 
+  DVLOG(1) << __FUNCTION__ << ": profile:" << config.profile
+           << " is_encrypted:" << config.is_encrypted;
+
   client_ = client;
-  codec_ = VideoCodecProfileToVideoCodec(profile);
+  codec_ = VideoCodecProfileToVideoCodec(config.profile);
+  is_encrypted_ = config.is_encrypted;
 
   bool profile_supported = codec_ == media::kCodecVP8;
 #if defined(ENABLE_MEDIA_PIPELINE_ON_ANDROID)
@@ -107,7 +112,7 @@ bool AndroidVideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile,
 #endif
 
   if (!profile_supported) {
-    LOG(ERROR) << "Unsupported profile: " << profile;
+    LOG(ERROR) << "Unsupported profile: " << config.profile;
     return false;
   }
 

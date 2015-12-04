@@ -313,10 +313,15 @@ VTVideoDecodeAccelerator::~VTVideoDecodeAccelerator() {
   DCHECK(gpu_thread_checker_.CalledOnValidThread());
 }
 
-bool VTVideoDecodeAccelerator::Initialize(
-    media::VideoCodecProfile profile,
-    Client* client) {
+bool VTVideoDecodeAccelerator::Initialize(const Config& config,
+                                          Client* client) {
   DCHECK(gpu_thread_checker_.CalledOnValidThread());
+
+  if (config.is_encrypted) {
+    NOTREACHED() << "Encrypted streams are not supported for this VDA";
+    return false;
+  }
+
   client_ = client;
 
   if (!InitializeVideoToolbox())
@@ -324,7 +329,7 @@ bool VTVideoDecodeAccelerator::Initialize(
 
   bool profile_supported = false;
   for (const auto& supported_profile : kSupportedProfiles) {
-    if (profile == supported_profile) {
+    if (config.profile == supported_profile) {
       profile_supported = true;
       break;
     }

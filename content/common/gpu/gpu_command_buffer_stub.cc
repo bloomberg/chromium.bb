@@ -881,13 +881,13 @@ void GpuCommandBufferStub::PutChanged() {
 }
 
 void GpuCommandBufferStub::OnCreateVideoDecoder(
-    media::VideoCodecProfile profile,
+    const media::VideoDecodeAccelerator::Config& config,
     int32 decoder_route_id,
     IPC::Message* reply_message) {
   TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnCreateVideoDecoder");
   GpuVideoDecodeAccelerator* decoder = new GpuVideoDecodeAccelerator(
       decoder_route_id, this, channel_->io_task_runner());
-  decoder->Initialize(profile, reply_message);
+  decoder->Initialize(config, reply_message);
   // decoder is registered as a DestructionObserver of this stub and will
   // self-delete during destruction of this stub.
 }

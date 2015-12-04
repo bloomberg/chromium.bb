@@ -83,8 +83,7 @@ class CONTENT_EXPORT V4L2VideoDecodeAccelerator
 
   // media::VideoDecodeAccelerator implementation.
   // Note: Initialize() and Destroy() are synchronous.
-  bool Initialize(media::VideoCodecProfile profile,
-                  Client* client) override;
+  bool Initialize(const Config& config, Client* client) override;
   void Decode(const media::BitstreamBuffer& bitstream_buffer) override;
   void AssignPictureBuffers(
       const std::vector<media::PictureBuffer>& buffers) override;

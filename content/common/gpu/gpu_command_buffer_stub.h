@@ -21,7 +21,7 @@
 #include "gpu/command_buffer/service/gpu_scheduler.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
-#include "media/base/video_decoder_config.h"
+#include "media/video/video_decode_accelerator.h"
 #include "ui/events/latency_info.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
@@ -180,7 +180,7 @@ class GpuCommandBufferStub
   void OnDestroyTransferBuffer(int32 id);
   void OnGetTransferBuffer(int32 id, IPC::Message* reply_message);
 
-  void OnCreateVideoDecoder(media::VideoCodecProfile profile,
+  void OnCreateVideoDecoder(const media::VideoDecodeAccelerator::Config& config,
                             int32 route_id,
                             IPC::Message* reply_message);
   void OnCreateVideoEncoder(media::VideoPixelFormat input_format,

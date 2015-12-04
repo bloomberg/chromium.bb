@@ -632,15 +632,20 @@ DXVAVideoDecodeAccelerator::~DXVAVideoDecodeAccelerator() {
   client_ = NULL;
 }
 
-bool DXVAVideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile,
-                                           Client* client) {
+bool DXVAVideoDecodeAccelerator::Initialize(const Config& config,
+                                            Client* client) {
+  if (config.is_encrypted) {
+    NOTREACHED() << "Encrypted streams are not supported for this VDA";
+    return false;
+  }
+
   client_ = client;
 
   main_thread_task_runner_ = base::MessageLoop::current()->task_runner();
 
   bool profile_supported = false;
   for (const auto& supported_profile : kSupportedProfiles) {
-    if (profile == supported_profile) {
+    if (config.profile == supported_profile) {
       profile_supported = true;
       break;
     }
@@ -692,7 +697,7 @@ bool DXVAVideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile,
 
   media::InitializeMediaFoundation();
 
-  RETURN_AND_NOTIFY_ON_FAILURE(InitDecoder(profile),
+  RETURN_AND_NOTIFY_ON_FAILURE(InitDecoder(config.profile),
       "Failed to initialize decoder", PLATFORM_FAILURE, false);
 
   RETURN_AND_NOTIFY_ON_FAILURE(GetStreamsInfoAndBufferReqs(),

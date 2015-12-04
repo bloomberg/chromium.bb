@@ -868,18 +868,22 @@ VideoDecoderShim::~VideoDecoderShim() {
                  base::Owned(decoder_impl_.release())));
 }
 
-bool VideoDecoderShim::Initialize(
-    media::VideoCodecProfile profile,
-    media::VideoDecodeAccelerator::Client* client) {
+bool VideoDecoderShim::Initialize(const Config& vda_config, Client* client) {
   DCHECK_EQ(client, host_);
   DCHECK(RenderThreadImpl::current());
   DCHECK_EQ(state_, UNINITIALIZED);
+
+  if (vda_config.is_encrypted) {
+    NOTREACHED() << "Encrypted streams are not supported";
+    return false;
+  }
+
   media::VideoCodec codec = media::kUnknownVideoCodec;
-  if (profile <= media::H264PROFILE_MAX)
+  if (vda_config.profile <= media::H264PROFILE_MAX)
     codec = media::kCodecH264;
-  else if (profile <= media::VP8PROFILE_MAX)
+  else if (vda_config.profile <= media::VP8PROFILE_MAX)
     codec = media::kCodecVP8;
-  else if (profile <= media::VP9PROFILE_MAX)
+  else if (vda_config.profile <= media::VP9PROFILE_MAX)
     codec = media::kCodecVP9;
   DCHECK_NE(codec, media::kUnknownVideoCodec);
 
@@ -889,8 +893,9 @@ bool VideoDecoderShim::Initialize(
   if (!yuv_converter_->Initialize())
     return false;
 
-  media::VideoDecoderConfig config(
-      codec, profile, media::PIXEL_FORMAT_YV12, media::COLOR_SPACE_UNSPECIFIED,
+  media::VideoDecoderConfig video_decoder_config(
+      codec, vda_config.profile, media::PIXEL_FORMAT_YV12,
+      media::COLOR_SPACE_UNSPECIFIED,
       gfx::Size(32, 24),  // Small sizes that won't fail.
       gfx::Rect(32, 24), gfx::Size(32, 24),
       // TODO(bbudge): Verify extra data isn't needed.
@@ -899,8 +904,7 @@ bool VideoDecoderShim::Initialize(
   media_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&VideoDecoderShim::DecoderImpl::Initialize,
-                 base::Unretained(decoder_impl_.get()),
-                 config));
+                 base::Unretained(decoder_impl_.get()), video_decoder_config));
 
   state_ = DECODING;
 

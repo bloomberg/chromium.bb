@@ -53,6 +53,19 @@ class MEDIA_EXPORT VideoDecodeAccelerator {
     LARGEST_ERROR_ENUM,
   };
 
+  // Config structure contains parameters required for the VDA initialization.
+  struct MEDIA_EXPORT Config {
+    Config() = default;
+    Config(VideoCodecProfile profile);
+    Config(const VideoDecoderConfig& video_decoder_config);
+
+    // |profile| combines the information about the codec and its profile.
+    VideoCodecProfile profile = VIDEO_CODEC_PROFILE_UNKNOWN;
+
+    // The flag indicating whether the stream is encrypted.
+    bool is_encrypted = false;
+  };
+
   // Interface for collaborating with picture interface to provide memory for
   // output picture and blitting them. These callbacks will not be made unless
   // Initialize() has returned successfully.
@@ -111,10 +124,10 @@ class MEDIA_EXPORT VideoDecodeAccelerator {
   // attached can we start to decode.
   //
   // Parameters:
-  //  |profile| is the video stream's format profile.
+  //  |config| contains the initialization parameters.
   //  |client| is the client of this video decoder. Does not take ownership of
   //  |client| which must be valid until Destroy() is called.
-  virtual bool Initialize(VideoCodecProfile profile, Client* client) = 0;
+  virtual bool Initialize(const Config& config, Client* client) = 0;
 
   // Sets a CDM to be used by the decoder to decode encrypted buffers.
   // Client::NotifyCdmAttached() will then be called to indicate whether the CDM

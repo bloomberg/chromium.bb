@@ -174,7 +174,10 @@ void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
   }
 
   vda_ = factories_->CreateVideoDecodeAccelerator().Pass();
-  if (!vda_ || !vda_->Initialize(config.profile(), this)) {
+
+  VideoDecodeAccelerator::Config vda_config(config);
+
+  if (!vda_ || !vda_->Initialize(vda_config, this)) {
     DVLOG(1) << "VDA initialization failed.";
     bound_init_cb.Run(false);
     return;

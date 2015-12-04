@@ -316,12 +316,19 @@ VaapiVideoDecodeAccelerator::~VaapiVideoDecodeAccelerator() {
   DCHECK_EQ(message_loop_, base::MessageLoop::current());
 }
 
-bool VaapiVideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile,
+bool VaapiVideoDecodeAccelerator::Initialize(const Config& config,
                                              Client* client) {
   DCHECK_EQ(message_loop_, base::MessageLoop::current());
 
+  if (config.is_encrypted) {
+    NOTREACHED() << "Encrypted streams are not supported for this VDA";
+    return false;
+  }
+
   client_ptr_factory_.reset(new base::WeakPtrFactory<Client>(client));
   client_ = client_ptr_factory_->GetWeakPtr();
+
+  media::VideoCodecProfile profile = config.profile;
 
   base::AutoLock auto_lock(lock_);
   DCHECK_EQ(state_, kUninitialized);

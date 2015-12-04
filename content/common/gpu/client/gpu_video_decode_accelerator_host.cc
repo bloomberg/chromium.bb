@@ -81,7 +81,7 @@ void GpuVideoDecodeAcceleratorHost::OnChannelError() {
   PostNotifyError(PLATFORM_FAILURE);
 }
 
-bool GpuVideoDecodeAcceleratorHost::Initialize(media::VideoCodecProfile profile,
+bool GpuVideoDecodeAcceleratorHost::Initialize(const Config& config,
                                                Client* client) {
   DCHECK(CalledOnValidThread());
   client_ = client;
@@ -93,7 +93,7 @@ bool GpuVideoDecodeAcceleratorHost::Initialize(media::VideoCodecProfile profile,
   channel_->AddRoute(route_id, weak_this_factory_.GetWeakPtr());
 
   bool succeeded = false;
-  Send(new GpuCommandBufferMsg_CreateVideoDecoder(impl_->route_id(), profile,
+  Send(new GpuCommandBufferMsg_CreateVideoDecoder(impl_->route_id(), config,
                                                   route_id, &succeeded));
 
   if (!succeeded) {

@@ -674,7 +674,9 @@ void RTCVideoDecoder::CreateVDA(media::VideoCodecProfile profile,
     DVLOG(1) << "Unsupported profile " << profile;
   } else {
     vda_ = factories_->CreateVideoDecodeAccelerator();
-    if (vda_ && !vda_->Initialize(profile, this))
+
+    media::VideoDecodeAccelerator::Config config(profile);
+    if (vda_ && !vda_->Initialize(config, this))
       vda_.release()->Destroy();
   }
 

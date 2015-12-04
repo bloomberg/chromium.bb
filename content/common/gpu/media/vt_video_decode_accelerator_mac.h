@@ -41,7 +41,7 @@ class VTVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   ~VTVideoDecodeAccelerator() override;
 
   // VideoDecodeAccelerator implementation.
-  bool Initialize(media::VideoCodecProfile profile, Client* client) override;
+  bool Initialize(const Config& config, Client* client) override;
   void Decode(const media::BitstreamBuffer& bitstream) override;
   void AssignPictureBuffers(
       const std::vector<media::PictureBuffer>& pictures) override;

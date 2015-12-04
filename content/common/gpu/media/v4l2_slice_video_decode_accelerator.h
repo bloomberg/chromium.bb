@@ -42,8 +42,7 @@ class CONTENT_EXPORT V4L2SliceVideoDecodeAccelerator
   ~V4L2SliceVideoDecodeAccelerator() override;
 
   // media::VideoDecodeAccelerator implementation.
-  bool Initialize(media::VideoCodecProfile profile,
-                  VideoDecodeAccelerator::Client* client) override;
+  bool Initialize(const Config& config, Client* client) override;
   void Decode(const media::BitstreamBuffer& bitstream_buffer) override;
   void AssignPictureBuffers(
       const std::vector<media::PictureBuffer>& buffers) override;

@@ -65,10 +65,10 @@ class GpuVideoDecodeAccelerator
   bool Send(IPC::Message* message) override;
 
   // Initialize VDAs from the set of VDAs supported for current platform until
-  // one of them succeeds for given |profile|. Send the |init_done_msg| when
+  // one of them succeeds for given |config|. Send the |init_done_msg| when
   // done. filter_ is passed to GpuCommandBufferStub channel only if the chosen
   // VDA can decode on IO thread.
-  void Initialize(const media::VideoCodecProfile profile,
+  void Initialize(const media::VideoDecodeAccelerator::Config& config,
                   IPC::Message* init_done_msg);
 
  private:

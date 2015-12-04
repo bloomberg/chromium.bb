@@ -216,6 +216,11 @@ IPC_STRUCT_TRAITS_BEGIN(gpu::GPUInfo::GPUDevice)
   IPC_STRUCT_TRAITS_MEMBER(device_string)
 IPC_STRUCT_TRAITS_END()
 
+IPC_STRUCT_TRAITS_BEGIN(media::VideoDecodeAccelerator::Config)
+  IPC_STRUCT_TRAITS_MEMBER(profile)
+  IPC_STRUCT_TRAITS_MEMBER(is_encrypted)
+IPC_STRUCT_TRAITS_END()
+
 IPC_STRUCT_TRAITS_BEGIN(gpu::VideoDecodeAcceleratorSupportedProfile)
   IPC_STRUCT_TRAITS_MEMBER(profile)
   IPC_STRUCT_TRAITS_MEMBER(max_resolution)
@@ -600,7 +605,7 @@ IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_DestroyTransferBuffer,
 // Created decoders should be freed with AcceleratedVideoDecoderMsg_Destroy when
 // no longer needed.
 IPC_SYNC_MESSAGE_ROUTED2_1(GpuCommandBufferMsg_CreateVideoDecoder,
-                           media::VideoCodecProfile /* profile */,
+                           media::VideoDecodeAccelerator::Config, /* config */
                            int32, /* route_id */
                            bool /* succeeded */)
 

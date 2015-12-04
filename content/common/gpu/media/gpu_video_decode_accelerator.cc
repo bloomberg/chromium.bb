@@ -323,7 +323,7 @@ bool GpuVideoDecodeAccelerator::Send(IPC::Message* message) {
 }
 
 void GpuVideoDecodeAccelerator::Initialize(
-    const media::VideoCodecProfile profile,
+    const media::VideoDecodeAccelerator::Config& config,
     IPC::Message* init_done_msg) {
   DCHECK(!video_decode_accelerator_);
 
@@ -356,7 +356,7 @@ void GpuVideoDecodeAccelerator::Initialize(
   for (const auto& create_vda_function : create_vda_fps) {
     video_decode_accelerator_ = (this->*create_vda_function)();
     if (!video_decode_accelerator_ ||
-        !video_decode_accelerator_->Initialize(profile, this))
+        !video_decode_accelerator_->Initialize(config, this))
       continue;
 
     if (video_decode_accelerator_->CanDecodeOnIOThread()) {
@@ -367,7 +367,8 @@ void GpuVideoDecodeAccelerator::Initialize(
     return;
   }
   video_decode_accelerator_.reset();
-  LOG(ERROR) << "HW video decode not available for profile " << profile;
+  LOG(ERROR) << "HW video decode not available for profile " << config.profile
+             << (config.is_encrypted ? " with encryption" : "");
   SendCreateDecoderReply(init_done_msg, false);
 }
 

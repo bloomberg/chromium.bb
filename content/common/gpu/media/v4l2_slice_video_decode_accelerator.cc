@@ -433,10 +433,14 @@ void V4L2SliceVideoDecodeAccelerator::NotifyError(Error error) {
   }
 }
 
-bool V4L2SliceVideoDecodeAccelerator::Initialize(
-    media::VideoCodecProfile profile,
-    VideoDecodeAccelerator::Client* client) {
-  DVLOGF(3) << "profile: " << profile;
+bool V4L2SliceVideoDecodeAccelerator::Initialize(const Config& config,
+                                                 Client* client) {
+  DVLOGF(3) << "profile: " << config.profile;
+  if (config.is_encrypted) {
+    NOTREACHED() << "Encrypted streams are not supported for this VDA";
+    return false;
+  }
+
   DCHECK(child_task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, kUninitialized);
 
@@ -444,7 +448,7 @@ bool V4L2SliceVideoDecodeAccelerator::Initialize(
       new base::WeakPtrFactory<VideoDecodeAccelerator::Client>(client));
   client_ = client_ptr_factory_->GetWeakPtr();
 
-  video_profile_ = profile;
+  video_profile_ = config.profile;
 
   if (video_profile_ >= media::H264PROFILE_MIN &&
       video_profile_ <= media::H264PROFILE_MAX) {

@@ -95,7 +95,7 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
   ~AndroidVideoDecodeAccelerator() override;
 
   // media::VideoDecodeAccelerator implementation:
-  bool Initialize(media::VideoCodecProfile profile, Client* client) override;
+  bool Initialize(const Config& config, Client* client) override;
   void SetCdm(int cdm_id) override;
   void Decode(const media::BitstreamBuffer& bitstream_buffer) override;
   void AssignPictureBuffers(
@@ -177,6 +177,9 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
 
   // Codec type. Used when we configure media codec.
   media::VideoCodec codec_;
+
+  // Whether the stream is encrypted.
+  bool is_encrypted_;
 
   // The current state of this class. For now, this is used only for setting
   // error state.

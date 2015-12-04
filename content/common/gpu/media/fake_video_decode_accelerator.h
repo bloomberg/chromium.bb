@@ -25,8 +25,7 @@ class CONTENT_EXPORT FakeVideoDecodeAccelerator
       const base::Callback<bool(void)>& make_context_current);
   ~FakeVideoDecodeAccelerator() override;
 
-  bool Initialize(media::VideoCodecProfile profile,
-                  Client* client) override;
+  bool Initialize(const Config& config, Client* client) override;
   void Decode(const media::BitstreamBuffer& bitstream_buffer) override;
   void AssignPictureBuffers(
       const std::vector<media::PictureBuffer>& buffers) override;
