@@ -4595,6 +4595,49 @@ template<> inline ScrollSnapType CSSPrimitiveValue::convertTo() const
     return ScrollSnapTypeNone;
 }
 
+template<> inline CSSPrimitiveValue::CSSPrimitiveValue(Containment snapType)
+    : CSSValue(PrimitiveClass)
+{
+    init(UnitType::ValueID);
+    switch (snapType) {
+    case ContainsNone:
+        m_value.valueID = CSSValueNone;
+        break;
+    case ContainsStrict:
+        m_value.valueID = CSSValueStrict;
+        break;
+    case ContainsPaint:
+        m_value.valueID = CSSValuePaint;
+        break;
+    case ContainsStyle:
+        m_value.valueID = CSSValueStyle;
+        break;
+    case ContainsLayout:
+        m_value.valueID = CSSValueLayout;
+        break;
+    }
+}
+
+template<> inline Containment CSSPrimitiveValue::convertTo() const
+{
+    switch (getValueID()) {
+    case CSSValueNone:
+        return ContainsNone;
+    case CSSValueStrict:
+        return ContainsStrict;
+    case CSSValuePaint:
+        return ContainsPaint;
+    case CSSValueStyle:
+        return ContainsStyle;
+    case CSSValueLayout:
+        return ContainsLayout;
+    default:
+        break;
+    }
+    ASSERT_NOT_REACHED();
+    return ContainsNone;
+}
+
 } // namespace blink
 
 #endif

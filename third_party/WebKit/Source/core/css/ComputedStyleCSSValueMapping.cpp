@@ -2679,6 +2679,22 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
             list->append(cssValuePool().createValue(style.scale()->z(), CSSPrimitiveValue::UnitType::Number));
         return list.release();
     }
+    case CSSPropertyContain: {
+        if (!style.contain())
+            return cssValuePool().createIdentifierValue(CSSValueNone);
+        if (style.contain() == ContainsStrict)
+            return cssValuePool().createIdentifierValue(CSSValueStrict);
+
+        RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
+        if (style.contain() & ContainsStyle)
+            list->append(cssValuePool().createIdentifierValue(CSSValueStyle));
+        if (style.contain() & ContainsLayout)
+            list->append(cssValuePool().createIdentifierValue(CSSValueLayout));
+        if (style.contain() & ContainsPaint)
+            list->append(cssValuePool().createIdentifierValue(CSSValuePaint));
+        ASSERT(list->length());
+        return list.release();
+    }
     case CSSPropertyVariable:
         // TODO(leviw): We should have a way to retrive variables here.
         ASSERT_NOT_REACHED();

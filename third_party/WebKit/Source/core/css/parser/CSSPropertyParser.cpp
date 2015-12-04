@@ -1761,6 +1761,30 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeTextDecorationLine(CSSParserToken
     return list.release();
 }
 
+// none | strict | [ layout || style || paint ]
+static PassRefPtrWillBeRawPtr<CSSValue> consumeContain(CSSParserTokenRange& range)
+{
+    CSSValueID id = range.peek().id();
+    if (id == CSSValueNone)
+        return consumeIdent(range);
+
+    RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
+    if (id == CSSValueStrict) {
+        list->append(consumeIdent(range));
+        return list.release();
+    }
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> ident = nullptr;
+    while ((ident = consumeIdent<CSSValuePaint, CSSValueLayout, CSSValueStyle>(range))) {
+        if (list->hasValue(ident.get()))
+            return nullptr;
+        list->append(ident.release());
+    }
+
+    if (!list->length())
+        return nullptr;
+    return list.release();
+}
+
 static PassRefPtrWillBeRawPtr<CSSValue> consumeMotionPath(CSSParserTokenRange& range)
 {
     CSSValueID id = range.peek().id();
@@ -2428,6 +2452,8 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
         return consumeLengthOrPercent(m_range, SVGAttributeMode, ValueRangeAll, UnitlessQuirk::Forbid);
     case CSSPropertyCursor:
         return consumeCursor(m_range);
+    case CSSPropertyContain:
+        return consumeContain(m_range);
     default:
         return nullptr;
     }

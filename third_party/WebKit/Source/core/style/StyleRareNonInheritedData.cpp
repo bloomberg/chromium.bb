@@ -118,6 +118,7 @@ StyleRareNonInheritedData::StyleRareNonInheritedData()
     , m_touchAction(ComputedStyle::initialTouchAction())
     , m_objectFit(ComputedStyle::initialObjectFit())
     , m_isolation(ComputedStyle::initialIsolation())
+    , m_contain(ComputedStyle::initialContain())
     , m_scrollBehavior(ComputedStyle::initialScrollBehavior())
     , m_scrollSnapType(ComputedStyle::initialScrollSnapType())
     , m_requiresAcceleratedCompositingForExternalReasons(false)
@@ -199,6 +200,7 @@ StyleRareNonInheritedData::StyleRareNonInheritedData(const StyleRareNonInherited
     , m_touchAction(o.m_touchAction)
     , m_objectFit(o.m_objectFit)
     , m_isolation(o.m_isolation)
+    , m_contain(o.m_contain)
     , m_scrollBehavior(o.m_scrollBehavior)
     , m_scrollSnapType(o.m_scrollSnapType)
     , m_requiresAcceleratedCompositingForExternalReasons(o.m_requiresAcceleratedCompositingForExternalReasons)
@@ -289,6 +291,7 @@ bool StyleRareNonInheritedData::operator==(const StyleRareNonInheritedData& o) c
         && m_touchAction == o.m_touchAction
         && m_objectFit == o.m_objectFit
         && m_isolation == o.m_isolation
+        && m_contain == o.m_contain
         && m_scrollBehavior == o.m_scrollBehavior
         && m_scrollSnapType == o.m_scrollSnapType
         && m_requiresAcceleratedCompositingForExternalReasons == o.m_requiresAcceleratedCompositingForExternalReasons

@@ -44,6 +44,7 @@ CSS3TextDecorations status=experimental
 CSSAttributeCaseSensitivity status=experimental
 CSSBackdropFilter status=experimental
 CSSCompositing status=stable
+CSSContainment status=experimental
 CSSFontDisplay status=experimental
 CSSFontSizeAdjust status=experimental
 CSSGridLayout status=experimental
