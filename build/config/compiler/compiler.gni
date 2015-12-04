@@ -13,6 +13,10 @@ declare_args() {
   #   0 means no symbols.
   #   -1 means auto-set according to debug/release and platform.
   symbol_level = -1
+
+  # Compile in such a way as to enable profiling of the generated code. For
+  # example, don't omit the frame pointer and leave in symbols.
+  enable_profiling = false
 }
 
 # If it wasn't manually set, set to an appropriate default.

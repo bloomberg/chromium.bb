@@ -8,6 +8,7 @@
 #include <cmath>
 
 #include "base/command_line.h"
+#include "base/debug/debugging_flags.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
@@ -322,7 +323,7 @@ void ToolsMenuModel::Build(Browser* browser) {
   AddSeparator(ui::NORMAL_SEPARATOR);
   AddItemWithStringId(IDC_DEV_TOOLS, IDS_DEV_TOOLS);
 
-#if defined(ENABLE_PROFILING) && !defined(NO_TCMALLOC)
+#if BUILDFLAG(ENABLE_PROFILING) && !defined(NO_TCMALLOC)
   AddSeparator(ui::NORMAL_SEPARATOR);
   AddCheckItemWithStringId(IDC_PROFILING_ENABLED, IDS_PROFILING_ENABLED);
 #endif

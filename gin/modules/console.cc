@@ -4,7 +4,7 @@
 
 #include "gin/modules/console.h"
 
-#include <iostream>
+#include <stdio.h>
 
 #include "base/strings/string_util.h"
 #include "gin/arguments.h"
@@ -25,7 +25,7 @@ void Log(Arguments* args) {
     args->ThrowError();
     return;
   }
-  std::cout << base::JoinString(messages, " ") << std::endl;
+  printf("%s\n", base::JoinString(messages, " ").c_str());
 }
 
 WrapperInfo g_wrapper_info = { kEmbedderNativeGin };

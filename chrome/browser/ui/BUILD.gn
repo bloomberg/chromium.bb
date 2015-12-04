@@ -46,6 +46,7 @@ source_set("ui") {
   deps = [
     # NOTE: New dependencies should generally be added in the OS!="ios"
     # dependencies block below, rather than here.
+    "//base/debug:debugging_flags",
     "//chrome:extra_resources",
     "//chrome:resources",
     "//chrome:strings",
