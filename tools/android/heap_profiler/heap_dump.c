@@ -40,6 +40,7 @@
 #include <unistd.h>
 #include <sys/ptrace.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
 
 #include "tools/android/heap_profiler/heap_profiler.h"
 
@@ -234,8 +235,6 @@ static void lseek_abs(int fd, size_t off) {
 static ssize_t read_safe(int fd, void* buf, size_t count) {
   ssize_t res;
   size_t bytes_read = 0;
-  if (count < 0)
-    return -1;
   do {
     do {
       res = read(fd, buf + bytes_read, count - bytes_read);
