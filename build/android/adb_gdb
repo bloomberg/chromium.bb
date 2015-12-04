@@ -949,10 +949,16 @@ TARGET_PORT=$PORT
 
 # Select correct app_process for architecture.
 case $TARGET_ARCH in
-      arm|x86|mips) GDBEXEC=app_process;;
+      arm|x86|mips) GDBEXEC=app_process32;;
       arm64|x86_64) GDBEXEC=app_process64;;
       *) fail_panic "Unknown app_process for architecture!";;
 esac
+
+# Default to app_process if bit-width specific process isn't found.
+adb_shell ls /system/bin/$GDBEXEC
+if [ $? != 0 ]; then
+    GDBEXEC=app_process
+fi
 
 # Detect AddressSanitizer setup on the device. In that case app_process is a
 # script, and the real executable is app_process.real.
