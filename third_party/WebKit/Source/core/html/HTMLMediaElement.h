@@ -356,7 +356,6 @@ private:
     WebMediaPlayer::LoadType loadType() const;
     void scheduleNextSourceChild();
     void loadNextSourceChild();
-    void userCancelledLoad();
     void clearMediaPlayer(int flags);
     void clearMediaPlayerAndAudioSourceProviderClientWithoutLocking();
     bool havePotentialSourceChild();

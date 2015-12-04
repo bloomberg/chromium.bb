@@ -384,13 +384,6 @@ HTMLMediaElement::~HTMLMediaElement()
     removeElementFromDocumentMap(this, &document());
 
     // Destroying the player may cause a resource load to be canceled,
-    // which could result in userCancelledLoad() being called back.
-    // Setting m_isFinalizing ensures that such a call will not cause
-    // us to dispatch an abort event, which would result in a crash.
-    // See http://crbug.com/233654 for more details.
-    m_isFinalizing = true;
-
-    // Destroying the player may cause a resource load to be canceled,
     // which could result in Document::dispatchWindowLoadEvent() being
     // called via ResourceFetch::didLoadResource() then
     // FrameLoader::checkCompleted(). To prevent load event dispatching during
@@ -474,10 +467,12 @@ void HTMLMediaElement::didMoveToNewDocument(Document& oldDocument)
 
     // FIXME: This is a temporary fix to prevent this object from causing the
     // MediaPlayer to dereference LocalFrame and FrameLoader pointers from the
-    // previous document. A proper fix would provide a mechanism to allow this
-    // object to refresh the MediaPlayer's LocalFrame and FrameLoader references on
+    // previous document. This restarts the load, as if the src attribute had been set.
+    // A proper fix would provide a mechanism to allow this object to refresh
+    // the MediaPlayer's LocalFrame and FrameLoader references on
     // document changes so that playback can be resumed properly.
-    userCancelledLoad();
+    clearMediaPlayer(LoadMediaResource);
+    scheduleDelayedAction(LoadMediaResource);
 
     // Decrement the load event delay count on oldDocument now that m_webMediaPlayer has been destroyed
     // and there is no risk of dispatching a load event from within the destructor.
@@ -2978,50 +2973,6 @@ void HTMLMediaElement::stopPeriodicTimers()
     m_playbackProgressTimer.stop();
 }
 
-void HTMLMediaElement::userCancelledLoad()
-{
-    WTF_LOG(Media, "HTMLMediaElement::userCancelledLoad(%p)", this);
-
-    // If the media data fetching process is aborted by the user:
-
-    // 1 - The user agent should cancel the fetching process.
-    clearMediaPlayer(-1);
-    // Reset m_readyState and m_readyStateMaximum since m_webMediaPlayer is gone.
-    ReadyState readyState = m_readyState;
-    m_readyState = HAVE_NOTHING;
-    m_readyStateMaximum = HAVE_NOTHING;
-
-    // TODO(srirama.m): Investigate if this condition can be dropped entirely without any issues.
-    if (m_networkState == NETWORK_EMPTY || m_completelyLoaded || m_isFinalizing)
-        return;
-
-    // 2 - Set the error attribute to a new MediaError object whose code attribute is set to MEDIA_ERR_ABORTED.
-    m_error = MediaError::create(MediaError::MEDIA_ERR_ABORTED);
-
-    // 3 - Queue a task to fire a simple event named error at the media element.
-    scheduleEvent(EventTypeNames::abort);
-
-    // 4 - If the media element's readyState attribute has a value equal to HAVE_NOTHING, set the
-    // element's networkState attribute to the NETWORK_EMPTY value and queue a task to fire a
-    // simple event named emptied at the element. Otherwise, set the element's networkState
-    // attribute to the NETWORK_IDLE value.
-    if (readyState == HAVE_NOTHING) {
-        setNetworkState(NETWORK_EMPTY);
-        scheduleEvent(EventTypeNames::emptied);
-    } else {
-        setNetworkState(NETWORK_IDLE);
-    }
-
-    // 5 - Set the element's delaying-the-load-event flag to false. This stops delaying the load event.
-    setShouldDelayLoadEvent(false);
-
-    // 6 - Abort the overall resource selection algorithm.
-    m_currentSourceNode = nullptr;
-
-    invalidateCachedTime();
-    cueTimeline().updateActiveCues(0);
-}
-
 void HTMLMediaElement::clearMediaPlayerAndAudioSourceProviderClientWithoutLocking()
 {
 #if ENABLE(WEB_AUDIO)
@@ -3070,13 +3021,19 @@ void HTMLMediaElement::stop()
 
     recordMetricsIfPausing();
 
-    // Close the async event queue so that no events are enqueued by userCancelledLoad.
+    // Close the async event queue so that no events are enqueued.
     cancelPendingEventsAndCallbacks();
     m_asyncEventQueue->close();
 
-    userCancelledLoad();
-
     // Stop the playback without generating events
+    clearMediaPlayer(-1);
+    m_readyState = HAVE_NOTHING;
+    m_readyStateMaximum = HAVE_NOTHING;
+    setNetworkState(NETWORK_EMPTY);
+    setShouldDelayLoadEvent(false);
+    m_currentSourceNode = nullptr;
+    invalidateCachedTime();
+    cueTimeline().updateActiveCues(0);
     m_playing = false;
     m_paused = true;
     m_seeking = false;
