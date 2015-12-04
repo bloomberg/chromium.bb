@@ -6,7 +6,9 @@
 
 #include <algorithm>
 
+#include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/i18n/base_i18n_switches.h"
 #include "base/logging.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -61,6 +63,30 @@ base::i18n::TextDirection GetCharacterDirection(UChar32 character) {
              (property == U_LEFT_TO_RIGHT_OVERRIDE)) {
     return base::i18n::LEFT_TO_RIGHT;
   }
+  return base::i18n::UNKNOWN_DIRECTION;
+}
+
+// Gets the explicitly forced text direction for debugging. If no forcing is
+// applied, returns UNKNOWN_DIRECTION.
+base::i18n::TextDirection GetForcedTextDirection() {
+  // On iOS, check for RTL forcing.
+#if defined(OS_IOS)
+  if (base::ios::IsInForcedRTL())
+    return base::i18n::RIGHT_TO_LEFT;
+#endif
+
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kForceUIDirection)) {
+    std::string force_flag =
+        command_line->GetSwitchValueASCII(switches::kForceUIDirection);
+
+    if (force_flag == switches::kForceUIDirectionLTR)
+      return base::i18n::LEFT_TO_RIGHT;
+
+    if (force_flag == switches::kForceUIDirectionRTL)
+      return base::i18n::RIGHT_TO_LEFT;
+  }
+
   return base::i18n::UNKNOWN_DIRECTION;
 }
 
@@ -135,11 +161,10 @@ bool ICUIsRTL() {
 }
 
 TextDirection GetTextDirectionForLocaleInStartUp(const char* locale_name) {
-// On iOS, check for RTL forcing.
-#if defined(OS_IOS)
-  if (ios::IsInForcedRTL())
-    return RIGHT_TO_LEFT;
-#endif
+  // Check for direction forcing.
+  TextDirection forced_direction = GetForcedTextDirection();
+  if (forced_direction != UNKNOWN_DIRECTION)
+    return forced_direction;
 
   // This list needs to be updated in alphabetical order if we add more RTL
   // locales.
@@ -155,11 +180,10 @@ TextDirection GetTextDirectionForLocaleInStartUp(const char* locale_name) {
 }
 
 TextDirection GetTextDirectionForLocale(const char* locale_name) {
-  // On iOS, check for RTL forcing.
-#if defined(OS_IOS)
-  if (ios::IsInForcedRTL())
-    return RIGHT_TO_LEFT;
-#endif
+  // Check for direction forcing.
+  TextDirection forced_direction = GetForcedTextDirection();
+  if (forced_direction != UNKNOWN_DIRECTION)
+    return forced_direction;
 
   UErrorCode status = U_ZERO_ERROR;
   ULayoutType layout_dir = uloc_getCharacterOrientation(locale_name, &status);

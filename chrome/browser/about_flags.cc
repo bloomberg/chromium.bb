@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/i18n/base_i18n_switches.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/metrics/sparse_histogram.h"
@@ -512,6 +513,14 @@ const FeatureEntry::Choice kPpapiWin32kLockdown[] = {
      switches::kEnableWin32kLockDownMimeTypes, "*"},
 };
 #endif  // defined(OS_WIN)
+
+const FeatureEntry::Choice kForceUIDirectionChoices[] = {
+    {IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", ""},
+    {IDS_FLAGS_FORCE_UI_DIRECTION_LTR, switches::kForceUIDirection,
+     switches::kForceUIDirectionLTR},
+    {IDS_FLAGS_FORCE_UI_DIRECTION_RTL, switches::kForceUIDirection,
+     switches::kForceUIDirectionRTL},
+};
 
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
@@ -2089,6 +2098,11 @@ const FeatureEntry kFeatureEntries[] = {
      kOsWin,
      FEATURE_VALUE_TYPE(kWindowsDesktopSearchRedirectionFeature)},
 #endif  // defined(OS_WIN)
+    {"force-ui-direction",
+     IDS_FLAGS_FORCE_UI_DIRECTION_NAME,
+     IDS_FLAGS_FORCE_UI_DIRECTION_DESCRIPTION,
+     kOsAll,
+     MULTI_VALUE_TYPE(kForceUIDirectionChoices)},
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

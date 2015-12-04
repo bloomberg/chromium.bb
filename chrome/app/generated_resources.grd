@@ -6681,6 +6681,18 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Enables a new option to upload credit cards to Google Payments for sync to all Chrome devices.
         </message>
       </if>
+      <message name="IDS_FLAGS_FORCE_UI_DIRECTION_NAME" desc="Name for the flag to force a specific UI direction.">
+          Force UI direction
+      </message>
+      <message name="IDS_FLAGS_FORCE_UI_DIRECTION_DESCRIPTION" desc="Description for the flag to force a specific UI direction.">
+          Explicitly force the UI to left-to-right or right-to-left mode, overriding the default direction of the UI language.
+      </message>
+      <message name="IDS_FLAGS_FORCE_UI_DIRECTION_LTR" desc="Name for the option to force left-to-right UI direction mode.">
+          Left-to-right
+      </message>
+      <message name="IDS_FLAGS_FORCE_UI_DIRECTION_RTL" desc="Name for the option to force right-to-left UI direction mode.">
+          Right-to-left
+      </message>
 
       <!-- WebRTC logs -->
       <message name="IDS_WEBRTC_LOGS_TITLE" desc="Title for the chrome://webrtc-logs page.">

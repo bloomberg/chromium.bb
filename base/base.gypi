@@ -1018,6 +1018,8 @@
         ],
         'sources': [
           'i18n/base_i18n_export.h',
+          'i18n/base_i18n_switches.cc',
+          'i18n/base_i18n_switches.h',
           'i18n/bidi_line_iterator.cc',
           'i18n/bidi_line_iterator.h',
           'i18n/break_iterator.cc',

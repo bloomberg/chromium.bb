@@ -67653,6 +67653,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-2008272679" label="disable-webrtc-hw-encoding"/>
   <int value="-2003354337"
       label="enable-search-button-in-omnibox-for-str-or-iip"/>
+  <int value="-1999892428" label="force-ui-direction"/>
   <int value="-1998927516" label="enable-md-settings"/>
   <int value="-1985025593" label="file-manager-enable-new-gallery"/>
   <int value="-1980328793" label="trace-upload-url"/>
