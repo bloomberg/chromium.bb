@@ -20013,12 +20013,20 @@
         "active_waterfall": "chromiumos",
         "boards": [
             "amd64-generic",
-            "daisy"
+            "daisy",
+            "x86-alex"
         ],
         "build_type": "binary",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Continuous",
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}"
+        ],
+        "hw_tests_override": [
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}"
+        ],
         "trybot_list": true,
-        "uprev": false
+        "uprev": false,
+        "vm_tests": []
     },
     "toolchain-minor": {
         "archive_build_debug": true,
