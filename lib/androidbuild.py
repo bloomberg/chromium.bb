@@ -13,8 +13,9 @@ import os
 import urllib
 
 
-# Locations where to look for credentials JSON files.
-HOMEDIR_JSON_CREDENTIALS_PATH = '~/.ab_creds.json'
+# Locations where to look for credentials JSON files, relative to the user's
+# home directory.
+HOMEDIR_JSON_CREDENTIALS_PATH = '.ab_creds.json'
 
 # Scope URL on which we need authorization.
 DEFAULT_SCOPE_URL = 'https://www.googleapis.com/auth/androidbuild.internal'
@@ -46,7 +47,7 @@ def FindCredentialsFile(override_json_credentials_path=None,
         This is meant for a file specified on a --json-key-file argument on the
         command line. Whenever present, always use this value.
     homedir_json_credentials_path: Optional override for the file to be looked
-        for in the user's home directory. Defaults to '~/.ab_creds.json'.
+        for in the user's home directory. Defaults to '.ab_creds.json'.
 
   Returns:
     The resolved path to the file that was found.
@@ -59,9 +60,13 @@ def FindCredentialsFile(override_json_credentials_path=None,
 
   if homedir_json_credentials_path is None:
     homedir_json_credentials_path = HOMEDIR_JSON_CREDENTIALS_PATH
-  json_path = os.path.expanduser(homedir_json_credentials_path)
-  if os.path.exists(json_path):
-    return json_path
+
+  # Check for the file in the user's homedir:
+  user_homedir = os.path.expanduser('~')
+  if user_homedir:
+    json_path = os.path.join(user_homedir, homedir_json_credentials_path)
+    if os.path.exists(json_path):
+      return json_path
 
   raise CredentialsNotFoundError(
       'Could not find the JSON credentials at [%s] and no JSON file was '

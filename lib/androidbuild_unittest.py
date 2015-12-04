@@ -26,9 +26,7 @@ class AndroidBuildTests(cros_test_lib.TestCase):
 
     def RelativeToHome(fpath):
       """Builds paths relative to the home directory."""
-      return os.path.join(
-          '~', os.path.relpath(fpath,
-                               os.path.expanduser('~')))
+      return os.path.relpath(fpath, os.environ['HOME'])
 
     authorized_user_path = os.path.join(
         TESTDATA_PATH, 'androidbuild', 'test_creds_authorized_user.json')
@@ -54,14 +52,6 @@ class AndroidBuildTests(cros_test_lib.TestCase):
         homedir_json_credentials_path=RelativeToHome(authorized_user_path))
     self.assertEqual(os.path.abspath(json_path),
                      os.path.abspath(service_account_path))
-
-    # Check that expansion of '~' only works for the authorized user and not
-    # for the command line override.
-    json_path = androidbuild.FindCredentialsFile(
-        RelativeToHome(service_account_path),
-        homedir_json_credentials_path=RelativeToHome(nonexistent_path))
-    # Starts with a literal '~', not really a valid path.
-    self.assertRegexpMatches(json_path, r'^~')
 
   def testLoadCredentials_ServiceAccount(self):
     """Checks that loading a service account from JSON works."""
