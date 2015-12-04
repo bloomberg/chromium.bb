@@ -214,13 +214,12 @@ TEST_F(RootWindowControllerTest, MoveWindows_Basic) {
   EXPECT_EQ("0,0 600x597",
             maximized->GetNativeView()->GetBoundsInRootWindow().ToString());
 
-  // Set fullscreen to true. In that case the 3px inset becomes invisible so
-  // the maximized window can also use the area fully.
+  // Set fullscreen to true, but maximized window's size won't change because
+  // it's not visible. see crbug.com/504299.
   fullscreen->SetFullscreen(true);
   EXPECT_EQ(root_windows[0], maximized->GetNativeView()->GetRootWindow());
-  EXPECT_EQ("0,0 600x600",
-            maximized->GetWindowBoundsInScreen().ToString());
-  EXPECT_EQ("0,0 600x600",
+  EXPECT_EQ("0,0 600x597", maximized->GetWindowBoundsInScreen().ToString());
+  EXPECT_EQ("0,0 600x597",
             maximized->GetNativeView()->GetBoundsInRootWindow().ToString());
 
   EXPECT_EQ(root_windows[0], minimized->GetNativeView()->GetRootWindow());

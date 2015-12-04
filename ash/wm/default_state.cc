@@ -5,6 +5,7 @@
 #include "ash/wm/default_state.h"
 
 #include "ash/display/window_tree_host_manager.h"
+#include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
@@ -17,6 +18,7 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "ash/wm/workspace/workspace_window_resizer.h"
+#include "ash/wm/workspace_controller.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -461,6 +463,15 @@ bool DefaultState::ProcessWorkspaceEvents(WindowState* window_state,
       return true;
     }
     case WM_EVENT_WORKAREA_BOUNDS_CHANGED: {
+      // Don't resize the maximized window when the desktop is covered
+      // by fullscreen window. crbug.com/504299.
+      bool in_fullscreen =
+          RootWindowController::ForWindow(window_state->window())
+              ->workspace_controller()
+              ->GetWindowState() == WORKSPACE_WINDOW_STATE_FULL_SCREEN;
+      if (in_fullscreen && window_state->IsMaximized())
+        return true;
+
       if (window_state->is_dragged() ||
           SetMaximizedOrFullscreenBounds(window_state)) {
         return true;

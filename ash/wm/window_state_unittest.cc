@@ -334,6 +334,35 @@ TEST_F(WindowStateTest, RestoredWindowBoundsShrink) {
   EXPECT_TRUE(work_area.Contains(window->bounds()));
 }
 
+TEST_F(WindowStateTest, DoNotResizeMaximizedWindowInFullscreen) {
+  if (!SupportsHostWindowResize())
+    return;
+
+  scoped_ptr<aura::Window> maximized(CreateTestWindowInShellWithId(0));
+  scoped_ptr<aura::Window> fullscreen(CreateTestWindowInShellWithId(1));
+  WindowState* maximized_state = GetWindowState(maximized.get());
+  maximized_state->Maximize();
+  ASSERT_TRUE(maximized_state->IsMaximized());
+  EXPECT_EQ("0,0 800x553", maximized->GetBoundsInScreen().ToString());
+
+  // Entering fullscreen mode will not update the maximized window's size
+  // under fullscreen.
+  WMEvent fullscreen_event(WM_EVENT_FULLSCREEN);
+  WindowState* fullscreen_state = GetWindowState(fullscreen.get());
+  fullscreen_state->OnWMEvent(&fullscreen_event);
+  ASSERT_TRUE(fullscreen_state->IsFullscreen());
+  ASSERT_TRUE(maximized_state->IsMaximized());
+  EXPECT_EQ("0,0 800x553", maximized->GetBoundsInScreen().ToString());
+
+  // Updating display size will update the maximum window size.
+  UpdateDisplay("900x700");
+  EXPECT_EQ("0,0 900x700", maximized->GetBoundsInScreen().ToString());
+  fullscreen.reset();
+
+  // Exitting fullscreen will update the maximized widnow to the work area.
+  EXPECT_EQ("0,0 900x653", maximized->GetBoundsInScreen().ToString());
+}
+
 // TODO(skuhne): Add more unit test to verify the correctness for the restore
 // operation.
 
