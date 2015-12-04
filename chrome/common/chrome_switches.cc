@@ -520,6 +520,12 @@ const char kEnableSimplifiedFullscreenUI[]  = "enable-simplified-fullscreen-ui";
 const char kDisableSimplifiedFullscreenUI[] =
     "disable-simplified-fullscreen-ui";
 
+// Enable the Site Engagement App Banner which triggers app install banners
+// using the site engagement service rather than a navigation-based heuristic.
+// Implicitly enables the site engagement service.
+const char kEnableSiteEngagementAppBanner[] =
+    "enable-site-engagement-app-banner";
+
 // Enable the Site Engagement Eviction Policy which evicts temporary storage
 // using the site engagement service. Implicitly enables the site engagement
 // service.

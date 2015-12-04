@@ -57,9 +57,16 @@ enum UserResponse {
   USER_RESPONSE_MAX = 7,
 };
 
+extern const char kDismissEventHistogram[];
+extern const char kDisplayEventHistogram[];
+extern const char kInstallEventHistogram[];
+extern const char kMinutesHistogram[];
+extern const char kUserResponseHistogram[];
+
 void TrackDismissEvent(int event);
 void TrackDisplayEvent(int event);
 void TrackInstallEvent(int event);
+void TrackMinutesFromFirstVisitToBannerShown(int minutes);
 void TrackUserResponse(int event);
 
 };  // namespace banners
