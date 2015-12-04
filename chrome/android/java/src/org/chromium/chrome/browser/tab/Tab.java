@@ -2015,8 +2015,8 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
 
     private void destroyNativePage() {
         if (mNativePage == null) return;
+        if (mTabView != null) mTabView.removeView(mNativePage.getView());
 
-        mTabView.removeView(mNativePage.getView());
         mNativePage.destroy();
         mNativePage = null;
     }
