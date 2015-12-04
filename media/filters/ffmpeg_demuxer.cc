@@ -748,7 +748,6 @@ FFmpegDemuxer::FFmpegDemuxer(
       text_enabled_(false),
       duration_known_(false),
       encrypted_media_init_data_cb_(encrypted_media_init_data_cb),
-      stream_memory_usage_(0),
       weak_factory_(this) {
   DCHECK(task_runner_.get());
   DCHECK(data_source_);
@@ -925,8 +924,12 @@ void FFmpegDemuxer::AddTextStreams() {
 }
 
 int64_t FFmpegDemuxer::GetMemoryUsage() const {
-  base::AutoLock locker(stream_memory_usage_lock_);
-  return stream_memory_usage_;
+  int64_t allocation_size = 0;
+  for (const auto& stream : streams_) {
+    if (stream)
+      allocation_size += stream->MemoryUsage();
+  }
+  return allocation_size;
 }
 
 // Helper for calculating the bitrate of the media based on information stored
@@ -1379,15 +1382,10 @@ void FFmpegDemuxer::OnReadFrameDone(ScopedAVPacket packet, int result) {
     return;
   }
 
-  // Max allowed memory usage, all streams combined.
-  const int64_t kDemuxerMemoryLimit = 150 * 1024 * 1024;
-  const bool is_max_memory_usage_reached =
-      UpdateMemoryUsage() > kDemuxerMemoryLimit;
-
   // Consider the stream as ended if:
   // - either underlying ffmpeg returned an error
   // - or FFMpegDemuxer reached the maximum allowed memory usage.
-  if (result < 0 || is_max_memory_usage_reached) {
+  if (result < 0 || IsMaxMemoryUsageReached()) {
     // Update the duration based on the highest elapsed time across all streams
     // if it was previously unknown.
     if (!duration_known_) {
@@ -1453,16 +1451,24 @@ bool FFmpegDemuxer::StreamsHaveAvailableCapacity() {
   return false;
 }
 
-int64_t FFmpegDemuxer::UpdateMemoryUsage() {
+bool FFmpegDemuxer::IsMaxMemoryUsageReached() const {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  base::AutoLock locker(stream_memory_usage_lock_);
-  stream_memory_usage_ = 0;
-  for (const auto& stream : streams_) {
-    if (stream)
-      stream_memory_usage_ += stream->MemoryUsage();
+  // Max allowed memory usage, all streams combined.
+  const size_t kDemuxerMemoryLimit = 150 * 1024 * 1024;
+
+  size_t memory_left = kDemuxerMemoryLimit;
+  for (StreamVector::const_iterator iter = streams_.begin();
+       iter != streams_.end(); ++iter) {
+    if (!(*iter))
+      continue;
+
+    size_t stream_memory_usage = (*iter)->MemoryUsage();
+    if (stream_memory_usage > memory_left)
+      return true;
+    memory_left -= stream_memory_usage;
   }
-  return stream_memory_usage_;
+  return false;
 }
 
 void FFmpegDemuxer::StreamHasEnded() {
