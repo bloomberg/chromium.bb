@@ -54,40 +54,20 @@
 
     <request name="get_xdg_surface">
       <description summary="create a shell surface from a surface">
-	This creates an xdg_surface for the given surface and gives it the
-	xdg_surface role. A wl_surface can only be given an xdg_surface role
-	once. If get_xdg_surface is called with a wl_surface that already has
-	an active xdg_surface associated with it, or if it had any other role,
-	an error is raised.
+	This creates an xdg_surface for the given surface. While xdg_surface
+	itself is not a role, the corresponding surface may only be assigned
+	a role extending xdg_surface, such as xdg_toplevel or xdg_popup.
+
+	This creates an xdg_surface for the given surface. An xdg_surface is
+	used as basis to define a role to a given surface, such as xdg_toplevel
+	or xdg_popup. It also manages functionality shared between xdg_surface
+	based surface roles.
 
 	See the documentation of xdg_surface for more details about what an
 	xdg_surface is and how it is used.
       </description>
       <arg name="id" type="new_id" interface="zxdg_surface_v6"/>
       <arg name="surface" type="object" interface="wl_surface"/>
-    </request>
-
-    <request name="get_xdg_popup">
-      <description summary="create a popup for a surface">
-	This creates an xdg_popup for the given surface and gives it the
-	xdg_popup role. A wl_surface can only be given an xdg_popup role
-	once. If get_xdg_popup is called with a wl_surface that already has
-	an active xdg_popup associated with it, or if it had any other role,
-	an error is raised.
-
-	This request must be used in response to some sort of user action
-	like a button press, key press, or touch down event.
-
-	See the documentation of xdg_popup for more details about what an
-	xdg_popup is and how it is used.
-      </description>
-      <arg name="id" type="new_id" interface="zxdg_popup_v6"/>
-      <arg name="surface" type="object" interface="wl_surface"/>
-      <arg name="parent" type="object" interface="wl_surface"/>
-      <arg name="seat" type="object" interface="wl_seat" summary="the wl_seat of the user event"/>
-      <arg name="serial" type="uint" summary="the serial of the user event"/>
-      <arg name="x" type="int"/>
-      <arg name="y" type="int"/>
     </request>
 
     <event name="ping">
@@ -117,13 +97,23 @@
   </interface>
 
   <interface name="zxdg_surface_v6" version="1">
-    <description summary="A desktop window">
+    <description summary="desktop user interface surface base interface">
       An interface that may be implemented by a wl_surface, for
       implementations that provide a desktop-style user interface.
 
-      It provides requests to treat surfaces like windows, allowing to set
-      properties like maximized, fullscreen, minimized, and to move and resize
-      them, and associate metadata like title and app id.
+      It provides a base set of functionality required to construct user
+      interface elements requiring management by the compositor, such as
+      toplevel windows, menus, etc. The types of functionality are split into
+      xdg_surface roles.
+
+      Creating an xdg_surface does not set the role for a wl_surface. In order
+      to map an xdg_surface, the client must create a role-specific object
+      using, e.g., get_toplevel, get_popup. The wl_surface for any given
+      xdg_surface can have at most one role, and may not be assigned any role
+      not based on xdg_surface.
+
+      A role must be assigned before any other requests are made to the
+      xdg_surface object.
 
       The client must call wl_surface.commit on the corresponding wl_surface
       for the xdg_surface state to take effect.
@@ -133,12 +123,147 @@
       manipulate a buffer prior to the first xdg_surface.configure call must
       also be treated as errors.
 
-      For a surface to be mapped by the compositor the client must have
-      committed both an xdg_surface state and a buffer.
+      For a surface to be mapped by the compositor, the following conditions
+      must be met: (1) the client has assigned a xdg_surface based role to the
+      surface, (2) the client has set and committed the xdg_surface state and
+      the role dependent state to the surface and (3) the client has committed a
+      buffer to the surface.
+    </description>
+
+    <enum name="error">
+      <entry name="not_constructed" value="1"/>
+      <entry name="already_constructed" value="2"/>
+    </enum>
+
+    <request name="destroy" type="destructor">
+      <description summary="destroy the xdg_surface">
+	Destroy the xdg_surface object. An xdg_surface must only be destroyed
+	after its role object has been destroyed.
+      </description>
+    </request>
+
+    <request name="get_toplevel">
+      <description summary="assign the xdg_toplevel surface role">
+	This creates an xdg_toplevel object for the given xdg_surface and gives
+	the associated wl_surface the xdg_toplevel role.
+
+	See the documentation of xdg_toplevel for more details about what an
+	xdg_toplevel is and how it is used.
+      </description>
+      <arg name="id" type="new_id" interface="zxdg_toplevel_v6"/>
+    </request>
+
+    <request name="get_popup">
+      <description summary="assign the xdg_popup surface role">
+	This creates an xdg_popup object for the given xdg_surface and gives the
+	associated wl_surface the xdg_popup role.
+
+	This request must be used in response to some sort of user action like a
+	button press, key press, or touch down event.
+
+	See the documentation of xdg_popup for more details about what an
+	xdg_popup is and how it is used.
+      </description>
+      <arg name="id" type="new_id" interface="zxdg_popup_v6"/>
+      <arg name="parent" type="object" interface="wl_surface"/>
+      <arg name="seat" type="object" interface="wl_seat" summary="the wl_seat of the user event"/>
+      <arg name="serial" type="uint" summary="the serial of the user event"/>
+      <arg name="x" type="int"/>
+      <arg name="y" type="int"/>
+    </request>
+
+    <request name="set_window_geometry">
+      <description summary="set the new window geometry">
+	The window geometry of a surface is its "visible bounds" from the
+	user's perspective. Client-side decorations often have invisible
+	portions like drop-shadows which should be ignored for the
+	purposes of aligning, placing and constraining windows.
+
+	The window geometry is double buffered, and will be applied at the
+	time wl_surface.commit of the corresponding wl_surface is called.
+
+	Once the window geometry of the surface is set, it is not possible to
+	unset it, and it will remain the same until set_window_geometry is
+	called again, even if a new subsurface or buffer is attached.
+
+	If never set, the value is the full bounds of the surface,
+	including any subsurfaces. This updates dynamically on every
+	commit. This unset is meant for extremely simple clients.
+
+	The arguments are given in the surface-local coordinate space of
+	the wl_surface associated with this xdg_surface.
+
+	The width and height must be greater than zero. Setting an invalid size
+	will raise an error. When applied, the effective window geometry will be
+	the set window geometry clamped to the bounding rectangle of the
+	combined geometry of the surface of the xdg_surface and the associated
+	subsurfaces.
+      </description>
+      <arg name="x" type="int"/>
+      <arg name="y" type="int"/>
+      <arg name="width" type="int"/>
+      <arg name="height" type="int"/>
+    </request>
+
+    <request name="ack_configure">
+      <description summary="ack a configure event">
+	When a configure event is received, if a client commits the
+	surface in response to the configure event, then the client
+	must make an ack_configure request sometime before the commit
+	request, passing along the serial of the configure event.
+
+	For instance, for toplevel surfaces the compositor might use this
+	information to move a surface to the top left only when the client has
+	drawn itself for the maximized or fullscreen state.
+
+	If the client receives multiple configure events before it
+	can respond to one, it only has to ack the last configure event.
+
+	A client is not required to commit immediately after sending
+	an ack_configure request - it may even ack_configure several times
+	before its next surface commit.
+
+	A client may send multiple ack_configure requests before committing, but
+	only the last request sent before a commit indicates which configure
+	event the client really is responding to.
+      </description>
+      <arg name="serial" type="uint" summary="the serial from the configure event"/>
+    </request>
+
+    <event name="configure">
+      <description summary="suggest a surface change">
+	The configure event marks the end of a configure sequence. A configure
+	sequence is a set of one or more events configuring the state of the
+	xdg_surface, including the final xdg_surface.configure event.
+
+	Where applicable, xdg_surface surface roles will during a configure
+	sequence extend this event as a latched state sent as events before the
+	xdg_surface.configure event. Such events should be considered to make up
+	a set of atomically applied configuration states, where the
+	xdg_surface.configure commits the accumulated state.
+
+	Clients should arrange their surface for the new states, and then send
+	an ack_configure request with the serial sent in this configure event at
+	some point before committing the new surface.
+
+	If the client receives multiple configure events before it can respond
+	to one, it is free to discard all but the last event it received.
+      </description>
+      <arg name="serial" type="uint" summary="serial of the configure event"/>
+    </event>
+  </interface>
+
+  <interface name="zxdg_toplevel_v6" version="1">
+    <description summary="toplevel surface">
+      This interface defines an xdg_surface role which allows a surface to,
+      among other things, set window-like properties such as maximize,
+      fullscreen, and minimize, set application-specific metadata like title and
+      id, and well as trigger user interactive operations such as interactive
+      resize and move.
     </description>
 
     <request name="destroy" type="destructor">
-      <description summary="Destroy the xdg_surface">
+      <description summary="destroy the xdg_toplevel">
 	Unmap and destroy the window. The window will be effectively
 	hidden from the user's point of view, and all state like
 	maximization, fullscreen, and so on, will be lost.
@@ -155,7 +280,7 @@
 	"auxiliary" surfaces, so that the parent is raised when the dialog
 	is raised.
       </description>
-      <arg name="parent" type="object" interface="zxdg_surface_v6" allow-null="true"/>
+      <arg name="parent" type="object" interface="zxdg_toplevel_v6" allow-null="true"/>
     </request>
 
     <request name="set_title">
@@ -348,8 +473,9 @@
 
     <event name="configure">
       <description summary="suggest a surface change">
-	The configure event asks the client to resize its surface or to
-	change its state.
+	This configure event asks the client to resize its toplevel surface or
+	to change its state. The configured state should not be applied
+	immediately. See xdg_surface.configure for details.
 
 	The width and height arguments specify a hint to the window
 	about how its surface should be resized in window geometry
@@ -364,80 +490,14 @@
 	arguments should be interpreted, and possibly how it should be
 	drawn.
 
-	Clients should arrange their surface for the new size and
-	states, and then send a ack_configure request with the serial
-	sent in this configure event at some point before committing
-	the new surface.
-
-	If the client receives multiple configure events before it
-	can respond to one, it is free to discard all but the last
-	event it received.
+	Clients must send an ack_configure in response to this event. See
+	xdg_surface.configure and xdg_surface.ack_configure for details.
       </description>
 
       <arg name="width" type="int"/>
       <arg name="height" type="int"/>
       <arg name="states" type="array"/>
-      <arg name="serial" type="uint"/>
     </event>
-
-    <request name="ack_configure">
-      <description summary="ack a configure event">
-	When a configure event is received, if a client commits the
-	surface in response to the configure event, then the client
-	must make an ack_configure request sometime before the commit
-	request, passing along the serial of the configure event.
-
-	For instance, the compositor might use this information to move
-	a surface to the top left only when the client has drawn itself
-	for the maximized or fullscreen state.
-
-	If the client receives multiple configure events before it
-	can respond to one, it only has to ack the last configure event.
-
-	A client is not required to commit immediately after sending
-	an ack_configure request - it may even ack_configure several times
-	before its next surface commit.
-
-	The compositor expects that the most recently received
-	ack_configure request at the time of a commit indicates which
-	configure event the client is responding to.
-      </description>
-      <arg name="serial" type="uint" summary="the serial from the configure event"/>
-    </request>
-
-    <request name="set_window_geometry">
-      <description summary="set the new window geometry">
-	The window geometry of a window is its "visible bounds" from the
-	user's perspective. Client-side decorations often have invisible
-	portions like drop-shadows which should be ignored for the
-	purposes of aligning, placing and constraining windows.
-
-	The window geometry is double buffered, and will be applied at the
-	time wl_surface.commit of the corresponding wl_surface is called.
-
-	Once the window geometry of the surface is set once, it is not
-	possible to unset it, and it will remain the same until
-	set_window_geometry is called again, even if a new subsurface or
-	buffer is attached.
-
-	If never set, the value is the full bounds of the surface,
-	including any subsurfaces. This updates dynamically on every
-	commit. This unset mode is meant for extremely simple clients.
-
-	If responding to a configure event, the window geometry in here
-	must respect the sizing negotiations specified by the states in
-	the configure event.
-
-	The arguments are given in the surface local coordinate space of
-	the wl_surface associated with this xdg_surface.
-
-	The width and height must be greater than zero.
-      </description>
-      <arg name="x" type="int"/>
-      <arg name="y" type="int"/>
-      <arg name="width" type="int"/>
-      <arg name="height" type="int"/>
-    </request>
 
     <request name="set_max_size">
       <description summary="set the maximum size">
@@ -447,7 +507,7 @@
 	not try to configure the window beyond this size.
 
 	The width and height arguments are in window geometry coordinates.
-	See set_window_geometry.
+	See xdg_surface.set_window_geometry.
 
 	Values set in this way are double-buffered. They will get applied
 	on the next commit.
@@ -488,7 +548,7 @@
 	not try to configure the window below this size.
 
 	The width and height arguments are in window geometry coordinates.
-	See set_window_geometry.
+	See xdg_surface.set_window_geometry.
 
 	Values set in this way are double-buffered. They will get applied
 	on the next commit.
@@ -631,7 +691,7 @@
       their own is clicked should dismiss the popup using the destroy
       request.
 
-      The parent surface must have either an xdg_surface or xdg_popup
+      The parent surface must have either the xdg_toplevel or xdg_popup surface
       role.
 
       Specifying an xdg_popup for the parent means that the popups are
@@ -653,7 +713,7 @@
       The x and y arguments passed when creating the popup object specify
       where the top left of the popup should be placed, relative to the
       local surface coordinates of the parent surface. See
-      xdg_shell.get_xdg_popup.
+      xdg_surface.get_popup.
 
       The client must call wl_surface.commit on the corresponding wl_surface
       for the xdg_popup state to take effect.
