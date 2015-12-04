@@ -208,6 +208,7 @@ private:
     enum SelectOptionFlag {
         DeselectOtherOptions = 1 << 0,
         DispatchInputAndChangeEvent = 1 << 1,
+        MakeOptionDirty = 1 << 2,
     };
     typedef unsigned SelectOptionFlags;
     void selectOption(int optionIndex, SelectOptionFlags = 0);

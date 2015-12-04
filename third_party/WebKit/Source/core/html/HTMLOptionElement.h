@@ -58,6 +58,8 @@ public:
 
     bool selected() const;
     void setSelected(bool);
+    bool selectedForBinding() const;
+    void setSelectedForBinding(bool);
 
     HTMLDataListElement* ownerDataListElement() const;
     HTMLSelectElement* ownerSelectElement() const;
@@ -71,7 +73,10 @@ public:
 
     String textIndentedToRespectGroupLabel() const;
 
+    // Update 'selectedness'.
     void setSelectedState(bool);
+    // Update 'dirtiness'.
+    void setDirty(bool);
 
     HTMLFormElement* form() const;
     bool spatialNavigationFocused() const;
@@ -104,7 +109,12 @@ private:
     void updateLabel();
 
     bool m_disabled;
+    // Represents 'selectedness'.
+    // https://html.spec.whatwg.org/multipage/forms.html#concept-option-selectedness
     bool m_isSelected;
+    // Represents 'dirtiness'.
+    // https://html.spec.whatwg.org/multipage/forms.html#concept-option-dirtiness
+    bool m_isDirty = false;
     RefPtr<ComputedStyle> m_style;
 };
 
