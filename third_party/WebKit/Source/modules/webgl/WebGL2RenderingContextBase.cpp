@@ -2372,8 +2372,10 @@ String WebGL2RenderingContextBase::getActiveUniformBlockName(WebGLProgram* progr
         return String();
     }
     OwnPtr<GLchar[]> name = adoptArrayPtr(new GLchar[maxNameLength]);
-    GLsizei length;
+
+    GLsizei length = 0;
     webContext()->getActiveUniformBlockName(objectOrZero(program), uniformBlockIndex, maxNameLength, &length, name.get());
+
     return String(name.get(), length);
 }
 
