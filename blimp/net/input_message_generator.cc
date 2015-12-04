@@ -5,6 +5,7 @@
 #include "blimp/net/input_message_generator.h"
 
 #include "base/logging.h"
+#include "blimp/common/create_blimp_message.h"
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/common/proto/input.pb.h"
 #include "blimp/net/blimp_message_processor.h"
@@ -113,9 +114,8 @@ InputMessageGenerator::~InputMessageGenerator() {}
 
 scoped_ptr<BlimpMessage> InputMessageGenerator::GenerateMessage(
     const blink::WebInputEvent& event) {
-  scoped_ptr<BlimpMessage> message(new BlimpMessage);
-  message->set_type(BlimpMessage::INPUT);
-  InputMessage* details = message->mutable_input();
+  InputMessage* details;
+  scoped_ptr<BlimpMessage> message = CreateBlimpMessage(&details);
 
   switch (event.type) {
     case blink::WebInputEvent::Type::GestureScrollBegin:

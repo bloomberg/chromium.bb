@@ -9,6 +9,8 @@ component("blimp_common") {
     "blimp_common_export.h",
     "compositor/blimp_task_graph_runner.cc",
     "compositor/blimp_task_graph_runner.h",
+    "create_blimp_message.cc",
+    "create_blimp_message.h",
   ]
 
   defines = [ "BLIMP_COMMON_IMPLEMENTATION=1" ]
@@ -20,5 +22,19 @@ component("blimp_common") {
     "//skia",
     "//ui/gfx/geometry",
     "//ui/gl",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+
+  sources = [
+    "create_blimp_message_unittest.cc",
+  ]
+
+  deps = [
+    ":blimp_common",
+    "//blimp/common/proto",
+    "//testing/gtest",
   ]
 }

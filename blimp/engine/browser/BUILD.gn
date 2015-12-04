@@ -24,6 +24,7 @@ source_set("browser") {
 
   deps = [
     "//base",
+    "//blimp/common:blimp_common",
     "//blimp/common/proto",
     "//blimp/engine/ui",
     "//blimp/net:blimp_net",
@@ -51,6 +52,7 @@ source_set("unit_tests") {
     "//base",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
+    "//blimp/common:blimp_common",
     "//blimp/common/proto",
     "//blimp/engine/common",
     "//blimp/net:blimp_net",

@@ -5,6 +5,7 @@
 #include "blimp/engine/browser/engine_render_widget_message_processor.h"
 
 #include "base/numerics/safe_conversions.h"
+#include "blimp/common/create_blimp_message.h"
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/common/proto/compositor.pb.h"
 #include "blimp/common/proto/input.pb.h"
@@ -32,12 +33,9 @@ void EngineRenderWidgetMessageProcessor::OnRenderWidgetInitialized(
     const int tab_id) {
   render_widget_ids_[tab_id] = GetRenderWidgetId(tab_id) + 1;
 
-  scoped_ptr<BlimpMessage> blimp_message(new BlimpMessage);
-  blimp_message->set_target_tab_id(tab_id);
-
-  RenderWidgetMessage* render_widget_message =
-      blimp_message->mutable_render_widget();
-
+  RenderWidgetMessage* render_widget_message;
+  scoped_ptr<BlimpMessage> blimp_message =
+      CreateBlimpMessage(&render_widget_message, tab_id);
   render_widget_message->set_type(RenderWidgetMessage::INITIALIZE);
   render_widget_message->set_render_widget_id(GetRenderWidgetId(tab_id));
 
@@ -48,10 +46,10 @@ void EngineRenderWidgetMessageProcessor::OnRenderWidgetInitialized(
 void EngineRenderWidgetMessageProcessor::SendCompositorMessage(
     const int tab_id,
     const std::vector<uint8_t>& message) {
-  scoped_ptr<BlimpMessage> blimp_message(new BlimpMessage);
-  blimp_message->set_target_tab_id(tab_id);
+  CompositorMessage* compositor_message;
+  scoped_ptr<BlimpMessage> blimp_message =
+      CreateBlimpMessage(&compositor_message, tab_id);
 
-  CompositorMessage* compositor_message = blimp_message->mutable_compositor();
   uint32_t render_widget_id = GetRenderWidgetId(tab_id);
   DCHECK_LT(0U, render_widget_id);
   compositor_message->set_render_widget_id(render_widget_id);

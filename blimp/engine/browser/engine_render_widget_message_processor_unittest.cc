@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/numerics/safe_conversions.h"
+#include "blimp/common/create_blimp_message.h"
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/common/proto/compositor.pb.h"
 #include "blimp/common/proto/render_widget.pb.h"
@@ -91,11 +92,8 @@ void SendCompositorMessage(BlimpMessageProcessor* processor,
                              int tab_id,
                              uint32_t rw_id,
                              const std::vector<uint8_t>& payload) {
-  scoped_ptr<BlimpMessage> message(new BlimpMessage);
-  message->set_type(BlimpMessage::COMPOSITOR);
-  message->set_target_tab_id(tab_id);
-
-  CompositorMessage* details = message->mutable_compositor();
+  CompositorMessage* details;
+  scoped_ptr<BlimpMessage> message = CreateBlimpMessage(&details, tab_id);
   details->set_render_widget_id(rw_id);
   details->set_payload(payload.data(), base::checked_cast<int>(payload.size()));
   processor->ProcessMessage(std::move(message),

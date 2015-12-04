@@ -51,6 +51,7 @@ component("blimp_net") {
 
   deps = [
     "//base",
+    "//blimp/common:blimp_common",
     "//blimp/common/proto",
     "//net",
   ]

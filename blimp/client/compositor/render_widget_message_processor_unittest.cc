@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "blimp/common/create_blimp_message.h"
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/common/proto/compositor.pb.h"
 #include "blimp/common/proto/render_widget.pb.h"
@@ -50,11 +51,8 @@ MATCHER_P2(CompMsgEquals, tab_id, rw_id, "") {
 void SendRenderWidgetMessage(BlimpMessageProcessor* processor,
                              int tab_id,
                              uint32_t rw_id) {
-  scoped_ptr<BlimpMessage> message(new BlimpMessage);
-  message->set_type(BlimpMessage::RENDER_WIDGET);
-  message->set_target_tab_id(tab_id);
-
-  RenderWidgetMessage* details = message->mutable_render_widget();
+  RenderWidgetMessage* details;
+  scoped_ptr<BlimpMessage> message = CreateBlimpMessage(&details, tab_id);
   details->set_type(RenderWidgetMessage::INITIALIZE);
   details->set_render_widget_id(rw_id);
   processor->ProcessMessage(std::move(message),
@@ -64,11 +62,8 @@ void SendRenderWidgetMessage(BlimpMessageProcessor* processor,
 void SendCompositorMessage(BlimpMessageProcessor* processor,
                              int tab_id,
                              uint32_t rw_id) {
-  scoped_ptr<BlimpMessage> message(new BlimpMessage);
-  message->set_type(BlimpMessage::COMPOSITOR);
-  message->set_target_tab_id(tab_id);
-
-  CompositorMessage* details = message->mutable_compositor();
+  CompositorMessage* details;
+  scoped_ptr<BlimpMessage> message = CreateBlimpMessage(&details, tab_id);
   details->set_render_widget_id(rw_id);
   processor->ProcessMessage(std::move(message),
                             net::CompletionCallback());
