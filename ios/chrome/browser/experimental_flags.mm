@@ -174,8 +174,10 @@ std::string GetWKWebViewSearchParams() {
 }
 
 bool AreKeyboardCommandsEnabled() {
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableKeyboardCommands);
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
+  return command_line &&
+         !command_line->HasSwitch(switches::kDisableKeyboardCommands);
 }
 
 bool IsViewCopyPasswordsEnabled() {
