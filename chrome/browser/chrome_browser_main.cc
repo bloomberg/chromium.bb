@@ -151,13 +151,19 @@
 #include "ui/strings/grit/app_locale_settings.h"
 
 #if defined(OS_ANDROID)
+#include "ui/base/resource/resource_bundle_android.h"
+#endif  // defined(OS_ANDROID)
+
+// TODO(bshe): Use defined(ANDROID_JAVA_UI) once
+// codereview.chromium.org/1459793002 landed for
+// dev_tools_discovery_provider_android.h.
+#if defined(OS_ANDROID) && !defined(USE_AURA)
 #include "chrome/browser/android/dev_tools_discovery_provider_android.h"
 #include "chrome/browser/metrics/thread_watcher_android.h"
-#include "ui/base/resource/resource_bundle_android.h"
 #else
 #include "chrome/browser/devtools/chrome_devtools_discovery_provider.h"
 #include "chrome/browser/feedback/feedback_profile_observer.h"
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID) && !defined(USE_AURA)
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 #include "chrome/browser/first_run/upgrade_util_linux.h"
@@ -789,6 +795,8 @@ void ChromeBrowserMainParts::RecordBrowserStartupTime() {
   // On Android, first run is handled in Java code, and the C++ side of Chrome
   // doesn't know if this is the first run. This will cause some inaccuracy in
   // the UMA statistics, but this should be minor (first runs are rare).
+  // TODO(bshe): Figure out which first run code to use for Aura Android. See
+  // crbug.com/560498
   is_first_run = first_run::IsChromeFirstRun();
 #endif  // defined(OS_ANDROID)
 
@@ -862,11 +870,13 @@ int ChromeBrowserMainParts::PreCreateThreads() {
   result_code_ = PreCreateThreadsImpl();
 
   if (result_code_ == content::RESULT_CODE_NORMAL_EXIT) {
-#if !defined(OS_ANDROID)
+  // TODO(bshe): Use !defined(ANDROID_JAVA_UI) once
+  // codereview.chromium.org/1459793002 landed.
+#if !defined(OS_ANDROID) || defined(USE_AURA)
     // These members must be initialized before exiting this function normally.
     DCHECK(master_prefs_.get());
     DCHECK(browser_creator_.get());
-#endif  // !defined(OS_ANDROID)
+#endif  // !defined(OS_ANDROID) || defined(USE_AURA)
     for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
       chrome_extra_parts_[i]->PreCreateThreads();
   }
@@ -887,6 +897,8 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   MediaCaptureDevicesDispatcher::GetInstance();
 
   // Android's first run is done in Java instead of native.
+  // TODO(bshe): Figure out which first run code to use for Aura Android. See
+  // crbug.com/560498
 #if !defined(OS_ANDROID)
   process_singleton_.reset(new ChromeProcessSingleton(
       user_data_dir_, base::Bind(&ProcessSingletonNotificationCallback)));
@@ -924,14 +936,16 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   local_state_ = InitializeLocalState(
       local_state_task_runner.get(), parsed_command_line());
 
-#if !defined(OS_ANDROID)
+  // TODO(bshe): Use !defined(ANDROID_JAVA_UI) once
+  // codereview.chromium.org/1459793002 landed.
+#if !defined(OS_ANDROID) || defined(USE_AURA)
   // These members must be initialized before returning from this function.
   master_prefs_.reset(new first_run::MasterPrefs);
   // Android doesn't use StartupBrowserCreator.
   browser_creator_.reset(new StartupBrowserCreator);
   // TODO(yfriedman): Refactor Android to re-use UMABrowsingActivityObserver
   chrome::UMABrowsingActivityObserver::Init();
-#endif  // !defined(OS_ANDROID)
+#endif  // !defined(OS_ANDROID) || defined(USE_AURA)
 
 #if !defined(OS_CHROMEOS)
   // Convert active labs into switches. This needs to be done before
@@ -1006,6 +1020,7 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
     base::FilePath resources_pack_path;
     PathService::Get(chrome::FILE_RESOURCES_PACK, &resources_pack_path);
 #if defined(OS_ANDROID)
+    // Uses Android resources even without ANDROID_JAVA_UI.
     ui::LoadMainAndroidPackFile("assets/resources.pak", resources_pack_path);
 #else
     ResourceBundle::GetSharedInstance().AddDataPackFromPath(
@@ -1016,6 +1031,8 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
 
   // Android does first run in Java instead of native.
   // Chrome OS has its own out-of-box-experience code.
+  // TODO(bshe): Figure out which first run code to use for Aura Android. See
+  // crbug.com/560498
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
   // On first run, we need to process the predictor preferences before the
   // browser's profile_manager object is created, but after ResourceBundle
@@ -1449,12 +1466,14 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   if (!profile_)
     return content::RESULT_CODE_NORMAL_EXIT;
 
-#if !defined(OS_ANDROID)
+  // TODO(bshe): Use !defined(ANDROID_JAVA_UI) once
+  // codereview.chromium.org/1459793002 landed.
+#if !defined(OS_ANDROID) || defined(USE_AURA)
   const base::TimeTicks start_time_step2 = base::TimeTicks::Now();
   // The first run sentinel must be created after the process singleton was
   // grabbed and no early return paths were otherwise hit above.
   first_run::CreateSentinelIfNeeded();
-#endif  // !defined(OS_ANDROID)
+#endif  // !defined(OS_ANDROID) || defined(USE_AURA)
 
 #if defined(ENABLE_BACKGROUND)
   // Autoload any profiles which are running background apps.
@@ -1496,6 +1515,8 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // Note that this be done _after_ the PrefService is initialized and all
   // preferences are registered, since some of the code that the importer
   // touches reads preferences.
+  // TODO(bshe): Figure out which first run code to use for Aura Android. See
+  // crbug.com/560498
   if (first_run::IsChromeFirstRun()) {
     first_run::AutoImport(profile_,
                           master_prefs_->homepage_defined,
@@ -1630,9 +1651,10 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
       g_browser_process->local_state());
   ThreadWatcherList::StartWatchingAll(parsed_command_line());
 
-#if defined(OS_ANDROID)
+  // TODO(bshe): Aura Android may need this call. See crbug.com/565317.
+#if defined(OS_ANDROID) && !defined(USE_AURA)
   ThreadWatcherAndroid::RegisterApplicationStatusListener();
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID) && !defined(USE_AURA)
 
 #if !defined(DISABLE_NACL)
   BrowserThread::PostTask(
@@ -1659,7 +1681,9 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   if (!parsed_command_line().HasSwitch(switches::kDisableComponentUpdate))
     RegisterComponentsForUpdate();
 
-#if defined(OS_ANDROID)
+  // TODO(bshe): Use defined(ANDROID_JAVA_UI) once
+  // codereview.chromium.org/1459793002 landed.
+#if defined(OS_ANDROID) && !defined(USE_AURA)
   variations::VariationsService* variations_service =
       browser_process_->variations_service();
   if (variations_service) {
@@ -1669,7 +1693,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   }
   translate::TranslateDownloadManager::RequestLanguageList(
       profile_->GetPrefs());
-
 #else
   // Most general initialization is behind us, but opening a
   // tab and/or session restore and such is still to be done.
@@ -1746,9 +1769,11 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     content::StartPowerUsageMonitor();
 #endif  // !defined(OS_LINUX) || defined(OS_CHROMEOS)
 
+#if !defined(OS_ANDROID)
   process_power_collector_.reset(new ProcessPowerCollector);
   process_power_collector_->Initialize();
 #endif  // !defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID) && !defined(USE_AURA)
 
   PostBrowserStart();
 
@@ -1766,10 +1791,12 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   }
 #endif  // defined(OS_ANDROID)
 
-#if !defined(OS_ANDROID)
+  // TODO(bshe): Use !defined(ANDROID_JAVA_UI) once
+  // codereview.chromium.org/1459793002 landed.
+#if !defined(OS_ANDROID) || defined(USE_AURA)
   UMA_HISTOGRAM_TIMES("Startup.PreMainMessageLoopRunImplStep3Time",
                       base::TimeTicks::Now() - start_time_step3);
-#endif  // !defined(OS_ANDROID)
+#endif  // !defined(OS_ANDROID) || defined(USE_AURA)
 
   return result_code_;
 }

@@ -164,7 +164,10 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
 
   scoped_ptr<BrowserProcessImpl> browser_process_;
   scoped_refptr<metrics::TrackingSynchronizer> tracking_synchronizer_;
-#if !defined(OS_ANDROID)
+
+  // TODO(bshe): Use !defined(ANDROID_JAVA_UI) once
+  // codereview.chromium.org/1459793002 landed.
+#if !defined(OS_ANDROID) || defined(USE_AURA)
   // Browser creation happens on the Java side in Android.
   scoped_ptr<StartupBrowserCreator> browser_creator_;
 
@@ -174,7 +177,7 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
 
   // Android's first run is done in Java instead of native.
   scoped_ptr<first_run::MasterPrefs> master_prefs_;
-#endif
+#endif  // !defined(OS_ANDROID) || defined(USE_AURA)
   Profile* profile_;
   bool run_message_loop_;
   ProcessSingleton::NotifyResult notify_result_;
