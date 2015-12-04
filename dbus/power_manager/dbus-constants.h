@@ -35,8 +35,6 @@ const char kHandleDarkSuspendReadinessMethod[] = "HandleDarkSuspendReadiness";
 const char kHandlePowerButtonAcknowledgmentMethod[] =
     "HandlePowerButtonAcknowledgment";
 const char kRecordDarkResumeWakeReasonMethod[] = "RecordDarkResumeWakeReason";
-const char kAcquireDisplayWakeLockMethod[] = "AcquireDisplayWakeLock";
-const char kReleaseDisplayWakeLockMethod[] = "ReleaseDisplayWakeLock";
 // Signals emitted by powerd.
 const char kBrightnessChangedSignal[] = "BrightnessChanged";
 const char kKeyboardBrightnessChangedSignal[] = "KeyboardBrightnessChanged";
@@ -62,16 +60,6 @@ enum UserActivityType {
 enum RequestRestartReason {
   REQUEST_RESTART_FOR_USER = 0,
   REQUEST_RESTART_FOR_UPDATE = 1,
-};
-enum DisplayWakeLockType {
-  // Take this if you want the screen to stay bright (i.e. prevent dimming).
-  WAKE_LOCK_BRIGHT = 0,
-  // Take this if you want the screen to stay at least dim (i.e. prevent turning
-  // off).
-  WAKE_LOCK_DIM = 1,
-
-  // Number of display wake lock types.
-  WAKE_LOCK_TYPES = 2,
 };
 }  // namespace power_manager
 
