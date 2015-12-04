@@ -889,12 +889,11 @@ template("java_strings_grd_prebuilt") {
 template("java_binary") {
   set_sources_assignment_filter([])
 
-  # TODO(cjhopman): This should not act like a java_library for dependents (i.e.
-  # dependents shouldn't get the jar in their classpath, etc.).
   java_library_impl(target_name) {
     forward_variables_from(invoker, "*")
     supports_android = false
     main_class = invoker.main_class
+    is_java_binary = true
   }
 }
 
