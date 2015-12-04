@@ -4,26 +4,29 @@
 
 import sys
 
-import recipe_util  # pylint: disable=F0401
+import config_util  # pylint: disable=F0401
 
 
 # This class doesn't need an __init__ method, so we disable the warning
 # pylint: disable=W0232
-class Chromium(recipe_util.Recipe):
-  """Basic Recipe class for Chromium."""
-
+class Breakpad(config_util.Config):
   @staticmethod
   def fetch_spec(props):
-    url = 'https://chromium.googlesource.com/external/gyp.git'
-    solution = { 'name'   :'gyp',
-                 'url'    : url,
-                 'managed'   : False,
-                 'custom_deps': {},
-                 'safesync_url': '',
+    url = 'https://chromium.googlesource.com/breakpad/breakpad.git'
+    solution = {
+      'name': 'src',
+      'url': url,
+      'managed': False,
+      'custom_deps': {},
+      'safesync_url': '',
     }
     spec = {
       'solutions': [solution],
     }
+    if props.get('target_os'):
+      spec['target_os'] = props['target_os'].split(',')
+    if props.get('target_os_only'):
+      spec['target_os_only'] = props['target_os_only']
     return {
       'type': 'gclient_git',
       'gclient_git_spec': spec,
@@ -31,11 +34,11 @@ class Chromium(recipe_util.Recipe):
 
   @staticmethod
   def expected_root(_props):
-    return 'gyp'
+    return 'src'
 
 
 def main(argv=None):
-  return Chromium().handle_args(argv)
+  return Breakpad().handle_args(argv)
 
 
 if __name__ == '__main__':

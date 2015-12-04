@@ -4,19 +4,19 @@
 
 import sys
 
-import recipe_util  # pylint: disable=F0401
+import config_util  # pylint: disable=F0401
 
 
 # This class doesn't need an __init__ method, so we disable the warning
 # pylint: disable=W0232
-class Android(recipe_util.Recipe):
-  """Basic Recipe alias for Android -> Chromium."""
+class Android(config_util.Config):
+  """Basic Config alias for Android -> Chromium."""
 
   @staticmethod
   def fetch_spec(props):
     return {
       'alias': {
-        'recipe': 'chromium',
+        'config': 'chromium',
         'props': ['--target_os=android'],
       },
     }

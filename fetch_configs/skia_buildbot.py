@@ -4,19 +4,19 @@
 
 import sys
 
-import recipe_util  # pylint: disable=F0401
+import config_util  # pylint: disable=F0401
 
 
 # This class doesn't need an __init__ method, so we disable the warning
 # pylint: disable=W0232
-class Skia(recipe_util.Recipe):
-  """Basic Recipe class for the Skia repository."""
+class SkiaBuildbot(config_util.Config):
+  """Basic Config class for the Skia Buildbot repository."""
 
   @staticmethod
   def fetch_spec(_props):
     solution = {
-      'name'     : 'skia',
-      'url'      : 'https://skia.googlesource.com/skia.git',
+      'name'     : 'buildbot',
+      'url'      : 'https://skia.googlesource.com/buildbot.git',
       'deps_file': 'DEPS',
       'managed'  : False,
     }
@@ -30,11 +30,11 @@ class Skia(recipe_util.Recipe):
 
   @staticmethod
   def expected_root(_props):
-    return 'skia'
+    return 'buildbot'
 
 
 def main(argv=None):
-  return Skia().handle_args(argv)
+  return SkiaBuildbot().handle_args(argv)
 
 
 if __name__ == '__main__':

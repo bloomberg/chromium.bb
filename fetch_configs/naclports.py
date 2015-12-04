@@ -1,24 +1,27 @@
-# Copyright (c) 2015 The Chromium Authors. All rights reserved.
+# Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 import sys
 
-import recipe_util  # pylint: disable=F0401
+import config_util  # pylint: disable=F0401
 
 
 # This class doesn't need an __init__ method, so we disable the warning
 # pylint: disable=W0232
-class Breakpad(recipe_util.Recipe):
+class Naclports(config_util.Config):
+  """Basic Config class for naclports."""
+
   @staticmethod
   def fetch_spec(props):
-    url = 'https://chromium.googlesource.com/breakpad/breakpad.git'
+    url = 'https://chromium.googlesource.com/external/naclports.git'
     solution = {
-      'name': 'src',
-      'url': url,
-      'managed': False,
-      'custom_deps': {},
-      'safesync_url': '',
+        'name'        : 'src',
+        'url'         : url,
+        'deps_file'   : 'DEPS',
+        'managed'     : False,
+        'custom_deps' : {},
+        'safesync_url': '',
     }
     spec = {
       'solutions': [solution],
@@ -38,7 +41,7 @@ class Breakpad(recipe_util.Recipe):
 
 
 def main(argv=None):
-  return Breakpad().handle_args(argv)
+  return Naclports().handle_args(argv)
 
 
 if __name__ == '__main__':

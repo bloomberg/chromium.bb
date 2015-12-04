@@ -4,30 +4,25 @@
 
 import sys
 
-import recipe_util  # pylint: disable=F0401
+import config_util  # pylint: disable=F0401
 
 
 # This class doesn't need an __init__ method, so we disable the warning
 # pylint: disable=W0232
-class Dart(recipe_util.Recipe):
-  """Basic Recipe class for Dart."""
+class CrashpadConfig(config_util.Config):
+  """Basic Config class for Crashpad."""
 
   @staticmethod
   def fetch_spec(props):
-    url = 'https://github.com/dart-lang/sdk.git'
-    solution = {
-      'name'   :'src/dart',
-      'url'    : url,
-      'deps_file': 'tools/deps/dartium.deps/DEPS',
-      'managed'   : False,
-      'custom_deps': {},
-      'safesync_url': '',
-    }
     spec = {
-      'solutions': [solution],
+      'solutions': [
+        {
+          'name': 'crashpad',
+          'url': 'https://chromium.googlesource.com/crashpad/crashpad.git',
+          'managed': False,
+        },
+      ],
     }
-    if props.get('target_os'):
-      spec['target_os'] = props['target_os'].split(',')
     return {
       'type': 'gclient_git',
       'gclient_git_spec': spec,
@@ -35,11 +30,11 @@ class Dart(recipe_util.Recipe):
 
   @staticmethod
   def expected_root(_props):
-    return 'src'
+    return 'crashpad'
 
 
 def main(argv=None):
-  return Dart().handle_args(argv)
+  return CrashpadConfig().handle_args(argv)
 
 
 if __name__ == '__main__':

@@ -2,13 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""This module holds utilities which make writing recipes easier."""
+"""This module holds utilities which make writing configs easier."""
 
 import json
 
 
-class Recipe(object):
-  """Base class for all recipes.
+class Config(object):
+  """Base class for all configs.
 
   Provides methods that are expected to be overridden by child classes. Also
   provides an command-line parsing method that converts the unified command-line

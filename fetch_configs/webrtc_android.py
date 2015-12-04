@@ -4,19 +4,19 @@
 
 import sys
 
-import recipe_util  # pylint: disable=F0401
+import config_util  # pylint: disable=F0401
 
 
 # This class doesn't need an __init__ method, so we disable the warning
 # pylint: disable=W0232
-class WebRTCAndroid(recipe_util.Recipe):
-  """Basic Recipe alias for Android -> WebRTC."""
+class WebRTCAndroid(config_util.Config):
+  """Basic Config alias for Android -> WebRTC."""
 
   @staticmethod
   def fetch_spec(props):
     return {
       'alias': {
-        'recipe': 'webrtc',
+        'config': 'webrtc',
         'props': ['--target_os=android,unix'],
       },
     }

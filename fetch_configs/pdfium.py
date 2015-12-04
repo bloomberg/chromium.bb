@@ -4,37 +4,36 @@
 
 import sys
 
-import recipe_util  # pylint: disable=F0401
+import config_util  # pylint: disable=F0401
 
 
 # This class doesn't need an __init__ method, so we disable the warning
 # pylint: disable=W0232
-class CrashpadRecipe(recipe_util.Recipe):
-  """Basic Recipe class for Crashpad."""
+class PdfiumConfig(config_util.Config):
+  """Basic Config class for pdfium."""
 
   @staticmethod
   def fetch_spec(props):
-    spec = {
-      'solutions': [
-        {
-          'name': 'crashpad',
-          'url': 'https://chromium.googlesource.com/crashpad/crashpad.git',
-          'managed': False,
-        },
-      ],
-    }
     return {
       'type': 'gclient_git',
-      'gclient_git_spec': spec,
+      'gclient_git_spec': {
+        'solutions': [
+          {
+            'name': 'pdfium',
+            'url': 'https://pdfium.googlesource.com/pdfium.git',
+            'managed': False,
+          },
+        ],
+      },
     }
 
   @staticmethod
   def expected_root(_props):
-    return 'crashpad'
+    return 'pdfium'
 
 
 def main(argv=None):
-  return CrashpadRecipe().handle_args(argv)
+  return PdfiumConfig().handle_args(argv)
 
 
 if __name__ == '__main__':

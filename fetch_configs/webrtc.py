@@ -4,13 +4,13 @@
 
 import sys
 
-import recipe_util  # pylint: disable=F0401
+import config_util  # pylint: disable=F0401
 
 
 # This class doesn't need an __init__ method, so we disable the warning
 # pylint: disable=W0232
-class WebRTC(recipe_util.Recipe):
-  """Basic Recipe class for WebRTC."""
+class WebRTC(config_util.Config):
+  """Basic Config class for WebRTC."""
 
   @staticmethod
   def fetch_spec(props):

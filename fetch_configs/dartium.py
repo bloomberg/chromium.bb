@@ -4,20 +4,21 @@
 
 import sys
 
-import recipe_util  # pylint: disable=F0401
+import config_util  # pylint: disable=F0401
+
 
 # This class doesn't need an __init__ method, so we disable the warning
 # pylint: disable=W0232
-class Fletch(recipe_util.Recipe):
-  """Basic Recipe class for Fletch."""
+class Dart(config_util.Config):
+  """Basic Config class for Dart."""
 
   @staticmethod
   def fetch_spec(props):
-    url = 'https://github.com/dart-lang/fletch.git'
+    url = 'https://github.com/dart-lang/sdk.git'
     solution = {
-      'name'   :'fletch',
+      'name'   :'src/dart',
       'url'    : url,
-      'deps_file': 'DEPS',
+      'deps_file': 'tools/deps/dartium.deps/DEPS',
       'managed'   : False,
       'custom_deps': {},
       'safesync_url': '',
@@ -34,11 +35,11 @@ class Fletch(recipe_util.Recipe):
 
   @staticmethod
   def expected_root(_props):
-    return 'fletch'
+    return 'src'
 
 
 def main(argv=None):
-  return Fletch().handle_args(argv)
+  return Dart().handle_args(argv)
 
 
 if __name__ == '__main__':

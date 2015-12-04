@@ -1,39 +1,40 @@
-# Copyright 2015 The Chromium Authors. All rights reserved.
+# Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 import sys
 
-import recipe_util  # pylint: disable=F0401
+import config_util  # pylint: disable=F0401
 
 
 # This class doesn't need an __init__ method, so we disable the warning
 # pylint: disable=W0232
-class PdfiumRecipe(recipe_util.Recipe):
-  """Basic Recipe class for pdfium."""
+class Infra(config_util.Config):
+  """Basic Config class for the Infrastructure repositories."""
 
   @staticmethod
-  def fetch_spec(props):
+  def fetch_spec(_props):
     return {
       'type': 'gclient_git',
       'gclient_git_spec': {
         'solutions': [
           {
-            'name': 'pdfium',
-            'url': 'https://pdfium.googlesource.com/pdfium.git',
-            'managed': False,
-          },
+            'name'     : 'infra',
+            'url'      : 'https://chromium.googlesource.com/infra/infra.git',
+            'deps_file': '.DEPS.git',
+            'managed'  : False,
+          }
         ],
       },
     }
 
   @staticmethod
   def expected_root(_props):
-    return 'pdfium'
+    return 'infra'
 
 
 def main(argv=None):
-  return PdfiumRecipe().handle_args(argv)
+  return Infra().handle_args(argv)
 
 
 if __name__ == '__main__':

@@ -7,15 +7,15 @@
 Tool to perform checkouts in one easy command line!
 
 Usage:
-  fetch <recipe> [--property=value [--property2=value2 ...]]
+  fetch <config> [--property=value [--property2=value2 ...]]
 
 This script is a wrapper around various version control and repository
-checkout commands. It requires a |recipe| name, fetches data from that
-recipe in depot_tools/recipes, and then performs all necessary inits,
+checkout commands. It requires a |config| name, fetches data from that
+config in depot_tools/fetch_configs, and then performs all necessary inits,
 checkouts, pulls, fetches, etc.
 
 Optional arguments may be passed on the command line in key-value pairs.
-These parameters will be passed through to the recipe's main method.
+These parameters will be passed through to the config's main method.
 """
 
 import json
@@ -39,10 +39,10 @@ class Checkout(object):
 
   Attributes:
     |base|: the absolute path of the directory in which this script is run.
-    |spec|: the spec for this checkout as returned by the recipe. Different
+    |spec|: the spec for this checkout as returned by the config. Different
         subclasses will expect different keys in this dictionary.
     |root|: the directory into which the checkout will be performed, as returned
-        by the recipe. This is a relative path from |base|.
+        by the config. This is a relative path from |base|.
   """
   def __init__(self, options, spec, root):
     self.base = os.getcwd()
@@ -222,7 +222,7 @@ def usage(msg=None):
     print 'Error:', msg
 
   print textwrap.dedent("""\
-    usage: %s [options] <recipe> [--property=value [--property2=value2 ...]]
+    usage: %s [options] <config> [--property=value [--property2=value2 ...]]
 
     This script can be used to download the Chromium sources. See
     http://www.chromium.org/developers/how-tos/get-the-code
@@ -234,21 +234,21 @@ def usage(msg=None):
        -n, --dry-run      Don't run commands, only print them.
        --no-history       Perform shallow clones, don't fetch the full git history.
 
-    Valid fetch recipes:""") % os.path.basename(sys.argv[0])
+    Valid fetch configs:""") % os.path.basename(sys.argv[0])
 
-  recipes_dir = os.path.join(SCRIPT_PATH, 'recipes')
-  recipes = [f[:-3] for f in os.listdir(recipes_dir) if f.endswith('.py')]
-  recipes.sort()
-  for fname in recipes:
+  configs_dir = os.path.join(SCRIPT_PATH, 'fetch_configs')
+  configs = [f[:-3] for f in os.listdir(configs_dir) if f.endswith('.py')]
+  configs.sort()
+  for fname in configs:
     print '  ' + fname
 
   sys.exit(bool(msg))
 
 
 def handle_args(argv):
-  """Gets the recipe name from the command line arguments."""
+  """Gets the config name from the command line arguments."""
   if len(argv) <= 1:
-    usage('Must specify a recipe.')
+    usage('Must specify a config.')
   if argv[1] in ('-h', '--help', 'help'):
     usage()
 
@@ -276,32 +276,33 @@ def handle_args(argv):
   if bad_parms:
     usage('Got bad arguments %s' % bad_parms)
 
-  recipe = argv[1]
+  config = argv[1]
   props = argv[2:]
   return (
       optparse.Values(
           {'dry_run':dry_run, 'nohooks':nohooks, 'no_history': no_history }),
-      recipe,
+      config,
       props)
 
 
-def run_recipe_fetch(recipe, props, aliased=False):
-  """Invoke a recipe's fetch method with the passed-through args
+def run_config_fetch(config, props, aliased=False):
+  """Invoke a config's fetch method with the passed-through args
   and return its json output as a python object."""
-  recipe_path = os.path.abspath(os.path.join(SCRIPT_PATH, 'recipes', recipe))
-  if not os.path.exists(recipe_path + '.py'):
-    print "Could not find a recipe for %s" % recipe
+  config_path = os.path.abspath(
+      os.path.join(SCRIPT_PATH, 'fetch_configs', config))
+  if not os.path.exists(config_path + '.py'):
+    print "Could not find a config for %s" % config
     sys.exit(1)
 
-  cmd = [sys.executable, recipe_path + '.py', 'fetch'] + props
+  cmd = [sys.executable, config_path + '.py', 'fetch'] + props
   result = subprocess.Popen(cmd, stdout=subprocess.PIPE).communicate()[0]
 
   spec = json.loads(result)
   if 'alias' in spec:
     assert not aliased
-    return run_recipe_fetch(
-        spec['alias']['recipe'], spec['alias']['props'] + props, aliased=True)
-  cmd = [sys.executable, recipe_path + '.py', 'root']
+    return run_config_fetch(
+        spec['alias']['config'], spec['alias']['props'] + props, aliased=True)
+  cmd = [sys.executable, config_path + '.py', 'root']
   result = subprocess.Popen(cmd, stdout=subprocess.PIPE).communicate()[0]
   root = json.loads(result)
   return spec, root
@@ -312,7 +313,7 @@ def run(options, spec, root):
 
     Args:
       options: Options instance.
-      spec: Checkout configuration returned by the the recipe's fetch_spec
+      spec: Checkout configuration returned by the the config's fetch_spec
           method (checkout type, repository url, etc.).
       root: The directory into which the repo expects to be checkout out.
   """
@@ -335,8 +336,8 @@ def run(options, spec, root):
 
 
 def main():
-  options, recipe, props = handle_args(sys.argv)
-  spec, root = run_recipe_fetch(recipe, props)
+  options, config, props = handle_args(sys.argv)
+  spec, root = run_config_fetch(config, props)
   return run(options, spec, root)
 
 

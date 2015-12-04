@@ -4,13 +4,13 @@
 
 import sys
 
-import recipe_util  # pylint: disable=F0401
+import config_util  # pylint: disable=F0401
 
 
 # This class doesn't need an __init__ method, so we disable the warning
 # pylint: disable=W0232
-class NaCl(recipe_util.Recipe):
-  """Basic Recipe class for NaCl."""
+class NaCl(config_util.Config):
+  """Basic Config class for NaCl."""
 
   @staticmethod
   def fetch_spec(props):

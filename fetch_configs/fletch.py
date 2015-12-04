@@ -1,35 +1,32 @@
-# Copyright 2014 The Chromium Authors. All rights reserved.
+# Copyright 2015 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 import sys
 
-import recipe_util  # pylint: disable=F0401
-
+import config_util  # pylint: disable=F0401
 
 # This class doesn't need an __init__ method, so we disable the warning
 # pylint: disable=W0232
-class Naclports(recipe_util.Recipe):
-  """Basic Recipe class for naclports."""
+class Fletch(config_util.Config):
+  """Basic Config class for Fletch."""
 
   @staticmethod
   def fetch_spec(props):
-    url = 'https://chromium.googlesource.com/external/naclports.git'
+    url = 'https://github.com/dart-lang/fletch.git'
     solution = {
-        'name'        : 'src',
-        'url'         : url,
-        'deps_file'   : 'DEPS',
-        'managed'     : False,
-        'custom_deps' : {},
-        'safesync_url': '',
+      'name'   :'fletch',
+      'url'    : url,
+      'deps_file': 'DEPS',
+      'managed'   : False,
+      'custom_deps': {},
+      'safesync_url': '',
     }
     spec = {
       'solutions': [solution],
     }
     if props.get('target_os'):
       spec['target_os'] = props['target_os'].split(',')
-    if props.get('target_os_only'):
-      spec['target_os_only'] = props['target_os_only']
     return {
       'type': 'gclient_git',
       'gclient_git_spec': spec,
@@ -37,11 +34,11 @@ class Naclports(recipe_util.Recipe):
 
   @staticmethod
   def expected_root(_props):
-    return 'src'
+    return 'fletch'
 
 
 def main(argv=None):
-  return Naclports().handle_args(argv)
+  return Fletch().handle_args(argv)
 
 
 if __name__ == '__main__':
