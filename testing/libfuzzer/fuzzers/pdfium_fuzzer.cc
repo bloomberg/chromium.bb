@@ -165,20 +165,18 @@ static v8::Platform* Init() {
   v8::Platform* platform;
   InitializeV8ForPDFium(&platform);
 
-  FPDF_LIBRARY_CONFIG config;
-  config.version = 2;
-  config.m_pUserFontPaths = nullptr;
-  config.m_pIsolate = nullptr;
-  config.m_v8EmbedderSlot = 0;
+  auto config = new FPDF_LIBRARY_CONFIG();
+  config->version = 2;
+  config->m_pUserFontPaths = nullptr;
+  config->m_pIsolate = nullptr;
+  config->m_v8EmbedderSlot = 0;
+  FPDF_InitLibraryWithConfig(config);
 
-  FPDF_InitLibraryWithConfig(&config);
-
-  UNSUPPORT_INFO unsuppored_info;
-  memset(&unsuppored_info, '\0', sizeof(unsuppored_info));
-  unsuppored_info.version = 1;
-  unsuppored_info.FSDK_UnSupport_Handler = ExampleUnsupportedHandler;
-
-  FSDK_SetUnSpObjProcessHandler(&unsuppored_info);
+  auto unsuppored_info = new UNSUPPORT_INFO();
+  memset(unsuppored_info, '\0', sizeof(*unsuppored_info));
+  unsuppored_info->version = 1;
+  unsuppored_info->FSDK_UnSupport_Handler = ExampleUnsupportedHandler;
+  FSDK_SetUnSpObjProcessHandler(unsuppored_info);
 
   return platform;
 }
