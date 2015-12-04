@@ -213,8 +213,11 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
 #if defined(OS_WIN)
 #define MAYBE_AccessibilityEventsListboxNext \
   DISABLED_AccessibilityEventsListboxNext
+#define MAYBE_AccessibilityEventsMenuListPopup \
+  DISABLED_AccessibilityEventsMenuListPopup
 #else
 #define MAYBE_AccessibilityEventsListboxNext AccessibilityEventsListboxNext
+#define MAYBE_AccessibilityEventsMenuListPopup AccessibilityEventsMenuListPopup
 #endif
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
@@ -233,7 +236,7 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
-                       AccessibilityEventsMenuListPopup) {
+                       MAYBE_AccessibilityEventsMenuListPopup) {
   RunEventTest(FILE_PATH_LITERAL("menulist-popup.html"));
 }
 
