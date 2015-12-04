@@ -1896,6 +1896,9 @@
       ['OS=="mac" or OS=="ios"', {
         'clang%': 1,
 
+        # On Mac and iOS we just use the default system allocator.
+        'use_allocator%': 'none',
+
         'variables': {
           # Mac OS X SDK and deployment target support.  The SDK identifies
           # the version of the system headers that will be used, and
