@@ -263,13 +263,9 @@ def BuildScript(status, context):
     # toolchain scripts only support x86-64 hosts, while NaCl's x86-32
     # testing bots have to be actual x86-32 hosts.
     can_use_gn = context['arch'] == '64'
-  elif context.Mac():
-    # Mac builds for x86-32 and x86-64, but the bots do not yet have
-    # the right SDK installed for the GN Mac toolchain to be happy.
-    # TODO(mcgrathr): Remove this when the bots are all updated.
-    can_use_gn = False
   else:
-    # Linux builds (or cross-builds) for every target.
+    # Linux builds (or cross-builds) for every target.  Mac builds for
+    # x86-32 and x86-64, and can build untrusted code for others.
     can_use_gn = True
   gn_out = '../out'
 
@@ -301,8 +297,27 @@ def BuildScript(status, context):
 
     # If this is a 32-bit build but the kernel reports as 64-bit,
     # then gn will set host_cpu=x64 when we want host_cpu=x86.
-    if context['arch'] == '32':
+    if context.Linux() and context['arch'] == '32':
       gn_gen_args.append('host_cpu="x86"')
+
+    # Mac can build the untrusted code for machines Mac doesn't
+    # support, but the GN files will get confused in a couple of ways.
+    if context.Mac() and context['arch'] not in ('32', '64'):
+      gn_gen_args += [
+          # Subtle GN issues mean that $host_toolchain context will
+          # wind up seeing current_cpu=="arm" when target_os is left
+          # to default to "mac", because host_toolchain matches
+          # _default_toolchain and toolchain_args() does not apply to
+          # the default toolchain.  Using target_os="ios" ensures that
+          # the default toolchain is something different from
+          # host_toolchain and thus that toolchain's toolchain_args()
+          # block will be applied and set current_cpu correctly.
+          'target_os="ios"',
+          # build/config/ios/ios_sdk.gni will try to find some
+          # XCode magic that won't exist.  This GN flag disables
+          # the problematic code.
+          'ios_enable_code_signing=false',
+          ]
 
     gn_out_trusted = gn_out
     gn_out_irt = os.path.join(gn_out, 'irt_' + gn_arch_name)
@@ -434,7 +449,9 @@ def BuildScript(status, context):
   ### END tests ###
 
   ### BEGIN GN tests ###
-  if can_use_gn:
+  # Non-Linux can build non-x86 untrusted code, but can't build or run
+  # the trusted code and so cannot test.
+  if can_use_gn and (context.Linux() or context['arch'] in ('32', '64')):
     gn_sel_ldr = os.path.join(gn_out_trusted, 'sel_ldr')
     if context.Windows():
       gn_sel_ldr += '.exe'
