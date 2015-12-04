@@ -2,9 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/buildflag_header.gni")
-import("//build/config/compiler/compiler.gni")
-
 source_set("debug") {
   sources = [
     "alias.cc",
@@ -61,7 +58,6 @@ source_set("debug") {
   configs += [ "//base:base_implementation" ]
 
   deps = [
-    ":debugging_flags",
     "//base:base_static",
     "//base/memory",
     "//base/process",
@@ -78,10 +74,4 @@ source_set("debug") {
   ]
 
   visibility = [ "//base/*" ]
-}
-
-buildflag_header("debugging_flags") {
-  header = "debugging_flags.h"
-
-  flags = [ "ENABLE_PROFILING=$enable_profiling" ]
 }

@@ -39,6 +39,10 @@ declare_args() {
   binutils_path = rebase_path("//third_party/binutils/Linux_x64/Release/bin",
                               root_build_dir)
 
+  # Compile in such a way as to enable profiling of the generated code. For
+  # example, don't omit the frame pointer and leave in symbols.
+  enable_profiling = false
+
   # Compile in such a way as to make it possible for the profiler to unwind full
   # stack frames. Setting this flag has a large effect on the performance of the
   # generated code than just setting profiling, but gives the profiler more
@@ -205,6 +209,11 @@ config("compiler") {
   # -----------------------------------
   if (is_posix && !(is_mac || is_ios)) {
     if (enable_profiling && !is_debug) {
+      # The GYP build spams this define into every compilation unit, as we do
+      # here, but it only appears to be used in base and a couple other places.
+      # TODO(abarth): Should we move this define closer to where it's used?
+      defines += [ "ENABLE_PROFILING" ]
+
       cflags += [
         "-fno-omit-frame-pointer",
         "-g",

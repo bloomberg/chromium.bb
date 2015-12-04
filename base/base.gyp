@@ -21,7 +21,6 @@
         'optimize': 'max',
       },
       'dependencies': [
-        'base_debugging_flags',
         'base_static',
         'allocator/allocator.gyp:allocator_extension_thunks',
         '../testing/gtest.gyp:gtest_prod',
@@ -1077,18 +1076,6 @@
         }],
       ],
     },
-    {
-      # GN version: //base/debug:debugging_flags
-      'target_name': 'base_debugging_flags',
-      'toolsets': ['host', 'target'],
-      'includes': [ '../build/buildflag_header.gypi' ],
-      'variables': {
-        'buildflag_header_path': 'base/debug/debugging_flags.h',
-        'buildflag_flags': [
-          'ENABLE_PROFILING=<(profiling)',
-        ],
-      },
-    },
   ],
   'conditions': [
     ['OS=="ios" and "<(GENERATOR)"=="ninja"', {
@@ -1144,7 +1131,6 @@
             'base_target': 1,
           },
           'dependencies': [
-            'base_debugging_flags',
             'base_static_win64',
             'allocator/allocator.gyp:allocator_extension_thunks_win64',
             '../third_party/modp_b64/modp_b64.gyp:modp_b64_win64',

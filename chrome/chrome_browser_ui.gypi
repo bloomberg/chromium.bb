@@ -2807,7 +2807,6 @@
         'chrome_resources.gyp:platform_locale_settings',
         'chrome_resources.gyp:theme_resources',
         'common',
-        '../base/base.gyp:base_debugging_flags',
         '../components/components.gyp:auto_login_parser',
         '../components/components.gyp:certificate_reporting',
         '../components/components.gyp:device_event_log_component',

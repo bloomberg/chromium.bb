@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import("//build/config/allocator.gni")
-import("//build/config/compiler/compiler.gni")
 
 declare_args() {
   # Provide a way to force disable debugallocation in Debug builds,
@@ -148,6 +147,8 @@ if (use_allocator == "tcmalloc") {
       "$tcmalloc_dir/src/base/synchronization_profiling.h",
       "$tcmalloc_dir/src/base/sysinfo.cc",
       "$tcmalloc_dir/src/base/sysinfo.h",
+      "$tcmalloc_dir/src/base/thread_lister.c",
+      "$tcmalloc_dir/src/base/thread_lister.h",
       "$tcmalloc_dir/src/base/vdso_support.cc",
       "$tcmalloc_dir/src/base/vdso_support.h",
       "$tcmalloc_dir/src/central_freelist.cc",
@@ -174,6 +175,11 @@ if (use_allocator == "tcmalloc") {
       "$tcmalloc_dir/src/memory_region_map.h",
       "$tcmalloc_dir/src/page_heap.cc",
       "$tcmalloc_dir/src/page_heap.h",
+      "$tcmalloc_dir/src/profile-handler.cc",
+      "$tcmalloc_dir/src/profile-handler.h",
+      "$tcmalloc_dir/src/profiledata.cc",
+      "$tcmalloc_dir/src/profiledata.h",
+      "$tcmalloc_dir/src/profiler.cc",
       "$tcmalloc_dir/src/raw_printer.cc",
       "$tcmalloc_dir/src/raw_printer.h",
       "$tcmalloc_dir/src/sampler.cc",
@@ -233,8 +239,16 @@ if (use_allocator == "tcmalloc") {
         "$tcmalloc_dir/src/symbolize.h",
         "$tcmalloc_dir/src/system-alloc.cc",
         "$tcmalloc_dir/src/system-alloc.h",
-      ]
 
+        # cpuprofiler
+        "$tcmalloc_dir/src/base/thread_lister.c",
+        "$tcmalloc_dir/src/base/thread_lister.h",
+        "$tcmalloc_dir/src/profile-handler.cc",
+        "$tcmalloc_dir/src/profile-handler.h",
+        "$tcmalloc_dir/src/profiledata.cc",
+        "$tcmalloc_dir/src/profiledata.h",
+        "$tcmalloc_dir/src/profiler.cc",
+      ]
       defines += [ "PERFTOOLS_DLL_DECL=" ]
 
       configs -= [
@@ -246,19 +260,6 @@ if (use_allocator == "tcmalloc") {
       public_configs = [ ":nocmt" ]
 
       deps += [ ":prep_libc" ]
-    }
-
-    if (enable_profiling) {
-      sources += [
-        "$tcmalloc_dir/src/base/thread_lister.c",
-        "$tcmalloc_dir/src/base/thread_lister.h",
-        "$tcmalloc_dir/src/profile-handler.cc",
-        "$tcmalloc_dir/src/profile-handler.h",
-        "$tcmalloc_dir/src/profiledata.cc",
-        "$tcmalloc_dir/src/profiledata.h",
-        "$tcmalloc_dir/src/profiler.cc",
-      ]
-      defines += [ "ENABLE_PROFILING=1" ]
     }
 
     if (is_linux || is_android) {
