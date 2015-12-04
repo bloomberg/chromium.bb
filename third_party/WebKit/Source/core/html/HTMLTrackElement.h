@@ -72,7 +72,6 @@ private:
     void newCuesAvailable(TextTrackLoader*) override;
     void cueLoadingCompleted(TextTrackLoader*, bool loadingFailed) override;
     void newRegionsAvailable(TextTrackLoader*) override;
-    String debugName() const override { return "HTMLTrackElement"; }
 
     void setReadyState(ReadyState);
 

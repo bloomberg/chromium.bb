@@ -38,9 +38,9 @@ namespace blink {
 class Document;
 class TextTrackLoader;
 
-class TextTrackLoaderClient : public ResourceOwner<RawResource> {
+class TextTrackLoaderClient {
 public:
-    ~TextTrackLoaderClient() override {}
+    virtual ~TextTrackLoaderClient() {}
 
     virtual void newCuesAvailable(TextTrackLoader*) = 0;
     virtual void cueLoadingCompleted(TextTrackLoader*, bool loadingFailed) = 0;
