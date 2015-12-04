@@ -41,15 +41,25 @@ bool BrowserAccessibility::PlatformIsLeaf() const {
   if (InternalChildCount() == 0)
     return true;
 
-  // All of these roles may have children that we use as internal
-  // implementation details, but we want to expose them as leaves
-  // to platform accessibility APIs.
+  // These types of objects may have children that we use as internal
+  // implementation details, but we want to expose them as leaves to platform
+  // accessibility APIs because screen readers might be confused if they find
+  // any children.
+  if (IsSimpleTextControl() || IsTextOnlyObject())
+    return true;
+
+  // Roles whose children are only presentational according to the ARIA and
+  // HTML5 Specs.
+  // (Note that whilst ARIA buttons can have only presentational children, HTML5
+  // buttons are allowed to have content.)
   switch (GetRole()) {
-    case ui::AX_ROLE_COMBO_BOX:
-    case ui::AX_ROLE_LINE_BREAK:
+    case ui::AX_ROLE_IMAGE:
+    case ui::AX_ROLE_MATH:
+    case ui::AX_ROLE_METER:
+    case ui::AX_ROLE_SCROLL_BAR:
     case ui::AX_ROLE_SLIDER:
-    case ui::AX_ROLE_STATIC_TEXT:
-    case ui::AX_ROLE_TEXT_FIELD:
+    case ui::AX_ROLE_SPLITTER:
+    case ui::AX_ROLE_PROGRESS_INDICATOR:
       return true;
     default:
       return false;
@@ -712,7 +722,7 @@ bool BrowserAccessibility::IsControl() const {
   }
 }
 
-bool BrowserAccessibility::IsTextControl() const {
+bool BrowserAccessibility::IsSimpleTextControl() const {
   // Time fields, color wells and spinner buttons might also use text fields as
   // constituent parts, but they are not considered text fields as a whole.
   switch (GetRole()) {
@@ -723,6 +733,12 @@ bool BrowserAccessibility::IsTextControl() const {
     default:
       return false;
   }
+}
+
+// Indicates if this object is at the root of a rich edit text control.
+bool BrowserAccessibility::IsRichTextControl() const {
+  return HasState(ui::AX_STATE_RICHLY_EDITABLE) &&
+         (!GetParent() || !GetParent()->HasState(ui::AX_STATE_RICHLY_EDITABLE));
 }
 
 std::string BrowserAccessibility::ComputeAccessibleNameFromDescendants() {

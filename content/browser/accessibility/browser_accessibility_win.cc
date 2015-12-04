@@ -3421,8 +3421,8 @@ void BrowserAccessibilityWin::UpdateStep1ComputeWinAttributes() {
 }
 
 void BrowserAccessibilityWin::UpdateStep2ComputeHypertext() {
-  if (!PlatformChildCount()) {
-    if (IsTextControl())
+  if (PlatformIsLeaf()) {
+    if (IsSimpleTextControl())
       win_attributes_->hypertext += value();
     else
       win_attributes_->hypertext += name();
@@ -3702,14 +3702,18 @@ int32 BrowserAccessibilityWin::GetHypertextOffsetFromChild(
   DCHECK(child.GetParent() == this);
 
   // Handle the case when we are dealing with a direct text-only child.
+  // (Note that this object might be a platform leaf, e.g. an ARIA searchbox,
+  // and so InternalChild... functions need to be used. Also, direct text-only
+  // children should not be present at tree roots and so no cross-tree traversal
+  // is necessary.)
   if (child.IsTextOnlyObject()) {
     int32 hypertextOffset = 0;
     int32 index_in_parent = child.GetIndexInParent();
     DCHECK_GE(index_in_parent, 0);
-    DCHECK_LT(index_in_parent, static_cast<int32>(PlatformChildCount()));
+    DCHECK_LT(index_in_parent, static_cast<int32>(InternalChildCount()));
     for (uint32 i = 0; i < static_cast<uint32>(index_in_parent); ++i) {
       const BrowserAccessibilityWin* sibling =
-          PlatformGetChild(i)->ToBrowserAccessibilityWin();
+          InternalGetChild(i)->ToBrowserAccessibilityWin();
       DCHECK(sibling);
       if (sibling->IsTextOnlyObject())
         hypertextOffset += sibling->hypertext().length();
@@ -3791,8 +3795,8 @@ int BrowserAccessibilityWin::GetHypertextOffsetFromEndpoint(
   // We can safely assume that the endpoint is in another part of the tree or
   // at common parent, and that this object is a descendant of common parent.
   int32 endpoint_index_in_common_parent = -1;
-  for (uint32 i = 0; i < common_parent->PlatformChildCount(); ++i) {
-    const BrowserAccessibility* child = common_parent->PlatformGetChild(i);
+  for (uint32 i = 0; i < common_parent->InternalChildCount(); ++i) {
+    const BrowserAccessibility* child = common_parent->InternalGetChild(i);
     DCHECK(child);
     if (endpoint_object.IsDescendantOf(child)) {
       endpoint_index_in_common_parent = child->GetIndexInParent();
@@ -3812,19 +3816,19 @@ int BrowserAccessibilityWin::GetHypertextOffsetFromEndpoint(
 
 int BrowserAccessibilityWin::GetSelectionAnchor() const {
   int32 anchor_id = manager()->GetTreeData().sel_anchor_object_id;
-  BrowserAccessibilityWin* anchor_object = manager()->GetFromID(
-      anchor_id)->ToBrowserAccessibilityWin();
+  const auto anchor_object =
+      manager()->GetFromID(anchor_id)->ToBrowserAccessibilityWin();
   if (!anchor_object)
     return -1;
 
-  int32 anchor_offset = manager()->GetTreeData().sel_anchor_offset;
+  int anchor_offset = manager()->GetTreeData().sel_anchor_offset;
   return GetHypertextOffsetFromEndpoint(*anchor_object, anchor_offset);
 }
 
 int BrowserAccessibilityWin::GetSelectionFocus() const {
   int32 focus_id = manager()->GetTreeData().sel_focus_object_id;
-  BrowserAccessibilityWin* focus_object = manager()->GetFromID(
-      focus_id)->ToBrowserAccessibilityWin();
+  const auto focus_object =
+      manager()->GetFromID(focus_id)->ToBrowserAccessibilityWin();
   if (!focus_object)
     return -1;
 
@@ -4023,10 +4027,8 @@ LONG BrowserAccessibilityWin::FindBoundary(
     LONG start_offset,
     ui::TextBoundaryDirection direction) {
   HandleSpecialTextOffset(text, &start_offset);
-  if (ia2_boundary == IA2_TEXT_BOUNDARY_WORD &&
-      GetRole() == ui::AX_ROLE_TEXT_FIELD) {
+  if (ia2_boundary == IA2_TEXT_BOUNDARY_WORD && IsSimpleTextControl())
     return GetWordStartBoundary(static_cast<int>(start_offset), direction);
-  }
 
   ui::TextBoundaryType boundary = IA2TextBoundaryToTextBoundary(ia2_boundary);
   const std::vector<int32>& line_breaks = GetIntListAttribute(
@@ -4115,7 +4117,7 @@ void BrowserAccessibilityWin::UpdateRequiredAttributes() {
   // Expose input-text type attribute.
   base::string16 type;
   base::string16 html_tag = GetString16Attribute(ui::AX_ATTR_HTML_TAG);
-  if (GetRole() == ui::AX_ROLE_TEXT_FIELD && html_tag == L"input" &&
+  if (IsSimpleTextControl() && html_tag == L"input" &&
       GetHtmlAttribute("type", &type)) {
     SanitizeStringAttributeForIA2(type, &type);
     win_attributes_->ia2_attributes.push_back(L"text-input-type:" + type);

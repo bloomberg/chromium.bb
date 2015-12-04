@@ -61,10 +61,6 @@
 // Returns the requested text range from this object's value attribute.
 - (NSString*)valueForRange:(NSRange)range;
 
-// Indicates if this object is at the root of a rich edit text field.
-@property(nonatomic, readonly, getter=isRichEditTextField)
-    BOOL richEditTextField;
-
 // Internally-used method.
 @property(nonatomic, readonly) NSPoint origin;
 

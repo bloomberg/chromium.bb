@@ -1,3 +1,2 @@
 AXWebArea AXRoleDescription='HTML content'
 ++AXGroup AXSubrole=AXDocumentMath AXRoleDescription='math'
-++++AXStaticText AXRoleDescription='text' AXValue='ARIA role math.'

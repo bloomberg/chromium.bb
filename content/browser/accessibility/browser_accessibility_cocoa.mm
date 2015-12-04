@@ -228,7 +228,7 @@ AccessibilityMatchPredicate PredicateForSearchKey(NSString* searchKey) {
     };
   } else if ([searchKey isEqualToString:@"AXTextFieldSearchKey"]) {
     return [](BrowserAccessibility* start, BrowserAccessibility* current) {
-      return current->GetRole() == ui::AX_ROLE_TEXT_FIELD;
+      return current->IsSimpleTextControl() || current->IsRichTextControl();
     };
   } else if ([searchKey isEqualToString:@"AXUnderlineSearchKey"]) {
     // TODO(dmazzoni): implement this.
@@ -928,6 +928,9 @@ bool InitializeAccessibilityTreeSearch(
 
 // Returns a string indicating the NSAccessibility role of this object.
 - (NSString*)role {
+  if (!browserAccessibility_)
+    return nil;
+
   ui::AXRole role = [self internalRole];
   if (role == ui::AX_ROLE_CANVAS &&
       browserAccessibility_->GetBoolAttribute(
@@ -945,9 +948,9 @@ bool InitializeAccessibilityTreeSearch(
     else
       return NSAccessibilityButtonRole;
   }
-  if ((role == ui::AX_ROLE_TEXT_FIELD &&
+  if ((browserAccessibility_->IsSimpleTextControl() &&
        browserAccessibility_->HasState(ui::AX_STATE_MULTILINE)) ||
-      [self isRichEditTextField]) {
+      browserAccessibility_->IsRichTextControl()) {
     return NSAccessibilityTextAreaRole;
   }
 
@@ -1431,21 +1434,6 @@ bool InitializeAccessibilityTreeSearch(
 
 - (void)swapChildren:(base::scoped_nsobject<NSMutableArray>*)other {
   children_.swap(*other);
-}
-
-// Indicates if this object is at the root of a rich edit text field.
-- (BOOL)isRichEditTextField {
-  if (!browserAccessibility_)
-    return NO;
-
-  if (browserAccessibility_->HasState(ui::AX_STATE_RICHLY_EDITABLE) &&
-      !(browserAccessibility_->GetParent() &&
-        browserAccessibility_->GetParent()->HasState(
-            ui::AX_STATE_RICHLY_EDITABLE))) {
-    return YES;
-  }
-
-  return NO;
 }
 
 // Returns the requested text range from this object's value attribute.

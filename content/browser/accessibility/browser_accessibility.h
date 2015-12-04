@@ -296,7 +296,9 @@ class CONTENT_EXPORT BrowserAccessibility {
   bool IsWebAreaForPresentationalIframe() const;
 
   bool IsControl() const;
-  bool IsTextControl() const;
+  bool IsSimpleTextControl() const;
+  // Indicates if this object is at the root of a rich edit text control.
+  bool IsRichTextControl() const;
 
   // If an object is focusable but has no accessible name, use this
   // to compute a name from its descendants.
