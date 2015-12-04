@@ -35,8 +35,8 @@ char(&ArraySizeHelper(const T(&array)[N]))[N];
 // to tell that this type is move-only.
 #define MOJO_MOVE_ONLY_TYPE(type)                                              \
  private:                                                                      \
-  type(type&);                                                                 \
-  void operator=(type&);                                                       \
+  type(const type&) = delete;                                                  \
+  void operator=(const type&) = delete;                                        \
                                                                                \
  public:                                                                       \
   type&& Pass() MOJO_WARN_UNUSED_RESULT { return static_cast<type&&>(*this); } \
