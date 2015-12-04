@@ -8,7 +8,7 @@ PASS [[PreventExtensions]] should throw for cross-origin objects
 FAIL [[GetOwnProperty]] - Properties on cross-origin objects should be reported |own| Blocked a frame with origin "http://web-platform.test:8000" from accessing a cross-origin frame.
 FAIL [[GetOwnProperty]] - Property descriptors for cross-origin properties should be set up correctly assert_equals: property descriptor for location should be non-enumerable expected false but got true
 PASS [[Delete]] Should throw on cross-origin objects 
-FAIL [[DefineOwnProperty]] Should throw for cross-origin objects assert_throws: Can't define cross-origin value property length function "function () { Object.defineProperty(obj, prop, valueDesc); }" did not throw
+PASS [[DefineOwnProperty]] Should throw for cross-origin objects 
 PASS [[Enumerate]] should return an empty iterator 
 FAIL [[OwnPropertyKeys]] should return all properties from cross-origin objects assert_array_equals: Object.getOwnPropertyNames() gives the right answer for cross-origin Location property 0, expected "href" but got "assign"
 PASS A and B jointly observe the same identity for cross-origin Window and Location 
