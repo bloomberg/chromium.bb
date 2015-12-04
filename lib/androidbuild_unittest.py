@@ -11,6 +11,7 @@ import httplib2
 import mock
 import oauth2client
 import os
+import pwd
 
 from chromite.lib import androidbuild
 from chromite.lib import cros_test_lib
@@ -52,6 +53,31 @@ class AndroidBuildTests(cros_test_lib.TestCase):
         homedir_json_credentials_path=RelativeToHome(authorized_user_path))
     self.assertEqual(os.path.abspath(json_path),
                      os.path.abspath(service_account_path))
+
+  def testFindCredentialsFile_PortageUsername(self):
+    """Checks that we can locate the JSON files under $PORTAGE_USERNAME."""
+    copy_environ = os.environ.copy()
+    copy_environ['HOME'] = '/nonexistent'
+    copy_environ['PORTAGE_USERNAME'] = 'fakeuser'
+
+    fakeuser_homedir = os.path.join(TESTDATA_PATH, 'androidbuild')
+    fakeuser_pwent = pwd.struct_passwd(('fakeuser', 'x', 1234, 1234,
+                                        'Fake User', fakeuser_homedir,
+                                        '/bin/sh'))
+
+    service_account_name = 'test_creds_authorized_user.json'
+
+    with mock.patch.dict(os.environ, copy_environ), \
+        mock.patch.object(pwd, 'getpwnam') as mock_getpwnam:
+      mock_getpwnam.return_value = fakeuser_pwent
+
+      json_path = androidbuild.FindCredentialsFile(
+          homedir_json_credentials_path=service_account_name)
+
+      mock_getpwnam.assert_called_once_with('fakeuser')
+
+      self.assertEqual(json_path,
+                       os.path.join(fakeuser_homedir, service_account_name))
 
   def testLoadCredentials_ServiceAccount(self):
     """Checks that loading a service account from JSON works."""

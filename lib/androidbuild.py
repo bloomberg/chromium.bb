@@ -10,6 +10,7 @@ import apiclient
 import httplib2
 import oauth2client.client
 import os
+import pwd
 import urllib
 
 
@@ -67,6 +68,20 @@ def FindCredentialsFile(override_json_credentials_path=None,
     json_path = os.path.join(user_homedir, homedir_json_credentials_path)
     if os.path.exists(json_path):
       return json_path
+
+  # If not found, check at ~$PORTAGE_USERNAME. That might be the case if the
+  # tool is being used from within an ebuild script.
+  portage_username = os.environ.get('PORTAGE_USERNAME')
+  if portage_username:
+    try:
+      portage_homedir = pwd.getpwnam(portage_username).pw_dir
+    except KeyError:
+      # User $PORTAGE_USERNAME does not exist.
+      pass
+    else:
+      json_path = os.path.join(portage_homedir, homedir_json_credentials_path)
+      if os.path.exists(json_path):
+        return json_path
 
   raise CredentialsNotFoundError(
       'Could not find the JSON credentials at [%s] and no JSON file was '
