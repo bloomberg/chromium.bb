@@ -4,31 +4,8 @@
 
 /**
  * @fileoverview
- * Common styles for Settings pages.
+ * Common styles for Material Design settings.
  */
-:host > paper-material {
-  -webkit-padding-start: 80px;
-  background-color: white;
-  display: flex;
-  flex-direction: column;
-  padding: 40px;
-}
-
-.soft-border {
-  border: 1px solid #c4c4c4;
-  border-radius: 2px;
-}
-
-.page-content {
-  width: 760px;
-}
-
-settings-checkbox {
-  -webkit-margin-end: 10px;
-  -webkit-margin-start: 0;
-  margin-bottom: 10px;
-  margin-top: 10px;
-}
 
 paper-button {
   margin: 0;
@@ -36,7 +13,7 @@ paper-button {
 }
 
 paper-button[toggles][active] {
-  background-color: lightgrey;
+  background-color: LightGray;
 }
 
 h2 {
@@ -45,6 +22,15 @@ h2 {
   font-weight: normal;
   margin-bottom: 20px;
   margin-top: 30px;
+}
+
+.button-row {
+  display: flex;
+  margin-top: 25px;
+}
+
+.button-strip {
+  text-align: end;
 }
 
 .settings-box {
@@ -70,8 +56,4 @@ h2 {
 .settings-box paper-item iron-icon {
   /* Same padding as paper-icon-button. */
   padding: 8px;
-}
-
-.button-strip {
-  text-align: end;
 }

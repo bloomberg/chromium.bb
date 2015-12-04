@@ -11,6 +11,11 @@
   width: 18px;
 }
 
+.soft-border {
+  border: 1px solid #c4c4c4;
+  border-radius: 2px;
+}
+
 .user {
   -webkit-padding-end: 8px;
   -webkit-padding-start: 20px;

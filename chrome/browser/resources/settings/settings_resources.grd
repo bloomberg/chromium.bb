@@ -127,8 +127,8 @@
       <structure name="IDR_SETTINGS_CR_SETTINGS_SUBHEADER_JS"
                  file="settings_page/settings_subheader.js"
                  type="chrome_html" />
-      <structure name="IDR_SETTINGS_CR_SETTINGS_PAGE_CSS"
-                 file="settings_page/settings_page.css"
+      <structure name="IDR_SETTINGS_CR_SETTINGS_SHARED_CSS"
+                 file="settings_shared.css"
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_BREADCRUMB_CSS"
                  file="settings_ui/breadcrumb.css"
