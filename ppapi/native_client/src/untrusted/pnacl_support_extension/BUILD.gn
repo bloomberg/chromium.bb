@@ -31,14 +31,7 @@ if (enable_nacl && enable_nacl_untrusted && enable_pnacl) {
     deps = [
       shim_target_tc_label,
     ]
-    shim_lib_path =
-        rebase_path(get_label_info(shim_target_tc_label, "target_out_dir") +
-                        "/$src_shim_name",
-                    root_build_dir)
-    shim_override_args = [
-      "--lib_override",
-      "$target_cpu,$shim_lib_path,$desired_shim_name",
-    ]
+    shim_cpu = target_cpu
 
     output_prefix = "$root_out_dir/pnacl/pnacl_public_"
     outputs = [
@@ -55,51 +48,43 @@ if (enable_nacl && enable_nacl_untrusted && enable_pnacl) {
       "libpnacl_irt_shim_a",
       "pnacl_llc_nexe",
     ]
-    if (target_cpu == "arm") {
-      foreach(output_elem, outputs_from_toolchain) {
-        outputs += [ output_prefix + "arm_" + output_elem ]
-      }
-    } else if (target_cpu == "mipsel") {
-      foreach(output_elem, outputs_from_toolchain) {
-        outputs += [ output_prefix + "mips32_" + output_elem ]
-      }
-    } else if (target_cpu == "x86") {
-      foreach(output_elem, outputs_from_toolchain) {
-        outputs += [ output_prefix + "x86_32_" + output_elem ]
-      }
 
+    if (target_cpu == "arm") {
+      output_cpu = "arm"
+    } else if (target_cpu == "mipsel") {
+      output_cpu = "mips32"
+    } else if (target_cpu == "x64") {
+      output_cpu = "x86_64"
+    } else if (target_cpu == "x86") {
+      output_cpu = "x86_32"
+    } else {
+      assert(false, "unhandled target_cpu")
+    }
+
+    foreach(output_elem, outputs_from_toolchain) {
+      outputs += [ output_prefix + output_cpu + "_" + output_elem ]
+    }
+
+    if (is_win && target_cpu == "x86") {
       # On Windows, for offline testing (i.e., without component updater
       # selecting the platform-specific files with multi-CRXes), we need
       # to stage both x86-32 and x86-64 (because 32-bit chrome on 64-bit
       # windows will need 64-bit nexes).
-      if (is_win) {
-        foreach(output_elem, outputs_from_toolchain) {
-          outputs += [ output_prefix + "x86_64_" + output_elem ]
-        }
-        shim_target_tc_x64_label =
-            "$shim_target_label(${shim_toolchain_base}x64)"
-        deps += [ shim_target_tc_x64_label ]
-        shim_lib_x64_path =
-            rebase_path(get_label_info(shim_target_tc_x64_label,
-                                       "target_out_dir") + "/$src_shim_name",
-                        root_build_dir)
-        shim_override_args = [
-          "--lib_override",
-          "x64,$shim_lib_x64_path,$desired_shim_name",
-        ]
-      }
-    } else if (target_cpu == "x64") {
+
+      shim_target_tc_label = "$shim_target_label(${shim_toolchain_base}x64)"
+      deps += [ shim_target_tc_label ]
+
+      shim_cpu = "x64"
+
       foreach(output_elem, outputs_from_toolchain) {
         outputs += [ output_prefix + "x86_64_" + output_elem ]
       }
-    } else {
-      assert(false, "unhandled target_cpu")
     }
-    args = [
-      "--dest",
-      rebase_path("$root_out_dir/pnacl", root_build_dir),
-    ]
-    args += shim_override_args
+
+    shim_lib_path =
+        rebase_path(get_label_info(shim_target_tc_label, "target_out_dir") +
+                        "/$src_shim_name",
+                    root_build_dir)
 
     if (current_os == "chromeos") {
       toolchain_os = "linux"
@@ -107,19 +92,29 @@ if (enable_nacl && enable_nacl_untrusted && enable_pnacl) {
       toolchain_os = current_os
     }
 
-    args += [
+    args = [
+      "--dest",
+      rebase_path("$root_out_dir/pnacl", root_build_dir),
+
+      "--lib_override",
+      "$shim_cpu,$shim_lib_path,$desired_shim_name",
+
       "--target_arch",
       target_cpu,
+
       "--info_template_path",
       rebase_path("//native_client/pnacl/driver/pnacl_info_template.json",
                   root_build_dir),
+
       "--pnacl_translator_path",
       rebase_path(
           "//native_client/toolchain/${toolchain_os}_x86/pnacl_translator",
           root_build_dir),
+
       "--package_version_path",
       rebase_path("//native_client/build/package_version/package_version.py",
                   root_build_dir),
+
       "--pnacl_package_name",
       "pnacl_translator",
 
