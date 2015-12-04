@@ -287,7 +287,6 @@ public:
 
     bool isContinuousSpellCheckingEnabled() override { return false; }
     void toggleContinuousSpellChecking() override {}
-    bool isGrammarCheckingEnabled() override { return false; }
 
     TextCheckerClient& textChecker() override { return m_textCheckerClient; }
 

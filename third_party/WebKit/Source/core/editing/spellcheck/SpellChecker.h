@@ -57,7 +57,6 @@ public:
 
     bool isContinuousSpellCheckingEnabled() const;
     void toggleContinuousSpellChecking();
-    bool isGrammarCheckingEnabled();
     void ignoreSpelling();
     bool isSpellCheckingEnabledInFocusedNode() const;
     bool isSpellCheckingEnabledFor(Node*) const;

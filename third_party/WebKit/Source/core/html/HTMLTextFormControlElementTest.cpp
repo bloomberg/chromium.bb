@@ -59,7 +59,6 @@ public:
     virtual ~DummySpellCheckerClient() { }
 
     bool isContinuousSpellCheckingEnabled() override { return true; }
-    bool isGrammarCheckingEnabled() override { return true; }
 
     TextCheckerClient& textChecker() override { return m_dummyTextCheckerClient; }
 

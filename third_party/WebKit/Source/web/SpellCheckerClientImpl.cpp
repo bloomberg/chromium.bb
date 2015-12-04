@@ -116,13 +116,6 @@ void SpellCheckerClientImpl::toggleContinuousSpellChecking()
 }
 
 // TODO(yosin): We should get rid of
-// |SepllCheckerClient::isGrammarCheckingEnabled()| as it always true.
-bool SpellCheckerClientImpl::isGrammarCheckingEnabled()
-{
-    return true;
-}
-
-// TODO(yosin): We should get rid of
 // |TextCheckerClient::shouldEraseMarkersAfterChangeSelection()| as it always
 // false.
 bool SpellCheckerClientImpl::shouldEraseMarkersAfterChangeSelection(TextCheckingType type) const

@@ -39,7 +39,6 @@ public:
 
     virtual bool isContinuousSpellCheckingEnabled() = 0;
     virtual void toggleContinuousSpellChecking() = 0;
-    virtual bool isGrammarCheckingEnabled() = 0;
 
     virtual TextCheckerClient& textChecker() = 0;
 
