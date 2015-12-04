@@ -6,29 +6,23 @@
 #include "core/layout/LayoutTestHelper.h"
 
 #include "core/frame/FrameHost.h"
-#include "platform/graphics/GraphicsLayer.h"
-#include "platform/graphics/GraphicsLayerFactory.h"
+#include "platform/graphics/test/FakeGraphicsLayerFactory.h"
 
 namespace blink {
 
-class FakeGraphicsLayerFactory : public GraphicsLayerFactory {
-public:
-    PassOwnPtr<GraphicsLayer> createGraphicsLayer(GraphicsLayerClient* client) override
-    {
-        return adoptPtr(new GraphicsLayer(client));
-    }
-};
+namespace {
 
 class FakeChromeClient : public EmptyChromeClient {
 public:
     static PassOwnPtrWillBeRawPtr<FakeChromeClient> create() { return adoptPtrWillBeNoop(new FakeChromeClient); }
 
-    virtual GraphicsLayerFactory* graphicsLayerFactory() const
+    GraphicsLayerFactory* graphicsLayerFactory() const override
     {
-        static FakeGraphicsLayerFactory* factory = adoptPtr(new FakeGraphicsLayerFactory).leakPtr();
-        return factory;
+        return FakeGraphicsLayerFactory::instance();
     }
 };
+
+} // namespace
 
 RenderingTest::RenderingTest(PassOwnPtrWillBeRawPtr<FrameLoaderClient> frameLoaderClient)
 {

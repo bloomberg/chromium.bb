@@ -1072,6 +1072,8 @@
       'testing/UnitTestHelpers.h',
     ],
     'platform_test_support_files': [
+      'graphics/test/FakeGraphicsLayerFactory.cpp',
+      'graphics/test/FakeGraphicsLayerFactory.h',
       'testing/GeometryPrinters.cpp',
       'testing/GeometryPrinters.h',
       'testing/PaintPrinters.cpp',

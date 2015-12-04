@@ -120,10 +120,14 @@
       'type': 'static_library',
       'dependencies': [
         '../config.gyp:config',
+        '../wtf/wtf.gyp:wtf',
         'blink_platform.gyp:blink_platform',
       ],
       'defines': [
         'INSIDE_BLINK',
+      ],
+      'include_dirs': [
+        '<(SHARED_INTERMEDIATE_DIR)/blink',
       ],
       'sources': [
         '<@(platform_test_support_files)',
