@@ -13,18 +13,6 @@
 #include "cc/scheduler/delay_based_time_source.h"
 #include "cc/scheduler/scheduler.h"
 
-#ifdef NDEBUG
-#define DEBUG_FRAMES(...)
-#else
-#define DEBUG_FRAMES(name, arg1_name, arg1_val, arg2_name, arg2_val)   \
-  TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("cc.debug.scheduler.frames"), \
-               name,                                                   \
-               arg1_name,                                              \
-               arg1_val,                                               \
-               arg2_name,                                              \
-               arg2_val);
-#endif
-
 namespace cc {
 
 // BeginFrameObserverBase -----------------------------------------------
