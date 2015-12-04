@@ -37,9 +37,6 @@ ChromeBrowserProvider::ChromeBrowserProvider() {
 void ChromeBrowserProvider::AssertBrowserContextKeyedFactoriesBuilt() {
 }
 
-void ChromeBrowserProvider::RegisterLocalState(PrefRegistrySimple* registry) {
-}
-
 void ChromeBrowserProvider::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
 }

@@ -77,8 +77,6 @@ class ChromeBrowserProvider {
 
   // Asserts all iOS-specific |BrowserContextKeyedServiceFactory| are built.
   virtual void AssertBrowserContextKeyedFactoriesBuilt();
-  // Registers all prefs that will be used via the local state PrefService.
-  virtual void RegisterLocalState(PrefRegistrySimple* registry);
   // Registers all prefs that will be used via a PrefService attached to a
   // Profile.
   virtual void RegisterProfilePrefs(

@@ -20,6 +20,7 @@
 #include "components/rappor/rappor_service.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/signin/core/common/signin_pref_names.h"
+#include "components/ssl_config/ssl_config_service_manager.h"
 #include "components/sync_driver/sync_prefs.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/translate/core/common/translate_pref_names.h"
@@ -57,6 +58,7 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   network_time::NetworkTimeTracker::RegisterPrefs(registry);
   PrefProxyConfigTrackerImpl::RegisterPrefs(registry);
   rappor::RapporService::RegisterPrefs(registry);
+  ssl_config::SSLConfigServiceManager::RegisterPrefs(registry);
   variations::VariationsService::RegisterPrefs(registry);
   web_resource::PromoResourceService::RegisterPrefs(registry);
 
@@ -79,8 +81,6 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
                                 false);
 
   ApplicationContextImpl::RegisterPrefs(registry);
-
-  ios::GetChromeBrowserProvider()->RegisterLocalState(registry);
 }
 
 void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
