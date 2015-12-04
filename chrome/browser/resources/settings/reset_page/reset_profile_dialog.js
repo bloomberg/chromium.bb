@@ -53,11 +53,6 @@ Polymer({
   },
 
   /** @private */
-  onLearnMoreTap_: function() {
-    window.open(loadTimeData.getString('resetPageLearnMoreUrl'));
-  },
-
-  /** @private */
   onSendSettingsChange_: function() {
     // TODO(dpapad): Update how settings info is surfaced when final mocks
     // exist.

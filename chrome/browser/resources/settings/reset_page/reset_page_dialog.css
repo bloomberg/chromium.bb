@@ -32,10 +32,6 @@
   -webkit-padding-start: 24px;
 }
 
-.button-container {
-  display: flex;
-}
-
 .action-button {
   -webkit-margin-start: 10px;
   background-color: rgb(66, 133, 244);
@@ -44,7 +40,7 @@
 }
 
 .cancel-button {
-  color: rgb(66, 133, 244);
+  color: rgb(109, 109, 109);
   font-weight: 500;
 }
 
@@ -52,11 +48,16 @@ paper-button {
   margin: 0;
 }
 
+a {
+  color: rgb(66, 133, 244);
+  text-decoration: none;
+}
+
 .explanation {
   margin-bottom: 35px;
 }
 
-.action-buttons {
+.button-container {
   display: flex;
   flex: 1;
   justify-content: flex-end;

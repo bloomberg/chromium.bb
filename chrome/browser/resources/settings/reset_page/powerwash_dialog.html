@@ -16,18 +16,17 @@
           </paper-icon-button>
         </div>
         <div class="dialog-body">
-          <div class="explanation"
-              i18n-content="powerwashDialogExplanation"></div>
+          <div class="explanation">
+            <span i18n-content="powerwashDialogExplanation"></span>
+            <a i18n-values="href:powerwashLearnMoreUrl"
+                i18n-content="learnMore" target="_blank"></a>
+          </div>
           <div class="button-container">
-            <paper-button i18n-content="learnMore"
-                on-tap="onLearnMoreTap_" id="learnMore"></paper-button>
-            <div class="action-buttons">
-              <paper-button class="cancel-button" on-tap="onCancelTap_"
-                  id="cancel" i18n-content="cancel"></paper-button>
-              <paper-button class="action-button" id="powerwash"
-                  on-tap="onRestartTap_" i18n-content="powerwashDialogButton">
-              </paper-button>
-            </div>
+            <paper-button class="cancel-button" on-tap="onCancelTap_"
+                id="cancel" i18n-content="cancel"></paper-button>
+            <paper-button class="action-button" id="powerwash"
+                on-tap="onRestartTap_" i18n-content="powerwashDialogButton">
+            </paper-button>
           </div>
         </div>
       </div>

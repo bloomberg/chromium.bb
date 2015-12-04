@@ -27,9 +27,4 @@ Polymer({
   onRestartTap_: function() {
     chrome.send('requestFactoryResetRestart');
   },
-
-  /** @private */
-  onLearnMoreTap_: function() {
-    window.open(loadTimeData.getString('powerwashLearnMoreUrl'));
-  },
 });
