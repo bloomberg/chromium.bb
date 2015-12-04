@@ -1671,12 +1671,14 @@ test("unit_tests") {
         [ "../browser/download/download_request_infobar_delegate_unittest.cc" ]
   }
 
-  if (!is_android && !is_ios) {
+  if (!is_ios) {
     deps += [ ":unit_tests_js" ]
-    sources += rebase_path(
-            chrome_tests_unit_gypi_values.chrome_unit_tests_non_mobile_sources,
-            ".",
-            "//chrome")
+    if (!is_android) {
+      sources += rebase_path(
+              chrome_tests_unit_gypi_values.chrome_unit_tests_non_mobile_sources,
+              ".",
+              "//chrome")
+    }
   }
 
   if (is_ios || is_chromeos) {
