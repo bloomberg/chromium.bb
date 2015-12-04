@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/passwords/manage_passwords_state.h"
 #include "chrome/browser/ui/passwords/passwords_client_ui_delegate.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate.h"
+#include "chrome/common/features.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -57,7 +58,7 @@ class ManagePasswordsUIController
   void OnLoginsChanged(
       const password_manager::PasswordStoreChangeList& changes) override;
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(ANDROID_JAVA_UI)
   // Set the state of the Omnibox icon, and possibly show the associated bubble
   // without user interaction.
   virtual void UpdateIconAndBubbleState(ManagePasswordsIconView* icon);

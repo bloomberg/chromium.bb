@@ -39,6 +39,7 @@
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tab_dialogs.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/features.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/dom_distiller/content/browser/web_contents_main_frame_observer.h"
@@ -49,7 +50,7 @@
 #include "components/tracing/tracing_switches.h"
 #include "content/public/browser/web_contents.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
 #include "chrome/browser/android/data_usage/data_use_tab_helper.h"
 #include "chrome/browser/android/voice_search_tab_helper.h"
 #include "chrome/browser/android/webapps/single_tab_mode_tab_helper.h"
@@ -69,7 +70,7 @@
 #include "components/pdf/browser/pdf_web_contents_helper.h"
 #include "components/ui/zoom/zoom_controller.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(ANDROID_JAVA_UI)
 
 #if defined(OS_WIN)
 #include "chrome/browser/ui/metro_pin_tab_helper_win.h"
@@ -131,7 +132,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   // SessionTabHelper comes first because it sets up the tab ID, and other
   // helpers may rely on that.
   SessionTabHelper::CreateForWebContents(web_contents);
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(ANDROID_JAVA_UI)
   // ZoomController comes before common tab helpers since ChromeAutofillClient
   // may want to register as a ZoomObserver with it.
   ui_zoom::ZoomController::CreateForWebContents(web_contents);
@@ -179,7 +180,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
 
   // --- Platform-specific tab helpers ---
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
   ContextMenuHelper::CreateForWebContents(web_contents);
   DataUseTabHelper::CreateForWebContents(web_contents);
   SingleTabModeTabHelper::CreateForWebContents(web_contents);
@@ -228,14 +229,14 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   SupervisedUserNavigationObserver::CreateForWebContents(web_contents);
 #endif
 
-#if defined(ENABLE_PRINTING) && !defined(OS_ANDROID)
+#if defined(ENABLE_PRINTING) && !BUILDFLAG(ANDROID_JAVA_UI)
 #if defined(ENABLE_PRINT_PREVIEW)
   printing::PrintViewManager::CreateForWebContents(web_contents);
   printing::PrintPreviewMessageHandler::CreateForWebContents(web_contents);
 #else
   printing::PrintViewManagerBasic::CreateForWebContents(web_contents);
 #endif  // defined(ENABLE_PRINT_PREVIEW)
-#endif  // defined(ENABLE_PRINTING) && !defined(OS_ANDROID)
+#endif  // defined(ENABLE_PRINTING) && !BUILDFLAG(ANDROID_JAVA_UI)
 
   bool enabled_distiller = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableDomDistiller);

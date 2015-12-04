@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_member.h"
 #include "chrome/browser/net/dns_probe_service.h"
+#include "chrome/common/features.h"
 #include "components/error_page/common/net_error_info.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -103,13 +104,13 @@ class NetErrorTabHelper
   virtual void RunNetworkDiagnosticsHelper(const std::string& sanitized_url);
 
   // Relates to offline pages handling.
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
   void SetOfflinePageInfo(content::RenderFrameHost* render_frame_host,
                           const GURL& url);
   void ShowOfflinePages();
   void LoadOfflineCopy(const GURL& url);
   bool IsFromErrorPage() const;
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(ANDROID_JAVA_UI)
 
   // True if the last provisional load that started was for an error page.
   bool is_error_page_;

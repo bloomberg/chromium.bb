@@ -16,6 +16,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
+#include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/infobar.h"
@@ -36,9 +37,9 @@
 #include "ui/base/webui/jstemplate_builder.h"
 #include "ui/base/webui/web_ui_util.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
 #include "chrome/browser/supervised_user/child_accounts/child_account_feedback_reporter_android.h"
-#else
+#elif !defined(OS_ANDROID)
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -340,7 +341,7 @@ void SupervisedUserInterstitial::CommandReceived(const std::string& command) {
         SupervisedUserURLFilter::GetBlockMessageID(reason_));
     std::string message = l10n_util::GetStringFUTF8(
         IDS_BLOCK_INTERSTITIAL_DEFAULT_FEEDBACK_TEXT, reason);
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
     ReportChildAccountFeedback(web_contents_, message, url_);
 #else
     chrome::ShowFeedbackPage(chrome::FindBrowserWithWebContents(web_contents_),

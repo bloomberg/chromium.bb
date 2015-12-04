@@ -40,6 +40,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/browser/download_item.h"
@@ -49,7 +50,7 @@
 #include "net/base/filename_util.h"
 #include "net/base/mime_util.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
 #include "chrome/browser/android/download/chrome_download_manager_overwrite_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #endif
@@ -579,7 +580,7 @@ void ChromeDownloadManagerDelegate::PromptUserForDownloadPath(
     const base::FilePath& suggested_path,
     const DownloadTargetDeterminerDelegate::FileSelectedCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
   chrome::android::ChromeDownloadManagerOverwriteInfoBarDelegate::Create(
       InfoBarService::FromWebContents(download->GetWebContents()),
       suggested_path, callback);

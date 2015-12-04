@@ -31,6 +31,7 @@
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/crash_keys.h"
+#include "chrome/common/features.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/profiling.h"
 #include "chrome/common/switch_utils.h"
@@ -89,8 +90,11 @@
 #include "chromeos/chromeos_switches.h"
 #endif
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
 #include "chrome/browser/android/java_exception_reporter.h"
+#endif
+
+#if defined(OS_ANDROID)
 #include "chrome/common/descriptors_android.h"
 #else
 // Diagnostics is only available on non-android platforms.
@@ -792,7 +796,11 @@ void ChromeMainDelegate::PreSandboxStartup() {
 #if defined(OS_ANDROID)
     if (process_type.empty()) {
       breakpad::InitCrashReporter(process_type);
+// TODO(crbug.com/551176): Exception reporting should work without
+// ANDROID_JAVA_UI
+#if BUILDFLAG(ANDROID_JAVA_UI)
       chrome::android::InitJavaExceptionReporter();
+#endif
     } else {
       breakpad::InitNonBrowserCrashReporterForAndroid(process_type);
     }

@@ -116,7 +116,7 @@
 #include "net/cert_net/nss_ocsp.h"
 #endif
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
 #include "base/android/build_info.h"
 #include "chrome/browser/android/data_usage/external_data_use_observer.h"
 #include "chrome/browser/android/net/external_estimate_provider_android.h"
@@ -636,7 +636,7 @@ void IOThread::Init() {
 #endif
 
   scoped_ptr<data_usage::DataUseAmortizer> data_use_amortizer;
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
   data_use_amortizer.reset(new data_usage::android::TrafficStatsAmortizer());
 #endif
 
@@ -658,7 +658,7 @@ void IOThread::Init() {
       globals_->data_use_aggregator.get(),
       true /* is_data_usage_off_the_record */);
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
   globals_->external_data_use_observer.reset(
       new chrome::android::ExternalDataUseObserver(
           globals_->data_use_aggregator.get(),
@@ -679,7 +679,7 @@ void IOThread::Init() {
                                  &network_quality_estimator_params);
 
   scoped_ptr<net::ExternalEstimateProvider> external_estimate_provider;
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
   external_estimate_provider.reset(
       new chrome::android::ExternalEstimateProviderAndroid());
 #endif

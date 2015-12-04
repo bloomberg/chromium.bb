@@ -6,6 +6,7 @@
 
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -29,7 +30,7 @@ bool ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled() {
     return false;
   }
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(ANDROID_JAVA_UI)
   return IsMetricsReportingEnabled(g_browser_process->local_state());
 #else
   // Android currently obtain the value for whether the user has
@@ -42,7 +43,7 @@ bool ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled() {
   pref_value = g_browser_process->local_state()->GetBoolean(
       prefs::kCrashReportingEnabled);
   return IsMetricsReportingEnabledWithPrefValue(pref_value);
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(ANDROID_JAVA_UI)
 }
 
 // static

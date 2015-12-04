@@ -9,6 +9,7 @@
 
 #include "base/callback_forward.h"
 #include "base/strings/string16.h"
+#include "chrome/common/features.h"
 #include "ui/gfx/native_widget_types.h"
 
 class GURL;
@@ -98,7 +99,7 @@ bool IsVisible(gfx::NativeView view);
 bool IsSwipeTrackingFromScrollEventsEnabled();
 #endif
 
-#if defined(OS_ANDROID) && !defined(USE_AURA)
+#if BUILDFLAG(ANDROID_JAVA_UI)
 bool RegisterPlatformUtil(JNIEnv* env);
 #endif
 }  // namespace platform_util

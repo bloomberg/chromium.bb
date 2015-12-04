@@ -12,6 +12,7 @@
 #include "chrome/browser/policy/managed_bookmarks_policy_handler.h"
 #include "chrome/browser/profiles/incognito_mode_policy_handler.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/content_settings/core/common/pref_names.h"
@@ -35,7 +36,7 @@
 #include "components/variations/pref_names.h"
 #include "policy/policy_constants.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
 #include "chrome/browser/search/contextual_search_policy_handler_android.h"
 #endif
 
@@ -507,14 +508,14 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::TYPE_BOOLEAN },
 #endif  // !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
   { key::kDataCompressionProxyEnabled,
     data_reduction_proxy::prefs::kDataReductionProxyEnabled,
     base::Value::TYPE_BOOLEAN },
   { key::kAuthAndroidNegotiateAccountType,
     prefs::kAuthAndroidNegotiateAccountType,
     base::Value::TYPE_STRING },
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(ANDROID_JAVA_UI)
 
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
   { key::kNativeMessagingUserLevelHosts,
@@ -622,7 +623,7 @@ scoped_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(make_scoped_ptr(new ProxyPolicyHandler()));
   handlers->AddHandler(make_scoped_ptr(new URLBlacklistPolicyHandler()));
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
   handlers->AddHandler(
       make_scoped_ptr(new ContextualSearchPolicyHandlerAndroid()));
 #endif

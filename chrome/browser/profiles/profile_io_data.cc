@@ -47,6 +47,7 @@
 #include "chrome/browser/ui/search/new_tab_page_interceptor_service_factory.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/about_handler/about_protocol_handler.h"
@@ -867,7 +868,7 @@ bool ProfileIOData::IsOffTheRecord() const {
 
 void ProfileIOData::InitializeMetricsEnabledStateOnUIThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
   // TODO(dwkang): rename or unify the pref for UMA once we have conclusion
   // in crbugs.com/246495.
   // Android has it's own preferences for metrics / crash uploading.
@@ -882,7 +883,7 @@ void ProfileIOData::InitializeMetricsEnabledStateOnUIThread() {
                        g_browser_process->local_state());
   enable_metrics_.MoveToThread(
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(ANDROID_JAVA_UI)
 }
 
 bool ProfileIOData::GetMetricsEnabledStateOnIOThread() const {

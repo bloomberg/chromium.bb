@@ -16,13 +16,14 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/features.h"
 #include "chrome/common/url_constants.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "content/public/test/test_launcher.h"
 #include "extensions/common/constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
 #include "base/android/jni_android.h"
 #include "chrome/browser/android/chrome_jni_registrar.h"
 #endif
@@ -82,7 +83,7 @@ void ChromeTestSuite::Initialize() {
     PathService::Override(base::DIR_MODULE, browser_dir_);
   }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
   ASSERT_TRUE(chrome::android::RegisterBrowserJNI(
       base::android::AttachCurrentThread()));
 #endif

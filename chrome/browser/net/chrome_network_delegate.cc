@@ -35,6 +35,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/task_management/task_manager_interface.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/data_usage/core/data_use_aggregator.h"
@@ -56,7 +57,7 @@
 #include "net/log/net_log.h"
 #include "net/url_request/url_request.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/precache/precache_manager_factory.h"
 #include "components/precache/content/precache_manager.h"
@@ -106,7 +107,7 @@ void ForceGoogleSafeSearchCallbackWrapper(
   callback.Run(rv);
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
 void RecordPrecacheStatsOnUIThread(const GURL& url,
                                    const GURL& referrer,
                                    base::TimeDelta latency,
@@ -129,7 +130,7 @@ void RecordPrecacheStatsOnUIThread(const GURL& url,
   precache_manager->RecordStatsForFetch(url, referrer, latency, fetch_time,
                                         size, was_cached);
 }
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(ANDROID_JAVA_UI)
 
 void ReportInvalidReferrerSendOnUI() {
   base::RecordAction(
@@ -526,7 +527,7 @@ void ChromeNetworkDelegate::OnCompleted(net::URLRequest* request,
   }
 
   if (request->status().status() == net::URLRequestStatus::SUCCESS) {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
     // For better accuracy, we use the actual bytes read instead of the length
     // specified with the Content-Length header, which may be inaccurate,
     // or missing, as is the case with chunked encoding.
@@ -540,7 +541,7 @@ void ChromeNetworkDelegate::OnCompleted(net::URLRequest* request,
         base::Bind(&RecordPrecacheStatsOnUIThread, request->url(),
                    GURL(request->referrer()), latency, base::Time::Now(),
                    received_content_length, request->was_cached(), profile_));
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(ANDROID_JAVA_UI)
     extensions_delegate_->OnCompleted(request, started);
   } else if (request->status().status() == net::URLRequestStatus::FAILED ||
              request->status().status() == net::URLRequestStatus::CANCELED) {

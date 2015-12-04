@@ -5,7 +5,6 @@
 #include "chrome/common/pref_names.h"
 
 #include "base/basictypes.h"
-#include "chrome/common/features.h"
 #include "chrome/common/pref_font_webkit_names.h"
 
 namespace prefs {
@@ -371,7 +370,7 @@ const char kIncognitoModeAvailability[] = "incognito.mode_availability";
 // Boolean that is true when Suggest support is enabled.
 const char kSearchSuggestEnabled[] = "search.suggest_enabled";
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
 // String indicating the Contextual Search enabled state.
 // "false" - opt-out (disabled)
 // "" (empty string) - undecided
@@ -995,7 +994,7 @@ const char kAutofillDialogWalletShippingSameAsBilling[] =
 const char kAutofillGeneratedCardBubbleTimesShown[] =
     "autofill.generated_card_bubble_times_shown";
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
 // A dictionary that tracks the defaults to be set on the next invocation
 // of the requestAutocomplete dialog.
 const char kAutofillDialogDefaults[] = "autofill.rac_dialog_defaults";
@@ -1260,7 +1259,7 @@ const char kStabilityKernelCrashCount[] =
 const char kStabilitySystemUncleanShutdownCount[] =
     "user_experience_metrics.stability.system_unclean_shutdowns";
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
 // Activity type that is currently in the foreground for the UMA session.
 // Uses the ActivityTypeIds::Type enum.
 const char kStabilityForegroundActivityType[] =
@@ -1420,7 +1419,7 @@ const char kDisablePluginFinder[] = "plugins.disable_plugin_finder";
 // Customized app page names that appear on the New Tab Page.
 const char kNtpAppPageNames[] = "ntp.app_page_names";
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
 // Keeps track of currently open tabs collapsed state in the Other Devices menu.
 const char kNtpCollapsedCurrentlyOpenTabs[] = "ntp.collapsed_open_tabs";
 #endif
@@ -1428,7 +1427,7 @@ const char kNtpCollapsedCurrentlyOpenTabs[] = "ntp.collapsed_open_tabs";
 // Keeps track of which sessions are collapsed in the Other Devices menu.
 const char kNtpCollapsedForeignSessions[] = "ntp.collapsed_foreign_sessions";
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
 // Keeps track of recently closed tabs collapsed state in the Other Devices
 // menu.
 const char kNtpCollapsedRecentlyClosedTabs[] =
@@ -1444,7 +1443,7 @@ const char kNtpCollapsedSyncPromo[] = "ntp.collapsed_sync_promo";
 // Which page should be visible on the new tab page v4
 const char kNtpShownPage[] = "ntp.shown_page";
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
 // Ordered list of website suggestions shown on the new tab page that will allow
 // retaining the order even if the suggestions change over time.
 const char kNTPSuggestionsURL[] = "ntp.suggestions_url";
@@ -1546,7 +1545,7 @@ const char kWebAppCreateInQuickLaunchBar[] =
 // corresponding access token.
 const char kGeolocationAccessToken[] = "geolocation.access_token";
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
 // Boolean that controls the enabled-state of Geolocation in content.
 const char kGeolocationEnabled[] = "geolocation.enabled";
 #endif
@@ -2117,7 +2116,7 @@ const char kEnableDRM[] = "settings.privacy.drm_enabled";
 const char kWatchdogExtensionActive[] =
     "profile.extensions.activity_log.num_consumers_active";
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
 // A list of partner bookmark rename/remove mappings.
 // Each list item is a dictionary containing a "url", a "provider_title" and
 // "mapped_title" entries, detailing the bookmark target URL (if any), the title

@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/passwords/passwords_client_ui_delegate.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/features.h"
 #include "chrome/common/url_constants.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
@@ -53,11 +54,11 @@
 #include "net/base/url_util.h"
 #include "third_party/re2/re2/re2.h"
 
-#if defined(OS_MACOSX) || defined(OS_ANDROID)
+#if defined(OS_MACOSX) || BUILDFLAG(ANDROID_JAVA_UI)
 #include "chrome/browser/password_manager/save_password_infobar_delegate.h"
 #endif
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/password_manager/account_chooser_dialog_android.h"
 #include "chrome/browser/password_manager/generated_password_saved_infobar_delegate_android.h"
@@ -228,7 +229,7 @@ bool ChromePasswordManagerClient::PromptUserToSaveOrUpdatePassword(
       manage_passwords_ui_controller->OnPasswordSubmitted(form_to_save.Pass());
     }
   } else {
-#if defined(OS_MACOSX) || defined(OS_ANDROID)
+#if defined(OS_MACOSX) || BUILDFLAG(ANDROID_JAVA_UI)
     if (form_to_save->IsBlacklisted())
       return false;
     std::string uma_histogram_suffix(
@@ -273,7 +274,7 @@ void ChromePasswordManagerClient::ForceSavePassword() {
 void ChromePasswordManagerClient::NotifyUserAutoSignin(
     ScopedVector<autofill::PasswordForm> local_forms) {
   DCHECK(!local_forms.empty());
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
   ShowAutoSigninPrompt(web_contents(), local_forms[0]->username_value);
 #else
   PasswordsClientUIDelegateFromWebContents(web_contents())
@@ -284,7 +285,7 @@ void ChromePasswordManagerClient::NotifyUserAutoSignin(
 
 void ChromePasswordManagerClient::AutomaticPasswordSave(
     scoped_ptr<password_manager::PasswordFormManager> saved_form) {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
   GeneratedPasswordSavedInfoBarDelegateAndroid::Create(web_contents());
 #else
   if (IsTheHotNewBubbleUIEnabled()) {
@@ -473,7 +474,7 @@ void ChromePasswordManagerClient::GenerationAvailableForForm(
 }
 
 bool ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled() {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
   return false;
 #elif defined(OS_MACOSX)
   // Query the group first for correct UMA reporting.

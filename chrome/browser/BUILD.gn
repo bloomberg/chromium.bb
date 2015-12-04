@@ -276,6 +276,34 @@ source_set("browser") {
     sources += rebase_path(gypi_values.chrome_browser_web_resource_sources,
                            ".",
                            "//chrome")
+    if (android_java_ui) {
+      sources +=
+          rebase_path(gypi_values.chrome_browser_sync_android_java_ui_sources,
+                      ".",
+                      "//chrome")
+      sources +=
+          rebase_path(gypi_values.chrome_browser_ssl_android_java_ui_sources,
+                      ".",
+                      "//chrome")
+      sources += rebase_path(
+              gypi_values.chrome_browser_history_android_java_ui_sources,
+              ".",
+              "//chrome")
+      sources += rebase_path(
+              gypi_values.chrome_browser_permissions_android_java_ui_sources,
+              ".",
+              "//chrome")
+      sources += rebase_path(
+              gypi_values.chrome_browser_search_engines_android_java_ui_sources,
+              ".",
+              "//chrome")
+      if (enable_supervised_users) {
+        sources += rebase_path(
+                gypi_values.chrome_browser_supervised_user_android_java_ui_sources,
+                ".",
+                "//chrome")
+      }
+    }
 
     deps += [
       "//apps",
@@ -644,11 +672,11 @@ source_set("browser") {
     sources += rebase_path(gypi_values.chrome_browser_notifications_sources,
                            ".",
                            "//chrome")
-    if (is_android) {
-      sources +=
-          rebase_path(gypi_values.chrome_browser_notifications_android_sources,
-                      ".",
-                      "//chrome")
+    if (android_java_ui) {
+      sources += rebase_path(
+              gypi_values.chrome_browser_notifications_android_java_ui_sources,
+              ".",
+              "//chrome")
     } else {
       sources += rebase_path(
               gypi_values.chrome_browser_notifications_non_android_sources,
@@ -727,6 +755,12 @@ source_set("browser") {
   if (is_android) {
     sources +=
         rebase_path(gypi_values.chrome_browser_android_sources, ".", "//chrome")
+  }
+
+  if (android_java_ui) {
+    sources += rebase_path(gypi_values.chrome_browser_android_java_ui_sources,
+                           ".",
+                           "//chrome")
     sources += rebase_path(gypi_values.chrome_browser_bookmark_android_sources,
                            ".",
                            "//chrome")
@@ -734,7 +768,6 @@ source_set("browser") {
       ":client_discourse_context_proto",
       ":delta_file_proto",
       ":jni_headers",
-      "//components/cdm/browser",
       "//components/data_usage/android",
       "//components/enhanced_bookmarks",
       "//components/precache/content",
@@ -743,16 +776,25 @@ source_set("browser") {
       "//components/service_tab_launcher",
       "//components/toolbar",
       "//components/web_contents_delegate_android",
+    ]
+
+    defines += [ "ENABLE_DATA_REDUCTION_PROXY_DEBUGGING" ]
+  }
+
+  if (is_android) {
+    deps += [
+      "//components/cdm/browser",
+      "//components/resources:components_resources",
       "//third_party/android_opengl/etc1",
       "//third_party/android_tools:cpu_features",
       "//third_party/libaddressinput:util",
     ]
+
     deps -= [
       "//components/storage_monitor",
       "//components/web_modal",
       "//third_party/libaddressinput",
     ]
-    defines += [ "ENABLE_DATA_REDUCTION_PROXY_DEBUGGING" ]
 
     if (use_seccomp_bpf) {
       defines += [ "USE_SECCOMP_BPF" ]
@@ -924,7 +966,7 @@ source_set("browser") {
   }
 }
 
-if (is_android) {
+if (android_java_ui) {
   # GYP version: chrome/chrome_browser.gypi:chrome_browser_jni_headers
   generate_jni("jni_headers") {
     sources =

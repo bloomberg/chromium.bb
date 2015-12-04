@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/features.h"
 #include "chrome/common/render_messages.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/navigation_controller.h"
@@ -22,7 +23,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "third_party/WebKit/public/web/WebWindowFeatures.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
 #endif
 
@@ -120,7 +121,7 @@ void PopupBlockerTabHelper::ShowBlockedPopup(int32 id) {
     return;
   // We set user_gesture to true here, so the new popup gets correctly focused.
   popup->params.user_gesture = true;
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
   TabModelList::HandlePopupNavigation(&popup->params);
 #else
   chrome::Navigate(&popup->params);

@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/web_data_service_factory.h"
+#include "chrome/common/features.h"
 #include "chrome/common/url_constants.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/common/autofill_messages.h"
@@ -39,7 +40,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "ui/gfx/geometry/rect.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
 #include "chrome/browser/android/chrome_application.h"
 #include "chrome/browser/ui/android/autofill/autofill_logger_android.h"
 #else
@@ -60,7 +61,7 @@ ChromeAutofillClient::ChromeAutofillClient(content::WebContents* web_contents)
       last_rfh_to_rac_(nullptr) {
   DCHECK(web_contents);
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(ANDROID_JAVA_UI)
   // Since ZoomController is also a WebContentsObserver, we need to be careful
   // about disconnecting from it since the relative order of destruction of
   // WebContentsObservers is not guaranteed. ZoomController silently clears
@@ -112,7 +113,7 @@ IdentityProvider* ChromeAutofillClient::GetIdentityProvider() {
         Profile::FromBrowserContext(web_contents()->GetBrowserContext())
             ->GetOriginalProfile();
     base::Closure login_callback;
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(ANDROID_JAVA_UI)
     login_callback =
         LoginUIServiceFactory::GetShowLoginPopupCallbackForProfile(profile);
 #endif
@@ -130,13 +131,13 @@ rappor::RapporService* ChromeAutofillClient::GetRapporService() {
 }
 
 void ChromeAutofillClient::ShowAutofillSettings() {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
   chrome::android::ChromeApplication::ShowAutofillSettings();
 #else
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
   if (browser)
     chrome::ShowSettingsSubPage(browser, chrome::kAutofillSubPage);
-#endif  // #if defined(OS_ANDROID)
+#endif  // #if BUILDFLAG(ANDROID_JAVA_UI)
 }
 
 void ChromeAutofillClient::ShowUnmaskPrompt(
@@ -279,7 +280,7 @@ void ChromeAutofillClient::DidNavigateAnyFrame(
 }
 
 void ChromeAutofillClient::MainFrameWasResized(bool width_changed) {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
   // Ignore virtual keyboard showing and hiding a strip of suggestions.
   if (!width_changed)
     return;
@@ -312,10 +313,10 @@ void ChromeAutofillClient::PropagateAutofillPredictions(
 void ChromeAutofillClient::DidFillOrPreviewField(
     const base::string16& autofilled_value,
     const base::string16& profile_full_name) {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
   AutofillLoggerAndroid::DidFillOrPreviewField(autofilled_value,
                                                profile_full_name);
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(ANDROID_JAVA_UI)
 }
 
 void ChromeAutofillClient::OnFirstUserGestureObserved() {

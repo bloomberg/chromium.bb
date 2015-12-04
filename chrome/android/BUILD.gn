@@ -6,6 +6,7 @@ import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
 import("//build_overrides/v8.gni")
 import("//chrome/android/chrome_public_apk_tmpl.gni")
+import("//chrome/common/features.gni")
 import("//chrome/version.gni")
 import("//testing/test.gni")
 import("//third_party/icu/config.gni")
@@ -128,29 +129,14 @@ java_strings_grd("chrome_strings_grd") {
 # GYP: //chrome/chrome.gyp:chrome_java
 android_library("chrome_java") {
   deps = [
-    ":chrome_java_resources",
-    ":document_tab_model_info_proto_java",
     "//base:base_java",
-    "//components/bookmarks/common/android:bookmarks_java",
-    "//components/dom_distiller/android:dom_distiller_content_java",
-    "//components/dom_distiller/android:dom_distiller_core_java",
-    "//components/gcm_driver/android:gcm_driver_java",
-    "//components/invalidation/impl:java",
-    "//components/navigation_interception/android:navigation_interception_java",
-    "//components/policy/android:policy_java",
-    "//components/precache/android:precache_java",
     "//components/safe_json/android:safe_json_java",
-    "//components/service_tab_launcher:service_tab_launcher_java",
-    "//components/signin/core/browser/android:java",
     "//components/variations/android:variations_java",
-    "//components/web_contents_delegate_android:web_contents_delegate_android_java",
     "//content/public/android:content_java",
-    "//media/base/android:media_java",
     "//media/base/android:media_java",
     "//media/midi:midi_java",
     "//net/android:net_java",
     "//printing:printing_java",
-    "//sync/android:sync_java",
     "//third_party/WebKit/public:blink_headers_java",
     "//third_party/android_data_chart:android_data_chart_java",
     "//third_party/android_media:android_media_java",
@@ -175,17 +161,41 @@ android_library("chrome_java") {
     ":chrome_android_java_enums_srcjar",
     ":chrome_android_java_google_api_keys_srcjar",
     ":chrome_version_srcjar",
-    ":custom_tabs_service_aidl",
     ":resource_id_javagen",
-    "//chrome:page_info_connection_type_javagen",
     "//chrome:content_setting_javagen",
     "//chrome:content_settings_type_javagen",
-    "//components/enhanced_bookmarks:enhanced_bookmarks_java_enums_srcjar",
-    "//components/offline_pages:offline_pages_enums_java",
-    "//components/omnibox/browser:autocomplete_match_type_javagen",
   ]
 
-  DEPRECATED_java_in_dir = "java/src"
+  # TODO(sievers): Split java code into components. Not everything
+  # is really all that UI related here.
+  if (android_java_ui) {
+    DEPRECATED_java_in_dir = "java/src"
+
+    srcjar_deps += [
+      ":custom_tabs_service_aidl",
+      "//chrome:page_info_connection_type_javagen",
+      "//components/enhanced_bookmarks:enhanced_bookmarks_java_enums_srcjar",
+      "//components/offline_pages:offline_pages_enums_java",
+      "//components/omnibox/browser:autocomplete_match_type_javagen",
+    ]
+
+    deps += [
+      ":chrome_java_resources",
+      ":document_tab_model_info_proto_java",
+      "//components/bookmarks/common/android:bookmarks_java",
+      "//components/dom_distiller/android:dom_distiller_content_java",
+      "//components/dom_distiller/android:dom_distiller_core_java",
+      "//components/gcm_driver/android:gcm_driver_java",
+      "//components/invalidation/impl:java",
+      "//components/navigation_interception/android:navigation_interception_java",
+      "//components/policy/android:policy_java",
+      "//components/precache/android:precache_java",
+      "//components/service_tab_launcher:service_tab_launcher_java",
+      "//components/signin/core/browser/android:java",
+      "//components/web_contents_delegate_android:web_contents_delegate_android_java",
+      "//sync/android:sync_java",
+    ]
+  }
 }
 
 # GYP: //chrome/chrome_browser.gypi:activity_type_ids_java

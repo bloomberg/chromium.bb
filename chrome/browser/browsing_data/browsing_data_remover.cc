@@ -39,6 +39,7 @@
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/web_data_service_factory.h"
+#include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
@@ -76,7 +77,7 @@
 #include "storage/browser/quota/special_storage_policy.h"
 #include "url/origin.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/android/webapps/webapp_registry.h"
 #include "chrome/browser/precache/precache_manager_factory.h"
@@ -429,7 +430,7 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
     if (profile_->GetSSLHostStateDelegate())
       profile_->GetSSLHostStateDelegate()->Clear();
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
     precache::PrecacheManager* precache_manager =
         precache::PrecacheManagerFactory::GetForBrowserContext(profile_);
     // |precache_manager| could be nullptr if the profile is off the record.
@@ -801,7 +802,7 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
     }
   }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
   if (remove_mask & REMOVE_WEBAPP_DATA) {
     waiting_for_clear_webapp_data_ = true;
     WebappRegistry::UnregisterWebapps(
@@ -897,7 +898,7 @@ bool BrowsingDataRemover::AllDone() {
          !waiting_for_clear_platform_keys_ &&
          !waiting_for_clear_plugin_data_ &&
          !waiting_for_clear_pnacl_cache_ &&
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
          !waiting_for_clear_precache_history_ &&
          !waiting_for_clear_webapp_data_ &&
          !waiting_for_clear_offline_page_data_ &&
@@ -1193,7 +1194,7 @@ void BrowsingDataRemover::OnClearedWebRtcLogs() {
 }
 #endif
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
 void BrowsingDataRemover::OnClearedPrecacheHistory() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   waiting_for_clear_precache_history_ = false;

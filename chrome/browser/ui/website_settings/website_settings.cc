@@ -30,6 +30,7 @@
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate_factory.h"
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
@@ -313,7 +314,7 @@ void WebsiteSettings::Init(
     const GURL& url,
     const SecurityStateModel::SecurityInfo& security_info) {
   bool isChromeUINativeScheme = false;
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
   isChromeUINativeScheme = url.SchemeIs(chrome::kChromeUINativeScheme);
 #endif
 

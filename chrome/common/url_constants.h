@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "build/build_config.h"
+#include "chrome/common/features.h"
 #include "content/public/common/url_constants.h"
 
 namespace chrome {
@@ -83,7 +84,7 @@ extern const char kChromeUIUberFrameURL[];
 extern const char kChromeUIUserActionsURL[];
 extern const char kChromeUIVersionURL[];
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
 extern const char kChromeUIContextualSearchPromoURL[];
 extern const char kChromeUINativeScheme[];
 extern const char kChromeUINativeNewTabURL[];

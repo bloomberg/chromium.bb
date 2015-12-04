@@ -149,7 +149,7 @@ extern const char kSafeBrowsingExtendedReportingOptInAllowed[];
 extern const char kSSLErrorOverrideAllowed[];
 extern const char kIncognitoModeAvailability[];
 extern const char kSearchSuggestEnabled[];
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
 extern const char kContextualSearchEnabled[];
 #endif
 #if defined(OS_MACOSX)
@@ -335,7 +335,7 @@ extern const char kAutofillDialogWalletLocationAcceptance[];
 extern const char kAutofillDialogSaveData[];
 extern const char kAutofillDialogWalletShippingSameAsBilling[];
 extern const char kAutofillGeneratedCardBubbleTimesShown[];
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
 extern const char kAutofillDialogDefaults[];
 #endif
 
@@ -418,7 +418,7 @@ extern const char kGLVersionString[];
 // Android has it's own metric / crash reporting implemented in Android
 // Java code so kMetricsReportingEnabled doesn't make sense. We use this
 // to inform crashes_ui that we have enabled crash reporting.
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
 extern const char kCrashReportingEnabled[];
 #endif
 
@@ -433,7 +433,7 @@ extern const char kProfileCreatedByVersion[];
 extern const char kStabilityOtherUserCrashCount[];
 extern const char kStabilityKernelCrashCount[];
 extern const char kStabilitySystemUncleanShutdownCount[];
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
 extern const char kStabilityForegroundActivityType[];
 extern const char kStabilityLaunchedActivityFlags[];
 extern const char kStabilityLaunchedActivityCounts[];
@@ -503,17 +503,17 @@ extern const char kDisableExtensions[];
 extern const char kDisablePluginFinder[];
 
 extern const char kNtpAppPageNames[];
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
 extern const char kNtpCollapsedCurrentlyOpenTabs[];
 #endif
 extern const char kNtpCollapsedForeignSessions[];
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
 extern const char kNtpCollapsedRecentlyClosedTabs[];
 extern const char kNtpCollapsedSnapshotDocument[];
 extern const char kNtpCollapsedSyncPromo[];
 #endif
 extern const char kNtpShownPage[];
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
 extern const char kNTPSuggestionsURL[];
 extern const char kNTPSuggestionsIsPersonal[];
 #endif
@@ -554,7 +554,7 @@ extern const char kWebAppCreateInAppsMenu[];
 extern const char kWebAppCreateInQuickLaunchBar[];
 
 extern const char kGeolocationAccessToken[];
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
 extern const char kGeolocationEnabled[];
 #endif
 
@@ -769,7 +769,7 @@ extern const char kEnableDRM[];
 
 extern const char kWatchdogExtensionActive[];
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
 extern const char kPartnerBookmarkMappings[];
 #endif
 

@@ -331,19 +331,19 @@ source_set("ui") {
   }
 
   if (is_android) {
-    deps += [
-      "//chrome/browser:jni_headers",
-      "//crypto:platform",
-    ]
+    deps += [ "//crypto:platform" ]
 
     defines += [ "CHROME_BUILD_ID=\"$android_chrome_build_id\"" ]
 
-    if (!use_aura) {
+    if (android_java_ui) {
       sources +=
-          rebase_path(gypi_values.chrome_browser_ui_android_non_aura_sources,
+          rebase_path(gypi_values.chrome_browser_ui_android_java_ui_sources,
                       ".",
                       "//chrome")
-      deps += [ "//components/web_contents_delegate_android" ]
+      deps += [
+        "//chrome/browser:jni_headers",
+        "//components/web_contents_delegate_android",
+      ]
       deps -= [ "//ui/events" ]
     }
   }

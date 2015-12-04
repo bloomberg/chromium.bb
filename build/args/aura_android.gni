@@ -15,4 +15,5 @@ enable_plugins = true
 
 # ui.gni overrides
 use_aura = true
+android_java_ui = false
 toolkit_views = true

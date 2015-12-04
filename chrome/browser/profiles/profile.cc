@@ -79,7 +79,7 @@ void Profile::RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
       prefs::kSearchSuggestEnabled,
       true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
   registry->RegisterStringPref(
       prefs::kContextualSearchEnabled,
       std::string(),

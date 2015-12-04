@@ -16,6 +16,7 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
 #include "chrome/browser/pepper_flash_settings_manager.h"
+#include "chrome/common/features.h"
 #include "components/search_engines/template_url_service.h"
 #if defined(OS_CHROMEOS)
 #include "chromeos/dbus/dbus_method_call_status.h"
@@ -83,7 +84,7 @@ class BrowsingDataRemover
     REMOVE_NOCHECKS = 1 << 16,
     REMOVE_WEBRTC_IDENTITY = 1 << 17,
     REMOVE_CACHE_STORAGE = 1 << 18,
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
     REMOVE_WEBAPP_DATA = 1 << 19,
     REMOVE_OFFLINE_PAGE_DATA = 1 << 20,
 #endif
@@ -104,7 +105,7 @@ class BrowsingDataRemover
                        REMOVE_WEBSQL |
                        REMOVE_CHANNEL_IDS |
                        REMOVE_SITE_USAGE_DATA |
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
                        REMOVE_WEBAPP_DATA |
                        REMOVE_OFFLINE_PAGE_DATA |
 #endif
@@ -397,7 +398,7 @@ class BrowsingDataRemover
   void OnClearedWebRtcLogs();
 #endif
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
   // Callback on UI thread when the precache history has been cleared.
   void OnClearedPrecacheHistory();
 
@@ -465,7 +466,7 @@ class BrowsingDataRemover
   bool waiting_for_clear_platform_keys_ = false;
   bool waiting_for_clear_plugin_data_ = false;
   bool waiting_for_clear_pnacl_cache_ = false;
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
   bool waiting_for_clear_precache_history_ = false;
   bool waiting_for_clear_webapp_data_ = false;
   bool waiting_for_clear_offline_page_data_ = false;

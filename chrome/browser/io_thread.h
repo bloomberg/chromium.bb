@@ -19,6 +19,7 @@
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
+#include "chrome/common/features.h"
 #include "components/ssl_config/ssl_config_service_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browser_thread_delegate.h"
@@ -35,13 +36,13 @@ namespace base {
 class CommandLine;
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
 namespace chrome {
 namespace android {
 class ExternalDataUseObserver;
 }
 }
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(ANDROID_JAVA_UI)
 
 namespace chrome_browser_net {
 class DnsProbeService;
@@ -138,11 +139,11 @@ class IOThread : public content::BrowserThreadDelegate {
     // Global aggregator of data use. It must outlive the
     // |system_network_delegate|.
     scoped_ptr<data_usage::DataUseAggregator> data_use_aggregator;
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
     // An external observer of data use.
     scoped_ptr<chrome::android::ExternalDataUseObserver>
         external_data_use_observer;
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(ANDROID_JAVA_UI)
     // The "system" NetworkDelegate, used for Profile-agnostic network events.
     scoped_ptr<net::NetworkDelegate> system_network_delegate;
     scoped_ptr<net::HostResolver> host_resolver;

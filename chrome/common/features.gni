@@ -7,6 +7,12 @@
 
 declare_args() {
   enable_google_now = !is_ios && !is_android
+
+  # Whether the Java UI is being used (Java infobars and popups, Java native
+  # settings and first run experience, sign-in etc.).
+  # Default to true if compiling for android, but allow this being overriden
+  # through the environment.
+  android_java_ui = is_android
 }
 
 chrome_grit_defines = [ "enable_google_now=$enable_google_now" ]

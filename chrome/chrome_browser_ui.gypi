@@ -15,8 +15,6 @@
       'browser/ui/android/android_about_app_info.h',
       'browser/ui/android/external_protocol_dialog_android.cc',
       'browser/ui/android/status_tray_android.cc',
-      'browser/ui/android/tab_model/tab_model_list.cc',
-      'browser/ui/android/tab_model/tab_model_list.h',
       'browser/ui/app_list/app_list_util.cc',
       'browser/ui/app_list/app_list_util.h',
       # All other browser/ui/app_list files go in chrome_browser_ui_app_list_sources.
@@ -425,7 +423,7 @@
       'browser/ui/zoom/chrome_zoom_level_prefs.cc',
       'browser/ui/zoom/chrome_zoom_level_prefs.h',
     ],
-    'chrome_browser_ui_android_non_aura_sources': [
+    'chrome_browser_ui_android_java_ui_sources': [
       'browser/ui/android/autofill/autofill_dialog_controller_android.cc',
       'browser/ui/android/autofill/autofill_dialog_controller_android.h',
       'browser/ui/android/autofill/autofill_dialog_result.cc',
@@ -494,6 +492,10 @@
       'browser/ui/android/tab_model/tab_model.h',
       'browser/ui/android/tab_model/tab_model_jni_bridge.cc',
       'browser/ui/android/tab_model/tab_model_jni_bridge.h',
+      'browser/ui/android/tab_model/tab_model_list.cc',
+      'browser/ui/android/tab_model/tab_model_list.h',
+      'browser/ui/android/toolbar/toolbar_model_android.cc',
+      'browser/ui/android/toolbar/toolbar_model_android.h',
       'browser/ui/android/website_settings_popup_android.cc',
       'browser/ui/android/website_settings_popup_android.h',
       'browser/ui/android/window_android_helper.cc',
@@ -2785,8 +2787,6 @@
       'browser/ui/webui/local_discovery/local_discovery_ui_handler.h',
     ],
     'chrome_browser_ui_toolbar_model_sources': [
-      'browser/ui/android/toolbar/toolbar_model_android.cc',
-      'browser/ui/android/toolbar/toolbar_model_android.h',
       'browser/ui/toolbar/chrome_toolbar_model.cc',
       'browser/ui/toolbar/chrome_toolbar_model.h',
       'browser/ui/toolbar/toolbar_model_delegate.h',
@@ -3078,15 +3078,21 @@
         }],
         ['OS=="android"', {
           'dependencies': [
-            '../components/components.gyp:web_contents_delegate_android',
             '../third_party/boringssl/boringssl.gyp:boringssl',
-            'chrome_browser_jni_headers',
           ],
-          'dependencies!': [
-             '../ui/events/events.gyp:events',
-             'chrome_browser_ui_views.gyp:browser_ui_views',
+          'conditions': [
+            ['android_java_ui == 1', {
+              'sources': [ '<@(chrome_browser_ui_android_java_ui_sources)' ],
+              'dependencies': [
+                '../components/components.gyp:web_contents_delegate_android',
+                'chrome_browser_jni_headers',
+              ],
+              'dependencies!': [
+                '../ui/events/events.gyp:events',
+                'chrome_browser_ui_views.gyp:browser_ui_views',
+              ],
+            }]
           ],
-          'sources': [ '<@(chrome_browser_ui_android_non_aura_sources)' ],
         }],
         ['OS=="mac"', {
           'sources': [ '<@(chrome_browser_ui_mac_sources)' ],

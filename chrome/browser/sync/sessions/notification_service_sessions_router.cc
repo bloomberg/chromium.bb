@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/sync/browser_synced_window_delegates_getter.h"
 #include "chrome/browser/ui/sync/tab_contents_synced_tab_delegate.h"
+#include "chrome/common/features.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/sync_sessions/sync_sessions_client.h"
 #include "components/sync_sessions/synced_tab_delegate.h"
@@ -22,7 +23,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
 #include "chrome/browser/android/tab_android.h"
 #endif
 
@@ -44,14 +45,14 @@ namespace {
 
 SyncedTabDelegate* GetSyncedTabDelegateFromWebContents(
     content::WebContents* web_contents) {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
   TabAndroid* tab = TabAndroid::FromWebContents(web_contents);
   return tab ? tab->GetSyncedTabDelegate() : nullptr;
-#else   // !OS_ANDROID
+#else
   SyncedTabDelegate* delegate =
       TabContentsSyncedTabDelegate::FromWebContents(web_contents);
   return delegate;
-#endif  // OS_ANDROID
+#endif
 }
 
 }  // namespace

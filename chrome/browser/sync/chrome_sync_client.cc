@@ -29,6 +29,7 @@
 #include "chrome/browser/undo/bookmark_undo_service_factory.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "chrome/common/channel_info.h"
+#include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/autofill/core/browser/webdata/autocomplete_syncable_service.h"
@@ -90,7 +91,7 @@
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 #endif
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
 #include "chrome/browser/sync/glue/synced_window_delegates_getter_android.h"
 #endif
 
@@ -116,7 +117,7 @@ class SyncSessionsClientImpl : public sync_sessions::SyncSessionsClient {
  public:
   explicit SyncSessionsClientImpl(Profile* profile) : profile_(profile) {
     window_delegates_getter_.reset(
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
         // Android doesn't have multi-profile support, so no need to pass the
         // profile in.
         new browser_sync::SyncedWindowDelegatesGetterAndroid());
@@ -262,11 +263,11 @@ base::Closure ChromeSyncClient::GetPasswordStateChangedCallback() {
 sync_driver::SyncApiComponentFactory::RegisterDataTypesMethod
 ChromeSyncClient::GetRegisterPlatformTypesCallback() {
   return base::Bind(
-#ifdef OS_ANDROID
+#if BUILDFLAG(ANDROID_JAVA_UI)
       &ChromeSyncClient::RegisterAndroidDataTypes,
 #else
       &ChromeSyncClient::RegisterDesktopDataTypes,
-#endif  // OS_ANDROID
+#endif  // BUILDFLAG(ANDROID_JAVA_UI)
       weak_ptr_factory_.GetWeakPtr());
 }
 

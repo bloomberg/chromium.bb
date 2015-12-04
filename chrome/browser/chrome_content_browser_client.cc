@@ -93,6 +93,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/env_vars.h"
+#include "chrome/common/features.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pepper_permission_util.h"
 #include "chrome/common/pref_names.h"
@@ -197,6 +198,12 @@
 #include "components/crash/content/browser/crash_handler_host_linux.h"
 #endif
 
+#if BUILDFLAG(ANDROID_JAVA_UI)
+#include "chrome/browser/android/new_tab_page_url_handler.h"
+#include "chrome/browser/android/webapps/single_tab_mode_tab_helper.h"
+#include "components/service_tab_launcher/browser/android/service_tab_launcher.h"
+#endif
+
 #if defined(OS_ANDROID)
 #include "ui/base/ui_base_paths.h"
 #include "ui/gfx/android/device_display_info.h"
@@ -275,12 +282,6 @@
 
 #if defined(ENABLE_WAYLAND_SERVER)
 #include "chrome/browser/chrome_browser_main_extra_parts_exo.h"
-#endif
-
-#if defined(OS_ANDROID) && !defined(USE_AURA)
-#include "chrome/browser/android/new_tab_page_url_handler.h"
-#include "chrome/browser/android/webapps/single_tab_mode_tab_helper.h"
-#include "components/service_tab_launcher/browser/android/service_tab_launcher.h"
 #endif
 
 using base::FileDescriptor;
@@ -589,10 +590,7 @@ class SafeBrowsingSSLCertReporter : public SSLCertReporter {
       safe_browsing_ui_manager_;
 };
 
-
-  // TODO(bshe): Use defined(ANDROID_JAVA_UI) once
-  // codereview.chromium.org/1459793002 landed.
-#if defined(OS_ANDROID) && !defined(USE_AURA)
+#if BUILDFLAG(ANDROID_JAVA_UI)
 void HandleSingleTabModeBlockOnUIThread(const BlockedWindowParams& params) {
   WebContents* web_contents = tab_util::GetWebContentsByFrameID(
       params.render_process_id(), params.opener_render_frame_id());
@@ -601,7 +599,7 @@ void HandleSingleTabModeBlockOnUIThread(const BlockedWindowParams& params) {
 
   SingleTabModeTabHelper::FromWebContents(web_contents)->HandleOpenUrl(params);
 }
-#endif
+#endif  // BUILDFLAG(ANDROID_JAVA_UI)
 
 #if defined(OS_ANDROID)
 float GetDeviceScaleAdjustment() {
@@ -2176,9 +2174,7 @@ bool ChromeContentBrowserClient::CanCreateWindow(
     }
   }
 
-  // TODO(bshe): Use defined(ANDROID_JAVA_UI) once
-  // codereview.chromium.org/1459793002 landed.
-#if defined(OS_ANDROID) && !defined(USE_AURA)
+#if BUILDFLAG(ANDROID_JAVA_UI)
   if (SingleTabModeTabHelper::IsRegistered(render_process_id,
                                            opener_render_view_id)) {
     BrowserThread::PostTask(BrowserThread::UI,
@@ -2348,9 +2344,7 @@ void ChromeContentBrowserClient::BrowserURLHandlerCreated(
   handler->AddHandlerPair(&WillHandleBrowserAboutURL,
                           BrowserURLHandler::null_handler());
 
-  // TODO(bshe): Use defined(ANDROID_JAVA_UI) once
-  // codereview.chromium.org/1459793002 landed.
-#if defined(OS_ANDROID) && !defined(USE_AURA)
+#if BUILDFLAG(ANDROID_JAVA_UI)
   // Handler to rewrite chrome://newtab on Android.
   handler->AddHandlerPair(&chrome::android::HandleAndroidNativePageURL,
                           BrowserURLHandler::null_handler());
@@ -2636,9 +2630,10 @@ void ChromeContentBrowserClient::OpenURL(
     const base::Callback<void(content::WebContents*)>& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  // TODO(bshe): Use !defined(ANDROID_JAVA_UI) once
-  // codereview.chromium.org/1459793002 landed.
-#if (!defined(OS_ANDROID) || defined(USE_AURA)) && !defined(OS_IOS)
+#if BUILDFLAG(ANDROID_JAVA_UI)
+  service_tab_launcher::ServiceTabLauncher::GetInstance()->LaunchTab(
+      browser_context, params, callback);
+#elif !defined(OS_IOS)
   chrome::NavigateParams nav_params(
       Profile::FromBrowserContext(browser_context),
       params.url,
@@ -2648,9 +2643,6 @@ void ChromeContentBrowserClient::OpenURL(
 
   Navigate(&nav_params);
   callback.Run(nav_params.target_contents);
-#elif defined(OS_ANDROID)
-  service_tab_launcher::ServiceTabLauncher::GetInstance()->LaunchTab(
-      browser_context, params, callback);
 #else
   NOTIMPLEMENTED();
 #endif

@@ -9,10 +9,11 @@
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/web_data_service_factory.h"
+#include "chrome/common/features.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
 #include "chrome/browser/signin/oauth2_token_service_delegate_android.h"
 #else
 #include "chrome/browser/signin/mutable_profile_oauth2_token_service_delegate.h"
@@ -50,7 +51,7 @@ ProfileOAuth2TokenServiceFactory*
 KeyedService* ProfileOAuth2TokenServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = static_cast<Profile*>(context);
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
   OAuth2TokenServiceDelegateAndroid* delegate =
       new OAuth2TokenServiceDelegateAndroid(
           AccountTrackerServiceFactory::GetInstance()->GetForProfile(profile));

@@ -9,6 +9,7 @@
 #include "chrome/browser/media/media_stream_device_permissions.h"
 #include "chrome/browser/media/media_stream_devices_controller.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/browser_thread.h"
@@ -16,7 +17,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
 #include <vector>
 
 #include "base/bind.h"
@@ -25,9 +26,9 @@
 #include "chrome/browser/permissions/permission_update_infobar_delegate_android.h"
 #else
 #include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
-#endif  // OS_ANDROID
+#endif  // BUILDFLAG(ANDROID_JAVA_UI)
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
 namespace {
 // Callback for the permission update infobar when the site and Chrome
 // permissions are mismatched on Android.
@@ -40,7 +41,7 @@ void OnPermissionConflictResolved(
 }
 }  // namespace
 
-#endif  // OS_ANDROID
+#endif  // BUILDFLAG(ANDROID_JAVA_UI)
 
 using content::BrowserThread;
 
@@ -141,7 +142,7 @@ void PermissionBubbleMediaAccessHandler::ProcessQueuedAccessRequest(
               &PermissionBubbleMediaAccessHandler::OnAccessRequestResponse,
               base::Unretained(this), web_contents)));
   if (!controller->IsAskingForAudio() && !controller->IsAskingForVideo()) {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
     // If either audio or video was previously allowed and Chrome no longer has
     // the necessary permissions, show a infobar to attempt to address this
     // mismatch.
@@ -165,7 +166,7 @@ void PermissionBubbleMediaAccessHandler::ProcessQueuedAccessRequest(
     return;
   }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
   MediaStreamInfoBarDelegateAndroid::Create(web_contents, controller.Pass());
 #else
   PermissionBubbleManager* bubble_manager =

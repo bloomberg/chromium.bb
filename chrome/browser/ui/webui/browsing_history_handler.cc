@@ -28,6 +28,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
+#include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -59,7 +60,7 @@
 #include "chrome/browser/supervised_user/supervised_user_url_filter.h"
 #endif
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
 #include "chrome/browser/android/chrome_application.h"
 #endif
 
@@ -544,7 +545,7 @@ void BrowsingHistoryHandler::HandleRemoveVisits(const base::ListValue* args) {
 
 void BrowsingHistoryHandler::HandleClearBrowsingData(
     const base::ListValue* args) {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
   chrome::android::ChromeApplication::OpenClearBrowsingData(
       web_ui()->GetWebContents());
 #else

@@ -27,7 +27,7 @@
 #include "content/public/browser/navigation_details.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
 #include "chrome/browser/android/chrome_application.h"
 #else
 #include "chrome/browser/ui/passwords/manage_passwords_icon_view.h"
@@ -149,7 +149,7 @@ void ManagePasswordsUIController::OnLoginsChanged(
     UpdateBubbleAndIconVisibility();
 }
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(ANDROID_JAVA_UI)
 void ManagePasswordsUIController::UpdateIconAndBubbleState(
     ManagePasswordsIconView* icon) {
   if (should_pop_up_bubble_) {
@@ -271,7 +271,7 @@ void ManagePasswordsUIController::ChooseCredential(
 }
 
 void ManagePasswordsUIController::NavigateToExternalPasswordManager() {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
   NOTREACHED();
 #else
   chrome::NavigateParams params(
@@ -284,7 +284,7 @@ void ManagePasswordsUIController::NavigateToExternalPasswordManager() {
 }
 
 void ManagePasswordsUIController::NavigateToSmartLockHelpPage() {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
   NOTREACHED();
 #else
   chrome::NavigateParams params(
@@ -296,7 +296,7 @@ void ManagePasswordsUIController::NavigateToSmartLockHelpPage() {
 }
 
 void ManagePasswordsUIController::NavigateToPasswordManagerSettingsPage() {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
   chrome::android::ChromeApplication::ShowPasswordSettings();
 #else
   chrome::ShowSettingsSubPage(
@@ -340,7 +340,7 @@ void ManagePasswordsUIController::UpdateBubbleAndIconVisibility() {
     passwords_data_.OnInactive();
   }
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(ANDROID_JAVA_UI)
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
   if (!browser)
     return;
@@ -375,14 +375,14 @@ void ManagePasswordsUIController::DidNavigateMainFrame(
 }
 
 void ManagePasswordsUIController::WasHidden() {
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(ANDROID_JAVA_UI)
   TabDialogs::FromWebContents(web_contents())->HideManagePasswordsBubble();
 #endif
 }
 
 void ManagePasswordsUIController::ShowBubbleWithoutUserInteraction() {
   DCHECK(should_pop_up_bubble_);
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(ANDROID_JAVA_UI)
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
   if (!browser || browser->toolbar_model()->input_in_progress())
     return;

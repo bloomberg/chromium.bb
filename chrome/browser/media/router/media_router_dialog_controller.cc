@@ -5,11 +5,12 @@
 #include "chrome/browser/media/router/media_router_dialog_controller.h"
 
 #include "chrome/browser/media/router/media_router_metrics.h"
+#include "chrome/common/features.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
 #include "chrome/browser/media/android/router/media_router_dialog_controller_android.h"
 #else
 #include "chrome/browser/ui/webui/media_router/media_router_dialog_controller_impl.h"
@@ -21,7 +22,7 @@ namespace media_router {
 MediaRouterDialogController*
 MediaRouterDialogController::GetOrCreateForWebContents(
     content::WebContents* contents) {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
   return MediaRouterDialogControllerAndroid::GetOrCreateForWebContents(
       contents);
 #else

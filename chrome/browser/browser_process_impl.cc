@@ -69,6 +69,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/chrome_extensions_client.h"
+#include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/switch_utils.h"
 #include "chrome/common/url_constants.h"
@@ -837,10 +838,10 @@ void BrowserProcessImpl::RegisterPrefs(PrefRegistrySimple* registry) {
 #endif  // defined(OS_CHROMEOS)
   registry->RegisterBooleanPref(metrics::prefs::kMetricsReportingEnabled,
                                 GoogleUpdateSettings::GetCollectStatsConsent());
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
   registry->RegisterBooleanPref(
       prefs::kCrashReportingEnabled, false);
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(ANDROID_JAVA_UI)
 }
 
 DownloadRequestLimiter* BrowserProcessImpl::download_request_limiter() {

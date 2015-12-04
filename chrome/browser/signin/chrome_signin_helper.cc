@@ -11,6 +11,7 @@
 #include "chrome/browser/signin/chrome_signin_client.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/common/features.h"
 #include "chrome/common/url_constants.h"
 #include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/core/browser/signin_header_helper.h"
@@ -20,13 +21,13 @@
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "net/url_request/url_request.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
 #include "chrome/browser/android/signin/account_management_screen_helper.h"
 #else
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(ANDROID_JAVA_UI)
 
 namespace signin {
 
@@ -54,7 +55,7 @@ void ProcessMirrorHeaderUIThread(int child_id,
       AccountReconcilorFactory::GetForProfile(profile);
   account_reconcilor->OnReceivedManageAccountsResponse(
       manage_accounts_params.service_type);
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(ANDROID_JAVA_UI)
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   if (browser) {
     BrowserWindow::AvatarBubbleMode bubble_mode;
@@ -76,7 +77,7 @@ void ProcessMirrorHeaderUIThread(int child_id,
     browser->window()->ShowAvatarBubbleFromAvatarButton(bubble_mode,
                                                         manage_accounts_params);
   }
-#else   // defined(OS_ANDROID)
+#else   // BUILDFLAG(ANDROID_JAVA_UI)
   if (service_type == signin::GAIA_SERVICE_TYPE_INCOGNITO) {
     GURL url(manage_accounts_params.continue_url.empty()
                  ? chrome::kChromeUINativeNewTabURL
@@ -90,7 +91,7 @@ void ProcessMirrorHeaderUIThread(int child_id,
     AccountManagementScreenHelper::OpenAccountManagementScreen(profile,
                                                                service_type);
   }
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(ANDROID_JAVA_UI)
 }
 
 // Returns the parameters contained in the X-Chrome-Manage-Accounts response

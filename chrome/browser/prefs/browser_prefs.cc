@@ -66,6 +66,7 @@
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/ui/webui/plugins_ui.h"
 #include "chrome/browser/ui/webui/print_preview/sticky_settings.h"
+#include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -136,7 +137,7 @@
 #include "chrome/browser/ui/webui/local_discovery/local_discovery_ui.h"
 #endif
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
 #include "chrome/browser/android/bookmarks/partner_bookmarks_shim.h"
 #include "chrome/browser/android/most_visited_sites.h"
 #include "chrome/browser/android/new_tab_page_prefs.h"
@@ -467,7 +468,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   SupervisedUserWhitelistService::RegisterProfilePrefs(registry);
 #endif
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
   variations::VariationsService::RegisterProfilePrefs(registry);
   MostVisitedSites::RegisterProfilePrefs(registry);
   NewTabPagePrefs::RegisterProfilePrefs(registry);

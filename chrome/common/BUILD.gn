@@ -40,7 +40,10 @@ if (enable_extensions) {
 
 buildflag_header("features") {
   header = "features.h"
-  flags = [ "ENABLE_GOOGLE_NOW=$enable_google_now" ]
+  flags = [
+    "ENABLE_GOOGLE_NOW=$enable_google_now",
+    "ANDROID_JAVA_UI=$android_java_ui",
+  ]
 }
 
 # GYP version: chrome/chrome_common.gypi:common

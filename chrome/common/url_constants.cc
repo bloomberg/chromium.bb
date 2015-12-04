@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/basictypes.h"
+#include "chrome/common/features.h"
 #include "content/public/common/url_constants.h"
 #include "url/url_util.h"
 
@@ -87,7 +88,7 @@ const char kChromeUIUberFrameURL[] = "chrome://uber-frame/";
 const char kChromeUIUserActionsURL[] = "chrome://user-actions/";
 const char kChromeUIVersionURL[] = "chrome://version/";
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
 const char kChromeUIContextualSearchPromoURL[] =
     "chrome://contextual-search-promo";
 const char kChromeUINativeScheme[] = "chrome-native";

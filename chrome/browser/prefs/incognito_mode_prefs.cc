@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
@@ -26,9 +27,9 @@
 #include "base/win/windows_version.h"
 #endif  // OS_WIN
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
 #include "chrome/browser/android/chrome_application.h"
-#endif  // OS_ANDROID
+#endif  // BUILDFLAG(ANDROID_JAVA_UI)
 
 using content::BrowserThread;
 
@@ -208,15 +209,13 @@ void IncognitoModePrefs::InitializePlatformParentalControls() {
 bool IncognitoModePrefs::ArePlatformParentalControlsEnabled() {
 #if defined(OS_WIN)
   return PlatformParentalControlsValue::GetInstance()->is_enabled();
-#elif defined(OS_ANDROID)
-#if defined(USE_AURA)
+#elif defined(OS_ANDROID) && defined(USE_AURA)
   // TODO(bshe): Support parental controls for Aura Android. See
   // crbug.com/564742
   NOTIMPLEMENTED();
   return false;
-#else
+#elif BUILDFLAG(ANDROID_JAVA_UI)
   return chrome::android::ChromeApplication::AreParentalControlsEnabled();
-#endif
 #else
   return false;
 #endif

@@ -6,9 +6,10 @@
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/features.h"
 #include "components/rappor/rappor_utils.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
 #include "chrome/browser/android/background_sync_launcher_android.h"
 #endif
 
@@ -39,7 +40,7 @@ void BackgroundSyncControllerImpl::RunInBackground(bool enabled,
 
   if (profile_->IsOffTheRecord())
     return;
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
   BackgroundSyncLauncherAndroid::LaunchBrowserIfStopped(enabled, min_ms);
 #else
 // TODO(jkarlin): Use BackgroundModeManager to enter background mode. See

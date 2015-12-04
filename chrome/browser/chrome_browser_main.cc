@@ -97,6 +97,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/env_vars.h"
+#include "chrome/common/features.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/net/net_resource_provider.h"
 #include "chrome/common/pref_names.h"
@@ -150,20 +151,18 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/strings/grit/app_locale_settings.h"
 
-#if defined(OS_ANDROID)
-#include "ui/base/resource/resource_bundle_android.h"
-#endif  // defined(OS_ANDROID)
-
-// TODO(bshe): Use defined(ANDROID_JAVA_UI) once
-// codereview.chromium.org/1459793002 landed for
-// dev_tools_discovery_provider_android.h.
-#if defined(OS_ANDROID) && !defined(USE_AURA)
+#if BUILDFLAG(ANDROID_JAVA_UI)
 #include "chrome/browser/android/dev_tools_discovery_provider_android.h"
-#include "chrome/browser/metrics/thread_watcher_android.h"
 #else
 #include "chrome/browser/devtools/chrome_devtools_discovery_provider.h"
+#endif
+
+#if defined(OS_ANDROID)
+#include "chrome/browser/metrics/thread_watcher_android.h"
+#include "ui/base/resource/resource_bundle_android.h"
+#else
 #include "chrome/browser/feedback/feedback_profile_observer.h"
-#endif  // defined(OS_ANDROID) && !defined(USE_AURA)
+#endif  // defined(OS_ANDROID)
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 #include "chrome/browser/first_run/upgrade_util_linux.h"
@@ -1180,11 +1179,11 @@ void ChromeBrowserMainParts::PreProfileInit() {
 void ChromeBrowserMainParts::PostProfileInit() {
   TRACE_EVENT0("startup", "ChromeBrowserMainParts::PostProfileInit");
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
   DevToolsDiscoveryProviderAndroid::Install();
 #else
   ChromeDevToolsDiscoveryProvider::Install();
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(ANDROID_JAVA_UI)
 
   LaunchDevToolsHandlerIfNeeded(parsed_command_line());
   for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)

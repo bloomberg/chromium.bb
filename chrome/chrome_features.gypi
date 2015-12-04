@@ -10,6 +10,11 @@
     'variables': {
       # Conditional variables.
       'conditions': [
+        ['OS=="android"', {
+          'android_java_ui%': 1,
+        }, {
+          'android_java_ui': 0,
+        }],
         ['OS=="android" or OS=="ios"', {
           'enable_google_now%': 0,
         }, {
@@ -21,6 +26,7 @@
     # Anything in the conditions needs to be copied to the outer scope to be
     # accessible.
     'enable_google_now%': '<(enable_google_now)',
+    'android_java_ui%': '<(android_java_ui)',
 
     # Grit defines based on the feature flags. These must be manually added to
     # grit targets.

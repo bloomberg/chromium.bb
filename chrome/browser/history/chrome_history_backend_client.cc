@@ -5,18 +5,19 @@
 #include "chrome/browser/history/chrome_history_backend_client.h"
 
 #include "chrome/common/channel_info.h"
+#include "chrome/common/features.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/version_info/version_info.h"
 #include "url/gurl.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "chrome/browser/history/android/android_provider_backend.h"
 #include "components/history/core/browser/history_backend.h"
 #endif
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
 namespace {
 const base::FilePath::CharType kAndroidCacheFilename[] =
     FILE_PATH_LITERAL("AndroidCache");
@@ -70,7 +71,7 @@ bool ChromeHistoryBackendClient::ShouldReportDatabaseError() {
          channel != version_info::Channel::BETA;
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ANDROID_JAVA_UI)
 void ChromeHistoryBackendClient::OnHistoryBackendInitialized(
     history::HistoryBackend* history_backend,
     history::HistoryDatabase* history_database,
@@ -91,4 +92,4 @@ void ChromeHistoryBackendClient::OnHistoryBackendDestroyed(
     const base::FilePath& history_dir) {
   sql::Connection::Delete(history_dir.Append(kAndroidCacheFilename));
 }
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(ANDROID_JAVA_UI)
