@@ -251,18 +251,6 @@ void NaClLog(int         detail_level,
              ...) ATTRIBUTE_FORMAT_PRINTF(2, 3);
 
 /*
- * A version of NaClLog with an explicit module name parameter.  This
- * is used, for example, by C++ template code that is defined in a
- * header file which logically belongs to the module in which the
- * header file appears, rather than where the template expansion
- * occurs.
- */
-void NaClLog2(char const *module_name,
-              int        detail_level,
-              char const *fmt,
-              ...) ATTRIBUTE_FORMAT_PRINTF(3, 4);
-
-/*
  * "Internal" functions.  NaClLogSetModule and
  * NaClLogDoLogAndUnsetModule should only be used by the syntactic
  * macro below.

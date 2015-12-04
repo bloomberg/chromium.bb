@@ -13,25 +13,16 @@
 
 #include "native_client/src/include/portability.h"  // NACL_PRIxPTR etc
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
-#include "native_client/src/shared/platform/nacl_log.h"
 
 namespace nacl {
-
-static char const* const kMutexLockerModuleName = "nacl_sync_raii";
 
 class MutexLocker {
  public:
   explicit MutexLocker(NaClMutex* mu)
       : mu_(mu) {
-    NaClLog2(kMutexLockerModuleName, 3,
-             "MutexLocker: taking lock %" NACL_PRIxPTR "\n",
-             (uintptr_t) mu_);
     NaClXMutexLock(mu_);
   }
   ~MutexLocker() {
-    NaClLog2(kMutexLockerModuleName, 3,
-             "MutexLocker: dropping lock %" NACL_PRIxPTR "\n",
-             (uintptr_t) mu_);
     NaClXMutexUnlock(mu_);
   }
  private:

@@ -700,18 +700,6 @@ void NaClLog_mu(int         detail_level,
   va_end(ap);
 }
 
-void NaClLog2(char const *module_name,
-              int        detail_level,
-              char const *fmt,
-              ...) {
-  va_list ap;
-
-  NaClLogSetModule(module_name);
-  va_start(ap, fmt);
-  NaClLogDoLogAndUnsetModuleV(detail_level, fmt, ap);
-  va_end(ap);
-}
-
 void NaClLogSetAbortBehavior(void (*fn)(void)) {
   NaClXMutexLock(&log_mu);
   gNaClLogAbortBehavior = fn;
