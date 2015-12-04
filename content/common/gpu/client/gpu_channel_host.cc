@@ -162,17 +162,6 @@ uint32_t GpuChannelHost::OrderingBarrier(
   return 0;
 }
 
-void GpuChannelHost::FlushPendingStream(int32 stream_id) {
-  AutoLock lock(context_lock_);
-  auto flush_info_iter = stream_flush_info_.find(stream_id);
-  if (flush_info_iter == stream_flush_info_.end())
-    return;
-
-  StreamFlushInfo& flush_info = flush_info_iter->second;
-  if (flush_info.flush_pending)
-    InternalFlush(&flush_info);
-}
-
 void GpuChannelHost::InternalFlush(StreamFlushInfo* flush_info) {
   context_lock_.AssertAcquired();
   DCHECK(flush_info);

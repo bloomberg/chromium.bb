@@ -3782,8 +3782,6 @@ TEST_F(GLES2ImplementationTest, GenSyncTokenCHROMIUM) {
       .WillRepeatedly(testing::Return(kNamespaceId));
   EXPECT_CALL(*gpu_control_, GetCommandBufferID())
       .WillRepeatedly(testing::Return(kCommandBufferId));
-  EXPECT_CALL(*gpu_control_, GetExtraCommandBufferData())
-      .WillRepeatedly(testing::Return(0));
 
   gl_->GenSyncTokenCHROMIUM(kFenceSync, nullptr);
   EXPECT_EQ(GL_INVALID_VALUE, CheckError());
@@ -3827,8 +3825,6 @@ TEST_F(GLES2ImplementationTest, GenUnverifiedSyncTokenCHROMIUM) {
       .WillRepeatedly(testing::Return(kNamespaceId));
   EXPECT_CALL(*gpu_control_, GetCommandBufferID())
       .WillRepeatedly(testing::Return(kCommandBufferId));
-  EXPECT_CALL(*gpu_control_, GetExtraCommandBufferData())
-      .WillRepeatedly(testing::Return(0));
 
   gl_->GenUnverifiedSyncTokenCHROMIUM(kFenceSync, nullptr);
   EXPECT_EQ(GL_INVALID_VALUE, CheckError());
@@ -3876,8 +3872,6 @@ TEST_F(GLES2ImplementationTest, WaitSyncTokenCHROMIUM) {
       .WillOnce(testing::Return(kNamespaceId));
   EXPECT_CALL(*gpu_control_, GetCommandBufferID())
       .WillOnce(testing::Return(kCommandBufferId));
-  EXPECT_CALL(*gpu_control_, GetExtraCommandBufferData())
-      .WillOnce(testing::Return(0));
   gl_->GenSyncTokenCHROMIUM(kFenceSync, sync_token);
 
   struct Cmds {
@@ -3905,14 +3899,14 @@ TEST_F(GLES2ImplementationTest, WaitSyncTokenCHROMIUMErrors) {
 
   // Invalid sync tokens should produce no error and be a nop.
   ClearCommands();
-  gpu::SyncToken invalid_sync_token;
+  gpu::SyncToken invalid_sync_token(CommandBufferNamespace::INVALID, 0, 0);
   gl_->WaitSyncTokenCHROMIUM(invalid_sync_token.GetConstData());
   EXPECT_TRUE(NoCommandsWritten());
   EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), gl_->GetError());
 
   // Unverified sync token should produce INVALID_OPERATION.
   ClearCommands();
-  gpu::SyncToken unverified_sync_token(CommandBufferNamespace::GPU_IO, 0, 0, 0);
+  gpu::SyncToken unverified_sync_token(CommandBufferNamespace::GPU_IO, 0, 0);
   EXPECT_CALL(*gpu_control_, CanWaitUnverifiedSyncToken(_))
       .WillOnce(testing::Return(false));
   gl_->WaitSyncTokenCHROMIUM(unverified_sync_token.GetConstData());

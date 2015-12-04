@@ -116,8 +116,6 @@ class GpuChannelHost : public IPC::Sender,
                            bool put_offset_changed,
                            bool do_flush);
 
-  void FlushPendingStream(int32 stream_id);
-
   // Create and connect to a command buffer in the GPU process.
   scoped_ptr<CommandBufferProxyImpl> CreateViewCommandBuffer(
       int32 surface_id,

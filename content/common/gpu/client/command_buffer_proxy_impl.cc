@@ -449,7 +449,7 @@ int32_t CommandBufferProxyImpl::CreateImage(ClientBuffer buffer,
 
   if (image_fence_sync) {
     gpu::SyncToken sync_token(GetNamespaceID(), GetCommandBufferID(),
-                              GetExtraCommandBufferData(), image_fence_sync);
+                              image_fence_sync);
 
     // Force a synchronous IPC to validate sync token.
     channel_->ValidateFlushIDReachedServer(stream_id_, true);
@@ -519,10 +519,6 @@ uint64_t CommandBufferProxyImpl::GetCommandBufferID() const {
   return command_buffer_id_;
 }
 
-int32_t CommandBufferProxyImpl::GetExtraCommandBufferData() const {
-  return stream_id_;
-}
-
 uint64_t CommandBufferProxyImpl::GenerateFenceSyncRelease() {
   return next_fence_sync_release_++;
 }
@@ -581,20 +577,8 @@ bool CommandBufferProxyImpl::CanWaitUnverifiedSyncToken(
   // Can only wait on an unverified sync token if it is from the same channel.
   const uint64_t token_channel = sync_token->command_buffer_id() >> 32;
   const uint64_t channel = command_buffer_id_ >> 32;
-  if (sync_token->namespace_id() != gpu::CommandBufferNamespace::GPU_IO ||
-      token_channel != channel) {
-    return false;
-  }
-
-  // If waiting on a different stream, flush pending commands on that stream.
-  const int32_t release_stream_id = sync_token->extra_data_field();
-  if (release_stream_id == 0)
-    return false;
-
-  if (release_stream_id != stream_id_)
-    channel_->FlushPendingStream(release_stream_id);
-
-  return true;
+  return (sync_token->namespace_id() == gpu::CommandBufferNamespace::GPU_IO &&
+          token_channel == channel);
 }
 
 uint32 CommandBufferProxyImpl::InsertSyncPoint() {

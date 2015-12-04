@@ -5552,7 +5552,6 @@ void GLES2Implementation::GenSyncTokenCHROMIUM(GLuint64 fence_sync,
 
   // Copy the data over after setting the data to ensure alignment.
   SyncToken sync_token_data(gpu_control_->GetNamespaceID(),
-                            gpu_control_->GetExtraCommandBufferData(),
                             gpu_control_->GetCommandBufferID(), fence_sync);
   sync_token_data.SetVerifyFlush();
   memcpy(sync_token, &sync_token_data, sizeof(sync_token_data));
@@ -5576,7 +5575,6 @@ void GLES2Implementation::GenUnverifiedSyncTokenCHROMIUM(GLuint64 fence_sync,
 
   // Copy the data over after setting the data to ensure alignment.
   SyncToken sync_token_data(gpu_control_->GetNamespaceID(),
-                            gpu_control_->GetExtraCommandBufferData(),
                             gpu_control_->GetCommandBufferID(), fence_sync);
   memcpy(sync_token, &sync_token_data, sizeof(sync_token_data));
 }

@@ -213,10 +213,6 @@ bool PpapiCommandBufferProxy::CanWaitUnverifiedSyncToken(
   return false;
 }
 
-int32_t PpapiCommandBufferProxy::GetExtraCommandBufferData() const {
-  return 0;
-}
-
 uint32 PpapiCommandBufferProxy::InsertSyncPoint() {
   uint32 sync_point = 0;
   if (last_state_.error == gpu::error::kNoError) {

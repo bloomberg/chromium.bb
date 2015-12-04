@@ -345,10 +345,6 @@ uint64_t Display::GetCommandBufferID() const {
   return 0;
 }
 
-int32_t Display::GetExtraCommandBufferData() const {
-  return 0;
-}
-
 uint64_t Display::GenerateFenceSyncRelease() {
   return next_fence_sync_release_++;
 }
