@@ -16,31 +16,6 @@ namespace media {
 // background rendering to keep the Render() callbacks moving.
 const int kBackgroundRenderingTimeoutMs = 250;
 
-// Returns true if the format has no Alpha channel (hence is always opaque).
-static bool IsOpaque(const scoped_refptr<VideoFrame>& frame) {
-  switch (frame->format()) {
-    case PIXEL_FORMAT_UNKNOWN:
-    case PIXEL_FORMAT_I420:
-    case PIXEL_FORMAT_YV12:
-    case PIXEL_FORMAT_YV16:
-    case PIXEL_FORMAT_YV24:
-    case PIXEL_FORMAT_NV12:
-    case PIXEL_FORMAT_NV21:
-    case PIXEL_FORMAT_UYVY:
-    case PIXEL_FORMAT_YUY2:
-    case PIXEL_FORMAT_XRGB:
-    case PIXEL_FORMAT_RGB24:
-    case PIXEL_FORMAT_MJPEG:
-    case PIXEL_FORMAT_MT21:
-      return true;
-    case PIXEL_FORMAT_YV12A:
-    case PIXEL_FORMAT_ARGB:
-    case PIXEL_FORMAT_RGB32:
-      break;
-  }
-  return false;
-}
-
 VideoFrameCompositor::VideoFrameCompositor(
     const scoped_refptr<base::SingleThreadTaskRunner>& compositor_task_runner,
     const base::Callback<void(gfx::Size)>& natural_size_changed_cb,
@@ -213,8 +188,9 @@ bool VideoFrameCompositor::ProcessNewFrame(
     natural_size_changed_cb_.Run(frame->natural_size());
   }
 
-  if (!current_frame_ || IsOpaque(current_frame_) != IsOpaque(frame))
-    opacity_changed_cb_.Run(IsOpaque(frame));
+  if (!current_frame_ ||
+      IsOpaque(current_frame_->format()) != IsOpaque(frame->format()))
+    opacity_changed_cb_.Run(IsOpaque(frame->format()));
 
   current_frame_ = frame;
   return true;

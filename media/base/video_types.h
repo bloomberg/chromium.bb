@@ -69,6 +69,9 @@ MEDIA_EXPORT std::string VideoPixelFormatToString(VideoPixelFormat format);
 // Returns true if |format| is a YUV format with multiple planes.
 MEDIA_EXPORT bool IsYuvPlanar(VideoPixelFormat format);
 
+// Returns true if |format| has no Alpha channel (hence is always opaque).
+MEDIA_EXPORT bool IsOpaque(VideoPixelFormat format);
+
 }  // namespace media
 
 #endif  // MEDIA_BASE_VIDEO_TYPES_H_
