@@ -103,7 +103,8 @@ def ProvisionDevice(device, blacklist, options):
 
   try:
     if should_run_phase(_PHASES.WIPE):
-      if options.chrome_specific_wipe:
+      if (options.chrome_specific_wipe or device.build_version_sdk >=
+          version_codes.MARSHMALLOW):
         run_phase(WipeChromeData)
       else:
         run_phase(WipeDevice)
