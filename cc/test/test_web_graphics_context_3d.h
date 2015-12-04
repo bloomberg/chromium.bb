@@ -314,6 +314,9 @@ class TestWebGraphicsContext3D {
   void set_have_post_sub_buffer(bool have) {
     test_capabilities_.gpu.post_sub_buffer = have;
   }
+  void set_have_commit_overlay_planes(bool have) {
+    test_capabilities_.gpu.commit_overlay_planes = have;
+  }
   void set_have_discard_framebuffer(bool have) {
     test_capabilities_.gpu.discard_framebuffer = have;
   }

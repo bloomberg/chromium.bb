@@ -34,6 +34,9 @@ struct RendererCapabilitiesImpl {
 
   // Capabilities used on compositor thread only.
   bool using_partial_swap;
+  // Whether it's valid to SwapBuffers with an empty rect. Trivially true when
+  // |using_partial_swap|.
+  bool allow_empty_swap;
   bool using_egl_image;
   bool using_image;
   bool using_discard_framebuffer;
