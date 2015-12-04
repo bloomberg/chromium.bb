@@ -778,7 +778,15 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, PRE_VersionChangeCrashResilience) {
   exit(0);
 }
 
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, VersionChangeCrashResilience) {
+// Fails to cleanup GPU processes on swarming.
+// http://crbug.com/552543
+#if defined(OS_WIN)
+#define MAYBE_VersionChangeCrashResilience DISABLED_VersionChangeCrashResilience
+#else
+#define MAYBE_VersionChangeCrashResilience VersionChangeCrashResilience
+#endif
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest,
+                       MAYBE_VersionChangeCrashResilience) {
   NavigateAndWaitForTitle(shell(), "version_change_crash.html", "#part3",
                           "pass - part3 - rolled back");
 }
