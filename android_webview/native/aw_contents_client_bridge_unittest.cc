@@ -129,10 +129,10 @@ TEST_F(AwContentsClientBridgeTest,
   bridge_->SelectClientCertificate(
       cert_request_info_.get(),
       make_scoped_ptr(new TestClientCertificateDelegate(this)));
-  bridge_->ProvideClientCertificateResponse(env_, jbridge_.obj(),
+  bridge_->ProvideClientCertificateResponse(
+      env_, jbridge_,
       Java_MockAwContentsClientBridge_getRequestId(env_, jbridge_.obj()),
-      Java_MockAwContentsClientBridge_createTestCertChain(
-          env_, jbridge_.obj()).obj(),
+      Java_MockAwContentsClientBridge_createTestCertChain(env_, jbridge_.obj()),
       nullptr);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(nullptr, selected_cert_);
@@ -150,8 +150,8 @@ TEST_F(AwContentsClientBridgeTest,
       make_scoped_ptr(new TestClientCertificateDelegate(this)));
   int requestId =
     Java_MockAwContentsClientBridge_getRequestId(env_, jbridge_.obj());
-  bridge_->ProvideClientCertificateResponse(
-      env_, jbridge_.obj(), requestId, nullptr, nullptr);
+  bridge_->ProvideClientCertificateResponse(env_, jbridge_, requestId, nullptr,
+                                            nullptr);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(nullptr, selected_cert_);
   EXPECT_EQ(1, cert_selected_callbacks_);

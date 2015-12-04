@@ -33,9 +33,9 @@ AwPdfExporter::~AwPdfExporter() {
 }
 
 void AwPdfExporter::ExportToPdf(JNIEnv* env,
-                                jobject obj,
+                                const JavaParamRef<jobject>& obj,
                                 int fd,
-                                jobject cancel_signal) {
+                                const JavaParamRef<jobject>& cancel_signal) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   printing::PrintSettings print_settings;
   InitPdfSettings(env, obj, print_settings);

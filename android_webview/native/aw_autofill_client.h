@@ -96,7 +96,9 @@ class AwAutofillClient : public autofill::AutofillClient,
   void OnFirstUserGestureObserved() override;
   bool IsContextSecure(const GURL& form_origin) override;
 
-  void SuggestionSelected(JNIEnv* env, jobject obj, jint position);
+  void SuggestionSelected(JNIEnv* env,
+                          const base::android::JavaParamRef<jobject>& obj,
+                          jint position);
 
  private:
   AwAutofillClient(content::WebContents* web_contents);

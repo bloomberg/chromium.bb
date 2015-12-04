@@ -37,15 +37,21 @@ class AwQuotaManagerBridgeImpl : public AwQuotaManagerBridge {
       AwBrowserContext* browser_context);
 
   // Called by Java.
-  void Init(JNIEnv* env, jobject object);
-  void DeleteAllData(JNIEnv* env, jobject object);
-  void DeleteOrigin(JNIEnv* env, jobject object, jstring origin);
-  void GetOrigins(JNIEnv* env, jobject object, jint callback_id);
-  void GetUsageAndQuotaForOrigin(JNIEnv* env,
-                                 jobject object,
-                                 jstring origin,
-                                 jint callback_id,
-                                 bool is_quota);
+  void Init(JNIEnv* env, const base::android::JavaParamRef<jobject>& object);
+  void DeleteAllData(JNIEnv* env,
+                     const base::android::JavaParamRef<jobject>& object);
+  void DeleteOrigin(JNIEnv* env,
+                    const base::android::JavaParamRef<jobject>& object,
+                    const base::android::JavaParamRef<jstring>& origin);
+  void GetOrigins(JNIEnv* env,
+                  const base::android::JavaParamRef<jobject>& object,
+                  jint callback_id);
+  void GetUsageAndQuotaForOrigin(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& object,
+      const base::android::JavaParamRef<jstring>& origin,
+      jint callback_id,
+      bool is_quota);
 
   typedef base::Callback<
       void(const std::vector<std::string>& /* origin */,

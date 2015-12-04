@@ -37,8 +37,11 @@ class AwHttpAuthHandler : public AwHttpAuthHandlerBase {
   // from AwHttpAuthHandler
   bool HandleOnUIThread(content::WebContents* web_contents) override;
 
-  void Proceed(JNIEnv* env, jobject obj, jstring username, jstring password);
-  void Cancel(JNIEnv* env, jobject obj);
+  void Proceed(JNIEnv* env,
+               const base::android::JavaParamRef<jobject>& obj,
+               const base::android::JavaParamRef<jstring>& username,
+               const base::android::JavaParamRef<jstring>& password);
+  void Cancel(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
 
  private:
   scoped_refptr<AwLoginDelegate> login_delegate_;

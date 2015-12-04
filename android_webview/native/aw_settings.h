@@ -29,16 +29,33 @@ class AwSettings : public content::WebContentsObserver {
 
   // Called from Java. Methods with "Locked" suffix require that the settings
   // access lock is held during their execution.
-  void Destroy(JNIEnv* env, jobject obj);
-  void PopulateWebPreferencesLocked(JNIEnv* env, jobject obj, jlong web_prefs);
-  void ResetScrollAndScaleState(JNIEnv* env, jobject obj);
-  void UpdateEverythingLocked(JNIEnv* env, jobject obj);
-  void UpdateInitialPageScaleLocked(JNIEnv* env, jobject obj);
-  void UpdateUserAgentLocked(JNIEnv* env, jobject obj);
-  void UpdateWebkitPreferencesLocked(JNIEnv* env, jobject obj);
-  void UpdateFormDataPreferencesLocked(JNIEnv* env, jobject obj);
-  void UpdateRendererPreferencesLocked(JNIEnv* env, jobject obj);
-  void UpdateOffscreenPreRasterLocked(JNIEnv* env, jobject obj);
+  void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+  void PopulateWebPreferencesLocked(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jlong web_prefs);
+  void ResetScrollAndScaleState(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+  void UpdateEverythingLocked(JNIEnv* env,
+                              const base::android::JavaParamRef<jobject>& obj);
+  void UpdateInitialPageScaleLocked(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+  void UpdateUserAgentLocked(JNIEnv* env,
+                             const base::android::JavaParamRef<jobject>& obj);
+  void UpdateWebkitPreferencesLocked(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+  void UpdateFormDataPreferencesLocked(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+  void UpdateRendererPreferencesLocked(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+  void UpdateOffscreenPreRasterLocked(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
 
   void PopulateWebPreferences(content::WebPreferences* web_prefs);
 

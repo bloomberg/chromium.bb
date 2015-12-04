@@ -194,7 +194,7 @@ bool AwAutofillClient::IsContextSecure(const GURL& form_origin) {
 }
 
 void AwAutofillClient::SuggestionSelected(JNIEnv* env,
-                                          jobject object,
+                                          const JavaParamRef<jobject>& object,
                                           jint position) {
   if (delegate_) {
     delegate_->DidAcceptSuggestion(suggestions_[position].value,

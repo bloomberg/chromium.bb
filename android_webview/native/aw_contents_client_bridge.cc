@@ -108,8 +108,10 @@ void AwContentsClientBridge::AllowCertificateError(
   }
 }
 
-void AwContentsClientBridge::ProceedSslError(JNIEnv* env, jobject obj,
-                                             jboolean proceed, jint id) {
+void AwContentsClientBridge::ProceedSslError(JNIEnv* env,
+                                             const JavaRef<jobject>& obj,
+                                             jboolean proceed,
+                                             jint id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CertErrorCallback* callback = pending_cert_error_callbacks_.Lookup(id);
   if (!callback || callback->is_null()) {
@@ -196,17 +198,17 @@ void AwContentsClientBridge::SelectClientCertificate(
 // chrome/browser/ui/android/ssl_client_certificate_request.cc
 void AwContentsClientBridge::ProvideClientCertificateResponse(
     JNIEnv* env,
-    jobject obj,
+    const JavaRef<jobject>& obj,
     int request_id,
-    jobjectArray encoded_chain_ref,
-    jobject private_key_ref) {
+    const JavaRef<jobjectArray>& encoded_chain_ref,
+    const JavaRef<jobject>& private_key_ref) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   content::ClientCertificateDelegate* delegate =
       pending_client_cert_request_delegates_.Lookup(request_id);
   DCHECK(delegate);
 
-  if (encoded_chain_ref == NULL || private_key_ref == NULL) {
+  if (encoded_chain_ref.is_null() || private_key_ref.is_null()) {
     LOG(ERROR) << "No client certificate selected";
     pending_client_cert_request_delegates_.Remove(request_id);
     delegate->ContinueWithCertificate(nullptr);
@@ -222,9 +224,9 @@ void AwContentsClientBridge::ProvideClientCertificateResponse(
 
   // Convert the encoded chain to a vector of strings.
   std::vector<std::string> encoded_chain_strings;
-  if (encoded_chain_ref) {
+  if (!encoded_chain_ref.is_null()) {
     base::android::JavaArrayOfByteArrayToStringVector(
-        env, encoded_chain_ref, &encoded_chain_strings);
+        env, encoded_chain_ref.obj(), &encoded_chain_strings);
   }
 
   std::vector<base::StringPiece> encoded_chain;
@@ -241,7 +243,7 @@ void AwContentsClientBridge::ProvideClientCertificateResponse(
 
   // Create an EVP_PKEY wrapper for the private key JNI reference.
   crypto::ScopedEVP_PKEY private_key(
-      net::android::GetOpenSSLPrivateKeyWrapper(private_key_ref));
+      net::android::GetOpenSSLPrivateKeyWrapper(private_key_ref.obj()));
   if (!private_key.get()) {
     LOG(ERROR) << "Could not create OpenSSL wrapper for private key";
     return;
@@ -341,9 +343,9 @@ void AwContentsClientBridge::RunBeforeUnloadDialog(
 }
 
 void AwContentsClientBridge::ConfirmJsResult(JNIEnv* env,
-                                             jobject,
+                                             const JavaRef<jobject>&,
                                              int id,
-                                             jstring prompt) {
+                                             const JavaRef<jstring>& prompt) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   content::JavaScriptDialogManager::DialogClosedCallback* callback =
       pending_js_dialog_callbacks_.Lookup(id);
@@ -352,14 +354,16 @@ void AwContentsClientBridge::ConfirmJsResult(JNIEnv* env,
     return;
   }
   base::string16 prompt_text;
-  if (prompt) {
+  if (!prompt.is_null()) {
     prompt_text = ConvertJavaStringToUTF16(env, prompt);
   }
   callback->Run(true, prompt_text);
   pending_js_dialog_callbacks_.Remove(id);
 }
 
-void AwContentsClientBridge::CancelJsResult(JNIEnv*, jobject, int id) {
+void AwContentsClientBridge::CancelJsResult(JNIEnv*,
+                                            const JavaRef<jobject>&,
+                                            int id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   content::JavaScriptDialogManager::DialogClosedCallback* callback =
       pending_js_dialog_callbacks_.Lookup(id);

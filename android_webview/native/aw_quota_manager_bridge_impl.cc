@@ -180,7 +180,8 @@ AwQuotaManagerBridgeImpl::AwQuotaManagerBridgeImpl(
 
 AwQuotaManagerBridgeImpl::~AwQuotaManagerBridgeImpl() {}
 
-void AwQuotaManagerBridgeImpl::Init(JNIEnv* env, jobject object) {
+void AwQuotaManagerBridgeImpl::Init(JNIEnv* env,
+                                    const JavaParamRef<jobject>& object) {
   java_ref_ = JavaObjectWeakGlobalRef(env, object);
 }
 
@@ -202,7 +203,9 @@ QuotaManager* AwQuotaManagerBridgeImpl::GetQuotaManager() const {
   return quota_manager;
 }
 
-void AwQuotaManagerBridgeImpl::DeleteAllData(JNIEnv* env, jobject object) {
+void AwQuotaManagerBridgeImpl::DeleteAllData(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& object) {
   RunOnUIThread(base::Bind(&AwQuotaManagerBridgeImpl::DeleteAllDataOnUiThread,
                            this));
 }
@@ -222,7 +225,9 @@ void AwQuotaManagerBridgeImpl::DeleteAllDataOnUiThread() {
 }
 
 void AwQuotaManagerBridgeImpl::DeleteOrigin(
-    JNIEnv* env, jobject object, jstring origin) {
+    JNIEnv* env,
+    const JavaParamRef<jobject>& object,
+    const JavaParamRef<jstring>& origin) {
   base::string16 origin_string(
       base::android::ConvertJavaStringToUTF16(env, origin));
   RunOnUIThread(base::Bind(&AwQuotaManagerBridgeImpl::DeleteOriginOnUiThread,
@@ -246,8 +251,9 @@ void AwQuotaManagerBridgeImpl::DeleteOriginOnUiThread(
       base::Bind(&base::DoNothing));
 }
 
-void AwQuotaManagerBridgeImpl::GetOrigins(
-    JNIEnv* env, jobject object, jint callback_id) {
+void AwQuotaManagerBridgeImpl::GetOrigins(JNIEnv* env,
+                                          const JavaParamRef<jobject>& object,
+                                          jint callback_id) {
   RunOnUIThread(base::Bind(&AwQuotaManagerBridgeImpl::GetOriginsOnUiThread,
                            this,
                            callback_id));
@@ -305,8 +311,9 @@ void OnUsageAndQuotaObtained(
 } // namespace
 
 void AwQuotaManagerBridgeImpl::GetUsageAndQuotaForOrigin(
-    JNIEnv* env, jobject object,
-    jstring origin,
+    JNIEnv* env,
+    const JavaParamRef<jobject>& object,
+    const JavaParamRef<jstring>& origin,
     jint callback_id,
     bool is_quota) {
   base::string16 origin_string(

@@ -93,7 +93,7 @@ AwSettings::~AwSettings() {
                                        reinterpret_cast<intptr_t>(this));
 }
 
-void AwSettings::Destroy(JNIEnv* env, jobject obj) {
+void AwSettings::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   delete this;
 }
 
@@ -108,7 +108,8 @@ AwRenderViewHostExt* AwSettings::GetAwRenderViewHostExt() {
   return contents->render_view_host_ext();
 }
 
-void AwSettings::ResetScrollAndScaleState(JNIEnv* env, jobject obj) {
+void AwSettings::ResetScrollAndScaleState(JNIEnv* env,
+                                          const JavaParamRef<jobject>& obj) {
   AwRenderViewHostExt* rvhe = GetAwRenderViewHostExt();
   if (!rvhe) return;
   rvhe->ResetScrollAndScaleState();
@@ -124,7 +125,8 @@ void AwSettings::UpdateEverything() {
   Java_AwSettings_updateEverything(env, obj);
 }
 
-void AwSettings::UpdateEverythingLocked(JNIEnv* env, jobject obj) {
+void AwSettings::UpdateEverythingLocked(JNIEnv* env,
+                                        const JavaParamRef<jobject>& obj) {
   UpdateInitialPageScaleLocked(env, obj);
   UpdateWebkitPreferencesLocked(env, obj);
   UpdateUserAgentLocked(env, obj);
@@ -134,7 +136,8 @@ void AwSettings::UpdateEverythingLocked(JNIEnv* env, jobject obj) {
   UpdateOffscreenPreRasterLocked(env, obj);
 }
 
-void AwSettings::UpdateUserAgentLocked(JNIEnv* env, jobject obj) {
+void AwSettings::UpdateUserAgentLocked(JNIEnv* env,
+                                       const JavaParamRef<jobject>& obj) {
   if (!web_contents()) return;
 
   ScopedJavaLocalRef<jstring> str =
@@ -152,7 +155,9 @@ void AwSettings::UpdateUserAgentLocked(JNIEnv* env, jobject obj) {
     controller.GetEntryAtIndex(i)->SetIsOverridingUserAgent(ua_overidden);
 }
 
-void AwSettings::UpdateWebkitPreferencesLocked(JNIEnv* env, jobject obj) {
+void AwSettings::UpdateWebkitPreferencesLocked(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   if (!web_contents()) return;
   AwRenderViewHostExt* render_view_host_ext = GetAwRenderViewHostExt();
   if (!render_view_host_ext) return;
@@ -163,7 +168,9 @@ void AwSettings::UpdateWebkitPreferencesLocked(JNIEnv* env, jobject obj) {
   render_view_host->OnWebkitPreferencesChanged();
 }
 
-void AwSettings::UpdateInitialPageScaleLocked(JNIEnv* env, jobject obj) {
+void AwSettings::UpdateInitialPageScaleLocked(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   AwRenderViewHostExt* rvhe = GetAwRenderViewHostExt();
   if (!rvhe) return;
 
@@ -178,7 +185,9 @@ void AwSettings::UpdateInitialPageScaleLocked(JNIEnv* env, jobject obj) {
   }
 }
 
-void AwSettings::UpdateFormDataPreferencesLocked(JNIEnv* env, jobject obj) {
+void AwSettings::UpdateFormDataPreferencesLocked(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   if (!web_contents()) return;
   AwContents* contents = AwContents::FromWebContents(web_contents());
   if (!contents) return;
@@ -186,7 +195,9 @@ void AwSettings::UpdateFormDataPreferencesLocked(JNIEnv* env, jobject obj) {
   contents->SetSaveFormData(Java_AwSettings_getSaveFormDataLocked(env, obj));
 }
 
-void AwSettings::UpdateRendererPreferencesLocked(JNIEnv* env, jobject obj) {
+void AwSettings::UpdateRendererPreferencesLocked(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   if (!web_contents()) return;
 
   bool update_prefs = false;
@@ -215,7 +226,9 @@ void AwSettings::UpdateRendererPreferencesLocked(JNIEnv* env, jobject obj) {
     host->SyncRendererPrefs();
 }
 
-void AwSettings::UpdateOffscreenPreRasterLocked(JNIEnv* env, jobject obj) {
+void AwSettings::UpdateOffscreenPreRasterLocked(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   AwContents* contents = AwContents::FromWebContents(web_contents());
   if (contents) {
     contents->SetOffscreenPreRaster(
@@ -253,8 +266,9 @@ void AwSettings::PopulateWebPreferences(WebPreferences* web_prefs) {
       env, obj, reinterpret_cast<jlong>(web_prefs));
 }
 
-void AwSettings::PopulateWebPreferencesLocked(
-    JNIEnv* env, jobject obj, jlong web_prefs_ptr) {
+void AwSettings::PopulateWebPreferencesLocked(JNIEnv* env,
+                                              const JavaParamRef<jobject>& obj,
+                                              jlong web_prefs_ptr) {
   AwRenderViewHostExt* render_view_host_ext = GetAwRenderViewHostExt();
   if (!render_view_host_ext) return;
 

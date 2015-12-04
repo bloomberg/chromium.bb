@@ -38,9 +38,9 @@ AwHttpAuthHandler:: ~AwHttpAuthHandler() {
 }
 
 void AwHttpAuthHandler::Proceed(JNIEnv* env,
-                                jobject obj,
-                                jstring user,
-                                jstring password) {
+                                const JavaParamRef<jobject>& obj,
+                                const JavaParamRef<jstring>& user,
+                                const JavaParamRef<jstring>& password) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (login_delegate_.get()) {
     login_delegate_->Proceed(ConvertJavaStringToUTF16(env, user),
@@ -49,7 +49,7 @@ void AwHttpAuthHandler::Proceed(JNIEnv* env,
   }
 }
 
-void AwHttpAuthHandler::Cancel(JNIEnv* env, jobject obj) {
+void AwHttpAuthHandler::Cancel(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (login_delegate_.get()) {
     login_delegate_->Cancel();

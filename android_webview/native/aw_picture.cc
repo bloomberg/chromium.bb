@@ -18,19 +18,21 @@ AwPicture::AwPicture(skia::RefPtr<SkPicture> picture)
 
 AwPicture::~AwPicture() {}
 
-void AwPicture::Destroy(JNIEnv* env, jobject obj) {
+void AwPicture::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   delete this;
 }
 
-jint AwPicture::GetWidth(JNIEnv* env, jobject obj) {
+jint AwPicture::GetWidth(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   return picture_->cullRect().roundOut().width();
 }
 
-jint AwPicture::GetHeight(JNIEnv* env, jobject obj) {
+jint AwPicture::GetHeight(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   return picture_->cullRect().roundOut().height();
 }
 
-void AwPicture::Draw(JNIEnv* env, jobject obj, jobject canvas) {
+void AwPicture::Draw(JNIEnv* env,
+                     const JavaParamRef<jobject>& obj,
+                     const JavaParamRef<jobject>& canvas) {
   const SkIRect bounds = picture_->cullRect().roundOut();
   scoped_ptr<SoftwareCanvasHolder> canvas_holder = SoftwareCanvasHolder::Create(
       canvas, gfx::Vector2d(), gfx::Size(bounds.width(), bounds.height()),

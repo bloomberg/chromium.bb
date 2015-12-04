@@ -46,7 +46,7 @@ AwPermissionRequest::~AwPermissionRequest() {
 }
 
 void AwPermissionRequest::OnAccept(JNIEnv* env,
-                                   jobject jcaller,
+                                   const JavaParamRef<jobject>& jcaller,
                                    jboolean accept) {
   OnAcceptInternal(accept);
 }
@@ -66,7 +66,8 @@ void AwPermissionRequest::DeleteThis() {
                                          j_request.obj());
 }
 
-void AwPermissionRequest::Destroy(JNIEnv* env, jobject obj) {
+void AwPermissionRequest::Destroy(JNIEnv* env,
+                                  const JavaParamRef<jobject>& obj) {
   delete this;
 }
 
