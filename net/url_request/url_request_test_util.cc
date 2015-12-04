@@ -276,6 +276,11 @@ void TestDelegate::OnReadCompleted(URLRequest* request, int bytes_read) {
   // It doesn't make sense for the request to have IO pending at this point.
   DCHECK(!request->status().is_io_pending());
 
+  // If the request was cancelled in a redirect, it should not signal
+  // OnReadCompleted. Note that |cancel_in_rs_| may be true due to
+  // https://crbug.com/564848.
+  EXPECT_FALSE(cancel_in_rr_);
+
   if (response_started_count_ == 0)
     received_data_before_response_ = true;
 

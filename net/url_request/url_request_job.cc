@@ -436,21 +436,22 @@ void URLRequestJob::NotifyHeadersComplete() {
     bool defer_redirect = false;
     request_->NotifyReceivedRedirect(redirect_info, &defer_redirect);
 
-    // Ensure that the request wasn't detached or destroyed in
-    // NotifyReceivedRedirect
-    if (!request_ || !request_->has_delegate())
-      return;
-
-    // If we were not cancelled, then maybe follow the redirect.
-    if (request_->status().is_success()) {
-      if (defer_redirect) {
-        deferred_redirect_info_ = redirect_info;
-      } else {
-        FollowRedirect(redirect_info);
-      }
+    // Ensure that the request wasn't detached, destroyed, or canceled in
+    // NotifyReceivedRedirect.
+    if (!request_ || !request_->has_delegate() ||
+        !request_->status().is_success()) {
       return;
     }
-  } else if (NeedsAuth()) {
+
+    if (defer_redirect) {
+      deferred_redirect_info_ = redirect_info;
+    } else {
+      FollowRedirect(redirect_info);
+    }
+    return;
+  }
+
+  if (NeedsAuth()) {
     scoped_refptr<AuthChallengeInfo> auth_info;
     GetAuthChallengeInfo(&auth_info);
 
