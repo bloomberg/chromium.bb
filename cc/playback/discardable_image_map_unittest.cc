@@ -21,10 +21,10 @@ namespace cc {
 namespace {
 
 struct PositionDrawImage {
-  PositionDrawImage(const SkImage* image, const gfx::RectF& image_rect)
+  PositionDrawImage(const SkImage* image, const gfx::Rect& image_rect)
       : image(image), image_rect(image_rect) {}
   const SkImage* image;
-  gfx::RectF image_rect;
+  gfx::Rect image_rect;
 };
 
 }  // namespace
@@ -38,7 +38,7 @@ class DiscardableImageMapTest : public testing::Test {
     image_map.GetDiscardableImagesInRect(rect, 1.f, &draw_images);
 
     std::vector<size_t> indices;
-    image_map.images_rtree_.Search(gfx::RectF(rect), &indices);
+    image_map.images_rtree_.Search(rect, &indices);
     std::vector<PositionDrawImage> position_draw_images;
     for (size_t index : indices) {
       position_draw_images.push_back(
@@ -104,7 +104,7 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectTest) {
         EXPECT_EQ(1u, images.size()) << x << " " << y;
         EXPECT_TRUE(images[0].image == discardable_image[y][x].get())
             << x << " " << y;
-        EXPECT_EQ(gfx::RectF(x * 512 + 6, y * 512 + 6, 500, 500),
+        EXPECT_EQ(gfx::Rect(x * 512 + 6, y * 512 + 6, 500, 500),
                   images[0].image_rect);
       } else {
         EXPECT_EQ(0u, images.size()) << x << " " << y;
@@ -117,14 +117,14 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectTest) {
       GetDiscardableImagesInRect(image_map, gfx::Rect(512, 512, 2048, 2048));
   EXPECT_EQ(4u, images.size());
   EXPECT_TRUE(images[0].image == discardable_image[1][2].get());
-  EXPECT_EQ(gfx::RectF(2 * 512 + 6, 512 + 6, 500, 500), images[0].image_rect);
+  EXPECT_EQ(gfx::Rect(2 * 512 + 6, 512 + 6, 500, 500), images[0].image_rect);
   EXPECT_TRUE(images[1].image == discardable_image[2][1].get());
-  EXPECT_EQ(gfx::RectF(512 + 6, 2 * 512 + 6, 500, 500), images[1].image_rect);
+  EXPECT_EQ(gfx::Rect(512 + 6, 2 * 512 + 6, 500, 500), images[1].image_rect);
   EXPECT_TRUE(images[2].image == discardable_image[2][3].get());
-  EXPECT_EQ(gfx::RectF(3 * 512 + 6, 2 * 512 + 6, 500, 500),
+  EXPECT_EQ(gfx::Rect(3 * 512 + 6, 2 * 512 + 6, 500, 500),
             images[2].image_rect);
   EXPECT_TRUE(images[3].image == discardable_image[3][2].get());
-  EXPECT_EQ(gfx::RectF(2 * 512 + 6, 3 * 512 + 6, 500, 500),
+  EXPECT_EQ(gfx::Rect(2 * 512 + 6, 3 * 512 + 6, 500, 500),
             images[3].image_rect);
 }
 
@@ -181,7 +181,7 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectNonZeroLayer) {
         EXPECT_EQ(1u, images.size()) << x << " " << y;
         EXPECT_TRUE(images[0].image == discardable_image[y][x].get())
             << x << " " << y;
-        EXPECT_EQ(gfx::RectF(1024 + x * 512 + 6, y * 512 + 6, 500, 500),
+        EXPECT_EQ(gfx::Rect(1024 + x * 512 + 6, y * 512 + 6, 500, 500),
                   images[0].image_rect);
       } else {
         EXPECT_EQ(0u, images.size()) << x << " " << y;
@@ -194,16 +194,16 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectNonZeroLayer) {
         image_map, gfx::Rect(1024 + 512, 512, 2048, 2048));
     EXPECT_EQ(4u, images.size());
     EXPECT_TRUE(images[0].image == discardable_image[1][2].get());
-    EXPECT_EQ(gfx::RectF(1024 + 2 * 512 + 6, 512 + 6, 500, 500),
+    EXPECT_EQ(gfx::Rect(1024 + 2 * 512 + 6, 512 + 6, 500, 500),
               images[0].image_rect);
     EXPECT_TRUE(images[1].image == discardable_image[2][1].get());
-    EXPECT_EQ(gfx::RectF(1024 + 512 + 6, 2 * 512 + 6, 500, 500),
+    EXPECT_EQ(gfx::Rect(1024 + 512 + 6, 2 * 512 + 6, 500, 500),
               images[1].image_rect);
     EXPECT_TRUE(images[2].image == discardable_image[2][3].get());
-    EXPECT_EQ(gfx::RectF(1024 + 3 * 512 + 6, 2 * 512 + 6, 500, 500),
+    EXPECT_EQ(gfx::Rect(1024 + 3 * 512 + 6, 2 * 512 + 6, 500, 500),
               images[2].image_rect);
     EXPECT_TRUE(images[3].image == discardable_image[3][2].get());
-    EXPECT_EQ(gfx::RectF(1024 + 2 * 512 + 6, 3 * 512 + 6, 500, 500),
+    EXPECT_EQ(gfx::Rect(1024 + 2 * 512 + 6, 3 * 512 + 6, 500, 500),
               images[3].image_rect);
   }
 
@@ -281,7 +281,7 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectOnePixelQuery) {
         EXPECT_EQ(1u, images.size()) << x << " " << y;
         EXPECT_TRUE(images[0].image == discardable_image[y][x].get())
             << x << " " << y;
-        EXPECT_EQ(gfx::RectF(x * 512 + 6, y * 512 + 6, 500, 500),
+        EXPECT_EQ(gfx::Rect(x * 512 + 6, y * 512 + 6, 500, 500),
                   images[0].image_rect);
       } else {
         EXPECT_EQ(0u, images.size()) << x << " " << y;
@@ -319,7 +319,7 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectMassiveImage) {
       GetDiscardableImagesInRect(image_map, gfx::Rect(0, 0, 1, 1));
   EXPECT_EQ(1u, images.size());
   EXPECT_TRUE(images[0].image == discardable_image.get());
-  EXPECT_EQ(gfx::RectF(0, 0, 1 << 25, 1 << 25), images[0].image_rect);
+  EXPECT_EQ(gfx::Rect(0, 0, 1 << 25, 1 << 25), images[0].image_rect);
 }
 
 }  // namespace cc

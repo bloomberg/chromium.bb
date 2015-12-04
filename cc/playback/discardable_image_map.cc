@@ -39,7 +39,7 @@ class DiscardableImagesMetadataCanvas : public SkNWayCanvas {
   DiscardableImagesMetadataCanvas(
       int width,
       int height,
-      std::vector<std::pair<DrawImage, gfx::RectF>>* image_set)
+      std::vector<std::pair<DrawImage, gfx::Rect>>* image_set)
       : SkNWayCanvas(width, height),
         image_set_(image_set),
         canvas_bounds_(SkRect::MakeIWH(width, height)) {}
@@ -99,11 +99,11 @@ class DiscardableImagesMetadataCanvas : public SkNWayCanvas {
       }
       image_set_->push_back(
           std::make_pair(DrawImage(image, ExtractScale(matrix), filter_quality),
-                         gfx::SkRectToRectF(rect)));
+                         gfx::ToEnclosingRect(gfx::SkRectToRectF(rect))));
     }
   }
 
-  std::vector<std::pair<DrawImage, gfx::RectF>>* image_set_;
+  std::vector<std::pair<DrawImage, gfx::Rect>>* image_set_;
   const SkRect canvas_bounds_;
 };
 
@@ -121,8 +121,10 @@ scoped_ptr<SkCanvas> DiscardableImageMap::BeginGeneratingMetadata(
 }
 
 void DiscardableImageMap::EndGeneratingMetadata() {
-  images_rtree_.Build(
-      all_images_, [](const PositionDrawImage& image) { return image.second; });
+  images_rtree_.Build(all_images_,
+                      [](const std::pair<DrawImage, gfx::Rect>& image) {
+                        return image.second;
+                      });
 }
 
 void DiscardableImageMap::GetDiscardableImagesInRect(
@@ -130,7 +132,7 @@ void DiscardableImageMap::GetDiscardableImagesInRect(
     float raster_scale,
     std::vector<DrawImage>* images) const {
   std::vector<size_t> indices;
-  images_rtree_.Search(gfx::RectF(rect), &indices);
+  images_rtree_.Search(rect, &indices);
   for (size_t index : indices)
     images->push_back(all_images_[index].first.ApplyScale(raster_scale));
 }

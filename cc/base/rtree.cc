@@ -89,14 +89,13 @@ RTree::Branch RTree::BuildRecursive(std::vector<Branch>* branches, int level) {
   return BuildRecursive(branches, level + 1);
 }
 
-void RTree::Search(const gfx::RectF& query,
-                   std::vector<size_t>* results) const {
+void RTree::Search(const gfx::Rect& query, std::vector<size_t>* results) const {
   if (num_data_elements_ > 0 && query.Intersects(root_.bounds))
     SearchRecursive(root_.subtree, query, results);
 }
 
 void RTree::SearchRecursive(Node* node,
-                            const gfx::RectF& query,
+                            const gfx::Rect& query,
                             std::vector<size_t>* results) const {
   for (uint16_t i = 0; i < node->num_children; ++i) {
     if (query.Intersects(node->children[i].bounds)) {

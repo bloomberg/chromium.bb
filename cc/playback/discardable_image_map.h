@@ -49,12 +49,11 @@ class CC_EXPORT DiscardableImageMap {
  private:
   friend class ScopedMetadataGenerator;
   friend class DiscardableImageMapTest;
-  using PositionDrawImage = std::pair<DrawImage, gfx::RectF>;
 
   scoped_ptr<SkCanvas> BeginGeneratingMetadata(const gfx::Size& bounds);
   void EndGeneratingMetadata();
 
-  std::vector<PositionDrawImage> all_images_;
+  std::vector<std::pair<DrawImage, gfx::Rect>> all_images_;
   RTree images_rtree_;
 };
 
