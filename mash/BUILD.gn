@@ -9,8 +9,16 @@ group("all") {
   testonly = true
 
   deps = [
-    ":mash_unittests",
+    ":tests",
     "//mash/example",
+  ]
+}
+
+group("tests") {
+  testonly = true
+
+  deps = [
+    ":mash_unittests",
     "//mash/wm:tests",
   ]
 }
