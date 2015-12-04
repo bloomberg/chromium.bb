@@ -167,7 +167,18 @@ void ChromeClient::setToolTip(const HitTestResult& result)
         }
     }
 
+    if (m_lastToolTipPoint == result.hitTestLocation().point() && m_lastToolTipText == toolTip)
+        return;
+    m_lastToolTipPoint = result.hitTestLocation().point();
+    m_lastToolTipText = toolTip;
     setToolTip(toolTip, toolTipDirection);
+}
+
+void ChromeClient::clearToolTip()
+{
+    // Do not check m_lastToolTip* and do not update them intentionally.
+    // We don't want to show tooltips with same content after clearToolTip().
+    setToolTip(String(), LTR);
 }
 
 void ChromeClient::print(LocalFrame* frame)

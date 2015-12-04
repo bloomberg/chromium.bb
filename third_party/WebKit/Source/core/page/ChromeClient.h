@@ -22,6 +22,7 @@
 #ifndef ChromeClient_h
 #define ChromeClient_h
 
+#include "base/gtest_prod_util.h"
 #include "core/CoreExport.h"
 #include "core/dom/AXObjectCache.h"
 #include "core/frame/ConsoleTypes.h"
@@ -155,6 +156,7 @@ public:
 
     void mouseDidMoveOverElement(const HitTestResult&);
     virtual void setToolTip(const String&, TextDirection) = 0;
+    void clearToolTip();
 
     void print(LocalFrame*);
 
@@ -270,6 +272,11 @@ protected:
 private:
     bool canOpenModalIfDuringPageDismissal(Frame* mainFrame, DialogType, const String& message);
     void setToolTip(const HitTestResult&);
+
+    LayoutPoint m_lastToolTipPoint;
+    String m_lastToolTipText;
+
+    FRIEND_TEST_ALL_PREFIXES(ChromeClientTest, SetToolTipFlood);
 };
 
 } // namespace blink
