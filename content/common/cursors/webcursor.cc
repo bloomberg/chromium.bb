@@ -112,8 +112,12 @@ bool WebCursor::Deserialize(base::PickleIterator* iter) {
     if (size_x > 0 && size_y > 0) {
       // The * 4 is because the expected format is an array of RGBA pixel
       // values.
-      if (size_x * size_y * 4 > data_len)
+      if (size_x * size_y * 4 != data_len) {
+        LOG(WARNING) << "WebCursor's data length and image size mismatch: "
+                     << size_x << "x" << size_y << "x4 != "
+                     << data_len;
         return false;
+      }
 
       hotspot_.set_x(hotspot_x);
       hotspot_.set_y(hotspot_y);
