@@ -128,6 +128,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   bool IsGpuChannelLost() override;
   CommandBufferNamespace GetNamespaceID() const override;
   uint64_t GetCommandBufferID() const override;
+  int32_t GetExtraCommandBufferData() const override;
   uint64_t GenerateFenceSyncRelease() override;
   bool IsFenceSyncRelease(uint64_t release) override;
   bool IsFenceSyncFlushed(uint64_t release) override;

@@ -505,6 +505,10 @@ uint64_t GLManager::GetCommandBufferID() const {
   return command_buffer_id_;
 }
 
+int32_t GLManager::GetExtraCommandBufferData() const {
+  return 0;
+}
+
 uint64_t GLManager::GenerateFenceSyncRelease() {
   return next_fence_sync_release_++;
 }

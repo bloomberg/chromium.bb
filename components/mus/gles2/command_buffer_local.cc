@@ -228,6 +228,10 @@ uint64_t CommandBufferLocal::GetCommandBufferID() const {
   return command_buffer_id_;
 }
 
+int32_t CommandBufferLocal::GetExtraCommandBufferData() const {
+  return 0;
+}
+
 uint64_t CommandBufferLocal::GenerateFenceSyncRelease() {
   return next_fence_sync_release_++;
 }

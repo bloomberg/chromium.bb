@@ -547,8 +547,8 @@ gpu::SyncToken TypeConverter<gpu::SyncToken, SyncTokenPtr>::Convert(
     const SyncTokenPtr& input) {
   const gpu::CommandBufferNamespace namespace_id =
       static_cast<gpu::CommandBufferNamespace>(input->namespace_id);
-  gpu::SyncToken sync_token(namespace_id, input->command_buffer_id,
-                            input->release_count);
+  gpu::SyncToken sync_token(namespace_id, 0,
+                            input->command_buffer_id, input->release_count);
   if (input->verified_flush)
     sync_token.SetVerifyFlush();
 
