@@ -255,7 +255,7 @@ def main():
   if args.output_directory:
     constants.SetOutputDirectory(args.output_directory)
 
-  devil_chromium.Initialize(output_directory=constants.GetOutputDirectory())
+  devil_chromium.Initialize(output_directory=constants.GetOutDirectory())
 
   if args.device:
     # Retries are annoying when commands fail for legitimate reasons. Might want
