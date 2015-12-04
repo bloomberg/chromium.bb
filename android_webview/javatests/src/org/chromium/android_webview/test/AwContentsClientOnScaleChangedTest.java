@@ -37,12 +37,12 @@ public class AwContentsClientOnScaleChangedTest extends AwTestBase {
                                 + " minimum-scale=0.5, maximum-scale=2, user-scalable=yes\" />",
                         "testScaleUp test page body"),
                 "text/html", false);
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return mAwContents.canZoomIn();
             }
-        }));
+        });
         int callCount = mContentsClient.getOnScaleChangedHelper().getCallCount();
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override

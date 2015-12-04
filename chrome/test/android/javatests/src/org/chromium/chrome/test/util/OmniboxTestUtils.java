@@ -229,9 +229,9 @@ public class OmniboxTestUtils {
             throws InterruptedException {
         for (int i = 0; i < times; i++) {
             toggleUrlBarFocus(urlBar, true);
-            Assert.assertTrue(waitForFocusAndKeyboardActive(urlBar, true));
+            waitForFocusAndKeyboardActive(urlBar, true);
             toggleUrlBarFocus(urlBar, false);
-            Assert.assertTrue(waitForFocusAndKeyboardActive(urlBar, false));
+            waitForFocusAndKeyboardActive(urlBar, false);
         }
     }
 
@@ -284,11 +284,10 @@ public class OmniboxTestUtils {
      *
      * @param urlBar The UrlBar whose focus is being inspected.
      * @param active Whether the UrlBar is expected to have focus or not.
-     * @return Whether the UrlBar had the requested focus state.
      */
-    public static boolean waitForFocusAndKeyboardActive(final UrlBar urlBar, final boolean active)
+    public static void waitForFocusAndKeyboardActive(final UrlBar urlBar, final boolean active)
             throws InterruptedException {
-        return CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return (doesUrlBarHaveFocus(urlBar) == active)
@@ -301,11 +300,10 @@ public class OmniboxTestUtils {
      * Waits for a non-empty list of omnibox suggestions is shown.
      *
      * @param locationBar The LocationBar who owns the suggestions.
-     * @return Whether the suggestions were shown.
      */
-    public static boolean waitForOmniboxSuggestions(final LocationBarLayout locationBar)
+    public static void waitForOmniboxSuggestions(final LocationBarLayout locationBar)
             throws InterruptedException {
-        return CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 LocationBarLayout.OmniboxSuggestionsList suggestionsList =
@@ -321,12 +319,11 @@ public class OmniboxTestUtils {
      * Waits for a suggestion list to be shown with a specified number of entries.
      * @param locationBar The LocationBar who owns the suggestions.
      * @param expectedCount The number of suggestions expected to be shown.
-     * @return Whether the suggestions were shown.
      */
-    public static boolean waitForOmniboxSuggestions(
+    public static void waitForOmniboxSuggestions(
             final LocationBarLayout locationBar, final int expectedCount)
             throws InterruptedException {
-        return CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 LocationBarLayout.OmniboxSuggestionsList suggestionsList =

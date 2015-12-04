@@ -233,19 +233,18 @@ public class NavigationPopupTest extends ChromeActivityTestCaseBase<ChromeActivi
             }
         });
 
-        assertTrue("All favicons did not get updated.",
-                CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
-                    @Override
-                    public boolean isSatisfied() {
-                        NavigationHistory history = controller.mHistory;
-                        for (int i = 0; i < history.getEntryCount(); i++) {
-                            if (history.getEntryAtIndex(i).getFavicon() == null) {
-                                return false;
-                            }
-                        }
-                        return true;
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria("All favicons did not get updated.") {
+            @Override
+            public boolean isSatisfied() {
+                NavigationHistory history = controller.mHistory;
+                for (int i = 0; i < history.getEntryCount(); i++) {
+                    if (history.getEntryAtIndex(i).getFavicon() == null) {
+                        return false;
                     }
-                }));
+                }
+                return true;
+            }
+        });
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override

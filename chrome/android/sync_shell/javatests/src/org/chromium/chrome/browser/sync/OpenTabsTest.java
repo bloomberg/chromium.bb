@@ -245,7 +245,9 @@ public class OpenTabsTest extends SyncTestBase {
             throws InterruptedException {
         final List<String> urlList = new ArrayList<String>(urls.length);
         for (String url : urls) urlList.add(url);
-        boolean success = CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(new Criteria(
+                "Expected local open tabs for client " + clientName + ": "
+                        + Arrays.toString(urls)) {
             @Override
             public boolean isSatisfied() {
                 try {
@@ -255,13 +257,12 @@ public class OpenTabsTest extends SyncTestBase {
                 }
             }
         }, SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);
-        assertTrue("Expected local open tabs for client " + clientName + ": "
-                + Arrays.toString(urls), success);
     }
 
     private void waitForServerTabs(final String... urls)
             throws InterruptedException {
-        boolean success = CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(new Criteria(
+                "Expected server open tabs: " + Arrays.toString(urls)) {
             @Override
             public boolean isSatisfied() {
                 try {
@@ -271,7 +272,6 @@ public class OpenTabsTest extends SyncTestBase {
                 }
             }
         }, SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);
-        assertTrue("Expected server open tabs: " + Arrays.toString(urls), success);
     }
 
     private String getClientName() throws JSONException {

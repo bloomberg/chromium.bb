@@ -7,7 +7,7 @@ package org.chromium.content.browser.test.util;
 /**
  * Criteria used to know when an orientation change happens.
  */
-public class OrientationChangeObserverCriteria implements Criteria {
+public class OrientationChangeObserverCriteria extends Criteria {
 
     private final MockOrientationObserver mObserver;
     private final int mTarget;

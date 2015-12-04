@@ -19,11 +19,10 @@ public class ApplicationUtils {
      * instrumented.
      *
      * @param instrumentation The test instrumentation.
-     * @return Whether the library dependencies were initialized.
      */
-    public static boolean waitForLibraryDependencies(final Instrumentation instrumentation)
+    public static void waitForLibraryDependencies(final Instrumentation instrumentation)
             throws InterruptedException {
-        return CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 Context context = instrumentation.getTargetContext();

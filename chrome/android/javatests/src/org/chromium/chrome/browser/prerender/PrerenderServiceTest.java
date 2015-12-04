@@ -146,15 +146,16 @@ public class PrerenderServiceTest extends
                             }
                         });
         // TODO(yusufo): We should be using the NotificationCenter for checking the page loading.
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return chromeActivity.getActivityTab() != null
                         && chromeActivity.getActivityTab().isLoadingAndRenderingDone();
             }
-        }));
+        });
         assertTrue(chromeActivity.getActivityTab().getUrl().equals(url));
-        ThreadUtils.runOnUiThreadBlocking(new Runnable(){
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
             public void run() {
                 assertFalse(WarmupManager.getInstance().hasAnyPrerenderedUrl());
             }
@@ -162,11 +163,11 @@ public class PrerenderServiceTest extends
     }
 
     private void assertServiceHasPrerenderedUrl(final String url) throws InterruptedException {
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return WarmupManager.getInstance().hasPrerenderedUrl(url);
             }
-        }));
+        });
     }
 }

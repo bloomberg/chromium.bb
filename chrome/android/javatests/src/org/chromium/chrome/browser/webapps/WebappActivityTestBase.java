@@ -126,7 +126,7 @@ public abstract class WebappActivityTestBase extends ChromeActivityTestCaseBase<
     protected void waitUntilIdle() {
         getInstrumentation().waitForIdleSync();
         try {
-            assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+            CriteriaHelper.pollForCriteria(new Criteria() {
                     @Override
                     public boolean isSatisfied() {
                         return getActivity().getActivityTab() != null
@@ -134,7 +134,7 @@ public abstract class WebappActivityTestBase extends ChromeActivityTestCaseBase<
                     }
                 },
                 MultiActivityTestBase.DEFAULT_MAX_TIME_TO_POLL_FOR_ACTIVITY_MS,
-                CriteriaHelper.DEFAULT_POLLING_INTERVAL));
+                CriteriaHelper.DEFAULT_POLLING_INTERVAL);
         } catch (InterruptedException exception) {
             fail();
         }
@@ -184,15 +184,14 @@ public abstract class WebappActivityTestBase extends ChromeActivityTestCaseBase<
     }
 
     /**
-     * Waits for the splash screen to be hidden and return whether it was hidden
-     * (true) or if it timed out (false).
+     * Waits for the splash screen to be hidden.
      */
-    protected boolean waitUntilSplashscreenHides() throws InterruptedException {
-        return CriteriaHelper.pollForCriteria(new Criteria() {
-                @Override
-                public boolean isSatisfied() {
-                    return !getActivity().isSplashScreenVisibleForTests();
-                }
-            });
+    protected void waitUntilSplashscreenHides() throws InterruptedException {
+        CriteriaHelper.pollForCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return !getActivity().isSplashScreenVisibleForTests();
+            }
+        });
     }
 }

@@ -26,12 +26,13 @@ public class ActivityUtils {
     /**
      * Waits for a particular fragment to be present on a given activity.
      */
-    private static class FragmentPresentCriteria implements Criteria {
+    private static class FragmentPresentCriteria extends Criteria {
 
         private final Activity mActivity;
         private final String mFragmentTag;
 
         public FragmentPresentCriteria(Activity activity, String fragmentTag) {
+            super(String.format("Could not locate the fragment with tag '%s'", fragmentTag));
             mActivity = activity;
             mFragmentTag = fragmentTag;
         }
@@ -96,9 +97,8 @@ public class ActivityUtils {
     @SuppressWarnings({"unchecked", "TypeParameterUnusedInFormals"})
     public static <T> T waitForFragment(Activity activity, String fragmentTag)
             throws InterruptedException {
-        Assert.assertTrue(String.format("Could not locate the fragment with tag '%s'", fragmentTag),
-                CriteriaHelper.pollForCriteria(new FragmentPresentCriteria(activity, fragmentTag),
-                        ACTIVITY_START_TIMEOUT_MS, CONDITION_POLL_INTERVAL_MS));
+        CriteriaHelper.pollForCriteria(new FragmentPresentCriteria(activity, fragmentTag),
+                ACTIVITY_START_TIMEOUT_MS, CONDITION_POLL_INTERVAL_MS);
         return (T) activity.getFragmentManager().findFragmentByTag(fragmentTag);
     }
 
@@ -117,15 +117,12 @@ public class ActivityUtils {
     public static <T extends Fragment> T waitForFragmentToAttach(
             final Preferences activity, final Class<T> fragmentClass)
             throws InterruptedException {
-        boolean isFragmentAttached = CriteriaHelper.pollForCriteria(
-                new Criteria() {
-                    @Override
-                    public boolean isSatisfied() {
-                        return fragmentClass.isInstance(activity.getFragmentForTest());
-                    }
-                },
-                ACTIVITY_START_TIMEOUT_MS, CONDITION_POLL_INTERVAL_MS);
-        Assert.assertTrue("Could not find fragment " + fragmentClass, isFragmentAttached);
+        CriteriaHelper.pollForCriteria(new Criteria("Could not find fragment " + fragmentClass) {
+            @Override
+            public boolean isSatisfied() {
+                return fragmentClass.isInstance(activity.getFragmentForTest());
+            }
+        }, ACTIVITY_START_TIMEOUT_MS, CONDITION_POLL_INTERVAL_MS);
         return (T) activity.getFragmentForTest();
     }
 }

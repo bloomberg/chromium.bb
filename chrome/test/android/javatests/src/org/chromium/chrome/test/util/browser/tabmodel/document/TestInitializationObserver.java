@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.test.util.browser.tabmodel.document;
 
-import static junit.framework.Assert.assertTrue;
-
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModel;
 import org.chromium.content.browser.test.util.Criteria;
@@ -52,11 +50,11 @@ public class TestInitializationObserver extends DocumentTabModel.InitializationO
             }
         });
 
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return observer.mIsReady;
             }
-        }));
+        });
     }
 }

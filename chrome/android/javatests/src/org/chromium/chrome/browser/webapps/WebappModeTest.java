@@ -64,8 +64,8 @@ public class WebappModeTest extends MultiActivityTestBase {
             + "IWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3wQIFB4cxOfiSQAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdG"
             + "ggR0lNUFeBDhcAAAAMSURBVAjXY2AUawEAALcAnI/TkI8AAAAASUVORK5CYII=";
 
-    private boolean isNumberOfRunningActivitiesCorrect(final int numActivities) throws Exception {
-        return CriteriaHelper.pollForCriteria(new Criteria() {
+    private void isNumberOfRunningActivitiesCorrect(final int numActivities) throws Exception {
+        CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 Context context = getInstrumentation().getTargetContext();
@@ -126,29 +126,29 @@ public class WebappModeTest extends MultiActivityTestBase {
     public void testWebappLaunches() throws Exception {
         final Activity firstActivity =
                 startWebappActivity(WEBAPP_1_ID, WEBAPP_1_URL, WEBAPP_1_TITLE, WEBAPP_ICON);
-        assertTrue(isNumberOfRunningActivitiesCorrect(1));
+        isNumberOfRunningActivitiesCorrect(1);
 
         // Firing a different Intent should start a new WebappActivity instance.
         fireWebappIntent(WEBAPP_2_ID, WEBAPP_2_URL, WEBAPP_2_TITLE, WEBAPP_ICON, true);
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 Activity lastActivity = ApplicationStatus.getLastTrackedFocusedActivity();
                 return isWebappActivityReady(lastActivity) && lastActivity != firstActivity;
             }
-        }));
-        assertTrue(isNumberOfRunningActivitiesCorrect(2));
+        });
+        isNumberOfRunningActivitiesCorrect(2);
 
         // Firing the first Intent should bring back the first WebappActivity instance.
         fireWebappIntent(WEBAPP_1_ID, WEBAPP_1_URL, WEBAPP_1_TITLE, WEBAPP_ICON, true);
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 Activity lastActivity = ApplicationStatus.getLastTrackedFocusedActivity();
                 return isWebappActivityReady(lastActivity) && lastActivity == firstActivity;
             }
-        }));
-        assertTrue(isNumberOfRunningActivitiesCorrect(2));
+        });
+        isNumberOfRunningActivitiesCorrect(2);
     }
 
     /**
@@ -164,7 +164,7 @@ public class WebappModeTest extends MultiActivityTestBase {
 
         final WebappActivity webappActivity =
                 startWebappActivity(WEBAPP_1_ID, WEBAPP_1_URL, WEBAPP_1_TITLE, WEBAPP_ICON);
-        assertTrue(isNumberOfRunningActivitiesCorrect(1));
+        isNumberOfRunningActivitiesCorrect(1);
         assertEquals("Wrong Tab ID was used", 11684, webappActivity.getActivityTab().getId());
     }
 
@@ -196,7 +196,7 @@ public class WebappModeTest extends MultiActivityTestBase {
         // Start the WebappActivity.
         final WebappActivity activity =
                 startWebappActivity(WEBAPP_1_ID, WEBAPP_1_URL, WEBAPP_1_TITLE, WEBAPP_ICON);
-        assertTrue(isNumberOfRunningActivitiesCorrect(1));
+        isNumberOfRunningActivitiesCorrect(1);
 
         // Return home.
         final Context context = getInstrumentation().getTargetContext();
@@ -217,14 +217,14 @@ public class WebappModeTest extends MultiActivityTestBase {
         // When Chrome is back in the foreground, confirm that the original Activity was restored.
         getInstrumentation().waitForIdleSync();
         ApplicationTestUtils.waitUntilChromeInForeground();
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return activity == ApplicationStatus.getLastTrackedFocusedActivity()
                         && activity.hasWindowFocus();
             }
-        }));
-        assertTrue(isNumberOfRunningActivitiesCorrect(1));
+        });
+        isNumberOfRunningActivitiesCorrect(1);
     }
 
     /**
@@ -234,7 +234,7 @@ public class WebappModeTest extends MultiActivityTestBase {
     public void testWebappRequiresValidMac() throws Exception {
         // Try to start a WebappActivity.  Fail because the Intent is insecure.
         fireWebappIntent(WEBAPP_1_ID, WEBAPP_1_URL, WEBAPP_1_TITLE, WEBAPP_ICON, false);
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 Activity lastActivity = ApplicationStatus.getLastTrackedFocusedActivity();
@@ -242,18 +242,18 @@ public class WebappModeTest extends MultiActivityTestBase {
                 return lastActivity instanceof ChromeTabbedActivity
                         || lastActivity instanceof DocumentActivity;
             }
-        }));
+        });
         final Activity firstActivity = ApplicationStatus.getLastTrackedFocusedActivity();
 
         // Firing a correct Intent should start a new WebappActivity instance.
         fireWebappIntent(WEBAPP_2_ID, WEBAPP_2_URL, WEBAPP_2_TITLE, WEBAPP_ICON, true);
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 Activity lastActivity = ApplicationStatus.getLastTrackedFocusedActivity();
                 return isWebappActivityReady(lastActivity) && lastActivity != firstActivity;
             }
-        }));
+        });
     }
 
     /**
@@ -296,7 +296,7 @@ public class WebappModeTest extends MultiActivityTestBase {
             Class<T> classToWaitFor, String linkHtml, boolean checkContents) throws Exception {
         final WebappActivity webappActivity =
                 startWebappActivity(WEBAPP_1_ID, WEBAPP_1_URL, WEBAPP_1_TITLE, WEBAPP_ICON);
-        assertTrue(isNumberOfRunningActivitiesCorrect(1));
+        isNumberOfRunningActivitiesCorrect(1);
 
         // Load up the test page.
         new TabLoadObserver(webappActivity.getActivityTab(), linkHtml).assertLoaded(
@@ -330,12 +330,12 @@ public class WebappModeTest extends MultiActivityTestBase {
         // Close the child window to kick the user back to the WebappActivity.
         JavaScriptUtils.executeJavaScript(
                 secondActivity.getActivityTab().getWebContents(), "window.close()");
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return webappActivity == ApplicationStatus.getLastTrackedFocusedActivity();
             }
-        }));
+        });
         ApplicationTestUtils.waitUntilChromeInForeground();
     }
 
@@ -347,13 +347,13 @@ public class WebappModeTest extends MultiActivityTestBase {
     private WebappActivity startWebappActivity(String id, String url, String title, String icon)
             throws Exception {
         fireWebappIntent(id, url, title, icon, true);
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 Activity lastActivity = ApplicationStatus.getLastTrackedFocusedActivity();
                 return isWebappActivityReady(lastActivity);
             }
-        }));
+        });
         return (WebappActivity) ApplicationStatus.getLastTrackedFocusedActivity();
     }
 

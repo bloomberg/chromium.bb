@@ -174,14 +174,14 @@ public abstract class MultiActivityTestBase extends InstrumentationTestCase
         final Tab tab = activity.getActivityTab();
         assert tab != null;
 
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 if (!tab.isLoadingAndRenderingDone()) return false;
                 if (!TextUtils.equals(expectedTitle, tab.getTitle())) return false;
                 return true;
             }
-        }));
+        });
     }
 
     /**

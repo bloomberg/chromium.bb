@@ -42,7 +42,7 @@ public class ToolbarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     }
 
     private void waitForFindInPageVisibility(final boolean visible) throws InterruptedException {
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 FindToolbar findToolbar = (FindToolbar) getActivity().findViewById(
@@ -51,7 +51,7 @@ public class ToolbarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
                 boolean isVisible = findToolbar != null && findToolbar.isShown();
                 return (visible == isVisible) && !findToolbar.isAnimating();
             }
-        }));
+        });
     }
 
     @MediumTest

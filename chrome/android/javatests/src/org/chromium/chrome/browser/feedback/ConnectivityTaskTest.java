@@ -45,13 +45,12 @@ public class ConnectivityTaskTest extends ConnectivityCheckerTestBase {
                     }
                 });
 
-        boolean gotResult = CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria("Should be finished by now.") {
             @Override
             public boolean isSatisfied() {
                 return task.isDone();
             }
         }, TIMEOUT_MS, RESULT_CHECK_INTERVAL_MS);
-        assertTrue("Should be finished by now.", gotResult);
         FeedbackData feedback = getResult(task);
         verifyConnections(feedback, ConnectivityCheckResult.NOT_CONNECTED);
         assertEquals("The timeout value is wrong.", TIMEOUT_MS, feedback.getTimeoutMs());
@@ -160,13 +159,17 @@ public class ConnectivityTaskTest extends ConnectivityCheckerTestBase {
                                 null);
                     }
                 });
-        boolean gotResult = CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return task.isDone();
-            }
-        }, TIMEOUT_MS / 5, RESULT_CHECK_INTERVAL_MS);
-        assertFalse("Should not be finished by now.", gotResult);
+        try {
+            CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+                @Override
+                public boolean isSatisfied() {
+                    return task.isDone();
+                }
+            }, TIMEOUT_MS / 5, RESULT_CHECK_INTERVAL_MS);
+            fail("Should not be finished by now.");
+        } catch (AssertionError e) {
+            // TODO(tedchoc): This is horrible and should never timeout to determine success.
+        }
         FeedbackData feedback = getResult(task);
         verifyConnections(feedback, ConnectivityCheckResult.UNKNOWN);
         assertEquals("The timeout value is wrong.", TIMEOUT_MS, feedback.getTimeoutMs());

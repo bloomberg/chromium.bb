@@ -26,10 +26,11 @@ public class ContentViewPopupZoomerTest extends ContentShellTestBase {
         return null;
     }
 
-    private static class PopupShowingCriteria implements Criteria {
+    private static class PopupShowingCriteria extends Criteria {
         private final ViewGroup mView;
         private final boolean mShouldBeShown;
         public PopupShowingCriteria(ViewGroup view, boolean shouldBeShown) {
+            super(shouldBeShown ? "Popup did not get shown." : "Popup shown incorrectly.");
             mView = view;
             mShouldBeShown = shouldBeShown;
         }
@@ -41,9 +42,10 @@ public class ContentViewPopupZoomerTest extends ContentShellTestBase {
         }
     }
 
-    private static class PopupHasNonZeroDimensionsCriteria implements Criteria {
+    private static class PopupHasNonZeroDimensionsCriteria extends Criteria {
         private final ViewGroup mView;
         public PopupHasNonZeroDimensionsCriteria(ViewGroup view) {
+            super("The zoomer popup has zero dimensions.");
             mView = view;
         }
         @Override
@@ -82,22 +84,19 @@ public class ContentViewPopupZoomerTest extends ContentShellTestBase {
     @DisabledTest // crbug.com/167045
     public void testPopupZoomerShowsUp() throws InterruptedException, TimeoutException {
         launchContentShellWithUrl(generateTestUrl(100, 15, "clickme"));
-        assertTrue("Page failed to load", waitForActiveShellToBeDoneLoading());
+        waitForActiveShellToBeDoneLoading();
 
         final ContentViewCore viewCore = getContentViewCore();
         final ViewGroup view = viewCore.getContainerView();
 
         // The popup should be hidden before the click.
-        assertTrue("The zoomer popup is shown after load.",
-                CriteriaHelper.pollForCriteria(new PopupShowingCriteria(view, false)));
+        CriteriaHelper.pollForCriteria(new PopupShowingCriteria(view, false));
 
         // Once clicked, the popup should show up.
         DOMUtils.clickNode(this, viewCore, "clickme");
-        assertTrue("The zoomer popup did not show up on click.",
-                CriteriaHelper.pollForCriteria(new PopupShowingCriteria(view, true)));
+        CriteriaHelper.pollForCriteria(new PopupShowingCriteria(view, true));
 
         // The shown popup should have valid dimensions eventually.
-        assertTrue("The zoomer popup has zero dimensions.",
-                CriteriaHelper.pollForCriteria(new PopupHasNonZeroDimensionsCriteria(view)));
+        CriteriaHelper.pollForCriteria(new PopupHasNonZeroDimensionsCriteria(view));
     }
 }

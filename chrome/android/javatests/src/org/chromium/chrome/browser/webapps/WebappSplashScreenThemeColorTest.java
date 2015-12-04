@@ -63,13 +63,13 @@ public class WebappSplashScreenThemeColorTest extends WebappActivityTestBase {
         });
 
         // Waits for theme-color to change so the test doesn't rely on system timing.
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
-                @Override
-                public boolean isSatisfied() {
-                    return getActivity().getWindow().getStatusBarColor()
-                            == ColorUtils.getDarkenedColorForStatusBar(Color.GREEN);
-                }
-            }));
+        CriteriaHelper.pollForCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return getActivity().getWindow().getStatusBarColor()
+                        == ColorUtils.getDarkenedColorForStatusBar(Color.GREEN);
+            }
+        });
     }
 
     @SmallTest

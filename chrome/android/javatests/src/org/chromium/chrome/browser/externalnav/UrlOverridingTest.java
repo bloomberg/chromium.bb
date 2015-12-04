@@ -184,7 +184,7 @@ public class UrlOverridingTest extends ChromeActivityTestCaseBase<ChromeActivity
         // For sub frames, the |loadFailCallback| run through different threads
         // from the ExternalNavigationHandler. As a result, there is no guarantee
         // when url override result would come.
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(
+        CriteriaHelper.pollForUIThreadCriteria(
                 new Criteria() {
                     @Override
                     public boolean isSatisfied() {
@@ -202,7 +202,7 @@ public class UrlOverridingTest extends ChromeActivityTestCaseBase<ChromeActivity
                         return expectedFinalUrl == null
                                 || TextUtils.equals(expectedFinalUrl, tab.getUrl());
                     }
-                }));
+                });
     }
 
     @SmallTest
@@ -296,12 +296,12 @@ public class UrlOverridingTest extends ChromeActivityTestCaseBase<ChromeActivity
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         targetContext.startActivity(intent);
 
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return mActivityMonitor.getHits() == 1;
             }
-        }));
+        });
     }
 
     @Override

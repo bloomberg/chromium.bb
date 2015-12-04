@@ -102,15 +102,13 @@ public class PowerBroadcastReceiverTest extends ChromeTabbedActivityTestBase {
     /**
      * Waits to see if the runnable was run.
      */
-    public boolean runnableRan(final MockServiceRunnable runnable) throws Exception {
-        return CriteriaHelper.pollForCriteria(
-                new Criteria() {
-                    @Override
-                    public boolean isSatisfied() {
-                        return runnable.mRan;
-                    }
-                },
-                MS_TIMEOUT, MS_INTERVAL);
+    public void waitForRunnableRan(final MockServiceRunnable runnable) throws Exception {
+        CriteriaHelper.pollForCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return runnable.mRan;
+            }
+        }, MS_TIMEOUT, MS_INTERVAL);
     }
 
     /**
@@ -134,7 +132,7 @@ public class PowerBroadcastReceiverTest extends ChromeTabbedActivityTestBase {
         pauseMain(true);
 
         // Check to see that the runnable gets run.
-        assertTrue("MockServiceRunnable didn't run after resuming Chrome.", runnableRan(runnable));
+        waitForRunnableRan(runnable);
         assertFalse("PowerBroadcastReceiver was still registered.", receiver.isRegistered());
     }
 
@@ -157,7 +155,13 @@ public class PowerBroadcastReceiverTest extends ChromeTabbedActivityTestBase {
         pauseMain(false);
 
         // Wait enough time for the runnable to run(), if it's still in the handler.
-        assertFalse("MockServiceRunnable ran after resuming Chrome.", runnableRan(runnable));
+        try {
+            waitForRunnableRan(runnable);
+            fail("MockServiceRunnable ran after resuming Chrome.");
+        } catch (AssertionError e) {
+            // TODO(tedchoc): This is horrible.  This test should be rewritten.  It should not
+            //                require timing out a criteria to determine success.
+        }
         assertFalse("PowerBroadcastReceiver was still registered.", receiver.isRegistered());
     }
 
@@ -184,8 +188,13 @@ public class PowerBroadcastReceiverTest extends ChromeTabbedActivityTestBase {
         pauseMain(true);
 
         // Wait enough time for the runnable to run(), if it's still in the handler.
-        boolean ranWhileScreenOff = runnableRan(runnable);
-        assertFalse("MockServiceRunnable ran even though screen was off.", ranWhileScreenOff);
+        try {
+            waitForRunnableRan(runnable);
+            fail("MockServiceRunnable ran after resuming Chrome.");
+        } catch (AssertionError e) {
+            // TODO(tedchoc): This is horrible.  This test should be rewritten.  It should not
+            //                require timing out a criteria to determine success.
+        }
         assertTrue("PowerBroadcastReceiver was not registered.", receiver.isRegistered());
 
         // Pretend to turn the screen on.
@@ -194,8 +203,7 @@ public class PowerBroadcastReceiverTest extends ChromeTabbedActivityTestBase {
         receiver.onReceive(main, intent);
 
         // Wait enough time for the runnable to run(), if it's still in the handler.
-        boolean ranWhileScreenOn = runnableRan(runnable);
-        assertTrue("MockServiceRunnable didn't run when screen turned on.", ranWhileScreenOn);
+        waitForRunnableRan(runnable);
         assertFalse("PowerBroadcastReceiver wasn't unregistered.", receiver.isRegistered());
     }
 }

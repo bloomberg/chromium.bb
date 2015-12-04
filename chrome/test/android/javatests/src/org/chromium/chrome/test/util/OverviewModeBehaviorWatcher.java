@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.test.util;
 
-import junit.framework.Assert;
-
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior.OverviewModeObserver;
 import org.chromium.content.browser.test.util.Criteria;
@@ -23,7 +21,17 @@ public class OverviewModeBehaviorWatcher implements OverviewModeObserver {
     private final Criteria mCriteria = new Criteria() {
         @Override
         public boolean isSatisfied() {
-            return !mWaitingForShow && !mWaitingForHide;
+            if (mWaitingForShow) {
+                updateFailureReason(
+                        "OverviewModeObserver#onOverviewModeFinishedShowing() not called.");
+                return false;
+            }
+            if (mWaitingForHide) {
+                updateFailureReason(
+                        "OverviewModeObserver#onOverviewModeFinishedHiding() not called.");
+                return false;
+            }
+            return true;
         }
     };
 
@@ -67,14 +75,7 @@ public class OverviewModeBehaviorWatcher implements OverviewModeObserver {
      */
     public void waitForBehavior() throws InterruptedException {
         try {
-            if (!CriteriaHelper.pollForUIThreadCriteria(mCriteria)) {
-                Assert.assertFalse(
-                        "OverviewModeObserver#onOverviewModeFinishedShowing() not called.",
-                        mWaitingForShow);
-                Assert.assertFalse(
-                        "OverviewModeObserver#onOverviewModeFinishedHiding() not called.",
-                        mWaitingForHide);
-            }
+            CriteriaHelper.pollForUIThreadCriteria(mCriteria);
         } finally {
             mOverviewModeBehavior.removeOverviewModeObserver(this);
         }

@@ -59,7 +59,7 @@ public class NavigateTest extends ChromeTabbedActivityTestBase {
             throws InterruptedException {
         new TabLoadObserver(getActivity().getActivityTab(), startUrl).assertLoaded();
 
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 final UrlBar urlBar = (UrlBar) getActivity().findViewById(R.id.url_bar);
@@ -68,7 +68,7 @@ public class NavigateTest extends ChromeTabbedActivityTestBase {
                 return TextUtils.equals(expectedLocation(endUrl), urlBar.getText().toString())
                         && TextUtils.equals(endUrl, getActivity().getActivityTab().getUrl());
             }
-        }));
+        });
     }
 
     /**
@@ -91,8 +91,7 @@ public class NavigateTest extends ChromeTabbedActivityTestBase {
         });
         final LocationBarLayout locationBar =
                 (LocationBarLayout) getActivity().findViewById(R.id.location_bar);
-        assertTrue("Omnibox Suggestions never shown.",
-                OmniboxTestUtils.waitForOmniboxSuggestions(locationBar));
+        OmniboxTestUtils.waitForOmniboxSuggestions(locationBar);
 
         Tab currentTab = getActivity().getActivityTab();
         final CallbackHelper loadedCallback = new CallbackHelper();
@@ -261,12 +260,12 @@ public class NavigateTest extends ChromeTabbedActivityTestBase {
                 TestHttpServerClient.getUrl("chrome/test/data/android/redirect/one.html");
         typeInOmniboxAndNavigate(initialUrl);
 
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return getActivity().getActivityTab().getUrl().equals(redirectedUrl);
             }
-        }));
+        });
     }
 
     /**
@@ -291,12 +290,12 @@ public class NavigateTest extends ChromeTabbedActivityTestBase {
         typeInOmniboxAndNavigate(initialUrl);
 
         // Now intent fallback should be triggered assuming 'non_existent' scheme cannot be handled.
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return getActivity().getActivityTab().getUrl().equals(targetUrl);
             }
-        }));
+        });
 
         // Check if Java redirections were removed from the history.
         // Note that if we try to go back in the test: NavigateToEntry() is called, but
@@ -416,13 +415,12 @@ public class NavigateTest extends ChromeTabbedActivityTestBase {
             // Wait for the url to change.
             final Tab tab = TabModelUtils.getCurrentTab(model);
             assertWaitForPageScaleFactorMatch(0.75f);
-            assertTrue("Page url didn't change",
-                    CriteriaHelper.pollForCriteria(new Criteria() {
-                        @Override
-                        public boolean isSatisfied() {
-                            return mockedUrl.equals(getTabUrlOnUIThread(tab));
-                        }
-                    }, 5000, 50));
+            CriteriaHelper.pollForCriteria(new Criteria("Page url didn't change") {
+                @Override
+                public boolean isSatisfied() {
+                    return mockedUrl.equals(getTabUrlOnUIThread(tab));
+                }
+            }, 5000, 50);
 
             // Make sure that we're showing new content now.
             assertEquals("Still showing spoofed data", "\"Real\"", getTabBodyText(tab));

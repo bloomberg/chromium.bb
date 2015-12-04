@@ -35,7 +35,7 @@ public class ClipboardTest extends ContentShellTestBase {
     protected void setUp() throws Exception {
         super.setUp();
         launchContentShellWithUrl(TEST_PAGE_DATA_URL);
-        assertTrue("Page failed to load", waitForActiveShellToBeDoneLoading());
+        waitForActiveShellToBeDoneLoading();
     }
 
     /**
@@ -60,12 +60,12 @@ public class ClipboardTest extends ContentShellTestBase {
         copy(webContents);
 
         // Waits until data has been made available on the Android clipboard.
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return hasPrimaryClip(clipboardManager);
             }
-        }));
+        });
 
         // Verify that the data on the clipboard is what we expect it to be. For Android JB MR2
         // and higher we expect HTML content, for other versions the plain-text representation.

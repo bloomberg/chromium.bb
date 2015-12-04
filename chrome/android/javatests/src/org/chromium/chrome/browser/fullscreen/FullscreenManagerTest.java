@@ -83,16 +83,16 @@ public class FullscreenManagerTest extends ChromeTabbedActivityTestBase {
         Tab tab = getActivity().getActivityTab();
         final TabWebContentsDelegateAndroid delegate = tab.getTabWebContentsDelegateAndroid();
 
-        assertTrue(waitForFullscreenFlag(tab, false));
-        assertTrue(waitForPersistentFullscreen(delegate, false));
+        waitForFullscreenFlag(tab, false);
+        waitForPersistentFullscreen(delegate, false);
 
         togglePersistentFullscreen(delegate, true);
-        assertTrue(waitForFullscreenFlag(tab, true));
-        assertTrue(waitForPersistentFullscreen(delegate, true));
+        waitForFullscreenFlag(tab, true);
+        waitForPersistentFullscreen(delegate, true);
 
         togglePersistentFullscreen(delegate, false);
-        assertTrue(waitForFullscreenFlag(tab, false));
-        assertTrue(waitForPersistentFullscreen(delegate, false));
+        waitForFullscreenFlag(tab, false);
+        waitForPersistentFullscreen(delegate, false);
     }
 
     @LargeTest
@@ -106,12 +106,12 @@ public class FullscreenManagerTest extends ChromeTabbedActivityTestBase {
         final Tab tab = getActivity().getActivityTab();
         final TabWebContentsDelegateAndroid delegate = tab.getTabWebContentsDelegateAndroid();
 
-        assertTrue(waitForFullscreenFlag(tab, false));
-        assertTrue(waitForPersistentFullscreen(delegate, false));
+        waitForFullscreenFlag(tab, false);
+        waitForPersistentFullscreen(delegate, false);
 
         togglePersistentFullscreen(delegate, true);
-        assertTrue(waitForFullscreenFlag(tab, true));
-        assertTrue(waitForPersistentFullscreen(delegate, true));
+        waitForFullscreenFlag(tab, true);
+        waitForPersistentFullscreen(delegate, true);
 
         // There is a race condition in android when setting various system UI flags.
         // Adding this wait to allow the animation transitions to complete before continuing
@@ -126,8 +126,8 @@ public class FullscreenManagerTest extends ChromeTabbedActivityTestBase {
                         view.getSystemUiVisibility() & ~View.SYSTEM_UI_FLAG_FULLSCREEN);
             }
         });
-        assertTrue(waitForFullscreenFlag(tab, true));
-        assertTrue(waitForPersistentFullscreen(delegate, true));
+        waitForFullscreenFlag(tab, true);
+        waitForPersistentFullscreen(delegate, true);
     }
 
     @LargeTest
@@ -206,14 +206,13 @@ public class FullscreenManagerTest extends ChromeTabbedActivityTestBase {
         // When the top-controls are removed, we need a layout to trigger the
         // transparent region for the app to be updated.
         scrollTopControls(false);
-        boolean layoutOccured = CriteriaHelper.pollForUIThreadCriteria(
+        CriteriaHelper.pollForUIThreadCriteria(
                 new Criteria() {
                     @Override
                     public boolean isSatisfied() {
                         return layoutCount.get() > 0;
                     }
                 });
-        assertTrue(layoutOccured);
 
         getInstrumentation().runOnMainSync(new Runnable() {
             @Override
@@ -268,7 +267,7 @@ public class FullscreenManagerTest extends ChromeTabbedActivityTestBase {
 
         ChromeFullscreenManager fullscreenManager = getActivity().getFullscreenManager();
         fullscreenManager.setAnimationDurationsForTest(1, 1);
-        assertTrue(waitForNoBrowserTopControlsOffset());
+        waitForNoBrowserTopControlsOffset();
         assertEquals(fullscreenManager.getControlOffset(), 0f);
 
         scrollTopControls(false);
@@ -290,7 +289,7 @@ public class FullscreenManagerTest extends ChromeTabbedActivityTestBase {
                 delegate.rendererResponsive();
             }
         });
-        assertTrue(waitForNoBrowserTopControlsOffset());
+        waitForNoBrowserTopControlsOffset();
     }
 
     /*
@@ -349,7 +348,7 @@ public class FullscreenManagerTest extends ChromeTabbedActivityTestBase {
         dragStart(dragX, dragStartY, downTime);
         dragTo(dragX, dragX, dragStartY, dragEndY, 100, downTime);
         dragEnd(dragX, dragEndY, downTime);
-        assertTrue(waitForNoBrowserTopControlsOffset());
+        waitForNoBrowserTopControlsOffset();
         assertEquals(fullscreenManager.getControlOffset(), 0f);
 
         Tab tab = getActivity().getActivityTab();
@@ -416,9 +415,9 @@ public class FullscreenManagerTest extends ChromeTabbedActivityTestBase {
         }
     }
 
-    private boolean waitForFullscreenFlag(final Tab tab, final boolean state)
+    private void waitForFullscreenFlag(final Tab tab, final boolean state)
             throws InterruptedException {
-        return CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return isFullscreenFlagSet(tab, state);
@@ -426,9 +425,9 @@ public class FullscreenManagerTest extends ChromeTabbedActivityTestBase {
         });
     }
 
-    private boolean waitForPersistentFullscreen(final TabWebContentsDelegateAndroid delegate,
+    private void waitForPersistentFullscreen(final TabWebContentsDelegateAndroid delegate,
             final boolean state) throws InterruptedException {
-        return CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return state == delegate.isFullscreenForTabOrPending();
@@ -453,9 +452,9 @@ public class FullscreenManagerTest extends ChromeTabbedActivityTestBase {
         });
     }
 
-    private boolean waitForNoBrowserTopControlsOffset() throws InterruptedException {
+    private void waitForNoBrowserTopControlsOffset() throws InterruptedException {
         final ChromeFullscreenManager fullscreenManager = getActivity().getFullscreenManager();
-        return CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return !fullscreenManager.hasBrowserControlOffsetOverride();
@@ -463,8 +462,8 @@ public class FullscreenManagerTest extends ChromeTabbedActivityTestBase {
         });
     }
 
-    private boolean waitForPageToBeScrollable(final Tab tab) throws InterruptedException {
-        return CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+    private void waitForPageToBeScrollable(final Tab tab) throws InterruptedException {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 ContentViewCore contentViewCore = tab.getContentViewCore();
@@ -474,8 +473,8 @@ public class FullscreenManagerTest extends ChromeTabbedActivityTestBase {
         });
     }
 
-    private boolean waitForEditableNodeToLoseFocus(final Tab tab) throws InterruptedException {
-        return CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+    private void waitForEditableNodeToLoseFocus(final Tab tab) throws InterruptedException {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 ContentViewCore contentViewCore = tab.getContentViewCore();

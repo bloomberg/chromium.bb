@@ -282,12 +282,12 @@ public class BookmarkTestUtils {
 
     private static void checkCriteria(String message, final Callable<Boolean> criteria)
             throws InterruptedException {
-        Assert.assertTrue(message, CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(new Criteria(message) {
             @Override
             public boolean isSatisfied() {
                 return ThreadUtils.runOnUiThreadBlockingNoException(criteria);
             }
-        }));
+        });
     }
 
     /**

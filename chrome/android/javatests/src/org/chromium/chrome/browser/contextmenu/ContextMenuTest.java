@@ -12,8 +12,6 @@ import android.test.suitebuilder.annotation.MediumTest;
 import android.view.ContextMenu;
 import android.view.KeyEvent;
 
-import junit.framework.Assert;
-
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
@@ -156,13 +154,12 @@ public class ContextMenuTest extends DownloadTestBase {
         assertFalse("Context menu did not have window focus", getActivity().hasWindowFocus());
 
         getInstrumentation().sendKeyDownUpSync(KeyEvent.KEYCODE_BACK);
-        Assert.assertTrue("Activity did not regain focus.",
-                CriteriaHelper.pollForCriteria(new Criteria() {
-                    @Override
-                    public boolean isSatisfied() {
-                        return getActivity().hasWindowFocus();
-                    }
-                }));
+        CriteriaHelper.pollForCriteria(new Criteria("Activity did not regain focus.") {
+            @Override
+            public boolean isSatisfied() {
+                return getActivity().hasWindowFocus();
+            }
+        });
     }
 
     @MediumTest
@@ -175,13 +172,12 @@ public class ContextMenuTest extends DownloadTestBase {
 
         TestTouchUtils.singleClickView(getInstrumentation(), tab.getView(), 0, 0);
 
-        Assert.assertTrue("Activity did not regain focus.",
-                CriteriaHelper.pollForCriteria(new Criteria() {
-                    @Override
-                    public boolean isSatisfied() {
-                        return getActivity().hasWindowFocus();
-                    }
-                }));
+        CriteriaHelper.pollForCriteria(new Criteria("Activity did not regain focus.") {
+            @Override
+            public boolean isSatisfied() {
+                return getActivity().hasWindowFocus();
+            }
+        });
     }
 
     @MediumTest
@@ -247,13 +243,13 @@ public class ContextMenuTest extends DownloadTestBase {
         // Wait for any new tab animation to finish if we're being driven by the compositor.
         final LayoutManager layoutDriver = getActivity()
                 .getCompositorViewHolder().getLayoutManager();
-        assertTrue("Background tab animation not finished.",
-                CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(
+                new Criteria("Background tab animation not finished.") {
                     @Override
                     public boolean isSatisfied() {
                         return layoutDriver.getActiveLayout().shouldDisplayContentOverlay();
                     }
-                }));
+                });
 
         ContextMenuUtils.selectContextMenuItem(this, tab, "testLink2",
                 R.id.contextmenu_open_in_new_tab);

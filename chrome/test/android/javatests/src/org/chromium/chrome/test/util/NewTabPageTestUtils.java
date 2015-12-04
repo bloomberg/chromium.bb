@@ -23,11 +23,10 @@ public class NewTabPageTestUtils {
      * Waits for the NTP owned by the passed in tab to be fully loaded.
      *
      * @param tab The tab to be monitored for NTP loading.
-     * @return Whether the NTP has fully loaded.
      */
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public static boolean waitForNtpLoaded(final Tab tab) throws InterruptedException {
-        return CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+    public static void waitForNtpLoaded(final Tab tab) throws InterruptedException {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria("NTP never fully loaded") {
             @Override
             public boolean isSatisfied() {
                 if (!tab.isIncognito()) {

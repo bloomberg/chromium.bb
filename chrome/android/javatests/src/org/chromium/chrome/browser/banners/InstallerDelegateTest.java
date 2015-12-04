@@ -93,21 +93,21 @@ public class InstallerDelegateTest extends InstrumentationTestCase
         mInstallStarted = true;
 
         // Wait until we know that the Thread is running the InstallerDelegate task.
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return mTestDelegate.isRunning();
             }
-        }));
+        });
     }
 
     private void checkResults(boolean expectedResult) throws InterruptedException {
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return !mTestDelegate.isRunning() && mResultFinished;
             }
-        }));
+        });
 
         assertEquals(expectedResult, mResultSuccess);
         assertEquals(mTestDelegate, mResultDelegate);

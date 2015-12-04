@@ -256,8 +256,7 @@ public class ChromeTabUtils {
 
         Tab tab = activity.getActivityTab();
         waitForTabPageLoaded(tab, (String) null);
-        Assert.assertTrue("NTP never fully loaded.",
-                NewTabPageTestUtils.waitForNtpLoaded(tab));
+        NewTabPageTestUtils.waitForNtpLoaded(tab);
         instrumentation.waitForIdleSync();
         Log.d(TAG, "newTabFromMenu <<");
     }

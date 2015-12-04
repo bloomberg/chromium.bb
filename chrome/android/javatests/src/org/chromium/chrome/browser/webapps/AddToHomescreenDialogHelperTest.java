@@ -201,12 +201,12 @@ public class AddToHomescreenDialogHelperTest extends ChromeActivityTestCaseBase<
         addShortcutToURL(MANIFEST_URL, MANIFEST_TITLE, "");
 
         // Make sure that the splash screen image was downloaded.
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return dataStorageFactory.mSplashImage != null;
             }
-        }));
+        });
 
         // Test that bitmap sizes match expectations.
         int idealSize = mActivity.getResources().getDimensionPixelSize(
@@ -245,12 +245,12 @@ public class AddToHomescreenDialogHelperTest extends ChromeActivityTestCaseBase<
                 ThreadUtils.runOnUiThreadBlockingNoException(callable);
 
         // Make sure that the shortcut was added.
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return mShortcutHelperDelegate.mBroadcastedIntent != null;
             }
-        }));
+        });
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override

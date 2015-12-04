@@ -92,7 +92,7 @@ public class DocumentModeTest extends DocumentModeTestBase {
         startTabbedActivity(URL_1);
 
         // ApplicationStatus should note that the ChromeTabbedActivity isn't running anymore.
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 List<WeakReference<Activity>> activities = ApplicationStatus.getRunningActivities();
@@ -101,7 +101,7 @@ public class DocumentModeTest extends DocumentModeTestBase {
                 }
                 return true;
             }
-        }));
+        });
     }
 
     /**
@@ -126,22 +126,22 @@ public class DocumentModeTest extends DocumentModeTestBase {
 
         // A DocumentActivity gets started, but it should immediately call finishAndRemoveTask()
         // because of the broken Intent.
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 Activity activity = ApplicationStatus.getLastTrackedFocusedActivity();
                 return activity != lastTrackedActivity;
             }
-        }));
+        });
 
         // We shouldn't record that a new Tab exists.
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return selector.getCurrentModel().getCount() == 3
                         && selector.getTotalTabCount() == 3;
             }
-        }));
+        });
     }
 
     /**
@@ -167,7 +167,7 @@ public class DocumentModeTest extends DocumentModeTestBase {
         // Funnily enough, Android doesn't differentiate between URIs with different queries when
         // refocusing Activities based on the Intent data.  This means we can't do a check to see
         // that the new Activity appears with URL_4 -- we just get a new instance of URL_3.
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 Activity activity = ApplicationStatus.getLastTrackedFocusedActivity();
@@ -179,16 +179,16 @@ public class DocumentModeTest extends DocumentModeTestBase {
                         && !selector.isIncognitoSelected()
                         && lastTabId == selector.getCurrentTabId();
             }
-        }));
+        });
 
         // Although we get a new DocumentActivity, the old one with the same tab ID gets killed.
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return selector.getCurrentModel().getCount() == 3
                     && selector.getTotalTabCount() == 3;
             }
-        }));
+        });
     }
 
     /**
@@ -212,14 +212,14 @@ public class DocumentModeTest extends DocumentModeTestBase {
         mContext.startActivity(intent);
         ApplicationTestUtils.waitUntilChromeInForeground();
 
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return lastTrackedActivity == ApplicationStatus.getLastTrackedFocusedActivity()
                         && !selector.isIncognitoSelected()
                         && lastTabId == selector.getCurrentTabId();
             }
-        }));
+        });
 
         assertEquals(3, selector.getCurrentModel().getCount());
         assertEquals(3, selector.getTotalTabCount());
@@ -241,12 +241,12 @@ public class DocumentModeTest extends DocumentModeTestBase {
         ApplicationTestUtils.fireHomeScreenIntent(mContext);
         ApplicationTestUtils.launchChrome(mContext);
 
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return !selector.isIncognitoSelected() && lastTabId == selector.getCurrentTabId();
             }
-        }));
+        });
 
         assertEquals(3, selector.getCurrentModel().getCount());
         assertEquals(3, selector.getTotalTabCount());
@@ -268,12 +268,12 @@ public class DocumentModeTest extends DocumentModeTestBase {
             }
         });
 
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return !selector.isIncognitoSelected() && selector.getCurrentModel().index() == 0;
             }
-        }));
+        });
 
         assertEquals(3, selector.getCurrentModel().getCount());
         assertEquals(3, selector.getTotalTabCount());
@@ -304,25 +304,25 @@ public class DocumentModeTest extends DocumentModeTestBase {
         };
         ActivityUtils.waitForActivity(getInstrumentation(), ChromeLauncherActivity.class, runnable);
         ApplicationTestUtils.waitUntilChromeInForeground();
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 Activity lastActivity = ApplicationStatus.getLastTrackedFocusedActivity();
                 return lastActivity instanceof DocumentActivity;
             }
-        }));
+        });
         assertEquals(tabId, selector.getCurrentTabId());
         assertFalse(selector.isIncognitoSelected());
 
         // Create another tab.
         final int secondTabId = launchViaViewIntent(false, URL_2, "Page 2");
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return selector.getModel(false).getCount() == 2
                         && selector.getCurrentTabId() == secondTabId;
             }
-        }));
+        });
     }
 
     /**
@@ -358,45 +358,45 @@ public class DocumentModeTest extends DocumentModeTestBase {
         final DocumentTabModelSelector selector =
                 ChromeApplication.getDocumentTabModelSelector();
         final TabModel incognitoModel = selector.getModel(true);
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return firstId == selector.getCurrentTabId() && selector.getTotalTabCount() == 1;
             }
-        }));
+        });
         assertEquals(incognitoModel, selector.getCurrentModel());
 
         // Make sure the URL isn't in the Intent of the first IncognitoDocumentActivity.
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return ApplicationStatus.getLastTrackedFocusedActivity()
                         instanceof IncognitoDocumentActivity;
             }
-        }));
+        });
         assertNull("URL is in the Incognito Intent", IntentHandler.getUrlFromIntent(
                 ApplicationStatus.getLastTrackedFocusedActivity().getIntent()));
 
         // Launch via ChromeLauncherActivity.launchInstance().
         final int secondId = launchViaLaunchDocumentInstance(true, URL_3, "Page 3");
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return secondId == selector.getCurrentTabId() && selector.getTotalTabCount() == 2;
             }
-        }));
+        });
         assertTrue(selector.isIncognitoSelected());
         assertEquals(incognitoModel, selector.getCurrentModel());
         assertEquals(secondId, TabModelUtils.getCurrentTabId(incognitoModel));
 
         // Make sure the URL isn't in the Intent of the second IncognitoDocumentActivity.
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return ApplicationStatus.getLastTrackedFocusedActivity()
                         instanceof IncognitoDocumentActivity;
             }
-        }));
+        });
         assertNull("URL is in the Incognito Intent", IntentHandler.getUrlFromIntent(
                 ApplicationStatus.getLastTrackedFocusedActivity().getIntent()));
     }
@@ -414,12 +414,12 @@ public class DocumentModeTest extends DocumentModeTestBase {
         final DocumentTabModelSelector selector =
                 ChromeApplication.getDocumentTabModelSelector();
         final TabModel incognitoModel = selector.getModel(true);
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return firstId == selector.getCurrentTabId() && selector.getTotalTabCount() == 1;
             }
-        }));
+        });
         assertEquals(incognitoModel, selector.getCurrentModel());
 
         Activity firstActivity = ApplicationStatus.getLastTrackedFocusedActivity();
@@ -428,12 +428,12 @@ public class DocumentModeTest extends DocumentModeTestBase {
         // The context menu for links in Incognito mode lacks an "Open in new Incognito tab" option.
         // Instead, the regular "Open in new tab" option opens a new incognito tab.
         openLinkInNewTabViaContextMenu(false, true);
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return firstId == selector.getCurrentTabId() && selector.getTotalTabCount() == 2;
             }
-        }));
+        });
         assertEquals(incognitoModel, selector.getCurrentModel());
         assertEquals(firstActivity, ApplicationStatus.getLastTrackedFocusedActivity());
     }
@@ -450,12 +450,12 @@ public class DocumentModeTest extends DocumentModeTestBase {
         assertFalse(selector.isIncognitoSelected());
 
         final int incognitoId = launchViaLaunchDocumentInstance(true, URL_2, "Page 2");
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return selector.isIncognitoSelected() && selector.getCurrentTabId() == incognitoId;
             }
-        }));
+        });
         assertEquals(0, selector.getCurrentModel().index());
         assertEquals(1, selector.getCurrentModel().getCount());
 
@@ -463,12 +463,12 @@ public class DocumentModeTest extends DocumentModeTestBase {
                 ChromeLauncherActivity.getRemoveAllIncognitoTabsIntent(mContext);
         closeAllIntent.send();
 
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return selector.getCurrentTabId() == regularId;
             }
-        }));
+        });
         OffTheRecordDocumentTabModel tabModel =
                 (OffTheRecordDocumentTabModel) selector.getModel(true);
         assertFalse(selector.isIncognitoSelected());
@@ -510,13 +510,13 @@ public class DocumentModeTest extends DocumentModeTestBase {
 
         // Re-open the other tab.
         TabModelUtils.setIndex(regularTabModel, 0);
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return !selector.isIncognitoSelected()
                         && selector.getCurrentTabId() == regularTabId;
             }
-        }));
+        });
 
         // Try to open a new Incognito Tab in the background using the TabModelSelector directly.
         // Should open it in the foreground, instead.

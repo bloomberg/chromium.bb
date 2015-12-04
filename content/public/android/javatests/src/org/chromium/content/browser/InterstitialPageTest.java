@@ -63,8 +63,9 @@ public class InterstitialPageTest extends ContentShellTestBase {
         waitForActiveShellToBeDoneLoading();
     }
 
-    private boolean waitForInterstitial(final boolean shouldBeShown) throws InterruptedException {
-        return CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+    private void waitForInterstitial(final boolean shouldBeShown) throws InterruptedException {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria(
+                shouldBeShown ? "Interstitial never shown." : "Interstitial never hidden.") {
             @Override
             public boolean isSatisfied() {
                 return shouldBeShown
@@ -111,11 +112,11 @@ public class InterstitialPageTest extends ContentShellTestBase {
                     }
                 });
 
-        assertTrue("Interstitial never shown.", waitForInterstitial(true));
+        waitForInterstitial(true);
         assertTrue("WebContentsObserver not notified of interstitial showing",
                 observer.isInterstitialShowing());
         TouchCommon.singleClickView(getContentViewCore().getContainerView(), 10, 10);
-        assertTrue("Interstitial never hidden.", waitForInterstitial(false));
+        waitForInterstitial(false);
         assertTrue("WebContentsObserver not notified of interstitial hiding",
                 !observer.isInterstitialShowing());
     }

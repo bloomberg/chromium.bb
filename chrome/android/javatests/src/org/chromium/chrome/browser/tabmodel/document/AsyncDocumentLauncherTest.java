@@ -40,7 +40,7 @@ public class AsyncDocumentLauncherTest extends DocumentModeTestBase {
         AsyncDocumentLauncher.getInstance().enqueueLaunch(false, Tab.INVALID_TAB_ID, secondParams);
         AsyncDocumentLauncher.getInstance().enqueueLaunch(false, Tab.INVALID_TAB_ID, finalParams);
 
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 Activity lastActivity = ApplicationStatus.getLastTrackedFocusedActivity();
@@ -51,7 +51,7 @@ public class AsyncDocumentLauncherTest extends DocumentModeTestBase {
 
                 return TextUtils.equals(URL_3, documentActivity.getActivityTab().getUrl());
             }
-        }));
+        });
 
         TabModelSelector selector = ChromeApplication.getDocumentTabModelSelector();
         assertEquals(3, selector.getTotalTabCount());
@@ -74,7 +74,7 @@ public class AsyncDocumentLauncherTest extends DocumentModeTestBase {
         AsyncDocumentLauncher.getInstance().enqueueLaunch(false, parentId, secondParams);
         AsyncDocumentLauncher.getInstance().enqueueLaunch(false, parentId, finalParams);
 
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 Activity lastActivity = ApplicationStatus.getLastTrackedFocusedActivity();
@@ -85,7 +85,7 @@ public class AsyncDocumentLauncherTest extends DocumentModeTestBase {
 
                 return TextUtils.equals(URL_4, documentActivity.getActivityTab().getUrl());
             }
-        }));
+        });
 
         TabModelSelector selector = ChromeApplication.getDocumentTabModelSelector();
         assertEquals(4, selector.getTotalTabCount());
@@ -116,7 +116,7 @@ public class AsyncDocumentLauncherTest extends DocumentModeTestBase {
         AsyncDocumentLauncher.getInstance().enqueueLaunch(false, parentId, secondParams);
         AsyncDocumentLauncher.getInstance().enqueueLaunch(false, Tab.INVALID_TAB_ID, finalParams);
 
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 Activity lastActivity = ApplicationStatus.getLastTrackedFocusedActivity();
@@ -127,7 +127,7 @@ public class AsyncDocumentLauncherTest extends DocumentModeTestBase {
 
                 return TextUtils.equals(URL_4, documentActivity.getActivityTab().getUrl());
             }
-        }));
+        });
 
         TabModelSelector selector = ChromeApplication.getDocumentTabModelSelector();
         assertEquals(3, selector.getTotalTabCount());

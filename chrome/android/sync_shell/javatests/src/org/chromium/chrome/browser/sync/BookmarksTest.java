@@ -456,7 +456,7 @@ public class BookmarksTest extends SyncTestBase {
     }
 
     private void waitForClientBookmarkCount(final int n) throws InterruptedException {
-        boolean success = CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(new Criteria("There should be " + n + " local bookmarks.") {
             @Override
             public boolean isSatisfied() {
                 try {
@@ -466,12 +466,12 @@ public class BookmarksTest extends SyncTestBase {
                 }
             }
         }, SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);
-        assertTrue("There should be " + n + " local bookmarks.", success);
     }
 
     private void waitForServerBookmarkCountWithName(final int count, final String name)
             throws InterruptedException {
-        boolean success = CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(new Criteria(
+                "Expected " + count + " remote bookmarks with name " + name + ".") {
             @Override
             public boolean isSatisfied() {
                 try {
@@ -482,6 +482,5 @@ public class BookmarksTest extends SyncTestBase {
                 }
             }
         }, SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);
-        assertTrue("Expected " + count + " remote bookmarks with name " + name + ".", success);
     }
 }

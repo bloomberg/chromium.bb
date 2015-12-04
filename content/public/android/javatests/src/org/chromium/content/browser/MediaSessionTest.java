@@ -63,8 +63,8 @@ public class MediaSessionTest extends ContentShellTestBase {
             mAudioFocusState = AudioManager.AUDIOFOCUS_LOSS;
         }
 
-        public boolean waitForFocusStateChange(final int focusType) throws InterruptedException {
-            return CriteriaHelper.pollForCriteria(new Criteria() {
+        public void waitForFocusStateChange(final int focusType) throws InterruptedException {
+            CriteriaHelper.pollForCriteria(new Criteria() {
                 @Override
                 public boolean isSatisfied() {
                     return getAudioFocusState() == focusType;
@@ -100,19 +100,19 @@ public class MediaSessionTest extends ContentShellTestBase {
     public void testDontStopEachOther() throws Exception {
         assertTrue(DOMUtils.isMediaPaused(getWebContents(), LONG_AUDIO));
         DOMUtils.playMedia(getWebContents(), LONG_AUDIO);
-        assertTrue(DOMUtils.waitForMediaPlay(getWebContents(), LONG_AUDIO));
+        DOMUtils.waitForMediaPlay(getWebContents(), LONG_AUDIO);
 
         assertTrue(DOMUtils.isMediaPaused(getWebContents(), LONG_VIDEO));
         DOMUtils.playMedia(getWebContents(), LONG_VIDEO);
-        assertTrue(DOMUtils.waitForMediaPlay(getWebContents(), LONG_VIDEO));
+        DOMUtils.waitForMediaPlay(getWebContents(), LONG_VIDEO);
 
         assertTrue(DOMUtils.isMediaPaused(getWebContents(), SHORT_VIDEO));
         DOMUtils.playMedia(getWebContents(), SHORT_VIDEO);
-        assertTrue(DOMUtils.waitForMediaPlay(getWebContents(), SHORT_VIDEO));
+        DOMUtils.waitForMediaPlay(getWebContents(), SHORT_VIDEO);
 
         assertTrue(DOMUtils.isMediaPaused(getWebContents(), SHORT_AUDIO));
         DOMUtils.playMedia(getWebContents(), SHORT_AUDIO);
-        assertTrue(DOMUtils.waitForMediaPlay(getWebContents(), SHORT_AUDIO));
+        DOMUtils.waitForMediaPlay(getWebContents(), SHORT_AUDIO);
 
         assertFalse(DOMUtils.isMediaPaused(getWebContents(), SHORT_AUDIO));
         assertFalse(DOMUtils.isMediaPaused(getWebContents(), LONG_AUDIO));
@@ -128,11 +128,11 @@ public class MediaSessionTest extends ContentShellTestBase {
         assertEquals(AudioManager.AUDIOFOCUS_GAIN, mAudioFocusChangeListener.getAudioFocusState());
 
         DOMUtils.playMedia(getWebContents(), VERY_SHORT_AUDIO);
-        assertTrue(DOMUtils.waitForMediaPlay(getWebContents(), VERY_SHORT_AUDIO));
+        DOMUtils.waitForMediaPlay(getWebContents(), VERY_SHORT_AUDIO);
 
-        assertTrue(mAudioFocusChangeListener.waitForFocusStateChange(
-                AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK));
-        assertTrue(mAudioFocusChangeListener.waitForFocusStateChange(AudioManager.AUDIOFOCUS_GAIN));
+        mAudioFocusChangeListener.waitForFocusStateChange(
+                AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK);
+        mAudioFocusChangeListener.waitForFocusStateChange(AudioManager.AUDIOFOCUS_GAIN);
     }
 
     @MediumTest
@@ -143,11 +143,11 @@ public class MediaSessionTest extends ContentShellTestBase {
         assertEquals(AudioManager.AUDIOFOCUS_GAIN, mAudioFocusChangeListener.getAudioFocusState());
 
         DOMUtils.playMedia(getWebContents(), VERY_SHORT_VIDEO);
-        assertTrue(DOMUtils.waitForMediaPlay(getWebContents(), VERY_SHORT_VIDEO));
+        DOMUtils.waitForMediaPlay(getWebContents(), VERY_SHORT_VIDEO);
 
-        assertTrue(mAudioFocusChangeListener.waitForFocusStateChange(
-                AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK));
-        assertTrue(mAudioFocusChangeListener.waitForFocusStateChange(AudioManager.AUDIOFOCUS_GAIN));
+        mAudioFocusChangeListener.waitForFocusStateChange(
+                AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK);
+        mAudioFocusChangeListener.waitForFocusStateChange(AudioManager.AUDIOFOCUS_GAIN);
     }
 
     @SmallTest
@@ -158,9 +158,9 @@ public class MediaSessionTest extends ContentShellTestBase {
         assertEquals(AudioManager.AUDIOFOCUS_GAIN, mAudioFocusChangeListener.getAudioFocusState());
 
         DOMUtils.playMedia(getWebContents(), LONG_AUDIO);
-        assertTrue(DOMUtils.waitForMediaPlay(getWebContents(), LONG_AUDIO));
+        DOMUtils.waitForMediaPlay(getWebContents(), LONG_AUDIO);
 
-        assertTrue(mAudioFocusChangeListener.waitForFocusStateChange(AudioManager.AUDIOFOCUS_LOSS));
+        mAudioFocusChangeListener.waitForFocusStateChange(AudioManager.AUDIOFOCUS_LOSS);
     }
 
     @SmallTest
@@ -171,9 +171,9 @@ public class MediaSessionTest extends ContentShellTestBase {
         assertEquals(AudioManager.AUDIOFOCUS_GAIN, mAudioFocusChangeListener.getAudioFocusState());
 
         DOMUtils.playMedia(getWebContents(), LONG_VIDEO);
-        assertTrue(DOMUtils.waitForMediaPlay(getWebContents(), LONG_VIDEO));
+        DOMUtils.waitForMediaPlay(getWebContents(), LONG_VIDEO);
 
-        assertTrue(mAudioFocusChangeListener.waitForFocusStateChange(AudioManager.AUDIOFOCUS_LOSS));
+        mAudioFocusChangeListener.waitForFocusStateChange(AudioManager.AUDIOFOCUS_LOSS);
     }
 
     @SmallTest
@@ -184,13 +184,13 @@ public class MediaSessionTest extends ContentShellTestBase {
         assertEquals(AudioManager.AUDIOFOCUS_GAIN, mAudioFocusChangeListener.getAudioFocusState());
 
         DOMUtils.playMedia(getWebContents(), SHORT_AUDIO);
-        assertTrue(DOMUtils.waitForMediaPlay(getWebContents(), SHORT_AUDIO));
-        assertTrue(mAudioFocusChangeListener.waitForFocusStateChange(
-                AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK));
+        DOMUtils.waitForMediaPlay(getWebContents(), SHORT_AUDIO);
+        mAudioFocusChangeListener.waitForFocusStateChange(
+                AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK);
 
         DOMUtils.playMedia(getWebContents(), LONG_AUDIO);
-        assertTrue(DOMUtils.waitForMediaPlay(getWebContents(), LONG_AUDIO));
-        assertTrue(mAudioFocusChangeListener.waitForFocusStateChange(AudioManager.AUDIOFOCUS_LOSS));
+        DOMUtils.waitForMediaPlay(getWebContents(), LONG_AUDIO);
+        mAudioFocusChangeListener.waitForFocusStateChange(AudioManager.AUDIOFOCUS_LOSS);
     }
 
     @SmallTest
@@ -201,13 +201,13 @@ public class MediaSessionTest extends ContentShellTestBase {
         assertEquals(AudioManager.AUDIOFOCUS_GAIN, mAudioFocusChangeListener.getAudioFocusState());
 
         DOMUtils.playMedia(getWebContents(), SHORT_VIDEO);
-        assertTrue(DOMUtils.waitForMediaPlay(getWebContents(), SHORT_VIDEO));
-        assertTrue(mAudioFocusChangeListener.waitForFocusStateChange(
-                AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK));
+        DOMUtils.waitForMediaPlay(getWebContents(), SHORT_VIDEO);
+        mAudioFocusChangeListener.waitForFocusStateChange(
+                AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK);
 
         DOMUtils.playMedia(getWebContents(), LONG_VIDEO);
-        assertTrue(DOMUtils.waitForMediaPlay(getWebContents(), LONG_VIDEO));
-        assertTrue(mAudioFocusChangeListener.waitForFocusStateChange(AudioManager.AUDIOFOCUS_LOSS));
+        DOMUtils.waitForMediaPlay(getWebContents(), LONG_VIDEO);
+        mAudioFocusChangeListener.waitForFocusStateChange(AudioManager.AUDIOFOCUS_LOSS);
     }
 
     @SmallTest
@@ -218,16 +218,16 @@ public class MediaSessionTest extends ContentShellTestBase {
         assertEquals(AudioManager.AUDIOFOCUS_GAIN, mAudioFocusChangeListener.getAudioFocusState());
 
         DOMUtils.playMedia(getWebContents(), SHORT_AUDIO);
-        assertTrue(DOMUtils.waitForMediaPlay(getWebContents(), SHORT_AUDIO));
+        DOMUtils.waitForMediaPlay(getWebContents(), SHORT_AUDIO);
 
         // Wait for the media to be really playing.
-        assertTrue(mAudioFocusChangeListener.waitForFocusStateChange(
-                AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK));
+        mAudioFocusChangeListener.waitForFocusStateChange(
+                AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK);
 
         mAudioFocusChangeListener.requestAudioFocus(AudioManager.AUDIOFOCUS_GAIN);
         assertEquals(AudioManager.AUDIOFOCUS_GAIN, mAudioFocusChangeListener.getAudioFocusState());
 
-        assertTrue(DOMUtils.waitForMediaPause(getWebContents(), SHORT_AUDIO));
+        DOMUtils.waitForMediaPause(getWebContents(), SHORT_AUDIO);
     }
 
     @SmallTest
@@ -238,16 +238,16 @@ public class MediaSessionTest extends ContentShellTestBase {
         assertEquals(AudioManager.AUDIOFOCUS_GAIN, mAudioFocusChangeListener.getAudioFocusState());
 
         DOMUtils.playMedia(getWebContents(), SHORT_VIDEO);
-        assertTrue(DOMUtils.waitForMediaPlay(getWebContents(), SHORT_VIDEO));
+        DOMUtils.waitForMediaPlay(getWebContents(), SHORT_VIDEO);
 
         // Wait for the media to be really playing.
-        assertTrue(mAudioFocusChangeListener.waitForFocusStateChange(
-                AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK));
+        mAudioFocusChangeListener.waitForFocusStateChange(
+                AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK);
 
         mAudioFocusChangeListener.requestAudioFocus(AudioManager.AUDIOFOCUS_GAIN);
         assertEquals(AudioManager.AUDIOFOCUS_GAIN, mAudioFocusChangeListener.getAudioFocusState());
 
-        assertTrue(DOMUtils.waitForMediaPause(getWebContents(), SHORT_VIDEO));
+        DOMUtils.waitForMediaPause(getWebContents(), SHORT_VIDEO);
     }
 
     @MediumTest
@@ -258,15 +258,15 @@ public class MediaSessionTest extends ContentShellTestBase {
         assertEquals(AudioManager.AUDIOFOCUS_GAIN, mAudioFocusChangeListener.getAudioFocusState());
 
         DOMUtils.playMedia(getWebContents(), LONG_AUDIO);
-        assertTrue(DOMUtils.waitForMediaPlay(getWebContents(), LONG_AUDIO));
+        DOMUtils.waitForMediaPlay(getWebContents(), LONG_AUDIO);
 
         // Wait for the media to be really playing.
-        assertTrue(mAudioFocusChangeListener.waitForFocusStateChange(AudioManager.AUDIOFOCUS_LOSS));
+        mAudioFocusChangeListener.waitForFocusStateChange(AudioManager.AUDIOFOCUS_LOSS);
 
         mAudioFocusChangeListener.requestAudioFocus(AudioManager.AUDIOFOCUS_GAIN);
         assertEquals(AudioManager.AUDIOFOCUS_GAIN, mAudioFocusChangeListener.getAudioFocusState());
 
-        assertTrue(DOMUtils.waitForMediaPause(getWebContents(), LONG_AUDIO));
+        DOMUtils.waitForMediaPause(getWebContents(), LONG_AUDIO);
     }
 
     @SmallTest
@@ -277,15 +277,15 @@ public class MediaSessionTest extends ContentShellTestBase {
         assertEquals(AudioManager.AUDIOFOCUS_GAIN, mAudioFocusChangeListener.getAudioFocusState());
 
         DOMUtils.playMedia(getWebContents(), LONG_VIDEO);
-        assertTrue(DOMUtils.waitForMediaPlay(getWebContents(), LONG_VIDEO));
+        DOMUtils.waitForMediaPlay(getWebContents(), LONG_VIDEO);
 
         // Wait for the media to be really playing.
-        assertTrue(mAudioFocusChangeListener.waitForFocusStateChange(AudioManager.AUDIOFOCUS_LOSS));
+        mAudioFocusChangeListener.waitForFocusStateChange(AudioManager.AUDIOFOCUS_LOSS);
 
         mAudioFocusChangeListener.requestAudioFocus(AudioManager.AUDIOFOCUS_GAIN);
         assertEquals(AudioManager.AUDIOFOCUS_GAIN, mAudioFocusChangeListener.getAudioFocusState());
 
-        assertTrue(DOMUtils.waitForMediaPause(getWebContents(), LONG_VIDEO));
+        DOMUtils.waitForMediaPause(getWebContents(), LONG_VIDEO);
     }
 
     @SmallTest
@@ -296,20 +296,20 @@ public class MediaSessionTest extends ContentShellTestBase {
         assertEquals(AudioManager.AUDIOFOCUS_GAIN, mAudioFocusChangeListener.getAudioFocusState());
 
         DOMUtils.playMedia(getWebContents(), LONG_AUDIO);
-        assertTrue(DOMUtils.waitForMediaPlay(getWebContents(), LONG_AUDIO));
+        DOMUtils.waitForMediaPlay(getWebContents(), LONG_AUDIO);
         DOMUtils.playMedia(getWebContents(), LONG_VIDEO);
-        assertTrue(DOMUtils.waitForMediaPlay(getWebContents(), LONG_VIDEO));
+        DOMUtils.waitForMediaPlay(getWebContents(), LONG_VIDEO);
 
         // Wait for the media to be really playing.
-        assertTrue(mAudioFocusChangeListener.waitForFocusStateChange(AudioManager.AUDIOFOCUS_LOSS));
+        mAudioFocusChangeListener.waitForFocusStateChange(AudioManager.AUDIOFOCUS_LOSS);
 
         mAudioFocusChangeListener.requestAudioFocus(
                 AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK);
         assertEquals(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK,
                 mAudioFocusChangeListener.getAudioFocusState());
 
-        assertTrue(DOMUtils.waitForMediaPause(getWebContents(), LONG_AUDIO));
-        assertTrue(DOMUtils.waitForMediaPause(getWebContents(), LONG_VIDEO));
+        DOMUtils.waitForMediaPause(getWebContents(), LONG_AUDIO);
+        DOMUtils.waitForMediaPause(getWebContents(), LONG_VIDEO);
     }
 
     @MediumTest
@@ -320,25 +320,25 @@ public class MediaSessionTest extends ContentShellTestBase {
         assertEquals(AudioManager.AUDIOFOCUS_GAIN, mAudioFocusChangeListener.getAudioFocusState());
 
         DOMUtils.playMedia(getWebContents(), LONG_AUDIO);
-        assertTrue(DOMUtils.waitForMediaPlay(getWebContents(), LONG_AUDIO));
+        DOMUtils.waitForMediaPlay(getWebContents(), LONG_AUDIO);
         DOMUtils.playMedia(getWebContents(), LONG_VIDEO);
-        assertTrue(DOMUtils.waitForMediaPlay(getWebContents(), LONG_VIDEO));
+        DOMUtils.waitForMediaPlay(getWebContents(), LONG_VIDEO);
 
         // Wait for the media to be really playing.
-        assertTrue(mAudioFocusChangeListener.waitForFocusStateChange(AudioManager.AUDIOFOCUS_LOSS));
+        mAudioFocusChangeListener.waitForFocusStateChange(AudioManager.AUDIOFOCUS_LOSS);
 
         mAudioFocusChangeListener.requestAudioFocus(
                 AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK);
         assertEquals(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK,
                 mAudioFocusChangeListener.getAudioFocusState());
 
-        assertTrue(DOMUtils.waitForMediaPause(getWebContents(), LONG_AUDIO));
-        assertTrue(DOMUtils.waitForMediaPause(getWebContents(), LONG_VIDEO));
+        DOMUtils.waitForMediaPause(getWebContents(), LONG_AUDIO);
+        DOMUtils.waitForMediaPause(getWebContents(), LONG_VIDEO);
 
         mAudioFocusChangeListener.abandonAudioFocus();
 
-        assertTrue(DOMUtils.waitForMediaPlay(getWebContents(), LONG_AUDIO));
-        assertTrue(DOMUtils.waitForMediaPlay(getWebContents(), LONG_VIDEO));
+        DOMUtils.waitForMediaPlay(getWebContents(), LONG_AUDIO);
+        DOMUtils.waitForMediaPlay(getWebContents(), LONG_VIDEO);
     }
 
     @MediumTest
@@ -349,23 +349,23 @@ public class MediaSessionTest extends ContentShellTestBase {
         assertEquals(AudioManager.AUDIOFOCUS_GAIN, mAudioFocusChangeListener.getAudioFocusState());
 
         DOMUtils.playMedia(getWebContents(), LONG_AUDIO);
-        assertTrue(DOMUtils.waitForMediaPlay(getWebContents(), LONG_AUDIO));
+        DOMUtils.waitForMediaPlay(getWebContents(), LONG_AUDIO);
         DOMUtils.playMedia(getWebContents(), LONG_VIDEO);
-        assertTrue(DOMUtils.waitForMediaPlay(getWebContents(), LONG_VIDEO));
+        DOMUtils.waitForMediaPlay(getWebContents(), LONG_VIDEO);
 
         // Wait for the media to be really playing.
-        assertTrue(mAudioFocusChangeListener.waitForFocusStateChange(AudioManager.AUDIOFOCUS_LOSS));
+        mAudioFocusChangeListener.waitForFocusStateChange(AudioManager.AUDIOFOCUS_LOSS);
 
         mAudioFocusChangeListener.requestAudioFocus(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT);
         assertEquals(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT,
                 mAudioFocusChangeListener.getAudioFocusState());
 
-        assertTrue(DOMUtils.waitForMediaPause(getWebContents(), LONG_AUDIO));
-        assertTrue(DOMUtils.waitForMediaPause(getWebContents(), LONG_VIDEO));
+        DOMUtils.waitForMediaPause(getWebContents(), LONG_AUDIO);
+        DOMUtils.waitForMediaPause(getWebContents(), LONG_VIDEO);
 
         mAudioFocusChangeListener.abandonAudioFocus();
 
-        assertTrue(DOMUtils.waitForMediaPlay(getWebContents(), LONG_AUDIO));
-        assertTrue(DOMUtils.waitForMediaPlay(getWebContents(), LONG_VIDEO));
+        DOMUtils.waitForMediaPlay(getWebContents(), LONG_AUDIO);
+        DOMUtils.waitForMediaPlay(getWebContents(), LONG_VIDEO);
     }
 }

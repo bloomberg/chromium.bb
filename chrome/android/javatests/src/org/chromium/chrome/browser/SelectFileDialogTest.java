@@ -60,7 +60,11 @@ public class SelectFileDialogTest extends ChromeActivityTestCaseBase<ChromeActiv
         }
     }
 
-    private class IntentSentCriteria implements Criteria {
+    private class IntentSentCriteria extends Criteria {
+        public IntentSentCriteria() {
+            super("SelectFileDialog never sent an intent.");
+        }
+
         @Override
         public boolean isSatisfied() {
             return mActivityWindowAndroidForTest.lastIntent != null;
@@ -89,8 +93,7 @@ public class SelectFileDialogTest extends ChromeActivityTestCaseBase<ChromeActiv
         mContentViewCore = getActivity().getCurrentContentViewCore();
         // TODO(aurimas) remove this wait once crbug.com/179511 is fixed.
         assertWaitForPageScaleFactorMatch(2);
-        assertTrue(
-                DOMUtils.waitForNonZeroNodeBounds(mContentViewCore.getWebContents(), "input_file"));
+        DOMUtils.waitForNonZeroNodeBounds(mContentViewCore.getWebContents(), "input_file");
     }
 
     /**
@@ -101,14 +104,12 @@ public class SelectFileDialogTest extends ChromeActivityTestCaseBase<ChromeActiv
     @Feature({"TextInput", "Main"})
     public void testSelectFileAndCancelRequest() throws Throwable {
         DOMUtils.clickNode(this, mContentViewCore, "input_file");
-        assertTrue("SelectFileDialog never sent an intent.",
-                CriteriaHelper.pollForCriteria(new IntentSentCriteria()));
+        CriteriaHelper.pollForCriteria(new IntentSentCriteria());
         assertEquals(Intent.ACTION_CHOOSER, mActivityWindowAndroidForTest.lastIntent.getAction());
         resetActivityWindowAndroidForTest();
 
         DOMUtils.clickNode(this, mContentViewCore, "input_file_multiple");
-        assertTrue("SelectFileDialog never sent an intent.",
-                CriteriaHelper.pollForCriteria(new IntentSentCriteria()));
+        CriteriaHelper.pollForCriteria(new IntentSentCriteria());
         assertEquals(Intent.ACTION_CHOOSER, mActivityWindowAndroidForTest.lastIntent.getAction());
         Intent contentIntent = (Intent)
                 mActivityWindowAndroidForTest.lastIntent.getParcelableExtra(Intent.EXTRA_INTENT);
@@ -119,15 +120,13 @@ public class SelectFileDialogTest extends ChromeActivityTestCaseBase<ChromeActiv
         resetActivityWindowAndroidForTest();
 
         DOMUtils.clickNode(this, mContentViewCore, "input_image");
-        assertTrue("SelectFileDialog never sent an intent.",
-                CriteriaHelper.pollForCriteria(new IntentSentCriteria()));
+        CriteriaHelper.pollForCriteria(new IntentSentCriteria());
         assertEquals(MediaStore.ACTION_IMAGE_CAPTURE,
                 mActivityWindowAndroidForTest.lastIntent.getAction());
         resetActivityWindowAndroidForTest();
 
         DOMUtils.clickNode(this, mContentViewCore, "input_audio");
-        assertTrue("SelectFileDialog never sent an intent.",
-                CriteriaHelper.pollForCriteria(new IntentSentCriteria()));
+        CriteriaHelper.pollForCriteria(new IntentSentCriteria());
         assertEquals(MediaStore.Audio.Media.RECORD_SOUND_ACTION,
                 mActivityWindowAndroidForTest.lastIntent.getAction());
         resetActivityWindowAndroidForTest();

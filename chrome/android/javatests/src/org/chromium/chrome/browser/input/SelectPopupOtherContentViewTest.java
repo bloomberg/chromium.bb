@@ -37,7 +37,11 @@ public class SelectPopupOtherContentViewTest extends ChromeActivityTestCaseBase<
             + "</select>"
             + "</body></html>");
 
-    private class PopupShowingCriteria implements Criteria {
+    private class PopupShowingCriteria extends Criteria {
+        public PopupShowingCriteria() {
+            super("The select popup did not show up on click.");
+        }
+
         @Override
         public boolean isSatisfied() {
             ContentViewCore contentViewCore = getActivity().getCurrentContentViewCore();
@@ -72,8 +76,7 @@ public class SelectPopupOtherContentViewTest extends ChromeActivityTestCaseBase<
 
         // Once clicked, the popup should show up.
         DOMUtils.clickNode(this, viewCore, "select");
-        assertTrue("The select popup did not show up on click.",
-                CriteriaHelper.pollForCriteria(new PopupShowingCriteria()));
+        CriteriaHelper.pollForCriteria(new PopupShowingCriteria());
 
         // Now create and destroy a different ContentView.
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {

@@ -523,13 +523,13 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
     }
 
     private void waitForBackendInitialized() throws InterruptedException {
-        boolean success = CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria(
+                "Timed out waiting for sync's backend to be initialized.") {
             @Override
             public boolean isSatisfied() {
                 return mProfileSyncService.isBackendInitialized();
             }
         }, SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);
-        assertTrue("Timed out waiting for sync's backend to be initialized.", success);
     }
 
     // UI interaction convenience methods.

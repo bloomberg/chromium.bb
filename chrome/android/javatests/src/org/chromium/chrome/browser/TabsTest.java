@@ -141,13 +141,12 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
             }
         });
 
-        assertTrue("Tab never spawned in normal model.",
-                CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
-                    @Override
-                    public boolean isSatisfied() {
-                        return getActivity().getTabModelSelector().getModel(false).getCount() == 2;
-                    }
-                }));
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria("Tab never spawned in normal model.") {
+            @Override
+            public boolean isSatisfied() {
+                return getActivity().getTabModelSelector().getModel(false).getCount() == 2;
+            }
+        });
     }
 
     @MediumTest
@@ -239,7 +238,7 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
             }
         });
 
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 Tab tab = getActivity().getCurrentTabModel().getTabAt(1);
@@ -247,7 +246,7 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
                 String expectedTitle = "new tab";
                 return title.startsWith(expectedTitle);
             }
-        }));
+        });
 
         ChromeTabUtils.closeCurrentTab(getInstrumentation(), getActivity());
         getInstrumentation().runOnMainSync(new Runnable() {
@@ -271,7 +270,7 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
 
         // Make sure we're on the NTP
         Tab tab = getActivity().getActivityTab();
-        assertTrue("NTP never fully loaded.", NewTabPageTestUtils.waitForNtpLoaded(tab));
+        NewTabPageTestUtils.waitForNtpLoaded(tab);
 
         loadUrl(INITIAL_SIZE_TEST_URL);
 
@@ -914,14 +913,14 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
                 }
             }
         });
-        assertTrue("Did not finish animation",
-                CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
-                    @Override
-                    public boolean isSatisfied() {
-                        Layout layout = getActivity().getLayoutManager().getActiveLayout();
-                        return !layout.isLayoutAnimating();
-                    }
-                }));
+
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria("Did not finish animation") {
+            @Override
+            public boolean isSatisfied() {
+                Layout layout = getActivity().getLayoutManager().getActiveLayout();
+                return !layout.isLayoutAnimating();
+            }
+        });
     }
 
     private void swipeToCloseNTabs(int number, boolean isLandscape, boolean isIncognito,
@@ -1203,12 +1202,12 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
                 R.id.close_all_tabs_menu_id);
         UiUtils.settleDownUI(getInstrumentation());
 
-        assertTrue("Should be in overview mode", CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(new Criteria("Should be in overview mode") {
             @Override
             public boolean isSatisfied() {
                 return getActivity().isInOverviewMode();
             }
-        }));
+        });
 
         int initialTabCount = getActivity().getCurrentTabModel().getCount();
         assertEquals("Tab count is expected to be 0 after closing all the tabs",
@@ -1397,8 +1396,8 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
     }
 
     private void waitForStaticLayout() throws InterruptedException {
-        assertTrue("Static Layout never selected after side swipe",
-                CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(
+                new Criteria("Static Layout never selected after side swipe") {
                     @Override
                     public boolean isSatisfied() {
                         CompositorViewHolder compositorViewHolder = (CompositorViewHolder)
@@ -1407,7 +1406,7 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
 
                         return layoutManager.getActiveLayout() instanceof StaticLayout;
                     }
-                }));
+                });
     }
 
     /**
@@ -1455,14 +1454,14 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
             }
         });
 
-        assertTrue("Layout still requesting Tab Android view be attached",
-                CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(
+                new Criteria("Layout still requesting Tab Android view be attached") {
                     @Override
                     public boolean isSatisfied() {
                         LayoutManager driver = getActivity().getLayoutManager();
                         return !driver.getActiveLayout().shouldDisplayContentOverlay();
                     }
-                }));
+                });
 
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
@@ -1473,14 +1472,14 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
             }
         });
 
-        assertTrue("Layout not requesting Tab Android view be attached",
-                CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(
+                new Criteria("Layout not requesting Tab Android view be attached") {
                     @Override
                     public boolean isSatisfied() {
                         LayoutManager driver = getActivity().getLayoutManager();
                         return driver.getActiveLayout().shouldDisplayContentOverlay();
                     }
-                }));
+                });
 
         assertFalse("Keyboard should not be shown",
                 org.chromium.ui.UiUtils.isKeyboardShowing(getActivity(), urlBar));

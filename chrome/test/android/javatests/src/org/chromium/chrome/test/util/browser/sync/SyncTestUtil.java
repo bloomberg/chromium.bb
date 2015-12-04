@@ -67,13 +67,13 @@ public final class SyncTestUtil {
     public static void triggerSyncAndWaitForCompletion() throws InterruptedException {
         final long oldSyncTime = getCurrentSyncTime();
         triggerSync();
-        boolean syncCompleted = CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(new Criteria(
+                "Timed out waiting for sync cycle to complete.") {
             @Override
             public boolean isSatisfied() {
                 return getCurrentSyncTime() > oldSyncTime;
             }
         }, TIMEOUT_MS, INTERVAL_MS);
-        Assert.assertTrue("Timed out waiting for sync cycle to complete.", syncCompleted);
     }
 
     private static long getCurrentSyncTime() {
@@ -89,13 +89,13 @@ public final class SyncTestUtil {
      * Waits for sync to become active.
      */
     public static void waitForSyncActive() throws InterruptedException {
-        Assert.assertTrue("Timed out waiting for sync to become active.",
-                CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
-                    @Override
-                    public boolean isSatisfied() {
-                        return ProfileSyncService.get().isSyncActive();
-                    }
-                }, TIMEOUT_MS, INTERVAL_MS));
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria(
+                "Timed out waiting for sync to become active.") {
+            @Override
+            public boolean isSatisfied() {
+                return ProfileSyncService.get().isSyncActive();
+            }
+        }, TIMEOUT_MS, INTERVAL_MS);
     }
 
     /**

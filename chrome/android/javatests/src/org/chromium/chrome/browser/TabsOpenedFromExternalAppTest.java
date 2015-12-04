@@ -48,11 +48,12 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
     private static final String EXTERNAL_APP_1_ID = "app1";
     private static final String EXTERNAL_APP_2_ID = "app2";
 
-    static class ElementFocusedCriteria implements Criteria {
+    static class ElementFocusedCriteria extends Criteria {
         private final Tab mTab;
         private final String mElementId;
 
         public ElementFocusedCriteria(Tab tab, String elementId) {
+            super("Text-field in page not focused.");
             mTab = tab;
             // Add quotes to match returned value from JS.
             mElementId = "\"" + elementId + "\"";
@@ -89,12 +90,13 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
         }
     }
 
-    static class ElementTextIsCriteria implements Criteria {
+    static class ElementTextIsCriteria extends Criteria {
         private final Tab mTab;
         private final String mElementId;
         private final String mExpectedText;
 
         public ElementTextIsCriteria(Tab tab, String elementId, String expectedText) {
+            super("Page does not have the text typed in.");
             mTab = tab;
             mElementId = elementId;
             mExpectedText = expectedText;
@@ -145,13 +147,12 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
             }
         });
         if (createNewTab) {
-            assertTrue("Failed to select different tab",
-                    CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
-                        @Override
-                        public boolean isSatisfied() {
-                            return getActivity().getActivityTab() != originalTab;
-                        }
-                    }));
+            CriteriaHelper.pollForUIThreadCriteria(new Criteria("Failed to select different tab") {
+                @Override
+                public boolean isSatisfied() {
+                    return getActivity().getActivityTab() != originalTab;
+                }
+            });
         }
         ChromeTabUtils.waitForTabPageLoaded(getActivity().getActivityTab(), url);
     }
@@ -428,17 +429,15 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
         DOMUtils.clickNode(this, tab.getContentViewCore(), "textField");
 
         // Some processing needs to happen before the test-field has the focus.
-        assertTrue("Text-field in page not focused.", CriteriaHelper.pollForCriteria(
-                new ElementFocusedCriteria(
-                        getActivity().getActivityTab(), "textField"), 2000, 200));
+        CriteriaHelper.pollForCriteria(new ElementFocusedCriteria(
+                getActivity().getActivityTab(), "textField"), 2000, 200);
 
         // Now type something.
         getInstrumentation().sendStringSync("banana");
 
         // We also have to wait for the text to happen in the page.
-        assertTrue("Page does not have the text typed in.", CriteriaHelper.pollForCriteria(
-                new ElementTextIsCriteria(getActivity().getActivityTab(), "textField",
-                        "banana"), 2000, 200));
+        CriteriaHelper.pollForCriteria(new ElementTextIsCriteria(
+                getActivity().getActivityTab(), "textField", "banana"), 2000, 200);
 
         // Launch a second URL from the same app, it should open in a new tab.
         int originalTabCount = ChromeTabUtils.getNumOpenTabs(getActivity());
@@ -473,12 +472,12 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
                 TabModelUtils.closeTabByIndex(getActivity().getCurrentTabModel(), 0);
             }
         });
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return getActivity().getTabModelSelector().getTotalTabCount() == 0;
             }
-        }));
+        });
 
         // Open a tab via an external application.
         final Intent intent = new Intent(
@@ -489,12 +488,12 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         getInstrumentation().getTargetContext().startActivity(intent);
 
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return getActivity().getTabModelSelector().getTotalTabCount() == 1;
             }
-        }));
+        });
         ApplicationTestUtils.assertWaitForPageScaleFactorMatch(getActivity(), 0.5f, false);
 
         // Long press the center of the page, which should bring up the context menu.
@@ -508,12 +507,12 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
             }
         });
         TouchCommon.longPressView(view);
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return observer.mContextMenu != null;
             }
-        }));
+        });
         getActivity().getActivityTab().removeObserver(observer);
 
         // Select the "open in new tab" option.
@@ -526,21 +525,21 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
         });
 
         // The second tab should open in the background.
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return getActivity().getTabModelSelector().getTotalTabCount() == 2;
             }
-        }));
+        });
 
         // Hitting "back" should close the tab, minimize Chrome, and select the background tab.
         // Confirm that the number of tabs is correct and that closing the tab didn't cause a crash.
         getActivity().onBackPressed();
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return getActivity().getTabModelSelector().getTotalTabCount() == 1;
             }
-        }));
+        });
     }
 }

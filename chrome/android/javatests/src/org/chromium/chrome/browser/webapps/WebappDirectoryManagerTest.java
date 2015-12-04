@@ -156,11 +156,11 @@ public class WebappDirectoryManagerTest extends InstrumentationTestCase {
     private void runCleanup() throws Exception {
         final AsyncTask task =
                 mWebappDirectoryManager.cleanUpDirectories(mMockContext, WEBAPP_ID_1);
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return task.getStatus() == AsyncTask.Status.FINISHED;
             }
-        }));
+        });
     }
 }

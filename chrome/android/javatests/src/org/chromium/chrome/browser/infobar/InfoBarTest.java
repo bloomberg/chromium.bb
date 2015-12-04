@@ -57,14 +57,14 @@ public class InfoBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         super.setUp();
 
         // Register for animation notifications
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 if (getActivity().getActivityTab() == null) return false;
                 if (getActivity().getActivityTab().getInfoBarContainer() == null) return false;
                 return true;
             }
-        }));
+        });
         InfoBarContainer container = getActivity().getActivityTab().getInfoBarContainer();
         mListener =  new InfoBarTestAnimationListener();
         container.setAnimationListener(mListener);

@@ -17,8 +17,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ListView;
 
-import junit.framework.Assert;
-
 import org.chromium.base.PerfTraceEvent;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
@@ -464,33 +462,26 @@ public abstract class ChromeActivityTestCaseBase<T extends ChromeActivity>
 
         startActivityCompletely(intent);
 
-        assertTrue("Tab never selected/initialized.",
-                CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
-                    @Override
-                    public boolean isSatisfied() {
-                        return getActivity().getActivityTab() != null;
-                    }
-                }));
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria("Tab never selected/initialized.") {
+            @Override
+            public boolean isSatisfied() {
+                return getActivity().getActivityTab() != null;
+            }
+        });
         Tab tab = getActivity().getActivityTab();
 
         ChromeTabUtils.waitForTabPageLoaded(tab, (String) null);
 
         if (!isDocumentMode && tab != null && NewTabPage.isNTPUrl(tab.getUrl())) {
-            boolean ntpReady = NewTabPageTestUtils.waitForNtpLoaded(tab);
-            if (!ntpReady && tab.isShowingSadTab()) {
-                fail("Renderer crashed before NTP finished loading. "
-                        + "Look at logcat for renderer stack dump.");
-            }
-            assertTrue("Initial NTP never fully loaded.", ntpReady);
+            NewTabPageTestUtils.waitForNtpLoaded(tab);
         }
 
-        assertTrue("Deferred startup never completed",
-                CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
-                    @Override
-                    public boolean isSatisfied() {
-                        return DeferredStartupHandler.getInstance().isDeferredStartupComplete();
-                    }
-                }));
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria("Deferred startup never completed") {
+            @Override
+            public boolean isSatisfied() {
+                return DeferredStartupHandler.getInstance().isDeferredStartupComplete();
+            }
+        });
 
         assertNotNull(tab);
         assertNotNull(tab.getView());
@@ -588,8 +579,7 @@ public abstract class ChromeActivityTestCaseBase<T extends ChromeActivity>
         }
 
         ChromeTabUtils.waitForTabPageLoaded(tab, (String) null);
-        Assert.assertTrue("NTP never fully loaded.",
-                NewTabPageTestUtils.waitForNtpLoaded(tab));
+        NewTabPageTestUtils.waitForNtpLoaded(tab);
         getInstrumentation().waitForIdleSync();
         Log.d(TAG, "newIncognitoTabFromMenu <<");
     }
@@ -702,13 +692,13 @@ public abstract class ChromeActivityTestCaseBase<T extends ChromeActivity>
                 }
 
                 // Wait for suggestions to show up.
-                assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+                CriteriaHelper.pollForCriteria(new Criteria() {
                     @Override
                     public boolean isSatisfied() {
                         return ((LocationBarLayout) getActivity().findViewById(
                                 R.id.location_bar)).getSuggestionList() != null;
                     }
-                }, 3000, 10));
+                }, 3000, 10);
                 final ListView suggestionListView = locationBar.getSuggestionList();
                 OmniboxResultItem popupItem = (OmniboxResultItem) suggestionListView
                         .getItemAtPosition(0);

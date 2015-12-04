@@ -34,14 +34,16 @@ public class GestureDetectorResetTest extends ContentShellTestBase {
             + "<div id=\"test\">not clicked</div><br/>"
             + "</body></html>");
 
-    private static class NodeContentsIsEqualToCriteria implements Criteria {
+    private static class NodeContentsIsEqualToCriteria extends Criteria {
         private final ContentViewCore mViewCore;
         private final String mNodeId;
         private final String mExpectedContents;
 
         public NodeContentsIsEqualToCriteria(
+                String failureReason,
                 ContentViewCore viewCore,
                 String nodeId, String expectedContents) {
+            super(failureReason);
             mViewCore = viewCore;
             mNodeId = nodeId;
             mExpectedContents = expectedContents;
@@ -68,17 +70,17 @@ public class GestureDetectorResetTest extends ContentShellTestBase {
             ContentViewCore contentViewCore)
                     throws InterruptedException, Exception, Throwable {
         // Initially the text on the page should say "not clicked".
-        assertTrue("The page contents is invalid " + disambiguation,
-                CriteriaHelper.pollForCriteria(new NodeContentsIsEqualToCriteria(
-                        contentViewCore, "test", "not clicked")));
+        CriteriaHelper.pollForCriteria(new NodeContentsIsEqualToCriteria(
+                "The page contents is invalid " + disambiguation, contentViewCore,
+                "test", "not clicked"));
 
         // Click the button.
         DOMUtils.clickNode(this, contentViewCore, "button");
 
         // After the click, the text on the page should say "clicked".
-        assertTrue("The page contents didn't change after a click " + disambiguation,
-                CriteriaHelper.pollForCriteria(new NodeContentsIsEqualToCriteria(
-                        contentViewCore, "test", "clicked")));
+        CriteriaHelper.pollForCriteria(new NodeContentsIsEqualToCriteria(
+                "The page contents didn't change after a click " + disambiguation,
+                contentViewCore, "test", "clicked"));
     }
 
     /**
@@ -94,7 +96,7 @@ public class GestureDetectorResetTest extends ContentShellTestBase {
             throws InterruptedException, Exception, Throwable {
         // Load the test page.
         launchContentShellWithUrl(CLICK_TEST_URL);
-        assertTrue("Page failed to load", waitForActiveShellToBeDoneLoading());
+        waitForActiveShellToBeDoneLoading();
 
         final ContentViewCore viewCore = getContentViewCore();
         final TestCallbackHelperContainer viewClient =

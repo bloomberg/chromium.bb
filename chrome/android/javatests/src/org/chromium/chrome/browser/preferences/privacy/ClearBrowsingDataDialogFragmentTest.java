@@ -52,12 +52,12 @@ public class ClearBrowsingDataDialogFragmentTest
                 mCallbackCalled = true;
             }
         });
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return mCallbackCalled;
             }
-        }));
+        });
         mCallbackCalled = false;
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -67,12 +67,12 @@ public class ClearBrowsingDataDialogFragmentTest
                         ClearBrowsingDataDialogFragment.FRAGMENT_TAG);
             }
         });
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return mFragment.getDialog() != null;
             }
-        }));
+        });
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -82,12 +82,12 @@ public class ClearBrowsingDataDialogFragmentTest
                 clearButton.performClick();
             }
         });
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return mFragment.getProgressDialog() == null;
             }
-        }));
+        });
 
         WebappRegistry.getRegisteredWebappIds(getActivity(), new WebappRegistry.FetchCallback() {
             @Override
@@ -96,12 +96,12 @@ public class ClearBrowsingDataDialogFragmentTest
                 mCallbackCalled = true;
             }
         });
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return mCallbackCalled;
             }
-        }));
+        });
     }
 
     private static class TestClearDataDialogFragment extends ClearBrowsingDataDialogFragment {

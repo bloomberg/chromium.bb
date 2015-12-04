@@ -183,14 +183,14 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
                 mOfflinePageBridge.markPageAccessed(bookmarkId);
             }
         });
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 OfflinePageItem offlinePage =
                         mOfflinePageBridge.getPageByBookmarkId(bookmarkId);
                 return offlinePage.getAccessCount() == expectedAccessCount;
             }
-        }));
+        });
     }
 
     private void deletePage(BookmarkId bookmarkId, final int expectedResult)

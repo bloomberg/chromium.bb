@@ -174,7 +174,8 @@ public class AutofillTest extends SyncTestBase {
     }
 
     private void waitForClientAutofillProfileCount(final int count) throws InterruptedException {
-        boolean success = CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(new Criteria(
+                "Expected " + count + " local autofill profiles.") {
             @Override
             public boolean isSatisfied() {
                 try {
@@ -184,12 +185,12 @@ public class AutofillTest extends SyncTestBase {
                 }
             }
         }, SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);
-        assertTrue("Expected " + count + " local autofill profiles.", success);
     }
 
     private void waitForServerAutofillProfileCountWithName(final int count, final String name)
             throws InterruptedException {
-        boolean success = CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(new Criteria(
+                "Expected " + count + " server autofill profiles with name " + name + ".") {
             @Override
             public boolean isSatisfied() {
                 try {
@@ -200,7 +201,5 @@ public class AutofillTest extends SyncTestBase {
                 }
             }
         }, SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);
-        assertTrue("Expected " + count + " server autofill profiles with name " + name + ".",
-                success);
     }
 }

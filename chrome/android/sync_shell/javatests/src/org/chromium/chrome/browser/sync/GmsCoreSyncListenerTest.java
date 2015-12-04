@@ -106,7 +106,8 @@ public class GmsCoreSyncListenerTest extends SyncTestBase {
     }
 
     private void waitForCryptographer() throws InterruptedException {
-        boolean isReady = CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria(
+                "Timed out waiting for cryptographer to be ready.") {
             @Override
             public boolean isSatisfied() {
                 ProfileSyncService syncService = ProfileSyncService.get();
@@ -114,7 +115,6 @@ public class GmsCoreSyncListenerTest extends SyncTestBase {
                         && syncService.isCryptographerReady();
             }
         });
-        assertTrue("Timed out waiting for cryptographer to be ready.", isReady);
     }
 
     private void waitForCallCount(final int count) throws InterruptedException {

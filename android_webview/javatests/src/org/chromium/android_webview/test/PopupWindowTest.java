@@ -134,12 +134,12 @@ public class PopupWindowTest extends AwTestBase {
     // Copied from imeTest.java.
     private void assertWaitForSelectActionBarStatus(final boolean show, final ContentViewCore cvc)
             throws InterruptedException {
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return show == cvc.isSelectActionBarShowing();
             }
-        }));
+        });
     }
 
     private void hideSelectActionMode(final ContentViewCore cvc) {

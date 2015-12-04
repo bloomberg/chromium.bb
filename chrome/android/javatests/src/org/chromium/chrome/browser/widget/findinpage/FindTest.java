@@ -47,12 +47,12 @@ public class FindTest extends ChromeTabbedActivityTestBase {
         final TextView findResults = (TextView) getActivity().findViewById(R.id.find_status);
         assertNotNull(expectedResult);
         assertNotNull(findResults);
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
                 @Override
                 public boolean isSatisfied() {
                     return expectedResult.equals(findResults.getText());
                 }
-            }));
+            });
         return findResults.getText().toString();
     }
 
@@ -69,7 +69,7 @@ public class FindTest extends ChromeTabbedActivityTestBase {
     }
 
     private void waitForFindInPageVisibility(final boolean visible) throws InterruptedException {
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 FindToolbar findToolbar = (FindToolbar) getActivity().findViewById(
@@ -78,7 +78,7 @@ public class FindTest extends ChromeTabbedActivityTestBase {
                 boolean isVisible = findToolbar != null && findToolbar.isShown();
                 return (visible == isVisible) && !findToolbar.isAnimating();
             }
-        }));
+        });
     }
 
     private String findStringInPage(final String query, String expectedResult)

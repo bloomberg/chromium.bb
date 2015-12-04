@@ -60,12 +60,12 @@ public class PopupTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     @Feature({"Popup"})
     public void testPopupInfobarAppears() throws Exception {
         loadUrl(POPUP_HTML_FILENAME);
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return getNumInfobarsShowing() == 1;
             }
-        }));
+        });
     }
 
     @MediumTest
@@ -78,12 +78,12 @@ public class PopupTest extends ChromeActivityTestCaseBase<ChromeActivity> {
                 : getActivity().getTabModelSelector();
 
         loadUrl(POPUP_HTML_FILENAME);
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return getNumInfobarsShowing() == 1;
             }
-        }));
+        });
         assertEquals(1, selector.getTotalTabCount());
         final InfoBarContainer container = selector.getCurrentTab().getInfoBarContainer();
         ArrayList<InfoBar> infobars = container.getInfoBars();
@@ -91,37 +91,37 @@ public class PopupTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
         // Wait until the animations are done, then click the "open popups" button.
         final InfoBar infobar = infobars.get(0);
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return !container.isAnimating();
             }
-        }));
+        });
         TouchCommon.singleClickView(infobar.getView().findViewById(R.id.button_primary));
 
         // Document mode popups appear slowly and sequentially to prevent Android from throwing them
         // away, so use a long timeout.  http://crbug.com/498920.
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 if (getNumInfobarsShowing() != 0) return false;
                 return TextUtils.equals("Popup #3", selector.getCurrentTab().getTitle());
             }
-        }, 7500, CriteriaHelper.DEFAULT_POLLING_INTERVAL));
+        }, 7500, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
 
         assertEquals(4, selector.getTotalTabCount());
         int currentTabId = selector.getCurrentTab().getId();
 
         // Test that revisiting the original page makes popup windows immediately.
         loadUrl(POPUP_HTML_FILENAME);
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 if (getNumInfobarsShowing() != 0) return false;
                 if (selector.getTotalTabCount() != 7) return false;
                 return TextUtils.equals("Popup #3", selector.getCurrentTab().getTitle());
             }
-        }, 7500, CriteriaHelper.DEFAULT_POLLING_INTERVAL));
+        }, 7500, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
         assertNotSame(currentTabId, selector.getCurrentTab().getId());
     }
 }

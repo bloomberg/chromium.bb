@@ -41,13 +41,13 @@ public class LauncherActivityTest extends ChromeActivityTestCaseBase<ChromeActiv
         mContext.startActivity(intent);
 
         // Check that Chrome launched successfully
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 int state = ApplicationStatus.getStateForApplication();
                 return state == ApplicationState.HAS_RUNNING_ACTIVITIES;
             }
-        }));
+        });
     }
 
     @Override

@@ -64,35 +64,35 @@ public class BrandColorTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private void checkForBrandColor(final int brandColor) {
         try {
-            assertTrue("The toolbar background doesn't contain the right color",
-                    CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
-                        @Override
-                        public boolean isSatisfied() {
-                            if (mToolbarDataProvider.getPrimaryColor() != brandColor) return false;
-                            return mToolbarDataProvider.getPrimaryColor()
-                                    == mToolbar.getBackgroundDrawable().getColor();
-                        }
-                    }));
-            assertTrue("The overlay drawable doesn't contain the right color",
-                    CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
-                        @Override
-                        public boolean isSatisfied() {
-                            return mToolbar.getOverlayDrawable().getColor() == brandColor;
-                        }
-                    }));
+            CriteriaHelper.pollForUIThreadCriteria(new Criteria(
+                    "The toolbar background doesn't contain the right color") {
+                @Override
+                public boolean isSatisfied() {
+                    if (mToolbarDataProvider.getPrimaryColor() != brandColor) return false;
+                    return mToolbarDataProvider.getPrimaryColor()
+                            == mToolbar.getBackgroundDrawable().getColor();
+                }
+            });
+            CriteriaHelper.pollForUIThreadCriteria(new Criteria(
+                    "The overlay drawable doesn't contain the right color") {
+                @Override
+                public boolean isSatisfied() {
+                    return mToolbar.getOverlayDrawable().getColor() == brandColor;
+                }
+            });
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
                     && !SysUtils.isLowEndDevice()) {
                 final int expectedStatusBarColor = brandColor == mDefaultColor
                         ? Color.BLACK
                         : ColorUtils.getDarkenedColorForStatusBar(brandColor);
-                assertTrue("The status bar is not set to the right color",
-                        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
-                            @Override
-                            public boolean isSatisfied() {
-                                return expectedStatusBarColor
-                                        == getActivity().getWindow().getStatusBarColor();
-                            }
-                        }));
+                CriteriaHelper.pollForUIThreadCriteria(new Criteria(
+                        "The status bar is not set to the right color") {
+                    @Override
+                    public boolean isSatisfied() {
+                        return expectedStatusBarColor
+                                == getActivity().getWindow().getStatusBarColor();
+                    }
+                });
             }
 
         } catch (InterruptedException e) {
@@ -215,12 +215,12 @@ public class BrandColorTest extends ChromeActivityTestCaseBase<ChromeActivity> {
                         brandColorUrl, delegate.getNative());
             }
         });
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return getActivity().getActivityTab().isShowingInterstitialPage();
             }
-        }));
+        });
         checkForBrandColor(ApiCompatibilityUtils.getColor(
                 getActivity().getResources(), R.color.default_primary_color));
     }

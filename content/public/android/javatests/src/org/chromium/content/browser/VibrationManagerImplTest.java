@@ -60,7 +60,7 @@ public class VibrationManagerImplTest extends ContentShellTestBase {
     protected void setUp() throws Exception {
         super.setUp();
         launchContentShellWithUrl("about:blank");
-        assertTrue("Page failed to load", waitForActiveShellToBeDoneLoading());
+        waitForActiveShellToBeDoneLoading();
 
         mFakeWrapper = new FakeAndroidVibratorWrapper();
         VibrationManagerImpl.setVibratorWrapperForTesting(mFakeWrapper);
@@ -80,12 +80,12 @@ public class VibrationManagerImplTest extends ContentShellTestBase {
         loadNewShell(URL_VIBRATOR_VIBRATE);
 
         // Waits until VibrationManagerImpl.Vibrate() got called.
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return mFakeWrapper.mMilliSeconds != -1;
             }
-        }));
+        });
 
         assertEquals(
                 "Did not get vibrate mMilliSeconds correctly", 3000, mFakeWrapper.mMilliSeconds);
@@ -102,12 +102,12 @@ public class VibrationManagerImplTest extends ContentShellTestBase {
         loadNewShell(URL_VIBRATOR_CANCEL);
 
         // Waits until VibrationManagerImpl.Cancel() got called.
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return mFakeWrapper.mCancelled;
             }
-        }));
+        });
 
         assertTrue("Did not get cancelled", mFakeWrapper.mCancelled);
     }

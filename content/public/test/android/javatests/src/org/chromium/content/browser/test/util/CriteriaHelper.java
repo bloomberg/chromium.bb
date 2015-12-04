@@ -8,6 +8,8 @@ import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import android.os.SystemClock;
 
+import junit.framework.Assert;
+
 import org.chromium.base.ThreadUtils;
 
 import java.util.concurrent.Callable;
@@ -19,6 +21,23 @@ import java.util.concurrent.Callable;
  * If possible, use callbacks or testing delegates instead of criteria as they
  * do not introduce any polling delays.  Should only use Criteria if no suitable
  * other approach exists.
+ *
+ * <p>
+ * <pre>
+ * Sample Usage:
+ * <code>
+ * public void waitForTabTitle(final Tab tab, final String title) {
+ *     CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+ *         {@literal @}Override
+ *         public boolean isSatisified() {
+ *             updateFailureReason("Tab title did not match -- expected: " + title
+ *                     + ", actual: " + tab.getTitle());
+ *             return TextUtils.equals(tab.getTitle(), title);
+ *         }
+ *     });
+ * }
+ * </code>
+ * </pre>
  */
 public class CriteriaHelper {
 
@@ -34,10 +53,9 @@ public class CriteriaHelper {
      * @param maxTimeoutMs The maximum number of ms that this check will be performed for
      * before timeout.
      * @param checkIntervalMs The number of ms between checks.
-     * @return true iff checking has ended with the criteria being satisfied.
      * @throws InterruptedException
      */
-    public static boolean pollForCriteria(Criteria criteria, long maxTimeoutMs,
+    public static void pollForCriteria(Criteria criteria, long maxTimeoutMs,
             long checkIntervalMs) throws InterruptedException {
         boolean isSatisfied = criteria.isSatisfied();
         long startTime = SystemClock.uptimeMillis();
@@ -45,19 +63,18 @@ public class CriteriaHelper {
             Thread.sleep(checkIntervalMs);
             isSatisfied = criteria.isSatisfied();
         }
-        return isSatisfied;
+        Assert.assertTrue(criteria.getFailureReason(), isSatisfied);
     }
 
     /**
      * Checks whether the given Criteria is satisfied polling at a default interval.
      *
      * @param criteria The Criteria that will be checked.
-     * @return iff checking has ended with the criteria being satisfied.
      * @throws InterruptedException
      * @see #pollForCriteria(Criteria, long, long)
      */
-    public static boolean pollForCriteria(Criteria criteria) throws InterruptedException {
-        return pollForCriteria(criteria, DEFAULT_MAX_TIME_TO_POLL, DEFAULT_POLLING_INTERVAL);
+    public static void pollForCriteria(Criteria criteria) throws InterruptedException {
+        pollForCriteria(criteria, DEFAULT_MAX_TIME_TO_POLL, DEFAULT_POLLING_INTERVAL);
     }
 
     /**
@@ -68,11 +85,10 @@ public class CriteriaHelper {
      * @param maxTimeoutMs The maximum number of ms that this check will be performed for
      * before timeout.
      * @param checkIntervalMs The number of ms between checks.
-     * @return iff checking has ended with the criteria being satisfied.
      * @throws InterruptedException
      * @see #pollForCriteria(Criteria)
      */
-    public static boolean pollForUIThreadCriteria(final Criteria criteria, long maxTimeoutMs,
+    public static void pollForUIThreadCriteria(final Criteria criteria, long maxTimeoutMs,
             long checkIntervalMs) throws InterruptedException {
         final Callable<Boolean> callable = new Callable<Boolean>() {
             @Override
@@ -81,7 +97,7 @@ public class CriteriaHelper {
             }
         };
 
-        return pollForCriteria(new Criteria() {
+        pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return ThreadUtils.runOnUiThreadBlockingNoException(callable);
@@ -93,30 +109,11 @@ public class CriteriaHelper {
      * Checks whether the given Criteria is satisfied polling at a default interval on the UI
      * thread.
      * @param criteria The Criteria that will be checked.
-     * @return iff checking has ended with the criteria being satisfied.
      * @throws InterruptedException
      * @see #pollForCriteria(Criteria)
      */
-    public static boolean pollForUIThreadCriteria(final Criteria criteria)
+    public static void pollForUIThreadCriteria(final Criteria criteria)
             throws InterruptedException {
-        return pollForUIThreadCriteria(criteria, DEFAULT_MAX_TIME_TO_POLL,
-                DEFAULT_POLLING_INTERVAL);
-    }
-
-    /**
-     * Performs the runnable action, then checks whether the given criteria are satisfied
-     * until the specified timeout, using the pollForCriteria method. If not, then the runnable
-     * action is performed again, to a maximum of maxAttempts tries.
-     */
-    public static boolean runUntilCriteria(Runnable runnable, Criteria criteria,
-            int maxAttempts, long maxTimeoutMs, long checkIntervalMs) throws InterruptedException {
-        int count = 0;
-        boolean success = false;
-        while (count < maxAttempts && !success) {
-            count++;
-            runnable.run();
-            success = pollForCriteria(criteria, maxTimeoutMs, checkIntervalMs);
-        }
-        return success;
+        pollForUIThreadCriteria(criteria, DEFAULT_MAX_TIME_TO_POLL, DEFAULT_POLLING_INTERVAL);
     }
 }

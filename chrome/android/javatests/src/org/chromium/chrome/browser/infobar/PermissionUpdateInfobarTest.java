@@ -56,14 +56,14 @@ public class PermissionUpdateInfobarTest extends ChromeTabbedActivityTestBase {
         ChromeTabUtils.newTabFromMenu(getInstrumentation(), getActivity());
 
         // Register for animation notifications
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 if (getActivity().getActivityTab() == null) return false;
                 if (getActivity().getActivityTab().getInfoBarContainer() == null) return false;
                 return true;
             }
-        }));
+        });
         InfoBarContainer container = getActivity().getActivityTab().getInfoBarContainer();
         mListener =  new InfoBarTestAnimationListener();
         container.setAnimationListener(mListener);
@@ -114,19 +114,19 @@ public class PermissionUpdateInfobarTest extends ChromeTabbedActivityTestBase {
             assertFalse(webContents.isDestroyed());
 
             ChromeTabUtils.closeCurrentTab(getInstrumentation(), getActivity());
-            assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+            CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
                 @Override
                 public boolean isSatisfied() {
                     return webContents.isDestroyed();
                 }
-            }));
+            });
 
-            assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+            CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
                 @Override
                 public boolean isSatisfied() {
                     return getActivity().getTabModelSelector().getModel(false).getCount() == 1;
                 }
-            }));
+            });
         } finally {
             ThreadUtils.runOnUiThreadBlocking(new Runnable() {
                 @Override

@@ -48,12 +48,16 @@ public class PrerenderTestHelper {
      */
     public static boolean waitForPrerenderUrl(final Tab tab, final String url,
             boolean shortTimeout) throws InterruptedException {
-        CriteriaHelper.pollForCriteria(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return hasTabPrerenderedUrl(tab, url);
-            }
-        }, shortTimeout ? SHORT_TIMEOUT_MS : WAIT_FOR_RESPONSE_MS, UI_DELAY_MS);
+        try {
+            CriteriaHelper.pollForCriteria(new Criteria() {
+                @Override
+                public boolean isSatisfied() {
+                    return hasTabPrerenderedUrl(tab, url);
+                }
+            }, shortTimeout ? SHORT_TIMEOUT_MS : WAIT_FOR_RESPONSE_MS, UI_DELAY_MS);
+        } catch (AssertionError e) {
+            // TODO(tedchoc): This is horrible and should never timeout to determine success.
+        }
 
         return hasTabPrerenderedUrl(tab, url);
     }

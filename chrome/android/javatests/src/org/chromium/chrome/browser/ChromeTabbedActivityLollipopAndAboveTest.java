@@ -40,13 +40,13 @@ public class ChromeTabbedActivityLollipopAndAboveTest extends ChromeTabbedActivi
         // Make sure that ChromeTabbedActivity started up.
         Context context = getInstrumentation().getTargetContext();
         assertFalse(FeatureUtilities.isDocumentMode(context));
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 Activity lastActivity = ApplicationStatus.getLastTrackedFocusedActivity();
                 return lastActivity instanceof ChromeTabbedActivity;
             }
-        }));
+        });
 
         // Try launching a DocumentActivity.
         Runnable runnable = new Runnable() {
@@ -66,7 +66,7 @@ public class ChromeTabbedActivityLollipopAndAboveTest extends ChromeTabbedActivi
                 getInstrumentation(), DocumentActivity.class, runnable);
 
         // ApplicationStatus should note that the DocumentActivity isn't running anymore.
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 List<WeakReference<Activity>> activities = ApplicationStatus.getRunningActivities();
@@ -75,7 +75,7 @@ public class ChromeTabbedActivityLollipopAndAboveTest extends ChromeTabbedActivi
                 }
                 return true;
             }
-        }));
+        });
     }
 
     @Override

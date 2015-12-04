@@ -157,13 +157,14 @@ public class PostMessageTest extends AwTestBase {
 
     // Call on non-UI thread.
     private void expectTitle(final String title) throws Throwable {
-        assertTrue("Received title " + mAwContents.getTitle() + " while expecting " + title,
-                CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
-                    @Override
-                    public boolean isSatisfied() {
-                        return mAwContents.getTitle().equals(title);
-                    }
-                }));
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                updateFailureReason(
+                        "Received title " + mAwContents.getTitle() + " while expecting " + title);
+                return mAwContents.getTitle().equals(title);
+            }
+        });
     }
 
     private void loadPage(String page) throws Throwable {

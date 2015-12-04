@@ -45,13 +45,13 @@ public class ChromeBrowserSyncAdapterTest extends ChromeActivityTestCaseBase<Chr
         intent.addCategory(Intent.CATEGORY_HOME);
         context.startActivity(intent);
 
-        assertTrue("Activity should have been sent to background",
-                CriteriaHelper.pollForCriteria(new Criteria() {
-                    @Override
-                    public boolean isSatisfied() {
-                        return !ApplicationStatus.hasVisibleActivities();
-                    }
-                }, WAIT_FOR_LAUNCHER_MS, POLL_INTERVAL_MS));
+        CriteriaHelper.pollForCriteria(new Criteria(
+                "Activity should have been sent to background") {
+            @Override
+            public boolean isSatisfied() {
+                return !ApplicationStatus.hasVisibleActivities();
+            }
+        }, WAIT_FOR_LAUNCHER_MS, POLL_INTERVAL_MS);
     }
 
     private void performSyncWithBundle(Bundle bundle) {

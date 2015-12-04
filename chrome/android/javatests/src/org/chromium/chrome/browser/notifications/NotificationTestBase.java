@@ -95,7 +95,7 @@ public class NotificationTestBase extends ChromeActivityTestCaseBase<ChromeActiv
      * @return The NotificationEntry object tracked by the MockNotificationManagerProxy.
      */
     protected NotificationEntry waitForNotification() throws Exception {
-        assertTrue(waitForNotificationManagerMutation());
+        waitForNotificationManagerMutation();
         List<NotificationEntry> notifications = getNotificationEntries();
         assertEquals(1, notifications.size());
         return notifications.get(0);
@@ -108,11 +108,9 @@ public class NotificationTestBase extends ChromeActivityTestCaseBase<ChromeActiv
     /**
      * Waits for a mutation to occur in the mocked notification manager. This indicates that Chrome
      * called into Android to notify or cancel a notification.
-     *
-     * @return Whether the wait was successful.
      */
-    protected boolean waitForNotificationManagerMutation() throws Exception {
-        return CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+    protected void waitForNotificationManagerMutation() throws Exception {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return mMockNotificationManager.getMutationCountAndDecrement() > 0;

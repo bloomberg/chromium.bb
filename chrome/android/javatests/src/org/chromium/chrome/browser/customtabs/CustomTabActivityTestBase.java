@@ -51,13 +51,12 @@ public abstract class CustomTabActivityTestBase extends
      */
     protected void startCustomTabActivityWithIntent(Intent intent) throws InterruptedException {
         startActivityCompletely(intent);
-        assertTrue("Tab never selected/initialized.",
-                CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
-                    @Override
-                    public boolean isSatisfied() {
-                        return getActivity().getActivityTab() != null;
-                    }
-                }));
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria("Tab never selected/initialized.") {
+            @Override
+            public boolean isSatisfied() {
+                return getActivity().getActivityTab() != null;
+            }
+        });
         final Tab tab = getActivity().getActivityTab();
         final CallbackHelper pageLoadFinishedHelper = new CallbackHelper();
         tab.addObserver(new EmptyTabObserver() {
@@ -71,13 +70,12 @@ public abstract class CustomTabActivityTestBase extends
         } catch (TimeoutException e) {
             fail();
         }
-        assertTrue("Deferred startup never completed",
-                CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
-                    @Override
-                    public boolean isSatisfied() {
-                        return DeferredStartupHandler.getInstance().isDeferredStartupComplete();
-                    }
-                }, 5000, 200));
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria("Deferred startup never completed") {
+            @Override
+            public boolean isSatisfied() {
+                return DeferredStartupHandler.getInstance().isDeferredStartupComplete();
+            }
+        }, 5000, 200);
         assertNotNull(tab);
         assertNotNull(tab.getView());
     }

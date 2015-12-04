@@ -212,7 +212,7 @@ public class NotificationUIManagerTest extends NotificationTestBase {
 
         // The Service Worker will close the notification upon receiving the notificationclick
         // event. This will eventually bubble up to a call to cancel() in the NotificationManager.
-        assertTrue(waitForNotificationManagerMutation());
+        waitForNotificationManagerMutation();
         assertTrue(getNotificationEntries().isEmpty());
     }
 
@@ -228,13 +228,13 @@ public class NotificationUIManagerTest extends NotificationTestBase {
         setNotificationContentSettingForCurrentOrigin(ContentSetting.ALLOW);
 
         runJavaScriptCodeInCurrentTab("showNotification('MyNotification', {tag: 'myTag'});");
-        assertTrue(waitForNotificationManagerMutation());
+        waitForNotificationManagerMutation();
         List<NotificationEntry> notifications = getNotificationEntries();
         String tag = notifications.get(0).tag;
         int id = notifications.get(0).id;
 
         runJavaScriptCodeInCurrentTab("showNotification('SecondNotification', {tag: 'myTag'});");
-        assertTrue(waitForNotificationManagerMutation());
+        waitForNotificationManagerMutation();
 
         // Verify that the notification was successfully replaced.
         notifications = getNotificationEntries();
@@ -262,7 +262,7 @@ public class NotificationUIManagerTest extends NotificationTestBase {
 
         // Open the first notification and verify it is displayed.
         runJavaScriptCodeInCurrentTab("showNotification('One');");
-        assertTrue(waitForNotificationManagerMutation());
+        waitForNotificationManagerMutation();
         List<NotificationEntry> notifications = getNotificationEntries();
         assertEquals(1, notifications.size());
         Notification notificationOne = notifications.get(0).notification;
@@ -270,7 +270,7 @@ public class NotificationUIManagerTest extends NotificationTestBase {
 
         // Open the second notification and verify it is displayed.
         runJavaScriptCodeInCurrentTab("showNotification('Two');");
-        assertTrue(waitForNotificationManagerMutation());
+        waitForNotificationManagerMutation();
         notifications = getNotificationEntries();
         assertEquals(2, notifications.size());
         Notification notificationTwo = notifications.get(1).notification;
@@ -294,7 +294,7 @@ public class NotificationUIManagerTest extends NotificationTestBase {
         // notificationclick event is fired. The test service worker will close the notification
         // upon receiving the event.
         notificationOne.contentIntent.send();
-        assertTrue(waitForNotificationManagerMutation());
+        waitForNotificationManagerMutation();
         notifications = getNotificationEntries();
         assertEquals(1, notifications.size());
         assertEquals("Two",
@@ -302,7 +302,7 @@ public class NotificationUIManagerTest extends NotificationTestBase {
 
         // Close the last notification and verify that none remain.
         notifications.get(0).notification.contentIntent.send();
-        assertTrue(waitForNotificationManagerMutation());
+        waitForNotificationManagerMutation();
         assertTrue(getNotificationEntries().isEmpty());
     }
 

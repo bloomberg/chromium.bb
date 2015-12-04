@@ -142,7 +142,8 @@ public class TypedUrlsTest extends SyncTestBase {
     }
 
     private void waitForClientTypedUrlCount(final int count) throws InterruptedException {
-        boolean success = CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(new Criteria(
+                "Expected " + count + " local typed URL entities.") {
             @Override
             public boolean isSatisfied() {
                 try {
@@ -152,12 +153,12 @@ public class TypedUrlsTest extends SyncTestBase {
                 }
             }
         }, SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);
-        assertTrue("Expected " + count + " local typed URL entities.", success);
     }
 
     private void waitForServerTypedUrlCountWithName(final int count, final String name)
             throws InterruptedException {
-        boolean success = CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(new Criteria(
+                "Expected " + count + " server typed URLs with name " + name + ".") {
             @Override
             public boolean isSatisfied() {
                 try {
@@ -168,6 +169,5 @@ public class TypedUrlsTest extends SyncTestBase {
                 }
             }
         }, SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);
-        assertTrue("Expected " + count + " server typed URLs with name " + name + ".", success);
     }
 }

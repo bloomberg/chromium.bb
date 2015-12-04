@@ -33,7 +33,7 @@ public class TestsJavaScriptEvalTest extends ContentShellTestBase {
     public void testJavaScriptEvalIsCorrectlyOrdered()
             throws InterruptedException, Exception, Throwable {
         launchContentShellWithUrl(JSTEST_URL);
-        assertTrue("Page failed to load", waitForActiveShellToBeDoneLoading());
+        waitForActiveShellToBeDoneLoading();
 
         final WebContents webContents = getWebContents();
         for (int i = 0; i < 30; ++i) {

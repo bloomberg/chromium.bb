@@ -103,7 +103,7 @@ public class ScreenOrientationProviderTest extends ContentShellTestBase {
     /**
      * Call |lockOrientation| and wait for an orientation change.
      */
-    private boolean lockOrientationAndWait(final int orientations) throws InterruptedException {
+    private void lockOrientationAndWait(final int orientations) throws InterruptedException {
         OrientationChangeObserverCriteria criteria =
                 new OrientationChangeObserverCriteria(mObserver);
 
@@ -115,7 +115,13 @@ public class ScreenOrientationProviderTest extends ContentShellTestBase {
         });
         getInstrumentation().waitForIdleSync();
 
-        return CriteriaHelper.pollForCriteria(criteria);
+        try {
+            CriteriaHelper.pollForCriteria(criteria);
+        } catch (AssertionError e) {
+            // This should not be here but the Criteria does not support cases where the orientation
+            // is not being changed (i.e. where the Natural orientation matches the one you are
+            // locking to).  crbug.com/565587
+        }
     }
 
     @Override
@@ -145,7 +151,13 @@ public class ScreenOrientationProviderTest extends ContentShellTestBase {
         lockOrientationAndWait(ScreenOrientationValues.PORTRAIT_PRIMARY);
 
         // Make sure mObserver is updated before we start the tests.
-        CriteriaHelper.pollForCriteria(criteria);
+        try {
+            CriteriaHelper.pollForCriteria(criteria);
+        } catch (AssertionError e) {
+            // This should not be here but the Criteria does not support cases where the orientation
+            // is not being changed (i.e. where the Natural orientation matches the one you are
+            // locking to).  crbug.com/565587
+        }
     }
 
     @Override

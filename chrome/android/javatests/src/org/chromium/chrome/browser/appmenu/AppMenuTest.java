@@ -92,12 +92,12 @@ public class AppMenuTest extends ChromeActivityTestCaseBase<ChromeActivity> {
                 mAppMenu.getPopup().getListView().setSelection(0);
             }
         });
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return getCurrentFocusedRow() == 0;
             }
-        }));
+        });
         getInstrumentation().waitForIdleSync();
     }
 
@@ -202,13 +202,12 @@ public class AppMenuTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         showAppMenuAndAssertMenuShown();
         getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        assertTrue("AppMenu did not dismiss",
-                CriteriaHelper.pollForCriteria(new Criteria() {
-                    @Override
-                    public boolean isSatisfied() {
-                        return !mAppMenuHandler.isAppMenuShowing();
-                    }
-                }));
+        CriteriaHelper.pollForCriteria(new Criteria("AppMenu did not dismiss") {
+            @Override
+            public boolean isSatisfied() {
+                return !mAppMenuHandler.isAppMenuShowing();
+            }
+        });
     }
 
     private void showAppMenuAndAssertMenuShown() throws InterruptedException {
@@ -218,25 +217,23 @@ public class AppMenuTest extends ChromeActivityTestCaseBase<ChromeActivity> {
                 mAppMenuHandler.showAppMenu(null, false);
             }
         });
-        assertTrue("AppMenu did not show",
-                CriteriaHelper.pollForCriteria(new Criteria() {
-                    @Override
-                    public boolean isSatisfied() {
-                        return mAppMenuHandler.isAppMenuShowing();
-                    }
-                }));
+        CriteriaHelper.pollForCriteria(new Criteria("AppMenu did not show") {
+            @Override
+            public boolean isSatisfied() {
+                return mAppMenuHandler.isAppMenuShowing();
+            }
+        });
     }
 
     private void hitEnterAndAssertAppMenuDismissed() throws InterruptedException {
         getInstrumentation().waitForIdleSync();
         pressKey(KeyEvent.KEYCODE_ENTER);
-        assertTrue("AppMenu did not dismiss",
-                CriteriaHelper.pollForCriteria(new Criteria() {
-                    @Override
-                    public boolean isSatisfied() {
-                        return !mAppMenuHandler.isAppMenuShowing();
-                    }
-                }));
+        CriteriaHelper.pollForCriteria(new Criteria("AppMenu did not dismiss") {
+            @Override
+            public boolean isSatisfied() {
+                return !mAppMenuHandler.isAppMenuShowing();
+            }
+        });
     }
 
     private void moveToBoundary(boolean towardsTop, boolean movePast) throws InterruptedException {
@@ -246,25 +243,24 @@ public class AppMenuTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         for (int index = getCurrentFocusedRow(); index != end; index += increment) {
             pressKey(towardsTop ? KeyEvent.KEYCODE_DPAD_UP : KeyEvent.KEYCODE_DPAD_DOWN);
             final int expectedPosition = index + increment;
-            assertTrue("Focus did not move to the next menu item",
-                    CriteriaHelper.pollForCriteria(new Criteria() {
+            CriteriaHelper.pollForCriteria(
+                    new Criteria("Focus did not move to the next menu item") {
                         @Override
                         public boolean isSatisfied() {
                             return getCurrentFocusedRow() == expectedPosition;
                         }
-                    }));
+                    });
         }
 
         // Try moving past it by one.
         if (movePast) {
             pressKey(towardsTop ? KeyEvent.KEYCODE_DPAD_UP : KeyEvent.KEYCODE_DPAD_DOWN);
-            assertTrue("Focus moved past the edge menu item",
-                    CriteriaHelper.pollForCriteria(new Criteria() {
-                        @Override
-                        public boolean isSatisfied() {
-                            return getCurrentFocusedRow() == end;
-                        }
-                    }));
+            CriteriaHelper.pollForCriteria(new Criteria("Focus moved past the edge menu item") {
+                @Override
+                public boolean isSatisfied() {
+                    return getCurrentFocusedRow() == end;
+                }
+            });
         }
 
         // The menu should stay open.

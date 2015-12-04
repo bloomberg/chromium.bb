@@ -262,13 +262,13 @@ public class DownloadTest extends DownloadTestBase {
             }
         });
 
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return getActivity().getActivityTab() == model.getTabAt(count - 1)
                         && getActivity().getActivityTab().isReady();
             }
-        }));
+        });
     }
 
     private void waitForNewTabToStabilize(final int numTabsAfterNewTab)
@@ -276,17 +276,18 @@ public class DownloadTest extends DownloadTestBase {
         // Wait until we have a new tab first. This should be called before checking the active
         // layout because the active layout changes StaticLayout --> SimpleAnimationLayout
         // --> (tab added) --> StaticLayout.
-        assertTrue("Actual tab count: " + getActivity().getCurrentTabModel().getCount(),
-                CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
-                    @Override
-                    public boolean isSatisfied() {
-                        return getActivity().getCurrentTabModel().getCount() >= numTabsAfterNewTab;
-                    }
-                }));
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                updateFailureReason(
+                        "Actual tab count: " + getActivity().getCurrentTabModel().getCount());
+                return getActivity().getCurrentTabModel().getCount() >= numTabsAfterNewTab;
+            }
+        });
 
         // Now wait until the new tab animation finishes. Something wonky happens
         // if we try to go to the new tab before this.
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 CompositorViewHolder compositorViewHolder =
@@ -296,7 +297,7 @@ public class DownloadTest extends DownloadTestBase {
 
                 return layoutManager.getActiveLayout() instanceof StaticLayout;
             }
-        }));
+        });
     }
 
     /*
@@ -371,13 +372,13 @@ public class DownloadTest extends DownloadTestBase {
      */
     private void assertPollForInfoBarSize(final int size) throws InterruptedException {
         final InfoBarContainer container = getActivity().getActivityTab().getInfoBarContainer();
-        assertTrue("There should be " + size + " infobar but there are "
-                + getInfoBars().size() + " infobars.",
-                CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
-                    @Override
-                    public boolean isSatisfied() {
-                        return getInfoBars().size() == size && !container.isAnimating();
-                    }
-                }));
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                updateFailureReason("There should be " + size + " infobar but there are "
+                        + getInfoBars().size() + " infobars.");
+                return getInfoBars().size() == size && !container.isAnimating();
+            }
+        });
     }
 }

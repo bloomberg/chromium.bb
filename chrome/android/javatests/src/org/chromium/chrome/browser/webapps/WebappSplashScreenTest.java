@@ -86,7 +86,7 @@ public class WebappSplashScreenTest extends WebappActivityTestBase {
             }
         });
 
-        assertTrue(waitUntilSplashscreenHides());
+        waitUntilSplashscreenHides();
     }
 
     @SmallTest
@@ -102,7 +102,7 @@ public class WebappSplashScreenTest extends WebappActivityTestBase {
             }
         });
 
-        assertTrue(waitUntilSplashscreenHides());
+        waitUntilSplashscreenHides();
     }
 
     @SmallTest
@@ -118,7 +118,7 @@ public class WebappSplashScreenTest extends WebappActivityTestBase {
             }
         });
 
-        assertTrue(waitUntilSplashscreenHides());
+        waitUntilSplashscreenHides();
     }
 
     @SmallTest
@@ -134,7 +134,7 @@ public class WebappSplashScreenTest extends WebappActivityTestBase {
             }
         });
 
-        assertTrue(waitUntilSplashscreenHides());
+        waitUntilSplashscreenHides();
     }
 
     @SmallTest
@@ -154,7 +154,7 @@ public class WebappSplashScreenTest extends WebappActivityTestBase {
             }
         });
 
-        assertTrue(waitUntilSplashscreenHides());
+        waitUntilSplashscreenHides();
     }
 
     @SmallTest
@@ -201,7 +201,7 @@ public class WebappSplashScreenTest extends WebappActivityTestBase {
             }
         });
 
-        assertTrue(waitUntilSplashscreenHides());
+        waitUntilSplashscreenHides();
 
         // DURATION and HIDES should now have a value.
         assertTrue(hasHistogramEntry(WebappUma.HISTOGRAM_SPLASHSCREEN_DURATION, 3000));

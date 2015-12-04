@@ -175,7 +175,7 @@ public class InfoBarTest2 extends ChromeActivityTestCaseBase<ChromeActivity> {
                         networkPredictionOptions);
             }
         };
-    };
+    }
 
     /**
      * Same as testInfoBarExpiration but with prerender turned-off.
@@ -375,14 +375,13 @@ public class InfoBarTest2 extends ChromeActivityTestCaseBase<ChromeActivity> {
         addInfoBarToCurrentTab(infoBar);
 
         // A layout must occur to recalculate the transparent region.
-        boolean layoutOccured = CriteriaHelper.pollForUIThreadCriteria(
+        CriteriaHelper.pollForUIThreadCriteria(
                 new Criteria() {
                     @Override
                     public boolean isSatisfied() {
                         return layoutCount.get() > 0;
                     }
                 });
-        assertTrue(layoutOccured);
 
         final Rect fullDisplayFrame = new Rect();
         final Rect fullDisplayFrameMinusContainer = new Rect();
@@ -414,14 +413,13 @@ public class InfoBarTest2 extends ChromeActivityTestCaseBase<ChromeActivity> {
         dismissInfoBar(infoBar);
 
         // A layout must occur to recalculate the transparent region.
-        layoutOccured = CriteriaHelper.pollForUIThreadCriteria(
+        CriteriaHelper.pollForUIThreadCriteria(
                 new Criteria() {
                     @Override
                     public boolean isSatisfied() {
                         return layoutCount.get() > 0;
                     }
                 });
-        assertTrue(layoutOccured);
 
         getInstrumentation().runOnMainSync(new Runnable() {
             @Override

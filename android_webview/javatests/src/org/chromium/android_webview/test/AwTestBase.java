@@ -495,7 +495,7 @@ public class AwTestBase
      * treats timeouts and exceptions as test failures automatically.
      */
     public static void poll(final Callable<Boolean> callable) throws Exception {
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 try {
@@ -505,7 +505,7 @@ public class AwTestBase
                     return false;
                 }
             }
-        }, WAIT_TIMEOUT_MS, CHECK_INTERVAL));
+        }, WAIT_TIMEOUT_MS, CHECK_INTERVAL);
     }
 
     /**

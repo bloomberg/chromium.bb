@@ -143,7 +143,7 @@ public class HistoryUITest extends ChromeActivityTestCaseBase<ChromeActivity> {
      */
     private void assertResultCountReaches(final ContentViewCore cvc, final int expected)
             throws InterruptedException {
-        assertTrue(CriteriaHelper.pollForCriteria(
+        CriteriaHelper.pollForCriteria(
                 new Criteria() {
                     @Override
                     public boolean isSatisfied() {
@@ -157,7 +157,7 @@ public class HistoryUITest extends ChromeActivityTestCaseBase<ChromeActivity> {
                             return false;
                         }
                     }
-                }));
+                });
     }
 
     /*
@@ -280,13 +280,12 @@ public class HistoryUITest extends ChromeActivityTestCaseBase<ChromeActivity> {
         assertNotNull("Could not find Clear button.", clearButton);
 
         TestTouchUtils.performClickOnMainSync(getInstrumentation(), clearButton);
-        assertTrue("Clear browsing dialog never hidden",
-                CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
-                    @Override
-                    public boolean isSatisfied() {
-                        return !clearBrowsingFragment.isVisible();
-                    }
-                }));
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria("Clear browsing dialog never hidden") {
+            @Override
+            public boolean isSatisfied() {
+                return !clearBrowsingFragment.isVisible();
+            }
+        });
 
         final ChromeActivity mainActivity = ActivityUtils.waitForActivity(
                 getInstrumentation(), getActivity().getClass(), new Runnable() {
@@ -301,14 +300,13 @@ public class HistoryUITest extends ChromeActivityTestCaseBase<ChromeActivity> {
                     }
                 });
         assertNotNull("Main never resumed", mainActivity);
-        assertTrue("Main tab never restored", CriteriaHelper.pollForUIThreadCriteria(
-                new Criteria() {
-                    @Override
-                    public boolean isSatisfied() {
-                        return mainActivity.getActivityTab() != null
-                                && !mainActivity.getActivityTab().isFrozen();
-                    }
-                }));
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria("Main tab never restored") {
+            @Override
+            public boolean isSatisfied() {
+                return mainActivity.getActivityTab() != null
+                        && !mainActivity.getActivityTab().isFrozen();
+            }
+        });
         JavaScriptUtils.executeJavaScriptAndWaitForResult(
                 mainActivity.getCurrentContentViewCore().getWebContents(), "reloadHistory()");
         assertResultCountReaches(getActivity().getCurrentContentViewCore(), 0);

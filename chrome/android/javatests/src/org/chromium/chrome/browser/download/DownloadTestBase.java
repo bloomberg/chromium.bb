@@ -210,7 +210,7 @@ public abstract class DownloadTestBase extends ChromeActivityTestCaseBase<Chrome
         cleanUpAllDownloads();
 
         try {
-            assertTrue(ApplicationUtils.waitForLibraryDependencies(getInstrumentation()));
+            ApplicationUtils.waitForLibraryDependencies(getInstrumentation());
         } catch (InterruptedException e) {
             fail("Library dependencies were never initialized.");
         }

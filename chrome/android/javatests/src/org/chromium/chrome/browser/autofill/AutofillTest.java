@@ -84,8 +84,8 @@ public class AutofillTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         public void deleteSuggestion(int listIndex) {
         }
 
-        public boolean waitForCallback() throws InterruptedException {
-            return CriteriaHelper.pollForCriteria(new Criteria() {
+        public void waitForCallback() throws InterruptedException {
+            CriteriaHelper.pollForCriteria(new Criteria() {
                 @Override
                 public boolean isSatisfied() {
                     return mGotPopupSelection.get();
@@ -117,7 +117,7 @@ public class AutofillTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         };
     }
 
-    public boolean openAutofillPopupAndWaitUntilReady(final AutofillSuggestion[] suggestions)
+    public void openAutofillPopupAndWaitUntilReady(final AutofillSuggestion[] suggestions)
             throws InterruptedException {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -125,7 +125,7 @@ public class AutofillTest extends ChromeActivityTestCaseBase<ChromeActivity> {
                 mAutofillPopup.filterAndShow(suggestions, false);
             }
         });
-        return CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return mAutofillPopup.getListView().getChildCount() > 0;
@@ -136,10 +136,10 @@ public class AutofillTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     @SmallTest
     @Feature({"autofill"})
     public void testAutofillWithDifferentNumberSuggestions() throws Exception {
-        assertTrue(openAutofillPopupAndWaitUntilReady(createTwoAutofillSuggestionArray()));
+        openAutofillPopupAndWaitUntilReady(createTwoAutofillSuggestionArray());
         assertEquals(2, mAutofillPopup.getListView().getCount());
 
-        assertTrue(openAutofillPopupAndWaitUntilReady(createFiveAutofillSuggestionArray()));
+        openAutofillPopupAndWaitUntilReady(createFiveAutofillSuggestionArray());
         assertEquals(5, mAutofillPopup.getListView().getCount());
     }
 
@@ -147,11 +147,11 @@ public class AutofillTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     @Feature({"autofill"})
     public void testAutofillClickFirstSuggestion() throws Exception {
         AutofillSuggestion[] suggestions = createTwoAutofillSuggestionArray();
-        assertTrue(openAutofillPopupAndWaitUntilReady(suggestions));
+        openAutofillPopupAndWaitUntilReady(suggestions);
         assertEquals(2, mAutofillPopup.getListView().getCount());
 
         TouchCommon.singleClickView(mAutofillPopup.getListView().getChildAt(0));
-        assertTrue(mMockAutofillCallback.waitForCallback());
+        mMockAutofillCallback.waitForCallback();
 
         assertEquals(0, mMockAutofillCallback.mListIndex);
     }

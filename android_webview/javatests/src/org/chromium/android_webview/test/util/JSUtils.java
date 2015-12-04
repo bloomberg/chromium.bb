@@ -28,7 +28,7 @@ public class JSUtils {
             final OnEvaluateJavaScriptResultHelper onEvaluateJavaScriptResultHelper,
             final String linkId) throws Exception {
 
-        Assert.assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 try {
@@ -42,7 +42,7 @@ public class JSUtils {
                     return false;
                 }
             }
-        }, WAIT_TIMEOUT_MS, CHECK_INTERVAL));
+        }, WAIT_TIMEOUT_MS, CHECK_INTERVAL);
 
         testCase.getInstrumentation().runOnMainSync(new Runnable() {
             @Override

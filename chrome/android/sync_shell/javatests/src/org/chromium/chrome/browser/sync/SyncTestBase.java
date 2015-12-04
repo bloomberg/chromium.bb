@@ -182,13 +182,12 @@ public class SyncTestBase extends ChromeActivityTestCaseBase<ChromeActivity> {
     protected void clearServerData() throws InterruptedException {
         mFakeServerHelper.clearServerData();
         SyncTestUtil.triggerSync();
-        boolean syncStopped = CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria("Timed out waiting for sync to stop.") {
             @Override
             public boolean isSatisfied() {
                 return !ProfileSyncService.get().isSyncRequested();
             }
         }, SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);
-        assertTrue("Timed out waiting for sync to stop.", syncStopped);
     }
 
     protected void disableDataType(final int modelType) {

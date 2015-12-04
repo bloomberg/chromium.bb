@@ -165,12 +165,12 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
             }
         });
 
-        assertTrue("App menu was not shown", CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria("App menu was not shown") {
             @Override
             public boolean isSatisfied() {
                 return mActivity.getAppMenuHandler().isAppMenuShowing();
             }
-        }));
+        });
     }
 
     /**
@@ -301,12 +301,12 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
             }
         });
 
-        assertTrue("Pending Intent was not sent.", CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(new Criteria("Pending Intent was not sent.") {
             @Override
             public boolean isSatisfied() {
                 return onFinished.isSent();
             }
-        }));
+        });
     }
 
     /**
@@ -338,14 +338,14 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         final ChromeActivity chromeActivity = (ChromeActivity) monitor
                 .waitForActivityWithTimeout(ACTIVITY_START_TIMEOUT_MS);
         assertNotNull("A normal chrome activity did not start.", chromeActivity);
-        assertTrue("The normal tab was not initiated correctly.",
-                CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(
+                new Criteria("The normal tab was not initiated correctly.") {
                     @Override
                     public boolean isSatisfied() {
                         Tab tab = chromeActivity.getActivityTab();
                         return tab != null && tab.getUrl().equals(TEST_PAGE);
                     }
-                }));
+                });
     }
 
     /**
@@ -409,12 +409,12 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
             }
         });
 
-        assertTrue("Pending Intent was not sent.", CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(new Criteria("Pending Intent was not sent.") {
             @Override
             public boolean isSatisfied() {
                 return onFinished.isSent();
             }
-        }));
+        });
     }
 
     /**
@@ -468,12 +468,12 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
                                         (new CustomTabsTestUtils.DummyCallback()).asBinder()));
                     }
                 }));
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
-                    @Override
-                    public boolean isSatisfied() {
-                        return mActivity.getActivityTab().getUrl().equals(TEST_PAGE);
-                    }
-        }));
+        CriteriaHelper.pollForCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return mActivity.getActivityTab().getUrl().equals(TEST_PAGE);
+            }
+        });
         assertTrue("CustomTabContentHandler can't handle intent with same session",
                 ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
                     @Override
@@ -496,12 +496,12 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         } catch (TimeoutException e) {
             fail();
         }
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
-                    @Override
-                    public boolean isSatisfied() {
-                        return mActivity.getActivityTab().getUrl().equals(TEST_PAGE_2);
-                    }
-        }));
+        CriteriaHelper.pollForCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return mActivity.getActivityTab().getUrl().equals(TEST_PAGE_2);
+            }
+        });
     }
 
     @SmallTest

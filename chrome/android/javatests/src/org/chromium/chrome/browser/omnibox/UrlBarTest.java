@@ -544,7 +544,7 @@ public class UrlBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         UrlBar urlBar = getUrlBar();
         assertNotNull(urlBar);
         OmniboxTestUtils.toggleUrlBarFocus(urlBar, true);
-        assertTrue(OmniboxTestUtils.waitForFocusAndKeyboardActive(urlBar, true));
+        OmniboxTestUtils.waitForFocusAndKeyboardActive(urlBar, true);
     }
 
     @SmallTest

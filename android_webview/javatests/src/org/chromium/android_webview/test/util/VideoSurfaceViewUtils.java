@@ -91,7 +91,7 @@ public class VideoSurfaceViewUtils {
      */
     public static void pollAndAssertContainsOneVideoHoleSurfaceView(final AwTestBase test,
             final View view) throws InterruptedException {
-        AwTestBase.assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 try {
@@ -102,7 +102,7 @@ public class VideoSurfaceViewUtils {
                 }
             }
         }, MAX_WAIT_FOR_HOLE_PUNCHING_SURFACE_ATTACHED,
-        MAX_WAIT_FOR_HOLE_PUNCHING_SURFACE_ATTACHED / 10));
+                MAX_WAIT_FOR_HOLE_PUNCHING_SURFACE_ATTACHED / 10);
     }
 
     private static int containsNumChildrenOfType(final AwTestBase test,

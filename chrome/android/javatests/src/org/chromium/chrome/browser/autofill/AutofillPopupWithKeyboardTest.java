@@ -82,7 +82,7 @@ public class AutofillPopupWithKeyboardTest extends ChromeActivityTestCaseBase<Ch
                 viewRef.set(viewCoreRef.get().getContainerView());
             }
         });
-        assertTrue(DOMUtils.waitForNonZeroNodeBounds(webContentsRef.get(), "fn"));
+        DOMUtils.waitForNonZeroNodeBounds(webContentsRef.get(), "fn");
 
         // Click on the unfocused input element for the first time to focus on it. This brings up
         // the autofill popup and shows the keyboard at the same time. Showing the keyboard should
@@ -90,24 +90,23 @@ public class AutofillPopupWithKeyboardTest extends ChromeActivityTestCaseBase<Ch
         DOMUtils.clickNode(this, viewCoreRef.get(), "fn");
 
         // Wait until the keyboard is showing.
-        assertTrue("Keyboard was never shown.",
-                CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
-                    @Override
-                    public boolean isSatisfied() {
-                        return UiUtils.isKeyboardShowing(
-                                getActivity(),
-                                getActivity().getCurrentContentViewCore().getContainerView());
-                    }
-                }));
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria("Keyboard was never shown.") {
+            @Override
+            public boolean isSatisfied() {
+                return UiUtils.isKeyboardShowing(
+                        getActivity(),
+                        getActivity().getCurrentContentViewCore().getContainerView());
+            }
+        });
 
         // Verify that the autofill popup is showing.
-        assertTrue("Autofill Popup anchor view was never added.",
-                CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(
+                new Criteria("Autofill Popup anchor view was never added.") {
                     @Override
                     public boolean isSatisfied() {
                         return viewRef.get().findViewById(R.id.dropdown_popup_window) != null;
                     }
-                }));
+                });
         Object popupObject = ThreadUtils.runOnUiThreadBlocking(new Callable<Object>() {
             @Override
             public Object call() {
@@ -116,12 +115,11 @@ public class AutofillPopupWithKeyboardTest extends ChromeActivityTestCaseBase<Ch
         });
         assertTrue(popupObject instanceof AutofillPopup);
         final AutofillPopup popup = (AutofillPopup) popupObject;
-        assertTrue("Autofill Popup was never shown.",
-                CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
-                    @Override
-                    public boolean isSatisfied() {
-                        return popup.isShowing();
-                    }
-                }));
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria("Autofill Popup was never shown.") {
+            @Override
+            public boolean isSatisfied() {
+                return popup.isShowing();
+            }
+        });
     }
 }

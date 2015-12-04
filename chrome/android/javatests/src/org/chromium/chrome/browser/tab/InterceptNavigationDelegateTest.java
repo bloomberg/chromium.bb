@@ -66,9 +66,9 @@ public class InterceptNavigationDelegateTest extends ChromeActivityTestCaseBase<
     }
 
     private void waitTillExpectedCallsComplete(final int count, long timeout) {
-        boolean result = false;
         try {
-            result = CriteriaHelper.pollForCriteria(new Criteria() {
+            CriteriaHelper.pollForCriteria(new Criteria(
+                    "Failed while waiting for all calls to complete.") {
                 @Override
                 public boolean isSatisfied() {
                     return mHistory.size() == count;
@@ -77,7 +77,6 @@ public class InterceptNavigationDelegateTest extends ChromeActivityTestCaseBase<
         } catch (InterruptedException e) {
             fail("Failed while waiting for all calls to complete." + e);
         }
-        assertTrue("Failed while waiting for all calls to complete.", result);
     }
 
     @Override

@@ -50,12 +50,12 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
 
         void assertIsInForeground(final int pid) {
             try {
-                assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+                CriteriaHelper.pollForCriteria(new Criteria() {
                     @Override
                     public boolean isSatisfied() {
                         return mProcessInForegroundMap.get(pid);
                     }
-                }));
+                });
             } catch (InterruptedException ie) {
                 fail();
             }
@@ -63,12 +63,12 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
 
         void assertIsInBackground(final int pid) {
             try {
-                assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+                CriteriaHelper.pollForCriteria(new Criteria() {
                     @Override
                     public boolean isSatisfied() {
                         return !mProcessInForegroundMap.get(pid);
                     }
-                }));
+                });
             } catch (InterruptedException ie) {
                 fail();
             }
@@ -76,12 +76,12 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
 
         void assertSetInForegroundWasCalled(String message, final int pid) {
             try {
-                assertTrue(message, CriteriaHelper.pollForCriteria(new Criteria() {
+                CriteriaHelper.pollForCriteria(new Criteria(message) {
                     @Override
                     public boolean isSatisfied() {
                         return mProcessInForegroundMap.indexOfKey(pid) >= 0;
                     }
-                }));
+                });
             } catch (InterruptedException ie) {
                 fail();
             }
@@ -89,12 +89,12 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
 
         void assertIsReleaseAllModerateBindingsCalled() {
             try {
-                assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+                CriteriaHelper.pollForCriteria(new Criteria() {
                     @Override
                     public boolean isSatisfied() {
                         return mIsReleaseAllModerateBindingsCalled;
                     }
-                }));
+                });
             } catch (InterruptedException ie) {
                 fail();
             }
@@ -206,15 +206,14 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
         // Wait for the new tab animations on phones to finish.
         if (!DeviceFormFactor.isTablet(getActivity())) {
             final ChromeActivity activity = getActivity();
-            assertTrue("Did not finish animation",
-                    CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
-                        @Override
-                        public boolean isSatisfied() {
-                            Layout layout = activity.getCompositorViewHolder()
-                                    .getLayoutManager().getActiveLayout();
-                            return !layout.isLayoutAnimating();
-                        }
-                    }));
+            CriteriaHelper.pollForUIThreadCriteria(new Criteria("Did not finish animation") {
+                @Override
+                public boolean isSatisfied() {
+                    Layout layout = activity.getCompositorViewHolder()
+                            .getLayoutManager().getActiveLayout();
+                    return !layout.isLayoutAnimating();
+                }
+            });
         }
         getInstrumentation().waitForIdleSync();
 
@@ -278,15 +277,14 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
         // Wait for the new tab animations on phones to finish.
         if (!DeviceFormFactor.isTablet(getActivity())) {
             final ChromeActivity activity = getActivity();
-            assertTrue("Did not finish animation",
-                    CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
-                        @Override
-                        public boolean isSatisfied() {
-                            Layout layout = activity.getCompositorViewHolder()
-                                    .getLayoutManager().getActiveLayout();
-                            return !layout.isLayoutAnimating();
-                        }
-                    }));
+            CriteriaHelper.pollForUIThreadCriteria(new Criteria("Did not finish animation") {
+                @Override
+                public boolean isSatisfied() {
+                    Layout layout = activity.getCompositorViewHolder()
+                            .getLayoutManager().getActiveLayout();
+                    return !layout.isLayoutAnimating();
+                }
+            });
         }
         getInstrumentation().waitForIdleSync();
 
@@ -311,13 +309,13 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
         assertTrue(ChildProcessLauncher.crashProcessForTesting(
                 tabs[1].getContentViewCore().getCurrentRenderProcessId()));
 
-        assertTrue("Renderer crash wasn't noticed by the browser.",
-                CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(
+                new Criteria("Renderer crash wasn't noticed by the browser.") {
                     @Override
                     public boolean isSatisfied() {
                         return tabs[1].getContentViewCore().getCurrentRenderProcessId() == 0;
                     }
-                }));
+                });
 
         // Switch to the tab that crashed in background.
         getInstrumentation().runOnMainSync(new Runnable() {
@@ -328,13 +326,13 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
         });
 
         // Wait until the process is spawned and its visibility is determined.
-        assertTrue("Process for the crashed tab was not respawned.",
-                CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(
+                new Criteria("Process for the crashed tab was not respawned.") {
                     @Override
                     public boolean isSatisfied() {
                         return tabs[1].getContentViewCore().getCurrentRenderProcessId() != 0;
                     }
-                }));
+                });
 
         mBindingManager.assertSetInForegroundWasCalled(
                 "isInForeground() was not called for the process.",
@@ -377,13 +375,13 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
         assertTrue(ChildProcessLauncher.crashProcessForTesting(
                 tab.getContentViewCore().getCurrentRenderProcessId()));
 
-        assertTrue("Renderer crash wasn't noticed by the browser.",
-                CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(
+                new Criteria("Renderer crash wasn't noticed by the browser.") {
                     @Override
                     public boolean isSatisfied() {
                         return tab.getContentViewCore().getCurrentRenderProcessId() == 0;
                     }
-                }));
+                });
 
         // Reload the tab, respawning the renderer.
         getInstrumentation().runOnMainSync(new Runnable() {
@@ -394,13 +392,13 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
         });
 
         // Wait until the process is spawned and its visibility is determined.
-        assertTrue("Process for the crashed tab was not respawned.",
-                CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(
+                new Criteria("Process for the crashed tab was not respawned.") {
                     @Override
                     public boolean isSatisfied() {
                         return tab.getContentViewCore().getCurrentRenderProcessId() != 0;
                     }
-                }));
+                });
 
         mBindingManager.assertSetInForegroundWasCalled(
                 "isInForeground() was not called for the process.",
@@ -536,7 +534,7 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
         tabs[0] = getActivity().getActivityTab();
         singleClickView(tabs[0].getView());
 
-        assertTrue("Child tab isn't opened.", CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(new Criteria("Child tab isn't opened.") {
             @Override
             public boolean isSatisfied() {
                 return getActivity().getCurrentTabModel().getCount() == 2
@@ -547,7 +545,7 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
                                    .getCurrentRenderProcessId()
                         != 0;
             }
-        }));
+        });
         tabs[1] = getActivity().getActivityTab();
         assertEquals(tabs[0].getContentViewCore().getCurrentRenderProcessId(),
                 tabs[1].getContentViewCore().getCurrentRenderProcessId());
@@ -564,13 +562,13 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
         assertTrue(ChildProcessLauncher.crashProcessForTesting(
                 tabs[1].getContentViewCore().getCurrentRenderProcessId()));
 
-        assertTrue("Renderer crash wasn't noticed by the browser.",
-                CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(
+                new Criteria("Renderer crash wasn't noticed by the browser.") {
                     @Override
                     public boolean isSatisfied() {
                         return tabs[1].getContentViewCore().getCurrentRenderProcessId() == 0;
                     }
-                }));
+                });
         // Reload the tab, respawning the renderer.
         getInstrumentation().runOnMainSync(new Runnable() {
             @Override
@@ -580,13 +578,13 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
         });
 
         // Wait until the process is spawned and its visibility is determined.
-        assertTrue("Process for the crashed tab was not respawned.",
-                CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(
+                new Criteria("Process for the crashed tab was not respawned.") {
                     @Override
                     public boolean isSatisfied() {
                         return tabs[1].getContentViewCore().getCurrentRenderProcessId() != 0;
                     }
-                }));
+                });
 
         mBindingManager.assertSetInForegroundWasCalled(
                 "setInForeground() was not called for the process.",

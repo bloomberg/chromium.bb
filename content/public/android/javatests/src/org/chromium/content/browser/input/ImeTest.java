@@ -69,7 +69,7 @@ public class ImeTest extends ContentShellTestBase {
         super.setUp();
 
         launchContentShellWithUrl(DATA_URL);
-        assertTrue("Page failed to load", waitForActiveShellToBeDoneLoading());
+        waitForActiveShellToBeDoneLoading();
         mContentViewCore = getContentViewCore();
         mWebContents = getWebContents();
 
@@ -82,8 +82,7 @@ public class ImeTest extends ContentShellTestBase {
         mCallbackContainer = new TestCallbackHelperContainer(mContentViewCore);
         // TODO(aurimas) remove this wait once crbug.com/179511 is fixed.
         assertWaitForPageScaleFactorMatch(1);
-        assertTrue(DOMUtils.waitForNonZeroNodeBounds(
-                mWebContents, "input_text"));
+        DOMUtils.waitForNonZeroNodeBounds(mWebContents, "input_text");
         DOMUtils.clickNode(this, mContentViewCore, "input_text");
         assertWaitForKeyboardStatus(true);
 
@@ -100,12 +99,17 @@ public class ImeTest extends ContentShellTestBase {
 
     private void assertNoFurtherStateUpdate(final int index) throws InterruptedException {
         final List<TestImeState> states = mConnectionFactory.getImeStateList();
-        assertFalse(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return states.size() > index;
-            }
-        }));
+        try {
+            CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+                @Override
+                public boolean isSatisfied() {
+                    return states.size() > index;
+                }
+            });
+            fail("Unexpected updates pending");
+        } catch (AssertionError e) {
+            // TODO(tedchoc): This is horrible and should never timeout to determine success.
+        }
     }
 
     @MediumTest
@@ -206,13 +210,14 @@ public class ImeTest extends ContentShellTestBase {
     private void waitForKeyboardStates(int show, int hide, int restart, Integer[] history)
             throws InterruptedException {
         final String expected = stringifyKeyboardStates(show, hide, restart, history);
-        assertTrue("Expected: {" + expected + "}, Actual: {" + getKeyboardStates() + "}",
-                CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
-                    @Override
-                    public boolean isSatisfied() {
-                        return expected.equals(getKeyboardStates());
-                    }
-                }));
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                updateFailureReason(
+                        "Expected: {" + expected + "}, Actual: {" + getKeyboardStates() + "}");
+                return expected.equals(getKeyboardStates());
+            }
+        });
     }
 
     private void resetAllStates() {
@@ -329,12 +334,12 @@ public class ImeTest extends ContentShellTestBase {
         // hide status of IME, so we will just check whether showIme() has been triggered.
         DOMUtils.longPressNode(this, mContentViewCore, "input_text");
         final int newCount = showCount + 2;
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return newCount == mInputMethodManagerWrapper.getShowSoftInputCounter();
             }
-        }));
+        });
     }
 
     private void attachPhysicalKeyboard() {
@@ -390,13 +395,18 @@ public class ImeTest extends ContentShellTestBase {
 
         detachPhysicalKeyboard();
 
-        // We should not show soft keyboard here because focus has been lost.
-        assertFalse(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mInputMethodManagerWrapper.isShowWithoutHideOutstanding();
-            }
-        }));
+        try {
+            // We should not show soft keyboard here because focus has been lost.
+            CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+                @Override
+                public boolean isSatisfied() {
+                    return mInputMethodManagerWrapper.isShowWithoutHideOutstanding();
+                }
+            });
+            fail("Keyboard incorrectly showing");
+        } catch (AssertionError e) {
+            // TODO(tedchoc): This is horrible and should never timeout to determine success.
+        }
     }
 
     @SmallTest
@@ -885,23 +895,23 @@ public class ImeTest extends ContentShellTestBase {
         waitAndVerifyStatesAndCalls(2, "", 0, 0, -1, -1);
 
         DOMUtils.longPressNode(this, mContentViewCore, "input_text");
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return mContentViewCore.isPastePopupShowing();
             }
-        }));
+        });
 
         DOMUtils.clickNode(this, mContentViewCore, "input_text");
         assertWaitForKeyboardStatus(true);
         DOMUtils.longPressNode(this, mContentViewCore, "input_text");
         setComposingText("h", 1);
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return !mContentViewCore.isPastePopupShowing();
             }
-        }));
+        });
         assertFalse(mContentViewCore.hasInsertion());
     }
 
@@ -965,36 +975,36 @@ public class ImeTest extends ContentShellTestBase {
     }
 
     private void assertWaitForKeyboardStatus(final boolean show) throws InterruptedException {
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 boolean hasConnection = getAdapterInputConnection() != null;
                 return show == mInputMethodManagerWrapper.isShowWithoutHideOutstanding()
                         && show == hasConnection;
             }
-        }));
+        });
     }
 
     private void assertWaitForSelectActionBarStatus(
             final boolean show) throws InterruptedException {
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return show == mContentViewCore.isSelectActionBarShowing();
             }
-        }));
+        });
     }
 
     private void waitAndVerifyStates(final int index, String text, final int selectionStart,
             final int selectionEnd, final int compositionStart, final int compositionEnd)
             throws InterruptedException {
         final List<TestImeState> states = mConnectionFactory.getImeStateList();
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return states.size() > index;
             }
-        }));
+        });
         states.get(index).assertEqualState(
                 text, selectionStart, selectionEnd, compositionStart, compositionEnd);
     }
@@ -1008,16 +1018,17 @@ public class ImeTest extends ContentShellTestBase {
         // Wait and verify calls to InputMethodManager.
         final Range selection = new Range(selectionStart, selectionEnd);
         final Range composition = new Range(compositionStart, compositionEnd);
-        assertTrue("Actual selection was: " + mInputMethodManagerWrapper.getSelection()
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                updateFailureReason(
+                        "Actual selection was: " + mInputMethodManagerWrapper.getSelection()
                         + ", and actual composition was: "
-                        + mInputMethodManagerWrapper.getComposition(),
-                CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
-                    @Override
-                    public boolean isSatisfied() {
-                        return mInputMethodManagerWrapper.getSelection().equals(selection)
-                                && mInputMethodManagerWrapper.getComposition().equals(composition);
-                    }
-                }));
+                        + mInputMethodManagerWrapper.getComposition());
+                return mInputMethodManagerWrapper.getSelection().equals(selection)
+                        && mInputMethodManagerWrapper.getComposition().equals(composition);
+            }
+        });
     }
 
     private void resetUpdateStateList() {
@@ -1038,7 +1049,7 @@ public class ImeTest extends ContentShellTestBase {
 
     private void assertClipboardContents(final Activity activity, final String expectedContents)
             throws InterruptedException {
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 ClipboardManager clipboardManager =
@@ -1047,7 +1058,7 @@ public class ImeTest extends ContentShellTestBase {
                 return clip != null && clip.getItemCount() == 1
                         && TextUtils.equals(clip.getItemAt(0).getText(), expectedContents);
             }
-        }));
+        });
     }
 
     private ImeAdapter getImeAdapter() {
@@ -1196,7 +1207,7 @@ public class ImeTest extends ContentShellTestBase {
             throws InterruptedException, TimeoutException {
         DOMUtils.focusNode(mWebContents, id);
         assertWaitForKeyboardStatus(shouldShowKeyboard);
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 try {
@@ -1205,7 +1216,7 @@ public class ImeTest extends ContentShellTestBase {
                     return false;
                 }
             }
-        }));
+        });
         // When we focus another element, the connection may be recreated.
         mConnection = (TestAdapterInputConnection) getAdapterInputConnection();
     }

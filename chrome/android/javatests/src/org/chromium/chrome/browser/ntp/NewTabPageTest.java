@@ -98,13 +98,13 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
         singleClickView(mFakebox);
         waitForFakeboxFocusAnimationComplete(mNtp);
         UrlBar urlBar = (UrlBar) getActivity().findViewById(R.id.url_bar);
-        assertTrue(OmniboxTestUtils.waitForFocusAndKeyboardActive(urlBar, true));
+        OmniboxTestUtils.waitForFocusAndKeyboardActive(urlBar, true);
         int afterFocusFakeboxTop = getFakeboxTop(mNtp);
         assertTrue(afterFocusFakeboxTop < initialFakeboxTop);
 
         OmniboxTestUtils.toggleUrlBarFocus(urlBar, false);
         waitForFakeboxTopPosition(mNtp, initialFakeboxTop);
-        assertTrue(OmniboxTestUtils.waitForFocusAndKeyboardActive(urlBar, false));
+        OmniboxTestUtils.waitForFocusAndKeyboardActive(urlBar, false);
     }
 
     /**
@@ -117,7 +117,7 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
         singleClickView(mFakebox);
         waitForFakeboxFocusAnimationComplete(mNtp);
         final UrlBar urlBar = (UrlBar) getActivity().findViewById(R.id.url_bar);
-        assertTrue(OmniboxTestUtils.waitForFocusAndKeyboardActive(urlBar, true));
+        OmniboxTestUtils.waitForFocusAndKeyboardActive(urlBar, true);
 
         getInstrumentation().sendStringSync(TEST_PAGE);
         LocationBarLayout locationBar =
@@ -253,8 +253,8 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
             final View v = urlBar;
             KeyUtils.singleKeyEventView(getInstrumentation(), v, KeyEvent.KEYCODE_ENTER);
 
-            assertTrue(waitForUrlFocusAnimationsDisabledState(true));
-            assertTrue(waitForTabLoading());
+            waitForUrlFocusAnimationsDisabledState(true);
+            waitForTabLoading();
 
             ThreadUtils.runOnUiThreadBlocking(new Runnable() {
                 @Override
@@ -262,7 +262,7 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
                     mTab.stopLoading();
                 }
             });
-            assertTrue(waitForUrlFocusAnimationsDisabledState(false));
+            waitForUrlFocusAnimationsDisabledState(false);
             delaySemaphore.release();
             loadedCallback.waitForCallback(0);
             assertFalse(getUrlFocusAnimatonsDisabled());
@@ -280,9 +280,9 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
         });
     }
 
-    private boolean waitForUrlFocusAnimationsDisabledState(final boolean disabled)
+    private void waitForUrlFocusAnimationsDisabledState(final boolean disabled)
             throws InterruptedException {
-        return CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return getUrlFocusAnimatonsDisabled() == disabled;
@@ -290,8 +290,8 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
         });
     }
 
-    private boolean waitForTabLoading() throws InterruptedException {
-        return CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+    private void waitForTabLoading() throws InterruptedException {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return mTab.isLoading();
@@ -303,19 +303,14 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
         waitForUrlFocusPercent(ntp, 1f);
     }
 
-    private void waitForFakeboxUnfocusAnimationComplete(NewTabPage ntp)
-            throws InterruptedException {
-        waitForUrlFocusPercent(ntp, 0f);
-    }
-
     private void waitForUrlFocusPercent(final NewTabPage ntp, final float percent)
             throws InterruptedException {
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return ntp.getNewTabPageView().getUrlFocusChangeAnimationPercent() == percent;
             }
-        }));
+        });
     }
 
     private void clickFakebox() {
@@ -343,11 +338,11 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
      */
     private void waitForFakeboxTopPosition(final NewTabPage ntp, final int position)
             throws InterruptedException {
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return getFakeboxTop(ntp) == position;
             }
-        }));
+        });
     }
 }

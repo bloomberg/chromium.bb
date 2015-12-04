@@ -168,7 +168,7 @@ public class AutofillPopupTest extends ChromeActivityTestCaseBase<ChromeActivity
         assertEquals(1, mHelper.getNumberOfProfiles());
 
         // Click the input field for the first name.
-        assertTrue(DOMUtils.waitForNonZeroNodeBounds(webContents, "fn"));
+        DOMUtils.waitForNonZeroNodeBounds(webContents, "fn");
         DOMUtils.clickNode(this, viewCore, "fn");
 
         waitForKeyboardShowRequest(immw, 1);
@@ -303,52 +303,51 @@ public class AutofillPopupTest extends ChromeActivityTestCaseBase<ChromeActivity
 
     private void waitForKeyboardShowRequest(final TestInputMethodManagerWrapper immw,
             final int count) throws InterruptedException {
-        assertTrue("Keyboard was never requested to be shown.",
-                CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(
+                new Criteria("Keyboard was never requested to be shown.") {
                     @Override
                     public boolean isSatisfied() {
                         return immw.getShowSoftInputCounter() == count;
                     }
-                }));
+                });
     }
 
     private void waitForAnchorViewAdd(final ViewGroup view) throws InterruptedException {
-        assertTrue("Autofill Popup anchor view was never added.",
-                CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
-                    @Override
-                    public boolean isSatisfied() {
-                        return view.findViewById(R.id.dropdown_popup_window) != null;
-                    }
-                }));
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria(
+                "Autofill Popup anchor view was never added.") {
+            @Override
+            public boolean isSatisfied() {
+                return view.findViewById(R.id.dropdown_popup_window) != null;
+            }
+        });
     }
 
     private void waitForAutofillPopopShow(final AutofillPopup popup) throws InterruptedException {
-        assertTrue("Autofill Popup anchor view was never added.",
-                CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(
+                new Criteria("Autofill Popup anchor view was never added.") {
                     @Override
                     public boolean isSatisfied() {
                         // Wait until the popup is showing and onLayout() has happened.
                         return popup.isShowing() && popup.getListView() != null
                                 && popup.getListView().getHeight() != 0;
                     }
-                }));
+                });
     }
 
     private void waitForInputFieldFill(final WebContents webContents) throws InterruptedException {
-        assertTrue("First name field was never filled.",
-                CriteriaHelper.pollForCriteria(new Criteria() {
-                    @Override
-                    public boolean isSatisfied() {
-                        try {
-                            return TextUtils.equals(FIRST_NAME,
-                                    DOMUtils.getNodeValue(webContents, "fn"));
-                        } catch (InterruptedException e) {
-                            return false;
-                        } catch (TimeoutException e) {
-                            return false;
-                        }
-                    }
-                }));
+        CriteriaHelper.pollForCriteria(new Criteria("First name field was never filled.") {
+            @Override
+            public boolean isSatisfied() {
+                try {
+                    return TextUtils.equals(FIRST_NAME,
+                            DOMUtils.getNodeValue(webContents, "fn"));
+                } catch (InterruptedException e) {
+                    return false;
+                } catch (TimeoutException e) {
+                    return false;
+                }
+            }
+        });
     }
 
     private void assertLogged(String autofilledValue, String profileFullName) {

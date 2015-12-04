@@ -41,11 +41,11 @@ public class PauseOnHeadsetUnplugTest extends ChromeActivityTestCaseBase<ChromeA
 
         assertTrue(DOMUtils.isMediaPaused(tab.getWebContents(), VIDEO_ID));
         DOMUtils.playMedia(tab.getWebContents(), VIDEO_ID);
-        assertTrue(DOMUtils.waitForMediaPlay(tab.getWebContents(), VIDEO_ID));
-        assertTrue(waitForNotificationReady());
+        DOMUtils.waitForMediaPlay(tab.getWebContents(), VIDEO_ID);
+        waitForNotificationReady();
 
         simulateHeadsetUnplug();
-        assertTrue(DOMUtils.waitForMediaPause(tab.getWebContents(), VIDEO_ID));
+        DOMUtils.waitForMediaPause(tab.getWebContents(), VIDEO_ID);
     }
 
     @Override
@@ -53,15 +53,14 @@ public class PauseOnHeadsetUnplugTest extends ChromeActivityTestCaseBase<ChromeA
         startMainActivityWithURL(TestHttpServerClient.getUrl(TEST_URL));
     }
 
-    private boolean waitForNotificationReady()
-            throws InterruptedException {
-        return CriteriaHelper.pollForCriteria(new Criteria() {
-                @Override
-                public boolean isSatisfied() {
-                    return MediaNotificationManager.hasManagerForTesting(
-                            R.id.media_playback_notification);
-                }
-            });
+    private void waitForNotificationReady() throws InterruptedException {
+        CriteriaHelper.pollForCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return MediaNotificationManager.hasManagerForTesting(
+                        R.id.media_playback_notification);
+            }
+        });
     }
 
     private void simulateHeadsetUnplug() {

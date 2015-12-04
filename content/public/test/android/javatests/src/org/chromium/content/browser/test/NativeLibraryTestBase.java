@@ -36,7 +36,7 @@ public class NativeLibraryTestBase extends InstrumentationTestCase {
         assertFalse(ThreadUtils.runningOnUiThread());
 
         try {
-            assertTrue(ApplicationUtils.waitForLibraryDependencies(getInstrumentation()));
+            ApplicationUtils.waitForLibraryDependencies(getInstrumentation());
         } catch (InterruptedException e) {
             fail("Library dependencies were never initialized.");
         }

@@ -66,12 +66,12 @@ public class CleanupReferenceTest extends InstrumentationTestCase {
         // Ensure compiler / instrumentation does not strip out the assignment.
         assertTrue(instance == null);
         collectGarbage();
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return sObjectCount.get() == 0;
             }
-        }));
+        });
     }
 
     @SuppressFBWarnings("UC_USELESS_OBJECT")
@@ -95,12 +95,12 @@ public class CleanupReferenceTest extends InstrumentationTestCase {
         // to be GC'ed only when building using GN.
         assertTrue(sObjectCount.get() != -1);
         collectGarbage();
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return sObjectCount.get() == 0;
             }
-        }));
+        });
     }
 
 }

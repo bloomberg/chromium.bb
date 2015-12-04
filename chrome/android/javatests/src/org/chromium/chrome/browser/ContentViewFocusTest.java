@@ -106,14 +106,14 @@ public class ContentViewFocusTest extends ChromeTabbedActivityTestBase {
             }
         });
 
-        assertTrue("Layout still requesting Tab Android view be attached",
-                CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(
+                new Criteria("Layout still requesting Tab Android view be attached") {
                     @Override
                     public boolean isSatisfied() {
                         LayoutManager driver = getActivity().getLayoutManager();
                         return !driver.getActiveLayout().shouldDisplayContentOverlay();
                     }
-                }));
+                });
 
         // Make sure the view loses focus. It is immediately given focus back
         // because it's the only focusable view.
@@ -127,14 +127,14 @@ public class ContentViewFocusTest extends ChromeTabbedActivityTestBase {
             }
         });
 
-        assertTrue("Layout not requesting Tab Android view be attached",
-                CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(
+                new Criteria("Layout not requesting Tab Android view be attached") {
                     @Override
                     public boolean isSatisfied() {
                         LayoutManager driver = getActivity().getLayoutManager();
                         return driver.getActiveLayout().shouldDisplayContentOverlay();
                     }
-                }));
+                });
 
         assertTrue("Content view didn't regain focus", blockForFocusChanged());
         assertFalse("Unexpected focus change", haveFocusChanges());

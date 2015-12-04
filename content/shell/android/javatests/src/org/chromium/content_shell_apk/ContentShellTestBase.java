@@ -78,7 +78,7 @@ public class ContentShellTestBase
     protected void startActivityWithTestUrl(String url) throws Throwable {
         launchContentShellWithUrl(UrlUtils.getIsolatedTestFileUrl(url));
         assertNotNull(getActivity());
-        assertTrue(waitForActiveShellToBeDoneLoading());
+        waitForActiveShellToBeDoneLoading();
         assertEquals(UrlUtils.getIsolatedTestFileUrl(url),
                 getContentViewCore().getWebContents().getUrl());
     }
@@ -102,14 +102,13 @@ public class ContentShellTestBase
      * WAIT_FOR_ACTIVE_SHELL_LOADING_TIMEOUT milliseconds and it shouldn't be used for long
      * loading pages. Instead it should be used more for test initialization. The proper way
      * to wait is to use a TestCallbackHelperContainer after the initial load is completed.
-     * @return Whether or not the Shell was actually finished loading.
      * @throws InterruptedException
      */
-    protected boolean waitForActiveShellToBeDoneLoading() throws InterruptedException {
+    protected void waitForActiveShellToBeDoneLoading() throws InterruptedException {
         final ContentShellActivity activity = getActivity();
 
         // Wait for the Content Shell to be initialized.
-        return CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 Shell shell = activity.getActiveShell();
@@ -117,9 +116,19 @@ public class ContentShellTestBase
                 // The first is that we've just created a Shell and it isn't
                 // loading because it has no URL set yet.  The second is that
                 // we've set a URL and it actually is loading.
-                if (shell == null) return false;
-                return !shell.isLoading() && !TextUtils.isEmpty(shell.getContentViewCore()
-                        .getWebContents().getUrl());
+                if (shell == null) {
+                    updateFailureReason("Shell is null.");
+                    return false;
+                }
+                if (shell.isLoading()) {
+                    updateFailureReason("Shell is still loading.");
+                    return false;
+                }
+                if (TextUtils.isEmpty(shell.getContentViewCore().getWebContents().getUrl())) {
+                    updateFailureReason("Shell's URL is empty or null.");
+                    return false;
+                }
+                return true;
             }
         }, WAIT_FOR_ACTIVE_SHELL_LOADING_TIMEOUT, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
     }
@@ -191,12 +200,12 @@ public class ContentShellTestBase
      */
     protected void assertWaitForPageScaleFactorMatch(final float expectedScale)
             throws InterruptedException {
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return getContentViewCore().getScale() == expectedScale;
             }
-        }));
+        });
     }
 
     /**

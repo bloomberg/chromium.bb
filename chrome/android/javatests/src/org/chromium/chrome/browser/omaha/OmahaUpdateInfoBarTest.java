@@ -127,12 +127,12 @@ public class OmahaUpdateInfoBarTest extends ChromeActivityTestCaseBase<ChromeAct
         startMainActivityWithURL(url);
 
         // Check to make sure that the version numbers get queried.
-        assertTrue("Main didn't ask Omaha for version numbers.", versionNumbersQueried());
+        waitForVersionNumbersQueried();
     }
 
-    private boolean versionNumbersQueried() throws Exception {
-        return CriteriaHelper.pollForCriteria(
-                new Criteria() {
+    private void waitForVersionNumbersQueried() throws Exception {
+        CriteriaHelper.pollForCriteria(
+                new Criteria("Main didn't ask Omaha for version numbers.") {
                     @Override
                     public boolean isSatisfied() {
                         return mMockVersionNumberGetter.askedForCurrentVersion()
@@ -169,8 +169,8 @@ public class OmahaUpdateInfoBarTest extends ChromeActivityTestCaseBase<ChromeAct
     /**
      * Waits until the NavigateToURLInfoBar appears for the current tab.
      */
-    private boolean correctInfoBarAdded() throws Exception {
-        return CriteriaHelper.pollForCriteria(
+    private void correctInfoBarAdded() throws Exception {
+        CriteriaHelper.pollForCriteria(
                 new Criteria() {
                     @Override
                     public boolean isSatisfied() {
@@ -184,8 +184,8 @@ public class OmahaUpdateInfoBarTest extends ChromeActivityTestCaseBase<ChromeAct
     /**
      * Waits until the NavigateToURLInfoBar goes away.
      */
-    private boolean correctInfoBarRemoved() throws Exception {
-        return CriteriaHelper.pollForCriteria(
+    private void correctInfoBarRemoved() throws Exception {
+        CriteriaHelper.pollForCriteria(
                 new Criteria() {
                     @Override
                     public boolean isSatisfied() {
@@ -205,23 +205,32 @@ public class OmahaUpdateInfoBarTest extends ChromeActivityTestCaseBase<ChromeAct
 
         if (url == null) {
             // The InfoBar shouldn't be created yet because we're on the NTP.
-            assertFalse("InfoBar shown on NTP.", correctInfoBarAdded());
+            try {
+                correctInfoBarAdded();
+                fail("Infobar should not have been added");
+            } catch (AssertionError e) {
+                // TODO(tedchoc): This is horrible and should never timeout to determine success.
+            }
 
             // Navigate somewhere else and then check for the InfoBar.
             loadUrl(UrlUtils.getIsolatedTestFileUrl(HTML_FILENAME_1));
-            assertTrue("InfoBar failed to show after navigating from NTP.",
-                    correctInfoBarAdded());
+            correctInfoBarAdded();
         } else {
             // The InfoBar be shown ASAP since we're not on the NTP.
-            assertTrue("InfoBar failed to show.", correctInfoBarAdded());
+            correctInfoBarAdded();
         }
 
         // Make sure the InfoBar doesn't disappear immediately.
-        assertFalse("InfoBar was removed too quickly.", correctInfoBarRemoved());
+        try {
+            correctInfoBarRemoved();
+            fail("InfoBar was removed too quickly.");
+        } catch (AssertionError e) {
+            // TODO(tedchoc): This is horrible and should never timeout to determine success.
+        }
 
         // Make sure the InfoBar goes away once we navigate somewhere else on the same tab.
         loadUrl(UrlUtils.getIsolatedTestFileUrl(HTML_FILENAME_2));
-        assertTrue("InfoBar is still showing", correctInfoBarRemoved());
+        correctInfoBarRemoved();
     }
 
     /**
@@ -231,9 +240,19 @@ public class OmahaUpdateInfoBarTest extends ChromeActivityTestCaseBase<ChromeAct
     private void checkInfobarDoesNotAppear(String currentVersion, String latestVersion, String url)
             throws Exception {
         prepareAndStartMainActivity(currentVersion, latestVersion, url);
-        assertFalse("Infobar is showing.", correctInfoBarAdded());
+        try {
+            correctInfoBarAdded();
+            fail("Infobar is showing.");
+        } catch (AssertionError e) {
+            // TODO(tedchoc): This is horrible and should never timeout to determine success.
+        }
         loadUrl(UrlUtils.getIsolatedTestFileUrl(HTML_FILENAME_2));
-        assertFalse("Infobar is now showing", correctInfoBarAdded());
+        try {
+            correctInfoBarAdded();
+            fail("Infobar is now showing");
+        } catch (AssertionError e) {
+            // TODO(tedchoc): This is horrible and should never timeout to determine success.
+        }
     }
 
     @MediumTest

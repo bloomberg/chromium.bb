@@ -160,13 +160,13 @@ public class TemplateUrlServiceTest extends NativeLibraryTestBase {
                     }
                 });
 
-        assertTrue("Observer wasn't notified of TemplateUrlService load.",
-                CriteriaHelper.pollForCriteria(new Criteria() {
-                    @Override
-                    public boolean isSatisfied() {
-                        return observerNotified.get();
-                    }
-                }));
+        CriteriaHelper.pollForCriteria(new Criteria(
+                "Observer wasn't notified of TemplateUrlService load.") {
+            @Override
+            public boolean isSatisfied() {
+                return observerNotified.get();
+            }
+        });
         return templateUrlService;
     }
 }

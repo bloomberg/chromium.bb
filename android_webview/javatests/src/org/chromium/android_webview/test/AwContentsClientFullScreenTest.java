@@ -191,7 +191,7 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
         assertTrue(DOMUtils.isMediaPaused(getWebContentsOnUiThread(), VIDEO_ID));
 
         tapPlayButton();
-        assertTrue(DOMUtils.waitForMediaPlay(getWebContentsOnUiThread(), VIDEO_ID));
+        DOMUtils.waitForMediaPlay(getWebContentsOnUiThread(), VIDEO_ID);
     }
 
     @MediumTest
@@ -206,7 +206,7 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
         // Play and verify that a surface view for hole punching is not created.
         // Note that VIDEO_TEST_URL contains clear video.
         tapPlayButton();
-        assertTrue(DOMUtils.waitForMediaPlay(getWebContentsOnUiThread(), VIDEO_ID));
+        DOMUtils.waitForMediaPlay(getWebContentsOnUiThread(), VIDEO_ID);
         // Wait to ensure that the surface view is not added asynchronously.
         VideoSurfaceViewUtils.waitAndAssertContainsZeroVideoHoleSurfaceViews(this,
                 mTestContainerView);
@@ -228,7 +228,7 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
 
         // Play and verify that there is a surface view for hole punching.
         tapPlayButton();
-        assertTrue(DOMUtils.waitForMediaPlay(getWebContentsOnUiThread(), VIDEO_ID));
+        DOMUtils.waitForMediaPlay(getWebContentsOnUiThread(), VIDEO_ID);
         VideoSurfaceViewUtils.pollAndAssertContainsOneVideoHoleSurfaceView(this,
                 mTestContainerView);
 
@@ -262,7 +262,7 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
 
         // Play and verify that there is a surface view for hole punching.
         tapPlayButton();
-        assertTrue(DOMUtils.waitForMediaPlay(getWebContentsOnUiThread(), VIDEO_ID));
+        DOMUtils.waitForMediaPlay(getWebContentsOnUiThread(), VIDEO_ID);
         VideoSurfaceViewUtils.pollAndAssertContainsOneVideoHoleSurfaceView(this,
                 mTestContainerView);
 
@@ -438,7 +438,7 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
             throws InterruptedException {
         // We need to poll because it takes time to synchronize the state between the android
         // views and Javascript.
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 try {
@@ -450,7 +450,7 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
                     return false;
                 }
             }
-        }));
+        });
     }
 
     private void assertKeepScreenOnActive(final View view, final boolean expected)
@@ -475,7 +475,7 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
 
     private void assertWaitForIsFullscreen() throws InterruptedException {
         // We need to poll because the Javascript state is updated asynchronously
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 try {
@@ -485,12 +485,12 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
                     return false;
                 }
             }
-        }));
+        });
     }
 
     private void assertWaitForIsEmbedded() throws InterruptedException {
         // We need to poll because the Javascript state is updated asynchronously
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 try {
@@ -500,7 +500,7 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
                     return false;
                 }
             }
-        }));
+        });
         // TODO: Test that inline video is actually displayed.
     }
 

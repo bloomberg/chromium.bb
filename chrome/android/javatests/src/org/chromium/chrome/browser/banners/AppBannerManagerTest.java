@@ -189,8 +189,8 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
         AppBannerManager.setEngagementWeights(1, 1);
     }
 
-    private boolean waitUntilNoInfoBarsExist() throws Exception {
-        return CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+    private void waitUntilNoInfoBarsExist() throws Exception {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 InfoBarContainer container = getActivity().getActivityTab().getInfoBarContainer();
@@ -199,8 +199,8 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
         });
     }
 
-    private boolean waitUntilAppDetailsRetrieved(final int numExpected) throws Exception {
-        return CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+    private void waitUntilAppDetailsRetrieved(final int numExpected) throws Exception {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 AppBannerManager manager =
@@ -211,8 +211,8 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
         });
     }
 
-    private boolean waitUntilAppBannerInfoBarAppears(final String title) throws Exception {
-        return CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+    private void waitUntilAppBannerInfoBarAppears(final String title) throws Exception {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 InfoBarContainer container = getActivity().getActivityTab().getInfoBarContainer();
@@ -231,9 +231,9 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
     private void runFullNativeInstallPathway(String url, String expectedReferrer) throws Exception {
         // Visit a site that requests a banner.
         new TabLoadObserver(getActivity().getActivityTab(), url).assertLoaded();
-        assertTrue(waitUntilAppDetailsRetrieved(1));
+        waitUntilAppDetailsRetrieved(1);
         assertEquals(mDetailsDelegate.mReferrer, expectedReferrer);
-        assertTrue(waitUntilNoInfoBarsExist());
+        waitUntilNoInfoBarsExist();
 
         // Indicate a day has passed, then revisit the page to get the banner to appear.
         InfoBarContainer container = getActivity().getActivityTab().getInfoBarContainer();
@@ -241,14 +241,14 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
         container.setAnimationListener(listener);
         AppBannerManager.setTimeDeltaForTesting(1);
         new TabLoadObserver(getActivity().getActivityTab(), url).assertLoaded();
-        assertTrue(waitUntilAppDetailsRetrieved(2));
-        assertTrue(waitUntilAppBannerInfoBarAppears(NATIVE_APP_TITLE));
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        waitUntilAppDetailsRetrieved(2);
+        waitUntilAppBannerInfoBarAppears(NATIVE_APP_TITLE);
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return listener.mDoneAnimating;
             }
-        }));
+        });
 
         // Check that the button asks if the user wants to install the app.
         InfoBar infobar = container.getInfoBars().get(0);
@@ -266,24 +266,24 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
         // Wait for the infobar to register that the app is installing.
         final String installingText =
                 getInstrumentation().getTargetContext().getString(R.string.app_banner_installing);
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return getInstrumentation().checkMonitorHit(activityMonitor, 1)
                         && TextUtils.equals(button.getText(), installingText);
             }
-        }));
+        });
 
         // Say that the package is installed.  Infobar should say that the app is ready to open.
         mPackageManager.isInstalled = true;
         final String openText =
                 getInstrumentation().getTargetContext().getString(R.string.app_banner_open);
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return TextUtils.equals(button.getText(), openText);
             }
-        }));
+        });
     }
 
     @SmallTest
@@ -303,42 +303,42 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
     public void testBannerAppearsThenDoesNotAppearAgainForMonths() throws Exception {
         // Visit a site that requests a banner.
         new TabLoadObserver(getActivity().getActivityTab(), NATIVE_APP_URL).assertLoaded();
-        assertTrue(waitUntilAppDetailsRetrieved(1));
-        assertTrue(waitUntilNoInfoBarsExist());
+        waitUntilAppDetailsRetrieved(1);
+        waitUntilNoInfoBarsExist();
 
         // Indicate a day has passed, then revisit the page.
         AppBannerManager.setTimeDeltaForTesting(1);
         new TabLoadObserver(getActivity().getActivityTab(), NATIVE_APP_URL).assertLoaded();
-        assertTrue(waitUntilAppDetailsRetrieved(2));
-        assertTrue(waitUntilAppBannerInfoBarAppears(NATIVE_APP_TITLE));
+        waitUntilAppDetailsRetrieved(2);
+        waitUntilAppBannerInfoBarAppears(NATIVE_APP_TITLE);
 
         // Revisit the page to make the banner go away, but don't explicitly dismiss it.
         // This hides the banner for a few months.
         new TabLoadObserver(getActivity().getActivityTab(), NATIVE_APP_URL).assertLoaded();
-        assertTrue(waitUntilAppDetailsRetrieved(3));
-        assertTrue(waitUntilNoInfoBarsExist());
+        waitUntilAppDetailsRetrieved(3);
+        waitUntilNoInfoBarsExist();
 
         // Wait a month until revisiting the page.
         AppBannerManager.setTimeDeltaForTesting(31);
         new TabLoadObserver(getActivity().getActivityTab(), NATIVE_APP_URL).assertLoaded();
-        assertTrue(waitUntilAppDetailsRetrieved(4));
-        assertTrue(waitUntilNoInfoBarsExist());
+        waitUntilAppDetailsRetrieved(4);
+        waitUntilNoInfoBarsExist();
 
         AppBannerManager.setTimeDeltaForTesting(32);
         new TabLoadObserver(getActivity().getActivityTab(), NATIVE_APP_URL).assertLoaded();
-        assertTrue(waitUntilAppDetailsRetrieved(5));
-        assertTrue(waitUntilNoInfoBarsExist());
+        waitUntilAppDetailsRetrieved(5);
+        waitUntilNoInfoBarsExist();
 
         // Wait two months until revisiting the page, which should pop up the banner.
         AppBannerManager.setTimeDeltaForTesting(61);
         new TabLoadObserver(getActivity().getActivityTab(), NATIVE_APP_URL).assertLoaded();
-        assertTrue(waitUntilAppDetailsRetrieved(6));
-        assertTrue(waitUntilNoInfoBarsExist());
+        waitUntilAppDetailsRetrieved(6);
+        waitUntilNoInfoBarsExist();
 
         AppBannerManager.setTimeDeltaForTesting(62);
         new TabLoadObserver(getActivity().getActivityTab(), NATIVE_APP_URL).assertLoaded();
-        assertTrue(waitUntilAppDetailsRetrieved(7));
-        assertTrue(waitUntilAppBannerInfoBarAppears(NATIVE_APP_TITLE));
+        waitUntilAppDetailsRetrieved(7);
+        waitUntilAppBannerInfoBarAppears(NATIVE_APP_TITLE);
     }
 
     @MediumTest
@@ -346,8 +346,8 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
     public void testBlockedBannerDoesNotAppearAgainForMonths() throws Exception {
         // Visit a site that requests a banner.
         new TabLoadObserver(getActivity().getActivityTab(), NATIVE_APP_URL).assertLoaded();
-        assertTrue(waitUntilAppDetailsRetrieved(1));
-        assertTrue(waitUntilNoInfoBarsExist());
+        waitUntilAppDetailsRetrieved(1);
+        waitUntilNoInfoBarsExist();
 
         // Indicate a day has passed, then revisit the page.
         InfoBarContainer container = getActivity().getActivityTab().getInfoBarContainer();
@@ -355,42 +355,42 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
         container.setAnimationListener(listener);
         AppBannerManager.setTimeDeltaForTesting(1);
         new TabLoadObserver(getActivity().getActivityTab(), NATIVE_APP_URL).assertLoaded();
-        assertTrue(waitUntilAppDetailsRetrieved(2));
-        assertTrue(waitUntilAppBannerInfoBarAppears(NATIVE_APP_TITLE));
+        waitUntilAppDetailsRetrieved(2);
+        waitUntilAppBannerInfoBarAppears(NATIVE_APP_TITLE);
 
         // Explicitly dismiss the banner.
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return listener.mDoneAnimating;
             }
-        }));
+        });
         ArrayList<InfoBar> infobars = container.getInfoBars();
         View close = infobars.get(0).getView().findViewById(R.id.infobar_close_button);
         TouchCommon.singleClickView(close);
-        assertTrue(waitUntilNoInfoBarsExist());
+        waitUntilNoInfoBarsExist();
 
         // Waiting two months shouldn't be long enough.
         AppBannerManager.setTimeDeltaForTesting(61);
         new TabLoadObserver(getActivity().getActivityTab(), NATIVE_APP_URL).assertLoaded();
-        assertTrue(waitUntilAppDetailsRetrieved(3));
-        assertTrue(waitUntilNoInfoBarsExist());
+        waitUntilAppDetailsRetrieved(3);
+        waitUntilNoInfoBarsExist();
 
         AppBannerManager.setTimeDeltaForTesting(62);
         new TabLoadObserver(getActivity().getActivityTab(), NATIVE_APP_URL).assertLoaded();
-        assertTrue(waitUntilAppDetailsRetrieved(4));
-        assertTrue(waitUntilNoInfoBarsExist());
+        waitUntilAppDetailsRetrieved(4);
+        waitUntilNoInfoBarsExist();
 
         // Waiting three months should allow banners to reappear.
         AppBannerManager.setTimeDeltaForTesting(91);
         new TabLoadObserver(getActivity().getActivityTab(), NATIVE_APP_URL).assertLoaded();
-        assertTrue(waitUntilAppDetailsRetrieved(5));
-        assertTrue(waitUntilNoInfoBarsExist());
+        waitUntilAppDetailsRetrieved(5);
+        waitUntilNoInfoBarsExist();
 
         AppBannerManager.setTimeDeltaForTesting(92);
         new TabLoadObserver(getActivity().getActivityTab(), NATIVE_APP_URL).assertLoaded();
-        assertTrue(waitUntilAppDetailsRetrieved(6));
-        assertTrue(waitUntilAppBannerInfoBarAppears(NATIVE_APP_TITLE));
+        waitUntilAppDetailsRetrieved(6);
+        waitUntilAppBannerInfoBarAppears(NATIVE_APP_TITLE);
     }
 
     @MediumTest
@@ -401,12 +401,12 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
             new TabLoadObserver(getActivity().getActivityTab(), NATIVE_APP_URL).assertLoaded();
 
             final Integer iteration = Integer.valueOf(i);
-            assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+            CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
                 @Override
                 public boolean isSatisfied() {
                     return mDetailsDelegate.mNumRetrieved == iteration;
                 }
-            }));
+            });
         }
     }
 
@@ -417,28 +417,28 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
         loadUrlInNewTab("about:blank");
         new TabLoadObserver(getActivity().getActivityTab(), WEB_APP_URL).assertLoaded();
 
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 AppBannerManager manager =
                         getActivity().getActivityTab().getAppBannerManagerForTesting();
                 return !manager.isFetcherActiveForTesting();
             }
-        }));
-        assertTrue(waitUntilNoInfoBarsExist());
+        });
+        waitUntilNoInfoBarsExist();
 
         // Indicate a day has passed, then revisit the page to show the banner.
         AppBannerManager.setTimeDeltaForTesting(1);
         new TabLoadObserver(getActivity().getActivityTab(), WEB_APP_URL).assertLoaded();
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 AppBannerManager manager =
                         getActivity().getActivityTab().getAppBannerManagerForTesting();
                 return !manager.isFetcherActiveForTesting();
             }
-        }));
-        assertTrue(waitUntilAppBannerInfoBarAppears(WEB_APP_TITLE));
+        });
+        waitUntilAppBannerInfoBarAppears(WEB_APP_TITLE);
     }
 
     @SmallTest
@@ -452,15 +452,15 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
         loadUrlInNewTab("about:blank");
         new TabLoadObserver(getActivity().getActivityTab(), WEB_APP_URL).assertLoaded();
 
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 AppBannerManager manager =
                         getActivity().getActivityTab().getAppBannerManagerForTesting();
                 return !manager.isFetcherActiveForTesting();
             }
-        }));
-        assertTrue(waitUntilNoInfoBarsExist());
+        });
+        waitUntilNoInfoBarsExist();
 
         // Add the animation listener in.
         InfoBarContainer container = getActivity().getActivityTab().getInfoBarContainer();
@@ -470,21 +470,21 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
         // Indicate a day has passed, then revisit the page to show the banner.
         AppBannerManager.setTimeDeltaForTesting(1);
         new TabLoadObserver(getActivity().getActivityTab(), WEB_APP_URL).assertLoaded();
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 AppBannerManager manager =
                         getActivity().getActivityTab().getAppBannerManagerForTesting();
                 return !manager.isFetcherActiveForTesting();
             }
-        }));
-        assertTrue(waitUntilAppBannerInfoBarAppears(WEB_APP_TITLE));
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        });
+        waitUntilAppBannerInfoBarAppears(WEB_APP_TITLE);
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return listener.mDoneAnimating;
             }
-        }));
+        });
 
         // Click the button to trigger the adding of the shortcut.
         InfoBar infobar = container.getInfoBars().get(0);
@@ -493,12 +493,12 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
         TouchCommon.singleClickView(button);
 
         // Make sure that the splash screen icon was downloaded.
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return dataStorageFactory.mSplashImage != null;
             }
-        }));
+        });
 
         // Test that bitmap sizes match expectations.
         int idealSize = getActivity().getResources().getDimensionPixelSize(
