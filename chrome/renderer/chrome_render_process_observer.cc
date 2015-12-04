@@ -318,7 +318,8 @@ void ChromeRenderProcessObserver::OnSetFieldTrialGroup(
   base::FieldTrial* trial =
       base::FieldTrialList::CreateFieldTrial(field_trial_name, group_name);
   // TODO(mef): Remove this check after the investigation of 359406 is complete.
-  CHECK(trial) << field_trial_name << ":" << group_name;
+  CHECK(trial) << field_trial_name << ":" << group_name << "=>"
+               << base::FieldTrialList::FindFullName(field_trial_name);
   // Ensure the trial is marked as "used" by calling group() on it if it is
   // marked as activated.
   trial->group();
