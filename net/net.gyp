@@ -527,6 +527,7 @@
         'cookies/cookie_store_test_callbacks.h',
         'cookies/cookie_store_test_helpers.cc',
         'cookies/cookie_store_test_helpers.h',
+        'cookies/cookie_store_unittest.h',
         'disk_cache/disk_cache_test_base.cc',
         'disk_cache/disk_cache_test_base.h',
         'disk_cache/disk_cache_test_util.cc',
