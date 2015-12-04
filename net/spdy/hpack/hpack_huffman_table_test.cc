@@ -4,7 +4,10 @@
 
 #include "net/spdy/hpack/hpack_huffman_table.h"
 
+#include <stdint.h>
+
 #include <bitset>
+#include <limits>
 #include <string>
 
 #include "base/logging.h"
@@ -32,8 +35,8 @@ class HpackHuffmanTablePeer {
   explicit HpackHuffmanTablePeer(const HpackHuffmanTable& table)
       : table_(table) {}
 
-  const std::vector<uint32>& code_by_id() const { return table_.code_by_id_; }
-  const std::vector<uint8>& length_by_id() const {
+  const std::vector<uint32_t>& code_by_id() const { return table_.code_by_id_; }
+  const std::vector<uint8_t>& length_by_id() const {
     return table_.length_by_id_;
   }
   const std::vector<DecodeTable>& decode_tables() const {
@@ -43,7 +46,7 @@ class HpackHuffmanTablePeer {
     // Cast to match signed-ness of bits8().
     return static_cast<char>(table_.pad_bits_);
   }
-  uint16 failed_symbol_id() const { return table_.failed_symbol_id_; }
+  uint16_t failed_symbol_id() const { return table_.failed_symbol_id_; }
   std::vector<DecodeEntry> decode_entries(const DecodeTable& decode_table) {
     std::vector<DecodeEntry>::const_iterator begin =
         table_.decode_entries_.begin() + decode_table.entries_offset;
@@ -82,7 +85,7 @@ MATCHER(DecodeEntryEq, "") {
          lhs.length == rhs.length && lhs.symbol_id == rhs.symbol_id;
 }
 
-uint32 bits32(const string& bitstring) {
+uint32_t bits32(const string& bitstring) {
   return std::bitset<32>(bitstring).to_ulong();
 }
 char bits8(const string& bitstring) {
@@ -239,7 +242,8 @@ TEST_F(HpackHuffmanTableTest, ValidateInternalsWithSmallCode) {
   EXPECT_EQ(expect, buffer_in);
 
   string buffer_out;
-  HpackInputStream input_stream(kuint32max, buffer_in);
+  HpackInputStream input_stream(std::numeric_limits<uint32_t>::max(),
+                                buffer_in);
   EXPECT_TRUE(table_.DecodeString(&input_stream, input.size(), &buffer_out));
   EXPECT_EQ(buffer_out, input);
 }
@@ -304,7 +308,7 @@ TEST_F(HpackHuffmanTableTest, DecodeWithBadInput) {
     char input_storage[] = {bits8("00010001"), bits8("00110100")};
     StringPiece input(input_storage, arraysize(input_storage));
 
-    HpackInputStream input_stream(kuint32max, input);
+    HpackInputStream input_stream(std::numeric_limits<uint32_t>::max(), input);
     EXPECT_TRUE(table_.DecodeString(&input_stream, capacity, &buffer));
     EXPECT_EQ(buffer, "\x02\x03\x02\x06");
   }
@@ -314,7 +318,7 @@ TEST_F(HpackHuffmanTableTest, DecodeWithBadInput) {
     char input_storage[] = {bits8("00010001"), bits8("01000111")};
     StringPiece input(input_storage, arraysize(input_storage));
 
-    HpackInputStream input_stream(kuint32max, input);
+    HpackInputStream input_stream(std::numeric_limits<uint32_t>::max(), input);
     EXPECT_FALSE(table_.DecodeString(&input_stream, capacity, &buffer));
     EXPECT_EQ(buffer, "\x02\x03\x02");
   }
@@ -323,7 +327,7 @@ TEST_F(HpackHuffmanTableTest, DecodeWithBadInput) {
     std::vector<char> input_storage(1 + capacity / 4, '\0');
     StringPiece input(&input_storage[0], input_storage.size());
 
-    HpackInputStream input_stream(kuint32max, input);
+    HpackInputStream input_stream(std::numeric_limits<uint32_t>::max(), input);
     EXPECT_FALSE(table_.DecodeString(&input_stream, capacity, &buffer));
 
     std::vector<char> expected(capacity, '\x02');
@@ -336,7 +340,7 @@ TEST_F(HpackHuffmanTableTest, DecodeWithBadInput) {
     char input_storage[] = {bits8("10011010"), bits8("01110000")};
     StringPiece input(input_storage, arraysize(input_storage));
 
-    HpackInputStream input_stream(kuint32max, input);
+    HpackInputStream input_stream(std::numeric_limits<uint32_t>::max(), input);
     EXPECT_FALSE(table_.DecodeString(&input_stream, capacity, &buffer));
     EXPECT_EQ(buffer, "\x06");
   }
@@ -361,7 +365,8 @@ TEST_F(HpackHuffmanTableTest, SpecRequestExamples) {
   for (size_t i = 0; i != arraysize(test_table); i += 2) {
     const string& encodedFixture(test_table[i]);
     const string& decodedFixture(test_table[i + 1]);
-    HpackInputStream input_stream(kuint32max, encodedFixture);
+    HpackInputStream input_stream(std::numeric_limits<uint32_t>::max(),
+                                  encodedFixture);
 
     EXPECT_TRUE(
         table_.DecodeString(&input_stream, decodedFixture.size(), &buffer));
@@ -392,7 +397,8 @@ TEST_F(HpackHuffmanTableTest, SpecResponseExamples) {
   for (size_t i = 0; i != arraysize(test_table); i += 2) {
     const string& encodedFixture(test_table[i]);
     const string& decodedFixture(test_table[i + 1]);
-    HpackInputStream input_stream(kuint32max, encodedFixture);
+    HpackInputStream input_stream(std::numeric_limits<uint32_t>::max(),
+                                  encodedFixture);
 
     EXPECT_TRUE(
         table_.DecodeString(&input_stream, decodedFixture.size(), &buffer));
@@ -414,7 +420,8 @@ TEST_F(HpackHuffmanTableTest, RoundTripIndvidualSymbols) {
     string buffer_in = EncodeString(input);
     string buffer_out;
 
-    HpackInputStream input_stream(kuint32max, buffer_in);
+    HpackInputStream input_stream(std::numeric_limits<uint32_t>::max(),
+                                  buffer_in);
     EXPECT_TRUE(table_.DecodeString(&input_stream, input.size(), &buffer_out));
     EXPECT_EQ(input, buffer_out);
   }
@@ -434,7 +441,8 @@ TEST_F(HpackHuffmanTableTest, RoundTripSymbolSequence) {
   string buffer_in = EncodeString(input);
   string buffer_out;
 
-  HpackInputStream input_stream(kuint32max, buffer_in);
+  HpackInputStream input_stream(std::numeric_limits<uint32_t>::max(),
+                                buffer_in);
   EXPECT_TRUE(table_.DecodeString(&input_stream, input.size(), &buffer_out));
   EXPECT_EQ(input, buffer_out);
 }

@@ -4,6 +4,10 @@
 
 #include "chrome/browser/devtools/device/usb/android_rsa.h"
 
+#include <stdint.h>
+
+#include <limits>
+
 #include "base/base64.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/profiles/profile.h"
@@ -27,21 +31,25 @@ static const char kDummyRSAPublicKey[] =
     "WO5ywp0UWRiGZCkK+wOFQIDAQAB";
 
 typedef struct RSAPublicKey {
-    int len;                // Length of n[] in number of uint32
-    uint32 n0inv;           // -1 / n[0] mod 2^32
-    uint32 n[kRSANumWords];  // modulus as little endian array
-    uint32 rr[kRSANumWords]; // R^2 as little endian array
-    int exponent;           // 3 or 65537
+  int len;                    // Length of n[] in number of uint32_t
+  uint32_t n0inv;             // -1 / n[0] mod 2^32
+  uint32_t n[kRSANumWords];   // modulus as little endian array
+  uint32_t rr[kRSANumWords];  // R^2 as little endian array
+  int exponent;               // 3 or 65537
 } RSAPublicKey;
 
 // http://en.wikipedia.org/wiki/Extended_Euclidean_algorithm
 // a * x + b * y = gcd(a, b) = d
-void ExtendedEuclid(uint64 a, uint64 b, uint64 *x, uint64 *y, uint64 *d) {
-  uint64 x1 = 0, x2 = 1, y1 = 1, y2 = 0;
+void ExtendedEuclid(uint64_t a,
+                    uint64_t b,
+                    uint64_t* x,
+                    uint64_t* y,
+                    uint64_t* d) {
+  uint64_t x1 = 0, x2 = 1, y1 = 1, y2 = 0;
 
   while (b > 0) {
-    uint64 q = a / b;
-    uint64 r = a % b;
+    uint64_t q = a / b;
+    uint64_t r = a % b;
     *x = x2 - q * x1;
     *y = y2 - q * y1;
     a = b;
@@ -57,63 +65,62 @@ void ExtendedEuclid(uint64 a, uint64 b, uint64 *x, uint64 *y, uint64 *d) {
   *y = y2;
 }
 
-uint32 ModInverse(uint64 a, uint64 m)
-{
-  uint64 d, x, y;
+uint32_t ModInverse(uint64_t a, uint64_t m) {
+  uint64_t d, x, y;
   ExtendedEuclid(a, m, &x, &y, &d);
   if (d == 1)
-    return static_cast<uint32>(x);
+    return static_cast<uint32_t>(x);
   return 0;
 }
 
-uint32* BnNew() {
-  uint32* result = new uint32[kBigIntSize];
-  memset(result, 0, kBigIntSize * sizeof(uint32));
+uint32_t* BnNew() {
+  uint32_t* result = new uint32_t[kBigIntSize];
+  memset(result, 0, kBigIntSize * sizeof(uint32_t));
   return result;
 }
 
-void BnFree(uint32* a) {
+void BnFree(uint32_t* a) {
   delete[] a;
 }
 
-uint32* BnCopy(uint32* a) {
-  uint32* result = new uint32[kBigIntSize];
-  memcpy(result, a, kBigIntSize * sizeof(uint32));
+uint32_t* BnCopy(uint32_t* a) {
+  uint32_t* result = new uint32_t[kBigIntSize];
+  memcpy(result, a, kBigIntSize * sizeof(uint32_t));
   return result;
 }
 
-uint32* BnMul(uint32* a, uint32 b) {
-  uint32* result = BnNew();
-  uint64 carry_over = 0;
+uint32_t* BnMul(uint32_t* a, uint32_t b) {
+  uint32_t* result = BnNew();
+  uint64_t carry_over = 0;
   for (size_t i = 0; i < kBigIntSize; ++i) {
-    carry_over += static_cast<uint64>(a[i]) * b;
-    result[i] = carry_over & kuint32max;
+    carry_over += static_cast<uint64_t>(a[i]) * b;
+    result[i] = carry_over & std::numeric_limits<uint32_t>::max();
     carry_over >>= 32;
   }
   return result;
 }
 
-void BnSub(uint32* a, uint32* b) {
+void BnSub(uint32_t* a, uint32_t* b) {
   int carry_over = 0;
   for (size_t i = 0; i < kBigIntSize; ++i) {
-    int64 sub = static_cast<int64>(a[i]) - b[i] - carry_over;
+    int64_t sub = static_cast<int64_t>(a[i]) - b[i] - carry_over;
     carry_over = 0;
     if (sub < 0) {
       carry_over = 1;
       sub += 0x100000000LL;
     }
-    a[i] = static_cast<uint32>(sub);
+    a[i] = static_cast<uint32_t>(sub);
   }
 }
 
-void BnLeftShift(uint32* a, int offset) {
+void BnLeftShift(uint32_t* a, int offset) {
   for (int i = kBigIntSize - offset - 1; i >= 0; --i)
     a[i + offset] = a[i];
   for (int i = 0; i < offset; ++i)
     a[i] = 0;
 }
 
-int BnCompare(uint32* a, uint32* b) {
+int BnCompare(uint32_t* a, uint32_t* b) {
   for (int i = kBigIntSize - 1; i >= 0; --i) {
     if (a[i] > b[i])
       return 1;
@@ -123,12 +130,12 @@ int BnCompare(uint32* a, uint32* b) {
   return 0;
 }
 
-uint64 BnGuess(uint32* a, uint32* b, uint64 from, uint64 to) {
+uint64_t BnGuess(uint32_t* a, uint32_t* b, uint64_t from, uint64_t to) {
   if (from + 1 >= to)
     return from;
 
-  uint64 guess = (from + to) / 2;
-  uint32* t = BnMul(b, static_cast<uint32>(guess));
+  uint64_t guess = (from + to) / 2;
+  uint32_t* t = BnMul(b, static_cast<uint32_t>(guess));
   int result = BnCompare(a, t);
   BnFree(t);
   if (result > 0)
@@ -138,7 +145,7 @@ uint64 BnGuess(uint32* a, uint32* b, uint64 from, uint64 to) {
   return guess;
 }
 
-void BnDiv(uint32* a, uint32* b, uint32** pq, uint32** pr) {
+void BnDiv(uint32_t* a, uint32_t* b, uint32_t** pq, uint32_t** pr) {
   if (BnCompare(a, b) < 0) {
     if (pq)
       *pq = BnNew();
@@ -151,18 +158,19 @@ void BnDiv(uint32* a, uint32* b, uint32** pq, uint32** pr) {
   int ob = kBigIntSize - 1;
   for (; oa > 0 && !a[oa]; --oa) {}
   for (; ob > 0 && !b[ob]; --ob) {}
-  uint32* q = BnNew();
-  uint32* ca = BnCopy(a);
+  uint32_t* q = BnNew();
+  uint32_t* ca = BnCopy(a);
 
   int digit = a[oa] < b[ob] ? oa - ob - 1 : oa - ob;
 
   for (; digit >= 0; --digit) {
-    uint32* shifted_b = BnCopy(b);
+    uint32_t* shifted_b = BnCopy(b);
     BnLeftShift(shifted_b, digit);
-    uint32 value = static_cast<uint32>(
-        BnGuess(ca, shifted_b, 0, static_cast<uint64>(kuint32max) + 1));
+    uint32_t value = static_cast<uint32_t>(BnGuess(
+        ca, shifted_b, 0,
+        static_cast<uint64_t>(std::numeric_limits<uint32_t>::max()) + 1));
     q[digit] = value;
-    uint32* t = BnMul(shifted_b, value);
+    uint32_t* t = BnMul(shifted_b, value);
     BnSub(ca, t);
     BnFree(t);
     BnFree(shifted_b);
@@ -186,12 +194,12 @@ crypto::RSAPrivateKey* AndroidRSAPrivateKey(Profile* profile) {
   std::string decoded_key;
   scoped_ptr<crypto::RSAPrivateKey> key;
   if (!encoded_key.empty() && base::Base64Decode(encoded_key, &decoded_key)) {
-    std::vector<uint8> key_info(decoded_key.begin(), decoded_key.end());
+    std::vector<uint8_t> key_info(decoded_key.begin(), decoded_key.end());
     key.reset(crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(key_info));
   }
   if (!key) {
     key.reset(crypto::RSAPrivateKey::Create(2048));
-    std::vector<uint8> key_info;
+    std::vector<uint8_t> key_info;
     if (!key || !key->ExportPrivateKey(&key_info))
       return NULL;
 
@@ -204,7 +212,7 @@ crypto::RSAPrivateKey* AndroidRSAPrivateKey(Profile* profile) {
 }
 
 std::string AndroidRSAPublicKey(crypto::RSAPrivateKey* key) {
-  std::vector<uint8> public_key;
+  std::vector<uint8_t> public_key;
   if (!key)
     return kDummyRSAPublicKey;
 
@@ -216,10 +224,10 @@ std::string AndroidRSAPublicKey(crypto::RSAPrivateKey* key) {
     return kDummyRSAPublicKey;
 
   // Skip 10 byte asn1 prefix to the modulus.
-  std::vector<uint8> pk_data(pk.data() + 10, pk.data() + pk.length());
-  uint32* n = BnNew();
+  std::vector<uint8_t> pk_data(pk.data() + 10, pk.data() + pk.length());
+  uint32_t* n = BnNew();
   for (size_t i = 0; i < kRSANumWords; ++i) {
-    uint32 t = pk_data[4 * i];
+    uint32_t t = pk_data[4 * i];
     t = t << 8;
     t += pk_data[4 * i + 1];
     t = t << 8;
@@ -228,7 +236,7 @@ std::string AndroidRSAPublicKey(crypto::RSAPrivateKey* key) {
     t += pk_data[4 * i + 3];
     n[kRSANumWords - i - 1] = t;
   }
-  uint64 n0 = n[0];
+  uint64_t n0 = n[0];
 
   RSAPublicKey pkey;
   pkey.len = kRSANumWords;
@@ -237,10 +245,10 @@ std::string AndroidRSAPublicKey(crypto::RSAPrivateKey* key) {
   if (pkey.n0inv == 0)
     return kDummyRSAPublicKey;
 
-  uint32* r = BnNew();
+  uint32_t* r = BnNew();
   r[kRSANumWords * 2] = 1;
 
-  uint32* rr;
+  uint32_t* rr;
   BnDiv(r, n, NULL, &rr);
 
   for (size_t i = 0; i < kRSANumWords; ++i) {
@@ -260,8 +268,8 @@ std::string AndroidRSAPublicKey(crypto::RSAPrivateKey* key) {
 
 std::string AndroidRSASign(crypto::RSAPrivateKey* key,
                            const std::string& body) {
-  std::vector<uint8> digest(body.begin(), body.end());
-  std::vector<uint8> result;
+  std::vector<uint8_t> digest(body.begin(), body.end());
+  std::vector<uint8_t> result;
   if (!crypto::SignatureCreator::Sign(key, crypto::SignatureCreator::SHA1,
                                       digest.data(), digest.size(), &result)) {
     return std::string();

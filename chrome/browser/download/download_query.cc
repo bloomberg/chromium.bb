@@ -4,7 +4,10 @@
 
 #include "chrome/browser/download/download_query.h"
 
+#include <stdint.h>
+
 #include <algorithm>
+#include <limits>
 #include <string>
 #include <vector>
 
@@ -69,11 +72,11 @@ template<> bool GetAs(const base::Value& in, std::vector<base::string16>* out) {
 // The next several functions are helpers for making Callbacks that access
 // DownloadItem fields.
 
-static int64 GetStartTimeMsEpoch(const DownloadItem& item) {
+static int64_t GetStartTimeMsEpoch(const DownloadItem& item) {
   return (item.GetStartTime() - base::Time::UnixEpoch()).InMilliseconds();
 }
 
-static int64 GetEndTimeMsEpoch(const DownloadItem& item) {
+static int64_t GetEndTimeMsEpoch(const DownloadItem& item) {
   return (item.GetEndTime() - base::Time::UnixEpoch()).InMilliseconds();
 }
 
@@ -239,7 +242,8 @@ bool DownloadQuery::MatchesQuery(const std::vector<base::string16>& query_terms,
   return true;
 }
 
-DownloadQuery::DownloadQuery() : limit_(kuint32max), skip_(0U) {}
+DownloadQuery::DownloadQuery()
+    : limit_(std::numeric_limits<uint32_t>::max()), skip_(0U) {}
 DownloadQuery::~DownloadQuery() {}
 
 // AddFilter() pushes a new FilterCallback to filters_. Most FilterCallbacks are
@@ -388,10 +392,11 @@ void DownloadQuery::AddSorter(DownloadQuery::SortType type,
                               DownloadQuery::SortDirection direction) {
   switch (type) {
     case SORT_END_TIME:
-      sorters_.push_back(Sorter::Build<int64>(direction, &GetEndTimeMsEpoch));
+      sorters_.push_back(Sorter::Build<int64_t>(direction, &GetEndTimeMsEpoch));
       break;
     case SORT_START_TIME:
-      sorters_.push_back(Sorter::Build<int64>(direction, &GetStartTimeMsEpoch));
+      sorters_.push_back(
+          Sorter::Build<int64_t>(direction, &GetStartTimeMsEpoch));
       break;
     case SORT_URL:
       sorters_.push_back(Sorter::Build<std::string>(direction, &GetUrl));

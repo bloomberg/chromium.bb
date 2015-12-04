@@ -4,6 +4,10 @@
 
 #include "net/disk_cache/blockfile/file.h"
 
+#include <stdint.h>
+
+#include <limits>
+
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
@@ -56,8 +60,8 @@ bool File::IsValid() const {
 
 bool File::Read(void* buffer, size_t buffer_len, size_t offset) {
   DCHECK(base_file_.IsValid());
-  if (buffer_len > static_cast<size_t>(kint32max) ||
-      offset > static_cast<size_t>(kint32max)) {
+  if (buffer_len > static_cast<size_t>(std::numeric_limits<int32_t>::max()) ||
+      offset > static_cast<size_t>(std::numeric_limits<int32_t>::max())) {
     return false;
   }
 
@@ -67,8 +71,8 @@ bool File::Read(void* buffer, size_t buffer_len, size_t offset) {
 
 bool File::Write(const void* buffer, size_t buffer_len, size_t offset) {
   DCHECK(base_file_.IsValid());
-  if (buffer_len > static_cast<size_t>(kint32max) ||
-      offset > static_cast<size_t>(kint32max)) {
+  if (buffer_len > static_cast<size_t>(std::numeric_limits<int32_t>::max()) ||
+      offset > static_cast<size_t>(std::numeric_limits<int32_t>::max())) {
     return false;
   }
 
@@ -86,8 +90,8 @@ bool File::Read(void* buffer, size_t buffer_len, size_t offset,
     return Read(buffer, buffer_len, offset);
   }
 
-  if (buffer_len > static_cast<size_t>(kint32max) ||
-      offset > static_cast<size_t>(kint32max)) {
+  if (buffer_len > static_cast<size_t>(std::numeric_limits<int32_t>::max()) ||
+      offset > static_cast<size_t>(std::numeric_limits<int32_t>::max())) {
     return false;
   }
 
@@ -109,8 +113,8 @@ bool File::Write(const void* buffer, size_t buffer_len, size_t offset,
     return Write(buffer, buffer_len, offset);
   }
 
-  if (buffer_len > static_cast<size_t>(kint32max) ||
-      offset > static_cast<size_t>(kint32max)) {
+  if (buffer_len > static_cast<size_t>(std::numeric_limits<int32_t>::max()) ||
+      offset > static_cast<size_t>(std::numeric_limits<int32_t>::max())) {
     return false;
   }
 
@@ -125,7 +129,7 @@ bool File::Write(const void* buffer, size_t buffer_len, size_t offset,
 
 bool File::SetLength(size_t length) {
   DCHECK(base_file_.IsValid());
-  if (length > kuint32max)
+  if (length > std::numeric_limits<uint32_t>::max())
     return false;
 
   return base_file_.SetLength(length);
@@ -133,10 +137,10 @@ bool File::SetLength(size_t length) {
 
 size_t File::GetLength() {
   DCHECK(base_file_.IsValid());
-  int64 len = base_file_.GetLength();
+  int64_t len = base_file_.GetLength();
 
-  if (len > static_cast<int64>(kuint32max))
-    return kuint32max;
+  if (len > static_cast<int64_t>(std::numeric_limits<uint32_t>::max()))
+    return std::numeric_limits<uint32_t>::max();
 
   return static_cast<size_t>(len);
 }

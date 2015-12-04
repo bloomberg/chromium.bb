@@ -5,8 +5,10 @@
 #include "ui/base/clipboard/clipboard_mac.h"
 
 #import <Cocoa/Cocoa.h>
+#include <stdint.h>
 
-#include "base/basictypes.h"
+#include <limits>
+
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
@@ -183,7 +185,7 @@ ClipboardMac::~ClipboardMac() {
   DCHECK(CalledOnValidThread());
 }
 
-uint64 ClipboardMac::GetSequenceNumber(ClipboardType type) const {
+uint64_t ClipboardMac::GetSequenceNumber(ClipboardType type) const {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(type, CLIPBOARD_TYPE_COPY_PASTE);
 
@@ -264,8 +266,8 @@ void ClipboardMac::ReadAsciiText(ClipboardType type,
 void ClipboardMac::ReadHTML(ClipboardType type,
                             base::string16* markup,
                             std::string* src_url,
-                            uint32* fragment_start,
-                            uint32* fragment_end) const {
+                            uint32_t* fragment_start,
+                            uint32_t* fragment_end) const {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(type, CLIPBOARD_TYPE_COPY_PASTE);
 
@@ -288,8 +290,8 @@ void ClipboardMac::ReadHTML(ClipboardType type,
   }
 
   *fragment_start = 0;
-  DCHECK(markup->length() <= kuint32max);
-  *fragment_end = static_cast<uint32>(markup->length());
+  DCHECK(markup->length() <= std::numeric_limits<uint32_t>::max());
+  *fragment_end = static_cast<uint32_t>(markup->length());
 }
 
 void ClipboardMac::ReadRTF(ClipboardType type, std::string* result) const {

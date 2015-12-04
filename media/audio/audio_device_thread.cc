@@ -4,7 +4,10 @@
 
 #include "media/audio/audio_device_thread.h"
 
+#include <stdint.h>
+
 #include <algorithm>
+#include <limits>
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -163,21 +166,22 @@ void AudioDeviceThread::Thread::ThreadMain() {
 }
 
 void AudioDeviceThread::Thread::Run() {
-  uint32 buffer_index = 0;
+  uint32_t buffer_index = 0;
   while (true) {
-    uint32 pending_data = 0;
+    uint32_t pending_data = 0;
     size_t bytes_read = socket_.Receive(&pending_data, sizeof(pending_data));
     if (bytes_read != sizeof(pending_data))
       break;
 
-    // kuint32max is a special signal which is returned after the browser
-    // stops the output device in response to a renderer side request.
+    // std::numeric_limits<uint32_t>::max() is a special signal which is
+    // returned after the browser stops the output device in response to a
+    // renderer side request.
     //
     // Avoid running Process() for the paused signal, we still need to update
     // the buffer index if |synchronized_buffers_| is true though.
     //
     // See comments in AudioOutputController::DoPause() for details on why.
-    if (pending_data != kuint32max) {
+    if (pending_data != std::numeric_limits<uint32_t>::max()) {
       base::AutoLock auto_lock(callback_lock_);
       if (callback_)
         callback_->Process(pending_data);

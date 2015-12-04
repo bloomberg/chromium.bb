@@ -5,9 +5,10 @@
 #ifndef NET_HTTP_HTTP_SECURITY_HEADERS_H_
 #define NET_HTTP_HTTP_SECURITY_HEADERS_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "net/base/hash_value.h"
@@ -17,7 +18,7 @@ class GURL;
 
 namespace net {
 
-const int64 kMaxHSTSAgeSecs = 86400 * 365;  // 1 year
+const int64_t kMaxHSTSAgeSecs = 86400 * 365;  // 1 year
 
 // Parses |value| as a Strict-Transport-Security header value. If successful,
 // returns true and sets |*max_age| and |*include_subdomains|.

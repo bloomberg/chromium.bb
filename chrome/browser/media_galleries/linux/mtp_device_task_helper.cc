@@ -5,6 +5,7 @@
 #include "chrome/browser/media_galleries/linux/mtp_device_task_helper.h"
 
 #include <algorithm>
+#include <limits>
 
 #include "base/logging.h"
 #include "chrome/browser/media_galleries/linux/mtp_device_object_enumerator.h"
@@ -76,7 +77,7 @@ void MTPDeviceTaskHelper::OpenStorage(const std::string& storage_name,
 }
 
 void MTPDeviceTaskHelper::GetFileInfo(
-    uint32 file_id,
+    uint32_t file_id,
     const GetFileInfoSuccessCallback& success_callback,
     const ErrorCallback& error_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -92,7 +93,7 @@ void MTPDeviceTaskHelper::GetFileInfo(
 }
 
 void MTPDeviceTaskHelper::CreateDirectory(
-    const uint32 parent_id,
+    const uint32_t parent_id,
     const std::string& directory_name,
     const CreateDirectorySuccessCallback& success_callback,
     const ErrorCallback& error_callback) {
@@ -108,7 +109,7 @@ void MTPDeviceTaskHelper::CreateDirectory(
 }
 
 void MTPDeviceTaskHelper::ReadDirectory(
-    const uint32 directory_id,
+    const uint32_t directory_id,
     const size_t max_size,
     const ReadDirectorySuccessCallback& success_callback,
     const ErrorCallback& error_callback) {
@@ -153,7 +154,7 @@ void MTPDeviceTaskHelper::ReadBytes(
 }
 
 void MTPDeviceTaskHelper::RenameObject(
-    const uint32 object_id,
+    const uint32_t object_id,
     const std::string& new_name,
     const RenameObjectSuccessCallback& success_callback,
     const ErrorCallback& error_callback) {
@@ -172,7 +173,7 @@ MTPDeviceTaskHelper::MTPEntry::MTPEntry() : file_id(0) {}
 void MTPDeviceTaskHelper::CopyFileFromLocal(
     const std::string& storage_name,
     const int source_file_descriptor,
-    const uint32 parent_id,
+    const uint32_t parent_id,
     const std::string& file_name,
     const CopyFileFromLocalSuccessCallback& success_callback,
     const ErrorCallback& error_callback) {
@@ -186,7 +187,7 @@ void MTPDeviceTaskHelper::CopyFileFromLocal(
 }
 
 void MTPDeviceTaskHelper::DeleteObject(
-    const uint32 object_id,
+    const uint32_t object_id,
     const DeleteObjectSuccessCallback& success_callback,
     const ErrorCallback& error_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -296,7 +297,8 @@ void MTPDeviceTaskHelper::OnGetFileInfoToReadBytes(
   if (file_info.is_directory) {
     return HandleDeviceError(request.error_callback,
                              base::File::FILE_ERROR_NOT_A_FILE);
-  } else if (file_info.size < 0 || file_info.size > kuint32max ||
+  } else if (file_info.size < 0 ||
+             file_info.size > std::numeric_limits<uint32_t>::max() ||
              request.offset > file_info.size) {
     return HandleDeviceError(request.error_callback,
                              base::File::FILE_ERROR_FAILED);
@@ -308,15 +310,13 @@ void MTPDeviceTaskHelper::OnGetFileInfoToReadBytes(
     return;
   }
 
-  uint32 bytes_to_read = std::min(
-      base::checked_cast<uint32>(request.buf_len),
-      base::saturated_cast<uint32>(file_info.size - request.offset));
+  uint32_t bytes_to_read =
+      std::min(base::checked_cast<uint32_t>(request.buf_len),
+               base::saturated_cast<uint32_t>(file_info.size - request.offset));
 
   GetMediaTransferProtocolManager()->ReadFileChunk(
-      device_handle_,
-      request.file_id,
-      base::checked_cast<uint32>(request.offset),
-      bytes_to_read,
+      device_handle_, request.file_id,
+      base::checked_cast<uint32_t>(request.offset), bytes_to_read,
       base::Bind(&MTPDeviceTaskHelper::OnDidReadBytes,
                  weak_ptr_factory_.GetWeakPtr(), request, file_info));
 }

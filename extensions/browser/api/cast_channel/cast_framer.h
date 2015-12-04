@@ -5,9 +5,10 @@
 #ifndef EXTENSIONS_BROWSER_API_CAST_CHANNEL_CAST_FRAMER_H_
 #define EXTENSIONS_BROWSER_API_CAST_CHANNEL_CAST_FRAMER_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "extensions/common/api/cast_channel.h"
 #include "net/base/io_buffer.h"
 

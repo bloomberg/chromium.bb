@@ -4,12 +4,14 @@
 
 #include "ui/base/clipboard/clipboard_aurax11.h"
 
+#include <stdint.h>
 #include <X11/extensions/Xfixes.h>
 #include <X11/Xatom.h>
+
+#include <limits>
 #include <list>
 #include <set>
 
-#include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
@@ -65,10 +67,10 @@ class SelectionChangeObserver : public ui::PlatformEventObserver {
  public:
   static SelectionChangeObserver* GetInstance();
 
-  uint64 clipboard_sequence_number() const {
+  uint64_t clipboard_sequence_number() const {
     return clipboard_sequence_number_;
   }
-  uint64 primary_sequence_number() const { return primary_sequence_number_; }
+  uint64_t primary_sequence_number() const { return primary_sequence_number_; }
 
  private:
   friend struct base::DefaultSingletonTraits<SelectionChangeObserver>;
@@ -82,8 +84,8 @@ class SelectionChangeObserver : public ui::PlatformEventObserver {
 
   int event_base_;
   Atom clipboard_atom_;
-  uint64 clipboard_sequence_number_;
-  uint64 primary_sequence_number_;
+  uint64_t clipboard_sequence_number_;
+  uint64_t primary_sequence_number_;
 
   DISALLOW_COPY_AND_ASSIGN(SelectionChangeObserver);
 };
@@ -670,7 +672,7 @@ ClipboardAuraX11::~ClipboardAuraX11() {
   aurax11_details_->StoreCopyPasteDataAndWait();
 }
 
-uint64 ClipboardAuraX11::GetSequenceNumber(ClipboardType type) const {
+uint64_t ClipboardAuraX11::GetSequenceNumber(ClipboardType type) const {
   DCHECK(CalledOnValidThread());
   if (type == CLIPBOARD_TYPE_COPY_PASTE)
     return SelectionChangeObserver::GetInstance()->clipboard_sequence_number();
@@ -753,8 +755,8 @@ void ClipboardAuraX11::ReadAsciiText(ClipboardType type,
 void ClipboardAuraX11::ReadHTML(ClipboardType type,
                                 base::string16* markup,
                                 std::string* src_url,
-                                uint32* fragment_start,
-                                uint32* fragment_end) const {
+                                uint32_t* fragment_start,
+                                uint32_t* fragment_end) const {
   DCHECK(CalledOnValidThread());
   markup->clear();
   if (src_url)
@@ -768,8 +770,8 @@ void ClipboardAuraX11::ReadHTML(ClipboardType type,
     *markup = data.GetHtml();
 
     *fragment_start = 0;
-    DCHECK(markup->length() <= kuint32max);
-    *fragment_end = static_cast<uint32>(markup->length());
+    DCHECK(markup->length() <= std::numeric_limits<uint32_t>::max());
+    *fragment_end = static_cast<uint32_t>(markup->length());
   }
 }
 

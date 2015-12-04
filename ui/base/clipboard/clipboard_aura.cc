@@ -4,9 +4,11 @@
 
 #include "ui/base/clipboard/clipboard_aura.h"
 
+#include <stdint.h>
+
+#include <limits>
 #include <list>
 
-#include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -210,8 +212,8 @@ class AuraClipboard {
   // Reads HTML from the data at the top of clipboard stack.
   void ReadHTML(base::string16* markup,
                 std::string* src_url,
-                uint32* fragment_start,
-                uint32* fragment_end) const {
+                uint32_t* fragment_start,
+                uint32_t* fragment_end) const {
     markup->clear();
     if (src_url)
       src_url->clear();
@@ -226,8 +228,8 @@ class AuraClipboard {
     *src_url = data->url();
 
     *fragment_start = 0;
-    DCHECK_LE(markup->length(), kuint32max);
-    *fragment_end = static_cast<uint32>(markup->length());
+    DCHECK_LE(markup->length(), std::numeric_limits<uint32_t>::max());
+    *fragment_end = static_cast<uint32_t>(markup->length());
   }
 
   // Reads RTF from the data at the top of clipboard stack.
@@ -528,7 +530,7 @@ ClipboardAura::~ClipboardAura() {
   DeleteClipboard();
 }
 
-uint64 ClipboardAura::GetSequenceNumber(ClipboardType type) const {
+uint64_t ClipboardAura::GetSequenceNumber(ClipboardType type) const {
   DCHECK(CalledOnValidThread());
   return GetClipboard()->sequence_number();
 }
@@ -605,8 +607,8 @@ void ClipboardAura::ReadAsciiText(ClipboardType type,
 void ClipboardAura::ReadHTML(ClipboardType type,
                              base::string16* markup,
                              std::string* src_url,
-                             uint32* fragment_start,
-                             uint32* fragment_end) const {
+                             uint32_t* fragment_start,
+                             uint32_t* fragment_end) const {
   DCHECK(CalledOnValidThread());
   GetClipboard()->ReadHTML(markup, src_url, fragment_start, fragment_end);
 }

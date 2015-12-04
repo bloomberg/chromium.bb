@@ -7,6 +7,8 @@
 #ifndef NET_DISK_CACHE_BLOCKFILE_BACKEND_IMPL_H_
 #define NET_DISK_CACHE_BLOCKFILE_BACKEND_IMPL_H_
 
+#include <stdint.h>
+
 #include "base/containers/hash_tables.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
@@ -54,7 +56,7 @@ class NET_EXPORT_PRIVATE BackendImpl : public Backend {
               net::NetLog* net_log);
   // mask can be used to limit the usable size of the hash table, for testing.
   BackendImpl(const base::FilePath& path,
-              uint32 mask,
+              uint32_t mask,
               const scoped_refptr<base::SingleThreadTaskRunner>& cache_thread,
               net::NetLog* net_log);
   ~BackendImpl() override;
@@ -149,16 +151,16 @@ class NET_EXPORT_PRIVATE BackendImpl : public Backend {
   EntryImpl* GetOpenEntry(CacheRankingsBlock* rankings) const;
 
   // Returns the id being used on this run of the cache.
-  int32 GetCurrentEntryId() const;
+  int32_t GetCurrentEntryId() const;
 
   // Returns the maximum size for a file to reside on the cache.
   int MaxFileSize() const;
 
   // A user data block is being created, extended or truncated.
-  void ModifyStorageSize(int32 old_size, int32 new_size);
+  void ModifyStorageSize(int32_t old_size, int32_t new_size);
 
   // Logs requests that are denied due to being too big.
-  void TooMuchStorageRequested(int32 size);
+  void TooMuchStorageRequested(int32_t size);
 
   // Returns true if a temporary buffer is allowed to be extended.
   bool IsAllocAllowed(int current_size, int new_size);
@@ -228,7 +230,7 @@ class NET_EXPORT_PRIVATE BackendImpl : public Backend {
   void SetNewEviction();
 
   // Sets an explicit set of BackendFlags.
-  void SetFlags(uint32 flags);
+  void SetFlags(uint32_t flags);
 
   // Clears the counter of references to test handling of corruptions.
   void ClearRefCountForTest();
@@ -261,7 +263,7 @@ class NET_EXPORT_PRIVATE BackendImpl : public Backend {
 
   // Backend implementation.
   net::CacheType GetCacheType() const override;
-  int32 GetEntryCount() const override;
+  int32_t GetEntryCount() const override;
   int OpenEntry(const std::string& key,
                 Entry** entry,
                 const CompletionCallback& callback) override;
@@ -316,8 +318,11 @@ class NET_EXPORT_PRIVATE BackendImpl : public Backend {
   // if it doesn't match the entry on the index, we know that it was replaced
   // with a new entry; in this case |*match_error| will be set to true and the
   // return value will be NULL.
-  EntryImpl* MatchEntry(const std::string& key, uint32 hash, bool find_parent,
-                        Addr entry_addr, bool* match_error);
+  EntryImpl* MatchEntry(const std::string& key,
+                        uint32_t hash,
+                        bool find_parent,
+                        Addr entry_addr,
+                        bool* match_error);
 
   // Opens the next or previous entry on a single list. If successful,
   // |from_entry| will be updated to point to the new entry, otherwise it will
@@ -335,8 +340,8 @@ class NET_EXPORT_PRIVATE BackendImpl : public Backend {
   void DestroyInvalidEntry(EntryImpl* entry);
 
   // Handles the used storage count.
-  void AddStorageSize(int32 bytes);
-  void SubstractStorageSize(int32 bytes);
+  void AddStorageSize(int32_t bytes);
+  void SubstractStorageSize(int32_t bytes);
 
   // Update the number of referenced cache entries.
   void IncreaseNumRefs();
@@ -371,8 +376,8 @@ class NET_EXPORT_PRIVATE BackendImpl : public Backend {
   Index* data_;  // Pointer to the index data.
   BlockFiles block_files_;  // Set of files used to store all data.
   Rankings rankings_;  // Rankings to be able to trim the cache.
-  uint32 mask_;  // Binary mask to map a hash to the hash table.
-  int32 max_size_;  // Maximum data size for this instance.
+  uint32_t mask_;            // Binary mask to map a hash to the hash table.
+  int32_t max_size_;         // Maximum data size for this instance.
   Eviction eviction_;  // Handler of the eviction algorithm.
   EntriesMap open_entries_;  // Map of open entries.
   int num_refs_;  // Number of referenced cache entries.
@@ -384,7 +389,7 @@ class NET_EXPORT_PRIVATE BackendImpl : public Backend {
   int up_ticks_;  // The number of timer ticks received (OnStatsTimer).
   net::CacheType cache_type_;
   int uma_report_;  // Controls transmission of UMA data.
-  uint32 user_flags_;  // Flags set by the user.
+  uint32_t user_flags_;  // Flags set by the user.
   bool init_;  // controls the initialization of the system.
   bool restarted_;
   bool unit_test_;

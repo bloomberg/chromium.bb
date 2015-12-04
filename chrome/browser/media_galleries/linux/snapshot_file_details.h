@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_MEDIA_GALLERIES_LINUX_SNAPSHOT_FILE_DETAILS_H_
 #define CHROME_BROWSER_MEDIA_GALLERIES_LINUX_SNAPSHOT_FILE_DETAILS_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
@@ -16,7 +17,7 @@
 // Used to represent snapshot file request params.
 struct SnapshotRequestInfo {
   SnapshotRequestInfo(
-      uint32 file_id,
+      uint32_t file_id,
       const base::FilePath& snapshot_file_path,
       const MTPDeviceAsyncDelegate::CreateSnapshotFileSuccessCallback&
           success_callback,
@@ -24,7 +25,7 @@ struct SnapshotRequestInfo {
   ~SnapshotRequestInfo();
 
   // MTP device file id.
-  const uint32 file_id;
+  const uint32_t file_id;
 
   // Local platform path of the snapshot file.
   const base::FilePath snapshot_file_path;
@@ -47,17 +48,13 @@ class SnapshotFileDetails {
 
   ~SnapshotFileDetails();
 
-  uint32 file_id() const {
-    return request_info_.file_id;
-  }
+  uint32_t file_id() const { return request_info_.file_id; }
 
   base::FilePath snapshot_file_path() const {
     return request_info_.snapshot_file_path;
   }
 
-  uint32 bytes_written() const {
-    return bytes_written_;
-  }
+  uint32_t bytes_written() const { return bytes_written_; }
 
   const base::File::Info& file_info() const {
     return file_info_;
@@ -85,13 +82,13 @@ class SnapshotFileDetails {
   // |bytes_written_|.
   // If |bytes_written| is invalid, returns false and does not add
   // |bytes_written| to |bytes_written_|.
-  bool AddBytesWritten(uint32 bytes_written);
+  bool AddBytesWritten(uint32_t bytes_written);
 
   // Returns true if the snapshot file is created successfully (no more write
   // operation is required to complete the snapshot file).
   bool IsSnapshotFileWriteComplete() const;
 
-  uint32 BytesToRead() const;
+  uint32_t BytesToRead() const;
 
  private:
   // Snapshot file request params.
@@ -101,7 +98,7 @@ class SnapshotFileDetails {
   const base::File::Info file_info_;
 
   // Number of bytes written into the snapshot file.
-  uint32 bytes_written_;
+  uint32_t bytes_written_;
 
   // Whether an error occurred during file transfer.
   bool error_occurred_;

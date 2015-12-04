@@ -5,10 +5,11 @@
 #ifndef BASE_PICKLE_H_
 #define BASE_PICKLE_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/base_export.h"
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/logging.h"
@@ -34,10 +35,10 @@ class BASE_EXPORT PickleIterator {
   bool ReadBool(bool* result) WARN_UNUSED_RESULT;
   bool ReadInt(int* result) WARN_UNUSED_RESULT;
   bool ReadLong(long* result) WARN_UNUSED_RESULT;
-  bool ReadUInt16(uint16* result) WARN_UNUSED_RESULT;
-  bool ReadUInt32(uint32* result) WARN_UNUSED_RESULT;
-  bool ReadInt64(int64* result) WARN_UNUSED_RESULT;
-  bool ReadUInt64(uint64* result) WARN_UNUSED_RESULT;
+  bool ReadUInt16(uint16_t* result) WARN_UNUSED_RESULT;
+  bool ReadUInt32(uint32_t* result) WARN_UNUSED_RESULT;
+  bool ReadInt64(int64_t* result) WARN_UNUSED_RESULT;
+  bool ReadUInt64(uint64_t* result) WARN_UNUSED_RESULT;
   bool ReadSizeT(size_t* result) WARN_UNUSED_RESULT;
   bool ReadFloat(float* result) WARN_UNUSED_RESULT;
   bool ReadDouble(double* result) WARN_UNUSED_RESULT;
@@ -179,22 +180,14 @@ class BASE_EXPORT Pickle {
   bool WriteLongUsingDangerousNonPortableLessPersistableForm(long value) {
     return WritePOD(value);
   }
-  bool WriteUInt16(uint16 value) {
-    return WritePOD(value);
-  }
-  bool WriteUInt32(uint32 value) {
-    return WritePOD(value);
-  }
-  bool WriteInt64(int64 value) {
-    return WritePOD(value);
-  }
-  bool WriteUInt64(uint64 value) {
-    return WritePOD(value);
-  }
+  bool WriteUInt16(uint16_t value) { return WritePOD(value); }
+  bool WriteUInt32(uint32_t value) { return WritePOD(value); }
+  bool WriteInt64(int64_t value) { return WritePOD(value); }
+  bool WriteUInt64(uint64_t value) { return WritePOD(value); }
   bool WriteSizeT(size_t value) {
     // Always write size_t as a 64-bit value to ensure compatibility between
     // 32-bit and 64-bit processes.
-    return WritePOD(static_cast<uint64>(value));
+    return WritePOD(static_cast<uint64_t>(value));
   }
   bool WriteFloat(float value) {
     return WritePOD(value);
@@ -219,7 +212,7 @@ class BASE_EXPORT Pickle {
 
   // Payload follows after allocation of Header (header size is customizable).
   struct Header {
-    uint32 payload_size;  // Specifies the size of the payload.
+    uint32_t payload_size;  // Specifies the size of the payload.
   };
 
   // Returns the header, cast to a user-specified type T.  The type T must be a

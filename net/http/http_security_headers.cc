@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <limits>
+
 #include "base/base64.h"
-#include "base/basictypes.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_tokenizer.h"
@@ -18,36 +19,36 @@ namespace {
 
 enum MaxAgeParsing { REQUIRE_MAX_AGE, DO_NOT_REQUIRE_MAX_AGE };
 
-static_assert(kMaxHSTSAgeSecs <= kuint32max, "kMaxHSTSAgeSecs too large");
+static_assert(kMaxHSTSAgeSecs <= UINT32_MAX, "kMaxHSTSAgeSecs too large");
 
 // MaxAgeToInt converts a string representation of a "whole number" of
-// seconds into a uint32. The string may contain an arbitrarily large number,
+// seconds into a uint32_t. The string may contain an arbitrarily large number,
 // which will be clipped to kMaxHSTSAgeSecs and which is guaranteed to fit
 // within a 32-bit unsigned integer. False is returned on any parse error.
 bool MaxAgeToInt(std::string::const_iterator begin,
                  std::string::const_iterator end,
-                 uint32* result) {
+                 uint32_t* result) {
   const base::StringPiece s(begin, end);
   if (s.empty())
     return false;
 
-  int64 i = 0;
+  int64_t i = 0;
 
-  // Return false on any StringToInt64 parse errors *except* for
-  // int64 overflow. StringToInt64 is used, rather than StringToUint64,
-  // in order to properly handle and reject negative numbers
-  // (StringToUint64 does not return false on negative numbers).
-  // For values too large to be stored in an int64, StringToInt64 will
-  // return false with i set to kint64max, so this case is detected
-  // by the immediately following if-statement and allowed to fall
-  // through so that i gets clipped to kMaxHSTSAgeSecs.
-  if (!base::StringToInt64(s, &i) && i != kint64max)
+  // Return false on any StringToInt64 parse errors *except* for int64_t
+  // overflow. StringToInt64 is used, rather than StringToUint64, in order to
+  // properly handle and reject negative numbers (StringToUint64 does not return
+  // false on negative numbers). For values too large to be stored in an
+  // int64_t, StringToInt64 will return false with i set to
+  // std::numeric_limits<int64_t>::max(), so this case is detected by the
+  // immediately following if-statement and allowed to fall through so that i
+  // gets clipped to kMaxHSTSAgeSecs.
+  if (!base::StringToInt64(s, &i) && i != std::numeric_limits<int64_t>::max())
     return false;
   if (i < 0)
     return false;
   if (i > kMaxHSTSAgeSecs)
     i = kMaxHSTSAgeSecs;
-  *result = (uint32)i;
+  *result = (uint32_t)i;
   return true;
 }
 
@@ -128,7 +129,7 @@ bool ParseHPKPHeaderImpl(const std::string& value,
                          GURL* report_uri) {
   bool parsed_max_age = false;
   bool include_subdomains_candidate = false;
-  uint32 max_age_candidate = 0;
+  uint32_t max_age_candidate = 0;
   GURL parsed_report_uri;
   HashValueVector pins;
   bool require_max_age = max_age_status == REQUIRE_MAX_AGE;
@@ -224,7 +225,7 @@ bool ParseHPKPHeaderImpl(const std::string& value,
 bool ParseHSTSHeader(const std::string& value,
                      base::TimeDelta* max_age,
                      bool* include_subdomains) {
-  uint32 max_age_candidate = 0;
+  uint32_t max_age_candidate = 0;
   bool include_subdomains_candidate = false;
 
   // We must see max-age exactly once.

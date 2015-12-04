@@ -7,6 +7,8 @@
 #ifndef NET_DISK_CACHE_BLOCKFILE_BACKEND_IMPL_V3_H_
 #define NET_DISK_CACHE_BLOCKFILE_BACKEND_IMPL_V3_H_
 
+#include <stdint.h>
+
 #include "base/containers/hash_tables.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
@@ -86,16 +88,16 @@ class NET_EXPORT_PRIVATE BackendImplV3 : public Backend {
   EntryImplV3* GetOpenEntry(Addr address) const;
 
   // Returns the id being used on this run of the cache.
-  int32 GetCurrentEntryId() const;
+  int32_t GetCurrentEntryId() const;
 
   // Returns the maximum size for a file to reside on the cache.
   int MaxFileSize() const;
 
   // A user data block is being created, extended or truncated.
-  void ModifyStorageSize(int32 old_size, int32 new_size);
+  void ModifyStorageSize(int32_t old_size, int32_t new_size);
 
   // Logs requests that are denied due to being too big.
-  void TooMuchStorageRequested(int32 size);
+  void TooMuchStorageRequested(int32_t size);
 
   // Returns true if a temporary buffer is allowed to be extended.
   bool IsAllocAllowed(int current_size, int new_size);
@@ -154,7 +156,7 @@ class NET_EXPORT_PRIVATE BackendImplV3 : public Backend {
   void SetNewEviction();
 
   // Sets an explicit set of BackendFlags.
-  void SetFlags(uint32 flags);
+  void SetFlags(uint32_t flags);
 
   // Sends a dummy operation through the operation queue, for unit tests.
   int FlushQueueForTest(const CompletionCallback& callback);
@@ -173,7 +175,7 @@ class NET_EXPORT_PRIVATE BackendImplV3 : public Backend {
 
   // Backend implementation.
   net::CacheType GetCacheType() const override;
-  int32 GetEntryCount() const override;
+  int32_t GetEntryCount() const override;
   int OpenEntry(const std::string& key,
                 Entry** entry,
                 const CompletionCallback& callback) override;
@@ -216,8 +218,8 @@ class NET_EXPORT_PRIVATE BackendImplV3 : public Backend {
   int NewEntry(Addr address, EntryImplV3** entry);
 
   // Handles the used storage count.
-  void AddStorageSize(int32 bytes);
-  void SubstractStorageSize(int32 bytes);
+  void AddStorageSize(int32_t bytes);
+  void SubstractStorageSize(int32_t bytes);
 
   // Update the number of referenced cache entries.
   void IncreaseNumRefs();
@@ -249,7 +251,7 @@ class NET_EXPORT_PRIVATE BackendImplV3 : public Backend {
   IndexTable index_;
   base::FilePath path_;  // Path to the folder used as backing storage.
   BlockBitmaps block_files_;
-  int32 max_size_;  // Maximum data size for this instance.
+  int32_t max_size_;     // Maximum data size for this instance.
   EvictionV3 eviction_;  // Handler of the eviction algorithm.
   EntriesMap open_entries_;
   int num_refs_;  // Number of referenced cache entries.
@@ -260,7 +262,7 @@ class NET_EXPORT_PRIVATE BackendImplV3 : public Backend {
   int up_ticks_;  // The number of timer ticks received (OnTimerTick).
   net::CacheType cache_type_;
   int uma_report_;  // Controls transmission of UMA data.
-  uint32 user_flags_;  // Flags set by the user.
+  uint32_t user_flags_;  // Flags set by the user.
   bool init_;  // controls the initialization of the system.
   bool restarted_;
   bool read_only_;  // Prevents updates of the rankings data (used by tools).

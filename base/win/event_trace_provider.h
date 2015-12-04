@@ -10,9 +10,12 @@
 #include <windows.h>
 #include <wmistr.h>
 #include <evntrace.h>
+#include <stdint.h>
+
+#include <limits>
 
 #include "base/base_export.h"
-#include "base/basictypes.h"
+#include "base/macros.h"
 
 namespace base {
 namespace win {
@@ -66,7 +69,7 @@ template <size_t N> class EtwMofEvent: public EtwMofEventBase<N> {
 
   void SetField(int field, size_t size, const void *data) {
     // DCHECK(field < N);
-    if ((field < N) && (size <= kuint32max)) {
+    if ((field < N) && (size <= std::numeric_limits<uint32_t>::max())) {
       fields[field].DataPtr = reinterpret_cast<ULONG64>(data);
       fields[field].Length = static_cast<ULONG>(size);
     }

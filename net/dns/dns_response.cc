@@ -4,6 +4,8 @@
 
 #include "net/dns/dns_response.h"
 
+#include <limits>
+
 #include "base/big_endian.h"
 #include "base/strings/string_util.h"
 #include "base/sys_byteorder.h"
@@ -61,19 +63,19 @@ unsigned DnsRecordParser::ReadName(const void* const vpos,
     // either a direct length or a pointer to the remainder of the name.
     switch (*p & dns_protocol::kLabelMask) {
       case dns_protocol::kLabelPointer: {
-        if (p + sizeof(uint16) > end)
+        if (p + sizeof(uint16_t) > end)
           return 0;
         if (consumed == 0) {
-          consumed = p - pos + sizeof(uint16);
+          consumed = p - pos + sizeof(uint16_t);
           if (!out)
             return consumed;  // If name is not stored, that's all we need.
         }
-        seen += sizeof(uint16);
+        seen += sizeof(uint16_t);
         // If seen the whole packet, then we must be in a loop.
         if (seen > length_)
           return 0;
-        uint16 offset;
-        base::ReadBigEndian<uint16>(p, &offset);
+        uint16_t offset;
+        base::ReadBigEndian<uint16_t>(p, &offset);
         offset &= dns_protocol::kOffsetMask;
         p = packet_ + offset;
         if (p >= end)
@@ -81,7 +83,7 @@ unsigned DnsRecordParser::ReadName(const void* const vpos,
         break;
       }
       case dns_protocol::kLabelDirect: {
-        uint8 label_len = *p;
+        uint8_t label_len = *p;
         ++p;
         // Note: root domain (".") is NOT included.
         if (label_len == 0) {
@@ -115,7 +117,7 @@ bool DnsRecordParser::ReadRecord(DnsResourceRecord* out) {
     return false;
   base::BigEndianReader reader(cur_ + consumed,
                                packet_ + length_ - (cur_ + consumed));
-  uint16 rdlen;
+  uint16_t rdlen;
   if (reader.ReadU16(&out->type) &&
       reader.ReadU16(&out->klass) &&
       reader.ReadU32(&out->ttl) &&
@@ -132,7 +134,7 @@ bool DnsRecordParser::SkipQuestion() {
   if (!consumed)
     return false;
 
-  const char* next = cur_ + consumed + 2 * sizeof(uint16);  // QTYPE + QCLASS
+  const char* next = cur_ + consumed + 2 * sizeof(uint16_t);  // QTYPE + QCLASS
   if (next > packet_ + length_)
     return false;
 
@@ -216,12 +218,12 @@ bool DnsResponse::IsValid() const {
   return parser_.IsValid();
 }
 
-uint16 DnsResponse::flags() const {
+uint16_t DnsResponse::flags() const {
   DCHECK(parser_.IsValid());
   return base::NetToHost16(header()->flags) & ~(dns_protocol::kRcodeMask);
 }
 
-uint8 DnsResponse::rcode() const {
+uint8_t DnsResponse::rcode() const {
   DCHECK(parser_.IsValid());
   return base::NetToHost16(header()->flags) & dns_protocol::kRcodeMask;
 }
@@ -240,18 +242,19 @@ base::StringPiece DnsResponse::qname() const {
   DCHECK(parser_.IsValid());
   // The response is HEADER QNAME QTYPE QCLASS ANSWER.
   // |parser_| is positioned at the beginning of ANSWER, so the end of QNAME is
-  // two uint16s before it.
+  // two uint16_ts before it.
   const size_t hdr_size = sizeof(dns_protocol::Header);
-  const size_t qname_size = parser_.GetOffset() - 2 * sizeof(uint16) - hdr_size;
+  const size_t qname_size =
+      parser_.GetOffset() - 2 * sizeof(uint16_t) - hdr_size;
   return base::StringPiece(io_buffer_->data() + hdr_size, qname_size);
 }
 
-uint16 DnsResponse::qtype() const {
+uint16_t DnsResponse::qtype() const {
   DCHECK(parser_.IsValid());
   // QTYPE starts where QNAME ends.
-  const size_t type_offset = parser_.GetOffset() - 2 * sizeof(uint16);
-  uint16 type;
-  base::ReadBigEndian<uint16>(io_buffer_->data() + type_offset, &type);
+  const size_t type_offset = parser_.GetOffset() - 2 * sizeof(uint16_t);
+  uint16_t type;
+  base::ReadBigEndian<uint16_t>(io_buffer_->data() + type_offset, &type);
   return type;
 }
 
@@ -282,14 +285,14 @@ DnsResponse::Result DnsResponse::ParseToAddressList(
   // Expected owner of record. No trailing dot.
   std::string expected_name = GetDottedName();
 
-  uint16 expected_type = qtype();
+  uint16_t expected_type = qtype();
   DCHECK(expected_type == dns_protocol::kTypeA ||
          expected_type == dns_protocol::kTypeAAAA);
 
   size_t expected_size = (expected_type == dns_protocol::kTypeAAAA)
       ? kIPv6AddressSize : kIPv4AddressSize;
 
-  uint32 ttl_sec = kuint32max;
+  uint32_t ttl_sec = std::numeric_limits<uint32_t>::max();
   IPAddressList ip_addresses;
   DnsRecordParser parser = Parser();
   DnsResourceRecord record;

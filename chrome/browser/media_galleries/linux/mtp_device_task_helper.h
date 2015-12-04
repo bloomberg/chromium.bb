@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_MEDIA_GALLERIES_LINUX_MTP_DEVICE_TASK_HELPER_H_
 #define CHROME_BROWSER_MEDIA_GALLERIES_LINUX_MTP_DEVICE_TASK_HELPER_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 

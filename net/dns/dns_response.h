@@ -5,9 +5,11 @@
 #ifndef NET_DNS_DNS_RESPONSE_H_
 #define NET_DNS_DNS_RESPONSE_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
@@ -29,9 +31,9 @@ struct NET_EXPORT_PRIVATE DnsResourceRecord {
   ~DnsResourceRecord();
 
   std::string name;  // in dotted form
-  uint16 type;
-  uint16 klass;
-  uint32 ttl;
+  uint16_t type;
+  uint16_t klass;
+  uint32_t ttl;
   base::StringPiece rdata;  // points to the original response buffer
 };
 
@@ -127,15 +129,15 @@ class NET_EXPORT_PRIVATE DnsResponse {
   // All of the methods below are valid only if the response is valid.
 
   // Accessors for the header.
-  uint16 flags() const;  // excluding rcode
-  uint8 rcode() const;
+  uint16_t flags() const;  // excluding rcode
+  uint8_t rcode() const;
 
   unsigned answer_count() const;
   unsigned additional_answer_count() const;
 
   // Accessors to the question. The qname is unparsed.
   base::StringPiece qname() const;
-  uint16 qtype() const;
+  uint16_t qtype() const;
 
   // Returns qname in dotted format.
   std::string GetDottedName() const;

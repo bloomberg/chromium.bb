@@ -7,8 +7,10 @@
 #include "chrome/installer/util/l10n_string_util.h"
 
 #include <atlbase.h>
+#include <stdint.h>
 
 #include <algorithm>
+#include <limits>
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -89,7 +91,7 @@ std::wstring GetLocalizedEulaResource() {
 
   // The cast is safe because url_path has limited length
   // (see the definition of full_exe_path and resource).
-  DCHECK(kuint32max > (url_path.size() * 3));
+  DCHECK(std::numeric_limits<uint32_t>::max() > (url_path.size() * 3));
   DWORD count = static_cast<DWORD>(url_path.size() * 3);
   scoped_ptr<wchar_t[]> url_canon(new wchar_t[count]);
   HRESULT hr = ::UrlCanonicalizeW(url_path.c_str(), url_canon.get(),

@@ -17,7 +17,7 @@ class ClipboardAura : public Clipboard {
   ~ClipboardAura() override;
 
   // Clipboard overrides:
-  uint64 GetSequenceNumber(ClipboardType type) const override;
+  uint64_t GetSequenceNumber(ClipboardType type) const override;
   bool IsFormatAvailable(const FormatType& format,
                          ClipboardType type) const override;
   void Clear(ClipboardType type) override;

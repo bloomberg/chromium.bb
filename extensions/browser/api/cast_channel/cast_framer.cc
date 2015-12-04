@@ -6,6 +6,8 @@
 
 #include <stdlib.h>
 
+#include <limits>
+
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_byteorder.h"
@@ -26,7 +28,7 @@ MessageFramer::MessageHeader::MessageHeader() : message_size(0) {
 }
 
 void MessageFramer::MessageHeader::SetMessageSize(size_t size) {
-  DCHECK_LT(size, static_cast<size_t>(kuint32max));
+  DCHECK_LT(size, static_cast<size_t>(std::numeric_limits<uint32_t>::max()));
   DCHECK_GT(size, 0U);
   message_size = size;
 }
@@ -47,7 +49,7 @@ void MessageFramer::MessageHeader::PrependToString(std::string* str) {
 // if bit-for-bit compatible.
 void MessageFramer::MessageHeader::Deserialize(char* data,
                                                MessageHeader* header) {
-  uint32 message_size;
+  uint32_t message_size;
   memcpy(&message_size, data, header_size());
   header->message_size =
       base::checked_cast<size_t>(base::NetToHost32(message_size));
@@ -55,7 +57,7 @@ void MessageFramer::MessageHeader::Deserialize(char* data,
 
 // static
 size_t MessageFramer::MessageHeader::header_size() {
-  return sizeof(uint32);
+  return sizeof(uint32_t);
 }
 
 // static
@@ -65,7 +67,7 @@ size_t MessageFramer::MessageHeader::max_message_size() {
 
 std::string MessageFramer::MessageHeader::ToString() {
   return "{message_size: " +
-         base::UintToString(static_cast<uint32>(message_size)) + "}";
+         base::UintToString(static_cast<uint32_t>(message_size)) + "}";
 }
 
 // static
@@ -120,7 +122,7 @@ scoped_ptr<CastMessage> MessageFramer::Ingest(size_t num_bytes,
     return scoped_ptr<CastMessage>();
   }
 
-  DCHECK_EQ(base::checked_cast<int32>(message_bytes_received_),
+  DCHECK_EQ(base::checked_cast<int32_t>(message_bytes_received_),
             input_buffer_->offset());
   CHECK_LE(num_bytes, BytesRequested());
   message_bytes_received_ += num_bytes;

@@ -5,7 +5,7 @@
 #ifndef MEDIA_AUDIO_AUDIO_DEVICE_THREAD_H_
 #define MEDIA_AUDIO_AUDIO_DEVICE_THREAD_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"

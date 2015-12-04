@@ -5,6 +5,8 @@
 #ifndef UI_BASE_CLIPBOARD_CLIPBOARD_H_
 #define UI_BASE_CLIPBOARD_CLIPBOARD_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 #include <vector>
@@ -148,7 +150,7 @@ class UI_BASE_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
   // Returns a sequence number which uniquely identifies clipboard state.
   // This can be used to version the data on the clipboard and determine
   // whether it has changed.
-  virtual uint64 GetSequenceNumber(ClipboardType type) const = 0;
+  virtual uint64_t GetSequenceNumber(ClipboardType type) const = 0;
 
   // Tests whether the clipboard contains a certain format
   virtual bool IsFormatAvailable(const FormatType& format,

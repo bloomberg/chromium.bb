@@ -4,6 +4,8 @@
 
 #include "net/disk_cache/blockfile/backend_impl_v3.h"
 
+#include <limits>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
@@ -100,8 +102,11 @@ bool BackendImplV3::SetMaxSize(int max_bytes) {
     return true;
 
   // Avoid a DCHECK later on.
-  if (max_bytes >= kint32max - kint32max / 10)
-    max_bytes = kint32max - kint32max / 10 - 1;
+  if (max_bytes >= std::numeric_limits<int32_t>::max() -
+                       std::numeric_limits<int32_t>::max() / 10) {
+    max_bytes = std::numeric_limits<int32_t>::max() -
+                std::numeric_limits<int32_t>::max() / 10 - 1;
+  }
 
   user_flags_ |= MAX_SIZE;
   max_size_ = max_bytes;
@@ -126,7 +131,7 @@ void BackendImplV3::UpdateRank(EntryImplV3* entry, bool modified) {
 }
 
 void BackendImplV3::InternalDoomEntry(EntryImplV3* entry) {
-  uint32 hash = entry->GetHash();
+  uint32_t hash = entry->GetHash();
   std::string key = entry->GetKey();
   Addr entry_addr = entry->entry()->address();
   bool error;
@@ -184,7 +189,7 @@ int BackendImplV3::MaxFileSize() const {
   return max_size_ / 8;
 }
 
-void BackendImplV3::ModifyStorageSize(int32 old_size, int32 new_size) {
+void BackendImplV3::ModifyStorageSize(int32_t old_size, int32_t new_size) {
   if (disabled_ || old_size == new_size)
     return;
   if (old_size > new_size)
@@ -196,7 +201,7 @@ void BackendImplV3::ModifyStorageSize(int32 old_size, int32 new_size) {
   stats_.ModifyStorageStats(old_size, new_size);
 }
 
-void BackendImplV3::TooMuchStorageRequested(int32 size) {
+void BackendImplV3::TooMuchStorageRequested(int32_t size) {
   stats_.ModifyStorageStats(0, size);
 }
 
@@ -247,7 +252,7 @@ bool BackendImplV3::ShouldReportAgain() {
     return uma_report_ == 2;
 
   uma_report_++;
-  int64 last_report = stats_.GetCounter(Stats::LAST_REPORT);
+  int64_t last_report = stats_.GetCounter(Stats::LAST_REPORT);
   Time last_time = Time::FromInternalValue(last_report);
   if (!last_report || (Time::Now() - last_time).InDays() >= 7) {
     stats_.SetCounter(Stats::LAST_REPORT, Time::Now().ToInternalValue());
@@ -267,7 +272,7 @@ void BackendImplV3::FirstEviction() {
   Time create_time = Time::FromInternalValue(header->create_time);
   CACHE_UMA(AGE, "FillupAge", create_time);
 
-  int64 use_time = stats_.GetCounter(Stats::TIMER);
+  int64_t use_time = stats_.GetCounter(Stats::TIMER);
   CACHE_UMA(HOURS, "FillupTime", static_cast<int>(use_time / 120));
   CACHE_UMA(PERCENTAGE, "FirstHitRatio", stats_.GetHitRatio());
 
@@ -302,27 +307,27 @@ void BackendImplV3::OnEvent(Stats::Counters an_event) {
   stats_.OnEvent(an_event);
 }
 
-void BackendImplV3::OnRead(int32 bytes) {
+void BackendImplV3::OnRead(int32_t bytes) {
   DCHECK_GE(bytes, 0);
   byte_count_ += bytes;
   if (byte_count_ < 0)
-    byte_count_ = kint32max;
+    byte_count_ = std::numeric_limits<int32_t>::max();
 }
 
-void BackendImplV3::OnWrite(int32 bytes) {
+void BackendImplV3::OnWrite(int32_t bytes) {
   // We use the same implementation as OnRead... just log the number of bytes.
   OnRead(bytes);
 }
 
 void BackendImplV3::OnTimerTick() {
   stats_.OnEvent(Stats::TIMER);
-  int64 time = stats_.GetCounter(Stats::TIMER);
-  int64 current = stats_.GetCounter(Stats::OPEN_ENTRIES);
+  int64_t time = stats_.GetCounter(Stats::TIMER);
+  int64_t current = stats_.GetCounter(Stats::OPEN_ENTRIES);
 
   // OPEN_ENTRIES is a sampled average of the number of open entries, avoiding
   // the bias towards 0.
   if (num_refs_ && (current != num_refs_)) {
-    int64 diff = (num_refs_ - current) / 50;
+    int64_t diff = (num_refs_ - current) / 50;
     if (!diff)
       diff = num_refs_ > current ? 1 : -1;
     current = current + diff;
@@ -368,7 +373,7 @@ void BackendImplV3::SetNewEviction() {
   lru_eviction_ = false;
 }
 
-void BackendImplV3::SetFlags(uint32 flags) {
+void BackendImplV3::SetFlags(uint32_t flags) {
   user_flags_ |= flags;
 }
 
@@ -417,7 +422,7 @@ net::CacheType BackendImplV3::GetCacheType() const {
   return cache_type_;
 }
 
-int32 BackendImplV3::GetEntryCount() const {
+int32_t BackendImplV3::GetEntryCount() const {
   if (disabled_)
     return 0;
   DCHECK(init_);
@@ -430,7 +435,7 @@ int BackendImplV3::OpenEntry(const std::string& key, Entry** entry,
     return NULL;
 
   TimeTicks start = TimeTicks::Now();
-  uint32 hash = base::Hash(key);
+  uint32_t hash = base::Hash(key);
   Trace("Open hash 0x%x", hash);
 
   bool error;
@@ -442,9 +447,9 @@ int BackendImplV3::OpenEntry(const std::string& key, Entry** entry,
   }
 
   int current_size = data_->header.num_bytes / (1024 * 1024);
-  int64 total_hours = stats_.GetCounter(Stats::TIMER) / 120;
-  int64 no_use_hours = stats_.GetCounter(Stats::LAST_REPORT_TIMER) / 120;
-  int64 use_hours = total_hours - no_use_hours;
+  int64_t total_hours = stats_.GetCounter(Stats::TIMER) / 120;
+  int64_t no_use_hours = stats_.GetCounter(Stats::LAST_REPORT_TIMER) / 120;
+  int64_t use_hours = total_hours - no_use_hours;
 
   if (!cache_entry) {
     CACHE_UMA(AGE_MS, "OpenTime.Miss", 0, start);
@@ -717,7 +722,7 @@ void BackendImplV3::OnExternalCacheHit(const std::string& key) {
   if (disabled_)
     return;
 
-  uint32 hash = base::Hash(key);
+  uint32_t hash = base::Hash(key);
   bool error;
   EntryImpl* cache_entry = MatchEntry(key, hash, false, Addr(), &error);
   if (cache_entry) {
@@ -740,7 +745,7 @@ void BackendImplV3::AdjustMaxCacheSize(int table_len) {
   DCHECK(!table_len || data_->header.magic);
 
   // The user is not setting the size, let's figure it out.
-  int64 available = base::SysInfo::AmountOfFreeDiskSpace(path_);
+  int64_t available = base::SysInfo::AmountOfFreeDiskSpace(path_);
   if (available < 0) {
     max_size_ = kDefaultCacheSize;
     return;
@@ -822,10 +827,10 @@ void BackendImplV3::StoreStats() {
 }
 
 void BackendImplV3::RestartCache(bool failure) {
-  int64 errors = stats_.GetCounter(Stats::FATAL_ERROR);
-  int64 full_dooms = stats_.GetCounter(Stats::DOOM_CACHE);
-  int64 partial_dooms = stats_.GetCounter(Stats::DOOM_RECENT);
-  int64 last_report = stats_.GetCounter(Stats::LAST_REPORT);
+  int64_t errors = stats_.GetCounter(Stats::FATAL_ERROR);
+  int64_t full_dooms = stats_.GetCounter(Stats::DOOM_CACHE);
+  int64_t partial_dooms = stats_.GetCounter(Stats::DOOM_RECENT);
+  int64_t last_report = stats_.GetCounter(Stats::LAST_REPORT);
 
   PrepareForRestart();
   if (failure) {
@@ -965,12 +970,12 @@ int BackendImplV3::NewEntry(Addr address, EntryImplV3** entry) {
   return 0;
 }
 
-void BackendImplV3::AddStorageSize(int32 bytes) {
+void BackendImplV3::AddStorageSize(int32_t bytes) {
   data_->header.num_bytes += bytes;
   DCHECK_GE(data_->header.num_bytes, 0);
 }
 
-void BackendImplV3::SubstractStorageSize(int32 bytes) {
+void BackendImplV3::SubstractStorageSize(int32_t bytes) {
   data_->header.num_bytes -= bytes;
   DCHECK_GE(data_->header.num_bytes, 0);
 }
@@ -1262,7 +1267,7 @@ void BackendImplV3::ReportStats() {
   stats_.SetCounter(Stats::DOOM_CACHE, 0);
   stats_.SetCounter(Stats::DOOM_RECENT, 0);
 
-  int64 total_hours = stats_.GetCounter(Stats::TIMER) / 120;
+  int64_t total_hours = stats_.GetCounter(Stats::TIMER) / 120;
   if (!(header->flags & CACHE_EVICTED)) {
     CACHE_UMA(HOURS, "TotalTimeNotFull", static_cast<int>(total_hours));
     return;
@@ -1273,7 +1278,7 @@ void BackendImplV3::ReportStats() {
 
   CACHE_UMA(HOURS, "TotalTime", static_cast<int>(total_hours));
 
-  int64 use_hours = stats_.GetCounter(Stats::LAST_REPORT_TIMER) / 120;
+  int64_t use_hours = stats_.GetCounter(Stats::LAST_REPORT_TIMER) / 120;
   stats_.SetCounter(Stats::LAST_REPORT_TIMER, stats_.GetCounter(Stats::TIMER));
 
   // We may see users with no use_hours at this point if this is the first time
@@ -1286,7 +1291,7 @@ void BackendImplV3::ReportStats() {
 
   CACHE_UMA(HOURS, "UseTime", static_cast<int>(use_hours));
 
-  int64 trim_rate = stats_.GetCounter(Stats::TRIM_ENTRY) / use_hours;
+  int64_t trim_rate = stats_.GetCounter(Stats::TRIM_ENTRY) / use_hours;
   CACHE_UMA(COUNTS, "TrimRate", static_cast<int>(trim_rate));
 
   int avg_size = header->num_bytes / GetEntryCount();
@@ -1368,7 +1373,7 @@ bool BackendImplV3::CheckIndex() {
 
 #if !defined(NET_BUILD_STRESS_CACHE)
   if (data_->header.num_bytes < 0 ||
-      (max_size_ < kint32max - kDefaultCacheSize &&
+      (max_size_ < std::numeric_limits<int32_t>::max() - kDefaultCacheSize &&
        data_->header.num_bytes > max_size_ + kDefaultCacheSize)) {
     LOG(ERROR) << "Invalid cache (current) size";
     return false;
@@ -1391,7 +1396,7 @@ bool BackendImplV3::CheckIndex() {
 int BackendImplV3::CheckAllEntries() {
   int num_dirty = 0;
   int num_entries = 0;
-  DCHECK(mask_ < kuint32max);
+  DCHECK(mask_ < std::numeric_limits<uint32_t>::max());
   for (unsigned int i = 0; i <= mask_; i++) {
     Addr address(data_->table[i]);
     if (!address.is_initialized())
@@ -1447,7 +1452,7 @@ bool BackendImplV3::CheckEntry(EntryImpl* cache_entry) {
 }
 
 int BackendImplV3::MaxBuffersSize() {
-  static int64 total_memory = base::SysInfo::AmountOfPhysicalMemory();
+  static int64_t total_memory = base::SysInfo::AmountOfPhysicalMemory();
   static bool done = false;
 
   if (!done) {
@@ -1474,7 +1479,7 @@ net::CacheType BackendImplV3::GetCacheType() const {
   return cache_type_;
 }
 
-int32 BackendImplV3::GetEntryCount() const {
+int32_t BackendImplV3::GetEntryCount() const {
   return 0;
 }
 
