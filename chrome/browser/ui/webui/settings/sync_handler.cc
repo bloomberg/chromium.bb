@@ -19,6 +19,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_metrics.h"
+#include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/signin/chrome_signin_helper.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -28,6 +29,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/singleton_tabs.h"
+#include "chrome/browser/ui/user_manager.h"
 #include "chrome/browser/ui/webui/options/options_handlers_helper.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
@@ -222,6 +224,10 @@ void SyncHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "SyncSetupGetSyncStatus",
       base::Bind(&SyncHandler::HandleGetSyncStatus, base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "SyncSetupManageOtherPeople",
+      base::Bind(&SyncHandler::HandleManageOtherPeople,
+                 base::Unretained(this)));
 #if defined(OS_CHROMEOS)
   web_ui()->RegisterMessageCallback(
       "SyncSetupDoSignOutOnAuthError",
@@ -564,6 +570,11 @@ void SyncHandler::HandleCloseTimeout(const base::ListValue* args) {
 
 void SyncHandler::HandleGetSyncStatus(const base::ListValue* /* args */) {
   UpdateSyncState();
+}
+
+void SyncHandler::HandleManageOtherPeople(const base::ListValue* /* args */) {
+  UserManager::Show(base::FilePath(), profiles::USER_MANAGER_NO_TUTORIAL,
+                    profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
 }
 
 void SyncHandler::CloseSyncSetup() {

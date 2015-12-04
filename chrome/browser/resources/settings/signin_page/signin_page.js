@@ -84,21 +84,25 @@ Polymer({
     this.$.pages.setSubpageChain(['sync']);
   },
 
-  /**
-   * @private
-   * @return {boolean}
-   */
-  isStatusTextSet_: function() {
-    return this.syncStatus && this.syncStatus.statusText.length > 0;
+  /** @private */
+  onManageOtherPeople_: function() {
+    settings.SyncPrivateApi.manageOtherPeople();
   },
 
   /**
    * @private
    * @return {boolean}
    */
-  isAdvancedSyncSettingsVisible_: function() {
-    var status = this.syncStatus;
-    return status && status.signedIn && !status.managed &&
-           status.syncSystemEnabled;
+  isStatusTextSet_: function(syncStatus) {
+    return syncStatus && syncStatus.statusText.length > 0;
+  },
+
+  /**
+   * @private
+   * @return {boolean}
+   */
+  isAdvancedSyncSettingsVisible_: function(syncStatus) {
+    return syncStatus && syncStatus.signedIn && !syncStatus.managed &&
+           syncStatus.syncSystemEnabled;
   },
 });

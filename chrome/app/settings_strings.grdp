@@ -564,6 +564,9 @@
   <message name="IDS_SETTINGS_SYNC_DISCONNECT_CONFIRM" desc="The text to display on the button to confirm the user wishes to stop syncing.">
     Clear and Disconnect
   </message>
+  <message name="IDS_SETTINGS_SYNC_MANAGE_OTHER_PEOPLE" desc="Label for the button that opens the multi profile user manager.">
+    Manage other people
+  </message>
 
   <message name="IDS_SETTINGS_SYNC" desc="Name of the settings page which manages syncing data between multiple browser instances with the same Google profile.">
     Advanced sync settings

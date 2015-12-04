@@ -16,35 +16,52 @@
     <settings-animated-pages id="pages" current-route="{{currentRoute}}"
         section="people">
       <neon-animatable id="main">
-        <div class="settings-box split" hidden="[[!isStatusTextSet_(syncStatus)]]">
+        <div class="settings-box">
+          <div class="split">
+            <span class="start">
+              <!-- TODO(tommycli): Show current profile icon and name here.
+                                   To be done by December 2015. -->
+            </span>
+            <span>
+              <template is="dom-if" if="[[!syncStatus.signedIn]]">
+                <paper-button on-tap="onSigninTap_" raised
+                    disabled="[[syncStatus.setupInProgress]]">
+                    [[i18n('syncSignin')]]
+                </paper-button>
+              </template>
+              <template is="dom-if" if="[[syncStatus.signedIn]]">
+                <paper-button on-tap="onDisconnectTap_"
+                    disabled="[[syncStatus.setupInProgress]]">
+                    [[i18n('syncDisconnect')]]
+                </paper-button>
+              </template>
+            </span>
+          </div>
+          <div hidden="[[syncStatus.signedIn]]">[[i18n('syncOverview')]]</div>
+        </div>
+
+        <div class="settings-box split"
+            hidden="[[!isStatusTextSet_(syncStatus)]]">
           <span id="syncStatusText"></span>
           <paper-button on-tap="onActionLinkTap_">
             [[syncStatus.actionLinkText]]
           </paper-button>
         </div>
 
-        <template is="dom-if" if="[[!syncStatus.signedIn]]">
-          <div class="settings-box">[[i18n('syncOverview')]]</div>
-          <div class="settings-box button-strip">
-            <paper-button on-tap="onSigninTap_" raised
-                disabled="[[syncStatus.setupInProgress]]">
-                [[i18n('syncSignin')]]
-            </paper-button>
-          </div>
-        </template>
-        <template is="dom-if" if="[[syncStatus.signedIn]]">
-          <paper-button on-tap="onDisconnectTap_" raised
-              disabled="[[syncStatus.setupInProgress]]">
-              [[i18n('syncDisconnect')]]
-          </paper-button>
-
-          <template is="dom-if"
-              if="[[isAdvancedSyncSettingsVisible_(syncStatus)]]">
+        <template is="dom-if"
+            if="[[isAdvancedSyncSettingsVisible_(syncStatus)]]">
+          <div class="settings-box">
             <paper-button on-tap="onSyncTap_" raised>
               [[i18n('syncPageTitle')]]
             </paper-button>
-          </template>
+          </div>
         </template>
+
+        <div class="settings-box">
+          <paper-button i18n-content="manageOtherPeople"
+              on-tap="onManageOtherPeople_">
+          </paper-button>
+        </div>
       </neon-animatable>
       <neon-animatable id="sync">
         <settings-subheader i18n-values="page-title:syncPageTitle">

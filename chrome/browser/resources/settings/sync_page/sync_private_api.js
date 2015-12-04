@@ -202,6 +202,13 @@ cr.define('settings', function() {
   };
 
   /**
+   * Sends a request from JS to C++ to open the multi-profile User Manager.
+   */
+  SyncPrivateApi.manageOtherPeople = function() {
+    chrome.send('SyncSetupManageOtherPeople');
+  };
+
+  /**
    * This function encapsulates the logic that maps from the legacy
    * SyncSettingsHandler to an API natural to the new Polymer implementation.
    * @param {!settings.PageStatus} status

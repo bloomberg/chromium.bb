@@ -607,6 +607,8 @@ void AddSyncStrings(content::WebUIDataSource* html_source) {
                                   IDS_SETTINGS_SYNC_DISCONNECT_DELETE_PROFILE);
   html_source->AddLocalizedString("syncDisconnectConfirm",
                                   IDS_SETTINGS_SYNC_DISCONNECT_CONFIRM);
+  html_source->AddLocalizedString("manageOtherPeople",
+                                  IDS_SETTINGS_SYNC_MANAGE_OTHER_PEOPLE);
 
   html_source->AddLocalizedString("syncPageTitle", IDS_SETTINGS_SYNC);
   html_source->AddLocalizedString("syncLoading", IDS_SETTINGS_SYNC_LOADING);
