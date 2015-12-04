@@ -31,6 +31,10 @@ import gyp_chromium
 import gyp_environment
 
 
+# Its existence signifies an Android checkout.
+ANDROID_ONLY_DIR = os.path.join(SCRIPT_DIR, os.pardir, os.pardir, os.pardir,
+                                'third_party', 'android_tools')
+
 URL_PREFIX = 'http://storage.googleapis.com'
 URL_PATH = 'chrome-linux-sysroot/toolchain'
 REVISION_AMD64 = '402274e42cb72fde4f48a4bb01664d0ad4533c69'
@@ -65,7 +69,7 @@ def GetSha1(filename):
   return sha1.hexdigest()
 
 
-def DetectArch(gyp_defines, is_android):
+def DetectArch(gyp_defines):
   # Check for optional target_arch and only install for that architecture.
   # If target_arch is not specified, then only install for the host
   # architecture.
@@ -82,9 +86,6 @@ def DetectArch(gyp_defines, is_android):
     return 'mips'
   elif target_arch:
     raise Exception('Unrecognized target_arch: %s' % target_arch)
-
-  if is_android:
-    return 'arm'
 
   # Figure out host arch using build/detect_host_arch.py and
   # set target_arch to host arch
@@ -107,31 +108,27 @@ def main():
   if options.running_as_hook and not sys.platform.startswith('linux'):
     return 0
 
+  # TODO(agrieve): Make this script not depend on GYP_DEFINES so that it works
+  #     with GN as well.
   gyp_environment.SetEnvironment()
   supplemental_includes = gyp_chromium.GetSupplementalFiles()
   gyp_defines = gyp_chromium.GetGypVars(supplemental_includes)
-  is_android = gyp_defines.get('OS') == 'android'
-
-  if (options.running_as_hook and (not is_android) and
-      (gyp_defines.get('chromeos') or gyp_defines.get('use_sysroot') == '0')):
-    return 0
 
   if options.arch:
     target_arch = options.arch
+  elif os.path.exists(ANDROID_ONLY_DIR):
+    # 32-bit Android builds (the default for target_os="android") require a
+    # 32-bit host sysroot for the v8 snapshot, and a 64-bit sysroot for host
+    # tools.
+    ret = _InstallSysroot('i386')
+    if ret:
+      return ret
+    target_arch = 'amd64'
   else:
-    target_arch = DetectArch(gyp_defines, is_android)
+    target_arch = DetectArch(gyp_defines)
     if not target_arch:
       print 'Unable to detect target architecture'
       return 1
-
-  if is_android:
-    # 32-bit Android builds require a 32-bit host sysroot for the v8 snapshot.
-    if '64' not in target_arch:
-      ret = _InstallSysroot('i386')
-      if ret:
-        return ret
-    # Always need host sysroot (which we assume is x64).
-    target_arch = 'amd64'
 
   return _InstallSysroot(target_arch)
 
