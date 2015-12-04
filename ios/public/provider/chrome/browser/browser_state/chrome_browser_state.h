@@ -5,6 +5,8 @@
 #ifndef IOS_PUBLIC_PROVIDER_CHROME_BROWSER_BROWSER_STATE_CHROME_BROWSER_STATE_H_
 #define IOS_PUBLIC_PROVIDER_CHROME_BROWSER_BROWSER_STATE_CHROME_BROWSER_STATE_H_
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
@@ -78,6 +80,9 @@ class ChromeBrowserState : public web::BrowserState {
   // invoked after the Profile instance has been destroyed.
   virtual void ClearNetworkingHistorySince(base::Time time,
                                            const base::Closure& completion) = 0;
+
+  // Returns an identifier of the browser state for debugging.
+  std::string GetDebugName();
 
  protected:
   ChromeBrowserState() {}
