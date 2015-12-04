@@ -42,7 +42,8 @@ void DecryptingVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                         const SetCdmReadyCB& set_cdm_ready_cb,
                                         const InitCB& init_cb,
                                         const OutputCB& output_cb) {
-  DVLOG(2) << "Initialize()";
+  DVLOG(2) << __FUNCTION__ << ": " << config.AsHumanReadableString();
+
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(state_ == kUninitialized ||
          state_ == kIdle ||

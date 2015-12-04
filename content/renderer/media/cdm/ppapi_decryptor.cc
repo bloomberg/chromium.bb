@@ -161,6 +161,7 @@ void PpapiDecryptor::UpdateSession(
     const std::string& session_id,
     const std::vector<uint8_t>& response,
     scoped_ptr<media::SimpleCdmPromise> promise) {
+  DVLOG(2) << __FUNCTION__;
   DCHECK(render_task_runner_->BelongsToCurrentThread());
 
   if (!CdmDelegate()) {
@@ -172,6 +173,7 @@ void PpapiDecryptor::UpdateSession(
 
 void PpapiDecryptor::CloseSession(const std::string& session_id,
                                   scoped_ptr<media::SimpleCdmPromise> promise) {
+  DVLOG(2) << __FUNCTION__;
   DCHECK(render_task_runner_->BelongsToCurrentThread());
 
   if (!CdmDelegate()) {
@@ -185,6 +187,7 @@ void PpapiDecryptor::CloseSession(const std::string& session_id,
 void PpapiDecryptor::RemoveSession(
     const std::string& session_id,
     scoped_ptr<media::SimpleCdmPromise> promise) {
+  DVLOG(2) << __FUNCTION__;
   DCHECK(render_task_runner_->BelongsToCurrentThread());
 
   if (!CdmDelegate()) {
@@ -401,6 +404,7 @@ void PpapiDecryptor::OnSessionMessage(const std::string& session_id,
 void PpapiDecryptor::OnSessionKeysChange(const std::string& session_id,
                                          bool has_additional_usable_key,
                                          media::CdmKeysInfo keys_info) {
+  DVLOG(2) << __FUNCTION__ << ": " << has_additional_usable_key;
   DCHECK(render_task_runner_->BelongsToCurrentThread());
 
   // TODO(jrummell): Handling resume playback should be done in the media
