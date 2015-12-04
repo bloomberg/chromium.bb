@@ -180,6 +180,18 @@ void ShellSurface::Move() {
   }
 }
 
+void ShellSurface::SetGeometry(const gfx::Rect& geometry) {
+  TRACE_EVENT1("exo", "ShellSurface::SetGeometry", "geometry",
+               geometry.ToString());
+
+  if (geometry.IsEmpty()) {
+    DLOG(WARNING) << "Surface geometry must be non-empty";
+    return;
+  }
+
+  geometry_ = geometry;
+}
+
 scoped_refptr<base::trace_event::TracedValue> ShellSurface::AsTracedValue()
     const {
   scoped_refptr<base::trace_event::TracedValue> value =
@@ -198,7 +210,8 @@ void ShellSurface::OnSurfaceCommit() {
     // Update surface bounds and widget size.
     gfx::Point origin;
     views::View::ConvertPointToWidget(this, &origin);
-    surface_->SetBounds(gfx::Rect(origin, surface_->layer()->size()));
+    surface_->SetBounds(gfx::Rect(origin - geometry_.OffsetFromOrigin(),
+                                  surface_->layer()->size()));
     widget_->SetSize(widget_->non_client_view()->GetPreferredSize());
 
     // Show widget if not already visible.
@@ -248,6 +261,9 @@ views::NonClientFrameView* ShellSurface::CreateNonClientFrameView(
 // views::Views overrides:
 
 gfx::Size ShellSurface::GetPreferredSize() const {
+  if (!geometry_.IsEmpty())
+    return geometry_.size();
+
   return surface_ ? surface_->GetPreferredSize() : gfx::Size();
 }
 

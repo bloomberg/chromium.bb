@@ -758,7 +758,8 @@ void xdg_surface_set_window_geometry(wl_client* client,
                                      int32_t y,
                                      int32_t width,
                                      int32_t height) {
-  NOTIMPLEMENTED();
+  GetUserDataAs<ShellSurface>(resource)
+      ->SetGeometry(gfx::Rect(x, y, width, height));
 }
 
 void xdg_surface_set_maximized(wl_client* client, wl_resource* resource) {

@@ -58,6 +58,10 @@ class ShellSurface : public SurfaceDelegate,
   // Start an interactive move of surface.
   void Move();
 
+  // Set geometry for surface. The geometry represents the "visible bounds"
+  // for the surface from the user's perspective.
+  void SetGeometry(const gfx::Rect& geometry);
+
   // Returns a trace value representing the state of the surface.
   scoped_refptr<base::trace_event::TracedValue> AsTracedValue() const;
 
@@ -84,6 +88,7 @@ class ShellSurface : public SurfaceDelegate,
   Surface* surface_;
   base::string16 title_;
   std::string application_id_;
+  gfx::Rect geometry_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellSurface);
 };

@@ -117,5 +117,25 @@ TEST_F(ShellSurfaceTest, Move) {
   shell_surface->Move();
 }
 
+TEST_F(ShellSurfaceTest, SetGeometry) {
+  gfx::Size buffer_size(64, 64);
+  scoped_ptr<Buffer> buffer(new Buffer(
+      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size), GL_TEXTURE_2D));
+  scoped_ptr<Surface> surface(new Surface);
+  scoped_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
+
+  shell_surface->SetToplevel();
+  gfx::Rect geometry(16, 16, 32, 32);
+  shell_surface->SetGeometry(geometry);
+  surface->Attach(buffer.get());
+  surface->Commit();
+  EXPECT_EQ(
+      geometry.size().ToString(),
+      shell_surface->GetWidget()->GetWindowBoundsInScreen().size().ToString());
+  EXPECT_EQ(gfx::Rect(gfx::Point() - geometry.OffsetFromOrigin(), buffer_size)
+                .ToString(),
+            surface->bounds().ToString());
+}
+
 }  // namespace
 }  // namespace exo
