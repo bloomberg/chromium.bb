@@ -37,6 +37,7 @@ namespace wm {
 
 class AcceleratorRegistrarImpl;
 class BackgroundLayout;
+class ShadowController;
 class ShelfLayout;
 class WindowLayout;
 class WindowManagerImpl;
@@ -122,6 +123,8 @@ class WindowManagerApplication
   scoped_ptr<BackgroundLayout> background_layout_;
   scoped_ptr<ShelfLayout> shelf_layout_;
   scoped_ptr<WindowLayout> window_layout_;
+
+  scoped_ptr<ShadowController> shadow_controller_;
 
   std::set<AcceleratorRegistrarImpl*> accelerator_registrars_;
 

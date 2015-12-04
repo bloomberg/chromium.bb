@@ -46,6 +46,8 @@ source_set("lib") {
     "property_util.h",
     "shadow.cc",
     "shadow.h",
+    "shadow_controller.cc",
+    "shadow_controller.h",
     "shelf_layout.cc",
     "shelf_layout.h",
     "window_layout.cc",

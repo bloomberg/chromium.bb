@@ -21,6 +21,8 @@ class Window;
 namespace mash {
 namespace wm {
 
+class Shadow;
+
 // Utility functions to read values from properties & convert them to the
 // appropriate types.
 
@@ -38,6 +40,9 @@ mus::mojom::ResizeBehavior GetResizeBehavior(const mus::Window* window);
 
 void SetRestoreBounds(mus::Window* window, const gfx::Rect& bounds);
 gfx::Rect GetRestoreBounds(const mus::Window* window);
+
+void SetShadow(mus::Window* window, Shadow* shadow);
+Shadow* GetShadow(mus::Window* window);
 
 }  // namespace wm
 }  // namespace mash

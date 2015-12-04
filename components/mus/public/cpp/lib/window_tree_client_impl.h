@@ -7,6 +7,7 @@
 
 #include <map>
 
+#include "base/observer_list.h"
 #include "components/mus/common/types.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_tree_connection.h"
@@ -133,6 +134,8 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   Window* NewWindow(const Window::SharedProperties* properties) override;
   bool IsEmbedRoot() override;
   ConnectionSpecificId GetConnectionId() override;
+  void AddObserver(WindowTreeConnectionObserver* observer) override;
+  void RemoveObserver(WindowTreeConnectionObserver* observer) override;
 
   // Overridden from WindowTreeClient:
   void OnEmbed(ConnectionSpecificId connection_id,
@@ -215,6 +218,8 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   bool is_embed_root_;
 
   bool in_destructor_;
+
+  base::ObserverList<WindowTreeConnectionObserver> observers_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(WindowTreeClientImpl);
 };

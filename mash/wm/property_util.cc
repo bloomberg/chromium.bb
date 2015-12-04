@@ -7,11 +7,17 @@
 #include "components/mus/public/cpp/property_type_converters.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_property.h"
+#include "mash/wm/shadow.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace mash {
 namespace wm {
+namespace {
+
+DEFINE_LOCAL_WINDOW_PROPERTY_KEY(Shadow*, kLocalShadowProperty, nullptr);
+
+}  // namespace
 
 mus::mojom::ShowState GetWindowShowState(const mus::Window* window) {
   if (window->HasSharedProperty(
@@ -86,6 +92,14 @@ gfx::Rect GetRestoreBounds(const mus::Window* window) {
         mus::mojom::WindowManager::kRestoreBounds_Property);
   }
   return gfx::Rect();
+}
+
+void SetShadow(mus::Window* window, Shadow* shadow) {
+  window->SetLocalProperty(kLocalShadowProperty, shadow);
+}
+
+Shadow* GetShadow(mus::Window* window) {
+  return window->GetLocalProperty(kLocalShadowProperty);
 }
 
 }  // namespace wm

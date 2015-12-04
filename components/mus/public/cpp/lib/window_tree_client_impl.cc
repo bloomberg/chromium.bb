@@ -11,6 +11,7 @@
 #include "components/mus/public/cpp/window_manager_delegate.h"
 #include "components/mus/public/cpp/window_observer.h"
 #include "components/mus/public/cpp/window_tree_connection.h"
+#include "components/mus/public/cpp/window_tree_connection_observer.h"
 #include "components/mus/public/cpp/window_tree_delegate.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/application/public/cpp/connect.h"
@@ -362,6 +363,11 @@ void WindowTreeClientImpl::OnEmbedImpl(mojom::WindowTree* window_tree,
   focused_window_ = GetWindowById(focused_window_id);
 
   delegate_->OnEmbed(root_);
+
+  if (focused_window_) {
+    FOR_EACH_OBSERVER(WindowTreeConnectionObserver, observers_,
+                      OnWindowTreeFocusChanged(focused_window_, nullptr));
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -410,6 +416,15 @@ ConnectionSpecificId WindowTreeClientImpl::GetConnectionId() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // WindowTreeClientImpl, WindowTreeClient implementation:
+
+void WindowTreeClientImpl::AddObserver(WindowTreeConnectionObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void WindowTreeClientImpl::RemoveObserver(
+    WindowTreeConnectionObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
 
 void WindowTreeClientImpl::OnEmbed(ConnectionSpecificId connection_id,
                                    mojom::WindowDataPtr root_data,
@@ -607,6 +622,8 @@ void WindowTreeClientImpl::OnWindowFocused(Id focused_window_id) {
     FOR_EACH_OBSERVER(WindowObserver, *WindowPrivate(focused).observers(),
                       OnWindowFocusChanged(focused, blurred));
   }
+  FOR_EACH_OBSERVER(WindowTreeConnectionObserver, observers_,
+                    OnWindowTreeFocusChanged(focused, blurred));
 }
 
 void WindowTreeClientImpl::OnChangeCompleted(uint32 change_id, bool success) {

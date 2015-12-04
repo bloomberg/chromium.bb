@@ -22,8 +22,7 @@ class Window;
 // If the change originated from another connection to the window manager, it's
 // possible that the change has already been applied to the service-side model
 // prior to being called, so for example in the case of OnWindowDestroying(),
-// it's
-// possible the window has already been destroyed on the service side.
+// it's possible the window has already been destroyed on the service side.
 
 class WindowObserver {
  public:

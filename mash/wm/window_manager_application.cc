@@ -12,6 +12,7 @@
 #include "components/mus/public/cpp/window_tree_host_factory.h"
 #include "mash/wm/accelerator_registrar_impl.h"
 #include "mash/wm/background_layout.h"
+#include "mash/wm/shadow_controller.h"
 #include "mash/wm/shelf_layout.h"
 #include "mash/wm/window_layout.h"
 #include "mash/wm/window_manager_impl.h"
@@ -130,12 +131,15 @@ void WindowManagerApplication::OnEmbed(mus::Window* root) {
   for (auto request : requests_)
     window_manager_binding_.AddBinding(window_manager_.get(), request->Pass());
   requests_.clear();
+
+  shadow_controller_.reset(new ShadowController(root->connection()));
 }
 
 void WindowManagerApplication::OnConnectionLost(
     mus::WindowTreeConnection* connection) {
   // TODO(sky): shutdown.
   NOTIMPLEMENTED();
+  shadow_controller_.reset();
 }
 
 void WindowManagerApplication::Create(

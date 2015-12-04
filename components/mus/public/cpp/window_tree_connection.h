@@ -17,6 +17,7 @@ namespace mus {
 
 class Window;
 class WindowManagerDelegate;
+class WindowTreeConnectionObserver;
 class WindowTreeDelegate;
 
 // Encapsulates a connection to a window tree. A unique connection is made
@@ -67,6 +68,9 @@ class WindowTreeConnection {
 
   // Returns the id for this connection.
   virtual ConnectionSpecificId GetConnectionId() = 0;
+
+  virtual void AddObserver(WindowTreeConnectionObserver* observer) = 0;
+  virtual void RemoveObserver(WindowTreeConnectionObserver* observer) = 0;
 };
 
 }  // namespace mus
