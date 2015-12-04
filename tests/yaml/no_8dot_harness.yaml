@@ -1,4 +1,4 @@
-tables: [unicode.dis, no-no-8dot.utb]
+tables: [unicode.dis, no-no-8dot-fallback-6dot-g0.utb]
 tests:
   - ["\u0001", ⣁] # START OF HEADING
   - ["\u0002", ⣃] # START OF TEXT
@@ -250,7 +250,5 @@ tests:
   - [ý, ⠯]
   - [þ, ⢫]
   - [ÿ, ⢳]
-  # If character not defined in 8-dot standard; follow 6-dot standard instead (lower case diacritic)
-  - [ờ, ⠈⠕]
-  # If character not defined in 8-dot standard; follow 6-dot standard (upper case diacritic)
-  - [Ờ, ⠠⠈⠕, {xfail: true}]
+  - [ờ, ⠈⠕] # If character not defined in 8-dot standard; follow 6-dot standard instead (lower case diacritic)
+  - [Ờ, ⠠⠈⠕, {xfail: true}] # If character not defined in 8-dot standard; follow 6-dot standard (upper case diacritic)

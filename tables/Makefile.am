@@ -197,9 +197,10 @@ table_files = \
 	nl-BE-g1.ctb \
 	nl-NL-chardefs.cti \
 	nl-NL-g1.ctb \
+	no-no-comp8.ctb \
 	no-no-8dot.utb \
+	no-no-8dot-fallback-6dot-g0.utb \
 	no-no-chardefs6.uti \
-	no-no.ctb \
 	no-no.dis \
 	no-no-g0.utb \
 	no-no-g1.ctb \
