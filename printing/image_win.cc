@@ -8,7 +8,7 @@
 #include "base/win/scoped_hdc.h"
 #include "base/win/scoped_select_object.h"
 #include "printing/metafile.h"
-#include "skia/ext/platform_device.h"
+#include "skia/ext/skia_utils_win.h"
 #include "ui/gfx/gdi_util.h"  // EMF support
 #include "ui/gfx/geometry/rect.h"
 

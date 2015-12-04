@@ -38,12 +38,6 @@ SK_API void SetPlatformDevice(SkBaseDevice* device,
                               PlatformDevice* platform_device);
 SK_API PlatformDevice* GetPlatformDevice(SkBaseDevice* device);
 
-
-#if defined(OS_WIN)
-// Initializes the default settings and colors in a device context.
-SK_API void InitializeDC(HDC context);
-#endif
-
 // A SkBitmapDevice is basically a wrapper around SkBitmap that provides a 
 // surface for SkCanvas to draw into. PlatformDevice provides a surface 
 // Windows can also write to. It also provides functionality to play well 

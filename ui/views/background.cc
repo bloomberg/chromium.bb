@@ -5,12 +5,14 @@
 #include "ui/views/background.h"
 
 #include "base/logging.h"
-#include "skia/ext/skia_utils_win.h"
-#include "third_party/skia/include/core/SkPaint.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/views/painter.h"
 #include "ui/views/view.h"
+
+#if defined(OS_WIN)
+#include "skia/ext/skia_utils_win.h"
+#endif
 
 namespace views {
 

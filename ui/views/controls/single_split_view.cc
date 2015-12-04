@@ -4,13 +4,16 @@
 
 #include "ui/views/controls/single_split_view.h"
 
-#include "skia/ext/skia_utils_win.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/single_split_view_listener.h"
 #include "ui/views/native_cursor.h"
+
+#if defined(OS_WIN)
+#include "skia/ext/skia_utils_win.h"
+#endif
 
 namespace views {
 

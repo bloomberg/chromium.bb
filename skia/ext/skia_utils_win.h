@@ -7,6 +7,9 @@
 
 #include "third_party/skia/include/core/SkColor.h"
 
+#include "build/build_config.h"
+#include <windows.h>
+
 struct SkIRect;
 struct SkPoint;
 struct SkRect;
@@ -42,6 +45,9 @@ SK_API SkColor COLORREFToSkColor(COLORREF color);
 
 // Converts ARGB to COLORREFs (0BGR).
 SK_API COLORREF SkColorToCOLORREF(SkColor color);
+
+// Initializes the default settings and colors in a device context.
+SK_API void InitializeDC(HDC context);
 
 }  // namespace skia
 

@@ -8,7 +8,7 @@
 #include "base/message_loop/message_loop.h"
 #include "printing/backend/win_helper.h"
 #include "printing/print_settings_initializer_win.h"
-#include "skia/ext/platform_device.h"
+#include "skia/ext/skia_utils_win.h"
 
 namespace printing {
 
