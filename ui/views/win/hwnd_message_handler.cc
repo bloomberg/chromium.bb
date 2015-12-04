@@ -2265,9 +2265,6 @@ LRESULT HWNDMessageHandler::HandleMouseEventInternal(UINT message,
                                                      WPARAM w_param,
                                                      LPARAM l_param,
                                                      bool track_mouse) {
-  if (!touch_ids_.empty())
-    return 0;
-
   // We handle touch events on Windows Aura. Windows generates synthesized
   // mouse messages in response to touch which we should ignore. However touch
   // messages are only received for the client area. We need to ignore the
@@ -2285,6 +2282,26 @@ LRESULT HWNDMessageHandler::HandleMouseEventInternal(UINT message,
     LRESULT hittest = SendMessage(hwnd(), WM_NCHITTEST, 0, l_param_ht);
     if (hittest == HTCLIENT || hittest == HTNOWHERE)
       return 0;
+  }
+
+  // Windows does not reliably set the touch flag on mouse moves and nc
+  // mouse moves. We also ignore mouse leaves as they are an artificially
+  // generated message in response to the TrackMouseEvents API.
+  // The code below is primarily for validation that we don't receive
+  // other mouse messages while we are in a touch sequence.
+  switch (message) {
+    case WM_MOUSEMOVE:
+    case WM_NCMOUSEMOVE:
+    case WM_MOUSELEAVE:
+    case WM_NCMOUSELEAVE:
+      break;
+
+    default:
+      // Remove this CHECK once we validate that our hypothesis about the above
+      // mouse events being the only ones on which the touch flag is not set
+      // is correct.
+      CHECK(touch_ids_.empty());
+      break;
   }
 
   // Certain logitech drivers send the WM_MOUSEHWHEEL message to the parent
