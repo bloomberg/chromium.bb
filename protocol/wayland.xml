@@ -229,7 +229,7 @@
       <arg name="width" type="int"/>
       <arg name="height" type="int"/>
       <arg name="stride" type="int"/>
-      <arg name="format" type="uint"/>
+      <arg name="format" type="uint" enum="wl_shm.format"/>
     </request>
 
     <request name="destroy" type="destructor">
@@ -1580,7 +1580,7 @@
 	wl_output.transform enum the invalid_transform protocol error
 	is raised.
       </description>
-      <arg name="transform" type="int"/>
+      <arg name="transform" type="int" enum="wl_output.transform"/>
     </request>
 
     <!-- Version 3 additions -->

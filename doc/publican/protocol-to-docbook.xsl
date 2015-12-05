@@ -152,9 +152,22 @@
     <term><xsl:value-of select="@name"/></term>
     <listitem>
         <simpara>
-          <link linkend="protocol-spec-{../../@name}-enum-{@enum}">
-            <xsl:value-of select="../../@name"/>::<xsl:value-of select="@enum"/>
-          </link>
+          <xsl:choose>
+            <xsl:when test="contains(@enum, '.')">
+              <link linkend="protocol-spec-{substring-before(@enum, '.')}-enum-{substring-after(@enum, '.')}">
+                <xsl:value-of select="substring-before(@enum, '.')"/>
+                <xsl:text>::</xsl:text>
+                <xsl:value-of select="substring-after(@enum, '.')"/>
+              </link>
+            </xsl:when>
+            <xsl:otherwise>
+              <link linkend="protocol-spec-{../../@name}-enum-{@enum}">
+                <xsl:value-of select="../../@name"/>
+                <xsl:text>::</xsl:text>
+                <xsl:value-of select="@enum"/>
+              </link>
+            </xsl:otherwise>
+          </xsl:choose>
           (<xsl:value-of select="@type"/>)
           <xsl:if test="@summary" >
             - <xsl:value-of select="@summary"/>

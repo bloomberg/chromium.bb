@@ -752,8 +752,8 @@ start_element(void *data, const char *element_name, const char **atts)
 			enumeration->bitfield = true;
 		else
 			fail(&ctx->loc,
-                             "invalid value (%s) for bitfield attribute (only true/false are accepted)",
-                             bitfield);
+			     "invalid value (%s) for bitfield attribute (only true/false are accepted)",
+			     bitfield);
 
 		wl_list_insert(ctx->interface->enumeration_list.prev,
 			       &enumeration->link);
@@ -790,32 +790,68 @@ start_element(void *data, const char *element_name, const char **atts)
 	}
 }
 
+static struct enumeration *
+find_enumeration(struct protocol *protocol,
+		 struct interface *interface,
+		 char *enum_attribute)
+{
+	struct interface *i;
+	struct enumeration *e;
+	char *enum_name;
+	uint idx = 0, j;
+
+	for (j = 0; j + 1 < strlen(enum_attribute); j++) {
+		if (enum_attribute[j] == '.') {
+			idx = j;
+		}
+	}
+
+	if (idx > 0) {
+		enum_name = enum_attribute + idx + 1;
+
+		wl_list_for_each(i, &protocol->interface_list, link)
+			if (strncmp(i->name, enum_attribute, idx) == 0)
+				wl_list_for_each(e, &i->enumeration_list, link)
+					if (strcmp(e->name, enum_name) == 0)
+						return e;
+	} else if (interface) {
+		enum_name = enum_attribute;
+
+		wl_list_for_each(e, &interface->enumeration_list, link)
+			if (strcmp(e->name, enum_name) == 0)
+				return e;
+	}
+
+	return NULL;
+}
+
 static void
-verify_arguments(struct parse_context *ctx, struct wl_list *messages, struct wl_list *enumerations)
+verify_arguments(struct parse_context *ctx,
+		 struct interface *interface,
+		 struct wl_list *messages,
+		 struct wl_list *enumerations)
 {
 	struct message *m;
 	wl_list_for_each(m, messages, link) {
 		struct arg *a;
 		wl_list_for_each(a, &m->arg_list, link) {
-			struct enumeration *e, *f;
+			struct enumeration *e;
 
 			if (!a->enumeration_name)
 				continue;
 
-			f = NULL;
-			wl_list_for_each(e, enumerations, link) {
-				if(strcmp(e->name, a->enumeration_name) == 0)
-					f = e;
-			}
 
-			if (f == NULL)
+			e = find_enumeration(ctx->protocol, interface,
+					     a->enumeration_name);
+
+			if (e == NULL)
 				fail(&ctx->loc,
 				     "could not find enumeration %s",
 				     a->enumeration_name);
 
 			switch (a->type) {
 			case INT:
-				if (f->bitfield)
+				if (e->bitfield)
 					fail(&ctx->loc,
 					     "bitfield-style enum must only be referenced by uint");
 				break;
@@ -853,12 +889,13 @@ end_element(void *data, const XML_Char *name)
 			     ctx->enumeration->name);
 		}
 		ctx->enumeration = NULL;
-	} else if (strcmp(name, "interface") == 0) {
-		struct interface *i = ctx->interface;
+	} else if (strcmp(name, "protocol") == 0) {
+		struct interface *i;
 
-		verify_arguments(ctx, &i->request_list, &i->enumeration_list);
-		verify_arguments(ctx, &i->event_list, &i->enumeration_list);
-
+		wl_list_for_each(i, &ctx->protocol->interface_list, link) {
+			verify_arguments(ctx, i, &i->request_list, &i->enumeration_list);
+			verify_arguments(ctx, i, &i->event_list, &i->enumeration_list);
+		}
 	}
 }
 
