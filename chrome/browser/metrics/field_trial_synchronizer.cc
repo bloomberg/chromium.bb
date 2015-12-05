@@ -51,7 +51,11 @@ void FieldTrialSynchronizer::NotifyAllRenderers(
 void FieldTrialSynchronizer::OnFieldTrialGroupFinalized(
     const std::string& field_trial_name,
     const std::string& group_name) {
+  // TODO(asvitkine): Remove these CHECKs once http://crbug.com/359406 is fixed.
   CHECK(!field_trial_name.empty() && !group_name.empty());
+  CHECK_EQ(group_name, base::FieldTrialList::FindFullName(field_trial_name))
+      << field_trial_name << ":" << group_name << "=>"
+      << base::FieldTrialList::FindFullName(field_trial_name);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&FieldTrialSynchronizer::NotifyAllRenderers,
