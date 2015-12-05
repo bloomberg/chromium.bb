@@ -239,7 +239,7 @@ private:
     RefPtrWillBeMember<HistoryItem> m_provisionalItem;
 
     class DeferredHistoryLoad : public NoBaseWillBeGarbageCollectedFinalized<DeferredHistoryLoad> {
-        DISALLOW_COPY(DeferredHistoryLoad);
+        WTF_MAKE_NONCOPYABLE(DeferredHistoryLoad);
     public:
         static PassOwnPtrWillBeRawPtr<DeferredHistoryLoad> create(ResourceRequest request, HistoryItem* item, FrameLoadType loadType, HistoryLoadType historyLoadType)
         {
