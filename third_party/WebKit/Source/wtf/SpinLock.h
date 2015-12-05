@@ -31,48 +31,36 @@
 #ifndef WTF_SpinLock_h
 #define WTF_SpinLock_h
 
-#include "wtf/Compiler.h"
-#include "wtf/WTFExport.h"
-#include <atomic>
-#include <memory>
-#include <mutex>
-
 // DESCRIPTION
-// Spinlock is a simple spinlock class based on the standard CPU primitive of
-// atomic increment and decrement of an int at a given memory address. These are
-// intended only for very short duration locks and assume a system with multiple
-// cores. For any potentially longer wait you should be using a real lock.
+// spinLockLock() and spinLockUnlock() are simple spinlock primitives based on
+// the standard CPU primitive of atomic increment and decrement of an int at
+// a given memory address. These are intended only for very short duration locks
+// and assume a system with multiple cores. For any potentially longer wait you
+// should be using a real lock.
+
+#include "wtf/Atomics.h"
 
 namespace WTF {
 
-class SpinLock {
-public:
-    using Guard = std::lock_guard<SpinLock>;
+// This is called if the initial attempt to acquire the lock fails. It's a bit
+// slower, but has a much better scheduling and power consumption behavior.
+WTF_EXPORT void slowSpinLockLock(int volatile* lock);
 
-    ALWAYS_INLINE void lock()
-    {
-        static_assert(sizeof(m_lock) == sizeof(int), "int and m_lock are different sizes");
-        if (LIKELY(!m_lock.exchange(true, std::memory_order_acq_rel)))
-            return;
-        lockSlow();
-    }
+ALWAYS_INLINE void spinLockLock(int volatile* lock)
+{
+    if (LIKELY(!atomicTestAndSetToOne(lock)))
+        return;
+    slowSpinLockLock(lock);
+}
 
-    ALWAYS_INLINE void unlock()
-    {
-        m_lock.store(false, std::memory_order_release);
-    }
-
-private:
-    // This is called if the initial attempt to acquire the lock fails. It's
-    // slower, but has a much better scheduling and power consumption behavior.
-    WTF_EXPORT void lockSlow();
-
-    std::atomic<int> m_lock;
-};
-
+ALWAYS_INLINE void spinLockUnlock(int volatile* lock)
+{
+    atomicSetOneToZero(lock);
+}
 
 } // namespace WTF
 
-using WTF::SpinLock;
+using WTF::spinLockLock;
+using WTF::spinLockUnlock;
 
 #endif // WTF_SpinLock_h

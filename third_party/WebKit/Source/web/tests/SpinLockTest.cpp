@@ -44,7 +44,7 @@ namespace blink {
 
 static const size_t bufferSize = 16;
 
-static SpinLock lock;
+static int lock = 0;
 
 static void fillBuffer(volatile char* buffer, char fillPattern)
 {
@@ -69,8 +69,9 @@ static void changeAndCheckBuffer(volatile char* buffer)
 static void threadMain(volatile char* buffer)
 {
     for (int i = 0; i < 500000; ++i) {
-        SpinLock::Guard guard(lock);
+        spinLockLock(&lock);
         changeAndCheckBuffer(buffer);
+        spinLockUnlock(&lock);
     }
 }
 
