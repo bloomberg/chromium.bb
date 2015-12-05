@@ -68,6 +68,9 @@ class DownloadsListTracker : public AllDownloadItemNotifier::Observer {
   virtual scoped_ptr<base::DictionaryValue> CreateDownloadItemValue(
       content::DownloadItem* item) const;
 
+  // Exposed for testing.
+  bool IsIncognito(const content::DownloadItem& item) const;
+
   const content::DownloadItem* GetItemForTesting(size_t index) const;
 
  private:

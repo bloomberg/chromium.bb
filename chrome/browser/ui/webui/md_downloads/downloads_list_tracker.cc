@@ -235,14 +235,7 @@ scoped_ptr<base::DictionaryValue> DownloadsListTracker::CreateDownloadItemValue(
   file_value->SetBoolean("file_externally_removed",
                          download_item->GetFileExternallyRemoved());
   file_value->SetBoolean("resume", download_item->CanResume());
-
-  bool incognito = false;
-  auto* original_manager = GetOriginalNotifierManager();
-  if (original_manager) {
-    incognito =
-        original_manager->GetDownload(download_item->GetId()) == download_item;
-  }
-  file_value->SetBoolean("otr", incognito);
+  file_value->SetBoolean("otr", IsIncognito(*download_item));
 
   const char* danger_type = "";
   base::string16 last_reason_text;
@@ -307,6 +300,11 @@ scoped_ptr<base::DictionaryValue> DownloadsListTracker::CreateDownloadItemValue(
   return file_value.Pass();
 }
 
+bool DownloadsListTracker::IsIncognito(const DownloadItem& item) const {
+  return GetOriginalNotifierManager() && GetMainNotifierManager() &&
+      GetMainNotifierManager()->GetDownload(item.GetId()) == &item;
+}
+
 const DownloadItem* DownloadsListTracker::GetItemForTesting(size_t index)
     const {
   if (index >= sorted_visible_items_.size())
@@ -335,9 +333,9 @@ void DownloadsListTracker::Init() {
   Profile* profile = Profile::FromBrowserContext(
       GetMainNotifierManager()->GetBrowserContext());
   if (profile->IsOffTheRecord()) {
+    Profile* original_profile = profile->GetOriginalProfile();
     original_notifier_.reset(new AllDownloadItemNotifier(
-       BrowserContext::GetDownloadManager(profile->GetOriginalProfile()),
-        this));
+        BrowserContext::GetDownloadManager(original_profile), this));
   }
 
   RebuildSortedSet();

@@ -77,6 +77,7 @@ class TestDownloadsListTracker : public DownloadsListTracker {
       : DownloadsListTracker(manager, web_ui, base::Bind(&ShouldShowItem)) {}
   ~TestDownloadsListTracker() override {}
 
+  using DownloadsListTracker::IsIncognito;
   using DownloadsListTracker::GetItemForTesting;
 
  protected:
@@ -125,6 +126,7 @@ class DownloadsListTrackerTest : public testing::Test {
     tracker_.reset(new TestDownloadsListTracker(manager(), web_ui()));
   }
 
+  TestingProfile* profile() { return &profile_; }
   content::DownloadManager* manager() { return &manager_; }
   content::TestWebUI* web_ui() { return &web_ui_; }
   TestDownloadsListTracker* tracker() { return tracker_.get(); }
@@ -270,4 +272,18 @@ TEST_F(DownloadsListTrackerTest, StartExcludesHiddenItems) {
   EXPECT_EQ("downloads.Manager.insertItems",
             web_ui()->call_data()[0]->function_name());
   EXPECT_TRUE(GetIds(web_ui()->call_data()[0]->arg2()).empty());
+}
+
+TEST_F(DownloadsListTrackerTest, Incognito) {
+  testing::NiceMock<content::MockDownloadManager> incognito_manager;
+  ON_CALL(incognito_manager, GetBrowserContext()).WillByDefault(Return(
+      TestingProfile::Builder().BuildIncognito(profile())));
+
+  MockDownloadItem item;
+  EXPECT_CALL(item, GetId()).WillRepeatedly(Return(0));
+
+  ON_CALL(incognito_manager, GetDownload(0)).WillByDefault(Return(&item));
+
+  TestDownloadsListTracker tracker(&incognito_manager, web_ui());
+  EXPECT_TRUE(tracker.IsIncognito(item));
 }

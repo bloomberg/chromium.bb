@@ -122,8 +122,6 @@ DownloadManager* BrowserContext::GetDownloadManager(
     BrowserContext* context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!context->GetUserData(kDownloadManagerKeyName)) {
-    ResourceDispatcherHostImpl* rdh = ResourceDispatcherHostImpl::Get();
-    DCHECK(rdh);
     DownloadManager* download_manager =
         new DownloadManagerImpl(
             GetContentClient()->browser()->GetNetLog(), context);
