@@ -28,6 +28,13 @@ class GL_EXPORT GLHelper {
   // Attaches 2 shaders, links them to a program, and checks for errors.
   // Returns program, 0 on failure.
   static GLuint SetupProgram(GLuint vertex_shader, GLuint fragment_shader);
+
+  // Sets up a vertex buffer containing 4 vertices that can be used to draw
+  // a quad as a tri-strip.
+  static GLuint SetupQuadVertexBuffer();
+
+  // Draws a quad to the currently bound frame buffer.
+  static void DrawQuad(GLuint vertex_buffer);
 };
 
 }  // namespace gfx

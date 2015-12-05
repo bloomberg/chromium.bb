@@ -180,15 +180,6 @@ GLenum DataType(BufferFormat format) {
   return 0;
 }
 
-GLuint SetupVertexBuffer() {
-  GLuint vertex_buffer = 0;
-  glGenBuffersARB(1, &vertex_buffer);
-  gfx::ScopedBufferBinder buffer_binder(GL_ARRAY_BUFFER, vertex_buffer);
-  GLfloat data[] = {-1.f, -1.f, 1.f, -1.f, -1.f, 1.f, 1.f, 1.f};
-  glBufferData(GL_ARRAY_BUFFER, sizeof(data), data, GL_STATIC_DRAW);
-  return vertex_buffer;
-}
-
 }  // namespace
 
 GLImageIOSurface::GLImageIOSurface(const gfx::Size& size,
@@ -290,7 +281,7 @@ bool GLImageIOSurface::CopyTexImage(unsigned target) {
 
   if (!framebuffer_) {
     glGenFramebuffersEXT(1, &framebuffer_);
-    vertex_buffer_ = SetupVertexBuffer();
+    vertex_buffer_ = gfx::GLHelper::SetupQuadVertexBuffer();
     vertex_shader_ = gfx::GLHelper::LoadShader(GL_VERTEX_SHADER, kVertexShader);
     fragment_shader_ =
         gfx::GLHelper::LoadShader(GL_FRAGMENT_SHADER, kFragmentShader);
@@ -360,18 +351,7 @@ bool GLImageIOSurface::CopyTexImage(unsigned target) {
       gfx::ScopedUseProgram use_program(program_);
       glUniform2f(size_location_, size_.width(), size_.height());
 
-      // TODO(dcastagna): Extract and share the following code to draw a quad.
-      gfx::ScopedBufferBinder buffer_binder(GL_ARRAY_BUFFER, vertex_buffer_);
-      gfx::ScopedVertexAttribArray vertex_attrib_array(0, 2, GL_FLOAT, GL_FALSE,
-                                                       sizeof(GLfloat) * 2, 0);
-      gfx::ScopedCapability disable_blending(GL_BLEND, GL_FALSE);
-      gfx::ScopedCapability disable_culling(GL_CULL_FACE, GL_FALSE);
-      gfx::ScopedCapability disable_dithering(GL_DITHER, GL_FALSE);
-      gfx::ScopedCapability disable_depth_test(GL_DEPTH_TEST, GL_FALSE);
-      gfx::ScopedCapability disable_scissor_test(GL_SCISSOR_TEST, GL_FALSE);
-      gfx::ScopedColorMask color_mask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-
-      glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+      gfx::GLHelper::DrawQuad(vertex_buffer_);
 
       // Detach the output texture from the fbo.
       glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,

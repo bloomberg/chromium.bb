@@ -130,11 +130,10 @@ TYPED_TEST_P(GLImageCopyTest, CopyTexImage) {
   // clang-format off
   const char kVertexShader[] = STRINGIZE(
     attribute vec2 a_position;
-    attribute vec2 a_texCoord;
     varying vec2 v_texCoord;
     void main() {
       gl_Position = vec4(a_position.x, a_position.y, 0.0, 1.0);
-      v_texCoord = a_texCoord;
+      v_texCoord = (a_position + vec2(1.0, 1.0)) * 0.5;
     }
   );
   const char kFragmentShader[] = STRINGIZE(
@@ -165,33 +164,10 @@ TYPED_TEST_P(GLImageCopyTest, CopyTexImage) {
   ASSERT_NE(sampler_location, -1);
   glUniform1i(sampler_location, 0);
 
-  // clang-format off
-  static GLfloat vertices[] = {
-    -1.f, -1.f, 0.f, 0.f,
-     1.f, -1.f, 1.f, 0.f,
-    -1.f,  1.f, 0.f, 1.f,
-     1.f,  1.f, 1.f, 1.f
-  };
-  // clang-format on
-
-  GLuint vertex_buffer;
-  glGenBuffersARB(1, &vertex_buffer);
-  glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-  GLint position_location = glGetAttribLocation(program, "a_position");
-  ASSERT_NE(position_location, -1);
-  glEnableVertexAttribArray(position_location);
-  glVertexAttribPointer(position_location, 2, GL_FLOAT, GL_FALSE,
-                        sizeof(GLfloat) * 4, 0);
-  GLint tex_coord_location = glGetAttribLocation(program, "a_texCoord");
-  EXPECT_NE(tex_coord_location, -1);
-  glEnableVertexAttribArray(tex_coord_location);
-  glVertexAttribPointer(tex_coord_location, 2, GL_FLOAT, GL_FALSE,
-                        sizeof(GLfloat) * 4,
-                        reinterpret_cast<void*>(sizeof(GLfloat) * 2));
-
+  GLuint vertex_buffer = gfx::GLHelper::SetupQuadVertexBuffer();
   // Draw |texture| to viewport and read back pixels to check expectations.
-  glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+  gfx::GLHelper::DrawQuad(vertex_buffer);
+
   GLTestHelper::CheckPixels(0, 0, image_size.width(), image_size.height(),
                             image_color);
 
