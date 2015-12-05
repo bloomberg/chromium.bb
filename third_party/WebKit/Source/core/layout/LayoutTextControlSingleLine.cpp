@@ -121,19 +121,26 @@ void LayoutTextControlSingleLine::layout()
     LayoutBox* viewPortLayoutObject = editingViewPortElement() ? editingViewPortElement()->layoutBox() : 0;
 
     // To ensure consistency between layouts, we need to reset any conditionally overriden height.
-    if (innerEditorLayoutObject && !innerEditorLayoutObject->styleRef().logicalHeight().isAuto()) {
-        innerEditorLayoutObject->mutableStyleRef().setLogicalHeight(Length(Auto));
+    if (innerEditorLayoutObject) {
+        innerEditorLayoutObject->clearOverrideLogicalContentHeight();
+        // TODO(jchaffraix): We could probably skip some of these due to
+        // forcing children relayout below but keeping them for safety for now.
         layoutScope.setNeedsLayout(innerEditorLayoutObject, LayoutInvalidationReason::TextControlChanged);
         HTMLElement* placeholderElement = inputElement()->placeholderElement();
         if (LayoutBox* placeholderBox = placeholderElement ? placeholderElement->layoutBox() : 0)
             layoutScope.setNeedsLayout(placeholderBox, LayoutInvalidationReason::TextControlChanged);
     }
+    // TODO(jchaffraix): This logic is not correct and will yield to bugs such
+    // as crbug.com/529252. The fix is similar to what is done with
+    // innerEditorLayoutObject above.
     if (viewPortLayoutObject && !viewPortLayoutObject->styleRef().logicalHeight().isAuto()) {
         viewPortLayoutObject->mutableStyleRef().setLogicalHeight(Length(Auto));
         layoutScope.setNeedsLayout(viewPortLayoutObject, LayoutInvalidationReason::TextControlChanged);
     }
 
-    LayoutBlockFlow::layoutBlock(false);
+    // This is the measuring phase. Thus we force children to be relayout so
+    // that the checks below are executed consistently.
+    LayoutBlockFlow::layoutBlock(true);
 
     Element* container = containerElement();
     LayoutBox* containerLayoutObject = container ? container->layoutBox() : 0;
@@ -147,7 +154,7 @@ void LayoutTextControlSingleLine::layout()
 
         m_desiredInnerEditorLogicalHeight = desiredLogicalHeight;
 
-        innerEditorLayoutObject->mutableStyleRef().setLogicalHeight(Length(desiredLogicalHeight, Fixed));
+        innerEditorLayoutObject->setOverrideLogicalContentHeight(desiredLogicalHeight);
         layoutScope.setNeedsLayout(innerEditorLayoutObject, LayoutInvalidationReason::TextControlChanged);
         if (viewPortLayoutObject) {
             viewPortLayoutObject->mutableStyleRef().setLogicalHeight(Length(desiredLogicalHeight, Fixed));
@@ -252,9 +259,6 @@ void LayoutTextControlSingleLine::styleDidChange(StyleDifference diff, const Com
         containerLayoutObject->mutableStyleRef().setHeight(Length());
         containerLayoutObject->mutableStyleRef().setWidth(Length());
     }
-    LayoutObject* innerEditorLayoutObject = innerEditorElement()->layoutObject();
-    if (innerEditorLayoutObject && diff.needsFullLayout())
-        innerEditorLayoutObject->setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::StyleChange);
     if (HTMLElement* placeholder = inputElement()->placeholderElement())
         placeholder->setInlineStyleProperty(CSSPropertyTextOverflow, textShouldBeTruncated() ? CSSValueEllipsis : CSSValueClip);
     setHasOverflowClip(false);

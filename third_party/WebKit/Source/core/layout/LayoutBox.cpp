@@ -2362,7 +2362,7 @@ void LayoutBox::computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logica
         // grab our cached flexible height.
         // FIXME: Account for writing-mode in flexible boxes.
         // https://bugs.webkit.org/show_bug.cgi?id=46418
-        if (hasOverrideLogicalContentHeight() && (parent()->isFlexibleBoxIncludingDeprecated() || parent()->isLayoutGrid())) {
+        if (hasOverrideLogicalContentHeight()) {
             LayoutUnit contentHeight = overrideLogicalContentHeight();
             if (parent()->isLayoutGrid() && style()->logicalMinHeight().isAuto() && style()->overflowY() == OVISIBLE) {
                 ASSERT(style()->logicalHeight().isAuto());
