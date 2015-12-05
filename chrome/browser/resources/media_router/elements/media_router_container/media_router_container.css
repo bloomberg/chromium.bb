@@ -77,11 +77,6 @@ paper-menu {
   padding-top: 4px;
 }
 
-.route {
-  color: rgb(150, 150, 150);
-  padding-top: 8px;
-}
-
 #searching-devices-spinner {
   height: 30px;
   width: 30px;
@@ -98,6 +93,11 @@ paper-menu {
   display: flex;
   flex-direction: row;
   font-weight: normal;
+}
+
+.sink-subtext {
+  color: rgb(150, 150, 150);
+  padding-top: 8px;
 }
 
 .sink-text {

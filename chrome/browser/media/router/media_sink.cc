@@ -18,8 +18,4 @@ bool MediaSink::Equals(const MediaSink& other) const {
   return sink_id_ == other.sink_id_;
 }
 
-bool MediaSink::Empty() const {
-  return sink_id_.empty();
-}
-
 }  // namespace media_router

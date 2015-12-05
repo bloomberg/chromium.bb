@@ -89,10 +89,12 @@
                 <div class="sink-text">
                   <span>[[item.name]]</span>
                 </div>
-                <div class="sink-text route"
-                    hidden$="[[computeRouteInSinkListHidden_(item.id, sinkToRouteMap_)]]">
-                  <span>[[computeRouteInSinkListValue_(item.id, sinkToRouteMap_)]]</span>
-                </div>
+                <template is="dom-if"
+                    if="[[!computeSinkSubtextHidden_(item, sinkToRouteMap_)]]">
+                  <div class="sink-text sink-subtext">
+                    <span>[[computeSinkSubtext_(item, sinkToRouteMap_)]]</span>
+                  </div>
+                </template>
               </div>
             </div>
           </paper-item>

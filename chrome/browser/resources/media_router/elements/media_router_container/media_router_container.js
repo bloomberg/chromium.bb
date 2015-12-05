@@ -390,27 +390,6 @@ Polymer({
   },
 
   /**
-   * @param {!string} sinkId A sink ID.
-   * @return {boolean} Whether or not to hide the route info in the sink list
-   *     that is associated with |sinkId|.
-   * @private
-   */
-  computeRouteInSinkListHidden_: function(sinkId, sinkToRouteMap) {
-    return !sinkToRouteMap[sinkId];
-  },
-
-  /**
-   * @param {!string} sinkId A sink ID.
-   * @return {string} The description value of the route associated with
-   *     |sinkId|.
-   * @private
-   */
-  computeRouteInSinkListValue_: function(sinkId, sinkToRouteMap) {
-    var route = sinkToRouteMap[sinkId];
-    return route ? route.description : '';
-  },
-
-  /**
    * @param {!Array<!media_router.CastMode>} castModeList The current list of
    *     cast modes.
    * @return {boolean} Whether or not to hide the share screen subheading text.
@@ -487,6 +466,38 @@ Polymer({
   },
 
   /**
+   * Returns the subtext to be shown for |sink|. Only called if
+   * |computeSinkSubtextHidden_| returns false for the same |sink| and
+   * |sinkToRouteMap|.
+   * @param {!media_router.Sink} sink
+   * @param {!Object<!string, ?media_router.Route>} sinkToRouteMap
+   * @return {string} The subtext to be shown.
+   * @private
+   */
+  computeSinkSubtext_: function(sink, sinkToRouteMap) {
+    var route = sinkToRouteMap[sink.id];
+    if (route && !this.isEmptyOrWhitespace_(route.description))
+      return route.description;
+
+    return sink.description;
+  },
+
+  /**
+   * Returns whether the sink subtext for |sink| should be hidden.
+   * @param {!media_router.Sink} sink
+   * @param {!Object<!string, ?media_router.Route>} sinkToRouteMap
+   * @return {boolean} |true| if the subtext should be hidden.
+   * @private
+   */
+  computeSinkSubtextHidden_: function(sink, sinkToRouteMap) {
+    if (!this.isEmptyOrWhitespace_(sink.description))
+      return false;
+
+    var route = sinkToRouteMap[sink.id];
+    return !route || this.isEmptyOrWhitespace_(route.description);
+  },
+
+  /**
    * @param {boolean} justOpened Whether the MR UI was just opened.
    * @return {boolean} Whether or not to hide the spinner.
    * @private
@@ -524,6 +535,16 @@ Polymer({
       return;
 
     this.setSelectedCastMode_(castMode);
+  },
+
+  /**
+   * Returns whether given string is null, empty, or whitespaces only.
+   * @param {?string} str String to be tested.
+   * @return {boolean} |true| if the string is null, empty, or whitespaces.
+   * @private
+   */
+  isEmptyOrWhitespace_: function(str) {
+    return str === null || (/^\s*$/).test(str);
   },
 
   /**

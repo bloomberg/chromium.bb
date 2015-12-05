@@ -59,8 +59,12 @@ media_router::interfaces::MediaSink::IconType SinkIconTypeToMojo(
 media_router::MediaSink
 TypeConverter<media_router::MediaSink, MediaSinkPtr>::Convert(
     const MediaSinkPtr& input) {
-  return media_router::MediaSink(input->sink_id, input->name,
-                                 SinkIconTypeFromMojo(input->icon_type));
+  media_router::MediaSink sink(input->sink_id, input->name,
+                               SinkIconTypeFromMojo(input->icon_type));
+  if (!input->description.get().empty())
+    sink.set_description(input->description);
+
+  return sink;
 }
 
 // static

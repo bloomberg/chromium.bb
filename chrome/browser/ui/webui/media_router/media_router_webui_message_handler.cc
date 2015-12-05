@@ -53,12 +53,14 @@ scoped_ptr<base::ListValue> SinksToValue(
     sink_val->SetString("id", sink.id());
     sink_val->SetString("name", sink.name());
     sink_val->SetInteger("iconType", sink.icon_type());
+    if (!sink.description().empty())
+      sink_val->SetString("description", sink.description());
 
     scoped_ptr<base::ListValue> cast_modes_val(new base::ListValue);
     for (MediaCastMode cast_mode : sink_with_cast_modes.cast_modes)
       cast_modes_val->AppendInteger(cast_mode);
-    sink_val->Set("castModes", cast_modes_val.Pass());
 
+    sink_val->Set("castModes", cast_modes_val.Pass());
     value->Append(sink_val.release());
   }
 
@@ -68,14 +70,12 @@ scoped_ptr<base::ListValue> SinksToValue(
 scoped_ptr<base::DictionaryValue> RouteToValue(
     const MediaRoute& route, const std::string& extension_id) {
   scoped_ptr<base::DictionaryValue> dictionary(new base::DictionaryValue);
-
   dictionary->SetString("id", route.media_route_id());
   dictionary->SetString("sinkId", route.media_sink_id());
   dictionary->SetString("description", route.description());
   dictionary->SetBoolean("isLocal", route.is_local());
 
   const std::string& custom_path = route.custom_controller_path();
-
   if (!custom_path.empty()) {
     std::string full_custom_controller_path = base::StringPrintf("%s://%s/%s",
         extensions::kExtensionScheme, extension_id.c_str(),

@@ -18,6 +18,8 @@ struct MediaSink {
   string sink_id;
   // The human-readable name, e.g. "Janet's Chromecast".
   string name;
+  // Optional description of the sink.
+  string? description;
   // The type of icon to show in the UI for this media sink.
   IconType icon_type;
 };

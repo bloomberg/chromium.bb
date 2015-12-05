@@ -88,11 +88,6 @@ cr.define('media_router_container', function() {
         assertEquals(visible, elementVisible);
       };
 
-      // Checks whether |element| is hidden.
-      var checkElementHidden = function(hidden, element) {
-        assertEquals(hidden, element.hidden);
-      };
-
       // Checks whether |expected| and the text in the |element| are equal.
       var checkElementText = function(expected, element) {
         assertEquals(expected.trim(), element.textContent.trim());
@@ -142,13 +137,13 @@ cr.define('media_router_container', function() {
         // Note: These need to be in-order by name to prevent shuffling.
         // Sorting of sinks by name is tested separately.
         fakeSinkList = [
-          new media_router.Sink('sink id 1', 'Sink 1',
+          new media_router.Sink('sink id 1', 'Sink 1', null,
               media_router.SinkIconType.CAST,
               media_router.SinkStatus.ACTIVE, [1, 2, 3]),
-          new media_router.Sink('sink id 2', 'Sink 2',
+          new media_router.Sink('sink id 2', 'Sink 2', null,
               media_router.SinkIconType.CAST,
               media_router.SinkStatus.ACTIVE, [1, 2, 3]),
-          new media_router.Sink('sink id 3', 'Sink 3',
+          new media_router.Sink('sink id 3', 'Sink 3', null,
               media_router.SinkIconType.CAST,
               media_router.SinkStatus.PENDING, [1, 2, 3]),
         ];
@@ -313,32 +308,47 @@ cr.define('media_router_container', function() {
 
       // Tests the text shown for the sink list.
       test('initial sink list route text', function(done) {
-        container.allSinks = fakeSinkList;
-        container.routeList = fakeRouteList;
+        // Sink 1 - no sink description, no route -> no subtext
+        // Sink 2 - sink description, no route -> subtext = sink description
+        // Sink 3 - no sink description, route -> subtext = route description
+        // Sink 4 - sink description, route -> subtext = route description
+        container.allSinks = [
+            new media_router.Sink('sink id 1', 'Sink 1', null,
+                media_router.SinkIconType.CAST,
+                media_router.SinkStatus.ACTIVE, [1, 2, 3]),
+            new media_router.Sink('sink id 2', 'Sink 2', 'Sink 2 description',
+                media_router.SinkIconType.CAST,
+                media_router.SinkStatus.ACTIVE, [1, 2, 3]),
+            new media_router.Sink('sink id 3', 'Sink 3', null,
+                media_router.SinkIconType.CAST,
+                media_router.SinkStatus.PENDING, [1, 2, 3]),
+            new media_router.Sink('sink id 4', 'Sink 4', 'Sink 4 description',
+                media_router.SinkIconType.CAST,
+                media_router.SinkStatus.PENDING, [1, 2, 3])
+        ];
+
+        container.routeList = [
+            new media_router.Route('id 3', 'sink id 3', 'Title 3', 0, true),
+            new media_router.Route('id 4', 'sink id 4', 'Title 4', 1, false),
+        ];
 
         setTimeout(function() {
-          var routeList =
-              container.$['sink-list'].querySelectorAll('.route');
-          assertEquals(fakeSinkList.length, routeList.length);
-          checkElementText(fakeRouteList[0].description, routeList[0]);
-          checkElementText(fakeRouteList[1].description, routeList[1]);
-          checkElementText('', routeList[2]);
-          done();
-        });
-      });
+          var sinkSubtextList =
+              container.$['sink-list'].querySelectorAll('.sink-subtext');
 
-      // Tests the visibility of routes in the sink list.
-      test('initial route visibility', function(done) {
-        container.allSinks = fakeSinkList;
-        container.routeList = fakeRouteList;
+          // There will only be 3 sink subtext entries, because Sink 1 does not
+          // have any subtext.
+          assertEquals(3, sinkSubtextList.length);
 
-        setTimeout(function() {
-          var routeList =
-              container.$['sink-list'].querySelectorAll('.route');
+          checkElementText(container.allSinks[1].description,
+              sinkSubtextList[0]);
 
-          checkElementHidden(false, routeList[0]);
-          checkElementHidden(false, routeList[1]);
-          checkElementHidden(true, routeList[2]);
+          // Route description overrides sink description for subtext.
+          checkElementText(container.routeList[0].description,
+              sinkSubtextList[1]);
+
+          checkElementText(container.routeList[1].description,
+              sinkSubtextList[2]);
           done();
         });
       });
@@ -498,13 +508,13 @@ cr.define('media_router_container', function() {
       // route.
       test('sink list filtering based on initial cast mode', function(done) {
         var newSinks = [
-          new media_router.Sink('sink id 10', 'Sink 10',
+          new media_router.Sink('sink id 10', 'Sink 10', null,
               media_router.SinkIconType.CAST,
               media_router.SinkStatus.ACTIVE, [2, 3]),
-          new media_router.Sink('sink id 20', 'Sink 20',
+          new media_router.Sink('sink id 20', 'Sink 20', null,
               media_router.SinkIconType.CAST,
               media_router.SinkStatus.ACTIVE, [1, 2, 3]),
-          new media_router.Sink('sink id 30', 'Sink 30',
+          new media_router.Sink('sink id 30', 'Sink 30', null,
               media_router.SinkIconType.CAST,
               media_router.SinkStatus.PENDING, [2, 3]),
         ];
@@ -568,22 +578,22 @@ cr.define('media_router_container', function() {
       // when shown to the user.
       test('sinks are shown sorted by name', function(done) {
         var outOfOrderSinks = [
-          new media_router.Sink('6543', 'Sleepy',
+          new media_router.Sink('6543', 'Sleepy', null,
               media_router.SinkIconType.CAST,
               media_router.SinkStatus.ACTIVE, [1]),
-          new media_router.Sink('543', 'Happy',
+          new media_router.Sink('543', 'Happy', null,
               media_router.SinkIconType.CAST,
               media_router.SinkStatus.ACTIVE, [1]),
-          new media_router.Sink('43', 'Bashful',
+          new media_router.Sink('43', 'Bashful', null,
               media_router.SinkIconType.CAST,
               media_router.SinkStatus.ACTIVE, [1]),
-          new media_router.Sink('2', 'George',
+          new media_router.Sink('2', 'George', null,
               media_router.SinkIconType.CAST_AUDIO,
               media_router.SinkStatus.ACTIVE, [1]),
-          new media_router.Sink('1', 'George',
+          new media_router.Sink('1', 'George', null,
               media_router.SinkIconType.CAST,
               media_router.SinkStatus.ACTIVE, [1]),
-          new media_router.Sink('3', 'George',
+          new media_router.Sink('3', 'George', null,
               media_router.SinkIconType.HANGOUT,
               media_router.SinkStatus.ACTIVE, [1]),
         ];
