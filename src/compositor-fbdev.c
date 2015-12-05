@@ -90,8 +90,6 @@ struct fbdev_output {
 
 	/* pixman details. */
 	pixman_image_t *hw_surface;
-	pixman_image_t *shadow_surface;
-	void *shadow_buf;
 	uint8_t depth;
 };
 
@@ -131,38 +129,10 @@ fbdev_output_repaint_pixman(struct weston_output *base, pixman_region32_t *damag
 {
 	struct fbdev_output *output = to_fbdev_output(base);
 	struct weston_compositor *ec = output->base.compositor;
-	pixman_box32_t *rects;
-	int nrects, i;
 
 	/* Repaint the damaged region onto the back buffer. */
-	pixman_renderer_output_set_buffer(base, output->shadow_surface);
+	pixman_renderer_output_set_buffer(base, output->hw_surface);
 	ec->renderer->repaint_output(base, damage);
-
-	/* Transform and composite onto the frame buffer. */
-	rects = pixman_region32_rectangles(damage, &nrects);
-
-	for (i = 0; i < nrects; i++) {
-		pixman_box32_t transformed_rect;
-		int width, height;
-
-		transformed_rect = weston_transformed_rect(base->width,
-							   base->height,
-							   base->transform,
-							   1, rects[i]);
-		width = transformed_rect.x2 - transformed_rect.x1;
-		height = transformed_rect.y2 - transformed_rect.y1;
-		pixman_image_composite32(PIXMAN_OP_SRC,
-			output->shadow_surface, /* src */
-			NULL /* mask */,
-			output->hw_surface, /* dest */
-			transformed_rect.x1, /* src_x */
-			transformed_rect.y1, /* src_y */
-			0, 0, /* mask_x, mask_y */
-			transformed_rect.x1, /* dest_x */
-			transformed_rect.y1, /* dest_y */
-			width, /* width */
-			height /* height */);
-	}
 
 	/* Update the damage region. */
 	pixman_region32_subtract(&ec->primary_plane.damage,
@@ -489,8 +459,6 @@ fbdev_output_create(struct fbdev_backend *backend,
 	struct fbdev_output *output;
 	struct weston_config_section *section;
 	int fb_fd;
-	int width, height;
-	unsigned int bytes_per_pixel;
 	struct wl_event_loop *loop;
 	uint32_t config_transform;
 	char *s;
@@ -553,24 +521,9 @@ fbdev_output_create(struct fbdev_backend *backend,
 	                   config_transform,
 			   1);
 
-	width = output->mode.width;
-	height = output->mode.height;
-	bytes_per_pixel = output->fb_info.bits_per_pixel / 8;
-
-	output->shadow_buf = malloc(width * height * bytes_per_pixel);
-	output->shadow_surface =
-		pixman_image_create_bits(output->fb_info.pixel_format,
-		                         width, height,
-		                         output->shadow_buf,
-		                         width * bytes_per_pixel);
-	if (output->shadow_buf == NULL || output->shadow_surface == NULL) {
-		weston_log("Failed to create surface for frame buffer.\n");
-		goto out_hw_surface;
-	}
-
 	if (backend->use_pixman) {
 		if (pixman_renderer_output_create(&output->base) < 0)
-			goto out_shadow_surface;
+			goto out_hw_surface;
 	} else {
 		setenv("HYBRIS_EGLPLATFORM", "wayland", 1);
 		if (gl_renderer->output_create(&output->base,
@@ -578,10 +531,9 @@ fbdev_output_create(struct fbdev_backend *backend,
 					       gl_renderer->opaque_attribs,
 					       NULL, 0) < 0) {
 			weston_log("gl_renderer_output_create failed.\n");
-			goto out_shadow_surface;
+			goto out_hw_surface;
 		}
 	}
-
 
 	loop = wl_display_get_event_loop(backend->compositor->wl_display);
 	output->finish_frame_timer =
@@ -596,11 +548,7 @@ fbdev_output_create(struct fbdev_backend *backend,
 
 	return 0;
 
-out_shadow_surface:
-	pixman_image_unref(output->shadow_surface);
-	output->shadow_surface = NULL;
 out_hw_surface:
-	free(output->shadow_buf);
 	pixman_image_unref(output->hw_surface);
 	output->hw_surface = NULL;
 	weston_output_destroy(&output->base);
@@ -625,16 +573,6 @@ fbdev_output_destroy(struct weston_output *base)
 	if (backend->use_pixman) {
 		if (base->renderer_state != NULL)
 			pixman_renderer_output_destroy(base);
-
-		if (output->shadow_surface != NULL) {
-			pixman_image_unref(output->shadow_surface);
-			output->shadow_surface = NULL;
-		}
-
-		if (output->shadow_buf != NULL) {
-			free(output->shadow_buf);
-			output->shadow_buf = NULL;
-		}
 	} else {
 		gl_renderer->output_destroy(base);
 	}
