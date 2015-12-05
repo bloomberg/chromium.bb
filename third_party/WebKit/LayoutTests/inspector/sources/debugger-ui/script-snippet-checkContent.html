@@ -17,9 +17,9 @@ function test()
     window.confirm = confirmOverride;
 
     WebInspector.scriptSnippetModel.project().createFile("", null, "", onCreated.bind(this));
-    function onCreated(path)
+    function onCreated(usc)
     {
-        uiSourceCode = WebInspector.scriptSnippetModel.project().uiSourceCode(path);
+        uiSourceCode = usc;
         uiSourceCode.requestContent(onContentAvailable);
     }
 

@@ -92,9 +92,9 @@ function test()
             
             WebInspector.scriptSnippetModel.project().createFile("", null, "", step2.bind(this));
             
-            function step2(path)
+            function step2(uiSourceCode)
             {
-                uiSourceCode1 = WebInspector.scriptSnippetModel.project().uiSourceCode(path);
+                uiSourceCode1 = uiSourceCode;
                 
                 uiSourceCode1.requestContent(contentCallback);
                 uiSourceCode1.addRevision("<snippet content>");
@@ -107,9 +107,9 @@ function test()
                 WebInspector.scriptSnippetModel.project().createFile("", null, "", step3.bind(this));
             }
 
-            function step3(path)
+            function step3(uiSourceCode)
             {
-                var uiSourceCode2 = WebInspector.scriptSnippetModel.project().uiSourceCode(path);
+                var uiSourceCode2 = uiSourceCode;
                 InspectorTest.addResult("Snippet2 created.");
                 renameSnippetAndCheckWorkspace(uiSourceCode1, "foo");
                 renameSnippetAndCheckWorkspace(uiSourceCode1, "   ");
@@ -127,9 +127,9 @@ function test()
                 WebInspector.scriptSnippetModel.project().createFile("", null, "", step4.bind(this));
             }
 
-            function step4(path)
+            function step4(uiSourceCode)
             {
-                var uiSourceCode3 = WebInspector.scriptSnippetModel.project().uiSourceCode(path);
+                var uiSourceCode3 = uiSourceCode;
                 InspectorTest.addResult("Snippet3 created.");
                 WebInspector.scriptSnippetModel.project().deleteFile(uiSourceCode3.path());
                 InspectorTest.addResult("Snippet3 deleted.");
@@ -156,9 +156,9 @@ function test()
 
             WebInspector.scriptSnippetModel.project().createFile("", null, "", step2.bind(this));
             
-            function step2(path)
+            function step2(uiSourceCode)
             {
-                uiSourceCode1 = WebInspector.scriptSnippetModel.project().uiSourceCode(path);
+                uiSourceCode1 = uiSourceCode;
                 uiSourceCode1.rename("Snippet1", function() { });
                 var content = "";
                 content += "// This snippet does nothing.\n";
@@ -167,9 +167,9 @@ function test()
                 WebInspector.scriptSnippetModel.project().createFile("", null, "", step3.bind(this));
             }
             
-            function step3(path)
+            function step3(uiSourceCode)
             {
-                uiSourceCode2 = WebInspector.scriptSnippetModel.project().uiSourceCode(path);
+                uiSourceCode2 = uiSourceCode;
                 uiSourceCode2.rename("Snippet2", function() { });
                 content = "";
                 content += "// This snippet creates a function that does nothing and returns it.\n";
@@ -213,9 +213,9 @@ function test()
 
             WebInspector.scriptSnippetModel.project().createFile("", null, "", step3.bind(this));
             
-            function step3(path)
+            function step3(uiSourceCode)
             {
-                var uiSourceCode1 = WebInspector.scriptSnippetModel.project().uiSourceCode(path);
+                var uiSourceCode1 = uiSourceCode;
                 uiSourceCode1.rename("Snippet1", function() { });
                 var content = "";
                 content += "// This snippet does nothing.\n";
@@ -242,9 +242,8 @@ function test()
                 WebInspector.scriptSnippetModel.project().createFile("", null, "", step2.bind(this));
             }
 
-            function step2(path)
+            function step2(uiSourceCode)
             {
-                var uiSourceCode = WebInspector.scriptSnippetModel.project().uiSourceCode(path);
                 uiSourceCode.rename("Snippet1", function() { });
                 var content = "2+2;\n";
                 uiSourceCode.setWorkingCopy(content);

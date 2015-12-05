@@ -8,8 +8,8 @@ function test()
     function createMockProject()
     {
         var workspace = new WebInspector.Workspace();
-        var projectDelegate = new WebInspector.NetworkProjectDelegate(InspectorTest.mainTarget, workspace, "");
-        var project = workspace.addProject("projectId", projectDelegate);
+        var project = new WebInspector.NetworkProjectDelegate(InspectorTest.mainTarget, workspace, "");
+        workspace.addProject(project);
         project.requestFileContent = function(uri, callback)
         {
             callback("<script content>");
@@ -17,11 +17,6 @@ function test()
         project.setFileContent = function(uri, newContent, callback)
         {
         }
-        project.fileMimeType = function(uri)
-        {
-            return "text/javascript";
-        }
-
         return project;
     }
  

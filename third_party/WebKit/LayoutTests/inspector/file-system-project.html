@@ -19,17 +19,7 @@ function test()
                 return;
             }
 
-            InspectorTest.dumpUISourceCode(uiSourceCodes[startIndex], dumpCallback.bind(this, uiSourceCodes, startIndex, next));
-            function dumpCallback(uiSourceCodes, startIndex, next)
-            {
-                uiSourceCodes[startIndex].requestMetadata(dumpMetadata.bind(this, uiSourceCodes, startIndex, next));
-            }
-
-            function dumpMetadata(uiSourceCodes, startIndex, next, modificationTime, size)
-            {
-                InspectorTest.addResult("modificationTime=" + modificationTime.getTime() + ", size=" + size);
-                innerDumpUISourceCodes.call(this, uiSourceCodes, startIndex + 1, next);
-            }
+            InspectorTest.dumpUISourceCode(uiSourceCodes[startIndex], innerDumpUISourceCodes.bind(this, uiSourceCodes, startIndex + 1, next));
         }
     }
 
@@ -121,25 +111,14 @@ function test()
             function contentCommitted()
             {
                 InspectorTest.addResult("After revision added:");
-                InspectorTest.dumpUISourceCode(uiSourceCodes[0], dumped);
+                InspectorTest.dumpUISourceCode(uiSourceCodes[0], finalize);
+            }
 
-                function dumped()
-                {
-                    uiSourceCodes[0].requestMetadata(dumpModifiedMetadata);
-                }
-
-                function dumpModifiedMetadata(modificationTime, size)
-                {
-                    InspectorTest.addResult("New modificationTime=" + modificationTime.getTime() + ", size=" + size);
-                    var uiSourceCodesCount = InspectorTest.fileSystemUISourceCodes().length;
-                    InspectorTest.addResult("Removing second file system.");
-                    fs1.reportRemoved();
-                    InspectorTest.addResult("    number of uiSourceCodes in workspace after removing second file system: " + InspectorTest.fileSystemUISourceCodes().length);
-                    InspectorTest.addResult("Removing first file system.");
-                    fs2.reportRemoved();
-                    InspectorTest.addResult("    number of uiSourceCodes in workspace after removing first file system: " + InspectorTest.fileSystemUISourceCodes().length);
-                    next();
-                }
+            function finalize()
+            {
+                fs1.reportRemoved();
+                fs2.reportRemoved();
+                next();
             }
         },
 

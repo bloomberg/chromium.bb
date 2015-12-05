@@ -11,19 +11,16 @@ UISourceCode: file:///var/www/localhost/foo.js
 UISourceCode is content script: false
 Highlighter type: text/javascript
 UISourceCode content: <foo content>
-modificationTime=1000000, size=13
 
 UISourceCode: file:///var/www/bar.js
 UISourceCode is content script: false
 Highlighter type: text/javascript
 UISourceCode content: <bark content>
-modificationTime=1000000, size=14
 
 UISourceCode: file:///foo/bar/baz.js
 UISourceCode is content script: false
 Highlighter type: text/javascript
 UISourceCode content: <bazzz content>
-modificationTime=1000000, size=15
 
 Dumping uiSourceCode location link texts:
  - foo.js:6
@@ -40,11 +37,6 @@ UISourceCode: file:///var/www/localhost/foo.js
 UISourceCode is content script: false
 Highlighter type: text/javascript
 UISourceCode content: <Modified UISourceCode content>
-New modificationTime=1001000, size=31
-Removing second file system.
-    number of uiSourceCodes in workspace after removing second file system: 1
-Removing first file system.
-    number of uiSourceCodes in workspace after removing first file system: 0
 
 Running: testDefaultExcludes
 

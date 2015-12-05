@@ -33,7 +33,7 @@ function test()
     function createMockWorkspace()
     {
         InspectorTest.createWorkspaceWithTarget(true);
-        InspectorTest.testDebuggerProjectDelegate = new WebInspector.DebuggerProjectDelegate(InspectorTest.testWorkspace, "debugger:", WebInspector.projectTypes.Debugger);
+        InspectorTest.testDebuggerProject = new WebInspector.ContentProviderBasedProject(InspectorTest.testWorkspace, "", WebInspector.projectTypes.Debugger, "debugger:", "");
         return InspectorTest.testWorkspace;
     }
 
@@ -44,7 +44,7 @@ function test()
 
     function addDebuggerFile(workspace, url)
     {
-        var path = InspectorTest.testDebuggerProjectDelegate.addContentProvider("", url, url, createContentProvider(url));
+        var path = InspectorTest.testDebuggerProject.addContentProvider("", url, url, createContentProvider(url));
         return InspectorTest.testWorkspace.uiSourceCode("debugger:", path)
     }
 
