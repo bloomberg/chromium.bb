@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/render_widget_mus_connection.h"
+#include "content/renderer/mus/render_widget_mus_connection.h"
 
 #include <map>
 
@@ -15,7 +15,7 @@
 #include "components/mus/public/interfaces/gpu.mojom.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "content/public/common/mojo_shell_connection.h"
-#include "content/renderer/compositor_mus_connection.h"
+#include "content/renderer/mus/compositor_mus_connection.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "mojo/application/public/cpp/application_impl.h"

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_RENDER_WIDGET_MUS_CONNECTION_H_
-#define CONTENT_RENDERER_RENDER_WIDGET_MUS_CONNECTION_H_
+#ifndef CONTENT_RENDERER_MUS_RENDER_WIDGET_MUS_CONNECTION_H_
+#define CONTENT_RENDERER_MUS_RENDER_WIDGET_MUS_CONNECTION_H_
 
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "cc/output/output_surface.h"
 #include "components/mus/public/cpp/window_surface.h"
-#include "content/renderer/compositor_mus_connection.h"
+#include "content/renderer/mus/compositor_mus_connection.h"
 
 namespace content {
 
@@ -52,4 +52,4 @@ class RenderWidgetMusConnection {
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_RENDER_WIDGET_MUS_CONNECTION_H_
+#endif  // CONTENT_RENDERER_MUS_RENDER_WIDGET_MUS_CONNECTION_H_

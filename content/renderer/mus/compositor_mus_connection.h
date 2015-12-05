@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_COMPOSITOR_MUS_CONNECTION_H_
-#define CONTENT_RENDERER_COMPOSITOR_MUS_CONNECTION_H_
+#ifndef CONTENT_RENDERER_MUS_COMPOSITOR_MUS_CONNECTION_H_
+#define CONTENT_RENDERER_MUS_COMPOSITOR_MUS_CONNECTION_H_
 
 #include "base/bind.h"
 #include "base/macros.h"
@@ -80,4 +80,4 @@ class CompositorMusConnection
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_COMPOSITOR_MUS_CONNECTION_H_
+#endif  // CONTENT_RENDERER_MUS_COMPOSITOR_MUS_CONNECTION_H_

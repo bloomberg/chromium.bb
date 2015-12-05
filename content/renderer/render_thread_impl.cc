@@ -204,7 +204,7 @@
 
 #if defined(MOJO_SHELL_CLIENT)
 #include "content/public/common/mojo_shell_connection.h"
-#include "content/renderer/render_widget_window_tree_client_factory.h"
+#include "content/renderer/mus/render_widget_window_tree_client_factory.h"
 #endif
 
 using base::ThreadRestrictions;

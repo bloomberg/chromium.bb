@@ -96,7 +96,7 @@
 
 #if defined(MOJO_SHELL_CLIENT)
 #include "content/public/common/mojo_shell_connection.h"
-#include "content/renderer/render_widget_mus_connection.h"
+#include "content/renderer/mus/render_widget_mus_connection.h"
 #endif
 
 #include "third_party/WebKit/public/web/WebWidget.h"

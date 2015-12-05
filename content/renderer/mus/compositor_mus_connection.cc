@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/compositor_mus_connection.h"
+#include "content/renderer/mus/compositor_mus_connection.h"
 
 #include "base/single_thread_task_runner.h"
 #include "content/common/input/web_input_event_traits.h"
 #include "content/renderer/input/input_handler_manager.h"
-#include "content/renderer/render_widget_mus_connection.h"
+#include "content/renderer/mus/render_widget_mus_connection.h"
 #include "mojo/converters/blink/blink_input_events_type_converters.h"
 #include "ui/events/latency_info.h"
 

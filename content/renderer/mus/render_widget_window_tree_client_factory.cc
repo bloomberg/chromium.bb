@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/render_widget_window_tree_client_factory.h"
+#include "content/renderer/mus/render_widget_window_tree_client_factory.h"
 
 #include "base/logging.h"
 #include "base/macros.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "content/common/render_widget_window_tree_client_factory.mojom.h"
 #include "content/public/common/mojo_shell_connection.h"
-#include "content/renderer/render_widget_mus_connection.h"
+#include "content/renderer/mus/render_widget_mus_connection.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/interface_factory.h"
 #include "mojo/common/weak_binding_set.h"
@@ -45,7 +45,7 @@ class RenderWidgetWindowTreeClientFactoryImpl
   void Create(mojo::ApplicationConnection* connection,
               mojo::InterfaceRequest<mojom::RenderWidgetWindowTreeClientFactory>
                   request) override {
-    bindings_.AddBinding(this, request.Pass());
+    bindings_.AddBinding(this, std::move(request));
   }
 
   // mojom::RenderWidgetWindowTreeClientFactory implementation.
@@ -54,7 +54,7 @@ class RenderWidgetWindowTreeClientFactoryImpl
       mojo::InterfaceRequest<mus::mojom::WindowTreeClient> request) override {
     RenderWidgetMusConnection* connection =
         RenderWidgetMusConnection::GetOrCreate(routing_id);
-    connection->Bind(request.Pass());
+    connection->Bind(std::move(request));
   }
 
   mojo::WeakBindingSet<mojom::RenderWidgetWindowTreeClientFactory> bindings_;
