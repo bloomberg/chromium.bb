@@ -617,7 +617,7 @@ TEST_F(DeleteRegistryKeyPartialTest, NonEmptyKeyWithPreserve) {
   {
     base::win::RegistryKeyIterator it(root_, path_.c_str());
     ASSERT_EQ(to_preserve_.size(), it.SubkeyCount());
-    for (; it.Valid(); ++it) {
+    for (it; it.Valid(); ++it) {
       ASSERT_NE(to_preserve_.end(),
                 std::find_if(to_preserve_.begin(), to_preserve_.end(),
                              [&it](const base::string16& key_name) {
