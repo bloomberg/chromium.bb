@@ -1229,6 +1229,65 @@ TEST_F(PipelineIntegrationTest, BasicPlaybackHashed_MP3) {
   EXPECT_HASH_EQ("1.30,2.72,4.56,5.08,3.74,2.03,", GetAudioHash());
 }
 
+class Mp3FastSeekParams {
+ public:
+  Mp3FastSeekParams(const char* filename, const char* hash)
+      : filename(filename), hash(hash) {}
+  const char* filename;
+  const char* hash;
+};
+
+class Mp3FastSeekIntegrationTest
+    : public PipelineIntegrationTest,
+      public testing::WithParamInterface<Mp3FastSeekParams> {};
+
+TEST_P(Mp3FastSeekIntegrationTest, FastSeekAccuracy_MP3) {
+  Mp3FastSeekParams config = GetParam();
+  ASSERT_EQ(PIPELINE_OK, Start(config.filename, kHashed));
+
+  // The XING TOC is inaccurate. We don't use it for CBR, we tolerate it for VBR
+  // (best option for fast seeking; see Mp3SeekFFmpegDemuxerTest). The chosen
+  // seek time exposes inaccuracy in TOC such that the hash will change if seek
+  // logic is regressed. See https://crbug.com/545914.
+  //
+  // Quick TOC design (not pretty!):
+  // - All MP3 TOCs are 100 bytes
+  // - Each byte is read as a uint8; value between 0 - 255.
+  // - The index into this array is the numerator in the ratio: index / 100.
+  //   This fraction represents a playback time as a percentage of duration.
+  // - The value at the given index is the numerator in the ratio: value / 256.
+  //   This fraction represents a byte offset as a percentage of the file size.
+  //
+  // For CBR files, each frame is the same size, so the offset for time of
+  // (0.98 * duration) should be around (0.98 * file size). This is 250.88 / 256
+  // but the numerator will be truncated in the TOC as 250, losing precision.
+  base::TimeDelta seek_time(0.98 * pipeline_->GetMediaDuration());
+
+  ASSERT_TRUE(Seek(seek_time));
+  Play();
+  ASSERT_TRUE(WaitUntilOnEnded());
+
+  EXPECT_HASH_EQ(config.hash, GetAudioHash());
+}
+
+// CBR seeks should always be fast and accurate.
+INSTANTIATE_TEST_CASE_P(
+    CBRSeeks,
+    Mp3FastSeekIntegrationTest,
+    ::testing::Values(Mp3FastSeekParams("bear-audio-10s-CBR-has-TOC.mp3",
+                                        "-0.71,0.36,2.96,2.68,2.10,-1.08,"),
+                      Mp3FastSeekParams("bear-audio-10s-CBR-no-TOC.mp3",
+                                        "0.95,0.56,1.34,0.47,1.77,0.84,")));
+
+// VBR seeks can be fast *OR* accurate, but not both. We chose fast.
+INSTANTIATE_TEST_CASE_P(
+    VBRSeeks,
+    Mp3FastSeekIntegrationTest,
+    ::testing::Values(Mp3FastSeekParams("bear-audio-10s-VBR-has-TOC.mp3",
+                                        "-0.15,-0.83,0.54,1.00,1.94,0.93,"),
+                      Mp3FastSeekParams("bear-audio-10s-VBR-no-TOC.mp3",
+                                        "-0.22,0.80,1.19,0.73,-0.31,-1.12,")));
+
 TEST_F(PipelineIntegrationTest, MediaSource_MP3) {
   MockMediaSource source("sfx.mp3", kMP3, kAppendWholeFile);
   StartHashedPipelineWithMediaSource(&source);

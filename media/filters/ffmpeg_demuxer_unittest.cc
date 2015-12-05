@@ -981,7 +981,8 @@ TEST_P(Mp3SeekFFmpegDemuxerTest, TestFastSeek) {
   event.RunAndWaitForStatus(PIPELINE_OK);
 
   // Verify that seeking to the end read only a small portion of the file.
-  // Slow that read sequentially up to the seek point will fail this check.
+  // Slow seeks that read sequentially up to the seek point will read too many
+  // bytes and fail this check.
   int64 file_size = 0;
   ASSERT_TRUE(data_source_->GetSize(&file_size));
   EXPECT_LT(data_source_->bytes_read_for_testing(), (file_size * .25));
