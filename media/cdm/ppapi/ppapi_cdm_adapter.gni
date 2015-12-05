@@ -20,16 +20,18 @@ template("ppapi_cdm_adapter") {
     defines += [ "USE_PPAPI_CDM_ADAPTER" ]
     sources += [
       "//media/cdm/api/content_decryption_module.h",
+      "//media/cdm/cdm_helpers.cc",
+      "//media/cdm/cdm_helpers.h",
       "//media/cdm/cdm_wrapper.h",
       "//media/cdm/ppapi/cdm_file_io_impl.cc",
       "//media/cdm/ppapi/cdm_file_io_impl.h",
-      "//media/cdm/ppapi/cdm_helpers.cc",
-      "//media/cdm/ppapi/cdm_helpers.h",
       "//media/cdm/ppapi/cdm_logging.cc",
       "//media/cdm/ppapi/cdm_logging.h",
       "//media/cdm/ppapi/linked_ptr.h",
       "//media/cdm/ppapi/ppapi_cdm_adapter.cc",
       "//media/cdm/ppapi/ppapi_cdm_adapter.h",
+      "//media/cdm/ppapi/ppapi_cdm_buffer.cc",
+      "//media/cdm/ppapi/ppapi_cdm_buffer.h",
       "//media/cdm/supported_cdm_versions.cc",
       "//media/cdm/supported_cdm_versions.h",
     ]

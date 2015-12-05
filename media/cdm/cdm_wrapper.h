@@ -321,4 +321,6 @@ static_assert(cdm::ContentDecryptionModule::kVersion ==
 
 }  // namespace media
 
+#undef PLATFORM_DCHECK
+
 #endif  // MEDIA_CDM_CDM_WRAPPER_H_

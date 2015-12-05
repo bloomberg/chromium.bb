@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/cdm/ppapi/cdm_helpers.h"
+#include "media/cdm/ppapi/ppapi_cdm_buffer.h"
 
 #include <algorithm>
 
@@ -56,8 +56,7 @@ pp::Buffer_Dev PpbBuffer::TakeBuffer() {
 PpbBuffer::PpbBuffer(pp::Buffer_Dev buffer,
                      uint32_t buffer_id,
                      PpbBufferAllocator* allocator)
-    : buffer_(buffer), buffer_id_(buffer_id), size_(0), allocator_(allocator) {
-}
+    : buffer_(buffer), buffer_id_(buffer_id), size_(0), allocator_(allocator) {}
 
 PpbBuffer::~PpbBuffer() {
   PP_DCHECK(!buffer_id_ == buffer_.is_null());
@@ -128,21 +127,6 @@ pp::Buffer_Dev PpbBufferAllocator::AllocateNewBuffer(uint32_t capacity) {
   // Creation of pp::Buffer_Dev is expensive! It involves synchronous IPC calls.
   // That's why we try to avoid AllocateNewBuffer() as much as we can.
   return pp::Buffer_Dev(instance_, capacity + kBufferPadding);
-}
-
-VideoFrameImpl::VideoFrameImpl()
-    : format_(cdm::kUnknownVideoFormat),
-      frame_buffer_(NULL),
-      timestamp_(0) {
-  for (uint32_t i = 0; i < kMaxPlanes; ++i) {
-    plane_offsets_[i] = 0;
-    strides_[i] = 0;
-  }
-}
-
-VideoFrameImpl::~VideoFrameImpl() {
-  if (frame_buffer_)
-    frame_buffer_->Destroy();
 }
 
 }  // namespace media
