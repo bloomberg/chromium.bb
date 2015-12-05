@@ -115,4 +115,9 @@
       ],
     }
   ],
+
+  # Allow the file to be included based on the given buildflag_header_path.
+  'direct_dependent_settings': {
+    'include_dirs': [ '<(SHARED_INTERMEDIATE_DIR)' ],
+  },
 }

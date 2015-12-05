@@ -39,6 +39,9 @@
               '-fno-strict-aliasing',
             ],
           },
+          'dependencies': [
+            'base.gyp:base_debugging_flags',
+          ],
         },
         {
           'target_name': 'base_i18n_nacl',
@@ -115,6 +118,7 @@
           ],
           'dependencies': [
             '../third_party/libevent/libevent_nacl_nonsfi.gyp:event_nacl_nonsfi',
+            'base.gyp:base_debugging_flags',
           ],
         },
         {
