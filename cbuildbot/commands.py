@@ -958,7 +958,9 @@ def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
       if running_json_dump_flag:
         s = ''.join(result.task_summary_json['shards'][0]['outputs'])
         sys.stdout.write(s)
-        json_dump_result = json.loads(s)
+        i = s.find(JSON_DICT_START) + len(JSON_DICT_START)
+        j = s.find(JSON_DICT_END)
+        json_dump_result = json.loads(s[i:j])
       else:
         for output in result.task_summary_json['shards'][0]['outputs']:
           sys.stdout.write(output)
