@@ -22,7 +22,7 @@ namespace {
 // This is the same PRNG as used by tcmalloc for mapping address randomness;
 // see http://burtleburtle.net/bob/rand/smallprng.html
 struct ranctx {
-    int lock;
+    SpinLock lock;
     bool initialized;
     uint32_t a;
     uint32_t b;
@@ -46,7 +46,7 @@ uint32_t ranvalInternal(ranctx* x)
 
 uint32_t ranval(ranctx* x)
 {
-    spinLockLock(&x->lock);
+    SpinLock::Guard guard(x->lock);
     if (UNLIKELY(!x->initialized)) {
         x->initialized = true;
         char c;
@@ -73,7 +73,6 @@ uint32_t ranval(ranctx* x)
         }
     }
     uint32_t ret = ranvalInternal(x);
-    spinLockUnlock(&x->lock);
     return ret;
 }
 

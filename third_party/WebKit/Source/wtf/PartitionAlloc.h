@@ -309,7 +309,7 @@ struct WTF_EXPORT PartitionRootBase {
     int16_t globalEmptyPageRingIndex;
     uintptr_t invertedSelf;
 
-    static int gInitializedLock;
+    static SpinLock gInitializedLock;
     static bool gInitialized;
     // gSeedPage is used as a sentinel to indicate that there is no page
     // in the active page list. We can use nullptr, but in that case we need
@@ -330,7 +330,7 @@ struct PartitionRoot : public PartitionRootBase {
 
 // Never instantiate a PartitionRootGeneric directly, instead use PartitionAllocatorGeneric.
 struct PartitionRootGeneric : public PartitionRootBase {
-    int lock;
+    SpinLock lock;
     // Some pre-computed constants.
     size_t orderIndexShifts[kBitsPerSizet + 1];
     size_t orderSubIndexMasks[kBitsPerSizet + 1];
@@ -752,16 +752,18 @@ ALWAYS_INLINE void* partitionAllocGenericFlags(PartitionRootGeneric* root, int f
     size_t requestedSize = size;
     size = partitionCookieSizeAdjustAdd(size);
     PartitionBucket* bucket = partitionGenericSizeToBucket(root, size);
-    spinLockLock(&root->lock);
-    // TODO(bashi): Remove following RELEAE_ASSERT()s once we find the cause of
-    // http://crbug.com/514141
+    void* ret = nullptr;
+    {
+        SpinLock::Guard guard(root->lock);
+        // TODO(bashi): Remove following RELEAE_ASSERT()s once we find the cause of
+        // http://crbug.com/514141
 #if OS(ANDROID)
-    RELEASE_ASSERT(bucket >= &root->buckets[0] || bucket == &PartitionRootGeneric::gPagedBucket);
-    RELEASE_ASSERT(bucket <= &root->buckets[kGenericNumBuckets - 1] || bucket == &PartitionRootGeneric::gPagedBucket);
-    RELEASE_ASSERT(root->initialized);
+        RELEASE_ASSERT(bucket >= &root->buckets[0] || bucket == &PartitionRootGeneric::gPagedBucket);
+        RELEASE_ASSERT(bucket <= &root->buckets[kGenericNumBuckets - 1] || bucket == &PartitionRootGeneric::gPagedBucket);
+        RELEASE_ASSERT(root->initialized);
 #endif
-    void* ret = partitionBucketAlloc(root, flags, size, bucket);
-    spinLockUnlock(&root->lock);
+        ret = partitionBucketAlloc(root, flags, size, bucket);
+    }
     PartitionAllocHooks::allocationHookIfEnabled(ret, requestedSize, typeName);
     return ret;
 #endif
@@ -786,9 +788,10 @@ ALWAYS_INLINE void partitionFreeGeneric(PartitionRootGeneric* root, void* ptr)
     ptr = partitionCookieFreePointerAdjust(ptr);
     ASSERT(partitionPointerIsValid(ptr));
     PartitionPage* page = partitionPointerToPage(ptr);
-    spinLockLock(&root->lock);
-    partitionFreeWithPage(ptr, page);
-    spinLockUnlock(&root->lock);
+    {
+        SpinLock::Guard guard(root->lock);
+        partitionFreeWithPage(ptr, page);
+    }
 #endif
 }
 

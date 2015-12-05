@@ -39,7 +39,7 @@ namespace WTF {
 
 const char* const Partitions::kAllocatedObjectPoolName = "partition_alloc/allocated_objects";
 
-int Partitions::s_initializationLock = 0;
+SpinLock Partitions::s_initializationLock;
 bool Partitions::s_initialized = false;
 
 PartitionAllocatorGeneric Partitions::m_fastMallocAllocator;
@@ -50,7 +50,7 @@ HistogramEnumerationFunction Partitions::m_histogramEnumeration = nullptr;
 
 void Partitions::initialize(HistogramEnumerationFunction histogramEnumeration)
 {
-    spinLockLock(&s_initializationLock);
+    SpinLock::Guard guard(s_initializationLock);
 
     if (!s_initialized) {
         partitionAllocGlobalInit(&Partitions::handleOutOfMemory);
@@ -61,13 +61,11 @@ void Partitions::initialize(HistogramEnumerationFunction histogramEnumeration)
         m_histogramEnumeration = histogramEnumeration;
         s_initialized = true;
     }
-
-    spinLockUnlock(&s_initializationLock);
 }
 
 void Partitions::shutdown()
 {
-    spinLockLock(&s_initializationLock);
+    SpinLock::Guard guard(s_initializationLock);
 
     // We could ASSERT here for a memory leak within the partition, but it leads
     // to very hard to diagnose ASSERTs, so it's best to leave leak checking for
@@ -78,8 +76,6 @@ void Partitions::shutdown()
         (void) m_bufferAllocator.shutdown();
         (void) m_fastMallocAllocator.shutdown();
     }
-
-    spinLockUnlock(&s_initializationLock);
 }
 
 void Partitions::decommitFreeableMemory()
