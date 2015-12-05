@@ -3372,6 +3372,10 @@ bool RenderFrameImpl::runModalBeforeUnloadDialog(
 
 void RenderFrameImpl::showContextMenu(const blink::WebContextMenuData& data) {
   ContextMenuParams params = ContextMenuParamsBuilder::Build(data);
+  blink::WebRect position_in_window(params.x, params.y, 0, 0);
+  GetRenderWidget()->convertViewportToWindow(&position_in_window);
+  params.x = position_in_window.x;
+  params.y = position_in_window.y;
   params.source_type = GetRenderWidget()->context_menu_source_type();
   GetRenderWidget()->OnShowHostContextMenu(&params);
   if (GetRenderWidget()->has_host_context_menu_location()) {

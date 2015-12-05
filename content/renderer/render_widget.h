@@ -197,6 +197,10 @@ class CONTENT_EXPORT RenderWidget
                      const blink::WebFloatSize& velocity) override;
   void showImeIfNeeded() override;
 
+  // Converts the |rect| from Viewport coordinates to Window coordinates.
+  // See RenderView::convertViewportToWindow for more details.
+  void convertViewportToWindow(blink::WebRect* rect);
+
 #if defined(OS_ANDROID)
   // Notifies that a tap was not consumed, so showing a UI for the unhandled
   // tap may be needed.
