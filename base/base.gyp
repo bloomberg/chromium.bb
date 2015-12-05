@@ -427,6 +427,7 @@
       'target_name': 'base_unittests',
       'type': '<(gtest_target_type)',
       'sources': [
+        'allocator/tcmalloc_unittest.cc',
         'android/application_status_listener_unittest.cc',
         'android/content_uri_utils_unittest.cc',
         'android/jni_android_unittest.cc',

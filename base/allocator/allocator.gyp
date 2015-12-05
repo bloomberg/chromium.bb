@@ -377,9 +377,6 @@
       ],  # conditions of 'allocator' target.
     },  # 'allocator' target.
     {
-      # This library is linked in to src/base.gypi:base and allocator_unittests
-      # It can't depend on either and nothing else should depend on it - all
-      # other code should use the interfaced provided by base.
       'target_name': 'allocator_extension_thunks',
       'type': 'static_library',
       'sources': [
@@ -417,24 +414,6 @@
             },
           ],
         },
-        {
-          'target_name': 'allocator_unittests',
-          'type': 'executable',
-          'dependencies': [
-            'allocator',
-            'allocator_extension_thunks',
-            '../../testing/gtest.gyp:gtest',
-          ],
-          'include_dirs': [
-            '.',
-            '../..',
-          ],
-          'sources': [
-            '../profiler/alternate_timer.cc',
-            '../profiler/alternate_timer.h',
-            'allocator_unittest.cc',
-          ],
-        },
       ],
     }],
     ['OS=="win" and target_arch=="ia32"', {
@@ -455,25 +434,6 @@
               'msvs_target_platform': 'x64',
             },
           },
-        },
-      ],
-    }],
-    ['use_allocator=="tcmalloc"', {
-      'targets': [
-         {
-           'target_name': 'tcmalloc_unittest',
-           'type': 'executable',
-           'sources': [
-             'tcmalloc_unittest.cc',
-           ],
-           'include_dirs': [
-             '<(tcmalloc_dir)/src',
-             '../..',
-           ],
-           'dependencies': [
-             '../../testing/gtest.gyp:gtest',
-             'allocator',
-          ],
         },
       ],
     }],

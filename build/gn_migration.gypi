@@ -727,11 +727,6 @@
             '../tools/win/static_initializers/static_initializers.gyp:static_initializers',
           ],
         }],
-        ['OS=="win" and win_use_allocator_shim==1', {
-          'dependencies': [
-            '../base/allocator/allocator.gyp:allocator_unittests',
-          ]
-        }],
         ['OS=="win" and target_arch=="ia32"', {
           'dependencies': [
             # TODO(GYP): All of these targets need to be ported over.
