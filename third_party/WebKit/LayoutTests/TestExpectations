@@ -772,13 +772,6 @@ crbug.com/396941 ietestcenter/css3/multicolumn/column-width-applies-to-012.htm [
 crbug.com/396941 ietestcenter/css3/multicolumn/column-width-applies-to-015.htm [ Failure ]
 crbug.com/378610 svg/custom/focus-ring-text.svg [ Failure ]
 
-crbug.com/529252 fast/repaint/change-text-content-and-background-color.html [ NeedsRebaseline ]
-crbug.com/529252 fast/repaint/multi-layout-one-frame.html [ NeedsRebaseline ]
-crbug.com/529252 fast/repaint/subtree-root-skipped.html [ NeedsRebaseline ]
-crbug.com/529252 virtual/syncpaint/fast/repaint/change-text-content-and-background-color.html [ NeedsRebaseline ]
-crbug.com/529252 virtual/syncpaint/fast/repaint/multi-layout-one-frame.html [ NeedsRebaseline ]
-crbug.com/529252 virtual/syncpaint/fast/repaint/subtree-root-skipped.html [ NeedsRebaseline ]
-
 crbug.com/515454 [ Mac Win7 Win10 Android Linux ] css3/fonts/font-style-matching.html [ Slow ]
 crbug.com/523021 [ XP ] css3/fonts/font-style-matching.html [ Failure Slow ]
 
