@@ -904,6 +904,13 @@ WebFrameScheduler* LocalFrame::frameScheduler()
     return m_frameScheduler.get();
 }
 
+void LocalFrame::scheduleVisualUpdateUnlessThrottled()
+{
+    if (shouldThrottleRendering())
+        return;
+    page()->animator().scheduleVisualUpdate();
+}
+
 void LocalFrame::updateSecurityOrigin(SecurityOrigin* origin)
 {
     script().updateSecurityOrigin(origin);

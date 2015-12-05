@@ -60,6 +60,9 @@ enum class FrameDetachType { Remove, Swap };
 // Status of user gesture.
 enum class UserGestureStatus { Active, None };
 
+// Frame is the base class of LocalFrame and RemoteFrame and should only contain
+// functionality shared between both. In particular, any method related to
+// input, layout, or painting probably belongs on LocalFrame.
 class CORE_EXPORT Frame : public RefCountedWillBeGarbageCollectedFinalized<Frame> {
 public:
     virtual ~Frame();
@@ -129,8 +132,6 @@ public:
     bool isLoading() const { return m_isLoading; }
 
     virtual WindowProxyManager* windowProxyManager() const = 0;
-
-    void scheduleVisualUpdateUnlessThrottled();
 
 protected:
     Frame(FrameClient*, FrameHost*, FrameOwner*);

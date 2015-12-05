@@ -186,6 +186,7 @@ public:
 
     // Returns the frame scheduler, creating one if needed.
     WebFrameScheduler* frameScheduler();
+    void scheduleVisualUpdateUnlessThrottled();
 
     void updateSecurityOrigin(SecurityOrigin*);
 
