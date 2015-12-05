@@ -63,7 +63,8 @@ LIBCXX_DIR = os.path.join(LLVM_DIR, 'projects', 'libcxx')
 LIBCXXABI_DIR = os.path.join(LLVM_DIR, 'projects', 'libcxxabi')
 LLVM_BUILD_TOOLS_DIR = os.path.abspath(
     os.path.join(LLVM_DIR, '..', 'llvm-build-tools'))
-STAMP_FILE = os.path.join(LLVM_DIR, '..', 'llvm-build', 'cr_build_revision')
+STAMP_FILE = os.path.normpath(
+    os.path.join(LLVM_DIR, '..', 'llvm-build', 'cr_build_revision'))
 BINUTILS_DIR = os.path.join(THIRD_PARTY_DIR, 'binutils')
 VERSION = '3.8.0'
 ANDROID_NDK_DIR = os.path.join(
