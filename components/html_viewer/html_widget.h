@@ -45,8 +45,8 @@ class HTMLWidgetRootRemote : public HTMLWidget, public blink::WebViewClient {
 
  private:
   // WebViewClient methods:
-  virtual blink::WebStorageNamespace* createSessionStorageNamespace();
-  virtual bool allowsBrokenNullLayerTreeView() const;
+  blink::WebStorageNamespace* createSessionStorageNamespace() override;
+  bool allowsBrokenNullLayerTreeView() const override;
 
   // HTMLWidget:
   blink::WebWidget* GetWidget() override;
@@ -79,15 +79,15 @@ class HTMLWidgetRootLocal : public HTMLWidget, public blink::WebViewClient {
 
  protected:
   // WebViewClient methods:
-  virtual blink::WebStorageNamespace* createSessionStorageNamespace();
-  virtual void initializeLayerTreeView();
-  virtual blink::WebLayerTreeView* layerTreeView();
-  virtual void didMeaningfulLayout(blink::WebMeaningfulLayout layout_type);
-  virtual void resetInputMethod();
-  virtual void didHandleGestureEvent(const blink::WebGestureEvent& event,
-                                     bool event_cancelled);
-  virtual void didUpdateTextOfFocusedElementByNonUserInput();
-  virtual void showImeIfNeeded();
+  blink::WebStorageNamespace* createSessionStorageNamespace() override;
+  void initializeLayerTreeView() override;
+  blink::WebLayerTreeView* layerTreeView() override;
+  void didMeaningfulLayout(blink::WebMeaningfulLayout layout_type) override;
+  void resetInputMethod() override;
+  void didHandleGestureEvent(const blink::WebGestureEvent& event,
+                             bool event_cancelled) override;
+  void didUpdateTextOfFocusedElementByNonUserInput() override;
+  void showImeIfNeeded() override;
 
  private:
   // HTMLWidget:
@@ -119,13 +119,13 @@ class HTMLWidgetLocalRoot : public HTMLWidget, public blink::WebWidgetClient {
   void OnWindowBoundsChanged(mus::Window* window) override;
 
   // WebWidgetClient:
-  virtual void initializeLayerTreeView();
-  virtual blink::WebLayerTreeView* layerTreeView();
-  virtual void resetInputMethod();
-  virtual void didHandleGestureEvent(const blink::WebGestureEvent& event,
-                                     bool event_cancelled);
-  virtual void didUpdateTextOfFocusedElementByNonUserInput();
-  virtual void showImeIfNeeded();
+  void initializeLayerTreeView() override;
+  blink::WebLayerTreeView* layerTreeView() override;
+  void resetInputMethod() override;
+  void didHandleGestureEvent(const blink::WebGestureEvent& event,
+                             bool event_cancelled) override;
+  void didUpdateTextOfFocusedElementByNonUserInput() override;
+  void showImeIfNeeded() override;
 
   mojo::ApplicationImpl* app_;
   GlobalState* global_state_;

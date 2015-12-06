@@ -50,11 +50,11 @@ class WebWaitableEventImpl : public blink::WebWaitableEvent {
     bool initially_signaled = state == InitialState::Signaled;
     impl_.reset(new base::WaitableEvent(manual_reset, initially_signaled));
   }
-  virtual ~WebWaitableEventImpl() {}
+  ~WebWaitableEventImpl() override {}
 
-  virtual void reset() { impl_->Reset(); }
-  virtual void wait() { impl_->Wait(); }
-  virtual void signal() { impl_->Signal(); }
+  void reset() override { impl_->Reset(); }
+  void wait() override { impl_->Wait(); }
+  void signal() override { impl_->Signal(); }
 
   base::WaitableEvent* impl() {
     return impl_.get();

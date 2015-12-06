@@ -44,7 +44,7 @@ class WebGraphicsContext3DCommandBufferImpl
       const GURL& active_url,
       const blink::WebGraphicsContext3D::Attributes& attributes,
       blink::WebGraphicsContext3D* share_context);
-  virtual ~WebGraphicsContext3DCommandBufferImpl();
+  ~WebGraphicsContext3DCommandBufferImpl() override;
 
   static void ContextLostThunk(void* closure) {
     static_cast<WebGraphicsContext3DCommandBufferImpl*>(closure)->ContextLost();

@@ -40,61 +40,61 @@ class BlinkPlatformImpl : public blink::Platform {
   BlinkPlatformImpl(GlobalState* global_state,
                     mojo::ApplicationImpl* app,
                     scheduler::RendererScheduler* renderer_scheduler);
-  virtual ~BlinkPlatformImpl();
+  ~BlinkPlatformImpl() override;
 
   // blink::Platform methods:
-  virtual blink::WebCookieJar* cookieJar();
-  virtual blink::WebClipboard* clipboard();
-  virtual blink::WebMimeRegistry* mimeRegistry();
-  virtual blink::WebThemeEngine* themeEngine();
-  virtual blink::WebString defaultLocale();
-  virtual blink::WebBlobRegistry* blobRegistry();
-  virtual double currentTimeSeconds();
-  virtual double monotonicallyIncreasingTimeSeconds();
-  virtual void cryptographicallyRandomValues(unsigned char* buffer,
-                                             size_t length);
-  virtual bool isThreadedCompositingEnabled();
-  virtual blink::WebCompositorSupport* compositorSupport();
+  blink::WebCookieJar* cookieJar() override;
+  blink::WebClipboard* clipboard() override;
+  blink::WebMimeRegistry* mimeRegistry() override;
+  blink::WebThemeEngine* themeEngine() override;
+  blink::WebString defaultLocale() override;
+  blink::WebBlobRegistry* blobRegistry() override;
+  double currentTimeSeconds() override;
+  double monotonicallyIncreasingTimeSeconds() override;
+  void cryptographicallyRandomValues(unsigned char* buffer,
+                                     size_t length) override;
+  bool isThreadedCompositingEnabled() override;
+  blink::WebCompositorSupport* compositorSupport() override;
   uint32_t getUniqueIdForProcess() override;
   void createMessageChannel(blink::WebMessagePortChannel** channel1,
                             blink::WebMessagePortChannel** channel2) override;
-  virtual blink::WebURLLoader* createURLLoader();
-  virtual blink::WebSocketHandle* createWebSocketHandle();
-  virtual blink::WebString userAgent();
-  virtual blink::WebData parseDataURL(
-      const blink::WebURL& url, blink::WebString& mime_type,
-      blink::WebString& charset);
-  virtual bool isReservedIPAddress(const blink::WebString& host) const;
-  virtual blink::WebURLError cancelledError(const blink::WebURL& url) const;
-  virtual blink::WebThread* createThread(const char* name);
-  virtual blink::WebThread* currentThread();
-  virtual void yieldCurrentThread();
-  virtual blink::WebWaitableEvent* createWaitableEvent(
+  blink::WebURLLoader* createURLLoader() override;
+  blink::WebSocketHandle* createWebSocketHandle() override;
+  blink::WebString userAgent() override;
+  blink::WebData parseDataURL(const blink::WebURL& url,
+                              blink::WebString& mime_type,
+                              blink::WebString& charset) override;
+  bool isReservedIPAddress(const blink::WebString& host) const override;
+  blink::WebURLError cancelledError(const blink::WebURL& url) const override;
+  blink::WebThread* createThread(const char* name) override;
+  blink::WebThread* currentThread() override;
+  void yieldCurrentThread() override;
+  blink::WebWaitableEvent* createWaitableEvent(
       blink::WebWaitableEvent::ResetPolicy policy,
-      blink::WebWaitableEvent::InitialState state);
-  virtual blink::WebWaitableEvent* waitMultipleEvents(
-      const blink::WebVector<blink::WebWaitableEvent*>& events);
-  virtual blink::WebScrollbarBehavior* scrollbarBehavior();
-  virtual const unsigned char* getTraceCategoryEnabledFlag(
-      const char* category_name);
-  virtual blink::WebGraphicsContext3D* createOffscreenGraphicsContext3D(
+      blink::WebWaitableEvent::InitialState state) override;
+  blink::WebWaitableEvent* waitMultipleEvents(
+      const blink::WebVector<blink::WebWaitableEvent*>& events) override;
+  blink::WebScrollbarBehavior* scrollbarBehavior() override;
+  const unsigned char* getTraceCategoryEnabledFlag(
+      const char* category_name) override;
+  blink::WebGraphicsContext3D* createOffscreenGraphicsContext3D(
       const blink::WebGraphicsContext3D::Attributes& attributes,
-      blink::WebGraphicsContext3D* share_context);
-  virtual blink::WebGraphicsContext3D* createOffscreenGraphicsContext3D(
+      blink::WebGraphicsContext3D* share_context) override;
+  blink::WebGraphicsContext3D* createOffscreenGraphicsContext3D(
       const blink::WebGraphicsContext3D::Attributes& attributes,
       blink::WebGraphicsContext3D* share_context,
-      blink::WebGraphicsContext3D::WebGraphicsInfo* gl_info);
-  virtual blink::WebGraphicsContext3D* createOffscreenGraphicsContext3D(
-      const blink::WebGraphicsContext3D::Attributes& attributes);
-  virtual blink::WebGraphicsContext3DProvider*
-      createSharedOffscreenGraphicsContext3DProvider();
-  virtual blink::WebData loadResource(const char* name);
-  virtual blink::WebGestureCurve* createFlingAnimationCurve(
+      blink::WebGraphicsContext3D::WebGraphicsInfo* gl_info) override;
+  blink::WebGraphicsContext3D* createOffscreenGraphicsContext3D(
+      const blink::WebGraphicsContext3D::Attributes& attributes) override;
+  blink::WebGraphicsContext3DProvider*
+  createSharedOffscreenGraphicsContext3DProvider() override;
+  blink::WebData loadResource(const char* name) override;
+  blink::WebGestureCurve* createFlingAnimationCurve(
       blink::WebGestureDevice device_source,
       const blink::WebFloatPoint& velocity,
-      const blink::WebSize& cumulative_scroll);
-  virtual blink::WebCrypto* crypto();
-  virtual blink::WebNotificationManager* notificationManager();
+      const blink::WebSize& cumulative_scroll) override;
+  blink::WebCrypto* crypto() override;
+  blink::WebNotificationManager* notificationManager() override;
 
  private:
   void UpdateWebThreadTLS(blink::WebThread* thread);

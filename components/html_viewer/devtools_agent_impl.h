@@ -41,7 +41,7 @@ class DevToolsAgentImpl : public devtools_service::DevToolsAgent,
   void sendProtocolMessage(int session_id,
                            int call_id,
                            const blink::WebString& response,
-                           const blink::WebString& state);
+                           const blink::WebString& state) override;
 
   void OnConnectionError();
 

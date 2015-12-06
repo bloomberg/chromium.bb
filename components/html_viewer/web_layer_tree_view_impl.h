@@ -72,40 +72,40 @@ class WebLayerTreeViewImpl : public blink::WebLayerTreeView,
       override {}
 
   // blink::WebLayerTreeView implementation.
-  virtual void setRootLayer(const blink::WebLayer& layer);
-  virtual void clearRootLayer();
-  virtual void setViewportSize(const blink::WebSize& device_viewport_size);
-  virtual void setDeviceScaleFactor(float);
+  void setRootLayer(const blink::WebLayer& layer) override;
+  void clearRootLayer() override;
+  void setViewportSize(const blink::WebSize& device_viewport_size) override;
+  void setDeviceScaleFactor(float) override;
   virtual float deviceScaleFactor() const;
-  virtual void setBackgroundColor(blink::WebColor color);
-  virtual void setHasTransparentBackground(bool has_transparent_background);
-  virtual void setVisible(bool visible);
-  virtual void setPageScaleFactorAndLimits(float page_scale_factor,
-                                           float minimum,
-                                           float maximum);
-  virtual void startPageScaleAnimation(const blink::WebPoint& destination,
-                                       bool use_anchor,
-                                       float new_page_scale,
-                                       double duration_sec);
-  virtual void heuristicsForGpuRasterizationUpdated(bool matches_heuristic) {}
-  virtual void setNeedsAnimate();
-  virtual void didStopFlinging() {}
-  virtual void compositeAndReadbackAsync(
-      blink::WebCompositeAndReadbackAsyncCallback* callback) {}
-  virtual void setDeferCommits(bool defer_commits) {}
-  virtual void registerForAnimations(blink::WebLayer* layer);
-  virtual void registerViewportLayers(
+  void setBackgroundColor(blink::WebColor color) override;
+  void setHasTransparentBackground(bool has_transparent_background) override;
+  void setVisible(bool visible) override;
+  void setPageScaleFactorAndLimits(float page_scale_factor,
+                                   float minimum,
+                                   float maximum) override;
+  void startPageScaleAnimation(const blink::WebPoint& destination,
+                               bool use_anchor,
+                               float new_page_scale,
+                               double duration_sec) override;
+  void heuristicsForGpuRasterizationUpdated(bool matches_heuristic) override {}
+  void setNeedsAnimate() override;
+  void didStopFlinging() override {}
+  void compositeAndReadbackAsync(
+      blink::WebCompositeAndReadbackAsyncCallback* callback) override {}
+  void setDeferCommits(bool defer_commits) override {}
+  void registerForAnimations(blink::WebLayer* layer) override;
+  void registerViewportLayers(
       const blink::WebLayer* overscrollElasticityLayer,
       const blink::WebLayer* pageScaleLayerLayer,
       const blink::WebLayer* innerViewportScrollLayer,
-      const blink::WebLayer* outerViewportScrollLayer);
-  virtual void clearViewportLayers();
-  virtual void registerSelection(const blink::WebSelection& selection) {}
-  virtual void clearSelection() {}
-  virtual void setShowFPSCounter(bool) {}
-  virtual void setShowPaintRects(bool) {}
-  virtual void setShowDebugBorders(bool) {}
-  virtual void setShowScrollBottleneckRects(bool) {}
+      const blink::WebLayer* outerViewportScrollLayer) override;
+  void clearViewportLayers() override;
+  void registerSelection(const blink::WebSelection& selection) override {}
+  void clearSelection() override {}
+  void setShowFPSCounter(bool) override {}
+  void setShowPaintRects(bool) override {}
+  void setShowDebugBorders(bool) override {}
+  void setShowScrollBottleneckRects(bool) override {}
 
  private:
   // widget_ and window_ will outlive us.

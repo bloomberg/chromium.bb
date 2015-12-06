@@ -152,59 +152,59 @@ class HTMLFrame : public blink::WebFrameClient,
                    base::TimeTicks navigation_start_time);
 
  protected:
-  virtual ~HTMLFrame();
+  ~HTMLFrame() override;
 
   // WebFrameClient methods:
-  virtual blink::WebMediaPlayer* createMediaPlayer(
+  blink::WebMediaPlayer* createMediaPlayer(
       blink::WebLocalFrame* frame,
       const blink::WebURL& url,
       blink::WebMediaPlayerClient* client,
       blink::WebMediaPlayerEncryptedMediaClient* encrypted_client,
       blink::WebContentDecryptionModule* initial_cdm,
-      const blink::WebString& sink_id);
-  virtual blink::WebFrame* createChildFrame(
+      const blink::WebString& sink_id) override;
+  blink::WebFrame* createChildFrame(
       blink::WebLocalFrame* parent,
       blink::WebTreeScopeType scope,
       const blink::WebString& frame_ame,
       blink::WebSandboxFlags sandbox_flags,
-      const blink::WebFrameOwnerProperties& frame_owner_properties);
-  virtual void frameDetached(blink::WebFrame* frame,
-                             blink::WebFrameClient::DetachType type);
-  virtual blink::WebCookieJar* cookieJar(blink::WebLocalFrame* frame);
-  virtual blink::WebNavigationPolicy decidePolicyForNavigation(
-      const NavigationPolicyInfo& info);
-  virtual bool hasPendingNavigation(blink::WebLocalFrame* frame);
-  virtual void didHandleOnloadEvents(blink::WebLocalFrame* frame);
-  virtual void didAddMessageToConsole(const blink::WebConsoleMessage& message,
-                                      const blink::WebString& source_name,
-                                      unsigned source_line,
-                                      const blink::WebString& stack_trace);
-  virtual void didFinishLoad(blink::WebLocalFrame* frame);
-  virtual void didNavigateWithinPage(blink::WebLocalFrame* frame,
-                                     const blink::WebHistoryItem& history_item,
-                                     blink::WebHistoryCommitType commit_type);
-  virtual blink::WebGeolocationClient* geolocationClient();
-  virtual blink::WebEncryptedMediaClient* encryptedMediaClient();
-  virtual void didStartLoading(bool to_different_document);
-  virtual void didStopLoading();
-  virtual void didChangeLoadProgress(double load_progress);
-  virtual void dispatchLoad();
-  virtual void didChangeName(blink::WebLocalFrame* frame,
-                             const blink::WebString& name);
-  virtual void didCommitProvisionalLoad(
+      const blink::WebFrameOwnerProperties& frame_owner_properties) override;
+  void frameDetached(blink::WebFrame* frame,
+                     blink::WebFrameClient::DetachType type) override;
+  blink::WebCookieJar* cookieJar(blink::WebLocalFrame* frame) override;
+  blink::WebNavigationPolicy decidePolicyForNavigation(
+      const NavigationPolicyInfo& info) override;
+  bool hasPendingNavigation(blink::WebLocalFrame* frame) override;
+  void didHandleOnloadEvents(blink::WebLocalFrame* frame) override;
+  void didAddMessageToConsole(const blink::WebConsoleMessage& message,
+                              const blink::WebString& source_name,
+                              unsigned source_line,
+                              const blink::WebString& stack_trace) override;
+  void didFinishLoad(blink::WebLocalFrame* frame) override;
+  void didNavigateWithinPage(blink::WebLocalFrame* frame,
+                             const blink::WebHistoryItem& history_item,
+                             blink::WebHistoryCommitType commit_type) override;
+  blink::WebGeolocationClient* geolocationClient() override;
+  blink::WebEncryptedMediaClient* encryptedMediaClient() override;
+  void didStartLoading(bool to_different_document) override;
+  void didStopLoading() override;
+  void didChangeLoadProgress(double load_progress) override;
+  void dispatchLoad() override;
+  void didChangeName(blink::WebLocalFrame* frame,
+                     const blink::WebString& name) override;
+  void didCommitProvisionalLoad(
       blink::WebLocalFrame* frame,
       const blink::WebHistoryItem& item,
-      blink::WebHistoryCommitType commit_type);
-  virtual void didReceiveTitle(blink::WebLocalFrame* frame,
-                               const blink::WebString& title,
-                               blink::WebTextDirection direction);
-  virtual void reportFindInFrameMatchCount(int identifier,
-                                           int count,
-                                           bool finalUpdate);
-  virtual void reportFindInPageSelection(int identifier,
-                                         int activeMatchOrdinal,
-                                         const blink::WebRect& selection);
-  virtual bool shouldSearchSingleFrame();
+      blink::WebHistoryCommitType commit_type) override;
+  void didReceiveTitle(blink::WebLocalFrame* frame,
+                       const blink::WebString& title,
+                       blink::WebTextDirection direction) override;
+  void reportFindInFrameMatchCount(int identifier,
+                                   int count,
+                                   bool finalUpdate) override;
+  void reportFindInPageSelection(int identifier,
+                                 int activeMatchOrdinal,
+                                 const blink::WebRect& selection) override;
+  bool shouldSearchSingleFrame() override;
 
  private:
   friend class HTMLFrameTreeManager;
@@ -310,17 +310,17 @@ class HTMLFrame : public blink::WebFrameClient,
   void StopHighlightingFindResults() override;
 
   // blink::WebRemoteFrameClient:
-  virtual void frameDetached(blink::WebRemoteFrameClient::DetachType type);
-  virtual void postMessageEvent(blink::WebLocalFrame* source_web_frame,
-                                blink::WebRemoteFrame* target_web_frame,
-                                blink::WebSecurityOrigin target_origin,
-                                blink::WebDOMMessageEvent event);
-  virtual void initializeChildFrame(const blink::WebRect& frame_rect,
-                                    float scale_factor);
-  virtual void navigate(const blink::WebURLRequest& request,
-                        bool should_replace_current_entry);
-  virtual void reload(bool ignore_cache, bool is_client_redirect);
-  virtual void frameRectsChanged(const blink::WebRect& frame_rect);
+  void frameDetached(blink::WebRemoteFrameClient::DetachType type) override;
+  void postMessageEvent(blink::WebLocalFrame* source_web_frame,
+                        blink::WebRemoteFrame* target_web_frame,
+                        blink::WebSecurityOrigin target_origin,
+                        blink::WebDOMMessageEvent event) override;
+  void initializeChildFrame(const blink::WebRect& frame_rect,
+                            float scale_factor) override;
+  void navigate(const blink::WebURLRequest& request,
+                bool should_replace_current_entry) override;
+  void reload(bool ignore_cache, bool is_client_redirect) override;
+  void frameRectsChanged(const blink::WebRect& frame_rect) override;
 
   HTMLFrameTreeManager* frame_tree_manager_;
   HTMLFrame* parent_;

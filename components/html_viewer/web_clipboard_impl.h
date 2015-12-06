@@ -16,24 +16,24 @@ class WebClipboardImpl : public blink::WebClipboard {
   virtual ~WebClipboardImpl();
 
   // blink::WebClipboard methods:
-  virtual uint64_t sequenceNumber(Buffer);
-  virtual bool isFormatAvailable(Format, Buffer);
-  virtual blink::WebVector<blink::WebString> readAvailableTypes(
+  uint64_t sequenceNumber(Buffer) override;
+  bool isFormatAvailable(Format, Buffer) override;
+  blink::WebVector<blink::WebString> readAvailableTypes(
       Buffer buffer,
-      bool* contains_filenames);
-  virtual blink::WebString readPlainText(Buffer buffer);
-  virtual blink::WebString readHTML(Buffer buffer,
-                                    blink::WebURL* page_url,
-                                    unsigned* fragment_start,
-                                    unsigned* fragment_end);
+      bool* contains_filenames) override;
+  blink::WebString readPlainText(Buffer buffer) override;
+  blink::WebString readHTML(Buffer buffer,
+                            blink::WebURL* page_url,
+                            unsigned* fragment_start,
+                            unsigned* fragment_end) override;
   // TODO(erg): readImage()
-  virtual blink::WebString readCustomData(Buffer buffer,
-                                          const blink::WebString& type);
-  virtual void writePlainText(const blink::WebString& plain_text);
-  virtual void writeHTML(const blink::WebString& html_text,
-                         const blink::WebURL& source_url,
-                         const blink::WebString& plain_text,
-                         bool write_smart_paste);
+  blink::WebString readCustomData(Buffer buffer,
+                                  const blink::WebString& type) override;
+  void writePlainText(const blink::WebString& plain_text) override;
+  void writeHTML(const blink::WebString& html_text,
+                 const blink::WebURL& source_url,
+                 const blink::WebString& plain_text,
+                 bool write_smart_paste) override;
 
  private:
   // Changes webkit buffers to mojo Clipboard::Types.

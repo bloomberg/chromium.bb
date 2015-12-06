@@ -42,11 +42,12 @@ class TestHTMLViewerImpl::ExecutionCallbackImpl
   ExecutionCallbackImpl(TestHTMLViewerImpl* host,
                         const mojo::Callback<void(mojo::String)>& callback)
       : host_(host), callback_(callback) {}
-  virtual ~ExecutionCallbackImpl() {}
+  ~ExecutionCallbackImpl() override {}
 
  private:
   // blink::WebScriptExecutionCallback:
-  virtual void completed(const blink::WebVector<v8::Local<v8::Value>>& result) {
+  void completed(
+      const blink::WebVector<v8::Local<v8::Value>>& result) override {
     mojo::String callback_result;
     if (!result.isEmpty())
       callback_result = V8ValueToJSONString(host_->web_frame_, result);

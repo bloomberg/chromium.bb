@@ -16,15 +16,15 @@ class WebCookieJarImpl : public blink::WebCookieJar {
   virtual ~WebCookieJarImpl();
 
   // blink::WebCookieJar methods:
-  virtual void setCookie(const blink::WebURL& url,
-                         const blink::WebURL& first_party_for_cookies,
-                         const blink::WebString& cookie);
-  virtual blink::WebString cookies(
+  void setCookie(const blink::WebURL& url,
+                 const blink::WebURL& first_party_for_cookies,
+                 const blink::WebString& cookie) override;
+  blink::WebString cookies(
       const blink::WebURL& url,
-      const blink::WebURL& first_party_for_cookies);
-  virtual blink::WebString cookieRequestHeaderFieldValue(
+      const blink::WebURL& first_party_for_cookies) override;
+  blink::WebString cookieRequestHeaderFieldValue(
       const blink::WebURL& url,
-      const blink::WebURL& first_party_for_cookies);
+      const blink::WebURL& first_party_for_cookies) override;
 
  private:
   mojo::CookieStorePtr store_;
