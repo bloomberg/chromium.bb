@@ -9,6 +9,7 @@
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/system/awakable_list.h"
 #include "mojo/edk/system/dispatcher.h"
+#include "mojo/edk/system/message_in_transit_queue.h"
 #include "mojo/edk/system/raw_channel.h"
 #include "mojo/edk/system/system_impl_export.h"
 #include "mojo/public/cpp/system/macros.h"
@@ -27,8 +28,10 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeDispatcher final
   static const MojoCreateMessagePipeOptions kDefaultCreateOptions;
 
   static scoped_refptr<MessagePipeDispatcher> Create(
-      const MojoCreateMessagePipeOptions& /*validated_options*/) {
-    return make_scoped_refptr(new MessagePipeDispatcher());
+      const MojoCreateMessagePipeOptions& validated_options) {
+    return make_scoped_refptr(new MessagePipeDispatcher(
+        !!(validated_options.flags &
+           MOJO_CREATE_MESSAGE_PIPE_OPTIONS_FLAG_TRANSFERABLE)));
   }
 
   // Validates and/or sets default options for |MojoCreateMessagePipeOptions|.
@@ -40,6 +43,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeDispatcher final
       const MojoCreateMessagePipeOptions* in_options,
       MojoCreateMessagePipeOptions* out_options);
 
+  // Initializes a transferable message pipe.
   // Must be called before any other methods. (This method is not thread-safe.)
   void Init(
       ScopedPlatformHandle message_pipe,
@@ -48,8 +52,23 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeDispatcher final
       std::vector<int>* serialized_read_fds,
       std::vector<int>* serialized_write_fds);
 
+  // Initializes a nontransferable message pipe.
+  void InitNonTransferable(uint64_t pipe_id);
+
   // |Dispatcher| public methods:
   Type GetType() const override;
+
+  // RawChannel::Delegate methods:
+  void OnReadMessage(
+      const MessageInTransit::View& message_view,
+      ScopedPlatformHandleVectorPtr platform_handles) override;
+  void OnError(Error error) override;
+
+  // Called by broker when a route is established between this
+  // MessagePipeDispatcher and another one. This object will receive messages
+  // sent to its pipe_id. It should tag all outgoing messages by calling
+  // MessageInTransit::set_route_id with pipe_id_.
+  void GotNonTransferableChannel(RawChannel* channel);
 
   // The "opposite" of |SerializeAndClose()|. (Typically this is called by
   // |Dispatcher::Deserialize()|.)
@@ -59,7 +78,9 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeDispatcher final
       PlatformHandleVector* platform_handles);
 
  private:
-  MessagePipeDispatcher();
+  // See MOJO_CREATE_MESSAGE_PIPE_OPTIONS_FLAG_TRANSFERABLE's definition for an
+  // explanation of what is a transferable pipe.
+  explicit MessagePipeDispatcher(bool transferable);
   ~MessagePipeDispatcher() override;
 
   void InitOnIO();
@@ -96,12 +117,6 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeDispatcher final
   void TransportStarted() override;
   void TransportEnded() override;
 
-  // |RawChannel::Delegate methods:
-  void OnReadMessage(
-    const MessageInTransit::View& message_view,
-    ScopedPlatformHandleVectorPtr platform_handles) override;
-  void OnError(Error error) override;
-
   // Calls ReleaseHandle and serializes the raw channel. This is split into a
   // function because it's called in two different ways:
   // 1) When serializing "live" dispatchers that are passed to MojoWriteMessage,
@@ -115,14 +130,20 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeDispatcher final
       MessageInTransit* message,
       std::vector<DispatcherTransport>* transports);
 
+  // Called whenever a read or write is done on a non-transferable pipe, which
+  // "binds" the pipe id to this object.
+  void RequestNontransferableChannel();
+
   // Protected by |lock()|:
   RawChannel* channel_;
 
   // Queue of incoming messages that we read from RawChannel but haven't been
   // consumed through MojoReadMessage yet.
   MessageInTransitQueue message_queue_;
+
+  // The following members are only used when transferable_ is false;
+
   // When sending MP, contains serialized message_queue_.
-  bool serialized_;
   std::vector<char> serialized_message_queue_;
   std::vector<char> serialized_read_buffer_;
   std::vector<char> serialized_write_buffer_;
@@ -133,14 +154,40 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeDispatcher final
   size_t serialized_write_fds_length_;
   size_t serialized_message_fds_length_;
   ScopedPlatformHandle serialized_platform_handle_;
+
+  // The following members are only used when transferable_ is true;
+
+  // The unique id shared by both ends of a non-transferable message pipe. This
+  // is held on until a read or write are done, and at that point it's used to
+  // get a RawChannel.
+  uint64_t pipe_id_;
+  enum NonTransferableState {
+    WAITING_FOR_READ_OR_WRITE,
+    CONNECT_CALLED,
+    CONNECTED,
+    WAITING_FOR_CONNECT_TO_CLOSE,
+    CLOSED,
+    SERIALISED,
+  };
+
+  NonTransferableState non_transferable_state_;
+  // Messages that were written while we were waiting to get a RawChannel.
+  MessageInTransitQueue non_transferable_outgoing_message_queue_;
+
+
+  // The following members are used for both modes of transferable_.
+
   AwakableList awakable_list_;
 
   // If DispatcherTransport is created. Must be set before lock() is called to
   // avoid deadlocks with RawChannel calling us.
   base::Lock started_transport_;
 
+  bool serialized_;
   bool calling_init_;
   bool write_error_;
+  // Whether it can be sent after read or write.
+  bool transferable_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(MessagePipeDispatcher);
 };

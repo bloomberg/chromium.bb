@@ -11,16 +11,7 @@ namespace edk {
 namespace test {
 
 #if !defined(OS_IOS)
-MultiprocessMessagePipeTestBase::MultiprocessMessagePipeTestBase()
-    : test_io_thread_(base::TestIOThread::kAutoStart),
-      ipc_support_(test_io_thread_.task_runner()) {
-}
-
-MultiprocessMessagePipeTestBase::MultiprocessMessagePipeTestBase(
-    base::MessageLoop::Type main_message_loop_type)
-    : message_loop_(main_message_loop_type),
-      test_io_thread_(base::TestIOThread::kAutoStart),
-      ipc_support_(test_io_thread_.task_runner()) {
+MultiprocessMessagePipeTestBase::MultiprocessMessagePipeTestBase() {
 }
 
 MultiprocessMessagePipeTestBase::~MultiprocessMessagePipeTestBase() {

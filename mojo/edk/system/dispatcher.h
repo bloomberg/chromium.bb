@@ -300,6 +300,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher
   // Available to subclasses. (Note: Returns a non-const reference, just like
   // |base::AutoLock|'s constructor takes a non-const reference.)
   base::Lock& lock() const { return lock_; }
+  bool is_closed() const { return is_closed_; }
 
  private:
   friend class DispatcherTransport;

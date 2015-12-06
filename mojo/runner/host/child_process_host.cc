@@ -39,11 +39,8 @@ ChildProcessHost::ChildProcessHost(base::TaskRunner* launch_process_runner,
       channel_info_(nullptr),
       start_child_process_event_(false, false),
       weak_factory_(this) {
-#if defined(OS_WIN)
-  // TODO(jam): enable on POSIX
   if (base::CommandLine::ForCurrentProcess()->HasSwitch("use-new-edk"))
     serializer_platform_channel_pair_.reset(new edk::PlatformChannelPair(true));
-#endif
 
   child_message_pipe_ = embedder::CreateChannel(
       platform_channel_pair_.PassServerHandle(),
@@ -71,7 +68,6 @@ void ChildProcessHost::Start() {
   DCHECK(!child_process_.IsValid());
   DCHECK(child_message_pipe_.is_valid());
 
-#if defined(OS_WIN)
   if (base::CommandLine::ForCurrentProcess()->HasSwitch("use-new-edk")) {
     std::string client_handle_as_string =
         serializer_platform_channel_pair_
@@ -86,7 +82,6 @@ void ChildProcessHost::Start() {
         MOJO_WRITE_MESSAGE_FLAG_NONE);
     DCHECK_EQ(rv, MOJO_RESULT_OK);
   }
-#endif
 
   controller_.Bind(
       InterfacePtrInfo<ChildController>(child_message_pipe_.Pass(), 0u));
@@ -206,7 +201,6 @@ void ChildProcessHost::DoLaunch() {
 
   if (child_process_.IsValid()) {
     platform_channel_pair_.ChildProcessLaunched();
-#if defined(OS_WIN)
     if (serializer_platform_channel_pair_.get()) {
       serializer_platform_channel_pair_->ChildProcessLaunched();
       mojo::embedder::ChildProcessLaunched(
@@ -220,7 +214,6 @@ void ChildProcessHost::DoLaunch() {
 #endif
             )));
     }
-#endif
   }
   start_child_process_event_.Signal();
 }

@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/rand_util.h"
 #include "base/time/time.h"
 #include "mojo/edk/embedder/embedder_internal.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
@@ -206,18 +207,28 @@ MojoResult Core::CreateMessagePipe(
     return MOJO_RESULT_RESOURCE_EXHAUSTED;
   }
 
-  ScopedPlatformHandle server_handle, client_handle;
+  if (validated_options.flags &
+          MOJO_CREATE_MESSAGE_PIPE_OPTIONS_FLAG_TRANSFERABLE) {
+    ScopedPlatformHandle server_handle, client_handle;
 #if defined(OS_WIN)
-  internal::g_broker->CreatePlatformChannelPair(&server_handle, &client_handle);
+    internal::g_broker->CreatePlatformChannelPair(&server_handle,
+                                                  &client_handle);
 #else
-  PlatformChannelPair channel_pair;
-  server_handle = channel_pair.PassServerHandle();
-  client_handle = channel_pair.PassClientHandle();
+    PlatformChannelPair channel_pair;
+    server_handle = channel_pair.PassServerHandle();
+    client_handle = channel_pair.PassClientHandle();
 #endif
-  dispatcher0->Init(server_handle.Pass(), nullptr, 0u, nullptr, 0u, nullptr,
-                    nullptr);
-  dispatcher1->Init(client_handle.Pass(), nullptr, 0u, nullptr, 0u, nullptr,
-                    nullptr);
+    dispatcher0->Init(server_handle.Pass(), nullptr, 0u, nullptr, 0u, nullptr,
+                      nullptr);
+    dispatcher1->Init(client_handle.Pass(), nullptr, 0u, nullptr, 0u, nullptr,
+                      nullptr);
+  } else {
+    uint64_t pipe_id = 0;
+    while (pipe_id == 0)
+      pipe_id = base::RandUint64();
+    dispatcher0->InitNonTransferable(pipe_id);
+    dispatcher1->InitNonTransferable(pipe_id);
+  }
 
   *message_pipe_handle0 = handle_pair.first;
   *message_pipe_handle1 = handle_pair.second;

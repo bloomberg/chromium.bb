@@ -5,12 +5,7 @@
 #ifndef MOJO_EDK_SYSTEM_MESSAGE_PIPE_TEST_UTILS_H_
 #define MOJO_EDK_SYSTEM_MESSAGE_PIPE_TEST_UTILS_H_
 
-#include "base/message_loop/message_loop.h"
-#include "base/test/test_io_thread.h"
-#include "mojo/edk/embedder/simple_platform_support.h"
-#include "mojo/edk/system/test_utils.h"
 #include "mojo/edk/test/multiprocess_test_helper.h"
-#include "mojo/edk/test/scoped_ipc_support.h"
 #include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
@@ -25,19 +20,12 @@ namespace test {
 class MultiprocessMessagePipeTestBase : public testing::Test {
  public:
   MultiprocessMessagePipeTestBase();
-  MultiprocessMessagePipeTestBase(
-      base::MessageLoop::Type main_message_loop_type);
   ~MultiprocessMessagePipeTestBase() override;
 
  protected:
-  PlatformSupport* platform_support() { return &platform_support_; }
   test::MultiprocessTestHelper* helper() { return &helper_; }
 
  private:
-  SimplePlatformSupport platform_support_;
-  base::MessageLoop message_loop_;
-  base::TestIOThread test_io_thread_;
-  test::ScopedIPCSupport ipc_support_;
   test::MultiprocessTestHelper helper_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(MultiprocessMessagePipeTestBase);

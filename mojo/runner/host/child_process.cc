@@ -124,7 +124,9 @@ class AppContext : public embedder::ProcessDelegate {
     // create a message pipe which requires this code to be run first.
     embedder::InitIPCSupport(embedder::ProcessType::NONE, this, io_runner_,
                              embedder::ScopedPlatformHandle());
+  }
 
+  void StartControllerThread() {
     // Create and start our controller thread.
     base::Thread::Options controller_thread_options;
     controller_thread_options.message_loop_type =
@@ -305,7 +307,6 @@ ScopedMessagePipeHandle InitializeHostMessagePipe(
   ScopedMessagePipeHandle host_message_pipe(embedder::CreateChannel(
       platform_channel.Pass(), base::Bind(&DidCreateChannel), io_task_runner));
 
-#if defined(OS_WIN)
   if (base::CommandLine::ForCurrentProcess()->HasSwitch("use-new-edk")) {
     // When using the new Mojo EDK, each message pipe is backed by a platform
     // handle. The one platform handle that comes on the command line is used
@@ -339,9 +340,6 @@ ScopedMessagePipeHandle InitializeHostMessagePipe(
 #endif
             )));
   }
-#else
-  // TODO(jam): hook up on POSIX
-#endif
 
   return host_message_pipe.Pass();
 }
@@ -385,6 +383,7 @@ int ChildProcessMain() {
   app_context.Init();
   ScopedMessagePipeHandle host_message_pipe = InitializeHostMessagePipe(
       platform_channel.Pass(), app_context.io_runner());
+  app_context.StartControllerThread();
   Blocker blocker;
   app_context.controller_runner()->PostTask(
       FROM_HERE,

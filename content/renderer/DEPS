@@ -30,4 +30,7 @@ specific_include_rules = {
     "+content/public/browser",
     "+content/shell",
   ],
+  "render_thread_impl_browsertest\.cc": [
+    "+content/app/mojo/mojo_init.h",
+  ],
 }

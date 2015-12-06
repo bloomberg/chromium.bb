@@ -401,8 +401,6 @@ void BrowserChildProcessHostImpl::OnProcessLaunched() {
   const base::Process& process = child_process_->GetProcess();
   DCHECK(process.IsValid());
 
-#if defined(OS_WIN)
-  // TODO(jam): enable on POSIX
   if (base::CommandLine::ForCurrentProcess()->HasSwitch("use-new-edk")) {
     mojo::embedder::ScopedPlatformHandle client_pipe =
         mojo::embedder::ChildProcessLaunched(process.Handle());
@@ -415,7 +413,6 @@ void BrowserChildProcessHostImpl::OnProcessLaunched() {
 #endif
                                      process.Handle(), true)));
   }
-#endif
 
 #if defined(OS_WIN)
   // Start a WaitableEventWatcher that will invoke OnProcessExitedEarly if the

@@ -387,12 +387,12 @@ void Frame::OnCanNavigateFrame(
     // case we do not use the WindowTreeClient (because the app has a Window
     // already
     // and ends up reusing it).
-    DCHECK(!window_tree_client.get());
+    DCHECK(!window_tree_client);
     ChangeClient(frame_client, user_data.Pass(), window_tree_client.Pass(),
                  app_id, navigation_start_time);
   } else {
     waiting_for_on_will_navigate_ack_ = true;
-    DCHECK(window_tree_client.get());
+    DCHECK(window_tree_client);
     // TODO(sky): url isn't correct here, it should be a security origin.
     frame_client_->OnWillNavigate(
         url.spec(),

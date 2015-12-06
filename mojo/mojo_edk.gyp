@@ -105,6 +105,8 @@
         'edk/system/raw_channel.h',
         'edk/system/raw_channel_posix.cc',
         'edk/system/raw_channel_win.cc',
+        'edk/system/routed_raw_channel.cc',
+        'edk/system/routed_raw_channel.h',
         'edk/system/shared_buffer_dispatcher.cc',
         'edk/system/shared_buffer_dispatcher.h',
         'edk/system/simple_dispatcher.cc',

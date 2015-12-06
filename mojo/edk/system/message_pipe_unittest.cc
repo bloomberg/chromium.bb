@@ -16,7 +16,7 @@ const MojoHandleSignals kAllSignals = MOJO_HANDLE_SIGNAL_READABLE |
                                       MOJO_HANDLE_SIGNAL_PEER_CLOSED;
 static const char kHelloWorld[] = "hello world";
 
-class MessagePipeTest : public test::MojoSystemTest {
+class MessagePipeTest : public testing::Test {
  public:
   MessagePipeTest() {
     CHECK_EQ(MOJO_RESULT_OK, MojoCreateMessagePipe(nullptr, &pipe0_, &pipe1_));

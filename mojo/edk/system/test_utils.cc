@@ -69,15 +69,6 @@ MojoDeadline Stopwatch::Elapsed() {
   return static_cast<MojoDeadline>(result);
 }
 
-
-MojoSystemTest::MojoSystemTest()
-    : test_io_thread_(base::TestIOThread::kAutoStart),
-      ipc_support_(test_io_thread_.task_runner()) {
-}
-
-MojoSystemTest::~MojoSystemTest() {
-}
-
 }  // namespace test
 }  // namespace edk
 }  // namespace mojo

@@ -10,6 +10,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "components/scheduler/renderer/renderer_scheduler.h"
+#include "content/app/mojo/mojo_init.h"
 #include "content/common/in_process_child_thread_params.h"
 #include "content/common/resource_messages.h"
 #include "content/common/websocket_messages.h"
@@ -173,6 +174,7 @@ class RenderThreadImplBrowserTest : public testing::Test {
 
     scoped_ptr<scheduler::RendererScheduler> renderer_scheduler =
         scheduler::RendererScheduler::Create();
+    InitializeMojo();
     thread_ = new RenderThreadImplForTest(
         InProcessChildThreadParams(test_helper_->GetChannelId(),
                                    test_helper_->GetIOTaskRunner()),

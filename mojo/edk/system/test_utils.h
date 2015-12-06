@@ -5,9 +5,7 @@
 #ifndef MOJO_EDK_SYSTEM_TEST_UTILS_H_
 #define MOJO_EDK_SYSTEM_TEST_UTILS_H_
 
-#include "base/test/test_io_thread.h"
 #include "base/time/time.h"
-#include "mojo/edk/test/scoped_ipc_support.h"
 #include "mojo/public/c/system/types.h"
 #include "mojo/public/cpp/system/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -52,23 +50,6 @@ class Stopwatch {
   base::TimeTicks start_time_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(Stopwatch);
-};
-
-// A base class which initializes and shuts down the necessary objects so that
-// Mojo system calls can be made.
-class MojoSystemTest : public testing::Test {
- public:
-  MojoSystemTest();
-  ~MojoSystemTest() override;
-
-  base::TestIOThread* test_io_thread() { return &test_io_thread_; }
-
- private:
-  base::MessageLoop message_loop_;
-  base::TestIOThread test_io_thread_;
-  test::ScopedIPCSupport ipc_support_;
-
-  MOJO_DISALLOW_COPY_AND_ASSIGN(MojoSystemTest);
 };
 
 }  // namespace test

@@ -22,7 +22,7 @@ namespace test {
 
 class CoreTestBase_MockHandleInfo;
 
-class CoreTestBase : public MojoSystemTest {
+class CoreTestBase : public testing::Test {
  public:
   using MockHandleInfo = CoreTestBase_MockHandleInfo;
 

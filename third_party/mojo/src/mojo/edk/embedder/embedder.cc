@@ -65,6 +65,7 @@ class NewEDKProcessDelegate : public mojo::edk::ProcessDelegate {
 
   void OnShutdownComplete() {
     passed_in_delegate_->OnShutdownComplete();
+    delete this;
   }
 
  private:
@@ -248,6 +249,8 @@ void ShutdownIPCSupportOnIOThread() {
   internal::g_ipc_support->ShutdownOnIOThread();
   delete internal::g_ipc_support;
   internal::g_ipc_support = nullptr;
+  delete g_wrapper_process_delegate;
+  g_wrapper_process_delegate = nullptr;
 }
 
 void ShutdownIPCSupport() {

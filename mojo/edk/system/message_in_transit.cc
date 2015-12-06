@@ -166,6 +166,7 @@ void MessageInTransit::ConstructorHelper(Type type,
   header()->type = type;
   header()->num_bytes = num_bytes;
   header()->unused = 0;
+  header()->route_id = 0;
   // Note: If dispatchers are subsequently attached, then |total_size| will have
   // to be adjusted.
   UpdateTotalSize();

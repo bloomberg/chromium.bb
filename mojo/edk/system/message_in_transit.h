@@ -103,6 +103,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
       return static_cast<const char*>(buffer_) + sizeof(Header);
     }
     Type type() const { return header()->type; }
+    uint64_t route_id() const { return header()->route_id; }
 
    private:
     const Header* header() const { return static_cast<const Header*>(buffer_); }
@@ -171,6 +172,9 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
 
   Type type() const { return header()->type; }
 
+  void set_route_id(uint64_t route_id) { header()->route_id = route_id; }
+  uint64_t route_id() const { return header()->route_id; }
+
   // Gets the dispatchers attached to this message; this may return null if
   // there are none. Note that the caller may mutate the set of dispatchers
   // (e.g., take ownership of all the dispatchers, leaving the vector empty).
@@ -200,9 +204,10 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
     // |SerializeAndCloseDispatchers()| has not been called.
     uint32_t total_size;
     Type type;                         // 2 bytes.
-    Type unusedforalignment;           // 2 bytes.
+    uint16_t unusedforalignment;       // 2 bytes.
     uint32_t num_bytes;
     uint32_t unused;
+    uint64_t route_id;
   };
 
   const Header* header() const {

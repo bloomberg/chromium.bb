@@ -414,6 +414,7 @@ void ChildThreadImpl::Init(const Options& options) {
     IPC::Logging::GetInstance()->SetIPCSender(this);
 #endif
 
+  mojo_ipc_support_.reset(new IPC::ScopedIPCSupport(GetIOTaskRunner()));
   mojo_application_.reset(new MojoApplication(GetIOTaskRunner()));
 
   sync_message_filter_ = channel_->CreateSyncMessageFilter();
@@ -653,10 +654,8 @@ bool ChildThreadImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnProcessBackgrounded)
     IPC_MESSAGE_HANDLER(MojoMsg_BindExternalMojoShellHandle,
                         OnBindExternalMojoShellHandle)
-#if defined(OS_WIN)
     IPC_MESSAGE_HANDLER(ChildProcessMsg_SetMojoParentPipeHandle,
                         OnSetMojoParentPipeHandle)
-#endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 

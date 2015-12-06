@@ -6,23 +6,26 @@
 #define MOJO_EDK_SYSTEM_BROKER_H_
 
 #include <stdint.h>
-#include <vector>
 
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 
 namespace mojo {
 namespace edk {
+class MessagePipeDispatcher;
+class RawChannel;
 
 // An interface for communicating to a central "broker" process from each
-// process using the EDK. This is needed because child processes are sandboxed.
-// It is safe to call from any thread.
+// process using the EDK. It serves two purposes:
+// 1) Windows only: brokering to help child processes as they can't create
+//    named pipes or duplicate handles.
+// 2) All platforms: support multiplexed messages pipes.
+
 class MOJO_SYSTEM_IMPL_EXPORT Broker {
  public:
   virtual ~Broker() {}
 
 #if defined(OS_WIN)
-  // All these methods are needed because sandboxed Windows processes can't
-  // create named pipes or duplicate handles.
+  // It is safe to call these three methods from any thread.
 
   // Create a PlatformChannelPair.
   virtual void CreatePlatformChannelPair(ScopedPlatformHandle* server,
@@ -40,6 +43,20 @@ class MOJO_SYSTEM_IMPL_EXPORT Broker {
                              size_t count,
                              PlatformHandle* handles) = 0;
 #endif
+
+  // Multiplexing related methods. They are called from the IO thread only.
+
+  // Called by |message_pipe| so that it receives messages for the given
+  // globally unique |pipe_id|. When the connection is established,
+  // MessagePipeDispatcher::GotNonTransferableChannel is called with the channel
+  // that it can use for sending messages.
+  virtual void ConnectMessagePipe(uint64_t pipe_id,
+                                  MessagePipeDispatcher* message_pipe) = 0;
+
+  // Called by |message_pipe| when it's closing so that its route can be
+  // unregistered.
+  virtual void CloseMessagePipe(uint64_t pipe_id,
+                                MessagePipeDispatcher* message_pipe) = 0;
 };
 
 }  // namespace edk

@@ -235,6 +235,7 @@ class CONTENT_EXPORT ChildThreadImpl
 
   void EnsureConnected();
 
+  scoped_ptr<IPC::ScopedIPCSupport> mojo_ipc_support_;
   scoped_ptr<MojoApplication> mojo_application_;
 
   std::string channel_name_;

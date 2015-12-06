@@ -34,14 +34,7 @@ const MojoHandleSignals kSignalAll = MOJO_HANDLE_SIGNAL_READABLE |
                                      MOJO_HANDLE_SIGNAL_WRITABLE |
                                      MOJO_HANDLE_SIGNAL_PEER_CLOSED;
 
-class EmbedderTest : public test::MojoSystemTest {
- public:
-  EmbedderTest() {}
-  ~EmbedderTest() override {}
-
- private:
-  MOJO_DISALLOW_COPY_AND_ASSIGN(EmbedderTest);
-};
+typedef testing::Test EmbedderTest;
 
 TEST_F(EmbedderTest, ChannelBasic) {
   MojoHandle server_mp, client_mp;
@@ -85,8 +78,11 @@ TEST_F(EmbedderTest, SendReadableMessagePipe) {
             MojoCreateMessagePipe(nullptr, &server_mp, &client_mp));
 
   MojoHandle server_mp2, client_mp2;
+  MojoCreateMessagePipeOptions options;
+  options.struct_size = sizeof(MojoCreateMessagePipeOptions);
+  options.flags = MOJO_CREATE_MESSAGE_PIPE_OPTIONS_FLAG_TRANSFERABLE;
   ASSERT_EQ(MOJO_RESULT_OK,
-            MojoCreateMessagePipe(nullptr, &server_mp2, &client_mp2));
+            MojoCreateMessagePipe(&options, &server_mp2, &client_mp2));
 
   // Write to server2 and wait for client2 to be readable before sending it.
   // client2's MessagePipeDispatcher will have the message below in its
@@ -165,9 +161,12 @@ TEST_F(EmbedderTest, SendMessagePipeWithWriteQueue) {
   ASSERT_EQ(MOJO_RESULT_OK,
             MojoCreateMessagePipe(nullptr, &server_mp, &client_mp));
 
+  MojoCreateMessagePipeOptions options;
+  options.struct_size = sizeof(MojoCreateMessagePipeOptions);
+  options.flags = MOJO_CREATE_MESSAGE_PIPE_OPTIONS_FLAG_TRANSFERABLE;
   MojoHandle server_mp2, client_mp2;
   ASSERT_EQ(MOJO_RESULT_OK,
-            MojoCreateMessagePipe(nullptr, &server_mp2, &client_mp2));
+            MojoCreateMessagePipe(&options, &server_mp2, &client_mp2));
 
   static const size_t kNumMessages = 1001;
   for (size_t i = 0; i < kNumMessages; i++) {
@@ -465,114 +464,108 @@ TEST_F(EmbedderTest, MAYBE_MultiprocessChannels) {
 }
 
 MOJO_MULTIPROCESS_TEST_CHILD_TEST(MultiprocessChannelsClient) {
-  base::MessageLoop message_loop;
   ScopedPlatformHandle client_platform_handle =
       test::MultiprocessTestHelper::client_platform_handle.Pass();
   EXPECT_TRUE(client_platform_handle.is_valid());
 
-  base::TestIOThread test_io_thread(base::TestIOThread::kAutoStart);
+  MojoHandle client_mp = CreateMessagePipe(
+      client_platform_handle.Pass()).release().value();
 
-  {
-    test::ScopedIPCSupport ipc_support(test_io_thread.task_runner());
-    MojoHandle client_mp = CreateMessagePipe(
-        client_platform_handle.Pass()).release().value();
+  // 1. Read the first message from |client_mp|.
+  MojoHandleSignalsState state;
+  ASSERT_EQ(MOJO_RESULT_OK, MojoWait(client_mp, MOJO_HANDLE_SIGNAL_READABLE,
+                                      MOJO_DEADLINE_INDEFINITE, &state));
+  ASSERT_EQ(kSignalReadadableWritable, state.satisfied_signals);
+  ASSERT_EQ(kSignalAll, state.satisfiable_signals);
 
-    // 1. Read the first message from |client_mp|.
-    MojoHandleSignalsState state;
-    ASSERT_EQ(MOJO_RESULT_OK, MojoWait(client_mp, MOJO_HANDLE_SIGNAL_READABLE,
-                                       MOJO_DEADLINE_INDEFINITE, &state));
-    ASSERT_EQ(kSignalReadadableWritable, state.satisfied_signals);
-    ASSERT_EQ(kSignalAll, state.satisfiable_signals);
+  char buffer[1000] = {};
+  uint32_t num_bytes = static_cast<uint32_t>(sizeof(buffer));
+  ASSERT_EQ(MOJO_RESULT_OK,
+            MojoReadMessage(client_mp, buffer, &num_bytes, nullptr, nullptr,
+                            MOJO_READ_MESSAGE_FLAG_NONE));
+  const char kHello[] = "hello";
+  ASSERT_EQ(sizeof(kHello), num_bytes);
+  EXPECT_STREQ(kHello, buffer);
 
-    char buffer[1000] = {};
-    uint32_t num_bytes = static_cast<uint32_t>(sizeof(buffer));
-    ASSERT_EQ(MOJO_RESULT_OK,
-              MojoReadMessage(client_mp, buffer, &num_bytes, nullptr, nullptr,
-                              MOJO_READ_MESSAGE_FLAG_NONE));
-    const char kHello[] = "hello";
-    ASSERT_EQ(sizeof(kHello), num_bytes);
-    EXPECT_STREQ(kHello, buffer);
+  // 2. Write a message to |client_mp| (attaching nothing).
+  const char kWorld[] = "world!";
+  ASSERT_EQ(MOJO_RESULT_OK,
+            MojoWriteMessage(client_mp, kWorld,
+                              static_cast<uint32_t>(sizeof(kWorld)), nullptr,
+                              0, MOJO_WRITE_MESSAGE_FLAG_NONE));
 
-    // 2. Write a message to |client_mp| (attaching nothing).
-    const char kWorld[] = "world!";
-    ASSERT_EQ(MOJO_RESULT_OK,
-              MojoWriteMessage(client_mp, kWorld,
-                               static_cast<uint32_t>(sizeof(kWorld)), nullptr,
-                               0, MOJO_WRITE_MESSAGE_FLAG_NONE));
+  // 4. Read a message from |client_mp|, which should have |mp1| attached.
+  ASSERT_EQ(MOJO_RESULT_OK, MojoWait(client_mp, MOJO_HANDLE_SIGNAL_READABLE,
+                                      MOJO_DEADLINE_INDEFINITE, &state));
+  // The other end of the handle may or may not be closed at this point, so we
+  // can't test MOJO_HANDLE_SIGNAL_WRITABLE or MOJO_HANDLE_SIGNAL_PEER_CLOSED.
+  ASSERT_EQ(MOJO_HANDLE_SIGNAL_READABLE,
+            state.satisfied_signals & MOJO_HANDLE_SIGNAL_READABLE);
+  ASSERT_EQ(MOJO_HANDLE_SIGNAL_READABLE,
+            state.satisfiable_signals & MOJO_HANDLE_SIGNAL_READABLE);
+  // TODO(vtl): If the scope were to end here (and |client_mp| closed), we'd
+  // die (again due to |Channel::HandleLocalError()|).
+  memset(buffer, 0, sizeof(buffer));
+  num_bytes = static_cast<uint32_t>(sizeof(buffer));
+  MojoHandle mp1 = MOJO_HANDLE_INVALID;
+  uint32_t num_handles = 1;
+  ASSERT_EQ(MOJO_RESULT_OK,
+            MojoReadMessage(client_mp, buffer, &num_bytes, &mp1, &num_handles,
+                            MOJO_READ_MESSAGE_FLAG_NONE));
+  const char kBar[] = "Bar";
+  ASSERT_EQ(sizeof(kBar), num_bytes);
+  EXPECT_STREQ(kBar, buffer);
+  ASSERT_EQ(1u, num_handles);
+  EXPECT_NE(mp1, MOJO_HANDLE_INVALID);
+  // TODO(vtl): If the scope were to end here (and the two handles closed),
+  // we'd die due to |Channel::RunRemoteMessagePipeEndpoint()| not handling
+  // write errors (assuming the parent had closed the pipe).
 
-    // 4. Read a message from |client_mp|, which should have |mp1| attached.
-    ASSERT_EQ(MOJO_RESULT_OK, MojoWait(client_mp, MOJO_HANDLE_SIGNAL_READABLE,
-                                       MOJO_DEADLINE_INDEFINITE, &state));
-    // The other end of the handle may or may not be closed at this point, so we
-    // can't test MOJO_HANDLE_SIGNAL_WRITABLE or MOJO_HANDLE_SIGNAL_PEER_CLOSED.
-    ASSERT_EQ(MOJO_HANDLE_SIGNAL_READABLE,
-              state.satisfied_signals & MOJO_HANDLE_SIGNAL_READABLE);
-    ASSERT_EQ(MOJO_HANDLE_SIGNAL_READABLE,
-              state.satisfiable_signals & MOJO_HANDLE_SIGNAL_READABLE);
-    // TODO(vtl): If the scope were to end here (and |client_mp| closed), we'd
-    // die (again due to |Channel::HandleLocalError()|).
-    memset(buffer, 0, sizeof(buffer));
-    num_bytes = static_cast<uint32_t>(sizeof(buffer));
-    MojoHandle mp1 = MOJO_HANDLE_INVALID;
-    uint32_t num_handles = 1;
-    ASSERT_EQ(MOJO_RESULT_OK,
-              MojoReadMessage(client_mp, buffer, &num_bytes, &mp1, &num_handles,
-                              MOJO_READ_MESSAGE_FLAG_NONE));
-    const char kBar[] = "Bar";
-    ASSERT_EQ(sizeof(kBar), num_bytes);
-    EXPECT_STREQ(kBar, buffer);
-    ASSERT_EQ(1u, num_handles);
-    EXPECT_NE(mp1, MOJO_HANDLE_INVALID);
-    // TODO(vtl): If the scope were to end here (and the two handles closed),
-    // we'd die due to |Channel::RunRemoteMessagePipeEndpoint()| not handling
-    // write errors (assuming the parent had closed the pipe).
+  // 6. Close |client_mp|.
+  ASSERT_EQ(MOJO_RESULT_OK, MojoClose(client_mp));
 
-    // 6. Close |client_mp|.
-    ASSERT_EQ(MOJO_RESULT_OK, MojoClose(client_mp));
+  // Create a new message pipe (endpoints |mp2| and |mp3|).
+  MojoHandle mp2, mp3;
+  ASSERT_EQ(MOJO_RESULT_OK, MojoCreateMessagePipe(nullptr, &mp2, &mp3));
 
-    // Create a new message pipe (endpoints |mp2| and |mp3|).
-    MojoHandle mp2, mp3;
-    ASSERT_EQ(MOJO_RESULT_OK, MojoCreateMessagePipe(nullptr, &mp2, &mp3));
+  // 7. Write a message to |mp3|.
+  const char kBaz[] = "baz";
+  ASSERT_EQ(MOJO_RESULT_OK,
+            MojoWriteMessage(mp3, kBaz, static_cast<uint32_t>(sizeof(kBaz)),
+                              nullptr, 0, MOJO_WRITE_MESSAGE_FLAG_NONE));
 
-    // 7. Write a message to |mp3|.
-    const char kBaz[] = "baz";
-    ASSERT_EQ(MOJO_RESULT_OK,
-              MojoWriteMessage(mp3, kBaz, static_cast<uint32_t>(sizeof(kBaz)),
-                               nullptr, 0, MOJO_WRITE_MESSAGE_FLAG_NONE));
+  // 8. Close |mp3|.
+  ASSERT_EQ(MOJO_RESULT_OK, MojoClose(mp3));
 
-    // 8. Close |mp3|.
-    ASSERT_EQ(MOJO_RESULT_OK, MojoClose(mp3));
+  // 9. Write a message to |mp1|, attaching |mp2|.
+  const char kQuux[] = "quux";
+  ASSERT_EQ(MOJO_RESULT_OK,
+            MojoWriteMessage(mp1, kQuux, static_cast<uint32_t>(sizeof(kQuux)),
+                              &mp2, 1, MOJO_WRITE_MESSAGE_FLAG_NONE));
+  mp2 = MOJO_HANDLE_INVALID;
 
-    // 9. Write a message to |mp1|, attaching |mp2|.
-    const char kQuux[] = "quux";
-    ASSERT_EQ(MOJO_RESULT_OK,
-              MojoWriteMessage(mp1, kQuux, static_cast<uint32_t>(sizeof(kQuux)),
-                               &mp2, 1, MOJO_WRITE_MESSAGE_FLAG_NONE));
-    mp2 = MOJO_HANDLE_INVALID;
+  // 3. Read a message from |mp1|.
+  ASSERT_EQ(MOJO_RESULT_OK, MojoWait(mp1, MOJO_HANDLE_SIGNAL_READABLE,
+                                      MOJO_DEADLINE_INDEFINITE, &state));
+  ASSERT_EQ(kSignalReadadableWritable, state.satisfied_signals);
+  ASSERT_EQ(kSignalAll, state.satisfiable_signals);
 
-    // 3. Read a message from |mp1|.
-    ASSERT_EQ(MOJO_RESULT_OK, MojoWait(mp1, MOJO_HANDLE_SIGNAL_READABLE,
-                                       MOJO_DEADLINE_INDEFINITE, &state));
-    ASSERT_EQ(kSignalReadadableWritable, state.satisfied_signals);
-    ASSERT_EQ(kSignalAll, state.satisfiable_signals);
+  memset(buffer, 0, sizeof(buffer));
+  num_bytes = static_cast<uint32_t>(sizeof(buffer));
+  ASSERT_EQ(MOJO_RESULT_OK,
+            MojoReadMessage(mp1, buffer, &num_bytes, nullptr, nullptr,
+                            MOJO_READ_MESSAGE_FLAG_NONE));
+  const char kFoo[] = "FOO";
+  ASSERT_EQ(sizeof(kFoo), num_bytes);
+  EXPECT_STREQ(kFoo, buffer);
 
-    memset(buffer, 0, sizeof(buffer));
-    num_bytes = static_cast<uint32_t>(sizeof(buffer));
-    ASSERT_EQ(MOJO_RESULT_OK,
-              MojoReadMessage(mp1, buffer, &num_bytes, nullptr, nullptr,
-                              MOJO_READ_MESSAGE_FLAG_NONE));
-    const char kFoo[] = "FOO";
-    ASSERT_EQ(sizeof(kFoo), num_bytes);
-    EXPECT_STREQ(kFoo, buffer);
-
-    // 11. Wait on |mp1| (which should eventually fail) and then close it.
-    ASSERT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-              MojoWait(mp1, MOJO_HANDLE_SIGNAL_READABLE,
-                       MOJO_DEADLINE_INDEFINITE, &state));
-    ASSERT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, state.satisfied_signals);
-    ASSERT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, state.satisfiable_signals);
-    ASSERT_EQ(MOJO_RESULT_OK, MojoClose(mp1));
-  }
+  // 11. Wait on |mp1| (which should eventually fail) and then close it.
+  ASSERT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
+            MojoWait(mp1, MOJO_HANDLE_SIGNAL_READABLE,
+                      MOJO_DEADLINE_INDEFINITE, &state));
+  ASSERT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, state.satisfied_signals);
+  ASSERT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, state.satisfiable_signals);
+  ASSERT_EQ(MOJO_RESULT_OK, MojoClose(mp1));
 }
 
 // TODO(vtl): Test immediate write & close.

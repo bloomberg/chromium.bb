@@ -2478,8 +2478,6 @@ void RenderProcessHostImpl::OnProcessLaunched() {
   SendExternalMojoShellHandleToChild(GetHandle(), this);
 #endif
 
-#if defined(OS_WIN)
-  // TODO(jam): enable on POSIX
   if (base::CommandLine::ForCurrentProcess()->HasSwitch("use-new-edk") &&
       child_process_launcher_.get()) {
     base::ProcessHandle process_handle =
@@ -2495,7 +2493,6 @@ void RenderProcessHostImpl::OnProcessLaunched() {
 #endif
                                      process_handle, true)));
   }
-#endif
 
   // Allow Mojo to be setup before the renderer sees any Chrome IPC messages.
   // This way, Mojo can be safely used from the renderer in response to any

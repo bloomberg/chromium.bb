@@ -69,6 +69,8 @@ static_library("system") {
     "raw_channel.h",
     "raw_channel_posix.cc",
     "raw_channel_win.cc",
+    "routed_raw_channel.cc",
+    "routed_raw_channel.h",
     "shared_buffer_dispatcher.cc",
     "shared_buffer_dispatcher.h",
     "simple_dispatcher.cc",

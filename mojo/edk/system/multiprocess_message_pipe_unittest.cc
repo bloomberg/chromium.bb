@@ -16,8 +16,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/test/test_io_thread.h"
-#include "build/build_config.h"  // TODO(vtl): Remove this.
+#include "build/build_config.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/platform_shared_buffer.h"
@@ -44,11 +43,6 @@ class MultiprocessMessagePipeTest
 // (which it doesn't reply to). It'll return the number of messages received,
 // not including any "quitquitquit" message, modulo 100.
 MOJO_MULTIPROCESS_TEST_CHILD_MAIN(EchoEcho) {
-  SimplePlatformSupport platform_support;
-  base::MessageLoop message_loop;
-  base::TestIOThread test_io_thread(base::TestIOThread::kAutoStart);
-  test::ScopedIPCSupport ipc_support(test_io_thread.task_runner());
-
   ScopedPlatformHandle client_platform_handle =
       test::MultiprocessTestHelper::client_platform_handle.Pass();
   CHECK(client_platform_handle.is_valid());
@@ -208,11 +202,6 @@ TEST_F(MultiprocessMessagePipeTest, MAYBE_QueueMessages) {
 }
 
 MOJO_MULTIPROCESS_TEST_CHILD_MAIN(CheckSharedBuffer) {
-  SimplePlatformSupport platform_support;
-  base::MessageLoop message_loop;
-  base::TestIOThread test_io_thread(base::TestIOThread::kAutoStart);
-  test::ScopedIPCSupport ipc_support(test_io_thread.task_runner());
-
   ScopedPlatformHandle client_platform_handle =
       test::MultiprocessTestHelper::client_platform_handle.Pass();
   CHECK(client_platform_handle.is_valid());
@@ -382,11 +371,6 @@ TEST_F(MultiprocessMessagePipeTest, MAYBE_SharedBufferPassing) {
 }
 
 MOJO_MULTIPROCESS_TEST_CHILD_MAIN(CheckPlatformHandleFile) {
-  SimplePlatformSupport platform_support;
-  base::MessageLoop message_loop;
-  base::TestIOThread test_io_thread(base::TestIOThread::kAutoStart);
-  test::ScopedIPCSupport ipc_support(test_io_thread.task_runner());
-
   ScopedPlatformHandle client_platform_handle =
       test::MultiprocessTestHelper::client_platform_handle.Pass();
   CHECK(client_platform_handle.is_valid());
@@ -501,11 +485,6 @@ INSTANTIATE_TEST_CASE_P(PipeCount,
 #endif
 
 MOJO_MULTIPROCESS_TEST_CHILD_MAIN(CheckMessagePipe) {
-  SimplePlatformSupport platform_support;
-  base::MessageLoop message_loop;
-  base::TestIOThread test_io_thread(base::TestIOThread::kAutoStart);
-  test::ScopedIPCSupport ipc_support(test_io_thread.task_runner());
-
   ScopedPlatformHandle client_platform_handle =
       test::MultiprocessTestHelper::client_platform_handle.Pass();
   CHECK(client_platform_handle.is_valid());
@@ -666,11 +645,6 @@ TEST_F(MultiprocessMessagePipeTest, MAYBE_MessagePipeTwoPassing) {
 }
 
 MOJO_MULTIPROCESS_TEST_CHILD_MAIN(DataPipeConsumer) {
-  SimplePlatformSupport platform_support;
-  base::MessageLoop message_loop;
-  base::TestIOThread test_io_thread(base::TestIOThread::kAutoStart);
-  test::ScopedIPCSupport ipc_support(test_io_thread.task_runner());
-
   ScopedPlatformHandle client_platform_handle =
       test::MultiprocessTestHelper::client_platform_handle.Pass();
   CHECK(client_platform_handle.is_valid());

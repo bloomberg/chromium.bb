@@ -54,6 +54,7 @@ source_set("run_all_perftests") {
     ":test_support_impl",
     "//base",
     "//base/test:test_support",
+    "//mojo/edk/test:test_support",
     "//mojo/public/c/test_support",
 
     # TODO(use_chrome_edk): temporary since the Mojo wrapper primitives are

@@ -24,8 +24,7 @@ class MultiprocessMessagePipePerfTest
     : public test::MultiprocessMessagePipeTestBase {
  public:
   MultiprocessMessagePipePerfTest()
-      : test::MultiprocessMessagePipeTestBase(base::MessageLoop::TYPE_IO),
-        message_count_(0),
+      : message_count_(0),
         message_size_(0) {}
 
   void SetUpMeasurement(int message_count, size_t message_size) {
@@ -86,11 +85,6 @@ class MultiprocessMessagePipePerfTest
 // (which it doesn't reply to). It'll return the number of messages received,
 // not including any "quitquitquit" message, modulo 100.
 MOJO_MULTIPROCESS_TEST_CHILD_MAIN(PingPongClient) {
-  SimplePlatformSupport platform_support;
-  base::MessageLoop message_loop(base::MessageLoop::TYPE_IO);
-  base::TestIOThread test_io_thread(base::TestIOThread::kAutoStart);
-  test::ScopedIPCSupport ipc_support(test_io_thread.task_runner());
-
   ScopedPlatformHandle client_platform_handle =
       test::MultiprocessTestHelper::client_platform_handle.Pass();
   CHECK(client_platform_handle.is_valid());

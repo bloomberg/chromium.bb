@@ -65,15 +65,9 @@ void PreInitializeChildProcess() {
 }
 
 ScopedPlatformHandle ChildProcessLaunched(base::ProcessHandle child_process) {
-#if defined(OS_WIN)
   PlatformChannelPair token_channel;
   new ChildBrokerHost(child_process, token_channel.PassServerHandle());
   return token_channel.PassClientHandle();
-#else
-  // TODO(jam): create this for POSIX. Need to implement channel reading first
-  // so we don't leak handles.
-  return ScopedPlatformHandle();
-#endif
 }
 
 void ChildProcessLaunched(base::ProcessHandle child_process,
@@ -165,9 +159,11 @@ void ShutdownIPCSupport() {
 
 ScopedMessagePipeHandle CreateMessagePipe(
     ScopedPlatformHandle platform_handle) {
+  MojoCreateMessagePipeOptions options = {
+      static_cast<uint32_t>(sizeof(MojoCreateMessagePipeOptions)),
+      MOJO_CREATE_MESSAGE_PIPE_OPTIONS_FLAG_TRANSFERABLE};
   scoped_refptr<MessagePipeDispatcher> dispatcher =
-      MessagePipeDispatcher::Create(
-          MessagePipeDispatcher::kDefaultCreateOptions);
+      MessagePipeDispatcher::Create(options);
 
   ScopedMessagePipeHandle rv(
       MessagePipeHandle(internal::g_core->AddDispatcher(dispatcher)));
