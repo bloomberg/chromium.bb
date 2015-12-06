@@ -452,28 +452,6 @@ crbug.com/505364 imported/web-platform-tests/shadow-dom/untriaged/styles/test-00
 crbug.com/505364 imported/web-platform-tests/shadow-dom/untriaged/styles/test-010.html [ Failure Crash ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/untriaged/user-interaction/ranges-and-selections/test-002.html [ Failure Crash ]
 
-crbug.com/481585 compositing/backface-visibility-transformed.html [ NeedsRebaseline ]
-crbug.com/481585 compositing/geometry/layer-due-to-layer-children-deep.html [ NeedsRebaseline ]
-crbug.com/481585 compositing/geometry/layer-due-to-layer-children.html [ NeedsRebaseline ]
-crbug.com/481585 compositing/geometry/vertical-scroll-composited.html [ NeedsRebaseline ]
-crbug.com/481585 compositing/overflow/nested-render-surfaces-with-rotation.html [ NeedsRebaseline ]
-crbug.com/481585 compositing/perpendicular-layer-sorting.html [ NeedsRebaseline ]
-crbug.com/481585 compositing/reflections/nested-reflection-anchor-point.html [ NeedsRebaseline ]
-crbug.com/481585 compositing/reflections/nested-reflection-animated.html [ NeedsRebaseline ]
-crbug.com/481585 compositing/reflections/transform-inside-reflection.html [ NeedsRebaseline ]
-crbug.com/481585 css3/blending/background-blend-mode-overlapping-accelerated-elements.html [ NeedsRebaseline ]
-crbug.com/481585 fast/sub-pixel/transformed-iframe-copy-on-scroll.html [ NeedsRebaseline ]
-crbug.com/481585 media/video-layer-crash.html [ NeedsRebaseline ]
-crbug.com/481585 media/video-transformed.html [ NeedsRebaseline ]
-crbug.com/481585 transforms/3d/general/perspective-units.html [ NeedsRebaseline ]
-crbug.com/481585 transforms/3d/general/transform-origin-z-change.html [ NeedsRebaseline ]
-crbug.com/481585 transforms/3d/point-mapping/3d-point-mapping-coplanar.html [ NeedsRebaseline ]
-crbug.com/481585 transforms/3d/point-mapping/3d-point-mapping-deep.html [ NeedsRebaseline ]
-crbug.com/481585 transforms/3d/point-mapping/3d-point-mapping-origins.html [ NeedsRebaseline ]
-crbug.com/481585 transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ NeedsRebaseline ]
-crbug.com/481585 transforms/3d/point-mapping/3d-point-mapping.html [ NeedsRebaseline ]
-crbug.com/481585 virtual/prefer_compositing_to_lcd_text/compositing/overflow/nested-render-surfaces-with-rotation.html [ NeedsRebaseline ]
-
 crbug.com/552532 [ Win10 ] fast/replaced/no-focus-ring-embed.html [ Pass Crash ]
 crbug.com/552532 [ Win10 ] fast/replaced/no-focus-ring-object.html [ Pass Crash ]
 crbug.com/552532 [ Win10 ] plugins/focus.html [ Pass Crash ]
@@ -773,8 +751,6 @@ crbug.com/467635 fast/dom/HTMLImageElement/image-sizes-meta-viewport.html [ Skip
 # crbug.com/396823 [ Mac ] fast/multicol/multicol-with-child-renderLayer-for-input.html [ Failure ]
 
 crbug.com/484370 [ Win Debug ] svg/custom/gradient-userSpaceOnUse-with-percentage.svg [ Failure ]
-
-crbug.com/116710 [ Win Debug ] transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ Pass Failure ]
 
 # Printing Layout broken in these tests.
 crbug.com/377696 printing/setPrinting.html [ Skip ]
