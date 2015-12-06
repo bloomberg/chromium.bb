@@ -29,6 +29,7 @@
 #include "media/blink/webmediaplayer_params.h"
 #include "mojo/application/public/interfaces/service_provider.mojom.h"
 #include "mojo/application/public/interfaces/shell.mojom.h"
+#include "third_party/WebKit/public/platform/WebFocusType.h"
 #include "third_party/WebKit/public/platform/modules/app_banner/WebAppBannerClient.h"
 #include "third_party/WebKit/public/web/WebAXObject.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
@@ -746,6 +747,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnDidUpdateSandboxFlags(blink::WebSandboxFlags flags);
   void OnSetFrameOwnerProperties(
       const blink::WebFrameOwnerProperties& frame_owner_properties);
+  void OnAdvanceFocus(blink::WebFocusType type, int32_t source_routing_id);
   void OnTextTrackSettingsChanged(
       const FrameMsg_TextTrackSettings_Params& params);
   void OnPostMessageEvent(const FrameMsg_PostMessage_Params& params);

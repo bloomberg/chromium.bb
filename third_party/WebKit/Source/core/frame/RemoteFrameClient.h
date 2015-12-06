@@ -8,6 +8,7 @@
 #include "core/frame/FrameClient.h"
 #include "core/frame/FrameTypes.h"
 #include "core/loader/FrameLoaderTypes.h"
+#include "public/platform/WebFocusType.h"
 
 namespace blink {
 
@@ -28,6 +29,8 @@ public:
     virtual void forwardInputEvent(Event*) = 0;
 
     virtual void frameRectsChanged(const IntRect& frameRect) = 0;
+
+    virtual void advanceFocus(WebFocusType, LocalFrame* source) = 0;
 };
 
 } // namespace blink

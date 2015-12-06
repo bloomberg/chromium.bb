@@ -46,6 +46,7 @@ class InputDeviceCapabilities;
 class LocalFrame;
 class Node;
 class Page;
+class RemoteFrame;
 
 class CORE_EXPORT FocusController final : public NoBaseWillBeGarbageCollectedFinalized<FocusController> {
     WTF_MAKE_NONCOPYABLE(FocusController); USING_FAST_MALLOC_WILL_BE_REMOVED(FocusController);
@@ -68,6 +69,7 @@ public:
 
     bool setInitialFocus(WebFocusType);
     bool advanceFocus(WebFocusType type, InputDeviceCapabilities* sourceCapabilities = nullptr) { return advanceFocus(type, false, sourceCapabilities); }
+    bool advanceFocusAcrossFrames(WebFocusType, RemoteFrame* from, LocalFrame* to, InputDeviceCapabilities* sourceCapabilities = nullptr);
     Element* findFocusableElement(WebFocusType, Node&);
 
     bool setFocusedElement(Element*, PassRefPtrWillBeRawPtr<Frame>, const FocusParams&);
@@ -88,7 +90,7 @@ private:
 
     bool advanceFocus(WebFocusType, bool initialFocus, InputDeviceCapabilities* sourceCapabilities = nullptr);
     bool advanceFocusDirectionally(WebFocusType);
-    bool advanceFocusInDocumentOrder(WebFocusType, bool initialFocus, InputDeviceCapabilities* sourceCapabilities);
+    bool advanceFocusInDocumentOrder(LocalFrame*, Node* startingNode, WebFocusType, bool initialFocus, InputDeviceCapabilities* sourceCapabilities);
 
     bool advanceFocusDirectionallyInContainer(Node* container, const LayoutRect& startingRect, WebFocusType);
     void findFocusCandidateInContainer(Node& container, const LayoutRect& startingRect, WebFocusType, FocusCandidate& closest);

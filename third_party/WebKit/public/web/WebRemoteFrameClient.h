@@ -5,6 +5,7 @@
 #ifndef WebRemoteFrameClient_h
 #define WebRemoteFrameClient_h
 
+#include "public/platform/WebFocusType.h"
 #include "public/platform/WebSecurityOrigin.h"
 #include "public/web/WebDOMMessageEvent.h"
 
@@ -48,6 +49,11 @@ public:
 
     // This frame updated its opener to another frame.
     virtual void didChangeOpener(WebFrame* opener) { }
+
+    // Continue sequential focus navigation in this frame.  This is called when
+    // the |source| frame is searching for the next focusable element (e.g., in
+    // response to <tab>) and encounters a remote frame.
+    virtual void advanceFocus(WebFocusType type, WebLocalFrame* source) { }
 };
 
 } // namespace blink

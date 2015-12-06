@@ -188,4 +188,9 @@ void RemoteFrameClientImpl::frameRectsChanged(const IntRect& frameRect)
     m_webFrame->client()->frameRectsChanged(frameRect);
 }
 
+void RemoteFrameClientImpl::advanceFocus(WebFocusType type, LocalFrame* source)
+{
+    m_webFrame->client()->advanceFocus(type, WebLocalFrameImpl::fromFrame(source));
+}
+
 } // namespace blink

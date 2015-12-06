@@ -10,6 +10,7 @@
 #include "content/browser/site_instance_impl.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
+#include "third_party/WebKit/public/platform/WebFocusType.h"
 
 struct FrameMsg_PostMessage_Params;
 
@@ -129,6 +130,7 @@ class RenderFrameProxyHost
   void OnOpenURL(const FrameHostMsg_OpenURL_Params& params);
   void OnRouteMessageEvent(const FrameMsg_PostMessage_Params& params);
   void OnDidChangeOpener(int32 opener_routing_id);
+  void OnAdvanceFocus(blink::WebFocusType type, int32_t source_routing_id);
 
   // This RenderFrameProxyHost's routing id.
   int routing_id_;

@@ -33,6 +33,7 @@
 
 #include "../platform/WebColor.h"
 #include "../platform/WebDisplayMode.h"
+#include "../platform/WebFocusType.h"
 #include "../platform/WebPageVisibilityState.h"
 #include "../platform/WebString.h"
 #include "../platform/WebVector.h"
@@ -50,9 +51,11 @@ class WebCredentialManagerClient;
 class WebDragData;
 class WebFrame;
 class WebHitTestResult;
+class WebLocalFrame;
 class WebPageImportanceSignals;
 class WebPageOverlay;
 class WebPrerendererClient;
+class WebRemoteFrame;
 class WebSettings;
 class WebSpellCheckClient;
 class WebString;
@@ -190,6 +193,11 @@ public:
     // Advance the focus of the WebView forward to the next element or to the
     // previous element in the tab sequence (if reverse is true).
     virtual void advanceFocus(bool reverse) { }
+
+    // Advance the focus from the frame |from| to the next in sequence
+    // (determined by WebFocusType) focusable element in frame |to|. Used when
+    // focus needs to advance to/from a cross-process frame.
+    virtual void advanceFocusAcrossFrames(WebFocusType, WebRemoteFrame* from, WebLocalFrame* to) { }
 
     // Animate a scale into the specified rect where multiple targets were
     // found from previous tap gesture.

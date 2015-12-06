@@ -29,6 +29,7 @@
 #include "content/public/common/three_d_api_types.h"
 #include "content/public/common/transition_element.h"
 #include "ipc/ipc_message_macros.h"
+#include "third_party/WebKit/public/platform/WebFocusType.h"
 #include "third_party/WebKit/public/web/WebFrameOwnerProperties.h"
 #include "third_party/WebKit/public/web/WebTreeScopeType.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
@@ -58,6 +59,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(blink::WebContextMenuData::MediaType,
                           blink::WebContextMenuData::MediaTypeLast)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebContextMenuData::InputFieldType,
                           blink::WebContextMenuData::InputFieldTypeLast)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::WebFocusType, blink::WebFocusTypeLast)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebFrameOwnerProperties::ScrollingMode,
                           blink::WebFrameOwnerProperties::ScrollingMode::Last)
 IPC_ENUM_TRAITS(blink::WebSandboxFlags)  // Bitmask.
@@ -720,6 +722,14 @@ IPC_MESSAGE_ROUTED3(FrameMsg_GetSerializedHtmlWithLocalLinks,
 IPC_MESSAGE_ROUTED1(FrameMsg_SetFrameOwnerProperties,
                     blink::WebFrameOwnerProperties /* frame_owner_properties */)
 
+// Request to continue running the sequential focus navigation algorithm in
+// this frame.  |source_routing_id| identifies the frame that issued this
+// request.  This message is sent when pressing <tab> or <shift-tab> needs to
+// find the next focusable element in a cross-process frame.
+IPC_MESSAGE_ROUTED2(FrameMsg_AdvanceFocus,
+                    blink::WebFocusType /* type */,
+                    int32_t /* source_routing_id */)
+
 #if defined(ENABLE_PLUGINS)
 // Notifies the renderer of updates to the Plugin Power Saver origin whitelist.
 IPC_MESSAGE_ROUTED1(FrameMsg_UpdatePluginContentOriginWhitelist,
@@ -1249,6 +1259,15 @@ IPC_MESSAGE_ROUTED2(FrameHostMsg_SerializedHtmlWithLocalLinksResponse,
 // Sent when the renderer updates hint for importance of a tab.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_UpdatePageImportanceSignals,
                     content::PageImportanceSignals)
+
+// This message is sent from a RenderFrameProxy when sequential focus
+// navigation needs to advance into its actual frame.  |source_routing_id|
+// identifies the frame that issued this request.  This is used when pressing
+// <tab> or <shift-tab> hits an out-of-process iframe when searching for the
+// next focusable element.
+IPC_MESSAGE_ROUTED2(FrameHostMsg_AdvanceFocus,
+                    blink::WebFocusType /* type */,
+                    int32_t /* source_routing_id */)
 
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
 

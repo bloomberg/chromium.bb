@@ -444,4 +444,10 @@ void RenderFrameProxy::didChangeOpener(blink::WebFrame* opener) {
   Send(new FrameHostMsg_DidChangeOpener(routing_id_, opener_routing_id));
 }
 
+void RenderFrameProxy::advanceFocus(blink::WebFocusType type,
+                                    blink::WebLocalFrame* source) {
+  int source_routing_id = RenderFrameImpl::FromWebFrame(source)->GetRoutingID();
+  Send(new FrameHostMsg_AdvanceFocus(routing_id_, type, source_routing_id));
+}
+
 }  // namespace

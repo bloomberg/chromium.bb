@@ -4069,6 +4069,91 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_EQ("FOO", result);
 }
 
+// Ensure that sequential focus navigation (advancing focused elements with
+// <tab> and <shift-tab>) works across cross-process subframes.
+// The test sets up six inputs fields in a page with two cross-process
+// subframes:
+//                 child1            child2
+//             /------------\    /------------\.
+//             | 2. <input> |    | 4. <input> |
+//  1. <input> | 3. <input> |    | 5. <input> |  6. <input>
+//             \------------/    \------------/.
+//
+// The test then presses <tab> six times to cycle through focused elements 1-6.
+// The test then repeats this with <shift-tab> to cycle in reverse order.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, SequentialFocusNavigation) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b,c)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  WebContents* contents = shell()->web_contents();
+  FrameTreeNode* root =
+      static_cast<WebContentsImpl*>(contents)->GetFrameTree()->root();
+
+  // Assign a name to each frame.  This will be sent along in test messages
+  // from focus events.
+  EXPECT_TRUE(ExecuteScript(root->current_frame_host(),
+                            "window.name = 'root';"));
+  EXPECT_TRUE(ExecuteScript(root->child_at(0)->current_frame_host(),
+                            "window.name = 'child1';"));
+  EXPECT_TRUE(ExecuteScript(root->child_at(1)->current_frame_host(),
+                            "window.name = 'child2';"));
+
+  // This script will insert two <input> fields in the document, one at the
+  // beginning and one at the end.  For root frame, this means that we will
+  // have an <input>, then two <iframe> elements, then another <input>.
+  std::string script =
+      "function onFocus(e) {"
+      "  domAutomationController.setAutomationId(0);"
+      "  domAutomationController.send(window.name + '-focused-' + e.target.id);"
+      "}"
+      "var input1 = document.createElement('input');"
+      "input1.id = 'input1';"
+      "var input2 = document.createElement('input');"
+      "input2.id = 'input2';"
+      "document.body.insertBefore(input1, document.body.firstChild);"
+      "document.body.appendChild(input2);"
+      "input1.addEventListener('focus', onFocus, false);"
+      "input2.addEventListener('focus', onFocus, false);";
+
+  // Add two input fields to each of the three frames.
+  EXPECT_TRUE(ExecuteScript(root->current_frame_host(), script));
+  EXPECT_TRUE(ExecuteScript(root->child_at(0)->current_frame_host(), script));
+  EXPECT_TRUE(ExecuteScript(root->child_at(1)->current_frame_host(), script));
+
+  // Helper to simulate a tab press and wait for a focus message.
+  auto press_tab_and_wait_for_message = [contents](bool reverse) {
+    DOMMessageQueue msg_queue;
+    std::string reply;
+    SimulateKeyPress(contents, ui::VKEY_TAB, false, reverse /* shift */, false,
+                     false);
+    EXPECT_TRUE(msg_queue.WaitForMessage(&reply));
+    return reply;
+  };
+
+  // Press <tab> six times to focus each of the <input> elements in turn.
+  EXPECT_EQ("\"root-focused-input1\"", press_tab_and_wait_for_message(false));
+  EXPECT_EQ(root, root->frame_tree()->GetFocusedFrame());
+  EXPECT_EQ("\"child1-focused-input1\"", press_tab_and_wait_for_message(false));
+  EXPECT_EQ(root->child_at(0), root->frame_tree()->GetFocusedFrame());
+  EXPECT_EQ("\"child1-focused-input2\"", press_tab_and_wait_for_message(false));
+  EXPECT_EQ("\"child2-focused-input1\"", press_tab_and_wait_for_message(false));
+  EXPECT_EQ(root->child_at(1), root->frame_tree()->GetFocusedFrame());
+  EXPECT_EQ("\"child2-focused-input2\"", press_tab_and_wait_for_message(false));
+  EXPECT_EQ("\"root-focused-input2\"", press_tab_and_wait_for_message(false));
+  EXPECT_EQ(root, root->frame_tree()->GetFocusedFrame());
+
+  // Now, press <shift-tab> to navigate focus in the reverse direction.
+  EXPECT_EQ("\"child2-focused-input2\"", press_tab_and_wait_for_message(true));
+  EXPECT_EQ(root->child_at(1), root->frame_tree()->GetFocusedFrame());
+  EXPECT_EQ("\"child2-focused-input1\"", press_tab_and_wait_for_message(true));
+  EXPECT_EQ("\"child1-focused-input2\"", press_tab_and_wait_for_message(true));
+  EXPECT_EQ(root->child_at(0), root->frame_tree()->GetFocusedFrame());
+  EXPECT_EQ("\"child1-focused-input1\"", press_tab_and_wait_for_message(true));
+  EXPECT_EQ("\"root-focused-input1\"", press_tab_and_wait_for_message(true));
+  EXPECT_EQ(root, root->frame_tree()->GetFocusedFrame());
+}
+
 // A WebContentsDelegate to capture ContextMenu creation events.
 class ContextMenuObserverDelegate : public WebContentsDelegate {
  public:

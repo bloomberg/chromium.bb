@@ -146,6 +146,7 @@ bool RenderFrameProxyHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_OpenURL, OnOpenURL)
     IPC_MESSAGE_HANDLER(FrameHostMsg_RouteMessageEvent, OnRouteMessageEvent)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidChangeOpener, OnDidChangeOpener)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_AdvanceFocus, OnAdvanceFocus)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -323,6 +324,31 @@ void RenderFrameProxyHost::OnRouteMessageEvent(
 void RenderFrameProxyHost::OnDidChangeOpener(int32 opener_routing_id) {
   frame_tree_node_->render_manager()->DidChangeOpener(opener_routing_id,
                                                       GetSiteInstance());
+}
+
+void RenderFrameProxyHost::OnAdvanceFocus(blink::WebFocusType type,
+                                          int32_t source_routing_id) {
+  RenderFrameHostImpl* target_rfh =
+      frame_tree_node_->render_manager()->current_frame_host();
+
+  // Translate the source RenderFrameHost in this process to its equivalent
+  // RenderFrameProxyHost in the target process.  This is needed for continuing
+  // the focus traversal from correct place in a parent frame after one of its
+  // child frames finishes its traversal.
+  RenderFrameHostImpl* source_rfh =
+      RenderFrameHostImpl::FromID(GetProcess()->GetID(), source_routing_id);
+  int32_t source_proxy_routing_id = MSG_ROUTING_NONE;
+  if (source_rfh) {
+    RenderFrameProxyHost* source_proxy =
+        source_rfh->frame_tree_node()
+            ->render_manager()
+            ->GetRenderFrameProxyHost(target_rfh->GetSiteInstance());
+    if (source_proxy)
+      source_proxy_routing_id = source_proxy->GetRoutingID();
+  }
+
+  target_rfh->Send(new FrameMsg_AdvanceFocus(target_rfh->GetRoutingID(), type,
+                                             source_proxy_routing_id));
 }
 
 }  // namespace content

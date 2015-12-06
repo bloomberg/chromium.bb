@@ -10,6 +10,7 @@
 #include "content/common/content_export.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
+#include "third_party/WebKit/public/platform/WebFocusType.h"
 #include "third_party/WebKit/public/web/WebRemoteFrame.h"
 #include "third_party/WebKit/public/web/WebRemoteFrameClient.h"
 #include "url/origin.h"
@@ -132,6 +133,8 @@ class CONTENT_EXPORT RenderFrameProxy
   void forwardInputEvent(const blink::WebInputEvent* event) override;
   void frameRectsChanged(const blink::WebRect& frame_rect) override;
   void didChangeOpener(blink::WebFrame* opener) override;
+  void advanceFocus(blink::WebFocusType type,
+                    blink::WebLocalFrame* source) override;
 
   // IPC handlers
   void OnDidStartLoading();

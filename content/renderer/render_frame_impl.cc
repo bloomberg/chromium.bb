@@ -1243,6 +1243,7 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateSandboxFlags, OnDidUpdateSandboxFlags)
     IPC_MESSAGE_HANDLER(FrameMsg_SetFrameOwnerProperties,
                         OnSetFrameOwnerProperties)
+    IPC_MESSAGE_HANDLER(FrameMsg_AdvanceFocus, OnAdvanceFocus)
     IPC_MESSAGE_HANDLER(FrameMsg_SetTextTrackSettings,
                         OnTextTrackSettingsChanged)
     IPC_MESSAGE_HANDLER(FrameMsg_PostMessageEvent, OnPostMessageEvent)
@@ -1799,6 +1800,17 @@ void RenderFrameImpl::OnSetFrameOwnerProperties(
     const blink::WebFrameOwnerProperties& frame_owner_properties) {
   DCHECK(frame_);
   frame_->setFrameOwnerProperties(frame_owner_properties);
+}
+
+void RenderFrameImpl::OnAdvanceFocus(blink::WebFocusType type,
+                                     int32_t source_routing_id) {
+  RenderFrameProxy* source_frame =
+      RenderFrameProxy::FromRoutingID(source_routing_id);
+  if (!source_frame)
+    return;
+
+  render_view_->webview()->advanceFocusAcrossFrames(
+      type, source_frame->web_frame(), frame_);
 }
 
 void RenderFrameImpl::OnTextTrackSettingsChanged(

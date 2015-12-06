@@ -2968,6 +2968,13 @@ void WebViewImpl::advanceFocus(bool reverse)
     page()->focusController().advanceFocus(reverse ? WebFocusTypeBackward : WebFocusTypeForward);
 }
 
+void WebViewImpl::advanceFocusAcrossFrames(WebFocusType type, WebRemoteFrame* from, WebLocalFrame* to)
+{
+    // TODO(alexmos): Pass in proper with sourceCapabilities.
+    page()->focusController().advanceFocusAcrossFrames(
+        type, toWebRemoteFrameImpl(from)->frame(), toWebLocalFrameImpl(to)->frame());
+}
+
 double WebViewImpl::zoomLevel()
 {
     return m_zoomLevel;

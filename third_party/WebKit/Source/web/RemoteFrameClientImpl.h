@@ -36,6 +36,7 @@ public:
     unsigned backForwardLength() override;
     void forwardInputEvent(Event*) override;
     void frameRectsChanged(const IntRect& frameRect) override;
+    void advanceFocus(WebFocusType, LocalFrame*) override;
 
     WebRemoteFrameImpl* webFrame() const { return m_webFrame; }
 
