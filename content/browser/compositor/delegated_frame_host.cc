@@ -211,7 +211,7 @@ cc::SurfaceId DelegatedFrameHost::SurfaceIdAtPoint(
     gfx::Point* transformed_point) {
   if (surface_id_.is_null())
     return surface_id_;
-  cc::SurfaceHittest hittest(GetSurfaceManager());
+  cc::SurfaceHittest hittest(nullptr, GetSurfaceManager());
   gfx::Transform target_transform;
   cc::SurfaceId target_surface_id =
       hittest.GetTargetSurfaceAtPoint(surface_id_, point, &target_transform);
@@ -230,7 +230,7 @@ void DelegatedFrameHost::TransformPointToLocalCoordSpace(
     return;
 
   gfx::Transform transform;
-  cc::SurfaceHittest hittest(GetSurfaceManager());
+  cc::SurfaceHittest hittest(nullptr, GetSurfaceManager());
   if (hittest.GetTransformToTargetSurface(surface_id_, original_surface,
                                           &transform) &&
       transform.GetInverse(&transform)) {

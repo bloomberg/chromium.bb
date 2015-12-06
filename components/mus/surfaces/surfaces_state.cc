@@ -7,9 +7,7 @@
 namespace mus {
 
 SurfacesState::SurfacesState()
-    : next_id_namespace_(1u),
-      hit_tester_(&manager_) {
-}
+    : next_id_namespace_(1u), hit_tester_(nullptr, &manager_) {}
 
 SurfacesState::~SurfacesState() {}
 

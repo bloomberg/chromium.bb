@@ -16,16 +16,18 @@ class Transform;
 }
 
 namespace cc {
+
 class DrawQuad;
 class QuadList;
 class RenderPass;
 class RenderPassId;
+class SurfaceHittestDelegate;
 class SurfaceManager;
 
 // Performs a hittest in surface quads.
 class CC_SURFACES_EXPORT SurfaceHittest {
  public:
-  explicit SurfaceHittest(SurfaceManager* manager);
+  SurfaceHittest(SurfaceHittestDelegate* delegate, SurfaceManager* manager);
   ~SurfaceHittest();
 
   // Returns the target surface that falls underneath the provided |point|.
@@ -67,6 +69,7 @@ class CC_SURFACES_EXPORT SurfaceHittest {
                    gfx::Transform* target_to_quad_transform,
                    gfx::Point* point_in_quad_space);
 
+  SurfaceHittestDelegate* const delegate_;
   SurfaceManager* const manager_;
 };
 }  // namespace cc

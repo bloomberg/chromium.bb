@@ -92,5 +92,32 @@ scoped_ptr<CompositorFrame> CreateCompositorFrame(const gfx::Rect& root_rect,
   return root_frame;
 }
 
+TestSurfaceHittestDelegate::TestSurfaceHittestDelegate()
+    : target_overrides_(0) {}
+
+TestSurfaceHittestDelegate::~TestSurfaceHittestDelegate() {}
+
+void TestSurfaceHittestDelegate::AddInsetsForSurface(
+    const SurfaceId& surface_id,
+    const gfx::Insets& inset) {
+  insets_for_surface_.insert(std::make_pair(surface_id, inset));
+}
+
+bool TestSurfaceHittestDelegate::RejectHitTarget(
+    const SurfaceDrawQuad* surface_quad,
+    const gfx::Point& point_in_quad_space) {
+  if (!insets_for_surface_.count(surface_quad->surface_id))
+    return false;
+  gfx::Rect bounds(surface_quad->rect);
+  bounds.Inset(insets_for_surface_[surface_quad->surface_id]);
+  // If the point provided falls outside the inset, then we skip this surface.
+  if (!bounds.Contains(point_in_quad_space)) {
+    if (surface_quad->rect.Contains(point_in_quad_space))
+      ++target_overrides_;
+    return true;
+  }
+  return false;
+}
+
 }  // namespace test
 }  // namespace cc
