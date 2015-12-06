@@ -152,7 +152,7 @@ std::string PowerPolicyController::GetPolicyDebugString(
   }
   if (policy.has_reason())
     str += base::StringPrintf("reason=\"%s\" ", policy.reason().c_str());
-  base::TrimWhitespace(str, base::TRIM_TRAILING, &str);
+  base::TrimWhitespaceASCII(str, base::TRIM_TRAILING, &str);
   return str;
 }
 

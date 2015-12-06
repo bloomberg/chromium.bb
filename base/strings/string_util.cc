@@ -403,14 +403,6 @@ StringPiece TrimWhitespaceASCII(StringPiece input, TrimPositions positions) {
   return TrimStringPieceT(input, StringPiece(kWhitespaceASCII), positions);
 }
 
-// This function is only for backward-compatibility.
-// To be removed when all callers are updated.
-TrimPositions TrimWhitespace(const std::string& input,
-                             TrimPositions positions,
-                             std::string* output) {
-  return TrimWhitespaceASCII(input, positions, output);
-}
-
 template<typename STR>
 STR CollapseWhitespaceT(const STR& text,
                         bool trim_sequences_with_line_breaks) {

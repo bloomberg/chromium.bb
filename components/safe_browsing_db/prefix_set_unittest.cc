@@ -199,7 +199,7 @@ class PrefixSetTest : public PlatformTest {
     while (fgets(buf, sizeof(buf), file.get())) {
       std::string trimmed;
       if (base::TRIM_TRAILING !=
-          base::TrimWhitespace(buf, base::TRIM_ALL, &trimmed))
+          base::TrimWhitespaceASCII(buf, base::TRIM_ALL, &trimmed))
         return false;
       unsigned prefix;
       if (!base::StringToUint(trimmed, &prefix))

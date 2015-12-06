@@ -97,7 +97,7 @@ void GoogleURLTracker::OnURLFetchComplete(const net::URLFetcher* source) {
   // See if the response data was valid.  It should be ".google.<TLD>".
   std::string url_str;
   source->GetResponseAsString(&url_str);
-  base::TrimWhitespace(url_str, base::TRIM_ALL, &url_str);
+  base::TrimWhitespaceASCII(url_str, base::TRIM_ALL, &url_str);
   if (!base::StartsWith(url_str, ".google.",
                         base::CompareCase::INSENSITIVE_ASCII))
     return;

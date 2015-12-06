@@ -446,7 +446,7 @@ void ClipboardUtil::CFHtmlToHtml(const std::string& cf_html,
       fragment_start != std::string::npos &&
       fragment_end != std::string::npos) {
     *html = cf_html.substr(fragment_start, fragment_end - fragment_start);
-    base::TrimWhitespace(*html, base::TRIM_ALL, html);
+    base::TrimWhitespaceASCII(*html, base::TRIM_ALL, html);
   }
 }
 
@@ -464,7 +464,7 @@ void ClipboardUtil::CFHtmlExtractMetadata(const std::string& cf_html,
       size_t src_start = line_start + src_url_str.length();
       if (src_end != std::string::npos && src_start != std::string::npos) {
         *base_url = cf_html.substr(src_start, src_end - src_start);
-        base::TrimWhitespace(*base_url, base::TRIM_ALL, base_url);
+        base::TrimWhitespaceASCII(*base_url, base::TRIM_ALL, base_url);
       }
     }
   }

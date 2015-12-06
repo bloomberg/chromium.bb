@@ -31,7 +31,12 @@ void SanitizeGeneratedFileName(base::FilePath::StringType* filename,
     size_t length = filename->size();
     size_t pos = filename->find_last_not_of(FILE_PATH_LITERAL(" ."));
     filename->resize((pos == std::string::npos) ? 0 : (pos + 1));
+#if defined(OS_WIN)
     base::TrimWhitespace(*filename, base::TRIM_TRAILING, filename);
+#else
+    base::TrimWhitespaceASCII(*filename, base::TRIM_TRAILING, filename);
+#endif
+
     if (filename->empty())
       return;
     size_t trimmed = length - filename->size();

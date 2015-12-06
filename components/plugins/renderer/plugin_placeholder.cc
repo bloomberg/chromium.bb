@@ -81,7 +81,7 @@ void PluginPlaceholderBase::HidePlugin() {
     if (base::EndsWith(width_str, "px", base::CompareCase::INSENSITIVE_ASCII)) {
       width_str = width_str.substr(0, width_str.length() - 2);
     }
-    base::TrimWhitespace(width_str, base::TRIM_TRAILING, &width_str);
+    base::TrimWhitespaceASCII(width_str, base::TRIM_TRAILING, &width_str);
     width_str += "[\\s]*px";
     std::string height_str("height:[\\s]*");
     height_str += element.getAttribute("height").utf8().data();
@@ -89,7 +89,7 @@ void PluginPlaceholderBase::HidePlugin() {
                        base::CompareCase::INSENSITIVE_ASCII)) {
       height_str = height_str.substr(0, height_str.length() - 2);
     }
-    base::TrimWhitespace(height_str, base::TRIM_TRAILING, &height_str);
+    base::TrimWhitespaceASCII(height_str, base::TRIM_TRAILING, &height_str);
     height_str += "[\\s]*px";
     blink::WebNode parent = element;
     while (!parent.parentNode().isNull()) {

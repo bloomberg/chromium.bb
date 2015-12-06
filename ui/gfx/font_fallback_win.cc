@@ -206,8 +206,8 @@ void ParseFontFamilyString(const std::string& family,
     const size_t index = font_names->back().find('(');
     if (index != std::string::npos) {
       font_names->back().resize(index);
-      base::TrimWhitespace(font_names->back(), base::TRIM_TRAILING,
-                           &font_names->back());
+      base::TrimWhitespaceASCII(font_names->back(), base::TRIM_TRAILING,
+                                &font_names->back());
     }
   }
 }

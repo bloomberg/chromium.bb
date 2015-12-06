@@ -36,8 +36,8 @@ bool GetByteRange(const std::string& headers, uint32_t* start, uint32_t* end) {
         std::string range_end;
         if (pos != std::string::npos)
           range_end = range.substr(pos + 1);
-        TrimWhitespaceASCII(range, base::TRIM_LEADING, &range);
-        TrimWhitespaceASCII(range_end, base::TRIM_LEADING, &range_end);
+        base::TrimWhitespaceASCII(range, base::TRIM_LEADING, &range);
+        base::TrimWhitespaceASCII(range_end, base::TRIM_LEADING, &range_end);
         *start = atoi(range.c_str());
         *end = atoi(range_end.c_str());
         return true;
@@ -145,7 +145,7 @@ bool DocumentLoader::Init(const pp::URLLoader& loader,
         if (semi_colon_pos != std::string::npos) {
           type = type.substr(0, semi_colon_pos);
         }
-        TrimWhitespace(type, base::TRIM_ALL, &type);
+        TrimWhitespaceASCII(type, base::TRIM_ALL, &type);
       } else if (base::LowerCaseEqualsASCII(it.name(), "content-disposition")) {
         disposition = it.values();
       }

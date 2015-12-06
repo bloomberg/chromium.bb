@@ -94,7 +94,8 @@ bool CpuIsOnline(const int i) {
   std::string cpu_online_string;
   if (base::ReadFileToString(base::FilePath(cpu_online_file),
                              &cpu_online_string)) {
-    base::TrimWhitespace(cpu_online_string, base::TRIM_ALL, &cpu_online_string);
+    base::TrimWhitespaceASCII(cpu_online_string, base::TRIM_ALL,
+                              &cpu_online_string);
     if (base::StringToInt(cpu_online_string, &online))
       return online == kCpuOnlineStatus;
   }
@@ -159,9 +160,9 @@ void SampleCpuIdleData(
           return;
         }
 
-        base::TrimWhitespace(state_name, base::TRIM_ALL, &state_name);
-        base::TrimWhitespace(
-            occupancy_time_string, base::TRIM_ALL, &occupancy_time_string);
+        base::TrimWhitespaceASCII(state_name, base::TRIM_ALL, &state_name);
+        base::TrimWhitespaceASCII(occupancy_time_string, base::TRIM_ALL,
+                                  &occupancy_time_string);
         if (base::StringToInt64(occupancy_time_string, &occupancy_time_usec)) {
           // idle state occupancy time in sysfs is recorded in microseconds.
           int64 time_in_state_ms = occupancy_time_usec / 1000;
@@ -324,7 +325,8 @@ void SampleCpuStateOnBlockingPool(
         int max_cpu;
         // The possible CPUs are listed in the format "0-N". Hence, N is present
         // in the substring starting at offset 2.
-        base::TrimWhitespace(possible_string, base::TRIM_ALL, &possible_string);
+        base::TrimWhitespaceASCII(possible_string, base::TRIM_ALL,
+                                  &possible_string);
         if (possible_string.find("-") != std::string::npos &&
             possible_string.length() > 2 &&
             base::StringToInt(possible_string.substr(2), &max_cpu)) {

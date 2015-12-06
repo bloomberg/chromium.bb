@@ -127,9 +127,9 @@ void EditSearchEngineController::CleanUpCancelledAdd() {
 std::string EditSearchEngineController::GetFixedUpURL(
     const std::string& url_input) const {
   std::string url;
-  base::TrimWhitespace(TemplateURLRef::DisplayURLToURLRef(
-                           base::UTF8ToUTF16(url_input)),
-                       base::TRIM_ALL, &url);
+  base::TrimWhitespaceASCII(
+      TemplateURLRef::DisplayURLToURLRef(base::UTF8ToUTF16(url_input)),
+      base::TRIM_ALL, &url);
   if (url.empty())
     return url;
 

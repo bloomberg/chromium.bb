@@ -223,7 +223,7 @@ class HttpRequest {
 
     std::string value = response_.substr(
         start_pos + header.length(), endline_pos - start_pos - header.length());
-    base::TrimWhitespace(value, base::TRIM_ALL, &value);
+    base::TrimWhitespaceASCII(value, base::TRIM_ALL, &value);
     return value;
   }
 

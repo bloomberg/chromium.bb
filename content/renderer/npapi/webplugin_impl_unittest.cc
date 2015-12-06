@@ -19,7 +19,7 @@ namespace {
 
 std::string GetHeader(const WebURLRequest& request, const char* name) {
   std::string result;
-  base::TrimWhitespace(
+  base::TrimWhitespaceASCII(
       request.httpHeaderField(WebString::fromUTF8(name)).utf8(),
       base::TRIM_ALL,
       &result);

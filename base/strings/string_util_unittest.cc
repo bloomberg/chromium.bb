@@ -250,7 +250,7 @@ TEST(StringUtilTest, TrimWhitespace) {
   for (size_t i = 0; i < arraysize(trim_cases_ascii); ++i) {
     const trim_case_ascii& value = trim_cases_ascii[i];
     EXPECT_EQ(value.return_value,
-              TrimWhitespace(value.input, value.positions, &output_ascii));
+              TrimWhitespaceASCII(value.input, value.positions, &output_ascii));
     EXPECT_EQ(value.output, output_ascii);
   }
 }
