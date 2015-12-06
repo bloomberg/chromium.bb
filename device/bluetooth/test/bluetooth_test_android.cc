@@ -163,6 +163,16 @@ void BluetoothTestAndroid::SimulateGattCharacteristic(
       base::android::ConvertUTF8ToJavaString(env, uuid).obj(), properties);
 }
 
+void BluetoothTestAndroid::RememberCharacteristicForSubsequentAction(
+    BluetoothGattCharacteristic* characteristic) {
+  BluetoothRemoteGattCharacteristicAndroid* characteristic_android =
+      static_cast<BluetoothRemoteGattCharacteristicAndroid*>(characteristic);
+
+  Java_FakeBluetoothGattCharacteristic_rememberCharacteristic(
+      base::android::AttachCurrentThread(),
+      characteristic_android->GetJavaObject().obj());
+}
+
 void BluetoothTestAndroid::SimulateGattNotifySessionStarted(
     BluetoothGattCharacteristic* characteristic) {
   // Android doesn't provide any sort of callback for when notifications have
@@ -190,7 +200,9 @@ void BluetoothTestAndroid::SimulateGattCharacteristicRead(
   JNIEnv* env = base::android::AttachCurrentThread();
 
   Java_FakeBluetoothGattCharacteristic_valueRead(
-      env, characteristic_android->GetJavaObject().obj(),
+      env,
+      characteristic_android ? characteristic_android->GetJavaObject().obj()
+                             : nullptr,
       0,  // android.bluetooth.BluetoothGatt.GATT_SUCCESS
       base::android::ToJavaByteArray(env, value).obj());
 }
@@ -226,7 +238,8 @@ void BluetoothTestAndroid::SimulateGattCharacteristicWrite(
       static_cast<BluetoothRemoteGattCharacteristicAndroid*>(characteristic);
   Java_FakeBluetoothGattCharacteristic_valueWrite(
       base::android::AttachCurrentThread(),
-      characteristic_android->GetJavaObject().obj(),
+      characteristic_android ? characteristic_android->GetJavaObject().obj()
+                             : nullptr,
       0);  // android.bluetooth.BluetoothGatt.GATT_SUCCESS
 }
 

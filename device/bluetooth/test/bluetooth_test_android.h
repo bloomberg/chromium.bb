@@ -39,6 +39,8 @@ class BluetoothTestAndroid : public BluetoothTestBase {
   void SimulateGattCharacteristic(BluetoothGattService* service,
                                   const std::string& uuid,
                                   int properties) override;
+  void RememberCharacteristicForSubsequentAction(
+      BluetoothGattCharacteristic* characteristic) override;
   void SimulateGattNotifySessionStarted(
       BluetoothGattCharacteristic* characteristic) override;
   void SimulateGattCharacteristicSetNotifyWillFailSynchronouslyOnce(

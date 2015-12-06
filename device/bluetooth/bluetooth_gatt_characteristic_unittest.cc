@@ -214,6 +214,42 @@ TEST_F(BluetoothGattCharacteristicTest, WriteRemoteCharacteristic_Empty) {
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_ANDROID)
+// Tests ReadRemoteCharacteristic completing after Chrome objects are deleted.
+TEST_F(BluetoothGattCharacteristicTest, ReadRemoteCharacteristic_AfterDeleted) {
+  ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate());
+
+  characteristic1_->ReadRemoteCharacteristic(
+      GetReadValueCallback(Call::NOT_EXPECTED),
+      GetGattErrorCallback(Call::NOT_EXPECTED));
+
+  RememberCharacteristicForSubsequentAction(characteristic1_);
+  DeleteDevice(device_);
+
+  std::vector<uint8_t> empty_vector;
+  SimulateGattCharacteristicRead(/* use remembered characteristic */ nullptr,
+                                 empty_vector);
+}
+#endif  // defined(OS_ANDROID)
+
+#if defined(OS_ANDROID)
+// Tests WriteRemoteCharacteristic completing after Chrome objects are deleted.
+TEST_F(BluetoothGattCharacteristicTest,
+       WriteRemoteCharacteristic_AfterDeleted) {
+  ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate());
+
+  std::vector<uint8_t> empty_vector;
+  characteristic1_->WriteRemoteCharacteristic(
+      empty_vector, GetCallback(Call::NOT_EXPECTED),
+      GetGattErrorCallback(Call::NOT_EXPECTED));
+
+  RememberCharacteristicForSubsequentAction(characteristic1_);
+  DeleteDevice(device_);
+
+  SimulateGattCharacteristicWrite(/* use remembered characteristic */ nullptr);
+}
+#endif  // defined(OS_ANDROID)
+
+#if defined(OS_ANDROID)
 // Tests ReadRemoteCharacteristic and GetValue with non-empty value buffer.
 TEST_F(BluetoothGattCharacteristicTest, ReadRemoteCharacteristic) {
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate());

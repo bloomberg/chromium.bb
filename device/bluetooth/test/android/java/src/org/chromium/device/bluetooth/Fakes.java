@@ -428,6 +428,7 @@ class Fakes {
         final int mProperties;
         final UUID mUuid;
         byte[] mValue;
+        static FakeBluetoothGattCharacteristic sRememberedCharacteristic;
 
         public FakeBluetoothGattCharacteristic(
                 FakeBluetoothGattService service, int instanceId, int properties, UUID uuid) {
@@ -441,10 +442,23 @@ class Fakes {
 
         // Simulate a value being read from a characteristic.
         @CalledByNative("FakeBluetoothGattCharacteristic")
+        private static void rememberCharacteristic(
+                ChromeBluetoothRemoteGattCharacteristic chromeCharacteristic) {
+            sRememberedCharacteristic =
+                    (FakeBluetoothGattCharacteristic) chromeCharacteristic.mCharacteristic;
+        }
+
+        // Simulate a value being read from a characteristic.
+        @CalledByNative("FakeBluetoothGattCharacteristic")
         private static void valueRead(ChromeBluetoothRemoteGattCharacteristic chromeCharacteristic,
                 int status, byte[] value) {
-            FakeBluetoothGattCharacteristic fakeCharacteristic =
-                    (FakeBluetoothGattCharacteristic) chromeCharacteristic.mCharacteristic;
+            if (chromeCharacteristic == null && sRememberedCharacteristic == null)
+                throw new IllegalArgumentException(
+                        "rememberCharacteristic wasn't called previously.");
+
+            FakeBluetoothGattCharacteristic fakeCharacteristic = (chromeCharacteristic == null)
+                    ? sRememberedCharacteristic
+                    : (FakeBluetoothGattCharacteristic) chromeCharacteristic.mCharacteristic;
 
             fakeCharacteristic.mValue = value;
             fakeCharacteristic.mService.mDevice.mGattCallback.onCharacteristicRead(
@@ -455,8 +469,13 @@ class Fakes {
         @CalledByNative("FakeBluetoothGattCharacteristic")
         private static void valueWrite(
                 ChromeBluetoothRemoteGattCharacteristic chromeCharacteristic, int status) {
-            FakeBluetoothGattCharacteristic fakeCharacteristic =
-                    (FakeBluetoothGattCharacteristic) chromeCharacteristic.mCharacteristic;
+            if (chromeCharacteristic == null && sRememberedCharacteristic == null)
+                throw new IllegalArgumentException(
+                        "rememberCharacteristic wasn't called previously.");
+
+            FakeBluetoothGattCharacteristic fakeCharacteristic = (chromeCharacteristic == null)
+                    ? sRememberedCharacteristic
+                    : (FakeBluetoothGattCharacteristic) chromeCharacteristic.mCharacteristic;
 
             fakeCharacteristic.mService.mDevice.mGattCallback.onCharacteristicWrite(
                     fakeCharacteristic, status);
