@@ -28,6 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// https://html.spec.whatwg.org/#imagebitmapfactories
+
 typedef (HTMLImageElement or
          HTMLVideoElement or
          HTMLCanvasElement or
