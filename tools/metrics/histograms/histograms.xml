@@ -79775,6 +79775,9 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="ContentLength_Image_WEBP"
       label="for each carrier, number of WebP image responses whose
              Content-Length header has been tampered with"/>
+  <suffix name="ContentLength_Video"
+      label="for each carrier, number of video responses whose Content-Length
+             header has been tampered with"/>
   <suffix name="CompressionRatio_Image"
       label="the histogram of compression ratio of images"/>
   <suffix name="CompressionRatio_Image_GIF"
@@ -79785,6 +79788,8 @@ To add a new entry, add it with any value and run test to compute valid value.
       label="the histogram of compression ratio of PNG images"/>
   <suffix name="CompressionRatio_Image_WEBP"
       label="the histogram of compression ratio of WEBP images"/>
+  <suffix name="CompressionRatio_Video"
+      label="the histogram of compression ratio of videos"/>
   <suffix name="CompressionRatio_Image_0_10KB"
       label="the histogram of compression ratio of images whose sizes are in
              the range of 0-10KB"/>
@@ -79838,6 +79843,8 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram
       name="DataReductionProxy.HeaderTamperDetectionHTTP_Image_WEBP"/>
   <affected-histogram name="DataReductionProxy.HeaderTamperDetectionHTTP_JS"/>
+  <affected-histogram
+      name="DataReductionProxy.HeaderTamperDetectionHTTP_Video"/>
   <affected-histogram name="DataReductionProxy.HeaderTamperDetectionHTTPS"/>
   <affected-histogram name="DataReductionProxy.HeaderTamperDetectionHTTPS_CSS"/>
   <affected-histogram
@@ -79859,6 +79866,8 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram
       name="DataReductionProxy.HeaderTamperDetectionHTTPS_Image_WEBP"/>
   <affected-histogram name="DataReductionProxy.HeaderTamperDetectionHTTPS_JS"/>
+  <affected-histogram
+      name="DataReductionProxy.HeaderTamperDetectionHTTPS_Video"/>
   <affected-histogram name="DataReductionProxy.HeaderTamperDetectionPassHTTP"/>
   <affected-histogram name="DataReductionProxy.HeaderTamperDetectionPassHTTPS"/>
   <affected-histogram name="DataReductionProxy.HeaderTamperedHTTP_ChromeProxy"/>
@@ -79903,6 +79912,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="Image_JPG" label="JPG image count"/>
   <suffix name="Image_PNG" label="PNG image count"/>
   <suffix name="Image_WEBP" label="WEBP image count"/>
+  <suffix name="Video" label="Video count"/>
   <suffix name="Image_0_10KB" label="image counts of 0-10KB"/>
   <suffix name="Image_10_100KB" label="image counts of 10-100KB"/>
   <suffix name="Image_100_500KB" label="image counts of 100-500KB"/>

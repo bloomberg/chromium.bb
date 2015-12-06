@@ -105,6 +105,8 @@ class DataReductionProxyTamperDetection {
                            HistogramCount);
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyTamperDetectionTest,
                            DetectAndReport);
+  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyTamperDetectionTest,
+                           CompressionRatio);
 
   // Reports UMA for the numbers of responses with valid fingerprints, separated
   // by MIME type.

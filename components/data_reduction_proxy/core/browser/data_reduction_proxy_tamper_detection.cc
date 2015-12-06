@@ -250,6 +250,10 @@ void DataReductionProxyTamperDetection::ReportUMAForTamperDetectionCount(
           "DataReductionProxy.HeaderTamperDetectionHTTP_Image_500KB",
           carrier_id_);
     }
+  } else if (net::MatchesMimeType("video/*", mime_type)) {
+    REPORT_TAMPER_DETECTION_UMA(
+        scheme_is_https_, "DataReductionProxy.HeaderTamperDetectionHTTPS_Video",
+        "DataReductionProxy.HeaderTamperDetectionHTTP_Video", carrier_id_);
   }
 }
 
@@ -490,6 +494,12 @@ void DataReductionProxyTamperDetection::ReportUMAForContentLength(
       REPORT_TAMPER_DETECTION_UMA_COMPRESSION_RATIO(
           scheme_is_https_, "_Image_500KB", compression_ratio);
     }
+  } else if (net::MatchesMimeType("video/*", mime_type)) {
+    REPORT_TAMPER_DETECTION_UMA_AND_COMPRESSION_RATIO(
+        scheme_is_https_,
+        "DataReductionProxy.HeaderTamperedHTTPS_ContentLength_Video",
+        "DataReductionProxy.HeaderTamperedHTTP_ContentLength_Video",
+        carrier_id_, "_Video", compression_ratio);
   } else {
     REPORT_TAMPER_DETECTION_UMA(
         scheme_is_https_,
