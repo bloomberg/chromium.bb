@@ -14,7 +14,7 @@
 #include "content/common/gpu/gpu_channel.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
-#include "media/base/android/media_codec_bridge.h"
+#include "media/base/android/media_codec_util.h"
 #include "media/base/bitstream_buffer.h"
 #include "media/base/limits.h"
 #include "media/video/picture.h"
@@ -22,7 +22,6 @@
 #include "ui/gl/android/scoped_java_surface.h"
 #include "ui/gl/gl_bindings.h"
 
-using media::MediaCodecBridge;
 using media::VideoCodecBridge;
 using media::VideoFrame;
 
@@ -83,7 +82,7 @@ static bool GetSupportedColorFormatForMime(const std::string& mime,
   if (mime.empty())
     return false;
 
-  std::set<int> formats = MediaCodecBridge::GetEncoderColorFormats(mime);
+  std::set<int> formats = media::MediaCodecUtil::GetEncoderColorFormats(mime);
   if (formats.count(COLOR_FORMAT_YUV420_SEMIPLANAR) > 0)
     *pixel_format = COLOR_FORMAT_YUV420_SEMIPLANAR;
   else if (formats.count(COLOR_FORMAT_YUV420_PLANAR) > 0)
@@ -157,8 +156,8 @@ bool AndroidVideoEncodeAccelerator::Initialize(
 
   client_ptr_factory_.reset(new base::WeakPtrFactory<Client>(client));
 
-  if (!(media::MediaCodecBridge::SupportsSetParameters() &&
-        format == media::PIXEL_FORMAT_I420)) {
+  if (!(media::MediaCodecUtil::SupportsSetParameters() &&
+      format == media::PIXEL_FORMAT_I420)) {
     DLOG(ERROR) << "Unexpected combo: " << format << ", " << output_profile;
     return false;
   }

@@ -14,7 +14,7 @@
 #include "base/timer/timer.h"
 #include "base/tuple.h"
 #include "content/common/content_export.h"
-#include "media/base/android/media_codec_bridge.h"
+#include "media/base/android/sdk_media_codec_bridge.h"
 #include "media/video/video_encode_accelerator.h"
 
 namespace media {

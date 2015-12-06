@@ -1182,12 +1182,12 @@
       ],
       'sources': [
         'base/android/access_unit_queue_unittest.cc',
-        'base/android/media_codec_bridge_unittest.cc',
         'base/android/media_codec_decoder_unittest.cc',
         'base/android/media_codec_player_unittest.cc',
         'base/android/media_drm_bridge_unittest.cc',
         'base/android/media_player_bridge_unittest.cc',
         'base/android/media_source_player_unittest.cc',
+        'base/android/sdk_media_codec_bridge_unittest.cc',
         'base/android/test_data_factory.cc',
         'base/android/test_data_factory.h',
         'base/android/test_statistics.h',
@@ -1807,6 +1807,7 @@
             'base/android/java/src/org/chromium/media/AudioManagerAndroid.java',
             'base/android/java/src/org/chromium/media/AudioRecordInput.java',
             'base/android/java/src/org/chromium/media/MediaCodecBridge.java',
+            'base/android/java/src/org/chromium/media/MediaCodecUtil.java',
             'base/android/java/src/org/chromium/media/MediaDrmBridge.java',
             'base/android/java/src/org/chromium/media/MediaPlayerBridge.java',
             'base/android/java/src/org/chromium/media/MediaPlayerListener.java',
@@ -1856,6 +1857,8 @@
             'base/android/media_codec_player.h',
             'base/android/media_codec_video_decoder.cc',
             'base/android/media_codec_video_decoder.h',
+            'base/android/media_codec_util.cc',
+            'base/android/media_codec_util.h',
             'base/android/media_common_android.h',
             'base/android/media_decoder_job.cc',
             'base/android/media_decoder_job.h',
@@ -1882,11 +1885,27 @@
             'base/android/media_task_runner.h',
             'base/android/media_url_interceptor.h',
             'base/android/provision_fetcher.h',
+            'base/android/sdk_media_codec_bridge.cc',
+            'base/android/sdk_media_codec_bridge.h',
             'base/android/video_decoder_job.cc',
             'base/android/video_decoder_job.h',
             'base/android/webaudio_media_codec_bridge.cc',
             'base/android/webaudio_media_codec_bridge.h',
             'base/android/webaudio_media_codec_info.h',
+          ],
+          'conditions': [
+            # Only 64 bit builds are using android-21 NDK library, check common.gypi
+            ['target_arch=="arm64" or target_arch=="x64" or target_arch=="mips64el"', {
+              'sources': [
+                'base/android/ndk_media_codec_bridge.cc',
+                'base/android/ndk_media_codec_bridge.h',
+              ],
+              'link_settings': {
+                'libraries': [
+                  '-lmediandk',
+                ],
+              },
+            }],
           ],
           'dependencies': [
             '../base/base.gyp:base',

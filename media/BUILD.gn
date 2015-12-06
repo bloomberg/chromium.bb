@@ -395,6 +395,16 @@ component("media") {
       "//media/base/android:media_jni_headers",
       "//media/base/android:video_capture_jni_headers",
     ]
+
+    # Only 64 bit builds are using android-21 NDK library, check common.gypi
+    if (current_cpu == "arm64" || current_cpu == "x64" ||
+        current_cpu == "mips64el") {
+      sources += [
+        "base/android/ndk_media_codec_bridge.cc",
+        "base/android/ndk_media_codec_bridge.h",
+      ]
+      libs += [ "-lmediandk" ]
+    }
     allow_circular_includes_from = [ "//media/base/android" ]
   }
 

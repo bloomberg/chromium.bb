@@ -1,0 +1,63 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef MEDIA_BASE_ANDROID_MEDIA_CODEC_UTIL_H_
+#define MEDIA_BASE_ANDROID_MEDIA_CODEC_UTIL_H_
+
+#include <jni.h>
+#include <set>
+#include <string>
+#include <vector>
+
+#include "base/compiler_specific.h"
+#include "base/macros.h"
+#include "media/base/media_export.h"
+
+namespace media {
+
+// Helper macro to skip the test if MediaCodecBridge isn't available.
+#define SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE()        \
+  do {                                                            \
+    if (!MediaCodecUtil::IsMediaCodecAvailable()) {               \
+      VLOG(0) << "Could not run test - not supported on device."; \
+      return;                                                     \
+    }                                                             \
+  } while (0)
+
+// Codec direction. Keep this in sync with MediaCodecUtil.java.
+enum MediaCodecDirection {
+  MEDIA_CODEC_DECODER,
+  MEDIA_CODEC_ENCODER,
+};
+
+class MEDIA_EXPORT MediaCodecUtil {
+ public:
+  // Returns true if MediaCodec is available on the device.
+  // All other static methods check IsAvailable() internally. There's no need
+  // to check IsAvailable() explicitly before calling them.
+  static bool IsMediaCodecAvailable();
+
+  // Returns true if MediaCodec.setParameters() is available on the device.
+  static bool SupportsSetParameters();
+
+  // Returns whether MediaCodecBridge has a decoder that |is_secure| and can
+  // decode |codec| type.
+  static bool CanDecode(const std::string& codec, bool is_secure);
+
+  // Get a list of encoder supported color formats for |mime_type|.
+  // The mapping of color format name and its value refers to
+  // MediaCodecInfo.CodecCapabilities.
+  static std::set<int> GetEncoderColorFormats(const std::string& mime_type);
+
+  // Returns true if |mime_type| is known to be unaccelerated (i.e. backed by a
+  // software codec instead of a hardware one).
+  static bool IsKnownUnaccelerated(const std::string& mime_type,
+                                   MediaCodecDirection direction);
+
+  static bool RegisterMediaCodecUtil(JNIEnv* env);
+};
+
+}  // namespace media
+
+#endif  // MEDIA_BASE_ANDROID_MEDIA_CODEC_UTIL_H_
