@@ -62,6 +62,7 @@ source_set("variations") {
   }
 
   deps = [
+    "proto",
     "//base",
     "//base:prefs",
     "//components/compression",
@@ -69,7 +70,6 @@ source_set("variations") {
     "//crypto",
     "//third_party/mt19937ar",
     "//third_party/protobuf:protobuf_lite",
-    "proto",
   ]
 
   if (is_android) {
@@ -111,11 +111,11 @@ source_set("unit_tests") {
 
   deps = [
     ":variations",
+    "net",
+    "proto",
     "//base:prefs_test_support",
     "//base/test:test_support",
     "//components/compression",
     "//testing/gtest",
-    "net",
-    "proto",
   ]
 }

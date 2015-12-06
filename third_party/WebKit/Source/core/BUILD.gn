@@ -49,6 +49,8 @@ source_set("generated") {
   deps = [
     ":make_core_generated",
     ":prerequisites",
+    "inspector:instrumentation_sources",
+    "inspector:protocol_sources",
     "//gin",
     "//skia",
     "//third_party/WebKit/Source/bindings/core/v8:bindings_core_v8_generated",
@@ -60,8 +62,6 @@ source_set("generated") {
     "//third_party/npapi",
     "//third_party/qcms",
     "//third_party/sqlite",
-    "inspector:instrumentation_sources",
-    "inspector:protocol_sources",
 
     # FIXME: don't depend on bindings/modules http://crbug.com/358074
     "//third_party/WebKit/Source/bindings/modules:bindings_modules_generated",
@@ -97,9 +97,9 @@ source_set("prerequisites") {
   ]
   deps = [
     ":make_core_generated",
-    "//third_party/WebKit/Source/bindings/core/v8:bindings_core_v8_generated",
     "inspector:instrumentation_sources",
     "inspector:protocol_sources",
+    "//third_party/WebKit/Source/bindings/core/v8:bindings_core_v8_generated",
 
     # FIXME: don't depend on bindings_modules http://crbug.com/358074
     "//third_party/WebKit/Source/bindings/modules/v8:bindings_modules_generated",
@@ -423,6 +423,8 @@ source_set("core_generated") {
   public_deps = [
     ":make_core_generated",
     ":prerequisites",
+    "inspector:instrumentation_sources",
+    "inspector:protocol_sources",
     "//gin",
     "//skia",
     "//third_party/WebKit/Source/bindings/core/v8:bindings_core_v8_generated",
@@ -434,8 +436,6 @@ source_set("core_generated") {
     "//third_party/npapi",
     "//third_party/qcms",
     "//third_party/sqlite",
-    "inspector:instrumentation_sources",
-    "inspector:protocol_sources",
 
     # FIXME: don't depend on bindings/modules http://crbug.com/358074
     "//third_party/WebKit/Source/bindings/modules:bindings_modules_generated",

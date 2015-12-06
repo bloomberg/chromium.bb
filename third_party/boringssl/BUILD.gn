@@ -74,6 +74,7 @@ component("boringssl") {
     if (is_android) {
       rebased_android_toolchain_root =
           rebase_path(android_toolchain_root, root_build_dir)
+
       # Else /usr/bin/as gets picked up.
       asmflags += [ "-B${rebased_android_toolchain_root}/bin" ]
     }

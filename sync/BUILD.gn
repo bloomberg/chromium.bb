@@ -879,10 +879,10 @@ if (is_android) {
   android_library("sync_java_test_support") {
     testonly = true
     deps = [
+      "android:sync_java",
       "//base:base_java",
       "//base:base_java_test_support",
       "//third_party/jsr-305:jsr_305_javalib",
-      "android:sync_java",
     ]
     DEPRECATED_java_in_dir = "test/android/javatests/src"
   }

@@ -115,11 +115,11 @@ test("cacheinvalidation_unittests") {
 
   deps = [
     ":cacheinvalidation",
+    "src/google/cacheinvalidation:cacheinvalidation_proto_cpp",
     "//base",
     "//base/test:run_all_unittests",
     "//testing/gmock",
     "//testing/gtest",
-    "src/google/cacheinvalidation:cacheinvalidation_proto_cpp",
   ]
 }
 
