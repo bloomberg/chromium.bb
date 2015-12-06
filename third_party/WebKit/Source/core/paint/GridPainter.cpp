@@ -51,9 +51,9 @@ void GridPainter::paintChildren(const PaintInfo& paintInfo, const LayoutPoint& p
 
     Vector<std::pair<LayoutBox*, size_t>> gridItemsToBePainted;
 
-    for (GridSpan::iterator row = dirtiedRows.begin(); row != dirtiedRows.end(); ++row) {
-        for (GridSpan::iterator column = dirtiedColumns.begin(); column != dirtiedColumns.end(); ++column) {
-            const Vector<LayoutBox*, 1>& children = m_layoutGrid.gridCell(row.toInt(), column.toInt());
+    for (const auto& row : dirtiedRows) {
+        for (const auto& column : dirtiedColumns) {
+            const Vector<LayoutBox*, 1>& children = m_layoutGrid.gridCell(row, column);
             for (auto* child : children)
                 gridItemsToBePainted.append(std::make_pair(child, m_layoutGrid.paintIndexForGridItem(child)));
         }

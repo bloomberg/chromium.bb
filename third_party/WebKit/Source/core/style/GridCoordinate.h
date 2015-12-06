@@ -50,7 +50,7 @@ struct GridSpan {
     USING_FAST_MALLOC(GridSpan);
 public:
 
-    static GridSpan definiteGridSpan(const GridResolvedPosition& resolvedInitialPosition, const GridResolvedPosition& resolvedFinalPosition)
+    static GridSpan definiteGridSpan(size_t resolvedInitialPosition, size_t resolvedFinalPosition)
     {
         return GridSpan(resolvedInitialPosition, resolvedFinalPosition, Definite);
     }
@@ -68,30 +68,40 @@ public:
     size_t integerSpan() const
     {
         ASSERT(isDefinite());
-        return m_resolvedFinalPosition.toInt() - m_resolvedInitialPosition.toInt();
+        ASSERT(m_resolvedFinalPosition > m_resolvedInitialPosition);
+        return m_resolvedFinalPosition - m_resolvedInitialPosition;
     }
 
-    const GridResolvedPosition& resolvedInitialPosition() const
+    size_t resolvedInitialPosition() const
     {
         ASSERT(isDefinite());
         return m_resolvedInitialPosition;
     }
 
-    const GridResolvedPosition& resolvedFinalPosition() const
+    size_t resolvedFinalPosition() const
     {
         ASSERT(isDefinite());
+        ASSERT(m_resolvedFinalPosition);
         return m_resolvedFinalPosition;
     }
 
-    typedef GridResolvedPosition iterator;
+    struct GridSpanIterator {
+        GridSpanIterator(size_t v) : value(v) {}
 
-    iterator begin() const
+        size_t operator*() const { return value; }
+        size_t operator++() { return value++; }
+        bool operator!=(GridSpanIterator other) const { return value != other.value; }
+
+        size_t value;
+    };
+
+    GridSpanIterator begin() const
     {
         ASSERT(isDefinite());
         return m_resolvedInitialPosition;
     }
 
-    iterator end() const
+    GridSpanIterator end() const
     {
         ASSERT(isDefinite());
         return m_resolvedFinalPosition;
@@ -106,16 +116,16 @@ private:
 
     enum GridSpanType {Definite, Indefinite};
 
-    GridSpan(const GridResolvedPosition& resolvedInitialPosition, const GridResolvedPosition& resolvedFinalPosition, GridSpanType type)
-        : m_resolvedInitialPosition(std::min(resolvedInitialPosition.toInt(), kGridMaxTracks - 1))
-        , m_resolvedFinalPosition(std::min(resolvedFinalPosition.toInt(), kGridMaxTracks))
+    GridSpan(size_t resolvedInitialPosition, size_t resolvedFinalPosition, GridSpanType type)
+        : m_resolvedInitialPosition(std::min(resolvedInitialPosition, kGridMaxTracks - 1))
+        , m_resolvedFinalPosition(std::min(resolvedFinalPosition, kGridMaxTracks))
         , m_type(type)
     {
         ASSERT(resolvedInitialPosition < resolvedFinalPosition);
     }
 
-    GridResolvedPosition m_resolvedInitialPosition;
-    GridResolvedPosition m_resolvedFinalPosition;
+    size_t m_resolvedInitialPosition;
+    size_t m_resolvedFinalPosition;
     GridSpanType m_type;
 };
 

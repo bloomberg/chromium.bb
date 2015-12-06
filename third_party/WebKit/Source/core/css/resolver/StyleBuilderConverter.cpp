@@ -521,12 +521,12 @@ void StyleBuilderConverter::createImplicitNamedGridLinesFromGridArea(const Named
         GridSpan areaSpan = direction == ForRows ? namedGridAreaEntry.value.rows : namedGridAreaEntry.value.columns;
         {
             NamedGridLinesMap::AddResult startResult = namedGridLines.add(namedGridAreaEntry.key + "-start", Vector<size_t>());
-            startResult.storedValue->value.append(areaSpan.resolvedInitialPosition().toInt());
+            startResult.storedValue->value.append(areaSpan.resolvedInitialPosition());
             std::sort(startResult.storedValue->value.begin(), startResult.storedValue->value.end());
         }
         {
             NamedGridLinesMap::AddResult endResult = namedGridLines.add(namedGridAreaEntry.key + "-end", Vector<size_t>());
-            endResult.storedValue->value.append(areaSpan.resolvedFinalPosition().toInt());
+            endResult.storedValue->value.append(areaSpan.resolvedFinalPosition());
             std::sort(endResult.storedValue->value.begin(), endResult.storedValue->value.end());
         }
     }
