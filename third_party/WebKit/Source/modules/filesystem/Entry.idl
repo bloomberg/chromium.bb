@@ -39,8 +39,8 @@
     readonly attribute DOMFileSystem filesystem;
 
     void getMetadata(MetadataCallback successCallback, optional ErrorCallback errorCallback);
-    [LegacyInterfaceTypeChecking] void moveTo(DirectoryEntry parent, [TreatUndefinedAs=NullString] optional DOMString? name, optional EntryCallback successCallback, optional ErrorCallback errorCallback);
-    [LegacyInterfaceTypeChecking] void copyTo(DirectoryEntry parent, [TreatUndefinedAs=NullString] optional DOMString? name, optional EntryCallback successCallback, optional ErrorCallback errorCallback);
+    void moveTo(DirectoryEntry parent, [TreatUndefinedAs=NullString] optional DOMString? name, optional EntryCallback successCallback, optional ErrorCallback errorCallback);
+    void copyTo(DirectoryEntry parent, [TreatUndefinedAs=NullString] optional DOMString? name, optional EntryCallback successCallback, optional ErrorCallback errorCallback);
     DOMString toURL();
     void remove(VoidCallback successCallback, optional ErrorCallback errorCallback);
     void getParent(optional EntryCallback successCallback, optional ErrorCallback errorCallback);

@@ -18,6 +18,8 @@ function successCallback(fs)
     window.fileSystem = fs;
     debug("Successfully obtained FileSystem: " + fileSystem.name);
 
+    shouldThrow("fileSystem.root.moveTo(null)");
+    shouldThrow("fileSystem.root.copyTo(null)");
     fileSystem.root.getFile("/test", { create: true }, function(entry) {
         entry.createWriter(function(writer) {
             window.writer = writer;
