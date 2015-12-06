@@ -60,17 +60,18 @@ bool UseAutoWindowManager(const aura::Window* window) {
   return !window_state->is_dragged() && window_state->window_position_managed();
 }
 
-// Check if a given |window| can be managed. This includes that it's state is
-// not minimized/maximized/the user has changed it's size by hand already.
-// It furthermore checks for the WindowIsManaged status.
+// Check if a given |window| can be managed. This includes that its
+// state is not minimized/maximized/fullscreen/the user has changed
+// its size by hand already. It furthermore checks for the
+// WindowIsManaged status.
 bool WindowPositionCanBeManaged(const aura::Window* window) {
   if (disable_auto_positioning)
     return false;
   const wm::WindowState* window_state = wm::GetWindowState(window);
   return window_state->window_position_managed() &&
-      !window_state->IsMinimized() &&
-      !window_state->IsMaximized() &&
-      !window_state->bounds_changed_by_user();
+         !window_state->IsMinimized() && !window_state->IsMaximized() &&
+         !window_state->IsFullscreen() &&
+         !window_state->bounds_changed_by_user();
 }
 
 // Get the work area for a given |window| in parent coordinates.
@@ -291,12 +292,13 @@ void WindowPositioner::GetBoundsAndShowStateForNewWindow(
         ui::SHOW_STATE_DEFAULT;
   }
 
-  if (maximized) {
+  if (maximized || top_window_state->IsFullscreen()) {
     bool has_restore_bounds = top_window_state->HasRestoreBounds();
     if (has_restore_bounds) {
-      // For a maximized window ignore the real bounds of the top level window
-      // and use its restore bounds instead. Offset the bounds to prevent the
-      // windows from overlapping exactly when restored.
+      // For a maximized/fullscreen window ignore the real bounds of
+      // the top level window and use its restore bounds
+      // instead. Offset the bounds to prevent the windows from
+      // overlapping exactly when restored.
       *bounds_in_out = top_window_state->GetRestoreBoundsInScreen() +
           gfx::Vector2d(kMinimumWindowOffset, kMinimumWindowOffset);
     }

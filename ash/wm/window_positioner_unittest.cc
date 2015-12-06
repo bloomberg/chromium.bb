@@ -195,4 +195,39 @@ TEST_F(WindowPositionerTest, FirstRunMaximizeWindowLowResolution) {
   EXPECT_EQ(show_state_out, ui::SHOW_STATE_MAXIMIZED);
 }
 
-}  // namespace
+TEST_F(WindowPositionerTest, IgnoreFullscreenInAutoRearrange) {
+  if (!SupportsHostWindowResize())
+    return;
+  // Set bigger than 1366 so that the new window is opened in normal state.
+  UpdateDisplay("1400x800");
+
+  // 1st window mimics fullscreen browser window behavior.
+  shell::ToplevelWindow::CreateParams params;
+  params.can_resize = true;
+  params.can_maximize = true;
+  views::Widget* widget1 = shell::ToplevelWindow::CreateToplevelWindow(params);
+  wm::WindowState* managed_state =
+      wm::GetWindowState(widget1->GetNativeWindow());
+  EXPECT_TRUE(managed_state->window_position_managed());
+  EXPECT_EQ("300x300", widget1->GetWindowBoundsInScreen().size().ToString());
+  widget1->SetFullscreen(true);
+  ASSERT_EQ("1400x800", widget1->GetWindowBoundsInScreen().size().ToString());
+
+  // 2nd window mimics windowed v1 app.
+  params.use_saved_placement = false;
+  views::Widget* widget2 = shell::ToplevelWindow::CreateToplevelWindow(params);
+  wm::WindowState* state_2 = wm::GetWindowState(widget2->GetNativeWindow());
+  EXPECT_TRUE(state_2->window_position_managed());
+  EXPECT_EQ("300x300", widget2->GetWindowBoundsInScreen().size().ToString());
+
+  // Restores to the original size.
+  widget1->SetFullscreen(false);
+  ASSERT_EQ("300x300", widget1->GetWindowBoundsInScreen().size().ToString());
+
+  // Closing 2nd widget triggers the rearrange logic but the 1st
+  // widget should stay in the current size.
+  widget2->CloseNow();
+  ASSERT_EQ("300x300", widget1->GetWindowBoundsInScreen().size().ToString());
+}
+
+}  // namespace ash
