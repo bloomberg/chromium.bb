@@ -110,6 +110,7 @@ source_set("browser") {
     sources += [
       "mojo/mojo_shell_client_host.cc",
       "mojo/mojo_shell_client_host.h",
+      "mojo/renderer_capability_filter.cc",
     ]
 
     # Non-iOS deps.

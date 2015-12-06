@@ -1,0 +1,13 @@
+# Changes to the renderer capability filter require a security review to avoid
+# exposing new sandbox escapes and undesirable services.
+per-file renderer_capability_filter.cc=set noparent
+per-file renderer_capability_filter.cc=dcheng@chromium.org
+per-file renderer_capability_filter.cc=inferno@chromium.org
+per-file renderer_capability_filter.cc=jln@chromium.org
+per-file renderer_capability_filter.cc=jschuh@chromium.org
+per-file renderer_capability_filter.cc=kenrb@chromium.org
+per-file renderer_capability_filter.cc=mkwst@chromium.org
+per-file renderer_capability_filter.cc=nasko@chromium.org
+per-file renderer_capability_filter.cc=palmer@chromium.org
+per-file renderer_capability_filter.cc=tsepez@chromium.org
+per-file renderer_capability_filter.cc=wfh@chromium.org
