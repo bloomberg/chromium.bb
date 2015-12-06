@@ -2326,17 +2326,18 @@ RenderFrameHostImpl* RenderFrameHostManager::UpdateStateForNavigate(
     return render_frame_host_.get();
   }
 
-  // If we are currently navigating cross-process, we want to get back to normal
-  // and then navigate as usual.
-  if (pending_render_frame_host_)
-    CancelPending();
-
   SiteInstance* current_instance = render_frame_host_->GetSiteInstance();
   scoped_refptr<SiteInstance> new_instance = GetSiteInstanceForNavigation(
       dest_url, source_instance, dest_instance, nullptr, transition,
       dest_is_restore, dest_is_view_source_mode);
 
-  DCHECK(!pending_render_frame_host_);
+  // If we are currently navigating cross-process to a pending RFH for a
+  // different SiteInstance, we want to get back to normal and then navigate as
+  // usual.  We will reuse the pending RFH below if it matches the destination
+  // SiteInstance.
+  if (pending_render_frame_host_ &&
+      pending_render_frame_host_->GetSiteInstance() != new_instance)
+    CancelPending();
 
   if (new_instance.get() != current_instance) {
     TRACE_EVENT_INSTANT2(
@@ -2348,10 +2349,12 @@ RenderFrameHostImpl* RenderFrameHostManager::UpdateStateForNavigate(
 
     // New SiteInstance: create a pending RFH to navigate.
 
-    CreatePendingRenderFrameHost(current_instance, new_instance.get());
+    if (!pending_render_frame_host_)
+      CreatePendingRenderFrameHost(current_instance, new_instance.get());
     DCHECK(pending_render_frame_host_);
     if (!pending_render_frame_host_)
       return nullptr;
+    DCHECK_EQ(new_instance, pending_render_frame_host_->GetSiteInstance());
 
     pending_render_frame_host_->UpdatePendingWebUI(dest_url, bindings);
     pending_render_frame_host_->CommitPendingWebUI();
@@ -2377,20 +2380,20 @@ RenderFrameHostImpl* RenderFrameHostManager::UpdateStateForNavigate(
     }
     // Otherwise, it's safe to treat this as a pending cross-process transition.
 
-    // We need to wait until the beforeunload handler has run, unless we are
-    // transferring an existing request (in which case it has already run).
-    // Suspend the new render view (i.e., don't let it send the cross-process
-    // Navigate message) until we hear back from the old renderer's
-    // beforeunload handler.  If the handler returns false, we'll have to
-    // cancel the request.
-    DCHECK(!pending_render_frame_host_->are_navigations_suspended());
     bool is_transfer = transferred_request_id != GlobalRequestID();
     if (is_transfer) {
       // We don't need to stop the old renderer or run beforeunload/unload
       // handlers, because those have already been done.
       DCHECK(cross_site_transferring_request_->request_id() ==
              transferred_request_id);
-    } else {
+    } else if (!pending_render_frame_host_->are_navigations_suspended()) {
+      // If the pending RFH hasn't already been suspended from a previous
+      // attempt to navigate it, then we need to wait for the beforeunload
+      // handler to run.  Suspend navigations in the pending RFH until we hear
+      // back from the old RFH's beforeunload handler (via OnBeforeUnloadACK or
+      // a timeout).  If the handler returns false, we'll have to cancel the
+      // request.
+      //
       // Also make sure the old render view stops, in case a load is in
       // progress.  (We don't want to do this for transfers, since it will
       // interrupt the transfer with an unexpected DidStopLoading.)
@@ -2398,10 +2401,6 @@ RenderFrameHostImpl* RenderFrameHostManager::UpdateStateForNavigate(
           render_frame_host_->GetRoutingID()));
       pending_render_frame_host_->SetNavigationsSuspended(true,
                                                           base::TimeTicks());
-      // Unless we are transferring an existing request, we should now tell the
-      // old render view to run its beforeunload handler, since it doesn't
-      // otherwise know that the cross-site request is happening.  This will
-      // trigger a call to OnBeforeUnloadACK with the reply.
       render_frame_host_->DispatchBeforeUnload(true);
     }
 

@@ -1847,11 +1847,8 @@ void RenderFrameHostImpl::Navigate(
   // Only send the message if we aren't suspended at the start of a cross-site
   // request.
   if (navigations_suspended_) {
-    // Shouldn't be possible to have a second navigation while suspended, since
-    // navigations will only be suspended during a cross-site request.  If a
-    // second navigation occurs, RenderFrameHostManager will cancel this pending
-    // RFH and create a new pending RFH.
-    DCHECK(!suspended_nav_params_.get());
+    // This may replace an existing set of params, if this is a pending RFH that
+    // is navigated twice consecutively.
     suspended_nav_params_.reset(
         new NavigationParams(common_params, start_params, request_params));
   } else {

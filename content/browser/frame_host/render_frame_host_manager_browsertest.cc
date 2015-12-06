@@ -2413,4 +2413,47 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
       shell(), embedded_test_server()->GetURL("b.com", "/title3.html")));
 }
 
+// Ensure that we use the same pending RenderFrameHost if a second navigation to
+// its site occurs before it commits.  Otherwise the renderer process will have
+// two competing pending RenderFrames that both try to swap with the same
+// RenderFrameProxy.  See https://crbug.com/545900.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
+                       ConsecutiveNavigationsToSite) {
+  StartEmbeddedServer();
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("a.com", "/title1.html")));
+
+  // Open a popup and navigate it to b.com to keep the b.com process alive.
+  Shell* new_shell =
+      OpenPopup(shell()->web_contents(), GURL(url::kAboutBlankURL), "popup");
+  NavigateToURL(new_shell,
+                embedded_test_server()->GetURL("b.com", "/title3.html"));
+
+  // Start a cross-site navigation to the same site but don't commit.
+  GURL cross_site_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  NavigationStallDelegate stall_delegate(cross_site_url);
+  ResourceDispatcherHost::Get()->SetDelegate(&stall_delegate);
+  shell()->LoadURL(cross_site_url);
+
+  WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
+      shell()->web_contents());
+  RenderFrameHostImpl* pending_rfh =
+      web_contents->GetRenderManagerForTesting()->pending_frame_host();
+  ASSERT_TRUE(pending_rfh);
+
+  // Navigate to the same new site and verify that we commit in the same RFH.
+  GURL cross_site_url2(embedded_test_server()->GetURL("b.com", "/title2.html"));
+  TestNavigationObserver navigation_observer(web_contents, 1);
+  shell()->LoadURL(cross_site_url2);
+  EXPECT_EQ(pending_rfh,
+            web_contents->GetRenderManagerForTesting()->pending_frame_host());
+  navigation_observer.Wait();
+  EXPECT_EQ(cross_site_url2, web_contents->GetLastCommittedURL());
+  EXPECT_EQ(pending_rfh, web_contents->GetMainFrame());
+  EXPECT_FALSE(
+      web_contents->GetRenderManagerForTesting()->pending_frame_host());
+
+  ResourceDispatcherHost::Get()->SetDelegate(nullptr);
+}
+
 }  // namespace content
