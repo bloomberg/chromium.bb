@@ -220,7 +220,7 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
       network_session_params;
   ApplyCmdlineOverridesToNetworkSessionParams(&network_session_params);
   builder.set_http_network_session_params(network_session_params);
-  builder.SetSpdyAndQuicEnabled(true, true);
+  builder.SetSpdyAndQuicEnabled(true, false);
 
   scoped_ptr<net::MappedHostResolver> host_resolver(new net::MappedHostResolver(
       net::HostResolver::CreateDefaultResolver(nullptr)));
