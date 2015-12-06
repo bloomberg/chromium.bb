@@ -63,6 +63,7 @@ class EventMatcher {
       : fields_to_match_(NONE),
         event_type_(mojom::EVENT_TYPE_UNKNOWN),
         event_flags_(mojom::EVENT_FLAGS_NONE),
+        ignore_event_flags_(mojom::EVENT_FLAGS_NONE),
         keyboard_code_(mojom::KEYBOARD_CODE_UNKNOWN),
         pointer_kind_(mojom::POINTER_KIND_MOUSE) {
     if (matcher.type_matcher) {
@@ -72,6 +73,8 @@ class EventMatcher {
     if (matcher.flags_matcher) {
       fields_to_match_ |= FLAGS;
       event_flags_ = matcher.flags_matcher->flags;
+      if (matcher.ignore_flags_matcher)
+        ignore_event_flags_ = matcher.ignore_flags_matcher->flags;
     }
     if (matcher.key_matcher) {
       fields_to_match_ |= KEYBOARD_CODE;
@@ -93,7 +96,9 @@ class EventMatcher {
   bool MatchesEvent(const mojom::Event& event) const {
     if ((fields_to_match_ & TYPE) && event.action != event_type_)
       return false;
-    if ((fields_to_match_ & FLAGS) && event.flags != event_flags_)
+    mojom::EventFlags flags =
+        static_cast<mojom::EventFlags>(event.flags & ~ignore_event_flags_);
+    if ((fields_to_match_ & FLAGS) && flags != event_flags_)
       return false;
     if (fields_to_match_ & KEYBOARD_CODE) {
       if (!event.key_data)
@@ -121,6 +126,7 @@ class EventMatcher {
     return fields_to_match_ == matcher.fields_to_match_ &&
            event_type_ == matcher.event_type_ &&
            event_flags_ == matcher.event_flags_ &&
+           ignore_event_flags_ == matcher.ignore_event_flags_ &&
            keyboard_code_ == matcher.keyboard_code_ &&
            pointer_kind_ == matcher.pointer_kind_ &&
            pointer_region_ == matcher.pointer_region_;
@@ -139,6 +145,7 @@ class EventMatcher {
   uint32_t fields_to_match_;
   mojom::EventType event_type_;
   mojom::EventFlags event_flags_;
+  mojom::EventFlags ignore_event_flags_;
   mojom::KeyboardCode keyboard_code_;
   mojom::PointerKind pointer_kind_;
   gfx::RectF pointer_region_;

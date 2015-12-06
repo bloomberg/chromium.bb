@@ -7,25 +7,19 @@ import("//mojo/public/mojo_application.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//tools/grit/repack.gni")
 
-mojo_native_application("shell") {
-  output_name = "mash_shell"
-
+mojo_native_application("browser_driver") {
   sources = [
+    "browser_driver_application_delegate.cc",
+    "browser_driver_application_delegate.h",
     "main.cc",
-    "shell_application_delegate.cc",
-    "shell_application_delegate.h",
   ]
 
   deps = [
     "//base",
+    "//components/mus/public/cpp",
+    "//components/mus/public/interfaces",
     "//mojo/application/public/cpp",
     "//mojo/application/public/cpp:sources",
     "//mojo/public/cpp/bindings",
-  ]
-
-  data_deps = [
-    "//mash/browser_driver",
-    "//mash/system_ui",
-    "//mash/wm",
   ]
 }

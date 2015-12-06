@@ -18,19 +18,23 @@ enum EventType {
 // This mirrors ui::EventFlags
 // TODO(morrita): Use shift operator once it is available.
 enum EventFlags {
-  NONE                =      0,
-  CAPS_LOCK_DOWN      =      1,
-  SHIFT_DOWN          =      2,
-  CONTROL_DOWN        =      4,
-  ALT_DOWN            =      8,
-  LEFT_MOUSE_BUTTON   =     16,
-  MIDDLE_MOUSE_BUTTON =     32,
-  RIGHT_MOUSE_BUTTON  =     64,
-  COMMAND_DOWN        =    128,
-  EXTENDED            =    256,
-  IS_SYNTHESIZED      =    512,
-  ALTGR_DOWN          =   1024,
-  MOD3_DOWN           =   2048
+  NONE                 =      0,
+  CAPS_LOCK_DOWN       =      1,
+  SHIFT_DOWN           =      2,
+  CONTROL_DOWN         =      4,
+  ALT_DOWN             =      8,
+  LEFT_MOUSE_BUTTON    =     16,
+  MIDDLE_MOUSE_BUTTON  =     32,
+  RIGHT_MOUSE_BUTTON   =     64,
+  COMMAND_DOWN         =    128,
+  EXTENDED             =    256,
+  IS_SYNTHESIZED       =    512,
+  ALTGR_DOWN           =   1024,
+  MOD3_DOWN            =   2048,
+  BACK_MOUSE_BUTTON    =   4096,
+  FORWARD_MOUSE_BUTTON =   8192,
+  NUM_LOCK_DOWN        =  16384,
+  SCROLL_LOCK_DOWN     =  32768,
 };
 
 enum MouseEventFlags {

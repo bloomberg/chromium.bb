@@ -11,6 +11,13 @@ mojom::EventMatcherPtr CreateKeyMatcher(mojom::KeyboardCode code,
   mojom::EventMatcherPtr matcher(mojom::EventMatcher::New());
   matcher->type_matcher = mojom::EventTypeMatcher::New();
   matcher->flags_matcher = mojom::EventFlagsMatcher::New();
+  matcher->ignore_flags_matcher = mojom::EventFlagsMatcher::New();
+  // Ignoring these makes most accelerator scenarios more straight forward. Code
+  // that needs to check them can override this setting.
+  matcher->ignore_flags_matcher->flags =
+      static_cast<mojom::EventFlags>(mojom::EVENT_FLAGS_CAPS_LOCK_DOWN |
+                                     mojom::EVENT_FLAGS_SCROLL_LOCK_DOWN |
+                                     mojom::EVENT_FLAGS_NUM_LOCK_DOWN);
   matcher->key_matcher = mojom::KeyEventMatcher::New();
 
   matcher->type_matcher->type = mus::mojom::EVENT_TYPE_KEY_PRESSED;

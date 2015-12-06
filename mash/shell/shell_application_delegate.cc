@@ -17,6 +17,7 @@ ShellApplicationDelegate::~ShellApplicationDelegate() {}
 
 void ShellApplicationDelegate::Initialize(mojo::ApplicationImpl* app) {
   app_ = app;
+  StartBrowserDriver();
   StartWindowManager();
   StartSystemUI();
 }
@@ -37,6 +38,13 @@ void ShellApplicationDelegate::StartSystemUI() {
   StartRestartableService("mojo:system_ui",
                           base::Bind(&ShellApplicationDelegate::StartSystemUI,
                                      base::Unretained(this)));
+}
+
+void ShellApplicationDelegate::StartBrowserDriver() {
+  StartRestartableService(
+      "mojo:browser_driver",
+      base::Bind(&ShellApplicationDelegate::StartBrowserDriver,
+                 base::Unretained(this)));
 }
 
 void ShellApplicationDelegate::StartRestartableService(

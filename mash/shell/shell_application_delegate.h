@@ -32,6 +32,7 @@ class ShellApplicationDelegate : public mojo::ApplicationDelegate {
 
   void StartWindowManager();
   void StartSystemUI();
+  void StartBrowserDriver();
 
   // Starts the application at |url|, running |restart_callback| if the
   // connection to the application is closed.

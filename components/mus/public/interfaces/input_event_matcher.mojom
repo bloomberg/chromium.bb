@@ -42,6 +42,9 @@ struct EventFlagsMatcher {
 struct EventMatcher {
   EventTypeMatcher? type_matcher;
   EventFlagsMatcher? flags_matcher;
+  // These flags will be stripped from incoming events' flags when comparing
+  // against |flags_matcher|.
+  EventFlagsMatcher? ignore_flags_matcher;
   KeyEventMatcher? key_matcher;
   PointerKindMatcher? pointer_kind_matcher;
   PointerLocationMatcher? pointer_location_matcher;
