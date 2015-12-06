@@ -59,7 +59,7 @@ LayerTreeSettings::LayerTreeSettings()
       scheduled_raster_task_limit(32),
       use_occlusion_for_tile_prioritization(false),
       verify_property_trees(false),
-      use_property_trees(false),
+      use_property_trees(true),
       image_decode_tasks_enabled(false),
       use_compositor_animation_timelines(false),
       wait_for_beginframe_interval(true),

@@ -56,10 +56,10 @@ const char kEnableBeginFrameScheduling[] = "enable-begin-frame-scheduling";
 // Enables the GPU benchmarking extension
 const char kEnableGpuBenchmarking[] = "enable-gpu-benchmarking";
 
-// Enables the use of property trees rather than CalcDrawProps for computing
+// Disables the use of property trees rather than CalcDrawProps for computing
 // draw properties.
-const char kEnableCompositorPropertyTrees[] =
-    "enable-compositor-property-trees";
+const char kDisableCompositorPropertyTrees[] =
+    "disable-compositor-property-trees";
 
 // Renders a border around compositor layers to help debug and study
 // layer compositing.
