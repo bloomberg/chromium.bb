@@ -914,6 +914,8 @@ public:
         RTCPeerConnectionSetRemoteDescriptionLegacyNoFailureCallback = 1056,
         RTCPeerConnectionSetRemoteDescriptionLegacyCompliant = 1057,
         RTCPeerConnectionGetStatsLegacyNonCompliant = 1058,
+        NodeFilterIsFunction = 1059,
+        NodeFilterIsObject = 1060,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

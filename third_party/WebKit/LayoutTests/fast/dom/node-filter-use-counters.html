@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<title>NodeFilter UseCounters</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script>
+test(function() {
+  var NodeFilterIsFunction = 1059; // From UseCounter.h
+
+  assert_false(internals.isUseCounted(document, NodeFilterIsFunction));
+
+  var filterCalled = false;
+  var filter = function() {
+    assert_true(internals.isUseCounted(document, NodeFilterIsFunction));
+    filter.called = true;
+  };
+
+  var iterator = document.createNodeIterator(document, 0, filter);
+  iterator.filter.acceptNode(document);
+  assert_true(filter.called);
+}, 'NodeFilter UseCounter for callback function');
+
+test(function() {
+  var NodeFilterIsObject = 1060; // From UseCounter.h
+
+  assert_false(internals.isUseCounted(document, NodeFilterIsObject));
+
+  var filter = {
+    acceptNodeCalled: false,
+    acceptNode: function() {
+      assert_true(internals.isUseCounted(document, NodeFilterIsObject));
+      filter.called = true;
+    }
+  };
+
+  var iterator = document.createNodeIterator(document, 0, filter);
+  iterator.filter.acceptNode(document);
+  assert_true(filter.called);
+}, 'NodeFilter UseCounter for callback function');
+</script>

@@ -36,6 +36,7 @@
 #include "bindings/core/v8/V8Node.h"
 #include "core/dom/Node.h"
 #include "core/dom/NodeFilter.h"
+#include "core/frame/UseCounter.h"
 #include "wtf/OwnPtr.h"
 
 namespace blink {
@@ -73,6 +74,7 @@ unsigned V8NodeFilterCondition::acceptNode(Node* node, ExceptionState& exception
     v8::Local<v8::Function> callback;
     v8::Local<v8::Value> receiver;
     if (filter->IsFunction()) {
+        UseCounter::countIfNotPrivateScript(isolate, callingExecutionContext(isolate), UseCounter::NodeFilterIsFunction);
         callback = v8::Local<v8::Function>::Cast(filter);
         receiver = v8::Undefined(isolate);
     } else {
@@ -86,6 +88,7 @@ unsigned V8NodeFilterCondition::acceptNode(Node* node, ExceptionState& exception
             exceptionState.throwTypeError("NodeFilter object does not have an acceptNode function");
             return NodeFilter::FILTER_REJECT;
         }
+        UseCounter::countIfNotPrivateScript(isolate, callingExecutionContext(isolate), UseCounter::NodeFilterIsObject);
         callback = v8::Local<v8::Function>::Cast(value);
         receiver = filter;
     }
