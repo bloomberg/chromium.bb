@@ -355,6 +355,40 @@ CommonCertSets* CryptoTestUtils::MockCommonCertSets(StringPiece cert,
   return new class MockCommonCertSets(cert, hash, index);
 }
 
+// static
+void CryptoTestUtils::FillInDummyReject(CryptoHandshakeMessage* rej,
+                                        bool reject_is_stateless) {
+  if (reject_is_stateless) {
+    rej->set_tag(kSREJ);
+  } else {
+    rej->set_tag(kREJ);
+  }
+
+  // Minimum SCFG that passes config validation checks.
+  // clang-format off
+  unsigned char scfg[] = {
+    // SCFG
+    0x53, 0x43, 0x46, 0x47,
+    // num entries
+    0x01, 0x00,
+    // padding
+    0x00, 0x00,
+    // EXPY
+    0x45, 0x58, 0x50, 0x59,
+    // EXPY end offset
+    0x08, 0x00, 0x00, 0x00,
+    // Value
+    '1',  '2',  '3',  '4',
+    '5',  '6',  '7',  '8'
+  };
+  // clang-format on
+  rej->SetValue(kSCFG, scfg);
+  rej->SetStringPiece(kServerNonceTag, "SERVER_NONCE");
+  vector<QuicTag> reject_reasons;
+  reject_reasons.push_back(CLIENT_NONCE_INVALID_FAILURE);
+  rej->SetVector(kRREJ, reject_reasons);
+}
+
 void CryptoTestUtils::CompareClientAndServerKeys(
     QuicCryptoClientStream* client,
     QuicCryptoServerStream* server) {

@@ -38,4 +38,6 @@ NET_EXPORT_PRIVATE extern bool FLAGS_quic_respect_send_alarm;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_set_client_hello_cb_nullptr;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_track_single_retransmission;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_batch_writes;
+NET_EXPORT_PRIVATE extern bool FLAGS_quic_block_unencrypted_writes;
+
 #endif  // NET_QUIC_QUIC_FLAGS_H_

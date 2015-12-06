@@ -51,6 +51,7 @@ class QuicPacketCreatorPeer {
   static QuicTime::Delta GetFecTimeout(QuicPacketCreator* creator);
   // TODO(rtenneti): Delete this code after the 0.25 RTT FEC experiment.
   static float GetRttMultiplierForFecTimeout(QuicPacketCreator* creator);
+  static EncryptionLevel GetEncryptionLevel(QuicPacketCreator* creator);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicPacketCreatorPeer);

@@ -10,6 +10,8 @@
 #include "net/quic/crypto/aes_128_gcm_12_encrypter.h"
 #include "net/quic/quic_flags.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
+#include "net/quic/test_tools/quic_connection_peer.h"
+#include "net/quic/test_tools/quic_packet_creator_peer.h"
 #include "net/quic/test_tools/quic_spdy_session_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/tools/quic/quic_spdy_client_stream.h"
@@ -22,6 +24,8 @@ using net::test::DefaultQuicConfig;
 using net::test::MockConnection;
 using net::test::MockConnectionHelper;
 using net::test::PacketSavingConnection;
+using net::test::QuicConnectionPeer;
+using net::test::QuicPacketCreatorPeer;
 using net::test::QuicSpdySessionPeer;
 using net::test::SupportedVersions;
 using net::test::TestPeerIPAddress;
@@ -44,18 +48,21 @@ class ToolsQuicClientSessionTest
     : public ::testing::TestWithParam<QuicVersion> {
  protected:
   ToolsQuicClientSessionTest()
-      : crypto_config_(CryptoTestUtils::ProofVerifierForTesting()),
-        connection_(new PacketSavingConnection(&helper_,
-                                               Perspective::IS_CLIENT,
-                                               SupportedVersions(GetParam()))),
-        session_(new QuicClientSession(
-            DefaultQuicConfig(),
-            connection_,
-            QuicServerId(kServerHostname, kPort, PRIVACY_MODE_DISABLED),
-            &crypto_config_)) {
-    session_->Initialize();
+      : crypto_config_(CryptoTestUtils::ProofVerifierForTesting()) {
+    Initialize();
     // Advance the time, because timers do not like uninitialized times.
     connection_->AdvanceTime(QuicTime::Delta::FromSeconds(1));
+  }
+
+  void Initialize() {
+    session_.reset();
+    connection_ = new PacketSavingConnection(&helper_, Perspective::IS_CLIENT,
+                                             SupportedVersions(GetParam()));
+    session_.reset(new QuicClientSession(
+        DefaultQuicConfig(), connection_,
+        QuicServerId(kServerHostname, kPort, PRIVACY_MODE_DISABLED),
+        &crypto_config_));
+    session_->Initialize();
   }
 
   void CompleteCryptoHandshake() {
@@ -78,6 +85,45 @@ INSTANTIATE_TEST_CASE_P(Tests, ToolsQuicClientSessionTest,
 
 TEST_P(ToolsQuicClientSessionTest, CryptoConnect) {
   CompleteCryptoHandshake();
+}
+
+TEST_P(ToolsQuicClientSessionTest, NoEncryptionAfterInitialEncryption) {
+  ValueRestore<bool> old_flag(&FLAGS_quic_block_unencrypted_writes, true);
+  // Complete a handshake in order to prime the crypto config for 0-RTT.
+  CompleteCryptoHandshake();
+
+  // Now create a second session using the same crypto config.
+  Initialize();
+
+  // Starting the handshake should move immediately to encryption
+  // established and will allow streams to be created.
+  session_->CryptoConnect();
+  EXPECT_TRUE(session_->IsEncryptionEstablished());
+  QuicSpdyClientStream* stream = session_->CreateOutgoingDynamicStream();
+  DCHECK_NE(kCryptoStreamId, stream->id());
+  EXPECT_TRUE(stream != nullptr);
+
+  // Process an "inchoate" REJ from the server which will cause
+  // an inchoate CHLO to be sent and will leave the encryption level
+  // at NONE.
+  CryptoHandshakeMessage rej;
+  CryptoTestUtils::FillInDummyReject(&rej, /* stateless */ false);
+  EXPECT_TRUE(session_->IsEncryptionEstablished());
+  session_->GetCryptoStream()->OnHandshakeMessage(rej);
+  EXPECT_FALSE(session_->IsEncryptionEstablished());
+  EXPECT_EQ(ENCRYPTION_NONE,
+            QuicPacketCreatorPeer::GetEncryptionLevel(
+                QuicConnectionPeer::GetPacketCreator(connection_)));
+  // Verify that no new streams may be created.
+  EXPECT_TRUE(session_->CreateOutgoingDynamicStream() == nullptr);
+  // Verify that no data may be send on existing streams.
+  char data[] = "hello world";
+  struct iovec iov = {data, arraysize(data)};
+  QuicIOVector iovector(&iov, 1, iov.iov_len);
+  QuicConsumedData consumed = session_->WritevData(
+      stream->id(), iovector, 0, false, MAY_FEC_PROTECT, nullptr);
+  EXPECT_FALSE(consumed.fin_consumed);
+  EXPECT_EQ(0u, consumed.bytes_consumed);
 }
 
 TEST_P(ToolsQuicClientSessionTest, MaxNumStreamsWithNoFinOrRst) {

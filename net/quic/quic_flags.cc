@@ -118,3 +118,7 @@ bool FLAGS_quic_track_single_retransmission = true;
 // If true, allow each quic stream to write 16k blocks rather than doing a round
 // robin of one packet per session when ack clocked or paced.
 bool FLAGS_quic_batch_writes = true;
+
+// If true, QUIC sessions will write block streams that attempt to write
+// unencrypted data.
+bool FLAGS_quic_block_unencrypted_writes = true;

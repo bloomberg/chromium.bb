@@ -505,6 +505,10 @@ TEST_P(QuicSessionTestServer, TestBatchedWrites) {
 }
 
 TEST_P(QuicSessionTestServer, OnCanWriteBundlesStreams) {
+  // Encryption needs to be established before data can be sent.
+  CryptoHandshakeMessage msg;
+  session_.GetCryptoStream()->OnHandshakeMessage(msg);
+
   // Drive congestion control manually.
   MockSendAlgorithm* send_algorithm = new StrictMock<MockSendAlgorithm>;
   QuicConnectionPeer::SetSendAlgorithm(session_.connection(), send_algorithm);

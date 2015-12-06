@@ -156,6 +156,12 @@ class CryptoTestUtils {
                                             uint64 hash,
                                             uint32 index);
 
+  // Creates a minimal dummy reject message that will pass the client-config
+  // validation tests. This will include a server config, but no certs, proof
+  // source address token, or server nonce.
+  static void FillInDummyReject(CryptoHandshakeMessage* rej,
+                                bool reject_is_stateless);
+
   // ParseTag returns a QuicTag from parsing |tagstr|. |tagstr| may either be
   // in the format "EXMP" (i.e. ASCII format), or "#11223344" (an explicit hex
   // format). It CHECK fails if there's a parse error.
