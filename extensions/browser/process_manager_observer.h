@@ -30,11 +30,19 @@ class ProcessManagerObserver {
   // Called immediately after the extension background host is destroyed.
   virtual void OnBackgroundHostClose(const std::string& extension_id) {}
 
+  // Called when a RenderFrameHost has been registered in an extension process.
   virtual void OnExtensionFrameRegistered(
       const std::string& extension_id,
       content::RenderFrameHost* render_frame_host) {}
 
+  // Called when a RenderFrameHost is no longer part of an extension process.
   virtual void OnExtensionFrameUnregistered(
+      const std::string& extension_id,
+      content::RenderFrameHost* render_frame_host) {}
+
+  // Called when a RenderFrameHost was navigated to another page within the
+  // extension process.
+  virtual void OnExtensionFrameNavigated(
       const std::string& extension_id,
       content::RenderFrameHost* render_frame_host) {}
 };

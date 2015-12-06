@@ -4,23 +4,182 @@
 
 #include "extensions/browser/process_manager.h"
 
+#include "base/callback.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/browser_action_test_util.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/test_extension_dir.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/extensions/extension_process_policy.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/common/value_builder.h"
+#include "extensions/test/background_page_watcher.h"
+#include "extensions/test/extension_test_message_listener.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
 namespace extensions {
 
+namespace {
+
+void AddFrameToSet(std::set<content::RenderFrameHost*>* frames,
+                   content::RenderFrameHost* rfh) {
+  if (rfh->IsRenderFrameLive())
+    frames->insert(rfh);
+}
+
+}  // namespace
+
+// Takes a snapshot of all frames upon construction. When Wait() is called, a
+// MessageLoop is created and Quit when all previously recorded frames are
+// either present in the tab, or deleted. If a navigation happens between the
+// construction and the Wait() call, then this logic ensures that all obsolete
+// RenderFrameHosts have been destructed when Wait() returns.
+// See also the comment at ProcessManagerBrowserTest::NavigateToURL.
+class NavigationCompletedObserver : public content::WebContentsObserver {
+ public:
+  explicit NavigationCompletedObserver(content::WebContents* web_contents)
+      : content::WebContentsObserver(web_contents),
+        message_loop_runner_(new content::MessageLoopRunner) {
+    web_contents->ForEachFrame(
+        base::Bind(&AddFrameToSet, base::Unretained(&frames_)));
+  }
+
+  void Wait() {
+    if (!AreAllFramesInTab())
+      message_loop_runner_->Run();
+  }
+
+  void RenderFrameDeleted(content::RenderFrameHost* rfh) override {
+    if (frames_.erase(rfh) != 0 && message_loop_runner_->loop_running() &&
+        AreAllFramesInTab())
+      message_loop_runner_->Quit();
+  }
+
+ private:
+  // Check whether all frames that were recorded at the construction of this
+  // class are still part of the tab.
+  bool AreAllFramesInTab() {
+    std::set<content::RenderFrameHost*> current_frames;
+    web_contents()->ForEachFrame(
+        base::Bind(&AddFrameToSet, base::Unretained(&current_frames)));
+    for (content::RenderFrameHost* frame : frames_) {
+      if (current_frames.find(frame) == current_frames.end())
+        return false;
+    }
+    return true;
+  }
+
+  std::set<content::RenderFrameHost*> frames_;
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(NavigationCompletedObserver);
+};
+
 // Exists as a browser test because ExtensionHosts are hard to create without
 // a real browser.
-typedef ExtensionBrowserTest ProcessManagerBrowserTest;
+class ProcessManagerBrowserTest : public ExtensionBrowserTest {
+ public:
+  // Create an extension with web-accessible frames and an optional background
+  // page.
+  const Extension* CreateExtension(const std::string& name,
+                                   bool has_background_process) {
+    scoped_ptr<TestExtensionDir> dir(new TestExtensionDir());
+
+    DictionaryBuilder manifest;
+    manifest.Set("name", name)
+        .Set("version", "1")
+        .Set("manifest_version", 2)
+        // To allow ExecuteScript* to work.
+        .Set("content_security_policy",
+             "script-src 'self' 'unsafe-eval'; object-src 'self'")
+        .Set("sandbox", DictionaryBuilder().Set(
+                            "pages", ListBuilder().Append("sandboxed.html")))
+        .Set("web_accessible_resources", ListBuilder().Append("*"));
+
+    if (has_background_process) {
+      manifest.Set("background", DictionaryBuilder().Set("page", "bg.html"));
+      dir->WriteFile(FILE_PATH_LITERAL("bg.html"),
+                     "<iframe id='bgframe' src='empty.html'></iframe>");
+    }
+
+    dir->WriteFile(FILE_PATH_LITERAL("blank_iframe.html"),
+                   "<iframe id='frame0' src='about:blank'></iframe>");
+
+    dir->WriteFile(FILE_PATH_LITERAL("srcdoc_iframe.html"),
+                   "<iframe id='frame0' srcdoc='Hello world'></iframe>");
+
+    dir->WriteFile(FILE_PATH_LITERAL("two_iframes.html"),
+                   "<iframe id='frame1' src='empty.html'></iframe>"
+                   "<iframe id='frame2' src='empty.html'></iframe>");
+
+    dir->WriteFile(FILE_PATH_LITERAL("sandboxed.html"), "Some sandboxed page");
+
+    dir->WriteFile(FILE_PATH_LITERAL("empty.html"), "");
+
+    dir->WriteManifest(manifest.ToJSON());
+
+    const Extension* extension = LoadExtension(dir->unpacked_path());
+    EXPECT_TRUE(extension);
+    temp_dirs_.push_back(dir.Pass());
+    return extension;
+  }
+
+  // ui_test_utils::NavigateToURL sometimes returns too early: It returns as
+  // soon as the StopLoading notification has been triggered. This does not
+  // imply that RenderFrameDeleted was called, so the test may continue too
+  // early and fail when ProcessManager::GetAllFrames() returns too many frames
+  // (namely frames that are in the process of being deleted). To work around
+  // this problem, we also wait until all previous frames have been deleted.
+  void NavigateToURL(const GURL& url) {
+    NavigationCompletedObserver observer(
+        browser()->tab_strip_model()->GetActiveWebContents());
+
+    ui_test_utils::NavigateToURL(browser(), url);
+
+    // Wait until the last RenderFrameHosts are deleted. This wait doesn't take
+    // long.
+    observer.Wait();
+  }
+
+  void NavigateIframeToURLAndWait(content::WebContents* web_contents,
+                                  const std::string iframe_id,
+                                  const GURL& url) {
+    // This is an improved version of content::NavigateIframeToURL. Unlike the
+    // other method, this does actually wait until the load of all child frames
+    // completes.
+    std::string script = base::StringPrintf(
+        "var frame = document.getElementById('%s');"
+        "frame.onload = frame.onerror = function(event) {"
+        "  frame.onload = frame.onerror = null;"
+        "  domAutomationController.send(event.type === 'load');"
+        "};"
+        "frame.src = '%s';",
+        iframe_id.c_str(), url.spec().c_str());
+    bool is_loaded = false;
+    EXPECT_TRUE(ExecuteScriptAndExtractBool(web_contents, script, &is_loaded));
+    EXPECT_TRUE(is_loaded);
+  }
+
+  size_t IfExtensionsIsolated(size_t if_enabled, size_t if_disabled) {
+    return content::AreAllSitesIsolatedForTesting() ||
+                   IsIsolateExtensionsEnabled()
+               ? if_enabled
+               : if_disabled;
+  }
+
+ private:
+  std::vector<scoped_ptr<TestExtensionDir>> temp_dirs_;
+};
 
 // Test that basic extension loading creates the appropriate ExtensionHosts
 // and background pages.
@@ -155,6 +314,193 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest, HttpHostMatchingExtensionId) {
   EXPECT_TRUE(pm->GetSiteInstanceForURL(extension->url()) !=
               tab_web_contents->GetSiteInstance());
   EXPECT_TRUE(pm->GetBackgroundHostForExtension(extension->id()));
+}
+
+IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest, NoBackgroundPage) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  ProcessManager* pm = ProcessManager::Get(profile());
+  const Extension* extension =
+      LoadExtension(test_data_dir_.AppendASCII("api_test")
+                        .AppendASCII("messaging")
+                        .AppendASCII("connect_nobackground"));
+  ASSERT_TRUE(extension);
+
+  // The extension has no background page.
+  EXPECT_EQ(0u, pm->GetRenderFrameHostsForExtension(extension->id()).size());
+
+  // Start in a non-extension process, then navigate to an extension process.
+  NavigateToURL(embedded_test_server()->GetURL("/empty.html"));
+  EXPECT_EQ(0u, pm->GetRenderFrameHostsForExtension(extension->id()).size());
+
+  const GURL extension_url = extension->url().Resolve("manifest.json");
+  NavigateToURL(extension_url);
+  EXPECT_EQ(1u, pm->GetRenderFrameHostsForExtension(extension->id()).size());
+
+  NavigateToURL(GURL("about:blank"));
+  EXPECT_EQ(0u, pm->GetRenderFrameHostsForExtension(extension->id()).size());
+
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), extension_url, NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  EXPECT_EQ(1u, pm->GetRenderFrameHostsForExtension(extension->id()).size());
+}
+
+// Tests whether frames are correctly classified. Non-extension frames should
+// never appear in the list. Top-level extension frames should always appear.
+// Child extension frames should only appear if it is hosted in an extension
+// process (i.e. if the top-level frame is an extension page, or if OOP frames
+// are enabled for extensions).
+IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest, FrameClassification) {
+  const Extension* extension1 = CreateExtension("Extension 1", false);
+  const Extension* extension2 = CreateExtension("Extension 2", true);
+  embedded_test_server()->ServeFilesFromDirectory(extension1->path());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  const GURL kExt1TwoFramesUrl(extension1->url().Resolve("two_iframes.html"));
+  const GURL kExt1EmptyUrl(extension1->url().Resolve("empty.html"));
+  const GURL kExt2TwoFramesUrl(extension2->url().Resolve("two_iframes.html"));
+  const GURL kExt2EmptyUrl(extension2->url().Resolve("empty.html"));
+
+  ProcessManager* pm = ProcessManager::Get(profile());
+
+  // 1 background page + 1 frame in background page from Extension 2.
+  BackgroundPageWatcher(pm, extension2).WaitForOpen();
+  EXPECT_EQ(2u, pm->GetAllFrames().size());
+  EXPECT_EQ(0u, pm->GetRenderFrameHostsForExtension(extension1->id()).size());
+  EXPECT_EQ(2u, pm->GetRenderFrameHostsForExtension(extension2->id()).size());
+
+  ExecuteScriptInBackgroundPageNoWait(extension2->id(),
+                                      "setTimeout(window.close, 0)");
+  BackgroundPageWatcher(pm, extension2).WaitForClose();
+  EXPECT_EQ(0u, pm->GetAllFrames().size());
+  EXPECT_EQ(0u, pm->GetRenderFrameHostsForExtension(extension2->id()).size());
+
+  NavigateToURL(embedded_test_server()->GetURL("/two_iframes.html"));
+  EXPECT_EQ(0u, pm->GetAllFrames().size());
+
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Tests extension frames in non-extension page.
+  NavigateIframeToURLAndWait(tab, "frame1", kExt1EmptyUrl);
+  EXPECT_EQ(IfExtensionsIsolated(1, 0),
+            pm->GetRenderFrameHostsForExtension(extension1->id()).size());
+  EXPECT_EQ(IfExtensionsIsolated(1, 0), pm->GetAllFrames().size());
+
+  NavigateIframeToURLAndWait(tab, "frame2", kExt2EmptyUrl);
+  EXPECT_EQ(IfExtensionsIsolated(1, 0),
+            pm->GetRenderFrameHostsForExtension(extension2->id()).size());
+  EXPECT_EQ(IfExtensionsIsolated(2, 0), pm->GetAllFrames().size());
+
+  // Tests non-extension page in extension frame.
+  NavigateToURL(kExt1TwoFramesUrl);
+  // 1 top-level + 2 child frames from Extension 1.
+  EXPECT_EQ(3u, pm->GetAllFrames().size());
+  EXPECT_EQ(3u, pm->GetRenderFrameHostsForExtension(extension1->id()).size());
+  EXPECT_EQ(0u, pm->GetRenderFrameHostsForExtension(extension2->id()).size());
+
+  NavigateIframeToURLAndWait(tab, "frame1",
+                             embedded_test_server()->GetURL("/empty.html"));
+  // 1 top-level + 1 child frame from Extension 1.
+  EXPECT_EQ(2u, pm->GetRenderFrameHostsForExtension(extension1->id()).size());
+  EXPECT_EQ(2u, pm->GetAllFrames().size());
+
+  NavigateIframeToURLAndWait(tab, "frame1", kExt1EmptyUrl);
+  // 1 top-level + 2 child frames from Extension 1.
+  EXPECT_EQ(3u, pm->GetAllFrames().size());
+  EXPECT_EQ(3u, pm->GetRenderFrameHostsForExtension(extension1->id()).size());
+
+  // Load a frame from another extension.
+  NavigateIframeToURLAndWait(tab, "frame1", kExt2EmptyUrl);
+  // 1 top-level + 1 child frame from Extension 1,
+  // 1 child frame from Extension 2.
+  EXPECT_EQ(IfExtensionsIsolated(3, 2), pm->GetAllFrames().size());
+  EXPECT_EQ(2u, pm->GetRenderFrameHostsForExtension(extension1->id()).size());
+  EXPECT_EQ(IfExtensionsIsolated(1, 0),
+            pm->GetRenderFrameHostsForExtension(extension2->id()).size());
+
+  // Destroy all existing frames by navigating to another extension.
+  NavigateToURL(extension2->url().Resolve("empty.html"));
+  EXPECT_EQ(1u, pm->GetAllFrames().size());
+  EXPECT_EQ(0u, pm->GetRenderFrameHostsForExtension(extension1->id()).size());
+  EXPECT_EQ(1u, pm->GetRenderFrameHostsForExtension(extension2->id()).size());
+
+  // Test about:blank and about:srcdoc child frames.
+  NavigateToURL(extension2->url().Resolve("srcdoc_iframe.html"));
+  // 1 top-level frame + 1 child frame from Extension 2.
+  EXPECT_EQ(2u, pm->GetAllFrames().size());
+  EXPECT_EQ(2u, pm->GetRenderFrameHostsForExtension(extension2->id()).size());
+
+  NavigateToURL(extension2->url().Resolve("blank_iframe.html"));
+  // 1 top-level frame + 1 child frame from Extension 2.
+  EXPECT_EQ(2u, pm->GetAllFrames().size());
+  EXPECT_EQ(2u, pm->GetRenderFrameHostsForExtension(extension2->id()).size());
+
+  // Sandboxed frames are not viewed as extension frames.
+  NavigateIframeToURLAndWait(tab, "frame0",
+                             extension2->url().Resolve("sandboxed.html"));
+  // 1 top-level frame from Extension 2.
+  EXPECT_EQ(1u, pm->GetAllFrames().size());
+  EXPECT_EQ(1u, pm->GetRenderFrameHostsForExtension(extension2->id()).size());
+
+  NavigateToURL(extension2->url().Resolve("sandboxed.html"));
+  EXPECT_EQ(0u, pm->GetAllFrames().size());
+  EXPECT_EQ(0u, pm->GetRenderFrameHostsForExtension(extension2->id()).size());
+
+  // Test nested frames (same extension).
+  NavigateToURL(kExt2TwoFramesUrl);
+  // 1 top-level + 2 child frames from Extension 2.
+  EXPECT_EQ(3u, pm->GetAllFrames().size());
+  EXPECT_EQ(3u, pm->GetRenderFrameHostsForExtension(extension2->id()).size());
+
+  NavigateIframeToURLAndWait(tab, "frame1", kExt2TwoFramesUrl);
+  // 1 top-level + 2 child frames from Extension 1,
+  // 2 child frames in frame1 from Extension 2.
+  EXPECT_EQ(5u, pm->GetAllFrames().size());
+  EXPECT_EQ(5u, pm->GetRenderFrameHostsForExtension(extension2->id()).size());
+
+  // The extension frame from the other extension should not be classified as an
+  // extension (unless out-of-process frames are enabled).
+  NavigateIframeToURLAndWait(tab, "frame1", kExt1EmptyUrl);
+  // 1 top-level + 1 child frames from Extension 2,
+  // 1 child frame from Extension 1.
+  EXPECT_EQ(IfExtensionsIsolated(3, 2), pm->GetAllFrames().size());
+  EXPECT_EQ(IfExtensionsIsolated(1, 0),
+            pm->GetRenderFrameHostsForExtension(extension1->id()).size());
+  EXPECT_EQ(2u, pm->GetRenderFrameHostsForExtension(extension2->id()).size());
+
+  NavigateIframeToURLAndWait(tab, "frame2", kExt1TwoFramesUrl);
+  // 1 top-level + 1 child frames from Extension 2,
+  // 1 child frame + 2 child frames in frame2 from Extension 1.
+  EXPECT_EQ(IfExtensionsIsolated(5, 1), pm->GetAllFrames().size());
+  EXPECT_EQ(IfExtensionsIsolated(4, 0),
+            pm->GetRenderFrameHostsForExtension(extension1->id()).size());
+  EXPECT_EQ(1u, pm->GetRenderFrameHostsForExtension(extension2->id()).size());
+
+  // Crash tab where the top-level frame is an extension frame.
+  content::CrashTab(tab);
+  EXPECT_EQ(0u, pm->GetAllFrames().size());
+  EXPECT_EQ(0u, pm->GetRenderFrameHostsForExtension(extension1->id()).size());
+  EXPECT_EQ(0u, pm->GetRenderFrameHostsForExtension(extension2->id()).size());
+
+  // Now load an extension page and a non-extension page...
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), kExt1EmptyUrl, NEW_BACKGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  NavigateToURL(embedded_test_server()->GetURL("/two_iframes.html"));
+  EXPECT_EQ(1u, pm->GetAllFrames().size());
+
+  // ... load an extension frame in the non-extension process
+  NavigateIframeToURLAndWait(tab, "frame1", kExt1EmptyUrl);
+  EXPECT_EQ(IfExtensionsIsolated(2, 1),
+            pm->GetRenderFrameHostsForExtension(extension1->id()).size());
+
+  // ... and take down the tab. The extension process is not part of the tab,
+  // so it should be kept alive (minus the frames that died).
+  content::CrashTab(tab);
+  EXPECT_EQ(1u, pm->GetAllFrames().size());
+  EXPECT_EQ(1u, pm->GetRenderFrameHostsForExtension(extension1->id()).size());
 }
 
 // Verify correct keepalive count behavior on network request events.

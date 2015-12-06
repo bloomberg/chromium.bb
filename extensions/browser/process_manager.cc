@@ -166,6 +166,7 @@ struct ProcessManager::ExtensionRenderFrameData {
       case VIEW_TYPE_APP_WINDOW:
       case VIEW_TYPE_BACKGROUND_CONTENTS:
       case VIEW_TYPE_EXTENSION_DIALOG:
+      case VIEW_TYPE_EXTENSION_GUEST:
       case VIEW_TYPE_EXTENSION_POPUP:
       case VIEW_TYPE_LAUNCHER_PAGE:
       case VIEW_TYPE_PANEL:
@@ -309,6 +310,21 @@ void ProcessManager::UnregisterRenderFrameHost(
   }
 }
 
+void ProcessManager::DidNavigateRenderFrameHost(
+    content::RenderFrameHost* render_frame_host) {
+  ExtensionRenderFrames::iterator frame =
+      all_extension_frames_.find(render_frame_host);
+
+  if (frame != all_extension_frames_.end()) {
+    std::string extension_id = GetExtensionID(render_frame_host);
+
+    FOR_EACH_OBSERVER(ProcessManagerObserver,
+                      observer_list_,
+                      OnExtensionFrameNavigated(extension_id,
+                                                render_frame_host));
+  }
+}
+
 scoped_refptr<content::SiteInstance> ProcessManager::GetSiteInstanceForURL(
     const GURL& url) {
   return make_scoped_refptr(site_instance_->GetRelatedSiteInstance(url));
@@ -324,18 +340,17 @@ const ProcessManager::FrameSet ProcessManager::GetAllFrames() const {
 ProcessManager::FrameSet ProcessManager::GetRenderFrameHostsForExtension(
     const std::string& extension_id) {
   FrameSet result;
-  scoped_refptr<content::SiteInstance> site_instance(GetSiteInstanceForURL(
-      Extension::GetBaseURLFromExtensionId(extension_id)));
-  if (!site_instance.get())
-    return result;
-
-  // Gather up all the frames for that site.
   for (const auto& key_value : all_extension_frames_) {
-    if (key_value.first->GetSiteInstance() == site_instance)
+    if (GetExtensionID(key_value.first) == extension_id)
       result.insert(key_value.first);
   }
-
   return result;
+}
+
+bool ProcessManager::IsRenderFrameHostRegistered(
+    content::RenderFrameHost* render_frame_host) {
+  return all_extension_frames_.find(render_frame_host) !=
+         all_extension_frames_.end();
 }
 
 void ProcessManager::AddObserver(ProcessManagerObserver* observer) {

@@ -4,6 +4,7 @@
 
 #include "extensions/renderer/extension_frame_helper.h"
 
+#include "base/strings/string_util.h"
 #include "content/public/renderer/render_frame.h"
 #include "extensions/common/api/messaging/message.h"
 #include "extensions/common/constants.h"
@@ -14,6 +15,7 @@
 #include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/messaging_bindings.h"
 #include "extensions/renderer/script_context.h"
+#include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
@@ -34,11 +36,22 @@ bool RenderFrameMatches(const ExtensionFrameHelper* frame_helper,
   if (match_view_type != VIEW_TYPE_INVALID &&
       frame_helper->view_type() != match_view_type)
     return false;
-  GURL url = frame_helper->render_frame()->GetWebFrame()->document().url();
-  if (!url.SchemeIs(kExtensionScheme))
+
+  // Not all frames have a valid ViewType, e.g. devtools, most GuestViews, and
+  // unclassified detached WebContents.
+  if (frame_helper->view_type() == VIEW_TYPE_INVALID)
     return false;
-  if (url.host() != match_extension_id)
+
+  // This logic matches ExtensionWebContentsObserver::GetExtensionFromFrame.
+  blink::WebSecurityOrigin origin =
+      frame_helper->render_frame()->GetWebFrame()->securityOrigin();
+  if (origin.isUnique() ||
+      !base::EqualsASCII(base::StringPiece16(origin.protocol()),
+                         kExtensionScheme) ||
+      !base::EqualsASCII(base::StringPiece16(origin.host()),
+                         match_extension_id.c_str()))
     return false;
+
   if (match_window_id != extension_misc::kUnknownWindowId &&
       frame_helper->browser_window_id() != match_window_id)
     return false;

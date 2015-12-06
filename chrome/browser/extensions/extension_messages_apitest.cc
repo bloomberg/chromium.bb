@@ -123,6 +123,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MessagingExternal) {
   ASSERT_TRUE(RunExtensionTest("messaging/connect_external")) << message_;
 }
 
+// Tests that a content script can exchange messages with a tab even if there is
+// no background page.
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MessagingNoBackground) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ASSERT_TRUE(RunExtensionSubtest("messaging/connect_nobackground",
+                                  "page_in_main_frame.html")) << message_;
+}
+
 // Tests that messages with event_urls are only passed to extensions with
 // appropriate permissions.
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MessagingEventURL) {

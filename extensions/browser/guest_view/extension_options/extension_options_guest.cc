@@ -19,6 +19,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/guest_view/extension_options/extension_options_constants.h"
 #include "extensions/browser/guest_view/extension_options/extension_options_guest_delegate.h"
+#include "extensions/browser/view_type_utils.h"
 #include "extensions/common/api/extension_options_internal.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -108,7 +109,9 @@ void ExtensionOptionsGuest::CreateWebContents(
       content::SiteInstance::CreateForURL(browser_context(), extension_url);
   WebContents::CreateParams params(browser_context(), options_site_instance);
   params.guest_delegate = this;
-  callback.Run(WebContents::Create(params));
+  WebContents* wc = WebContents::Create(params);
+  SetViewType(wc, VIEW_TYPE_EXTENSION_GUEST);
+  callback.Run(wc);
 }
 
 void ExtensionOptionsGuest::DidInitialize(

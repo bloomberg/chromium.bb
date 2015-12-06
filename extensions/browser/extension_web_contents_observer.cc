@@ -5,6 +5,7 @@
 #include "extensions/browser/extension_web_contents_observer.h"
 
 #include "content/public/browser/child_process_security_policy.h"
+#include "content/public/browser/navigation_details.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -50,18 +51,25 @@ void ExtensionWebContentsObserver::InitializeRenderFrame(
   DCHECK(render_frame_host);
   DCHECK(render_frame_host->IsRenderFrameLive());
 
+  // At the initialization of the render frame, the last committed URL is not
+  // reliable, so do not take it into account in determining whether it is an
+  // extension frame.
+  const Extension* frame_extension =
+      GetExtensionFromFrame(render_frame_host, false);
+  // This observer is attached to every WebContents, so we are also notified of
+  // frames that are not in an extension process.
+  if (!frame_extension)
+    return;
+
   // Notify the render frame of the view type.
   render_frame_host->Send(new ExtensionMsg_NotifyRenderViewType(
       render_frame_host->GetRoutingID(), GetViewType(web_contents())));
 
-  const Extension* frame_extension = GetExtensionFromFrame(render_frame_host);
-  if (frame_extension) {
-    ExtensionsBrowserClient::Get()->RegisterMojoServices(render_frame_host,
-                                                         frame_extension);
-    ProcessManager::Get(browser_context_)
-        ->RegisterRenderFrameHost(web_contents(), render_frame_host,
-                                  frame_extension);
-  }
+  ExtensionsBrowserClient::Get()->RegisterMojoServices(render_frame_host,
+                                                       frame_extension);
+  ProcessManager::Get(browser_context_)
+      ->RegisterRenderFrameHost(web_contents(), render_frame_host,
+                                frame_extension);
 }
 
 content::WebContents* ExtensionWebContentsObserver::GetAssociatedWebContents()
@@ -110,6 +118,49 @@ void ExtensionWebContentsObserver::RenderFrameDeleted(
       ->UnregisterRenderFrameHost(render_frame_host);
 }
 
+void ExtensionWebContentsObserver::DidCommitProvisionalLoadForFrame(
+    content::RenderFrameHost* render_frame_host,
+    const GURL& url,
+    ui::PageTransition transition_type) {
+  ProcessManager* pm = ProcessManager::Get(browser_context_);
+
+  if (pm->IsRenderFrameHostRegistered(render_frame_host)) {
+    const Extension* frame_extension =
+        GetExtensionFromFrame(render_frame_host, true);
+
+    if (!frame_extension)
+      pm->UnregisterRenderFrameHost(render_frame_host);
+  }
+}
+
+void ExtensionWebContentsObserver::DidNavigateAnyFrame(
+    content::RenderFrameHost* render_frame_host,
+    const content::LoadCommittedDetails& details,
+    const content::FrameNavigateParams& params) {
+  if (details.is_in_page)
+    return;
+
+  const Extension* frame_extension =
+      GetExtensionFromFrame(render_frame_host, true);
+  ProcessManager* pm = ProcessManager::Get(browser_context_);
+
+  if (!frame_extension) {
+    // Should have been unregistered by DidCommitProvisionalLoadForFrame.
+    DCHECK(!pm->IsRenderFrameHostRegistered(render_frame_host));
+    return;
+  }
+
+  if (pm->IsRenderFrameHostRegistered(render_frame_host)) {
+    // Notify ProcessManager, because some clients do not just want to know
+    // whether the frame is in an extension process, but also whether the frame
+    // was navigated.
+    pm->DidNavigateRenderFrameHost(render_frame_host);
+  } else {
+    pm->RegisterRenderFrameHost(web_contents(), render_frame_host,
+                                frame_extension);
+  }
+}
+
 bool ExtensionWebContentsObserver::OnMessageReceived(
     const IPC::Message& message,
     content::RenderFrameHost* render_frame_host) {
@@ -146,24 +197,38 @@ void ExtensionWebContentsObserver::PepperInstanceDeleted() {
 
 std::string ExtensionWebContentsObserver::GetExtensionIdFromFrame(
     content::RenderFrameHost* render_frame_host) const {
-  content::SiteInstance* site_instance = render_frame_host->GetSiteInstance();
-  GURL url = render_frame_host->GetLastCommittedURL();
-  if (!url.is_empty()) {
-    if (site_instance->GetSiteURL().GetOrigin() != url.GetOrigin())
-      return std::string();
-  } else {
-    url = site_instance->GetSiteURL();
-  }
-
-  return url.SchemeIs(kExtensionScheme) ? url.host() : std::string();
+  const Extension* extension = GetExtensionFromFrame(render_frame_host, true);
+  return extension ? extension->id() : std::string();
 }
 
 const Extension* ExtensionWebContentsObserver::GetExtensionFromFrame(
-    content::RenderFrameHost* render_frame_host) const {
-  return ExtensionRegistry::Get(
-             render_frame_host->GetProcess()->GetBrowserContext())
-      ->enabled_extensions()
-      .GetByID(GetExtensionIdFromFrame(render_frame_host));
+    content::RenderFrameHost* render_frame_host,
+    bool verify_url) const {
+  const GURL site_url(render_frame_host->GetSiteInstance()->GetSiteURL());
+  if (!site_url.SchemeIs(kExtensionScheme))
+    return nullptr;
+
+  const std::string& extension_id = site_url.host();
+  content::BrowserContext* browser_context =
+      render_frame_host->GetProcess()->GetBrowserContext();
+  const Extension* extension = ExtensionRegistry::Get(browser_context)
+                                   ->enabled_extensions()
+                                   .GetByID(extension_id);
+  if (!extension)
+    return nullptr;
+
+  if (verify_url) {
+    const url::Origin& origin(render_frame_host->GetLastCommittedOrigin());
+    // Without site isolation, this check is needed to eliminate non-extension
+    // schemes. With site isolation, this is still needed to exclude sandboxed
+    // extension frames with a unique origin.
+    if (origin.unique() ||
+        site_url != content::SiteInstance::GetSiteForURL(
+                        browser_context, GURL(origin.Serialize())))
+      return nullptr;
+  }
+
+  return extension;
 }
 
 const Extension* ExtensionWebContentsObserver::GetExtension(

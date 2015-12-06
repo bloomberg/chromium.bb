@@ -29,6 +29,23 @@ class Extension;
 // WebContents. It must be a subclass so that creating an instance via
 // content::WebContentsUserData::CreateForWebContents() provides an object of
 // the correct type. For an example, see ChromeExtensionWebContentsObserver.
+//
+// This class is responsible for maintaining the registrations of extension
+// frames with the ProcessManager. Only frames in an extension process are
+// registered. If out-of-process frames are enabled, every frame hosts a
+// chrome-extension: page. Otherwise non-extension frames may erroneously be
+// registered, but only briefly until they are correctly classified. This is
+// achieved using the following notifications:
+// 1. RenderFrameCreated - registers all new frames in extension processes.
+// 2. DidCommitProvisionalLoadForFrame - unregisters non-extension frames.
+// 3. DidNavigateAnyFrame - registers extension frames if they had been
+//    unregistered.
+//
+// Without OOPIF, non-extension frames created by the Chrome extension are also
+// registered at RenderFrameCreated. When the non-extension page is committed,
+// we detect that the unexpected URL and unregister the frame.
+// With OOPIF only the first notification is sufficient in most cases, except
+// for sandboxed frames with a unique origin.
 class ExtensionWebContentsObserver
     : public content::WebContentsObserver,
       public ExtensionFunctionDispatcher::Delegate {
@@ -60,6 +77,13 @@ class ExtensionWebContentsObserver
 
   void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
   void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
+  void DidCommitProvisionalLoadForFrame(
+      content::RenderFrameHost* render_frame_host,
+      const GURL& url,
+      ui::PageTransition transition_type) override;
+  void DidNavigateAnyFrame(content::RenderFrameHost* render_frame_host,
+                           const content::LoadCommittedDetails& details,
+                           const content::FrameNavigateParams& params) override;
 
   // Subclasses should call this first before doing their own message handling.
   bool OnMessageReceived(const IPC::Message& message,
@@ -77,8 +101,12 @@ class ExtensionWebContentsObserver
 
   // Returns the extension associated with the given |render_frame_host|, or
   // null if there is none.
+  // If |verify_url| is false, only the SiteInstance is taken into account.
+  // If |verify_url| is true, the frame's last committed URL is also used to
+  // improve the classification of the frame.
   const Extension* GetExtensionFromFrame(
-      content::RenderFrameHost* render_frame_host) const;
+      content::RenderFrameHost* render_frame_host,
+      bool verify_url) const;
 
   // TODO(devlin): Remove these once callers are updated to use the FromFrame
   // equivalents.
