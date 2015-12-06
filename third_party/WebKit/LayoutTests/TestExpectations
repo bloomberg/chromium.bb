@@ -885,6 +885,9 @@ crbug.com/385014 accessibility/canvas-fallback-content-2.html [ Failure ]
 
 crbug.com/440452 virtual/display_list_2d_canvas/fast/canvas/canvas-partial-invalidation-zoomed.html [ Pass Slow Timeout ]
 
+crbug.com/551043 fast/repaint/inline-focus.html [ NeedsRebaseline ]
+crbug.com/551043 virtual/syncpaint/fast/repaint/inline-focus.html [ NeedsRebaseline ]
+
 crbug.com/364614 [ Mac ] fast/scroll-behavior/overflow-scroll-animates.html [ Skip ]
 crbug.com/364614 [ Mac ] virtual/threaded/fast/scroll-behavior/overflow-scroll-animates.html [ Skip ]
 crbug.com/364614 [ Mac ] virtual/scroll_customization/fast/scroll-behavior/overflow-scroll-animates.html [ Skip ]

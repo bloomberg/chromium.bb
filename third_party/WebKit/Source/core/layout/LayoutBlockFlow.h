@@ -93,7 +93,7 @@ public:
 
     void layoutBlock(bool relayoutChildren) override;
 
-    void computeOverflow(LayoutUnit oldClientAfterEdge) override;
+    void computeOverflow(LayoutUnit oldClientAfterEdge, bool recomputeFloats = false) override;
 
     void deleteLineBoxTree() final;
 

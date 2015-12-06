@@ -342,7 +342,7 @@ protected:
     virtual void simplifiedNormalFlowLayout();
 
 public:
-    virtual void computeOverflow(LayoutUnit oldClientAfterEdge);
+    virtual void computeOverflow(LayoutUnit oldClientAfterEdge, bool = false);
 protected:
     virtual void addOverflowFromChildren();
     void addOverflowFromPositionedObjects();
