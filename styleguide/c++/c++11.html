@@ -303,7 +303,7 @@ Parameter pack</a></td>
 <td><code>v.data()</code></td>
 <td>Returns a pointer to a <code>std::vector</code>'s underlying data, accounting for empty vectors.</td>
 <td><a href="http://en.cppreference.com/w/cpp/container/vector/data">std::vector::data</a></td>
-<td><a href="https://groups.google.com/a/chromium.org/forum/#!topic/cxx/16V7fmtbzok">Discussion thread</a>.</td>
+<td><a href="https://groups.google.com/a/chromium.org/forum/#!topic/cxx/16V7fmtbzok">Discussion thread</a></td>
 </tr>
 
 <tr>
@@ -316,6 +316,14 @@ std::begin</a> and
 <a href="http://en.cppreference.com/w/cpp/iterator/end">
 std::end</a></td>
 <td>Useful for fixed-size arrays. <a href="https://groups.google.com/a/chromium.org/d/topic/cxx/5iFNE8P5qT4/discussion">Discussion thread</a></td>
+</tr>
+
+<tr>
+<td>Conditional Type Selection</td>
+<td><code>std::enable_if</code> and <code>std::conditional</code></td>
+<td>Enables compile-time conditional type selection</td>
+<td><a href="http://en.cppreference.com/w/cpp/types/enable_if">std::enable_if</a> and <a href="http://en.cppreference.com/w/cpp/types/conditional">conditional</a></td>
+<td>Usage should be rare. <a href='https://groups.google.com/a/chromium.org/forum/#!topic/cxx/vCxo4tZNd_M'>Discussion thread</a></td>
 </tr>
 
 <tr>
@@ -335,23 +343,19 @@ std::end</a></td>
 </tr>
 
 <tr>
-<td>Move Semantics</td>
-<td><code>std::move()</code></td>
-<td>Facilitates efficient move operations</td>
-<td><a href="http://en.cppreference.com/w/cpp/utility/move">
-<code>std::move</code> reference</a></td>
-<td>Note: std::move() is allowed but writing your own move constructors is still only allowed in exceptional cases for now, see 'Rvalue References (and Move Semantics)'. <a href='https://groups.google.com/a/chromium.org/forum/#!topic/cxx/x_dWFxJFdbM'>Discussion thread</a></td>
+<td>Move Iterator Adaptor</td>
+<td><code>std::make_move_iterator()</code></td>
+<td>Wraps an iterator so that it moves objects instead of copying them.</td>
+<td><a href="http://en.cppreference.com/w/cpp/iterator/make_move_iterator">std::make_move_iterator</a></td>
+<td>Useful to move objects between containers that contain move-only types like <code>scoped_ptr</code>. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/cxx/lccnUljOHQU">Discussion thread</a></td>
 </tr>
 
 <tr>
-<td>Conditional Type Selection</td>
-<td><code>std::enable_if</code> and <code>std::conditional</code></td>
-<td>Enables compile-time conditional type selection</td>
-<td><a href="http://en.cppreference.com/w/cpp/types/enable_if">
-std::enable_if</a> and
-<a href="http://en.cppreference.com/w/cpp/types/conditional">
-conditional</a></td>
-<td>Usage should be rare.<a href='https://groups.google.com/a/chromium.org/forum/#!topic/cxx/vCxo4tZNd_M'>Discussion thread</a></td>
+<td>Move Semantics</td>
+<td><code>std::move()</code></td>
+<td>Facilitates efficient move operations</td>
+<td><a href="http://en.cppreference.com/w/cpp/utility/move"><code>std::move</code> reference</a></td>
+<td>Note: std::move() is allowed but writing your own move constructors is still only allowed in exceptional cases for now, see 'Rvalue References (and Move Semantics)'. <a href='https://groups.google.com/a/chromium.org/forum/#!topic/cxx/x_dWFxJFdbM'>Discussion thread</a></td>
 </tr>
 
 <tr>
@@ -364,12 +368,11 @@ Standard library header &lt;type_traits&gt;</a></td>
 </tr>
 
 <tr>
-<td>Move Iterator Adaptor</td>
-<td><code>std::make_move_iterator()</code></td>
-<td>Wraps an iterator so that it moves objects instead of copying them.</td>
-<td><a href="http://en.cppreference.com/w/cpp/iterator/make_move_iterator">
-std::make_move_iterator</a></td>
-<td>Useful to move objects between containers that contain move-only types like <code>scoped_ptr</code>. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/cxx/lccnUljOHQU">Discussion thread</a></td>
+<td>Types, functions, and constants from <code>&lt;cmath&gt;</code></td>
+<td><code>std::round()</code>, <code>std::isnan()</code>, and others</td>
+<td>Useful for math-related code</td>
+<td><a href="http://en.cppreference.com/w/cpp/header/cmath"><code>&lt;cmath&gt;</code></a></td>
+<td>Anything in <code>&lt;cmath&gt;</code> is allowed. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/cxx/P-1bFBXMeUk">Discussion thread</a></td>
 </tr>
 
 </tbody>
@@ -830,14 +833,6 @@ std::declare_no_pointers</a></td>
 <td><code>std::is_heap()</code></td>
 <td>Checks whether an iterator range is in fact a heap</td>
 <td>TODO: documentation link</td>
-<td></td>
-</tr>
-
-<tr>
-<td>Is Nan</td>
-<td><code>std::isnan()</code></td>
-<td>Determines if a floating point value is not-a-number</td>
-<td><a href="http://en.cppreference.com/w/cpp/numeric/math/isnan">std::isnan</a></td>
 <td></td>
 </tr>
 
