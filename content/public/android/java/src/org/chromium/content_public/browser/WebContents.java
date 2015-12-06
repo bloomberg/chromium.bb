@@ -323,6 +323,18 @@ public interface WebContents extends Parcelable {
     void removeObserver(WebContentsObserver observer);
 
     /**
+     * Called when context menu gets opened.
+     */
+    void onContextMenuOpened();
+
+    /**
+     * Called when context menu gets closed. Note that closing context menu that is
+     * not triggered by WebContents will still call this. However, it will have no effect
+     * if onContextMenuOpened() isn't called in advance.
+     */
+    void onContextMenuClosed();
+
+    /**
      * @return The character encoding for the current visible page.
      */
     @VisibleForTesting

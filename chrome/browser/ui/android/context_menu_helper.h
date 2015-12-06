@@ -24,7 +24,7 @@ class ContextMenuHelper
  public:
   ~ContextMenuHelper() override;
 
-  void ShowContextMenu(const content::ContextMenuParams& params);
+  bool ShowContextMenu(const content::ContextMenuParams& params);
 
   void SetPopulator(jobject jpopulator);
 

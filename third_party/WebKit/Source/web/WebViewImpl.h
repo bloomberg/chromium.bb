@@ -262,6 +262,7 @@ public:
                                     unsigned inactiveForegroundColor) override;
     void performCustomContextMenuAction(unsigned action) override;
     void showContextMenu() override;
+    void didCloseContextMenu() override;
     void extractSmartClipData(WebRect, WebString&, WebString&, WebRect&) override;
     void hidePopups() override;
     void setPageOverlayColor(WebColor) override;

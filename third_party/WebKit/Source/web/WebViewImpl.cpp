@@ -3771,6 +3771,13 @@ void WebViewImpl::showContextMenu()
     }
 }
 
+void WebViewImpl::didCloseContextMenu()
+{
+    LocalFrame* frame = m_page->focusController().focusedFrame();
+    if (frame)
+        frame->selection().setCaretBlinkingSuspended(false);
+}
+
 void WebViewImpl::extractSmartClipData(WebRect rectInViewport, WebString& clipText, WebString& clipHtml, WebRect& clipRectInViewport)
 {
     LocalFrame* localFrame = toLocalFrame(focusedCoreFrame());

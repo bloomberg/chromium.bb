@@ -391,6 +391,9 @@ public:
     // Shows a context menu for the currently focused element.
     virtual void showContextMenu() = 0;
 
+    // Notify that context menu has been closed.
+    virtual void didCloseContextMenu() = 0;
+
 
     // SmartClip support ---------------------------------------------------
     virtual void extractSmartClipData(WebRect initRect, WebString& text, WebString& html, WebRect& resultRect) = 0;

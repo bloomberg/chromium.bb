@@ -44,26 +44,24 @@ ContextMenuHelper::~ContextMenuHelper() {
   Java_ContextMenuHelper_destroy(env, java_obj_.obj());
 }
 
-void ContextMenuHelper::ShowContextMenu(
+bool ContextMenuHelper::ShowContextMenu(
     const content::ContextMenuParams& params) {
   content::ContentViewCore* content_view_core =
       content::ContentViewCore::FromWebContents(web_contents_);
 
   if (!content_view_core)
-    return;
+    return false;
 
   base::android::ScopedJavaLocalRef<jobject> jcontent_view_core(
       content_view_core->GetJavaObject());
 
   if (jcontent_view_core.is_null())
-    return;
+    return false;
 
   JNIEnv* env = base::android::AttachCurrentThread();
   context_menu_params_ = params;
-  Java_ContextMenuHelper_showContextMenu(
-      env,
-      java_obj_.obj(),
-      jcontent_view_core.obj(),
+  return Java_ContextMenuHelper_showContextMenu(
+      env, java_obj_.obj(), jcontent_view_core.obj(),
       ContextMenuHelper::CreateJavaContextMenuParams(params).obj());
 }
 

@@ -130,6 +130,7 @@ import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.common.ContentSwitches;
 import org.chromium.content_public.browser.ContentBitmapCallback;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.readback_types.ReadbackResponse;
 import org.chromium.policy.CombinedPolicyProvider.PolicyChangeListener;
 import org.chromium.printing.PrintManagerDelegateImpl;
@@ -1601,6 +1602,18 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
                     getComponentName().flattenToString(),
                     true /* hardwareAccelerated */);
         }
+    }
+
+    /**
+     * @see Activity#onContextMenuClosed(Menu)
+     */
+    @Override
+    public void onContextMenuClosed(Menu menu) {
+        final Tab currentTab = getActivityTab();
+        if (currentTab == null) return;
+        WebContents webContents = currentTab.getWebContents();
+        if (webContents == null) return;
+        webContents.onContextMenuClosed();
     }
 
     private void enableHardwareAcceleration() {

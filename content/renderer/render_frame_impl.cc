@@ -1449,6 +1449,8 @@ void RenderFrameImpl::OnContextMenuClosed(
     // Internal request, forward to WebKit.
     context_menu_node_.reset();
   }
+
+  render_view()->webview()->didCloseContextMenu();
 }
 
 void RenderFrameImpl::OnCustomContextMenuAction(

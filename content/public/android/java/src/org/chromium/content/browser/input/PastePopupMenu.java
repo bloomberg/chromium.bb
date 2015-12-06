@@ -16,6 +16,11 @@ public interface PastePopupMenu {
          * Called to initiate a paste after the popup has been tapped.
          */
         void paste();
+
+        /**
+         * Called when the popup menu is dismissed.
+         */
+        void onDismiss();
     }
 
     /**

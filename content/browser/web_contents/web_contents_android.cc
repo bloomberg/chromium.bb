@@ -675,6 +675,11 @@ void WebContentsAndroid::GetContentBitmap(
                                result_callback);
 }
 
+void WebContentsAndroid::OnContextMenuClosed(JNIEnv* env, jobject obj) {
+  static_cast<WebContentsImpl*>(web_contents_)
+      ->NotifyContextMenuClosed(CustomContextMenuContext());
+}
+
 void WebContentsAndroid::OnFinishGetContentBitmap(
     ScopedJavaGlobalRef<jobject>* obj,
     ScopedJavaGlobalRef<jobject>* callback,
@@ -690,4 +695,5 @@ void WebContentsAndroid::OnFinishGetContentBitmap(
                                                   java_bitmap.obj(),
                                                   response);
 }
+
 }  // namespace content

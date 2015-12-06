@@ -48,7 +48,7 @@ class CONTENT_EXPORT ContentViewCore {
   virtual ui::ViewAndroid* GetViewAndroid() const = 0;
   virtual ui::WindowAndroid* GetWindowAndroid() const = 0;
   virtual const scoped_refptr<cc::Layer>& GetLayer() const = 0;
-  virtual void ShowPastePopup(int x, int y) = 0;
+  virtual bool ShowPastePopup(int x, int y) = 0;
 
   // Request a scaled content readback. The result is passed through the
   // callback. The boolean parameter indicates whether the readback was a
