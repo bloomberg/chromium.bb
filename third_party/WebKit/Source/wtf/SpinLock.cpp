@@ -53,7 +53,7 @@
 
 namespace WTF {
 
-void slowSpinLockLock(int volatile* lock)
+void SpinLock::lockSlow()
 {
     // The value of kYieldProcessorTries is cargo culted from TCMalloc, Windows
     // critical section defaults, and various other recommendations.
@@ -64,14 +64,14 @@ void slowSpinLockLock(int volatile* lock)
             for (int count = 0; count < kYieldProcessorTries; ++count) {
                 // Let the Processor know we're spinning.
                 YIELD_PROCESSOR;
-                if (!*lock && LIKELY(!atomicTestAndSetToOne(lock)))
+                if (!m_lock.load(std::memory_order_relaxed) && LIKELY(!m_lock.exchange(true, std::memory_order_acq_rel)))
                     return;
             }
 
             // Give the OS a chance to schedule something on this core.
             YIELD_THREAD;
-        } while (*lock);
-    } while (UNLIKELY(atomicTestAndSetToOne(lock)));
+        } while (m_lock.load(std::memory_order_relaxed));
+    } while (UNLIKELY(m_lock.exchange(true, std::memory_order_acq_rel)));
 }
 
 } // namespace WTF

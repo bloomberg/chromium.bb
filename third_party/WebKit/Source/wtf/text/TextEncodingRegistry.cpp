@@ -28,6 +28,7 @@
 #include "wtf/text/TextEncodingRegistry.h"
 
 #include "wtf/ASCIICType.h"
+#include "wtf/Atomics.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"

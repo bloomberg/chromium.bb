@@ -5,6 +5,7 @@
 #ifndef WTF_ContainerAnnotations_h
 #define WTF_ContainerAnnotations_h
 
+#include "wtf/AddressSanitizer.h"
 #include "wtf/CPU.h"
 
 // TODO(ochang): Remove the CPU(X86_64) condition to enable this for X86 once

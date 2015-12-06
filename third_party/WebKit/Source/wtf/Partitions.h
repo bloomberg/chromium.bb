@@ -125,7 +125,7 @@ public:
     static void handleOutOfMemory();
 
 private:
-    static int s_initializationLock;
+    static SpinLock s_initializationLock;
     static bool s_initialized;
 
     // We have the following four partitions.
