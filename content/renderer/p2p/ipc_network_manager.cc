@@ -80,10 +80,10 @@ void IpcNetworkManager::OnNetworkListChanged(
   if (!network_list_received_)
     network_list_received_ = true;
 
-  // Update the default local interfaces.
-  set_default_local_addresses(
-      jingle_glue::IPAddressNumberToIPAddress(default_ipv4_local_address),
-      jingle_glue::IPAddressNumberToIPAddress(default_ipv6_local_address));
+  // Default addresses should be set only when they are in the filtered list of
+  // network addresses.
+  bool use_default_ipv4_address = false;
+  bool use_default_ipv6_address = false;
 
   // rtc::Network uses these prefix_length to compare network
   // interfaces discovered.
@@ -102,6 +102,7 @@ void IpcNetworkManager::OnNetworkListChanged(
 
     rtc::InterfaceAddress iface_addr;
     if (it->address.size() == net::kIPv4AddressSize) {
+      use_default_ipv4_address |= (default_ipv4_local_address == it->address);
       iface_addr = rtc::InterfaceAddress(ip_address);
     } else {
       DCHECK(it->address.size() == net::kIPv6AddressSize);
@@ -114,10 +115,25 @@ void IpcNetworkManager::OnNetworkListChanged(
           rtc::IPIsPrivate(iface_addr)) {
         continue;
       }
+
+      use_default_ipv6_address |= (default_ipv6_local_address == it->address);
     }
     network->AddIP(iface_addr);
     networks.push_back(network.release());
   }
+
+  // Update the default local addresses.
+  rtc::IPAddress ipv4_default;
+  rtc::IPAddress ipv6_defualt;
+  if (use_default_ipv4_address) {
+    ipv4_default =
+        jingle_glue::IPAddressNumberToIPAddress(default_ipv4_local_address);
+  }
+  if (use_default_ipv6_address) {
+    ipv6_defualt =
+        jingle_glue::IPAddressNumberToIPAddress(default_ipv6_local_address);
+  }
+  set_default_local_addresses(ipv4_default, ipv6_defualt);
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAllowLoopbackInPeerConnection)) {
