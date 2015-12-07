@@ -406,14 +406,19 @@ void PopupMenuImpl::setValueAndClosePopup(int numValue, const String& stringValu
 {
     ASSERT(m_popup);
     ASSERT(m_ownerElement);
-    EventQueueScope scope;
     RefPtrWillBeRawPtr<PopupMenuImpl> protector(this);
     bool success;
     int listIndex = stringValue.toInt(&success);
     ASSERT(success);
-    m_ownerElement->valueChanged(listIndex);
-    if (m_popup)
-        m_chromeClient->closePagePopup(m_popup);
+    {
+        EventQueueScope scope;
+        m_ownerElement->valueChanged(listIndex);
+        if (m_popup)
+            m_chromeClient->closePagePopup(m_popup);
+        // 'change' event is dispatched here.  For compatbility with
+        // Angular 1.2, we need to dispatch a change event before
+        // mouseup/click events.
+    }
     // We dispatch events on the owner element to match the legacy behavior.
     // Other browsers dispatch click events before and after showing the popup.
     if (m_ownerElement) {
