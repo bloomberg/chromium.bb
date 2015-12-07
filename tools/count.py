@@ -9,6 +9,7 @@ Saves the data fetched from the server into a json file to enable reprocessing
 the data without having to always fetch from the server.
 """
 
+import collections
 import datetime
 import json
 import logging
@@ -24,6 +25,8 @@ import urllib
 CLIENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, CLIENT_DIR)
 
+
+from third_party import colorama
 from utils import graph
 
 
@@ -49,14 +52,37 @@ def parse_time_option(value):
   raise ValueError('Failed to parse %s' % value)
 
 
-def fetch_data(swarming, start, end, state, tags):
-  """Fetches data from swarming and returns it."""
+def flatten(dimensions):
+  items = {i['key']: i['value'] for i in dimensions}
+  return ','.join('%s=%s' % (k, v) for k, v in sorted(items.iteritems()))
+
+
+def fetch_tasks(swarming, start, end, state, tags):
+  """Fetches the data."""
+  def process(data):
+    return [
+        flatten(t['properties']['dimensions']) for t in data.get('items', [])]
+  return _fetch_internal(
+      swarming, process, 'tasks/requests', start, end, state, tags)
+
+
+def fetch_counts(swarming, start, end, state, tags):
+  """Fetches counts from swarming and returns it."""
+  def process(data):
+    return int(data['count'])
+  return _fetch_internal(
+      swarming, process, 'tasks/count', start, end, state, tags)
+
+
+def _fetch_internal(swarming, process, endpoint, start, end, state, tags):
   # Split the work in days. That's a lot of requests to do.
   queue = Queue.Queue()
   threads = []
   def run(start, cmd):
-    data = json.loads(subprocess.check_output(cmd))
-    queue.put((start, int(data['count'])))
+    logging.info('Running %s', ' '.join(cmd))
+    raw = subprocess.check_output(cmd)
+    logging.info('- returned %d', len(raw))
+    queue.put((start, process(json.loads(raw))))
 
   day = start
   while day != end:
@@ -69,7 +95,8 @@ def fetch_data(swarming, start, end, state, tags):
       data.append(('tags', tag))
     cmd = [
       sys.executable, os.path.join(CLIENT_DIR, 'swarming.py'),
-      'query', '-S', swarming, 'tasks/count?' + urllib.urlencode(data),
+      'query', '-S', swarming,
+      endpoint + '?' + urllib.urlencode(data),
     ]
     thread = threading.Thread(target=run, args=(day.strftime('%Y-%m-%d'), cmd))
     thread.daemon = True
@@ -105,17 +132,32 @@ def fetch_data(swarming, start, end, state, tags):
   return dict(data)
 
 
-def present(items, daily_count):
-  months = {}
+def present_dimensions(items, daily_count):
+  # Split items per group.
+  per_dimension = collections.defaultdict(lambda: collections.defaultdict(int))
+  for date, dimensions in items.iteritems():
+    for d in dimensions:
+      per_dimension[d][date] += 1
+  for i, (dimension, data) in enumerate(sorted(per_dimension.iteritems())):
+    print(
+        '%s%s%s' % (
+          colorama.Style.BRIGHT + colorama.Fore.MAGENTA,
+          dimension,
+          colorama.Fore.RESET))
+    present_counts(data, daily_count)
+    if i != len(per_dimension) - 1:
+      print('')
+
+
+def present_counts(items, daily_count):
+  months = collections.defaultdict(int)
   for day, count in sorted(items.iteritems()):
     month = day.rsplit('-', 1)[0]
-    months.setdefault(month, 0)
     months[month] += count
 
-  years = {}
+  years = collections.defaultdict(int)
   for month, count in months.iteritems():
     year = month.rsplit('-', 1)[0]
-    years.setdefault(year, 0)
     years[year] += count
   total = sum(months.itervalues())
   maxlen = len(str(total))
@@ -127,7 +169,7 @@ def present(items, daily_count):
   if len(items) > 1:
     for month, count in sorted(months.iteritems()):
       print('%s   : %*d' % (month, maxlen, count))
-  if len(month) > 1:
+  if len(months) > 1:
     for year, count in sorted(years.iteritems()):
       print('%s      : %*d' % (year, maxlen, count))
   if len(years) > 1:
@@ -152,6 +194,7 @@ STATES = (
 
 
 def main():
+  colorama.init()
   parser = optparse.OptionParser(description=sys.modules['__main__'].__doc__)
   tomorrow = datetime.datetime.utcnow().date() + datetime.timedelta(days=1)
   year = datetime.datetime(tomorrow.year, 1, 1)
@@ -159,24 +202,31 @@ def main():
       '-S', '--swarming',
       metavar='URL', default=os.environ.get('SWARMING_SERVER', ''),
       help='Swarming server to use')
-  parser.add_option(
+  group = optparse.OptionGroup(parser, 'Filtering')
+  group.add_option(
       '--start', default=year.strftime('%Y-%m-%d'),
       help='Starting date in UTC; defaults to start of year: %default')
-  parser.add_option(
+  group.add_option(
       '--end', default=tomorrow.strftime('%Y-%m-%d'),
       help='End date in UTC; defaults to tomorrow: %default')
-  parser.add_option(
+  group.add_option(
       '--state', default='ALL', type='choice', choices=STATES,
       help='State to filter on')
-  parser.add_option(
+  group.add_option(
       '--tags', action='append', default=[], help='Tags to filter on')
-  parser.add_option(
+  parser.add_option_group(group)
+  group = optparse.OptionGroup(parser, 'Presentation')
+  group.add_option(
+      '--dimensions', action='store_true', help='Show the dimensions')
+  group.add_option(
       '--daily-count', action='store_true',
       help='Show the daily count in raw number instead of histogram')
+  parser.add_option_group(group)
   parser.add_option(
       '--json', default='counts.json',
       help='File containing raw data; default: %default')
-  parser.add_option('-v', '--verbose', action='count', default=0)
+  parser.add_option(
+      '-v', '--verbose', action='count', default=0, help='Log')
   options, args = parser.parse_args()
 
   if args:
@@ -184,9 +234,16 @@ def main():
   logging.basicConfig(level=logging.DEBUG if options.verbose else logging.ERROR)
   start = parse_time_option(options.start)
   end = parse_time_option(options.end)
-  print('From %s to %s' % (start, end))
+  print('From %s (%d) to %s (%d)' % (
+      start, int((start- _EPOCH).total_seconds()),
+      end, int((end - _EPOCH).total_seconds())))
   if options.swarming:
-    data = fetch_data(options.swarming, start, end, options.state, options.tags)
+    if options.dimensions:
+      data = fetch_tasks(
+          options.swarming, start, end, options.state, options.tags)
+    else:
+      data = fetch_counts(
+          options.swarming, start, end, options.state, options.tags)
     with open(options.json, 'wb') as f:
       json.dump(data, f)
   elif not os.path.isfile(options.json):
@@ -196,7 +253,10 @@ def main():
       data = json.load(f)
 
   print('')
-  present(data, options.daily_count)
+  if options.dimensions:
+    present_dimensions(data, options.daily_count)
+  else:
+    present_counts(data, options.daily_count)
   return 0
 
 
