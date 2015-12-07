@@ -961,6 +961,10 @@ def _ExtractImportantEnvironment(output_of_set):
       'tmp',
       )
   env = {}
+  # This occasionally happens and leads to misleading SYSTEMROOT error messages
+  # if not caught here.
+  if output_of_set.count('=') == 0:
+    raise Exception('Invalid output_of_set. Value is:\n%s' % output_of_set)
   for line in output_of_set.splitlines():
     for envvar in envvars_to_save:
       if re.match(envvar + '=', line.lower()):
@@ -1029,6 +1033,8 @@ def GenerateEnvironmentFiles(toplevel_build_dir, generator_flags,
     popen = subprocess.Popen(
         args, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     variables, _ = popen.communicate()
+    if popen.returncode != 0:
+      raise Exception('"%s" failed with error %d' % (args, popen.returncode))
     env = _ExtractImportantEnvironment(variables)
 
     # Inject system includes from gyp files into INCLUDE.
