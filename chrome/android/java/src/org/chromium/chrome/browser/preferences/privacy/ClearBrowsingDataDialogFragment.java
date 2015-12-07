@@ -194,7 +194,14 @@ public class ClearBrowsingDataDialogFragment extends DialogFragment
      */
     private void updateButtonState() {
         Button clearButton = mDialog.getButton(AlertDialog.BUTTON_POSITIVE);
-        if (clearButton != null) clearButton.setEnabled(!mSelectedOptions.isEmpty());
+        if (clearButton == null) return;
+        boolean isEnabled = !mSelectedOptions.isEmpty();
+        clearButton.setEnabled(isEnabled);
+
+        // Work around a bug in the app compat library where disabled buttons in alert dialogs
+        // don't look disabled on pre-L devices. See: http://crbug.com/550784
+        // TODO(newt): remove this workaround when the app compat library is fixed (b/26017217)
+        clearButton.setTextColor(isEnabled ? 0xFF4285F4 : 0x335A5A5A);
     }
 
     @Override
