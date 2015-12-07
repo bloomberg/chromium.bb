@@ -115,9 +115,6 @@ void PopulateResourceResponse(ResourceRequestInfoImpl* info,
     GetSSLStatusForRequest(request->url(), request->ssl_info(),
                            info->GetChildID(), &ssl_status);
     response->head.security_info = SerializeSecurityInfo(ssl_status);
-    response->head.has_major_certificate_errors =
-        net::IsCertStatusError(ssl_status.cert_status) &&
-        !net::IsCertStatusMinorError(ssl_status.cert_status);
   } else {
     // We should not have any SSL state.
     DCHECK(!request->ssl_info().cert_status);

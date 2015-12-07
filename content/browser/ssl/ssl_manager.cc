@@ -134,7 +134,11 @@ void SSLManager::DidCommitProvisionalLoad(const LoadCommittedDetails& details) {
   NotifyDidChangeVisibleSSLState();
 }
 
-void SSLManager::DidRunInsecureContent(const GURL& security_origin) {
+void SSLManager::DidDisplayInsecureContent() {
+  UpdateEntry(controller_->GetLastCommittedEntry());
+}
+
+void SSLManager::DidRunInsecureContent(const std::string& security_origin) {
   NavigationEntryImpl* navigation_entry = controller_->GetLastCommittedEntry();
   policy()->DidRunInsecureContent(navigation_entry, security_origin);
   UpdateEntry(navigation_entry);

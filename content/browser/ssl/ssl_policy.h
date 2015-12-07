@@ -36,7 +36,7 @@ class SSLPolicy {
   void OnCertError(SSLCertErrorHandler* handler);
 
   void DidRunInsecureContent(NavigationEntryImpl* entry,
-                             const GURL& security_origin);
+                             const std::string& security_origin);
 
   // We have started a resource request with the given info.
   void OnRequestStarted(SSLRequestInfo* info);

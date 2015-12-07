@@ -887,7 +887,6 @@ void WebURLLoaderImpl::PopulateURLResponse(const GURL& url,
   response->setTextEncodingName(WebString::fromUTF8(info.charset));
   response->setExpectedContentLength(info.content_length);
   response->setSecurityInfo(info.security_info);
-  response->setHasMajorCertificateErrors(info.has_major_certificate_errors);
   response->setAppCacheID(info.appcache_id);
   response->setAppCacheManifestURL(info.appcache_manifest_url);
   response->setWasCached(!info.load_timing.request_start_time.is_null() &&
