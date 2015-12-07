@@ -242,8 +242,8 @@ static const char *opcodeNames[CTO_None] = {
   "noletsign",
   "noletsignafter",
   "numsign",
-	"numericmodechars",
-	"numericnocontchars",
+//	"numericmodechars",
+//	"numericnocontchars",
 	"seqdelimiter",
 	"seqbeforechars",
 	"seqafterchars",
@@ -4371,6 +4371,7 @@ doOpcode:
 		}
 		break;
 
+	/*
 	case CTO_NumericModeChars:
 	
 		c = NULL;
@@ -4412,6 +4413,7 @@ doOpcode:
 			}
 		}	
 		break;
+	*/
 		
 	case CTO_NoContractSign:
 	
@@ -5054,12 +5056,12 @@ doOpcode:
 	if (getRuleDotsPattern (nested, &ruleDots))
 	  if (!addRule (nested, opcode, &ruleChars, &ruleDots, after, before))
 	    ok = 0;
-		if(opcode == CTO_MidNum)
-		{
-			TranslationTableCharacter *c = compile_findCharOrDots(ruleChars.chars[0], 0);
-			if(c)
-				c->attributes |= CTC_NumericMode;
-		}
+//		if(opcode == CTO_MidNum)
+//		{
+//			TranslationTableCharacter *c = compile_findCharOrDots(ruleChars.chars[0], 0);
+//			if(c)
+//				c->attributes |= CTC_NumericMode;
+//		}
       break;
     case CTO_CompDots:
     case CTO_Comp6:
@@ -5275,12 +5277,12 @@ doOpcode:
 	    if (!addRule
 		(nested, opcode, &ruleChars, &ruleDots, after, before))
 	      ok = 0;
-		if(opcode == CTO_DecPoint)
-		{
-			TranslationTableCharacter *c = compile_findCharOrDots(ruleChars.chars[0], 0);
-			if(c)
-				c->attributes |= CTC_NumericMode;
-		}
+//		if(opcode == CTO_DecPoint)
+//		{
+//			TranslationTableCharacter *c = compile_findCharOrDots(ruleChars.chars[0], 0);
+//			if(c)
+//				c->attributes |= CTC_NumericMode;
+//		}
 	  }
       break;
     case CTO_Space:

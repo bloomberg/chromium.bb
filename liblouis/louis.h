@@ -224,8 +224,8 @@ extern "C"
     CTO_NoLetsignAfter,
     
     CTO_NumberSign,
-	CTO_NumericModeChars,
-	CTO_NumericNoContractChars,
+	//CTO_NumericModeChars,
+	//CTO_NumericNoContractChars,
 	CTO_SeqDelimiter,
 	CTO_SeqBeforeChars,
 	CTO_SeqAfterChars,

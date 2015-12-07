@@ -781,17 +781,16 @@ insertBrailleIndicators (int finish)
 	    }
 	  break;
 	case checkNumber:
-//	  if (brailleIndicatorDefined
-//	      (table->numberSign) &&
-//	      checkAttr_safe (currentInput, src, CTC_Digit, 0) &&
-//	      (prevTransOpcode == CTO_ExactDots
-//	       || !(beforeAttributes & CTC_Digit))
-//	      && prevTransOpcode != CTO_MidNum)
-//	    {
-//	      ok = 1;
-//	      checkWhat = checkNothing;
-//	    }
-//	  else
+	  if (brailleIndicatorDefined(table->numberSign) &&
+	      checkAttr_safe (currentInput, src, CTC_Digit, 0) &&
+	      (prevTransOpcode == CTO_ExactDots
+	       || !(beforeAttributes & CTC_Digit))
+	      && prevTransOpcode != CTO_MidNum)
+	    {
+	      ok = 1;
+	      checkWhat = checkNothing;
+	    }
+	  else
 	    checkWhat = checkLetter;
 	  break;
 	case checkLetter:
@@ -3101,7 +3100,7 @@ translateString ()
 //			&indicRule->charsdots[0], 0, indicRule->dotslen, 0))
 //			goto failure;
 		insertEmphases();
-		checkNumericMode();
+//		checkNumericMode();
 
       if (transOpcode == CTO_Context || findAttribOrSwapRules ())
         switch (transOpcode)
@@ -3156,15 +3155,15 @@ translateString ()
           }
           break;
         case CTO_DecPoint:
-//          if (table->numberSign)
-//            {
-//              TranslationTableRule *numRule = (TranslationTableRule *)
-//        	& table->ruleArea[table->numberSign];
-//              if (!for_updatePositions
-//        	  (&numRule->charsdots[numRule->charslen],
-//        	   numRule->charslen, numRule->dotslen, 0))
-//        	goto failure;
-//            }
+          if (table->numberSign)
+            {
+              TranslationTableRule *numRule = (TranslationTableRule *)
+        	&table->ruleArea[table->numberSign];
+              if (!for_updatePositions
+        	  (&numRule->charsdots[numRule->charslen],
+        	   numRule->charslen, numRule->dotslen, 0))
+        	goto failure;
+            }
           transOpcode = CTO_MidNum;
           break;
         case CTO_NoCont:
