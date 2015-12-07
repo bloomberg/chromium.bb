@@ -4,6 +4,9 @@
 
 package org.chromium.chrome.browser.media.ui;
 
+import android.app.Activity;
+import android.media.AudioManager;
+
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
@@ -14,6 +17,7 @@ import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
+import org.chromium.ui.base.WindowAndroid;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -30,6 +34,7 @@ public class MediaSessionTabHelper {
     private Tab mTab;
     private WebContents mWebContents;
     private WebContentsObserver mWebContentsObserver;
+    private int mPreviousVolumeControlStream = AudioManager.USE_DEFAULT_STREAM_TYPE;
 
     private MediaNotificationListener mControlsListener = new MediaNotificationListener() {
         @Override
@@ -57,6 +62,17 @@ public class MediaSessionTabHelper {
         }
     };
 
+    void hideNotification() {
+        if (mTab == null) {
+            return;
+        }
+        MediaNotificationManager.hide(mTab.getId(), R.id.media_playback_notification);
+        Activity activity = getActivityFromTab(mTab);
+        if (activity != null) {
+            activity.setVolumeControlStream(mPreviousVolumeControlStream);
+        }
+    }
+
     private WebContentsObserver createWebContentsObserver(WebContents webContents) {
         return new WebContentsObserver(webContents) {
             @Override
@@ -64,15 +80,16 @@ public class MediaSessionTabHelper {
                 if (mTab == null) {
                     MediaNotificationManager.clear(R.id.media_playback_notification);
                 } else {
-                    MediaNotificationManager.hide(mTab.getId(), R.id.media_playback_notification);
+                    hideNotification();
                 }
+
                 super.destroy();
             }
 
             @Override
             public void mediaSessionStateChanged(boolean isControllable, boolean isPaused) {
                 if (!isControllable) {
-                    MediaNotificationManager.hide(mTab.getId(), R.id.media_playback_notification);
+                    hideNotification();
                     return;
                 }
                 String origin = mTab.getUrl();
@@ -95,6 +112,10 @@ public class MediaSessionTabHelper {
                                         | MediaNotificationInfo.ACTION_SWIPEAWAY)
                                 .setId(R.id.media_playback_notification)
                                 .setListener(mControlsListener));
+                Activity activity = getActivityFromTab(mTab);
+                if (activity != null) {
+                    activity.setVolumeControlStream(AudioManager.STREAM_MUSIC);
+                }
             }
         };
 
@@ -127,7 +148,7 @@ public class MediaSessionTabHelper {
 
             cleanupWebContents();
 
-            MediaNotificationManager.hide(mTab.getId(), R.id.media_playback_notification);
+            hideNotification();
             mTab.removeObserver(this);
             mTab = null;
         }
@@ -137,6 +158,11 @@ public class MediaSessionTabHelper {
         mTab = tab;
         mTab.addObserver(mTabObserver);
         if (mTab.getWebContents() != null) setWebContents(tab.getWebContents());
+
+        Activity activity = getActivityFromTab(mTab);
+        if (activity != null) {
+            mPreviousVolumeControlStream = activity.getVolumeControlStream();
+        }
     }
 
     /**
@@ -177,5 +203,12 @@ public class MediaSessionTabHelper {
 
         assert false;
         return MediaSessionUMA.MEDIA_SESSION_ACTION_SOURCE_MAX;
+    }
+
+    private Activity getActivityFromTab(Tab tab) {
+        WindowAndroid windowAndroid = tab.getWindowAndroid();
+        if (windowAndroid == null) return null;
+
+        return windowAndroid.getActivity().get();
     }
 }
