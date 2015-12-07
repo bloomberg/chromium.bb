@@ -254,6 +254,7 @@ class CC_EXPORT LayerTreeHostImpl
   void TreeLayerTransformIsPotentiallyAnimatingChanged(int layer_id,
                                                        LayerTreeImpl* tree,
                                                        bool is_animating);
+  bool AnimationsPreserveAxisAlignment(const LayerImpl* layer) const;
 
   // LayerTreeMutatorsClient implementation.
   bool IsLayerInTree(int layer_id, LayerTreeType tree_type) const override;

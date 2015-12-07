@@ -70,6 +70,15 @@ class LayerTestCommon {
       return ptr;
     }
 
+    template <typename T>
+    T* AddReplicaLayer(LayerImpl* origin) {
+      scoped_ptr<T> layer =
+          T::Create(host_->host_impl()->active_tree(), layer_impl_id_++);
+      T* ptr = layer.get();
+      origin->SetReplicaLayer(layer.Pass());
+      return ptr;
+    }
+
     template <typename T, typename A>
     T* AddChildToRoot(const A& a) {
       scoped_ptr<T> layer =

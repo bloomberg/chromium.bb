@@ -169,7 +169,7 @@ class TileManagerPerfTest : public testing::Test {
         FakePictureLayerImpl::CreateWithRasterSource(pending_tree, id_,
                                                      raster_source);
     pending_layer->SetDrawsContent(true);
-    pending_layer->SetHasRenderSurface(true);
+    pending_layer->SetForceRenderSurface(true);
     pending_tree->SetRootLayer(std::move(pending_layer));
     pending_tree->BuildPropertyTreesForTesting();
 

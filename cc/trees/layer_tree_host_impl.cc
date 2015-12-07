@@ -3666,6 +3666,13 @@ void LayerTreeHostImpl::TreeLayerTransformIsPotentiallyAnimatingChanged(
     layer->OnTransformIsPotentiallyAnimatingChanged(is_animating);
 }
 
+bool LayerTreeHostImpl::AnimationsPreserveAxisAlignment(
+    const LayerImpl* layer) const {
+  return animation_host_
+             ? animation_host_->AnimationsPreserveAxisAlignment(layer->id())
+             : true;
+}
+
 void LayerTreeHostImpl::SetLayerFilterMutated(int layer_id,
                                               LayerTreeType tree_type,
                                               const FilterOperations& filters) {

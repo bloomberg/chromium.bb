@@ -777,22 +777,18 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
                                                   device_scale_factor_);
   }
 
-  bool can_render_to_separate_surface = true;
 
   TRACE_EVENT0("cc", "LayerTreeHost::UpdateLayers::CalcDrawProps");
 
   LayerTreeHostCommon::PreCalculateMetaInformation(root_layer);
 
-  bool preserves_2d_axis_alignment = false;
   gfx::Transform identity_transform;
   LayerList update_layer_list;
 
-  LayerTreeHostCommon::UpdateRenderSurfaces(
-      root_layer, can_render_to_separate_surface, identity_transform,
-      preserves_2d_axis_alignment);
   {
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug.cdp-perf"),
                  "LayerTreeHostCommon::ComputeVisibleRectsWithPropertyTrees");
+    bool can_render_to_separate_surface = true;
     BuildPropertyTreesAndComputeVisibleRects(
         root_layer, page_scale_layer, inner_viewport_scroll_layer_.get(),
         outer_viewport_scroll_layer_.get(), overscroll_elasticity_layer_.get(),

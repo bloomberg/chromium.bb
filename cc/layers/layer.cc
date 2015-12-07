@@ -1203,6 +1203,7 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->SetDrawsContent(DrawsContent());
   layer->SetHideLayerAndSubtree(hide_layer_and_subtree_);
   layer->SetHasRenderSurface(has_render_surface_);
+  layer->SetForceRenderSurface(force_render_surface_);
   if (!layer->FilterIsAnimatingOnImplOnly() && !FilterIsAnimating())
     layer->SetFilters(filters_);
   DCHECK(!(FilterIsAnimating() && layer->FilterIsAnimatingOnImplOnly()));
@@ -1541,9 +1542,8 @@ void Layer::SetHasRenderSurface(bool has_render_surface) {
     return;
   has_render_surface_ = has_render_surface;
   // We do not need SetNeedsCommit here, since this is only ever called
-  // during a commit, from CalculateDrawProperties.
+  // during a commit, from CalculateDrawProperties using property trees.
   SetNeedsPushProperties();
-  layer_tree_host_->property_trees()->needs_rebuild = true;
 }
 
 gfx::ScrollOffset Layer::ScrollOffsetForAnimation() const {

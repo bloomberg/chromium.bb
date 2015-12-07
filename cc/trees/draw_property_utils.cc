@@ -21,6 +21,28 @@ namespace cc {
 namespace {
 
 template <typename LayerType>
+static void ValidateRenderSurfaces(LayerType* layer) {
+  for (size_t i = 0; i < layer->children().size(); ++i) {
+    ValidateRenderSurfaces(layer->child_at(i));
+  }
+
+  // This test verifies that there are no cases where a LayerImpl needs
+  // a render surface, but doesn't have one.
+  if (layer->has_render_surface())
+    return;
+
+  DCHECK(layer->filters().IsEmpty()) << "layer: " << layer->id();
+  DCHECK(layer->background_filters().IsEmpty()) << "layer: " << layer->id();
+  DCHECK(layer->parent()) << "layer: " << layer->id();
+  if (layer->parent()->replica_layer() == layer)
+    return;
+  DCHECK(!layer->mask_layer()) << "layer: " << layer->id();
+  DCHECK(!layer->replica_layer()) << "layer: " << layer->id();
+  DCHECK(!layer->is_root_for_isolated_group()) << "layer: " << layer->id();
+  DCHECK(!layer->HasCopyRequest()) << "layer: " << layer->id();
+}
+
+template <typename LayerType>
 void CalculateVisibleRects(const std::vector<LayerType*>& visible_layer_list,
                            const ClipTree& clip_tree,
                            const TransformTree& transform_tree,
@@ -438,6 +460,43 @@ void FindLayersThatNeedUpdates(
   }
 }
 
+template <typename LayerType>
+void UpdateRenderSurfacesWithEffectTreeInternal(EffectTree* effect_tree,
+                                                LayerType* layer) {
+  EffectNode* node = effect_tree->Node(layer->effect_tree_index());
+
+  if (node->owner_id == layer->id() && node->data.has_render_surface)
+    layer->SetHasRenderSurface(true);
+  else
+    layer->SetHasRenderSurface(false);
+
+  for (size_t i = 0; i < layer->children().size(); ++i) {
+    UpdateRenderSurfacesWithEffectTreeInternal<LayerType>(effect_tree,
+                                                          layer->child_at(i));
+  }
+}
+
+void UpdateRenderSurfacesWithEffectTree(EffectTree* effect_tree, Layer* layer) {
+  UpdateRenderSurfacesWithEffectTreeInternal<Layer>(effect_tree, layer);
+}
+
+void UpdateRenderSurfacesNonRootSurfacesDisabled(LayerImpl* layer) {
+  // Only root layer has render surface, all other layers don't.
+  layer->SetHasRenderSurface(!layer->parent());
+
+  for (size_t i = 0; i < layer->children().size(); ++i)
+    UpdateRenderSurfacesNonRootSurfacesDisabled(layer->child_at(i));
+}
+
+void UpdateRenderSurfacesWithEffectTree(EffectTree* effect_tree,
+                                        bool non_root_surfaces_enabled,
+                                        LayerImpl* layer) {
+  if (!non_root_surfaces_enabled)
+    UpdateRenderSurfacesNonRootSurfacesDisabled(layer);
+  else
+    UpdateRenderSurfacesWithEffectTreeInternal<LayerImpl>(effect_tree, layer);
+}
+
 }  // namespace
 
 static void ResetIfHasNanCoordinate(gfx::RectF* rect) {
@@ -500,7 +559,6 @@ void ComputeClips(ClipTree* clip_tree,
           parent_to_current,
           parent_clip_node->data.combined_clip_in_target_space);
     }
-
     // Only nodes affected by ancestor clips will have their clip adjusted due
     // to intersecting with an ancestor clip. But, we still need to propagate
     // the combined clip to our children because if they are clipped, they may
@@ -523,7 +581,6 @@ void ComputeClips(ClipTree* clip_tree,
       ResetIfHasNanCoordinate(&clip_node->data.combined_clip_in_target_space);
       continue;
     }
-
     bool use_only_parent_clip = !clip_node->data.applies_local_clip;
     if (use_only_parent_clip) {
       clip_node->data.combined_clip_in_target_space =
@@ -648,6 +705,8 @@ void BuildPropertyTreesAndComputeVisibleRects(
       outer_viewport_scroll_layer, overscroll_elasticity_layer,
       elastic_overscroll, page_scale_factor, device_scale_factor, viewport,
       device_transform, property_trees);
+  UpdateRenderSurfacesWithEffectTree(&property_trees->effect_tree, root_layer);
+  ValidateRenderSurfaces(root_layer);
   ComputeVisibleRectsUsingPropertyTrees(root_layer, property_trees,
                                         can_render_to_separate_surface,
                                         update_layer_list);
@@ -691,6 +750,10 @@ void ComputeVisibleRectsUsingPropertyTrees(LayerImpl* root_layer,
                                            PropertyTrees* property_trees,
                                            bool can_render_to_separate_surface,
                                            LayerImplList* visible_layer_list) {
+  UpdateRenderSurfacesWithEffectTree(
+      &property_trees->effect_tree, can_render_to_separate_surface, root_layer);
+  if (can_render_to_separate_surface)
+    ValidateRenderSurfaces(root_layer);
   LayerImplList update_layer_list;
   ComputeVisibleRectsUsingPropertyTreesInternal(
       root_layer, property_trees, can_render_to_separate_surface,

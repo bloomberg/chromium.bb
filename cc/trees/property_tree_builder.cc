@@ -47,6 +47,8 @@ struct DataForRecursion {
   bool target_is_clipped;
   const gfx::Transform* device_transform;
   gfx::Vector2dF scroll_compensation_adjustment;
+  gfx::Transform compound_transform_since_render_target;
+  bool axis_align_since_render_target;
   int sequence_number;
 };
 
@@ -70,11 +72,11 @@ static ClipNode* GetClipParent(const DataForRecursion<LayerType>& data,
 template <typename LayerType>
 static bool AppliesClip(LayerType* layer,
                         const DataForRecursion<LayerType>& data,
+                        bool created_render_surface,
                         bool is_clipped) {
-  const bool render_surface_applies_clip =
-      layer->has_render_surface() && is_clipped;
+  const bool render_surface_applies_clip = created_render_surface && is_clipped;
   const bool render_surface_may_grow_due_to_clip_children =
-      layer->has_render_surface() && layer->num_unclipped_descendants() > 0;
+      created_render_surface && layer->num_unclipped_descendants() > 0;
 
   if (layer->masks_to_bounds() || layer->mask_layer() ||
       render_surface_may_grow_due_to_clip_children)
@@ -108,7 +110,7 @@ void AddClipNodeIfNeeded(const DataForRecursion<LayerType>& data_from_ancestor,
   bool layers_are_clipped = false;
   bool has_unclipped_surface = false;
 
-  if (layer->has_render_surface()) {
+  if (created_render_surface) {
     // Clips can usually be applied to a surface's descendants simply by
     // clipping the surface (or applied implicitly by the surface's bounds).
     // However, if the surface has unclipped descendants (layers that aren't
@@ -147,7 +149,8 @@ void AddClipNodeIfNeeded(const DataForRecursion<LayerType>& data_from_ancestor,
       parent->data.layers_are_clipped_when_surfaces_disabled;
 
   bool applies_clip =
-      AppliesClip(layer, data_from_ancestor, ancestor_clips_subtree);
+      AppliesClip(layer, data_from_ancestor, created_render_surface,
+                  ancestor_clips_subtree);
   bool parent_applies_clip = !parent->data.resets_clip;
 
   // When we have an unclipped surface, all ancestor clips no longer apply.
@@ -182,7 +185,7 @@ void AddClipNodeIfNeeded(const DataForRecursion<LayerType>& data_from_ancestor,
       // Surfaces reset the rect used for layer clipping. At other nodes, layer
       // clipping state from ancestors must continue to get propagated.
       node.data.layer_clipping_uses_only_local_clip =
-          layer->has_render_surface() || !ancestor_clips_subtree;
+          created_render_surface || !ancestor_clips_subtree;
     } else {
       // Otherwise, we're either unclipped, or exist only in order to apply our
       // parent's clips in our space.
@@ -201,7 +204,6 @@ void AddClipNodeIfNeeded(const DataForRecursion<LayerType>& data_from_ancestor,
   }
 
   layer->SetClipTreeIndex(data_for_children->clip_tree_parent);
-
   // TODO(awoloszyn): Right now when we hit a node with a replica, we reset the
   // clip for all children since we may need to draw. We need to figure out a
   // better way, since we will need both the clipped and unclipped versions.
@@ -233,7 +235,7 @@ bool AddTransformNodeIfNeeded(
   const bool has_any_transform_animation =
       layer->HasAnyAnimationTargetingProperty(Animation::TRANSFORM);
 
-  const bool has_surface = layer->has_render_surface();
+  const bool has_surface = created_render_surface;
 
   bool requires_node = is_root || is_scrollable || has_significant_transform ||
                        has_any_transform_animation || has_surface || is_fixed ||
@@ -431,6 +433,122 @@ bool IsAnimatingOpacity(LayerImpl* layer) {
 }
 
 template <typename LayerType>
+static inline bool LayerIsInExisting3DRenderingContext(LayerType* layer) {
+  return layer->Is3dSorted() && layer->parent() &&
+         layer->parent()->Is3dSorted() &&
+         (layer->parent()->sorting_context_id() == layer->sorting_context_id());
+}
+
+template <typename LayerType>
+bool ShouldCreateRenderSurface(LayerType* layer,
+                               gfx::Transform current_transform,
+                               bool axis_aligned) {
+  const bool preserves_2d_axis_alignment =
+      (current_transform * layer->transform()).Preserves2dAxisAlignment() &&
+      axis_aligned && layer->AnimationsPreserveAxisAlignment();
+  const bool is_root = !layer->parent();
+  if (is_root)
+    return true;
+
+  // If the layer uses a mask and the layer is not a replica layer.
+  // TODO(weiliangc): After slimming paint there won't be replica layers.
+  if (layer->mask_layer() && layer->parent()->replica_layer() != layer) {
+    return true;
+  }
+
+  // If the layer has a reflection.
+  if (layer->replica_layer()) {
+    return true;
+  }
+
+  // If the layer uses a CSS filter.
+  if (!layer->filters().IsEmpty() || !layer->background_filters().IsEmpty()) {
+    return true;
+  }
+
+  // If the layer will use a CSS filter.  In this case, the animation
+  // will start and add a filter to this layer, so it needs a surface.
+  if (layer->HasPotentiallyRunningFilterAnimation()) {
+    return true;
+  }
+
+  int num_descendants_that_draw_content =
+      layer->NumDescendantsThatDrawContent();
+
+  // If the layer flattens its subtree, but it is treated as a 3D object by its
+  // parent (i.e. parent participates in a 3D rendering context).
+  if (LayerIsInExisting3DRenderingContext(layer) &&
+      layer->should_flatten_transform() &&
+      num_descendants_that_draw_content > 0) {
+    TRACE_EVENT_INSTANT0(
+        "cc", "PropertyTreeBuilder::ShouldCreateRenderSurface flattening",
+        TRACE_EVENT_SCOPE_THREAD);
+    return true;
+  }
+
+  // If the layer has blending.
+  // TODO(rosca): this is temporary, until blending is implemented for other
+  // types of quads than RenderPassDrawQuad. Layers having descendants that draw
+  // content will still create a separate rendering surface.
+  if (!layer->uses_default_blend_mode()) {
+    TRACE_EVENT_INSTANT0(
+        "cc", "PropertyTreeBuilder::ShouldCreateRenderSurface blending",
+        TRACE_EVENT_SCOPE_THREAD);
+    return true;
+  }
+  // If the layer clips its descendants but it is not axis-aligned with respect
+  // to its parent.
+  bool layer_clips_external_content =
+      LayerClipsSubtree(layer) || layer->HasDelegatedContent();
+  if (layer_clips_external_content && !preserves_2d_axis_alignment &&
+      num_descendants_that_draw_content > 0) {
+    TRACE_EVENT_INSTANT0(
+        "cc", "PropertyTreeBuilder::ShouldCreateRenderSurface clipping",
+        TRACE_EVENT_SCOPE_THREAD);
+    return true;
+  }
+
+  // If the layer has some translucency and does not have a preserves-3d
+  // transform style.  This condition only needs a render surface if two or more
+  // layers in the subtree overlap. But checking layer overlaps is unnecessarily
+  // costly so instead we conservatively create a surface whenever at least two
+  // layers draw content for this subtree.
+  bool at_least_two_layers_in_subtree_draw_content =
+      num_descendants_that_draw_content > 0 &&
+      (layer->DrawsContent() || num_descendants_that_draw_content > 1);
+
+  if (layer->opacity() != 1.f && layer->should_flatten_transform() &&
+      at_least_two_layers_in_subtree_draw_content) {
+    TRACE_EVENT_INSTANT0(
+        "cc", "PropertyTreeBuilder::ShouldCreateRenderSurface opacity",
+        TRACE_EVENT_SCOPE_THREAD);
+    DCHECK(!is_root);
+    return true;
+  }
+  // If the layer has isolation.
+  // TODO(rosca): to be optimized - create separate rendering surface only when
+  // the blending descendants might have access to the content behind this layer
+  // (layer has transparent background or descendants overflow).
+  // https://code.google.com/p/chromium/issues/detail?id=301738
+  if (layer->is_root_for_isolated_group()) {
+    TRACE_EVENT_INSTANT0(
+        "cc", "PropertyTreeBuilder::ShouldCreateRenderSurface isolation",
+        TRACE_EVENT_SCOPE_THREAD);
+    return true;
+  }
+
+  // If we force it.
+  if (layer->force_render_surface())
+    return true;
+
+  // If we'll make a copy of the layer's contents.
+  if (layer->HasCopyRequest())
+    return true;
+
+  return false;
+}
+
+template <typename LayerType>
 bool AddEffectNodeIfNeeded(
     const DataForRecursion<LayerType>& data_from_ancestor,
     LayerType* layer,
@@ -438,15 +556,22 @@ bool AddEffectNodeIfNeeded(
   const bool is_root = !layer->parent();
   const bool has_transparency = layer->opacity() != 1.f;
   const bool has_animated_opacity = IsAnimatingOpacity(layer);
-  const bool has_render_surface = layer->has_render_surface();
-  bool requires_node =
-      is_root || has_transparency || has_animated_opacity || has_render_surface;
+  const bool should_create_render_surface = ShouldCreateRenderSurface(
+      layer, data_from_ancestor.compound_transform_since_render_target,
+      data_from_ancestor.axis_align_since_render_target);
+  data_for_children->axis_align_since_render_target &=
+      layer->AnimationsPreserveAxisAlignment();
+
+  bool requires_node = is_root || has_transparency || has_animated_opacity ||
+                       should_create_render_surface;
 
   int parent_id = data_from_ancestor.effect_tree_parent;
 
   if (!requires_node) {
     layer->SetEffectTreeIndex(parent_id);
     data_for_children->effect_tree_parent = parent_id;
+    data_for_children->compound_transform_since_render_target *=
+        layer->transform();
     return false;
   }
 
@@ -454,7 +579,8 @@ bool AddEffectNodeIfNeeded(
   node.owner_id = layer->id();
   node.data.opacity = layer->opacity();
   node.data.screen_space_opacity = layer->opacity();
-  node.data.has_render_surface = has_render_surface;
+  node.data.has_render_surface = should_create_render_surface;
+
   if (!is_root) {
     // For every effect node, we create a transform node, so it's safe to use
     // the next available id from the transform tree as this effect node's
@@ -477,7 +603,12 @@ bool AddEffectNodeIfNeeded(
   data_for_children->effect_tree_parent =
       data_for_children->effect_tree->Insert(node, parent_id);
   layer->SetEffectTreeIndex(data_for_children->effect_tree_parent);
-  return has_render_surface;
+  if (should_create_render_surface) {
+    data_for_children->compound_transform_since_render_target =
+        gfx::Transform();
+    data_for_children->axis_align_since_render_target = true;
+  }
+  return should_create_render_surface;
 }
 
 template <typename LayerType>
@@ -581,6 +712,8 @@ void BuildPropertyTreesTopLevelInternal(
   data_for_recursion.transform_tree->clear();
   data_for_recursion.clip_tree->clear();
   data_for_recursion.effect_tree->clear();
+  data_for_recursion.compound_transform_since_render_target = gfx::Transform();
+  data_for_recursion.axis_align_since_render_target = true;
   data_for_recursion.sequence_number = property_trees->sequence_number;
   data_for_recursion.transform_tree->set_device_scale_factor(
       device_scale_factor);

@@ -391,6 +391,7 @@ class CC_EXPORT LayerTreeImpl {
   bool OpacityIsAnimatingOnImplOnly(const LayerImpl* layer) const;
   bool TransformIsAnimatingOnImplOnly(const LayerImpl* layer) const;
 
+  bool AnimationsPreserveAxisAlignment(const LayerImpl* layer) const;
   bool HasOnlyTranslationTransforms(const LayerImpl* layer) const;
 
   bool MaximumTargetScale(const LayerImpl* layer, float* max_scale) const;
