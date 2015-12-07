@@ -135,6 +135,22 @@ camera.util.TooltipManager.prototype.showTooltip_ = function(element) {
 };
 
 /**
+ * Checks the board name if the user is using a chromebook.
+ * @param {string} name Board name.
+ * @param {function(boolean)} callback Result callback.
+ */
+camera.util.isBoard = function(name, callback) {
+  if (chrome.chromeosInfoPrivate) {
+    chrome.chromeosInfoPrivate.get(['board'], function(values) {
+      var board = values['board'];
+      callback(board && board.indexOf(name) == 0);
+    });
+  } else {
+    callback(false);
+  }
+};
+
+/**
  * Sets localized aria attributes for TTS on the entire document. Uses the
  * dedicated i18n-aria-label attribute as a strings identifier. If it is not
  * found, then i18n-label is used as a fallback.
