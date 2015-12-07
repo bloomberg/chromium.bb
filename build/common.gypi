@@ -4229,9 +4229,15 @@
                       # Clang does not support the following options.
                       '-finline-limit=64',
                     ],
-                    'cflags': [
-                      # TODO(gordanac) Enable integrated-as.
-                      '-no-integrated-as',
+                    # TODO(gordanac) Enable integrated-as.
+                    'cflags': [ '-fno-integrated-as' ],
+                    'conditions': [
+                      ['OS=="android"', {
+                        'cflags': [
+                          # Else /usr/bin/as gets picked up.
+                          '-B<(android_toolchain)',
+                        ],
+                      }],
                     ],
                   }],
                   ['clang==1 and OS=="android"', {
