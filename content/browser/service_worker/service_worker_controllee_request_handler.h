@@ -8,6 +8,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/time/time.h"
 #include "content/browser/service_worker/service_worker_request_handler.h"
+#include "content/browser/service_worker/service_worker_url_request_job.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/request_context_frame_type.h"
 #include "content/public/common/request_context_type.h"
@@ -24,13 +25,13 @@ namespace content {
 
 class ResourceRequestBody;
 class ServiceWorkerRegistration;
-class ServiceWorkerURLRequestJob;
 class ServiceWorkerVersion;
 
 // A request handler derivative used to handle requests from
 // controlled documents.
 class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
-    : public ServiceWorkerRequestHandler {
+    : public ServiceWorkerRequestHandler,
+      public ServiceWorkerURLRequestJob::Delegate {
  public:
   ServiceWorkerControlleeRequestHandler(
       base::WeakPtr<ServiceWorkerContextCore> context,
@@ -79,10 +80,12 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
   // For sub resource case.
   void PrepareForSubResource();
 
+  // ServiceWorkerURLRequestJob::Delegate implementation:
+
   // Called just before the request is restarted. Makes sure the next request
   // goes over the network.
   void OnPrepareToRestart(base::TimeTicks service_worker_start_time,
-                          base::TimeTicks service_worker_ready_time);
+                          base::TimeTicks service_worker_ready_time) override;
 
   // Called when the request's start phase completes. Caches response info for
   // GetExtraResponseInfo.
@@ -92,7 +95,14 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
       const GURL& original_url_via_service_worker,
       blink::WebServiceWorkerResponseType response_type_via_service_worker,
       base::TimeTicks worker_start_time,
-      base::TimeTicks service_worker_ready_time);
+      base::TimeTicks service_worker_ready_time) override;
+
+  ServiceWorkerVersion* GetServiceWorkerVersion(
+      ServiceWorkerMetrics::URLRequestJobResult* result) override;
+  bool RequestStillValid(
+      ServiceWorkerMetrics::URLRequestJobResult* result) override;
+  void MainResourceLoadFailed() override;
+  GURL GetRequestingOrigin() override;
 
   // Sets |job_| to nullptr, and clears all extra response info associated with
   // that job, except for timing information.

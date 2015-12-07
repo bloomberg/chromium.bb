@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -23,6 +24,7 @@
 #include "content/browser/fileapi/chrome_blob_storage_context.h"
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/resource_context_impl.h"
+#include "content/browser/service_worker/foreign_fetch_request_handler.h"
 #include "content/browser/service_worker/service_worker_request_handler.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/streams/stream.h"
@@ -37,6 +39,7 @@
 #include "content/public/browser/navigator_connect_service_factory.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_constants.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "crypto/sha2.h"
 #include "net/url_request/url_request_context.h"
@@ -445,6 +448,13 @@ StoragePartitionImpl* StoragePartitionImplMap::Get(
   request_interceptors.push_back(
       ServiceWorkerRequestHandler::CreateInterceptor(
           browser_context_->GetResourceContext()).release());
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableExperimentalWebPlatformFeatures)) {
+    request_interceptors.push_back(
+        ForeignFetchRequestHandler::CreateInterceptor(
+            browser_context_->GetResourceContext())
+            .release());
+  }
   request_interceptors.push_back(new AppCacheInterceptor());
 
   // These calls must happen after StoragePartitionImpl::Create().

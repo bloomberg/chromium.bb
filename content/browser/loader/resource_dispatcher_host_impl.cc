@@ -54,6 +54,7 @@
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/resource_context_impl.h"
+#include "content/browser/service_worker/foreign_fetch_request_handler.h"
 #include "content/browser/service_worker/service_worker_request_handler.h"
 #include "content/browser/streams/stream.h"
 #include "content/browser/streams/stream_context.h"
@@ -1373,14 +1374,28 @@ void ResourceDispatcherHostImpl::BeginRequest(
 
   // Initialize the service worker handler for the request. We don't use
   // ServiceWorker for synchronous loads to avoid renderer deadlocks.
+  const bool should_skip_service_worker =
+      request_data.skip_service_worker || is_sync_load;
   ServiceWorkerRequestHandler::InitializeHandler(
       new_request.get(), filter_->service_worker_context(), blob_context,
       child_id, request_data.service_worker_provider_id,
-      request_data.skip_service_worker || is_sync_load,
+      should_skip_service_worker,
       request_data.fetch_request_mode, request_data.fetch_credentials_mode,
       request_data.fetch_redirect_mode, request_data.resource_type,
       request_data.fetch_request_context_type, request_data.fetch_frame_type,
       request_data.request_body);
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableExperimentalWebPlatformFeatures)) {
+    ForeignFetchRequestHandler::InitializeHandler(
+        new_request.get(), filter_->service_worker_context(), blob_context,
+        child_id, request_data.service_worker_provider_id,
+        should_skip_service_worker,
+        request_data.fetch_request_mode, request_data.fetch_credentials_mode,
+        request_data.fetch_redirect_mode, request_data.resource_type,
+        request_data.fetch_request_context_type, request_data.fetch_frame_type,
+        request_data.request_body);
+  }
 
   // Have the appcache associate its extra info with the request.
   AppCacheInterceptor::SetExtraRequestInfo(

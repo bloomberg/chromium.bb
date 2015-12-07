@@ -149,12 +149,12 @@ class MockHttpProtocolHandler
       base::WeakPtr<ServiceWorkerProviderHost> provider_host,
       const ResourceContext* resource_context,
       base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
-      TestCallbackTracker* callback_tracker)
+      ServiceWorkerURLRequestJob::Delegate* delegate)
       : provider_host_(provider_host),
         resource_context_(resource_context),
         blob_storage_context_(blob_storage_context),
         job_(nullptr),
-        callback_tracker_(callback_tracker) {}
+        delegate_(delegate) {}
 
   ~MockHttpProtocolHandler() override {}
 
@@ -169,16 +169,11 @@ class MockHttpProtocolHandler
     }
 
     job_ = new ServiceWorkerURLRequestJob(
-        request, network_delegate, provider_host_, blob_storage_context_,
-        resource_context_, FETCH_REQUEST_MODE_NO_CORS,
-        FETCH_CREDENTIALS_MODE_OMIT, FetchRedirectMode::FOLLOW_MODE,
-        true /* is_main_resource_load */, REQUEST_CONTEXT_TYPE_HYPERLINK,
-        REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL,
-        scoped_refptr<ResourceRequestBody>(),
-        base::Bind(&TestCallbackTracker::OnPrepareToRestart,
-                   base::Unretained(callback_tracker_)),
-        base::Bind(&TestCallbackTracker::OnStartCompleted,
-                   base::Unretained(callback_tracker_)));
+        request, network_delegate, blob_storage_context_, resource_context_,
+        FETCH_REQUEST_MODE_NO_CORS, FETCH_CREDENTIALS_MODE_OMIT,
+        FetchRedirectMode::FOLLOW_MODE, true /* is_main_resource_load */,
+        REQUEST_CONTEXT_TYPE_HYPERLINK, REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL,
+        scoped_refptr<ResourceRequestBody>(), delegate_);
     job_->ForwardToServiceWorker();
     return job_;
   }
@@ -188,7 +183,7 @@ class MockHttpProtocolHandler
   const ResourceContext* resource_context_;
   base::WeakPtr<storage::BlobStorageContext> blob_storage_context_;
   mutable ServiceWorkerURLRequestJob* job_;
-  TestCallbackTracker* callback_tracker_;
+  ServiceWorkerURLRequestJob::Delegate* delegate_;
 };
 
 // Returns a BlobProtocolHandler that uses |blob_storage_context|. Caller owns
@@ -204,7 +199,9 @@ scoped_ptr<storage::BlobProtocolHandler> CreateMockBlobProtocolHandler(
 
 }  // namespace
 
-class ServiceWorkerURLRequestJobTest : public testing::Test {
+class ServiceWorkerURLRequestJobTest
+    : public testing::Test,
+      public ServiceWorkerURLRequestJob::Delegate {
  protected:
   ServiceWorkerURLRequestJobTest()
       : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
@@ -262,6 +259,7 @@ class ServiceWorkerURLRequestJobTest : public testing::Test {
                                       SERVICE_WORKER_PROVIDER_FOR_WINDOW,
                                       helper_->context()->AsWeakPtr(),
                                       nullptr));
+    provider_host_ = provider_host->AsWeakPtr();
     provider_host->SetDocumentUrl(GURL("http://example.com/"));
     registration_->SetActiveVersion(version_);
     provider_host->AssociateRegistration(registration_.get(),
@@ -279,7 +277,7 @@ class ServiceWorkerURLRequestJobTest : public testing::Test {
         "http",
         make_scoped_ptr(new MockHttpProtocolHandler(
             provider_host->AsWeakPtr(), browser_context_->GetResourceContext(),
-            blob_storage_context->AsWeakPtr(), &callback_tracker_)));
+            blob_storage_context->AsWeakPtr(), this)));
     url_request_job_factory_->SetProtocolHandler(
         "blob", CreateMockBlobProtocolHandler(blob_storage_context));
     url_request_context_.set_job_factory(url_request_job_factory_.get());
@@ -332,6 +330,59 @@ class ServiceWorkerURLRequestJobTest : public testing::Test {
     return version_->HasInflightRequests();
   }
 
+  // ServiceWorkerURLRequestJob::Delegate implementation:
+  void OnPrepareToRestart(base::TimeTicks service_worker_start_time,
+                          base::TimeTicks service_worker_ready_time) override {
+    callback_tracker_.OnPrepareToRestart(service_worker_start_time,
+                                         service_worker_ready_time);
+  }
+
+  void OnStartCompleted(
+      bool was_fetched_via_service_worker,
+      bool was_fallback_required,
+      const GURL& original_url_via_service_worker,
+      blink::WebServiceWorkerResponseType response_type_via_service_worker,
+      base::TimeTicks worker_start_time,
+      base::TimeTicks service_worker_ready_time) override {
+    callback_tracker_.OnStartCompleted(
+        was_fetched_via_service_worker, was_fallback_required,
+        original_url_via_service_worker, response_type_via_service_worker,
+        worker_start_time, service_worker_ready_time);
+  }
+
+  ServiceWorkerVersion* GetServiceWorkerVersion(
+      ServiceWorkerMetrics::URLRequestJobResult* result) override {
+    if (!provider_host_) {
+      *result = ServiceWorkerMetrics::REQUEST_JOB_ERROR_NO_PROVIDER_HOST;
+      return nullptr;
+    }
+    if (!provider_host_->active_version()) {
+      *result = ServiceWorkerMetrics::REQUEST_JOB_ERROR_NO_ACTIVE_VERSION;
+      return nullptr;
+    }
+    return provider_host_->active_version();
+  }
+
+  bool RequestStillValid(
+      ServiceWorkerMetrics::URLRequestJobResult* result) override {
+    if (!provider_host_) {
+      *result = ServiceWorkerMetrics::REQUEST_JOB_ERROR_NO_PROVIDER_HOST;
+      return false;
+    }
+    return true;
+  }
+
+  void MainResourceLoadFailed() override {
+    CHECK(provider_host_);
+    // Detach the controller so subresource requests also skip the worker.
+    provider_host_->NotifyControllerLost();
+  }
+
+  GURL GetRequestingOrigin() override {
+    CHECK(provider_host_);
+    return provider_host_->document_url().GetOrigin();
+  }
+
   TestBrowserThreadBundle thread_bundle_;
 
   scoped_ptr<TestBrowserContext> browser_context_;
@@ -347,6 +398,7 @@ class ServiceWorkerURLRequestJobTest : public testing::Test {
   scoped_ptr<storage::BlobDataBuilder> blob_data_;
 
   TestCallbackTracker callback_tracker_;
+  base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerURLRequestJobTest);

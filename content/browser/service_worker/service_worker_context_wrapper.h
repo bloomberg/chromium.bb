@@ -150,6 +150,8 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
 
   bool is_incognito() const { return is_incognito_; }
 
+  bool OriginHasForeignFetchRegistrations(const GURL& origin);
+
  private:
   friend class BackgroundSyncManagerTest;
   friend class base::RefCountedThreadSafe<ServiceWorkerContextWrapper>;

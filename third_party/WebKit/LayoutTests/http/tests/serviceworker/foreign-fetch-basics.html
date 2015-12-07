@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="resources/test-helpers.js"></script>
+<body>
+<script>
+var worker = 'resources/foreign-fetch-worker.js';
+
+promise_test(t => {
+    var scope = 'resources/foreign-fetch/scope';
+    return service_worker_unregister_and_register(t, worker, scope)
+      .then(r => {
+          add_completion_callback(() => r.unregister());
+          return wait_for_state(t, r.installing, 'activated');
+        })
+      .then(() => fetch(scope + '/foo'))
+      .then(response => {
+          assert_equals(response.status, 404);
+          return fetch(scope + '/intercept/foo');
+        })
+      .then(response => response.text())
+      .then(response_text => {
+          assert_equals(response_text, 'Foreign Fetch');
+        });
+  }, 'Service Worker intercepts fetches in scope.');
+</script>
+</body>

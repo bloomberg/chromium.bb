@@ -641,6 +641,14 @@ void ServiceWorkerContextWrapper::RemoveObserver(
   observer_list_->RemoveObserver(observer);
 }
 
+bool ServiceWorkerContextWrapper::OriginHasForeignFetchRegistrations(
+    const GURL& origin) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!context_core_)
+    return false;
+  return context_core_->storage()->OriginHasForeignFetchRegistrations(origin);
+}
+
 void ServiceWorkerContextWrapper::InitInternal(
     const base::FilePath& user_data_directory,
     scoped_ptr<ServiceWorkerDatabaseTaskManager> database_task_manager,

@@ -1314,6 +1314,8 @@
       'browser/service_worker/embedded_worker_instance.h',
       'browser/service_worker/embedded_worker_registry.cc',
       'browser/service_worker/embedded_worker_registry.h',
+      'browser/service_worker/foreign_fetch_request_handler.cc',
+      'browser/service_worker/foreign_fetch_request_handler.h',
       'browser/service_worker/service_worker_cache_writer.cc',
       'browser/service_worker/service_worker_cache_writer.h',
       'browser/service_worker/service_worker_context_core.cc',
