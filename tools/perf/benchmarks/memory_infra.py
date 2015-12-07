@@ -9,6 +9,7 @@ from core import perf_benchmark
 from telemetry import benchmark
 from telemetry.timeline import tracing_category_filter
 from telemetry.web_perf import timeline_based_measurement
+from telemetry.web_perf.metrics import memory_timeline
 
 import page_sets
 
@@ -34,9 +35,19 @@ class _MemoryInfra(perf_benchmark.PerfBenchmark):
     # the timeline markers used for mapping threads to tabs.
     trace_memory = tracing_category_filter.TracingCategoryFilter(
       filter_string='-*,blink.console,disabled-by-default-memory-infra')
-    options = timeline_based_measurement.Options(overhead_level=trace_memory)
-    options.tracing_options.enable_android_graphics_memtrack = True
-    return options
+    tbm_options = timeline_based_measurement.Options(
+        overhead_level=trace_memory)
+    tbm_options.tracing_options.enable_android_graphics_memtrack = True
+    return tbm_options
+
+  @classmethod
+  def HasBenchmarkTraceRerunDebugOption(cls):
+    return True
+
+  def SetupBenchmarkDefaultTraceRerunOptions(self, tbm_options):
+    tbm_options.SetTimelineBasedMetrics((
+        memory_timeline.MemoryTimelineMetric(),
+    ))
 
 
 # TODO(bashi): Workaround for http://crbug.com/532075
