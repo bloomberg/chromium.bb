@@ -3318,7 +3318,7 @@
    fun:_ZN7content5Shell15LoadURLForFrameERK4GURLRKSs
 }
 {
-   bug_542543
+   bug_542543a
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN8IOThread34ConstructProxyScriptFetcherContextEPNS_7GlobalsEPN3net6NetLogE
@@ -3456,4 +3456,14 @@
    fun:_ZN8GrGLCapsC1ERK16GrContextOptionsRK15GrGLContextInfoPK13GrGLInterface
    fun:_ZN15GrGLContextInfoC1ERKNS_15ConstructorArgsE
    fun:_ZN11GrGLContextC2ERKN15GrGLContextInfo15ConstructorArgsE
+}
+{
+   bug_542543b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN8IOThread4InitEv
+   fun:_ZN7content17BrowserThreadImpl4InitEv
+   fun:_ZN7content21TestBrowserThreadImpl4InitEv
+   fun:_ZN4base6Thread10ThreadMainEv
+   fun:_ZN4base12_GLOBAL__N_110ThreadFuncEPv
 }
