@@ -293,10 +293,8 @@ void BrowserAccessibilityManager::OnAccessibilityEvents(
     }
   }
 
-  if (should_send_initial_focus &&
-      (!delegate_ || delegate_->AccessibilityViewHasFocus())) {
+  if (should_send_initial_focus && NativeViewHasFocus())
     NotifyAccessibilityEvent(ui::AX_EVENT_FOCUS, GetFromAXNode(focus_));
-  }
 
   // Now iterate over the events again and fire the events.
   for (uint32 index = 0; index < details.size(); index++) {
@@ -319,7 +317,7 @@ void BrowserAccessibilityManager::OnAccessibilityEvents(
 
       // Don't send a native focus event if the window itself doesn't
       // have focus.
-      if (delegate_ && !delegate_->AccessibilityViewHasFocus())
+      if (!NativeViewHasFocus())
         continue;
     }
 
@@ -392,6 +390,13 @@ BrowserAccessibility* BrowserAccessibilityManager::GetActiveDescendantFocus(
       return active_descendant;
   }
   return node;
+}
+
+bool BrowserAccessibilityManager::NativeViewHasFocus() {
+  BrowserAccessibilityDelegate* delegate = GetDelegateFromRootManager();
+  if (delegate)
+    return delegate->AccessibilityViewHasFocus();
+  return false;
 }
 
 BrowserAccessibility* BrowserAccessibilityManager::GetFocus(
@@ -576,10 +581,21 @@ void BrowserAccessibilityManager::OnAtomicUpdateFinished(
     ui::AXTree* tree,
     bool root_changed,
     const std::vector<ui::AXTreeDelegate::Change>& changes) {
+  bool ax_tree_id_changed = false;
   if (GetTreeData().tree_id != -1 && GetTreeData().tree_id != ax_tree_id_) {
     g_ax_tree_id_map.Get().erase(ax_tree_id_);
     ax_tree_id_ = GetTreeData().tree_id;
     g_ax_tree_id_map.Get().insert(std::make_pair(ax_tree_id_, this));
+    ax_tree_id_changed = true;
+  }
+
+  if (ax_tree_id_changed || root_changed) {
+    BrowserAccessibility* parent = GetParentNodeFromParentTree();
+    if (parent) {
+      parent->OnDataChanged();
+      parent->manager()->NotifyAccessibilityEvent(
+          ui::AX_EVENT_CHILDREN_CHANGED, parent);
+    }
   }
 }
 

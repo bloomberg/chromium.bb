@@ -112,7 +112,7 @@ void BrowserAccessibilityManagerWin::MaybeCallNotifyWinEvent(
   // entering their "browse" mode.
   if ((event == EVENT_OBJECT_FOCUS ||
        event == IA2_EVENT_DOCUMENT_LOAD_COMPLETE) &&
-      (!delegate_->AccessibilityViewHasFocus())) {
+      !NativeViewHasFocus()) {
     return;
   }
 
@@ -152,7 +152,7 @@ void BrowserAccessibilityManagerWin::OnWindowFocused() {
   // if they're not successful this time.
   focus_event_on_root_needed_ = true;
 
-  if (!delegate_ || !delegate_->AccessibilityViewHasFocus()) {
+  if (!NativeViewHasFocus()) {
     inside_on_window_focused_ = false;
     return;
   }
@@ -195,7 +195,7 @@ void BrowserAccessibilityManagerWin::NotifyAccessibilityEvent(
   if ((event_type == ui::AX_EVENT_FOCUS ||
        event_type == ui::AX_EVENT_BLUR ||
        event_type == ui::AX_EVENT_LOAD_COMPLETE) &&
-      !root_delegate->AccessibilityViewHasFocus()) {
+      !NativeViewHasFocus()) {
     return;
   }
 

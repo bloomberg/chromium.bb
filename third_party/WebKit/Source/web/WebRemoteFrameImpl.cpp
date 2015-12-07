@@ -7,6 +7,7 @@
 
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
+#include "core/html/HTMLFrameOwnerElement.h"
 #include "core/page/Page.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebFloatRect.h"
@@ -760,6 +761,20 @@ void WebRemoteFrameImpl::setReplicatedOrigin(const WebSecurityOrigin& origin) co
 {
     ASSERT(frame());
     frame()->securityContext()->setReplicatedOrigin(origin);
+
+    // If the origin of a remote frame changed, the accessibility object for the owner
+    // element now points to a different child.
+    //
+    // TODO(dmazzoni, dcheng): there's probably a better way to solve this.
+    // Run SitePerProcessAccessibilityBrowserTest.TwoCrossSiteNavigations to
+    // ensure an alternate fix works.  http://crbug.com/566222
+    FrameOwner* owner = frame()->owner();
+    if (owner && owner->isLocal()) {
+        HTMLElement* ownerElement = toHTMLFrameOwnerElement(owner);
+        AXObjectCache* cache = ownerElement->document().existingAXObjectCache();
+        if (cache)
+            cache->childrenChanged(ownerElement);
+    }
 }
 
 void WebRemoteFrameImpl::setReplicatedSandboxFlags(WebSandboxFlags flags) const

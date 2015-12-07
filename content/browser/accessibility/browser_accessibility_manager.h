@@ -250,6 +250,9 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
   // active descendant if it has one.
   BrowserAccessibility* GetActiveDescendantFocus(BrowserAccessibility* root);
 
+  // Returns true if native focus is anywhere in this WebContents or not.
+  bool NativeViewHasFocus();
+
   // True by default, but some platforms want to treat the root
   // scroll offsets separately.
   virtual bool UseRootScrollOffsetsWhenComputingBounds();
