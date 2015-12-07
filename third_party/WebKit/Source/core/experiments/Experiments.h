@@ -24,7 +24,7 @@ namespace blink {
 // TODO(chasej): Link to documentation, or provide more detail on keys, .etc
 class CORE_EXPORT Experiments {
 public:
-    static bool isApiEnabled(ExecutionContext*, const String& apiName);
+    static bool isApiEnabled(ExecutionContext*, const String& apiName, String& errorMessage);
     // Creates a NotSupportedError exception with a message explaining to
     // external developers why the API is disabled and how to join API
     // experiments.
