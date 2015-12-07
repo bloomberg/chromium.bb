@@ -1,0 +1,21 @@
+
+Verifies that correct mouse events are fired and when resizing an element
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+--- mousedown preventDefault ---
+--- move mouse into target ---
+--- start resizing ---
+1 Received mousedown
+--- mouse released ---
+--- No preventDefault ---
+--- move mouse into target ---
+--- start resizing ---
+2 Received mousedown
+--- mouse released ---
+3 Received mouseup
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

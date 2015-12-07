@@ -1050,7 +1050,12 @@ WebInputEventResult EventHandler::handleMousePressEvent(const PlatformMouseEvent
     m_clickCount = mouseEvent.clickCount();
     m_clickNode = mev.innerNode()->isTextNode() ?  ComposedTreeTraversal::parent(*mev.innerNode()) : mev.innerNode();
 
-    if (FrameView* view = m_frame->view()) {
+    m_frame->selection().setCaretBlinkingSuspended(true);
+
+    WebInputEventResult eventResult = updatePointerTargetAndDispatchEvents(EventTypeNames::mousedown, mev.innerNode(), m_clickCount, mouseEvent);
+
+    if (eventResult == WebInputEventResult::NotHandled && m_frame->view()) {
+        FrameView* view = m_frame->view();
         PaintLayer* layer = mev.innerNode()->layoutObject() ? mev.innerNode()->layoutObject()->enclosingLayer() : nullptr;
         IntPoint p = view->rootFrameToContents(mouseEvent.position());
         if (layer && layer->scrollableArea() && layer->scrollableArea()->isPointInResizeControl(p, ResizerForPointer)) {
@@ -1058,13 +1063,10 @@ WebInputEventResult EventHandler::handleMousePressEvent(const PlatformMouseEvent
             m_resizeScrollableArea->setInResizeMode(true);
             m_offsetFromResizeCorner = LayoutSize(m_resizeScrollableArea->offsetFromResizeCorner(p));
             invalidateClick();
-            return WebInputEventResult::HandledSuppressed;
+            return WebInputEventResult::HandledSystem;
         }
     }
 
-    m_frame->selection().setCaretBlinkingSuspended(true);
-
-    WebInputEventResult eventResult = updatePointerTargetAndDispatchEvents(EventTypeNames::mousedown, mev.innerNode(), m_clickCount, mouseEvent);
 
     // m_selectionInitiationState is initialized after dispatching mousedown
     // event in order not to keep the selection by DOM APIs Because we can't
