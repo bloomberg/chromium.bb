@@ -589,8 +589,6 @@ _waterfall_config_map = {
     constants.WATERFALL_INTERNAL: frozenset([
         # Experimental Paladins.
         'lakitu_next-paladin',
-        'panther_moblab-paladin',
-        'stumpy_moblab-paladin',
         'veyron_mighty-paladin',
         'veyron_speedy-paladin',
 
@@ -608,7 +606,6 @@ _waterfall_config_map = {
         'kayle-release',
         'lakitu_next-release',
         'nyan_freon-release',
-        'panther_moblab-release',
         'rush_ryu-release',
         'smaug-release',
         'guado_moblab-release',
