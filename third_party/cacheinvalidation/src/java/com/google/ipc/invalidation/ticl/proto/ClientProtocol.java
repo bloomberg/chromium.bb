@@ -77,7 +77,7 @@ public interface ClientProtocol {
 
     public static Version parseFrom(byte[] data) throws ValidationException {
       try {
-        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.NanoClientProtocol.Version(), data));
+        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.Version(), data));
       } catch (InvalidProtocolBufferNanoException exception) {
         throw new ValidationException(exception);
       } catch (ValidationArgumentException exception) {
@@ -85,7 +85,7 @@ public interface ClientProtocol {
       }
     }
 
-    static Version fromMessageNano(com.google.protos.ipc.invalidation.NanoClientProtocol.Version message) {
+    static Version fromMessageNano(com.google.protos.ipc.invalidation.nano.NanoClientProtocol.Version message) {
       if (message == null) { return null; }
       return new Version(message.majorVersion,
           message.minorVersion);
@@ -95,8 +95,8 @@ public interface ClientProtocol {
       return MessageNano.toByteArray(toMessageNano());
     }
 
-    com.google.protos.ipc.invalidation.NanoClientProtocol.Version toMessageNano() {
-      com.google.protos.ipc.invalidation.NanoClientProtocol.Version msg = new com.google.protos.ipc.invalidation.NanoClientProtocol.Version();
+    com.google.protos.ipc.invalidation.nano.NanoClientProtocol.Version toMessageNano() {
+      com.google.protos.ipc.invalidation.nano.NanoClientProtocol.Version msg = new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.Version();
       msg.majorVersion = majorVersion;
       msg.minorVersion = minorVersion;
       return msg;
@@ -138,7 +138,7 @@ public interface ClientProtocol {
 
     public static ProtocolVersion parseFrom(byte[] data) throws ValidationException {
       try {
-        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.NanoClientProtocol.ProtocolVersion(), data));
+        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ProtocolVersion(), data));
       } catch (InvalidProtocolBufferNanoException exception) {
         throw new ValidationException(exception);
       } catch (ValidationArgumentException exception) {
@@ -146,7 +146,7 @@ public interface ClientProtocol {
       }
     }
 
-    static ProtocolVersion fromMessageNano(com.google.protos.ipc.invalidation.NanoClientProtocol.ProtocolVersion message) {
+    static ProtocolVersion fromMessageNano(com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ProtocolVersion message) {
       if (message == null) { return null; }
       return new ProtocolVersion(com.google.ipc.invalidation.ticl.proto.ClientProtocol.Version.fromMessageNano(message.version));
     }
@@ -155,8 +155,8 @@ public interface ClientProtocol {
       return MessageNano.toByteArray(toMessageNano());
     }
 
-    com.google.protos.ipc.invalidation.NanoClientProtocol.ProtocolVersion toMessageNano() {
-      com.google.protos.ipc.invalidation.NanoClientProtocol.ProtocolVersion msg = new com.google.protos.ipc.invalidation.NanoClientProtocol.ProtocolVersion();
+    com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ProtocolVersion toMessageNano() {
+      com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ProtocolVersion msg = new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ProtocolVersion();
       msg.version = version.toMessageNano();
       return msg;
     }
@@ -227,7 +227,7 @@ public interface ClientProtocol {
 
     public static ClientVersion parseFrom(byte[] data) throws ValidationException {
       try {
-        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.NanoClientProtocol.ClientVersion(), data));
+        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ClientVersion(), data));
       } catch (InvalidProtocolBufferNanoException exception) {
         throw new ValidationException(exception);
       } catch (ValidationArgumentException exception) {
@@ -235,7 +235,7 @@ public interface ClientProtocol {
       }
     }
 
-    static ClientVersion fromMessageNano(com.google.protos.ipc.invalidation.NanoClientProtocol.ClientVersion message) {
+    static ClientVersion fromMessageNano(com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ClientVersion message) {
       if (message == null) { return null; }
       return new ClientVersion(com.google.ipc.invalidation.ticl.proto.ClientProtocol.Version.fromMessageNano(message.version),
           message.platform,
@@ -247,8 +247,8 @@ public interface ClientProtocol {
       return MessageNano.toByteArray(toMessageNano());
     }
 
-    com.google.protos.ipc.invalidation.NanoClientProtocol.ClientVersion toMessageNano() {
-      com.google.protos.ipc.invalidation.NanoClientProtocol.ClientVersion msg = new com.google.protos.ipc.invalidation.NanoClientProtocol.ClientVersion();
+    com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ClientVersion toMessageNano() {
+      com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ClientVersion msg = new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ClientVersion();
       msg.version = version.toMessageNano();
       msg.platform = platform;
       msg.language = language;
@@ -321,7 +321,7 @@ public interface ClientProtocol {
 
     public static StatusP parseFrom(byte[] data) throws ValidationException {
       try {
-        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.NanoClientProtocol.StatusP(), data));
+        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.StatusP(), data));
       } catch (InvalidProtocolBufferNanoException exception) {
         throw new ValidationException(exception);
       } catch (ValidationArgumentException exception) {
@@ -329,7 +329,7 @@ public interface ClientProtocol {
       }
     }
 
-    static StatusP fromMessageNano(com.google.protos.ipc.invalidation.NanoClientProtocol.StatusP message) {
+    static StatusP fromMessageNano(com.google.protos.ipc.invalidation.nano.NanoClientProtocol.StatusP message) {
       if (message == null) { return null; }
       return new StatusP(message.code,
           message.description);
@@ -339,8 +339,8 @@ public interface ClientProtocol {
       return MessageNano.toByteArray(toMessageNano());
     }
 
-    com.google.protos.ipc.invalidation.NanoClientProtocol.StatusP toMessageNano() {
-      com.google.protos.ipc.invalidation.NanoClientProtocol.StatusP msg = new com.google.protos.ipc.invalidation.NanoClientProtocol.StatusP();
+    com.google.protos.ipc.invalidation.nano.NanoClientProtocol.StatusP toMessageNano() {
+      com.google.protos.ipc.invalidation.nano.NanoClientProtocol.StatusP msg = new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.StatusP();
       msg.code = code;
       msg.description = hasDescription() ? description : null;
       return msg;
@@ -393,7 +393,7 @@ public interface ClientProtocol {
 
     public static ObjectIdP parseFrom(byte[] data) throws ValidationException {
       try {
-        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.NanoClientProtocol.ObjectIdP(), data));
+        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ObjectIdP(), data));
       } catch (InvalidProtocolBufferNanoException exception) {
         throw new ValidationException(exception);
       } catch (ValidationArgumentException exception) {
@@ -401,7 +401,7 @@ public interface ClientProtocol {
       }
     }
 
-    static ObjectIdP fromMessageNano(com.google.protos.ipc.invalidation.NanoClientProtocol.ObjectIdP message) {
+    static ObjectIdP fromMessageNano(com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ObjectIdP message) {
       if (message == null) { return null; }
       return new ObjectIdP(message.source,
           Bytes.fromByteArray(message.name));
@@ -411,8 +411,8 @@ public interface ClientProtocol {
       return MessageNano.toByteArray(toMessageNano());
     }
 
-    com.google.protos.ipc.invalidation.NanoClientProtocol.ObjectIdP toMessageNano() {
-      com.google.protos.ipc.invalidation.NanoClientProtocol.ObjectIdP msg = new com.google.protos.ipc.invalidation.NanoClientProtocol.ObjectIdP();
+    com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ObjectIdP toMessageNano() {
+      com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ObjectIdP msg = new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ObjectIdP();
       msg.source = source;
       msg.name = name.getByteArray();
       return msg;
@@ -478,7 +478,7 @@ public interface ClientProtocol {
 
     public static ApplicationClientIdP parseFrom(byte[] data) throws ValidationException {
       try {
-        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.NanoClientProtocol.ApplicationClientIdP(), data));
+        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ApplicationClientIdP(), data));
       } catch (InvalidProtocolBufferNanoException exception) {
         throw new ValidationException(exception);
       } catch (ValidationArgumentException exception) {
@@ -486,7 +486,7 @@ public interface ClientProtocol {
       }
     }
 
-    static ApplicationClientIdP fromMessageNano(com.google.protos.ipc.invalidation.NanoClientProtocol.ApplicationClientIdP message) {
+    static ApplicationClientIdP fromMessageNano(com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ApplicationClientIdP message) {
       if (message == null) { return null; }
       return new ApplicationClientIdP(message.clientType,
           Bytes.fromByteArray(message.clientName));
@@ -496,8 +496,8 @@ public interface ClientProtocol {
       return MessageNano.toByteArray(toMessageNano());
     }
 
-    com.google.protos.ipc.invalidation.NanoClientProtocol.ApplicationClientIdP toMessageNano() {
-      com.google.protos.ipc.invalidation.NanoClientProtocol.ApplicationClientIdP msg = new com.google.protos.ipc.invalidation.NanoClientProtocol.ApplicationClientIdP();
+    com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ApplicationClientIdP toMessageNano() {
+      com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ApplicationClientIdP msg = new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ApplicationClientIdP();
       msg.clientType = hasClientType() ? clientType : null;
       msg.clientName = clientName.getByteArray();
       return msg;
@@ -631,7 +631,7 @@ public interface ClientProtocol {
 
     public static InvalidationP parseFrom(byte[] data) throws ValidationException {
       try {
-        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.NanoClientProtocol.InvalidationP(), data));
+        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.InvalidationP(), data));
       } catch (InvalidProtocolBufferNanoException exception) {
         throw new ValidationException(exception);
       } catch (ValidationArgumentException exception) {
@@ -639,7 +639,7 @@ public interface ClientProtocol {
       }
     }
 
-    static InvalidationP fromMessageNano(com.google.protos.ipc.invalidation.NanoClientProtocol.InvalidationP message) {
+    static InvalidationP fromMessageNano(com.google.protos.ipc.invalidation.nano.NanoClientProtocol.InvalidationP message) {
       if (message == null) { return null; }
       return new InvalidationP(com.google.ipc.invalidation.ticl.proto.ClientProtocol.ObjectIdP.fromMessageNano(message.objectId),
           message.isKnownVersion,
@@ -652,8 +652,8 @@ public interface ClientProtocol {
       return MessageNano.toByteArray(toMessageNano());
     }
 
-    com.google.protos.ipc.invalidation.NanoClientProtocol.InvalidationP toMessageNano() {
-      com.google.protos.ipc.invalidation.NanoClientProtocol.InvalidationP msg = new com.google.protos.ipc.invalidation.NanoClientProtocol.InvalidationP();
+    com.google.protos.ipc.invalidation.nano.NanoClientProtocol.InvalidationP toMessageNano() {
+      com.google.protos.ipc.invalidation.nano.NanoClientProtocol.InvalidationP msg = new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.InvalidationP();
       msg.objectId = objectId.toMessageNano();
       msg.isKnownVersion = isKnownVersion;
       msg.version = version;
@@ -713,7 +713,7 @@ public interface ClientProtocol {
 
     public static RegistrationP parseFrom(byte[] data) throws ValidationException {
       try {
-        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.NanoClientProtocol.RegistrationP(), data));
+        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.RegistrationP(), data));
       } catch (InvalidProtocolBufferNanoException exception) {
         throw new ValidationException(exception);
       } catch (ValidationArgumentException exception) {
@@ -721,7 +721,7 @@ public interface ClientProtocol {
       }
     }
 
-    static RegistrationP fromMessageNano(com.google.protos.ipc.invalidation.NanoClientProtocol.RegistrationP message) {
+    static RegistrationP fromMessageNano(com.google.protos.ipc.invalidation.nano.NanoClientProtocol.RegistrationP message) {
       if (message == null) { return null; }
       return new RegistrationP(com.google.ipc.invalidation.ticl.proto.ClientProtocol.ObjectIdP.fromMessageNano(message.objectId),
           message.opType);
@@ -731,8 +731,8 @@ public interface ClientProtocol {
       return MessageNano.toByteArray(toMessageNano());
     }
 
-    com.google.protos.ipc.invalidation.NanoClientProtocol.RegistrationP toMessageNano() {
-      com.google.protos.ipc.invalidation.NanoClientProtocol.RegistrationP msg = new com.google.protos.ipc.invalidation.NanoClientProtocol.RegistrationP();
+    com.google.protos.ipc.invalidation.nano.NanoClientProtocol.RegistrationP toMessageNano() {
+      com.google.protos.ipc.invalidation.nano.NanoClientProtocol.RegistrationP msg = new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.RegistrationP();
       msg.objectId = objectId.toMessageNano();
       msg.opType = opType;
       return msg;
@@ -786,7 +786,7 @@ public interface ClientProtocol {
 
     public static RegistrationSummary parseFrom(byte[] data) throws ValidationException {
       try {
-        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.NanoClientProtocol.RegistrationSummary(), data));
+        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.RegistrationSummary(), data));
       } catch (InvalidProtocolBufferNanoException exception) {
         throw new ValidationException(exception);
       } catch (ValidationArgumentException exception) {
@@ -794,7 +794,7 @@ public interface ClientProtocol {
       }
     }
 
-    static RegistrationSummary fromMessageNano(com.google.protos.ipc.invalidation.NanoClientProtocol.RegistrationSummary message) {
+    static RegistrationSummary fromMessageNano(com.google.protos.ipc.invalidation.nano.NanoClientProtocol.RegistrationSummary message) {
       if (message == null) { return null; }
       return new RegistrationSummary(message.numRegistrations,
           Bytes.fromByteArray(message.registrationDigest));
@@ -804,8 +804,8 @@ public interface ClientProtocol {
       return MessageNano.toByteArray(toMessageNano());
     }
 
-    com.google.protos.ipc.invalidation.NanoClientProtocol.RegistrationSummary toMessageNano() {
-      com.google.protos.ipc.invalidation.NanoClientProtocol.RegistrationSummary msg = new com.google.protos.ipc.invalidation.NanoClientProtocol.RegistrationSummary();
+    com.google.protos.ipc.invalidation.nano.NanoClientProtocol.RegistrationSummary toMessageNano() {
+      com.google.protos.ipc.invalidation.nano.NanoClientProtocol.RegistrationSummary msg = new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.RegistrationSummary();
       msg.numRegistrations = numRegistrations;
       msg.registrationDigest = registrationDigest.getByteArray();
       return msg;
@@ -945,7 +945,7 @@ public interface ClientProtocol {
 
     public static ClientHeader parseFrom(byte[] data) throws ValidationException {
       try {
-        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.NanoClientProtocol.ClientHeader(), data));
+        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ClientHeader(), data));
       } catch (InvalidProtocolBufferNanoException exception) {
         throw new ValidationException(exception);
       } catch (ValidationArgumentException exception) {
@@ -953,7 +953,7 @@ public interface ClientProtocol {
       }
     }
 
-    static ClientHeader fromMessageNano(com.google.protos.ipc.invalidation.NanoClientProtocol.ClientHeader message) {
+    static ClientHeader fromMessageNano(com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ClientHeader message) {
       if (message == null) { return null; }
       return new ClientHeader(com.google.ipc.invalidation.ticl.proto.ClientProtocol.ProtocolVersion.fromMessageNano(message.protocolVersion),
           Bytes.fromByteArray(message.clientToken),
@@ -968,8 +968,8 @@ public interface ClientProtocol {
       return MessageNano.toByteArray(toMessageNano());
     }
 
-    com.google.protos.ipc.invalidation.NanoClientProtocol.ClientHeader toMessageNano() {
-      com.google.protos.ipc.invalidation.NanoClientProtocol.ClientHeader msg = new com.google.protos.ipc.invalidation.NanoClientProtocol.ClientHeader();
+    com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ClientHeader toMessageNano() {
+      com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ClientHeader msg = new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ClientHeader();
       msg.protocolVersion = protocolVersion.toMessageNano();
       msg.clientToken = hasClientToken() ? clientToken.getByteArray() : null;
       msg.registrationSummary = this.registrationSummary != null ? registrationSummary.toMessageNano() : null;
@@ -1093,7 +1093,7 @@ public interface ClientProtocol {
 
     public static ClientToServerMessage parseFrom(byte[] data) throws ValidationException {
       try {
-        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.NanoClientProtocol.ClientToServerMessage(), data));
+        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ClientToServerMessage(), data));
       } catch (InvalidProtocolBufferNanoException exception) {
         throw new ValidationException(exception);
       } catch (ValidationArgumentException exception) {
@@ -1101,7 +1101,7 @@ public interface ClientProtocol {
       }
     }
 
-    static ClientToServerMessage fromMessageNano(com.google.protos.ipc.invalidation.NanoClientProtocol.ClientToServerMessage message) {
+    static ClientToServerMessage fromMessageNano(com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ClientToServerMessage message) {
       if (message == null) { return null; }
       return new ClientToServerMessage(com.google.ipc.invalidation.ticl.proto.ClientProtocol.ClientHeader.fromMessageNano(message.header),
           com.google.ipc.invalidation.ticl.proto.ClientProtocol.InitializeMessage.fromMessageNano(message.initializeMessage),
@@ -1115,8 +1115,8 @@ public interface ClientProtocol {
       return MessageNano.toByteArray(toMessageNano());
     }
 
-    com.google.protos.ipc.invalidation.NanoClientProtocol.ClientToServerMessage toMessageNano() {
-      com.google.protos.ipc.invalidation.NanoClientProtocol.ClientToServerMessage msg = new com.google.protos.ipc.invalidation.NanoClientProtocol.ClientToServerMessage();
+    com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ClientToServerMessage toMessageNano() {
+      com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ClientToServerMessage msg = new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ClientToServerMessage();
       msg.header = header.toMessageNano();
       msg.initializeMessage = this.initializeMessage != null ? initializeMessage.toMessageNano() : null;
       msg.registrationMessage = this.registrationMessage != null ? registrationMessage.toMessageNano() : null;
@@ -1198,7 +1198,7 @@ public interface ClientProtocol {
 
     public static InitializeMessage parseFrom(byte[] data) throws ValidationException {
       try {
-        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.NanoClientProtocol.InitializeMessage(), data));
+        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.InitializeMessage(), data));
       } catch (InvalidProtocolBufferNanoException exception) {
         throw new ValidationException(exception);
       } catch (ValidationArgumentException exception) {
@@ -1206,7 +1206,7 @@ public interface ClientProtocol {
       }
     }
 
-    static InitializeMessage fromMessageNano(com.google.protos.ipc.invalidation.NanoClientProtocol.InitializeMessage message) {
+    static InitializeMessage fromMessageNano(com.google.protos.ipc.invalidation.nano.NanoClientProtocol.InitializeMessage message) {
       if (message == null) { return null; }
       return new InitializeMessage(message.clientType,
           Bytes.fromByteArray(message.nonce),
@@ -1218,8 +1218,8 @@ public interface ClientProtocol {
       return MessageNano.toByteArray(toMessageNano());
     }
 
-    com.google.protos.ipc.invalidation.NanoClientProtocol.InitializeMessage toMessageNano() {
-      com.google.protos.ipc.invalidation.NanoClientProtocol.InitializeMessage msg = new com.google.protos.ipc.invalidation.NanoClientProtocol.InitializeMessage();
+    com.google.protos.ipc.invalidation.nano.NanoClientProtocol.InitializeMessage toMessageNano() {
+      com.google.protos.ipc.invalidation.nano.NanoClientProtocol.InitializeMessage msg = new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.InitializeMessage();
       msg.clientType = clientType;
       msg.nonce = nonce.getByteArray();
       msg.applicationClientId = applicationClientId.toMessageNano();
@@ -1262,7 +1262,7 @@ public interface ClientProtocol {
 
     public static RegistrationMessage parseFrom(byte[] data) throws ValidationException {
       try {
-        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.NanoClientProtocol.RegistrationMessage(), data));
+        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.RegistrationMessage(), data));
       } catch (InvalidProtocolBufferNanoException exception) {
         throw new ValidationException(exception);
       } catch (ValidationArgumentException exception) {
@@ -1270,7 +1270,7 @@ public interface ClientProtocol {
       }
     }
 
-    static RegistrationMessage fromMessageNano(com.google.protos.ipc.invalidation.NanoClientProtocol.RegistrationMessage message) {
+    static RegistrationMessage fromMessageNano(com.google.protos.ipc.invalidation.nano.NanoClientProtocol.RegistrationMessage message) {
       if (message == null) { return null; }
       List<com.google.ipc.invalidation.ticl.proto.ClientProtocol.RegistrationP> registration = new ArrayList<com.google.ipc.invalidation.ticl.proto.ClientProtocol.RegistrationP>(message.registration.length);
       for (int i = 0; i < message.registration.length; i++) {
@@ -1283,9 +1283,9 @@ public interface ClientProtocol {
       return MessageNano.toByteArray(toMessageNano());
     }
 
-    com.google.protos.ipc.invalidation.NanoClientProtocol.RegistrationMessage toMessageNano() {
-      com.google.protos.ipc.invalidation.NanoClientProtocol.RegistrationMessage msg = new com.google.protos.ipc.invalidation.NanoClientProtocol.RegistrationMessage();
-      msg.registration = new com.google.protos.ipc.invalidation.NanoClientProtocol.RegistrationP[registration.size()];
+    com.google.protos.ipc.invalidation.nano.NanoClientProtocol.RegistrationMessage toMessageNano() {
+      com.google.protos.ipc.invalidation.nano.NanoClientProtocol.RegistrationMessage msg = new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.RegistrationMessage();
+      msg.registration = new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.RegistrationP[registration.size()];
       for (int i = 0; i < msg.registration.length; i++) {
         msg.registration[i] = registration.get(i).toMessageNano();
       }
@@ -1327,7 +1327,7 @@ public interface ClientProtocol {
 
     public static RegistrationSyncMessage parseFrom(byte[] data) throws ValidationException {
       try {
-        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.NanoClientProtocol.RegistrationSyncMessage(), data));
+        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.RegistrationSyncMessage(), data));
       } catch (InvalidProtocolBufferNanoException exception) {
         throw new ValidationException(exception);
       } catch (ValidationArgumentException exception) {
@@ -1335,7 +1335,7 @@ public interface ClientProtocol {
       }
     }
 
-    static RegistrationSyncMessage fromMessageNano(com.google.protos.ipc.invalidation.NanoClientProtocol.RegistrationSyncMessage message) {
+    static RegistrationSyncMessage fromMessageNano(com.google.protos.ipc.invalidation.nano.NanoClientProtocol.RegistrationSyncMessage message) {
       if (message == null) { return null; }
       List<com.google.ipc.invalidation.ticl.proto.ClientProtocol.RegistrationSubtree> subtree = new ArrayList<com.google.ipc.invalidation.ticl.proto.ClientProtocol.RegistrationSubtree>(message.subtree.length);
       for (int i = 0; i < message.subtree.length; i++) {
@@ -1348,9 +1348,9 @@ public interface ClientProtocol {
       return MessageNano.toByteArray(toMessageNano());
     }
 
-    com.google.protos.ipc.invalidation.NanoClientProtocol.RegistrationSyncMessage toMessageNano() {
-      com.google.protos.ipc.invalidation.NanoClientProtocol.RegistrationSyncMessage msg = new com.google.protos.ipc.invalidation.NanoClientProtocol.RegistrationSyncMessage();
-      msg.subtree = new com.google.protos.ipc.invalidation.NanoClientProtocol.RegistrationSubtree[subtree.size()];
+    com.google.protos.ipc.invalidation.nano.NanoClientProtocol.RegistrationSyncMessage toMessageNano() {
+      com.google.protos.ipc.invalidation.nano.NanoClientProtocol.RegistrationSyncMessage msg = new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.RegistrationSyncMessage();
+      msg.subtree = new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.RegistrationSubtree[subtree.size()];
       for (int i = 0; i < msg.subtree.length; i++) {
         msg.subtree[i] = subtree.get(i).toMessageNano();
       }
@@ -1394,7 +1394,7 @@ public interface ClientProtocol {
 
     public static RegistrationSubtree parseFrom(byte[] data) throws ValidationException {
       try {
-        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.NanoClientProtocol.RegistrationSubtree(), data));
+        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.RegistrationSubtree(), data));
       } catch (InvalidProtocolBufferNanoException exception) {
         throw new ValidationException(exception);
       } catch (ValidationArgumentException exception) {
@@ -1402,7 +1402,7 @@ public interface ClientProtocol {
       }
     }
 
-    static RegistrationSubtree fromMessageNano(com.google.protos.ipc.invalidation.NanoClientProtocol.RegistrationSubtree message) {
+    static RegistrationSubtree fromMessageNano(com.google.protos.ipc.invalidation.nano.NanoClientProtocol.RegistrationSubtree message) {
       if (message == null) { return null; }
       List<com.google.ipc.invalidation.ticl.proto.ClientProtocol.ObjectIdP> registeredObject = new ArrayList<com.google.ipc.invalidation.ticl.proto.ClientProtocol.ObjectIdP>(message.registeredObject.length);
       for (int i = 0; i < message.registeredObject.length; i++) {
@@ -1415,9 +1415,9 @@ public interface ClientProtocol {
       return MessageNano.toByteArray(toMessageNano());
     }
 
-    com.google.protos.ipc.invalidation.NanoClientProtocol.RegistrationSubtree toMessageNano() {
-      com.google.protos.ipc.invalidation.NanoClientProtocol.RegistrationSubtree msg = new com.google.protos.ipc.invalidation.NanoClientProtocol.RegistrationSubtree();
-      msg.registeredObject = new com.google.protos.ipc.invalidation.NanoClientProtocol.ObjectIdP[registeredObject.size()];
+    com.google.protos.ipc.invalidation.nano.NanoClientProtocol.RegistrationSubtree toMessageNano() {
+      com.google.protos.ipc.invalidation.nano.NanoClientProtocol.RegistrationSubtree msg = new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.RegistrationSubtree();
+      msg.registeredObject = new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ObjectIdP[registeredObject.size()];
       for (int i = 0; i < msg.registeredObject.length; i++) {
         msg.registeredObject[i] = registeredObject.get(i).toMessageNano();
       }
@@ -1519,7 +1519,7 @@ public interface ClientProtocol {
 
     public static InfoMessage parseFrom(byte[] data) throws ValidationException {
       try {
-        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.NanoClientProtocol.InfoMessage(), data));
+        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.InfoMessage(), data));
       } catch (InvalidProtocolBufferNanoException exception) {
         throw new ValidationException(exception);
       } catch (ValidationArgumentException exception) {
@@ -1527,7 +1527,7 @@ public interface ClientProtocol {
       }
     }
 
-    static InfoMessage fromMessageNano(com.google.protos.ipc.invalidation.NanoClientProtocol.InfoMessage message) {
+    static InfoMessage fromMessageNano(com.google.protos.ipc.invalidation.nano.NanoClientProtocol.InfoMessage message) {
       if (message == null) { return null; }
       List<com.google.ipc.invalidation.ticl.proto.ClientProtocol.PropertyRecord> configParameter = new ArrayList<com.google.ipc.invalidation.ticl.proto.ClientProtocol.PropertyRecord>(message.configParameter.length);
       for (int i = 0; i < message.configParameter.length; i++) {
@@ -1548,14 +1548,14 @@ public interface ClientProtocol {
       return MessageNano.toByteArray(toMessageNano());
     }
 
-    com.google.protos.ipc.invalidation.NanoClientProtocol.InfoMessage toMessageNano() {
-      com.google.protos.ipc.invalidation.NanoClientProtocol.InfoMessage msg = new com.google.protos.ipc.invalidation.NanoClientProtocol.InfoMessage();
+    com.google.protos.ipc.invalidation.nano.NanoClientProtocol.InfoMessage toMessageNano() {
+      com.google.protos.ipc.invalidation.nano.NanoClientProtocol.InfoMessage msg = new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.InfoMessage();
       msg.clientVersion = this.clientVersion != null ? clientVersion.toMessageNano() : null;
-      msg.configParameter = new com.google.protos.ipc.invalidation.NanoClientProtocol.PropertyRecord[configParameter.size()];
+      msg.configParameter = new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.PropertyRecord[configParameter.size()];
       for (int i = 0; i < msg.configParameter.length; i++) {
         msg.configParameter[i] = configParameter.get(i).toMessageNano();
       }
-      msg.performanceCounter = new com.google.protos.ipc.invalidation.NanoClientProtocol.PropertyRecord[performanceCounter.size()];
+      msg.performanceCounter = new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.PropertyRecord[performanceCounter.size()];
       for (int i = 0; i < msg.performanceCounter.length; i++) {
         msg.performanceCounter[i] = performanceCounter.get(i).toMessageNano();
       }
@@ -1634,7 +1634,7 @@ public interface ClientProtocol {
 
     public static PropertyRecord parseFrom(byte[] data) throws ValidationException {
       try {
-        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.NanoClientProtocol.PropertyRecord(), data));
+        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.PropertyRecord(), data));
       } catch (InvalidProtocolBufferNanoException exception) {
         throw new ValidationException(exception);
       } catch (ValidationArgumentException exception) {
@@ -1642,7 +1642,7 @@ public interface ClientProtocol {
       }
     }
 
-    static PropertyRecord fromMessageNano(com.google.protos.ipc.invalidation.NanoClientProtocol.PropertyRecord message) {
+    static PropertyRecord fromMessageNano(com.google.protos.ipc.invalidation.nano.NanoClientProtocol.PropertyRecord message) {
       if (message == null) { return null; }
       return new PropertyRecord(message.name,
           message.value);
@@ -1652,8 +1652,8 @@ public interface ClientProtocol {
       return MessageNano.toByteArray(toMessageNano());
     }
 
-    com.google.protos.ipc.invalidation.NanoClientProtocol.PropertyRecord toMessageNano() {
-      com.google.protos.ipc.invalidation.NanoClientProtocol.PropertyRecord msg = new com.google.protos.ipc.invalidation.NanoClientProtocol.PropertyRecord();
+    com.google.protos.ipc.invalidation.nano.NanoClientProtocol.PropertyRecord toMessageNano() {
+      com.google.protos.ipc.invalidation.nano.NanoClientProtocol.PropertyRecord msg = new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.PropertyRecord();
       msg.name = hasName() ? name : null;
       msg.value = hasValue() ? value : null;
       return msg;
@@ -1781,7 +1781,7 @@ public interface ClientProtocol {
 
     public static ServerHeader parseFrom(byte[] data) throws ValidationException {
       try {
-        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.NanoClientProtocol.ServerHeader(), data));
+        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ServerHeader(), data));
       } catch (InvalidProtocolBufferNanoException exception) {
         throw new ValidationException(exception);
       } catch (ValidationArgumentException exception) {
@@ -1789,7 +1789,7 @@ public interface ClientProtocol {
       }
     }
 
-    static ServerHeader fromMessageNano(com.google.protos.ipc.invalidation.NanoClientProtocol.ServerHeader message) {
+    static ServerHeader fromMessageNano(com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ServerHeader message) {
       if (message == null) { return null; }
       return new ServerHeader(com.google.ipc.invalidation.ticl.proto.ClientProtocol.ProtocolVersion.fromMessageNano(message.protocolVersion),
           Bytes.fromByteArray(message.clientToken),
@@ -1802,8 +1802,8 @@ public interface ClientProtocol {
       return MessageNano.toByteArray(toMessageNano());
     }
 
-    com.google.protos.ipc.invalidation.NanoClientProtocol.ServerHeader toMessageNano() {
-      com.google.protos.ipc.invalidation.NanoClientProtocol.ServerHeader msg = new com.google.protos.ipc.invalidation.NanoClientProtocol.ServerHeader();
+    com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ServerHeader toMessageNano() {
+      com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ServerHeader msg = new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ServerHeader();
       msg.protocolVersion = protocolVersion.toMessageNano();
       msg.clientToken = clientToken.getByteArray();
       msg.registrationSummary = this.registrationSummary != null ? registrationSummary.toMessageNano() : null;
@@ -2004,7 +2004,7 @@ public interface ClientProtocol {
 
     public static ServerToClientMessage parseFrom(byte[] data) throws ValidationException {
       try {
-        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.NanoClientProtocol.ServerToClientMessage(), data));
+        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ServerToClientMessage(), data));
       } catch (InvalidProtocolBufferNanoException exception) {
         throw new ValidationException(exception);
       } catch (ValidationArgumentException exception) {
@@ -2012,7 +2012,7 @@ public interface ClientProtocol {
       }
     }
 
-    static ServerToClientMessage fromMessageNano(com.google.protos.ipc.invalidation.NanoClientProtocol.ServerToClientMessage message) {
+    static ServerToClientMessage fromMessageNano(com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ServerToClientMessage message) {
       if (message == null) { return null; }
       return new ServerToClientMessage(com.google.ipc.invalidation.ticl.proto.ClientProtocol.ServerHeader.fromMessageNano(message.header),
           com.google.ipc.invalidation.ticl.proto.ClientProtocol.TokenControlMessage.fromMessageNano(message.tokenControlMessage),
@@ -2028,8 +2028,8 @@ public interface ClientProtocol {
       return MessageNano.toByteArray(toMessageNano());
     }
 
-    com.google.protos.ipc.invalidation.NanoClientProtocol.ServerToClientMessage toMessageNano() {
-      com.google.protos.ipc.invalidation.NanoClientProtocol.ServerToClientMessage msg = new com.google.protos.ipc.invalidation.NanoClientProtocol.ServerToClientMessage();
+    com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ServerToClientMessage toMessageNano() {
+      com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ServerToClientMessage msg = new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ServerToClientMessage();
       msg.header = header.toMessageNano();
       msg.tokenControlMessage = hasTokenControlMessage() ? tokenControlMessage.toMessageNano() : null;
       msg.invalidationMessage = this.invalidationMessage != null ? invalidationMessage.toMessageNano() : null;
@@ -2092,7 +2092,7 @@ public interface ClientProtocol {
 
     public static TokenControlMessage parseFrom(byte[] data) throws ValidationException {
       try {
-        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.NanoClientProtocol.TokenControlMessage(), data));
+        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.TokenControlMessage(), data));
       } catch (InvalidProtocolBufferNanoException exception) {
         throw new ValidationException(exception);
       } catch (ValidationArgumentException exception) {
@@ -2100,7 +2100,7 @@ public interface ClientProtocol {
       }
     }
 
-    static TokenControlMessage fromMessageNano(com.google.protos.ipc.invalidation.NanoClientProtocol.TokenControlMessage message) {
+    static TokenControlMessage fromMessageNano(com.google.protos.ipc.invalidation.nano.NanoClientProtocol.TokenControlMessage message) {
       if (message == null) { return null; }
       return new TokenControlMessage(Bytes.fromByteArray(message.newToken));
     }
@@ -2109,8 +2109,8 @@ public interface ClientProtocol {
       return MessageNano.toByteArray(toMessageNano());
     }
 
-    com.google.protos.ipc.invalidation.NanoClientProtocol.TokenControlMessage toMessageNano() {
-      com.google.protos.ipc.invalidation.NanoClientProtocol.TokenControlMessage msg = new com.google.protos.ipc.invalidation.NanoClientProtocol.TokenControlMessage();
+    com.google.protos.ipc.invalidation.nano.NanoClientProtocol.TokenControlMessage toMessageNano() {
+      com.google.protos.ipc.invalidation.nano.NanoClientProtocol.TokenControlMessage msg = new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.TokenControlMessage();
       msg.newToken = hasNewToken() ? newToken.getByteArray() : null;
       return msg;
     }
@@ -2161,7 +2161,7 @@ public interface ClientProtocol {
 
     public static RegistrationStatus parseFrom(byte[] data) throws ValidationException {
       try {
-        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.NanoClientProtocol.RegistrationStatus(), data));
+        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.RegistrationStatus(), data));
       } catch (InvalidProtocolBufferNanoException exception) {
         throw new ValidationException(exception);
       } catch (ValidationArgumentException exception) {
@@ -2169,7 +2169,7 @@ public interface ClientProtocol {
       }
     }
 
-    static RegistrationStatus fromMessageNano(com.google.protos.ipc.invalidation.NanoClientProtocol.RegistrationStatus message) {
+    static RegistrationStatus fromMessageNano(com.google.protos.ipc.invalidation.nano.NanoClientProtocol.RegistrationStatus message) {
       if (message == null) { return null; }
       return new RegistrationStatus(com.google.ipc.invalidation.ticl.proto.ClientProtocol.RegistrationP.fromMessageNano(message.registration),
           com.google.ipc.invalidation.ticl.proto.ClientProtocol.StatusP.fromMessageNano(message.status));
@@ -2179,8 +2179,8 @@ public interface ClientProtocol {
       return MessageNano.toByteArray(toMessageNano());
     }
 
-    com.google.protos.ipc.invalidation.NanoClientProtocol.RegistrationStatus toMessageNano() {
-      com.google.protos.ipc.invalidation.NanoClientProtocol.RegistrationStatus msg = new com.google.protos.ipc.invalidation.NanoClientProtocol.RegistrationStatus();
+    com.google.protos.ipc.invalidation.nano.NanoClientProtocol.RegistrationStatus toMessageNano() {
+      com.google.protos.ipc.invalidation.nano.NanoClientProtocol.RegistrationStatus msg = new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.RegistrationStatus();
       msg.registration = registration.toMessageNano();
       msg.status = status.toMessageNano();
       return msg;
@@ -2221,7 +2221,7 @@ public interface ClientProtocol {
 
     public static RegistrationStatusMessage parseFrom(byte[] data) throws ValidationException {
       try {
-        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.NanoClientProtocol.RegistrationStatusMessage(), data));
+        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.RegistrationStatusMessage(), data));
       } catch (InvalidProtocolBufferNanoException exception) {
         throw new ValidationException(exception);
       } catch (ValidationArgumentException exception) {
@@ -2229,7 +2229,7 @@ public interface ClientProtocol {
       }
     }
 
-    static RegistrationStatusMessage fromMessageNano(com.google.protos.ipc.invalidation.NanoClientProtocol.RegistrationStatusMessage message) {
+    static RegistrationStatusMessage fromMessageNano(com.google.protos.ipc.invalidation.nano.NanoClientProtocol.RegistrationStatusMessage message) {
       if (message == null) { return null; }
       List<com.google.ipc.invalidation.ticl.proto.ClientProtocol.RegistrationStatus> registrationStatus = new ArrayList<com.google.ipc.invalidation.ticl.proto.ClientProtocol.RegistrationStatus>(message.registrationStatus.length);
       for (int i = 0; i < message.registrationStatus.length; i++) {
@@ -2242,9 +2242,9 @@ public interface ClientProtocol {
       return MessageNano.toByteArray(toMessageNano());
     }
 
-    com.google.protos.ipc.invalidation.NanoClientProtocol.RegistrationStatusMessage toMessageNano() {
-      com.google.protos.ipc.invalidation.NanoClientProtocol.RegistrationStatusMessage msg = new com.google.protos.ipc.invalidation.NanoClientProtocol.RegistrationStatusMessage();
-      msg.registrationStatus = new com.google.protos.ipc.invalidation.NanoClientProtocol.RegistrationStatus[registrationStatus.size()];
+    com.google.protos.ipc.invalidation.nano.NanoClientProtocol.RegistrationStatusMessage toMessageNano() {
+      com.google.protos.ipc.invalidation.nano.NanoClientProtocol.RegistrationStatusMessage msg = new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.RegistrationStatusMessage();
+      msg.registrationStatus = new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.RegistrationStatus[registrationStatus.size()];
       for (int i = 0; i < msg.registrationStatus.length; i++) {
         msg.registrationStatus[i] = registrationStatus.get(i).toMessageNano();
       }
@@ -2283,7 +2283,7 @@ public interface ClientProtocol {
 
     public static RegistrationSyncRequestMessage parseFrom(byte[] data) throws ValidationException {
       try {
-        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.NanoClientProtocol.RegistrationSyncRequestMessage(), data));
+        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.RegistrationSyncRequestMessage(), data));
       } catch (InvalidProtocolBufferNanoException exception) {
         throw new ValidationException(exception);
       } catch (ValidationArgumentException exception) {
@@ -2291,7 +2291,7 @@ public interface ClientProtocol {
       }
     }
 
-    static RegistrationSyncRequestMessage fromMessageNano(com.google.protos.ipc.invalidation.NanoClientProtocol.RegistrationSyncRequestMessage message) {
+    static RegistrationSyncRequestMessage fromMessageNano(com.google.protos.ipc.invalidation.nano.NanoClientProtocol.RegistrationSyncRequestMessage message) {
       if (message == null) { return null; }
       return new RegistrationSyncRequestMessage();
     }
@@ -2300,8 +2300,8 @@ public interface ClientProtocol {
       return MessageNano.toByteArray(toMessageNano());
     }
 
-    com.google.protos.ipc.invalidation.NanoClientProtocol.RegistrationSyncRequestMessage toMessageNano() {
-      com.google.protos.ipc.invalidation.NanoClientProtocol.RegistrationSyncRequestMessage msg = new com.google.protos.ipc.invalidation.NanoClientProtocol.RegistrationSyncRequestMessage();
+    com.google.protos.ipc.invalidation.nano.NanoClientProtocol.RegistrationSyncRequestMessage toMessageNano() {
+      com.google.protos.ipc.invalidation.nano.NanoClientProtocol.RegistrationSyncRequestMessage msg = new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.RegistrationSyncRequestMessage();
       return msg;
     }
   }
@@ -2340,7 +2340,7 @@ public interface ClientProtocol {
 
     public static InvalidationMessage parseFrom(byte[] data) throws ValidationException {
       try {
-        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.NanoClientProtocol.InvalidationMessage(), data));
+        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.InvalidationMessage(), data));
       } catch (InvalidProtocolBufferNanoException exception) {
         throw new ValidationException(exception);
       } catch (ValidationArgumentException exception) {
@@ -2348,7 +2348,7 @@ public interface ClientProtocol {
       }
     }
 
-    static InvalidationMessage fromMessageNano(com.google.protos.ipc.invalidation.NanoClientProtocol.InvalidationMessage message) {
+    static InvalidationMessage fromMessageNano(com.google.protos.ipc.invalidation.nano.NanoClientProtocol.InvalidationMessage message) {
       if (message == null) { return null; }
       List<com.google.ipc.invalidation.ticl.proto.ClientProtocol.InvalidationP> invalidation = new ArrayList<com.google.ipc.invalidation.ticl.proto.ClientProtocol.InvalidationP>(message.invalidation.length);
       for (int i = 0; i < message.invalidation.length; i++) {
@@ -2361,9 +2361,9 @@ public interface ClientProtocol {
       return MessageNano.toByteArray(toMessageNano());
     }
 
-    com.google.protos.ipc.invalidation.NanoClientProtocol.InvalidationMessage toMessageNano() {
-      com.google.protos.ipc.invalidation.NanoClientProtocol.InvalidationMessage msg = new com.google.protos.ipc.invalidation.NanoClientProtocol.InvalidationMessage();
-      msg.invalidation = new com.google.protos.ipc.invalidation.NanoClientProtocol.InvalidationP[invalidation.size()];
+    com.google.protos.ipc.invalidation.nano.NanoClientProtocol.InvalidationMessage toMessageNano() {
+      com.google.protos.ipc.invalidation.nano.NanoClientProtocol.InvalidationMessage msg = new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.InvalidationMessage();
+      msg.invalidation = new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.InvalidationP[invalidation.size()];
       for (int i = 0; i < msg.invalidation.length; i++) {
         msg.invalidation[i] = invalidation.get(i).toMessageNano();
       }
@@ -2409,7 +2409,7 @@ public interface ClientProtocol {
 
     public static InfoRequestMessage parseFrom(byte[] data) throws ValidationException {
       try {
-        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.NanoClientProtocol.InfoRequestMessage(), data));
+        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.InfoRequestMessage(), data));
       } catch (InvalidProtocolBufferNanoException exception) {
         throw new ValidationException(exception);
       } catch (ValidationArgumentException exception) {
@@ -2417,7 +2417,7 @@ public interface ClientProtocol {
       }
     }
 
-    static InfoRequestMessage fromMessageNano(com.google.protos.ipc.invalidation.NanoClientProtocol.InfoRequestMessage message) {
+    static InfoRequestMessage fromMessageNano(com.google.protos.ipc.invalidation.nano.NanoClientProtocol.InfoRequestMessage message) {
       if (message == null) { return null; }
       List<Integer> infoType = new ArrayList<Integer>(message.infoType.length);
       for (int i = 0; i < message.infoType.length; i++) {
@@ -2430,8 +2430,8 @@ public interface ClientProtocol {
       return MessageNano.toByteArray(toMessageNano());
     }
 
-    com.google.protos.ipc.invalidation.NanoClientProtocol.InfoRequestMessage toMessageNano() {
-      com.google.protos.ipc.invalidation.NanoClientProtocol.InfoRequestMessage msg = new com.google.protos.ipc.invalidation.NanoClientProtocol.InfoRequestMessage();
+    com.google.protos.ipc.invalidation.nano.NanoClientProtocol.InfoRequestMessage toMessageNano() {
+      com.google.protos.ipc.invalidation.nano.NanoClientProtocol.InfoRequestMessage msg = new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.InfoRequestMessage();
       msg.infoType = new int[infoType.size()];
       for (int i = 0; i < msg.infoType.length; i++) {
         msg.infoType[i] = infoType.get(i);
@@ -2486,7 +2486,7 @@ public interface ClientProtocol {
 
     public static RateLimitP parseFrom(byte[] data) throws ValidationException {
       try {
-        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.NanoClientProtocol.RateLimitP(), data));
+        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.RateLimitP(), data));
       } catch (InvalidProtocolBufferNanoException exception) {
         throw new ValidationException(exception);
       } catch (ValidationArgumentException exception) {
@@ -2494,7 +2494,7 @@ public interface ClientProtocol {
       }
     }
 
-    static RateLimitP fromMessageNano(com.google.protos.ipc.invalidation.NanoClientProtocol.RateLimitP message) {
+    static RateLimitP fromMessageNano(com.google.protos.ipc.invalidation.nano.NanoClientProtocol.RateLimitP message) {
       if (message == null) { return null; }
       return new RateLimitP(message.windowMs,
           message.count);
@@ -2504,8 +2504,8 @@ public interface ClientProtocol {
       return MessageNano.toByteArray(toMessageNano());
     }
 
-    com.google.protos.ipc.invalidation.NanoClientProtocol.RateLimitP toMessageNano() {
-      com.google.protos.ipc.invalidation.NanoClientProtocol.RateLimitP msg = new com.google.protos.ipc.invalidation.NanoClientProtocol.RateLimitP();
+    com.google.protos.ipc.invalidation.nano.NanoClientProtocol.RateLimitP toMessageNano() {
+      com.google.protos.ipc.invalidation.nano.NanoClientProtocol.RateLimitP msg = new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.RateLimitP();
       msg.windowMs = windowMs;
       msg.count = count;
       return msg;
@@ -2593,7 +2593,7 @@ public interface ClientProtocol {
 
     public static ProtocolHandlerConfigP parseFrom(byte[] data) throws ValidationException {
       try {
-        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.NanoClientProtocol.ProtocolHandlerConfigP(), data));
+        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ProtocolHandlerConfigP(), data));
       } catch (InvalidProtocolBufferNanoException exception) {
         throw new ValidationException(exception);
       } catch (ValidationArgumentException exception) {
@@ -2601,7 +2601,7 @@ public interface ClientProtocol {
       }
     }
 
-    static ProtocolHandlerConfigP fromMessageNano(com.google.protos.ipc.invalidation.NanoClientProtocol.ProtocolHandlerConfigP message) {
+    static ProtocolHandlerConfigP fromMessageNano(com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ProtocolHandlerConfigP message) {
       if (message == null) { return null; }
       List<com.google.ipc.invalidation.ticl.proto.ClientProtocol.RateLimitP> rateLimit = new ArrayList<com.google.ipc.invalidation.ticl.proto.ClientProtocol.RateLimitP>(message.rateLimit.length);
       for (int i = 0; i < message.rateLimit.length; i++) {
@@ -2615,10 +2615,10 @@ public interface ClientProtocol {
       return MessageNano.toByteArray(toMessageNano());
     }
 
-    com.google.protos.ipc.invalidation.NanoClientProtocol.ProtocolHandlerConfigP toMessageNano() {
-      com.google.protos.ipc.invalidation.NanoClientProtocol.ProtocolHandlerConfigP msg = new com.google.protos.ipc.invalidation.NanoClientProtocol.ProtocolHandlerConfigP();
+    com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ProtocolHandlerConfigP toMessageNano() {
+      com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ProtocolHandlerConfigP msg = new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ProtocolHandlerConfigP();
       msg.batchingDelayMs = hasBatchingDelayMs() ? batchingDelayMs : null;
-      msg.rateLimit = new com.google.protos.ipc.invalidation.NanoClientProtocol.RateLimitP[rateLimit.size()];
+      msg.rateLimit = new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.RateLimitP[rateLimit.size()];
       for (int i = 0; i < msg.rateLimit.length; i++) {
         msg.rateLimit[i] = rateLimit.get(i).toMessageNano();
       }
@@ -2945,7 +2945,7 @@ public interface ClientProtocol {
 
     public static ClientConfigP parseFrom(byte[] data) throws ValidationException {
       try {
-        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.NanoClientProtocol.ClientConfigP(), data));
+        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ClientConfigP(), data));
       } catch (InvalidProtocolBufferNanoException exception) {
         throw new ValidationException(exception);
       } catch (ValidationArgumentException exception) {
@@ -2953,7 +2953,7 @@ public interface ClientProtocol {
       }
     }
 
-    static ClientConfigP fromMessageNano(com.google.protos.ipc.invalidation.NanoClientProtocol.ClientConfigP message) {
+    static ClientConfigP fromMessageNano(com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ClientConfigP message) {
       if (message == null) { return null; }
       return new ClientConfigP(com.google.ipc.invalidation.ticl.proto.ClientProtocol.Version.fromMessageNano(message.version),
           message.networkTimeoutDelayMs,
@@ -2974,8 +2974,8 @@ public interface ClientProtocol {
       return MessageNano.toByteArray(toMessageNano());
     }
 
-    com.google.protos.ipc.invalidation.NanoClientProtocol.ClientConfigP toMessageNano() {
-      com.google.protos.ipc.invalidation.NanoClientProtocol.ClientConfigP msg = new com.google.protos.ipc.invalidation.NanoClientProtocol.ClientConfigP();
+    com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ClientConfigP toMessageNano() {
+      com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ClientConfigP msg = new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ClientConfigP();
       msg.version = version.toMessageNano();
       msg.networkTimeoutDelayMs = hasNetworkTimeoutDelayMs() ? networkTimeoutDelayMs : null;
       msg.writeRetryDelayMs = hasWriteRetryDelayMs() ? writeRetryDelayMs : null;
@@ -3044,7 +3044,7 @@ public interface ClientProtocol {
 
     public static ConfigChangeMessage parseFrom(byte[] data) throws ValidationException {
       try {
-        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.NanoClientProtocol.ConfigChangeMessage(), data));
+        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ConfigChangeMessage(), data));
       } catch (InvalidProtocolBufferNanoException exception) {
         throw new ValidationException(exception);
       } catch (ValidationArgumentException exception) {
@@ -3052,7 +3052,7 @@ public interface ClientProtocol {
       }
     }
 
-    static ConfigChangeMessage fromMessageNano(com.google.protos.ipc.invalidation.NanoClientProtocol.ConfigChangeMessage message) {
+    static ConfigChangeMessage fromMessageNano(com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ConfigChangeMessage message) {
       if (message == null) { return null; }
       return new ConfigChangeMessage(message.nextMessageDelayMs);
     }
@@ -3061,8 +3061,8 @@ public interface ClientProtocol {
       return MessageNano.toByteArray(toMessageNano());
     }
 
-    com.google.protos.ipc.invalidation.NanoClientProtocol.ConfigChangeMessage toMessageNano() {
-      com.google.protos.ipc.invalidation.NanoClientProtocol.ConfigChangeMessage msg = new com.google.protos.ipc.invalidation.NanoClientProtocol.ConfigChangeMessage();
+    com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ConfigChangeMessage toMessageNano() {
+      com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ConfigChangeMessage msg = new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ConfigChangeMessage();
       msg.nextMessageDelayMs = hasNextMessageDelayMs() ? nextMessageDelayMs : null;
       return msg;
     }
@@ -3118,7 +3118,7 @@ public interface ClientProtocol {
 
     public static ErrorMessage parseFrom(byte[] data) throws ValidationException {
       try {
-        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.NanoClientProtocol.ErrorMessage(), data));
+        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ErrorMessage(), data));
       } catch (InvalidProtocolBufferNanoException exception) {
         throw new ValidationException(exception);
       } catch (ValidationArgumentException exception) {
@@ -3126,7 +3126,7 @@ public interface ClientProtocol {
       }
     }
 
-    static ErrorMessage fromMessageNano(com.google.protos.ipc.invalidation.NanoClientProtocol.ErrorMessage message) {
+    static ErrorMessage fromMessageNano(com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ErrorMessage message) {
       if (message == null) { return null; }
       return new ErrorMessage(message.code,
           message.description);
@@ -3136,8 +3136,8 @@ public interface ClientProtocol {
       return MessageNano.toByteArray(toMessageNano());
     }
 
-    com.google.protos.ipc.invalidation.NanoClientProtocol.ErrorMessage toMessageNano() {
-      com.google.protos.ipc.invalidation.NanoClientProtocol.ErrorMessage msg = new com.google.protos.ipc.invalidation.NanoClientProtocol.ErrorMessage();
+    com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ErrorMessage toMessageNano() {
+      com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ErrorMessage msg = new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ErrorMessage();
       msg.code = code;
       msg.description = description;
       return msg;

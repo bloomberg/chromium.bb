@@ -15,9 +15,9 @@
  */
 package com.google.ipc.invalidation.examples.android2;
 
-import com.google.ipc.invalidation.examples.android2.ExampleListenerProto.ExampleListenerStateProto;
-import com.google.ipc.invalidation.examples.android2.ExampleListenerProto.ExampleListenerStateProto.ObjectIdProto;
-import com.google.ipc.invalidation.examples.android2.ExampleListenerProto.ExampleListenerStateProto.ObjectStateProto;
+import com.google.ipc.invalidation.examples.android2.nano.ExampleListenerProto.ExampleListenerStateProto;
+import com.google.ipc.invalidation.examples.android2.nano.ExampleListenerProto.ExampleListenerStateProto.ObjectIdProto;
+import com.google.ipc.invalidation.examples.android2.nano.ExampleListenerProto.ExampleListenerStateProto.ObjectStateProto;
 import com.google.ipc.invalidation.external.client.types.ObjectId;
 import com.google.protobuf.nano.InvalidProtocolBufferNanoException;
 import com.google.protobuf.nano.MessageNano;

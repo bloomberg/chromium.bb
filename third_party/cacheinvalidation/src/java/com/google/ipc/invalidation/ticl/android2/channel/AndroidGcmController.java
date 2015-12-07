@@ -149,7 +149,14 @@ public class AndroidGcmController {
             .setService(GcmRegistrationTaskService.class)
             .build();
 
-    gcmNetworkManager.schedule(registrationTask);
+    try {
+      gcmNetworkManager.schedule(registrationTask);
+    } catch (IllegalArgumentException exception) {
+      // Scheduling the service can throw an exception due to a framework error on Android when
+      // the the look up for the GCMTaskService being scheduled to be run fails.
+      // See crbug/548314.
+      logger.warning("Failed to schedule GCM registration task. Exception: %s", exception);
+    }
   }
 
   /**

@@ -65,7 +65,7 @@ public interface ChannelCommon {
 
     public static ChannelMessageEncoding parseFrom(byte[] data) throws ValidationException {
       try {
-        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.NanoChannelCommon.ChannelMessageEncoding(), data));
+        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.nano.NanoChannelCommon.ChannelMessageEncoding(), data));
       } catch (InvalidProtocolBufferNanoException exception) {
         throw new ValidationException(exception);
       } catch (ValidationArgumentException exception) {
@@ -73,7 +73,7 @@ public interface ChannelCommon {
       }
     }
 
-    static ChannelMessageEncoding fromMessageNano(com.google.protos.ipc.invalidation.NanoChannelCommon.ChannelMessageEncoding message) {
+    static ChannelMessageEncoding fromMessageNano(com.google.protos.ipc.invalidation.nano.NanoChannelCommon.ChannelMessageEncoding message) {
       if (message == null) { return null; }
       return new ChannelMessageEncoding();
     }
@@ -82,8 +82,8 @@ public interface ChannelCommon {
       return MessageNano.toByteArray(toMessageNano());
     }
 
-    com.google.protos.ipc.invalidation.NanoChannelCommon.ChannelMessageEncoding toMessageNano() {
-      com.google.protos.ipc.invalidation.NanoChannelCommon.ChannelMessageEncoding msg = new com.google.protos.ipc.invalidation.NanoChannelCommon.ChannelMessageEncoding();
+    com.google.protos.ipc.invalidation.nano.NanoChannelCommon.ChannelMessageEncoding toMessageNano() {
+      com.google.protos.ipc.invalidation.nano.NanoChannelCommon.ChannelMessageEncoding msg = new com.google.protos.ipc.invalidation.nano.NanoChannelCommon.ChannelMessageEncoding();
       return msg;
     }
   }
@@ -182,7 +182,7 @@ public interface ChannelCommon {
 
     public static NetworkEndpointId parseFrom(byte[] data) throws ValidationException {
       try {
-        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.NanoChannelCommon.NetworkEndpointId(), data));
+        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.nano.NanoChannelCommon.NetworkEndpointId(), data));
       } catch (InvalidProtocolBufferNanoException exception) {
         throw new ValidationException(exception);
       } catch (ValidationArgumentException exception) {
@@ -190,7 +190,7 @@ public interface ChannelCommon {
       }
     }
 
-    static NetworkEndpointId fromMessageNano(com.google.protos.ipc.invalidation.NanoChannelCommon.NetworkEndpointId message) {
+    static NetworkEndpointId fromMessageNano(com.google.protos.ipc.invalidation.nano.NanoChannelCommon.NetworkEndpointId message) {
       if (message == null) { return null; }
       return new NetworkEndpointId(message.networkAddress,
           Bytes.fromByteArray(message.clientAddress),
@@ -201,8 +201,8 @@ public interface ChannelCommon {
       return MessageNano.toByteArray(toMessageNano());
     }
 
-    com.google.protos.ipc.invalidation.NanoChannelCommon.NetworkEndpointId toMessageNano() {
-      com.google.protos.ipc.invalidation.NanoChannelCommon.NetworkEndpointId msg = new com.google.protos.ipc.invalidation.NanoChannelCommon.NetworkEndpointId();
+    com.google.protos.ipc.invalidation.nano.NanoChannelCommon.NetworkEndpointId toMessageNano() {
+      com.google.protos.ipc.invalidation.nano.NanoChannelCommon.NetworkEndpointId msg = new com.google.protos.ipc.invalidation.nano.NanoChannelCommon.NetworkEndpointId();
       msg.networkAddress = hasNetworkAddress() ? networkAddress : null;
       msg.clientAddress = hasClientAddress() ? clientAddress.getByteArray() : null;
       msg.isOffline = hasIsOffline() ? isOffline : null;

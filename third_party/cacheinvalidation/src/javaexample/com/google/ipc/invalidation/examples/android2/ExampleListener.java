@@ -15,7 +15,7 @@
  */
 package com.google.ipc.invalidation.examples.android2;
 
-import com.google.ipc.invalidation.examples.android2.ExampleListenerProto.ExampleListenerStateProto.ObjectIdProto;
+import com.google.ipc.invalidation.examples.android2.nano.ExampleListenerProto.ExampleListenerStateProto.ObjectIdProto;
 import com.google.ipc.invalidation.external.client.InvalidationClientConfig;
 import com.google.ipc.invalidation.external.client.InvalidationListener.RegistrationState;
 import com.google.ipc.invalidation.external.client.contrib.AndroidListener;

@@ -1,6 +1,5 @@
 syntax = "proto2";
 package ipc.invalidation.examples.android2;
-option javanano_use_deprecated_package = true;
 option java_package = "com.google.ipc.invalidation.examples.android2";
 option java_outer_classname = "ExampleListenerProto";
 

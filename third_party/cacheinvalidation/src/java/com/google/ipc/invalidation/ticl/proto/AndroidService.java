@@ -280,11 +280,11 @@ public interface AndroidService {
 
       com.google.protos.ipc.invalidation.NanoAndroidService.ClientDowncall.RegistrationDowncall toMessageNano() {
         com.google.protos.ipc.invalidation.NanoAndroidService.ClientDowncall.RegistrationDowncall msg = new com.google.protos.ipc.invalidation.NanoAndroidService.ClientDowncall.RegistrationDowncall();
-        msg.registrations = new com.google.protos.ipc.invalidation.NanoClientProtocol.ObjectIdP[registrations.size()];
+        msg.registrations = new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ObjectIdP[registrations.size()];
         for (int i = 0; i < msg.registrations.length; i++) {
           msg.registrations[i] = registrations.get(i).toMessageNano();
         }
-        msg.unregistrations = new com.google.protos.ipc.invalidation.NanoClientProtocol.ObjectIdP[unregistrations.size()];
+        msg.unregistrations = new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ObjectIdP[unregistrations.size()];
         for (int i = 0; i < msg.unregistrations.length; i++) {
           msg.unregistrations[i] = unregistrations.get(i).toMessageNano();
         }

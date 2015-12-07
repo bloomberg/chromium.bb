@@ -343,7 +343,7 @@ public interface AndroidListenerProtocol {
 
     com.google.protos.ipc.invalidation.NanoAndroidListenerProtocol.AndroidListenerState toMessageNano() {
       com.google.protos.ipc.invalidation.NanoAndroidListenerProtocol.AndroidListenerState msg = new com.google.protos.ipc.invalidation.NanoAndroidListenerProtocol.AndroidListenerState();
-      msg.registration = new com.google.protos.ipc.invalidation.NanoClientProtocol.ObjectIdP[registration.size()];
+      msg.registration = new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ObjectIdP[registration.size()];
       for (int i = 0; i < msg.registration.length; i++) {
         msg.registration[i] = registration.get(i).toMessageNano();
       }
@@ -485,7 +485,7 @@ public interface AndroidListenerProtocol {
     com.google.protos.ipc.invalidation.NanoAndroidListenerProtocol.RegistrationCommand toMessageNano() {
       com.google.protos.ipc.invalidation.NanoAndroidListenerProtocol.RegistrationCommand msg = new com.google.protos.ipc.invalidation.NanoAndroidListenerProtocol.RegistrationCommand();
       msg.isRegister = hasIsRegister() ? isRegister : null;
-      msg.objectId = new com.google.protos.ipc.invalidation.NanoClientProtocol.ObjectIdP[objectId.size()];
+      msg.objectId = new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ObjectIdP[objectId.size()];
       for (int i = 0; i < msg.objectId.length; i++) {
         msg.objectId[i] = objectId.get(i).toMessageNano();
       }

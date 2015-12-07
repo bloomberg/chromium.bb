@@ -26,7 +26,7 @@ option optimize_for = LITE_RUNTIME;
 
 
 option java_outer_classname = "NanoChannelCommon";
-option java_package = "com.google.protos.ipc.invalidation";
+option java_package = "com.google.protos.ipc.invalidation.nano";
 
 
 

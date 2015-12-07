@@ -169,19 +169,19 @@ public interface JavaClient {
 
     com.google.protos.ipc.invalidation.NanoJavaClient.BatcherState toMessageNano() {
       com.google.protos.ipc.invalidation.NanoJavaClient.BatcherState msg = new com.google.protos.ipc.invalidation.NanoJavaClient.BatcherState();
-      msg.registration = new com.google.protos.ipc.invalidation.NanoClientProtocol.ObjectIdP[registration.size()];
+      msg.registration = new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ObjectIdP[registration.size()];
       for (int i = 0; i < msg.registration.length; i++) {
         msg.registration[i] = registration.get(i).toMessageNano();
       }
-      msg.unregistration = new com.google.protos.ipc.invalidation.NanoClientProtocol.ObjectIdP[unregistration.size()];
+      msg.unregistration = new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ObjectIdP[unregistration.size()];
       for (int i = 0; i < msg.unregistration.length; i++) {
         msg.unregistration[i] = unregistration.get(i).toMessageNano();
       }
-      msg.acknowledgement = new com.google.protos.ipc.invalidation.NanoClientProtocol.InvalidationP[acknowledgement.size()];
+      msg.acknowledgement = new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.InvalidationP[acknowledgement.size()];
       for (int i = 0; i < msg.acknowledgement.length; i++) {
         msg.acknowledgement[i] = acknowledgement.get(i).toMessageNano();
       }
-      msg.registrationSubtree = new com.google.protos.ipc.invalidation.NanoClientProtocol.RegistrationSubtree[registrationSubtree.size()];
+      msg.registrationSubtree = new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.RegistrationSubtree[registrationSubtree.size()];
       for (int i = 0; i < msg.registrationSubtree.length; i++) {
         msg.registrationSubtree[i] = registrationSubtree.get(i).toMessageNano();
       }
@@ -415,12 +415,12 @@ public interface JavaClient {
 
     com.google.protos.ipc.invalidation.NanoJavaClient.RegistrationManagerStateP toMessageNano() {
       com.google.protos.ipc.invalidation.NanoJavaClient.RegistrationManagerStateP msg = new com.google.protos.ipc.invalidation.NanoJavaClient.RegistrationManagerStateP();
-      msg.registrations = new com.google.protos.ipc.invalidation.NanoClientProtocol.ObjectIdP[registrations.size()];
+      msg.registrations = new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.ObjectIdP[registrations.size()];
       for (int i = 0; i < msg.registrations.length; i++) {
         msg.registrations[i] = registrations.get(i).toMessageNano();
       }
       msg.lastKnownServerSummary = this.lastKnownServerSummary != null ? lastKnownServerSummary.toMessageNano() : null;
-      msg.pendingOperations = new com.google.protos.ipc.invalidation.NanoClientProtocol.RegistrationP[pendingOperations.size()];
+      msg.pendingOperations = new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.RegistrationP[pendingOperations.size()];
       for (int i = 0; i < msg.pendingOperations.length; i++) {
         msg.pendingOperations[i] = pendingOperations.get(i).toMessageNano();
       }
@@ -624,7 +624,7 @@ public interface JavaClient {
 
     com.google.protos.ipc.invalidation.NanoJavaClient.StatisticsState toMessageNano() {
       com.google.protos.ipc.invalidation.NanoJavaClient.StatisticsState msg = new com.google.protos.ipc.invalidation.NanoJavaClient.StatisticsState();
-      msg.counter = new com.google.protos.ipc.invalidation.NanoClientProtocol.PropertyRecord[counter.size()];
+      msg.counter = new com.google.protos.ipc.invalidation.nano.NanoClientProtocol.PropertyRecord[counter.size()];
       for (int i = 0; i < msg.counter.length; i++) {
         msg.counter[i] = counter.get(i).toMessageNano();
       }

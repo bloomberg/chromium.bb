@@ -29,7 +29,7 @@ option optimize_for = LITE_RUNTIME;
 
 
 option java_outer_classname = "NanoClientProtocol";
-option java_package = "com.google.protos.ipc.invalidation";
+option java_package = "com.google.protos.ipc.invalidation.nano";
 
 
 

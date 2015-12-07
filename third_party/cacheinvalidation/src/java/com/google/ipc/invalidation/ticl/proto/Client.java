@@ -70,7 +70,7 @@ public interface Client {
 
     public static AckHandleP parseFrom(byte[] data) throws ValidationException {
       try {
-        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.NanoClient.AckHandleP(), data));
+        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.nano.NanoClient.AckHandleP(), data));
       } catch (InvalidProtocolBufferNanoException exception) {
         throw new ValidationException(exception);
       } catch (ValidationArgumentException exception) {
@@ -78,7 +78,7 @@ public interface Client {
       }
     }
 
-    static AckHandleP fromMessageNano(com.google.protos.ipc.invalidation.NanoClient.AckHandleP message) {
+    static AckHandleP fromMessageNano(com.google.protos.ipc.invalidation.nano.NanoClient.AckHandleP message) {
       if (message == null) { return null; }
       return new AckHandleP(com.google.ipc.invalidation.ticl.proto.ClientProtocol.InvalidationP.fromMessageNano(message.invalidation));
     }
@@ -87,8 +87,8 @@ public interface Client {
       return MessageNano.toByteArray(toMessageNano());
     }
 
-    com.google.protos.ipc.invalidation.NanoClient.AckHandleP toMessageNano() {
-      com.google.protos.ipc.invalidation.NanoClient.AckHandleP msg = new com.google.protos.ipc.invalidation.NanoClient.AckHandleP();
+    com.google.protos.ipc.invalidation.nano.NanoClient.AckHandleP toMessageNano() {
+      com.google.protos.ipc.invalidation.nano.NanoClient.AckHandleP msg = new com.google.protos.ipc.invalidation.nano.NanoClient.AckHandleP();
       msg.invalidation = this.invalidation != null ? invalidation.toMessageNano() : null;
       return msg;
     }
@@ -185,7 +185,7 @@ public interface Client {
 
     public static PersistentTiclState parseFrom(byte[] data) throws ValidationException {
       try {
-        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.NanoClient.PersistentTiclState(), data));
+        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.nano.NanoClient.PersistentTiclState(), data));
       } catch (InvalidProtocolBufferNanoException exception) {
         throw new ValidationException(exception);
       } catch (ValidationArgumentException exception) {
@@ -193,7 +193,7 @@ public interface Client {
       }
     }
 
-    static PersistentTiclState fromMessageNano(com.google.protos.ipc.invalidation.NanoClient.PersistentTiclState message) {
+    static PersistentTiclState fromMessageNano(com.google.protos.ipc.invalidation.nano.NanoClient.PersistentTiclState message) {
       if (message == null) { return null; }
       return new PersistentTiclState(Bytes.fromByteArray(message.clientToken),
           message.lastMessageSendTimeMs);
@@ -203,8 +203,8 @@ public interface Client {
       return MessageNano.toByteArray(toMessageNano());
     }
 
-    com.google.protos.ipc.invalidation.NanoClient.PersistentTiclState toMessageNano() {
-      com.google.protos.ipc.invalidation.NanoClient.PersistentTiclState msg = new com.google.protos.ipc.invalidation.NanoClient.PersistentTiclState();
+    com.google.protos.ipc.invalidation.nano.NanoClient.PersistentTiclState toMessageNano() {
+      com.google.protos.ipc.invalidation.nano.NanoClient.PersistentTiclState msg = new com.google.protos.ipc.invalidation.nano.NanoClient.PersistentTiclState();
       msg.clientToken = hasClientToken() ? clientToken.getByteArray() : null;
       msg.lastMessageSendTimeMs = hasLastMessageSendTimeMs() ? lastMessageSendTimeMs : null;
       return msg;
@@ -280,7 +280,7 @@ public interface Client {
 
     public static PersistentStateBlob parseFrom(byte[] data) throws ValidationException {
       try {
-        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.NanoClient.PersistentStateBlob(), data));
+        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.nano.NanoClient.PersistentStateBlob(), data));
       } catch (InvalidProtocolBufferNanoException exception) {
         throw new ValidationException(exception);
       } catch (ValidationArgumentException exception) {
@@ -288,7 +288,7 @@ public interface Client {
       }
     }
 
-    static PersistentStateBlob fromMessageNano(com.google.protos.ipc.invalidation.NanoClient.PersistentStateBlob message) {
+    static PersistentStateBlob fromMessageNano(com.google.protos.ipc.invalidation.nano.NanoClient.PersistentStateBlob message) {
       if (message == null) { return null; }
       return new PersistentStateBlob(com.google.ipc.invalidation.ticl.proto.Client.PersistentTiclState.fromMessageNano(message.ticlState),
           Bytes.fromByteArray(message.authenticationCode));
@@ -298,8 +298,8 @@ public interface Client {
       return MessageNano.toByteArray(toMessageNano());
     }
 
-    com.google.protos.ipc.invalidation.NanoClient.PersistentStateBlob toMessageNano() {
-      com.google.protos.ipc.invalidation.NanoClient.PersistentStateBlob msg = new com.google.protos.ipc.invalidation.NanoClient.PersistentStateBlob();
+    com.google.protos.ipc.invalidation.nano.NanoClient.PersistentStateBlob toMessageNano() {
+      com.google.protos.ipc.invalidation.nano.NanoClient.PersistentStateBlob msg = new com.google.protos.ipc.invalidation.nano.NanoClient.PersistentStateBlob();
       msg.ticlState = hasTiclState() ? ticlState.toMessageNano() : null;
       msg.authenticationCode = hasAuthenticationCode() ? authenticationCode.getByteArray() : null;
       return msg;
@@ -362,7 +362,7 @@ public interface Client {
 
     public static RunStateP parseFrom(byte[] data) throws ValidationException {
       try {
-        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.NanoClient.RunStateP(), data));
+        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.nano.NanoClient.RunStateP(), data));
       } catch (InvalidProtocolBufferNanoException exception) {
         throw new ValidationException(exception);
       } catch (ValidationArgumentException exception) {
@@ -370,7 +370,7 @@ public interface Client {
       }
     }
 
-    static RunStateP fromMessageNano(com.google.protos.ipc.invalidation.NanoClient.RunStateP message) {
+    static RunStateP fromMessageNano(com.google.protos.ipc.invalidation.nano.NanoClient.RunStateP message) {
       if (message == null) { return null; }
       return new RunStateP(message.state);
     }
@@ -379,8 +379,8 @@ public interface Client {
       return MessageNano.toByteArray(toMessageNano());
     }
 
-    com.google.protos.ipc.invalidation.NanoClient.RunStateP toMessageNano() {
-      com.google.protos.ipc.invalidation.NanoClient.RunStateP msg = new com.google.protos.ipc.invalidation.NanoClient.RunStateP();
+    com.google.protos.ipc.invalidation.nano.NanoClient.RunStateP toMessageNano() {
+      com.google.protos.ipc.invalidation.nano.NanoClient.RunStateP msg = new com.google.protos.ipc.invalidation.nano.NanoClient.RunStateP();
       msg.state = hasState() ? state : null;
       return msg;
     }
@@ -455,7 +455,7 @@ public interface Client {
 
     public static ExponentialBackoffState parseFrom(byte[] data) throws ValidationException {
       try {
-        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.NanoClient.ExponentialBackoffState(), data));
+        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.nano.NanoClient.ExponentialBackoffState(), data));
       } catch (InvalidProtocolBufferNanoException exception) {
         throw new ValidationException(exception);
       } catch (ValidationArgumentException exception) {
@@ -463,7 +463,7 @@ public interface Client {
       }
     }
 
-    static ExponentialBackoffState fromMessageNano(com.google.protos.ipc.invalidation.NanoClient.ExponentialBackoffState message) {
+    static ExponentialBackoffState fromMessageNano(com.google.protos.ipc.invalidation.nano.NanoClient.ExponentialBackoffState message) {
       if (message == null) { return null; }
       return new ExponentialBackoffState(message.currentMaxDelay,
           message.inRetryMode);
@@ -473,8 +473,8 @@ public interface Client {
       return MessageNano.toByteArray(toMessageNano());
     }
 
-    com.google.protos.ipc.invalidation.NanoClient.ExponentialBackoffState toMessageNano() {
-      com.google.protos.ipc.invalidation.NanoClient.ExponentialBackoffState msg = new com.google.protos.ipc.invalidation.NanoClient.ExponentialBackoffState();
+    com.google.protos.ipc.invalidation.nano.NanoClient.ExponentialBackoffState toMessageNano() {
+      com.google.protos.ipc.invalidation.nano.NanoClient.ExponentialBackoffState msg = new com.google.protos.ipc.invalidation.nano.NanoClient.ExponentialBackoffState();
       msg.currentMaxDelay = hasCurrentMaxDelay() ? currentMaxDelay : null;
       msg.inRetryMode = hasInRetryMode() ? inRetryMode : null;
       return msg;
