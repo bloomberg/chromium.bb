@@ -13,6 +13,7 @@ import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/ui.gni")
 import("//build_overrides/v8.gni")
 import("//media/media_options.gni")
+import("//third_party/openh264/openh264_args.gni")
 
 if (is_android) {
   import("//build/config/android/config.gni")
@@ -586,6 +587,14 @@ group("both_gn_and_gyp") {
 
   if (is_ios || is_mac) {
     deps += [ "//media/cast:cast_h264_vt_encoder_unittests" ]
+  }
+
+  if (use_openh264) {
+    deps += [
+      "//third_party/openh264:common",
+      "//third_party/openh264:encoder",
+      "//third_party/openh264:processing",
+    ]
   }
 }
 

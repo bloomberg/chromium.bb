@@ -10,6 +10,9 @@
     # For Android-specific targets.
     'android_app_targets%': [],
   },
+  'includes': [
+    '../third_party/openh264/openh264_args.gypi',
+  ],
   'targets': [
     {
       'target_name': 'All',
@@ -284,6 +287,11 @@
         ['envoy==1', {
           'dependencies': [
             '../envoy/envoy.gyp:*',
+          ],
+        }],
+        ['use_openh264==1', {
+          'dependencies': [
+            '../third_party/openh264/openh264.gyp:*',
           ],
         }],
       ],

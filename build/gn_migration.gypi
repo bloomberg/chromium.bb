@@ -528,8 +528,15 @@
         ['chromecast==1', {
           'dependencies': [
             '../chromecast/chromecast.gyp:cast_shell',
-          ]
-        }]
+          ],
+        }],
+        ['use_openh264==1', {
+          'dependencies': [
+            '../third_party/openh264/openh264.gyp:openh264_common',
+            '../third_party/openh264/openh264.gyp:openh264_processing',
+            '../third_party/openh264/openh264.gyp:openh264_encoder',
+          ],
+        }],
       ],
     },
     {
