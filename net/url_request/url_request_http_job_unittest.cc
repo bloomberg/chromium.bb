@@ -414,11 +414,23 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest, BackoffHeaderUserGesture) {
                 "Connection: keep-alive\r\n"
                 "User-Agent:\r\n"
                 "Accept-Encoding: gzip, deflate\r\n"
-                "Accept-Language: en-us,fr\r\n\r\n")};
-  MockRead reads[] = {MockRead("HTTP/1.1 200 OK\r\n"
-                               "Backoff: 3600\r\n"
-                               "Content-Length: 9\r\n\r\n"),
-                      MockRead("test.html")};
+                "Accept-Language: en-us,fr\r\n\r\n"),
+      MockWrite("GET / HTTP/1.1\r\n"
+                "Host: www.example.com\r\n"
+                "Connection: keep-alive\r\n"
+                "User-Agent:\r\n"
+                "Accept-Encoding: gzip, deflate\r\n"
+                "Accept-Language: en-us,fr\r\n\r\n"),
+  };
+  MockRead reads[] = {
+      MockRead("HTTP/1.1 200 OK\r\n"
+               "Backoff: 3600\r\n"
+               "Content-Length: 9\r\n\r\n"),
+      MockRead("test.html"), MockRead("HTTP/1.1 200 OK\r\n"
+                                      "Backoff: 3600\r\n"
+                                      "Content-Length: 9\r\n\r\n"),
+      MockRead("test.html"),
+  };
 
   net::SSLSocketDataProvider ssl_socket_data_provider(net::ASYNC, net::OK);
   ssl_socket_data_provider.SetNextProto(kProtoHTTP11);
@@ -444,9 +456,6 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest, BackoffHeaderUserGesture) {
   EXPECT_EQ("test.html", delegate1.data_received());
   EXPECT_EQ(1, delegate1.received_before_network_start_count());
   EXPECT_EQ(1, manager_.GetNumberOfEntriesForTests());
-
-  // Reset socket data provider to replay socket data.
-  socket_data.Reset();
 
   // Issue a user-initiated request, backoff logic should not apply.
   TestDelegate delegate2;

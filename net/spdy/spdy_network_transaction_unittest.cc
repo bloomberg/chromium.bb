@@ -901,7 +901,8 @@ TEST_P(SpdyNetworkTransactionTest, ThreeGets) {
       MockRead(ASYNC, 0, 12),  // EOF
   };
   SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
-  SequencedSocketData data_placeholder(NULL, 0, NULL, 0);
+  SequencedSocketData data_placeholder1(NULL, 0, NULL, 0);
+  SequencedSocketData data_placeholder2(NULL, 0, NULL, 0);
 
   BoundNetLog log;
   TransactionHelperResult out;
@@ -912,8 +913,8 @@ TEST_P(SpdyNetworkTransactionTest, ThreeGets) {
   // We require placeholder data because three get requests are sent out at
   // the same time which results in three sockets being connected. The first
   // on will negotiate SPDY and will be used for all requests.
-  helper.AddData(&data_placeholder);
-  helper.AddData(&data_placeholder);
+  helper.AddData(&data_placeholder1);
+  helper.AddData(&data_placeholder2);
   scoped_ptr<HttpNetworkTransaction> trans1(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session()));
   scoped_ptr<HttpNetworkTransaction> trans2(
@@ -3550,7 +3551,6 @@ TEST_P(SpdyNetworkTransactionTest, DecompressFailureOnSynReply) {
   helper.RunToCompletion(&data);
   TransactionHelperResult out = helper.output();
   EXPECT_EQ(ERR_SPDY_COMPRESSION_ERROR, out.rv);
-  data.Reset();
 }
 
 // Test that the NetLog contains good data for a simple GET request.

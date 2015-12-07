@@ -187,12 +187,13 @@ struct MockWriteResult {
 };
 
 // The SocketDataProvider is an interface used by the MockClientSocket
-// for getting data about individual reads and writes on the socket.
+// for getting data about individual reads and writes on the socket.  Can be
+// used with at most one socket at a time.
+// TODO(mmenke):  Do these really need to be re-useable?
 class SocketDataProvider {
  public:
-  SocketDataProvider() : socket_(NULL) {}
-
-  virtual ~SocketDataProvider() {}
+  SocketDataProvider();
+  virtual ~SocketDataProvider();
 
   // Returns the buffer and result code for the next simulated read.
   // If the |MockRead.result| is ERR_IO_PENDING, it informs the caller
@@ -200,18 +201,32 @@ class SocketDataProvider {
   // function at a later time.
   virtual MockRead OnRead() = 0;
   virtual MockWriteResult OnWrite(const std::string& data) = 0;
-  virtual void Reset() = 0;
   virtual bool AllReadDataConsumed() const = 0;
   virtual bool AllWriteDataConsumed() const = 0;
 
+  // Returns true if the request should be considered idle, for the purposes of
+  // IsConnectedAndIdle.
+  virtual bool IsIdle() const;
+
+  // Initializes the SocketDataProvider for use with |socket|.  Must be called
+  // before use
+  void Initialize(AsyncSocket* socket);
+  // Detaches the socket associated with a SocketDataProvider.  Must be called
+  // before |socket_| is destroyed, unless the SocketDataProvider has informed
+  // |socket_| it was destroyed.  Must also be called before Initialize() may
+  // be called again with a new socket.
+  void DetachSocket();
+
   // Accessor for the socket which is using the SocketDataProvider.
   AsyncSocket* socket() { return socket_; }
-  void set_socket(AsyncSocket* socket) { socket_ = socket; }
 
   MockConnect connect_data() const { return connect_; }
   void set_connect_data(const MockConnect& connect) { connect_ = connect; }
 
  private:
+  // Called to inform subclasses of initialization.
+  virtual void Reset() = 0;
+
   MockConnect connect_;
   AsyncSocket* socket_;
 
@@ -235,6 +250,11 @@ class AsyncSocket {
   // is called to complete the asynchronous read operation.
   virtual void OnWriteComplete(int rv) = 0;
   virtual void OnConnectComplete(const MockConnect& data) = 0;
+
+  // Called when the SocketDataProvider associated with the socket is destroyed.
+  // The socket may continue to be used after the data provider is destroyed,
+  // so it should be sure not to dereference the provider after this is called.
+  virtual void OnDataProviderDestroyed() = 0;
 };
 
 // StaticSocketDataHelper manages a list of reads and writes.
@@ -295,10 +315,9 @@ class StaticSocketDataProvider : public SocketDataProvider {
 
   virtual void CompleteRead() {}
 
-  // SocketDataProvider implementation.
+  // From SocketDataProvider:
   MockRead OnRead() override;
   MockWriteResult OnWrite(const std::string& data) override;
-  void Reset() override;
   bool AllReadDataConsumed() const override;
   bool AllWriteDataConsumed() const override;
 
@@ -307,10 +326,10 @@ class StaticSocketDataProvider : public SocketDataProvider {
   size_t read_count() const { return helper_.read_count(); }
   size_t write_count() const { return helper_.write_count(); }
 
- protected:
-  StaticSocketDataHelper* helper() { return &helper_; }
-
  private:
+  // From SocketDataProvider:
+  void Reset() override;
+
   StaticSocketDataHelper helper_;
 
   DISALLOW_COPY_AND_ASSIGN(StaticSocketDataProvider);
@@ -358,15 +377,25 @@ class SequencedSocketData : public SocketDataProvider {
 
   ~SequencedSocketData() override;
 
-  // SocketDataProviderBase implementation.
+  // From SocketDataProvider:
   MockRead OnRead() override;
   MockWriteResult OnWrite(const std::string& data) override;
-  void Reset() override;
   bool AllReadDataConsumed() const override;
   bool AllWriteDataConsumed() const override;
+  bool IsIdle() const override;
 
   bool IsReadPaused();
   void CompleteRead();
+
+  // When true, IsConnectedAndIdle() will return false if the next event in the
+  // sequence is a synchronous.  Otherwise, the socket claims to be idle as
+  // long as it's connected.  Defaults to false.
+  // TODO(mmenke):  See if this can be made the default behavior, and consider
+  // removing this mehtod.  Need to make sure it doesn't change what code any
+  // tests are targetted at testing.
+  void set_busy_before_sync_reads(bool busy_before_sync_reads) {
+    busy_before_sync_reads_ = busy_before_sync_reads;
+  }
 
  private:
   // Defines the state for the read or write path.
@@ -378,6 +407,9 @@ class SequencedSocketData : public SocketDataProvider {
     PAUSED,      // IO is paused until CompleteRead() is called.
   };
 
+  // From SocketDataProvider:
+  void Reset() override;
+
   void OnReadComplete();
   void OnWriteComplete();
 
@@ -388,6 +420,8 @@ class SequencedSocketData : public SocketDataProvider {
   int sequence_number_;
   IoState read_state_;
   IoState write_state_;
+
+  bool busy_before_sync_reads_;
 
   base::WeakPtrFactory<SequencedSocketData> weak_factory_;
 
@@ -717,6 +751,7 @@ class MockTCPClientSocket : public MockClientSocket, public AsyncSocket {
   void OnReadComplete(const MockRead& data) override;
   void OnWriteComplete(int rv) override;
   void OnConnectComplete(const MockConnect& data) override;
+  void OnDataProviderDestroyed() override;
 
  private:
   int CompleteRead();
@@ -898,6 +933,7 @@ class MockSSLClientSocket : public MockClientSocket, public AsyncSocket {
   int Connect(const CompletionCallback& callback) override;
   void Disconnect() override;
   bool IsConnected() const override;
+  bool IsConnectedAndIdle() const override;
   bool WasEverUsed() const override;
   bool UsingTCPFastOpen() const override;
   int GetPeerAddress(IPEndPoint* address) const override;
@@ -911,6 +947,10 @@ class MockSSLClientSocket : public MockClientSocket, public AsyncSocket {
   void OnReadComplete(const MockRead& data) override;
   void OnWriteComplete(int rv) override;
   void OnConnectComplete(const MockConnect& data) override;
+  // SSL sockets don't need magic to deal with destruction of their data
+  // provider.
+  // TODO(mmenke):  Probably a good idea to support it, anyways.
+  void OnDataProviderDestroyed() override {}
 
   ChannelIDService* GetChannelIDService() const override;
 
@@ -954,6 +994,7 @@ class MockUDPClientSocket : public DatagramClientSocket, public AsyncSocket {
   void OnReadComplete(const MockRead& data) override;
   void OnWriteComplete(int rv) override;
   void OnConnectComplete(const MockConnect& data) override;
+  void OnDataProviderDestroyed() override;
 
   void set_source_port(uint16 port) { source_port_ = port;}
 

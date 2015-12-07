@@ -190,7 +190,6 @@ TestClientSocketFactory::CreateDatagramClientSocket(
   data_providers_.push_back(data_provider);
   scoped_ptr<MockUDPClientSocket> socket(
       new MockUDPClientSocket(data_provider, net_log));
-  data_provider->set_socket(socket.get());
   return socket.Pass();
 }
 

@@ -196,7 +196,6 @@ class TestSocketFactory : public MockClientSocketFactory {
     SocketDataProvider* data_provider = mock_data().GetNext();
     scoped_ptr<TestUDPClientSocket> socket(
         new TestUDPClientSocket(this, data_provider, net_log));
-    data_provider->set_socket(socket.get());
     return socket.Pass();
   }
 
@@ -519,11 +518,6 @@ TEST_F(DnsTransactionTest, CancelLookup) {
   helper1.StartTransaction(transaction_factory_.get());
 
   helper0.Cancel();
-  // Since the transaction has been cancelled, the assocaited socket has been
-  // destroyed, so make sure the data provide does not attempt to callback
-  // to the socket.
-  // TODO(rch): Make the SocketDataProvider and MockSocket do this by default.
-  socket_data_[0]->GetProvider()->set_socket(nullptr);
 
   base::MessageLoop::current()->RunUntilIdle();
 

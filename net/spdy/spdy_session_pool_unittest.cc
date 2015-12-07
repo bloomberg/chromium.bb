@@ -143,9 +143,9 @@ TEST_P(SpdySessionPoolTest, CloseCurrentIdleSessions) {
 
   session_deps_.host_resolver->set_synchronous_mode(true);
 
-  StaticSocketDataProvider data(reads, arraysize(reads), NULL, 0);
-  data.set_connect_data(connect_data);
-  session_deps_.socket_factory->AddSocketDataProvider(&data);
+  StaticSocketDataProvider data1(reads, arraysize(reads), nullptr, 0);
+  data1.set_connect_data(connect_data);
+  session_deps_.socket_factory->AddSocketDataProvider(&data1);
 
   SSLSocketDataProvider ssl(SYNCHRONOUS, OK);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
@@ -166,7 +166,9 @@ TEST_P(SpdySessionPoolTest, CloseCurrentIdleSessions) {
   ASSERT_TRUE(spdy_stream1.get() != NULL);
 
   // Set up session 2
-  session_deps_.socket_factory->AddSocketDataProvider(&data);
+  StaticSocketDataProvider data2(reads, arraysize(reads), nullptr, 0);
+  data2.set_connect_data(connect_data);
+  session_deps_.socket_factory->AddSocketDataProvider(&data2);
   const std::string kTestHost2("http://www.b.com");
   HostPortPair test_host_port_pair2(kTestHost2, 80);
   SpdySessionKey key2(test_host_port_pair2, ProxyServer::Direct(),
@@ -180,7 +182,9 @@ TEST_P(SpdySessionPoolTest, CloseCurrentIdleSessions) {
   ASSERT_TRUE(spdy_stream2.get() != NULL);
 
   // Set up session 3
-  session_deps_.socket_factory->AddSocketDataProvider(&data);
+  StaticSocketDataProvider data3(reads, arraysize(reads), nullptr, 0);
+  data3.set_connect_data(connect_data);
+  session_deps_.socket_factory->AddSocketDataProvider(&data3);
   const std::string kTestHost3("http://www.c.com");
   HostPortPair test_host_port_pair3(kTestHost3, 80);
   SpdySessionKey key3(test_host_port_pair3, ProxyServer::Direct(),
@@ -363,9 +367,9 @@ void SpdySessionPoolTest::RunIPPoolingTest(
     MockRead(SYNCHRONOUS, ERR_IO_PENDING)  // Stall forever.
   };
 
-  StaticSocketDataProvider data(reads, arraysize(reads), NULL, 0);
-  data.set_connect_data(connect_data);
-  session_deps_.socket_factory->AddSocketDataProvider(&data);
+  StaticSocketDataProvider data1(reads, arraysize(reads), NULL, 0);
+  data1.set_connect_data(connect_data);
+  session_deps_.socket_factory->AddSocketDataProvider(&data1);
 
   SSLSocketDataProvider ssl(SYNCHRONOUS, OK);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
@@ -395,7 +399,9 @@ void SpdySessionPoolTest::RunIPPoolingTest(
   EXPECT_FALSE(HasSpdySession(spdy_session_pool_, test_hosts[2].key));
 
   // Create a new session to host 2.
-  session_deps_.socket_factory->AddSocketDataProvider(&data);
+  StaticSocketDataProvider data2(reads, arraysize(reads), NULL, 0);
+  data2.set_connect_data(connect_data);
+  session_deps_.socket_factory->AddSocketDataProvider(&data2);
   base::WeakPtr<SpdySession> session2 = CreateInsecureSpdySession(
       http_session_.get(), test_hosts[2].key, BoundNetLog());
 
@@ -523,10 +529,10 @@ TEST_P(SpdySessionPoolTest, IPAddressChanged) {
       spdy_util.ConstructSpdyGet("http://www.a.com", false, 1, MEDIUM));
   MockWrite writes[] = {CreateMockWrite(*req, 1)};
 
-  StaticSocketDataProvider data(reads, arraysize(reads), writes,
-                                arraysize(writes));
-  data.set_connect_data(connect_data);
-  session_deps_.socket_factory->AddSocketDataProvider(&data);
+  StaticSocketDataProvider dataA(reads, arraysize(reads), writes,
+                                 arraysize(writes));
+  dataA.set_connect_data(connect_data);
+  session_deps_.socket_factory->AddSocketDataProvider(&dataA);
 
   SSLSocketDataProvider ssl(SYNCHRONOUS, OK);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
@@ -534,7 +540,6 @@ TEST_P(SpdySessionPoolTest, IPAddressChanged) {
   CreateNetworkSession();
 
   // Set up session A: Going away, but with an active stream.
-  session_deps_.socket_factory->AddSocketDataProvider(&data);
   const std::string kTestHostA("http://www.a.com");
   HostPortPair test_host_port_pairA(kTestHostA, 80);
   SpdySessionKey keyA(
@@ -561,6 +566,10 @@ TEST_P(SpdySessionPoolTest, IPAddressChanged) {
   EXPECT_FALSE(delegateA.StreamIsClosed());
 
   // Set up session B: Available, with a created stream.
+  StaticSocketDataProvider dataB(reads, arraysize(reads), writes,
+                                 arraysize(writes));
+  dataB.set_connect_data(connect_data);
+  session_deps_.socket_factory->AddSocketDataProvider(&dataB);
   const std::string kTestHostB("http://www.b.com");
   HostPortPair test_host_port_pairB(kTestHostB, 80);
   SpdySessionKey keyB(
@@ -576,7 +585,10 @@ TEST_P(SpdySessionPoolTest, IPAddressChanged) {
   spdy_streamB->SetDelegate(&delegateB);
 
   // Set up session C: Draining.
-  session_deps_.socket_factory->AddSocketDataProvider(&data);
+  StaticSocketDataProvider dataC(reads, arraysize(reads), writes,
+                                 arraysize(writes));
+  dataC.set_connect_data(connect_data);
+  session_deps_.socket_factory->AddSocketDataProvider(&dataC);
   const std::string kTestHostC("http://www.c.com");
   HostPortPair test_host_port_pairC(kTestHostC, 80);
   SpdySessionKey keyC(

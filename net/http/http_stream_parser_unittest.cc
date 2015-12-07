@@ -52,7 +52,6 @@ scoped_ptr<ClientSocketHandle> CreateConnectedSocketHandle(
 
   scoped_ptr<MockTCPClientSocket> socket(
       new MockTCPClientSocket(net::AddressList(), nullptr, data));
-  data->set_socket(socket.get());
 
   TestCompletionCallback callback;
   EXPECT_EQ(OK, socket->Connect(callback.callback()));

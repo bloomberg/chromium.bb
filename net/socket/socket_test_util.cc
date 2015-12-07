@@ -143,6 +143,29 @@ MockConnect::MockConnect(IoMode io_mode, int r, IPEndPoint addr) :
 
 MockConnect::~MockConnect() {}
 
+bool SocketDataProvider::IsIdle() const {
+  return true;
+}
+
+void SocketDataProvider::Initialize(AsyncSocket* socket) {
+  CHECK(!socket_);
+  CHECK(socket);
+  socket_ = socket;
+  Reset();
+}
+
+void SocketDataProvider::DetachSocket() {
+  CHECK(socket_);
+  socket_ = nullptr;
+}
+
+SocketDataProvider::SocketDataProvider() : socket_(nullptr) {}
+
+SocketDataProvider::~SocketDataProvider() {
+  if (socket_)
+    socket_->OnDataProviderDestroyed();
+}
+
 StaticSocketDataHelper::StaticSocketDataHelper(MockRead* reads,
                                                size_t reads_count,
                                                MockWrite* writes,
@@ -247,16 +270,16 @@ MockWriteResult StaticSocketDataProvider::OnWrite(const std::string& data) {
   return MockWriteResult(next_write.mode, result);
 }
 
-void StaticSocketDataProvider::Reset() {
-  helper_.Reset();
-}
-
 bool StaticSocketDataProvider::AllReadDataConsumed() const {
   return helper_.AllReadDataConsumed();
 }
 
 bool StaticSocketDataProvider::AllWriteDataConsumed() const {
   return helper_.AllWriteDataConsumed();
+}
+
+void StaticSocketDataProvider::Reset() {
+  helper_.Reset();
 }
 
 SSLSocketDataProvider::SSLSocketDataProvider(IoMode mode, int result)
@@ -288,6 +311,7 @@ SequencedSocketData::SequencedSocketData(MockRead* reads,
       sequence_number_(0),
       read_state_(IDLE),
       write_state_(IDLE),
+      busy_before_sync_reads_(false),
       weak_factory_(this) {
   // Check that reads and writes have a contiguous set of sequence numbers
   // starting from 0 and working their way up, with no repeats and skipping
@@ -411,20 +435,26 @@ MockWriteResult SequencedSocketData::OnWrite(const std::string& data) {
   return MockWriteResult(SYNCHRONOUS, ERR_IO_PENDING);
 }
 
-void SequencedSocketData::Reset() {
-  helper_.Reset();
-  sequence_number_ = 0;
-  read_state_ = IDLE;
-  write_state_ = IDLE;
-  weak_factory_.InvalidateWeakPtrs();
-}
-
 bool SequencedSocketData::AllReadDataConsumed() const {
   return helper_.AllReadDataConsumed();
 }
 
 bool SequencedSocketData::AllWriteDataConsumed() const {
   return helper_.AllWriteDataConsumed();
+}
+
+bool SequencedSocketData::IsIdle() const {
+  // If |busy_before_sync_reads_| is not set, always considered idle.  If
+  // no reads left, or the next operation is a write, also consider it idle.
+  if (!busy_before_sync_reads_ || helper_.AllReadDataConsumed() ||
+      helper_.PeekRead().sequence_number != sequence_number_) {
+    return true;
+  }
+
+  // If the next operation is synchronous read, treat the socket as not idle.
+  if (helper_.PeekRead().mode == SYNCHRONOUS)
+    return false;
+  return true;
 }
 
 bool SequencedSocketData::IsReadPaused() {
@@ -484,6 +514,14 @@ void SequencedSocketData::MaybePostWriteCompleteTask() {
                             weak_factory_.GetWeakPtr()));
   CHECK_NE(COMPLETING, read_state_);
   write_state_ = COMPLETING;
+}
+
+void SequencedSocketData::Reset() {
+  helper_.Reset();
+  sequence_number_ = 0;
+  read_state_ = IDLE;
+  write_state_ = IDLE;
+  weak_factory_.InvalidateWeakPtrs();
 }
 
 void SequencedSocketData::OnReadComplete() {
@@ -777,7 +815,6 @@ MockClientSocketFactory::CreateDatagramClientSocket(
   SocketDataProvider* data_provider = mock_data_.GetNext();
   scoped_ptr<MockUDPClientSocket> socket(
       new MockUDPClientSocket(data_provider, net_log));
-  data_provider->set_socket(socket.get());
   if (bind_type == DatagramSocket::RANDOM_BIND)
     socket->set_source_port(static_cast<uint16>(rand_int_cb.Run(1025, 65535)));
   return socket.Pass();
@@ -790,7 +827,6 @@ scoped_ptr<StreamSocket> MockClientSocketFactory::CreateTransportClientSocket(
   SocketDataProvider* data_provider = mock_data_.GetNext();
   scoped_ptr<MockTCPClientSocket> socket(
       new MockTCPClientSocket(addresses, net_log, data_provider));
-  data_provider->set_socket(socket.get());
   return socket.Pass();
 }
 
@@ -937,14 +973,17 @@ MockTCPClientSocket::MockTCPClientSocket(const AddressList& addresses,
       was_used_to_convey_data_(false) {
   DCHECK(data_);
   peer_addr_ = data->connect_data().peer_addr;
-  data_->Reset();
+  data_->Initialize(this);
 }
 
-MockTCPClientSocket::~MockTCPClientSocket() {}
+MockTCPClientSocket::~MockTCPClientSocket() {
+  if (data_)
+    data_->DetachSocket();
+}
 
 int MockTCPClientSocket::Read(IOBuffer* buf, int buf_len,
                               const CompletionCallback& callback) {
-  if (!connected_)
+  if (!connected_ || !data_)
     return ERR_UNEXPECTED;
 
   // If the buffer is already in use, a read is already in progress!
@@ -986,7 +1025,7 @@ int MockTCPClientSocket::Write(IOBuffer* buf, int buf_len,
   DCHECK(buf);
   DCHECK_GT(buf_len, 0);
 
-  if (!connected_)
+  if (!connected_ || !data_)
     return ERR_UNEXPECTED;
 
   std::string data(buf->data(), buf_len);
@@ -1024,6 +1063,9 @@ void MockTCPClientSocket::AddConnectionAttempts(
 }
 
 int MockTCPClientSocket::Connect(const CompletionCallback& callback) {
+  if (!data_)
+    return ERR_UNEXPECTED;
+
   if (connected_)
     return OK;
   connected_ = true;
@@ -1055,11 +1097,15 @@ void MockTCPClientSocket::Disconnect() {
 }
 
 bool MockTCPClientSocket::IsConnected() const {
+  if (!data_)
+    return false;
   return connected_ && !peer_closed_connection_;
 }
 
 bool MockTCPClientSocket::IsConnectedAndIdle() const {
-  return IsConnected();
+  if (!data_)
+    return false;
+  return IsConnected() && data_->IsIdle();
 }
 
 int MockTCPClientSocket::GetPeerAddress(IPEndPoint* address) const {
@@ -1087,6 +1133,10 @@ bool MockTCPClientSocket::GetSSLInfo(SSLInfo* ssl_info) {
 }
 
 void MockTCPClientSocket::OnReadComplete(const MockRead& data) {
+  // If |data_| has been destroyed, safest to just do nothing.
+  if (!data_)
+    return;
+
   // There must be a read pending.
   DCHECK(pending_read_buf_.get());
   // You can't complete a read with another ERR_IO_PENDING status code.
@@ -1107,6 +1157,10 @@ void MockTCPClientSocket::OnReadComplete(const MockRead& data) {
 }
 
 void MockTCPClientSocket::OnWriteComplete(int rv) {
+  // If |data_| has been destroyed, safest to just do nothing.
+  if (!data_)
+    return;
+
   // There must be a read pending.
   DCHECK(!pending_write_callback_.is_null());
   CompletionCallback callback = pending_write_callback_;
@@ -1114,8 +1168,16 @@ void MockTCPClientSocket::OnWriteComplete(int rv) {
 }
 
 void MockTCPClientSocket::OnConnectComplete(const MockConnect& data) {
+  // If |data_| has been destroyed, safest to just do nothing.
+  if (!data_)
+    return;
+
   CompletionCallback callback = pending_connect_callback_;
   RunCallback(callback, data.result);
+}
+
+void MockTCPClientSocket::OnDataProviderDestroyed() {
+  data_ = nullptr;
 }
 
 int MockTCPClientSocket::CompleteRead() {
@@ -1503,6 +1565,10 @@ bool MockSSLClientSocket::IsConnected() const {
   return transport_->socket()->IsConnected();
 }
 
+bool MockSSLClientSocket::IsConnectedAndIdle() const {
+  return transport_->socket()->IsConnectedAndIdle();
+}
+
 bool MockSSLClientSocket::WasEverUsed() const {
   return transport_->socket()->WasEverUsed();
 }
@@ -1571,16 +1637,19 @@ MockUDPClientSocket::MockUDPClientSocket(SocketDataProvider* data,
       net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_NONE)),
       weak_factory_(this) {
   DCHECK(data_);
-  data_->Reset();
+  data_->Initialize(this);
   peer_addr_ = data->connect_data().peer_addr;
 }
 
-MockUDPClientSocket::~MockUDPClientSocket() {}
+MockUDPClientSocket::~MockUDPClientSocket() {
+  if (data_)
+    data_->DetachSocket();
+}
 
 int MockUDPClientSocket::Read(IOBuffer* buf,
                               int buf_len,
                               const CompletionCallback& callback) {
-  if (!connected_)
+  if (!connected_ || !data_)
     return ERR_UNEXPECTED;
 
   // If the buffer is already in use, a read is already in progress!
@@ -1611,7 +1680,7 @@ int MockUDPClientSocket::Write(IOBuffer* buf, int buf_len,
   DCHECK(buf);
   DCHECK_GT(buf_len, 0);
 
-  if (!connected_)
+  if (!connected_ || !data_)
     return ERR_UNEXPECTED;
 
   std::string data(buf->data(), buf_len);
@@ -1665,12 +1734,17 @@ int MockUDPClientSocket::BindToNetwork(
 }
 
 int MockUDPClientSocket::Connect(const IPEndPoint& address) {
+  if (!data_)
+    return ERR_UNEXPECTED;
   connected_ = true;
   peer_addr_ = address;
   return data_->connect_data().result;
 }
 
 void MockUDPClientSocket::OnReadComplete(const MockRead& data) {
+  if (!data_)
+    return;
+
   // There must be a read pending.
   DCHECK(pending_read_buf_.get());
   // You can't complete a read with another ERR_IO_PENDING status code.
@@ -1691,6 +1765,9 @@ void MockUDPClientSocket::OnReadComplete(const MockRead& data) {
 }
 
 void MockUDPClientSocket::OnWriteComplete(int rv) {
+  if (!data_)
+    return;
+
   // There must be a read pending.
   DCHECK(!pending_write_callback_.is_null());
   CompletionCallback callback = pending_write_callback_;
@@ -1699,6 +1776,10 @@ void MockUDPClientSocket::OnWriteComplete(int rv) {
 
 void MockUDPClientSocket::OnConnectComplete(const MockConnect& data) {
   NOTIMPLEMENTED();
+}
+
+void MockUDPClientSocket::OnDataProviderDestroyed() {
+  data_ = nullptr;
 }
 
 int MockUDPClientSocket::CompleteRead() {
