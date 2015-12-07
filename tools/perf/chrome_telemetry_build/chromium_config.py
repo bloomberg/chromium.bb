@@ -15,7 +15,7 @@ from telemetry import project_config
 
 
 CLIENT_CONFIG_PATH = os.path.join(
-    os.path.dirname(__file__), 'binary_dependencies.json')
+    os.path.dirname(os.path.abspath(__file__)), 'binary_dependencies.json')
 
 
 class ChromiumConfig(project_config.ProjectConfig):
