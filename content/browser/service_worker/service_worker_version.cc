@@ -1771,7 +1771,7 @@ void ServiceWorkerVersion::DidNavigateClient(int request_id,
                                              int render_frame_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (running_status() != RUNNING)
+  if (!context_ || running_status() != RUNNING)
     return;
 
   if (render_process_id == ChildProcessHost::kInvalidUniqueID &&
@@ -1963,7 +1963,7 @@ void ServiceWorkerVersion::GetWindowClients(
   if (!options.include_uncontrolled) {
     for (auto& controllee : controllee_map_)
       AddWindowClient(controllee.second, &clients_info);
-  } else {
+  } else if (context_) {
     for (auto it =
              context_->GetClientProviderHostIterator(script_url_.GetOrigin());
          !it->IsAtEnd(); it->Advance()) {
@@ -2002,7 +2002,7 @@ void ServiceWorkerVersion::GetNonWindowClients(
     for (auto& controllee : controllee_map_) {
       AddNonWindowClient(controllee.second, options, clients);
     }
-  } else {
+  } else if (context_) {
     for (auto it =
              context_->GetClientProviderHostIterator(script_url_.GetOrigin());
          !it->IsAtEnd(); it->Advance()) {
@@ -2066,6 +2066,9 @@ void ServiceWorkerVersion::OnTimeoutTimer() {
   DCHECK(running_status() == STARTING || running_status() == RUNNING ||
          running_status() == STOPPING)
       << running_status();
+
+  if (!context_)
+    return;
 
   MarkIfStale();
 
