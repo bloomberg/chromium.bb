@@ -1338,25 +1338,34 @@ void ThreadState::invokePreFinalizers()
     ASSERT(checkThread());
     ASSERT(!sweepForbidden());
     TRACE_EVENT0("blink_gc", "ThreadState::invokePreFinalizers");
+
     double startTime = WTF::currentTimeMS();
+    if (!m_orderedPreFinalizers.isEmpty()) {
+        SweepForbiddenScope forbiddenScope(this);
+        if (isMainThread())
+            ScriptForbiddenScope::enter();
 
-    if (isMainThread())
-        ScriptForbiddenScope::enter();
+        // Call the prefinalizers in the opposite order to their registration.
+        //
+        // The prefinalizer callback wrapper returns |true| when its associated
+        // object is unreachable garbage and the prefinalizer callback has run.
+        // The registered prefinalizer entry must then be removed and deleted.
+        //
+        auto it = --m_orderedPreFinalizers.end();
+        bool done;
+        do {
+            auto entry = it;
+            done = it == m_orderedPreFinalizers.begin();
+            if (!done)
+                --it;
+            if ((entry->second)(entry->first))
+                m_orderedPreFinalizers.remove(entry);
+        } while (!done);
 
-    SweepForbiddenScope forbiddenScope(this);
-    Vector<PreFinalizer> deadPreFinalizers;
-    // Call the pre-finalizers in the reverse order in which they
-    // are registered.
-    for (auto it = m_orderedPreFinalizers.rbegin(); it != m_orderedPreFinalizers.rend(); ++it) {
-        if (!(it->second)(it->first))
-            continue;
-        deadPreFinalizers.append(*it);
+        if (isMainThread())
+            ScriptForbiddenScope::exit();
     }
-    // FIXME: removeAll is inefficient.  It can shrink repeatedly.
-    m_orderedPreFinalizers.removeAll(deadPreFinalizers);
-
     if (isMainThread()) {
-        ScriptForbiddenScope::exit();
         double timeForInvokingPreFinalizers = WTF::currentTimeMS() - startTime;
         Platform::current()->histogramCustomCounts("BlinkGC.TimeForInvokingPreFinalizers", timeForInvokingPreFinalizers, 1, 10 * 1000, 50);
     }

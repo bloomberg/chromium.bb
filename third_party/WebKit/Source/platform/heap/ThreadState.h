@@ -40,7 +40,6 @@
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/ThreadSpecific.h"
 #include "wtf/Threading.h"
 #include "wtf/ThreadingPrimitives.h"
@@ -111,7 +110,7 @@ static bool invokePreFinalizer(void* object)        \
     self->Class::preFinalizer();                    \
     return true;                                    \
 }                                                   \
-using UsingPreFinazlizerMacroNeedsTrailingSemiColon = char
+using UsingPreFinalizerMacroNeedsTrailingSemiColon = char
 
 #if ENABLE(OILPAN)
 #define WILL_BE_USING_PRE_FINALIZER(Class, method) USING_PRE_FINALIZER(Class, method)

@@ -48,7 +48,6 @@
 #include "wtf/LeakAnnotations.h"
 #include "wtf/MainThread.h"
 #include "wtf/Partitions.h"
-#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
