@@ -251,7 +251,7 @@ bool Animation::preCommit(int compositorGroup, bool startOnCompositor)
     bool shouldCancel = (!playing() && m_compositorState) || changed;
     bool shouldStart = playing() && (!m_compositorState || changed);
 
-    if (shouldCancel && shouldStart && m_compositorState && m_compositorState->pendingAction == Start) {
+    if (startOnCompositor && shouldCancel && shouldStart && m_compositorState && m_compositorState->pendingAction == Start) {
         // Restarting but still waiting for a start time.
         return false;
     }

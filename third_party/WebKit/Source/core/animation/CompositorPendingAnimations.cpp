@@ -77,6 +77,7 @@ bool CompositorPendingAnimations::update(bool startOnCompositor)
         // Animations with a start time do not participate in compositor start-time grouping.
         if (animation->preCommit(animation->hasStartTime() ? 1 : compositorGroup, startOnCompositor)) {
             if (animation->hasActiveAnimationsOnCompositor() && !hadCompositorAnimation) {
+
                 startedSynchronizedOnCompositor = true;
             }
 
@@ -110,11 +111,10 @@ bool CompositorPendingAnimations::update(bool startOnCompositor)
         animation->postCommit(animation->timeline()->currentTimeInternal());
 
     ASSERT(m_pending.isEmpty());
+    ASSERT(startOnCompositor || deferred.isEmpty());
     for (auto& animation : deferred)
         animation->setCompositorPending();
-#if ENABLE(ASSERT)
-    size_t pendingSize = m_pending.size();
-#endif
+    ASSERT(m_pending.size() == deferred.size());
 
     if (startedSynchronizedOnCompositor)
         return true;
@@ -131,7 +131,7 @@ bool CompositorPendingAnimations::update(bool startOnCompositor)
     // If not, go ahead and start any animations that were waiting.
     notifyCompositorAnimationStarted(monotonicallyIncreasingTime());
 
-    ASSERT(pendingSize == m_pending.size());
+    ASSERT(m_pending.size() == deferred.size());
     return false;
 }
 
