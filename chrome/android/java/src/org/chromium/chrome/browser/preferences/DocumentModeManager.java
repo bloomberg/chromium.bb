@@ -39,13 +39,16 @@ public class DocumentModeManager {
             "GT-I9505", // Galaxy S4
             "GT-I9508", // Galaxy S4
             "GT-I9508C", // Galaxy S4
+            "GT-I9508V", // Galaxy S4
             "SAMSUNG-SGH-I337Z", // Galaxy S4
             "SAMSUNG-SGH-I337", // Galaxy S4
             "SGH-I337M", // Galaxy S4
             "SGH-M919V", // Galaxy S4
+            "SGH-M919N", // Galaxy S4
             "SCH-R970C", // Galaxy S4
             "SCH-R970X", // Galaxy S4
             "SCH-I545L", // Galaxy S4
+            "SCH-I545PP", // Galaxy S4
             "SPH-L720T", // Galaxy S4
             "SPH-L720", // Galaxy S4
             "SM-S975L", // Galaxy S4
@@ -88,17 +91,16 @@ public class DocumentModeManager {
             "SAMSUNG-SM-C105A", // Galaxy S4 Zoom
             "SM-C105L", // Galaxy S4 Zoom
             "SM-C105S", // Galaxy S4 Zoom
+            "SM-C105K", // Galaxy S4 Zoom
             "SM-C105", // Galaxy S4 Zoom
             "SC-02E", // Galaxy Note2
             "GT-N7100", // Galaxy Note2
             "GT-N7100T", // Galaxy Note2
-            "GT-N7100", // Galaxy Note2
             "GT-N7102", // Galaxy Note2
-            "GT-N7102i", // Galaxy Note2
             "GT-N7108", // Galaxy Note2
             "SCH-N719", // Galaxy Note2
             "GT-N7102", // Galaxy Note2
-            "GT-N7102i", // Galaxy Note2
+            "GT-N7102I", // Galaxy Note2
             "GT-N7105", // Galaxy Note2
             "GT-N7105T", // Galaxy Note2
             "SAMSUNG-SGH-I317", // Galaxy Note2
@@ -248,7 +250,7 @@ public class DocumentModeManager {
     public static boolean isDeviceTabbedModeByDefault() {
         String model = Build.MODEL.toUpperCase(Locale.US);
         for (String device : DEFAULT_TABBED_MODE_DEVICES) {
-            if (model.contains(device)) return true;
+            if (model.equals(device)) return true;
         }
         return false;
     }
