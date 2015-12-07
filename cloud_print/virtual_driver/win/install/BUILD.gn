@@ -20,6 +20,7 @@ executable("virtual_driver_setup") {
     ":resources",
     ":setup_version",
     "//base",
+    "//cloud_print/common",
     "//cloud_print/common:install_utils",
     "//cloud_print/virtual_driver/win",
   ]

@@ -32,6 +32,7 @@ shared_library("chrome_elf") {
     ":breakpad",
     ":chrome_elf_manifest",
     ":chrome_elf_resources",
+    ":common",
     "//build/config/sanitizers:deps",
   ]
   configs += [ "//build/config/win:windowed" ]
@@ -54,8 +55,12 @@ source_set("constants") {
 }
 
 source_set("common") {
-  deps = [
+  public_deps = [
     ":constants",
+  ]
+  deps = [
+    "//base",
+    "//sandbox",
   ]
   sources = [
     "chrome_elf_util.cc",
@@ -73,6 +78,7 @@ source_set("breakpad") {
   ]
   deps = [
     ":common",
+    "//base",
     "//breakpad:breakpad_handler",
     "//chrome/common:version_header",
   ]
@@ -105,11 +111,14 @@ static_library("blacklist") {
     "blacklist/blacklist_interceptions.cc",
     "blacklist/blacklist_interceptions.h",
   ]
+  public_deps = [
+    "//sandbox",
+  ]
   deps = [
     ":breakpad",
+    ":common",
     ":constants",
     "//base",
-    "//sandbox:sandbox",
   ]
 }
 
@@ -124,9 +133,11 @@ test("chrome_elf_unittests") {
   deps = [
     ":blacklist",
     ":blacklist_test_main_dll",
+    ":common",
     "//base",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
+    "//chrome/common:version_header",
     "//sandbox",
     "//testing/gtest",
   ]
@@ -145,6 +156,7 @@ shared_library("blacklist_test_main_dll") {
   ]
   deps = [
     ":blacklist",
+    ":common",
     "//base",
     "//build/config/sanitizers:deps",
   ]

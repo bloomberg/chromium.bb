@@ -20,8 +20,12 @@ executable("cloud_print_service") {
   deps = [
     ":exe_manifest",
     ":exe_version",
+    "//base",
+    "//chrome/common:constants",
+    "//cloud_print/common",
     "//cloud_print/service:lib",
     "//cloud_print/service:resources",
+    "//content/public/common:static_switches",
   ]
 
   libs = [ "secur32.lib" ]
@@ -78,6 +82,9 @@ executable("cloud_print_service_config") {
   deps = [
     ":config_version",
     ":exe_manifest",
+    "//base",
+    "//chrome/common:constants",
+    "//cloud_print/common",
     "//cloud_print/common:install_utils",
     "//cloud_print/service:lib",
     "//cloud_print/service:resources",
@@ -105,6 +112,8 @@ executable("cloud_print_service_setup") {
 
   deps = [
     ":exe_manifest",
+    "//base",
+    "//cloud_print/common",
     "//cloud_print/common:install_utils",
     "//cloud_print/service:lib",
     "//cloud_print/service:resources",
