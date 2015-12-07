@@ -32,9 +32,9 @@ void __cdecl operator delete(void* memory, void* buffer,
 // DCHECK_NT is defined to be pretty much an assert at this time because we
 // don't have logging from the ntdll layer on the child.
 //
-// VERIFY_NT and VERIFY_SUCCESS_NT are the standard asserts on debug, but
+// VERIFY_NT and VERIFY_SUCCESS are the standard asserts on debug, but
 // execute the actual argument on release builds. VERIFY_NT expects an action
-// returning a bool, while VERIFY_SUCCESS_NT expects an action returning
+// returning a bool, while VERIFY_SUCCESS expects an action returning
 // NTSTATUS.
 #ifndef NDEBUG
 #define DCHECK_NT(condition) { (condition) ? (void)0 : __debugbreak(); }
