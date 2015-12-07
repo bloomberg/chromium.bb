@@ -778,9 +778,8 @@ void FrameView::performPreLayoutTasks()
     if (m_frame->isMainFrame() && !m_viewportScrollableArea) {
         ScrollableArea& visualViewport = m_frame->host()->visualViewport();
         ScrollableArea* layoutViewport = layoutViewportScrollableArea();
-        bool invertScrollOrder = m_frame->settings()->invertViewportScrollOrder();
         ASSERT(layoutViewport);
-        m_viewportScrollableArea = RootFrameViewport::create(visualViewport, *layoutViewport, invertScrollOrder);
+        m_viewportScrollableArea = RootFrameViewport::create(visualViewport, *layoutViewport);
     }
 }
 

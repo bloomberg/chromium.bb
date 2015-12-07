@@ -253,14 +253,6 @@ bool VisualViewport::magnifyScaleAroundAnchor(float magnifyDelta, const FloatPoi
     // First try to use the anchor's delta to scroll the FrameView.
     FloatSize anchorDeltaUnusedByScroll = anchorDelta;
 
-    if (!frameHost().settings().invertViewportScrollOrder()) {
-        FrameView* view = mainFrame()->view();
-        DoublePoint oldPosition = view->scrollPositionDouble();
-        view->scrollBy(DoubleSize(anchorDelta.width(), anchorDelta.height()), UserScroll);
-        DoublePoint newPosition = view->scrollPositionDouble();
-        anchorDeltaUnusedByScroll -= toFloatSize(newPosition - oldPosition);
-    }
-
     // Manually bubble any remaining anchor delta up to the visual viewport.
     FloatPoint newLocation(location() + anchorDeltaUnusedByScroll);
     setScaleAndLocation(newPageScale, newLocation);
