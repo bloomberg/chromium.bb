@@ -103,7 +103,6 @@ void UpdateAuthParams(base::DictionaryValue* params,
   // Now check whether we're in multi-profiles user adding scenario and
   // disable GAIA right panel features if that's the case.
   if (UserAddingScreen::Get()->IsRunning()) {
-    params->SetBoolean("createAccount", false);
     params->SetBoolean("guestSignin", false);
     params->SetBoolean("supervisedUsersCanCreate", false);
   }
@@ -145,9 +144,6 @@ struct GaiaScreenHandler::GaiaContext {
 
   // Forces Gaia to reload.
   bool force_reload = false;
-
-  // True if user pods can be displayed.
-  bool show_users = false;
 
   // Whether Gaia should be loaded in offline mode.
   bool use_offline = false;
@@ -193,7 +189,6 @@ void GaiaScreenHandler::LoadGaiaWithVersion(
   base::DictionaryValue params;
 
   params.SetBoolean("forceReload", context.force_reload);
-  params.SetBoolean("isShowUsers", context.show_users);
   params.SetBoolean("useOffline", context.use_offline);
   params.SetString("gaiaId", context.gaia_id);
   params.SetBoolean("readOnlyEmail", true);
@@ -788,10 +783,6 @@ void GaiaScreenHandler::LoadAuthExtension(bool force,
       user_manager::UserManager::Get()->FindGaiaID(
           AccountId::FromUserEmail(context.email), &gaia_id)) {
     context.gaia_id = gaia_id;
-  }
-
-  if (Delegate()) {
-    context.show_users = Delegate()->IsShowUsers();
   }
 
   if (!context.email.empty()) {

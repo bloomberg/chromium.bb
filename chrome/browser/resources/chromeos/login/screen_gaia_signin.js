@@ -137,13 +137,6 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     },
 
     /**
-     * Whether we should show user pods on the login screen.
-     * @type {boolean}
-     * @private
-     */
-    isShowUsers_: undefined,
-
-    /**
      * SAML password confirmation attempt count.
      * @type {number}
      */
@@ -499,9 +492,6 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       params.chromeType = data.chromeType;
       params.isNewGaiaFlow = true;
 
-      if (data.gaiaEndpoint)
-        params.gaiaPath = data.gaiaEndpoint;
-
       // Screen size could have been changed because of 'full-width' classes.
       if (Oobe.getInstance().currentScreen === this)
         Oobe.getInstance().updateScreenSize(this);
@@ -532,7 +522,6 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
           data.supervisedUsersCanCreate;
       $('login-header-bar').showGuestButton = data.guestSignin;
 
-      this.isShowUsers_ = data.isShowUsers;
       this.updateControlsState();
 
       this.classList.toggle('full-width', false);
