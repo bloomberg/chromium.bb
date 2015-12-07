@@ -26,7 +26,8 @@
         </div>
         <div class="permission-list">
           <paper-dropdown-menu>
-            <paper-menu id="permission" class="dropdown-content">
+            <paper-menu id="permission" class="dropdown-content"
+                on-iron-select="onPermissionMenuIronSelect_">
               <paper-item>[[i18n_.allowAction]]</paper-item>
               <paper-item>[[i18n_.blockAction]]</paper-item>
             </paper-menu>

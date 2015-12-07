@@ -25,6 +25,41 @@ var SiteSettingsBehaviorImpl = {
   },
 
   /**
+   * Re-sets the category permission for a given origin.
+   * @param {string} origin The origin to change the permission for.
+   * @param {number} category The category permission to change.
+   * @protected
+   */
+  resetCategoryPermissionForOrigin: function(origin, category) {
+    var pref = JSON.parse(JSON.stringify(this.getPref(
+        this.computeCategoryExceptionsPrefName(category))));
+    delete pref.value[origin + ',' + origin];
+    delete pref.value[origin + ',*'];
+    this.setPrefValue(
+        this.computeCategoryExceptionsPrefName(category), pref.value);
+  },
+
+  /**
+   * Sets the category permission for a given origin.
+   * @param {string} origin The origin to change the permission for.
+   * @param {number} value What value to set the permission to.
+   * @param {number} category The category permission to change.
+   * @protected
+   */
+  setCategoryPermissionForOrigin: function(origin, value, category) {
+    var pref = JSON.parse(JSON.stringify(this.getPref(
+        this.computeCategoryExceptionsPrefName(category))));
+    var key1 = origin + ',' + origin;
+    var key2 = origin + ',*';
+    if (pref.value[key1] != undefined)
+      pref.value[key1].setting = value;
+    if (pref.value[key2] != undefined)
+      pref.value[key2].setting = value;
+    this.setPrefValue(
+        this.computeCategoryExceptionsPrefName(category), pref.value);
+  },
+
+  /**
    * A utility function to compute the icon to use for the category.
    * @param {number} category The category to show the icon for.
    * @return {string} The id of the icon for the given category.

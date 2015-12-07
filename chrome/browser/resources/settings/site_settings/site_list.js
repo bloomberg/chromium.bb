@@ -105,6 +105,10 @@ Polymer({
     },
   },
 
+  observers: [
+    'onPrefChanged_(prefs.profile.content_settings.exceptions.*)',
+  ],
+
   ready: function() {
     CrSettingsPrefs.initialized.then(function() {
       this.initialize_();
@@ -121,6 +125,20 @@ Polymer({
 
     if (this.categoryEnabled)
       this.$.category.opened = true;
+  },
+
+  /**
+   * Handles changes to the underlying exceptions pref.
+   * @private
+   */
+  onPrefChanged_: function() {
+    // An observer that observes one deep path (like this class does) is called
+    // when the root property becomes defined (which some of the other tests,
+    // like site_settings_category_tests.js, do).
+    if (this.get('prefs.profile.content_settings') === undefined)
+      return;
+
+    this.populateList_();
   },
 
   /**
@@ -187,10 +205,20 @@ Polymer({
 
   /**
    * A handler for activating one of the menu action items.
+   * @param {!{target: !{selectedItems: !{textContent: string}}}} event
    * @private
    */
   onActionMenuIronSelect_: function(event) {
-    // TODO(finnur): Implement.
+    var origin = event.model.item.url;
+    var action = event.target.selectedItems[0].textContent;
+    if (action == this.i18n_.resetAction) {
+      this.resetCategoryPermissionForOrigin(origin, this.category);
+    } else {
+      var value = (action == this.i18n_.allowAction) ?
+          settings.PermissionValues.ALLOW :
+          settings.PermissionValues.BLOCK;
+      this.setCategoryPermissionForOrigin(origin, value, this.category);
+    }
   },
 
   /**
