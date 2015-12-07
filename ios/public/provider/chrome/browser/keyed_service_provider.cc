@@ -4,7 +4,7 @@
 
 #include "ios/public/provider/chrome/browser/keyed_service_provider.h"
 
-#include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
+#include "base/logging.h"
 
 namespace ios {
 namespace {
@@ -29,10 +29,6 @@ KeyedServiceProvider::~KeyedServiceProvider() {
 }
 
 void KeyedServiceProvider::AssertKeyedFactoriesBuilt() {
-  GetDataReductionProxySettingsFactory();
-#if defined(ENABLE_CONFIGURATION_POLICY)
-  GetManagedBookmarkServiceFactory();
-#endif
   GetSyncServiceFactory();
 }
 

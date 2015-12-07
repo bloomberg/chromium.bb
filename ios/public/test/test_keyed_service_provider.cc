@@ -8,7 +8,6 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
-#include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
@@ -67,19 +66,6 @@ TestKeyedServiceProvider::TestKeyedServiceProvider() {
 TestKeyedServiceProvider::~TestKeyedServiceProvider() {
 }
 
-#if defined(ENABLE_CONFIGURATION_POLICY)
-KeyedServiceBaseFactory*
-TestKeyedServiceProvider::GetManagedBookmarkServiceFactory() {
-  return MissingServiceKeyedServiceFactory::GetInstance();
-}
-
-bookmarks::ManagedBookmarkService*
-TestKeyedServiceProvider::GetManagedBookmarkServiceForBrowserState(
-    ChromeBrowserState* browser_state) {
-  return nullptr;
-}
-#endif
-
 KeyedServiceBaseFactory* TestKeyedServiceProvider::GetSyncServiceFactory() {
   return FakeSyncServiceFactory::GetInstance();
 }
@@ -94,17 +80,6 @@ sync_driver::SyncService*
 TestKeyedServiceProvider::GetSyncServiceForBrowserStateIfExists(
     ChromeBrowserState* browser_state) {
   return FakeSyncServiceFactory::GetForBrowserStateIfExists(browser_state);
-}
-
-KeyedServiceBaseFactory*
-TestKeyedServiceProvider::GetDataReductionProxySettingsFactory() {
-  return MissingServiceKeyedServiceFactory::GetInstance();
-}
-
-data_reduction_proxy::DataReductionProxySettings*
-TestKeyedServiceProvider::GetDataReductionProxySettingsForBrowserState(
-    ios::ChromeBrowserState* browser_state) {
-  return nullptr;
 }
 
 }  // namespace ios

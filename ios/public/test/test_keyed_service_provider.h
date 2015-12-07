@@ -16,20 +16,11 @@ class TestKeyedServiceProvider : public KeyedServiceProvider {
   ~TestKeyedServiceProvider() override;
 
   // KeyedServiceProvider implementation:
-#if defined(ENABLE_CONFIGURATION_POLICY)
-  KeyedServiceBaseFactory* GetManagedBookmarkServiceFactory() override;
-  bookmarks::ManagedBookmarkService* GetManagedBookmarkServiceForBrowserState(
-      ChromeBrowserState* browser_state) override;
-#endif
   KeyedServiceBaseFactory* GetSyncServiceFactory() override;
   sync_driver::SyncService* GetSyncServiceForBrowserState(
       ChromeBrowserState* browser_state) override;
   sync_driver::SyncService* GetSyncServiceForBrowserStateIfExists(
       ChromeBrowserState* browser_state) override;
-  KeyedServiceBaseFactory* GetDataReductionProxySettingsFactory() override;
-  data_reduction_proxy::DataReductionProxySettings*
-  GetDataReductionProxySettingsForBrowserState(
-      ios::ChromeBrowserState* browser_state) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestKeyedServiceProvider);

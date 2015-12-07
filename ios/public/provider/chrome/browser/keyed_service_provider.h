@@ -6,21 +6,9 @@
 #define IOS_PUBLIC_PROVIDER_CHROME_BROWSER_KEYED_SERVICE_PROVIDER_H_
 
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
-
-enum class ServiceAccessType;
 
 class KeyedServiceBaseFactory;
-
-#if defined(ENABLE_CONFIGURATION_POLICY)
-namespace bookmarks {
-class ManagedBookmarkService;
-}
-#endif
-
-namespace data_reduction_proxy {
-class DataReductionProxySettings;
-}
+enum class ServiceAccessType;
 
 namespace sync_driver {
 class SyncService;
@@ -47,17 +35,6 @@ class KeyedServiceProvider {
   // correct.
   void AssertKeyedFactoriesBuilt();
 
-#if defined(ENABLE_CONFIGURATION_POLICY)
-  // Returns the bookmarks::ManagedBookmarkService factory for dependencies.
-  virtual KeyedServiceBaseFactory* GetManagedBookmarkServiceFactory() = 0;
-
-  // Returns an instance of bookmarks::ManagedBookmarkService tied to
-  // |browser_state|.
-  virtual bookmarks::ManagedBookmarkService*
-  GetManagedBookmarkServiceForBrowserState(
-      ChromeBrowserState* browser_state) = 0;
-#endif
-
   // Returns the sync_driver::SyncService factory for dependencies.
   virtual KeyedServiceBaseFactory* GetSyncServiceFactory() = 0;
 
@@ -69,16 +46,6 @@ class KeyedServiceProvider {
   // there is one created already.
   virtual sync_driver::SyncService* GetSyncServiceForBrowserStateIfExists(
       ChromeBrowserState* browser_state) = 0;
-
-  // Returns the data_reduction_proxy::DataReductionProxySettings factory for
-  // dependencies.
-  virtual KeyedServiceBaseFactory* GetDataReductionProxySettingsFactory() = 0;
-
-  // Returns an instance of data_reduction_proxy::DataReductionProxySettings
-  // tied to |browser_state|.
-  virtual data_reduction_proxy::DataReductionProxySettings*
-  GetDataReductionProxySettingsForBrowserState(
-      ios::ChromeBrowserState* browser_state) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(KeyedServiceProvider);
