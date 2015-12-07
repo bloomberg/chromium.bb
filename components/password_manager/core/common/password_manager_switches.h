@@ -19,11 +19,8 @@ extern const char kDisableManagerForSyncSignin[];
 extern const char kDisallowAutofillSyncCredential[];
 extern const char kDisallowAutofillSyncCredentialForReauth[];
 extern const char kEnableAffiliationBasedMatching[];
-extern const char kEnableAutomaticPasswordSaving[];
 extern const char kEnableDropSyncCredential[];
 extern const char kEnableManagerForSyncSignin[];
-extern const char kEnablePasswordChangeSupport[];
-extern const char kEnablePasswordForceSaving[];
 
 }  // namespace switches
 

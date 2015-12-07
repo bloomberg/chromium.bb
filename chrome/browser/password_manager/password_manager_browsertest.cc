@@ -36,6 +36,7 @@
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
 #include "components/password_manager/core/browser/login_model.h"
 #include "components/password_manager/core/browser/test_password_store.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_switches.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/navigation_controller.h"
@@ -1191,9 +1192,12 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
 
   NavigateToFile("/password/password_form.html");
 
-  // Add the enable-automatic-password-saving switch.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      password_manager::switches::kEnableAutomaticPasswordSaving);
+  // Add the enable-automatic-password-saving feature.
+  base::FeatureList::ClearInstanceForTesting();
+  scoped_ptr<base::FeatureList> feature_list(new base::FeatureList);
+  feature_list->InitializeFromCommandLine(
+      password_manager::features::kEnableAutomaticPasswordSaving.name, "");
+  base::FeatureList::SetInstance(std::move(feature_list));
 
   // Fill a form and submit through a <input type="submit"> button.
   NavigationObserver observer(WebContents());

@@ -18,6 +18,7 @@
 #include "components/password_manager/core/browser/statistics_table.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/password_manager/core/common/password_manager_switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -1214,8 +1215,12 @@ TEST_F(PasswordManagerTest, PasswordGenerationUsernameChanged) {
 }
 
 TEST_F(PasswordManagerTest, ForceSavingPasswords) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnablePasswordForceSaving);
+  // Add the enable-password-force-saving feature.
+  base::FeatureList::ClearInstanceForTesting();
+  scoped_ptr<base::FeatureList> feature_list(new base::FeatureList);
+  feature_list->InitializeFromCommandLine(
+      password_manager::features::kEnablePasswordForceSaving.name, "");
+  base::FeatureList::SetInstance(std::move(feature_list));
   PasswordForm form(MakeSimpleForm());
 
   std::vector<PasswordForm> observed;
@@ -1241,8 +1246,12 @@ TEST_F(PasswordManagerTest, ForceSavingPasswords) {
 
 // Forcing Chrome to save an empty passwords should fail without a crash.
 TEST_F(PasswordManagerTest, ForceSavingPasswords_Empty) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnablePasswordForceSaving);
+  // Add the enable-password-force-saving feature.
+  base::FeatureList::ClearInstanceForTesting();
+  scoped_ptr<base::FeatureList> feature_list(new base::FeatureList);
+  feature_list->InitializeFromCommandLine(
+      password_manager::features::kEnablePasswordForceSaving.name, "");
+  base::FeatureList::SetInstance(std::move(feature_list));
   PasswordForm empty_password_form;
 
   std::vector<PasswordForm> observed;

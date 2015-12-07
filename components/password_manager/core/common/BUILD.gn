@@ -8,6 +8,8 @@ source_set("common") {
     "credential_manager_types.h",
     "experiments.cc",
     "experiments.h",
+    "password_manager_features.cc",
+    "password_manager_features.h",
     "password_manager_pref_names.cc",
     "password_manager_pref_names.h",
     "password_manager_switches.cc",

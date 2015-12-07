@@ -41,6 +41,7 @@
 #include "components/nacl/common/nacl_switches.h"
 #include "components/offline_pages/offline_page_switches.h"
 #include "components/omnibox/browser/omnibox_switches.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_switches.h"
 #include "components/proximity_auth/switches.h"
 #include "components/search/search_switches.h"
@@ -985,8 +986,8 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_AUTOMATIC_PASSWORD_SAVING_NAME,
      IDS_FLAGS_AUTOMATIC_PASSWORD_SAVING_DESCRIPTION,
      kOsDesktop,
-     SINGLE_VALUE_TYPE(
-         password_manager::switches::kEnableAutomaticPasswordSaving)},
+     FEATURE_VALUE_TYPE(
+         password_manager::features::kEnableAutomaticPasswordSaving)},
     {"password-manager-reauthentication",
      IDS_FLAGS_PASSWORD_MANAGER_REAUTHENTICATION_NAME,
      IDS_FLAGS_PASSWORD_MANAGER_REAUTHENTICATION_DESCRIPTION,
@@ -997,13 +998,14 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_PASSWORD_CHANGE_SUPPORT_NAME,
      IDS_FLAGS_PASSWORD_CHANGE_SUPPORT_DESCRIPTION,
      kOsMac,
-     SINGLE_VALUE_TYPE(
-         password_manager::switches::kEnablePasswordChangeSupport)},
+     FEATURE_VALUE_TYPE(
+         password_manager::features::kEnablePasswordChangeSupport)},
     {"enable-password-force-saving",
      IDS_FLAGS_PASSWORD_FORCE_SAVING_NAME,
      IDS_FLAGS_PASSWORD_FORCE_SAVING_DESCRIPTION,
      kOsAll,
-     SINGLE_VALUE_TYPE(password_manager::switches::kEnablePasswordForceSaving)},
+     FEATURE_VALUE_TYPE(
+         password_manager::features::kEnablePasswordForceSaving)},
     {"enable-affiliation-based-matching",
      IDS_FLAGS_AFFILIATION_BASED_MATCHING_NAME,
      IDS_FLAGS_AFFILIATION_BASED_MATCHING_DESCRIPTION,

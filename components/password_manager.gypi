@@ -207,6 +207,8 @@
         'password_manager/core/common/credential_manager_types.h',
         'password_manager/core/common/experiments.cc',
         'password_manager/core/common/experiments.h',
+        'password_manager/core/common/password_manager_features.cc',
+        'password_manager/core/common/password_manager_features.h',
         'password_manager/core/common/password_manager_pref_names.cc',
         'password_manager/core/common/password_manager_pref_names.h',
         'password_manager/core/common/password_manager_switches.cc',
