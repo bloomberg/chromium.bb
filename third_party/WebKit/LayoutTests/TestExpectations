@@ -1306,9 +1306,6 @@ crbug.com/532643 [ Mac ] fast/events/hit-test-cache-scrollbar-no-crash.html [ Pa
 crbug.com/532643 [ Mac ] virtual/trustedeventsdefaultaction/fast/events/hit-test-cache-scrollbar-no-crash.html [ Pass Failure ]
 crbug.com/532643 [ Mac ] virtual/pointerevent/fast/events/hit-test-cache-scrollbar-no-crash.html [ Pass Failure ]
 
-# Will be fixed by an upcoming Skia fix (https://codereview.chromium.org/1500923004/).
-crbug.com/240827 css3/filters/effect-reference.html [ NeedsRebaseline ]
-
 # The Win10 result for fast/text/emoji-font-fallback-win.html does not match the description
 crbug.com/527044 [ Win10 ] fast/text/emoji-font-fallback-win.html [ Failure ]
 
