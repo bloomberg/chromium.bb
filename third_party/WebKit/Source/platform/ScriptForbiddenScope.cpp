@@ -14,15 +14,12 @@ static unsigned s_scriptForbiddenCount = 0;
 
 ScriptForbiddenScope::ScriptForbiddenScope()
 {
-    ASSERT(isMainThread());
-    ++s_scriptForbiddenCount;
+    enter();
 }
 
 ScriptForbiddenScope::~ScriptForbiddenScope()
 {
-    ASSERT(isMainThread());
-    ASSERT(s_scriptForbiddenCount);
-    --s_scriptForbiddenCount;
+    exit();
 }
 
 void ScriptForbiddenScope::enter()
@@ -54,4 +51,15 @@ ScriptForbiddenScope::AllowUserAgentScript::~AllowUserAgentScript()
     ASSERT(!isMainThread() || !s_scriptForbiddenCount);
 }
 
+ScriptForbiddenIfMainThreadScope::ScriptForbiddenIfMainThreadScope()
+{
+    if (isMainThread())
+        ScriptForbiddenScope::enter();
+}
+
+ScriptForbiddenIfMainThreadScope::~ScriptForbiddenIfMainThreadScope()
+{
+    if (isMainThread())
+        ScriptForbiddenScope::exit();
+}
 } // namespace blink

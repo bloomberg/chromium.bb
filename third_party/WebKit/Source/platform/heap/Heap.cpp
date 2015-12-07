@@ -396,9 +396,7 @@ void Heap::collectGarbage(BlinkGC::StackState stackState, BlinkGC::GCType gcType
 
     // Resume all parked threads upon leaving this scope.
     ResumeThreadScope resumeThreads(gcType);
-
-    if (state->isMainThread())
-        ScriptForbiddenScope::enter();
+    ScriptForbiddenIfMainThreadScope scriptForbidden;
 
     TRACE_EVENT2("blink_gc", "Heap::collectGarbage",
         "lazySweeping", gcType == BlinkGC::GCWithoutSweep,
@@ -461,9 +459,6 @@ void Heap::collectGarbage(BlinkGC::StackState stackState, BlinkGC::GCType gcType
         s_gcGeneration = 1;
     }
 #endif
-
-    if (state->isMainThread())
-        ScriptForbiddenScope::exit();
 }
 
 void Heap::collectGarbageForTerminatingThread(ThreadState* state)

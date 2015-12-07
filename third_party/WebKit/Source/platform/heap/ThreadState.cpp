@@ -467,9 +467,8 @@ void ThreadState::threadLocalWeakProcessing()
     TRACE_EVENT0("blink_gc", "ThreadState::threadLocalWeakProcessing");
     double startTime = WTF::currentTimeMS();
 
-    SweepForbiddenScope forbiddenScope(this);
-    if (isMainThread())
-        ScriptForbiddenScope::enter();
+    SweepForbiddenScope sweepForbiddenScope(this);
+    ScriptForbiddenIfMainThreadScope scriptForbiddenScope;
 
     // Disallow allocation during weak processing.
     // It would be technically safe to allow allocations, but it is unsafe
@@ -485,7 +484,6 @@ void ThreadState::threadLocalWeakProcessing()
     while (popAndInvokeThreadLocalWeakCallback(&weakProcessingVisitor)) { }
 
     if (isMainThread()) {
-        ScriptForbiddenScope::exit();
         double timeForThreadLocalWeakProcessing = WTF::currentTimeMS() - startTime;
         Platform::current()->histogramCustomCounts("BlinkGC.timeForThreadLocalWeakProcessing", timeForThreadLocalWeakProcessing, 1, 10 * 1000, 50);
     }
@@ -784,8 +782,7 @@ void ThreadState::performIdleLazySweep(double deadlineSeconds)
     SweepForbiddenScope scope(this);
     {
         double startTime = WTF::currentTimeMS();
-        if (isMainThread())
-            ScriptForbiddenScope::enter();
+        ScriptForbiddenIfMainThreadScope scriptForbiddenScope;
 
         for (int i = 0; i < BlinkGC::NumberOfHeaps; i++) {
             // lazySweepWithDeadline() won't check the deadline until it sweeps
@@ -801,8 +798,6 @@ void ThreadState::performIdleLazySweep(double deadlineSeconds)
             }
         }
 
-        if (isMainThread())
-            ScriptForbiddenScope::exit();
         accumulateSweepingTime(WTF::currentTimeMS() - startTime);
     }
 
@@ -1075,17 +1070,11 @@ void ThreadState::eagerSweep()
         return;
 
     SweepForbiddenScope scope(this);
-    {
-        double startTime = WTF::currentTimeMS();
-        if (isMainThread())
-            ScriptForbiddenScope::enter();
+    ScriptForbiddenIfMainThreadScope scriptForbiddenScope;
 
-        m_heaps[BlinkGC::EagerSweepHeapIndex]->completeSweep();
-
-        if (isMainThread())
-            ScriptForbiddenScope::exit();
-        accumulateSweepingTime(WTF::currentTimeMS() - startTime);
-    }
+    double startTime = WTF::currentTimeMS();
+    m_heaps[BlinkGC::EagerSweepHeapIndex]->completeSweep();
+    accumulateSweepingTime(WTF::currentTimeMS() - startTime);
 }
 
 void ThreadState::completeSweep()
@@ -1103,8 +1092,7 @@ void ThreadState::completeSweep()
 
     SweepForbiddenScope scope(this);
     {
-        if (isMainThread())
-            ScriptForbiddenScope::enter();
+        ScriptForbiddenIfMainThreadScope scriptForbiddenScope;
 
         TRACE_EVENT0("blink_gc", "ThreadState::completeSweep");
         double startTime = WTF::currentTimeMS();
@@ -1116,10 +1104,8 @@ void ThreadState::completeSweep()
         double timeForCompleteSweep = WTF::currentTimeMS() - startTime;
         accumulateSweepingTime(timeForCompleteSweep);
 
-        if (isMainThread()) {
-            ScriptForbiddenScope::exit();
+        if (isMainThread())
             Platform::current()->histogramCustomCounts("BlinkGC.CompleteSweep", timeForCompleteSweep, 1, 10 * 1000, 50);
-        }
     }
 
     postSweep();
@@ -1341,9 +1327,8 @@ void ThreadState::invokePreFinalizers()
 
     double startTime = WTF::currentTimeMS();
     if (!m_orderedPreFinalizers.isEmpty()) {
-        SweepForbiddenScope forbiddenScope(this);
-        if (isMainThread())
-            ScriptForbiddenScope::enter();
+        SweepForbiddenScope sweepForbidden(this);
+        ScriptForbiddenIfMainThreadScope scriptForbidden;
 
         // Call the prefinalizers in the opposite order to their registration.
         //
@@ -1361,9 +1346,6 @@ void ThreadState::invokePreFinalizers()
             if ((entry->second)(entry->first))
                 m_orderedPreFinalizers.remove(entry);
         } while (!done);
-
-        if (isMainThread())
-            ScriptForbiddenScope::exit();
     }
     if (isMainThread()) {
         double timeForInvokingPreFinalizers = WTF::currentTimeMS() - startTime;
