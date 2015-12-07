@@ -26,19 +26,19 @@
 #ifndef ImageFrameGenerator_h
 #define ImageFrameGenerator_h
 
-#include "SkBitmap.h"
-#include "SkSize.h"
-#include "SkTypes.h"
 #include "platform/PlatformExport.h"
 #include "platform/graphics/ThreadSafeDataTransport.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkSize.h"
+#include "third_party/skia/include/core/SkTypes.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
-#include "wtf/ThreadingPrimitives.h"
 #include "wtf/ThreadSafeRefCounted.h"
+#include "wtf/ThreadingPrimitives.h"
 #include "wtf/Vector.h"
 
 namespace blink {
@@ -63,14 +63,11 @@ public:
         return adoptRef(new ImageFrameGenerator(fullSize, data, allDataReceived, isMultiFrame));
     }
 
-    ImageFrameGenerator(const SkISize& fullSize, PassRefPtr<SharedBuffer>, bool allDataReceived, bool isMultiFrame);
     ~ImageFrameGenerator();
 
-    // Decodes and scales the specified frame indicated by |index|. Dimensions
-    // and output format are specified in |info|. Decoded pixels are written
-    // into |pixels| with a stride of |rowBytes|.
-    //
-    // Returns true if decoding was successful.
+    // Decodes and scales the specified frame at |index|. The dimensions and output
+    // format are given in SkImageInfo. Decoded pixels are written into |pixels| with
+    // a stride of |rowBytes|. Returns true if decoding was successful.
     bool decodeAndScale(const SkImageInfo&, size_t index, void* pixels, size_t rowBytes);
 
     // Decodes YUV components directly into the provided memory planes.
@@ -81,17 +78,17 @@ public:
     // Creates a new SharedBuffer containing the data received so far.
     void copyData(RefPtr<SharedBuffer>*, bool* allDataReceived);
 
-    SkISize getFullSize() const { return m_fullSize; }
+    const SkISize& getFullSize() const { return m_fullSize; }
 
     bool isMultiFrame() const { return m_isMultiFrame; }
 
-    // FIXME: Return alpha state for each frame.
-    bool hasAlpha(size_t);
+    bool hasAlpha(size_t index);
 
     bool getYUVComponentSizes(SkISize componentSizes[3]);
 
 private:
-    class ExternalMemoryAllocator;
+    ImageFrameGenerator(const SkISize& fullSize, PassRefPtr<SharedBuffer>, bool allDataReceived, bool isMultiFrame);
+
     friend class ImageFrameGeneratorTest;
     friend class DeferredImageDecoderTest;
     // For testing. |factory| will overwrite the default ImageDecoder creation logic if |factory->create()| returns non-zero.
@@ -114,6 +111,8 @@ private:
     int m_decodeCount;
     Vector<bool> m_frameComplete;
     size_t m_frameCount;
+
+    class ExternalMemoryAllocator;
     OwnPtr<ExternalMemoryAllocator> m_externalAllocator;
 
     OwnPtr<ImageDecoderFactory> m_imageDecoderFactory;

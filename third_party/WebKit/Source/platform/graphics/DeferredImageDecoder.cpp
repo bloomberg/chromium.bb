@@ -27,14 +27,30 @@
 #include "platform/graphics/DeferredImageDecoder.h"
 
 #include "platform/graphics/DecodingImageGenerator.h"
+#include "platform/graphics/FrameData.h"
 #include "platform/graphics/ImageDecodingStore.h"
+#include "platform/graphics/ImageFrameGenerator.h"
 #include "third_party/skia/include/core/SkImage.h"
-#include "third_party/skia/include/core/SkImageInfo.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
 bool DeferredImageDecoder::s_enabled = true;
+
+PassOwnPtr<DeferredImageDecoder> DeferredImageDecoder::create(const SharedBuffer& data, ImageDecoder::AlphaOption alphaOption, ImageDecoder::GammaAndColorProfileOption colorOptions)
+{
+    OwnPtr<ImageDecoder> actualDecoder = ImageDecoder::create(data, alphaOption, colorOptions);
+
+    if (!actualDecoder)
+        return nullptr;
+
+    return adoptPtr(new DeferredImageDecoder(actualDecoder.release()));
+}
+
+PassOwnPtr<DeferredImageDecoder> DeferredImageDecoder::createForTesting(PassOwnPtr<ImageDecoder> actualDecoder)
+{
+    return adoptPtr(new DeferredImageDecoder(actualDecoder));
+}
 
 DeferredImageDecoder::DeferredImageDecoder(PassOwnPtr<ImageDecoder> actualDecoder)
     : m_allDataReceived(false)
@@ -47,17 +63,6 @@ DeferredImageDecoder::DeferredImageDecoder(PassOwnPtr<ImageDecoder> actualDecode
 
 DeferredImageDecoder::~DeferredImageDecoder()
 {
-}
-
-PassOwnPtr<DeferredImageDecoder> DeferredImageDecoder::create(const SharedBuffer& data, ImageDecoder::AlphaOption alphaOption, ImageDecoder::GammaAndColorProfileOption colorOptions)
-{
-    OwnPtr<ImageDecoder> actualDecoder = ImageDecoder::create(data, alphaOption, colorOptions);
-    return actualDecoder ? adoptPtr(new DeferredImageDecoder(actualDecoder.release())) : nullptr;
-}
-
-PassOwnPtr<DeferredImageDecoder> DeferredImageDecoder::createForTesting(PassOwnPtr<ImageDecoder> decoder)
-{
-    return adoptPtr(new DeferredImageDecoder(decoder));
 }
 
 void DeferredImageDecoder::setEnabled(bool enabled)
@@ -78,23 +83,24 @@ String DeferredImageDecoder::filenameExtension() const
 PassRefPtr<SkImage> DeferredImageDecoder::createFrameAtIndex(size_t index)
 {
     prepareLazyDecodedFrames();
+
     if (index < m_frameData.size()) {
         // ImageFrameGenerator has the latest known alpha state. There will be a
         // performance boost if this frame is opaque.
         FrameData* frameData = &m_frameData[index];
         frameData->m_hasAlpha = m_frameGenerator->hasAlpha(index);
-        frameData->m_frameBytes = m_size.area() *  sizeof(ImageFrame::PixelData);
-        return createImage(index, !frameData->m_hasAlpha);
+        frameData->m_frameBytes = m_size.area() * sizeof(ImageFrame::PixelData);
+        return createFrameImageAtIndex(index, !frameData->m_hasAlpha);
     }
 
     if (!m_actualDecoder)
         return nullptr;
 
-    ImageFrame* buffer = m_actualDecoder->frameBufferAtIndex(index);
-    if (!buffer || buffer->status() == ImageFrame::FrameEmpty)
+    ImageFrame* frame = m_actualDecoder->frameBufferAtIndex(index);
+    if (!frame || frame->status() == ImageFrame::FrameEmpty)
         return nullptr;
 
-    return adoptRef(SkImage::NewFromBitmap(buffer->bitmap()));
+    return adoptRef(SkImage::NewFromBitmap(frame->bitmap()));
 }
 
 void DeferredImageDecoder::setData(SharedBuffer& data, bool allDataReceived)
@@ -253,17 +259,18 @@ void DeferredImageDecoder::prepareLazyDecodedFrames()
     }
 }
 
-// Creates an SkImage that is backed by SkDiscardablePixelRef.
-PassRefPtr<SkImage> DeferredImageDecoder::createImage(size_t index, bool knownToBeOpaque) const
+inline SkImageInfo imageInfoFrom(const SkISize& decodedSize, bool knownToBeOpaque)
 {
-    SkISize decodedSize = m_frameGenerator->getFullSize();
+    return SkImageInfo::MakeN32(decodedSize.width(), decodedSize.height(), knownToBeOpaque ? kOpaque_SkAlphaType : kPremul_SkAlphaType);
+}
+
+PassRefPtr<SkImage> DeferredImageDecoder::createFrameImageAtIndex(size_t index, bool knownToBeOpaque) const
+{
+    const SkISize& decodedSize = m_frameGenerator->getFullSize();
     ASSERT(decodedSize.width() > 0);
     ASSERT(decodedSize.height() > 0);
 
-    const SkImageInfo info = SkImageInfo::MakeN32(decodedSize.width(), decodedSize.height(),
-        knownToBeOpaque ? kOpaque_SkAlphaType : kPremul_SkAlphaType);
-
-    DecodingImageGenerator* generator = new DecodingImageGenerator(m_frameGenerator, info, index);
+    DecodingImageGenerator* generator = new DecodingImageGenerator(m_frameGenerator, imageInfoFrom(decodedSize, knownToBeOpaque), index);
     RefPtr<SkImage> image = adoptRef(SkImage::NewFromGenerator(generator));
     if (!image)
         return nullptr;

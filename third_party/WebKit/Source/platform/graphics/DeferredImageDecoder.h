@@ -26,13 +26,11 @@
 #ifndef DeferredImageDecoder_h
 #define DeferredImageDecoder_h
 
-#include "SkBitmap.h"
-#include "SkPixelRef.h"
 #include "platform/PlatformExport.h"
 #include "platform/geometry/IntSize.h"
-#include "platform/graphics/FrameData.h"
-#include "platform/graphics/ImageFrameGenerator.h"
 #include "platform/image-decoders/ImageDecoder.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkPixelRef.h"
 #include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 #include "wtf/OwnPtr.h"
@@ -44,15 +42,17 @@ namespace blink {
 
 class ImageFrameGenerator;
 class SharedBuffer;
+struct FrameData;
 
 class PLATFORM_EXPORT DeferredImageDecoder final {
     WTF_MAKE_NONCOPYABLE(DeferredImageDecoder);
     USING_FAST_MALLOC(DeferredImageDecoder);
 public:
-    ~DeferredImageDecoder();
     static PassOwnPtr<DeferredImageDecoder> create(const SharedBuffer& data, ImageDecoder::AlphaOption, ImageDecoder::GammaAndColorProfileOption);
 
     static PassOwnPtr<DeferredImageDecoder> createForTesting(PassOwnPtr<ImageDecoder>);
+
+    ~DeferredImageDecoder();
 
     static void setEnabled(bool);
     static bool enabled();
@@ -69,22 +69,24 @@ public:
     IntSize frameSizeAtIndex(size_t index) const;
     size_t frameCount();
     int repetitionCount() const;
-    size_t clearCacheExceptFrame(size_t);
+    size_t clearCacheExceptFrame(size_t index);
     bool frameHasAlphaAtIndex(size_t index) const;
-    bool frameIsCompleteAtIndex(size_t) const;
-    float frameDurationAtIndex(size_t) const;
+    bool frameIsCompleteAtIndex(size_t index) const;
+    float frameDurationAtIndex(size_t index) const;
     size_t frameBytesAtIndex(size_t index) const;
     ImageOrientation orientationAtIndex(size_t index) const;
     bool hotSpot(IntPoint&) const;
 
-    // For testing.
-    ImageFrameGenerator* frameGenerator() { return m_frameGenerator.get(); }
-
 private:
     explicit DeferredImageDecoder(PassOwnPtr<ImageDecoder> actualDecoder);
-    void prepareLazyDecodedFrames();
-    PassRefPtr<SkImage> createImage(size_t index, bool knownToBeOpaque) const;
+
+    friend class DeferredImageDecoderTest;
+    ImageFrameGenerator* frameGenerator() { return m_frameGenerator.get(); }
+
     void activateLazyDecoding();
+    void prepareLazyDecodedFrames();
+
+    PassRefPtr<SkImage> createFrameImageAtIndex(size_t index, bool knownToBeOpaque) const;
 
     RefPtr<SharedBuffer> m_data;
     bool m_allDataReceived;

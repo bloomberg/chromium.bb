@@ -26,14 +26,13 @@
 #include "config.h"
 #include "platform/graphics/DecodingImageGenerator.h"
 
-#include "SkData.h"
-#include "SkImageInfo.h"
 #include "platform/PlatformInstrumentation.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/SharedBuffer.h"
 #include "platform/TraceEvent.h"
 #include "platform/graphics/ImageFrameGenerator.h"
 #include "platform/image-decoders/ImageDecoder.h"
+#include "third_party/skia/include/core/SkData.h"
 
 namespace blink {
 
@@ -126,4 +125,3 @@ SkImageGenerator* DecodingImageGenerator::create(SkData* data)
 }
 
 } // namespace blink
-
