@@ -1,0 +1,83 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module device;
+
+enum NFCErrorType {
+  SECURITY,
+  NOT_SUPPORTED,
+  DEVICE_DISABLED,
+  NOT_FOUND,
+  INVALID_MESSAGE,
+  OPERATION_CANCELLED,
+  TIMER_EXPIRED,
+  CANNOT_CANCEL,
+  IO_ERROR
+};
+
+enum NFCRecordType {
+  EMPTY,
+  TEXT,
+  URL,
+  JSON,
+  OPAQUE
+};
+
+enum NFCPushTarget {
+  TAG,
+  PEER,
+  ANY
+};
+
+enum NFCWatchMode {
+  WEBNFC_ONLY,
+  ANY
+};
+
+struct NFCError {
+  NFCErrorType error_type;
+};
+
+struct NFCRecord {
+  NFCRecordType recordType;
+  string? mediaType;
+  array<uint8> data;
+};
+
+struct NFCMessage {
+  array<NFCRecord> data;
+  string? url;
+};
+
+struct NFCPushOptions {
+  NFCPushTarget target;
+  double timeout;
+  bool ignoreRead;
+};
+
+struct NFCRecordTypeFilter {
+  NFCRecordType recordType;
+};
+
+struct NFCWatchOptions {
+  string? url;
+  NFCRecordTypeFilter? recordFilter;
+  string? mediaType;
+  NFCWatchMode mode;
+};
+
+interface NFC {
+  SetClient(NFCClient client);
+  Push(NFCMessage message, NFCPushOptions? options) => (NFCError? error);
+  CancelPush(NFCPushTarget target) => (NFCError? error);
+  Watch(NFCWatchOptions options) => (uint32 id, NFCError? error);
+  CancelWatch (uint32 id) => (NFCError? error);
+  CancelAllWatches () => (NFCError? error);
+  SuspendNFCOperations();
+  ResumeNFCOperations();
+};
+
+interface NFCClient {
+  OnWatch(uint32 id, NFCMessage message);
+};
