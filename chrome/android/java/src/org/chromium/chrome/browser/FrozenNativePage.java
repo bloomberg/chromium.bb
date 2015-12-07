@@ -39,6 +39,7 @@ public class FrozenNativePage implements NativePage {
 
     @Override
     public View getView() {
+        assert false;
         return null;
     }
 
