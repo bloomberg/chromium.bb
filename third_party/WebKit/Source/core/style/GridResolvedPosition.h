@@ -40,7 +40,7 @@ public:
     static GridPositionSide initialPositionSide(GridTrackSizingDirection);
     static GridPositionSide finalPositionSide(GridTrackSizingDirection);
 
-    static GridSpan resolveGridPositionsFromAutoPlacementPosition(const ComputedStyle&, const LayoutBox&, GridTrackSizingDirection, size_t resolvedInitialPosition);
+    static size_t spanSizeForAutoPlacedItem(const ComputedStyle&, const LayoutBox&, GridTrackSizingDirection);
     static GridSpan resolveGridPositionsFromStyle(const ComputedStyle&, const LayoutBox&, GridTrackSizingDirection);
 
 };

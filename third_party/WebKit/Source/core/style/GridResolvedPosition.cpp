@@ -155,24 +155,21 @@ static GridSpan resolveGridPositionAgainstOppositePosition(const ComputedStyle& 
     return definiteGridSpanWithSpanAgainstOpposite(resolvedOppositePosition, position, side);
 }
 
-GridSpan GridResolvedPosition::resolveGridPositionsFromAutoPlacementPosition(const ComputedStyle& gridContainerStyle, const LayoutBox& gridItem, GridTrackSizingDirection direction, size_t resolvedInitialPosition)
+size_t GridResolvedPosition::spanSizeForAutoPlacedItem(const ComputedStyle& gridContainerStyle, const LayoutBox& gridItem, GridTrackSizingDirection direction)
 {
     GridPosition initialPosition, finalPosition;
     initialAndFinalPositionsFromStyle(gridContainerStyle, gridItem, direction, initialPosition, finalPosition);
 
-    GridPositionSide finalSide = finalPositionSide(direction);
-
     // This method will only be used when both positions need to be resolved against the opposite one.
     ASSERT(initialPosition.shouldBeResolvedAgainstOppositePosition() && finalPosition.shouldBeResolvedAgainstOppositePosition());
 
-    size_t resolvedFinalPosition = resolvedInitialPosition + 1;
+    if (initialPosition.isAuto() && finalPosition.isAuto())
+        return 1;
 
-    if (initialPosition.isSpan())
-        return resolveGridPositionAgainstOppositePosition(gridContainerStyle, resolvedInitialPosition, initialPosition, finalSide);
-    if (finalPosition.isSpan())
-        return resolveGridPositionAgainstOppositePosition(gridContainerStyle, resolvedInitialPosition, finalPosition, finalSide);
-
-    return GridSpan::definiteGridSpan(resolvedInitialPosition, resolvedFinalPosition);
+    GridPosition position = initialPosition.isSpan() ? initialPosition : finalPosition;
+    ASSERT(position.isSpan());
+    ASSERT(position.spanPosition());
+    return position.spanPosition();
 }
 
 size_t GridResolvedPosition::explicitGridColumnCount(const ComputedStyle& gridContainerStyle)
