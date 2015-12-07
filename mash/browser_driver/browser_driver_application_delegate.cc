@@ -82,6 +82,8 @@ void BrowserDriverApplicationDelegate::AddAccelerators() {
   mus::mojom::AcceleratorRegistrarPtr registrar;
   app_->ConnectToService("mojo:desktop_wm", &registrar);
 
+  if (binding_.is_bound())
+    binding_.Unbind();
   mus::mojom::AcceleratorHandlerPtr handler;
   binding_.Bind(GetProxy(&handler));
   // If the window manager restarts, the handler pipe will close and we'll need
