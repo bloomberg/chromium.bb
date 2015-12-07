@@ -99,17 +99,6 @@ var simple_entries = [
   },
 
   {
-    name: 'secret_cat',
-    request: new Request('http://tom:jerry@example.com/cat'),
-    response: new Response('')
-  },
-
-  {
-    name: 'top_secret_cat',
-    request: new Request('http://tom:j3rry@example.com/cat'),
-    response: new Response('')
-  },
-  {
     name: 'non_2xx_response',
     request: new Request('http://example.com/non2xx'),
     response: new Response('', {status: 404, statusText: 'nope'})

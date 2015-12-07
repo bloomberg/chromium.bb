@@ -94,15 +94,6 @@ prepopulated_cache_test(simple_entries, function(cache, entries) {
         });
   }, 'Cache.matchAll with string fragment "http" as query');
 
-prepopulated_cache_test(simple_entries, function(cache, entries) {
-    return cache.matchAll(entries.secret_cat.request.url)
-      .then(function(result) {
-          assert_response_array_equivalent(
-            result, [entries.secret_cat.response],
-            'Cache.matchAll should not ignore embedded credentials');
-        });
-  }, 'Cache.matchAll with URL containing credentials');
-
 prepopulated_cache_test(vary_entries, function(cache, entries) {
     return cache.matchAll('http://example.com/c')
       .then(function(result) {

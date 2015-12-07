@@ -8,7 +8,6 @@ PASS Cache.match with ignoreSearch option (request with no search parameters)
 PASS Cache.match with ignoreSearch option (request with search parameter) 
 PASS Cache.match with URL containing fragment 
 PASS Cache.match with string fragment "http" as query 
-PASS Cache.match with URL containing credentials 
 PASS Cache.match with responses containing "Vary" header 
 PASS Cache.match with Request and Response objects with different URLs 
 PASS Cache.match invoked multiple times for the same Request/Response 
