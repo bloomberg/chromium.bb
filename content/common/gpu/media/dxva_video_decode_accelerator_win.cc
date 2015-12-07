@@ -109,6 +109,24 @@ DEFINE_GUID(CLSID_VideoProcessorMFT,
 DEFINE_GUID(MF_XVP_PLAYBACK_MODE, 0x3c5d293f, 0xad67, 0x4e29, 0xaf, 0x12,
             0xcf, 0x3e, 0x23, 0x8a, 0xcc, 0xe9);
 
+// Helper class to automatically lock unlock the DX11 device in a scope.
+class AutoDX11DeviceLock {
+ public:
+  explicit AutoDX11DeviceLock(ID3D10Multithread* multi_threaded)
+      : multi_threaded_(multi_threaded) {
+    multi_threaded_->Enter();
+  }
+
+  ~AutoDX11DeviceLock() {
+    multi_threaded_->Leave();
+  }
+
+ private:
+  base::win::ScopedComPtr<ID3D10Multithread> multi_threaded_;
+
+  DISALLOW_COPY_AND_ASSIGN(AutoDX11DeviceLock);
+};
+
 }  // namespace
 
 namespace content {
@@ -794,11 +812,6 @@ bool DXVAVideoDecodeAccelerator::CreateDX11DevManager() {
 
   using_angle_device_ = true;
   d3d11_device_ = angle_device;
-  d3d11_device_->GetImmediateContext(d3d11_device_context_.Receive());
-  RETURN_ON_FAILURE(
-      d3d11_device_context_.get(),
-      "Failed to query DX11 device context from ANGLE device",
-      false);
 
   // Enable multithreaded mode on the device. This ensures that accesses to
   // context are synchronized across threads. We have multiple threads
@@ -811,14 +824,6 @@ bool DXVAVideoDecodeAccelerator::CreateDX11DevManager() {
   hr = d3d11_device_manager_->ResetDevice(d3d11_device_.get(),
                                           dx11_dev_manager_reset_token_);
   RETURN_ON_HR_FAILURE(hr, "Failed to reset device", false);
-
-  D3D11_QUERY_DESC query_desc;
-  query_desc.Query = D3D11_QUERY_EVENT;
-  query_desc.MiscFlags = 0;
-  hr = d3d11_device_->CreateQuery(
-      &query_desc,
-      d3d11_query_.Receive());
-  RETURN_ON_HR_FAILURE(hr, "Failed to create DX11 device query", false);
 
   HMODULE video_processor_dll = ::GetModuleHandle(L"msvproc.dll");
   RETURN_ON_FAILURE(video_processor_dll, "Failed to load video processor",
@@ -1527,10 +1532,8 @@ void DXVAVideoDecodeAccelerator::Invalidate() {
           MFT_MESSAGE_NOTIFY_END_STREAMING, 0);
       video_format_converter_mft_.Release();
     }
-    d3d11_device_context_.Release();
     d3d11_device_.Release();
     d3d11_device_manager_.Release();
-    d3d11_query_.Release();
     dx11_video_format_converter_media_type_needs_init_ = true;
   } else {
     d3d9_.Release();
@@ -2003,15 +2006,6 @@ void DXVAVideoDecodeAccelerator::CopyTexture(ID3D11Texture2D* src_texture,
 
   DCHECK(video_format_converter_mft_.get());
 
-  // d3d11_device_context_->Begin(d3d11_query_.get());
-
-  hr = video_format_converter_mft_->ProcessInput(0, video_frame, 0);
-  if (FAILED(hr)) {
-    DCHECK(false);
-    RETURN_AND_NOTIFY_ON_HR_FAILURE(hr,
-        "Failed to convert output sample format.", PLATFORM_FAILURE,);
-  }
-
   // The video processor MFT requires output samples to be allocated by the
   // caller. We create a sample with a buffer backed with the ID3D11Texture2D
   // interface exposed by ANGLE. This works nicely as this ensures that the
@@ -2040,9 +2034,16 @@ void DXVAVideoDecodeAccelerator::CopyTexture(ID3D11Texture2D* src_texture,
 
   output_sample->AddBuffer(output_buffer.get());
 
-  // Lock the device here as we are accessing the destination texture created
-  // on the main thread.
-  multi_threaded_->Enter();
+  // Lock the device here as we are accessing the DX11 video context and the
+  // texture which need to be synchronized with the main thread.
+  AutoDX11DeviceLock device_lock(multi_threaded_.get());
+
+  hr = video_format_converter_mft_->ProcessInput(0, video_frame, 0);
+  if (FAILED(hr)) {
+    DCHECK(false);
+    RETURN_AND_NOTIFY_ON_HR_FAILURE(hr,
+        "Failed to convert output sample format.", PLATFORM_FAILURE,);
+  }
 
   DWORD status = 0;
   MFT_OUTPUT_DATA_BUFFER format_converter_output = {};
@@ -2052,11 +2053,6 @@ void DXVAVideoDecodeAccelerator::CopyTexture(ID3D11Texture2D* src_texture,
         1,  // # of out streams to pull from
         &format_converter_output,
         &status);
-
-  d3d11_device_context_->Flush();
-  d3d11_device_context_->End(d3d11_query_.get());
-
-  multi_threaded_->Leave();
 
   if (FAILED(hr)) {
     base::debug::Alias(&hr);
@@ -2239,16 +2235,6 @@ bool DXVAVideoDecodeAccelerator::InitializeDX11VideoFormatConverterMediaType(
       RETURN_AND_NOTIFY_ON_HR_FAILURE(hr,
           "Failed to set converter output type", PLATFORM_FAILURE, false);
 
-      hr = video_format_converter_mft_->ProcessMessage(
-          MFT_MESSAGE_NOTIFY_BEGIN_STREAMING, 0);
-      if (FAILED(hr)) {
-        // TODO(ananta)
-        // Remove this CHECK when the change to use DX11 for H/W decoding
-        // stablizes.
-        RETURN_AND_NOTIFY_ON_FAILURE(
-            false, "Failed to initialize video converter.", PLATFORM_FAILURE,
-            false);
-      }
       dx11_video_format_converter_media_type_needs_init_ = false;
       return true;
     }

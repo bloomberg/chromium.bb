@@ -255,10 +255,8 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
   base::win::ScopedComPtr<IDirect3DDeviceManager9> device_manager_;
   base::win::ScopedComPtr<IDirect3DQuery9> query_;
 
-  base::win::ScopedComPtr<ID3D11DeviceContext> d3d11_device_context_;
   base::win::ScopedComPtr<ID3D11Device > d3d11_device_;
   base::win::ScopedComPtr<IMFDXGIDeviceManager> d3d11_device_manager_;
-  base::win::ScopedComPtr<ID3D11Query> d3d11_query_;
   base::win::ScopedComPtr<ID3D10Multithread> multi_threaded_;
 
   // Ideally the reset token would be a stack variable which is used while
