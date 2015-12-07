@@ -49,9 +49,6 @@ class FocusController : public ServerWindowDrawnTrackerObserver {
   bool CanBeFocused(ServerWindow* window) const;
   bool CanBeActivated(ServerWindow* window) const;
 
-  ServerWindow* GetNextActivatableWindow(ServerWindow* window) const;
-  ServerWindow* FindNextWindowInTree(ServerWindow* window) const;
-
   // Returns the closest activatable ancestor of |window|. Returns nullptr if
   // there is no such ancestor.
   ServerWindow* GetActivatableAncestorOf(ServerWindow* window) const;

@@ -797,15 +797,25 @@ TEST_F(WindowServerTest, ActivationNext) {
 
   WindowTreeConnection* embedded1 = Embed(child1).connection;
   ASSERT_NE(nullptr, embedded1);
+  WindowTreeConnection* embedded2 = Embed(child2).connection;
+  ASSERT_NE(nullptr, embedded2);
+  WindowTreeConnection* embedded3 = Embed(child3).connection;
+  ASSERT_NE(nullptr, embedded3);
 
-  NewVisibleWindow(embedded1->GetRoot(), embedded1);
-  WaitForTreeSizeToMatch(parent, 5);
+  Window* child11 = NewVisibleWindow(embedded1->GetRoot(), embedded1);
+  Window* child21 = NewVisibleWindow(embedded2->GetRoot(), embedded2);
+  Window* child31 = NewVisibleWindow(embedded3->GetRoot(), embedded3);
+  WaitForTreeSizeToMatch(parent, 7);
 
   Window* expecteds[] = { child1, child2, child3, child1, nullptr };
+  Window* focused[] = { child11, child21, child31, child11, nullptr };
   for (size_t index = 0; expecteds[index]; ++index) {
     host()->ActivateNextWindow();
     ASSERT_TRUE(WaitForOrderChange(window_manager(), expecteds[index]))
         << " Failure at " << index;
+
+    WaitForWindowToHaveFocus(focused[index]);
+    EXPECT_TRUE(focused[index]->HasFocus());
   }
 }
 
