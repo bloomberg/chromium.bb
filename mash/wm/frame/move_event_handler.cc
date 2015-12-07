@@ -17,9 +17,15 @@ namespace wm {
 
 MoveEventHandler::MoveEventHandler(mus::Window* mus_window,
                                    aura::Window* aura_window)
-    : mus_window_(mus_window), aura_window_(aura_window) {}
+    : mus_window_(mus_window), aura_window_(aura_window),
+      root_window_(aura_window->GetRootWindow()) {
+  root_window_->AddPreTargetHandler(this);
+}
 
-MoveEventHandler::~MoveEventHandler() {}
+MoveEventHandler::~MoveEventHandler() {
+  if (root_window_)
+    root_window_->RemovePreTargetHandler(this);
+}
 
 void MoveEventHandler::ProcessLocatedEvent(ui::LocatedEvent* event) {
   const bool had_move_loop = move_loop_.get() != nullptr;
@@ -59,6 +65,12 @@ void MoveEventHandler::OnCancelMode(ui::CancelModeEvent* event) {
   move_loop_->Revert();
   move_loop_.reset();
   event->SetHandled();
+}
+
+void MoveEventHandler::OnWindowDestroying(aura::Window* window) {
+  DCHECK_EQ(root_window_, window);
+  root_window_->RemovePreTargetHandler(this);
+  root_window_ = nullptr;
 }
 
 }  // namespace wm

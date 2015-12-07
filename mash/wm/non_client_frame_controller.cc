@@ -95,10 +95,6 @@ class WmNativeWidgetMus : public views::NativeWidgetMus {
                         window,
                         mus::mojom::SURFACE_TYPE_UNDERLAY) {}
   ~WmNativeWidgetMus() override {
-    if (move_event_handler_) {
-      GetNativeView()->GetHost()->window()->RemovePreTargetHandler(
-          move_event_handler_.get());
-    }
   }
 
   // NativeWidgetMus:
@@ -107,9 +103,7 @@ class WmNativeWidgetMus : public views::NativeWidgetMus {
         static_cast<views::internal::NativeWidgetPrivate*>(this)->GetWidget();
     NonClientFrameViewMash* frame_view =
         new NonClientFrameViewMash(widget, window());
-    aura::Window* root_window = GetNativeView()->GetHost()->window();
     move_event_handler_.reset(new MoveEventHandler(window(), GetNativeView()));
-    root_window->AddPreTargetHandler(move_event_handler_.get());
     return frame_view;
   }
   void InitNativeWidget(const views::Widget::InitParams& params) override {
